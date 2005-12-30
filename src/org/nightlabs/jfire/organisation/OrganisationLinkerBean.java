@@ -1,16 +1,16 @@
 /*
  * Created on Dec 21, 2004
  */
-package org.nightlabs.ipanema.organisation;
+package org.nightlabs.jfire.organisation;
 
 import javax.ejb.CreateException;
 import javax.jdo.PersistenceManager;
 
 import org.apache.log4j.Logger;
-import org.nightlabs.ipanema.base.Lookup;
-import org.nightlabs.ipanema.organisation.LocalOrganisation;
-import org.nightlabs.ipanema.organisation.Organisation;
-import org.nightlabs.ipanema.organisation.RegistrationStatus;
+import org.nightlabs.jfire.base.Lookup;
+import org.nightlabs.jfire.organisation.LocalOrganisation;
+import org.nightlabs.jfire.organisation.Organisation;
+import org.nightlabs.jfire.organisation.RegistrationStatus;
 
 import org.nightlabs.ModuleException;
 
@@ -21,8 +21,8 @@ import org.nightlabs.ModuleException;
  * <br/><br/>
  * If you want to work with Organisations, use the OrganisationManager EJB or other beans!
  *
- * @ejb.bean name="ipanema/ejb/JFireBasePublicBean/OrganisationLinker"
- *	jndi-name="ipanema/ejb/JFireBasePublicBean/OrganisationLinkerBean"
+ * @ejb.bean name="jfire/ejb/JFireBasePublicBean/OrganisationLinker"
+ *	jndi-name="jfire/ejb/JFireBasePublicBean/OrganisationLinkerBean"
  *	type="Stateless"
  *
  * @ejb.util generate = "physical"
