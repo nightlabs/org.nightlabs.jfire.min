@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<connection-factories>
+
+	<tx-connection-factory>
+		<jndi-name>ipanema/system/JFireServerManagerFactory</jndi-name>
+
+<!-- JBoss 3.2.x: begin
+		<adapter-display-name>JFire Server Manager</adapter-display-name>
+JBoss 3.2.x: end -->
+
+<!-- JBoss 4.x: begin -->
+		<rar-name>JFire.last#JFireBase.ear#JFireServerManager.rar</rar-name>
+		<connection-definition>javax.resource.cci.ConnectionFactory</connection-definition>
+<!-- JBoss 4.x: end -->
+
+		<config-property name="SysConfigDirectory" type="java.lang.String">../server/default/deploy/JFire.last/JFireBase.ear/config/</config-property>
+
+	</tx-connection-factory>
+
+</connection-factories>

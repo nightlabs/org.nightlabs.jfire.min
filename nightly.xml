@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE nightlybuild PUBLIC "-//NightLabs//DTD NightlyBuild V 0.5//EN" "http://www.nightlabs.de/dtd/nightlybuild_0_5.dtd">
+<nightlybuild>
+
+  <project name="JFireServerManager" category="JFire">
+    <!-- source repository is defined in JFireBuildAll/nightly-ipanema-server.xml -->
+    <ant path="JFireServerManager" file="build-nightlabs.xml" target="deploy"/>
+    <requires/> <!-- default requires: uses .classpath file -->
+    <provides path="/JFireServerManager" location="JFireServerManager/dist/JFireServerManager.rar"/>
+    <provides path="/JFireServerManager/dist/JFireServerManager.rar" location="JFireServerManager/dist/JFireServerManager.rar"/>
+    <provides path="/JFireServerManager/dist/JFireServerManager.jar" location="JFireServerManager/dist/JFireServerManager.jar"/>
+    <provides path="WORKSPACE/JFireServerManager/dist/JFireServerManager.jar" location="JFireServerManager/dist/JFireServerManager.jar"/>
+    <publishes location="JFireServerManager/dist/JFireServerManager.jar"/>
+    <publishes location="JFireServerManager/dist/jdo-jpox-ds.template.xml"/>
+    <javadoc path="JFireServerManager/src"/>
+  </project>
+
+</nightlybuild>

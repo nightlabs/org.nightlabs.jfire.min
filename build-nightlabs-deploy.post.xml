@@ -1,0 +1,8 @@
+<project>
+	<target name="deploy.post">
+		<copy
+			file="${project.dir}/JFireServerManager/META-INF/JFireServerManager-ds.xml"
+			todir="${j2ee.deploy.dir}/${j2ee.deploy.subdir}"/>
+		<mkdir dir="${j2ee.deploy.dir}/${j2ee.deploy.subdir}/${j2ee.ear}/config"/>
+	</target>
+</project>

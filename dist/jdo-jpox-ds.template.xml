@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<connection-factories>
+	<tx-connection-factory>
+		<jndi-name>{jdoPersistenceManagerFactoryJNDIName}</jndi-name>
+
+<!-- JBoss 3.2.x: begin
+		<adapter-display-name>JPOX Connector</adapter-display-name>
+JBoss 3.2.x: end -->
+
+<!-- JBoss 4.x: begin -->
+		<rar-name>jpox-1.1.0.rar</rar-name>
+		<connection-definition>javax.resource.cci.ConnectionFactory</connection-definition>
+<!-- JBoss 4.x: end -->
+
+		<config-property name="ConnectionDriverName" type="java.lang.String">{databaseDriverName}</config-property>
+		<config-property name="ConnectionURL" type="java.lang.String">{databaseJDBCURL}</config-property>
+		<config-property name="ConnectionUserName" type="java.lang.String">{databaseUserName}</config-property>
+		<config-property name="ConnectionPassword" type="java.lang.String">{databasePassword}</config-property>
+<!--		<config-property name="AutoCreateSchema" type="boolean">true</config-property> -->
+		<config-property name="AutoCreateTables" type="boolean">true</config-property>
+		<config-property name="AutoCreateColumns" type="boolean">true</config-property>
+		<config-property name="JdoCacheCollections" type="boolean">true</config-property>
+		<config-property name="NontransactionalRead" type="boolean">true</config-property>
+		<config-property name="StoreDictionaryCaseIdentifier" type="java.lang.String">PreserveCase</config-property>
+	</tx-connection-factory>
+</connection-factories>
