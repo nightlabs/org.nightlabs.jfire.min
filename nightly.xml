@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE nightlybuild PUBLIC "-//NightLabs//DTD NightlyBuild V 0.5//EN" "http://www.nightlabs.de/dtd/nightlybuild_0_5.dtd">
+<nightlybuild>
+
+  <project name="JFireBasePublicBean" category="JFire">
+    <!-- source repository is defined in JFireBuildAll/nightly-ipanema-server.xml -->
+    <ant target="deploy" path="JFireBasePublicBean" file="build-nightlabs.xml"/>
+    <requires/> <!-- default requires: uses .classpath file -->
+    <provides/> <!-- default provides: provides dist/<projectname>.jar in all variations -->
+    <publishes location="JFireBasePublicBean/dist/JFireBasePublicBean.jar"/>
+    <javadoc path="JFireBasePublicBean/src"/>
+  </project>
+
+</nightlybuild>
