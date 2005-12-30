@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+Copyright (c) 2004 NightLabs GmbH
+Rehlingstr. 6d
+79100 Freiburg, Germany
+All rights reserved.
+
+This is the DTD defining which resources shall be published
+to the clients.
+
+   Use is subject to license terms.
+-->
+
+<!NOTATION ClassLoaderRepository.1_0 PUBLIC
+          "-//NightLabs GmbH//DTD ClassLoader Repository 1.0//EN">
+<!--
+This is the XML DTD for the class loader repository publication used
+by JFire. All class loader repository metadata descriptors must
+include a DOCTYPE of the following form:
+
+	<!DOCTYPE classloader-repository
+		PUBLIC "-//NightLabs GmbH//DTD ClassLoader Repository 1.0//EN"
+		"http://www.nightlabs.de/dtd/clrepository_1_0.dtd">
+
+Every file must be named "*clrepository.xml". Means, the files
+"clrepository.xml" and "JPOX-clrepository.xml" would both be read,
+while "Test-clrepository.xml.bak" would be ignored. If multiple
+files are existing within a directory, the order in which they are
+read is arbitrary! If one file declares multiple times the same
+target or multiple files declare the same target, the result is
+arbitrary as well. In this case, it is no problem, if "inherit" is
+"true", but if it is "false", noone knows what is published.
+
+You should make sure, you do NEVER declare multiple files in the same
+directory with the same target.
+
+Warning: Within JAR files, all "*clrepository.xml" files MUST be in
+the root directory!
+
+Here are a few examples:
+	- - - example 1 - - -
+	<!DOCTYPE classloader-repository
+		PUBLIC "-//NightLabs GmbH//DTD ClassLoader Repository 1.0//EN"
+		"http://www.nightlabs.de/dtd/clrepository_1_0.dtd">
+	<classloader-repository>
+		<publish>
+			<resources>com\/nightlabs\/.*</resources>
+		</publish>
+	</classloader-repository>
+	
+	The above file declares that all resources beginning with "com/nightlabs/"
+	are published. Because the attribute "target" is missing, it applies to the
+	current directory ("."). And as the attribute "inherit" is missing, it
+	inherits all previously defined resource patterns.
+	- - - /example 1 - - -
+	
+	- - - example 2 - - -
+	<!DOCTYPE classloader-repository
+		PUBLIC "-//NightLabs GmbH//DTD ClassLoader Repository 1.0//EN"
+		"http://www.nightlabs.de/dtd/clrepository_1_0.dtd">
+	<classloader-repository>
+		<publish target=".">
+			<resources>com\/nightlabs\/.*</resources>
+		</publish>
+		<publish target="JFireXYZ.jar" inherit="false">
+			<resources>com\/nightlabs\/jfire\/xxx\/.*</resources>
+			<resources>com\/nightlabs\/jfire\/yyy\/.*</resources>
+			<resources>com\/nightlabs\/jfire\/zzz\/.*</resources>
+		</publish>
+	</classloader-repository>
+
+	In this example, the first publish element makes all resources available
+	that begin with "com/nightlabs/". Because the second publish element has
+	inherit="false", the first publish rule does NOT apply to "JFireXYZ.jar",
+	but only the packages "xxx", "yyy" and "zzz" within "com/nightlabs/jfire"
+	are published.
+	- - - /example 2 - - -
+
+-->
+
+
+
+
+<!--
+	The classloader-repository element is the root element of the
+	jfire class loader publication definition.
+	It contains the following elements:
+		- publish (one or more)
+-->
+<!ELEMENT classloader-repository (publish+)>
+
+<!--
+	The publish element defines a publication rule for a certain
+	target. Therefore, it contains the following attributes:
+		- target (optional, defaults to ".")
+		- inherit (optional, defaults to "true")
+	And it contains the following child nodes:
+		- resources (zero or more)
+
+	The attribute "target" specifies to which directory (or jar file) the
+	rules defined in a "publish"-element apply. It can either be ".", which
+	means the current directory (the one that contains the *clrepository.xml)
+	or it can specify a directory or [jar]filename which is a sibling to the
+	*clrepository.xml.
+
+	The order is like follows:
+		1. inherited definitions (declared in a super-directory)
+		2. local declaration for "."
+		3. local declaration for a certain directory (or jar-file)
+
+	The attribute "inherit" defines whether or not to accept definitions
+	that have been on a higher/more general level (either in a super-
+	directory or for "."). It can either be "true" or "false" and if
+	omitted, it defaults to "true".
+-->
+<!ELEMENT publish (resources*)>
+<!ATTLIST publish target CDATA #IMPLIED>
+<!ATTLIST publish inherit CDATA #IMPLIED>
+
+<!--
+	The "resources" element defines by a regular expression which resources
+	shall be published and made available to the clients.
+-->
+<!ELEMENT resources (#PCDATA)>
+
+

@@ -2,7 +2,7 @@
 <connection-factories>
 
 	<tx-connection-factory>
-		<jndi-name>ipanema/system/JFireServerManagerFactory</jndi-name>
+		<jndi-name>jfire/system/JFireServerManagerFactory</jndi-name>
 
 <!-- JBoss 3.2.x: begin
 		<adapter-display-name>JFire Server Manager</adapter-display-name>

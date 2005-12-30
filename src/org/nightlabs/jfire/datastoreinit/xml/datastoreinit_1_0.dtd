@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+Copyright (c) 2004 NightLabs GmbH
+Rehlingstr. 6d
+79100 Freiburg, Germany
+All rights reserved.
+
+This is the DTD defining which bean methods should be called
+for initialization of a new datastore or for each datastore
+when the server is started.
+
+   Use is subject to license terms.
+-->
+
+<!NOTATION DatastoreInitialization.1_0 PUBLIC
+          "-//NightLabs GmbH//DTD Datastore Initialization 1.0//EN">
+<!--
+This is the XML DTD for the initialization of datastores done by
+JFire. All datastore initialization metadata descriptors must
+include a DOCTYPE of the following form:
+
+	<!DOCTYPE datastore-initialization
+		PUBLIC "-//NightLabs GmbH//DTD Datastore Initialization 1.0//EN"
+		"http://www.nightlabs.de/dtd/datastoreinit_1_0.dtd">
+
+Every file must be named "datastoreinit.xml" and it must be located
+in the META-INF directory of the JAR.
+
+Here is an example:
+	- - - example - - -
+	<!DOCTYPE datastore-initialization
+		PUBLIC "-//NightLabs GmbH//DTD Datastore Initialization 1.0//EN"
+		"http://www.nightlabs.de/dtd/datastoreinit_1_0.dtd">
+	<datastore-initialization>
+		<init bean="jfire/ejb/JFireSimpleTrade/SimpleTradeManager" method="dosomething" priority="50">
+			<depends
+					module="JFireTrade.ear"
+					archive="JFireTrade.jar"
+					bean="jfire/ejb/JFireTrade/AccountingManager"
+					method="dosthbefore" />
+		</init>
+
+		<init bean="jfire/ejb/JFireSimpleTrade/SimpleTradeUser" method="dosomething"/>
+	</datastore-initialization>
+	- - - /example - - -
+-->
+
+
+
+<!--
+	The datastore-initialization element is the root element.
+	It contains the following elements:
+		- init (one or more)
+-->
+<!ELEMENT datastore-initialization (init+)>
+
+<!--
+	The "init" element defines one call of one method of a given bean. The bean
+	will be instantiated and the method called. If there are multiple calls on
+	the same bean configured, the bean will be created multiple times, because it
+	is anyway unlikely that an initialization makes multiple calls on the same
+	bean necessary.
+
+	The "init" element has the following attributes:
+		- bean (necessary)
+		- method (necessary)
+		- priority (optional, defaults to "50")
+	And it contains the following child nodes:
+		- depends (zero or more)
+
+	The attributes have the following meaning:
+		- bean:
+				The JNDI name of the bean which will be used to obtain the home
+				interface. The bean itself will be obtained by calling the create
+				method of this home.
+		- method:
+				The name of the method to call. This method must not have any
+				parameters.
+		- priority:
+				A number from 0 to 99 where 0 is the highest priority. If you omit
+				this attribute, it defaults to 50. You should not assign values below
+				10 if you don't know what you're doing.
+-->
+<!ELEMENT init (depends*)>
+<!ATTLIST init bean CDATA>
+<!ATTLIST init method CDATA>
+<!ATTLIST init priority CDATA #IMPLIED>
+
+<!--
+	The "depends" element defines another "init" declaration which should
+	have been done before. If the declared dependency does not exist, a
+	warning will be logged, but the initialization will be done anyway.
+
+	If there are multiple "depends" declarations, the method will be called
+	after all have been called. If there is a circular dependency, a warning
+	will be logged and the method will be called at an arbitrary order.
+
+	The "depends" element has the following attributes:
+		- module (necessary)
+		- archive (necessary)
+		- bean (necessary)
+		- method (necessary)
+
+	These attributes have the following meaning:
+		- module:
+				Defines the name of the J2EE enterprise archive. Example:
+				"JFireBase.ear"
+		- archive:
+				Defines another archive in the form "ArchiveName.jar" where the
+				other init is defined in.
+		- bean:
+				Same as the one in the other init declaration.
+		- method:
+				Same as the one in the other init declaration.
+-->
+<!ELEMENT depends EMPTY>
+<!ATTLIST depends module CDATA>
+<!ATTLIST depends archive CDATA>
+<!ATTLIST depends bean CDATA>
+<!ATTLIST depends method CDATA>
+

@@ -1,0 +1,69 @@
+/* ************************************************************************** *
+ * Copyright (C) 2004 NightLabs GmbH, Marco Schulze                           *
+ * All rights reserved.                                                       *
+ * http://www.NightLabs.de                                                    *
+ *                                                                            *
+ * This program and the accompanying materials are free software; you can re- *
+ * distribute it and/or modify it under the terms of the GNU General Public   *
+ * License as published by the Free Software Foundation; either ver 2 of the  *
+ * License, or any later version.                                             *
+ *                                                                            *
+ * This module is distributed in the hope that it will be useful, but WITHOUT *
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FIT- *
+ * NESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more *
+ * details.                                                                   *
+ *                                                                            *
+ * You should have received a copy of the GNU General Public License along    *
+ * with this module; if not, write to the Free Software Foundation, Inc.:     *
+ *    59 Temple Place, Suite 330                                              *
+ *    Boston MA 02111-1307                                                    *
+ *    USA                                                                     *
+ *                                                                            *
+ * Or get it online:                                                          *
+ *    http://www.opensource.org/licenses/gpl-license.php                      *
+ *                                                                            *
+ * In case, you want to use this module or parts of it in a proprietary pro-  *
+ * ject, you can purchase it under the NightLabs Commercial License. Please   *
+ * contact NightLabs GmbH under info AT nightlabs DOT com for more infos or   *
+ * visit http://www.NightLabs.com                                             *
+ * ************************************************************************** */
+
+/*
+ * Created on 25.06.2004
+ */
+package org.nightlabs.jfire.servermanager.xml.test;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.util.Iterator;
+
+import org.nightlabs.jfire.servermanager.xml.EJBJarMan;
+import org.nightlabs.jfire.servermanager.xml.EJBRoleGroupMan;
+import org.nightlabs.jfire.servermanager.xml.RoleGroupDef;
+
+
+/**
+ * @author marco
+ */
+public class EJBJarManTest {
+	public static void main(String[] args) {
+		try {
+			File file = new File("/home/marco/workspace/JFireBaseBean/JFireBaseBean/META-INF/ejb-jar.xml");
+			InputStream in = new FileInputStream(file);
+			EJBJarMan ejbJarMan = new EJBJarMan("testmodule", in);
+			in.close();
+			
+			file = new File("/home/marco/workspace/JFireBaseBean/JFireBaseBean/META-INF/ejb-rolegroup.xml");
+			in = new FileInputStream(file);
+			EJBRoleGroupMan ejb = new EJBRoleGroupMan(ejbJarMan, in);
+			for (Iterator it = ejb.getRoleGroups().iterator(); it.hasNext(); ) {
+				RoleGroupDef rg = (RoleGroupDef) it.next();
+				System.out.println(rg.getRoleGroupID());
+			}
+			in.close();
+		} catch (Exception x) {
+			x.printStackTrace();
+		}
+	}
+}

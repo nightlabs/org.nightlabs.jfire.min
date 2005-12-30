@@ -8,11 +8,11 @@
   	<eis-type>JFireServerManager Adaptor</eis-type>
   	<version>1.0</version>                                  
   	<resourceadapter>
-  		<managedconnectionfactory-class>org.nightlabs.ipanema.servermanager.ra.ManagedConnectionFactoryImpl</managedconnectionfactory-class>
+  		<managedconnectionfactory-class>org.nightlabs.jfire.servermanager.ra.ManagedConnectionFactoryImpl</managedconnectionfactory-class>
   		<connectionfactory-interface>javax.resource.cci.ConnectionFactory</connectionfactory-interface>
-    	<connectionfactory-impl-class>org.nightlabs.ipanema.servermanager.ra.JFireServerManagerFactoryImpl</connectionfactory-impl-class>
+    	<connectionfactory-impl-class>org.nightlabs.jfire.servermanager.ra.JFireServerManagerFactoryImpl</connectionfactory-impl-class>
     	<connection-interface>javax.resource.cci.Connection</connection-interface>
-    	<connection-impl-class>org.nightlabs.ipanema.servermanager.ra.JFireServerManagerImpl</connection-impl-class>
+    	<connection-impl-class>org.nightlabs.jfire.servermanager.ra.JFireServerManagerImpl</connection-impl-class>
     	<transaction-support>LocalTransaction</transaction-support>
 	    <config-property>
 	      <config-property-name>SysConfigDirectory</config-property-name>
