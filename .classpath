@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="ejbsrc"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="src" path="/JFireBase"/>
+	<classpathentry kind="src" path="/JFireServerManager"/>
+	<classpathentry kind="var" path="JDK_TOOLS"/>
+	<classpathentry kind="var" path="JBOSS/bin/run.jar"/>
+	<classpathentry kind="var" path="JBOSS/bin/shutdown.jar"/>
+	<classpathentry kind="var" path="JBOSS/client/jboss-j2ee.jar"/>
+	<classpathentry kind="var" path="JBOSS/lib/concurrent.jar"/>
+	<classpathentry kind="var" path="JBOSS/lib/jboss-system.jar"/>
+	<classpathentry kind="var" path="JBOSS/server/default/lib/bcel.jar"/>
+	<classpathentry kind="var" path="JBOSS/server/default/lib/jboss.jar"/>
+	<classpathentry kind="var" path="JBOSS/server/default/lib/jboss-transaction.jar"/>
+	<classpathentry sourcepath="JBOSS_SRC/naming/src/main" kind="var" path="JBOSS/server/default/lib/jnpserver.jar"/>
+	<classpathentry kind="var" path="JBOSS/server/default/lib/jpl-pattern.jar"/>
+	<classpathentry kind="var" path="JBOSS/server/default/lib/jpl-util.jar"/>
+	<classpathentry kind="var" path="JDO2"/>
+	<classpathentry kind="var" path="LOG4J"/>
+	<classpathentry kind="var" path="WORKSPACE/NightLabsBase/dist/NightLabsBase.jar"/>
+	<classpathentry kind="var" path="WORKSPACE/NightLabsJDO/dist/NightLabsJDO.jar"/>
+	<classpathentry kind="var" path="JBOSS/client/jboss-client.jar"/>
+	<classpathentry kind="var" path="JBOSS/client/jboss-common-client.jar"/>
+	<classpathentry sourcepath="JBOSS_SRC/security/src/main" kind="var" path="JBOSS/client/jbosssx-client.jar"/>
+	<classpathentry kind="var" path="JBOSS/client/jnp-client.jar"/>
+	<classpathentry kind="var" path="JBOSS/client/log4j.jar"/>
+	<classpathentry kind="var" path="WORKSPACE/JFireBasePublicBean/dist/JFireBasePublicBean.jar"/>
+	<classpathentry kind="var" path="JUNIT_HOME/junit.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

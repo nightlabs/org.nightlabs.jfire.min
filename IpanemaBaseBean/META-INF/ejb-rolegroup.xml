@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ejb-rolegroup
+PUBLIC "-//NightLabs GmbH//DTD JFire role groups 1.0//EN"
+"http://www.nightlabs.de/dtd/ejb-rolegroup_1_0.dtd">
+
+<ejb-rolegroup>
+	<rolegroups defaultgroup="OrganisationAdmin">
+
+
+		<rolegroup id="OrganisationReader">
+			<description>This role group combines all roles that are necessary to read metadata of the own organisation (e.g. organisation person, users etc.).</description>
+			<description language="de">Diese Rollengruppe kombiniert alle Rollen, die notwendig sind, um Meta-Daten der eigenen Organisation zu lesen (z.B. Organisations-Person, Benutzer etc.).</description>
+			
+			<roles>
+				<role id="AuthorityManager-read">
+					<name>AuthorityManager-read</name>
+					<name language="de">AuthorityManager-lesen</name>
+					<description>This role allows read access for the AuthorityManager.</description>
+					<description language="de">Diese Rolle erlaubt Lesezugriff auf den AuthorityManager.</description>
+				</role>
+				<role id="LanguageManager-read"/>
+				<role id="OrganisationManager-read"/>
+				<role id="PersonManager-read"/>
+				<role id="RoleManager-read"/>
+				<role id="UserManager-read"/>
+			</roles>			
+		</rolegroup>
+
+
+		<rolegroup id="OrganisationAdmin">
+			<!-- This rolegroup is defined as "defaultgroup". This means, all roles that are not mentioned
+					in this file, but declared in ejb-jar.xml, will be registered within this rolegroup.
+			-->
+		
+			<name>Organisation Admin</name>
+			<name language="de">Organisation Verwalter</name>
+			<description>This role group combines all roles that are necessary to manage the own organisation (e.g. organisation person, users etc.).</description>
+			<includerolegroup id="OrganisationReader"/>
+			<!-- includerolegroup means all roles of the named rolegroup are added to this one as well. -->
+
+			<!--
+				These roles should be added automatically, because this is the default role group:
+					* AuthorityManager-write
+					* LanguageManager-write
+					* PersonManager-write
+					* RoleManager-write
+					* UserManager-write
+			-->
+
+		</rolegroup>
+
+	</rolegroups>
+</ejb-rolegroup>

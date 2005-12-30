@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<server>
+  <mbean code="org.jboss.mq.security.SecurityManager" name="jboss.mq:service=JFireMQSecurityManager">
+    <attribute name="DefaultSecurityConfig">
+      <security>
+        <role name="_LocalQueueWriter_" read="false" write="true" create="true"/>
+        <role name="_LocalQueueReader_" read="true" write="false" create="true"/>
+        <role name="guest" read="true" write="false" create="false"/>
+<!--
+        <role name="guest" read="false" write="false" create="false"/>
+-->
+      </security>
+    </attribute>
+    <attribute name="SecurityDomain">java:/jaas/ipanemaLocal</attribute>
+    <depends optional-attribute-name="NextInterceptor">jboss.mq:service=DestinationManager</depends>
+  </mbean>
+
+  <mbean code="org.jboss.mq.server.jmx.Queue"
+         name="jboss.mq.destination:service=Queue,name=ipanema/JFireBaseBean/AsyncInvokerInvocationQueue">
+    <depends optional-attribute-name="DestinationManager">jboss.mq:service=DestinationManager</depends>
+    <depends optional-attribute-name="SecurityManager">jboss.mq:service=JFireMQSecurityManager</depends>
+		<attribute name="SecurityManager">jboss.mq:service=JFireMQSecurityManager</attribute>
+<!--
+		<attribute name="SecurityConf">
+      <security>
+        <role name="guest" read="false" write="false" create="false"/>
+      </security>
+    </attribute>
+-->
+
+		<attribute name="RedeliveryDelay">10000</attribute>
+  	<attribute name="RedeliveryLimit">3</attribute>
+<!--
+    <attribute name="RedeliveryDelay">3600000</attribute>
+  	<attribute name="RedeliveryLimit">744</attribute>
+-->
+  </mbean>
+
+  <mbean code="org.jboss.mq.server.jmx.Queue"
+         name="jboss.mq.destination:service=Queue,name=ipanema/JFireBaseBean/AsyncInvokerSuccessCallbackQueue">
+    <depends optional-attribute-name="DestinationManager">jboss.mq:service=DestinationManager</depends>
+    <depends optional-attribute-name="SecurityManager">jboss.mq:service=SecurityManager</depends>
+    <attribute name="SecurityManager">jboss.mq:service=JFireMQSecurityManager</attribute>
+
+    <attribute name="RedeliveryDelay">3600000</attribute>
+  	<attribute name="RedeliveryLimit">744</attribute>
+  </mbean>
+
+  <mbean code="org.jboss.mq.server.jmx.Queue"
+         name="jboss.mq.destination:service=Queue,name=ipanema/JFireBaseBean/AsyncInvokerErrorCallbackQueue">
+    <depends optional-attribute-name="DestinationManager">jboss.mq:service=DestinationManager</depends>
+    <depends optional-attribute-name="SecurityManager">jboss.mq:service=SecurityManager</depends>
+		<attribute name="SecurityManager">jboss.mq:service=JFireMQSecurityManager</attribute>
+
+    <attribute name="RedeliveryDelay">3600000</attribute>
+  	<attribute name="RedeliveryLimit">744</attribute>
+  </mbean>
+
+<!--
+	The following queue is configured to be the DLQ in the jboss-security.xml (which is
+	merged into the jboss.xml).
+-->
+	<mbean code="org.jboss.mq.server.jmx.Queue"
+         name="jboss.mq.destination:service=Queue,name=ipanema/JFireBaseBean/AsyncInvokerUndeliverableCallbackQueue">
+    <depends optional-attribute-name="DestinationManager">jboss.mq:service=DestinationManager</depends>
+    <depends optional-attribute-name="SecurityManager">jboss.mq:service=JFireMQSecurityManager</depends>
+    <attribute name="SecurityManager">jboss.mq:service=JFireMQSecurityManager</attribute>
+
+    <attribute name="RedeliveryDelay">3600000</attribute>
+  	<attribute name="RedeliveryLimit">744</attribute>
+  </mbean>
+
+</server>
