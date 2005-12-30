@@ -1,0 +1,120 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Schema file written by PDE -->
+<schema targetNamespace="org.nightlabs.jfire.base">
+<annotation>
+      <appInfo>
+         <meta.schema plugin="org.nightlabs.jfire.base" id="person_edit_personDataFieldEditorFactory" name="PersonDataFieldEditor"/>
+      </appInfo>
+      <documentation>
+         Defines a editor for a specific subclass of AbstractPersonDataField.
+      </documentation>
+   </annotation>
+
+   <element name="extension">
+      <complexType>
+         <sequence>
+            <element ref="personDataFieldEditorFactory" minOccurs="1" maxOccurs="unbounded"/>
+         </sequence>
+         <attribute name="point" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="id" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="name" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="personDataFieldEditorFactory">
+      <annotation>
+         <appInfo>
+            <meta.element labelAttribute="editorDescription"/>
+         </appInfo>
+         <documentation>
+            Defines one PersonDataFieldEditor for one subclass of AbstractPersonDataField and a editorType.
+         </documentation>
+      </annotation>
+      <complexType>
+         <attribute name="class" type="string" use="required">
+            <annotation>
+               <documentation>
+                  PersonDataFieldEditors define their class here.&lt;br&gt;
+This has to be a implementor of org.nightlabs.jfire.base.person.edit.PersonDataFieldEditorFactory&lt;br&gt;
+A PersonDataFieldEditorFactory has to define its editor-type and target-type itself, they don&apos;t have to be defined here.&lt;br&gt;
+See the interface documentations for more details.
+               </documentation>
+               <appInfo>
+                  <meta.attribute kind="java" basedOn="org.nightlabs.jfire.base.person.edit.PersonDataFieldEditor"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+         <attribute name="editorDescription" type="string">
+            <annotation>
+               <documentation>
+                  A optional description for the PersonDataFieldEditor
+               </documentation>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <annotation>
+      <appInfo>
+         <meta.section type="since"/>
+      </appInfo>
+      <documentation>
+         1.0
+      </documentation>
+   </annotation>
+
+   <annotation>
+      <appInfo>
+         <meta.section type="examples"/>
+      </appInfo>
+      <documentation>
+         
+      </documentation>
+   </annotation>
+
+   <annotation>
+      <appInfo>
+         <meta.section type="apiInfo"/>
+      </appInfo>
+      <documentation>
+         
+      </documentation>
+   </annotation>
+
+   <annotation>
+      <appInfo>
+         <meta.section type="implementation"/>
+      </appInfo>
+      <documentation>
+         
+      </documentation>
+   </annotation>
+
+   <annotation>
+      <appInfo>
+         <meta.section type="copyright"/>
+      </appInfo>
+      <documentation>
+         NightLabs GmbH 2005
+      </documentation>
+   </annotation>
+
+</schema>

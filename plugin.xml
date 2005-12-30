@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+<plugin
+   id="org.nightlabs.jfire.base"
+   name="JFire Base Plug-in"
+   version="1.0.0"
+   provider-name="NightLabs.com"
+   class="org.nightlabs.jfire.base.JFireBasePlugin">
+
+   <runtime>
+      <library name="org.nightlabs.jfire.base.jar">
+         <export name="*"/>
+      </library>
+      <library name="lib/JFireRemoteClassLoader.jar">
+         <export name="*"/>
+      </library>
+      <library name="lib/JFireRCLBackend.jar">
+         <export name="*"/>
+      </library>
+      <library name="lib/JFireRCLBackendBean.jar">
+         <export name="*"/>
+      </library>
+   </runtime>
+
+   <requires>
+      <import plugin="org.eclipse.ui"/>
+      <import plugin="org.eclipse.core.runtime"/>
+      <import plugin="org.eclipse.ui.forms"/>
+      <import plugin="org.nightlabs.base" export="false"/>
+      <import plugin="org.nightlabs.jdo"/>
+      <import plugin="org.nightlabs.classsharing" export="false"/>
+      <import plugin="org.nightlabs.rcp.splash"/>
+      <import plugin="org.eclipse.update.configurator"/>
+      <import plugin="org.eclipse.update.core"/>
+   </requires>
+   
+	<!-- Extension-points -->
+	
+	<extension-point         
+   		id="exceptionhandler" 
+   		name="Defines handler for uncaught exception within the workbench." 
+   		schema="schema/exceptionhandler.exsd"
+   	/>
+   	
+   <extension-point 
+   		id="loginstatelistener" 
+   		name="Login State Listener" 
+   		schema="schema/loginstatelistener.exsd"
+   	/>
+   	
+   		
+   <extension-point 
+   		id="person_edit_personDataFieldEditorFactory" 
+   		name="Defines a editor factory for a specific subclass of AbstractPersonDataField" 
+   		schema="schema/person_edit_personDataFieldEditorFactory.exsd"
+   	/>
+   	
+   <extension-point 
+   		id="person_edit_specializedDataBlockEditor" 
+   		name="Specialized PersonDataBlockEditors" 
+   		schema="schema/person_edit_specializedDataBlockEditor.exsd"
+   	/>
+   <extension-point id="configsetupvisualiser" name="ConfigSetupVisualiser extension-point" schema="schema/configsetupvisualiser.exsd"/>
+   
+	
+   <!-- Extensions -->	
+   
+   <!-- 
+        Pruduct and application.
+        Main entry to the workbench and branding.
+   -->
+		
+   <extension
+         point="org.eclipse.core.runtime.applications"
+         id="app"
+         name="%appName">
+      <application>
+         <run
+            class="org.nightlabs.jfire.base.app.JFireApplication">
+         </run>
+      </application>
+   </extension>
+   <extension
+         point="org.eclipse.core.runtime.products"
+         id="product">
+      <product
+            application="org.nightlabs.jfire.base.app"
+            name="%productName">
+         <property
+               name="appName"
+               value="%swtAppName"/>
+         <property
+               name="windowImages"
+               value="icons/JFireIcon.16x16.png,icons/JFireIcon.16x16.png"/>
+         <property
+               name="aboutText"
+               value="%aboutText"/>
+         <property
+               name="aboutImage"
+               value="icons/JFire-Logo.gif"/>
+      </product>
+   </extension>
+
+   <!-- Perspectives and Views
+   -->
+   <extension
+         point="org.eclipse.ui.perspectives">
+      <perspective
+            icon="icons/JFire-Icon-16x16.gif"
+            class="org.nightlabs.jfire.base.JFireWelcomePerspective"
+            fixed="false"
+            name="%perspectives.jfireWelcome.name"
+            id="org.nightlabs.jfire.base.perspective.JFireWelcomePerspective"/>
+   </extension>
+   
+   <extension
+         point="org.eclipse.ui.views">
+      <category
+            name="%views.welcome.category.name"
+            id="org.nightlabs.jfire.base.welcomecategory">
+      </category>
+      <view
+            name="%views.welcome.name"
+            icon="icons/JFire-Icon-16x16.gif"
+            category="org.nightlabs.jfire.base.welcomecategory"
+            class="org.nightlabs.jfire.base.JFireWelcomeView"
+            id="org.nightlabs.jfire.base.view.JFireWelcomeView">
+      </view>
+   </extension>   
+
+   <!-- Actions 
+   -->
+   <extension
+         point="org.eclipse.ui.actionSets">
+      <actionSet
+            label="%login.actionSet.label"
+            visible="true"
+            id="org.nightlabs.jfire.base.login.actions">
+         <menu
+               label="%login.menu.label"
+               id="loginMenu">
+            <separator
+                  name="loginGroup">
+            </separator>
+         </menu>
+         <action
+               label="&amp;Login"
+               icon="icons/Login_login.gif"
+               class="org.nightlabs.jfire.base.login.action.LoginAction"
+               tooltip="%login.action.toolTip"
+               menubarPath="loginMenu/loginGroup"
+               toolbarPath="loginGroup"
+               id="org.nightlabs.jfire.base.login.actions.LoginAction">
+         </action>
+      </actionSet>
+   </extension>   
+
+   <!-- ExceptionHandler
+   -->
+   <extension
+         id="org.nightlabs.jfire.base.exceptionhandler.ThrowableHandler"
+         name="%exceptionhandler.throwable.name"
+         point="org.nightlabs.jfire.base.exceptionhandler">
+         
+   		<exceptionHandler
+           targetType="java.lang.Throwable"
+           class="org.nightlabs.jfire.base.exceptionhandler.ThrowableHandler"
+           name="Default Handler for all Throwable s"/>
+   </extension>
+
+
+   <!-- ClassSharing for NightLabsBase et al -->
+   <extension
+         point="org.nightlabs.classsharing.globalclasspublish">
+      <globalClassPublish pattern="org\.nightlabs\.jfire\.base\.login\..*"/>
+      <globalClassPublish pattern="org\.nightlabs\.jfire\.classloader\..*"/>
+      <globalClassPublish pattern="org\.nightlabs\.config\..*"/>
+      <globalClassPublish pattern="org\.nightlabs\.util\..*"/>
+      <globalClassPublish pattern="org\.apache\.log4j\..*"/>
+      <globalClassPublish pattern="org\.jboss\..*"/>
+      <globalClassPublish pattern="org\.nightlabs\.jfire\.classloader\..*"/>
+      <globalClassPublish pattern="javax\.ejb\..*"/>
+      <globalClassPublish pattern="org\.nightlabs\.ModuleException"/>
+      <globalClassPublish pattern="org\.nightlabs\.webapp\..*"/>
+      <globalClassPublish pattern="org\.nightlabs\.l10n\..*"/>
+      <globalClassPublish pattern="org\.nightlabs\.jfire\.base\.exceptionhandler\.wizard\..*CfMod"/>
+      <globalClassPublish pattern="org\.nightlabs\.i18n\..*"/>
+      <globalClassPublish pattern="org\.nightlabs\.inheritance\..*"/>
+      <globalClassPublish pattern="org\.nightlabs\.io\..*"/>
+      <globalClassPublish pattern="org\.nightlabs\.j2ee\..*"/>
+      <globalClassPublish pattern="org\.nightlabs\.xml\..*"/>
+      <globalClassPublish pattern="org\.nightlabs\.jfire\.base\.config\..*"/>
+   </extension>
+	
+	
+	<!-- Person preferences pages -->
+	<extension
+    	point="org.eclipse.ui.preferencePages">
+    	<page
+		name="%person.preferences.pages.PersonManagement.name"
+		class="org.nightlabs.jfire.base.person.preferences.PersonManagementPreferencePage"
+		id="org.nightlabs.jfire.person.preferences.PersonManagementPreferencePage">
+      </page>
+      <page
+            name="%person.preferences.pages.PersonStructOrder.name"
+            category="org.nightlabs.jfire.person.preferences.PersonManagementPreferencePage"
+            class="org.nightlabs.jfire.base.person.preferences.PersonStructOrderPreferencePage"
+            id="org.nightlabs.jfire.person.preferences.PersonStructOrderPreferencePage">
+      </page>  
+	</extension>
+
+	
+	<!-- Class sharing extensions Person preferences -->
+	<extension
+    	point="org.nightlabs.classsharing.globalclasspublish">
+     <globalClassPublish pattern="org\.nightlabs\.math\..*"/>
+     <globalClassPublish pattern="org\.nightlabs\.jfire\.base\.jdo\.cache\.CacheCfMod"/>
+     <globalClassPublish pattern="org\.nightlabs\.language\..*"/>
+ 	</extension>
+
+ 	<!-- PersonDataFieldEditor extensions bock-based -->
+	<extension
+       id="org.nightlabs.jfire.person.edit.blockbased.PersonDataFieldEditorFactories"
+       name="Block-based PersonDataFieldEditors"
+       point="org.nightlabs.jfire.base.person_edit_personDataFieldEditorFactory">
+       
+    	<!-- TextDataFieldEditor -->
+    	<personDataFieldEditorFactory
+        	class="org.nightlabs.jfire.base.person.edit.blockbased.TextPersonDataFieldEditor$Factory"
+        	editorDescription="Block-based Text PersonDataFieldEditor"
+        />
+	</extension>
+	
+ 	<!-- PersonDataFieldEditor extensions field-based-disguised -->
+	<extension
+       id="org.nightlabs.jfire.person.edit.fieldbased.PersonDataFieldEditorFactories"
+       name="Disguised field-based PersonDataFieldEditors"
+       point="org.nightlabs.jfire.base.person_edit_personDataFieldEditorFactory">
+    <personDataFieldEditorFactory class="org.nightlabs.jfire.base.person.edit.fieldbased.DisguisedTextPersonDatatFieldEditor$Factory"/>
+	</extension>
+ 
+ 	<!-- Specialized PersonDataBlockEditors extensions -->
+ 	<extension
+       id="org.nightlabs.jfire.person.edit.blockbased.special.PersonalDataBlockEditor"
+       point="org.nightlabs.jfire.base.person_edit_specializedDataBlockEditor">
+    <specializedDataBlockEditor
+          class="org.nightlabs.jfire.base.person.edit.blockbased.special.PersonalDataBlockEditor$Factory"
+	/>
+    <specializedDataBlockEditor class="org.nightlabs.jfire.base.person.edit.blockbased.special.CommentDataBlockEditor$Factory"/>
+	</extension>
+  <extension
+        point="org.nightlabs.jfire.base.loginstatelistener">
+     <loginStateListener class="org.nightlabs.jfire.base.language.LanguageWatcher"/>
+  </extension>
+  <extension
+        point="org.nightlabs.base.notificationinterceptor">
+     <notificationInterceptor
+           class="org.nightlabs.jfire.base.jdo.JDOObjectID2PCClassNotificationInterceptor"
+           name="JDO ObjectID to PersistenceCapable Interceptor"/>
+  </extension>
+  <extension
+        point="org.nightlabs.jfire.base.configsetupvisualiser">
+     <visualiser
+           class="org.nightlabs.jfire.base.config.UserCSVisualiser"
+           configSetupType="org.nightlabs.jfire.config.UserConfigSetup"/>
+     <visualiser
+           class="org.nightlabs.jfire.base.config.WorkstationCSVisualiser"
+           configSetupType="org.nightlabs.jfire.config.WorkstationConfigSetup"/>
+  </extension>
+
+</plugin>

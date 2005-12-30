@@ -1,0 +1,42 @@
+<project>
+	<target name="compile.pre">
+	    <mkdir dir="${project.dir}/${lib.dir}"/>
+
+	    <copy file="../NightLabsCascadedAuthenticationJBoss/dist/NightLabsCascadedAuthenticationJBoss.jar" todir="${project.dir}/${lib.dir}" failonerror="false" verbose="true"/>
+		<jarlib-resolve property="NightLabsCascadedAuthenticationJBoss.library" failonerror="true" checkextension="false">
+			<extension extensionname="NightLabsCascadedAuthenticationJBoss"/>
+			<location location="${project.dir}/${lib.dir}/NightLabsCascadedAuthenticationJBoss.jar"/>
+			<url
+				url="http://jfire.nightlabs.org/~nightly/NightLabs/NightLabsCascadedAuthenticationJBoss.jar"
+				destdir="${project.dir}/${lib.dir}"/>
+		</jarlib-resolve>
+
+	    <copy file="../JFireRCLBackend/dist/JFireRCLBackend.jar" todir="${project.dir}/${lib.dir}" failonerror="false" verbose="true"/>
+		<jarlib-resolve property="JFireRCLBackend.library" failonerror="true" checkextension="false">
+			<extension extensionname="JFireRCLBackend"/>
+			<location location="${project.dir}/${lib.dir}/JFireRCLBackend.jar"/>
+			<url
+				url="http://jfire.nightlabs.org/~nightly/JFire/JFireRCLBackend.jar"
+				destdir="${project.dir}/${lib.dir}"/>
+		</jarlib-resolve>
+
+	    <copy file="../JFireRCLBackendBean/dist/JFireRCLBackendBean.jar" todir="${project.dir}/${lib.dir}" failonerror="false" verbose="true"/>
+		<jarlib-resolve property="JFireRCLBackendBean.library" failonerror="true" checkextension="false">
+			<extension extensionname="JFireRCLBackendBean"/>
+			<location location="${project.dir}/${lib.dir}/JFireRCLBackendBean.jar"/>
+			<url
+				url="http://jfire.nightlabs.org/~nightly/JFire/JFireRCLBackendBean.jar"
+				destdir="${project.dir}/${lib.dir}"/>
+		</jarlib-resolve>
+
+	    <copy file="../JFireRemoteClassLoader/dist/JFireRemoteClassLoader.jar" todir="${project.dir}/${lib.dir}" failonerror="false" verbose="true"/>
+		<jarlib-resolve property="JFireRemoteClassLoader.library" failonerror="true" checkextension="false">
+			<extension extensionname="JFireRemoteClassLoader"/>
+			<location location="${project.dir}/${lib.dir}/JFireRemoteClassLoader.jar"/>
+			<url
+				url="http://jfire.nightlabs.org/~nightly/NightLabsClient/JFireRemoteClassLoader.jar"
+				destdir="${project.dir}/${lib.dir}"/>
+		</jarlib-resolve>
+
+	</target>
+</project>
