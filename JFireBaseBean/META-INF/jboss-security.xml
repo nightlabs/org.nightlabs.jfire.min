@@ -4,7 +4,7 @@
 			to specify the elements we want to override -->
 		<container-name>Standard Stateful SessionBean</container-name>
 		<role-mapping-manager>java:/jaas/session-roles</role-mapping-manager>
-		<security-domain>java:/jaas/ipanema</security-domain>
+		<security-domain>java:/jaas/jfire</security-domain>
 	</container-configuration>
 
 	<container-configuration>
@@ -12,7 +12,7 @@
 			to specify the elements we want to override -->
 		<container-name>Standard Stateless SessionBean</container-name>
 		<role-mapping-manager>java:/jaas/session-roles</role-mapping-manager>
-		<security-domain>java:/jaas/ipanema</security-domain>
+		<security-domain>java:/jaas/jfire</security-domain>
 	</container-configuration>
 
 	<container-configuration>
@@ -20,7 +20,7 @@
 			to specify the elements we want to override -->
 		<container-name>Standard Message Driven Bean</container-name>
 		<role-mapping-manager>java:/jaas/session-roles</role-mapping-manager>
-		<security-domain>java:/jaas/ipanemaLocal</security-domain>
+		<security-domain>java:/jaas/jfireLocal</security-domain>
 	</container-configuration>
 </container-configurations>
 
@@ -39,7 +39,7 @@
             <MDBConfig>
                <ReconnectIntervalSec>10</ReconnectIntervalSec>
                <DLQConfig>
-                  <DestinationQueue>queue/ipanema/JFireBaseBean/AsyncInvokerUndeliverableCallbackQueue</DestinationQueue>
+                  <DestinationQueue>queue/jfire/JFireBaseBean/AsyncInvokerUndeliverableCallbackQueue</DestinationQueue>
                   <MaxTimesRedelivered>11</MaxTimesRedelivered>
                   <TimeToLive>0</TimeToLive>
 <!--

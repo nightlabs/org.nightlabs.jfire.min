@@ -12,12 +12,12 @@
 -->
       </security>
     </attribute>
-    <attribute name="SecurityDomain">java:/jaas/ipanemaLocal</attribute>
+    <attribute name="SecurityDomain">java:/jaas/jfireLocal</attribute>
     <depends optional-attribute-name="NextInterceptor">jboss.mq:service=DestinationManager</depends>
   </mbean>
 
   <mbean code="org.jboss.mq.server.jmx.Queue"
-         name="jboss.mq.destination:service=Queue,name=ipanema/JFireBaseBean/AsyncInvokerInvocationQueue">
+         name="jboss.mq.destination:service=Queue,name=jfire/JFireBaseBean/AsyncInvokerInvocationQueue">
     <depends optional-attribute-name="DestinationManager">jboss.mq:service=DestinationManager</depends>
     <depends optional-attribute-name="SecurityManager">jboss.mq:service=JFireMQSecurityManager</depends>
 		<attribute name="SecurityManager">jboss.mq:service=JFireMQSecurityManager</attribute>
@@ -38,7 +38,7 @@
   </mbean>
 
   <mbean code="org.jboss.mq.server.jmx.Queue"
-         name="jboss.mq.destination:service=Queue,name=ipanema/JFireBaseBean/AsyncInvokerSuccessCallbackQueue">
+         name="jboss.mq.destination:service=Queue,name=jfire/JFireBaseBean/AsyncInvokerSuccessCallbackQueue">
     <depends optional-attribute-name="DestinationManager">jboss.mq:service=DestinationManager</depends>
     <depends optional-attribute-name="SecurityManager">jboss.mq:service=SecurityManager</depends>
     <attribute name="SecurityManager">jboss.mq:service=JFireMQSecurityManager</attribute>
@@ -48,7 +48,7 @@
   </mbean>
 
   <mbean code="org.jboss.mq.server.jmx.Queue"
-         name="jboss.mq.destination:service=Queue,name=ipanema/JFireBaseBean/AsyncInvokerErrorCallbackQueue">
+         name="jboss.mq.destination:service=Queue,name=jfire/JFireBaseBean/AsyncInvokerErrorCallbackQueue">
     <depends optional-attribute-name="DestinationManager">jboss.mq:service=DestinationManager</depends>
     <depends optional-attribute-name="SecurityManager">jboss.mq:service=SecurityManager</depends>
 		<attribute name="SecurityManager">jboss.mq:service=JFireMQSecurityManager</attribute>
@@ -62,7 +62,7 @@
 	merged into the jboss.xml).
 -->
 	<mbean code="org.jboss.mq.server.jmx.Queue"
-         name="jboss.mq.destination:service=Queue,name=ipanema/JFireBaseBean/AsyncInvokerUndeliverableCallbackQueue">
+         name="jboss.mq.destination:service=Queue,name=jfire/JFireBaseBean/AsyncInvokerUndeliverableCallbackQueue">
     <depends optional-attribute-name="DestinationManager">jboss.mq:service=DestinationManager</depends>
     <depends optional-attribute-name="SecurityManager">jboss.mq:service=JFireMQSecurityManager</depends>
     <attribute name="SecurityManager">jboss.mq:service=JFireMQSecurityManager</attribute>
