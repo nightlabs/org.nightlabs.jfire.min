@@ -3,7 +3,7 @@
 <nightlybuild>
 
   <project name="JFireRCLBackendBean" category="JFire">
-    <!-- source repository is defined in JFireBuildAll/nightly-ipanema-server.xml -->
+    <!-- source repository is defined in JFireBuildAll/nightly-jfire-server.xml -->
     <ant target="deploy" path="JFireRCLBackendBean" file="build-nightlabs.xml"/>
     <requires/> <!-- default requires: uses .classpath file -->
     <provides/> <!-- default provides: provides dist/<projectname>.jar in all variations -->

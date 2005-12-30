@@ -30,7 +30,7 @@
 /*
  * Created on 30.09.2004
  */
-package org.nightlabs.ipanema.classloader;
+package org.nightlabs.jfire.classloader;
 
 import java.io.IOException;
 import java.rmi.RemoteException;
@@ -42,15 +42,15 @@ import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
 
 import org.apache.log4j.Logger;
-import org.nightlabs.ipanema.classloader.ClassLoaderException;
-import org.nightlabs.ipanema.classloader.ResourceMetaData;
+import org.nightlabs.jfire.classloader.ClassLoaderException;
+import org.nightlabs.jfire.classloader.ResourceMetaData;
 
-import org.nightlabs.ipanema.base.BaseSessionBeanImpl;
-import org.nightlabs.ipanema.servermanager.JFireServerManager;
+import org.nightlabs.jfire.base.BaseSessionBeanImpl;
+import org.nightlabs.jfire.servermanager.JFireServerManager;
 
 /**
- * @ejb.bean name="ipanema/ejb/JFireRCLBackendBean/JFireRCLBackend"
- *	jndi-name="ipanema/ejb/JFireRCLBackendBean/JFireRCLBackend"
+ * @ejb.bean name="jfire/ejb/JFireRCLBackendBean/JFireRCLBackend"
+ *	jndi-name="jfire/ejb/JFireRCLBackendBean/JFireRCLBackend"
  *	type="Stateless"
  *
  * @ejb.util generate = "physical"
@@ -62,7 +62,7 @@ public abstract class JFireRCLBackendBean
 	public static final Logger LOGGER = Logger.getLogger(JFireRCLBackendBean.class);
 
 	/**
-	 * @see org.nightlabs.ipanema.base.BaseSessionBeanImpl#setSessionContext(javax.ejb.SessionContext)
+	 * @see org.nightlabs.jfire.base.BaseSessionBeanImpl#setSessionContext(javax.ejb.SessionContext)
 	 */
 	public void setSessionContext(SessionContext sessionContext)
 			throws EJBException, RemoteException
@@ -71,7 +71,7 @@ public abstract class JFireRCLBackendBean
 		super.setSessionContext(sessionContext);
 	}
 	/**
-	 * @see org.nightlabs.ipanema.base.BaseSessionBeanImpl#unsetSessionContext()
+	 * @see org.nightlabs.jfire.base.BaseSessionBeanImpl#unsetSessionContext()
 	 */
 	public void unsetSessionContext() {
 		super.unsetSessionContext();
@@ -128,14 +128,14 @@ public abstract class JFireRCLBackendBean
 		throws ClassLoaderException
 	{
 		try {
-			JFireServerManager ipanemaServerManager = getJFireServerManager();
+			JFireServerManager jfireServerManager = getJFireServerManager();
 			try {
-				CLRegistrar clRegistrar = ipanemaServerManager.getCLRegistrar();
+				CLRegistrar clRegistrar = jfireServerManager.getCLRegistrar();
 				return clRegistrar.getResourcesMetaData(name);
 				// eigentlich sollte der CLRegistrar ein echter ResourceAdapter sein und
 				// nicht �ber den JFireServerManager verwaltet werden.
 			} finally {
-				ipanemaServerManager.close();
+				jfireServerManager.close();
 			}
 		} catch (Exception x) {
 			LOGGER.error("getResourcesMetaData(\""+name+"\") failed!", x);
@@ -158,14 +158,14 @@ public abstract class JFireRCLBackendBean
 		throws ClassLoaderException
 	{
 		try {
-			JFireServerManager ipanemaServerManager = getJFireServerManager();
+			JFireServerManager jfireServerManager = getJFireServerManager();
 			try {
-				CLRegistrar clRegistrar = ipanemaServerManager.getCLRegistrar();
+				CLRegistrar clRegistrar = jfireServerManager.getCLRegistrar();
 				return clRegistrar.getResourceBytes(rmd);
 				// eigentlich sollte der CLRegistrar ein echter ResourceAdapter sein und
 				// nicht �ber den JFireServerManager verwaltet werden.
 			} finally {
-				ipanemaServerManager.close();
+				jfireServerManager.close();
 			}
 		} catch (Exception x) {
 			LOGGER.error("getResourceBytes(\""+rmd.getJar()+'!'+rmd.getPath()+"\") failed!", x);
@@ -187,12 +187,12 @@ public abstract class JFireRCLBackendBean
 		throws ClassLoaderException
 	{
 		try {
-			JFireServerManager ipanemaServerManager = getJFireServerManager();
+			JFireServerManager jfireServerManager = getJFireServerManager();
 			try {
-				CLRegistrar clRegistrar = ipanemaServerManager.getCLRegistrar();
+				CLRegistrar clRegistrar = jfireServerManager.getCLRegistrar();
 				return clRegistrar.getResourcesMetaDataMapBytes();
 			} finally {
-				ipanemaServerManager.close();
+				jfireServerManager.close();
 			}
 		} catch (Exception x) {
 			LOGGER.error("getResourcesMetaDataMapBytes() failed!", x);
@@ -214,12 +214,12 @@ public abstract class JFireRCLBackendBean
 	throws ClassLoaderException
 	{
 		try {
-			JFireServerManager ipanemaServerManager = getJFireServerManager();
+			JFireServerManager jfireServerManager = getJFireServerManager();
 			try {
-				CLRegistrar clRegistrar = ipanemaServerManager.getCLRegistrar();
+				CLRegistrar clRegistrar = jfireServerManager.getCLRegistrar();
 				return clRegistrar.getResourcesMetaDataMapBytesTimestamp();
 			} finally {
-				ipanemaServerManager.close();
+				jfireServerManager.close();
 			}
 		} catch (Exception x) {
 			LOGGER.error("getResourcesMetaDataMapBytesTimestamp() failed!", x);
