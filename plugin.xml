@@ -216,6 +216,7 @@
      <globalClassPublish pattern="org\.nightlabs\.math\..*"/>
      <globalClassPublish pattern="org\.nightlabs\.jfire\.base\.jdo\.cache\.CacheCfMod"/>
      <globalClassPublish pattern="org\.nightlabs\.language\..*"/>
+     <globalClassPublish pattern="org\.nightlabs\.jfire\.base\.person\.preferences\.PersonStructOrderConfigModule.*"/>
  	</extension>
 
  	<!-- PersonDataFieldEditor extensions bock-based -->
