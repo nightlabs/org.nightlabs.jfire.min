@@ -85,19 +85,19 @@
          id="product">
       <product
             application="org.nightlabs.jfire.base.app"
-            name="%productName">
+            name="%swtAppName">
          <property
                name="appName"
                value="%swtAppName"/>
          <property
                name="windowImages"
-               value="icons/JFireIcon.16x16.png,icons/JFireIcon.16x16.png"/>
+               value="icons/JFire-Logo.16x16.png"/>
          <property
                name="aboutText"
                value="%aboutText"/>
          <property
                name="aboutImage"
-               value="icons/JFire-Logo.gif"/>
+               value="icons/JFire-Logo.16x16.png"/>
       </product>
    </extension>
 
@@ -106,7 +106,7 @@
    <extension
          point="org.eclipse.ui.perspectives">
       <perspective
-            icon="icons/JFire-Icon-16x16.gif"
+            icon="icons/JFire-Icon.16x16.png"
             class="org.nightlabs.jfire.base.JFireWelcomePerspective"
             fixed="false"
             name="%perspectives.jfireWelcome.name"
@@ -121,7 +121,7 @@
       </category>
       <view
             name="%views.welcome.name"
-            icon="icons/JFire-Icon-16x16.gif"
+            icon="icons/JFire-Icon.16x16.png"
             category="org.nightlabs.jfire.base.welcomecategory"
             class="org.nightlabs.jfire.base.JFireWelcomeView"
             id="org.nightlabs.jfire.base.view.JFireWelcomeView">
