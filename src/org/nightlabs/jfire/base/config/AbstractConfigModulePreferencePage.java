@@ -338,7 +338,10 @@ implements IWorkbenchPreferencePage
 		}
 		if (isConfigChanged())
 			updateConfigModule(getCurrentConfigModule());
-		getCurrentConfigModule().setAllowUserOverride(checkBoxAllowOverwrite.getSelection());
+		boolean allowOverwrite = false;
+		if (checkBoxAllowOverwrite != null)
+			allowOverwrite = checkBoxAllowOverwrite.getSelection();
+		getCurrentConfigModule().setAllowUserOverride(allowOverwrite);
 		
 		try {
 			currentConfigModule = configManager.storeConfigModule(getCurrentConfigModule(), true, getConfigModuleFetchGroups());
