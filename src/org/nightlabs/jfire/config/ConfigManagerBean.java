@@ -54,6 +54,8 @@ import org.nightlabs.ModuleException;
 import org.nightlabs.jdo.ObjectID;
 import org.nightlabs.jdo.moduleregistry.ModuleMetaData;
 
+import com.sun.tools.doclets.formats.html.AllClassesFrameWriter;
+
 /**
  * @ejb.bean name="jfire/ejb/JFireBaseBean/ConfigManager"
  *	jndi-name="jfire/ejb/JFireBaseBean/ConfigManager"
@@ -325,11 +327,26 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	{
 		ConfigSetup.ensureAllPrerequisites(pm);
 		ConfigModule configModule = null;
+		boolean groupAllowOverwrite = true;
 		configModule = ConfigModule.getAutoCreateConfigModule(pm, config, cfModClass, cfModID);
 		if (fetchGroups != null)
 			pm.getFetchPlan().setGroups(fetchGroups);
 		
+		ConfigGroup configGroup = ConfigGroup.getConfigGroupForConfig(
+				pm, 
+				ConfigID.create(
+						config.getOrganisationID(),
+						config.getConfigKey(),
+						config.getConfigType()
+					)
+			);
+		if (configGroup != null) {
+			ConfigModule groupModule = ConfigModule.getConfigModule(pm, configGroup, cfModClass, cfModID);
+			if (groupModule != null)
+				groupAllowOverwrite = groupModule.isAllowOverride();
+		}
 		ConfigModule result = (ConfigModule)pm.detachCopy(configModule);
+		result.setGroupAllowOverwrite(groupAllowOverwrite);
 		return result;
 	}
 
