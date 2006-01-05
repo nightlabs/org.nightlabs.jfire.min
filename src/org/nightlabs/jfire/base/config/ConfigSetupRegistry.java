@@ -430,7 +430,7 @@ public class ConfigSetupRegistry extends AbstractEPProcessor {
 	public static ConfigSetupRegistry sharedInstance() {
 		if (sharedInstance == null) {
 			sharedInstance = new ConfigSetupRegistry();
-			ChangeManager.sharedInstance().addNotificationListener(ConfigSetup.class, sharedInstance.setupChangeListener);
+//			ChangeManager.sharedInstance().addNotificationListener(ConfigSetup.class, sharedInstance.setupChangeListener);
 			ChangeManager.sharedInstance().addNotificationListener(Config.class, sharedInstance.configChangeListener);
 			ChangeManager.sharedInstance().addNotificationListener(ConfigGroup.class, sharedInstance.configGroupChangeListener);
 			try {
