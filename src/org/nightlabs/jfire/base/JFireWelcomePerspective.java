@@ -51,17 +51,17 @@ public class JFireWelcomePerspective implements IPerspectiveFactory {
 	 * 
 	 */
 	public void createInitialLayout(IPageLayout layout) {
-		layout.setEditorAreaVisible(false);
-		layout.addView(
-			JFireWelcomeView.ID_VIEW,
-      IPageLayout.TOP,
-      IPageLayout.RATIO_MAX,
-      IPageLayout.ID_EDITOR_AREA
-		);
-		
-		
+//		layout.setEditorAreaVisible(false);
+//		layout.addView(
+//			JFireWelcomeView.ID_VIEW,
+//      IPageLayout.TOP,
+//      IPageLayout.RATIO_MAX,
+//      IPageLayout.ID_EDITOR_AREA
+//		);
+//		
+//		
 		RCPUtil.addAllPerspectiveShortcuts(layout);
-		
-		layout.addShowViewShortcut(JFireWelcomeView.ID_VIEW);    
+//		
+//		layout.addShowViewShortcut(JFireWelcomeView.ID_VIEW);    
 	}
 }
