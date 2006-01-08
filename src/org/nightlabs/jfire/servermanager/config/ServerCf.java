@@ -169,7 +169,7 @@ implements Serializable, Cloneable
 			serverName = "NightLabs Demo Server (please rename)";
 
 		if (j2eeServerType == null)
-			j2eeServerType = Server.J2EESERVERTYPE_JBOSS32X;
+			j2eeServerType = Server.J2EESERVERTYPE_JBOSS40X;
 
 //		if (initialContextFactory == null)
 //			initialContextFactory = "org.jboss.security.jndi.LoginInitialContextFactory"; // "org.jnp.interfaces.NamingContextFactory";
