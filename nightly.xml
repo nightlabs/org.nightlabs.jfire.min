@@ -25,6 +25,16 @@
     <provides path="org.nightlabs.jfire.base" location="org.nightlabs.jfire.base/lib/JFireRemoteClassLoader.jar"/>
     <provides path="org.nightlabs.jfire.base" location="org.nightlabs.jfire.base/lib/JFireRCLBackend.jar"/>
     <provides path="org.nightlabs.jfire.base" location="org.nightlabs.jfire.base/lib/JFireRCLBackendBean.jar"/>
+
+<!-- original, as copied from org.nightlabs.base/nightly.xml:
+    <provides path="org.nightlabs.base" location="org.nightlabs.base/lib/jboss-j2ee.jar"/>
+    <provides path="org.nightlabs.base" location="org.nightlabs.base/lib/jbosssx.jar"/>
+    <provides path="org.nightlabs.base" location="lib/jboss/client/jbossall-client.jar"/>
+
+    ... and I believe, the following line should be fine:
+-->
+	<provides path="org.nightlabs.base" location="org.nightlabs.base/lib/jbossall-client.jar"/>
+    
     <publishes description="..." location="org.nightlabs.jfire.base/dist/org.nightlabs.jfire.base_1.0.0.tar.gz"/>
     <javadoc path="org.nightlabs.jfire.base/src"/>
   </project>

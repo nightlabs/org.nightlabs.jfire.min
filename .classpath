@@ -14,5 +14,6 @@
 	<classpathentry kind="lib" path="lib/JFireRCLBackend.jar"/>
 	<classpathentry kind="lib" path="lib/JFireRCLBackendBean.jar"/>
 	<classpathentry kind="lib" path="lib/JFireRemoteClassLoader.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jbossall-client.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

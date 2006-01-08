@@ -20,6 +20,9 @@
       <library name="lib/JFireRCLBackendBean.jar">
          <export name="*"/>
       </library>
+      <library name="lib/jbossall-client.jar">
+         <export name="*"/>
+      </library>
    </runtime>
 
    <requires>
