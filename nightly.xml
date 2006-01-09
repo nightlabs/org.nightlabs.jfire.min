@@ -3,7 +3,7 @@
 
 <nightlybuild>
 
-  <project name="org.nightlabs.jfire.base" category="NightLabsClient">
+  <project name="org.nightlabs.jfire.base">
     <ant path="org.nightlabs.jfire.base" file="build-nightlabs.xml" target="deploy"/>
     <requires/>
 
