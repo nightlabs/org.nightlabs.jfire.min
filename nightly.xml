@@ -2,13 +2,13 @@
 <!DOCTYPE nightlybuild PUBLIC "-//NightLabs//DTD NightlyBuild V 0.5//EN" "http://www.nightlabs.de/dtd/nightlybuild_0_5.dtd">
 <nightlybuild>
 
-  <project name="JFireBaseBean">
-    <!-- source repository is defined in JFireBuildAll/nightly-jfire-server.xml -->
-    <ant target="deploy" path="JFireBaseBean" file="build-nightlabs.xml"/>
-    <requires/> <!-- default requires: uses .classpath file -->
-    <provides/> <!-- default provides: provides dist/<projectname>.jar in all variations -->
-    <publishes location="JFireBaseBean/dist/JFireBaseBean.jar"/>
-    <javadoc path="JFireBaseBean/src"/>
-  </project>
+	<project name="JFireBaseBean">
+		<ant target="deploy" path="JFireBaseBean" file="build-nightlabs.xml"/>
+		<requires/> <!-- default requires: uses .classpath file -->
+		<provides/> <!-- default provides: provides dist/<projectname>.jar in all variations -->
+		<publishes location="JFireBaseBean/dist/JFireBaseBean.jar"/>
+		<javadoc path="JFireBaseBean/src"/>
+		<javadoc path="JFireBaseBean/ejbsrc"/>
+	</project>
 
 </nightlybuild>
