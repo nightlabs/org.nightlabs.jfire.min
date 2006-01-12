@@ -39,7 +39,7 @@ import org.nightlabs.base.app.AbstractApplication;
 import org.nightlabs.base.app.AbstractWorkbenchAdvisor;
 import org.nightlabs.base.exceptionhandler.ExceptionHandlerRegistry;
 import org.nightlabs.base.exceptionhandler.ExceptionHandlingWorkbenchAdvisor;
-import org.nightlabs.classsharing.extensionpoint.globalpublish.EPClassLoaderDelegate;
+import org.nightlabs.classsharing.extensionpoint.globalpublish.ResourcePublishCLDelegate;
 import org.nightlabs.jfire.base.JFireWelcomePerspective;
 import org.nightlabs.jfire.base.login.JFireLoginHandler;
 import org.nightlabs.jfire.base.login.JFireSecurityConfiguration;
@@ -60,7 +60,7 @@ extends AbstractWorkbenchAdvisor
     
 	/**
 	 * Constructs a new <code>JFireWorkbenchAdvisor</code>.<br/>
-	 * Registeres {@link EPClassLoaderDelegate} to the parent ClassLoader.<br/>
+	 * Registeres {@link ResourcePublishCLDelegate} to the parent ClassLoader.<br/>
 	 * Initializes logging, so all logging should be done after 
 	 * the WorkbenchAdvisor is created.<br/>
 	 * At last initializes the config.
