@@ -27,6 +27,7 @@
 package org.nightlabs.jfire.base.login;
 
 import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -347,14 +348,18 @@ public class LoginDialog extends ExpandableAreaDialog {
 				getLoginStaticArea().setErrMessage(JFireBasePlugin.getResourceString("login.error.authenticationFailed"),3);
 			}
 			else if (loginResult.isWasCommunicationErr()) {
-				getLoginStaticArea().setErrMessage(JFireBasePlugin.getResourceString("login.error.communicatinError")+" "+loginResult.getException().getMessage(),3);
+				Throwable error = loginResult.getException();
+				while (error.getLocalizedMessage() == null && error.getCause() != null) {
+					error = ExceptionUtils.getCause(error);
+				}
+				getLoginStaticArea().setErrMessage(JFireBasePlugin.getResourceString("login.error.communicatinError") + " " + error.getLocalizedMessage(),3);				
 			}
 			else {
 				int lineNo = 2;
 				String message = loginResult.getMessage();
 				if (loginResult.getException() != null) {
 					message += "\n"+loginResult.getException().getClass().getName()+": "+loginResult.getException().getLocalizedMessage();
-					Throwable cause = loginResult.getException().getCause();
+					Throwable cause = loginResult.getException();
 					while ( cause != null ) {
 						message += "\n"+cause.getClass().getName()+": "+cause.getLocalizedMessage();
 						lineNo++;
