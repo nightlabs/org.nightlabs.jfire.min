@@ -27,6 +27,7 @@
 package org.nightlabs.jfire.jdo;
 
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
@@ -39,12 +40,16 @@ import javax.jdo.PersistenceManager;
 
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.jdo.cache.CacheManager;
+import org.nightlabs.jfire.jdo.controller.JDOObjectChangeEvent;
+import org.nightlabs.jfire.jdo.controller.JDOObjectController;
+import org.nightlabs.jfire.jdo.controller.JDOObjectSyncResult;
 import org.nightlabs.jfire.jdo.organisationsync.DirtyObjectIDCarrier;
 import org.nightlabs.jfire.jdo.organisationsync.IncomingChangeListenerDescriptor;
 import org.nightlabs.jfire.jdo.organisationsync.id.IncomingChangeListenerDescriptorID;
 
 import org.nightlabs.ModuleException;
 import org.nightlabs.jfire.jdo.JDOManager;
+import org.nightlabs.jdo.ObjectID;
 import org.nightlabs.jdo.ObjectIDUtil;
 
 
@@ -259,4 +264,82 @@ implements SessionBean
 			pm.close();
 		} 
 	}
+	
+	/**
+	 *
+	 * @ejb.interface-method
+	 * @ejb.permission role-name="_Guest_"
+	 * @ejb.transaction type = "Required"
+	 */
+	public JDOObjectController getJDOObjectController(ObjectID linkObject, String[] fetchGroups)
+	throws ModuleException
+	{
+		return getJDOObjectController(linkObject.toString(), fetchGroups);
+	}
+	
+	/**
+	 *
+	 * @ejb.interface-method
+	 * @ejb.permission role-name="_Guest_"
+	 * @ejb.transaction type = "Required"
+	 */
+	public JDOObjectController getJDOObjectController(String linkObject, String[] fetchGroups)
+	throws ModuleException
+	{
+		PersistenceManager pm = getPersistenceManager();
+		try {
+			if (fetchGroups != null)
+				pm.getFetchPlan().setGroups(fetchGroups);
+			else
+				pm.getFetchPlan().setGroups(JDOObjectController.DEFAULT_FETCH_GROUPS);
+			
+			JDOObjectController controller = JDOObjectController.getObjectController(pm, linkObject);
+			
+			return (JDOObjectController) pm.detachCopy(controller);
+			
+		} finally {
+			pm.close();
+		}
+		
+	}
+	
+	/**
+	 *
+	 * @ejb.interface-method
+	 * @ejb.permission role-name="_Guest_"
+	 * @ejb.transaction type = "Required"
+	 */
+	public JDOObjectSyncResult syncJDOObjectChanges(String linkObject, long version, String[] fetchGroups)
+	throws ModuleException
+	{
+		PersistenceManager pm = getPersistenceManager();
+		try {
+			if (fetchGroups == null)
+				pm.getFetchPlan().setGroups(JDOObjectSyncResult.DEFAULT_FETCH_GROUPS);
+			else
+				pm.getFetchPlan().setGroups(fetchGroups);
+			
+			JDOObjectController controller = JDOObjectController.getObjectController(pm, linkObject);
+			JDOObjectController dController = (JDOObjectController)pm.detachCopy(controller);
+			
+			Collection<JDOObjectChangeEvent> events = JDOObjectChangeEvent.getChangeEventsAfterVersion(pm, linkObject, version);
+			Collection dEvents = pm.detachCopyAll(events);			
+			return new JDOObjectSyncResult(dController, dEvents);
+		} finally {
+			pm.close();
+		}
+		
+	}	
+	
+	/**
+	 *
+	 * @ejb.interface-method
+	 * @ejb.permission role-name="_Guest_"
+	 * @ejb.transaction type = "Required"
+	 */
+	public JDOObjectSyncResult syncJDOObjectChanges(ObjectID linkObject, long version, String[] fetchGroups)
+	throws ModuleException
+	{
+		return syncJDOObjectChanges(linkObject.toString(), version, fetchGroups);
+	}	
 }
