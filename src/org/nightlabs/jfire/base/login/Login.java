@@ -823,7 +823,7 @@ public class Login
 						login.getInitialContextProperties()).create();
 //				languageManager = LanguageManagerUtil.getHome(
 //						login.getInitialContextProperties()).create();
-        loginResult.setSuccess(true);
+				loginResult.setSuccess(true);
 			} catch (RemoteException remoteException) {
 				Throwable cause = remoteException.getCause();
 				if (cause != null && cause.getCause() instanceof EJBException) {
@@ -836,9 +836,13 @@ public class Login
 				}
 				else {
 					if (ExceptionUtils.indexOfThrowable(cause, SecurityException.class) >= 0) {
-						loginResult.setWasAuthenticationErr(true);
-            loginResult.setSuccess(false);
-          }
+						loginResult.setWasAuthenticationErr(true);				
+						loginResult.setSuccess(false);
+					}
+					else {
+						loginResult.setException(remoteException);
+						loginResult.setSuccess(false);
+					}
 				}
 			} catch (LoginException x) {
 				LOGGER.warn("Login failed with a very weird LoginException!", x);
