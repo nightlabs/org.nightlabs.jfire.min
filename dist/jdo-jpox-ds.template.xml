@@ -22,5 +22,6 @@ JBoss 3.2.x: end -->
 		<config-property name="JdoCacheCollections" type="boolean">true</config-property>
 		<config-property name="NontransactionalRead" type="boolean">true</config-property>
 		<config-property name="StoreDictionaryCaseIdentifier" type="java.lang.String">PreserveCase</config-property>
+		<config-property name="PersistenceByReachabilityAtCommit" type="boolean">false</config-property>
 	</tx-connection-factory>
 </connection-factories>
