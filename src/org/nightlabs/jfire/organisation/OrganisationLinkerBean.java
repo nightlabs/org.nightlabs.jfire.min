@@ -97,7 +97,7 @@ public abstract class OrganisationLinkerBean implements javax.ejb.SessionBean
 					applicantOrganisation.getOrganisationID(), grantOrganisationUserPassword);
 
 //			NLJDOHelper.makeDirtyRecursively(applicantOrganisation); // makeDirty seems to have NO effect on a detached object!
-			applicantOrganisation = (Organisation) pm.attachCopy(applicantOrganisation, false);
+			applicantOrganisation = (Organisation) pm.makePersistent(applicantOrganisation);
 
 			RegistrationStatus registrationStatus = new RegistrationStatus(
 					registrationID, applicantOrganisation);
