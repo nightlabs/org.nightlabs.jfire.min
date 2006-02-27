@@ -106,7 +106,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 			if (!JDOHelper.isDetached(configModule))
 				throw new IllegalArgumentException("Pass only detached ConfigModules to this method.");
 			
-			ConfigModule pConfigModule = (ConfigModule)pm.attachCopy(configModule, false);
+			ConfigModule pConfigModule = (ConfigModule)pm.makePersistent(configModule);
 			
 			if (pConfigModule.getConfig() instanceof ConfigGroup) {
 				// is a ConfigModule of a ConfigGroup -> inherit all ConfigModules for 

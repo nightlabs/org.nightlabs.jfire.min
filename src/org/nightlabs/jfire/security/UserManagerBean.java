@@ -169,7 +169,7 @@ implements SessionBean
 //          if(user.passwdChanged)
 //            user.setPassword(User.encryptPassword(user.getPassword()));
 //        }
-        user = (User) pm.attachCopy(user, false);
+        user = (User) pm.makePersistent(user);
         if (passwd != null)
         	user.getUserLocal().setPasswordPlain(passwd);
       }
@@ -430,7 +430,7 @@ implements SessionBean
 //          "  this.userID != \"" + User.OTHER_USERID + "\" " +
 //          "VARIABLES UserGroup userGroup " +
 //          "PARAMETERS String paramOrganisationID, String paramUserGroupID " +
-//          "IMPORTS import org.nightlabs.jfire.security.UserGroup; import java.lang.String");
+//          "import org.nightlabs.jfire.security.UserGroup; import java.lang.String");
 //      Collection c = (Collection)query.execute(getOrganisationID(), userGroupID);
 //      return (Collection)pm.detachCopyAll(c);
 
@@ -505,7 +505,7 @@ implements SessionBean
 //					"  this.userID != \"" + User.OTHER_USERID + "\" " +
 //					"VARIABLES UserGroup userGroup " +
 //					"PARAMETERS String paramOrganisationID, String paramUserGroupID " +
-//					"IMPORTS import org.nightlabs.jfire.security.UserGroup; import java.lang.String");
+//					"import org.nightlabs.jfire.security.UserGroup; import java.lang.String");
 //    	Collection c = (Collection)query.execute(getOrganisationID(), userGroupID);
 //    	return (Collection)pm.detachCopyAll(c);
 
@@ -581,7 +581,7 @@ implements SessionBean
 					"  user.userID == paramUserID " +
 					"VARIABLES RoleGroupRef roleGroupRef; UserRef userRef; User user " +
 					"PARAMETERS String paramOrganisationID, String paramUserID, String paramAuthorityID " +
-					"IMPORTS import org.nightlabs.jfire.security.RoleGroupRef; import org.nightlabs.jfire.security.UserRef; import org.nightlabs.jfire.security.User; import java.lang.String");
+					"import org.nightlabs.jfire.security.RoleGroupRef; import org.nightlabs.jfire.security.UserRef; import org.nightlabs.jfire.security.User; import java.lang.String");
     	Collection roleGroupsUser = (Collection)query.execute(getOrganisationID(), userID, authorityID);
     	
     	// rolegroups via usergroups
@@ -597,7 +597,7 @@ implements SessionBean
 					"  user.userID == paramUserID " +
 					"VARIABLES RoleGroupRef roleGroupRef; UserGroupRef userGroupRef; UserGroup userGroup; User user " +
 					"PARAMETERS String paramOrganisationID, String paramUserID, String paramAuthorityID " +
-					"IMPORTS import org.nightlabs.jfire.security.RoleGroupRef; import org.nightlabs.jfire.security.UserRef; import java.lang.String");
+					"import org.nightlabs.jfire.security.RoleGroupRef; import org.nightlabs.jfire.security.UserRef; import java.lang.String");
     	Collection roleGroupsUserGroups = (Collection)query.execute(getOrganisationID(), userID, authorityID);
 
     	RoleGroupListCarrier rglc = new RoleGroupListCarrier();
@@ -671,7 +671,7 @@ implements SessionBean
           "WHERE " +
           "  users.containsKey(paramUserID) " +
           "PARAMETERS String paramUserID " +
-          "IMPORTS import java.lang.String");
+          "import java.lang.String");
       Collection assignedGroups = (Collection)query.execute(userID);
 
       //FIXME: JPOX bug reoccured (negation generates INNER JOIN instead of LEFT OUTER JOIN)
@@ -680,7 +680,7 @@ implements SessionBean
 //        "WHERE " +
 //        "  !(users.containsKey(paramUserID)) " +
 //        "PARAMETERS String paramUserID " +
-//        "IMPORTS import java.lang.String");
+//        "import java.lang.String");
 //
 //    Collection excludedGroups = (Collection)query.execute(userID);
    
@@ -742,7 +742,7 @@ implements SessionBean
           "  user.userID == paramUserID " +
           "VARIABLES RoleGroupRef roleGroupRef; UserRef userRef; User user " +
           "PARAMETERS String paramOrganisationID, String paramUserID, String paramAuthorityID " +
-          "IMPORTS import org.nightlabs.jfire.security.RoleGroupRef; import org.nightlabs.jfire.security.UserRef; import org.nightlabs.jfire.security.User; import java.lang.String");
+          "import org.nightlabs.jfire.security.RoleGroupRef; import org.nightlabs.jfire.security.UserRef; import org.nightlabs.jfire.security.User; import java.lang.String");
       Collection roleGroupsUser = (Collection)query.execute(getOrganisationID(), userID, authorityID);
       
       // rolegroups via usergroups
@@ -758,7 +758,7 @@ implements SessionBean
           "  user.userID == paramUserID " +
           "VARIABLES RoleGroupRef roleGroupRef; UserGroupRef userGroupRef; UserGroup userGroup; User user " +
           "PARAMETERS String paramOrganisationID, String paramUserID, String paramAuthorityID " +
-          "IMPORTS import org.nightlabs.jfire.security.RoleGroupRef; import org.nightlabs.jfire.security.UserRef; import java.lang.String");
+          "import org.nightlabs.jfire.security.RoleGroupRef; import org.nightlabs.jfire.security.UserRef; import java.lang.String");
       Collection roleGroupsUserGroups = (Collection)query.execute(getOrganisationID(), userID, authorityID);
 
       //FIXME: JPOX bug (INNER JOIN instead of LEFT JOIN)
@@ -773,7 +773,7 @@ implements SessionBean
 //        "  roleGroupRef.authorityID == paramAuthorityID " +
 //        "VARIABLES RoleGroupRef roleGroupRef; UserRef userRef " +
 //        "PARAMETERS String paramOrganisationID, String paramUserID, String paramAuthorityID " +
-//        "IMPORTS import org.nightlabs.jfire.security.RoleGroupRef; import org.nightlabs.jfire.security.UserRef; import java.lang.String");
+//        "import org.nightlabs.jfire.security.RoleGroupRef; import org.nightlabs.jfire.security.UserRef; import java.lang.String");
 //
 //    Collection excludedRoleGroups = (Collection)query.execute(getOrganisationID(), userID, authorityID);
 
@@ -875,7 +875,7 @@ implements SessionBean
 //					"  roleGroupRef.authorityID == paramAuthorityID " +
 //					"VARIABLES RoleGroupRef roleGroupRef; UserRef userRef " +
 //					"PARAMETERS String paramOrganisationID, String paramUserID, String paramAuthorityID " +
-//					"IMPORTS import org.nightlabs.jfire.security.RoleGroupRef; import org.nightlabs.jfire.security.UserRef; import java.lang.String");
+//					"import org.nightlabs.jfire.security.RoleGroupRef; import org.nightlabs.jfire.security.UserRef; import java.lang.String");
 //
 //    	Collection res = (Collection)query.execute(getOrganisationID(), userID, authorityID);
 
@@ -890,7 +890,7 @@ implements SessionBean
 //					"  user.userID == paramUserID " +
 //					"VARIABLES RoleGroupRef roleGroupRef; UserRef userRef; User user " +
 //					"PARAMETERS String paramOrganisationID, String paramUserID, String paramAuthorityID " +
-//					"IMPORTS import org.nightlabs.jfire.security.RoleGroupRef; import org.nightlabs.jfire.security.UserRef; import java.lang.String");
+//					"import org.nightlabs.jfire.security.RoleGroupRef; import org.nightlabs.jfire.security.UserRef; import java.lang.String");
 //    	Collection res = (Collection)query.execute(getOrganisationID(), userID, authorityID);
 //
 //      return pm.detachCopyAll(res);
@@ -909,7 +909,7 @@ implements SessionBean
 					"  user.userID == paramUserID " +
 					"VARIABLES RoleGroupRef roleGroupRef; UserRef userRef; User user " +
 					"PARAMETERS String paramOrganisationID, String paramUserID, String paramAuthorityID " +
-					"IMPORTS import org.nightlabs.jfire.security.RoleGroupRef; import org.nightlabs.jfire.security.UserRef; import org.nightlabs.jfire.security.User; import java.lang.String");
+					"import org.nightlabs.jfire.security.RoleGroupRef; import org.nightlabs.jfire.security.UserRef; import org.nightlabs.jfire.security.User; import java.lang.String");
     	Collection roleGroupsUser = (Collection)query.execute(getOrganisationID(), userID, authorityID);
     	query = pm.newQuery( 
     			"SELECT FROM org.nightlabs.jfire.security.RoleGroup " +
@@ -923,7 +923,7 @@ implements SessionBean
 					"  user.userID == paramUserID " +
 					"VARIABLES RoleGroupRef roleGroupRef; UserGroupRef userGroupRef; UserGroup userGroup; User user " +
 					"PARAMETERS String paramOrganisationID, String paramUserID, String paramAuthorityID " +
-					"IMPORTS import org.nightlabs.jfire.security.RoleGroupRef; import org.nightlabs.jfire.security.UserRef; import java.lang.String");
+					"import org.nightlabs.jfire.security.RoleGroupRef; import org.nightlabs.jfire.security.UserRef; import java.lang.String");
     	Collection roleGroupsUserGroups = (Collection)query.execute(getOrganisationID(), userID, authorityID);
       
       Iterator i = c.iterator();
@@ -979,7 +979,7 @@ implements SessionBean
 					"WHERE " +
 					"  users.containsKey(paramUserID) " +
 					"PARAMETERS String paramUserID " +
-					"IMPORTS import java.lang.String");
+					"import java.lang.String");
       
       Collection c = (Collection)query.execute(userID);
       return pm.detachCopyAll(c);
@@ -1026,7 +1026,7 @@ implements SessionBean
 //					"WHERE " +
 //					"  !(users.containsKey(paramUserID)) " +
 //					"PARAMETERS String paramUserID " +
-//					"IMPORTS import java.lang.String");
+//					"import java.lang.String");
 //
 //      Collection c = (Collection)query.execute(userID);
 
@@ -1039,7 +1039,7 @@ implements SessionBean
 					"WHERE " +
 					"  users.containsKey(paramUserID) " +
 					"PARAMETERS String paramUserID " +
-					"IMPORTS import java.lang.String");
+					"import java.lang.String");
       
       Collection includedUsers = (Collection)query.execute(userID);
       Iterator i = c.iterator();
