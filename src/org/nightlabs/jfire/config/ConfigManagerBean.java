@@ -94,7 +94,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type = "Required"
 	 */
-	public ConfigModule storeConfigModule(ConfigModule configModule, boolean get, String[] fetchGroups)
+	public ConfigModule storeConfigModule(ConfigModule configModule, boolean get, String[] fetchGroups, int maxFetchDepth)
 	throws ModuleException
 	{
 		PersistenceManager pm;
@@ -117,6 +117,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 			if (!get)
 				return null;
 			else {
+				pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
 				if (fetchGroups != null)
 					pm.getFetchPlan().setGroups(fetchGroups);
 				return (ConfigModule)pm.detachCopy(pConfigModule);
@@ -139,7 +140,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 * @ejb.transaction type = "Required" 
 	 * 
 	 */
-	public Collection getConfigGroups(String configType, String[] fetchGroups)
+	public Collection getConfigGroups(String configType, String[] fetchGroups, int maxFetchDepth)
 	throws ModuleException
 	{
 		PersistenceManager pm;
@@ -151,7 +152,8 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 				q.setFilter("this.configType == \""+configType+"\"");
 			
 			Collection groups = (Collection)q.execute();
-			
+
+			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
 			if (fetchGroups != null)
 				pm.getFetchPlan().setGroups(fetchGroups);
 			
@@ -171,10 +173,10 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type = "Required"
 	 */
-	public Collection getConfigGroups(String[] fetchGroups) 
+	public Collection getConfigGroups(String[] fetchGroups, int maxFetchDepth) 
 	throws ModuleException
 	{
-		return getConfigGroups(null, fetchGroups);
+		return getConfigGroups(null, fetchGroups, maxFetchDepth);
 	}
 	
 	
@@ -190,7 +192,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type = "Required"
 	 */
-	public Collection getConfigs(String configType, String[] fetchGroups)
+	public Collection getConfigs(String configType, String[] fetchGroups, int maxFetchDepth)
 	throws ModuleException
 	{
 		PersistenceManager pm;
@@ -203,11 +205,11 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 				q.setFilter("this.configType == \""+configType+"\"");
 			
 			Collection configs = (Collection)q.execute();
-			
+
+			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
 			if (fetchGroups != null)
 				pm.getFetchPlan().setGroups(fetchGroups);
 
-			
 			Collection result = pm.detachCopyAll(configs);
 			return result;
 		} finally {
@@ -222,10 +224,10 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type = "Required"
 	 */
-	public Collection getConfigs(String[] fetchGroups)
+	public Collection getConfigs(String[] fetchGroups, int maxFetchDepth)
 	throws ModuleException
 	{
-		return getConfigs(null, fetchGroups);
+		return getConfigs(null, fetchGroups, maxFetchDepth);
 	}
 	
 	/**
@@ -235,13 +237,14 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type = "Required"
 	 */
-	public Config getConfig(ConfigID configID, String[] fetchGroups)
+	public Config getConfig(ConfigID configID, String[] fetchGroups, int maxFetchDepth)
 	throws ModuleException
 	{
 		PersistenceManager pm;
 		pm = getPersistenceManager();
 		try 
 		{
+			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
 			if (fetchGroups != null)
 				pm.getFetchPlan().setGroups(fetchGroups);
 			
@@ -275,7 +278,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 * @ejb.transaction type = "Required"
 	 * 
 	 */
-	public ConfigModule getConfigModule(ConfigID configID, Class cfModClass, String cfModID, String[] fetchGroups)
+	public ConfigModule getConfigModule(ConfigID configID, Class cfModClass, String cfModID, String[] fetchGroups, int maxFetchDepth)
 	throws ModuleException
 	{
 		PersistenceManager pm;
@@ -284,7 +287,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 		{
 			ConfigSetup.ensureAllPrerequisites(pm);
 			Config config = (Config)pm.getObjectById(configID);
-			return getConfigModule(pm, config, cfModClass, cfModID, fetchGroups);
+			return getConfigModule(pm, config, cfModClass, cfModID, fetchGroups, maxFetchDepth);
 		} finally {
 			pm.close();
 		}
@@ -306,14 +309,14 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 * @ejb.transaction type = "Required"
 	 * 
 	 */
-	public ConfigModule getConfigModule(Config config, Class cfModClass, String cfModID, String[] fetchGroups)
+	public ConfigModule getConfigModule(Config config, Class cfModClass, String cfModID, String[] fetchGroups, int maxFetchDepth)
 	throws ModuleException
 	{
 		PersistenceManager pm;
 		pm = getPersistenceManager();
 		try 
 		{
-			return getConfigModule(pm, config, cfModClass, cfModID, fetchGroups);
+			return getConfigModule(pm, config, cfModClass, cfModID, fetchGroups, maxFetchDepth);
 		} finally {
 			pm.close();
 		}
@@ -322,16 +325,20 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	/**
 	 * Helper method for the other getConfigModule methods 
 	 */
-	protected ConfigModule getConfigModule(PersistenceManager pm, Config config, Class cfModClass, String cfModID, String[] fetchGroups)
+	protected ConfigModule getConfigModule(PersistenceManager pm, Config config, Class cfModClass, String cfModID, String[] fetchGroups, int maxFetchDepth)
 	throws ModuleException
 	{
 		ConfigSetup.ensureAllPrerequisites(pm);
 		ConfigModule configModule = null;
 		boolean groupAllowOverwrite = true;
 		configModule = ConfigModule.getAutoCreateConfigModule(pm, config, cfModClass, cfModID);
+
+		pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
 		if (fetchGroups != null)
 			pm.getFetchPlan().setGroups(fetchGroups);
-		
+		else
+			pm.getFetchPlan().clearGroups();
+
 		ConfigGroup configGroup = ConfigGroup.getConfigGroupForConfig(
 				pm, 
 				ConfigID.create(
@@ -366,7 +373,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 * @ejb.transaction type = "Required"
 	 * 
 	 */
-	public ConfigModule getConfigModule(ObjectID keyObjectID, Class cfModClass, String cfModID, String fetchGroups[])
+	public ConfigModule getConfigModule(ObjectID keyObjectID, Class cfModClass, String cfModID, String[] fetchGroups, int maxFetchDepth)
 	throws ModuleException
 	{
 		PersistenceManager pm;
@@ -381,7 +388,8 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 					keyObject, 
 					cfModClass, 
 					cfModID, 
-					fetchGroups
+					fetchGroups,
+					maxFetchDepth
 				);
 		} finally {
 			pm.close();
@@ -404,7 +412,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type = "Required"
 	 */
-	public ConfigGroup addConfigGroup(String configKey, String groupType, String groupName, boolean get, String[] fetchGroups)
+	public ConfigGroup addConfigGroup(String configKey, String groupType, String groupName, boolean get, String[] fetchGroups, int maxFetchDepth)
 	throws ModuleException
 	{		
 		PersistenceManager pm;

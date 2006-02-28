@@ -223,11 +223,13 @@ public abstract class OrganisationManagerBean
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="OrganisationManager-read"
 	 **/
-	public Collection getPendingRegistrations(String[] fetchGroups)
+	public Collection getPendingRegistrations(String[] fetchGroups, int maxFetchDepth)
 		throws ModuleException
 	{
 		PersistenceManager pm = getPersistenceManager();
 		try {
+			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
+
 			if (fetchGroups != null) {
 				FetchPlan fetchPlan = pm.getFetchPlan();
 				for (int i = 0; i < fetchGroups.length; ++i)
@@ -715,7 +717,7 @@ public abstract class OrganisationManagerBean
 	 * @ejb.transaction type = "Required"
 	 * @ejb.permission role-name="_Guest_"
 	 **/
-	public Collection getOrganisationsFromRootOrganisation(boolean filterPartnerOrganisations, String[] fetchGroups)
+	public Collection getOrganisationsFromRootOrganisation(boolean filterPartnerOrganisations, String[] fetchGroups, int maxFetchDepth)
 	throws ModuleException
 	{
 		try {
@@ -725,7 +727,7 @@ public abstract class OrganisationManagerBean
 				String localOrganisationID = getOrganisationID();
 				if (!rootOrganisationID.equals(localOrganisationID)) {
 					OrganisationManager organisationManager = OrganisationManagerUtil.getHome(getInitialContextProps(rootOrganisationID)).create();
-					Collection res = organisationManager.getOrganisationsFromRootOrganisation(filterPartnerOrganisations, fetchGroups);
+					Collection res = organisationManager.getOrganisationsFromRootOrganisation(filterPartnerOrganisations, fetchGroups, maxFetchDepth);
 
 					if (!filterPartnerOrganisations)
 						return res;
@@ -757,6 +759,7 @@ public abstract class OrganisationManagerBean
 
 			PersistenceManager pm = getPersistenceManager();
 			try {
+				pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
 				if (fetchGroups != null)
 					pm.getFetchPlan().setGroups(fetchGroups);
 

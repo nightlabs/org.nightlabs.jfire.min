@@ -170,12 +170,13 @@ public abstract class AuthorityManagerBean extends BaseSessionBeanImpl implement
 	 * @ejb.permission role-name="AuthorityManager-read"
 	 **/
 	public AuthoritySearchResult searchAuthorities (
-			String searchStr, boolean exact, int itemsPerPage, int pageIndex, String[] fetchGroups)
+			String searchStr, boolean exact, int itemsPerPage, int pageIndex, String[] fetchGroups, int maxFetchDepth)
 		throws SecurityException
 	{
 		try 
 		{
 			PersistenceManager pm = getPersistenceManager();
+			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
       if (fetchGroups != null) 
       	pm.getFetchPlan().setGroups(fetchGroups);
 			

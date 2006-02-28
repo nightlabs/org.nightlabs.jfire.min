@@ -146,22 +146,23 @@ public abstract class PersonManagerBean extends BaseSessionBeanImpl implements
 	 * @ejb.permission role-name="PersonManager-read"
 	 * @ejb.transaction type = "Required"
 	 */
-	public Person getPerson(PersonID personID, String[] fetchGroups)
-			throws ModuleException, JDOObjectNotFoundException {
+	public Person getPerson(PersonID personID, String[] fetchGroups, int maxFetchDepth)
+			throws ModuleException, JDOObjectNotFoundException 
+	{
 		PersistenceManager pm = this.getPersistenceManager();
-		pm.getExtent(Person.class, true);
-		Person person = (Person) pm.getObjectById(personID, true);
+		try {
+			pm.getExtent(Person.class, true);
+			Person person = (Person) pm.getObjectById(personID, true);
 
-		if (fetchGroups != null) {
-			for (int i = 0; i < fetchGroups.length; i++) {
-				pm.getFetchPlan().addGroup(fetchGroups[i]);
-			}
+			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
+			if (fetchGroups != null)
+				pm.getFetchPlan().setGroups(fetchGroups);
+
+			Person result = (Person) pm.detachCopy(person);
+			return result;
+		} finally {
+			pm.close();
 		}
-
-		Person result = (Person) pm.detachCopy(person);
-		pm.close();
-
-		return result;
 	}
 
 	/**
@@ -197,18 +198,18 @@ public abstract class PersonManagerBean extends BaseSessionBeanImpl implements
 	 * @ejb.permission role-name="PersonManager-read"
 	 * @ejb.transaction type = "Required"
 	 */
-	public Collection searchPerson(PersonSearchFilter personSearchFilter, String[] fetchGroups)
-			throws ModuleException, JDOObjectNotFoundException {
-		
+	public Collection searchPerson(PersonSearchFilter personSearchFilter, String[] fetchGroups, int maxFetchDepth)
+			throws ModuleException, JDOObjectNotFoundException
+	{
 		PersistenceManager pm = this.getPersistenceManager();
 		try {
 			Collection persons = personSearchFilter.executeQuery(pm);
-			
+
+			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
 			if (fetchGroups != null)
 				pm.getFetchPlan().setGroups(fetchGroups);
-			
+
 			Collection result = pm.detachCopyAll(persons);
-			
 			return result;
 		} finally {
 			pm.close();
@@ -250,12 +251,12 @@ public abstract class PersonManagerBean extends BaseSessionBeanImpl implements
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type = "Required"
 	 */
-	public Person storePerson(Person person, boolean get, String[] fetchGroups)
+	public Person storePerson(Person person, boolean get, String[] fetchGroups, int maxFetchDepth)
 	throws ModuleException
 	{
 		PersistenceManager pm = getPersistenceManager();
 		try {
-			return (Person) NLJDOHelper.storeJDO(pm, person, get, fetchGroups);
+			return (Person) NLJDOHelper.storeJDO(pm, person, get, fetchGroups, maxFetchDepth);
 		} finally {
 			pm.close();
 		}
@@ -270,16 +271,17 @@ public abstract class PersonManagerBean extends BaseSessionBeanImpl implements
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type = "Required"
 	 */
-	public Collection getPersons(String[] fetchGroups) throws ModuleException {
+	public Collection getPersons(String[] fetchGroups, int maxFetchDepth) throws ModuleException {
 //		MultiPageSearchResult multiPageSearchResult = new MultiPageSearchResult();
 		PersistenceManager pm = getPersistenceManager();
 		try {
-			
 			Query query = pm.newQuery(Person.class);
-			
+
+			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
+			if (fetchGroups != null)
+				pm.getFetchPlan().setGroups(fetchGroups);
+
 			Collection elements = (Collection)query.execute();
-			for (int i=0; i<fetchGroups.length; i++)
-				pm.getFetchPlan().addGroup(fetchGroups[i]);
 			
 			long time = System.currentTimeMillis();
 			Collection result = pm.detachCopyAll(elements);
@@ -303,11 +305,13 @@ public abstract class PersonManagerBean extends BaseSessionBeanImpl implements
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type = "Required"
 	 */
-	public Collection getPersons(Object[] personIDs, String[] fetchGroups) throws ModuleException {
+	public Collection getPersons(Object[] personIDs, String[] fetchGroups, int maxFetchDepth) throws ModuleException {
 //		MultiPageSearchResult multiPageSearchResult = new MultiPageSearchResult();
 		PersistenceManager pm = getPersistenceManager();
 		try {
 			Collection persons = new LinkedList();
+
+			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
 			if (fetchGroups != null)
 				pm.getFetchPlan().setGroups(fetchGroups);
 			

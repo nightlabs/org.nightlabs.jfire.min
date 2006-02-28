@@ -271,10 +271,10 @@ implements SessionBean
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type = "Required"
 	 */
-	public JDOObjectController getJDOObjectController(ObjectID linkObject, String[] fetchGroups)
+	public JDOObjectController getJDOObjectController(ObjectID linkObject, String[] fetchGroups, int maxFetchDepth)
 	throws ModuleException
 	{
-		return getJDOObjectController(linkObject.toString(), fetchGroups);
+		return getJDOObjectController(linkObject.toString(), fetchGroups, maxFetchDepth);
 	}
 	
 	/**
@@ -283,11 +283,13 @@ implements SessionBean
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type = "Required"
 	 */
-	public JDOObjectController getJDOObjectController(String linkObject, String[] fetchGroups)
+	public JDOObjectController getJDOObjectController(String linkObject, String[] fetchGroups, int maxFetchDepth)
 	throws ModuleException
 	{
 		PersistenceManager pm = getPersistenceManager();
 		try {
+			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
+
 			if (fetchGroups != null)
 				pm.getFetchPlan().setGroups(fetchGroups);
 			else
@@ -309,11 +311,13 @@ implements SessionBean
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type = "Required"
 	 */
-	public JDOObjectSyncResult syncJDOObjectChanges(String linkObject, long version, String[] fetchGroups)
+	public JDOObjectSyncResult syncJDOObjectChanges(String linkObject, long version, String[] fetchGroups, int maxFetchDepth)
 	throws ModuleException
 	{
 		PersistenceManager pm = getPersistenceManager();
 		try {
+			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
+
 			if (fetchGroups == null)
 				pm.getFetchPlan().setGroups(JDOObjectSyncResult.DEFAULT_FETCH_GROUPS);
 			else
@@ -337,9 +341,9 @@ implements SessionBean
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type = "Required"
 	 */
-	public JDOObjectSyncResult syncJDOObjectChanges(ObjectID linkObject, long version, String[] fetchGroups)
+	public JDOObjectSyncResult syncJDOObjectChanges(ObjectID linkObject, long version, String[] fetchGroups, int maxFetchDepth)
 	throws ModuleException
 	{
-		return syncJDOObjectChanges(linkObject.toString(), version, fetchGroups);
+		return syncJDOObjectChanges(linkObject.toString(), version, fetchGroups, maxFetchDepth);
 	}	
 }

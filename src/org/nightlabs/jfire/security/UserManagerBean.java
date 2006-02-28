@@ -114,31 +114,31 @@ implements SessionBean
    */
   public void ejbRemove() throws EJBException, RemoteException { }
   
-  /**
-   * 
-   * 
-   * @throws ModuleException
-   * 
-   * @deprecated use saveUser instead
-   * 
-   * @ejb.interface-method
-   * @ejb.permission role-name="UserManager-write"
-   * @ejb.transaction type = "Required"
-   */
-  public User saveDetachedUser(User user, String [] fetchGroups) 
-  	throws ModuleException 
-  {
-    PersistenceManager pm = this.getPersistenceManager();
-    try 
-		{
-    	User result = (User)NLJDOHelper.storeJDO(pm, user, true, fetchGroups);
-    	return result;
-    }
-    finally 
-		{
-    	pm.close();
-    }
-  }
+//  /**
+//   * 
+//   * 
+//   * @throws ModuleException
+//   * 
+//   * @deprecated use saveUser instead
+//   * 
+//   * @ejb.interface-method
+//   * @ejb.permission role-name="UserManager-write"
+//   * @ejb.transaction type = "Required"
+//   */
+//  public User saveDetachedUser(User user, String [] fetchGroups) 
+//  	throws ModuleException 
+//  {
+//    PersistenceManager pm = this.getPersistenceManager();
+//    try 
+//		{
+//    	User result = (User)NLJDOHelper.storeJDO(pm, user, true, fetchGroups);
+//    	return result;
+//    }
+//    finally 
+//		{
+//    	pm.close();
+//    }
+//  }
   
   /**
    * Create a new user or change an existing one. You can leave user.organisationID <code>null</code>.
@@ -618,13 +618,13 @@ implements SessionBean
    * @ejb.interface-method
    * @ejb.permission role-name="UserManager-read"
    **/
-  public Collection getUserGroups(Object[] userGroupIDs, String [] fetchGroups) 
+  public Collection getUserGroups(Object[] userGroupIDs, String[] fetchGroups, int maxFetchDepth) 
     throws ModuleException
   {
     PersistenceManager pm = getPersistenceManager();
     try 
     {
-      return NLJDOHelper.getObjectsByIDs(pm, userGroupIDs, fetchGroups);
+      return NLJDOHelper.getDetachedObjectList(pm, userGroupIDs, null, fetchGroups, maxFetchDepth);
     } 
     finally 
     {
@@ -638,13 +638,13 @@ implements SessionBean
    * @ejb.interface-method
    * @ejb.permission role-name="UserManager-read"
    **/
-  public Collection getUsers(Object[] userIDs, String [] fetchGroups) 
+  public Collection getUsers(Object[] userIDs, String[] fetchGroups, int maxFetchDepth) 
     throws ModuleException
   {
     PersistenceManager pm = getPersistenceManager();
     try 
     {
-      return NLJDOHelper.getObjectsByIDs(pm, userIDs, fetchGroups);
+      return NLJDOHelper.getDetachedObjectList(pm, userIDs, null, fetchGroups, maxFetchDepth);
     } 
     finally 
     {
@@ -819,13 +819,13 @@ implements SessionBean
    * @ejb.interface-method
    * @ejb.permission role-name="UserManager-read"
    **/
-  public Collection getRoleGroups(Object[] roleGroupIDs, String [] fetchGroups) 
+  public Collection getRoleGroups(Object[] roleGroupIDs, String [] fetchGroups, int maxFetchDepth)
     throws ModuleException
   {
     PersistenceManager pm = getPersistenceManager();
     try 
     {
-      return NLJDOHelper.getObjectsByIDs(pm, roleGroupIDs, fetchGroups);
+      return NLJDOHelper.getDetachedObjectList(pm, roleGroupIDs, null, fetchGroups, maxFetchDepth);
     } 
     finally 
     {
@@ -1101,12 +1101,13 @@ implements SessionBean
    * @ejb.interface-method
    * @ejb.permission role-name="UserManager-read"
    */
-  public User getUser(UserID userID, String [] fetchGroups)
+  public User getUser(UserID userID, String[] fetchGroups, int maxFetchDepth)
   	throws ModuleException
   {
     PersistenceManager pm = this.getPersistenceManager();	    
     try
     {
+    	pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
       if (fetchGroups != null) 
       	pm.getFetchPlan().setGroups(fetchGroups);
 

@@ -127,12 +127,13 @@ public class WorkstationManagerBean extends BaseSessionBeanImpl implements Sessi
    * @ejb.permission role-name="WorkstationManagerBean-read"
    * @ejb.transaction type="Required"
    **/
-	public Collection getWorkstations(String[] fetchGroups)
+	public Collection getWorkstations(String[] fetchGroups, int maxFetchDepth)
 	throws ModuleException
 	{		
     PersistenceManager pm = getPersistenceManager();
     try 
     {
+    	pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
       if (fetchGroups != null) 
         pm.getFetchPlan().setGroups(fetchGroups);
 
