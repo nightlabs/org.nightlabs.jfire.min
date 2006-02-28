@@ -175,6 +175,7 @@
    <!-- ClassSharing for NightLabsBase et al -->
    <extension
          point="org.nightlabs.classsharing.globalclasspublish">
+         <resourcePublish pattern="org/nightlabs/language/LanguageCf.*"/>
       <globalClassPublish pattern="org\.nightlabs\.jfire\.base\.login\..*"/>
       <globalClassPublish pattern="org\.nightlabs\.jfire\.classloader\..*"/>
       <globalClassPublish pattern="org\.nightlabs\.config\..*"/>
