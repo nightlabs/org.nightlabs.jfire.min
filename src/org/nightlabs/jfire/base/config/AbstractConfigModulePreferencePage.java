@@ -42,8 +42,8 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
-
 import org.nightlabs.base.composite.XComposite;
+import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.login.Login;
 import org.nightlabs.jfire.config.ConfigManager;
 import org.nightlabs.jfire.config.ConfigManagerUtil;
@@ -193,7 +193,8 @@ implements IWorkbenchPreferencePage
 				currentConfigID,
 				getConfigModuleClass(),
 				getConfigModuleCfModID(),
-				getConfigModuleFetchGroups()
+				getConfigModuleFetchGroups(),
+				getConfigModuleMaxFetchDepth()
 			);
 	}
 	
@@ -309,6 +310,10 @@ implements IWorkbenchPreferencePage
 		return CONFIG_MODULE_FETCH_GROUPS;
 	}
 
+	public int getConfigModuleMaxFetchDepth() {
+		return 0;
+	}
+
 	/**
 	 * Default implementation does nothing. Subclasses (AbstractUser..., AbstractWorkstation...),
 	 * set a ConfigID for this PreferencePage. 
@@ -344,7 +349,8 @@ implements IWorkbenchPreferencePage
 		getCurrentConfigModule().setAllowUserOverride(allowOverwrite);
 		
 		try {
-			currentConfigModule = configManager.storeConfigModule(getCurrentConfigModule(), true, getConfigModuleFetchGroups());
+			currentConfigModule = configManager.storeConfigModule(
+					getCurrentConfigModule(), true, getConfigModuleFetchGroups(), NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}

@@ -36,6 +36,7 @@ public class Key
 	private String scope;
 	private Object objectID;
 	private Set fetchGroups;
+	private int maxFetchDepth;
 
 	/**
 	 * @param scope Can be <tt>null</tt> (the default) or a <tt>String</tt> specifying a different
@@ -47,7 +48,7 @@ public class Key
 	 * @param fetchGroups Can be <tt>null</tt> or must be a <tt>Set</tt> of <tt>String</tt>.
 	 *		Note, that you MUST NOT change the set after you called this constructor!
 	 */
-	public Key(String scope, Object objectID, Set fetchGroups)
+	public Key(String scope, Object objectID, Set fetchGroups, int maxFetchDepth)
 	{
 		this.scope = scope;
 
@@ -61,6 +62,7 @@ public class Key
 //		}
 
 		this.fetchGroups = fetchGroups;
+		this.maxFetchDepth = maxFetchDepth;
 	}
 
 	private int _hashCode = 0;
@@ -74,7 +76,8 @@ public class Key
 			_hashCode =
 				(scope == null ? 0 : scope.hashCode()) ^
 				(objectID == null ? 0 : objectID.hashCode()) ^
-				(fetchGroups ==  null ? 0 : fetchGroups.hashCode());
+				(fetchGroups ==  null ? 0 : fetchGroups.hashCode()) ^
+				maxFetchDepth;
 		}
 
 		return _hashCode;
@@ -101,7 +104,9 @@ public class Key
 				&&
 				(this.objectID == null ? other.objectID == null : this.objectID.equals(other.objectID))
 				&&
-				(this.fetchGroups == null ? other.fetchGroups == null : this.fetchGroups.equals(other.fetchGroups));
+				(this.fetchGroups == null ? other.fetchGroups == null : this.fetchGroups.equals(other.fetchGroups))
+				&&
+				this.maxFetchDepth == other.maxFetchDepth;
 	}
 
 	private transient String thisString = null;
@@ -123,10 +128,18 @@ public class Key
 			sb.append(';');
 			sb.append("fetchGroups=");
 			sb.append(fetchGroups);
+			sb.append(';');
+			sb.append("maxFetchDepth=");
+			sb.append(maxFetchDepth);
 			sb.append('}');
 			thisString = sb.toString();
 		}
 		return thisString;
+	}
+
+	public int getMaxFetchDepth()
+	{
+		return maxFetchDepth;
 	}
 
 	/**

@@ -41,6 +41,7 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtension;
 import org.nightlabs.base.extensionpoint.AbstractEPProcessor;
 import org.nightlabs.base.extensionpoint.EPProcessorException;
+import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.jdo.JDOObjectID2PCClassMap;
 import org.nightlabs.jfire.base.jdo.cache.Cache;
 import org.nightlabs.jfire.base.jdo.notification.ChangeManager;
@@ -290,16 +291,16 @@ public class ConfigSetupRegistry extends AbstractEPProcessor {
 		configSetupsByType.put(setup.getConfigSetupType(), setup);
 		
 		// Add the setup itself to the Cache for notifications
-		Cache.sharedInstance().put(null, setup, DEFAULT_FETCH_GROUP_GROUPS);
+		Cache.sharedInstance().put(null, setup, DEFAULT_FETCH_GROUP_GROUPS, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
 		// now add all Configs to the Cache
 		for (Iterator iterator = setup.getConfigs().iterator(); iterator.hasNext();) {
 			Config config = (Config) iterator.next();
-			Cache.sharedInstance().put(null, config, DEFAULT_FETCH_GROUP_CONFIGS);
+			Cache.sharedInstance().put(null, config, DEFAULT_FETCH_GROUP_CONFIGS, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
 		}
 		// and finally all ConfigGroups
 		for (Iterator iterator = setup.getConfigGroups().iterator(); iterator.hasNext();) {
 			ConfigGroup group = (ConfigGroup) iterator.next();
-			Cache.sharedInstance().put(null, group, DEFAULT_FETCH_GROUP_GROUPS);
+			Cache.sharedInstance().put(null, group, DEFAULT_FETCH_GROUP_GROUPS, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
 		}
 		mergedTreeNodes.remove(setup.getConfigSetupType());
 	}
@@ -355,11 +356,11 @@ public class ConfigSetupRegistry extends AbstractEPProcessor {
 				Config config = null;
 				try {
 					ConfigManager configManager = ConfigManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
-					config = configManager.getConfig(configID, DEFAULT_FETCH_GROUP_CONFIGS);
+					config = configManager.getConfig(configID, DEFAULT_FETCH_GROUP_CONFIGS, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
 				} catch (Exception e) {
 					throw new RuntimeException(e);
 				}
-				Cache.sharedInstance().put(null, config, DEFAULT_FETCH_GROUP_CONFIGS);
+				Cache.sharedInstance().put(null, config, DEFAULT_FETCH_GROUP_CONFIGS, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
 				for (Iterator iter = configSetupsByType.values().iterator(); iter.hasNext();) {
 					ConfigSetup setup = (ConfigSetup) iter.next();
 					if (setup.getConfigsMap().get(configID) == null)
@@ -382,11 +383,11 @@ public class ConfigSetupRegistry extends AbstractEPProcessor {
 				ConfigGroup group = null;
 				try {
 					ConfigManager configManager = ConfigManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
-					group = (ConfigGroup)configManager.getConfig(configID, DEFAULT_FETCH_GROUP_GROUPS);
+					group = (ConfigGroup)configManager.getConfig(configID, DEFAULT_FETCH_GROUP_GROUPS, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
 				} catch (Exception e) {
 					throw new RuntimeException(e);
 				}
-				Cache.sharedInstance().put(null, group, DEFAULT_FETCH_GROUP_GROUPS);
+				Cache.sharedInstance().put(null, group, DEFAULT_FETCH_GROUP_GROUPS, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
 				
 				for (Iterator iter = configSetupsByType.values().iterator(); iter.hasNext();) {
 					ConfigSetup setup = (ConfigSetup) iter.next();

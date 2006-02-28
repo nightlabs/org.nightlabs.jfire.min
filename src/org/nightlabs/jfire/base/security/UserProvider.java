@@ -59,48 +59,48 @@ public class UserProvider extends JDOObjectProvider
     return _sharedInstance;
   }
 
-  public User getUser(UserID id, String[] fetchGroups)
+  public User getUser(UserID id, String[] fetchGroups, int maxFetchDepth)
     throws RemoteException, LoginException, CreateException, NamingException
   {
     //TODO: is there a way to check if a session bean is still valid? (e.g. after server crash)
     um = UserManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
-    return (User)super.getJDOObject(null, id, fetchGroups);
+    return (User)super.getJDOObject(null, id, fetchGroups, maxFetchDepth);
   }
   
-  public Collection getUsersByType(String type, String[] fetchgroups) 
+  public Collection getUsersByType(String type, String[] fetchgroups, int maxFetchDepth) 
     throws RemoteException, ModuleException, LoginException, CreateException, NamingException
   {
     um = UserManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
     Collection ids = um.getUserIDsByType(type);
-    return super.getJDOObjects(null, ids.toArray(), fetchgroups);
+    return super.getJDOObjects(null, ids.toArray(), fetchgroups, maxFetchDepth);
   }
 
-  public Collection getUsersInUserGroup(UserID userGroupID, String[] fetchgroups) 
+  public Collection getUsersInUserGroup(UserID userGroupID, String[] fetchgroups, int maxFetchDepth) 
     throws RemoteException, ModuleException, LoginException, CreateException, NamingException
   {
     um = UserManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
     Collection ids = um.getUserIDsInUserGroup(userGroupID);
-    return super.getJDOObjects(null, ids.toArray(), fetchgroups);
+    return super.getJDOObjects(null, ids.toArray(), fetchgroups, maxFetchDepth);
   }
 
-  public Collection getUsersNotInUserGroup(UserID userGroupID, String[] fetchgroups) 
+  public Collection getUsersNotInUserGroup(UserID userGroupID, String[] fetchgroups, int maxFetchDepth) 
     throws RemoteException, ModuleException, LoginException, CreateException, NamingException
   {
     um = UserManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
     Collection ids = um.getUserIDsNotInUserGroup(userGroupID);
-    return super.getJDOObjects(null, ids.toArray(), fetchgroups);
+    return super.getJDOObjects(null, ids.toArray(), fetchgroups, maxFetchDepth);
   }
 
-  protected Object retrieveJDOObject( String scope, Object objectID, String[] fetchGroups)
+  protected Object retrieveJDOObject( String scope, Object objectID, String[] fetchGroups, int maxFetchDepth)
     throws Exception
   {
-    return um.getUser((UserID)objectID, fetchGroups);
+    return um.getUser((UserID)objectID, fetchGroups, maxFetchDepth);
   }
   
-  protected Collection retrieveJDOObjects(String scope, Object[] objectIDs, String[] fetchGroups)
+  protected Collection retrieveJDOObjects(String scope, Object[] objectIDs, String[] fetchGroups, int maxFetchDepth)
     throws Exception
   {
-    return um.getUsers(objectIDs, fetchGroups);
+    return um.getUsers(objectIDs, fetchGroups, maxFetchDepth);
   }
 
 }

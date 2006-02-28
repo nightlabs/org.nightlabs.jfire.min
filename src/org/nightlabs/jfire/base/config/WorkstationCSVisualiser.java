@@ -28,6 +28,7 @@ package org.nightlabs.jfire.base.config;
 
 import javax.jdo.FetchPlan;
 
+import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.workstation.WorkstationProvider;
 import org.nightlabs.jfire.config.ConfigGroup;
 import org.nightlabs.jfire.config.ConfigSetup;
@@ -56,7 +57,7 @@ public class WorkstationCSVisualiser implements ConfigSetupVisualiser {
 	public String getKeyObjectName(ConfigID configID) {
 		try {
 			WorkstationID workstaionID = new WorkstationID(configID.configKey);
-			Workstation workstation = WorkstationProvider.sharedInstance().getWorkstation(workstaionID, WORKSTATION_FETCH_GROUPS);
+			Workstation workstation = WorkstationProvider.sharedInstance().getWorkstation(workstaionID, WORKSTATION_FETCH_GROUPS, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
 			return workstation.getWorkstationID();
 		} catch (Exception e) {
 			return configID.configKey;

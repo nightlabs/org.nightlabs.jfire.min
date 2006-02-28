@@ -34,6 +34,7 @@ import java.util.Map;
 
 import javax.security.auth.login.LoginException;
 
+import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.jdo.JDOObjectProvider;
 import org.nightlabs.jfire.base.login.Login;
 import org.nightlabs.jfire.base.person.preferences.PersonStructOrderConfigModule;
@@ -67,7 +68,7 @@ public class PersonStructProvider extends JDOObjectProvider {
 	 * 
 	 * @see org.nightlabs.jfire.base.jdo.JDOObjectProvider#retrieveJDOObject(java.lang.String, java.lang.Object, java.lang.String[])
 	 */
-	protected synchronized Object retrieveJDOObject(String scope, Object objectID, String[] fetchGroups)  throws Exception {
+	protected synchronized Object retrieveJDOObject(String scope, Object objectID, String[] fetchGroups, int maxFetchDepth)  throws Exception {
 		PersonManager personManager = PersonManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
 		PersonStruct personStruct = personManager.getFullPersonStructure();
 		
@@ -104,7 +105,7 @@ public class PersonStructProvider extends JDOObjectProvider {
 	 */
 	public PersonStruct getPersonStruct() {
 		try {
-			return (PersonStruct)getJDOObject(null, PersonStructID.create(Login.getLogin().getOrganisationID()), dummyFetchGroups);
+			return (PersonStruct)getJDOObject(null, PersonStructID.create(Login.getLogin().getOrganisationID()), dummyFetchGroups, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
 		} catch (LoginException e) {
 			throw new RuntimeException(e);
 		}

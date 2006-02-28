@@ -46,7 +46,7 @@ public class WorkstationProvider extends JDOObjectProvider {
 		super();
 	}
 
-	protected Object retrieveJDOObject(String scope, Object objectID, String[] fetchGroups) throws Exception {
+	protected Object retrieveJDOObject(String scope, Object objectID, String[] fetchGroups, int maxFetchDepth) throws Exception {
 		WorkstationManager wm = WorkstationManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
 		if (!(objectID instanceof WorkstationID))
 			return null;
@@ -60,9 +60,9 @@ public class WorkstationProvider extends JDOObjectProvider {
 	 * @param id WorkstationID of the desired Workstation
 	 * @param fetchGroups FetchGroups to detach the Workstation with
 	 */
-  public Workstation getWorkstation(WorkstationID id, String[] fetchGroups)
+  public Workstation getWorkstation(WorkstationID id, String[] fetchGroups, int maxFetchDepth)
 	{
-		return (Workstation)super.getJDOObject(null, id, fetchGroups);
+		return (Workstation)super.getJDOObject(null, id, fetchGroups, maxFetchDepth);
 	}	
 	
 	

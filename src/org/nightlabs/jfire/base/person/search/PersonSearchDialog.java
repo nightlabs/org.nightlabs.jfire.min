@@ -38,8 +38,11 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
-
 import org.nightlabs.base.composite.XComposite;
+import org.nightlabs.j2ee.InitialContextProvider;
+import org.nightlabs.jdo.NLJDOHelper;
+import org.nightlabs.jdo.search.SearchFilterProvider;
+import org.nightlabs.jdo.search.SearchResultFetcher;
 import org.nightlabs.jfire.base.login.Login;
 import org.nightlabs.jfire.person.PersonManager;
 import org.nightlabs.jfire.person.PersonManagerHome;
@@ -47,9 +50,6 @@ import org.nightlabs.jfire.person.PersonManagerUtil;
 import org.nightlabs.jfire.person.PersonStruct;
 import org.nightlabs.jfire.person.TextPersonDataField;
 import org.nightlabs.jfire.person.util.PersonSearchFilter;
-import org.nightlabs.j2ee.InitialContextProvider;
-import org.nightlabs.jdo.search.SearchFilterProvider;
-import org.nightlabs.jdo.search.SearchResultFetcher;
 
 /**
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
@@ -121,7 +121,7 @@ public class PersonSearchDialog extends Dialog implements SearchResultFetcher{
 		
 		try {
 			long start = System.currentTimeMillis();
-			Collection persons = personManager.searchPerson(searchFilter, new String[] {FetchPlan.ALL});
+			Collection persons = personManager.searchPerson(searchFilter, new String[] {FetchPlan.ALL}, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
 			LOGGER.debug("Person search for "+persons.size()+" entries took "+(System.currentTimeMillis()-start)/1000+" s.");
 			start = System.currentTimeMillis();
 			resultTable.setInput(persons);

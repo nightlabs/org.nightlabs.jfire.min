@@ -38,10 +38,10 @@ import java.util.Set;
 import javax.jdo.JDOHelper;
 
 import org.apache.log4j.Logger;
-
 import org.nightlabs.ModuleException;
 import org.nightlabs.config.Config;
 import org.nightlabs.config.ConfigException;
+import org.nightlabs.jdo.ObjectID;
 import org.nightlabs.jfire.base.jdo.notification.ChangeEvent;
 import org.nightlabs.jfire.base.jdo.notification.ChangeManager;
 import org.nightlabs.jfire.base.jdo.notification.ChangeSubjectCarrier;
@@ -49,7 +49,6 @@ import org.nightlabs.jfire.base.login.Login;
 import org.nightlabs.jfire.jdo.JDOManager;
 import org.nightlabs.jfire.jdo.JDOManagerUtil;
 import org.nightlabs.jfire.jdo.cache.DirtyObjectID;
-import org.nightlabs.jdo.ObjectID;
 import org.nightlabs.util.Utils;
 
 /**
@@ -701,9 +700,9 @@ public class Cache
 	 *
 	 * @return Returns either <code>null</code> or the desired JDO object.
 	 */
-	public Object get(String scope, Object objectID, String[] fetchGroups)
+	public Object get(String scope, Object objectID, String[] fetchGroups, int maxFetchDepth)
 	{
-		return get(scope, objectID, Utils.array2HashSet(fetchGroups));
+		return get(scope, objectID, Utils.array2HashSet(fetchGroups), maxFetchDepth);
 	}
 
 	/**
@@ -722,11 +721,11 @@ public class Cache
 	 *
 	 * @return Returns either <code>null</code> or the desired JDO object.
 	 */
-	public synchronized Object get(String scope, Object objectID, Set fetchGroups)
+	public synchronized Object get(String scope, Object objectID, Set fetchGroups, int maxFetchDepth)
 	{
 		assertOpen();
 
-		Key key = new Key(scope, objectID, fetchGroups);
+		Key key = new Key(scope, objectID, fetchGroups, maxFetchDepth);
 		Carrier carrier = (Carrier) carriersByKey.get(key);
 		if (carrier == null) {
 			if (LOGGER.isDebugEnabled())
@@ -750,43 +749,43 @@ public class Cache
 		return object;
 	}
 
-	public void putAll(String scope, Collection objects, String[] fetchGroups)
+	public void putAll(String scope, Collection objects, String[] fetchGroups, int maxFetchDepth)
 	{
-		putAll(scope, objects, Utils.array2HashSet(fetchGroups));
+		putAll(scope, objects, Utils.array2HashSet(fetchGroups), maxFetchDepth);
 	}
 
-	public void putAll(String scope, Collection objects, Set fetchGroups)
+	public void putAll(String scope, Collection objects, Set fetchGroups, int maxFetchDepth)
 	{
 		if (objects == null)
 			throw new NullPointerException("objects must not be null!");
 
 		for (Iterator it = objects.iterator(); it.hasNext(); )
-			put(scope, it.next(), fetchGroups);
+			put(scope, it.next(), fetchGroups, maxFetchDepth);
 	}
 
 	/**
 	 * This method calls {@link #put(String, Object, Set)}.
 	 */
-	public void put(String scope, Object object, String[] fetchGroups)
+	public void put(String scope, Object object, String[] fetchGroups, int maxFetchDepth)
 	{
-		put(scope, object, Utils.array2HashSet(fetchGroups));
+		put(scope, object, Utils.array2HashSet(fetchGroups), maxFetchDepth);
 	}
 
 	/**
 	 * This method puts a jdo object into the cache. Therefore, it
 	 * obtains the objectID and calls {@link #put(String, Object, Object, Set)}.
 	 */
-	public void put(String scope, Object object, Set fetchGroups)
+	public void put(String scope, Object object, Set fetchGroups, int maxFetchDepth)
 	{
-		put(scope, JDOHelper.getObjectId(object), object, fetchGroups);
+		put(scope, JDOHelper.getObjectId(object), object, fetchGroups, maxFetchDepth);
 	}
 
 	/**
 	 * This method calls {@link #put(String, Object, Object, Set)}.
 	 */
-	public void put(String scope, Object objectID, Object object, String[] fetchGroups)
+	public void put(String scope, Object objectID, Object object, String[] fetchGroups, int maxFetchDepth)
 	{
-		put(scope, objectID, object, Utils.array2HashSet(fetchGroups));
+		put(scope, objectID, object, Utils.array2HashSet(fetchGroups), maxFetchDepth);
 	}
 
 	/**
@@ -805,7 +804,7 @@ public class Cache
 	 * @param fetchGroups Either <code>null</code> or the fetchGroups with which the object has been retrieved.
 	 *		If you cache a non-jdo-object, you should pass <code>null</code> here and use <code>scope</code>.
 	 */
-	public void put(String scope, Object objectID, Object object, Set fetchGroups)
+	public void put(String scope, Object objectID, Object object, Set fetchGroups, int maxFetchDepth)
 	{
 		assertOpen();
 
@@ -815,7 +814,7 @@ public class Cache
 		if (objectID == null)
 			throw new NullPointerException("objectID must not be null!");
 
-		Key key = new Key(scope, objectID, fetchGroups);
+		Key key = new Key(scope, objectID, fetchGroups, maxFetchDepth);
 
 		if (LOGGER.isDebugEnabled())
 			LOGGER.debug("Putting object into cache. key: " + key.toString());

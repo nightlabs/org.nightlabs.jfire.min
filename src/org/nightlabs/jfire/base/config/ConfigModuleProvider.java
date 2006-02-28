@@ -28,6 +28,8 @@ package org.nightlabs.jfire.base.config;
 
 import javax.jdo.JDOHelper;
 
+import org.nightlabs.jdo.NLJDOHelper;
+import org.nightlabs.jdo.ObjectID;
 import org.nightlabs.jfire.base.jdo.JDOObjectProvider;
 import org.nightlabs.jfire.base.login.Login;
 import org.nightlabs.jfire.config.Config;
@@ -36,7 +38,6 @@ import org.nightlabs.jfire.config.ConfigManagerUtil;
 import org.nightlabs.jfire.config.ConfigModule;
 import org.nightlabs.jfire.config.id.ConfigID;
 import org.nightlabs.jfire.config.id.ConfigModuleID;
-import org.nightlabs.jdo.ObjectID;
 
 public class ConfigModuleProvider extends JDOObjectProvider {
 
@@ -47,7 +48,7 @@ public class ConfigModuleProvider extends JDOObjectProvider {
 	/**
 	 * @see org.nightlabs.jfire.base.jdo.JDOObjectProvider#retrieveJDOObject(java.lang.String, java.lang.Object, java.lang.String[])
 	 */
-	protected Object retrieveJDOObject(String scope, Object objectID, String[] fetchGroups) throws Exception {
+	protected Object retrieveJDOObject(String scope, Object objectID, String[] fetchGroups, int maxFetchDepth) throws Exception {
 		if (!(objectID instanceof ConfigModuleID))
 			throw new IllegalArgumentException("Expected ConfigModuleID as objectID-parameter but found "+objectID.getClass().getName()+": "+objectID);
 		ConfigModuleID moduleID = (ConfigModuleID)objectID;
@@ -61,14 +62,14 @@ public class ConfigModuleProvider extends JDOObjectProvider {
 		String cfModID = ConfigModule.getCfModIDOutOfCfModKey(moduleID.cfModKey);		
 		ConfigID configID = ConfigID.create(moduleID.organisationID, moduleID.configKey, moduleID.configType);
 		ConfigManager configManager = ConfigManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();		
-		return configManager.getConfigModule(configID, cfModClass, cfModID, fetchGroups);
+		return configManager.getConfigModule(configID, cfModClass, cfModID, fetchGroups, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
 	}
 	
 	/**
 	 * Get the ConfigModule of the given class and cfModID for the Config defined
 	 * by the given configID.
 	 */
-	public ConfigModule getConfigModule(ConfigID config, Class cfModClass, String cfModID, String[] fetchGroups) {
+	public ConfigModule getConfigModule(ConfigID config, Class cfModClass, String cfModID, String[] fetchGroups, int maxFetchDepth) {
 		return (ConfigModule)getJDOObject(
 				null, 
 				ConfigModuleID.create(
@@ -77,15 +78,16 @@ public class ConfigModuleProvider extends JDOObjectProvider {
 						config.configType,
 						ConfigModule.getCfModKey(cfModClass, cfModID)
 				),
-				fetchGroups
+				fetchGroups,
+				maxFetchDepth
 			);
 	}
 
 	/**
 	 * Get the ConfigModule of the given class and cfModID for the given Config.
 	 */
-	public ConfigModule getConfigModule(Config config, Class cfModClass, String cfModID, String[] fetchGroups) {
-		return getConfigModule((ConfigID)JDOHelper.getObjectId(config), cfModClass, cfModID, fetchGroups);
+	public ConfigModule getConfigModule(Config config, Class cfModClass, String cfModID, String[] fetchGroups, int maxFetchDepth) {
+		return getConfigModule((ConfigID)JDOHelper.getObjectId(config), cfModClass, cfModID, fetchGroups, maxFetchDepth);
 	}
 	
 	/**
@@ -99,7 +101,8 @@ public class ConfigModuleProvider extends JDOObjectProvider {
 			Class linkObjectClass, 
 			Class cfModClass, 
 			String cfModID, 
-			String[] fetchGroups
+			String[] fetchGroups,
+			int maxFetchDepth
 		) 
 	{
 		return getConfigModule(
@@ -110,7 +113,8 @@ public class ConfigModuleProvider extends JDOObjectProvider {
 					), 
 				cfModClass, 
 				cfModID, 
-				fetchGroups
+				fetchGroups,
+				maxFetchDepth
 			);
 	}
 	

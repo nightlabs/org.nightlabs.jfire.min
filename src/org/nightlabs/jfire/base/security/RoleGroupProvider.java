@@ -65,33 +65,33 @@ public class RoleGroupProvider extends JDOObjectProvider
     return _sharedInstance;
   }
 
-  public RoleGroupListCarrier getRoleGroups(String userID, String authorityID, String[] fetchgroups) 
+  public RoleGroupListCarrier getRoleGroups(String userID, String authorityID, String[] fetchgroups, int maxFetchDepths) 
     throws RemoteException, ModuleException, LoginException, CreateException, NamingException
   {
     um = UserManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
     RoleGroupIDListCarrier idc = um.getRoleGroupIDs(userID, authorityID);
     
     RoleGroupListCarrier rgc = new RoleGroupListCarrier();
-    rgc.assigned.addAll(super.getJDOObjects(null, idc.assignedToUser.toArray(), fetchgroups));
-    rgc.assignedByUserGroup.addAll(super.getJDOObjects(null, idc.assignedToUserGroups.toArray(), fetchgroups));
-    rgc.excluded.addAll(super.getJDOObjects(null, idc.excluded.toArray(), fetchgroups));
+    rgc.assigned.addAll(super.getJDOObjects(null, idc.assignedToUser.toArray(), fetchgroups, maxFetchDepths));
+    rgc.assignedByUserGroup.addAll(super.getJDOObjects(null, idc.assignedToUserGroups.toArray(), fetchgroups, maxFetchDepths));
+    rgc.excluded.addAll(super.getJDOObjects(null, idc.excluded.toArray(), fetchgroups, maxFetchDepths));
     return rgc;
   }
 
-  protected Object retrieveJDOObject( String scope, Object objectID, String[] fetchGroups)
+  protected Object retrieveJDOObject( String scope, Object objectID, String[] fetchGroups, int maxFetchDepth)
   throws Exception
   {
-    Collection ret = retrieveJDOObjects(null, new Object[] {objectID}, fetchGroups);
+    Collection ret = retrieveJDOObjects(null, new Object[] {objectID}, fetchGroups, maxFetchDepth);
     if(ret.iterator().hasNext())
       return ret.iterator().next();
     else
       return null;
   }
   
-  protected Collection retrieveJDOObjects(String scope, Object[] objectIDs, String[] fetchGroups)
+  protected Collection retrieveJDOObjects(String scope, Object[] objectIDs, String[] fetchGroups, int maxFetchDepth)
   throws Exception
   {
-    return um.getUserGroups(objectIDs, fetchGroups);
+    return um.getUserGroups(objectIDs, fetchGroups, maxFetchDepth);
   }
 
 }

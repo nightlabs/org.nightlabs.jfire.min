@@ -28,6 +28,7 @@ package org.nightlabs.jfire.base.config;
 
 import javax.jdo.FetchPlan;
 
+import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.security.UserProvider;
 import org.nightlabs.jfire.config.ConfigGroup;
 import org.nightlabs.jfire.config.ConfigSetup;
@@ -56,7 +57,7 @@ public class UserCSVisualiser implements ConfigSetupVisualiser {
 	public String getKeyObjectName(ConfigID configID) {
 		try {
 			UserID userID = new UserID(configID.configKey);
-			User user = UserProvider.sharedInstance().getUser(userID, USER_FETCH_GROUPS);
+			User user = UserProvider.sharedInstance().getUser(userID, USER_FETCH_GROUPS, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
 			return user.getUserID()+" ("+user.getName()+")";
 		} catch (Exception e) {
 			return configID.configKey;

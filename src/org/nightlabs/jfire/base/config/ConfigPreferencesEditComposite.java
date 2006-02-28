@@ -172,7 +172,8 @@ public class ConfigPreferencesEditComposite
 					(ConfigID)currentConfigID,
 					selectedPage.getConfigModuleClass(), 
 					selectedPage.getConfigModuleCfModID(), 
-					selectedPage.getConfigModuleFetchGroups()
+					selectedPage.getConfigModuleFetchGroups(),
+					selectedPage.getConfigModuleMaxFetchDepth()
 			);
 		} catch (Exception e) {
 			throw new RuntimeException(e);

@@ -47,14 +47,15 @@ public class ConfigUtil {
 	 * @param cfModClass The class of the ConfigModule to get.
 	 * @param fetchGroups The fetch-groups the ConfigModule should be detached with
 	 */
-	public static ConfigModule getUserCfMod(Class cfModClass, String[] fetchGroups) {
+	public static ConfigModule getUserCfMod(Class cfModClass, String[] fetchGroups, int maxFetchDepth) {
 		try {
 			UserID userID = UserID.create(Login.getLogin().getOrganisationID(), Login.getLogin().getUserID());
 			return ConfigModuleProvider.sharedInstance().getConfigModule(
 					UserConfigSetup.getUserConfigID(userID),
 					cfModClass,
 					null,
-					fetchGroups
+					fetchGroups,
+					maxFetchDepth
 				);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
@@ -68,7 +69,7 @@ public class ConfigUtil {
 	 * @param cfModClass The class of the ConfigModule to get.
 	 * @param fetchGroups The fetch-groups the ConfigModule should be detached with
 	 */
-	public static ConfigModule getWorkstationCfMod(Class cfModClass, String[] fetchGroups) {
+	public static ConfigModule getWorkstationCfMod(Class cfModClass, String[] fetchGroups, int maxFetchDepth) {
 		try {
 			WorkstationID workstationID = WorkstationID.create(
 					Login.getLogin().getOrganisationID(), 
@@ -78,7 +79,8 @@ public class ConfigUtil {
 					WorkstationConfigSetup.getWorkstationConfigID(workstationID),
 					cfModClass,
 					null,
-					fetchGroups
+					fetchGroups,
+					maxFetchDepth
 				);
 		} catch (Exception e) {
 			throw new RuntimeException(e);

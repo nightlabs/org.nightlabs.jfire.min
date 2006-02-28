@@ -65,34 +65,34 @@ public class UserGroupProvider extends JDOObjectProvider
     return _sharedInstance;
   }
 
-  public UserGroupListCarrier getUserGroups(String userID, String authorityID, String[] fetchgroups) 
+  public UserGroupListCarrier getUserGroups(String userID, String authorityID, String[] fetchgroups, int maxFetchDepth) 
     throws RemoteException, ModuleException, LoginException, CreateException, NamingException
   {
     um = UserManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
     UserGroupIDListCarrier idc = um.getUserGroupIDs(userID, authorityID);
   
     UserGroupListCarrier ugc = new UserGroupListCarrier();
-    ugc.assigned.addAll(super.getJDOObjects(null, idc.assigned.toArray(), fetchgroups));
-    ugc.excluded.addAll(super.getJDOObjects(null, idc.excluded.toArray(), fetchgroups));
+    ugc.assigned.addAll(super.getJDOObjects(null, idc.assigned.toArray(), fetchgroups, maxFetchDepth));
+    ugc.excluded.addAll(super.getJDOObjects(null, idc.excluded.toArray(), fetchgroups, maxFetchDepth));
     
     return ugc;
   }
 
   
-  protected Object retrieveJDOObject( String scope, Object objectID, String[] fetchGroups)
+  protected Object retrieveJDOObject( String scope, Object objectID, String[] fetchGroups, int maxFetchDepth)
   throws Exception
   {
-    Collection ret = retrieveJDOObjects(null, new Object[] {objectID}, fetchGroups);
+    Collection ret = retrieveJDOObjects(null, new Object[] {objectID}, fetchGroups, maxFetchDepth);
     if(ret.iterator().hasNext())
       return ret.iterator().next();
     else
       return null;
   }
   
-  protected Collection retrieveJDOObjects(String scope, Object[] objectIDs, String[] fetchGroups)
+  protected Collection retrieveJDOObjects(String scope, Object[] objectIDs, String[] fetchGroups, int maxFetchDepth)
   throws Exception
   {
-    return um.getUserGroups(objectIDs, fetchGroups);
+    return um.getUserGroups(objectIDs, fetchGroups, maxFetchDepth);
   }
 
 }

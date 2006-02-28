@@ -52,9 +52,9 @@ public class PersonProvider extends JDOObjectProvider {
 	 * 
 	 * @see org.nightlabs.jfire.base.jdo.JDOObjectProvider#retrieveJDOObject(java.lang.String, java.lang.Object, java.lang.String[])
 	 */
-	protected Object retrieveJDOObject(String scope, Object objectID, String[] fetchGroups) throws Exception {
+	protected Object retrieveJDOObject(String scope, Object objectID, String[] fetchGroups, int maxFetchDepth) throws Exception {
 		PersonManager personManager = PersonManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
-		Person person = personManager.getPerson((PersonID)objectID, fetchGroups);
+		Person person = personManager.getPerson((PersonID)objectID, fetchGroups, maxFetchDepth);
 		PersonStructProvider.sharedInstance().getPersonStruct().explodePerson(person);
 		return person;
 	}
@@ -63,9 +63,9 @@ public class PersonProvider extends JDOObjectProvider {
 	 * Retrieves and explodes the given 
 	 * @see org.nightlabs.jfire.base.jdo.JDOObjectProvider#retrieveJDOObjects(java.lang.String, java.lang.Object[], java.lang.String[])
 	 */
-	protected Collection retrieveJDOObjects(String scope, Object[] objectIDs, String[] fetchGroups) throws Exception {
+	protected Collection retrieveJDOObjects(String scope, Object[] objectIDs, String[] fetchGroups, int maxFetchDepth) throws Exception {
 		PersonManager personManager = PersonManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
-		Collection persons = personManager.getPersons(objectIDs, fetchGroups);
+		Collection persons = personManager.getPersons(objectIDs, fetchGroups, maxFetchDepth);
 		PersonStruct personStruct = PersonStructProvider.sharedInstance().getPersonStruct();
 		for (Iterator iter = persons.iterator(); iter.hasNext();) {
 			personStruct.explodePerson((Person)iter.next());
@@ -80,8 +80,8 @@ public class PersonProvider extends JDOObjectProvider {
 	 * @param fetchGroups The FetchGroups the Person should be detached with
 	 * @return An exploded Person.
 	 */
-	public Person getPerson(PersonID personID, String[] fetchGroups) {
-		return (Person)getJDOObject(null, personID, fetchGroups);
+	public Person getPerson(PersonID personID, String[] fetchGroups, int maxFetchDepth) {
+		return (Person)getJDOObject(null, personID, fetchGroups, maxFetchDepth);
 	}
 	
 	/**
@@ -90,8 +90,8 @@ public class PersonProvider extends JDOObjectProvider {
 	 * @param fetchGroups
 	 * @return
 	 */
-	public Collection getPersons(Object[] personIDs, String[] fetchGroups) {
-		return getJDOObjects(null, personIDs, fetchGroups);
+	public Collection getPersons(Object[] personIDs, String[] fetchGroups, int maxFetchDepth) {
+		return getJDOObjects(null, personIDs, fetchGroups, maxFetchDepth);
 	}
 
 	
