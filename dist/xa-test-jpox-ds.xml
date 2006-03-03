@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <connection-factories>
 	<tx-connection-factory>
-		<jndi-name>{jdoPersistenceManagerFactoryJNDIName}</jndi-name>
+		<jndi-name>jfire/persistenceManagerFactory/schulze.nightlabs.de</jndi-name>
 
 <!-- JBoss 3.2.x: begin
 		<adapter-display-name>JPOX Connector</adapter-display-name>
@@ -12,10 +12,15 @@ JBoss 3.2.x: end -->
 		<connection-definition>javax.resource.cci.ConnectionFactory</connection-definition>
 <!-- JBoss 4.x: end -->
 
-		<config-property name="ConnectionDriverName" type="java.lang.String">{databaseDriverName}</config-property>
-		<config-property name="ConnectionURL" type="java.lang.String">{databaseJDBCURL}</config-property>
-		<config-property name="ConnectionUserName" type="java.lang.String">{databaseUserName}</config-property>
-		<config-property name="ConnectionPassword" type="java.lang.String">{databasePassword}</config-property>
+		<config-property name="ConnectionDriverName" type="java.lang.String">org.jpox.driver.JPOXDriver</config-property>
+		<config-property name="ConnectionURL" type="java.lang.String">jpox:java:jfire/datasource/schulze.nightlabs.de</config-property>
+
+<!--
+		<config-property name="ConnectionDriverName" type="java.lang.String">com.mysql.jdbc.Driver</config-property>
+		<config-property name="ConnectionURL" type="java.lang.String">jdbc:mysql://localhost/JFire_schulze_nightlabs_de</config-property>
+		<config-property name="ConnectionUserName" type="java.lang.String">ipanema</config-property>
+		<config-property name="ConnectionPassword" type="java.lang.String">pw_ip</config-property>
+-->
 
 <!--
 		<config-property name="AutoCreateSchema" type="boolean">true</config-property>
@@ -28,7 +33,6 @@ JBoss 3.2.x: end -->
 		<config-property name="IdentifierCase" type="java.lang.String">PRESERVECASE</config-property>
 		<config-property name="DetachOnClose" type="boolean">false</config-property>
 <!--
-  Connection pooling causes the system to "hang up"! see http://www.jpox.org/servlet/forum/viewthread?thread=876&lastpage=yes
 		<config-property name="ConnectionPoolingType" type="java.lang.String">DBCP</config-property>
 -->
 
