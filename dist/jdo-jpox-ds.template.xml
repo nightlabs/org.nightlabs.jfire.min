@@ -17,9 +17,7 @@ JBoss 3.2.x: end -->
 		<config-property name="ConnectionUserName" type="java.lang.String">{databaseUserName}</config-property>
 		<config-property name="ConnectionPassword" type="java.lang.String">{databasePassword}</config-property>
 
-<!--
 		<config-property name="AutoCreateSchema" type="boolean">true</config-property>
--->
 		<config-property name="AutoCreateTables" type="boolean">true</config-property>
 		<config-property name="AutoCreateColumns" type="boolean">true</config-property>
 
@@ -29,8 +27,8 @@ JBoss 3.2.x: end -->
 		<config-property name="DetachOnClose" type="boolean">false</config-property>
 <!--
   Connection pooling causes the system to "hang up"! see http://www.jpox.org/servlet/forum/viewthread?thread=876&lastpage=yes
-		<config-property name="ConnectionPoolingType" type="java.lang.String">DBCP</config-property>
 -->
+		<config-property name="ConnectionPoolingType" type="java.lang.String">DBCP</config-property>
 
 <!--
 		<config-property name="JdoCacheLevel2" type="boolean">true</config-property>

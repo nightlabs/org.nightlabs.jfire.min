@@ -189,7 +189,7 @@ public class DatastoreInitializer
 			res.add(init);
 
 		} finally {
-			initsInAddProcess.remove(init);
+			initsInAddProcess.remove(initKey);
 			initsInAddProcessStack.removeLast();
 		}
 	}
