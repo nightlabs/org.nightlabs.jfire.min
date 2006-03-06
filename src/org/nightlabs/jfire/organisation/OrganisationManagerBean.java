@@ -729,6 +729,18 @@ public abstract class OrganisationManagerBean
 					OrganisationManager organisationManager = OrganisationManagerUtil.getHome(getInitialContextProps(rootOrganisationID)).create();
 					Collection res = organisationManager.getOrganisationsFromRootOrganisation(filterPartnerOrganisations, fetchGroups, maxFetchDepth);
 
+					// TODO DEBUG begin
+					LOGGER.info("Root Organisation returned the following organisations:");
+					if (res.isEmpty())
+						LOGGER.info("  {NONE}");
+					else {
+						for (Iterator iter = res.iterator(); iter.hasNext();) {
+							Organisation organisation = (Organisation) iter.next();
+							LOGGER.info("  " + organisation.getOrganisationID());
+						}
+					}
+					// TODO DEBUG end
+
 					if (!filterPartnerOrganisations)
 						return res;
 
@@ -743,7 +755,9 @@ public abstract class OrganisationManagerBean
 							String userID = User.USERID_PREFIX_TYPE_ORGANISATION + orga.getOrganisationID();
 							try {
 								pm.getObjectById(UserID.create(localOrganisationID, userID));
+								LOGGER.info("Organisation is already a partner and will be filtered: " + orga.getOrganisationID());
 							} catch (JDOObjectNotFoundException x) {
+								LOGGER.info("Organisation will not be filtered and added to result: " + orga.getOrganisationID());
 								newRes.add(orga); // add only if no user existent yet
 							}
 						} // for (Iterator it = res.iterator(); it.hasNext(); ) {
@@ -763,14 +777,26 @@ public abstract class OrganisationManagerBean
 				if (fetchGroups != null)
 					pm.getFetchPlan().setGroups(fetchGroups);
 
-				return pm.detachCopyAll((Collection)pm.newQuery(Organisation.class).execute());
+				Collection res = (Collection)pm.newQuery(Organisation.class).execute();
+
+				// TODO DEBUG begin
+				LOGGER.info("I am the Root Organisation and I will return the following organisations: ");
+				for (Iterator iter = res.iterator(); iter.hasNext();) {
+					Organisation organisation = (Organisation) iter.next();
+					LOGGER.info("  " + organisation.getOrganisationID());
+				}
+				// TODO DEBUG end
+
+				return pm.detachCopyAll(res);
 			} finally {
 				pm.close();
 			}
 
 		} catch (ModuleException x) {
+			LOGGER.error("Obtaining organisations failed!", x);
 			throw x;
 		} catch (Exception x) {
+			LOGGER.error("Obtaining organisations failed!", x);
 			throw new ModuleException(x);
 		}
 	}
