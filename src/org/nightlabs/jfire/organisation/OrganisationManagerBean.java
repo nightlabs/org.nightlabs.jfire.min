@@ -291,7 +291,8 @@ public abstract class OrganisationManagerBean
 //			} catch (JDOObjectNotFoundException x) {
 //				pm.makePersistent(grantOrganisation.getServer());
 //			}
-//			pm.makePersistent(grantOrganisation);
+			pm.makePersistent(grantOrganisation.getPerson());
+			pm.makePersistent(grantOrganisation);
 		} finally {
 			pm.close();
 		}
