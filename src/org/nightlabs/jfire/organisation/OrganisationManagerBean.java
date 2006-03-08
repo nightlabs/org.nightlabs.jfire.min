@@ -43,25 +43,18 @@ import javax.jdo.PersistenceManager;
 import javax.naming.InitialContext;
 
 import org.apache.log4j.Logger;
+import org.nightlabs.ModuleException;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
-import org.nightlabs.jfire.organisation.LocalOrganisation;
-import org.nightlabs.jfire.organisation.Organisation;
-import org.nightlabs.jfire.organisation.RegistrationStatus;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.security.UserLocal;
+import org.nightlabs.jfire.security.UserManager;
+import org.nightlabs.jfire.security.UserManagerHome;
+import org.nightlabs.jfire.security.UserManagerUtil;
 import org.nightlabs.jfire.security.id.UserID;
-import org.nightlabs.jfire.server.id.ServerID;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.servermanager.config.OrganisationCf;
 import org.nightlabs.jfire.servermanager.config.RootOrganisationCf;
 import org.nightlabs.jfire.servermanager.config.ServerCf;
-
-import org.nightlabs.ModuleException;
-import org.nightlabs.jfire.organisation.OrganisationManager;
-import org.nightlabs.jfire.organisation.OrganisationManagerUtil;
-import org.nightlabs.jfire.security.UserManager;
-import org.nightlabs.jfire.security.UserManagerHome;
-import org.nightlabs.jfire.security.UserManagerUtil;
 
 /**
  * @author Niklas Schiffler - nick at nightlabs dot de
@@ -381,6 +374,10 @@ public abstract class OrganisationManagerBean
 				pm.getFetchPlan().addGroup(FetchPlan.ALL); // TODO fetch-groups?!
 				Organisation grantOrganisation = (Organisation) pm.detachCopy(
 						localOrganisation.getOrganisation());
+//				Organisation grantOrganisation = localOrganisation.getOrganisation();
+//				grantOrganisation.getPerson();
+//				grantOrganisation.getServer();
+//				pm.makeTransient(grantOrganisation, true);
 
 //				// WORKAROUND Because of a JPOX bug, we need to do this here (it's not nice, though it should be ok, because the transaction should be rolled back if an error occurs)
 //				// We close the RegistrationStatus by accepting
