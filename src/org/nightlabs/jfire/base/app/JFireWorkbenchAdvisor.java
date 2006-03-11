@@ -27,6 +27,7 @@
 package org.nightlabs.jfire.base.app;
 
 import java.io.File;
+import java.io.IOException;
 
 import javax.security.auth.login.LoginException;
 
@@ -34,7 +35,6 @@ import org.apache.log4j.Logger;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
-
 import org.nightlabs.base.app.AbstractApplication;
 import org.nightlabs.base.app.AbstractWorkbenchAdvisor;
 import org.nightlabs.base.exceptionhandler.ExceptionHandlerRegistry;
@@ -81,7 +81,15 @@ extends AbstractWorkbenchAdvisor
 	{
 		// create log directory if not existent
 		JFireApplication.getLogDir();
-		JFireRCDLDelegate.createSharedInstance(Login.getLogin(false), new File(JFireApplication.getRootDir(), "classloader.cache"));
+		try {
+			JFireRCDLDelegate.createSharedInstance(Login.getLogin(false), new File(JFireApplication.getRootDir(), "classloader.cache"));
+		} catch (LoginException e) {
+			throw e;
+		} catch (IOException e) {
+			LoginException x = new LoginException(e.getMessage());
+			x.initCause(e);
+			throw x;
+		}
 		initializeLoginModule();
 	}
 	   	    
