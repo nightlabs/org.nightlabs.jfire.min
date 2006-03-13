@@ -185,6 +185,8 @@ public class StaticPersonSearchFilterProvider implements
 		// new filter
 		PersonSearchFilter filter = createPersonSearchFilter();
 		
+		filter.setConjunction(SearchFilter.CONJUNCTION_OR);
+		
 		ParsedNameCriteria nameCriteria = parseNameNeedle(criteriaBuilderComposite.getControlName().getTextControl().getText());
 		
 		PersonStructFieldID[] nameCriteriaFieldIDs = new PersonStructFieldID[] {
