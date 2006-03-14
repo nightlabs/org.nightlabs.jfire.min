@@ -105,7 +105,7 @@ public class PersonStructProvider extends JDOObjectProvider {
 	 */
 	public PersonStruct getPersonStruct() {
 		try {
-			return (PersonStruct)getJDOObject(null, PersonStructID.create(Login.getLogin().getOrganisationID()), dummyFetchGroups, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
+			return (PersonStruct)getJDOObject("PersonManager.getFullPersonStructure", PersonStructID.create(Login.getLogin().getOrganisationID()), dummyFetchGroups, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
 		} catch (LoginException e) {
 			throw new RuntimeException(e);
 		}

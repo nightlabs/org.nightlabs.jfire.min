@@ -311,7 +311,7 @@ implements IWorkbenchPreferencePage
 	}
 
 	public int getConfigModuleMaxFetchDepth() {
-		return 0;
+		return NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT;
 	}
 
 	/**
