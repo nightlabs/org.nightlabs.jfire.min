@@ -41,28 +41,17 @@ import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
 
 import org.apache.log4j.Logger;
+import org.nightlabs.ModuleException;
+import org.nightlabs.jdo.NLJDOHelper;
+import org.nightlabs.jdo.ObjectIDException;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.config.ConfigSetup;
 import org.nightlabs.jfire.person.Person;
 import org.nightlabs.jfire.person.id.PersonID;
-import org.nightlabs.jfire.security.Authority;
-import org.nightlabs.jfire.security.RoleGroup;
-import org.nightlabs.jfire.security.RoleGroupRef;
-import org.nightlabs.jfire.security.SecurityException;
-import org.nightlabs.jfire.security.User;
-import org.nightlabs.jfire.security.UserGroup;
-import org.nightlabs.jfire.security.UserLocal;
-import org.nightlabs.jfire.security.UserNotFoundException;
-import org.nightlabs.jfire.security.UserRef;
-import org.nightlabs.jfire.security.UserSearchResult;
 import org.nightlabs.jfire.security.id.AuthorityID;
 import org.nightlabs.jfire.security.id.RoleGroupID;
 import org.nightlabs.jfire.security.id.UserID;
 import org.nightlabs.jfire.security.id.UserRefID;
-
-import org.nightlabs.ModuleException;
-import org.nightlabs.jdo.NLJDOHelper;
-import org.nightlabs.jdo.ObjectIDException;
 
 /**
  * @author Alexander Bieber <alex@nightlabs.de>
@@ -715,7 +704,26 @@ implements SessionBean
       pm.close();
     }
   }
-  
+
+  // FIXME JPOX bug workaround method. Remove this, once the jpox bug is fixed
+  private static Collection getRoleGroupsForUserRef(PersistenceManager pm, String organisationID, String userID, String authorityID)
+  {
+  	Query query = pm.newQuery( 
+        "SELECT FROM org.nightlabs.jfire.security.RoleGroup " +
+        "WHERE " +
+        "  this == roleGroupRef.roleGroup &&" +
+        "  roleGroupRef.userRefs.containsValue(userRef) &&" +
+        "  userRef.organisationID == paramOrganisationID &&" +
+        "  userRef.userID == paramUserID &&" +
+        "  userRef.authorityID == paramAuthorityID " +
+        "VARIABLES RoleGroupRef roleGroupRef; UserRef userRef " +
+        "PARAMETERS String paramOrganisationID, String paramUserID, String paramAuthorityID " +
+        "import org.nightlabs.jfire.security.RoleGroupRef; " +
+        "import org.nightlabs.jfire.security.UserRef; " +
+        "import java.lang.String");
+    return (Collection)query.execute(organisationID, userID, authorityID);
+  }
+
   /**
    * @throws ModuleException
    * 
@@ -728,42 +736,57 @@ implements SessionBean
     PersistenceManager pm = getPersistenceManager();
     try 
     {
-      Extent ext = pm.getExtent(RoleGroup.class, false);
+    	Query query;
 
       // rolegroups via userrefs
-      Query query = pm.newQuery( 
-          "SELECT FROM org.nightlabs.jfire.security.RoleGroup " +
-          "WHERE " +
-          "  this == roleGroupRef.roleGroup &&" +
-          "  roleGroupRef.userRefs.containsValue(userRef) &&" +
-          "  userRef.authorityID == paramAuthorityID &&" +
-          "  userRef.user == user &&" +
-          "  user.organisationID == paramOrganisationID &&" +
-          "  user.userID == paramUserID " +
-          "VARIABLES RoleGroupRef roleGroupRef; UserRef userRef; User user " +
-          "PARAMETERS String paramOrganisationID, String paramUserID, String paramAuthorityID " +
-          "import org.nightlabs.jfire.security.RoleGroupRef; import org.nightlabs.jfire.security.UserRef; import org.nightlabs.jfire.security.User; import java.lang.String");
-      Collection roleGroupsUser = (Collection)query.execute(getOrganisationID(), userID, authorityID);
-      
+//      query = pm.newQuery( 
+//          "SELECT FROM org.nightlabs.jfire.security.RoleGroup " +
+//          "WHERE " +
+//          "  this == roleGroupRef.roleGroup &&" +
+//          "  roleGroupRef.userRefs.containsValue(userRef) &&" +
+//          "  userRef.organisationID == paramOrganisationID &&" +
+//          "  userRef.userID == paramUserID &&" +
+//          "  userRef.authorityID == paramAuthorityID " +
+//          "VARIABLES RoleGroupRef roleGroupRef; UserRef userRef " +
+//          "PARAMETERS String paramOrganisationID, String paramUserID, String paramAuthorityID " +
+//          "import org.nightlabs.jfire.security.RoleGroupRef; " +
+//          "import org.nightlabs.jfire.security.UserRef; " +
+//          "import java.lang.String");
+//      Collection roleGroupsUser = new HashSet((Collection)query.execute(getOrganisationID(), userID, authorityID));
+    	Collection roleGroupsUser = new HashSet(getRoleGroupsForUserRef(pm, getOrganisationID(), userID, authorityID));
+    	// FIXME JPOX bug workarounds. Clean this up, once the jpox bug is fixed
+
       // rolegroups via usergroups
-      query = pm.newQuery( 
-          "SELECT FROM org.nightlabs.jfire.security.RoleGroup " +
-          "WHERE " +
-          "  this == roleGroupRef.roleGroup &&" +
-          "  roleGroupRef.userRefs.containsValue(userGroupRef) &&" +
-          "  userGroupRef.user == userGroup &&" +
-          "  userGroupRef.authorityID == paramAuthorityID &&" +
-          "  userGroup.users.containsValue(user) &&" +
-          "  user.organisationID == paramOrganisationID &&" +
-          "  user.userID == paramUserID " +
-          "VARIABLES RoleGroupRef roleGroupRef; UserGroupRef userGroupRef; UserGroup userGroup; User user " +
-          "PARAMETERS String paramOrganisationID, String paramUserID, String paramAuthorityID " +
-          "import org.nightlabs.jfire.security.RoleGroupRef; import org.nightlabs.jfire.security.UserRef; import java.lang.String");
-      Collection roleGroupsUserGroups = (Collection)query.execute(getOrganisationID(), userID, authorityID);
+//      query = pm.newQuery( 
+//          "SELECT FROM org.nightlabs.jfire.security.RoleGroup " +
+//          "WHERE " +
+//          "  this == roleGroupRef.roleGroup &&" +
+//          "  roleGroupRef.userRefs.containsValue(userGroupRef) &&" +
+//          "  userGroupRef.authorityID == paramAuthorityID &&" +
+//          "  userGroup == userGroupRef.user &&" +
+//          "  userGroup.users.containsValue(user) &&" +
+//          "  user.organisationID == paramOrganisationID &&" +
+//          "  user.userID == paramUserID " +
+//          "VARIABLES RoleGroupRef roleGroupRef; UserGroupRef userGroupRef; UserGroup userGroup; User user " +
+//          "PARAMETERS String paramOrganisationID, String paramUserID, String paramAuthorityID " +
+//          "import org.nightlabs.jfire.security.RoleGroupRef; " +
+//          "import org.nightlabs.jfire.security.UserRef; " +
+//          "import org.nightlabs.jfire.security.UserGroup; " +
+//          "import org.nightlabs.jfire.security.User; " +
+//          "import java.lang.String");
+//      Collection roleGroupsUserGroups = new HashSet((Collection)query.execute(getOrganisationID(), userID, authorityID));
+    	Collection roleGroupsUserGroups = new HashSet();
+    	pm.getExtent(User.class);
+    	User user = (User) pm.getObjectById(UserID.create(getOrganisationID(), userID));
+    	for (Iterator iter = user.getUserGroups().iterator(); iter.hasNext();) {
+				UserGroup userGroup = (UserGroup) iter.next();
+				roleGroupsUserGroups.addAll(
+						getRoleGroupsForUserRef(pm, userGroup.getOrganisationID(), userGroup.getUserID(), authorityID));
+			}
 
       //FIXME: JPOX bug (INNER JOIN instead of LEFT JOIN)
       // excluded rolegroups
-//    Query query = pm.newQuery( 
+//    query = pm.newQuery( 
 //        "SELECT FROM org.nightlabs.jfire.security.RoleGroup " +
 //        "WHERE " +
 //        "  this == roleGroupRef.roleGroup &&" +
@@ -790,19 +813,22 @@ implements SessionBean
       }
       // workaround end
 
-      RoleGroupIDListCarrier rglc = new RoleGroupIDListCarrier();
-      
-      i = roleGroupsUser.iterator();
-      while(i.hasNext())
-        rglc.assignedToUser.add(JDOHelper.getObjectId(i.next()));
+      RoleGroupIDListCarrier rglc = new RoleGroupIDListCarrier(
+      		NLJDOHelper.getObjectIDSet(excludedRoleGroups),
+      		NLJDOHelper.getObjectIDSet(roleGroupsUser),
+      		NLJDOHelper.getObjectIDSet(roleGroupsUserGroups));
 
-      i = roleGroupsUserGroups.iterator();
-      while(i.hasNext())
-        rglc.assignedToUserGroups.add(JDOHelper.getObjectId(i.next()));
-
-      i = excludedRoleGroups.iterator();
-      while(i.hasNext())
-        rglc.excluded.add(JDOHelper.getObjectId(i.next()));
+//      i = roleGroupsUser.iterator();
+//      while(i.hasNext())
+//        rglc.assignedToUser.add(JDOHelper.getObjectId(i.next()));
+//
+//      i = roleGroupsUserGroups.iterator();
+//      while(i.hasNext())
+//        rglc.assignedToUserGroups.add(JDOHelper.getObjectId(i.next()));
+//
+//      i = excludedRoleGroups.iterator();
+//      while(i.hasNext())
+//        rglc.excluded.add(JDOHelper.getObjectId(i.next()));
 
       return rglc;
     } 

@@ -42,7 +42,23 @@ public class RoleGroupIDListCarrier implements Serializable
     assignedToUser = new HashSet();
     assignedToUserGroups = new HashSet();
   }
-  
+
+  public RoleGroupIDListCarrier(Set excluded, Set assignedToUser, Set assignedToUserGroups)
+  {
+  	if (excluded == null)
+  		throw new IllegalArgumentException("excluded must not be null!");
+
+  	if (assignedToUser == null)
+  		throw new IllegalArgumentException("assignedToUser must not be null!");
+
+  	if (assignedToUserGroups == null)
+  		throw new IllegalArgumentException("assignedToUserGroups must not be null!");
+
+    this.excluded = excluded;
+    this.assignedToUser = assignedToUser;
+    this.assignedToUserGroups = assignedToUserGroups;
+  }
+
   public Set excluded;
   public Set assignedToUser;
   public Set assignedToUserGroups;

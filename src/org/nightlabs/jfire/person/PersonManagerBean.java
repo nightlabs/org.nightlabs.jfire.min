@@ -110,6 +110,7 @@ public abstract class PersonManagerBean extends BaseSessionBeanImpl implements
 		PersistenceManager pm = getPersistenceManager();
 		try {
 			pm.getFetchPlan().addGroup(FetchPlan.ALL);
+			pm.getFetchPlan().setMaxFetchDepth(NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
 			PersonStruct ps = PersonStruct.getPersonStruct(getOrganisationID(), pm);
 			PersonStruct result = (PersonStruct) pm.detachCopy(ps);
 			return result;
