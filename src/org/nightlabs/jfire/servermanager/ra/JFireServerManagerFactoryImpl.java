@@ -26,7 +26,9 @@
 
 package org.nightlabs.jfire.servermanager.ra;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.FilenameFilter;
@@ -38,8 +40,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -62,6 +66,10 @@ import javax.transaction.TransactionManager;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.nightlabs.ModuleException;
+import org.nightlabs.config.Config;
+import org.nightlabs.config.ConfigException;
+import org.nightlabs.jdo.ObjectIDUtil;
 import org.nightlabs.jfire.base.JFireBasePrincipal;
 import org.nightlabs.jfire.base.JFirePrincipal;
 import org.nightlabs.jfire.base.JFireServerLocalLoginManager;
@@ -93,6 +101,7 @@ import org.nightlabs.jfire.security.registry.SecurityRegistrar;
 import org.nightlabs.jfire.security.registry.SecurityRegistrarFactoryImpl;
 import org.nightlabs.jfire.server.LocalServer;
 import org.nightlabs.jfire.server.Server;
+import org.nightlabs.jfire.serverinit.ServerInitializer;
 import org.nightlabs.jfire.servermanager.DuplicateOrganisationException;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.servermanager.JFireServerManagerFactory;
@@ -101,8 +110,8 @@ import org.nightlabs.jfire.servermanager.OrganisationNotFoundException;
 import org.nightlabs.jfire.servermanager.RoleImportSet;
 import org.nightlabs.jfire.servermanager.TemplateParseException;
 import org.nightlabs.jfire.servermanager.config.CreateOrganisationConfigModule;
-import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
 import org.nightlabs.jfire.servermanager.config.J2eeServerTypeRegistryConfigModule;
+import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
 import org.nightlabs.jfire.servermanager.config.OrganisationCf;
 import org.nightlabs.jfire.servermanager.config.OrganisationConfigModule;
 import org.nightlabs.jfire.servermanager.config.ServerCf;
@@ -119,11 +128,6 @@ import org.nightlabs.jfire.servermanager.xml.RoleDef;
 import org.nightlabs.jfire.servermanager.xml.RoleGroupDef;
 import org.nightlabs.jfire.servermanager.xml.XMLReadException;
 import org.xml.sax.SAXException;
-
-import org.nightlabs.ModuleException;
-import org.nightlabs.config.Config;
-import org.nightlabs.config.ConfigException;
-import org.nightlabs.jdo.ObjectIDUtil;
 
 /**
  * @author marco
@@ -368,7 +372,8 @@ public class JFireServerManagerFactoryImpl
 		try {
 
 			String deployBaseDir = mcf.getConfigModule().getJ2ee().getJ2eeDeployBaseDirectory();
-			DatastoreInitializer datastoreInitializer = new DatastoreInitializer(new File(deployBaseDir));
+			File deployBaseDirFile = new File(deployBaseDir);
+			DatastoreInitializer datastoreInitializer = new DatastoreInitializer(deployBaseDirFile);
 
 			InitialContext ctx = new InitialContext();
 			try {
@@ -428,6 +433,56 @@ public class JFireServerManagerFactoryImpl
 					}
 				}
 
+				// search for server-init-ears
+				long startDT = System.currentTimeMillis();
+				String[] ears = deployBaseDirFile.list(fileFilterEARs);
+				List<String> serverInitEARs = new LinkedList<String>();
+				for (int i = 0; i < ears.length; i++) {
+					String ear = ears[i];
+					File serverInitEARDir = new File(deployBaseDirFile, ear);
+					File serverInitEARPropertiesFile = new File(serverInitEARDir, "serverinit.properties");
+					if (serverInitEARPropertiesFile.exists())
+						serverInitEARs.add(ear);
+				}
+				Collections.sort(serverInitEARs);
+				long stopDT = System.currentTimeMillis();
+				LOGGER.debug("Searching server init EARs took " + (stopDT - startDT) + " msec. Found: " + serverInitEARs.size());
+
+				loopServerInitEARs: for (String serverInitEAR : serverInitEARs) {
+					File serverInitEARDir = new File(deployBaseDirFile, serverInitEAR);
+					File serverInitEARPropertiesFile = new File(serverInitEARDir, "serverinit.properties");
+
+					LOGGER.debug("Reading \"serverinit.properties\" file of server init EAR \"" + serverInitEAR + "\"...");
+					Properties serverInitEARProperties = new Properties();
+					InputStream in = new BufferedInputStream(new FileInputStream(serverInitEARPropertiesFile));
+					try {
+						serverInitEARProperties.load(in);
+					} finally {
+						in.close();
+					}
+
+					String serverInitializerClassName = (String) serverInitEARProperties.get("serverInitializer.class");
+					if (serverInitializerClassName == null || "".equals(serverInitializerClassName)) {
+						LOGGER.error("Server init EAR \"" + serverInitEAR + "\" contains a \"serverinit.properties\" file, but this file misses the property \"serverInitializer.class\"!");
+						continue loopServerInitEARs;
+					}
+
+					try {
+						Class serverInitializerClass = Class.forName(serverInitializerClassName);
+						if (!ServerInitializer.class.isAssignableFrom(serverInitializerClass))
+							throw new ClassCastException("Class " + serverInitializerClassName + " does not extend " + ServerInitializer.class);
+
+						ServerInitializer serverInitializer = (ServerInitializer) serverInitializerClass.newInstance();
+						serverInitializer.setInitialContext(ctx);
+						serverInitializer.setJFireServerManagerFactory(this);
+						serverInitializer.setJ2EEVendorAdapter(getJ2EEVendorAdapter());
+						serverInitializer.initialize();
+					} catch (Exception x) {
+						LOGGER.error("Executing server init EAR \"" + serverInitEAR + "\" failed!", x);
+						continue loopServerInitEARs;
+					}
+
+				} // loopServerInitEARs: for (String serverInitEAR : serverInitEARs) {
 			} finally {
 				ctx.close();
 			}

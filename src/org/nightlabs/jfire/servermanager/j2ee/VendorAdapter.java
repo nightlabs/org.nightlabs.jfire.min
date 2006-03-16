@@ -51,7 +51,7 @@ public interface VendorAdapter
 	 */
 	public void registerNotificationListenerServerStarted(ServerStartNotificationListener listener)
 		throws Exception;
-	
+
 	public TransactionManager getTransactionManager(InitialContext initialContext)
 		throws Exception;
 
