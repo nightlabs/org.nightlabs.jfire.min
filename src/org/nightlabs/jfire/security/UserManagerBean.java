@@ -35,6 +35,7 @@ import javax.ejb.EJBException;
 import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
 import javax.jdo.Extent;
+import javax.jdo.FetchPlan;
 import javax.jdo.JDOHelper;
 import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
@@ -1253,6 +1254,7 @@ implements SessionBean
   	PersistenceManager pm = getPersistenceManager();
   	try 
 		{
+  		pm.getFetchPlan().setGroup(FetchPlan.DEFAULT);
   		pm.getExtent(Authority.class, true);
  			Authority auth = (Authority)pm.getObjectById(AuthorityID.create(getOrganisationID(), authorityID), true);
   		pm.getExtent(User.class, true);
@@ -1333,6 +1335,7 @@ implements SessionBean
     try {
       PersistenceManager pm = getPersistenceManager();
       try {
+      	pm.getFetchPlan().setGroup(FetchPlan.DEFAULT);
         pm.getExtent(User.class, true);
         pm.getExtent(UserGroup.class, true);
         
@@ -1366,7 +1369,7 @@ implements SessionBean
       throw new SecurityException(x);
     }
   }
-  
+
   /**
    * Revoke rolegroups from a user (should be renamed)
    * @param userID id of the user
@@ -1405,6 +1408,7 @@ implements SessionBean
   	PersistenceManager pm = getPersistenceManager();
   	try 
 		{
+  		pm.getFetchPlan().setGroup(FetchPlan.DEFAULT);
  			UserRef uref = (UserRef)pm.getObjectById(UserRefID.create(authorityID, getOrganisationID(), userID), true);
  			uref.removeRoleGroupRef(roleGroupID);
 		} 
@@ -1478,6 +1482,7 @@ implements SessionBean
   	PersistenceManager pm = getPersistenceManager();
   	try 
 		{
+  		pm.getFetchPlan().setGroup(FetchPlan.DEFAULT);
 //  		pm.getExtent(User.class, true);
 //  		User user = (User) pm.getObjectById(UserID.create(getOrganisationID(), userID), true);
   		pm.getExtent(UserGroup.class, true);
