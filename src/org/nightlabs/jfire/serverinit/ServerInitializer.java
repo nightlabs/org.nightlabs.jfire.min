@@ -15,7 +15,25 @@ import org.nightlabs.jfire.servermanager.ra.JFireServerManagerFactoryImpl;
  * <a href="https://www.jfire.org/modules/phpwiki/index.php/HowToDataStoreInit">described in the wiki</a>.
  * </p>
  * <p>
- * To 
+ * Currently, there can only be one ServerInitializer per EAR. You register it by placing
+ * a file called <code>serverinit.properties</code> into the EAR directory (parallel to
+ * the *.jar, *.war and *.rar files). Into this <code>serverinit.properties</code>, you declare
+ * your initializer as value to the property <code>serverInitializer.class</code>.
+ * </p>
+ * <p>
+ * <u>Example:</u><br/>
+ * <code>
+ * serverInitializer.class=org.nightlabs.jfire.chezfrancois.ChezFrancoisServerInitializer
+ * </code>
+ * </p>
+ * <p>
+ * <b>Important note:</b> This registration mechanism might soon be changed in order to
+ * be controlled by XML files similar to the datastore initialization (with dependency
+ * declarations). Stay tuned on http://www.jfire.org
+ * </p>
+ * <p>
+ * If there are multiple EARs declaring server initializers, the EARs are ordered by their
+ * directory name.
  * </p>
  * <p>
  * A common use case for the <code>ServerInitializer</code> is the setup of a demo system,
