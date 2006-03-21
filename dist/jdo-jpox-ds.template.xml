@@ -23,7 +23,12 @@ JBoss 3.2.x: end -->
 
 		<config-property name="JdoCacheCollections" type="boolean">true</config-property>
 		<config-property name="NontransactionalRead" type="boolean">true</config-property>
+
+<!--
+  If you use MySQL on GNU+Linux, you can savely activate PRESERVECASE (it's much more beautiful). Unfortunately,
+  this setting doesn't work with MySQL on Windows. Thus, it's deactivated by default.
 		<config-property name="IdentifierCase" type="java.lang.String">PRESERVECASE</config-property>
+-->
 		<config-property name="DetachOnClose" type="boolean">false</config-property>
 		<config-property name="StringDefaultLength" type="int">255</config-property>
 
