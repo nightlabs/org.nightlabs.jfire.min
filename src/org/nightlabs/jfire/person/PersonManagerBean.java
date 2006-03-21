@@ -111,7 +111,7 @@ public abstract class PersonManagerBean extends BaseSessionBeanImpl implements
 		try {
 			pm.getFetchPlan().addGroup(FetchPlan.ALL);
 			pm.getFetchPlan().setMaxFetchDepth(NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
-			PersonStruct ps = PersonStruct.getPersonStruct(getOrganisationID(), pm);
+			PersonStruct ps = PersonStruct.getPersonStruct(pm);
 			PersonStruct result = (PersonStruct) pm.detachCopy(ps);
 			return result;
 
