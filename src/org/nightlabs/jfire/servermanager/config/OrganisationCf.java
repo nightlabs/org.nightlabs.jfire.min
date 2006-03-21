@@ -232,6 +232,12 @@ public class OrganisationCf
 			throw new IllegalStateException("This instance of OrganisationCf does not allow write!");
 	}
 
+	@SuppressWarnings("deprecation")
+	private PersonStruct getPersonStruct(PersistenceManager pm)
+	{
+		return PersonStruct.getPersonStructInternal(getOrganisationID(), pm);
+	}
+
 	/**
 	 * This method creates a JDO Organisation object with the given persistenceManager
 	 * in case it does not yet exist.
@@ -256,7 +262,7 @@ public class OrganisationCf
 
 		if (organisation.getPerson() == null) {
 			Person person = new Person(organisationID, PersonRegistry.getRegistry(pm).createPersonID());
-			PersonStruct personStruct = PersonStruct.getPersonStruct(getOrganisationID(), pm);
+			PersonStruct personStruct = getPersonStruct(pm);
 			personStruct.explodePerson(person);
 			try {
 				TextPersonDataField f = (TextPersonDataField) person.getPersonDataField(
