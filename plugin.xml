@@ -39,11 +39,6 @@
    
 	<!-- Extension-points -->
 	
-	<extension-point         
-   		id="exceptionhandler" 
-   		name="Defines handler for uncaught exception within the workbench." 
-   		schema="schema/exceptionhandler.exsd"
-   	/>
    	
    <extension-point 
    		id="loginstatelistener" 
@@ -160,16 +155,6 @@
 
    <!-- ExceptionHandler
    -->
-   <extension
-         id="org.nightlabs.jfire.base.exceptionhandler.ThrowableHandler"
-         name="%exceptionhandler.throwable.name"
-         point="org.nightlabs.jfire.base.exceptionhandler">
-         
-   		<exceptionHandler
-           targetType="java.lang.Throwable"
-           class="org.nightlabs.jfire.base.exceptionhandler.ThrowableHandler"
-           name="Default Handler for all Throwable s"/>
-   </extension>
 
 
    <!-- ClassSharing for NightLabsBase et al -->
