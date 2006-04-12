@@ -52,10 +52,8 @@ import org.nightlabs.jfire.servermanager.j2ee.JMSConnectionFactoryLookup;
 
 
 /**
- * This class is your entry point for asynchronous method invocation. Simply create an
- * instance and call one of the <tt>asyncInvoke(...)</tt> methods. This class is intended
- * for throw-away-usage. Means, you should obtain a new instance in every bean method where
- * you need it.
+ * This class is your entry point for asynchronous method invocation. Simply call one of
+ * the <tt>exec(...)</tt> methods.
  *
  * @author Marco Schulze - marco at nightlabs dot de
  */
@@ -66,9 +64,9 @@ public class AsyncInvoke
 	protected static final String QUEUE_ERRORCALLBACK = "queue/jfire/JFireBaseBean/AsyncInvokerErrorCallbackQueue";
 	protected static final String QUEUE_UNDELIVERABLECALLBACK = "queue/jfire/JFireBaseBean/AsyncInvokerUndeliverableCallbackQueue";
 
-	private InitialContext initialContext = null;
+//	private InitialContext initialContext = null;
 
-	public AsyncInvoke()
+	protected AsyncInvoke()
 	{
 	}
 
@@ -76,7 +74,7 @@ public class AsyncInvoke
 	 * This is a convenience method which calls {@link #asyncInvoke(Invocation, SuccessCallback, ErrorCallback, UndeliverableCallback)}.
 	 * @throws CreateException 
 	 */
-	public void exec(Invocation invocation)
+	public static void exec(Invocation invocation)
 	throws JMSException, NamingException, LoginException
 	{
 		exec(invocation, null, null, null);
@@ -86,7 +84,7 @@ public class AsyncInvoke
 	 * This is a convenience method which calls {@link #asyncInvoke(Invocation, SuccessCallback, ErrorCallback, UndeliverableCallback)}.
 	 * @throws CreateException 
 	 */
-	public void exec(
+	public static void exec(
 			Invocation invocation, SuccessCallback successCallback)
 	throws JMSException, NamingException, LoginException
 	{
@@ -97,7 +95,7 @@ public class AsyncInvoke
 	 * This is a convenience method which calls {@link #asyncInvoke(Invocation, SuccessCallback, ErrorCallback, UndeliverableCallback)}.
 	 * @throws CreateException 
 	 */
-	public void exec(
+	public static void exec(
 			Invocation invocation, ErrorCallback errorCallback)
 	throws JMSException, NamingException, LoginException
 	{
@@ -108,7 +106,7 @@ public class AsyncInvoke
 	 * This is a convenience method which calls {@link #asyncInvoke(Invocation, SuccessCallback, ErrorCallback, UndeliverableCallback)}.
 	 * @throws CreateException 
 	 */
-	public void exec(
+	public static void exec(
 			Invocation invocation, UndeliverableCallback undeliverableCallback)
 	throws JMSException, NamingException, LoginException
 	{
@@ -137,7 +135,7 @@ public class AsyncInvoke
 	 * @throws NamingException
 	 * @throws CreateException 
 	 */
-	public void exec(
+	public static void exec(
 			Invocation invocation, SuccessCallback successCallback,
 			ErrorCallback errorCallback, UndeliverableCallback undeliverableCallback)
 	throws JMSException, NamingException, LoginException
@@ -177,46 +175,46 @@ public class AsyncInvoke
 		}
 	}
 
-	protected AuthCallbackHandler mqCallbackHandler = null;
+//	protected AuthCallbackHandler mqCallbackHandler = null;
 
-	protected void enqueue(String queueJNDIName, AsyncInvokeEnvelope envelope)
+	protected static void enqueue(String queueJNDIName, AsyncInvokeEnvelope envelope)
 	throws JMSException, NamingException, LoginException
 	{
-		if (initialContext == null)
-			initialContext = new InitialContext();
-
-		if (mqCallbackHandler == null) {
+		InitialContext initialContext = new InitialContext();
+		try {
 			JFireServerLocalLoginManager m = JFireServerLocalLoginManager.getJFireServerLocalLoginManager(initialContext);
 
-			mqCallbackHandler = new AuthCallbackHandler(
+			AuthCallbackHandler mqCallbackHandler = new AuthCallbackHandler(
 					JFireServerLocalLoginManager.PRINCIPAL_LOCALQUEUEWRITER,
 					m.getPrincipal(JFireServerLocalLoginManager.PRINCIPAL_LOCALQUEUEWRITER).getPassword().toCharArray());
-		}
 
-		LoginContext loginContext = new LoginContext("jfireLocal", mqCallbackHandler);
-		loginContext.login();
-		try {		
-			QueueConnectionFactory connectionFactory = JMSConnectionFactoryLookup.lookupQueueConnectionFactory(initialContext);
-
-			QueueConnection connection = null;
-			QueueSession session = null;
-			QueueSender sender = null;
-
-			try {
-				connection = connectionFactory.createQueueConnection();
-				session = connection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
-				Queue queue = (Queue) initialContext.lookup(queueJNDIName);
-				sender = session.createSender(queue);
+			LoginContext loginContext = new LoginContext("jfireLocal", mqCallbackHandler);
+			loginContext.login();
+			try {		
+				QueueConnectionFactory connectionFactory = JMSConnectionFactoryLookup.lookupQueueConnectionFactory(initialContext);
 	
-				Message message = session.createObjectMessage(envelope);
-				sender.send(message);
+				QueueConnection connection = null;
+				QueueSession session = null;
+				QueueSender sender = null;
+	
+				try {
+					connection = connectionFactory.createQueueConnection();
+					session = connection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
+					Queue queue = (Queue) initialContext.lookup(queueJNDIName);
+					sender = session.createSender(queue);
+		
+					Message message = session.createObjectMessage(envelope);
+					sender.send(message);
+				} finally {
+					if (sender != null) sender.close();
+					if (session != null) session.close();
+					if (connection != null) connection.close();
+				}
 			} finally {
-				if (sender != null) sender.close();
-				if (session != null) session.close();
-				if (connection != null) connection.close();
+				loginContext.logout();
 			}
 		} finally {
-			loginContext.logout();
+			initialContext.close();
 		}
 	}
 

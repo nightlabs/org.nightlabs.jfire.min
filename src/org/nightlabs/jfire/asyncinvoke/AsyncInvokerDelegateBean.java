@@ -78,7 +78,7 @@ implements SessionBean
 	public void enqueueErrorCallback(AsyncInvokeEnvelope envelope)
 	throws Exception
 	{
-		new AsyncInvoke().enqueue(AsyncInvoke.QUEUE_ERRORCALLBACK, envelope);
+		AsyncInvoke.enqueue(AsyncInvoke.QUEUE_ERRORCALLBACK, envelope);
 	}
 
 	/**

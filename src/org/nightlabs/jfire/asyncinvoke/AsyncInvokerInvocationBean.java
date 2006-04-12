@@ -28,8 +28,6 @@ package org.nightlabs.jfire.asyncinvoke;
 
 import java.io.Serializable;
 
-import org.nightlabs.jfire.asyncinvoke.AsyncInvokerDelegateLocal;
-
 /**
  * @ejb.bean name="jfire/mdb/JFireBaseBean/AsyncInvokerInvocation"
  *		 acknowledge-mode="Auto-acknowledge"
@@ -71,7 +69,7 @@ extends AsyncInvokerBaseBean
 			SuccessCallback successCallback = envelope.getSuccessCallback();
 			if (successCallback != null) {
 				try {
-					new AsyncInvoke().enqueue(AsyncInvoke.QUEUE_SUCCESSCALLBACK, envelope);
+					AsyncInvoke.enqueue(AsyncInvoke.QUEUE_SUCCESSCALLBACK, envelope);
 				} catch (Throwable x) {
 					logger.fatal("Failed to enqueue in AsyncInvoke.QUEUE_SUCCESSCALLBACK!", x);
 					messageContext.setRollbackOnly();
