@@ -951,43 +951,34 @@ public class JFireServerManagerFactoryImpl
 					String databaseName = databaseNameSB.toString();
 
 					// generate jdbc url for server
-					StringBuffer dbServerURLSB = new StringBuffer();
-					dbServerURLSB.append("jdbc:");
-					dbServerURLSB.append(dbCf.getDatabaseProtocol());
-					dbServerURLSB.append("://");
-					dbServerURLSB.append(dbCf.getDatabaseHost());
-					dbServerURLSB.append('/');
-					String dbServerURL = dbServerURLSB.toString();
-			
-					// generate jdbc url for database based on dbServerURL
-					StringBuffer dbURLSB = new StringBuffer(dbServerURL);
-					dbURLSB.append(databaseName);
-					String dbURL = dbURLSB.toString();
-			
+//					StringBuffer dbServerURLSB = new StringBuffer();
+//					dbServerURLSB.append("jdbc:");
+//					dbServerURLSB.append(dbCf.getDatabaseProtocol());
+//					dbServerURLSB.append("://");
+//					dbServerURLSB.append(dbCf.getDatabaseHost());
+//					dbServerURLSB.append('/');
+//					String dbServerURL = dbServerURLSB.toString();
+//			
+//					// generate jdbc url for database based on dbServerURL
+//					StringBuffer dbURLSB = new StringBuffer(dbServerURL);
+//					dbURLSB.append(databaseName);
+//					String dbURL = dbURLSB.toString();
+					String dbURL = dbCf.getDatabaseURL(databaseName);
+
 //					StringBuffer jdoPersistenceManagerJNDINameSB = new StringBuffer();
 //					jdoPersistenceManagerJNDINameSB.append(jdoCf.getJdoPersistenceManagerFactoryJNDIPrefix());
 //					jdoPersistenceManagerJNDINameSB.append(organisationID_simpleChars);
 //					jdoPersistenceManagerJNDINameSB.append(jdoCf.getJdoPersistenceManagerFactoryJNDISuffix());
 //					String jdoPersistenceManagerFactoryJNDIName = jdoPersistenceManagerJNDINameSB.toString();
 					String jdoPersistenceManagerFactoryJNDIName = OrganisationCf.PERSISTENCE_MANAGER_FACTORY_PREFIX_RELATIVE + organisationID;
-					
-					File tmpJDODSXML;
+
 					try {
-						Map variables = new HashMap();
-						variables.put("organisationID", organisationID);
-//						variables.put("organisationID_simpleChars", organisationID_simpleChars);
-						variables.put("jdoPersistenceManagerFactoryJNDIName", jdoPersistenceManagerFactoryJNDIName);
-						variables.put("databaseDriverName", dbCf.getDatabaseDriverName());
-						variables.put("databaseJDBCURL", dbURL);
-						variables.put("databaseUserName", dbCf.getDatabaseUserName());
-						variables.put("databasePassword", dbCf.getDatabasePassword());
-			
-						tmpJDODSXML = createJDODSXML(jdoCf.getJdoConfigDirectory(), jdoCf.getJdoTemplateDSXMLFile(), variables);
-					} catch (Exception e) {
-						throw new ModuleException("Generating jdo ds xml file from template \""+jdoCf.getJdoTemplateDSXMLFile()+"\" failed!", e);
+						Class.forName(dbCf.getDatabaseDriverName());
+					} catch (ClassNotFoundException e) {
+						throw new ConfigException("Database driver class \""+dbCf.getDatabaseDriverName()+"\" could not be found!", e);
 					}
-			
-					// create SQL server database
+
+					// create database
 					String dbCreatorClassName = dbCf.getDatabaseCreator();
 					try {
 						Class dbCreatorClass = Class.forName(dbCreatorClassName);
@@ -995,11 +986,27 @@ public class JFireServerManagerFactoryImpl
 							throw new ClassCastException("DatabaseCreatorClass does not implement interface \""+DatabaseCreator.class.getName()+"\"!");
 			
 						DatabaseCreator dbCreator = (DatabaseCreator) dbCreatorClass.newInstance();
-						dbCreator.createDatabase(mcf.getConfigModule(), dbServerURL, databaseName, dbURL);
+						dbCreator.createDatabase(mcf.getConfigModule(), dbURL);
 					} catch (Exception x) {
 						throw new ModuleException("Creating sql database with DatabaseCreator \""+dbCreatorClassName+"\" failed!", x);
 					}
+
+					File tmpJDODSXML;
+					try {
+						Map variables = new HashMap();
+						variables.put("organisationID", organisationID);
+//						variables.put("organisationID_simpleChars", organisationID_simpleChars);
+						variables.put("jdoPersistenceManagerFactoryJNDIName", jdoPersistenceManagerFactoryJNDIName);
+						variables.put("databaseDriverName", dbCf.getDatabaseDriverName());
+						variables.put("databaseURL", dbURL);
+						variables.put("databaseUserName", dbCf.getDatabaseUserName());
+						variables.put("databasePassword", dbCf.getDatabasePassword());
 			
+						tmpJDODSXML = createJDODSXML(jdoCf.getJdoConfigDirectory(), jdoCf.getJdoTemplateDSXMLFile(), variables);
+					} catch (Exception e) {
+						throw new ModuleException("Generating jdo ds xml file from template \""+jdoCf.getJdoTemplateDSXMLFile()+"\" failed!", e);
+					}
+
 					// Activate the jdo ds xml by renaming it.
 					File jdoDSXML = new File(
 							jdoCf.getJdoConfigDirectory(),

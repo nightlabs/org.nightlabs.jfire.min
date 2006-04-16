@@ -44,11 +44,10 @@ import javax.security.auth.Subject;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
-import org.nightlabs.jfire.servermanager.dbcreate.DatabaseCreator;
-
 import org.nightlabs.config.Config;
 import org.nightlabs.config.ConfigException;
+import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
+import org.nightlabs.jfire.servermanager.dbcreate.DatabaseCreator;
 
 /**
  * @author marco
@@ -351,12 +350,14 @@ public class ManagedConnectionFactoryImpl
 
 		try {
 			Connection sqlConn = DriverManager.getConnection(
-			    "jdbc:"+dbCf.getDatabaseProtocol()+"://"+dbCf.getDatabaseHost()+"/",
+					dbCf.getDatabaseURL(null),
+//			    "jdbc:"+dbCf.getDatabaseProtocol()+"://"+dbCf.getDatabaseHost()+"/",
 			    dbCf.getDatabaseUserName(),
 			    dbCf.getDatabasePassword()
 			  );			
 			sqlConn.close();
 		} catch (SQLException e) {
+			LOGGER.error("Connecting to database server failed!", e);
 			throw new ConfigException("Connecting to database server failed!", e);
 		}
 

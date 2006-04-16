@@ -31,13 +31,12 @@ import java.lang.reflect.InvocationTargetException;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.log4j.Logger;
-import org.nightlabs.jfire.server.LocalServer;
-import org.nightlabs.jfire.server.Server;
-import org.nightlabs.jfire.servermanager.dbcreate.DatabaseCreatorMySQL;
-
 import org.nightlabs.ModuleException;
 import org.nightlabs.config.ConfigModule;
 import org.nightlabs.config.InitException;
+import org.nightlabs.jfire.server.LocalServer;
+import org.nightlabs.jfire.server.Server;
+import org.nightlabs.jfire.servermanager.dbcreate.DatabaseCreatorMySQL;
 
 /**
  * @author marco
@@ -89,8 +88,9 @@ public class JFireServerConfigModule extends ConfigModule
 	public static class Database implements Serializable
 	{
 		private String databaseDriverName;
-		private String databaseProtocol;
-		private String databaseHost;
+		private String databaseURL;
+//		private String databaseProtocol;
+//		private String databaseHost;
 		private String databasePrefix;
 		private String databaseSuffix;
 		private String databaseUserName;
@@ -110,29 +110,62 @@ public class JFireServerConfigModule extends ConfigModule
 		public void setDatabaseDriverName(String _databaseDriverName) {
 			this.databaseDriverName = _databaseDriverName;
 		}
-		/**
-		 * @return Returns the databaseProtocol.
-		 */
-		public String getDatabaseProtocol() {
-			return databaseProtocol;
+//		/**
+//		 * @return Returns the databaseProtocol.
+//		 */
+//		public String getDatabaseProtocol() {
+//			return databaseProtocol;
+//		}
+//		/**
+//		 * @param databaseProtocol The databaseProtocol to set.
+//		 */
+//		public void setDatabaseProtocol(String databaseProtocol) {
+//			this.databaseProtocol = databaseProtocol;
+//		}
+//		/**
+//		 * @return Returns the databaseHost.
+//		 */
+//		public String getDatabaseHost() {
+//			return databaseHost;
+//		}
+//		/**
+//		 * @param databaseHost The databaseHost to set.
+//		 */
+//		public void setDatabaseHost(String databaseHost) {
+//			this.databaseHost = databaseHost;
+//		}
+
+		public static final String DATABASE_NAME_VAR = "{databaseName}";
+
+		public String getDatabaseURL()
+		{
+			return databaseURL;
 		}
 		/**
-		 * @param databaseProtocol The databaseProtocol to set.
+		 * Returns the databaseURL after the {databaseName} has been replaced by the given
+		 * value. In order to connect to the database server without any database, use
+		 * either <code>null</code> or an empty string as <code>databaseName</code>.
+		 *
+		 * @param databaseName The name that should be replaced into the database URL template.
+		 *
+		 * @return Returns a final JDBC connection string for connecting to one database (but without user name and password)
 		 */
-		public void setDatabaseProtocol(String databaseProtocol) {
-			this.databaseProtocol = databaseProtocol;
+		public String getDatabaseURL(String databaseName)
+		{
+			if (databaseName == null)
+				databaseName = "";
+
+			return databaseURL.replace(DATABASE_NAME_VAR, databaseName);
 		}
-		/**
-		 * @return Returns the databaseHost.
-		 */
-		public String getDatabaseHost() {
-			return databaseHost;
-		}
-		/**
-		 * @param databaseHost The databaseHost to set.
-		 */
-		public void setDatabaseHost(String databaseHost) {
-			this.databaseHost = databaseHost;
+		public void setDatabaseURL(String databaseURL)
+		{
+			if (databaseURL == null)
+				throw new IllegalArgumentException("databaseURL must not be null!");
+
+			if (databaseURL.indexOf(DATABASE_NAME_VAR) < 0)
+				throw new IllegalArgumentException("databaseURL must contain \"" + DATABASE_NAME_VAR + "\"!");
+
+			this.databaseURL = databaseURL;
 		}
 		/**
 		 * @return Returns the databaseURLPrefix.
@@ -199,32 +232,30 @@ public class JFireServerConfigModule extends ConfigModule
 		public void init()
 		{
 			if (databaseDriverName == null)
-				databaseDriverName = "com.mysql.jdbc.Driver";
+				setDatabaseDriverName("com.mysql.jdbc.Driver");
 
-			if (databaseProtocol == null)
-				databaseProtocol = "mysql";
-
-			if (databaseHost == null)
-				databaseHost = "localhost";
-
+			if (databaseURL == null)
+				setDatabaseURL("jdbc:mysql://localhost/" + DATABASE_NAME_VAR);
+				
 			if (databasePrefix == null)	
-				databasePrefix = "JFire_";
+				setDatabasePrefix("JFire_");
 
 			if (databaseSuffix == null)	
-				databaseSuffix = "";
+				setDatabaseSuffix("");
 
 			if (databaseUserName == null)
-				databaseUserName = "jfire";
+				setDatabaseUserName("jfire");
 
 			if (databasePassword == null)
-				databasePassword = "{MyPassword}";
-			
+				setDatabasePassword("jfire_password");
+
 			if (databaseCreator == null)
-				databaseCreator = DatabaseCreatorMySQL.class.getName();
+				setDatabaseCreator(DatabaseCreatorMySQL.class.getName());
 
 			LOGGER.info("databaseDriverName = "+databaseDriverName);
-			LOGGER.info("databaseProtocol = "+databaseProtocol);
-			LOGGER.info("databaseHost = "+databaseHost);
+			LOGGER.info("databaseURL = "+databaseURL);
+//			LOGGER.info("databaseProtocol = "+databaseProtocol);
+//			LOGGER.info("databaseHost = "+databaseHost);
 			LOGGER.info("databasePrefix = "+databasePrefix);
 			LOGGER.info("databaseSuffix = "+databaseSuffix);
 			LOGGER.info("databaseUserName = "+databaseUserName);

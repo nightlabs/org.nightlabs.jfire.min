@@ -35,7 +35,7 @@ public interface DatabaseCreator {
 
 	public void createDatabase(
 			JFireServerConfigModule jfireServerConfigModule,
-			String dbServerURL, String databaseName, String databaseURL)
+			String databaseURL)
 		throws CreateDatabaseException;
 
 }
