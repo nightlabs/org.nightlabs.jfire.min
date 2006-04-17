@@ -115,7 +115,7 @@ import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
 import org.nightlabs.jfire.servermanager.config.OrganisationCf;
 import org.nightlabs.jfire.servermanager.config.OrganisationConfigModule;
 import org.nightlabs.jfire.servermanager.config.ServerCf;
-import org.nightlabs.jfire.servermanager.dbcreate.DatabaseCreator;
+import org.nightlabs.jfire.servermanager.db.DatabaseCreator;
 import org.nightlabs.jfire.servermanager.j2ee.JMSConnectionFactoryLookup;
 import org.nightlabs.jfire.servermanager.j2ee.SecurityReflector;
 import org.nightlabs.jfire.servermanager.j2ee.ServerStartNotificationListener;

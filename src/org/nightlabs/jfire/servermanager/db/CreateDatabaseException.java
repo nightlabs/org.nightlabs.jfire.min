@@ -24,18 +24,33 @@
  *                                                                             *
  ******************************************************************************/
 
-package org.nightlabs.jfire.servermanager.dbcreate;
+package org.nightlabs.jfire.servermanager.db;
 
-import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
+import org.nightlabs.ModuleException;
 
 /**
  * @author marco
  */
-public interface DatabaseCreator {
-
-	public void createDatabase(
-			JFireServerConfigModule jfireServerConfigModule,
-			String databaseURL)
-		throws CreateDatabaseException;
-
+public class CreateDatabaseException extends ModuleException {
+	
+	public CreateDatabaseException() { }
+	/**
+	 * @param message
+	 */
+	public CreateDatabaseException(String message) {
+		super(message);
+	}
+	/**
+	 * @param message
+	 * @param cause
+	 */
+	public CreateDatabaseException(String message, Throwable cause) {
+		super(message, cause);
+	}
+	/**
+	 * @param cause
+	 */
+	public CreateDatabaseException(Throwable cause) {
+		super(cause);
+	}
 }

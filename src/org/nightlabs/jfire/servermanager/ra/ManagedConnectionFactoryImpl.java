@@ -47,7 +47,7 @@ import org.apache.log4j.Logger;
 import org.nightlabs.config.Config;
 import org.nightlabs.config.ConfigException;
 import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
-import org.nightlabs.jfire.servermanager.dbcreate.DatabaseCreator;
+import org.nightlabs.jfire.servermanager.db.DatabaseCreator;
 
 /**
  * @author marco

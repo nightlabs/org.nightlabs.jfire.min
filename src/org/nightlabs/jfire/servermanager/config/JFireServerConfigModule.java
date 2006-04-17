@@ -36,7 +36,7 @@ import org.nightlabs.config.ConfigModule;
 import org.nightlabs.config.InitException;
 import org.nightlabs.jfire.server.LocalServer;
 import org.nightlabs.jfire.server.Server;
-import org.nightlabs.jfire.servermanager.dbcreate.DatabaseCreatorMySQL;
+import org.nightlabs.jfire.servermanager.db.DatabaseCreatorMySQL;
 
 /**
  * @author marco

@@ -24,25 +24,59 @@
  *                                                                             *
  ******************************************************************************/
 
-package org.nightlabs.jfire.servermanager.dbcreate;
+package org.nightlabs.jfire.servermanager.db;
 
-import javax.jdo.PersistenceManager;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
 
-import org.nightlabs.jfire.servermanager.config.OrganisationCf;
+import org.apache.log4j.Logger;
+import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
 
 
 /**
- * You should implement this interface and register your class in the
- * CreateOrganisationConfigModule. The JFireServerManagerFactory will
- * instantiate an instance of your listener then and execute the
- * method organisationCreated(...), whenever a new organisation has
- * been created.
- * <br/>
- * Note, that your listener class needs to have a default-constructor.
- *
  * @author marco
  */
-public interface CreateOrganisationListener
-{
-	public void organisationCreated(PersistenceManager pm, OrganisationCf organisationCf);
+public class DatabaseCreatorMySQL implements DatabaseCreator {
+	/**
+	 * @see org.nightlabs.jfire.servermanager.db.DatabaseCreator#createDatabase(org.nightlabs.jfire.servermanager.config.JFireServerConfigModule, String)
+	 */
+	public void createDatabase(JFireServerConfigModule jfireServerConfigModule,
+			String databaseURL)
+			throws CreateDatabaseException
+	{
+		Logger LOGGER = Logger.getLogger(DatabaseCreatorMySQL.class);
+
+		JFireServerConfigModule.Database dbCf = jfireServerConfigModule.getDatabase();
+
+		if (!databaseURL.startsWith("jdbc:mysql:"))
+			throw new IllegalArgumentException("databaseURL must start with 'jdbc:mysql:'!");
+
+		int lastSlashPos = databaseURL.lastIndexOf('/');
+		if (lastSlashPos < 0)
+			throw new IllegalArgumentException("databaseURL is malformed: Misses '/' before database name!");
+
+		String dbServerURL = databaseURL.substring(0, lastSlashPos + 1);
+		String databaseName = databaseURL.substring(lastSlashPos + 1);
+
+		LOGGER.info("Creating database \""+databaseName+"\" on server \""+dbServerURL+"\"");
+
+		try {
+			java.sql.Connection conn = DriverManager.getConnection(
+					dbServerURL, dbCf.getDatabaseUserName(), dbCf.getDatabasePassword());
+			try {
+				Statement stmt = conn.createStatement();
+				StringBuffer sql = new StringBuffer();
+
+				sql.append("create database ");
+				sql.append(databaseName);
+
+				stmt.execute(sql.toString());
+			} finally {
+				conn.close();
+			}
+		} catch (SQLException e) {
+			throw new CreateDatabaseException(e);
+		}
+	}
 }
