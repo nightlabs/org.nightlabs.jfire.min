@@ -33,9 +33,9 @@ import javax.transaction.TransactionManager;
 /**
  * This interface defines an adapter for vendor specific functionality.
  * 
- * @author marco
+ * @author Marco Schulze - marco at nightlabs dot de
  */
-public interface VendorAdapter
+public interface J2EEAdapter
 {
 	public void flushAuthenticationCache()
 		throws Exception;

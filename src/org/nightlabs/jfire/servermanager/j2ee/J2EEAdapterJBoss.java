@@ -38,9 +38,9 @@ import javax.naming.InitialContext;
 import javax.transaction.TransactionManager;
 
 /**
- * @author marco
+ * @author Marco Schulze - marco at nightlabs dot de
  */
-public class VendorAdapterJBoss implements VendorAdapter
+public class J2EEAdapterJBoss implements J2EEAdapter
 {
 	public void flushAuthenticationCache()
 	throws Exception
@@ -100,7 +100,7 @@ public class VendorAdapterJBoss implements VendorAdapter
 	protected InitialContext initialContext = null;
 
 	/**
-	 * @see org.nightlabs.jfire.servermanager.j2ee.VendorAdapter#registerNotificationListenerServerStarted(org.nightlabs.jfire.servermanager.j2ee.ServerStartNotificationListener)
+	 * @see org.nightlabs.jfire.servermanager.j2ee.J2EEAdapter#registerNotificationListenerServerStarted(org.nightlabs.jfire.servermanager.j2ee.ServerStartNotificationListener)
 	 */
 	public void registerNotificationListenerServerStarted(ServerStartNotificationListener listener)
 		throws Exception
@@ -132,7 +132,7 @@ public class VendorAdapterJBoss implements VendorAdapter
 
 	private SecurityReflector userResolver = null;
 	/**
-	 * @see org.nightlabs.jfire.servermanager.j2ee.VendorAdapter#getUserResolver()
+	 * @see org.nightlabs.jfire.servermanager.j2ee.J2EEAdapter#getUserResolver()
 	 */
 	public SecurityReflector getUserResolver()
 	{

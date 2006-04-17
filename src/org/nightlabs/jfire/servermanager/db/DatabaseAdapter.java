@@ -26,56 +26,37 @@
 
 package org.nightlabs.jfire.servermanager.db;
 
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
-
-import org.apache.log4j.Logger;
 import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
 
-
 /**
- * @author marco
+ * A database adapter is used for those things that need to be done outside of JDO.
+ * Currently, this is only the creation of a database - once it exists, all
+ * interaction is done using JDO.
+ *
+ * @author Marco Schulze - marco at nightlabs dot de
  */
-public class DatabaseCreatorHSQL implements DatabaseCreator {
-
-	public void createDatabase(JFireServerConfigModule jfireServerConfigModule,
+public interface DatabaseAdapter
+{
+	/**
+	 * @param jfireServerConfigModule The configuration module which has the database connection properties. You can read
+	 *		username and password out of it.
+	 * @param databaseURL The complete connection URL for accessing the new database. You must parse it in order to
+	 *		check whether 1st you are really able to handle this kind of database (e.g. if it starts with 'jdbc:mysql' and you
+	 *		support only PostgreSQL, then you have to throw an exception).
+	 * @throws DatabaseException Thrown, if accessing the database server/creating the database fails.
+	 */
+	public void createDatabase(
+			JFireServerConfigModule jfireServerConfigModule,
 			String databaseURL)
-			throws CreateDatabaseException
-	{
-		Logger LOGGER = Logger.getLogger(DatabaseCreatorHSQL.class);
+	throws DatabaseException;
 
-		JFireServerConfigModule.Database dbCf = jfireServerConfigModule.getDatabase();
+	/**
+	 * This method is called after {@link #createDatabase(JFireServerConfigModule, String) } in case an error occured
+	 * during organisation setup and thus, the corrupted new database needs to be thrown away.
+	 *
+	 * @throws DatabaseException
+	 */
+	public void dropDatabase()
+	throws DatabaseException;
 
-		if (!databaseURL.startsWith("jdbc:hsqldb:"))
-			throw new IllegalArgumentException("databaseURL must start with 'jdbc:hsqldb:'!");
-
-//		int lastSlashPos = databaseURL.lastIndexOf('/');
-//		if (lastSlashPos < 0)
-//			throw new IllegalArgumentException("databaseURL is malformed: Misses '/' before database name!");
-//
-//		String dbServerURL = databaseURL.substring(0, lastSlashPos + 1);
-//		String databaseName = databaseURL.substring(lastSlashPos + 1);
-
-//		LOGGER.info("Creating database \""+databaseName+"\" on server \""+dbServerURL+"\"");
-
-		try {
-//			java.sql.Connection conn = DriverManager.getConnection(
-//					dbServerURL, dbCf.getDatabaseUserName(), dbCf.getDatabasePassword());
-			java.sql.Connection conn = DriverManager.getConnection(
-					databaseURL, dbCf.getDatabaseUserName(), dbCf.getDatabasePassword());
-			try {
-				Statement stmt = conn.createStatement();
-				StringBuffer sql = new StringBuffer();
-
-				sql.append("create table MY_FIRST_TABLE (a int not null)");
-
-				stmt.execute(sql.toString());
-			} finally {
-				conn.close();
-			}
-		} catch (SQLException e) {
-			throw new CreateDatabaseException(e);
-		}
-	}
 }

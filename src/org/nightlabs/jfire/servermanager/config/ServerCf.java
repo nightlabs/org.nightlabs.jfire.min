@@ -31,10 +31,9 @@ import java.io.Serializable;
 import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 
+import org.nightlabs.jdo.ObjectIDUtil;
 import org.nightlabs.jfire.server.Server;
 import org.nightlabs.jfire.server.id.ServerID;
-
-import org.nightlabs.jdo.ObjectIDUtil;
 
 /**
  * @author marco
@@ -54,7 +53,6 @@ implements Serializable, Cloneable
   private String serverID = null;
 	private String serverName = null;
 	private String j2eeServerType = null;
-//	private String initialContextFactory = null;
 	private String initialContextURL = null;
 
 
@@ -90,20 +88,6 @@ implements Serializable, Cloneable
 			throw new IllegalArgumentException("serverName must not be an empty string!");
 		this.serverName = _serverName;
 	}
-
-//	/**
-//	 * @return Returns the initialContextFactory.
-//	 */
-//	public String getInitialContextFactory() {
-//		return initialContextFactory;
-//	}
-//
-//	/**
-//	 * @param initialContextFactory The initialContextFactory to set.
-//	 */
-//	public void setInitialContextFactory(String initialContextFactory) {
-//		this.initialContextFactory = initialContextFactory;
-//	}
 
 	/**
 	 * @return Returns the initialContextURL.
@@ -153,7 +137,6 @@ implements Serializable, Cloneable
 			server = new Server(getServerID());
 			server.setServerName(getServerName());
 			server.setJ2eeServerType(getJ2eeServerType());
-//			server.setInitialContextFactory(getInitialContextFactory());
 			server.setInitialContextURL(getInitialContextURL());
 			pm.makePersistent(server);
 		}
@@ -163,16 +146,13 @@ implements Serializable, Cloneable
 	public void init()
 	{
 		if (serverID == null)
-			serverID = "rename.me.NightLabs.de";
+			serverID = "rename.me." + Long.toHexString(System.currentTimeMillis()) + ".jfire.org";
 
 		if (serverName == null)
 			serverName = "NightLabs Demo Server (please rename)";
 
 		if (j2eeServerType == null)
 			j2eeServerType = Server.J2EESERVERTYPE_JBOSS40X;
-
-//		if (initialContextFactory == null)
-//			initialContextFactory = "org.jboss.security.jndi.LoginInitialContextFactory"; // "org.jnp.interfaces.NamingContextFactory";
 
 		if (initialContextURL == null)
 			initialContextURL = "jnp://127.0.0.1:1099";

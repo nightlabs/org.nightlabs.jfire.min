@@ -30,53 +30,54 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import org.apache.log4j.Logger;
 import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
 
 
 /**
- * @author marco
+ * @author Marco Schulze - marco at nightlabs dot de
  */
-public class DatabaseCreatorMySQL implements DatabaseCreator {
-	/**
-	 * @see org.nightlabs.jfire.servermanager.db.DatabaseCreator#createDatabase(org.nightlabs.jfire.servermanager.config.JFireServerConfigModule, String)
-	 */
-	public void createDatabase(JFireServerConfigModule jfireServerConfigModule,
+public class DatabaseAdapterHSQL
+implements DatabaseAdapter
+{
+	private java.sql.Connection connCreateDB = null; 
+
+	public void createDatabase(
+			JFireServerConfigModule jfireServerConfigModule,
 			String databaseURL)
-			throws CreateDatabaseException
+	throws DatabaseException
 	{
-		Logger LOGGER = Logger.getLogger(DatabaseCreatorMySQL.class);
+//		Logger LOGGER = Logger.getLogger(DatabaseAdapterHSQL.class);
 
 		JFireServerConfigModule.Database dbCf = jfireServerConfigModule.getDatabase();
 
-		if (!databaseURL.startsWith("jdbc:mysql:"))
-			throw new IllegalArgumentException("databaseURL must start with 'jdbc:mysql:'!");
-
-		int lastSlashPos = databaseURL.lastIndexOf('/');
-		if (lastSlashPos < 0)
-			throw new IllegalArgumentException("databaseURL is malformed: Misses '/' before database name!");
-
-		String dbServerURL = databaseURL.substring(0, lastSlashPos + 1);
-		String databaseName = databaseURL.substring(lastSlashPos + 1);
-
-		LOGGER.info("Creating database \""+databaseName+"\" on server \""+dbServerURL+"\"");
+		if (!databaseURL.startsWith("jdbc:hsqldb:"))
+			throw new IllegalArgumentException("databaseURL must start with 'jdbc:hsqldb:'!");
 
 		try {
-			java.sql.Connection conn = DriverManager.getConnection(
-					dbServerURL, dbCf.getDatabaseUserName(), dbCf.getDatabasePassword());
-			try {
-				Statement stmt = conn.createStatement();
-				StringBuffer sql = new StringBuffer();
+			connCreateDB = DriverManager.getConnection(
+					databaseURL, dbCf.getDatabaseUserName(), dbCf.getDatabasePassword());
 
-				sql.append("create database ");
-				sql.append(databaseName);
-
-				stmt.execute(sql.toString());
-			} finally {
-				conn.close();
-			}
+			Statement stmt = connCreateDB.createStatement();
+			stmt.execute("create table MY_FIRST_TABLE (a int not null)");
+			stmt.execute("drop table MY_FIRST_TABLE");
 		} catch (SQLException e) {
-			throw new CreateDatabaseException(e);
+			throw new DatabaseException(e);
 		}
 	}
+
+	public void dropDatabase()
+			throws DatabaseException
+	{
+		try {
+			if (connCreateDB != null) {
+//				Statement stmt = connCreateDB.createStatement();
+//				stmt.execute("dropall");
+				connCreateDB.close();
+				connCreateDB = null;
+			}
+		} catch (SQLException e) {
+			throw new DatabaseException(e);
+		}
+	}
+
 }

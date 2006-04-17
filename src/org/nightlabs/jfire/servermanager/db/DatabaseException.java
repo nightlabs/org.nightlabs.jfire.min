@@ -26,16 +26,33 @@
 
 package org.nightlabs.jfire.servermanager.db;
 
-import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
+import org.nightlabs.ModuleException;
 
 /**
- * @author marco
+ * A {@link DatabaseAdapter} throws this exception whenever accessing the database server fails.
+ *
+ * @author Marco Schulze - marco at nightlabs dot de
  */
-public interface DatabaseCreator {
-
-	public void createDatabase(
-			JFireServerConfigModule jfireServerConfigModule,
-			String databaseURL)
-		throws CreateDatabaseException;
-
+public class DatabaseException extends ModuleException {
+	
+	public DatabaseException() { }
+	/**
+	 * @param message
+	 */
+	public DatabaseException(String message) {
+		super(message);
+	}
+	/**
+	 * @param message
+	 * @param cause
+	 */
+	public DatabaseException(String message, Throwable cause) {
+		super(message, cause);
+	}
+	/**
+	 * @param cause
+	 */
+	public DatabaseException(Throwable cause) {
+		super(cause);
+	}
 }

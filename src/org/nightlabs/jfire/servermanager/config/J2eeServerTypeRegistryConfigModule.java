@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.nightlabs.jfire.server.Server;
-import org.nightlabs.jfire.servermanager.j2ee.VendorAdapterJBoss;
+import org.nightlabs.jfire.servermanager.j2ee.J2EEAdapterJBoss;
 
 import org.nightlabs.config.ConfigModule;
 import org.nightlabs.config.InitException;
@@ -209,7 +209,7 @@ public class J2eeServerTypeRegistryConfigModule extends ConfigModule
 			localServer = new J2eeLocalServer();
 			localServer.cfMod = this;
 			localServer.setJ2eeServerType(Server.J2EESERVERTYPE_JBOSS32X);
-			localServer.setJ2eeVendorAdapterClassName(VendorAdapterJBoss.class.getName());
+			localServer.setJ2eeVendorAdapterClassName(J2EEAdapterJBoss.class.getName());
 			localServer.init();
 
 			remoteServer = new J2eeRemoteServer();
@@ -233,7 +233,7 @@ public class J2eeServerTypeRegistryConfigModule extends ConfigModule
 			localServer = new J2eeLocalServer();
 			localServer.cfMod = this;
 			localServer.setJ2eeServerType(Server.J2EESERVERTYPE_JBOSS40X);
-			localServer.setJ2eeVendorAdapterClassName(VendorAdapterJBoss.class.getName());
+			localServer.setJ2eeVendorAdapterClassName(J2EEAdapterJBoss.class.getName());
 			localServer.init();
 
 			remoteServer = new J2eeRemoteServer();

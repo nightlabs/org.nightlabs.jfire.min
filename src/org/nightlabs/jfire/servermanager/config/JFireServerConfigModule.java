@@ -26,8 +26,11 @@
 
 package org.nightlabs.jfire.servermanager.config;
 
+import java.io.File;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.log4j.Logger;
@@ -36,7 +39,9 @@ import org.nightlabs.config.ConfigModule;
 import org.nightlabs.config.InitException;
 import org.nightlabs.jfire.server.LocalServer;
 import org.nightlabs.jfire.server.Server;
-import org.nightlabs.jfire.servermanager.db.DatabaseCreatorMySQL;
+import org.nightlabs.jfire.servermanager.db.DatabaseAdapterHSQL;
+import org.nightlabs.jfire.servermanager.db.DatabaseAdapterMySQL;
+import org.nightlabs.util.Utils;
 
 /**
  * @author marco
@@ -44,12 +49,11 @@ import org.nightlabs.jfire.servermanager.db.DatabaseCreatorMySQL;
 public class JFireServerConfigModule extends ConfigModule
 {
 	public static Logger LOGGER = Logger.getLogger(JFireServerConfigModule.class);
-	
+
 	public static class J2ee implements Serializable
 	{
 		private String j2eeDeployBaseDirectory;
-//		private String j2eeVendorAdapterClassName;
-		
+
 		/**
 		 * @return Returns the j2eeDeployBaseDirectory.
 		 */
@@ -62,24 +66,9 @@ public class JFireServerConfigModule extends ConfigModule
 		public void setJ2eeDeployBaseDirectory(String deployBaseDirectory) {
 			j2eeDeployBaseDirectory = deployBaseDirectory;
 		}
-//		/**
-//		 * @return Returns the j2eeVendorAdapterClassName.
-//		 */
-//		public String getJ2eeVendorAdapterClassName() {
-//			return j2eeVendorAdapterClassName;
-//		}
-//		/**
-//		 * @param vendorAdapterClassName The j2eeVendorAdapterClassName to set.
-//		 */
-//		public void setJ2eeVendorAdapterClassName(String vendorAdapterClassName) {
-//			j2eeVendorAdapterClassName = vendorAdapterClassName;
-//		}
-		
+
 		public void init()
 		{
-//			if (j2eeVendorAdapterClassName == null)
-//				j2eeVendorAdapterClassName = VendorAdapterJBoss.class.getName();
-
 			if (j2eeDeployBaseDirectory == null)
 				j2eeDeployBaseDirectory = "../server/default/deploy/JFire.last/";
 		}
@@ -87,17 +76,49 @@ public class JFireServerConfigModule extends ConfigModule
 
 	public static class Database implements Serializable
 	{
+		public static final String DATABASE_NAME_VAR = "{databaseName}";
+
+		public static String DEFAULTS_DEFAULT_KEY = "HSQL";
+		public static Map<String, Database> DEFAULTS = new HashMap<String, Database>();
+		static {
+			try {
+				Database db;
+
+				// Default values for HSQLDB
+				db = new Database();
+				db._init();
+				db.setDatabaseDriverName("org.hsqldb.jdbcDriver");
+//				db.setDatabaseURL("jdbc:hsqldb:hsql:" + Utils.getTempDir() + "/hsqldb/" + DATABASE_NAME_VAR);
+				db.setDatabaseURL("jdbc:hsqldb:file:" + new File(Utils.getTempDir(), "hsqldb").getAbsolutePath() + File.separatorChar + DATABASE_NAME_VAR);
+				db.setDatabaseUserName("sa");
+				db.setDatabasePassword("");
+				db.setDatabaseAdapter(DatabaseAdapterHSQL.class.getName());
+				DEFAULTS.put("HSQL", db);
+
+				// Default values for MySQL
+				db = new Database();
+				db._init();
+				db.setDatabaseDriverName("com.mysql.jdbc.Driver");
+				db.setDatabaseURL("jdbc:mysql://localhost/" + DATABASE_NAME_VAR);
+				db.setDatabaseUserName("jfire");
+				db.setDatabasePassword("jfire_password");
+				db.setDatabaseAdapter(DatabaseAdapterMySQL.class.getName());
+				DEFAULTS.put("MySQL", db);
+
+			} catch (Throwable t) {
+				LOGGER.error("Creating database default values failed!", t);
+			}
+		}
+
 		private String databaseDriverName;
 		private String databaseURL;
-//		private String databaseProtocol;
-//		private String databaseHost;
 		private String databasePrefix;
 		private String databaseSuffix;
 		private String databaseUserName;
 		private String databasePassword;
-		
-		private String databaseCreator;
-		
+
+		private String databaseAdapter;
+
 		/**
 		 * @return Returns the databaseDriverName.
 		 */
@@ -110,32 +131,6 @@ public class JFireServerConfigModule extends ConfigModule
 		public void setDatabaseDriverName(String _databaseDriverName) {
 			this.databaseDriverName = _databaseDriverName;
 		}
-//		/**
-//		 * @return Returns the databaseProtocol.
-//		 */
-//		public String getDatabaseProtocol() {
-//			return databaseProtocol;
-//		}
-//		/**
-//		 * @param databaseProtocol The databaseProtocol to set.
-//		 */
-//		public void setDatabaseProtocol(String databaseProtocol) {
-//			this.databaseProtocol = databaseProtocol;
-//		}
-//		/**
-//		 * @return Returns the databaseHost.
-//		 */
-//		public String getDatabaseHost() {
-//			return databaseHost;
-//		}
-//		/**
-//		 * @param databaseHost The databaseHost to set.
-//		 */
-//		public void setDatabaseHost(String databaseHost) {
-//			this.databaseHost = databaseHost;
-//		}
-
-		public static final String DATABASE_NAME_VAR = "{databaseName}";
 
 		public String getDatabaseURL()
 		{
@@ -217,19 +212,19 @@ public class JFireServerConfigModule extends ConfigModule
 		}
 
 		/**
-		 * @return Returns the databaseCreator.
+		 * @return Returns the databaseAdapter.
 		 */
-		public String getDatabaseCreator() {
-			return databaseCreator;
+		public String getDatabaseAdapter() {
+			return databaseAdapter;
 		}
 		/**
-		 * @param databaseCreator The databaseCreator to set.
+		 * @param databaseAdapter The databaseAdapter to set.
 		 */
-		public void setDatabaseCreator(String databaseCreator) {
-			this.databaseCreator = databaseCreator;
+		public void setDatabaseAdapter(String databaseCreator) {
+			this.databaseAdapter = databaseCreator;
 		}
 
-		public void init()
+		protected void _init()
 		{
 			if (databaseDriverName == null)
 				setDatabaseDriverName("com.mysql.jdbc.Driver");
@@ -249,28 +244,46 @@ public class JFireServerConfigModule extends ConfigModule
 			if (databasePassword == null)
 				setDatabasePassword("jfire_password");
 
-			if (databaseCreator == null)
-				setDatabaseCreator(DatabaseCreatorMySQL.class.getName());
+			if (databaseAdapter == null)
+				setDatabaseAdapter(DatabaseAdapterMySQL.class.getName());
+		}
+
+		public void init()
+		{
+			_init();
 
 			LOGGER.info("databaseDriverName = "+databaseDriverName);
 			LOGGER.info("databaseURL = "+databaseURL);
-//			LOGGER.info("databaseProtocol = "+databaseProtocol);
-//			LOGGER.info("databaseHost = "+databaseHost);
 			LOGGER.info("databasePrefix = "+databasePrefix);
 			LOGGER.info("databaseSuffix = "+databaseSuffix);
 			LOGGER.info("databaseUserName = "+databaseUserName);
 			LOGGER.info("databasePassword = "+databasePassword);
-			LOGGER.info("databaseCreator = "+databaseCreator);
+			LOGGER.info("databaseAdapter = "+databaseAdapter);
+		}
+
+		public void loadDefaults(String defaultKey)
+		{
+			Database db = DEFAULTS.get(defaultKey);
+			if (db == null)
+				throw new IllegalArgumentException("No defaults known with defaultKey=" + defaultKey);
+
+			setDatabaseDriverName(db.getDatabaseDriverName());
+			setDatabaseURL(db.getDatabaseURL());
+			setDatabasePrefix(db.getDatabasePrefix());
+			setDatabaseSuffix(db.getDatabaseSuffix());
+			setDatabaseUserName(db.getDatabaseUserName());
+			setDatabasePassword(db.getDatabasePassword());
+			setDatabaseAdapter(db.getDatabaseAdapter());
 		}
 	}
 
 	public static class JDO implements Serializable
 	{
+		public static final String ORGANISATION_ID_VAR = "{organisationID}";
+
 		private String jdoConfigDirectory;
 		private String jdoConfigFilePrefix;
 		private String jdoConfigFileSuffix;
-//		private String jdoPersistenceManagerFactoryJNDIPrefix;
-//		private String jdoPersistenceManagerFactoryJNDISuffix;
 		private String jdoTemplateDSXMLFile;
 		
 		/**
@@ -279,10 +292,23 @@ public class JFireServerConfigModule extends ConfigModule
 		public String getJdoConfigDirectory() {
 			return jdoConfigDirectory;
 		}
+		public String getJdoConfigDirectory(String organisationID)
+		{
+			if (organisationID == null || "".equals(organisationID))
+				throw new IllegalArgumentException("organisationID must not be null or empty string!");
+
+			return jdoConfigDirectory.replace(ORGANISATION_ID_VAR, organisationID);
+		}
 		/**
 		 * @param jdoConfigDirectory The jdoConfigDirectory to set.
 		 */
 		public void setJdoConfigDirectory(String _jdoConfigDirectory) {
+			if (_jdoConfigDirectory == null)
+				throw new IllegalArgumentException("jdoConfigDirectory must not be null!");
+
+			if (_jdoConfigDirectory.indexOf(ORGANISATION_ID_VAR) < 0)
+				throw new IllegalArgumentException("jdoConfigDirectory must contain \"" + ORGANISATION_ID_VAR + "\"!");
+
 			this.jdoConfigDirectory = _jdoConfigDirectory;
 		}
 		/**
@@ -309,30 +335,6 @@ public class JFireServerConfigModule extends ConfigModule
 		public void setJdoConfigFileSuffix(String _jdoConfigFileSuffix) {
 			this.jdoConfigFileSuffix = _jdoConfigFileSuffix;
 		}
-//		/**
-//		 * @return Returns the jdoPersistenceManagerFactoryJNDIPrefix.
-//		 */
-//		public String getJdoPersistenceManagerFactoryJNDIPrefix() {
-//			return jdoPersistenceManagerFactoryJNDIPrefix;
-//		}
-//		/**
-//		 * @param jdoPersistenceManagerFactoryJNDIPrefix The jdoPersistenceManagerFactoryJNDIPrefix to set.
-//		 */
-//		public void setJdoPersistenceManagerFactoryJNDIPrefix(String _jdoPersistenceManagerJNDIPrefix) {
-//			this.jdoPersistenceManagerFactoryJNDIPrefix = _jdoPersistenceManagerJNDIPrefix;
-//		}
-//		/**
-//		 * @return Returns the jdoPersistenceManagerFactoryJNDISuffix.
-//		 */
-//		public String getJdoPersistenceManagerFactoryJNDISuffix() {
-//			return jdoPersistenceManagerFactoryJNDISuffix;
-//		}
-//		/**
-//		 * @param jdoPersistenceManagerFactoryJNDISuffix The jdoPersistenceManagerFactoryJNDISuffix to set.
-//		 */
-//		public void setJdoPersistenceManagerFactoryJNDISuffix(String _jdoPersistenceManagerJNDISuffix) {
-//			this.jdoPersistenceManagerFactoryJNDISuffix = _jdoPersistenceManagerJNDISuffix;
-//		}	
 		/**
 		 * @return Returns the jdoTemplateDSXMLFile.
 		 */
@@ -349,19 +351,13 @@ public class JFireServerConfigModule extends ConfigModule
 		public void init()
 		{
 			if (jdoConfigDirectory == null)
-				jdoConfigDirectory = "../server/default/deploy/JFire_JDO.last/";
+				setJdoConfigDirectory("../server/default/deploy/JFire_JDO_" + ORGANISATION_ID_VAR + ".last/");
 
 			if (jdoConfigFilePrefix == null)
-				jdoConfigFilePrefix = "jfire_jpox-";
+				jdoConfigFilePrefix = "jdo-";
 
 			if (jdoConfigFileSuffix == null)
 				jdoConfigFileSuffix = "-ds.xml";
-
-//			if (jdoPersistenceManagerFactoryJNDIPrefix == null)
-//				jdoPersistenceManagerFactoryJNDIPrefix = "jfire/persistenceManagerFactory/"; // "jfire/persistenceManagers/";
-//
-//			if (jdoPersistenceManagerFactoryJNDISuffix == null)
-//				jdoPersistenceManagerFactoryJNDISuffix = "";
 
 			if (jdoTemplateDSXMLFile == null)
 				jdoTemplateDSXMLFile = "../server/default/deploy/JFire.last/JFireBase.ear/jdo-jpox-ds.template.xml";
@@ -369,8 +365,6 @@ public class JFireServerConfigModule extends ConfigModule
 			LOGGER.info("jdoConfigDirectory = "+jdoConfigDirectory);
 			LOGGER.info("jdoConfigFilePrefix = "+jdoConfigFilePrefix);
 			LOGGER.info("jdoConfigFileSuffix = "+jdoConfigFileSuffix);
-//			LOGGER.info("jdoPersistenceManagerFactoryJNDIPrefix = "+jdoPersistenceManagerFactoryJNDIPrefix);
-//			LOGGER.info("jdoPersistenceManagerFactoryJNDISuffix = "+jdoPersistenceManagerFactoryJNDISuffix);
 			LOGGER.info("jdoTemplateDSXMLFile = "+jdoTemplateDSXMLFile);
 		}
 	}

@@ -47,7 +47,7 @@ import org.apache.log4j.Logger;
 import org.nightlabs.config.Config;
 import org.nightlabs.config.ConfigException;
 import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
-import org.nightlabs.jfire.servermanager.db.DatabaseCreator;
+import org.nightlabs.jfire.servermanager.db.DatabaseAdapter;
 
 /**
  * @author marco
@@ -333,8 +333,8 @@ public class ManagedConnectionFactoryImpl
 //		String j2eeVendorAdapterClassName = j2eeCf.getJ2eeVendorAdapterClassName();
 //		try {
 //			Class j2eeVendorAdapterClass = Class.forName(j2eeVendorAdapterClassName);
-//			if (!VendorAdapter.class.isAssignableFrom(j2eeVendorAdapterClass))
-//				throw new ClassCastException("J2eeVendorAdapterClass does not implement interface \""+VendorAdapter.class.getName()+"\"!");
+//			if (!J2EEAdapter.class.isAssignableFrom(j2eeVendorAdapterClass))
+//				throw new ClassCastException("J2eeVendorAdapterClass does not implement interface \""+J2EEAdapter.class.getName()+"\"!");
 //		} catch (Exception x) {
 //			throw new ConfigException("J2eeVendorAdapter \""+j2eeVendorAdapterClassName+"\" is not correct!", x);
 //		}
@@ -361,28 +361,28 @@ public class ManagedConnectionFactoryImpl
 			throw new ConfigException("Connecting to database server failed!", e);
 		}
 
-		String dbCreatorClassName = dbCf.getDatabaseCreator();
+		String dbCreatorClassName = dbCf.getDatabaseAdapter();
 		try {
 			Class dbCreatorClass = Class.forName(dbCreatorClassName);
-			if (!DatabaseCreator.class.isAssignableFrom(dbCreatorClass))
-				throw new ClassCastException("DatabaseCreatorClass does not implement interface \""+DatabaseCreator.class.getName()+"\"!");
+			if (!DatabaseAdapter.class.isAssignableFrom(dbCreatorClass))
+				throw new ClassCastException("DatabaseCreatorClass does not implement interface \""+DatabaseAdapter.class.getName()+"\"!");
 		} catch (Exception x) {
-			throw new ConfigException("DatabaseCreator \""+dbCreatorClassName+"\" is not correct!", x);
+			throw new ConfigException("DatabaseAdapter \""+dbCreatorClassName+"\" is not correct!", x);
 		}
 
-		File jdoConfigDir = new File(cfMod.getJdo().getJdoConfigDirectory());
-		if (!jdoConfigDir.exists())
-			throw new ConfigException("JDO config directory \""+cfMod.getJdo().getJdoConfigDirectory()+"\" does not exist!");
-		
-		if (!jdoConfigDir.isDirectory())
-			throw new ConfigException("JDO config directory \""+cfMod.getJdo().getJdoConfigDirectory()+"\" is not a directory!");
+//		File jdoConfigDir = new File(cfMod.getJdo().getJdoConfigDirectory());
+//		if (!jdoConfigDir.exists())
+//			throw new ConfigException("JDO config directory \""+cfMod.getJdo().getJdoConfigDirectory()+"\" does not exist!");
+//		
+//		if (!jdoConfigDir.isDirectory())
+//			throw new ConfigException("JDO config directory \""+cfMod.getJdo().getJdoConfigDirectory()+"\" is not a directory!");
+//
+//		if (!jdoConfigDir.canRead())
+//			throw new ConfigException("JDO config directory \""+cfMod.getJdo().getJdoConfigDirectory()+"\" is not readable!");
+//
+//		if (!jdoConfigDir.canWrite())
+//			throw new ConfigException("JDO config directory \""+cfMod.getJdo().getJdoConfigDirectory()+"\" is not writeable!");
 
-		if (!jdoConfigDir.canRead())
-			throw new ConfigException("JDO config directory \""+cfMod.getJdo().getJdoConfigDirectory()+"\" is not readable!");
-
-		if (!jdoConfigDir.canWrite())
-			throw new ConfigException("JDO config directory \""+cfMod.getJdo().getJdoConfigDirectory()+"\" is not writeable!");
-		
 		File jdoDSXMLTemplate = new File(cfMod.getJdo().getJdoTemplateDSXMLFile());
 		if (!jdoDSXMLTemplate.exists())
 			throw new ConfigException("JDO datasource xml template file \""+cfMod.getJdo().getJdoTemplateDSXMLFile()+"\" does not exist!");

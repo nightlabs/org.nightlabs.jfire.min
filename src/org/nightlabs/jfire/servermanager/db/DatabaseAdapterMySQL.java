@@ -26,31 +26,69 @@
 
 package org.nightlabs.jfire.servermanager.db;
 
-import org.nightlabs.ModuleException;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+import org.apache.log4j.Logger;
+import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
+
 
 /**
- * @author marco
+ * @author Marco Schulze - marco at nightlabs dot de
  */
-public class CreateDatabaseException extends ModuleException {
-	
-	public CreateDatabaseException() { }
-	/**
-	 * @param message
-	 */
-	public CreateDatabaseException(String message) {
-		super(message);
+public class DatabaseAdapterMySQL
+implements DatabaseAdapter
+{
+	private java.sql.Connection connCreateDB = null;
+	private String databaseName = null;
+
+	public void createDatabase(
+			JFireServerConfigModule jfireServerConfigModule,
+			String databaseURL)
+	throws DatabaseException
+	{
+		Logger LOGGER = Logger.getLogger(DatabaseAdapterMySQL.class);
+
+		JFireServerConfigModule.Database dbCf = jfireServerConfigModule.getDatabase();
+
+		if (!databaseURL.startsWith("jdbc:mysql:"))
+			throw new IllegalArgumentException("databaseURL must start with 'jdbc:mysql:'!");
+
+		int lastSlashPos = databaseURL.lastIndexOf('/');
+		if (lastSlashPos < 0)
+			throw new IllegalArgumentException("databaseURL is malformed: Misses '/' before database name!");
+
+		String dbServerURL = databaseURL.substring(0, lastSlashPos + 1);
+		String databaseName = databaseURL.substring(lastSlashPos + 1);
+
+		LOGGER.info("Creating database \""+databaseName+"\" on server \""+dbServerURL+"\"");
+
+		try {
+			connCreateDB = DriverManager.getConnection(
+					dbServerURL, dbCf.getDatabaseUserName(), dbCf.getDatabasePassword());
+			Statement stmt = connCreateDB.createStatement();
+			stmt.execute("create database " + databaseName);
+			this.databaseName = databaseName;
+		} catch (SQLException e) {
+			throw new DatabaseException(e);
+		}
 	}
-	/**
-	 * @param message
-	 * @param cause
-	 */
-	public CreateDatabaseException(String message, Throwable cause) {
-		super(message, cause);
-	}
-	/**
-	 * @param cause
-	 */
-	public CreateDatabaseException(Throwable cause) {
-		super(cause);
+
+	public void dropDatabase()
+			throws DatabaseException
+	{
+		try {
+			if (connCreateDB != null) {
+				if (databaseName != null) {
+					Statement stmt = connCreateDB.createStatement();
+					stmt.execute("drop database " + databaseName);
+				}
+				connCreateDB.close();
+				connCreateDB = null;
+			}
+		} catch (SQLException e) {
+			throw new DatabaseException(e);
+		}
 	}
 }

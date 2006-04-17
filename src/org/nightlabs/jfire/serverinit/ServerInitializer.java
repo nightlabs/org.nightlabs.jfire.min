@@ -4,7 +4,7 @@ import javax.naming.InitialContext;
 
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.servermanager.JFireServerManagerFactory;
-import org.nightlabs.jfire.servermanager.j2ee.VendorAdapter;
+import org.nightlabs.jfire.servermanager.j2ee.J2EEAdapter;
 import org.nightlabs.jfire.servermanager.ra.JFireServerManagerFactoryImpl;
 
 /**
@@ -81,13 +81,13 @@ public abstract class ServerInitializer
 		return jFireServerManagerFactory;
 	}
 
-	private VendorAdapter j2eeVendorAdapter;
+	private J2EEAdapter j2eeVendorAdapter;
 	
-	public VendorAdapter getJ2EEVendorAdapter()
+	public J2EEAdapter getJ2EEVendorAdapter()
 	{
 		return j2eeVendorAdapter;
 	}
-	public void setJ2EEVendorAdapter(VendorAdapter vendorAdapter)
+	public void setJ2EEVendorAdapter(J2EEAdapter vendorAdapter)
 	{
 		j2eeVendorAdapter = vendorAdapter;
 	}

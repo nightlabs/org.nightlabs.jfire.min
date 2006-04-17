@@ -115,11 +115,11 @@ import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
 import org.nightlabs.jfire.servermanager.config.OrganisationCf;
 import org.nightlabs.jfire.servermanager.config.OrganisationConfigModule;
 import org.nightlabs.jfire.servermanager.config.ServerCf;
-import org.nightlabs.jfire.servermanager.db.DatabaseCreator;
+import org.nightlabs.jfire.servermanager.db.DatabaseAdapter;
+import org.nightlabs.jfire.servermanager.j2ee.J2EEAdapter;
 import org.nightlabs.jfire.servermanager.j2ee.JMSConnectionFactoryLookup;
 import org.nightlabs.jfire.servermanager.j2ee.SecurityReflector;
 import org.nightlabs.jfire.servermanager.j2ee.ServerStartNotificationListener;
-import org.nightlabs.jfire.servermanager.j2ee.VendorAdapter;
 import org.nightlabs.jfire.servermanager.xml.EARApplicationMan;
 import org.nightlabs.jfire.servermanager.xml.EJBJarMan;
 import org.nightlabs.jfire.servermanager.xml.EJBRoleGroupMan;
@@ -650,15 +650,15 @@ public class JFireServerManagerFactoryImpl
 		}
 	}
 
-	protected VendorAdapter j2eeVendorAdapter = null;
-	protected synchronized VendorAdapter getJ2EEVendorAdapter()
+	protected J2EEAdapter j2eeVendorAdapter = null;
+	protected synchronized J2EEAdapter getJ2EEVendorAdapter()
 		throws ModuleException
 	{
 		if (j2eeVendorAdapter == null) {
 			try {
 				String j2eeVendorAdapterClassName = j2eeLocalServerCf.getJ2eeVendorAdapterClassName(); // mcf.getConfigModule().getJ2ee().getJ2eeVendorAdapterClassName();
 				Class j2eeVendorAdapterClass = Class.forName(j2eeVendorAdapterClassName);
-				j2eeVendorAdapter = (VendorAdapter)j2eeVendorAdapterClass.newInstance();
+				j2eeVendorAdapter = (J2EEAdapter)j2eeVendorAdapterClass.newInstance();
 			} catch (Exception e) {
 				throw new ModuleException(e);
 			}
@@ -934,6 +934,7 @@ public class JFireServerManagerFactoryImpl
 				
 				InitialContext ctx = new InitialContext();
 				TransactionManager transactionManager = getJ2EEVendorAdapter().getTransactionManager(ctx);
+				DatabaseAdapter databaseAdapter = null;
 				boolean doCommit = false;
 				transactionManager.begin();
 		    try {
@@ -979,16 +980,21 @@ public class JFireServerManagerFactoryImpl
 					}
 
 					// create database
-					String dbCreatorClassName = dbCf.getDatabaseCreator();
+					String databaseAdapterClassName = dbCf.getDatabaseAdapter();
 					try {
-						Class dbCreatorClass = Class.forName(dbCreatorClassName);
-						if (!DatabaseCreator.class.isAssignableFrom(dbCreatorClass))
-							throw new ClassCastException("DatabaseCreatorClass does not implement interface \""+DatabaseCreator.class.getName()+"\"!");
+						Class dbCreatorClass = Class.forName(databaseAdapterClassName);
+						if (!DatabaseAdapter.class.isAssignableFrom(dbCreatorClass))
+							throw new ClassCastException("DatabaseCreatorClass does not implement interface \""+DatabaseAdapter.class.getName()+"\"!");
 			
-						DatabaseCreator dbCreator = (DatabaseCreator) dbCreatorClass.newInstance();
-						dbCreator.createDatabase(mcf.getConfigModule(), dbURL);
+						databaseAdapter = (DatabaseAdapter) dbCreatorClass.newInstance();
 					} catch (Exception x) {
-						throw new ModuleException("Creating sql database with DatabaseCreator \""+dbCreatorClassName+"\" failed!", x);
+						throw new ModuleException("Instantiating DatabaseAdapter \""+databaseAdapterClassName+"\" failed!", x);
+					}
+
+					try {
+						databaseAdapter.createDatabase(mcf.getConfigModule(), dbURL);
+					} catch (Exception x) {
+						throw new ModuleException("Creating database with DatabaseAdapter \""+databaseAdapterClassName+"\" failed!", x);
 					}
 
 					File tmpJDODSXML;
@@ -1001,15 +1007,15 @@ public class JFireServerManagerFactoryImpl
 						variables.put("databaseURL", dbURL);
 						variables.put("databaseUserName", dbCf.getDatabaseUserName());
 						variables.put("databasePassword", dbCf.getDatabasePassword());
-			
-						tmpJDODSXML = createJDODSXML(jdoCf.getJdoConfigDirectory(), jdoCf.getJdoTemplateDSXMLFile(), variables);
+
+						tmpJDODSXML = createJDODSXML(jdoCf.getJdoConfigDirectory(organisationID), jdoCf.getJdoTemplateDSXMLFile(), variables);
 					} catch (Exception e) {
 						throw new ModuleException("Generating jdo ds xml file from template \""+jdoCf.getJdoTemplateDSXMLFile()+"\" failed!", e);
 					}
 
 					// Activate the jdo ds xml by renaming it.
 					File jdoDSXML = new File(
-							jdoCf.getJdoConfigDirectory(),
+							tmpJDODSXML.getParentFile(),
 							jdoCf.getJdoConfigFilePrefix() + organisationID + jdoCf.getJdoConfigFileSuffix()
 							);
 					tmpJDODSXML.renameTo(jdoDSXML);
@@ -1173,8 +1179,18 @@ public class JFireServerManagerFactoryImpl
 		    } finally {
 		    	if (doCommit)
 		    		transactionManager.commit();
-		    	else
+		    	else {
 		    		transactionManager.rollback();
+
+		    		// We drop the database after rollback(), because it might be the case that JDO tries to do sth. with
+		    		// the database during rollback.
+		    		try {
+		    			if (databaseAdapter != null)
+		    				databaseAdapter.dropDatabase();
+		    		} catch (Throwable t) {
+		    			LOGGER.error("Dropping database failed!", t);
+		    		}
+		    	}
 		    }
 
 			} catch (RuntimeException x) {
@@ -1426,11 +1442,19 @@ public class JFireServerManagerFactoryImpl
 	 *				value for the variable to replace.
 	 * @return An instance of File pointing to the newly created temporary ds.xml-file.
 	 */
-	protected File createJDODSXML(String jdoConfigDirectory, String jdoTemplateDSXMLFile, Map variables)
+	protected File createJDODSXML(String _jdoConfigDirectory, String jdoTemplateDSXMLFile, Map variables)
 		throws IOException, TemplateParseException
 	{
+		File jdoConfigDirectory = new File(_jdoConfigDirectory);
+		if (!jdoConfigDirectory.exists()) {
+			LOGGER.info("jdoConfigDirectory does not exist. Creating it: " + jdoConfigDirectory.getAbsolutePath());
+			if (!jdoConfigDirectory.mkdirs()) {
+				LOGGER.error("Creating jdoConfigDirectory failed: " + jdoConfigDirectory.getAbsolutePath());
+			}
+		}
+
 		File f;
-		
+
 		// Create and configure StreamTokenizer to read template file.
 		FileReader fr = new FileReader(jdoTemplateDSXMLFile);
 		try {
@@ -1443,7 +1467,7 @@ public class JFireServerManagerFactoryImpl
 //			stk.whitespaceChars('}', '}');
 			
 			// Create FileWriter for temporary file.
-			f = File.createTempFile(".tmp-", "-ds_xml.tmp", new File(jdoConfigDirectory));
+			f = File.createTempFile(".tmp-", "-ds_xml.tmp", jdoConfigDirectory);
 			FileWriter fw = new FileWriter(f);
 			try {
 
