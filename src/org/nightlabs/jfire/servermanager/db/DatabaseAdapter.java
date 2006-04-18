@@ -38,6 +38,18 @@ import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
 public interface DatabaseAdapter
 {
 	/**
+	 * This method tests whether the database server configured in the
+	 * given config module is accessible. Note, that the jdbc database driver
+	 * has already been loaded by Class.forName(...) - i.e. you don't need to
+	 * do this anymore.
+	 *
+	 * @param jfireServerConfigModule The configuration module which holds the database connection properties.
+	 * @throws DatabaseException Thrown, if the configuration is incorrect or the database server cannot be reached.
+	 */
+	void test(JFireServerConfigModule jfireServerConfigModule)
+	throws DatabaseException;
+
+	/**
 	 * @param jfireServerConfigModule The configuration module which has the database connection properties. You can read
 	 *		username and password out of it.
 	 * @param databaseURL The complete connection URL for accessing the new database. You must parse it in order to
@@ -45,7 +57,7 @@ public interface DatabaseAdapter
 	 *		support only PostgreSQL, then you have to throw an exception).
 	 * @throws DatabaseException Thrown, if accessing the database server/creating the database fails.
 	 */
-	public void createDatabase(
+	void createDatabase(
 			JFireServerConfigModule jfireServerConfigModule,
 			String databaseURL)
 	throws DatabaseException;
@@ -56,7 +68,7 @@ public interface DatabaseAdapter
 	 *
 	 * @throws DatabaseException
 	 */
-	public void dropDatabase()
+	void dropDatabase()
 	throws DatabaseException;
 
 }

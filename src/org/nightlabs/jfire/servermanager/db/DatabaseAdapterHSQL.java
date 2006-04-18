@@ -26,6 +26,7 @@
 
 package org.nightlabs.jfire.servermanager.db;
 
+import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -39,6 +40,23 @@ import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
 public class DatabaseAdapterHSQL
 implements DatabaseAdapter
 {
+	public void test(JFireServerConfigModule jfireServerConfigModule)
+	throws DatabaseException
+	{
+		try {
+			JFireServerConfigModule.Database dbCf = jfireServerConfigModule.getDatabase();
+			Connection sqlConn = DriverManager.getConnection(
+					dbCf.getDatabaseURL("test"),
+					dbCf.getDatabaseUserName(),
+					dbCf.getDatabasePassword()
+			);			
+			
+			sqlConn.close();
+		} catch (SQLException e) {
+			throw new DatabaseException(e);
+		}
+	}
+
 	private java.sql.Connection connCreateDB = null; 
 
 	public void createDatabase(
@@ -68,6 +86,7 @@ implements DatabaseAdapter
 	public void dropDatabase()
 			throws DatabaseException
 	{
+		// TODO how can I drop a HSQL database???
 		try {
 			if (connCreateDB != null) {
 //				Statement stmt = connCreateDB.createStatement();

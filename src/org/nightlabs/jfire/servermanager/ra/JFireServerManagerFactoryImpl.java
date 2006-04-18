@@ -982,11 +982,11 @@ public class JFireServerManagerFactoryImpl
 					// create database
 					String databaseAdapterClassName = dbCf.getDatabaseAdapter();
 					try {
-						Class dbCreatorClass = Class.forName(databaseAdapterClassName);
-						if (!DatabaseAdapter.class.isAssignableFrom(dbCreatorClass))
+						Class dbAdapterClass = Class.forName(databaseAdapterClassName);
+						if (!DatabaseAdapter.class.isAssignableFrom(dbAdapterClass))
 							throw new ClassCastException("DatabaseCreatorClass does not implement interface \""+DatabaseAdapter.class.getName()+"\"!");
 			
-						databaseAdapter = (DatabaseAdapter) dbCreatorClass.newInstance();
+						databaseAdapter = (DatabaseAdapter) dbAdapterClass.newInstance();
 					} catch (Exception x) {
 						throw new ModuleException("Instantiating DatabaseAdapter \""+databaseAdapterClassName+"\" failed!", x);
 					}

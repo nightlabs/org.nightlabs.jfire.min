@@ -28,9 +28,6 @@ package org.nightlabs.jfire.servermanager.ra;
 
 import java.io.File;
 import java.io.PrintWriter;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -48,6 +45,7 @@ import org.nightlabs.config.Config;
 import org.nightlabs.config.ConfigException;
 import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
 import org.nightlabs.jfire.servermanager.db.DatabaseAdapter;
+import org.nightlabs.jfire.servermanager.db.DatabaseException;
 
 /**
  * @author marco
@@ -348,26 +346,30 @@ public class ManagedConnectionFactoryImpl
 			throw new ConfigException("Database driver class \""+dbCf.getDatabaseDriverName()+"\" could not be found!", e);
 		}
 
+		String dbAdapterClassName = dbCf.getDatabaseAdapter();
+		DatabaseAdapter databaseAdapter;
 		try {
-			Connection sqlConn = DriverManager.getConnection(
-					dbCf.getDatabaseURL(null),
-//			    "jdbc:"+dbCf.getDatabaseProtocol()+"://"+dbCf.getDatabaseHost()+"/",
-			    dbCf.getDatabaseUserName(),
-			    dbCf.getDatabasePassword()
-			  );			
-			sqlConn.close();
-		} catch (SQLException e) {
-			LOGGER.error("Connecting to database server failed!", e);
-			throw new ConfigException("Connecting to database server failed!", e);
+			Class dbAdapterClass = Class.forName(dbAdapterClassName);
+			if (!DatabaseAdapter.class.isAssignableFrom(dbAdapterClass))
+				throw new ClassCastException("DatabaseAdapterClass does not implement interface \""+DatabaseAdapter.class.getName()+"\"!");
+
+			databaseAdapter = (DatabaseAdapter) dbAdapterClass.newInstance();
+		} catch (Exception x) {
+			throw new ConfigException("DatabaseAdapter \""+dbAdapterClassName+"\" is not correct!", x);
 		}
 
-		String dbCreatorClassName = dbCf.getDatabaseAdapter();
 		try {
-			Class dbCreatorClass = Class.forName(dbCreatorClassName);
-			if (!DatabaseAdapter.class.isAssignableFrom(dbCreatorClass))
-				throw new ClassCastException("DatabaseCreatorClass does not implement interface \""+DatabaseAdapter.class.getName()+"\"!");
-		} catch (Exception x) {
-			throw new ConfigException("DatabaseAdapter \""+dbCreatorClassName+"\" is not correct!", x);
+			databaseAdapter.test(cfMod);
+//			Connection sqlConn = DriverManager.getConnection(
+//					dbCf.getDatabaseURL(null),
+////			    "jdbc:"+dbCf.getDatabaseProtocol()+"://"+dbCf.getDatabaseHost()+"/",
+//			    dbCf.getDatabaseUserName(),
+//			    dbCf.getDatabasePassword()
+//			  );			
+//			sqlConn.close();
+		} catch (DatabaseException e) {
+			LOGGER.error("Connecting to database server failed!", e);
+			throw new ConfigException(e);
 		}
 
 //		File jdoConfigDir = new File(cfMod.getJdo().getJdoConfigDirectory());
