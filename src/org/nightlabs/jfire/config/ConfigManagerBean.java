@@ -39,23 +39,13 @@ import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
 
 import org.apache.log4j.Logger;
-import org.nightlabs.jfire.base.BaseSessionBeanImpl;
-import org.nightlabs.jfire.base.JFireBaseEAR;
-import org.nightlabs.jfire.config.Config;
-import org.nightlabs.jfire.config.ConfigGroup;
-import org.nightlabs.jfire.config.ConfigModule;
-import org.nightlabs.jfire.config.ConfigSetup;
-import org.nightlabs.jfire.config.FeatureSetConfigModule;
-import org.nightlabs.jfire.config.UserConfigSetup;
-import org.nightlabs.jfire.config.WorkstationConfigSetup;
-import org.nightlabs.jfire.config.id.ConfigID;
-import org.nightlabs.jfire.idgenerator.IDGenerator;
-
 import org.nightlabs.ModuleException;
 import org.nightlabs.jdo.ObjectID;
 import org.nightlabs.jdo.moduleregistry.ModuleMetaData;
-
-import com.sun.tools.doclets.formats.html.AllClassesFrameWriter;
+import org.nightlabs.jfire.base.BaseSessionBeanImpl;
+import org.nightlabs.jfire.base.JFireBaseEAR;
+import org.nightlabs.jfire.config.id.ConfigID;
+import org.nightlabs.jfire.idgenerator.IDGenerator;
 
 /**
  * @ejb.bean name="jfire/ejb/JFireBaseBean/ConfigManager"
@@ -570,8 +560,15 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 		pm = getPersistenceManager();
 		try {
 //		 TODO remove this test!!!
-			IDGenerator.nextID("one");
-			IDGenerator.nextIDs("many", 5);
+			LOGGER.info("****************************************************************************");
+			LOGGER.info("nextID(one): " + IDGenerator.nextID("one"));
+			LOGGER.info("nextID(many): ");
+			long[] nextIDs = IDGenerator.nextIDs("many", 5);
+			for (int i = 0; i < nextIDs.length; i++) {
+				long l = nextIDs[i];
+				LOGGER.info("              " + l);
+			}
+			LOGGER.info("****************************************************************************");
 //		 TODO remove this test!!!
 
 
