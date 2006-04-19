@@ -1,3 +1,28 @@
+/* *****************************************************************************
+ * JFire - it's hot - Free ERP System - http://jfire.org                       *
+ * Copyright (C) 2004-2005 NightLabs - http://NightLabs.org                    *
+ *                                                                             *
+ * This library is free software; you can redistribute it and/or               *
+ * modify it under the terms of the GNU Lesser General Public                  *
+ * License as published by the Free Software Foundation; either                *
+ * version 2.1 of the License, or (at your option) any later version.          *
+ *                                                                             *
+ * This library is distributed in the hope that it will be useful,             *
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of              *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU           *
+ * Lesser General Public License for more details.                             *
+ *                                                                             *
+ * You should have received a copy of the GNU Lesser General Public            *
+ * License along with this library; if not, write to the                       *
+ *     Free Software Foundation, Inc.,                                         *
+ *     51 Franklin St, Fifth Floor,                                            *
+ *     Boston, MA  02110-1301  USA                                             *
+ *                                                                             *
+ * Or get it online :                                                          *
+ *     http://opensource.org/licenses/lgpl-license.php                         *
+ *                                                                             *
+ *                                                                             *
+ ******************************************************************************/
 package org.nightlabs.jfire.idgenerator;
 
 import java.util.HashMap;
@@ -8,7 +33,16 @@ import javax.naming.InitialContext;
 
 import org.nightlabs.jfire.servermanager.j2ee.SecurityReflector;
 
-
+/**
+ * This implementation of {@link IDGenerator} is used in on the server side for ID generation.
+ * It holds a local cache of IDs and queries IDs via a local EJB call to
+ * {@link IDGeneratorHelperBean#serverNextIDs(String, int, int)}.
+ * <p>
+ * You <b>must not</b> use this class directly! Use the static methods provided by {@link IDGenerator} instead!
+ * </p>
+ *
+ * @author Marco Schulze - marco at nightlabs dot de
+ */
 public class IDGeneratorServer
 		extends IDGenerator
 {
@@ -79,7 +113,7 @@ public class IDGeneratorServer
 		           home = (IDGeneratorHelperLocalHome) objRef;
 
 						IDGeneratorHelperLocal idGeneratorHelper = (IDGeneratorHelperLocal) home.create();
-						long[] nextIDs = idGeneratorHelper.nextIDs(namespace, cachedIDs.size(), quantity);
+						long[] nextIDs = idGeneratorHelper.serverNextIDs(namespace, cachedIDs.size(), quantity);
 						for (int i = 0; i < nextIDs.length; i++) {
 							cachedIDs.add(new Long(nextIDs[i]));
 						}
