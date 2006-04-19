@@ -179,6 +179,7 @@
       <globalClassPublish pattern="org\.nightlabs\.j2ee\..*"/>
       <globalClassPublish pattern="org\.nightlabs\.xml\..*"/>
       <globalClassPublish pattern="org\.nightlabs\.jfire\.base\.config\..*"/>
+      <resourcePublish pattern="org/nightlabs/jfire/base/idgenerator/IDGeneratorClient\..*"/>
    </extension>
 	
 	
