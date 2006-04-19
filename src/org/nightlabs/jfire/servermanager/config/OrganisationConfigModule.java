@@ -27,6 +27,7 @@
 package org.nightlabs.jfire.servermanager.config;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.nightlabs.config.ConfigModule;
@@ -68,6 +69,19 @@ public class OrganisationConfigModule extends ConfigModule
 		organisations.add(org);
 		setChanged();
 		return org;
+	}
+
+	public boolean removeOrganisation(String organisationID)
+	{
+		for (Iterator it = organisations.iterator(); it.hasNext(); ) {
+			if (organisationID.equals(((OrganisationCf)it.next()).getOrganisationID())) {
+				it.remove();
+				setChanged();
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**

@@ -78,30 +78,49 @@ public class JFireServerConfigModule extends ConfigModule
 	{
 		public static final String DATABASE_NAME_VAR = "{databaseName}";
 
-		public static String DEFAULTS_DEFAULT_KEY = "HSQL";
+		public static String DEFAULTS_DEFAULT_KEY = "Mckoi";
 		public static Map<String, Database> DEFAULTS = new HashMap<String, Database>();
 		static {
 			try {
 				Database db;
 
-				// Default values for HSQLDB
+				// Default values for Mckoi
+				db = new Database();
+				db._init();
+				db.setDatabaseDriverName("com.mckoi.JDBCDriver");
+				db.setDatabaseURL("jdbc:mckoi:local:/" + new File(Utils.getTempDir(), "jfire-mckoi").getAbsolutePath() + File.separatorChar + DATABASE_NAME_VAR + File.separatorChar + "db.conf");
+//				db.setDatabaseUserName("jfire");
+//				db.setDatabasePassword("jfire_password");
+				db.setDatabaseAdapter("org.nightlabs.jfire.databaseadaptermckoi.DatabaseAdapterMckoi");
+				DEFAULTS.put("Mckoi", db);
+
+				// Default values for HSQLDB (file)
 				db = new Database();
 				db._init();
 				db.setDatabaseDriverName("org.hsqldb.jdbcDriver");
-//				db.setDatabaseURL("jdbc:hsqldb:hsql:" + Utils.getTempDir() + "/hsqldb/" + DATABASE_NAME_VAR);
-				db.setDatabaseURL("jdbc:hsqldb:file:" + new File(Utils.getTempDir(), "hsqldb").getAbsolutePath() + File.separatorChar + DATABASE_NAME_VAR);
+				db.setDatabaseURL("jdbc:hsqldb:file:" + new File(Utils.getTempDir(), "jfire-hsqldb").getAbsolutePath() + File.separatorChar + DATABASE_NAME_VAR);
 				db.setDatabaseUserName("sa");
 				db.setDatabasePassword("");
 				db.setDatabaseAdapter(DatabaseAdapterHSQL.class.getName());
-				DEFAULTS.put("HSQL", db);
+				DEFAULTS.put("HSQL (file)", db);
+
+				// Default values for HSQLDB (memory)
+				db = new Database();
+				db._init();
+				db.setDatabaseDriverName("org.hsqldb.jdbcDriver");
+				db.setDatabaseURL("jdbc:hsqldb:mem:" + new File(Utils.getTempDir(), "jfire-hsqldb").getAbsolutePath() + File.separatorChar + DATABASE_NAME_VAR);
+				db.setDatabaseUserName("sa");
+				db.setDatabasePassword("");
+				db.setDatabaseAdapter(DatabaseAdapterHSQL.class.getName());
+				DEFAULTS.put("HSQL (memory)", db);
 
 				// Default values for MySQL
 				db = new Database();
 				db._init();
 				db.setDatabaseDriverName("com.mysql.jdbc.Driver");
 				db.setDatabaseURL("jdbc:mysql://localhost/" + DATABASE_NAME_VAR);
-				db.setDatabaseUserName("jfire");
-				db.setDatabasePassword("jfire_password");
+//				db.setDatabaseUserName("jfire");
+//				db.setDatabasePassword("jfire_password");
 				db.setDatabaseAdapter(DatabaseAdapterMySQL.class.getName());
 				DEFAULTS.put("MySQL", db);
 

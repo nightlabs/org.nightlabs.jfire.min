@@ -60,7 +60,7 @@ implements DatabaseAdapter
 	}
 
 
-	private java.sql.Connection connCreateDB = null;
+	private Connection connCreateDB = null;
 	private String databaseName = null;
 
 	public void createDatabase(

@@ -133,9 +133,13 @@ public class DatastoreInitializer
 		if (LOGGER.isDebugEnabled()) {
 			LOGGER.debug("************************************************");
 			LOGGER.debug("Datastore Inits in execution order:");
-			for (Iterator it = inits.iterator(); it.hasNext();) {
-				Init init = (Init) it.next();
-				LOGGER.debug("  " + init.getBean() + '#' + init.getMethod());
+			for (Iterator itInit = inits.iterator(); itInit.hasNext(); ) {
+				Init init = (Init) itInit.next();
+				LOGGER.debug("  init: " + init.getDatastoreInitMan().getJFireEAR() + '/' + init.getDatastoreInitMan().getJFireJAR() + '/' + init.getBean() + '#' + init.getMethod());
+				for (Iterator itDep = init.getDependencies().iterator(); itDep.hasNext(); ) {
+					Dependency dep = (Dependency) itDep.next();
+					LOGGER.debug("      depends: " + dep.getModule() + '/' + dep.getArchive() + '/' + dep.getBean() + '#' + dep.getMethod());
+				}
 			}
 			LOGGER.debug("************************************************");
 		}
@@ -246,12 +250,13 @@ public class DatastoreInitializer
 			try {
 				for (Iterator it = inits.iterator(); it.hasNext(); ) {
 					Init init = (Init)it.next();
+					LOGGER.info("Invoking DatastoreInit: " + init.getDatastoreInitMan().getJFireEAR() + '/' + init.getDatastoreInitMan().getJFireJAR() + '/' + init.getBean() + '#' + init.getMethod());
 					try {
 						Object homeRef = initCtx.lookup(init.getBean());
-						Method homeCreate = homeRef.getClass().getMethod("create", null);
-						Object bean = homeCreate.invoke(homeRef, null);
-						Method beanMethod = bean.getClass().getMethod(init.getMethod(), null);
-						beanMethod.invoke(bean, null);
+						Method homeCreate = homeRef.getClass().getMethod("create", (Class[]) null);
+						Object bean = homeCreate.invoke(homeRef, (Object[]) null);
+						Method beanMethod = bean.getClass().getMethod(init.getMethod(), (Class[]) null);
+						beanMethod.invoke(bean, (Object[]) null);
 
 						try {
 							if (bean instanceof EJBObject)

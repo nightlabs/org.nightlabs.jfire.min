@@ -128,6 +128,7 @@ import org.nightlabs.jfire.servermanager.xml.ModuleDef;
 import org.nightlabs.jfire.servermanager.xml.RoleDef;
 import org.nightlabs.jfire.servermanager.xml.RoleGroupDef;
 import org.nightlabs.jfire.servermanager.xml.XMLReadException;
+import org.nightlabs.util.Utils;
 import org.xml.sax.SAXException;
 
 /**
@@ -939,7 +940,10 @@ public class JFireServerManagerFactoryImpl
 				
 				InitialContext ctx = new InitialContext();
 				TransactionManager transactionManager = getJ2EEVendorAdapter().getTransactionManager(ctx);
+				File jdoConfigDir = null;
 				DatabaseAdapter databaseAdapter = null;
+				boolean dropDatabase = false; // will be set true, AFTER the databaseAdapter has really created the database - this prevents a database to be dropped that was already previously existing
+				OrganisationCf organisationCf = null;
 				boolean doCommit = false;
 				transactionManager.begin();
 		    try {
@@ -956,26 +960,8 @@ public class JFireServerManagerFactoryImpl
 					databaseNameSB.append(dbCf.getDatabaseSuffix());
 					String databaseName = databaseNameSB.toString();
 
-					// generate jdbc url for server
-//					StringBuffer dbServerURLSB = new StringBuffer();
-//					dbServerURLSB.append("jdbc:");
-//					dbServerURLSB.append(dbCf.getDatabaseProtocol());
-//					dbServerURLSB.append("://");
-//					dbServerURLSB.append(dbCf.getDatabaseHost());
-//					dbServerURLSB.append('/');
-//					String dbServerURL = dbServerURLSB.toString();
-//			
-//					// generate jdbc url for database based on dbServerURL
-//					StringBuffer dbURLSB = new StringBuffer(dbServerURL);
-//					dbURLSB.append(databaseName);
-//					String dbURL = dbURLSB.toString();
+					// get jdbc url
 					String dbURL = dbCf.getDatabaseURL(databaseName);
-
-//					StringBuffer jdoPersistenceManagerJNDINameSB = new StringBuffer();
-//					jdoPersistenceManagerJNDINameSB.append(jdoCf.getJdoPersistenceManagerFactoryJNDIPrefix());
-//					jdoPersistenceManagerJNDINameSB.append(organisationID_simpleChars);
-//					jdoPersistenceManagerJNDINameSB.append(jdoCf.getJdoPersistenceManagerFactoryJNDISuffix());
-//					String jdoPersistenceManagerFactoryJNDIName = jdoPersistenceManagerJNDINameSB.toString();
 					String jdoPersistenceManagerFactoryJNDIName = OrganisationCf.PERSISTENCE_MANAGER_FACTORY_PREFIX_RELATIVE + organisationID;
 
 					try {
@@ -990,7 +976,7 @@ public class JFireServerManagerFactoryImpl
 						Class dbAdapterClass = Class.forName(databaseAdapterClassName);
 						if (!DatabaseAdapter.class.isAssignableFrom(dbAdapterClass))
 							throw new ClassCastException("DatabaseCreatorClass does not implement interface \""+DatabaseAdapter.class.getName()+"\"!");
-			
+
 						databaseAdapter = (DatabaseAdapter) dbAdapterClass.newInstance();
 					} catch (Exception x) {
 						throw new ModuleException("Instantiating DatabaseAdapter \""+databaseAdapterClassName+"\" failed!", x);
@@ -998,6 +984,7 @@ public class JFireServerManagerFactoryImpl
 
 					try {
 						databaseAdapter.createDatabase(mcf.getConfigModule(), dbURL);
+						dropDatabase = true;
 					} catch (Exception x) {
 						throw new ModuleException("Creating database with DatabaseAdapter \""+databaseAdapterClassName+"\" failed!", x);
 					}
@@ -1013,23 +1000,24 @@ public class JFireServerManagerFactoryImpl
 						variables.put("databaseUserName", dbCf.getDatabaseUserName());
 						variables.put("databasePassword", dbCf.getDatabasePassword());
 
-						tmpJDODSXML = createJDODSXML(jdoCf.getJdoConfigDirectory(organisationID), jdoCf.getJdoTemplateDSXMLFile(), variables);
+						jdoConfigDir = new File(jdoCf.getJdoConfigDirectory(organisationID));
+						tmpJDODSXML = createJDODSXML(jdoConfigDir.getAbsolutePath(), jdoCf.getJdoTemplateDSXMLFile(), variables);
 					} catch (Exception e) {
 						throw new ModuleException("Generating jdo ds xml file from template \""+jdoCf.getJdoTemplateDSXMLFile()+"\" failed!", e);
 					}
 
 					// Activate the jdo ds xml by renaming it.
 					File jdoDSXML = new File(
-							tmpJDODSXML.getParentFile(),
+							jdoConfigDir,
 							jdoCf.getJdoConfigFilePrefix() + organisationID + jdoCf.getJdoConfigFileSuffix()
 							);
 					tmpJDODSXML.renameTo(jdoDSXML);
 
-					OrganisationCf org = organisationConfigModule.addOrganisation(
+					organisationCf = organisationConfigModule.addOrganisation(
 							organisationID, organisationName);
 //					, masterOrganisationID,
 //							"java:/"+jdoPersistenceManagerJNDIName);
-					if (userID != null && isServerAdmin) org.addServerAdmin(userID);
+					if (userID != null && isServerAdmin) organisationCf.addServerAdmin(userID);
 					resetOrganisationCfs();
 					try {
 						getConfig().saveConfFile(true); // TODO force all modules to be written???
@@ -1076,7 +1064,7 @@ public class JFireServerManagerFactoryImpl
 						LOGGER.debug("pm.makePersistent(localServer) done.");
 			
 						LOGGER.debug("Creating JDO object LocalOrganisation...");
-						Organisation organisation = org.createOrganisation(pm, server);
+						Organisation organisation = organisationCf.createOrganisation(pm, server);
 						LocalOrganisation localOrganisation = new LocalOrganisation(organisation);
 						pm.makePersistent(localOrganisation);
 						LOGGER.debug("pm.makePersistent(localOrganisation) done.");
@@ -1167,7 +1155,7 @@ public class JFireServerManagerFactoryImpl
 
 					// create the CacheManagerFactory for the new organisation
 					try {
-						CacheManagerFactory cmf = new CacheManagerFactory(ctx, org, cacheCfMod); // registers itself in JNDI
+						CacheManagerFactory cmf = new CacheManagerFactory(ctx, organisationCf, cacheCfMod); // registers itself in JNDI
 
 						// register the cache's JDO-listeners in the PersistenceManagerFactory
 						PersistenceManagerFactory pmf = getPersistenceManagerFactory(organisationID);
@@ -1185,15 +1173,39 @@ public class JFireServerManagerFactoryImpl
 		    	if (doCommit)
 		    		transactionManager.commit();
 		    	else {
-		    		transactionManager.rollback();
+		    		try {
+		    			transactionManager.rollback();
+		    		} catch (Throwable t) {
+		    			LOGGER.error("Rolling back transaction failed!", t);
+		    		}
 
 		    		// We drop the database after rollback(), because it might be the case that JDO tries to do sth. with
 		    		// the database during rollback.
 		    		try {
-		    			if (databaseAdapter != null)
+		    			if (dropDatabase && databaseAdapter != null)
 		    				databaseAdapter.dropDatabase();
 		    		} catch (Throwable t) {
 		    			LOGGER.error("Dropping database failed!", t);
+		    		}
+
+		    		try {
+			    		if (jdoConfigDir != null) {
+			    			if (!Utils.deleteDirectoryRecursively(jdoConfigDir))
+			    				LOGGER.error("Deleting JDO config directory \"" + jdoConfigDir.getAbsolutePath() + "\" failed!");;
+			    		}
+		    		} catch (Throwable t) {
+		    			LOGGER.error("Deleting JDO config directory \"" + jdoConfigDir.getAbsolutePath() + "\" failed!", t);
+		    		}
+
+		    		if (organisationCf != null) {
+		    			try {
+		    				if (!organisationConfigModule.removeOrganisation(organisationCf.getOrganisationID()))
+		    					throw new IllegalStateException("Organisation was not registered in ConfigModule!");
+
+		    				organisationConfigModule._getConfig().saveConfFile();
+		    			} catch (Throwable t) {
+		    				LOGGER.error("Removing organisation \"" + organisationCf.getOrganisationID() + "\" from JFire server configuration failed!", t);
+		    			}
 		    		}
 		    	}
 		    }
