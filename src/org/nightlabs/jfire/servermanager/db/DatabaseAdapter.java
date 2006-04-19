@@ -70,5 +70,4 @@ public interface DatabaseAdapter
 	 */
 	void dropDatabase()
 	throws DatabaseException;
-
 }

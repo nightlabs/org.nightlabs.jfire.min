@@ -33,7 +33,6 @@ import java.sql.Statement;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
-import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule.Database;
 
 
 /**

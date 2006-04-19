@@ -79,6 +79,7 @@ import org.nightlabs.jfire.classloader.CLRegistrar;
 import org.nightlabs.jfire.classloader.CLRegistrarFactory;
 import org.nightlabs.jfire.classloader.CLRegistryCfMod;
 import org.nightlabs.jfire.datastoreinit.DatastoreInitializer;
+import org.nightlabs.jfire.idgenerator.IDGenerator;
 import org.nightlabs.jfire.jdo.cache.CacheCfMod;
 import org.nightlabs.jfire.jdo.cache.CacheManagerFactory;
 import org.nightlabs.jfire.jdo.organisationsync.OrganisationSyncManagerFactory;
@@ -210,6 +211,10 @@ public class JFireServerManagerFactoryImpl
 				throw new ResourceException(e.getMessage());
 			}
 		}
+
+		// TODO make the IDGenerator configurable
+		System.setProperty(IDGenerator.PROPERTY_KEY_ID_GENERATOR_CLASS, "org.nightlabs.jfire.id.IDGeneratorServer");
+		// org.nightlabs.jfire.id.IDGeneratorServer comes from JFireBaseBean and thus is not known in this module
 
 
 		String j2eeServerType = null;

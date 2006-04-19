@@ -48,14 +48,13 @@ import javax.ejb.EJBObject;
 import javax.naming.InitialContext;
 
 import org.apache.log4j.Logger;
+import org.nightlabs.ModuleException;
 import org.nightlabs.jfire.datastoreinit.xml.DatastoreInitMan;
 import org.nightlabs.jfire.datastoreinit.xml.Dependency;
 import org.nightlabs.jfire.datastoreinit.xml.Init;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.servermanager.JFireServerManagerFactory;
 import org.nightlabs.jfire.servermanager.config.ServerCf;
-
-import org.nightlabs.ModuleException;
 
 /**
  * @author Marco Schulze - marco at nightlabs dot de
@@ -130,6 +129,16 @@ public class DatastoreInitializer
 		});
 
 		inits = sortByDependencies();
+
+		if (LOGGER.isDebugEnabled()) {
+			LOGGER.debug("************************************************");
+			LOGGER.debug("Datastore Inits in execution order:");
+			for (Iterator it = inits.iterator(); it.hasNext();) {
+				Init init = (Init) it.next();
+				LOGGER.debug("  " + init.getBean() + '#' + init.getMethod());
+			}
+			LOGGER.debug("************************************************");
+		}
 	}
 
 	/**
@@ -185,8 +194,10 @@ public class DatastoreInitializer
 				} // if (!resKeySet.contains(depKey)) {
 			} // for (Iterator it = init.getDependencies().iterator(); it.hasNext(); ) {
 
-			resKeySet.add(initKey);
-			res.add(init);
+			if (!resKeySet.contains(initKey)) {
+				resKeySet.add(initKey);
+				res.add(init);
+			}
 
 		} finally {
 			initsInAddProcess.remove(initKey);
