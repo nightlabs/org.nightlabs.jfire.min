@@ -213,7 +213,7 @@ public class JFireServerManagerFactoryImpl
 		}
 
 		// TODO make the IDGenerator configurable
-		System.setProperty(IDGenerator.PROPERTY_KEY_ID_GENERATOR_CLASS, "org.nightlabs.jfire.id.IDGeneratorServer");
+		System.setProperty(IDGenerator.PROPERTY_KEY_ID_GENERATOR_CLASS, "org.nightlabs.jfire.idgenerator.IDGeneratorServer");
 		// org.nightlabs.jfire.id.IDGeneratorServer comes from JFireBaseBean and thus is not known in this module
 
 
