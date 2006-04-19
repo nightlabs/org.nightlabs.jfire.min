@@ -49,6 +49,7 @@ import org.nightlabs.jfire.config.FeatureSetConfigModule;
 import org.nightlabs.jfire.config.UserConfigSetup;
 import org.nightlabs.jfire.config.WorkstationConfigSetup;
 import org.nightlabs.jfire.config.id.ConfigID;
+import org.nightlabs.jfire.idgenerator.IDGenerator;
 
 import org.nightlabs.ModuleException;
 import org.nightlabs.jdo.ObjectID;
@@ -568,6 +569,12 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 		PersistenceManager pm;
 		pm = getPersistenceManager();
 		try {
+//		 TODO remove this test!!!
+			IDGenerator.nextID("one");
+			IDGenerator.nextIDs("many", 5);
+//		 TODO remove this test!!!
+
+
 			String organisationID = getOrganisationID();
 
 			ModuleMetaData moduleMetaData = ModuleMetaData.getModuleMetaData(pm, JFireBaseEAR.MODULE_NAME);
@@ -580,10 +587,10 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 			moduleMetaData = new ModuleMetaData(
 					JFireBaseEAR.MODULE_NAME, "1.0.0-0-beta", "1.0.0-0-beta");
 			pm.makePersistent(moduleMetaData);
-			
+
 			UserConfigSetup userConfigSetup = new UserConfigSetup(getOrganisationID());
 			pm.makePersistent(userConfigSetup);
-			
+
 			WorkstationConfigSetup workstationConfigSetup = new WorkstationConfigSetup(getOrganisationID());
 			pm.makePersistent(workstationConfigSetup);
 			workstationConfigSetup.getConfigModuleClasses().add(FeatureSetConfigModule.class.getName());

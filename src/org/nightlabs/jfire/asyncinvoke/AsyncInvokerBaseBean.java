@@ -141,9 +141,9 @@ implements javax.ejb.MessageDrivenBean, javax.jms.MessageListener
 
 			AsyncInvokeEnvelope envelope = (AsyncInvokeEnvelope) obj;
 
-			Invocation invocation = envelope.getInvocation();
+//			Invocation invocation = envelope.getInvocation();
 
-			SecurityReflector.UserDescriptor caller = envelope.getCaller();
+//			SecurityReflector.UserDescriptor caller = envelope.getCaller();
 			LoginContext loginContext;
 			JFireServerManager ism = ismf.getJFireServerManager();
 			try {
