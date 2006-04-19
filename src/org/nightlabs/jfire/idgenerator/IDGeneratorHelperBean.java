@@ -1,4 +1,4 @@
-package org.nightlabs.jfire.id;
+package org.nightlabs.jfire.idgenerator;
 
 import java.rmi.RemoteException;
 

@@ -1,4 +1,4 @@
-package org.nightlabs.jfire.id;
+package org.nightlabs.jfire.idgenerator;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -6,7 +6,6 @@ import java.util.Map;
 
 import javax.naming.InitialContext;
 
-import org.nightlabs.jfire.idgenerator.IDGenerator;
 import org.nightlabs.jfire.servermanager.j2ee.SecurityReflector;
 
 
@@ -35,9 +34,10 @@ public class IDGeneratorServer
 		// In case there are issues in a cluster which cannot be solved by JDO, we have to implement
 		// a way to synchronise the different VMs.
 
-		InitialContext initialContext = null;
 		try {
 			String organisationID;
+
+			InitialContext initialContext = null;
 			try {
 				if (securityReflector == null) {
 					if (initialContext == null)
