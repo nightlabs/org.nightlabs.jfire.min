@@ -56,6 +56,7 @@ import org.xml.sax.SAXException;
 
 import org.nightlabs.ModuleException;
 import org.nightlabs.io.DataBuffer;
+import org.nightlabs.util.CacheDirTag;
 import org.nightlabs.util.Utils;
 import org.nightlabs.xml.XMLReadException;
 
@@ -198,6 +199,11 @@ public class CLRegistrarFactory
 		clRegistryCfMod.acquireReadLock();
 		try {
 			clear();
+
+			// tag the temp repository with CacheDirTag
+			File tempRepositoryFile = new File(clRegistryCfMod.getTempRepository().getPath());
+			new CacheDirTag(tempRepositoryFile).tag("http://JFire.org - JFireRemoteClassLoader (Temp-Repository)", true, false);
+
 			resourceRepositories.put(clRegistryCfMod.getTempRepository().getName(), clRegistryCfMod.getTempRepository());
 			tempJarFiles = new ArrayList();
 			for (Iterator it = clRegistryCfMod.getResourceRepositories().iterator(); it.hasNext(); ) {
