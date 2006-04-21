@@ -202,7 +202,7 @@ public class CLRegistrarFactory
 
 			// tag the temp repository with CacheDirTag
 			File tempRepositoryFile = new File(clRegistryCfMod.getTempRepository().getPath());
-			new CacheDirTag(tempRepositoryFile).tag("http://JFire.org - JFireRemoteClassLoader (Temp-Repository)", true, false);
+			new CacheDirTag(tempRepositoryFile).tag("http://JFire.org - JFireRemoteClassLoader (Temporary Repository)", true, false);
 
 			resourceRepositories.put(clRegistryCfMod.getTempRepository().getName(), clRegistryCfMod.getTempRepository());
 			tempJarFiles = new ArrayList();
