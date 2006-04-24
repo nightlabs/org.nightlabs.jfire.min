@@ -236,8 +236,8 @@ public class Cache
 						jdoManager = JDOManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
 
 					Map subscriptionChanges = cache.fetchSubscriptionChangeRequests();
-					if (LOGGER.isDebugEnabled())
-						LOGGER.debug("Thread found " + subscriptionChanges.size() + " subscription change requests.");
+//					if (LOGGER.isDebugEnabled())
+//						LOGGER.debug("Thread found " + subscriptionChanges.size() + " subscription change requests.");
 
 					Map newSubscriptionChanges = null;
 					LinkedList objectIDsToSubscribe = null;
@@ -438,7 +438,7 @@ public class Cache
 	protected void restoreOldSubscriptionChangeRequests(Map oldChangeRequests)
 	{
 		if (oldChangeRequests == null || oldChangeRequests.isEmpty()) {
-			LOGGER.debug("There are no old subscription change requests. Won't do anything.");
+//			LOGGER.debug("There are no old subscription change requests. Won't do anything.");
 			return;
 		}
 
