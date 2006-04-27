@@ -40,6 +40,7 @@ import javax.jdo.Query;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.ModuleException;
+import org.nightlabs.config.ConfigModuleNotFoundException;
 import org.nightlabs.jdo.ObjectID;
 import org.nightlabs.jdo.moduleregistry.ModuleMetaData;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
@@ -322,7 +323,8 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 		ConfigSetup.ensureAllPrerequisites(pm);
 		ConfigModule configModule = null;
 		boolean groupAllowOverwrite = true;
-		configModule = ConfigModule.getAutoCreateConfigModule(pm, config, cfModClass, cfModID);
+		configModule = config.createConfigModule(cfModClass, cfModID);
+//		configModule = ConfigModule.getAutoCreateConfigModule(pm, config, cfModClass, cfModID);
 
 		pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
 		if (fetchGroups != null)
@@ -362,31 +364,83 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type = "Required"
-	 * 
 	 */
-	public ConfigModule getConfigModule(ObjectID keyObjectID, Class cfModClass, String cfModID, String[] fetchGroups, int maxFetchDepth)
+	public ConfigModule createConfigModule(
+			ObjectID keyObjectID, Class cfModClass, String cfModID,
+			String[] fetchGroups, int maxFetchDepth)
 	throws ModuleException
 	{
-		PersistenceManager pm;
-		pm = getPersistenceManager();
+		PersistenceManager pm = getPersistenceManager();
 		try 
 		{
 			ConfigSetup.ensureAllPrerequisites(pm);
 			Object keyObject = pm.getObjectById(keyObjectID);
-			return ConfigModule.getConfigModuleForKeyObject(
-					pm, 
-					getOrganisationID(), 
-					keyObject, 
-					cfModClass, 
-					cfModID, 
-					fetchGroups,
-					maxFetchDepth
-				);
+			Config config = Config.getConfig(pm, getOrganisationID(), keyObject); // Config is autocreated, if necessary
+
+			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
+			if (fetchGroups != null)
+				pm.getFetchPlan().setGroups(fetchGroups);
+
+			ConfigModule configModule = config.createConfigModule(cfModClass, cfModID);
+			return (ConfigModule)pm.detachCopy(configModule);
 		} finally {
 			pm.close();
 		}
 	}
-	
+
+	/**
+	 * Searches the ConfigModule for the given keyObject and inherits all its 
+	 * fields from the ConfigModule in the Configs configGroup according to its 
+	 * inheritance-settings. 
+	 * 
+	 * @param keyObjectID The ObjectID of the Object the Config holding the ConfigModule is assigned to. 
+	 * @param cfModClass The classname of the ConfigModule desired
+	 * @param cfModID The cfModID of the ConfigModule desired
+	 * @param throwExceptionIfNotFound If <code>true</code> and the ConfigModule does not exist, a {@link ConfigModuleNotFoundException} will be thrown. If it's <code>false</code>, <code>null</code> will be returned instead of an exception.
+	 * @param fetchGroups The fetch-groups to detach the returned ConfigModule with
+	 * @return Returns <code>null</code> (if allowed) or an instance of a class extending ConfigModule.
+	 *
+	 * @ejb.interface-method
+	 * @ejb.permission role-name="_Guest_"
+	 * @ejb.transaction type = "Required"
+	 */
+	public ConfigModule getConfigModule(
+			ObjectID keyObjectID, Class cfModClass, String cfModID, boolean throwExceptionIfNotFound,
+			String[] fetchGroups, int maxFetchDepth)
+	throws ModuleException
+	{
+		PersistenceManager pm = getPersistenceManager();
+		try 
+		{
+			ConfigSetup.ensureAllPrerequisites(pm);
+			Object keyObject = pm.getObjectById(keyObjectID);
+			Config config = Config.getConfig(pm, getOrganisationID(), keyObject); // Config is autocreated, if necessary
+			
+			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
+			if (fetchGroups != null)
+				pm.getFetchPlan().setGroups(fetchGroups);
+
+			ConfigModule configModule = config.getConfigModule(cfModClass, cfModID, throwExceptionIfNotFound);
+			if (configModule == null)
+				return null;
+
+			return (ConfigModule)pm.detachCopy(configModule);
+
+//
+//			return ConfigModule.getConfigModuleForKeyObject(
+//					pm, 
+//					getOrganisationID(), 
+//					keyObject, 
+//					cfModClass, 
+//					cfModID, 
+//					fetchGroups,
+//					maxFetchDepth
+//				);
+		} finally {
+			pm.close();
+		}
+	}
+
 	/* *********************************************************************** */
 	/* ************************** ConfigSetup stuff ************************** */
 	/* *********************************************************************** */

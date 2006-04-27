@@ -59,6 +59,30 @@ public class IDGeneratorServer
 	private SecurityReflector securityReflector = null;
 
 	@Override
+	protected String _getOrganisationID()
+	{
+		try {
+			InitialContext initialContext = null;
+			try {
+				if (securityReflector == null) {
+					if (initialContext == null)
+						initialContext = new InitialContext();
+
+					securityReflector = SecurityReflector.lookupSecurityReflector(initialContext);
+				}
+				return securityReflector.whoAmI().getOrganisationID();
+			} finally {
+				if (initialContext != null)
+					initialContext.close();
+			}
+		} catch (RuntimeException x) {
+			throw x;
+		} catch (Exception x) {
+			throw new RuntimeException(x);
+		}
+	}
+
+	@Override
 	protected long[] _nextIDs(String namespace, int quantity)
 	{
 		// We have for sure no problem as long as the server has only one VM. But,
