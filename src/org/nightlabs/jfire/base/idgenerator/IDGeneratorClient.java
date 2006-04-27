@@ -63,6 +63,18 @@ public class IDGeneratorClient
 	private Object namespace2cachedIDsMutex = new Object();
 
 	@Override
+	protected String _getOrganisationID()
+	{
+		try {
+			return Login.getLogin().getOrganisationID();
+		} catch (RuntimeException x) {
+			throw x;
+		} catch (Exception x) {
+			throw new RuntimeException(x);
+		}
+	}
+
+	@Override
 	protected long[] _nextIDs(String namespace, int quantity)
 	{
 		try {
