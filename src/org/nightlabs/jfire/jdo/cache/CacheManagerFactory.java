@@ -211,8 +211,15 @@ implements Serializable
 		} catch (NameAlreadyBoundException e) {
 			// ignore
 		}
-
-		ctx.bind(getJNDIName(organisationID), this);
+		
+		try
+		{
+			ctx.bind(getJNDIName(organisationID), this);
+		}
+		catch (NameAlreadyBoundException) 
+		{
+			ctx.rebind(getJNDIName(organisationID), this);
+		}
 
 //		// TO DO do we really want this? We don't have a plan yet on how to make
 //		// the representative-organisations work.

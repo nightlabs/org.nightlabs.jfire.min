@@ -286,10 +286,33 @@ public class JFireServerManagerFactoryImpl
 			}
 
 			String rootOrganisationID = getJFireServerConfigModule().getRootOrganisation().getOrganisationID();
-			initialContext.bind(Organisation.ROOT_ORGANISATION_ID_JNDI_NAME, rootOrganisationID);
-
-			initialContext.bind(JMSConnectionFactoryLookup.QUEUECF_JNDI_LINKNAME, "UIL2ConnectionFactory");
-			initialContext.bind(JMSConnectionFactoryLookup.TOPICCF_JNDI_LINKNAME, "UIL2ConnectionFactory");
+			try
+			{
+				initialContext.bind(Organisation.ROOT_ORGANISATION_ID_JNDI_NAME, rootOrganisationID);
+			}
+			catch (NameAlreadyBoundException e)
+			{
+				initialContext.rebind(Organisation.ROOT_ORGANISATION_ID_JNDI_NAME, rootOrganisationID);
+			}
+			
+			try
+			{
+				initialContext.bind(JMSConnectionFactoryLookup.QUEUECF_JNDI_LINKNAME, "UIL2ConnectionFactory");
+			}
+			catch (NameAlreadyBoundException e)
+			{
+				initialContext.rebind(JMSConnectionFactoryLookup.QUEUECF_JNDI_LINKNAME, "UIL2ConnectionFactory");
+			}
+			
+			try
+			{
+				initialContext.bind(JMSConnectionFactoryLookup.TOPICCF_JNDI_LINKNAME, "UIL2ConnectionFactory");
+			}
+			catch (NameAlreadyBoundException e)
+			{
+				initialContext.rebind(JMSConnectionFactoryLookup.TOPICCF_JNDI_LINKNAME, "UIL2ConnectionFactory");
+			}			
+			
 		} catch (Exception e) {
 			LOGGER.error("Binding some config settings into JNDI failed!", e);
 			throw new ResourceException(e.getMessage());
@@ -299,16 +322,32 @@ public class JFireServerManagerFactoryImpl
 			SecurityReflector userResolver = getJ2EEVendorAdapter().getUserResolver();
 			if (userResolver == null)
 				throw new NullPointerException("J2EEVendorAdapter "+getJ2EEVendorAdapter().getClass()+".getUserResolver() returned null!");
-			initialContext.bind(SecurityReflector.JNDI_NAME, userResolver);
+			try
+			{
+				initialContext.bind(SecurityReflector.JNDI_NAME, userResolver);
+			}
+			catch (NameAlreadyBoundException e)
+			{
+				initialContext.rebind(SecurityReflector.JNDI_NAME, userResolver);
+			}
 		} catch (Exception e) {
 			LOGGER.error("Creating SecurityReflector and binding it into JNDI failed!", e);
 			throw new ResourceException(e.getMessage());
 		}
 
-		try {
+		try
+		{
 			JFireServerLocalLoginManager m = new JFireServerLocalLoginManager();
-			initialContext.bind(JFireServerLocalLoginManager.JNDI_NAME, m);
-		} catch (Exception e) {
+			try
+			{			
+				initialContext.bind(JFireServerLocalLoginManager.JNDI_NAME, m);		
+			}
+			catch (NameAlreadyBoundException e)
+			{
+				initialContext.rebind(JFireServerLocalLoginManager.JNDI_NAME, m);
+			}
+		}
+		catch (Exception e) {
 			LOGGER.error("Creating JFireServerLocalLoginManager and binding it into JNDI failed!", e);
 			throw new ResourceException(e.getMessage());
 		}
