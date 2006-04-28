@@ -216,7 +216,7 @@ implements Serializable
 		{
 			ctx.bind(getJNDIName(organisationID), this);
 		}
-		catch (NameAlreadyBoundException) 
+		catch (NameAlreadyBoundException e) 
 		{
 			ctx.rebind(getJNDIName(organisationID), this);
 		}
