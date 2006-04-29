@@ -28,6 +28,8 @@ package org.nightlabs.jfire.servermanager.j2ee;
 
 import java.lang.reflect.Method;
 import java.rmi.Remote;
+import java.util.Collection;
+import java.util.Iterator;
 
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
@@ -110,9 +112,6 @@ public class J2EEAdapterJBoss implements J2EEAdapter
 		server.addNotificationListener(
 				new ObjectName("jboss.system:type=Server"),
 				new NotificationListener(){
-					/**
-					 * @see javax.management.NotificationListener#handleNotification(javax.management.Notification, java.lang.Object)
-					 */
 					public void handleNotification(Notification notification, Object handback)
 					{
 						if (org.jboss.system.server.Server.START_NOTIFICATION_TYPE.equals(notification.getType())) {
@@ -122,6 +121,77 @@ public class J2EEAdapterJBoss implements J2EEAdapter
 				}, null,
 				listener
 		);
+
+		
+//		ObjectName mainDeployer = new ObjectName("jboss.system:service=MainDeployer");
+//		server.addNotificationListener(mainDeployer, 
+//				new NotificationListener()
+//				{
+//					public void handleNotification(Notification notification, Object handback)
+//					{
+//						
+//						System.out.println("*****************************************************************");
+//						System.out.println("*****************************************************************");
+//						System.out.println("*****************************************************************");
+//						System.out.println("*****************************************************************");
+//						System.out.println(notification.toString());
+//						System.out.println(notification.getSource());
+//						System.out.println("*****************************************************************");
+//						System.out.println("*****************************************************************");
+//						System.out.println("*****************************************************************");
+//						System.out.println("*****************************************************************");
+//					}
+//				}, null, null);
+//		
+//    // Obtain the deployers list
+//    Object[] args = {};
+//    String[] sig = {};
+//    Collection deployers = (Collection) server.invoke(mainDeployer, "listDeployers", args, sig);
+//    
+//    for(Iterator iter = deployers.iterator(); iter.hasNext() ; ) {
+//       ObjectName name = (ObjectName) iter.next();
+//
+//       server.addNotificationListener(
+//      		 name,
+//	 				new NotificationListener(){
+//	 					public void handleNotification(Notification notification, Object handback)
+//	 					{
+//	 						System.out.println("-----------------------------------------------------------------");
+//	 						System.out.println("-----------------------------------------------------------------");
+//	 						System.out.println("-----------------------------------------------------------------");
+//	 						System.out.println("-----------------------------------------------------------------");
+//	 						System.out.println(notification.toString());
+//	 						System.out.println("-----------------------------------------------------------------");
+//	 						System.out.println("-----------------------------------------------------------------");
+//	 						System.out.println("-----------------------------------------------------------------");
+//	 						System.out.println("-----------------------------------------------------------------");
+//	 					}
+//	 				}, null,
+//	 				null
+//	 		);
+//    }
+
+//		server.addNotificationListener(
+////				new ObjectName("jboss.system:type=Server"),
+////				new ObjectName("jboss.jca:service=RARDeployment,name='jpox-1.1.0.rar'"),
+////				new ObjectName("jboss.jca:service=ConnectionFactoryDeployer"),
+//				new ObjectName("jboss.jca:service=TxCM,name=jfire/persistenceManagerFactory/chezfrancois.jfire.org"),
+//				new NotificationListener(){
+//					public void handleNotification(Notification notification, Object handback)
+//					{
+//						System.out.println("*****************************************************************");
+//						System.out.println("*****************************************************************");
+//						System.out.println("*****************************************************************");
+//						System.out.println("*****************************************************************");
+//						System.out.println(notification.toString());
+//						System.out.println("*****************************************************************");
+//						System.out.println("*****************************************************************");
+//						System.out.println("*****************************************************************");
+//						System.out.println("*****************************************************************");
+//					}
+//				}, null,
+//				null
+//		);
 	}
 
 	public TransactionManager getTransactionManager(InitialContext initialContext)
