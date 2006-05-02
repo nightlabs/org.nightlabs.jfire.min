@@ -38,13 +38,12 @@ import org.apache.log4j.Logger;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
-
 import org.nightlabs.base.notification.SelectionManager;
+import org.nightlabs.jdo.ObjectID;
+import org.nightlabs.jdo.notification.SelectionNotificationProxy;
 import org.nightlabs.jfire.base.jdo.JDOObjectID2PCClassMap;
 import org.nightlabs.jfire.base.login.Login;
 import org.nightlabs.jfire.config.id.ConfigID;
-import org.nightlabs.jdo.notification.SelectionNotificationProxy;
-import org.nightlabs.jdo.ObjectID;
 import org.nightlabs.notification.NotificationEvent;
 import org.nightlabs.notification.SubjectCarrier;
 
@@ -65,12 +64,12 @@ public class ConfigLinkSelectionNotificationProxy extends
 	
 	private static Logger LOGGER = Logger.getLogger(ConfigLinkSelectionNotificationProxy.class);
 
-	/**
-	 * @param source
-	 */
-	public ConfigLinkSelectionNotificationProxy(Object source) {
-		super(source);
-	}
+//	/**
+//	 * @param source
+//	 */
+//	public ConfigLinkSelectionNotificationProxy(Object source) {
+//		super(source);
+//	}
 
 	/**
 	 * @param source
@@ -78,8 +77,8 @@ public class ConfigLinkSelectionNotificationProxy extends
 	 * @param ignoreInheritance
 	 */
 	public ConfigLinkSelectionNotificationProxy(Object source, String zone,
-			boolean ignoreInheritance) {
-		super(source, zone, ignoreInheritance);
+			boolean ignoreInheritance, boolean clearOnEmptySelection) {
+		super(source, zone, ignoreInheritance, clearOnEmptySelection);
 	}
 
 	/**
