@@ -236,7 +236,7 @@ public class DatastoreInitializer
 		throws ModuleException
 	{
 		try {
-			String username = User.SYSTEM_USERID + '@' + organisationID;
+			String username = User.USERID_SYSTEM + '@' + organisationID;
 	
 			Hashtable props = new Properties();
 			String initialContextFactory = ismf.getInitialContextFactory(localServer.getJ2eeServerType(), true);

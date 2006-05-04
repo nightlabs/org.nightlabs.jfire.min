@@ -405,7 +405,7 @@ public class JFireServerManagerImpl
 					PersistenceManager pm = lookup.getPersistenceManager();
 					try
 					{
-						if (User.SYSTEM_USERID.equals(userID)) {
+						if (User.USERID_SYSTEM.equals(userID)) {
 							if (!authenticated) {
 								LOGGER.info("Login failed because system user of organisation \""+organisationID+"\" either has no temporary password assigned or the given password does not match. This user cannot have a real password and before login, a temporary password must be created.");
 								throw new LoginException("Invalid username or password!");
@@ -433,7 +433,7 @@ public class JFireServerManagerImpl
 
 								authenticated = true;
 							} // if (!authenticated) { // temporary password NOT matched
-						} // if (!User.SYSTEM_USERID.equals(userID)) {
+						} // if (!User.USERID_SYSTEM.equals(userID)) {
 
 						RoleSet roleSet = jfireServerManagerFactoryImpl.jfireSecurity_getRoleSet(organisationID, userID);
 

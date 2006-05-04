@@ -470,7 +470,7 @@ public class JFireServerManagerFactoryImpl
 					try {
 						datastoreInitializer.initializeDatastore(
 								this, mcf.getConfigModule().getLocalServer(), organisationID,
-								jfireSecurity_createTempUserPassword(organisationID, User.SYSTEM_USERID));
+								jfireSecurity_createTempUserPassword(organisationID, User.USERID_SYSTEM));
 
 						LOGGER.info("Datastore initialization of organisation \""+organisationID+"\" done.");
 					} catch (Exception x) {
@@ -1118,8 +1118,8 @@ public class JFireServerManagerFactoryImpl
 						pm.makePersistent(authority);
 						LOGGER.debug("pm.makePersistent(authority) done.");
 
-						LOGGER.debug("Creating JDO object User with ID \""+User.OTHER_USERID+"\"...");
-						User otherUser = new User(organisationID, User.OTHER_USERID);
+						LOGGER.debug("Creating JDO object User with ID \""+User.USERID_OTHER+"\"...");
+						User otherUser = new User(organisationID, User.USERID_OTHER);
 						new UserLocal(otherUser);
 						pm.makePersistent(otherUser);
 						LOGGER.debug("pm.makePersistent(otherUser) done.");
@@ -1159,7 +1159,7 @@ public class JFireServerManagerFactoryImpl
 						
 						// create system user
 						LOGGER.debug("Creating system user...");
-						User systemUser = new User(organisationID, User.SYSTEM_USERID);
+						User systemUser = new User(organisationID, User.USERID_SYSTEM);
 						new UserLocal(systemUser);
 						pm.makePersistent(systemUser);
 						LOGGER.debug("System user created.");
@@ -1265,7 +1265,7 @@ public class JFireServerManagerFactoryImpl
 		try {
 			datastoreInitializer.initializeDatastore(
 					this, mcf.getConfigModule().getLocalServer(), organisationID,
-					jfireSecurity_createTempUserPassword(organisationID, User.SYSTEM_USERID));
+					jfireSecurity_createTempUserPassword(organisationID, User.USERID_SYSTEM));
 		} catch (Exception x) {
 			LOGGER.error("Datastore initialization for new organisation \""+organisationID+"\" failed!", x);
 		}
@@ -1717,7 +1717,7 @@ public class JFireServerManagerFactoryImpl
 
 	protected void jfireSecurity_flushCache(String organisationID, String userID)
 	{
-		if (User.OTHER_USERID.equals(userID)) {
+		if (User.USERID_OTHER.equals(userID)) {
 			jfireSecurity_flushCache();
 			return;
 		}
@@ -1767,7 +1767,7 @@ public class JFireServerManagerFactoryImpl
 //					try {
 			PersistenceManager pm = getPersistenceManager(organisationID);
 			try {
-				if (User.SYSTEM_USERID.equals(userID)) {
+				if (User.USERID_SYSTEM.equals(userID)) {
 					// user is system user and needs ALL roles
 					roleSet.addMember(new SimplePrincipal("_ServerAdmin_"));
 					for (Iterator it = pm.getExtent(Role.class, true).iterator(); it.hasNext(); ) {
@@ -1801,7 +1801,7 @@ public class JFireServerManagerFactoryImpl
 							userRef = (UserRef) pm.getObjectById(
 									UserRefID.create(
 											Authority.AUTHORITY_ID_ORGANISATION, 
-											organisationID, User.OTHER_USERID
+											organisationID, User.USERID_OTHER
 									), true);
 						} catch (JDOObjectNotFoundException e) {
 							userRef = null;
@@ -1816,7 +1816,7 @@ public class JFireServerManagerFactoryImpl
 						}
 					} // if (userRef != null) {
 
-				} // if (User.SYSTEM_USERID.equals(userID)) {
+				} // if (User.USERID_SYSTEM.equals(userID)) {
 
 			} finally {
 				pm.close();
