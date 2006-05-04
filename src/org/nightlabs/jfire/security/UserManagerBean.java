@@ -140,6 +140,11 @@ implements SessionBean
   public void saveUser(User user, String passwd)
   	throws SecurityException
   {
+  	if (User.USERID_SYSTEM.equals(user.getUserID()))
+  		throw new IllegalArgumentException("Cannot manipulate system user \"" + User.USERID_SYSTEM + "\"!");
+  	if (User.USERID_OTHER.equals(user.getUserID()))
+  		throw new IllegalArgumentException("Cannot change properties of special user \"" + User.USERID_OTHER + "\"!");
+
     try
     {
       if (user.getOrganisationID() != null && !user.getOrganisationID().equals(getOrganisationID()))
@@ -223,10 +228,10 @@ implements SessionBean
     {
       Query query = pm.newQuery(pm.getExtent(User.class, true));
       query.declareImports("import java.lang.String");
-      query.declareParameters("String userType, String systemUserID, String otherUserID");
-      query.setFilter("this.userType == userType && this.userID != systemUserID && this.userID != otherUserID");
+      query.declareParameters("String userType"); // , String systemUserID, String otherUserID");
+      query.setFilter("this.userType == userType"); //  && this.userID != systemUserID && this.userID != otherUserID");
       query.setOrdering("this.userID ascending");
-      Collection c = (Collection)query.execute(userType, User.SYSTEM_USERID, User.OTHER_USERID);
+      Collection c = (Collection)query.execute(userType); // , User.USERID_SYSTEM, User.USERID_OTHER);
       Iterator i = c.iterator();
       Collection ret = new HashSet();
       while(i.hasNext())
@@ -280,7 +285,7 @@ implements SessionBean
       query.declareParameters("String userType, String systemUserID, String otherUserID");
       query.setFilter("this.userType == userType && this.userID != systemUserID && this.userID != otherUserID");
       query.setOrdering("this.userID ascending");
-      Collection c = (Collection)query.execute(userType, User.SYSTEM_USERID, User.OTHER_USERID);
+      Collection c = (Collection)query.execute(userType, User.USERID_SYSTEM, User.USERID_OTHER);
       return pm.detachCopyAll(c);
     } 
     finally 
@@ -317,11 +322,11 @@ implements SessionBean
       	pm.getFetchPlan().setGroups(fetchGroups);
 
       Query query = pm.newQuery(pm.getExtent(User.class, true));
-      query.declareImports("import java.lang.String");
-      query.declareParameters("String systemUserID");
-      query.setFilter("this.userID != systemUserID");
-      query.setOrdering("this.userID ascending");
-      Collection c = (Collection)query.execute(User.SYSTEM_USERID);
+//      query.declareImports("import java.lang.String");
+//      query.declareParameters("String systemUserID");
+//      query.setFilter("this.userID != systemUserID");
+//      query.setOrdering("this.userID ascending");
+      Collection c = (Collection)query.execute(); // User.USERID_SYSTEM);
       return pm.detachCopyAll(c);
     } 
     finally 
@@ -416,8 +421,8 @@ implements SessionBean
 //          "  !(userGroup.users.containsValue(this)) &&" +
 //          "  userGroup.organisationID == paramOrganisationID &&" +
 //          "  userGroup.userID == paramUserGroupID " +
-//          "  this.userID != \"" + User.SYSTEM_USERID + "\" && " +
-//          "  this.userID != \"" + User.OTHER_USERID + "\" " +
+//          "  this.userID != \"" + User.USERID_SYSTEM + "\" && " +
+//          "  this.userID != \"" + User.USERID_OTHER + "\" " +
 //          "VARIABLES UserGroup userGroup " +
 //          "PARAMETERS String paramOrganisationID, String paramUserGroupID " +
 //          "import org.nightlabs.jfire.security.UserGroup; import java.lang.String");
@@ -431,8 +436,8 @@ implements SessionBean
           "WHERE " +
           "  (userType == \"" + User.USERTYPE_USER + "\" ||" +
           "  userType == \"" + User.USERTYPE_ORGANISATION + "\") && " +
-          "  this.userID != \"" + User.SYSTEM_USERID + "\" && " +
-          "  this.userID != \"" + User.OTHER_USERID + "\"");
+          "  this.userID != \"" + User.USERID_SYSTEM + "\" && " +
+          "  this.userID != \"" + User.USERID_OTHER + "\"");
       Collection c = (Collection)query.execute();
 
       Iterator i = c.iterator();
@@ -491,8 +496,8 @@ implements SessionBean
 //					"  !(userGroup.users.containsValue(this)) &&" +
 //					"  userGroup.organisationID == paramOrganisationID &&" +
 //					"  userGroup.userID == paramUserGroupID " +
-//	      	"  this.userID != \"" + User.SYSTEM_USERID + "\" && " +
-//					"  this.userID != \"" + User.OTHER_USERID + "\" " +
+//	      	"  this.userID != \"" + User.USERID_SYSTEM + "\" && " +
+//					"  this.userID != \"" + User.USERID_OTHER + "\" " +
 //					"VARIABLES UserGroup userGroup " +
 //					"PARAMETERS String paramOrganisationID, String paramUserGroupID " +
 //					"import org.nightlabs.jfire.security.UserGroup; import java.lang.String");
@@ -506,8 +511,8 @@ implements SessionBean
       		"WHERE " +
 					"  (userType == \"" + User.USERTYPE_USER + "\" ||" +
 					"  userType == \"" + User.USERTYPE_ORGANISATION + "\") && " +
-					"  this.userID != \"" + User.SYSTEM_USERID + "\" && " +
-					"  this.userID != \"" + User.OTHER_USERID + "\"");
+					"  this.userID != \"" + User.USERID_SYSTEM + "\" && " +
+					"  this.userID != \"" + User.USERID_OTHER + "\"");
       Collection c = (Collection)query.execute();
 
       Iterator i = c.iterator();
@@ -1251,6 +1256,9 @@ implements SessionBean
   public void addUserToRoleGroup(String userID, String authorityID, String roleGroupID) 
   	throws ModuleException
   {
+  	if (User.USERID_SYSTEM.equals(userID))
+  		throw new IllegalArgumentException("Cannot manipulate system user \"" + User.USERID_SYSTEM + "\"!");
+
   	PersistenceManager pm = getPersistenceManager();
   	try 
 		{
@@ -1332,6 +1340,9 @@ implements SessionBean
   public void addUserToUserGroup(String userID, String userGroupID)
   throws SecurityException
   {
+  	if (User.USERID_SYSTEM.equals(userID))
+  		throw new IllegalArgumentException("Cannot manipulate system user \"" + User.USERID_SYSTEM + "\"!");
+
     try {
       PersistenceManager pm = getPersistenceManager();
       try {
