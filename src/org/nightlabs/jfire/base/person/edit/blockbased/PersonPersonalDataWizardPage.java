@@ -36,6 +36,7 @@ import org.eclipse.swt.widgets.Control;
 
 import org.nightlabs.base.composite.LabeledText;
 import org.nightlabs.base.exceptionhandler.ExceptionHandlerRegistry;
+import org.nightlabs.base.resource.SharedImages;
 import org.nightlabs.jfire.base.JFireBasePlugin;
 import org.nightlabs.jfire.base.person.PersonStructProvider;
 import org.nightlabs.jfire.base.person.edit.PersonDataFieldEditor;
