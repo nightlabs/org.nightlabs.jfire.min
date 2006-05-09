@@ -26,6 +26,9 @@
 
 package org.nightlabs.jfire.base.person.search;
 
+import java.util.ArrayList;
+import java.util.Collection;
+
 import javax.security.auth.login.LoginException;
 
 import org.eclipse.swt.SWT;
@@ -125,6 +128,15 @@ public class StaticPersonSearchFilterProvider implements
 		public String completeString;
 	}
 	
+	public static Collection<String> parseNameNeedles(String needle) {
+		String[] toks = needle.split("[:;,. ]+");
+		Collection<String> result = new ArrayList<String>(toks.length);
+		for (int i = 0; i < toks.length; i++) {
+			result.add(toks[i]);
+		}
+		return result;
+	}
+	
 	public static ParsedNameCriteria parseNameNeedle(String needle) {
 //		String text = criteriaBuilderComposite.getControlName().getTextControl().getText();
 		// sTok will return Delims
@@ -185,22 +197,29 @@ public class StaticPersonSearchFilterProvider implements
 		// new filter
 		PersonSearchFilter filter = createPersonSearchFilter();
 		
-		filter.setConjunction(SearchFilter.CONJUNCTION_OR);
+		filter.setConjunction(SearchFilter.CONJUNCTION_AND);
 		
-		ParsedNameCriteria nameCriteria = parseNameNeedle(criteriaBuilderComposite.getControlName().getTextControl().getText());
+//		ParsedNameCriteria nameCriteria = parseNameNeedle(criteriaBuilderComposite.getControlName().getTextControl().getText());
+		
+		Collection<String> needles = parseNameNeedles(criteriaBuilderComposite.getControlName().getTextControl().getText());
+		
 		
 		PersonStructFieldID[] nameCriteriaFieldIDs = new PersonStructFieldID[] {
 			PersonStruct.PERSONALDATA_COMPANY,
 			PersonStruct.PERSONALDATA_NAME,
 			PersonStruct.PERSONALDATA_FIRSTNAME
 		};
+	
+		for (String needle : needles) {
+			filter.addSearchFilterItem(new TextPersonSearchFilterItem(nameCriteriaFieldIDs, SearchFilterItem.MATCHTYPE_CONTAINS, needle));
+		}
 		
-		if (nameCriteria.company != null || !"".equals(nameCriteria.company))
-			filter.addSearchFilterItem(new TextPersonSearchFilterItem(nameCriteriaFieldIDs, SearchFilterItem.MATCHTYPE_CONTAINS, nameCriteria.company));
-		if (nameCriteria.name != null || !"".equals(nameCriteria.name))
-			filter.addSearchFilterItem(new TextPersonSearchFilterItem(nameCriteriaFieldIDs, SearchFilterItem.MATCHTYPE_CONTAINS, nameCriteria.name));
-		if (nameCriteria.firstName != null || !"".equals(nameCriteria.firstName))
-			filter.addSearchFilterItem(new TextPersonSearchFilterItem(nameCriteriaFieldIDs, SearchFilterItem.MATCHTYPE_CONTAINS, nameCriteria.firstName));
+//		if (nameCriteria.company != null || !"".equals(nameCriteria.company))
+//			filter.addSearchFilterItem(new TextPersonSearchFilterItem(nameCriteriaFieldIDs, SearchFilterItem.MATCHTYPE_CONTAINS, nameCriteria.company));
+//		if (nameCriteria.name != null || !"".equals(nameCriteria.name))
+//			filter.addSearchFilterItem(new TextPersonSearchFilterItem(nameCriteriaFieldIDs, SearchFilterItem.MATCHTYPE_CONTAINS, nameCriteria.name));
+//		if (nameCriteria.firstName != null || !"".equals(nameCriteria.firstName))
+//			filter.addSearchFilterItem(new TextPersonSearchFilterItem(nameCriteriaFieldIDs, SearchFilterItem.MATCHTYPE_CONTAINS, nameCriteria.firstName));
 		
 		// add items if neccessary
 //		if (!criteriaBuilderComposite.getControlName().getTextControl().getText().equals("")) {
