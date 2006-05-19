@@ -56,7 +56,7 @@ public class OrganisationSyncDelegateImpl extends OrganisationSyncDelegate
 	throws Exception
 	{
 		JDOManager jdoManager = JDOManagerUtil.getHome(
-				Lookup.getInitialContextProps(persistenceManager, organisationID)).create();
+				Lookup.getInitialContextProperties(persistenceManager, organisationID)).create();
 		jdoManager.notifyDirtyObjectIDs(dirtyObjectIDCarriers);
 	}
 

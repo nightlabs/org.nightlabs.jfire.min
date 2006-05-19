@@ -44,7 +44,10 @@ import javax.naming.InitialContext;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.ModuleException;
+import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
+import org.nightlabs.jfire.base.JFirePrincipal;
+import org.nightlabs.jfire.person.TextPersonDataField;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.security.UserLocal;
 import org.nightlabs.jfire.security.UserManager;
@@ -55,6 +58,7 @@ import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.servermanager.config.OrganisationCf;
 import org.nightlabs.jfire.servermanager.config.RootOrganisationCf;
 import org.nightlabs.jfire.servermanager.config.ServerCf;
+import org.nightlabs.math.Base62Coder;
 
 /**
  * @author Niklas Schiffler - nick at nightlabs dot de
@@ -276,15 +280,6 @@ public abstract class OrganisationManagerBean
 
 			localOrganisation.setPassword(grantOrganisationID, userPassword);
 			registrationStatus.accept(User.getUser(pm, getPrincipal()));
-
-//			// It seems, there is a bug in JPOX (foreign key constraint error) and therefore,
-//			// we need to persist the server manually...
-//			try {
-//				pm.getObjectById(ServerID.create(grantOrganisation.getServer().getServerID()));
-//			} catch (JDOObjectNotFoundException x) {
-//				pm.makePersistent(grantOrganisation.getServer());
-//			}
-			pm.makePersistent(grantOrganisation.getPerson());
 			pm.makePersistent(grantOrganisation);
 		} finally {
 			pm.close();
@@ -372,6 +367,7 @@ public abstract class OrganisationManagerBean
 				}
 
 				pm.getFetchPlan().addGroup(FetchPlan.ALL); // TODO fetch-groups?!
+				pm.getFetchPlan().setMaxFetchDepth(NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
 				Organisation grantOrganisation = (Organisation) pm.detachCopy(
 						localOrganisation.getOrganisation());
 //				Organisation grantOrganisation = localOrganisation.getOrganisation();
@@ -387,7 +383,7 @@ public abstract class OrganisationManagerBean
 
 				// Now, we notify the other organisation that its request has been
 				// accepted.
-				OrganisationManager organisationManager = OrganisationManagerUtil.getHome(getInitialContextProps(applicantOrganisationID)).create();
+				OrganisationManager organisationManager = OrganisationManagerUtil.getHome(getInitialContextProperties(applicantOrganisationID)).create();
 				organisationManager.notifyAcceptRegistration(
 						registrationStatus.getRegistrationID(), grantOrganisation, usrPassword);
 			} catch (RuntimeException x) {
@@ -430,7 +426,7 @@ public abstract class OrganisationManagerBean
 			try {
 				// Now, we notify the other organisation that its request has been
 				// rejected.
-				OrganisationManager organisationManager = OrganisationManagerUtil.getHome(getInitialContextProps(applicantOrganisationID)).create();
+				OrganisationManager organisationManager = OrganisationManagerUtil.getHome(getInitialContextProperties(applicantOrganisationID)).create();
 				organisationManager.notifyRejectRegistration(registrationStatus.getRegistrationID());
 				// Because notifyRejectRegistration drops our user remotely, we cannot execute
 				// any command there anymore - not even remove the bean.
@@ -513,70 +509,77 @@ public abstract class OrganisationManagerBean
 			String initialContextFactory, String initialContextURL, String organisationID)
 		throws ModuleException
 	{
-		String registrationID = getOrganisationID()
-				+ '-' + Long.toHexString(System.currentTimeMillis())
-				+ '-' + Integer.toHexString((int)Math.round(Integer.MAX_VALUE * Math.random()));
+		PersistenceManager pm = getPersistenceManager();
+		try {
+			beginRegistration(pm, getPrincipal(), initialContextFactory, initialContextURL, organisationID);
+		} finally {
+			pm.close();
+		}
+	}
+
+	protected static void beginRegistration(
+			PersistenceManager pm, JFirePrincipal principal,
+			String initialContextFactory, String initialContextURL, String organisationID)
+	throws ModuleException
+	{
+		String registrationID = principal.getOrganisationID()
+				+ '-' + Base62Coder.sharedInstance().encode(System.currentTimeMillis(), 1)
+				+ '-' + Base62Coder.sharedInstance().encode((int)Math.round(Integer.MAX_VALUE * Math.random()), 1);
 
 		// fetch and detach our local organisation (containing the local server)
 		Organisation myOrganisation;
-		PersistenceManager pm = getPersistenceManager();
+
+		LocalOrganisation localOrganisation = LocalOrganisation.getLocalOrganisation(pm);
+
+		// We need to find out, whether the applicant organisation has already
+		// been successfully registered (status accepted).
+		// If there is currently a pending registration, it will be cancelled.
+		RegistrationStatus.ensureRegisterability(
+				pm, localOrganisation, organisationID);
+
+		pm.getFetchPlan().addGroup(FetchPlan.ALL); // TODO fetch-groups?!
+		pm.getFetchPlan().setMaxFetchDepth(NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
+		myOrganisation = (Organisation) pm.detachCopy(localOrganisation.getOrganisation());
+
+		RegistrationStatus registrationStatus = new RegistrationStatus(
+				registrationID,
+				organisationID, User.getUser(pm, principal),
+				initialContextFactory, initialContextURL);
+
+		localOrganisation.addPendingRegistration(registrationStatus);
+
+		// We have to create a user for the new organisation. Therefore,
+		// generate a password with a random length between 8 and 16 characters.
+		String usrPassword = UserLocal.generatePassword(8, 16);
+
 		try {
-			LocalOrganisation localOrganisation = LocalOrganisation.getLocalOrganisation(pm);
-
-			// We need to find out, whether the applicant organisation has already
-			// been successfully registered (status accepted).
-			// If there is currently a pending registration, it will be cancelled.
-			RegistrationStatus.ensureRegisterability(
-					pm, localOrganisation, organisationID);
-
-			pm.getFetchPlan().addGroup(FetchPlan.ALL); // TODO fetch-groups?!
-			myOrganisation = (Organisation) pm.detachCopy(localOrganisation.getOrganisation());
-
-			RegistrationStatus registrationStatus = new RegistrationStatus(
-					registrationID,
-					organisationID, User.getUser(pm, getPrincipal()),
-					initialContextFactory, initialContextURL);
-
-			localOrganisation.addPendingRegistration(registrationStatus);
-			
-			// We have to create a user for the new organisation. Therefore,
-			// generate a password with a random length between 8 and 16 characters.
-			String usrPassword = UserLocal.generatePassword(8, 16);
-
+			// Create the user if it doesn't yet exist
+			String userID = User.USERID_PREFIX_TYPE_ORGANISATION + organisationID;
 			try {
-				// Create the user if it doesn't yet exist
-				String userID = User.USERID_PREFIX_TYPE_ORGANISATION + organisationID;
-				try {
-					User user = User.getUser(pm, getOrganisationID(), userID);
-					user.getUserLocal().setPasswordPlain(usrPassword); // set the new password, if the user already exists
-				} catch (JDOObjectNotFoundException x) {
-					// Create the user
-					UserManager userManager = UserManagerUtil.getHome().create();
-					User user = new User(getOrganisationID(), userID);
-					UserLocal userLocal = new UserLocal(user);
-					userLocal.setPasswordPlain(usrPassword);
-					pm.makePersistent(user);
-//					userManager.saveUser(user);
-//					userManager.remove();
-				}
-
-				// Create the initial context properties to connect to the remote server.
-				Properties props = new Properties();
-				props.put(InitialContext.INITIAL_CONTEXT_FACTORY, initialContextFactory);
-				props.put(InitialContext.PROVIDER_URL, initialContextURL);
-
-				// Obtain the OrganisationLinker EJB and request registration
-				OrganisationLinker organisationLinker = OrganisationLinkerUtil.getHome(props).create();
-				organisationLinker.requestRegistration(registrationID, myOrganisation, organisationID, usrPassword);
-				organisationLinker.remove();
-
-			} catch (ModuleException e) {
-				throw e;
-			} catch (Exception e) {
-				throw new ModuleException(e);
+				User user = User.getUser(pm, principal.getOrganisationID(), userID);
+				user.getUserLocal().setPasswordPlain(usrPassword); // set the new password, if the user already exists
+			} catch (JDOObjectNotFoundException x) {
+				// Create the user
+				User user = new User(principal.getOrganisationID(), userID);
+				UserLocal userLocal = new UserLocal(user);
+				userLocal.setPasswordPlain(usrPassword);
+				pm.makePersistent(user);
 			}
-		} finally {
-			pm.close();
+
+			// Create the initial context properties to connect to the remote server.
+			Properties props = new Properties();
+			props.put(InitialContext.INITIAL_CONTEXT_FACTORY, initialContextFactory);
+			props.put(InitialContext.PROVIDER_URL, initialContextURL);
+
+			// Obtain the OrganisationLinker EJB and request registration
+			OrganisationLinker organisationLinker = OrganisationLinkerUtil.getHome(props).create();
+			organisationLinker.requestRegistration(registrationID, myOrganisation, organisationID, usrPassword);
+			organisationLinker.remove();
+
+		} catch (ModuleException e) {
+			throw e;
+		} catch (Exception e) {
+			throw new ModuleException(e);
 		}
 	}
 	
@@ -646,7 +649,7 @@ public abstract class OrganisationManagerBean
 			LOGGER.info("testBackhand ("+organisationIDs.length+"): backhanding to organisation \""+organisationID+"\"");
 			try {
 				LOGGER.info("testBackhand ("+organisationIDs.length+"): OrganisationManagerUtil.getHome(...)");
-				OrganisationManager organisationManager = OrganisationManagerUtil.getHome(getInitialContextProps(organisationID)).create();
+				OrganisationManager organisationManager = OrganisationManagerUtil.getHome(getInitialContextProperties(organisationID)).create();
 				
 				LOGGER.info("testBackhand ("+organisationIDs.length+"): UserManagerUtil.getHome()");
 				UserManagerHome userManagerHome = UserManagerUtil.getHome();
@@ -724,7 +727,7 @@ public abstract class OrganisationManagerBean
 				String rootOrganisationID = Organisation.getRootOrganisationID(ctx);
 				String localOrganisationID = getOrganisationID();
 				if (!rootOrganisationID.equals(localOrganisationID)) {
-					OrganisationManager organisationManager = OrganisationManagerUtil.getHome(getInitialContextProps(rootOrganisationID)).create();
+					OrganisationManager organisationManager = OrganisationManagerUtil.getHome(getInitialContextProperties(rootOrganisationID)).create();
 					Collection res = organisationManager.getOrganisationsFromRootOrganisation(filterPartnerOrganisations, fetchGroups, maxFetchDepth);
 
 					// TODO DEBUG begin
@@ -853,15 +856,16 @@ public abstract class OrganisationManagerBean
 					}
 				} // if (RegistrationStatus.getRegistrationStatusCount(pm, rootOrganisationID) > 0) {
 
+				LOGGER.info("Registering organisation \""+localOrganisationID+"\" in the root organisation \""+rootOrganisationID+"\".");
+				beginRegistration(
+						pm,
+						getPrincipal(),
+						"org.jnp.interfaces.NamingContextFactory", // TODO this should come from a config - maybe an anonymousInitialContextFactory in org.nightlabs.jfire.servermanager.config.J2eeServerTypeRegistryConfigModule - see Lookup.getInitialContextProperties(...)
+						rootServer.getInitialContextURL(),
+						rootOrganisationID);
 			} finally {
 				pm.close();
 			}
-
-			LOGGER.info("Registering organisation \""+localOrganisationID+"\" in the root organisation \""+rootOrganisationID+"\".");
-			beginRegistration(
-					"org.jnp.interfaces.NamingContextFactory", // TODO this should come from a config - maybe an anonymousInitialContextFactory in org.nightlabs.jfire.servermanager.config.J2eeServerTypeRegistryConfigModule - see Lookup.getInitialContextProperties(...)
-					rootServer.getInitialContextURL(),
-					rootOrganisationID);
 		} finally {
 			ism.close();
 		}

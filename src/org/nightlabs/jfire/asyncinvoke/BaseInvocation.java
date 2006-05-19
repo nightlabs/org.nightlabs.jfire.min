@@ -161,7 +161,7 @@ implements Serializable
 			pm = persistenceManager;
 
 		try {
-			return Lookup.getInitialContextProps(pm, organisationID);
+			return Lookup.getInitialContextProperties(pm, organisationID);
 		} finally {
 			if (managePM)
 				pm.close();

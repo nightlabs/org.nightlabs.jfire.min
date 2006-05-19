@@ -160,7 +160,7 @@ public class BaseSessionBeanImpl
 		throws ModuleException 
 	{
 		try {
-			return new InitialContext(getInitialContextProps(organisationID));
+			return new InitialContext(getInitialContextProperties(organisationID));
 		} catch (NamingException e) {
 			throw new ModuleException(e);
 		} catch (ModuleException e) {
@@ -184,7 +184,7 @@ public class BaseSessionBeanImpl
 	 * 
 	 * @see getInitialContext(String organisationID)
 	 */
-	protected Hashtable getInitialContextProps(String organisationID)
+	protected Hashtable getInitialContextProperties(String organisationID)
 		throws ModuleException
 	{
 		boolean managePM = false;
@@ -197,7 +197,7 @@ public class BaseSessionBeanImpl
 			pm = persistenceManager;
 
 		try {
-			return Lookup.getInitialContextProps(pm, organisationID);
+			return Lookup.getInitialContextProperties(pm, organisationID);
 		} finally {
 			if (managePM)
 				pm.close();
