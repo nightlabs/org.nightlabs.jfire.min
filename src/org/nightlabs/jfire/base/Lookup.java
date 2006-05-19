@@ -288,7 +288,7 @@ public class Lookup
 	 * to connect and login to the organisation defined by _organisationID. If _organisationID
 	 * is the local organisation (managed by pm), this method returns <tt>null</tt>! 
 	 */
-	public static Hashtable getInitialContextProps(PersistenceManager pm, String _organisationID) throws ModuleException
+	public static Hashtable getInitialContextProperties(PersistenceManager pm, String _organisationID) throws ModuleException
 	{
 		try {
 			LocalOrganisation localOrganisation = LocalOrganisation.getLocalOrganisation(pm);
