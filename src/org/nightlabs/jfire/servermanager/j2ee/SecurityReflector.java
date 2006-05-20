@@ -32,6 +32,9 @@ import javax.jdo.PersistenceManager;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+import org.nightlabs.ModuleException;
+import org.nightlabs.jfire.base.InitException;
+import org.nightlabs.jfire.base.Lookup;
 import org.nightlabs.jfire.security.User;
 
 
@@ -100,4 +103,20 @@ implements Serializable
 	 */
 	public abstract UserDescriptor whoAmI();
 
+	
+	public static UserDescriptor getUserDescriptor() throws NamingException {
+		InitialContext initCtx = null;
+		try {
+			initCtx = new InitialContext();
+			return lookupSecurityReflector(initCtx).whoAmI();
+		} finally {
+			if (initCtx != null)
+				initCtx.close();
+		}		
+	}
+	
+	public static Lookup getLookup() throws NamingException, InitException {
+		return new Lookup(getUserDescriptor().getOrganisationID());
+	}
+	
 }

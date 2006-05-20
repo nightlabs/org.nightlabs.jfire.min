@@ -155,4 +155,5 @@ public interface JFireServerManager
 	
 	public JFirePrincipal login(String _organisationID, String _userID, String _sessionID, String _password)
 		throws LoginException;
+	
 }
