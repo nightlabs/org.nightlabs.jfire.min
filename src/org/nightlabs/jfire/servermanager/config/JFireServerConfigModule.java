@@ -78,7 +78,7 @@ public class JFireServerConfigModule extends ConfigModule
 	{
 		public static final String DATABASE_NAME_VAR = "{databaseName}";
 
-		public static String DEFAULTS_DEFAULT_KEY = "Mckoi";
+		public static String DEFAULTS_DEFAULT_KEY = "MySQL";
 		public static Map<String, Database> DEFAULTS = new HashMap<String, Database>();
 		static {
 			try {
