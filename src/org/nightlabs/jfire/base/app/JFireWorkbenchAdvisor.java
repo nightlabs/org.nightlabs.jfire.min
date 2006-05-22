@@ -85,12 +85,11 @@ extends AbstractWorkbenchAdvisor
 			JFireRCDLDelegate.createSharedInstance(Login.getLogin(false), new File(JFireApplication.getRootDir(), "classloader.cache"));
 		} catch (LoginException e) {
 			throw e;
+		} catch (IOException e) {
+			LoginException x = new LoginException(e.getMessage());
+			x.initCause(e);
+			throw x;
 		}
-//		catch (IOException e) {
-//			LoginException x = new LoginException(e.getMessage());
-//			x.initCause(e);
-//			throw x;
-//		}
 		initializeLoginModule();
 	}
 	   	    
