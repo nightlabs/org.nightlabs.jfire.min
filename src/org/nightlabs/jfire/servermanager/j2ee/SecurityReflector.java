@@ -32,7 +32,6 @@ import javax.jdo.PersistenceManager;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import org.nightlabs.ModuleException;
 import org.nightlabs.jfire.base.InitException;
 import org.nightlabs.jfire.base.Lookup;
 import org.nightlabs.jfire.security.User;
@@ -55,6 +54,8 @@ implements Serializable
 	public static class UserDescriptor
 	implements Serializable
 	{
+		private static final long serialVersionUID = 1L;
+
 		private String organisationID;
 		private String userID;
 		private String sessionID;
