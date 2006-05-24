@@ -44,9 +44,8 @@ import java.io.Serializable;
 public class AsyncInvokerInvocationBean
 extends AsyncInvokerBaseBean
 {
-	/**
-	 * @see org.nightlabs.jfire.asyncinvoke.AsyncInvokerBaseBean#doInvoke(org.nightlabs.jfire.asyncinvoke.AsyncInvokeEnvelope, AsyncInvokerDelegateLocal)
-	 */
+	private static final long serialVersionUID = 1L;
+
 	protected void doInvoke(AsyncInvokeEnvelope envelope, AsyncInvokerDelegateLocal invokerDelegate)
 	{
 		boolean success = false;

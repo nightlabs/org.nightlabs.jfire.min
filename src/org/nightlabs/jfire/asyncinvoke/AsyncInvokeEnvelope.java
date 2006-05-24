@@ -75,13 +75,24 @@ implements Serializable
 	 */
 	private UndeliverableCallback undeliverableCallback = null;
 
+	protected static SecurityReflector.UserDescriptor getUserDescriptor()
+	throws NamingException
+	{
+		InitialContext initialContext = new InitialContext();
+		try {
+			return SecurityReflector.lookupSecurityReflector(initialContext).whoAmI();
+		} finally {
+			initialContext.close();
+		}
+	}
+
 	public AsyncInvokeEnvelope(
 			Invocation invocation,
 			SuccessCallback successCallback, ErrorCallback errorCallback,
 			UndeliverableCallback undeliverableCallback)
 	throws NamingException
 	{
-		this(SecurityReflector.lookupSecurityReflector(new InitialContext()).whoAmI(),
+		this(getUserDescriptor(),
 				invocation,
 				successCallback, errorCallback,
 				undeliverableCallback);

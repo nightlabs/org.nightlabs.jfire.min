@@ -45,10 +45,8 @@ import org.nightlabs.jfire.asyncinvoke.AsyncInvokerDelegateLocal;
 public class AsyncInvokerUndeliverableCallbackBean
 extends AsyncInvokerBaseBean
 {
+	private static final long serialVersionUID = 1L;
 
-	/**
-	 * @see org.nightlabs.jfire.asyncinvoke.AsyncInvokerBaseBean#doInvoke(org.nightlabs.jfire.asyncinvoke.AsyncInvokeEnvelope, org.nightlabs.jfire.asyncinvoke.AsyncInvokerDelegateLocal)
-	 */
 	protected void doInvoke(AsyncInvokeEnvelope envelope, AsyncInvokerDelegateLocal invokerDelegate)
 	{
 		try {
