@@ -238,6 +238,8 @@ public class StaticPersonSearchFilterProvider implements
 //			filter.addSearchFilterItem(new TextPersonSearchFilterItem(PersonStruct.PHONE_AREACODE,SearchFilterItem.MATCHTYPE_CONTAINS,criteriaBuilderComposite.getControlPhonePre().getTextControl().getText()));
 		if (!criteriaBuilderComposite.getControlPhone().getTextControl().getText().equals(""))
 			filter.addSearchFilterItem(new TextPersonSearchFilterItem(PersonStruct.PHONE_LOCALNUMBER,SearchFilterItem.MATCHTYPE_CONTAINS,criteriaBuilderComposite.getControlPhone().getTextControl().getText()));
+		if (!criteriaBuilderComposite.getControlEmail().getTextControl().getText().equals(""))
+			filter.addSearchFilterItem(new TextPersonSearchFilterItem(PersonStruct.INTERNET_EMAIL,SearchFilterItem.MATCHTYPE_CONTAINS,criteriaBuilderComposite.getControlEmail().getTextControl().getText()));
 		
 		return filter;
 	}

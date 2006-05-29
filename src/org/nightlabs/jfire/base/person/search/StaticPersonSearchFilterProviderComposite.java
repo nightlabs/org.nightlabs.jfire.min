@@ -188,6 +188,9 @@ public class StaticPersonSearchFilterProviderComposite extends org.eclipse.swt.w
 	public LabeledText getControlPostCode() {
 		return controlPostCode;
 	}
+	public LabeledText getControlEmail() {
+		return controlEmail;
+	}
 	public Button getSearchButton() {
 		return searchButton;
 	}
