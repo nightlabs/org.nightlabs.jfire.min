@@ -98,9 +98,13 @@ public class JFireLoginHandler implements ILoginHandler {
         SwingUtilities.invokeAndWait(runLogin);
       
 		} catch (InterruptedException e) {
-			throw new LoginException("Error in SplashLogin: "+e.getMessage());
+			LoginException x = new LoginException("Error in SplashLogin: "+e.getMessage());
+			x.initCause(e);
+			throw x;
 		} catch (InvocationTargetException e) {
-			throw new LoginException("Error in SplashLogin: "+e.getMessage());
+			LoginException x = new LoginException("Error in SplashLogin: "+e.getMessage());
+			x.initCause(e);
+			throw x;
 		}
 		boolean loggedIn = false;
 		int loginTries = 0;
@@ -111,7 +115,9 @@ public class JFireLoginHandler implements ILoginHandler {
 					SplashScreen.getMutex().wait();
 				}
 			} catch (InterruptedException e) {
-				throw new LoginException("Caught InterruptedException while waiting for login: "+e.getMessage());
+				LoginException x = new LoginException("Caught InterruptedException while waiting for login: "+e.getMessage());
+				x.initCause(e);
+				throw x;
 			}
       if(loginPanel.isWorkOffline()) {
         SplashScreen.setSplashMessage("Work offline");
