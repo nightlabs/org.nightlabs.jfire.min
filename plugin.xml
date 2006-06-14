@@ -96,6 +96,9 @@
          <property
                name="aboutImage"
                value="icons/JFire-Logo.16x16.png"/>
+		 <property 
+			   name="preferenceCustomization" 
+			   value="plugin_customization.ini"/>   
       </product>
    </extension>
 
