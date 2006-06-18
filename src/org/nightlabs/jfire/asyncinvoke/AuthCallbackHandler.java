@@ -34,10 +34,9 @@ import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 
+import org.nightlabs.jdo.ObjectIDUtil;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.servermanager.j2ee.SecurityReflector;
-
-import org.nightlabs.jdo.ObjectIDUtil;
 
 /**
  * @author Marco Schulze - marco at nightlabs dot de
@@ -49,6 +48,23 @@ public class AuthCallbackHandler implements CallbackHandler
 	private String sessionID;
 	private String userName;
 	private char[] password;
+
+	public AuthCallbackHandler(JFireServerManager ism,
+			String organisationID, String userID)
+	{
+		this(ism, organisationID, userID, ObjectIDUtil.makeValidIDString(null, true));
+	}
+
+	public AuthCallbackHandler(JFireServerManager ism,
+			String organisationID, String userID, String sessionID)
+	{
+		this.organisationID = organisationID;
+		this.userID = userID;
+		this.sessionID = sessionID;
+		this.userName = userID + '@' + organisationID + '/' + sessionID;
+		this.password = ism.jfireSecurity_createTempUserPassword(
+				organisationID, userID).toCharArray();
+	}
 
 	public AuthCallbackHandler(JFireServerManager ism, AsyncInvokeEnvelope envelope) {
 		SecurityReflector.UserDescriptor caller = envelope.getCaller();

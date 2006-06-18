@@ -4,4 +4,5 @@
 <datastore-initialization>
 	<init bean="jfire/ejb/JFireBaseBean/ConfigManager" method="initialize"/>
 	<init bean="jfire/ejb/JFireBaseBean/OrganisationManager" method="registerInRootOrganisation"/>
+	<init bean="jfire/ejb/JFireBaseBean/JFireTimer" method="startTimer"/>
 </datastore-initialization>

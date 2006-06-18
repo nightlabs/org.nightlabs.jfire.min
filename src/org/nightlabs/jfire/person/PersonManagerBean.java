@@ -56,9 +56,7 @@ import org.nightlabs.jdo.NLJDOHelper;
  * @author alex
  * @author nick
  * @author marco
- */
-
-/**
+ *
  * @ejb.bean
  *		name="jfire/ejb/JFireBaseBean/PersonManager"
  *		jndi-name="jfire/ejb/JFireBaseBean/PersonManager"
