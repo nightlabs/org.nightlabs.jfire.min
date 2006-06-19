@@ -211,6 +211,7 @@
      <globalClassPublish pattern="org\.nightlabs\.base\.config\..*"/>
      <globalClassPublish pattern="org\.nightlabs\.jfire\.base\.person\.preferences\.PersonStructOrderConfigModule.*"/>
      <globalClassPublish pattern="org\.nightlabs\.jdo\.ObjectID"/>
+     <globalClassPublish pattern="org\.nightlabs\.timepattern\..*"/>
  	</extension>
 
  	<!-- PersonDataFieldEditor extensions bock-based -->
