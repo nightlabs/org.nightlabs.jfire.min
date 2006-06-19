@@ -19,6 +19,7 @@ import org.nightlabs.jfire.asyncinvoke.AsyncInvokeEnvelope;
 import org.nightlabs.jfire.asyncinvoke.ErrorCallback;
 import org.nightlabs.jfire.asyncinvoke.Invocation;
 import org.nightlabs.jfire.asyncinvoke.SuccessCallback;
+import org.nightlabs.jfire.asyncinvoke.UndeliverableCallback;
 import org.nightlabs.jfire.servermanager.j2ee.SecurityReflector.UserDescriptor;
 import org.nightlabs.jfire.timer.id.TaskID;
 
@@ -58,7 +59,7 @@ public class TimerAsyncInvoke
 		private String bean;
 		private String method;
 		private String activeExecID;
-		
+
 		public TaskID getTaskID()
 		{
 			return taskID;
@@ -101,17 +102,20 @@ public class TimerAsyncInvoke
 				throws Exception
 		{
 			try {
-				PersistenceManager pm = getPersistenceManager();
-				try {
-					Task task = (Task) pm.getObjectById(invocationParam.getTaskID());
-					if (!invocationParam.getActiveExecID().equals(task.getActiveExecID())) {
-						LOGGER.info("Cancelled execution of task " + invocationParam.getTaskID() + " because the activeExecID does not match. invocationParam.getActiveExecID()=\""+invocationParam.getActiveExecID()+"\" task.getActiveExecID()=\""+task.getActiveExecID()+"\"");
-						return null;
-					}
-				} finally {
-					pm.close();
+				Thread.sleep(5000); // give the other transaction some time to finish (and write all data)
+				// TODO isn't there a better solution? Isn't this a JPOX bug anyway?!
+			} catch (InterruptedException x) {
+				// ignore
+			}
+
+			try {
+				TimerManagerLocal timerManager = TimerManagerUtil.getLocalHome().create();
+				if (!timerManager.setExecutingIfActiveExecIDMatches(invocationParam.getTaskID(), invocationParam.getActiveExecID())) {
+					LOGGER.info("Cancelled execution of task " + invocationParam.getTaskID() + " because the activeExecID does not match. invocationParam.getActiveExecID()=\""+invocationParam.getActiveExecID()+"\".");
+					return null;
 				}
 
+				LOGGER.info("Timer invocation: taskID=\"" + invocationParam.getTaskID() + "\" bean=\"" + invocationParam.getBean() + "\" method=\""+invocationParam.getMethod()+"\"");
 				long startDT = System.currentTimeMillis();
 				InitialContext initCtx = new InitialContext();
 				try {
@@ -182,6 +186,14 @@ public class TimerAsyncInvoke
 					return; // no changes, if we're not active anymore!!!
 				}
 
+				if (durationMSec < 0) {
+					// We were too fast (the invocation was called already before the TimerManagerBean wrote the
+					// new data to the database. Hence, we re-enqueue it.
+					LOGGER.error("Task " + invocationParam.getTaskID() + " was re-enqueued, because the previous invocation was too fast. Should not happen!");
+					enqueue(QUEUE_INVOCATION, envelope);
+					return;
+				}
+
 				task.lastExecSuccessful(durationMSec);
 			} finally {
 				pm.close();
@@ -226,6 +238,43 @@ public class TimerAsyncInvoke
 		}
 	}
 
+	public static class TimerUndeliverableCallback
+	extends UndeliverableCallback
+	{
+		private static final long serialVersionUID = 1L;
+
+		private InvocationParam invocationParam;
+		public InvocationParam getInvocationParam()
+		{
+			return invocationParam;
+		}
+
+		public TimerUndeliverableCallback(InvocationParam invocationParam)
+		{
+			if (invocationParam == null)
+				throw new IllegalArgumentException("invocationParam must not be null!");
+
+			this.invocationParam = invocationParam;
+		}
+
+		@Override
+		public void handle(AsyncInvokeEnvelope envelope)
+				throws Exception
+		{
+			PersistenceManager pm = getPersistenceManager();
+			try {
+				Task task = (Task) pm.getObjectById(invocationParam.getTaskID());
+				if (!invocationParam.getActiveExecID().equals(task.getActiveExecID())) {
+					return; // no changes, if we're not active anymore!!!
+				}
+
+				task.setActiveExecID(null);
+			} finally {
+				pm.close();
+			}
+		}
+	}
+
 	protected static void exec(Task task)
 	throws LoginException, JMSException, NamingException
 	{
@@ -239,10 +288,11 @@ public class TimerAsyncInvoke
 		TimerInvocation invocation = new TimerInvocation(invocationParam);
 		TimerSuccessCallback successCallback = new TimerSuccessCallback(invocationParam);
 		TimerErrorCallback errorCallback = new TimerErrorCallback(invocationParam);
+		TimerUndeliverableCallback undeliverableCallback = new TimerUndeliverableCallback(invocationParam);
 
 		AsyncInvokeEnvelope envelope = new AsyncInvokeEnvelope(
 				caller,
-				invocation, successCallback, errorCallback, null);
+				invocation, successCallback, errorCallback, undeliverableCallback);
 		enqueue(QUEUE_INVOCATION, envelope);
 	}
 }

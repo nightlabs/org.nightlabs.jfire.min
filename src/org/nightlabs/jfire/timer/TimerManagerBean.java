@@ -1,6 +1,7 @@
 package org.nightlabs.jfire.timer;
 
 import java.rmi.RemoteException;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -11,14 +12,17 @@ import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
 import javax.ejb.Timer;
 import javax.jdo.FetchPlan;
+import javax.jdo.JDODetachedFieldAccessException;
 import javax.jdo.PersistenceManager;
 
 import org.apache.log4j.Logger;
+import org.nightlabs.ModuleException;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jdo.ObjectIDUtil;
 import org.nightlabs.jdo.timepattern.TimePatternSetJDOImpl;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.security.User;
+import org.nightlabs.jfire.timer.id.TaskID;
 
 /**
  * @author Marco Schulze - marco at nightlabs dot de
@@ -46,7 +50,7 @@ implements SessionBean
 	}
 	/**
 	 * @ejb.create-method  
-	 * @ejb.permission role-name="_Guest_"
+	 * @ejb.permission unchecked="true"
 	 */
 	public void ejbCreate() throws CreateException
 	{
@@ -63,6 +67,31 @@ implements SessionBean
 		Task.FETCH_GROUP_USER,
 		Task.FETCH_GROUP_TIME_PATTERN_SET,
 		TimePatternSetJDOImpl.FETCH_GROUP_TIME_PATTERNS };
+
+	/**
+	 * This method is called by {@link TimerAsyncInvoke.TimerInvocation#invoke()}.
+	 *
+	 * @ejb.interface-method view-type="local"
+	 * @ejb.transaction type="RequiresNew"
+	 * @ejb.permission unchecked="true"
+	 **/
+	public boolean setExecutingIfActiveExecIDMatches(TaskID taskID, String activeExecID)
+	throws Exception
+	{
+		PersistenceManager pm = getPersistenceManager();
+		try {
+			Task task = (Task) pm.getObjectById(taskID);
+			if (!activeExecID.equals(task.getActiveExecID())) {
+				LOGGER.info("setExecutingIfActiveExecIDMatches(...): will not touch task with taskID=\""+taskID+"\", because activeExecID does not match: activeExecID()=\""+activeExecID+"\" task.getActiveExecID()=\""+task.getActiveExecID()+"\"");
+				return false;
+			}
+
+			task.setExecuting(true);
+			return true;
+		} finally {
+			pm.close();
+		}
+	}
 
 	/**
 	 * Because the method {@link #ejbTimeout(Timer)} is called without authentication
@@ -88,13 +117,18 @@ implements SessionBean
 		try {
 			pm.getFetchPlan().setMaxFetchDepth(NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
 			pm.getFetchPlan().setGroups(FETCH_GROUPS_TASK);
-			tasks = Task.getTasksToDo(pm, new Date());
+			Date now = new Date();
+			tasks = Task.getTasksToDo(pm, now);
 			for (Iterator it = tasks.iterator(); it.hasNext(); ) {
 				Task task = (Task) it.next();
-				task.setExecuting(true);
 				task.setActiveExecID(activeExecID);
 			}
 			tasks = (List) pm.detachCopyAll(tasks);
+
+			for (Iterator it = Task.getTasksToRecalculateNextExecDT(pm, now).iterator(); it.hasNext(); ) {
+				Task task = (Task) it.next();
+				task.calculateNextExecDT();
+			}
 		} finally {
 			pm.close();
 		}
@@ -107,4 +141,94 @@ implements SessionBean
 		LOGGER.info("ejbTimeoutDelegate(...) for organisationID=\""+timerParam.organisationID+"\": end");
 	}
 
+	/**
+	 * @ejb.interface-method
+	 * @ejb.transaction type="Supports"
+	 * @ejb.permission role-name="_Guest_"
+	 **/
+	@SuppressWarnings("unchecked")
+	public Task getTask(TaskID taskID, String[] fetchGroups, int maxFetchDepth)
+	throws ModuleException
+	{
+		try {
+			PersistenceManager pm = getPersistenceManager();
+			try {
+				pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
+				if (fetchGroups != null)
+					pm.getFetchPlan().setGroups(fetchGroups);
+
+				Task task = (Task) pm.getObjectById(taskID);
+				task = (Task) pm.detachCopy(task);
+				try {
+					task.getUser().getUserLocal().setPassword("********");
+				} catch (NullPointerException x) {
+					// ignore
+				} catch (JDODetachedFieldAccessException x) {
+					// ignore
+				}
+
+				return task;
+			} finally {
+				pm.close();
+			}
+		} catch (RuntimeException x) {
+			throw x;
+		} catch (Exception x) {
+			throw new ModuleException(x);
+		}
+	}
+
+	/**
+	 * @ejb.interface-method
+	 * @ejb.transaction type="Supports"
+	 * @ejb.permission role-name="_Guest_"
+	 **/
+	@SuppressWarnings("unchecked")
+	public List<TaskID> getTaskIDs()
+	throws ModuleException
+	{
+		try {
+			PersistenceManager pm = getPersistenceManager();
+			try {
+				return NLJDOHelper.getObjectIDList(
+						(Collection)pm.newQuery(Task.class).execute());
+			} finally {
+				pm.close();
+			}
+		} catch (Exception x) {
+			throw new ModuleException(x);
+		}
+	}
+
+	/**
+	 * @ejb.interface-method
+	 * @ejb.transaction type="Supports"
+	 * @ejb.permission role-name="_Guest_"
+	 **/
+	@SuppressWarnings("unchecked")
+	public List<Task> getTasks(
+			Collection<TaskID> taskIDs, String[] fetchGroups, int maxFetchDepth)
+	throws ModuleException
+	{
+		try {
+			PersistenceManager pm = getPersistenceManager();
+			try {
+				List<Task> tasks = NLJDOHelper.getDetachedObjectList(pm, taskIDs, Task.class, fetchGroups, maxFetchDepth);
+				for (Task task : tasks) {
+					try {
+						task.getUser().getUserLocal().setPassword("********");
+					} catch (NullPointerException x) {
+						// ignore
+					} catch (JDODetachedFieldAccessException x) {
+						// ignore
+					}
+				}
+				return tasks;
+			} finally {
+				pm.close();
+			}
+		} catch (Exception x) {
+			throw new ModuleException(x);
+		}
+	}
 }

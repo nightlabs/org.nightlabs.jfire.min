@@ -63,6 +63,8 @@ implements SessionBean, TimedObject
 	{
 		try {
 			TimerParam timerParam = (TimerParam) timer.getInfo();
+			if (timerParam == null)
+				throw new IllegalStateException("timer.getInfo() returned null! Should be an instance of TimerParam!!!");
 
 			// We are not authenticated here, thus we cannot access the persistence manager properly.
 			// Therefore, we wrap this in an AsyncInvoke
@@ -118,9 +120,22 @@ implements SessionBean, TimedObject
 		if (!User.USERID_SYSTEM.equals(getUserID()))
 			throw new SecurityException("This method can only be called by user " + User.USERID_SYSTEM);
 
-		Date firstExecDate = new Date(); // start now
-		long timeout = 60 * 1000; // call once every minute
 		TimerService timerService = sessionContext.getTimerService();
+
+		long timeout = 60 * 1000; // call once every minute
+
+		// We want the timer to start as exactly as possible at the starting of the minute (at 00 sec).
+		long start = System.currentTimeMillis();
+		start = start + timeout - (start % timeout);
+
+//		try {
+//			if (wait > 0)
+//				Thread.sleep(wait);
+//		} catch (InterruptedException e) {
+//			// ignore
+//		}
+
+		Date firstExecDate = new Date(start);
 		timerService.createTimer(
 				firstExecDate,
 				timeout,
