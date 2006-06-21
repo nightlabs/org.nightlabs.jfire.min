@@ -92,6 +92,7 @@ public class JFireServerConfigModule extends ConfigModule
 //				db.setDatabaseUserName("jfire");
 //				db.setDatabasePassword("jfire_password");
 				db.setDatabaseAdapter("org.nightlabs.jfire.databaseadaptermckoi.DatabaseAdapterMckoi");
+				db.setDatasourceMetadataTypeMapping("mySQL"); // TODO - i have no idea???!! 
 				DEFAULTS.put("Mckoi", db);
 
 				// Default values for HSQLDB (file)
@@ -102,6 +103,7 @@ public class JFireServerConfigModule extends ConfigModule
 				db.setDatabaseUserName("sa");
 				db.setDatabasePassword("");
 				db.setDatabaseAdapter(DatabaseAdapterHSQL.class.getName());
+				db.setDatasourceMetadataTypeMapping("mySQL"); // TODO - what value??!
 				DEFAULTS.put("HSQL (file)", db);
 
 				// Default values for HSQLDB (memory)
@@ -112,6 +114,7 @@ public class JFireServerConfigModule extends ConfigModule
 				db.setDatabaseUserName("sa");
 				db.setDatabasePassword("");
 				db.setDatabaseAdapter(DatabaseAdapterHSQL.class.getName());
+				db.setDatasourceMetadataTypeMapping("mySQL"); // TODO - what value??!
 				DEFAULTS.put("HSQL (memory)", db);
 
 				// Default values for MySQL
@@ -122,6 +125,7 @@ public class JFireServerConfigModule extends ConfigModule
 //				db.setDatabaseUserName("jfire");
 //				db.setDatabasePassword("jfire_password");
 				db.setDatabaseAdapter(DatabaseAdapterMySQL.class.getName());
+				db.setDatasourceMetadataTypeMapping("mySQL");
 				DEFAULTS.put("MySQL", db);
 
 			} catch (Throwable t) {
@@ -137,6 +141,7 @@ public class JFireServerConfigModule extends ConfigModule
 		private String databasePassword;
 
 		private String databaseAdapter;
+		private String datasourceMetadataTypeMapping;
 
 		/**
 		 * @return Returns the databaseDriverName.
@@ -230,6 +235,16 @@ public class JFireServerConfigModule extends ConfigModule
 			this.databasePassword = _databasePassword;
 		}
 
+		public String getDatasourceMetadataTypeMapping()
+		{
+			return datasourceMetadataTypeMapping;
+		}
+		public void setDatasourceMetadataTypeMapping(
+				String datasourceMetadataTypeMapping)
+		{
+			this.datasourceMetadataTypeMapping = datasourceMetadataTypeMapping;
+		}
+
 		/**
 		 * @return Returns the databaseAdapter.
 		 */
@@ -250,6 +265,9 @@ public class JFireServerConfigModule extends ConfigModule
 
 			if (databaseURL == null)
 				setDatabaseURL("jdbc:mysql://localhost/" + DATABASE_NAME_VAR);
+
+			if (datasourceMetadataTypeMapping == null)
+				setDatasourceMetadataTypeMapping("mySQL");
 				
 			if (databasePrefix == null)	
 				setDatabasePrefix("JFire_");
@@ -278,6 +296,7 @@ public class JFireServerConfigModule extends ConfigModule
 			LOGGER.info("databaseUserName = "+databaseUserName);
 			LOGGER.info("databasePassword = "+databasePassword);
 			LOGGER.info("databaseAdapter = "+databaseAdapter);
+			LOGGER.info("datasourceMetadataTypeMapping = "+datasourceMetadataTypeMapping);
 		}
 
 		public void loadDefaults(String defaultKey)
@@ -301,10 +320,13 @@ public class JFireServerConfigModule extends ConfigModule
 		public static final String ORGANISATION_ID_VAR = "{organisationID}";
 
 		private String jdoConfigDirectory;
-		private String jdoConfigFilePrefix;
-		private String jdoConfigFileSuffix;
+
+		private String datasourceConfigFile;
+		private String datasourceTemplateDSXMLFile;
+
+		private String jdoConfigFile;
 		private String jdoTemplateDSXMLFile;
-		
+
 		/**
 		 * @return Returns the jdoConfigDirectory.
 		 */
@@ -330,30 +352,64 @@ public class JFireServerConfigModule extends ConfigModule
 
 			this.jdoConfigDirectory = _jdoConfigDirectory;
 		}
-		/**
-		 * @return Returns the jdoConfigFilePrefix.
-		 */
-		public String getJdoConfigFilePrefix() {
-			return jdoConfigFilePrefix;
+
+		public String getDatasourceConfigFile(String organisationID)
+		{
+			if (organisationID == null || "".equals(organisationID))
+				throw new IllegalArgumentException("organisationID must not be null or empty string!");
+
+			return datasourceConfigFile.replace(ORGANISATION_ID_VAR, organisationID);
 		}
-		/**
-		 * @param jdoConfigFilePrefix The jdoConfigFilePrefix to set.
-		 */
-		public void setJdoConfigFilePrefix(String _jdoConfigFilePrefix) {
-			this.jdoConfigFilePrefix = _jdoConfigFilePrefix;
+
+		public String getDatasourceConfigFile()
+		{
+			return datasourceConfigFile;
 		}
-		/**
-		 * @return Returns the jdoConfigFileSuffix.
-		 */
-		public String getJdoConfigFileSuffix() {
-			return jdoConfigFileSuffix;
+
+		public void setDatasourceConfigFile(String datasourceConfigFile)
+		{
+			if (datasourceConfigFile == null)
+				throw new IllegalArgumentException("datasourceConfigFile must not be null!");
+
+			if (datasourceConfigFile.indexOf(ORGANISATION_ID_VAR) < 0)
+				throw new IllegalArgumentException("datasourceConfigFile must contain \"" + ORGANISATION_ID_VAR + "\"!");
+
+			this.datasourceConfigFile = datasourceConfigFile;
 		}
-		/**
-		 * @param jdoConfigFileSuffix The jdoConfigFileSuffix to set.
-		 */
-		public void setJdoConfigFileSuffix(String _jdoConfigFileSuffix) {
-			this.jdoConfigFileSuffix = _jdoConfigFileSuffix;
+
+		public String getJdoConfigFile(String organisationID)
+		{
+			if (organisationID == null || "".equals(organisationID))
+				throw new IllegalArgumentException("organisationID must not be null or empty string!");
+
+			return jdoConfigFile.replace(ORGANISATION_ID_VAR, organisationID);
 		}
+		public String getJdoConfigFile()
+		{
+			return jdoConfigFile;
+		}
+
+		public void setJdoConfigFile(String jdoConfigFile)
+		{
+			if (jdoConfigFile == null)
+				throw new IllegalArgumentException("jdoConfigFile must not be null!");
+
+			if (jdoConfigFile.indexOf(ORGANISATION_ID_VAR) < 0)
+				throw new IllegalArgumentException("jdoConfigFile must contain \"" + ORGANISATION_ID_VAR + "\"!");
+
+			this.jdoConfigFile = jdoConfigFile;
+		}
+
+		public String getDatasourceTemplateDSXMLFile()
+		{
+			return datasourceTemplateDSXMLFile;
+		}
+		public void setDatasourceTemplateDSXMLFile(
+				String datasourceTemplateDSXMLFile)
+		{
+			this.datasourceTemplateDSXMLFile = datasourceTemplateDSXMLFile;
+		}
+
 		/**
 		 * @return Returns the jdoTemplateDSXMLFile.
 		 */
@@ -372,18 +428,22 @@ public class JFireServerConfigModule extends ConfigModule
 			if (jdoConfigDirectory == null)
 				setJdoConfigDirectory("../server/default/deploy/JFire_JDO_" + ORGANISATION_ID_VAR + ".last/");
 
-			if (jdoConfigFilePrefix == null)
-				jdoConfigFilePrefix = "jdo-";
+			if (datasourceConfigFile == null)
+				datasourceConfigFile = "db-" + ORGANISATION_ID_VAR + "-ds.xml";
 
-			if (jdoConfigFileSuffix == null)
-				jdoConfigFileSuffix = "-ds.xml";
+			if (jdoConfigFile == null)
+				jdoConfigFile = "jdo-" + ORGANISATION_ID_VAR + "-ds.xml";
+
+			if (datasourceTemplateDSXMLFile == null)
+				datasourceTemplateDSXMLFile = "../server/default/deploy/JFire.last/JFireBase.ear/db-all-ds.template.xml";
 
 			if (jdoTemplateDSXMLFile == null)
 				jdoTemplateDSXMLFile = "../server/default/deploy/JFire.last/JFireBase.ear/jdo-jpox-ds.template.xml";
 
 			LOGGER.info("jdoConfigDirectory = "+jdoConfigDirectory);
-			LOGGER.info("jdoConfigFilePrefix = "+jdoConfigFilePrefix);
-			LOGGER.info("jdoConfigFileSuffix = "+jdoConfigFileSuffix);
+			LOGGER.info("datasourceConfigFile = "+datasourceConfigFile);
+			LOGGER.info("datasourceTemplateDSXMLFile = "+datasourceTemplateDSXMLFile);
+			LOGGER.info("jdoConfigFile = "+jdoConfigFile);
 			LOGGER.info("jdoTemplateDSXMLFile = "+jdoTemplateDSXMLFile);
 		}
 	}

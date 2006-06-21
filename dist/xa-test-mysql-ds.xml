@@ -15,11 +15,11 @@
     </local-tx-datasource>
 -->
     <xa-datasource>
-	<jndi-name>jfire/datasource/schulze.nightlabs.de</jndi-name>
+	<jndi-name>jfire/datasource/chezfrancois.jfire.org</jndi-name>
 	<xa-datasource-class>com.mysql.jdbc.jdbc2.optional.MysqlXADataSource</xa-datasource-class>
-	<xa-datasource-property name="URL">jdbc:mysql://localhost/JFire_schulze_nightlabs_de</xa-datasource-property>
-	<user-name>ipanema</user-name>
-	<password>pw_ip</password>
+	<xa-datasource-property name="URL">jdbc:mysql://localhost/JFire_chezfrancois_jfire_org</xa-datasource-property>
+	<user-name>jfire</user-name>
+	<password>jfire_password</password>
 	<track-connection-by-tx>true</track-connection-by-tx>
 	<exception-sorter-class-name>org.jboss.resource.adapter.jdbc.vendor.MySQLExceptionSorter</exception-sorter-class-name>
 	<metadata>

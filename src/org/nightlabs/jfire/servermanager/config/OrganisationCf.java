@@ -34,6 +34,7 @@ import java.util.Set;
 import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 
+import org.nightlabs.jdo.ObjectIDUtil;
 import org.nightlabs.jfire.organisation.Organisation;
 import org.nightlabs.jfire.organisation.id.OrganisationID;
 import org.nightlabs.jfire.person.Person;
@@ -42,14 +43,15 @@ import org.nightlabs.jfire.person.PersonStruct;
 import org.nightlabs.jfire.person.TextPersonDataField;
 import org.nightlabs.jfire.server.Server;
 
-import org.nightlabs.jdo.ObjectIDUtil;
-
 /**
  * @author marco
  */
 public class OrganisationCf
 	implements Serializable, Comparable, Cloneable
 {
+	public static final String DATASOURCE_PREFIX_RELATIVE = "jfire/datasource/";
+	public static final String DATASOURCE_PREFIX_ABSOLUTE = "java:/jfire/datasource/";
+
 	public static final String PERSISTENCE_MANAGER_FACTORY_PREFIX_RELATIVE =	"jfire/persistenceManagerFactory/";
 	public static final String PERSISTENCE_MANAGER_FACTORY_PREFIX_ABSOLUTE =	"java:/jfire/persistenceManagerFactory/";
 

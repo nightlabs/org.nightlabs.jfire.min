@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <connection-factories>
 	<tx-connection-factory>
-		<jndi-name>jfire/persistenceManagerFactory/schulze.nightlabs.de</jndi-name>
+		<jndi-name>jfire/persistenceManagerFactory/chezfrancois.jfire.org</jndi-name>
 
 <!-- JBoss 3.2.x: begin
 		<adapter-display-name>JPOX Connector</adapter-display-name>
 JBoss 3.2.x: end -->
 
 <!-- JBoss 4.x: begin -->
-		<rar-name>jpox-1.1.0.rar</rar-name>
+		<rar-name>jpox.rar</rar-name>
 		<connection-definition>javax.resource.cci.ConnectionFactory</connection-definition>
 <!-- JBoss 4.x: end -->
 
 		<config-property name="ConnectionDriverName" type="java.lang.String">org.jpox.driver.JPOXDriver</config-property>
-		<config-property name="ConnectionURL" type="java.lang.String">jpox:java:jfire/datasource/schulze.nightlabs.de</config-property>
+		<config-property name="ConnectionURL" type="java.lang.String">jpox:java:jfire/datasource/chezfrancois.jfire.org</config-property>
 
 <!--
 		<config-property name="ConnectionDriverName" type="java.lang.String">com.mysql.jdbc.Driver</config-property>

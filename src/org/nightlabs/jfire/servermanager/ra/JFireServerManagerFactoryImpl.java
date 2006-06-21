@@ -1001,7 +1001,10 @@ public class JFireServerManagerFactoryImpl
 
 					// get jdbc url
 					String dbURL = dbCf.getDatabaseURL(databaseName);
-					String jdoPersistenceManagerFactoryJNDIName = OrganisationCf.PERSISTENCE_MANAGER_FACTORY_PREFIX_RELATIVE + organisationID;
+					String datasourceJNDIName_relative = OrganisationCf.DATASOURCE_PREFIX_RELATIVE + organisationID;
+					String datasourceJNDIName_absolute = OrganisationCf.DATASOURCE_PREFIX_ABSOLUTE + organisationID;
+					String jdoPersistenceManagerFactoryJNDIName_relative = OrganisationCf.PERSISTENCE_MANAGER_FACTORY_PREFIX_RELATIVE + organisationID;
+					String jdoPersistenceManagerFactoryJNDIName_absolute = OrganisationCf.PERSISTENCE_MANAGER_FACTORY_PREFIX_ABSOLUTE + organisationID;
 
 					try {
 						Class.forName(dbCf.getDatabaseDriverName());
@@ -1028,29 +1031,48 @@ public class JFireServerManagerFactoryImpl
 						throw new ModuleException("Creating database with DatabaseAdapter \""+databaseAdapterClassName+"\" failed!", x);
 					}
 
-					File tmpJDODSXML;
-					try {
-						Map variables = new HashMap();
-						variables.put("organisationID", organisationID);
-//						variables.put("organisationID_simpleChars", organisationID_simpleChars);
-						variables.put("jdoPersistenceManagerFactoryJNDIName", jdoPersistenceManagerFactoryJNDIName);
-						variables.put("databaseDriverName", dbCf.getDatabaseDriverName());
-						variables.put("databaseURL", dbURL);
-						variables.put("databaseUserName", dbCf.getDatabaseUserName());
-						variables.put("databasePassword", dbCf.getDatabasePassword());
+					jdoConfigDir = new File(jdoCf.getJdoConfigDirectory(organisationID)).getAbsoluteFile();
 
-						jdoConfigDir = new File(jdoCf.getJdoConfigDirectory(organisationID));
-						tmpJDODSXML = createJDODSXML(jdoConfigDir.getAbsolutePath(), jdoCf.getJdoTemplateDSXMLFile(), variables);
+					Map variables = new HashMap();
+					variables.put("organisationID", organisationID);
+					variables.put("datasourceJNDIName_relative", datasourceJNDIName_relative);
+					variables.put("datasourceJNDIName_absolute", datasourceJNDIName_absolute);
+					variables.put("datasourceMetadataTypeMapping", dbCf.getDatasourceMetadataTypeMapping());
+					variables.put("jdoPersistenceManagerFactoryJNDIName_relative", jdoPersistenceManagerFactoryJNDIName_relative);
+					variables.put("jdoPersistenceManagerFactoryJNDIName_absolute", jdoPersistenceManagerFactoryJNDIName_absolute);
+					variables.put("databaseDriverName", dbCf.getDatabaseDriverName());
+					variables.put("databaseURL", dbURL);
+					variables.put("databaseUserName", dbCf.getDatabaseUserName());
+					variables.put("databasePassword", dbCf.getDatabasePassword());
+
+					File datasourceDSXML;
+					try {
+						datasourceDSXML = createDSXML(
+								jdoConfigDir,
+								new File(jdoCf.getDatasourceTemplateDSXMLFile()),
+								jdoCf.getDatasourceConfigFile(organisationID),
+								variables);
+					} catch (Exception e) {
+						throw new ModuleException("Generating datasource ds xml file from template \""+jdoCf.getDatasourceTemplateDSXMLFile()+"\" failed!", e);
+					}
+
+					File jdoDSXML;
+					try {
+						jdoDSXML = createDSXML(
+								jdoConfigDir,
+								new File(jdoCf.getJdoTemplateDSXMLFile()),
+								jdoCf.getJdoConfigFile(organisationID),
+								variables);
 					} catch (Exception e) {
 						throw new ModuleException("Generating jdo ds xml file from template \""+jdoCf.getJdoTemplateDSXMLFile()+"\" failed!", e);
 					}
 
-					// Activate the jdo ds xml by renaming it.
-					File jdoDSXML = new File(
-							jdoConfigDir,
-							jdoCf.getJdoConfigFilePrefix() + organisationID + jdoCf.getJdoConfigFileSuffix()
-							);
-					tmpJDODSXML.renameTo(jdoDSXML);
+//					// Activate the jdo ds xml by renaming it.
+//					File jdoDSXML = new File(
+//							jdoConfigDir,
+//							jdoCf.getJdoConfigFilePrefix() + organisationID + jdoCf.getJdoConfigFileSuffix()
+//							);
+//					tmpJDODSXML.renameTo(jdoDSXML);
 
 					organisationCf = organisationConfigModule.addOrganisation(
 							organisationID, organisationName);
@@ -1080,8 +1102,10 @@ public class JFireServerManagerFactoryImpl
 								if (tryNr >= tryCount) throw x;
 
 								LOGGER.info("Obtaining PersistenceManagerFactory failed! Touching jdo-ds-file and its directory and trying it again...");
-								jdoDSXML.setLastModified(System.currentTimeMillis());
-								jdoDSXML.getParentFile().setLastModified(System.currentTimeMillis());
+								long now = System.currentTimeMillis();
+								datasourceDSXML.setLastModified(now);
+								jdoDSXML.setLastModified(now);
+								jdoDSXML.getParentFile().setLastModified(now);
 							}
 						}
 						LOGGER.info("PersistenceManagerFactory of organisation \""+organisationID+"\" (\""+organisationName+"\") has been deployed.");
@@ -1487,21 +1511,20 @@ public class JFireServerManagerFactoryImpl
 	}
 
 	/**
-	 * Generate a temporary -ds.xml file within the jdo config directory. The
-	 * file will have a temporary name to prevent the j2ee server from deploying
-	 * it. It needs to be renamed to "*-ds.xml".
+	 * Generate a -ds.xml file within the jdo config directory.
 	 *
 	 * @param jdoConfigDirectory The directory in which the temporary file will be created
-	 * @param jdoTemplateDSXMLFile The template file to use.
+	 * @param templateDSXMLFile The template file to use.
+	 * @param finalDSXMLFileName The simple name (without path) of the ds.xml-file's final name. Note, that this
+	 *		must end with "-ds.xml" in order to work (otherwise the J2EE server will ignore the file)!
 	 * @param variables This map defines what variable has to be replaced by what value. The
 	 *				key is the variable name (without brackets "{", "}"!) and the value is the
 	 *				value for the variable to replace.
 	 * @return An instance of File pointing to the newly created temporary ds.xml-file.
 	 */
-	protected File createJDODSXML(String _jdoConfigDirectory, String jdoTemplateDSXMLFile, Map variables)
+	protected File createDSXML(File jdoConfigDirectory, File templateDSXMLFile, String finalDSXMLFileName, Map variables)
 		throws IOException, TemplateParseException
 	{
-		File jdoConfigDirectory = new File(_jdoConfigDirectory);
 		if (!jdoConfigDirectory.exists()) {
 			LOGGER.info("jdoConfigDirectory does not exist. Creating it: " + jdoConfigDirectory.getAbsolutePath());
 			if (!jdoConfigDirectory.mkdirs()) {
@@ -1512,7 +1535,7 @@ public class JFireServerManagerFactoryImpl
 		File f;
 
 		// Create and configure StreamTokenizer to read template file.
-		FileReader fr = new FileReader(jdoTemplateDSXMLFile);
+		FileReader fr = new FileReader(templateDSXMLFile);
 		try {
 			StreamTokenizer stk = new StreamTokenizer(fr);
 			stk.resetSyntax();
@@ -1567,7 +1590,11 @@ public class JFireServerManagerFactoryImpl
 			fr.close();
 		}
 
-		return f;
+		File finalDSXMLFile = new File(jdoConfigDirectory, finalDSXMLFileName);
+		if (!f.renameTo(finalDSXMLFile))
+			throw new IOException("Renaming file \""+ f.getAbsolutePath() +"\" to \"" + f.getAbsolutePath() + "\" failed!");
+
+		return finalDSXMLFile;
 	}
 
 	public static PersistenceManagerFactory getPersistenceManagerFactory(String organisationID)
