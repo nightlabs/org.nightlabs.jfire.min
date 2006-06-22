@@ -4,19 +4,10 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="src" path="/JFireBase"/>
 	<classpathentry kind="var" path="JDK_TOOLS"/>
-	<classpathentry kind="var" path="JBOSS/bin/run.jar"/>
-	<classpathentry kind="var" path="JBOSS/bin/shutdown.jar"/>
 	<classpathentry kind="var" path="JBOSS/client/jboss-j2ee.jar"/>
-	<classpathentry kind="var" path="JBOSS/lib/concurrent.jar"/>
 	<classpathentry kind="var" path="JBOSS/lib/jboss-system.jar"/>
-	<classpathentry kind="var" path="JBOSS/lib/jboss-jmx.jar"/>
 	<classpathentry kind="var" path="JBOSS/server/default/lib/bcel.jar"/>
 	<classpathentry sourcepath="/JBOSS_SRC" kind="var" path="JBOSS/server/default/lib/jboss.jar"/>
-	<classpathentry kind="var" path="JBOSS/server/default/lib/jboss-transaction.jar"/>
-	<classpathentry kind="var" path="JBOSS/server/default/lib/jnpserver.jar"/>
-	<classpathentry kind="var" path="JBOSS/server/default/lib/jpl-pattern.jar"/>
-	<classpathentry kind="var" path="JBOSS/server/default/lib/jpl-util.jar"/>
-	<classpathentry sourcepath="JBOSS_SRC/security/src/main" kind="var" path="JBOSS/server/default/lib/jbosssx.jar"/>
 	<classpathentry kind="var" path="LOG4J"/>
 	<classpathentry kind="var" path="JDO2"/>
 	<classpathentry kind="var" path="XERCES"/>
@@ -27,5 +18,6 @@
 	<classpathentry kind="var" path="WORKSPACE/JFireRCLBackend/dist/JFireRCLBackend.jar"/>
 	<classpathentry kind="var" path="APACHE_COMMONS/commons-beanutils.jar"/>
 	<classpathentry sourcepath="/JPOX_SRC/Core/src/java" kind="var" path="JPOX"/>
+	<classpathentry kind="var" path="JBOSS/server/default/lib/jbosssx.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
