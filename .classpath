@@ -4,26 +4,13 @@
 	<classpathentry kind="src" path="ejbsrc"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="var" path="JDK_TOOLS"/>
-	<classpathentry kind="var" path="JBOSS/bin/run.jar"/>
-	<classpathentry kind="var" path="JBOSS/bin/shutdown.jar"/>
 	<classpathentry kind="var" path="JBOSS/client/jboss-j2ee.jar"/>
-	<classpathentry kind="var" path="JBOSS/lib/concurrent.jar"/>
-	<classpathentry kind="var" path="JBOSS/lib/jboss-system.jar"/>
-	<classpathentry kind="var" path="JBOSS/server/default/lib/bcel.jar"/>
 	<classpathentry kind="var" path="JBOSS/server/default/lib/jboss.jar"/>
-	<classpathentry kind="var" path="JBOSS/server/default/lib/jboss-transaction.jar"/>
-	<classpathentry kind="var" path="JBOSS/server/default/lib/jnpserver.jar"/>
-	<classpathentry kind="var" path="JBOSS/server/default/lib/jpl-pattern.jar"/>
-	<classpathentry kind="var" path="JBOSS/server/default/lib/jpl-util.jar"/>
-	<classpathentry kind="var" path="JBOSS/client/jboss-client.jar"/>
-	<classpathentry kind="var" path="JBOSS/client/jboss-common-client.jar"/>
-	<classpathentry kind="var" path="JBOSS/client/jbosssx-client.jar"/>
-	<classpathentry kind="var" path="JBOSS/client/jnp-client.jar"/>
-	<classpathentry kind="var" path="JBOSS/client/log4j.jar"/>
 	<classpathentry kind="src" path="/JFireRCLBackend"/>
 	<classpathentry kind="var" path="WORKSPACE/NightLabsBase/dist/NightLabsBase.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/JFireBase"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/JFireBaseBean"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/JFireServerManager"/>
+	<classpathentry kind="var" path="LOG4J"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
