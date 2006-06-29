@@ -48,9 +48,8 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtension;
 import org.eclipse.jface.action.IAction;
-import org.eclipse.osgi.baseadaptor.HookRegistry;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.internal.util.BundleUtility;
+import org.eclipse.ui.PlatformUI;
 import org.nightlabs.ModuleException;
 import org.nightlabs.base.extensionpoint.AbstractEPProcessor;
 import org.nightlabs.base.extensionpoint.EPProcessorException;
@@ -58,7 +57,6 @@ import org.nightlabs.classloader.osgi.DelegatingClassLoaderOSGI;
 import org.nightlabs.config.Config;
 import org.nightlabs.j2ee.InitialContextProvider;
 import org.nightlabs.jfire.base.JFireBasePlugin;
-import org.nightlabs.jfire.base.JFireException;
 import org.nightlabs.jfire.base.j2ee.JFireJ2EEPlugin;
 import org.nightlabs.jfire.base.jdo.cache.Cache;
 import org.nightlabs.jfire.classloader.JFireRCDLDelegate;
@@ -319,13 +317,18 @@ public class Login
 					for (String pkg : test) {
 						System.out.println(" "+pkg+",");
 					}
-					JFireJ2EEPlugin.getDefault().updateManifest();
+					boolean needRestart = JFireJ2EEPlugin.getDefault().updateManifest();
+					if (needRestart) {
+						// TODO show a nice dialog (maybe with a timeout - in case the user doesn't react => force restart).
+						Display.getDefault().asyncExec(new Runnable()
+						{
+							public void run()
+							{
+								PlatformUI.getWorkbench().restart();
+							}
+						});
+					}
 
-//					JFireJ2EEPlugin.getDefault().getBundle().loadClass("org.nightlabs.jfire.idgenerator.id.IDNamespaceID");
-					new org.nightlabs.jfire.idgenerator.id.IDNamespaceID();  
-
-//					JFireBasePlugin.getDefault().getBundle()
-					
 					try {
 					  // notify loginstate listeners
 					  notifyLoginStateListeners(LOGINSTATE_LOGGED_IN);
