@@ -138,7 +138,7 @@ extends AbstractApplicationThread
 			
       try
       {
-        LoginConfigModule lcm = Login.getLogin(false).getLoginConfigModule();
+        LoginConfigModule lcm = Login.sharedInstance().getLoginConfigModule();
         if(lcm.getAutomaticUpdate() == true)
         {
 					Login.getLogin();

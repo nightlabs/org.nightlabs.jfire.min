@@ -319,6 +319,7 @@ public class Login
 					for (String pkg : test) {
 						System.out.println(" "+pkg+",");
 					}
+					JFireJ2EEPlugin.getDefault().updateManifest();
 
 //					JFireJ2EEPlugin.getDefault().getBundle().loadClass("org.nightlabs.jfire.idgenerator.id.IDNamespaceID");
 					new org.nightlabs.jfire.idgenerator.id.IDNamespaceID();  

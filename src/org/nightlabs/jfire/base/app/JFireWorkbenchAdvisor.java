@@ -44,7 +44,6 @@ import org.nightlabs.jfire.base.login.JFireLoginHandler;
 import org.nightlabs.jfire.base.login.JFireSecurityConfiguration;
 import org.nightlabs.jfire.base.login.Login;
 import org.nightlabs.jfire.base.login.WorkOfflineException;
-import org.nightlabs.jfire.classloader.JFireRCDLDelegate;
 
 /**
  * 
@@ -80,8 +79,14 @@ extends AbstractWorkbenchAdvisor
 	{
 		// create log directory if not existent
 		JFireApplication.getLogDir();
-		try {
-			JFireRCDLDelegate.createSharedInstance(Login.getLogin(false), new File(JFireApplication.getRootDir(), "classloader.cache"));
+//		try {
+//			this.getClass().getClassLoader().loadClass("org.nightlabs.jfire.classloader.JFireRCDLDelegate");
+//		} catch (ClassNotFoundException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+		try {	
+			org.nightlabs.jfire.classloader.JFireRCDLDelegate.createSharedInstance(Login.getLogin(false), new File(JFireApplication.getRootDir(), "classloader.cache"));
 		} catch (LoginException e) {
 			throw e;
 		} catch (IOException e) {
