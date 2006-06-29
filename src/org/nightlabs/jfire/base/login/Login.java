@@ -33,6 +33,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import javax.ejb.EJBException;
 import javax.naming.CommunicationException;
@@ -47,18 +48,22 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtension;
 import org.eclipse.jface.action.IAction;
+import org.eclipse.osgi.baseadaptor.HookRegistry;
 import org.eclipse.swt.widgets.Display;
-
+import org.eclipse.ui.internal.util.BundleUtility;
 import org.nightlabs.ModuleException;
 import org.nightlabs.base.extensionpoint.AbstractEPProcessor;
 import org.nightlabs.base.extensionpoint.EPProcessorException;
+import org.nightlabs.classloader.osgi.DelegatingClassLoaderOSGI;
 import org.nightlabs.config.Config;
+import org.nightlabs.j2ee.InitialContextProvider;
 import org.nightlabs.jfire.base.JFireBasePlugin;
+import org.nightlabs.jfire.base.JFireException;
+import org.nightlabs.jfire.base.j2ee.JFireJ2EEPlugin;
 import org.nightlabs.jfire.base.jdo.cache.Cache;
+import org.nightlabs.jfire.classloader.JFireRCDLDelegate;
 import org.nightlabs.jfire.classloader.JFireRCLBackend;
 import org.nightlabs.jfire.classloader.JFireRCLBackendUtil;
-import org.nightlabs.jfire.classloader.JFireRCDLDelegate;
-import org.nightlabs.j2ee.InitialContextProvider;
 import org.nightlabs.math.Base62Coder;
 
 /**
@@ -245,7 +250,7 @@ public class Login
 	 */
 	public void logout() {
 		// remove class loader delegate
-		JFireRCDLDelegate.sharedInstance().unregister();
+		JFireRCDLDelegate.sharedInstance().unregister(DelegatingClassLoaderOSGI.getSharedInstance());
 		// logout
 		loginContext = null;
 		nullUserMembers();
@@ -309,10 +314,24 @@ public class Login
 					// done should be logged in by now
 					
 					// at the end, we register the JFireRCDLDelegate
-					JFireRCDLDelegate.sharedInstance().register(); // this method does nothing, if already registered.
+					JFireRCDLDelegate.sharedInstance().register(DelegatingClassLoaderOSGI.getSharedInstance()); // this method does nothing, if already registered.
+					Set<String> test = JFireRCDLDelegate.sharedInstance().getPublishedRemotePackages();
+					for (String pkg : test) {
+						System.out.println(" "+pkg+",");
+					}
+
+//					JFireJ2EEPlugin.getDefault().getBundle().loadClass("org.nightlabs.jfire.idgenerator.id.IDNamespaceID");
+					new org.nightlabs.jfire.idgenerator.id.IDNamespaceID();  
+
+//					JFireBasePlugin.getDefault().getBundle()
 					
-					// notify loginstate listeners
-					notifyLoginStateListeners(LOGINSTATE_LOGGED_IN);				
+					try {
+					  // notify loginstate listeners
+					  notifyLoginStateListeners(LOGINSTATE_LOGGED_IN);
+					} catch (Throwable t) {
+						// TODO: ignore ??
+						LOGGER.error(t);
+					}
 				} catch(Throwable t){
 					loginContext = null;
 					LOGGER.error("Exception thrown while logging in.",t);
@@ -819,8 +838,17 @@ public class Login
 //		LanguageManager languageManager = null;
 		if (jfireCLBackend == null) {
 			try {
+				System.out.println(Thread.currentThread().getContextClassLoader());
+				System.out.println(JFireBasePlugin.class.getClassLoader());
+//				Class.forName("org.jboss.security.jndi.LoginInitialContextFactory");
+//				RMIClassLoader.loadClass("org.jboss.security.jndi.LoginInitialContextFactory");
+//				RMIClassLoader.getDefaultProviderInstance().loadClass(codebase, name, defaultLoader));
+//				Thread.currentThread().setContextClassLoader(Login.class.getClass().getClassLoader());
+				System.out.println("**********************************************************");
+				System.out.println("Create testing login");
 				jfireCLBackend = JFireRCLBackendUtil.getHome(
 						login.getInitialContextProperties()).create();
+				System.out.println("**********************************************************");
 //				languageManager = LanguageManagerUtil.getHome(
 //						login.getInitialContextProperties()).create();
 				loginResult.setSuccess(true);

@@ -1,42 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.0"?>
-<plugin
-   id="org.nightlabs.jfire.base"
-   name="JFire Base Plug-in"
-   version="1.0.0"
-   provider-name="NightLabs.com"
-   class="org.nightlabs.jfire.base.JFireBasePlugin">
-
-   <runtime>
-      <library name="org.nightlabs.jfire.base.jar">
-         <export name="*"/>
-      </library>
-      <library name="lib/JFireRemoteClassLoader.jar">
-         <export name="*"/>
-      </library>
-      <library name="lib/JFireRCLBackend.jar">
-         <export name="*"/>
-      </library>
-      <library name="lib/JFireRCLBackendBean.jar">
-         <export name="*"/>
-      </library>
-      <library name="lib/jbossall-client.jar">
-         <export name="*"/>
-      </library>
-   </runtime>
-
-   <requires>
-      <import plugin="org.eclipse.ui"/>
-      <import plugin="org.eclipse.core.runtime"/>
-      <import plugin="org.eclipse.ui.forms"/>
-      <import plugin="org.nightlabs.base" export="false"/>
-      <import plugin="org.nightlabs.jdo"/>
-      <import plugin="org.nightlabs.classsharing" export="false"/>
-      <import plugin="org.nightlabs.rcp.splash"/>
-      <import plugin="org.eclipse.update.configurator"/>
-      <import plugin="org.eclipse.update.core"/>
-   </requires>
-   
+<plugin>   
 	<!-- Extension-points -->
 	
    	
@@ -160,32 +124,6 @@
    -->
 
 
-   <!-- ClassSharing for NightLabsBase et al -->
-   <extension
-         point="org.nightlabs.classsharing.globalclasspublish">
-         <resourcePublish pattern="org/nightlabs/language/LanguageCf.*"/>
-      <globalClassPublish pattern="org\.nightlabs\.jfire\.base\.login\..*"/>
-      <globalClassPublish pattern="org\.nightlabs\.jfire\.classloader\..*"/>
-      <globalClassPublish pattern="org\.nightlabs\.config\..*"/>
-      <globalClassPublish pattern="org\.nightlabs\.util\..*"/>
-      <globalClassPublish pattern="org\.apache\.log4j\..*"/>
-      <globalClassPublish pattern="org\.jboss\..*"/>
-      <globalClassPublish pattern="org\.nightlabs\.jfire\.classloader\..*"/>
-      <globalClassPublish pattern="javax\.ejb\..*"/>
-      <globalClassPublish pattern="org\.nightlabs\.ModuleException"/>
-      <globalClassPublish pattern="org\.nightlabs\.webapp\..*"/>
-      <globalClassPublish pattern="org\.nightlabs\.l10n\..*"/>
-      <globalClassPublish pattern="org\.nightlabs\.jfire\.base\.exceptionhandler\.wizard\..*CfMod"/>
-      <globalClassPublish pattern="org\.nightlabs\.i18n\..*"/>
-      <globalClassPublish pattern="org\.nightlabs\.inheritance\..*"/>
-      <globalClassPublish pattern="org\.nightlabs\.io\..*"/>
-      <globalClassPublish pattern="org\.nightlabs\.j2ee\..*"/>
-      <globalClassPublish pattern="org\.nightlabs\.xml\..*"/>
-      <globalClassPublish pattern="org\.nightlabs\.jfire\.base\.config\..*"/>
-      <resourcePublish pattern="org/nightlabs/jfire/base/idgenerator/IDGeneratorClient\..*"/>
-   </extension>
-	
-	
 	<!-- Person preferences pages -->
 	<extension
     	point="org.eclipse.ui.preferencePages">
@@ -203,17 +141,6 @@
 	</extension>
 
 	
-	<!-- Class sharing extensions Person preferences -->
-	<extension
-    	point="org.nightlabs.classsharing.globalclasspublish">
-     <globalClassPublish pattern="org\.nightlabs\.math\..*"/>
-     <globalClassPublish pattern="org\.nightlabs\.jfire\.base\.jdo\.cache\.CacheCfMod"/>
-     <globalClassPublish pattern="org\.nightlabs\.base\.config\..*"/>
-     <globalClassPublish pattern="org\.nightlabs\.jfire\.base\.person\.preferences\.PersonStructOrderConfigModule.*"/>
-     <globalClassPublish pattern="org\.nightlabs\.jdo\.ObjectID"/>
-     <globalClassPublish pattern="org\.nightlabs\.timepattern\..*"/>
- 	</extension>
-
  	<!-- PersonDataFieldEditor extensions bock-based -->
 	<extension
        id="org.nightlabs.jfire.person.edit.blockbased.PersonDataFieldEditorFactories"

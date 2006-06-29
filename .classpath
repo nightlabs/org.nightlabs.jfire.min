@@ -9,11 +9,5 @@
 	<classpathentry sourcepath="WORKSPACE/NightLabsJDO/src" kind="var" path="WORKSPACE/NightLabsJDO/dist/NightLabsJDO.jar"/>
 	<classpathentry sourcepath="/WORKSPACE/JFireBaseBean" kind="var" path="WORKSPACE/JFireBaseBean/dist/JFireBaseBean.jar"/>
 	<classpathentry sourcepath="/WORKSPACE/JFireServerManager/src" kind="var" path="WORKSPACE/JFireServerManager/dist/JFireServerManager.jar"/>
-	<classpathentry kind="lib" path="lib/NightLabsCascadedAuthenticationJBoss.jar"/>
-	<classpathentry kind="lib" path="/org.nightlabs.classsharing/lib/DelegatingClassLoader.jar"/>
-	<classpathentry kind="lib" path="lib/JFireRCLBackend.jar"/>
-	<classpathentry kind="lib" path="lib/JFireRCLBackendBean.jar"/>
-	<classpathentry kind="lib" path="lib/JFireRemoteClassLoader.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/jbossall-client.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

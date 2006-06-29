@@ -26,6 +26,7 @@
 
 package org.nightlabs.jfire.base.app;
 
+import java.rmi.server.RMIClassLoader;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -73,6 +74,7 @@ extends AbstractApplication
 	}
 
 	public AbstractApplicationThread initApplicationThread(ThreadGroup group) {
+//		RMIClassLoader.getDefaultProviderInstance().
 		return new JFireApplicationThread(group);
 	}
 	
