@@ -32,9 +32,10 @@ import java.lang.reflect.InvocationTargetException;
 import javax.security.auth.login.LoginException;
 import javax.swing.SwingUtilities;
 
+import org.apache.commons.beanutils.BeanUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.ui.PlatformUI;
-
+import org.nightlabs.base.NLBasePlugin;
 import org.nightlabs.jfire.base.JFireBasePlugin;
 import org.nightlabs.rcp.splash.SplashScreen;
 
@@ -54,7 +55,74 @@ public class JFireLoginHandler implements ILoginHandler {
 	 * @see org.nightlabs.jfire.base.login.ILoginHandler#handleLogin(org.nightlabs.jfire.base.login.JFireLoginContext)
 	 * @see LoginDialog
 	 */
-	public void handleLogin(JFireLoginContext loginContext, LoginConfigModule loginConfigModule, Login.AsyncLoginResult loginResult) throws LoginException {
+	public void handleLogin(JFireLoginContext loginContext, LoginConfigModule loginConfigModule, Login.AsyncLoginResult loginResult)
+	throws LoginException
+	{
+		// if the user specified the necessary parameters and the login succeeds, we don't show any login dialog
+		try {
+			String userID = null;
+			String password = null;
+			String organisationID = null;
+			String initialContextFactory = null;
+			String serverURL = null;
+
+			String[] args = NLBasePlugin.getDefault().getApplication().getArguments();
+			for (int i = 0; i < args.length; i++) {
+				String arg = args[i];
+				String val = i + 1 < args.length ? args[i + 1] : null;
+
+				if ("--login.userID".equals(arg))
+					userID = val;
+				else if ("--login.password".equals(arg))
+					password = val;
+				else if ("--login.organisationID".equals(arg))
+					organisationID = val;
+				else if ("--login.initialContextFactory".equals(arg))
+					initialContextFactory = val;
+				else if ("--login.serverURL".equals(arg))
+					serverURL = val;
+			}
+
+			if (password != null) {
+				if (userID == null)
+					userID = loginConfigModule.getUserID();
+				else
+					loginConfigModule.setUserID(userID);
+
+				if (organisationID == null)
+					organisationID = loginConfigModule.getOrganisationID();
+				else
+					loginConfigModule.setOrganisationID(organisationID);
+				
+				if (initialContextFactory == null)
+					initialContextFactory = loginConfigModule.getInitialContextFactory();
+				else
+					loginConfigModule.setInitialContextFactory(initialContextFactory);
+
+				if (serverURL == null)
+					serverURL = loginConfigModule.getServerURL();
+				else
+					loginConfigModule.setServerURL(serverURL);
+
+				// perform a test login
+				loginContext.setCredentials(userID, organisationID, password);
+				Login.AsyncLoginResult res = Login.testLogin(loginContext);
+				if (res.isSuccess()) {
+					BeanUtils.copyProperties(loginResult, res);
+					return;
+				}
+				else if (res.getException() != null)
+					throw res.getException();
+				else if ((res.getMessage() != null))
+					throw new LoginException(res.getMessage());
+				else
+					throw new LoginException("Login failed and I have no idea, why!!!");
+			}
+		} catch (Throwable x) {
+			// sth. went wrong => log and show normal login dialog
+			LOGGER.error("Could not login using the specified program arguments!", x);
+		}
+
 		if (SplashScreen.waitForVisibleSplash()) // isSplashVisible())
 			handleSplashLogin(loginContext, loginConfigModule, loginResult);
 		else

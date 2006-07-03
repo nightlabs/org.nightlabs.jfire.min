@@ -278,7 +278,7 @@ public class Login
 	private volatile boolean handlingLogin = false;
 	private AsyncLoginResult loginResult = new AsyncLoginResult();
 	
-	private Runnable loginHandlerRunanble = new Runnable() {
+	private Runnable loginHandlerRunnable = new Runnable() {
 		private boolean logoutFirst = false;
 		
 		public void run() {
@@ -319,11 +319,11 @@ public class Login
 					}
 					boolean needRestart = JFireJ2EEPlugin.getDefault().updateManifest();
 					if (needRestart) {
-						// TODO show a nice dialog (maybe with a timeout - in case the user doesn't react => force restart).
 						Display.getDefault().asyncExec(new Runnable()
 						{
 							public void run()
 							{
+								// TODO show a nice dialog (maybe with a timeout - in case the user doesn't react => force restart).
 								PlatformUI.getWorkbench().restart();
 							}
 						});
@@ -399,7 +399,7 @@ public class Login
 		}
 		if (!handlingLogin) {
 			handlingLogin = true;
-			Display.getDefault().asyncExec(loginHandlerRunanble);
+			Display.getDefault().asyncExec(loginHandlerRunnable);
 		}
 		if (!Display.getDefault().getThread().equals(Thread.currentThread())) {
 			LOGGER.debug("Login requestor-thread "+Thread.currentThread()+" waiting for login handler");		
