@@ -26,13 +26,11 @@
 
 package org.nightlabs.jfire.base.app;
 
-import java.rmi.server.RMIClassLoader;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-
 import org.nightlabs.base.app.AbstractApplication;
 import org.nightlabs.base.app.AbstractApplicationThread;
 
