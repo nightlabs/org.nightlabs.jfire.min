@@ -9,5 +9,6 @@
 	<classpathentry sourcepath="WORKSPACE/NightLabsJDO/src" kind="var" path="WORKSPACE/NightLabsJDO/dist/NightLabsJDO.jar"/>
 	<classpathentry sourcepath="/WORKSPACE/JFireBaseBean" kind="var" path="WORKSPACE/JFireBaseBean/dist/JFireBaseBean.jar"/>
 	<classpathentry sourcepath="/WORKSPACE/JFireServerManager/src" kind="var" path="WORKSPACE/JFireServerManager/dist/JFireServerManager.jar"/>
+	<classpathentry kind="var" path="WORKSPACE/DelegatingClassLoader/dist/DelegatingClassLoader.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
