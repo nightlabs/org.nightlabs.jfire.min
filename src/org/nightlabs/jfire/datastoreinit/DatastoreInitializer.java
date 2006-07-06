@@ -55,6 +55,9 @@ import org.nightlabs.jfire.datastoreinit.xml.Init;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.servermanager.JFireServerManagerFactory;
 import org.nightlabs.jfire.servermanager.config.ServerCf;
+import org.nightlabs.jfire.servermanager.j2ee.J2EEAdapter;
+import org.nightlabs.jfire.servermanager.ra.JFireServerManagerFactoryImpl;
+import org.nightlabs.jfire.servermanager.ra.ManagedConnectionFactoryImpl;
 
 /**
  * @author Marco Schulze - marco at nightlabs dot de
@@ -77,8 +80,11 @@ public class DatastoreInitializer
 
 	private List inits = new ArrayList();
 
-	public DatastoreInitializer(File jfireModuleBaseDir)
+	public DatastoreInitializer(JFireServerManagerFactoryImpl jfsmf, ManagedConnectionFactoryImpl mcf, J2EEAdapter j2eeAdapter)
 	{
+		String deployBaseDir = mcf.getConfigModule().getJ2ee().getJ2eeDeployBaseDirectory();
+		File jfireModuleBaseDir = new File(deployBaseDir);
+
 		// Scan all JARs within all EARs for datastoreinit.xml files.
 		File[] ears = jfireModuleBaseDir.listFiles(earFileFilter);
 		for (int i = 0; i < ears.length; ++i) {

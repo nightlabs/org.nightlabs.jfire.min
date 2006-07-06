@@ -26,9 +26,7 @@
 
 package org.nightlabs.jfire.servermanager.ra;
 
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.FilenameFilter;
@@ -40,10 +38,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -102,7 +98,7 @@ import org.nightlabs.jfire.security.registry.SecurityRegistrar;
 import org.nightlabs.jfire.security.registry.SecurityRegistrarFactoryImpl;
 import org.nightlabs.jfire.server.LocalServer;
 import org.nightlabs.jfire.server.Server;
-import org.nightlabs.jfire.serverinit.ServerInitializerDelegate;
+import org.nightlabs.jfire.serverinit.ServerInitializer;
 import org.nightlabs.jfire.servermanager.DuplicateOrganisationException;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.servermanager.JFireServerManagerFactory;
@@ -415,10 +411,8 @@ public class JFireServerManagerFactoryImpl
 		LOGGER.info("Caught SERVER STARTED event!");
 
 		try {
-
-			String deployBaseDir = mcf.getConfigModule().getJ2ee().getJ2eeDeployBaseDirectory();
-			File deployBaseDirFile = new File(deployBaseDir);
-			DatastoreInitializer datastoreInitializer = new DatastoreInitializer(deployBaseDirFile);
+			// DatastoreInitialization
+			DatastoreInitializer datastoreInitializer = new DatastoreInitializer(this, mcf, getJ2EEVendorAdapter());
 
 			InitialContext ctx = new InitialContext();
 			try {
@@ -478,56 +472,8 @@ public class JFireServerManagerFactoryImpl
 					}
 				}
 
-				// search for server-init-ears
-				long startDT = System.currentTimeMillis();
-				String[] ears = deployBaseDirFile.list(fileFilterEARs);
-				List<String> serverInitEARs = new LinkedList<String>();
-				for (int i = 0; i < ears.length; i++) {
-					String ear = ears[i];
-					File serverInitEARDir = new File(deployBaseDirFile, ear);
-					File serverInitEARPropertiesFile = new File(serverInitEARDir, "serverinit.properties");
-					if (serverInitEARPropertiesFile.exists())
-						serverInitEARs.add(ear);
-				}
-				Collections.sort(serverInitEARs);
-				long stopDT = System.currentTimeMillis();
-				LOGGER.debug("Searching server init EARs took " + (stopDT - startDT) + " msec. Found: " + serverInitEARs.size());
-
-				loopServerInitEARs: for (String serverInitEAR : serverInitEARs) {
-					File serverInitEARDir = new File(deployBaseDirFile, serverInitEAR);
-					File serverInitEARPropertiesFile = new File(serverInitEARDir, "serverinit.properties");
-
-					LOGGER.debug("Reading \"serverinit.properties\" file of server init EAR \"" + serverInitEAR + "\"...");
-					Properties serverInitEARProperties = new Properties();
-					InputStream in = new BufferedInputStream(new FileInputStream(serverInitEARPropertiesFile));
-					try {
-						serverInitEARProperties.load(in);
-					} finally {
-						in.close();
-					}
-
-					String serverInitializerClassName = (String) serverInitEARProperties.get("serverInitializer.class");
-					if (serverInitializerClassName == null || "".equals(serverInitializerClassName)) {
-						LOGGER.error("Server init EAR \"" + serverInitEAR + "\" contains a \"serverinit.properties\" file, but this file misses the property \"serverInitializer.class\"!");
-						continue loopServerInitEARs;
-					}
-
-					try {
-						Class serverInitializerClass = Class.forName(serverInitializerClassName);
-						if (!ServerInitializerDelegate.class.isAssignableFrom(serverInitializerClass))
-							throw new ClassCastException("Class " + serverInitializerClassName + " does not extend " + ServerInitializerDelegate.class);
-
-						ServerInitializerDelegate serverInitializer = (ServerInitializerDelegate) serverInitializerClass.newInstance();
-						serverInitializer.setInitialContext(ctx);
-						serverInitializer.setJFireServerManagerFactory(this);
-						serverInitializer.setJ2EEVendorAdapter(getJ2EEVendorAdapter());
-						serverInitializer.initialize();
-					} catch (Exception x) {
-						LOGGER.error("Executing server init EAR \"" + serverInitEAR + "\" failed!", x);
-						continue loopServerInitEARs;
-					}
-
-				} // loopServerInitEARs: for (String serverInitEAR : serverInitEARs) {
+				// Server Initialization
+				new ServerInitializer(this, mcf, getJ2EEVendorAdapter()).initializeServer(ctx);
 			} finally {
 				ctx.close();
 			}
@@ -1283,8 +1229,8 @@ public class JFireServerManagerFactoryImpl
 
 		} // synchronized (this) {
 
-		String deployBaseDir = mcf.getConfigModule().getJ2ee().getJ2eeDeployBaseDirectory();
-		DatastoreInitializer datastoreInitializer = new DatastoreInitializer(new File(deployBaseDir));
+//		String deployBaseDir = mcf.getConfigModule().getJ2ee().getJ2eeDeployBaseDirectory();
+		DatastoreInitializer datastoreInitializer = new DatastoreInitializer(this, mcf, getJ2EEVendorAdapter());
 
 		try {
 			datastoreInitializer.initializeDatastore(
@@ -1420,7 +1366,7 @@ public class JFireServerManagerFactoryImpl
 	}
 	private static FileFilterDirectoriesExcludingEARs fileFilterDirectoriesExcludingEARs = null;
 
-	private static class FileFilterEARs implements FilenameFilter
+	public static class FileFilterEARs implements FilenameFilter
 	{
 		/**
 		 * @see java.io.FilenameFilter#accept(java.io.File, java.lang.String)
