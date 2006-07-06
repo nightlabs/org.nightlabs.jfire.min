@@ -102,7 +102,7 @@ import org.nightlabs.jfire.security.registry.SecurityRegistrar;
 import org.nightlabs.jfire.security.registry.SecurityRegistrarFactoryImpl;
 import org.nightlabs.jfire.server.LocalServer;
 import org.nightlabs.jfire.server.Server;
-import org.nightlabs.jfire.serverinit.ServerInitializer;
+import org.nightlabs.jfire.serverinit.ServerInitializerDelegate;
 import org.nightlabs.jfire.servermanager.DuplicateOrganisationException;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.servermanager.JFireServerManagerFactory;
@@ -514,10 +514,10 @@ public class JFireServerManagerFactoryImpl
 
 					try {
 						Class serverInitializerClass = Class.forName(serverInitializerClassName);
-						if (!ServerInitializer.class.isAssignableFrom(serverInitializerClass))
-							throw new ClassCastException("Class " + serverInitializerClassName + " does not extend " + ServerInitializer.class);
+						if (!ServerInitializerDelegate.class.isAssignableFrom(serverInitializerClass))
+							throw new ClassCastException("Class " + serverInitializerClassName + " does not extend " + ServerInitializerDelegate.class);
 
-						ServerInitializer serverInitializer = (ServerInitializer) serverInitializerClass.newInstance();
+						ServerInitializerDelegate serverInitializer = (ServerInitializerDelegate) serverInitializerClass.newInstance();
 						serverInitializer.setInitialContext(ctx);
 						serverInitializer.setJFireServerManagerFactory(this);
 						serverInitializer.setJ2EEVendorAdapter(getJ2EEVendorAdapter());
