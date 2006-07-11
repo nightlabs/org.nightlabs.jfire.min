@@ -7,25 +7,14 @@
     <ant path="org.nightlabs.jfire.base" file="build-nightlabs.xml" target="deploy"/>
     <requires/>
 
-    <!-- For the build-nightlabs-compile.pre.xml to work, the following projects must be built before. -->
-    <requires path="/NightLabsCascadedAuthenticationJBoss"/>
-    <requires path="/JFireRemoteClassLoader"/>
-    <requires path="/JFireRCLBackend"/>
-    <requires path="/JFireRCLBackendBean"/>
-
-<!--
-    <requires path="lib/JFireRemoteClassLoader.jar"/>
-    <requires path="lib/JFireRCLBackend.jar"/>
-    <requires path="lib/JFireRCLBackendBean.jar"/>
-    <requires path="lib/NightLabsCascadedAuthenticationJBoss.jar"/>
--->
-
     <provides/>
-    <provides path="org.nightlabs.jfire.base" location="org.nightlabs.jfire.base/lib/NightLabsCascadedAuthenticationJBoss.jar"/>
+<!--    
+	<provides path="org.nightlabs.jfire.base" location="org.nightlabs.jfire.base/lib/NightLabsCascadedAuthenticationJBoss.jar"/>
     <provides path="org.nightlabs.jfire.base" location="org.nightlabs.jfire.base/lib/JFireRemoteClassLoader.jar"/>
     <provides path="org.nightlabs.jfire.base" location="org.nightlabs.jfire.base/lib/JFireRCLBackend.jar"/>
     <provides path="org.nightlabs.jfire.base" location="org.nightlabs.jfire.base/lib/JFireRCLBackendBean.jar"/>
-
+-->
+	  
 <!-- original, as copied from org.nightlabs.base/nightly.xml:
     <provides path="org.nightlabs.base" location="org.nightlabs.base/lib/jboss-j2ee.jar"/>
     <provides path="org.nightlabs.base" location="org.nightlabs.base/lib/jbosssx.jar"/>
