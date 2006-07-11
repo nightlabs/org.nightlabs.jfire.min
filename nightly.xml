@@ -24,7 +24,7 @@
 
     ... and I believe, the following line should be fine:
 -->
-	<provides path="org.nightlabs.jfire.base" location="org.nightlabs.jfire.base/lib/jbossall-client.jar"/>
+<!--	<provides path="org.nightlabs.jfire.base" location="org.nightlabs.jfire.base/lib/jbossall-client.jar"/> -->
     
     <publishes description="..." location="org.nightlabs.jfire.base/dist/org.nightlabs.jfire.base_1.0.0.tar.gz"/>
     <javadoc path="org.nightlabs.jfire.base/src"/>
