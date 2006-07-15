@@ -29,6 +29,23 @@ package org.nightlabs.jfire.asyncinvoke;
 import java.io.Serializable;
 
 /**
+ * <p>
+ * Subclass this <code>Invocation</code> and pass an instance to {@link AsyncInvoke} in order
+ * to do some work asynchronously.
+ * </p>
+ * <p>
+ * If you want to react on successful completion, an error or the final give-up (when it permanently fails),
+ * you can implement one or more of the callbacks (and pass them additionally to {@link AsyncInvoke}):
+ * <ul>
+ * <li>{@link SuccessCallback}</li>
+ * <li>{@link ErrorCallback}</li>
+ * <li>{@link UndeliverableCallback}</li>
+ * </ul>
+ * All of them are triggered within a <b>separate transaction</b> in order to isolate them
+ * from this invocation (in case of an error, this is a must, of course; for the {@link SuccessCallback},
+ * it's not really necessary as you can put that logic into the main invocation).
+ * </p>
+ *
  * @author Marco Schulze - marco at nightlabs dot de
  */
 public abstract class Invocation
@@ -40,11 +57,13 @@ extends BaseInvocation
 	}
 
 	/**
-	 * This method is called by the framework and you must call whatever bean
-	 * method(s) you need.
+	 * This method is called by the framework and you can do here whatever you want
+	 * to do asynchronously.
 	 *
-	 * @return
-	 * @throws Exception
+	 * @return You can return either <code>null</code> or any {@link Serializable} that you want to pass
+	 *		to the {@link SuccessCallback}.
+	 * @throws Exception If anything goes wrong, throw whatever exception you like. It will be passed to the
+	 *		{@link ErrorCallback}.
 	 */
 	public abstract Serializable invoke()
 	throws Exception;

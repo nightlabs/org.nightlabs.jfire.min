@@ -28,7 +28,7 @@ package org.nightlabs.jfire.asyncinvoke;
 
 
 /**
- * This callback is triggered, when an invocation does not succeed. This happens at every
+ * This callback is triggered, when an {@link Invocation} does not succeed. This happens at every
  * retry, means this callback is not definite.
  *
  * @author Marco Schulze - marco at nightlabs dot de

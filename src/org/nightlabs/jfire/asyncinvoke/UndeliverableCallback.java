@@ -27,7 +27,7 @@
 package org.nightlabs.jfire.asyncinvoke;
 
 /**
- * This callback is triggered after the last invocation retry has failed. Hence,
+ * This callback is triggered after the last {@link Invocation} retry has failed. Hence,
  * this callback happens either none or one time for an invocation and therefore is
  * definite.
  *

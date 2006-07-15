@@ -27,6 +27,10 @@
 package org.nightlabs.jfire.asyncinvoke;
 
 /**
+ * This callback is triggered after an {@link Invocation} has been completed
+ * successfully. Hence, this might be never or once for every given {@link AsyncInvoke}
+ * execution.
+ *
  * @author Marco Schulze - marco at nightlabs dot de
  */
 public abstract class SuccessCallback
@@ -37,6 +41,14 @@ extends BaseInvocation
 	{
 	}
 
+	/**
+	 * This method is called after the method {@link Invocation#invoke()} has been completed
+	 * successfully (i.e. without an exception).
+	 *
+	 * @param envelope The controller object for the whole invocation process.
+	 * @param result The result that has been returned by {@link Invocation#invoke()}.
+	 * @throws Exception You can throw any exception in case of an error.
+	 */
 	public abstract void handle(AsyncInvokeEnvelope envelope, Object result)
 	throws Exception;
 
