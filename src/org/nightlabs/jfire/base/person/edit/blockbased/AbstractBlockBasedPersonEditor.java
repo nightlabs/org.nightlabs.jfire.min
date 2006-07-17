@@ -189,21 +189,21 @@ public abstract class AbstractBlockBasedPersonEditor implements PersonEditor { /
 		List result = new LinkedList();
 		Map structBlockOrder = getStructBlockDisplayOrder();
 		
-		int maxIndex = 0;
-		int unmentionedCount = 0;
-		// all datablocks of this person
-		for (Iterator it = person.getPersonDataBlockGroups().iterator(); it.hasNext(); ) {
-			PersonDataBlockGroup blockGroup = (PersonDataBlockGroup)it.next();
-			boolean orderedAdd = false;
-			if (structBlockOrder.containsKey(blockGroup.getStructBlockKey())) {
-				// block mentioned in structBlockOrder
-				Integer index = (Integer)structBlockOrder.get(blockGroup.getStructBlockKey());
-				blockGroup.setPriority(index.intValue());
+		if (person != null) {
+			int unmentionedCount = 0;
+			// all datablocks of this person
+			for (Iterator it = person.getPersonDataBlockGroups().iterator(); it.hasNext(); ) {
+				PersonDataBlockGroup blockGroup = (PersonDataBlockGroup)it.next();
+				if (structBlockOrder.containsKey(blockGroup.getStructBlockKey())) {
+					// block mentioned in structBlockOrder
+					Integer index = (Integer)structBlockOrder.get(blockGroup.getStructBlockKey());
+					blockGroup.setPriority(index.intValue());
+				}
+				else {
+					blockGroup.setPriority(allStructBlockCount + (unmentionedCount++));
+				}
+				result.add(blockGroup);
 			}
-			else {
-				blockGroup.setPriority(allStructBlockCount + (unmentionedCount++));
-			}
-			result.add(blockGroup);
 		}
 		Collections.sort(result);
 		return result.iterator();

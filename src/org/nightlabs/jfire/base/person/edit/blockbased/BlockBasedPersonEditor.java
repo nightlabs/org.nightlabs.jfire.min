@@ -108,7 +108,8 @@ public class BlockBasedPersonEditor extends AbstractBlockBasedPersonEditor {
 		Display.getDefault().asyncExec( 
 			new Runnable() {
 				public void run() {
-					getPersonStructure().explodePerson(person);
+					if (person != null)
+						getPersonStructure().explodePerson(person);
 					
 					// get the ordered dataBlocks
 					for (Iterator it = BlockBasedPersonEditor.this.getOrderedDataBlockGroupsIterator(); it.hasNext(); ) {
