@@ -79,7 +79,7 @@ public class LSDViewController extends ViewController implements LoginStateListe
 		try {
 			Login.getLogin();
 		} catch (LoginException e) {
-			// ignore LoginExceptions here
+			// TODO: Really ignore LoginExceptions here?
 		}
 	}
 	
@@ -103,5 +103,6 @@ public class LSDViewController extends ViewController implements LoginStateListe
 			login.addLoginStateListener(sharedInstance);
 		}
 		return sharedInstance;
+		
 	}
 }

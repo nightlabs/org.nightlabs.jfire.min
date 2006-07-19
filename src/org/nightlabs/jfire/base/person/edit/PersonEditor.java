@@ -93,4 +93,13 @@ public interface PersonEditor {
 	 *
 	 */
 	public void updatePerson();
+	
+	/**
+	 * Returns the {@link Person} associated with this editor.
+	 * Implementations should perform an update of the person
+	 * before returning it.
+	 * @see #updatePerson();
+	 * @return The {@link Person} associated with this editor.
+	 */
+	public Person getPerson();
 }

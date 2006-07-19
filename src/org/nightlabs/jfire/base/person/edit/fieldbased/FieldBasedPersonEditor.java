@@ -428,4 +428,14 @@ public class FieldBasedPersonEditor implements PersonEditor {
 			editor.updatePerson();
 		}
 	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see org.nightlabs.jfire.base.person.edit.PersonEditor#getPerson()
+	 */
+	public Person getPerson() {
+		updatePerson();
+		return person;
+	}
+	
 }

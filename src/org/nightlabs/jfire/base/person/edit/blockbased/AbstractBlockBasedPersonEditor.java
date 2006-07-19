@@ -80,10 +80,11 @@ public abstract class AbstractBlockBasedPersonEditor implements PersonEditor { /
 		setPerson(person,false);
 	}
 	/**
-	 * Returns the person.
+	 * Returns the person after updating it.
 	 * @return
 	 */
 	public Person getPerson() {
+		updatePerson();
 		return person;
 	}
 

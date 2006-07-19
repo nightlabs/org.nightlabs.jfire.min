@@ -65,19 +65,32 @@ import org.nightlabs.jfire.classloader.JFireRCLBackendUtil;
 import org.nightlabs.math.Base62Coder;
 
 /**
- * Defines a client login to a j2ee server.<br/>
+ * Defines a client login to the JFire server<br/>
+ * 
  * Use the static function getLogin. If logged in an instance of this class is returned. 
- * If not and all attempts to authenticate on the server fail a {@link javax.security.auth.login.LoginException} is thrown. 
+ * If not and all attempts to authenticate on the server fail a {@link javax.security.auth.login.LoginException} is thrown.
+ * 
+ * In general all code that requires the user to log in should place a line like
+ * <code>Login.getLogin();</code>
+ * somewhere before. If the user is already logged in this method immediately exits and returns
+ * the static Login member. If the user some time before decided to work offline this method
+ * will throw an {@link WorkOfflineException} to indicate this and not make any attempts to 
+ * login unless {@link #setForceLogin(boolean)} was not set to true. This means that user interface
+ * actions have to do something like the following to login:
+ * <pre>
+ *   Login.getLogin(false).setForceLogin(true);
+ *   Login.getLogin();
+ * </pre>
  * 
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  */
 public class Login
-	extends AbstractEPProcessor
-	implements InitialContextProvider
+extends AbstractEPProcessor
+implements InitialContextProvider
 {
 	public static final Logger LOGGER = Logger.getLogger(Login.class);
 	public static final long WORK_OFFLINE_TIMEOUT = 60000; // One minute
-	
+
 	/**
 	 * Loginstate: Logged in
 	 * @see LoginStateListener
@@ -89,14 +102,23 @@ public class Login
 	 */
 	public static final int LOGINSTATE_LOGGED_OUT = 1;
 	/**
-	 * Loginstate: Working offline
+	 * Loginstate: Working offline indicating also that the user wants 
+	 * to stay offline and causing the Login to fail for a certain time
+	 * when not forced.
 	 * @see LoginStateListener
 	 */
 	public static final int LOGINSTATE_OFFLINE = 2;
 
 
 	private static Login sharedInstanceLogin = null;
-	
+
+	private boolean forceLogin = false;
+
+	private long lastWorkOfflineDecisionTime = System.currentTimeMillis();
+
+	private int currLoginState = LOGINSTATE_LOGGED_OUT;
+
+
 	/**
 	 * Class used to pass the result of 
 	 * login procedures back to {@link Login}
@@ -107,22 +129,22 @@ public class Login
 		private boolean success = false;
 		private String message = "";
 		private boolean workOffline = false;
-		
+
 		private boolean wasAuthenticationErr = false;
 		private boolean wasCommunicationErr = false;
 		private boolean wasSocketTimeout = false;
-		
+
 		public void reset() {
 			exception = null;
 			success = false;
 			message = "";
 			workOffline = false;
-			
+
 			wasAuthenticationErr = false;
 			wasCommunicationErr = false;
 			wasSocketTimeout = false;
 		}
-		
+
 		public Throwable getException() {
 			return exception;
 		}
@@ -183,13 +205,13 @@ public class Login
 		public void setWasSocketTimeout(boolean wasSocketTimeout) {
 			this.wasSocketTimeout = wasSocketTimeout;
 		}		
-		
+
 		public void copyValuesTo(AsyncLoginResult loginResult) {
 			loginResult.exception = this.exception;
 			loginResult.success = this.success;
 			loginResult.message = this.message;
 			loginResult.workOffline = this.workOffline;
-			
+
 			loginResult.wasAuthenticationErr = this.wasAuthenticationErr;
 			loginResult.wasCommunicationErr = this.wasCommunicationErr;
 			loginResult.wasSocketTimeout = this.wasSocketTimeout;
@@ -204,7 +226,7 @@ public class Login
 	protected static void createLogin(){
 		sharedInstanceLogin = new Login();
 	}
-	
+
 	static {
 		createLogin();
 	}
@@ -231,7 +253,6 @@ public class Login
 		return sharedInstanceLogin.currLoginState == LOGINSTATE_LOGGED_IN;
 	}
 
-	private int currLoginState = LOGINSTATE_LOGGED_OUT;
 	/**
 	 * Returns one of {@link Login#LOGINSTATE_LOGGED_IN}, {@link Login#LOGINSTATE_LOGGED_OUT}
 	 * or {@link Login#LOGINSTATE_OFFLINE}
@@ -241,23 +262,46 @@ public class Login
 		return currLoginState;
 	}
 
+	public void logout() {
+		logout(true);
+	}
+	
 	/**
 	 * First removes the JFireRCDLDelegate from
 	 * the parent classloader and then flushes 
 	 * user information (logs out).
 	 */
-	public void logout() {
+	private void logout(boolean doNotify) {
 		// remove class loader delegate
 		JFireRCDLDelegate.sharedInstance().unregister(DelegatingClassLoaderOSGI.getSharedInstance());
 		// logout
 		loginContext = null;
 		nullUserMembers();
-		notifyLoginStateListeners(LOGINSTATE_LOGGED_OUT);
+		sessionID = null;
+		Exception ex = null;
 		try {
 			Cache.sharedInstance().close();
 		} catch (ModuleException e) {
-			throw new RuntimeException();
+			ex = e;
 		}
+		if (doNotify) {
+			try {
+				notifyLoginStateListeners(LOGINSTATE_LOGGED_OUT);
+			} catch (Exception e) {
+				ex = e;
+			}
+		}
+		if (ex != null)
+			throw new RuntimeException(ex);
+	}
+	
+	public void workOffline() {
+		if (currLoginState != LOGINSTATE_OFFLINE) {
+			logout(false);
+			currLoginState = LOGINSTATE_OFFLINE;
+			notifyLoginStateListeners(LOGINSTATE_OFFLINE);
+		}
+		
 	}
 
 	/**
@@ -273,14 +317,14 @@ public class Login
 		securityProtocol = null;
 		workstationID = null;
 	}
-	
-	
+
+
 	private volatile boolean handlingLogin = false;
 	private AsyncLoginResult loginResult = new AsyncLoginResult();
-	
+
 	private Runnable loginHandlerRunnable = new Runnable() {
 		private boolean logoutFirst = false;
-		
+
 		public void run() {
 			handlingLogin = true;
 			if (logoutFirst)
@@ -289,28 +333,28 @@ public class Login
 				try{
 					if (sharedInstanceLogin == null)
 						createLogin();
-					
+
 					loginResult.reset();
 					// create a loginContext
 					loginContext = new JFireLoginContext("jfire", new LoginCallbackHandler());
-					
+
 					ILoginHandler lHandler = getLoginHandler();
 					if (lHandler == null)
 						throw new LoginException("Cannot login, loginHandler is not set!");
-					
+
 					LOGGER.debug("Calling login handler");
 					lHandler.handleLogin(loginContext,sharedInstanceLogin.runtimeConfigModule, loginResult);
-					
-					
+
+
 					if ((!loginResult.isSuccess()) || (loginResult.getException() != null)) {
 						loginContext = null;
 						return;
 					}
-					
+
 					// copy properties
 					sharedInstanceLogin.copyPropertiesFrom(loginContext);
 					// done should be logged in by now
-					
+
 					// at the end, we register the JFireRCDLDelegate
 					JFireRCDLDelegate.sharedInstance().register(DelegatingClassLoaderOSGI.getSharedInstance()); // this method does nothing, if already registered.
 					Set<String> test = JFireRCDLDelegate.sharedInstance().getPublishedRemotePackages();
@@ -328,14 +372,8 @@ public class Login
 							}
 						});
 					}
-
-					try {
-					  // notify loginstate listeners
-					  notifyLoginStateListeners(LOGINSTATE_LOGGED_IN);
-					} catch (Throwable t) {
-						// TODO: ignore ??
-						LOGGER.error(t);
-					}
+					forceLogin = false;
+					currLoginState = LOGINSTATE_LOGGED_IN;
 				} catch(Throwable t){
 					loginContext = null;
 					LOGGER.error("Exception thrown while logging in.",t);
@@ -350,7 +388,7 @@ public class Login
 			}
 		}
 	};
-		// not logged in by now
+	// not logged in by now
 	/**
 	 * Actually performs the login procedure.<br/>
 	 * This method calls {@link #doLogin(boolean)} with parameter forceLogoutFirst
@@ -367,7 +405,7 @@ public class Login
 	public void doLogin() throws LoginException {
 		doLogin(false);
 	}
-	
+
 	/**
 	 * Actually performs the login procedure.
 	 * To do so it calls {@link ILoginHandler#handleLogin(JFireLoginContext, LoginConfigModule, Login.AsyncLoginResult)}
@@ -383,18 +421,20 @@ public class Login
 	 * @see Login#setLoginHandler(ILoginHandler)
 	 */
 	private void doLogin(final boolean forceLogoutFirst) throws LoginException {
+		int oldLoginstate = currLoginState;
 		LOGGER.debug("Login requested by thread "+Thread.currentThread());		
 		if ((currLoginState == LOGINSTATE_OFFLINE)){
-			long elapsedTime = System.currentTimeMillis() - lastWorkOfflineDecision;
-			if (elapsedTime > WORK_OFFLINE_TIMEOUT) {
+			long elapsedTime = System.currentTimeMillis() - lastWorkOfflineDecisionTime;			
+			if (!forceLogin && elapsedTime < WORK_OFFLINE_TIMEOUT) {
 				LoginException lEx = new LoginException();
 				lEx.initCause(new WorkOfflineException());
 				throw lEx;
 			}
 		}
-		
+
 		if (getLoginState() == LOGINSTATE_LOGGED_IN) {
-			LOGGER.debug("Already logged in, returnning. Thread "+Thread.currentThread());		
+			LOGGER.debug("Already logged in, returnning. Thread "+Thread.currentThread());
+			if (forceLogin) forceLogin = false;
 			return;
 		}
 		if (!handlingLogin) {
@@ -428,7 +468,8 @@ public class Login
 		if (!loginResult.isSuccess()) {
 			if (loginResult.isWorkOffline()) {
 				// if user decided to work offline first notify loginstate listeners
-				notifyLoginStateListeners(LOGINSTATE_OFFLINE);
+				currLoginState = LOGINSTATE_OFFLINE;
+				notifyLoginStateListeners(currLoginState);
 				// but then still throw Exception with WorkOffline as cause
 				LoginException lEx = new LoginException(loginResult.getMessage());
 				lEx.initCause(new WorkOfflineException(loginResult.getMessage()));
@@ -437,14 +478,37 @@ public class Login
 			else
 				throw new LoginException(loginResult.getMessage());
 		}
-		Cache.sharedInstance().open(sessionID);
+
+		// We should be logged in now, open the cache if not already open
+		Cache.sharedInstance().open(getSessionID());
+
+		if (currLoginState != oldLoginstate) {
+			try {
+				// notify loginstate listeners
+				notifyLoginStateListeners(currLoginState);
+			} catch (Throwable t) {
+				// TODO: ignore ??
+				LOGGER.error(t);
+			}
+		}
 
 		LOGGER.debug("Login OK. Thread "+Thread.currentThread());
 	}
 	
 	/**
+	 * Sets whether to force login on next attempt even if login state is 
+	 * {@link #LOGINSTATE_OFFLINE}.
+	 * 
+	 * @param forceLogin Whether to force Login on the next attempt.
+	 */
+	public void setForceLogin(boolean forceLogin) {
+		this.forceLogin = forceLogin;
+	}
+
+	/**
 	 * If not logged in by now does so and
 	 * returns the static instance of Login.
+	 * 
 	 * @return
 	 * @throws LoginException
 	 */
@@ -453,14 +517,14 @@ public class Login
 	{
 		return getLogin(true);
 	}
-	
+
 	public static Login sharedInstance()
 	{
 		if (sharedInstanceLogin == null)
 			throw new NullPointerException("createLogin has not been called! SharedInstance is null!");
 		return sharedInstanceLogin;
 	}
-	
+
 	/**
 	 * Returns the static instance of Login.
 	 * If doLogin is true the login procedure is started.
@@ -489,13 +553,13 @@ public class Login
 	private String contextFactory;
 	private String securityProtocol;
 	private String workstationID;
-	
+
 	private LoginConfigModule loginConfigModule;
 	private LoginConfigModule runtimeConfigModule = new LoginConfigModule();
-	
+
 	// LoginContext instantiated to perform the login
 	private JFireLoginContext loginContext = null;
-	
+
 	// ILoginHandler to handle the user interaction
 	private ILoginHandler loginHandler = null;
 	public ILoginHandler getLoginHandler() {
@@ -508,7 +572,7 @@ public class Login
 	public void setLoginHandler(ILoginHandler loginHandler) {
 		this.loginHandler = loginHandler;
 	}
-	
+
 	/**
 	 * Creates a new Login. It takes properties from the static {@link JFireLoginContext} 
 	 * field of this class (if ). Thats why it does not take organisationID, loginName and password parameters.  
@@ -520,7 +584,7 @@ public class Login
 		if (loginContext != null){
 			copyPropertiesFrom(loginContext);
 		}
-		
+
 		try {
 			loginConfigModule = ((LoginConfigModule)Config.sharedInstance().createConfigModule(LoginConfigModule.class));
 			if (loginConfigModule != null) {
@@ -530,7 +594,7 @@ public class Login
 			throw new RuntimeException(e);
 		}
 	}
-	
+
 
 	/**
 	 * @return Returns the organisationID.
@@ -556,8 +620,8 @@ public class Login
 	public String getWorkstationID() {
 		return workstationID;
 	}
-	
-	
+
+
 	public JFireLoginContext getLoginContext() {
 		return loginContext;
 	}
@@ -592,17 +656,17 @@ public class Login
 	 */
 	public Hashtable getInitialContextProperties() throws LoginException{
 //		boolean doReload;
-		
+
 //		if (getLoginState() != LOGINSTATE_LOGGED_IN) {
-//		  LOGGER.debug("getInitialContextProperties(): begin");
-//			doLogin();
-//
-//			LOGGER.debug("getInitialContextProperties(): logged in");
-//			
-//			LOGGER.debug("getInitialContextProperties(): generating props");
+//		LOGGER.debug("getInitialContextProperties(): begin");
+//		doLogin();
+
+//		LOGGER.debug("getInitialContextProperties(): logged in");
+
+//		LOGGER.debug("getInitialContextProperties(): generating props");
 //		}
-    if (initialContextProperties == null){
-    	copyPropertiesFrom(loginContext);
+		if (initialContextProperties == null){
+			copyPropertiesFrom(loginContext);
 			copyPropertiesFromConfig();
 			Properties props = new Properties();
 			props.put(InitialContext.INITIAL_CONTEXT_FACTORY,contextFactory);
@@ -615,8 +679,8 @@ public class Login
 		return initialContextProperties;
 	}
 
-	
-	
+
+
 	public InitialContext getInitialContext() throws NamingException, LoginException
 	{
 		LOGGER.debug("getInitialContext(): begin");
@@ -629,7 +693,7 @@ public class Login
 		initialContext = new InitialContext(getInitialContextProperties());
 		return initialContext;
 	}
-	
+
 	/**
 	 * Returns the runtime (not the persitent) LoginConfigModule. The persistent
 	 * one can be obtained via {@link Config}.
@@ -639,8 +703,8 @@ public class Login
 	public LoginConfigModule getLoginConfigModule() {
 		return runtimeConfigModule;
 	}
-	
-		
+
+
 	/**
 	 * Simple class to hold {@link LoginStateListener} 
 	 * and their associated {@link IAction}.   
@@ -660,14 +724,14 @@ public class Login
 			return loginStateListener;
 		}
 		private boolean checkActionOnEquals = true;
-		
+
 		public boolean isCheckActionOnEquals() {
 			return checkActionOnEquals;
 		}
 		public void setCheckActionOnEquals(boolean checkActionOnEquals) {
 			this.checkActionOnEquals = checkActionOnEquals;
 		}
-		
+
 		public boolean equals(Object o) {
 			if (o instanceof LoginStateListenerRegistryItem) {
 				if ( ((LoginStateListenerRegistryItem)o).getLoginStateListener().equals(this.loginStateListener)) {
@@ -684,16 +748,16 @@ public class Login
 				return false;
 		}
 	}
-	
+
 	/**
 	 * Holds instances of {@link Login.LoginStateListenerRegistryItem}.
 	 */
 	private List loginStateListenerRegistry = new LinkedList();
-	
+
 	public synchronized void addLoginStateListener(LoginStateListener loginStateListener) {
 		addLoginStateListener(loginStateListener,null);
 	}
-	
+
 	public void addLoginStateListener(LoginStateListener loginStateListener, IAction action) {
 		synchronized (loginStateListenerRegistry) {
 			LoginStateListenerRegistryItem regItem = new LoginStateListenerRegistryItem(loginStateListener,action);
@@ -701,7 +765,7 @@ public class Login
 			loginStateListener.loginStateChanged(getLoginState(), action);
 		}
 	}
-	
+
 	/**
 	 * Removes all occurences of the given {@link LoginStateListener}
 	 * @param loginStateListener
@@ -709,7 +773,7 @@ public class Login
 	public synchronized void removeLoginStateListener(LoginStateListener loginStateListener) {
 		removeLoginStateListener(loginStateListener,null,true);
 	}
-	
+
 	/**
 	 * Removes either the first or all occurences of the given {@link LoginStateListener}
 	 * @param loginStateListener
@@ -718,7 +782,7 @@ public class Login
 	public synchronized void removeLoginStateListener(LoginStateListener loginStateListener, boolean allOccurences) {
 		removeLoginStateListener(loginStateListener,null,allOccurences);
 	}
-	
+
 	/**
 	 * Removes only the {@link LoginStateListener} associated to the given {@link IAction}.  
 	 * @param loginStateListener
@@ -751,17 +815,16 @@ public class Login
 			}
 		}
 	}
-	
-	private long lastWorkOfflineDecision = System.currentTimeMillis();
-	
-	
+
+
 	protected void notifyLoginStateListeners(int loginState){
+
 		synchronized (loginStateListenerRegistry) {
 			try {
 				currLoginState = loginState;
 				if (currLoginState == LOGINSTATE_OFFLINE)
-					lastWorkOfflineDecision = System.currentTimeMillis();
-				
+					lastWorkOfflineDecisionTime = System.currentTimeMillis();
+
 				if (!isProcessed()) {
 					try {
 						process();
@@ -782,7 +845,7 @@ public class Login
 			}
 		}
 	}
-	
+
 	/**
 	 * Do not call this method yourself.<br/>
 	 * It is used to trigger the notification right after the 
@@ -816,27 +879,27 @@ public class Login
 			}
 		}
 	}
-	
+
 	public static Login.AsyncLoginResult testLogin(JFireLoginContext loginContext) {
 		Login.AsyncLoginResult loginResult = new Login.AsyncLoginResult();
-		
+
 		Login login = null;
 		try {
 			login = Login.getLogin(false);
 		} catch (LoginException e) {
 			LOGGER.error("Obtaining shared instance of Login failed!", e);
 		}
-		
+
 		if ( login != null)
 			login.copyPropertiesFrom(loginContext);
 		else
 			throw new IllegalStateException("Shared instance of Login must not be null");
-		
+
 		loginResult.setSuccess(false);
 		loginResult.setMessage(null);
 		loginResult.setException(null);
 		login.flushInitialContextProperties();
-		
+
 		// verify login
 		JFireRCLBackend jfireCLBackend = null;
 //		LanguageManager languageManager = null;
@@ -854,7 +917,7 @@ public class Login
 						login.getInitialContextProperties()).create();
 				System.out.println("**********************************************************");
 //				languageManager = LanguageManagerUtil.getHome(
-//						login.getInitialContextProperties()).create();
+//				login.getInitialContextProperties()).create();
 				loginResult.setSuccess(true);
 			} catch (RemoteException remoteException) {
 				Throwable cause = remoteException.getCause();
@@ -896,8 +959,8 @@ public class Login
 				loginResult.setMessage(JFireBasePlugin.getResourceString("login.error.unhadledExceptionMessage"));
 				loginResult.setException(loginE);
 			}
-     }
-    
+		}
+
 		return loginResult;
 	}
 	

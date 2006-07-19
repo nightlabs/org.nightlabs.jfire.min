@@ -65,9 +65,11 @@ public class LoginAction extends LSDWorkbenchWindowActionDelegate {
 		try {			
 			Login login = Login.getLogin(false);
 			if (Login.isLoggedIn()) 
-				login.logout();
-			else
+				login.workOffline();
+			else {
+				Login.getLogin(false).setForceLogin(true);
 				Login.getLogin();
+			}
 			
 		} catch (LoginException e) {
 			LOGGER.error("Login failed",e);
@@ -82,7 +84,7 @@ public class LoginAction extends LSDWorkbenchWindowActionDelegate {
 				break;
 			case Login.LOGINSTATE_LOGGED_OUT:
 				action.setImageDescriptor(loginIcon);
-				action.setToolTipText("You are working offline, click to login");
+				action.setToolTipText("actions.login.tooltip.login");
 			break;				
 			case Login.LOGINSTATE_OFFLINE:
 				action.setImageDescriptor(loginIcon);

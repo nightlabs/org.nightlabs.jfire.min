@@ -377,8 +377,8 @@ public class LoginDialog extends ExpandableAreaDialog {
 	protected void offlinePressed(SelectionEvent event) {
 		loginResult.setSuccess(false);
 		loginResult.setWorkOffline(true);
-		loginResult.setMessage(JFireBasePlugin.getResourceString("login.error.offlineDecision"));
-		loginResult.setException(new WorkOfflineException(JFireBasePlugin.getResourceString("login.error.offlineDecision")));
+//		loginResult.setMessage(JFireBasePlugin.getResourceString("login.error.offlineDecision"));
+//		loginResult.setException(new WorkOfflineException(JFireBasePlugin.getResourceString("login.error.offlineDecision")));
 		close();
 	}
 

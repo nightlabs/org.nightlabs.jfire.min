@@ -93,7 +93,7 @@ public class JFireLoginHandler implements ILoginHandler {
 					organisationID = loginConfigModule.getOrganisationID();
 				else
 					loginConfigModule.setOrganisationID(organisationID);
-				
+
 				if (initialContextFactory == null)
 					initialContextFactory = loginConfigModule.getInitialContextFactory();
 				else
@@ -128,7 +128,7 @@ public class JFireLoginHandler implements ILoginHandler {
 		else
 			handleSWTLogin(loginContext, loginConfigModule, loginResult);
 	}
-	
+
 	protected void handleSWTLogin(JFireLoginContext loginContext, LoginConfigModule loginConfigModule, Login.AsyncLoginResult loginResult) throws LoginException {
 		LoginDialog loginDialog = new LoginDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
 		LoginDialog.registerSharedInstance(loginDialog);
@@ -136,7 +136,7 @@ public class JFireLoginHandler implements ILoginHandler {
 			loginDialog.setLoginResult(loginResult);
 			loginDialog.setLoginModule(loginConfigModule);
 			loginDialog.setLoginContext(loginContext);
-			
+
 			// LoginDialog does all the work
 			loginDialog.open();
 		}
@@ -144,14 +144,14 @@ public class JFireLoginHandler implements ILoginHandler {
 			LoginDialog.deregisterSharedInstance();
 		}
 	}
-	
+
 	protected void handleSplashLogin(JFireLoginContext loginContext, LoginConfigModule loginConfigModule, final Login.AsyncLoginResult loginResult) throws LoginException 
 	{
 		final SplashLoginPanel loginPanel = new SplashLoginPanel(loginContext, loginConfigModule);
 		loginPanel.doLayout();
 //		Object mutex = new Object();
 		try {
-      Runnable runLogin =  new Runnable() {
+			Runnable runLogin =  new Runnable() {
 				public void run() {
 					SplashScreen.setSplashPanel(loginPanel);
 					SplashScreen.setProgressIndeterminite(false);
@@ -159,12 +159,12 @@ public class JFireLoginHandler implements ILoginHandler {
 					SplashScreen.setProgressValue(0);
 					SplashScreen.setSplashMessage("");
 				}
-      };
-      if (EventQueue.isDispatchThread())
-        runLogin.run();
-      else
-        SwingUtilities.invokeAndWait(runLogin);
-      
+			};
+			if (EventQueue.isDispatchThread())
+				runLogin.run();
+			else
+				SwingUtilities.invokeAndWait(runLogin);
+
 		} catch (InterruptedException e) {
 			LoginException x = new LoginException("Error in SplashLogin: "+e.getMessage());
 			x.initCause(e);
@@ -187,10 +187,11 @@ public class JFireLoginHandler implements ILoginHandler {
 				x.initCause(e);
 				throw x;
 			}
-      if(loginPanel.isWorkOffline()) {
-        SplashScreen.setSplashMessage("Work offline");
-        break;
-      }
+			if(loginPanel.isWorkOffline()) {
+				SplashScreen.setSplashMessage("Work offline");
+				loginResult.setWorkOffline(true);
+				break;
+			}
 			loginPanel.assignLoginValues();
 			SplashScreen.setSplashMessage("Try to log in ...");
 			Login.AsyncLoginResult testResult = Login.testLogin(loginContext);
@@ -201,7 +202,7 @@ public class JFireLoginHandler implements ILoginHandler {
 				break;
 			}
 			loginTries++;
-			
+
 			SwingUtilities.invokeLater(new Runnable(){
 				public void run() {
 					if ((!loginResult.isWasAuthenticationErr()) && (loginResult.isSuccess()))
@@ -226,7 +227,7 @@ public class JFireLoginHandler implements ILoginHandler {
 								loginResult.getException().printStackTrace();
 							}
 							loginPanel.setErrMessage(message);
-							
+
 						}
 					}
 				}

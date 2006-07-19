@@ -42,8 +42,8 @@ public interface LoginStateListener {
 	 * 	<li>{@link Login#LOGINSTATE_LOGGED_OUT} user has logged out.</li>
 	 * 	<li>{@link Login#LOGINSTATE_OFFLINE} user decided to work offline.</li>
 	 * <ul>
-	 * Note that the param action is likely to be null, depending on what did
-	 * or didn't pass to {@link Login#addLoginStateListener(LoginStateListener)}
+	 * Note that the param action is likely to be null, depending on what was 
+	 * passed to {@link Login#addLoginStateListener(LoginStateListener)}
 	 * or {@link Login#addLoginStateListener(LoginStateListener, IAction)}
 	 * 
 	 * @param loginState The login state the user switched to
