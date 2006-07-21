@@ -26,7 +26,6 @@
 
 package org.nightlabs.jfire.base;
 
-import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Properties;
 
@@ -36,7 +35,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
-import org.nightlabs.jfire.base.InitException;
+import org.nightlabs.ModuleException;
 import org.nightlabs.jfire.jdo.cache.CacheManager;
 import org.nightlabs.jfire.jdo.cache.CacheManagerFactory;
 import org.nightlabs.jfire.organisation.LocalOrganisation;
@@ -47,8 +46,6 @@ import org.nightlabs.jfire.server.Server;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.servermanager.JFireServerManagerFactory;
 import org.nightlabs.jfire.servermanager.config.OrganisationCf;
-
-import org.nightlabs.ModuleException;
 
 /**
  * This class is a util to make it easier to look up objects from JNDI.
@@ -174,12 +171,9 @@ public class Lookup
 		throws ModuleException
 	{
 		PersistenceManager pm = getPersistenceManagerFactory().getPersistenceManager();
-//		// WORK AROUND: Better assign the LifecyleListener to the PersitenceManagerFactory when it gets into the spec
-//		if (pm.getUserObject() == null) {
-//			pm.setUserObject(new LifecycleListener());
-//			// add the listener for all classes
-//			pm.addInstanceLifecycleListener((InstanceLifecycleListener)pm.getUserObject(), null);
-//		}
+//		// TO DO remove this WORKAROUND: the PersistenceManagerFactory should reset the fetchplan! Not necessary?!
+//		pm.getFetchPlan().setGroup(FetchPlan.DEFAULT);
+//		pm.getFetchPlan().setDetachmentOptions(FetchPlan.DETACH_LOAD_FIELDS);
 		return pm;
 	}
 
