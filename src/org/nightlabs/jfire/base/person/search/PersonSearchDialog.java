@@ -39,6 +39,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.nightlabs.base.composite.XComposite;
+import org.nightlabs.base.composite.XComposite.LayoutMode;
 import org.nightlabs.j2ee.InitialContextProvider;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jdo.search.SearchFilterProvider;
@@ -71,7 +72,7 @@ public class PersonSearchDialog extends Dialog implements SearchResultFetcher{
 
 	protected Control createDialogArea(Composite parent) {
 		
-		XComposite wrapper = new XComposite(parent, SWT.NONE, XComposite.LAYOUT_MODE_TIGHT_WRAPPER);
+		XComposite wrapper = new XComposite(parent, SWT.NONE, LayoutMode.TIGHT_WRAPPER);
 		
 		filterProvider = new DynamicPersonSearchFilterProvider(new PersonSearchFilterItemListMutator());
 		try {

@@ -39,6 +39,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 
 import org.nightlabs.base.composite.XComposite;
+import org.nightlabs.base.composite.XComposite.LayoutDataMode;
+import org.nightlabs.base.composite.XComposite.LayoutMode;
 import org.nightlabs.jfire.config.id.ConfigID;
 
 /**
@@ -108,8 +110,8 @@ public class ConfigPreferencesTreeComposite extends XComposite {
 	 */
 	public ConfigPreferencesTreeComposite(Composite parent, int style, boolean setLayoutData, ConfigID configID) {
 		super(parent, style, 
-				XComposite.LAYOUT_MODE_TIGHT_WRAPPER, 
-				setLayoutData ? XComposite.LAYOUT_DATA_MODE_GRID_DATA : XComposite.LAYOUT_DATA_MODE_NONE
+				LayoutMode.TIGHT_WRAPPER, 
+				setLayoutData ? LayoutDataMode.GRID_DATA : LayoutDataMode.NONE
 		);
 //		this.currentConfigGroupID();
 		treeViewer = new TreeViewer(this, SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL);

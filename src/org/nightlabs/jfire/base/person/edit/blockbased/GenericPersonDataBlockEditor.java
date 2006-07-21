@@ -39,6 +39,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 
 import org.nightlabs.base.composite.XComposite;
+import org.nightlabs.base.composite.XComposite.LayoutMode;
 import org.nightlabs.jfire.base.person.edit.PersonDataFieldEditor;
 import org.nightlabs.jfire.base.person.edit.PersonDataFieldEditorFactoryRegistry;
 import org.nightlabs.jfire.base.person.edit.PersonDataFieldEditorNotFoundException;
@@ -101,7 +102,7 @@ public class GenericPersonDataBlockEditor extends PersonDataBlockEditor {
 				// have an editor, store it
 //				fieldEditors.put(dataFieldKey,fieldEditor);
 				// wrap the editor in a Composite to make it easier to layout
-				XComposite wrapperComp = new XComposite(this, SWT.PUSH, XComposite.LAYOUT_MODE_TIGHT_WRAPPER);
+				XComposite wrapperComp = new XComposite(this, SWT.PUSH, LayoutMode.TIGHT_WRAPPER);
 				((GridLayout)wrapperComp.getLayout()).verticalSpacing = 5;
 				// add the field editor
 				fieldEditor.createControl(wrapperComp);

@@ -39,6 +39,7 @@ import org.eclipse.swt.widgets.Label;
 
 import org.nightlabs.base.composite.SelectableComposite;
 import org.nightlabs.base.composite.XComposite;
+import org.nightlabs.base.composite.XComposite.LayoutMode;
 import org.nightlabs.jfire.base.login.Login;
 import org.nightlabs.jfire.person.PersonManager;
 import org.nightlabs.jfire.person.util.PersonSearchFilter;
@@ -94,7 +95,7 @@ public class PersonQuickSearch implements SearchFilterProvider {
 	 * @see org.nightlabs.jdo.search.SearchFilterProvider#createComposite(org.eclipse.swt.widgets.Composite)
 	 */
 	public Composite createComposite(Composite parent) {
-		wrapperComposite = new XComposite(parent, SWT.NONE, XComposite.LAYOUT_MODE_TIGHT_WRAPPER);
+		wrapperComposite = new XComposite(parent, SWT.NONE, LayoutMode.TIGHT_WRAPPER);
 //			quickButton = new Button(wrapperComposite,SWT.TOGGLE);
 //			quickButton.setText(buttonText);
 //			GridData gd = new GridData(GridData.FILL_HORIZONTAL);

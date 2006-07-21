@@ -41,6 +41,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 
 import org.nightlabs.base.composite.XComposite;
+import org.nightlabs.base.composite.XComposite.LayoutMode;
 import org.nightlabs.jfire.base.person.PersonStructProvider;
 import org.nightlabs.jfire.person.AbstractPersonStructField;
 import org.nightlabs.jfire.person.PersonStructBlock;
@@ -66,7 +67,7 @@ public class PersonSearchFilterItemEditor extends SearchFilterItemEditor impleme
 	 */
 	public Control getControl(Composite parent) {
 		if (wrapper == null) {
-			wrapper = new XComposite(parent, SWT.NONE, XComposite.LAYOUT_MODE_TIGHT_WRAPPER);
+			wrapper = new XComposite(parent, SWT.NONE, LayoutMode.TIGHT_WRAPPER);
 			GridLayout wrapperLayout = (GridLayout)wrapper.getLayout();
 			wrapperLayout.numColumns = 2;
 			wrapperLayout.makeColumnsEqualWidth = false;

@@ -38,6 +38,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 
 import org.nightlabs.base.composite.XComposite;
+import org.nightlabs.base.composite.XComposite.LayoutMode;
 import org.nightlabs.jfire.base.person.edit.PersonEditor;
 import org.nightlabs.jfire.person.Person;
 import org.nightlabs.jfire.person.id.PersonStructBlockID;
@@ -73,7 +74,7 @@ public class FullDataBlockCoverageComposite extends Composite {
 		this.setLayoutData(new GridData(GridData.FILL_BOTH));
 		
 		for (int i=0; i<numColumns; i++) {
-			XComposite wrapper = new XComposite(this,SWT.BORDER, XComposite.LAYOUT_MODE_TIGHT_WRAPPER);				
+			XComposite wrapper = new XComposite(this,SWT.BORDER, LayoutMode.TIGHT_WRAPPER);				
 			BlockBasedPersonEditor personEditor = (BlockBasedPersonEditor)personEditors.get(i);
 			personEditor.setPerson(person);
 			personEditor.setEditorDomain(editorScope,"#FullDatBlockCoverageComposite"+i);

@@ -34,6 +34,8 @@ import org.eclipse.swt.widgets.Composite;
 
 import org.nightlabs.base.composite.LabeledText;
 import org.nightlabs.base.composite.XComposite;
+import org.nightlabs.base.composite.XComposite.LayoutDataMode;
+import org.nightlabs.base.composite.XComposite.LayoutMode;
 
 /**
  * 
@@ -63,7 +65,7 @@ public class StaticPersonSearchFilterProviderComposite extends org.eclipse.swt.w
 		thisLayout.marginWidth = 0;
 		this.setLayout(thisLayout);
 		
-		firstRow = new XComposite(this, SWT.NONE, XComposite.LAYOUT_MODE_TIGHT_WRAPPER, XComposite.LAYOUT_DATA_MODE_NONE);
+		firstRow = new XComposite(this, SWT.NONE, LayoutMode.TIGHT_WRAPPER, LayoutDataMode.NONE);
 		GridLayout firstRowLayout = ((GridLayout)firstRow.getLayout());
 		firstRowLayout.numColumns = 2;
 		firstRowLayout.makeColumnsEqualWidth = true;
@@ -94,7 +96,7 @@ public class StaticPersonSearchFilterProviderComposite extends org.eclipse.swt.w
 //		controlCompanyLData.horizontalAlignment = GridData.FILL;
 //		controlCompany.setLayoutData(controlCompanyLData);
 
-		secondRow = new XComposite(this, SWT.NONE, XComposite.LAYOUT_MODE_TIGHT_WRAPPER, XComposite.LAYOUT_DATA_MODE_NONE);
+		secondRow = new XComposite(this, SWT.NONE, LayoutMode.TIGHT_WRAPPER, LayoutDataMode.NONE);
 		GridLayout secondRowLayout = ((GridLayout)secondRow.getLayout());;		
 		GridData secondRowLData = new GridData();		
 		secondRowLData.grabExcessHorizontalSpace = true;
@@ -123,7 +125,7 @@ public class StaticPersonSearchFilterProviderComposite extends org.eclipse.swt.w
 		controlCity.setLayoutData(controlCityLData);
 
 		
-		thirdRow = new XComposite(this, SWT.NONE, XComposite.LAYOUT_MODE_TIGHT_WRAPPER, XComposite.LAYOUT_DATA_MODE_NONE);
+		thirdRow = new XComposite(this, SWT.NONE, LayoutMode.TIGHT_WRAPPER, LayoutDataMode.NONE);
 		GridLayout thirdRowLayout = ((GridLayout)thirdRow.getLayout());;
 		if (createSearchButton)
 			thirdRowLayout.numColumns = 3;

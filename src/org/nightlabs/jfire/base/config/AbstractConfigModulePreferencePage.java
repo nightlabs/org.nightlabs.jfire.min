@@ -43,6 +43,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.nightlabs.base.composite.XComposite;
+import org.nightlabs.base.composite.XComposite.LayoutMode;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.login.Login;
 import org.nightlabs.jfire.config.ConfigManager;
@@ -151,7 +152,7 @@ implements IWorkbenchPreferencePage
 	 * @see org.eclipse.jface.preference.PreferencePage#createContents(org.eclipse.swt.widgets.Composite)
 	 */
 	protected Control createContents(Composite parent) {
-		wrapper = new XComposite(parent, SWT.NONE, XComposite.LAYOUT_MODE_ORDINARY_WRAPPER);
+		wrapper = new XComposite(parent, SWT.NONE, LayoutMode.ORDINARY_WRAPPER);
 		
 		if (doCreateConfigGroupHeader)
 			createConfigGroupHeader(wrapper);

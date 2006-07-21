@@ -39,6 +39,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 
 import org.nightlabs.base.composite.XComposite;
+import org.nightlabs.base.composite.XComposite.LayoutMode;
 import org.nightlabs.jfire.base.login.Login;
 import org.nightlabs.jfire.person.PersonStruct;
 import org.nightlabs.jfire.person.id.PersonStructFieldID;
@@ -90,7 +91,7 @@ public class StaticPersonSearchFilterProvider implements
 	 * @see org.nightlabs.jdo.search.SearchFilterProvider#getComposite(org.eclipse.swt.widgets.Composite)
 	 */	
 	public Composite createComposite(Composite parent) {
-		wrapper = new XComposite(parent, SWT.NONE, XComposite.LAYOUT_MODE_TIGHT_WRAPPER);
+		wrapper = new XComposite(parent, SWT.NONE, LayoutMode.TIGHT_WRAPPER);
 		
 		criteriaBuilderComposite = new StaticPersonSearchFilterProviderComposite(wrapper, SWT.NONE, !createOwnSearchButton);
 		if (createOwnSearchButton) {

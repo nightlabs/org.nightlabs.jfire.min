@@ -36,6 +36,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 
 import org.nightlabs.base.composite.XComposite;
+import org.nightlabs.base.composite.XComposite.LayoutMode;
 import org.nightlabs.base.exceptionhandler.ExceptionHandlerRegistry;
 import org.nightlabs.base.extensionpoint.EPProcessorException;
 import org.nightlabs.base.wizard.WizardHopPage;
@@ -115,7 +116,7 @@ public class PersonCompoundDataBlockWizardPage extends WizardHopPage {
 	 * @param parent
 	 */
 	protected void createWrapper(Composite parent) {
-		wrapperComp = new XComposite(parent, SWT.NONE, XComposite.LAYOUT_MODE_TIGHT_WRAPPER);
+		wrapperComp = new XComposite(parent, SWT.NONE, LayoutMode.TIGHT_WRAPPER);
 		setControl(wrapperComp);
 	}
 	

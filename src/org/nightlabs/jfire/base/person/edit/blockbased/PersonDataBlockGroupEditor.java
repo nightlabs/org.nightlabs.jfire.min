@@ -37,6 +37,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
 
 import org.nightlabs.base.composite.XComposite;
+import org.nightlabs.base.composite.XComposite.LayoutMode;
 import org.nightlabs.base.extensionpoint.EPProcessorException;
 import org.nightlabs.jfire.base.person.edit.PersonDataFieldEditor;
 import org.nightlabs.jfire.person.PersonDataBlockGroup;
@@ -65,7 +66,7 @@ implements PersonDataBlockEditorChangedListener
 		super(parent, SWT.NONE);		
 		this.blockGroup = blockGroup;
 		
-		wrapperComposite = new XComposite(this, SWT.NONE, XComposite.LAYOUT_MODE_TIGHT_WRAPPER);		
+		wrapperComposite = new XComposite(this, SWT.NONE, LayoutMode.TIGHT_WRAPPER);		
 		
 		createDataBlockEditors(wrapperComposite);
 	}
