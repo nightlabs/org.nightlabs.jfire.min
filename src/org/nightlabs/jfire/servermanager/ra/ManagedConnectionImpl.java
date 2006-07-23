@@ -140,7 +140,7 @@ public class ManagedConnectionImpl
 	public synchronized void cleanup()
 	throws ResourceException
 	{
-		System.out.println(this.getClass().getName()+": cleanup()");
+		LOGGER.info(this.getClass().getName()+": cleanup()");
 		for (Iterator i = handles.iterator(); i.hasNext();)
 		{
 			((JFireServerManagerImpl)i.next()).setManagedConnection(null);
@@ -152,7 +152,7 @@ public class ManagedConnectionImpl
 	 * @see javax.resource.spi.ManagedConnection#destroy()
 	 */
 	public void destroy() throws ResourceException {
-		System.out.println(this.getClass().getName()+": destroy()");		
+		LOGGER.info(this.getClass().getName()+": destroy()");		
 	}
 
 	/**

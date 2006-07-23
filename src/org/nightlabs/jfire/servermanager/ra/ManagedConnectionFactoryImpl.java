@@ -209,7 +209,7 @@ public class ManagedConnectionFactoryImpl
 	protected PasswordCredential getPasswordCredential(Subject subject) 
 	throws ResourceException
 	{
-		System.out.println(this.getClass().getName()+": getPasswordCredential(subject=\""+subject+"\")");
+		LOGGER.info(this.getClass().getName()+": getPasswordCredential(subject=\""+subject+"\")");
 		
 		if (subject == null) 
 		{

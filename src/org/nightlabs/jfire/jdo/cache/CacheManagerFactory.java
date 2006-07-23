@@ -414,7 +414,7 @@ implements Serializable
 	{
 		synchronized (cacheSessionContainers) {
 			CacheSessionContainer newActiveCSC = new CacheSessionContainer(this);
-			LOGGER.info("Creating new activeCacheSessionContainer (createDT=" + newActiveCSC.getCreateDT() + ").");
+			LOGGER.debug("Creating new activeCacheSessionContainer (createDT=" + newActiveCSC.getCreateDT() + ").");
 			cacheSessionContainers.addFirst(newActiveCSC);
 			activeCacheSessionContainer = newActiveCSC;
 
@@ -424,7 +424,7 @@ implements Serializable
 
 			while (cacheSessionContainers.size() > cacheSessionContainerCount) {
 				CacheSessionContainer csc = (CacheSessionContainer) cacheSessionContainers.removeLast();
-				LOGGER.info("Dropping cacheSessionContainer (createDT=" + csc.getCreateDT() + ")");
+				LOGGER.debug("Dropping cacheSessionContainer (createDT=" + csc.getCreateDT() + ")");
 				csc.close();
 			}
 		}
@@ -490,7 +490,7 @@ implements Serializable
 	{
 		synchronized (freshDirtyObjectIDContainers) {
 			DirtyObjectIDContainer newActiveDOC = new DirtyObjectIDContainer();
-			LOGGER.info("Creating new activeFreshDirtyObjectIDContainer (createDT=" + newActiveDOC.getCreateDT() + ").");
+			LOGGER.debug("Creating new activeFreshDirtyObjectIDContainer (createDT=" + newActiveDOC.getCreateDT() + ").");
 			freshDirtyObjectIDContainers.addFirst(newActiveDOC);
 			activeFreshDirtyObjectIDContainer = newActiveDOC;
 
@@ -500,7 +500,7 @@ implements Serializable
 
 			while (freshDirtyObjectIDContainers.size() > freshDirtyObjectIDContainerCount) {
 				DirtyObjectIDContainer doc = (DirtyObjectIDContainer) freshDirtyObjectIDContainers.removeLast();
-				LOGGER.info("Dropping freshDirtyObjectIDContainer (createDT=" + doc.getCreateDT() + ").");
+				LOGGER.debug("Dropping freshDirtyObjectIDContainer (createDT=" + doc.getCreateDT() + ").");
 				doc.close();
 			}
 		}

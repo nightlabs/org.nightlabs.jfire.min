@@ -763,7 +763,7 @@ public class JFireServerManagerFactoryImpl
 				ejbJarMan = new EJBJarMan(jar.getName(), in);
 				for (Iterator it = ejbJarMan.getRoles().iterator(); it.hasNext(); ) {
 					RoleDef roleDef = (RoleDef)it.next();
-					System.out.println("roleDef.roleID = "+roleDef.getRoleID());
+					LOGGER.info("roleDef.roleID = "+roleDef.getRoleID());
 				}
 			} finally {
 				in.close();
@@ -785,10 +785,10 @@ public class JFireServerManagerFactoryImpl
 				ejbRoleGroupMan = new EJBRoleGroupMan(ejbJarMan, in);
 				for (Iterator it = ejbRoleGroupMan.getRoleGroups().iterator(); it.hasNext(); ) {
 					RoleGroupDef roleGroupDef = (RoleGroupDef)it.next();
-					System.out.println("roleGroupDef.roleGroupID = "+roleGroupDef.getRoleGroupID());
+					LOGGER.info("roleGroupDef.roleGroupID = "+roleGroupDef.getRoleGroupID());
 					for (Iterator itRoles = roleGroupDef.getAllRoles().iterator(); itRoles.hasNext(); ) {
 						RoleDef roleDef = (RoleDef)itRoles.next();
-						System.out.println("  roleDef.roleID = "+roleDef.getRoleID());
+						LOGGER.info("  roleDef.roleID = "+roleDef.getRoleID());
 					}
 				}
 			} finally {
