@@ -53,7 +53,10 @@ import org.nightlabs.xml.DOMParser;
  */
 public class EJBRoleGroupMan implements Serializable
 {
-	public static Logger LOGGER = Logger.getLogger(EJBRoleGroupMan.class);
+	/**
+	 * LOG4J logger used by this class
+	 */
+	private static final Logger logger = Logger.getLogger(EJBRoleGroupMan.class);
 
 	protected EJBJarMan ejbJarMan = null;
 	
@@ -124,17 +127,17 @@ public class EJBRoleGroupMan implements Serializable
 //		parser.setFeature("http://xml.org/sax/features/validation", false);
 		parser.setErrorHandler(new ErrorHandler(){
 			public void error(SAXParseException exception) throws SAXException {
-				LOGGER.error("Parse (ejb-rolegroup.xml): ", exception);
+				logger.error("Parse (ejb-rolegroup.xml): ", exception);
 				parseException = exception;
 			}
 
 			public void fatalError(SAXParseException exception) throws SAXException {
-				LOGGER.fatal("Parse (ejb-rolegroup.xml): ", exception);
+				logger.fatal("Parse (ejb-rolegroup.xml): ", exception);
 				parseException = exception;
 			}
 
 			public void warning(SAXParseException exception) throws SAXException {
-				LOGGER.warn("Parse (ejb-rolegroup.xml): ", exception);
+				logger.warn("Parse (ejb-rolegroup.xml): ", exception);
 			}
 		});
 		parser.parse(inputSource);
@@ -206,7 +209,7 @@ public class EJBRoleGroupMan implements Serializable
 							
 							RoleDef role = ejbJarMan.getRole(roleID);
 							if (role == null) {
-								LOGGER.warn("Role \""+roleID+"\" declared in ejb-rolegroup.xml not defined in ejb-jar.xml!");
+								logger.warn("Role \""+roleID+"\" declared in ejb-rolegroup.xml not defined in ejb-jar.xml!");
 								role = new RoleDef(roleID);
 								ejbJarMan.addRole(role);
 							}

@@ -137,7 +137,10 @@ public class JFireServerManagerFactoryImpl
 		PersistenceManagerProvider,
 		ServerStartNotificationListener
 {
-	public static final Logger LOGGER = Logger.getLogger(JFireServerManagerFactoryImpl.class);
+	/**
+	 * LOG4J logger used by this class
+	 */
+	private static final Logger logger = Logger.getLogger(JFireServerManagerFactoryImpl.class);
 	
 	private final ManagedConnectionFactoryImpl mcf;
 	private final ConnectionManager cm;
@@ -158,8 +161,8 @@ public class JFireServerManagerFactoryImpl
 	public JFireServerManagerFactoryImpl(final ManagedConnectionFactoryImpl mcf, final ConnectionManager cm)
 	throws ResourceException 
 	{
-		if(LOGGER.isDebugEnabled())
-			LOGGER.debug(this.getClass().getName()+": CONSTRUCTOR");
+		if(logger.isDebugEnabled())
+			logger.debug(this.getClass().getName()+": CONSTRUCTOR");
 		this.mcf = mcf;
 		this.cm = cm;
 		Config config = getConfig();
@@ -173,28 +176,28 @@ public class JFireServerManagerFactoryImpl
 			organisationConfigModule = (OrganisationConfigModule)
 					config.createConfigModule(OrganisationConfigModule.class);
 		} catch (ConfigException e) {
-			LOGGER.log(Level.FATAL, "Getting/creating OrganisationConfigModule failed!", e);
+			logger.log(Level.FATAL, "Getting/creating OrganisationConfigModule failed!", e);
 			throw new ResourceException(e.getMessage());
 		}
 		try {
 			createOrganisationConfigModule = (CreateOrganisationConfigModule)
 					config.createConfigModule(CreateOrganisationConfigModule.class);
 		} catch (ConfigException e) {
-			LOGGER.log(Level.FATAL, "Getting/creating CreateOrganisationConfigModule failed!", e);
+			logger.log(Level.FATAL, "Getting/creating CreateOrganisationConfigModule failed!", e);
 			throw new ResourceException(e.getMessage());
 		}
 		try {
 			j2eeServerTypeRegistryConfigModule = (J2eeServerTypeRegistryConfigModule)
 					config.createConfigModule(J2eeServerTypeRegistryConfigModule.class);
 		} catch (ConfigException e) {
-			LOGGER.log(Level.FATAL, "Getting/creating J2eeServerTypeRegistryConfigModule failed!", e);
+			logger.log(Level.FATAL, "Getting/creating J2eeServerTypeRegistryConfigModule failed!", e);
 			throw new ResourceException(e.getMessage());
 		}
 
 		try {
 			cacheCfMod = (CacheCfMod) config.createConfigModule(CacheCfMod.class);
 		} catch (Exception e) {
-			LOGGER.error("Creating CacheCfMod failed!", e);
+			logger.error("Creating CacheCfMod failed!", e);
 			throw new ResourceException(e.getMessage());
 		}
 
@@ -205,7 +208,7 @@ public class JFireServerManagerFactoryImpl
 				// Probably not, after last config bugs are fixed.
 				// I think I fixed the bug today ;-) Changed it to false. Marco.
 			} catch (ConfigException e) {
-				LOGGER.fatal("Saving configuration failed!", e);
+				logger.fatal("Saving configuration failed!", e);
 				throw new ResourceException(e.getMessage());
 			}
 		}
@@ -221,7 +224,7 @@ public class JFireServerManagerFactoryImpl
 			j2eeServerType = localServerCf.getJ2eeServerType();
 		}
 		if (j2eeServerType == null) {
-			LOGGER.warn("No configuration existing! Assuming that this is a 'jboss32x'. If you change the server type, you must restart!");
+			logger.warn("No configuration existing! Assuming that this is a 'jboss32x'. If you change the server type, you must restart!");
 			j2eeServerType = Server.J2EESERVERTYPE_JBOSS32X; // TODO we assume that we're running on a jboss32x, but we should somehow allow the user to change this on the fly.
 //			throw new ResourceException("JFireServerConfigModule: localServer.j2eeServerType is null! Check config!");
 		}
@@ -245,7 +248,7 @@ public class JFireServerManagerFactoryImpl
 					(CLRegistryCfMod) this.getConfig().createConfigModule(CLRegistryCfMod.class));
 //			clRegistrarFactory.scan(); // TODO this should be done lazy. Only for a test here in constructor!
 		} catch (Exception e) {
-			LOGGER.error("Creating CLRegistrarFactory failed!", e);
+			logger.error("Creating CLRegistrarFactory failed!", e);
 			throw new ResourceException(e.getMessage());
 		}
 
@@ -253,7 +256,7 @@ public class JFireServerManagerFactoryImpl
 		try {
 			initialContext = new InitialContext();
 		} catch (Exception e) {
-			LOGGER.error("Obtaining JNDI InitialContext failed!", e);
+			logger.error("Obtaining JNDI InitialContext failed!", e);
 			throw new ResourceException(e.getMessage());
 		}
 
@@ -311,7 +314,7 @@ public class JFireServerManagerFactoryImpl
 			}			
 			
 		} catch (Exception e) {
-			LOGGER.error("Binding some config settings into JNDI failed!", e);
+			logger.error("Binding some config settings into JNDI failed!", e);
 			throw new ResourceException(e.getMessage());
 		}
 
@@ -328,7 +331,7 @@ public class JFireServerManagerFactoryImpl
 				initialContext.rebind(SecurityReflector.JNDI_NAME, userResolver);
 			}
 		} catch (Exception e) {
-			LOGGER.error("Creating SecurityReflector and binding it into JNDI failed!", e);
+			logger.error("Creating SecurityReflector and binding it into JNDI failed!", e);
 			throw new ResourceException(e.getMessage());
 		}
 
@@ -345,7 +348,7 @@ public class JFireServerManagerFactoryImpl
 			}
 		}
 		catch (Exception e) {
-			LOGGER.error("Creating JFireServerLocalLoginManager and binding it into JNDI failed!", e);
+			logger.error("Creating JFireServerLocalLoginManager and binding it into JNDI failed!", e);
 			throw new ResourceException(e.getMessage());
 		}
 
@@ -356,7 +359,7 @@ public class JFireServerManagerFactoryImpl
 			try {
 				new CacheManagerFactory(initialContext, organisation, cacheCfMod); // registers itself in JNDI
 			} catch (Exception e) {
-				LOGGER.error("Creating CacheManagerFactory for organisation \""+organisationID+"\" failed!", e);
+				logger.error("Creating CacheManagerFactory for organisation \""+organisationID+"\" failed!", e);
 				throw new ResourceException(e.getMessage());
 			}
 		}
@@ -364,13 +367,13 @@ public class JFireServerManagerFactoryImpl
 		try {
 			initialContext.close();
 		} catch (Exception e) {
-			LOGGER.warn("Closing InitialContext failed!", e);
+			logger.warn("Closing InitialContext failed!", e);
 		}
 
 		try {
 			getJ2EEVendorAdapter().registerNotificationListenerServerStarted(this);
 		} catch (Exception e) {
-			LOGGER.error("Registering NotificationListener (for notification on server start) failed!", e);
+			logger.error("Registering NotificationListener (for notification on server start) failed!", e);
 //			throw new ResourceException(e.getMessage());
 		}
 
@@ -409,7 +412,7 @@ public class JFireServerManagerFactoryImpl
 
 	public void serverStarted()
 	{
-		LOGGER.info("Caught SERVER STARTED event!");
+		logger.info("Caught SERVER STARTED event!");
 
 		try {
 			// DatastoreInitialization
@@ -422,7 +425,7 @@ public class JFireServerManagerFactoryImpl
 					OrganisationCf org = (OrganisationCf)it.next();
 					String organisationID = org.getOrganisationID();
 					
-					LOGGER.info("Importing roles and rolegroups into organisation \""+organisationID+"\"...");
+					logger.info("Importing roles and rolegroups into organisation \""+organisationID+"\"...");
 					try {
 
 						TransactionManager transactionManager = getJ2EEVendorAdapter().getTransactionManager(ctx);
@@ -440,9 +443,9 @@ public class JFireServerManagerFactoryImpl
 				    	else
 				    		transactionManager.rollback();
 				    }
-						LOGGER.info("Import of roles and rolegroups into organisation \""+organisationID+"\" done.");
+						logger.info("Import of roles and rolegroups into organisation \""+organisationID+"\" done.");
 					} catch (Exception x) {
-						LOGGER.error("Role import into organisation \""+organisationID+"\" failed!", x);
+						logger.error("Role import into organisation \""+organisationID+"\" failed!", x);
 					}
 
 
@@ -456,20 +459,20 @@ public class JFireServerManagerFactoryImpl
 								ctx, organisationID,
 								getJ2EEVendorAdapter().getTransactionManager(ctx), pmf); // registers itself in JNDI
 					} catch (Exception e) {
-						LOGGER.error("Creating OrganisationSyncManagerFactory for organisation \""+organisationID+"\" failed!", e);
+						logger.error("Creating OrganisationSyncManagerFactory for organisation \""+organisationID+"\" failed!", e);
 						throw new ResourceException(e.getMessage());
 					}
 
 
-					LOGGER.info("Initializing datastore of organisation \""+organisationID+"\"...");
+					logger.info("Initializing datastore of organisation \""+organisationID+"\"...");
 					try {
 						datastoreInitializer.initializeDatastore(
 								this, mcf.getConfigModule().getLocalServer(), organisationID,
 								jfireSecurity_createTempUserPassword(organisationID, User.USERID_SYSTEM));
 
-						LOGGER.info("Datastore initialization of organisation \""+organisationID+"\" done.");
+						logger.info("Datastore initialization of organisation \""+organisationID+"\" done.");
 					} catch (Exception x) {
-						LOGGER.error("Datastore initialization of organisation \""+organisationID+"\" failed!", x);
+						logger.error("Datastore initialization of organisation \""+organisationID+"\" failed!", x);
 					}
 				}
 
@@ -480,10 +483,10 @@ public class JFireServerManagerFactoryImpl
 			}
 
 		} catch (Exception x) {
-			LOGGER.fatal("Problem in serverStarted()!", x);
+			logger.fatal("Problem in serverStarted()!", x);
 		}
 
-		LOGGER.info("*** JFireServer is up and running! ***");
+		logger.info("*** JFireServer is up and running! ***");
 		upAndRunning = true;
 	}
 
@@ -494,8 +497,8 @@ public class JFireServerManagerFactoryImpl
 	 * @see javax.resource.cci.ConnectionFactory#getConnection()
 	 */
 	public Connection getConnection() throws ResourceException {
-		if(LOGGER.isDebugEnabled())
-			LOGGER.debug(this.getClass().getName()+": getConnection()");
+		if(logger.isDebugEnabled())
+			logger.debug(this.getClass().getName()+": getConnection()");
 		JFireServerManagerImpl ismi = (JFireServerManagerImpl)cm.allocateConnection(mcf, null);
 		ismi.setJFireServerManagerFactory(this);
 		return ismi;
@@ -505,8 +508,8 @@ public class JFireServerManagerFactoryImpl
 	 * @see javax.resource.cci.ConnectionFactory#getConnection(javax.resource.cci.ConnectionSpec)
 	 */
 	public Connection getConnection(ConnectionSpec cs) throws ResourceException {
-		if(LOGGER.isDebugEnabled())
-			LOGGER.debug(this.getClass().getName()+": getConnection(ConnectionSpec cs): cs = "+cs);
+		if(logger.isDebugEnabled())
+			logger.debug(this.getClass().getName()+": getConnection(ConnectionSpec cs): cs = "+cs);
 		return getConnection();
 	}
 
@@ -514,8 +517,8 @@ public class JFireServerManagerFactoryImpl
 	 * @see javax.resource.cci.ConnectionFactory#getRecordFactory()
 	 */
 	public RecordFactory getRecordFactory() throws ResourceException {
-		if(LOGGER.isDebugEnabled())
-			LOGGER.debug(this.getClass().getName()+": getRecordFactory()");
+		if(logger.isDebugEnabled())
+			logger.debug(this.getClass().getName()+": getRecordFactory()");
 		return null;
 	}
 
@@ -530,8 +533,8 @@ public class JFireServerManagerFactoryImpl
 	 * @see javax.resource.Referenceable#setReference(javax.naming.Reference)
 	 */
 	public void setReference(Reference _ref) {
-		if(LOGGER.isDebugEnabled())
-			LOGGER.debug(this.getClass().getName()+": setReference(Reference ref): ref = "+_ref);
+		if(logger.isDebugEnabled())
+			logger.debug(this.getClass().getName()+": setReference(Reference ref): ref = "+_ref);
 		this.ref = _ref;
 	}
 
@@ -739,11 +742,11 @@ public class JFireServerManagerFactoryImpl
 					String jarFileName;
 					try {
 						jarFileName = jar.getCanonicalPath();
-						LOGGER.warn("Processing Jar \""+jarFileName+"\" failed!", x);
+						logger.warn("Processing Jar \""+jarFileName+"\" failed!", x);
 					} catch (IOException e) {
 						jarFileName = jar.getPath();
-						LOGGER.warn("Processing Jar \""+jarFileName+"\" failed!", x);
-						LOGGER.warn("Getting canonical path for \""+jarFileName+"\" failed!", e);
+						logger.warn("Processing Jar \""+jarFileName+"\" failed!", x);
+						logger.warn("Getting canonical path for \""+jarFileName+"\" failed!", e);
 					}
 					exceptions.put(jarFileName, x);
 				}
@@ -757,49 +760,49 @@ public class JFireServerManagerFactoryImpl
 		JarEntry ejbJarXML = jf.getJarEntry("META-INF/ejb-jar.xml");
 		EJBJarMan ejbJarMan;
 		if (ejbJarXML == null) {
-			LOGGER.warn("Jar \""+jar.getCanonicalPath()+"\" does not contain \"META-INF/ejb-jar.xml\"!");
+			logger.warn("Jar \""+jar.getCanonicalPath()+"\" does not contain \"META-INF/ejb-jar.xml\"!");
 			ejbJarMan = new EJBJarMan(jar.getName());
 		}
 		else {
-			LOGGER.info("*****************************************************************");
-			LOGGER.info("Jar \""+jar.getCanonicalPath()+"\": ejb-jar.xml:");
+			logger.info("*****************************************************************");
+			logger.info("Jar \""+jar.getCanonicalPath()+"\": ejb-jar.xml:");
 			InputStream in = jf.getInputStream(ejbJarXML);
 			try {
 				ejbJarMan = new EJBJarMan(jar.getName(), in);
 				for (Iterator it = ejbJarMan.getRoles().iterator(); it.hasNext(); ) {
 					RoleDef roleDef = (RoleDef)it.next();
-					LOGGER.info("roleDef.roleID = "+roleDef.getRoleID());
+					logger.info("roleDef.roleID = "+roleDef.getRoleID());
 				}
 			} finally {
 				in.close();
 			}
-			LOGGER.info("*****************************************************************");
+			logger.info("*****************************************************************");
 		}
 
 		JarEntry roleGroupXML = jf.getJarEntry("META-INF/ejb-rolegroup.xml");
 		EJBRoleGroupMan ejbRoleGroupMan;
 		if (roleGroupXML == null) {
-			LOGGER.warn("Jar \""+jar.getCanonicalPath()+"\" does not contain \"META-INF/ejb-rolegroup.xml\"!");
+			logger.warn("Jar \""+jar.getCanonicalPath()+"\" does not contain \"META-INF/ejb-rolegroup.xml\"!");
 			ejbRoleGroupMan = new EJBRoleGroupMan(ejbJarMan);
 		}
 		else {
-			LOGGER.info("*****************************************************************");
-			LOGGER.info("Jar \""+jar.getCanonicalPath()+"\": ejb-rolegroup.xml:");
+			logger.info("*****************************************************************");
+			logger.info("Jar \""+jar.getCanonicalPath()+"\": ejb-rolegroup.xml:");
 			InputStream in = jf.getInputStream(roleGroupXML);
 			try {
 				ejbRoleGroupMan = new EJBRoleGroupMan(ejbJarMan, in);
 				for (Iterator it = ejbRoleGroupMan.getRoleGroups().iterator(); it.hasNext(); ) {
 					RoleGroupDef roleGroupDef = (RoleGroupDef)it.next();
-					LOGGER.info("roleGroupDef.roleGroupID = "+roleGroupDef.getRoleGroupID());
+					logger.info("roleGroupDef.roleGroupID = "+roleGroupDef.getRoleGroupID());
 					for (Iterator itRoles = roleGroupDef.getAllRoles().iterator(); itRoles.hasNext(); ) {
 						RoleDef roleDef = (RoleDef)itRoles.next();
-						LOGGER.info("  roleDef.roleID = "+roleDef.getRoleID());
+						logger.info("  roleDef.roleID = "+roleDef.getRoleID());
 					}
 				}
 			} finally {
 				in.close();
 			}
-			LOGGER.info("*****************************************************************");
+			logger.info("*****************************************************************");
 		}
 		ejbRoleGroupMan.createBackupDefaultRoleGroup();
 		globalEJBRoleGroupMan.mergeRoleGroupMan(ejbRoleGroupMan);
@@ -818,7 +821,7 @@ public class JFireServerManagerFactoryImpl
 		EJBRoleGroupMan roleGroupMan = roleImportSet.getEjbRoleGroupMan();
 		
 		if (!roleImportSet.getJarExceptions().isEmpty())
-			LOGGER.warn("roleImportSet.jarExceptions is not empty! You should execute roleImportSet.clearJarExceptions()!", new ModuleException("roleImportSet.jarExceptions is not empty."));
+			logger.warn("roleImportSet.jarExceptions is not empty! You should execute roleImportSet.clearJarExceptions()!", new ModuleException("roleImportSet.jarExceptions is not empty."));
 
 		boolean localPM = pm == null;
 
@@ -1034,9 +1037,9 @@ public class JFireServerManagerFactoryImpl
 					try {
 						getConfig().saveConfFile(true); // TODO force all modules to be written???
 					} catch (ConfigException e) {
-						LOGGER.fatal("Saving config failed!", e);
+						logger.fatal("Saving config failed!", e);
 					}
-					LOGGER.info("Empty organisation \""+organisationID+"\" (\""+organisationName+"\") has been created. Waiting for deployment...");
+					logger.info("Empty organisation \""+organisationID+"\" (\""+organisationName+"\") has been created. Waiting for deployment...");
 
 					PersistenceManager pm = null;
 					try {
@@ -1052,14 +1055,14 @@ public class JFireServerManagerFactoryImpl
 							} catch (ModuleException x) {
 								if (tryNr >= tryCount) throw x;
 
-								LOGGER.info("Obtaining PersistenceManagerFactory failed! Touching jdo-ds-file and its directory and trying it again...");
+								logger.info("Obtaining PersistenceManagerFactory failed! Touching jdo-ds-file and its directory and trying it again...");
 								long now = System.currentTimeMillis();
 								datasourceDSXML.setLastModified(now);
 								jdoDSXML.setLastModified(now);
 								jdoDSXML.getParentFile().setLastModified(now);
 							}
 						}
-						LOGGER.info("PersistenceManagerFactory of organisation \""+organisationID+"\" (\""+organisationName+"\") has been deployed.");
+						logger.info("PersistenceManagerFactory of organisation \""+organisationID+"\" (\""+organisationName+"\") has been deployed.");
 
 
 						// Create the basic jdo objects:
@@ -1071,71 +1074,71 @@ public class JFireServerManagerFactoryImpl
 						//		- UserRef "_Organisation_"+"_Other_"
 						//		- UserRef "_Organisation_"+user
 
-						if(LOGGER.isDebugEnabled())
-							LOGGER.debug("Creating JDO object LocalServer...");
+						if(logger.isDebugEnabled())
+							logger.debug("Creating JDO object LocalServer...");
 						Server server = mcf.getConfigModule().getLocalServer().createServer(pm);
 						LocalServer localServer = new LocalServer(server);
 						pm.makePersistent(localServer);
-						if(LOGGER.isDebugEnabled())
-							LOGGER.debug("pm.makePersistent(localServer) done.");
+						if(logger.isDebugEnabled())
+							logger.debug("pm.makePersistent(localServer) done.");
 			
-						if(LOGGER.isDebugEnabled())
-							LOGGER.debug("Creating JDO object LocalOrganisation...");
+						if(logger.isDebugEnabled())
+							logger.debug("Creating JDO object LocalOrganisation...");
 						Organisation organisation = organisationCf.createOrganisation(pm, server);
 						LocalOrganisation localOrganisation = new LocalOrganisation(organisation);
 						pm.makePersistent(localOrganisation);
-						if(LOGGER.isDebugEnabled())
-							LOGGER.debug("pm.makePersistent(localOrganisation) done.");
+						if(logger.isDebugEnabled())
+							logger.debug("pm.makePersistent(localOrganisation) done.");
 
-						if(LOGGER.isDebugEnabled())
-							LOGGER.debug("Creating JDO object AuthorityType with ID \""+AuthorityType.AUTHORITY_TYPE_ID_SYSTEM+"\"...");
+						if(logger.isDebugEnabled())
+							logger.debug("Creating JDO object AuthorityType with ID \""+AuthorityType.AUTHORITY_TYPE_ID_SYSTEM+"\"...");
 						AuthorityType authorityType = new AuthorityType(organisationID, AuthorityType.AUTHORITY_TYPE_ID_SYSTEM);
 						pm.makePersistent(authorityType);
-						if(LOGGER.isDebugEnabled())
-							LOGGER.debug("pm.makePersistent(authorityType) done.");
+						if(logger.isDebugEnabled())
+							logger.debug("pm.makePersistent(authorityType) done.");
 
-						if(LOGGER.isDebugEnabled())
-							LOGGER.debug("Creating JDO object Authority with ID \""+Authority.AUTHORITY_ID_ORGANISATION+"\"...");
+						if(logger.isDebugEnabled())
+							logger.debug("Creating JDO object Authority with ID \""+Authority.AUTHORITY_ID_ORGANISATION+"\"...");
 						Authority authority = new Authority(organisationID, Authority.AUTHORITY_ID_ORGANISATION, authorityType);
 						pm.makePersistent(authority);
-						if(LOGGER.isDebugEnabled())
-							LOGGER.debug("pm.makePersistent(authority) done.");
+						if(logger.isDebugEnabled())
+							logger.debug("pm.makePersistent(authority) done.");
 
-						if(LOGGER.isDebugEnabled())
-							LOGGER.debug("Creating JDO object User with ID \""+User.USERID_OTHER+"\"...");
+						if(logger.isDebugEnabled())
+							logger.debug("Creating JDO object User with ID \""+User.USERID_OTHER+"\"...");
 						User otherUser = new User(organisationID, User.USERID_OTHER);
 						new UserLocal(otherUser);
 						pm.makePersistent(otherUser);
-						if(LOGGER.isDebugEnabled())
-							LOGGER.debug("pm.makePersistent(otherUser) done.");
+						if(logger.isDebugEnabled())
+							logger.debug("pm.makePersistent(otherUser) done.");
 
-						if(LOGGER.isDebugEnabled())
-							LOGGER.debug("Creating JDO object User with ID \""+userID+"\"...");
+						if(logger.isDebugEnabled())
+							logger.debug("Creating JDO object User with ID \""+userID+"\"...");
 						User user = new User(organisationID, userID);
 						UserLocal userLocal = new UserLocal(user);
 						userLocal.setPasswordPlain(password);
 						pm.makePersistent(user);
-						if(LOGGER.isDebugEnabled())
-							LOGGER.debug("pm.makePersistent(user) done.");
+						if(logger.isDebugEnabled())
+							logger.debug("pm.makePersistent(user) done.");
 
-						if(LOGGER.isDebugEnabled())
-							LOGGER.debug("Creating instances of UserRef for both Users within the default authority...");
+						if(logger.isDebugEnabled())
+							logger.debug("Creating instances of UserRef for both Users within the default authority...");
 						authority.createUserRef(otherUser);
 						UserRef userRef = authority.createUserRef(user);
-						if(LOGGER.isDebugEnabled())
-							LOGGER.debug("Creating instances of UserRef for both Users within the default authority done.");
+						if(logger.isDebugEnabled())
+							logger.debug("Creating instances of UserRef for both Users within the default authority done.");
 
 						// import all roles
-						if(LOGGER.isDebugEnabled())
-							LOGGER.debug("Importing all roles and role groups...");
+						if(logger.isDebugEnabled())
+							logger.debug("Importing all roles and role groups...");
 						RoleImportSet roleImportSet = roleImport_prepare(organisationID);
 						roleImport_commit(roleImportSet, pm);
-						if(LOGGER.isDebugEnabled())
-							LOGGER.debug("Import of roles and role groups done.");
+						if(logger.isDebugEnabled())
+							logger.debug("Import of roles and role groups done.");
 
 						// Give the user all RoleGroups.
-						if(LOGGER.isDebugEnabled())
-							LOGGER.debug("Assign all RoleGroups to the user \""+userID+"\"...");
+						if(logger.isDebugEnabled())
+							logger.debug("Assign all RoleGroups to the user \""+userID+"\"...");
 						for (Iterator it = pm.getExtent(RoleGroup.class).iterator(); it.hasNext(); ) {
 							RoleGroup roleGroup = (RoleGroup)it.next();
 							RoleGroupRef roleGroupRef = authority.createRoleGroupRef(roleGroup);
@@ -1147,17 +1150,17 @@ public class JFireServerManagerFactoryImpl
 		//					RoleGroupRef roleGroupRef = authority.createRoleGroupRef(roleGroup);
 		//					userRef.addRoleGroupRef(roleGroupRef);
 		//				}
-						if(LOGGER.isDebugEnabled())
-							LOGGER.debug("Assigning all RoleGroups to user \""+userID+"\" done.");
+						if(logger.isDebugEnabled())
+							logger.debug("Assigning all RoleGroups to user \""+userID+"\" done.");
 						
 						// create system user
-						if(LOGGER.isDebugEnabled())
-							LOGGER.debug("Creating system user...");
+						if(logger.isDebugEnabled())
+							logger.debug("Creating system user...");
 						User systemUser = new User(organisationID, User.USERID_SYSTEM);
 						new UserLocal(systemUser);
 						pm.makePersistent(systemUser);
-						if(LOGGER.isDebugEnabled())
-							LOGGER.debug("System user created.");
+						if(logger.isDebugEnabled())
+							logger.debug("System user created.");
 			
 						// Because flushing the authentication cache causes trouble to currently logged in
 						// clients, we only do that if we are creating the first organisation of a new server.
@@ -1198,7 +1201,7 @@ public class JFireServerManagerFactoryImpl
 						new OrganisationSyncManagerFactory(ctx, organisationID,
 								getJ2EEVendorAdapter().getTransactionManager(ctx), pmf); // registers itself in JNDI
 					} catch (Exception e) {
-						LOGGER.error("Creating CacheManagerFactory for organisation \""+organisationID+"\" failed!", e);
+						logger.error("Creating CacheManagerFactory for organisation \""+organisationID+"\" failed!", e);
 						throw new ResourceException(e.getMessage());
 					}
 
@@ -1210,7 +1213,7 @@ public class JFireServerManagerFactoryImpl
 		    		try {
 		    			transactionManager.rollback();
 		    		} catch (Throwable t) {
-		    			LOGGER.error("Rolling back transaction failed!", t);
+		    			logger.error("Rolling back transaction failed!", t);
 		    		}
 
 		    		// We drop the database after rollback(), because it might be the case that JDO tries to do sth. with
@@ -1219,16 +1222,16 @@ public class JFireServerManagerFactoryImpl
 		    			if (dropDatabase && databaseAdapter != null)
 		    				databaseAdapter.dropDatabase();
 		    		} catch (Throwable t) {
-		    			LOGGER.error("Dropping database failed!", t);
+		    			logger.error("Dropping database failed!", t);
 		    		}
 
 		    		try {
 			    		if (jdoConfigDir != null) {
 			    			if (!Utils.deleteDirectoryRecursively(jdoConfigDir))
-			    				LOGGER.error("Deleting JDO config directory \"" + jdoConfigDir.getAbsolutePath() + "\" failed!");;
+			    				logger.error("Deleting JDO config directory \"" + jdoConfigDir.getAbsolutePath() + "\" failed!");;
 			    		}
 		    		} catch (Throwable t) {
-		    			LOGGER.error("Deleting JDO config directory \"" + jdoConfigDir.getAbsolutePath() + "\" failed!", t);
+		    			logger.error("Deleting JDO config directory \"" + jdoConfigDir.getAbsolutePath() + "\" failed!", t);
 		    		}
 
 		    		if (organisationCf != null) {
@@ -1238,7 +1241,7 @@ public class JFireServerManagerFactoryImpl
 
 		    				organisationConfigModule._getConfig().saveConfFile();
 		    			} catch (Throwable t) {
-		    				LOGGER.error("Removing organisation \"" + organisationCf.getOrganisationID() + "\" from JFire server configuration failed!", t);
+		    				logger.error("Removing organisation \"" + organisationCf.getOrganisationID() + "\" from JFire server configuration failed!", t);
 		    			}
 		    		}
 		    	}
@@ -1262,7 +1265,7 @@ public class JFireServerManagerFactoryImpl
 					this, mcf.getConfigModule().getLocalServer(), organisationID,
 					jfireSecurity_createTempUserPassword(organisationID, User.USERID_SYSTEM));
 		} catch (Exception x) {
-			LOGGER.error("Datastore initialization for new organisation \""+organisationID+"\" failed!", x);
+			logger.error("Datastore initialization for new organisation \""+organisationID+"\" failed!", x);
 		}
 	}
 
@@ -1431,7 +1434,7 @@ public class JFireServerManagerFactoryImpl
 // TODO So far, we only support ear directories, but no ear jars.
 // EARApplicationMan should be extended to support both!
 		if (!ear.isDirectory()) {
-			LOGGER.warn("Deployed EAR \""+ear.getAbsolutePath()+"\" is ignored, because only EAR directories are supported!");
+			logger.warn("Deployed EAR \""+ear.getAbsolutePath()+"\" is ignored, because only EAR directories are supported!");
 			return;
 		}
 		EARApplicationMan earAppMan = new EARApplicationMan(ear, moduleType);
@@ -1497,9 +1500,9 @@ public class JFireServerManagerFactoryImpl
 		throws IOException, TemplateParseException
 	{
 		if (!jdoConfigDirectory.exists()) {
-			LOGGER.info("jdoConfigDirectory does not exist. Creating it: " + jdoConfigDirectory.getAbsolutePath());
+			logger.info("jdoConfigDirectory does not exist. Creating it: " + jdoConfigDirectory.getAbsolutePath());
 			if (!jdoConfigDirectory.mkdirs()) {
-				LOGGER.error("Creating jdoConfigDirectory failed: " + jdoConfigDirectory.getAbsolutePath());
+				logger.error("Creating jdoConfigDirectory failed: " + jdoConfigDirectory.getAbsolutePath());
 			}
 		}
 
@@ -1624,19 +1627,19 @@ public class JFireServerManagerFactoryImpl
 					} catch (NamingException x) {
 						if (System.currentTimeMillis() < waitStartDT) { // System time has been changed!
 							waitStartDT = System.currentTimeMillis();
-							LOGGER.warn("While waiting for deployment of PersistenceManagerFactory \""+persistenceManagerJNDIName+"\", the system time has been changed. Resetting wait time.");
+							logger.warn("While waiting for deployment of PersistenceManagerFactory \""+persistenceManagerJNDIName+"\", the system time has been changed. Resetting wait time.");
 						}
 		
 						if (System.currentTimeMillis() - waitStartDT > timeout) {
-							LOGGER.fatal("PersistenceManagerFactory \""+persistenceManagerJNDIName+"\" has not become accessible in JNDI within timeout (\""+timeout+"\" msec).");
+							logger.fatal("PersistenceManagerFactory \""+persistenceManagerJNDIName+"\" has not become accessible in JNDI within timeout (\""+timeout+"\" msec).");
 							throw x;
 						}
 						else
 							try {
-								LOGGER.info("PersistenceManagerFactory \""+persistenceManagerJNDIName+"\" is not yet accessible in JNDI. Waiting "+checkPeriod+" msec.");
+								logger.info("PersistenceManagerFactory \""+persistenceManagerJNDIName+"\" is not yet accessible in JNDI. Waiting "+checkPeriod+" msec.");
 								Thread.sleep(checkPeriod);
 							} catch (InterruptedException e) {
-								LOGGER.error("Sleeping has been interrupted!", e);
+								logger.error("Sleeping has been interrupted!", e);
 							}
 					}
 				} // while (pmf == null)
@@ -1649,7 +1652,7 @@ public class JFireServerManagerFactoryImpl
 						if (pm == null)
 							throw new NullPointerException("PersistenceManager coming out of factory should never be null!");
 					} catch (Exception x) {
-						LOGGER.warn("getPersistenceManager() failed!", x);
+						logger.warn("getPersistenceManager() failed!", x);
 
 						if (++pmTryCount > 3)
 							throw x;

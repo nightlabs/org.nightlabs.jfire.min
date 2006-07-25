@@ -48,7 +48,10 @@ import org.nightlabs.jdo.ObjectIDUtil;
  */
 public class RoleGroupCf implements Serializable, Initializable
 {
-	public static final Logger LOGGER = Logger.getLogger(RoleGroupCf.class); 
+	/**
+	 * LOG4J logger used by this class
+	 */
+	private static final Logger logger = Logger.getLogger(RoleGroupCf.class); 
 	
 	private String roleGroupID;
 //	private String roleGroupName;
@@ -133,41 +136,41 @@ public class RoleGroupCf implements Serializable, Initializable
 	 */
 	public RoleGroup createRoleGroup(PersistenceManager pm)
 	{
-		LOGGER.debug("createRoleGroup(...): before: pm.getExtent(RoleGroup.class, true);");
+		logger.debug("createRoleGroup(...): before: pm.getExtent(RoleGroup.class, true);");
 		// Initialize meta data.
 		pm.getExtent(RoleGroup.class, true);
 
 		// Fetch/create RoleGroup instance.
-		LOGGER.debug("createRoleGroup(...): before: roleGroup = (RoleGroup)pm.getObjectById(RoleGroupID.create(getRoleGroupID()), true);");
+		logger.debug("createRoleGroup(...): before: roleGroup = (RoleGroup)pm.getObjectById(RoleGroupID.create(getRoleGroupID()), true);");
 		RoleGroup roleGroup;
 		try {
 			roleGroup = (RoleGroup)pm.getObjectById(RoleGroupID.create(getRoleGroupID()), true);
-			LOGGER.debug("createRoleGroup(...): after (roleGroup exists): roleGroup = (RoleGroup)pm.getObjectById(RoleGroupID.create(getRoleGroupID()), true);");
+			logger.debug("createRoleGroup(...): after (roleGroup exists): roleGroup = (RoleGroup)pm.getObjectById(RoleGroupID.create(getRoleGroupID()), true);");
 		} catch (JDOObjectNotFoundException x) {
-			LOGGER.debug("createRoleGroup(...): after (roleGroup does NOT exist): roleGroup = (RoleGroup)pm.getObjectById(RoleGroupID.create(getRoleGroupID()), true);");
+			logger.debug("createRoleGroup(...): after (roleGroup does NOT exist): roleGroup = (RoleGroup)pm.getObjectById(RoleGroupID.create(getRoleGroupID()), true);");
 			roleGroup = new RoleGroup(getRoleGroupID());
 			roleGroup.setName(null, getRoleGroupID());
 //			roleGroup.setRoleGroupName(getRoleGroupName());
 //			roleGroup.setDescription(getDescription());
-			LOGGER.debug("createRoleGroup(...): before: pm.makePersistent(roleGroup'"+roleGroup.getRoleGroupID()+"');");
+			logger.debug("createRoleGroup(...): before: pm.makePersistent(roleGroup'"+roleGroup.getRoleGroupID()+"');");
 			pm.makePersistent(roleGroup);
-			LOGGER.debug("createRoleGroup(...): after: pm.makePersistent(roleGroup'"+roleGroup.getRoleGroupID()+"');");
+			logger.debug("createRoleGroup(...): after: pm.makePersistent(roleGroup'"+roleGroup.getRoleGroupID()+"');");
 		}
 		
 		// Add missing roles.
-		LOGGER.debug("createRoleGroup(...): about to create and add roles...");
+		logger.debug("createRoleGroup(...): about to create and add roles...");
 		for (Iterator it = getRoles().iterator(); it.hasNext(); ) {
 			RoleCf roleCf = (RoleCf)it.next();
 			Role role = roleCf.createRole(pm);
 			// Because we use a Map, the following "if" is not really necessary.
 			// ...just in case, the jdo implementation of Map runs into trouble with a duplicate add...
 			if (!roleGroup.containsRole(role)) {
-				LOGGER.debug("createRoleGroup(...): before: roleGroup.addRole(role'"+role.getRoleID()+"');");
+				logger.debug("createRoleGroup(...): before: roleGroup.addRole(role'"+role.getRoleID()+"');");
 				roleGroup.addRole(role);
-				LOGGER.debug("createRoleGroup(...): after: roleGroup.addRole(role'"+role.getRoleID()+"');");
+				logger.debug("createRoleGroup(...): after: roleGroup.addRole(role'"+role.getRoleID()+"');");
 			}
 		}
-		LOGGER.debug("createRoleGroup(...): creating roles done.");
+		logger.debug("createRoleGroup(...): creating roles done.");
 		
 		return roleGroup;
 	}

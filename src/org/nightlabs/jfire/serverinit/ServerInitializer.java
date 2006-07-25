@@ -47,7 +47,11 @@ import org.nightlabs.jfire.servermanager.ra.ManagedConnectionFactoryImpl;
  */
 public class ServerInitializer
 {
-	private final Logger LOGGER = Logger.getLogger(ServerInitializer.class);
+	/**
+	 * LOG4J logger used by this class
+	 */
+	private static final Logger logger = Logger.getLogger(ServerInitializer.class);
+	
 	private final J2EEAdapter j2eeAdapter;
 	private final JFireServerManagerFactoryImpl jFireServerManagerFactory;
 	private final ManagedConnectionFactoryImpl managedConnectionFactory;
@@ -77,13 +81,13 @@ public class ServerInitializer
 		}
 		Collections.sort(serverInitEARs);
 		long stopDT = System.currentTimeMillis();
-		LOGGER.debug("Searching server init EARs took " + (stopDT - startDT) + " msec. Found: " + serverInitEARs.size());
+		logger.debug("Searching server init EARs took " + (stopDT - startDT) + " msec. Found: " + serverInitEARs.size());
 
 		loopServerInitEARs: for (String serverInitEAR : serverInitEARs) {
 			File serverInitEARDir = new File(deployBaseDirFile, serverInitEAR);
 			File serverInitEARPropertiesFile = new File(serverInitEARDir, "serverinit.properties");
 
-			LOGGER.debug("Reading \"serverinit.properties\" file of server init EAR \"" + serverInitEAR + "\"...");
+			logger.debug("Reading \"serverinit.properties\" file of server init EAR \"" + serverInitEAR + "\"...");
 			Properties serverInitEARProperties = new Properties();
 			InputStream in = new BufferedInputStream(new FileInputStream(serverInitEARPropertiesFile));
 			try {
@@ -94,7 +98,7 @@ public class ServerInitializer
 
 			String serverInitializerClassName = (String) serverInitEARProperties.get("serverInitializer.class");
 			if (serverInitializerClassName == null || "".equals(serverInitializerClassName)) {
-				LOGGER.error("Server init EAR \"" + serverInitEAR + "\" contains a \"serverinit.properties\" file, but this file misses the property \"serverInitializer.class\"!");
+				logger.error("Server init EAR \"" + serverInitEAR + "\" contains a \"serverinit.properties\" file, but this file misses the property \"serverInitializer.class\"!");
 				continue loopServerInitEARs;
 			}
 
@@ -109,7 +113,7 @@ public class ServerInitializer
 				serverInitializer.setJ2EEVendorAdapter(j2eeAdapter);
 				serverInitializer.initialize();
 			} catch (Exception x) {
-				LOGGER.error("Executing server init EAR \"" + serverInitEAR + "\" failed!", x);
+				logger.error("Executing server init EAR \"" + serverInitEAR + "\" failed!", x);
 				continue loopServerInitEARs;
 			}
 

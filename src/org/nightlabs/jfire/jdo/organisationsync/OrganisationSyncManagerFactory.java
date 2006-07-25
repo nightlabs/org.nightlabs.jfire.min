@@ -59,7 +59,10 @@ import org.nightlabs.jdo.ObjectIDUtil;
 
 public class OrganisationSyncManagerFactory implements Serializable
 {
-	public static final Logger LOGGER = Logger
+	/**
+	 * LOG4J logger used by this class
+	 */
+	private static final Logger logger = Logger
 			.getLogger(OrganisationSyncManagerFactory.class);
 
 	public static final String JNDI_PREFIX = "java:/jfire/organisationSyncManagerFactory/";
@@ -206,7 +209,7 @@ public class OrganisationSyncManagerFactory implements Serializable
 					transactionManager.rollback();
 			}
 		} catch (Throwable t) {
-			LOGGER.error("Processing incoming dirty objects failed!", t);
+			logger.error("Processing incoming dirty objects failed!", t);
 		}
 	}
 
@@ -329,7 +332,7 @@ public class OrganisationSyncManagerFactory implements Serializable
 								ld.setDirty(false);
 							}
 						} catch (Throwable t) {
-							LOGGER.error("Notifying organisation \"" + organisationID + "\" failed!", t);
+							logger.error("Notifying organisation \"" + organisationID + "\" failed!", t);
 						}
 					} // for (Iterator it = listenerDescriptorsByOrganisationID.entrySet().iterator(); it.hasNext(); ) {
 
@@ -345,7 +348,7 @@ public class OrganisationSyncManagerFactory implements Serializable
 					transactionManager.rollback();
 			}
 		} catch (Throwable t) {
-			LOGGER.error("Processing outgoing dirty objects failed!", t);
+			logger.error("Processing outgoing dirty objects failed!", t);
 		}
 	}
 
@@ -366,7 +369,7 @@ public class OrganisationSyncManagerFactory implements Serializable
 			for (Iterator it = objectIDs.iterator(); it.hasNext(); ) {
 				Object objectID = it.next();
 				if (!(objectID instanceof ObjectID))
-					LOGGER.warn("Ignoring objectID \"" + objectID + "\" (" + objectID.getClass() + ") because it does not implement " + ObjectID.class +"!");
+					logger.warn("Ignoring objectID \"" + objectID + "\" (" + objectID.getClass() + ") because it does not implement " + ObjectID.class +"!");
 				else
 					filteredObjectIDs.add(objectID);
 			}

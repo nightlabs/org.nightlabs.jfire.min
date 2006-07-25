@@ -45,7 +45,10 @@ import org.nightlabs.jdo.ObjectIDUtil;
 public class DirtyObjectIDBufferMySQL
 implements DirtyObjectIDBuffer
 {
-	public static final Logger LOGGER = Logger.getLogger(DirtyObjectIDBufferMySQL.class);
+	/**
+	 * LOG4J logger used by this class
+	 */
+	private static final Logger logger = Logger.getLogger(DirtyObjectIDBufferMySQL.class);
 
 	private OrganisationSyncManagerFactory organisationSyncManagerFactory;
 
@@ -151,7 +154,7 @@ implements DirtyObjectIDBuffer
 				if (tryNumber >= 1)
 					throw new RuntimeException(x);
 				else
-					LOGGER.error("Exception while storing dirty object IDs! Trying again after reconnect.", x);
+					logger.error("Exception while storing dirty object IDs! Trying again after reconnect.", x);
 			}
 
 			++tryNumber;
@@ -166,7 +169,7 @@ implements DirtyObjectIDBuffer
 	public synchronized Set fetchDirtyObjectIDs() throws DirtyObjectIDBufferException
 	{
 		if (!fetchDirtyObjectIDsClear)
-			LOGGER.warn("fetchDirtyObjectIDs() called again before clearFetchedDirtyObjectIDs()! Maybe there was an error during last execution cycle.", new Exception());
+			logger.warn("fetchDirtyObjectIDs() called again before clearFetchedDirtyObjectIDs()! Maybe there was an error during last execution cycle.", new Exception());
 
 		fetchDirtyObjectIDsClear = false;
 
@@ -253,7 +256,7 @@ implements DirtyObjectIDBuffer
 		try {
 			connectionHandle.close();
 		} catch (Throwable t) {
-			LOGGER.error("Closing SQL connection failed!", t);
+			logger.error("Closing SQL connection failed!", t);
 		}
 	}
 }

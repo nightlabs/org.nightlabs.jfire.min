@@ -34,7 +34,6 @@ import javax.jdo.PersistenceManagerFactory;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import org.apache.log4j.Logger;
 import org.nightlabs.ModuleException;
 import org.nightlabs.jfire.jdo.cache.CacheManager;
 import org.nightlabs.jfire.jdo.cache.CacheManagerFactory;
@@ -59,8 +58,6 @@ import org.nightlabs.jfire.servermanager.config.OrganisationCf;
 // **/
 public class Lookup 
 {
-	public static final Logger LOGGER = Logger.getLogger(Lookup.class);
-
 	private String organisationID;
 	/**
 	 * @return The organisationID with which the current session is working locally.

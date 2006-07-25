@@ -48,7 +48,10 @@ import org.nightlabs.jfire.servermanager.JFireServerManager;
  */
 public class JFireServerLoginModule extends AbstractServerLoginModule
 {
-	public static Logger LOGGER = Logger.getLogger(JFireServerLoginModule.class);
+	/**
+	 * LOG4J logger used by this class
+	 */
+	private static final Logger logger = Logger.getLogger(JFireServerLoginModule.class);
 
 	protected Lookup lookup;
 	protected JFirePrincipal ip = null;
@@ -87,11 +90,11 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 			((PasswordCallback)callbacks[1]).clearPassword();
 			loginCredential = password;
 		} catch (Exception x) {
-			LOGGER.fatal("Callback handling failed!", x);
+			logger.fatal("Callback handling failed!", x);
 			throw new LoginException(x.getMessage());
 		}
 
-		LOGGER.info(Thread.currentThread().toString() + ": Login requested by " + username);
+		logger.info(Thread.currentThread().toString() + ": Login requested by " + username);
 //		Principal previousPrincipal = SecurityAssociation.getPrincipal();
 //		if (previousPrincipal != null && username.equals(previousPrincipal.getName()))
 //			previousPrincipal = null;
@@ -147,7 +150,7 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 		} catch (LoginException e) {
 			throw e;
 		} catch(Throwable e) {
-			LOGGER.fatal("Login failed!", e);
+			logger.fatal("Login failed!", e);
 			throw new LoginException(e.getMessage());
 		}
 	}
@@ -158,7 +161,7 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 	public boolean commit() throws LoginException
 	{
 		if (!super.commit()) {
-			LOGGER.error("org.jboss.security.auth.spi.AbstractServerLoginModule.commit() returned false!");
+			logger.error("org.jboss.security.auth.spi.AbstractServerLoginModule.commit() returned false!");
 			return false;
 		}
 
@@ -190,16 +193,16 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 
 	protected Principal getIdentity()
 	{
-		LOGGER.debug("*********************************************************");
-		LOGGER.debug("getIdentity() returning JFirePrincipal: "+ip);
+		logger.debug("*********************************************************");
+		logger.debug("getIdentity() returning JFirePrincipal: "+ip);
 		return ip;
 	}
 
 	protected Group[] getRoleSets()
 		throws LoginException
 	{
-		LOGGER.debug("*********************************************************");
-		LOGGER.debug("getRoleSets()");
+		logger.debug("*********************************************************");
+		logger.debug("getRoleSets()");
 		
 		if (ip == null)
 			throw new NullPointerException("Why the hell is getRoleSets() called before login?!");

@@ -44,7 +44,10 @@ import org.nightlabs.jdo.ObjectIDUtil;
  */
 public class RoleCf implements Serializable, Initializable
 {
-	public static final Logger LOGGER = Logger.getLogger(RoleCf.class);
+	/**
+	 * LOG4J logger used by this class
+	 */
+	private static final Logger logger = Logger.getLogger(RoleCf.class);
 	
 	private String roleID = null;
 //	private String description = null;
@@ -91,21 +94,21 @@ public class RoleCf implements Serializable, Initializable
 	public Role createRole(PersistenceManager pm)
 	{
 		// Initialize meta data.
-		LOGGER.debug("createRole(...): before: pm.getExtent(Role.class, true);");
+		logger.debug("createRole(...): before: pm.getExtent(Role.class, true);");
 		pm.getExtent(Role.class, true);
 		
 		// Fetch/create Role instance.
 		Role role;
 		try {
-			LOGGER.debug("createRole(...): before: role = (Role)pm.getObjectById(RoleID.create(getRoleID()), true);");
+			logger.debug("createRole(...): before: role = (Role)pm.getObjectById(RoleID.create(getRoleID()), true);");
 			role = (Role)pm.getObjectById(RoleID.create(getRoleID()), true);
-			LOGGER.debug("createRole(...): after (role exists): role = (Role)pm.getObjectById(RoleID.create(getRoleID()), true);");
+			logger.debug("createRole(...): after (role exists): role = (Role)pm.getObjectById(RoleID.create(getRoleID()), true);");
 		} catch (JDOObjectNotFoundException x) {
-			LOGGER.debug("createRole(...): after (role does NOT exist): role = (Role)pm.getObjectById(RoleID.create(getRoleID()), true);");
+			logger.debug("createRole(...): after (role does NOT exist): role = (Role)pm.getObjectById(RoleID.create(getRoleID()), true);");
 			role = new Role(getRoleID());
-			LOGGER.debug("createRole(...): before: pm.makePersistent(role);");
+			logger.debug("createRole(...): before: pm.makePersistent(role);");
 			pm.makePersistent(role);
-			LOGGER.debug("createRole(...): after: pm.makePersistent(role);");
+			logger.debug("createRole(...): after: pm.makePersistent(role);");
 		}
 		return role;
 	}

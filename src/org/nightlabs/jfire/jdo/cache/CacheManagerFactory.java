@@ -56,7 +56,10 @@ import org.nightlabs.jfire.servermanager.ra.JFireServerManagerFactoryImpl;
 public class CacheManagerFactory
 implements Serializable
 {
-	public static final Logger LOGGER = Logger.getLogger(CacheManagerFactory.class);
+	/**
+	 * LOG4J logger used by this class
+	 */
+	private static final Logger logger = Logger.getLogger(CacheManagerFactory.class);
 
 	public static final String JNDI_PREFIX = "java:/jfire/cacheManagerFactory/";
 
@@ -106,13 +109,13 @@ implements Serializable
 
 					Set cacheSessionIDs = cacheManagerFactory.fetchCacheSessionIDsToNotify();
 					if (cacheSessionIDs != null) {
-						LOGGER.info("Found " + cacheSessionIDs.size() + " CacheSessions to notify.");
+						logger.info("Found " + cacheSessionIDs.size() + " CacheSessions to notify.");
 
 						for (Iterator it = cacheSessionIDs.iterator(); it.hasNext(); ) {
 							String cacheSessionID = (String) it.next();
 							CacheSession session = cacheManagerFactory.getCacheSession(cacheSessionID);
 							if (session == null)
-								LOGGER.error("No CacheSession found for cacheSessionID=\""+cacheSessionID+"\"!");
+								logger.error("No CacheSession found for cacheSessionID=\""+cacheSessionID+"\"!");
 							else {
 							// if (session != null)
 								session.notifyChanges();
@@ -122,7 +125,7 @@ implements Serializable
 					} // if (cacheSessionIDs != null) {
 
 				} catch (Throwable t) {
-					LOGGER.error("Exception in NotificationThread!", t);
+					logger.error("Exception in NotificationThread!", t);
 				}
 			} // while (!isInterrupted()) {
 		}
@@ -159,9 +162,9 @@ implements Serializable
 	throws IOException
 	{
 		out.defaultWriteObject();
-		LOGGER.info("***********************************************************");
-		LOGGER.info("writeObject(...) called");
-		LOGGER.info("***********************************************************");
+		logger.info("***********************************************************");
+		logger.info("writeObject(...) called");
+		logger.info("***********************************************************");
 	}
 
 	private void readObject(java.io.ObjectInputStream in)
@@ -283,7 +286,7 @@ implements Serializable
 						cacheManagerFactory.rollFreshDirtyObjectIDContainers();
 
 				} catch (Throwable t) {
-					LOGGER.error("Exception in FreshDirtyObjectIDContainerManagerThread!", t);
+					logger.error("Exception in FreshDirtyObjectIDContainerManagerThread!", t);
 				}
 			} // while (!isInterrupted()) {
 		}
@@ -356,7 +359,7 @@ implements Serializable
 						cacheManagerFactory.rollCacheSessionContainers();
 
 				} catch (Throwable t) {
-					LOGGER.error("Exception in CacheSessionContainerManagerThread!", t);
+					logger.error("Exception in CacheSessionContainerManagerThread!", t);
 				}
 			} // while (!isInterrupted()) {
 		}
@@ -414,7 +417,7 @@ implements Serializable
 	{
 		synchronized (cacheSessionContainers) {
 			CacheSessionContainer newActiveCSC = new CacheSessionContainer(this);
-			LOGGER.debug("Creating new activeCacheSessionContainer (createDT=" + newActiveCSC.getCreateDT() + ").");
+			logger.debug("Creating new activeCacheSessionContainer (createDT=" + newActiveCSC.getCreateDT() + ").");
 			cacheSessionContainers.addFirst(newActiveCSC);
 			activeCacheSessionContainer = newActiveCSC;
 
@@ -424,7 +427,7 @@ implements Serializable
 
 			while (cacheSessionContainers.size() > cacheSessionContainerCount) {
 				CacheSessionContainer csc = (CacheSessionContainer) cacheSessionContainers.removeLast();
-				LOGGER.debug("Dropping cacheSessionContainer (createDT=" + csc.getCreateDT() + ")");
+				logger.debug("Dropping cacheSessionContainer (createDT=" + csc.getCreateDT() + ")");
 				csc.close();
 			}
 		}
@@ -437,7 +440,7 @@ implements Serializable
 			if (session == null) {
 				session = new CacheSession(this, cacheSessionID);
 				cacheSessions.put(cacheSessionID, session);
-				LOGGER.debug("Created new CacheSession for cacheSessionID=\""+cacheSessionID+"\"!");
+				logger.debug("Created new CacheSession for cacheSessionID=\""+cacheSessionID+"\"!");
 			}
 
 			session.setCacheSessionContainer(getActiveCacheSessionContainer());
@@ -490,7 +493,7 @@ implements Serializable
 	{
 		synchronized (freshDirtyObjectIDContainers) {
 			DirtyObjectIDContainer newActiveDOC = new DirtyObjectIDContainer();
-			LOGGER.debug("Creating new activeFreshDirtyObjectIDContainer (createDT=" + newActiveDOC.getCreateDT() + ").");
+			logger.debug("Creating new activeFreshDirtyObjectIDContainer (createDT=" + newActiveDOC.getCreateDT() + ").");
 			freshDirtyObjectIDContainers.addFirst(newActiveDOC);
 			activeFreshDirtyObjectIDContainer = newActiveDOC;
 
@@ -500,7 +503,7 @@ implements Serializable
 
 			while (freshDirtyObjectIDContainers.size() > freshDirtyObjectIDContainerCount) {
 				DirtyObjectIDContainer doc = (DirtyObjectIDContainer) freshDirtyObjectIDContainers.removeLast();
-				LOGGER.debug("Dropping freshDirtyObjectIDContainer (createDT=" + doc.getCreateDT() + ").");
+				logger.debug("Dropping freshDirtyObjectIDContainer (createDT=" + doc.getCreateDT() + ").");
 				doc.close();
 			}
 		}
@@ -521,8 +524,8 @@ implements Serializable
 		String sessionID = l.getSessionID();
 		Object objectID = l.getObjectID();
 
-		if (LOGGER.isDebugEnabled())
-			LOGGER.debug("addChangeListener adding listener for session " + sessionID + " on objectID " + objectID);
+		if (logger.isDebugEnabled())
+			logger.debug("addChangeListener adding listener for session " + sessionID + " on objectID " + objectID);
 
 		CacheSession session = createCacheSession(sessionID);
 		session.subscribeObjectID(objectID); // is synchronized itself
@@ -554,8 +557,8 @@ implements Serializable
 		} // synchronized (freshDirtyObjectIDContainers) {
 
 		if (triggerNotificationDirtyObjectID != null) {
-			if (LOGGER.isDebugEnabled())
-				LOGGER.debug("addChangeListener immediately notifying session " + sessionID + " for newly added listener on freshly changed object " + objectID);
+			if (logger.isDebugEnabled())
+				logger.debug("addChangeListener immediately notifying session " + sessionID + " for newly added listener on freshly changed object " + objectID);
 
 			ArrayList notifyDirtyObjectIDs = new ArrayList(1);
 			notifyDirtyObjectIDs.add(triggerNotificationDirtyObjectID);
@@ -577,8 +580,8 @@ implements Serializable
 	 */
 	protected void removeChangeListener(String sessionID, Object objectID)
 	{
-		if (LOGGER.isDebugEnabled())
-			LOGGER.debug("removeChangeListener removing listener for session " + sessionID + " on objectID " + objectID);
+		if (logger.isDebugEnabled())
+			logger.debug("removeChangeListener removing listener for session " + sessionID + " on objectID " + objectID);
 
 		CacheSession session = getCacheSession(sessionID);
 		if (session != null)
@@ -605,12 +608,12 @@ implements Serializable
 	 */
 	protected void closeCacheSession(String cacheSessionID)
 	{
-		if (LOGGER.isDebugEnabled())
-			LOGGER.debug("Closing CacheSession with cacheSessionID=\""+cacheSessionID+"\"");
+		if (logger.isDebugEnabled())
+			logger.debug("Closing CacheSession with cacheSessionID=\""+cacheSessionID+"\"");
 
 		CacheSession session = getCacheSession(cacheSessionID);
 		if (session == null) {
-			LOGGER.warn("CacheSession with cacheSessionID=\""+cacheSessionID+"\" cannot be closed, because it is unknown!");
+			logger.warn("CacheSession with cacheSessionID=\""+cacheSessionID+"\" cannot be closed, because it is unknown!");
 			return;
 		}
 
@@ -672,10 +675,10 @@ implements Serializable
 		if (objectIDs == null || objectIDs.isEmpty()) // to avoid unnecessary errors (though null should never come here)
 			return;
 
-		if (LOGGER.isDebugEnabled()) {
-			LOGGER.debug("addDirtyObjectIDs(...) called by sessionID \"" + sessionID + "\" with " + objectIDs.size() + " objectIDs:");
+		if (logger.isDebugEnabled()) {
+			logger.debug("addDirtyObjectIDs(...) called by sessionID \"" + sessionID + "\" with " + objectIDs.size() + " objectIDs:");
 			for (Iterator it = objectIDs.iterator(); it.hasNext(); )
-				LOGGER.debug("      " + it.next());
+				logger.debug("      " + it.next());
 		}
 
 		synchronized (localDirtyListenersMutex) {
@@ -750,7 +753,7 @@ implements Serializable
 	protected void distributeDirtyObjectIDs()
 	{
 		if (this.objectIDsWaitingForNotification == null) { // IMHO no sync necessary, because, if this value is just right now changing, we can simply wait for the next cycle.
-			LOGGER.debug("There are no objectIDs waiting for notification. Return immediately.");
+			logger.debug("There are no objectIDs waiting for notification. Return immediately.");
 			return;
 		}
 
@@ -784,17 +787,17 @@ implements Serializable
 				String cacheSessionID = (String) it.next();
 				CacheSession session = (CacheSession) cacheSessions.get(cacheSessionID);
 				if (session == null)
-					LOGGER.error("Could not find CacheSession for cacheSessionID=\""+cacheSessionID+"\"!");
+					logger.error("Could not find CacheSession for cacheSessionID=\""+cacheSessionID+"\"!");
 				else
 					session.addDirtyObjectIDs(dirtyObjectIDs.values()); // this method picks only those IDs which the session has subscribed
 			}
 		}
 
-		if (LOGGER.isDebugEnabled()) {
-			LOGGER.debug("The following CacheSessions have been marked to have changed objectIDs:");
+		if (logger.isDebugEnabled()) {
+			logger.debug("The following CacheSessions have been marked to have changed objectIDs:");
 			for (Iterator it = interestedCacheSessionIDs.iterator(); it.hasNext(); ) {
 				String cacheSessionID = (String) it.next();
-				LOGGER.debug("      " + cacheSessionID);
+				logger.debug("      " + cacheSessionID);
 			}
 		}
 
@@ -821,8 +824,8 @@ implements Serializable
 	 */
 	protected Collection waitForChanges(String cacheSessionID, long waitTimeout)
 	{
-		if (LOGGER.isDebugEnabled())
-			LOGGER.debug("waitForChanges(cacheSessionID=\""+cacheSessionID+"\") entered");
+		if (logger.isDebugEnabled())
+			logger.debug("waitForChanges(cacheSessionID=\""+cacheSessionID+"\") entered");
 
 		CacheSession session = createCacheSession(cacheSessionID);
 		long startDT = System.currentTimeMillis();
@@ -844,10 +847,10 @@ implements Serializable
 
 		Map dirtyObjectIDs = session.fetchDirtyObjectIDs();
 
-		if (LOGGER.isDebugEnabled()) {
-			LOGGER.debug("CacheSession \"" + cacheSessionID + "\" will be notified with the following objectIDs:");
+		if (logger.isDebugEnabled()) {
+			logger.debug("CacheSession \"" + cacheSessionID + "\" will be notified with the following objectIDs:");
 			if (dirtyObjectIDs == null)
-				LOGGER.debug("      NONE!");
+				logger.debug("      NONE!");
 			else {
 				for (Iterator itD = dirtyObjectIDs.values().iterator(); itD.hasNext(); ) {
 					DirtyObjectID dirtyObjectID = (DirtyObjectID) itD.next();
@@ -857,7 +860,7 @@ implements Serializable
 						if (itC.hasNext())
 							causes.append(',');
 					}
-					LOGGER.debug("      " + dirtyObjectID.getObjectID() + " (causes: "+causes+")");
+					logger.debug("      " + dirtyObjectID.getObjectID() + " (causes: "+causes+")");
 				}
 			}
 		}
@@ -897,15 +900,15 @@ implements Serializable
 			throw new NullPointerException("pmf");
 
 		if (bridge != null) {
-			LOGGER.info("The CacheManagerFactory for organisation \""+organisationID+"\" has already a JdoCacheBridge assigned: " + bridge);
-			LOGGER.info("Will close the old bridge and setup a new one.");
+			logger.info("The CacheManagerFactory for organisation \""+organisationID+"\" has already a JdoCacheBridge assigned: " + bridge);
+			logger.info("Will close the old bridge and setup a new one.");
 			bridge.close();
 			bridge = null;
 		}
 
 		String jdoCacheBridgeClassName = cacheCfMod.getJdoCacheBridgeClassName();
 
-		LOGGER.info("Creating JdoCacheBridge \""+jdoCacheBridgeClassName+"\" for organisationID=\""+organisationID+"\"!");
+		logger.info("Creating JdoCacheBridge \""+jdoCacheBridgeClassName+"\" for organisationID=\""+organisationID+"\"!");
 
 		bridge = (JdoCacheBridge) Class.forName(jdoCacheBridgeClassName).newInstance();
 		bridge.setCacheManagerFactory(this);
@@ -925,12 +928,12 @@ implements Serializable
 					if (bridge == null || bridge.getPersistenceManagerFactory().isClosed()) {
 						PersistenceManagerFactory pmf = JFireServerManagerFactoryImpl.getPersistenceManagerFactory(organisationID);
 						if (pmf == null)
-							LOGGER.warn("Old PersistenceManagerFactory for organisationID=\""+organisationID+"\" has been closed, but there is no new one!!");
+							logger.warn("Old PersistenceManagerFactory for organisationID=\""+organisationID+"\" has been closed, but there is no new one!!");
 						else
 							setupJdoCacheBridge(pmf);
 					}
 				} catch (Exception e) {
-					LOGGER.error("Checking PersistenceManagerFactory failed for organisationID=\""+organisationID+"\"!", e);
+					logger.error("Checking PersistenceManagerFactory failed for organisationID=\""+organisationID+"\"!", e);
 				}
 			}
 		}, 0, 30000); // TODO should be configurable

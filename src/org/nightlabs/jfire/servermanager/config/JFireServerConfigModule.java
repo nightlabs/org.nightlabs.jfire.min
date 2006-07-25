@@ -48,7 +48,10 @@ import org.nightlabs.util.Utils;
  */
 public class JFireServerConfigModule extends ConfigModule
 {
-	public static Logger LOGGER = Logger.getLogger(JFireServerConfigModule.class);
+	/**
+	 * LOG4J logger used by this class
+	 */
+	public static final Logger logger = Logger.getLogger(JFireServerConfigModule.class);
 
 	public static class J2ee implements Serializable
 	{
@@ -129,7 +132,7 @@ public class JFireServerConfigModule extends ConfigModule
 				DEFAULTS.put("MySQL", db);
 
 			} catch (Throwable t) {
-				LOGGER.error("Creating database default values failed!", t);
+				logger.error("Creating database default values failed!", t);
 			}
 		}
 
@@ -289,14 +292,14 @@ public class JFireServerConfigModule extends ConfigModule
 		{
 			_init();
 
-			LOGGER.info("databaseDriverName = "+databaseDriverName);
-			LOGGER.info("databaseURL = "+databaseURL);
-			LOGGER.info("databasePrefix = "+databasePrefix);
-			LOGGER.info("databaseSuffix = "+databaseSuffix);
-			LOGGER.info("databaseUserName = "+databaseUserName);
-			LOGGER.info("databasePassword = "+databasePassword);
-			LOGGER.info("databaseAdapter = "+databaseAdapter);
-			LOGGER.info("datasourceMetadataTypeMapping = "+datasourceMetadataTypeMapping);
+			logger.info("databaseDriverName = "+databaseDriverName);
+			logger.info("databaseURL = "+databaseURL);
+			logger.info("databasePrefix = "+databasePrefix);
+			logger.info("databaseSuffix = "+databaseSuffix);
+			logger.info("databaseUserName = "+databaseUserName);
+			logger.info("databasePassword = "+databasePassword);
+			logger.info("databaseAdapter = "+databaseAdapter);
+			logger.info("datasourceMetadataTypeMapping = "+datasourceMetadataTypeMapping);
 		}
 
 		public void loadDefaults(String defaultKey)
@@ -440,11 +443,11 @@ public class JFireServerConfigModule extends ConfigModule
 			if (jdoTemplateDSXMLFile == null)
 				jdoTemplateDSXMLFile = "../server/default/deploy/JFire.last/JFireBase.ear/jdo-jpox-ds.template.xml";
 
-			LOGGER.info("jdoConfigDirectory = "+jdoConfigDirectory);
-			LOGGER.info("datasourceConfigFile = "+datasourceConfigFile);
-			LOGGER.info("datasourceTemplateDSXMLFile = "+datasourceTemplateDSXMLFile);
-			LOGGER.info("jdoConfigFile = "+jdoConfigFile);
-			LOGGER.info("jdoTemplateDSXMLFile = "+jdoTemplateDSXMLFile);
+			logger.info("jdoConfigDirectory = "+jdoConfigDirectory);
+			logger.info("datasourceConfigFile = "+datasourceConfigFile);
+			logger.info("datasourceTemplateDSXMLFile = "+datasourceTemplateDSXMLFile);
+			logger.info("jdoConfigFile = "+jdoConfigFile);
+			logger.info("jdoTemplateDSXMLFile = "+jdoTemplateDSXMLFile);
 		}
 	}
 

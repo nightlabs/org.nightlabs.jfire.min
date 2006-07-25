@@ -48,7 +48,10 @@ import org.nightlabs.xml.XMLReadException;
  */
 public class DatastoreInitMan
 {
-	public static final Logger LOGGER = Logger.getLogger(DatastoreInitMan.class);
+	/**
+	 * LOG4J logger used by this class
+	 */
+	private static final Logger logger = Logger.getLogger(DatastoreInitMan.class);
 
 	/**
 	 * The EAR module directory in which the JAR is deployed. E.g. "JFireBase.ear"
@@ -83,17 +86,17 @@ public class DatastoreInitMan
 		//	parser.setFeature("http://xml.org/sax/features/validation", false);
 			parser.setErrorHandler(new ErrorHandler(){
 				public void error(SAXParseException exception) throws SAXException {
-					LOGGER.error("Parse (datastoreinit.xml): ", exception);
+					logger.error("Parse (datastoreinit.xml): ", exception);
 					parseException = exception;
 				}
 		
 				public void fatalError(SAXParseException exception) throws SAXException {
-					LOGGER.fatal("Parse (datastoreinit.xml): ", exception);
+					logger.fatal("Parse (datastoreinit.xml): ", exception);
 					parseException = exception;
 				}
 		
 				public void warning(SAXParseException exception) throws SAXException {
-					LOGGER.warn("Parse (datastoreinit.xml): ", exception);
+					logger.warn("Parse (datastoreinit.xml): ", exception);
 				}
 			});
 			parser.parse(inputSource);

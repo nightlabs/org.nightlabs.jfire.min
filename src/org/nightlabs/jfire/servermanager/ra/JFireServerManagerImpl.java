@@ -63,7 +63,10 @@ import org.nightlabs.config.Config;
 public class JFireServerManagerImpl
 	implements Connection, JFireServerManager
 {
-	public static Logger LOGGER = Logger.getLogger(JFireServerManagerImpl.class);
+	/**
+	 * LOG4J logger used by this class
+	 */
+	private static final Logger logger = Logger.getLogger(JFireServerManagerImpl.class);
 	
 	private ManagedConnectionFactoryImpl managedConnectionFactoryImpl;
 	private ManagedConnectionImpl managedConnectionImpl;
@@ -110,8 +113,8 @@ public class JFireServerManagerImpl
 	}
 	protected void setJFireServerManagerFactory(final JFireServerManagerFactoryImpl _jfireServerManagerFactoryImpl)
 	{
-		if(LOGGER.isDebugEnabled())
-			LOGGER.debug(this.getClass().getName()+": setJFireManagerFactory(...)");
+		if(logger.isDebugEnabled())
+			logger.debug(this.getClass().getName()+": setJFireManagerFactory(...)");
 		this.jfireServerManagerFactoryImpl = _jfireServerManagerFactoryImpl;
 	}
 
@@ -121,8 +124,8 @@ public class JFireServerManagerImpl
 	 */
 	public void close()
 	{
-		if(LOGGER.isDebugEnabled())
-			LOGGER.debug(this.getClass().getName()+": close()");
+		if(logger.isDebugEnabled())
+			logger.debug(this.getClass().getName()+": close()");
 		if (managedConnectionImpl != null) 
 		{
 //			managedConnectionImpl.flushDirty();
@@ -409,7 +412,7 @@ public class JFireServerManagerImpl
 					{
 						if (User.USERID_SYSTEM.equals(userID)) {
 							if (!authenticated) {
-								LOGGER.info("Login failed because system user of organisation \""+organisationID+"\" either has no temporary password assigned or the given password does not match. This user cannot have a real password and before login, a temporary password must be created.");
+								logger.info("Login failed because system user of organisation \""+organisationID+"\" either has no temporary password assigned or the given password does not match. This user cannot have a real password and before login, a temporary password must be created.");
 								throw new LoginException("Invalid username or password!");
 							}
 						}
@@ -423,13 +426,13 @@ public class JFireServerManagerImpl
 								try {
 									userLocal = (UserLocal)pm.getObjectById(UserLocalID.create(organisationID, userID), true);
 								} catch (JDOObjectNotFoundException x) {
-									LOGGER.info("Login failed because user \""+userID+"\" not known in organisation \""+organisationID+"\".", x);
+									logger.info("Login failed because user \""+userID+"\" not known in organisation \""+organisationID+"\".", x);
 									throw new LoginException("Invalid username or password!");
 								}
 
 								if(!userLocal.checkPassword(password))
 								{
-									LOGGER.info("Login failed because password for user \""+userID + '@' + organisationID +"\" is incorrect.");
+									logger.info("Login failed because password for user \""+userID + '@' + organisationID +"\" is incorrect.");
 									throw new LoginException("Invalid username or password!");
 								}
 
@@ -441,8 +444,8 @@ public class JFireServerManagerImpl
 
 						// login succeeded, create principal
 						this.principal = new JFirePrincipal(userID, organisationID, sessionID, userIsOrganisation, lookup, roleSet);
-						if(LOGGER.isDebugEnabled())
-							LOGGER.debug("Created JFirePrincipal \""+principal+"\".");
+						if(logger.isDebugEnabled())
+							logger.debug("Created JFirePrincipal \""+principal+"\".");
 					}
 					finally
 					{
@@ -465,7 +468,7 @@ public class JFireServerManagerImpl
 		} catch (LoginException e) {
 			throw e;
 		} catch(Throwable e) {
-			LOGGER.fatal("Login failed!", e);
+			logger.fatal("Login failed!", e);
 			throw new LoginException(e.getMessage());
 		}
 

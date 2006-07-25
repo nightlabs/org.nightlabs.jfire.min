@@ -45,7 +45,10 @@ import org.jboss.security.auth.spi.AbstractServerLoginModule;
  */
 public class JFireServerLocalLoginModule extends AbstractServerLoginModule
 {
-	public static Logger LOGGER = Logger.getLogger(JFireServerLocalLoginModule.class);
+	/**
+	 * LOG4J logger used by this class
+	 */
+	private static final Logger logger = Logger.getLogger(JFireServerLocalLoginModule.class);
 
 	protected JFireServerLocalLoginManager.LocalPrincipal principal = null;
 	protected Object loginCredential = null;
@@ -80,7 +83,7 @@ public class JFireServerLocalLoginModule extends AbstractServerLoginModule
 			((PasswordCallback)callbacks[1]).clearPassword();
 			loginCredential = password;
 		} catch (Exception x) {
-			LOGGER.fatal("Callback handling failed!", x);
+			logger.fatal("Callback handling failed!", x);
 			throw new LoginException(x.getMessage());
 		}
 
@@ -97,11 +100,11 @@ public class JFireServerLocalLoginModule extends AbstractServerLoginModule
 			principal = null;
 
 		if (principal == null) {
-			LOGGER.error("Login by " + username + " failed: Unknown user or invalid password!");
+			logger.error("Login by " + username + " failed: Unknown user or invalid password!");
 			throw new LoginException("Unknown user or invalid password!");
 		}
 
-		LOGGER.info("Login by " + username + " successful!");
+		logger.info("Login by " + username + " successful!");
 
 		super.subject.getPrincipals().add(principal);
 
@@ -111,14 +114,14 @@ public class JFireServerLocalLoginModule extends AbstractServerLoginModule
 
 	protected Principal getIdentity()
 	{
-		LOGGER.debug("getIdentity() returning Principal: "+principal);
+		logger.debug("getIdentity() returning Principal: "+principal);
 		return principal;
 	}
 
 	protected Group[] getRoleSets()
 		throws LoginException
 	{
-		LOGGER.debug("getRoleSets()");
+		logger.debug("getRoleSets()");
 
 		if (principal == null)
 			throw new NullPointerException("Why the hell is getRoleSets() called before login?!");

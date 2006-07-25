@@ -53,12 +53,15 @@ import org.nightlabs.jfire.servermanager.db.DatabaseException;
 public class ManagedConnectionFactoryImpl
 	implements ManagedConnectionFactory
 {
-	public static Logger LOGGER = Logger.getLogger(ManagedConnectionFactoryImpl.class);
+	/**
+	 * LOG4J logger used by this class
+	 */
+	public static final Logger logger = Logger.getLogger(ManagedConnectionFactoryImpl.class);
 
 	public ManagedConnectionFactoryImpl()
 	{
-		if(LOGGER.isDebugEnabled())
-			LOGGER.debug(this.getClass().getName() + ": CONSTRUCTOR");
+		if(logger.isDebugEnabled())
+			logger.debug(this.getClass().getName() + ": CONSTRUCTOR");
 	}
 	
 	// *********************************************
@@ -138,11 +141,11 @@ public class ManagedConnectionFactoryImpl
 	 * @see javax.resource.spi.ManagedConnectionFactory#createConnectionFactory(javax.resource.spi.ConnectionManager)
 	 */
 	public Object createConnectionFactory(ConnectionManager cm) throws ResourceException {
-		LOGGER.info(this.getClass().getName()+": createConnectionFactory(ConnectionManager)");
+		logger.info(this.getClass().getName()+": createConnectionFactory(ConnectionManager)");
 		try {
 			freezeConfiguration();
 		} catch (ConfigException e) {
-			LOGGER.log(Level.FATAL, "Error in configuration!", e);
+			logger.log(Level.FATAL, "Error in configuration!", e);
 			throw new ResourceException(e.getMessage());
 		}
 		return new JFireServerManagerFactoryImpl(this, cm);
@@ -152,11 +155,11 @@ public class ManagedConnectionFactoryImpl
 	 * @see javax.resource.spi.ManagedConnectionFactory#createManagedConnection(javax.security.auth.Subject, javax.resource.spi.ConnectionRequestInfo)
 	 */
 	public ManagedConnection createManagedConnection(Subject subject, ConnectionRequestInfo requestInfo) throws ResourceException {
-		if(LOGGER.isDebugEnabled()) {
-			LOGGER.debug("***********************************************************");
-			LOGGER.debug(this.getClass().getName()+": createManagedConnection(...)");
-			LOGGER.debug("subject: "+subject);
-			LOGGER.debug("***********************************************************");
+		if(logger.isDebugEnabled()) {
+			logger.debug("***********************************************************");
+			logger.debug(this.getClass().getName()+": createManagedConnection(...)");
+			logger.debug("subject: "+subject);
+			logger.debug("***********************************************************");
 		}
 		PasswordCredential pc = getPasswordCredential(subject);
 		return new ManagedConnectionImpl(pc);
@@ -166,8 +169,8 @@ public class ManagedConnectionFactoryImpl
 	 * @see javax.resource.spi.ManagedConnectionFactory#getLogWriter()
 	 */
 	public PrintWriter getLogWriter() throws ResourceException {
-		if(LOGGER.isDebugEnabled())
-			LOGGER.debug(this.getClass().getName()+": getLogWriter()");
+		if(logger.isDebugEnabled())
+			logger.debug(this.getClass().getName()+": getLogWriter()");
 		return null;
 	}
 
@@ -175,11 +178,11 @@ public class ManagedConnectionFactoryImpl
 	 * @see javax.resource.spi.ManagedConnectionFactory#matchManagedConnections(java.util.Set, javax.security.auth.Subject, javax.resource.spi.ConnectionRequestInfo)
 	 */
 	public ManagedConnection matchManagedConnections(Set mcs, Subject subject, ConnectionRequestInfo cri) throws ResourceException {
-		if(LOGGER.isDebugEnabled()) {
-			LOGGER.debug("***********************************************************");
-			LOGGER.debug(this.getClass().getName()+": matchManagedConnections(...)");
-			LOGGER.debug("subject: "+subject);
-			LOGGER.debug("***********************************************************");
+		if(logger.isDebugEnabled()) {
+			logger.debug("***********************************************************");
+			logger.debug(this.getClass().getName()+": matchManagedConnections(...)");
+			logger.debug("subject: "+subject);
+			logger.debug("***********************************************************");
 		}
 		
 		PasswordCredential pc = getPasswordCredential(subject);
@@ -208,16 +211,16 @@ public class ManagedConnectionFactoryImpl
 	 * @see javax.resource.spi.ManagedConnectionFactory#setLogWriter(java.io.PrintWriter)
 	 */
 	public void setLogWriter(PrintWriter pw) throws ResourceException {
-		if(LOGGER.isDebugEnabled())
-			LOGGER.debug(this.getClass().getName()+": setLogWriter(pw): pw="+pw);
+		if(logger.isDebugEnabled())
+			logger.debug(this.getClass().getName()+": setLogWriter(pw): pw="+pw);
 	}
 	
 	// *** helpers
 	protected PasswordCredential getPasswordCredential(Subject subject) 
 	throws ResourceException
 	{
-		if(LOGGER.isDebugEnabled())
-			LOGGER.debug(this.getClass().getName()+": getPasswordCredential(subject=\""+subject+"\")");
+		if(logger.isDebugEnabled())
+			logger.debug(this.getClass().getName()+": getPasswordCredential(subject=\""+subject+"\")");
 		
 		if (subject == null) 
 		{
@@ -261,8 +264,8 @@ public class ManagedConnectionFactoryImpl
 		throws ConfigException
 	{
 		if (!configurable) {
-			LOGGER.log(Level.WARN, "freezeConfiguration is called twice!");
-			LOGGER.log(Level.WARN, "STACKTRACE:", new Exception());
+			logger.log(Level.WARN, "freezeConfiguration is called twice!");
+			logger.log(Level.WARN, "STACKTRACE:", new Exception());
 			return;
 		}
 
@@ -312,7 +315,7 @@ public class ManagedConnectionFactoryImpl
 		try {
 			testConfiguration(cfMod);
 		} catch (ConfigException x) {
-			LOGGER.fatal("Configuration invalid!", x);
+			logger.fatal("Configuration invalid!", x);
 		}
 	}
 
@@ -376,7 +379,7 @@ public class ManagedConnectionFactoryImpl
 //			  );			
 //			sqlConn.close();
 		} catch (DatabaseException e) {
-			LOGGER.error("Connecting to database server failed!", e);
+			logger.error("Connecting to database server failed!", e);
 			throw new ConfigException(e);
 		}
 

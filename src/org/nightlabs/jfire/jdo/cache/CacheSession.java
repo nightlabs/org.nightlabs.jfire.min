@@ -43,7 +43,10 @@ import org.apache.log4j.Logger;
 public class CacheSession
 implements Serializable
 {
-	public static final Logger LOGGER = Logger.getLogger(CacheSession.class);
+	/**
+	 * LOG4J logger used by this class
+	 */
+	private static final Logger logger = Logger.getLogger(CacheSession.class);
 
 	private CacheManagerFactory cacheManagerFactory;
 	private String cacheSessionID;
@@ -231,8 +234,8 @@ implements Serializable
 	public Map fetchDirtyObjectIDs()
 	{
 		if (closed) {
-			if (LOGGER.isDebugEnabled())
-				LOGGER.debug("fetchChangedObjectIDs() in CacheSession(cacheSessionID=\""+cacheSessionID+"\") will return null, because the session is closed!");
+			if (logger.isDebugEnabled())
+				logger.debug("fetchChangedObjectIDs() in CacheSession(cacheSessionID=\""+cacheSessionID+"\") will return null, because the session is closed!");
 
 			return null;
 		}
@@ -247,8 +250,8 @@ implements Serializable
 			}
 		}
 
-		if (LOGGER.isDebugEnabled()) {
-			LOGGER.debug("fetchChangedObjectIDs() in CacheSession(cacheSessionID=\""+cacheSessionID+"\") will return " +
+		if (logger.isDebugEnabled()) {
+			logger.debug("fetchChangedObjectIDs() in CacheSession(cacheSessionID=\""+cacheSessionID+"\") will return " +
 					(res == null ? "null" : ("a Set with " + res.size() + " entries")) + ".");
 		}
 
@@ -306,34 +309,34 @@ implements Serializable
 	 */
 	public void waitForChanges(long waitTimeout)
 	{
-		if (LOGGER.isDebugEnabled())
-			LOGGER.debug("CacheSession \"" + cacheSessionID + "\" entered waitForChanges with waitTimeout=" + waitTimeout + ".");
+		if (logger.isDebugEnabled())
+			logger.debug("CacheSession \"" + cacheSessionID + "\" entered waitForChanges with waitTimeout=" + waitTimeout + ".");
 
 		CacheCfMod cacheCfMod = cacheManagerFactory.getCacheCfMod();
 		long waitMin = cacheCfMod.getWaitForChangesTimeoutMin();
 		long waitMax = cacheCfMod.getWaitForChangesTimeoutMax();
 
 		if (waitTimeout < waitMin) {
-			LOGGER.warn("waitTimeout (" + waitTimeout + " msec) < waitForChangesTimeoutMin (" + waitMin + " msec)! Will ignore and use waitForChangesTimeoutMin!");
+			logger.warn("waitTimeout (" + waitTimeout + " msec) < waitForChangesTimeoutMin (" + waitMin + " msec)! Will ignore and use waitForChangesTimeoutMin!");
 			waitTimeout = waitMin;
 		}
 
 		if (waitTimeout > waitMax) {
-			LOGGER.warn("waitTimeout (" + waitTimeout + " msec) > waitForChangesTimeoutMax (" + waitMax + " msec)! Will ignore and use waitForChangesTimeoutMax!");
+			logger.warn("waitTimeout (" + waitTimeout + " msec) > waitForChangesTimeoutMax (" + waitMax + " msec)! Will ignore and use waitForChangesTimeoutMax!");
 			waitTimeout = waitMax;
 		}
 
 		synchronized (dirtyObjectIDsMutex) {
 
 			if (!dirtyObjectIDs.isEmpty()) {
-				if (LOGGER.isDebugEnabled())
-					LOGGER.debug("CacheSession \"" + cacheSessionID + "\" has already changed objectIDs. Return immediately.");
+				if (logger.isDebugEnabled())
+					logger.debug("CacheSession \"" + cacheSessionID + "\" has already changed objectIDs. Return immediately.");
 
 				return;
 			}
 
-			if (LOGGER.isDebugEnabled())
-				LOGGER.debug("CacheSession \"" + cacheSessionID + "\" will wait " + waitTimeout + " msec for changed objects.");
+			if (logger.isDebugEnabled())
+				logger.debug("CacheSession \"" + cacheSessionID + "\" will wait " + waitTimeout + " msec for changed objects.");
 
 			try {
 				dirtyObjectIDsMutex.wait(waitTimeout);
@@ -341,8 +344,8 @@ implements Serializable
 				// ignore
 			}
 
-			if (LOGGER.isDebugEnabled())
-				LOGGER.debug("CacheSession \"" + cacheSessionID + "\" woke up.");
+			if (logger.isDebugEnabled())
+				logger.debug("CacheSession \"" + cacheSessionID + "\" woke up.");
 		}
 	}
 

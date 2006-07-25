@@ -45,7 +45,10 @@ import org.nightlabs.xml.DOMParser;
  */
 public class WEBMan
 {
-	public static Logger LOGGER = Logger.getLogger(WEBMan.class);
+	/**
+	 * LOG4J logger used by this class
+	 */
+	private static final Logger logger = Logger.getLogger(WEBMan.class);
 	
 	private SAXParseException parseException = null;
 
@@ -59,17 +62,17 @@ public class WEBMan
 //			parser.setFeature("http://xml.org/sax/features/validation", true);
 			parser.setErrorHandler(new ErrorHandler(){
 				public void error(SAXParseException exception) throws SAXException {
-					LOGGER.error("Parse (ejb-rolegroup.xml): ", exception);
+					logger.error("Parse (ejb-rolegroup.xml): ", exception);
 					parseException = exception;
 				}
 	
 				public void fatalError(SAXParseException exception) throws SAXException {
-					LOGGER.fatal("Parse (ejb-rolegroup.xml): ", exception);
+					logger.fatal("Parse (ejb-rolegroup.xml): ", exception);
 					parseException = exception;
 				}
 	
 				public void warning(SAXParseException exception) throws SAXException {
-					LOGGER.warn("Parse (ejb-rolegroup.xml): ", exception);
+					logger.warn("Parse (ejb-rolegroup.xml): ", exception);
 				}
 			});
 			parser.parse(inputSource);

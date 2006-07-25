@@ -65,7 +65,10 @@ import org.nightlabs.xml.XMLReadException;
  */
 public class CLRegistrarFactory
 {
-	public static final Logger LOGGER = Logger.getLogger(CLRegistrarFactory.class);
+	/**
+	 * LOG4J logger used by this class
+	 */
+	private static final Logger logger = Logger.getLogger(CLRegistrarFactory.class);
 	
 	protected CLRegistryCfMod clRegistryCfMod;
 
@@ -178,7 +181,7 @@ public class CLRegistrarFactory
 		// we recursively delete our temp repository if it exists
 		File tempRepositoryFile = new File(clRegistryCfMod.getTempRepository().getPath());
 		if (!Utils.deleteDirectoryRecursively(tempRepositoryFile))
-			LOGGER.error("Deleting temporary repository \""+clRegistryCfMod.getTempRepository().getPath()+"\" failed!");
+			logger.error("Deleting temporary repository \""+clRegistryCfMod.getTempRepository().getPath()+"\" failed!");
 	}
 
 	/**
@@ -195,7 +198,7 @@ public class CLRegistrarFactory
 	protected synchronized void scan()
 		throws XMLReadException, SAXException, IOException, TransformerException
 	{
-		LOGGER.info("CLRegistrarFactory.scan(): start indexing all resources...");
+		logger.info("CLRegistrarFactory.scan(): start indexing all resources...");
 		clRegistryCfMod.acquireReadLock();
 		try {
 			clear();
@@ -223,7 +226,7 @@ public class CLRegistrarFactory
 		} finally {
 			clRegistryCfMod.releaseLock();
 		}
-		LOGGER.info("CLRegistrarFactory.scan(): completed indexing all resources!");
+		logger.info("CLRegistrarFactory.scan(): completed indexing all resources!");
 	}
 
 	private CLRepositoryFileFilter clRepositoryFileFilter = null;
@@ -295,7 +298,7 @@ public class CLRegistrarFactory
 				try {
 					jf = new JarFile(dir, false);
 				} catch (IOException x) {
-					LOGGER.info(dir.getAbsolutePath() + " is not a jar.");
+					logger.info(dir.getAbsolutePath() + " is not a jar.");
 				}
 				if (jf != null) {
 					try {
@@ -403,7 +406,7 @@ public class CLRegistrarFactory
 						if (doExtract) {
 							File dir = tempExtractedJar.getParentFile();
 							if (!dir.exists() && !dir.mkdirs()) {
-								LOGGER.error("Failed to create the directory \"" + dir.getPath() + "\"!");
+								logger.error("Failed to create the directory \"" + dir.getPath() + "\"!");
 							}
 
 							OutputStream out = new FileOutputStream(tempExtractedJar);
@@ -427,7 +430,7 @@ public class CLRegistrarFactory
 						tempJarFiles.add(tempExtractedJar.getParentFile());
 					} // if (isJar) {
 				} catch (IOException e) {
-					LOGGER.error("Extracting jar failed! repository=\"" + repository.getName() + "\" outerJar=\"" + jarFileMetaData.getPath() + "\" innerJar=\"" + je.getName() + "\"", e);
+					logger.error("Extracting jar failed! repository=\"" + repository.getName() + "\" outerJar=\"" + jarFileMetaData.getPath() + "\" innerJar=\"" + je.getName() + "\"", e);
 				}				
 			} // if (!je.isDirectory()) {
 		}

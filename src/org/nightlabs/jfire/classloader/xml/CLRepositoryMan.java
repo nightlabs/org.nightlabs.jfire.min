@@ -63,7 +63,10 @@ import org.nightlabs.xml.XMLReadException;
  */
 public class CLRepositoryMan
 {
-	public static final Logger LOGGER = Logger.getLogger(CLRepositoryMan.class);
+	/**
+	 * LOG4J logger used by this class
+	 */
+	private static final Logger logger = Logger.getLogger(CLRepositoryMan.class);
 	
 	public static class Publication {
 		private boolean inherit = true;
@@ -182,17 +185,17 @@ public class CLRepositoryMan
 //		parser.setFeature("http://xml.org/sax/features/validation", false);
 		parser.setErrorHandler(new ErrorHandler(){
 			public void error(SAXParseException exception) throws SAXException {
-				LOGGER.error("Parse ("+clRepositoryAbsFileName+"): ", exception);
+				logger.error("Parse ("+clRepositoryAbsFileName+"): ", exception);
 				parseException = exception;
 			}
 
 			public void fatalError(SAXParseException exception) throws SAXException {
-				LOGGER.fatal("Parse ("+clRepositoryAbsFileName+"): ", exception);
+				logger.fatal("Parse ("+clRepositoryAbsFileName+"): ", exception);
 				parseException = exception;
 			}
 
 			public void warning(SAXParseException exception) throws SAXException {
-				LOGGER.warn("Parse ("+clRepositoryAbsFileName+"): ", exception);
+				logger.warn("Parse ("+clRepositoryAbsFileName+"): ", exception);
 			}
 		});
 		parseException = null;
@@ -252,7 +255,7 @@ public class CLRepositoryMan
 	public void readCLRepositoryXML(File clrepository)
 	throws XMLReadException
 	{
-		LOGGER.debug("reading cl repository file \""+clrepository.getAbsolutePath()+"\".");
+		logger.debug("reading cl repository file \""+clrepository.getAbsolutePath()+"\".");
 		try {
 			if (!clrepository.exists())
 				throw new FileNotFoundException("CLRepository file  \""+clrepository.getAbsolutePath()+"\" does not exist.");

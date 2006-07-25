@@ -51,7 +51,10 @@ import org.nightlabs.jfire.servermanager.j2ee.SecurityReflector;
  */
 public class JdoCacheBridgeJPOX extends JdoCacheBridge
 {
-	public static final Logger LOGGER = Logger.getLogger(JdoCacheBridgeJPOX.class);
+	/**
+	 * LOG4J logger used by this class
+	 */
+	private static final Logger logger = Logger.getLogger(JdoCacheBridgeJPOX.class);
 
 	public static class CacheTransactionListener implements ConnectionEventListener
 	{
@@ -113,20 +116,20 @@ public class JdoCacheBridgeJPOX extends JdoCacheBridge
 		public void localTransactionCommitted(javax.resource.spi.ConnectionEvent event)
 		{
 			try {
-				LOGGER.debug("localTransactionCommitted(...) called.");
+				logger.debug("localTransactionCommitted(...) called.");
 				if (dirtyObjectIDs != null) {
 					bridge.getCacheManagerFactory().addDirtyObjectIDs(
 							bridge.securityReflector.whoAmI().getSessionID(), dirtyObjectIDs);
 					dirtyObjectIDs = null;
 				}
 			} catch (Throwable e) {
-				LOGGER.error("", e);
+				logger.error("", e);
 			}
 		}
 
 		public void localTransactionRolledback(javax.resource.spi.ConnectionEvent event)
 		{
-			LOGGER.debug("localTransactionRolledback(...) called.");
+			logger.debug("localTransactionRolledback(...) called.");
 			dirtyObjectIDs = null;
 		}
 
@@ -179,13 +182,13 @@ public class JdoCacheBridgeJPOX extends JdoCacheBridge
 //		JdoTransactionHandle th = (JdoTransactionHandle) pm.getLocalTransaction();
 		CacheTransactionListener listener = (CacheTransactionListener)pm.getUserObject();
 		if (listener == null) {
-			LOGGER.debug("PersistenceManagerImpl.getUserObject() returned null. Will create and add a CacheTransactionListener.");
+			logger.debug("PersistenceManagerImpl.getUserObject() returned null. Will create and add a CacheTransactionListener.");
 			listener = new CacheTransactionListener(this);
 			pm.addConnectionEventListener(listener);
 			pm.setUserObject(listener);
 		}
 		else
-			LOGGER.debug("PersistenceManagerImpl.getUserObject() returned a CacheTransactionListener. No registration necessary.");
+			logger.debug("PersistenceManagerImpl.getUserObject() returned a CacheTransactionListener. No registration necessary.");
 
 		return listener;
 //		Synchronization oldSync = th.getSynchronization();
@@ -217,7 +220,7 @@ public class JdoCacheBridgeJPOX extends JdoCacheBridge
 
 			getCacheTransactionListener(pm).addDirtyObjectID(objectID);
 		} catch (Throwable t) {
-			LOGGER.error("Failed to make object dirty: " + object, t);
+			logger.error("Failed to make object dirty: " + object, t);
 		}
 	}
 
@@ -227,7 +230,7 @@ public class JdoCacheBridgeJPOX extends JdoCacheBridge
 		}
 		public void postDirty(javax.jdo.listener.InstanceLifecycleEvent event)
 		{
-			LOGGER.debug("object became dirty: source="+event.getSource()+" target="+event.getTarget());
+			logger.debug("object became dirty: source="+event.getSource()+" target="+event.getTarget());
 			makeDirty(event.getSource());
 		}
 	};
@@ -238,7 +241,7 @@ public class JdoCacheBridgeJPOX extends JdoCacheBridge
 		}
 		public void postAttach(InstanceLifecycleEvent event)
 		{
-			LOGGER.debug("object was attached: source="+event.getSource()+" target="+event.getTarget());
+			logger.debug("object was attached: source="+event.getSource()+" target="+event.getTarget());
 			makeDirty(event.getSource());
 		}
 	};

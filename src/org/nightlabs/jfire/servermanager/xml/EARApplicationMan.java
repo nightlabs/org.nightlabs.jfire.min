@@ -56,7 +56,10 @@ import org.nightlabs.xml.DOMParser;
  */
 public class EARApplicationMan
 {
-	public static final Logger LOGGER = Logger.getLogger(EARApplicationMan.class);
+	/**
+	 * LOG4J logger used by this class
+	 */
+	private static final Logger logger = Logger.getLogger(EARApplicationMan.class);
 
 	private SAXParseException parseException = null;
 	
@@ -65,7 +68,7 @@ public class EARApplicationMan
 	public EARApplicationMan(File ear, ModuleType _moduleType)
 	throws XMLReadException
 	{
-		LOGGER.debug("Creating instance of EARApplicationMan for ear \""+ear.getAbsolutePath()+"\".");
+		logger.debug("Creating instance of EARApplicationMan for ear \""+ear.getAbsolutePath()+"\".");
 		this.moduleType = _moduleType;
 		try {
 			if (!ear.isDirectory())
@@ -84,17 +87,17 @@ public class EARApplicationMan
 //				parser.setFeature("http://xml.org/sax/features/validation", false);
 				parser.setErrorHandler(new ErrorHandler(){
 					public void error(SAXParseException exception) throws SAXException {
-						LOGGER.error("Parse (ejb-rolegroup.xml): ", exception);
+						logger.error("Parse (ejb-rolegroup.xml): ", exception);
 						parseException = exception;
 					}
 		
 					public void fatalError(SAXParseException exception) throws SAXException {
-						LOGGER.fatal("Parse (ejb-rolegroup.xml): ", exception);
+						logger.fatal("Parse (ejb-rolegroup.xml): ", exception);
 						parseException = exception;
 					}
 		
 					public void warning(SAXParseException exception) throws SAXException {
-						LOGGER.warn("Parse (ejb-rolegroup.xml): ", exception);
+						logger.warn("Parse (ejb-rolegroup.xml): ", exception);
 					}
 				});
 				parser.parse(inputSource);
@@ -144,7 +147,7 @@ public class EARApplicationMan
 		JarFile jf = new JarFile(moduleFile);
 		JarEntry jeWebXML = jf.getJarEntry("WEB-INF/web.xml");
 		if (jeWebXML == null) {
-			LOGGER.warn("Jar \""+moduleFile.getCanonicalPath()+"\" does not contain \"WEB-INF/web.xml\"!");
+			logger.warn("Jar \""+moduleFile.getCanonicalPath()+"\" does not contain \"WEB-INF/web.xml\"!");
 		}
 		WEBMan webMan = new WEBMan(jf.getInputStream(jeWebXML));
 		moduleDef.setName(webMan.getDisplayName());

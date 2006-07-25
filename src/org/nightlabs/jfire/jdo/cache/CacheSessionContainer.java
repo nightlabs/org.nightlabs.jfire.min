@@ -39,7 +39,10 @@ import org.apache.log4j.Logger;
 public class CacheSessionContainer
 implements Serializable
 {
-	public static final Logger LOGGER = Logger.getLogger(CacheSessionContainer.class);
+	/**
+	 * LOG4J logger used by this class
+	 */
+	private static final Logger logger = Logger.getLogger(CacheSessionContainer.class);
 
 	private CacheManagerFactory cacheManagerFactory;
 
@@ -47,8 +50,8 @@ implements Serializable
 	{
 		this.cacheManagerFactory = cacheManagerFactory;
 
-		if (LOGGER.isDebugEnabled())
-			LOGGER.debug("Created new instance of CacheSessionContainer (createDT="+createDT+")");
+		if (logger.isDebugEnabled())
+			logger.debug("Created new instance of CacheSessionContainer (createDT="+createDT+")");
 	}
 
 	private long createDT = System.currentTimeMillis();
@@ -83,8 +86,8 @@ implements Serializable
 		if (cacheSession.getCacheSessionContainer() != this)
 			throw new IllegalArgumentException("cacheSession.getCacheSessionContainer() != this!!! cacheSession.cacheSessionID=\""+cacheSession.getCacheSessionID()+"\"");
 
-		if (LOGGER.isDebugEnabled())
-			LOGGER.debug("Adding CacheSession (cacheSessionID=\""+cacheSession.getCacheSessionID()+"\") to CacheSessionContainer (createDT="+createDT+")");
+		if (logger.isDebugEnabled())
+			logger.debug("Adding CacheSession (cacheSessionID=\""+cacheSession.getCacheSessionID()+"\") to CacheSessionContainer (createDT="+createDT+")");
 
 		synchronized (cacheSessions) {
 			cacheSessions.put(cacheSession.getCacheSessionID(), cacheSession);
@@ -104,8 +107,8 @@ implements Serializable
 		if (closed)
 			return;
 
-		if (LOGGER.isDebugEnabled())
-			LOGGER.debug("Removing CacheSession (cacheSessionID=\""+cacheSession.getCacheSessionID()+"\") from CacheSessionContainer (createDT="+createDT+")");
+		if (logger.isDebugEnabled())
+			logger.debug("Removing CacheSession (cacheSessionID=\""+cacheSession.getCacheSessionID()+"\") from CacheSessionContainer (createDT="+createDT+")");
 
 		synchronized (cacheSessions) {
 			cacheSessions.remove(cacheSession.getCacheSessionID());
@@ -123,7 +126,7 @@ implements Serializable
 		closed = true;
 
 		synchronized (cacheSessions) {
-			LOGGER.info("CacheSessionContainer (createDT="+createDT+") closes " + cacheSessions.size() + " CacheSessions now.");
+			logger.info("CacheSessionContainer (createDT="+createDT+") closes " + cacheSessions.size() + " CacheSessions now.");
 
 			for (Iterator it = cacheSessions.keySet().iterator(); it.hasNext(); ) {
 				String cacheSessionID = (String) it.next();

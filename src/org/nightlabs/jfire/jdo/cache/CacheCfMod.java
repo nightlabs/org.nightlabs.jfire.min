@@ -37,7 +37,10 @@ import org.nightlabs.config.InitException;
  */
 public class CacheCfMod extends ConfigModule
 {
-	public static final Logger LOGGER = Logger.getLogger(CacheCfMod.class);
+	/**
+	 * LOG4J logger used by this class
+	 */
+	private static final Logger logger = Logger.getLogger(CacheCfMod.class);
 
 	private String documentation;
 
@@ -148,27 +151,27 @@ public class CacheCfMod extends ConfigModule
 		// 2 * 60000 < cacheSessionLifeTime < 300 * 30*60000
 		long cacheSessionLifeTime = cacheSessionContainerCount * cacheSessionContainerActivityMSec;
 		if (cacheSessionLifeTime < waitForChangesTimeoutMax) {
-			LOGGER.warn("cacheSessionLifeTime (" + cacheSessionLifeTime +" msec = cacheSessionContainerCount (" + cacheSessionContainerCount + ") * cacheSessionContainerActivityMSec (" + cacheSessionContainerActivityMSec + ")) < waitForChangesTimeoutMax (" + waitForChangesTimeoutMax + ")! Adjusting waitForChangesTimeoutMax!");
+			logger.warn("cacheSessionLifeTime (" + cacheSessionLifeTime +" msec = cacheSessionContainerCount (" + cacheSessionContainerCount + ") * cacheSessionContainerActivityMSec (" + cacheSessionContainerActivityMSec + ")) < waitForChangesTimeoutMax (" + waitForChangesTimeoutMax + ")! Adjusting waitForChangesTimeoutMax!");
 			setWaitForChangesTimeoutMax(cacheSessionLifeTime - 60000);
 			// now 120000 - 60000 < waitForChangesTimeoutMax
 		}
 
 		if (waitForChangesTimeoutMax < waitForChangesTimeoutMin) {
-			LOGGER.warn("waitForChangesTimeoutMax (" + waitForChangesTimeoutMax + ") < waitForChangesTimeoutMin(" + waitForChangesTimeoutMin + ")! Adjusting waitForChangesTimeoutMin!");
+			logger.warn("waitForChangesTimeoutMax (" + waitForChangesTimeoutMax + ") < waitForChangesTimeoutMin(" + waitForChangesTimeoutMin + ")! Adjusting waitForChangesTimeoutMin!");
 			setWaitForChangesTimeoutMin(waitForChangesTimeoutMax);
 		}
 
-		if (LOGGER.isDebugEnabled()) {
-			LOGGER.debug("The Cache settings are:");
-			LOGGER.debug("      notificationIntervalMSec=" + notificationIntervalMSec);
+		if (logger.isDebugEnabled()) {
+			logger.debug("The Cache settings are:");
+			logger.debug("      notificationIntervalMSec=" + notificationIntervalMSec);
 //			LOGGER.debug("      cacheSessionContainerCheckIntervalMSec=" + cacheSessionContainerCheckIntervalMSec);
-			LOGGER.debug("      cacheSessionContainerActivityMSec=" + cacheSessionContainerActivityMSec);
-			LOGGER.debug("      cacheSessionContainerCount=" + cacheSessionContainerCount);
-			LOGGER.debug("      freshDirtyObjectIDContainerActivityMSec=" + freshDirtyObjectIDContainerActivityMSec);
-			LOGGER.debug("      freshDirtyObjectIDContainerCount=" + freshDirtyObjectIDContainerCount);
-			LOGGER.debug("      waitForChangesTimeoutMin=" + waitForChangesTimeoutMin);
-			LOGGER.debug("      waitForChangesTimeoutMax=" + waitForChangesTimeoutMax);
-			LOGGER.debug("      jdoCacheBridgeClassName=" + jdoCacheBridgeClassName);
+			logger.debug("      cacheSessionContainerActivityMSec=" + cacheSessionContainerActivityMSec);
+			logger.debug("      cacheSessionContainerCount=" + cacheSessionContainerCount);
+			logger.debug("      freshDirtyObjectIDContainerActivityMSec=" + freshDirtyObjectIDContainerActivityMSec);
+			logger.debug("      freshDirtyObjectIDContainerCount=" + freshDirtyObjectIDContainerCount);
+			logger.debug("      waitForChangesTimeoutMin=" + waitForChangesTimeoutMin);
+			logger.debug("      waitForChangesTimeoutMax=" + waitForChangesTimeoutMax);
+			logger.debug("      jdoCacheBridgeClassName=" + jdoCacheBridgeClassName);
 		}
 	}
 

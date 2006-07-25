@@ -43,7 +43,10 @@ import org.nightlabs.jdo.ObjectIDUtil;
 public class DirtyObjectIDBufferFileSystem
 implements DirtyObjectIDBuffer
 {
-	public static final Logger LOGGER = Logger.getLogger(DirtyObjectIDBufferFileSystem.class);
+	/**
+	 * LOG4J logger used by this class
+	 */
+	private static final Logger logger = Logger.getLogger(DirtyObjectIDBufferFileSystem.class);
 
 	private OrganisationSyncManagerFactory organisationSyncManagerFactory;
 	private File workDirectory;
@@ -107,10 +110,10 @@ implements DirtyObjectIDBuffer
 				if (!successful) { // if the file was not successfully created, we delete it.
 					try {
 						if (objectIDFile.exists() && !objectIDFile.delete())
-							LOGGER.error("Deleting incomplete file \"" + objectIDFile.getAbsolutePath() + "\" failed for unknown reason!");
+							logger.error("Deleting incomplete file \"" + objectIDFile.getAbsolutePath() + "\" failed for unknown reason!");
 
 					} catch (Throwable t) {
-						LOGGER.error("Deleting incomplete file \"" + objectIDFile.getAbsolutePath() + "\" failed with exception!", t);
+						logger.error("Deleting incomplete file \"" + objectIDFile.getAbsolutePath() + "\" failed with exception!", t);
 					}
 				} // if (!successful) {
 				lockedFiles.remove(objectIDFile);
@@ -132,7 +135,7 @@ implements DirtyObjectIDBuffer
 	public synchronized Set fetchDirtyObjectIDs() throws DirtyObjectIDBufferException
 	{
 		if (filesInProcess != null)
-			LOGGER.warn("fetchDirtyObjectIDs() called again before clearFetchedDirtyObjectIDs()! Maybe there was an error during last execution cycle.", new Exception());
+			logger.warn("fetchDirtyObjectIDs() called again before clearFetchedDirtyObjectIDs()! Maybe there was an error during last execution cycle.", new Exception());
 
 		filesInProcess = new HashSet();
 		HashSet res = new HashSet();
@@ -180,7 +183,7 @@ implements DirtyObjectIDBuffer
 			for (Iterator it = filesInProcess.iterator(); it.hasNext(); ) {
 				File file = (File) it.next();
 				if (!file.delete())
-					LOGGER.error("Could not delete file: " + file.getAbsolutePath());
+					logger.error("Could not delete file: " + file.getAbsolutePath());
 			}
 		}
 

@@ -64,7 +64,10 @@ import org.nightlabs.jfire.servermanager.ra.ManagedConnectionFactoryImpl;
  */
 public class DatastoreInitializer
 {
-	public static final Logger LOGGER = Logger.getLogger(DatastoreInitializer.class);
+	/**
+	 * LOG4J logger used by this class
+	 */
+	private static final Logger logger = Logger.getLogger(DatastoreInitializer.class);
 	
 	private FileFilter earFileFilter = new FileFilter() {
 		public boolean accept(File pathname) {
@@ -113,7 +116,7 @@ public class DatastoreInitializer
 						jf.close();
 					}
 				} catch (Exception e) {
-					LOGGER.error("Reading from JAR '"+jar.getAbsolutePath()+"' failed!", e);
+					logger.error("Reading from JAR '"+jar.getAbsolutePath()+"' failed!", e);
 				}
 			}
 		}
@@ -136,18 +139,18 @@ public class DatastoreInitializer
 
 		inits = sortByDependencies();
 
-		if (LOGGER.isDebugEnabled()) {
-			LOGGER.debug("************************************************");
-			LOGGER.debug("Datastore Inits in execution order:");
+		if (logger.isDebugEnabled()) {
+			logger.debug("************************************************");
+			logger.debug("Datastore Inits in execution order:");
 			for (Iterator itInit = inits.iterator(); itInit.hasNext(); ) {
 				Init init = (Init) itInit.next();
-				LOGGER.debug("  init: " + init.getDatastoreInitMan().getJFireEAR() + '/' + init.getDatastoreInitMan().getJFireJAR() + '/' + init.getBean() + '#' + init.getMethod());
+				logger.debug("  init: " + init.getDatastoreInitMan().getJFireEAR() + '/' + init.getDatastoreInitMan().getJFireJAR() + '/' + init.getBean() + '#' + init.getMethod());
 				for (Iterator itDep = init.getDependencies().iterator(); itDep.hasNext(); ) {
 					Dependency dep = (Dependency) itDep.next();
-					LOGGER.debug("      depends: " + dep.getModule() + '/' + dep.getArchive() + '/' + dep.getBean() + '#' + dep.getMethod());
+					logger.debug("      depends: " + dep.getModule() + '/' + dep.getArchive() + '/' + dep.getBean() + '#' + dep.getMethod());
 				}
 			}
-			LOGGER.debug("************************************************");
+			logger.debug("************************************************");
 		}
 	}
 
@@ -164,7 +167,7 @@ public class DatastoreInitializer
 				init.getBean() + '/' + init.getMethod();
 
 		if (initsInAddProcess.contains(initKey)) {
-			LOGGER.error("Circular reference in init dependencies: "+initKey);
+			logger.error("Circular reference in init dependencies: "+initKey);
 			// TODO include initsInAddProcessStack in log!
 
 			return;
@@ -199,7 +202,7 @@ public class DatastoreInitializer
 					}
 
 					if (!found)
-						LOGGER.error("Init "+initKey+" has dependency "+depKey+" which cannot be found!");
+						logger.error("Init "+initKey+" has dependency "+depKey+" which cannot be found!");
 
 				} // if (!resKeySet.contains(depKey)) {
 			} // for (Iterator it = init.getDependencies().iterator(); it.hasNext(); ) {
@@ -256,7 +259,7 @@ public class DatastoreInitializer
 			try {
 				for (Iterator it = inits.iterator(); it.hasNext(); ) {
 					Init init = (Init)it.next();
-					LOGGER.info("Invoking DatastoreInit: " + init.getDatastoreInitMan().getJFireEAR() + '/' + init.getDatastoreInitMan().getJFireJAR() + '/' + init.getBean() + '#' + init.getMethod());
+					logger.info("Invoking DatastoreInit: " + init.getDatastoreInitMan().getJFireEAR() + '/' + init.getDatastoreInitMan().getJFireJAR() + '/' + init.getBean() + '#' + init.getMethod());
 					try {
 						Object homeRef = initCtx.lookup(init.getBean());
 						Method homeCreate = homeRef.getClass().getMethod("create", (Class[]) null);
@@ -271,14 +274,14 @@ public class DatastoreInitializer
 							if (bean instanceof EJBLocalObject)
 								((EJBLocalObject)bean).remove();
 						} catch (Exception x) {
-							LOGGER.warn(
+							logger.warn(
 									"Init could not remove bean! EAR=\""+init.getDatastoreInitMan().getJFireEAR()+"\"" +
 											" JAR=\""+init.getDatastoreInitMan().getJFireJAR()+"\"" +
 											" Bean=\""+init.getBean()+"\"", x);
 						}
 
 					} catch (Exception x) {
-						LOGGER.error(
+						logger.error(
 								"Init failed! EAR=\""+init.getDatastoreInitMan().getJFireEAR()+"\"" +
 										" JAR=\""+init.getDatastoreInitMan().getJFireJAR()+"\"" +
 										" Bean=\""+init.getBean()+"\" Method=\""+init.getMethod()+"\"", x);
