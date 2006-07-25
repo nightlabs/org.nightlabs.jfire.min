@@ -53,7 +53,10 @@ public abstract class JFireRCLBackendBean
 	extends BaseSessionBeanImpl
 	implements SessionBean
 {
-	public static final Logger LOGGER = Logger.getLogger(JFireRCLBackendBean.class);
+	/**
+	 * LOG4J logger used by this class
+	 */
+	private static final Logger logger = Logger.getLogger(JFireRCLBackendBean.class);
 
 	/**
 	 * @see org.nightlabs.jfire.base.BaseSessionBeanImpl#setSessionContext(javax.ejb.SessionContext)
@@ -77,7 +80,7 @@ public abstract class JFireRCLBackendBean
 	public void ejbCreate()
 	throws CreateException
 	{
-		LOGGER.debug(this.getClass().getName() + ".ejbCreate()");
+		logger.debug(this.getClass().getName() + ".ejbCreate()");
 	}
 	/**
 	 * @see javax.ejb.SessionBean#ejbRemove()
@@ -86,7 +89,7 @@ public abstract class JFireRCLBackendBean
 	 */
 	public void ejbRemove() throws EJBException, RemoteException
 	{
-		LOGGER.debug(this.getClass().getName() + ".ejbRemove()");
+		logger.debug(this.getClass().getName() + ".ejbRemove()");
 	}
 
 	/**
@@ -94,14 +97,14 @@ public abstract class JFireRCLBackendBean
 	 */
 	public void ejbActivate() throws EJBException, RemoteException
 	{
-		LOGGER.debug(this.getClass().getName() + ".ejbActivate()");
+		logger.debug(this.getClass().getName() + ".ejbActivate()");
 	}
 	/**
 	 * @see javax.ejb.SessionBean#ejbPassivate()
 	 */
 	public void ejbPassivate() throws EJBException, RemoteException
 	{
-		LOGGER.debug(this.getClass().getName() + ".ejbPassivate()");
+		logger.debug(this.getClass().getName() + ".ejbPassivate()");
 	}
 
 	/**
@@ -132,7 +135,7 @@ public abstract class JFireRCLBackendBean
 				jfireServerManager.close();
 			}
 		} catch (Exception x) {
-			LOGGER.error("getResourcesMetaData(\""+name+"\") failed!", x);
+			logger.error("getResourcesMetaData(\""+name+"\") failed!", x);
 			// Because of classloading problems, we must NOT rethrow/encause x - x won't be found in the client!
 			// Thus, we throw a special classloader exception.
 			throw new ClassLoaderException("JFireRCLBackendBean.getResourcesMetaData(\""+name+"\") failed!" + x.getMessage());
@@ -162,7 +165,7 @@ public abstract class JFireRCLBackendBean
 				jfireServerManager.close();
 			}
 		} catch (Exception x) {
-			LOGGER.error("getResourceBytes(\""+rmd.getJar()+'!'+rmd.getPath()+"\") failed!", x);
+			logger.error("getResourceBytes(\""+rmd.getJar()+'!'+rmd.getPath()+"\") failed!", x);
 			// Because of classloading problems, we must NOT rethrow/encause x - x won't be found in the client!
 			// Thus, we throw a special classloader exception.
 			throw new ClassLoaderException("JFireRCLBackendBean.getResourceBytes(\""+rmd.getJar()+'!'+rmd.getPath()+"\") failed!" + x.getMessage());
@@ -189,7 +192,7 @@ public abstract class JFireRCLBackendBean
 				jfireServerManager.close();
 			}
 		} catch (Exception x) {
-			LOGGER.error("getResourcesMetaDataMapBytes() failed!", x);
+			logger.error("getResourcesMetaDataMapBytes() failed!", x);
 			// Because of classloading problems, we must NOT rethrow/encause x - x won't be found in the client!
 			// Thus, we throw a special classloader exception.
 			throw new ClassLoaderException("JFireRCLBackendBean.getResourcesMetaDataMapBytes() failed!" + x.getMessage());
@@ -216,7 +219,7 @@ public abstract class JFireRCLBackendBean
 				jfireServerManager.close();
 			}
 		} catch (Exception x) {
-			LOGGER.error("getResourcesMetaDataMapBytesTimestamp() failed!", x);
+			logger.error("getResourcesMetaDataMapBytesTimestamp() failed!", x);
 			// Because of classloading problems, we must NOT rethrow/encause x - x won't be found in the client!
 			// Thus, we throw a special classloader exception.
 			throw new ClassLoaderException("JFireRCLBackendBean.getResourcesMetaDataMapBytesTimestamp() failed!" + x.getMessage());
