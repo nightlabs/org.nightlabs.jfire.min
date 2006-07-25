@@ -53,7 +53,10 @@ import org.nightlabs.ModuleException;
  */
 public abstract class OrganisationLinkerBean implements javax.ejb.SessionBean
 {
-	public static final Logger LOGGER = Logger.getLogger(OrganisationLinkerBean.class);
+	/**
+	 * LOG4J logger used by this class
+	 */
+	private static final Logger logger = Logger.getLogger(OrganisationLinkerBean.class);
 
 	/**
 	 * @ejb.create-method  
@@ -61,7 +64,7 @@ public abstract class OrganisationLinkerBean implements javax.ejb.SessionBean
 	public void ejbCreate()
 	throws CreateException
 	{
-		LOGGER.debug(this.getClass().getName() + ".ejbCreate()");
+		logger.debug(this.getClass().getName() + ".ejbCreate()");
 	}
 
 	/**
