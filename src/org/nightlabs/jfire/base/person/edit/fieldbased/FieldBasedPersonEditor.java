@@ -67,7 +67,10 @@ import org.nightlabs.jfire.person.id.PersonStructFieldID;
  */
 public class FieldBasedPersonEditor implements PersonEditor {
 
-	public static final Logger LOGGER = Logger.getLogger(FieldBasedPersonEditor.class);
+	/**
+	 * LOG4J logger used by this class
+	 */
+	private static final Logger logger = Logger.getLogger(FieldBasedPersonEditor.class);
 	
 	public static final String EDITORTYPE_FIELD_BASED = "field-based";
 
@@ -378,7 +381,7 @@ public class FieldBasedPersonEditor implements PersonEditor {
 						try {
 							field = person.getPersonDataField(structFieldID);
 						} catch (PersonDataNotFoundException e) {
-							LOGGER.error("Could not find PersonDataField for "+structFieldID,e);
+							logger.error("Could not find PersonDataField for "+structFieldID,e);
 							continue;
 						}
 						if (field.isEmpty()) {
@@ -395,7 +398,7 @@ public class FieldBasedPersonEditor implements PersonEditor {
 							try {
 								editor = PersonDataFieldEditorFactoryRegistry.sharedInstance().getNewEditorInstance(field, getEditorType(), false);
 							} catch (PersonDataFieldEditorNotFoundException e) {
-								LOGGER.error("Could not find PersonDataFieldEditor for "+field.getClass().getName(),e);
+								logger.error("Could not find PersonDataFieldEditor for "+field.getClass().getName(),e);
 								continue;
 							}
 							editor.setData(field);

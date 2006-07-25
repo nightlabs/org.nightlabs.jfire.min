@@ -54,7 +54,10 @@ public class JFireWorkbenchAdvisor
 //extends SplashHandlingWorkbenchAdvisor 
 extends AbstractWorkbenchAdvisor
 {
-	public static Logger LOGGER = Logger.getLogger(JFireWorkbenchAdvisor.class);
+	/**
+	 * LOG4J logger used by this class
+	 */
+	private static final Logger logger = Logger.getLogger(JFireWorkbenchAdvisor.class);
     
 	/**
 	 * Constructs a new <code>JFireWorkbenchAdvisor</code>.<br/>
@@ -106,10 +109,10 @@ extends AbstractWorkbenchAdvisor
 	}
 			
 	protected void initializeLoginModule(){
-		LOGGER.debug("#initializeLoginModule: Declaring Configuration");
+		logger.debug("#initializeLoginModule: Declaring Configuration");
 		JFireSecurityConfiguration.declareConfiguration();
 		
-		LOGGER.debug("#initializeLoginModule: Setting LoginHandler");
+		logger.debug("#initializeLoginModule: Setting LoginHandler");
 		try {
 			Login.getLogin(false).setLoginHandler(new JFireLoginHandler());
 		} catch (LoginException e) {

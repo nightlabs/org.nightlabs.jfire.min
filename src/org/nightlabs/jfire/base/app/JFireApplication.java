@@ -30,7 +30,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
 import org.nightlabs.base.app.AbstractApplication;
 import org.nightlabs.base.app.AbstractApplicationThread;
 
@@ -42,7 +41,6 @@ public class JFireApplication
 extends AbstractApplication 
 {
 	public static final String PLUGIN_ID = "org.nightlabs.jfire.base"; //$NON-NLS-1$
-	public static final Logger LOGGER = Logger.getLogger(JFireApplication.class);
 	
 	private static List applicationListener = new LinkedList();
 	

@@ -58,8 +58,10 @@ import org.nightlabs.jdo.search.SearchResultFetcher;
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  */
 public class PersonQuickSearch implements SearchFilterProvider {
-	private static final Logger LOGGER = Logger.getLogger(PersonQuickSearch.class);
-
+	/**
+	 * LOG4J logger used by this class
+	 */
+	private static final Logger logger = Logger.getLogger(PersonQuickSearch.class);
 	
 	private XComposite wrapperComposite;
 	private Button quickButton;
@@ -157,7 +159,7 @@ public class PersonQuickSearch implements SearchFilterProvider {
 		try {
 			login = Login.getLogin();
 		} catch (LoginException e) {
-			LOGGER.error("Could not log in, fetcher will not be triggered!",e);
+			logger.error("Could not log in, fetcher will not be triggered!",e);
 			return;
 		}
 		

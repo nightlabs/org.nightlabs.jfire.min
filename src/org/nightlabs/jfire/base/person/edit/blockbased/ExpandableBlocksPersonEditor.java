@@ -33,7 +33,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -41,7 +40,6 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
-
 import org.nightlabs.jfire.base.person.PersonStructProvider;
 import org.nightlabs.jfire.base.person.edit.PersonEditor;
 import org.nightlabs.jfire.base.person.preferences.PersonStructOrderConfigModule;
@@ -64,7 +62,6 @@ import org.nightlabs.jfire.person.id.PersonStructBlockID;
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  */
 public class ExpandableBlocksPersonEditor implements PersonEditor { // extends ScrolledComposite {
-	private static Logger LOGGER = Logger.getLogger(ExpandableBlocksPersonEditor.class);
 	public static final String EDITORTYPE_BLOCK_BASED_EXPANDABLE = "block-based-expandable";
 	
 	public ExpandableBlocksPersonEditor() {

@@ -36,7 +36,10 @@ import org.nightlabs.config.InitException;
  */
 public class CacheCfMod extends ConfigModule
 {
-	public static final Logger LOGGER = Logger.getLogger(CacheCfMod.class);
+	/**
+	 * LOG4J logger used by this class
+	 */
+	private static final Logger logger = Logger.getLogger(CacheCfMod.class);
 
 	private String documentation;
 
@@ -132,16 +135,16 @@ public class CacheCfMod extends ConfigModule
 				!REFERENCE_TYPE_HARD.equals(referenceType))
 			setReferenceType(REFERENCE_TYPE_HARD);
 
-		if (LOGGER.isDebugEnabled()) {
-			LOGGER.debug("The Cache settings are:");
-			LOGGER.debug("    threadErrorWaitMSec=" + threadErrorWaitMSec);
-			LOGGER.debug("    localListenerReactionTimeMSec=" + localListenerReactionTimeMSec);
-			LOGGER.debug("    waitForChangesTimeoutMSec=" + waitForChangesTimeoutMSec);
-			LOGGER.debug("    cacheManagerThreadIntervalMSec=" + cacheManagerThreadIntervalMSec);
-			LOGGER.debug("    resyncRemoteListenersIntervalMSec=" + resyncRemoteListenersIntervalMSec);
-			LOGGER.debug("    carrierContainerCount=" + carrierContainerCount);
-			LOGGER.debug("    carrierContainerActivityMSec=" + carrierContainerActivityMSec);
-			LOGGER.debug("    referenceType=" + referenceType);
+		if (logger.isDebugEnabled()) {
+			logger.debug("The Cache settings are:");
+			logger.debug("    threadErrorWaitMSec=" + threadErrorWaitMSec);
+			logger.debug("    localListenerReactionTimeMSec=" + localListenerReactionTimeMSec);
+			logger.debug("    waitForChangesTimeoutMSec=" + waitForChangesTimeoutMSec);
+			logger.debug("    cacheManagerThreadIntervalMSec=" + cacheManagerThreadIntervalMSec);
+			logger.debug("    resyncRemoteListenersIntervalMSec=" + resyncRemoteListenersIntervalMSec);
+			logger.debug("    carrierContainerCount=" + carrierContainerCount);
+			logger.debug("    carrierContainerActivityMSec=" + carrierContainerActivityMSec);
+			logger.debug("    referenceType=" + referenceType);
 		}
 	}
 

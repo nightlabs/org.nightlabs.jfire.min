@@ -54,7 +54,10 @@ import org.nightlabs.jfire.person.id.PersonStructBlockID;
  * @deprecated use {@link org.nightlabs.jfire.base.person.PersonStructProvider} instead
  */
 public class PersonStructCache {
-	private static final Logger LOGGER = Logger.getLogger(PersonStructCache.class);
+	/**
+	 * LOG4J logger used by this class
+	 */
+	private static final Logger logger = Logger.getLogger(PersonStructCache.class);
 	
 	public PersonStructCache() {
 	}
@@ -69,12 +72,12 @@ public class PersonStructCache {
 		    try {
 		      home = PersonManagerUtil.getHome(login.getInitialContextProperties());
 		    } catch (Exception e) {
-		    	LOGGER.error("Error getting PersonManagerHome.",e);
+		    	logger.error("Error getting PersonManagerHome.",e);
 		    }
 		    try {
 		      personManager = home.create();
 		    } catch (Exception e) {
-		    	LOGGER.error("Error creating PersonManager.",e);
+		    	logger.error("Error creating PersonManager.",e);
 		    }	
 			} catch (Throwable e) {
 				throw new RuntimeException(e);
@@ -106,7 +109,7 @@ public class PersonStructCache {
 					personStructure = (PersonStruct)ois.readObject();
 				} catch (Throwable t) {
 					// something, whatever went wrong ..
-					LOGGER.error("Error reading person structure cache.",t);
+					logger.error("Error reading person structure cache.",t);
 					personStructure = null;
 				}
 			}
@@ -116,7 +119,7 @@ public class PersonStructCache {
 				try {
 					personStructure = getPersonManager().getFullPersonStructure();
 				} catch (Throwable t) {
-					LOGGER.error("Error fetching person structure",t);
+					logger.error("Error fetching person structure",t);
 					personStructure = null;
 				}
 				
@@ -131,7 +134,7 @@ public class PersonStructCache {
 						oos.writeObject(personStructure);
 					} catch (Throwable t) {
 						// something, whatever went wrong ..
-						LOGGER.error("Error writing person structure cache.",t);
+						logger.error("Error writing person structure cache.",t);
 						cache.delete();
 					}
 				}

@@ -52,7 +52,10 @@ import org.apache.log4j.Logger;
  */
 public class CarrierContainer
 {
-	public static final Logger LOGGER = Logger.getLogger(CarrierContainer.class);
+	/**
+	 * LOG4J logger used by this class
+	 */
+	private static final Logger logger = Logger.getLogger(CarrierContainer.class);
 
 	private Cache cache;
 
@@ -87,8 +90,8 @@ public class CarrierContainer
 		if (carrier == null)
 			throw new NullPointerException("carrier");
 
-		if (LOGGER.isDebugEnabled())
-			LOGGER.debug("Adding Carrier with key " + carrier.getKey());
+		if (logger.isDebugEnabled())
+			logger.debug("Adding Carrier with key " + carrier.getKey());
 
 		synchronized (carriersByKey) {
 			carriersByKey.put(carrier.getKey(), carrier);
@@ -102,12 +105,12 @@ public class CarrierContainer
 
 		synchronized (carriersByKey) {
 			if (carriersByKey.remove(key) != null) {
-				if (LOGGER.isDebugEnabled())
-					LOGGER.debug("Removed Carrier for key " + key);
+				if (logger.isDebugEnabled())
+					logger.debug("Removed Carrier for key " + key);
 			}
 			else {
-				if (LOGGER.isDebugEnabled())
-					LOGGER.debug("Could not remove (because did not find) Carrier for key " + key);
+				if (logger.isDebugEnabled())
+					logger.debug("Could not remove (because did not find) Carrier for key " + key);
 			}
 
 		}
@@ -119,8 +122,8 @@ public class CarrierContainer
 	{
 		closed = true;
 
-		if (LOGGER.isDebugEnabled())
-			LOGGER.debug("Closing CarrierContainer (created " + createDT + ")");
+		if (logger.isDebugEnabled())
+			logger.debug("Closing CarrierContainer (created " + createDT + ")");
 
 		synchronized (carriersByKey) {
 			for (Iterator it = carriersByKey.keySet().iterator(); it.hasNext(); ) {

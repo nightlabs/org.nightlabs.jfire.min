@@ -56,7 +56,10 @@ import org.nightlabs.jdo.search.SearchFilterItemEditor;
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  */
 public class PersonSearchFilterItemEditor extends SearchFilterItemEditor implements SelectionListener{
-	private static final Logger LOGGER = Logger.getLogger(PersonSearchFilterItemEditor.class);
+	/**
+	 * LOG4J logger used by this class
+	 */
+	private static final Logger logger = Logger.getLogger(PersonSearchFilterItemEditor.class);
 
 	private XComposite wrapper;
 	private List searchFieldList;
@@ -154,7 +157,7 @@ public class PersonSearchFilterItemEditor extends SearchFilterItemEditor impleme
 			try {
 				lastHelper.getControl(null).dispose();
 			} catch (Throwable t) {
-				LOGGER.error("Error disposing helper control.",t);
+				logger.error("Error disposing helper control.",t);
 			}				
 		}
 		helper.getControl(wrapper);

@@ -88,7 +88,11 @@ public class Login
 extends AbstractEPProcessor
 implements InitialContextProvider
 {
-	public static final Logger LOGGER = Logger.getLogger(Login.class);
+	/**
+	 * LOG4J logger used by this class
+	 */
+	private static final Logger logger = Logger.getLogger(Login.class);
+	
 	public static final long WORK_OFFLINE_TIMEOUT = 60000; // One minute
 
 	/**
@@ -342,7 +346,7 @@ implements InitialContextProvider
 					if (lHandler == null)
 						throw new LoginException("Cannot login, loginHandler is not set!");
 
-					LOGGER.debug("Calling login handler");
+					logger.debug("Calling login handler");
 					lHandler.handleLogin(loginContext,sharedInstanceLogin.runtimeConfigModule, loginResult);
 
 
@@ -376,13 +380,13 @@ implements InitialContextProvider
 					currLoginState = LOGINSTATE_LOGGED_IN;
 				} catch(Throwable t){
 					loginContext = null;
-					LOGGER.error("Exception thrown while logging in.",t);
+					logger.error("Exception thrown while logging in.",t);
 					loginResult.setException(t);
 				}
 			} finally {
 				handlingLogin = false;
 				synchronized (loginResult) {
-					LOGGER.debug("Login handler done notifying loginResult");
+					logger.debug("Login handler done notifying loginResult");
 					loginResult.notifyAll();
 				}
 			}
@@ -422,7 +426,7 @@ implements InitialContextProvider
 	 */
 	private void doLogin(final boolean forceLogoutFirst) throws LoginException {
 		int oldLoginstate = currLoginState;
-		LOGGER.debug("Login requested by thread "+Thread.currentThread());		
+		logger.debug("Login requested by thread "+Thread.currentThread());		
 		if ((currLoginState == LOGINSTATE_OFFLINE)){
 			long elapsedTime = System.currentTimeMillis() - lastWorkOfflineDecisionTime;			
 			if (!forceLogin && elapsedTime < WORK_OFFLINE_TIMEOUT) {
@@ -433,7 +437,7 @@ implements InitialContextProvider
 		}
 
 		if (getLoginState() == LOGINSTATE_LOGGED_IN) {
-			LOGGER.debug("Already logged in, returnning. Thread "+Thread.currentThread());
+			logger.debug("Already logged in, returnning. Thread "+Thread.currentThread());
 			if (forceLogin) forceLogin = false;
 			return;
 		}
@@ -442,7 +446,7 @@ implements InitialContextProvider
 			Display.getDefault().asyncExec(loginHandlerRunnable);
 		}
 		if (!Display.getDefault().getThread().equals(Thread.currentThread())) {
-			LOGGER.debug("Login requestor-thread "+Thread.currentThread()+" waiting for login handler");		
+			logger.debug("Login requestor-thread "+Thread.currentThread()+" waiting for login handler");		
 			synchronized (loginResult) {
 				while (handlingLogin) {
 					try {
@@ -450,7 +454,7 @@ implements InitialContextProvider
 					} catch (InterruptedException e) { }
 				}
 			}
-			LOGGER.debug("Login requestor-thread "+Thread.currentThread()+" returned");		
+			logger.debug("Login requestor-thread "+Thread.currentThread()+" returned");		
 		}
 		else {
 			while (handlingLogin) {
@@ -462,7 +466,7 @@ implements InitialContextProvider
 			if (loginResult.getException() instanceof LoginException)
 				throw (LoginException)loginResult.getException();
 			else
-				LOGGER.error("Exception thrown while logging in.",loginResult.getException());
+				logger.error("Exception thrown while logging in.",loginResult.getException());
 			throw new LoginException(loginResult.getException().getMessage());
 		}
 		if (!loginResult.isSuccess()) {
@@ -488,11 +492,11 @@ implements InitialContextProvider
 				notifyLoginStateListeners(currLoginState);
 			} catch (Throwable t) {
 				// TODO: ignore ??
-				LOGGER.error(t);
+				logger.error(t);
 			}
 		}
 
-		LOGGER.debug("Login OK. Thread "+Thread.currentThread());
+		logger.debug("Login OK. Thread "+Thread.currentThread());
 	}
 	
 	/**
@@ -683,13 +687,13 @@ implements InitialContextProvider
 
 	public InitialContext getInitialContext() throws NamingException, LoginException
 	{
-		LOGGER.debug("getInitialContext(): begin");
+		logger.debug("getInitialContext(): begin");
 		doLogin();
-		LOGGER.debug("getInitialContext(): logged in");
+		logger.debug("getInitialContext(): logged in");
 		if (initialContext != null)
 			return initialContext;
 
-		LOGGER.debug("getInitialContext(): creating new initctx.");
+		logger.debug("getInitialContext(): creating new initctx.");
 		initialContext = new InitialContext(getInitialContextProperties());
 		return initialContext;
 	}
@@ -829,7 +833,7 @@ implements InitialContextProvider
 					try {
 						process();
 					} catch (EPProcessorException e) {
-						LOGGER.error("Processing LoginStateListener extensions failed!", e);
+						logger.error("Processing LoginStateListener extensions failed!", e);
 					}
 				}
 				for (Iterator it = new LinkedList(loginStateListenerRegistry).iterator(); it.hasNext();) {
@@ -837,11 +841,11 @@ implements InitialContextProvider
 						LoginStateListenerRegistryItem item = (LoginStateListenerRegistryItem)it.next();
 						item.getLoginStateListener().loginStateChanged(loginState,item.getAction());
 					} catch (Throwable t) {
-						LOGGER.warn("Caught exception while notifying LoginStateListener. Continue.", t);
+						logger.warn("Caught exception while notifying LoginStateListener. Continue.", t);
 					}
 				}
 			} catch (Throwable t) {
-				LOGGER.warn("Cought exception while notifying LoginStateListener. Abort.", t);
+				logger.warn("Cought exception while notifying LoginStateListener. Abort.", t);
 			}
 		}
 	}
@@ -887,7 +891,7 @@ implements InitialContextProvider
 		try {
 			login = Login.getLogin(false);
 		} catch (LoginException e) {
-			LOGGER.error("Obtaining shared instance of Login failed!", e);
+			logger.error("Obtaining shared instance of Login failed!", e);
 		}
 
 		if ( login != null)
@@ -940,7 +944,7 @@ implements InitialContextProvider
 					}
 				}
 			} catch (LoginException x) {
-				LOGGER.warn("Login failed with a very weird LoginException!", x);
+				logger.warn("Login failed with a very weird LoginException!", x);
 				// something went very wrong as we are in the login procedure
 				IllegalStateException ill = new IllegalStateException("Caught LoginException although getLogin(FALSE) was executed. "+x.getMessage());
 				ill.initCause(x);
@@ -953,7 +957,7 @@ implements InitialContextProvider
 					loginResult.setWasSocketTimeout(true);
 				}
 				// cant create local bean stub
-				LOGGER.warn("Login failed!", x);
+				logger.warn("Login failed!", x);
 				LoginException loginE = new LoginException(x.getMessage());
 				loginE.initCause(x);
 				loginResult.setMessage(JFireBasePlugin.getResourceString("login.error.unhadledExceptionMessage"));

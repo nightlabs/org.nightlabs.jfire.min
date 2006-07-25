@@ -56,7 +56,10 @@ import org.nightlabs.language.LanguageCf;
  */
 public class LanguageWatcher implements LoginStateListener {
 	
-	public static final Logger LOGGER = Logger.getLogger(LanguageWatcher.class);
+	/**
+	 * LOG4J logger used by this class
+	 */
+	private static final Logger logger = Logger.getLogger(LanguageWatcher.class);
 	
 	private Map languageChecks = new HashMap();
 	private static LanguageWatcher sharedInstance;
@@ -78,7 +81,7 @@ public class LanguageWatcher implements LoginStateListener {
 	public void loginStateChanged(int loginState, IAction action) {
 		switch (loginState) {
 			case Login.LOGINSTATE_LOGGED_IN:
-				LOGGER.debug("loginStateChanged(..): syncing languages");
+				logger.debug("loginStateChanged(..): syncing languages");
 				String userName = Login.sharedInstance().getLoginContext().getUsername();
 				if (!isLanguageChecked(userName)) {
 					syncLanguages();
@@ -137,7 +140,7 @@ public class LanguageWatcher implements LoginStateListener {
 				}
 			}
 		} catch (Exception e) {
-			LOGGER.error("Failed syncing languages: ",e);
+			logger.error("Failed syncing languages: ",e);
 		}
 	}
 	
@@ -176,7 +179,7 @@ public class LanguageWatcher implements LoginStateListener {
 		try {
 			Config.sharedInstance().createConfigModule(GlobalL10nSettings.class);
 		} catch (ConfigException e) {
-			LOGGER.error("Error creating GlobalL10nSettings Cf-Mod.",e);
+			logger.error("Error creating GlobalL10nSettings Cf-Mod.",e);
 		}
 	}
 

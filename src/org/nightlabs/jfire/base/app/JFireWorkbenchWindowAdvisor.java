@@ -38,7 +38,10 @@ public class JFireWorkbenchWindowAdvisor extends
 		SplashHandlingWorkbenchWindowAdvisor 
 	{
 	
-	protected Logger LOGGER = Logger.getLogger(JFireWorkbenchWindowAdvisor.class);
+	/**
+	 * LOG4J logger used by this class
+	 */
+	private static final Logger logger = Logger.getLogger(JFireWorkbenchWindowAdvisor.class);
 
 	public JFireWorkbenchWindowAdvisor(IWorkbenchWindowConfigurer configurer) {
 		super(configurer);
@@ -78,7 +81,7 @@ public class JFireWorkbenchWindowAdvisor extends
 	public void postWindowCreate() {
 		super.postWindowCreate();
 		PartVisibilityTracker.sharedInstance().initialize();
-		LOGGER.debug("Initialized part-visibibity-tracker");
+		logger.debug("Initialized part-visibibity-tracker");
 	}
 
 

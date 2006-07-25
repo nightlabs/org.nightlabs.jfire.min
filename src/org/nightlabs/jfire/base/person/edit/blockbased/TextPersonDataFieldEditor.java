@@ -26,11 +26,9 @@
 
 package org.nightlabs.jfire.base.person.edit.blockbased;
 
-import org.apache.log4j.Logger;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-
 import org.nightlabs.jfire.base.person.edit.AbstractPersonDataFieldEditor;
 import org.nightlabs.jfire.base.person.edit.AbstractPersonDataFieldEditorFactory;
 import org.nightlabs.jfire.person.AbstractPersonDataField;
@@ -43,8 +41,6 @@ import org.nightlabs.jfire.person.TextPersonDataField;
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  */
 public class TextPersonDataFieldEditor extends AbstractPersonDataFieldEditor {
-	private static Logger LOGGER = Logger.getLogger(TextPersonDataFieldEditor.class);
-	
 	public static class Factory extends AbstractPersonDataFieldEditorFactory {
 		/**
 		 * @see org.nightlabs.jfire.base.person.edit.PersonDataFieldEditorFactory#getTargetPersonDataFieldType()

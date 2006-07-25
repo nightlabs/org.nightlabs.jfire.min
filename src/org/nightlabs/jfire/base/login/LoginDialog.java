@@ -48,7 +48,10 @@ import org.nightlabs.jfire.base.JFireBasePlugin;
  * @author Alexander Bieber
  */
 public class LoginDialog extends ExpandableAreaDialog {
-	public static final Logger LOGGER = Logger.getLogger(LoginDialog.class);
+	/**
+	 * LOG4J logger used by this class
+	 */
+	private static final Logger logger = Logger.getLogger(LoginDialog.class);
 	
 	private LoginConfigModule persistentLoginModule = null;
 	private LoginConfigModule runtimeLoginModule = null;
@@ -258,7 +261,7 @@ public class LoginDialog extends ExpandableAreaDialog {
 				persistentLoginModule.setChanged();
 //				persistentLoginModule._getConfig().saveConfFile();
 			} catch (Exception e) {
-				LOGGER.error("Saving config failed!", e);
+				logger.error("Saving config failed!", e);
 			}
 		}
 		

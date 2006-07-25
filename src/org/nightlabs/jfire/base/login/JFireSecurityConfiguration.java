@@ -41,7 +41,10 @@ import org.nightlabs.config.ConfigException;
  * @author Alexander Bieber
  */
 public class JFireSecurityConfiguration extends Configuration {
-	public static final Logger LOGGER = Logger.getLogger(JFireSecurityConfiguration.class);
+	/**
+	 * LOG4J logger used by this class
+	 */
+	private static final Logger logger = Logger.getLogger(JFireSecurityConfiguration.class);
 
 	private LoginConfigModule loginConfigModule = null;
 	private HashMap entries = new HashMap();
@@ -60,13 +63,13 @@ public class JFireSecurityConfiguration extends Configuration {
 	 * @see javax.security.auth.login.Configuration#refresh()
 	 */
 	public void refresh() {
-		LOGGER.debug("Refreshing entries");
+		logger.debug("Refreshing entries");
 		ArrayList configEntries = loginConfigModule.getSecurityConfigurations();
 		this.entries.clear();
 		for (int i=0; i<configEntries.size(); i++){
 			JFireSecurityConfigurationEntry confEntry = (JFireSecurityConfigurationEntry)configEntries.get(i);
-			LOGGER.debug("Adding entry for "+confEntry.getApplicationName()+"("+confEntry.getLoginModuleName()+", "+confEntry.getControlFlag()+", "+confEntry.getOptions()+")");
-			LOGGER.debug("Control Flag is: "+strToLoginModuleControlFlag(confEntry.getControlFlag()));
+			logger.debug("Adding entry for "+confEntry.getApplicationName()+"("+confEntry.getLoginModuleName()+", "+confEntry.getControlFlag()+", "+confEntry.getOptions()+")");
+			logger.debug("Control Flag is: "+strToLoginModuleControlFlag(confEntry.getControlFlag()));
 			this.entries.put(
 				confEntry.getApplicationName(),
 				new AppConfigurationEntry(
@@ -94,14 +97,14 @@ public class JFireSecurityConfiguration extends Configuration {
 	public static void declareConfiguration(){
 		Class configClass = null; //Configuration.getConfiguration().getClass();
 		if (configClass == null)
-			LOGGER.debug("Current security configuration is null");
+			logger.debug("Current security configuration is null");
 		else 
-			LOGGER.debug("Current security configuration is of type: "+configClass.getName());
+			logger.debug("Current security configuration is of type: "+configClass.getName());
 		
 		if (configClass != JFireSecurityConfiguration.class){
 			configInstance = new JFireSecurityConfiguration();
 			Configuration.setConfiguration(configInstance);
-			LOGGER.debug("Set configuration to type: "+Configuration.getConfiguration().getClass().getName());
+			logger.debug("Set configuration to type: "+Configuration.getConfiguration().getClass().getName());
 		}
 	}
 	

@@ -52,7 +52,10 @@ import org.nightlabs.jfire.person.id.PersonStructFieldID;
  */
 public class PersonalDataBlockEditor extends PersonDataBlockEditor {
 
-	public static final Logger LOGGER = Logger.getLogger(PersonalDataBlockEditor.class);
+	/**
+	 * LOG4J logger used by this class
+	 */
+	private static final Logger logger = Logger.getLogger(PersonalDataBlockEditor.class);
 	
 	public PersonalDataBlockEditor(PersonDataBlock dataBlock, Composite parent, int style) {		
 		super(dataBlock, parent, style);
@@ -89,7 +92,7 @@ public class PersonalDataBlockEditor extends PersonDataBlockEditor {
 		try {
 			field = dataBlock.getPersonDataField(fieldID);
 		} catch (PersonDataFieldNotFoundException e) {
-			LOGGER.error("addPersonalDataFieldEditor(PersonStructFieldID fieldID) PersonDataField not found for fieldID continuing: "+fieldID.toString(),e);
+			logger.error("addPersonalDataFieldEditor(PersonStructFieldID fieldID) PersonDataField not found for fieldID continuing: "+fieldID.toString(),e);
 		}
 		PersonDataFieldEditor editor = null;
 		if (!hasFieldEditorFor(field)) { 
@@ -99,7 +102,7 @@ public class PersonalDataBlockEditor extends PersonDataBlockEditor {
 					ExpandableBlocksPersonEditor.EDITORTYPE_BLOCK_BASED_EXPANDABLE
 				);
 			} catch (PersonDataFieldEditorNotFoundException e1) {
-				LOGGER.error("addPersonalDataFieldEditor(PersonStructFieldID fieldID) PersonDataFieldEditor not found for fieldID continuing: "+fieldID.toString(),e1);
+				logger.error("addPersonalDataFieldEditor(PersonStructFieldID fieldID) PersonDataFieldEditor not found for fieldID continuing: "+fieldID.toString(),e1);
 			}
 			Control editorControl = editor.createControl(this);
 			GridData editorLData = new GridData();

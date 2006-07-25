@@ -60,7 +60,10 @@ import org.nightlabs.util.Utils;
  */
 public class Cache
 {
-	public static Logger LOGGER = Logger.getLogger(Cache.class);
+	/**
+	 * LOG4J logger used by this class
+	 */
+	private static final Logger logger = Logger.getLogger(Cache.class);
 
 	private static Cache _sharedInstance = null;
 
@@ -96,7 +99,7 @@ public class Cache
 							cache.getCacheCfMod().getWaitForChangesTimeoutMSec());
 
 					if (dirtyObjectIDs != null) {
-						LOGGER.info("Received change notification with " + dirtyObjectIDs.size() + " objectIDs.");
+						logger.info("Received change notification with " + dirtyObjectIDs.size() + " objectIDs.");
 						int removedCarrierCount = 0;
 						Set objectIDs = new HashSet(dirtyObjectIDs.size());
 						for (Iterator it = dirtyObjectIDs.iterator(); it.hasNext(); ) {
@@ -104,7 +107,7 @@ public class Cache
 							objectIDs.add(dirtyObjectID.getObjectID());
 							removedCarrierCount += cache.remove((ObjectID)dirtyObjectID.getObjectID());
 						}
-						LOGGER.info("Removed " + removedCarrierCount + " carriers from the cache.");
+						logger.info("Removed " + removedCarrierCount + " carriers from the cache.");
 
 						cache.unsubscribeObjectIDs(
 								objectIDs,
@@ -129,7 +132,7 @@ public class Cache
 					} // if (changeObjectIDs != null) {
 
 				} catch (Throwable t) {
-					LOGGER.error("Error in NotificationThread!", t);
+					logger.error("Error in NotificationThread!", t);
 					jdoManager = null;
 					long lastErrorTimeDiff = System.currentTimeMillis() - lastErrorDT;
 					long threadErrorWaitMSec = cache.getCacheCfMod().getThreadErrorWaitMSec();
@@ -246,15 +249,15 @@ public class Cache
 					try {
 						long now = System.currentTimeMillis();
 						for (Iterator it = subscriptionChanges.entrySet().iterator(); it.hasNext(); ) {
-							LOGGER.debug("Before it.next()");
+							logger.debug("Before it.next()");
 							Map.Entry me = (Map.Entry) it.next();
-							LOGGER.debug("After it.next()");
+							logger.debug("After it.next()");
 							Object objectID = me.getKey();
 							SubscriptionChangeRequest scr = (SubscriptionChangeRequest) me.getValue();
 
 							if (scr.getScheduledActionDT() > now) {
-								if (LOGGER.isDebugEnabled())
-									LOGGER.debug("Subscription change request " + scr.toString() + " is delayed and will be processed in about " + (scr.getScheduledActionDT() - now) + " msec.");
+								if (logger.isDebugEnabled())
+									logger.debug("Subscription change request " + scr.toString() + " is delayed and will be processed in about " + (scr.getScheduledActionDT() - now) + " msec.");
 
 								if (newSubscriptionChanges == null)
 									newSubscriptionChanges = new HashMap();
@@ -282,15 +285,15 @@ public class Cache
 										currentlySubscribedObjectIDs.add(objectID);
 									}
 									else {
-										if (LOGGER.isDebugEnabled())
-											LOGGER.debug("Subscription change request " + scr.toString() + " is ignored, because there exists already a listener.");
+										if (logger.isDebugEnabled())
+											logger.debug("Subscription change request " + scr.toString() + " is ignored, because there exists already a listener.");
 									}
 								}
 							}
 						}
 
 						if (resync) {
-							LOGGER.info("Synchronizing remote change listeners.");
+							logger.info("Synchronizing remote change listeners.");
 
 							jdoManager.resubscribeAllChangeListeners(
 									currentlySubscribedObjectIDs);
@@ -299,28 +302,28 @@ public class Cache
 						}
 						else {
 							if (objectIDsToUnsubscribe != null || objectIDsToSubscribe != null) {
-								LOGGER.info(
+								logger.info(
 										"Adding " +
 										(objectIDsToSubscribe == null ? 0 : objectIDsToSubscribe.size()) +
 										" and removing " +
 										(objectIDsToUnsubscribe == null ? 0 : objectIDsToUnsubscribe.size()) +
 										" remote change listeners.");
 
-								if (LOGGER.isDebugEnabled()) {
-									LOGGER.debug("Change listeners for the following ObjectIDs will be removed:");
+								if (logger.isDebugEnabled()) {
+									logger.debug("Change listeners for the following ObjectIDs will be removed:");
 									if (objectIDsToUnsubscribe == null)
-										LOGGER.debug("      NONE!");
+										logger.debug("      NONE!");
 									else {
 										for (Iterator it = objectIDsToUnsubscribe.iterator(); it.hasNext(); )
-											LOGGER.debug("      " +  it.next());
+											logger.debug("      " +  it.next());
 									}
 
-									LOGGER.debug("Change listeners for the following ObjectIDs will be added:");
+									logger.debug("Change listeners for the following ObjectIDs will be added:");
 									if (objectIDsToSubscribe == null)
-										LOGGER.debug("      NONE!");
+										logger.debug("      NONE!");
 									else {
 										for (Iterator it = objectIDsToSubscribe.iterator(); it.hasNext(); )
-											LOGGER.debug("      " +  it.next());
+											logger.debug("      " +  it.next());
 									}
 								}
 
@@ -333,7 +336,7 @@ public class Cache
 						restoreCurrentlySubscribedObjectIDs = false; // this is only executed, if there is no exception before
 					} finally {
 						if (restoreCurrentlySubscribedObjectIDs) {
-							LOGGER.warn("An error occured - will restore previous subscription change requests.");
+							logger.warn("An error occured - will restore previous subscription change requests.");
 
 							if (objectIDsToSubscribe != null)
 								currentlySubscribedObjectIDs.removeAll(objectIDsToSubscribe);
@@ -349,7 +352,7 @@ public class Cache
 					// *** listener management above ***
 
 				} catch (Throwable t) {
-					LOGGER.error("Error in NotificationThread!", t);
+					logger.error("Error in NotificationThread!", t);
 					jdoManager = null;
 					long lastErrorTimeDiff = System.currentTimeMillis() - lastErrorDT;
 					long threadErrorWaitMSec = cache.getCacheCfMod().getThreadErrorWaitMSec();
@@ -442,23 +445,23 @@ public class Cache
 			return;
 		}
 
-		if (LOGGER.isDebugEnabled()) {
-			LOGGER.debug("Restoring older subscription change requests:");
+		if (logger.isDebugEnabled()) {
+			logger.debug("Restoring older subscription change requests:");
 			for (Iterator it = oldChangeRequests.values().iterator(); it.hasNext(); ) {
 				SubscriptionChangeRequest scr = (SubscriptionChangeRequest) it.next();
-				LOGGER.debug("      " + scr);
+				logger.debug("      " + scr);
 			}
 		}
 
 		synchronized (subscriptionChangeRequestsMutex) {
-			if (LOGGER.isDebugEnabled()) {
+			if (logger.isDebugEnabled()) {
 				if (subscriptionChangeRequests.isEmpty())
-					LOGGER.debug("There are no new subscription change requests to merge into the old ones. Simply replacing them.");
+					logger.debug("There are no new subscription change requests to merge into the old ones. Simply replacing them.");
 				else {
-					LOGGER.debug("There are new subscription change requests which will be merged into the old ones:");
+					logger.debug("There are new subscription change requests which will be merged into the old ones:");
 					for (Iterator it = subscriptionChangeRequests.values().iterator(); it.hasNext(); ) {
 						SubscriptionChangeRequest scr = (SubscriptionChangeRequest) it.next();
-						LOGGER.debug("      " + scr);
+						logger.debug("      " + scr);
 					}
 				}
 			}
@@ -466,11 +469,11 @@ public class Cache
 			oldChangeRequests.putAll(subscriptionChangeRequests);
 			subscriptionChangeRequests = oldChangeRequests;
 
-			if (LOGGER.isDebugEnabled()) {
-				LOGGER.debug("These are the subscription change requests after restore:");
+			if (logger.isDebugEnabled()) {
+				logger.debug("These are the subscription change requests after restore:");
 				for (Iterator it = subscriptionChangeRequests.values().iterator(); it.hasNext(); ) {
 					SubscriptionChangeRequest scr = (SubscriptionChangeRequest) it.next();
-					LOGGER.debug("      " + scr);
+					logger.debug("      " + scr);
 				}
 			}
 		}
@@ -493,8 +496,8 @@ public class Cache
 							&&
 							scr.getScheduledActionDT() < System.currentTimeMillis() + delayMSec) {
 
-						if (LOGGER.isDebugEnabled())
-							LOGGER.debug("Ignoring request to subscribe ObjectID, because there is already a request, which is scheduled earlier. ObjectID: " + objectID);
+						if (logger.isDebugEnabled())
+							logger.debug("Ignoring request to subscribe ObjectID, because there is already a request, which is scheduled earlier. ObjectID: " + objectID);
 
 						continue;
 					}
@@ -525,8 +528,8 @@ public class Cache
 					if (scr.getAction() == SubscriptionChangeRequest.ACTION_REMOVE
 							&&
 							scr.getScheduledActionDT() < System.currentTimeMillis() + delayMSec) {
-						if (LOGGER.isDebugEnabled())
-							LOGGER.debug("Ignoring request to unsubscribe ObjectID, because there is already a request, which is scheduled earlier. ObjectID: " + objectID);
+						if (logger.isDebugEnabled())
+							logger.debug("Ignoring request to unsubscribe ObjectID, because there is already a request, which is scheduled earlier. ObjectID: " + objectID);
 
 						return;
 					}
@@ -627,7 +630,7 @@ public class Cache
 
 	protected synchronized void rollCarrierContainers()
 	{
-		LOGGER.info("Creating new activeCarrierContainer.");
+		logger.info("Creating new activeCarrierContainer.");
 		CarrierContainer newActiveCC = new CarrierContainer(this);
 		carrierContainers.addFirst(newActiveCC);
 		activeCarrierContainer = newActiveCC;
@@ -639,7 +642,7 @@ public class Cache
 
 		while (carrierContainers.size() > carrierContainerCount) {
 			CarrierContainer cc = (CarrierContainer) carrierContainers.removeLast();
-			LOGGER.info("Dropping carrierContainer (created " + cc.getCreateDT() + ")");
+			logger.info("Dropping carrierContainer (created " + cc.getCreateDT() + ")");
 			cc.close();
 		}
 	}
@@ -658,7 +661,7 @@ public class Cache
 	 */
 	protected Cache() throws ConfigException
 	{
-		LOGGER.info("Creating new Cache instance.");
+		logger.info("Creating new Cache instance.");
 		cacheCfMod = (CacheCfMod) Config.sharedInstance().createConfigModule(CacheCfMod.class);
 		Config.sharedInstance().saveConfFile(); // TODO remove this as soon as we have a thread that periodically saves it.
 		activeCarrierContainer = new CarrierContainer(this);
@@ -728,22 +731,22 @@ public class Cache
 		Key key = new Key(scope, objectID, fetchGroups, maxFetchDepth);
 		Carrier carrier = (Carrier) carriersByKey.get(key);
 		if (carrier == null) {
-			if (LOGGER.isDebugEnabled())
-				LOGGER.debug("No Carrier found for key: " + key.toString());
+			if (logger.isDebugEnabled())
+				logger.debug("No Carrier found for key: " + key.toString());
 
 			return null;
 		}
 
 		Object object = carrier.getObject();
 		if (object == null) { // remove the unnecessary keys from all indices.
-			LOGGER.warn("Found Carrier, but object has already been released by the garbage collector! If this message occurs often, give the VM more memory or the Cache a shorter object-lifetime! Alternatively, you may switch to hard references. key: " + key.toString());
+			logger.warn("Found Carrier, but object has already been released by the garbage collector! If this message occurs often, give the VM more memory or the Cache a shorter object-lifetime! Alternatively, you may switch to hard references. key: " + key.toString());
 
 			remove(key);
 			return null;
 		}
 
-		if (LOGGER.isDebugEnabled())
-			LOGGER.debug("Found Carrier - will return object from cache. key: " + key.toString());
+		if (logger.isDebugEnabled())
+			logger.debug("Found Carrier - will return object from cache. key: " + key.toString());
 
 		carrier.setAccessDT();
 		return object;
@@ -816,15 +819,15 @@ public class Cache
 
 		Key key = new Key(scope, objectID, fetchGroups, maxFetchDepth);
 
-		if (LOGGER.isDebugEnabled())
-			LOGGER.debug("Putting object into cache. key: " + key.toString());
+		if (logger.isDebugEnabled())
+			logger.debug("Putting object into cache. key: " + key.toString());
 
 		synchronized (this) {
 			// remove the old carrier - if existing
 			Carrier oldCarrier = (Carrier) carriersByKey.get(key);
 			if (oldCarrier != null) {
-				if (LOGGER.isDebugEnabled())
-					LOGGER.debug("There was an old carrier for the same key in the cache; removing it. key: " + key.toString());
+				if (logger.isDebugEnabled())
+					logger.debug("There was an old carrier for the same key in the cache; removing it. key: " + key.toString());
 
 				oldCarrier.setCarrierContainer(null);
 			}
@@ -888,8 +891,8 @@ public class Cache
 	 */
 	protected synchronized void remove(Key key)
 	{
-		if (LOGGER.isDebugEnabled())
-			LOGGER.debug("Removing Carrier for key: " + key.toString());
+		if (logger.isDebugEnabled())
+			logger.debug("Removing Carrier for key: " + key.toString());
 
 		Carrier oldCarrier = (Carrier) carriersByKey.remove(key);
 		Set objectIDs;
@@ -936,7 +939,7 @@ public class Cache
 	 */
 	protected synchronized int remove(ObjectID objectID)
 	{
-		LOGGER.debug("Removing all Carriers for objectID: " + objectID);
+		logger.debug("Removing all Carriers for objectID: " + objectID);
 
 		Set keySet = (Set) keySetsByObjectID.remove(objectID);
 		if (keySet == null)
@@ -947,14 +950,14 @@ public class Cache
 			Key key = (Key) it.next();
 			Carrier carrier = (Carrier) carriersByKey.remove(key);
 			if (carrier != null) {
-				if (LOGGER.isDebugEnabled())
-					LOGGER.debug("Removing Carrier: key=\""+key.toString()+"\"");
+				if (logger.isDebugEnabled())
+					logger.debug("Removing Carrier: key=\""+key.toString()+"\"");
 
 				carrier.setCarrierContainer(null);
 				removedCarrierCount++;
 			}
 			else
-				LOGGER.warn("There was a key in the keySetsByObjectID, but no carrier for it in carriersByKey! key=\""+key.toString()+"\"");
+				logger.warn("There was a key in the keySetsByObjectID, but no carrier for it in carriersByKey! key=\""+key.toString()+"\"");
 		}
 		return removedCarrierCount;
 	}

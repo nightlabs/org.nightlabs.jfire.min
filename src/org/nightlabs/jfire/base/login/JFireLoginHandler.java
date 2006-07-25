@@ -45,7 +45,10 @@ import org.nightlabs.rcp.splash.SplashScreen;
  * @author Alexander Bieber
  */
 public class JFireLoginHandler implements ILoginHandler {
-	public static final Logger LOGGER = Logger.getLogger(JFireLoginHandler.class);
+	/**
+	 * LOG4J logger used by this class
+	 */
+	private static final Logger logger = Logger.getLogger(JFireLoginHandler.class);
 
 	/**
 	 * Opens an instance of {@link LoginDialog}. 
@@ -120,7 +123,7 @@ public class JFireLoginHandler implements ILoginHandler {
 			}
 		} catch (Throwable x) {
 			// sth. went wrong => log and show normal login dialog
-			LOGGER.error("Could not login using the specified program arguments!", x);
+			logger.error("Could not login using the specified program arguments!", x);
 		}
 
 		if (SplashScreen.waitForVisibleSplash()) // isSplashVisible())

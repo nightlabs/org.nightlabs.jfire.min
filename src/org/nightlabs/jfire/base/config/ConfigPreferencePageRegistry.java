@@ -45,7 +45,10 @@ import org.nightlabs.base.extensionpoint.EPProcessorException;
  */
 public class ConfigPreferencePageRegistry extends AbstractEPProcessor {
 
-	protected Logger LOGGER = Logger.getLogger(ConfigPreferencePageRegistry.class); 
+	/**
+	 * LOG4J logger used by this class
+	 */
+	private static final Logger logger = Logger.getLogger(ConfigPreferencePageRegistry.class); 
 	
 	private ConfigPreferenceNode preferencesRootNode; 
 	
@@ -102,7 +105,7 @@ public class ConfigPreferencePageRegistry extends AbstractEPProcessor {
 			try {
 					page = (IWorkbenchPreferencePage)element.createExecutableExtension("class");
 			} catch (Throwable e) {				
-				LOGGER.warn("Could not instantiate preference-page extension of type "+element.getAttribute("class")+". Reason "+e.getClass().getName()+": "+e.getMessage());
+				logger.warn("Could not instantiate preference-page extension of type "+element.getAttribute("class")+". Reason "+e.getClass().getName()+": "+e.getMessage());
 				page = null;
 			}
 			if (page == null)

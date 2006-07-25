@@ -30,13 +30,11 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
-
 import org.nightlabs.base.composite.groupedcontent.GroupedContentComposite;
 import org.nightlabs.base.composite.groupedcontent.GroupedContentProvider;
 import org.nightlabs.jfire.base.person.PersonStructProvider;
@@ -51,8 +49,6 @@ import org.nightlabs.jfire.person.PersonDataBlockGroup;
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  */
 public class BlockBasedPersonEditor extends AbstractBlockBasedPersonEditor {
-	
-	private static Logger LOGGER = Logger.getLogger(BlockBasedPersonEditor.class);
 	public static final String EDITORTYPE_BLOCK_BASED = "block-based";
 	
 	private GroupedContentComposite groupedContentComposite;

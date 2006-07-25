@@ -55,7 +55,10 @@ import org.nightlabs.jfire.person.PersonDataBlock;
  */
 public class GenericPersonDataBlockEditor extends PersonDataBlockEditor {
 	
-	private static Logger LOGGER = Logger.getLogger(GenericPersonDataBlockEditor.class);
+	/**
+	 * LOG4J logger used by this class
+	 */
+	private static final Logger logger = Logger.getLogger(GenericPersonDataBlockEditor.class);
 
 	/**
 	 * Assumes to have a parent with GridLayout.
@@ -95,7 +98,7 @@ public class GenericPersonDataBlockEditor extends PersonDataBlockEditor {
 					fieldEditor = PersonDataFieldEditorFactoryRegistry.sharedInstance().getNewEditorInstance(dataField,ExpandableBlocksPersonEditor.EDITORTYPE_BLOCK_BASED_EXPANDABLE);
 				} catch (PersonDataFieldEditorNotFoundException e) {
 					// could not find editor for class log the error
-					LOGGER.error("Editor not found for one field, continuing",e);
+					logger.error("Editor not found for one field, continuing",e);
 					continue;
 				}
 				addFieldEditor(dataField, fieldEditor,true);

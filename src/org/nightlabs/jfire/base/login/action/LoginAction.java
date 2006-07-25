@@ -40,7 +40,10 @@ import org.nightlabs.jfire.base.login.Login;
  * @author Alexander Bieber
  */
 public class LoginAction extends LSDWorkbenchWindowActionDelegate {
-	private static final Logger LOGGER = Logger.getLogger(LoginAction.class);
+	/**
+	 * LOG4J logger used by this class
+	 */
+	private static final Logger logger = Logger.getLogger(LoginAction.class);
 
 	private static ImageDescriptor loginIcon = null;
 	private static ImageDescriptor logoutIcon = null;
@@ -72,7 +75,7 @@ public class LoginAction extends LSDWorkbenchWindowActionDelegate {
 			}
 			
 		} catch (LoginException e) {
-			LOGGER.error("Login failed",e);
+			logger.error("Login failed",e);
 		}
 	}
 	

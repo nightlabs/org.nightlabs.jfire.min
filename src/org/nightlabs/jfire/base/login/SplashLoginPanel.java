@@ -54,8 +54,10 @@ import org.nightlabs.util.SpringUtilities;
  */
 public class SplashLoginPanel extends JPanel 
 {
-  
-  private static Logger LOGGER = Logger.getLogger(SplashLoginPanel.class);
+	/**
+	 * LOG4J logger used by this class
+	 */
+	private static final Logger logger = Logger.getLogger(SplashLoginPanel.class);
   
   private JFireLoginContext loginContext;
   private LoginConfigModule loginConfigModule;
@@ -290,7 +292,7 @@ public class SplashLoginPanel extends JPanel
         BeanUtils.copyProperties(persistentLoginModule,loginConfigModule);
         persistentLoginModule.setChanged();
       } catch (Exception e) {
-        LOGGER.error("Saving config failed!", e);
+        logger.error("Saving config failed!", e);
       }
     }
     

@@ -45,7 +45,10 @@ import org.nightlabs.jfire.person.AbstractPersonDataField;
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  */
 public class PersonDataFieldEditorFactoryRegistry extends AbstractEPProcessor {
-	private Logger LOGGER = Logger.getLogger(PersonDataFieldEditorFactoryRegistry.class);
+	/**
+	 * LOG4J logger used by this class
+	 */
+	private static final Logger logger = Logger.getLogger(PersonDataFieldEditorFactoryRegistry.class);
 	
 	public static final String EXTENSION_POINT_ID = "org.nightlabs.jfire.base.person_edit_personDataFieldEditorFactory";
 	public static final String EXTENSION_POINT_ELEMENT_NAME = "persondatafieldeditorfactory"; // lower case for error tolerance
@@ -82,7 +85,7 @@ public class PersonDataFieldEditorFactoryRegistry extends AbstractEPProcessor {
 		Class targetType = editorFactory.getTargetPersonDataFieldType();
 		if (!(AbstractPersonDataField.class.isAssignableFrom(targetType)))
 			throw new IllegalArgumentException("TargetType must be subclass of AbstractPersonDataField but is "+targetType.getName());
-		LOGGER.debug("Adding registration for "+targetType.getName()+" on editor "+editorFactory+" editorType is "+editorFactory.getEditorType());
+		logger.debug("Adding registration for "+targetType.getName()+" on editor "+editorFactory+" editorType is "+editorFactory.getEditorType());
 		
 		getTypedRegistry(editorFactory.getEditorType()).put(targetType,editorFactory);
 	}

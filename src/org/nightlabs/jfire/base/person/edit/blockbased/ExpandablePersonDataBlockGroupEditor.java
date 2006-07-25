@@ -26,7 +26,6 @@
 
 package org.nightlabs.jfire.base.person.edit.blockbased;
 
-import org.apache.log4j.Logger;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -35,7 +34,6 @@ import org.eclipse.ui.forms.events.ExpansionAdapter;
 import org.eclipse.ui.forms.events.ExpansionEvent;
 import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
-
 import org.nightlabs.jfire.base.person.PersonStructProvider;
 import org.nightlabs.jfire.base.person.edit.PersonDataFieldEditor;
 import org.nightlabs.jfire.person.PersonDataBlockGroup;
@@ -48,9 +46,6 @@ public class ExpandablePersonDataBlockGroupEditor
 extends ExpandableComposite
 implements PersonDataBlockEditorChangedListener
 {
-	
-	private static final Logger LOGGER = Logger.getLogger(ExpandablePersonDataBlockGroupEditor.class);
-	
 	private PersonDataBlockGroupEditor blockGroupEditor;
 	
 	/**

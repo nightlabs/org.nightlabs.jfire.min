@@ -35,9 +35,7 @@ import org.apache.log4j.Logger;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
-
 import org.nightlabs.base.composite.XComposite;
-import org.nightlabs.base.composite.XComposite.LayoutMode;
 import org.nightlabs.base.extensionpoint.EPProcessorException;
 import org.nightlabs.jfire.base.person.edit.PersonDataFieldEditor;
 import org.nightlabs.jfire.person.PersonDataBlockGroup;
@@ -51,7 +49,10 @@ extends XComposite
 implements PersonDataBlockEditorChangedListener
 {
 	
-	private static final Logger LOGGER = Logger.getLogger(PersonDataBlockGroupEditor.class);
+	/**
+	 * LOG4J logger used by this class
+	 */
+	private static final Logger logger = Logger.getLogger(PersonDataBlockGroupEditor.class);
 	
 	private PersonDataBlockGroup blockGroup;
 	
@@ -108,9 +109,9 @@ implements PersonDataBlockEditorChangedListener
 						blockEditor.addPersonDataBlockEditorChangedListener(this);
 						personDataBlockEditors.add(blockEditor);
 					} catch (PersonDataBlockNotFoundException e) {
-						LOGGER.error("Could not find PersonDataBlock (idx = 0) for "+blockGroup.getStructBlockKey());
+						logger.error("Could not find PersonDataBlock (idx = 0) for "+blockGroup.getStructBlockKey());
 					} catch (EPProcessorException e1) {
-						LOGGER.error("Caught EPProcessorException when trying to findnot find PersonDataBlock (idx = 0) for "+blockGroup.getStructBlockKey());
+						logger.error("Caught EPProcessorException when trying to findnot find PersonDataBlock (idx = 0) for "+blockGroup.getStructBlockKey());
 					}
 				}
 				j = i;

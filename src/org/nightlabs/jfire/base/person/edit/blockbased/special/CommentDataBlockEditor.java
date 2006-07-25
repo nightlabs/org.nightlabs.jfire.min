@@ -64,7 +64,10 @@ public class CommentDataBlockEditor extends PersonDataBlockEditor
 		PersonDataFieldEditor
 {
 	
-	public static final Logger LOGGER = Logger.getLogger(CommentDataBlockEditor.class);
+	/**
+	 * LOG4J logger used by this class
+	 */
+	private static final Logger logger = Logger.getLogger(CommentDataBlockEditor.class);
 
 	private Text textComment;
 	private Label labelTitle;
@@ -94,7 +97,7 @@ public class CommentDataBlockEditor extends PersonDataBlockEditor
 			commentData = (TextPersonDataField)dataBlock.getPersonDataField(PersonStruct.COMMENT_COMMENT);
 			refresh();
 		} catch (PersonDataFieldNotFoundException e) {
-			LOGGER.error("PersonDataField not found. ",e);
+			logger.error("PersonDataField not found. ",e);
 			commentData = null;
 		}
 	}

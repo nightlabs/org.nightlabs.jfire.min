@@ -62,7 +62,10 @@ import org.nightlabs.notification.SubjectCarrier;
 public class ConfigLinkSelectionNotificationProxy extends
 		SelectionNotificationProxy {
 	
-	private static Logger LOGGER = Logger.getLogger(ConfigLinkSelectionNotificationProxy.class);
+	/**
+	 * LOG4J logger used by this class
+	 */
+	private static final Logger logger = Logger.getLogger(ConfigLinkSelectionNotificationProxy.class);
 
 //	/**
 //	 * @param source
@@ -101,7 +104,7 @@ public class ConfigLinkSelectionNotificationProxy extends
 			// get ObjectID for PC class
 			Object idObject = JDOHelper.getObjectId(object); 
 			if (!(idObject instanceof ObjectID)) {
-				LOGGER.warn("ID-object of PersistenceCapable selection object was not an instance of ObjectID but "+idObject.getClass().getName()+" and was ignored.");
+				logger.warn("ID-object of PersistenceCapable selection object was not an instance of ObjectID but "+idObject.getClass().getName()+" and was ignored.");
 				return null;				
 			}
 			objectID = (ObjectID)idObject;

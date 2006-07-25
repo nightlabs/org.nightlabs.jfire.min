@@ -41,7 +41,10 @@ import org.nightlabs.jdo.ObjectID;
  */
 public class JDOObjectID2PCClassMap
 {
-	public static final Logger LOGGER = Logger.getLogger(JDOObjectID2PCClassMap.class);
+	/**
+	 * LOG4J logger used by this class
+	 */
+	private static final Logger logger = Logger.getLogger(JDOObjectID2PCClassMap.class);
 
 	private static JDOObjectID2PCClassMap _sharedInstance = null;
 
@@ -80,21 +83,21 @@ public class JDOObjectID2PCClassMap
 	public synchronized void initPersistenceCapableClass(Object objectID, Class clazz)
 	{
 		if (!(objectID instanceof ObjectID)) {
-			if (LOGGER.isDebugEnabled())
-				LOGGER.debug("initPersistenceCapableClass: Won't register objectID, because it does not implement "+ObjectID.class.getName()+": " +  objectID);
+			if (logger.isDebugEnabled())
+				logger.debug("initPersistenceCapableClass: Won't register objectID, because it does not implement "+ObjectID.class.getName()+": " +  objectID);
 
 			return;
 		}
 
 		if (objectID2PCClassMap.containsKey(objectID)) {
-			if (LOGGER.isDebugEnabled())
-				LOGGER.debug("initPersistenceCapableClass: Won't do anything, because there is already a mapping for this objectID: " +  objectID);
+			if (logger.isDebugEnabled())
+				logger.debug("initPersistenceCapableClass: Won't do anything, because there is already a mapping for this objectID: " +  objectID);
 
 			return;
 		}
 
-		if (LOGGER.isDebugEnabled())
-			LOGGER.debug("Storing mapping on class \"" + clazz.getName() + "\" for objectID: " +  objectID);
+		if (logger.isDebugEnabled())
+			logger.debug("Storing mapping on class \"" + clazz.getName() + "\" for objectID: " +  objectID);
 
 		objectID2PCClassMap.put(objectID, clazz);
 	}

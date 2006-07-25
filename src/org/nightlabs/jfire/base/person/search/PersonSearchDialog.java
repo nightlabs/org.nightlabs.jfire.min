@@ -57,7 +57,11 @@ import org.nightlabs.jfire.person.util.PersonSearchFilter;
  */
 public class PersonSearchDialog extends Dialog implements SearchResultFetcher{
 
-	private static final Logger LOGGER = Logger.getLogger(PersonSearchDialog.class);
+	/**
+	 * LOG4J logger used by this class
+	 */
+	private static final Logger logger = Logger.getLogger(PersonSearchDialog.class);
+	
 	/**
 	 * @param parentShell
 	 */
@@ -78,7 +82,7 @@ public class PersonSearchDialog extends Dialog implements SearchResultFetcher{
 		try {
 			filterProvider.setSearchResultFetcher(this,Login.getLogin());
 		} catch (LoginException e) {
-			LOGGER.error("Error logging in ",e);
+			logger.error("Error logging in ",e);
 			throw new RuntimeException(e);
 		}
 		Composite providerComp = filterProvider.createComposite(wrapper);
@@ -99,7 +103,7 @@ public class PersonSearchDialog extends Dialog implements SearchResultFetcher{
 	 * @see org.nightlabs.jdo.search.SearchResultFetcher#searchTriggered(org.nightlabs.jdo.search.SearchFilterProvider, org.nightlabs.j2ee.InitialContextProvider)
 	 */
 	public void searchTriggered(SearchFilterProvider filterProvider, InitialContextProvider login) {
-		LOGGER.debug("Search triggered, getting PersonManager");
+		logger.debug("Search triggered, getting PersonManager");
     PersonManagerHome home = null;
     PersonManager personManager = null;
     try {
@@ -108,10 +112,10 @@ public class PersonSearchDialog extends Dialog implements SearchResultFetcher{
       home = PersonManagerUtil.getHome(Login.getLogin().getInitialContextProperties());
       personManager = home.create();
     } catch (Exception e) {
-    	LOGGER.error("Error creating PersonManagerUtil.",e);
+    	logger.error("Error creating PersonManagerUtil.",e);
     	throw new RuntimeException(e);
     }
-		LOGGER.debug("Have PersonManager searching");
+		logger.debug("Have PersonManager searching");
 		
 		PersonSearchFilter searchFilter = (PersonSearchFilter)filterProvider.getSearchFilter();
 		searchFilter.clearResultFields();
@@ -123,12 +127,12 @@ public class PersonSearchDialog extends Dialog implements SearchResultFetcher{
 		try {
 			long start = System.currentTimeMillis();
 			Collection persons = personManager.searchPerson(searchFilter, new String[] {FetchPlan.ALL}, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
-			LOGGER.debug("Person search for "+persons.size()+" entries took "+(System.currentTimeMillis()-start)/1000+" s.");
+			logger.debug("Person search for "+persons.size()+" entries took "+(System.currentTimeMillis()-start)/1000+" s.");
 			start = System.currentTimeMillis();
 			resultTable.setInput(persons);
-			LOGGER.debug("Setting results to table for "+persons.size()+" entries took "+(System.currentTimeMillis()-start)/1000+" s.");
+			logger.debug("Setting results to table for "+persons.size()+" entries took "+(System.currentTimeMillis()-start)/1000+" s.");
 		} catch (Exception e) {
-			LOGGER.error("Error searching person.",e);
+			logger.error("Error searching person.",e);
 			throw new RuntimeException(e);
 		}
 		

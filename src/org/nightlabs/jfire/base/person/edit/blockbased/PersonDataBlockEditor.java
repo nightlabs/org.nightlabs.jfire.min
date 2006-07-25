@@ -34,9 +34,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
 import org.eclipse.swt.widgets.Composite;
-
 import org.nightlabs.jfire.base.person.edit.DataFieldEditorChangeListener;
 import org.nightlabs.jfire.base.person.edit.PersonDataFieldEditor;
 import org.nightlabs.jfire.base.person.preferences.PersonStructOrderConfigModule;
@@ -50,8 +48,6 @@ import org.nightlabs.jfire.person.PersonDataBlock;
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  */
 public abstract class PersonDataBlockEditor extends Composite implements DataFieldEditorChangeListener{
-	
-	private static Logger LOGGER = Logger.getLogger(PersonDataBlockEditor.class);
 	
 	protected PersonDataBlockEditor(PersonDataBlock dataBlock, Composite parent, int style) {
 		super(parent,style);
