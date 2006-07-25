@@ -1,5 +1,5 @@
 <!--
-  Generic j2ee (jboss/jpox) ant build file (version 2006-07-21)
+  Generic j2ee (jboss/jpox) ant build file (version 2006-07-25)
   Author: marc [at] nightlabs [dot] de
   Author: marco [at] nightlabs [dot] de
 
@@ -260,8 +260,10 @@
     <!-- set dist.dir to "dist" if not already defined -->
     <setdefault property="j2ee.deployear.includes" value="${project.jar},${project.war},${project.rar}" />
     <setdefault property="j2ee.deployear.excludes" value="" />
+	<!--  Don't set default for deplaysubdir.includes/excludes so per default nothing is copied
     <setdefault property="j2ee.deploysubdir.includes" value="*.xml" />
     <setdefault property="j2ee.deploysubdir.excludes" value="application.xml" />
+	-->
     <setdefault property="j2ee.deploymetainf.includes" value="application.xml" />
     <setdefault property="j2ee.deploymetainf.excludes" value="" />
     <setdefault property="dist.bin.includes" value="**/*" />
