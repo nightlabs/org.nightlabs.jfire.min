@@ -66,7 +66,11 @@ import org.nightlabs.jdo.NLJDOHelper;
  */
 public abstract class PersonManagerBean extends BaseSessionBeanImpl implements
 		SessionBean {
-	private static final Logger LOGGER = Logger.getLogger(PersonManagerBean.class);
+
+	/**
+	 * LOG4J logger used by this class
+	 */
+	private static final Logger logger = Logger.getLogger(PersonManagerBean.class);
 
 	/**
 	 * @see org.nightlabs.jfire.base.BaseSessionBeanImpl#setSessionContext(javax.ejb.SessionContext)
@@ -129,7 +133,7 @@ public abstract class PersonManagerBean extends BaseSessionBeanImpl implements
 		PersistenceManager pm = this.getPersistenceManager();
 		try {
 			long nextPersonID = PersonRegistry.getRegistry(pm).createPersonID();
-			LOGGER.info("createPersonID() returning "+nextPersonID+" as next PersonID");
+			logger.info("createPersonID() returning "+nextPersonID+" as next PersonID");
 			return nextPersonID;
 		} 
 		finally {
@@ -285,7 +289,7 @@ public abstract class PersonManagerBean extends BaseSessionBeanImpl implements
 			long time = System.currentTimeMillis();
 			Collection result = pm.detachCopyAll(elements);
 			time = System.currentTimeMillis() - time;
-			LOGGER.info("Detach of "+result.size()+" Persons took "+((double)time / (double)1000));
+			logger.info("Detach of "+result.size()+" Persons took "+((double)time / (double)1000));
 			return result;
 		}
 		finally {
@@ -323,7 +327,7 @@ public abstract class PersonManagerBean extends BaseSessionBeanImpl implements
 			long time = System.currentTimeMillis();
 			Collection result = pm.detachCopyAll(persons);
 			time = System.currentTimeMillis() - time;
-			LOGGER.debug("Detach of "+result.size()+" Persons took "+((double)time / (double)1000));
+			logger.debug("Detach of "+result.size()+" Persons took "+((double)time / (double)1000));
 			return result;
 		}
 		finally {

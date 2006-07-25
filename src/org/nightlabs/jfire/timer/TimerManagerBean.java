@@ -38,7 +38,10 @@ public abstract class TimerManagerBean
 extends BaseSessionBeanImpl
 implements SessionBean
 {
-	public static final Logger LOGGER = Logger.getLogger(TimerManagerBean.class);
+	/**
+	 * LOG4J logger used by this class
+	 */
+	private static final Logger logger = Logger.getLogger(TimerManagerBean.class);
 
 	public void setSessionContext(SessionContext sessionContext)
 	throws EJBException, RemoteException
@@ -82,7 +85,7 @@ implements SessionBean
 		try {
 			Task task = (Task) pm.getObjectById(taskID);
 			if (!activeExecID.equals(task.getActiveExecID())) {
-				LOGGER.info("setExecutingIfActiveExecIDMatches(...): will not touch task with taskID=\""+taskID+"\", because activeExecID does not match: activeExecID()=\""+activeExecID+"\" task.getActiveExecID()=\""+task.getActiveExecID()+"\"");
+				logger.info("setExecutingIfActiveExecIDMatches(...): will not touch task with taskID=\""+taskID+"\", because activeExecID does not match: activeExecID()=\""+activeExecID+"\" task.getActiveExecID()=\""+task.getActiveExecID()+"\"");
 				return false;
 			}
 
@@ -108,7 +111,7 @@ implements SessionBean
 		if (!User.USERID_SYSTEM.equals(getUserID()))
 			throw new SecurityException("This method can only be called by user " + User.USERID_SYSTEM);
 
-		LOGGER.info("ejbTimeoutDelegate(...) for organisationID=\""+timerParam.organisationID+"\": begin");
+		logger.info("ejbTimeoutDelegate(...) for organisationID=\""+timerParam.organisationID+"\": begin");
 
 		String activeExecID = ObjectIDUtil.makeValidIDString(null);
 
@@ -138,7 +141,7 @@ implements SessionBean
 			TimerAsyncInvoke.exec(task);
 		}
 
-		LOGGER.info("ejbTimeoutDelegate(...) for organisationID=\""+timerParam.organisationID+"\": end");
+		logger.info("ejbTimeoutDelegate(...) for organisationID=\""+timerParam.organisationID+"\": end");
 	}
 
 	/**

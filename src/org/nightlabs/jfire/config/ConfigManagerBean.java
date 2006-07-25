@@ -60,7 +60,10 @@ import org.nightlabs.jfire.idgenerator.IDGenerator;
 
 public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements SessionBean 
 {
-	protected static Logger LOGGER = Logger.getLogger(ConfigManagerBean.class);
+	/**
+	 * LOG4J logger used by this class
+	 */
+	private static final Logger logger = Logger.getLogger(ConfigManagerBean.class);
 
 	/**
 	 * @ejb.create-method
@@ -614,15 +617,15 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 		pm = getPersistenceManager();
 		try {
 //		 TODO remove this test!!!
-			LOGGER.info("****************************************************************************");
-			LOGGER.info("nextID(one): " + IDGenerator.nextID("one"));
-			LOGGER.info("nextID(many): ");
+			logger.info("****************************************************************************");
+			logger.info("nextID(one): " + IDGenerator.nextID("one"));
+			logger.info("nextID(many): ");
 			long[] nextIDs = IDGenerator.nextIDs("many", 5);
 			for (int i = 0; i < nextIDs.length; i++) {
 				long l = nextIDs[i];
-				LOGGER.info("              " + l);
+				logger.info("              " + l);
 			}
-			LOGGER.info("****************************************************************************");
+			logger.info("****************************************************************************");
 //		 TODO remove this test!!!
 
 
@@ -632,7 +635,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 			if (moduleMetaData != null)
 				return;
 
-			LOGGER.info("Initialization of Configuration in JFireBase started...");
+			logger.info("Initialization of Configuration in JFireBase started...");
 
 			// version is {major}.{minor}.{release}-{patchlevel}-{suffix}
 			moduleMetaData = new ModuleMetaData(

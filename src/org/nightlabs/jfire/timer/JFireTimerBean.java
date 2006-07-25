@@ -35,7 +35,10 @@ public abstract class JFireTimerBean
 extends BaseSessionBeanImpl
 implements SessionBean, TimedObject
 {
-	public static final Logger LOGGER = Logger.getLogger(JFireTimerBean.class);
+	/**
+	 * LOG4J logger used by this class
+	 */
+	private static final Logger logger = Logger.getLogger(JFireTimerBean.class);
 
 	public void setSessionContext(SessionContext sessionContext)
 	throws EJBException, RemoteException
@@ -73,12 +76,12 @@ implements SessionBean, TimedObject
 				JFireServerManagerFactory ismf = (JFireServerManagerFactory) initCtxNotAuthenticated.lookup(JFireServerManagerFactory.JNDI_NAME);
 
 				if (ismf == null) {
-					LOGGER.error("JFireServerManagerFactory is not (yet?) in JNDI! Cannot do anything.");
+					logger.error("JFireServerManagerFactory is not (yet?) in JNDI! Cannot do anything.");
 					return;
 				}
 
 				if (!ismf.isUpAndRunning()) {
-					LOGGER.info("Server is not yet up and running - will not do anything.");
+					logger.info("Server is not yet up and running - will not do anything.");
 					return;
 				}
 
@@ -104,7 +107,7 @@ implements SessionBean, TimedObject
 				initCtxNotAuthenticated.close();
 			}
 		} catch (Throwable x) {
-			LOGGER.error("Timer failed!", x);
+			logger.error("Timer failed!", x);
 		}
 	}
 

@@ -47,7 +47,6 @@ import org.nightlabs.ModuleException;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.base.JFirePrincipal;
-import org.nightlabs.jfire.person.TextPersonDataField;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.security.UserLocal;
 import org.nightlabs.jfire.security.UserManager;
@@ -75,7 +74,10 @@ public abstract class OrganisationManagerBean
 	extends BaseSessionBeanImpl
 	implements SessionBean
 {
-	public static final Logger LOGGER = Logger.getLogger(OrganisationManagerBean.class);
+	/**
+	 * LOG4J logger used by this class
+	 */
+	private static final Logger logger = Logger.getLogger(OrganisationManagerBean.class);
 	
 	/**
 	 * @see org.nightlabs.jfire.base.BaseSessionBeanImpl#setSessionContext(javax.ejb.SessionContext)
@@ -622,7 +624,7 @@ public abstract class OrganisationManagerBean
 	public void testBackhand(String[] organisationIDs)
 		throws ModuleException
 	{
-		LOGGER.info("testBackhand ("+organisationIDs.length+"): begin: principal="+getPrincipalString());
+		logger.info("testBackhand ("+organisationIDs.length+"): begin: principal="+getPrincipalString());
 		if (organisationIDs != null && organisationIDs.length > 0) {
 			String organisationID = organisationIDs[0];
 			String[] bhOrgaIDs = new String[organisationIDs.length - 1];
@@ -646,21 +648,21 @@ public abstract class OrganisationManagerBean
 //				pm.close();
 //			}
 
-			LOGGER.info("testBackhand ("+organisationIDs.length+"): backhanding to organisation \""+organisationID+"\"");
+			logger.info("testBackhand ("+organisationIDs.length+"): backhanding to organisation \""+organisationID+"\"");
 			try {
-				LOGGER.info("testBackhand ("+organisationIDs.length+"): OrganisationManagerUtil.getHome(...)");
+				logger.info("testBackhand ("+organisationIDs.length+"): OrganisationManagerUtil.getHome(...)");
 				OrganisationManager organisationManager = OrganisationManagerUtil.getHome(getInitialContextProperties(organisationID)).create();
 				
-				LOGGER.info("testBackhand ("+organisationIDs.length+"): UserManagerUtil.getHome()");
+				logger.info("testBackhand ("+organisationIDs.length+"): UserManagerUtil.getHome()");
 				UserManagerHome userManagerHome = UserManagerUtil.getHome();
 				
-				LOGGER.info("testBackhand ("+organisationIDs.length+"): userManagerHome.create()");
+				logger.info("testBackhand ("+organisationIDs.length+"): userManagerHome.create()");
 				UserManager userManager = userManagerHome.create();
 
-				LOGGER.info("testBackhand ("+organisationIDs.length+"): organisationManager.testBackhand(...)");
+				logger.info("testBackhand ("+organisationIDs.length+"): organisationManager.testBackhand(...)");
 				organisationManager.testBackhand(bhOrgaIDs);
 
-				LOGGER.info("testBackhand ("+organisationIDs.length+"): userManager.whoami()");
+				logger.info("testBackhand ("+organisationIDs.length+"): userManager.whoami()");
 				userManager.whoami();
 
 				organisationManager.remove();
@@ -673,7 +675,7 @@ public abstract class OrganisationManagerBean
 				throw new ModuleException(e);			
 			}
 		}
-		LOGGER.info("testBackhand ("+organisationIDs.length+"): end: principal="+getPrincipalString());
+		logger.info("testBackhand ("+organisationIDs.length+"): end: principal="+getPrincipalString());
 	}
 
 	/**
@@ -731,13 +733,13 @@ public abstract class OrganisationManagerBean
 					Collection res = organisationManager.getOrganisationsFromRootOrganisation(filterPartnerOrganisations, fetchGroups, maxFetchDepth);
 
 					// TODO DEBUG begin
-					LOGGER.info("Root Organisation returned the following organisations:");
+					logger.info("Root Organisation returned the following organisations:");
 					if (res.isEmpty())
-						LOGGER.info("  {NONE}");
+						logger.info("  {NONE}");
 					else {
 						for (Iterator iter = res.iterator(); iter.hasNext();) {
 							Organisation organisation = (Organisation) iter.next();
-							LOGGER.info("  " + organisation.getOrganisationID());
+							logger.info("  " + organisation.getOrganisationID());
 						}
 					}
 					// TODO DEBUG end
@@ -756,9 +758,9 @@ public abstract class OrganisationManagerBean
 							String userID = User.USERID_PREFIX_TYPE_ORGANISATION + orga.getOrganisationID();
 							try {
 								pm.getObjectById(UserID.create(localOrganisationID, userID));
-								LOGGER.info("Organisation is already a partner and will be filtered: " + orga.getOrganisationID());
+								logger.info("Organisation is already a partner and will be filtered: " + orga.getOrganisationID());
 							} catch (JDOObjectNotFoundException x) {
-								LOGGER.info("Organisation will not be filtered and added to result: " + orga.getOrganisationID());
+								logger.info("Organisation will not be filtered and added to result: " + orga.getOrganisationID());
 								newRes.add(orga); // add only if no user existent yet
 							}
 						} // for (Iterator it = res.iterator(); it.hasNext(); ) {
@@ -781,10 +783,10 @@ public abstract class OrganisationManagerBean
 				Collection res = (Collection)pm.newQuery(Organisation.class).execute();
 
 				// TODO DEBUG begin
-				LOGGER.info("I am the Root Organisation and I will return the following organisations: ");
+				logger.info("I am the Root Organisation and I will return the following organisations: ");
 				for (Iterator iter = res.iterator(); iter.hasNext();) {
 					Organisation organisation = (Organisation) iter.next();
-					LOGGER.info("  " + organisation.getOrganisationID());
+					logger.info("  " + organisation.getOrganisationID());
 				}
 				// TODO DEBUG end
 
@@ -794,10 +796,10 @@ public abstract class OrganisationManagerBean
 			}
 
 		} catch (ModuleException x) {
-			LOGGER.error("Obtaining organisations failed!", x);
+			logger.error("Obtaining organisations failed!", x);
 			throw x;
 		} catch (Exception x) {
-			LOGGER.error("Obtaining organisations failed!", x);
+			logger.error("Obtaining organisations failed!", x);
 			throw new ModuleException(x);
 		}
 	}
@@ -824,22 +826,22 @@ public abstract class OrganisationManagerBean
 			String localOrganisationID = getOrganisationID();
 			if (localOrganisationID.equals(rootOrganisationCf.getOrganisationID())) {
 				// This IS the root-organisation. Only check the correctness of the server.
-				if (LOGGER.isDebugEnabled())
-					LOGGER.debug("Organisation \"" + localOrganisationID + "\" is the root-organisation. Will not perform registration.");
+				if (logger.isDebugEnabled())
+					logger.debug("Organisation \"" + localOrganisationID + "\" is the root-organisation. Will not perform registration.");
 
 				ServerCf localServer = ism.getJFireServerConfigModule().getLocalServer();
 
 				if (!localServer.getServerID().equals(rootServer.getServerID()))
-					LOGGER.error("localOrganisation.server.serverID == \"" + localServer.getServerID() + "\" != rootOrganisation.server.serverID == \"" + rootServer.getServerID() + "\"");
+					logger.error("localOrganisation.server.serverID == \"" + localServer.getServerID() + "\" != rootOrganisation.server.serverID == \"" + rootServer.getServerID() + "\"");
 
 				if (!localServer.getServerName().equals(rootServer.getServerID()))
-					LOGGER.error("localOrganisation.server.serverName == \"" + localServer.getServerName() + "\" != rootOrganisation.server.serverName == \"" + rootServer.getServerName() + "\"");
+					logger.error("localOrganisation.server.serverName == \"" + localServer.getServerName() + "\" != rootOrganisation.server.serverName == \"" + rootServer.getServerName() + "\"");
 
 				if (!localServer.getJ2eeServerType().equals(rootServer.getJ2eeServerType()))
-					LOGGER.error("localOrganisation.server.j2eeServerType == \"" + localServer.getJ2eeServerType() + "\" != rootOrganisation.server.j2eeServerType == \"" + rootServer.getJ2eeServerType() + "\"");
+					logger.error("localOrganisation.server.j2eeServerType == \"" + localServer.getJ2eeServerType() + "\" != rootOrganisation.server.j2eeServerType == \"" + rootServer.getJ2eeServerType() + "\"");
 
 				if (!localServer.getInitialContextURL().equals(rootServer.getInitialContextURL()))
-					LOGGER.error("localOrganisation.server.initialContextURL == \"" + localServer.getInitialContextURL() + "\" != rootOrganisation.server.initialContextURL == \"" + rootServer.getInitialContextURL() + "\"");
+					logger.error("localOrganisation.server.initialContextURL == \"" + localServer.getInitialContextURL() + "\" != rootOrganisation.server.initialContextURL == \"" + rootServer.getInitialContextURL() + "\"");
 
 				return;
 			}
@@ -850,13 +852,13 @@ public abstract class OrganisationManagerBean
 			try {
 				if (RegistrationStatus.getRegistrationStatusCount(pm, rootOrganisationID) > 0) {
 					if (!force) {
-						if (LOGGER.isDebugEnabled())
-							LOGGER.debug("There has already been a registration of organisation \""+localOrganisationID+"\" in the root organisation \""+rootOrganisationID+"\" (though it might have been rejected). Will NOT register again. Do it manually if you want to!");
+						if (logger.isDebugEnabled())
+							logger.debug("There has already been a registration of organisation \""+localOrganisationID+"\" in the root organisation \""+rootOrganisationID+"\" (though it might have been rejected). Will NOT register again. Do it manually if you want to!");
 						return;
 					}
 				} // if (RegistrationStatus.getRegistrationStatusCount(pm, rootOrganisationID) > 0) {
 
-				LOGGER.info("Registering organisation \""+localOrganisationID+"\" in the root organisation \""+rootOrganisationID+"\".");
+				logger.info("Registering organisation \""+localOrganisationID+"\" in the root organisation \""+rootOrganisationID+"\".");
 				beginRegistration(
 						pm,
 						getPrincipal(),

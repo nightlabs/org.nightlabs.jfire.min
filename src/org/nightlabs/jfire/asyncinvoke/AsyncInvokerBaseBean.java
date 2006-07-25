@@ -42,6 +42,9 @@ import org.nightlabs.jfire.servermanager.JFireServerManagerFactory;
 public abstract class AsyncInvokerBaseBean
 implements javax.ejb.MessageDrivenBean, javax.jms.MessageListener
 {
+	/**
+	 * LOG4J logger used by this class
+	 */
 	protected Logger logger = Logger.getLogger(this.getClass());
 
 	protected javax.ejb.MessageDrivenContext messageContext = null;

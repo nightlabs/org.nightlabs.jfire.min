@@ -54,7 +54,11 @@ import org.nightlabs.language.LanguageCf;
  */
 public abstract class LanguageManagerBean extends BaseSessionBeanImpl implements SessionBean 
 {
-	public static final Logger LOGGER = Logger.getLogger(LanguageManagerBean.class);
+	/**
+	 * LOG4J logger used by this class
+	 */
+	private static final Logger logger = Logger.getLogger(LanguageManagerBean.class);
+	
 	/**
 	 * @see org.nightlabs.jfire.base.BaseSessionBeanImpl#setSessionContext(javax.ejb.SessionContext)
 	 */
@@ -98,7 +102,7 @@ public abstract class LanguageManagerBean extends BaseSessionBeanImpl implements
 	public void createLanguage(LanguageCf langCf) 
 	throws LanguageException
 	{
-		LOGGER.debug("LanguageManagerBean.createLanguage");
+		logger.debug("LanguageManagerBean.createLanguage");
 		try {
 			PersistenceManager pm = this.getPersistenceManager();
 			try {
@@ -113,12 +117,12 @@ public abstract class LanguageManagerBean extends BaseSessionBeanImpl implements
 
 				Language newLang = new Language(langCf);
 				pm.makePersistent(newLang);
-				LOGGER.debug("new language created..");
+				logger.debug("new language created..");
 			} finally {
 				pm.close();
 			}
 		} catch(Exception e) {
-			LOGGER.debug("exception: " + e.getMessage());
+			logger.debug("exception: " + e.getMessage());
 			throw new LanguageException(e);
 		}
 	}

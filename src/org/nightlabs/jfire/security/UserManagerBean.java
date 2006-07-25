@@ -71,7 +71,10 @@ public abstract class UserManagerBean
 extends BaseSessionBeanImpl
 implements SessionBean 
 {
-  public static final Logger LOGGER = Logger.getLogger(UserManagerBean.class);
+	/**
+	 * LOG4J logger used by this class
+	 */
+  private static final Logger logger = Logger.getLogger(UserManagerBean.class);
   
   /**
    * @see org.nightlabs.jfire.base.BaseSessionBeanImpl#setSessionContext(javax.ejb.SessionContext)
@@ -1110,12 +1113,12 @@ implements SessionBean
     try
     {
       Object test = pm.getObjectById(userID, true);
-      LOGGER.debug("userIDAlreadyRegistered(\"" + userID + "\") = " + (test != null));
+      logger.debug("userIDAlreadyRegistered(\"" + userID + "\") = " + (test != null));
       return (test != null);
     }
     catch(JDOObjectNotFoundException e) 
     {
-      LOGGER.debug("userIDAlreadyRegistered(\"" + userID + "\") = false");
+      logger.debug("userIDAlreadyRegistered(\"" + userID + "\") = false");
       return false;
     }
     finally
@@ -1555,7 +1558,7 @@ implements SessionBean
 	public void whoami()
 		throws ModuleException
 	{
-		LOGGER.info("******** WHOAMI: "+getPrincipalString());
+		logger.info("******** WHOAMI: "+getPrincipalString());
 	}
 
   //	/**
