@@ -1,5 +1,5 @@
 <!--
-  Generic j2ee (jboss/jpox) ant build file (version 2006-05-16)
+  Generic j2ee (jboss/jpox) ant build file (version 2006-07-25)
   Author: marc [at] nightlabs [dot] de
   Author: marco [at] nightlabs [dot] de
 
@@ -171,12 +171,12 @@
         <isset property="j2ee.deployear.excludes"/>
       </not>
     </condition>
-    <condition property="j2ee.deploysubdir.includes" value="*.xml">
+    <condition property="j2ee.deploysubdir.includes">
       <not>
         <isset property="j2ee.deploysubdir.includes"/>
       </not>
     </condition>
-    <condition property="j2ee.deploysubdir.excludes" value="application.xml">
+    <condition property="j2ee.deploysubdir.excludes">
       <not>
         <isset property="j2ee.deploysubdir.excludes"/>
       </not>
