@@ -27,7 +27,6 @@
 package org.nightlabs.jfire.base.app;
 
 import java.io.File;
-import java.io.IOException;
 
 import javax.security.auth.login.LoginException;
 
@@ -40,6 +39,7 @@ import org.nightlabs.base.app.AbstractWorkbenchAdvisor;
 import org.nightlabs.base.exceptionhandler.ExceptionHandlerRegistry;
 import org.nightlabs.base.exceptionhandler.ExceptionHandlingWorkbenchAdvisor;
 import org.nightlabs.jfire.base.JFireWelcomePerspective;
+import org.nightlabs.jfire.base.j2ee.RemoteResourceFilterRegistry;
 import org.nightlabs.jfire.base.login.JFireLoginHandler;
 import org.nightlabs.jfire.base.login.JFireSecurityConfiguration;
 import org.nightlabs.jfire.base.login.Login;
@@ -89,10 +89,14 @@ extends AbstractWorkbenchAdvisor
 //			e.printStackTrace();
 //		}
 		try {	
-			org.nightlabs.jfire.classloader.JFireRCDLDelegate.createSharedInstance(Login.getLogin(false), new File(JFireApplication.getRootDir(), "classloader.cache"));
+			org.nightlabs.jfire.classloader.JFireRCDLDelegate.
+					createSharedInstance(Login.getLogin(false), new File(JFireApplication.getRootDir(), "classloader.cache"))
+					.setFilter(RemoteResourceFilterRegistry.sharedInstance());
 		} catch (LoginException e) {
 			throw e;
-		} catch (IOException e) {
+		} catch (RuntimeException e) {
+			throw e;
+		} catch (Exception e) {
 			LoginException x = new LoginException(e.getMessage());
 			x.initCause(e);
 			throw x;
