@@ -110,7 +110,8 @@ public class JFireServerManagerImpl
 	}
 	protected void setJFireServerManagerFactory(final JFireServerManagerFactoryImpl _jfireServerManagerFactoryImpl)
 	{
-		LOGGER.debug(this.getClass().getName()+": setJFireManagerFactory(...)");
+		if(LOGGER.isDebugEnabled())
+			LOGGER.debug(this.getClass().getName()+": setJFireManagerFactory(...)");
 		this.jfireServerManagerFactoryImpl = _jfireServerManagerFactoryImpl;
 	}
 
@@ -120,7 +121,8 @@ public class JFireServerManagerImpl
 	 */
 	public void close()
 	{
-		LOGGER.info(this.getClass().getName()+": close()");
+		if(LOGGER.isDebugEnabled())
+			LOGGER.debug(this.getClass().getName()+": close()");
 		if (managedConnectionImpl != null) 
 		{
 //			managedConnectionImpl.flushDirty();
@@ -439,7 +441,8 @@ public class JFireServerManagerImpl
 
 						// login succeeded, create principal
 						this.principal = new JFirePrincipal(userID, organisationID, sessionID, userIsOrganisation, lookup, roleSet);
-						LOGGER.debug("Created JFirePrincipal \""+principal+"\".");
+						if(LOGGER.isDebugEnabled())
+							LOGGER.debug("Created JFirePrincipal \""+principal+"\".");
 					}
 					finally
 					{

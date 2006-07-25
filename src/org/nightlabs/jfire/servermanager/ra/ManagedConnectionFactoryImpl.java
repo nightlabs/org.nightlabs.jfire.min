@@ -57,7 +57,8 @@ public class ManagedConnectionFactoryImpl
 
 	public ManagedConnectionFactoryImpl()
 	{
-		LOGGER.debug(this.getClass().getName() + ": CONSTRUCTOR");
+		if(LOGGER.isDebugEnabled())
+			LOGGER.debug(this.getClass().getName() + ": CONSTRUCTOR");
 	}
 	
 	// *********************************************
@@ -151,10 +152,12 @@ public class ManagedConnectionFactoryImpl
 	 * @see javax.resource.spi.ManagedConnectionFactory#createManagedConnection(javax.security.auth.Subject, javax.resource.spi.ConnectionRequestInfo)
 	 */
 	public ManagedConnection createManagedConnection(Subject subject, ConnectionRequestInfo requestInfo) throws ResourceException {
-		LOGGER.debug("***********************************************************");
-		LOGGER.debug(this.getClass().getName()+": createManagedConnection(...)");
-		LOGGER.debug("subject: "+subject);
-		LOGGER.debug("***********************************************************");
+		if(LOGGER.isDebugEnabled()) {
+			LOGGER.debug("***********************************************************");
+			LOGGER.debug(this.getClass().getName()+": createManagedConnection(...)");
+			LOGGER.debug("subject: "+subject);
+			LOGGER.debug("***********************************************************");
+		}
 		PasswordCredential pc = getPasswordCredential(subject);
 		return new ManagedConnectionImpl(pc);
 	}
@@ -163,7 +166,8 @@ public class ManagedConnectionFactoryImpl
 	 * @see javax.resource.spi.ManagedConnectionFactory#getLogWriter()
 	 */
 	public PrintWriter getLogWriter() throws ResourceException {
-		LOGGER.debug(this.getClass().getName()+": getLogWriter()");
+		if(LOGGER.isDebugEnabled())
+			LOGGER.debug(this.getClass().getName()+": getLogWriter()");
 		return null;
 	}
 
@@ -171,10 +175,12 @@ public class ManagedConnectionFactoryImpl
 	 * @see javax.resource.spi.ManagedConnectionFactory#matchManagedConnections(java.util.Set, javax.security.auth.Subject, javax.resource.spi.ConnectionRequestInfo)
 	 */
 	public ManagedConnection matchManagedConnections(Set mcs, Subject subject, ConnectionRequestInfo cri) throws ResourceException {
-		LOGGER.debug("***********************************************************");
-		LOGGER.debug(this.getClass().getName()+": matchManagedConnections(...)");
-		LOGGER.debug("subject: "+subject);
-		LOGGER.debug("***********************************************************");
+		if(LOGGER.isDebugEnabled()) {
+			LOGGER.debug("***********************************************************");
+			LOGGER.debug(this.getClass().getName()+": matchManagedConnections(...)");
+			LOGGER.debug("subject: "+subject);
+			LOGGER.debug("***********************************************************");
+		}
 		
 		PasswordCredential pc = getPasswordCredential(subject);
 		for (Iterator i = mcs.iterator(); i.hasNext();)
@@ -202,14 +208,16 @@ public class ManagedConnectionFactoryImpl
 	 * @see javax.resource.spi.ManagedConnectionFactory#setLogWriter(java.io.PrintWriter)
 	 */
 	public void setLogWriter(PrintWriter pw) throws ResourceException {
-		LOGGER.debug(this.getClass().getName()+": setLogWriter(pw): pw="+pw);
+		if(LOGGER.isDebugEnabled())
+			LOGGER.debug(this.getClass().getName()+": setLogWriter(pw): pw="+pw);
 	}
 	
 	// *** helpers
 	protected PasswordCredential getPasswordCredential(Subject subject) 
 	throws ResourceException
 	{
-		LOGGER.info(this.getClass().getName()+": getPasswordCredential(subject=\""+subject+"\")");
+		if(LOGGER.isDebugEnabled())
+			LOGGER.debug(this.getClass().getName()+": getPasswordCredential(subject=\""+subject+"\")");
 		
 		if (subject == null) 
 		{

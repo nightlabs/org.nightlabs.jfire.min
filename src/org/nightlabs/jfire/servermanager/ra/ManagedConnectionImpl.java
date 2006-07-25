@@ -79,21 +79,24 @@ public class ManagedConnectionImpl
 	 * @see javax.resource.spi.LocalTransaction#begin()
 	 */
 	public void begin() throws ResourceException {
-		LOGGER.debug(this.getClass().getName()+": begin()");		
+		if(LOGGER.isDebugEnabled())
+			LOGGER.debug(this.getClass().getName()+": begin()");		
 	}
 
 	/**
 	 * @see javax.resource.spi.LocalTransaction#commit()
 	 */
 	public void commit() throws ResourceException {
-		LOGGER.debug(this.getClass().getName()+": commit()");
+		if(LOGGER.isDebugEnabled())
+			LOGGER.debug(this.getClass().getName()+": commit()");
 	}
 
 	/**
 	 * @see javax.resource.spi.LocalTransaction#rollback()
 	 */
 	public void rollback() throws ResourceException {
-		LOGGER.debug(this.getClass().getName()+": rollback()");
+		if(LOGGER.isDebugEnabled())
+			LOGGER.debug(this.getClass().getName()+": rollback()");
 	}
 
 	/**
@@ -102,7 +105,8 @@ public class ManagedConnectionImpl
 	 */
 	public void addConnectionEventListener(ConnectionEventListener cel)
 	{
-		LOGGER.debug(this.getClass().getName()+": addConnectionEventListener(...)");
+		if(LOGGER.isDebugEnabled())
+			LOGGER.debug(this.getClass().getName()+": addConnectionEventListener(...)");
 		synchronized (cels) {
 			cels.add(cel);
 		}
@@ -114,7 +118,8 @@ public class ManagedConnectionImpl
 	 */
 	public void removeConnectionEventListener(ConnectionEventListener cel)
 	{
-		LOGGER.debug(this.getClass().getName()+": removeConnectionEventListener(...)");
+		if(LOGGER.isDebugEnabled())
+			LOGGER.debug(this.getClass().getName()+": removeConnectionEventListener(...)");
 		synchronized (cels) {
 			cels.remove(cel);
 		}
@@ -124,7 +129,8 @@ public class ManagedConnectionImpl
 	 * @see javax.resource.spi.ManagedConnection#associateConnection(java.lang.Object)
 	 */
 	public void associateConnection(Object c) throws ResourceException {
-		LOGGER.debug(this.getClass().getName()+": associateConnection(...)");
+		if(LOGGER.isDebugEnabled())
+			LOGGER.debug(this.getClass().getName()+": associateConnection(...)");
 		if (!(c instanceof JFireServerManagerImpl)) 
 		{
 			throw new ResourceException("Wrong Connection type! Expected \""+JFireServerManagerImpl.class.getName()+"\" Found \""+(c==null?"null":c.getClass().getName())+"\"");
@@ -140,7 +146,8 @@ public class ManagedConnectionImpl
 	public synchronized void cleanup()
 	throws ResourceException
 	{
-		LOGGER.info(this.getClass().getName()+": cleanup()");
+		if(LOGGER.isDebugEnabled())
+			LOGGER.debug(this.getClass().getName()+": cleanup()");
 		for (Iterator i = handles.iterator(); i.hasNext();)
 		{
 			((JFireServerManagerImpl)i.next()).setManagedConnection(null);
@@ -152,7 +159,8 @@ public class ManagedConnectionImpl
 	 * @see javax.resource.spi.ManagedConnection#destroy()
 	 */
 	public void destroy() throws ResourceException {
-		LOGGER.info(this.getClass().getName()+": destroy()");		
+		if(LOGGER.isDebugEnabled())
+			LOGGER.debug(this.getClass().getName()+": destroy()");		
 	}
 
 	/**
@@ -168,10 +176,12 @@ public class ManagedConnectionImpl
 	public Object getConnection(Subject subject, ConnectionRequestInfo cri)
 	throws ResourceException
 	{
-		LOGGER.debug("***********************************************************");
-		LOGGER.debug(this.getClass().getName()+": getConnection(...)");
-		LOGGER.debug("subject: " + subject);
-		LOGGER.debug("***********************************************************");
+		if(LOGGER.isDebugEnabled()) {
+			LOGGER.debug("***********************************************************");
+			LOGGER.debug(this.getClass().getName()+": getConnection(...)");
+			LOGGER.debug("subject: " + subject);
+			LOGGER.debug("***********************************************************");
+		}
 
 //		PasswordCredential pc = getManagedConnectionFactory().getPasswordCredential(subject);
 //		if (!credential.equals(pc))
@@ -189,7 +199,8 @@ public class ManagedConnectionImpl
 	 * @see javax.resource.spi.ManagedConnection#getLocalTransaction()
 	 */
 	public LocalTransaction getLocalTransaction() throws ResourceException {
-		LOGGER.debug(this.getClass().getName()+": getLocalTransaction()");
+		if(LOGGER.isDebugEnabled())
+			LOGGER.debug(this.getClass().getName()+": getLocalTransaction()");
 		return this;
 	}
 
@@ -197,7 +208,8 @@ public class ManagedConnectionImpl
 	 * @see javax.resource.spi.ManagedConnection#getLogWriter()
 	 */
 	public PrintWriter getLogWriter() throws ResourceException {
-		LOGGER.debug(this.getClass().getName()+": getLogWriter()");
+		if(LOGGER.isDebugEnabled())
+			LOGGER.debug(this.getClass().getName()+": getLogWriter()");
 		return null;
 	}
 
@@ -219,7 +231,8 @@ public class ManagedConnectionImpl
 	 * @see javax.resource.spi.ManagedConnection#setLogWriter(java.io.PrintWriter)
 	 */
 	public void setLogWriter(PrintWriter lw) throws ResourceException {
-		LOGGER.debug(this.getClass().getName()+": setLogWriter(...)");		
+		if(LOGGER.isDebugEnabled())
+			LOGGER.debug(this.getClass().getName()+": setLogWriter(...)");		
 	}
 
 	

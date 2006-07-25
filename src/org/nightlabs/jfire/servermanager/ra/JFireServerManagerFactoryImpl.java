@@ -158,7 +158,8 @@ public class JFireServerManagerFactoryImpl
 	public JFireServerManagerFactoryImpl(final ManagedConnectionFactoryImpl mcf, final ConnectionManager cm)
 	throws ResourceException 
 	{
-		LOGGER.debug(this.getClass().getName()+": CONSTRUCTOR");
+		if(LOGGER.isDebugEnabled())
+			LOGGER.debug(this.getClass().getName()+": CONSTRUCTOR");
 		this.mcf = mcf;
 		this.cm = cm;
 		Config config = getConfig();
@@ -493,7 +494,8 @@ public class JFireServerManagerFactoryImpl
 	 * @see javax.resource.cci.ConnectionFactory#getConnection()
 	 */
 	public Connection getConnection() throws ResourceException {
-		LOGGER.debug(this.getClass().getName()+": getConnection()");
+		if(LOGGER.isDebugEnabled())
+			LOGGER.debug(this.getClass().getName()+": getConnection()");
 		JFireServerManagerImpl ismi = (JFireServerManagerImpl)cm.allocateConnection(mcf, null);
 		ismi.setJFireServerManagerFactory(this);
 		return ismi;
@@ -503,7 +505,8 @@ public class JFireServerManagerFactoryImpl
 	 * @see javax.resource.cci.ConnectionFactory#getConnection(javax.resource.cci.ConnectionSpec)
 	 */
 	public Connection getConnection(ConnectionSpec cs) throws ResourceException {
-		LOGGER.debug(this.getClass().getName()+": getConnection(ConnectionSpec cs): cs = "+cs);
+		if(LOGGER.isDebugEnabled())
+			LOGGER.debug(this.getClass().getName()+": getConnection(ConnectionSpec cs): cs = "+cs);
 		return getConnection();
 	}
 
@@ -511,7 +514,8 @@ public class JFireServerManagerFactoryImpl
 	 * @see javax.resource.cci.ConnectionFactory#getRecordFactory()
 	 */
 	public RecordFactory getRecordFactory() throws ResourceException {
-		LOGGER.debug(this.getClass().getName()+": getRecordFactory()");
+		if(LOGGER.isDebugEnabled())
+			LOGGER.debug(this.getClass().getName()+": getRecordFactory()");
 		return null;
 	}
 
@@ -526,7 +530,8 @@ public class JFireServerManagerFactoryImpl
 	 * @see javax.resource.Referenceable#setReference(javax.naming.Reference)
 	 */
 	public void setReference(Reference _ref) {
-		LOGGER.debug(this.getClass().getName()+": setReference(Reference ref): ref = "+_ref);
+		if(LOGGER.isDebugEnabled())
+			LOGGER.debug(this.getClass().getName()+": setReference(Reference ref): ref = "+_ref);
 		this.ref = _ref;
 	}
 
@@ -1066,54 +1071,71 @@ public class JFireServerManagerFactoryImpl
 						//		- UserRef "_Organisation_"+"_Other_"
 						//		- UserRef "_Organisation_"+user
 
-						LOGGER.debug("Creating JDO object LocalServer...");
+						if(LOGGER.isDebugEnabled())
+							LOGGER.debug("Creating JDO object LocalServer...");
 						Server server = mcf.getConfigModule().getLocalServer().createServer(pm);
 						LocalServer localServer = new LocalServer(server);
 						pm.makePersistent(localServer);
-						LOGGER.debug("pm.makePersistent(localServer) done.");
+						if(LOGGER.isDebugEnabled())
+							LOGGER.debug("pm.makePersistent(localServer) done.");
 			
-						LOGGER.debug("Creating JDO object LocalOrganisation...");
+						if(LOGGER.isDebugEnabled())
+							LOGGER.debug("Creating JDO object LocalOrganisation...");
 						Organisation organisation = organisationCf.createOrganisation(pm, server);
 						LocalOrganisation localOrganisation = new LocalOrganisation(organisation);
 						pm.makePersistent(localOrganisation);
-						LOGGER.debug("pm.makePersistent(localOrganisation) done.");
+						if(LOGGER.isDebugEnabled())
+							LOGGER.debug("pm.makePersistent(localOrganisation) done.");
 
-						LOGGER.debug("Creating JDO object AuthorityType with ID \""+AuthorityType.AUTHORITY_TYPE_ID_SYSTEM+"\"...");
+						if(LOGGER.isDebugEnabled())
+							LOGGER.debug("Creating JDO object AuthorityType with ID \""+AuthorityType.AUTHORITY_TYPE_ID_SYSTEM+"\"...");
 						AuthorityType authorityType = new AuthorityType(organisationID, AuthorityType.AUTHORITY_TYPE_ID_SYSTEM);
 						pm.makePersistent(authorityType);
-						LOGGER.debug("pm.makePersistent(authorityType) done.");
+						if(LOGGER.isDebugEnabled())
+							LOGGER.debug("pm.makePersistent(authorityType) done.");
 
-						LOGGER.debug("Creating JDO object Authority with ID \""+Authority.AUTHORITY_ID_ORGANISATION+"\"...");
+						if(LOGGER.isDebugEnabled())
+							LOGGER.debug("Creating JDO object Authority with ID \""+Authority.AUTHORITY_ID_ORGANISATION+"\"...");
 						Authority authority = new Authority(organisationID, Authority.AUTHORITY_ID_ORGANISATION, authorityType);
 						pm.makePersistent(authority);
-						LOGGER.debug("pm.makePersistent(authority) done.");
+						if(LOGGER.isDebugEnabled())
+							LOGGER.debug("pm.makePersistent(authority) done.");
 
-						LOGGER.debug("Creating JDO object User with ID \""+User.USERID_OTHER+"\"...");
+						if(LOGGER.isDebugEnabled())
+							LOGGER.debug("Creating JDO object User with ID \""+User.USERID_OTHER+"\"...");
 						User otherUser = new User(organisationID, User.USERID_OTHER);
 						new UserLocal(otherUser);
 						pm.makePersistent(otherUser);
-						LOGGER.debug("pm.makePersistent(otherUser) done.");
+						if(LOGGER.isDebugEnabled())
+							LOGGER.debug("pm.makePersistent(otherUser) done.");
 
-						LOGGER.debug("Creating JDO object User with ID \""+userID+"\"...");
+						if(LOGGER.isDebugEnabled())
+							LOGGER.debug("Creating JDO object User with ID \""+userID+"\"...");
 						User user = new User(organisationID, userID);
 						UserLocal userLocal = new UserLocal(user);
 						userLocal.setPasswordPlain(password);
 						pm.makePersistent(user);
-						LOGGER.debug("pm.makePersistent(user) done.");
+						if(LOGGER.isDebugEnabled())
+							LOGGER.debug("pm.makePersistent(user) done.");
 
-						LOGGER.debug("Creating instances of UserRef for both Users within the default authority...");
+						if(LOGGER.isDebugEnabled())
+							LOGGER.debug("Creating instances of UserRef for both Users within the default authority...");
 						authority.createUserRef(otherUser);
 						UserRef userRef = authority.createUserRef(user);
-						LOGGER.debug("Creating instances of UserRef for both Users within the default authority done.");
+						if(LOGGER.isDebugEnabled())
+							LOGGER.debug("Creating instances of UserRef for both Users within the default authority done.");
 
 						// import all roles
-						LOGGER.debug("Importing all roles and role groups...");
+						if(LOGGER.isDebugEnabled())
+							LOGGER.debug("Importing all roles and role groups...");
 						RoleImportSet roleImportSet = roleImport_prepare(organisationID);
 						roleImport_commit(roleImportSet, pm);
-						LOGGER.debug("Import of roles and role groups done.");
+						if(LOGGER.isDebugEnabled())
+							LOGGER.debug("Import of roles and role groups done.");
 
 						// Give the user all RoleGroups.
-						LOGGER.debug("Assign all RoleGroups to the user \""+userID+"\"...");
+						if(LOGGER.isDebugEnabled())
+							LOGGER.debug("Assign all RoleGroups to the user \""+userID+"\"...");
 						for (Iterator it = pm.getExtent(RoleGroup.class).iterator(); it.hasNext(); ) {
 							RoleGroup roleGroup = (RoleGroup)it.next();
 							RoleGroupRef roleGroupRef = authority.createRoleGroupRef(roleGroup);
@@ -1125,14 +1147,17 @@ public class JFireServerManagerFactoryImpl
 		//					RoleGroupRef roleGroupRef = authority.createRoleGroupRef(roleGroup);
 		//					userRef.addRoleGroupRef(roleGroupRef);
 		//				}
-						LOGGER.debug("Assigning all RoleGroups to user \""+userID+"\" done.");
+						if(LOGGER.isDebugEnabled())
+							LOGGER.debug("Assigning all RoleGroups to user \""+userID+"\" done.");
 						
 						// create system user
-						LOGGER.debug("Creating system user...");
+						if(LOGGER.isDebugEnabled())
+							LOGGER.debug("Creating system user...");
 						User systemUser = new User(organisationID, User.USERID_SYSTEM);
 						new UserLocal(systemUser);
 						pm.makePersistent(systemUser);
-						LOGGER.debug("System user created.");
+						if(LOGGER.isDebugEnabled())
+							LOGGER.debug("System user created.");
 			
 						// Because flushing the authentication cache causes trouble to currently logged in
 						// clients, we only do that if we are creating the first organisation of a new server.
