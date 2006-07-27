@@ -56,7 +56,12 @@ import org.nightlabs.ModuleException;
  **/
 public abstract class RoleManagerBean extends BaseSessionBeanImpl implements SessionBean  
 {
-
+	/**
+	 * LOG4J logger used by this class
+	 */
+	private static final org.apache.log4j.Logger logger = org.apache.log4j.Logger
+			.getLogger(RoleManagerBean.class);
+	
 	/**
 	 * @see org.nightlabs.jfire.base.BaseSessionBeanImpl#setSessionContext(javax.ejb.SessionContext)
 	 */
@@ -95,13 +100,14 @@ public abstract class RoleManagerBean extends BaseSessionBeanImpl implements Ses
 	public void createRole(String roleID)
 	throws SecurityException
 	{
-		System.out.println("RoleManagerBean.createRole");
+		if(logger.isDebugEnabled())
+			logger.debug("RoleManagerBean.createRole");
 		try {
 			PersistenceManager pm = getPersistenceManager();
 			try {
 				Role newRole = new Role(roleID);
 				pm.makePersistent(newRole);
-				System.out.println("new role created..");
+				logger.info("new role created..");
 			} finally {
 				if (AuthorityManagerBean.CLOSE_PM) pm.close();
 			}

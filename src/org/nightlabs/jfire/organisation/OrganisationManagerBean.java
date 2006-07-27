@@ -85,7 +85,8 @@ public abstract class OrganisationManagerBean
 	public void setSessionContext(SessionContext sessionContext)
 			throws EJBException, RemoteException
 	{
-		System.out.println(this.getClass().getName() + ".setSessionContext("+sessionContext+")");
+		if(logger.isDebugEnabled())
+			logger.debug("setSessionContext("+sessionContext+")");
 		super.setSessionContext(sessionContext);
 	}
 	/**
@@ -98,7 +99,8 @@ public abstract class OrganisationManagerBean
 	public void ejbCreate()
 	throws CreateException
 	{
-		System.out.println(this.getClass().getName() + ".ejbCreate()");
+		if(logger.isDebugEnabled())
+			logger.debug("ejbCreate()");
 //		try
 //		{
 //			System.out.println("OrganisationManager created by " + this.getPrincipalString());
