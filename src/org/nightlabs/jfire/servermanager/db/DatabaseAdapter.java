@@ -55,12 +55,13 @@ public interface DatabaseAdapter
 	 * @param databaseURL The complete connection URL for accessing the new database. You must parse it in order to
 	 *		check whether 1st you are really able to handle this kind of database (e.g. if it starts with 'jdbc:mysql' and you
 	 *		support only PostgreSQL, then you have to throw an exception).
-	 * @throws DatabaseException Thrown, if accessing the database server/creating the database fails.
+	 * @throws DatabaseAlreadyExistsException Thrown if the database already exists and therefore cannot be created.
+	 * @throws DatabaseException Thrown, if accessing the database server fails or creating the database fails.
 	 */
 	void createDatabase(
 			JFireServerConfigModule jfireServerConfigModule,
 			String databaseURL)
-	throws DatabaseException;
+	throws DatabaseAlreadyExistsException, DatabaseException;
 
 	/**
 	 * This method is called after {@link #createDatabase(JFireServerConfigModule, String) } in case an error occured

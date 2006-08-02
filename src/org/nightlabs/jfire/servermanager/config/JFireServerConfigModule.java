@@ -39,6 +39,8 @@ import org.nightlabs.config.ConfigModule;
 import org.nightlabs.config.InitException;
 import org.nightlabs.jfire.server.LocalServer;
 import org.nightlabs.jfire.server.Server;
+import org.nightlabs.jfire.serverconfigurator.ServerConfiguratorDummy;
+import org.nightlabs.jfire.servermanager.db.DatabaseAdapter;
 import org.nightlabs.jfire.servermanager.db.DatabaseAdapterHSQL;
 import org.nightlabs.jfire.servermanager.db.DatabaseAdapterMySQL;
 import org.nightlabs.util.Utils;
@@ -55,7 +57,10 @@ public class JFireServerConfigModule extends ConfigModule
 
 	public static class J2ee implements Serializable
 	{
+		private JFireServerConfigModule cfMod;
+
 		private String j2eeDeployBaseDirectory;
+		private String serverConfigurator;
 
 		/**
 		 * @return Returns the j2eeDeployBaseDirectory.
@@ -68,17 +73,33 @@ public class JFireServerConfigModule extends ConfigModule
 		 */
 		public void setJ2eeDeployBaseDirectory(String deployBaseDirectory) {
 			j2eeDeployBaseDirectory = deployBaseDirectory;
+			if (cfMod != null) cfMod.setChanged();
+		}
+
+		public String getServerConfigurator()
+		{
+			return serverConfigurator;
+		}
+		public void setServerConfigurator(String serverConfigurator)
+		{
+			this.serverConfigurator = serverConfigurator;
+			if (cfMod != null) cfMod.setChanged();
 		}
 
 		public void init()
 		{
 			if (j2eeDeployBaseDirectory == null)
-				j2eeDeployBaseDirectory = "../server/default/deploy/JFire.last/";
+				setJ2eeDeployBaseDirectory("../server/default/deploy/JFire.last/");
+
+			if (serverConfigurator == null)
+				setServerConfigurator(ServerConfiguratorDummy.class.getName());
 		}
 	}
 
 	public static class Database implements Serializable
 	{
+		private JFireServerConfigModule cfMod;
+
 		public static final String DATABASE_NAME_VAR = "{databaseName}";
 
 		public static String DEFAULTS_DEFAULT_KEY = "MySQL";
@@ -261,6 +282,16 @@ public class JFireServerConfigModule extends ConfigModule
 			this.databaseAdapter = databaseCreator;
 		}
 
+		public DatabaseAdapter instantiateDatabaseAdapter() throws ClassNotFoundException, InstantiationException, IllegalAccessException
+		{
+			String databaseAdapterClassName = getDatabaseAdapter();
+			Class dbAdapterClass = Class.forName(databaseAdapterClassName);
+			if (!DatabaseAdapter.class.isAssignableFrom(dbAdapterClass))
+				throw new ClassCastException("DatabaseCreatorClass \"" + databaseAdapterClassName + "\" does not implement interface \""+DatabaseAdapter.class.getName()+"\"!");
+
+			return (DatabaseAdapter) dbAdapterClass.newInstance();
+		}
+
 		protected void _init()
 		{
 			if (databaseDriverName == null)
@@ -320,6 +351,8 @@ public class JFireServerConfigModule extends ConfigModule
 
 	public static class JDO implements Serializable
 	{
+		private JFireServerConfigModule cfMod;
+
 		public static final String ORGANISATION_ID_VAR = "{organisationID}";
 
 		private String jdoConfigDirectory;
@@ -562,8 +595,13 @@ public class JFireServerConfigModule extends ConfigModule
 		if (jdo == null)
 			jdo = new JDO();
 
+		j2ee.cfMod = this;
 		j2ee.init();
+
+		database.cfMod = this;
 		database.init();
+
+		jdo.cfMod = this;
 		jdo.init();
 
 		if (localServer != null)

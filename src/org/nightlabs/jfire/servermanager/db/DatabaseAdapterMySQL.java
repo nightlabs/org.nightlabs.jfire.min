@@ -28,6 +28,7 @@ package org.nightlabs.jfire.servermanager.db;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -66,9 +67,10 @@ implements DatabaseAdapter
 	public void createDatabase(
 			JFireServerConfigModule jfireServerConfigModule,
 			String databaseURL)
-	throws DatabaseException
+	throws DatabaseAlreadyExistsException, DatabaseException
 	{
-		Logger LOGGER = Logger.getLogger(DatabaseAdapterMySQL.class);
+		this.databaseName = null;
+		Logger logger = Logger.getLogger(DatabaseAdapterMySQL.class);
 
 		JFireServerConfigModule.Database dbCf = jfireServerConfigModule.getDatabase();
 
@@ -82,15 +84,26 @@ implements DatabaseAdapter
 		String dbServerURL = databaseURL.substring(0, lastSlashPos + 1);
 		String databaseName = databaseURL.substring(lastSlashPos + 1);
 
-		LOGGER.info("Creating database \""+databaseName+"\" on server \""+dbServerURL+"\"");
+		logger.info("Creating database \""+databaseName+"\" on server \""+dbServerURL+"\"");
 
 		try {
 			connCreateDB = DriverManager.getConnection(
 					dbServerURL, dbCf.getDatabaseUserName(), dbCf.getDatabasePassword());
 			Statement stmt = connCreateDB.createStatement();
+
+// We check the error code below instead! That reduces two calls to one.
+//			// check whether database exists
+//			ResultSet resultSet = stmt.executeQuery("show databases like '" + databaseName + "'");
+//			if (resultSet.next()) // the database exists
+//				throw new DatabaseAlreadyExistsException(dbServerURL, databaseName);
+
 			stmt.execute("create database " + databaseName);
 			this.databaseName = databaseName;
 		} catch (SQLException e) {
+// We check the error code here instead of querying before: http://dev.mysql.com/doc/refman/5.1/en/error-messages-server.html
+			if (1007 == e.getErrorCode())
+				throw new DatabaseAlreadyExistsException(dbServerURL, databaseName);
+
 			throw new DatabaseException(e);
 		}
 		// It's no problem that we don't close the connCreateDB, if dropDatabase() is not called.

@@ -62,9 +62,9 @@ implements DatabaseAdapter
 	public void createDatabase(
 			JFireServerConfigModule jfireServerConfigModule,
 			String databaseURL)
-	throws DatabaseException
+	throws DatabaseAlreadyExistsException, DatabaseException
 	{
-//		Logger LOGGER = Logger.getLogger(DatabaseAdapterHSQL.class);
+//		Logger logger = Logger.getLogger(DatabaseAdapterHSQL.class);
 
 		JFireServerConfigModule.Database dbCf = jfireServerConfigModule.getDatabase();
 
@@ -79,6 +79,7 @@ implements DatabaseAdapter
 			stmt.execute("create table MY_FIRST_TABLE (a int not null)");
 			stmt.execute("drop table MY_FIRST_TABLE");
 		} catch (SQLException e) {
+			// TODO throw a DatabaseAlreadyExistsException, if this is the cause of the failure. Is there a way to know which databases exist?!
 			throw new DatabaseException(e);
 		}
 	}

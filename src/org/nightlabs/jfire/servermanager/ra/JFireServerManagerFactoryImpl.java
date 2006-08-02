@@ -98,6 +98,7 @@ import org.nightlabs.jfire.security.registry.SecurityRegistrar;
 import org.nightlabs.jfire.security.registry.SecurityRegistrarFactoryImpl;
 import org.nightlabs.jfire.server.LocalServer;
 import org.nightlabs.jfire.server.Server;
+import org.nightlabs.jfire.serverconfigurator.ServerConfigurator;
 import org.nightlabs.jfire.serverinit.ServerInitializer;
 import org.nightlabs.jfire.servermanager.DuplicateOrganisationException;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
@@ -203,7 +204,7 @@ public class JFireServerManagerFactoryImpl
 
 		if (saveConfig) {
 			try {
-				config.saveConfFile(false);
+				config.save(false);
 				// shall we really force all modules to be written here?
 				// Probably not, after last config bugs are fixed.
 				// I think I fixed the bug today ;-) Changed it to false. Marco.
@@ -311,7 +312,7 @@ public class JFireServerManagerFactoryImpl
 			catch (NameAlreadyBoundException e)
 			{
 				initialContext.rebind(JMSConnectionFactoryLookup.TOPICCF_JNDI_LINKNAME, "UIL2ConnectionFactory");
-			}			
+			}
 			
 		} catch (Exception e) {
 			logger.error("Binding some config settings into JNDI failed!", e);
@@ -415,12 +416,47 @@ public class JFireServerManagerFactoryImpl
 		logger.info("Caught SERVER STARTED event!");
 
 		try {
-			// DatastoreInitialization
-			DatastoreInitializer datastoreInitializer = new DatastoreInitializer(this, mcf, getJ2EEVendorAdapter());
 
 			InitialContext ctx = new InitialContext();
-			try {
-	
+			try {				
+				// instantiating and calling ServerConfigurator
+				String serverConfiguratorClassName = mcf.getConfigModule().getJ2ee().getServerConfigurator();
+
+				if (logger.isDebugEnabled())
+					logger.debug("Instantiating ServerConfigurator: " + serverConfiguratorClassName);
+
+				Class serverConfiguratorClass;
+				try {
+					serverConfiguratorClass = Class.forName(serverConfiguratorClassName);
+				} catch (Throwable x) {
+					logger.error("Loading ServerConfigurator class " + serverConfiguratorClassName + " (configured in JFireServerConfigModule) failed!", x);
+					throw x;
+				}
+
+				if (!ServerConfigurator.class.isAssignableFrom(serverConfiguratorClass))
+					throw new IllegalStateException("ServerConfigurator " + serverConfiguratorClassName + " (configured in JFireServerConfigModule) does not extend class " + ServerConfigurator.class);
+
+				ServerConfigurator serverConfigurator;
+				try {
+					serverConfigurator = (ServerConfigurator) serverConfiguratorClass.newInstance();
+					serverConfigurator.setJFireServerManagerFactoryImpl(this);
+					serverConfigurator.setJFireServerConfigModule(mcf.getConfigModule());
+				} catch (Throwable x) {
+					logger.error("Instantiating ServerConfigurator from class " + serverConfiguratorClassName + " (configured in JFireServerConfigModule) failed!", x);
+					throw x;
+				}
+
+				try {
+					serverConfigurator.configureServer();
+				} catch (Throwable x) {
+					logger.error("Calling ServerConfigurator.configureServer() with instance of " + serverConfiguratorClassName + " (configured in JFireServerConfigModule) failed!", x);
+					throw x;
+				}	
+
+				// DatastoreInitialization
+				DatastoreInitializer datastoreInitializer = new DatastoreInitializer(this, mcf, getJ2EEVendorAdapter());
+
+				
 				for (Iterator it = organisationConfigModule.getOrganisations().iterator(); it.hasNext(); ) {
 					OrganisationCf org = (OrganisationCf)it.next();
 					String organisationID = org.getOrganisationID();
@@ -482,7 +518,7 @@ public class JFireServerManagerFactoryImpl
 				ctx.close();
 			}
 
-		} catch (Exception x) {
+		} catch (Throwable x) {
 			logger.fatal("Problem in serverStarted()!", x);
 		}
 
@@ -967,22 +1003,13 @@ public class JFireServerManagerFactoryImpl
 					}
 
 					// create database
-					String databaseAdapterClassName = dbCf.getDatabaseAdapter();
-					try {
-						Class dbAdapterClass = Class.forName(databaseAdapterClassName);
-						if (!DatabaseAdapter.class.isAssignableFrom(dbAdapterClass))
-							throw new ClassCastException("DatabaseCreatorClass does not implement interface \""+DatabaseAdapter.class.getName()+"\"!");
-
-						databaseAdapter = (DatabaseAdapter) dbAdapterClass.newInstance();
-					} catch (Exception x) {
-						throw new ModuleException("Instantiating DatabaseAdapter \""+databaseAdapterClassName+"\" failed!", x);
-					}
+					databaseAdapter = dbCf.instantiateDatabaseAdapter();
 
 					try {
 						databaseAdapter.createDatabase(mcf.getConfigModule(), dbURL);
 						dropDatabase = true;
 					} catch (Exception x) {
-						throw new ModuleException("Creating database with DatabaseAdapter \""+databaseAdapterClassName+"\" failed!", x);
+						throw new ModuleException("Creating database with DatabaseAdapter \"" + databaseAdapter.getClass().getName() + "\" failed!", x);
 					}
 
 					jdoConfigDir = new File(jdoCf.getJdoConfigDirectory(organisationID)).getAbsoluteFile();
