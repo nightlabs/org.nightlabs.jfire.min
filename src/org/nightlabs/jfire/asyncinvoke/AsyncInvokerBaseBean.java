@@ -83,6 +83,10 @@ implements javax.ejb.MessageDrivenBean, javax.jms.MessageListener
 
 	public void onMessage(javax.jms.Message message)
 	{
+//		if (logger.isDebugEnabled())
+//			logger.debug("onMessage(...) entered.");
+		logger.info("onMessage(...) entered.");
+
 		try {
 			if (!(message instanceof ObjectMessage)) {
 				logger.error("Message is not an instance of ObjectMessage: " + message);
@@ -97,17 +101,14 @@ implements javax.ejb.MessageDrivenBean, javax.jms.MessageListener
 
 			InitialContext initCtxNotAuthenticated = new InitialContext();
 
-			logger.info("*****************************************************************");
-			logger.info("*****************************************************************");
-			logger.info("*****************************************************************");
-
 			// we need to wait for the system to be up, ready and running
 			// wait max 5 min for the JFireServerManagerFactory to pop up in JNDI
 			long startDT = System.currentTimeMillis();
 			JFireServerManagerFactory ismf = null;
-			do {
-				logger.info("-----------------------------------------------------------------");
+			if (logger.isDebugEnabled())
+				logger.debug("looking up JFireServerManagerFactory...");
 
+			do {
 				if (System.currentTimeMillis() - startDT > 5 * 60 * 1000)
 					throw new IllegalStateException("JFireServerManagerFactory did not pop up in JNDI within timeout (hardcoded 5 min)!");
 
@@ -116,6 +117,7 @@ implements javax.ejb.MessageDrivenBean, javax.jms.MessageListener
 				} catch (NameNotFoundException x) {
 					// ignore
 					ismf = null;
+					logger.info("JFireServerManagerFactory is not (yet) bound into JNDI! Will wait and try again...");
 				}
 
 				if (ismf == null)
@@ -123,20 +125,23 @@ implements javax.ejb.MessageDrivenBean, javax.jms.MessageListener
 
 			} while (ismf == null);
 
+			if (logger.isDebugEnabled())
+				logger.debug("checking whether JFireServerManagerFactory is up and running...");
+
 			startDT = System.currentTimeMillis();
 			do {
-				logger.info("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-
 				if (System.currentTimeMillis() - startDT > 10 * 60 * 1000)
 					throw new IllegalStateException("JFireServer did not start within timeout (hardcoded 10 min)!");
 
-				if (!ismf.isUpAndRunning())
+				if (!ismf.isUpAndRunning()) {
 					try { Thread.sleep(3000); } catch (InterruptedException x) { }
+					logger.info("JFireServerManagerFactory is not (yet) up and running! Will wait and try again...");
+				}
 
 			} while (!ismf.isUpAndRunning());
 
-			logger.info("*****************************************************************");
-			logger.info("*****************************************************************");
+			if (logger.isDebugEnabled())
+				logger.debug("JFireServerManagerFactory is up and running. Will process asynchronous invocation.");
 
 			AsyncInvokeEnvelope envelope = (AsyncInvokeEnvelope) obj;
 

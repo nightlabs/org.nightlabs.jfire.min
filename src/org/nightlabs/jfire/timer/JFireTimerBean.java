@@ -1,7 +1,9 @@
 package org.nightlabs.jfire.timer;
 
+import java.io.Serializable;
 import java.rmi.RemoteException;
 import java.util.Date;
+import java.util.List;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
@@ -10,12 +12,15 @@ import javax.ejb.SessionContext;
 import javax.ejb.TimedObject;
 import javax.ejb.Timer;
 import javax.ejb.TimerService;
+import javax.jdo.JDOHelper;
+import javax.jdo.PersistenceManager;
 import javax.naming.InitialContext;
 import javax.security.auth.login.LoginContext;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.ModuleException;
 import org.nightlabs.jfire.asyncinvoke.AuthCallbackHandler;
+import org.nightlabs.jfire.asyncinvoke.Invocation;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
@@ -114,7 +119,7 @@ implements SessionBean, TimedObject
 	/**
 	 * @throws ModuleException 
 	 * @ejb.interface-method
-	 * @ejb.transaction type="Supports"
+	 * @ejb.transaction type="Required"
 	 * @ejb.permission unchecked="true"
 	 **/
 	public void startTimer()
@@ -125,24 +130,40 @@ implements SessionBean, TimedObject
 
 		TimerService timerService = sessionContext.getTimerService();
 
-		long timeout = 60 * 1000; // call once every minute
+		PersistenceManager pm = getPersistenceManager();
+		try {
+			// before we start the timer, we clear all Task.executing flags (it's not possible that there's sth. executing before we start the timer)
+			List<Task> tasks = (List<Task>) Task.getTasksByExecuting(pm, true);
+			if (!tasks.isEmpty()) {
+				logger.warn("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+				logger.warn("There are " + tasks.size() + " Tasks currently marked with executing=true! This is impossible! Will clear that flag now:");
+				for (Task task : tasks) {
+					task.setExecuting(false);
+					logger.warn("  cleared Task.executing: " + JDOHelper.getObjectId(task));
+				}
+			}
 
-		// We want the timer to start as exactly as possible at the starting of the minute (at 00 sec).
-		long start = System.currentTimeMillis();
-		start = start + timeout - (start % timeout);
-
-//		try {
-//			if (wait > 0)
-//				Thread.sleep(wait);
-//		} catch (InterruptedException e) {
-//			// ignore
-//		}
-
-		Date firstExecDate = new Date(start);
-		timerService.createTimer(
-				firstExecDate,
-				timeout,
-				new TimerParam(getOrganisationID()) // this object can be retrieved by Timer#getInfo()
-				);
+			long timeout = 60 * 1000; // call once every minute
+	
+			// We want the timer to start as exactly as possible at the starting of the minute (at 00 sec).
+			long start = System.currentTimeMillis();
+			start = start + timeout - (start % timeout);
+	
+	//		try {
+	//			if (wait > 0)
+	//				Thread.sleep(wait);
+	//		} catch (InterruptedException e) {
+	//			// ignore
+	//		}
+	
+			Date firstExecDate = new Date(start);
+			timerService.createTimer(
+					firstExecDate,
+					timeout,
+					new TimerParam(getOrganisationID()) // this object can be retrieved by Timer#getInfo()
+					);
+		} finally {
+			pm.close();
+		}
 	}
 }

@@ -104,12 +104,13 @@ public class TimerAsyncInvoke
 		public Serializable invoke()
 				throws Exception
 		{
-			try {
-				Thread.sleep(5000); // give the other transaction some time to finish (and write all data)
-				// TODO isn't there a better solution? Isn't this a JPOX bug anyway?!
-			} catch (InterruptedException x) {
-				// ignore
-			}
+//			try {
+//				Thread.sleep(5000); // give the other transaction some time to finish (and write all data)
+//				// TO DO isn't there a better solution? Isn't this a JPOX bug anyway?!
+//				// NOT necessary anymore - using XA transactions for AsyncInvoke now. Marco.
+//			} catch (InterruptedException x) {
+//				// ignore
+//			}
 
 			try {
 				TimerManagerLocal timerManager = TimerManagerUtil.getLocalHome().create();
@@ -193,7 +194,7 @@ public class TimerAsyncInvoke
 					// We were too fast (the invocation was called already before the TimerManagerBean wrote the
 					// new data to the database. Hence, we re-enqueue it.
 					logger.error("Task " + invocationParam.getTaskID() + " was re-enqueued, because the previous invocation was too fast. Should not happen!");
-					enqueue(QUEUE_INVOCATION, envelope);
+					enqueue(QUEUE_INVOCATION, envelope, false);
 					return;
 				}
 
@@ -278,7 +279,7 @@ public class TimerAsyncInvoke
 		}
 	}
 
-	protected static void exec(Task task)
+	protected static void exec(Task task, boolean enableXA)
 	throws LoginException, JMSException, NamingException
 	{
 		UserDescriptor caller = new UserDescriptor(
@@ -296,6 +297,6 @@ public class TimerAsyncInvoke
 		AsyncInvokeEnvelope envelope = new AsyncInvokeEnvelope(
 				caller,
 				invocation, successCallback, errorCallback, undeliverableCallback);
-		enqueue(QUEUE_INVOCATION, envelope);
+		enqueue(QUEUE_INVOCATION, envelope, enableXA);
 	}
 }

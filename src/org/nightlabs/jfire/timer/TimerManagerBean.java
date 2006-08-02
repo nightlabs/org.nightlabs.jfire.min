@@ -131,14 +131,10 @@ implements SessionBean
 			for (Iterator it = Task.getTasksToRecalculateNextExecDT(pm, now).iterator(); it.hasNext(); ) {
 				Task task = (Task) it.next();
 				task.calculateNextExecDT();
+				TimerAsyncInvoke.exec(task, true);
 			}
 		} finally {
 			pm.close();
-		}
-
-		for (Iterator it = tasks.iterator(); it.hasNext(); ) {
-			Task task = (Task) it.next();
-			TimerAsyncInvoke.exec(task);
 		}
 
 		logger.info("ejbTimeoutDelegate(...) for organisationID=\""+timerParam.organisationID+"\": end");

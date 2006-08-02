@@ -29,8 +29,11 @@ package org.nightlabs.jfire.asyncinvoke;
 import java.io.IOException;
 
 import javax.ejb.CreateException;
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
 import javax.jms.Message;
+import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.QueueConnection;
 import javax.jms.QueueConnectionFactory;
@@ -72,64 +75,72 @@ public class AsyncInvoke
 
 	/**
 	 * This is a convenience method which calls {@link #asyncInvoke(Invocation, SuccessCallback, ErrorCallback, UndeliverableCallback)}.
+	 * @param enableXA TODO
 	 * @throws CreateException 
 	 */
-	public static void exec(Invocation invocation)
+	public static void exec(Invocation invocation, boolean enableXA)
 	throws JMSException, NamingException, LoginException
 	{
-		exec(invocation, null, null, null);
+		exec(invocation, null, null, null, enableXA);
 	}
 
 	/**
 	 * This is a convenience method which calls {@link #asyncInvoke(Invocation, SuccessCallback, ErrorCallback, UndeliverableCallback)}.
+	 * @param enableXA TODO
 	 * @throws CreateException 
 	 */
 	public static void exec(
-			Invocation invocation, SuccessCallback successCallback)
+			Invocation invocation, SuccessCallback successCallback, boolean enableXA)
 	throws JMSException, NamingException, LoginException
 	{
-		exec(invocation, successCallback, null, null);
+		exec(invocation, successCallback, null, null, enableXA);
 	}
 
 	/**
 	 * This is a convenience method which calls {@link #asyncInvoke(Invocation, SuccessCallback, ErrorCallback, UndeliverableCallback)}.
+	 * @param enableXA TODO
 	 * @throws CreateException 
 	 */
 	public static void exec(
-			Invocation invocation, ErrorCallback errorCallback)
+			Invocation invocation, ErrorCallback errorCallback, boolean enableXA)
 	throws JMSException, NamingException, LoginException
 	{
-		exec(invocation, null, errorCallback, null);
+		exec(invocation, null, errorCallback, null, enableXA);
 	}
 
 	/**
 	 * This is a convenience method which calls {@link #asyncInvoke(Invocation, SuccessCallback, ErrorCallback, UndeliverableCallback)}.
+	 * @param enableXA TODO
 	 * @throws CreateException 
 	 */
 	public static void exec(
-			Invocation invocation, UndeliverableCallback undeliverableCallback)
+			Invocation invocation, UndeliverableCallback undeliverableCallback, boolean enableXA)
 	throws JMSException, NamingException, LoginException
 	{
-		exec(invocation, null, null, undeliverableCallback);
+		exec(invocation, null, null, undeliverableCallback, enableXA);
 	}
 
 	/**
 	 * @param invocation The <tt>Invocation</tt> that should be done asynchronously.
 	 * <tt>invocation</tt> MUST NOT be <tt>null</tt>.
-	 *
 	 * @param successCallback An optional callback that is executed in a separate asynchronous
 	 * transaction (means a failure does not affect the previous <tt>Invocation</tt>). To include
 	 * your success callback in the same XATransaction as the invocation, leave this param <tt>null</tt>
 	 * and do your callback directly in <tt>invocation</tt>. <tt>successCallback</tt> might be <tt>null</tt>.
-	 *
 	 * @param errorCallback An optional callback that is triggered every time the <tt>invocation</tt>
 	 * failed. It is executed asynchronously within a separate XATransaction (unlinked to the
 	 * <tt>invocation</tt> which is a necessity as the original XATransaction will be rolled back in
 	 * case of an error). <tt>errorCallback</tt> might be <tt>null</tt>.
-	 *
 	 * @param undeliverableCallback After a certain number of failed invocation retries, the <tt>invocation</tt>
 	 * is given up and this callback triggered. The default configuration is to retry an <tt>invocation</tt> once
 	 * per hour and to give up after a month (31 days).  <tt>undeliverableCallback</tt> might be <tt>null</tt>.
+	 * @param enableXA TODO
+	 * @param enableXA Whether or not to use an XA transaction and thus hook into the currently active global transaction <i>GT</i>.
+	 *		If this is <code>true</code>, the message will not be processed (and thus the invocation occur), before the
+	 *		<i>GT</i> is committed. If <code>GT</code> is rolled back, the invocation will never occur.
+	 *		If <code>enableXA</code> is <code>false</code>, the <code>envelope</code> will be enqueued without a transaction
+	 *		and thus, processing starts immediately - probably before the <i>GT</i> is complete. This will cause
+	 *		problems, if the asynchronously called code requires JDO objects written/manipulated within <i>GT</i>.
 	 *
 	 * @throws JMSException
 	 * @throws NamingException
@@ -137,12 +148,12 @@ public class AsyncInvoke
 	 */
 	public static void exec(
 			Invocation invocation, SuccessCallback successCallback,
-			ErrorCallback errorCallback, UndeliverableCallback undeliverableCallback)
+			ErrorCallback errorCallback, UndeliverableCallback undeliverableCallback, boolean enableXA)
 	throws JMSException, NamingException, LoginException
 	{
 		AsyncInvokeEnvelope envelope = new AsyncInvokeEnvelope(
 				invocation, successCallback, errorCallback, undeliverableCallback);
-		enqueue(QUEUE_INVOCATION, envelope);
+		enqueue(QUEUE_INVOCATION, envelope, enableXA);
 	}
 	
 	protected static class AuthCallbackHandler implements CallbackHandler
@@ -175,9 +186,18 @@ public class AsyncInvoke
 		}
 	}
 
-//	protected AuthCallbackHandler mqCallbackHandler = null;
-
-	protected static void enqueue(String queueJNDIName, AsyncInvokeEnvelope envelope)
+	/**
+	 * @param queueJNDIName The queue into which the <code>envelope</code> should be enqueued. This should be one
+	 *		of: {@link #QUEUE_INVOCATION}, {@link #QUEUE_SUCCESSCALLBACK}, {@link #QUEUE_ERRORCALLBACK}, {@link #QUEUE_UNDELIVERABLECALLBACK}
+	 * @param envelope The envelope containing all the AsyncInvoke data.
+	 * @param enableXA Whether or not to use an XA transaction and thus hook into the currently active global transaction <i>GT</i>.
+	 *		If this is <code>true</code>, the message will not be processed (and thus the invocation occur), before the
+	 *		<i>GT</i> is committed. If <code>GT</code> is rolled back, the invocation will never occur.
+	 *		If <code>enableXA</code> is <code>false</code>, the <code>envelope</code> will be enqueued without a transaction
+	 *		and thus, processing starts immediately - probably before the <i>GT</i> is complete. This will cause
+	 *		problems, if the asynchronously called code requires JDO objects written/manipulated within <i>GT</i>.
+	 */
+	protected static void enqueue(String queueJNDIName, AsyncInvokeEnvelope envelope, boolean enableXA)
 	throws JMSException, NamingException, LoginException
 	{
 		InitialContext initialContext = new InitialContext();
@@ -190,25 +210,50 @@ public class AsyncInvoke
 
 			LoginContext loginContext = new LoginContext("jfireLocal", mqCallbackHandler);
 			loginContext.login();
-			try {		
-				QueueConnectionFactory connectionFactory = JMSConnectionFactoryLookup.lookupQueueConnectionFactory(initialContext);
+			try {
+				if (enableXA) {
+					// TODO "java:/JmsXA" should be configurable?!
+					ConnectionFactory connectionFactory = (ConnectionFactory) initialContext.lookup("java:/JmsXA");
 
-				QueueConnection connection = null;
-				QueueSession session = null;
-				QueueSender sender = null;
+					Connection connection = null;
+					Session session = null;
+					MessageProducer sender = null;
 
-				try {
-					connection = connectionFactory.createQueueConnection();
-					session = connection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
-					Queue queue = (Queue) initialContext.lookup(queueJNDIName);
-					sender = session.createSender(queue);
+					try {
+						Queue queue = (Queue) initialContext.lookup(queueJNDIName);
+						connection = connectionFactory.createConnection();
+						session = connection.createSession(true, Session.AUTO_ACKNOWLEDGE);
+						sender = session.createProducer(queue);
 
-					Message message = session.createObjectMessage(envelope);
-					sender.send(message);
-				} finally {
-					if (sender != null) sender.close();
-					if (session != null) session.close();
-					if (connection != null) connection.close();
+						Message message = session.createObjectMessage(envelope);
+						sender.send(message);
+					} finally {
+						if (sender != null) try { sender.close(); } catch (Exception ignore) { }
+						if (session != null) try { session.close(); } catch (Exception ignore) { }
+						if (connection != null) try { connection.close(); } catch (Exception ignore) { }
+					}
+				}
+				else {
+					QueueConnectionFactory connectionFactory = JMSConnectionFactoryLookup.lookupQueueConnectionFactory(initialContext);
+	
+					QueueConnection connection = null;
+					QueueSession session = null;
+					QueueSender sender = null;
+	
+					try {
+						connection = connectionFactory.createQueueConnection();
+						session = connection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
+	//					session = connection.createQueueSession(true, Session.AUTO_ACKNOWLEDGE); // transacted = true
+						Queue queue = (Queue) initialContext.lookup(queueJNDIName);
+						sender = session.createSender(queue);
+	
+						Message message = session.createObjectMessage(envelope);
+						sender.send(message);
+					} finally {
+						if (sender != null) try { sender.close(); } catch (Exception ignore) { }
+						if (session != null) try { session.close(); } catch (Exception ignore) { }
+						if (connection != null) try { connection.close(); } catch (Exception ignore) { }
+					}
 				}
 			} finally {
 				loginContext.logout();

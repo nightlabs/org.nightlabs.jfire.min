@@ -68,7 +68,7 @@ extends AsyncInvokerBaseBean
 			SuccessCallback successCallback = envelope.getSuccessCallback();
 			if (successCallback != null) {
 				try {
-					AsyncInvoke.enqueue(AsyncInvoke.QUEUE_SUCCESSCALLBACK, envelope);
+					AsyncInvoke.enqueue(AsyncInvoke.QUEUE_SUCCESSCALLBACK, envelope, true);
 				} catch (Throwable x) {
 					logger.fatal("Failed to enqueue in AsyncInvoke.QUEUE_SUCCESSCALLBACK!", x);
 					messageContext.setRollbackOnly();
