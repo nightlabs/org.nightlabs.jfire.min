@@ -125,13 +125,13 @@ implements SessionBean
 			for (Iterator it = tasks.iterator(); it.hasNext(); ) {
 				Task task = (Task) it.next();
 				task.setActiveExecID(activeExecID);
+				TimerAsyncInvoke.exec(task, true); // this method does not use the task instance later outside the current transaction (it only fetches the TaskID)
 			}
-			tasks = (List) pm.detachCopyAll(tasks);
+//			tasks = (List) pm.detachCopyAll(tasks); // not necessary anymore
 
 			for (Iterator it = Task.getTasksToRecalculateNextExecDT(pm, now).iterator(); it.hasNext(); ) {
 				Task task = (Task) it.next();
 				task.calculateNextExecDT();
-				TimerAsyncInvoke.exec(task, true);
 			}
 		} finally {
 			pm.close();
