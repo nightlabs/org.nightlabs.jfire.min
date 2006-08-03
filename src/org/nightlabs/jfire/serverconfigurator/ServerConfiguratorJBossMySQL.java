@@ -1,10 +1,7 @@
 package org.nightlabs.jfire.serverconfigurator;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.InputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
@@ -67,11 +64,7 @@ extends ServerConfiguratorJBoss
 			text = text.replaceAll("\\{databaseUserName\\}", getJFireServerConfigModule().getDatabase().getDatabaseUserName());
 			text = text.replaceAll("\\{databasePassword\\}", getJFireServerConfigModule().getDatabase().getDatabasePassword());
 
-			FileOutputStream out = new FileOutputStream(destFile);
-			Writer w = new OutputStreamWriter(out, Utils.CHARSET_NAME_UTF_8);
-			w.write(text);
-			w.close();
-			out.close();
+			writeTextFile(destFile, text);
 		}
 
 		boolean deletedDeploymentDescriptor = false;
@@ -170,12 +163,7 @@ extends ServerConfiguratorJBoss
 			Pattern pattern = Pattern.compile("<mbean[^<]*?EJBTimerService,persistencePolicy=database(.|\\n)*?</mbean>");
 			text = pattern.matcher(text).replaceAll(replacementText);
 
-			// write the file
-			FileOutputStream out = new FileOutputStream(destFile);
-			Writer w = new OutputStreamWriter(out, Utils.CHARSET_NAME_UTF_8);
-			w.write(text);
-			w.close();
-			out.close();
+			writeTextFile(destFile, text);
 		}
 
 		// check/modify ${jboss.conf}/login-config.xml and REBOOT if changes occured
@@ -185,11 +173,7 @@ extends ServerConfiguratorJBoss
 			setRebootRequired(true); // this is a must, because the conf directory doesn't support redeployment
 			text = text.replaceAll("java:/DefaultDS", "java:/JFireJBossMQDS");
 
-			// write the file
-			FileOutputStream out = new FileOutputStream(destFile);
-			Writer w = new OutputStreamWriter(out, Utils.CHARSET_NAME_UTF_8);
-			w.write(text);
-			w.close();
+			writeTextFile(destFile, text);
 		}
 	}
 

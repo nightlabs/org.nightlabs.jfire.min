@@ -2,6 +2,7 @@ package org.nightlabs.jfire.serverconfigurator;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.Properties;
@@ -28,6 +29,21 @@ public class ServerConfiguratorJBoss
 {
 	private static final Logger logger = Logger.getLogger(ServerConfiguratorJBoss.class);
 	protected static final boolean rebootOnDeployDirChanges = false;
+
+	protected static void writeTextFile(File file, String text)
+	throws IOException
+	{
+		FileOutputStream out = null;
+		Writer w = null;
+		try {
+			out = new FileOutputStream(file);
+			w = new OutputStreamWriter(out, Utils.CHARSET_NAME_UTF_8);
+			w.write(text);
+		} finally {
+			if (w != null) w.close();
+			if (out != null) out.close();
+		}
+	}
 
 	@Override
 	public void configureServer()
@@ -83,11 +99,7 @@ public class ServerConfiguratorJBoss
 
 			text = text.replaceAll("</policy>", replacementText);
 
-			// write the file
-			FileOutputStream out = new FileOutputStream(destFile);
-			Writer w = new OutputStreamWriter(out, Utils.CHARSET_NAME_UTF_8);
-			w.write(text);
-			w.close();
+			writeTextFile(destFile, text);
 		}
 
 
@@ -106,13 +118,35 @@ public class ServerConfiguratorJBoss
 			pattern = Pattern.compile("(<client-interceptors>[^<]*?<home>(.|\\n)*?</home>[^<]*?<bean>)");
 			text = pattern.matcher(text).replaceAll(replacementText);
 
-			// write the file
-			FileOutputStream out = new FileOutputStream(destFile);
-			Writer w = new OutputStreamWriter(out, Utils.CHARSET_NAME_UTF_8);
-			w.write(text);
-			w.close();
+			writeTextFile(destFile, text);
 		}
 
+		// We deactivate the JAAS cache, because we have our own cache that is
+		// proactively managed and reflects changes immediately.
+		destFile = new File(jbossConfDir, "jboss-service.xml");
+		text = Utils.readTextFile(destFile);
+		String modificationMarker = "!!!ModifiedByJFire!!!";
+		if (text.indexOf(modificationMarker) < 0) {
+			logger.info("File " + destFile.getAbsolutePath() + " was not yet updated. Will reduce JAAS cache timeout - we cannot deactivate it completely, because that causes JPOX problems (though I don't understand why).");
+			setRebootRequired(true);
+
+			Pattern pattern = Pattern.compile(
+					"(<mbean[^>]*?org.jboss.security.plugins.JaasSecurityManagerService(?:\\n|.)*?<attribute +?name *?= *?\"DefaultCacheTimeout\")>[0-9]*<((?:\\n|.)*?</mbean>)"
+					);
+			text = pattern.matcher(text).replaceAll(
+					"<!-- " + modificationMarker + "\n " +
+					ServerConfiguratorJBoss.class.getName() + " has reduced the JAAS cache timeout.\n" +
+					" JFire has its own cache, which is updated immediately. We cannot completely deactivate it, however, because that causes JPOX bugs (why?!).\n Marco :-)\n-->\n" +
+					"   $1>30<$2"
+					);
+
+			pattern = Pattern.compile(
+					"(<mbean[^>]*?org.jboss.security.plugins.JaasSecurityManagerService(?:\\n|.)*?<attribute +?name *?= *?\"DefaultCacheResolution\")>[0-9]*<((?:\\n|.)*?</mbean>)"
+					);
+			text = pattern.matcher(text).replaceAll("$1>30<$2");
+
+			writeTextFile(destFile, text);
+		}
 
 		// create ${jboss.bin}/CascadedAuthenticationClientInterceptor.properties if not yet existent
 		// jboss' bin is our current working directory

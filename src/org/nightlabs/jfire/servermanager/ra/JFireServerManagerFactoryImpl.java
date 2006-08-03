@@ -149,6 +149,7 @@ public class JFireServerManagerFactoryImpl
 	private Reference ref;
 
 	private volatile boolean upAndRunning = false;
+	private volatile boolean shuttingDown = false;
 
 	protected J2eeServerTypeRegistryConfigModule j2eeServerTypeRegistryConfigModule;
 	protected J2eeServerTypeRegistryConfigModule.J2eeLocalServer j2eeLocalServerCf;
@@ -457,6 +458,8 @@ public class JFireServerManagerFactoryImpl
 			}
 	
 			if (serverConfigurator.isRebootRequired()) {
+				shuttingDown = true;
+
 				logger.warn("*** REBOOT REQUIRED ***");
 				logger.warn("*** REBOOT REQUIRED ***");
 				logger.warn("*** REBOOT REQUIRED ***");
@@ -1975,5 +1978,12 @@ public class JFireServerManagerFactoryImpl
 	public boolean isUpAndRunning()
 	{
 		return upAndRunning;
+	}
+
+	public boolean isShuttingDown()
+	{
+		
+		
+		return false;
 	}
 }

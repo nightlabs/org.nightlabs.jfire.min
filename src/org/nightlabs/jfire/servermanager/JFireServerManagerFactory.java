@@ -49,4 +49,6 @@ public interface JFireServerManagerFactory
 	public ServerCf getLocalServer();
 
 	public boolean isUpAndRunning();
+
+	public boolean isShuttingDown();
 }
