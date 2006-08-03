@@ -36,6 +36,7 @@ import javax.ejb.SessionContext;
 
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.module.ModuleType;
+import org.nightlabs.jfire.serverconfigurator.ServerConfigurator;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
 
@@ -132,6 +133,28 @@ public abstract class ServerManagerBean
 		JFireServerManager ism = getJFireServerManager();
 		try {
 			ism.setJFireServerConfigModule(cfMod);
+		} finally {
+			ism.close();
+		}
+	}
+
+	/**
+	 * Configures the server using the currently configured {@link ServerConfigurator} and
+	 * shuts it down if necessary.
+	 *
+	 * @param delayMSec In case shutdown is necessary, how long to delay it (this method will return immediately).
+	 *		This is necessary for having a few secs left to return the client a new web page.
+	 * @return <code>true</code>, if the server configuration was changed in a way that requires reboot.
+	 *
+	 * @ejb.interface-method
+	 * @ejb.permission role-name="_ServerAdmin_"
+	 */
+	public boolean configureServerAndShutdownIfNecessary(long delayMSec)
+		throws ModuleException
+	{
+		JFireServerManager ism = getJFireServerManager();
+		try {
+			return ism.configureServerAndShutdownIfNecessary(delayMSec);
 		} finally {
 			ism.close();
 		}
