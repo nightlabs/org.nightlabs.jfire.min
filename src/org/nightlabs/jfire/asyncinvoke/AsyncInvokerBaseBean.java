@@ -133,6 +133,10 @@ implements javax.ejb.MessageDrivenBean, javax.jms.MessageListener
 				if (System.currentTimeMillis() - startDT > 10 * 60 * 1000)
 					throw new IllegalStateException("JFireServer did not start within timeout (hardcoded 10 min)!");
 
+				if (ismf.isShuttingDown()) {
+					throw new IllegalStateException("Server is shutting down! Cannot process messsage anymore!");
+				}
+
 				if (!ismf.isUpAndRunning()) {
 					try { Thread.sleep(3000); } catch (InterruptedException x) { }
 					logger.info("JFireServerManagerFactory is not (yet) up and running! Will wait and try again...");

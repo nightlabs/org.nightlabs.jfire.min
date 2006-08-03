@@ -26,7 +26,6 @@
 
 package org.nightlabs.jfire.asyncinvoke;
 
-import org.nightlabs.jfire.asyncinvoke.AsyncInvokerDelegateLocal;
 
 /**
  * @ejb.bean name="jfire/mdb/JFireBaseBean/AsyncInvokerSuccessCallback"
