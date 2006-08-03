@@ -91,6 +91,14 @@ public interface JFireServerManager
 	public void createOrganisation(String organisationID, String organisationName, String userID, String password, boolean isServerAdmin)
 		throws ModuleException;
 
+	/**
+	 * This method configures the server using the currently configured server configurator.
+	 * @param delayMSec In case a reboot is necessary, the shutdown will be delayed by this time in milliseconds.
+	 * @return Returns whether a reboot was necessary (and thus a shutdown was/will be initiated).
+	 * @throws ModuleException In case sth. goes wrong.
+	 */
+	public boolean configureServerAndShutdownIfNecessary(long delayMSec) throws ModuleException;
+
 	public OrganisationCf getOrganisationConfig(String organisationID)
 	throws ModuleException;
 

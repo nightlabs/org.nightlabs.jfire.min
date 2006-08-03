@@ -475,11 +475,13 @@ public class JFireServerManagerImpl
 		return this.principal;
 	}
 
-	/**
-	 * @see org.nightlabs.jfire.servermanager.JFireServerManager#jfireSecurity_createTempUserPassword(java.lang.String, java.lang.String)
-	 */
 	public String jfireSecurity_createTempUserPassword(String organisationID, String userID)
 	{
 		return jfireServerManagerFactoryImpl.jfireSecurity_createTempUserPassword(organisationID, userID); 
+	}
+
+	public boolean configureServerAndShutdownIfNecessary(long delayMSec) throws ModuleException
+	{
+		return jfireServerManagerFactoryImpl.configureServerAndShutdownIfNecessary(delayMSec);
 	}
 }

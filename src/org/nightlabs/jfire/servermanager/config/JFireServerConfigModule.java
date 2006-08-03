@@ -29,7 +29,9 @@ package org.nightlabs.jfire.servermanager.config;
 import java.io.File;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.beanutils.BeanUtils;
@@ -39,7 +41,9 @@ import org.nightlabs.config.ConfigModule;
 import org.nightlabs.config.InitException;
 import org.nightlabs.jfire.server.LocalServer;
 import org.nightlabs.jfire.server.Server;
-import org.nightlabs.jfire.serverconfigurator.ServerConfiguratorDummy;
+import org.nightlabs.jfire.serverconfigurator.ServerConfigurator;
+import org.nightlabs.jfire.serverconfigurator.ServerConfiguratorJBoss;
+import org.nightlabs.jfire.serverconfigurator.ServerConfiguratorJBossMySQL;
 import org.nightlabs.jfire.servermanager.db.DatabaseAdapter;
 import org.nightlabs.jfire.servermanager.db.DatabaseAdapterHSQL;
 import org.nightlabs.jfire.servermanager.db.DatabaseAdapterMySQL;
@@ -61,6 +65,7 @@ public class JFireServerConfigModule extends ConfigModule
 
 		private String j2eeDeployBaseDirectory;
 		private String serverConfigurator;
+		private List<String> availableServerConfigurators;
 
 		/**
 		 * @return Returns the j2eeDeployBaseDirectory.
@@ -76,6 +81,9 @@ public class JFireServerConfigModule extends ConfigModule
 			if (cfMod != null) cfMod.setChanged();
 		}
 
+		/**
+		 * @return Returns the active (i.e. used) {@link ServerConfigurator}).
+		 */
 		public String getServerConfigurator()
 		{
 			return serverConfigurator;
@@ -86,13 +94,28 @@ public class JFireServerConfigModule extends ConfigModule
 			if (cfMod != null) cfMod.setChanged();
 		}
 
+		public List<String> getAvailableServerConfigurators()
+		{
+			return availableServerConfigurators;
+		}
+		public void setAvailableServerConfigurators(List<String> serverConfigurators)
+		{
+			this.availableServerConfigurators = serverConfigurators;
+		}
+
 		public void init()
 		{
 			if (j2eeDeployBaseDirectory == null)
 				setJ2eeDeployBaseDirectory("../server/default/deploy/JFire.last/");
 
 			if (serverConfigurator == null)
-				setServerConfigurator(ServerConfiguratorDummy.class.getName());
+				setServerConfigurator(ServerConfiguratorJBoss.class.getName());
+
+			if (availableServerConfigurators == null) {
+				availableServerConfigurators = new ArrayList<String>();
+				availableServerConfigurators.add(ServerConfiguratorJBoss.class.getName());
+				availableServerConfigurators.add(ServerConfiguratorJBossMySQL.class.getName());
+			}
 		}
 	}
 

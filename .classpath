@@ -12,7 +12,7 @@
 	<classpathentry kind="var" path="JDO2"/>
 	<classpathentry kind="var" path="XERCES"/>
 	<classpathentry kind="var" path="XALAN"/>
-	<classpathentry kind="var" path="WORKSPACE/NightLabsCascadedAuthenticationJBoss/dist/NightLabsCascadedAuthenticationJBoss.jar"/>
+	<classpathentry sourcepath="/WORKSPACE/NightLabsCascadedAuthenticationJBoss/src" kind="var" path="WORKSPACE/NightLabsCascadedAuthenticationJBoss/dist/NightLabsCascadedAuthenticationJBoss.jar"/>
 	<classpathentry sourcepath="WORKSPACE/NightLabsBase/src" kind="var" path="WORKSPACE/NightLabsBase/dist/NightLabsBase.jar"/>
 	<classpathentry sourcepath="WORKSPACE/NightLabsJDO/src" kind="var" path="WORKSPACE/NightLabsJDO/dist/NightLabsJDO.jar"/>
 	<classpathentry kind="var" path="WORKSPACE/JFireRCLBackend/dist/JFireRCLBackend.jar"/>

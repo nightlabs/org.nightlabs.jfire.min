@@ -67,6 +67,7 @@ import org.nightlabs.config.Config;
 import org.nightlabs.config.ConfigException;
 import org.nightlabs.jdo.ObjectIDUtil;
 import org.nightlabs.jfire.base.JFireBasePrincipal;
+import org.nightlabs.jfire.base.JFireException;
 import org.nightlabs.jfire.base.JFirePrincipal;
 import org.nightlabs.jfire.base.JFireServerLocalLoginManager;
 import org.nightlabs.jfire.base.PersistenceManagerProvider;
@@ -411,6 +412,103 @@ public class JFireServerManagerFactoryImpl
 //		roleImportThread.start();
 	} // end constructor
 
+	/**
+	 * This method configures the server using the currently configured server configurator.
+	 * @param delayMSec In case a reboot is necessary, the shutdown will be delayed by this time in milliseconds.
+	 * @return Returns whether a reboot was necessary (and thus a shutdown was/will be initiated).
+	 * @throws ClassNotFoundException 
+	 */
+	public boolean configureServerAndShutdownIfNecessary(final long delayMSec)
+	throws ModuleException
+	{
+		try {
+	//	 instantiating and calling ServerConfigurator
+			String serverConfiguratorClassName = mcf.getConfigModule().getJ2ee().getServerConfigurator();
+	
+			if (logger.isDebugEnabled())
+				logger.debug("Instantiating ServerConfigurator: " + serverConfiguratorClassName);
+	
+			Class serverConfiguratorClass;
+			try {
+				serverConfiguratorClass = Class.forName(serverConfiguratorClassName);
+			} catch (Throwable x) {
+				logger.error("Loading ServerConfigurator class " + serverConfiguratorClassName + " (configured in JFireServerConfigModule) failed!", x);
+				throw x;
+			}
+	
+			if (!ServerConfigurator.class.isAssignableFrom(serverConfiguratorClass))
+				throw new IllegalStateException("ServerConfigurator " + serverConfiguratorClassName + " (configured in JFireServerConfigModule) does not extend class " + ServerConfigurator.class);
+	
+			ServerConfigurator serverConfigurator;
+			try {
+				serverConfigurator = (ServerConfigurator) serverConfiguratorClass.newInstance();
+				serverConfigurator.setJFireServerManagerFactoryImpl(this);
+				serverConfigurator.setJFireServerConfigModule(mcf.getConfigModule());
+			} catch (Throwable x) {
+				logger.error("Instantiating ServerConfigurator from class " + serverConfiguratorClassName + " (configured in JFireServerConfigModule) failed!", x);
+				throw x;
+			}
+	
+			try {
+				serverConfigurator.configureServer();
+			} catch (Throwable x) {
+				logger.error("Calling ServerConfigurator.configureServer() with instance of " + serverConfiguratorClassName + " (configured in JFireServerConfigModule) failed!", x);
+				throw x;
+			}
+	
+			if (serverConfigurator.isRebootRequired()) {
+				logger.warn("*** REBOOT REQUIRED ***");
+				logger.warn("*** REBOOT REQUIRED ***");
+				logger.warn("*** REBOOT REQUIRED ***");
+	
+				logger.warn("*** REBOOT REQUIRED ***");
+				logger.warn("*** REBOOT REQUIRED ***");
+				logger.warn("*** REBOOT REQUIRED ***");
+	
+				logger.warn("*** REBOOT REQUIRED ***");
+				logger.warn("*** REBOOT REQUIRED ***");
+				logger.warn("*** REBOOT REQUIRED ***");
+	
+				logger.warn("The Server Configurator " + serverConfigurator.getClass().getName() + " indicates that the server needs to be rebooted! Hence, I will shutdown the server NOW!");
+				logger.warn("If this is an error and prevents your JFire Server from starting up correctly, you must exchange the ServerConfigurator in the config module " + JFireServerConfigModule.class.getName());
+				
+				logger.warn("*** REBOOT REQUIRED ***");
+				logger.warn("*** REBOOT REQUIRED ***");
+				logger.warn("*** REBOOT REQUIRED ***");
+	
+				logger.warn("*** REBOOT REQUIRED ***");
+				logger.warn("*** REBOOT REQUIRED ***");
+				logger.warn("*** REBOOT REQUIRED ***");
+	
+				logger.warn("*** REBOOT REQUIRED ***");
+				logger.warn("*** REBOOT REQUIRED ***");
+				logger.warn("*** REBOOT REQUIRED ***");
+	
+				Thread thread = new Thread() {
+					@Override
+					public void run()
+					{
+						if (delayMSec > 0)
+							try { Thread.sleep(delayMSec); } catch (InterruptedException ignore) { }
+
+						try {
+							getJ2EEVendorAdapter().shutdown();
+							logger.warn("*** SHUTDOWN initiated ***");
+						} catch (Throwable e) {
+							logger.error("Shutting down server failed!", e);
+						}
+					}
+				};
+				thread.setDaemon(false);
+				thread.start();
+				return true;
+			}
+			return false;
+		} catch (Throwable x) {
+			throw new ModuleException(x);
+		}
+	}
+
 	public void serverStarted()
 	{
 		logger.info("Caught SERVER STARTED event!");
@@ -419,39 +517,8 @@ public class JFireServerManagerFactoryImpl
 
 			InitialContext ctx = new InitialContext();
 			try {				
-				// instantiating and calling ServerConfigurator
-				String serverConfiguratorClassName = mcf.getConfigModule().getJ2ee().getServerConfigurator();
-
-				if (logger.isDebugEnabled())
-					logger.debug("Instantiating ServerConfigurator: " + serverConfiguratorClassName);
-
-				Class serverConfiguratorClass;
-				try {
-					serverConfiguratorClass = Class.forName(serverConfiguratorClassName);
-				} catch (Throwable x) {
-					logger.error("Loading ServerConfigurator class " + serverConfiguratorClassName + " (configured in JFireServerConfigModule) failed!", x);
-					throw x;
-				}
-
-				if (!ServerConfigurator.class.isAssignableFrom(serverConfiguratorClass))
-					throw new IllegalStateException("ServerConfigurator " + serverConfiguratorClassName + " (configured in JFireServerConfigModule) does not extend class " + ServerConfigurator.class);
-
-				ServerConfigurator serverConfigurator;
-				try {
-					serverConfigurator = (ServerConfigurator) serverConfiguratorClass.newInstance();
-					serverConfigurator.setJFireServerManagerFactoryImpl(this);
-					serverConfigurator.setJFireServerConfigModule(mcf.getConfigModule());
-				} catch (Throwable x) {
-					logger.error("Instantiating ServerConfigurator from class " + serverConfiguratorClassName + " (configured in JFireServerConfigModule) failed!", x);
-					throw x;
-				}
-
-				try {
-					serverConfigurator.configureServer();
-				} catch (Throwable x) {
-					logger.error("Calling ServerConfigurator.configureServer() with instance of " + serverConfiguratorClassName + " (configured in JFireServerConfigModule) failed!", x);
-					throw x;
-				}	
+				if (configureServerAndShutdownIfNecessary(0))
+					return;
 
 				// DatastoreInitialization
 				DatastoreInitializer datastoreInitializer = new DatastoreInitializer(this, mcf, getJ2EEVendorAdapter());
@@ -677,9 +744,9 @@ public class JFireServerManagerFactoryImpl
 		} finally {
 			orgCfMod.releaseLock();
 		}
-		
+
 		try {
-			getConfig().saveConfFile(true); // TODO force all modules to be written???
+			getConfig().save(true); // TODO force all modules to be written???
 		} catch (ConfigException e) {
 			throw new ModuleException(e);
 		}

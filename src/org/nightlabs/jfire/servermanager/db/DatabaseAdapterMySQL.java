@@ -28,7 +28,6 @@ package org.nightlabs.jfire.servermanager.db;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -101,9 +100,12 @@ implements DatabaseAdapter
 			this.databaseName = databaseName;
 		} catch (SQLException e) {
 // We check the error code here instead of querying before: http://dev.mysql.com/doc/refman/5.1/en/error-messages-server.html
-			if (1007 == e.getErrorCode())
+			if (1007 == e.getErrorCode()) {
+				logger.info("Database \""+databaseName+"\" on server \""+dbServerURL+"\" could not be created, because it already exists.");
 				throw new DatabaseAlreadyExistsException(dbServerURL, databaseName);
+			}
 
+			logger.info("Database \""+databaseName+"\" on server \""+dbServerURL+"\" could not be created, because of an unexpected failure!", e);
 			throw new DatabaseException(e);
 		}
 		// It's no problem that we don't close the connCreateDB, if dropDatabase() is not called.

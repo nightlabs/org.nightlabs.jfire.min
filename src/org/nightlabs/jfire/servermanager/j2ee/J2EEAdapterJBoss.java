@@ -28,8 +28,6 @@ package org.nightlabs.jfire.servermanager.j2ee;
 
 import java.lang.reflect.Method;
 import java.rmi.Remote;
-import java.util.Collection;
-import java.util.Iterator;
 
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
@@ -139,5 +137,10 @@ public class J2EEAdapterJBoss implements J2EEAdapter
 			userResolver = new SecurityReflectorJBoss();
 
 		return userResolver;
+	}
+
+	public void shutdown()
+	{
+		System.exit(-1);
 	}
 }

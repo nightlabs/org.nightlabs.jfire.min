@@ -56,4 +56,9 @@ public interface J2EEAdapter
 		throws Exception;
 
 	public SecurityReflector getUserResolver();
+
+	/**
+	 * This method shuts the server down. It should do so nicely.
+	 */
+	public void shutdown();
 }
