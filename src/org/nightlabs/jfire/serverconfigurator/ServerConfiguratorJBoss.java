@@ -127,7 +127,7 @@ public class ServerConfiguratorJBoss
 		text = Utils.readTextFile(destFile);
 		String modificationMarker = "!!!ModifiedByJFire!!!";
 		if (text.indexOf(modificationMarker) < 0) {
-			logger.info("File " + destFile.getAbsolutePath() + " was not yet updated. Will reduce JAAS cache timeout - we cannot deactivate it completely, because that causes JPOX problems (though I don't understand why).");
+			logger.info("File " + destFile.getAbsolutePath() + " was not yet updated. Will reduce JAAS cache timeout to 5 min - we cannot deactivate it completely or reduce it further, because that causes JPOX problems (though I don't understand why).");
 			setRebootRequired(true);
 
 			Pattern pattern = Pattern.compile(
@@ -135,15 +135,17 @@ public class ServerConfiguratorJBoss
 					);
 			text = pattern.matcher(text).replaceAll(
 					"<!-- " + modificationMarker + "\n " +
-					ServerConfiguratorJBoss.class.getName() + " has reduced the JAAS cache timeout.\n" +
-					" JFire has its own cache, which is updated immediately. We cannot completely deactivate it, however, because that causes JPOX bugs (why?!).\n Marco :-)\n-->\n" +
-					"   $1>30<$2"
+					ServerConfiguratorJBoss.class.getName() + " has reduced the JAAS cache timeout to 5 min.\n" +
+					" JFire has its own cache, which is updated immediately. We cannot completely deactivate the JAAS cache, however,\n" +
+					" because that causes JPOX bugs (why?!).\n Marco :-)\n-->\n" +
+					"   $1>300<$2"
 					);
 
-			pattern = Pattern.compile(
-					"(<mbean[^>]*?org.jboss.security.plugins.JaasSecurityManagerService(?:\\n|.)*?<attribute +?name *?= *?\"DefaultCacheResolution\")>[0-9]*<((?:\\n|.)*?</mbean>)"
-					);
-			text = pattern.matcher(text).replaceAll("$1>30<$2");
+// IMHO 60 is the default - Marco.
+//			pattern = Pattern.compile(
+//					"(<mbean[^>]*?org.jboss.security.plugins.JaasSecurityManagerService(?:\\n|.)*?<attribute +?name *?= *?\"DefaultCacheResolution\")>[0-9]*<((?:\\n|.)*?</mbean>)"
+//					);
+//			text = pattern.matcher(text).replaceAll("$1>60<$2");
 
 			writeTextFile(destFile, text);
 		}

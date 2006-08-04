@@ -29,19 +29,23 @@ extends ServerConfiguratorJBoss
 	{
 		super.configureServer();
 		
+		// jbossDeployDir is ${jboss}/server/default/deploy - not ${jboss}/server/default/deploy/JFire.last
+		File jbossDeployDir = new File(getJFireServerConfigModule().getJ2ee().getJ2eeDeployBaseDirectory()).getParentFile().getAbsoluteFile();
+		File jbossConfDir = new File(jbossDeployDir.getParentFile(), "conf");
+		File jbossDeployJmsDir = new File(jbossDeployDir, "jms");
+
+		boolean redeployJMS = false;
+
 		// create the database
 		String databaseURL = getJFireServerConfigModule().getDatabase().getDatabaseURL(DATABASE_NAME);
 		DatabaseAdapter databaseAdapter = getJFireServerConfigModule().getDatabase().instantiateDatabaseAdapter();
 		try {
 			databaseAdapter.createDatabase(getJFireServerConfigModule(), databaseURL);
+			// if the database was not existing before, we cause the JMS to be redeployed
+			redeployJMS = true;
 		} catch (DatabaseAlreadyExistsException x) {
 			// the database already exists - ignore
 		}
-
-		// jbossDeployDir is ${jboss}/server/default/deploy - not ${jboss}/server/default/deploy/JFire.last
-		File jbossDeployDir = new File(getJFireServerConfigModule().getJ2ee().getJ2eeDeployBaseDirectory()).getParentFile().getAbsoluteFile();
-		File jbossConfDir = new File(jbossDeployDir.getParentFile(), "conf");
-		File jbossDeployJmsDir = new File(jbossDeployDir, "jms");
 
 		File destFile;
 
@@ -174,6 +178,30 @@ extends ServerConfiguratorJBoss
 			text = text.replaceAll("java:/DefaultDS", "java:/JFireJBossMQDS");
 
 			writeTextFile(destFile, text);
+		}
+
+		if (redeployJMS) {
+			File jbossDir = jbossDeployDir.getParentFile();
+			File tmpJmsDir = new File(jbossDir, "jms.bak");
+			if (!jbossDeployJmsDir.renameTo(tmpJmsDir))
+				logger.error("Moving JMS deploy directory temporarily from " + jbossDeployJmsDir.getAbsolutePath() + " to " + tmpJmsDir.getAbsolutePath() + " failed!!!");
+
+			File mysqlDSFile = new File(jbossDeployDir, "mysql-ds.xml");
+			File tmpMysqlDSFile = new File(jbossDeployDir, "mysql-ds.xml.bak");
+
+			if (!mysqlDSFile.renameTo(tmpMysqlDSFile))
+				logger.error("Renaming mysql-ds deployment descriptor temporarily from " + mysqlDSFile.getAbsolutePath() + " to " + tmpMysqlDSFile.getAbsolutePath() + " failed!!!");
+
+			// give jboss some time to undeploy
+			try { Thread.sleep(10000); } catch (InterruptedException ignore) { }
+
+			// and redeploy
+
+			if (!tmpMysqlDSFile.renameTo(mysqlDSFile))
+				logger.error("Renaming mysql-ds deployment descriptor back from temporary name " + tmpMysqlDSFile.getAbsolutePath() + " to " + mysqlDSFile.getAbsolutePath() + " failed!!!");
+
+			if (!tmpJmsDir.renameTo(jbossDeployJmsDir))
+				logger.error("Moving JMS deploy directory back from temporary location " + tmpJmsDir.getAbsolutePath() + " to " + jbossDeployJmsDir.getAbsolutePath() + " failed!!!");
 		}
 	}
 
