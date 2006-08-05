@@ -230,4 +230,34 @@ implements SessionBean
 			throw new ModuleException(x);
 		}
 	}
+
+	/**
+	 * @ejb.interface-method
+	 * @ejb.transaction type="Required"
+	 * @ejb.permission role-name="TimerManager.setTask"
+	 **/
+	public Task storeTask(Task task, boolean get, String[] fetchGroups, int maxFetchDepth)
+	throws ModuleException
+	{
+		try {
+			PersistenceManager pm = getPersistenceManager();
+			try {
+				task = (Task) NLJDOHelper.storeJDO(pm, task, get, fetchGroups, maxFetchDepth);
+
+				try {
+					task.getUser().getUserLocal().setPassword("********");
+				} catch (NullPointerException x) {
+					// ignore
+				} catch (JDODetachedFieldAccessException x) {
+					// ignore
+				}
+
+				return task;
+			} finally {
+				pm.close();
+			}
+		} catch (Exception x) {
+			throw new ModuleException(x);
+		}
+	}
 }
