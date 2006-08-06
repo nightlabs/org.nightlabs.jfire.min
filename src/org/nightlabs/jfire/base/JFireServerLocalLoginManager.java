@@ -33,9 +33,7 @@ import java.util.Map;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import org.jboss.security.SimplePrincipal;
 import org.nightlabs.jfire.security.RoleSet;
-import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.security.UserLocal;
 
 
