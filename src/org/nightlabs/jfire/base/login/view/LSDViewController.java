@@ -49,7 +49,7 @@ import org.nightlabs.jfire.base.login.LoginStateListener;
  * it to the sharedInstance of LSDViewController:
  * <pre>
  * 	public MyView() {
- * 		LSDViewController.sharedInstance().registerView(this);
+ * 		LSDViewController.sharedInstance().registerPart(this);
  * 	}
  * </pre>
  * 
@@ -57,7 +57,7 @@ import org.nightlabs.jfire.base.login.LoginStateListener;
  * <pre>
  *  public void createPartControl(Composite parent)
  *  {
- *  	LSDViewController.sharedInstance().createViewControl(this, parent);
+ *  	LSDViewController.sharedInstance().createPartControl(this, parent);
  *  }
  * </pre>
  * And create the real WorkbenchPart contents in {@link org.nightlabs.base.part.ControllablePart#createPartContents(Composite)}.
