@@ -48,11 +48,13 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtension;
 import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.nightlabs.ModuleException;
 import org.nightlabs.base.extensionpoint.AbstractEPProcessor;
 import org.nightlabs.base.extensionpoint.EPProcessorException;
+import org.nightlabs.base.util.RCPUtil;
 import org.nightlabs.classloader.osgi.DelegatingClassLoaderOSGI;
 import org.nightlabs.config.Config;
 import org.nightlabs.j2ee.InitialContextProvider;
@@ -371,7 +373,10 @@ implements InitialContextProvider
 						{
 							public void run()
 							{
-								// TODO show a nice dialog (maybe with a timeout - in case the user doesn't react => force restart).
+								MessageDialog.openInformation(
+										RCPUtil.getActiveWorkbenchShell(),
+										"Reboot Required",
+										"Your class loading configuration was changed in order to make all published server classes available. A restart is required.");
 								PlatformUI.getWorkbench().restart();
 							}
 						});
