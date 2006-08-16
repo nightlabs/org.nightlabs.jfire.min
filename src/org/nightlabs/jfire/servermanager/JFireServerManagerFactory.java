@@ -29,7 +29,6 @@ package org.nightlabs.jfire.servermanager;
 import org.nightlabs.jfire.base.JFirePrincipal;
 import org.nightlabs.jfire.servermanager.config.ServerCf;
 
-import org.nightlabs.ModuleException;
 
 /**
  * @author marco
@@ -38,11 +37,9 @@ public interface JFireServerManagerFactory
 {
 	public static final String JNDI_NAME = "java:/jfire/system/JFireServerManagerFactory";
 
-	public JFireServerManager getJFireServerManager()
-		throws ModuleException;
+	public JFireServerManager getJFireServerManager();
 
-	public JFireServerManager getJFireServerManager(JFirePrincipal jfirePrincipal)
-		throws ModuleException;
+	public JFireServerManager getJFireServerManager(JFirePrincipal jfirePrincipal);
 
 	public String getInitialContextFactory(String j2eeServerTypeRemote, boolean throwExceptionIfUnknownServerType);
 	

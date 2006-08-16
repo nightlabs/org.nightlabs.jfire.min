@@ -67,7 +67,6 @@ import org.nightlabs.config.Config;
 import org.nightlabs.config.ConfigException;
 import org.nightlabs.jdo.ObjectIDUtil;
 import org.nightlabs.jfire.base.JFireBasePrincipal;
-import org.nightlabs.jfire.base.JFireException;
 import org.nightlabs.jfire.base.JFirePrincipal;
 import org.nightlabs.jfire.base.JFireServerLocalLoginManager;
 import org.nightlabs.jfire.base.PersistenceManagerProvider;
@@ -660,17 +659,15 @@ public class JFireServerManagerFactoryImpl
 	 * @see org.nightlabs.jfire.servermanager.JFireServerManagerFactory#getJFireServerManager()
 	 */
 	public JFireServerManager getJFireServerManager()
-		throws ModuleException
 	{
 		try {
 			return (JFireServerManager)getConnection();
 		} catch (ResourceException e) {
-			throw new ModuleException(e);
+			throw new RuntimeException(e);
 		}
 	}
 	
 	public JFireServerManager getJFireServerManager(JFirePrincipal jfirePrincipal)
-	throws ModuleException
 	{
 		try {
 			JFireServerManager ism = (JFireServerManager)getConnection();
@@ -678,7 +675,7 @@ public class JFireServerManagerFactoryImpl
 				((JFireServerManagerImpl)ism).setJFirePrincipal(jfirePrincipal);
 			return ism;
 		} catch (ResourceException e) {
-			throw new ModuleException(e);
+			throw new RuntimeException(e);
 		}
 	}
 	

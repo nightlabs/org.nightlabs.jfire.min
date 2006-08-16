@@ -47,15 +47,10 @@ import org.nightlabs.jfire.servermanager.JFireServerManagerFactory;
 import org.nightlabs.jfire.servermanager.config.OrganisationCf;
 
 /**
- * This class is a util to make it easier to look up objects from JNDI.
+ * This class is a util to make it easier to look up important JFire objects from JNDI.
  * 
  * @author marco
  */
-///*// this is now ignored - we expect the system persistence manager to be always "java:/jfire/persistenceManagers/system" 
-// * @ejb.env-entry name = "jfire/persistenceManagers/system"
-// * 	type = "java.lang.String"
-// * 	value = "java:/jfire/persistenceManagers/system"
-// **/
 public class Lookup 
 {
 	private String organisationID;
@@ -73,8 +68,12 @@ public class Lookup
 	}
 
 	private JFireServerManagerFactory jfireServerManagerFactory = null;
+
+	/**
+	 * @throws RuntimeException A properly configured server should not have problems with JNDI. Therefore,
+	 *		we wrap the NamingException in a RuntimeException.
+	 */
 	public JFireServerManagerFactory getJFireServerManagerFactory()
-		throws ModuleException
 	{
 		if (jfireServerManagerFactory == null)
 			try {
@@ -85,14 +84,13 @@ public class Lookup
 					ctx.close();
 				}
 			} catch (NamingException e) {
-				throw new ModuleException(e);
+				throw new RuntimeException(e);
 			}
 		
 		return jfireServerManagerFactory;
 	}
 
 	public JFireServerManager getJFireServerManager()
-	throws ModuleException
 	{
 		return getJFireServerManagerFactory().getJFireServerManager(jfirePrincipal);
 	}
@@ -105,55 +103,15 @@ public class Lookup
 	 * @throws NamingException if a naming exception occurs while creating an initial context.
 	 */
 	public Lookup(String _organisationId)
-	throws InitException
 	{	
 		this.organisationID = _organisationId;
-		
-//		try {
-//			this.initialContext = new InitialContext();
-//			
-////			this.jfireServerManagerFactory = (JFireServerManagerFactory)
-////					getInitialContext().lookup(IPANEMA_SERVER_MANAGER_FACTORY_JNDI_NAME);
-////			this.persistenceManagerFactory = getPersistenceManagerFactory(organisationID);
-//		} catch (Exception x) {
-//			throw new InitException(x);
-//		}
 	}
 	
-//	private InitialContext initialContext;
-//	
-//	/**
-//	 * @return The default initial context.
-//	 * @throws ModuleException
-//	 */
-//	public InitialContext getInitialContext()
-//		throws ModuleException
-//	{
-//		if (initialContext == null) {
-//			try {
-//				this.initialContext = new InitialContext();
-//			} catch (Exception x) {
-//				throw new ModuleException(x);
-//			}
-//		}
-//
-//		return initialContext; 
-//	}
-
-//	private PersistenceManagerFactory persistenceManagerFactory;
-
-//	private static final String PMF_PROPS_KEY_INITIALIZED = "__"+Lookup.class.getName()+".isInitialized"; 
-
 	/**
 	 * @return the pmfactory for the organisationID of the working user.
 	 */
 	public PersistenceManagerFactory getPersistenceManagerFactory()
-		throws ModuleException
 	{
-//		if (!CACHE_PERSISTENCEMANAGERFACTORIES || persistenceManagerFactory == null || persistenceManagerFactory.isClosed())
-//			persistenceManagerFactory = getPersistenceManagerFactory(organisationID);
-//
-//		return persistenceManagerFactory;
 		return getPersistenceManagerFactory(organisationID);
 	}
 
@@ -165,12 +123,8 @@ public class Lookup
 	 * @return
 	 */
 	public PersistenceManager getPersistenceManager()
-		throws ModuleException
 	{
 		PersistenceManager pm = getPersistenceManagerFactory().getPersistenceManager();
-//		// TO DO remove this WORKAROUND: the PersistenceManagerFactory should reset the fetchplan! Not necessary?!
-//		pm.getFetchPlan().setGroup(FetchPlan.DEFAULT);
-//		pm.getFetchPlan().setDetachmentOptions(FetchPlan.DETACH_LOAD_FIELDS);
 		return pm;
 	}
 
@@ -187,10 +141,10 @@ public class Lookup
 	 *  
 	 * @param organisationID The unique identifier for the organisationID
 	 * @return the PersistenceManagerFactory belonging to the given organisationID.
-	 * @throws NamingException if a naming exception is encountered. 
+	 * @throws RuntimeException Because a properly configured server should not have any JNDI (or other) problems,
+	 *		we wrap any exception in a RuntimeException.
 	 */
 	protected PersistenceManagerFactory getPersistenceManagerFactory(String organisationID)
-	throws ModuleException
 	{
 		PersistenceManagerFactory pmf;
 		try {
@@ -202,77 +156,15 @@ public class Lookup
 				ctx.close();
 			}
 		} catch (NamingException e) {
-			throw new ModuleException(e);
+			throw new RuntimeException(e);
 		}
 		return pmf;
 	}
 	
 	protected PersistenceManager getPersistenceManager(String organisationId)
-	throws ModuleException
 	{
 		return getPersistenceManagerFactory(organisationId).getPersistenceManager();
 	}
-
-//	/**
-//	 * key: String organisationID<br/>
-//	 * value: InitialContext initialContext 
-//	 */
-//	protected Map initCtxMap = new HashMap();
-//
-//	/**
-//	 * Do NOT forget to close the InitialContext you retrieved!
-//	 */
-//	public InitialContext getInitialContext(String _organisationID)
-//	throws ModuleException
-//	{
-////		InitialContext ctx = (InitialContext)initCtxMap.get(_organisationID);
-////		
-////		if (ctx == null) {						
-////			try {
-////				ctx = new InitialContext(getInitialContextProps(_organisationID));
-////			} catch (NamingException e) {
-////				throw new ModuleException(e);
-////			}			
-////			initCtxMap.put(_organisationID, ctx);
-////		}
-////		
-////		return ctx;
-//		try {
-//			return new InitialContext(getInitialContextProps(_organisationID));
-//		} catch (NamingException e) {
-//			throw new ModuleException(e);
-//		}			
-//	}
-//
-//	/**
-//	 * key: String organisationID
-//	 * value: Properties initialContextProperties
-//	 */
-//	protected HashMap initialContextPropsMap = new HashMap();
-//
-//	/**
-//	 * @param organisationID
-//	 * @return This method returns <tt>null</tt> if the given organisationID is the local one (we don't login into ourselves).
-//	 * @throws ModuleException
-//	 */
-//	public Hashtable getInitialContextProps(String organisationID)
-//		throws ModuleException
-//	{
-//		if (this.getOrganisationID().equals(organisationID))
-//			return null;
-//
-//		java.util.Hashtable props = (Properties) initialContextPropsMap.get(organisationID);
-//		if (props == null) {
-//			PersistenceManager pm = getPersistenceManager();
-//			try {
-//				props = _getInitialContextProps(pm, organisationID);
-//			} finally {
-//				pm.close();
-//			}
-//			initialContextPropsMap.put(organisationID, props);
-//		} // if (props == null) {
-//		return props;
-//	}
 
 	/**
 	 * This method reads the properties out of the datastore managed by pm, that are necessary
@@ -345,8 +237,12 @@ public class Lookup
 		return props;
 	}
 
+	/**
+	 * @throws RuntimeException There might be a {@link NamingException}, but in a properly
+	 *		configured server, this should never happen. Therefore, we throw a {@link RuntimeException} in
+	 *		this very rare situation.
+	 */
 	public CacheManagerFactory getCacheManagerFactory()
-	throws ModuleException
 	{
 		try {
 			InitialContext ctx = new InitialContext();
@@ -355,8 +251,8 @@ public class Lookup
 			} finally {
 				ctx.close();
 			}
-		} catch (Exception x) {
-			throw new ModuleException(x);
+		} catch (NamingException x) {
+			throw new RuntimeException(x);
 		}
 	}
 

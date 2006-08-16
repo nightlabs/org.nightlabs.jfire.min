@@ -32,7 +32,6 @@ import javax.jdo.PersistenceManager;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import org.nightlabs.jfire.base.InitException;
 import org.nightlabs.jfire.base.Lookup;
 import org.nightlabs.jfire.security.User;
 
@@ -46,9 +45,12 @@ implements Serializable
 	public static final String JNDI_NAME = "java:/jfire/system/SecurityReflector";
 
 	public static SecurityReflector lookupSecurityReflector(InitialContext initialContext)
-	throws NamingException
 	{
-		return (SecurityReflector) initialContext.lookup(JNDI_NAME);
+		try {
+			return (SecurityReflector) initialContext.lookup(JNDI_NAME);
+		} catch (NamingException x) {
+			throw new RuntimeException(x);
+		}
 	}
 
 	public static class UserDescriptor
@@ -105,18 +107,23 @@ implements Serializable
 	public abstract UserDescriptor whoAmI();
 
 	
-	public static UserDescriptor getUserDescriptor() throws NamingException {
-		InitialContext initCtx = null;
+	public static UserDescriptor getUserDescriptor()
+	{
 		try {
-			initCtx = new InitialContext();
-			return lookupSecurityReflector(initCtx).whoAmI();
-		} finally {
-			if (initCtx != null)
-				initCtx.close();
-		}		
+			InitialContext initCtx = null;
+			try {
+				initCtx = new InitialContext();
+				return lookupSecurityReflector(initCtx).whoAmI();
+			} finally {
+				if (initCtx != null)
+					initCtx.close();
+			}
+		} catch (NamingException x) {
+			throw new RuntimeException(x);
+		}
 	}
 	
-	public static Lookup getLookup() throws NamingException, InitException {
+	public static Lookup getLookup() {
 		return new Lookup(getUserDescriptor().getOrganisationID());
 	}
 	
