@@ -28,14 +28,19 @@ package org.nightlabs.jfire.jdo.cache;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+
+import sun.reflect.ReflectionFactory.GetReflectionFactoryAction;
 
 public class DirtyObjectID
 implements Serializable
 {
+	private long createDT;
+	private long changeDT;
 	private Object objectID;
-	private Set sourceSessionIDs;
+	private Set<String> sourceSessionIDs;
 
 	/**
 	 * @param objectID The jdo object id.
@@ -43,25 +48,42 @@ implements Serializable
 	 */
 	public DirtyObjectID(Object objectID, String causeSessionID)
 	{
+		this.createDT = System.currentTimeMillis();
+		this.changeDT = System.currentTimeMillis();
 		this.objectID = objectID;
-		this.sourceSessionIDs = new HashSet(1);
+		this.sourceSessionIDs = new HashSet<String>(1);
 		this.sourceSessionIDs.add(causeSessionID);
 	}
 
+	private Set<String> unmodifiableSourceSessionIDs = null;
+
 	public Set getSourceSessionIDs()
 	{
-		return sourceSessionIDs;
+		if (unmodifiableSourceSessionIDs == null)
+			unmodifiableSourceSessionIDs = Collections.unmodifiableSet(sourceSessionIDs);
+
+		return unmodifiableSourceSessionIDs;
 	}
 	public void addSourceSessionID(String causeSessionID)
 	{
 		sourceSessionIDs.add(causeSessionID);
+		this.changeDT = System.currentTimeMillis();
 	}
-	public void addSourceSessionIDs(Collection causeSessionIDs)
+	public void addSourceSessionIDs(Collection<String> causeSessionIDs)
 	{
-		causeSessionIDs.addAll(causeSessionIDs);
+		sourceSessionIDs.addAll(causeSessionIDs);
+		this.changeDT = System.currentTimeMillis();
 	}
 	public Object getObjectID()
 	{
 		return objectID;
+	}
+	public long getCreateDT()
+	{
+		return createDT;
+	}
+	public long getChangeDT()
+	{
+		return changeDT;
 	}
 }

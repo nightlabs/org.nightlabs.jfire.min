@@ -228,8 +228,14 @@ implements Serializable
 	 * This method replaces the <tt>Set dirtyObjectIDs</tt> by a new (empty) one
 	 * and returns the old <tt>Set</tt>, if it contains at least one entry. If
 	 * it is empty, this method does nothing and returns <tt>null</tt>.
+	 * <p>
+	 * If there are {@link DirtyObjectID}s that have their <code>changeDT</code> still younger than
+	 * {@link System#currentTimeMillis()} <code>minus</code> {@link CacheCfMod#getDelayNotificationMSec()},
+	 * they will be filtered and added to the new Map.
+	 * </p>
 	 *
-	 * @return Returns either <tt>null</tt> or a <tt>Set</tt> of jdo object-IDs.
+	 * @return Returns either <tt>null</tt> or a <tt>Map</tt> of jdo object-IDs. This Map will never be empty (instead of an
+	 *		empty Map, null is returned). 
 	 */
 	public Map fetchDirtyObjectIDs()
 	{
@@ -247,8 +253,23 @@ implements Serializable
 			else {
 				res = dirtyObjectIDs;
 				dirtyObjectIDs = new HashMap();
+
+				long youngestChangeDT = System.currentTimeMillis() - cacheManagerFactory.getCacheCfMod().getDelayNotificationMSec();
+
+				for (Iterator it = res.entrySet().iterator(); it.hasNext(); ) {
+					Map.Entry me = (Map.Entry) it.next();
+					DirtyObjectID dirtyObjectID = (DirtyObjectID) me.getValue();
+					if (dirtyObjectID.getChangeDT() > youngestChangeDT) {
+						// it's too new => remove it from the result and delay it by putting it back to (the new) this.dirtyObjectIDs map.
+						dirtyObjectIDs.put(me.getKey(), dirtyObjectID);
+						it.remove();
+					}
+				}
+
+				if (res.isEmpty())
+					res = null;
 			}
-		}
+		} // synchronized (dirtyObjectIDsMutex) {
 
 		if (logger.isDebugEnabled()) {
 			logger.debug("fetchChangedObjectIDs() in CacheSession(cacheSessionID=\""+cacheSessionID+"\") will return " +
@@ -297,13 +318,23 @@ implements Serializable
 	}
 
 	/**
-	 * If <tt>dirtyObjectIDs</tt> is empty,
-	 * this method will block until either {@link #notifyChanges()} is called
-	 * or the {@link #waitTimeout} occured. If <tt>dirtyObjectIDs</tt> contains
-	 * at least one entry, this method immediately returns.
+	 * If <tt>dirtyObjectIDs</tt> is empty or contains only entries that are too young for immediate
+	 * notification, this method will start blocking.
+	 * <p>
+	 * It will block, until either {@link #notifyChanges()} is called <b>and</b> at
+	 * least one dirtyObjectID is old enough for notification or the {@link #waitTimeout}
+	 * occured.
+	 * </p>
+	 * <p>
+	 * If <tt>dirtyObjectIDs</tt> contains at least one entry that is old enough (the delay
+	 * {@link CacheCfMod#getDelayNotificationMSec()} already expired),
+	 * this method immediately returns.
+	 * </p>
 	 * <p>
 	 * If the waitTimeout is changed
-	 * after this method already started waiting, it has no effect.
+	 * after this method already started waiting, it has very likely no effect (there are rare situations
+	 * in which it might have an effect though).
+	 * </p>
 	 *
 	 * @see #notifyChanges()
 	 */
@@ -311,6 +342,8 @@ implements Serializable
 	{
 		if (logger.isDebugEnabled())
 			logger.debug("CacheSession \"" + cacheSessionID + "\" entered waitForChanges with waitTimeout=" + waitTimeout + ".");
+
+		long methodBeginDT = System.currentTimeMillis();
 
 		CacheCfMod cacheCfMod = cacheManagerFactory.getCacheCfMod();
 		long waitMin = cacheCfMod.getWaitForChangesTimeoutMin();
@@ -326,27 +359,53 @@ implements Serializable
 			waitTimeout = waitMax;
 		}
 
-		synchronized (dirtyObjectIDsMutex) {
+		do {
+			long actualWaitMSec = waitTimeout;
+			synchronized (dirtyObjectIDsMutex) {
+	
+				if (!dirtyObjectIDs.isEmpty()) {
+					long delayMSec = cacheManagerFactory.getCacheCfMod().getDelayNotificationMSec();
 
-			if (!dirtyObjectIDs.isEmpty()) {
+					if (logger.isDebugEnabled())
+						logger.debug("CacheSession \"" + cacheSessionID + "\" has changed objectIDs. Checking their age (taking delayNotificationMSec="+delayMSec+" into account).");
+
+					long youngestChangeDT = System.currentTimeMillis() - delayMSec;
+					for (Iterator it = dirtyObjectIDs.entrySet().iterator(); it.hasNext(); ) {
+						Map.Entry me = (Map.Entry) it.next();
+						DirtyObjectID dirtyObjectID = (DirtyObjectID) me.getValue();
+						if (dirtyObjectID.getChangeDT() < youngestChangeDT) {
+							// it's old enough => we have at least one that needs immediate notification
+							if (logger.isDebugEnabled())
+								logger.debug("CacheSession \"" + cacheSessionID + "\" has changed objectIDs and at least one of them is old enough for notification. Return immediately.");
+
+							return;
+						}
+						else {
+							long tmp = System.currentTimeMillis() - dirtyObjectID.getChangeDT(); // how old is it
+							tmp = delayMSec - tmp; // the rest time that is needed to reach the minimum age 
+							if (tmp < actualWaitMSec) {
+								if (logger.isDebugEnabled())
+									logger.debug("CacheSession \"" + cacheSessionID + "\" has a changed objectID, but it is still too young for immediate notification. Will wait, but shorten the waitTimeout from " + actualWaitMSec + " to " + tmp + " msec.");
+	
+								actualWaitMSec = tmp;
+							}
+						}
+					}
+				}
+
 				if (logger.isDebugEnabled())
-					logger.debug("CacheSession \"" + cacheSessionID + "\" has already changed objectIDs. Return immediately.");
+						logger.debug("CacheSession \"" + cacheSessionID + "\" will wait " + actualWaitMSec + " msec for changed objects.");
 
-				return;
-			}
+				try {
+					dirtyObjectIDsMutex.wait(actualWaitMSec);
+				} catch (InterruptedException e) {
+					// ignore
+				}
 
-			if (logger.isDebugEnabled())
-				logger.debug("CacheSession \"" + cacheSessionID + "\" will wait " + waitTimeout + " msec for changed objects.");
-
-			try {
-				dirtyObjectIDsMutex.wait(waitTimeout);
-			} catch (InterruptedException e) {
-				// ignore
-			}
-
-			if (logger.isDebugEnabled())
-				logger.debug("CacheSession \"" + cacheSessionID + "\" woke up.");
-		}
+				if (logger.isDebugEnabled())
+					logger.debug("CacheSession \"" + cacheSessionID + "\" woke up.");
+			} // synchronized (dirtyObjectIDsMutex) {
+		} while (System.currentTimeMillis() - methodBeginDT < waitTimeout);
 	}
 
 

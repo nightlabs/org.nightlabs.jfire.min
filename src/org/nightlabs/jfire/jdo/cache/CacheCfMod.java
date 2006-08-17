@@ -45,6 +45,7 @@ public class CacheCfMod extends ConfigModule
 	private String documentation;
 
 	private long notificationIntervalMSec = 0;
+	private long delayNotificationMSec = -1;
 //	private long cacheSessionContainerCheckIntervalMSec = 0;
 	private long cacheSessionContainerActivityMSec = 0;
 	private int cacheSessionContainerCount = 0;
@@ -66,6 +67,10 @@ public class CacheCfMod extends ConfigModule
 	public void init() throws InitException
 	{
 		documentation = "This is the documentation for the settings in this ConfigModule.\n" +
+				"\n" +
+				"  delayNotificationMSec: How long in milliseconds to wait before forwarding a\n" +
+				"    notification to the interested listeners. The delay is realized in the\n" +
+				"    method CacheSession#fetchDirtyObjectIDs(). Default is 500.\n" +
 				"\n" +
 				"* notificationIntervalMSec: The length of the interval in millisec, in which the\n" +
 				"    NotificationThread will check changed objects and trigger events. Default\n" +
@@ -121,6 +126,9 @@ public class CacheCfMod extends ConfigModule
 				"    is changed in datastore.\n" +
 				"    Default: org.nightlabs.jfire.jdo.cache.bridge.JdoCacheBridgeJPOX\n";
 
+		if (delayNotificationMSec < 0)
+			setDelayNotificationMSec(500);
+
 		if (notificationIntervalMSec < 100)
 			setNotificationIntervalMSec(3 * 1000);
 
@@ -173,6 +181,16 @@ public class CacheCfMod extends ConfigModule
 			logger.debug("      waitForChangesTimeoutMax=" + waitForChangesTimeoutMax);
 			logger.debug("      jdoCacheBridgeClassName=" + jdoCacheBridgeClassName);
 		}
+	}
+
+	public long getDelayNotificationMSec()
+	{
+		return delayNotificationMSec;
+	}
+	public void setDelayNotificationMSec(long delayNotificationMSec)
+	{
+		this.delayNotificationMSec = delayNotificationMSec;
+		setChanged();
 	}
 
 	/**
