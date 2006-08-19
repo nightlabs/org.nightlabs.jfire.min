@@ -33,6 +33,7 @@ import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IWorkbenchWindow;
 
+import org.nightlabs.base.exceptionhandler.ExceptionHandlerRegistry;
 import org.nightlabs.jfire.base.JFireBasePlugin;
 import org.nightlabs.jfire.base.login.Login;
 
@@ -75,6 +76,7 @@ public class LoginAction extends LSDWorkbenchWindowActionDelegate {
 			}
 			
 		} catch (LoginException e) {
+			ExceptionHandlerRegistry.asyncHandleException(e);
 			logger.error("Login failed",e);
 		}
 	}
