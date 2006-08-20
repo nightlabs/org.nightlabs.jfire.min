@@ -134,8 +134,10 @@ implements SessionBean
 //  }
   
   /**
-   * Create a new user or change an existing one. You can leave user.organisationID <code>null</code>.
-   *
+   * Create a new user or change an existing one.
+   * @param user The user to save
+   * @param passwd The password for the user. This might be <code>null</code> for an existing user.
+   * 
    * @ejb.interface-method
    * @ejb.permission role-name="UserManager-write"
    * @ejb.transaction type = "Required"
