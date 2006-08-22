@@ -62,7 +62,7 @@ public class ConfigModuleProvider extends JDOObjectProvider {
 		String cfModID = ConfigModule.getCfModIDOutOfCfModKey(moduleID.cfModKey);		
 		ConfigID configID = ConfigID.create(moduleID.organisationID, moduleID.configKey, moduleID.configType);
 		ConfigManager configManager = ConfigManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();		
-		return configManager.getConfigModule(configID, cfModClass, cfModID, fetchGroups, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
+		return configManager.getConfigModule(configID, cfModClass, cfModID, fetchGroups, maxFetchDepth);
 	}
 	
 	/**
