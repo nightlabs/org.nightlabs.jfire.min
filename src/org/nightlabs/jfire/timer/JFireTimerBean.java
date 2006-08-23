@@ -1,6 +1,5 @@
 package org.nightlabs.jfire.timer;
 
-import java.io.Serializable;
 import java.rmi.RemoteException;
 import java.util.Date;
 import java.util.List;
@@ -20,7 +19,6 @@ import javax.security.auth.login.LoginContext;
 import org.apache.log4j.Logger;
 import org.nightlabs.ModuleException;
 import org.nightlabs.jfire.asyncinvoke.AuthCallbackHandler;
-import org.nightlabs.jfire.asyncinvoke.Invocation;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
