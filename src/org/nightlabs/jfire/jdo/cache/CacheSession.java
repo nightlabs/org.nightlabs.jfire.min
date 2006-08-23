@@ -397,7 +397,8 @@ implements Serializable
 						logger.debug("CacheSession \"" + cacheSessionID + "\" will wait " + actualWaitMSec + " msec for changed objects.");
 
 				try {
-					dirtyObjectIDsMutex.wait(actualWaitMSec);
+					if (actualWaitMSec > 0)
+						dirtyObjectIDsMutex.wait(actualWaitMSec);
 				} catch (InterruptedException e) {
 					// ignore
 				}

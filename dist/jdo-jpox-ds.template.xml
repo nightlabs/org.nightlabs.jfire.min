@@ -26,6 +26,7 @@ JBoss 3.2.x: end -->
 		<config-property name="AutoCreateSchema" type="boolean">true</config-property>
 		<config-property name="AutoCreateTables" type="boolean">true</config-property>
 		<config-property name="AutoCreateColumns" type="boolean">true</config-property>
+		<config-property name="ValidateColumns" type="boolean">false</config-property>
 
 		<config-property name="JdoCacheCollections" type="boolean">true</config-property>
 		<config-property name="NontransactionalRead" type="boolean">true</config-property>
@@ -38,8 +39,14 @@ JBoss 3.2.x: end -->
 		<config-property name="DetachOnClose" type="boolean">false</config-property>
 		<config-property name="StringDefaultLength" type="int">255</config-property>
 
+<!--
+		<config-property name="ConnectionPoolingType" type="java.lang.String">Proxool</config-property>
+		<config-property name="ConnectionPoolingConfigurationFile" type="java.lang.String">jpox-proxool.properties</config-property>
+-->
+
 		<config-property name="ConnectionPoolingType" type="java.lang.String">DBCP</config-property>
 		<config-property name="ConnectionPoolingConfigurationFile" type="java.lang.String">jpox-dbcp.properties</config-property>
+
 <!--
 		<config-property name="ConnectionPoolingType" type="java.lang.String">C3P0</config-property>
 		<config-property name="ConnectionPoolingConfigurationFile" type="java.lang.String">jpox-c3p0.properties</config-property>
