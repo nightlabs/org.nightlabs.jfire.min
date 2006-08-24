@@ -37,6 +37,7 @@ import org.nightlabs.util.Utils;
 
 /**
  * @author Marco Schulze - marco at nightlabs dot de
+ * @deprecated Please use {@link JDOObjectDAO} for future client development
  */
 public abstract class JDOObjectProvider
 {
