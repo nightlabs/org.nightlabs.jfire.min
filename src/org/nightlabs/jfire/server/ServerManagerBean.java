@@ -34,6 +34,7 @@ import javax.ejb.EJBException;
 import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
 
+import org.nightlabs.config.ConfigException;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.module.ModuleType;
 import org.nightlabs.jfire.serverconfigurator.ServerConfigurator;
@@ -122,13 +123,13 @@ public abstract class ServerManagerBean
 	}
 
 	/**
-	 * @return Returns the main config module.
+	 * @throws ConfigException If the configuration is obviously wrong - not all errors are detected, however! 
 	 *
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_ServerAdmin_"
 	 */
 	public void setJFireServerConfigModule(JFireServerConfigModule cfMod)
-		throws ModuleException
+	throws ConfigException
 	{
 		JFireServerManager ism = getJFireServerManager();
 		try {

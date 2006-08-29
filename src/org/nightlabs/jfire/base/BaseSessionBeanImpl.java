@@ -37,13 +37,9 @@ import javax.jdo.PersistenceManagerFactory;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import org.nightlabs.jfire.base.JFirePrincipal;
-import org.nightlabs.jfire.base.Lookup;
 import org.nightlabs.jfire.organisation.Organisation;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.servermanager.JFireServerManagerFactory;
-
-import org.nightlabs.ModuleException;
 
 /**
  * This class should be used as anchestor of your session beans. Note, that
@@ -98,7 +94,6 @@ public class BaseSessionBeanImpl
 	}
 	
 	protected PersistenceManagerFactory getPersistenceManagerFactory()
-	throws ModuleException
 	{
 		return getPrincipal().getLookup().getPersistenceManagerFactory();
 	}
@@ -124,12 +119,10 @@ public class BaseSessionBeanImpl
 	 * It might fail with stateless session beans!
 	 * 
 	 * @return Returns the PersistenceManager assigned to the current user.
-	 * @throws ModuleException
 	 *
 	 * @see getPrincipal()
 	 */
 	protected PersistenceManager getPersistenceManager()
-		throws ModuleException
 	{
 		persistenceManager = getPrincipal().getLookup().getPersistenceManager();
 		return persistenceManager;
@@ -154,19 +147,12 @@ public class BaseSessionBeanImpl
 	 *
 	 * @param organisationID The organisationID with wich to communicate.
 	 * @return Returns an InitialContext that is configured properly to authenticate at and communicate with another organisation (wherever it may be - e.g. on another server).
-	 * @throws ModuleException
+	 * @throws NamingException 
 	 */
 	protected InitialContext getInitialContext(String organisationID)
-		throws ModuleException 
+	throws NamingException
 	{
-		try {
-			return new InitialContext(getInitialContextProperties(organisationID));
-		} catch (NamingException e) {
-			throw new ModuleException(e);
-		} catch (ModuleException e) {
-			throw e;
-		}
-		// return getPrincipal().getLookup().getInitialContext(organisationID);
+		return new InitialContext(getInitialContextProperties(organisationID));
 	}
 
 	/**
@@ -180,12 +166,12 @@ public class BaseSessionBeanImpl
 	 *
 	 * @param organisationID
 	 * @return Returns an instance of Properties to be used in <code>new InitialContext(Properties)</code>.
-	 * @throws ModuleException
-	 * 
+	 * @throws NamingException 
+	 *
 	 * @see getInitialContext(String organisationID)
 	 */
 	protected Hashtable getInitialContextProperties(String organisationID)
-		throws ModuleException
+	throws NamingException
 	{
 		boolean managePM = false;
 		PersistenceManager pm;
@@ -202,48 +188,39 @@ public class BaseSessionBeanImpl
 			if (managePM)
 				pm.close();
 		}
-
-//		return getPrincipal().getLookup().getInitialContextProps(organisationID);
 	}
 
 	protected JFireServerManagerFactory getJFireServerManagerFactory()
-		throws ModuleException
 	{
 		return getPrincipal().getLookup().getJFireServerManagerFactory();
 	}
 	
 	protected JFireServerManager getJFireServerManager()
-	throws ModuleException
 	{
 		return getPrincipal().getLookup().getJFireServerManager();
 	}
 
 	protected String getOrganisationID()
-	throws ModuleException
 	{
 		return getPrincipal().getOrganisationID();
 	}
 
 	protected String getUserID()
-	throws ModuleException
 	{
-		return new String(getPrincipal().getUserID());
+		return getPrincipal().getUserID();
 	}
 
 	protected String getSessionID()
-	throws ModuleException
 	{
-		return new String(getPrincipal().getSessionID());
+		return getPrincipal().getSessionID();
 	}
 
 	protected boolean userIsOrganisation()
-	throws ModuleException
 	{
 		return getPrincipal().userIsOrganisation();
 	}
 	
 	protected String getPrincipalString()
-		throws ModuleException
 	{
 		return getPrincipal().toString();
 	}

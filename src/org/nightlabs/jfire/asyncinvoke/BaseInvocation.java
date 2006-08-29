@@ -34,13 +34,12 @@ import javax.jdo.PersistenceManagerFactory;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+import org.nightlabs.ModuleException;
 import org.nightlabs.jfire.base.JFirePrincipal;
 import org.nightlabs.jfire.base.Lookup;
 import org.nightlabs.jfire.organisation.Organisation;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.servermanager.JFireServerManagerFactory;
-
-import org.nightlabs.ModuleException;
 
 /**
  * @author Marco Schulze - marco at nightlabs dot de
@@ -78,7 +77,6 @@ implements Serializable
 	}
 	
 	protected PersistenceManagerFactory getPersistenceManagerFactory()
-		throws ModuleException
 	{
 		return getPrincipal().getLookup().getPersistenceManagerFactory();
 	}
@@ -95,7 +93,6 @@ implements Serializable
 	 * @see getPrincipal()
 	 */
 	protected PersistenceManager getPersistenceManager()
-		throws ModuleException
 	{
 		persistenceManager = getPrincipal().getLookup().getPersistenceManager();
 		return persistenceManager;
@@ -121,16 +118,9 @@ implements Serializable
 	 * @throws ModuleException
 	 */
 	protected InitialContext getInitialContext(String organisationID)
-		throws ModuleException 
+	throws NamingException
 	{
-		try {
-			return new InitialContext(getInitialContextProps(organisationID));
-		} catch (NamingException e) {
-			throw new ModuleException(e);
-		} catch (ModuleException e) {
-			throw e;
-		}
-		// return getPrincipal().getLookup().getInitialContext(organisationID);
+		return new InitialContext(getInitialContextProperties(organisationID));
 	}
 
 	/**
@@ -148,8 +138,8 @@ implements Serializable
 	 * 
 	 * @see getInitialContext(String organisationID)
 	 */
-	protected Hashtable getInitialContextProps(String organisationID)
-		throws ModuleException
+	protected Hashtable getInitialContextProperties(String organisationID)
+	throws NamingException
 	{
 		boolean managePM = false;
 		PersistenceManager pm;
@@ -171,37 +161,36 @@ implements Serializable
 	}
 
 	protected JFireServerManagerFactory getJFireServerManagerFactory()
-		throws ModuleException
 	{
 		return getPrincipal().getLookup().getJFireServerManagerFactory();
 	}
 	
 	protected JFireServerManager getJFireServerManager()
-	throws ModuleException
 	{
 		return getPrincipal().getLookup().getJFireServerManager();
 	}
 
 	protected String getOrganisationID()
-	throws ModuleException
 	{
 		return getPrincipal().getOrganisationID();
 	}
 
 	protected String getUserID()
-	throws ModuleException
 	{
-		return new String(getPrincipal().getUserID());
+		return getPrincipal().getUserID();
+	}
+
+	protected String getSessionID()
+	{
+		return getPrincipal().getSessionID();
 	}
 	
 	protected boolean userIsOrganisation()
-	throws ModuleException
 	{
 		return getPrincipal().userIsOrganisation();
 	}
 	
 	protected String getPrincipalString()
-		throws ModuleException
 	{
 		return getPrincipal().toString();
 	}

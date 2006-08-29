@@ -41,12 +41,15 @@ import javax.jdo.FetchPlan;
 import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.ModuleException;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
+import org.nightlabs.jfire.base.JFireException;
 import org.nightlabs.jfire.base.JFirePrincipal;
+import org.nightlabs.jfire.base.JFireRemoteException;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.security.UserLocal;
 import org.nightlabs.jfire.security.UserManager;
@@ -54,6 +57,7 @@ import org.nightlabs.jfire.security.UserManagerHome;
 import org.nightlabs.jfire.security.UserManagerUtil;
 import org.nightlabs.jfire.security.id.UserID;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
+import org.nightlabs.jfire.servermanager.OrganisationNotFoundException;
 import org.nightlabs.jfire.servermanager.config.OrganisationCf;
 import org.nightlabs.jfire.servermanager.config.RootOrganisationCf;
 import org.nightlabs.jfire.servermanager.config.ServerCf;
@@ -67,6 +71,7 @@ import org.nightlabs.math.Base62Coder;
  *		name="jfire/ejb/JFireBaseBean/OrganisationManager"
  *		jndi-name="jfire/ejb/JFireBaseBean/OrganisationManager"
  *		type="Stateless"
+ *		view-type="remote"
  *
  * @ejb.util generate="physical"
  **/
@@ -187,11 +192,13 @@ public abstract class OrganisationManagerBean
 	}
 
 	/**
+	 * @throws OrganisationNotFoundException If the specified organisation does not exist.
+	 * 
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_ServerAdmin_"
 	 **/
 	public OrganisationCf getOrganisationConfig(String organisationID)
-		throws ModuleException
+	throws OrganisationNotFoundException
 	{
 		JFireServerManager ism = getJFireServerManager();
 		try {
@@ -225,7 +232,6 @@ public abstract class OrganisationManagerBean
 	 * @ejb.permission role-name="OrganisationManager-read"
 	 **/
 	public Collection getPendingRegistrations(String[] fetchGroups, int maxFetchDepth)
-		throws ModuleException
 	{
 		PersistenceManager pm = getPersistenceManager();
 		try {
@@ -258,7 +264,6 @@ public abstract class OrganisationManagerBean
 	 * @ejb.permission role-name="_Guest_"
 	 **/
 	public void notifyAcceptRegistration(String registrationID, Organisation grantOrganisation, String userPassword)
-		throws ModuleException
 	{
 		if (registrationID == null)
 			throw new NullPointerException("registrationID");
@@ -296,7 +301,6 @@ public abstract class OrganisationManagerBean
 	 * @ejb.permission role-name="_Guest_"
 	 **/
 	public void notifyRejectRegistration(String registrationID)
-		throws ModuleException
 	{
 		if (registrationID == null)
 			throw new NullPointerException("registrationID");
@@ -340,7 +344,7 @@ public abstract class OrganisationManagerBean
 	 * @ejb.permission role-name="OrganisationManager-write"
 	 **/
 	public void acceptRegistration(String applicantOrganisationID)
-		throws ModuleException
+	throws JFireRemoteException
 	{
 		PersistenceManager pm = getPersistenceManager();
 		try {
@@ -356,46 +360,42 @@ public abstract class OrganisationManagerBean
 			// generate a password with a random length between 8 and 16 characters.
 			String usrPassword = UserLocal.generatePassword(8, 16);
 
+			// Create the user if it doesn't yet exist
+			String userID = User.USERID_PREFIX_TYPE_ORGANISATION + applicantOrganisationID;				
 			try {
-				// Create the user if it doesn't yet exist
-				String userID = User.USERID_PREFIX_TYPE_ORGANISATION + applicantOrganisationID;				
-				try {
-					User user = User.getUser(pm, getOrganisationID(), userID);
-					user.getUserLocal().setPasswordPlain(usrPassword); // set the new password, if the user already exists
-				} catch (JDOObjectNotFoundException x) {
-					// Create the user
-					User user = new User(getOrganisationID(), userID);
-					UserLocal userLocal = new UserLocal(user);
-					userLocal.setPasswordPlain(usrPassword);
-					pm.makePersistent(user);
-				}
+				User user = User.getUser(pm, getOrganisationID(), userID);
+				user.getUserLocal().setPasswordPlain(usrPassword); // set the new password, if the user already exists
+			} catch (JDOObjectNotFoundException x) {
+				// Create the user
+				User user = new User(getOrganisationID(), userID);
+				UserLocal userLocal = new UserLocal(user);
+				userLocal.setPasswordPlain(usrPassword);
+				pm.makePersistent(user);
+			}
 
-				pm.getFetchPlan().addGroup(FetchPlan.ALL); // TODO fetch-groups?!
-				pm.getFetchPlan().setMaxFetchDepth(NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
-				Organisation grantOrganisation = (Organisation) pm.detachCopy(
-						localOrganisation.getOrganisation());
-//				Organisation grantOrganisation = localOrganisation.getOrganisation();
-//				grantOrganisation.getPerson();
-//				grantOrganisation.getServer();
-//				pm.makeTransient(grantOrganisation, true);
+			pm.getFetchPlan().addGroup(FetchPlan.ALL); // TODO fetch-groups?!
+			pm.getFetchPlan().setMaxFetchDepth(NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
+			Organisation grantOrganisation = (Organisation) pm.detachCopy(
+					localOrganisation.getOrganisation());
+//			Organisation grantOrganisation = localOrganisation.getOrganisation();
+//			grantOrganisation.getPerson();
+//			grantOrganisation.getServer();
+//			pm.makeTransient(grantOrganisation, true);
 
-//				// WORKAROUND Because of a JPOX bug, we need to do this here (it's not nice, though it should be ok, because the transaction should be rolled back if an error occurs)
-//				// We close the RegistrationStatus by accepting
-//				// and remove it from the pending ones.
-//				registrationStatus.accept(User.getUser(pm, getPrincipal()));
-//				localOrganisation.removePendingRegistration(applicantOrganisationID);
+//			// WORKAROUND Because of a JPOX bug, we need to do this here (it's not nice, though it should be ok, because the transaction should be rolled back if an error occurs)
+//			// We close the RegistrationStatus by accepting
+//			// and remove it from the pending ones.
+//			registrationStatus.accept(User.getUser(pm, getPrincipal()));
+//			localOrganisation.removePendingRegistration(applicantOrganisationID);
 
-				// Now, we notify the other organisation that its request has been
-				// accepted.
+			// Now, we notify the other organisation that its request has been
+			// accepted.
+			try {
 				OrganisationManager organisationManager = OrganisationManagerUtil.getHome(getInitialContextProperties(applicantOrganisationID)).create();
 				organisationManager.notifyAcceptRegistration(
-						registrationStatus.getRegistrationID(), grantOrganisation, usrPassword);
-			} catch (RuntimeException x) {
-				throw x;
-			} catch (ModuleException x) {
-				throw x;
-			} catch (Exception x) {
-				throw new ModuleException(x);
+					registrationStatus.getRegistrationID(), grantOrganisation, usrPassword);
+			} catch (Exception e) {
+				throw new JFireRemoteException(e);
 			}
 
 			// WORKAROUND Because of a JPOX bug, we need to do this above.
@@ -415,7 +415,7 @@ public abstract class OrganisationManagerBean
 	 * @ejb.permission role-name="OrganisationManager-write"
 	 **/
 	public void rejectRegistration(String applicantOrganisationID)
-		throws ModuleException
+	throws JFireRemoteException
 	{
 		PersistenceManager pm = getPersistenceManager();
 		try {
@@ -427,21 +427,17 @@ public abstract class OrganisationManagerBean
 			if (registrationStatus == null)
 				throw new IllegalArgumentException("There is no pending registration for applicantOrganisation \""+applicantOrganisationID+"\" at grantOrganisation \""+getOrganisationID()+"\"!");
 
+			// Now, we notify the other organisation that its request has been
+			// rejected.
 			try {
-				// Now, we notify the other organisation that its request has been
-				// rejected.
 				OrganisationManager organisationManager = OrganisationManagerUtil.getHome(getInitialContextProperties(applicantOrganisationID)).create();
 				organisationManager.notifyRejectRegistration(registrationStatus.getRegistrationID());
-				// Because notifyRejectRegistration drops our user remotely, we cannot execute
-				// any command there anymore - not even remove the bean.
-				// organisationManager.remove();
-			} catch (RuntimeException x) {
-				throw x;
-			} catch (ModuleException x) {
-				throw x;
-			} catch (Exception x) {
-				throw new ModuleException(x);
+			} catch (Exception e) {
+				throw new JFireRemoteException(e);
 			}
+			// Because notifyRejectRegistration drops our user remotely, we cannot execute
+			// any command there anymore - not even remove the bean.
+			// organisationManager.remove();
 
 			// We close the RegistrationStatus by rejecting
 			// and remove it from the pending ones.
@@ -458,7 +454,7 @@ public abstract class OrganisationManagerBean
 	 * @ejb.permission role-name="OrganisationManager-write"
 	 **/
 	public void cancelRegistration(String grantOrganisationID)
-		throws ModuleException
+	throws JFireRemoteException
 	{
 		PersistenceManager pm = getPersistenceManager();
 		try {
@@ -467,22 +463,19 @@ public abstract class OrganisationManagerBean
 			if (registrationStatus == null)
 				throw new IllegalArgumentException("There is no pending registration for grantOrganisation \""+grantOrganisationID+"\" at applicantOrganisation \""+getOrganisationID()+"\"!");
 
-			try {
-				// Create the initial context properties to connect to the remote server.
-				Properties props = new Properties();
-				props.put(InitialContext.INITIAL_CONTEXT_FACTORY, registrationStatus.getInitialContextFactory());
-				props.put(InitialContext.PROVIDER_URL, registrationStatus.getInitialContextURL());
+			// Create the initial context properties to connect to the remote server.
+			Properties props = new Properties();
+			props.put(InitialContext.INITIAL_CONTEXT_FACTORY, registrationStatus.getInitialContextFactory());
+			props.put(InitialContext.PROVIDER_URL, registrationStatus.getInitialContextURL());
 
-				// Obtain the OrganisationLinker EJB and request registration
+			// Obtain the OrganisationLinker EJB and request registration
+			try {
 				OrganisationLinker organisationLinker = OrganisationLinkerUtil.getHome(props).create();
 				organisationLinker.cancelRegistration(
 						registrationStatus.getRegistrationID(),
 						getOrganisationID(), grantOrganisationID);
-				organisationLinker.remove();
-			} catch (ModuleException e) {
-				throw e;
 			} catch (Exception e) {
-				throw new ModuleException(e);
+				throw new JFireRemoteException(e);
 			}
 
 			// Delete the user we previously created.
@@ -504,6 +497,7 @@ public abstract class OrganisationManagerBean
 	 * This method is called by a client. It is the first step to make two
 	 * organisations know each other. It creates a user for the new organisation
 	 * and requests to be registered at the other organisation.
+	 * @throws OrganisationAlreadyRegisteredException 
 	 *
 	 * @ejb.interface-method
 	 * @ejb.transaction type = "Required"
@@ -511,7 +505,7 @@ public abstract class OrganisationManagerBean
 	 **/
 	public void beginRegistration(
 			String initialContextFactory, String initialContextURL, String organisationID)
-		throws ModuleException
+	throws OrganisationAlreadyRegisteredException, JFireRemoteException
 	{
 		PersistenceManager pm = getPersistenceManager();
 		try {
@@ -524,7 +518,7 @@ public abstract class OrganisationManagerBean
 	protected static void beginRegistration(
 			PersistenceManager pm, JFirePrincipal principal,
 			String initialContextFactory, String initialContextURL, String organisationID)
-	throws ModuleException
+	throws OrganisationAlreadyRegisteredException, JFireRemoteException
 	{
 		String registrationID = principal.getOrganisationID()
 				+ '-' + Base62Coder.sharedInstance().encode(System.currentTimeMillis(), 1)
@@ -556,34 +550,32 @@ public abstract class OrganisationManagerBean
 		// generate a password with a random length between 8 and 16 characters.
 		String usrPassword = UserLocal.generatePassword(8, 16);
 
+		// Create the user if it doesn't yet exist
+		String userID = User.USERID_PREFIX_TYPE_ORGANISATION + organisationID;
 		try {
-			// Create the user if it doesn't yet exist
-			String userID = User.USERID_PREFIX_TYPE_ORGANISATION + organisationID;
-			try {
-				User user = User.getUser(pm, principal.getOrganisationID(), userID);
-				user.getUserLocal().setPasswordPlain(usrPassword); // set the new password, if the user already exists
-			} catch (JDOObjectNotFoundException x) {
-				// Create the user
-				User user = new User(principal.getOrganisationID(), userID);
-				UserLocal userLocal = new UserLocal(user);
-				userLocal.setPasswordPlain(usrPassword);
-				pm.makePersistent(user);
-			}
+			User user = User.getUser(pm, principal.getOrganisationID(), userID);
+			user.getUserLocal().setPasswordPlain(usrPassword); // set the new password, if the user already exists
+		} catch (JDOObjectNotFoundException x) {
+			// Create the user
+			User user = new User(principal.getOrganisationID(), userID);
+			UserLocal userLocal = new UserLocal(user);
+			userLocal.setPasswordPlain(usrPassword);
+			pm.makePersistent(user);
+		}
 
-			// Create the initial context properties to connect to the remote server.
-			Properties props = new Properties();
-			props.put(InitialContext.INITIAL_CONTEXT_FACTORY, initialContextFactory);
-			props.put(InitialContext.PROVIDER_URL, initialContextURL);
+		// Create the initial context properties to connect to the remote server.
+		Properties props = new Properties();
+		props.put(InitialContext.INITIAL_CONTEXT_FACTORY, initialContextFactory);
+		props.put(InitialContext.PROVIDER_URL, initialContextURL);
 
-			// Obtain the OrganisationLinker EJB and request registration
+		// Obtain the OrganisationLinker EJB and request registration
+		try {
 			OrganisationLinker organisationLinker = OrganisationLinkerUtil.getHome(props).create();
 			organisationLinker.requestRegistration(registrationID, myOrganisation, organisationID, usrPassword);
-			organisationLinker.remove();
-
-		} catch (ModuleException e) {
-			throw e;
-		} catch (Exception e) {
-			throw new ModuleException(e);
+		} catch (OrganisationAlreadyRegisteredException x) {
+			throw x;
+		} catch (Exception x) {
+			throw new JFireRemoteException(x);
 		}
 	}
 	
@@ -598,9 +590,7 @@ public abstract class OrganisationManagerBean
 	 * @ejb.transaction type = "Required"
 	 * @ejb.permission role-name="OrganisationManager-write"
 	 **/
-	public void ackRegistration(
-			String grantOrganisationID)
-		throws ModuleException
+	public void ackRegistration(String grantOrganisationID)
 	{
 		PersistenceManager pm = getPersistenceManager();
 		try {
@@ -690,13 +680,17 @@ public abstract class OrganisationManagerBean
 	 * <p>
 	 * Note, that this method does nothing, if the local organisation IS the root-organisation.
 	 * </p>
+	 * @throws NamingException 
+	 * @throws CreateException 
+	 * @throws RemoteException 
+	 * @throws OrganisationAlreadyRegisteredException 
 	 *
 	 * @ejb.interface-method
 	 * @ejb.transaction type = "Required"
 	 * @ejb.permission role-name="OrganisationManager-write"
 	 **/
 	public void registerInRootOrganisation()
-	throws ModuleException
+	throws OrganisationAlreadyRegisteredException, JFireRemoteException
 	{
 		registerInRootOrganisation(false);
 	}
@@ -723,7 +717,7 @@ public abstract class OrganisationManagerBean
 	 * @ejb.permission role-name="_Guest_"
 	 **/
 	public Collection getOrganisationsFromRootOrganisation(boolean filterPartnerOrganisations, String[] fetchGroups, int maxFetchDepth)
-	throws ModuleException
+	throws JFireException
 	{
 		try {
 			InitialContext ctx = new InitialContext();
@@ -797,12 +791,12 @@ public abstract class OrganisationManagerBean
 				pm.close();
 			}
 
-		} catch (ModuleException x) {
+		} catch (JFireException x) {
 			logger.error("Obtaining organisations failed!", x);
 			throw x;
-		} catch (Exception x) {
+		} catch (Throwable x) {
 			logger.error("Obtaining organisations failed!", x);
-			throw new ModuleException(x);
+			throw new JFireException(x);
 		}
 	}
 
@@ -813,13 +807,14 @@ public abstract class OrganisationManagerBean
 	 * <p>
 	 * Note, that this method does nothing, if the local organisation IS the root-organisation.
 	 * </p> 
+	 * @throws OrganisationAlreadyRegisteredException 
 	 *
 	 * @ejb.interface-method
 	 * @ejb.transaction type = "Required"
 	 * @ejb.permission role-name="OrganisationManager-write"
 	 **/
 	public void registerInRootOrganisation(boolean force)
-	throws ModuleException
+	throws OrganisationAlreadyRegisteredException, JFireRemoteException
 	{
 		JFireServerManager ism = getJFireServerManager();
 		try {
