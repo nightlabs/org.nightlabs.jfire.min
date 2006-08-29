@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StreamTokenizer;
 import java.lang.ref.SoftReference;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -693,7 +694,6 @@ public class JFireServerManagerFactoryImpl
 	 * @throws ModuleException
 	 */
 	protected JFireServerConfigModule getJFireServerConfigModule()
-		throws ModuleException
 	{
 		JFireServerConfigModule cfMod = mcf.getConfigModule();
 		cfMod.acquireReadLock();
@@ -705,7 +705,7 @@ public class JFireServerManagerFactoryImpl
 	}
 
 	protected void setJFireServerConfigModule(JFireServerConfigModule cfMod)
-		throws ModuleException
+	throws ConfigException
 	{
 		if (cfMod.getLocalServer() == null)
 			throw new NullPointerException("localServer of config module must not be null!");
@@ -716,11 +716,7 @@ public class JFireServerManagerFactoryImpl
 		if (cfMod.getJdo() == null)
 			throw new NullPointerException("jdo of config module must not be null!");
 
-		try {
-			mcf.testConfiguration(cfMod);
-		} catch (ConfigException e) {
-			throw new ModuleException(e);
-		}
+		mcf.testConfiguration(cfMod);
 
 		JFireServerConfigModule orgCfMod = mcf.getConfigModule();
 		orgCfMod.acquireWriteLock();
@@ -737,19 +733,17 @@ public class JFireServerManagerFactoryImpl
 			
 			try {
 				BeanUtils.copyProperties(orgCfMod, cfMod);
-			} catch (Exception e) {
-				throw new ModuleException(e);
+			} catch (IllegalAccessException e) {
+				throw new RuntimeException(e); // should never happen => RuntimeException
+			} catch (InvocationTargetException e) {
+				throw new RuntimeException(e); // should never happen => RuntimeException
 			}
 
 		} finally {
 			orgCfMod.releaseLock();
 		}
 
-		try {
-			getConfig().save(true); // TODO force all modules to be written???
-		} catch (ConfigException e) {
-			throw new ModuleException(e);
-		}
+		getConfig().save(true); // TODO force all modules to be written???
 	}
 
 	protected J2EEAdapter j2eeVendorAdapter = null;
@@ -1368,7 +1362,7 @@ public class JFireServerManagerFactoryImpl
 	 * @throws OrganisationNotFoundException If the organisation does not exist.
 	 */
 	protected OrganisationCf getOrganisationConfig(String organisationID)
-		throws ModuleException
+	throws OrganisationNotFoundException
 	{
 		OrganisationCf org = (OrganisationCf)getOrganisationCfsCloned().get(organisationID);
 		if (org == null)

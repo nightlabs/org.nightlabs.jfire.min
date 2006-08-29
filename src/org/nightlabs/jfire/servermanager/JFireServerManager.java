@@ -30,6 +30,7 @@ import java.util.List;
 
 import javax.security.auth.login.LoginException;
 
+import org.nightlabs.config.ConfigException;
 import org.nightlabs.jfire.base.JFirePrincipal;
 import org.nightlabs.jfire.classloader.CLRegistrar;
 import org.nightlabs.jfire.module.ModuleType;
@@ -54,13 +55,10 @@ public interface JFireServerManager
 
 	/**
 	 * @return Returns a clone of the internal config module.
-	 * @throws ModuleException
 	 */
-	public JFireServerConfigModule getJFireServerConfigModule()
-		throws ModuleException;
+	public JFireServerConfigModule getJFireServerConfigModule();
 
-	public void setJFireServerConfigModule(JFireServerConfigModule cfMod)
-		throws ModuleException;
+	public void setJFireServerConfigModule(JFireServerConfigModule cfMod) throws ConfigException;
 
 //	/**
 //	 * This method creates a representative organisation on this server. Note,
@@ -99,8 +97,7 @@ public interface JFireServerManager
 	 */
 	public boolean configureServerAndShutdownIfNecessary(long delayMSec) throws ModuleException;
 
-	public OrganisationCf getOrganisationConfig(String organisationID)
-	throws ModuleException;
+	public OrganisationCf getOrganisationConfig(String organisationID) throws OrganisationNotFoundException;
 
 	/**
 	 * If a server is completely new, it does not have any organisation registered. Thus,

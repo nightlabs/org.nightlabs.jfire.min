@@ -170,35 +170,31 @@ public class Lookup
 	 * This method reads the properties out of the datastore managed by pm, that are necessary
 	 * to connect and login to the organisation defined by _organisationID. If _organisationID
 	 * is the local organisation (managed by pm), this method returns <tt>null</tt>! 
+	 * @throws NamingException 
 	 */
-	public static Hashtable getInitialContextProperties(PersistenceManager pm, String _organisationID) throws ModuleException
+	public static Hashtable getInitialContextProperties(PersistenceManager pm, String _organisationID)
+	throws NamingException
 	{
+		LocalOrganisation localOrganisation = LocalOrganisation.getLocalOrganisation(pm);
+		if (_organisationID.equals(localOrganisation.getOrganisationID()))
+			return null;
+
+		InitialContext initCtx = new InitialContext();
 		try {
-			LocalOrganisation localOrganisation = LocalOrganisation.getLocalOrganisation(pm);
-			if (_organisationID.equals(localOrganisation.getOrganisationID()))
-				return null;
+			JFireServerManagerFactory jfireServerManagerFactory = (JFireServerManagerFactory)
+			initCtx.lookup(JFireServerManagerFactory.JNDI_NAME);
 
-			InitialContext initCtx = new InitialContext();
-			try {
-				JFireServerManagerFactory jfireServerManagerFactory = (JFireServerManagerFactory)
-						initCtx.lookup(JFireServerManagerFactory.JNDI_NAME);
+			String password = localOrganisation.getPassword(_organisationID);
 
-				String password = localOrganisation.getPassword(_organisationID);
-
-				Organisation organisation = (Organisation)pm.getObjectById(OrganisationID.create(_organisationID), true);
-				Server server = organisation.getServer();
-				String initialContextFactory = jfireServerManagerFactory.getInitialContextFactory(server.getJ2eeServerType(), true);
-				return _getInitialContextProps(
-						initialContextFactory, server.getInitialContextURL(),
-						localOrganisation.getOrganisationID(),
-						_organisationID, password);
-			} finally {
-				initCtx.close();
-			}
-		} catch (RuntimeException x) {
-			throw x;
-		} catch (Exception x) {
-			throw new ModuleException(x);
+			Organisation organisation = (Organisation)pm.getObjectById(OrganisationID.create(_organisationID), true);
+			Server server = organisation.getServer();
+			String initialContextFactory = jfireServerManagerFactory.getInitialContextFactory(server.getJ2eeServerType(), true);
+			return _getInitialContextProps(
+					initialContextFactory, server.getInitialContextURL(),
+					localOrganisation.getOrganisationID(),
+					_organisationID, password);
+		} finally {
+			initCtx.close();
 		}
 	}
 

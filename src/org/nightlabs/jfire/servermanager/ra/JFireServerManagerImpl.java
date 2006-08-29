@@ -50,12 +50,14 @@ import org.nightlabs.jfire.security.UserLocal;
 import org.nightlabs.jfire.security.id.UserLocalID;
 import org.nightlabs.jfire.security.registry.SecurityRegistrar;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
+import org.nightlabs.jfire.servermanager.OrganisationNotFoundException;
 import org.nightlabs.jfire.servermanager.RoleImportSet;
 import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
 import org.nightlabs.jfire.servermanager.config.OrganisationCf;
 
 import org.nightlabs.ModuleException;
 import org.nightlabs.config.Config;
+import org.nightlabs.config.ConfigException;
 
 /**
  * @author marco
@@ -199,7 +201,9 @@ public class JFireServerManagerImpl
 	/**
 	 * @see org.nightlabs.jfire.servermanager.JFireServerManager#getOrganisationConfig(java.lang.String)
 	 */
-	public OrganisationCf getOrganisationConfig(String organisationID) throws ModuleException {
+	public OrganisationCf getOrganisationConfig(String organisationID)
+	throws OrganisationNotFoundException 
+	{
 		assertOpen();
 		return jfireServerManagerFactoryImpl.getOrganisationConfig(organisationID);
 	}
@@ -255,7 +259,6 @@ public class JFireServerManagerImpl
 	 * @see org.nightlabs.jfire.servermanager.JFireServerManager#getJFireServerConfigModule()
 	 */
 	public JFireServerConfigModule getJFireServerConfigModule()
-		throws ModuleException
 	{
 		assertOpen();
 		return jfireServerManagerFactoryImpl.getJFireServerConfigModule();
@@ -265,7 +268,7 @@ public class JFireServerManagerImpl
 	 * @see org.nightlabs.jfire.servermanager.JFireServerManager#setJFireServerConfigModule(org.nightlabs.jfire.servermanager.config.JFireServerConfigModule)
 	 */
 	public void setJFireServerConfigModule(JFireServerConfigModule cfMod)
-		throws ModuleException 
+	throws ConfigException 
 	{
 		assertOpen();
 		jfireServerManagerFactoryImpl.setJFireServerConfigModule(cfMod);
