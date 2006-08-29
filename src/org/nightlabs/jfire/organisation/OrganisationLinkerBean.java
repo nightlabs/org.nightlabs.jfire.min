@@ -31,11 +31,6 @@ import javax.jdo.PersistenceManager;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.jfire.base.Lookup;
-import org.nightlabs.jfire.organisation.LocalOrganisation;
-import org.nightlabs.jfire.organisation.Organisation;
-import org.nightlabs.jfire.organisation.RegistrationStatus;
-
-import org.nightlabs.ModuleException;
 
 /**
  * This EJB is used anonymously by a foreign organisation to initiate (or cancel)
@@ -73,10 +68,12 @@ public abstract class OrganisationLinkerBean implements javax.ejb.SessionBean
 	 * <br/><br/>
 	 * Do NOT call this method by your client! Use OrganisationManager EJB instead!
 	 *
+	 * @throws OrganisationAlreadyRegisteredException 
+	 *
 	 * @ejb.interface-method
 	 **/
 	public void requestRegistration(String registrationID, Organisation applicantOrganisation, String grantOrganisationID, String grantOrganisationUserPassword)
-		throws ModuleException
+	throws OrganisationAlreadyRegisteredException
 	{
 		if (applicantOrganisation == null)
 			throw new NullPointerException("applicantOrganisation");
@@ -136,7 +133,6 @@ public abstract class OrganisationLinkerBean implements javax.ejb.SessionBean
 	 * @ejb.interface-method
 	 **/
 	public void cancelRegistration(String registrationID, String applicantOrganisationID, String grantOrganisationID)
-		throws ModuleException
 	{
 		if (registrationID == null)
 			throw new NullPointerException("registrationID");
