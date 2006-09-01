@@ -121,6 +121,7 @@ public class UserDAO extends JDOObjectDAO<UserID, User>
   public synchronized User getUser(UserID userID, String[] fetchGroups, int maxFetchDepth, IProgressMonitor monitor)
   {
   	try {
+  		monitor.setTaskName("Loading user "+userID.userID);
   		um = UserManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
   		User user = getJDOObject(null, userID, fetchGroups, maxFetchDepth, monitor);
   		monitor.worked(1);
