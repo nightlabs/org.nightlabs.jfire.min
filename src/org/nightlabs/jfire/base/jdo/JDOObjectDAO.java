@@ -29,12 +29,13 @@ package org.nightlabs.jfire.base.jdo;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.jdo.cache.Cache;
-import org.nightlabs.util.Utils;
+import org.nightlabs.util.CollectionUtil;
 
 /**
  * JDO object retrieval through the JFire client cache.
@@ -149,7 +150,7 @@ public abstract class JDOObjectDAO<JDOObjectID, JDOObject>
 	 * @return All requested and existing JDO objects.
 	 * @throws Exception in case of an error
 	 */
-	protected synchronized Collection<JDOObject> getJDOObjects(String scope, Collection<JDOObjectID> objectIDs, String[] fetchGroups, int maxFetchDepth, IProgressMonitor monitor)
+	protected synchronized List<JDOObject> getJDOObjects(String scope, Collection<JDOObjectID> objectIDs, String[] fetchGroups, int maxFetchDepth, IProgressMonitor monitor)
 	{
 		try	{
 			ArrayList<JDOObject> objects = new ArrayList<JDOObject>();
@@ -208,7 +209,7 @@ public abstract class JDOObjectDAO<JDOObjectID, JDOObject>
 	 * @return All requested and existing JDO objects.
 	 * @throws Exception in case of an error
 	 */
-	protected synchronized Collection<JDOObject> getJDOObjects(String scope, Collection<JDOObjectID> objectIDs, Set<String> fetchGroups, int maxFetchDepth, IProgressMonitor monitor)
+	protected synchronized List<JDOObject> getJDOObjects(String scope, Collection<JDOObjectID> objectIDs, Set<String> fetchGroups, int maxFetchDepth, IProgressMonitor monitor)
 	{
 		return getJDOObjects(
 				scope, 
@@ -236,11 +237,11 @@ public abstract class JDOObjectDAO<JDOObjectID, JDOObject>
 	 * @return All requested and existing JDO objects.
 	 * @throws Exception in case of an error
 	 */
-	protected synchronized Collection<JDOObject> getJDOObjects(String scope, JDOObjectID[] objectIDs, Set<String> fetchGroups, int maxFetchDepth, IProgressMonitor monitor)
+	protected synchronized List<JDOObject> getJDOObjects(String scope, JDOObjectID[] objectIDs, Set<String> fetchGroups, int maxFetchDepth, IProgressMonitor monitor)
 	{
 		return getJDOObjects(
 				scope, 
-				Utils.array2ArrayList(objectIDs), 
+				CollectionUtil.array2ArrayList(objectIDs), 
 				fetchGroups, 
 				maxFetchDepth, 
 				monitor);
@@ -264,12 +265,12 @@ public abstract class JDOObjectDAO<JDOObjectID, JDOObject>
 	 * @return All requested and existing JDO objects.
 	 * @throws Exception in case of an error
 	 */
-	protected synchronized Collection<JDOObject> getJDOObjects(String scope, JDOObjectID[] objectIDs, String[] fetchGroups, int maxFetchDepth, IProgressMonitor monitor)
+	protected synchronized List<JDOObject> getJDOObjects(String scope, JDOObjectID[] objectIDs, String[] fetchGroups, int maxFetchDepth, IProgressMonitor monitor)
 	{
 		return getJDOObjects(
 				scope, 
-				Utils.array2ArrayList(objectIDs), 
-				Utils.array2HashSet(fetchGroups), 
+				CollectionUtil.array2ArrayList(objectIDs), 
+				CollectionUtil.array2HashSet(fetchGroups), 
 				maxFetchDepth, 
 				monitor);
 	}	

@@ -41,6 +41,7 @@ import org.apache.log4j.Logger;
 import org.nightlabs.ModuleException;
 import org.nightlabs.config.Config;
 import org.nightlabs.config.ConfigException;
+import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jdo.ObjectID;
 import org.nightlabs.jfire.base.jdo.notification.ChangeEvent;
 import org.nightlabs.jfire.base.jdo.notification.ChangeManager;
@@ -49,7 +50,7 @@ import org.nightlabs.jfire.base.login.Login;
 import org.nightlabs.jfire.jdo.JDOManager;
 import org.nightlabs.jfire.jdo.JDOManagerUtil;
 import org.nightlabs.jfire.jdo.cache.DirtyObjectID;
-import org.nightlabs.util.Utils;
+import org.nightlabs.util.CollectionUtil;
 
 /**
  * A singleton of this class caches <b>all</b> JDO objects 
@@ -192,7 +193,7 @@ public class Cache
 			start();
 		}
 
-		private Set currentlySubscribedObjectIDs = new HashSet();
+		private Set<Object> currentlySubscribedObjectIDs = new HashSet<Object>();
 
 		/**
 		 * @see java.lang.Thread#run()
@@ -242,9 +243,9 @@ public class Cache
 //					if (LOGGER.isDebugEnabled())
 //						LOGGER.debug("Thread found " + subscriptionChanges.size() + " subscription change requests.");
 
-					Map newSubscriptionChanges = null;
-					LinkedList objectIDsToSubscribe = null;
-					LinkedList objectIDsToUnsubscribe = null;
+					Map<Object, SubscriptionChangeRequest> newSubscriptionChanges = null;
+					LinkedList<Object> objectIDsToSubscribe = null;
+					LinkedList<Object> objectIDsToUnsubscribe = null;
 					boolean restoreCurrentlySubscribedObjectIDs = true;
 					try {
 						long now = System.currentTimeMillis();
@@ -260,7 +261,7 @@ public class Cache
 									logger.debug("Subscription change request " + scr.toString() + " is delayed and will be processed in about " + (scr.getScheduledActionDT() - now) + " msec.");
 
 								if (newSubscriptionChanges == null)
-									newSubscriptionChanges = new HashMap();
+									newSubscriptionChanges = new HashMap<Object, SubscriptionChangeRequest>();
 
 								newSubscriptionChanges.put(objectID, scr);
 							}
@@ -270,7 +271,7 @@ public class Cache
 									currentlySubscribedObjectIDs.remove(objectID);
 
 									if (objectIDsToUnsubscribe == null)
-										objectIDsToUnsubscribe = new LinkedList();
+										objectIDsToUnsubscribe = new LinkedList<Object>();
 
 									objectIDsToUnsubscribe.add(objectID);
 								}
@@ -279,7 +280,7 @@ public class Cache
 									// if there exists already one, we don't register it again => ignore
 									if (!currentlySubscribedObjectIDs.contains(objectID)) {
 										if (objectIDsToSubscribe == null)
-											objectIDsToSubscribe = new LinkedList();
+											objectIDsToSubscribe = new LinkedList<Object>();
 
 										objectIDsToSubscribe.add(objectID);
 										currentlySubscribedObjectIDs.add(objectID);
@@ -408,19 +409,19 @@ public class Cache
 	 * with the new changes that have been added here while the <code>CacheManagerThread</code>
 	 * was busy.
 	 */
-	private Map subscriptionChangeRequests = new HashMap();
+	private Map<Object, SubscriptionChangeRequest> subscriptionChangeRequests = new HashMap<Object, SubscriptionChangeRequest>();
 	private Object subscriptionChangeRequestsMutex = new Object();
 
 	/**
 	 * @return Returns the {@link #objectIDsToSubscribe} and replaces
 	 *		the field by a new instance of <code>HashMap</code>.
 	 */
-	protected Map fetchSubscriptionChangeRequests()
+	protected Map<Object, SubscriptionChangeRequest> fetchSubscriptionChangeRequests()
 	{
-		Map res;
+		Map<Object, SubscriptionChangeRequest> res;
 		synchronized (subscriptionChangeRequestsMutex) {
 			res = subscriptionChangeRequests;
-			subscriptionChangeRequests = new HashMap();
+			subscriptionChangeRequests = new HashMap<Object, SubscriptionChangeRequest>();
 		}
 		return res;
 	}
@@ -438,7 +439,7 @@ public class Cache
 	 * @param oldChangeRequests Either <code>null</code> or a <code>Map</code> like the one
 	 *		returned from {@link #fetchSubscriptionChangeRequests()}.
 	 */
-	protected void restoreOldSubscriptionChangeRequests(Map oldChangeRequests)
+	protected void restoreOldSubscriptionChangeRequests(Map<Object, SubscriptionChangeRequest> oldChangeRequests)
 	{
 		if (oldChangeRequests == null || oldChangeRequests.isEmpty()) {
 //			LOGGER.debug("There are no old subscription change requests. Won't do anything.");
@@ -580,13 +581,13 @@ public class Cache
 	 * key: {@link Key} key<br/>
 	 * value: {@link Carrier} carrier
 	 */
-	private Map carriersByKey = new HashMap();
+	private Map<Key, Carrier> carriersByKey = new HashMap<Key, Carrier>();
 
 	/**
 	 * key: Object objectID<br/>
 	 * value: Set of Key
 	 */
-	private Map keySetsByObjectID = new HashMap();
+	private Map<Object, Set<Key>> keySetsByObjectID = new HashMap<Object, Set<Key>>();
 
 	/**
 	 * When a new object is put into the Cache, it is immediately registered in
@@ -599,13 +600,13 @@ public class Cache
 	 * key: {@link Key} key<br/>
 	 * value: {@link Carrier} carrier
 	 */
-	private Map newCarriersByKey = new HashMap();
+	private Map<Key, Carrier> newCarriersByKey = new HashMap<Key, Carrier>();
 
 	/**
 	 * This is a rolling carrier-registration with the activeCarrierContainer
 	 * being the first entry.
 	 */
-	private LinkedList carrierContainers = new LinkedList();
+	private LinkedList<CarrierContainer> carrierContainers = new LinkedList<CarrierContainer>();
 	private CarrierContainer activeCarrierContainer;
 
 	protected CarrierContainer getActiveCarrierContainer()
@@ -624,7 +625,7 @@ public class Cache
 			return null;
 
 		Map res = newCarriersByKey;
-		newCarriersByKey = new HashMap();
+		newCarriersByKey = new HashMap<Key, Carrier>();
 		return res;
 	}
 
@@ -663,7 +664,7 @@ public class Cache
 	{
 		logger.info("Creating new Cache instance.");
 		cacheCfMod = (CacheCfMod) Config.sharedInstance().createConfigModule(CacheCfMod.class);
-		Config.sharedInstance().saveConfFile(); // TODO remove this as soon as we have a thread that periodically saves it.
+		Config.sharedInstance().save(); // TODO remove this as soon as we have a thread that periodically saves it.
 		activeCarrierContainer = new CarrierContainer(this);
 		carrierContainers.addFirst(activeCarrierContainer);
 //		notificationThread.start();
@@ -705,12 +706,17 @@ public class Cache
 	 */
 	public Object get(String scope, Object objectID, String[] fetchGroups, int maxFetchDepth)
 	{
-		return get(scope, objectID, Utils.array2HashSet(fetchGroups), maxFetchDepth);
+		return get(scope, objectID, CollectionUtil.array2HashSet(fetchGroups), maxFetchDepth);
 	}
 
 	/**
 	 * Use this method to retrieve an object from the cache. This method updates
 	 * the access timestamp, if an object has been found.
+	 * <p>
+	 * If <code>scope == null</code>, this method searches for an object that has
+	 * been retrieved with <b>at least</b> the required <code>fetchGroups</code> and <b>at least</b>
+	 * the required <code>maxFetchDepth</code>, in case no exact match can be found.
+	 * </p>
 	 *
 	 * @param scope Either <code>null</code> (default) or a <code>String</code> to separate
 	 *		a special namespace in the cache. This is necessary, if the method with which
@@ -724,9 +730,10 @@ public class Cache
 	 *
 	 * @return Returns either <code>null</code> or the desired JDO object.
 	 */
-	public synchronized Object get(String scope, Object objectID, Set fetchGroups, int maxFetchDepth)
+	public synchronized Object get(String scope, Object objectID, Set<String> fetchGroups, int maxFetchDepth)
 	{
 		assertOpen();
+		Object object = null;
 
 		Key key = new Key(scope, objectID, fetchGroups, maxFetchDepth);
 		Carrier carrier = (Carrier) carriersByKey.get(key);
@@ -734,10 +741,57 @@ public class Cache
 			if (logger.isDebugEnabled())
 				logger.debug("No Carrier found for key: " + key.toString());
 
-			return null;
-		}
+			// If and only if the scope is null, we search for a record that contains
+			// AT LEAST our required fetch groups and AT LEAST our maxFetchDepth.
+			if (scope == null) {
+				logger.debug("scope == null => searching for alternative entries (which contain at least the required fetch groups)...");
 
-		Object object = carrier.getObject();
+				Set<Key> keySet = keySetsByObjectID.get(objectID);
+				if (keySet != null) {
+					iterateCandidateKey: for (Key candidateKey : keySet) {
+						// is the scope correct?
+						if (candidateKey.getScope() != null)
+							continue iterateCandidateKey;
+						
+						// is the maxFetchDepth sufficient?
+						if (maxFetchDepth < 0) {
+							if (maxFetchDepth != NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT)
+								throw new IllegalArgumentException("maxFetchDepth < 0 but maxFetchDepth != NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT");
+	
+							if (maxFetchDepth != candidateKey.getMaxFetchDepth())
+								continue iterateCandidateKey;
+						}
+						else if (maxFetchDepth > candidateKey.getMaxFetchDepth())
+							continue iterateCandidateKey;
+	
+						// does the candidateKey contain all required fetchgroups?
+						if (!candidateKey.getFetchGroups().containsAll(fetchGroups))
+							continue iterateCandidateKey;
+	
+						carrier = (Carrier) carriersByKey.get(candidateKey);
+						if (carrier != null) {
+							object = carrier.getObject();
+							if (object == null) {
+								logger.warn("Found Carrier, but object has already been released by the garbage collector! If this message occurs often, give the VM more memory or the Cache a shorter object-lifetime! Alternatively, you may switch to hard references. searched key: " + key.toString() + " candidateKey: " + candidateKey.toString());
+
+								remove(candidateKey);
+								carrier = null;
+							}
+							else {
+								logger.debug("Found alternative entry with at least the required fetch groups: searched key: " + key.toString() + " candidateKey: " + candidateKey.toString());
+								carrier.setAccessDT();
+								return object;
+							}
+
+						} // if (carrier != null) {
+					} // iterateCandidateKey
+				} // if (keySet != null) {
+			} // if (scope == null) {
+
+			return null;
+		} // if (carrier == null) {
+
+		object = carrier.getObject();
 		if (object == null) { // remove the unnecessary keys from all indices.
 			logger.warn("Found Carrier, but object has already been released by the garbage collector! If this message occurs often, give the VM more memory or the Cache a shorter object-lifetime! Alternatively, you may switch to hard references. key: " + key.toString());
 
@@ -754,10 +808,10 @@ public class Cache
 
 	public void putAll(String scope, Collection objects, String[] fetchGroups, int maxFetchDepth)
 	{
-		putAll(scope, objects, Utils.array2HashSet(fetchGroups), maxFetchDepth);
+		putAll(scope, objects, CollectionUtil.array2HashSet(fetchGroups), maxFetchDepth);
 	}
 
-	public void putAll(String scope, Collection objects, Set fetchGroups, int maxFetchDepth)
+	public void putAll(String scope, Collection objects, Set<String> fetchGroups, int maxFetchDepth)
 	{
 		if (objects == null)
 			throw new NullPointerException("objects must not be null!");
@@ -771,14 +825,14 @@ public class Cache
 	 */
 	public void put(String scope, Object object, String[] fetchGroups, int maxFetchDepth)
 	{
-		put(scope, object, Utils.array2HashSet(fetchGroups), maxFetchDepth);
+		put(scope, object, CollectionUtil.array2HashSet(fetchGroups), maxFetchDepth);
 	}
 
 	/**
 	 * This method puts a jdo object into the cache. Therefore, it
 	 * obtains the objectID and calls {@link #put(String, Object, Object, Set)}.
 	 */
-	public void put(String scope, Object object, Set fetchGroups, int maxFetchDepth)
+	public void put(String scope, Object object, Set<String> fetchGroups, int maxFetchDepth)
 	{
 		put(scope, JDOHelper.getObjectId(object), object, fetchGroups, maxFetchDepth);
 	}
@@ -788,7 +842,7 @@ public class Cache
 	 */
 	public void put(String scope, Object objectID, Object object, String[] fetchGroups, int maxFetchDepth)
 	{
-		put(scope, objectID, object, Utils.array2HashSet(fetchGroups), maxFetchDepth);
+		put(scope, objectID, object, CollectionUtil.array2HashSet(fetchGroups), maxFetchDepth);
 	}
 
 	/**
@@ -807,7 +861,7 @@ public class Cache
 	 * @param fetchGroups Either <code>null</code> or the fetchGroups with which the object has been retrieved.
 	 *		If you cache a non-jdo-object, you should pass <code>null</code> here and use <code>scope</code>.
 	 */
-	public void put(String scope, Object objectID, Object object, Set fetchGroups, int maxFetchDepth)
+	public void put(String scope, Object objectID, Object object, Set<String> fetchGroups, int maxFetchDepth)
 	{
 		assertOpen();
 
@@ -841,9 +895,9 @@ public class Cache
 			newCarriersByKey.put(key, carrier);
 
 			// register the key by its objectID (for fast removal if the object changed)
-			Set keySet = (Set) keySetsByObjectID.get(objectID);
+			Set<Key> keySet = keySetsByObjectID.get(objectID);
 			if (keySet == null) {
-				keySet = new HashSet();
+				keySet = new HashSet<Key>();
 				keySetsByObjectID.put(objectID, keySet);
 			}
 			keySet.add(key);
@@ -873,9 +927,9 @@ public class Cache
 		for (Iterator it = objectIDs.iterator(); it.hasNext(); ) {
 			Object objectID = it.next();
 
-			Set keySet = (Set) keySetsByObjectID.get(objectID);
+			Set<Key> keySet = keySetsByObjectID.get(objectID);
 			if (keySet == null) {
-				keySet = new HashSet();
+				keySet = new HashSet<Key>();
 				keySetsByObjectID.put(objectID, keySet);
 			}
 			keySet.add(key);
@@ -895,9 +949,9 @@ public class Cache
 			logger.debug("Removing Carrier for key: " + key.toString());
 
 		Carrier oldCarrier = (Carrier) carriersByKey.remove(key);
-		Set objectIDs;
+		Set<Object> objectIDs;
 		if (oldCarrier == null) {
-			objectIDs = new HashSet();
+			objectIDs = new HashSet<Object>();
 			objectIDs.add(key.getObjectID());
 		}
 		else {

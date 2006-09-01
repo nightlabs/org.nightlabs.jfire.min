@@ -35,7 +35,7 @@ public class Key
 {
 	private String scope;
 	private Object objectID;
-	private Set fetchGroups;
+	private Set<String> fetchGroups;
 	private int maxFetchDepth;
 
 	/**
@@ -48,7 +48,7 @@ public class Key
 	 * @param fetchGroups Can be <tt>null</tt> or must be a <tt>Set</tt> of <tt>String</tt>.
 	 *		Note, that you MUST NOT change the set after you called this constructor!
 	 */
-	public Key(String scope, Object objectID, Set fetchGroups, int maxFetchDepth)
+	public Key(String scope, Object objectID, Set<String> fetchGroups, int maxFetchDepth)
 	{
 		this.scope = scope;
 
@@ -147,7 +147,7 @@ public class Key
 	 *
 	 * @return Returns the fetchGroups.
 	 */
-	public Set getFetchGroups()
+	public Set<String> getFetchGroups()
 	{
 		return fetchGroups;
 	}

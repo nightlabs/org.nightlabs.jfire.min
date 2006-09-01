@@ -54,7 +54,7 @@ public class Carrier
 	/**
 	 * @see #getObjectIDs()
 	 */
-	private Set objectIDs = null;
+	private Set<Object> objectIDs = null;
 
 	/**
 	 * When has this <tt>Carrier</tt> been created.
@@ -85,7 +85,7 @@ public class Carrier
 			referenceType = carrierContainer.getCache().getCacheCfMod().getReferenceType();
 
 		if (CacheCfMod.REFERENCE_TYPE_SOFT.equals(referenceType)) {
-			this.ref = new SoftReference(pcObject);
+			this.ref = new SoftReference<Object>(pcObject);
 			this.object = null;
 		}
 		else if (CacheCfMod.REFERENCE_TYPE_HARD.equals(referenceType)) {
@@ -178,12 +178,12 @@ public class Carrier
 	 *		collected (the first call to this method), this method will return
 	 *		a Set which contains only the objectID of the main object!
 	 */
-	public Set getObjectIDs()
+	public Set<Object> getObjectIDs()
 	throws IllegalArgumentException, IllegalAccessException
 	{
 		if (objectIDs == null) {
 			Object object = getObject();
-			Set set = new HashSet();
+			Set<Object> set = new HashSet<Object>();
 			set.add(key.getObjectID()); // this might be a special key (non-jdo-objectID) as soon as we support to store arbitrary objects into the cache.
 
 			if (object != null)
