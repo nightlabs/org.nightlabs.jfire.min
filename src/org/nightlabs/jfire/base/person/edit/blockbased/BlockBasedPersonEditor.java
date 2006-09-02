@@ -121,7 +121,7 @@ public class BlockBasedPersonEditor extends AbstractBlockBasedPersonEditor {
 								contentProvider.refresh(blockGroup);
 							}
 						} // if (shouldDisplayStructBlock(blockGroup)) {
-					}		
+					}
 					groupedContentComposite.layout();
 				}
 			}

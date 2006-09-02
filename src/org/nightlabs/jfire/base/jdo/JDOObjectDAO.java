@@ -68,7 +68,7 @@ public abstract class JDOObjectDAO<JDOObjectID, JDOObject>
 	 * <p>
 	 * Subclassers may override this method to provide a specialized way to
 	 * retrieve a single JDO object from the server. The given implementation
-	 * works by calling {@link #retrieveJDOObjects(Object, Set, int, IProgressMonitor)}
+	 * works by calling {@link #retrieveJDOObjects(Collection, Set, int, IProgressMonitor)}
 	 * for the single object.
 	 * 
 	 * @param objectID Wich object to get
