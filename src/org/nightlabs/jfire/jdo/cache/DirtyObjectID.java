@@ -32,11 +32,18 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import sun.reflect.ReflectionFactory.GetReflectionFactoryAction;
-
 public class DirtyObjectID
 implements Serializable
 {
+	private static final long serialVersionUID = 1L;
+
+	public static enum LifecycleType {
+		_new,
+		_dirty,
+		_deleted
+	}
+
+	private LifecycleType lifecycleType;
 	private long createDT;
 	private long changeDT;
 	private Object objectID;
@@ -44,34 +51,40 @@ implements Serializable
 
 	/**
 	 * @param objectID The jdo object id.
-	 * @param causeSessionID The session which caused this object to be dirty.
+	 * @param sourceSessionID The session which caused this object to be dirty.
 	 */
-	public DirtyObjectID(Object objectID, String causeSessionID)
+	public DirtyObjectID(Object objectID, String sourceSessionID, LifecycleType lifecycleType)
 	{
+		this.lifecycleType = lifecycleType;
 		this.createDT = System.currentTimeMillis();
 		this.changeDT = System.currentTimeMillis();
 		this.objectID = objectID;
 		this.sourceSessionIDs = new HashSet<String>(1);
-		this.sourceSessionIDs.add(causeSessionID);
+		this.sourceSessionIDs.add(sourceSessionID);
+	}
+
+	public LifecycleType getLifecycleType()
+	{
+		return lifecycleType;
 	}
 
 	private Set<String> unmodifiableSourceSessionIDs = null;
 
-	public Set getSourceSessionIDs()
+	public Set<String> getSourceSessionIDs()
 	{
 		if (unmodifiableSourceSessionIDs == null)
 			unmodifiableSourceSessionIDs = Collections.unmodifiableSet(sourceSessionIDs);
 
 		return unmodifiableSourceSessionIDs;
 	}
-	public void addSourceSessionID(String causeSessionID)
+	public void addSourceSessionID(String _sourceSessionID)
 	{
-		sourceSessionIDs.add(causeSessionID);
+		this.sourceSessionIDs.add(_sourceSessionID);
 		this.changeDT = System.currentTimeMillis();
 	}
-	public void addSourceSessionIDs(Collection<String> causeSessionIDs)
+	public void addSourceSessionIDs(Collection<String> _sourceSessionIDs)
 	{
-		sourceSessionIDs.addAll(causeSessionIDs);
+		this.sourceSessionIDs.addAll(_sourceSessionIDs);
 		this.changeDT = System.currentTimeMillis();
 	}
 	public Object getObjectID()

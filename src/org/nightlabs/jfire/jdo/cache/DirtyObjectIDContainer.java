@@ -35,6 +35,8 @@ import java.util.Map;
 public class DirtyObjectIDContainer
 implements Serializable
 {
+	private static final long serialVersionUID = 1L;
+
 	private long createDT = System.currentTimeMillis();
 	private boolean closed = false;
 
@@ -48,7 +50,7 @@ implements Serializable
 	 * key: Object objectID<br/>
 	 * value: DirtyObjectID dirtyObjectID
 	 */
-	private Map dirtyObjectIDs = null;
+	private Map<Object, DirtyObjectID> dirtyObjectIDs = null;
 //	private static final Map EMPTY_MAP = Collections.unmodifiableMap(new HashMap());
 
 	public DirtyObjectIDContainer()
@@ -60,7 +62,7 @@ implements Serializable
 		return createDT;
 	}
 
-	public synchronized void addDirtyObjectIDs(Collection newDirtyObjectIDs)
+	public synchronized void addDirtyObjectIDs(Collection<DirtyObjectID> newDirtyObjectIDs)
 	{
 		assertOpen();
 
@@ -68,7 +70,7 @@ implements Serializable
 			return;
 
 		if (dirtyObjectIDs == null) {
-			dirtyObjectIDs = new HashMap(newDirtyObjectIDs.size());
+			dirtyObjectIDs = new HashMap<Object, DirtyObjectID>(newDirtyObjectIDs.size());
 			for (Iterator it = newDirtyObjectIDs.iterator(); it.hasNext();) {
 				DirtyObjectID newDirtyObjectID = (DirtyObjectID) it.next();
 				dirtyObjectIDs.put(newDirtyObjectID.getObjectID(), newDirtyObjectID);

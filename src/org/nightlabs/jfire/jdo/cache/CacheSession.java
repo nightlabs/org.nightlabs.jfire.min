@@ -43,6 +43,8 @@ import org.apache.log4j.Logger;
 public class CacheSession
 implements Serializable
 {
+	private static final long serialVersionUID = 1L;
+
 	/**
 	 * LOG4J logger used by this class
 	 */
@@ -162,8 +164,8 @@ implements Serializable
 //		return res;
 //	}
 
-	private Set subscribedObjectIDs = new HashSet();
-	private Set _subscribedObjectIDs = null;
+	private Set<Object> subscribedObjectIDs = new HashSet<Object>();
+	private Set<Object> _subscribedObjectIDs = null;
 
 
 	/**
@@ -200,7 +202,7 @@ implements Serializable
 
 
 	/**
-	 * @return Returns the subscribed object IDs.
+	 * @return Returns the subscribed object IDs in form of an unmodifiable copy of the internal set.
 	 */
 	public Set getSubscribedObjectIDs()
 	{
@@ -208,7 +210,7 @@ implements Serializable
 		if (res == null) {
 			synchronized (subscribedObjectIDs) {
 				_subscribedObjectIDs = Collections.unmodifiableSet(
-						new HashSet(subscribedObjectIDs));
+						new HashSet<Object>(subscribedObjectIDs));
 
 				res = _subscribedObjectIDs;
 			}
@@ -221,7 +223,7 @@ implements Serializable
 	 * key: Object objectID<br/>
 	 * value: {@link DirtyObjectID} dirtyObjectID
 	 */
-	private Map dirtyObjectIDs = new HashMap();
+	private Map<Object, DirtyObjectID> dirtyObjectIDs = new HashMap<Object, DirtyObjectID>();
 	private transient Object dirtyObjectIDsMutex = new Object();
 
 	/**
@@ -237,7 +239,7 @@ implements Serializable
 	 * @return Returns either <tt>null</tt> or a <tt>Map</tt> of jdo object-IDs. This Map will never be empty (instead of an
 	 *		empty Map, null is returned). 
 	 */
-	public Map fetchDirtyObjectIDs()
+	public Map<Object, DirtyObjectID> fetchDirtyObjectIDs()
 	{
 		if (closed) {
 			if (logger.isDebugEnabled())
@@ -246,13 +248,13 @@ implements Serializable
 			return null;
 		}
 
-		Map res;
+		Map<Object, DirtyObjectID> res;
 		synchronized (dirtyObjectIDsMutex) {
 			if (dirtyObjectIDs.isEmpty())
 				res = null;
 			else {
 				res = dirtyObjectIDs;
-				dirtyObjectIDs = new HashMap();
+				dirtyObjectIDs = new HashMap<Object, DirtyObjectID>();
 
 				long youngestChangeDT = System.currentTimeMillis() - cacheManagerFactory.getCacheCfMod().getDelayNotificationMSec();
 
@@ -286,7 +288,7 @@ implements Serializable
 	 * <p>
 	 * Note, that this method will NOT yet notify anyone! Notification is done indirectly.
 	 */
-	public void addDirtyObjectIDs(Collection dirtyOjectIDs)
+	public void addDirtyObjectIDs(Collection<DirtyObjectID> dirtyOjectIDs)
 	{
 		assertOpen();
 

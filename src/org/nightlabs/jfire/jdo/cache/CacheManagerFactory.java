@@ -34,6 +34,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Timer;
@@ -243,7 +244,7 @@ implements Serializable
 	 *		value: ChangeListenerDescriptor changeListener<br/>
 	 * }
 	 */
-	private Map listenersByObjectID = new HashMap();
+	private Map<Object, Map<String, ChangeListenerDescriptor>> listenersByObjectID = new HashMap<Object, Map<String,ChangeListenerDescriptor>>();
 
 
 	private transient FreshDirtyObjectIDContainerManagerThread freshDirtyObjectIDContainerManagerThread =
@@ -641,36 +642,86 @@ implements Serializable
 	 * {@link #addDirtyObjectIDs(Collection)} will create a new <tt>HashSet</tt>,
 	 * if it is <tt>null</tt>, and add all cacheSessionIDs that must be notified.
 	 */
-	private Set cacheSessionIDsToNotify = null;
+	private Set<String> cacheSessionIDsToNotify = null;
 	private transient Object cacheSessionIDsToNotifyMutex = new Object();
 
-	protected Set fetchCacheSessionIDsToNotify() {
+	protected Set<String> fetchCacheSessionIDsToNotify() {
 		synchronized (cacheSessionIDsToNotifyMutex) {
-			Set res = cacheSessionIDsToNotify;
+			Set<String> res = cacheSessionIDsToNotify;
 			cacheSessionIDsToNotify = null;
 			return res;
 		}
 	}
 
 	/**
-	 * key: Object objectID<br/>
-	 * value: {@link DirtyObjectID} dirtyObjectID
+	 * key: DirtyObjectID.LifecycleType lifecycleType<br/>
+	 * value: Map {<br/>
+	 *		key: Object objectID<br/>
+	 *		value: {@link DirtyObjectID} dirtyObjectID<br/>
+	 * }
 	 */
-	private Map objectIDsWaitingForNotification = null;
+	private Map<DirtyObjectID.LifecycleType, Map<Object, DirtyObjectID>> lifecycleType2objectIDsWaitingForNotification = null;
 	private transient Object objectIDsWaitingForNotificationMutex = new Object();
+
+	private void notifyLocalListeners(String sessionID, Collection<Object> objectIDs, DirtyObjectID.LifecycleType lifecycleType)
+	{
+		switch (lifecycleType) {
+			case _new:
+				synchronized (localNewListenersMutex) {
+					if (localNewListeners != null) {
+						if (_localNewListeners == null)
+							_localNewListeners = new LinkedList<LocalNewListener>(localNewListeners);
+
+						List<LocalNewListener> listeners = _localNewListeners;
+						for (LocalNewListener localNewListener : listeners)
+							localNewListener.notifyNewObjectIDs(objectIDs);
+					}
+				}
+				break;
+			case _dirty:
+				synchronized (localDirtyListenersMutex) {
+					if (localDirtyListeners != null) {
+						if (_localDirtyListeners == null)
+							_localDirtyListeners = new LinkedList<LocalDirtyListener>(localDirtyListeners);
+
+						List<LocalDirtyListener> listeners = _localDirtyListeners;
+						for (LocalDirtyListener localDirtyListener : listeners)
+							localDirtyListener.notifyDirtyObjectIDs(objectIDs);
+					}
+				}
+				break;
+			case _deleted:
+				synchronized (localDeletedListenersMutex) {
+					if (localDeletedListeners != null) {
+						if (_localDeletedListeners == null)
+							_localDeletedListeners = new LinkedList<LocalDeletedListener>(localDeletedListeners);
+
+						List<LocalDeletedListener> listeners = _localDeletedListeners;
+						for (LocalDeletedListener localDeletedListener : listeners)
+							localDeletedListener.notifyDeletedObjectIDs(objectIDs);
+					}
+				}
+				break;
+
+			default:
+				throw new IllegalStateException("Unknown lifecycleType: " + lifecycleType);
+		}
+	}
 
 	/**
 	 * Call this method to notify all interested clients about the changed
 	 * JDO objects. This method is called by
 	 * {@link CacheManager#addDirtyObjectIDs(Collection)}.
 	 * <p>
-	 * Note, that the notification works asynchronously and this method
-	 * immediately returns.
+	 * Note, that the notification of remote clients works asynchronously and this method
+	 * immediately returns. The {@link LocalDirtyListener}s, {@link LocalNewListener}s and
+	 * {@link LocalDeletedListener}s are, however, triggered already here.
 	 * </p>
-	 * @param sessionID The session which made the objects dirty.
-	 * @param objectIDs The object-ids referencing the changed JDO objects.
+	 * @param sessionID The session which made the objects dirty / created them / deleted them.
+	 * @param objectIDs The object-ids referencing the new/changed/deleted JDO objects.
+	 * @param lifecycleType Defines how referenced JDO objects have been affected. 
 	 */
-	public void addDirtyObjectIDs(String sessionID, Collection objectIDs)
+	public void addDirtyObjectIDs(String sessionID, Collection<Object> objectIDs, DirtyObjectID.LifecycleType lifecycleType)
 	{
 		if (objectIDs == null || objectIDs.isEmpty()) // to avoid unnecessary errors (though null should never come here)
 			return;
@@ -681,16 +732,21 @@ implements Serializable
 				logger.debug("      " + it.next());
 		}
 
-		synchronized (localDirtyListenersMutex) {
-			if (localDirtyListeners != null) {
-				for (Iterator it = localDirtyListeners.iterator(); it.hasNext(); )
-					((LocalDirtyListener)it.next()).notifyDirtyObjectIDs(objectIDs);
-			}
-		}
+		// local listeners are triggered here (i.e. during commit), because they might require to be
+		// done for sure. If we did it in the NotificationThread, they might be never triggered,
+		// in case the server is restarted.
+		notifyLocalListeners(sessionID, objectIDs, lifecycleType);
 
 		synchronized (objectIDsWaitingForNotificationMutex) {
-			if (objectIDsWaitingForNotification == null)
-				objectIDsWaitingForNotification = new HashMap(objectIDs.size());
+			if (lifecycleType2objectIDsWaitingForNotification == null)
+				lifecycleType2objectIDsWaitingForNotification = new HashMap<DirtyObjectID.LifecycleType, Map<Object, DirtyObjectID>>(DirtyObjectID.LifecycleType.values().length); 
+
+			Map<Object, DirtyObjectID> objectIDsWaitingForNotification = lifecycleType2objectIDsWaitingForNotification.get(lifecycleType);
+
+			if (objectIDsWaitingForNotification == null) {
+				objectIDsWaitingForNotification = new HashMap<Object, DirtyObjectID>(objectIDs.size());
+				lifecycleType2objectIDsWaitingForNotification.put(lifecycleType, objectIDsWaitingForNotification);
+			}
 
 			for (Iterator it = objectIDs.iterator(); it.hasNext(); ) {
 				Object objectID = it.next();
@@ -698,20 +754,22 @@ implements Serializable
 				if (dirtyObjectID != null)
 					dirtyObjectID.addSourceSessionID(sessionID);
 				else
-					objectIDsWaitingForNotification.put(objectID, new DirtyObjectID(objectID, sessionID));
+					objectIDsWaitingForNotification.put(objectID, new DirtyObjectID(objectID, sessionID, lifecycleType));
 			}
 		}
 	}
 
-	private LinkedList localDirtyListeners = null;
+	private LinkedList<LocalDirtyListener> localDirtyListeners = null;
+	private LinkedList<LocalDirtyListener> _localDirtyListeners = null;
 	private transient Object localDirtyListenersMutex = new Object();
 	public void addLocalDirtyListener(LocalDirtyListener localDirtyListener)
 	{
 		synchronized (localDirtyListenersMutex) {
 			if (localDirtyListeners == null)
-				localDirtyListeners = new LinkedList();
+				localDirtyListeners = new LinkedList<LocalDirtyListener>();
 
 			localDirtyListeners.add(localDirtyListener);
+			_localDirtyListeners = null;
 		}
 	}
 	public void removeLocalDirtyListener(LocalDirtyListener localDirtyListener)
@@ -721,9 +779,64 @@ implements Serializable
 				return;
 
 			localDirtyListeners.remove(localDirtyListener);
+			_localDirtyListeners = null;
 
 			if (localDirtyListeners.isEmpty())
 				localDirtyListeners = null;
+		}
+	}
+
+	private LinkedList<LocalNewListener> localNewListeners = null;
+	private LinkedList<LocalNewListener> _localNewListeners = null;
+	private transient Object localNewListenersMutex = new Object();
+	public void addLocalNewListener(LocalNewListener localNewListener)
+	{
+		synchronized (localNewListenersMutex) {
+			if (localNewListeners == null)
+				localNewListeners = new LinkedList<LocalNewListener>();
+
+			localNewListeners.add(localNewListener);
+			_localNewListeners = null;
+		}
+	}
+	public void removeLocalNewListener(LocalNewListener localNewListener)
+	{
+		synchronized (localNewListenersMutex) {
+			if (localNewListeners == null)
+				return;
+
+			localNewListeners.remove(localNewListener);
+			_localNewListeners = null;
+
+			if (localNewListeners.isEmpty())
+				localNewListeners = null;
+		}
+	}
+
+	private LinkedList<LocalDeletedListener> localDeletedListeners = null;
+	private LinkedList<LocalDeletedListener> _localDeletedListeners = null;
+	private transient Object localDeletedListenersMutex = new Object();
+	public void addLocalDeletedListener(LocalDeletedListener localDeletedListener)
+	{
+		synchronized (localDeletedListenersMutex) {
+			if (localDeletedListeners == null)
+				localDeletedListeners = new LinkedList<LocalDeletedListener>();
+
+			localDeletedListeners.add(localDeletedListener);
+			_localDeletedListeners = null;
+		}
+	}
+	public void removeLocalDeletedListener(LocalDeletedListener localDeletedListener)
+	{
+		synchronized (localDeletedListenersMutex) {
+			if (localDeletedListeners == null)
+				return;
+
+			localDeletedListeners.remove(localDeletedListener);
+			_localDeletedListeners = null;
+
+			if (localDeletedListeners.isEmpty())
+				localDeletedListeners = null;
 		}
 	}
 
@@ -752,44 +865,67 @@ implements Serializable
 	 */
 	protected void distributeDirtyObjectIDs()
 	{
-		if (this.objectIDsWaitingForNotification == null) { // IMHO no sync necessary, because, if this value is just right now changing, we can simply wait for the next cycle.
+		if (this.lifecycleType2objectIDsWaitingForNotification == null) { // IMHO no sync necessary, because, if this value is just right now changing, we can simply wait for the next cycle.
 			logger.debug("There are no objectIDs waiting for notification. Return immediately.");
 			return;
 		}
 
-		// No need to synchronize access to activeFreshDirtyObjectIDContainer, because this is never
-		// null and it doesn't matter, whether this is really the active one or we missed the rolling.
-		activeFreshDirtyObjectIDContainer.addDirtyObjectIDs(objectIDsWaitingForNotification.values());
-
-		Map dirtyObjectIDs;
+		Map<DirtyObjectID.LifecycleType, Map<Object, DirtyObjectID>> lifecycleType2dirtyObjectIDs;
 		synchronized (objectIDsWaitingForNotificationMutex) {
-			dirtyObjectIDs = this.objectIDsWaitingForNotification;
-			this.objectIDsWaitingForNotification = null;
+			lifecycleType2dirtyObjectIDs = this.lifecycleType2objectIDsWaitingForNotification;
+			this.lifecycleType2objectIDsWaitingForNotification = null;
 		}
 
+		Map<Object, DirtyObjectID> objectIDsWaitingForNotification_new = lifecycleType2dirtyObjectIDs.get(DirtyObjectID.LifecycleType._new);
+		Map<Object, DirtyObjectID> objectIDsWaitingForNotification_dirty = lifecycleType2dirtyObjectIDs.get(DirtyObjectID.LifecycleType._dirty);
+		Map<Object, DirtyObjectID> objectIDsWaitingForNotification_deleted = lifecycleType2dirtyObjectIDs.get(DirtyObjectID.LifecycleType._deleted);
+
+		// No need to synchronize access to activeFreshDirtyObjectIDContainer, because this is never
+		// null and it doesn't matter, whether this is really the active one or we missed the rolling.
+		DirtyObjectIDContainer activeFreshDirtyObjectIDContainer = this.activeFreshDirtyObjectIDContainer;
+
+		if (objectIDsWaitingForNotification_dirty != null)
+			activeFreshDirtyObjectIDContainer.addDirtyObjectIDs(objectIDsWaitingForNotification_dirty.values());
+
+		if (objectIDsWaitingForNotification_deleted != null)
+			activeFreshDirtyObjectIDContainer.addDirtyObjectIDs(objectIDsWaitingForNotification_deleted.values());
+
 		// instances of String cacheSessionID
-		Set interestedCacheSessionIDs = new HashSet();
+		Set<String> interestedCacheSessionIDs = new HashSet<String>();
 
 		synchronized (listenersByObjectID) {
 			// find all CacheSessions' IDs which are interested in the changed objectIDs
-			for (Iterator it = dirtyObjectIDs.values().iterator(); it.hasNext(); ) {
-				DirtyObjectID dirtyObjectID = (DirtyObjectID) it.next();
+			for (DirtyObjectID.LifecycleType lifecycleType : DirtyObjectID.LifecycleType.values()) {
+				if (lifecycleType == DirtyObjectID.LifecycleType._new)
+					continue; // we don't want new ones
+				
+				Map<Object, DirtyObjectID> objectIDsWaitingForNotification = lifecycleType2dirtyObjectIDs.get(lifecycleType);
 
-				Map m = (Map) listenersByObjectID.get(dirtyObjectID.getObjectID());
-				if (m != null)
-					interestedCacheSessionIDs.addAll(m.keySet());
+				if (objectIDsWaitingForNotification != null) {
+					for (Iterator it = objectIDsWaitingForNotification.values().iterator(); it.hasNext(); ) {
+						DirtyObjectID dirtyObjectID = (DirtyObjectID) it.next();
+
+						Map<String, ChangeListenerDescriptor> m = listenersByObjectID.get(dirtyObjectID.getObjectID());
+						if (m != null)
+							interestedCacheSessionIDs.addAll(m.keySet());
+					}
+				}
 			}
 		} // synchronized (listenersByObjectID) {
 
-		// add the changed objectIDs to the found sessions
+		// add the DirtyObjectIDs to the found sessions
 		synchronized (cacheSessions) {
 			for (Iterator it = interestedCacheSessionIDs.iterator(); it.hasNext(); ) {
 				String cacheSessionID = (String) it.next();
 				CacheSession session = (CacheSession) cacheSessions.get(cacheSessionID);
 				if (session == null)
 					logger.error("Could not find CacheSession for cacheSessionID=\""+cacheSessionID+"\"!");
-				else
-					session.addDirtyObjectIDs(dirtyObjectIDs.values()); // this method picks only those IDs which the session has subscribed
+				else {
+					if (objectIDsWaitingForNotification_dirty != null)
+						session.addDirtyObjectIDs(objectIDsWaitingForNotification_dirty.values()); // this method picks only those IDs which the session has subscribed
+					if (objectIDsWaitingForNotification_deleted != null)
+						session.addDirtyObjectIDs(objectIDsWaitingForNotification_deleted.values());
+				}
 			}
 		}
 
@@ -822,7 +958,7 @@ implements Serializable
 	 * @return Returns either <tt>null</tt> if nothing changed or a <tt>Collection</tt>
 	 *		of object ids.
 	 */
-	protected Collection waitForChanges(String cacheSessionID, long waitTimeout)
+	protected Collection<DirtyObjectID> waitForChanges(String cacheSessionID, long waitTimeout)
 	{
 		if (logger.isDebugEnabled())
 			logger.debug("waitForChanges(cacheSessionID=\""+cacheSessionID+"\") entered");
@@ -845,7 +981,7 @@ implements Serializable
 			}
 		}
 
-		Map dirtyObjectIDs = session.fetchDirtyObjectIDs();
+		Map<Object, DirtyObjectID> dirtyObjectIDs = session.fetchDirtyObjectIDs();
 
 		if (logger.isDebugEnabled()) {
 			logger.debug("CacheSession \"" + cacheSessionID + "\" will be notified with the following objectIDs:");
@@ -868,7 +1004,7 @@ implements Serializable
 		if (dirtyObjectIDs == null)
 			return null;
 
-		return new ArrayList(dirtyObjectIDs.values());
+		return new ArrayList<DirtyObjectID>(dirtyObjectIDs.values());
 	}
 
 	/**

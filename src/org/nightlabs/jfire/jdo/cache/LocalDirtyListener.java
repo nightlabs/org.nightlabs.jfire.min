@@ -37,5 +37,5 @@ public interface LocalDirtyListener
 	 * This means, it happens during the JDO-commit.
 	 * @param objectIDs The JDO object ids of those objects that have been changed.
 	 */
-	void notifyDirtyObjectIDs(Collection objectIDs);
+	void notifyDirtyObjectIDs(Collection<Object> objectIDs);
 }
