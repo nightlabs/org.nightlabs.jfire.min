@@ -654,19 +654,19 @@ implements Serializable
 	}
 
 	/**
-	 * key: DirtyObjectID.LifecycleType lifecycleType<br/>
+	 * key: DirtyObjectID.LifecycleStage lifecycleType<br/>
 	 * value: Map {<br/>
 	 *		key: Object objectID<br/>
 	 *		value: {@link DirtyObjectID} dirtyObjectID<br/>
 	 * }
 	 */
-	private Map<DirtyObjectID.LifecycleType, Map<Object, DirtyObjectID>> lifecycleType2objectIDsWaitingForNotification = null;
+	private Map<DirtyObjectID.LifecycleStage, Map<Object, DirtyObjectID>> lifecycleType2objectIDsWaitingForNotification = null;
 	private transient Object objectIDsWaitingForNotificationMutex = new Object();
 
-	private void notifyLocalListeners(String sessionID, Collection<Object> objectIDs, DirtyObjectID.LifecycleType lifecycleType)
+	private void notifyLocalListeners(String sessionID, Collection<Object> objectIDs, DirtyObjectID.LifecycleStage lifecycleStage)
 	{
-		switch (lifecycleType) {
-			case _new:
+		switch (lifecycleStage) {
+			case NEW:
 				synchronized (localNewListenersMutex) {
 					if (localNewListeners != null) {
 						if (_localNewListeners == null)
@@ -678,7 +678,7 @@ implements Serializable
 					}
 				}
 				break;
-			case _dirty:
+			case DIRTY:
 				synchronized (localDirtyListenersMutex) {
 					if (localDirtyListeners != null) {
 						if (_localDirtyListeners == null)
@@ -690,7 +690,7 @@ implements Serializable
 					}
 				}
 				break;
-			case _deleted:
+			case DELETED:
 				synchronized (localDeletedListenersMutex) {
 					if (localDeletedListeners != null) {
 						if (_localDeletedListeners == null)
@@ -704,7 +704,7 @@ implements Serializable
 				break;
 
 			default:
-				throw new IllegalStateException("Unknown lifecycleType: " + lifecycleType);
+				throw new IllegalStateException("Unknown lifecycleType: " + lifecycleStage);
 		}
 	}
 
@@ -719,9 +719,9 @@ implements Serializable
 	 * </p>
 	 * @param sessionID The session which made the objects dirty / created them / deleted them.
 	 * @param objectIDs The object-ids referencing the new/changed/deleted JDO objects.
-	 * @param lifecycleType Defines how referenced JDO objects have been affected. 
+	 * @param lifecycleStage Defines how referenced JDO objects have been affected. 
 	 */
-	public void addDirtyObjectIDs(String sessionID, Collection<Object> objectIDs, DirtyObjectID.LifecycleType lifecycleType)
+	public void addDirtyObjectIDs(String sessionID, Collection<Object> objectIDs, DirtyObjectID.LifecycleStage lifecycleStage)
 	{
 		if (objectIDs == null || objectIDs.isEmpty()) // to avoid unnecessary errors (though null should never come here)
 			return;
@@ -735,17 +735,17 @@ implements Serializable
 		// local listeners are triggered here (i.e. during commit), because they might require to be
 		// done for sure. If we did it in the NotificationThread, they might be never triggered,
 		// in case the server is restarted.
-		notifyLocalListeners(sessionID, objectIDs, lifecycleType);
+		notifyLocalListeners(sessionID, objectIDs, lifecycleStage);
 
 		synchronized (objectIDsWaitingForNotificationMutex) {
 			if (lifecycleType2objectIDsWaitingForNotification == null)
-				lifecycleType2objectIDsWaitingForNotification = new HashMap<DirtyObjectID.LifecycleType, Map<Object, DirtyObjectID>>(DirtyObjectID.LifecycleType.values().length); 
+				lifecycleType2objectIDsWaitingForNotification = new HashMap<DirtyObjectID.LifecycleStage, Map<Object, DirtyObjectID>>(DirtyObjectID.LifecycleStage.values().length); 
 
-			Map<Object, DirtyObjectID> objectIDsWaitingForNotification = lifecycleType2objectIDsWaitingForNotification.get(lifecycleType);
+			Map<Object, DirtyObjectID> objectIDsWaitingForNotification = lifecycleType2objectIDsWaitingForNotification.get(lifecycleStage);
 
 			if (objectIDsWaitingForNotification == null) {
 				objectIDsWaitingForNotification = new HashMap<Object, DirtyObjectID>(objectIDs.size());
-				lifecycleType2objectIDsWaitingForNotification.put(lifecycleType, objectIDsWaitingForNotification);
+				lifecycleType2objectIDsWaitingForNotification.put(lifecycleStage, objectIDsWaitingForNotification);
 			}
 
 			for (Iterator it = objectIDs.iterator(); it.hasNext(); ) {
@@ -754,7 +754,7 @@ implements Serializable
 				if (dirtyObjectID != null)
 					dirtyObjectID.addSourceSessionID(sessionID);
 				else
-					objectIDsWaitingForNotification.put(objectID, new DirtyObjectID(objectID, sessionID, lifecycleType));
+					objectIDsWaitingForNotification.put(objectID, new DirtyObjectID(objectID, sessionID, lifecycleStage));
 			}
 		}
 	}
@@ -870,15 +870,15 @@ implements Serializable
 			return;
 		}
 
-		Map<DirtyObjectID.LifecycleType, Map<Object, DirtyObjectID>> lifecycleType2dirtyObjectIDs;
+		Map<DirtyObjectID.LifecycleStage, Map<Object, DirtyObjectID>> lifecycleType2dirtyObjectIDs;
 		synchronized (objectIDsWaitingForNotificationMutex) {
 			lifecycleType2dirtyObjectIDs = this.lifecycleType2objectIDsWaitingForNotification;
 			this.lifecycleType2objectIDsWaitingForNotification = null;
 		}
 
-		Map<Object, DirtyObjectID> objectIDsWaitingForNotification_new = lifecycleType2dirtyObjectIDs.get(DirtyObjectID.LifecycleType._new);
-		Map<Object, DirtyObjectID> objectIDsWaitingForNotification_dirty = lifecycleType2dirtyObjectIDs.get(DirtyObjectID.LifecycleType._dirty);
-		Map<Object, DirtyObjectID> objectIDsWaitingForNotification_deleted = lifecycleType2dirtyObjectIDs.get(DirtyObjectID.LifecycleType._deleted);
+		Map<Object, DirtyObjectID> objectIDsWaitingForNotification_new = lifecycleType2dirtyObjectIDs.get(DirtyObjectID.LifecycleStage.NEW);
+		Map<Object, DirtyObjectID> objectIDsWaitingForNotification_dirty = lifecycleType2dirtyObjectIDs.get(DirtyObjectID.LifecycleStage.DIRTY);
+		Map<Object, DirtyObjectID> objectIDsWaitingForNotification_deleted = lifecycleType2dirtyObjectIDs.get(DirtyObjectID.LifecycleStage.DELETED);
 
 		// No need to synchronize access to activeFreshDirtyObjectIDContainer, because this is never
 		// null and it doesn't matter, whether this is really the active one or we missed the rolling.
@@ -895,11 +895,11 @@ implements Serializable
 
 		synchronized (listenersByObjectID) {
 			// find all CacheSessions' IDs which are interested in the changed objectIDs
-			for (DirtyObjectID.LifecycleType lifecycleType : DirtyObjectID.LifecycleType.values()) {
-				if (lifecycleType == DirtyObjectID.LifecycleType._new)
+			for (DirtyObjectID.LifecycleStage lifecycleStage : DirtyObjectID.LifecycleStage.values()) {
+				if (lifecycleStage == DirtyObjectID.LifecycleStage.NEW)
 					continue; // we don't want new ones
 				
-				Map<Object, DirtyObjectID> objectIDsWaitingForNotification = lifecycleType2dirtyObjectIDs.get(lifecycleType);
+				Map<Object, DirtyObjectID> objectIDsWaitingForNotification = lifecycleType2dirtyObjectIDs.get(lifecycleStage);
 
 				if (objectIDsWaitingForNotification != null) {
 					for (Iterator it = objectIDsWaitingForNotification.values().iterator(); it.hasNext(); ) {

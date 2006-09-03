@@ -37,13 +37,13 @@ implements Serializable
 {
 	private static final long serialVersionUID = 1L;
 
-	public static enum LifecycleType {
-		_new,
-		_dirty,
-		_deleted
+	public static enum LifecycleStage {
+		NEW,
+		DIRTY,
+		DELETED
 	}
 
-	private LifecycleType lifecycleType;
+	private LifecycleStage lifecycleStage;
 	private long createDT;
 	private long changeDT;
 	private Object objectID;
@@ -53,9 +53,9 @@ implements Serializable
 	 * @param objectID The jdo object id.
 	 * @param sourceSessionID The session which caused this object to be dirty.
 	 */
-	public DirtyObjectID(Object objectID, String sourceSessionID, LifecycleType lifecycleType)
+	public DirtyObjectID(Object objectID, String sourceSessionID, LifecycleStage lifecycleStage)
 	{
-		this.lifecycleType = lifecycleType;
+		this.lifecycleStage = lifecycleStage;
 		this.createDT = System.currentTimeMillis();
 		this.changeDT = System.currentTimeMillis();
 		this.objectID = objectID;
@@ -63,9 +63,9 @@ implements Serializable
 		this.sourceSessionIDs.add(sourceSessionID);
 	}
 
-	public LifecycleType getLifecycleType()
+	public LifecycleStage getLifecycleType()
 	{
-		return lifecycleType;
+		return lifecycleStage;
 	}
 
 	private Set<String> unmodifiableSourceSessionIDs = null;

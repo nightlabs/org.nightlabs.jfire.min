@@ -160,9 +160,9 @@ public class CacheManager
 	 * @param objectIDs The IDs of the JDO objects that have been changed
 	 *		(see {@link javax.jdo.JDOHelper#getObjectId(java.lang.Object)}).
 	 */
-	public void addDirtyObjectIDs(String sessionID, Collection<Object> objectIDs, DirtyObjectID.LifecycleType lifecycleType)
+	public void addDirtyObjectIDs(String sessionID, Collection<Object> objectIDs, DirtyObjectID.LifecycleStage lifecycleStage)
 	{
-		cacheManagerFactory.addDirtyObjectIDs(sessionID, objectIDs, lifecycleType);
+		cacheManagerFactory.addDirtyObjectIDs(sessionID, objectIDs, lifecycleStage);
 	}
 
 	/**

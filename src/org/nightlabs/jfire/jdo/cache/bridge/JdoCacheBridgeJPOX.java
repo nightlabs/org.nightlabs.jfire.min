@@ -132,17 +132,17 @@ public class JdoCacheBridgeJPOX extends JdoCacheBridge
 				String sessionID = bridge.securityReflector.whoAmI().getSessionID();
 
 				if (newObjectIDs != null) {
-					bridge.getCacheManagerFactory().addDirtyObjectIDs(sessionID, newObjectIDs, DirtyObjectID.LifecycleType._new);
+					bridge.getCacheManagerFactory().addDirtyObjectIDs(sessionID, newObjectIDs, DirtyObjectID.LifecycleStage.NEW);
 					newObjectIDs = null;
 				}
 
 				if (dirtyObjectIDs != null) {
-					bridge.getCacheManagerFactory().addDirtyObjectIDs(sessionID, dirtyObjectIDs, DirtyObjectID.LifecycleType._dirty);
+					bridge.getCacheManagerFactory().addDirtyObjectIDs(sessionID, dirtyObjectIDs, DirtyObjectID.LifecycleStage.DIRTY);
 					dirtyObjectIDs = null;
 				}
 
 				if (deletedObjectIDs != null) {
-					bridge.getCacheManagerFactory().addDirtyObjectIDs(sessionID, deletedObjectIDs, DirtyObjectID.LifecycleType._deleted);
+					bridge.getCacheManagerFactory().addDirtyObjectIDs(sessionID, deletedObjectIDs, DirtyObjectID.LifecycleStage.DELETED);
 					deletedObjectIDs = null;
 				}
 			} catch (Throwable e) {
@@ -230,7 +230,7 @@ public class JdoCacheBridgeJPOX extends JdoCacheBridge
 //		}
 	}
 
-	private void registerJDOObject(Object object, DirtyObjectID.LifecycleType lifecycleType)
+	private void registerJDOObject(Object object, DirtyObjectID.LifecycleStage lifecycleStage)
 	{
 		try {
 			if (object == null)
@@ -244,18 +244,18 @@ public class JdoCacheBridgeJPOX extends JdoCacheBridge
 			if (objectID == null)
 				throw new IllegalArgumentException("Could not obtain the objectID from the given object!");
 
-			switch (lifecycleType) {
-				case _new:
+			switch (lifecycleStage) {
+				case NEW:
 					getCacheTransactionListener(pm).addNewObjectID(objectID);
 					break;
-				case _dirty:
+				case DIRTY:
 					getCacheTransactionListener(pm).addDirtyObjectID(objectID);
 					break;
-				case _deleted:
+				case DELETED:
 					getCacheTransactionListener(pm).addDeletedObjectID(objectID);
 					break;
 				default:
-					throw new IllegalStateException("Unknown LifecycleType: " + lifecycleType);
+					throw new IllegalStateException("Unknown LifecycleStage: " + lifecycleStage);
 			}
 		} catch (Throwable t) {
 			logger.error("Failed to make object dirty: " + object, t);
@@ -268,7 +268,7 @@ public class JdoCacheBridgeJPOX extends JdoCacheBridge
 			if (logger.isDebugEnabled())
 				logger.debug("postCreate: " + event.getPersistentInstance() + " (isNew="+JDOHelper.isNew(event.getPersistentInstance())+")");
 
-			registerJDOObject(event.getPersistentInstance(), DirtyObjectID.LifecycleType._new);
+			registerJDOObject(event.getPersistentInstance(), DirtyObjectID.LifecycleStage.NEW);
 		}
 	};
 
@@ -281,7 +281,7 @@ public class JdoCacheBridgeJPOX extends JdoCacheBridge
 //				logger.debug("postStore: " + event.getPersistentInstance() + " (isNew="+JDOHelper.isNew(event.getPersistentInstance())+")");
 //
 ////			if (JDOHelper.isNew(event.getPersistentInstance()))
-////				registerJDOObject(event.getPersistentInstance(), LifecycleType._new);
+////				registerJDOObject(event.getPersistentInstance(), LifecycleStage.NEW);
 //		}
 //	};
 
@@ -293,7 +293,7 @@ public class JdoCacheBridgeJPOX extends JdoCacheBridge
 				logger.debug("postDirty: " + event.getPersistentInstance()); // source="+event.getSource()+" target="+event.getTarget());
 
 //			makeDirty(event.getSource());
-			registerJDOObject(event.getPersistentInstance(), DirtyObjectID.LifecycleType._dirty);
+			registerJDOObject(event.getPersistentInstance(), DirtyObjectID.LifecycleStage.DIRTY);
 		}
 	};
 
@@ -305,7 +305,7 @@ public class JdoCacheBridgeJPOX extends JdoCacheBridge
 				logger.debug("postAttach: " + event.getPersistentInstance()); // source="+event.getSource()+" target="+event.getTarget());
 
 //			makeDirty(event.getSource());
-			registerJDOObject(event.getPersistentInstance(), DirtyObjectID.LifecycleType._dirty);
+			registerJDOObject(event.getPersistentInstance(), DirtyObjectID.LifecycleStage.DIRTY);
 		}
 	};
 
@@ -315,7 +315,7 @@ public class JdoCacheBridgeJPOX extends JdoCacheBridge
 			if (logger.isDebugEnabled())
 				logger.debug("preDelete: " + event.getPersistentInstance());
 
-			registerJDOObject(event.getPersistentInstance(), DirtyObjectID.LifecycleType._deleted);
+			registerJDOObject(event.getPersistentInstance(), DirtyObjectID.LifecycleStage.DELETED);
 		}
 		public void postDelete(InstanceLifecycleEvent event) { }
 	};
