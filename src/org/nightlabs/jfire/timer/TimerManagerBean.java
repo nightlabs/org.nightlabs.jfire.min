@@ -111,7 +111,11 @@ implements SessionBean
 		if (!User.USERID_SYSTEM.equals(getUserID()))
 			throw new SecurityException("This method can only be called by user " + User.USERID_SYSTEM);
 
-		logger.info("ejbTimeoutDelegate(...) for organisationID=\""+timerParam.organisationID+"\": begin");
+		if (logger.isDebugEnabled())
+			logger.debug("ejbTimeoutDelegate: principal.organisationID=\""+getOrganisationID()+"\" timerParam.organisationID=\""+timerParam.organisationID+"\": begin");
+
+		if (!getOrganisationID().equals(timerParam.organisationID))
+			throw new IllegalStateException("principal.organisationID=\""+getOrganisationID()+"\" != timerParam.organisationID=\""+timerParam.organisationID+"\"");
 
 		String activeExecID = ObjectIDUtil.makeValidIDString(null);
 
@@ -137,7 +141,7 @@ implements SessionBean
 			pm.close();
 		}
 
-		logger.info("ejbTimeoutDelegate(...) for organisationID=\""+timerParam.organisationID+"\": end");
+		logger.info("ejbTimeoutDelegate: organisationID=\""+timerParam.organisationID+"\": end");
 	}
 
 	/**

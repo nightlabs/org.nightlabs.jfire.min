@@ -33,9 +33,9 @@ import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.SessionBean;
 
-import org.nightlabs.jfire.base.BaseSessionBeanImpl;
-
+import org.apache.log4j.Logger;
 import org.nightlabs.ModuleException;
+import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 
 /**
  * @ejb.bean name="jfire/ejb/JFireBaseBean/AsyncInvokerDelegate"	
@@ -43,14 +43,17 @@ import org.nightlabs.ModuleException;
  *           type="Stateless" 
  *           transaction-type="Container"
  *
+ * @ejb.interface extends="org.nightlabs.jfire.asyncinvoke.DelegateR" local-extends="org.nightlabs.jfire.asyncinvoke.DelegateL"
  * @!ejb.interface generate="local" // causes the Util class to have compile errors :-(((
  *
- * @ejb.util generate="physical"
+ * @ejb.util generate="physical" 
  */
 public abstract class AsyncInvokerDelegateBean
 extends BaseSessionBeanImpl
 implements SessionBean
 {
+	private static final Logger logger = Logger.getLogger(AsyncInvokerDelegateBean.class);
+
 	/**
 	 * @ejb.create-method  
 	 * @ejb.permission role-name="_Guest_"
@@ -71,7 +74,7 @@ implements SessionBean
 	/**
 	 * @throws ModuleException
 	 *
-	 * @ejb.interface-method view-type = "local"
+	 * @ejb.interface-method view-type="local"
 	 * @ejb.transaction type = "RequiresNew"
 	 * @ejb.permission role-name="_Guest_"
 	 */
@@ -84,13 +87,16 @@ implements SessionBean
 	/**
 	 * @throws ModuleException
 	 *
-	 * @ejb.interface-method view-type = "local"
+	 * @ejb.interface-method view-type="local"
 	 * @ejb.transaction type = "Required"
 	 * @ejb.permission role-name="_Guest_"
 	 */
 	public Serializable doInvocation(AsyncInvokeEnvelope envelope)
 	throws Exception
 	{
+		if (logger.isDebugEnabled())
+			logger.debug("doInvocation: principal.organisationID="+getOrganisationID()+" principal.userID="+getUserID()+" envelope.caller.organisationID=" + envelope.getCaller().getOrganisationID() + " envelope.caller.userID=" + envelope.getCaller().getUserID());
+
 		Invocation invocation = envelope.getInvocation();
 		invocation.setPrincipal(getPrincipal());
 		return invocation.invoke();
@@ -99,7 +105,7 @@ implements SessionBean
 	/**
 	 * @throws ModuleException
 	 *
-	 * @ejb.interface-method view-type = "local"
+	 * @ejb.interface-method view-type="local"
 	 * @ejb.transaction type = "Required"
 	 * @ejb.permission role-name="_Guest_"
 	 */
@@ -110,6 +116,9 @@ implements SessionBean
 		if (callback == null)
 			return;
 
+		if (logger.isDebugEnabled())
+			logger.debug("doErrorCallback: principal.organisationID="+getOrganisationID()+" principal.userID="+getUserID()+" envelope.caller.organisationID=" + envelope.getCaller().getOrganisationID() + " envelope.caller.userID=" + envelope.getCaller().getUserID());
+
 		callback.setPrincipal(getPrincipal());
 		callback.handle(envelope, error);
 	}
@@ -117,7 +126,7 @@ implements SessionBean
 	/**
 	 * @throws ModuleException
 	 *
-	 * @ejb.interface-method view-type = "local"
+	 * @ejb.interface-method view-type="local"
 	 * @ejb.transaction type = "Required"
 	 * @ejb.permission role-name="_Guest_"
 	 */
@@ -128,6 +137,9 @@ implements SessionBean
 		if (callback == null)
 			return;
 
+		if (logger.isDebugEnabled())
+			logger.debug("doSuccessCallback: principal.organisationID="+getOrganisationID()+" principal.userID="+getUserID()+" envelope.caller.organisationID=" + envelope.getCaller().getOrganisationID() + " envelope.caller.userID=" + envelope.getCaller().getUserID());
+
 		callback.setPrincipal(getPrincipal());
 		callback.handle(envelope, result);
 	}
@@ -135,7 +147,7 @@ implements SessionBean
 	/**
 	 * @throws ModuleException
 	 *
-	 * @ejb.interface-method view-type = "local"
+	 * @ejb.interface-method view-type="local"
 	 * @ejb.transaction type = "Required"
 	 * @ejb.permission role-name="_Guest_"
 	 */
@@ -145,6 +157,9 @@ implements SessionBean
 		UndeliverableCallback callback = envelope.getUndeliverableCallback();
 		if (callback == null)
 			return;
+
+		if (logger.isDebugEnabled())
+			logger.debug("doUndeliverableCallback: principal.organisationID="+getOrganisationID()+" principal.userID="+getUserID()+" envelope.caller.organisationID=" + envelope.getCaller().getOrganisationID() + " envelope.caller.userID=" + envelope.getCaller().getUserID());
 
 		callback.setPrincipal(getPrincipal());
 		callback.handle(envelope);

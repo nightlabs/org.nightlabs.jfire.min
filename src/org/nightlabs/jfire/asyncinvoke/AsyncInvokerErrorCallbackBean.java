@@ -45,10 +45,11 @@ extends AsyncInvokerBaseBean
 {
 	private static final long serialVersionUID = 1L;
 
-	protected void doInvoke(AsyncInvokeEnvelope envelope, AsyncInvokerDelegateLocal invokerDelegate)
+	protected void doInvoke(AsyncInvokeEnvelope envelope, Delegate invokerDelegate)
 	{
 		try {
-			invokerDelegate.doErrorCallback(envelope, envelope.getError());
+			if (invokerDelegate != null)
+				invokerDelegate.doErrorCallback(envelope, envelope.getError());
 		} catch (Throwable x) {
 			logger.fatal("ErrorCallback failed!", x);
 			messageContext.setRollbackOnly();

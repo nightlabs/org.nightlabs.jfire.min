@@ -72,6 +72,9 @@ implements SessionBean, TimedObject
 			if (timerParam == null)
 				throw new IllegalStateException("timer.getInfo() returned null! Should be an instance of TimerParam!!!");
 
+			if(logger.isDebugEnabled())
+				logger.debug("ejbTimeout: organisationID=" + timerParam.organisationID);
+
 			// We are not authenticated here, thus we cannot access the persistence manager properly.
 			// Therefore, we wrap this in an AsyncInvoke
 			InitialContext initCtxNotAuthenticated = new InitialContext();

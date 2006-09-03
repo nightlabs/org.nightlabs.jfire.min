@@ -26,6 +26,9 @@
 
 package org.nightlabs.jfire.asyncinvoke;
 
+import java.util.Hashtable;
+import java.util.Properties;
+
 import javax.jms.ObjectMessage;
 import javax.naming.InitialContext;
 import javax.naming.NameNotFoundException;
@@ -34,6 +37,8 @@ import javax.security.auth.login.LoginContext;
 import org.apache.log4j.Logger;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.servermanager.JFireServerManagerFactory;
+import org.nightlabs.jfire.servermanager.config.ServerCf;
+import org.nightlabs.jfire.servermanager.j2ee.SecurityReflector;
 
 
 /**
@@ -149,43 +154,62 @@ implements javax.ejb.MessageDrivenBean, javax.jms.MessageListener
 
 			AsyncInvokeEnvelope envelope = (AsyncInvokeEnvelope) obj;
 
-//			Invocation invocation = envelope.getInvocation();
-
-//			SecurityReflector.UserDescriptor caller = envelope.getCaller();
-			LoginContext loginContext;
-			JFireServerManager ism = ismf.getJFireServerManager();
-			try {
-				loginContext = new LoginContext(
-						"jfire", new AuthCallbackHandler(ism, envelope));
-
-//				Hashtable props = new Properties();
-//				String initialContextFactory = ismf.getInitialContextFactory(localServer.getJ2eeServerType(), true);
-//				props.put(InitialContext.INITIAL_CONTEXT_FACTORY, initialContextFactory);
-//				props.put(InitialContext.PROVIDER_URL, localServer.getInitialContextURL());
-//				props.put(InitialContext.SECURITY_PRINCIPAL, caller.getUserID() + '@' + caller.getOrganisationID());
-//				props.put(InitialContext.SECURITY_CREDENTIALS, ism.jfireSecurity_createTempUserPassword(caller.getOrganisationID(), caller.getUserID()));
-//				props.put(InitialContext.SECURITY_PROTOCOL, "jfire");
-
-				loginContext.login();
+			if (pseudoExternalInvoke) {
+				JFireServerManager ism = ismf.getJFireServerManager();
 				try {
-					AsyncInvokerDelegateLocal invokerDelegate = null;
+					SecurityReflector.UserDescriptor caller = envelope.getCaller();
+					Hashtable props = new Properties();
+					ServerCf localServer = ismf.getLocalServer();
+					String initialContextFactory = ismf.getInitialContextFactory(localServer.getJ2eeServerType(), true);
+					props.put(InitialContext.INITIAL_CONTEXT_FACTORY, initialContextFactory);
+					props.put(InitialContext.PROVIDER_URL, localServer.getInitialContextURL());
+					props.put(InitialContext.SECURITY_PRINCIPAL, caller.getUserID() + '@' + caller.getOrganisationID());
+					props.put(InitialContext.SECURITY_CREDENTIALS, ism.jfireSecurity_createTempUserPassword(caller.getOrganisationID(), caller.getUserID()));
+					props.put(InitialContext.SECURITY_PROTOCOL, "jfire");
+
+					AsyncInvokerDelegate invokerDelegate = null;
 
 					try {
-						invokerDelegate = AsyncInvokerDelegateUtil.getLocalHome().create();
+						invokerDelegate = AsyncInvokerDelegateUtil.getHome(props).create();
 					} catch (Exception x) {
-						logger.fatal("Obtaining stateless session bean AsyncInvokerDelegateLocal failed!", x);
+						logger.fatal("Obtaining stateless session bean AsyncInvokerDelegate failed!", x);
 						messageContext.setRollbackOnly();
 					}
 
 					if (invokerDelegate != null)
 						doInvoke(envelope, invokerDelegate);
+				} finally {
+					ism.close();
+				}
+			}
+			else {
+				LoginContext loginContext;
+				JFireServerManager ism = ismf.getJFireServerManager();
+				try {
+					loginContext = new LoginContext(
+							"jfire", new AuthCallbackHandler(ism, envelope));
+
+					loginContext.login();
+					try {
+						AsyncInvokerDelegateLocal invokerDelegate = null;
+
+						try {
+							invokerDelegate = AsyncInvokerDelegateUtil.getLocalHome().create();
+						} catch (Exception x) {
+							logger.fatal("Obtaining stateless session bean AsyncInvokerDelegateLocal failed!", x);
+							messageContext.setRollbackOnly();
+						}
+
+						if (invokerDelegate != null)
+							doInvoke(envelope, invokerDelegate);
+
+					} finally {
+						loginContext.logout();
+					}
 
 				} finally {
-					loginContext.logout();
+					ism.close();
 				}
-
-			} finally {
-				ism.close();
 			}
 
 		} catch (Throwable x) {
@@ -194,5 +218,7 @@ implements javax.ejb.MessageDrivenBean, javax.jms.MessageListener
 		}
 	}
 
-	protected abstract void doInvoke(AsyncInvokeEnvelope envelope, AsyncInvokerDelegateLocal invokerDelegate);
+	private static boolean pseudoExternalInvoke = false;
+
+	protected abstract void doInvoke(AsyncInvokeEnvelope envelope, Delegate invokerDelegate);
 }

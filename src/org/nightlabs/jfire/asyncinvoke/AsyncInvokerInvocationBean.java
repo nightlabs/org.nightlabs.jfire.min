@@ -46,7 +46,7 @@ extends AsyncInvokerBaseBean
 {
 	private static final long serialVersionUID = 1L;
 
-	protected void doInvoke(AsyncInvokeEnvelope envelope, AsyncInvokerDelegateLocal invokerDelegate)
+	protected void doInvoke(AsyncInvokeEnvelope envelope, Delegate invokerDelegate)
 	{
 		boolean success = false;
 		try {

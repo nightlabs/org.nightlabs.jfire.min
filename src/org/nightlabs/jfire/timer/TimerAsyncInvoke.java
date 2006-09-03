@@ -119,9 +119,10 @@ public class TimerAsyncInvoke
 					return null;
 				}
 
-				logger.info("Timer invocation: taskID=\"" + invocationParam.getTaskID() + "\" bean=\"" + invocationParam.getBean() + "\" method=\""+invocationParam.getMethod()+"\"");
+				logger.info("Timer invocation: organisationID=\""+getOrganisationID()+"\" userID=\""+getUserID()+"\" taskID=\"" + invocationParam.getTaskID() + "\" bean=\"" + invocationParam.getBean() + "\" method=\""+invocationParam.getMethod()+"\"");
 				long startDT = System.currentTimeMillis();
 				InitialContext initCtx = new InitialContext();
+//				InitialContext ini
 				try {
 					Object homeRef = initCtx.lookup(invocationParam.getBean());
 					Method homeCreate = homeRef.getClass().getMethod("create", (Class[]) null);
@@ -286,6 +287,9 @@ public class TimerAsyncInvoke
 				task.getUser().getOrganisationID(),
 				task.getUser().getUserID(),
 				ObjectIDUtil.makeValidIDString("TimerAsyncInvoke", true));
+
+		if(logger.isDebugEnabled())
+			logger.debug("exec: organisationID=" + caller.getOrganisationID() + " userID=" + caller.getUserID());
 
 		InvocationParam invocationParam = new InvocationParam(task);
 
