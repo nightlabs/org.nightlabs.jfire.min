@@ -155,32 +155,32 @@ implements javax.ejb.MessageDrivenBean, javax.jms.MessageListener
 			AsyncInvokeEnvelope envelope = (AsyncInvokeEnvelope) obj;
 
 			if (pseudoExternalInvoke) {
-				JFireServerManager ism = ismf.getJFireServerManager();
-				try {
-					SecurityReflector.UserDescriptor caller = envelope.getCaller();
-					Hashtable props = new Properties();
-					ServerCf localServer = ismf.getLocalServer();
-					String initialContextFactory = ismf.getInitialContextFactory(localServer.getJ2eeServerType(), true);
-					props.put(InitialContext.INITIAL_CONTEXT_FACTORY, initialContextFactory);
-					props.put(InitialContext.PROVIDER_URL, localServer.getInitialContextURL());
-					props.put(InitialContext.SECURITY_PRINCIPAL, caller.getUserID() + '@' + caller.getOrganisationID());
-					props.put(InitialContext.SECURITY_CREDENTIALS, ism.jfireSecurity_createTempUserPassword(caller.getOrganisationID(), caller.getUserID()));
-					props.put(InitialContext.SECURITY_PROTOCOL, "jfire");
-
-					AsyncInvokerDelegate invokerDelegate = null;
-
-					try {
-						invokerDelegate = AsyncInvokerDelegateUtil.getHome(props).create();
-					} catch (Exception x) {
-						logger.fatal("Obtaining stateless session bean AsyncInvokerDelegate failed!", x);
-						messageContext.setRollbackOnly();
-					}
-
-					if (invokerDelegate != null)
-						doInvoke(envelope, invokerDelegate);
-				} finally {
-					ism.close();
-				}
+//				JFireServerManager ism = ismf.getJFireServerManager();
+//				try {
+//					SecurityReflector.UserDescriptor caller = envelope.getCaller();
+//					Hashtable props = new Properties();
+//					ServerCf localServer = ismf.getLocalServer();
+//					String initialContextFactory = ismf.getInitialContextFactory(localServer.getJ2eeServerType(), true);
+//					props.put(InitialContext.INITIAL_CONTEXT_FACTORY, initialContextFactory);
+//					props.put(InitialContext.PROVIDER_URL, localServer.getInitialContextURL());
+//					props.put(InitialContext.SECURITY_PRINCIPAL, caller.getUserID() + '@' + caller.getOrganisationID());
+//					props.put(InitialContext.SECURITY_CREDENTIALS, ism.jfireSecurity_createTempUserPassword(caller.getOrganisationID(), caller.getUserID()));
+//					props.put(InitialContext.SECURITY_PROTOCOL, "jfire");
+//
+//					AsyncInvokerDelegate invokerDelegate = null;
+//
+//					try {
+//						invokerDelegate = AsyncInvokerDelegateUtil.getHome(props).create();
+//					} catch (Exception x) {
+//						logger.fatal("Obtaining stateless session bean AsyncInvokerDelegate failed!", x);
+//						messageContext.setRollbackOnly();
+//					}
+//
+//					if (invokerDelegate != null)
+//						doInvoke(envelope, invokerDelegate);
+//				} finally {
+//					ism.close();
+//				}
 			}
 			else {
 				LoginContext loginContext;
@@ -218,7 +218,7 @@ implements javax.ejb.MessageDrivenBean, javax.jms.MessageListener
 		}
 	}
 
-	private static boolean pseudoExternalInvoke = false;
+	private static final boolean pseudoExternalInvoke = false;
 
 	protected abstract void doInvoke(AsyncInvokeEnvelope envelope, Delegate invokerDelegate);
 }
