@@ -67,6 +67,9 @@ import org.nightlabs.notification.NotificationEvent;
  * manually handle the reload-process asnychronously (and you shouldn't do it on the GUI
  * thread, because it's expensive).
  *
+ * @deprecated Use {@link JDOLifecycleManager} instead. Its subjects will be instances of {@link org.nightlabs.jfire.jdo.cache.DirtyObjectID} which
+ *		provide more information.
+ *
  * @author Marco Schulze - marco at nightlabs dot de
  */
 public class ChangeManager extends NotificationManager

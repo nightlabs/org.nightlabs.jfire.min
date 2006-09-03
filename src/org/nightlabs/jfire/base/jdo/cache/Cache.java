@@ -46,10 +46,12 @@ import org.nightlabs.jdo.ObjectID;
 import org.nightlabs.jfire.base.jdo.notification.ChangeEvent;
 import org.nightlabs.jfire.base.jdo.notification.ChangeManager;
 import org.nightlabs.jfire.base.jdo.notification.ChangeSubjectCarrier;
+import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleManager;
 import org.nightlabs.jfire.base.login.Login;
 import org.nightlabs.jfire.jdo.JDOManager;
 import org.nightlabs.jfire.jdo.JDOManagerUtil;
 import org.nightlabs.jfire.jdo.cache.DirtyObjectID;
+import org.nightlabs.notification.NotificationEvent;
 import org.nightlabs.util.CollectionUtil;
 
 /**
@@ -100,7 +102,7 @@ public class Cache
 							cache.getCacheCfMod().getWaitForChangesTimeoutMSec());
 
 					if (dirtyObjectIDs != null) {
-						logger.info("Received change notification with " + dirtyObjectIDs.size() + " objectIDs.");
+						logger.info("Received change notification with " + dirtyObjectIDs.size() + " DirtyObjectIDs.");
 						int removedCarrierCount = 0;
 						Set objectIDs = new HashSet(dirtyObjectIDs.size());
 						for (Iterator it = dirtyObjectIDs.iterator(); it.hasNext(); ) {
@@ -115,9 +117,21 @@ public class Cache
 								cache.getCacheCfMod().getLocalListenerReactionTimeMSec());
 
 						// notify via local class based notification mechanism
+						// the interceptor org.nightlabs.jfire.base.jdo.JDOObjectID2PCClassNotificationInterceptor takes care about correct class mapping
+						JDOLifecycleManager.sharedInstance().notify(new NotificationEvent(
+								this,             // source
+								(String)null,     // zone
+								dirtyObjectIDs    // subjects
+								));
+
+						// TODO the following is only for legacy (i.e. deprecated ChangeManager)
 						ArrayList subjectCarriers = new ArrayList(dirtyObjectIDs.size());
 						for (Iterator it = dirtyObjectIDs.iterator(); it.hasNext(); ) {
 							DirtyObjectID dirtyObjectID = (DirtyObjectID) it.next();
+							// ignore removal, because that's not supported by the old ChangeManager - new shouldn't be in that list
+							if (dirtyObjectID.getLifecycleType() != DirtyObjectID.LifecycleType._dirty)
+								continue;
+
 							subjectCarriers.add(new ChangeSubjectCarrier(
 									dirtyObjectID.getSourceSessionIDs(),
 									dirtyObjectID.getObjectID()));
@@ -130,6 +144,8 @@ public class Cache
 										null,             // subjects
 										null,             // subjectClasses
 										subjectCarriers)); // subjectCarriers
+						// TODO the above is only for legacy (i.e. deprecated ChangeManager)
+
 					} // if (changeObjectIDs != null) {
 
 				} catch (Throwable t) {
@@ -765,8 +781,10 @@ public class Cache
 							continue iterateCandidateKey;
 	
 						// does the candidateKey contain all required fetchgroups?
-						if (!candidateKey.getFetchGroups().containsAll(fetchGroups))
-							continue iterateCandidateKey;
+						if (fetchGroups != null) {
+							if (candidateKey.getFetchGroups() == null || !candidateKey.getFetchGroups().containsAll(fetchGroups))
+								continue iterateCandidateKey;
+						}
 	
 						carrier = (Carrier) carriersByKey.get(candidateKey);
 						if (carrier != null) {

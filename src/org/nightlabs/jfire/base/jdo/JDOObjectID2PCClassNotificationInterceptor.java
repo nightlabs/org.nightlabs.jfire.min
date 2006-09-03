@@ -29,6 +29,7 @@ package org.nightlabs.jfire.base.jdo;
 import java.util.Iterator;
 
 import org.nightlabs.jdo.ObjectID;
+import org.nightlabs.jfire.jdo.cache.DirtyObjectID;
 import org.nightlabs.notification.Interceptor;
 import org.nightlabs.notification.NotificationEvent;
 import org.nightlabs.notification.SubjectCarrier;
@@ -39,9 +40,6 @@ import org.nightlabs.notification.SubjectCarrier;
 public class JDOObjectID2PCClassNotificationInterceptor
 implements Interceptor
 {
-	/**
-	 * @see org.nightlabs.notification.Interceptor#intercept(org.nightlabs.notification.NotificationEvent)
-	 */
 	public NotificationEvent intercept(NotificationEvent event)
 	{
 		for (Iterator itSubjectCarriers = event.getSubjectCarriers().iterator(); itSubjectCarriers.hasNext(); ) {
@@ -52,9 +50,22 @@ implements Interceptor
  				Class jdoObjectClass = JDOObjectID2PCClassMap.sharedInstance().getPersistenceCapableClass(subject);
  				subjectCarrier.getSubjectClasses().add(jdoObjectClass);
  			} // if (subject instanceof ObjectID) {
+ 			else if (subject instanceof DirtyObjectID) {
+ 				DirtyObjectID dirtyObjectID = (DirtyObjectID) subject;
+
+ 				// We remove the DirtyObjectID class, because it is not needed and thus, this removal should make
+ 				// the notification a little bit faster (only 2 classes have to be searched instead of 3). If it
+ 				// ever becomes needed, we can safely delete the following line (and thus react on DirtyObjectIDs directly).
+ 				subjectCarrier.getSubjectClasses().remove(DirtyObjectID.class);
+
+ 				Object jdoObjectID = dirtyObjectID.getObjectID();
+ 				subjectCarrier.getSubjectClasses().add(jdoObjectID.getClass());
+
+ 				Class jdoObjectClass = JDOObjectID2PCClassMap.sharedInstance().getPersistenceCapableClass(jdoObjectID);
+ 				subjectCarrier.getSubjectClasses().add(jdoObjectClass);
+ 			}
 		} // for (Iterator itSubjectCarriers = event.getSubjectCarriers().iterator(); itSubjectCarriers.hasNext(); ) {
 
 		return null;
 	}
-
 }
