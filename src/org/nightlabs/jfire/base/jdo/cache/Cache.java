@@ -129,7 +129,7 @@ public class Cache
 						for (Iterator it = dirtyObjectIDs.iterator(); it.hasNext(); ) {
 							DirtyObjectID dirtyObjectID = (DirtyObjectID) it.next();
 							// ignore removal, because that's not supported by the old ChangeManager - new shouldn't be in that list
-							if (dirtyObjectID.getLifecycleType() != DirtyObjectID.LifecycleType._dirty)
+							if (dirtyObjectID.getLifecycleType() != DirtyObjectID.LifecycleStage.DIRTY)
 								continue;
 
 							subjectCarriers.add(new ChangeSubjectCarrier(

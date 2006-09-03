@@ -1,8 +1,14 @@
 package org.nightlabs.jfire.base.jdo.notification;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 import org.nightlabs.base.notification.NotificationManager;
 import org.nightlabs.jfire.base.jdo.cache.Cache;
 import org.nightlabs.jfire.jdo.cache.DirtyObjectID;
+import org.nightlabs.jfire.jdo.notification.IJDOLifecycleListenerFilter;
 import org.nightlabs.notification.NotificationEvent;
 
 /**
@@ -61,4 +67,86 @@ public class JDOLifecycleManager
 	protected JDOLifecycleManager()
 	{
 	}
+
+	private long nextFilterID = 0;
+	private Object nextFilterIDMutex = new Object();
+
+	protected long nextFilterID()
+	{
+		long res;
+		synchronized (nextFilterIDMutex) {
+			res = nextFilterID++;
+			if (res > Long.MAX_VALUE - 100)
+				throw new IllegalStateException("nextFilterID is getting out of range! restart your client!"); // this should really never happen, but I'm a perfectionist ;-) Marco.
+
+			return res;
+		}
+	}
+
+	public boolean containsLifecycleListener(JDOLifecycleListener listener)
+	{
+		synchronized (lifecycleListeners) {
+			return lifecycleListeners.contains(listener);
+		}
+	}
+
+	/**
+	 * This method adds a {@link JDOLifecycleListener}. If it has already been added
+	 * before, this method silently returns without any action.
+	 *
+	 * @param listener The listener that shall be registered.
+	 */
+	public void addLifecycleListener(JDOLifecycleListener listener)
+	{
+		// check param
+		if (listener == null)
+			throw new IllegalArgumentException("listener must not be null!");
+
+		// is it already registered?
+		synchronized (lifecycleListeners) {
+			if (lifecycleListeners.contains(listener))
+				return; // silently return
+		}
+
+		IJDOLifecycleListenerFilter jdoLifecycleListenerFilter = listener.getJDOLifecycleListenerFilter();
+		if (jdoLifecycleListenerFilter == null)
+			throw new IllegalArgumentException("listener.getJDOLifecycleListenerFilter() returned null!");
+
+		// check, whether there's already an ID assigned
+		if (jdoLifecycleListenerFilter.getFilterID() >= 0)
+			throw new IllegalArgumentException(
+					"The listener shares its IJDOLifecycleListenerFilter with another listener. That is not possible, sorry. " +
+					"If you get this error without sharing, you probably mis-implemented the getFilterID() method. Read the " +
+					"documentation or better extend the class JDOLifecycleListenerFilter instead of directly implementing the " +
+					"interface.");
+
+		// assign a unique id
+		jdoLifecycleListenerFilter.setFilterID(nextFilterID());
+
+		// add the listener
+		synchronized (lifecycleListeners) {
+			lifecycleListeners.add(listener);
+			filterID2LifecycleListener.put(jdoLifecycleListenerFilter.getFilterID(), listener);
+		}
+
+		// TODO we need to put the filter into the Cache, which then registers it in the server. 
+	}
+
+	public void removeLifecycleListener(JDOLifecycleListener listener)
+	{
+		synchronized (lifecycleListeners) {
+			if (!lifecycleListeners.remove(listener))
+				return; // no need to do anything else, if it was not registered
+
+			IJDOLifecycleListenerFilter jdoLifecycleListenerFilter = listener.getJDOLifecycleListenerFilter();
+			if (filterID2LifecycleListener.remove(jdoLifecycleListenerFilter.getFilterID()) != listener)
+				throw new IllegalStateException("Two JDOLifecycleListeners used the same filter and we didn't recognize it before.");
+		}
+	}
+
+	private Set<JDOLifecycleListener> lifecycleListeners = new HashSet<JDOLifecycleListener>();
+	/**
+	 * Accessing this object must be synchronized using {@link #lifecycleListeners} as mutex.
+	 */
+	private Map<Long, JDOLifecycleListener> filterID2LifecycleListener = new HashMap<Long, JDOLifecycleListener>();
 }
