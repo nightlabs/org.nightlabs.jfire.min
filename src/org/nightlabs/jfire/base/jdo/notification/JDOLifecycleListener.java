@@ -4,8 +4,6 @@ import org.nightlabs.jfire.jdo.notification.IJDOLifecycleListenerFilter;
 
 public interface JDOLifecycleListener
 {
-//	void setJDOLifecycleListenerFilter(JDOLifecycleListenerFilter filter);
-
 	/**
 	 * @return Returns the filter defining in which events this listener is interested.
 	 */

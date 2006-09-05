@@ -1,5 +1,6 @@
 package org.nightlabs.jfire.base.jdo.notification;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -7,7 +8,11 @@ import java.util.Set;
 
 import org.nightlabs.base.notification.NotificationManager;
 import org.nightlabs.jfire.base.jdo.cache.Cache;
+import org.nightlabs.jfire.base.login.Login;
+import org.nightlabs.jfire.jdo.JDOManager;
+import org.nightlabs.jfire.jdo.JDOManagerUtil;
 import org.nightlabs.jfire.jdo.cache.DirtyObjectID;
+import org.nightlabs.jfire.jdo.notification.AbsoluteFilterID;
 import org.nightlabs.jfire.jdo.notification.IJDOLifecycleListenerFilter;
 import org.nightlabs.notification.NotificationEvent;
 
@@ -60,7 +65,7 @@ public class JDOLifecycleManager
 	{
 		if (_sharedInstance == null)
 			_sharedInstance = new JDOLifecycleManager();
-
+		
 		return _sharedInstance;
 	}
 
@@ -113,34 +118,57 @@ public class JDOLifecycleManager
 			throw new IllegalArgumentException("listener.getJDOLifecycleListenerFilter() returned null!");
 
 		// check, whether there's already an ID assigned
-		if (jdoLifecycleListenerFilter.getFilterID() >= 0)
+		if (jdoLifecycleListenerFilter.getFilterID() != null)
 			throw new IllegalArgumentException(
 					"The listener shares its IJDOLifecycleListenerFilter with another listener. That is not possible, sorry. " +
-					"If you get this error without sharing, you probably mis-implemented the getFilterID() method. Read the " +
+					"If you get this error without sharing, you probably mis-implemented the getFilterID() method, because " +
+					"it returned a value instead of null. Read the " +
 					"documentation or better extend the class JDOLifecycleListenerFilter instead of directly implementing the " +
 					"interface.");
 
-		// assign a unique id
-		jdoLifecycleListenerFilter.setFilterID(nextFilterID());
+		// assign sessionID and a unique id
+		jdoLifecycleListenerFilter.setFilterID(
+				new AbsoluteFilterID(Cache.sharedInstance().getSessionID(), nextFilterID()));
 
 		// add the listener
 		synchronized (lifecycleListeners) {
 			lifecycleListeners.add(listener);
-			filterID2LifecycleListener.put(jdoLifecycleListenerFilter.getFilterID(), listener);
+			filterID2LifecycleListener.put(jdoLifecycleListenerFilter.getFilterID().getFilterID(), listener);
 		}
 
-		// TODO we need to put the filter into the Cache, which then registers it in the server. 
+		// TODO we need to put the filter into the Cache, which then registers it in the server. NOT directly do it here!
+		try {
+			Login.getLogin();
+			JDOManager m = JDOManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
+			ArrayList<IJDOLifecycleListenerFilter> filters = new ArrayList<IJDOLifecycleListenerFilter>(1);
+			filters.add(jdoLifecycleListenerFilter);
+			m.addLifecycleListenerFilters(filters);
+		} catch (Exception x) {
+			throw new RuntimeException(x);
+		}
 	}
 
 	public void removeLifecycleListener(JDOLifecycleListener listener)
 	{
+		IJDOLifecycleListenerFilter jdoLifecycleListenerFilter = listener.getJDOLifecycleListenerFilter();
+
 		synchronized (lifecycleListeners) {
 			if (!lifecycleListeners.remove(listener))
 				return; // no need to do anything else, if it was not registered
 
-			IJDOLifecycleListenerFilter jdoLifecycleListenerFilter = listener.getJDOLifecycleListenerFilter();
-			if (filterID2LifecycleListener.remove(jdoLifecycleListenerFilter.getFilterID()) != listener)
+			if (filterID2LifecycleListener.remove(jdoLifecycleListenerFilter.getFilterID().getFilterID()) != listener)
 				throw new IllegalStateException("Two JDOLifecycleListeners used the same filter and we didn't recognize it before.");
+		}
+
+		// TODO we need to do this asynchronously via the cache!!!
+		try {
+			Login.getLogin();
+			JDOManager m = JDOManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
+			HashSet<Long> filterIDs = new HashSet<Long>(1);
+			filterIDs.add(jdoLifecycleListenerFilter.getFilterID().getFilterID());
+			m.removeLifecycleListenerFilters(filterIDs);
+		} catch (Exception x) {
+			throw new RuntimeException(x);
 		}
 	}
 
@@ -149,4 +177,17 @@ public class JDOLifecycleManager
 	 * Accessing this object must be synchronized using {@link #lifecycleListeners} as mutex.
 	 */
 	private Map<Long, JDOLifecycleListener> filterID2LifecycleListener = new HashMap<Long, JDOLifecycleListener>();
+
+	/**
+	 * @param filterID The ID of the filter.
+	 * @return Returns <code>null</code>, if no matching listener can be found or that instance of {@link JDOLifecycleListener} that
+	 *		matches the given filterID.
+	 */
+	public JDOLifecycleListener getLifecycleListener(Long filterID)
+	{
+		synchronized (lifecycleListeners) {
+			return filterID2LifecycleListener.get(filterID);
+		}
+	}
+
 }

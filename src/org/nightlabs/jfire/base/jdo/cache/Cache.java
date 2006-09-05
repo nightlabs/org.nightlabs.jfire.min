@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -42,15 +43,17 @@ import org.nightlabs.ModuleException;
 import org.nightlabs.config.Config;
 import org.nightlabs.config.ConfigException;
 import org.nightlabs.jdo.NLJDOHelper;
-import org.nightlabs.jdo.ObjectID;
 import org.nightlabs.jfire.base.jdo.notification.ChangeEvent;
 import org.nightlabs.jfire.base.jdo.notification.ChangeManager;
 import org.nightlabs.jfire.base.jdo.notification.ChangeSubjectCarrier;
+import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleEvent;
+import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleListener;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleManager;
 import org.nightlabs.jfire.base.login.Login;
 import org.nightlabs.jfire.jdo.JDOManager;
 import org.nightlabs.jfire.jdo.JDOManagerUtil;
 import org.nightlabs.jfire.jdo.cache.DirtyObjectID;
+import org.nightlabs.jfire.jdo.cache.NotificationBundle;
 import org.nightlabs.notification.NotificationEvent;
 import org.nightlabs.util.CollectionUtil;
 
@@ -98,55 +101,77 @@ public class Cache
 					if (jdoManager == null)
 						jdoManager = JDOManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
 
-					Collection dirtyObjectIDs = jdoManager.waitForChanges(
+					NotificationBundle notificationBundle = jdoManager.waitForChanges(
 							cache.getCacheCfMod().getWaitForChangesTimeoutMSec());
 
-					if (dirtyObjectIDs != null) {
-						logger.info("Received change notification with " + dirtyObjectIDs.size() + " DirtyObjectIDs.");
-						int removedCarrierCount = 0;
-						Set objectIDs = new HashSet(dirtyObjectIDs.size());
-						for (Iterator it = dirtyObjectIDs.iterator(); it.hasNext(); ) {
-							DirtyObjectID dirtyObjectID = (DirtyObjectID)it.next();
-							objectIDs.add(dirtyObjectID.getObjectID());
-							removedCarrierCount += cache.remove((ObjectID)dirtyObjectID.getObjectID());
-						}
-						logger.info("Removed " + removedCarrierCount + " carriers from the cache.");
+					{ // implicit listeners
+						List<DirtyObjectID> dirtyObjectIDs = notificationBundle == null ? null : notificationBundle.getDirtyObjectIDs();
 
-						cache.unsubscribeObjectIDs(
-								objectIDs,
-								cache.getCacheCfMod().getLocalListenerReactionTimeMSec());
+						if (dirtyObjectIDs != null) {
+							logger.info("Received change notification with " + dirtyObjectIDs.size() + " DirtyObjectIDs.");
+							int removedCarrierCount = 0;
+							Set<Object> objectIDs = new HashSet<Object>(dirtyObjectIDs.size());
+							for (Iterator it = dirtyObjectIDs.iterator(); it.hasNext(); ) {
+								DirtyObjectID dirtyObjectID = (DirtyObjectID)it.next();
+								objectIDs.add(dirtyObjectID.getObjectID());
+								removedCarrierCount += cache.removeByObjectID(dirtyObjectID.getObjectID());
+							}
+							logger.info("Removed " + removedCarrierCount + " carriers from the cache.");
 
-						// notify via local class based notification mechanism
-						// the interceptor org.nightlabs.jfire.base.jdo.JDOObjectID2PCClassNotificationInterceptor takes care about correct class mapping
-						JDOLifecycleManager.sharedInstance().notify(new NotificationEvent(
-								this,             // source
-								(String)null,     // zone
-								dirtyObjectIDs    // subjects
-								));
+							cache.unsubscribeObjectIDs(
+									objectIDs,
+									cache.getCacheCfMod().getLocalListenerReactionTimeMSec());
 
-						// TODO the following is only for legacy (i.e. deprecated ChangeManager)
-						ArrayList subjectCarriers = new ArrayList(dirtyObjectIDs.size());
-						for (Iterator it = dirtyObjectIDs.iterator(); it.hasNext(); ) {
-							DirtyObjectID dirtyObjectID = (DirtyObjectID) it.next();
-							// ignore removal, because that's not supported by the old ChangeManager - new shouldn't be in that list
-							if (dirtyObjectID.getLifecycleType() != DirtyObjectID.LifecycleStage.DIRTY)
-								continue;
+							// notify via local class based notification mechanism
+							// the interceptor org.nightlabs.jfire.base.jdo.JDOObjectID2PCClassNotificationInterceptor takes care about correct class mapping
+							JDOLifecycleManager.sharedInstance().notify(new NotificationEvent(
+									cache,             // source
+									(String)null,     // zone
+									dirtyObjectIDs    // subjects
+							));
 
-							subjectCarriers.add(new ChangeSubjectCarrier(
-									dirtyObjectID.getSourceSessionIDs(),
-									dirtyObjectID.getObjectID()));
-						}
+							// TODO the following is only for legacy (i.e. deprecated ChangeManager)
+							ArrayList<ChangeSubjectCarrier> subjectCarriers = new ArrayList<ChangeSubjectCarrier>(dirtyObjectIDs.size());
+							for (Iterator it = dirtyObjectIDs.iterator(); it.hasNext(); ) {
+								DirtyObjectID dirtyObjectID = (DirtyObjectID) it.next();
+								// ignore removal, because that's not supported by the old ChangeManager - new shouldn't be in that list
+								if (dirtyObjectID.getLifecycleStage() != DirtyObjectID.LifecycleStage.DIRTY)
+									continue;
 
-						ChangeManager.sharedInstance().notify(
-								new ChangeEvent(
-										this,             // source
-										(String)null,     // zone
-										null,             // subjects
-										null,             // subjectClasses
-										subjectCarriers)); // subjectCarriers
-						// TODO the above is only for legacy (i.e. deprecated ChangeManager)
+								subjectCarriers.add(new ChangeSubjectCarrier(
+										dirtyObjectID.getSourceSessionIDs(),
+										dirtyObjectID.getObjectID()));
+							}
 
-					} // if (changeObjectIDs != null) {
+							ChangeManager.sharedInstance().notify(
+									new ChangeEvent(
+											cache,             // source
+											(String)null,      // zone
+											null,              // subjects
+											null,              // subjectClasses
+											subjectCarriers)); // subjectCarriers
+							// TODO the above is only for legacy (i.e. deprecated ChangeManager)
+
+						} // if (dirtyObjectIDs != null) {
+					}
+
+					{ // explicit listeners
+						Map<Long, List<DirtyObjectID>> filterID2DirtyObjectIDs = notificationBundle == null ? null : notificationBundle.getFilterID2dirtyObjectIDs();
+						if (filterID2DirtyObjectIDs != null) {
+							for (Map.Entry<Long, List<DirtyObjectID>> me : filterID2DirtyObjectIDs.entrySet()) {
+								Long filterID = me.getKey();
+								List<DirtyObjectID> dirtyObjectIDs = me.getValue();
+
+								JDOLifecycleListener listener = JDOLifecycleManager.sharedInstance().getLifecycleListener(filterID);
+								if (listener == null)
+									logger.error("No listener found for filterID="+filterID);
+								else {
+									JDOLifecycleEvent event = new JDOLifecycleEvent(cache, dirtyObjectIDs);
+									listener.notifyLifecycleEvent(event);
+								}
+							}
+						} // if (filterID2DirtyObjectIDs != null) {
+					}
 
 				} catch (Throwable t) {
 					logger.error("Error in NotificationThread!", t);
@@ -792,7 +817,7 @@ public class Cache
 							if (object == null) {
 								logger.warn("Found Carrier, but object has already been released by the garbage collector! If this message occurs often, give the VM more memory or the Cache a shorter object-lifetime! Alternatively, you may switch to hard references. searched key: " + key.toString() + " candidateKey: " + candidateKey.toString());
 
-								remove(candidateKey);
+								removeByKey(candidateKey);
 								carrier = null;
 							}
 							else {
@@ -813,7 +838,7 @@ public class Cache
 		if (object == null) { // remove the unnecessary keys from all indices.
 			logger.warn("Found Carrier, but object has already been released by the garbage collector! If this message occurs often, give the VM more memory or the Cache a shorter object-lifetime! Alternatively, you may switch to hard references. key: " + key.toString());
 
-			remove(key);
+			removeByKey(key);
 			return null;
 		}
 
@@ -961,7 +986,7 @@ public class Cache
 	 *
 	 * @param key The key referencing the <code>Carrier</code> that shall be removed.
 	 */
-	protected synchronized void remove(Key key)
+	protected synchronized void removeByKey(Key key)
 	{
 		if (logger.isDebugEnabled())
 			logger.debug("Removing Carrier for key: " + key.toString());
@@ -1009,7 +1034,7 @@ public class Cache
 	 *
 	 * @param objectID The JDO object-id of the persistance-capable object.
 	 */
-	protected synchronized int remove(ObjectID objectID)
+	protected synchronized int removeByObjectID(Object objectID)
 	{
 		logger.debug("Removing all Carriers for objectID: " + objectID);
 

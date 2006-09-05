@@ -129,7 +129,7 @@ public class CarrierContainer
 			for (Iterator it = carriersByKey.keySet().iterator(); it.hasNext(); ) {
 				Key key = (Key) it.next();
 
-				cache.remove(key);
+				cache.removeByKey(key);
 			}
 		}
 	}
