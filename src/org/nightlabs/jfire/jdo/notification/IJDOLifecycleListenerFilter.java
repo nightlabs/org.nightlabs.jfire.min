@@ -1,24 +1,51 @@
 package org.nightlabs.jfire.jdo.notification;
 
+import java.io.Serializable;
 import java.util.Collection;
 
 import org.nightlabs.jfire.jdo.cache.DirtyObjectID;
 
 public interface IJDOLifecycleListenerFilter
+extends Serializable
 {
 	/**
 	 * This method is called automatically by the client-side <code>JDOLifecycleManager</code>
 	 * when this filter is registered.
 	 *
-	 * @param filterID A unique ID within the scope of your session.
+	 * @param filterID A unique ID.
 	 */
-	void setFilterID(long filterID);
-
+	void setFilterID(AbsoluteFilterID filterID);
 	/**
-	 * @return The id that has previously been assigned by {@link #setFilterID(long)}. Returns -1, before
+	 * @return The id that has previously been assigned by {@link #setFilterID(long)}. Returns <code>null</code>, before
 	 *		{@link #setFilterID(long)} was called.
 	 */
-	long getFilterID();
+	AbsoluteFilterID getFilterID();
+
+//	/**
+//	 * This method will be called automatically by the client-side <code>JDOLifecycleManager</code>.
+//	 *
+//	 * @param sessionID 
+//	 */
+//	void setSessionID(String sessionID);
+//
+//	/**
+//	 * @return The sessionID that has been assigned via {@link #setSessionID(String)}.
+//	 */
+//	String getSessionID();
+//
+//	/**
+//	 * This method is called automatically by the client-side <code>JDOLifecycleManager</code>
+//	 * when this filter is registered.
+//	 *
+//	 * @param filterID A unique ID within the scope of your session.
+//	 */
+//	void setFilterID(long filterID);
+//
+//	/**
+//	 * @return The id that has previously been assigned by {@link #setFilterID(long)}. Returns -1, before
+//	 *		{@link #setFilterID(long)} was called.
+//	 */
+//	long getFilterID();
 
 	/**
 	 * @return The classes of JDO objects about which the client-sided listener wants to get notified.
@@ -41,7 +68,7 @@ public interface IJDOLifecycleListenerFilter
 	/**
 	 * @return The lifecycle stages in which the listener is interested. This must not be <code>null</code> and it must not be empty, too.
 	 */
-	DirtyObjectID.LifecycleStage[] getLifecycleTypes();
+	DirtyObjectID.LifecycleStage[] getLifecycleStages();
 
 	/**
 	 * This method checks which ones of the given {@link DirtyObjectID}s require

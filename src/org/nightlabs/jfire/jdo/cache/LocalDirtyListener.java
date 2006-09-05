@@ -26,16 +26,16 @@
 
 package org.nightlabs.jfire.jdo.cache;
 
-import java.util.Collection;
+import java.util.Map;
 
 
 public interface LocalDirtyListener
 {
 	/**
 	 * This method is executed synchronously by
-	 * {@link CacheManagerFactory#addDirtyObjectIDs(Collection)}.
+	 * {@link CacheManagerFactory#addDirtyObjectIDs(String, Map)}.
 	 * This means, it happens during the JDO-commit.
 	 * @param objectIDs The JDO object ids of those objects that have been changed.
 	 */
-	void notifyDirtyObjectIDs(Collection<Object> objectIDs);
+	void notifyDirtyObjectIDs(Map<DirtyObjectID.LifecycleStage, Map<Object, DirtyObjectID>> dirtyObjectIDs);
 }

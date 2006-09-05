@@ -72,7 +72,7 @@ implements DirtyObjectIDBuffer
 		this.organisationSyncManagerFactory = organisationSyncManagerFactory;
 		workDirectory = new File(
 				System.getProperty("java.io.tmpdir") + File.separatorChar +
-				"jfire" + File.separatorChar + "dirtyObjectIDs",
+				"jfire" + File.separatorChar + "dirtyObjectIDsRaw",
 				this.organisationSyncManagerFactory.getOrganisationID());
 		if (!workDirectory.exists() && !workDirectory.mkdirs())
 			throw new DirtyObjectIDBufferException("Could not create directory: " + workDirectory.getAbsolutePath());

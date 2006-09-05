@@ -24,91 +24,68 @@
  *                                                                             *
  ******************************************************************************/
 
-package org.nightlabs.jfire.jdo.cache;
+package org.nightlabs.jfire.base;
 
-import java.io.Serializable;
+import java.io.IOException;
+
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.NameCallback;
+import javax.security.auth.callback.PasswordCallback;
+import javax.security.auth.callback.UnsupportedCallbackException;
+
+import org.nightlabs.jdo.ObjectIDUtil;
+import org.nightlabs.jfire.servermanager.JFireServerManager;
 
 /**
- * This is a descriptor for a client which desires to be notified about
- * the change of a certain JDO object.
- *
  * @author Marco Schulze - marco at nightlabs dot de
  */
-public class ChangeListenerDescriptor
-implements Serializable
+public class AuthCallbackHandler implements CallbackHandler
 {
+	private String organisationID;
+	private String userID;
 	private String sessionID;
-//	private String userID;
-	private Serializable objectID;
+	private String userName;
+	private char[] password;
 
-	public ChangeListenerDescriptor(
-			String sessionID,
-//			String userID,
-			Object objectID)
+	public AuthCallbackHandler(JFireServerManager ism,
+			String organisationID, String userID)
 	{
-		if (sessionID == null)
-			throw new NullPointerException("sessionID");
+		this(ism, organisationID, userID, ObjectIDUtil.makeValidIDString(null, true));
+	}
 
-//		if (userID == null)
-//			throw new NullPointerException("userID");
-
-		if (objectID == null)
-			throw new NullPointerException("objectID");
-
+	public AuthCallbackHandler(JFireServerManager ism,
+			String organisationID, String userID, String sessionID)
+	{
+		this.organisationID = organisationID;
+		this.userID = userID;
 		this.sessionID = sessionID;
-//		this.userID = userID;
-		this.objectID = (Serializable)objectID;
+		this.userName = userID + '@' + organisationID + '/' + sessionID;
+		this.password = ism.jfireSecurity_createTempUserPassword(
+				organisationID, userID).toCharArray();
 	}
 
 	/**
-	 * @return Returns the sessionID.
+	 * @see javax.security.auth.callback.CallbackHandler#handle(javax.security.auth.callback.Callback[])
 	 */
-	public String getSessionID()
+	public void handle(Callback[] callbacks)
+	throws IOException,
+			UnsupportedCallbackException
 	{
-		return sessionID;
+//		if (callbacks.length != 2)
+//			throw new IllegalArgumentException("callbacks.length != 2!");
+//
+		for (int i = 0; i < callbacks.length; ++i) {
+			Callback cb = callbacks[i];
+			if (cb instanceof NameCallback) {
+				((NameCallback)cb).setName(userName);
+			}
+			else if (cb instanceof PasswordCallback) {
+				((PasswordCallback)cb).setPassword(password);
+			}
+			else throw new UnsupportedCallbackException(cb);
+		}
+			
 	}
 
-//	public String getUserID()
-//	{
-//		return userID;
-//	}
-
-	/**
-	 * @return Returns the objectID.
-	 */
-	public Object getObjectID()
-	{
-		return objectID;
-	}
-
-	private int _hashCode = 0;
-
-	/**
-	 * @see java.lang.Object#hashCode()
-	 */
-	public int hashCode()
-	{
-		if (_hashCode == 0)
-			_hashCode = sessionID.hashCode() ^ objectID.hashCode();
-
-		return _hashCode;
-	}
-
-	/**
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
-	public boolean equals(Object obj)
-	{
-		if (obj == this)
-			return true;
-
-		if (!(obj instanceof ChangeListenerDescriptor))
-			return false;
-
-		ChangeListenerDescriptor other = (ChangeListenerDescriptor)obj;
-		return
-				this.sessionID.equals(other.sessionID)
-				&&
-				this.objectID.equals(other.objectID);
-	}
 }

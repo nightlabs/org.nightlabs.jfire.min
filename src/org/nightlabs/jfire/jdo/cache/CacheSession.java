@@ -31,11 +31,14 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.nightlabs.jfire.jdo.notification.AbsoluteFilterID;
+import org.nightlabs.jfire.jdo.notification.FilterRegistry;
+import org.nightlabs.jfire.jdo.notification.IJDOLifecycleListenerFilter;
 
 /**
  * @author Marco Schulze - marco at nightlabs dot de
@@ -51,18 +54,32 @@ implements Serializable
 	private static final Logger logger = Logger.getLogger(CacheSession.class);
 
 	private CacheManagerFactory cacheManagerFactory;
-	private String cacheSessionID;
+	private String sessionID;
+	private String userID;
 
-	public CacheSession(CacheManagerFactory cacheManagerFactory, String cacheSessionID)
+	private FilterRegistry filterRegistry;
+
+	/**
+	 * @param cacheManagerFactory The {@link CacheManagerFactory} which created this {@link CacheSession}.
+	 * @param sessionID The sessionID as specified by the client. He cannot "hijack" sessions anyway, because the userID is checked.
+	 * @param userID The userID of the user - the organisationID is clear.
+	 */
+	public CacheSession(CacheManagerFactory cacheManagerFactory, String sessionID, String userID)
 	{
 		if (cacheManagerFactory == null)
-			throw new NullPointerException("cacheManagerFactory");
+			throw new IllegalArgumentException("cacheManagerFactory is null");
 
-		if (cacheSessionID == null)
-			throw new NullPointerException("cacheSessionID");
+		if (sessionID == null)
+			throw new IllegalArgumentException("sessionID is null");
+
+		if (userID == null)
+			throw new IllegalArgumentException("userID is null");
 
 		this.cacheManagerFactory = cacheManagerFactory;
-		this.cacheSessionID = cacheSessionID;
+		this.sessionID = sessionID;
+		this.userID = userID;
+
+		this.filterRegistry = cacheManagerFactory.getFilterRegistry();
 	}
 
 	private volatile boolean closed = false;
@@ -70,7 +87,7 @@ implements Serializable
 	protected void assertOpen()
 	{
 		if (closed)
-			throw new IllegalStateException("This instance of CacheSession (id=\""+cacheSessionID+"\") has already been closed!");
+			throw new IllegalStateException("This instance of CacheSession (id=\""+sessionID+"\") has already been closed!");
 	}
 
 	/**
@@ -80,89 +97,45 @@ implements Serializable
 	 * with argument <tt>null</tt>.
 	 * <p>
 	 * After a <tt>CacheSession</tt> has been closed, it cannot be changed anymore. But
-	 * if the <tt>CacheManagerFactory</tt> is used with the same <tt>cacheSessionID</tt>,
+	 * if the <tt>CacheManagerFactory</tt> is used with the same <tt>sessionID</tt>,
 	 * it will create a new instance of <tt>CacheSession</tt> with the same ID.
 	 */
 	public void close()
 	{
+		if (closed)
+			return;
+
+		// We first remove all filters from the FilterRegistry to make sure, no notifications
+		// are routed here anymore.
+		LinkedList<IJDOLifecycleListenerFilter> filters;
+		synchronized (this.filters) {
+			filters = new LinkedList<IJDOLifecycleListenerFilter>(this.filters.values());
+			this.filters.clear();
+		}
+
+		for (IJDOLifecycleListenerFilter filter : filters)
+			filterRegistry.removeFilter(filter);
+
+		// Then we mark this instance as closed.
+		// From now on, all operations on this object should either fail or become no-ops.
 		closed = true;
 
 		notifyChanges();
+
 		setCacheSessionContainer(null);
 	}
 
 	/**
-	 * @return Returns the cacheSessionID.
+	 * @return Returns the sessionID.
 	 */
-	public String getCacheSessionID()
+	public String getSessionID()
 	{
-		return cacheSessionID;
+		return sessionID;
 	}
-
-//	/**
-//	 * key: Object objectID<br/>
-//	 * value: ChangeListenerDescriptor changeListener
-//	 */
-//	private Map changeListeners = new HashMap();
-//	private Set _subscribedObjectIDs = null;
-//	private Collection _changeListeners = null;
-//
-//	/**
-//	 * This method adds a <tt>ChangeListenerDescriptor</tt> to the backing <tt>Set</tt>. Note,
-//	 * that a second call for the same listener (or another one with the same objectID)
-//	 * does not add-up, because it can exist only once in the backing <tt>Set</tt>.
-//	 *
-//	 * @param objectID The JDO object ID to be subscribed.
-//	 */
-//	public void addChangeListener(ChangeListenerDescriptor listener)
-//	{
-//		assertOpen();
-//
-//		if (!cacheSessionID.equals(listener.getCacheSessionID()))
-//			throw new IllegalArgumentException("this.cacheSessionID (\""+cacheSessionID+"\") != listener.cacheSessionID (\""+listener.getCacheSessionID()+"\")");
-//
-//		synchronized (changeListeners) {
-//			changeListeners.put(listener.getObjectID(), listener);
-//			_subscribedObjectIDs = null;
-//			_changeListeners = null;
-//		}
-//	}
-//
-//	/**
-//	 * This method removes a <tt>ChangeListenerDescriptor</tt> from the backing <tt>Set</tt>.
-//	 *
-//	 * @param listener The listener to be removed. Note that a listener can only exist
-//	 *		once in the used <tt>Set</tt> and therefore one call to this method removes
-//	 *		it - no matter how often {@link #addChangeListener(ChangeListenerDescriptor)} was called!
-//	 */
-//	public void removeChangeListener(ChangeListenerDescriptor listener)
-//	{
-//		assertOpen();
-//
-//		if (!cacheSessionID.equals(listener.getCacheSessionID()))
-//			throw new IllegalArgumentException("this.cacheSessionID (\""+cacheSessionID+"\") != listener.cacheSessionID (\""+listener.getCacheSessionID()+"\")");
-//
-//		synchronized (changeListeners) {
-//			changeListeners.remove(listener.getObjectID());
-//			_subscribedObjectIDs = null;
-//			_changeListeners = null;
-//		}
-//	}
-//
-//	public Collection getChangeListeners()
-//	{
-//		Collection res = _changeListeners;
-//		if (res == null) {
-//			synchronized (changeListeners) {
-//				_changeListeners = Collections.unmodifiableCollection(
-//						new LinkedList(changeListeners.values()));
-//
-//				res = _changeListeners;
-//			}
-//		}
-//
-//		return res;
-//	}
+	public String getUserID()
+	{
+		return userID;
+	}
 
 	private Set<Object> subscribedObjectIDs = new HashSet<Object>();
 	private Set<Object> _subscribedObjectIDs = null;
@@ -206,6 +179,8 @@ implements Serializable
 	 */
 	public Set getSubscribedObjectIDs()
 	{
+		assertOpen();
+
 		Set res = _subscribedObjectIDs;
 		if (res == null) {
 			synchronized (subscribedObjectIDs) {
@@ -223,11 +198,84 @@ implements Serializable
 	 * key: Object objectID<br/>
 	 * value: {@link DirtyObjectID} dirtyObjectID
 	 */
-	private Map<Object, DirtyObjectID> dirtyObjectIDs = new HashMap<Object, DirtyObjectID>();
+	private Map<Object, Map<DirtyObjectID.LifecycleStage, DirtyObjectID>> dirtyObjectIDs = new HashMap<Object, Map<DirtyObjectID.LifecycleStage, DirtyObjectID>>();
 	private transient Object dirtyObjectIDsMutex = new Object();
 
 	/**
-	 * This method replaces the <tt>Set dirtyObjectIDs</tt> by a new (empty) one
+	 * This field is synchronized via {@link #dirtyObjectIDsMutex}, too!
+	 */
+	private Map<AbsoluteFilterID, Map<Object, Map<DirtyObjectID.LifecycleStage, DirtyObjectID>>> filterID2DirtyObjectIDs = new HashMap<AbsoluteFilterID, Map<Object,Map<DirtyObjectID.LifecycleStage, DirtyObjectID>>>();
+
+	private Map<AbsoluteFilterID, IJDOLifecycleListenerFilter> filters = new HashMap<AbsoluteFilterID, IJDOLifecycleListenerFilter>();
+	private Map<AbsoluteFilterID, IJDOLifecycleListenerFilter> _filters = null;
+
+	public void addFilter(IJDOLifecycleListenerFilter filter)
+	{
+		assertOpen();
+
+		synchronized (filters) {
+			filters.put(filter.getFilterID(), filter);
+			_filters = null;
+		}
+
+		cacheManagerFactory.getFilterRegistry().addFilter(filter);
+	}
+
+	public void removeFilter(IJDOLifecycleListenerFilter filter)
+	{
+		removeFilter(filter.getFilterID());
+	}
+
+	public void removeFilter(AbsoluteFilterID filterID)
+	{
+		assertOpen();
+
+		// We remove FIRST from the index [i.e. our registry] (in order not to get no notifications anymore)
+		// and then here.
+		cacheManagerFactory.getFilterRegistry().removeFilter(filterID);
+
+		synchronized (filters) {
+			filters.remove(filterID);
+			_filters = null;
+		}
+	}
+
+	public Map<AbsoluteFilterID, IJDOLifecycleListenerFilter> getFilters()
+	{
+		assertOpen();
+
+		Map<AbsoluteFilterID, IJDOLifecycleListenerFilter> res = _filters;
+
+		if (res == null) {
+			synchronized (filters) {
+				_filters = Collections.unmodifiableMap(
+						new HashMap<AbsoluteFilterID, IJDOLifecycleListenerFilter>(filters));
+
+				res = _filters;
+			}
+		}
+
+		return res;
+	}
+
+	private boolean virginCacheSession = true;
+	public boolean isVirginCacheSession()
+	{
+		return virginCacheSession;
+	}
+	public void setVirginCacheSession(boolean virginCacheSession)
+	{
+		this.virginCacheSession = virginCacheSession;
+	}
+
+	public static class DirtyObjectIDGroup
+	{
+		public Map<Object, Map<DirtyObjectID.LifecycleStage, DirtyObjectID>> dirtyObjectIDs;
+		public Map<AbsoluteFilterID, Map<Object, Map<DirtyObjectID.LifecycleStage, DirtyObjectID>>> filterID2DirtyObjectIDs;
+	}
+
+	/**
+	 * This method replaces the <tt>Set dirtyObjectIDsRaw</tt> by a new (empty) one
 	 * and returns the old <tt>Set</tt>, if it contains at least one entry. If
 	 * it is empty, this method does nothing and returns <tt>null</tt>.
 	 * <p>
@@ -236,49 +284,106 @@ implements Serializable
 	 * they will be filtered and added to the new Map.
 	 * </p>
 	 *
-	 * @return Returns either <tt>null</tt> or a <tt>Map</tt> of jdo object-IDs. This Map will never be empty (instead of an
-	 *		empty Map, null is returned). 
+	 * @return Returns either <tt>null</tt> or an instance of {@link DirtyObjectIDGroup}.
 	 */
-	public Map<Object, DirtyObjectID> fetchDirtyObjectIDs()
+	public DirtyObjectIDGroup fetchDirtyObjectIDs()
 	{
 		if (closed) {
 			if (logger.isDebugEnabled())
-				logger.debug("fetchChangedObjectIDs() in CacheSession(cacheSessionID=\""+cacheSessionID+"\") will return null, because the session is closed!");
+				logger.debug("fetchChangedObjectIDs() in CacheSession(sessionID=\""+sessionID+"\") will return null, because the session is closed!");
 
 			return null;
 		}
 
-		Map<Object, DirtyObjectID> res;
+		DirtyObjectIDGroup res = new DirtyObjectIDGroup();
+
 		synchronized (dirtyObjectIDsMutex) {
 			if (dirtyObjectIDs.isEmpty())
-				res = null;
+				res.dirtyObjectIDs = null;
 			else {
-				res = dirtyObjectIDs;
-				dirtyObjectIDs = new HashMap<Object, DirtyObjectID>();
+				res.dirtyObjectIDs = dirtyObjectIDs;
+				dirtyObjectIDs = new HashMap<Object, Map<DirtyObjectID.LifecycleStage, DirtyObjectID>>();
 
-				long youngestChangeDT = System.currentTimeMillis() - cacheManagerFactory.getCacheCfMod().getDelayNotificationMSec();
-
-				for (Iterator it = res.entrySet().iterator(); it.hasNext(); ) {
-					Map.Entry me = (Map.Entry) it.next();
-					DirtyObjectID dirtyObjectID = (DirtyObjectID) me.getValue();
-					if (dirtyObjectID.getChangeDT() > youngestChangeDT) {
-						// it's too new => remove it from the result and delay it by putting it back to (the new) this.dirtyObjectIDs map.
-						dirtyObjectIDs.put(me.getKey(), dirtyObjectID);
-						it.remove();
-					}
-				}
-
-				if (res.isEmpty())
-					res = null;
+//				long youngestChangeDT = System.currentTimeMillis() - cacheManagerFactory.getCacheCfMod().getDelayNotificationMSec();
+//
+//				for (Iterator it = res.entrySet().iterator(); it.hasNext(); ) {
+//					Map.Entry me = (Map.Entry) it.next();
+//					DirtyObjectID dirtyObjectID = (DirtyObjectID) me.getValue();
+//					if (dirtyObjectID.getChangeDT() > youngestChangeDT) {
+//						// it's too new => remove it from the result and delay it by putting it back to (the new) this.dirtyObjectIDs map.
+//						dirtyObjectIDs.put(me.getKey(), dirtyObjectID);
+//						it.remove();
+//					}
+//				}
 			}
+
+			if (filterID2DirtyObjectIDs.isEmpty())
+				res.filterID2DirtyObjectIDs = null;
+			else {
+				res.filterID2DirtyObjectIDs = filterID2DirtyObjectIDs;
+				filterID2DirtyObjectIDs = new HashMap<AbsoluteFilterID, Map<Object,Map<DirtyObjectID.LifecycleStage, DirtyObjectID>>>();
+			}
+
+			if (res.dirtyObjectIDs == null && res.filterID2DirtyObjectIDs == null)
+				res = null;
 		} // synchronized (dirtyObjectIDsMutex) {
 
-		if (logger.isDebugEnabled()) {
-			logger.debug("fetchChangedObjectIDs() in CacheSession(cacheSessionID=\""+cacheSessionID+"\") will return " +
-					(res == null ? "null" : ("a Set with " + res.size() + " entries")) + ".");
-		}
+//		if (logger.isDebugEnabled()) {
+//			logger.debug("fetchChangedObjectIDs() in CacheSession(sessionID=\""+sessionID+"\") will return " +
+//					(res == null ? "null" : ("a Set with " + res.size() + " entries")) + ".");
+//		}
 
 		return res;
+	}
+
+	/**
+	 * In contrast to {@link #addDirtyObjectIDs(Collection)}, this method adds DirtyObjectIDs for
+	 * the explicit listeners (identified via their filterID). This method adds ALL given
+	 * parameters to the internal map!
+	 *
+	 * @param filterID2DirtyObjectIDs
+	 */
+	public void addDirtyObjectIDs(Map<AbsoluteFilterID, Collection<DirtyObjectID>> filterID2DirtyObjectIDs)
+	{
+		assertOpen();
+
+		synchronized (dirtyObjectIDsMutex) {
+			for (Map.Entry<AbsoluteFilterID, Collection<DirtyObjectID>> me : filterID2DirtyObjectIDs.entrySet()) {
+				AbsoluteFilterID filterID = me.getKey();
+				Collection<DirtyObjectID> dirtyObjectIDs = me.getValue();
+
+				Map<Object, Map<DirtyObjectID.LifecycleStage, DirtyObjectID>> m1 = this.filterID2DirtyObjectIDs.get(filterID);
+				if (m1 == null) {
+					m1 = new HashMap<Object, Map<DirtyObjectID.LifecycleStage, DirtyObjectID>>();
+					this.filterID2DirtyObjectIDs.put(filterID, m1);
+				}
+
+				for (DirtyObjectID dirtyObjectID : dirtyObjectIDs) {
+					Object objectID = dirtyObjectID.getObjectID();
+
+					Map<DirtyObjectID.LifecycleStage, DirtyObjectID> m2 = m1.get(objectID);
+					if (m2 == null) {
+						m2 = new HashMap<DirtyObjectID.LifecycleStage, DirtyObjectID>();
+						m1.put(objectID, m2);
+					}
+
+					DirtyObjectID dObj = m2.get(dirtyObjectID.getLifecycleStage());
+					if (dObj == null)
+						m2.put(dirtyObjectID.getLifecycleStage(), dirtyObjectID);
+					else {
+						DirtyObjectID older = dObj;
+						DirtyObjectID newer = dirtyObjectID;
+						if (older.getSerial() > newer.getSerial()) {
+							DirtyObjectID tmp = older;
+							older = newer;
+							newer = tmp;
+						}
+						newer.addSourceSessionIDs(older.getSourceSessionIDs());
+						m2.put(dirtyObjectID.getLifecycleStage(), newer);
+					}
+				} // for (DirtyObjectID dirtyObjectID : dirtyObjectIDs) {
+			} // for (Map.Entry<AbsoluteFilterID, Collection<DirtyObjectID>> me : filterID2DirtyObjectIDs.entrySet()) {
+		} // synchronized (dirtyObjectIDsMutex) {
 	}
 
 	/**
@@ -288,25 +393,39 @@ implements Serializable
 	 * <p>
 	 * Note, that this method will NOT yet notify anyone! Notification is done indirectly.
 	 */
-	public void addDirtyObjectIDs(Collection<DirtyObjectID> dirtyOjectIDs)
+	public void addDirtyObjectIDs(Collection<DirtyObjectID> dirtyObjectIDs)
 	{
 		assertOpen();
 
 		synchronized (dirtyObjectIDsMutex) {
 			Set subscribedObjectIDs = getSubscribedObjectIDs();
 
-			for (Iterator it = dirtyOjectIDs.iterator(); it.hasNext(); ) {
-				DirtyObjectID dirtyObjectID = (DirtyObjectID) it.next();
+			for (DirtyObjectID dirtyObjectID : dirtyObjectIDs) {
 				Object objectID = dirtyObjectID.getObjectID();
-				if (subscribedObjectIDs.contains(objectID)) {
-					DirtyObjectID dObj = (DirtyObjectID) dirtyObjectIDs.get(objectID);
-					if (dObj != null)
-						dObj.addSourceSessionIDs(dirtyObjectID.getSourceSessionIDs());
-					else
-						dirtyObjectIDs.put(objectID, dirtyObjectID);
-				}
-			}
-		}
+
+				if (subscribedObjectIDs.contains(objectID)) { // check, whether this sessionID is interested in the given objectID
+					Map<DirtyObjectID.LifecycleStage, DirtyObjectID> m = this.dirtyObjectIDs.get(objectID);
+					if (m == null) {
+						m = new HashMap<DirtyObjectID.LifecycleStage, DirtyObjectID>();
+						this.dirtyObjectIDs.put(objectID, m);
+					}
+					DirtyObjectID dObj = m.get(dirtyObjectID.getLifecycleStage());
+					if (dObj == null)
+						m.put(dirtyObjectID.getLifecycleStage(), dirtyObjectID);
+					else {
+						DirtyObjectID older = dObj;
+						DirtyObjectID newer = dirtyObjectID;
+						if (older.getSerial() > newer.getSerial()) {
+							DirtyObjectID tmp = older;
+							older = newer;
+							newer = tmp;
+						}
+						newer.addSourceSessionIDs(older.getSourceSessionIDs());
+						m.put(dirtyObjectID.getLifecycleStage(), newer);
+					}
+				} // if (subscribedObjectIDs.contains(objectID)) { // check, whether this sessionID is interested in the given objectID
+			} // for (DirtyObjectID dirtyObjectID : dirtyObjectIDs) {
+		} // synchronized (dirtyObjectIDsMutex) {
 	}
 
 	/**
@@ -320,7 +439,7 @@ implements Serializable
 	}
 
 	/**
-	 * If <tt>dirtyObjectIDs</tt> is empty or contains only entries that are too young for immediate
+	 * If <tt>dirtyObjectIDsRaw</tt> is empty or contains only entries that are too young for immediate
 	 * notification, this method will start blocking.
 	 * <p>
 	 * It will block, until either {@link #notifyChanges()} is called <b>and</b> at
@@ -328,7 +447,7 @@ implements Serializable
 	 * occured.
 	 * </p>
 	 * <p>
-	 * If <tt>dirtyObjectIDs</tt> contains at least one entry that is old enough (the delay
+	 * If <tt>dirtyObjectIDsRaw</tt> contains at least one entry that is old enough (the delay
 	 * {@link CacheCfMod#getDelayNotificationMSec()} already expired),
 	 * this method immediately returns.
 	 * </p>
@@ -343,60 +462,65 @@ implements Serializable
 	public void waitForChanges(long waitTimeout)
 	{
 		if (logger.isDebugEnabled())
-			logger.debug("CacheSession \"" + cacheSessionID + "\" entered waitForChanges with waitTimeout=" + waitTimeout + ".");
+			logger.debug("CacheSession \"" + sessionID + "\" entered waitForChanges with waitTimeout=" + waitTimeout + ".");
 
-		long methodBeginDT = System.currentTimeMillis();
+		if (closed) {
+			logger.error("This CacheSession is closed! sessionID="+sessionID, new Exception("CacheSession closed!"));
+			return;
+		}
+
+//		long methodBeginDT = System.currentTimeMillis();
 
 		CacheCfMod cacheCfMod = cacheManagerFactory.getCacheCfMod();
 		long waitMin = cacheCfMod.getWaitForChangesTimeoutMin();
 		long waitMax = cacheCfMod.getWaitForChangesTimeoutMax();
 
 		if (waitTimeout < waitMin) {
-			logger.warn("waitTimeout (" + waitTimeout + " msec) < waitForChangesTimeoutMin (" + waitMin + " msec)! Will ignore and use waitForChangesTimeoutMin!");
+			logger.warn("CacheSession \"" + sessionID + "\" ("+userID + '@' + cacheManagerFactory.getOrganisationID()+"): waitTimeout (" + waitTimeout + " msec) < waitForChangesTimeoutMin (" + waitMin + " msec)! Will ignore and use waitForChangesTimeoutMin!");
 			waitTimeout = waitMin;
 		}
 
 		if (waitTimeout > waitMax) {
-			logger.warn("waitTimeout (" + waitTimeout + " msec) > waitForChangesTimeoutMax (" + waitMax + " msec)! Will ignore and use waitForChangesTimeoutMax!");
+			logger.warn("CacheSession \"" + sessionID + "\" ("+userID + '@' + cacheManagerFactory.getOrganisationID()+"): waitTimeout (" + waitTimeout + " msec) > waitForChangesTimeoutMax (" + waitMax + " msec)! Will ignore and use waitForChangesTimeoutMax!");
 			waitTimeout = waitMax;
 		}
 
-		do {
+//		do {
 			long actualWaitMSec = waitTimeout;
 			synchronized (dirtyObjectIDsMutex) {
 	
-				if (!dirtyObjectIDs.isEmpty()) {
-					long delayMSec = cacheManagerFactory.getCacheCfMod().getDelayNotificationMSec();
-
-					if (logger.isDebugEnabled())
-						logger.debug("CacheSession \"" + cacheSessionID + "\" has changed objectIDs. Checking their age (taking delayNotificationMSec="+delayMSec+" into account).");
-
-					long youngestChangeDT = System.currentTimeMillis() - delayMSec;
-					for (Iterator it = dirtyObjectIDs.entrySet().iterator(); it.hasNext(); ) {
-						Map.Entry me = (Map.Entry) it.next();
-						DirtyObjectID dirtyObjectID = (DirtyObjectID) me.getValue();
-						if (dirtyObjectID.getChangeDT() < youngestChangeDT) {
-							// it's old enough => we have at least one that needs immediate notification
-							if (logger.isDebugEnabled())
-								logger.debug("CacheSession \"" + cacheSessionID + "\" has changed objectIDs and at least one of them is old enough for notification. Return immediately.");
-
-							return;
-						}
-						else {
-							long tmp = System.currentTimeMillis() - dirtyObjectID.getChangeDT(); // how old is it
-							tmp = delayMSec - tmp; // the rest time that is needed to reach the minimum age 
-							if (tmp < actualWaitMSec) {
-								if (logger.isDebugEnabled())
-									logger.debug("CacheSession \"" + cacheSessionID + "\" has a changed objectID, but it is still too young for immediate notification. Will wait, but shorten the waitTimeout from " + actualWaitMSec + " to " + tmp + " msec.");
-	
-								actualWaitMSec = tmp;
-							}
-						}
-					}
-				}
+//				if (!dirtyObjectIDs.isEmpty()) {
+//					long delayMSec = cacheManagerFactory.getCacheCfMod().getDelayNotificationMSec();
+//
+//					if (logger.isDebugEnabled())
+//						logger.debug("CacheSession \"" + sessionID + "\" has changed objectIDs. Checking their age (taking delayNotificationMSec="+delayMSec+" into account).");
+//
+//					long youngestChangeDT = System.currentTimeMillis() - delayMSec;
+//					for (Iterator it = dirtyObjectIDs.entrySet().iterator(); it.hasNext(); ) {
+//						Map.Entry me = (Map.Entry) it.next();
+//						DirtyObjectID dirtyObjectID = (DirtyObjectID) me.getValue();
+//						if (dirtyObjectID.getChangeDT() < youngestChangeDT) {
+//							// it's old enough => we have at least one that needs immediate notification
+//							if (logger.isDebugEnabled())
+//								logger.debug("CacheSession \"" + sessionID + "\" has changed objectIDs and at least one of them is old enough for notification. Return immediately.");
+//
+//							return;
+//						}
+//						else {
+//							long tmp = System.currentTimeMillis() - dirtyObjectID.getChangeDT(); // how old is it
+//							tmp = delayMSec - tmp; // the rest time that is needed to reach the minimum age 
+//							if (tmp < actualWaitMSec) {
+//								if (logger.isDebugEnabled())
+//									logger.debug("CacheSession \"" + sessionID + "\" has a changed objectID, but it is still too young for immediate notification. Will wait, but shorten the waitTimeout from " + actualWaitMSec + " to " + tmp + " msec.");
+//	
+//								actualWaitMSec = tmp;
+//							}
+//						}
+//					}
+//				}
 
 				if (logger.isDebugEnabled())
-						logger.debug("CacheSession \"" + cacheSessionID + "\" will wait " + actualWaitMSec + " msec for changed objects.");
+						logger.debug("CacheSession \"" + sessionID + "\" will wait " + actualWaitMSec + " msec for changed objects.");
 
 				try {
 					if (actualWaitMSec > 0)
@@ -406,9 +530,9 @@ implements Serializable
 				}
 
 				if (logger.isDebugEnabled())
-					logger.debug("CacheSession \"" + cacheSessionID + "\" woke up.");
+					logger.debug("CacheSession \"" + sessionID + "\" woke up.");
 			} // synchronized (dirtyObjectIDsMutex) {
-		} while (System.currentTimeMillis() - methodBeginDT < waitTimeout);
+//		} while (System.currentTimeMillis() - methodBeginDT < waitTimeout);
 	}
 
 

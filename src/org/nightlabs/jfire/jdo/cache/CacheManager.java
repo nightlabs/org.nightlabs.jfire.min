@@ -27,8 +27,14 @@
 package org.nightlabs.jfire.jdo.cache;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
+
+import org.nightlabs.jfire.base.JFirePrincipal;
+import org.nightlabs.jfire.jdo.notification.AbsoluteFilterID;
+import org.nightlabs.jfire.jdo.notification.IJDOLifecycleListenerFilter;
 
 
 /**
@@ -37,37 +43,39 @@ import java.util.Set;
 public class CacheManager
 {
 	private CacheManagerFactory cacheManagerFactory;
-	private String cacheSessionID;
+	private JFirePrincipal principal;
 
 	/**
 	 * You can only use some of the methods after having created an instance with
-	 * this constructor before having called {@link #initCacheSessionID(String)}.
+	 * this constructor before having called {@link #initPrincipal(JFirePrincipal)}.
+	 * Most methods require that you have created the CacheManager with
+	 * {@link #CacheManager(CacheManagerFactory, JFirePrincipal)}
 	 *
 	 * @param cacheManagerFactory
 	 */
 	protected CacheManager(CacheManagerFactory cacheManagerFactory)
 	{
-		this(cacheManagerFactory, (String)null);
+		this(cacheManagerFactory, (JFirePrincipal)null);
 	}
 
-	protected CacheManager(CacheManagerFactory cacheManagerFactory, String cacheSessionID)
+	protected CacheManager(CacheManagerFactory cacheManagerFactory, JFirePrincipal principal)
 	{
 		this.cacheManagerFactory = cacheManagerFactory;
-		this.cacheSessionID = cacheSessionID;
+		this.principal = principal;
 	}
 
-	public void initCacheSessionID(String cacheSessionID)
+	public void initPrincipal(JFirePrincipal principal)
 	{
-		if (this.cacheSessionID != null)
-			throw new IllegalStateException("CacheSessionID is already initialized!");
+		if (this.principal != null)
+			throw new IllegalStateException("principal is already initialized!");
 
-		this.cacheSessionID = cacheSessionID;
+		this.principal = principal;
 	}
 
-	protected void assertCacheSessionIDExisting()
+	protected void assertPrincipalExisting()
 	{
-		if (cacheSessionID == null)
-			throw new IllegalStateException("The cacheSessionID is unknown! Either create the CacheManager with a cacheSessionID or use the method initCacheSessionID(...)!");
+		if (principal == null)
+			throw new IllegalStateException("The principal is unknown! Either create the CacheManager with a principal or use the method initPrincipal(...)!");
 	}
 
 	/**
@@ -82,9 +90,10 @@ public class CacheManager
 	 */
 	public void addChangeListener(Object objectID)
 	{
-		assertCacheSessionIDExisting();
-		cacheManagerFactory.addChangeListener(new ChangeListenerDescriptor(
-				cacheSessionID, objectID));
+		assertPrincipalExisting();
+		cacheManagerFactory.addChangeListener(
+				principal.getUserID(),
+				new ChangeListenerDescriptor(principal.getSessionID(), objectID));
 	}
 
 	/**
@@ -94,17 +103,35 @@ public class CacheManager
 	 */
 	public void addChangeListeners(Collection objectIDs)
 	{
-		assertCacheSessionIDExisting();
+		assertPrincipalExisting();
 		for (Iterator it = objectIDs.iterator(); it.hasNext(); )
-			cacheManagerFactory.addChangeListener(new ChangeListenerDescriptor(
-					cacheSessionID, it.next()));
+			cacheManagerFactory.addChangeListener(
+					principal.getUserID(),
+					new ChangeListenerDescriptor(principal.getSessionID(), it.next()));
 	}
 
 	public void resubscribeAllChangeListeners(Set subscribedObjectIDs)
 	{
-		assertCacheSessionIDExisting();
+		assertPrincipalExisting();
 		cacheManagerFactory.resubscribeAllChangeListeners(
-				cacheSessionID, subscribedObjectIDs);
+				principal.getSessionID(), principal.getUserID(), subscribedObjectIDs);
+	}
+
+	public void addLifecycleListenerFilters(Collection<IJDOLifecycleListenerFilter> filters)
+	{
+		assertPrincipalExisting();
+		cacheManagerFactory.addLifecycleListenerFilters(principal.getUserID(), filters);
+	}
+
+	public void removeLifecycleListenerFilters(Set<Long> filterIDs)
+	{
+		assertPrincipalExisting();
+
+		Set<AbsoluteFilterID> absoluteFilterIDs = new HashSet<AbsoluteFilterID>(filterIDs.size());
+		for (Long filterID : filterIDs)
+			absoluteFilterIDs.add(new AbsoluteFilterID(principal.getSessionID(), filterID.longValue()));
+
+		cacheManagerFactory.removeLifecycleListenerFilters(absoluteFilterIDs);
 	}
 
 	/**
@@ -118,8 +145,8 @@ public class CacheManager
 	 */
 	public void removeChangeListener(Object objectID)
 	{
-		assertCacheSessionIDExisting();
-		cacheManagerFactory.removeChangeListener(cacheSessionID, objectID);
+		assertPrincipalExisting();
+		cacheManagerFactory.removeChangeListener(principal.getSessionID(), objectID);
 	}
 
 	/**
@@ -129,9 +156,9 @@ public class CacheManager
 	 */
 	public void removeChangeListeners(Collection objectIDs)
 	{
-		assertCacheSessionIDExisting();
+		assertPrincipalExisting();
 		for (Iterator it = objectIDs.iterator(); it.hasNext(); )
-			cacheManagerFactory.removeChangeListener(cacheSessionID, it.next());
+			cacheManagerFactory.removeChangeListener(principal.getSessionID(), it.next());
 	}
 
 	/**
@@ -147,8 +174,8 @@ public class CacheManager
 	 */
 	public void closeCacheSession()
 	{
-		assertCacheSessionIDExisting();
-		cacheManagerFactory.closeCacheSession(cacheSessionID);
+		assertPrincipalExisting();
+		cacheManagerFactory.closeCacheSession(principal.getSessionID());
 	}
 
 	/**
@@ -160,9 +187,9 @@ public class CacheManager
 	 * @param objectIDs The IDs of the JDO objects that have been changed
 	 *		(see {@link javax.jdo.JDOHelper#getObjectId(java.lang.Object)}).
 	 */
-	public void addDirtyObjectIDs(String sessionID, Collection<Object> objectIDs, DirtyObjectID.LifecycleStage lifecycleStage)
+	public void addDirtyObjectIDs(String sessionID, Map<DirtyObjectID.LifecycleStage, Map<Object, DirtyObjectID>> dirtyObjectIDs)
 	{
-		cacheManagerFactory.addDirtyObjectIDs(sessionID, objectIDs, lifecycleStage);
+		cacheManagerFactory.addDirtyObjectIDs(sessionID, dirtyObjectIDs);
 	}
 
 	/**
@@ -173,12 +200,13 @@ public class CacheManager
 	 * @param waitTimeout The timeout in milliseconds after which this method
 	 *		will return <tt>null</tt> if no changes occur before.
 	 *
-	 * @return Returns either <tt>null</tt> or a <tt>Collection</tt> of JDO object IDs
-	 *		(see {@link javax.jdo.JDOHelper#getObjectId(java.lang.Object)}).
+	 * @return Returns either <tt>null</tt> if nothing changed or a {@link NotificationBundle}
+	 *		of object ids. Hence {@link NotificationBundle#isEmpty()} will never return <code>true</code>
+	 *		(<code>null</code> would have been returned instead of a <code>NotificationBundle</code>).
 	 */
-	public Collection waitForChanges(long waitTimeout)
+	public NotificationBundle waitForChanges(long waitTimeout)
 	{
-		assertCacheSessionIDExisting();
-		return cacheManagerFactory.waitForChanges(cacheSessionID, waitTimeout);
+		assertPrincipalExisting();
+		return cacheManagerFactory.waitForChanges(principal.getSessionID(), principal.getUserID(), waitTimeout);
 	}
 }

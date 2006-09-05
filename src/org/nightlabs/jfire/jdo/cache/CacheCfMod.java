@@ -27,10 +27,9 @@
 package org.nightlabs.jfire.jdo.cache;
 
 import org.apache.log4j.Logger;
-import org.nightlabs.jfire.jdo.cache.bridge.JdoCacheBridgeJPOX;
-
 import org.nightlabs.config.ConfigModule;
 import org.nightlabs.config.InitException;
+import org.nightlabs.jfire.jdo.cache.bridge.JdoCacheBridgeJPOX;
 
 /**
  * @author Marco Schulze - marco at nightlabs dot de
@@ -45,8 +44,8 @@ public class CacheCfMod extends ConfigModule
 	private String documentation;
 
 	private long notificationIntervalMSec = 0;
-	private long delayNotificationMSec = -1;
-//	private long cacheSessionContainerCheckIntervalMSec = 0;
+//	private long delayNotificationMSec = -1;
+
 	private long cacheSessionContainerActivityMSec = 0;
 	private int cacheSessionContainerCount = 0;
 	private long waitForChangesTimeoutMin = 0;
@@ -67,19 +66,15 @@ public class CacheCfMod extends ConfigModule
 	public void init() throws InitException
 	{
 		documentation = "This is the documentation for the settings in this ConfigModule.\n" +
-				"\n" +
-				"  delayNotificationMSec: How long in milliseconds to wait before forwarding a\n" +
-				"    notification to the interested listeners. The delay is realized in the\n" +
-				"    method CacheSession#fetchDirtyObjectIDs(). Default is 500.\n" +
+//				"\n" +
+//				"  delayNotificationMSec: How long in milliseconds to wait before forwarding a\n" +
+//				"    notification to the interested listeners. The delay is realized in the\n" +
+//				"    method CacheSession#fetchDirtyObjectIDs(). Default is 500.\n" +
 				"\n" +
 				"* notificationIntervalMSec: The length of the interval in millisec, in which the\n" +
 				"    NotificationThread will check changed objects and trigger events. Default\n" +
 				"    is 3000 (3 sec). Minimum is 100.\n" +
 				"\n" +
-//				"* cacheSessionContainerCheckIntervalMSec: In which intervals shall be checked\n" +
-//				"    whether the CacheSessionContainers need to be rolled. Default is 120000\n" +
-//				"    (2 min). Minimum is 10 sec.\n" +
-//				"\n" +
 				"* cacheSessionContainerCount: CacheSessions expire after the client didn't use\n" +
 				"    them for a longer time. To avoid the need to iterate all CacheSessions in\n" +
 				"    order to find out which ones expired, they're grouped in CacheSessionContainers.\n" +
@@ -126,8 +121,8 @@ public class CacheCfMod extends ConfigModule
 				"    is changed in datastore.\n" +
 				"    Default: org.nightlabs.jfire.jdo.cache.bridge.JdoCacheBridgeJPOX\n";
 
-		if (delayNotificationMSec < 0)
-			setDelayNotificationMSec(500);
+//		if (delayNotificationMSec < 0)
+//			setDelayNotificationMSec(500);
 
 		if (notificationIntervalMSec < 100)
 			setNotificationIntervalMSec(3 * 1000);
@@ -183,15 +178,15 @@ public class CacheCfMod extends ConfigModule
 		}
 	}
 
-	public long getDelayNotificationMSec()
-	{
-		return delayNotificationMSec;
-	}
-	public void setDelayNotificationMSec(long delayNotificationMSec)
-	{
-		this.delayNotificationMSec = delayNotificationMSec;
-		setChanged();
-	}
+//	public long getDelayNotificationMSec()
+//	{
+//		return delayNotificationMSec;
+//	}
+//	public void setDelayNotificationMSec(long delayNotificationMSec)
+//	{
+//		this.delayNotificationMSec = delayNotificationMSec;
+//		setChanged();
+//	}
 
 	/**
 	 * @return Returns the cacheSessionContainerActivityMSec.

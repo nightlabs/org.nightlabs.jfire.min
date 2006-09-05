@@ -45,17 +45,15 @@ import javax.naming.NamingException;
 import javax.transaction.TransactionManager;
 
 import org.apache.log4j.Logger;
-import org.nightlabs.jfire.jdo.cache.CacheManagerFactory;
-import org.nightlabs.jfire.jdo.cache.LocalDirtyListener;
-import org.nightlabs.jfire.jdo.organisationsync.IncomingChangeListenerDescriptor;
-import org.nightlabs.jfire.jdo.organisationsync.OutgoingChangeListenerDescriptor;
-import org.nightlabs.jfire.jdo.organisationsync.SyncContext;
-import org.nightlabs.jfire.jdo.organisationsync.id.SyncContextID;
-import org.nightlabs.jfire.servermanager.ra.JFireServerManagerFactoryImpl;
-
 import org.nightlabs.ModuleException;
 import org.nightlabs.jdo.ObjectID;
 import org.nightlabs.jdo.ObjectIDUtil;
+import org.nightlabs.jfire.jdo.cache.CacheManagerFactory;
+import org.nightlabs.jfire.jdo.cache.DirtyObjectID;
+import org.nightlabs.jfire.jdo.cache.LocalDirtyListener;
+import org.nightlabs.jfire.jdo.cache.DirtyObjectID.LifecycleStage;
+import org.nightlabs.jfire.jdo.organisationsync.id.SyncContextID;
+import org.nightlabs.jfire.servermanager.ra.JFireServerManagerFactoryImpl;
 
 public class OrganisationSyncManagerFactory implements Serializable
 {
@@ -121,9 +119,12 @@ public class OrganisationSyncManagerFactory implements Serializable
 
 		CacheManagerFactory.getCacheManagerFactory(ctx, organisationID)
 				.addLocalDirtyListener(new LocalDirtyListener() {
-					public void notifyDirtyObjectIDs(Collection objectIDs)
+					public void notifyDirtyObjectIDs(Map<LifecycleStage, Map<Object, DirtyObjectID>> dirtyObjectIDs)
 					{
-						makeDirty(objectIDs);
+						// TODO handle all other LifecylceStages!
+						Map<Object, DirtyObjectID> m = dirtyObjectIDs.get(DirtyObjectID.LifecycleStage.DIRTY);
+						if (m != null)
+							makeDirty(m.keySet());
 					}
 				});
 

@@ -84,13 +84,13 @@ implements Serializable
 			throw new IllegalStateException("This CacheSessionContainer (createDT="+createDT+") is right now closing all cache sessions or has done this already! Why the hell are you trying to add a CacheSession??? This should not be the active container!");
 
 		if (cacheSession.getCacheSessionContainer() != this)
-			throw new IllegalArgumentException("cacheSession.getCacheSessionContainer() != this!!! cacheSession.cacheSessionID=\""+cacheSession.getCacheSessionID()+"\"");
+			throw new IllegalArgumentException("cacheSession.getCacheSessionContainer() != this!!! cacheSession.cacheSessionID=\""+cacheSession.getSessionID()+"\"");
 
 		if (logger.isDebugEnabled())
-			logger.debug("Adding CacheSession (cacheSessionID=\""+cacheSession.getCacheSessionID()+"\") to CacheSessionContainer (createDT="+createDT+")");
+			logger.debug("Adding CacheSession (cacheSessionID=\""+cacheSession.getSessionID()+"\") to CacheSessionContainer (createDT="+createDT+")");
 
 		synchronized (cacheSessions) {
-			cacheSessions.put(cacheSession.getCacheSessionID(), cacheSession);
+			cacheSessions.put(cacheSession.getSessionID(), cacheSession);
 		}
 	}
 
@@ -108,10 +108,10 @@ implements Serializable
 			return;
 
 		if (logger.isDebugEnabled())
-			logger.debug("Removing CacheSession (cacheSessionID=\""+cacheSession.getCacheSessionID()+"\") from CacheSessionContainer (createDT="+createDT+")");
+			logger.debug("Removing CacheSession (cacheSessionID=\""+cacheSession.getSessionID()+"\") from CacheSessionContainer (createDT="+createDT+")");
 
 		synchronized (cacheSessions) {
-			cacheSessions.remove(cacheSession.getCacheSessionID());
+			cacheSessions.remove(cacheSession.getSessionID());
 		}
 	}
 

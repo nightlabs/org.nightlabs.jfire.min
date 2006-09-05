@@ -44,26 +44,40 @@ implements Serializable
 	}
 
 	private LifecycleStage lifecycleStage;
-	private long createDT;
-	private long changeDT;
+//	private long createDT;
+//	private long changeDT;
 	private Object objectID;
 	private Set<String> sourceSessionIDs;
+	private long serial;
 
-	/**
-	 * @param objectID The jdo object id.
-	 * @param sourceSessionID The session which caused this object to be dirty.
-	 */
-	public DirtyObjectID(Object objectID, String sourceSessionID, LifecycleStage lifecycleStage)
+	public DirtyObjectID(Object objectID, LifecycleStage lifecycleStage, long serial)
 	{
 		this.lifecycleStage = lifecycleStage;
-		this.createDT = System.currentTimeMillis();
-		this.changeDT = System.currentTimeMillis();
+//		this.createDT = System.currentTimeMillis();
+//		this.changeDT = System.currentTimeMillis();
 		this.objectID = objectID;
-		this.sourceSessionIDs = new HashSet<String>(1);
-		this.sourceSessionIDs.add(sourceSessionID);
+		this.serial = serial;
+		this.sourceSessionIDs = new HashSet<String>();
 	}
 
-	public LifecycleStage getLifecycleType()
+//	/**
+//	 * @param objectID The jdo object id.
+//	 * @param sourceSessionID The session which caused this object to be dirty.
+//	 * @param lifecycleStage What happened (new, dirty, deleted)
+//	 * @param serial A serial obtained by {@link CacheManagerFactory#nextDirtyObjectIDSerial()}. See {@link #getSerial()}.
+//	 */
+//	public DirtyObjectID(Object objectID, String sourceSessionID, LifecycleStage lifecycleStage, long serial)
+//	{
+//		this.lifecycleStage = lifecycleStage;
+////		this.createDT = System.currentTimeMillis();
+////		this.changeDT = System.currentTimeMillis();
+//		this.objectID = objectID;
+//		this.serial = serial;
+//		this.sourceSessionIDs = new HashSet<String>(1);
+//		this.sourceSessionIDs.add(sourceSessionID);
+//	}
+
+	public LifecycleStage getLifecycleStage()
 	{
 		return lifecycleStage;
 	}
@@ -80,23 +94,39 @@ implements Serializable
 	public void addSourceSessionID(String _sourceSessionID)
 	{
 		this.sourceSessionIDs.add(_sourceSessionID);
-		this.changeDT = System.currentTimeMillis();
+//		this.changeDT = System.currentTimeMillis();
 	}
 	public void addSourceSessionIDs(Collection<String> _sourceSessionIDs)
 	{
 		this.sourceSessionIDs.addAll(_sourceSessionIDs);
-		this.changeDT = System.currentTimeMillis();
+//		this.changeDT = System.currentTimeMillis();
 	}
 	public Object getObjectID()
 	{
 		return objectID;
 	}
-	public long getCreateDT()
+	/**
+	 * The serial is used to find out which {@link DirtyObjectID} is newer when comparing two of them.
+	 * It is not the ID of a <code>DirtyObjectID</code> instance. For example, it will be replaced by
+	 * a new one, when multiple changes happened and are merged into one <code>DirtyObjectID</code> instance
+	 * (in this case, the highest = newest number will be used).
+	 *
+	 * @return Returns the serial that has been passed to the constructor or set via {@link #setSerial(long)}.
+	 */
+	public long getSerial()
 	{
-		return createDT;
+		return serial;
 	}
-	public long getChangeDT()
+	public void setSerial(long serial)
 	{
-		return changeDT;
+		this.serial = serial;
 	}
+//	public long getCreateDT()
+//	{
+//		return createDT;
+//	}
+//	public long getChangeDT()
+//	{
+//		return changeDT;
+//	}
 }

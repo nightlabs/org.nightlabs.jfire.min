@@ -262,12 +262,12 @@ public class Lookup
 	}
 
 	/**
-	 * @see CacheManagerFactory#getCacheManager(String)
+	 * @see CacheManagerFactory#getCacheManager(JFirePrincipal)
 	 */
-	public CacheManager getCacheManager(String cacheSessionID)
+	public CacheManager getCacheManager(JFirePrincipal principal)
 	throws ModuleException
 	{
-		return getCacheManagerFactory().getCacheManager(cacheSessionID);
+		return getCacheManagerFactory().getCacheManager(principal);
 	}
 
 //	public TransactionManager getTransactionManager()

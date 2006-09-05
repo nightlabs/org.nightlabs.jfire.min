@@ -360,7 +360,7 @@ public class JFireServerManagerFactoryImpl
 			String organisationID = organisation.getOrganisationID();
 
 			try {
-				new CacheManagerFactory(initialContext, organisation, cacheCfMod); // registers itself in JNDI
+				new CacheManagerFactory(this, initialContext, organisation, cacheCfMod); // registers itself in JNDI
 			} catch (Exception e) {
 				logger.error("Creating CacheManagerFactory for organisation \""+organisationID+"\" failed!", e);
 				throw new ResourceException(e.getMessage());
@@ -1280,7 +1280,7 @@ public class JFireServerManagerFactoryImpl
 
 					// create the CacheManagerFactory for the new organisation
 					try {
-						CacheManagerFactory cmf = new CacheManagerFactory(ctx, organisationCf, cacheCfMod); // registers itself in JNDI
+						CacheManagerFactory cmf = new CacheManagerFactory(this, ctx, organisationCf, cacheCfMod); // registers itself in JNDI
 
 						// register the cache's JDO-listeners in the PersistenceManagerFactory
 						PersistenceManagerFactory pmf = getPersistenceManagerFactory(organisationID);

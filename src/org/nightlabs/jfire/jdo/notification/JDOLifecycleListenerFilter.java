@@ -4,13 +4,13 @@ package org.nightlabs.jfire.jdo.notification;
 public abstract class JDOLifecycleListenerFilter
 		implements IJDOLifecycleListenerFilter
 {
-	private long filterID = -1;
+	private AbsoluteFilterID filterID = null;
 
-	public long getFilterID()
+	public AbsoluteFilterID getFilterID()
 	{
 		return filterID;
 	}
-	public void setFilterID(long filterID)
+	public void setFilterID(AbsoluteFilterID filterID)
 	{
 		this.filterID = filterID;
 	}
