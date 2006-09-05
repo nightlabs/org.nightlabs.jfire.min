@@ -18,7 +18,7 @@ import javax.security.auth.login.LoginContext;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.ModuleException;
-import org.nightlabs.jfire.asyncinvoke.AuthCallbackHandler;
+import org.nightlabs.jfire.base.AuthCallbackHandler;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.servermanager.JFireServerManager;

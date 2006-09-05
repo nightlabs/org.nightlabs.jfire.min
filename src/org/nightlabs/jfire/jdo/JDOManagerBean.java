@@ -27,8 +27,8 @@
 package org.nightlabs.jfire.jdo;
 
 import java.rmi.RemoteException;
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -38,19 +38,20 @@ import javax.ejb.SessionBean;
 import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 
+import org.nightlabs.ModuleException;
+import org.nightlabs.jdo.ObjectID;
+import org.nightlabs.jdo.ObjectIDUtil;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.jdo.cache.CacheManager;
+import org.nightlabs.jfire.jdo.cache.NotificationBundle;
 import org.nightlabs.jfire.jdo.controller.JDOObjectChangeEvent;
 import org.nightlabs.jfire.jdo.controller.JDOObjectController;
 import org.nightlabs.jfire.jdo.controller.JDOObjectSyncResult;
+import org.nightlabs.jfire.jdo.notification.AbsoluteFilterID;
+import org.nightlabs.jfire.jdo.notification.IJDOLifecycleListenerFilter;
 import org.nightlabs.jfire.jdo.organisationsync.DirtyObjectIDCarrier;
 import org.nightlabs.jfire.jdo.organisationsync.IncomingChangeListenerDescriptor;
 import org.nightlabs.jfire.jdo.organisationsync.id.IncomingChangeListenerDescriptorID;
-
-import org.nightlabs.ModuleException;
-import org.nightlabs.jfire.jdo.JDOManager;
-import org.nightlabs.jdo.ObjectID;
-import org.nightlabs.jdo.ObjectIDUtil;
 
 
 /**
@@ -132,7 +133,7 @@ implements SessionBean
 			Collection addObjectIDs)
 	throws ModuleException
 	{
-		CacheManager cm = getLookup().getCacheManager(getSessionID());
+		CacheManager cm = getLookup().getCacheManager(getPrincipal());
 
 		if (removeObjectIDs != null)
 			cm.removeChangeListeners(removeObjectIDs);
@@ -160,8 +161,32 @@ implements SessionBean
 			Set subscribedObjectIDs)
 	throws ModuleException
 	{
-		CacheManager cm = getLookup().getCacheManager(getSessionID());
+		CacheManager cm = getLookup().getCacheManager(getPrincipal());
 		cm.resubscribeAllChangeListeners(subscribedObjectIDs);
+	}
+
+	/**
+	 * @ejb.interface-method
+	 * @ejb.permission role-name="_Guest_"
+	 * @ejb.transaction type = "Supports"
+	 */
+	public void addLifecycleListenerFilters(Collection<IJDOLifecycleListenerFilter> filters)
+	throws ModuleException
+	{
+		CacheManager cm = getLookup().getCacheManager(getPrincipal());
+		cm.addLifecycleListenerFilters(filters);
+	}
+
+	/**
+	 * @ejb.interface-method
+	 * @ejb.permission role-name="_Guest_"
+	 * @ejb.transaction type = "Supports"
+	 */
+	public void removeLifecycleListenerFilters(Set<Long> filterIDs)
+	throws ModuleException
+	{
+		CacheManager cm = getLookup().getCacheManager(getPrincipal());
+		cm.removeLifecycleListenerFilters(filterIDs);
 	}
 
 	/**
@@ -176,7 +201,7 @@ implements SessionBean
 	public void closeCacheSession()
 	throws ModuleException
 	{
-		CacheManager cm = getLookup().getCacheManager(getSessionID());
+		CacheManager cm = getLookup().getCacheManager(getPrincipal());
 		cm.closeCacheSession();
 	}
 
@@ -192,8 +217,9 @@ implements SessionBean
 	 * @param waitTimeout The time in milliseconds defining how long this
 	 *		method shall wait for changes, before it returns <tt>null</tt>.
 	 *
-	 * @return Returns either <tt>null</tt> if nothing changed or a <tt>Collection</tt>
-	 *		of object ids.
+	 * @return Returns either <tt>null</tt> if nothing changed or a {@link NotificationBundle}
+	 *		of object ids. Hence {@link NotificationBundle#isEmpty()} will never return <code>true</code>
+	 *		(<code>null</code> would have been returned instead of a <code>NotificationBundle</code>).
 	 *
 	 * @see CacheManager#waitForChanges(long)
 	 *
@@ -201,10 +227,10 @@ implements SessionBean
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type = "Supports"
 	 */
-	public Collection waitForChanges(long waitTimeout)
+	public NotificationBundle waitForChanges(long waitTimeout)
 	throws ModuleException
 	{
-		CacheManager cm = getLookup().getCacheManager(getSessionID());
+		CacheManager cm = getLookup().getCacheManager(getPrincipal());
 		return cm.waitForChanges(waitTimeout);
 	}
 

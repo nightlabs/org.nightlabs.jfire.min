@@ -26,18 +26,16 @@
 
 package org.nightlabs.jfire.asyncinvoke;
 
-import java.util.Hashtable;
-import java.util.Properties;
-
 import javax.jms.ObjectMessage;
 import javax.naming.InitialContext;
 import javax.naming.NameNotFoundException;
 import javax.security.auth.login.LoginContext;
 
 import org.apache.log4j.Logger;
+import org.nightlabs.jdo.ObjectIDUtil;
+import org.nightlabs.jfire.base.AuthCallbackHandler;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.servermanager.JFireServerManagerFactory;
-import org.nightlabs.jfire.servermanager.config.ServerCf;
 import org.nightlabs.jfire.servermanager.j2ee.SecurityReflector;
 
 
@@ -187,7 +185,7 @@ implements javax.ejb.MessageDrivenBean, javax.jms.MessageListener
 				JFireServerManager ism = ismf.getJFireServerManager();
 				try {
 					loginContext = new LoginContext(
-							"jfire", new AuthCallbackHandler(ism, envelope));
+							"jfire", createAuthCallbackHandler(ism, envelope));
 
 					loginContext.login();
 					try {
@@ -216,6 +214,14 @@ implements javax.ejb.MessageDrivenBean, javax.jms.MessageListener
 			logger.fatal("Processing message failed!", x);
 			messageContext.setRollbackOnly();
 		}
+	}
+
+	private static AuthCallbackHandler createAuthCallbackHandler(JFireServerManager ism, AsyncInvokeEnvelope envelope) {
+		SecurityReflector.UserDescriptor caller = envelope.getCaller();
+		return new AuthCallbackHandler(ism,
+				caller.getOrganisationID(),
+				caller.getUserID(),
+				ObjectIDUtil.makeValidIDString(null, true));
 	}
 
 	private static final boolean pseudoExternalInvoke = false;
