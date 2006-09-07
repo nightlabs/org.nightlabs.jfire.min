@@ -128,9 +128,11 @@ implements SessionBean
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type = "Supports"
 	 */
-	public void removeAddChangeListeners(
-			Collection removeObjectIDs,
-			Collection addObjectIDs)
+	public void removeAddListeners(
+			Collection<Object> removeObjectIDs,
+			Collection<Object> addObjectIDs,
+			Collection<IJDOLifecycleListenerFilter> addFilters,
+			Collection<Long> removeFilterIDs)
 	throws ModuleException
 	{
 		CacheManager cm = getLookup().getCacheManager(getPrincipal());
@@ -140,6 +142,12 @@ implements SessionBean
 
 		if (addObjectIDs != null)
 			cm.addChangeListeners(addObjectIDs);
+
+		if (addFilters != null)
+			cm.addLifecycleListenerFilters(addFilters);
+
+		if (removeFilterIDs != null)
+			cm.removeLifecycleListenerFilters(removeFilterIDs);
 	}
 
 	/**
@@ -157,12 +165,13 @@ implements SessionBean
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type = "Supports"
 	 */
-	public void resubscribeAllChangeListeners(
-			Set subscribedObjectIDs)
+	public void resubscribeAllListeners(
+			Set<Object> subscribedObjectIDs,
+			Collection<IJDOLifecycleListenerFilter> filters)
 	throws ModuleException
 	{
 		CacheManager cm = getLookup().getCacheManager(getPrincipal());
-		cm.resubscribeAllChangeListeners(subscribedObjectIDs);
+		cm.resubscribeAllListeners(subscribedObjectIDs, filters);
 	}
 
 	/**
