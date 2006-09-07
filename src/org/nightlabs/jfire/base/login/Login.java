@@ -47,6 +47,7 @@ import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtension;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Display;
@@ -61,9 +62,12 @@ import org.nightlabs.j2ee.InitialContextProvider;
 import org.nightlabs.jfire.base.JFireBasePlugin;
 import org.nightlabs.jfire.base.j2ee.JFireJ2EEPlugin;
 import org.nightlabs.jfire.base.jdo.cache.Cache;
+import org.nightlabs.jfire.base.security.UserDAO;
 import org.nightlabs.jfire.classloader.JFireRCDLDelegate;
 import org.nightlabs.jfire.classloader.JFireRCLBackend;
 import org.nightlabs.jfire.classloader.JFireRCLBackendUtil;
+import org.nightlabs.jfire.security.User;
+import org.nightlabs.jfire.security.id.UserID;
 import org.nightlabs.math.Base62Coder;
 
 /**
@@ -630,6 +634,13 @@ implements InitialContextProvider
 		return workstationID;
 	}
 
+	public User getUser(String fetchGroups[], int maxFetchDepth, IProgressMonitor monitor) {
+		return UserDAO.sharedInstance().getUser(
+				UserID.create(organisationID, userID), 
+				fetchGroups, maxFetchDepth, monitor
+			);
+	}
+	
 
 	public JFireLoginContext getLoginContext() {
 		return loginContext;
