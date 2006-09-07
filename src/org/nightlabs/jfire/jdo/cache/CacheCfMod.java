@@ -36,6 +36,8 @@ import org.nightlabs.jfire.jdo.cache.bridge.JdoCacheBridgeJPOX;
  */
 public class CacheCfMod extends ConfigModule
 {
+	private static final long serialVersionUID = 1L;
+
 	/**
 	 * LOG4J logger used by this class
 	 */
@@ -44,7 +46,6 @@ public class CacheCfMod extends ConfigModule
 	private String documentation;
 
 	private long notificationIntervalMSec = 0;
-//	private long delayNotificationMSec = -1;
 
 	private long cacheSessionContainerActivityMSec = 0;
 	private int cacheSessionContainerCount = 0;
@@ -66,10 +67,6 @@ public class CacheCfMod extends ConfigModule
 	public void init() throws InitException
 	{
 		documentation = "This is the documentation for the settings in this ConfigModule.\n" +
-//				"\n" +
-//				"  delayNotificationMSec: How long in milliseconds to wait before forwarding a\n" +
-//				"    notification to the interested listeners. The delay is realized in the\n" +
-//				"    method CacheSession#fetchDirtyObjectIDs(). Default is 500.\n" +
 				"\n" +
 				"* notificationIntervalMSec: The length of the interval in millisec, in which the\n" +
 				"    NotificationThread will check changed objects and trigger events. Default\n" +
@@ -89,18 +86,20 @@ public class CacheCfMod extends ConfigModule
 				"    be active, before it will be replaced by a new one (and rolled through the\n" +
 				"    LinkedList. Default is 300000 (5 min). Minimum is 1 min and maximum 30 min.\n" +
 				"\n" +
-				"* freshDirtyObjectIDContainerCount: While one client is loading an object, another\n" +
-				"    client might simultaneously modify this object. In this case, the listener from\n" +
-				"    the first client will be established too late (after the change happened). This\n" +
-				"    would cause the first client to miss this modification completely. To avoid this,\n" +
-				"    modifications are considered to be fresh for a certain time. Whenever a client\n" +
-				"    registers a new listener, the system checks whether the target-object has been\n" +
-				"    modified by ANOTHER session during this freshness-period. If so, the new listener\n" +
-				"    will be triggered. Like for cache sessions, we use a rolling mechanism to enhance\n" +
-				"    performance. This setting controls how many buckets there are. Hence, the time,\n" +
-				"    in which a change is considered to be fresh, is:\n" +
-				"    freshDirtyObjectIDContainerCount * freshDirtyObjectIDContainerActivityMSec\n" +
-				"    Default is 9. Minimum is 2 and maximum is 100.\n" +
+				"* freshDirtyObjectIDContainerCount: While one client is loading an object, another\n"+
+		    "    client might simultaneously modify this object. In this case, the listener from\n"+
+		    "    the first client will be established too late (after the change happened). This\n"+
+		    "    would cause the first client to miss this modification completely. To avoid this,\n"+
+		    "    modifications are considered to be fresh for a certain time. Whenever a client\n"+
+		    "    registers a new implicit listener, the system checks whether the target-object has been\n"+
+		    "    modified by ANOTHER session during this freshness-period. In contrast to implicit\n"+
+		    "    listeners, changes by the same session are included, when registering explicit\n"+
+		    "    listeners. If fresh changes match the new listener, it will be triggered immediately.\n"+
+		    "    Like for cache sessions, we use a rolling mechanism to enhance performance.\n"+
+		    "    This setting controls how many buckets there are. Hence, the time, in which a\n"+
+		    "    change is considered to be fresh, is:\n"+
+		    "    freshDirtyObjectIDContainerCount * freshDirtyObjectIDContainerActivityMSec\n"+
+				"    Default is 9. Minimum is 2 and maximum is 100.\n"+
 				"\n" +
 				"* freshDirtyObjectIDContainerActivityMSec: How long is the active bucket active,\n" +
 				"    before being replaced by a new one. Default is 20000 millisec. Minimum is 1 sec\n" +
@@ -121,14 +120,8 @@ public class CacheCfMod extends ConfigModule
 				"    is changed in datastore.\n" +
 				"    Default: org.nightlabs.jfire.jdo.cache.bridge.JdoCacheBridgeJPOX\n";
 
-//		if (delayNotificationMSec < 0)
-//			setDelayNotificationMSec(500);
-
 		if (notificationIntervalMSec < 100)
 			setNotificationIntervalMSec(3 * 1000);
-
-//		if (cacheSessionContainerCheckIntervalMSec < 10)
-//			setCacheSessionContainerCheckIntervalMSec(2 * 60 * 1000);
 
 		if (cacheSessionContainerActivityMSec < 60 * 1000 || 30 * 60 * 1000 < cacheSessionContainerActivityMSec)
 			setCacheSessionContainerActivityMSec(5 * 60 * 1000);
@@ -167,7 +160,6 @@ public class CacheCfMod extends ConfigModule
 		if (logger.isDebugEnabled()) {
 			logger.debug("The Cache settings are:");
 			logger.debug("      notificationIntervalMSec=" + notificationIntervalMSec);
-//			LOGGER.debug("      cacheSessionContainerCheckIntervalMSec=" + cacheSessionContainerCheckIntervalMSec);
 			logger.debug("      cacheSessionContainerActivityMSec=" + cacheSessionContainerActivityMSec);
 			logger.debug("      cacheSessionContainerCount=" + cacheSessionContainerCount);
 			logger.debug("      freshDirtyObjectIDContainerActivityMSec=" + freshDirtyObjectIDContainerActivityMSec);
@@ -177,16 +169,6 @@ public class CacheCfMod extends ConfigModule
 			logger.debug("      jdoCacheBridgeClassName=" + jdoCacheBridgeClassName);
 		}
 	}
-
-//	public long getDelayNotificationMSec()
-//	{
-//		return delayNotificationMSec;
-//	}
-//	public void setDelayNotificationMSec(long delayNotificationMSec)
-//	{
-//		this.delayNotificationMSec = delayNotificationMSec;
-//		setChanged();
-//	}
 
 	/**
 	 * @return Returns the cacheSessionContainerActivityMSec.
@@ -204,22 +186,6 @@ public class CacheCfMod extends ConfigModule
 		this.cacheSessionContainerActivityMSec = cacheSessionContainerActivityMSec;
 		setChanged();
 	}
-//	/**
-//	 * @return Returns the cacheSessionContainerCheckIntervalMSec.
-//	 */
-//	public long getCacheSessionContainerCheckIntervalMSec()
-//	{
-//		return cacheSessionContainerCheckIntervalMSec;
-//	}
-//	/**
-//	 * @param cacheSessionContainerCheckIntervalMSec The cacheSessionContainerCheckIntervalMSec to set.
-//	 */
-//	public void setCacheSessionContainerCheckIntervalMSec(
-//			long cacheSessionContainerCheckIntervalMSec)
-//	{
-//		this.cacheSessionContainerCheckIntervalMSec = cacheSessionContainerCheckIntervalMSec;
-//		setChanged();
-//	}
 	/**
 	 * @return Returns the cacheSessionContainerCount.
 	 */
