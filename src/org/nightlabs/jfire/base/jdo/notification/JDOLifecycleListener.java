@@ -15,5 +15,5 @@ public interface JDOLifecycleListener
 	 *
 	 * @param event The event containing detailed information about what happened.
 	 */
-	void notifyLifecycleEvent(JDOLifecycleEvent event);
+	void notify(JDOLifecycleEvent event);
 }

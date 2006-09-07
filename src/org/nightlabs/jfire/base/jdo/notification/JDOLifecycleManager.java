@@ -1,5 +1,6 @@
 package org.nightlabs.jfire.base.jdo.notification;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -9,6 +10,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.swing.SwingUtilities;
+
+import org.apache.log4j.Logger;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.swt.widgets.Display;
+import org.nightlabs.base.notification.NotificationListenerJob;
+import org.nightlabs.base.notification.NotificationListenerSWTThreadAsync;
+import org.nightlabs.base.notification.NotificationListenerSWTThreadSync;
 import org.nightlabs.base.notification.NotificationManager;
 import org.nightlabs.jfire.base.jdo.cache.Cache;
 import org.nightlabs.jfire.jdo.cache.DirtyObjectID;
@@ -57,8 +69,9 @@ import org.nightlabs.notification.NotificationEvent;
  * @author Marco Schulze - marco at nightlabs dot de
  */
 public class JDOLifecycleManager
-		extends NotificationManager
+extends NotificationManager
 {
+	private static final Logger logger = Logger.getLogger(JDOLifecycleManager.class);
 	private static JDOLifecycleManager _sharedInstance = null;
 
 	public static JDOLifecycleManager sharedInstance()
@@ -95,6 +108,100 @@ public class JDOLifecycleManager
 		}
 	}
 
+	public void notify(Long filterID, final JDOLifecycleEvent event)
+	{
+		final JDOLifecycleListener listener = getLifecycleListener(filterID);
+		if (listener == null)
+			logger.error("No listener found for filterID="+filterID);
+
+		if (notifyRCP(filterID, event, listener))
+			return;
+
+		if (listener instanceof JDOLifecycleListenerCallerThread) {
+			listener.notify(event);
+		}
+		else if (listener instanceof JDOLifecycleListenerWorkerThreadAsync) {
+			Thread worker = new Thread() {
+				public void run() {
+					listener.notify(event);
+				}
+			};
+			worker.start();
+		}
+		else if (listener instanceof JDOLifecycleListenerAWTThreadSync) {
+			try {
+				SwingUtilities.invokeAndWait(new Runnable() {
+					public void run() {
+						listener.notify(event);
+					}
+				});
+			} catch (InterruptedException e) {
+				throw new RuntimeException(e);
+			} catch (InvocationTargetException e) {
+				throw new RuntimeException(e);
+			}
+		}
+		else if (listener instanceof JDOLifecycleListenerAWTThreadAsync) {
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					listener.notify(event);
+				}
+			});
+		}
+		else
+			throw new IllegalArgumentException("listener does not implement one of the supported interfaces: " + listener);
+	}
+
+	private boolean notifyRCP(Long filterID, final JDOLifecycleEvent event, final JDOLifecycleListener listener)
+	{
+		if (listener instanceof JDOLifecycleListenerJob) {
+			JDOLifecycleListenerJob l = (JDOLifecycleListenerJob) listener;
+
+			Job job = l.getJob(event);
+			if (job == null) {
+				String jobName = l.getJobName();
+				if (jobName == null)
+					jobName = "Processing JDOLifecycle";
+
+				job = new Job(jobName) {
+					protected IStatus run(IProgressMonitor monitor)
+					{
+						((JDOLifecycleListenerJob)listener).setProgressMonitor(monitor);
+						((JDOLifecycleListenerJob)listener).notify(event);
+
+						return Status.OK_STATUS;
+					}
+				};
+				job.setRule(l.getRule());
+				job.setPriority(l.getPriority());
+				job.setUser(l.isUser());
+				job.setSystem(l.isSystem());
+			}
+			job.schedule(l.getDelay());
+			return true;
+		}
+		else if (listener instanceof JDOLifecycleListenerSWTThreadAsync) {
+			Display.getDefault().asyncExec(new Runnable() {
+				public void run()
+				{
+					listener.notify(event);
+				}
+			});
+			return true;
+		}
+		else if (listener instanceof JDOLifecycleListenerSWTThreadSync) {
+			Display.getDefault().syncExec(new Runnable() {
+				public void run()
+				{
+					listener.notify(event);
+				}
+			});
+			return true;
+		}
+		else
+			return false;
+	}
+
 	/**
 	 * This method adds a {@link JDOLifecycleListener}. If it has already been added
 	 * before, this method silently returns without any action.
@@ -106,6 +213,15 @@ public class JDOLifecycleManager
 		// check param
 		if (listener == null)
 			throw new IllegalArgumentException("listener must not be null!");
+
+		if (!(listener instanceof JDOLifecycleListenerAWTThreadAsync) &&
+				!(listener instanceof JDOLifecycleListenerAWTThreadSync) &&
+				!(listener instanceof JDOLifecycleListenerCallerThread) &&
+				!(listener instanceof JDOLifecycleListenerJob) &&
+				!(listener instanceof JDOLifecycleListenerSWTThreadAsync) &&
+				!(listener instanceof JDOLifecycleListenerSWTThreadSync) &&
+				!(listener instanceof JDOLifecycleListenerWorkerThreadAsync))
+			throw new IllegalArgumentException("listener does not implement one of the supported interfaces: " + listener.getClass().getName());
 
 		// is it already registered?
 		synchronized (lifecycleListeners) {
@@ -138,17 +254,6 @@ public class JDOLifecycleManager
 		}
 
 		Cache.sharedInstance().addLifecycleListenerFilter(jdoLifecycleListenerFilter, 0);
-
-		// TODO we need to put the filter into the Cache, which then registers it in the server. NOT directly do it here!
-//		try {
-//			Login.getLogin();
-//			JDOManager m = JDOManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
-//			ArrayList<IJDOLifecycleListenerFilter> filters = new ArrayList<IJDOLifecycleListenerFilter>(1);
-//			filters.add(jdoLifecycleListenerFilter);
-//			m.addLifecycleListenerFilters(filters);
-//		} catch (Exception x) {
-//			throw new RuntimeException(x);
-//		}
 	}
 
 	public void removeLifecycleListener(JDOLifecycleListener listener)
@@ -166,17 +271,6 @@ public class JDOLifecycleManager
 		}
 
 		Cache.sharedInstance().removeLifecycleListenerFilter(jdoLifecycleListenerFilter, 0);
-
-		// TODO we need to do this asynchronously via the cache!!!
-//		try {
-//			Login.getLogin();
-//			JDOManager m = JDOManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
-//			HashSet<Long> filterIDs = new HashSet<Long>(1);
-//			filterIDs.add(jdoLifecycleListenerFilter.getFilterID().getFilterID());
-//			m.removeLifecycleListenerFilters(filterIDs);
-//		} catch (Exception x) {
-//			throw new RuntimeException(x);
-//		}
 	}
 
 	private Set<JDOLifecycleListener> lifecycleListeners = new HashSet<JDOLifecycleListener>();

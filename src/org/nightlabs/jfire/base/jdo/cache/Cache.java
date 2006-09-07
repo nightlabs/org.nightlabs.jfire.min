@@ -169,21 +169,22 @@ public class Cache
 								Long filterID = me.getKey();
 								SortedSet<DirtyObjectID> dirtyObjectIDs = me.getValue();
 
-								JDOLifecycleListener listener = JDOLifecycleManager.sharedInstance().getLifecycleListener(filterID);
-								if (listener == null)
-									logger.error("No listener found for filterID="+filterID);
-								else {
-									if (logger.isDebugEnabled()) {
-										logger.debug("Triggering listener (filterID=" + filterID + ") with " + dirtyObjectIDs.size() + " dirtyObjectIDs:");
-										for (DirtyObjectID dirtyObjectID : dirtyObjectIDs) {
-											if (logger.isDebugEnabled())
-												logger.debug("  " + dirtyObjectID);
-										}
-									}
-
-									JDOLifecycleEvent event = new JDOLifecycleEvent(cache, dirtyObjectIDs);
-									listener.notifyLifecycleEvent(event);
-								}
+								JDOLifecycleManager.sharedInstance().notify(filterID, new JDOLifecycleEvent(cache, dirtyObjectIDs));
+//								JDOLifecycleListener listener = JDOLifecycleManager.sharedInstance().getLifecycleListener(filterID);
+//								if (listener == null)
+//									logger.error("No listener found for filterID="+filterID);
+//								else {
+//									if (logger.isDebugEnabled()) {
+//										logger.debug("Triggering listener (filterID=" + filterID + ") with " + dirtyObjectIDs.size() + " dirtyObjectIDs:");
+//										for (DirtyObjectID dirtyObjectID : dirtyObjectIDs) {
+//											if (logger.isDebugEnabled())
+//												logger.debug("  " + dirtyObjectID);
+//										}
+//									}
+//
+//									JDOLifecycleEvent event = new JDOLifecycleEvent(cache, dirtyObjectIDs);
+//									listener.notify(event);
+//								}
 							}
 						} // if (filterID2DirtyObjectIDs != null) {
 					}
