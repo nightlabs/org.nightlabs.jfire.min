@@ -31,6 +31,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
@@ -177,11 +178,11 @@ implements Serializable
 	/**
 	 * @return Returns the subscribed object IDs in form of an unmodifiable copy of the internal set.
 	 */
-	public Set getSubscribedObjectIDs()
+	public Set<Object> getSubscribedObjectIDs()
 	{
 		assertOpen();
 
-		Set res = _subscribedObjectIDs;
+		Set<Object> res = _subscribedObjectIDs;
 		if (res == null) {
 			synchronized (subscribedObjectIDs) {
 				_subscribedObjectIDs = Collections.unmodifiableSet(
@@ -567,5 +568,74 @@ implements Serializable
 			if (cacheSessionContainer != null)
 				cacheSessionContainer.addCacheSession(this);
 		}
+	}
+
+	public static class ResubscribeResult
+	{
+		public LinkedList<Object> objectIDsRemoved = new LinkedList<Object>();
+		public LinkedList<Object> objectIDsAdded = new LinkedList<Object>();
+		public LinkedList<IJDOLifecycleListenerFilter> filtersRemoved = new LinkedList<IJDOLifecycleListenerFilter>();
+		public LinkedList<IJDOLifecycleListenerFilter> filtersAdded = new LinkedList<IJDOLifecycleListenerFilter>();
+	}
+
+	public ResubscribeResult resubscribeAllListeners(
+			Set<Object> subscribedObjectIDs,
+			Collection<IJDOLifecycleListenerFilter> filters)
+	{
+		ResubscribeResult res = new ResubscribeResult();
+
+		synchronized (this.subscribedObjectIDs) {
+			LinkedList<Object> objectIDsToRemove = res.objectIDsRemoved;
+			LinkedList<Object> objectIDsToAdd = res.objectIDsAdded;
+
+			Set<Object> oldSubscribedObjectIDs = this.subscribedObjectIDs;
+
+			for (Iterator it = oldSubscribedObjectIDs.iterator(); it.hasNext();) {
+				Object objectID = it.next();
+				if (!subscribedObjectIDs.contains(objectID))
+					objectIDsToRemove.add(objectID);
+			}
+
+			for (Iterator it = subscribedObjectIDs.iterator(); it.hasNext();) {
+				Object objectID = it.next();
+				if (!oldSubscribedObjectIDs.contains(objectID))
+					objectIDsToAdd.add(objectID);
+			}
+
+			for (Object objectID : objectIDsToRemove)
+				unsubscribeObjectID(objectID);
+
+			for (Object objectID : objectIDsToAdd)
+				subscribeObjectID(objectID);
+		}
+
+		synchronized (this.filters) {
+			LinkedList<IJDOLifecycleListenerFilter> filtersToRemove = res.filtersRemoved;
+			LinkedList<IJDOLifecycleListenerFilter> filtersToAdd = res.filtersAdded;
+
+			Map<AbsoluteFilterID, IJDOLifecycleListenerFilter> oldFilters = this.filters;
+			Map<AbsoluteFilterID, IJDOLifecycleListenerFilter> newFilters = new HashMap<AbsoluteFilterID, IJDOLifecycleListenerFilter>(filters.size());
+			for (IJDOLifecycleListenerFilter filter : filters) {
+				newFilters.put(filter.getFilterID(), filter);
+			}
+
+			for (Map.Entry<AbsoluteFilterID, IJDOLifecycleListenerFilter> me : oldFilters.entrySet()) {
+				if (!newFilters.containsKey(me.getKey()))
+					filtersToRemove.add(me.getValue());
+			}
+
+			for (Map.Entry<AbsoluteFilterID, IJDOLifecycleListenerFilter> me : newFilters.entrySet()) {
+				if (!oldFilters.containsKey(me.getKey()))
+					filtersToAdd.add(me.getValue());
+			}
+
+			for (IJDOLifecycleListenerFilter filter : filtersToRemove)
+				removeFilter(filter.getFilterID());
+
+			for (IJDOLifecycleListenerFilter filter : filtersToAdd)
+				addFilter(filter);
+		}
+
+		return res;
 	}
 }

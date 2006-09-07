@@ -5,7 +5,7 @@
  * This library is free software; you can redistribute it and/or               *
  * modify it under the terms of the GNU Lesser General Public                  *
  * License as published by the Free Software Foundation; either                *
- * version 2.1 of the License, or (at your option) any later version.          *
+ * objectVersion 2.1 of the License, or (at your option) any later objectVersion.          *
  *                                                                             *
  * This library is distributed in the hope that it will be useful,             *
  * but WITHOUT ANY WARRANTY; without even the implied warranty of              *
@@ -32,8 +32,19 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Instances of this class are used for notifying interested listeners
+ * (including client-sided listeners - both implicit and explicit - as well as
+ * server-sided internal listeners) 
+ * <p>
+ * This class implements {@link Comparable}: Its natural order is sorted
+ * ascendingly by its serial (see {@link #getSerial()}).
+ * </p>
+ *
+ * @author Marco Schulze - marco at nightlabs dot de
+ */
 public class DirtyObjectID
-implements Serializable
+implements Serializable, Comparable<DirtyObjectID>
 {
 	private static final long serialVersionUID = 1L;
 
@@ -47,17 +58,19 @@ implements Serializable
 //	private long createDT;
 //	private long changeDT;
 	private Object objectID;
+	private Object objectVersion;
 	private Set<String> sourceSessionIDs;
 	private long serial;
 
-	public DirtyObjectID(Object objectID, LifecycleStage lifecycleStage, long serial)
+	public DirtyObjectID(LifecycleStage lifecycleStage, Object objectID, Object objectVersion, long serial)
 	{
 		this.lifecycleStage = lifecycleStage;
 //		this.createDT = System.currentTimeMillis();
 //		this.changeDT = System.currentTimeMillis();
 		this.objectID = objectID;
+		this.objectVersion = objectVersion;
 		this.serial = serial;
-		this.sourceSessionIDs = new HashSet<String>();
+		this.sourceSessionIDs = new HashSet<String>(1); // it's usually only one, hence this might be more efficient than the default constructor
 	}
 
 //	/**
@@ -105,6 +118,10 @@ implements Serializable
 	{
 		return objectID;
 	}
+	public Object getObjectVersion()
+	{
+		return objectVersion;
+	}
 	/**
 	 * The serial is used to find out which {@link DirtyObjectID} is newer when comparing two of them.
 	 * It is not the ID of a <code>DirtyObjectID</code> instance. For example, it will be replaced by
@@ -121,6 +138,7 @@ implements Serializable
 	{
 		this.serial = serial;
 	}
+
 //	public long getCreateDT()
 //	{
 //		return createDT;
@@ -129,4 +147,27 @@ implements Serializable
 //	{
 //		return changeDT;
 //	}
+
+	/**
+	 * This method compares the serial of this {@link DirtyObjectID}
+	 * with another <code>DirtyObjectID</code>'s serial. The order is
+	 * ascending (i.e. the newest <code>DirtyObjectID</code> is last).
+	 * <p>
+	 * Note, that the {@link #equals(Object)} method does not correspond
+	 * to this method!
+	 * </p>
+	 *
+	 * @see #getSerial()
+	 * @see Comparable#compareTo(Object)
+	 */
+	public int compareTo(DirtyObjectID o)
+	{
+		return this.serial < o.serial ? -1 : (this.serial == o.serial ? 0 : 1);
+	}
+
+	@Override
+	public String toString()
+	{
+		return this.getClass().getName() + '[' + serial + ',' + lifecycleStage + ',' + objectID +',' + objectVersion+ ',' + sourceSessionIDs + ']';
+	}
 }

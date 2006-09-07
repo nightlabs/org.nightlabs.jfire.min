@@ -28,14 +28,19 @@ package org.nightlabs.jfire.jdo.cache;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+
+import org.apache.log4j.Logger;
 
 public class DirtyObjectIDContainer
 implements Serializable
 {
 	private static final long serialVersionUID = 1L;
+
+	private static final Logger logger = Logger.getLogger(DirtyObjectIDContainer.class);
 
 	private long createDT = System.currentTimeMillis();
 	private boolean closed = false;
@@ -51,7 +56,8 @@ implements Serializable
 	 * value: DirtyObjectID dirtyObjectID
 	 */
 	private Map<Object, DirtyObjectID> dirtyObjectIDs = null;
-//	private static final Map EMPTY_MAP = Collections.unmodifiableMap(new HashMap());
+	private Map<Object, DirtyObjectID> _dirtyObjectIDs = null;
+	private static final Map<Object, DirtyObjectID> EMPTY_MAP = Collections.unmodifiableMap(new HashMap<Object, DirtyObjectID>());
 
 	public DirtyObjectIDContainer()
 	{
@@ -87,6 +93,25 @@ implements Serializable
 			else
 				dirtyObjectID.addSourceSessionIDs(newDirtyObjectID.getSourceSessionIDs());
 		}
+
+		_dirtyObjectIDs = null;
+	}
+
+	public synchronized Map<Object, DirtyObjectID> getDirtyObjectIDs()
+	{
+		if (closed) {
+			logger.warn("getDirtyObjectIDs: DirtyObjectIDContainer has been closed already! Returning EMPTY_MAP.", new Exception("Debug stacktrace"));
+			return EMPTY_MAP;
+		}
+
+		if (_dirtyObjectIDs == null) {
+			if (dirtyObjectIDs == null)
+				return EMPTY_MAP;
+
+			_dirtyObjectIDs = Collections.unmodifiableMap(new HashMap<Object, DirtyObjectID>(dirtyObjectIDs));
+		}
+
+		return _dirtyObjectIDs;
 	}
 
 	/**
@@ -95,7 +120,10 @@ implements Serializable
 	 */
 	public synchronized DirtyObjectID getDirtyObjectID(Object objectID)
 	{
-		assertOpen();
+		if (closed) {
+			logger.warn("getDirtyObjectID: DirtyObjectIDContainer has been closed already! Returning null.", new Exception("Debug stacktrace"));
+			return null;
+		}
 
 		if (dirtyObjectIDs == null)
 			return null;

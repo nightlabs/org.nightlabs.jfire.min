@@ -170,6 +170,7 @@ public class JdoCacheBridgeJPOX extends JdoCacheBridge
 		public void addObject(DirtyObjectID.LifecycleStage lifecycleStage, Object object)
 		{
 			Object objectID = getObjectID(object);
+			Object version = JDOHelper.getVersion(object); // version can be null, if the jdo object is not versioned
 
 			registerClass(objectID, object.getClass());
 
@@ -182,7 +183,7 @@ public class JdoCacheBridgeJPOX extends JdoCacheBridge
 				dirtyObjectIDs.put(lifecycleStage, m);
 			}
 
-			m.put(objectID, new DirtyObjectID(objectID, lifecycleStage, bridge.getCacheManagerFactory().nextDirtyObjectIDSerial()));
+			m.put(objectID, new DirtyObjectID(lifecycleStage, objectID, version, bridge.getCacheManagerFactory().nextDirtyObjectIDSerial()));
 		}
 	}
 
@@ -258,6 +259,20 @@ public class JdoCacheBridgeJPOX extends JdoCacheBridge
 		}
 	};
 
+//	private StoreLifecycleListener storeLifecycleListener = new StoreLifecycleListener() {
+//		public void preStore(InstanceLifecycleEvent event) { }
+//		public void postStore(InstanceLifecycleEvent event)
+//		{
+//			if (logger.isDebugEnabled())
+//				logger.debug("postStore: " + event.getPersistentInstance() + " isNew=" + JDOHelper.isNew(event.getPersistentInstance()));
+//
+//			if (!JDOHelper.isNew(event.getPersistentInstance()))
+//				return;
+//
+//			registerJDOObject(DirtyObjectID.LifecycleStage.NEW, event.getPersistentInstance());
+//		}
+//	};
+
 	private DirtyLifecycleListener dirtyLifecycleListener = new DirtyLifecycleListener() {
 		public void preDirty(InstanceLifecycleEvent event) { }
 		public void postDirty(javax.jdo.listener.InstanceLifecycleEvent event)
@@ -313,6 +328,9 @@ public class JdoCacheBridgeJPOX extends JdoCacheBridge
 		pmf.addInstanceLifecycleListener(
 				createLifecycleListener,
 				null);
+//		pmf.addInstanceLifecycleListener(
+//				storeLifecycleListener,
+//				null);
 		pmf.addInstanceLifecycleListener(
 				dirtyLifecycleListener,
 				null);

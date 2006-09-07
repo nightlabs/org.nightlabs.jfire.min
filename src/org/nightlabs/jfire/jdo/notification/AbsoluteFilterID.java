@@ -52,4 +52,10 @@ implements Serializable
 	{
 		return sessionID.hashCode() ^ Utils.hashCode(filterID);
 	}
+
+	@Override
+	public String toString()
+	{
+		return this.getClass().getName() + '[' + sessionID + ',' + filterID + ']';
+	}
 }

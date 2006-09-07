@@ -110,11 +110,12 @@ public class CacheManager
 					new ChangeListenerDescriptor(principal.getSessionID(), it.next()));
 	}
 
-	public void resubscribeAllChangeListeners(Set subscribedObjectIDs)
+	public void resubscribeAllListeners(Set<Object> subscribedObjectIDs,
+			Collection<IJDOLifecycleListenerFilter> filters)
 	{
 		assertPrincipalExisting();
-		cacheManagerFactory.resubscribeAllChangeListeners(
-				principal.getSessionID(), principal.getUserID(), subscribedObjectIDs);
+		cacheManagerFactory.resubscribeAllListeners(
+				principal.getSessionID(), principal.getUserID(), subscribedObjectIDs, filters);
 	}
 
 	public void addLifecycleListenerFilters(Collection<IJDOLifecycleListenerFilter> filters)
@@ -123,7 +124,7 @@ public class CacheManager
 		cacheManagerFactory.addLifecycleListenerFilters(principal.getUserID(), filters);
 	}
 
-	public void removeLifecycleListenerFilters(Set<Long> filterIDs)
+	public void removeLifecycleListenerFilters(Collection<Long> filterIDs)
 	{
 		assertPrincipalExisting();
 

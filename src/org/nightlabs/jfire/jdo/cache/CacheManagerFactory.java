@@ -37,8 +37,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.TreeSet;
 
 import javax.jdo.PersistenceManager;
 import javax.jdo.PersistenceManagerFactory;
@@ -67,6 +69,8 @@ import org.nightlabs.jfire.servermanager.ra.JFireServerManagerFactoryImpl;
 public class CacheManagerFactory
 		implements Serializable
 {
+	private static final long serialVersionUID = 1L;
+
 	/**
 	 * LOG4J logger used by this class
 	 */
@@ -456,7 +460,7 @@ public class CacheManagerFactory
 	 * The first <tt>CacheSessionContainer</tt> is the active one, while the
 	 * last one is the oldest and will be deleted next.
 	 */
-	private LinkedList cacheSessionContainers = new LinkedList();
+	private LinkedList<CacheSessionContainer> cacheSessionContainers = new LinkedList<CacheSessionContainer>();
 
 	private CacheSessionContainer activeCacheSessionContainer; // initialized by
 																															// constructor
@@ -534,32 +538,19 @@ public class CacheManagerFactory
 		}
 	}
 
-	protected void resubscribeAllChangeListeners(String sessionID, String userID,
-			Set subscribedObjectIDs)
+	protected void resubscribeAllListeners(String sessionID, String userID,
+			Set<Object> subscribedObjectIDs, Collection<IJDOLifecycleListenerFilter> filters)
 	{
 		CacheSession session = createCacheSession(sessionID, userID);
+		CacheSession.ResubscribeResult res = session.resubscribeAllListeners(subscribedObjectIDs, filters);
 
-		LinkedList objectIDsToRemove = new LinkedList();
-		LinkedList objectIDsToAdd = new LinkedList();
-		Set oldSubscribedObjectIDs = session.getSubscribedObjectIDs();
-		for (Iterator it = oldSubscribedObjectIDs.iterator(); it.hasNext();) {
-			Object objectID = it.next();
-			if (!subscribedObjectIDs.contains(objectID))
-				objectIDsToRemove.add(objectID);
-		}
+		for (Object objectID : res.objectIDsRemoved)
+			after_removeChangeListener(sessionID, objectID);
 
-		for (Iterator it = subscribedObjectIDs.iterator(); it.hasNext();) {
-			Object objectID = it.next();
-			if (!oldSubscribedObjectIDs.contains(objectID))
-				objectIDsToAdd.add(objectID);
-		}
+		for (Object objectID : res.objectIDsAdded)
+			after_addChangeListener(session, new ChangeListenerDescriptor(sessionID, objectID), false);
 
-		for (Iterator it = objectIDsToRemove.iterator(); it.hasNext();)
-			removeChangeListener(sessionID, it.next());
-
-		for (Iterator it = objectIDsToAdd.iterator(); it.hasNext();)
-			addChangeListener(userID, new ChangeListenerDescriptor(sessionID, it
-					.next()));
+		after_addLifecycleListenerFilters(userID, res.filtersAdded);
 	}
 
 	/**
@@ -594,21 +585,156 @@ public class CacheManagerFactory
 		}
 	}
 
-	protected void addLifecycleListenerFilters(String userID,
-			Collection<IJDOLifecycleListenerFilter> filters)
+	protected void addLifecycleListenerFilters(String userID, Collection<IJDOLifecycleListenerFilter> filters)
 	{
+		if (logger.isDebugEnabled())
+			logger.debug("addLifecycleListenerFilters: filters.size="+filters.size());
+
 		if (filters.isEmpty())
 			return;
 
 		CacheSession session = null;
 		for (IJDOLifecycleListenerFilter filter : filters) {
-			if (session == null
-					|| !session.getSessionID()
-							.equals(filter.getFilterID().getSessionID()))
-				session = createCacheSession(filter.getFilterID().getSessionID(),
-						userID);
+			if (session == null || !session.getSessionID().equals(filter.getFilterID().getSessionID()))
+				session = createCacheSession(filter.getFilterID().getSessionID(), userID);
 
 			session.addFilter(filter);
+		}
+
+		after_addLifecycleListenerFilters(userID, filters); // , true);
+	}
+
+	private void after_addLifecycleListenerFilters(String userID, Collection<IJDOLifecycleListenerFilter> filters) // , boolean excludeLocalSessionFromNotification)
+	{
+		if (logger.isDebugEnabled())
+			logger.debug("after_addLifecycleListenerFilters: filters.size="+filters.size()); //  + " excludeLocalSessionFromNotification=" + excludeLocalSessionFromNotification);
+
+		// collect all freshDirtyObjectIDs from all freshDirtyObjectIDContainers
+		// take the newest, if there exist multiple for one objectID and the same lifecylestage
+		Map<DirtyObjectID.LifecycleStage, Map<Object, DirtyObjectID>> lifecycleStage2freshDirtyObjectIDsMap = new HashMap<DirtyObjectID.LifecycleStage, Map<Object,DirtyObjectID>>();
+		synchronized (freshDirtyObjectIDContainers) {
+			for (DirtyObjectIDContainer dirtyObjectIDContainer : freshDirtyObjectIDContainers) {
+				for (Map.Entry<Object, DirtyObjectID> me : dirtyObjectIDContainer.getDirtyObjectIDs().entrySet()) {
+					DirtyObjectID.LifecycleStage lifecycleStage = me.getValue().getLifecycleStage();
+					Map<Object, DirtyObjectID> freshDirtyObjectIDsMap = lifecycleStage2freshDirtyObjectIDsMap.get(lifecycleStage);
+					if (freshDirtyObjectIDsMap == null) {
+						freshDirtyObjectIDsMap = new HashMap<Object, DirtyObjectID>();
+						lifecycleStage2freshDirtyObjectIDsMap.put(lifecycleStage, freshDirtyObjectIDsMap);
+					}
+
+					if (!freshDirtyObjectIDsMap.containsKey(me.getKey()))
+						freshDirtyObjectIDsMap.put(me.getKey(), me.getValue());
+				}
+			}
+		} // synchronized (freshDirtyObjectIDContainers) {
+
+		if (logger.isDebugEnabled()) {
+			logger.debug("after_addLifecycleListenerFilters: collected freshDirtyObjectIDs:");
+			for (Map.Entry<DirtyObjectID.LifecycleStage, Map<Object, DirtyObjectID>> me1 : lifecycleStage2freshDirtyObjectIDsMap.entrySet()) {
+				logger.debug("after_addLifecycleListenerFilters:   lifecycleStage="+me1.getKey());
+				for (DirtyObjectID dirtyObjectID : me1.getValue().values())
+					logger.debug("after_addLifecycleListenerFilters:     dirtyObjectID="+dirtyObjectID);
+			}
+
+			logger.debug("after_addLifecycleListenerFilters: compiling sessionID2FilterID2FilterWithDirtyObjectIDs:");
+		}
+
+		Map<String, Map<AbsoluteFilterID, FilterWithDirtyObjectIDs>> sessionID2FilterID2FilterWithDirtyObjectIDs = null;
+		for (IJDOLifecycleListenerFilter filter : filters) {
+			String sessionID = filter.getFilterID().getSessionID();
+
+			if (logger.isDebugEnabled())
+				logger.debug("after_addLifecycleListenerFilters:   filterID=" + filter.getFilterID());
+
+			FilterWithDirtyObjectIDs filterWithDirtyObjectIDs = null;
+			for (Map<Object, DirtyObjectID> freshDirtyObjectIDsMap : lifecycleStage2freshDirtyObjectIDsMap.values()) {
+				for (Map.Entry<Object, DirtyObjectID> me2 : freshDirtyObjectIDsMap.entrySet()) {
+					Object objectID = me2.getKey();
+					DirtyObjectID dirtyObjectID = me2.getValue();
+
+					boolean lifecycleStageMatches = false;
+					for (DirtyObjectID.LifecycleStage lifecycleStage : filter.getLifecycleStages()) {
+						if (dirtyObjectID.getLifecycleStage() == lifecycleStage) {
+							lifecycleStageMatches = true;
+							break;
+						}
+					}
+					if (!lifecycleStageMatches) {
+						if (logger.isDebugEnabled())
+							logger.debug("after_addLifecycleListenerFilters:     lifecycleStage does not match. filterID="+filter.getFilterID() + " dirtyObjectID=" + dirtyObjectID);
+						
+						continue;
+					}
+
+					Class jdoObjectClass = getClassByObjectID(objectID);
+
+					boolean includeSubclasses = filter.includeSubclasses();
+					boolean classMatches = false;
+					for (Class candidateClass : filter.getCandidateClasses()) {
+						if (includeSubclasses) {
+							if (candidateClass.isAssignableFrom(jdoObjectClass)) {
+								classMatches = true;
+								break;
+							}
+						}
+						else {
+							if (candidateClass == jdoObjectClass) {
+								classMatches = true;
+								break;
+							}
+						}
+					}
+					if (!classMatches) {
+						if (logger.isDebugEnabled())
+							logger.debug("after_addLifecycleListenerFilters:     class does not match. filterID="+filter.getFilterID() + " jdoClass=" + jdoObjectClass.getName() + " dirtyObjectID=" + dirtyObjectID);
+
+						continue;
+					}
+
+					if (sessionID2FilterID2FilterWithDirtyObjectIDs == null)
+						sessionID2FilterID2FilterWithDirtyObjectIDs = new HashMap<String, Map<AbsoluteFilterID, FilterWithDirtyObjectIDs>>();
+
+					Map<AbsoluteFilterID, FilterWithDirtyObjectIDs> filterID2FilterWithDirtyObjectIDs = sessionID2FilterID2FilterWithDirtyObjectIDs.get(sessionID);
+					if (filterID2FilterWithDirtyObjectIDs == null) {
+						filterID2FilterWithDirtyObjectIDs = new HashMap<AbsoluteFilterID, FilterWithDirtyObjectIDs>();
+						sessionID2FilterID2FilterWithDirtyObjectIDs.put(sessionID, filterID2FilterWithDirtyObjectIDs);
+					}
+
+					if (filterWithDirtyObjectIDs == null) {
+						filterWithDirtyObjectIDs = new FilterWithDirtyObjectIDs();
+						filterWithDirtyObjectIDs.filter = filter;
+						filterWithDirtyObjectIDs.dirtyObjectIDsRaw = new LinkedList<DirtyObjectID>();
+						filterID2FilterWithDirtyObjectIDs.put(filter.getFilterID(), filterWithDirtyObjectIDs);
+					}
+
+					if (logger.isDebugEnabled())
+						logger.debug("after_addLifecycleListenerFilters:     raw filtering matches. filterID="+filter.getFilterID() + " dirtyObjectID=" + dirtyObjectID);
+
+					filterWithDirtyObjectIDs.dirtyObjectIDsRaw.add(dirtyObjectID);
+				} // for (Map.Entry<Object, DirtyObjectID> me2 : freshDirtyObjectIDsMap.entrySet()) {
+			} // for (Map<Object, DirtyObjectID> freshDirtyObjectIDsMap : lifecycleStage2freshDirtyObjectIDsMap.values()) {
+		} // for (IJDOLifecycleListenerFilter filter : filters) {
+
+		if (sessionID2FilterID2FilterWithDirtyObjectIDs != null) {
+			if (logger.isDebugEnabled()) {
+				logger.debug("after_addLifecycleListenerFilters: added " + filters.size() + " filters, and the following freshDirtyObjectIDs matched raw filtering:");
+				for (Map.Entry<String, Map<AbsoluteFilterID, FilterWithDirtyObjectIDs>> me1 : sessionID2FilterID2FilterWithDirtyObjectIDs.entrySet()) {
+					logger.debug("after_addLifecycleListenerFilters:   sessionID=" + me1.getKey());
+					for (Map.Entry<AbsoluteFilterID, FilterWithDirtyObjectIDs> me2 : me1.getValue().entrySet()) {
+						logger.debug("after_addLifecycleListenerFilters:     filterID=" + me2.getKey());
+						for (DirtyObjectID dirtyObjectID : me2.getValue().dirtyObjectIDsRaw)
+							logger.debug("after_addLifecycleListenerFilters:       dirtyObjectID=" + dirtyObjectID);							
+					}
+				}
+			}
+
+			distributeDirtyObjectIDs_filter(sessionID2FilterID2FilterWithDirtyObjectIDs);
+		}
+		else if (logger.isDebugEnabled()) {
+			logger.debug("after_addLifecycleListenerFilters: added " + filters.size() + " filters (but no freshDirtyObjectID matched raw filtering)");
+			for (IJDOLifecycleListenerFilter filter : filters) {
+				logger.debug("after_addLifecycleListenerFilters:   filterID=" + filter.getFilterID());
+			}
 		}
 	}
 
@@ -638,9 +764,6 @@ public class CacheManagerFactory
 	 * <p>
 	 * This method implicitely opens a new {@link CacheSession} if it is not yet
 	 * existing.
-	 * 
-	 * @param userID
-	 *          TODO
 	 */
 	protected void addChangeListener(String userID, ChangeListenerDescriptor l)
 	{
@@ -648,16 +771,23 @@ public class CacheManagerFactory
 		Object objectID = l.getObjectID();
 
 		if (logger.isDebugEnabled())
-			logger.debug("addChangeListener adding listener for session " + sessionID
-					+ " on objectID " + objectID);
+			logger.debug("addChangeListener: sessionID=" + sessionID + " objectID=" + objectID);
 
 		CacheSession session = createCacheSession(sessionID, userID);
 		session.subscribeObjectID(objectID); // is synchronized itself
 
+		after_addChangeListener(session, l, true);
+	}
+
+	private void after_addChangeListener(CacheSession session, ChangeListenerDescriptor l, boolean excludeLocalSessionFromNotification)
+	{
+		String sessionID = session.getSessionID();
+		Object objectID = l.getObjectID();
+
 		synchronized (listenersByObjectID) {
-			Map m = (Map) listenersByObjectID.get(objectID);
+			Map<String, ChangeListenerDescriptor> m = (Map<String, ChangeListenerDescriptor>) listenersByObjectID.get(objectID);
 			if (m == null) {
-				m = new HashMap();
+				m = new HashMap<String, ChangeListenerDescriptor>();
 				listenersByObjectID.put(objectID, m);
 			}
 			m.put(sessionID, l);
@@ -673,39 +803,34 @@ public class CacheManagerFactory
 																														// one found (and
 																														// matching)!
 		synchronized (freshDirtyObjectIDContainers) {
-			for (Iterator it = freshDirtyObjectIDContainers.iterator(); it.hasNext();) {
-				DirtyObjectIDContainer dirtyObjectIDContainer = (DirtyObjectIDContainer) it
-						.next();
-				DirtyObjectID dirtyObjectID = dirtyObjectIDContainer
-						.getDirtyObjectID(objectID);
-				if (dirtyObjectID != null) {
+			for (DirtyObjectIDContainer dirtyObjectIDContainer : freshDirtyObjectIDContainers) {
+				DirtyObjectID dirtyObjectID = dirtyObjectIDContainer.getDirtyObjectID(objectID);
+				if (dirtyObjectID != null && dirtyObjectID.getLifecycleStage() != DirtyObjectID.LifecycleStage.NEW) {
 					Set sourceSessionIDs = dirtyObjectID.getSourceSessionIDs();
-					if (sourceSessionIDs.size() > 1
-							|| !sourceSessionIDs.contains(sessionID)) {
+					if (!excludeLocalSessionFromNotification || sourceSessionIDs.size() > 1 || !sourceSessionIDs.contains(sessionID)) {
 						triggerNotificationDirtyObjectID = dirtyObjectID;
 						break;
 					}
 				}
-			} // for (Iterator it = freshDirtyObjectIDContainers.iterator();
-				// it.hasNext();) {
+			} // for (DirtyObjectIDContainer dirtyObjectIDContainer : freshDirtyObjectIDContainers) {
 		} // synchronized (freshDirtyObjectIDContainers) {
 
 		if (triggerNotificationDirtyObjectID != null) {
 			if (logger.isDebugEnabled())
 				logger
-						.debug("addChangeListener immediately notifying session "
+						.debug("after_addChangeListener: immediately notifying session "
 								+ sessionID
-								+ " for newly added listener on freshly changed object "
+								+ " for "
 								+ objectID);
 
-			ArrayList notifyDirtyObjectIDs = new ArrayList(1);
+			ArrayList<DirtyObjectID> notifyDirtyObjectIDs = new ArrayList<DirtyObjectID>(1);
 			notifyDirtyObjectIDs.add(triggerNotificationDirtyObjectID);
 			session.addDirtyObjectIDs(notifyDirtyObjectIDs);
 
 			// pass the intestedCacheSessionIDs to the NotificationThread
 			synchronized (cacheSessionIDsToNotifyMutex) {
 				if (cacheSessionIDsToNotify == null)
-					cacheSessionIDsToNotify = new HashSet();
+					cacheSessionIDsToNotify = new HashSet<String>();
 
 				cacheSessionIDsToNotify.add(sessionID);
 			}
@@ -719,15 +844,20 @@ public class CacheManagerFactory
 	protected void removeChangeListener(String sessionID, Object objectID)
 	{
 		if (logger.isDebugEnabled())
-			logger.debug("removeChangeListener removing listener for session "
-					+ sessionID + " on objectID " + objectID);
+			logger.debug("removeChangeListener: sessionID="
+					+ sessionID + " objectID=" + objectID);
 
 		CacheSession session = getCacheSession(sessionID);
 		if (session != null)
 			session.unsubscribeObjectID(objectID); // is synchronized itself
 
+		after_removeChangeListener(sessionID, objectID);
+	}
+
+	private void after_removeChangeListener(String sessionID, Object objectID)
+	{
 		synchronized (listenersByObjectID) {
-			Map m = (Map) listenersByObjectID.get(objectID);
+			Map<String, ChangeListenerDescriptor> m = (Map<String, ChangeListenerDescriptor>) listenersByObjectID.get(objectID);
 			if (m != null) {
 				m.remove(sessionID);
 
@@ -1071,7 +1201,7 @@ public class CacheManagerFactory
 																																		// by
 																																		// constructor
 
-	private LinkedList freshDirtyObjectIDContainers = new LinkedList();
+	private LinkedList<DirtyObjectIDContainer> freshDirtyObjectIDContainers = new LinkedList<DirtyObjectIDContainer>();
 
 	protected DirtyObjectIDContainer getActiveFreshDirtyObjectIDContainer()
 	{
@@ -1124,8 +1254,7 @@ public class CacheManagerFactory
 
 		// *** First process the implicit listeners ***
 
-// Map<Object, DirtyObjectID> objectIDsWaitingForNotification_new =
-// lifecycleType2dirtyObjectIDs.get(DirtyObjectID.LifecycleStage.NEW);
+		Map<Object, DirtyObjectID> objectIDsWaitingForNotification_new = lifecycleType2dirtyObjectIDs.get(DirtyObjectID.LifecycleStage.NEW);
 		Map<Object, DirtyObjectID> objectIDsWaitingForNotification_dirty = lifecycleType2dirtyObjectIDs.get(DirtyObjectID.LifecycleStage.DIRTY);
 		Map<Object, DirtyObjectID> objectIDsWaitingForNotification_deleted = lifecycleType2dirtyObjectIDs.get(DirtyObjectID.LifecycleStage.DELETED);
 
@@ -1134,6 +1263,9 @@ public class CacheManagerFactory
 		// null and it doesn't matter, whether this is really the active one or we
 		// missed the rolling.
 		DirtyObjectIDContainer activeFreshDirtyObjectIDContainer = this.activeFreshDirtyObjectIDContainer;
+
+		if (objectIDsWaitingForNotification_new != null)
+			activeFreshDirtyObjectIDContainer.addDirtyObjectIDs(objectIDsWaitingForNotification_new.values());
 
 		if (objectIDsWaitingForNotification_dirty != null)
 			activeFreshDirtyObjectIDContainer.addDirtyObjectIDs(objectIDsWaitingForNotification_dirty.values());
@@ -1201,11 +1333,13 @@ public class CacheManagerFactory
 		}
 
 		// pass the intestedCacheSessionIDs to the NotificationThread
-		synchronized (cacheSessionIDsToNotifyMutex) {
-			if (cacheSessionIDsToNotify == null)
-				cacheSessionIDsToNotify = interestedCacheSessionIDs;
-			else
-				cacheSessionIDsToNotify.addAll(interestedCacheSessionIDs);
+		if (!interestedCacheSessionIDs.isEmpty()) {
+			synchronized (cacheSessionIDsToNotifyMutex) {
+				if (cacheSessionIDsToNotify == null)
+					cacheSessionIDsToNotify = interestedCacheSessionIDs;
+				else
+					cacheSessionIDsToNotify.addAll(interestedCacheSessionIDs);
+			}
 		}
 
 
@@ -1220,10 +1354,7 @@ public class CacheManagerFactory
 		// re-created.
 		// But this is a bad thing, anyway, that should be avoided by the
 		// developers: Once sth. is deleted, it shouldn't be recreated with
-		// the same ID. We can only ensure that both events are sent to the client
-		// at the same time, but we cannot tell the client anything
-		// about the order in which they happened. He must know that himself when
-		// implementing his listener.
+		// the same ID. If a developer still does it
 		Map<String, Map<AbsoluteFilterID, FilterWithDirtyObjectIDs>> sessionID2FilterID2FilterWithDirtyObjectIDs = new HashMap<String, Map<AbsoluteFilterID,FilterWithDirtyObjectIDs>>();
 		for (Map.Entry<DirtyObjectID.LifecycleStage, Map<Object, DirtyObjectID>> me1 : lifecycleType2dirtyObjectIDs.entrySet()) {
 			DirtyObjectID.LifecycleStage lifecycleStage = me1.getKey();
@@ -1269,10 +1400,16 @@ public class CacheManagerFactory
 				}
 			}
 		}
+		
+		distributeDirtyObjectIDs_filter(sessionID2FilterID2FilterWithDirtyObjectIDs);
+	}
 
+	private void distributeDirtyObjectIDs_filter(Map<String, Map<AbsoluteFilterID, FilterWithDirtyObjectIDs>> sessionID2FilterID2FilterWithDirtyObjectIDs)
+	{
 		try {
 			// iterate all filters, authenticate as the user who owns the session and
 			// execute the filter method
+			Set<String> interestedCacheSessionIDs = new HashSet<String>();
 			for (Map.Entry<String, Map<AbsoluteFilterID, FilterWithDirtyObjectIDs>> me : sessionID2FilterID2FilterWithDirtyObjectIDs.entrySet()) {
 				CacheSession cacheSession = getCacheSession(me.getKey());
 				Map<AbsoluteFilterID, FilterWithDirtyObjectIDs> filterID2FilterWithDirtyObjectIDs = me.getValue();
@@ -1314,12 +1451,24 @@ public class CacheManagerFactory
 				for (Map.Entry<AbsoluteFilterID, FilterWithDirtyObjectIDs> me1 : filterID2FilterWithDirtyObjectIDs.entrySet()) {
 					AbsoluteFilterID filterID = me1.getKey();
 					FilterWithDirtyObjectIDs filterWithDirtyObjectIDs = me1.getValue();
-					if (filterWithDirtyObjectIDs.dirtyObjectIDsFiltered != null) {
+					if (filterWithDirtyObjectIDs.dirtyObjectIDsFiltered != null && !filterWithDirtyObjectIDs.dirtyObjectIDsFiltered.isEmpty()) {
 						mDest.put(filterID, filterWithDirtyObjectIDs.dirtyObjectIDsFiltered);
 					}
 				}
-				if (!mDest.isEmpty())
+
+				if (!mDest.isEmpty()) {
 					cacheSession.addDirtyObjectIDs(mDest);
+					interestedCacheSessionIDs.add(cacheSession.getSessionID());
+				}
+			} // iterate CacheSessions
+
+			if (!interestedCacheSessionIDs.isEmpty()) {
+				synchronized (cacheSessionIDsToNotifyMutex) {
+					if (cacheSessionIDsToNotify == null)
+						cacheSessionIDsToNotify = interestedCacheSessionIDs;
+					else
+						cacheSessionIDsToNotify.addAll(interestedCacheSessionIDs);
+				}
 			}
 		} catch (LoginException x) {
 			throw new RuntimeException(x); // a LoginException should never happen.
@@ -1499,6 +1648,8 @@ public class CacheManagerFactory
 	// Object();
 
 	private long nextDirtyObjectIDSerial = -Long.MAX_VALUE;
+//	private long nextDirtyObjectIDSerial = 0;
+
 
 	private transient Object nextDirtyObjectIDSerialMutex = new Object();
 
@@ -1573,40 +1724,36 @@ public class CacheManagerFactory
 				.fetchDirtyObjectIDs();
 		if (dirtyObjectIDGroup != null) {
 			if (dirtyObjectIDGroup.dirtyObjectIDs != null) {
-				ArrayList<DirtyObjectID> doids = null;
+				TreeSet<DirtyObjectID> doids = null;
 				for (Map<DirtyObjectID.LifecycleStage, DirtyObjectID> m1 : dirtyObjectIDGroup.dirtyObjectIDs
 						.values()) {
 					if (doids == null)
-						doids = new ArrayList<DirtyObjectID>(m1.values());
+						doids = new TreeSet<DirtyObjectID>(m1.values());
 					else
 						doids.addAll(m1.values());
 				}
 
-				if (doids != null) {
-					doids.trimToSize();
+				if (doids != null)
 					res.setDirtyObjectIDs(doids);
-				}
 			} // if (dirtyObjectIDGroup.dirtyObjectIDs != null) {
 
 			if (dirtyObjectIDGroup.filterID2DirtyObjectIDs != null) {
-				Map<Long, List<DirtyObjectID>> fid2doidMap = new HashMap<Long, List<DirtyObjectID>>();
+				Map<Long, SortedSet<DirtyObjectID>> fid2doidMap = new HashMap<Long, SortedSet<DirtyObjectID>>();
 
 				for (Map.Entry<AbsoluteFilterID, Map<Object, Map<DirtyObjectID.LifecycleStage, DirtyObjectID>>> me1 : dirtyObjectIDGroup.filterID2DirtyObjectIDs
 						.entrySet()) {
 					Long filterID = new Long(me1.getKey().getFilterID());
-					ArrayList<DirtyObjectID> doids = null;
+					TreeSet<DirtyObjectID> doids = null;
 					for (Map<DirtyObjectID.LifecycleStage, DirtyObjectID> m2 : me1
 							.getValue().values()) {
 						if (doids == null)
-							doids = new ArrayList<DirtyObjectID>(m2.values());
+							doids = new TreeSet<DirtyObjectID>(m2.values());
 						else
 							doids.addAll(m2.values());
 					}
 
-					if (doids != null) {
-						doids.trimToSize();
+					if (doids != null)
 						fid2doidMap.put(filterID, doids);
-					}
 				}
 
 				if (!fid2doidMap.isEmpty())
