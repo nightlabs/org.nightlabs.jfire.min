@@ -5,6 +5,16 @@ import java.util.Collection;
 
 import org.nightlabs.jfire.jdo.cache.DirtyObjectID;
 
+/**
+ * An implementation of this interface filters JDO lifecycle events on the server side
+ * in order to reduce the traffic to the client.
+ * <p>
+ * It's recommended to extend {@link JDOLifecycleListenerFilter} instead of implementing
+ * this interface directly.
+ * </p>
+ *
+ * @author Marco Schulze - marco at nightlabs dot de
+ */
 public interface IJDOLifecycleListenerFilter
 extends Serializable
 {
@@ -20,32 +30,6 @@ extends Serializable
 	 *		{@link #setFilterID(long)} was called.
 	 */
 	AbsoluteFilterID getFilterID();
-
-//	/**
-//	 * This method will be called automatically by the client-side <code>JDOLifecycleManager</code>.
-//	 *
-//	 * @param sessionID 
-//	 */
-//	void setSessionID(String sessionID);
-//
-//	/**
-//	 * @return The sessionID that has been assigned via {@link #setSessionID(String)}.
-//	 */
-//	String getSessionID();
-//
-//	/**
-//	 * This method is called automatically by the client-side <code>JDOLifecycleManager</code>
-//	 * when this filter is registered.
-//	 *
-//	 * @param filterID A unique ID within the scope of your session.
-//	 */
-//	void setFilterID(long filterID);
-//
-//	/**
-//	 * @return The id that has previously been assigned by {@link #setFilterID(long)}. Returns -1, before
-//	 *		{@link #setFilterID(long)} was called.
-//	 */
-//	long getFilterID();
 
 	/**
 	 * @return The classes of JDO objects about which the client-sided listener wants to get notified.
