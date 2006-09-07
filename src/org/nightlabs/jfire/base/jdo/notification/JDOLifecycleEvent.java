@@ -1,7 +1,7 @@
 package org.nightlabs.jfire.base.jdo.notification;
 
-import java.util.Collection;
 import java.util.EventObject;
+import java.util.SortedSet;
 
 import org.nightlabs.jfire.jdo.cache.DirtyObjectID;
 
@@ -10,15 +10,15 @@ public class JDOLifecycleEvent
 {
 	private static final long serialVersionUID = 1L;
 
-	public JDOLifecycleEvent(Object source, Collection<DirtyObjectID> dirtyObjectIDs)
+	public JDOLifecycleEvent(Object source, SortedSet<DirtyObjectID> dirtyObjectIDs)
 	{
 		super(source);
 		this.dirtyObjectIDs = dirtyObjectIDs;
 	}
 
-	private Collection<DirtyObjectID> dirtyObjectIDs;
+	private SortedSet<DirtyObjectID> dirtyObjectIDs;
 
-	public Collection<DirtyObjectID> getDirtyObjectIDs()
+	public SortedSet<DirtyObjectID> getDirtyObjectIDs()
 	{
 		return dirtyObjectIDs;
 	}

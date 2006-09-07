@@ -26,6 +26,8 @@
 
 package org.nightlabs.jfire.base.jdo.cache;
 
+import org.nightlabs.jfire.jdo.notification.IJDOLifecycleListenerFilter;
+
 
 /**
  * @author Marco Schulze - marco at nightlabs dot de
@@ -38,13 +40,26 @@ public class SubscriptionChangeRequest
 	private static String[] ACTIONS = new String[] {"add", "remove"};
 
 	private byte action;
+
+	/**
+	 * A JDO object id representing an implicit listener. If this is <code>null</code>,
+	 * {@link #filter} must be assigned. If this is assigned, {@link #filter} must be <code>null</code>.
+	 */
 	private Object objectID;
+
+	/**
+	 * A filter for an explicit listener. Either this or {@link #objectID} must be assigned (not both).
+	 */
+	private IJDOLifecycleListenerFilter filter;
+
 	private long createDT = System.currentTimeMillis();
 	private long delayMSec;
 
 	/**
 	 * @param action One of {@link #ACTION_ADD} or {@link #ACTION_REMOVE}
-	 * @param objectID The objectID for which to either add or remove a listener.
+	 * @param objectID Either the jdo objectID for which to either add or remove an implicit
+	 *		listener; or an instance of {@link IJDOLifecycleListenerFilter} for adding/removing
+	 *		an explicit listener.
 	 * @param delayMSec The action can be done immediately (means as soon as possible,
 	 *		because it's async and periodical) or it can be delayed for a certain time
 	 *		specified in millisec.
@@ -57,8 +72,12 @@ public class SubscriptionChangeRequest
 		this.action = action;
 
 		if (null == objectID)
-			throw new NullPointerException("objectID");
-		this.objectID = objectID;
+			throw new IllegalArgumentException("objectID is null");
+
+		if (objectID instanceof IJDOLifecycleListenerFilter)
+			this.filter = (IJDOLifecycleListenerFilter) objectID;
+		else
+			this.objectID = objectID;
 
 		if (delayMSec < 0)
 			throw new IllegalArgumentException("delayMSec < 0!!! Must be >= 0!");
@@ -72,8 +91,18 @@ public class SubscriptionChangeRequest
 	{
 		return action;
 	}
+
 	/**
-	 * @return Returns the objectID.
+	 * @return Returns <code>null</code>, if this request references an implicit listener (then, {@link #getObjectID()} will return
+	 *		sth. meaningful).
+	 */
+	public IJDOLifecycleListenerFilter getFilter()
+	{
+		return filter;
+	}
+	/**
+	 * @return Returns the objectID of a jdo object. If this request references an explicit listener, this
+	 *		method returns <code>null</code> and instead {@link #getFilter()} returns an instance.
 	 */
 	public Object getObjectID()
 	{

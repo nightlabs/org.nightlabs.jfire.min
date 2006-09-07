@@ -1,16 +1,16 @@
 package org.nightlabs.jfire.base.jdo.notification;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.nightlabs.base.notification.NotificationManager;
 import org.nightlabs.jfire.base.jdo.cache.Cache;
-import org.nightlabs.jfire.base.login.Login;
-import org.nightlabs.jfire.jdo.JDOManager;
-import org.nightlabs.jfire.jdo.JDOManagerUtil;
 import org.nightlabs.jfire.jdo.cache.DirtyObjectID;
 import org.nightlabs.jfire.jdo.notification.AbsoluteFilterID;
 import org.nightlabs.jfire.jdo.notification.IJDOLifecycleListenerFilter;
@@ -134,18 +134,21 @@ public class JDOLifecycleManager
 		synchronized (lifecycleListeners) {
 			lifecycleListeners.add(listener);
 			filterID2LifecycleListener.put(jdoLifecycleListenerFilter.getFilterID().getFilterID(), listener);
+			lifecycleListenerFilters = null;
 		}
 
+		Cache.sharedInstance().addLifecycleListenerFilter(jdoLifecycleListenerFilter, 0);
+
 		// TODO we need to put the filter into the Cache, which then registers it in the server. NOT directly do it here!
-		try {
-			Login.getLogin();
-			JDOManager m = JDOManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
-			ArrayList<IJDOLifecycleListenerFilter> filters = new ArrayList<IJDOLifecycleListenerFilter>(1);
-			filters.add(jdoLifecycleListenerFilter);
-			m.addLifecycleListenerFilters(filters);
-		} catch (Exception x) {
-			throw new RuntimeException(x);
-		}
+//		try {
+//			Login.getLogin();
+//			JDOManager m = JDOManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
+//			ArrayList<IJDOLifecycleListenerFilter> filters = new ArrayList<IJDOLifecycleListenerFilter>(1);
+//			filters.add(jdoLifecycleListenerFilter);
+//			m.addLifecycleListenerFilters(filters);
+//		} catch (Exception x) {
+//			throw new RuntimeException(x);
+//		}
 	}
 
 	public void removeLifecycleListener(JDOLifecycleListener listener)
@@ -158,18 +161,22 @@ public class JDOLifecycleManager
 
 			if (filterID2LifecycleListener.remove(jdoLifecycleListenerFilter.getFilterID().getFilterID()) != listener)
 				throw new IllegalStateException("Two JDOLifecycleListeners used the same filter and we didn't recognize it before.");
+
+			lifecycleListenerFilters = null;
 		}
 
+		Cache.sharedInstance().removeLifecycleListenerFilter(jdoLifecycleListenerFilter, 0);
+
 		// TODO we need to do this asynchronously via the cache!!!
-		try {
-			Login.getLogin();
-			JDOManager m = JDOManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
-			HashSet<Long> filterIDs = new HashSet<Long>(1);
-			filterIDs.add(jdoLifecycleListenerFilter.getFilterID().getFilterID());
-			m.removeLifecycleListenerFilters(filterIDs);
-		} catch (Exception x) {
-			throw new RuntimeException(x);
-		}
+//		try {
+//			Login.getLogin();
+//			JDOManager m = JDOManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
+//			HashSet<Long> filterIDs = new HashSet<Long>(1);
+//			filterIDs.add(jdoLifecycleListenerFilter.getFilterID().getFilterID());
+//			m.removeLifecycleListenerFilters(filterIDs);
+//		} catch (Exception x) {
+//			throw new RuntimeException(x);
+//		}
 	}
 
 	private Set<JDOLifecycleListener> lifecycleListeners = new HashSet<JDOLifecycleListener>();
@@ -177,6 +184,14 @@ public class JDOLifecycleManager
 	 * Accessing this object must be synchronized using {@link #lifecycleListeners} as mutex.
 	 */
 	private Map<Long, JDOLifecycleListener> filterID2LifecycleListener = new HashMap<Long, JDOLifecycleListener>();
+
+	/**
+	 * This is a cache used by {@link #getLifecycleListenerFilters()} and invalidated (i.e. set to <code>null</code>)
+	 * by {@link #addLifecycleListener(JDOLifecycleListener)} and {@link #removeLifecycleListener(JDOLifecycleListener)}.
+	 * Once it has been created, it is not modified anymore - thus it can be safely returned to the outside world
+	 * (as a read-only list).
+	 */
+	private List<IJDOLifecycleListenerFilter> lifecycleListenerFilters = null;
 
 	/**
 	 * @param filterID The ID of the filter.
@@ -190,4 +205,17 @@ public class JDOLifecycleManager
 		}
 	}
 
+	public Collection<IJDOLifecycleListenerFilter> getLifecycleListenerFilters()
+	{
+		synchronized (lifecycleListeners) {
+			if (lifecycleListenerFilters == null) {
+				ArrayList<IJDOLifecycleListenerFilter> res = new ArrayList<IJDOLifecycleListenerFilter>(lifecycleListeners.size());
+				for (JDOLifecycleListener listener : lifecycleListeners)
+					res.add(listener.getJDOLifecycleListenerFilter());
+
+				lifecycleListenerFilters = Collections.unmodifiableList(res);
+			}
+			return lifecycleListenerFilters;
+		}
+	}
 }

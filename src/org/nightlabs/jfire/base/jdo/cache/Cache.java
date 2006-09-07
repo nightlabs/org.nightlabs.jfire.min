@@ -32,9 +32,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
 
 import javax.jdo.JDOHelper;
 
@@ -54,6 +54,7 @@ import org.nightlabs.jfire.jdo.JDOManager;
 import org.nightlabs.jfire.jdo.JDOManagerUtil;
 import org.nightlabs.jfire.jdo.cache.DirtyObjectID;
 import org.nightlabs.jfire.jdo.cache.NotificationBundle;
+import org.nightlabs.jfire.jdo.notification.IJDOLifecycleListenerFilter;
 import org.nightlabs.notification.NotificationEvent;
 import org.nightlabs.util.CollectionUtil;
 
@@ -88,9 +89,7 @@ public class Cache
 			start();
 		}
 
-		/**
-		 * @see java.lang.Thread#run()
-		 */
+		@Override
 		public void run()
 		{
 			long lastErrorDT = 0;
@@ -104,15 +103,22 @@ public class Cache
 					NotificationBundle notificationBundle = jdoManager.waitForChanges(
 							cache.getCacheCfMod().getWaitForChangesTimeoutMSec());
 
+					if (notificationBundle != null && notificationBundle.isVirginCacheSession())
+						cache.setResubscribeAllListeners(true);
+
 					{ // implicit listeners
-						List<DirtyObjectID> dirtyObjectIDs = notificationBundle == null ? null : notificationBundle.getDirtyObjectIDs();
+						SortedSet<DirtyObjectID> dirtyObjectIDs = notificationBundle == null ? null : notificationBundle.getDirtyObjectIDs();
 
 						if (dirtyObjectIDs != null) {
-							logger.info("Received change notification with " + dirtyObjectIDs.size() + " DirtyObjectIDs.");
+							logger.info("Received notification for implicit listeners with " + dirtyObjectIDs.size() + " DirtyObjectIDs.");
+							if (logger.isDebugEnabled()) {
+								for (DirtyObjectID dirtyObjectID : dirtyObjectIDs)
+									logger.debug("  " + dirtyObjectID);
+							}
+
 							int removedCarrierCount = 0;
 							Set<Object> objectIDs = new HashSet<Object>(dirtyObjectIDs.size());
-							for (Iterator it = dirtyObjectIDs.iterator(); it.hasNext(); ) {
-								DirtyObjectID dirtyObjectID = (DirtyObjectID)it.next();
+							for (DirtyObjectID dirtyObjectID : dirtyObjectIDs) {
 								objectIDs.add(dirtyObjectID.getObjectID());
 								removedCarrierCount += cache.removeByObjectID(dirtyObjectID.getObjectID());
 							}
@@ -156,16 +162,25 @@ public class Cache
 					}
 
 					{ // explicit listeners
-						Map<Long, List<DirtyObjectID>> filterID2DirtyObjectIDs = notificationBundle == null ? null : notificationBundle.getFilterID2dirtyObjectIDs();
+						Map<Long, SortedSet<DirtyObjectID>> filterID2DirtyObjectIDs = notificationBundle == null ? null : notificationBundle.getFilterID2dirtyObjectIDs();
 						if (filterID2DirtyObjectIDs != null) {
-							for (Map.Entry<Long, List<DirtyObjectID>> me : filterID2DirtyObjectIDs.entrySet()) {
+							logger.info("Received notification for " + filterID2DirtyObjectIDs.size() + " explicit listeners.");
+							for (Map.Entry<Long, SortedSet<DirtyObjectID>> me : filterID2DirtyObjectIDs.entrySet()) {
 								Long filterID = me.getKey();
-								List<DirtyObjectID> dirtyObjectIDs = me.getValue();
+								SortedSet<DirtyObjectID> dirtyObjectIDs = me.getValue();
 
 								JDOLifecycleListener listener = JDOLifecycleManager.sharedInstance().getLifecycleListener(filterID);
 								if (listener == null)
 									logger.error("No listener found for filterID="+filterID);
 								else {
+									if (logger.isDebugEnabled()) {
+										logger.debug("Triggering listener (filterID=" + filterID + ") with " + dirtyObjectIDs.size() + " dirtyObjectIDs:");
+										for (DirtyObjectID dirtyObjectID : dirtyObjectIDs) {
+											if (logger.isDebugEnabled())
+												logger.debug("  " + dirtyObjectID);
+										}
+									}
+
 									JDOLifecycleEvent event = new JDOLifecycleEvent(cache, dirtyObjectIDs);
 									listener.notifyLifecycleEvent(event);
 								}
@@ -199,6 +214,7 @@ public class Cache
 		 * @see java.lang.Thread#isInterrupted()
 		 * @see #interrupt()
 		 */
+		@Override
 		public boolean isInterrupted()
 		{
 			return terminated || super.isInterrupted();
@@ -211,11 +227,22 @@ public class Cache
 		 * @see java.lang.Thread#interrupt()
 		 * @see #isInterrupted()
 		 */
+		@Override
 		public void interrupt()
 		{
 			terminated = true;
 			super.interrupt();
 		}
+	}
+
+	private volatile boolean resubscribeAllListeners = false;
+	public boolean isResubscribeAllListeners()
+	{
+		return resubscribeAllListeners;
+	}
+	public void setResubscribeAllListeners(boolean resubscribeAllListeners)
+	{
+		this.resubscribeAllListeners = resubscribeAllListeners;
 	}
 
 	private CacheManagerThread cacheManagerThread;
@@ -236,14 +263,12 @@ public class Cache
 
 		private Set<Object> currentlySubscribedObjectIDs = new HashSet<Object>();
 
-		/**
-		 * @see java.lang.Thread#run()
-		 */
+		@Override
 		public void run()
 		{
 			long lastErrorDT = 0;
 			JDOManager jdoManager = null;
-			boolean resync;
+//			boolean resync;
 
 			while (!isInterrupted()) {
 				try {
@@ -275,25 +300,22 @@ public class Cache
 						}
 					} // if (newCarriersByKey != null) {
 
-					resync = System.currentTimeMillis() - lastResyncDT > cache.getCacheCfMod().getResyncRemoteListenersIntervalMSec();
+//					resync = System.currentTimeMillis() - lastResyncDT > cache.getCacheCfMod().getResyncRemoteListenersIntervalMSec();
 
-					if (jdoManager == null)
-						jdoManager = JDOManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
-
-					Map subscriptionChanges = cache.fetchSubscriptionChangeRequests();
+					Map<Object, SubscriptionChangeRequest> subscriptionChanges = cache.fetchSubscriptionChangeRequests();
 //					if (LOGGER.isDebugEnabled())
 //						LOGGER.debug("Thread found " + subscriptionChanges.size() + " subscription change requests.");
 
 					Map<Object, SubscriptionChangeRequest> newSubscriptionChanges = null;
 					LinkedList<Object> objectIDsToSubscribe = null;
 					LinkedList<Object> objectIDsToUnsubscribe = null;
+					LinkedList<IJDOLifecycleListenerFilter> filtersToSubscribe = null;
+					LinkedList<Long> filterIDsToUnsubscribe = null;
 					boolean restoreCurrentlySubscribedObjectIDs = true;
 					try {
 						long now = System.currentTimeMillis();
 						for (Iterator it = subscriptionChanges.entrySet().iterator(); it.hasNext(); ) {
-							logger.debug("Before it.next()");
 							Map.Entry me = (Map.Entry) it.next();
-							logger.debug("After it.next()");
 							Object objectID = me.getKey();
 							SubscriptionChangeRequest scr = (SubscriptionChangeRequest) me.getValue();
 
@@ -309,47 +331,84 @@ public class Cache
 							else {
 								if (scr.getAction() == SubscriptionChangeRequest.ACTION_REMOVE) {
 								// remove
-									currentlySubscribedObjectIDs.remove(objectID);
+									if (scr.getObjectID() != null) {
+										// implicit listener
+										currentlySubscribedObjectIDs.remove(objectID);
 
-									if (objectIDsToUnsubscribe == null)
-										objectIDsToUnsubscribe = new LinkedList<Object>();
+										if (objectIDsToUnsubscribe == null)
+											objectIDsToUnsubscribe = new LinkedList<Object>();
 
-									objectIDsToUnsubscribe.add(objectID);
+										objectIDsToUnsubscribe.add(objectID);
+									}
+									else {
+										// explicit listener
+										if (filterIDsToUnsubscribe == null)
+											filterIDsToUnsubscribe = new LinkedList<Long>();
+
+										filterIDsToUnsubscribe.add((Long)objectID);
+									}
 								}
 								else {
 								// add
-									// if there exists already one, we don't register it again => ignore
-									if (!currentlySubscribedObjectIDs.contains(objectID)) {
-										if (objectIDsToSubscribe == null)
-											objectIDsToSubscribe = new LinkedList<Object>();
+									if (scr.getObjectID() != null) {
+										// implicit listener
+										// if there exists already one, we don't register it again => ignore
+										if (!currentlySubscribedObjectIDs.contains(objectID)) {
+											if (objectIDsToSubscribe == null)
+												objectIDsToSubscribe = new LinkedList<Object>();
 
-										objectIDsToSubscribe.add(objectID);
-										currentlySubscribedObjectIDs.add(objectID);
+											objectIDsToSubscribe.add(objectID);
+											currentlySubscribedObjectIDs.add(objectID);
+										}
+										else {
+											if (logger.isDebugEnabled())
+												logger.debug("Subscription change request " + scr.toString() + " is ignored, because there exists already a listener.");
+										}
 									}
 									else {
-										if (logger.isDebugEnabled())
-											logger.debug("Subscription change request " + scr.toString() + " is ignored, because there exists already a listener.");
+										// explicit listener
+										if (filtersToSubscribe == null)
+											filtersToSubscribe = new LinkedList<IJDOLifecycleListenerFilter>();
+
+										filtersToSubscribe.add(scr.getFilter());
 									}
 								}
 							}
 						}
 
-						if (resync) {
-							logger.info("Synchronizing remote change listeners.");
+						if (jdoManager == null)
+							jdoManager = JDOManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
 
-							jdoManager.resubscribeAllChangeListeners(
-									currentlySubscribedObjectIDs);
+						if (cache.isResubscribeAllListeners()) {
+							logger.info("Synchronizing all listeners.");
+
+							cache.setResubscribeAllListeners(false);
+							boolean resubscribeFailed = true;
+							try {
+								jdoManager.resubscribeAllListeners(
+										currentlySubscribedObjectIDs,
+										JDOLifecycleManager.sharedInstance().getLifecycleListenerFilters());
+								resubscribeFailed = false;
+							} finally {
+								if (resubscribeFailed)
+									cache.setResubscribeAllListeners(true);
+							}
 
 							lastResyncDT = System.currentTimeMillis();
 						}
 						else {
-							if (objectIDsToUnsubscribe != null || objectIDsToSubscribe != null) {
+							if (objectIDsToUnsubscribe != null || objectIDsToSubscribe != null ||
+									filterIDsToUnsubscribe != null || filtersToSubscribe != null) {
 								logger.info(
 										"Adding " +
 										(objectIDsToSubscribe == null ? 0 : objectIDsToSubscribe.size()) +
 										" and removing " +
 										(objectIDsToUnsubscribe == null ? 0 : objectIDsToUnsubscribe.size()) +
-										" remote change listeners.");
+										" implicit remote listeners. Adding " +
+										(filtersToSubscribe == null ? 0 : filtersToSubscribe.size()) +
+										" and removing " +
+										(filterIDsToUnsubscribe == null ? 0 : filterIDsToUnsubscribe.size()) +
+										" filters for explicit listeners.");
 
 								if (logger.isDebugEnabled()) {
 									logger.debug("Change listeners for the following ObjectIDs will be removed:");
@@ -367,11 +426,30 @@ public class Cache
 										for (Iterator it = objectIDsToSubscribe.iterator(); it.hasNext(); )
 											logger.debug("      " +  it.next());
 									}
+
+									logger.debug("LifecycleListenerFilters with the following IDs will be removed:");
+									if (filterIDsToUnsubscribe == null)
+										logger.debug("      NONE!");
+									else {
+										for (Long filterID : filterIDsToUnsubscribe)
+											logger.debug("      " +  filterID);
+									}
+
+									logger.debug("LifecycleListenerFilters will be added:");
+									if (filtersToSubscribe == null)
+										logger.debug("      NONE!");
+									else {
+										for (IJDOLifecycleListenerFilter filter : filtersToSubscribe) {
+											logger.debug("      id=" +  filter.getFilterID().getFilterID() + " filter=" + filter);
+										}
+									}
 								}
 
-								jdoManager.removeAddChangeListeners(
+								jdoManager.removeAddListeners(
 										objectIDsToUnsubscribe,
-										objectIDsToSubscribe);
+										objectIDsToSubscribe,
+										filtersToSubscribe,
+										filterIDsToUnsubscribe);
 							}
 						}
 
@@ -419,6 +497,7 @@ public class Cache
 		 * @see java.lang.Thread#isInterrupted()
 		 * @see #interrupt()
 		 */
+		@Override
 		public boolean isInterrupted()
 		{
 			return terminated || super.isInterrupted();
@@ -431,6 +510,7 @@ public class Cache
 		 * @see java.lang.Thread#interrupt()
 		 * @see #isInterrupted()
 		 */
+		@Override
 		public void interrupt()
 		{
 			terminated = true;
@@ -438,8 +518,11 @@ public class Cache
 		}
 	}
 
+//	private Map<Long, Subsc> filterSubscribeRequests = new HashMap<Long, IJDOLifecycleListenerFilter>();
+//	private Object filterSubscribeRequestsMutex = new Object();
+
 	/**
-	 * key: Object objectID<br/>
+	 * key: Object objectID (can be an instance of {@link Long} which references the filterID then and means the {@link SubscriptionChangeRequest} has an {@link IJDOLifecycleListenerFilter})<br/>
 	 * value: SubscriptionChangeRequest
 	 * <p>
 	 * The
@@ -522,6 +605,80 @@ public class Cache
 	}
 
 	/**
+	 * Though this method is public, you <b>must not</b> call it directly. Instead, you should
+	 * use the API provided by {@link JDOLifecycleManager}.
+	 * <p>
+	 * This method is called by {@link JDOLifecycleManager} when a new {@link JDOLifecycleListener}
+	 * is added.
+	 * </p>
+	 *
+	 * @param filter The filter to be added asynchronously
+	 */
+	public void addLifecycleListenerFilter(IJDOLifecycleListenerFilter filter, long delayMSec)
+	{
+		synchronized (subscriptionChangeRequestsMutex) {
+			Long filterID = filter.getFilterID().getFilterID();
+			
+			SubscriptionChangeRequest scr = subscriptionChangeRequests.get(filterID);
+			if (scr != null) {
+				if (scr.getAction() == SubscriptionChangeRequest.ACTION_ADD
+						&&
+						scr.getScheduledActionDT() < System.currentTimeMillis() + delayMSec) {
+
+					if (logger.isDebugEnabled())
+						logger.warn("Ignoring request to add LifecycleListenerFilter, because there is already a request, which is scheduled earlier. filterID="+filterID+" filter: " + filter);
+
+					return;
+				}
+			}
+
+			subscriptionChangeRequests.put(
+					filterID,
+					new SubscriptionChangeRequest(
+							SubscriptionChangeRequest.ACTION_ADD,
+							filter,
+							delayMSec));
+		}
+	}
+
+	/**
+	 * Though this method is public, you <b>must not</b> call it directly. Instead, you should
+	 * use the API provided by {@link JDOLifecycleManager}.
+	 * <p>
+	 * This method is called by {@link JDOLifecycleManager} when a {@link JDOLifecycleListener}
+	 * is removed.
+	 * </p>
+	 *
+	 * @param filter The filter to be added asynchronously
+	 */
+	public void removeLifecycleListenerFilter(IJDOLifecycleListenerFilter filter, long delayMSec)
+	{
+		synchronized (subscriptionChangeRequestsMutex) {
+			Long filterID = filter.getFilterID().getFilterID();
+			
+			SubscriptionChangeRequest scr = subscriptionChangeRequests.get(filterID);
+			if (scr != null) {
+				if (scr.getAction() == SubscriptionChangeRequest.ACTION_REMOVE
+						&&
+						scr.getScheduledActionDT() < System.currentTimeMillis() + delayMSec) {
+
+					if (logger.isDebugEnabled())
+						logger.warn("Ignoring request to remove LifecycleListenerFilter, because there is already a request, which is scheduled earlier. filterID="+filterID+" filter: " + filter);
+
+					return;
+				}
+			}
+
+			subscriptionChangeRequests.put(
+					filterID,
+					new SubscriptionChangeRequest(
+							SubscriptionChangeRequest.ACTION_REMOVE,
+							filter,
+							delayMSec));
+		}
+	}
+
+	/**
 	 * This method subscribes the given <code>objectIDs</code> asynchronously
 	 * via the {@link CacheManagerThread} (which calls
 	 * {@link JDOManager#addChangeListeners(java.lang.String, java.util.Collection)}).
@@ -548,8 +705,8 @@ public class Cache
 				subscriptionChangeRequests.put(
 						objectID,
 						new SubscriptionChangeRequest(SubscriptionChangeRequest.ACTION_ADD,
-						objectID,
-						delayMSec));
+								objectID,
+								delayMSec));
 			}
 		}
 	}
@@ -660,12 +817,12 @@ public class Cache
 	 *		otherwise it replaces the current map by a new one and
 	 *		returns it.
 	 */
-	protected synchronized Map fetchNewCarriersByKey()
+	protected synchronized Map<Key, Carrier> fetchNewCarriersByKey()
 	{
 		if (newCarriersByKey.isEmpty())
 			return null;
 
-		Map res = newCarriersByKey;
+		Map<Key, Carrier> res = newCarriersByKey;
 		newCarriersByKey = new HashMap<Key, Carrier>();
 		return res;
 	}

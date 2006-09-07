@@ -27,7 +27,6 @@
 package org.nightlabs.jfire.base.jdo.cache;
 
 import org.apache.log4j.Logger;
-
 import org.nightlabs.config.ConfigModule;
 import org.nightlabs.config.InitException;
 
@@ -47,7 +46,7 @@ public class CacheCfMod extends ConfigModule
 	private long localListenerReactionTimeMSec = 0;
 	private long waitForChangesTimeoutMSec = 0;
 	private long cacheManagerThreadIntervalMSec = 0;
-	private long resyncRemoteListenersIntervalMSec = 0;
+//	private long resyncRemoteListenersIntervalMSec = 0;
 	private int carrierContainerCount = 0;
 	private long carrierContainerActivityMSec = 0;
 
@@ -87,10 +86,10 @@ public class CacheCfMod extends ConfigModule
 				"    remote-listeners will be added to the server or old ones removed and all 3 sec\n" +
 				"    it will be checked, whether the CarrierContainers need to be rolled (and\n" +
 				"    therefore old ones be dropped).\n" +
-				"\n" +
-				"* resyncRemoteListenersIntervalMSec: In which intervals shall the Cache sync all\n" +
-				"    the listeners (means drop all remote ones and resubscribe the ones in its local\n" +
-				"    CacheManagerThread.currentlySubscribedObjectIDs. Default is 3600000 (60 min).\n" +
+//				"\n" +
+//				"* resyncRemoteListenersIntervalMSec: In which intervals shall the Cache sync all\n" +
+//				"    the listeners (means drop all remote ones and resubscribe the ones in its local\n" +
+//				"    CacheManagerThread.currentlySubscribedObjectIDs. Default is 3600000 (60 min).\n" +
 				"\n" +
 				"* carrierContainerCount: Carriers (means the cached objects in their wrappers)\n" +
 				"    expire after a certain time. To avoid iterating all Carriers and check their\n" +
@@ -122,8 +121,8 @@ public class CacheCfMod extends ConfigModule
 		if (cacheManagerThreadIntervalMSec < 100)
 			setCacheManagerThreadIntervalMSec(3 * 1000);
 
-		if (resyncRemoteListenersIntervalMSec <= 0)
-			setResyncRemoteListenersIntervalMSec(60 * 60 * 1000);
+//		if (resyncRemoteListenersIntervalMSec <= 0)
+//			setResyncRemoteListenersIntervalMSec(60 * 60 * 1000);
 
 		if (carrierContainerCount < 2 || carrierContainerCount > 300)
 			setCarrierContainerCount(24);
@@ -141,7 +140,7 @@ public class CacheCfMod extends ConfigModule
 			logger.debug("    localListenerReactionTimeMSec=" + localListenerReactionTimeMSec);
 			logger.debug("    waitForChangesTimeoutMSec=" + waitForChangesTimeoutMSec);
 			logger.debug("    cacheManagerThreadIntervalMSec=" + cacheManagerThreadIntervalMSec);
-			logger.debug("    resyncRemoteListenersIntervalMSec=" + resyncRemoteListenersIntervalMSec);
+//			logger.debug("    resyncRemoteListenersIntervalMSec=" + resyncRemoteListenersIntervalMSec);
 			logger.debug("    carrierContainerCount=" + carrierContainerCount);
 			logger.debug("    carrierContainerActivityMSec=" + carrierContainerActivityMSec);
 			logger.debug("    referenceType=" + referenceType);
@@ -225,22 +224,22 @@ public class CacheCfMod extends ConfigModule
 		this.localListenerReactionTimeMSec = localListenerReactionTimeMSec;
 		setChanged();
 	}
-	/**
-	 * @return Returns the resyncRemoteListenersIntervalMSec.
-	 */
-	public long getResyncRemoteListenersIntervalMSec()
-	{
-		return resyncRemoteListenersIntervalMSec;
-	}
-	/**
-	 * @param resyncRemoteListenersIntervalMSec The resyncRemoteListenersIntervalMSec to set.
-	 */
-	public void setResyncRemoteListenersIntervalMSec(
-			long resyncRemoteListenersIntervalMSec)
-	{
-		this.resyncRemoteListenersIntervalMSec = resyncRemoteListenersIntervalMSec;
-		setChanged();
-	}
+//	/**
+//	 * @return Returns the resyncRemoteListenersIntervalMSec.
+//	 */
+//	public long getResyncRemoteListenersIntervalMSec()
+//	{
+//		return resyncRemoteListenersIntervalMSec;
+//	}
+//	/**
+//	 * @param resyncRemoteListenersIntervalMSec The resyncRemoteListenersIntervalMSec to set.
+//	 */
+//	public void setResyncRemoteListenersIntervalMSec(
+//			long resyncRemoteListenersIntervalMSec)
+//	{
+//		this.resyncRemoteListenersIntervalMSec = resyncRemoteListenersIntervalMSec;
+//		setChanged();
+//	}
 	/**
 	 * @return Returns the threadErrorWaitMSec.
 	 */
