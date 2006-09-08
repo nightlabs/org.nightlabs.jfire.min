@@ -44,7 +44,6 @@ import org.nightlabs.config.Config;
 import org.nightlabs.config.ConfigException;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.jdo.notification.ChangeEvent;
-import org.nightlabs.jfire.base.jdo.notification.ChangeManager;
 import org.nightlabs.jfire.base.jdo.notification.ChangeSubjectCarrier;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleEvent;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleListener;
@@ -149,7 +148,7 @@ public class Cache
 										dirtyObjectID.getObjectID()));
 							}
 
-							ChangeManager.sharedInstance().notify(
+							org.nightlabs.jfire.base.jdo.notification.ChangeManager.sharedInstance().notify(
 									new ChangeEvent(
 											cache,             // source
 											(String)null,      // zone
@@ -253,7 +252,7 @@ public class Cache
 		private static volatile int nextID = 0;
 
 		private Cache cache;
-		private long lastResyncDT = System.currentTimeMillis();
+//		private long lastResyncDT = System.currentTimeMillis();
 
 		public CacheManagerThread(Cache cache)
 		{
@@ -288,12 +287,12 @@ public class Cache
 					// *** container management above ***
 
 					// *** listener management below ***
-					Map newCarriersByKey = cache.fetchNewCarriersByKey();
+					// fill in the object graph for all new objects 
+					Map<Key, Carrier> newCarriersByKey = cache.fetchNewCarriersByKey();
 					if (newCarriersByKey != null) {
-						for (Iterator itCarriers = newCarriersByKey.entrySet().iterator(); itCarriers.hasNext(); ) {
-							Map.Entry me = (Map.Entry)itCarriers.next();
-							Key key = (Key) me.getKey();
-							Carrier carrier = (Carrier) me.getValue();
+						for (Map.Entry<Key, Carrier> me : newCarriersByKey.entrySet()) {
+							Key key = me.getKey();
+							Carrier carrier = me.getValue();
 
 							Set objectIDs = carrier.getObjectIDs();
 							cache.mapObjectIDs2Key(objectIDs, key);
@@ -395,7 +394,7 @@ public class Cache
 									cache.setResubscribeAllListeners(true);
 							}
 
-							lastResyncDT = System.currentTimeMillis();
+//							lastResyncDT = System.currentTimeMillis();
 						}
 						else {
 							if (objectIDsToUnsubscribe != null || objectIDsToSubscribe != null ||
@@ -780,17 +779,30 @@ public class Cache
 	 * key: {@link Key} key<br/>
 	 * value: {@link Carrier} carrier
 	 */
-	private Map<Key, Carrier> carriersByKey = new HashMap<Key, Carrier>();
+	private Map<Key, Carrier> key2Carrier = new HashMap<Key, Carrier>();
 
 	/**
+	 * This map references all keys that are affected when an object becomes invalidated
+	 * (i.e. removed or dirty on the server). That means, it contains relations for the
+	 * whole object graph.
+	 * <p>
+	 * Note, that the transversal is asynchronously by the {@link CacheManagerThread}. 
+	 * </p>
+	 *
 	 * key: Object objectID<br/>
 	 * value: Set of Key
 	 */
-	private Map<Object, Set<Key>> keySetsByObjectID = new HashMap<Object, Set<Key>>();
+	private Map<Object, Set<Key>> objectID2KeySet_dependency = new HashMap<Object, Set<Key>>();
+
+	/**
+	 * In contrast to {@link #objectID2KeySet_dependency}, this map references only those {@link Key}s,
+	 * that point to the same objectID. And this map is only used for scope <code>null</code>.
+	 */
+	private Map<Object, Set<Key>> objectID2KeySet_alternative = new HashMap<Object, Set<Key>>();
 
 	/**
 	 * When a new object is put into the Cache, it is immediately registered in
-	 * {@link #carriersByKey}, {@link #keySetsByObjectID} and here. In {@link #keySetsByObjectID}
+	 * {@link #key2Carrier}, {@link #objectID2KeySet_dependency} and here. In {@link #objectID2KeySet_dependency}
 	 * however, there is only the main <code>objectID</code> registered immediately.
 	 * All contained objects within the object graph are added later in the
 	 * {@link CacheManagerThread}. This thread replaces this Map using
@@ -935,7 +947,7 @@ public class Cache
 		Object object = null;
 
 		Key key = new Key(scope, objectID, fetchGroups, maxFetchDepth);
-		Carrier carrier = (Carrier) carriersByKey.get(key);
+		Carrier carrier = (Carrier) key2Carrier.get(key);
 		if (carrier == null) {
 			if (logger.isDebugEnabled())
 				logger.debug("No Carrier found for key: " + key.toString());
@@ -943,9 +955,10 @@ public class Cache
 			// If and only if the scope is null, we search for a record that contains
 			// AT LEAST our required fetch groups and AT LEAST our maxFetchDepth.
 			if (scope == null) {
-				logger.debug("scope == null => searching for alternative entries (which contain at least the required fetch groups)...");
+				if (logger.isDebugEnabled())
+					logger.debug("scope == null => searching for alternative entries (which contain at least the required fetch groups)...");
 
-				Set<Key> keySet = keySetsByObjectID.get(objectID);
+				Set<Key> keySet = objectID2KeySet_alternative.get(objectID);
 				if (keySet != null) {
 					iterateCandidateKey: for (Key candidateKey : keySet) {
 						// is the scope correct?
@@ -969,7 +982,7 @@ public class Cache
 								continue iterateCandidateKey;
 						}
 	
-						carrier = (Carrier) carriersByKey.get(candidateKey);
+						carrier = (Carrier) key2Carrier.get(candidateKey);
 						if (carrier != null) {
 							object = carrier.getObject();
 							if (object == null) {
@@ -979,7 +992,9 @@ public class Cache
 								carrier = null;
 							}
 							else {
-								logger.debug("Found alternative entry with at least the required fetch groups: searched key: " + key.toString() + " candidateKey: " + candidateKey.toString());
+								if (logger.isDebugEnabled())
+									logger.debug("Found alternative entry with at least the required fetch groups: searched key: " + key.toString() + " candidateKey: " + candidateKey.toString());
+
 								carrier.setAccessDT();
 								return object;
 							}
@@ -987,6 +1002,9 @@ public class Cache
 						} // if (carrier != null) {
 					} // iterateCandidateKey
 				} // if (keySet != null) {
+
+				if (logger.isDebugEnabled())
+					logger.debug("...no alternative entry found.");
 			} // if (scope == null) {
 
 			return null;
@@ -1079,7 +1097,7 @@ public class Cache
 
 		synchronized (this) {
 			// remove the old carrier - if existing
-			Carrier oldCarrier = (Carrier) carriersByKey.get(key);
+			Carrier oldCarrier = (Carrier) key2Carrier.get(key);
 			if (oldCarrier != null) {
 				if (logger.isDebugEnabled())
 					logger.debug("There was an old carrier for the same key in the cache; removing it. key: " + key.toString());
@@ -1091,17 +1109,30 @@ public class Cache
 			Carrier carrier = new Carrier(key, object, getActiveCarrierContainer());
 
 			// store the new carrier in our main cache map
-			carriersByKey.put(key, carrier);
+			key2Carrier.put(key, carrier);
 			// ...and in the newCarriers map
 			newCarriersByKey.put(key, carrier);
 
 			// register the key by its objectID (for fast removal if the object changed)
-			Set<Key> keySet = keySetsByObjectID.get(objectID);
-			if (keySet == null) {
-				keySet = new HashSet<Key>();
-				keySetsByObjectID.put(objectID, keySet);
+			// note that the whole object graph is filled in later by the CacheManagerThread
+			{
+				Set<Key> keySet = objectID2KeySet_dependency.get(objectID);
+				if (keySet == null) {
+					keySet = new HashSet<Key>();
+					objectID2KeySet_dependency.put(objectID, keySet);
+				}
+				keySet.add(key);
 			}
-			keySet.add(key);
+
+			// register the key for finding alternatives with more fetchgroups (only in scope null)
+			if (scope == null) {
+				Set<Key> keySet = objectID2KeySet_alternative.get(objectID);
+				if (keySet == null) {
+					keySet = new HashSet<Key>();
+					objectID2KeySet_alternative.put(objectID, keySet);
+				}
+				keySet.add(key);
+			}
 		}
 
 //		// register the class of the pc object in the JDOObjectID2PCClassMap to minimize lookups.
@@ -1118,7 +1149,7 @@ public class Cache
 
 	/**
 	 * This method is called by the {@link CacheManagerThread} if there are objects returned
-	 * by {@link #fetchNewCarriersByKey()}. It adds entries to {@link #keySetsByObjectID}.
+	 * by {@link #fetchNewCarriersByKey()}. It adds entries to {@link #objectID2KeySet_dependency}.
 	 *
 	 * @param objectIDs The object-ids that should point to the given key.
 	 * @param key The key that should be mapped by all the given objectIDs.
@@ -1128,10 +1159,10 @@ public class Cache
 		for (Iterator it = objectIDs.iterator(); it.hasNext(); ) {
 			Object objectID = it.next();
 
-			Set<Key> keySet = keySetsByObjectID.get(objectID);
+			Set<Key> keySet = objectID2KeySet_dependency.get(objectID);
 			if (keySet == null) {
 				keySet = new HashSet<Key>();
-				keySetsByObjectID.put(objectID, keySet);
+				objectID2KeySet_dependency.put(objectID, keySet);
 			}
 			keySet.add(key);
 		}
@@ -1149,7 +1180,7 @@ public class Cache
 		if (logger.isDebugEnabled())
 			logger.debug("Removing Carrier for key: " + key.toString());
 
-		Carrier oldCarrier = (Carrier) carriersByKey.remove(key);
+		Carrier oldCarrier = (Carrier) key2Carrier.remove(key);
 		Set<Object> objectIDs;
 		if (oldCarrier == null) {
 			objectIDs = new HashSet<Object>();
@@ -1168,13 +1199,21 @@ public class Cache
 		for (Iterator it = objectIDs.iterator(); it.hasNext(); ) {
 			Object objectID = it.next(); // key.getObjectID();
 
-			Set keySet = (Set) keySetsByObjectID.get(objectID);
+			Set<Key> keySet = objectID2KeySet_dependency.get(objectID);
 			if (keySet != null) {
 				keySet.remove(key);
 
 				if (keySet.isEmpty())
-					keySetsByObjectID.remove(objectID);
+					objectID2KeySet_dependency.remove(objectID);
 			}
+		}
+
+		Set<Key> keySet = objectID2KeySet_alternative.get(key.getObjectID());
+		if (keySet != null) {
+			keySet.remove(key);
+
+			if (keySet.isEmpty())
+				objectID2KeySet_alternative.remove(key);
 		}
 
 		if (oldCarrier != null)
@@ -1196,14 +1235,16 @@ public class Cache
 	{
 		logger.debug("Removing all Carriers for objectID: " + objectID);
 
-		Set keySet = (Set) keySetsByObjectID.remove(objectID);
+		objectID2KeySet_alternative.remove(objectID);
+
+		Set keySet = (Set) objectID2KeySet_dependency.remove(objectID);
 		if (keySet == null)
 			return 0;
 
 		int removedCarrierCount = 0;
 		for (Iterator it = keySet.iterator(); it.hasNext(); ) {
 			Key key = (Key) it.next();
-			Carrier carrier = (Carrier) carriersByKey.remove(key);
+			Carrier carrier = (Carrier) key2Carrier.remove(key);
 			if (carrier != null) {
 				if (logger.isDebugEnabled())
 					logger.debug("Removing Carrier: key=\""+key.toString()+"\"");
@@ -1212,7 +1253,7 @@ public class Cache
 				removedCarrierCount++;
 			}
 			else
-				logger.warn("There was a key in the keySetsByObjectID, but no carrier for it in carriersByKey! key=\""+key.toString()+"\"");
+				logger.warn("There was a key in the objectID2KeySet_dependency, but no carrier for it in key2Carrier! key=\""+key.toString()+"\"");
 		}
 		return removedCarrierCount;
 	}
@@ -1254,8 +1295,8 @@ public class Cache
 			notificationThread = null;
 
 			// clear the cache
-			carriersByKey.clear();
-			keySetsByObjectID.clear();
+			key2Carrier.clear();
+			objectID2KeySet_dependency.clear();
 
 			// forget the sessionID - a new one will automatically be generated
 			sessionID = null;
