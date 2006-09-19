@@ -1406,6 +1406,15 @@ public class CacheManagerFactory
 
 	private void distributeDirtyObjectIDs_filter(Map<String, Map<AbsoluteFilterID, FilterWithDirtyObjectIDs>> sessionID2FilterID2FilterWithDirtyObjectIDs)
 	{
+		if (logger.isDebugEnabled()) {
+			logger.debug("***");
+			logger.debug("distributeDirtyObjectIDs_filter(...) enter");
+			logger.debug("sessionID2FilterID2FilterWithDirtyObjectIDs.size=" + sessionID2FilterID2FilterWithDirtyObjectIDs.size());
+			for (Map.Entry<String, Map<AbsoluteFilterID, FilterWithDirtyObjectIDs>> me : sessionID2FilterID2FilterWithDirtyObjectIDs.entrySet()) {
+				logger.debug("  sessionID=" + me.getKey() + " filterID2FilterWithDirtyObjectIDs.size=" + me.getValue().size());
+			}
+		} // if (logger.isDebugEnabled()) {
+
 		try {
 			// iterate all filters, authenticate as the user who owns the session and
 			// execute the filter method
@@ -1472,6 +1481,11 @@ public class CacheManagerFactory
 			}
 		} catch (LoginException x) {
 			throw new RuntimeException(x); // a LoginException should never happen.
+		}
+
+		if (logger.isDebugEnabled()) {
+			logger.debug("distributeDirtyObjectIDs_filter(...) exit");
+			logger.debug("***");
 		}
 	}
 
