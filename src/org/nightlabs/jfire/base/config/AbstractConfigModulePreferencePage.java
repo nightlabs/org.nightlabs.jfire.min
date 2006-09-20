@@ -52,7 +52,21 @@ import org.nightlabs.jfire.config.ConfigModule;
 import org.nightlabs.jfire.config.id.ConfigID;
 
 /**
- * An abstract PreferencePage for ConfigModules on user basis.
+ * An abstract PreferencePage for ConfigModules.
+ * Basicly it takes care of retrieving and storing
+ * the config module for you and provides callbacks
+ * to present the module to the user.
+ * See 
+ * {@link #getConfigModuleClass()}
+ * {@link #createPreferencePage(Composite)}
+ * {@link #updatePreferencePage(ConfigModule)}
+ * {@link #updateConfigModule(ConfigModule)}
+ * for methods you need to implement.
+ * 
+ * Also take a look at
+ * {@link #getConfigModuleFetchGroups()}
+ * in order to pass appropriate fetch groups to detach
+ * your config module.
  * 
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  *
@@ -62,7 +76,7 @@ extends PreferencePage
 implements IWorkbenchPreferencePage
 {
 
-	protected static String[] CONFIG_MODULE_FETCH_GROUPS = new String[] {FetchPlan.DEFAULT, FetchPlan.ALL}; // TODO are you sure you want FetchPlan.ALL?
+	protected static String[] CONFIG_MODULE_FETCH_GROUPS = new String[] {FetchPlan.DEFAULT, FetchPlan.ALL}; // TODO are you sure you want FetchPlan.ALL?, Yes, as default, individual pages, can overwrite. 
 
 	private XComposite wrapper;
 	private Button checkBoxAllowOverwrite;
@@ -311,6 +325,10 @@ implements IWorkbenchPreferencePage
 		return CONFIG_MODULE_FETCH_GROUPS;
 	}
 
+	/**
+	 * 
+	 * @return
+	 */
 	public int getConfigModuleMaxFetchDepth() {
 		return NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT;
 	}
