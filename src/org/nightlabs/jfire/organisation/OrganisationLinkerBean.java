@@ -76,9 +76,16 @@ public abstract class OrganisationLinkerBean implements javax.ejb.SessionBean
 	throws OrganisationAlreadyRegisteredException
 	{
 		if (applicantOrganisation == null)
-			throw new NullPointerException("applicantOrganisation");
+			throw new IllegalArgumentException("applicantOrganisation must not be null!");
 
 		String applicantOrganisationID = applicantOrganisation.getOrganisationID();
+
+		logger.info("***");
+		logger.info("requestRegistration(...) entered");
+		logger.info("  registrationID="+registrationID);
+		logger.info("  grantOrganisationID="+grantOrganisationID);
+		logger.info("  applicantOrganisationID="+applicantOrganisationID);
+		logger.info("***");
 
 		// We are not authenticated, thus we have to get the PersistenceManager manually.
 		// Which is not much work either ;-)
