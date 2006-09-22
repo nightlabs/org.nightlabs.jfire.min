@@ -27,6 +27,7 @@
 package org.nightlabs.jfire.servermanager.ra;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.FilenameFilter;
@@ -36,13 +37,16 @@ import java.io.StreamTokenizer;
 import java.lang.ref.SoftReference;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 
 import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
@@ -107,7 +111,6 @@ import org.nightlabs.jfire.servermanager.JFireServerManagerFactory;
 import org.nightlabs.jfire.servermanager.NoServerAdminException;
 import org.nightlabs.jfire.servermanager.OrganisationNotFoundException;
 import org.nightlabs.jfire.servermanager.RoleImportSet;
-import org.nightlabs.jfire.servermanager.TemplateParseException;
 import org.nightlabs.jfire.servermanager.config.CreateOrganisationConfigModule;
 import org.nightlabs.jfire.servermanager.config.J2eeServerTypeRegistryConfigModule;
 import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
@@ -115,6 +118,9 @@ import org.nightlabs.jfire.servermanager.config.OrganisationCf;
 import org.nightlabs.jfire.servermanager.config.OrganisationConfigModule;
 import org.nightlabs.jfire.servermanager.config.ServerCf;
 import org.nightlabs.jfire.servermanager.db.DatabaseAdapter;
+import org.nightlabs.jfire.servermanager.deploy.DeployOverwriteBehaviour;
+import org.nightlabs.jfire.servermanager.deploy.DeployedFileAlreadyExistsException;
+import org.nightlabs.jfire.servermanager.deploy.DeploymentJarItem;
 import org.nightlabs.jfire.servermanager.j2ee.J2EEAdapter;
 import org.nightlabs.jfire.servermanager.j2ee.JMSConnectionFactoryLookup;
 import org.nightlabs.jfire.servermanager.j2ee.SecurityReflector;
@@ -126,6 +132,7 @@ import org.nightlabs.jfire.servermanager.xml.ModuleDef;
 import org.nightlabs.jfire.servermanager.xml.RoleDef;
 import org.nightlabs.jfire.servermanager.xml.RoleGroupDef;
 import org.nightlabs.jfire.servermanager.xml.XMLReadException;
+import org.nightlabs.math.Base62Coder;
 import org.nightlabs.util.Utils;
 import org.xml.sax.SAXException;
 
@@ -1041,22 +1048,6 @@ public class JFireServerManagerFactoryImpl
 					JFireServerConfigModule.Database dbCf = mcf.getConfigModule().getDatabase();
 					JFireServerConfigModule.JDO jdoCf = mcf.getConfigModule().getJdo();
 
-					String organisationID_simpleChars = organisationID.replace('.', '_');
-
-					// generate databaseName
-					StringBuffer databaseNameSB = new StringBuffer();
-					databaseNameSB.append(dbCf.getDatabasePrefix());
-					databaseNameSB.append(organisationID_simpleChars);
-					databaseNameSB.append(dbCf.getDatabaseSuffix());
-					String databaseName = databaseNameSB.toString();
-
-					// get jdbc url
-					String dbURL = dbCf.getDatabaseURL(databaseName);
-					String datasourceJNDIName_relative = OrganisationCf.DATASOURCE_PREFIX_RELATIVE + organisationID;
-					String datasourceJNDIName_absolute = OrganisationCf.DATASOURCE_PREFIX_ABSOLUTE + organisationID;
-					String jdoPersistenceManagerFactoryJNDIName_relative = OrganisationCf.PERSISTENCE_MANAGER_FACTORY_PREFIX_RELATIVE + organisationID;
-					String jdoPersistenceManagerFactoryJNDIName_absolute = OrganisationCf.PERSISTENCE_MANAGER_FACTORY_PREFIX_ABSOLUTE + organisationID;
-
 					try {
 						Class.forName(dbCf.getDatabaseDriverName());
 					} catch (ClassNotFoundException e) {
@@ -1064,6 +1055,8 @@ public class JFireServerManagerFactoryImpl
 					}
 
 					// create database
+					String databaseName = dbCf.getDatabasePrefix() + organisationID.replace('.', '_') + dbCf.getDatabaseSuffix();
+					String dbURL = dbCf.getDatabaseURL(databaseName);
 					databaseAdapter = dbCf.instantiateDatabaseAdapter();
 
 					try {
@@ -1074,56 +1067,24 @@ public class JFireServerManagerFactoryImpl
 					}
 
 					jdoConfigDir = new File(jdoCf.getJdoConfigDirectory(organisationID)).getAbsoluteFile();
+					File datasourceDSXML = new File(jdoConfigDir, jdoCf.getDatasourceConfigFile(organisationID));
+					File jdoDSXML = new File(jdoConfigDir, jdoCf.getJdoConfigFile(organisationID));
 
-					Map variables = new HashMap();
-					variables.put("organisationID", organisationID);
-					variables.put("datasourceJNDIName_relative", datasourceJNDIName_relative);
-					variables.put("datasourceJNDIName_absolute", datasourceJNDIName_absolute);
-					variables.put("datasourceMetadataTypeMapping", dbCf.getDatasourceMetadataTypeMapping());
-					variables.put("jdoPersistenceManagerFactoryJNDIName_relative", jdoPersistenceManagerFactoryJNDIName_relative);
-					variables.put("jdoPersistenceManagerFactoryJNDIName_absolute", jdoPersistenceManagerFactoryJNDIName_absolute);
-					variables.put("databaseDriverName", dbCf.getDatabaseDriverName());
-					variables.put("databaseURL", dbURL);
-					variables.put("databaseUserName", dbCf.getDatabaseUserName());
-					variables.put("databasePassword", dbCf.getDatabasePassword());
+					// creating deployment descriptor for datasource
+					createDeploymentDescriptor(organisationID, datasourceDSXML,
+							new File(jdoCf.getDatasourceTemplateDSXMLFile()), null, DeployOverwriteBehaviour.EXCEPTION);
 
-					File datasourceDSXML;
-					try {
-						datasourceDSXML = createDSXML(
-								jdoConfigDir,
-								new File(jdoCf.getDatasourceTemplateDSXMLFile()),
-								jdoCf.getDatasourceConfigFile(organisationID),
-								variables);
-					} catch (Exception e) {
-						throw new ModuleException("Generating datasource ds xml file from template \""+jdoCf.getDatasourceTemplateDSXMLFile()+"\" failed!", e);
-					}
-
-					File jdoDSXML;
-					try {
-						jdoDSXML = createDSXML(
-								jdoConfigDir,
-								new File(jdoCf.getJdoTemplateDSXMLFile()),
-								jdoCf.getJdoConfigFile(organisationID),
-								variables);
-					} catch (Exception e) {
-						throw new ModuleException("Generating jdo ds xml file from template \""+jdoCf.getJdoTemplateDSXMLFile()+"\" failed!", e);
-					}
-
-//					// Activate the jdo ds xml by renaming it.
-//					File jdoDSXML = new File(
-//							jdoConfigDir,
-//							jdoCf.getJdoConfigFilePrefix() + organisationID + jdoCf.getJdoConfigFileSuffix()
-//							);
-//					tmpJDODSXML.renameTo(jdoDSXML);
+					// creating deployment descriptor for JDO PersistenceManagerFactory
+					createDeploymentDescriptor(organisationID, jdoDSXML,
+							new File(jdoCf.getJdoTemplateDSXMLFile()), null, DeployOverwriteBehaviour.EXCEPTION);
 
 					organisationCf = organisationConfigModule.addOrganisation(
 							organisationID, organisationName);
-//					, masterOrganisationID,
-//							"java:/"+jdoPersistenceManagerJNDIName);
+
 					if (userID != null && isServerAdmin) organisationCf.addServerAdmin(userID);
 					resetOrganisationCfs();
 					try {
-						getConfig().saveConfFile(true); // TODO force all modules to be written???
+						getConfig().save(true); // TODO really force all modules to be written???
 					} catch (ConfigException e) {
 						logger.fatal("Saving config failed!", e);
 					}
@@ -1147,7 +1108,7 @@ public class JFireServerManagerFactoryImpl
 								long now = System.currentTimeMillis();
 								datasourceDSXML.setLastModified(now);
 								jdoDSXML.setLastModified(now);
-								jdoDSXML.getParentFile().setLastModified(now);
+								jdoConfigDir.setLastModified(now);
 							}
 						}
 						logger.info("PersistenceManagerFactory of organisation \""+organisationID+"\" (\""+organisationName+"\") has been deployed.");
@@ -1232,12 +1193,6 @@ public class JFireServerManagerFactoryImpl
 							RoleGroupRef roleGroupRef = authority.createRoleGroupRef(roleGroup);
 							userRef.addRoleGroupRef(roleGroupRef);
 						}
-		//				for (Iterator it = createOrganisationConfigModule.getInitialRoleGroups().iterator(); it.hasNext(); ) {
-		//					RoleGroupCf roleGroupCf = (RoleGroupCf) it.next();
-		//					RoleGroup roleGroup = roleGroupCf.createRoleGroup(pm);
-		//					RoleGroupRef roleGroupRef = authority.createRoleGroupRef(roleGroup);
-		//					userRef.addRoleGroupRef(roleGroupRef);
-		//				}
 						if(logger.isDebugEnabled())
 							logger.debug("Assigning all RoleGroups to user \""+userID+"\" done.");
 						
@@ -1255,24 +1210,6 @@ public class JFireServerManagerFactoryImpl
 						if (creatingFirstOrganisation)
 							j2ee_flushAuthenticationCache();
 			
-						// Instantiate and fire all the CreateOrganisationListeners.
-		//				for (Iterator it = createOrganisationConfigModule.getCreateOrganisationListeners().iterator(); it.hasNext(); ) {
-		//					String className = (String)it.next();
-		//					if (className.startsWith("#")) // comment
-		//						continue;
-		//	
-		//					try {
-		//						Class clazz = Class.forName(className);
-		//						if (!CreateOrganisationListener.class.isAssignableFrom(clazz))
-		//							throw new ClassCastException("CreateOrganisationListener does not implement interface \""+CreateOrganisationListener.class.getName()+"\"!");
-		//							
-		//						CreateOrganisationListener listener = (CreateOrganisationListener) clazz.newInstance();
-		//						listener.organisationCreated(pm, org);
-		//					} catch (Exception x) {
-		//						LOGGER.fatal("notifying CreateOrganisationListener \""+className+"\" failed!", x);
-		//					}
-		//				}
-
 					} finally {
 						if (pm != null)
 							pm.close();
@@ -1327,7 +1264,7 @@ public class JFireServerManagerFactoryImpl
 		    				if (!organisationConfigModule.removeOrganisation(organisationCf.getOrganisationID()))
 		    					throw new IllegalStateException("Organisation was not registered in ConfigModule!");
 
-		    				organisationConfigModule._getConfig().saveConfFile();
+		    				organisationConfigModule._getConfig().save();
 		    			} catch (Throwable t) {
 		    				logger.error("Removing organisation \"" + organisationCf.getOrganisationID() + "\" from JFire server configuration failed!", t);
 		    			}
@@ -1572,75 +1509,305 @@ public class JFireServerManagerFactoryImpl
 		return organisationCfsCloned;
 	}
 
-	/**
-	 * Generate a -ds.xml file within the jdo config directory.
-	 *
-	 * @param jdoConfigDirectory The directory in which the temporary file will be created
-	 * @param templateDSXMLFile The template file to use.
-	 * @param finalDSXMLFileName The simple name (without path) of the ds.xml-file's final name. Note, that this
-	 *		must end with "-ds.xml" in order to work (otherwise the J2EE server will ignore the file)!
-	 * @param variables This map defines what variable has to be replaced by what value. The
-	 *				key is the variable name (without brackets "{", "}"!) and the value is the
-	 *				value for the variable to replace.
-	 * @return An instance of File pointing to the newly created temporary ds.xml-file.
-	 */
-	protected File createDSXML(File jdoConfigDirectory, File templateDSXMLFile, String finalDSXMLFileName, Map variables)
-		throws IOException, TemplateParseException
+	public void createDeploymentJar(String organisationID, File deploymentJar, Collection<DeploymentJarItem> deploymentJarItems, DeployOverwriteBehaviour deployOverwriteBehaviour)
+	throws IOException
 	{
-		if (!jdoConfigDirectory.exists()) {
-			logger.info("jdoConfigDirectory does not exist. Creating it: " + jdoConfigDirectory.getAbsolutePath());
-			if (!jdoConfigDirectory.mkdirs()) {
-				logger.error("Creating jdoConfigDirectory failed: " + jdoConfigDirectory.getAbsolutePath());
+		if (!deploymentJar.isAbsolute()) {
+			deploymentJar = new File(
+					new File(mcf.getConfigModule().getJ2ee().getJ2eeDeployBaseDirectory()).getAbsoluteFile().getParentFile(),
+					deploymentJar.getPath());
+		}
+
+		if (deploymentJar.exists()) {
+			switch (deployOverwriteBehaviour) {
+				case EXCEPTION:
+					throw new DeployedFileAlreadyExistsException(deploymentJar);
+				case KEEP:
+					logger.warn("File " + deploymentJar + " already exists. Will not change anything!");
+					return; // silently return
+				case OVERWRITE:
+					// nothing
+					break;
+				default:
+					throw new IllegalStateException("Unknown deployOverwriteBehaviour: " + deployOverwriteBehaviour);
 			}
 		}
 
-		File f;
+		logger.info("Creating deploymentJar: \""+deploymentJar.getAbsolutePath()+"\"");
+
+		// create a temporary directory
+		File tmpDir;
+		do {
+			tmpDir = new File(
+					Utils.getTempDir(),
+					"jfire_" +
+					Base62Coder.sharedInstance().encode(System.currentTimeMillis(), 1) + '-' +
+					Base62Coder.sharedInstance().encode((int)(Math.random() * Integer.MAX_VALUE), 1) + ".tmp");
+		} while (tmpDir.exists()); // should never happen, but it's safer ;-)
+
+		// in case there is no DeploymentJarItem, we create the tmpDir in any case
+		if (!tmpDir.mkdirs())
+			throw new IOException("Could not create temporary directory: " + tmpDir);
+
+		try { // ensure cleanup
+
+			// we create the manifest only, if it is not contained in the deploymentJarItems
+			File manifestFileRelative = new File("META-INF/MANIFEST.MF");
+
+			// create deployment descriptors within the temporary directory
+			boolean createManifest = true;
+			for (DeploymentJarItem deploymentJarItem : deploymentJarItems) {
+				if (manifestFileRelative.equals(deploymentJarItem.getDeploymentJarEntry()))
+					createManifest = false;
+
+				File deploymentDescriptorFile = new File(tmpDir, deploymentJarItem.getDeploymentJarEntry().getPath());
+				createDeploymentDescriptor(
+						organisationID,
+						deploymentDescriptorFile,
+						deploymentJarItem.getTemplateFile(),
+						deploymentJarItem.getAdditionalVariables(),
+						DeployOverwriteBehaviour.EXCEPTION); // it should not exist as we deploy into a temporary directory
+			}
+
+			// create manifest
+			if (createManifest) {
+				File manifestFile = new File(tmpDir, manifestFileRelative.getPath());
+				if (!manifestFile.getParentFile().mkdirs())
+					throw new IOException("Could not create META-INF directory: " + manifestFile.getParentFile());
+	
+				Manifest manifest = new Manifest();
+				manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
+				manifest.getMainAttributes().putValue("Created-By", "JFire - http://www.jfire.org");
+				FileOutputStream out = new FileOutputStream(manifestFile);
+				try {
+					manifest.write(out);
+				} finally {
+					out.close();
+				}
+			} // if (createManifest) {
+
+			File deploymentDirectory = deploymentJar.getParentFile();
+			if (!deploymentDirectory.exists()) {
+				logger.info("deploymentDirectory does not exist. Creating it: " + deploymentDirectory.getAbsolutePath());
+				if (!deploymentDirectory.mkdirs())
+					logger.error("Creating deploymentDirectory failed: " + deploymentDirectory.getAbsolutePath());
+			}
+
+			if (deploymentJar.exists()) {
+				logger.warn("deploymentJar already exists. Replacing it: " + deploymentJar.getAbsolutePath());
+				if (!deploymentJar.delete())
+					throw new IOException("Deleting deploymentJar failed: " + deploymentJar.getAbsolutePath());
+			}
+
+			Utils.zipFolder(deploymentJar, tmpDir);
+		} finally {
+			Utils.deleteDirectoryRecursively(tmpDir);
+		}
+	}
+
+	/**
+	 * @param organisationID The organisation for which a new deployment-descriptor is created.
+	 * @param deploymentDescriptorFile The deployment-descriptor-file (absolute or relative) that shall be created. The parent-directories are implicitely created.
+	 *		If this is relative, it will be created inside the deploy-directory of the jee server (i.e. within a subdirectory, if it contains a path, and as sibling
+	 *		to JFire.last).
+	 * @param templateFile The template file.
+	 * @param additionalVariables Additional variables that shall be available besides the default variables. They override default values, if they contain colliding keys.
+	 * @param deployOverwriteBehaviour TODO
+	 * @throws IOException If writing/reading fails.
+	 */
+	public void createDeploymentDescriptor(
+			String organisationID, File deploymentDescriptorFile, File templateFile, Map<String, String> additionalVariables, DeployOverwriteBehaviour deployOverwriteBehaviour)
+	throws IOException
+	{
+		JFireServerConfigModule.Database dbCf = mcf.getConfigModule().getDatabase();
+
+		if (!deploymentDescriptorFile.isAbsolute()) {
+			deploymentDescriptorFile = new File(
+					new File(mcf.getConfigModule().getJ2ee().getJ2eeDeployBaseDirectory()).getAbsoluteFile().getParentFile(),
+					deploymentDescriptorFile.getPath());
+		}
+
+		if (deploymentDescriptorFile.exists()) {
+			switch (deployOverwriteBehaviour) {
+				case EXCEPTION:
+					throw new DeployedFileAlreadyExistsException(deploymentDescriptorFile);
+				case KEEP:
+					logger.warn("File " + deploymentDescriptorFile + " already exists. Will not change anything!");
+					return;
+				case OVERWRITE:
+					logger.warn("File " + deploymentDescriptorFile + " already exists. Will overwrite this file!");
+					break;
+				default:
+					throw new IllegalStateException("Unknown deployOverwriteBehaviour: " + deployOverwriteBehaviour);
+			}
+		}
+
+		String organisationID_simpleChars = organisationID.replace('.', '_');
+
+		// generate databaseName
+		StringBuffer databaseNameSB = new StringBuffer();
+		databaseNameSB.append(dbCf.getDatabasePrefix());
+		databaseNameSB.append(organisationID_simpleChars);
+		databaseNameSB.append(dbCf.getDatabaseSuffix());
+		String databaseName = databaseNameSB.toString();
+
+		// get jdbc url
+		String dbURL = dbCf.getDatabaseURL(databaseName);
+		String datasourceJNDIName_relative = OrganisationCf.DATASOURCE_PREFIX_RELATIVE + organisationID;
+		String datasourceJNDIName_absolute = OrganisationCf.DATASOURCE_PREFIX_ABSOLUTE + organisationID;
+		String jdoPersistenceManagerFactoryJNDIName_relative = OrganisationCf.PERSISTENCE_MANAGER_FACTORY_PREFIX_RELATIVE + organisationID;
+		String jdoPersistenceManagerFactoryJNDIName_absolute = OrganisationCf.PERSISTENCE_MANAGER_FACTORY_PREFIX_ABSOLUTE + organisationID;
+
+		Map<String, String> variables = new HashMap<String, String>();
+		variables.put("organisationID", organisationID);
+		variables.put("datasourceJNDIName_relative", datasourceJNDIName_relative);
+		variables.put("datasourceJNDIName_absolute", datasourceJNDIName_absolute);
+		variables.put("datasourceMetadataTypeMapping", dbCf.getDatasourceMetadataTypeMapping());
+		variables.put("jdoPersistenceManagerFactoryJNDIName_relative", jdoPersistenceManagerFactoryJNDIName_relative);
+		variables.put("jdoPersistenceManagerFactoryJNDIName_absolute", jdoPersistenceManagerFactoryJNDIName_absolute);
+		variables.put("databaseDriverName", dbCf.getDatabaseDriverName());
+		variables.put("databaseURL", dbURL);
+		variables.put("databaseUserName", dbCf.getDatabaseUserName());
+		variables.put("databasePassword", dbCf.getDatabasePassword());
+
+		if (additionalVariables != null)
+			variables.putAll(additionalVariables); // we put them afterwards to allow overriding
+
+		_createDeploymentDescriptor(
+				deploymentDescriptorFile,
+				templateFile,
+				variables);
+	}
+
+	private static enum ParserExpects {
+		NORMAL,
+		BRACKET_OPEN,
+		VARIABLE,
+		BRACKET_CLOSE
+	}
+
+	/**
+	 * Generate a -ds.xml file (or any other deployment descriptor) from a template.
+	 *
+	 * @param deploymentDescriptorFile The file (absolute!) that shall be created out of the template.
+	 * @param templateFile The template file to use. Must not be <code>null</code>.
+	 * @param variables This map defines what variable has to be replaced by what value. The
+	 *				key is the variable name (without brackets "{", "}"!) and the value is the
+	 *				value for the variable to replace. This must not be <code>null</code>.
+	 */
+	private void _createDeploymentDescriptor(File deploymentDescriptorFile, File templateFile, Map<String, String> variables)
+		throws IOException
+	{
+		if (!deploymentDescriptorFile.isAbsolute())
+			throw new IllegalArgumentException("deploymentDescriptorFile is not absolute: " + deploymentDescriptorFile.getPath());
+
+		logger.info("Creating deploymentDescriptor \""+deploymentDescriptorFile.getAbsolutePath()+"\" from template \""+templateFile.getAbsolutePath()+"\".");
+		File deploymentDirectory = deploymentDescriptorFile.getParentFile();
+
+		if (!deploymentDirectory.exists()) {
+			logger.info("deploymentDirectory does not exist. Creating it: " + deploymentDirectory.getAbsolutePath());
+			if (!deploymentDirectory.mkdirs())
+				logger.error("Creating deploymentDirectory failed: " + deploymentDirectory.getAbsolutePath());
+		}
 
 		// Create and configure StreamTokenizer to read template file.
-		FileReader fr = new FileReader(templateDSXMLFile);
+		FileReader fr = new FileReader(templateFile);
 		try {
 			StreamTokenizer stk = new StreamTokenizer(fr);
 			stk.resetSyntax();
 			stk.wordChars(0, Integer.MAX_VALUE);
+			stk.ordinaryChar('$');
 			stk.ordinaryChar('{');
 			stk.ordinaryChar('}');
-//			stk.whitespaceChars('{', '{');
-//			stk.whitespaceChars('}', '}');
-			
-			// Create FileWriter for temporary file.
-			f = File.createTempFile(".tmp-", "-ds_xml.tmp", jdoConfigDirectory);
-			FileWriter fw = new FileWriter(f);
+			stk.ordinaryChar('\n');
+
+			// Create FileWriter
+			FileWriter fw = new FileWriter(deploymentDescriptorFile);
 			try {
 
 				// Read, parse and replace variables from template and write to FileWriter fw.
-				boolean nextTokenIsVar = false;
-				boolean varRead = false;
+				String variableName = null;
+				StringBuffer tmpBuf = new StringBuffer();
+				ParserExpects parserExpects = ParserExpects.NORMAL;
 				while (stk.nextToken() != StreamTokenizer.TT_EOF) {
 					String stringToWrite = null;
+
 					if (stk.ttype == StreamTokenizer.TT_WORD) {
-					
-						if (nextTokenIsVar) {
-							stringToWrite = (String)variables.get(stk.sval);
-							if (stringToWrite == null)
-								throw new TemplateParseException("Unknown variable: {"+stk.sval+"}");
-							else
-								varRead = true;
-							
-							nextTokenIsVar = false;
+						switch (parserExpects) {
+							case VARIABLE:
+								parserExpects = ParserExpects.BRACKET_CLOSE;
+								variableName = stk.sval;
+								tmpBuf.append(variableName);
+							break;
+							case NORMAL:
+								stringToWrite = stk.sval;
+							break;
+							default:
+								parserExpects = ParserExpects.NORMAL;
+								stringToWrite = tmpBuf.toString() + stk.sval;
+								tmpBuf.setLength(0);
 						}
-						else
-							stringToWrite = stk.sval;
-						
+					}
+					else if (stk.ttype == '\n') {
+						stringToWrite = new String(new char[] { (char)stk.ttype });
+
+						// These chars are not valid within a variable, so we reset the variable parsing, if we're currently parsing one.
+						// This helps keeping the tmpBuf small (to check for rowbreaks is not really necessary).
+						if (parserExpects != ParserExpects.NORMAL) {
+							parserExpects = ParserExpects.NORMAL;
+							stringToWrite = tmpBuf.toString() + stringToWrite;
+							tmpBuf.setLength(0);
+						}
+					}
+					else if (stk.ttype == '$') {
+						if (parserExpects != ParserExpects.NORMAL) {
+							stringToWrite = tmpBuf.toString();
+							tmpBuf.setLength(0);
+						}
+						tmpBuf.append((char)stk.ttype);
+						parserExpects = ParserExpects.BRACKET_OPEN;
 					}
 					else if (stk.ttype == '{') {
-						varRead = false;
-						nextTokenIsVar = true;
+						switch (parserExpects) {
+							case NORMAL:
+								stringToWrite = new String(new char[] { (char)stk.ttype });
+							break;
+							case BRACKET_OPEN:
+								tmpBuf.append((char)stk.ttype);
+								parserExpects = ParserExpects.VARIABLE;
+							break;
+							default:
+								parserExpects = ParserExpects.NORMAL;
+								stringToWrite = tmpBuf.toString() + (char)stk.ttype;
+								tmpBuf.setLength(0);
+						}
 					}
 					else if (stk.ttype == '}') {
-						if (!varRead)
-							throw new TemplateParseException("Found \"}\" without previous \"{\"!");
-						varRead = false;
+						switch (parserExpects) {
+							case NORMAL:
+								stringToWrite = new String(new char[] { (char)stk.ttype });
+							break;
+							case BRACKET_CLOSE:
+								parserExpects = ParserExpects.NORMAL;
+								tmpBuf.append((char)stk.ttype);
+
+								if (variableName == null)
+									throw new IllegalStateException("variableName is null!!!");
+
+								stringToWrite = variables.get(variableName);
+								if (stringToWrite == null) {
+									logger.warn("Variable " + tmpBuf.toString() + " occuring in template \"" + templateFile + "\" is unknown!");
+									stringToWrite = tmpBuf.toString();
+								}
+								tmpBuf.setLength(0);
+							break;
+							default:
+								parserExpects = ParserExpects.NORMAL;
+								stringToWrite = tmpBuf.toString() + (char)stk.ttype;
+								tmpBuf.setLength(0);
+						}
 					}
+
 					if (stringToWrite != null)
 						fw.write(stringToWrite);
 				} // while (stk.nextToken() != StreamTokenizer.TT_EOF) {
@@ -1651,12 +1818,6 @@ public class JFireServerManagerFactoryImpl
 		} finally {
 			fr.close();
 		}
-
-		File finalDSXMLFile = new File(jdoConfigDirectory, finalDSXMLFileName);
-		if (!f.renameTo(finalDSXMLFile))
-			throw new IOException("Renaming file \""+ f.getAbsolutePath() +"\" to \"" + f.getAbsolutePath() + "\" failed!");
-
-		return finalDSXMLFile;
 	}
 
 	public static PersistenceManagerFactory getPersistenceManagerFactory(String organisationID)

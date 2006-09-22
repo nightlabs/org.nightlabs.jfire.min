@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <connection-factories>
 	<tx-connection-factory>
-		<jndi-name>{jdoPersistenceManagerFactoryJNDIName_relative}</jndi-name>
+		<jndi-name>${jdoPersistenceManagerFactoryJNDIName_relative}</jndi-name>
 
 <!-- JBoss 3.2.x: begin
 		<adapter-display-name>JPOX Connector</adapter-display-name>
@@ -18,10 +18,10 @@ JBoss 3.2.x: end -->
 -->
 
 <!-- direct connection -->
-		<config-property name="ConnectionDriverName" type="java.lang.String">{databaseDriverName}</config-property>
-		<config-property name="ConnectionURL" type="java.lang.String">{databaseURL}</config-property>
-		<config-property name="ConnectionUserName" type="java.lang.String">{databaseUserName}</config-property>
-		<config-property name="ConnectionPassword" type="java.lang.String">{databasePassword}</config-property>
+		<config-property name="ConnectionDriverName" type="java.lang.String">${databaseDriverName}</config-property>
+		<config-property name="ConnectionURL" type="java.lang.String">${databaseURL}</config-property>
+		<config-property name="ConnectionUserName" type="java.lang.String">${databaseUserName}</config-property>
+		<config-property name="ConnectionPassword" type="java.lang.String">${databasePassword}</config-property>
 
 		<config-property name="AutoCreateSchema" type="boolean">true</config-property>
 		<config-property name="AutoCreateTables" type="boolean">true</config-property>

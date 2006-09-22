@@ -26,7 +26,11 @@
 
 package org.nightlabs.jfire.servermanager.ra;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
@@ -40,6 +44,9 @@ import javax.security.auth.login.LoginException;
 
 import org.apache.log4j.Logger;
 import org.jboss.security.SimplePrincipal;
+import org.nightlabs.ModuleException;
+import org.nightlabs.config.Config;
+import org.nightlabs.config.ConfigException;
 import org.nightlabs.jfire.base.JFirePrincipal;
 import org.nightlabs.jfire.base.Lookup;
 import org.nightlabs.jfire.classloader.CLRegistrar;
@@ -54,10 +61,8 @@ import org.nightlabs.jfire.servermanager.OrganisationNotFoundException;
 import org.nightlabs.jfire.servermanager.RoleImportSet;
 import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
 import org.nightlabs.jfire.servermanager.config.OrganisationCf;
-
-import org.nightlabs.ModuleException;
-import org.nightlabs.config.Config;
-import org.nightlabs.config.ConfigException;
+import org.nightlabs.jfire.servermanager.deploy.DeployOverwriteBehaviour;
+import org.nightlabs.jfire.servermanager.deploy.DeploymentJarItem;
 
 /**
  * @author marco
@@ -486,5 +491,24 @@ public class JFireServerManagerImpl
 	public boolean configureServerAndShutdownIfNecessary(long delayMSec) throws ModuleException
 	{
 		return jfireServerManagerFactoryImpl.configureServerAndShutdownIfNecessary(delayMSec);
+	}
+
+	public void createDeploymentDescriptor(File deploymentDescriptorFile, File templateFile, Map<String, String> additionalVariables, DeployOverwriteBehaviour deployOverwriteBehaviour)
+			throws IOException
+	{
+		assertOpen();
+		assertAuthenticated();
+
+		jfireServerManagerFactoryImpl.createDeploymentDescriptor(
+				principal.getOrganisationID(), deploymentDescriptorFile, templateFile, additionalVariables, deployOverwriteBehaviour);
+	}
+
+	public void createDeploymentJar(File deploymentJar, Collection<DeploymentJarItem> deploymentJarItems, DeployOverwriteBehaviour deployOverwriteBehaviour)
+			throws IOException
+	{
+		assertOpen();
+		assertAuthenticated();
+
+		jfireServerManagerFactoryImpl.createDeploymentJar(principal.getOrganisationID(), deploymentJar, deploymentJarItems, deployOverwriteBehaviour);
 	}
 }

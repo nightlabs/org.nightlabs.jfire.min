@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <datasources>
     <local-tx-datasource>
-        <jndi-name>{datasourceJNDIName_relative}</jndi-name>
-        <connection-url>{databaseURL}</connection-url>
-        <driver-class>{databaseDriverName}</driver-class>
+        <jndi-name>${datasourceJNDIName_relative}</jndi-name>
+        <connection-url>${databaseURL}</connection-url>
+        <driver-class>${databaseDriverName}</driver-class>
 
-        <user-name>{databaseUserName}</user-name>
-        <password>{databasePassword}</password>
+        <user-name>${databaseUserName}</user-name>
+        <password>${databasePassword}</password>
 
         <connection-property name="autoReconnect">false</connection-property>
         <connection-property name="auto-commit">false</connection-property>
 
         <metadata>
-            <type-mapping>{datasourceMetadataTypeMapping}</type-mapping>
+            <type-mapping>${datasourceMetadataTypeMapping}</type-mapping>
         </metadata>
     </local-tx-datasource>
 </datasources>

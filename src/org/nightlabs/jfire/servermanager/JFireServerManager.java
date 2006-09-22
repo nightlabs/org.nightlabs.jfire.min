@@ -26,7 +26,11 @@
 
 package org.nightlabs.jfire.servermanager;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import javax.security.auth.login.LoginException;
 
@@ -37,6 +41,8 @@ import org.nightlabs.jfire.module.ModuleType;
 import org.nightlabs.jfire.security.registry.SecurityRegistrar;
 import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
 import org.nightlabs.jfire.servermanager.config.OrganisationCf;
+import org.nightlabs.jfire.servermanager.deploy.DeployOverwriteBehaviour;
+import org.nightlabs.jfire.servermanager.deploy.DeploymentJarItem;
 
 import org.nightlabs.ModuleException;
 
@@ -160,5 +166,11 @@ public interface JFireServerManager
 	
 	public JFirePrincipal login(String _organisationID, String _userID, String _sessionID, String _password)
 		throws LoginException;
-	
+
+	public void createDeploymentDescriptor(
+			File deploymentDescriptorFile, File templateFile, Map<String, String> additionalVariables, DeployOverwriteBehaviour deployOverwriteBehaviour)
+	throws IOException;
+
+	public void createDeploymentJar(File deploymentJar, Collection<DeploymentJarItem> deploymentJarItems, DeployOverwriteBehaviour deployOverwriteBehaviour)
+	throws IOException;
 }
