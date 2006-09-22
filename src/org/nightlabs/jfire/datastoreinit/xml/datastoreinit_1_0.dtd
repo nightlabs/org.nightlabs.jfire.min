@@ -80,7 +80,7 @@ Here is an example:
 		- priority:
 				A number from 0 to 99 where 0 is the highest priority. If you omit
 				this attribute, it defaults to 50. You should not assign values below
-				10 if you don't know what you're doing.
+				10 and above 89, if you don't know what you're doing.
 -->
 <!ELEMENT init (depends*)>
 <!ATTLIST init bean CDATA>
