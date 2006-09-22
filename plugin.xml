@@ -190,5 +190,9 @@
            class="org.nightlabs.jfire.base.config.WorkstationCSVisualiser"
            configSetupType="org.nightlabs.jfire.config.WorkstationConfigSetup"/>
   </extension>
+  <extension
+        point="org.nightlabs.base.cache">
+     <cacheFactory class="org.nightlabs.jfire.base.jdo.cache.CacheFactory"/>
+  </extension>
 
 </plugin>

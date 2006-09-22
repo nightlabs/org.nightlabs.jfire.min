@@ -33,6 +33,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.forms.widgets.FormToolkit;
 
 import org.nightlabs.jfire.base.person.edit.AbstractPersonDataFieldComposite;
 
@@ -75,6 +76,7 @@ public class TextPersonDataFieldComposite extends AbstractPersonDataFieldComposi
 		fieldName.setLayoutData(nameData);
 		
 		fieldText = new Text(this, SWT.PUSH | SWT.BORDER | SWT.SINGLE);
+//		fieldText = new Text(this, SWT.PUSH | SWT.SINGLE);
 		GridData textData = new GridData(GridData.FILL_HORIZONTAL);
 		textData.grabExcessHorizontalSpace = true;
 		fieldText.setEditable(true);

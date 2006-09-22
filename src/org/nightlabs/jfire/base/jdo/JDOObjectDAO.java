@@ -121,6 +121,7 @@ public abstract class JDOObjectDAO<JDOObjectID, JDOObject>
 	 * @return All requested and existing JDO objects.
 	 * @throws Exception in case of an error
 	 */
+	@SuppressWarnings("unchecked")
 	protected synchronized JDOObject getJDOObject(String scope, JDOObjectID objectID, String[] fetchGroups, int maxFetchDepth, IProgressMonitor monitor)
 	{
 		try {
@@ -150,6 +151,7 @@ public abstract class JDOObjectDAO<JDOObjectID, JDOObject>
 	 * @return All requested and existing JDO objects.
 	 * @throws Exception in case of an error
 	 */
+	@SuppressWarnings("unchecked")
 	protected synchronized List<JDOObject> getJDOObjects(String scope, Collection<JDOObjectID> objectIDs, String[] fetchGroups, int maxFetchDepth, IProgressMonitor monitor)
 	{
 		try	{
