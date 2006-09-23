@@ -34,14 +34,14 @@ import javax.ejb.EJBException;
 import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
 
+import org.nightlabs.ModuleException;
 import org.nightlabs.config.ConfigException;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.module.ModuleType;
 import org.nightlabs.jfire.serverconfigurator.ServerConfigurator;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
+import org.nightlabs.jfire.servermanager.config.J2eeServerTypeRegistryConfigModule;
 import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
-
-import org.nightlabs.ModuleException;
 
 /**
  * @ejb.bean name="jfire/ejb/JFireBaseBean/ServerManager"
@@ -181,7 +181,6 @@ public abstract class ServerManagerBean
 	 * @ejb.permission role-name="_Guest_"
 	 */
 	public void flushModuleCache()
-		throws ModuleException
 	{
 		JFireServerManager ism = getJFireServerManager();
 		try {
@@ -190,6 +189,16 @@ public abstract class ServerManagerBean
 			ism.close();
 		}
 	}
+
+	/**
+	 * @ejb.interface-method
+	 * @ejb.permission role-name="_Guest_"
+	 */
+	public List<J2eeServerTypeRegistryConfigModule.J2eeRemoteServer> getJ2eeRemoteServers()
+	{
+		return getJFireServerManagerFactory().getJ2eeRemoteServers();
+	}
+
 
 //	/**
 //	 * @return The instance of the local host.

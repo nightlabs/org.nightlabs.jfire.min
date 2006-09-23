@@ -751,6 +751,11 @@ public abstract class OrganisationManagerBean
 
 						for (Iterator it = res.iterator(); it.hasNext(); ) {
 							Organisation orga = (Organisation) it.next();
+							if (getOrganisationID().equals(orga.getOrganisationID())) {
+								logger.info("Organisation is myself and will be filtered: " + orga.getOrganisationID());
+								continue;
+							}
+
 							String userID = User.USERID_PREFIX_TYPE_ORGANISATION + orga.getOrganisationID();
 							try {
 								pm.getObjectById(UserID.create(localOrganisationID, userID));
