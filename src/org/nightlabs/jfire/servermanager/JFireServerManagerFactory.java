@@ -26,7 +26,10 @@
 
 package org.nightlabs.jfire.servermanager;
 
+import java.util.List;
+
 import org.nightlabs.jfire.base.JFirePrincipal;
+import org.nightlabs.jfire.servermanager.config.J2eeServerTypeRegistryConfigModule;
 import org.nightlabs.jfire.servermanager.config.ServerCf;
 
 
@@ -42,7 +45,9 @@ public interface JFireServerManagerFactory
 	public JFireServerManager getJFireServerManager(JFirePrincipal jfirePrincipal);
 
 	public String getInitialContextFactory(String j2eeServerTypeRemote, boolean throwExceptionIfUnknownServerType);
-	
+
+	public List<J2eeServerTypeRegistryConfigModule.J2eeRemoteServer> getJ2eeRemoteServers();
+
 	public ServerCf getLocalServer();
 
 	public boolean isUpAndRunning();

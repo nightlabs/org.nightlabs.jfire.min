@@ -26,34 +26,38 @@
 
 package org.nightlabs.jfire.servermanager.config;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.nightlabs.jfire.server.Server;
-import org.nightlabs.jfire.servermanager.j2ee.J2EEAdapterJBoss;
-
 import org.nightlabs.config.ConfigModule;
 import org.nightlabs.config.InitException;
 import org.nightlabs.config.Initializable;
+import org.nightlabs.jfire.server.Server;
+import org.nightlabs.jfire.servermanager.j2ee.J2EEAdapterJBoss;
 
 /**
  * @author Marco Schulze - marco at nightlabs dot de
  */
 public class J2eeServerTypeRegistryConfigModule extends ConfigModule
 {
+	private static final long serialVersionUID = 1L;
+
 	public static class J2eeLocalServer
-		implements Initializable
+	implements Initializable, Serializable
 	{
+		private static final long serialVersionUID = 1L;
+
 		private J2eeServerTypeRegistryConfigModule cfMod;
 
 		private String j2eeServerType;
 		private String j2eeVendorAdapterClassName;
-		private List j2eeRemoteServers;
+		private List<J2eeRemoteServer> j2eeRemoteServers;
 
-		private Map j2eeRemoteServersByServerType = null;
+		private Map<String, J2eeRemoteServer> j2eeRemoteServersByServerType = null;
 
 		/**
 		 * @see org.nightlabs.config.Initializable#init()
@@ -61,7 +65,7 @@ public class J2eeServerTypeRegistryConfigModule extends ConfigModule
 		public void init() throws InitException
 		{
 			if (j2eeRemoteServers == null) {
-				j2eeRemoteServers = new ArrayList();
+				j2eeRemoteServers = new ArrayList<J2eeRemoteServer>();
 				if (cfMod != null) cfMod.setChanged();
 			}
 			else {
@@ -78,14 +82,14 @@ public class J2eeServerTypeRegistryConfigModule extends ConfigModule
 		/**
 		 * @return Returns the j2eeRemoteServers.
 		 */
-		public List getJ2eeRemoteServers()
+		public List<J2eeRemoteServer> getJ2eeRemoteServers()
 		{
 			return j2eeRemoteServers;
 		}
 		/**
 		 * @param remoteServers The j2eeRemoteServers to set.
 		 */
-		public void setJ2eeRemoteServers(List remoteServers)
+		public void setJ2eeRemoteServers(List<J2eeRemoteServer> remoteServers)
 		{
 			j2eeRemoteServers = remoteServers;
 			if (cfMod != null) cfMod.setChanged();
@@ -132,7 +136,7 @@ public class J2eeServerTypeRegistryConfigModule extends ConfigModule
 		public J2eeRemoteServer getJ2eeRemoteServer(String j2eeServerType)
 		{
 			if (j2eeRemoteServersByServerType == null) {
-				Map m = new HashMap();
+				Map<String, J2eeRemoteServer> m = new HashMap<String, J2eeRemoteServer>();
 
 				for (Iterator it = j2eeRemoteServers.iterator(); it.hasNext(); ) {
 					J2eeRemoteServer s = (J2eeRemoteServer) it.next();
@@ -147,21 +151,31 @@ public class J2eeServerTypeRegistryConfigModule extends ConfigModule
 	}
 
 	public static class J2eeRemoteServer
-		implements Initializable
+	implements Initializable, Serializable
 	{
+		private static final long serialVersionUID = 1L;
+
 		private J2eeServerTypeRegistryConfigModule cfMod;
 
 		private String j2eeServerType;
-		private String initialContextFactory;
-		
 		/**
-		 * @see org.nightlabs.config.Initializable#init()
+		 * This initialContextFactory is used for normal (authenticated) communication.
 		 */
+		private String initialContextFactory;
+		/**
+		 * This initialContextFactory is used for anonymous (not-authenticated) communication
+		 * during organisation-handshake. 
+		 */
+		private String anonymousInitialContextFactory;
+
 		public void init() throws InitException
 		{
+			if (anonymousInitialContextFactory == null)
+				setAnonymousInitialContextFactory("org.jnp.interfaces.NamingContextFactory");
 		}
 		/**
-		 * @return Returns the initialContextFactory.
+		 * @return the fully qualified class name of the initialContextFactory that is used for normal
+		 *		(authenticated) communication between organisations.
 		 */
 		public String getInitialContextFactory()
 		{
@@ -173,6 +187,20 @@ public class J2eeServerTypeRegistryConfigModule extends ConfigModule
 		public void setInitialContextFactory(String initialContextFactory)
 		{
 			this.initialContextFactory = initialContextFactory;
+			if (cfMod != null) cfMod.setChanged();
+		}
+		/**
+		 * @return the fully qualified class name of the context factory that is used for anonymous communication
+		 *		during organisation-handshake.
+		 */
+		public String getAnonymousInitialContextFactory()
+		{
+			return anonymousInitialContextFactory;
+		}
+		public void setAnonymousInitialContextFactory(
+				String anonymousInitialContextFactory)
+		{
+			this.anonymousInitialContextFactory = anonymousInitialContextFactory;
 			if (cfMod != null) cfMod.setChanged();
 		}
 		/**
@@ -192,7 +220,7 @@ public class J2eeServerTypeRegistryConfigModule extends ConfigModule
 		}
 	}
 
-	private List j2eeLocalServers;
+	private List<J2eeLocalServer> j2eeLocalServers;
 	
 	/**
 	 * @see org.nightlabs.config.ConfigModule#init()
@@ -200,8 +228,8 @@ public class J2eeServerTypeRegistryConfigModule extends ConfigModule
 	public void init() throws InitException
 	{
 		if (j2eeLocalServers == null) {
-			j2eeLocalServers = new ArrayList();
-			
+			j2eeLocalServers = new ArrayList<J2eeLocalServer>();
+
 			J2eeLocalServer localServer;
 			J2eeRemoteServer remoteServer;
 
@@ -216,6 +244,7 @@ public class J2eeServerTypeRegistryConfigModule extends ConfigModule
 			remoteServer.cfMod = this;
 			remoteServer.setJ2eeServerType(Server.J2EESERVERTYPE_JBOSS32X);
 			remoteServer.setInitialContextFactory("org.nightlabs.authentication.jboss.LoginInitialContextFactory");
+			remoteServer.setAnonymousInitialContextFactory("org.jnp.interfaces.NamingContextFactory");
 			remoteServer.init();
 			localServer.addJ2eeRemoteServer(remoteServer);
 
@@ -223,6 +252,7 @@ public class J2eeServerTypeRegistryConfigModule extends ConfigModule
 			remoteServer.cfMod = this;
 			remoteServer.setJ2eeServerType(Server.J2EESERVERTYPE_JBOSS40X);
 			remoteServer.setInitialContextFactory("org.nightlabs.authentication.jboss.LoginInitialContextFactory");
+			remoteServer.setAnonymousInitialContextFactory("org.jnp.interfaces.NamingContextFactory");
 			remoteServer.init();
 			localServer.addJ2eeRemoteServer(remoteServer);
 
@@ -240,6 +270,7 @@ public class J2eeServerTypeRegistryConfigModule extends ConfigModule
 			remoteServer.cfMod = this;
 			remoteServer.setJ2eeServerType(Server.J2EESERVERTYPE_JBOSS32X);
 			remoteServer.setInitialContextFactory("org.nightlabs.authentication.jboss.LoginInitialContextFactory");
+			remoteServer.setAnonymousInitialContextFactory("org.jnp.interfaces.NamingContextFactory");
 			remoteServer.init();
 			localServer.addJ2eeRemoteServer(remoteServer);
 
@@ -247,18 +278,18 @@ public class J2eeServerTypeRegistryConfigModule extends ConfigModule
 			remoteServer.cfMod = this;
 			remoteServer.setJ2eeServerType(Server.J2EESERVERTYPE_JBOSS40X);
 			remoteServer.setInitialContextFactory("org.nightlabs.authentication.jboss.LoginInitialContextFactory");
+			remoteServer.setAnonymousInitialContextFactory("org.jnp.interfaces.NamingContextFactory");
 			remoteServer.init();
 			localServer.addJ2eeRemoteServer(remoteServer);
 
 			j2eeLocalServers.add(localServer);
-
 
 			setChanged();
 		}
 		else {
 
 			for (Iterator it = j2eeLocalServers.iterator(); it.hasNext(); ) {
-				J2eeLocalServer server= (J2eeLocalServer) it.next();
+				J2eeLocalServer server = (J2eeLocalServer) it.next();
 				server.cfMod = this;
 				server.init();
 			}
@@ -269,14 +300,14 @@ public class J2eeServerTypeRegistryConfigModule extends ConfigModule
 	/**
 	 * @return Returns the j2eeLocalServers.
 	 */
-	public List getJ2eeLocalServers()
+	public List<J2eeLocalServer> getJ2eeLocalServers()
 	{
 		return j2eeLocalServers;
 	}
 	/**
 	 * @param localServers The j2eeLocalServers to set.
 	 */
-	public void setJ2eeLocalServers(List localServers)
+	public void setJ2eeLocalServers(List<J2eeLocalServer> localServers)
 	{
 		j2eeLocalServers = localServers;
 	}
