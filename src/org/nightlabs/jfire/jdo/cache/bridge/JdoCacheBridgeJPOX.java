@@ -327,20 +327,22 @@ public class JdoCacheBridgeJPOX extends JdoCacheBridge
 
 		pmf.addInstanceLifecycleListener(
 				createLifecycleListener,
-				null);
+				objectClassArray);
 //		pmf.addInstanceLifecycleListener(
 //				storeLifecycleListener,
 //				null);
 		pmf.addInstanceLifecycleListener(
 				dirtyLifecycleListener,
-				null);
+				objectClassArray);
 		pmf.addInstanceLifecycleListener(
 				attachLifecycleListener,
-				null);
+				objectClassArray);
 		pmf.addInstanceLifecycleListener(
 				deleteLifecycleListener,
-				null);
+				objectClassArray);
 	}
+
+	private static final Class[] objectClassArray = new Class[] { Object.class };
 
 	private SecurityReflector securityReflector;
 
