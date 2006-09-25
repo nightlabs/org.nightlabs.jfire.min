@@ -103,6 +103,18 @@ implements SessionBean
 	public String getPersistenceCapableClassName(Object objectID)
 	throws ModuleException
 	{
+		Class clazz;
+
+		CacheManager cm = getLookup().getCacheManager();
+		try {
+			clazz = cm.getClassByObjectID(objectID, false);
+		} finally {
+			cm.close();
+		}
+
+		if (clazz != null)
+			return clazz.getName();
+
 		PersistenceManager pm = getPersistenceManager();
 		try {
 			Object o = pm.getObjectById(objectID);
@@ -136,18 +148,23 @@ implements SessionBean
 	throws ModuleException
 	{
 		CacheManager cm = getLookup().getCacheManager(getPrincipal());
+		try {
 
-		if (removeObjectIDs != null)
-			cm.removeChangeListeners(removeObjectIDs);
+			if (removeObjectIDs != null)
+				cm.removeChangeListeners(removeObjectIDs);
 
-		if (addObjectIDs != null)
-			cm.addChangeListeners(addObjectIDs);
+			if (addObjectIDs != null)
+				cm.addChangeListeners(addObjectIDs);
 
-		if (addFilters != null)
-			cm.addLifecycleListenerFilters(addFilters);
+			if (addFilters != null)
+				cm.addLifecycleListenerFilters(addFilters);
 
-		if (removeFilterIDs != null)
-			cm.removeLifecycleListenerFilters(removeFilterIDs);
+			if (removeFilterIDs != null)
+				cm.removeLifecycleListenerFilters(removeFilterIDs);
+
+		} finally {
+			cm.close();
+		}
 	}
 
 	/**
@@ -171,7 +188,11 @@ implements SessionBean
 	throws ModuleException
 	{
 		CacheManager cm = getLookup().getCacheManager(getPrincipal());
-		cm.resubscribeAllListeners(subscribedObjectIDs, filters);
+		try {
+			cm.resubscribeAllListeners(subscribedObjectIDs, filters);
+		} finally {
+			cm.close();
+		}
 	}
 
 	/**
@@ -183,7 +204,11 @@ implements SessionBean
 	throws ModuleException
 	{
 		CacheManager cm = getLookup().getCacheManager(getPrincipal());
-		cm.addLifecycleListenerFilters(filters);
+		try {
+			cm.addLifecycleListenerFilters(filters);
+		} finally {
+			cm.close();
+		}
 	}
 
 	/**
@@ -195,7 +220,11 @@ implements SessionBean
 	throws ModuleException
 	{
 		CacheManager cm = getLookup().getCacheManager(getPrincipal());
-		cm.removeLifecycleListenerFilters(filterIDs);
+		try {
+			cm.removeLifecycleListenerFilters(filterIDs);
+		} finally {
+			cm.close();
+		}
 	}
 
 	/**
@@ -211,7 +240,11 @@ implements SessionBean
 	throws ModuleException
 	{
 		CacheManager cm = getLookup().getCacheManager(getPrincipal());
-		cm.closeCacheSession();
+		try {
+			cm.closeCacheSession();
+		} finally {
+			cm.close();
+		}
 	}
 
 	/**
@@ -240,7 +273,11 @@ implements SessionBean
 	throws ModuleException
 	{
 		CacheManager cm = getLookup().getCacheManager(getPrincipal());
-		return cm.waitForChanges(waitTimeout);
+		try {
+			return cm.waitForChanges(waitTimeout);
+		} finally {
+			cm.close();
+		}
 	}
 
 	/**
