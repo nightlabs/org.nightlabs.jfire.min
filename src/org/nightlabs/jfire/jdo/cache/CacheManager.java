@@ -210,4 +210,19 @@ public class CacheManager
 		assertPrincipalExisting();
 		return cacheManagerFactory.waitForChanges(principal.getSessionID(), principal.getUserID(), waitTimeout);
 	}
+
+	public Class getClassByObjectID(Object objectID)
+	{
+		return cacheManagerFactory.getClassByObjectID(objectID);
+	}
+
+	public Class getClassByObjectID(Object objectID, boolean throwExceptionIfNotFound)
+	{
+		return cacheManagerFactory.getClassByObjectID(objectID, throwExceptionIfNotFound);
+	}
+
+	public void close()
+	{
+		// is a noop, but maybe later on we might need it. Therefore, you MUST use it
+	}
 }

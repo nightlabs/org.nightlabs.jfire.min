@@ -1641,14 +1641,19 @@ public class CacheManagerFactory
 	 * This method is only usable for objectIDs that have been passed to
 	 * {@link #ensureAllClassesAreKnown(Set)} before.
 	 */
-	protected Class getClassByObjectID(Object objectID)
+	public Class getClassByObjectID(Object objectID)
+	{
+		return getClassByObjectID(objectID, true);
+	}
+
+	public Class getClassByObjectID(Object objectID, boolean throwExceptionIfNotFound)
 	{
 		Class res;
 		synchronized (objectID2Class) {
 			res = objectID2Class.get(objectID);
 		}
 
-		if (res == null)
+		if (throwExceptionIfNotFound && res == null)
 			throw new IllegalStateException(
 					"ObjectID is not known! It seems, addObjectID2ClassMap(...) has not been called or didn't contain all oids! objectID: "
 							+ objectID);
