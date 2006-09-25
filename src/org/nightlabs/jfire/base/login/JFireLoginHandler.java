@@ -50,6 +50,8 @@ public class JFireLoginHandler implements ILoginHandler {
 	 */
 	private static final Logger logger = Logger.getLogger(JFireLoginHandler.class);
 
+	private boolean autoLoginWithParams = true; // will be set false after it's done for the first time.
+
 	/**
 	 * Opens an instance of {@link LoginDialog}. 
 	 * The dialog sets the loginResult and loginContext values.
@@ -69,21 +71,25 @@ public class JFireLoginHandler implements ILoginHandler {
 			String initialContextFactory = null;
 			String serverURL = null;
 
-			String[] args = NLBasePlugin.getDefault().getApplication().getArguments();
-			for (int i = 0; i < args.length; i++) {
-				String arg = args[i];
-				String val = i + 1 < args.length ? args[i + 1] : null;
+			if (autoLoginWithParams) {
+				String[] args = NLBasePlugin.getDefault().getApplication().getArguments();
+				for (int i = 0; i < args.length; i++) {
+					String arg = args[i];
+					String val = i + 1 < args.length ? args[i + 1] : null;
 
-				if ("--login.userID".equals(arg))
-					userID = val;
-				else if ("--login.password".equals(arg))
-					password = val;
-				else if ("--login.organisationID".equals(arg))
-					organisationID = val;
-				else if ("--login.initialContextFactory".equals(arg))
-					initialContextFactory = val;
-				else if ("--login.serverURL".equals(arg))
-					serverURL = val;
+					if ("--login.userID".equals(arg))
+						userID = val;
+					else if ("--login.password".equals(arg))
+						password = val;
+					else if ("--login.organisationID".equals(arg))
+						organisationID = val;
+					else if ("--login.initialContextFactory".equals(arg))
+						initialContextFactory = val;
+					else if ("--login.serverURL".equals(arg))
+						serverURL = val;
+				}
+
+				autoLoginWithParams = false;
 			}
 
 			if (password != null) {

@@ -43,6 +43,7 @@ import org.nightlabs.ModuleException;
 import org.nightlabs.config.Config;
 import org.nightlabs.config.ConfigException;
 import org.nightlabs.jdo.NLJDOHelper;
+import org.nightlabs.jdo.ObjectID;
 import org.nightlabs.jfire.base.jdo.notification.ChangeEvent;
 import org.nightlabs.jfire.base.jdo.notification.ChangeSubjectCarrier;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleEvent;
@@ -688,6 +689,9 @@ public class Cache
 		synchronized (subscriptionChangeRequestsMutex) {
 			for (Iterator it = objectIDs.iterator(); it.hasNext(); ) {
 				Object objectID = it.next();
+
+				if (!(objectID instanceof ObjectID)) // we do not subscribe listeners to non-jdo keys
+					continue;
 
 				SubscriptionChangeRequest scr = (SubscriptionChangeRequest) subscriptionChangeRequests.get(objectID);
 				if (scr != null) {
