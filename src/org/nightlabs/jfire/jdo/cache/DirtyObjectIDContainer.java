@@ -30,7 +30,6 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -44,6 +43,7 @@ implements Serializable
 
 	private long createDT = System.currentTimeMillis();
 	private boolean closed = false;
+	private DirtyObjectIDContainer master;
 
 	protected void assertOpen()
 	{
@@ -55,12 +55,13 @@ implements Serializable
 	 * key: Object objectID<br/>
 	 * value: DirtyObjectID dirtyObjectID
 	 */
-	private Map<Object, DirtyObjectID> dirtyObjectIDs = null;
-	private Map<Object, DirtyObjectID> _dirtyObjectIDs = null;
-	private static final Map<Object, DirtyObjectID> EMPTY_MAP = Collections.unmodifiableMap(new HashMap<Object, DirtyObjectID>());
+	private Map<DirtyObjectID.LifecycleStage, Map<Object, DirtyObjectID>> lifecycleStage2dirtyObjectIDMap = null;
+	private Map<DirtyObjectID.LifecycleStage, Map<Object, DirtyObjectID>> _lifecycleStage2dirtyObjectIDMap = null;
+	private static final Map<DirtyObjectID.LifecycleStage, Map<Object, DirtyObjectID>> EMPTY_MAP = Collections.unmodifiableMap(new HashMap<DirtyObjectID.LifecycleStage, Map<Object, DirtyObjectID>>());
 
-	public DirtyObjectIDContainer()
+	public DirtyObjectIDContainer(DirtyObjectIDContainer master)
 	{
+		this.master = master;
 	}
 
 	public long getCreateDT()
@@ -68,71 +69,149 @@ implements Serializable
 		return createDT;
 	}
 
-	public synchronized void addDirtyObjectIDs(Collection<DirtyObjectID> newDirtyObjectIDs)
+	public void addDirtyObjectIDs(Collection<DirtyObjectID> newDirtyObjectIDs)
 	{
-		assertOpen();
+		synchronized (this) {
+			assertOpen();
 
-		if (newDirtyObjectIDs.isEmpty())
-			return;
+			if (newDirtyObjectIDs.isEmpty()) {
+				if (logger.isDebugEnabled())
+					logger.debug("addDirtyObjectIDs: newDirtyObjectIDs is empty");
 
-		if (dirtyObjectIDs == null) {
-			dirtyObjectIDs = new HashMap<Object, DirtyObjectID>(newDirtyObjectIDs.size());
-			for (Iterator it = newDirtyObjectIDs.iterator(); it.hasNext();) {
-				DirtyObjectID newDirtyObjectID = (DirtyObjectID) it.next();
-				dirtyObjectIDs.put(newDirtyObjectID.getObjectID(), newDirtyObjectID);
+				return;
 			}
-			return;
-		}
 
-		for (Iterator it = newDirtyObjectIDs.iterator(); it.hasNext();) {
-			DirtyObjectID newDirtyObjectID = (DirtyObjectID) it.next();
-			Object objectID = newDirtyObjectID.getObjectID();
-			DirtyObjectID dirtyObjectID = (DirtyObjectID) dirtyObjectIDs.get(objectID);
-			if (dirtyObjectID == null)
+			if (logger.isDebugEnabled()) {
+				logger.debug("addDirtyObjectIDs: newDirtyObjectIDs.size()=" + newDirtyObjectIDs.size());
+				for (DirtyObjectID objectID : newDirtyObjectIDs) {
+					logger.debug("addDirtyObjectIDs: => " + objectID);
+				}
+			}
+
+			if (lifecycleStage2dirtyObjectIDMap == null)
+				lifecycleStage2dirtyObjectIDMap = new HashMap<DirtyObjectID.LifecycleStage, Map<Object, DirtyObjectID>>(DirtyObjectID.LifecycleStage.values().length);
+
+			for (DirtyObjectID newDirtyObjectID : newDirtyObjectIDs) {
+				Object objectID = newDirtyObjectID.getObjectID();
+
+				Map<Object, DirtyObjectID> dirtyObjectIDs = lifecycleStage2dirtyObjectIDMap.get(newDirtyObjectID.getLifecycleStage());
+				if (dirtyObjectIDs == null) {
+					dirtyObjectIDs = new HashMap<Object, DirtyObjectID>();
+					lifecycleStage2dirtyObjectIDMap.put(newDirtyObjectID.getLifecycleStage(), dirtyObjectIDs);
+				}
+
+				DirtyObjectID dirtyObjectID = (DirtyObjectID) dirtyObjectIDs.get(objectID);
+				// we add the old sourceSessionIDs to the new DirtyObjectID and then we overwrite the old one
+				if (dirtyObjectID != null)
+					newDirtyObjectID.addSourceSessionIDs(dirtyObjectID.getSourceSessionIDs());
+
 				dirtyObjectIDs.put(objectID, newDirtyObjectID);
-			else
-				dirtyObjectID.addSourceSessionIDs(newDirtyObjectID.getSourceSessionIDs());
-		}
+			}
 
-		_dirtyObjectIDs = null;
+			_lifecycleStage2dirtyObjectIDMap = null;
+		} // synchronized (this) {
+
+		// do this outside the synchronized block to prevent dead-locks
+		if (master != null)
+			master.addDirtyObjectIDs(newDirtyObjectIDs);
 	}
 
-	public synchronized Map<Object, DirtyObjectID> getDirtyObjectIDs()
+	/**
+	 * @return Returns a read-only copy of the internal map.
+	 */
+	public synchronized Map<DirtyObjectID.LifecycleStage, Map<Object, DirtyObjectID>> getLifecycleStage2DirtyObjectIDMap()
 	{
 		if (closed) {
 			logger.warn("getDirtyObjectIDs: DirtyObjectIDContainer has been closed already! Returning EMPTY_MAP.", new Exception("Debug stacktrace"));
 			return EMPTY_MAP;
 		}
 
-		if (_dirtyObjectIDs == null) {
-			if (dirtyObjectIDs == null)
-				return EMPTY_MAP;
+		if (lifecycleStage2dirtyObjectIDMap == null)
+			return EMPTY_MAP;
 
-			_dirtyObjectIDs = Collections.unmodifiableMap(new HashMap<Object, DirtyObjectID>(dirtyObjectIDs));
+		if (_lifecycleStage2dirtyObjectIDMap == null) {
+			Map<DirtyObjectID.LifecycleStage, Map<Object, DirtyObjectID>> result = new HashMap<DirtyObjectID.LifecycleStage, Map<Object,DirtyObjectID>>(lifecycleStage2dirtyObjectIDMap);
+			for (Map.Entry<DirtyObjectID.LifecycleStage, Map<Object, DirtyObjectID>> me : lifecycleStage2dirtyObjectIDMap.entrySet())
+				result.put(me.getKey(), Collections.unmodifiableMap(new HashMap<Object, DirtyObjectID>(me.getValue())));
+
+			_lifecycleStage2dirtyObjectIDMap = Collections.unmodifiableMap(result);
 		}
 
-		return _dirtyObjectIDs;
+		return _lifecycleStage2dirtyObjectIDMap;
 	}
 
 	/**
 	 * @param objectID The JDO object-id pointing to an instance of {@link DirtyObjectID}. 
 	 * @return Returns either <code>null</code> or a <code>DirtyObjectID</code>.
 	 */
-	public synchronized DirtyObjectID getDirtyObjectID(Object objectID)
+	public synchronized DirtyObjectID getDirtyObjectID(DirtyObjectID.LifecycleStage lifecycleStage, Object objectID)
 	{
 		if (closed) {
 			logger.warn("getDirtyObjectID: DirtyObjectIDContainer has been closed already! Returning null.", new Exception("Debug stacktrace"));
 			return null;
 		}
 
-		if (dirtyObjectIDs == null)
+		if (lifecycleStage2dirtyObjectIDMap == null)
 			return null;
 
-		return (DirtyObjectID) dirtyObjectIDs.get(objectID);
+		Map<Object, DirtyObjectID> m = lifecycleStage2dirtyObjectIDMap.get(lifecycleStage);
+		if (m == null)
+			return null;
+
+		return (DirtyObjectID) m.get(objectID);
 	}
 
 	public void close()
 	{
-		closed = true;
+		synchronized (this) {
+			closed = true;
+		}
+
+		// no need for synchronization, because we're already closed and no other method can change anything anymore
+		// and we must not use synchronization because it cause deadlocks with the master's synchronized blocks
+		if (master != null)
+			master.removePart(this);
+
+		// unnecessary, but why not help the gc a bit and forget these references
+		_lifecycleStage2dirtyObjectIDMap = null;
+		lifecycleStage2dirtyObjectIDMap = null;
+	}
+
+	private void removePart(DirtyObjectIDContainer part)
+	{
+		if (part.lifecycleStage2dirtyObjectIDMap == null) {
+			if (logger.isDebugEnabled())
+				logger.debug("removePart: part.lifecycleStage2dirtyObjectIDMap == null => won't remove anything");
+
+			return;
+		}
+
+		synchronized (this) {
+			for (Map.Entry<DirtyObjectID.LifecycleStage, Map<Object, DirtyObjectID>> me1 : part.lifecycleStage2dirtyObjectIDMap.entrySet()) {
+				DirtyObjectID.LifecycleStage lifecycleStage = me1.getKey();
+				Map<Object, DirtyObjectID> part_dirtyObjectIDMap = me1.getValue();
+				Map<Object, DirtyObjectID> master_dirtyObjectIDMap = lifecycleStage2dirtyObjectIDMap.get(lifecycleStage);
+				if (master_dirtyObjectIDMap == null)
+					throw new IllegalStateException("master_dirtyObjectIDMap == null for lifecycleStage == " + lifecycleStage);
+	
+				for (Map.Entry<Object, DirtyObjectID> me2 : part_dirtyObjectIDMap.entrySet()) {
+					Object objectID = me2.getKey();
+					DirtyObjectID part_dirtyObjectID = me2.getValue();
+					DirtyObjectID master_dirtyObjectID = master_dirtyObjectIDMap.get(objectID);
+					if (master_dirtyObjectID == null)
+						throw new IllegalStateException("master_dirtyObjectID == null for part_dirtyObjectID == " + part_dirtyObjectID);
+	
+					if (master_dirtyObjectID.getSerial() == part_dirtyObjectID.getSerial()) {
+						master_dirtyObjectIDMap.remove(objectID);
+						if (logger.isDebugEnabled())
+							logger.debug("removePart: removed DirtyObjectID from master: " + master_dirtyObjectID);
+					}
+					else {
+						if (logger.isDebugEnabled())
+							logger.debug("removePart: did NOT remove DirtyObjectID from master, because serial is different: part=" + part_dirtyObjectID + " master=" + master_dirtyObjectID);
+					}
+				}
+			}
+		} // synchronized (this) {
 	}
 }

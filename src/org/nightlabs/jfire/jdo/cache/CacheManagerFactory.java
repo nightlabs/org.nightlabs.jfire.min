@@ -230,7 +230,8 @@ public class CacheManagerFactory
 		activeCacheSessionContainer = new CacheSessionContainer(this);
 		cacheSessionContainers.addFirst(activeCacheSessionContainer);
 
-		activeFreshDirtyObjectIDContainer = new DirtyObjectIDContainer();
+		freshDirtyObjectIDContainerMaster = new DirtyObjectIDContainer(null);
+		activeFreshDirtyObjectIDContainer = new DirtyObjectIDContainer(freshDirtyObjectIDContainerMaster);
 		freshDirtyObjectIDContainers.addFirst(activeFreshDirtyObjectIDContainer);
 
 		notificationThread.start();
@@ -563,7 +564,7 @@ public class CacheManagerFactory
 	protected void rollFreshDirtyObjectIDContainers()
 	{
 		synchronized (freshDirtyObjectIDContainers) {
-			DirtyObjectIDContainer newActiveDOC = new DirtyObjectIDContainer();
+			DirtyObjectIDContainer newActiveDOC = new DirtyObjectIDContainer(freshDirtyObjectIDContainerMaster);
 			logger.debug("Creating new activeFreshDirtyObjectIDContainer (createDT="
 					+ newActiveDOC.getCreateDT() + ").");
 			freshDirtyObjectIDContainers.addFirst(newActiveDOC);
@@ -576,10 +577,8 @@ public class CacheManagerFactory
 						+ freshDirtyObjectIDContainerCount + " but must be at least 2!!!");
 
 			while (freshDirtyObjectIDContainers.size() > freshDirtyObjectIDContainerCount) {
-				DirtyObjectIDContainer doc = (DirtyObjectIDContainer) freshDirtyObjectIDContainers
-						.removeLast();
-				logger.debug("Dropping freshDirtyObjectIDContainer (createDT="
-						+ doc.getCreateDT() + ").");
+				DirtyObjectIDContainer doc = (DirtyObjectIDContainer) freshDirtyObjectIDContainers.removeLast();
+				logger.debug("Dropping freshDirtyObjectIDContainer (createDT=" + doc.getCreateDT() + ").");
 				doc.close();
 			}
 		}
@@ -611,25 +610,29 @@ public class CacheManagerFactory
 
 		// collect all freshDirtyObjectIDs from all freshDirtyObjectIDContainers
 		// take the newest, if there exist multiple for one objectID and the same lifecylestage
-		Map<DirtyObjectID.LifecycleStage, Map<Object, DirtyObjectID>> lifecycleStage2freshDirtyObjectIDsMap = new HashMap<DirtyObjectID.LifecycleStage, Map<Object,DirtyObjectID>>();
-		synchronized (freshDirtyObjectIDContainers) {
-			for (DirtyObjectIDContainer dirtyObjectIDContainer : freshDirtyObjectIDContainers) {
-				for (Map.Entry<Object, DirtyObjectID> me : dirtyObjectIDContainer.getDirtyObjectIDs().entrySet()) {
-					DirtyObjectID.LifecycleStage lifecycleStage = me.getValue().getLifecycleStage();
-					Map<Object, DirtyObjectID> freshDirtyObjectIDsMap = lifecycleStage2freshDirtyObjectIDsMap.get(lifecycleStage);
-					if (freshDirtyObjectIDsMap == null) {
-						freshDirtyObjectIDsMap = new HashMap<Object, DirtyObjectID>();
-						lifecycleStage2freshDirtyObjectIDsMap.put(lifecycleStage, freshDirtyObjectIDsMap);
-					}
+//		Map<DirtyObjectID.LifecycleStage, Map<Object, DirtyObjectID>> lifecycleStage2freshDirtyObjectIDsMap = new HashMap<DirtyObjectID.LifecycleStage, Map<Object,DirtyObjectID>>();
+//		synchronized (freshDirtyObjectIDContainers) {
+//			for (DirtyObjectIDContainer dirtyObjectIDContainer : freshDirtyObjectIDContainers) {
+//				Map<DirtyObjectID.LifecycleStage, Map<Object, DirtyObjectID>> lifecycleStage2freshDirtyObjectIDsMap = dirtyObjectIDContainer.getLifecycleStage2DirtyObjectIDMap();
+//
+//				for (Map.Entry<Object, DirtyObjectID> me : dirtyObjectIDContainer.getDirtyObjectIDs().entrySet()) {
+//					DirtyObjectID.LifecycleStage lifecycleStage = me.getValue().getLifecycleStage();
+//					Map<Object, DirtyObjectID> freshDirtyObjectIDsMap = lifecycleStage2freshDirtyObjectIDsMap.get(lifecycleStage);
+//					if (freshDirtyObjectIDsMap == null) {
+//						freshDirtyObjectIDsMap = new HashMap<Object, DirtyObjectID>();
+//						lifecycleStage2freshDirtyObjectIDsMap.put(lifecycleStage, freshDirtyObjectIDsMap);
+//					}
+//
+//					if (!freshDirtyObjectIDsMap.containsKey(me.getKey()))
+//						freshDirtyObjectIDsMap.put(me.getKey(), me.getValue());
+//				}
+//			}
+//		} // synchronized (freshDirtyObjectIDContainers) {
 
-					if (!freshDirtyObjectIDsMap.containsKey(me.getKey()))
-						freshDirtyObjectIDsMap.put(me.getKey(), me.getValue());
-				}
-			}
-		} // synchronized (freshDirtyObjectIDContainers) {
+		Map<DirtyObjectID.LifecycleStage, Map<Object, DirtyObjectID>> lifecycleStage2freshDirtyObjectIDsMap = freshDirtyObjectIDContainerMaster.getLifecycleStage2DirtyObjectIDMap();
 
 		if (logger.isDebugEnabled()) {
-			logger.debug("after_addLifecycleListenerFilters: collected freshDirtyObjectIDs:");
+			logger.debug("after_addLifecycleListenerFilters: fetched freshDirtyObjectIDs from master:");
 			for (Map.Entry<DirtyObjectID.LifecycleStage, Map<Object, DirtyObjectID>> me1 : lifecycleStage2freshDirtyObjectIDsMap.entrySet()) {
 				logger.debug("after_addLifecycleListenerFilters:   lifecycleStage="+me1.getKey());
 				for (DirtyObjectID dirtyObjectID : me1.getValue().values())
@@ -638,6 +641,12 @@ public class CacheManagerFactory
 
 			logger.debug("after_addLifecycleListenerFilters: compiling sessionID2FilterID2FilterWithDirtyObjectIDs:");
 		}
+//		List<Map<DirtyObjectID.LifecycleStage, Map<Object, DirtyObjectID>>> lifecycleStage2freshDirtyObjectIDsMaps = new LinkedList<Map<DirtyObjectID.LifecycleStage,Map<Object,DirtyObjectID>>>();
+//		synchronized (freshDirtyObjectIDContainers) {
+//			for (DirtyObjectIDContainer freshDirtyObjectIDContainer : freshDirtyObjectIDContainers) {
+//				lifecycleStage2freshDirtyObjectIDsMaps.add(freshDirtyObjectIDContainer.getLifecycleStage2DirtyObjectIDMap());
+//			}
+//		}
 
 		Map<String, Map<AbsoluteFilterID, FilterWithDirtyObjectIDs>> sessionID2FilterID2FilterWithDirtyObjectIDs = null;
 		for (IJDOLifecycleListenerFilter filter : filters) {
@@ -647,6 +656,7 @@ public class CacheManagerFactory
 				logger.debug("after_addLifecycleListenerFilters:   filterID=" + filter.getFilterID());
 
 			FilterWithDirtyObjectIDs filterWithDirtyObjectIDs = null;
+
 			for (Map<Object, DirtyObjectID> freshDirtyObjectIDsMap : lifecycleStage2freshDirtyObjectIDsMap.values()) {
 				for (Map.Entry<Object, DirtyObjectID> me2 : freshDirtyObjectIDsMap.entrySet()) {
 					Object objectID = me2.getKey();
@@ -781,6 +791,8 @@ public class CacheManagerFactory
 
 	private void after_addChangeListener(CacheSession session, ChangeListenerDescriptor l, boolean excludeLocalSessionFromNotification)
 	{
+//		excludeLocalSessionFromNotification = false; // TODO remove this
+
 		String sessionID = session.getSessionID();
 		Object objectID = l.getObjectID();
 
@@ -802,20 +814,57 @@ public class CacheManagerFactory
 																														// will be the first
 																														// one found (and
 																														// matching)!
-		synchronized (freshDirtyObjectIDContainers) {
-			for (DirtyObjectIDContainer dirtyObjectIDContainer : freshDirtyObjectIDContainers) {
-				DirtyObjectID dirtyObjectID = dirtyObjectIDContainer.getDirtyObjectID(objectID);
-				if (dirtyObjectID != null && dirtyObjectID.getLifecycleStage() != DirtyObjectID.LifecycleStage.NEW) {
-					Set sourceSessionIDs = dirtyObjectID.getSourceSessionIDs();
-					if (!excludeLocalSessionFromNotification || sourceSessionIDs.size() > 1 || !sourceSessionIDs.contains(sessionID)) {
-						triggerNotificationDirtyObjectID = dirtyObjectID;
-						break;
-					}
-				}
-			} // for (DirtyObjectIDContainer dirtyObjectIDContainer : freshDirtyObjectIDContainers) {
-		} // synchronized (freshDirtyObjectIDContainers) {
+//		synchronized (freshDirtyObjectIDContainers) {
+//			for (DirtyObjectIDContainer dirtyObjectIDContainer : freshDirtyObjectIDContainers) {
+//				DirtyObjectID dirtyObjectID = dirtyObjectIDContainer.getDirtyObjectID(objectID);
+//				if (dirtyObjectID.getLifecycleStage() == DirtyObjectID.LifecycleStage.NEW) {
+//					
+//				}
+//				else if (dirtyObjectID != null) {
+//					Set sourceSessionIDs = dirtyObjectID.getSourceSessionIDs();
+//					
+//					if (!excludeLocalSessionFromNotification || sourceSessionIDs.size() > 1 || !sourceSessionIDs.contains(sessionID)) {
+//						triggerNotificationDirtyObjectID = dirtyObjectID;
+//						break;
+//					}
+//				}
+//			} // for (DirtyObjectIDContainer dirtyObjectIDContainer : freshDirtyObjectIDContainers) {
+//		} // synchronized (freshDirtyObjectIDContainers) {
 
+		// there can be a listener on a new object, if the object has been deleted and recreated with the same ID!!!
+		// we find the newest dirtyObjectID
+		DirtyObjectID triggerNotificationDirtyObjectID_new = freshDirtyObjectIDContainerMaster.getDirtyObjectID(DirtyObjectID.LifecycleStage.NEW, objectID);
+		DirtyObjectID triggerNotificationDirtyObjectID_dirty = freshDirtyObjectIDContainerMaster.getDirtyObjectID(DirtyObjectID.LifecycleStage.DIRTY, objectID);
+		DirtyObjectID triggerNotificationDirtyObjectID_deleted = freshDirtyObjectIDContainerMaster.getDirtyObjectID(DirtyObjectID.LifecycleStage.DELETED, objectID);
+
+		triggerNotificationDirtyObjectID = triggerNotificationDirtyObjectID_new;
+
+		if (triggerNotificationDirtyObjectID == null)
+			triggerNotificationDirtyObjectID = triggerNotificationDirtyObjectID_dirty;
+		else if (triggerNotificationDirtyObjectID_dirty != null) {
+			if (triggerNotificationDirtyObjectID_dirty.getSerial() > triggerNotificationDirtyObjectID.getSerial())
+				triggerNotificationDirtyObjectID = triggerNotificationDirtyObjectID_dirty;
+		}
+
+		if (triggerNotificationDirtyObjectID == null)
+			triggerNotificationDirtyObjectID = triggerNotificationDirtyObjectID_deleted;
+		else if (triggerNotificationDirtyObjectID_deleted != null) {
+			if (triggerNotificationDirtyObjectID_deleted.getSerial() > triggerNotificationDirtyObjectID.getSerial())
+				triggerNotificationDirtyObjectID = triggerNotificationDirtyObjectID_deleted;
+		}
+
+		triggerNotification:
 		if (triggerNotificationDirtyObjectID != null) {
+			// we exclude the newest if that's from us - if desired
+			if (excludeLocalSessionFromNotification) {
+				if (triggerNotificationDirtyObjectID.getSourceSessionIDs().size() <= 1 && triggerNotificationDirtyObjectID.getSourceSessionIDs().contains(sessionID)) {
+					if (logger.isDebugEnabled())
+						logger.debug("after_addChangeListener: excludeLocalSessionFromNotification: " + triggerNotificationDirtyObjectID);
+
+					break triggerNotification;
+				}
+			}
+
 			if (logger.isDebugEnabled())
 				logger
 						.debug("after_addChangeListener: immediately notifying session "
@@ -834,7 +883,7 @@ public class CacheManagerFactory
 
 				cacheSessionIDsToNotify.add(sessionID);
 			}
-		}
+		} // triggerNotification:
 	}
 
 	/**
@@ -1197,16 +1246,22 @@ public class CacheManagerFactory
 	// }
 	// }
 
-	private DirtyObjectIDContainer activeFreshDirtyObjectIDContainer; // initialized
-																																		// by
-																																		// constructor
+	private DirtyObjectIDContainer activeFreshDirtyObjectIDContainer; // initialized by constructor
 
+	/**
+	 * This is a conveyer of {@link DirtyObjectIDContainer} into which the new {@link #activeFreshDirtyObjectIDContainer}
+	 * is added by {@link #rollFreshDirtyObjectIDContainers()} and the old ones are removed. When an old one is removed,
+	 * all its entries are removed from {@link #freshDirtyObjectIDContainerMaster} (if they still exist and have not
+	 * been overwritten).
+	 */
 	private LinkedList<DirtyObjectIDContainer> freshDirtyObjectIDContainers = new LinkedList<DirtyObjectIDContainer>();
 
 	protected DirtyObjectIDContainer getActiveFreshDirtyObjectIDContainer()
 	{
 		return activeFreshDirtyObjectIDContainer;
 	}
+
+	private DirtyObjectIDContainer freshDirtyObjectIDContainerMaster; // initialized by constructor
 
 	/**
 	 * This method distributes those <tt>objectIDs</tt> which have been added by

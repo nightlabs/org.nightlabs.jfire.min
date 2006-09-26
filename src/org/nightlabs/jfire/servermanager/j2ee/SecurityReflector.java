@@ -99,6 +99,12 @@ implements Serializable
 		{
 			return User.getUser(pm, organisationID, userID);
 		}
+
+		@Override
+		public String toString()
+		{
+			return this.getClass().getName() + '[' + organisationID + ',' + userID + ',' + sessionID + ']';
+		}
 	}
 
 	/**
