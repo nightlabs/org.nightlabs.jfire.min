@@ -152,7 +152,7 @@ implements javax.ejb.MessageDrivenBean, javax.jms.MessageListener
 
 			AsyncInvokeEnvelope envelope = (AsyncInvokeEnvelope) obj;
 
-			if (pseudoExternalInvoke) {
+//			if (pseudoExternalInvoke) {
 //				JFireServerManager ism = ismf.getJFireServerManager();
 //				try {
 //					SecurityReflector.UserDescriptor caller = envelope.getCaller();
@@ -179,8 +179,8 @@ implements javax.ejb.MessageDrivenBean, javax.jms.MessageListener
 //				} finally {
 //					ism.close();
 //				}
-			}
-			else {
+//			}
+//			else {
 				LoginContext loginContext;
 				JFireServerManager ism = ismf.getJFireServerManager();
 				try {
@@ -208,7 +208,7 @@ implements javax.ejb.MessageDrivenBean, javax.jms.MessageListener
 				} finally {
 					ism.close();
 				}
-			}
+//			}
 
 		} catch (Throwable x) {
 			logger.fatal("Processing message failed!", x);
@@ -224,7 +224,7 @@ implements javax.ejb.MessageDrivenBean, javax.jms.MessageListener
 				ObjectIDUtil.makeValidIDString(null, true));
 	}
 
-	private static final boolean pseudoExternalInvoke = false;
+//	private static final boolean pseudoExternalInvoke = false;
 
 	protected abstract void doInvoke(AsyncInvokeEnvelope envelope, Delegate invokerDelegate);
 }
