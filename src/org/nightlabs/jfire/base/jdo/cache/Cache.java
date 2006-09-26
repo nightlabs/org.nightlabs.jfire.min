@@ -410,7 +410,7 @@ public class Cache
 										" and removing " +
 										(filterIDsToUnsubscribe == null ? 0 : filterIDsToUnsubscribe.size()) +
 										" filters for explicit listeners.");
-
+								
 								if (logger.isDebugEnabled()) {
 									logger.debug("Change listeners for the following ObjectIDs will be removed:");
 									if (objectIDsToUnsubscribe == null)
