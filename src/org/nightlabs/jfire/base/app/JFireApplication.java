@@ -42,7 +42,7 @@ extends AbstractApplication
 {
 	public static final String PLUGIN_ID = "org.nightlabs.jfire.base"; //$NON-NLS-1$
 	
-	private static List applicationListener = new LinkedList();
+	private static List<JFireApplicationListener> applicationListener = new LinkedList<JFireApplicationListener>();
 	
 	public static void addApplicationListener(JFireApplicationListener listener) {
 		applicationListener.add(listener);

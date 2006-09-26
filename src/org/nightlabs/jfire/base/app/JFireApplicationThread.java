@@ -81,7 +81,7 @@ extends AbstractApplicationThread
 	public JFireApplicationThread(Runnable target, String name) {
 		super(target, name);
 	}
-	
+
 	public JFireApplicationThread(ThreadGroup group) {
 		super(group, DEFAULT_NAME);
 	}
@@ -114,48 +114,48 @@ extends AbstractApplicationThread
 			String name, long stackSize) {
 		super(group, target, name, stackSize);
 	}
-	
+
 //	private JFireApplication application;
 //	void setJFireApplication(JFireApplication app) {
-//		this.application = app;
+//	this.application = app;
 //	}
-	
-	
+
+
 	private int platformResultCode = -1;
-  protected Display display;
-	
+	protected Display display;
+
 	public int getPlatformResultCode() {
 		return platformResultCode;
 	}
-	
+
 	public void run() 
 	{
 		try {
 			// create the display
-		  display = PlatformUI.createDisplay();
+			display = PlatformUI.createDisplay();
 
-			WorkbenchAdvisor workbenchAdvisor = new JFireWorkbenchAdvisor(display);
-			
-      try
-      {
-        LoginConfigModule lcm = Login.sharedInstance().getLoginConfigModule();
-        if(lcm.getAutomaticUpdate() == true)
-        {
+			WorkbenchAdvisor workbenchAdvisor = initWorkbenchAdvisor(display);
+
+			try
+			{
+				LoginConfigModule lcm = Login.sharedInstance().getLoginConfigModule();
+				if(lcm.getAutomaticUpdate() == true)
+				{
 					Login.getLogin();
-          StartupUpdateManager updateManager = new StartupUpdateManager(lcm);
-          updateManager.run();
-          if(updateManager.doRestart())
-          {
-            platformResultCode = PlatformUI.RETURN_RESTART;
-            return;
-          }
-        }
-      }
-      catch(LoginException e)
-      {
-      }
-      
-      platformResultCode = PlatformUI.createAndRunWorkbench(display, workbenchAdvisor);
+					StartupUpdateManager updateManager = new StartupUpdateManager(lcm);
+					updateManager.run();
+					if(updateManager.doRestart())
+					{
+						platformResultCode = PlatformUI.RETURN_RESTART;
+						return;
+					}
+				}
+			}
+			catch(LoginException e)
+			{
+			}
+
+			platformResultCode = PlatformUI.createAndRunWorkbench(display, workbenchAdvisor);
 		}
 		finally {
 			synchronized(JFireApplication.getMutex()) {
@@ -163,9 +163,13 @@ extends AbstractApplicationThread
 			}
 		}
 	}
-	
-	public AbstractWorkbenchAdvisor initWorkbenchAdvisor() {
-		return new JFireWorkbenchAdvisor(display);
+
+	protected Display getDisplay() {
+		return display;
 	}
 	
+	public AbstractWorkbenchAdvisor initWorkbenchAdvisor(Display display) {
+		return new JFireWorkbenchAdvisor(display);
+	}
+
 }

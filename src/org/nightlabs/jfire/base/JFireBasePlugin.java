@@ -29,6 +29,7 @@ package org.nightlabs.jfire.base;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
@@ -55,11 +56,6 @@ public class JFireBasePlugin
 	public JFireBasePlugin() {
 		super();
 		plugin = this;
-		try {
-			resourceBundle = ResourceBundle.getBundle("org.nightlabs.jfire.base.plugin");
-		} catch (MissingResourceException x) {
-			resourceBundle = null;
-		}
 	}
 
 	/**
@@ -77,6 +73,12 @@ public class JFireBasePlugin
 //		LOGGER.debug("Registered JFireBasePlugin as LoginStateListener");
 //		LanguageWatcher.registerAsLoginStateListener();
 //		LOGGER.debug("Registered LanguageWatcher as LoginStateListener");
+		
+		try {
+			resourceBundle = Platform.getResourceBundle(getBundle());
+		} catch (MissingResourceException x) {
+			resourceBundle = null;
+		}
 	}
 
 	/**
