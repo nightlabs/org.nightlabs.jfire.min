@@ -149,14 +149,16 @@ public class Cache
 										dirtyObjectID.getObjectID()));
 							}
 
-							org.nightlabs.jfire.base.jdo.notification.ChangeManager.sharedInstance().notify(
-									new ChangeEvent(
-											cache,             // source
-											(String)null,      // zone
-											null,              // subjects
-											null,              // subjectClasses
-											subjectCarriers)); // subjectCarriers
-							// TODO the above is only for legacy (i.e. deprecated ChangeManager)
+							if (!subjectCarriers.isEmpty()) {
+								org.nightlabs.jfire.base.jdo.notification.ChangeManager.sharedInstance().notify(
+										new ChangeEvent(
+												cache,             // source
+												(String)null,      // zone
+												null,              // subjects
+												null,              // subjectClasses
+												subjectCarriers)); // subjectCarriers
+								// TODO the above is only for legacy (i.e. deprecated ChangeManager)
+							}
 
 						} // if (dirtyObjectIDs != null) {
 					}
