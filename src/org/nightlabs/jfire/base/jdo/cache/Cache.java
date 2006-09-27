@@ -342,6 +342,8 @@ public class Cache
 										objectIDsToUnsubscribe.add(objectID);
 									}
 									else {
+										// warning: the filterID in the filter is already reset (in removeLifecycleListenerFilter(...))
+										// because we use only the filterID as saved in the map's key
 										// explicit listener
 										if (filterIDsToUnsubscribe == null)
 											filterIDsToUnsubscribe = new LinkedList<Long>();
@@ -670,6 +672,9 @@ public class Cache
 				}
 			}
 
+			// the CacheManagerThread doesn't access filter.filterID anymore,
+			// hence it's safe to reset it here.
+			filter.setFilterID(null);
 			subscriptionChangeRequests.put(
 					filterID,
 					new SubscriptionChangeRequest(
