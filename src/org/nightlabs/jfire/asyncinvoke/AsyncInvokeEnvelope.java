@@ -31,7 +31,7 @@ import java.io.Serializable;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import org.nightlabs.jfire.servermanager.j2ee.SecurityReflector;
+import org.nightlabs.jfire.security.SecurityReflector;
 
 
 /**

@@ -34,9 +34,9 @@ import javax.security.auth.login.LoginContext;
 import org.apache.log4j.Logger;
 import org.nightlabs.jdo.ObjectIDUtil;
 import org.nightlabs.jfire.base.AuthCallbackHandler;
+import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.servermanager.JFireServerManagerFactory;
-import org.nightlabs.jfire.servermanager.j2ee.SecurityReflector;
 
 
 /**

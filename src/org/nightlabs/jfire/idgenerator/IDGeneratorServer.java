@@ -31,7 +31,7 @@ import java.util.Map;
 
 import javax.naming.InitialContext;
 
-import org.nightlabs.jfire.servermanager.j2ee.SecurityReflector;
+import org.nightlabs.jfire.security.SecurityReflector;
 
 /**
  * This implementation of {@link IDGenerator} is used in on the server side for ID generation.

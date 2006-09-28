@@ -20,7 +20,7 @@ import org.nightlabs.jfire.asyncinvoke.ErrorCallback;
 import org.nightlabs.jfire.asyncinvoke.Invocation;
 import org.nightlabs.jfire.asyncinvoke.SuccessCallback;
 import org.nightlabs.jfire.asyncinvoke.UndeliverableCallback;
-import org.nightlabs.jfire.servermanager.j2ee.SecurityReflector.UserDescriptor;
+import org.nightlabs.jfire.security.SecurityReflector.UserDescriptor;
 import org.nightlabs.jfire.timer.id.TaskID;
 
 public class TimerAsyncInvoke
