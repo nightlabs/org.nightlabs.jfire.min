@@ -28,7 +28,6 @@ package org.nightlabs.jfire.base.login;
 
 import java.net.SocketTimeoutException;
 import java.rmi.RemoteException;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -493,7 +492,9 @@ implements InitialContextProvider
 		}
 
 		// We should be logged in now, open the cache if not already open
-		Cache.sharedInstance().open(getSessionID());
+		if (currLoginState == LOGINSTATE_LOGGED_IN) {
+			Cache.sharedInstance().open(getSessionID());
+		}
 
 		if (currLoginState != oldLoginstate) {
 			try {
@@ -674,7 +675,8 @@ implements InitialContextProvider
 	/**
 	 * Returns InitialContextProperties
 	 */
-	public Hashtable getInitialContextProperties() throws LoginException{
+	public Properties getInitialContextProperties() // throws LoginException
+	{
 //		boolean doReload;
 
 //		if (getLoginState() != LOGINSTATE_LOGGED_IN) {
@@ -699,8 +701,18 @@ implements InitialContextProvider
 		return initialContextProperties;
 	}
 
+	public InitialContext createInitialContext()
+	{
+		try {
+			return new InitialContext(getInitialContextProperties());
+		} catch (NamingException e) {
+			throw new RuntimeException(e);
+		}
+	}
 
-
+	/**
+	 * @deprecated Do not use anymore! Use 
+	 */
 	public InitialContext getInitialContext() throws NamingException, LoginException
 	{
 		logger.debug("getInitialContext(): begin");
@@ -959,12 +971,12 @@ implements InitialContextProvider
 						loginResult.setSuccess(false);
 					}
 				}
-			} catch (LoginException x) {
-				logger.warn("Login failed with a very weird LoginException!", x);
-				// something went very wrong as we are in the login procedure
-				IllegalStateException ill = new IllegalStateException("Caught LoginException although getLogin(FALSE) was executed. "+x.getMessage());
-				ill.initCause(x);
-				throw ill;
+//			} catch (LoginException x) {
+//				logger.warn("Login failed with a very weird LoginException!", x);
+//				// something went very wrong as we are in the login procedure
+//				IllegalStateException ill = new IllegalStateException("Caught LoginException although getLogin(FALSE) was executed. "+x.getMessage());
+//				ill.initCause(x);
+//				throw ill;
 			} catch (Exception x) {
 				if (x instanceof CommunicationException) {
 					loginResult.setWasCommunicationErr(true);
