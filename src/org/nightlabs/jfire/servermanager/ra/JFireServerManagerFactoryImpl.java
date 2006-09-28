@@ -94,6 +94,7 @@ import org.nightlabs.jfire.security.RoleGroup;
 import org.nightlabs.jfire.security.RoleGroupRef;
 import org.nightlabs.jfire.security.RoleRef;
 import org.nightlabs.jfire.security.RoleSet;
+import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.security.UserLocal;
 import org.nightlabs.jfire.security.UserRef;
@@ -123,7 +124,6 @@ import org.nightlabs.jfire.servermanager.deploy.DeployedFileAlreadyExistsExcepti
 import org.nightlabs.jfire.servermanager.deploy.DeploymentJarItem;
 import org.nightlabs.jfire.servermanager.j2ee.J2EEAdapter;
 import org.nightlabs.jfire.servermanager.j2ee.JMSConnectionFactoryLookup;
-import org.nightlabs.jfire.servermanager.j2ee.SecurityReflector;
 import org.nightlabs.jfire.servermanager.j2ee.ServerStartNotificationListener;
 import org.nightlabs.jfire.servermanager.xml.EARApplicationMan;
 import org.nightlabs.jfire.servermanager.xml.EJBJarMan;

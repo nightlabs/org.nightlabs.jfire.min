@@ -37,6 +37,8 @@ import javax.management.ObjectName;
 import javax.naming.InitialContext;
 import javax.transaction.TransactionManager;
 
+import org.nightlabs.jfire.security.SecurityReflector;
+
 /**
  * @author Marco Schulze - marco at nightlabs dot de
  */

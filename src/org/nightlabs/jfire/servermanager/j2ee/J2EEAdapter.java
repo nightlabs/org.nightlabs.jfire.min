@@ -29,6 +29,8 @@ package org.nightlabs.jfire.servermanager.j2ee;
 import javax.naming.InitialContext;
 import javax.transaction.TransactionManager;
 
+import org.nightlabs.jfire.security.SecurityReflector;
+
 
 /**
  * This interface defines an adapter for vendor specific functionality.

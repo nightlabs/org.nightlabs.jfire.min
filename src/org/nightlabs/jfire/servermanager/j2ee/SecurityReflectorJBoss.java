@@ -26,8 +26,14 @@
 
 package org.nightlabs.jfire.servermanager.j2ee;
 
+import java.util.Properties;
+
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+
 import org.jboss.security.SecurityAssociation;
 import org.nightlabs.jfire.base.JFireServerLoginModule;
+import org.nightlabs.jfire.security.SecurityReflector;
 
 
 
@@ -36,10 +42,9 @@ import org.nightlabs.jfire.base.JFireServerLoginModule;
  */
 public class SecurityReflectorJBoss extends SecurityReflector
 {
-	/**
-	 * @see org.nightlabs.jfire.servermanager.j2ee.SecurityReflector#whoAmI()
-	 */
-	public UserDescriptor whoAmI()
+	private static final long serialVersionUID = 1L;
+
+	public UserDescriptor _getUserDescriptor()
 	{
 		String principalName = SecurityAssociation.getPrincipal().getName();
 		String[] parts = JFireServerLoginModule.SPLIT_USERNAME_PATTERN.split(principalName);
@@ -49,6 +54,18 @@ public class SecurityReflectorJBoss extends SecurityReflector
 		return new UserDescriptor(
 				parts[1], parts[0],
 				(parts.length < 3 || "".equals(parts[2])) ? (parts[1] + '_' + parts[0]) : parts[2]);
+	}
+
+	public InitialContext _createInitialContext() {
+		try {
+			return new InitialContext();
+		} catch (NamingException e) {
+			throw new RuntimeException();
+		}
+	}
+
+	public Properties _getInitialContextProperties() {
+		return null; // TODO null should be a valid argument (i.e. new InitialContext(null) is legal), but maybe its error prone for other users - maybe an empty map would be better?! Is that possible???
 	}
 
 }

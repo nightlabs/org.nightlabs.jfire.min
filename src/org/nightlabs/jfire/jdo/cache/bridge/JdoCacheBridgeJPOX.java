@@ -46,7 +46,7 @@ import javax.resource.spi.ConnectionEventListener;
 import org.apache.log4j.Logger;
 import org.jpox.resource.PersistenceManagerImpl;
 import org.nightlabs.jfire.jdo.cache.DirtyObjectID;
-import org.nightlabs.jfire.servermanager.j2ee.SecurityReflector;
+import org.nightlabs.jfire.security.SecurityReflector;
 
 
 
@@ -127,7 +127,7 @@ public class JdoCacheBridgeJPOX extends JdoCacheBridge
 					return;
 				}
 
-				String sessionID = bridge.securityReflector.whoAmI().getSessionID();
+				String sessionID = bridge.securityReflector._getUserDescriptor().getSessionID();
 
 				if (objectID2Class != null) {
 					bridge.getCacheManagerFactory().addObjectID2ClassMap(objectID2Class);
