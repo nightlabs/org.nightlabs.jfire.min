@@ -42,6 +42,7 @@ import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import javax.transaction.SystemException;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.ModuleException;
@@ -58,6 +59,7 @@ import org.nightlabs.jfire.security.UserManagerUtil;
 import org.nightlabs.jfire.security.id.UserID;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.servermanager.OrganisationNotFoundException;
+import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
 import org.nightlabs.jfire.servermanager.config.OrganisationCf;
 import org.nightlabs.jfire.servermanager.config.RootOrganisationCf;
 import org.nightlabs.jfire.servermanager.config.ServerCf;
@@ -578,7 +580,7 @@ public abstract class OrganisationManagerBean
 			throw new JFireRemoteException(x);
 		}
 	}
-	
+
 	/**
 	 * This method is called by a client. After we began a registration and
 	 * the partner has either rejected or accepted, we still have the
@@ -823,7 +825,8 @@ public abstract class OrganisationManagerBean
 	{
 		JFireServerManager ism = getJFireServerManager();
 		try {
-			RootOrganisationCf rootOrganisationCf = ism.getJFireServerConfigModule().getRootOrganisation();
+			JFireServerConfigModule jfireServerConfigModule = ism.getJFireServerConfigModule();
+			RootOrganisationCf rootOrganisationCf = jfireServerConfigModule.getRootOrganisation();
 			ServerCf rootServer = rootOrganisationCf.getServer();
 			String localOrganisationID = getOrganisationID();
 			if (localOrganisationID.equals(rootOrganisationCf.getOrganisationID())) {
@@ -831,7 +834,7 @@ public abstract class OrganisationManagerBean
 				if (logger.isDebugEnabled())
 					logger.debug("Organisation \"" + localOrganisationID + "\" is the root-organisation. Will not perform registration.");
 
-				ServerCf localServer = ism.getJFireServerConfigModule().getLocalServer();
+				ServerCf localServer = jfireServerConfigModule.getLocalServer();
 
 				if (!localServer.getServerID().equals(rootServer.getServerID()))
 					logger.error("localOrganisation.server.serverID == \"" + localServer.getServerID() + "\" != rootOrganisation.server.serverID == \"" + rootServer.getServerID() + "\"");
@@ -864,9 +867,10 @@ public abstract class OrganisationManagerBean
 				beginRegistration(
 						pm,
 						getPrincipal(),
-						"org.jnp.interfaces.NamingContextFactory", // TODO this should come from a config - maybe an anonymousInitialContextFactory in org.nightlabs.jfire.servermanager.config.J2eeServerTypeRegistryConfigModule - see Lookup.getInitialContextProperties(...)
+						getJFireServerManagerFactory().getJ2eeRemoteServer(rootOrganisationCf.getServer().getJ2eeServerType()).getAnonymousInitialContextFactory(),
 						rootServer.getInitialContextURL(),
 						rootOrganisationID);
+
 			} finally {
 				pm.close();
 			}
