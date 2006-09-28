@@ -47,6 +47,7 @@ public interface JFireServerManagerFactory
 	public String getInitialContextFactory(String j2eeServerTypeRemote, boolean throwExceptionIfUnknownServerType);
 
 	public List<J2eeServerTypeRegistryConfigModule.J2eeRemoteServer> getJ2eeRemoteServers();
+	public J2eeServerTypeRegistryConfigModule.J2eeRemoteServer getJ2eeRemoteServer(String j2eeServerType);
 
 	public ServerCf getLocalServer();
 

@@ -2104,6 +2104,10 @@ public class JFireServerManagerFactoryImpl
 	{
 		return Collections.unmodifiableList(j2eeLocalServerCf.getJ2eeRemoteServers());
 	}
+	public J2eeServerTypeRegistryConfigModule.J2eeRemoteServer getJ2eeRemoteServer(String j2eeServerType)
+	{
+		return j2eeLocalServerCf.getJ2eeRemoteServer(j2eeServerType);
+	}
 
 	/**
 	 * @see org.nightlabs.jfire.servermanager.JFireServerManagerFactory#getInitialContextFactory(java.lang.String, boolean)
