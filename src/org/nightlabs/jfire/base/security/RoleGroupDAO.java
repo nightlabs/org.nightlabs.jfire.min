@@ -24,6 +24,7 @@
 package org.nightlabs.jfire.base.security;
 
 import java.util.Collection;
+import java.util.Set;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.nightlabs.jdo.NLJDOHelper;
@@ -70,7 +71,7 @@ public class RoleGroupDAO extends JDOObjectDAO<RoleGroupID, RoleGroup>
 	 * @see org.nightlabs.jfire.base.jdo.JDOObjectDAO#retrieveJDOObjects(java.util.Collection, java.lang.String[], int, org.eclipse.core.runtime.IProgressMonitor)
 	 */
 	@Override
-	protected Collection<RoleGroup> retrieveJDOObjects(Collection<RoleGroupID> objectIDs,
+	protected Collection<RoleGroup> retrieveJDOObjects(Set<RoleGroupID> objectIDs,
 			String[] fetchGroups, int maxFetchDepth, IProgressMonitor monitor)
 			throws Exception
 	{

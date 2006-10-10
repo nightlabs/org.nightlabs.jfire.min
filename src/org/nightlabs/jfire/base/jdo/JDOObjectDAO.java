@@ -68,7 +68,7 @@ public abstract class JDOObjectDAO<JDOObjectID, JDOObject>
 	 * <p>
 	 * Subclassers may override this method to provide a specialized way to
 	 * retrieve a single JDO object from the server. The given implementation
-	 * works by calling {@link #retrieveJDOObjects(Collection, Set, int, IProgressMonitor)}
+	 * works by calling {@link #retrieveJDOObjects(Set, Set, int, IProgressMonitor)}
 	 * for the single object.
 	 * 
 	 * @param objectID Wich object to get
@@ -82,7 +82,7 @@ public abstract class JDOObjectDAO<JDOObjectID, JDOObject>
 	protected JDOObject retrieveJDOObject(JDOObjectID objectID, String[] fetchGroups, int maxFetchDepth, IProgressMonitor monitor)
 	throws Exception
 	{
-		Collection<JDOObjectID> objectIDs = new ArrayList<JDOObjectID>(1);
+		Set<JDOObjectID> objectIDs = new HashSet<JDOObjectID>(1);
 		objectIDs.add(objectID);
 		Collection<JDOObject> objects = retrieveJDOObjects(objectIDs, fetchGroups, maxFetchDepth, monitor);
 		if(objects == null || objects.isEmpty())
@@ -103,7 +103,7 @@ public abstract class JDOObjectDAO<JDOObjectID, JDOObject>
 	 * @return All requested and existing JDO objects.
 	 * @throws Exception in case of an error
 	 */
-	protected abstract Collection<JDOObject> retrieveJDOObjects(Collection<JDOObjectID> objectIDs, String[] fetchGroups, int maxFetchDepth, IProgressMonitor monitor)
+	protected abstract Collection<JDOObject> retrieveJDOObjects(Set<JDOObjectID> objectIDs, String[] fetchGroups, int maxFetchDepth, IProgressMonitor monitor)
 	throws Exception;
 
 	/**
@@ -139,7 +139,7 @@ public abstract class JDOObjectDAO<JDOObjectID, JDOObject>
 	/**
 	 * Get JDO objects from the cache or the server.
 	 * Object download for uncached objects is delegated by calling 
-	 * {@link #retrieveJDOObjects(Collection, Set, int, IProgressMonitor)}
+	 * {@link #retrieveJDOObjects(Set, Set, int, IProgressMonitor)}
 	 * for all uncached objects.
 	 * 
 	 * @param scope The cache scope to use
@@ -196,7 +196,7 @@ public abstract class JDOObjectDAO<JDOObjectID, JDOObject>
 	/**
 	 * Get JDO objects from the cache or the server.
 	 * Object download for uncached objects is delegated by calling 
-	 * {@link #retrieveJDOObjects(Collection, Set, int, IProgressMonitor)}
+	 * {@link #retrieveJDOObjects(Set, Set, int, IProgressMonitor)}
 	 * for all uncached objects.
 	 * <p>
 	 * This is a convenience method that calls 
@@ -224,7 +224,7 @@ public abstract class JDOObjectDAO<JDOObjectID, JDOObject>
 	/**
 	 * Get JDO objects from the cache or the server.
 	 * Object download for uncached objects is delegated by calling 
-	 * {@link #retrieveJDOObjects(Collection, Set, int, IProgressMonitor)}
+	 * {@link #retrieveJDOObjects(Set, Set, int, IProgressMonitor)}
 	 * for all uncached objects.
 	 * <p>
 	 * This is a convenience method that calls 
@@ -252,7 +252,7 @@ public abstract class JDOObjectDAO<JDOObjectID, JDOObject>
 	/**
 	 * Get JDO objects from the cache or the server.
 	 * Object download for uncached objects is delegated by calling 
-	 * {@link #retrieveJDOObjects(Collection, Set, int, IProgressMonitor)}
+	 * {@link #retrieveJDOObjects(Set, Set, int, IProgressMonitor)}
 	 * for all uncached objects.
 	 * <p>
 	 * This is a convenience method that calls 

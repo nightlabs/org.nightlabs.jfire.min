@@ -25,6 +25,7 @@ package org.nightlabs.jfire.base.config;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Set;
 
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -81,7 +82,7 @@ public class ConfigDAO extends JDOObjectDAO<ConfigID, Config>
 	 */
 	@Override
 	protected Collection<Config> retrieveJDOObjects(
-			Collection<ConfigID> configIDs, String[] fetchGroups, int maxFetchDepth,
+			Set<ConfigID> configIDs, String[] fetchGroups, int maxFetchDepth,
 			IProgressMonitor monitor) throws Exception
 	{
 		// ConfigManager does not provide a way to get multiple Configs...

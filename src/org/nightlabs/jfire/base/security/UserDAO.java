@@ -25,6 +25,7 @@ package org.nightlabs.jfire.base.security;
 
 import java.util.Collection;
 import java.util.Hashtable;
+import java.util.Set;
 
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -89,7 +90,7 @@ public class UserDAO extends JDOObjectDAO<UserID, User>
 	 * @see org.nightlabs.jfire.base.jdo.JDOObjectDAO#retrieveJDOObjects(java.util.Collection, java.util.Set, int, org.eclipse.core.runtime.IProgressMonitor)
 	 */
 	@Override
-	protected Collection<User> retrieveJDOObjects(Collection<UserID> objectIDs, String[] fetchGroups, int maxFetchDepth, IProgressMonitor monitor) throws Exception
+	protected Collection<User> retrieveJDOObjects(Set<UserID> objectIDs, String[] fetchGroups, int maxFetchDepth, IProgressMonitor monitor) throws Exception
 	{
 		Assert.isNotNull(um);
 		Collection<User> users = um.getUsers(objectIDs.toArray(), fetchGroups, maxFetchDepth);
