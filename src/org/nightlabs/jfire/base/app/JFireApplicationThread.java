@@ -30,8 +30,6 @@ import javax.security.auth.login.LoginException;
 
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.application.WorkbenchAdvisor;
-
 import org.nightlabs.base.app.AbstractApplicationThread;
 import org.nightlabs.base.app.AbstractWorkbenchAdvisor;
 import org.nightlabs.jfire.base.login.Login;
@@ -128,42 +126,28 @@ extends AbstractApplicationThread
 		return platformResultCode;
 	}
 
-	public void run() 
-	{
-		try {
-			// create the display
-			display = PlatformUI.createDisplay();
-
-			WorkbenchAdvisor workbenchAdvisor = initWorkbenchAdvisor(display);
-
-			try
+	@Override
+	protected void preCreateWorkbench() {
+		try
+		{
+			LoginConfigModule lcm = Login.sharedInstance().getLoginConfigModule();
+			if(lcm.getAutomaticUpdate() == true)
 			{
-				LoginConfigModule lcm = Login.sharedInstance().getLoginConfigModule();
-				if(lcm.getAutomaticUpdate() == true)
+				Login.getLogin();
+				StartupUpdateManager updateManager = new StartupUpdateManager(lcm);
+				updateManager.run();
+				if(updateManager.doRestart())
 				{
-					Login.getLogin();
-					StartupUpdateManager updateManager = new StartupUpdateManager(lcm);
-					updateManager.run();
-					if(updateManager.doRestart())
-					{
-						platformResultCode = PlatformUI.RETURN_RESTART;
-						return;
-					}
+					platformResultCode = PlatformUI.RETURN_RESTART;
+					return;
 				}
 			}
-			catch(LoginException e)
-			{
-			}
-
-			platformResultCode = PlatformUI.createAndRunWorkbench(display, workbenchAdvisor);
 		}
-		finally {
-			synchronized(JFireApplication.getMutex()) {
-				JFireApplication.getMutex().notifyAll();
-			}
+		catch(LoginException e)
+		{
 		}
 	}
-
+	
 	protected Display getDisplay() {
 		return display;
 	}
