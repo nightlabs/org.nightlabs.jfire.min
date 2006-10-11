@@ -28,7 +28,6 @@ package org.nightlabs.jfire.base;
 
 import java.security.Principal;
 import java.security.acl.Group;
-import java.util.regex.Pattern;
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.NameCallback;
@@ -58,7 +57,6 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 	protected Object loginCredential = null;
 
 //	protected static Pattern SPLIT_USERNAME_PATTERN = Pattern.compile("[*@*]");
-	public static Pattern SPLIT_USERNAME_PATTERN = Pattern.compile("[@\\/]");
 
 	public boolean login() throws LoginException
 	{
@@ -70,7 +68,7 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 		
 		Callback[] callbacks = {nc, pc};
 		
-		String username;
+		String login;
 		String password;
 		String userID;
 		String organisationID;
@@ -81,10 +79,10 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 		try 
 		{
 			callbackHandler.handle(callbacks);
-			username = ((NameCallback)callbacks[0]).getName();
+			login = ((NameCallback)callbacks[0]).getName();
 			char[] tmpPassword = ((PasswordCallback)callbacks[1]).getPassword();
 			if (tmpPassword == null)
-				throw new IllegalStateException("No password set! username = " + username);
+				throw new IllegalStateException("No password set! username = " + login);
 
 			password = new String(tmpPassword);
 			((PasswordCallback)callbacks[1]).clearPassword();
@@ -94,7 +92,7 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 			throw new LoginException(x.getMessage());
 		}
 
-		logger.info(Thread.currentThread().toString() + ": Login requested by " + username);
+		logger.info(Thread.currentThread().toString() + ": Login requested by " + login);
 //		Principal previousPrincipal = SecurityAssociation.getPrincipal();
 //		if (previousPrincipal != null && username.equals(previousPrincipal.getName()))
 //			previousPrincipal = null;
@@ -112,23 +110,16 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 //		LOGGER.info("Not yet logged in. Trying to login "+username);
 
 		// set username and organisationID + userIsOrganisation
-		userIsOrganisation = false;
-		String tmpStr = username;
-		if(tmpStr.startsWith(User.USERID_PREFIX_TYPE_ORGANISATION))
-		{
-			userIsOrganisation = true;
-			tmpStr = tmpStr.substring(User.USERID_PREFIX_TYPE_ORGANISATION.length());
-		}
-		String[] txt = SPLIT_USERNAME_PATTERN.split(tmpStr);
+		String[] txt = User.PATTERN_SPLIT_LOGIN.split(login);
 		if(txt.length != 2 && txt.length != 3)
-			throw new LoginException("Invalid user string (use user@organisation/session, session is optional)");
+			throw new LoginException("Invalid login - not two or three parts (use user@organisation/session, session is optional): " + login);
 		if(txt[0].length() == 0 || txt[1].length() == 0)
-			throw new LoginException("Invalid user string (use user@organization/session, session is optional)");
-		userID = userIsOrganisation?User.USERID_PREFIX_TYPE_ORGANISATION+txt[0]:txt[0];
+			throw new LoginException("Invalid login - empty userID or empty organisationID (use user@organisation/session, session is optional): " + login);
+		userID = txt[0];
 		organisationID = txt[1];
 
 		if (txt.length < 3 || "".equals(txt[2]))
-			sessionID = txt[1] + '_' + txt[0];
+			sessionID = login;
 		else
 			sessionID = txt[2];
 
