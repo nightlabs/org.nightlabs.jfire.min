@@ -119,7 +119,7 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 		organisationID = txt[1];
 
 		if (txt.length < 3 || "".equals(txt[2]))
-			sessionID = login;
+			sessionID = userID + '!' + organisationID;
 		else
 			sessionID = txt[2];
 
