@@ -1721,7 +1721,7 @@ public class CacheManagerFactory
 	// private transient Object filterID2DirtyObjectIDsToNotifyMutex = new
 	// Object();
 
-	private long nextDirtyObjectIDSerial = -Long.MAX_VALUE;
+	private long nextDirtyObjectIDSerial = -Long.MAX_VALUE + 1000; // the client generates synthetic DirtyObjectIDs for dependent objects (i.e. carriers) with -Long.MAX_VALUE
 //	private long nextDirtyObjectIDSerial = 0;
 
 
