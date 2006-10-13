@@ -1231,6 +1231,32 @@ public class Cache
 			oldCarrier.setCarrierContainer(null);
 	}
 
+	public synchronized int removeByObjectIDClass(Class clazz)
+	{
+		// TODO we need an index for this feature!!! Iterating all objectIDs is too inefficient!
+		Set<Object> objectIDsToRemove = new HashSet<Object>();
+		for (Object objectID : objectID2KeySet_dependency.keySet()) {
+			if (clazz.isInstance(objectID))
+				objectIDsToRemove.add(objectID);
+		}
+
+		int removedCarrierCount = 0;
+		for (Object objectID : objectIDsToRemove)
+			removedCarrierCount += removeByObjectID(objectID);
+
+		return removedCarrierCount;
+	}
+
+	public synchronized void removeAll()
+	{
+		carrierContainers.clear();
+		rollCarrierContainers();
+		key2Carrier.clear();
+		objectID2KeySet_dependency.clear();
+		objectID2KeySet_alternative.clear();
+		// important: we do NOT clear the newCarriersByKey in order to have the listeners registered, still.
+	}
+
 	/**
 	 * This method is called by the <code>NotificationThread</code>, if an object has
 	 * been changed. It will
@@ -1242,7 +1268,7 @@ public class Cache
 	 *
 	 * @param objectID The JDO object-id of the persistance-capable object.
 	 */
-	protected synchronized int removeByObjectID(Object objectID)
+	public synchronized int removeByObjectID(Object objectID)
 	{
 		logger.debug("Removing all Carriers for objectID: " + objectID);
 
@@ -1306,8 +1332,7 @@ public class Cache
 			notificationThread = null;
 
 			// clear the cache
-			key2Carrier.clear();
-			objectID2KeySet_dependency.clear();
+			removeAll();
 
 			// forget the sessionID - a new one will automatically be generated
 			sessionID = null;
