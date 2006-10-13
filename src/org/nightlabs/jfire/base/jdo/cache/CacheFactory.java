@@ -54,7 +54,11 @@ public class CacheFactory implements ICacheFactory {
 		}
 
 		public void removeAll() {
-			throw new UnsupportedOperationException("NYI");
+			cache.removeAll();
+		}
+
+		public void removeByKeyClass(Class keyClass) {
+			cache.removeByObjectIDClass(keyClass);
 		}
 	}
 	
