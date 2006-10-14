@@ -28,6 +28,7 @@ package org.nightlabs.jfire.base.jdo.cache;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -35,6 +36,7 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.TreeSet;
 
 import javax.jdo.JDOHelper;
 
@@ -116,11 +118,26 @@ public class Cache
 									logger.debug("  " + dirtyObjectID);
 							}
 
+							Map<Object, DirtyObjectID> indirectlyAffectedDirtyObjectIDs = new HashMap<Object, DirtyObjectID>();
+							Set<Object> objectIDsWithLifecycleStageDirty = new HashSet<Object>();
+
 							int removedCarrierCount = 0;
 							Set<Object> objectIDs = new HashSet<Object>(dirtyObjectIDs.size());
 							for (DirtyObjectID dirtyObjectID : dirtyObjectIDs) {
-								objectIDs.add(dirtyObjectID.getObjectID());
-								removedCarrierCount += cache.removeByObjectID(dirtyObjectID.getObjectID());
+								Object objectID = dirtyObjectID.getObjectID();
+								objectIDs.add(objectID);
+								if (DirtyObjectID.LifecycleStage.DIRTY.equals(dirtyObjectID.getLifecycleStage()))
+									objectIDsWithLifecycleStageDirty.add(objectID);
+
+								Set<Key> removedKeys = cache.removeByObjectID(objectID);
+								removedCarrierCount += removedKeys.size();
+								for (Key removedKey : removedKeys) {
+									if (objectID.equals(removedKey.getObjectID()))
+										continue;
+
+									DirtyObjectID doid = new DirtyObjectID(DirtyObjectID.LifecycleStage.DIRTY, removedKey.getObjectID(), null, -Long.MAX_VALUE);
+									indirectlyAffectedDirtyObjectIDs.put(doid.getObjectID(), doid);
+								}
 							}
 							logger.info("Removed " + removedCarrierCount + " carriers from the cache.");
 
@@ -128,17 +145,29 @@ public class Cache
 									objectIDs,
 									cache.getCacheCfMod().getLocalListenerReactionTimeMSec());
 
+							// remove all synthetic DirtyObjectIDs for which real dirtyObjectIDs exist
+							for (Object objectID : objectIDsWithLifecycleStageDirty)
+								indirectlyAffectedDirtyObjectIDs.remove(objectID);
+
+
+							// create a set with all dirtyObjectIDs - the direct and the indirect=synthetic
+							SortedSet<DirtyObjectID> dirtyObjectIDsForNotification = new TreeSet<DirtyObjectID>(dirtyObjectIDs);
+							dirtyObjectIDsForNotification.addAll(indirectlyAffectedDirtyObjectIDs.values());
+
 							// notify via local class based notification mechanism
 							// the interceptor org.nightlabs.jfire.base.jdo.JDOObjectID2PCClassNotificationInterceptor takes care about correct class mapping
 							JDOLifecycleManager.sharedInstance().notify(new NotificationEvent(
 									cache,             // source
 									(String)null,     // zone
-									dirtyObjectIDs    // subjects
+									dirtyObjectIDsForNotification // dirtyObjectIDs    // subjects
 							));
 
 							// TODO the following is only for legacy (i.e. deprecated ChangeManager)
-							ArrayList<ChangeSubjectCarrier> subjectCarriers = new ArrayList<ChangeSubjectCarrier>(dirtyObjectIDs.size());
-							for (Iterator it = dirtyObjectIDs.iterator(); it.hasNext(); ) {
+//							ArrayList<ChangeSubjectCarrier> subjectCarriers = new ArrayList<ChangeSubjectCarrier>(dirtyObjectIDs.size());
+//							for (Iterator it = dirtyObjectIDs.iterator(); it.hasNext(); ) {
+
+							ArrayList<ChangeSubjectCarrier> subjectCarriers = new ArrayList<ChangeSubjectCarrier>(dirtyObjectIDsForNotification.size());
+							for (Iterator it = dirtyObjectIDsForNotification.iterator(); it.hasNext(); ) {
 								DirtyObjectID dirtyObjectID = (DirtyObjectID) it.next();
 								// ignore removal, because that's not supported by the old ChangeManager - new shouldn't be in that list
 								if (dirtyObjectID.getLifecycleStage() != DirtyObjectID.LifecycleStage.DIRTY)
@@ -1231,7 +1260,7 @@ public class Cache
 			oldCarrier.setCarrierContainer(null);
 	}
 
-	public synchronized int removeByObjectIDClass(Class clazz)
+	public synchronized Set<Key> removeByObjectIDClass(Class clazz)
 	{
 		// TODO we need an index for this feature!!! Iterating all objectIDs is too inefficient!
 		Set<Object> objectIDsToRemove = new HashSet<Object>();
@@ -1240,11 +1269,11 @@ public class Cache
 				objectIDsToRemove.add(objectID);
 		}
 
-		int removedCarrierCount = 0;
+		Set<Key> res = new HashSet<Key>();
 		for (Object objectID : objectIDsToRemove)
-			removedCarrierCount += removeByObjectID(objectID);
+			res.addAll(removeByObjectID(objectID));
 
-		return removedCarrierCount;
+		return res;
 	}
 
 	public synchronized void removeAll()
@@ -1257,6 +1286,18 @@ public class Cache
 		// important: we do NOT clear the newCarriersByKey in order to have the listeners registered, still.
 	}
 
+//	public synchronized void populateDependentObjectIDs(Object objectID, Set<Object> dependentObjectIDs)
+//	{
+//		Set<Key> keySet = objectID2KeySet_dependency.remove(objectID);
+//		if (keySet == null)
+//			return;
+//
+//		for (Key key : keySet)
+//			dependentObjectIDs.add(key.getObjectID());
+//	}
+
+	private static final Set<Key> emptyKeySet = Collections.unmodifiableSet(new HashSet<Key>(0));
+
 	/**
 	 * This method is called by the <code>NotificationThread</code>, if an object has
 	 * been changed. It will
@@ -1267,16 +1308,17 @@ public class Cache
 	 * the <code>NotificationThread</code>, too.
 	 *
 	 * @param objectID The JDO object-id of the persistance-capable object.
+	 * @return a Set of all removed {@link Key}s - never null
 	 */
-	public synchronized int removeByObjectID(Object objectID)
+	public synchronized Set<Key> removeByObjectID(Object objectID)
 	{
 		logger.debug("Removing all Carriers for objectID: " + objectID);
 
 		objectID2KeySet_alternative.remove(objectID);
 
-		Set keySet = (Set) objectID2KeySet_dependency.remove(objectID);
+		Set<Key> keySet = objectID2KeySet_dependency.remove(objectID);
 		if (keySet == null)
-			return 0;
+			return emptyKeySet;
 
 		int removedCarrierCount = 0;
 		for (Iterator it = keySet.iterator(); it.hasNext(); ) {
@@ -1292,7 +1334,7 @@ public class Cache
 			else
 				logger.warn("There was a key in the objectID2KeySet_dependency, but no carrier for it in key2Carrier! key=\""+key.toString()+"\"");
 		}
-		return removedCarrierCount;
+		return keySet;
 	}
 
 	public synchronized boolean isOpen()
