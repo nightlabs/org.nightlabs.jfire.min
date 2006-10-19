@@ -322,12 +322,20 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	protected ConfigModule getConfigModule(PersistenceManager pm, Config config, Class cfModClass, String cfModID, String[] fetchGroups, int maxFetchDepth)
 	throws ModuleException
 	{
+		logger.debug("config.organisatinID "+config.getOrganisationID());
 		ConfigSetup.ensureAllPrerequisites(pm);
 		ConfigModule configModule = null;
 		boolean groupAllowOverwrite = true;
 		configModule = config.createConfigModule(cfModClass, cfModID);
 //		configModule = ConfigModule.getAutoCreateConfigModule(pm, config, cfModClass, cfModID);
 
+		logger.debug("Have configmodule: "+configModule);
+		logger.debug("configModule.organisationID: "+configModule.getOrganisationID());
+		logger.debug("configModule.configType: "+configModule.getConfigType());
+		logger.debug("configModule.configKey: "+configModule.getConfigKey());
+		logger.debug("configModule.cfModID: "+configModule.getCfModID());
+		logger.debug("configModule.cfModKey: "+configModule.getCfModKey());
+		
 		pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
 		if (fetchGroups != null)
 			pm.getFetchPlan().setGroups(fetchGroups);
