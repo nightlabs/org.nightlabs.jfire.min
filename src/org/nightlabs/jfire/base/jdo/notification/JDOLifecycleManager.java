@@ -19,19 +19,33 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.widgets.Display;
 import org.nightlabs.base.notification.NotificationListenerJob;
-import org.nightlabs.base.notification.NotificationListenerSWTThreadAsync;
-import org.nightlabs.base.notification.NotificationListenerSWTThreadSync;
 import org.nightlabs.base.notification.NotificationManager;
 import org.nightlabs.jfire.base.jdo.cache.Cache;
 import org.nightlabs.jfire.jdo.cache.DirtyObjectID;
 import org.nightlabs.jfire.jdo.notification.AbsoluteFilterID;
 import org.nightlabs.jfire.jdo.notification.IJDOLifecycleListenerFilter;
 import org.nightlabs.notification.NotificationEvent;
+import org.nightlabs.notification.NotificationListener;
 
 /**
  * Use the shared instance of this manager to get notified
- * about changes on JDO object or similar objects where
+ * about changes on JDO objects or similar objects where
  * you can't register a change listener directly.
+ * <p>
+ * This implementation of {@link NotificationManager} supports two
+ * different kinds of listeners:
+ * <ul>
+ * <li>
+ * class-based listeners that are registered in the server implicitely
+ * </li>
+ * <li>
+ * filter-based listeners that are registered (and <b>must be unregistered!</b>)
+ * in the server explicitely.
+ * </li>
+ * </ul>
+ * Read this document for more details:
+ * https://www.jfire.org/modules/phpwiki/index.php/ClientSide%20JDO%20Lifecycle%20Listeners
+ * </p>
  * <p>
  * For many objects which are obtained from the server, there exist
  * multiple instances in the client. Often, these instances even are
@@ -39,6 +53,8 @@ import org.nightlabs.notification.NotificationEvent;
  * Hence, you can't use a property change support within these objects or
  * similar mechanisms.
  * <p>
+ * <u><b>implicit class-based listeners</b></u>
+ * <br/>
  * To handle JDO object changes with this manager works as follows:
  * <ul>
  * 	<li>
@@ -60,11 +76,16 @@ import org.nightlabs.notification.NotificationEvent;
  *		become dirty (changed on the server / attached) or deleted from the datastore.
  *	</li>
  * </ul>
- * When registering a listener, you can define, how the listener should be called
- * (<tt>notificationMode</tt>): This means on which thread and whether to wait or not.
- * In most cases, it makes sense to use a worker thread, because then you don't need to
- * manually handle the reload-process asnychronously (and you shouldn't do it on the GUI
- * thread, because it's expensive).
+ * When registering a listener, you can define, how the listener should be called by
+ * choosing an implementation of {@link NotificationListener}. In most cases, you'll
+ * probably want to extend {@link NotificationListenerJob}.
+ * </p>
+ * <p>
+ * <u><b>filter-based explicit listeners</b></u>
+ * <br/>
+ * This is similar to the implicit listeners, but you need to register <b>and unregister(!)</b>
+ * the listeners explicitely. See {@link #addLifecycleListener(JDOLifecycleListener)} for more details.
+ * </p>
  *
  * @author Marco Schulze - marco at nightlabs dot de
  */

@@ -2,6 +2,14 @@ package org.nightlabs.jfire.base.jdo.notification;
 
 import org.nightlabs.jfire.jdo.notification.IJDOLifecycleListenerFilter;
 
+/**
+ * There are many interfaces extending this basic interface. You <b>must not</b> directly
+ * implement this interface, because the sub-interface decides about which thread will be
+ * used for execution. In most cases, you'd probably want to extend
+ * {@link JDOLifecycleAdapterJob}.
+ *
+ * @author Marco Schulze - marco at nightlabs dot de
+ */
 public interface JDOLifecycleListener
 {
 	/**
