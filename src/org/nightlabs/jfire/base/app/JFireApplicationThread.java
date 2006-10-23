@@ -147,11 +147,11 @@ extends AbstractApplicationThread
 		{
 		}
 	}
-	
+
 	protected Display getDisplay() {
 		return display;
 	}
-	
+
 	public AbstractWorkbenchAdvisor initWorkbenchAdvisor(Display display) {
 		return new JFireWorkbenchAdvisor(display);
 	}
