@@ -26,6 +26,7 @@ Export-Package: org.nightlabs.jfire.base,
  org.nightlabs.jfire.base.person.preferences,
  org.nightlabs.jfire.base.person.search,
  org.nightlabs.jfire.base.security,
+ org.nightlabs.jfire.base.tree,
  org.nightlabs.jfire.base.update,
  org.nightlabs.jfire.base.workstation
 Require-Bundle: org.eclipse.ui,
