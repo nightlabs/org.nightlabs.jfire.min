@@ -32,6 +32,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.jdo.JDOHelper;
+import javax.management.ListenerNotFoundException;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.jdo.cache.Cache;
@@ -141,6 +144,9 @@ public abstract class JDOObjectDAO<JDOObjectID, JDOObject>
 	 * Object download for uncached objects is delegated by calling 
 	 * {@link #retrieveJDOObjects(Set, Set, int, IProgressMonitor)}
 	 * for all uncached objects.
+	 * <p>
+	 * Note that this will maintain the order of the objects given if you
+	 * pass a {@link List} as objectIDs. 
 	 * 
 	 * @param scope The cache scope to use
 	 * @param objectIDs Wich objects to get
@@ -155,20 +161,14 @@ public abstract class JDOObjectDAO<JDOObjectID, JDOObject>
 	protected synchronized List<JDOObject> getJDOObjects(String scope, Collection<JDOObjectID> objectIDs, String[] fetchGroups, int maxFetchDepth, IProgressMonitor monitor)
 	{
 		try	{
-			ArrayList<JDOObject> objects = new ArrayList<JDOObject>();
-			
-			if(objectIDs.size() == 1) {
-				objects.add(getJDOObject(scope, objectIDs.iterator().next(), fetchGroups, maxFetchDepth, monitor));
-				return objects;
-			}
-			
+			ArrayList<Object> objects = new ArrayList<Object>(objectIDs);
+
 			Set<JDOObjectID> fetchObjectIDs = new HashSet<JDOObjectID>();
-			for (JDOObjectID objectID : objectIDs) {
+			for (int i = 0; i < objects.size(); i++) {
+				JDOObjectID objectID = (JDOObjectID) objects.get(i);
 				JDOObject res = (JDOObject)cache.get(scope, objectID, fetchGroups, maxFetchDepth);
-				if(res != null) {
-					objects.add(res);
-					monitor.worked(1);
-				}
+				if (res != null)
+					objects.set(i, res);
 				else
 					fetchObjectIDs.add(objectID);
 			}
@@ -176,17 +176,23 @@ public abstract class JDOObjectDAO<JDOObjectID, JDOObject>
 			if (fetchObjectIDs.size() > 0) {
 				if(fetchObjectIDs.size() == 1) {
 					JDOObject fetchedObject = retrieveJDOObject(fetchObjectIDs.iterator().next(), fetchGroups, maxFetchDepth, monitor);
+					CollectionUtil.replaceAllInCollection(objects, fetchObjectIDs.iterator().next(), fetchedObject);
 					cache.put(scope, fetchedObject, fetchGroups, maxFetchDepth);
-					objects.add(fetchedObject);
+//					objects.add(fetchedObject);
 					monitor.worked(1);
 				} else {
 					Collection<JDOObject> fetchedObjects = retrieveJDOObjects(fetchObjectIDs, fetchGroups, maxFetchDepth, monitor);
 					cache.putAll(scope, fetchedObjects, fetchGroups, maxFetchDepth);
-					objects.addAll(fetchedObjects);
+					for (JDOObject fetchedObject : fetchedObjects) {
+						JDOObjectID id = (JDOObjectID) JDOHelper.getObjectId(fetchedObject);
+						CollectionUtil.replaceAllInCollection(objects, id, fetchedObject);
+					}
+//					objects.addAll(fetchedObjects);
 					monitor.worked(fetchedObjects.size());
 				}
 			}
-			return objects;
+			
+			return (List<JDOObject>) objects;
 			
 		} catch (Exception x)	{
 			throw new RuntimeException(x);
