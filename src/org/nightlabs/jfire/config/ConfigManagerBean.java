@@ -34,6 +34,7 @@ import java.util.Iterator;
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.SessionBean;
+import javax.jdo.FetchPlan;
 import javax.jdo.JDOHelper;
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
@@ -279,6 +280,12 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 		pm = getPersistenceManager();
 		try 
 		{
+			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
+			if (fetchGroups != null)
+				pm.getFetchPlan().setGroups(fetchGroups);
+			else
+				pm.getFetchPlan().setGroup(FetchPlan.DEFAULT);
+			
 			ConfigSetup.ensureAllPrerequisites(pm);
 			Config config = (Config)pm.getObjectById(configID);
 			return getConfigModule(pm, config, cfModClass, cfModID, fetchGroups, maxFetchDepth);
@@ -288,42 +295,12 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	}	
 	
 	/**
-	 * Searches the ConfigModule of the given config, cfModClass and cfModID.
-	 * If not found it will be autocreated.
-	 * 
-	 * @param config The Config the returned ConfigModule should belong to
-	 * @param cfModClass The ConfigModule's classname
-	 * @param cfModID The ConfigModules cfModID (suffix)
-	 * @param fetchGroups The fetch-groups to be used to detach the ConfigModule
-	 * @return The ConfigModule of the given Config, cfModClass and cfModID
-	 * @throws ModuleException
-	 * 
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type = "Required"
-	 * 
-	 */
-	public ConfigModule getConfigModule(Config config, Class cfModClass, String cfModID, String[] fetchGroups, int maxFetchDepth)
-	throws ModuleException
-	{
-		PersistenceManager pm;
-		pm = getPersistenceManager();
-		try 
-		{
-			return getConfigModule(pm, config, cfModClass, cfModID, fetchGroups, maxFetchDepth);
-		} finally {
-			pm.close();
-		}
-	}
-
-	/**
 	 * Helper method for the other getConfigModule methods 
 	 */
 	protected ConfigModule getConfigModule(PersistenceManager pm, Config config, Class cfModClass, String cfModID, String[] fetchGroups, int maxFetchDepth)
 	throws ModuleException
 	{
 		logger.debug("config.organisatinID "+config.getOrganisationID());
-		ConfigSetup.ensureAllPrerequisites(pm);
 		ConfigModule configModule = null;
 		boolean groupAllowOverwrite = true;
 		configModule = config.createConfigModule(cfModClass, cfModID);
@@ -336,11 +313,11 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 		logger.debug("configModule.cfModID: "+configModule.getCfModID());
 		logger.debug("configModule.cfModKey: "+configModule.getCfModKey());
 		
-		pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
-		if (fetchGroups != null)
-			pm.getFetchPlan().setGroups(fetchGroups);
-		else
-			pm.getFetchPlan().clearGroups();
+//		pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
+//		if (fetchGroups != null)
+//			pm.getFetchPlan().setGroups(fetchGroups);
+//		else
+//			pm.getFetchPlan().clearGroups();
 
 		ConfigGroup configGroup = ConfigGroup.getConfigGroupForConfig(
 				pm, 
@@ -514,6 +491,8 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 		pm = getPersistenceManager();
 		try 
 		{		
+			// Maybe its wise to set default to the fetchplan befor doing anything :-)
+			pm.getFetchPlan().setGroups(new String[] {FetchPlan.DEFAULT});			
 			Collection result = new ArrayList();
 			Collection setups = ConfigSetup.getConfigSetups(pm);
 			for (Iterator iter = setups.iterator(); iter.hasNext();) {
