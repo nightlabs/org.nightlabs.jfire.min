@@ -31,6 +31,9 @@ import java.util.ResourceBundle;
 
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.nightlabs.jfire.base.login.Login;
+import org.nightlabs.jfire.config.ConfigManager;
+import org.nightlabs.jfire.config.ConfigManagerUtil;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -116,4 +119,14 @@ public class JFireBasePlugin
 		return resourceBundle;
 	}
 
+	public static ConfigManager getConfigManager() {
+		try {
+			return ConfigManagerUtil.getHome(
+					Login.getLogin().getInitialContextProperties()
+			).create();
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
 }
