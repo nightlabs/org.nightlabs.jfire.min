@@ -3,7 +3,7 @@ package org.nightlabs.jfire.base.jdo.notification;
 import java.util.EventObject;
 import java.util.SortedSet;
 
-import org.nightlabs.jfire.jdo.cache.DirtyObjectID;
+import org.nightlabs.jfire.jdo.notification.DirtyObjectID;
 
 public class JDOLifecycleEvent
 		extends EventObject

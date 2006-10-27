@@ -29,7 +29,7 @@ package org.nightlabs.jfire.base.jdo;
 import java.util.Iterator;
 
 import org.nightlabs.jdo.ObjectID;
-import org.nightlabs.jfire.jdo.cache.DirtyObjectID;
+import org.nightlabs.jfire.jdo.notification.DirtyObjectID;
 import org.nightlabs.notification.Interceptor;
 import org.nightlabs.notification.NotificationEvent;
 import org.nightlabs.notification.SubjectCarrier;

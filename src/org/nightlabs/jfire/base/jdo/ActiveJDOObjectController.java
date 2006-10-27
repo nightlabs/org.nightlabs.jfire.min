@@ -23,8 +23,9 @@ import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleAdapterJob;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleEvent;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleListener;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleManager;
-import org.nightlabs.jfire.jdo.cache.DirtyObjectID;
+import org.nightlabs.jfire.jdo.notification.DirtyObjectID;
 import org.nightlabs.jfire.jdo.notification.IJDOLifecycleListenerFilter;
+import org.nightlabs.jfire.jdo.notification.JDOLifecycleState;
 import org.nightlabs.jfire.jdo.notification.SimpleLifecycleListenerFilter;
 import org.nightlabs.notification.NotificationEvent;
 import org.nightlabs.notification.NotificationListener;
@@ -77,7 +78,7 @@ public abstract class ActiveJDOObjectController<JDOObjectID, JDOObject>
 	{
 		return new SimpleLifecycleListenerFilter(
 				getJDOObjectClass(), true,
-				new DirtyObjectID.LifecycleStage[] { DirtyObjectID.LifecycleStage.NEW });
+				new JDOLifecycleState[] { JDOLifecycleState.NEW });
 	}
 
 	private Map<JDOObjectID, JDOObject> jdoObjectID2jdoObject = null;
@@ -136,7 +137,7 @@ public abstract class ActiveJDOObjectController<JDOObjectID, JDOObject>
 				for (DirtyObjectID dirtyObjectID : (Set<? extends DirtyObjectID>)notificationEvent.getSubjects()) {
 					JDOObjectID jdoObjectID = (JDOObjectID) dirtyObjectID.getObjectID();
 
-					if (DirtyObjectID.LifecycleStage.DELETED.equals(dirtyObjectID.getLifecycleStage()))
+					if (JDOLifecycleState.DELETED.equals(dirtyObjectID.getLifecycleState()))
 						jdoObjectID2jdoObject.remove(jdoObjectID);
 					else if (jdoObjectID2jdoObject.containsKey(jdoObjectID)) // only load it, if it's already here
 						jdoObjectIDsToLoad.add(jdoObjectID);

@@ -54,9 +54,10 @@ import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleManager;
 import org.nightlabs.jfire.base.login.Login;
 import org.nightlabs.jfire.jdo.JDOManager;
 import org.nightlabs.jfire.jdo.JDOManagerUtil;
-import org.nightlabs.jfire.jdo.cache.DirtyObjectID;
 import org.nightlabs.jfire.jdo.cache.NotificationBundle;
+import org.nightlabs.jfire.jdo.notification.DirtyObjectID;
 import org.nightlabs.jfire.jdo.notification.IJDOLifecycleListenerFilter;
+import org.nightlabs.jfire.jdo.notification.JDOLifecycleState;
 import org.nightlabs.notification.NotificationEvent;
 import org.nightlabs.util.CollectionUtil;
 
@@ -126,7 +127,7 @@ public class Cache
 							for (DirtyObjectID dirtyObjectID : dirtyObjectIDs) {
 								Object objectID = dirtyObjectID.getObjectID();
 								objectIDs.add(objectID);
-								if (DirtyObjectID.LifecycleStage.DIRTY.equals(dirtyObjectID.getLifecycleStage()))
+								if (JDOLifecycleState.DIRTY.equals(dirtyObjectID.getLifecycleState()))
 									objectIDsWithLifecycleStageDirty.add(objectID);
 
 								Set<Key> removedKeys = cache.removeByObjectID(objectID);
@@ -135,7 +136,7 @@ public class Cache
 									if (objectID.equals(removedKey.getObjectID()))
 										continue;
 
-									DirtyObjectID doid = new DirtyObjectID(DirtyObjectID.LifecycleStage.DIRTY, removedKey.getObjectID(), null, -Long.MAX_VALUE);
+									DirtyObjectID doid = new DirtyObjectID(JDOLifecycleState.DIRTY, removedKey.getObjectID(), null, -Long.MAX_VALUE);
 									indirectlyAffectedDirtyObjectIDs.put(doid.getObjectID(), doid);
 								}
 							}
@@ -170,7 +171,7 @@ public class Cache
 							for (Iterator it = dirtyObjectIDsForNotification.iterator(); it.hasNext(); ) {
 								DirtyObjectID dirtyObjectID = (DirtyObjectID) it.next();
 								// ignore removal, because that's not supported by the old ChangeManager - new shouldn't be in that list
-								if (dirtyObjectID.getLifecycleStage() != DirtyObjectID.LifecycleStage.DIRTY)
+								if (dirtyObjectID.getLifecycleState() != JDOLifecycleState.DIRTY)
 									continue;
 
 								subjectCarriers.add(new ChangeSubjectCarrier(
