@@ -1,8 +1,10 @@
-package org.nightlabs.jfire.base.tree;
+package org.nightlabs.jfire.base.jdo;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -17,7 +19,6 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.swt.widgets.Display;
 import org.nightlabs.base.notification.NotificationAdapterJob;
-import org.nightlabs.base.tree.TreeContentProvider;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleAdapterJob;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleEvent;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleListener;
@@ -27,53 +28,64 @@ import org.nightlabs.jfire.jdo.notification.IJDOLifecycleListenerFilter;
 import org.nightlabs.jfire.jdo.notification.SimpleLifecycleListenerFilter;
 import org.nightlabs.notification.NotificationEvent;
 import org.nightlabs.notification.NotificationListener;
-import org.nightlabs.util.CollectionUtil;
 
 /**
  * @author Marco Schulze - marco at nightlabs dot de
- *
- * @deprecated Will soon be removed. A ContentProvider should not retrieve data itself but only
- *		glue some data input into a TableViewer/TreeViewer (or other UI document). That's why
- *		there's now Xyz existing.
  */
-public abstract class ActiveTreeContentProvider<JDOObjectID, JDOObject>
-extends TreeContentProvider
+public abstract class ActiveJDOObjectController<JDOObjectID, JDOObject>
 {
-	private static final Logger logger = Logger.getLogger(ActiveTreeContentProvider.class);
+	private static final Logger logger = Logger.getLogger(ActiveJDOObjectController.class);
 
 	/**
 	 * This method is called on a worker thread and must retrieve JDO objects for
 	 * the given object-ids from the server.
 	 *
-	 * @param monitor
-	 * @return
+	 * @param objectIDs The jdo object ids representing the desired objects.
+	 * @param monitor The monitor.
+	 * @return Returns the jdo objects that correspond to the requested <code>objectIDs</code>.
 	 */
-	protected abstract Collection<JDOObject> getJDOObjects(Set<JDOObjectID> objectIDs, IProgressMonitor monitor);
+	protected abstract Collection<JDOObject> retrieveJDOObjects(Set<JDOObjectID> objectIDs, IProgressMonitor monitor);
 
-	protected abstract Collection<JDOObject> getAllJDOObjects(IProgressMonitor monitor);
+	/**
+	 * This method is called on a worker thread and must retrieve all JDO
+	 * objects this controller shall manage. In many cases, this is simply
+	 * the complete extent of a class (i.e. all instances that exist in the datastore).
+	 * If this is not the complete extent of the class specified by
+	 * {@link #getJDOObjectClass()}, you must override {@link #createJDOLifecycleListenerFilter()}
+	 * in order to filter newly created objects already on the server side.
+	 *
+	 * @param monitor The monitor.
+	 * @return Returns all those jdo objects that this 
+	 */
+	protected abstract Collection<JDOObject> retrieveJDOObjects(IProgressMonitor monitor);
 
 	/**
 	 * This method is always called on the UI thread.
 	 */
-	protected abstract void fireChangeEvent();
+	protected abstract void onJDOObjectsChanged();
 
-	protected abstract void sortJDOObjects(JDOObject[] objects);
+	protected abstract void sortJDOObjects(List<JDOObject> objects);
 
 	/**
 	 * Unfortunately, it is not possible to determine the class of a generic at runtime. Therefore,
 	 * we cannot know with which types the generic ActiveTreeContentProvider has been created.
 	 * I hope that Java will - in the future - improve the generics! Marco.
 	 */
-	protected abstract Class getJdoObjectClass();
+	protected abstract Class getJDOObjectClass();
+
+	protected IJDOLifecycleListenerFilter createJDOLifecycleListenerFilter()
+	{
+		return new SimpleLifecycleListenerFilter(
+				getJDOObjectClass(), true,
+				new DirtyObjectID.LifecycleStage[] { DirtyObjectID.LifecycleStage.NEW });
+	}
 
 	private Map<JDOObjectID, JDOObject> jdoObjectID2jdoObject = null;
 	private Object jdoObjectID2jdoObjectMutex = new Object();
-	private JDOObject[] jdoObjects = null;
+	private List<JDOObject> jdoObjects = null;
 	private JDOLifecycleListener lifecycleListener = new JDOLifecycleAdapterJob("Loading New jdoObjects")
 	{
-		private SimpleLifecycleListenerFilter lifecycleListenerFilter = new SimpleLifecycleListenerFilter(
-				getJdoObjectClass(), true,
-				new DirtyObjectID.LifecycleStage[] { DirtyObjectID.LifecycleStage.NEW });
+		private IJDOLifecycleListenerFilter lifecycleListenerFilter = createJDOLifecycleListenerFilter();
 
 		public IJDOLifecycleListenerFilter getJDOLifecycleListenerFilter()
 		{
@@ -95,18 +107,18 @@ extends TreeContentProvider
 				}
 
 				if (!jdoObjectIDsToLoad.isEmpty()) {
-					Collection<JDOObject> jdoObjects = getJDOObjects(jdoObjectIDsToLoad, getProgressMonitor());
+					Collection<JDOObject> jdoObjects = retrieveJDOObjects(jdoObjectIDsToLoad, getProgressMonitor());
 					for (JDOObject jdoObject : jdoObjects)
 						jdoObjectID2jdoObject.put((JDOObjectID) JDOHelper.getObjectId(jdoObject), jdoObject);
 
-					createJdoObjectArray();
+					createJDOObjectList();
 				}
 			} // synchronized (jdoObjectID2jdoObjectMutex) {
 
 			Display.getDefault().asyncExec(new Runnable() {
 				public void run()
 				{
-					fireChangeEvent();
+					onJDOObjectsChanged();
 				}
 			});
 		}
@@ -131,11 +143,11 @@ extends TreeContentProvider
 				}
 
 				if (!jdoObjectIDsToLoad.isEmpty()) {
-					Collection<JDOObject> jdoObjects = getJDOObjects(jdoObjectIDsToLoad, getProgressMonitor());
+					Collection<JDOObject> jdoObjects = retrieveJDOObjects(jdoObjectIDsToLoad, getProgressMonitor());
 					for (JDOObject jdoObject : jdoObjects)
 						jdoObjectID2jdoObject.put((JDOObjectID) JDOHelper.getObjectId(jdoObject), jdoObject);
 
-					createJdoObjectArray();
+					createJDOObjectList();
 				}
 			} // synchronized (jdoObjectID2jdoObjectMutex) {
 
@@ -143,7 +155,7 @@ extends TreeContentProvider
 			{
 				public void run()
 				{
-					fireChangeEvent();
+					onJDOObjectsChanged();
 				}
 			});
 		}
@@ -158,12 +170,6 @@ extends TreeContentProvider
 			throw new IllegalStateException("This instance of ActiveTreeContentProvider is already closed: " + this);
 	}
 
-	public ActiveTreeContentProvider()
-	{
-		// we register them lazily in the first call to getElements
-//		JDOLifecycleManager.sharedInstance().addLifecycleListener(lifecycleListener);
-//		JDOLifecycleManager.sharedInstance().addNotificationListener(getJdoObjectClass(), notificationListener);
-	}
 	/**
 	 * You <b>must</b> call this method once you don't need this content provider anymore.
 	 * It performs some clean-ups, e.g. unregistering all listeners. 
@@ -173,42 +179,41 @@ extends TreeContentProvider
 		assertOpen();
 		if (listenersExist) {
 			if (logger.isDebugEnabled())
-				logger.debug("close: unregistering listeners (" + getJdoObjectClass() + ')');
+				logger.debug("close: unregistering listeners (" + getJDOObjectClass() + ')');
 
 			JDOLifecycleManager.sharedInstance().removeLifecycleListener(lifecycleListener);
-			JDOLifecycleManager.sharedInstance().removeNotificationListener(getJdoObjectClass(), notificationListener);
+			JDOLifecycleManager.sharedInstance().removeNotificationListener(getJDOObjectClass(), notificationListener);
 		}
 		else {
 			if (logger.isDebugEnabled())
-				logger.debug("close: there are no listeners - will not unregister (" + getJdoObjectClass() + ')');
+				logger.debug("close: there are no listeners - will not unregister (" + getJDOObjectClass() + ')');
 		}
 		closed = true;
 	}
-	@Override
-	public void dispose()
-	{
-		if (logger.isDebugEnabled())
-			logger.debug("dispose");
-		super.dispose();
-	}
 
-	private void createJdoObjectArray()
+	protected void createJDOObjectList()
 	{
-		jdoObjects = (JDOObject[]) CollectionUtil.collection2TypedArray(jdoObjectID2jdoObject.values(), getJdoObjectClass());
-//		jdoObjects = (JDOObject[]) jdoObjectID2jdoObject.values().toArray();
+		jdoObjects = new ArrayList<JDOObject>(jdoObjectID2jdoObject.values());
 		sortJDOObjects(jdoObjects);
 	}
 
-	public Object[] getElements(Object inputElement)
+	/**
+	 * This method will immediately return. If there is no data available yet, this method will return <code>null</code>
+	 * and a {@link Job} will be launched in order to fetch the data.
+	 *
+	 * @return <code>null</code>, if there is no data here yet. An instance of {@link List} containing
+	 *		jdo objects. If a modification happened, this list will be recreated.
+	 */
+	public List<JDOObject> getJDOObjects()
 	{
 		assertOpen();
 		if (!listenersExist) {
 			if (logger.isDebugEnabled())
-				logger.debug("getElements: registering listeners (" + getJdoObjectClass() + ')');
+				logger.debug("getElements: registering listeners (" + getJDOObjectClass() + ')');
 
 			listenersExist = true;
 			JDOLifecycleManager.sharedInstance().addLifecycleListener(lifecycleListener);
-			JDOLifecycleManager.sharedInstance().addNotificationListener(getJdoObjectClass(), notificationListener);
+			JDOLifecycleManager.sharedInstance().addNotificationListener(getJDOObjectClass(), notificationListener);
 		}
 
 		if (jdoObjects != null)
@@ -217,7 +222,7 @@ extends TreeContentProvider
 		Job job = new Job("Loading Data") {
 			protected IStatus run(IProgressMonitor monitor)
 			{
-				Collection<JDOObject> jdoObjects = getAllJDOObjects(monitor);
+				Collection<JDOObject> jdoObjects = retrieveJDOObjects(monitor);
 
 				synchronized (jdoObjectID2jdoObjectMutex) {
 					if (jdoObjectID2jdoObject == null)
@@ -227,7 +232,7 @@ extends TreeContentProvider
 					for (JDOObject jdoObject : jdoObjects)
 						jdoObjectID2jdoObject.put((JDOObjectID) JDOHelper.getObjectId(jdoObject), jdoObject);
 
-					createJdoObjectArray();
+					createJDOObjectList();
 				} // synchronized (jdoObjectID2jdoObjectMutex) {
 
 				return Status.OK_STATUS;
@@ -238,13 +243,13 @@ extends TreeContentProvider
 			public void done(IJobChangeEvent event)
 			{
 				super.done(event);
-				fireChangeEvent();
+				onJDOObjectsChanged();
 			}
 		});
 		job.setPriority(Job.SHORT);
 		job.schedule();
 
-		return new String[] { "Loading data..." };
+		return null;
 	}
 
 }

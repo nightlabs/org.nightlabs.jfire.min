@@ -25,6 +25,7 @@ package org.nightlabs.jfire.base.security;
 
 import java.util.Collection;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Set;
 
 import org.eclipse.core.runtime.Assert;
@@ -192,12 +193,24 @@ public class UserDAO extends JDOObjectDAO<UserID, User>
 	 * 					object, <code>monitor.worked(1)</code> will be called.
 	 * @return The users of the given type.
 	 */
-	public synchronized Collection<User> getUsersByType(String type, String[] fetchgroups, int maxFetchDepth, IProgressMonitor monitor) 
+	public synchronized List<User> getUsersByType(String type, String[] fetchgroups, int maxFetchDepth, IProgressMonitor monitor) 
 	{
 		try {
 			um = UserManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
 			Collection<UserID> ids = um.getUserIDsByType(type);
 			return getJDOObjects(null, ids, fetchgroups, maxFetchDepth, monitor);
+		} catch(Exception e) {
+			throw new RuntimeException("User download failed", e);
+		} finally {
+			um = null;
+		}
+	}
+
+	public synchronized List<User> getUsers(Set<UserID> userIDs, String[] fetchgroups, int maxFetchDepth, IProgressMonitor monitor) 
+	{
+		try {
+			um = UserManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
+			return getJDOObjects(null, userIDs, fetchgroups, maxFetchDepth, monitor);
 		} catch(Exception e) {
 			throw new RuntimeException("User download failed", e);
 		} finally {

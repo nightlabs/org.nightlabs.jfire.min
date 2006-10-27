@@ -10,6 +10,7 @@ Bundle-Localization: plugin
 Export-Package: org.nightlabs.jfire.base,
  org.nightlabs.jfire.base.app,
  org.nightlabs.jfire.base.config,
+ org.nightlabs.jfire.base.entity.tree,
  org.nightlabs.jfire.base.idgenerator,
  org.nightlabs.jfire.base.jdo,
  org.nightlabs.jfire.base.jdo.cache,
