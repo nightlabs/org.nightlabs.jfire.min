@@ -56,9 +56,11 @@ import org.nightlabs.jfire.base.JFirePrincipal;
 import org.nightlabs.jfire.base.Lookup;
 import org.nightlabs.jfire.jdo.cache.bridge.JdoCacheBridge;
 import org.nightlabs.jfire.jdo.notification.AbsoluteFilterID;
+import org.nightlabs.jfire.jdo.notification.DirtyObjectID;
 import org.nightlabs.jfire.jdo.notification.FilterRegistry;
 import org.nightlabs.jfire.jdo.notification.IJDOLifecycleListenerFilter;
 import org.nightlabs.jfire.jdo.notification.JDOLifecycleRemoteEvent;
+import org.nightlabs.jfire.jdo.notification.JDOLifecycleState;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.servermanager.config.OrganisationCf;
 import org.nightlabs.jfire.servermanager.ra.JFireServerManagerFactoryImpl;
@@ -610,13 +612,13 @@ public class CacheManagerFactory
 
 		// collect all freshDirtyObjectIDs from all freshDirtyObjectIDContainers
 		// take the newest, if there exist multiple for one objectID and the same lifecylestage
-//		Map<DirtyObjectID.LifecycleStage, Map<Object, DirtyObjectID>> lifecycleStage2freshDirtyObjectIDsMap = new HashMap<DirtyObjectID.LifecycleStage, Map<Object,DirtyObjectID>>();
+//		Map<JDOLifecycleState, Map<Object, DirtyObjectID>> lifecycleStage2freshDirtyObjectIDsMap = new HashMap<JDOLifecycleState, Map<Object,DirtyObjectID>>();
 //		synchronized (freshDirtyObjectIDContainers) {
 //			for (DirtyObjectIDContainer dirtyObjectIDContainer : freshDirtyObjectIDContainers) {
-//				Map<DirtyObjectID.LifecycleStage, Map<Object, DirtyObjectID>> lifecycleStage2freshDirtyObjectIDsMap = dirtyObjectIDContainer.getLifecycleStage2DirtyObjectIDMap();
+//				Map<JDOLifecycleState, Map<Object, DirtyObjectID>> lifecycleStage2freshDirtyObjectIDsMap = dirtyObjectIDContainer.getLifecycleStage2DirtyObjectIDMap();
 //
 //				for (Map.Entry<Object, DirtyObjectID> me : dirtyObjectIDContainer.getDirtyObjectIDs().entrySet()) {
-//					DirtyObjectID.LifecycleStage lifecycleStage = me.getValue().getLifecycleStage();
+//					JDOLifecycleState lifecycleStage = me.getValue().getLifecycleStage();
 //					Map<Object, DirtyObjectID> freshDirtyObjectIDsMap = lifecycleStage2freshDirtyObjectIDsMap.get(lifecycleStage);
 //					if (freshDirtyObjectIDsMap == null) {
 //						freshDirtyObjectIDsMap = new HashMap<Object, DirtyObjectID>();
@@ -629,11 +631,11 @@ public class CacheManagerFactory
 //			}
 //		} // synchronized (freshDirtyObjectIDContainers) {
 
-		Map<DirtyObjectID.LifecycleStage, Map<Object, DirtyObjectID>> lifecycleStage2freshDirtyObjectIDsMap = freshDirtyObjectIDContainerMaster.getLifecycleStage2DirtyObjectIDMap();
+		Map<JDOLifecycleState, Map<Object, DirtyObjectID>> lifecycleStage2freshDirtyObjectIDsMap = freshDirtyObjectIDContainerMaster.getLifecycleStage2DirtyObjectIDMap();
 
 		if (logger.isDebugEnabled()) {
 			logger.debug("after_addLifecycleListenerFilters: fetched freshDirtyObjectIDs from master:");
-			for (Map.Entry<DirtyObjectID.LifecycleStage, Map<Object, DirtyObjectID>> me1 : lifecycleStage2freshDirtyObjectIDsMap.entrySet()) {
+			for (Map.Entry<JDOLifecycleState, Map<Object, DirtyObjectID>> me1 : lifecycleStage2freshDirtyObjectIDsMap.entrySet()) {
 				logger.debug("after_addLifecycleListenerFilters:   lifecycleStage="+me1.getKey());
 				for (DirtyObjectID dirtyObjectID : me1.getValue().values())
 					logger.debug("after_addLifecycleListenerFilters:     dirtyObjectID="+dirtyObjectID);
@@ -641,7 +643,7 @@ public class CacheManagerFactory
 
 			logger.debug("after_addLifecycleListenerFilters: compiling sessionID2FilterID2FilterWithDirtyObjectIDs:");
 		}
-//		List<Map<DirtyObjectID.LifecycleStage, Map<Object, DirtyObjectID>>> lifecycleStage2freshDirtyObjectIDsMaps = new LinkedList<Map<DirtyObjectID.LifecycleStage,Map<Object,DirtyObjectID>>>();
+//		List<Map<JDOLifecycleState, Map<Object, DirtyObjectID>>> lifecycleStage2freshDirtyObjectIDsMaps = new LinkedList<Map<JDOLifecycleState,Map<Object,DirtyObjectID>>>();
 //		synchronized (freshDirtyObjectIDContainers) {
 //			for (DirtyObjectIDContainer freshDirtyObjectIDContainer : freshDirtyObjectIDContainers) {
 //				lifecycleStage2freshDirtyObjectIDsMaps.add(freshDirtyObjectIDContainer.getLifecycleStage2DirtyObjectIDMap());
@@ -663,8 +665,8 @@ public class CacheManagerFactory
 					DirtyObjectID dirtyObjectID = me2.getValue();
 
 					boolean lifecycleStageMatches = false;
-					for (DirtyObjectID.LifecycleStage lifecycleStage : filter.getLifecycleStages()) {
-						if (dirtyObjectID.getLifecycleStage() == lifecycleStage) {
+					for (JDOLifecycleState lifecycleState : filter.getLifecycleStates()) {
+						if (dirtyObjectID.getLifecycleState() == lifecycleState) {
 							lifecycleStageMatches = true;
 							break;
 						}
@@ -817,7 +819,7 @@ public class CacheManagerFactory
 //		synchronized (freshDirtyObjectIDContainers) {
 //			for (DirtyObjectIDContainer dirtyObjectIDContainer : freshDirtyObjectIDContainers) {
 //				DirtyObjectID dirtyObjectID = dirtyObjectIDContainer.getDirtyObjectID(objectID);
-//				if (dirtyObjectID.getLifecycleStage() == DirtyObjectID.LifecycleStage.NEW) {
+//				if (dirtyObjectID.getLifecycleStage() == JDOLifecycleState.NEW) {
 //					
 //				}
 //				else if (dirtyObjectID != null) {
@@ -833,9 +835,9 @@ public class CacheManagerFactory
 
 		// there can be a listener on a new object, if the object has been deleted and recreated with the same ID!!!
 		// we find the newest dirtyObjectID
-		DirtyObjectID triggerNotificationDirtyObjectID_new = freshDirtyObjectIDContainerMaster.getDirtyObjectID(DirtyObjectID.LifecycleStage.NEW, objectID);
-		DirtyObjectID triggerNotificationDirtyObjectID_dirty = freshDirtyObjectIDContainerMaster.getDirtyObjectID(DirtyObjectID.LifecycleStage.DIRTY, objectID);
-		DirtyObjectID triggerNotificationDirtyObjectID_deleted = freshDirtyObjectIDContainerMaster.getDirtyObjectID(DirtyObjectID.LifecycleStage.DELETED, objectID);
+		DirtyObjectID triggerNotificationDirtyObjectID_new = freshDirtyObjectIDContainerMaster.getDirtyObjectID(JDOLifecycleState.NEW, objectID);
+		DirtyObjectID triggerNotificationDirtyObjectID_dirty = freshDirtyObjectIDContainerMaster.getDirtyObjectID(JDOLifecycleState.DIRTY, objectID);
+		DirtyObjectID triggerNotificationDirtyObjectID_deleted = freshDirtyObjectIDContainerMaster.getDirtyObjectID(JDOLifecycleState.DELETED, objectID);
 
 		triggerNotificationDirtyObjectID = triggerNotificationDirtyObjectID_new;
 
@@ -976,15 +978,15 @@ public class CacheManagerFactory
 	}
 
 	/**
-	 * key: DirtyObjectID.LifecycleStage lifecycleType<br/> value: Map {<br/>
+	 * key: JDOLifecycleState lifecycleType<br/> value: Map {<br/>
 	 * key: Object objectID<br/> value: {@link DirtyObjectID} dirtyObjectID<br/> }
 	 */
-	private Map<DirtyObjectID.LifecycleStage, Map<Object, DirtyObjectID>> lifecycleType2objectIDsWaitingForNotification = null;
+	private Map<JDOLifecycleState, Map<Object, DirtyObjectID>> lifecycleType2objectIDsWaitingForNotification = null;
 
 	private transient Object objectIDsWaitingForNotificationMutex = new Object();
 
 	private void notifyLocalListeners(
-			Map<DirtyObjectID.LifecycleStage, Map<Object, DirtyObjectID>> dirtyObjectIDs)
+			Map<JDOLifecycleState, Map<Object, DirtyObjectID>> dirtyObjectIDs)
 	{
 		List<LocalDirtyListener> listeners = null;
 		synchronized (localDirtyListenersMutex) {
@@ -1024,7 +1026,7 @@ public class CacheManagerFactory
 	 */
 	public void addDirtyObjectIDs(
 			String sessionID,
-			Map<DirtyObjectID.LifecycleStage, Map<Object, DirtyObjectID>> dirtyObjectIDs)
+			Map<JDOLifecycleState, Map<Object, DirtyObjectID>> dirtyObjectIDs)
 	{
 		if (sessionID == null)
 			throw new IllegalArgumentException("sessionID is null");
@@ -1033,7 +1035,7 @@ public class CacheManagerFactory
 			throw new IllegalArgumentException("dirtyObjectIDs is null");
 
 		// the dirtyObjectIDs don't have the sessionID assigned yet => assign it now
-		for (Map.Entry<DirtyObjectID.LifecycleStage, Map<Object, DirtyObjectID>> me1 : dirtyObjectIDs
+		for (Map.Entry<JDOLifecycleState, Map<Object, DirtyObjectID>> me1 : dirtyObjectIDs
 				.entrySet()) {
 			for (DirtyObjectID dirtyObjectID : me1.getValue().values()) {
 				dirtyObjectID.addSourceSessionID(sessionID);
@@ -1057,9 +1059,9 @@ public class CacheManagerFactory
 			else {
 				// if this.lifecycleType2objectIDsWaitingForNotification does exist, we
 				// need to merge
-				for (Map.Entry<DirtyObjectID.LifecycleStage, Map<Object, DirtyObjectID>> me1 : dirtyObjectIDs
+				for (Map.Entry<JDOLifecycleState, Map<Object, DirtyObjectID>> me1 : dirtyObjectIDs
 						.entrySet()) {
-					DirtyObjectID.LifecycleStage lifecycleStage = me1.getKey();
+					JDOLifecycleState lifecycleStage = me1.getKey();
 					Map<Object, DirtyObjectID> m2 = me1.getValue();
 
 					Map<Object, DirtyObjectID> objectIDsWaitingForNotification = lifecycleType2objectIDsWaitingForNotification
@@ -1110,7 +1112,7 @@ public class CacheManagerFactory
 	// don't know what happened before and what after.
 	// */
 	// public void addDirtyObjectIDs(String sessionID, Collection<Object>
-	// objectIDs, DirtyObjectID.LifecycleStage lifecycleStage)
+	// objectIDs, JDOLifecycleState lifecycleStage)
 	// {
 	// if (objectIDs == null || objectIDs.isEmpty()) // to avoid unnecessary
 	// errors (though null should never come here)
@@ -1133,8 +1135,8 @@ public class CacheManagerFactory
 	// synchronized (objectIDsWaitingForNotificationMutex) {
 	// if (lifecycleType2objectIDsWaitingForNotification == null)
 	// lifecycleType2objectIDsWaitingForNotification = new
-	// HashMap<DirtyObjectID.LifecycleStage, Map<Object,
-	// DirtyObjectID>>(DirtyObjectID.LifecycleStage.values().length);
+	// HashMap<JDOLifecycleState, Map<Object,
+	// DirtyObjectID>>(JDOLifecycleState.values().length);
 	//
 	// Map<Object, DirtyObjectID> objectIDsWaitingForNotification =
 	// lifecycleType2objectIDsWaitingForNotification.get(lifecycleStage);
@@ -1301,7 +1303,7 @@ public class CacheManagerFactory
 			return;
 		}
 
-		Map<DirtyObjectID.LifecycleStage, Map<Object, DirtyObjectID>> lifecycleType2dirtyObjectIDs;
+		Map<JDOLifecycleState, Map<Object, DirtyObjectID>> lifecycleType2dirtyObjectIDs;
 		synchronized (objectIDsWaitingForNotificationMutex) {
 			lifecycleType2dirtyObjectIDs = this.lifecycleType2objectIDsWaitingForNotification;
 			this.lifecycleType2objectIDsWaitingForNotification = null;
@@ -1309,9 +1311,9 @@ public class CacheManagerFactory
 
 		// *** First process the implicit listeners ***
 
-		Map<Object, DirtyObjectID> objectIDsWaitingForNotification_new = lifecycleType2dirtyObjectIDs.get(DirtyObjectID.LifecycleStage.NEW);
-		Map<Object, DirtyObjectID> objectIDsWaitingForNotification_dirty = lifecycleType2dirtyObjectIDs.get(DirtyObjectID.LifecycleStage.DIRTY);
-		Map<Object, DirtyObjectID> objectIDsWaitingForNotification_deleted = lifecycleType2dirtyObjectIDs.get(DirtyObjectID.LifecycleStage.DELETED);
+		Map<Object, DirtyObjectID> objectIDsWaitingForNotification_new = lifecycleType2dirtyObjectIDs.get(JDOLifecycleState.NEW);
+		Map<Object, DirtyObjectID> objectIDsWaitingForNotification_dirty = lifecycleType2dirtyObjectIDs.get(JDOLifecycleState.DIRTY);
+		Map<Object, DirtyObjectID> objectIDsWaitingForNotification_deleted = lifecycleType2dirtyObjectIDs.get(JDOLifecycleState.DELETED);
 
 		// No need to synchronize access to activeFreshDirtyObjectIDContainer,
 		// because this is never
@@ -1334,11 +1336,11 @@ public class CacheManagerFactory
 		synchronized (listenersByObjectID) {
 			// find all CacheSessions' IDs which are interested in the changed
 			// objectIDs
-			for (Map.Entry<DirtyObjectID.LifecycleStage, Map<Object, DirtyObjectID>> me : lifecycleType2dirtyObjectIDs.entrySet()) {
-				DirtyObjectID.LifecycleStage lifecycleStage = me.getKey();
+			for (Map.Entry<JDOLifecycleState, Map<Object, DirtyObjectID>> me : lifecycleType2dirtyObjectIDs.entrySet()) {
+				JDOLifecycleState lifecycleStage = me.getKey();
 				Map<Object, DirtyObjectID> objectIDsWaitingForNotification = me.getValue();
 
-				if (lifecycleStage == DirtyObjectID.LifecycleStage.NEW)
+				if (lifecycleStage == JDOLifecycleState.NEW)
 					continue; // we don't want new ones
 
 				if (objectIDsWaitingForNotification != null) {
@@ -1411,8 +1413,8 @@ public class CacheManagerFactory
 		// developers: Once sth. is deleted, it shouldn't be recreated with
 		// the same ID. If a developer still does it
 		Map<String, Map<AbsoluteFilterID, FilterWithDirtyObjectIDs>> sessionID2FilterID2FilterWithDirtyObjectIDs = new HashMap<String, Map<AbsoluteFilterID,FilterWithDirtyObjectIDs>>();
-		for (Map.Entry<DirtyObjectID.LifecycleStage, Map<Object, DirtyObjectID>> me1 : lifecycleType2dirtyObjectIDs.entrySet()) {
-			DirtyObjectID.LifecycleStage lifecycleStage = me1.getKey();
+		for (Map.Entry<JDOLifecycleState, Map<Object, DirtyObjectID>> me1 : lifecycleType2dirtyObjectIDs.entrySet()) {
+			JDOLifecycleState lifecycleStage = me1.getKey();
 			Map<Object, DirtyObjectID> objectIDsWaitingForNotification = me1.getValue();
 
 			// group the DirtyObjectIDs by the class of the corresponding JDO object
@@ -1547,7 +1549,7 @@ public class CacheManagerFactory
 	// private static class FilterWithDirtyObjectIDsKey
 	// {
 	// public FilterWithDirtyObjectIDsKey(
-	// DirtyObjectID.LifecycleStage lifecycleStage,
+	// JDOLifecycleState lifecycleStage,
 	// AbsoluteFilterID filterID)
 	// {
 	// this.sessionID = sessionID;
@@ -1556,7 +1558,7 @@ public class CacheManagerFactory
 	// }
 	//
 	// public String sessionID;
-	// public DirtyObjectID.LifecycleStage lifecycleStage;
+	// public JDOLifecycleState lifecycleStage;
 	// public AbsoluteFilterID filterID;
 	//
 	// @Override
@@ -1586,7 +1588,7 @@ public class CacheManagerFactory
 		 * Contains all DirtyObjectIDs that might match according to the raw
 		 * criteria. That means the given {@link #filter} was returned for the
 		 * classes of these <code>DirtyObjectID</code>s by
-		 * {@link FilterRegistry#getMatchingFilters(org.nightlabs.jfire.jdo.cache.DirtyObjectID.LifecycleStage, Class)}.
+		 * {@link FilterRegistry#getMatchingFilters(org.nightlabs.jfire.jdo.notification.JDOLifecycleState, Class)}.
 		 */
 		public List<DirtyObjectID> dirtyObjectIDsRaw;
 
@@ -1654,7 +1656,7 @@ public class CacheManagerFactory
 	// // if (rollback)
 	// // transactionManager.rollback();
 	// // }
-	// // getFilterRegistry().getMatchingFilters(DirtyObjectID.LifecycleStage.NEW,
+	// // getFilterRegistry().getMatchingFilters(JDOLifecycleState.NEW,
 	// jdoObjectClass)
 	// } finally {
 	// initialContext.close();
@@ -1677,7 +1679,7 @@ public class CacheManagerFactory
 	/**
 	 * This method must be called by the {@link JdoCacheBridge} for all objectIDs
 	 * it intends to notify about, BEFORE calling
-	 * {@link #addDirtyObjectIDs(String, Collection, org.nightlabs.jfire.jdo.cache.DirtyObjectID.LifecycleStage)}.
+	 * {@link #addDirtyObjectIDs(String, Collection, org.nightlabs.jfire.jdo.notification.JDOLifecycleState)}.
 	 * 
 	 * @param objectID2ClassMap
 	 *          A map from JDO object-id to class of the referenced JDO object.
@@ -1794,12 +1796,11 @@ public class CacheManagerFactory
 			}
 		}
 
-		CacheSession.DirtyObjectIDGroup dirtyObjectIDGroup = session
-				.fetchDirtyObjectIDs();
+		CacheSession.DirtyObjectIDGroup dirtyObjectIDGroup = session.fetchDirtyObjectIDs();
 		if (dirtyObjectIDGroup != null) {
 			if (dirtyObjectIDGroup.dirtyObjectIDs != null) {
 				TreeSet<DirtyObjectID> doids = null;
-				for (Map<DirtyObjectID.LifecycleStage, DirtyObjectID> m1 : dirtyObjectIDGroup.dirtyObjectIDs
+				for (Map<JDOLifecycleState, DirtyObjectID> m1 : dirtyObjectIDGroup.dirtyObjectIDs
 						.values()) {
 					if (doids == null)
 						doids = new TreeSet<DirtyObjectID>(m1.values());
@@ -1814,11 +1815,11 @@ public class CacheManagerFactory
 			if (dirtyObjectIDGroup.filterID2DirtyObjectIDs != null) {
 				Map<Long, SortedSet<DirtyObjectID>> fid2doidMap = new HashMap<Long, SortedSet<DirtyObjectID>>();
 
-				for (Map.Entry<AbsoluteFilterID, Map<Object, Map<DirtyObjectID.LifecycleStage, DirtyObjectID>>> me1 : dirtyObjectIDGroup.filterID2DirtyObjectIDs
+				for (Map.Entry<AbsoluteFilterID, Map<Object, Map<JDOLifecycleState, DirtyObjectID>>> me1 : dirtyObjectIDGroup.filterID2DirtyObjectIDs
 						.entrySet()) {
 					Long filterID = new Long(me1.getKey().getFilterID());
 					TreeSet<DirtyObjectID> doids = null;
-					for (Map<DirtyObjectID.LifecycleStage, DirtyObjectID> m2 : me1
+					for (Map<JDOLifecycleState, DirtyObjectID> m2 : me1
 							.getValue().values()) {
 						if (doids == null)
 							doids = new TreeSet<DirtyObjectID>(m2.values());

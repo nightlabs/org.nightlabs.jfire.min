@@ -28,6 +28,9 @@ package org.nightlabs.jfire.jdo.cache;
 
 import java.util.Map;
 
+import org.nightlabs.jfire.jdo.notification.DirtyObjectID;
+import org.nightlabs.jfire.jdo.notification.JDOLifecycleState;
+
 
 public interface LocalDirtyListener
 {
@@ -37,5 +40,5 @@ public interface LocalDirtyListener
 	 * This means, it happens during the JDO-commit.
 	 * @param objectIDs The JDO object ids of those objects that have been changed.
 	 */
-	void notifyDirtyObjectIDs(Map<DirtyObjectID.LifecycleStage, Map<Object, DirtyObjectID>> dirtyObjectIDs);
+	void notifyDirtyObjectIDs(Map<JDOLifecycleState, Map<Object, DirtyObjectID>> dirtyObjectIDs);
 }

@@ -7,8 +7,6 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.jfire.jdo.cache.CacheManagerFactory;
-import org.nightlabs.jfire.jdo.cache.DirtyObjectID;
-import org.nightlabs.jfire.jdo.cache.DirtyObjectID.LifecycleStage;
 
 public class FilterRegistry
 implements Serializable
@@ -22,7 +20,7 @@ implements Serializable
 	private Map<AbsoluteFilterID, IJDOLifecycleListenerFilter> filterID2Filter = new HashMap<AbsoluteFilterID, IJDOLifecycleListenerFilter>();
 
 	/**
-	 * key: DirtyObjectID.LifecycleStage lifecycleStage<br/>
+	 * key: JDOLifecycleState lifecycleStage<br/>
 	 * value: Map {<br/>
 	 *		key: Boolean includeSubclasses<br/>
 	 *		value: Map {<br/>
@@ -33,7 +31,7 @@ implements Serializable
 	 *		}<br/>
 	 * }<br/>
 	 */
-	private Map<DirtyObjectID.LifecycleStage, Map<Boolean, Map<Class, Map<AbsoluteFilterID, IJDOLifecycleListenerFilter>>>> groupedFilters = new HashMap<LifecycleStage, Map<Boolean, Map<Class, Map<AbsoluteFilterID, IJDOLifecycleListenerFilter>>>>();
+	private Map<JDOLifecycleState, Map<Boolean, Map<Class, Map<AbsoluteFilterID, IJDOLifecycleListenerFilter>>>> groupedFilters = new HashMap<JDOLifecycleState, Map<Boolean, Map<Class, Map<AbsoluteFilterID, IJDOLifecycleListenerFilter>>>>();
 
 	public FilterRegistry(CacheManagerFactory cacheManagerFactory)
 	{
@@ -55,7 +53,7 @@ implements Serializable
 		if (filter == null)
 			throw new IllegalArgumentException("filter is null");
 
-		DirtyObjectID.LifecycleStage[] lifecycleStages = filter.getLifecycleStages();
+		JDOLifecycleState[] lifecycleStages = filter.getLifecycleStates();
 		if (lifecycleStages == null)
 			throw new IllegalArgumentException("filter.getLifecycleStages() is null");
 
@@ -76,7 +74,7 @@ implements Serializable
 		}
 
 		synchronized (groupedFilters) {
-			for (DirtyObjectID.LifecycleStage lifecycleStage : lifecycleStages) {
+			for (JDOLifecycleState lifecycleStage : lifecycleStages) {
 				Map<Boolean, Map<Class, Map<AbsoluteFilterID, IJDOLifecycleListenerFilter>>> m1;
 
 				m1 = groupedFilters.get(lifecycleStage);
@@ -104,7 +102,7 @@ implements Serializable
 
 					m3.put(filter.getFilterID(), filter);
 				}
-			} // for (DirtyObjectID.LifecycleStage lifecycleStage : filter.getLifecycleStages()) {
+			} // for (JDOLifecycleState lifecycleStage : filter.getLifecycleStages()) {
 		} // synchronized (groupedFilters) {
 
 		if (logger.isDebugEnabled())
@@ -142,7 +140,7 @@ implements Serializable
 	 * @return Returns all matching groupedFilters - never <code>null</code>.
 	 */
 	public Collection<IJDOLifecycleListenerFilter> getMatchingFilters(
-			DirtyObjectID.LifecycleStage lifecycleStage, Class jdoObjectClass)
+			JDOLifecycleState lifecycleStage, Class jdoObjectClass)
 	{
 		assertOpen();
 
@@ -190,7 +188,7 @@ implements Serializable
 		if (filter == null)
 			throw new IllegalArgumentException("filter is null");
 
-		DirtyObjectID.LifecycleStage[] lifecycleStages = filter.getLifecycleStages();
+		JDOLifecycleState[] lifecycleStages = filter.getLifecycleStates();
 		if (lifecycleStages == null)
 			throw new IllegalArgumentException("filter.getLifecycleStages() is null");
 
@@ -207,7 +205,7 @@ implements Serializable
 		Boolean includeSubclasses = filter.includeSubclasses();
 
 		synchronized (groupedFilters) {
-			iterateLifecycleStage: for (DirtyObjectID.LifecycleStage lifecycleStage : lifecycleStages) {
+			iterateLifecycleStage: for (JDOLifecycleState lifecycleStage : lifecycleStages) {
 				Map<Boolean, Map<Class, Map<AbsoluteFilterID, IJDOLifecycleListenerFilter>>> m1;
 
 				m1 = groupedFilters.get(lifecycleStage);
@@ -237,7 +235,7 @@ implements Serializable
 
 				if (m1.isEmpty())
 					groupedFilters.remove(lifecycleStage);
-			} // for (DirtyObjectID.LifecycleStage lifecycleStage : filter.getLifecycleStages()) {
+			} // for (JDOLifecycleState lifecycleStage : filter.getLifecycleStages()) {
 		} // synchronized (groupedFilters) {
 
 		if (logger.isDebugEnabled())
@@ -251,7 +249,7 @@ implements Serializable
 		synchronized (groupedFilters) {
 			logger.debug("debugLogFilters(): groupedFilters.size=" + groupedFilters.size());
 
-			for (Map.Entry<DirtyObjectID.LifecycleStage, Map<Boolean, Map<Class, Map<AbsoluteFilterID, IJDOLifecycleListenerFilter>>>> me1 : groupedFilters.entrySet()) {
+			for (Map.Entry<JDOLifecycleState, Map<Boolean, Map<Class, Map<AbsoluteFilterID, IJDOLifecycleListenerFilter>>>> me1 : groupedFilters.entrySet()) {
 				logger.debug("debugLogFilters(): lifecycleStage="+me1.getKey());
 				for (Map.Entry<Boolean, Map<Class, Map<AbsoluteFilterID, IJDOLifecycleListenerFilter>>> me2 : me1.getValue().entrySet()) {
 					logger.debug("debugLogFilters():   includeSubclasses="+me2.getKey());

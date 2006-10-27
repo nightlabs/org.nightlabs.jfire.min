@@ -49,9 +49,9 @@ import org.nightlabs.ModuleException;
 import org.nightlabs.jdo.ObjectID;
 import org.nightlabs.jdo.ObjectIDUtil;
 import org.nightlabs.jfire.jdo.cache.CacheManagerFactory;
-import org.nightlabs.jfire.jdo.cache.DirtyObjectID;
 import org.nightlabs.jfire.jdo.cache.LocalDirtyListener;
-import org.nightlabs.jfire.jdo.cache.DirtyObjectID.LifecycleStage;
+import org.nightlabs.jfire.jdo.notification.DirtyObjectID;
+import org.nightlabs.jfire.jdo.notification.JDOLifecycleState;
 import org.nightlabs.jfire.jdo.organisationsync.id.SyncContextID;
 import org.nightlabs.jfire.servermanager.ra.JFireServerManagerFactoryImpl;
 
@@ -119,10 +119,10 @@ public class OrganisationSyncManagerFactory implements Serializable
 
 		CacheManagerFactory.getCacheManagerFactory(ctx, organisationID)
 				.addLocalDirtyListener(new LocalDirtyListener() {
-					public void notifyDirtyObjectIDs(Map<LifecycleStage, Map<Object, DirtyObjectID>> dirtyObjectIDs)
+					public void notifyDirtyObjectIDs(Map<JDOLifecycleState, Map<Object, DirtyObjectID>> dirtyObjectIDs)
 					{
 						// TODO handle all other LifecylceStages!
-						Map<Object, DirtyObjectID> m = dirtyObjectIDs.get(DirtyObjectID.LifecycleStage.DIRTY);
+						Map<Object, DirtyObjectID> m = dirtyObjectIDs.get(JDOLifecycleState.DIRTY);
 						if (m != null)
 							makeDirty(m.keySet());
 					}

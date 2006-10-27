@@ -38,8 +38,10 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.jfire.jdo.notification.AbsoluteFilterID;
+import org.nightlabs.jfire.jdo.notification.DirtyObjectID;
 import org.nightlabs.jfire.jdo.notification.FilterRegistry;
 import org.nightlabs.jfire.jdo.notification.IJDOLifecycleListenerFilter;
+import org.nightlabs.jfire.jdo.notification.JDOLifecycleState;
 
 /**
  * @author Marco Schulze - marco at nightlabs dot de
@@ -199,13 +201,13 @@ implements Serializable
 	 * key: Object objectID<br/>
 	 * value: {@link DirtyObjectID} dirtyObjectID
 	 */
-	private Map<Object, Map<DirtyObjectID.LifecycleStage, DirtyObjectID>> dirtyObjectIDs = new HashMap<Object, Map<DirtyObjectID.LifecycleStage, DirtyObjectID>>();
+	private Map<Object, Map<JDOLifecycleState, DirtyObjectID>> dirtyObjectIDs = new HashMap<Object, Map<JDOLifecycleState, DirtyObjectID>>();
 	private transient Object dirtyObjectIDsMutex = new Object();
 
 	/**
 	 * This field is synchronized via {@link #dirtyObjectIDsMutex}, too!
 	 */
-	private Map<AbsoluteFilterID, Map<Object, Map<DirtyObjectID.LifecycleStage, DirtyObjectID>>> filterID2DirtyObjectIDs = new HashMap<AbsoluteFilterID, Map<Object,Map<DirtyObjectID.LifecycleStage, DirtyObjectID>>>();
+	private Map<AbsoluteFilterID, Map<Object, Map<JDOLifecycleState, DirtyObjectID>>> filterID2DirtyObjectIDs = new HashMap<AbsoluteFilterID, Map<Object,Map<JDOLifecycleState, DirtyObjectID>>>();
 
 	private Map<AbsoluteFilterID, IJDOLifecycleListenerFilter> filters = new HashMap<AbsoluteFilterID, IJDOLifecycleListenerFilter>();
 	private Map<AbsoluteFilterID, IJDOLifecycleListenerFilter> _filters = null;
@@ -271,8 +273,8 @@ implements Serializable
 
 	public static class DirtyObjectIDGroup
 	{
-		public Map<Object, Map<DirtyObjectID.LifecycleStage, DirtyObjectID>> dirtyObjectIDs;
-		public Map<AbsoluteFilterID, Map<Object, Map<DirtyObjectID.LifecycleStage, DirtyObjectID>>> filterID2DirtyObjectIDs;
+		public Map<Object, Map<JDOLifecycleState, DirtyObjectID>> dirtyObjectIDs;
+		public Map<AbsoluteFilterID, Map<Object, Map<JDOLifecycleState, DirtyObjectID>>> filterID2DirtyObjectIDs;
 	}
 
 	/**
@@ -303,7 +305,7 @@ implements Serializable
 				res.dirtyObjectIDs = null;
 			else {
 				res.dirtyObjectIDs = dirtyObjectIDs;
-				dirtyObjectIDs = new HashMap<Object, Map<DirtyObjectID.LifecycleStage, DirtyObjectID>>();
+				dirtyObjectIDs = new HashMap<Object, Map<JDOLifecycleState, DirtyObjectID>>();
 
 //				long youngestChangeDT = System.currentTimeMillis() - cacheManagerFactory.getCacheCfMod().getDelayNotificationMSec();
 //
@@ -322,7 +324,7 @@ implements Serializable
 				res.filterID2DirtyObjectIDs = null;
 			else {
 				res.filterID2DirtyObjectIDs = filterID2DirtyObjectIDs;
-				filterID2DirtyObjectIDs = new HashMap<AbsoluteFilterID, Map<Object,Map<DirtyObjectID.LifecycleStage, DirtyObjectID>>>();
+				filterID2DirtyObjectIDs = new HashMap<AbsoluteFilterID, Map<Object,Map<JDOLifecycleState, DirtyObjectID>>>();
 			}
 
 			if (res.dirtyObjectIDs == null && res.filterID2DirtyObjectIDs == null)
@@ -353,24 +355,24 @@ implements Serializable
 				AbsoluteFilterID filterID = me.getKey();
 				Collection<DirtyObjectID> dirtyObjectIDs = me.getValue();
 
-				Map<Object, Map<DirtyObjectID.LifecycleStage, DirtyObjectID>> m1 = this.filterID2DirtyObjectIDs.get(filterID);
+				Map<Object, Map<JDOLifecycleState, DirtyObjectID>> m1 = this.filterID2DirtyObjectIDs.get(filterID);
 				if (m1 == null) {
-					m1 = new HashMap<Object, Map<DirtyObjectID.LifecycleStage, DirtyObjectID>>();
+					m1 = new HashMap<Object, Map<JDOLifecycleState, DirtyObjectID>>();
 					this.filterID2DirtyObjectIDs.put(filterID, m1);
 				}
 
 				for (DirtyObjectID dirtyObjectID : dirtyObjectIDs) {
 					Object objectID = dirtyObjectID.getObjectID();
 
-					Map<DirtyObjectID.LifecycleStage, DirtyObjectID> m2 = m1.get(objectID);
+					Map<JDOLifecycleState, DirtyObjectID> m2 = m1.get(objectID);
 					if (m2 == null) {
-						m2 = new HashMap<DirtyObjectID.LifecycleStage, DirtyObjectID>();
+						m2 = new HashMap<JDOLifecycleState, DirtyObjectID>();
 						m1.put(objectID, m2);
 					}
 
-					DirtyObjectID dObj = m2.get(dirtyObjectID.getLifecycleStage());
+					DirtyObjectID dObj = m2.get(dirtyObjectID.getLifecycleState());
 					if (dObj == null)
-						m2.put(dirtyObjectID.getLifecycleStage(), dirtyObjectID);
+						m2.put(dirtyObjectID.getLifecycleState(), dirtyObjectID);
 					else {
 						DirtyObjectID older = dObj;
 						DirtyObjectID newer = dirtyObjectID;
@@ -380,7 +382,7 @@ implements Serializable
 							newer = tmp;
 						}
 						newer.addSourceSessionIDs(older.getSourceSessionIDs());
-						m2.put(dirtyObjectID.getLifecycleStage(), newer);
+						m2.put(dirtyObjectID.getLifecycleState(), newer);
 					}
 				} // for (DirtyObjectID dirtyObjectID : dirtyObjectIDs) {
 			} // for (Map.Entry<AbsoluteFilterID, Collection<DirtyObjectID>> me : filterID2DirtyObjectIDs.entrySet()) {
@@ -405,14 +407,14 @@ implements Serializable
 				Object objectID = dirtyObjectID.getObjectID();
 
 				if (subscribedObjectIDs.contains(objectID)) { // check, whether this sessionID is interested in the given objectID
-					Map<DirtyObjectID.LifecycleStage, DirtyObjectID> m = this.dirtyObjectIDs.get(objectID);
+					Map<JDOLifecycleState, DirtyObjectID> m = this.dirtyObjectIDs.get(objectID);
 					if (m == null) {
-						m = new HashMap<DirtyObjectID.LifecycleStage, DirtyObjectID>();
+						m = new HashMap<JDOLifecycleState, DirtyObjectID>();
 						this.dirtyObjectIDs.put(objectID, m);
 					}
-					DirtyObjectID dObj = m.get(dirtyObjectID.getLifecycleStage());
+					DirtyObjectID dObj = m.get(dirtyObjectID.getLifecycleState());
 					if (dObj == null)
-						m.put(dirtyObjectID.getLifecycleStage(), dirtyObjectID);
+						m.put(dirtyObjectID.getLifecycleState(), dirtyObjectID);
 					else {
 						DirtyObjectID older = dObj;
 						DirtyObjectID newer = dirtyObjectID;
@@ -422,7 +424,7 @@ implements Serializable
 							newer = tmp;
 						}
 						newer.addSourceSessionIDs(older.getSourceSessionIDs());
-						m.put(dirtyObjectID.getLifecycleStage(), newer);
+						m.put(dirtyObjectID.getLifecycleState(), newer);
 					}
 				} // if (subscribedObjectIDs.contains(objectID)) { // check, whether this sessionID is interested in the given objectID
 			} // for (DirtyObjectID dirtyObjectID : dirtyObjectIDs) {

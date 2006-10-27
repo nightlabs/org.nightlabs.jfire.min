@@ -45,7 +45,8 @@ import javax.resource.spi.ConnectionEventListener;
 
 import org.apache.log4j.Logger;
 import org.jpox.resource.PersistenceManagerImpl;
-import org.nightlabs.jfire.jdo.cache.DirtyObjectID;
+import org.nightlabs.jfire.jdo.notification.DirtyObjectID;
+import org.nightlabs.jfire.jdo.notification.JDOLifecycleState;
 import org.nightlabs.jfire.security.SecurityReflector;
 
 
@@ -154,7 +155,7 @@ public class JdoCacheBridgeJPOX extends JdoCacheBridge
 		public void localTransactionStarted(ConnectionEvent event) { }
 
 		// IMHO no sync necessary, because one transaction should only be used by one thread.
-		private Map<DirtyObjectID.LifecycleStage, Map<Object, DirtyObjectID>> dirtyObjectIDs = null;
+		private Map<JDOLifecycleState, Map<Object, DirtyObjectID>> dirtyObjectIDs = null;
 		private Map<Object, Class> objectID2Class = null;
 
 		protected void registerClass(Object objectID, Class clazz) {
@@ -167,7 +168,7 @@ public class JdoCacheBridgeJPOX extends JdoCacheBridge
 			objectID2Class.put(objectID, clazz);
 		}
 
-		public void addObject(DirtyObjectID.LifecycleStage lifecycleStage, Object object)
+		public void addObject(JDOLifecycleState lifecycleStage, Object object)
 		{
 			Object objectID = getObjectID(object);
 			Object version = JDOHelper.getVersion(object); // version can be null, if the jdo object is not versioned
@@ -175,7 +176,7 @@ public class JdoCacheBridgeJPOX extends JdoCacheBridge
 			registerClass(objectID, object.getClass());
 
 			if (dirtyObjectIDs == null)
-				dirtyObjectIDs = new HashMap<DirtyObjectID.LifecycleStage, Map<Object,DirtyObjectID>>();
+				dirtyObjectIDs = new HashMap<JDOLifecycleState, Map<Object,DirtyObjectID>>();
 
 			Map<Object,DirtyObjectID> m = dirtyObjectIDs.get(lifecycleStage);
 			if (m == null) {
@@ -233,7 +234,7 @@ public class JdoCacheBridgeJPOX extends JdoCacheBridge
 //		}
 	}
 
-	private void registerJDOObject(DirtyObjectID.LifecycleStage lifecycleStage, Object object)
+	private void registerJDOObject(JDOLifecycleState lifecycleStage, Object object)
 	{
 		try {
 			if (object == null)
@@ -255,7 +256,7 @@ public class JdoCacheBridgeJPOX extends JdoCacheBridge
 			if (logger.isDebugEnabled())
 				logger.debug("postCreate: " + event.getPersistentInstance());
 
-			registerJDOObject(DirtyObjectID.LifecycleStage.NEW, event.getPersistentInstance());
+			registerJDOObject(JDOLifecycleState.NEW, event.getPersistentInstance());
 		}
 	};
 
@@ -269,7 +270,7 @@ public class JdoCacheBridgeJPOX extends JdoCacheBridge
 //			if (!JDOHelper.isNew(event.getPersistentInstance()))
 //				return;
 //
-//			registerJDOObject(DirtyObjectID.LifecycleStage.NEW, event.getPersistentInstance());
+//			registerJDOObject(JDOLifecycleState.NEW, event.getPersistentInstance());
 //		}
 //	};
 
@@ -280,7 +281,7 @@ public class JdoCacheBridgeJPOX extends JdoCacheBridge
 			if (logger.isDebugEnabled())
 				logger.debug("postDirty: " + event.getPersistentInstance());
 
-			registerJDOObject(DirtyObjectID.LifecycleStage.DIRTY, event.getPersistentInstance());
+			registerJDOObject(JDOLifecycleState.DIRTY, event.getPersistentInstance());
 		}
 	};
 
@@ -291,7 +292,7 @@ public class JdoCacheBridgeJPOX extends JdoCacheBridge
 			if (logger.isDebugEnabled())
 				logger.debug("postAttach: " + event.getPersistentInstance());
 
-			registerJDOObject(DirtyObjectID.LifecycleStage.DIRTY, event.getPersistentInstance());
+			registerJDOObject(JDOLifecycleState.DIRTY, event.getPersistentInstance());
 		}
 	};
 
@@ -301,7 +302,7 @@ public class JdoCacheBridgeJPOX extends JdoCacheBridge
 			if (logger.isDebugEnabled())
 				logger.debug("preDelete: " + event.getPersistentInstance());
 
-			registerJDOObject(DirtyObjectID.LifecycleStage.DELETED, event.getPersistentInstance());
+			registerJDOObject(JDOLifecycleState.DELETED, event.getPersistentInstance());
 		}
 		public void postDelete(InstanceLifecycleEvent event) { }
 	};

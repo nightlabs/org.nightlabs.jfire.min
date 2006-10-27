@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.SortedSet;
 
+import org.nightlabs.jfire.jdo.notification.DirtyObjectID;
+
 public class NotificationBundle
 implements Serializable
 {

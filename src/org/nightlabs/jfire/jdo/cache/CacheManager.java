@@ -34,7 +34,9 @@ import java.util.Set;
 
 import org.nightlabs.jfire.base.JFirePrincipal;
 import org.nightlabs.jfire.jdo.notification.AbsoluteFilterID;
+import org.nightlabs.jfire.jdo.notification.DirtyObjectID;
 import org.nightlabs.jfire.jdo.notification.IJDOLifecycleListenerFilter;
+import org.nightlabs.jfire.jdo.notification.JDOLifecycleState;
 
 
 /**
@@ -188,7 +190,7 @@ public class CacheManager
 	 * @param objectIDs The IDs of the JDO objects that have been changed
 	 *		(see {@link javax.jdo.JDOHelper#getObjectId(java.lang.Object)}).
 	 */
-	public void addDirtyObjectIDs(String sessionID, Map<DirtyObjectID.LifecycleStage, Map<Object, DirtyObjectID>> dirtyObjectIDs)
+	public void addDirtyObjectIDs(String sessionID, Map<JDOLifecycleState, Map<Object, DirtyObjectID>> dirtyObjectIDs)
 	{
 		cacheManagerFactory.addDirtyObjectIDs(sessionID, dirtyObjectIDs);
 	}

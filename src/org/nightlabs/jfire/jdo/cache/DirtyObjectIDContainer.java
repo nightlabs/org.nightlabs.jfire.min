@@ -33,6 +33,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.nightlabs.jfire.jdo.notification.DirtyObjectID;
+import org.nightlabs.jfire.jdo.notification.JDOLifecycleState;
 
 public class DirtyObjectIDContainer
 implements Serializable
@@ -55,9 +57,9 @@ implements Serializable
 	 * key: Object objectID<br/>
 	 * value: DirtyObjectID dirtyObjectID
 	 */
-	private Map<DirtyObjectID.LifecycleStage, Map<Object, DirtyObjectID>> lifecycleStage2dirtyObjectIDMap = null;
-	private Map<DirtyObjectID.LifecycleStage, Map<Object, DirtyObjectID>> _lifecycleStage2dirtyObjectIDMap = null;
-	private static final Map<DirtyObjectID.LifecycleStage, Map<Object, DirtyObjectID>> EMPTY_MAP = Collections.unmodifiableMap(new HashMap<DirtyObjectID.LifecycleStage, Map<Object, DirtyObjectID>>());
+	private Map<JDOLifecycleState, Map<Object, DirtyObjectID>> lifecycleState2dirtyObjectIDMap = null;
+	private Map<JDOLifecycleState, Map<Object, DirtyObjectID>> _lifecycleState2dirtyObjectIDMap = null;
+	private static final Map<JDOLifecycleState, Map<Object, DirtyObjectID>> EMPTY_MAP = Collections.unmodifiableMap(new HashMap<JDOLifecycleState, Map<Object, DirtyObjectID>>());
 
 	public DirtyObjectIDContainer(DirtyObjectIDContainer master)
 	{
@@ -88,16 +90,16 @@ implements Serializable
 				}
 			}
 
-			if (lifecycleStage2dirtyObjectIDMap == null)
-				lifecycleStage2dirtyObjectIDMap = new HashMap<DirtyObjectID.LifecycleStage, Map<Object, DirtyObjectID>>(DirtyObjectID.LifecycleStage.values().length);
+			if (lifecycleState2dirtyObjectIDMap == null)
+				lifecycleState2dirtyObjectIDMap = new HashMap<JDOLifecycleState, Map<Object, DirtyObjectID>>(JDOLifecycleState.values().length);
 
 			for (DirtyObjectID newDirtyObjectID : newDirtyObjectIDs) {
 				Object objectID = newDirtyObjectID.getObjectID();
 
-				Map<Object, DirtyObjectID> dirtyObjectIDs = lifecycleStage2dirtyObjectIDMap.get(newDirtyObjectID.getLifecycleStage());
+				Map<Object, DirtyObjectID> dirtyObjectIDs = lifecycleState2dirtyObjectIDMap.get(newDirtyObjectID.getLifecycleState());
 				if (dirtyObjectIDs == null) {
 					dirtyObjectIDs = new HashMap<Object, DirtyObjectID>();
-					lifecycleStage2dirtyObjectIDMap.put(newDirtyObjectID.getLifecycleStage(), dirtyObjectIDs);
+					lifecycleState2dirtyObjectIDMap.put(newDirtyObjectID.getLifecycleState(), dirtyObjectIDs);
 				}
 
 				DirtyObjectID dirtyObjectID = (DirtyObjectID) dirtyObjectIDs.get(objectID);
@@ -108,7 +110,7 @@ implements Serializable
 				dirtyObjectIDs.put(objectID, newDirtyObjectID);
 			}
 
-			_lifecycleStage2dirtyObjectIDMap = null;
+			_lifecycleState2dirtyObjectIDMap = null;
 		} // synchronized (this) {
 
 		// do this outside the synchronized block to prevent dead-locks
@@ -119,42 +121,42 @@ implements Serializable
 	/**
 	 * @return Returns a read-only copy of the internal map.
 	 */
-	public synchronized Map<DirtyObjectID.LifecycleStage, Map<Object, DirtyObjectID>> getLifecycleStage2DirtyObjectIDMap()
+	public synchronized Map<JDOLifecycleState, Map<Object, DirtyObjectID>> getLifecycleStage2DirtyObjectIDMap()
 	{
 		if (closed) {
 			logger.warn("getDirtyObjectIDs: DirtyObjectIDContainer has been closed already! Returning EMPTY_MAP.", new Exception("Debug stacktrace"));
 			return EMPTY_MAP;
 		}
 
-		if (lifecycleStage2dirtyObjectIDMap == null)
+		if (lifecycleState2dirtyObjectIDMap == null)
 			return EMPTY_MAP;
 
-		if (_lifecycleStage2dirtyObjectIDMap == null) {
-			Map<DirtyObjectID.LifecycleStage, Map<Object, DirtyObjectID>> result = new HashMap<DirtyObjectID.LifecycleStage, Map<Object,DirtyObjectID>>(lifecycleStage2dirtyObjectIDMap);
-			for (Map.Entry<DirtyObjectID.LifecycleStage, Map<Object, DirtyObjectID>> me : lifecycleStage2dirtyObjectIDMap.entrySet())
+		if (_lifecycleState2dirtyObjectIDMap == null) {
+			Map<JDOLifecycleState, Map<Object, DirtyObjectID>> result = new HashMap<JDOLifecycleState, Map<Object,DirtyObjectID>>(lifecycleState2dirtyObjectIDMap);
+			for (Map.Entry<JDOLifecycleState, Map<Object, DirtyObjectID>> me : lifecycleState2dirtyObjectIDMap.entrySet())
 				result.put(me.getKey(), Collections.unmodifiableMap(new HashMap<Object, DirtyObjectID>(me.getValue())));
 
-			_lifecycleStage2dirtyObjectIDMap = Collections.unmodifiableMap(result);
+			_lifecycleState2dirtyObjectIDMap = Collections.unmodifiableMap(result);
 		}
 
-		return _lifecycleStage2dirtyObjectIDMap;
+		return _lifecycleState2dirtyObjectIDMap;
 	}
 
 	/**
 	 * @param objectID The JDO object-id pointing to an instance of {@link DirtyObjectID}. 
 	 * @return Returns either <code>null</code> or a <code>DirtyObjectID</code>.
 	 */
-	public synchronized DirtyObjectID getDirtyObjectID(DirtyObjectID.LifecycleStage lifecycleStage, Object objectID)
+	public synchronized DirtyObjectID getDirtyObjectID(JDOLifecycleState lifecycleState, Object objectID)
 	{
 		if (closed) {
 			logger.warn("getDirtyObjectID: DirtyObjectIDContainer has been closed already! Returning null.", new Exception("Debug stacktrace"));
 			return null;
 		}
 
-		if (lifecycleStage2dirtyObjectIDMap == null)
+		if (lifecycleState2dirtyObjectIDMap == null)
 			return null;
 
-		Map<Object, DirtyObjectID> m = lifecycleStage2dirtyObjectIDMap.get(lifecycleStage);
+		Map<Object, DirtyObjectID> m = lifecycleState2dirtyObjectIDMap.get(lifecycleState);
 		if (m == null)
 			return null;
 
@@ -173,26 +175,26 @@ implements Serializable
 			master.removePart(this);
 
 		// unnecessary, but why not help the gc a bit and forget these references
-		_lifecycleStage2dirtyObjectIDMap = null;
-		lifecycleStage2dirtyObjectIDMap = null;
+		_lifecycleState2dirtyObjectIDMap = null;
+		lifecycleState2dirtyObjectIDMap = null;
 	}
 
 	private void removePart(DirtyObjectIDContainer part)
 	{
-		if (part.lifecycleStage2dirtyObjectIDMap == null) {
+		if (part.lifecycleState2dirtyObjectIDMap == null) {
 			if (logger.isDebugEnabled())
-				logger.debug("removePart: part.lifecycleStage2dirtyObjectIDMap == null => won't remove anything");
+				logger.debug("removePart: part.lifecycleState2dirtyObjectIDMap == null => won't remove anything");
 
 			return;
 		}
 
 		synchronized (this) {
-			for (Map.Entry<DirtyObjectID.LifecycleStage, Map<Object, DirtyObjectID>> me1 : part.lifecycleStage2dirtyObjectIDMap.entrySet()) {
-				DirtyObjectID.LifecycleStage lifecycleStage = me1.getKey();
+			for (Map.Entry<JDOLifecycleState, Map<Object, DirtyObjectID>> me1 : part.lifecycleState2dirtyObjectIDMap.entrySet()) {
+				JDOLifecycleState lifecycleState = me1.getKey();
 				Map<Object, DirtyObjectID> part_dirtyObjectIDMap = me1.getValue();
-				Map<Object, DirtyObjectID> master_dirtyObjectIDMap = lifecycleStage2dirtyObjectIDMap.get(lifecycleStage);
+				Map<Object, DirtyObjectID> master_dirtyObjectIDMap = lifecycleState2dirtyObjectIDMap.get(lifecycleState);
 				if (master_dirtyObjectIDMap == null)
-					throw new IllegalStateException("master_dirtyObjectIDMap == null for lifecycleStage == " + lifecycleStage);
+					throw new IllegalStateException("master_dirtyObjectIDMap == null for lifecycleState == " + lifecycleState);
 	
 				for (Map.Entry<Object, DirtyObjectID> me2 : part_dirtyObjectIDMap.entrySet()) {
 					Object objectID = me2.getKey();
