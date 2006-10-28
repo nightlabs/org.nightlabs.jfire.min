@@ -34,7 +34,6 @@ import org.apache.log4j.Logger;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
-import org.nightlabs.base.app.AbstractApplication;
 import org.nightlabs.base.app.AbstractWorkbenchAdvisor;
 import org.nightlabs.base.exceptionhandler.ExceptionHandlerRegistry;
 import org.nightlabs.base.exceptionhandler.ExceptionHandlingWorkbenchAdvisor;
@@ -133,8 +132,4 @@ extends AbstractWorkbenchAdvisor
 		return new JFireWorkbenchWindowAdvisor(configurer);
 	}
 
-	protected AbstractApplication initApplication() {
-		return new JFireApplication();
-	}	
-		
 }

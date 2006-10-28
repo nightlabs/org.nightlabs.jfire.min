@@ -961,6 +961,9 @@ implements InitialContextProvider
 							loginResult.setWasAuthenticationErr(true);
 					}
 				}
+				else if (cause != null && ExceptionUtils.indexOfThrowable(cause, LoginException.class) >= 0) {
+					loginResult.setWasAuthenticationErr(true);
+				}
 				else {
 					if (ExceptionUtils.indexOfThrowable(cause, SecurityException.class) >= 0) {
 						loginResult.setWasAuthenticationErr(true);				
