@@ -119,12 +119,7 @@ extends AbstractApplicationThread
 //	}
 
 
-	private int platformResultCode = -1;
 	protected Display display;
-
-	public int getPlatformResultCode() {
-		return platformResultCode;
-	}
 
 	@Override
 	protected void preCreateWorkbench() {
@@ -138,7 +133,7 @@ extends AbstractApplicationThread
 				updateManager.run();
 				if(updateManager.doRestart())
 				{
-					platformResultCode = PlatformUI.RETURN_RESTART;
+					setPlatformResultCode(PlatformUI.RETURN_RESTART);
 					return;
 				}
 			}
