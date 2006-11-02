@@ -13,10 +13,9 @@ import javax.jdo.JDOHelper;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.swt.widgets.Display;
 import org.nightlabs.base.notification.NotificationAdapterJob;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleAdapterJob;
@@ -29,6 +28,7 @@ import org.nightlabs.jfire.jdo.notification.JDOLifecycleState;
 import org.nightlabs.jfire.jdo.notification.SimpleLifecycleListenerFilter;
 import org.nightlabs.notification.NotificationEvent;
 import org.nightlabs.notification.NotificationListener;
+import org.nightlabs.notification.SubjectCarrier;
 
 /**
  * @author Marco Schulze - marco at nightlabs dot de
@@ -60,10 +60,46 @@ public abstract class ActiveJDOObjectController<JDOObjectID, JDOObject>
 	 */
 	protected abstract Collection<JDOObject> retrieveJDOObjects(IProgressMonitor monitor);
 
+	private ListenerList jdoObjectChangedListeners = null;
+
 	/**
-	 * This method is always called on the UI thread.
+	 * This method is always called on the UI thread. You can chose whether you override it in order to react on changes
+	 * or add a listener via {@link #addJDOObjectsChangedListener(JDOObjectsChangedListener)}.
+	 *
+	 * @param event The event containing details about which JDOObjects have been loaded from the server or have been deleted.
 	 */
-	protected abstract void onJDOObjectsChanged();
+	protected void onJDOObjectsChanged(JDOObjectsChangedEvent<JDOObject> event)
+	{
+	}
+
+	private void fireJDOObjectsChangedEvent(Collection<JDOObject> loadedJDOObjects, Collection<JDOObject> deletedJDOObjects)
+	{
+		JDOObjectsChangedEvent<JDOObject> event = new JDOObjectsChangedEvent<JDOObject>(this, loadedJDOObjects, deletedJDOObjects);
+		onJDOObjectsChanged(event);
+		if (jdoObjectChangedListeners != null) {
+			Object[] listeners = jdoObjectChangedListeners.getListeners();
+			for (Object listener : listeners) {
+				JDOObjectsChangedListener<JDOObject> l = (JDOObjectsChangedListener<JDOObject>) listener;
+				l.onJDOObjectsChanged(event);
+			}
+		}
+	}
+
+	public void addJDOObjectsChangedListener(JDOObjectsChangedListener<JDOObject> listener)
+	{
+		if (jdoObjectChangedListeners == null)
+			jdoObjectChangedListeners = new ListenerList();
+
+		jdoObjectChangedListeners.add(listener);
+	}
+
+	public void removeJDOObjectsChangedListener(JDOObjectsChangedListener<JDOObject> listener)
+	{
+		if (jdoObjectChangedListeners == null)
+			return;
+
+		jdoObjectChangedListeners.remove(listener);
+	}
 
 	protected abstract void sortJDOObjects(List<JDOObject> objects);
 
@@ -93,8 +129,9 @@ public abstract class ActiveJDOObjectController<JDOObjectID, JDOObject>
 			return lifecycleListenerFilter;
 		}
 
-		public void notify(JDOLifecycleEvent event)
+		public void notify(final JDOLifecycleEvent event)
 		{
+			final Collection<JDOObject> loadedJDOObjects;
 			synchronized (jdoObjectID2jdoObjectMutex) {
 				if (jdoObjectID2jdoObject == null)
 					return; // nothing loaded yet
@@ -109,17 +146,21 @@ public abstract class ActiveJDOObjectController<JDOObjectID, JDOObject>
 
 				if (!jdoObjectIDsToLoad.isEmpty()) {
 					Collection<JDOObject> jdoObjects = retrieveJDOObjects(jdoObjectIDsToLoad, getProgressMonitor());
+					loadedJDOObjects = jdoObjects;
 					for (JDOObject jdoObject : jdoObjects)
 						jdoObjectID2jdoObject.put((JDOObjectID) JDOHelper.getObjectId(jdoObject), jdoObject);
 
 					createJDOObjectList();
 				}
+				else
+					loadedJDOObjects = null;
 			} // synchronized (jdoObjectID2jdoObjectMutex) {
 
 			Display.getDefault().asyncExec(new Runnable() {
 				public void run()
 				{
-					onJDOObjectsChanged();
+					if (loadedJDOObjects != null)
+						fireJDOObjectsChangedEvent(loadedJDOObjects, null);
 				}
 			});
 		}
@@ -127,36 +168,55 @@ public abstract class ActiveJDOObjectController<JDOObjectID, JDOObject>
 
 	private NotificationListener notificationListener = new NotificationAdapterJob("Loading Changed jdoObjects")
 	{
-		public void notify(NotificationEvent notificationEvent)
+		public void notify(final NotificationEvent notificationEvent)
 		{
+			final Collection<JDOObject> loadedJDOObjects;
+			final Collection<JDOObject> deletedJDOObjects;
+
 			synchronized (jdoObjectID2jdoObjectMutex) {
 				if (jdoObjectID2jdoObject == null)
 					return; // nothing loaded yet
 
 				HashSet<JDOObjectID> jdoObjectIDsToLoad = new HashSet<JDOObjectID>();
-				for (DirtyObjectID dirtyObjectID : (Set<? extends DirtyObjectID>)notificationEvent.getSubjects()) {
+				Collection<JDOObject> _deletedJDOObjects = null;
+				for (SubjectCarrier subjectCarrier : (List<? extends SubjectCarrier>)notificationEvent.getSubjectCarriers()) {
+					DirtyObjectID dirtyObjectID = (DirtyObjectID) subjectCarrier.getSubject();
 					JDOObjectID jdoObjectID = (JDOObjectID) dirtyObjectID.getObjectID();
 
-					if (JDOLifecycleState.DELETED.equals(dirtyObjectID.getLifecycleState()))
-						jdoObjectID2jdoObject.remove(jdoObjectID);
+					if (JDOLifecycleState.DELETED.equals(dirtyObjectID.getLifecycleState())) {
+						JDOObject jdoObject = jdoObjectID2jdoObject.remove(jdoObjectID);
+						if (jdoObject != null) {
+							if (_deletedJDOObjects == null)
+								_deletedJDOObjects = new ArrayList<JDOObject>();
+							_deletedJDOObjects.add(jdoObject);
+						}
+						jdoObjectIDsToLoad.remove(jdoObjectID);
+					}
 					else if (jdoObjectID2jdoObject.containsKey(jdoObjectID)) // only load it, if it's already here
 						jdoObjectIDsToLoad.add(jdoObjectID);
 				}
 
 				if (!jdoObjectIDsToLoad.isEmpty()) {
 					Collection<JDOObject> jdoObjects = retrieveJDOObjects(jdoObjectIDsToLoad, getProgressMonitor());
+					loadedJDOObjects = jdoObjects;
 					for (JDOObject jdoObject : jdoObjects)
 						jdoObjectID2jdoObject.put((JDOObjectID) JDOHelper.getObjectId(jdoObject), jdoObject);
 
 					createJDOObjectList();
 				}
+				else {
+					loadedJDOObjects = null;
+				}
+
+				deletedJDOObjects = _deletedJDOObjects;
 			} // synchronized (jdoObjectID2jdoObjectMutex) {
 
 			Display.getDefault().asyncExec(new Runnable()
 			{
 				public void run()
 				{
-					onJDOObjectsChanged();
+					notificationEvent.getSubjectCarriers();
+					fireJDOObjectsChangedEvent(loadedJDOObjects, deletedJDOObjects);
 				}
 			});
 		}
@@ -223,7 +283,7 @@ public abstract class ActiveJDOObjectController<JDOObjectID, JDOObject>
 		Job job = new Job("Loading Data") {
 			protected IStatus run(IProgressMonitor monitor)
 			{
-				Collection<JDOObject> jdoObjects = retrieveJDOObjects(monitor);
+				final Collection<JDOObject> jdoObjects = retrieveJDOObjects(monitor);
 
 				synchronized (jdoObjectID2jdoObjectMutex) {
 					if (jdoObjectID2jdoObject == null)
@@ -236,17 +296,17 @@ public abstract class ActiveJDOObjectController<JDOObjectID, JDOObject>
 					createJDOObjectList();
 				} // synchronized (jdoObjectID2jdoObjectMutex) {
 
+				Display.getDefault().asyncExec(new Runnable()
+				{
+					public void run()
+					{
+						fireJDOObjectsChangedEvent(jdoObjects, null);
+					}
+				});
+
 				return Status.OK_STATUS;
 			}
 		};
-		job.addJobChangeListener(new JobChangeAdapter() {
-			@Override
-			public void done(IJobChangeEvent event)
-			{
-				super.done(event);
-				onJDOObjectsChanged();
-			}
-		});
 		job.setPriority(Job.SHORT);
 		job.schedule();
 

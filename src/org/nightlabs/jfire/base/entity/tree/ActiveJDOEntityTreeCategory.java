@@ -13,6 +13,7 @@ import org.nightlabs.base.entity.tree.EntityTreeCategory;
 import org.nightlabs.base.entity.tree.IEntityTreeCategoryContentConsumer;
 import org.nightlabs.base.tree.TreeContentProvider;
 import org.nightlabs.jfire.base.jdo.ActiveJDOObjectController;
+import org.nightlabs.jfire.base.jdo.JDOObjectsChangedEvent;
 import org.nightlabs.jfire.jdo.notification.IJDOLifecycleListenerFilter;
 
 public abstract class ActiveJDOEntityTreeCategory<JDOObjectID, JDOObject>
@@ -49,7 +50,8 @@ extends EntityTreeCategory
 			return super.createJDOLifecycleListenerFilter();
 		}
 
-		protected void onJDOObjectsChanged()
+		@Override
+		protected void onJDOObjectsChanged(JDOObjectsChangedEvent<JDOObject> event)
 		{
 			fireEntityTreeCategoryChange();
 		}
