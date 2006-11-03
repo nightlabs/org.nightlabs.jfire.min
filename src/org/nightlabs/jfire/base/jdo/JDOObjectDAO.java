@@ -29,10 +29,12 @@ package org.nightlabs.jfire.base.jdo;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
 import javax.jdo.JDOHelper;
+import javax.jdo.spi.PersistenceCapable;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.nightlabs.jdo.NLJDOHelper;
@@ -174,19 +176,32 @@ public abstract class JDOObjectDAO<JDOObjectID, JDOObject>
 
 			if (fetchObjectIDs.size() > 0) {
 				if(fetchObjectIDs.size() == 1) {
-					JDOObject fetchedObject = retrieveJDOObject(fetchObjectIDs.iterator().next(), fetchGroups, maxFetchDepth, monitor);
-					CollectionUtil.replaceAllInCollection(objects, fetchObjectIDs.iterator().next(), fetchedObject);
-					cache.put(scope, fetchedObject, fetchGroups, maxFetchDepth);
-//					objects.add(fetchedObject);
+					JDOObjectID objectID = fetchObjectIDs.iterator().next();
+					JDOObject fetchedObject = retrieveJDOObject(objectID, fetchGroups, maxFetchDepth, monitor);
+					if (fetchedObject == null)
+						objects.remove(objectID);
+					else {
+						CollectionUtil.replaceAllInCollection(objects, objectID, fetchedObject);						
+						cache.put(scope, fetchedObject, fetchGroups, maxFetchDepth);
+					}
 					monitor.worked(1);
 				} else {
 					Collection<JDOObject> fetchedObjects = retrieveJDOObjects(fetchObjectIDs, fetchGroups, maxFetchDepth, monitor);
 					cache.putAll(scope, fetchedObjects, fetchGroups, maxFetchDepth);
-					for (JDOObject fetchedObject : fetchedObjects) {
+					for (JDOObject fetchedObject : fetchedObjects) {						
 						JDOObjectID id = (JDOObjectID) JDOHelper.getObjectId(fetchedObject);
 						CollectionUtil.replaceAllInCollection(objects, id, fetchedObject);
 					}
-//					objects.addAll(fetchedObjects);
+					for (Iterator iter = objects.iterator(); iter.hasNext();) {
+						Object element = (Object) iter.next();
+						// we remove all entries that were not replaced by the actual object
+						// in this case the id-object is still in the Object collection
+						// this might happen, when the server does not return all objects
+						// it was asked for
+						if (!(element instanceof PersistenceCapable))
+							iter.remove();
+						
+					}
 					monitor.worked(fetchedObjects.size());
 				}
 			}
