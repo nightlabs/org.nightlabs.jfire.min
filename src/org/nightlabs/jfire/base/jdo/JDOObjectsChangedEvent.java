@@ -34,14 +34,22 @@ extends EventObject
 	}
 
 	/**
-	 * @return Returns all object-ids whose objects have not been reloaded after a modification. That means, these objects
-	 *		have been filtered out (even though they still exist). May be <code>null</code>.
+	 * @return Returns all object-ids (mapped to their jdo objects) whose objects have <b>not</b> been reloaded after a modification.
+	 *		That means, these objects have been filtered out in
+	 *		{@link ActiveJDOObjectController#retrieveJDOObjects(java.util.Set, org.eclipse.core.runtime.IProgressMonitor)}
+	 *		(even though they still exist). Note, that for a given object-id, a <code>null</code> value
+	 *		might be mapped as jdo object (i.e. map-value), if the jdo-object has not been fetched previously. May be <code>null</code>.
 	 */
 	public Map<JDOObjectID, JDOObject> getIgnoredJDOObjects()
 	{
 		return ignoredJDOObjects;
 	}
 
+	/**
+	 * @return Returns object-ids (mapped to their jdo objects) of jdo objects that have been deleted. If the jdo object
+	 *		has not been previously fetched, the mapped value will be <code>null</code> - otherwise the previously fetched
+	 *		jdo object corresponding to the object id. May be <code>null</code>.
+	 */
 	public Map<JDOObjectID, JDOObject> getDeletedJDOObjects()
 	{
 		return deletedJDOObjects;
