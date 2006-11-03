@@ -33,7 +33,6 @@ import java.util.List;
 import java.util.Set;
 
 import javax.jdo.JDOHelper;
-import javax.management.ListenerNotFoundException;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.nightlabs.jdo.NLJDOHelper;
