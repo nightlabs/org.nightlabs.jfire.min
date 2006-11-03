@@ -72,9 +72,11 @@ public abstract class ActiveJDOObjectController<JDOObjectID, JDOObject>
 	{
 	}
 
-	private void fireJDOObjectsChangedEvent(Collection<JDOObject> loadedJDOObjects, Collection<JDOObject> deletedJDOObjects)
+	private void fireJDOObjectsChangedEvent(Collection<JDOObject> loadedJDOObjects, Collection<JDOObject> ignoredJDOObjects, Collection<JDOObject> deletedJDOObjects)
 	{
-		JDOObjectsChangedEvent<JDOObject> event = new JDOObjectsChangedEvent<JDOObject>(this, loadedJDOObjects, deletedJDOObjects);
+		JDOObjectsChangedEvent<JDOObject> event = new JDOObjectsChangedEvent<JDOObject>(
+				this, loadedJDOObjects, ignoredJDOObjects, deletedJDOObjects);
+
 		onJDOObjectsChanged(event);
 		if (jdoObjectChangedListeners != null) {
 			Object[] listeners = jdoObjectChangedListeners.getListeners();
@@ -132,6 +134,8 @@ public abstract class ActiveJDOObjectController<JDOObjectID, JDOObject>
 		public void notify(final JDOLifecycleEvent event)
 		{
 			final Collection<JDOObject> loadedJDOObjects;
+			final Set<JDOObjectID> ignoredJDOObjectIDs;
+			final Collection<JDOObject> ignoredJDOObjects;
 			synchronized (jdoObjectID2jdoObjectMutex) {
 				if (jdoObjectID2jdoObject == null)
 					return; // nothing loaded yet
@@ -147,20 +151,37 @@ public abstract class ActiveJDOObjectController<JDOObjectID, JDOObject>
 				if (!jdoObjectIDsToLoad.isEmpty()) {
 					Collection<JDOObject> jdoObjects = retrieveJDOObjects(jdoObjectIDsToLoad, getProgressMonitor());
 					loadedJDOObjects = jdoObjects;
-					for (JDOObject jdoObject : jdoObjects)
-						jdoObjectID2jdoObject.put((JDOObjectID) JDOHelper.getObjectId(jdoObject), jdoObject);
+					ignoredJDOObjectIDs = new HashSet<JDOObjectID>(jdoObjectIDsToLoad);
+					for (JDOObject jdoObject : jdoObjects) {
+						JDOObjectID jdoObjectID = (JDOObjectID) JDOHelper.getObjectId(jdoObject);
+						ignoredJDOObjectIDs.remove(jdoObjectID);
+						jdoObjectID2jdoObject.put(jdoObjectID, jdoObject);
+					}
+					if (ignoredJDOObjectIDs.isEmpty())
+						ignoredJDOObjects = null;
+					else {
+						ignoredJDOObjects = new ArrayList<JDOObject>(ignoredJDOObjectIDs.size());
+						for (JDOObjectID jdoObjectID : ignoredJDOObjectIDs) {
+							JDOObject jdoObject = jdoObjectID2jdoObject.remove(jdoObjectID);
+							if (jdoObject != null)
+								ignoredJDOObjects.add(jdoObject);
+						}
+					}
 
 					createJDOObjectList();
 				}
-				else
+				else {
 					loadedJDOObjects = null;
+					ignoredJDOObjects = null;
+					ignoredJDOObjectIDs = null;
+				}
 			} // synchronized (jdoObjectID2jdoObjectMutex) {
 
 			Display.getDefault().asyncExec(new Runnable() {
 				public void run()
 				{
 					if (loadedJDOObjects != null)
-						fireJDOObjectsChangedEvent(loadedJDOObjects, null);
+						fireJDOObjectsChangedEvent(loadedJDOObjects, ignoredJDOObjects, null);
 				}
 			});
 		}
@@ -171,6 +192,8 @@ public abstract class ActiveJDOObjectController<JDOObjectID, JDOObject>
 		public void notify(final NotificationEvent notificationEvent)
 		{
 			final Collection<JDOObject> loadedJDOObjects;
+			final Set<JDOObjectID> ignoredJDOObjectIDs;
+			final Collection<JDOObject> ignoredJDOObjects;
 			final Collection<JDOObject> deletedJDOObjects;
 
 			synchronized (jdoObjectID2jdoObjectMutex) {
@@ -198,13 +221,29 @@ public abstract class ActiveJDOObjectController<JDOObjectID, JDOObject>
 
 				if (!jdoObjectIDsToLoad.isEmpty()) {
 					Collection<JDOObject> jdoObjects = retrieveJDOObjects(jdoObjectIDsToLoad, getProgressMonitor());
+					ignoredJDOObjectIDs = new HashSet<JDOObjectID>(jdoObjectIDsToLoad);
 					loadedJDOObjects = jdoObjects;
-					for (JDOObject jdoObject : jdoObjects)
-						jdoObjectID2jdoObject.put((JDOObjectID) JDOHelper.getObjectId(jdoObject), jdoObject);
+					for (JDOObject jdoObject : jdoObjects) {
+						JDOObjectID jdoObjectID = (JDOObjectID) JDOHelper.getObjectId(jdoObject);
+						ignoredJDOObjectIDs.remove(jdoObjectID);
+						jdoObjectID2jdoObject.put(jdoObjectID, jdoObject);
+					}
+					if (ignoredJDOObjectIDs.isEmpty())
+						ignoredJDOObjects = null;
+					else {
+						ignoredJDOObjects = new ArrayList<JDOObject>(ignoredJDOObjectIDs.size());
+						for (JDOObjectID jdoObjectID : ignoredJDOObjectIDs) {
+							JDOObject jdoObject = jdoObjectID2jdoObject.remove(jdoObjectID);
+							if (jdoObject != null)
+								ignoredJDOObjects.add(jdoObject);
+						}
+					}
 
 					createJDOObjectList();
 				}
 				else {
+					ignoredJDOObjectIDs = null;
+					ignoredJDOObjects = null;
 					loadedJDOObjects = null;
 				}
 
@@ -216,7 +255,7 @@ public abstract class ActiveJDOObjectController<JDOObjectID, JDOObject>
 				public void run()
 				{
 					notificationEvent.getSubjectCarriers();
-					fireJDOObjectsChangedEvent(loadedJDOObjects, deletedJDOObjects);
+					fireJDOObjectsChangedEvent(loadedJDOObjects, ignoredJDOObjects, deletedJDOObjects);
 				}
 			});
 		}
@@ -300,7 +339,7 @@ public abstract class ActiveJDOObjectController<JDOObjectID, JDOObject>
 				{
 					public void run()
 					{
-						fireJDOObjectsChangedEvent(jdoObjects, null);
+						fireJDOObjectsChangedEvent(jdoObjects, null, null);
 					}
 				});
 
