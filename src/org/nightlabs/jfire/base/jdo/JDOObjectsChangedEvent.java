@@ -2,25 +2,26 @@ package org.nightlabs.jfire.base.jdo;
 
 import java.util.Collection;
 import java.util.EventObject;
+import java.util.Map;
 
-public class JDOObjectsChangedEvent<JDOObject>
+public class JDOObjectsChangedEvent<JDOObjectID, JDOObject>
 extends EventObject
 {
 	private static final long serialVersionUID = 1L;
 
 	private Collection<JDOObject> loadedJDOObjects;
-	private Collection<JDOObject> ignoredJDOObjects;
-	private Collection<JDOObject> deletedJDOObjects;
+	private Map<JDOObjectID, JDOObject> ignoredJDOObjects;
+	private Map<JDOObjectID, JDOObject> deletedJDOObjects;
 
 	public JDOObjectsChangedEvent(
 			Object source,
 			Collection<JDOObject> loadedJDOObjects,
-			Collection<JDOObject> unloadedJDOObjects,
-			Collection<JDOObject> deletedJDOObjects)
+			Map<JDOObjectID, JDOObject> ignoredJDOObjects,
+			Map<JDOObjectID, JDOObject> deletedJDOObjects)
 	{
 		super(source);
 		this.loadedJDOObjects = loadedJDOObjects;
-		this.ignoredJDOObjects = unloadedJDOObjects;
+		this.ignoredJDOObjects = ignoredJDOObjects;
 		this.deletedJDOObjects = deletedJDOObjects;
 	}
 
@@ -36,12 +37,12 @@ extends EventObject
 	 * @return Returns all object-ids whose objects have not been reloaded after a modification. That means, these objects
 	 *		have been filtered out (even though they still exist). May be <code>null</code>.
 	 */
-	public Collection<JDOObject> getIgnoredJDOObjects()
+	public Map<JDOObjectID, JDOObject> getIgnoredJDOObjects()
 	{
 		return ignoredJDOObjects;
 	}
 
-	public Collection<JDOObject> getDeletedJDOObjects()
+	public Map<JDOObjectID, JDOObject> getDeletedJDOObjects()
 	{
 		return deletedJDOObjects;
 	}

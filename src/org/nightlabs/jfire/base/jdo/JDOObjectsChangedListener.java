@@ -1,6 +1,6 @@
 package org.nightlabs.jfire.base.jdo;
 
-public interface JDOObjectsChangedListener<JDOObject>
+public interface JDOObjectsChangedListener<JDOObjectID, JDOObject>
 {
-	void onJDOObjectsChanged(JDOObjectsChangedEvent<JDOObject> event);
+	void onJDOObjectsChanged(JDOObjectsChangedEvent<JDOObjectID, JDOObject> event);
 }

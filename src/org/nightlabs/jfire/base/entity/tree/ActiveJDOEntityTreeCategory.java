@@ -51,7 +51,7 @@ extends EntityTreeCategory
 		}
 
 		@Override
-		protected void onJDOObjectsChanged(JDOObjectsChangedEvent<JDOObject> event)
+		protected void onJDOObjectsChanged(JDOObjectsChangedEvent<JDOObjectID, JDOObject> event)
 		{
 			fireEntityTreeCategoryChange();
 		}

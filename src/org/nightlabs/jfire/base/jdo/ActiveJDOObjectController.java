@@ -68,26 +68,26 @@ public abstract class ActiveJDOObjectController<JDOObjectID, JDOObject>
 	 *
 	 * @param event The event containing details about which JDOObjects have been loaded from the server or have been deleted.
 	 */
-	protected void onJDOObjectsChanged(JDOObjectsChangedEvent<JDOObject> event)
+	protected void onJDOObjectsChanged(JDOObjectsChangedEvent<JDOObjectID, JDOObject> event)
 	{
 	}
 
-	private void fireJDOObjectsChangedEvent(Collection<JDOObject> loadedJDOObjects, Collection<JDOObject> ignoredJDOObjects, Collection<JDOObject> deletedJDOObjects)
+	private void fireJDOObjectsChangedEvent(Collection<JDOObject> loadedJDOObjects, Map<JDOObjectID, JDOObject> ignoredJDOObjects, Map<JDOObjectID, JDOObject> deletedJDOObjects)
 	{
-		JDOObjectsChangedEvent<JDOObject> event = new JDOObjectsChangedEvent<JDOObject>(
+		JDOObjectsChangedEvent<JDOObjectID, JDOObject> event = new JDOObjectsChangedEvent<JDOObjectID, JDOObject>(
 				this, loadedJDOObjects, ignoredJDOObjects, deletedJDOObjects);
 
 		onJDOObjectsChanged(event);
 		if (jdoObjectChangedListeners != null) {
 			Object[] listeners = jdoObjectChangedListeners.getListeners();
 			for (Object listener : listeners) {
-				JDOObjectsChangedListener<JDOObject> l = (JDOObjectsChangedListener<JDOObject>) listener;
+				JDOObjectsChangedListener<JDOObjectID, JDOObject> l = (JDOObjectsChangedListener<JDOObjectID, JDOObject>) listener;
 				l.onJDOObjectsChanged(event);
 			}
 		}
 	}
 
-	public void addJDOObjectsChangedListener(JDOObjectsChangedListener<JDOObject> listener)
+	public void addJDOObjectsChangedListener(JDOObjectsChangedListener<JDOObjectID, JDOObject> listener)
 	{
 		if (jdoObjectChangedListeners == null)
 			jdoObjectChangedListeners = new ListenerList();
@@ -95,7 +95,7 @@ public abstract class ActiveJDOObjectController<JDOObjectID, JDOObject>
 		jdoObjectChangedListeners.add(listener);
 	}
 
-	public void removeJDOObjectsChangedListener(JDOObjectsChangedListener<JDOObject> listener)
+	public void removeJDOObjectsChangedListener(JDOObjectsChangedListener<JDOObjectID, JDOObject> listener)
 	{
 		if (jdoObjectChangedListeners == null)
 			return;
@@ -135,7 +135,7 @@ public abstract class ActiveJDOObjectController<JDOObjectID, JDOObject>
 		{
 			final Collection<JDOObject> loadedJDOObjects;
 			final Set<JDOObjectID> ignoredJDOObjectIDs;
-			final Collection<JDOObject> ignoredJDOObjects;
+			final Map<JDOObjectID, JDOObject> ignoredJDOObjects;
 			synchronized (jdoObjectID2jdoObjectMutex) {
 				if (jdoObjectID2jdoObject == null)
 					return; // nothing loaded yet
@@ -160,11 +160,10 @@ public abstract class ActiveJDOObjectController<JDOObjectID, JDOObject>
 					if (ignoredJDOObjectIDs.isEmpty())
 						ignoredJDOObjects = null;
 					else {
-						ignoredJDOObjects = new ArrayList<JDOObject>(ignoredJDOObjectIDs.size());
+						ignoredJDOObjects = new HashMap<JDOObjectID, JDOObject>(ignoredJDOObjectIDs.size());
 						for (JDOObjectID jdoObjectID : ignoredJDOObjectIDs) {
 							JDOObject jdoObject = jdoObjectID2jdoObject.remove(jdoObjectID);
-							if (jdoObject != null)
-								ignoredJDOObjects.add(jdoObject);
+							ignoredJDOObjects.put(jdoObjectID, jdoObject);
 						}
 					}
 
@@ -193,26 +192,24 @@ public abstract class ActiveJDOObjectController<JDOObjectID, JDOObject>
 		{
 			final Collection<JDOObject> loadedJDOObjects;
 			final Set<JDOObjectID> ignoredJDOObjectIDs;
-			final Collection<JDOObject> ignoredJDOObjects;
-			final Collection<JDOObject> deletedJDOObjects;
+			final Map<JDOObjectID, JDOObject> ignoredJDOObjects;
+			final Map<JDOObjectID, JDOObject> deletedJDOObjects;
 
 			synchronized (jdoObjectID2jdoObjectMutex) {
 				if (jdoObjectID2jdoObject == null)
 					return; // nothing loaded yet
 
 				HashSet<JDOObjectID> jdoObjectIDsToLoad = new HashSet<JDOObjectID>();
-				Collection<JDOObject> _deletedJDOObjects = null;
+				Map<JDOObjectID, JDOObject> _deletedJDOObjects = null;
 				for (SubjectCarrier subjectCarrier : (List<? extends SubjectCarrier>)notificationEvent.getSubjectCarriers()) {
 					DirtyObjectID dirtyObjectID = (DirtyObjectID) subjectCarrier.getSubject();
 					JDOObjectID jdoObjectID = (JDOObjectID) dirtyObjectID.getObjectID();
 
 					if (JDOLifecycleState.DELETED.equals(dirtyObjectID.getLifecycleState())) {
 						JDOObject jdoObject = jdoObjectID2jdoObject.remove(jdoObjectID);
-						if (jdoObject != null) {
-							if (_deletedJDOObjects == null)
-								_deletedJDOObjects = new ArrayList<JDOObject>();
-							_deletedJDOObjects.add(jdoObject);
-						}
+						if (_deletedJDOObjects == null)
+							_deletedJDOObjects = new HashMap<JDOObjectID, JDOObject>();
+						_deletedJDOObjects.put(jdoObjectID, jdoObject);
 						jdoObjectIDsToLoad.remove(jdoObjectID);
 					}
 					else if (jdoObjectID2jdoObject.containsKey(jdoObjectID)) // only load it, if it's already here
@@ -231,11 +228,10 @@ public abstract class ActiveJDOObjectController<JDOObjectID, JDOObject>
 					if (ignoredJDOObjectIDs.isEmpty())
 						ignoredJDOObjects = null;
 					else {
-						ignoredJDOObjects = new ArrayList<JDOObject>(ignoredJDOObjectIDs.size());
+						ignoredJDOObjects = new HashMap<JDOObjectID, JDOObject>(ignoredJDOObjectIDs.size());
 						for (JDOObjectID jdoObjectID : ignoredJDOObjectIDs) {
 							JDOObject jdoObject = jdoObjectID2jdoObject.remove(jdoObjectID);
-							if (jdoObject != null)
-								ignoredJDOObjects.add(jdoObject);
+							ignoredJDOObjects.put(jdoObjectID, jdoObject);
 						}
 					}
 
