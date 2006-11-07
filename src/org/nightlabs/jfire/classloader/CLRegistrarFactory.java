@@ -303,6 +303,8 @@ public class CLRegistrarFactory
 				if (jf != null) {
 					try {
 						scanJar(repository, fmd, jf, new CLRepositoryMan(applicableTargets));
+					} catch (Throwable t) {
+						logger.error(dir.getAbsolutePath() + " could not be read - it seems to be corrupt!", t);
 					} finally {
 						jf.close();
 					}
