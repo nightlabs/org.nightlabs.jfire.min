@@ -132,7 +132,8 @@ public abstract class JDOObjectDAO<JDOObjectID, JDOObject>
 			JDOObject res = (JDOObject)cache.get(scope, objectID, fetchGroups, maxFetchDepth);
 			if (res == null) {
 				res = retrieveJDOObject(objectID, fetchGroups, maxFetchDepth, monitor);
-				cache.put(scope, res, fetchGroups, maxFetchDepth);
+				if (res != null)
+					cache.put(scope, res, fetchGroups, maxFetchDepth);
 			}
 			return res;
 		} catch (Exception x) {

@@ -74,6 +74,11 @@ public abstract class ActiveJDOObjectController<JDOObjectID, JDOObject>
 
 	private void fireJDOObjectsChangedEvent(Collection<JDOObject> loadedJDOObjects, Map<JDOObjectID, JDOObject> ignoredJDOObjects, Map<JDOObjectID, JDOObject> deletedJDOObjects)
 	{
+		if (closed) {
+			logger.warn("fireJDOObjectsChangedEvent: already closed: " + this);
+			return;
+		}
+
 		JDOObjectsChangedEvent<JDOObjectID, JDOObject> event = new JDOObjectsChangedEvent<JDOObjectID, JDOObject>(
 				this, loadedJDOObjects, ignoredJDOObjects, deletedJDOObjects);
 
@@ -263,7 +268,7 @@ public abstract class ActiveJDOObjectController<JDOObjectID, JDOObject>
 	protected void assertOpen()
 	{
 		if (closed)
-			throw new IllegalStateException("This instance of ActiveTreeContentProvider is already closed: " + this);
+			throw new IllegalStateException("This instance of ActiveJDOObjectController is already closed: " + this);
 	}
 
 	/**

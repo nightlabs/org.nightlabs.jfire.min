@@ -132,8 +132,10 @@ extends NotificationManager
 	public void notify(Long filterID, final JDOLifecycleEvent event)
 	{
 		final JDOLifecycleListener listener = getLifecycleListener(filterID);
-		if (listener == null)
+		if (listener == null) {
 			logger.error("No listener found for filterID="+filterID);
+			return;
+		}
 
 		if (notifyRCP(filterID, event, listener))
 			return;
