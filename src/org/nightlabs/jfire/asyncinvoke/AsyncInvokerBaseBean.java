@@ -137,7 +137,7 @@ implements javax.ejb.MessageDrivenBean, javax.jms.MessageListener
 					throw new IllegalStateException("JFireServer did not start within timeout (hardcoded 10 min)!");
 
 				if (ismf.isShuttingDown()) {
-					throw new IllegalStateException("Server is shutting down! Cannot process messsage anymore!");
+					throw new IllegalStateException("Server is shutting down! Cannot process message anymore!");
 				}
 
 				if (!ismf.isUpAndRunning()) {
