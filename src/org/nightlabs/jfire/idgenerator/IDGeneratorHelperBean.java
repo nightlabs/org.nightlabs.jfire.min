@@ -106,7 +106,7 @@ extends BaseSessionBeanImpl implements SessionBean
 				IDNamespace idNamespace = null;
 				try {
 					idNamespace = (IDNamespace) pm.getObjectById(IDNamespaceID.create(organisationID, namespace));
-					idNamespace.getNamespaceID(); // workaround for JPOX bug - the JDOObjectNotFoundException doesn't occur always in the above line
+					idNamespace.getCacheSizeServer(); // workaround for JPOX bug - the JDOObjectNotFoundException doesn't occur always in the above line
 				} catch (JDOObjectNotFoundException e) {
 					idNamespace = new IDNamespace(getOrganisationID(), namespace);
 					pm.makePersistent(idNamespace);
