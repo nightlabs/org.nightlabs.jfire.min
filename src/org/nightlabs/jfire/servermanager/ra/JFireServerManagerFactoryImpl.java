@@ -387,6 +387,14 @@ public class JFireServerManagerFactoryImpl
 //			throw new ResourceException(e.getMessage());
 		}
 
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+			@Override
+			public void run()
+			{
+				shuttingDown = true;
+			}
+		});
+
 //// Unfortunately this does not work, because the initial context is not yet existent, when
 //// this is executed.
 //		Thread roleImportThread = new Thread("roleImportThread") {
@@ -2143,8 +2151,6 @@ public class JFireServerManagerFactoryImpl
 
 	public boolean isShuttingDown()
 	{
-		
-		
-		return false;
+		return shuttingDown;
 	}
 }
