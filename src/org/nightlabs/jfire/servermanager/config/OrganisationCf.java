@@ -35,10 +35,10 @@ import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 
 import org.nightlabs.jdo.ObjectIDUtil;
+import org.nightlabs.jfire.idgenerator.IDGenerator;
 import org.nightlabs.jfire.organisation.Organisation;
 import org.nightlabs.jfire.organisation.id.OrganisationID;
 import org.nightlabs.jfire.person.Person;
-import org.nightlabs.jfire.person.PersonRegistry;
 import org.nightlabs.jfire.person.PersonStruct;
 import org.nightlabs.jfire.person.TextPersonDataField;
 import org.nightlabs.jfire.server.Server;
@@ -263,7 +263,7 @@ public class OrganisationCf
 		}
 
 		if (organisation.getPerson() == null) {
-			Person person = new Person(organisationID, PersonRegistry.getRegistry(pm).createPersonID());
+			Person person = new Person(organisationID, IDGenerator.nextID(Person.class));
 			PersonStruct personStruct = getPersonStruct(pm);
 			personStruct.explodePerson(person);
 			try {
