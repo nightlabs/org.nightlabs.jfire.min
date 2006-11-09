@@ -42,15 +42,11 @@ import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
 
 import org.apache.log4j.Logger;
-import org.nightlabs.jfire.base.BaseSessionBeanImpl;
-import org.nightlabs.jfire.person.Person;
-import org.nightlabs.jfire.person.PersonRegistry;
-import org.nightlabs.jfire.person.PersonStruct;
-import org.nightlabs.jfire.person.id.PersonID;
-import org.nightlabs.jfire.person.util.PersonSearchFilter;
-
 import org.nightlabs.ModuleException;
 import org.nightlabs.jdo.NLJDOHelper;
+import org.nightlabs.jfire.base.BaseSessionBeanImpl;
+import org.nightlabs.jfire.person.id.PersonID;
+import org.nightlabs.jfire.person.util.PersonSearchFilter;
 
 /**
  * @author alex
@@ -122,24 +118,24 @@ public abstract class PersonManagerBean extends BaseSessionBeanImpl implements
 		}
 	}
 	
-	/**
-	 * @throws ModuleException
-	 * 
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="PersonManager-write"
-	 * @ejb.transaction type = "Required"
-	 */
-	public long createPersonID() throws ModuleException {
-		PersistenceManager pm = this.getPersistenceManager();
-		try {
-			long nextPersonID = PersonRegistry.getRegistry(pm).createPersonID();
-			logger.info("createPersonID() returning "+nextPersonID+" as next PersonID");
-			return nextPersonID;
-		} 
-		finally {
-			pm.close();
-		}
-	}
+//	/**
+//	 * @throws ModuleException
+//	 * 
+//	 * @ejb.interface-method
+//	 * @ejb.permission role-name="PersonManager-write"
+//	 * @ejb.transaction type = "Required"
+//	 */
+//	public long createPersonID() throws ModuleException {
+//		PersistenceManager pm = this.getPersistenceManager();
+//		try {
+//			long nextPersonID = PersonRegistry.getRegistry(pm).createPersonID();
+//			logger.info("createPersonID() returning "+nextPersonID+" as next PersonID");
+//			return nextPersonID;
+//		} 
+//		finally {
+//			pm.close();
+//		}
+//	}
 
 	/**
 	 * Retrieve the person with the given ID
