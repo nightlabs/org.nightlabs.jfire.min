@@ -46,27 +46,42 @@ import org.nightlabs.base.composite.XComposite;
 import org.nightlabs.base.composite.XComposite.LayoutMode;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.login.Login;
+import org.nightlabs.jfire.config.ConfigGroup;
 import org.nightlabs.jfire.config.ConfigManager;
 import org.nightlabs.jfire.config.ConfigManagerUtil;
 import org.nightlabs.jfire.config.ConfigModule;
 import org.nightlabs.jfire.config.id.ConfigID;
+import org.nightlabs.util.Utils;
 
 /**
  * An abstract PreferencePage for ConfigModules.
  * Basicly it takes care of retrieving and storing
  * the config module for you and provides callbacks
  * to present the module to the user.
+ * <p>
  * See 
- * {@link #getConfigModuleClass()}
- * {@link #createPreferencePage(Composite)}
- * {@link #updatePreferencePage(ConfigModule)}
- * {@link #updateConfigModule(ConfigModule)}
+ * <ul>
+ * <li>{@link #getConfigModuleClass()}</li>
+ * <li>{@link #createPreferencePage(Composite)}</li>
+ * <li>{@link #updatePreferencePage(ConfigModule)}</li>
+ * <li>{@link #updateConfigModule(ConfigModule)}</li>
+ * </ul>
  * for methods you need to implement.
  * 
+ * <p>
  * Also take a look at
  * {@link #getConfigModuleFetchGroups()}
  * in order to pass appropriate fetch groups to detach
  * your config module.
+ * 
+ * <p>
+ * Note that by default the {@link ConfigModule}s are cloned
+ * by {@link Utils#cloneSerializable(Object)} before passed
+ * to implementors so they might be changed directly without
+ * taking care of restorage when the user decides not to
+ * store the configuration.
+ * See {@link #doCloneConfigModule()} in order to change this
+ * behaviour.
  * 
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  *
@@ -80,12 +95,12 @@ implements IWorkbenchPreferencePage
 
 	private XComposite wrapper;
 	private Button checkBoxAllowOverwrite;
-	
-	
+
+
 	protected ConfigID currentConfigID;
 	protected ConfigModule currentConfigModule;
 	protected boolean configChanged = false;
-	
+
 	/**
 	 * 
 	 */
@@ -107,7 +122,7 @@ implements IWorkbenchPreferencePage
 	public AbstractConfigModulePreferencePage(String title, ImageDescriptor image) {
 		super(title, image);
 	}
-	
+
 	/**
 	 * Checks if the user is allowed to changed configuration 
 	 * for groups or other users.
@@ -117,25 +132,68 @@ implements IWorkbenchPreferencePage
 	protected boolean isUserConfigSelectionAllowed() {
 		return true;
 	}
-	
+
+	/**
+	 * Returns the current config module.
+	 * 
+	 * @return The current config module.
+	 */
 	protected ConfigModule getCurrentConfigModule() {
 		return currentConfigModule;
 	}
-	
-	public void setCurrentConfigModule(ConfigModule configModule) {
-		this.currentConfigModule = configModule;
+
+	/**
+	 * Sets the current {@link ConfigModule}.
+	 * Note that according to {@link #doCloneConfigModule()}
+	 * the module might be cloned before it is used.
+	 * 
+	 * @param configModule The {@link ConfigModule} to set.
+	 */
+	protected void setCurrentConfigModule(ConfigModule configModule) {
+		if (doCloneConfigModule())
+			this.currentConfigModule = Utils.cloneSerializable(configModule);
+		else
+			this.currentConfigModule = configModule;
 	}
 
-	
+	/**
+	 * Determines whether config modules are
+	 * cloned by {@link Utils#cloneSerializable(Object)}
+	 * after retrieval. Doing so allows pages to change
+	 * the module directly, without changing the instance
+	 * that might be in the Cache and used in other places
+	 * throughout the application?
+	 * The default implementation returns <code>true</code>.
+	 * 
+	 * @return Whether the config module should be cloned.
+	 */
+	protected boolean doCloneConfigModule() {
+		return true;
+	}
+
+	/**
+	 * Whether the current config has changed since it was last set.
+	 *  
+	 * @return Whether the current config has changed since it was last set.
+	 */
 	public boolean isConfigChanged() {
 		return configChanged;
 	}
-	public void setConfigChanged(boolean configChanged) {
+
+	/**
+	 * Use this to mark the config as changed/not changed in your implementation.
+	 * <p>
+	 * Configurations will only be stored to the server if {@link #isConfigChanged()}
+	 * returns true when the user decides to store.
+	 * 
+	 * @param configChanged The changed flag for the Config.
+	 */
+	protected void setConfigChanged(boolean configChanged) {
 		this.configChanged = configChanged;
 		if (configChanged)
 			notifyConfigChangedListeners();
 	} 
-	
+
 	/**
 	 * Default value is true can only be changed by {@link #createContents(Composite, boolean, boolean, boolean)}
 	 */
@@ -148,7 +206,17 @@ implements IWorkbenchPreferencePage
 	 * Default value is false can only be changed by {@link #createContents(Composite, boolean, boolean, boolean)}
 	 */
 	private boolean doSetControl = false;
-	
+
+	/**
+	 * This might be called from outside in order to create the page, 
+	 * when the PreferencePage is not used within the Eclipse Preferences Dialog.
+	 * 
+	 * @param parent The parent to add the page to.
+	 * @param refreshConfigModule Whether to refresh and display the config module 
+	 * @param doCreateConfigGroupHeader Whether to create the header showing controls for ConfigModules of {@link ConfigGroup}s
+	 * @param doSetControl Whether to call super.setControl() wich is only needed, when inside the Preferences Dialog.
+	 * @return The pages Top control.
+	 */
 	public Control createContents(Composite parent, boolean refreshConfigModule, boolean doCreateConfigGroupHeader, boolean doSetControl) {
 		this.refreshConfigModule = refreshConfigModule;
 		this.doCreateConfigGroupHeader = doCreateConfigGroupHeader;
@@ -162,17 +230,18 @@ implements IWorkbenchPreferencePage
 			doSetControl = false;
 		}
 	}
+
 	/**
 	 * @see org.eclipse.jface.preference.PreferencePage#createContents(org.eclipse.swt.widgets.Composite)
 	 */
 	protected Control createContents(Composite parent) {
 		wrapper = new XComposite(parent, SWT.NONE, LayoutMode.ORDINARY_WRAPPER);
-		
+
 		if (doCreateConfigGroupHeader)
 			createConfigGroupHeader(wrapper);
-		
+
 		createPreferencePage(wrapper);
-		
+
 		if (refreshConfigModule) {
 			if (getCurrentConfigModule() == null)
 				setCurrentConfigModule(retrieveConfigModule());
@@ -182,37 +251,24 @@ implements IWorkbenchPreferencePage
 			setControl(wrapper);
 		return wrapper;
 	}
-	
-	public ConfigModule retrieveConfigModule() {
-//		if (currentConfigID == null)
-//			throw new IllegalStateException("Can not retrieve Config Module, currentConfigID is null");
-//		
-//		ConfigManager configManager = null;
-//		try {
-//			configManager = ConfigManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
-//		} catch (Throwable e) {
-//			throw new RuntimeException(e);
-//		}
-//		try {
-//			Login login = Login.getLogin();
-//			return configManager.getConfigModule(
-//					(ConfigID)currentConfigID,
-//					getConfigModuleClass(), 
-//					getConfigModuleCfModID(), 
-//					getConfigModuleFetchGroups()
-//			);
-//		} catch (Exception e) {
-//			throw new RuntimeException(e);
-//		}
+
+	protected ConfigModule retrieveConfigModule() {
 		return ConfigModuleProvider.sharedInstance().getConfigModule(
 				currentConfigID,
 				getConfigModuleClass(),
 				getConfigModuleCfModID(),
 				getConfigModuleFetchGroups(),
 				getConfigModuleMaxFetchDepth()
-			);
+		);
 	}
-	
+
+	/**
+	 * Create the header showing controls for {@link ConfigModule}s of {@link ConfigGroup}s.
+	 * <p>
+	 * Default implementation adds a checkbox for controlling overwriting for the complete module.
+	 * 
+	 * @param parent The parent to add the header to.
+	 */
 	protected void createConfigGroupHeader(Composite parent) {
 		checkBoxAllowOverwrite = new Button(wrapper, SWT.CHECK);
 		checkBoxAllowOverwrite.setText("Allow this configuration to be overwritten.");
@@ -221,8 +277,8 @@ implements IWorkbenchPreferencePage
 		checkBoxAllowOverwrite.setLayoutData(gd);
 		(new Label(wrapper, SWT.SEPARATOR | SWT.HORIZONTAL)).setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 	}
-	
-	
+
+
 	/**
 	 * Called to ask the reciever to create its UI representation.
 	 * The parent will be a Composite with a GridLayout.
@@ -230,7 +286,7 @@ implements IWorkbenchPreferencePage
 	 * @param parent The Composite to wich the Controls should be edited.
 	 */
 	protected abstract void createPreferencePage(Composite parent);
-	
+
 	/**
 	 * Will be called when the UI has to be updated with values of 
 	 * a new ConfigModule.
@@ -238,7 +294,7 @@ implements IWorkbenchPreferencePage
 	 * @param configModule The currently edited ConfigModule
 	 */
 	protected abstract void updatePreferencePage(ConfigModule configModule);
-	
+
 	/**
 	 * Will be called to determine whether the given ConfigModule is allowed
 	 * to be edited. The default implementation will return false only when
@@ -254,7 +310,7 @@ implements IWorkbenchPreferencePage
 	protected boolean canEdit(ConfigModule configModule) {
 		return configModule.isGroupAllowOverwrite();
 	}
-	
+
 	/**
 	 * Should change the GUI to either an editable
 	 * or an read-only version of the view of the current ConfigModule.
@@ -265,8 +321,8 @@ implements IWorkbenchPreferencePage
 	protected void setEditable(boolean editable) {
 		setEditable(wrapper, editable);
 	}
-	
-	
+
+
 	/**
 	 * Private helper, recursively sets enabled of
 	 * all Buttons in the preference-page to the given
@@ -282,28 +338,33 @@ implements IWorkbenchPreferencePage
 			}
 		}
 	}
-	
+
+	/**
+	 * Sets the given config module and updates the gui to display it.
+	 *  
+	 * @param configModule The {@link ConfigModule} to set and display.
+	 */
 	public void updatePreferencesGUI(ConfigModule configModule) {
 		updatePreferencePage(configModule);
 		setEditable(canEdit(configModule));
 		if (doCreateConfigGroupHeader)
 			checkBoxAllowOverwrite.setSelection(configModule.isAllowOverride());		
 	}
-	
+
 	/**
 	 * Will be called to update the ConfigModule from the UI.
 	 * 
 	 * @param configModule
 	 */
 	public abstract void updateConfigModule(ConfigModule configModule);
-	
+
 	/**
 	 * Returns the ConfigModule class this PreferencePage does edit.
 	 * 
 	 * @return The ConfigModule class this PreferencePage does edit.
 	 */
 	public abstract Class getConfigModuleClass();
-	
+
 	/**
 	 * Should return the cfModID of the ConfigModule this preference page
 	 * does edit. This method is intended to be overridden. The default 
@@ -314,7 +375,7 @@ implements IWorkbenchPreferencePage
 	public String getConfigModuleCfModID() {
 		return null;
 	}
-	
+
 	/**
 	 * Returns fetch-groups containing FetchPlan.ALL. Intented to be overridden
 	 * by subclasses to detach ConfigModules with custom fetchgroups.
@@ -347,7 +408,7 @@ implements IWorkbenchPreferencePage
 	public boolean okToLeave() {
 		return super.okToLeave();
 	}
-	
+
 	/**
 	 * Calls implementors to {@link #updateConfigModule(ConfigModule)} and
 	 * stores the updatedConfig module to the server.
@@ -366,7 +427,7 @@ implements IWorkbenchPreferencePage
 		if (checkBoxAllowOverwrite != null)
 			allowOverwrite = checkBoxAllowOverwrite.getSelection();
 		getCurrentConfigModule().setAllowUserOverride(allowOverwrite);
-		
+
 		try {
 			currentConfigModule = configManager.storeConfigModule(
 					getCurrentConfigModule(), true, getConfigModuleFetchGroups(), NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
@@ -374,13 +435,13 @@ implements IWorkbenchPreferencePage
 			throw new RuntimeException(e);
 		}
 	}
-	
+
 	/**
 	 * When called all widgets created in {@link #createPreferencePage(Composite)}
 	 * should be discarded (nulled).
 	 */
 	protected abstract void discardPreferencePageWidgets();
-	
+
 	public void discardWidgets() {
 		wrapper = null;
 		checkBoxAllowOverwrite = null;
@@ -399,50 +460,46 @@ implements IWorkbenchPreferencePage
 	protected void updateApplyButton() {
 		super.updateApplyButton();
 	}
-	
-	
+
+
 	private List configChangedListeners = new ArrayList();
-	
+
 	/**
-   * Call this when you modified the entity object.
-   *
-   */
-  public void notifyConfigChangedListeners()
-  {
-  	Iterator i = configChangedListeners.iterator();
-  	while(i.hasNext())
-  		((ConfigPreferenceChangedListener)i.next()).configPreferenceChanged(this);
-  }
+	 * Call this when you modified the entity object.
+	 *
+	 */
+	public void notifyConfigChangedListeners()
+	{
+		Iterator i = configChangedListeners.iterator();
+		while(i.hasNext())
+			((ConfigPreferenceChangedListener)i.next()).configPreferenceChanged(this);
+	}
 
-  /**
-   * Listen for modifications of the entity object
-   * @param listener your listener
-   */
-  public void addConfigPreferenceChangedListener(ConfigPreferenceChangedListener listener)
-  {
-  	if(!configChangedListeners.contains(listener))
-  		configChangedListeners.add(listener);
-  }
+	/**
+	 * Listen for modifications of the entity object
+	 * @param listener your listener
+	 */
+	public void addConfigPreferenceChangedListener(ConfigPreferenceChangedListener listener)
+	{
+		if(!configChangedListeners.contains(listener))
+			configChangedListeners.add(listener);
+	}
 
-  /**
-   * Remove a listener
-   * @param listener the listener
-   */
-  public void removeDataChangedListener(ConfigPreferenceChangedListener listener)
-  {
-  	if(configChangedListeners.contains(listener))
-  		configChangedListeners.remove(listener);
-  }
+	/**
+	 * Remove a listener
+	 * @param listener the listener
+	 */
+	public void removeDataChangedListener(ConfigPreferenceChangedListener listener)
+	{
+		if(configChangedListeners.contains(listener))
+			configChangedListeners.remove(listener);
+	}
 
 	public void dispose() {
-  	configChangedListeners.clear();
+		configChangedListeners.clear();
 		super.dispose();
 	}
-	
-//	public void setCurrentConfigID(ConfigID currentConfigID) {
-//		this.currentConfigID = currentConfigID;
-//	}
-	
+
 	public void setCurrentConfigID(ConfigID currentConfigID, boolean retrieveNewConfigModule) {
 		this.currentConfigID = currentConfigID;
 		if (retrieveNewConfigModule) 
