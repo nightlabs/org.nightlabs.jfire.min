@@ -1137,7 +1137,9 @@ public class JFireServerManagerFactoryImpl
 					}
 
 
-					// populating essential data (Server, Organisation, User etc.) via OrganisationManagerBean
+					// populating essential data (Server, Organisation, User etc.) via OrganisationManagerBean.
+					// we cannot reference the classes directly, because the project JFireBaseBean is dependent on JFireServerManager.
+					// therefore, we reference it via the names.
 					ServerCf localServerCf = mcf.getConfigModule().getLocalServer();
 					Properties props = InvokeUtil.getInitialContextProperties(
 							this, localServerCf, organisationID, User.USERID_SYSTEM,
