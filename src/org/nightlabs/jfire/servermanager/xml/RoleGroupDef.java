@@ -50,6 +50,8 @@ import org.nightlabs.jfire.security.id.RoleGroupID;
  */
 public class RoleGroupDef implements Serializable, Comparable
 {
+	private static final long serialVersionUID = 1L;
+
 	private EJBRoleGroupMan owner;
 	
 	private String roleGroupID;
@@ -58,13 +60,13 @@ public class RoleGroupDef implements Serializable, Comparable
 	 * key: String languageID<br/>
 	 * value: String name
 	 */
-	private Map names = new HashMap();
+	private Map<String, String> names = new HashMap<String, String>();
 
 	/**
 	 * key: String languageID<br/>
 	 * value: String description
 	 */
-	private Map descriptions = new HashMap();
+	private Map<String, String> descriptions = new HashMap<String, String>();
 
 	private boolean defaultGroup;
 
@@ -72,13 +74,13 @@ public class RoleGroupDef implements Serializable, Comparable
 	 * key: String roleGroupID<br/>
 	 * value: RoleGroupDef roleGroup
 	 */
-	protected Map includedRoleGroups = new HashMap();
+	protected Map<String, RoleGroupDef> includedRoleGroups = new HashMap<String, RoleGroupDef>();
 
 	/**
 	 * key: String roleID<br/>
 	 * value: RoleDef roleDef
 	 */
-	protected Map roles = new HashMap();
+	protected Map<String, RoleDef> roles = new HashMap<String, RoleDef>();
 
 	public RoleGroupDef(EJBRoleGroupMan owner) { }
 
@@ -196,7 +198,12 @@ public class RoleGroupDef implements Serializable, Comparable
 		}
 		return roleGroupDef;
 	}
-	
+
+	protected RoleDef removeRole(String roleID)
+	{
+		return (RoleDef) roles.remove(roleID);
+	}
+
 	protected void addRole(RoleDef roleDef)
 	{
 		roles.put(roleDef.getRoleID(), roleDef);
@@ -227,7 +234,7 @@ public class RoleGroupDef implements Serializable, Comparable
 	 *
 	 * @return A Collection with instances of type RoleDef.
 	 */
-	public Collection getDefaultRoles()
+	public Collection<RoleDef> getDefaultRoles()
 	{
 		if (!defaultGroup)
 			return EMPTYLIST;
@@ -241,12 +248,12 @@ public class RoleGroupDef implements Serializable, Comparable
 	 * @return Returns all roles as instances of RoleDef including the ones that 
 	 *   are indirectly included by includedRoleGroups or default roles.
 	 */
-	public Collection getAllRoles()
+	public Collection<RoleDef> getAllRoles()
 	{
 		if (includedRoleGroups.isEmpty() && !defaultGroup)
 			return roles.values();
 
-		Collection res = new HashSet(roles.values());
+		Collection<RoleDef> res = new HashSet<RoleDef>(roles.values());
 
 		// TODO: Circular reference detection in includes!!!
 		for (Iterator it = includedRoleGroups.entrySet().iterator(); it.hasNext(); ) {

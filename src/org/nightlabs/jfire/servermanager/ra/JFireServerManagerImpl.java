@@ -300,7 +300,6 @@ public class JFireServerManagerImpl
 	 * @see org.nightlabs.jfire.servermanager.JFireServerManager#roleImport_commit(org.nightlabs.jfire.servermanager.RoleImportSet)
 	 */
 	public void roleImport_commit(RoleImportSet roleImportSet)
-		throws ModuleException
 	{
 		assertOpen();
 		jfireServerManagerFactoryImpl.roleImport_commit(roleImportSet, null);
@@ -393,6 +392,9 @@ public class JFireServerManagerImpl
 				// add roles needed for setup
 				roleSet.addMember(new SimplePrincipal("_Guest_")); // EVERYONE has this role!
 				roleSet.addMember(new SimplePrincipal("_ServerAdmin_"));
+
+				if (User.USERID_SYSTEM.equals(userID))
+					roleSet.addMember(new SimplePrincipal(User.USERID_SYSTEM));
 
 				// setup mode login, create principal
 				this.principal = new JFirePrincipal(

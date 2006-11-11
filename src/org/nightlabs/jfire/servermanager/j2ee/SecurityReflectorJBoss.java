@@ -26,6 +26,7 @@
 
 package org.nightlabs.jfire.servermanager.j2ee;
 
+import java.security.Principal;
 import java.util.Properties;
 
 import javax.naming.InitialContext;
@@ -45,7 +46,11 @@ public class SecurityReflectorJBoss extends SecurityReflector
 
 	public UserDescriptor _getUserDescriptor()
 	{
-		String principalName = SecurityAssociation.getPrincipal().getName();
+		Principal principal = SecurityAssociation.getPrincipal();
+		if (principal == null)
+			throw new IllegalStateException("SecurityAssociation.getPrincipal() returned null! It seems, there is no user authenticated!");
+
+		String principalName = principal.getName();
 		return UserDescriptor.parseLogin(principalName);
 //		String[] parts = JFireServerLoginModule.SPLIT_USERNAME_PATTERN.split(principalName);
 //		if (parts.length != 2 && parts.length != 3)

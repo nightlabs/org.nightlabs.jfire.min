@@ -57,12 +57,18 @@ public class AuthCallbackHandler implements CallbackHandler
 	public AuthCallbackHandler(JFireServerManager ism,
 			String organisationID, String userID, String sessionID)
 	{
-		this.organisationID = organisationID;
-		this.userID = userID;
-		this.sessionID = sessionID;
+		this(
+				organisationID, userID, sessionID,
+				ism.jfireSecurity_createTempUserPassword(organisationID, userID).toCharArray());
+	}
+
+	public AuthCallbackHandler(String _organisationID, String _userID, String _sessionID, char[] password)
+	{
+		this.organisationID = _organisationID;
+		this.userID = _userID;
+		this.sessionID = _sessionID;
 		this.userName = userID + '@' + organisationID + '/' + sessionID;
-		this.password = ism.jfireSecurity_createTempUserPassword(
-				organisationID, userID).toCharArray();
+		this.password = password;
 	}
 
 	/**

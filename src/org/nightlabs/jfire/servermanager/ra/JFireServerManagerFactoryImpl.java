@@ -36,6 +36,7 @@ import java.io.InputStream;
 import java.io.StreamTokenizer;
 import java.lang.ref.SoftReference;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -43,6 +44,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -71,6 +73,7 @@ import org.nightlabs.ModuleException;
 import org.nightlabs.config.Config;
 import org.nightlabs.config.ConfigException;
 import org.nightlabs.jdo.ObjectIDUtil;
+import org.nightlabs.jfire.base.InvokeUtil;
 import org.nightlabs.jfire.base.JFireBasePrincipal;
 import org.nightlabs.jfire.base.JFirePrincipal;
 import org.nightlabs.jfire.base.JFireServerLocalLoginManager;
@@ -91,7 +94,6 @@ import org.nightlabs.jfire.security.Authority;
 import org.nightlabs.jfire.security.AuthorityType;
 import org.nightlabs.jfire.security.Role;
 import org.nightlabs.jfire.security.RoleGroup;
-import org.nightlabs.jfire.security.RoleGroupRef;
 import org.nightlabs.jfire.security.RoleRef;
 import org.nightlabs.jfire.security.RoleSet;
 import org.nightlabs.jfire.security.SecurityReflector;
@@ -102,7 +104,6 @@ import org.nightlabs.jfire.security.id.AuthorityTypeID;
 import org.nightlabs.jfire.security.id.UserRefID;
 import org.nightlabs.jfire.security.registry.SecurityRegistrar;
 import org.nightlabs.jfire.security.registry.SecurityRegistrarFactoryImpl;
-import org.nightlabs.jfire.server.LocalServer;
 import org.nightlabs.jfire.server.Server;
 import org.nightlabs.jfire.serverconfigurator.ServerConfigurator;
 import org.nightlabs.jfire.serverinit.ServerInitializer;
@@ -797,6 +798,8 @@ public class JFireServerManagerFactoryImpl
 		Map exceptions = new HashMap(); // key: File jar; value: Throwable exception
 		roleImport_prepare_collect(startDir, globalEJBRoleGroupMan, exceptions);
 
+		globalEJBRoleGroupMan.removeRole(User.USERID_SYSTEM); // the _System_ role should never be imported so that no real user can ever get this role!
+
 		return new RoleImportSet(organisationID, globalEJBRoleGroupMan, exceptions);
 	}
 	
@@ -920,49 +923,54 @@ public class JFireServerManagerFactoryImpl
 		globalEJBRoleGroupMan.mergeRoleGroupMan(ejbRoleGroupMan);
 	}
 
+	private transient Object roleImport_commit_mutex = new Object();
+
 	/**
 	 * @param roleImportSet
 	 * @param pm can be <tt>null</tt>. If <tt>null</tt>, it will be obtained according to <tt>roleImportSet.getOrganisationID()</tt>.
 	 * @throws ModuleException
 	 */
-	protected synchronized void roleImport_commit(RoleImportSet roleImportSet, PersistenceManager pm)
-		throws ModuleException
+	protected void roleImport_commit(RoleImportSet roleImportSet, PersistenceManager pm)
 	{
-		if (roleImportSet.getOrganisationID() == null)
-			throw new IllegalArgumentException("roleImportSet.organisationID is null! Use roleImport_prepare(...) to generate a roleImportSet!");
-		EJBRoleGroupMan roleGroupMan = roleImportSet.getEjbRoleGroupMan();
-		
-		if (!roleImportSet.getJarExceptions().isEmpty())
-			logger.warn("roleImportSet.jarExceptions is not empty! You should execute roleImportSet.clearJarExceptions()!", new ModuleException("roleImportSet.jarExceptions is not empty."));
+		synchronized (roleImport_commit_mutex) {
+			if (roleImportSet.getOrganisationID() == null)
+				throw new IllegalArgumentException("roleImportSet.organisationID is null! Use roleImport_prepare(...) to generate a roleImportSet!");
+			EJBRoleGroupMan roleGroupMan = roleImportSet.getEjbRoleGroupMan();
 
-		boolean localPM = pm == null;
+			if (!roleImportSet.getJarExceptions().isEmpty())
+				logger.warn("roleImportSet.jarExceptions is not empty! You should execute roleImportSet.clearJarExceptions()!", new ModuleException("roleImportSet.jarExceptions is not empty."));
 
-		if (localPM)
-			pm = getPersistenceManager(roleImportSet.getOrganisationID());
-		try {
-			if (!localPM) {
-				// check whether PM datastore matches organisationID
-				String datastoreOrgaID = LocalOrganisation.getLocalOrganisation(pm).getOrganisationID();
-				if (!datastoreOrgaID.equals(roleImportSet.getOrganisationID()))
-					throw new IllegalArgumentException("Parameter pm does not match organisationID of given roleImportSet!");
-			}
+			boolean localPM = pm == null;
 
-			pm.getExtent(AuthorityType.class);
-			AuthorityType authorityType = (AuthorityType) pm.getObjectById(AuthorityTypeID.create(roleImportSet.getOrganisationID(), AuthorityType.AUTHORITY_TYPE_ID_SYSTEM));
-
-			pm.getExtent(RoleGroup.class, true);
-
-			for (Iterator itRoleGroups = roleGroupMan.getRoleGroups().iterator(); itRoleGroups.hasNext(); ) {
-				RoleGroupDef roleGroupDef = (RoleGroupDef)itRoleGroups.next();
-				RoleGroup roleGroupJDO = roleGroupDef.createRoleGroup(pm);
-				authorityType.addRoleGroup(roleGroupJDO);
-			} // for (Iterator itRoleGroups = roleGroupMan.getRoleGroups().iterator(); itRoleGroups.hasNext(); ) {
-
-		} finally {
 			if (localPM)
-				pm.close();
+				pm = getPersistenceManager(roleImportSet.getOrganisationID());
+			try {
+				if (!localPM) {
+					// check whether PM datastore matches organisationID
+					String datastoreOrgaID = LocalOrganisation.getLocalOrganisation(pm).getOrganisationID();
+					if (!datastoreOrgaID.equals(roleImportSet.getOrganisationID()))
+						throw new IllegalArgumentException("Parameter pm does not match organisationID of given roleImportSet!");
+				}
+
+				pm.getExtent(AuthorityType.class);
+				AuthorityType authorityType = (AuthorityType) pm.getObjectById(AuthorityTypeID.create(roleImportSet.getOrganisationID(), AuthorityType.AUTHORITY_TYPE_ID_SYSTEM));
+
+				pm.getExtent(RoleGroup.class, true);
+
+				for (Iterator itRoleGroups = roleGroupMan.getRoleGroups().iterator(); itRoleGroups.hasNext(); ) {
+					RoleGroupDef roleGroupDef = (RoleGroupDef)itRoleGroups.next();
+					RoleGroup roleGroupJDO = roleGroupDef.createRoleGroup(pm);
+					authorityType.addRoleGroup(roleGroupJDO);
+				} // for (Iterator itRoleGroups = roleGroupMan.getRoleGroups().iterator(); itRoleGroups.hasNext(); ) {
+
+			} finally {
+				if (localPM)
+					pm.close();
+			}
 		}
 	}
+
+	private transient Object createOrganisation_mutex = new Object();
 
 	/**
 	 * This method either creates an organisation.
@@ -979,7 +987,7 @@ public class JFireServerManagerFactoryImpl
 //			) 
 		throws ModuleException
 	{
-		synchronized (this) {
+		synchronized (createOrganisation_mutex) {
 			
 			try {
 			
@@ -1021,10 +1029,10 @@ public class JFireServerManagerFactoryImpl
 					throw new IllegalArgumentException("userID has "+userID.length()+" chars and is too long! Maximum is 50 characters.");
 
 				if (password == null)
-					throw new IllegalArgumentException("userID is not null, thus password must NOT be null either to create a real (non-representative) organisation.");
-	
-				if ("".equals(password))
-					throw new IllegalArgumentException("password must not be an empty string!");
+					throw new IllegalArgumentException("password must NOT be null!");
+
+				if (password.length() < 5)
+					throw new IllegalArgumentException("password is too short! At least 5 characters are required!");
 
 				if (isNewServerNeedingSetup())
 					throw new IllegalStateException("This server is not yet set up! Please complete the basic setup before creating organisations!");
@@ -1042,15 +1050,15 @@ public class JFireServerManagerFactoryImpl
 					throw new DuplicateOrganisationException("An organisation with the name \""+organisationID+"\" already exists!");
 		
 				boolean creatingFirstOrganisation = isOrganisationCfsEmpty();
-				
+
 				InitialContext ctx = new InitialContext();
-				TransactionManager transactionManager = getJ2EEVendorAdapter().getTransactionManager(ctx);
+//				TransactionManager transactionManager = getJ2EEVendorAdapter().getTransactionManager(ctx);
 				File jdoConfigDir = null;
 				DatabaseAdapter databaseAdapter = null;
 				boolean dropDatabase = false; // will be set true, AFTER the databaseAdapter has really created the database - this prevents a database to be dropped that was already previously existing
 				OrganisationCf organisationCf = null;
 				boolean doCommit = false;
-				transactionManager.begin();
+//				transactionManager.begin();
 		    try {
 
 					JFireServerConfigModule.Database dbCf = mcf.getConfigModule().getDatabase();
@@ -1121,107 +1129,43 @@ public class JFireServerManagerFactoryImpl
 						}
 						logger.info("PersistenceManagerFactory of organisation \""+organisationID+"\" (\""+organisationName+"\") has been deployed.");
 
-
-						// Create the basic jdo objects:
-						//		- LocalServer
-						//		- LocalOrganisation
-						//		- Authority "_Organisation_"
-						//		- User user
-						//		- User "_Other_"
-						//		- UserRef "_Organisation_"+"_Other_"
-						//		- UserRef "_Organisation_"+user
-
-						if(logger.isDebugEnabled())
-							logger.debug("Creating JDO object LocalServer...");
-						Server server = mcf.getConfigModule().getLocalServer().createServer(pm);
-						LocalServer localServer = new LocalServer(server);
-						pm.makePersistent(localServer);
-						if(logger.isDebugEnabled())
-							logger.debug("pm.makePersistent(localServer) done.");
-			
-						if(logger.isDebugEnabled())
-							logger.debug("Creating JDO object LocalOrganisation...");
-						Organisation organisation = organisationCf.createOrganisation(pm, server);
-						LocalOrganisation localOrganisation = new LocalOrganisation(organisation);
-						pm.makePersistent(localOrganisation);
-						if(logger.isDebugEnabled())
-							logger.debug("pm.makePersistent(localOrganisation) done.");
-
-						if(logger.isDebugEnabled())
-							logger.debug("Creating JDO object AuthorityType with ID \""+AuthorityType.AUTHORITY_TYPE_ID_SYSTEM+"\"...");
-						AuthorityType authorityType = new AuthorityType(organisationID, AuthorityType.AUTHORITY_TYPE_ID_SYSTEM);
-						pm.makePersistent(authorityType);
-						if(logger.isDebugEnabled())
-							logger.debug("pm.makePersistent(authorityType) done.");
-
-						if(logger.isDebugEnabled())
-							logger.debug("Creating JDO object Authority with ID \""+Authority.AUTHORITY_ID_ORGANISATION+"\"...");
-						Authority authority = new Authority(organisationID, Authority.AUTHORITY_ID_ORGANISATION, authorityType);
-						pm.makePersistent(authority);
-						if(logger.isDebugEnabled())
-							logger.debug("pm.makePersistent(authority) done.");
-
-						if(logger.isDebugEnabled())
-							logger.debug("Creating JDO object User with ID \""+User.USERID_OTHER+"\"...");
-						User otherUser = new User(organisationID, User.USERID_OTHER);
-						new UserLocal(otherUser);
-						pm.makePersistent(otherUser);
-						if(logger.isDebugEnabled())
-							logger.debug("pm.makePersistent(otherUser) done.");
-
-						if(logger.isDebugEnabled())
-							logger.debug("Creating JDO object User with ID \""+userID+"\"...");
-						User user = new User(organisationID, userID);
-						UserLocal userLocal = new UserLocal(user);
-						userLocal.setPasswordPlain(password);
-						pm.makePersistent(user);
-						if(logger.isDebugEnabled())
-							logger.debug("pm.makePersistent(user) done.");
-
-						if(logger.isDebugEnabled())
-							logger.debug("Creating instances of UserRef for both Users within the default authority...");
-						authority.createUserRef(otherUser);
-						UserRef userRef = authority.createUserRef(user);
-						if(logger.isDebugEnabled())
-							logger.debug("Creating instances of UserRef for both Users within the default authority done.");
-
-						// import all roles
-						if(logger.isDebugEnabled())
-							logger.debug("Importing all roles and role groups...");
-						RoleImportSet roleImportSet = roleImport_prepare(organisationID);
-						roleImport_commit(roleImportSet, pm);
-						if(logger.isDebugEnabled())
-							logger.debug("Import of roles and role groups done.");
-
-						// Give the user all RoleGroups.
-						if(logger.isDebugEnabled())
-							logger.debug("Assign all RoleGroups to the user \""+userID+"\"...");
-						for (Iterator it = pm.getExtent(RoleGroup.class).iterator(); it.hasNext(); ) {
-							RoleGroup roleGroup = (RoleGroup)it.next();
-							RoleGroupRef roleGroupRef = authority.createRoleGroupRef(roleGroup);
-							userRef.addRoleGroupRef(roleGroupRef);
-						}
-						if(logger.isDebugEnabled())
-							logger.debug("Assigning all RoleGroups to user \""+userID+"\" done.");
-						
-						// create system user
-						if(logger.isDebugEnabled())
-							logger.debug("Creating system user...");
-						User systemUser = new User(organisationID, User.USERID_SYSTEM);
-						new UserLocal(systemUser);
-						pm.makePersistent(systemUser);
-						if(logger.isDebugEnabled())
-							logger.debug("System user created.");
-			
-						// Because flushing the authentication cache causes trouble to currently logged in
-						// clients, we only do that if we are creating the first organisation of a new server.
-						if (creatingFirstOrganisation)
-							j2ee_flushAuthenticationCache();
-			
 					} finally {
-						if (pm != null)
+						if (pm != null) {
 							pm.close();
+							pm = null;
+						}
 					}
+
+
+					// populating essential data (Server, Organisation, User etc.) via OrganisationManagerBean
+					ServerCf localServerCf = mcf.getConfigModule().getLocalServer();
+					Properties props = InvokeUtil.getInitialContextProperties(
+							this, localServerCf, organisationID, User.USERID_SYSTEM,
+							jfireSecurity_createTempUserPassword(organisationID, User.USERID_SYSTEM));
+					InitialContext authInitCtx = new InitialContext(props);
+					try {
+						Object bean = InvokeUtil.createBean(authInitCtx, "jfire/ejb/JFireBaseBean/OrganisationManager");
+						Method beanMethod = bean.getClass().getMethod(
+								"internalInitializeEmptyOrganisation",
+								new Class[] { ServerCf.class, OrganisationCf.class, String.class, String.class }
+								);
+						beanMethod.invoke(bean, new Object[] { localServerCf, organisationCf, userID, password});
+						InvokeUtil.removeBean(bean);
+					} finally {
+						authInitCtx.close();
+					}
+
+					// there has been a role import, hence we need to flush the cache
+					// (actually, it would be sufficient to flush it for the new organisation only, but there's no API yet and this doesn't harm)
+					jfireSecurity_flushCache();
+
+					// Because flushing the authentication cache causes trouble to currently logged in
+					// clients, we only do that if we are creating the first organisation of a new server.
+					// ***
+					// it seems, the problem described above doesn't exist anymore. but in case it pops up again,
+					// we need to uncomment the following line again
+//					if (creatingFirstOrganisation)
+					j2ee_flushAuthenticationCache();
 
 					// create the CacheManagerFactory for the new organisation
 					try {
@@ -1240,14 +1184,15 @@ public class JFireServerManagerFactoryImpl
 
 					doCommit = true;
 		    } finally {
-		    	if (doCommit)
-		    		transactionManager.commit();
+		    	if (doCommit) {
+//		    		transactionManager.commit();
+		    	}
 		    	else {
-		    		try {
-		    			transactionManager.rollback();
-		    		} catch (Throwable t) {
-		    			logger.error("Rolling back transaction failed!", t);
-		    		}
+//		    		try {
+//		    			transactionManager.rollback();
+//		    		} catch (Throwable t) {
+//		    			logger.error("Rolling back transaction failed!", t);
+//		    		}
 
 		    		// We drop the database after rollback(), because it might be the case that JDO tries to do sth. with
 		    		// the database during rollback.
@@ -1278,7 +1223,7 @@ public class JFireServerManagerFactoryImpl
 		    			}
 		    		}
 		    	}
-		    }
+		    } // } finally {
 
 			} catch (RuntimeException x) {
 				throw x;
@@ -1829,7 +1774,6 @@ public class JFireServerManagerFactoryImpl
 	}
 
 	public static PersistenceManagerFactory getPersistenceManagerFactory(String organisationID)
-	throws ModuleException
 	{
 		PersistenceManagerFactory pmf;
 		try {
@@ -1841,25 +1785,12 @@ public class JFireServerManagerFactoryImpl
 				initCtx.close();
 			}
 		} catch (NamingException e) {
-			throw new ModuleException(e);
+			throw new RuntimeException(e);
 		}
 		return pmf;
-//		OrganisationCf org = getOrganisationConfig(organisationID);
-//		String persistenceManagerJNDIName = org.getPersistenceManagerFactoryJNDIName();
-//		try {
-//			InitialContext initCtx = new InitialContext();
-//			try {
-//				return (PersistenceManagerFactory)initCtx.lookup(persistenceManagerJNDIName);
-//			} finally {
-//				initCtx.close();
-//			}
-//		} catch (NamingException e) {
-//			throw new ModuleException(e);
-//		}
 	}
 
 	public PersistenceManager getPersistenceManager(String organisationID)
-	throws ModuleException
 	{
 		PersistenceManagerFactory pmf = getPersistenceManagerFactory(organisationID);
 		PersistenceManager pm = pmf.getPersistenceManager();
@@ -1942,36 +1873,40 @@ public class JFireServerManagerFactoryImpl
 	 * key: String userName(userID@organisationID)<br/>
 	 * value: String password
 	 */
-	protected Map jfireSecurity_tempUserPasswords = new HashMap();
+	private Map<String, String> jfireSecurity_tempUserPasswords = new HashMap<String, String>();
 
 	protected boolean jfireSecurity_checkTempUserPassword(String organisationID, String userID, String password)
 	{
-		String pw = (String) jfireSecurity_tempUserPasswords.get(userID + '@' + organisationID);
-		if (pw == null)
-			return false;
-
+		String pw;
+		synchronized(jfireSecurity_tempUserPasswords) {
+			pw = jfireSecurity_tempUserPasswords.get(userID + '@' + organisationID);
+			if (pw == null)
+				return false;
+		}
 		return pw.equals(password);
 	}
 
 	protected String jfireSecurity_createTempUserPassword(String organisationID, String userID)
 	{
-		String pw = (String) jfireSecurity_tempUserPasswords.get(userID + '@' + organisationID);
-		if (pw == null) {
-			pw = UserLocal.generatePassword(8, 16);
-			jfireSecurity_tempUserPasswords.put(userID + '@' + organisationID, pw);
+		synchronized(jfireSecurity_tempUserPasswords) {
+			String pw = (String) jfireSecurity_tempUserPasswords.get(userID + '@' + organisationID);
+			if (pw == null) {
+				pw = UserLocal.generatePassword(8, 16);
+				jfireSecurity_tempUserPasswords.put(userID + '@' + organisationID, pw);
+			}
+			return pw;
 		}
-		return pw;
 	}
 
 	/**
 	 * This Map caches all the roles for all the users. It does NOT expire, because
-	 * it relies on that jfireAuth_flushCache is executed whenever access rights
-	 * change!
+	 * it relies on that {@link #jfireSecurity_flushCache()} or {@link #jfireSecurity_flushCache(String, String)}
+	 * is executed whenever access rights change!
 	 *
 	 * key: String userID + @ + organisationID<br/>
 	 * value: SoftReference of RoleSet roleSet
 	 */
-	protected Map jfireSecurity_roleCache = new HashMap();
+	protected Map<String, SoftReference<RoleSet>> jfireSecurity_roleCache = new HashMap<String, SoftReference<RoleSet>>();
 
 	protected void jfireSecurity_flushCache(String organisationID, String userID)
 	{
@@ -2004,9 +1939,9 @@ public class JFireServerManagerFactoryImpl
 			RoleSet roleSet = null;
 			// lookup in cache.
 			synchronized (jfireSecurity_roleCache) {
-				SoftReference ref = (SoftReference)jfireSecurity_roleCache.get(userPK);
+				SoftReference<RoleSet> ref = jfireSecurity_roleCache.get(userPK);
 				if (ref != null)
-					roleSet = (RoleSet)ref.get();
+					roleSet = ref.get();
 			}
 
 			if (roleSet != null)
@@ -2015,8 +1950,7 @@ public class JFireServerManagerFactoryImpl
 			roleSet = new RoleSet();
 
 			roleSet.addMember(new SimplePrincipal("_Guest_")); // EVERYONE has this role!
-	
-			
+
 //					boolean doCommit = false;
 //					TransactionManager tx = lookup.getTransactionManager();
 //					boolean handleTx = tx.getStatus() == Status.STATUS_NO_TRANSACTION;
@@ -2028,6 +1962,7 @@ public class JFireServerManagerFactoryImpl
 				if (User.USERID_SYSTEM.equals(userID)) {
 					// user is system user and needs ALL roles
 					roleSet.addMember(new SimplePrincipal("_ServerAdmin_"));
+					roleSet.addMember(new SimplePrincipal(User.USERID_SYSTEM)); // ONLY the system user has this role - no real user can get it as its virtual (it is ignored during import)
 					for (Iterator it = pm.getExtent(Role.class, true).iterator(); it.hasNext(); ) {
 						Role role = (Role) it.next();
 						roleSet.addMember(new SimplePrincipal(role.getRoleID()));

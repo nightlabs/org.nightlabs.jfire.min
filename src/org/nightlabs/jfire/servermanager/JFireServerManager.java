@@ -133,9 +133,8 @@ public interface JFireServerManager
 	
 	public RoleImportSet roleImport_prepare(String organisationID);
 
-	public void roleImport_commit(RoleImportSet roleImportSet)
-		throws ModuleException;
-	
+	public void roleImport_commit(RoleImportSet roleImportSet);
+
 	/**
 	 * This method flushes the authentication cache of the j2ee server.
 	 * Note, that this may cause problems! You should better avoid calling this method.

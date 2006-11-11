@@ -37,6 +37,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.nightlabs.xml.DOMParser;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -45,8 +46,6 @@ import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
-
-import org.nightlabs.xml.DOMParser;
 
 /**
  * @author marco
@@ -64,8 +63,8 @@ public class EJBRoleGroupMan implements Serializable
 	 * key: String roleGroupID<br/>
 	 * value: RoleGroup roleGroup
 	 */
-	protected Map roleGroups = new HashMap();
-	
+	protected Map<String, RoleGroupDef> roleGroups = new HashMap<String, RoleGroupDef>();
+
 	/**
 	 * key: String roleID<br/>
 	 * value: RoleDef role
@@ -75,7 +74,7 @@ public class EJBRoleGroupMan implements Serializable
 	 * are in the default group or if there is no ejbJarMan (in global usage).
 	 * 
 	 */
-	protected Map roles = new HashMap();
+	protected Map<String, RoleDef> roles = new HashMap<String, RoleDef>();
 
 	protected String defaultGroupID = null;
 	
@@ -331,9 +330,9 @@ public class EJBRoleGroupMan implements Serializable
 	 * 
 	 * @return A Collection with instances of type RoleDef.
 	 */
-	public Collection getRolesInDefaultGroup()
+	public Collection<RoleDef> getRolesInDefaultGroup()
 	{
-		Set _roles = new HashSet();
+		Set<RoleDef> _roles = new HashSet<RoleDef>();
 
 		if (ejbJarMan != null) {
 			for (Iterator it = ejbJarMan.getRoles().iterator(); it.hasNext(); ) {
@@ -344,6 +343,14 @@ public class EJBRoleGroupMan implements Serializable
 		}
 
 		return _roles;
+	}
+
+	public void removeRole(String roleID)
+	{
+		if (roles.remove(roleID) != null) {
+			for (RoleGroupDef roleGroup : roleGroups.values())
+				roleGroup.removeRole(roleID);
+		}
 	}
 
 }

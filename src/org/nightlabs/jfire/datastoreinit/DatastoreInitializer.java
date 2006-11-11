@@ -34,7 +34,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -43,12 +42,11 @@ import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-import javax.ejb.EJBLocalObject;
-import javax.ejb.EJBObject;
 import javax.naming.InitialContext;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.ModuleException;
+import org.nightlabs.jfire.base.InvokeUtil;
 import org.nightlabs.jfire.datastoreinit.xml.DatastoreInitMan;
 import org.nightlabs.jfire.datastoreinit.xml.Dependency;
 import org.nightlabs.jfire.datastoreinit.xml.Init;
@@ -245,40 +243,42 @@ public class DatastoreInitializer
 		throws ModuleException
 	{
 		try {
-			String username = User.USERID_SYSTEM + '@' + organisationID;
+//			String username = User.USERID_SYSTEM + '@' + organisationID;
 	
-			Hashtable props = new Properties();
-			String initialContextFactory = ismf.getInitialContextFactory(localServer.getJ2eeServerType(), true);
-			props.put(InitialContext.INITIAL_CONTEXT_FACTORY, initialContextFactory);
-			props.put(InitialContext.PROVIDER_URL, localServer.getInitialContextURL());
-			props.put(InitialContext.SECURITY_PRINCIPAL, username);
-			props.put(InitialContext.SECURITY_CREDENTIALS, systemUserPassword);
-			props.put(InitialContext.SECURITY_PROTOCOL, "jfire");
+//			Properties props = new Properties();
+//			String initialContextFactory = ismf.getInitialContextFactory(localServer.getJ2eeServerType(), true);
+//			props.put(InitialContext.INITIAL_CONTEXT_FACTORY, initialContextFactory);
+//			props.put(InitialContext.PROVIDER_URL, localServer.getInitialContextURL());
+//			props.put(InitialContext.SECURITY_PRINCIPAL, username);
+//			props.put(InitialContext.SECURITY_CREDENTIALS, systemUserPassword);
+//			props.put(InitialContext.SECURITY_PROTOCOL, "jfire");
 
+			Properties props = InvokeUtil.getInitialContextProperties(ismf, localServer, organisationID, User.USERID_SYSTEM, systemUserPassword);
 			InitialContext initCtx = new InitialContext(props);
 			try {
 				for (Iterator it = inits.iterator(); it.hasNext(); ) {
 					Init init = (Init)it.next();
 					logger.info("Invoking DatastoreInit: " + init.getDatastoreInitMan().getJFireEAR() + '/' + init.getDatastoreInitMan().getJFireJAR() + '/' + init.getBean() + '#' + init.getMethod());
 					try {
-						Object homeRef = initCtx.lookup(init.getBean());
-						Method homeCreate = homeRef.getClass().getMethod("create", (Class[]) null);
-						Object bean = homeCreate.invoke(homeRef, (Object[]) null);
+//						Object homeRef = initCtx.lookup(init.getBean());
+//						Method homeCreate = homeRef.getClass().getMethod("create", (Class[]) null);
+//						Object bean = homeCreate.invoke(homeRef, (Object[]) null);
+						Object bean = InvokeUtil.createBean(initCtx, init.getBean());
 						Method beanMethod = bean.getClass().getMethod(init.getMethod(), (Class[]) null);
 						beanMethod.invoke(bean, (Object[]) null);
-
-						try {
-							if (bean instanceof EJBObject)
-								((EJBObject)bean).remove();
-	
-							if (bean instanceof EJBLocalObject)
-								((EJBLocalObject)bean).remove();
-						} catch (Exception x) {
-							logger.warn(
-									"Init could not remove bean! EAR=\""+init.getDatastoreInitMan().getJFireEAR()+"\"" +
-											" JAR=\""+init.getDatastoreInitMan().getJFireJAR()+"\"" +
-											" Bean=\""+init.getBean()+"\"", x);
-						}
+						InvokeUtil.removeBean(bean);
+//						try {
+//							if (bean instanceof EJBObject)
+//								((EJBObject)bean).remove();
+//	
+//							if (bean instanceof EJBLocalObject)
+//								((EJBLocalObject)bean).remove();
+//						} catch (Exception x) {
+//							logger.warn(
+//									"Init could not remove bean! EAR=\""+init.getDatastoreInitMan().getJFireEAR()+"\"" +
+//											" JAR=\""+init.getDatastoreInitMan().getJFireJAR()+"\"" +
+//											" Bean=\""+init.getBean()+"\"", x);
+//						}
 
 					} catch (Exception x) {
 						logger.error(
