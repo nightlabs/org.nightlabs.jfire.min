@@ -42,7 +42,6 @@ import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.transaction.SystemException;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.ModuleException;
@@ -57,6 +56,7 @@ import org.nightlabs.jfire.security.UserManager;
 import org.nightlabs.jfire.security.UserManagerHome;
 import org.nightlabs.jfire.security.UserManagerUtil;
 import org.nightlabs.jfire.security.id.UserID;
+import org.nightlabs.jfire.server.Server;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.servermanager.OrganisationNotFoundException;
 import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
@@ -689,7 +689,7 @@ public abstract class OrganisationManagerBean
 	 *
 	 * @ejb.interface-method
 	 * @ejb.transaction type = "Required"
-	 * @ejb.permission role-name="OrganisationManager-write"
+	 * @ejb.permission role-name="_System_,OrganisationManager-write"
 	 **/
 	public void registerInRootOrganisation()
 	throws OrganisationAlreadyRegisteredException, JFireRemoteException
@@ -818,7 +818,7 @@ public abstract class OrganisationManagerBean
 	 *
 	 * @ejb.interface-method
 	 * @ejb.transaction type = "Required"
-	 * @ejb.permission role-name="OrganisationManager-write"
+	 * @ejb.permission role-name="_System_,OrganisationManager-write"
 	 **/
 	public void registerInRootOrganisation(boolean force)
 	throws OrganisationAlreadyRegisteredException, JFireRemoteException
@@ -877,6 +877,29 @@ public abstract class OrganisationManagerBean
 		} finally {
 			ism.close();
 		}
+	}
+
+	/**
+	 * This method is used internally to fill a newly created organisation with initial
+	 * objects like {@link Server}, {@link Organisation}, {@link User}, {@link UserLocal} and
+	 * many more.
+	 *
+	 * @ejb.interface-method
+	 * @ejb.transaction type="Supports"
+	 * @ejb.permission role-name="_System_"
+	 **/
+	public void internalInitializeEmptyOrganisation(
+			ServerCf localServerCf,
+			OrganisationCf organisationCf,
+			String userID, String password
+			)
+	throws CreateException, NamingException
+	{
+		OrganisationManagerHelperLocal m = OrganisationManagerHelperUtil.getLocalHome().create();
+		m.internalInitializeEmptyOrganisation_step1(localServerCf, organisationCf, userID, password);
+		m.internalInitializeEmptyOrganisation_step2();
+		m.internalInitializeEmptyOrganisation_step3(localServerCf, organisationCf, userID);
+//		OrganisationManager organisationManager = OrganisationManagerUtil.ge
 	}
 
 //	/**
