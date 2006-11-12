@@ -1893,7 +1893,7 @@ public class JFireServerManagerFactoryImpl
 		synchronized(jfireSecurity_tempUserPasswords) {
 			String pw = (String) jfireSecurity_tempUserPasswords.get(userID + '@' + organisationID);
 			if (pw == null) {
-				pw = UserLocal.generatePassword(8, 16);
+				pw = UserLocal.createPassword(15, 20);
 				jfireSecurity_tempUserPasswords.put(userID + '@' + organisationID, pw);
 			}
 			return pw;

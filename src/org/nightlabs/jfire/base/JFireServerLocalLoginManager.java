@@ -78,7 +78,7 @@ implements Serializable
 		{
 			super(name);
 			if (password == null)
-				password = UserLocal.generatePassword(15, 20);
+				password = UserLocal.createPassword(15, 20);
 			this.password = password;
 		}
 
