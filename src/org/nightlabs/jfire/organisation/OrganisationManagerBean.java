@@ -359,8 +359,8 @@ public abstract class OrganisationManagerBean
 				throw new IllegalArgumentException("There is no pending registration for applicantOrganisation \""+applicantOrganisationID+"\" at grantOrganisation \""+getOrganisationID()+"\"!");
 
 			// We have to create a user for the new organisation. Therefore,
-			// generate a password with a random length between 8 and 16 characters.
-			String usrPassword = UserLocal.generatePassword(8, 16);
+			// generate a password with a random length between 15 and 20 characters.
+			String usrPassword = UserLocal.createPassword(15, 20);
 
 			// Create the user if it doesn't yet exist
 			String userID = User.USERID_PREFIX_TYPE_ORGANISATION + applicantOrganisationID;				
@@ -550,7 +550,7 @@ public abstract class OrganisationManagerBean
 
 		// We have to create a user for the new organisation. Therefore,
 		// generate a password with a random length between 8 and 16 characters.
-		String usrPassword = UserLocal.generatePassword(8, 16);
+		String usrPassword = UserLocal.createPassword(8, 16);
 
 		// Create the user if it doesn't yet exist
 		String userID = User.USERID_PREFIX_TYPE_ORGANISATION + organisationID;
