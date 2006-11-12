@@ -33,9 +33,9 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
-
 import org.nightlabs.jfire.base.login.Login;
 import org.nightlabs.jfire.base.login.LoginStateListener;
 
@@ -69,7 +69,7 @@ public abstract class LSDWorkbenchWindowActionDelegate implements
 	protected IWorkbenchWindow getWindow() {
 		return window;
 	}
-	
+
 	/**
 	 * Default implementation of init remembers the
 	 * passed IWorkbenchWindow and makes it accessible 
@@ -78,6 +78,22 @@ public abstract class LSDWorkbenchWindowActionDelegate implements
 	 */
 	public void init(IWorkbenchWindow window){
 		this.window = window;
+		_init();
+	}
+	private void _init()
+	{
+		// normally it should not happen, but it just happened to me on a windows machine :-( therefore we need these null checks. Marco.
+		if (window.getActivePage() == null || window.getActivePage().getActivePart() == null || window.getActivePage().getActivePart().getSite() == null)
+		{
+			Display.getDefault().timerExec(300, new Runnable() {
+				public void run()
+				{
+					_init();
+				}
+			});
+			return;
+		}
+
 		ISelectionProvider oldProvider = window.getActivePage().getActivePart().getSite().getSelectionProvider();
 		ISelectionProvider test = new ISelectionProvider(){
 			public void addSelectionChangedListener(ISelectionChangedListener listener) {
@@ -98,7 +114,6 @@ public abstract class LSDWorkbenchWindowActionDelegate implements
 		} finally {
 			window.getActivePage().getActivePart().getSite().setSelectionProvider(oldProvider);
 		}
-//		window.getWorkbench().getActiveWorkbenchWindow().
 	}
 
 	/**
