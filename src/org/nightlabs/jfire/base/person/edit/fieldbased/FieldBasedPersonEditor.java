@@ -345,6 +345,8 @@ public class FieldBasedPersonEditor implements PersonEditor {
 	
 	private void createTitleLabel() {
 		if (personTitleLabel == null) {
+			if (titleComposite == null)
+				return;
 			personTitleLabel = new Label(titleComposite,SWT.NONE);
 			GridData gd = new GridData();
 			gd.horizontalAlignment = GridData.FILL;
@@ -358,7 +360,7 @@ public class FieldBasedPersonEditor implements PersonEditor {
 	 * @see org.nightlabs.jfire.base.person.edit.PersonEditor#refreshControl()
 	 */
 	public void refreshControl() {
-		Display.getDefault().syncExec( 
+		Display.getDefault().asyncExec( 
 			new Runnable() {
 				public void run() {
 					if (person == null)
