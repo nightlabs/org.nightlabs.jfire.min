@@ -54,7 +54,7 @@ extends AbstractApplication
 	
 	public static final int APPLICATION_EVENTTYPE_STARTED = 1;
 	
-	void noitfyApplicationListeners(int applicationEventType) {
+	void notifyApplicationListeners(int applicationEventType) {
 		for (Iterator iter = applicationListener.iterator(); iter.hasNext();) {
 			JFireApplicationListener listener = (JFireApplicationListener) iter.next();
 			switch (applicationEventType) {

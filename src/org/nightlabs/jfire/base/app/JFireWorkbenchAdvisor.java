@@ -69,9 +69,13 @@ extends AbstractWorkbenchAdvisor
 	 */
 	public JFireWorkbenchAdvisor(Display display) 
 	{
-		super();
+		this(display, true);
+	}
+	public JFireWorkbenchAdvisor(Display display, boolean initLogin) 
+	{
 		try {
-			initLogin();
+			if (initLogin)
+				initLogin();
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -123,10 +127,10 @@ extends AbstractWorkbenchAdvisor
 		}
 	}
 	
-	public void eventLoopException(Throwable exception) {
-		if (!ExceptionHandlerRegistry.syncHandleException(exception))
-			super.eventLoopException(exception);
-	}
+//	public void eventLoopException(Throwable exception) {
+//		if (!ExceptionHandlerRegistry.syncHandleException(exception))
+//			super.eventLoopException(exception);
+//	}
 
 	public WorkbenchWindowAdvisor createWorkbenchWindowAdvisor(IWorkbenchWindowConfigurer configurer) {
 		return new JFireWorkbenchWindowAdvisor(configurer);
