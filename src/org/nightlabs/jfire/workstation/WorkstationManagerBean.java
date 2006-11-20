@@ -28,16 +28,20 @@ package org.nightlabs.jfire.workstation;
 
 import java.rmi.RemoteException;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.SessionBean;
 import javax.jdo.PersistenceManager;
-
-import org.nightlabs.jfire.base.BaseSessionBeanImpl;
-import org.nightlabs.jfire.workstation.Workstation;
+import javax.jdo.Query;
 
 import org.nightlabs.ModuleException;
+import org.nightlabs.jdo.NLJDOHelper;
+import org.nightlabs.jfire.base.BaseSessionBeanImpl;
+import org.nightlabs.jfire.workstation.id.WorkstationID;
 
 /**
  * @author Niklas Schiffler <nick@nightlabs.de>
@@ -74,13 +78,12 @@ public class WorkstationManagerBean extends BaseSessionBeanImpl implements Sessi
   }
   
   /**
-   * @throws ModuleException 
    * @ejb.interface-method
    * @ejb.permission role-name="WorkstationManagerBean-write"
    * @ejb.transaction type="Required"
    **/
-  public Workstation saveWorkstation(Workstation ws, String [] fetchGroups) 
-    throws ModuleException
+  public Workstation saveWorkstation(Workstation ws, String [] fetchGroups)
+  throws ModuleException 
   {
     PersistenceManager pm = getPersistenceManager();
     try 
@@ -104,7 +107,6 @@ public class WorkstationManagerBean extends BaseSessionBeanImpl implements Sessi
    * @ejb.transaction type="Required"
    **/
   public Workstation getWorkstation(String organisationID, String workstationID, String [] fetchGroups) 
-    throws ModuleException
   {
     PersistenceManager pm = getPersistenceManager();
     try 
@@ -120,15 +122,13 @@ public class WorkstationManagerBean extends BaseSessionBeanImpl implements Sessi
       pm.close();
     }
   }
-	
+
   /**
-   * @throws ModuleException 
    * @ejb.interface-method
    * @ejb.permission role-name="WorkstationManagerBean-read"
    * @ejb.transaction type="Required"
    **/
 	public Collection getWorkstations(String[] fetchGroups, int maxFetchDepth)
-	throws ModuleException
 	{		
     PersistenceManager pm = getPersistenceManager();
     try 
@@ -145,5 +145,37 @@ public class WorkstationManagerBean extends BaseSessionBeanImpl implements Sessi
       pm.close();
     }
 	}
-	
+
+	/**
+   * @ejb.interface-method
+   * @ejb.permission role-name="_Guest_"
+   * @ejb.transaction type="Required"
+   **/
+	public Set<WorkstationID> getWorkstationIDs()
+	{
+		PersistenceManager pm = getPersistenceManager();
+    try {
+    	Query q = pm.newQuery(Workstation.class);
+    	q.setResult("JDOHelper.getObjectId(this)");
+    	return new HashSet<WorkstationID>((Collection<? extends WorkstationID>) q.execute());
+    } finally {
+      pm.close();
+    }
+	}
+
+	/**
+   * @ejb.interface-method
+   * @ejb.permission role-name="_Guest_"
+   * @ejb.transaction type="Required"
+   **/
+	@SuppressWarnings("unchecked")
+	public List<Workstation> getWorkstations(Set<WorkstationID> workstationIDs, String[] fetchGroups, int maxFetchDepth)
+	{
+		PersistenceManager pm = getPersistenceManager();
+    try {
+    	return NLJDOHelper.getDetachedObjectList(pm, workstationIDs, Workstation.class, fetchGroups, maxFetchDepth);
+    } finally {
+      pm.close();
+    }
+	}
 }
