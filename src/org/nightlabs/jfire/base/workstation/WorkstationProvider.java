@@ -35,7 +35,7 @@ import org.nightlabs.jfire.workstation.id.WorkstationID;
 
 /**
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
- *
+ * @deprecated Use {@link WorkstationDAO} instead!
  */
 public class WorkstationProvider extends JDOObjectProvider {
 
