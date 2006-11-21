@@ -29,6 +29,7 @@ package org.nightlabs.jfire.classloader;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.List;
+import java.util.Map;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
@@ -58,21 +59,15 @@ public abstract class JFireRCLBackendBean
 	 */
 	private static final Logger logger = Logger.getLogger(JFireRCLBackendBean.class);
 
-	/**
-	 * @see org.nightlabs.jfire.base.BaseSessionBeanImpl#setSessionContext(javax.ejb.SessionContext)
-	 */
 	public void setSessionContext(SessionContext sessionContext)
 			throws EJBException, RemoteException
 	{
-//		LOGGER.debug(this.getClass().getName() + ".setSessionContext("+sessionContext+")");
 		super.setSessionContext(sessionContext);
 	}
-	/**
-	 * @see org.nightlabs.jfire.base.BaseSessionBeanImpl#unsetSessionContext()
-	 */
 	public void unsetSessionContext() {
 		super.unsetSessionContext();
 	}
+
 	/**
 	 * @ejb.create-method  
 	 * @ejb.permission role-name="_Guest_"
@@ -80,35 +75,31 @@ public abstract class JFireRCLBackendBean
 	public void ejbCreate()
 	throws CreateException
 	{
-		logger.debug(this.getClass().getName() + ".ejbCreate()");
+		if (logger.isDebugEnabled())
+			logger.debug(this.getClass().getName() + ".ejbCreate()");
 	}
 	/**
-	 * @see javax.ejb.SessionBean#ejbRemove()
-	 * 
 	 * @ejb.permission unchecked="true"
 	 */
 	public void ejbRemove() throws EJBException, RemoteException
 	{
-		logger.debug(this.getClass().getName() + ".ejbRemove()");
+		if (logger.isDebugEnabled())
+			logger.debug(this.getClass().getName() + ".ejbRemove()");
 	}
 
-	/**
-	 * @see javax.ejb.SessionBean#ejbActivate()
-	 */
 	public void ejbActivate() throws EJBException, RemoteException
 	{
-		logger.debug(this.getClass().getName() + ".ejbActivate()");
+		if (logger.isDebugEnabled())
+			logger.debug(this.getClass().getName() + ".ejbActivate()");
 	}
-	/**
-	 * @see javax.ejb.SessionBean#ejbPassivate()
-	 */
 	public void ejbPassivate() throws EJBException, RemoteException
 	{
-		logger.debug(this.getClass().getName() + ".ejbPassivate()");
+		if (logger.isDebugEnabled())
+			logger.debug(this.getClass().getName() + ".ejbPassivate()");
 	}
 
 	/**
-	 * This method returns a List of ResourceMetaData for all resources that match
+	 * This method returns a List of {@link ResourceMetaData} for all resources that match
 	 * the given name. There may be many, because the j2ee server has multiple
 	 * repositories (at least lib and deploy) and even within one repository, there may
 	 * be multiple jars providing the same resource.
@@ -118,11 +109,11 @@ public abstract class JFireRCLBackendBean
 	 * @throws IOException
 	 *
 	 * @ejb.interface-method
-	 * @ejb.transaction type = "Required"
+	 * @ejb.transaction type="Supports"
 	 * @ejb.permission role-name="_Guest_"
 	 */
-	public List getResourcesMetaData(String name)
-		throws ClassLoaderException
+	public List<ResourceMetaData> getResourcesMetaData(String name)
+	throws ClassLoaderException
 	{
 		try {
 			JFireServerManager jfireServerManager = getJFireServerManager();
@@ -130,7 +121,7 @@ public abstract class JFireRCLBackendBean
 				CLRegistrar clRegistrar = jfireServerManager.getCLRegistrar();
 				return clRegistrar.getResourcesMetaData(name);
 				// eigentlich sollte der CLRegistrar ein echter ResourceAdapter sein und
-				// nicht �ber den JFireServerManager verwaltet werden.
+				// nicht ueber den JFireServerManager verwaltet werden.
 			} finally {
 				jfireServerManager.close();
 			}
@@ -148,11 +139,11 @@ public abstract class JFireRCLBackendBean
 	 * @throws ModuleException
 	 *
 	 * @ejb.interface-method
-	 * @ejb.transaction type = "Required"
+	 * @ejb.transaction type="Supports"
 	 * @ejb.permission role-name="_Guest_"
 	 */
 	public byte[] getResourceBytes(ResourceMetaData rmd)
-		throws ClassLoaderException
+	throws ClassLoaderException
 	{
 		try {
 			JFireServerManager jfireServerManager = getJFireServerManager();
@@ -160,7 +151,7 @@ public abstract class JFireRCLBackendBean
 				CLRegistrar clRegistrar = jfireServerManager.getCLRegistrar();
 				return clRegistrar.getResourceBytes(rmd);
 				// eigentlich sollte der CLRegistrar ein echter ResourceAdapter sein und
-				// nicht �ber den JFireServerManager verwaltet werden.
+				// nicht ueber den JFireServerManager verwaltet werden.
 			} finally {
 				jfireServerManager.close();
 			}
@@ -173,15 +164,16 @@ public abstract class JFireRCLBackendBean
 	}
 
 	/**
-	 * @return
-	 * @throws ModuleException
-	 * 
+	 * @return A zipped serialized instance of {@link Map} with the key <code>String fileName</code> and the value
+	 *		<code>{@link List}&lt;{@link ResourceMetaData}&gt; fileMetaData</code>. <code>fileName</code> is relative to the repository
+	 *		directory or within the jar (never starting with "/"!).
+	 *
 	 * @ejb.interface-method
-	 * @ejb.transaction type = "Required"
+	 * @ejb.transaction type="Supports"
 	 * @ejb.permission role-name="_Guest_"
 	 */
 	public byte[] getResourcesMetaDataMapBytes()
-		throws ClassLoaderException
+	throws ClassLoaderException
 	{
 		try {
 			JFireServerManager jfireServerManager = getJFireServerManager();
@@ -200,11 +192,14 @@ public abstract class JFireRCLBackendBean
 	}
 
 	/**
-	 * @return
-	 * @throws ModuleException
+	 * This method can be used to check whether the resource's meta-data as returned by
+	 * {@link #getResourcesMetaDataMapBytes()} needs to be downloaded or whether the client
+	 * already has a version that's up-to-date.
+	 *
+	 * @return The timestamp of the map returned by {@link #getResourcesMetaDataMapBytes()}.
 	 * 
 	 * @ejb.interface-method
-	 * @ejb.transaction type = "Required"
+	 * @ejb.transaction type="Supports"
 	 * @ejb.permission role-name="_Guest_"
 	 */
 	public long getResourcesMetaDataMapBytesTimestamp()
