@@ -61,7 +61,7 @@ import org.nightlabs.util.Utils;
 import org.nightlabs.xml.XMLReadException;
 
 /**
- * @author marco
+ * @author marco schulze - marco at nightlabs dot de
  */
 public class CLRegistrarFactory
 {
@@ -86,12 +86,6 @@ public class CLRegistrarFactory
 	{
 		return new CLRegistrar(this, principal);
 	}
-	
-//	/**
-//	 * key: String className<br/>
-//	 * value: ClassMetaData classMetaData
-//	 */
-//	protected Map classes = new HashMap();
 
 	/**
 	 * key: String fileName<br/>
@@ -99,16 +93,7 @@ public class CLRegistrarFactory
 	 * <br/><br/>
 	 * fileName is relative to the repository directory or within the jar (never starting with "/"!).
 	 */
-	protected Map resources = new HashMap();
-
-//	/**
-//	 * key: String fileName<br/>
-//	 * value: JarMetaData
-//	 * <br/><br/>
-//	 * fileName is the name of the jar and relative to the repository directory.
-//	 * Every jar that is registered here, exists in resources as well.
-//	 */
-//	protected Map jars = new HashMap();
+	protected Map<String, List<ResourceMetaData>> resources = new HashMap<String, List<ResourceMetaData>>();
 
 	/**
 	 * This method returns a List of ResourceMetaData for all resources that match
@@ -120,14 +105,14 @@ public class CLRegistrarFactory
 	 * @return
 	 * @throws IOException
 	 */
-	protected synchronized List getResourcesMetaData(String name)
+	protected synchronized List<ResourceMetaData> getResourcesMetaData(String name)
 		throws ModuleException
 	{
 		try {
 			if (!loaded)
 				scan();
 
-			return (List)resources.get(name);
+			return resources.get(name);
 		} catch (Exception e) {
 			throw new ModuleException(e);
 		}
@@ -173,10 +158,8 @@ public class CLRegistrarFactory
 	{
 		loaded = false;
 		resourcesMetaDataMapBytes = null;
-//		classes.clear();
 		resources.clear();
 		resourceRepositories.clear();
-//		jars.clear();
 
 		// we recursively delete our temp repository if it exists
 		File tempRepositoryFile = new File(clRegistryCfMod.getTempRepository().getPath());
@@ -188,12 +171,12 @@ public class CLRegistrarFactory
 	 * key: String repositoryName<br/>
 	 * value: ResourceRepository repository
 	 */
-	protected Map resourceRepositories = new HashMap();
-	
+	protected Map<String, ResourceRepository> resourceRepositories = new HashMap<String, ResourceRepository>();
+
 	/**
 	 * The jars that have been temporarily extracted. Instances of File.
 	 */
-	protected List tempJarFiles = null;
+	protected List<File> tempJarFiles = null;
 
 	protected synchronized void scan()
 		throws XMLReadException, SAXException, IOException, TransformerException
@@ -208,7 +191,7 @@ public class CLRegistrarFactory
 			new CacheDirTag(tempRepositoryFile).tag("http://JFire.org - JFireRemoteClassLoader (Temporary Repository)", true, false);
 
 			resourceRepositories.put(clRegistryCfMod.getTempRepository().getName(), clRegistryCfMod.getTempRepository());
-			tempJarFiles = new ArrayList();
+			tempJarFiles = new ArrayList<File>();
 			for (Iterator it = clRegistryCfMod.getResourceRepositories().iterator(); it.hasNext(); ) {
 				ResourceRepository repository = (ResourceRepository) it.next();
 				resourceRepositories.put(repository.getName(), repository);
@@ -439,9 +422,9 @@ public class CLRegistrarFactory
 	}
 	protected void registerResource(ResourceMetaData fmd)
 	{
-		List resList = (List)resources.get(fmd.getPath());
+		List<ResourceMetaData> resList = resources.get(fmd.getPath());
 		if (resList == null) {
-			resList = new ArrayList();
+			resList = new ArrayList<ResourceMetaData>();
 			resources.put(fmd.getPath(), resList);
 		}
 		resList.add(fmd);

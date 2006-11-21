@@ -34,7 +34,7 @@ import org.nightlabs.jfire.base.JFireBasePrincipal;
 import org.nightlabs.ModuleException;
 
 /**
- * @author marco
+ * @author marco schulze - marco at nightlabs dot de
  */
 public class CLRegistrar
 {
@@ -57,7 +57,7 @@ public class CLRegistrar
 	 * @return
 	 * @throws IOException
 	 */
-	public List getResourcesMetaData(String name)
+	public List<ResourceMetaData> getResourcesMetaData(String name)
 		throws ModuleException
 	{
 		return clRegistrarFactory.getResourcesMetaData(name);
