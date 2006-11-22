@@ -26,13 +26,8 @@
 
 package org.nightlabs.jfire.base;
 
-import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.IPerspectiveFactory;
-import org.eclipse.ui.application.WorkbenchAdvisor;
-import org.eclipse.ui.internal.Workbench;
-
 import org.nightlabs.base.util.RCPUtil;
 
 /**
