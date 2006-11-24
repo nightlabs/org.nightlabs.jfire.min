@@ -28,7 +28,6 @@ package org.nightlabs.jfire.jdo;
 
 import java.rmi.RemoteException;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -38,6 +37,7 @@ import javax.ejb.SessionBean;
 import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 
+import org.apache.log4j.Logger;
 import org.nightlabs.ModuleException;
 import org.nightlabs.jdo.ObjectID;
 import org.nightlabs.jdo.ObjectIDUtil;
@@ -47,7 +47,6 @@ import org.nightlabs.jfire.jdo.cache.NotificationBundle;
 import org.nightlabs.jfire.jdo.controller.JDOObjectChangeEvent;
 import org.nightlabs.jfire.jdo.controller.JDOObjectController;
 import org.nightlabs.jfire.jdo.controller.JDOObjectSyncResult;
-import org.nightlabs.jfire.jdo.notification.AbsoluteFilterID;
 import org.nightlabs.jfire.jdo.notification.IJDOLifecycleListenerFilter;
 import org.nightlabs.jfire.jdo.organisationsync.DirtyObjectIDCarrier;
 import org.nightlabs.jfire.jdo.organisationsync.IncomingChangeListenerDescriptor;
@@ -66,6 +65,8 @@ public abstract class JDOManagerBean
 extends BaseSessionBeanImpl
 implements SessionBean
 {
+	private static final Logger logger = Logger.getLogger(JDOManagerBean.class);
+
 	/**
 	 * @ejb.create-method  
 	 * @ejb.permission role-name="_Guest_"
@@ -101,26 +102,33 @@ implements SessionBean
 	 * @ejb.transaction type = "Supports"
 	 */
 	public String getPersistenceCapableClassName(Object objectID)
-	throws ModuleException
 	{
-		Class clazz;
-
-		CacheManager cm = getLookup().getCacheManager();
 		try {
-			clazz = cm.getClassByObjectID(objectID, false);
-		} finally {
-			cm.close();
-		}
-
-		if (clazz != null)
-			return clazz.getName();
-
-		PersistenceManager pm = getPersistenceManager();
-		try {
-			Object o = pm.getObjectById(objectID);
-			return o.getClass().getName();
-		} finally {
-			pm.close();
+			Class clazz;
+	
+			CacheManager cm = getLookup().getCacheManager();
+			try {
+				clazz = cm.getClassByObjectID(objectID, false);
+			} finally {
+				cm.close();
+			}
+	
+			if (clazz != null)
+				return clazz.getName();
+	
+			PersistenceManager pm = getPersistenceManager();
+			try {
+				Object o = pm.getObjectById(objectID);
+				return o.getClass().getName();
+			} finally {
+				pm.close();
+			}
+		} catch (Throwable t) {
+			logger.error("Could not find out class for objectID! objectID.class=" + (objectID == null ? null : objectID.getClass().getName()) + " objectID=" + objectID, t);
+			if (t instanceof RuntimeException)
+				throw (RuntimeException)t;
+			else
+				throw new RuntimeException(t);
 		}
 	}
 
