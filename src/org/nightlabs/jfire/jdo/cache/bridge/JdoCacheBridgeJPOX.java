@@ -45,6 +45,7 @@ import javax.resource.spi.ConnectionEventListener;
 
 import org.apache.log4j.Logger;
 import org.jpox.resource.PersistenceManagerImpl;
+import org.nightlabs.jdo.ObjectID;
 import org.nightlabs.jfire.jdo.notification.DirtyObjectID;
 import org.nightlabs.jfire.jdo.notification.JDOLifecycleState;
 import org.nightlabs.jfire.security.SecurityReflector;

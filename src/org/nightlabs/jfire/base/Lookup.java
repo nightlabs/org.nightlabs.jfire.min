@@ -256,7 +256,6 @@ public class Lookup
 	 * @see CacheManagerFactory#getCacheManager()
 	 */
 	public CacheManager getCacheManager()
-	throws ModuleException
 	{
 		return getCacheManagerFactory().getCacheManager();
 	}
@@ -265,7 +264,6 @@ public class Lookup
 	 * @see CacheManagerFactory#getCacheManager(JFirePrincipal)
 	 */
 	public CacheManager getCacheManager(JFirePrincipal principal)
-	throws ModuleException
 	{
 		return getCacheManagerFactory().getCacheManager(principal);
 	}
