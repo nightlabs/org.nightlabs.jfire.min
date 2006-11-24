@@ -28,6 +28,7 @@ package org.nightlabs.jfire.base.jdo;
 
 import java.util.Iterator;
 
+import org.apache.log4j.Logger;
 import org.nightlabs.jdo.ObjectID;
 import org.nightlabs.jfire.jdo.notification.DirtyObjectID;
 import org.nightlabs.notification.Interceptor;
@@ -40,6 +41,8 @@ import org.nightlabs.notification.SubjectCarrier;
 public class JDOObjectID2PCClassNotificationInterceptor
 implements Interceptor
 {
+	private static final Logger logger = Logger.getLogger(JDOObjectID2PCClassNotificationInterceptor.class);
+
 	public NotificationEvent intercept(NotificationEvent event)
 	{
 		for (Iterator itSubjectCarriers = event.getSubjectCarriers().iterator(); itSubjectCarriers.hasNext(); ) {
@@ -61,8 +64,21 @@ implements Interceptor
  				Object jdoObjectID = dirtyObjectID.getObjectID();
  				subjectCarrier.getSubjectClasses().add(jdoObjectID.getClass());
 
- 				Class jdoObjectClass = JDOObjectID2PCClassMap.sharedInstance().getPersistenceCapableClass(jdoObjectID);
- 				subjectCarrier.getSubjectClasses().add(jdoObjectClass);
+ 				if (!(jdoObjectID instanceof ObjectID)) {
+ 					// After I searched quite a while for an exception (a jdoObjectID was an instance of java.lang.String and
+ 					// no jdo object could be loaded by PersistenceManager.getObjectById(...), of course)
+ 					// I'd like to mention here, that Cache$NotificationThread.run() creates "synthetic" DirtyObjectIDs
+ 					// (stored in the Map indirectlyAffectedDirtyObjectIDs). As everything can be put into the cache,
+ 					// it might well be possible that an object has a key assigned, which is no jdo object id and for which
+ 					// no jdo object exists (e.g. a Collection or Map cached by an artificial key). That's why, we must not
+ 					// try to get the PersistenceCapableClass for object ids which are not explicitely tagged by org.nightlabs.jdo.ObjectID.
+ 					if (logger.isInfoEnabled())
+ 						logger.info("jdoObjectID does not implement " + ObjectID.class.getName() + "! It is an instance of " + (jdoObjectID == null ? null : jdoObjectID.getClass().getName()) + ": " + jdoObjectID, new Exception());
+ 				}
+ 				else {
+	 				Class jdoObjectClass = JDOObjectID2PCClassMap.sharedInstance().getPersistenceCapableClass(jdoObjectID);
+	 				subjectCarrier.getSubjectClasses().add(jdoObjectClass);
+ 				}
  			}
 		} // for (Iterator itSubjectCarriers = event.getSubjectCarriers().iterator(); itSubjectCarriers.hasNext(); ) {
 

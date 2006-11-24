@@ -136,6 +136,13 @@ public class Cache
 									if (objectID.equals(removedKey.getObjectID()))
 										continue;
 
+									// Note, that these "synthetic" DirtyObjectIDs might have an objectID which is not really
+									// a JDO object ID. This is, because removedKey.getObject() might return everything as the user
+									// is able to put arbitrary objects (e.g. a Collection) with arbitrary keys into the Cache.
+									// If you process DirtyObjectIDs, you must keep this in mind! Take the class
+									// JDOObjectID2PCClassNotificationInterceptor as an example, how this can be done
+									// (see the comment in the intercept(...) method): simply check whether the result of
+									// DirtyObjectID.getObjectID() implements org.nightlabs.jdo.ObjectID
 									DirtyObjectID doid = new DirtyObjectID(JDOLifecycleState.DIRTY, removedKey.getObjectID(), null, -Long.MAX_VALUE);
 									indirectlyAffectedDirtyObjectIDs.put(doid.getObjectID(), doid);
 								}
