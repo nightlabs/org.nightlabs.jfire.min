@@ -136,7 +136,7 @@ public class StructEditorComposite extends XComposite {
 		});
 
 		try {
-			structIDComposite.setInput(new LinkedList<StructLocalID>(structEditor.getAvailableStructLocalIDs()));
+			structIDComposite.setInput(new LinkedList<StructLocalID>(StructEditorUtil.getAvailableStructLocalIDs()));
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new RuntimeException(e);
@@ -168,7 +168,7 @@ public class StructEditorComposite extends XComposite {
 		}
 	}
 
-	public void addStructField() {
+	public void addStructField(StructBlock structBlock) {
 		StructFieldCreationWizard wiz = new StructFieldCreationWizard();
 		DynamicPathWizardDialog dialog = new DynamicPathWizardDialog(wiz);
 
@@ -176,7 +176,7 @@ public class StructEditorComposite extends XComposite {
 			return;
 
 		StructFieldMetaData newFieldMetaData = wiz.getSelectedFieldMetaData();
-		addStructField(structTree.getCurrentBlockNode().getBlock(), newFieldMetaData, wiz.getDetailsWizardPage());		
+		addStructField(structBlock, newFieldMetaData, wiz.getDetailsWizardPage());		
 	}
 
 	public void addStructField(StructBlock toBlock, StructFieldMetaData newFieldMetaData,
@@ -238,7 +238,7 @@ public class StructEditorComposite extends XComposite {
 		String fieldName = fieldNode.getI18nText().getText(langChooser.getLanguage().getLanguageID());
 		String message = "Are you sure you want to delete the struct field named " + fieldName + "?";
 		long dataFieldInstanceCount;
-		dataFieldInstanceCount = structEditor.getDataFieldInstanceCount(fieldNode.getField().getStructFieldIDObj());
+		dataFieldInstanceCount = StructEditorUtil.getDataFieldInstanceCount(fieldNode.getField().getStructFieldIDObj());
 		
 		message += "\n\n" + dataFieldInstanceCount
 				+ " instances of this struct field will be also deleted if you continue.";

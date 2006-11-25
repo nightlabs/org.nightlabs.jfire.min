@@ -14,6 +14,7 @@ import org.nightlabs.base.composite.LabeledText;
 import org.nightlabs.base.exceptionhandler.ExceptionHandlerRegistry;
 import org.nightlabs.jfire.base.JFireBasePlugin;
 import org.nightlabs.jfire.base.prop.StructDAO;
+import org.nightlabs.jfire.base.prop.StructLocalDAO;
 import org.nightlabs.jfire.base.prop.edit.DataFieldEditor;
 import org.nightlabs.jfire.base.prop.edit.blockbased.DataBlockEditor;
 import org.nightlabs.jfire.base.prop.edit.blockbased.DataBlockEditorChangedListener;
@@ -36,7 +37,7 @@ implements DataBlockEditorChangedListener
 	 * @param pageName
 	 */
 	public PersonPersonalDataWizardPage(String pageName, String title, Person person) {
-		super(pageName, title, StructDAO.sharedInstance().getStruct(Person.class), person, PersonStruct.PERSONALDATA);
+		super(pageName, title, StructLocalDAO.sharedInstance().getStructLocal(Person.class), person, PersonStruct.PERSONALDATA);
 	}
 
 	/**

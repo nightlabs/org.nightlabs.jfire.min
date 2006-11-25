@@ -1,24 +1,33 @@
 package org.nightlabs.jfire.base.prop.structedit;
 
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Set;
+
+import javax.jdo.JDOHelper;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleManager;
 import org.nightlabs.jfire.base.login.Login;
 import org.nightlabs.jfire.base.prop.StructLocalDAO;
+import org.nightlabs.jfire.jdo.notification.DirtyObjectID;
 import org.nightlabs.jfire.prop.IStruct;
 import org.nightlabs.jfire.prop.PropertyManager;
 import org.nightlabs.jfire.prop.PropertyManagerUtil;
+import org.nightlabs.jfire.prop.StructBlock;
 import org.nightlabs.jfire.prop.StructLocal;
-import org.nightlabs.jfire.prop.id.StructFieldID;
-import org.nightlabs.jfire.prop.id.StructID;
 import org.nightlabs.jfire.prop.id.StructLocalID;
+import org.nightlabs.notification.NotificationEvent;
+import org.nightlabs.notification.NotificationListener;
+import org.nightlabs.notification.NotificationListenerCallerThread;
 
 public class StructEditor {
 	private PropertyManager propertyManager;
@@ -35,14 +44,25 @@ public class StructEditor {
 	}
 	
 	public StructEditorComposite createComposite(Composite parent, int style) {
-		if (structEditorComposite == null)
+		if (structEditorComposite == null) {
 			structEditorComposite = new StructEditorComposite(parent, style, this);
+			JDOLifecycleManager.sharedInstance().addNotificationListener(StructLocal.class, changeListener);
+			structEditorComposite.addDisposeListener(new DisposeListener() {
+				public void widgetDisposed(DisposeEvent e) {
+					JDOLifecycleManager.sharedInstance().removeNotificationListener(StructLocal.class, changeListener);
+				}
+			});
+		}
 		
 		return structEditorComposite; 
 	}
 	
 	public void setCurrentStructLocalID(final StructLocalID structLocalID) {
-		structEditorComposite.setLoadingText();
+		Display.getDefault().asyncExec(new Runnable() {
+			public void run() {						
+				structEditorComposite.setLoadingText();
+			}
+		});
 		new Job("Fetching structure...") {
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
@@ -59,6 +79,18 @@ public class StructEditor {
 		}.schedule();		
 	}
 
+	private NotificationListener changeListener = new NotificationListenerCallerThread() {
+		public void notify(NotificationEvent notificationEvent) {
+			for (DirtyObjectID dirtyObjectID : (Set<DirtyObjectID>)notificationEvent.getSubjects()) {
+				Object currentStructID = currentStruct == null ? null : JDOHelper.getObjectId(currentStruct);
+				if (dirtyObjectID.getObjectID().equals(currentStructID)) {
+					setCurrentStructLocalID((StructLocalID) dirtyObjectID.getObjectID());
+				}
+			}
+		}
+		
+	};
+	
 	private PropertyManager getPropertyManager() {
 		if (propertyManager == null) {
 			try {
@@ -69,33 +101,6 @@ public class StructEditor {
 			}
 		}
 		return propertyManager;
-	}
-	
-	public Collection<StructID> getAvailableStructIDs() {
-		try {
-			return propertyManager.getAvailableStructIDs();
-		} catch (RemoteException e) {
-			e.printStackTrace();
-			throw new RuntimeException(e);
-		}
-	}
-	
-	public Collection<StructLocalID> getAvailableStructLocalIDs() {
-		try {
-			return propertyManager.getAvailableStructLocalIDs();
-		} catch (RemoteException e) {
-			e.printStackTrace();
-			throw new RuntimeException(e);
-		}
-	}
-	
-	public long getDataFieldInstanceCount(StructFieldID structFieldID) {
-		try {
-			return propertyManager.getDataFieldInstanceCount(structFieldID);
-		} catch (RemoteException e) {
-			e.printStackTrace();
-			throw new RuntimeException(e);
-		}
 	}
 
 	public void storeStructure() {
@@ -134,5 +139,21 @@ public class StructEditor {
 	private synchronized void notifyChangeListeners() {
 		for (IStructureChangedListener listener : changeListeners)
 			listener.structureChanged();
+	}
+
+	public void addStructBlock() {
+		structEditorComposite.addStructBlock();
+	}
+
+	public void addStructField(StructBlock structBlock) {
+		structEditorComposite.addStructField(structBlock);
+	}
+	
+	public ISelection getSelection() {
+		return structEditorComposite.getStructTree().getSelection();
+	}
+	
+	public void removeSelection() {
+		structEditorComposite.removeSelectedItem();
 	}
 }

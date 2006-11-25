@@ -14,9 +14,9 @@ public class RemoveStructElementAction implements IViewActionDelegate {
 	}
 
 	public void run(IAction action) {
-		if (structEditView.getStructEditComposite().getStructTree().getSelection().isEmpty())
+		if (structEditView.getStructEditor().getSelection().isEmpty())
 			return;
-		structEditView.getStructEditComposite().removeSelectedItem();
+		structEditView.getStructEditor().removeSelection();
 	}
 
 	public void selectionChanged(IAction action, ISelection selection) {

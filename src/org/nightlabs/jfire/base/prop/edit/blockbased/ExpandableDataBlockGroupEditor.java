@@ -35,7 +35,7 @@ import org.eclipse.ui.forms.events.ExpansionAdapter;
 import org.eclipse.ui.forms.events.ExpansionEvent;
 import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
-import org.nightlabs.jfire.base.prop.StructDAO;
+import org.nightlabs.jfire.base.prop.StructLocalDAO;
 import org.nightlabs.jfire.base.prop.edit.DataFieldEditor;
 import org.nightlabs.jfire.prop.DataBlockGroup;
 import org.nightlabs.jfire.prop.IStruct;
@@ -83,9 +83,9 @@ implements DataBlockEditorChangedListener
 //		StructProvider provider = (StructProvider)PropStructProviderRegistry.sharedInstance().getPropStructProvider(linkClass); 
 		
 //		IStruct structure = provider.getStruct();
-		IStruct structure = StructDAO.sharedInstance().getStruct(linkClass.getName());
+		IStruct structure = StructLocalDAO.sharedInstance().getStructLocal(linkClass.getName());
 		if (blockGroup.getStructBlock(structure).getName().getText() == null)
-			setText(blockGroup.getStructBlock(structure).getID());
+			setText(blockGroup.getStructBlock(structure).getStructBlockID());
 		else
 			setText(blockGroup.getStructBlock(structure).getName().getText());
 		

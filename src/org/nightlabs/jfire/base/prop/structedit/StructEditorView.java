@@ -44,10 +44,6 @@ implements PartVisibilityListener, ControllablePart {
 	public void setFocus() {
 	}
 
-	public StructEditorComposite getStructEditComposite() {
-		return structEditComposite;
-	}
-	
 	public StructEditor getStructEditor() {
 		return structEditor;
 	}

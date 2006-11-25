@@ -33,7 +33,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.nightlabs.jfire.base.prop.StructDAO;
+import org.nightlabs.jfire.base.prop.StructLocalDAO;
 import org.nightlabs.jfire.prop.IStruct;
 import org.nightlabs.jfire.prop.StructBlock;
 import org.nightlabs.jfire.prop.id.StructBlockID;
@@ -110,7 +110,7 @@ public class EditorStructBlockRegistry
 	{
 		for (List<StructBlockID> idList : editorsStructBlocks.values())
 		{
-			if (idList.contains(StructBlockID.create(structBlock.getOrganisationID(), structBlock.getID())))
+			if (idList.contains(StructBlockID.create(structBlock.getStructBlockOrganisationID(), structBlock.getStructBlockID())))
 				return true;
 		}
 		return false;
@@ -123,11 +123,11 @@ public class EditorStructBlockRegistry
 	public List<StructBlockID> getUnassignedBlockKeyList()
 	{
 		List<StructBlockID> toReturn = new LinkedList<StructBlockID>();
-		IStruct struct = StructDAO.sharedInstance().getStruct(linkClass.getName());
+		IStruct struct = StructLocalDAO.sharedInstance().getStructLocal(linkClass.getName());
 		for (StructBlock structBlock : struct.getStructBlocks())
 		{
 			if (!hasEditorCoverage(structBlock))
-				toReturn.add(StructBlockID.create(structBlock.getOrganisationID(), structBlock.getID()));
+				toReturn.add(StructBlockID.create(structBlock.getStructBlockOrganisationID(), structBlock.getStructBlockID()));
 		}
 		return toReturn;
 	}

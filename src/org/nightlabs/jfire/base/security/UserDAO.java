@@ -34,6 +34,7 @@ import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.jdo.JDOObjectDAO;
 import org.nightlabs.jfire.base.login.Login;
 import org.nightlabs.jfire.base.prop.StructDAO;
+import org.nightlabs.jfire.base.prop.StructLocalDAO;
 import org.nightlabs.jfire.idgenerator.IDGenerator;
 import org.nightlabs.jfire.person.Person;
 import org.nightlabs.jfire.prop.IStruct;
@@ -154,7 +155,7 @@ public class UserDAO extends JDOObjectDAO<UserID, User>
 			pm = PropertyManagerUtil.getHome(initialContextProperties).create();
 			monitor.worked(1);
 			Person person = user.getPerson();
-			IStruct struct = StructDAO.sharedInstance().getStruct(Person.class.getName());
+			IStruct struct = StructLocalDAO.sharedInstance().getStructLocal(Person.class.getName());
 			long activePersonID = person.getPropertyID();
 			if (activePersonID == Property.TEMPORARY_PROP_ID) {
 				person.assignID(IDGenerator.nextID(Person.class));

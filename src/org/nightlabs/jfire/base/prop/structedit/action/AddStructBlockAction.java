@@ -14,7 +14,7 @@ public class AddStructBlockAction implements IViewActionDelegate {
 	}
 
 	public void run(IAction action) {
-		structEditView.getStructEditComposite().addStructBlock();		
+		structEditView.getStructEditor().addStructBlock();		
 	}
 
 	public void selectionChanged(IAction action, ISelection selection) {
