@@ -48,7 +48,7 @@ import org.nightlabs.jdo.ObjectIDException;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.config.ConfigSetup;
 import org.nightlabs.jfire.person.Person;
-import org.nightlabs.jfire.person.id.PersonID;
+import org.nightlabs.jfire.prop.id.PropertyID;
 import org.nightlabs.jfire.security.id.AuthorityID;
 import org.nightlabs.jfire.security.id.RoleGroupID;
 import org.nightlabs.jfire.security.id.UserID;
@@ -1538,7 +1538,7 @@ implements SessionBean
   		User usr = (User) pm.getObjectById(UserID.create(getOrganisationID(), userID), true);
   		
   		pm.getExtent(Person.class, true);
-  		Person ps = (Person) pm.getObjectById(PersonID.create(getOrganisationID(), personID), true);
+  		Person ps = (Person) pm.getObjectById(PropertyID.create(getOrganisationID(), personID), true);
   		
   		usr.setPerson(ps);
 		}
