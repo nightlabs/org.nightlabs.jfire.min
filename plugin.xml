@@ -22,8 +22,32 @@
    		name="Specialized PersonDataBlockEditors" 
    		schema="schema/person_edit_specializedDataBlockEditor.exsd"
    	/>
-   <extension-point id="configsetupvisualiser" name="ConfigSetupVisualiser extension-point" schema="schema/configsetupvisualiser.exsd"/>
+	
+   <extension-point 
+	   id="configsetupvisualiser" 
+	   name="ConfigSetupVisualiser extension-point" 
+	   schema="schema/configsetupvisualiser.exsd"
+	/>
    
+	
+   <extension-point 
+	   id="specialisedDataBlockEditor" 
+	   name="Specialised PropDataBlockEditors" 
+	   schema="schema/specialisedDataBlockEditor.exsd"
+	/>
+	
+   <extension-point 
+	   id="propDataFieldEditorFactory" 
+	   name="Defines a editor factory for a specific subclass of AbstractPersonDataField" 
+	   schema="schema/propDataFieldEditorFactory.exsd"
+	/>
+	
+   <extension-point 
+	   id="propStructField" 
+	   name="propStructField" 
+	   schema="schema/propStructField.exsd"
+	/>
+	
 	
    <!-- Extensions -->	
    
@@ -142,25 +166,8 @@
 
 	
  	<!-- PersonDataFieldEditor extensions bock-based -->
-	<extension
-       id="org.nightlabs.jfire.person.edit.blockbased.PersonDataFieldEditorFactories"
-       name="Block-based PersonDataFieldEditors"
-       point="org.nightlabs.jfire.base.person_edit_personDataFieldEditorFactory">
-       
-    	<!-- TextDataFieldEditor -->
-    	<personDataFieldEditorFactory
-        	class="org.nightlabs.jfire.base.person.edit.blockbased.TextPersonDataFieldEditor$Factory"
-        	editorDescription="Block-based Text PersonDataFieldEditor"
-        />
-	</extension>
 	
  	<!-- PersonDataFieldEditor extensions field-based-disguised -->
-	<extension
-       id="org.nightlabs.jfire.person.edit.fieldbased.PersonDataFieldEditorFactories"
-       name="Disguised field-based PersonDataFieldEditors"
-       point="org.nightlabs.jfire.base.person_edit_personDataFieldEditorFactory">
-    <personDataFieldEditorFactory class="org.nightlabs.jfire.base.person.edit.fieldbased.DisguisedTextPersonDatatFieldEditor$Factory"/>
-	</extension>
  
  	<!-- Specialized PersonDataBlockEditors extensions -->
  	<extension
@@ -171,6 +178,8 @@
 	/>
     <specializedDataBlockEditor class="org.nightlabs.jfire.base.person.edit.blockbased.special.CommentDataBlockEditor$Factory"/>
 	</extension>
+	
+	
   <extension
         point="org.nightlabs.jfire.base.loginstatelistener">
      <loginStateListener class="org.nightlabs.jfire.base.language.LanguageWatcher"/>
@@ -181,6 +190,7 @@
            class="org.nightlabs.jfire.base.jdo.JDOObjectID2PCClassNotificationInterceptor"
            name="JDO ObjectID to PersistenceCapable Interceptor"/>
   </extension>
+	
   <extension
         point="org.nightlabs.jfire.base.configsetupvisualiser">
      <visualiser
@@ -190,9 +200,91 @@
            class="org.nightlabs.jfire.base.config.WorkstationCSVisualiser"
            configSetupType="org.nightlabs.jfire.config.WorkstationConfigSetup"/>
   </extension>
+	
   <extension
         point="org.nightlabs.base.cache">
      <cacheFactory class="org.nightlabs.jfire.base.jdo.cache.CacheFactory"/>
   </extension>
 
+	
+
+  <!-- Prop extensions -->
+   <extension
+         point="org.eclipse.ui.views">
+      <view
+            class="org.nightlabs.jfire.base.prop.structedit.StructEditorView"
+            id="org.nightlabs.jfire.base.prop.structedit.StructEditView"
+            name="StructEditView"/>
+      <view
+            class="org.nightlabs.jfire.prop.edit.blockbased.BlockBasedEditorView"
+            id="org.nightlabs.jfire.prop.edit.blockbased.BlockBasedEditorView"
+            name="BlockBasedEditorView"/>
+   </extension>
+   <extension
+         point="org.eclipse.ui.viewActions">
+      <viewContribution
+            id="org.nightlabs.jfire.prop.structedit.StructEditView"
+            targetID="org.nightlabs.jfire.prop.structedit.StructEditView">
+         <action
+               class="org.nightlabs.jfire.base.prop.structedit.action.AddStructBlockAction"
+               icon="icons/structedit/action/AddStructFieldAction.16x16.gif"
+               id="org.nightlabs.jfire.base.prop.structedit.action.AddStructBlockAction"
+               label="Add a new StructBlock"
+               style="push"
+               toolbarPath="additions"/>
+         <action
+               class="org.nightlabs.jfire.base.prop.structedit.action.AddStructFieldAction"
+               icon="icons/structedit/action/AddStructFieldAction.16x16.png"
+               id="org.nightlabs.jfire.base.prop.structedit.action.AddStructFieldAction"
+               label="Add a new StructField"
+               style="push"
+               toolbarPath="additions"/>
+         <action
+               class="org.nightlabs.jfire.base.prop.structedit.action.RemoveStructElementAction"
+               icon="icons/structedit/action/RemoveStructElementAction.16x16.png"
+               id="org.nightlabs.jfire.base.prop.structedit.action.RemoveStructElementAction"
+               label="Remove the selected struct element"
+               style="push"
+               toolbarPath="additions"/>
+         <action
+               class="org.nightlabs.jfire.base.prop.structedit.action.StoreStructure"
+               icon="icons/structedit/action/StoreStructure.16x16.png"
+               id="org.nightlabs.jfire.base.prop.structedit.action.StoreStructure"
+               label="Store the current structure on the server"
+               style="push"
+               toolbarPath="additions"/>
+      </viewContribution>
+   </extension>
+   <extension
+         point="org.nightlabs.jfire.base.propStructField">
+      <propStructField
+            class="org.nightlabs.jfire.prop.TextStructField"
+            description="Simple field for textual input"
+            editorFactoryClass="org.nightlabs.jfire.base.prop.structedit.TextStructFieldEditor$TextStructFieldEditorFactory"
+            factoryClass="org.nightlabs.jfire.base.prop.structedit.TextStructFieldFactory"
+            name="Text field"/>
+      <propStructField
+            class="org.nightlabs.jfire.prop.SelectionStructField"
+            description="Field that lets the user select from a predefined domain of values"
+            editorFactoryClass="org.nightlabs.jfire.base.prop.structedit.SelectionStructFieldEditor$SelectionStructFieldEditorFactory"
+            factoryClass="org.nightlabs.jfire.base.prop.structedit.SelectionStructFieldFactory"
+            name="Selection field"/>
+   </extension>
+ 	<extension
+       id="org.nightlabs.jfire.person.edit.blockbased.special.PersonalDataBlockEditor"
+       point="org.nightlabs.jfire.base.specialisedDataBlockEditor">
+    	<specialisedDataBlockEditor
+          class="org.nightlabs.jfire.base.person.edit.blockbased.special.PersonalDataBlockEditor$Factory"
+		/>
+    	<specialisedDataBlockEditor
+          class="org.nightlabs.jfire.base.person.edit.blockbased.special.CommentDataBlockEditor$Factory"
+		/>
+	</extension>
+   <extension
+         point="org.nightlabs.jfire.base.propDataFieldEditorFactory">
+      <propDataFieldEditorFactory
+            class="org.nightlabs.jfire.base.prop.edit.blockbased.TextDataFieldEditor$Factory"
+            targetType="org.nightlabs.jfire.prop.TextDataField"/>
+   </extension>
+			
 </plugin>

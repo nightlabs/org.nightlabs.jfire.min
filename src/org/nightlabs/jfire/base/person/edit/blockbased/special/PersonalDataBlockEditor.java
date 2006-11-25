@@ -31,34 +31,34 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-
-import org.nightlabs.jfire.base.person.edit.PersonDataFieldEditor;
-import org.nightlabs.jfire.base.person.edit.PersonDataFieldEditorFactoryRegistry;
-import org.nightlabs.jfire.base.person.edit.PersonDataFieldEditorNotFoundException;
-import org.nightlabs.jfire.base.person.edit.blockbased.ExpandableBlocksPersonEditor;
-import org.nightlabs.jfire.base.person.edit.blockbased.PersonDataBlockEditor;
-import org.nightlabs.jfire.base.person.edit.blockbased.PersonDataBlockEditorFactory;
-import org.nightlabs.jfire.person.AbstractPersonDataField;
-import org.nightlabs.jfire.person.PersonDataBlock;
-import org.nightlabs.jfire.person.PersonDataFieldNotFoundException;
+import org.nightlabs.jfire.base.prop.edit.DataFieldEditor;
+import org.nightlabs.jfire.base.prop.edit.DataFieldEditorFactoryRegistry;
+import org.nightlabs.jfire.base.prop.edit.DataFieldEditorNotFoundException;
+import org.nightlabs.jfire.base.prop.edit.blockbased.DataBlockEditor;
+import org.nightlabs.jfire.base.prop.edit.blockbased.DataBlockEditorFactory;
+import org.nightlabs.jfire.base.prop.edit.blockbased.ExpandableBlocksEditor;
 import org.nightlabs.jfire.person.PersonStruct;
-import org.nightlabs.jfire.person.id.PersonStructBlockID;
-import org.nightlabs.jfire.person.id.PersonStructFieldID;
+import org.nightlabs.jfire.prop.AbstractDataField;
+import org.nightlabs.jfire.prop.DataBlock;
+import org.nightlabs.jfire.prop.IStruct;
+import org.nightlabs.jfire.prop.exception.DataFieldNotFoundException;
+import org.nightlabs.jfire.prop.id.StructBlockID;
+import org.nightlabs.jfire.prop.id.StructFieldID;
 
 /**
  * 
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  *
  */
-public class PersonalDataBlockEditor extends PersonDataBlockEditor {
+public class PersonalDataBlockEditor extends DataBlockEditor {
 
 	/**
 	 * LOG4J logger used by this class
 	 */
 	private static final Logger logger = Logger.getLogger(PersonalDataBlockEditor.class);
 	
-	public PersonalDataBlockEditor(PersonDataBlock dataBlock, Composite parent, int style) {		
-		super(dataBlock, parent, style);
+	public PersonalDataBlockEditor(IStruct struct, DataBlock dataBlock, Composite parent, int style) {		
+		super(struct, dataBlock, parent, style);
 		try {
 			setLayoutData(new GridData(GridData.FILL_BOTH));
 			GridLayout thisLayout = new GridLayout();
@@ -77,31 +77,32 @@ public class PersonalDataBlockEditor extends PersonDataBlockEditor {
 	}
 	
 	private void createFieldEditors() {
-		addPersonalDataFieldEditor(PersonStruct.PERSONALDATA_NAME,3);
-		addPersonalDataFieldEditor(PersonStruct.PERSONALDATA_FIRSTNAME,3);
-		addPersonalDataFieldEditor(PersonStruct.PERSONALDATA_COMPANY,3);
-		addPersonalDataFieldEditor(PersonStruct.PERSONALDATA_SALUTATION,1);
-		addPersonalDataFieldEditor(PersonStruct.PERSONALDATA_TITLE,1);
-		addPersonalDataFieldEditor(PersonStruct.PERSONALDATA_DATEOFBIRTH,1);
+		addDataFieldEditor(PersonStruct.PERSONALDATA_NAME,3);
+		addDataFieldEditor(PersonStruct.PERSONALDATA_FIRSTNAME,3);
+		addDataFieldEditor(PersonStruct.PERSONALDATA_COMPANY,3);
+		addDataFieldEditor(PersonStruct.PERSONALDATA_SALUTATION,1);
+		addDataFieldEditor(PersonStruct.PERSONALDATA_TITLE,1);
+		addDataFieldEditor(PersonStruct.PERSONALDATA_DATEOFBIRTH,1);
 	}
 
-	private void addPersonalDataFieldEditor(PersonStructFieldID fieldID, int horizontalSpan) 
+	private void addDataFieldEditor(StructFieldID fieldID, int horizontalSpan) 
 	{
 	 
-		AbstractPersonDataField field = null;
+		AbstractDataField field = null;
 		try {
-			field = dataBlock.getPersonDataField(fieldID);
-		} catch (PersonDataFieldNotFoundException e) {
-			logger.error("addPersonalDataFieldEditor(PersonStructFieldID fieldID) PersonDataField not found for fieldID continuing: "+fieldID.toString(),e);
+			field = dataBlock.getDataField(fieldID);
+		} catch (DataFieldNotFoundException e) {
+			logger.error("addDataFieldEditor(StructFieldID fieldID) DataField not found for fieldID continuing: "+fieldID.toString(),e);
 		}
-		PersonDataFieldEditor editor = null;
+		DataFieldEditor editor = null;
 		if (!hasFieldEditorFor(field)) { 
 			try {
-				editor = PersonDataFieldEditorFactoryRegistry.sharedInstance().getNewEditorInstance(
-					field,
-					ExpandableBlocksPersonEditor.EDITORTYPE_BLOCK_BASED_EXPANDABLE
+				editor = DataFieldEditorFactoryRegistry.sharedInstance().getNewEditorInstance(
+						getStruct(), ExpandableBlocksEditor.EDITORTYPE_BLOCK_BASED_EXPANDABLE,
+						"", // TODO: Context ?!?
+						field					
 				);
-			} catch (PersonDataFieldEditorNotFoundException e1) {
+			} catch (DataFieldEditorNotFoundException e1) {
 				logger.error("addPersonalDataFieldEditor(PersonStructFieldID fieldID) PersonDataFieldEditor not found for fieldID continuing: "+fieldID.toString(),e1);
 			}
 			Control editorControl = editor.createControl(this);
@@ -115,32 +116,32 @@ public class PersonalDataBlockEditor extends PersonDataBlockEditor {
 		else {
 			editor = getFieldEditor(field);
 		}
-		editor.setData(field);
+		editor.setData(getStruct(), field);
 		editor.refresh();
 	}
 
-	/**
-	 * @see org.nightlabs.jfire.base.person.edit.blockbased.PersonDataBlockEditor#refresh(org.nightlabs.jfire.base.person.PersonDataBlock)
-	 */
-	public void refresh(PersonDataBlock block) {
+	@Override
+	public void refresh(IStruct struct, DataBlock block) {
 		this.dataBlock = block;
 		createFieldEditors();
 	}
 
 
-	public static class Factory implements PersonDataBlockEditorFactory {  
+	public static class Factory implements DataBlockEditorFactory {  
 		/**
 		 * @see org.nightlabs.jfire.base.person.edit.blockbased.PersonDataBlockEditorFactory#getProviderStructBlockID()
 		 */
-		public PersonStructBlockID getProviderStructBlockID() {
+		public StructBlockID getProviderStructBlockID() {
 			return PersonStruct.PERSONALDATA;
 		}
 		
 		/**
 		 * @see org.nightlabs.jfire.base.person.edit.blockbased.PersonDataBlockEditorFactory#createPersonDataBlockEditor(org.nightlabs.jfire.base.person.PersonDataBlock, org.eclipse.swt.widgets.Composite, int)
 		 */
-		public PersonDataBlockEditor createPersonDataBlockEditor(PersonDataBlock dataBlock, Composite parent, int style) {
-			return new PersonalDataBlockEditor(dataBlock,parent,style);
+		public DataBlockEditor createPropDataBlockEditor(IStruct struct, DataBlock dataBlock, Composite parent, int style) {
+			return new PersonalDataBlockEditor(struct, dataBlock, parent, style);
 		}
 	}
+
+
 }

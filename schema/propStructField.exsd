@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!-- Schema file written by PDE -->
-<schema targetNamespace="org.nightlabs.jfire.base">
+<schema targetNamespace="org.nightlabs.jfire.prop">
 <annotation>
       <appInfo>
-         <meta.schema plugin="org.nightlabs.jfire.base" id="person_edit_specializedDataBlockEditor" name="Specialized PersonDataBlockEditors"/>
+         <meta.schema plugin="org.nightlabs.jfire.prop" id="propStructField" name="propStructField"/>
       </appInfo>
       <documentation>
          [Enter description of this extension point.]
@@ -13,7 +13,7 @@
    <element name="extension">
       <complexType>
          <sequence>
-            <element ref="specializedDataBlockEditor" minOccurs="1" maxOccurs="unbounded"/>
+            <element ref="propStructField"/>
          </sequence>
          <attribute name="point" type="string" use="required">
             <annotation>
@@ -34,30 +34,61 @@
                <documentation>
                   
                </documentation>
+               <appInfo>
+                  <meta.attribute translatable="true"/>
+               </appInfo>
             </annotation>
          </attribute>
       </complexType>
    </element>
 
-   <element name="specializedDataBlockEditor">
-      <annotation>
-         <appInfo>
-            <meta.element labelAttribute="class"/>
-         </appInfo>
-         <documentation>
-            Defines a specialized PersonDataBlockEditor contrary to the generic default ones.
-Extendors have to provide an implementation of PersonDataBlockEditorProvider.
-         </documentation>
-      </annotation>
+   <element name="propStructField">
       <complexType>
-         <attribute name="class" type="string">
+         <attribute name="name" type="string">
+            <annotation>
+               <documentation>
+                  The name of the struct field.
+               </documentation>
+               <appInfo>
+                  <meta.attribute translatable="true"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+         <attribute name="class" type="string" use="required">
             <annotation>
                <documentation>
                   
                </documentation>
                <appInfo>
-                  <meta.attribute kind="java" basedOn="org.nightlabs.jfire.base.person.edit.blockbased.PersonDataBlockEditorProvider"/>
+                  <meta.attribute kind="java" basedOn="org.nightlabs.jfire.prop.AbstractPropStructField"/>
                </appInfo>
+            </annotation>
+         </attribute>
+         <attribute name="factoryClass" type="string" use="required">
+            <annotation>
+               <documentation>
+                  A factory able to create an instance of the struct field.
+               </documentation>
+               <appInfo>
+                  <meta.attribute kind="java" basedOn="org.nightlabs.jfire.prop.structedit.IStructFieldFactory"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+         <attribute name="editorFactoryClass" type="string" use="required">
+            <annotation>
+               <documentation>
+                  A factory able to create a specific editor for the given struct field.
+               </documentation>
+               <appInfo>
+                  <meta.attribute kind="java" basedOn="org.nightlabs.jfire.prop.structedit.IStructFieldEditorFactory"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+         <attribute name="description" type="string">
+            <annotation>
+               <documentation>
+                  A brief description of the functionality of the struct field.
+               </documentation>
             </annotation>
          </attribute>
       </complexType>
@@ -104,7 +135,7 @@ Extendors have to provide an implementation of PersonDataBlockEditorProvider.
          <meta.section type="copyright"/>
       </appInfo>
       <documentation>
-         NightLabs GmbH 2005
+         
       </documentation>
    </annotation>
 

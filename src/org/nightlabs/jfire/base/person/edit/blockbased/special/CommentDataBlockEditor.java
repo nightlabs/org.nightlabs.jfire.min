@@ -40,28 +40,28 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-
-import org.nightlabs.jfire.base.person.edit.DataFieldEditorChangeListener;
-import org.nightlabs.jfire.base.person.edit.PersonDataFieldEditor;
-import org.nightlabs.jfire.base.person.edit.PersonDataFieldEditorFactory;
-import org.nightlabs.jfire.base.person.edit.blockbased.ExpandableBlocksPersonEditor;
-import org.nightlabs.jfire.base.person.edit.blockbased.PersonDataBlockEditor;
-import org.nightlabs.jfire.base.person.edit.blockbased.PersonDataBlockEditorFactory;
-import org.nightlabs.jfire.person.AbstractPersonDataField;
-import org.nightlabs.jfire.person.PersonDataBlock;
-import org.nightlabs.jfire.person.PersonDataFieldNotFoundException;
+import org.nightlabs.jfire.base.prop.edit.DataFieldEditor;
+import org.nightlabs.jfire.base.prop.edit.DataFieldEditorChangeListener;
+import org.nightlabs.jfire.base.prop.edit.DataFieldEditorFactory;
+import org.nightlabs.jfire.base.prop.edit.blockbased.DataBlockEditor;
+import org.nightlabs.jfire.base.prop.edit.blockbased.DataBlockEditorFactory;
+import org.nightlabs.jfire.base.prop.edit.blockbased.ExpandableBlocksEditor;
 import org.nightlabs.jfire.person.PersonStruct;
-import org.nightlabs.jfire.person.TextPersonDataField;
-import org.nightlabs.jfire.person.id.PersonStructBlockID;
+import org.nightlabs.jfire.prop.AbstractDataField;
+import org.nightlabs.jfire.prop.DataBlock;
+import org.nightlabs.jfire.prop.IStruct;
+import org.nightlabs.jfire.prop.TextDataField;
+import org.nightlabs.jfire.prop.exception.DataFieldNotFoundException;
+import org.nightlabs.jfire.prop.id.StructBlockID;
 
 /**
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  *
  */
-public class CommentDataBlockEditor extends PersonDataBlockEditor
+public class CommentDataBlockEditor extends DataBlockEditor
 	implements 
 		ModifyListener,
-		PersonDataFieldEditor
+		DataFieldEditor
 {
 	
 	/**
@@ -78,26 +78,26 @@ public class CommentDataBlockEditor extends PersonDataBlockEditor
 	 * @param parent
 	 * @param style
 	 */
-	public CommentDataBlockEditor(PersonDataBlock dataBlock, Composite parent, int style) {
-		super(dataBlock, parent, style);
+	public CommentDataBlockEditor(IStruct struct, DataBlock dataBlock, Composite parent, int style) {
+		super(struct, dataBlock, parent, style);
 		setLayoutData(new GridData(GridData.FILL_BOTH));
 		GridLayout thisLayout = new GridLayout();
 		thisLayout.horizontalSpacing = 2;
 		thisLayout.verticalSpacing = 2;
 		this.setLayout(thisLayout);
-		refresh(dataBlock);
+		refresh(struct, dataBlock);
 	}
 
 	/**
-	 * @see org.nightlabs.jfire.base.person.edit.blockbased.PersonDataBlockEditor#refresh(org.nightlabs.jfire.base.person.PersonDataBlock)
+	 * @see org.nightlabs.jfire.base.person.edit.blockbased.DataBlockEditor#refresh(org.nightlabs.jfire.base.person.DataBlock)
 	 */
-	public void refresh(PersonDataBlock block) {
+	public void refresh(IStruct struct, DataBlock block) {
 		this.dataBlock = block;
 		try {
-			commentData = (TextPersonDataField)dataBlock.getPersonDataField(PersonStruct.COMMENT_COMMENT);
+			commentData = (TextDataField)dataBlock.getDataField(PersonStruct.COMMENT_COMMENT);
 			refresh();
-		} catch (PersonDataFieldNotFoundException e) {
-			logger.error("PersonDataField not found. ",e);
+		} catch (DataFieldNotFoundException e) {
+			logger.error("DataField not found. ",e);
 			commentData = null;
 		}
 	}
@@ -112,28 +112,28 @@ public class CommentDataBlockEditor extends PersonDataBlockEditor
 	}
 
 	/**
-	 * @see org.nightlabs.jfire.base.person.edit.PersonDataFieldEditor#getTargetPersonDataType()
+	 * @see org.nightlabs.jfire.base.person.edit.DataFieldEditor#getTargetDataType()
 	 */
-	public Class getTargetPersonDataType() {
-		return TextPersonDataField.class;
+	public Class getTargetDataType() {
+		return TextDataField.class;
 	}
 
 	/**
-	 * @see org.nightlabs.jfire.base.person.edit.PersonDataFieldEditor#getEditorType()
+	 * @see org.nightlabs.jfire.base.person.edit.DataFieldEditor#getEditorType()
 	 */
 	public String getEditorType() {
-		return ExpandableBlocksPersonEditor.EDITORTYPE_BLOCK_BASED_EXPANDABLE;
+		return ExpandableBlocksEditor.EDITORTYPE_BLOCK_BASED_EXPANDABLE;
 	}
 
 	/**
-	 * @see org.nightlabs.jfire.base.person.edit.PersonDataFieldEditor#createControl(org.eclipse.swt.widgets.Composite)
+	 * @see org.nightlabs.jfire.base.person.edit.DataFieldEditor#createControl(org.eclipse.swt.widgets.Composite)
 	 */
 	public Control createControl(Composite parent) {
 		if (textComment == null) {			
 			labelTitle = new Label(parent,SWT.NONE);
 			labelTitle.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 			
-			textComment = new Text(parent,SWT.MULTI);
+			textComment = new Text(parent, SWT.MULTI | SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);
 			GridData commentLData = new GridData();
 			commentLData.grabExcessHorizontalSpace = true;
 			commentLData.grabExcessVerticalSpace = true;
@@ -144,24 +144,14 @@ public class CommentDataBlockEditor extends PersonDataBlockEditor
 		return this;
 	}
 
-	/**
-	 * @see org.nightlabs.jfire.base.person.edit.PersonDataFieldEditor#getNewEditorInstance(org.nightlabs.jfire.base.person.AbstractPersonDataField)
-	 */
-	public PersonDataFieldEditor getNewEditorInstance(AbstractPersonDataField data) {
-		return new CommentDataBlockEditor(dataBlock,getParent(),getStyle());
+	public DataFieldEditor getNewEditorInstance(IStruct struct, AbstractDataField data) {
+		return new CommentDataBlockEditor(struct, dataBlock,getParent(),getStyle());
 	}
 
-	private TextPersonDataField commentData;
-	/**
-	 * @see org.nightlabs.jfire.base.person.edit.PersonDataFieldEditor#setData(org.nightlabs.jfire.base.person.AbstractPersonDataField)
-	 */
-	public void setData(AbstractPersonDataField data) {
-		commentData = (TextPersonDataField)data;
-		refresh();
-	}
+	private TextDataField commentData;
 
 	/**
-	 * @see org.nightlabs.jfire.base.person.edit.PersonDataFieldEditor#refresh()
+	 * @see org.nightlabs.jfire.base.person.edit.DataFieldEditor#refresh()
 	 */
 	public void refresh() {
 		refreshing = true;
@@ -181,14 +171,14 @@ public class CommentDataBlockEditor extends PersonDataBlockEditor
 	private List fieldEditorChangeListener = new LinkedList();
 	
 	/**
-	 * @see org.nightlabs.jfire.base.person.edit.PersonDataFieldEditor#addDataFieldEditorChangedListener(org.nightlabs.jfire.base.person.edit.DataFieldEditorChangeListener)
+	 * @see org.nightlabs.jfire.base.person.edit.DataFieldEditor#addDataFieldEditorChangedListener(org.nightlabs.jfire.base.person.edit.DataFieldEditorChangeListener)
 	 */
 	public void addDataFieldEditorChangedListener(DataFieldEditorChangeListener listener) {
 		fieldEditorChangeListener.add(listener);
 	}
 
 	/**
-	 * @see org.nightlabs.jfire.base.person.edit.PersonDataFieldEditor#removeDataFieldEditorChangedListener(org.nightlabs.jfire.base.person.edit.DataFieldEditorChangeListener)
+	 * @see org.nightlabs.jfire.base.person.edit.DataFieldEditor#removeDataFieldEditorChangedListener(org.nightlabs.jfire.base.person.edit.DataFieldEditorChangeListener)
 	 */
 	public void removeDataFieldEditorChangedListener(DataFieldEditorChangeListener listener) {
 		fieldEditorChangeListener.remove(listener);
@@ -197,7 +187,7 @@ public class CommentDataBlockEditor extends PersonDataBlockEditor
 	
 	private boolean changed = false;
 	/**
-	 * @see org.nightlabs.jfire.base.person.edit.PersonDataFieldEditor#setChanged(boolean)
+	 * @see org.nightlabs.jfire.base.person.edit.DataFieldEditor#setChanged(boolean)
 	 */	
 	public void setChanged(boolean changed) {
 		this.changed = changed;
@@ -205,7 +195,7 @@ public class CommentDataBlockEditor extends PersonDataBlockEditor
 			notifyChangeListeners(this);
 	}
 	
-	protected synchronized void notifyChangeListeners(PersonDataFieldEditor dataFieldEditor) {
+	protected synchronized void notifyChangeListeners(DataFieldEditor dataFieldEditor) {
 		if (refreshing)
 			return;
 		// first notify fieldEditorChangeListener
@@ -218,26 +208,26 @@ public class CommentDataBlockEditor extends PersonDataBlockEditor
 	}
 
 	/**
-	 * @see org.nightlabs.jfire.base.person.edit.PersonDataFieldEditor#isChanged()
+	 * @see org.nightlabs.jfire.base.person.edit.DataFieldEditor#isChanged()
 	 */
 	public boolean isChanged() {
 		return changed;
 	}
 
 	
-	public static class Factory implements PersonDataBlockEditorFactory {
+	public static class Factory implements DataBlockEditorFactory {
 		/**
-		 * @see org.nightlabs.jfire.base.person.edit.blockbased.PersonDataBlockEditorFactory#getProviderStructBlockID()
+		 * @see org.nightlabs.jfire.base.person.edit.blockbased.DataBlockEditorFactory#getProviderStructBlockID()
 		 */
-		public PersonStructBlockID getProviderStructBlockID() {
+		public StructBlockID getProviderStructBlockID() {
 			return PersonStruct.COMMENT;
 		}
 		
 		/**
-		 * @see org.nightlabs.jfire.base.person.edit.blockbased.PersonDataBlockEditorFactory#createPersonDataBlockEditor(org.nightlabs.jfire.base.person.PersonDataBlock, org.eclipse.swt.widgets.Composite, int)
+		 * @see org.nightlabs.jfire.base.person.edit.blockbased.DataBlockEditorFactory#createDataBlockEditor(org.nightlabs.jfire.base.person.DataBlock, org.eclipse.swt.widgets.Composite, int)
 		 */
-		public PersonDataBlockEditor createPersonDataBlockEditor(PersonDataBlock dataBlock, Composite parent, int style) {
-			return new CommentDataBlockEditor(dataBlock,parent,style);
+		public DataBlockEditor createPropDataBlockEditor(IStruct struct, DataBlock dataBlock, Composite parent, int style) {
+			return new CommentDataBlockEditor(struct, dataBlock,parent,style);
 		}
 	}
 
@@ -246,14 +236,19 @@ public class CommentDataBlockEditor extends PersonDataBlockEditor
 		return this;
 	}
 
-	protected PersonDataFieldEditorFactory factory;
+	protected DataFieldEditorFactory factory;
 	
-	public void setPersonDataFieldEditorFactory(PersonDataFieldEditorFactory factory) {
+	public void setPropDataFieldEditorFactory(DataFieldEditorFactory factory) {
 		this.factory = factory;
 	}
 
-	public PersonDataFieldEditorFactory getPersonDataFieldEditorFactory() {
+	public DataFieldEditorFactory getPropDataFieldEditorFactory() {
 		return factory;
+	}
+
+	public void setData(IStruct struct, AbstractDataField data) {
+		commentData = (TextDataField)data;
+		refresh();
 	}
 
 }

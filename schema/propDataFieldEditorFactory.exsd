@@ -1,19 +1,19 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!-- Schema file written by PDE -->
-<schema targetNamespace="org.nightlabs.jfire.base">
+<schema targetNamespace="org.nightlabs.jfire.prop">
 <annotation>
       <appInfo>
-         <meta.schema plugin="org.nightlabs.jfire.base" id="person_edit_personDataFieldEditorFactory" name="PersonDataFieldEditor"/>
+         <meta.schema plugin="org.nightlabs.jfire.prop" id="propDataFieldEditorFactory" name="PersonDataFieldEditor"/>
       </appInfo>
       <documentation>
-         Defines a editor for a specific subclass of AbstractPersonDataField.
+         Defines an editor factory for a specific subclass of AbstractPersonDataField.
       </documentation>
    </annotation>
 
    <element name="extension">
       <complexType>
          <sequence>
-            <element ref="personDataFieldEditorFactory" minOccurs="1" maxOccurs="unbounded"/>
+            <element ref="propDataFieldEditorFactory" minOccurs="1" maxOccurs="unbounded"/>
          </sequence>
          <attribute name="point" type="string" use="required">
             <annotation>
@@ -34,39 +34,34 @@
                <documentation>
                   
                </documentation>
+               <appInfo>
+                  <meta.attribute translatable="true"/>
+               </appInfo>
             </annotation>
          </attribute>
       </complexType>
    </element>
 
-   <element name="personDataFieldEditorFactory">
-      <annotation>
-         <appInfo>
-            <meta.element labelAttribute="editorDescription"/>
-         </appInfo>
-         <documentation>
-            Defines one PersonDataFieldEditor for one subclass of AbstractPersonDataField and a editorType.
-         </documentation>
-      </annotation>
+   <element name="propDataFieldEditorFactory">
       <complexType>
          <attribute name="class" type="string" use="required">
             <annotation>
                <documentation>
-                  PersonDataFieldEditors define their class here.&lt;br&gt;
-This has to be a implementor of org.nightlabs.jfire.base.person.edit.PersonDataFieldEditorFactory&lt;br&gt;
-A PersonDataFieldEditorFactory has to define its editor-type and target-type itself, they don&apos;t have to be defined here.&lt;br&gt;
-See the interface documentations for more details.
+                  Subclass of AbstractPropDataFieldEditorFactory that should provided an DataFieldEditor for the given DataField.
                </documentation>
                <appInfo>
-                  <meta.attribute kind="java" basedOn="org.nightlabs.jfire.base.person.edit.PersonDataFieldEditor"/>
+                  <meta.attribute kind="java" basedOn="org.nightlabs.jfire.base.prop.edit.AbstractPropDataFieldEditorFactory"/>
                </appInfo>
             </annotation>
          </attribute>
-         <attribute name="editorDescription" type="string">
+         <attribute name="targetType" type="string" use="required">
             <annotation>
                <documentation>
-                  A optional description for the PersonDataFieldEditor
+                  DataField whose Editor is to be registered.
                </documentation>
+               <appInfo>
+                  <meta.attribute kind="java" basedOn="org.nightlabs.jfire.prop.AbstractPropDataField"/>
+               </appInfo>
             </annotation>
          </attribute>
       </complexType>
@@ -77,7 +72,7 @@ See the interface documentations for more details.
          <meta.section type="since"/>
       </appInfo>
       <documentation>
-         1.0
+         [Enter the first release in which this extension point appears.]
       </documentation>
    </annotation>
 
@@ -86,7 +81,7 @@ See the interface documentations for more details.
          <meta.section type="examples"/>
       </appInfo>
       <documentation>
-         
+         [Enter extension point usage example here.]
       </documentation>
    </annotation>
 
@@ -95,7 +90,7 @@ See the interface documentations for more details.
          <meta.section type="apiInfo"/>
       </appInfo>
       <documentation>
-         
+         [Enter API information here.]
       </documentation>
    </annotation>
 
@@ -104,7 +99,7 @@ See the interface documentations for more details.
          <meta.section type="implementation"/>
       </appInfo>
       <documentation>
-         
+         [Enter information about supplied implementation of this extension point.]
       </documentation>
    </annotation>
 
@@ -113,7 +108,7 @@ See the interface documentations for more details.
          <meta.section type="copyright"/>
       </appInfo>
       <documentation>
-         NightLabs GmbH 2005
+         
       </documentation>
    </annotation>
 
