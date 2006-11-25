@@ -344,7 +344,7 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 		currentBlocks = currentStruct.getStructBlocks();
 
 		for (StructBlock block : currentBlocks) {
-			if (block.getOrganisationID().equals(Organisation.DEVIL_ORGANISATION_ID)) {
+			if (block.getStructBlockOrganisationID().equals(Organisation.DEVIL_ORGANISATION_ID)) {
 				int index = modifiedBlocks.indexOf(block);
 				if (index != -1)
 					modifiedBlocks.set(index, block);
