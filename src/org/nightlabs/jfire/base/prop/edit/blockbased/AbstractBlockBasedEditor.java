@@ -91,7 +91,7 @@ public abstract class AbstractBlockBasedEditor implements PropertyEditor { // ex
 	 * Returns the prop.
 	 * @return
 	 */
-	public Property getProp() {
+	public Property getProperty() {
 		return prop;
 	}
 
