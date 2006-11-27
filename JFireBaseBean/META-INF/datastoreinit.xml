@@ -3,6 +3,6 @@
 		"http://www.nightlabs.de/dtd/datastoreinit_1_0.dtd">
 <datastore-initialization>
 	<init bean="jfire/ejb/JFireBaseBean/ConfigManager" method="initialize"/>
-	<init bean="jfire/ejb/JFireBaseBean/OrganisationManager" method="registerInRootOrganisation"/>
+	<init bean="jfire/ejb/JFireBaseBean/OrganisationManager" method="registerInRootOrganisation" priority="999"/>
 	<init bean="jfire/ejb/JFireBaseBean/JFireTimer" method="startTimer"/>
 </datastore-initialization>
