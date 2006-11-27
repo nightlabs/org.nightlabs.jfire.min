@@ -65,7 +65,7 @@ Here is an example:
 	The "init" element has the following attributes:
 		- bean (necessary)
 		- method (necessary)
-		- priority (optional, defaults to "50")
+		- priority (optional, defaults to "500")
 	And it contains the following child nodes:
 		- depends (zero or more)
 
@@ -78,9 +78,9 @@ Here is an example:
 				The name of the method to call. This method must not have any
 				parameters.
 		- priority:
-				A number from 0 to 99 where 0 is the highest priority. If you omit
-				this attribute, it defaults to 50. You should not assign values below
-				10 and above 89, if you don't know what you're doing.
+				A number from 0 to 999 where 0 is the highest priority. If you omit
+				this attribute, it defaults to 500. You should not assign values below
+				100 and above 899, if you don't know what you're doing.
 -->
 <!ELEMENT init (depends*)>
 <!ATTLIST init bean CDATA>
@@ -98,9 +98,9 @@ Here is an example:
 
 	The "depends" element has the following attributes:
 		- module (necessary)
-		- archive (necessary)
-		- bean (necessary)
-		- method (necessary)
+		- archive (optional)
+		- bean (optional)
+		- method (optional)
 
 	These attributes have the following meaning:
 		- module:
@@ -113,6 +113,12 @@ Here is an example:
 				Same as the one in the other init declaration.
 		- method:
 				Same as the one in the other init declaration.
+
+	If at least one of archive, bean or method is empty or missing, all declared
+	inits which match the declared attributes, are understood as dependencies. In
+	other words: If you declare only module="JFireTrade.ear" as dependency and omit
+	archive, bean and method, then all inits declared by the module JFireTrade.ear
+	must first be executed, before your init will be launched.
 -->
 <!ELEMENT depends EMPTY>
 <!ATTLIST depends module CDATA>

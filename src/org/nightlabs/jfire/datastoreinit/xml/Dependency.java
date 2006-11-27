@@ -45,14 +45,23 @@ public class Dependency
 		if (module == null)
 			throw new NullPointerException("module must be defined!");
 
+//		if (archive == null)
+//			throw new NullPointerException("archive must be defined!");
+//
+//		if (bean == null)
+//			throw new NullPointerException("bean must be defined!");
+//
+//		if (method == null)
+//			throw new NullPointerException("method must be defined!");
+
 		if (archive == null)
-			throw new NullPointerException("archive must be defined!");
+			archive = "";
 
 		if (bean == null)
-			throw new NullPointerException("bean must be defined!");
+			bean = "";
 
 		if (method == null)
-			throw new NullPointerException("method must be defined!");
+			method = "";
 
 		this.init = init;
 		this.module = module;
@@ -123,5 +132,25 @@ public class Dependency
 	public void setMethod(String method)
 	{
 		this.method = method;
+	}
+
+	@Override
+	public String toString()
+	{
+		return this.getClass().getName() + '['
+			+ "init=" + init.toStringWithoutDependencies() + ','
+			+ "module=" + module + ','
+			+ "archive=" + archive + ','
+			+ "bean=" + bean + ','
+			+ "method=" + method + ']';
+	}
+
+	public String toStringWithoutInit()
+	{
+		return this.getClass().getName() + '['
+			+ "module=" + module + ','
+			+ "archive=" + archive + ','
+			+ "bean=" + bean + ','
+			+ "method=" + method + ']';
 	}
 }

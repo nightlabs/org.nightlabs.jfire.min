@@ -28,6 +28,7 @@ package org.nightlabs.jfire.datastoreinit.xml;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -40,7 +41,7 @@ public class Init
 	private String method;
 	private int priority;
 
-	private List dependencies = new ArrayList();
+	private List<Dependency> dependencies = new ArrayList<Dependency>();
 
 	public Init(DatastoreInitMan datastoreInitMan, String bean, String method, int priority)
 	{
@@ -97,6 +98,9 @@ public class Init
 	 */
 	public void setPriority(int priority)
 	{
+		if (priority < 0 || priority > 999)
+			throw new IllegalArgumentException("priority out of range! must be 0..999");
+
 		this.priority = priority;
 	}
 	
@@ -107,8 +111,46 @@ public class Init
 	/**
 	 * @return Returns the dependencies.
 	 */
-	public Collection getDependencies()
+	public Collection<Dependency> getDependencies()
 	{
-		return dependencies;
+		return Collections.unmodifiableList(dependencies);
 	}
+	public void replaceDependency(Dependency oldDependency, Collection<Dependency> newDependencies)
+	{
+		int idx = dependencies.indexOf(oldDependency);
+		if (idx >= 0)
+			dependencies.remove(idx);
+
+		dependencies.addAll(idx, newDependencies);
+	}
+
+	@Override
+	public String toString()
+	{
+		StringBuffer dependenciesSB = new StringBuffer();
+		dependenciesSB.append('[');
+
+		for (Dependency dependency : dependencies)
+			dependenciesSB.append(dependency.toStringWithoutInit());
+
+		dependenciesSB.append(']');
+
+		return this.getClass().getName() + '['
+			+ "module=" + datastoreInitMan.getJFireEAR() + ','
+			+ "archive=" + datastoreInitMan.getJFireJAR() + ','
+			+ "bean=" + bean + ','
+			+ "method=" + method + ','
+			+ "dependencies=" + dependenciesSB.toString()
+			+ ']';
+	}
+
+	public String toStringWithoutDependencies()
+	{
+		return this.getClass().getName() + '['
+		+ "module=" + datastoreInitMan.getJFireEAR() + ','
+		+ "archive=" + datastoreInitMan.getJFireJAR() + ','
+		+ "bean=" + bean + ','
+		+ "method=" + method + ']';
+	}
+
 }

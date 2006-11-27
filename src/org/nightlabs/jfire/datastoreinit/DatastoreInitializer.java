@@ -79,7 +79,7 @@ public class DatastoreInitializer
 		}
 	};
 
-	private List inits = new ArrayList();
+	private List<Init> inits = new ArrayList<Init>();
 
 	public DatastoreInitializer(JFireServerManagerFactoryImpl jfsmf, ManagedConnectionFactoryImpl mcf, J2EEAdapter j2eeAdapter)
 	{
@@ -120,22 +120,12 @@ public class DatastoreInitializer
 		}
 		// Now all meta data files have been read.
 
-		// Sort the inits by priority
-		Collections.sort(inits, new Comparator() {
-			public int compare(Object obj0,Object obj1) {
-				Init init0 = (Init)obj0;
-				Init init1 = (Init)obj1;
-				if (init0.getPriority() == init1.getPriority())
-					return 0;
+		// resolve wildcard dependencies
+		resolveWildcardDependencies();
 
-				if (init0.getPriority() < init1.getPriority())
-					return -1;
-
-				return 1;
-			}
-		});
-
-		inits = sortByDependencies();
+		// sort the inits
+		sortByPriorityAndAlphabetically();
+		sortByDependencies();
 
 		if (logger.isDebugEnabled()) {
 			logger.debug("************************************************");
@@ -155,10 +145,10 @@ public class DatastoreInitializer
 	/**
 	 * used to detect circular references in addInit(..)
 	 */
-	private HashSet initsInAddProcess = new HashSet();
-	private LinkedList initsInAddProcessStack = new LinkedList();
+	private HashSet<String> initsInAddProcess = new HashSet<String>();
+	private LinkedList<String> initsInAddProcessStack = new LinkedList<String>();
 
-	private void addInit(List res, Set resKeySet, Init init)
+	private void addInit(List<Init> res, Set<String> resKeySet, Init init)
 	{
 		String initKey = init.getDatastoreInitMan().getJFireEAR() + '/' +
 				init.getDatastoreInitMan().getJFireJAR() + '/' +
@@ -216,16 +206,85 @@ public class DatastoreInitializer
 		}
 	}
 
-	private List sortByDependencies()
+	private void resolveWildcardDependencies()
+	{
+		for (Init init : inits) {
+			ArrayList<Dependency> dependencies = new ArrayList<Dependency>(init.getDependencies());
+			for (Dependency dependency : dependencies) {
+				String dep_ear = dependency.getModule();
+				String dep_jar = dependency.getArchive();
+				String dep_bean = dependency.getBean();
+				String dep_method = dependency.getMethod();
+				
+				if ("".equals(dep_jar) ||
+						"".equals(dep_bean) ||
+						"".equals(dep_method))
+				{
+					ArrayList<Dependency> newDependencies = new ArrayList<Dependency>();
+					for (Init i : inits) {
+						if (dep_ear.equals(i.getDatastoreInitMan().getJFireEAR()) &&
+								("".equals(dep_jar) || dep_jar.equals(i.getDatastoreInitMan().getJFireJAR())) &&
+								("".equals(dep_bean) || dep_bean.equals(i.getBean())) &&
+								("".equals(dep_method) || dep_method.equals(i.getMethod())))
+							newDependencies.add(new Dependency(
+									init,
+									i.getDatastoreInitMan().getJFireEAR(),
+									i.getDatastoreInitMan().getJFireJAR(),
+									i.getBean(),
+									i.getMethod()));
+					}
+
+					if (newDependencies.isEmpty())
+						logger.warn("resolveWildcardDependencies: No init found matching wildcard dependency: " + dependency.toString());
+
+					if (logger.isDebugEnabled()) {
+						logger.debug("resolveWildcardDependencies: Replacing wildcard dependency of init:" + init.toStringWithoutDependencies());
+						logger.debug("    - " + dependency.toStringWithoutInit());
+						for (Dependency d : newDependencies)
+							logger.debug("    + " + d.toStringWithoutInit());
+					}
+
+					init.replaceDependency(dependency, newDependencies);
+				}
+			}
+		}
+	}
+
+	private void sortByPriorityAndAlphabetically()
+	{
+		Collections.sort(inits, new Comparator<Init>() {
+			public int compare(Init init0, Init init1) {
+				if (init0.getPriority() == init1.getPriority()) {
+					int res = init0.getDatastoreInitMan().getJFireEAR().compareTo(init1.getDatastoreInitMan().getJFireEAR());
+					if (res != 0)
+						return res;
+
+					res = init0.getDatastoreInitMan().getJFireJAR().compareTo(init1.getDatastoreInitMan().getJFireJAR());
+					if (res != 0)
+						return res;
+
+					res = init0.getBean().compareTo(init1.getBean());
+					if (res != 0)
+						return res;
+
+					return init0.getMethod().compareTo(init1.getMethod());
+				}
+
+				if (init0.getPriority() < init1.getPriority())
+					return -1;
+
+				return 1;
+			}
+		});
+	}
+
+	private void sortByDependencies()
 	{
 		initsInAddProcess.clear();
 		initsInAddProcessStack.clear();
 
-		List res = new ArrayList();
-		Set resKeySet = new HashSet();
-
-		// Stores the String {ear}/{jar}/{bean}/{method}
-		HashSet initsBefore = new HashSet();
+		List<Init> res = new ArrayList<Init>();
+		Set<String> resKeySet = new HashSet<String>();
 
 		// Resolve dependencies and resort the inits to fulfill the dependencies
 		for (Iterator itInits = inits.iterator(); itInits.hasNext(); ) {
@@ -233,7 +292,7 @@ public class DatastoreInitializer
 			addInit(res, resKeySet, init);
 		}
 
-		return res;
+		inits = res;
 	}
 
 	public void initializeDatastore(
@@ -243,16 +302,6 @@ public class DatastoreInitializer
 		throws ModuleException
 	{
 		try {
-//			String username = User.USERID_SYSTEM + '@' + organisationID;
-	
-//			Properties props = new Properties();
-//			String initialContextFactory = ismf.getInitialContextFactory(localServer.getJ2eeServerType(), true);
-//			props.put(InitialContext.INITIAL_CONTEXT_FACTORY, initialContextFactory);
-//			props.put(InitialContext.PROVIDER_URL, localServer.getInitialContextURL());
-//			props.put(InitialContext.SECURITY_PRINCIPAL, username);
-//			props.put(InitialContext.SECURITY_CREDENTIALS, systemUserPassword);
-//			props.put(InitialContext.SECURITY_PROTOCOL, "jfire");
-
 			Properties props = InvokeUtil.getInitialContextProperties(ismf, localServer, organisationID, User.USERID_SYSTEM, systemUserPassword);
 			InitialContext initCtx = new InitialContext(props);
 			try {
@@ -260,26 +309,10 @@ public class DatastoreInitializer
 					Init init = (Init)it.next();
 					logger.info("Invoking DatastoreInit: " + init.getDatastoreInitMan().getJFireEAR() + '/' + init.getDatastoreInitMan().getJFireJAR() + '/' + init.getBean() + '#' + init.getMethod());
 					try {
-//						Object homeRef = initCtx.lookup(init.getBean());
-//						Method homeCreate = homeRef.getClass().getMethod("create", (Class[]) null);
-//						Object bean = homeCreate.invoke(homeRef, (Object[]) null);
 						Object bean = InvokeUtil.createBean(initCtx, init.getBean());
 						Method beanMethod = bean.getClass().getMethod(init.getMethod(), (Class[]) null);
 						beanMethod.invoke(bean, (Object[]) null);
 						InvokeUtil.removeBean(bean);
-//						try {
-//							if (bean instanceof EJBObject)
-//								((EJBObject)bean).remove();
-//	
-//							if (bean instanceof EJBLocalObject)
-//								((EJBLocalObject)bean).remove();
-//						} catch (Exception x) {
-//							logger.warn(
-//									"Init could not remove bean! EAR=\""+init.getDatastoreInitMan().getJFireEAR()+"\"" +
-//											" JAR=\""+init.getDatastoreInitMan().getJFireJAR()+"\"" +
-//											" Bean=\""+init.getBean()+"\"", x);
-//						}
-
 					} catch (Exception x) {
 						logger.error(
 								"Init failed! EAR=\""+init.getDatastoreInitMan().getJFireEAR()+"\"" +

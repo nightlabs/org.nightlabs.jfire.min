@@ -33,15 +33,14 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.apache.xpath.CachedXPathAPI;
+import org.nightlabs.xml.DOMParser;
+import org.nightlabs.xml.XMLReadException;
 import org.w3c.dom.Node;
 import org.w3c.dom.traversal.NodeIterator;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
-
-import org.nightlabs.xml.DOMParser;
-import org.nightlabs.xml.XMLReadException;
 
 /**
  * @author Marco Schulze - marco at nightlabs dot de
@@ -68,7 +67,7 @@ public class DatastoreInitMan
 	/**
 	 * Holds instances of type <tt>Init</tt>.
 	 */
-	private List inits = new ArrayList();
+	private List<Init> inits = new ArrayList<Init>();
 
 	public DatastoreInitMan(String _jfireEAR, String _jfireJAR, InputStream ejbJarIn)
 	throws XMLReadException
@@ -138,7 +137,7 @@ public class DatastoreInitMan
 				if (methodStr == null)
 					throw new XMLReadException("jfireEAR '"+_jfireEAR+"' jfireJAR '"+_jfireJAR+"': Reading datastoreinit.xml failed: Attribute 'method' of element 'init' must be defined!");
 
-				int priority = 50;
+				int priority = 500;
 				if (priorityStr != null) {
 					try {
 						priority = Integer.parseInt(priorityStr);
@@ -185,16 +184,16 @@ public class DatastoreInitMan
 					}
 
 					if (moduleStr == null)
-						throw new XMLReadException("jfireEAR '"+_jfireEAR+"' jfireJAR '"+_jfireJAR+"': Reading datastoreinit.xml failed: Attribute 'bean' of element 'module' must be defined!");
+						throw new XMLReadException("jfireEAR '"+_jfireEAR+"' jfireJAR '"+_jfireJAR+"': Reading datastoreinit.xml failed: Attribute 'module' of element 'depends' must be defined!");
 
-					if (archiveStr == null)
-						throw new XMLReadException("jfireEAR '"+_jfireEAR+"' jfireJAR '"+_jfireJAR+"': Reading datastoreinit.xml failed: Attribute 'bean' of element 'archive' must be defined!");
-
-					if (beanStr == null)
-						throw new XMLReadException("jfireEAR '"+_jfireEAR+"' jfireJAR '"+_jfireJAR+"': Reading datastoreinit.xml failed: Attribute 'bean' of element 'depends' must be defined!");
-
-					if (methodStr == null)
-						throw new XMLReadException("jfireEAR '"+_jfireEAR+"' jfireJAR '"+_jfireJAR+"': Reading datastoreinit.xml failed: Attribute 'method' of element 'depends' must be defined!");
+//					if (archiveStr == null)
+//						throw new XMLReadException("jfireEAR '"+_jfireEAR+"' jfireJAR '"+_jfireJAR+"': Reading datastoreinit.xml failed: Attribute 'archive' of element 'depends' must be defined!");
+//
+//					if (beanStr == null)
+//						throw new XMLReadException("jfireEAR '"+_jfireEAR+"' jfireJAR '"+_jfireJAR+"': Reading datastoreinit.xml failed: Attribute 'bean' of element 'depends' must be defined!");
+//
+//					if (methodStr == null)
+//						throw new XMLReadException("jfireEAR '"+_jfireEAR+"' jfireJAR '"+_jfireJAR+"': Reading datastoreinit.xml failed: Attribute 'method' of element 'depends' must be defined!");
 
 					Dependency dep = new Dependency(init, moduleStr, archiveStr, beanStr, methodStr);
 					init.addDependency(dep);
