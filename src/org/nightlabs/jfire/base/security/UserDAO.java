@@ -33,7 +33,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.jdo.JDOObjectDAO;
 import org.nightlabs.jfire.base.login.Login;
-import org.nightlabs.jfire.base.prop.StructDAO;
 import org.nightlabs.jfire.base.prop.StructLocalDAO;
 import org.nightlabs.jfire.idgenerator.IDGenerator;
 import org.nightlabs.jfire.person.Person;
@@ -180,7 +179,7 @@ public class UserDAO extends JDOObjectDAO<UserID, User>
 				struct.implodeProperty(user.getPerson());
 			um.saveUser(user, null);
 			monitor.worked(1);
-			StructDAO.sharedInstance().getStruct(Person.class.getName()).explodeProperty(person);    
+			StructLocalDAO.sharedInstance().getStructLocal(Person.class.getName()).explodeProperty(person);    
 			monitor.worked(1);
 		} catch(Exception e) {
 			throw new RuntimeException("User upload failed", e);
