@@ -1500,7 +1500,12 @@ public class CacheManagerFactory
 										pm,
 										filterWithDirtyObjectIDs.dirtyObjectIDsRaw);
 
-								filterWithDirtyObjectIDs.dirtyObjectIDsFiltered = filterWithDirtyObjectIDs.filter.filter(event);
+								try {
+									filterWithDirtyObjectIDs.dirtyObjectIDsFiltered = filterWithDirtyObjectIDs.filter.filter(event);
+								} catch (Throwable t) {
+									// TODO should we add all DirtyObjectIDs if we have an exception during filtering?
+									logger.error("distributeDirtyObjectIDs_filter: organisationID=" + organisationID + ": Filtering DirtyObjectIDs failed!", t);
+								}
 							}
 						} finally {
 							pm.close();
