@@ -109,6 +109,7 @@ implements Serializable
 			debugLogFilters();
 	}
 
+// TODO maybe we should manage interfaces, as well. Marco.
 	private void findMatchingFilters(
 			Map<AbsoluteFilterID, IJDOLifecycleListenerFilter> outFilters,
 			Map<Boolean, Map<Class, Map<AbsoluteFilterID, IJDOLifecycleListenerFilter>>> inFilters,
