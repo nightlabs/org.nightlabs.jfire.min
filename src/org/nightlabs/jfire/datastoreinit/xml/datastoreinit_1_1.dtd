@@ -86,8 +86,8 @@ Here is an example:
 				100 and above 899, if you don't know what you're doing.
 -->
 <!ELEMENT init (depends*)>
-<!ATTLIST init bean CDATA>
-<!ATTLIST init method CDATA>
+<!ATTLIST init bean CDATA #IMPLIED>
+<!ATTLIST init method CDATA #IMPLIED>
 <!ATTLIST init priority CDATA #IMPLIED>
 
 <!--
@@ -124,7 +124,7 @@ Here is an example:
 	must first be executed, before your init will be launched.
 -->
 <!ELEMENT depends EMPTY>
-<!ATTLIST depends module CDATA>
+<!ATTLIST depends module CDATA #IMPLIED>
 <!ATTLIST depends archive CDATA #IMPLIED>
 <!ATTLIST depends bean CDATA #IMPLIED>
 <!ATTLIST depends method CDATA #IMPLIED>

@@ -9,13 +9,13 @@ import org.nightlabs.jfire.servermanager.ra.JFireServerManagerFactoryImpl;
 
 /**
  * <p>
- * This is the base class for all server initializers. A ServerInitializerDelegate is triggered,
+ * This is the base class for all server initializers. A ServerInitialiserDelegate is triggered,
  * whenever the server boots after all other initialization is done. In most of the use
  * cases, you'd probably prefer to use the datastore initialization mechanism as
  * <a href="https://www.jfire.org/modules/phpwiki/index.php/HowToDataStoreInit">described in the wiki</a>.
  * </p>
  * <p>
- * Currently, there can only be one ServerInitializerDelegate per EAR. You register it by placing
+ * Currently, there can only be one ServerInitialiserDelegate per EAR. You register it by placing
  * a file called <code>serverinit.properties</code> into the EAR directory (parallel to
  * the *.jar, *.war and *.rar files). Into this <code>serverinit.properties</code>, you declare
  * your initializer as value to the property <code>serverInitializer.class</code>.
@@ -23,7 +23,7 @@ import org.nightlabs.jfire.servermanager.ra.JFireServerManagerFactoryImpl;
  * <p>
  * <u>Example:</u><br/>
  * <code>
- * serverInitializer.class=org.nightlabs.jfire.chezfrancois.ChezFrancoisServerInitializer
+ * serverInitialiser.class=org.nightlabs.jfire.chezfrancois.ChezFrancoisServerInitialiser
  * </code>
  * </p>
  * <p>
@@ -36,19 +36,19 @@ import org.nightlabs.jfire.servermanager.ra.JFireServerManagerFactoryImpl;
  * directory name.
  * </p>
  * <p>
- * A common use case for the <code>ServerInitializerDelegate</code> is the setup of a demo system,
+ * A common use case for the <code>ServerInitialiserDelegate</code> is the setup of a demo system,
  * because this requires to create one or more organisations.
  * </p>
  * <p>
  * For the setup of a demo system, it is recommended to combine the server init with the
- * datastore init: Declare a ServerInitializerDelegate only for the creation of the necessary
+ * datastore init: Declare a ServerInitialiserDelegate only for the creation of the necessary
  * datastores and populate the demo data via the datastore init. When doing that, you must
  * of course check the organisation id in your datastore init beans!
  * </p>
  *
  * @author Marco Schulze - marco at nightlabs dot de
  */
-public abstract class ServerInitializerDelegate
+public abstract class ServerInitialiserDelegate
 {
 	private JFireServerManagerFactory jFireServerManagerFactory;
 

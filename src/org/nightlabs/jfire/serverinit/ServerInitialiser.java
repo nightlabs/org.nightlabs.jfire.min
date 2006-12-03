@@ -45,18 +45,18 @@ import org.nightlabs.jfire.servermanager.ra.ManagedConnectionFactoryImpl;
 /**
  * @author Marco Schulze - marco at nightlabs dot de
  */
-public class ServerInitializer
+public class ServerInitialiser
 {
 	/**
 	 * LOG4J logger used by this class
 	 */
-	private static final Logger logger = Logger.getLogger(ServerInitializer.class);
+	private static final Logger logger = Logger.getLogger(ServerInitialiser.class);
 	
 	private final J2EEAdapter j2eeAdapter;
 	private final JFireServerManagerFactoryImpl jFireServerManagerFactory;
 	private final ManagedConnectionFactoryImpl managedConnectionFactory;
 
-	public ServerInitializer(JFireServerManagerFactoryImpl jfsmf, ManagedConnectionFactoryImpl mcf, J2EEAdapter j2eeAdapter)
+	public ServerInitialiser(JFireServerManagerFactoryImpl jfsmf, ManagedConnectionFactoryImpl mcf, J2EEAdapter j2eeAdapter)
 	{
 		this.jFireServerManagerFactory = jfsmf;
 		this.managedConnectionFactory = mcf;
@@ -104,10 +104,10 @@ public class ServerInitializer
 
 			try {
 				Class serverInitializerClass = Class.forName(serverInitializerClassName);
-				if (!ServerInitializerDelegate.class.isAssignableFrom(serverInitializerClass))
-					throw new ClassCastException("Class " + serverInitializerClassName + " does not extend " + ServerInitializerDelegate.class);
+				if (!ServerInitialiserDelegate.class.isAssignableFrom(serverInitializerClass))
+					throw new ClassCastException("Class " + serverInitializerClassName + " does not extend " + ServerInitialiserDelegate.class);
 
-				ServerInitializerDelegate serverInitializer = (ServerInitializerDelegate) serverInitializerClass.newInstance();
+				ServerInitialiserDelegate serverInitializer = (ServerInitialiserDelegate) serverInitializerClass.newInstance();
 				serverInitializer.setInitialContext(ctx);
 				serverInitializer.setJFireServerManagerFactory(jFireServerManagerFactory);
 				serverInitializer.setJ2EEVendorAdapter(j2eeAdapter);

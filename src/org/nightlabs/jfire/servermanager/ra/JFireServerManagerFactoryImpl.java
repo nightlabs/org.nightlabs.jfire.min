@@ -106,7 +106,7 @@ import org.nightlabs.jfire.security.registry.SecurityRegistrar;
 import org.nightlabs.jfire.security.registry.SecurityRegistrarFactoryImpl;
 import org.nightlabs.jfire.server.Server;
 import org.nightlabs.jfire.serverconfigurator.ServerConfigurator;
-import org.nightlabs.jfire.serverinit.ServerInitializer;
+import org.nightlabs.jfire.serverinit.ServerInitialiser;
 import org.nightlabs.jfire.servermanager.DuplicateOrganisationException;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.servermanager.JFireServerManagerFactory;
@@ -599,7 +599,7 @@ public class JFireServerManagerFactoryImpl
 				}
 
 				// Server Initialization
-				new ServerInitializer(this, mcf, getJ2EEVendorAdapter()).initializeServer(ctx);
+				new ServerInitialiser(this, mcf, getJ2EEVendorAdapter()).initializeServer(ctx);
 			} finally {
 				ctx.close();
 			}
