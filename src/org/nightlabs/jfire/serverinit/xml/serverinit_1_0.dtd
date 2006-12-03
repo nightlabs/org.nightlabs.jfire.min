@@ -6,9 +6,8 @@ Rehlingstr. 6d
 79100 Freiburg, Germany
 All rights reserved.
 
-This is the DTD defining which bean methods should be called
-for initialisation to be done when a new JFire (http://jfire.org)
-server is started.
+This is the DTD defining how to tell JFire (http://jfire.org) 
+which ServerInitialisers to call upon a server startup.
 
    Use is subject to license terms.
 -->
@@ -16,7 +15,9 @@ server is started.
 <!NOTATION ServerInitialisation.1_1 PUBLIC
           "-//NightLabs GmbH//DTD Server Initialisation 1.0//EN">
 <!--
-This is the XML DTD for the initialisation of a new JFire server.
+This is the XML DTD for the initialisation of a JFire server
+upon startup.
+
 All server initialisation metadata descriptors must include a
 DOCTYPE of the following form:
 
