@@ -111,7 +111,7 @@ public class ServerInitialiser
 				serverInitializer.setInitialContext(ctx);
 				serverInitializer.setJFireServerManagerFactory(jFireServerManagerFactory);
 				serverInitializer.setJ2EEVendorAdapter(j2eeAdapter);
-				serverInitializer.initialize();
+				serverInitializer.initialise();
 			} catch (Exception x) {
 				logger.error("Executing server init EAR \"" + serverInitEAR + "\" failed!", x);
 				continue loopServerInitEARs;
