@@ -96,9 +96,9 @@ public class ServerInitialiser
 				in.close();
 			}
 
-			String serverInitializerClassName = (String) serverInitEARProperties.get("serverInitializer.class");
+			String serverInitializerClassName = (String) serverInitEARProperties.get("serverInitialiser.class");
 			if (serverInitializerClassName == null || "".equals(serverInitializerClassName)) {
-				logger.error("Server init EAR \"" + serverInitEAR + "\" contains a \"serverinit.properties\" file, but this file misses the property \"serverInitializer.class\"!");
+				logger.error("Server init EAR \"" + serverInitEAR + "\" contains a \"serverinit.properties\" file, but this file misses the property \"serverInitialiser.class\"!");
 				continue loopServerInitEARs;
 			}
 
