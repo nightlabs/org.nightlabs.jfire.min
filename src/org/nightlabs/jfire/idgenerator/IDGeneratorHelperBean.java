@@ -108,8 +108,11 @@ extends BaseSessionBeanImpl implements SessionBean
 					idNamespace = (IDNamespace) pm.getObjectById(IDNamespaceID.create(organisationID, namespace));
 					idNamespace.getCacheSizeServer(); // workaround for JPOX bug - the JDOObjectNotFoundException doesn't occur always in the above line
 				} catch (JDOObjectNotFoundException e) {
-					idNamespace = new IDNamespace(getOrganisationID(), namespace);
-					pm.makePersistent(idNamespace);
+					idNamespace = new IDNamespace(
+							getOrganisationID(),
+							namespace,
+							IDNamespaceDefault.getIDNamespaceDefault(pm, organisationID, namespace));
+					idNamespace = (IDNamespace) pm.makePersistent(idNamespace);
 				}
 
 				int quantity = minCacheSize - currentCacheSize + idNamespace.getCacheSizeServer();
