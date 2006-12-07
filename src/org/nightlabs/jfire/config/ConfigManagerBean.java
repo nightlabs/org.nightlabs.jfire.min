@@ -47,6 +47,7 @@ import org.nightlabs.jdo.moduleregistry.ModuleMetaData;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.base.JFireBaseEAR;
 import org.nightlabs.jfire.config.id.ConfigID;
+import org.nightlabs.jfire.workstation.WorkstationFeaturesCfMod;
 
 /**
  * @ejb.bean name="jfire/ejb/JFireBaseBean/ConfigManager"
@@ -593,7 +594,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 * @throws ModuleException
 	 *
 	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
+	 * @ejb.permission role-name="_System_"
 	 * @ejb.transaction type = "Required"
 	 */
 	public void initialize() 
@@ -620,7 +621,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 
 			WorkstationConfigSetup workstationConfigSetup = new WorkstationConfigSetup(organisationID);
 			pm.makePersistent(workstationConfigSetup);
-			workstationConfigSetup.getConfigModuleClasses().add(FeatureSetConfigModule.class.getName());
+			workstationConfigSetup.getConfigModuleClasses().add(WorkstationFeaturesCfMod.class.getName());
 		} finally {
 			pm.close();
 		}
