@@ -15,6 +15,16 @@ import org.nightlabs.jfire.workstation.id.WorkstationID;
 public class WorkstationDAO
 extends JDOObjectDAO<WorkstationID, Workstation>
 {
+	protected WorkstationDAO() { }
+
+	private static WorkstationDAO sharedInstance = null;
+	public static synchronized WorkstationDAO sharedInstance()
+	{
+		if (sharedInstance == null)
+			sharedInstance = new WorkstationDAO();
+
+		return sharedInstance;
+	}
 
 	protected Collection<Workstation> retrieveJDOObjects(
 			Set<WorkstationID> workstationIDs, String[] fetchGroups, int maxFetchDepth,
