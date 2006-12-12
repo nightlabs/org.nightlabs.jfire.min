@@ -71,8 +71,7 @@ public abstract class ServerInitialiserDelegate implements IServerInitialiser
 	 *
 	 * @param fireServerManagerFactory
 	 */
-	public void setJFireServerManagerFactory(
-			JFireServerManagerFactory fireServerManagerFactory)
+	public void setJFireServerManagerFactory(JFireServerManagerFactory fireServerManagerFactory)
 	{
 		jFireServerManagerFactory = fireServerManagerFactory;
 	}

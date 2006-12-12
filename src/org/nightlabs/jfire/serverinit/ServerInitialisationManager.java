@@ -10,11 +10,15 @@ import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+import javax.naming.InitialContext;
+
 import org.apache.log4j.Logger;
 import org.apache.xpath.CachedXPathAPI;
 import org.nightlabs.jfire.init.AbstractInitialisationManager;
 import org.nightlabs.jfire.init.DependencyCycleException;
 import org.nightlabs.jfire.init.InitException;
+import org.nightlabs.jfire.servermanager.JFireServerManager;
+import org.nightlabs.jfire.servermanager.JFireServerManagerFactory;
 import org.nightlabs.jfire.servermanager.j2ee.J2EEAdapter;
 import org.nightlabs.jfire.servermanager.ra.JFireServerManagerFactoryImpl;
 import org.nightlabs.jfire.servermanager.ra.ManagedConnectionFactoryImpl;
@@ -57,10 +61,14 @@ public class ServerInitialisationManager extends AbstractInitialisationManager<S
 
 	private List<ServerInit> earlyInits = new ArrayList<ServerInit>();
 	private List<ServerInit> lateInits = new ArrayList<ServerInit>();
+	
+	private JFireServerManagerFactory jfireServerManagerFactory;
 
 	public ServerInitialisationManager(JFireServerManagerFactoryImpl jfsmf, ManagedConnectionFactoryImpl mcf,
 			J2EEAdapter j2eeAdapter)
 	throws ServerInitException {
+		jfireServerManagerFactory = jfsmf;
+		
 		String deployBaseDir = mcf.getConfigModule().getJ2ee().getJ2eeDeployBaseDirectory();
 		File jfireModuleBaseDir = new File(deployBaseDir);
 		PrefixTree<ServerInit> earlyInitTrie = new PrefixTree<ServerInit>();
@@ -270,27 +278,29 @@ public class ServerInitialisationManager extends AbstractInitialisationManager<S
 			return new String[] { module, archive, theClass };
 	}
 	
-	public void performEarlyInits() {
-		initialiseServer(earlyInits);
+	public void performEarlyInits(InitialContext ctx) {
+		initialiseServer(earlyInits, ctx);
 	}
 	
-	public void performLateInits() {
-		initialiseServer(lateInits);
+	public void performLateInits(InitialContext ctx) {
+		initialiseServer(lateInits, ctx);
 	}
 
-	private void initialiseServer(List<ServerInit> inits) {
+	private void initialiseServer(List<ServerInit> inits, InitialContext ctx) {
 		if (!canPerformInit) {
 			logger.error("Server initialisation can not be performed due to errors above.");
 			return;
 		}
-
+		
 		for (ServerInit init : inits) {
 			logger.info("Invoking ServerInit: " + init);
 			try {
 				Object initialiserObj = Class.forName(init.getInitialiserClass()).newInstance();
-				if (initialiserObj instanceof IServerInitialiser) {
-					IServerInitialiser initialiser = (IServerInitialiser) initialiserObj;
-					initialiser.initialise();
+				if (initialiserObj instanceof ServerInitialiserDelegate) {
+					ServerInitialiserDelegate serverInitialiser = (ServerInitialiserDelegate) initialiserObj;
+					serverInitialiser.setInitialContext(ctx);
+					serverInitialiser.setJFireServerManagerFactory(jfireServerManagerFactory);					
+					serverInitialiser.initialise();
 				} else {
 					throw new Exception("Class \'" + init.getInitialiserClass() + "\' does not implement IServerInitialiser");
 				}

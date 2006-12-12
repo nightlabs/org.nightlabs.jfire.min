@@ -85,8 +85,8 @@ public class DatastoreInitialisationManager extends AbstractInitialisationManage
 						if (je != null) {
 							InputStream in = jf.getInputStream(je);
 							try {								
-								List<DatastoreInit> inits = parseDatastoreInitXML(ear.getName(), jar.getName(), in);
-								for (DatastoreInit init : inits) {									
+								List<DatastoreInit> serverInits = parseDatastoreInitXML(ear.getName(), jar.getName(), in);
+								for (DatastoreInit init : serverInits) {									
 									inits.add(init);
 									initTrie.insert(new String[] {init.getMethod(), init.getArchive(), init.getBean(), init.getMethod()}, init);
 								}
@@ -131,6 +131,8 @@ public class DatastoreInitialisationManager extends AbstractInitialisationManage
 	public List<DatastoreInit> parseDatastoreInitXML(String jfireEAR, String jfireJAR, InputStream ejbJarIn)
 	throws XMLReadException
 	{
+		List<DatastoreInit> serverInits = new ArrayList<DatastoreInit>();
+		
 		try {
 			InputSource inputSource = new InputSource(ejbJarIn);
 			DOMParser parser = new DOMParser();
@@ -252,7 +254,7 @@ public class DatastoreInitialisationManager extends AbstractInitialisationManage
 					nDepends = niDepends.nextNode();
 				}
 
-				inits.add(init);
+				serverInits.add(init);
 
 				nInit = ni.nextNode();
 			}
@@ -262,7 +264,7 @@ public class DatastoreInitialisationManager extends AbstractInitialisationManage
 			throw new XMLReadException("jfireEAR '"+jfireEAR+"' jfireJAR '"+jfireJAR+"': Reading datastoreinit.xml failed!", x);
 		}
 		
-		return inits;
+		return serverInits;
 	}
 
 	@Override
@@ -289,7 +291,7 @@ public class DatastoreInitialisationManager extends AbstractInitialisationManage
 		return toReturn.toArray(new String[0]);
 	}
 	
-	public void initializeDatastore(JFireServerManagerFactory ismf, ServerCf localServer, String organisationID, String systemUserPassword)
+	public void initialiseDatastore(JFireServerManagerFactory ismf, ServerCf localServer, String organisationID, String systemUserPassword)
 	throws ModuleException
 	{
 		if (!canPerformInit) {
