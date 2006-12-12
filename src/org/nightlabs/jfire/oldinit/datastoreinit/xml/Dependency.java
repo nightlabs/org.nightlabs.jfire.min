@@ -24,7 +24,7 @@
  *                                                                             *
  ******************************************************************************/
 
-package org.nightlabs.jfire.datastoreinit.xml;
+package org.nightlabs.jfire.oldinit.datastoreinit.xml;
 
 /**
  * @author Marco Schulze - marco at nightlabs dot de

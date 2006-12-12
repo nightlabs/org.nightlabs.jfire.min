@@ -24,7 +24,7 @@
  *                                                                             *
  ******************************************************************************/
 
-package org.nightlabs.jfire.datastoreinit.xml;
+package org.nightlabs.jfire.oldinit.datastoreinit.xml;
 
 import java.io.InputStream;
 import java.util.ArrayList;

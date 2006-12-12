@@ -34,18 +34,17 @@ Here is an example:
 		PUBLIC "-//NightLabs GmbH//DTD Server Initialisation 1.0//EN"
 		"http://www.nightlabs.de/dtd/serverinit_1_0.dtd">
 	<server-initialisation>
-		<init class="org.nightlabs.jfire.chezfrancois.ChezFrancoisServerInitialiser" priority="200">
+		<early-init class="org.nightlabs.jfire.chezfrancois.ChezFrancoisServerInitialiser" priority="200">
 			<depends
 					module="Dependency.ear"
 					archive="Dependency.jar"
-					class="org.nightlabs.jfire.dependency.DependencyInitialiser"
-					afterDatastoreInit="false" />
+					class="org.nightlabs.jfire.dependency.DependencyServerInitialiser" />
 
 			<depends
 					module="AnotherModule.ear" />
-		</init>
+		</early-init>
 
-		<init class="org.nightlabs.jfire.AnotherInitialiser" />
+		<late-init class="org.nightlabs.jfire.AnotherServerInitialiser" />
 	</server-initialisation>
 	- - - /example - - -
 -->
@@ -57,14 +56,17 @@ Here is an example:
 	It contains the following elements:
 		- init (one or more)
 -->
-<!ELEMENT server-initialisation (init+)>
+<!ELEMENT server-initialisation (early-init*,late-init*)>
 
 <!--
-	The "init" element defines a class that must be a subclass of ServerInitialiserDelegate.
-	The given Initialiser is instantiated and its method initialise() called, after the
-	execution order has been determined by resolving dependencies between Initialiers.
+	The "early-init" and "late-init" elements define a class that must extend IServerInitialiser.
+	The given Initialiser is instantiated and its method initialise() called, after the execution
+	order has been determined by resolving dependencies between Initialiers.
+	
+	All "early-init"s are executed *before* all declared datastore inits whereas all "late-init"s
+	are executed *after* all declared datastore inits.
 
-	The "init" element has the following attributes:
+	Both element have the following attributes:
 		- class (necessary)
 		- priority (optional, defaults to "500")
 	And it contains the following child nodes:
@@ -72,22 +74,28 @@ Here is an example:
 
 	The attributes have the following meaning:
 		- class:
-			The subclass of ServerInitialiserDelegate that is supposed to do the initialisation.
+			The implementor of IServerInitialiser that is supposed to do the initialisation.
 		- priority:
 			A number from 0 to 999 where 0 is the highest priority. If you omit
 			this attribute, it defaults to 500. You should not assign values below
-			100 and above 899, if you don't know what you're doing.
+			100 and above 899, if you don't know what you're doing..
 -->
-<!ELEMENT init (depends*)>
+<!ELEMENT early-init (depends*)>
+<!ATTLIST early-init class CDATA #REQUIRED>
+<!ATTLIST early-init priority CDATA #IMPLIED>
 
-<!ATTLIST init bean CDATA #IMPLIED>
-<!ATTLIST init method CDATA #IMPLIED>
-<!ATTLIST init priority CDATA #IMPLIED>
+<!ELEMENT late-init (depends*)>
+<!ATTLIST late-init class CDATA #REQUIRED>
+<!ATTLIST late-init priority CDATA #IMPLIED>
 
 <!--
 	The "depends" element defines another "init" declaration which should
 	have been done before. If the declared dependency does not exist, a
 	warning will be logged, but the initialisation will be done anyway.
+	
+	When defining dependencies, you have to be aware, that inits of a type (early-init
+	or late-init) can only have dependencies of the *same* type.
+	I.e. dependencies from late-inits on early-inits or vice versa are not possible
 
 	If there are multiple "depends" declarations, this initialisation will be performed
 	after all dependent ones have been called. If there is a circular dependency, a
@@ -100,13 +108,12 @@ Here is an example:
 
 	These attributes have the following meaning:
 		- module:
-			Defines the name of the J2EE enterprise archive.
-			Example: "JFireBase.ear"
+			Defines the name of the J2EE enterprise archive. Example: "JFireBase.ear"
 		- archive:
-			Defines another archive in the form "ArchiveName.jar" where the
-			other init is defined in.
+			Defines another archive in the form "ArchiveName.jar" where the required init is
+			defined in.
 		- class:
-			The subclass of ServerInitialiserDelegate that is supposed to do the initialisation.
+			The implementor of IServerInitialiser that is supposed to do the initialisation.
 			
 	If at least one of archive or method is empty or missing, all declared
 	inits which match the declared attributes, are understood as dependencies. In
@@ -115,7 +122,6 @@ Here is an example:
 	must first be executed, before your init will be launched.
 -->
 <!ELEMENT depends EMPTY>
-<!ATTLIST depends module CDATA #IMPLIED>
+<!ATTLIST depends module CDATA #REQUIRED>
 <!ATTLIST depends archive CDATA #IMPLIED>
-<!ATTLIST depends bean CDATA #IMPLIED>
-<!ATTLIST depends method CDATA #IMPLIED>
+<!ATTLIST depends class CDATA #IMPLIED>

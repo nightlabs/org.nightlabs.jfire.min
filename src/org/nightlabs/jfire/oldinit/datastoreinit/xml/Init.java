@@ -24,7 +24,7 @@
  *                                                                             *
  ******************************************************************************/
 
-package org.nightlabs.jfire.datastoreinit.xml;
+package org.nightlabs.jfire.oldinit.datastoreinit.xml;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -115,6 +115,7 @@ public class Init
 	{
 		return Collections.unmodifiableList(dependencies);
 	}
+	
 	public void replaceDependency(Dependency oldDependency, Collection<Dependency> newDependencies)
 	{
 		int idx = dependencies.indexOf(oldDependency);

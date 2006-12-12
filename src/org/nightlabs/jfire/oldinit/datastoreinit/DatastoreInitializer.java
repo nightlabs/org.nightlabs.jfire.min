@@ -24,7 +24,7 @@
  *                                                                             *
  ******************************************************************************/
 
-package org.nightlabs.jfire.datastoreinit;
+package org.nightlabs.jfire.oldinit.datastoreinit;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -47,9 +47,9 @@ import javax.naming.InitialContext;
 import org.apache.log4j.Logger;
 import org.nightlabs.ModuleException;
 import org.nightlabs.jfire.base.InvokeUtil;
-import org.nightlabs.jfire.datastoreinit.xml.DatastoreInitMan;
-import org.nightlabs.jfire.datastoreinit.xml.Dependency;
-import org.nightlabs.jfire.datastoreinit.xml.Init;
+import org.nightlabs.jfire.oldinit.datastoreinit.xml.DatastoreInitMan;
+import org.nightlabs.jfire.oldinit.datastoreinit.xml.Dependency;
+import org.nightlabs.jfire.oldinit.datastoreinit.xml.Init;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.servermanager.JFireServerManagerFactory;
 import org.nightlabs.jfire.servermanager.config.ServerCf;

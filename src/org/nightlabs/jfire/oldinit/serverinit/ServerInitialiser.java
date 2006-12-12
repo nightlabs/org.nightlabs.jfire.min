@@ -23,7 +23,7 @@
  *                                                                             *
  *                                                                             *
  ******************************************************************************/
-package org.nightlabs.jfire.serverinit;
+package org.nightlabs.jfire.oldinit.serverinit;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -38,6 +38,7 @@ import java.util.Properties;
 import javax.naming.InitialContext;
 
 import org.apache.log4j.Logger;
+import org.nightlabs.jfire.serverinit.ServerInitialiserDelegate;
 import org.nightlabs.jfire.servermanager.j2ee.J2EEAdapter;
 import org.nightlabs.jfire.servermanager.ra.JFireServerManagerFactoryImpl;
 import org.nightlabs.jfire.servermanager.ra.ManagedConnectionFactoryImpl;

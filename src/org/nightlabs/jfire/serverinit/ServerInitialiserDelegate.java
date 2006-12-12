@@ -2,6 +2,7 @@ package org.nightlabs.jfire.serverinit;
 
 import javax.naming.InitialContext;
 
+import org.nightlabs.jfire.init.InitException;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.servermanager.JFireServerManagerFactory;
 import org.nightlabs.jfire.servermanager.j2ee.J2EEAdapter;
@@ -48,7 +49,7 @@ import org.nightlabs.jfire.servermanager.ra.JFireServerManagerFactoryImpl;
  *
  * @author Marco Schulze - marco at nightlabs dot de
  */
-public abstract class ServerInitialiserDelegate
+public abstract class ServerInitialiserDelegate implements IServerInitialiser
 {
 	private JFireServerManagerFactory jFireServerManagerFactory;
 
@@ -100,7 +101,7 @@ public abstract class ServerInitialiserDelegate
 	 * easily by calling {@link JFireServerManager} whether your demo organisation(s) already
 	 * exist(s).
 	 * </p>
-	 * @throws Exception TODO
+	 * @throws InitException when something goes wrong.
 	 */
-	public abstract void initialise() throws Exception;
+	public abstract void initialise() throws InitException;
 }
