@@ -17,7 +17,7 @@ import org.apache.log4j.Logger;
 import org.apache.xpath.CachedXPathAPI;
 import org.nightlabs.ModuleException;
 import org.nightlabs.jfire.base.InvokeUtil;
-import org.nightlabs.jfire.init.AbstractInitialisationManager;
+import org.nightlabs.jfire.init.AbstractInitManager;
 import org.nightlabs.jfire.init.DependencyCycleException;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.servermanager.JFireServerManagerFactory;
@@ -35,12 +35,12 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
-public class DatastoreInitialisationManager extends AbstractInitialisationManager<DatastoreInit, DatastoreInitDependency>{
+public class DatastoreInitManager extends AbstractInitManager<DatastoreInit, DatastoreInitDependency>{
 
 	/**
 	 * LOG4J logger used by this class
 	 */
-	private static final Logger logger = Logger.getLogger(DatastoreInitialisationManager.class);
+	private static final Logger logger = Logger.getLogger(DatastoreInitManager.class);
 
 	private FileFilter earFileFilter = new FileFilter() {
 		public boolean accept(File pathname) {
@@ -63,7 +63,7 @@ public class DatastoreInitialisationManager extends AbstractInitialisationManage
 	 */
 	private List<DatastoreInit> inits = new ArrayList<DatastoreInit>();
 	
-	public DatastoreInitialisationManager(JFireServerManagerFactoryImpl jfsmf, ManagedConnectionFactoryImpl mcf, J2EEAdapter j2eeAdapter)
+	public DatastoreInitManager(JFireServerManagerFactoryImpl jfsmf, ManagedConnectionFactoryImpl mcf, J2EEAdapter j2eeAdapter)
 	throws DatastoreInitException
 	{
 		String deployBaseDir = mcf.getConfigModule().getJ2ee().getJ2eeDeployBaseDirectory();
@@ -88,7 +88,7 @@ public class DatastoreInitialisationManager extends AbstractInitialisationManage
 								List<DatastoreInit> serverInits = parseDatastoreInitXML(ear.getName(), jar.getName(), in);
 								for (DatastoreInit init : serverInits) {									
 									inits.add(init);
-									initTrie.insert(new String[] {init.getMethod(), init.getArchive(), init.getBean(), init.getMethod()}, init);
+									initTrie.insert(new String[] {init.getModule(), init.getArchive(), init.getBean(), init.getMethod()}, init);
 								}
 							} finally {
 								in.close();

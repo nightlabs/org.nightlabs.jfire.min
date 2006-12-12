@@ -83,7 +83,7 @@ import org.nightlabs.jfire.classloader.CLRegistrar;
 import org.nightlabs.jfire.classloader.CLRegistrarFactory;
 import org.nightlabs.jfire.classloader.CLRegistryCfMod;
 import org.nightlabs.jfire.datastoreinit.DatastoreInitException;
-import org.nightlabs.jfire.datastoreinit.DatastoreInitialisationManager;
+import org.nightlabs.jfire.datastoreinit.DatastoreInitManager;
 import org.nightlabs.jfire.idgenerator.IDGenerator;
 import org.nightlabs.jfire.init.DependencyCycleException;
 import org.nightlabs.jfire.jdo.cache.CacheCfMod;
@@ -544,11 +544,11 @@ public class JFireServerManagerFactoryImpl
 					return;
 				
 				ServerInitialisationManager serverInitialisationManager;
-				DatastoreInitialisationManager datastoreInitialisationManager;
+				DatastoreInitManager datastoreInitManager;
 				
 				try {
 					serverInitialisationManager = new ServerInitialisationManager(this, mcf, getJ2EEVendorAdapter());
-					datastoreInitialisationManager = new DatastoreInitialisationManager(this, mcf, getJ2EEVendorAdapter());
+					datastoreInitManager = new DatastoreInitManager(this, mcf, getJ2EEVendorAdapter());
 				}
 				catch(ServerInitException e) {
 					logger.error(e.getMessage());
@@ -605,10 +605,9 @@ public class JFireServerManagerFactoryImpl
 						throw new ResourceException(e.getMessage());
 					}
 
-
 					logger.info("Initialising datastore of organisation \""+organisationID+"\"...");
 					try {
-						datastoreInitialisationManager.initialiseDatastore(this, mcf.getConfigModule().getLocalServer(), organisationID,
+						datastoreInitManager.initialiseDatastore(this, mcf.getConfigModule().getLocalServer(), organisationID,
 							jfireSecurity_createTempUserPassword(organisationID, User.USERID_SYSTEM));
 						
 						// OLD INIT STUFF
@@ -1270,8 +1269,8 @@ public class JFireServerManagerFactoryImpl
 //		String deployBaseDir = mcf.getConfigModule().getJ2ee().getJ2eeDeployBaseDirectory();
 		
 		try {
-			DatastoreInitialisationManager datastoreInitialisationManager = new DatastoreInitialisationManager(this, mcf, getJ2EEVendorAdapter());
-			datastoreInitialisationManager.initialiseDatastore(this, mcf.getConfigModule().getLocalServer(), organisationID,
+			DatastoreInitManager datastoreInitManager = new DatastoreInitManager(this, mcf, getJ2EEVendorAdapter());
+			datastoreInitManager.initialiseDatastore(this, mcf.getConfigModule().getLocalServer(), organisationID,
 					jfireSecurity_createTempUserPassword(organisationID, User.USERID_SYSTEM));
 		} catch (DatastoreInitException e) {
 			logger.error("Datastore initialization for new organisation \""+organisationID+"\" failed!", e);

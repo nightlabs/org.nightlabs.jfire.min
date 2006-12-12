@@ -110,4 +110,9 @@ class DatastoreInitDependency implements IDependency<DatastoreInit> {
 	public void setModule(String module) {
 		this.module = module;
 	}
+	
+	@Override
+	public String toString() {
+		return this.getClass().getSimpleName() + ": " + module + '/' + archive + '/' + bean + '#' + method;
+	}
 }

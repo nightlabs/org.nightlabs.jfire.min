@@ -14,7 +14,7 @@ import javax.naming.InitialContext;
 
 import org.apache.log4j.Logger;
 import org.apache.xpath.CachedXPathAPI;
-import org.nightlabs.jfire.init.AbstractInitialisationManager;
+import org.nightlabs.jfire.init.AbstractInitManager;
 import org.nightlabs.jfire.init.DependencyCycleException;
 import org.nightlabs.jfire.init.InitException;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
@@ -38,7 +38,7 @@ import org.xml.sax.SAXParseException;
  * 
  * @author Tobias Langner <!-- tobias[DOT]langner[AT]nightlabs[DOT]de -->
  */
-public class ServerInitialisationManager extends AbstractInitialisationManager<ServerInit, ServerInitDependency> {
+public class ServerInitialisationManager extends AbstractInitManager<ServerInit, ServerInitDependency> {
 	/**
 	 * LOG4J logger used by this class
 	 */
