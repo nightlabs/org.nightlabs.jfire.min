@@ -38,11 +38,11 @@ import org.xml.sax.SAXParseException;
  * 
  * @author Tobias Langner <!-- tobias[DOT]langner[AT]nightlabs[DOT]de -->
  */
-public class ServerInitialisationManager extends AbstractInitManager<ServerInit, ServerInitDependency> {
+public class ServerInitManager extends AbstractInitManager<ServerInit, ServerInitDependency> {
 	/**
 	 * LOG4J logger used by this class
 	 */
-	private static final Logger logger = Logger.getLogger(ServerInitialisationManager.class);
+	private static final Logger logger = Logger.getLogger(ServerInitManager.class);
 	private boolean canPerformInit = false;
 
 	private SAXParseException parseException = null;
@@ -64,7 +64,7 @@ public class ServerInitialisationManager extends AbstractInitManager<ServerInit,
 	
 	private JFireServerManagerFactory jfireServerManagerFactory;
 
-	public ServerInitialisationManager(JFireServerManagerFactoryImpl jfsmf, ManagedConnectionFactoryImpl mcf,
+	public ServerInitManager(JFireServerManagerFactoryImpl jfsmf, ManagedConnectionFactoryImpl mcf,
 			J2EEAdapter j2eeAdapter)
 	throws ServerInitException {
 		jfireServerManagerFactory = jfsmf;
@@ -123,7 +123,11 @@ public class ServerInitialisationManager extends AbstractInitManager<ServerInit,
 		// Now all inits have references of their required and dependent inits.
 		Comparator<ServerInit> comp = new Comparator<ServerInit>() {
 			public int compare(ServerInit o1, ServerInit o2) {
-				return o1.getPriority() - o2.getPriority();
+				int prioDiff = o1.getPriority() - o2.getPriority();
+				if (prioDiff != 0)
+					return prioDiff;
+				else
+					return o1.getName().compareTo(o2.getName());
 			}
 		};
 		try {

@@ -87,7 +87,11 @@ implements IDirectedGraphNode<I>
 	}
 	
 	public String toStringWithDependencies() {
-		String toReturn = getName() + " depends on:";
+		String toReturn = getName();
+		if (requiredInits.isEmpty())
+			return toReturn + " (autonomous)";
+		
+		toReturn += " depends on:";
 		for (I init : requiredInits)
 			toReturn += "\n  - " + init;
 		return toReturn;

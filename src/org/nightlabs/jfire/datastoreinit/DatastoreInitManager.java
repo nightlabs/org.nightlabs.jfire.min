@@ -110,7 +110,11 @@ public class DatastoreInitManager extends AbstractInitManager<DatastoreInit, Dat
 		// Now all inits have references of their required and dependent inits.
 		Comparator<DatastoreInit> comp = new Comparator<DatastoreInit>() {
 			public int compare(DatastoreInit o1, DatastoreInit o2) {
-				return o1.getPriority() - o2.getPriority();
+				int prioDiff = o1.getPriority() - o2.getPriority();
+				if (prioDiff != 0)
+					return prioDiff;
+				else
+					return o1.getName().compareTo(o2.getName());
 			}
 		};
 		try {

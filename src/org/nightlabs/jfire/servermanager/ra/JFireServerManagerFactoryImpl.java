@@ -85,12 +85,10 @@ import org.nightlabs.jfire.classloader.CLRegistryCfMod;
 import org.nightlabs.jfire.datastoreinit.DatastoreInitException;
 import org.nightlabs.jfire.datastoreinit.DatastoreInitManager;
 import org.nightlabs.jfire.idgenerator.IDGenerator;
-import org.nightlabs.jfire.init.DependencyCycleException;
 import org.nightlabs.jfire.jdo.cache.CacheCfMod;
 import org.nightlabs.jfire.jdo.cache.CacheManagerFactory;
 import org.nightlabs.jfire.jdo.organisationsync.OrganisationSyncManagerFactory;
 import org.nightlabs.jfire.module.ModuleType;
-import org.nightlabs.jfire.oldinit.datastoreinit.DatastoreInitializer;
 import org.nightlabs.jfire.organisation.LocalOrganisation;
 import org.nightlabs.jfire.organisation.Organisation;
 import org.nightlabs.jfire.security.Authority;
@@ -110,7 +108,7 @@ import org.nightlabs.jfire.security.registry.SecurityRegistrarFactoryImpl;
 import org.nightlabs.jfire.server.Server;
 import org.nightlabs.jfire.serverconfigurator.ServerConfigurator;
 import org.nightlabs.jfire.serverinit.ServerInitException;
-import org.nightlabs.jfire.serverinit.ServerInitialisationManager;
+import org.nightlabs.jfire.serverinit.ServerInitManager;
 import org.nightlabs.jfire.servermanager.DuplicateOrganisationException;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.servermanager.JFireServerManagerFactory;
@@ -543,11 +541,11 @@ public class JFireServerManagerFactoryImpl
 				if (configureServerAndShutdownIfNecessary(0))
 					return;
 				
-				ServerInitialisationManager serverInitialisationManager;
+				ServerInitManager serverInitManager;
 				DatastoreInitManager datastoreInitManager;
 				
 				try {
-					serverInitialisationManager = new ServerInitialisationManager(this, mcf, getJ2EEVendorAdapter());
+					serverInitManager = new ServerInitManager(this, mcf, getJ2EEVendorAdapter());
 					datastoreInitManager = new DatastoreInitManager(this, mcf, getJ2EEVendorAdapter());
 				}
 				catch(ServerInitException e) {
@@ -557,7 +555,7 @@ public class JFireServerManagerFactoryImpl
 				
 				// do the server inits that are to be performed before the datastore inits
 				logger.info("Performing early server inits...");
-				serverInitialisationManager.performEarlyInits(ctx);
+				serverInitManager.performEarlyInits(ctx);
 				
 				// OLD INIT STUFF
 				// DatastoreInitialization
@@ -624,7 +622,7 @@ public class JFireServerManagerFactoryImpl
 				
 				// do the server inits that are to be performed after the datastore inits
 				logger.info("Performing late server inits...");
-				serverInitialisationManager.performLateInits(ctx);
+				serverInitManager.performLateInits(ctx);
 
 				// OLD INIT STUFF
 				// Server Initialization
