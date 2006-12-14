@@ -107,7 +107,6 @@ import org.nightlabs.jfire.security.registry.SecurityRegistrar;
 import org.nightlabs.jfire.security.registry.SecurityRegistrarFactoryImpl;
 import org.nightlabs.jfire.server.Server;
 import org.nightlabs.jfire.serverconfigurator.ServerConfigurator;
-import org.nightlabs.jfire.serverinit.ServerInitException;
 import org.nightlabs.jfire.serverinit.ServerInitManager;
 import org.nightlabs.jfire.servermanager.DuplicateOrganisationException;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
@@ -530,6 +529,12 @@ public class JFireServerManagerFactoryImpl
 		}
 	}
 
+	/**
+	 * The creation of an organisation is not allowed, before the datastore inits are run.
+	 * If you, dear reader, believe that this is a problem, please tell me. Marco :-)
+	 */
+	private boolean createOrganisationAllowed = false;
+
 	public void serverStarted()
 	{
 		logger.info("Caught SERVER STARTED event!");
@@ -540,27 +545,18 @@ public class JFireServerManagerFactoryImpl
 			try {				
 				if (configureServerAndShutdownIfNecessary(0))
 					return;
-				
-				ServerInitManager serverInitManager;
-				DatastoreInitManager datastoreInitManager;
-				
-				try {
-					serverInitManager = new ServerInitManager(this, mcf, getJ2EEVendorAdapter());
-					datastoreInitManager = new DatastoreInitManager(this, mcf, getJ2EEVendorAdapter());
-				}
-				catch(ServerInitException e) {
-					logger.error(e.getMessage());
-					throw new Exception(e);
-				}
-				
+
+				ServerInitManager serverInitManager = new ServerInitManager(this, mcf, getJ2EEVendorAdapter());
+				DatastoreInitManager datastoreInitManager = new DatastoreInitManager(this, mcf, getJ2EEVendorAdapter());
+
 				// do the server inits that are to be performed before the datastore inits
 				logger.info("Performing early server inits...");
 				serverInitManager.performEarlyInits(ctx);
-				
+
 				// OLD INIT STUFF
 				// DatastoreInitialization
 				//DatastoreInitializer datastoreInitializer = new DatastoreInitializer(this, mcf, getJ2EEVendorAdapter());
-				
+
 				for (Iterator it = organisationConfigModule.getOrganisations().iterator(); it.hasNext(); ) {
 					OrganisationCf org = (OrganisationCf)it.next();
 					String organisationID = org.getOrganisationID();
@@ -598,6 +594,8 @@ public class JFireServerManagerFactoryImpl
 						new OrganisationSyncManagerFactory(
 								ctx, organisationID,
 								getJ2EEVendorAdapter().getTransactionManager(ctx), pmf); // registers itself in JNDI
+					} catch (NameAlreadyBoundException e) {
+						// ignore - might happen, if an organisation is created in an early-server-init
 					} catch (Exception e) {
 						logger.error("Creating OrganisationSyncManagerFactory for organisation \""+organisationID+"\" failed!", e);
 						throw new ResourceException(e.getMessage());
@@ -619,7 +617,9 @@ public class JFireServerManagerFactoryImpl
 						logger.error("Datastore initialisation of organisation \""+organisationID+"\" failed!", x);
 					}
 				}
-				
+
+				createOrganisationAllowed = true;
+
 				// do the server inits that are to be performed after the datastore inits
 				logger.info("Performing late server inits...");
 				serverInitManager.performLateInits(ctx);
@@ -1014,6 +1014,9 @@ public class JFireServerManagerFactoryImpl
 //			) 
 		throws ModuleException
 	{
+		if (!createOrganisationAllowed)
+			throw new IllegalStateException("This method cannot be called yet. The creation of organisations is not allowed, before the datastore inits are run. If you get this exception in an early-server-init, you should switch to a late-server-init.");
+
 		synchronized (createOrganisation_mutex) {
 			
 			try {
