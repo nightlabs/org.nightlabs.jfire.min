@@ -439,6 +439,7 @@ implements IWorkbenchPreferencePage
 	/**
 	 * When called all widgets created in {@link #createPreferencePage(Composite)}
 	 * should be discarded (nulled).
+	 * TODO: Remove this method.
 	 */
 	protected abstract void discardPreferencePageWidgets();
 
