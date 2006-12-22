@@ -84,7 +84,7 @@ public class WorkstationFeaturesPreferencePage extends
 	@Override
 	protected void updatePreferencePage(ConfigModule configModule) {
 		featureTable.setInput(getAvailableFeatures());
-		featureTable.setCheckedEelements(new ArrayList<WorkstationFeature>(
+		featureTable.setCheckedElements(new ArrayList<WorkstationFeature>(
 				((WorkstationFeaturesCfMod)configModule).getFeatures().values())
 				);
 		featureTable.addSelectionChangedListener(new ISelectionChangedListener() {
