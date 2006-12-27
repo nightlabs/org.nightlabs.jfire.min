@@ -28,6 +28,8 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Set;
 
+import javax.jdo.JDOHelper;
+
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.nightlabs.jdo.NLJDOHelper;
@@ -40,10 +42,14 @@ import org.nightlabs.jfire.prop.IStruct;
 import org.nightlabs.jfire.prop.Property;
 import org.nightlabs.jfire.prop.PropertyManager;
 import org.nightlabs.jfire.prop.PropertyManagerUtil;
+import org.nightlabs.jfire.security.Authority;
+import org.nightlabs.jfire.security.RoleGroup;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.security.UserGroup;
 import org.nightlabs.jfire.security.UserManager;
 import org.nightlabs.jfire.security.UserManagerUtil;
+import org.nightlabs.jfire.security.id.AuthorityID;
+import org.nightlabs.jfire.security.id.RoleGroupID;
 import org.nightlabs.jfire.security.id.UserID;
 import org.nightlabs.util.CollectionUtil;
 
@@ -309,6 +315,64 @@ public class UserDAO extends JDOObjectDAO<UserID, User>
 			um.removeUserFromUserGroup(user.getUserID(), userGroup.getUserID());
 		} catch(Exception e) {
 			throw new RuntimeException("Adding user to user group failed", e);
+		} finally {
+			um = null;
+		}
+	}
+
+	public synchronized void addUserToRoleGroup(User user, Authority authority, RoleGroup roleGroup, IProgressMonitor monitor)
+	{
+		addUserToRoleGroup(
+				(UserID)JDOHelper.getObjectId(user),
+				(AuthorityID)JDOHelper.getObjectId(authority),
+				(RoleGroupID)JDOHelper.getObjectId(roleGroup), monitor);
+	}
+
+	public synchronized void removeUserFromRoleGroup(User user, Authority authority, RoleGroup roleGroup, IProgressMonitor monitor)
+	{
+		removeUserFromRoleGroup(
+				(UserID)JDOHelper.getObjectId(user),
+				(AuthorityID)JDOHelper.getObjectId(authority),
+				(RoleGroupID)JDOHelper.getObjectId(roleGroup), monitor);
+	}
+
+	public synchronized void addUserToRoleGroup(UserID userID, AuthorityID authorityID, RoleGroupID roleGroupID, IProgressMonitor monitor)
+	{
+		try {
+			String organisationID = Login.getLogin().getOrganisationID();
+			if (!organisationID.equals(userID.organisationID))
+				throw new IllegalArgumentException("Cannot manage foreign user! user.organisationID=\""+userID.organisationID+"\" does not match our organisationID=\""+organisationID+"\"!");
+			if (!organisationID.equals(authorityID.organisationID))
+				throw new IllegalArgumentException("Cannot manage foreign authority! authority.organisationID=\""+authorityID.organisationID+"\" does not match our organisationID=\""+organisationID+"\"!");
+
+			Hashtable initialContextProperties = Login.getLogin().getInitialContextProperties();
+			um = UserManagerUtil.getHome(initialContextProperties).create();
+			um.addUserToRoleGroup(userID.userID, authorityID.authorityID, roleGroupID.roleGroupID);
+		} catch(RuntimeException e) {
+			throw e;
+		} catch(Exception e) {
+			throw new RuntimeException("Adding user \""+userID.userID+"\" to role group \""+roleGroupID.roleGroupID+"\" within authority \""+authorityID.authorityID+"\" failed", e);
+		} finally {
+			um = null;
+		}
+	}
+
+	public synchronized void removeUserFromRoleGroup(UserID userID, AuthorityID authorityID, RoleGroupID roleGroupID, IProgressMonitor monitor)
+	{
+		try {
+			String organisationID = Login.getLogin().getOrganisationID();
+			if (!organisationID.equals(userID.organisationID))
+				throw new IllegalArgumentException("Cannot manage foreign user! user.organisationID=\""+userID.organisationID+"\" does not match our organisationID=\""+organisationID+"\"!");
+			if (!organisationID.equals(authorityID.organisationID))
+				throw new IllegalArgumentException("Cannot manage foreign authority! authority.organisationID=\""+authorityID.organisationID+"\" does not match our organisationID=\""+organisationID+"\"!");
+
+			Hashtable initialContextProperties = Login.getLogin().getInitialContextProperties();
+			um = UserManagerUtil.getHome(initialContextProperties).create();
+			um.removeUserFromRoleGroup(userID.userID, authorityID.authorityID, roleGroupID.roleGroupID);
+		} catch(RuntimeException e) {
+			throw e;
+		} catch(Exception e) {
+			throw new RuntimeException("Adding user \""+userID.userID+"\" to role group \""+roleGroupID.roleGroupID+"\" within authority \""+authorityID.authorityID+"\" failed", e);
 		} finally {
 			um = null;
 		}
