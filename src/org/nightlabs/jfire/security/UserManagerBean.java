@@ -53,6 +53,7 @@ import org.nightlabs.jfire.security.id.AuthorityID;
 import org.nightlabs.jfire.security.id.RoleGroupID;
 import org.nightlabs.jfire.security.id.UserID;
 import org.nightlabs.jfire.security.id.UserRefID;
+import org.nightlabs.jfire.servermanager.JFireServerManager;
 
 /**
  * @author Alexander Bieber <alex@nightlabs.de>
@@ -183,8 +184,7 @@ implements SessionBean
       }
       pm.close();
     }
-    catch (ModuleException e)
-    {
+    catch (ModuleException e) {
       throw new SecurityException(e);
     }
   }
@@ -244,8 +244,7 @@ implements SessionBean
 
       return ret;
     } 
-    finally 
-    {
+    finally {
       pm.close();
     }
   }
@@ -293,8 +292,7 @@ implements SessionBean
       Collection c = (Collection)query.execute(userType, User.USERID_SYSTEM, User.USERID_OTHER);
       return pm.detachCopyAll(c);
     } 
-    finally 
-    {
+    finally {
       pm.close();
     }
   }
@@ -334,8 +332,7 @@ implements SessionBean
       Collection c = (Collection)query.execute(); // User.USERID_SYSTEM);
       return pm.detachCopyAll(c);
     } 
-    finally 
-    {
+    finally {
       pm.close();
     }
   }
@@ -360,8 +357,7 @@ implements SessionBean
 
       return ret;
     } 
-    finally 
-    {
+    finally {
       pm.close();
     }
   }
@@ -398,8 +394,7 @@ implements SessionBean
       UserGroup ug = (UserGroup)pm.getObjectById(UserID.create(getOrganisationID(), userGroupID));
       return (Collection)pm.detachCopyAll(ug.getUsers());
     } 
-    finally 
-    {
+    finally {
       pm.close();
     }
   }
@@ -456,8 +451,7 @@ implements SessionBean
       return c2;
       // workaround end
     } 
-    finally 
-    {
+    finally {
       pm.close();
     }
   }  
@@ -532,8 +526,7 @@ implements SessionBean
       // workaround end
 
     } 
-    finally 
-    {
+    finally {
       pm.close();
     }
   }
@@ -606,8 +599,7 @@ implements SessionBean
 
     	return rglc;
     } 
-    finally 
-    {
+    finally {
       pm.close();
     }
   }
@@ -622,12 +614,10 @@ implements SessionBean
     throws ModuleException
   {
     PersistenceManager pm = getPersistenceManager();
-    try 
-    {
+    try {
       return NLJDOHelper.getDetachedObjectList(pm, userGroupIDs, null, fetchGroups, maxFetchDepth);
     } 
-    finally 
-    {
+    finally {
       pm.close();
     }
   }
@@ -642,12 +632,10 @@ implements SessionBean
     throws ModuleException
   {
     PersistenceManager pm = getPersistenceManager();
-    try 
-    {
+    try {
       return NLJDOHelper.getDetachedObjectList(pm, userIDs, null, fetchGroups, maxFetchDepth);
     } 
-    finally 
-    {
+    finally {
       pm.close();
     }
   }
@@ -710,8 +698,7 @@ implements SessionBean
       
       return uglc;
     } 
-    finally 
-    {
+    finally {
       pm.close();
     }
   }
@@ -843,8 +830,7 @@ implements SessionBean
 
       return rglc;
     } 
-    finally 
-    {
+    finally {
       pm.close();
     }
   }
@@ -864,8 +850,7 @@ implements SessionBean
     {
       return NLJDOHelper.getDetachedObjectList(pm, roleGroupIDs, null, fetchGroups, maxFetchDepth);
     } 
-    finally 
-    {
+    finally {
       pm.close();
     }
   }
@@ -975,8 +960,7 @@ implements SessionBean
       // workaround end
 
     } 
-    finally 
-    {
+    finally {
       pm.close();
     }
   }
@@ -1021,8 +1005,7 @@ implements SessionBean
       Collection c = (Collection)query.execute(userID);
       return pm.detachCopyAll(c);
     } 
-    finally 
-    {
+    finally {
       pm.close();
     }
   }
@@ -1093,8 +1076,7 @@ implements SessionBean
       //      return pm.detachCopyAll(c);
       
     } 
-    finally 
-    {
+    finally {
       pm.close();
     }
   }
@@ -1118,13 +1100,11 @@ implements SessionBean
       logger.debug("userIDAlreadyRegistered(\"" + userID + "\") = " + (test != null));
       return (test != null);
     }
-    catch(JDOObjectNotFoundException e) 
-    {
+    catch(JDOObjectNotFoundException e) {
       logger.debug("userIDAlreadyRegistered(\"" + userID + "\") = false");
       return false;
     }
-    finally
-    {
+    finally {
       pm.close();
     }
   }
@@ -1264,6 +1244,8 @@ implements SessionBean
   	if (User.USERID_SYSTEM.equals(userID))
   		throw new IllegalArgumentException("Cannot manipulate system user \"" + User.USERID_SYSTEM + "\"!");
 
+//  	logger.info("********* addUserToRoleGroup");
+
   	PersistenceManager pm = getPersistenceManager();
   	try 
 		{
@@ -1278,13 +1260,17 @@ implements SessionBean
   		RoleGroupRef rgf = auth.createRoleGroupRef(rg);
   		UserRef ur = auth.createUserRef(usr);
   		ur.addRoleGroupRef(rgf);
+  		JFireServerManager jfsm = getJFireServerManager();
+  		try {
+  			jfsm.jfireSecurity_flushCache(userID);
+  		} finally {
+  			jfsm.close();
+  		}
 		} 
-    catch(JDOObjectNotFoundException e) 
-    {
+    catch(JDOObjectNotFoundException e) {
       throw new ModuleException(e);
     }
-  	finally 
-		{
+  	finally {
   		pm.close();
 		}
   }
@@ -1375,7 +1361,14 @@ implements SessionBean
         }
         
         userGroup.addUser(user);
-        
+
+
+        JFireServerManager jfsm = getJFireServerManager();
+    		try {
+    			jfsm.jfireSecurity_flushCache(userID);
+    		} finally {
+    			jfsm.close();
+    		}
       } finally {
         if (AuthorityManagerBean.CLOSE_PM) pm.close();
       }
@@ -1427,13 +1420,18 @@ implements SessionBean
   		pm.getFetchPlan().setGroup(FetchPlan.DEFAULT);
  			UserRef uref = (UserRef)pm.getObjectById(UserRefID.create(authorityID, getOrganisationID(), userID), true);
  			uref.removeRoleGroupRef(roleGroupID);
+
+ 			JFireServerManager jfsm = getJFireServerManager();
+  		try {
+  			jfsm.jfireSecurity_flushCache(userID);
+  		} finally {
+  			jfsm.close();
+  		}
 		} 
-    catch(JDOObjectNotFoundException e) 
-    {
+    catch(JDOObjectNotFoundException e) {
       throw new ModuleException(e);
     }
-  	finally 
-		{
+  	finally {
   		pm.close();
 		}
   }
@@ -1502,17 +1500,20 @@ implements SessionBean
 //  		pm.getExtent(User.class, true);
 //  		User user = (User) pm.getObjectById(UserID.create(getOrganisationID(), userID), true);
   		pm.getExtent(UserGroup.class, true);
-  		UserGroup userGroup = (UserGroup) pm.getObjectById(UserID.create(getOrganisationID(), userGroupID), true);
-  		
-  		
+  		UserGroup userGroup = (UserGroup) pm.getObjectById(UserID.create(getOrganisationID(), userGroupID), true);  		  		
   		userGroup.removeUser(userID);
+
+  		JFireServerManager jfsm = getJFireServerManager();
+  		try {
+  			jfsm.jfireSecurity_flushCache(userID);
+  		} finally {
+  			jfsm.close();
+  		}
 		}
-  	catch(JDOObjectNotFoundException e) 
-		{
+  	catch(JDOObjectNotFoundException e) {
   		throw new ModuleException(e);
 		}
-  	finally 
-		{
+  	finally {
   		pm.close();
 		}
   }
@@ -1542,12 +1543,10 @@ implements SessionBean
   		
   		usr.setPerson(ps);
 		}
-  	catch(JDOObjectNotFoundException e) 
-		{
+  	catch(JDOObjectNotFoundException e) {
   		throw new ModuleException(e);
 		}
-  	finally 
-		{
+  	finally {
   		pm.close();
 		}
   }
