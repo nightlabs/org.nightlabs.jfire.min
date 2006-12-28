@@ -78,7 +78,7 @@ import org.nightlabs.math.Base62Coder;
  * In general all code that requires the user to log in should place a line like
  * <code>Login.getLogin();</code>
  * somewhere before. If the user is already logged in this method immediately exits and returns
- * the static Login member. If the user some time before decided to work offline this method
+ * the static Login member. If the user some time before decided to work OFFLINE this method
  * will throw an {@link WorkOfflineException} to indicate this and not make any attempts to 
  * login unless {@link #setForceLogin(boolean)} was not set to true. This means that user interface
  * actions have to do something like the following to login:
@@ -111,8 +111,8 @@ implements InitialContextProvider
 	 */
 	public static final int LOGINSTATE_LOGGED_OUT = 1;
 	/**
-	 * Loginstate: Working offline indicating also that the user wants 
-	 * to stay offline and causing the Login to fail for a certain time
+	 * Loginstate: Working OFFLINE indicating also that the user wants 
+	 * to stay OFFLINE and causing the Login to fail for a certain time
 	 * when not forced.
 	 * @see LoginStateListener
 	 */
@@ -234,6 +234,7 @@ implements InitialContextProvider
 	 */
 	protected static void createLogin(){
 		sharedInstanceLogin = new Login();
+		org.nightlabs.base.login.Login.sharedInstance(); // force processing of extension point
 	}
 
 	static {
@@ -337,6 +338,7 @@ implements InitialContextProvider
 			try {
 				LoginConfigModule _loginConfigModule = ((LoginConfigModule)Config.sharedInstance().createConfigModule(LoginConfigModule.class));
 				if (_loginConfigModule != null) {
+					_runtimeConfigModule = new LoginConfigModule();
 					BeanUtils.copyProperties(_runtimeConfigModule, _loginConfigModule);
 				}
 			} catch (Exception e) {
@@ -422,7 +424,7 @@ implements InitialContextProvider
 	 * set to false, so nothing will happen if already logged in.
 	 * 
 	 * @throws LoginException Exception is thrown whenever some error occurs during login. 
-	 * But not that the user might be presented the possibility to work offline. 
+	 * But not that the user might be presented the possibility to work OFFLINE. 
 	 * In this case a LoginException is thrown as well with a {@link WorkOfflineException} as cause.
 	 * 
 	 * @see ILoginHandler
@@ -441,7 +443,7 @@ implements InitialContextProvider
 	 * @param forceLogoutFirst Defines weather to logout first
 	 * 
 	 * @throws LoginException Exception is thrown whenever some error occurs during login. 
-	 * But not that the user might be presented the possibility to work offline. 
+	 * But not that the user might be presented the possibility to work OFFLINE. 
 	 * In this case a LoginException is thrown as well with a {@link WorkOfflineException} as cause.
 	 * 
 	 * @see ILoginHandler
@@ -494,7 +496,7 @@ implements InitialContextProvider
 		}
 		if (!loginResult.isSuccess()) {
 			if (loginResult.isWorkOffline()) {
-				// if user decided to work offline first notify loginstate listeners
+				// if user decided to work OFFLINE first notify loginstate listeners
 				currLoginState = LOGINSTATE_OFFLINE;
 				notifyLoginStateListeners(currLoginState);
 				// but then still throw Exception with WorkOffline as cause
@@ -584,7 +586,7 @@ implements InitialContextProvider
 	private String workstationID;
 
 //	private LoginConfigModule _loginConfigModule;
-	private LoginConfigModule _runtimeConfigModule = new LoginConfigModule();
+	private LoginConfigModule _runtimeConfigModule = null; // new LoginConfigModule();
 
 	// LoginContext instantiated to perform the login
 	private JFireLoginContext loginContext = null;
