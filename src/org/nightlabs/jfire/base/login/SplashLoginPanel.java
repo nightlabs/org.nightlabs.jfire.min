@@ -237,7 +237,7 @@ public class SplashLoginPanel extends JPanel
 			}
 		});
 
-		buttonWorkOffline = new JButton("Work offline");
+		buttonWorkOffline = new JButton("Work OFFLINE");
 		buttonPanel.add(buttonWorkOffline);
 		buttonWorkOffline.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e) {

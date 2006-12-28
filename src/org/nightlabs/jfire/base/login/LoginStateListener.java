@@ -40,7 +40,7 @@ public interface LoginStateListener {
 	 * <ul>
 	 * 	<li>{@link Login#LOGINSTATE_LOGGED_IN} user has logged in.</li>
 	 * 	<li>{@link Login#LOGINSTATE_LOGGED_OUT} user has logged out.</li>
-	 * 	<li>{@link Login#LOGINSTATE_OFFLINE} user decided to work offline.</li>
+	 * 	<li>{@link Login#LOGINSTATE_OFFLINE} user decided to work OFFLINE.</li>
 	 * <ul>
 	 * Note that the param action is likely to be null, depending on what was 
 	 * passed to {@link Login#addLoginStateListener(LoginStateListener)}

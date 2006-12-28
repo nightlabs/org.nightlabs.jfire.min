@@ -69,7 +69,7 @@ public class JFireBasePlugin
 
 		// We cannot use org.nightlabs.jfire.idgenerator.IDGenerator.PROPERTY_KEY_ID_GENERATOR_CLASS
 		// or IDGeneratorClient,  because this would cause the server side class to be loaded -
-		// and probably we're offline and can't do that!
+		// and probably we're OFFLINE and can't do that!
 		System.setProperty("org.nightlabs.jfire.idgenerator.idGeneratorClass", "org.nightlabs.jfire.base.idgenerator.IDGeneratorClient");
 		System.setProperty("org.nightlabs.jfire.security.SecurityReflector", "org.nightlabs.jfire.base.security.SecurityReflectorClient");
 

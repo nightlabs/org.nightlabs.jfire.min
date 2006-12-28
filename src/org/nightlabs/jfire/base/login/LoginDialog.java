@@ -82,7 +82,7 @@ public class LoginDialog extends ExpandableAreaDialog {
 	
 	protected Composite createStaticArea(Composite parent) 
 	{
-		return new LoginDialogStaticArea(parent,SWT.NONE,runtimeLoginModule);		
+		return new LoginDialogStaticArea(parent,SWT.NONE, runtimeLoginModule);		
 	}
 
 	protected Composite createExpandableArea(Composite 

@@ -197,7 +197,7 @@ public class JFireLoginHandler implements ILoginHandler {
 				throw x;
 			}
 			if(loginPanel.isWorkOffline()) {
-				SplashScreen.setSplashMessage("Work offline");
+				SplashScreen.setSplashMessage("Work OFFLINE");
 				loginResult.setWorkOffline(true);
 				break;
 			}

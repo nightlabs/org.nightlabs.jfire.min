@@ -55,7 +55,7 @@ public class NeedLoginComposite extends XComposite {
 					Login.getLogin(false).setForceLogin(true);
 					Login.getLogin();
 				} catch (LoginException e1) {
-					// nevermind if failed or working offline ...
+					// nevermind if failed or working OFFLINE ...
 				}
 			}
 			public void widgetDefaultSelected(SelectionEvent e) {

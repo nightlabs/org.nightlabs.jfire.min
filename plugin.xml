@@ -292,5 +292,9 @@
             class="org.nightlabs.jfire.base.prop.edit.blockbased.TextDataFieldEditor$Factory"
             targetType="org.nightlabs.jfire.prop.TextDataField"/>
    </extension>
+   <extension
+         point="org.nightlabs.base.login">
+      <login class="org.nightlabs.jfire.base.login.LoginDelegate"/>
+   </extension>
 			
 </plugin>
