@@ -331,6 +331,21 @@ implements InitialContextProvider
 	private volatile boolean handlingLogin = false;
 	private AsyncLoginResult loginResult = new AsyncLoginResult();
 
+	protected LoginConfigModule getRuntimeConfigModule()
+	{
+		if (_runtimeConfigModule == null) {
+			try {
+				LoginConfigModule _loginConfigModule = ((LoginConfigModule)Config.sharedInstance().createConfigModule(LoginConfigModule.class));
+				if (_loginConfigModule != null) {
+					BeanUtils.copyProperties(_runtimeConfigModule, _loginConfigModule);
+				}
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		}
+		return _runtimeConfigModule;
+	}
+
 	private Runnable loginHandlerRunnable = new Runnable() {
 		private boolean logoutFirst = false;
 
@@ -352,7 +367,7 @@ implements InitialContextProvider
 						throw new LoginException("Cannot login, loginHandler is not set!");
 
 					logger.debug("Calling login handler");
-					lHandler.handleLogin(loginContext,sharedInstanceLogin.runtimeConfigModule, loginResult);
+					lHandler.handleLogin(loginContext,sharedInstanceLogin.getRuntimeConfigModule(), loginResult);
 
 
 					if ((!loginResult.isSuccess()) || (loginResult.getException() != null)) {
@@ -568,8 +583,8 @@ implements InitialContextProvider
 	private String securityProtocol;
 	private String workstationID;
 
-	private LoginConfigModule loginConfigModule;
-	private LoginConfigModule runtimeConfigModule = new LoginConfigModule();
+//	private LoginConfigModule _loginConfigModule;
+	private LoginConfigModule _runtimeConfigModule = new LoginConfigModule();
 
 	// LoginContext instantiated to perform the login
 	private JFireLoginContext loginContext = null;
@@ -599,14 +614,14 @@ implements InitialContextProvider
 			copyPropertiesFrom(loginContext);
 		}
 
-		try {
-			loginConfigModule = ((LoginConfigModule)Config.sharedInstance().createConfigModule(LoginConfigModule.class));
-			if (loginConfigModule != null) {
-				BeanUtils.copyProperties(runtimeConfigModule,loginConfigModule);
-			}
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
+//		try {
+//			loginConfigModule = ((LoginConfigModule)Config.sharedInstance().createConfigModule(LoginConfigModule.class));
+//			if (loginConfigModule != null) {
+//				BeanUtils.copyProperties(runtimeConfigModule,loginConfigModule);
+//			}
+//		} catch (Exception e) {
+//			throw new RuntimeException(e);
+//		}
 	}
 
 
@@ -657,10 +672,10 @@ implements InitialContextProvider
 	}
 
 	private void copyPropertiesFromConfig(){
-		this.serverURL = runtimeConfigModule.getServerURL();
-		this.contextFactory = runtimeConfigModule.getInitialContextFactory();
-		this.securityProtocol = runtimeConfigModule.getSecurityProtocol();
-		this.workstationID = runtimeConfigModule.getWorkstationID();
+		this.serverURL = getRuntimeConfigModule().getServerURL();
+		this.contextFactory = getRuntimeConfigModule().getInitialContextFactory();
+		this.securityProtocol = getRuntimeConfigModule().getSecurityProtocol();
+		this.workstationID = getRuntimeConfigModule().getWorkstationID();
 	}
 
 
@@ -733,7 +748,7 @@ implements InitialContextProvider
 	 * @return The runtime (not the persitent) LoginConfigModule.
 	 */
 	public LoginConfigModule getLoginConfigModule() {
-		return runtimeConfigModule;
+		return getRuntimeConfigModule();
 	}
 
 
