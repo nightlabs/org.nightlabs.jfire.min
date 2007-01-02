@@ -123,15 +123,16 @@ public class ServerConfiguratorJBoss
 
 		// We deactivate the JAAS cache, because we have our own cache that is
 		// proactively managed and reflects changes immediately.
+		// Additionally, we extend the transaction timeout to 15 min (default is 5 min).
 		destFile = new File(jbossConfDir, "jboss-service.xml");
 		text = Utils.readTextFile(destFile);
 		String modificationMarker = "!!!ModifiedByJFire!!!";
 		if (text.indexOf(modificationMarker) < 0) {
-			logger.info("File " + destFile.getAbsolutePath() + " was not yet updated. Will reduce JAAS cache timeout to 5 min - we cannot deactivate it completely or reduce it further, because that causes JPOX problems (though I don't understand why).");
+			logger.info("File " + destFile.getAbsolutePath() + " was not yet updated. Will increase transaction timeout and reduce JAAS cache timeout to 5 min - we cannot deactivate the JAAS cache completely or reduce the timeout further, because that causes JPOX problems (though I don't understand why).");
 			setRebootRequired(true);
 
 			Pattern pattern = Pattern.compile(
-					"(<mbean[^>]*?org.jboss.security.plugins.JaasSecurityManagerService(?:\\n|.)*?<attribute +?name *?= *?\"DefaultCacheTimeout\")>[0-9]*<((?:\\n|.)*?</mbean>)"
+					"(<mbean[^>]*?org\\.jboss.security\\.plugins\\.JaasSecurityManagerService(?:\\n|.)*?<attribute +?name *?= *?\"DefaultCacheTimeout\")>[0-9]*<((?:\\n|.)*?</mbean>)"
 					);
 			text = pattern.matcher(text).replaceAll(
 					"<!-- " + modificationMarker + "\n " +
@@ -143,9 +144,18 @@ public class ServerConfiguratorJBoss
 
 // IMHO 60 is the default - Marco.
 //			pattern = Pattern.compile(
-//					"(<mbean[^>]*?org.jboss.security.plugins.JaasSecurityManagerService(?:\\n|.)*?<attribute +?name *?= *?\"DefaultCacheResolution\")>[0-9]*<((?:\\n|.)*?</mbean>)"
+//					"(<mbean[^>]*?org\\.jboss\\.security\\.plugins\\.JaasSecurityManagerService(?:\\n|.)*?<attribute +?name *?= *?\"DefaultCacheResolution\")>[0-9]*<((?:\\n|.)*?</mbean>)"
 //					);
 //			text = pattern.matcher(text).replaceAll("$1>60<$2");
+
+			pattern = Pattern.compile(
+					"(<mbean[^>]*?org\\.jboss\\.tm\\.TransactionManagerService(?:\\n|.)*?<attribute +?name *?= *?\"TransactionTimeout\")>[0-9]*<((?:\\n|.)*?</mbean>)"
+					);
+			text = pattern.matcher(text).replaceAll(
+					"<!-- " + modificationMarker + "\n " +
+					ServerConfiguratorJBoss.class.getName() + " has increased the transaction timeout to 15 min.\n-->\n" +
+					"   $1>900<$2"
+					);
 
 			writeTextFile(destFile, text);
 		}
