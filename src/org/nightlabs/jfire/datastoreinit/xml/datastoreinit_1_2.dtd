@@ -31,7 +31,7 @@ Here is an example:
 	- - - example - - -
 	<!DOCTYPE datastore-initialisation
 		PUBLIC "-//NightLabs GmbH//DTD Datastore Initialisation 1.2//EN"
-		"http://www.nightlabs.de/dtd/datastoreinit_1_1.dtd">
+		"http://www.nightlabs.de/dtd/datastoreinit_1_2.dtd">
 	<datastore-initialisation>
 		<init bean="jfire/ejb/JFireSimpleTrade/SimpleTradeManager" method="dosomething" priority="200">
 			<depends
