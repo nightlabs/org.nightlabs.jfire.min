@@ -19,6 +19,7 @@ import org.nightlabs.ModuleException;
 import org.nightlabs.jfire.base.InvokeUtil;
 import org.nightlabs.jfire.init.AbstractInitManager;
 import org.nightlabs.jfire.init.DependencyCycleException;
+import org.nightlabs.jfire.init.InitException;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.servermanager.JFireServerManagerFactory;
 import org.nightlabs.jfire.servermanager.config.ServerCf;
@@ -105,7 +106,11 @@ public class DatastoreInitManager extends AbstractInitManager<DatastoreInit, Dat
 		// Now all meta data files have been read.
 		
 		// substitute the temporary dependency definitions by links to the actual inits
-		establishDependencies(inits, initTrie);
+		try {
+			establishDependencies(inits, initTrie);
+		} catch (InitException e1) {
+			throw new DatastoreInitException("Datastore initialisation failed: " + e1.getMessage());
+		}
 		
 		// Now all inits have references of their required and dependent inits.
 		Comparator<DatastoreInit> comp = new Comparator<DatastoreInit>() {
@@ -161,7 +166,7 @@ public class DatastoreInitManager extends AbstractInitManager<DatastoreInit, Dat
 	
 			CachedXPathAPI xpa = new CachedXPathAPI();
 			
-			NodeIterator ni = xpa.selectNodeIterator(parser.getDocument(), "//datastore-initialization/init");
+			NodeIterator ni = xpa.selectNodeIterator(parser.getDocument(), "//datastore-initialisation/init");
 			Node nInit = ni.nextNode();
 			while (nInit != null) {
 				Node nBean = nInit.getAttributes().getNamedItem("bean");
@@ -239,10 +244,28 @@ public class DatastoreInitManager extends AbstractInitManager<DatastoreInit, Dat
 						if (txt != null)
 							methodStr = txt.getNodeValue();
 					}
+					
+					Node nResolution = nDepends.getAttributes().getNamedItem("resolution");
+					String resolutionStr = null;
+					if (nResolution != null) {
+						Node txt = nResolution.getFirstChild();
+						if (txt != null) {
+							resolutionStr = txt.getNodeValue();
+						}
+					}
+
+					Resolution resolution = null;
+					try {
+						resolution = Resolution.getEnumConstant(resolutionStr);
+					} catch (NullPointerException npe) {
+						resolution = Resolution.Required;
+					} catch (IllegalArgumentException e) {
+						logger.warn("Value '"+resolutionStr+"' of attribute resolution is not valid. Using default 'required'.");
+						resolution = Resolution.Required;
+					}
 
 					if (moduleStr == null)
 						throw new XMLReadException("jfireEAR '"+jfireEAR+"' jfireJAR '"+jfireJAR+"': Reading datastoreinit.xml failed: Attribute 'module' of element 'depends' must be defined!");
-					
 					
 					if (archiveStr == null && (beanStr != null || methodStr != null))
 						throw new XMLReadException("jfireEAR '" + jfireEAR + "' jfireJAR '" + jfireJAR
@@ -252,7 +275,7 @@ public class DatastoreInitManager extends AbstractInitManager<DatastoreInit, Dat
 						throw new XMLReadException("jfireEAR '" + jfireEAR + "' jfireJAR '" + jfireJAR
 										+ "': Reading serverinit.xml failed: Attribute 'method' of element 'depends' is defined whereas 'bean' is undefined!");
 					
-					DatastoreInitDependency dep = new DatastoreInitDependency(moduleStr, archiveStr, beanStr, methodStr);
+					DatastoreInitDependency dep = new DatastoreInitDependency(moduleStr, archiveStr, beanStr, methodStr, resolution);
 					init.addDependency(dep);
 
 					nDepends = niDepends.nextNode();

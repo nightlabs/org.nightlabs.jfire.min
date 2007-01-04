@@ -71,12 +71,14 @@ class DatastoreInitDependency implements IDependency<DatastoreInit> {
 	private String archive;
 	private String bean;
 	private String method;
+	private Resolution resolution;
 	
-	public DatastoreInitDependency(String module, String archive, String bean, String method) {
+	public DatastoreInitDependency(String module, String archive, String bean, String method, Resolution res) {
 		this.module = module;
 		this.archive = archive;
 		this.bean = bean;
 		this.method = method;
+		this.resolution = res;
 	}
 
 	public String getArchive() {
@@ -113,6 +115,15 @@ class DatastoreInitDependency implements IDependency<DatastoreInit> {
 	
 	@Override
 	public String toString() {
-		return this.getClass().getSimpleName() + ": " + module + '/' + archive + '/' + bean + '#' + method;
+		return this.getClass().getSimpleName() + ": " + module + '/'
+			+ archive + '/' + bean + '#' + method + " (" + resolution.toString() + ")";
+	}
+
+	public Resolution getResolution() {
+		return resolution;
+	}
+	
+	public void setResolution(Resolution resolution) {
+		this.resolution = resolution;
 	}
 }

@@ -5,19 +5,26 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.nightlabs.jfire.datastoreinit.Resolution;
 import org.nightlabs.util.ds.CycleException;
 import org.nightlabs.util.ds.DirectedGraph;
 import org.nightlabs.util.ds.PrefixTree;
 
 public abstract class AbstractInitManager<I extends AbstractInit<I, D>, D extends IDependency<I>> {
-	protected void establishDependencies(List<I> inits, PrefixTree<I> initTrie) {
+	private Logger logger = Logger.getLogger(AbstractInitManager.class);
+	
+	protected void establishDependencies(List<I> inits, PrefixTree<I> initTrie) throws InitException {
 		for (I init : inits) { // foreach parsed Init
 			for (D dep : init.getDependencies()) { // check all dependencies
 				// and find the corresponding required inits in the trie
 				Collection<I> reqInits = initTrie.getSubtrieElements(getTriePath(dep));
 				if (reqInits.isEmpty()) { // dependency could not be resolved
-					getLogger().warn("The server init dependency "+ dep +" does not exist.");
-					return;
+					if (dep.getResolution() == Resolution.Optional)
+						logger.debug("Optional dependency "+dep+" could not be resolved.");
+					else {
+						logger.error("Required dependency "+dep+" could not be resolved.");
+						throw new InitException("Required dependency "+dep+" could not be resolved.");
+					}
 				}
 				for (I reqInit : reqInits)
 					// and add them as required init

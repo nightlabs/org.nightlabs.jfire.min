@@ -1,5 +1,6 @@
 package org.nightlabs.jfire.serverinit;
 
+import org.nightlabs.jfire.datastoreinit.Resolution;
 import org.nightlabs.jfire.init.AbstractInit;
 import org.nightlabs.jfire.init.IDependency;
 
@@ -60,11 +61,13 @@ class ServerInitDependency implements IDependency<ServerInit> {
 	private String module;
 	private String archive;
 	private String intialiserClass;
+	private Resolution resolution;
 	
-	public ServerInitDependency(String module, String archive, String initialiserClass) {
+	public ServerInitDependency(String module, String archive, String initialiserClass, Resolution res) {
 		this.module = module;
 		this.archive = archive;
 		this.intialiserClass = initialiserClass;
+		this.resolution = res;
 	}
 	
 	public String getArchive() {
@@ -84,5 +87,18 @@ class ServerInitDependency implements IDependency<ServerInit> {
 	}
 	public void setIntialiserClass(String intialiserClass) {
 		this.intialiserClass = intialiserClass;
+	}
+	public Resolution getResolution() {
+		return resolution;
+	}
+	
+	public void setResolution(Resolution resolution) {
+		this.resolution = resolution;
+	}
+	
+	@Override
+	public String toString() {
+		return this.getClass().getSimpleName() + ": " + module + '/'
+			+ archive + '/' + intialiserClass + " (" + resolution.toString() + ")";
 	}
 }

@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.jar.JarEntry;
@@ -14,16 +13,14 @@ import javax.naming.InitialContext;
 
 import org.apache.log4j.Logger;
 import org.apache.xpath.CachedXPathAPI;
+import org.nightlabs.jfire.datastoreinit.Resolution;
 import org.nightlabs.jfire.init.AbstractInitManager;
 import org.nightlabs.jfire.init.DependencyCycleException;
 import org.nightlabs.jfire.init.InitException;
-import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.servermanager.JFireServerManagerFactory;
 import org.nightlabs.jfire.servermanager.j2ee.J2EEAdapter;
 import org.nightlabs.jfire.servermanager.ra.JFireServerManagerFactoryImpl;
 import org.nightlabs.jfire.servermanager.ra.ManagedConnectionFactoryImpl;
-import org.nightlabs.util.ds.CycleException;
-import org.nightlabs.util.ds.DirectedGraph;
 import org.nightlabs.util.ds.PrefixTree;
 import org.nightlabs.xml.DOMParser;
 import org.nightlabs.xml.XMLReadException;
@@ -117,8 +114,12 @@ public class ServerInitManager extends AbstractInitManager<ServerInit, ServerIni
 		// Now all meta data files have been read.
 		
 		// substitute the temporary dependency definitions by links to the actual inits
-		establishDependencies(earlyInits, earlyInitTrie);
-		establishDependencies(lateInits, lateInitTrie);
+		try {
+			establishDependencies(earlyInits, earlyInitTrie);
+			establishDependencies(lateInits, lateInitTrie);
+		} catch (InitException e1) {
+			throw new ServerInitException("ServerInit failed: " + e1.getMessage());
+		}
 		
 		// Now all inits have references of their required and dependent inits.
 		Comparator<ServerInit> comp = new Comparator<ServerInit>() {
@@ -242,7 +243,26 @@ public class ServerInitManager extends AbstractInitManager<ServerInit, ServerIni
 						if (txt != null)
 							classStr = txt.getNodeValue();
 					}
-
+					
+					Node nResolution = nDepends.getAttributes().getNamedItem("resolution");
+					String resolutionStr = null;
+					if (nResolution != null) {
+						Node txt = nResolution.getFirstChild();
+						if (txt != null) {
+							resolutionStr = txt.getNodeValue();
+						}
+					}
+					
+					Resolution resolution = null;
+					try {
+						resolution = Resolution.getEnumConstant(resolutionStr);
+					} catch (NullPointerException npe) {
+						resolution = Resolution.Required;
+					} catch (IllegalArgumentException e) {
+						logger.warn("Value '"+resolutionStr+"' of attribute resolution is not valid. Using default 'required'.");
+						resolution = Resolution.Required;
+					}
+					
 					if (moduleStr == null)
 						throw new XMLReadException("jfireEAR '" + jfireEAR + "' jfireJAR '" + jfireJAR
 								+ "': Reading serverinit.xml failed: Attribute 'module' of element 'depends' must be defined!");
@@ -251,7 +271,7 @@ public class ServerInitManager extends AbstractInitManager<ServerInit, ServerIni
 						throw new XMLReadException("jfireEAR '" + jfireEAR + "' jfireJAR '" + jfireJAR
 										+ "': Reading serverinit.xml failed: Attribute 'class' of element 'depends' is defined whereas 'archive' is undefined!");
 
-					ServerInitDependency dep = new ServerInitDependency(moduleStr, archiveStr, classStr);
+					ServerInitDependency dep = new ServerInitDependency(moduleStr, archiveStr, classStr, resolution);
 					init.addDependency(dep);
 					nDepends = niDepends.nextNode();
 				}

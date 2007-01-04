@@ -1,5 +1,7 @@
 package org.nightlabs.jfire.init;
 
-public interface IDependency<I> {
+import org.nightlabs.jfire.datastoreinit.Resolution;
 
+public interface IDependency<I> {
+	public Resolution getResolution();
 }

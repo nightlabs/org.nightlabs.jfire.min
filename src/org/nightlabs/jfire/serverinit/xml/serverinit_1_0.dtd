@@ -41,7 +41,8 @@ Here is an example:
 					class="org.nightlabs.jfire.dependency.DependencyServerInitialiser" />
 
 			<depends
-					module="AnotherModule.ear" />
+					module="AnotherModule.ear"
+					resolution="required" />
 		</early-init>
 
 		<late-init class="org.nightlabs.jfire.AnotherServerInitialiser" />
@@ -90,8 +91,9 @@ Here is an example:
 
 <!--
 	The "depends" element defines another "init" declaration which should
-	have been done before. If the declared dependency does not exist, a
-	warning will be logged, but the initialisation will be done anyway.
+	have been done before. If a declared *required* dependency does not exist,
+	the initialisation will be aborted with an error. On the contrary, a missing
+	*optional* dependency won't cause any harm to the initialisation.
 	
 	When defining dependencies, you have to be aware, that inits of a type (early-init
 	or late-init) can only have dependencies of the *same* type.
@@ -105,6 +107,8 @@ Here is an example:
 		- module (necessary)
 		- archive (optional but necessary when "class" is given)
 		- class (optional)
+		- type (optional)
+		- resolution (optional)
 
 	These attributes have the following meaning:
 		- module:
@@ -114,6 +118,8 @@ Here is an example:
 			defined in.
 		- class:
 			The implementor of IServerInitialiser that is supposed to do the initialisation.
+		- resolution:
+			States if the dependency is required or optional.
 			
 	If at least one of archive or method is empty or missing, all declared
 	inits which match the declared attributes, are understood as dependencies. In
@@ -125,3 +131,4 @@ Here is an example:
 <!ATTLIST depends module CDATA #REQUIRED>
 <!ATTLIST depends archive CDATA #IMPLIED>
 <!ATTLIST depends class CDATA #IMPLIED>
+<!ATTLIST depends resolution (optional|required) required #IMPLIED>
