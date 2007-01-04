@@ -1,7 +1,8 @@
 package org.nightlabs.jfire.base.workstation;
 
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -70,14 +71,41 @@ public class WorkstationFeaturesPreferencePage extends
 			throw new IllegalStateException("The WorkstationFeaturesPreference may only be used with WorkstationFeaturesCfMods!");
 		
 		WorkstationFeaturesCfMod featuresCfMod = (WorkstationFeaturesCfMod) configModule;
-		Map<String, WorkstationFeature> features = featuresCfMod.getFeatures();
+		Map<String, WorkstationFeature> oldFeatures = featuresCfMod.getFeatures();
+		
 		// FIXME: JPOX is having Problems clearing the list before adding new entries => Duplicate Key Exeption!
-		features.clear();
-		Iterator<WorkstationFeature> it = featureTable.getCheckedElements().iterator();
-		WorkstationFeature currentFeature;
-		while (it.hasNext()) {
-			currentFeature = it.next();
-			features.put(currentFeature.getFeatureID(), currentFeature);
+		// 				Workaround in WorkstationFeatureCfMod.JDOpreattach();
+		List<WorkstationFeature> newFeaturesList = featureTable.getCheckedElements();
+		if (newFeaturesList == null || newFeaturesList.isEmpty()) {
+			oldFeatures.clear();
+			return;
+		}
+		
+		// TODO: How to handle version numbers?? Currently they are ignored.
+		// Remove features that are not in new feature list and remove features from new feature list 
+		// which are already active
+		Map<String, WorkstationFeature> newFeatures = new HashMap<String, WorkstationFeature>();
+		if (oldFeatures != null) {
+			List<String> oldFeaturesToRemove = new LinkedList<String>();
+			for (WorkstationFeature feature : newFeaturesList)
+				newFeatures.put(feature.getFeatureID(), feature);
+
+			// sort out Features already marked and get all features to remove
+			for (String oldFeature : oldFeatures.keySet()) {
+				if (newFeatures.containsKey(oldFeature))
+					newFeatures.remove(oldFeature);
+				else
+					oldFeaturesToRemove.add(oldFeature);
+			}
+			
+			// remove features not marked anymore
+			for (String featureToRemove : oldFeaturesToRemove)
+				oldFeatures.remove(featureToRemove);
+		} // if (features != null)
+		
+		// add new features
+		for (WorkstationFeature feature : newFeatures.values()) {
+			oldFeatures.put(feature.getFeatureID(), feature);
 		}
 	}
 
