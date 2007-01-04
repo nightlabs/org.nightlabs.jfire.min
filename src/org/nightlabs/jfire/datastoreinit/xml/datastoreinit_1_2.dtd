@@ -13,16 +13,16 @@ when the JFire (http://jfire.org) server is started.
    Use is subject to license terms.
 -->
 
-<!NOTATION DatastoreInitialisation.1_1 PUBLIC
-          "-//NightLabs GmbH//DTD Datastore Initialisation 1.1//EN">
+<!NOTATION DatastoreInitialisation.1_2 PUBLIC
+          "-//NightLabs GmbH//DTD Datastore Initialisation 1.2//EN">
 <!--
 This is the XML DTD for the initialisation of datastores done by
 JFire. All datastore initialisation metadata descriptors must
 include a DOCTYPE of the following form:
 
 	<!DOCTYPE datastore-initialisation
-		PUBLIC "-//NightLabs GmbH//DTD Datastore Initialisation 1.1//EN"
-		"http://www.nightlabs.de/dtd/datastoreinit_1_1.dtd">
+		PUBLIC "-//NightLabs GmbH//DTD Datastore Initialisation 1.2//EN"
+		"http://www.nightlabs.de/dtd/datastoreinit_1_2.dtd">
 
 Every file must be named "datastoreinit.xml" and it must be located
 in the META-INF directory of the JAR.
@@ -30,7 +30,7 @@ in the META-INF directory of the JAR.
 Here is an example:
 	- - - example - - -
 	<!DOCTYPE datastore-initialisation
-		PUBLIC "-//NightLabs GmbH//DTD Datastore Initialisation 1.1//EN"
+		PUBLIC "-//NightLabs GmbH//DTD Datastore Initialisation 1.2//EN"
 		"http://www.nightlabs.de/dtd/datastoreinit_1_1.dtd">
 	<datastore-initialisation>
 		<init bean="jfire/ejb/JFireSimpleTrade/SimpleTradeManager" method="dosomething" priority="200">
