@@ -114,4 +114,50 @@ public class ConfigDAO extends JDOObjectDAO<ConfigID, Config>
   		cm = null;
   	}
 	}
+  
+	/**
+	 * Get a Collection of config objects.
+	 * @param configIDs The set of ConfigIDs corresponding to the desired configs.
+	 * @param fetchgroups The fetch groups to use
+	 * @param maxFetchDepth Fetch depth or {@link NLJDOHelper#MAX_FETCH_DEPTH_NO_LIMIT} 
+	 * @param monitor The progress monitor for this action. For every downloaded
+	 * 					object, <code>monitor.worked(1)</code> will be called.
+	 * @return a list with requested config objects
+	 */
+  public synchronized Collection<Config> getConfigs (Set<ConfigID> configIDs, String[] fetchGroups, int maxFetchDepth, IProgressMonitor monitor)
+  {
+  	try {
+  		cm = ConfigManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
+  		Collection<Config> configs = cm.getConfigs(configIDs, fetchGroups, maxFetchDepth);
+  		monitor.worked(1);
+  		return configs;
+  	} catch(Exception e) {
+  		throw new RuntimeException("Config download failed", e);
+  	} finally {
+  		cm = null;
+  	}
+	}
+  
+	/**
+	 * Get a Collection of all configs of a certain type.
+	 * @param configType The type of configs to fetch
+	 * @param fetchgroups The fetch groups to use
+	 * @param maxFetchDepth Fetch depth or {@link NLJDOHelper#MAX_FETCH_DEPTH_NO_LIMIT} 
+	 * @param monitor The progress monitor for this action. For every downloaded
+	 * 					object, <code>monitor.worked(1)</code> will be called.
+	 * @return a collection of all config of type <code>configType</code>
+	 */
+  public synchronized Collection<Config> getConfigs(String configType, String[] fetchGroups, int maxFetchDepth, IProgressMonitor monitor) {
+  	try {
+  		cm = ConfigManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
+  		Collection<Config> configs = cm.getConfigGroups(configType, fetchGroups, maxFetchDepth);
+  		monitor.worked(1);
+  		return configs;
+  	} catch(Exception e) {
+  		throw new RuntimeException("Config download failed", e);
+  	} finally {
+  		cm = null;
+  	}
+  			
+	}
 }
