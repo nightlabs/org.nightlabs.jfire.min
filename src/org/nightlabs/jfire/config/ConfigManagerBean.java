@@ -30,6 +30,7 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Set;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
@@ -48,6 +49,7 @@ import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.base.JFireBaseEAR;
 import org.nightlabs.jfire.config.id.ConfigID;
 import org.nightlabs.jfire.workstation.WorkstationFeaturesCfMod;
+import org.nightlabs.util.CollectionUtil;
 
 /**
  * @ejb.bean name="jfire/ejb/JFireBaseBean/ConfigManager"
@@ -177,6 +179,39 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	
 	
 	/**
+	 * Returns all Configs corresponding to the given Set of ConfigIDs.
+	 * 
+	 * @param configIDs The Set of ConfigIDs corresponding to the desired Configs. 
+	 * @param fetchGroups The fetch-groups to be used to detach the found Configs
+	 * @throws ModuleException 
+	 * 
+	 * @ejb.interface-method
+	 * @ejb.permission role-name="_Guest_"
+	 * @ejb.transaction type = "Required"
+	 */
+	public Collection<Config> getConfigs(Set<ConfigID> configIDs, String[] fetchGroups, int maxFetchDepth) throws ModuleException
+	{
+		if (configIDs == null)
+			throw new IllegalArgumentException("The Set of ConfigIDs must not be null!");
+		
+		PersistenceManager pm;
+		pm = getPersistenceManager();
+		try 
+		{
+			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
+			if (fetchGroups != null)
+				pm.getFetchPlan().setGroups(fetchGroups);
+			
+			Collection<Config> configs = CollectionUtil.castCollection(pm.getObjectsById(configIDs));
+			
+			return CollectionUtil.castCollection(pm.detachCopyAll(configs));
+			
+		} finally {
+			pm.close();
+		}
+	}
+	
+	/**
 	 * Returns all Configs with the given configType. If the parameter
 	 * is null all Configs will be returned.
 	 * 
@@ -188,7 +223,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type = "Required"
 	 */
-	public Collection getConfigs(String configType, String[] fetchGroups, int maxFetchDepth)
+	public Collection<Config> getConfigs(String configType, String[] fetchGroups, int maxFetchDepth)
 	throws ModuleException
 	{
 		PersistenceManager pm;
@@ -223,7 +258,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	public Collection getConfigs(String[] fetchGroups, int maxFetchDepth)
 	throws ModuleException
 	{
-		return getConfigs(null, fetchGroups, maxFetchDepth);
+		return getConfigs((String)null, fetchGroups, maxFetchDepth);
 	}
 	
 	/**
@@ -234,7 +269,6 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 * @ejb.transaction type = "Required"
 	 */
 	public Config getConfig(ConfigID configID, String[] fetchGroups, int maxFetchDepth)
-	throws ModuleException
 	{
 		PersistenceManager pm;
 		pm = getPersistenceManager();
