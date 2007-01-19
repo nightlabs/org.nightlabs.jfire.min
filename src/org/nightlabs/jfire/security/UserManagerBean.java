@@ -160,29 +160,32 @@ implements SessionBean
       	user.setOrganisationID(getOrganisationID());
 
       PersistenceManager pm = this.getPersistenceManager();
-      if (JDOHelper.isDetached(user))
-      {
-//        if(user.passwdChanged)
-//        {
-//          String password = user.getPassword();
-//          if(user instanceof UserGroup)
-//            throw new IllegalArgumentException("You cannot set a password for a UserGroup! userGroup.password must be null!");
-//          if(user.passwdChanged)
-//            user.setPassword(User.encryptPassword(user.getPassword()));
-//        }
-        user = (User) pm.makePersistent(user);
-        if (passwd != null)
-        	user.getUserLocal().setPasswordPlain(passwd);
+      try {
+	      if (JDOHelper.isDetached(user))
+	      {
+	//        if(user.passwdChanged)
+	//        {
+	//          String password = user.getPassword();
+	//          if(user instanceof UserGroup)
+	//            throw new IllegalArgumentException("You cannot set a password for a UserGroup! userGroup.password must be null!");
+	//          if(user.passwdChanged)
+	//            user.setPassword(User.encryptPassword(user.getPassword()));
+	//        }
+	        user = (User) pm.makePersistent(user);
+	        if (passwd != null)
+	        	user.getUserLocal().setPasswordPlain(passwd);
+	      }
+	      else
+	      {
+	//        user.setPassword(User.encryptPassword(user.getPassword()));
+	      	UserLocal userLocal = new UserLocal(user);
+	      	userLocal.setPasswordPlain(passwd);
+	        pm.makePersistent(user);
+	        ConfigSetup.ensureAllPrerequisites(pm);
+	      }
+      } finally {
+      	pm.close();
       }
-      else
-      {
-//        user.setPassword(User.encryptPassword(user.getPassword()));
-      	UserLocal userLocal = new UserLocal(user);
-      	userLocal.setPasswordPlain(passwd);
-        pm.makePersistent(user);
-        ConfigSetup.ensureAllPrerequisites(pm);
-      }
-      pm.close();
     }
     catch (ModuleException e) {
       throw new SecurityException(e);

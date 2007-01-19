@@ -59,6 +59,9 @@ import org.nightlabs.jfire.prop.id.StructFieldID;
 import org.nightlabs.jfire.prop.id.StructID;
 import org.nightlabs.jfire.prop.id.StructLocalID;
 import org.nightlabs.jfire.prop.search.PropSearchFilter;
+import org.nightlabs.jfire.prop.structfield.SelectionStructField;
+import org.nightlabs.jfire.prop.structfield.StructFieldValue;
+import org.nightlabs.jfire.prop.structfield.TextStructField;
 
 /**
  * TODO: Manage access rights for Properties on object-link-type basis
