@@ -3,7 +3,6 @@
  */
 package org.nightlabs.jfire.base.prop.edit.blockbased;
 
-import org.apache.log4j.Logger;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -11,7 +10,6 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.forms.editor.FormPage;
 import org.eclipse.ui.forms.widgets.ExpandableComposite;
-import org.eclipse.ui.forms.widgets.FormText;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 import org.nightlabs.base.editor.RestorableSectionPart;
@@ -27,11 +25,6 @@ import org.nightlabs.jfire.prop.IStruct;
  */
 public class BlockBasedEditorSection extends RestorableSectionPart
 {
-	/**
-	 * Logger used by this class.
-	 */
-	private static final Logger logger = Logger.getLogger(BlockBasedEditorSection.class);
-	
 	/**
 	 * The person editor used in this section.
 	 */
@@ -49,7 +42,7 @@ public class BlockBasedEditorSection extends RestorableSectionPart
 	 */
 	public BlockBasedEditorSection(FormPage page, Composite parent, String sectionDescriptionText)
 	{
-		super(parent, page.getEditor().getToolkit(), ExpandableComposite.TITLE_BAR | ExpandableComposite.TWISTIE | ExpandableComposite.TITLE_BAR);
+		super(parent, page.getEditor().getToolkit(), ExpandableComposite.EXPANDED | ExpandableComposite.TITLE_BAR | ExpandableComposite.TWISTIE | ExpandableComposite.TITLE_BAR);
 		createClient(getSection(), page.getEditor().getToolkit(), sectionDescriptionText);
 	}
 
@@ -109,14 +102,9 @@ public class BlockBasedEditorSection extends RestorableSectionPart
 
 	private void createDescriptionControl(Section section, FormToolkit toolkit, String sectionDescriptionText)
 	{
-		if (sectionDescriptionText == null || "".endsWith(sectionDescriptionText))
+		if (sectionDescriptionText == null || "".equals(sectionDescriptionText))
 			return;
-		FormText text = toolkit.createFormText(section, true);
-		try {
-			text.setText(sectionDescriptionText, true, false);
-		} catch (Exception e) {
-			logger.warn("Could not set Text for person editor section (description): "+sectionDescriptionText, e);
-		}
-		section.setDescriptionControl(text);
+
+		section.setText(sectionDescriptionText);
 	}
 }

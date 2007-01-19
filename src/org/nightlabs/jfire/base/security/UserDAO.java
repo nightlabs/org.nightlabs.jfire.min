@@ -161,6 +161,8 @@ public class UserDAO extends JDOObjectDAO<UserID, User>
 			monitor.worked(1);
 			Person person = user.getPerson();
 			IStruct struct = StructLocalDAO.sharedInstance().getStructLocal(Person.class.getName());
+			if (user.getPerson() != null)
+				struct.implodeProperty(user.getPerson());
 			long activePersonID = person.getPropertyID();
 			if (activePersonID == Property.TEMPORARY_PROP_ID) {
 				person.assignID(IDGenerator.nextID(Property.class));
@@ -181,8 +183,6 @@ public class UserDAO extends JDOObjectDAO<UserID, User>
 			// FIXME: how to do this?
 			// set person to call User.setNameAuto()
 //			user.setPerson(person);
-			if (user.getPerson() != null)
-				struct.implodeProperty(user.getPerson());
 			um.saveUser(user, null);
 			monitor.worked(1);
 			StructLocalDAO.sharedInstance().getStructLocal(Person.class.getName()).explodeProperty(person);    
