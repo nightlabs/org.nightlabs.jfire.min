@@ -430,7 +430,7 @@ public class FieldBasedEditor implements PropertyEditor {
 	public void updateProperty() {
 		for (Iterator iter = fieldEditors.values().iterator(); iter.hasNext();) {
 			DataFieldEditor editor = (DataFieldEditor) iter.next();
-			editor.updateProp();
+			editor.updateProperty();
 		}
 	}
 }

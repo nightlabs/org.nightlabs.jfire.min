@@ -34,7 +34,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.nightlabs.jfire.base.prop.edit.AbstractDataFieldComposite;
-import org.nightlabs.jfire.prop.AbstractStructField;
+import org.nightlabs.jfire.prop.StructField;
 
 /**
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
@@ -88,12 +88,12 @@ public class TextDataFieldComposite extends AbstractDataFieldComposite {
 	 * @see org.nightlabs.jfire.base.prop.edit.AbstractDataFieldComposite#refresh()
 	 */
 	public void refresh() {
-		AbstractStructField field = editor.getStructField();
+		StructField field = editor.getStructField();
 		fieldName.setText(field.getName().getText());
-		if (editor.getData().getText() == null)
+		if (editor.getDataField().getText() == null)
 			fieldText.setText("");
 		else
-			fieldText.setText(editor.getData().getText());
+			fieldText.setText(editor.getDataField().getText());
 	}
 	
 	public String getText() {

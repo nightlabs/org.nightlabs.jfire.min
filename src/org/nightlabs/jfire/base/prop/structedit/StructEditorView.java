@@ -50,12 +50,12 @@ implements PartVisibilityListener, ControllablePart {
 
 	public void partHidden(IWorkbenchPartReference partRef) {
 		if (structEditComposite != null)
-			selectionProviderProxy.removeRealSelectionProvider(structEditComposite.getStructTree().getTreeViewer());
+			selectionProviderProxy.removeRealSelectionProvider(structEditor.getStructTree().getTreeViewer());
 	}
 
 	public void partVisible(IWorkbenchPartReference partRef) {
 		if (structEditComposite != null)
-			selectionProviderProxy.addRealSelectionProvider(structEditComposite.getStructTree().getTreeViewer());
+			selectionProviderProxy.addRealSelectionProvider(structEditor.getStructTree().getTreeViewer());
 	}
 
 	public boolean canDisplayPart() {
@@ -65,7 +65,7 @@ implements PartVisibilityListener, ControllablePart {
 	public void createPartContents(Composite parent) {
 		structEditComposite = structEditor.createComposite(parent, parent.getStyle());
 //		structEditor.setCurrentStructLocalID(structLocalID)
-		getViewSite().setSelectionProvider(structEditComposite.getStructTree().getTreeViewer());
+		getViewSite().setSelectionProvider(structEditor.getStructTree().getTreeViewer());
 	}
 	
 	public void triggerSiteSelection() {

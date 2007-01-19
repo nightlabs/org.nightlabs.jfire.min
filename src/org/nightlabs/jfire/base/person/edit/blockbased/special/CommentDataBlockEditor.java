@@ -50,7 +50,7 @@ import org.nightlabs.jfire.person.PersonStruct;
 import org.nightlabs.jfire.prop.AbstractDataField;
 import org.nightlabs.jfire.prop.DataBlock;
 import org.nightlabs.jfire.prop.IStruct;
-import org.nightlabs.jfire.prop.TextDataField;
+import org.nightlabs.jfire.prop.datafield.TextDataField;
 import org.nightlabs.jfire.prop.exception.DataFieldNotFoundException;
 import org.nightlabs.jfire.prop.id.StructBlockID;
 

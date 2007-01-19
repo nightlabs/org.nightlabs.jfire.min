@@ -5,22 +5,23 @@ import org.nightlabs.base.wizard.DynamicPathWizardPage;
 import org.nightlabs.jfire.base.DuplicateKeyException;
 import org.nightlabs.jfire.prop.AbstractStructField;
 import org.nightlabs.jfire.prop.StructBlock;
-import org.nightlabs.jfire.prop.structfield.TextStructField;
+import org.nightlabs.jfire.prop.structfield.RegexStructField;
 
-public class TextStructFieldFactory extends AbstractStructFieldFactory {
+public class RegexStructFieldFactory extends AbstractStructFieldFactory {
+
 	public AbstractStructField createStructField(StructBlock block, String organisationID, String fieldID, WizardPage wizardPage) {
-		TextStructField textField;
+		RegexStructField field = new RegexStructField(block, organisationID, fieldID);
 		try {
-			textField = new TextStructField(block, organisationID, fieldID);
-			block.addStructField(textField);
+			block.addStructField(field);
 		} catch (DuplicateKeyException e) {
 			e.printStackTrace();
-			throw new IllegalStateException(e);
+			throw new RuntimeException(e);
 		}
-		return textField;
+		return field;
 	}
 
 	public DynamicPathWizardPage createWizardPage() {
+		// no additional information needed
 		return null;
 	}
 }

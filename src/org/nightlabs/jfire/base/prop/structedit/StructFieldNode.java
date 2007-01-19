@@ -4,20 +4,21 @@ import java.util.Locale;
 
 import org.nightlabs.i18n.I18nText;
 import org.nightlabs.jfire.prop.AbstractStructField;
+import org.nightlabs.jfire.prop.StructField;
 
 public class StructFieldNode extends TreeNode implements Comparable<StructFieldNode>
 {
-	private AbstractStructField field;
+	private StructField field;
 	private StructBlockNode parentBlock;
 	
 	/**
 	 * Creates a new StructFieldNode.
-	 * @param field The {@link AbstractStructField} to be represented. Can be null to indicate an
-	 * 				{@link AbstractStructField} whose type has not been specified yet.
+	 * @param field The {@link StructField} to be represented. Can be null to indicate an
+	 * 				{@link StructField} whose type has not been specified yet.
 	 * @param parentBlock The parentBlock node.
 	 * @param deletable Wether the node can be deleted or not.
 	 */
-	public StructFieldNode(AbstractStructField field, StructBlockNode parent)
+	public StructFieldNode(StructField field, StructBlockNode parent)
 	{
 		this.field = field;
 		this.parentBlock = parent;		
@@ -48,7 +49,7 @@ public class StructFieldNode extends TreeNode implements Comparable<StructFieldN
 		return false;
 	}
 	
-	public AbstractStructField getField()
+	public StructField getField()
 	{
 		return field;
 	}

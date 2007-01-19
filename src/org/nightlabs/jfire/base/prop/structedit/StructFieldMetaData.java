@@ -2,12 +2,12 @@ package org.nightlabs.jfire.base.prop.structedit;
 
 public class StructFieldMetaData
 {
-	private IStructFieldEditorFactory editorFactory;
-	private IStructFieldFactory fieldFactory;
+	private StructFieldEditorFactory editorFactory;
+	private StructFieldFactory fieldFactory;
 	private String fieldName;
 	private String description;
 	
-	public StructFieldMetaData(IStructFieldFactory _fieldFactory, IStructFieldEditorFactory _editorFactory, String _fieldName, String _description)
+	public StructFieldMetaData(StructFieldFactory _fieldFactory, StructFieldEditorFactory _editorFactory, String _fieldName, String _description)
 	{
 		editorFactory = _editorFactory;
 		fieldFactory = _fieldFactory;
@@ -15,12 +15,12 @@ public class StructFieldMetaData
 		description = _description;		
 	}
 
-	public IStructFieldEditorFactory getEditorFactory()
+	public StructFieldEditorFactory getEditorFactory()
 	{
 		return editorFactory;
 	}
 	
-	public IStructFieldFactory getFieldFactory()
+	public StructFieldFactory getFieldFactory()
 	{
 		return fieldFactory;
 	}

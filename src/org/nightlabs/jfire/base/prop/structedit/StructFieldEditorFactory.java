@@ -32,21 +32,21 @@ import org.nightlabs.jfire.prop.AbstractStructField;
 /**
  * @author Tobias Langner <tobias[DOT]langner[AT]nightlabs[DOT]de>
  */
-public interface IStructFieldEditorFactory extends IExecutableExtension
+public interface StructFieldEditorFactory extends IExecutableExtension
 {	
 	/**
-	 * Editors should return an appropriate {@link IStructFieldEditor} for the given {@link AbstractStructField}
+	 * Editors should return an appropriate {@link StructFieldEditor} for the given {@link AbstractStructField}
 	 */
-	public IStructFieldEditor getStructFieldEditorSingleton(String structFieldClass);
+	public StructFieldEditor getStructFieldEditorSingleton(String structFieldClass);
 	
 	/**
-	 * Should return the editor which must implement {@link IStructFieldEditor}.
+	 * Should return the editor which must implement {@link StructFieldEditor}.
 	 */
 	public String getStructFieldEditorClass();
 	
 	/**
 	 * Sets the editor class
-	 * @param theClass Must implement {@link IStructFieldEditor}
+	 * @param theClass Must implement {@link StructFieldEditor}
 	 */
 	public void setStructFieldEditorClass(String theClass);
 	

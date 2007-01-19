@@ -49,7 +49,7 @@ import org.nightlabs.jfire.person.PersonStruct;
 import org.nightlabs.jfire.prop.PropertyManager;
 import org.nightlabs.jfire.prop.PropertyManagerHome;
 import org.nightlabs.jfire.prop.PropertyManagerUtil;
-import org.nightlabs.jfire.prop.TextDataField;
+import org.nightlabs.jfire.prop.datafield.TextDataField;
 import org.nightlabs.jfire.prop.search.PropSearchFilter;
 
 /**

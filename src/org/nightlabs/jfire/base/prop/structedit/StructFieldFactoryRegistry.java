@@ -7,7 +7,7 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtension;
 import org.nightlabs.base.extensionpoint.AbstractEPProcessor;
 import org.nightlabs.base.extensionpoint.EPProcessorException;
-import org.nightlabs.jfire.prop.AbstractStructField;
+import org.nightlabs.jfire.prop.StructField;
 import org.nightlabs.jfire.prop.exception.PropertyException;
 
 public class StructFieldFactoryRegistry extends AbstractEPProcessor
@@ -32,8 +32,8 @@ public class StructFieldFactoryRegistry extends AbstractEPProcessor
 		fieldClassMap = new HashMap<String, String>();;
 	}
 	
-	public synchronized void addFieldMetadata(String fieldClass, IStructFieldFactory fieldFactory,
-			IStructFieldEditorFactory editorFactory, String fieldName, String description)
+	public synchronized void addFieldMetadata(String fieldClass, StructFieldFactory fieldFactory,
+			StructFieldEditorFactory editorFactory, String fieldName, String description)
 	{
 		fieldMetaDataMap.put(fieldClass, new StructFieldMetaData(fieldFactory, editorFactory, fieldName, description));
 		fieldClassMap.put(fieldName, fieldClass);
@@ -45,18 +45,22 @@ public class StructFieldFactoryRegistry extends AbstractEPProcessor
 		fieldMetaDataMap.remove(fieldClass);		
 	}
 	
-	private IStructFieldEditorFactory getEditorFactory(Class fieldClass) throws PropertyException
+	private StructFieldEditorFactory getEditorFactory(Class fieldClass) throws PropertyException
 	{
 		// make sure the EP was already processed
 		checkProcessing();
 		
-		IStructFieldEditorFactory editorFactory;
+		StructFieldEditorFactory editorFactory;
 		Class current = fieldClass;
+		String currentName;
+		StructFieldMetaData sfmd;
 		
 		// also check parents of the class
 		do
 		{
-			editorFactory = fieldMetaDataMap.get(current.getName()).getEditorFactory();
+			currentName = current.getName();
+			sfmd = fieldMetaDataMap.get(currentName);
+			editorFactory = sfmd.getEditorFactory();
 			current = current.getSuperclass();
 		}
 		while (editorFactory == null && current != null);
@@ -67,9 +71,9 @@ public class StructFieldFactoryRegistry extends AbstractEPProcessor
 			throw new StructFieldEditorFactoryNotFoundException("No editor found for class "+fieldClass.getName());
 	}
 	
-	public IStructFieldEditor getEditorSingleton(AbstractStructField field) throws PropertyException
+	public StructFieldEditor getEditorSingleton(StructField field) throws PropertyException
 	{
-		IStructFieldEditorFactory editorFactory = getEditorFactory(field.getClass());
+		StructFieldEditorFactory editorFactory = getEditorFactory(field.getClass());
 		return editorFactory.getStructFieldEditorSingleton(field.getClass().getName());
 	}
 	
@@ -80,8 +84,8 @@ public class StructFieldFactoryRegistry extends AbstractEPProcessor
 		{
 			if (element.getName().toLowerCase().equals(EXTENSION_POINT_ELEMENT_NAME))
 			{
-				IStructFieldEditorFactory editorFactory = (IStructFieldEditorFactory) element.createExecutableExtension("editorFactoryClass");
-				IStructFieldFactory fieldFactory = (IStructFieldFactory) element.createExecutableExtension("factoryClass");
+				StructFieldEditorFactory editorFactory = (StructFieldEditorFactory) element.createExecutableExtension("editorFactoryClass");
+				StructFieldFactory fieldFactory = (StructFieldFactory) element.createExecutableExtension("factoryClass");
 				String structFieldClass = element.getAttribute("class");
 				String fieldName = element.getAttribute("name");
 				String description = element.getAttribute("description");

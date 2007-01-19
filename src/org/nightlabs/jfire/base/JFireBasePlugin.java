@@ -30,6 +30,7 @@ import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.nightlabs.jfire.base.login.Login;
 import org.nightlabs.jfire.config.ConfigManager;
@@ -127,6 +128,17 @@ public class JFireBasePlugin
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
+	}
+	
+	/**
+	 * Returns an image descriptor for the image file at the given
+	 * plug-in relative path.
+	 *
+	 * @param path the path
+	 * @return the image descriptor
+	 */
+	public static ImageDescriptor getImageDescriptor(String path) {
+		return AbstractUIPlugin.imageDescriptorFromPlugin("org.nightlabs.jfire.base", path);
 	}
 	
 }

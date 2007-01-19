@@ -20,7 +20,7 @@ import org.nightlabs.jfire.base.prop.edit.blockbased.DataBlockEditorChangedListe
 import org.nightlabs.jfire.base.prop.edit.blockbased.DataBlockWizardPage;
 import org.nightlabs.jfire.person.Person;
 import org.nightlabs.jfire.person.PersonStruct;
-import org.nightlabs.jfire.prop.TextDataField;
+import org.nightlabs.jfire.prop.datafield.TextDataField;
 
 /**
  * @author alex

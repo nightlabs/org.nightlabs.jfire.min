@@ -1,5 +1,5 @@
 package org.nightlabs.jfire.base.prop.structedit;
 
-public interface IStructEditorChangedListener {
+public interface StructEditorChangedListener {
 	public void structEditorChanged(StructEditorComposite structEditor);
 }

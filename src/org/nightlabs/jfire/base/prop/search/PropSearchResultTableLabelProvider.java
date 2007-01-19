@@ -30,7 +30,7 @@ import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.swt.graphics.Image;
 import org.nightlabs.jfire.person.Person;
-import org.nightlabs.jfire.prop.TextDataField;
+import org.nightlabs.jfire.prop.datafield.TextDataField;
 
 /**
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>

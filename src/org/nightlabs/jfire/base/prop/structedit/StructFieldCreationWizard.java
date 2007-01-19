@@ -17,101 +17,92 @@ import org.nightlabs.base.composite.ListComposite;
 import org.nightlabs.base.wizard.DynamicPathWizard;
 import org.nightlabs.base.wizard.DynamicPathWizardPage;
 
-public class StructFieldCreationWizard extends DynamicPathWizard
-{
-	private static class StructFieldTypePage extends DynamicPathWizardPage
-	{
+public class StructFieldCreationWizard extends DynamicPathWizard {
+	private static class StructFieldTypePage extends DynamicPathWizardPage {
 		private ListComposite<StructFieldMetaData> fieldList;
 		private Map<StructFieldMetaData, DynamicPathWizardPage> fieldCreationWizardPages;
 		private Label description;
 
-		public StructFieldTypePage()
-		{			
+		public StructFieldTypePage() {
 			super("StructFieldTypePage", "Select the type of the struct field!");
 			fieldCreationWizardPages = new HashMap<StructFieldMetaData, DynamicPathWizardPage>();
 		}
-		
-		public StructFieldMetaData getSelectedFieldMetaData()
-		{
+
+		public StructFieldMetaData getSelectedFieldMetaData() {
 			return fieldList.getSelectedElement();
 		}
 
 		@Override
-		public Control createPageContents(Composite parent)
-		{
+		public Control createPageContents(Composite parent) {
 			Composite comp = new Composite(parent, SWT.NONE);
 			comp.setLayout(new GridLayout(1, false));
 			new Label(comp, SWT.NONE).setText("Available struct fields:");
-			Collection<StructFieldMetaData> fields = StructFieldFactoryRegistry.sharedInstance().getFieldMetaDataMap().values();			
+			Collection<StructFieldMetaData> fields = StructFieldFactoryRegistry.sharedInstance().getFieldMetaDataMap()
+					.values();
 			fieldList = new ListComposite<StructFieldMetaData>(comp, SWT.NONE);
 			fieldList.setInput(new LinkedList<StructFieldMetaData>(fields));
 			description = new Label(comp, SWT.NONE);
 			description.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-			
+
 			fieldList.getList().addSelectionListener(new SelectionListener() {
-				public void widgetDefaultSelected(SelectionEvent e)
-				{}
-				public void widgetSelected(SelectionEvent e)
-				{
+				public void widgetDefaultSelected(SelectionEvent e) {
+				}
+
+				public void widgetSelected(SelectionEvent e) {
 					StructFieldMetaData selected = fieldList.getSelectedElement();
 					description.setText(selected.getFieldDescription());
 					StructFieldCreationWizard wizard = (StructFieldCreationWizard) getWizard();
-					
-					if (!fieldCreationWizardPages.containsKey(selected))
-					{
+
+					if (!fieldCreationWizardPages.containsKey(selected)) {
 						DynamicPathWizardPage page = selected.getFieldFactory().createWizardPage();
 						fieldCreationWizardPages.put(selected, page);
 					}
-					
-					DynamicPathWizardPage page = fieldCreationWizardPages.get(selected);				
-					
+
+					DynamicPathWizardPage page = fieldCreationWizardPages.get(selected);
+
 					wizard.replaceDetailsWizardPage(page);
 					wizard.setSelectedFieldMetaData(selected);
 				}
 			});
-			
+
 			return comp;
 		}
 	}
-	
+
 	private DynamicPathWizardPage detailsPage = null;
 	private StructFieldMetaData selectedFieldMetaData = null;
 
-	public StructFieldCreationWizard()
-	{
+	public StructFieldCreationWizard() {
 		addPage(new StructFieldTypePage());
 	}
-	
-	public void replaceDetailsWizardPage(DynamicPathWizardPage newDetailsPage)
-	{
+
+	public void replaceDetailsWizardPage(DynamicPathWizardPage newDetailsPage) {
 		if (detailsPage != null)
 			removeDynamicWizardPage(detailsPage);
-		
+
 		if (newDetailsPage == null)
 			return;
-		
+
 		detailsPage = newDetailsPage;
-		addDynamicWizardPage(detailsPage);		
+		addDynamicWizardPage(detailsPage);
 	}
 	
-	public DynamicPathWizardPage getDetailsWizardPage()
-	{
+	
+
+	public DynamicPathWizardPage getDetailsWizardPage() {
 		return detailsPage;
 	}
-	
-	public void setSelectedFieldMetaData(StructFieldMetaData metaData)
-	{
+
+	public void setSelectedFieldMetaData(StructFieldMetaData metaData) {
 		selectedFieldMetaData = metaData;
 	}
-	
-	public StructFieldMetaData getSelectedFieldMetaData()
-	{
+
+	public StructFieldMetaData getSelectedFieldMetaData() {
 		return selectedFieldMetaData;
 	}
 
 	@Override
-	public boolean performFinish()
-	{
+	public boolean performFinish() {
 		return true;
 	}
 }

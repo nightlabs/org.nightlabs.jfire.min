@@ -211,7 +211,7 @@ public class DataFieldEditorFactoryRegistry extends AbstractEPProcessor {
 			{
 				DataFieldEditorFactory fieldEditorFactory = (DataFieldEditorFactory) element.createExecutableExtension("class");
 				Class targetType = Class.forName(element.getAttribute("targetType"));
-				if (targetType != fieldEditorFactory.getTargetPropDataFieldType())
+				if (targetType != fieldEditorFactory.getPropDataFieldType())
 					throw new IllegalStateException("Target type from extension point does not match editorFactory's target type.");
 				
 				String context = element.getAttribute("context");

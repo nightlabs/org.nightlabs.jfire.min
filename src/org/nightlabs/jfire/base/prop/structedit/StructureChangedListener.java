@@ -1,5 +1,5 @@
 package org.nightlabs.jfire.base.prop.structedit;
 
-public interface IStructureChangedListener {
+public interface StructureChangedListener {
 	public void structureChanged();
 }

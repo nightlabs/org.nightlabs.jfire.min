@@ -32,9 +32,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.nightlabs.jfire.base.prop.edit.AbstractDataFieldEditor;
 import org.nightlabs.jfire.base.prop.edit.AbstractDataFieldEditorFactory;
-import org.nightlabs.jfire.base.prop.edit.DataFieldEditor;
-import org.nightlabs.jfire.prop.AbstractDataField;
-import org.nightlabs.jfire.prop.TextDataField;
+import org.nightlabs.jfire.prop.datafield.TextDataField;
 
 /**
  * Represents an editor for {@link TextDataField} within a
@@ -42,18 +40,18 @@ import org.nightlabs.jfire.prop.TextDataField;
  *  
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  */
-public class TextDataFieldEditor extends AbstractDataFieldEditor {
+public class TextDataFieldEditor extends AbstractDataFieldEditor<TextDataField> {
 	
 	public TextDataFieldEditor() {		
 	}
 
 	private static Logger LOGGER = Logger.getLogger(TextDataFieldEditor.class);
 	
-	public static class Factory extends AbstractDataFieldEditorFactory {
+	public static class Factory extends AbstractDataFieldEditorFactory<TextDataField> {
 		/**
-		 * @see org.nightlabs.jfire.base.prop.edit.DataFieldEditorFactory#getTargetPropDataFieldType()
+		 * @see org.nightlabs.jfire.base.prop.edit.DataFieldEditorFactory#getPropDataFieldType()
 		 */
-		public Class getTargetPropDataFieldType() {
+		public Class<TextDataField> getPropDataFieldType() {
 			return TextDataField.class;
 		}
 		/**
@@ -63,29 +61,19 @@ public class TextDataFieldEditor extends AbstractDataFieldEditor {
 			return ExpandableBlocksEditor.EDITORTYPE_BLOCK_BASED_EXPANDABLE;
 		}
 		/**
-		 * @see org.nightlabs.jfire.base.prop.edit.AbstractDataFieldEditorFactory#getPropDataFieldEditorClass()
+		 * @see org.nightlabs.jfire.base.prop.edit.AbstractDataFieldEditorFactory#getDataFieldEditorClass()
 		 */
-		public Class getPropDataFieldEditorClass() {
+		public Class<TextDataFieldEditor> getDataFieldEditorClass() {
 			return TextDataFieldEditor.class;
 		}
-		
 	}
 	
-	
-	/**
-	 * @see org.nightlabs.jfire.base.prop.edit.DataFieldEditor#getTargetPropDataType()
-	 */
-	public Class getTargetPropDataType() {
-		return TextDataField.class;
-	}
-
 	/**
 	 * @see org.nightlabs.jfire.base.prop.edit.DataFieldEditor#getEditorType()
 	 */
 	public String getEditorType() {
 		return ExpandableBlocksEditor.EDITORTYPE_BLOCK_BASED_EXPANDABLE;
-	}
-
+	}	
 	
 	private TextDataFieldComposite composite;
 	/**
@@ -106,37 +94,13 @@ public class TextDataFieldEditor extends AbstractDataFieldEditor {
 		return composite;
 	}
 
-	private TextDataField data;
 	/**
-	 * @see org.nightlabs.jfire.base.prop.edit.AbstractDataFieldEditor#setData(org.nightlabs.jfire.base.prop.AbstractDataField)
+	 * @see org.nightlabs.jfire.base.prop.edit.DataFieldEditor#updateProperty()
 	 */
-	public void doSetData(AbstractDataField data) {
-		if (! (data instanceof TextDataField))
-			throw new IllegalArgumentException("Argument data should be of type "+TextDataField.class.getName()+" but was "+data.getClass().getName());
-		this.data = (TextDataField)data;
-		setChanged(false);
-		// TODO: refesh called twice ??
-//		if (composite != null)
-//			composite.refresh();
-	}
-	
-	public TextDataField getData() {
-		return data;
+	public void updateProperty() {
+		getDataField().setText(composite.getText());
 	}
 
-	/**
-	 * @see org.nightlabs.jfire.base.prop.edit.DataFieldEditor#updateProp()
-	 */
-	public void updateProp() {
-		data.setText(composite.getText());
-	}
-
-	/**
-	 * @see org.nightlabs.jfire.base.prop.edit.AbstractDataFieldEditor#doRefresh(org.nightlabs.jfire.base.prop.AbstractDataField)
-	 */
-	public void doRefresh(AbstractDataField data) {
-		setData(getStruct(), data);
-	}
 
 	/**
 	 * @see org.nightlabs.jfire.base.prop.edit.DataFieldEditor#disposeControl()

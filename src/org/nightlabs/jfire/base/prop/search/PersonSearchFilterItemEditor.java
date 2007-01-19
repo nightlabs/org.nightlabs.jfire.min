@@ -47,7 +47,7 @@ import org.nightlabs.jfire.base.prop.StructLocalDAO;
 import org.nightlabs.jfire.person.Person;
 import org.nightlabs.jfire.prop.AbstractStructField;
 import org.nightlabs.jfire.prop.StructBlock;
-import org.nightlabs.jfire.prop.TextStructField;
+import org.nightlabs.jfire.prop.structfield.TextStructField;
 
 /**
  * Concrete SearchFilterItemEditor that represents a

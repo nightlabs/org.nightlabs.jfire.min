@@ -103,6 +103,7 @@ public abstract class DataBlockEditor extends Composite implements DataFieldEdit
 	}
 
 	public Map getStructFieldDisplayOrder() {
+		// TODO re-enable this
 		//return AbstractPropStructOrderConfigModule.sharedInstance().structFieldDisplayOrder();
 		return new HashMap();
 	}
@@ -153,10 +154,10 @@ public abstract class DataBlockEditor extends Composite implements DataFieldEdit
 	 * and calls their updateProp method.<br/>
 	 * Implementors might override if no registered PropDataFieldEditors are used.
 	 */
-	public void updateProp() {
+	public void updateProperty() {
 		for (Iterator it = fieldEditors.values().iterator(); it.hasNext(); ) {
 			DataFieldEditor fieldEditor = (DataFieldEditor)it.next();
-			fieldEditor.updateProp();
+			fieldEditor.updateProperty();
 		}
 	}	
 }

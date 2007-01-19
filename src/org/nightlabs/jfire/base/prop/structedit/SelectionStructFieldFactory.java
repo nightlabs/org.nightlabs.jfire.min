@@ -4,8 +4,8 @@ import org.eclipse.jface.wizard.WizardPage;
 import org.nightlabs.base.wizard.DynamicPathWizardPage;
 import org.nightlabs.jfire.base.DuplicateKeyException;
 import org.nightlabs.jfire.prop.AbstractStructField;
-import org.nightlabs.jfire.prop.SelectionStructField;
 import org.nightlabs.jfire.prop.StructBlock;
+import org.nightlabs.jfire.prop.structfield.SelectionStructField;
 
 public class SelectionStructFieldFactory extends AbstractStructFieldFactory
 {

@@ -35,11 +35,10 @@ import org.nightlabs.jfire.prop.IStruct;
 /**
  * @author  Alexander Bieber <alex[AT]nightlabs[DOT]de>
  */
-public interface DataFieldEditor {
+public interface DataFieldEditor<F extends AbstractDataField> {
 	
 	/**
 	 * @param factory
-	 * @uml.property  name="propDataFieldEditorFactory"
 	 */
 	public void setPropDataFieldEditorFactory(DataFieldEditorFactory factory);
 	public DataFieldEditorFactory getPropDataFieldEditorFactory();
@@ -66,11 +65,11 @@ public interface DataFieldEditor {
 	 * The composite should be refreshed as well.
 	 * @param data
 	 */
-	public void setData(IStruct struct, AbstractDataField data);
+	public void setData(IStruct struct, F data);
 	
 	public void refresh();
 	
-	public void updateProp();
+	public void updateProperty();
 	
 	
 	public void addDataFieldEditorChangedListener(DataFieldEditorChangeListener listener);

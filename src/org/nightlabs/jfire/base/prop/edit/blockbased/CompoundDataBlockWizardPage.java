@@ -209,7 +209,7 @@ public class CompoundDataBlockWizardPage extends WizardHopPage {
   public void updateProp() {
   	for (Iterator iter = propDataBlockEditors.values().iterator(); iter.hasNext();) {
 			DataBlockEditor editor = (DataBlockEditor) iter.next();
-			editor.updateProp();
+			editor.updateProperty();
 		}
   }
 

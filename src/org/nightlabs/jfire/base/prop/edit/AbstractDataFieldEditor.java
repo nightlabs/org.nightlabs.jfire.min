@@ -27,7 +27,6 @@
 package org.nightlabs.jfire.base.prop.edit;
 
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.LinkedList;
 
 import org.eclipse.swt.events.ModifyEvent;
@@ -37,6 +36,7 @@ import org.eclipse.swt.widgets.Control;
 import org.nightlabs.jfire.prop.AbstractDataField;
 import org.nightlabs.jfire.prop.AbstractStructField;
 import org.nightlabs.jfire.prop.IStruct;
+import org.nightlabs.jfire.prop.StructField;
 
 /**
  * Abstract base class for all  {@link DataFieldEditor} s with implementations for the listener stuff and other
@@ -44,9 +44,9 @@ import org.nightlabs.jfire.prop.IStruct;
  * This class as well already implements ModifyListener so it can be used as listener for Text Widgets. 
  * @author  Alexander Bieber <alex[AT]nightlabs[DOT]de>
  */
-public abstract class AbstractDataFieldEditor implements DataFieldEditor, ModifyListener
+public abstract class AbstractDataFieldEditor<F extends AbstractDataField> implements DataFieldEditor<F>, ModifyListener
 {
-	AbstractStructField structField;
+	private StructField structField;
 	private IStruct struct;
 	
 	public AbstractDataFieldEditor()
@@ -59,39 +59,45 @@ public abstract class AbstractDataFieldEditor implements DataFieldEditor, Modify
 	 */
 	public abstract Control createControl(Composite parent);
 
-	private AbstractDataField _data;
+	/**
+	 * Extendors should use this field to store the data field they are currently handeling.
+	 */
+	private F dataField;
 	
 	/**
 	 * Not intended to be overridden.<br/>
-	 * Subclasses should set their data in {@link #doSetData(AbstractDataField)}.
+	 * Subclasses should overwrite {@link #seDataField()} to react on changes.
 	 * 
-	 * @see #doSetData(AbstractDataField)
-	 * @see org.nightlabs.jfire.base.prop.edit.DataFieldEditor#setData(org.nightlabs.jfire.base.prop.AbstractDataField)
+	 * @see #setDataField()
+	 * @see org.nightlabs.jfire.base.prop.edit.DataFieldEditor#setData(StructField)
 	 */
-	public void setData(IStruct struct, AbstractDataField data) {
+	public void setData(IStruct struct, F data) {
 		refreshing = true;
 		this.struct = struct;
 		structField = data.getStructField();
 		try  {
-			_data = data;
-			doSetData(data);
+			setDataField(data);
 		} finally {
 			refreshing = false;
 		}
-	}  	
+	}
+	
+	public F getDataField() {
+		return dataField;
+	}
 	
 	/**
-	 * Subclasses can do things when data changes here.
-	 * 
-	 * @see DataFieldEditor#setData(AbstractDataField)  
+	 * Subsclasses can do thins when data changes here.
+	 * @param dataField
 	 */
-	public abstract void doSetData(AbstractDataField data);
+	protected void setDataField(F dataField) {
+		this.dataField = dataField;
+		setChanged(false);
+	}
 	
 	/**
 	 * Subclasses should perfom refreshing <b>here<b> and not override
 	 * {@link #refresh(AbstractDataField)}
-	 * 
-	 * @param data
 	 */
 	public abstract void doRefresh();
 	
@@ -101,7 +107,6 @@ public abstract class AbstractDataFieldEditor implements DataFieldEditor, Modify
 	 * Not intended to be overridden.
 	 * 
 	 * @see #doRefresh(AbstractDataField) 
-	 * @param data
 	 */
 	public void refresh() {
 		refreshing = true;
@@ -112,7 +117,7 @@ public abstract class AbstractDataFieldEditor implements DataFieldEditor, Modify
 		}		
 	}
 	
-	private Collection changeListener = new LinkedList();
+	private Collection<DataFieldEditorChangeListener> changeListener = new LinkedList<DataFieldEditorChangeListener>();
 	/**
 	 * 
 	 * @see org.nightlabs.jfire.base.prop.edit.DataFieldEditor#addDataFieldEditorChangedListener(org.nightlabs.jfire.base.prop.edit.DataFieldEditorChangeListener)
@@ -130,10 +135,8 @@ public abstract class AbstractDataFieldEditor implements DataFieldEditor, Modify
 	
 	protected synchronized void notifyChangeListeners() {
 		// TODO: Rewrite to noitfy listener asynchronously
-		for (Iterator it = changeListener.iterator(); it.hasNext(); ) {
-			DataFieldEditorChangeListener listener = (DataFieldEditorChangeListener)it.next();
+		for (DataFieldEditorChangeListener listener : changeListener)
 			listener.dataFieldEditorChanged(this);
-		}
 	}
 	
 	private boolean changed;
@@ -166,13 +169,13 @@ public abstract class AbstractDataFieldEditor implements DataFieldEditor, Modify
 	 * 
 	 * @return
 	 */
-	public AbstractStructField getStructField() {
+	public StructField getStructField() {
 		if (structField == null) {
-			if (_data != null) {
+			if (dataField != null) {
 				try {
 					structField = struct.getStructField(
-							_data.getStructBlockOrganisationID(), _data.getStructBlockID(),
-							_data.getStructFieldOrganisationID(), _data.getStructFieldID()
+							dataField.getStructBlockOrganisationID(), dataField.getStructBlockID(),
+							dataField.getStructFieldOrganisationID(), dataField.getStructFieldID()
 						);
 				} catch (Exception e) {
 					throw new RuntimeException(e);

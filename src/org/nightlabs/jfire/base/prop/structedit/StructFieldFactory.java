@@ -9,7 +9,7 @@ import org.nightlabs.jfire.prop.StructBlock;
 /**
  * @author Tobias Langner <tobias[DOT]langner[AT]nightlabs[DOT]de> 
  */
-public interface IStructFieldFactory extends IExecutableExtension
+public interface StructFieldFactory extends IExecutableExtension
 {
 	/**
 	 * Here implementors should return a {@link WizardPage} that serves to acquire additional information that is

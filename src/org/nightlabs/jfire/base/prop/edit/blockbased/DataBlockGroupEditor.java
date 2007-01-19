@@ -156,7 +156,7 @@ implements DataBlockEditorChangedListener
 	public void updateProp() {
 		for (Iterator it = propDataBlockEditors.iterator(); it.hasNext(); ) {
 			DataBlockEditor blockEditor = (DataBlockEditor)it.next();
-			blockEditor.updateProp();
+			blockEditor.updateProperty();
 		}
 	}
 	

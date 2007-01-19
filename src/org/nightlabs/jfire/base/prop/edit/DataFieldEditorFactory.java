@@ -33,12 +33,12 @@ import org.nightlabs.jfire.prop.IStruct;
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  *
  */
-public interface DataFieldEditorFactory {
+public interface DataFieldEditorFactory<F extends AbstractDataField> {
 	/**
 	 * Should return a subclass of {@link AbstractDataField}
 	 * @return
 	 */
-	public Class getTargetPropDataFieldType();
+	public Class<F> getPropDataFieldType();
 
 	/**
 	 * Should return one static final type from {@link DataFieldEditorFactoryRegistry}.
@@ -51,7 +51,5 @@ public interface DataFieldEditorFactory {
 	 * @param data
 	 * @return
 	 */
-	public DataFieldEditor createPropDataFieldEditor(IStruct struct, AbstractDataField data, boolean setData);
-
-	
+	public DataFieldEditor<F> createPropDataFieldEditor(IStruct struct, F data, boolean setData);
 }

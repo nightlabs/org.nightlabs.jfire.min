@@ -34,7 +34,7 @@ import org.nightlabs.jfire.prop.IStruct;
  * 
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  */
-public abstract class AbstractDataFieldEditorFactory implements DataFieldEditorFactory {
+public abstract class AbstractDataFieldEditorFactory<F extends AbstractDataField> implements DataFieldEditorFactory<F> {
 
 	/**
 	 * Default constructor does nothing.
@@ -44,26 +44,26 @@ public abstract class AbstractDataFieldEditorFactory implements DataFieldEditorF
 	/**
 	 * @see org.nightlabs.jfire.base.prop.edit.DataFieldEditor#getTargetPropDataType()
 	 */
-	public abstract Class getTargetPropDataFieldType();
+	public abstract Class<F> getPropDataFieldType();
 
 	/**
 	 * @see org.nightlabs.jfire.base.prop.edit.DataFieldEditor#getEditorType()
 	 */
 	public abstract String getEditorType();
 	
-	public abstract Class getPropDataFieldEditorClass();
+	public abstract Class<? extends DataFieldEditor<F>> getDataFieldEditorClass();
 
 	/**
 	 * Default implementation instatiates a new instance of getEditorClass.getNewInstance()
 	 * invokes setData(data) and returnes the new instance.
 	 * 
 	 */
-	public DataFieldEditor createPropDataFieldEditor(IStruct struct, AbstractDataField data, boolean setData) {
-		DataFieldEditor editor;
+	public DataFieldEditor<F> createPropDataFieldEditor(IStruct struct, F data, boolean setData) {
+		DataFieldEditor<F> editor;
 		try {
-			editor = (DataFieldEditor) getPropDataFieldEditorClass().newInstance();
+			editor = getDataFieldEditorClass().newInstance();
 		} catch (Throwable t) {
-			IllegalStateException ill = new IllegalStateException("Error instantiating "+getPropDataFieldEditorClass().getName());
+			IllegalStateException ill = new IllegalStateException("Error instantiating "+getDataFieldEditorClass().getName());
 			ill.initCause(t);
 			throw ill;
 		}

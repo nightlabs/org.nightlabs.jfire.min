@@ -39,18 +39,17 @@ import org.nightlabs.base.composite.DisguisedText;
 import org.nightlabs.base.composite.DisguisedText.LabeledDisguisedText;
 import org.nightlabs.jfire.base.prop.edit.AbstractDataFieldEditor;
 import org.nightlabs.jfire.base.prop.edit.AbstractDataFieldEditorFactory;
-import org.nightlabs.jfire.prop.AbstractDataField;
-import org.nightlabs.jfire.prop.TextDataField;
+import org.nightlabs.jfire.prop.datafield.TextDataField;
 
 /**
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  *
  */
-public class DisguisedTextDataFieldEditor extends AbstractDataFieldEditor {
+public class DisguisedTextDataFieldEditor extends AbstractDataFieldEditor<TextDataField> {
 	
-	public static class Factory extends AbstractDataFieldEditorFactory {
+	public static class Factory extends AbstractDataFieldEditorFactory<TextDataField> {
 
-		public Class getTargetPropDataFieldType() {
+		public Class<TextDataField> getPropDataFieldType() {
 			return TextDataField.class;
 		}
 
@@ -58,10 +57,9 @@ public class DisguisedTextDataFieldEditor extends AbstractDataFieldEditor {
 			return DisguisedEditor.EDITORTYPE_FIELD_BASED_DISGUISED;
 		}
 
-		public Class getPropDataFieldEditorClass() {
+		public Class<DisguisedTextDataFieldEditor> getDataFieldEditorClass() {
 			return DisguisedTextDataFieldEditor.class;
 		}
-		
 	}
 
 	public DisguisedTextDataFieldEditor() {		
@@ -80,10 +78,8 @@ public class DisguisedTextDataFieldEditor extends AbstractDataFieldEditor {
 	/**
 	 * @see org.nightlabs.jfire.base.prop.edit.AbstractDataFieldEditor#doSetData(org.nightlabs.jfire.base.prop.AbstractDataField)
 	 */
-	public void doSetData(AbstractDataField _data) {
-		if (! (_data instanceof TextDataField))
-			throw new IllegalArgumentException("Argument data should be of type "+TextDataField.class.getName()+" but was "+data.getClass().getName());
-		this.data = (TextDataField)_data;
+	public void doSetData(TextDataField _data) {
+		this.data = _data;
 		setChanged(false);
 //		refreshComposite();
 	}
@@ -105,9 +101,9 @@ public class DisguisedTextDataFieldEditor extends AbstractDataFieldEditor {
 	}
 
 	/**
-	 * @see org.nightlabs.jfire.base.prop.edit.DataFieldEditor#updateProp()
+	 * @see org.nightlabs.jfire.base.prop.edit.DataFieldEditor#updateProperty()
 	 */
-	public void updateProp() {
+	public void updateProperty() {
 		data.setText(composite.getText());
 	}
 	
