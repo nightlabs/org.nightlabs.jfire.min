@@ -62,7 +62,6 @@ class RegexStructFieldEditComposite extends XComposite {
 	protected Text pattern;
 	protected Text displayText;
 	private String patternOrig, displayTextOrig;
-//	private Label errorLabel;
 
 	public RegexStructFieldEditComposite(Composite parent, int style, RegexStructFieldEditor editor) {
 		super(parent, style, LayoutMode.TIGHT_WRAPPER, LayoutDataMode.GRID_DATA_HORIZONTAL, 2);
@@ -93,18 +92,10 @@ class RegexStructFieldEditComposite extends XComposite {
 			}
 		});
 		new Label(wrapper, SWT.NONE);
-		
-//		errorLabel = new Label(wrapper, SWT.NONE | SWT.WRAP);
-//		GridData gd = new GridData(GridData.FILL_BOTH);
-//		gd.heightHint = 100;
-//		gd.grabExcessVerticalSpace = true;
-//		errorLabel.setLayoutData(gd);
-//		errorLabel.setBackground(new Color(null, 255, 0, 0));
 	}
 	
 	private void updateErrorLabel() {
 		regexField.validateData(pattern.getText(), displayText.getText());
-//		errorLabel.setText(regexField.getValidationError());
 		editor.setErrorMessage(regexField.getValidationError());
 	}
 

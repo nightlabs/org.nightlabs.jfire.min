@@ -281,6 +281,12 @@
             editorFactoryClass="org.nightlabs.jfire.base.prop.structedit.RegexStructFieldEditor$RegexStructFieldEditorFactory"
             factoryClass="org.nightlabs.jfire.base.prop.structedit.RegexStructFieldFactory"
             name="Regex field"/>
+      <propStructField
+            class="org.nightlabs.jfire.prop.structfield.NumberStructField"
+            description="Simple field for numerical input"
+            editorFactoryClass="org.nightlabs.jfire.base.prop.structedit.NumberStructFieldEditor$NumberStructFieldEditorFactory"
+            factoryClass="org.nightlabs.jfire.base.prop.structedit.NumberStructFieldFactory"
+            name="Number field"/>
    </extension>
  	<extension
        id="org.nightlabs.jfire.person.edit.blockbased.special.PersonalDataBlockEditor"

@@ -43,7 +43,6 @@ public abstract class AbstractStructFieldEditor<F extends StructField> implement
 		new Label(composite, SWT.SEPARATOR | SWT.HORIZONTAL).setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		
 		specialComposite = createSpecialComposite(composite, composite.getStyle());
-//		XComposite.setLayoutDataMode(LayoutDataMode.GRID_DATA, specialComposite);
 
 		errorComp = new ErrorComposite(composite);
 		
@@ -66,7 +65,7 @@ public abstract class AbstractStructFieldEditor<F extends StructField> implement
 		return fieldNameEditor;
 	}
 	
-	public LanguageChooser getLangChooser() {
+	public LanguageChooser getLanguageChooser() {
 		return languageChooser;
 	}
 	
@@ -134,6 +133,24 @@ public abstract class AbstractStructFieldEditor<F extends StructField> implement
 	 */
 	public void restoreData() {
 		// do nothing by default
+	}
+	
+	/**
+	 * This method is intended to be overriden by struct editors that require validation
+	 * and should return a boolean indicating whether the user input is valid for the
+	 * type of struct field.
+	 */
+	public boolean validateInput() {
+		return true; // no validation done by default
+	}
+		
+	/**
+	 * This method is intended to be overriden by struct editors that require validation.
+	 * In case of a validation failure (by {@link #validateInput()}), it should return a
+	 * message describing the cause of the validation failure.
+	 */
+	public String getValidationError() {
+		return ""; // no error to be reported
 	}
 	
 	public void setEnabled(boolean enabled) {

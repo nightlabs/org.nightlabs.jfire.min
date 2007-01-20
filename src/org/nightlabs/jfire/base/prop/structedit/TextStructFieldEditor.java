@@ -49,21 +49,9 @@ public class TextStructFieldEditor extends AbstractStructFieldEditor<TextStructF
 		errorLabel.setText(textField.getValidationError());
 	}
 
-	public String getValidationError() {
-		return "";
-	}
-
-	public boolean validateInput() {
-		return true;
-	}
-
 	@Override
 	protected void setSpecialData(TextStructField field) {
 		this.textField = field;
 		lineCountSpinner.setSelection(field.getLineCount());
-	}
-
-	public void reset() {
-		// nothing to do here
 	}
 }

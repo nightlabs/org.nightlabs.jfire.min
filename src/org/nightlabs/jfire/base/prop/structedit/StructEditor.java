@@ -82,7 +82,7 @@ public class StructEditor {
 				}
 			});
 			
-			structTree.addSelectionChangedListener(new ISelectionChangedListener() {
+			structTree.addSelectionChangedListener(new ISelectionChangedListener() {				
 				public void selectionChanged(SelectionChangedEvent event) {
 					if (ignoreChangeEvent)
 						return;
@@ -143,6 +143,7 @@ public class StructEditor {
 			});
 		}
 		
+		setCurrentStructLocalID(StructEditorUtil.getAvailableStructLocalIDs().toArray(new StructLocalID[1])[0]);
 		return structEditorComposite; 
 	}
 	
@@ -177,7 +178,7 @@ public class StructEditor {
 			if (!structFieldEditor.validateInput()) {
 				MessageBox mb = new MessageBox(RCPUtil.getActiveWorkbenchShell(), SWT.YES | SWT.NO );
 				String message = "The entered data is not valid.\nError: " + structFieldEditor.getValidationError();
-				message += "\n\nDo you want to discard all changes regarding this field?";
+				message += "\nDo you want to discard all changes regarding this field?";
 				mb.setMessage(message);
 				mb.setText("Validation error");
 				switch (mb.open()) {

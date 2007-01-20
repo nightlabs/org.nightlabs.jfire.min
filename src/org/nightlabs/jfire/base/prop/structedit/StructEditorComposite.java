@@ -27,7 +27,7 @@ public class StructEditorComposite extends XComposite {
 	
 	private Composite partEditorComposite;
 	private LanguageChooserImageCombo languageChooser;	
-	private ComboComposite<StructLocalID> structIDComposite;
+	protected ComboComposite<StructLocalID> structIDComposite;
 	private Label errorLabel;
 
 	private static class StructLocalIDLabelProvider extends org.eclipse.jface.viewers.LabelProvider {
@@ -66,7 +66,7 @@ public class StructEditorComposite extends XComposite {
 					return;
 				}
 			}
-			structEditor.setCurrentStructLocalID(structIDComposite.getSelectedElement());
+			
 		}
 	}
 
@@ -106,6 +106,8 @@ public class StructEditorComposite extends XComposite {
 			e.printStackTrace();
 			throw new RuntimeException(e);
 		}
+		
+		structIDComposite.setSelection(0);
 	}
 	
 	public void setLoadingText() {

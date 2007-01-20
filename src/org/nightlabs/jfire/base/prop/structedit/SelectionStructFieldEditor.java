@@ -35,7 +35,7 @@ public class SelectionStructFieldEditor extends AbstractStructFieldEditor<Select
 
 	@Override
 	protected Composite createSpecialComposite(Composite parent, int style) {
-		comp = new SelectionStructFieldEditComposite(parent, style, this, getLangChooser());
+		comp = new SelectionStructFieldEditComposite(parent, style, this, getLanguageChooser());
 		return comp;
 	}
 
@@ -43,18 +43,6 @@ public class SelectionStructFieldEditor extends AbstractStructFieldEditor<Select
 	public void setSpecialData(SelectionStructField field) {
 		selectionField = field;
 		comp.setField(selectionField);
-	}
-
-	public boolean validateInput() {
-		return true;
-	}
-
-	public String getValidationError() {
-		return "";
-	}
-
-	public void reset() {
-		// nothing to do here
 	}
 }
 
