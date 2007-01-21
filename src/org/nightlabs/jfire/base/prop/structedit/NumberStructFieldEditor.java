@@ -1,6 +1,8 @@
 package org.nightlabs.jfire.base.prop.structedit;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionEvent;
@@ -76,11 +78,11 @@ class NumberStructFieldEditComposite extends XComposite {
 		int oldDigits = numberField.getDigits();
 		double factor = Math.pow(10, newDigits - oldDigits);
 		if (factor > 1) {
-			numberField.setMax((int) (numberField.getMax() * factor));
-			numberField.setMin((int) (numberField.getMin() * factor));
+			numberField.setSpinnerMax((int) (numberField.getSpinnerMax() * factor));
+			numberField.setSpinnerMin((int) (numberField.getSpinnerMin() * factor));
 		} else {
-			numberField.setMin((int) (numberField.getMin() * factor));
-			numberField.setMax((int) (numberField.getMax() * factor));
+			numberField.setSpinnerMin((int) (numberField.getSpinnerMin() * factor));
+			numberField.setSpinnerMax((int) (numberField.getSpinnerMax() * factor));
 		}
 		numberField.setDigits(newDigits);
 	}
@@ -147,15 +149,10 @@ class NumberStructFieldEditComposite extends XComposite {
 		new Label(boundsComp, SWT.NONE).setText("Maximum: ");
 		maxSpinner = new Spinner(boundsComp, SWT.BORDER);
 		
-		minSpinner.setSelection(0);
-		minSpinner.setMinimum(0);
 		minSpinner.setDigits(0);
 		
-		maxSpinner.setSelection(10);
-		maxSpinner.setMaximum(Integer.MAX_VALUE);
 		maxSpinner.setDigits(0);
 		
-		setSpinnerBounds();
 		
 		minSpinner.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
@@ -163,7 +160,20 @@ class NumberStructFieldEditComposite extends XComposite {
 					return;
 				
 				setSpinnerBounds();
-				numberField.setMin(minSpinner.getSelection());
+				numberField.setSpinnerMin(minSpinner.getSelection());
+				rearrange();
+				System.out.println(numberField);
+			}
+		});
+		
+		minSpinner.addFocusListener(new FocusListener() {
+			public void focusGained(FocusEvent e) {}
+			public void focusLost(FocusEvent e) {
+				if (ignoreModify)
+					return;
+				
+				setSpinnerBounds();
+				numberField.setSpinnerMin(minSpinner.getSelection());
 				rearrange();
 				System.out.println(numberField);
 			}
@@ -175,7 +185,20 @@ class NumberStructFieldEditComposite extends XComposite {
 					return;
 				
 				setSpinnerBounds();
-				numberField.setMax(maxSpinner.getSelection());
+				numberField.setSpinnerMax(maxSpinner.getSelection());
+				rearrange();
+				System.out.println(numberField);
+			}
+		});
+		
+		maxSpinner.addFocusListener(new FocusListener() {
+			public void focusGained(FocusEvent e) {}
+			public void focusLost(FocusEvent e) {
+				if (ignoreModify)
+					return;
+				
+				setSpinnerBounds();
+				numberField.setSpinnerMax(maxSpinner.getSelection());
 				rearrange();
 				System.out.println(numberField);
 			}
@@ -206,9 +229,11 @@ class NumberStructFieldEditComposite extends XComposite {
 		ignoreModify = true;
 		
 		minSpinner.setMaximum(Integer.MAX_VALUE);
+		minSpinner.setMinimum(0);
+		maxSpinner.setMaximum(Integer.MAX_VALUE);
 		maxSpinner.setMinimum(0);
-		minSpinner.setSelection(numberField.getMin());
-		maxSpinner.setSelection(numberField.getMax());
+		minSpinner.setSelection(numberField.getSpinnerMin());
+		maxSpinner.setSelection(numberField.getSpinnerMax());
 		
 		setSpinnerBounds();
 		
