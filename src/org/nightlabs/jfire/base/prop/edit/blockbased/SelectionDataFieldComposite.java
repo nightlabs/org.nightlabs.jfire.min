@@ -9,6 +9,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.nightlabs.base.composite.ComboComposite;
 import org.nightlabs.jfire.base.prop.edit.AbstractDataFieldComposite;
+import org.nightlabs.jfire.prop.exception.StructFieldValueNotFoundException;
 import org.nightlabs.jfire.prop.structfield.SelectionStructField;
 import org.nightlabs.jfire.prop.structfield.StructFieldValue;
 
@@ -77,8 +78,17 @@ public class SelectionDataFieldComposite extends AbstractDataFieldComposite {
 		SelectionStructField field = (SelectionStructField) editor.getStructField();
 		fieldName.setText(field.getName().getText(editor.getLanguage().getLanguageID()));
 		fieldValueCombo.setInput(field.getStructFieldValues());
-		fieldValueCombo.setSelection(editor.getDataField().getSelection());
 		fieldValueCombo.refresh();
+		if (editor.getDataField().getStructFieldValueID() != null) {
+			try {
+				fieldValueCombo.setSelection(field.getStructFieldValue(editor.getDataField().getStructFieldValueID()));
+			} catch (StructFieldValueNotFoundException e) {
+				fieldValueCombo.getCombo().select(-1);
+				throw new RuntimeException("Could not find the referenced structFieldValue with id "+editor.getDataField().getStructFieldValueID());
+			}
+		} else {
+			fieldValueCombo.getCombo().select(-1);
+		}
 	}
 	
 	public ComboComposite<StructFieldValue> getFieldValueCombo() {

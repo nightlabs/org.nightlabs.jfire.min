@@ -308,10 +308,10 @@
          point="org.nightlabs.jfire.base.propDataFieldEditorFactory">
       <propDataFieldEditorFactory
             class="org.nightlabs.jfire.base.prop.edit.blockbased.TextDataFieldEditor$Factory"
-            targetType="org.nightlabs.jfire.prop.TextDataField"/>
+            targetType="org.nightlabs.jfire.prop.datafield.TextDataField"/>
       <propDataFieldEditorFactory
             class="org.nightlabs.jfire.base.prop.edit.blockbased.SelectionDataFieldEditor$Factory"
-            targetType="org.nightlabs.jfire.prop.SelectionDataField">
+            targetType="org.nightlabs.jfire.prop.datafield.SelectionDataField">
       </propDataFieldEditorFactory>
    </extension>
    <extension
