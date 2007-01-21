@@ -178,7 +178,7 @@ public class StructEditor {
 			StructFieldEditor<?> structFieldEditor = (StructFieldEditor<?>) currentStructPartEditor;
 			if (!structFieldEditor.validateInput()) {
 				MessageBox mb = new MessageBox(RCPUtil.getActiveWorkbenchShell(), SWT.YES | SWT.NO );
-				String message = "The entered data is not valid.\nError: " + structFieldEditor.getValidationError();
+				String message = "The entered data is not valid.\nError: " + structFieldEditor.getErrorMessage();
 				message += "\nDo you want to discard all changes regarding this field?";
 				mb.setMessage(message);
 				mb.setText("Validation error");

@@ -66,7 +66,7 @@ public class StructEditorComposite extends XComposite {
 					return;
 				}
 			}
-			
+			structEditor.setCurrentStructLocalID(structIDComposite.getSelectedElement());
 		}
 	}
 
@@ -106,8 +106,6 @@ public class StructEditorComposite extends XComposite {
 			e.printStackTrace();
 			throw new RuntimeException(e);
 		}
-		
-		structIDComposite.setSelection(0);
 	}
 	
 	public void setLoadingText() {

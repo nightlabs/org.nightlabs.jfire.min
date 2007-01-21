@@ -12,12 +12,6 @@ public interface StructFieldEditor<F extends StructField> extends StructPartEdit
 	public boolean validateInput();
 	
 	/**
-	 * In this method, editors should return a string indicating the problem in case of a validation failure.
-	 * @return
-	 */
-	public String getValidationError();
-	
-	/**
 	 * Returns the field name editor of this struct field editor.
 	 * @return
 	 */
@@ -32,4 +26,7 @@ public interface StructFieldEditor<F extends StructField> extends StructPartEdit
 	 * Resets all input data of this editor to the data saved by {@link #saveData()}.
 	 */
 	public void restoreData();
+
+	
+	public String getErrorMessage();
 }

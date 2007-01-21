@@ -25,6 +25,7 @@ public abstract class AbstractStructFieldEditor<F extends StructField> implement
 	private F structField;
 	private LanguageChooser languageChooser;
 	private ErrorComposite errorComp;
+	private String errorMessage;
 	
 	public void setChanged() {
 		getStructEditor().setChanged(true);
@@ -50,6 +51,7 @@ public abstract class AbstractStructFieldEditor<F extends StructField> implement
 	}
 	
 	public void setErrorMessage(String error) {
+		this.errorMessage = error;
 		errorComp.setErrorMessage(error);
 	}
 	
@@ -135,24 +137,20 @@ public abstract class AbstractStructFieldEditor<F extends StructField> implement
 		// do nothing by default
 	}
 	
+	public String getErrorMessage() {
+		return errorMessage;
+	}
+	
 	/**
 	 * This method is intended to be overriden by struct editors that require validation
 	 * and should return a boolean indicating whether the user input is valid for the
-	 * type of struct field.
+	 * type of struct field. In addition, extendors can call {@link #setErrorMessage(String)}
+	 * to display a message explaining the validation error if there is one.
 	 */
 	public boolean validateInput() {
 		return true; // no validation done by default
 	}
 		
-	/**
-	 * This method is intended to be overriden by struct editors that require validation.
-	 * In case of a validation failure (by {@link #validateInput()}), it should return a
-	 * message describing the cause of the validation failure.
-	 */
-	public String getValidationError() {
-		return ""; // no error to be reported
-	}
-	
 	public void setEnabled(boolean enabled) {
 		if (composite != null)
 			composite.setEnabled(enabled);

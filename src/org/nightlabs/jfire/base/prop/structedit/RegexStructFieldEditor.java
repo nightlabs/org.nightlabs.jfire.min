@@ -27,7 +27,7 @@ public class RegexStructFieldEditor extends AbstractStructFieldEditor<RegexStruc
 		return regexField.validateData(comp.pattern.getText(), comp.displayText.getText());
 	}
 
-	public String getValidationError() {
+	public String getErrorMessage() {
 		return regexField.getValidationError();
 	}
 

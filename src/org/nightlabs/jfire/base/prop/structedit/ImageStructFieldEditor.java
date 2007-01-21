@@ -3,8 +3,6 @@ package org.nightlabs.jfire.base.prop.structedit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.resource.spi.EISSystemException;
-
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusEvent;
@@ -19,6 +17,7 @@ import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
 import org.nightlabs.base.composite.ListComposite;
 import org.nightlabs.base.composite.XComposite;
+import org.nightlabs.jfire.prop.ModifyListener;
 import org.nightlabs.jfire.prop.structfield.ImageStructField;
 
 public class ImageStructFieldEditor extends AbstractStructFieldEditor<ImageStructField> {
@@ -30,10 +29,14 @@ public class ImageStructFieldEditor extends AbstractStructFieldEditor<ImageStruc
 			return ImageStructFieldEditor.class.getName();
 		}
 	}
+	
+	public ImageStructFieldEditor() {
+		
+	}
 
 	@Override
 	protected Composite createSpecialComposite(Composite parent, int style) {
-		imageStructFieldEditorComposite = new ImageStructFieldEditorComposite(parent);
+		imageStructFieldEditorComposite = new ImageStructFieldEditorComposite(parent, this);
 		return imageStructFieldEditorComposite;
 	}
 
@@ -41,6 +44,20 @@ public class ImageStructFieldEditor extends AbstractStructFieldEditor<ImageStruc
 	protected void setSpecialData(ImageStructField field) {
 		imageField = field;
 		imageStructFieldEditorComposite.setField(field);
+		
+		imageField.addModifyListener(new ModifyListener() {
+			public void modifyData() {
+				updateErrorMessage();
+			}
+		});
+	}
+	
+	protected void updateErrorMessage() {
+		if (!imageField.validateData()) {
+			setErrorMessage(imageField.getValidationError());
+		}	else {
+			setErrorMessage("");
+		}
 	}
 	
 	@Override
@@ -49,7 +66,7 @@ public class ImageStructFieldEditor extends AbstractStructFieldEditor<ImageStruc
 	}
 	
 	@Override
-	public String getValidationError() {
+	public String getErrorMessage() {
 		return imageField.getValidationError();
 	}
 	
@@ -65,9 +82,12 @@ class ImageStructFieldEditorComposite extends XComposite {
 	private Spinner heightSpinner;
 	private ListComposite<String> formatList;
 	private ImageStructField imageField;
+	private ImageStructFieldEditor editor;
 	
-	public ImageStructFieldEditorComposite(Composite parent) {
+	public ImageStructFieldEditorComposite(Composite parent, ImageStructFieldEditor imageStructFieldEditor) {
 		super(parent, SWT.NONE, LayoutMode.TIGHT_WRAPPER, LayoutDataMode.GRID_DATA_HORIZONTAL, 4);
+		
+		this.editor = imageStructFieldEditor;
 		new Label(this, SWT.NONE).setText("Maximum width: ");
 		widthSpinner = new Spinner(this, SWT.BORDER);
 		widthSpinner.setMaximum(10000);
@@ -153,7 +173,7 @@ class ImageStructFieldEditorComposite extends XComposite {
 			}
 			public void widgetSelected(SelectionEvent e) {}
 		});
-	}
+	}		
 	
 	protected void setField(ImageStructField field) {
 		if (field == null) {
