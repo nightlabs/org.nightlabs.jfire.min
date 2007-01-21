@@ -50,7 +50,6 @@ public class StructEditor {
 	private StructPartEditor currentStructPartEditor;
 	private StructBlockEditor structBlockEditor;	
 	private LanguageChooser languageChooser;
-	private IStruct struct;
 	private TreeNode lastSelection;
 	private boolean ignoreChangeEvent;
 	
@@ -270,10 +269,10 @@ public class StructEditor {
 
 		StructBlock newBlock;
 		try {
-			newBlock = new StructBlock(struct, Login.getLogin().getOrganisationID(), "sb_"
+			newBlock = new StructBlock(currentStruct, Login.getLogin().getOrganisationID(), "sb_"
 					+ coder.encode(newBlockID, 1));
 			newBlock.getName().setText(languageChooser.getLanguage().getLanguageID(), "Change me");
-			struct.addStructBlock(newBlock);
+			currentStruct.addStructBlock(newBlock);
 			structTree.addStructBlock(newBlock);
 			setChanged(true);
 		} catch (Exception e) {
@@ -336,7 +335,7 @@ public class StructEditor {
 		int result = mb.open();
 		if (result == SWT.YES) {
 			try {
-				struct.removeStructBlock(blockNode.getBlock());
+				currentStruct.removeStructBlock(blockNode.getBlock());
 			} catch (IllegalStructureModificationException e) {
 				e.printStackTrace();
 				mb = new MessageBox(null, SWT.ICON_ERROR | SWT.OK);

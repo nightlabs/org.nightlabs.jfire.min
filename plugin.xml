@@ -287,6 +287,12 @@
             editorFactoryClass="org.nightlabs.jfire.base.prop.structedit.NumberStructFieldEditor$NumberStructFieldEditorFactory"
             factoryClass="org.nightlabs.jfire.base.prop.structedit.NumberStructFieldFactory"
             name="Number field"/>
+      <propStructField
+            class="org.nightlabs.jfire.prop.structfield.ImageStructField"
+            description="Field for adding image data"
+            editorFactoryClass="org.nightlabs.jfire.base.prop.structedit.ImageStructFieldEditor$ImageStructFieldEditorFactory"
+            factoryClass="org.nightlabs.jfire.base.prop.structedit.ImageStructFieldFactory"
+            name="Image field"/>
    </extension>
  	<extension
        id="org.nightlabs.jfire.person.edit.blockbased.special.PersonalDataBlockEditor"
