@@ -142,7 +142,9 @@ public class StructEditor {
 			});
 		}
 		
-		setCurrentStructLocalID(StructEditorUtil.getAvailableStructLocalIDs().toArray(new StructLocalID[1])[0]);
+		// TODO load person struct on start up, makes testing easier...
+		// setCurrentStructLocalID(StructEditorUtil.getAvailableStructLocalIDs().toArray(new StructLocalID[1])[0]);
+		
 		return structEditorComposite; 
 	}
 	

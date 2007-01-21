@@ -1,5 +1,11 @@
 package org.nightlabs.jfire.base.prop.structedit;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.resource.spi.EISSystemException;
+
+import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
@@ -17,6 +23,7 @@ import org.nightlabs.jfire.prop.structfield.ImageStructField;
 
 public class ImageStructFieldEditor extends AbstractStructFieldEditor<ImageStructField> {
 	private ImageStructFieldEditorComposite imageStructFieldEditorComposite;
+	private ImageStructField imageField;
 	
 	public static class ImageStructFieldEditorFactory extends AbstractStructFieldEditorFactory {
 		public String getStructFieldEditorClass() {
@@ -32,7 +39,24 @@ public class ImageStructFieldEditor extends AbstractStructFieldEditor<ImageStruc
 
 	@Override
 	protected void setSpecialData(ImageStructField field) {
+		imageField = field;
 		imageStructFieldEditorComposite.setField(field);
+	}
+	
+	@Override
+	public boolean validateInput() {
+		return imageField.validateData();
+	}
+	
+	@Override
+	public String getValidationError() {
+		return imageField.getValidationError();
+	}
+	
+	@Override
+	public void restoreData() {
+		imageField.clearImageFormats();
+		imageField.addImageFormat("*");
 	}
 }
 
@@ -48,51 +72,65 @@ class ImageStructFieldEditorComposite extends XComposite {
 		widthSpinner = new Spinner(this, SWT.BORDER);
 		widthSpinner.setMaximum(10000);
 		
-		new Label(this, SWT.NONE).setText("Maximum height: ");
+		new Label(this, SWT.NONE).setText("   Maximum height: ");
 		heightSpinner = new Spinner(this, SWT.BORDER);
 		heightSpinner.setMaximum(10000);
 		
-		XComposite comp = new XComposite(this, SWT.NONE, LayoutMode.TIGHT_WRAPPER, LayoutDataMode.GRID_DATA_HORIZONTAL, 3);
-		comp.getGridData().heightHint = 150;
+		XComposite comp = new XComposite(this, SWT.NONE, LayoutMode.TIGHT_WRAPPER, LayoutDataMode.GRID_DATA_HORIZONTAL);
+		comp.getGridData().heightHint = 250;
 		comp.getGridData().horizontalSpan = 4;
-		new Label(comp, SWT.NONE).setText("Allowed extensions: ");
-		formatList = new ListComposite<String>(comp, SWT.NONE);
 		
-		XComposite editComp = new XComposite(comp, SWT.NONE, LayoutMode.TIGHT_WRAPPER, LayoutDataMode.GRID_DATA, 2);
-		Button addButton = new Button(editComp, SWT.PUSH);
+		new Label(comp, SWT.NONE);
+		new Label(comp, SWT.NONE).setText("Allowed extensions: ");
+		XComposite extComp = new XComposite(comp, SWT.NONE, LayoutMode.TIGHT_WRAPPER, LayoutDataMode.GRID_DATA, 2);
+		extComp.getGridData().horizontalSpan = 4;
+		
+		GridData gd = new GridData();
+		
+		XComposite editComp = new XComposite(extComp, SWT.NONE, LayoutMode.TIGHT_WRAPPER, LayoutDataMode.GRID_DATA, 3);
+		formatList = new ListComposite<String>(editComp, SWT.V_SCROLL);
+		formatList.setLabelProvider(new LabelProvider() {
+			@Override
+			public String getText(Object element) {
+				return "*." + element;
+			}
+		});
+		
+		XComposite buttonComp = new XComposite(editComp, SWT.NONE, LayoutMode.TIGHT_WRAPPER, LayoutDataMode.NONE);
+		gd.widthHint = 25;
+		final Button addButton = new Button(buttonComp, SWT.PUSH);
 		addButton.setText("+");
+		addButton.setLayoutData(gd);		
+		final Button remButton = new Button(buttonComp, SWT.PUSH);
+		remButton.setText("-");
+		remButton.setLayoutData(gd);
 		
 		final Text newFormat = new Text(editComp, SWT.BORDER);
-		GridData gd = new GridData();
+		gd = new GridData(GridData.FILL_HORIZONTAL);
 		gd.verticalSpan = 2;
-		gd.grabExcessHorizontalSpace = true;
 		gd.verticalAlignment = SWT.CENTER;
 		newFormat.setLayoutData(gd);
-		
-		Button remButton = new Button(editComp, SWT.PUSH);
-		remButton.setText("-");
 		
 		widthSpinner.addFocusListener(new FocusListener() {
 			public void focusGained(FocusEvent e) {}
 			public void focusLost(FocusEvent e) {
-				imageField.setWidth(widthSpinner.getSelection());
+				imageField.setMaxWidth(widthSpinner.getSelection());
 			}
 		});
 		
 		heightSpinner.addFocusListener(new FocusListener() {
 			public void focusGained(FocusEvent e) {}
 			public void focusLost(FocusEvent e) {
-				imageField.setHeight(heightSpinner.getSelection());
+				imageField.setMaxHeight(heightSpinner.getSelection());
 			}
 		});
 		
 		addButton.addSelectionListener(new SelectionListener() {
 			public void widgetDefaultSelected(SelectionEvent e) {}
 			public void widgetSelected(SelectionEvent e) {
-				String text = newFormat.getText();
-				if (text.length() == 3) {
-					formatList.addElement(text);
-					imageField.addImageFormat(text);
+				if (addExtension(newFormat.getText())) {
+					newFormat.setText("");
+					newFormat.setFocus();
 				}
 			}
 		});
@@ -100,15 +138,21 @@ class ImageStructFieldEditorComposite extends XComposite {
 		remButton.addSelectionListener(new SelectionListener() {
 			public void widgetDefaultSelected(SelectionEvent e) {}
 			public void widgetSelected(SelectionEvent e) {
-				String text = newFormat.getText();
-				if (text.length() == 3) {
-					formatList.removeElement(text);
-					imageField.removeImageFormat(text);
-				}
+				imageField.removeImageFormat(formatList.getSelectedElement());
+				formatList.setInput(imageField.getImageFormats());
+				formatList.setSelection(0);
 			}
 		});
 		
-		setEnabled(false);
+		newFormat.addSelectionListener(new SelectionListener() {
+			public void widgetDefaultSelected(SelectionEvent e) {
+				if (addExtension(newFormat.getText())) {
+					newFormat.setText("");
+					newFormat.setFocus();
+				}
+			}
+			public void widgetSelected(SelectionEvent e) {}
+		});
 	}
 	
 	protected void setField(ImageStructField field) {
@@ -121,7 +165,19 @@ class ImageStructFieldEditorComposite extends XComposite {
 		
 		this.imageField = field;
 		formatList.setInput(imageField.getImageFormats());
-		widthSpinner.setSelection(imageField.getWidth());
-		heightSpinner.setSelection(imageField.getHeight());
+		widthSpinner.setSelection(imageField.getMaxWidth());
+		heightSpinner.setSelection(imageField.getMaxHeight());
+	}
+	
+	protected boolean addExtension(String ext) {
+		String text = ext;
+		Matcher extMatcher = Pattern.compile("(?:\\*\\.|\\.)?([\\w\\*]+)").matcher(text);
+		if (extMatcher.matches()) {
+			text = extMatcher.group(1);
+			imageField.addImageFormat(text);
+			formatList.setInput(imageField.getImageFormats());
+			return true;
+		}
+		return false;
 	}
 }
