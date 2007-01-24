@@ -293,6 +293,12 @@
             editorFactoryClass="org.nightlabs.jfire.base.prop.structedit.ImageStructFieldEditor$ImageStructFieldEditorFactory"
             factoryClass="org.nightlabs.jfire.base.prop.structedit.ImageStructFieldFactory"
             name="Image field"/>
+       <propStructField
+            class="org.nightlabs.jfire.prop.structfield.DateStructField"
+            description="Field for inputting absolute times/dates."
+            editorFactoryClass="org.nightlabs.jfire.base.prop.structedit.DateStructFieldEditor$DateStructFieldEditorFactory"
+            factoryClass="org.nightlabs.jfire.base.prop.structedit.DateStructFieldFactory"
+            name="Date field"/>
    </extension>
  	<extension
        id="org.nightlabs.jfire.person.edit.blockbased.special.PersonalDataBlockEditor"
