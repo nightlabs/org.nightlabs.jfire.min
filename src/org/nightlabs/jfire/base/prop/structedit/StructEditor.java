@@ -1,5 +1,6 @@
 package org.nightlabs.jfire.base.prop.structedit;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
@@ -44,6 +45,7 @@ import org.nightlabs.math.Base36Coder;
 import org.nightlabs.notification.NotificationEvent;
 import org.nightlabs.notification.NotificationListener;
 import org.nightlabs.notification.NotificationListenerCallerThread;
+import org.nightlabs.util.reflect.ReflectUtil;
 
 public class StructEditor {
 	private StructTree structTree;
@@ -221,6 +223,14 @@ public class StructEditor {
 
 	public void storeStructure() {
 		try {
+			ReflectUtil.findContainedObjectsByClass(
+					currentStruct, Serializable.class, false, true,
+					new ReflectUtil.IObjectFoundHandler() {
+						public void objectFound(String path, Object object) {
+							System.out.println("found not Serializable: "+path+"="+object.getClass());
+						}
+					}
+				);
 			getPropertyManager().storeStruct(currentStruct);
 			setChanged(false);
 		} catch (Exception e) {
@@ -369,7 +379,7 @@ public class StructEditor {
 				structTree.removeStructField(fieldNode.getParentBlock(), fieldNode);
 				currentStructPartEditor.setData(null);
 			} catch (IllegalStructureModificationException e) {
-				mb = new MessageBox(null, SWT.ICON_ERROR | SWT.OK);
+				mb = new MessageBox(RCPUtil.getActiveWorkbenchShell(), SWT.ICON_ERROR | SWT.OK);
 				mb.setMessage("You cannot delete a struct block that has already been persisted.");
 				mb.setText("Deletion failed");
 				mb.open();

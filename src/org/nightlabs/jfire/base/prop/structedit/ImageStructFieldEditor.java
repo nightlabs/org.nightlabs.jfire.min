@@ -1,5 +1,6 @@
 package org.nightlabs.jfire.base.prop.structedit;
 
+import java.io.Serializable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -77,7 +78,7 @@ public class ImageStructFieldEditor extends AbstractStructFieldEditor<ImageStruc
 	}
 }
 
-class ImageStructFieldEditorComposite extends XComposite {
+class ImageStructFieldEditorComposite extends XComposite implements Serializable {
 	private Spinner widthSpinner;
 	private Spinner heightSpinner;
 	private ListComposite<String> formatList;
