@@ -324,5 +324,12 @@
          point="org.nightlabs.base.login">
       <login class="org.nightlabs.jfire.base.login.LoginDelegate"/>
    </extension>
+   <extension
+         point="org.nightlabs.jfire.base.propDataFieldEditorFactory">
+      <propDataFieldEditorFactory
+            class="org.nightlabs.jfire.base.prop.edit.blockbased.ImageDataFieldEditor$Factory"
+            targetType="org.nightlabs.jfire.prop.datafield.ImageDataField">
+      </propDataFieldEditorFactory>
+   </extension>
 			
 </plugin>

@@ -10,8 +10,7 @@ public class ImageStructFieldFactory extends AbstractStructFieldFactory {
 
 	public ImageStructField createStructField(StructBlock block, String organisationID, String fieldID, WizardPage wizardPage) {
 		ImageStructField field = new ImageStructField(block, organisationID, fieldID);
-		field.setMaxHeight(50);
-		field.setMaxWidth(50);
+		field.setMaxSizeKB(1024);
 		field.addImageFormat("*");
 		try {
 			block.addStructField(field);

@@ -83,11 +83,11 @@ public class PersonalDataBlockEditor extends DataBlockEditor {
 		addDataFieldEditor(PersonStruct.PERSONALDATA_SALUTATION,1);
 		addDataFieldEditor(PersonStruct.PERSONALDATA_TITLE,1);
 		addDataFieldEditor(PersonStruct.PERSONALDATA_DATEOFBIRTH,1);
+		addDataFieldEditor(PersonStruct.PERSONALDATA_PHOTO,3);
 	}
 
 	private void addDataFieldEditor(StructFieldID fieldID, int horizontalSpan) 
 	{
-	 
 		AbstractDataField field = null;
 		try {
 			field = dataBlock.getDataField(fieldID);

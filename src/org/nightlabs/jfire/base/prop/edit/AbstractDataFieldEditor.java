@@ -34,7 +34,6 @@ import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.nightlabs.jfire.prop.AbstractDataField;
-import org.nightlabs.jfire.prop.AbstractStructField;
 import org.nightlabs.jfire.prop.IStruct;
 import org.nightlabs.jfire.prop.StructField;
 
@@ -66,7 +65,7 @@ public abstract class AbstractDataFieldEditor<F extends AbstractDataField> imple
 	
 	/**
 	 * Not intended to be overridden.<br/>
-	 * Subclasses should overwrite {@link #seDataField()} to react on changes.
+	 * Subclasses should overwrite {@link #setDataField()} to react on changes.
 	 * 
 	 * @see #setDataField()
 	 * @see org.nightlabs.jfire.base.prop.edit.DataFieldEditor#setData(StructField)
@@ -87,7 +86,7 @@ public abstract class AbstractDataFieldEditor<F extends AbstractDataField> imple
 	}
 	
 	/**
-	 * Subsclasses can do thins when data changes here.
+	 * Subclasses can do things when data changes here.
 	 * @param dataField
 	 */
 	protected void setDataField(F dataField) {

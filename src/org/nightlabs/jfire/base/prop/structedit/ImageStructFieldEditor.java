@@ -79,32 +79,27 @@ public class ImageStructFieldEditor extends AbstractStructFieldEditor<ImageStruc
 }
 
 class ImageStructFieldEditorComposite extends XComposite implements Serializable {
-	private Spinner widthSpinner;
-	private Spinner heightSpinner;
+	private Spinner sizeSpinner;
 	private ListComposite<String> formatList;
 	private ImageStructField imageField;
 	private ImageStructFieldEditor editor;
 	
 	public ImageStructFieldEditorComposite(Composite parent, ImageStructFieldEditor imageStructFieldEditor) {
-		super(parent, SWT.NONE, LayoutMode.TIGHT_WRAPPER, LayoutDataMode.GRID_DATA_HORIZONTAL, 4);
+		super(parent, SWT.NONE, LayoutMode.TIGHT_WRAPPER, LayoutDataMode.GRID_DATA_HORIZONTAL, 2);
 		
 		this.editor = imageStructFieldEditor;
-		new Label(this, SWT.NONE).setText("Maximum width: ");
-		widthSpinner = new Spinner(this, SWT.BORDER);
-		widthSpinner.setMaximum(10000);
-		
-		new Label(this, SWT.NONE).setText("   Maximum height: ");
-		heightSpinner = new Spinner(this, SWT.BORDER);
-		heightSpinner.setMaximum(10000);
+		new Label(this, SWT.NONE).setText("Maximum size (KB): ");
+		sizeSpinner = new Spinner(this, SWT.BORDER);
+		sizeSpinner.setMaximum(Integer.MAX_VALUE);		
 		
 		XComposite comp = new XComposite(this, SWT.NONE, LayoutMode.TIGHT_WRAPPER, LayoutDataMode.GRID_DATA_HORIZONTAL);
 		comp.getGridData().heightHint = 250;
-		comp.getGridData().horizontalSpan = 4;
+		comp.getGridData().horizontalSpan = 2;
 		
 		new Label(comp, SWT.NONE);
 		new Label(comp, SWT.NONE).setText("Allowed extensions: ");
 		XComposite extComp = new XComposite(comp, SWT.NONE, LayoutMode.TIGHT_WRAPPER, LayoutDataMode.GRID_DATA, 2);
-		extComp.getGridData().horizontalSpan = 4;
+		extComp.getGridData().horizontalSpan = 2;
 		
 		GridData gd = new GridData();
 		
@@ -132,17 +127,10 @@ class ImageStructFieldEditorComposite extends XComposite implements Serializable
 		gd.verticalAlignment = SWT.CENTER;
 		newFormat.setLayoutData(gd);
 		
-		widthSpinner.addFocusListener(new FocusListener() {
+		sizeSpinner.addFocusListener(new FocusListener() {
 			public void focusGained(FocusEvent e) {}
 			public void focusLost(FocusEvent e) {
-				imageField.setMaxWidth(widthSpinner.getSelection());
-			}
-		});
-		
-		heightSpinner.addFocusListener(new FocusListener() {
-			public void focusGained(FocusEvent e) {}
-			public void focusLost(FocusEvent e) {
-				imageField.setMaxHeight(heightSpinner.getSelection());
+				imageField.setMaxSizeKB(sizeSpinner.getSelection());
 			}
 		});
 		
@@ -186,8 +174,7 @@ class ImageStructFieldEditorComposite extends XComposite implements Serializable
 		
 		this.imageField = field;
 		formatList.setInput(imageField.getImageFormats());
-		widthSpinner.setSelection(imageField.getMaxWidth());
-		heightSpinner.setSelection(imageField.getMaxHeight());
+		sizeSpinner.setSelection((int) imageField.getMaxSizeKB());		
 	}
 	
 	protected boolean addExtension(String ext) {
