@@ -193,7 +193,8 @@ public class ImageDataFieldEditor extends AbstractDataFieldEditor<ImageDataField
 			displayImage(id);			
 		}
 		
-		filenameTextbox.setText(getDataField().getFileName());
+		if (getDataField().getFileName() != null)
+			filenameTextbox.setText(getDataField().getFileName());		
 		
 		sizeLabel.setText("(max " + imageStructField.getMaxSizeKB() + " KB)");
 		sizeLabel.pack();
