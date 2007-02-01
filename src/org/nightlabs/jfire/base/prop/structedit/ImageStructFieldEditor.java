@@ -141,6 +141,7 @@ class ImageStructFieldEditorComposite extends XComposite implements Serializable
 					newFormat.setText("");
 					newFormat.setFocus();
 				}
+				editor.setChanged();
 			}
 		});
 		
@@ -150,6 +151,7 @@ class ImageStructFieldEditorComposite extends XComposite implements Serializable
 				imageField.removeImageFormat(formatList.getSelectedElement());
 				formatList.setInput(imageField.getImageFormats());
 				formatList.setSelection(0);
+				editor.setChanged();
 			}
 		});
 		

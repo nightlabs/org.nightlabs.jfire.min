@@ -6,7 +6,6 @@ import java.util.Date;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.nightlabs.base.composite.ComboComposite;
@@ -26,7 +25,7 @@ public class DateStructFieldEditor extends AbstractStructFieldEditor<DateStructF
 
 	@Override
 	protected Composite createSpecialComposite(Composite parent, int style) {
-		comp = new DateStructFieldEditComposite(parent, style);
+		comp = new DateStructFieldEditComposite(parent, style, this);
 		return comp;
 	}
 
@@ -41,15 +40,19 @@ class DateStructFieldEditComposite extends XComposite {
 	private DateStructField dateField;
 	private ComboComposite<String> dateFormatCombo;
 	private Label exampleLabel;
+	private XComposite comp;
+	private DateStructFieldEditor dateStructFieldEditor;
 	
-	public DateStructFieldEditComposite(Composite parent, int style) {
-		super(parent, style | SWT.NONE, LayoutMode.LEFT_RIGHT_WRAPPER, LayoutDataMode.NONE);
+	public DateStructFieldEditComposite(Composite parent, int style, DateStructFieldEditor editor) {
+		super(parent, style | SWT.NONE, LayoutMode.LEFT_RIGHT_WRAPPER, LayoutDataMode.GRID_DATA_HORIZONTAL);
+		
+		this.dateStructFieldEditor = editor;
 		
 		dateFormatCombo = new ComboComposite<String>(this, SWT.NONE);
 		System.out.println(dateFormatCombo.getGridData().widthHint);
-		new Label(this, SWT.NONE);
-		exampleLabel = new Label(this, SWT.NONE);
-		exampleLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		comp = new XComposite(this, SWT.NONE, LayoutMode.LEFT_RIGHT_WRAPPER, LayoutDataMode.GRID_DATA_HORIZONTAL);
+		exampleLabel = new Label(comp, SWT.NONE);
+		exampleLabel.setText("Preview:  ");
 		
 		dateFormatCombo.setInput(Arrays.asList(DateFormatter.FLAG_NAMES));
 		
@@ -57,8 +60,11 @@ class DateStructFieldEditComposite extends XComposite {
 			public void selectionChanged(SelectionChangedEvent event) {
 				int selectionIndex = dateFormatCombo.getSelectionIndex();
 				dateField.setDateTimeEditFlags(DateFormatter.FLAGS[selectionIndex]);
+				dateStructFieldEditor.setChanged();
 				
-				exampleLabel.setText("Preview:   " + DateFormatter.formatDate(new Date(), DateFormatter.FLAGS[selectionIndex]));
+				exampleLabel.setText("Preview:  " + DateFormatter.formatDate(new Date(), DateFormatter.FLAGS[selectionIndex]));
+				exampleLabel.pack();
+				exampleLabel.getParent().layout();
 			}
 		});
 	}
@@ -80,7 +86,8 @@ class DateStructFieldEditComposite extends XComposite {
 		}
 		
 		dateFormatCombo.setSelection(index);
-		exampleLabel.setText("Preview:   " + DateFormatter.formatDate(new Date(), DateFormatter.FLAGS[index]));
+		exampleLabel.setText("Preview:  " + DateFormatter.formatDate(new Date(), dateField.getDateTimeEditFlags()));
 		exampleLabel.pack();
+		exampleLabel.getParent().layout();			
 	}
 }

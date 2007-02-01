@@ -19,11 +19,13 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Text;
@@ -68,10 +70,12 @@ public class ImageDataFieldEditor extends AbstractDataFieldEditor<ImageDataField
 	private Text filenameTextbox;
 	private Button openFileChooserButton;
 	private FileDialog fileDialog;
-	private XComposite comp;
+	private Group group;
 	private Label imageLabel;
-	private Label titleLabel;
 	private Label sizeLabel;
+	
+	private static final int maxThumbnailWidth = 200;
+	private static final int maxThumbnailHeight = 200;
 	
 	public ImageDataFieldEditor() {
 		super();
@@ -90,35 +94,41 @@ public class ImageDataFieldEditor extends AbstractDataFieldEditor<ImageDataField
 	 * @see org.nightlabs.jfire.base.prop.edit.AbstractDataFieldEditor#createControl(org.eclipse.swt.widgets.Composite)
 	 */
 	@Override
-	public Control createControl(Composite parent) {
-		comp = new XComposite(parent, SWT.NONE, LayoutMode.TIGHT_WRAPPER, LayoutDataMode.GRID_DATA_HORIZONTAL, 3);
-		comp.getGridLayout().verticalSpacing = 0;
+	public Control createControl(Composite parent) {		
+		group = new Group(parent, SWT.BORDER);
+		
+		group.setLayout(new GridLayout(3, false));
+//		XComposite.configureLayout(LayoutMode.TIGHT_WRAPPER, (GridLayout)group.getLayout());
+//		((GridLayout)group.getLayout()).verticalSpacing = 0;
+//		((GridLayout)group.getLayout()).m= 0;
+		
+		XComposite.setLayoutDataMode(LayoutDataMode.GRID_DATA, group);
+		
 		
 		GridData gd = new GridData();
-		
 		gd.horizontalSpan = 3;
 		gd.horizontalAlignment = SWT.LEFT;
-		titleLabel = new Label(comp, SWT.NONE);
-		titleLabel.setLayoutData(gd);
 		
-		filenameTextbox = new Text(comp, SWT.BORDER);
+		filenameTextbox = new Text(group, SWT.BORDER);
 		filenameTextbox.setEditable(false);
 		filenameTextbox.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		openFileChooserButton = new Button(comp, SWT.PUSH);		
-		sizeLabel = new Label(comp, SWT.NONE);
+		openFileChooserButton = new Button(group, SWT.PUSH);		
+		sizeLabel = new Label(group, SWT.NONE);
 		
-		imageLabel = new Label(comp, SWT.NONE);
+		imageLabel = new Label(group, SWT.NONE);
 		imageLabel.addDisposeListener(new DisposeListener() {
 			public void widgetDisposed(DisposeEvent e) {
 				if (imageLabel.getImage() != null)
 					imageLabel.getImage().dispose();
 			}
 		});
-		
 		gd = new GridData();
-		gd.heightHint = 200;
+		gd.horizontalSpan = 3;
 		gd.horizontalAlignment = SWT.CENTER;
+		gd.verticalAlignment = SWT.CENTER;
+		gd.verticalIndent = 10;
 		imageLabel.setLayoutData(gd);
+		
 		
 		gd = new GridData();
 		gd.widthHint = 40;
@@ -146,16 +156,15 @@ public class ImageDataFieldEditor extends AbstractDataFieldEditor<ImageDataField
 					}
 					ImageData data = new ImageData(path);
 					setChanged(true);
-					filenameTextbox.setText(path);
-					fileDialog.setFilterPath(path);
+					filenameTextbox.setText(path);					
+					fileDialog.setFilterPath(file.getParent());
 					
-					displayImage(data);					
-					comp.layout();
-				}
+					displayImage(data);
+				}				
 			}
 		});
 		
-		return comp;
+		return group;
 	}
 	
 	private void displayImage(ImageData id) {
@@ -164,10 +173,15 @@ public class ImageDataFieldEditor extends AbstractDataFieldEditor<ImageDataField
 		
 		int width = id.width;
 		int height = id.height;
-		double factor = height > width ? 200.0/height : 200.0/width;
+		double factor = 1.0;
+		if (width > maxThumbnailWidth || height > maxThumbnailHeight)
+			factor *= height > width ? 1.0*maxThumbnailHeight/height : 1.0*maxThumbnailHeight/width;
+			
 		id = id.scaledTo((int) (factor*width), (int) (factor*height));
 		Image image = new Image(Display.getDefault(), id);
 		imageLabel.setImage(image);
+		imageLabel.getParent().layout(true, true);
+		imageLabel.getParent().getParent().layout(true, true);
 	}
 
 	/*
@@ -178,7 +192,7 @@ public class ImageDataFieldEditor extends AbstractDataFieldEditor<ImageDataField
 	public void doRefresh() {
 		ImageStructField imageStructField = (ImageStructField) getStructField();
 		
-		titleLabel.setText(imageStructField.getName().getText(language.getLanguageID()));
+		group.setText(imageStructField.getName().getText(language.getLanguageID()));
 		List<String> extList = imageStructField.getImageFormats();
 		
 		String[] extensions = new String[extList.size()];		
@@ -188,13 +202,12 @@ public class ImageDataFieldEditor extends AbstractDataFieldEditor<ImageDataField
 		
 		Arrays.sort(extensions);		
 		fileDialog.setFilterExtensions(extensions);
-		if (getDataField().getImageData() != null) {
-			ImageData id = new ImageData(new ByteArrayInputStream(getDataField().getImageData()));
-			displayImage(id);			
-		}
 		
-		if (getDataField().getFileName() != null)
-			filenameTextbox.setText(getDataField().getFileName());		
+		if (!getDataField().isEmpty()) {
+			filenameTextbox.setText(getDataField().getFileName());
+			ImageData id = new ImageData(new ByteArrayInputStream(getDataField().getImageData()));
+			displayImage(id);	
+		}
 		
 		sizeLabel.setText("(max " + imageStructField.getMaxSizeKB() + " KB)");
 		sizeLabel.pack();
@@ -206,7 +219,7 @@ public class ImageDataFieldEditor extends AbstractDataFieldEditor<ImageDataField
 	 * @see org.nightlabs.jfire.base.prop.edit.DataFieldEditor#getControl()
 	 */
 	public Control getControl() {
-		return comp;
+		return group;
 	}
 
 	/*

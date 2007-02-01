@@ -68,7 +68,7 @@ implements DataBlockEditorChangedListener
 		super(parent, SWT.NONE);		
 		this.blockGroup = blockGroup;
 		
-		wrapperComposite = new XComposite(this, SWT.NONE, XComposite.LayoutMode.TIGHT_WRAPPER);		
+		wrapperComposite = new XComposite(this, SWT.NONE, LayoutMode.TIGHT_WRAPPER, LayoutDataMode.GRID_DATA);		
 		
 		createDataBlockEditors(struct, wrapperComposite);
 	}
