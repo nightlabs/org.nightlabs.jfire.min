@@ -212,7 +212,7 @@ public class ImageDataFieldEditor extends AbstractDataFieldEditor<ImageDataField
 	public void updateProperty() {
 		ImageDataField dataField = getDataField();
 		String path = filenameTextbox.getText();		
-		if (path == null)
+		if (path == null || "".equals(path))
 			return;
 		
 		// store the image as in the data field.
