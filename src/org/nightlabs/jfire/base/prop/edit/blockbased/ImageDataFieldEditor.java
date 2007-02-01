@@ -138,8 +138,8 @@ public class ImageDataFieldEditor extends AbstractDataFieldEditor<ImageDataField
 					if (!imageStructField.validateSize(file.length()/1024)) {
 						MessageBox mb = new MessageBox(RCPUtil.getActiveWorkbenchShell(), SWT.OK | SWT.ICON_ERROR);
 						mb.setText("Error");
-						String msg = "The maximum image size is " + imageStructField.getMaxSizeKB() + "KB.";
-						msg += "\nThe given image's size is "+ file.length()/1024 + "KB. Please choose a smaller one.";
+						String msg = "The maximum image size is " + imageStructField.getMaxSizeKB() + "KB.\n";
+						msg += "\nThe selected image's size is "+ file.length()/1024 + "KB. Please choose a smaller one.";
 						mb.setMessage(msg);
 						mb.open();
 						return;
@@ -192,6 +192,9 @@ public class ImageDataFieldEditor extends AbstractDataFieldEditor<ImageDataField
 			ImageData id = new ImageData(new ByteArrayInputStream(getDataField().getImageData()));
 			displayImage(id);			
 		}
+		
+		filenameTextbox.setText(getDataField().getFileName());
+		
 		sizeLabel.setText("(max " + imageStructField.getMaxSizeKB() + " KB)");
 		sizeLabel.pack();
 		sizeLabel.getParent().layout(true, true);
@@ -210,10 +213,13 @@ public class ImageDataFieldEditor extends AbstractDataFieldEditor<ImageDataField
 	 * @see org.nightlabs.jfire.base.prop.edit.DataFieldEditor#updateProp()
 	 */
 	public void updateProperty() {
+		if (!isChanged())
+			return;
+		
 		ImageDataField dataField = getDataField();
 		String path = filenameTextbox.getText();		
 		if (path == null || "".equals(path))
-			return;
+			throw new RuntimeException("Path must not be empty or null!");
 		
 		// store the image as in the data field.
 		File imageFile = new File(path);
