@@ -331,5 +331,29 @@
    <extension
          point="org.nightlabs.base.login">
       <login class="org.nightlabs.jfire.base.login.LoginDelegate"/>
-   </extension>			
+   </extension>		
+   
+   <extension
+         point="org.nightlabs.base.removeExtension">
+      <removeExtension
+            attributeName="id"
+            attributePattern="org.eclipse.ui.edit.text.actionSet.navigation"
+            elementPath="actionSet"
+            extensionPointID="org.eclipse.ui.actionSets"/>
+      <removeExtension
+            attributeName="id"
+            attributePattern="org.eclipse.ui.edit.text.actionSet.convertLineDelimitersTo"
+            elementPath="actionSet"
+            extensionPointID="org.eclipse.ui.actionSets"/>
+      <removeExtension
+            attributeName="id"
+            attributePattern="org.eclipse.ui.WorkingSetActionSet"
+            elementPath="actionSet"
+            extensionPointID="org.eclipse.ui.actionSets"/>
+      <removeExtension
+            attributeName="id"
+            attributePattern=".*eclipse.*resource.*"
+            elementPath="perspective"
+            extensionPointID="org.eclipse.ui.perspectives"/>
+   </extension>
 </plugin>
