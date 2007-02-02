@@ -122,8 +122,8 @@ class NumberStructFieldEditComposite extends XComposite {
 				convertSpinner(minSpinner, newDigits);				
 				convertNumberField(newDigits);
 				
-				setSpinnerBounds();
-				
+				setSpinnerBounds();				
+				editor.setChanged();
 				rearrange();
 			}
 		});
@@ -140,6 +140,7 @@ class NumberStructFieldEditComposite extends XComposite {
 					numberField.setBounded(false);
 					boundsComp.setVisible(false);
 				}
+				editor.setChanged();
 			}
 		});
 		
@@ -173,6 +174,7 @@ class NumberStructFieldEditComposite extends XComposite {
 				
 				setSpinnerBounds();
 				numberField.setSpinnerMin(minSpinner.getSelection());
+				editor.setChanged();
 				rearrange();
 			}
 		});
@@ -196,6 +198,7 @@ class NumberStructFieldEditComposite extends XComposite {
 				
 				setSpinnerBounds();
 				numberField.setSpinnerMax(maxSpinner.getSelection());
+				editor.setChanged();
 				rearrange();
 			}
 		});

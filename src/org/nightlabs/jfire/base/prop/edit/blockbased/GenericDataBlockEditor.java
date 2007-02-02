@@ -87,10 +87,10 @@ public class GenericDataBlockEditor extends DataBlockEditor {
 	
 	
 	public void createFieldEditors() {
-		for (Iterator it = getOrderedPropDataFieldsIterator(); it.hasNext(); ) {
-			AbstractDataField dataField = (AbstractDataField)it.next();
+		for (Iterator<AbstractDataField> it = getOrderedPropDataFieldsIterator(); it.hasNext(); ) {
+			AbstractDataField dataField = it.next();
 			if (!hasFieldEditorFor(dataField)) {
-				DataFieldEditor fieldEditor;
+				DataFieldEditor<AbstractDataField> fieldEditor;
 				try {
 					fieldEditor = DataFieldEditorFactoryRegistry.sharedInstance().getNewEditorInstance(
 							getStruct(), ExpandableBlocksEditor.EDITORTYPE_BLOCK_BASED_EXPANDABLE, 
@@ -111,12 +111,11 @@ public class GenericDataBlockEditor extends DataBlockEditor {
 				fieldEditor.createControl(wrapperComp);
 //				fieldEditor.addDataFieldEditorChangedListener(this);
 			}
-			else {
-				DataFieldEditor fieldEditor = getFieldEditor(dataField);
-				if (getStruct() != null)
-					fieldEditor.setData(getStruct(), dataField);
-				fieldEditor.refresh();
-			}
+			
+			DataFieldEditor fieldEditor = getFieldEditor(dataField);
+			if (getStruct() != null)
+				fieldEditor.setData(getStruct(), dataField);
+			fieldEditor.refresh();
 		}
 	}
 	

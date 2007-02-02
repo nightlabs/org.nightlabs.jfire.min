@@ -327,6 +327,14 @@
             class="org.nightlabs.jfire.base.prop.edit.blockbased.DateDataFieldEditor$Factory"
             targetType="org.nightlabs.jfire.prop.datafield.DateDataField">
       </propDataFieldEditorFactory>
+      <propDataFieldEditorFactory
+            class="org.nightlabs.jfire.base.prop.edit.blockbased.NumberDataFieldEditor$Factory"
+            targetType="org.nightlabs.jfire.prop.datafield.NumberDataField">
+      </propDataFieldEditorFactory>
+      <propDataFieldEditorFactory
+            class="org.nightlabs.jfire.base.prop.edit.blockbased.RegexDataFieldEditor$Factory"
+            targetType="org.nightlabs.jfire.prop.datafield.RegexDataField">
+      </propDataFieldEditorFactory>
    </extension>
    <extension
          point="org.nightlabs.base.login">

@@ -24,7 +24,7 @@ public class RegexStructFieldEditor extends AbstractStructFieldEditor<RegexStruc
 	}
 
 	public boolean validateInput() {
-		return regexField.validateData(comp.pattern.getText(), comp.displayText.getText());
+		return regexField.validateData(comp.regexTextField.getText());
 	}
 
 	public String getErrorMessage() {
@@ -59,43 +59,28 @@ public class RegexStructFieldEditor extends AbstractStructFieldEditor<RegexStruc
 class RegexStructFieldEditComposite extends XComposite {
 	private RegexStructFieldEditor editor;
 	private RegexStructField regexField;
-	protected Text pattern;
-	protected Text displayText;
-	private String patternOrig, displayTextOrig;
+	protected Text regexTextField;
+	private String regexOrig;
 
 	public RegexStructFieldEditComposite(Composite parent, int style, RegexStructFieldEditor editor) {
-		super(parent, style, LayoutMode.TIGHT_WRAPPER, LayoutDataMode.GRID_DATA_HORIZONTAL, 2);
+		super(parent, style, LayoutMode.TIGHT_WRAPPER, LayoutDataMode.GRID_DATA_HORIZONTAL);
 		this.editor = editor;
 
-		Composite wrapper = new XComposite(this, SWT.NONE, LayoutMode.ORDINARY_WRAPPER,
-				LayoutDataMode.GRID_DATA_HORIZONTAL, 2);
-		new Label(wrapper, SWT.NONE).setText("Regular expression:");
-		pattern = new Text(wrapper, SWT.BORDER);
-		pattern.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		new Label(wrapper, SWT.NONE).setText("Display text:");
-		displayText = new Text(wrapper, SWT.BORDER);
-		displayText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-		pattern.addModifyListener(new ModifyListener() {
+		new Label(parent, SWT.NONE).setText("Regular expression:");
+		regexTextField = new Text(parent, SWT.BORDER);
+		regexTextField.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		
+		regexTextField.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
-				if (regexField.validatePattern(pattern.getText()))
-					regexField.setPattern(pattern.getText());
+				if (regexField.validateRegex(regexTextField.getText()))
+					regexField.setRegex(regexTextField.getText());
 				updateErrorLabel();
 			}
 		});
-
-		displayText.addModifyListener(new ModifyListener() {
-			public void modifyText(ModifyEvent e) {
-				if (regexField.validateDisplayText(displayText.getText()))
-					regexField.setDisplayText(displayText.getText());
-				updateErrorLabel();
-			}
-		});
-		new Label(wrapper, SWT.NONE);
 	}
 	
 	private void updateErrorLabel() {
-		regexField.validateData(pattern.getText(), displayText.getText());
+		regexField.validateData(regexTextField.getText());
 		editor.setErrorMessage(regexField.getValidationError());
 	}
 
@@ -103,13 +88,11 @@ class RegexStructFieldEditComposite extends XComposite {
 		if (regexField == null)
 			return;
 		
-		patternOrig = regexField.getPattern();
-		displayTextOrig = regexField.getDisplayText();
+		regexOrig = regexField.getRegex();		
 	}
 	
 	protected void restoreData() {
-		regexField.setPattern(patternOrig);
-		regexField.setDisplayText(displayTextOrig);
+		regexField.setRegex(regexOrig);
 	}
 
 	/**
@@ -120,17 +103,13 @@ class RegexStructFieldEditComposite extends XComposite {
 	public void setField(RegexStructField field) {
 		
 		regexField = field;
-
 		if (regexField == null) {
 			this.setEnabled(false);
 			return;
-		}
-		
+		}		
 		this.setEnabled(true);
 
-		String patternStr = field.getPattern() == null ? "" : field.getPattern();
-		String displayTextStr = field.getDisplayText() == null ? "" : field.getDisplayText();
-		pattern.setText(patternStr);
-		displayText.setText(displayTextStr);
+		String patternStr = field.getRegex() == null ? "" : field.getRegex();		
+		regexTextField.setText(patternStr);
 	}
 }

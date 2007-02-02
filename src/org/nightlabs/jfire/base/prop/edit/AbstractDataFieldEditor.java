@@ -143,7 +143,6 @@ public abstract class AbstractDataFieldEditor<F extends AbstractDataField> imple
 	/**
 	 * Sets the changed state of this editor.
 	 * @see  org.nightlabs.jfire.base.prop.edit.DataFieldEditor#setChanged(boolean)
-	 * @uml.property  name="changed"
 	 */
 	public void setChanged(boolean changed) {
 		this.changed = changed;
@@ -157,7 +156,6 @@ public abstract class AbstractDataFieldEditor<F extends AbstractDataField> imple
 	/**
 	 * Checks if this editors value has changed.
 	 * @see  org.nightlabs.jfire.base.prop.edit.DataFieldEditor#isChanged()
-	 * @uml.property  name="changed"
 	 */
 	public boolean isChanged() {
 		return changed;
