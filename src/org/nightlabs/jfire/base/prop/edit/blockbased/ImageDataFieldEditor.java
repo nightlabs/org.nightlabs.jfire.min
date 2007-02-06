@@ -94,17 +94,17 @@ public class ImageDataFieldEditor extends AbstractDataFieldEditor<ImageDataField
 	 * @see org.nightlabs.jfire.base.prop.edit.AbstractDataFieldEditor#createControl(org.eclipse.swt.widgets.Composite)
 	 */
 	@Override
-	public Control createControl(Composite parent) {		
-		group = new Group(parent, SWT.BORDER);
-		
+	public Control createControl(Composite parent) {
+		// Border looks ugly and is unecessary as group already has a border
+//		group = new Group(parent, SWT.BORDER);
+		group = new Group(parent, SWT.NONE);
 		group.setLayout(new GridLayout(3, false));
 //		XComposite.configureLayout(LayoutMode.TIGHT_WRAPPER, (GridLayout)group.getLayout());
 //		((GridLayout)group.getLayout()).verticalSpacing = 0;
 //		((GridLayout)group.getLayout()).m= 0;
 		
 		XComposite.setLayoutDataMode(LayoutDataMode.GRID_DATA, group);
-		
-		
+				
 		GridData gd = new GridData();
 		gd.horizontalSpan = 3;
 		gd.horizontalAlignment = SWT.LEFT;
