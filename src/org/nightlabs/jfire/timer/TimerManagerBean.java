@@ -234,6 +234,42 @@ implements SessionBean
 			throw new ModuleException(x);
 		}
 	}
+	
+	/**
+	 * @ejb.interface-method
+	 * @ejb.transaction type="Supports"
+	 * @ejb.permission role-name="_Guest_"
+	 **/
+	@SuppressWarnings("unchecked")
+	public List<Task> getTasks(String taskTypeID, String[] fetchGroups, int maxFetchDepth)
+	throws ModuleException
+	{
+		try {
+			PersistenceManager pm = getPersistenceManager();
+			try {
+				pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
+				if (fetchGroups != null)
+					pm.getFetchPlan().setGroups(fetchGroups);
+				
+				List<Task> tasks = Task.getTasksByTaskTypeID(pm, taskTypeID);
+				List<Task> dTasks = (List<Task>) pm.detachCopyAll(tasks);
+				for (Task task : dTasks) {
+					try {
+						task.getUser().getUserLocal().setPassword("********");
+					} catch (NullPointerException x) {
+						// ignore
+					} catch (JDODetachedFieldAccessException x) {
+						// ignore
+					}
+				}
+				return dTasks;
+			} finally {
+				pm.close();
+			}
+		} catch (Exception x) {
+			throw new ModuleException(x);
+		}
+	}	
 
 	/**
 	 * @ejb.interface-method
