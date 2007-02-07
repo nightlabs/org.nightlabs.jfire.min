@@ -14,5 +14,6 @@
         <metadata>
             <type-mapping>${datasourceMetadataTypeMapping}</type-mapping>
         </metadata>
+        <max-pool-size>100</max-pool-size>
     </local-tx-datasource>
 </datasources>

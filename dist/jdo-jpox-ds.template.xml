@@ -30,6 +30,8 @@ JBoss 3.2.x: end -->
 
 		<config-property name="JdoCacheCollections" type="boolean">true</config-property>
 		<config-property name="NontransactionalRead" type="boolean">true</config-property>
+<!--		<config-property name="UseUpdateLock" type="boolean">true</config-property>   -->
+		<config-property name="Optimistic" type="boolean">true</config-property>
 
 <!--
   If you use MySQL on GNU+Linux, you can savely activate PRESERVECASE (it's much more beautiful). Unfortunately,
@@ -60,6 +62,6 @@ JBoss 3.2.x: end -->
 
 <!-- WORKAROUND: Remove when JPOX bug is fixed: -->
 		<config-property name="PersistenceByReachabilityAtCommit" type="boolean">false</config-property>
-
+		<max-pool-size>100</max-pool-size>
 	</tx-connection-factory>
 </connection-factories>
