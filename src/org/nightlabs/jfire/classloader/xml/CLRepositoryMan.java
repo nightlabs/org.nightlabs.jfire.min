@@ -48,15 +48,14 @@ import javax.xml.transform.TransformerException;
 
 import org.apache.log4j.Logger;
 import org.apache.xpath.CachedXPathAPI;
+import org.nightlabs.xml.DOMParser;
+import org.nightlabs.xml.XMLReadException;
 import org.w3c.dom.Node;
 import org.w3c.dom.traversal.NodeIterator;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
-
-import org.nightlabs.xml.DOMParser;
-import org.nightlabs.xml.XMLReadException;
 
 /**
  * @author Marco Schulze - marco at nightlabs dot de
@@ -67,11 +66,12 @@ public class CLRepositoryMan
 	 * LOG4J logger used by this class
 	 */
 	private static final Logger logger = Logger.getLogger(CLRepositoryMan.class);
-	
+
 	public static class Publication {
 		private boolean inherit = true;
+		private boolean ignore = false;
 		private List resourcePatterns = new ArrayList();
-		
+
 		public Publication()
 		{
 		}
@@ -130,27 +130,36 @@ public class CLRepositoryMan
 		{
 			this.inherit = inherit;
 		}
+
+		public boolean isIgnore()
+		{
+			return ignore;
+		}
+		public void setIgnore(boolean ignore)
+		{
+			this.ignore = ignore;
+		}
 	}
 	
 	/**
 	 * List of Publication
 	 */
-	protected List inheritedPublications = null;
+	protected List<Publication> inheritedPublications = null;
 
 	/**
 	 * key: String targetName<br/>
 	 * value: Publication publication
 	 */
-	protected Map localPublications = new HashMap();
+	protected Map<String, Publication> localPublications = new HashMap<String, Publication>();
 
 	private SAXParseException parseException = null;
-	
+
 	public CLRepositoryMan()
 	{
 		this(null);
 	}
 	
-	public CLRepositoryMan(List _inheritedPublications)
+	public CLRepositoryMan(List<Publication> _inheritedPublications)
 	{
 		this.inheritedPublications = _inheritedPublications;
 //		if (this.inheritedPublications == null)
@@ -219,13 +228,22 @@ public class CLRepositoryMan
 
 			if (targetStr == null)
 				targetStr = ".";
-			
+
 			boolean inherit = true;
 			Node nInherit = n.getAttributes().getNamedItem("inherit");
 			if (nInherit != null) {
 				Node txt = nInherit.getFirstChild();
 				if (txt != null) {
 					inherit = Boolean.valueOf(txt.getNodeValue()).booleanValue();
+				}
+			}
+
+			boolean ignore = true;
+			Node nIgnore = n.getAttributes().getNamedItem("ignore");
+			if (nIgnore != null) {
+				Node txt = nIgnore.getFirstChild();
+				if (txt != null) {
+					ignore = Boolean.valueOf(txt.getNodeValue()).booleanValue();
 				}
 			}
 
@@ -236,6 +254,7 @@ public class CLRepositoryMan
 				throw new XMLReadException("target contains separator! You must exclusively use local directories/jars - no \"/\"!");
 			Publication publication = new Publication(); //new File(clrepository.getParent(), targetStr));
 			publication.setInherit(inherit);
+			publication.setIgnore(ignore);
 			NodeIterator itClassPatterns = xpa.selectNodeIterator(n, "resources");
 			Node nClassPattern = itClassPatterns.nextNode();
 			while (nClassPattern != null) {
@@ -251,7 +270,7 @@ public class CLRepositoryMan
 			localPublications.put(targetStr, publication);
 		}
 	}
-	
+
 	public void readCLRepositoryXML(File clrepository)
 	throws XMLReadException
 	{
@@ -259,7 +278,7 @@ public class CLRepositoryMan
 		try {
 			if (!clrepository.exists())
 				throw new FileNotFoundException("CLRepository file  \""+clrepository.getAbsolutePath()+"\" does not exist.");
-			
+
 			if (!clrepository.isFile())
 				throw new UnsupportedOperationException("CLRepositoryMan \""+clrepository.getAbsolutePath()+"\" is not a file!");
 
@@ -283,7 +302,7 @@ public class CLRepositoryMan
 	 * @param targetFileName
 	 * @return
 	 */
-	public List getApplicablePublications(String targetFileName)
+	public List<Publication> getApplicablePublications(String targetFileName)
 	{
 //		File parentFile = targetFile.getParentFile();
 //		if (parentFile == null)
@@ -292,7 +311,7 @@ public class CLRepositoryMan
 //		if (!parentFile.equals(baseDir))
 //			throw new IllegalArgumentException("targetFile is not a child of the base dir \""+baseDir.getAbsolutePath()+"\"!");
 
-		List res = new ArrayList();
+		List<Publication> res = new ArrayList<Publication>();
 		if (inheritedPublications != null)
 			res.addAll(inheritedPublications);
 
@@ -304,13 +323,14 @@ public class CLRepositoryMan
 		}
 
 		if (targetFileName == null) {
-			for (Iterator it = localPublications.entrySet().iterator(); it.hasNext(); ) {
-				Map.Entry me = (Map.Entry)it.next();
+			for (Iterator<Map.Entry<String, Publication>> it = localPublications.entrySet().iterator(); it.hasNext(); ) {
+				Map.Entry<String, Publication> me = it.next();
 				if (!".".equals(me.getKey()))
 					res.add(me.getValue());
 			}
 		}
-		else {
+//		else {
+		else if (!".".equals(targetFileName)) {
 			publication = (Publication)localPublications.get(targetFileName);
 			if (publication != null) {
 				if (!publication.isInherit())

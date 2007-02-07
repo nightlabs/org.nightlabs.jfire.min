@@ -47,18 +47,17 @@ import java.util.zip.DeflaterOutputStream;
 import javax.xml.transform.TransformerException;
 
 import org.apache.log4j.Logger;
+import org.nightlabs.ModuleException;
+import org.nightlabs.io.DataBuffer;
 import org.nightlabs.jfire.base.JFireBasePrincipal;
 import org.nightlabs.jfire.classloader.CLRegistryCfMod.ResourceRepository;
 import org.nightlabs.jfire.classloader.xml.CLRepositoryFileFilter;
 import org.nightlabs.jfire.classloader.xml.CLRepositoryMan;
 import org.nightlabs.jfire.classloader.xml.CLRepositoryMan.Publication;
-import org.xml.sax.SAXException;
-
-import org.nightlabs.ModuleException;
-import org.nightlabs.io.DataBuffer;
 import org.nightlabs.util.CacheDirTag;
 import org.nightlabs.util.Utils;
 import org.nightlabs.xml.XMLReadException;
+import org.xml.sax.SAXException;
 
 /**
  * @author marco schulze - marco at nightlabs dot de
@@ -247,16 +246,25 @@ public class CLRegistrarFactory
 		}
 
 		String[] dirs = directory.list();
-		for (int i = 0; i < dirs.length; ++i) {
+		iterateSubdirs: for (int i = 0; i < dirs.length; ++i) {
 			File dir = new File(directory, dirs[i]);
 
-			List applicableTargets = null;
+			List<CLRepositoryMan.Publication> applicablePublications = null;
 			if (clRepositoryMan != null)
-				applicableTargets = clRepositoryMan.getApplicablePublications(dir.getName());
+				applicablePublications = clRepositoryMan.getApplicablePublications(dir.getName());
+
+			if (applicablePublications != null) {
+				for (CLRepositoryMan.Publication publication : applicablePublications) {
+					if (publication.isIgnore()) {
+						logger.warn("Ignoring file/directory completely: " + dir.getAbsolutePath());
+						continue iterateSubdirs;
+					}
+				}
+			}
 
 			if (dir.isDirectory()) {
 				if (repository.isRecursiveSubDirs()) {
-					scanDirectory(repository, dir, new CLRepositoryMan(applicableTargets));
+					scanDirectory(repository, dir, new CLRepositoryMan(applicablePublications));
 				}
 			}
 			else {
@@ -264,15 +272,15 @@ public class CLRegistrarFactory
 				ResourceMetaData fmd = new ResourceMetaData(repository.getName(), null, relativePath, dir.length(), dir.lastModified());				
 
 				boolean publishResource = false;
-				if (applicableTargets != null) {
-					for (Iterator it = applicableTargets.iterator(); it.hasNext(); ) {
-						CLRepositoryMan.Publication target = (Publication) it.next();
-						if (target.getCompositeResourcePattern().matcher(relativePath).matches()) {
+				if (applicablePublications != null) {
+					for (Iterator it = applicablePublications.iterator(); it.hasNext(); ) {
+						CLRepositoryMan.Publication publication = (Publication) it.next();
+						if (publication.getCompositeResourcePattern().matcher(relativePath).matches()) {
 							publishResource = true;
 							break;
 						}
 					} // for (Iterator it = applicableTargets.iterator(); it.hasNext(); ) {
-				} // if (applicableTargets != null) {
+				} // if (applicablePublications != null) {
 
 				if (publishResource)
 					registerResource(fmd);
@@ -285,7 +293,7 @@ public class CLRegistrarFactory
 				}
 				if (jf != null) {
 					try {
-						scanJar(repository, fmd, jf, new CLRepositoryMan(applicableTargets));
+						scanJar(repository, fmd, jf, new CLRepositoryMan(applicablePublications));
 					} catch (Throwable t) {
 						logger.error(dir.getAbsolutePath() + " could not be read - it seems to be corrupt!", t);
 					} finally {
