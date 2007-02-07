@@ -238,7 +238,7 @@ public class CLRepositoryMan
 				}
 			}
 
-			boolean ignore = true;
+			boolean ignore = false;
 			Node nIgnore = n.getAttributes().getNamedItem("ignore");
 			if (nIgnore != null) {
 				Node txt = nIgnore.getFirstChild();
