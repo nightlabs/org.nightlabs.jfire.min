@@ -30,8 +30,10 @@ JBoss 3.2.x: end -->
 
 		<config-property name="JdoCacheCollections" type="boolean">true</config-property>
 		<config-property name="NontransactionalRead" type="boolean">true</config-property>
-<!--		<config-property name="UseUpdateLock" type="boolean">true</config-property>   -->
-		<config-property name="Optimistic" type="boolean">true</config-property>
+<!--		<config-property name="UseUpdateLock" type="boolean">true</config-property>
+-->
+<!--		<config-property name="Optimistic" type="boolean">true</config-property>
+-->
 
 <!--
   If you use MySQL on GNU+Linux, you can savely activate PRESERVECASE (it's much more beautiful). Unfortunately,
