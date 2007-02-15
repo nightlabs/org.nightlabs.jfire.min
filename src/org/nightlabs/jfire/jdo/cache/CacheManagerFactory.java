@@ -54,6 +54,7 @@ import org.apache.log4j.Logger;
 import org.nightlabs.jfire.base.AuthCallbackHandler;
 import org.nightlabs.jfire.base.JFirePrincipal;
 import org.nightlabs.jfire.base.Lookup;
+import org.nightlabs.jfire.idgenerator.IDGenerator;
 import org.nightlabs.jfire.jdo.cache.bridge.JdoCacheBridge;
 import org.nightlabs.jfire.jdo.notification.AbsoluteFilterID;
 import org.nightlabs.jfire.jdo.notification.DirtyObjectID;
@@ -1728,18 +1729,27 @@ public class CacheManagerFactory
 	// private transient Object filterID2DirtyObjectIDsToNotifyMutex = new
 	// Object();
 
-	private long nextDirtyObjectIDSerial = -Long.MAX_VALUE + 1000; // the client generates synthetic DirtyObjectIDs for dependent objects (i.e. carriers) with -Long.MAX_VALUE
-//	private long nextDirtyObjectIDSerial = 0;
-
-
-	private transient Object nextDirtyObjectIDSerialMutex = new Object();
-
 	public long nextDirtyObjectIDSerial()
 	{
-		synchronized (nextDirtyObjectIDSerialMutex) {
-			return nextDirtyObjectIDSerial++;
-		}
+		// TODO we should initialize this ID-namespace on -Long.MAX_VALUE + 1000 (the client generates
+		// synthetic DirtyObjectIDs for dependent objects (i.e. carriers) with -Long.MAX_VALUE) and
+		// a cache size of at least 1000 (there are many many changes).
+		return IDGenerator.nextID(DirtyObjectID.class.getName());
 	}
+	
+
+//	private long nextDirtyObjectIDSerial = -Long.MAX_VALUE + 1000; // the client generates synthetic DirtyObjectIDs for dependent objects (i.e. carriers) with -Long.MAX_VALUE
+////	private long nextDirtyObjectIDSerial = 0;
+//
+//
+//	private transient Object nextDirtyObjectIDSerialMutex = new Object();
+//
+//	public long nextDirtyObjectIDSerial()
+//	{
+//		synchronized (nextDirtyObjectIDSerialMutex) {
+//			return nextDirtyObjectIDSerial++;
+//		}
+//	}
 
 	/**
 	 * This method blocks and returns not before the timeout (default is

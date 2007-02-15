@@ -87,7 +87,7 @@ import org.nightlabs.jfire.datastoreinit.DatastoreInitManager;
 import org.nightlabs.jfire.idgenerator.IDGenerator;
 import org.nightlabs.jfire.jdo.cache.CacheCfMod;
 import org.nightlabs.jfire.jdo.cache.CacheManagerFactory;
-import org.nightlabs.jfire.jdo.organisationsync.OrganisationSyncManagerFactory;
+import org.nightlabs.jfire.jdo.notification.persistent.PersistentNotificationManagerFactory;
 import org.nightlabs.jfire.module.ModuleType;
 import org.nightlabs.jfire.organisation.LocalOrganisation;
 import org.nightlabs.jfire.organisation.Organisation;
@@ -591,13 +591,16 @@ public class JFireServerManagerFactoryImpl
 					cmf.setupJdoCacheBridge(pmf);
 
 					try {
-						new OrganisationSyncManagerFactory(
-								ctx, organisationID,
+						new PersistentNotificationManagerFactory(ctx, organisationID,
 								getJ2EEVendorAdapter().getTransactionManager(ctx), pmf); // registers itself in JNDI
+
+//						new OrganisationSyncManagerFactory(
+//								ctx, organisationID,
+//								getJ2EEVendorAdapter().getTransactionManager(ctx), pmf); // registers itself in JNDI
 					} catch (NameAlreadyBoundException e) {
 						// ignore - might happen, if an organisation is created in an early-server-init
 					} catch (Exception e) {
-						logger.error("Creating OrganisationSyncManagerFactory for organisation \""+organisationID+"\" failed!", e);
+						logger.error("Creating PersistentNotificationManagerFactory for organisation \""+organisationID+"\" failed!", e);
 						throw new ResourceException(e.getMessage());
 					}
 
@@ -1207,10 +1210,13 @@ public class JFireServerManagerFactoryImpl
 						PersistenceManagerFactory pmf = getPersistenceManagerFactory(organisationID);
 						cmf.setupJdoCacheBridge(pmf);
 
-						new OrganisationSyncManagerFactory(ctx, organisationID,
+//						new OrganisationSyncManagerFactory(ctx, organisationID,
+//								getJ2EEVendorAdapter().getTransactionManager(ctx), pmf); // registers itself in JNDI
+
+						new PersistentNotificationManagerFactory(ctx, organisationID,
 								getJ2EEVendorAdapter().getTransactionManager(ctx), pmf); // registers itself in JNDI
 					} catch (Exception e) {
-						logger.error("Creating CacheManagerFactory for organisation \""+organisationID+"\" failed!", e);
+						logger.error("Creating CacheManagerFactory or PersistentNotificationManagerFactory for organisation \""+organisationID+"\" failed!", e);
 						throw new ResourceException(e.getMessage());
 					}
 

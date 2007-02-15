@@ -45,7 +45,7 @@ import javax.resource.spi.ConnectionEventListener;
 
 import org.apache.log4j.Logger;
 import org.jpox.resource.PersistenceManagerImpl;
-import org.nightlabs.jdo.ObjectID;
+import org.nightlabs.jfire.idgenerator.IDNamespace;
 import org.nightlabs.jfire.jdo.notification.DirtyObjectID;
 import org.nightlabs.jfire.jdo.notification.JDOLifecycleState;
 import org.nightlabs.jfire.security.SecurityReflector;
@@ -171,10 +171,14 @@ public class JdoCacheBridgeJPOX extends JdoCacheBridge
 
 		public void addObject(JDOLifecycleState lifecycleStage, Object object)
 		{
+			Class clazz = object.getClass();
+			if (clazz == IDNamespace.class) // we MUST ignore the IDNamespace changes, because we use the IDGenerator below in: bridge.getCacheManagerFactory().nextDirtyObjectIDSerial()
+				return;
+
 			Object objectID = getObjectID(object);
 			Object version = JDOHelper.getVersion(object); // version can be null, if the jdo object is not versioned
 
-			registerClass(objectID, object.getClass());
+			registerClass(objectID, clazz);
 
 			if (dirtyObjectIDs == null)
 				dirtyObjectIDs = new HashMap<JDOLifecycleState, Map<Object,DirtyObjectID>>();
@@ -185,7 +189,7 @@ public class JdoCacheBridgeJPOX extends JdoCacheBridge
 				dirtyObjectIDs.put(lifecycleStage, m);
 			}
 
-			m.put(objectID, new DirtyObjectID(lifecycleStage, objectID, version, bridge.getCacheManagerFactory().nextDirtyObjectIDSerial()));
+			m.put(objectID, new DirtyObjectID(lifecycleStage, objectID, clazz.getName(), version, bridge.getCacheManagerFactory().nextDirtyObjectIDSerial()));
 		}
 	}
 
