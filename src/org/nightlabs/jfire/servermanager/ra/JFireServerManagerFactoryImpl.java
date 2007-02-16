@@ -591,7 +591,7 @@ public class JFireServerManagerFactoryImpl
 					cmf.setupJdoCacheBridge(pmf);
 
 					try {
-						new PersistentNotificationManagerFactory(ctx, organisationID,
+						new PersistentNotificationManagerFactory(ctx, organisationID, this,
 								getJ2EEVendorAdapter().getTransactionManager(ctx), pmf); // registers itself in JNDI
 
 //						new OrganisationSyncManagerFactory(
@@ -1213,7 +1213,7 @@ public class JFireServerManagerFactoryImpl
 //						new OrganisationSyncManagerFactory(ctx, organisationID,
 //								getJ2EEVendorAdapter().getTransactionManager(ctx), pmf); // registers itself in JNDI
 
-						new PersistentNotificationManagerFactory(ctx, organisationID,
+						new PersistentNotificationManagerFactory(ctx, organisationID, this,
 								getJ2EEVendorAdapter().getTransactionManager(ctx), pmf); // registers itself in JNDI
 					} catch (Exception e) {
 						logger.error("Creating CacheManagerFactory or PersistentNotificationManagerFactory for organisation \""+organisationID+"\" failed!", e);

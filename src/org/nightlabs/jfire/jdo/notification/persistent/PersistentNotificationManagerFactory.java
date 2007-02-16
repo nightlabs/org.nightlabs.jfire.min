@@ -28,6 +28,8 @@ package org.nightlabs.jfire.jdo.notification.persistent;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -37,19 +39,26 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 import javax.jdo.PersistenceManagerFactory;
 import javax.naming.InitialContext;
 import javax.naming.NameAlreadyBoundException;
 import javax.naming.NamingException;
+import javax.security.auth.login.LoginContext;
 import javax.transaction.TransactionManager;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.ModuleException;
+import org.nightlabs.jfire.base.AuthCallbackHandler;
 import org.nightlabs.jfire.jdo.cache.CacheManagerFactory;
 import org.nightlabs.jfire.jdo.cache.LocalDirtyListener;
 import org.nightlabs.jfire.jdo.notification.DirtyObjectID;
 import org.nightlabs.jfire.jdo.notification.JDOLifecycleState;
+import org.nightlabs.jfire.jdo.notification.persistent.id.PushNotifierID;
+import org.nightlabs.jfire.security.User;
+import org.nightlabs.jfire.servermanager.JFireServerManager;
+import org.nightlabs.jfire.servermanager.JFireServerManagerFactory;
 import org.nightlabs.jfire.servermanager.ra.JFireServerManagerFactoryImpl;
 
 public class PersistentNotificationManagerFactory implements Serializable
@@ -77,6 +86,7 @@ public class PersistentNotificationManagerFactory implements Serializable
 	}
 
 	private String organisationID;
+	private transient JFireServerManagerFactory jFireServerManagerFactory;
 	private transient TransactionManager transactionManager;
 	private PersistenceManagerFactory persistenceManagerFactory;
 
@@ -85,10 +95,12 @@ public class PersistentNotificationManagerFactory implements Serializable
 	private transient Timer timerIncoming = new Timer();
 
 	public PersistentNotificationManagerFactory(InitialContext ctx,
-			String organisationID, TransactionManager transactionManager, PersistenceManagerFactory pmf)
+			String organisationID, JFireServerManagerFactory jFireServerManagerFactory,
+			TransactionManager transactionManager, PersistenceManagerFactory pmf)
 			throws NamingException, DirtyObjectIDBufferException
 	{
 		this.organisationID = organisationID;
+		this.jFireServerManagerFactory = jFireServerManagerFactory;
 		this.transactionManager = transactionManager;
 		this.persistenceManagerFactory = pmf;
 
@@ -260,6 +272,26 @@ public class PersistentNotificationManagerFactory implements Serializable
 		return res;
 	}
 
+	private Class pushManagerClass = null;
+
+	private void pushNotificationBundle(NotificationBundle notificationBundle)
+	throws ClassNotFoundException, InstantiationException, IllegalAccessException, SecurityException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException
+	{
+		if (pushManagerClass == null) {
+			try {
+				pushManagerClass = Class.forName("org.nightlabs.jfire.jdo.notification.persistent.PushManager");
+			} catch (ClassNotFoundException x) {
+				logger.error("Could not load class org.nightlabs.jfire.jdo.notification.persistent.PushManager! Are you sure that JFireBaseBean is deployed?", x);
+				throw x;
+			}
+		}
+
+		Object pushManager = pushManagerClass.newInstance();
+		Method pushNotificationBundle = pushManagerClass.getMethod("pushNotificationBundle", new Class[] { NotificationBundle.class });
+
+		pushNotificationBundle.invoke(pushManager, new Object[] { notificationBundle });
+	}
+
 	/**
 	 * This method is called by {@link #timerOutgoing} and therefore does not run concurrently. 
 	 */
@@ -276,6 +308,8 @@ public class PersistentNotificationManagerFactory implements Serializable
 			// condense the raw objects (keep only the newest DirtyObjectID for every JDO object and every lifecycle state)
 			Map<JDOLifecycleState, Map<Object, DirtyObjectID>> dirtyObjectIDsMap = condenseDirtyObjectIDCollection(dirtyObjectIDsRaw);
 
+			List<Object> asyncInvokeEnvelopes = new ArrayList<Object>();
+
 			boolean doCommit = false;
 			transactionManager.begin();
 			try {
@@ -283,7 +317,7 @@ public class PersistentNotificationManagerFactory implements Serializable
 				try {
 
 					// find roughly matching subscriptions (by prefiltering according to jdo-lifecycle-state & class)
-					Map<Subscription, List<DirtyObjectID>> subscription2DirtyObjectID_beforeFilter = new HashMap<Subscription, List<DirtyObjectID>>();
+					Map<User, Map<Subscription, List<DirtyObjectID>>> user2subscription2DirtyObjectID_beforeFilter = new HashMap<User, Map<Subscription,List<DirtyObjectID>>>(); 
 
 					for (Map.Entry<JDOLifecycleState, Map<Object, DirtyObjectID>> me1 : dirtyObjectIDsMap.entrySet()) {
 						for (Map.Entry<Object, DirtyObjectID> me2 : me1.getValue().entrySet()) {
@@ -294,6 +328,12 @@ public class PersistentNotificationManagerFactory implements Serializable
 
 							// add the mapping
 							for (Subscription subscription : subscriptions) {
+								Map<Subscription, List<DirtyObjectID>> subscription2DirtyObjectID_beforeFilter = user2subscription2DirtyObjectID_beforeFilter.get(subscription.getUser());
+								if (subscription2DirtyObjectID_beforeFilter == null) {
+									subscription2DirtyObjectID_beforeFilter = new HashMap<Subscription, List<DirtyObjectID>>();
+									user2subscription2DirtyObjectID_beforeFilter.put(subscription.getUser(), subscription2DirtyObjectID_beforeFilter);
+								}
+
 								List<DirtyObjectID> dirtyObjectIDs = subscription2DirtyObjectID_beforeFilter.get(subscription);
 								if (dirtyObjectIDs == null) {
 									dirtyObjectIDs = new ArrayList<DirtyObjectID>();
@@ -306,16 +346,61 @@ public class PersistentNotificationManagerFactory implements Serializable
 					}
 
 
-//					Map<Subscription, Collection<DirtyObjectID>> subscription2DirtyObjectID_afterFilter = new HashMap<Subscription, Collection<DirtyObjectID>>(subscription2DirtyObjectID_beforeFilter.size()); 
+					if (!user2subscription2DirtyObjectID_beforeFilter.isEmpty()) {
+						pm.getExtent(PushNotifier.class); // initialize meta-data
 
-					// filter the DirtyObjectIDs
-					for (Map.Entry<Subscription, List<DirtyObjectID>> me : subscription2DirtyObjectID_beforeFilter.entrySet()) {
-						Subscription subscription = me.getKey();
-						Collection<DirtyObjectID> dirtyObjectIDs = subscription.filter(me.getValue());
+						// This Map stores, whether a PushNotifier exists for the given subscriberType - so multiple Subscriptions with
+						// the same subscriberType do not require multiple JDO accesses.
+						Map<String, Boolean> subscriberType2NeedsPush = new HashMap<String, Boolean>();
 
-						if (dirtyObjectIDs != null && !dirtyObjectIDs.isEmpty()) {
-							pm.makePersistent(new NotificationBundle(subscription, dirtyObjectIDs));
-//							subscription2DirtyObjectID_afterFilter.put(subscription, dirtyObjectIDs);
+						LoginContext loginContext;
+						JFireServerManager jfsm = jFireServerManagerFactory.getJFireServerManager();
+						try {
+							for (Map.Entry<User, Map<Subscription, List<DirtyObjectID>>> me1 : user2subscription2DirtyObjectID_beforeFilter.entrySet()) {
+								User user = me1.getKey();
+
+								if (!organisationID.equals(user.getOrganisationID()))
+									throw new IllegalStateException("PersistentNotificationManagerFactory.organisationID ("+organisationID+") != user.organisationID ("+user.getOrganisationID()+")");
+
+								loginContext = new LoginContext(
+										"jfire", new AuthCallbackHandler(jfsm, organisationID, user.getUserID(), this.getClass().getSimpleName()));
+
+								loginContext.login();
+								try {
+
+									// filter the DirtyObjectIDs
+									for (Map.Entry<Subscription, List<DirtyObjectID>> me2 : me1.getValue().entrySet()) {
+										Subscription subscription = me2.getKey();
+										Collection<DirtyObjectID> dirtyObjectIDs = subscription.filter(me2.getValue());
+
+										if (dirtyObjectIDs != null && !dirtyObjectIDs.isEmpty()) {
+											NotificationBundle notificationBundle = (NotificationBundle) pm.makePersistent(
+													new NotificationBundle(subscription, dirtyObjectIDs));
+
+											Boolean needsPush = subscriberType2NeedsPush.get(subscription.getSubscriberType());
+											if (needsPush == null) {
+												try {
+													pm.getObjectById(PushNotifierID.create(subscription.getSubscriberType()));
+													needsPush = Boolean.TRUE;
+												} catch (JDOObjectNotFoundException x) {
+													needsPush = Boolean.FALSE;
+												}
+
+												subscriberType2NeedsPush.put(subscription.getSubscriberType(), needsPush);
+											}
+
+											if (needsPush.booleanValue())
+												pushNotificationBundle(notificationBundle);
+										}
+									}
+
+								} finally {
+									loginContext.logout();
+								}
+
+							}
+						} finally {
+							jfsm.close();
 						}
 					}
 
@@ -351,77 +436,77 @@ public class PersistentNotificationManagerFactory implements Serializable
 //				organisationSyncDelegate.init(this);
 //			}
 
-			// 2nd step: notify the subscribers that have dirty listeners
-			doCommit = false;
-			transactionManager.begin();
-			try {
-				PersistenceManager pm = persistenceManagerFactory.getPersistenceManager();
-				try {
-
-//					// organise the listeners by organisation (in order to have only one RMI call per organisation)
+//			// 2nd step: notify the subscribers that have dirty listeners
+//			doCommit = false;
+//			transactionManager.begin();
+//			try {
+//				PersistenceManager pm = persistenceManagerFactory.getPersistenceManager();
+//				try {
 //
-//					// key: String organisationID
-//					// value: Collection outgoingChangeListenerDescriptors
-//					Map listenerDescriptorsByOrganisationID = new HashMap();
+////					// organise the listeners by organisation (in order to have only one RMI call per organisation)
+////
+////					// key: String organisationID
+////					// value: Collection outgoingChangeListenerDescriptors
+////					Map listenerDescriptorsByOrganisationID = new HashMap();
+////
+////					Collection listenerDescriptors = OutgoingChangeListenerDescriptor.findDirtyListenerDescriptors(pm);
+////					for (Iterator itLD = listenerDescriptors.iterator(); itLD.hasNext(); ) {
+////						OutgoingChangeListenerDescriptor ld = (OutgoingChangeListenerDescriptor) itLD.next();
+////						Collection c = (Collection) listenerDescriptorsByOrganisationID.get(ld.getOrganisationID());
+////						if (c == null) {
+////							c = new LinkedList();
+////							listenerDescriptorsByOrganisationID.put(ld.getOrganisationID(), c);
+////						}
+////						c.add(ld);
+////					}
+////
+////					// iterate the organisations and pass the objectIDs of the modified objects.
+////					for (Iterator it = listenerDescriptorsByOrganisationID.entrySet().iterator(); it.hasNext(); ) {
+////						Map.Entry me = (Map.Entry)it.next();
+////						String organisationID = (String) me.getKey();
+////						try {
+////							Collection descriptors = (Collection) me.getValue();
+////							// organise the objectIDs by context
+////							Map dirtyObjectIDCarriersByContext = new HashMap();
+////							for (Iterator itLD = descriptors.iterator(); itLD.hasNext(); ) {
+////								OutgoingChangeListenerDescriptor ld = (OutgoingChangeListenerDescriptor) itLD.next();
+////								Object objectID = ObjectIDUtil.createObjectID(ld.getObjectIDClassName(), ld.getObjectIDFieldPart());
+////								String context = ld.getContext();
+////								DirtyObjectIDCarrier carrier = (DirtyObjectIDCarrier) dirtyObjectIDCarriersByContext.get(context);
+////								if (carrier == null) {
+////									carrier = new DirtyObjectIDCarrier(context);
+////									dirtyObjectIDCarriersByContext.put(context, carrier);
+////								}
+////								carrier.addObjectID(objectID);
+////							}
+////
+////							// notify the other organisation (specified by organisationID)
+////							if (!dirtyObjectIDCarriersByContext.isEmpty()) {
+////								organisationSyncDelegate.notifyDirtyObjectIDs(
+////										pm, organisationID, dirtyObjectIDCarriersByContext.values());
+////							}
+////
+////							// clear the dirty flag (if we come here, the other organisation was successfully notified)
+////							for (Iterator itLD = descriptors.iterator(); itLD.hasNext(); ) {
+////								OutgoingChangeListenerDescriptor ld = (OutgoingChangeListenerDescriptor) itLD.next();
+////								ld.setDirty(false);
+////							}
+////						} catch (Throwable t) {
+////							logger.error("Notifying organisation \"" + organisationID + "\" failed!", t);
+////						}
+////					} // for (Iterator it = listenerDescriptorsByOrganisationID.entrySet().iterator(); it.hasNext(); ) {
 //
-//					Collection listenerDescriptors = OutgoingChangeListenerDescriptor.findDirtyListenerDescriptors(pm);
-//					for (Iterator itLD = listenerDescriptors.iterator(); itLD.hasNext(); ) {
-//						OutgoingChangeListenerDescriptor ld = (OutgoingChangeListenerDescriptor) itLD.next();
-//						Collection c = (Collection) listenerDescriptorsByOrganisationID.get(ld.getOrganisationID());
-//						if (c == null) {
-//							c = new LinkedList();
-//							listenerDescriptorsByOrganisationID.put(ld.getOrganisationID(), c);
-//						}
-//						c.add(ld);
-//					}
+//				} finally {
+//					pm.close();
+//				}
 //
-//					// iterate the organisations and pass the objectIDs of the modified objects.
-//					for (Iterator it = listenerDescriptorsByOrganisationID.entrySet().iterator(); it.hasNext(); ) {
-//						Map.Entry me = (Map.Entry)it.next();
-//						String organisationID = (String) me.getKey();
-//						try {
-//							Collection descriptors = (Collection) me.getValue();
-//							// organise the objectIDs by context
-//							Map dirtyObjectIDCarriersByContext = new HashMap();
-//							for (Iterator itLD = descriptors.iterator(); itLD.hasNext(); ) {
-//								OutgoingChangeListenerDescriptor ld = (OutgoingChangeListenerDescriptor) itLD.next();
-//								Object objectID = ObjectIDUtil.createObjectID(ld.getObjectIDClassName(), ld.getObjectIDFieldPart());
-//								String context = ld.getContext();
-//								DirtyObjectIDCarrier carrier = (DirtyObjectIDCarrier) dirtyObjectIDCarriersByContext.get(context);
-//								if (carrier == null) {
-//									carrier = new DirtyObjectIDCarrier(context);
-//									dirtyObjectIDCarriersByContext.put(context, carrier);
-//								}
-//								carrier.addObjectID(objectID);
-//							}
-//
-//							// notify the other organisation (specified by organisationID)
-//							if (!dirtyObjectIDCarriersByContext.isEmpty()) {
-//								organisationSyncDelegate.notifyDirtyObjectIDs(
-//										pm, organisationID, dirtyObjectIDCarriersByContext.values());
-//							}
-//
-//							// clear the dirty flag (if we come here, the other organisation was successfully notified)
-//							for (Iterator itLD = descriptors.iterator(); itLD.hasNext(); ) {
-//								OutgoingChangeListenerDescriptor ld = (OutgoingChangeListenerDescriptor) itLD.next();
-//								ld.setDirty(false);
-//							}
-//						} catch (Throwable t) {
-//							logger.error("Notifying organisation \"" + organisationID + "\" failed!", t);
-//						}
-//					} // for (Iterator it = listenerDescriptorsByOrganisationID.entrySet().iterator(); it.hasNext(); ) {
-
-				} finally {
-					pm.close();
-				}
-
-				doCommit = true;
-			} finally {
-				if (doCommit)
-					transactionManager.commit();
-				else
-					transactionManager.rollback();
-			}
+//				doCommit = true;
+//			} finally {
+//				if (doCommit)
+//					transactionManager.commit();
+//				else
+//					transactionManager.rollback();
+//			}
 		} catch (Throwable t) {
 			logger.error("Processing outgoing dirty objects failed!", t);
 		}
