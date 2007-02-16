@@ -50,7 +50,7 @@ import org.nightlabs.language.LanguageCf;
  *	jndi-name="jfire/ejb/JFireBaseBean/LanguageManager"
  *	type="Stateless"
  *   
- * @ejb.util generate = "physical"
+ * @ejb.util generate="physical"
  */
 public abstract class LanguageManagerBean extends BaseSessionBeanImpl implements SessionBean 
 {
