@@ -46,6 +46,7 @@ import org.nightlabs.config.Config;
 import org.nightlabs.config.ConfigException;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jdo.ObjectID;
+import org.nightlabs.jfire.base.jdo.JDOObjectID2PCClassMap;
 import org.nightlabs.jfire.base.jdo.notification.ChangeEvent;
 import org.nightlabs.jfire.base.jdo.notification.ChangeSubjectCarrier;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleEvent;
@@ -143,7 +144,10 @@ public class Cache
 									// JDOObjectID2PCClassNotificationInterceptor as an example, how this can be done
 									// (see the comment in the intercept(...) method): simply check whether the result of
 									// DirtyObjectID.getObjectID() implements org.nightlabs.jdo.ObjectID
-									DirtyObjectID doid = new DirtyObjectID(JDOLifecycleState.DIRTY, removedKey.getObjectID(), null, -Long.MAX_VALUE);
+									DirtyObjectID doid = new DirtyObjectID(
+											JDOLifecycleState.DIRTY, removedKey.getObjectID(),
+											JDOObjectID2PCClassMap.sharedInstance().getPersistenceCapableClass(removedKey.getObjectID()).getName(),
+											null, -Long.MAX_VALUE);
 									indirectlyAffectedDirtyObjectIDs.put(doid.getObjectID(), doid);
 								}
 							}
