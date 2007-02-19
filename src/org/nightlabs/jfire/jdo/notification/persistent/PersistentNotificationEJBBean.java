@@ -25,7 +25,10 @@
  ******************************************************************************/
 
 package org.nightlabs.jfire.jdo.notification.persistent;
+
 import java.rmi.RemoteException;
+import java.util.List;
+import java.util.Set;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
@@ -35,8 +38,11 @@ import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 
 import org.apache.log4j.Logger;
+import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
+import org.nightlabs.jfire.jdo.notification.persistent.id.NotificationBundleID;
 import org.nightlabs.jfire.jdo.notification.persistent.id.PushNotifierID;
+import org.nightlabs.jfire.jdo.notification.persistent.id.SubscriptionID;
 
 /**
  * @ejb.bean
@@ -91,4 +97,105 @@ extends BaseSessionBeanImpl implements SessionBean
 		}
 	}
 
+//	/**
+//	 * @ejb.interface-method
+//	 * @ejb.permission role-name="_Guest_"
+//	 **/
+//	public Set<SubscriptionID> getSubscriptionIDs()
+//	{
+//		PersistenceManager pm = getPersistenceManager();
+//		try  {
+//
+//		} finally {
+//			pm.close();
+//		}
+//	}
+//
+	/**
+	 * @ejb.interface-method
+	 * @ejb.permission role-name="_Guest_"
+	 * @ejb.transaction type="Supports"
+	 **/
+	@SuppressWarnings("unchecked")
+	public List<Subscription> getSubscriptions(Set<SubscriptionID> subscriptionIDs, String[] fetchGroups, int maxFetchDepth)
+	{
+		PersistenceManager pm = getPersistenceManager();
+		try  {
+			return NLJDOHelper.getDetachedObjectList(pm, subscriptionIDs, Subscription.class, fetchGroups, maxFetchDepth);
+		} finally {
+			pm.close();
+		}
+	}
+
+	/**
+	 * @ejb.interface-method
+	 * @ejb.permission role-name="_Guest_"
+	 **/
+	public Subscription storeSubscription(Subscription subscription, boolean get, String[] fetchGroups, int maxFetchDepth) 
+	{
+		PersistenceManager pm = getPersistenceManager();
+		try {
+			return (Subscription) NLJDOHelper.storeJDO(pm, subscription, get, fetchGroups, maxFetchDepth);
+		} finally {
+			pm.close();
+		}
+	}
+
+	/**
+	 * @ejb.interface-method
+	 * @ejb.permission role-name="_Guest_"
+	 **/
+	@SuppressWarnings("unchecked")
+	public void deleteNotificationBundles(Set<NotificationBundleID> notificationBundleIDs)
+	{
+		PersistenceManager pm = getPersistenceManager();
+		try {
+			Set<NotificationBundle> notificationBundles = NLJDOHelper.getObjectSet(pm, notificationBundleIDs, NotificationBundleID.class);
+			pm.deletePersistentAll(notificationBundles);
+		} finally {
+			pm.close();
+		}
+	}
+
+	/**
+	 * @param subscriptionID Identifies the subscription, for which to retrieve the {@link NotificationBundle}s. Must not be <code>null</code>.
+	 *
+	 * @ejb.interface-method
+	 * @ejb.permission role-name="_Guest_"
+	 * @ejb.transaction type="Supports"
+	 **/
+	@SuppressWarnings("unchecked")
+	public List<NotificationBundle> getNotificationBundles(SubscriptionID subscriptionID, String[] fetchGroups, int maxFetchDepth)
+	{
+		if (subscriptionID == null)
+			throw new IllegalArgumentException("subscriptionID must not be null!");
+
+		PersistenceManager pm = getPersistenceManager();
+		try  {
+			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
+			if (fetchGroups != null)
+				pm.getFetchPlan().setGroups(fetchGroups);
+
+			return (List<NotificationBundle>) pm.detachCopyAll(NotificationBundle.getNotificationBundles(pm, subscriptionID));
+		} finally {
+			pm.close();
+		}
+	}
+
+	/**
+	 * This method is called by the {@link PushNotifierOrganisation} in order to notify the
+	 * subscriber about new/dirty/deleted JDO objects.
+	 *
+	 * @ejb.interface-method
+	 * @ejb.permission role-name="_Guest_"
+	 **/
+	public void notifySubscription(NotificationBundle notificationBundle)
+	{
+		PersistenceManager pm = getPersistenceManager();
+		try {
+			
+		} finally {
+			pm.close();
+		}
+	}
 }
