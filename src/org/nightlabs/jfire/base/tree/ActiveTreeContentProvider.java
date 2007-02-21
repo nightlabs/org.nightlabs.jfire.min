@@ -18,6 +18,7 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.swt.widgets.Display;
 import org.nightlabs.base.notification.NotificationAdapterJob;
 import org.nightlabs.base.tree.TreeContentProvider;
+import org.nightlabs.jfire.base.jdo.ActiveJDOObjectController;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleAdapterJob;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleEvent;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleListener;
@@ -35,7 +36,7 @@ import org.nightlabs.util.CollectionUtil;
  *
  * @deprecated Will soon be removed. A ContentProvider should not retrieve data itself but only
  *		glue some data input into a TableViewer/TreeViewer (or other UI document). That's why
- *		there's now Xyz existing.
+ *		there's now {@link ActiveJDOObjectController} existing.
  */
 public abstract class ActiveTreeContentProvider<JDOObjectID, JDOObject>
 extends TreeContentProvider
