@@ -41,8 +41,9 @@ import org.apache.log4j.Logger;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.jdo.notification.persistent.id.NotificationBundleID;
+import org.nightlabs.jfire.jdo.notification.persistent.id.NotificationFilterID;
+import org.nightlabs.jfire.jdo.notification.persistent.id.NotificationReceiverID;
 import org.nightlabs.jfire.jdo.notification.persistent.id.PushNotifierID;
-import org.nightlabs.jfire.jdo.notification.persistent.id.SubscriptionID;
 
 /**
  * @ejb.bean
@@ -64,7 +65,7 @@ extends BaseSessionBeanImpl implements SessionBean
 	}
 	/**
 	 * @ejb.create-method  
-	 * @ejb.permission role-name="LanguageManager-read"
+	 * @ejb.permission role-name="_Guest_"
 	 */
 	public void ejbCreate() throws CreateException { }
 
@@ -85,11 +86,11 @@ extends BaseSessionBeanImpl implements SessionBean
 		try {
 			pm.getExtent(PushNotifierOrganisation.class);
 			try {
-				PushNotifier pushNotifier = (PushNotifier) pm.getObjectById(PushNotifierID.create(PushNotifierOrganisation.SUBSCRIBER_TYPE_ORGANISATION));
-				logger.info("There exists already a PushNotifier for the subscriberType '"+ PushNotifierOrganisation.SUBSCRIBER_TYPE_ORGANISATION +"': " + pushNotifier.getClass());
+				PushNotifier pushNotifier = (PushNotifier) pm.getObjectById(PushNotifierID.create(SubscriptionUtil.SUBSCRIBER_TYPE_ORGANISATION));
+				logger.info("There exists already a PushNotifier for the subscriberType '"+ SubscriptionUtil.SUBSCRIBER_TYPE_ORGANISATION +"': " + pushNotifier.getClass());
 			} catch (JDOObjectNotFoundException x) {
-				logger.info("Creating and persisting PushNotifier '"+PushNotifierOrganisation.class.getName()+"' for the subscriberType '"+ PushNotifierOrganisation.SUBSCRIBER_TYPE_ORGANISATION +"'.");
-				pm.makePersistent(new PushNotifierOrganisation(PushNotifierOrganisation.SUBSCRIBER_TYPE_ORGANISATION));
+				logger.info("Creating and persisting PushNotifier '"+PushNotifierOrganisation.class.getName()+"' for the subscriberType '"+ SubscriptionUtil.SUBSCRIBER_TYPE_ORGANISATION +"'.");
+				pm.makePersistent(new PushNotifierOrganisation(SubscriptionUtil.SUBSCRIBER_TYPE_ORGANISATION));
 			}
 
 		} finally {
@@ -101,7 +102,7 @@ extends BaseSessionBeanImpl implements SessionBean
 //	 * @ejb.interface-method
 //	 * @ejb.permission role-name="_Guest_"
 //	 **/
-//	public Set<SubscriptionID> getSubscriptionIDs()
+//	public Set<NotificationFilterID> getSubscriptionIDs()
 //	{
 //		PersistenceManager pm = getPersistenceManager();
 //		try  {
@@ -117,11 +118,11 @@ extends BaseSessionBeanImpl implements SessionBean
 	 * @ejb.transaction type="Supports"
 	 **/
 	@SuppressWarnings("unchecked")
-	public List<Subscription> getSubscriptions(Set<SubscriptionID> subscriptionIDs, String[] fetchGroups, int maxFetchDepth)
+	public List<NotificationFilter> getSubscriptions(Set<NotificationFilterID> notificationFilterIDs, String[] fetchGroups, int maxFetchDepth)
 	{
 		PersistenceManager pm = getPersistenceManager();
 		try  {
-			return NLJDOHelper.getDetachedObjectList(pm, subscriptionIDs, Subscription.class, fetchGroups, maxFetchDepth);
+			return NLJDOHelper.getDetachedObjectList(pm, notificationFilterIDs, NotificationFilter.class, fetchGroups, maxFetchDepth);
 		} finally {
 			pm.close();
 		}
@@ -131,11 +132,11 @@ extends BaseSessionBeanImpl implements SessionBean
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
 	 **/
-	public Subscription storeSubscription(Subscription subscription, boolean get, String[] fetchGroups, int maxFetchDepth) 
+	public NotificationFilter storeNotificationFilter(NotificationFilter notificationFilter, boolean get, String[] fetchGroups, int maxFetchDepth) 
 	{
 		PersistenceManager pm = getPersistenceManager();
 		try {
-			return (Subscription) NLJDOHelper.storeJDO(pm, subscription, get, fetchGroups, maxFetchDepth);
+			return (NotificationFilter) NLJDOHelper.storeJDO(pm, notificationFilter, get, fetchGroups, maxFetchDepth);
 		} finally {
 			pm.close();
 		}
@@ -158,16 +159,16 @@ extends BaseSessionBeanImpl implements SessionBean
 	}
 
 	/**
-	 * @param subscriptionID Identifies the subscription, for which to retrieve the {@link NotificationBundle}s. Must not be <code>null</code>.
+	 * @param notificationFilterID Identifies the subscription, for which to retrieve the {@link NotificationBundle}s. Must not be <code>null</code>.
 	 *
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type="Supports"
 	 **/
 	@SuppressWarnings("unchecked")
-	public List<NotificationBundle> getNotificationBundles(SubscriptionID subscriptionID, String[] fetchGroups, int maxFetchDepth)
+	public List<NotificationBundle> getNotificationBundles(NotificationFilterID notificationFilterID, String[] fetchGroups, int maxFetchDepth)
 	{
-		if (subscriptionID == null)
+		if (notificationFilterID == null)
 			throw new IllegalArgumentException("subscriptionID must not be null!");
 
 		PersistenceManager pm = getPersistenceManager();
@@ -176,7 +177,7 @@ extends BaseSessionBeanImpl implements SessionBean
 			if (fetchGroups != null)
 				pm.getFetchPlan().setGroups(fetchGroups);
 
-			return (List<NotificationBundle>) pm.detachCopyAll(NotificationBundle.getNotificationBundles(pm, subscriptionID));
+			return (List<NotificationBundle>) pm.detachCopyAll(NotificationBundle.getNotificationBundles(pm, notificationFilterID));
 		} finally {
 			pm.close();
 		}
@@ -189,11 +190,27 @@ extends BaseSessionBeanImpl implements SessionBean
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
 	 **/
-	public void notifySubscription(NotificationBundle notificationBundle)
+	public void pushNotificationBundle(NotificationBundle notificationBundle)
+	throws Exception
 	{
 		PersistenceManager pm = getPersistenceManager();
 		try {
-			
+			pm.getExtent(NotificationReceiver.class);
+
+			NotificationReceiverID notificationReceiverID = NotificationReceiverID.create(
+					notificationBundle.getOrganisationID(),
+					notificationBundle.getSubscriberType(),
+					notificationBundle.getSubscriberID(),
+					notificationBundle.getSubscriptionID());
+			NotificationReceiver notificationReceiver;
+			try {
+				notificationReceiver = (NotificationReceiver) pm.getObjectById(notificationReceiverID);
+			} catch (JDOObjectNotFoundException x) {
+				logger.error("No NotificationReceiver existing for NotificationBundle: " + notificationReceiverID, x);
+				return;
+			}
+
+			notificationReceiver.onReceiveNotificationBundle(notificationBundle);
 		} finally {
 			pm.close();
 		}

@@ -14,6 +14,5 @@
 	<classpathentry kind="var" path="JBOSS/client/jboss-j2ee.jar"/>
 	<classpathentry sourcepath="JPOX_SRC" kind="var" path="JDO2"/>
 	<classpathentry kind="var" path="JUNIT_HOME/junit.jar"/>
-	<classpathentry sourcepath="WORKSPACE/JFireBase/src" kind="var" path="WORKSPACE/JFireBase/dist/JFireBase.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

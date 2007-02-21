@@ -9,12 +9,11 @@ public class PushNotifierOrganisationDelegate
 	public void push(PersistenceManager pm, NotificationBundle notificationBundle)
 	throws Exception
 	{
-		Subscription subscription = notificationBundle.getSubscription();
-		if (!PushNotifierOrganisation.SUBSCRIBER_TYPE_ORGANISATION.equals(subscription.getSubscriberType()))
-			throw new IllegalArgumentException("notificationBundle.subscriberType illegal: " + subscription.getSubscriberType());
+		if (!SubscriptionUtil.SUBSCRIBER_TYPE_ORGANISATION.equals(notificationBundle.getSubscriberType()))
+			throw new IllegalArgumentException("notificationBundle.subscriberType illegal: " + notificationBundle.getSubscriberType());
 
-		String subscriberOrganisationID = subscription.getSubscriberID();
+		String subscriberOrganisationID = notificationBundle.getSubscriberID();
 		PersistentNotificationEJB pn = PersistentNotificationEJBUtil.getHome(Lookup.getInitialContextProperties(pm, subscriberOrganisationID)).create();
-
+		pn.pushNotificationBundle(notificationBundle);
 	}
 }

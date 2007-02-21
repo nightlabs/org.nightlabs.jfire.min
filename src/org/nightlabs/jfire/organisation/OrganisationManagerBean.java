@@ -28,10 +28,12 @@ package org.nightlabs.jfire.organisation;
 
 import java.rmi.RemoteException;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
@@ -40,6 +42,7 @@ import javax.ejb.SessionContext;
 import javax.jdo.FetchPlan;
 import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
+import javax.jdo.Query;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
@@ -50,6 +53,7 @@ import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.base.JFireException;
 import org.nightlabs.jfire.base.JFirePrincipal;
 import org.nightlabs.jfire.base.JFireRemoteException;
+import org.nightlabs.jfire.organisation.id.OrganisationID;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.security.UserLocal;
 import org.nightlabs.jfire.security.UserManager;
@@ -927,4 +931,36 @@ public abstract class OrganisationManagerBean
 //	  return organisations;
 //	}
 
+	/**
+	 * @ejb.interface-method
+	 * @ejb.transaction type="Supports"
+	 * @ejb.permission role-name="_Guest_"
+	 */
+	public Set<OrganisationID> getOrganisationIDs()
+	{
+		PersistenceManager pm = getPersistenceManager();
+		try {
+			Query q = pm.newQuery(Organisation.class);
+			q.setResult("JDOHelper.getObjectId(this)");
+			return new HashSet<OrganisationID>((Collection<? extends OrganisationID>) q.execute());
+		} finally {
+			pm.close();
+		}
+	}
+
+	/**
+	 * @ejb.interface-method
+	 * @ejb.transaction type="Supports"
+	 * @ejb.permission role-name="_Guest_"
+	 */
+	@SuppressWarnings("unchecked")
+	public List<Organisation> getOrganisations(Collection<OrganisationID> organisationIDs, String[] fetchGroups, int maxFetchDepth)
+	{
+		PersistenceManager pm = getPersistenceManager();
+		try {
+			return NLJDOHelper.getDetachedObjectList(pm, organisationIDs, Organisation.class, fetchGroups, maxFetchDepth);
+		} finally {
+			pm.close();
+		}
+	}
 }

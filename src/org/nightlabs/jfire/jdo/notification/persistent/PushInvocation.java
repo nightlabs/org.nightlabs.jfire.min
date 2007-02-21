@@ -32,7 +32,7 @@ extends Invocation
 
 			pm.getExtent(PushNotifier.class);
 			PushNotifier pushNotifier = (PushNotifier) pm.getObjectById(
-					PushNotifierID.create(notificationBundle.getSubscription().getSubscriberType()));
+					PushNotifierID.create(notificationBundle.getSubscriberType()));
 
 			pushNotifier.push(notificationBundle);
 
