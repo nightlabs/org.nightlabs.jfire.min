@@ -122,7 +122,7 @@ public class PersonSearchDialog extends Dialog implements SearchResultFetcher{
 		searchFilter.addResultStructFieldID(TextDataField.class, PersonStruct.PERSONALDATA_COMPANY);
 		searchFilter.addResultStructFieldID(TextDataField.class, PersonStruct.PERSONALDATA_NAME);
 		searchFilter.addResultStructFieldID(TextDataField.class, PersonStruct.PERSONALDATA_FIRSTNAME);
-		searchFilter.addResultStructFieldID(TextDataField.class, PersonStruct.PHONE_LOCALNUMBER);
+//		searchFilter.addResultStructFieldID(TextDataField.class, PersonStruct.PHONE_LOCALNUMBER);
 
 		try {
 			long start = System.currentTimeMillis();

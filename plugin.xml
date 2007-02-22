@@ -341,6 +341,10 @@
             class="org.nightlabs.jfire.base.prop.edit.blockbased.RegexDataFieldEditor$Factory"
             targetType="org.nightlabs.jfire.prop.datafield.RegexDataField">
       </propDataFieldEditorFactory>
+      <propDataFieldEditorFactory
+            class="org.nightlabs.jfire.base.prop.edit.blockbased.PhoneNumberDataFieldEditor$PhoneNumberDataFieldEditorFactory"
+            targetType="org.nightlabs.jfire.prop.datafield.PhoneNumberDataField">
+      </propDataFieldEditorFactory>
    </extension>
    <extension
          point="org.nightlabs.base.login">
