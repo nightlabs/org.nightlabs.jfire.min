@@ -803,7 +803,7 @@ implements InitialContextProvider
 	 */
 	private List loginStateListenerRegistry = new LinkedList();
 
-	public synchronized void addLoginStateListener(LoginStateListener loginStateListener) {
+	public void addLoginStateListener(LoginStateListener loginStateListener) {
 		addLoginStateListener(loginStateListener,null);
 	}
 
