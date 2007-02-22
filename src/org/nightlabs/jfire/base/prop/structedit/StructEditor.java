@@ -55,8 +55,6 @@ public class StructEditor {
 	private TreeNode lastSelection;
 	private boolean ignoreChangeEvent;
 	
-	private Composite structPartEditorComposite;
-	
 	private PropertyManager propertyManager;
 	private IStruct currentStruct;
 	private StructEditorComposite structEditorComposite;
@@ -104,13 +102,9 @@ public class StructEditor {
 					
 					lastSelection = (TreeNode) ((IStructuredSelection)event.getSelection()).getFirstElement();
 					
-					if (structPartEditorComposite != null)
-						structPartEditorComposite.dispose();
-					
 					TreeNode selected = (TreeNode) selection.getFirstElement();
 					StructFieldFactoryRegistry structFieldFactoryRegistry = StructFieldFactoryRegistry.sharedInstance();
 
-					
 					if (selected instanceof StructFieldNode) {
 						StructField field = ((StructFieldNode) selected).getField();
 						try {

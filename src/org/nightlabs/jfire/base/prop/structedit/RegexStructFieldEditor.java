@@ -20,9 +20,6 @@ public class RegexStructFieldEditor extends AbstractStructFieldEditor<RegexStruc
 	private RegexStructField regexField;
 	private RegexStructFieldEditComposite comp;
 
-	public RegexStructFieldEditor() {
-	}
-
 	public boolean validateInput() {
 		return regexField.validateData(comp.regexTextField.getText());
 	}
@@ -63,11 +60,11 @@ class RegexStructFieldEditComposite extends XComposite {
 	private String regexOrig;
 
 	public RegexStructFieldEditComposite(Composite parent, int style, RegexStructFieldEditor editor) {
-		super(parent, style, LayoutMode.TIGHT_WRAPPER, LayoutDataMode.GRID_DATA_HORIZONTAL);
+		super(parent, style, LayoutMode.LEFT_RIGHT_WRAPPER, LayoutDataMode.GRID_DATA_HORIZONTAL);
 		this.editor = editor;
 
-		new Label(parent, SWT.NONE).setText("Regular expression:");
-		regexTextField = new Text(parent, SWT.BORDER);
+		new Label(this, SWT.NONE).setText("Regular expression:");
+		regexTextField = new Text(this, SWT.BORDER);
 		regexTextField.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		
 		regexTextField.addModifyListener(new ModifyListener() {

@@ -94,6 +94,9 @@ public class TextDataFieldComposite extends AbstractDataFieldComposite {
 			fieldText.setText("");
 		else
 			fieldText.setText(editor.getDataField().getText());
+		
+		// TODO set the text fields maximum line count to the one given by the struct field 
+		// ((TextStructField)editor.getDataField().getStructField()).getLineCount();
 	}
 	
 	public String getText() {

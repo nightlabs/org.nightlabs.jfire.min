@@ -23,8 +23,7 @@ public class TextStructFieldEditor extends AbstractStructFieldEditor<TextStructF
 	@Override
 	protected Composite createSpecialComposite(Composite parent, int style) {
 		XComposite comp = new XComposite(parent, style, LayoutMode.LEFT_RIGHT_WRAPPER);
-		comp.getGridLayout().numColumns = 3;
-		new Label(comp, SWT.NONE).setText("Text Struct field.   ");
+		comp.getGridLayout().numColumns = 3;		
 		new Label(comp, SWT.NONE).setText("Line count: ");
 		lineCountSpinner = new Spinner(comp, SWT.BORDER);
 		lineCountSpinner.setMinimum(1);
@@ -37,7 +36,7 @@ public class TextStructFieldEditor extends AbstractStructFieldEditor<TextStructF
 					textField.setLineCount(lineCountSpinner.getSelection());
 			}			
 		});
-		return new Composite(parent, style);
+		return comp;
 	}
 
 	@Override

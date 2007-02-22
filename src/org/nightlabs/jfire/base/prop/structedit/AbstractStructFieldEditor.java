@@ -5,10 +5,11 @@ import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.nightlabs.base.composite.XComposite;
-import org.nightlabs.base.composite.XComposite.LayoutDataMode;
 import org.nightlabs.base.composite.XComposite.LayoutMode;
 import org.nightlabs.base.language.I18nTextEditor;
 import org.nightlabs.base.language.LanguageChooser;
@@ -18,7 +19,6 @@ import org.nightlabs.jfire.prop.StructField;
 
 public abstract class AbstractStructFieldEditor<F extends StructField> implements StructFieldEditor<F> {
 	
-	private Composite composite;
 	private Composite specialComposite;
 	private I18nTextEditor fieldNameEditor;
 	private StructEditor structEditor;
@@ -26,6 +26,7 @@ public abstract class AbstractStructFieldEditor<F extends StructField> implement
 	private LanguageChooser languageChooser;
 	private ErrorComposite errorComp;
 	private String errorMessage;
+	private Group editorGroup;
 	
 	public void setChanged() {
 		getStructEditor().setChanged(true);
@@ -34,20 +35,23 @@ public abstract class AbstractStructFieldEditor<F extends StructField> implement
 	public Composite createComposite(Composite parent, int style, StructEditor structEditor, LanguageChooser languageChooser) {
 		this.languageChooser = languageChooser;
 		this.structEditor = structEditor;
-		
-		composite = new XComposite(parent, style, LayoutMode.TOP_BOTTOM_WRAPPER, LayoutDataMode.GRID_DATA);
-		composite.setLayoutData(new GridData(GridData.FILL_BOTH));
+		editorGroup = new Group(parent, SWT.NONE);		
+		editorGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
+		GridLayout gl = new GridLayout();
+		XComposite.configureLayout(LayoutMode.TOP_BOTTOM_WRAPPER, gl);
+		editorGroup.setLayout(gl);
+		((GridLayout)editorGroup.getLayout()).marginTop = 15;
 				
-		fieldNameEditor = new I18nTextEditor(composite, this.languageChooser, "Field name:");
+		fieldNameEditor = new I18nTextEditor(editorGroup, this.languageChooser, "Field name:");
 		fieldNameEditor.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		
-		new Label(composite, SWT.SEPARATOR | SWT.HORIZONTAL).setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		new Label(editorGroup, SWT.SEPARATOR | SWT.HORIZONTAL).setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		
-		specialComposite = createSpecialComposite(composite, composite.getStyle());
+		specialComposite = createSpecialComposite(editorGroup, style);
 
-		errorComp = new ErrorComposite(composite);
+		errorComp = new ErrorComposite(editorGroup);
 		
-		return composite;
+		return editorGroup;
 	}
 	
 	public void setErrorMessage(String error) {
@@ -72,11 +76,11 @@ public abstract class AbstractStructFieldEditor<F extends StructField> implement
 	}
 	
 	public Composite getComposite() {
-		return composite;
+		return editorGroup;
 	}
 
 	public void setData(F field) {
-		if (composite == null)
+		if (editorGroup == null)
 			throw new IllegalStateException("You have to call createComposite(...) prior to calling setData(...)");
 		
 		if (field == null)
@@ -90,6 +94,8 @@ public abstract class AbstractStructFieldEditor<F extends StructField> implement
 		
 		fieldNameEditor.setEnabled(true);		
 		fieldNameEditor.setI18nText(field.getName(), EditMode.DIRECT);
+		String fieldName = StructFieldFactoryRegistry.sharedInstance().getFieldMetaDataMap().get(field.getClass().getName()).getFieldName();
+		editorGroup.setText(fieldName);
 		
 		setSpecialData(field);
 	}
@@ -152,8 +158,8 @@ public abstract class AbstractStructFieldEditor<F extends StructField> implement
 	}
 		
 	public void setEnabled(boolean enabled) {
-		if (composite != null)
-			composite.setEnabled(enabled);
+		if (editorGroup != null)
+			editorGroup.setEnabled(enabled);
 	}
 }
 

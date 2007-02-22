@@ -299,6 +299,12 @@
             editorFactoryClass="org.nightlabs.jfire.base.prop.structedit.DateStructFieldEditor$DateStructFieldEditorFactory"
             factoryClass="org.nightlabs.jfire.base.prop.structedit.DateStructFieldFactory"
             name="Date field"/>
+       <propStructField
+            class="org.nightlabs.jfire.prop.structfield.PhoneNumberStructField"
+            description="Field for inputting phone numbers."
+            editorFactoryClass="org.nightlabs.jfire.base.prop.structedit.DefaultStructFieldEditor$DefaultStructFieldEditorFactory"
+            factoryClass="org.nightlabs.jfire.base.prop.structedit.PhoneNumberStructFieldFactory"
+            name="Phone number field"/>
    </extension>
  	<extension
        id="org.nightlabs.jfire.person.edit.blockbased.special.PersonalDataBlockEditor"
