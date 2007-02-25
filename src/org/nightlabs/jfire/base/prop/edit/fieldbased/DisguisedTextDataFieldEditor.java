@@ -26,6 +26,8 @@
 
 package org.nightlabs.jfire.base.prop.edit.fieldbased;
 
+import java.util.Locale;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusAdapter;
 import org.eclipse.swt.events.FocusEvent;
@@ -39,6 +41,7 @@ import org.nightlabs.base.composite.DisguisedText;
 import org.nightlabs.base.composite.DisguisedText.LabeledDisguisedText;
 import org.nightlabs.jfire.base.prop.edit.AbstractDataFieldEditor;
 import org.nightlabs.jfire.base.prop.edit.AbstractDataFieldEditorFactory;
+import org.nightlabs.jfire.prop.StructField;
 import org.nightlabs.jfire.prop.datafield.TextDataField;
 
 /**
@@ -75,22 +78,16 @@ public class DisguisedTextDataFieldEditor extends AbstractDataFieldEditor<TextDa
 	}
 
 	private TextDataField data;
-	/**
-	 * @see org.nightlabs.jfire.base.prop.edit.AbstractDataFieldEditor#doSetData(org.nightlabs.jfire.base.prop.AbstractDataField)
-	 */
-	public void doSetData(TextDataField _data) {
-		this.data = _data;
-		setChanged(false);
-//		refreshComposite();
-	}
 	
 	public void refreshComposite() {
 		if (composite != null)
 			composite.refresh();
 	}
 	
-	public TextDataField getData() {
-		return data;
+	public TextDataField getTextData() {
+		if (getDataField() instanceof TextDataField)
+			return getDataField();
+		return null;
 	}
 
 	/**
@@ -129,7 +126,8 @@ public class DisguisedTextDataFieldEditor extends AbstractDataFieldEditor<TextDa
 			this.setLayoutData(gd);
 //			LabeledDisguisedText ldt = DisguisedText.createLabeledText(getPropStructField().getFieldName().getText(),parent);
 			// TODO: Reactivate above line
-			LabeledDisguisedText ldt = DisguisedText.createLabeledText(editor.getData().getStructFieldID(),parent);
+			StructField field = editor.getStructField();
+			LabeledDisguisedText ldt = DisguisedText.createLabeledText(field.getName().getText(Locale.getDefault().getLanguage()),parent);
 			editorLabel = ldt.getLabelControl();
 			editorText = ldt.getTextControl(); 
 			editorText.addFocusListener(focusListener);
@@ -140,7 +138,7 @@ public class DisguisedTextDataFieldEditor extends AbstractDataFieldEditor<TextDa
 		}
 		
 		public void refresh() {
-			String editorText = editor.getData().getText();
+			String editorText = editor.getTextData().getText();
 			if (editorText != null)
 				this.editorText.setText(editorText);
 			else
