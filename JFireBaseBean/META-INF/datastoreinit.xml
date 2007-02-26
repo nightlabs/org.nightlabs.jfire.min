@@ -6,4 +6,5 @@
 	<init bean="jfire/ejb/JFireBaseBean/OrganisationManager" method="registerInRootOrganisation" priority="999"/>
 	<init bean="jfire/ejb/JFireBaseBean/JFireTimer" method="startTimer"/>
 	<init bean="jfire/ejb/JFireBaseBean/PersistentNotificationEJB" method="initialise"/>
+	<init bean="jfire/ejb/JFireBaseBean/PropertyManager" method="initialise"/>
 </datastore-initialisation>
