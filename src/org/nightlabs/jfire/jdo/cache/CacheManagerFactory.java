@@ -26,8 +26,12 @@
 
 package org.nightlabs.jfire.jdo.cache;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.Serializable;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -54,7 +58,6 @@ import org.apache.log4j.Logger;
 import org.nightlabs.jfire.base.AuthCallbackHandler;
 import org.nightlabs.jfire.base.JFirePrincipal;
 import org.nightlabs.jfire.base.Lookup;
-import org.nightlabs.jfire.idgenerator.IDGenerator;
 import org.nightlabs.jfire.jdo.cache.bridge.JdoCacheBridge;
 import org.nightlabs.jfire.jdo.notification.AbsoluteFilterID;
 import org.nightlabs.jfire.jdo.notification.DirtyObjectID;
@@ -65,6 +68,7 @@ import org.nightlabs.jfire.jdo.notification.JDOLifecycleState;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.servermanager.config.OrganisationCf;
 import org.nightlabs.jfire.servermanager.ra.JFireServerManagerFactoryImpl;
+import org.nightlabs.util.Utils;
 
 /**
  * @author Marco Schulze - marco at nightlabs dot de
@@ -222,14 +226,17 @@ public class CacheManagerFactory
 
 	// private J2EEAdapter j2eeVendorAdapter;
 
+	private File sysConfigDirectory;
+
 	public CacheManagerFactory(JFireServerManagerFactoryImpl jfsmf,
-			InitialContext ctx, OrganisationCf organisation, CacheCfMod cacheCfMod)
+			InitialContext ctx, OrganisationCf organisation, CacheCfMod cacheCfMod, File sysConfigDirectory)
 			throws NamingException
 	{
 		this.jFireServerManagerFactory = jfsmf;
 		// this.j2eeVendorAdapter = j2eeVendorAdapter;
 		this.organisationID = organisation.getOrganisationID();
 		this.cacheCfMod = cacheCfMod;
+		this.sysConfigDirectory = sysConfigDirectory;
 		activeCacheSessionContainer = new CacheSessionContainer(this);
 		cacheSessionContainers.addFirst(activeCacheSessionContainer);
 
@@ -1729,12 +1736,238 @@ public class CacheManagerFactory
 	// private transient Object filterID2DirtyObjectIDsToNotifyMutex = new
 	// Object();
 
+	private static long DIRTY_OBJECT_ID_SERIAL_FILE_INTERVAL = 999;
+	private static long MAX_DIRTY_OBJECT_ID_SERIAL = Long.MAX_VALUE - 100;
+	private static long MIN_DIRTY_OBJECT_ID_SERIAL = -Long.MAX_VALUE + 1000;
+	private long nextDirtyObjectIDSerial_file = -Long.MAX_VALUE;
+	private long nextDirtyObjectIDSerial_ram = -Long.MAX_VALUE;
+	private transient Object nextDirtyObjectIDSerialMutex = new Object();
+
 	public long nextDirtyObjectIDSerial()
 	{
-		// TODO we should initialize this ID-namespace on -Long.MAX_VALUE + 1000 (the client generates
-		// synthetic DirtyObjectIDs for dependent objects (i.e. carriers) with -Long.MAX_VALUE) and
-		// a cache size of at least 1000 (there are many many changes).
-		return IDGenerator.nextID(DirtyObjectID.class.getName());
+//		// TODO we should initialize this ID-namespace on -Long.MAX_VALUE + 1000 (the client generates
+//		// synthetic DirtyObjectIDs for dependent objects (i.e. carriers) with -Long.MAX_VALUE) and
+//		// a cache size of at least 1000 (there are many many changes).
+//		return IDGenerator.nextID(DirtyObjectID.class.getName());
+		long res;
+
+		synchronized (nextDirtyObjectIDSerialMutex) {
+			File f = new File(sysConfigDirectory, "nextDirtyObjectIDSerial." + organisationID + ".conf");
+			File f2 = new File(sysConfigDirectory, "nextDirtyObjectIDSerial." + organisationID + ".conf.new");
+			if (f2.exists())
+				throw new IllegalStateException("File \""+f2.getAbsolutePath()+"\" exists! Seems, there was a problem with deleting the old version or renaming the new one!");
+
+			try {				
+				if (nextDirtyObjectIDSerial_ram == -Long.MAX_VALUE) {
+					if (f.exists()) {
+						String s = Utils.readTextFile(f);
+						nextDirtyObjectIDSerial_file = Long.parseLong(s);
+						nextDirtyObjectIDSerial_ram = nextDirtyObjectIDSerial_file;
+					}
+					else {
+						nextDirtyObjectIDSerial_ram = MIN_DIRTY_OBJECT_ID_SERIAL;
+					}
+				} // if (nextDirtyObjectIDSerial_ram == -Long.MAX_VALUE) {
+
+				res = nextDirtyObjectIDSerial_ram++;
+
+				// it should never happen in our life-time, but in case the serial gets too big, we restart with the min-value
+				if (nextDirtyObjectIDSerial_ram > MAX_DIRTY_OBJECT_ID_SERIAL) {
+					nextDirtyObjectIDSerial_ram = MIN_DIRTY_OBJECT_ID_SERIAL;
+					nextDirtyObjectIDSerial_file = nextDirtyObjectIDSerial_ram;
+					res = nextDirtyObjectIDSerial_ram++;
+				}
+
+				// as soon as the ram-value gets higher than the value stored in the file, we rewrite the file
+				if (nextDirtyObjectIDSerial_file < nextDirtyObjectIDSerial_ram) {
+					nextDirtyObjectIDSerial_file = nextDirtyObjectIDSerial_ram + DIRTY_OBJECT_ID_SERIAL_FILE_INTERVAL;
+					Writer w = new OutputStreamWriter(new FileOutputStream(f2), Utils.CHARSET_UTF_8);
+					try {
+						w.write(Long.toString(nextDirtyObjectIDSerial_file));
+					} finally {
+						w.close();
+					}
+					f.delete();
+					f2.renameTo(f);
+					if (!f.exists() || f2.exists())
+						throw new IllegalStateException("Deleting the active file \""+f.getAbsolutePath()+"\" or renaming the file \""+f2.getAbsolutePath()+"\" to the active file name failed!");
+				}
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		} // synchronized (nextDirtyObjectIDSerialMutex) {
+
+		return res;
+
+		// For a reason which I don't understand, we cannot use the IDGenerator here. This causes things like this:
+//	14:43:58,152 FATAL [Thread-2882] [JFireServerManagerImpl] Login failed!
+//	javax.jdo.JDODataStoreException: Update request failed
+//	        at org.jpox.store.rdbms.request.UpdateRequest.updateRelatedObjectsForField(UpdateRequest.java:486)
+//	        at org.jpox.store.rdbms.request.UpdateRequest.execute(UpdateRequest.java:309)
+//	        at org.jpox.store.rdbms.table.ClassTable.update(ClassTable.java:2573)
+//	        at org.jpox.store.StoreManager.update(StoreManager.java:967)
+//	        at org.jpox.state.StateManagerImpl.flush(StateManagerImpl.java:4925)
+//	        at org.jpox.AbstractPersistenceManager.flush(AbstractPersistenceManager.java:3217)
+//	        at org.jpox.resource.PersistenceManagerImpl.close(PersistenceManagerImpl.java:203)
+//	        at org.nightlabs.jfire.servermanager.ra.JFireServerManagerImpl.login(JFireServerManagerImpl.java:463)
+//	        at org.nightlabs.jfire.base.JFireServerLoginModule.login(JFireServerLoginModule.java:134)
+//	        at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+//	        at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+//	        at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+//	        at java.lang.reflect.Method.invoke(Method.java:585)
+//	        at javax.security.auth.login.LoginContext.invoke(LoginContext.java:769)
+//	        at javax.security.auth.login.LoginContext.access$000(LoginContext.java:186)
+//	        at javax.security.auth.login.LoginContext$4.run(LoginContext.java:683)
+//	        at java.security.AccessController.doPrivileged(Native Method)
+//	        at javax.security.auth.login.LoginContext.invokePriv(LoginContext.java:680)
+//	        at javax.security.auth.login.LoginContext.login(LoginContext.java:579)
+//	        at org.jboss.security.plugins.JaasSecurityManager.defaultLogin(JaasSecurityManager.java:601)
+//	        at org.jboss.security.plugins.JaasSecurityManager.authenticate(JaasSecurityManager.java:535)
+//	        at org.jboss.security.plugins.JaasSecurityManager.isValid(JaasSecurityManager.java:344)
+//	        at org.jboss.ejb.plugins.SecurityInterceptor.checkSecurityAssociation(SecurityInterceptor.java:211)
+//	        at org.jboss.ejb.plugins.SecurityInterceptor.invokeHome(SecurityInterceptor.java:135)
+//	        at org.jboss.ejb.plugins.LogInterceptor.invokeHome(LogInterceptor.java:132)
+//	        at org.jboss.ejb.plugins.ProxyFactoryFinderInterceptor.invokeHome(ProxyFactoryFinderInterceptor.java:107)
+//	        at org.jboss.ejb.SessionContainer.internalInvokeHome(SessionContainer.java:637)
+//	        at org.jboss.ejb.Container.invoke(Container.java:975)
+//	        at org.jboss.ejb.plugins.local.BaseLocalProxyFactory.invokeHome(BaseLocalProxyFactory.java:359)
+//	        at org.jboss.ejb.plugins.local.LocalHomeProxy.invoke(LocalHomeProxy.java:133)
+//	        at $Proxy88.create(Unknown Source)
+//	        at org.nightlabs.jfire.idgenerator.IDGeneratorServer._nextIDs(IDGeneratorServer.java:139)
+//	        at org.nightlabs.jfire.idgenerator.IDGenerator.nextIDs(IDGenerator.java:127)
+//	        at org.nightlabs.jfire.idgenerator.IDGenerator.nextID(IDGenerator.java:104)
+//	        at org.nightlabs.jfire.idgenerator.IDGenerator.nextID(IDGenerator.java:161)
+//	        at org.nightlabs.ipanema.wonderland.DataCreator.createTicketLayout(DataCreator.java:373)
+//	        at org.nightlabs.ipanema.wonderland.WonderlandDatastoreInitialiserBean.initialise(WonderlandDatastoreInitialiserBean.java:602)
+//	        at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+//	        at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+//	        at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+//	        at java.lang.reflect.Method.invoke(Method.java:585)
+//	        at org.jboss.invocation.Invocation.performCall(Invocation.java:359)
+//	        at org.jboss.ejb.StatelessSessionContainer$ContainerInterceptor.invoke(StatelessSessionContainer.java:237)
+//	        at org.jboss.resource.connectionmanager.CachedConnectionInterceptor.invoke(CachedConnectionInterceptor.java:158)
+//	        at org.jboss.ejb.plugins.StatelessSessionInstanceInterceptor.invoke(StatelessSessionInstanceInterceptor.java:169)
+//	        at org.jboss.ws.server.ServiceEndpointInterceptor.invoke(ServiceEndpointInterceptor.java:64)
+//	        at org.jboss.ejb.plugins.CallValidationInterceptor.invoke(CallValidationInterceptor.java:63)
+//	        at org.jboss.ejb.plugins.AbstractTxInterceptor.invokeNext(AbstractTxInterceptor.java:121)
+//	        at org.jboss.ejb.plugins.TxInterceptorCMT.runWithTransactions(TxInterceptorCMT.java:350)
+//	        at org.jboss.ejb.plugins.TxInterceptorCMT.invoke(TxInterceptorCMT.java:181)
+//	        at org.jboss.ejb.plugins.SecurityInterceptor.invoke(SecurityInterceptor.java:168)
+//	        at org.jboss.ejb.plugins.LogInterceptor.invoke(LogInterceptor.java:205)
+//	        at org.jboss.ejb.plugins.ProxyFactoryFinderInterceptor.invoke(ProxyFactoryFinderInterceptor.java:136)
+//	        at org.jboss.ejb.SessionContainer.internalInvoke(SessionContainer.java:648)
+//	        at org.jboss.ejb.Container.invoke(Container.java:954)
+//	        at sun.reflect.GeneratedMethodAccessor110.invoke(Unknown Source)
+//	        at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+//	        at java.lang.reflect.Method.invoke(Method.java:585)
+//	        at org.jboss.mx.interceptor.ReflectedDispatcher.invoke(ReflectedDispatcher.java:155)
+//	        at org.jboss.mx.server.Invocation.dispatch(Invocation.java:94)
+//	        at org.jboss.mx.server.Invocation.invoke(Invocation.java:86)
+//	        at org.jboss.mx.server.AbstractMBeanInvoker.invoke(AbstractMBeanInvoker.java:264)
+//	        at org.jboss.mx.server.MBeanServerImpl.invoke(MBeanServerImpl.java:659)
+//	        at org.jboss.invocation.local.LocalInvoker$MBeanServerAction.invoke(LocalInvoker.java:169)
+//	        at org.jboss.invocation.local.LocalInvoker.invoke(LocalInvoker.java:118)
+//	        at org.jboss.invocation.InvokerInterceptor.invokeLocal(InvokerInterceptor.java:206)
+//	        at org.jboss.invocation.InvokerInterceptor.invoke(InvokerInterceptor.java:192)
+//	        at org.jboss.proxy.TransactionInterceptor.invoke(TransactionInterceptor.java:61)
+//	        at org.jboss.proxy.SecurityInterceptor.invoke(SecurityInterceptor.java:70)
+//	        at org.jboss.proxy.ejb.StatelessSessionInterceptor.invoke(StatelessSessionInterceptor.java:112)
+//	        at org.nightlabs.authentication.jboss.CascadedAuthenticationClientInterceptorDelegate$CapsuledCaller.run(CascadedAuthenticationClientInterceptorDelegate.java:105)
+//	NestedThrowablesStackTrace:
+//	javax.jdo.JDOException: Invalid state, closed or no mc
+//	        at org.jpox.resource.PersistenceManagerImpl.checkStatus(PersistenceManagerImpl.java:1276)
+//	        at org.jpox.resource.PersistenceManagerImpl.findStateManager(PersistenceManagerImpl.java:1199)
+//	        at org.jpox.store.mapping.PersistenceCapableMapping.setObject(PersistenceCapableMapping.java:375)
+//	        at org.jpox.store.rdbms.fieldmanager.ParameterSetter.storeObjectField(ParameterSetter.java:144)
+//	        at org.jpox.state.StateManagerImpl.providedObjectField(StateManagerImpl.java:2771)
+//	        at org.nightlabs.ipanema.ticketing.venue.VenueLayout.jdoProvideField(VenueLayout.java)
+//	        at org.nightlabs.ipanema.ticketing.venue.VenueLayout.jdoProvideFields(VenueLayout.java)
+//	        at org.jpox.state.StateManagerImpl.provideFields(StateManagerImpl.java:3115)
+//	        at org.jpox.store.rdbms.request.InsertRequest.execute(InsertRequest.java:252)
+//	        at org.jpox.store.rdbms.table.ClassTable.insert(ClassTable.java:2519)
+//	        at org.jpox.store.StoreManager.insert(StoreManager.java:920)
+//	        at org.jpox.state.StateManagerImpl.internalMakePersistent(StateManagerImpl.java:3667)
+//	        at org.jpox.state.StateManagerImpl.makePersistent(StateManagerImpl.java:3646)
+//	        at org.jpox.AbstractPersistenceManager.internalMakePersistent(AbstractPersistenceManager.java:1198)
+//	        at org.jpox.AbstractPersistenceManager.makePersistentInternal(AbstractPersistenceManager.java:1243)
+//	        at org.jpox.resource.PersistenceManagerImpl.makePersistentInternal(PersistenceManagerImpl.java:728)
+//	        at org.jpox.store.mapping.PersistenceCapableMapping.setObject(PersistenceCapableMapping.java:450)
+//	        at org.jpox.store.rdbms.fieldmanager.ParameterSetter.storeObjectField(ParameterSetter.java:144)
+//	        at org.jpox.state.StateManagerImpl.providedObjectField(StateManagerImpl.java:2771)
+//	        at org.nightlabs.ipanema.ticketing.store.Event.jdoProvideField(Event.java)
+//	        at org.nightlabs.jfire.store.ProductType.jdoProvideFields(ProductType.java)
+//	        at org.jpox.state.StateManagerImpl.provideFields(StateManagerImpl.java:3115)
+//	        at org.jpox.store.rdbms.request.UpdateRequest.updateRelatedObjectsForField(UpdateRequest.java:411)
+//	        at org.jpox.store.rdbms.request.UpdateRequest.execute(UpdateRequest.java:309)
+//	        at org.jpox.store.rdbms.table.ClassTable.update(ClassTable.java:2573)
+//	        at org.jpox.store.StoreManager.update(StoreManager.java:967)
+//	        at org.jpox.state.StateManagerImpl.flush(StateManagerImpl.java:4925)
+//	        at org.jpox.AbstractPersistenceManager.flush(AbstractPersistenceManager.java:3217)
+//	        at org.jpox.resource.PersistenceManagerImpl.close(PersistenceManagerImpl.java:203)
+//	        at org.nightlabs.jfire.servermanager.ra.JFireServerManagerImpl.login(JFireServerManagerImpl.java:463)
+//	        at org.nightlabs.jfire.base.JFireServerLoginModule.login(JFireServerLoginModule.java:134)
+//	        at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+//	        at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+//	        at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+//	        at java.lang.reflect.Method.invoke(Method.java:585)
+//	        at javax.security.auth.login.LoginContext.invoke(LoginContext.java:769)
+//	        at javax.security.auth.login.LoginContext.access$000(LoginContext.java:186)
+//	        at javax.security.auth.login.LoginContext$4.run(LoginContext.java:683)
+//	        at java.security.AccessController.doPrivileged(Native Method)
+//	        at javax.security.auth.login.LoginContext.invokePriv(LoginContext.java:680)
+//	        at javax.security.auth.login.LoginContext.login(LoginContext.java:579)
+//	        at org.jboss.security.plugins.JaasSecurityManager.defaultLogin(JaasSecurityManager.java:601)
+//	        at org.jboss.security.plugins.JaasSecurityManager.authenticate(JaasSecurityManager.java:535)
+//	        at org.jboss.security.plugins.JaasSecurityManager.isValid(JaasSecurityManager.java:344)
+//	        at org.jboss.ejb.plugins.SecurityInterceptor.checkSecurityAssociation(SecurityInterceptor.java:211)
+//	        at org.jboss.ejb.plugins.SecurityInterceptor.invokeHome(SecurityInterceptor.java:135)
+//	        at org.jboss.ejb.plugins.LogInterceptor.invokeHome(LogInterceptor.java:132)
+//	        at org.jboss.ejb.plugins.ProxyFactoryFinderInterceptor.invokeHome(ProxyFactoryFinderInterceptor.java:107)
+//	        at org.jboss.ejb.SessionContainer.internalInvokeHome(SessionContainer.java:637)
+//	        at org.jboss.ejb.Container.invoke(Container.java:975)
+//	        at org.jboss.ejb.plugins.local.BaseLocalProxyFactory.invokeHome(BaseLocalProxyFactory.java:359)
+//	        at org.jboss.ejb.plugins.local.LocalHomeProxy.invoke(LocalHomeProxy.java:133)
+//	        at $Proxy88.create(Unknown Source)
+//	        at org.nightlabs.jfire.idgenerator.IDGeneratorServer._nextIDs(IDGeneratorServer.java:139)
+//	        at org.nightlabs.jfire.idgenerator.IDGenerator.nextIDs(IDGenerator.java:127)
+//	        at org.nightlabs.jfire.idgenerator.IDGenerator.nextID(IDGenerator.java:104)
+//	        at org.nightlabs.jfire.idgenerator.IDGenerator.nextID(IDGenerator.java:161)
+//	        at org.nightlabs.ipanema.wonderland.DataCreator.createTicketLayout(DataCreator.java:373)
+//	        at org.nightlabs.ipanema.wonderland.WonderlandDatastoreInitialiserBean.initialise(WonderlandDatastoreInitialiserBean.java:602)
+//	        at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+//	        at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+//	        at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+//	        at java.lang.reflect.Method.invoke(Method.java:585)
+//	        at org.jboss.invocation.Invocation.performCall(Invocation.java:359)
+//	        at org.jboss.ejb.StatelessSessionContainer$ContainerInterceptor.invoke(StatelessSessionContainer.java:237)
+//	        at org.jboss.resource.connectionmanager.CachedConnectionInterceptor.invoke(CachedConnectionInterceptor.java:158)
+//	        at org.jboss.ejb.plugins.StatelessSessionInstanceInterceptor.invoke(StatelessSessionInstanceInterceptor.java:169)
+//	        at org.jboss.ws.server.ServiceEndpointInterceptor.invoke(ServiceEndpointInterceptor.java:64)
+//	        at org.jboss.ejb.plugins.CallValidationInterceptor.invoke(CallValidationInterceptor.java:63)
+//	        at org.jboss.ejb.plugins.AbstractTxInterceptor.invokeNext(AbstractTxInterceptor.java:121)
+//	        at org.jboss.ejb.plugins.TxInterceptorCMT.runWithTransactions(TxInterceptorCMT.java:350)
+//	        at org.jboss.ejb.plugins.TxInterceptorCMT.invoke(TxInterceptorCMT.java:181)
+//	        at org.jboss.ejb.plugins.SecurityInterceptor.invoke(SecurityInterceptor.java:168)
+//	        at org.jboss.ejb.plugins.LogInterceptor.invoke(LogInterceptor.java:205)
+//	        at org.jboss.ejb.plugins.ProxyFactoryFinderInterceptor.invoke(ProxyFactoryFinderInterceptor.java:136)
+//	        at org.jboss.ejb.SessionContainer.internalInvoke(SessionContainer.java:648)
+//	        at org.jboss.ejb.Container.invoke(Container.java:954)
+//	        at sun.reflect.GeneratedMethodAccessor110.invoke(Unknown Source)
+//	        at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+//	        at java.lang.reflect.Method.invoke(Method.java:585)
+//	        at org.jboss.mx.interceptor.ReflectedDispatcher.invoke(ReflectedDispatcher.java:155)
+//	        at org.jboss.mx.server.Invocation.dispatch(Invocation.java:94)
+//	        at org.jboss.mx.server.Invocation.invoke(Invocation.java:86)
+//	        at org.jboss.mx.server.AbstractMBeanInvoker.invoke(AbstractMBeanInvoker.java:264)
+//	        at org.jboss.mx.server.MBeanServerImpl.invoke(MBeanServerImpl.java:659)
+//	        at org.jboss.invocation.local.LocalInvoker$MBeanServerAction.invoke(LocalInvoker.java:169)
+//	        at org.jboss.invocation.local.LocalInvoker.invoke(LocalInvoker.java:118)
+//	        at org.jboss.invocation.InvokerInterceptor.invokeLocal(InvokerInterceptor.java:206)
+//	        at org.jboss.invocation.InvokerInterceptor.invoke(InvokerInterceptor.java:192)
+//	        at org.jboss.proxy.TransactionInterceptor.invoke(TransactionInterceptor.java:61)
+//	        at org.jboss.proxy.SecurityInterceptor.invoke(SecurityInterceptor.java:70)
+//	        at org.jboss.proxy.ejb.StatelessSessionInterceptor.invoke(StatelessSessionInterceptor.java:112)
+//	        at org.nightlabs.authentication.jboss.CascadedAuthenticationClientInterceptorDelegate$CapsuledCaller.run(CascadedAuthenticationClientInterceptorDelegate.java:105)
 	}
 	
 
