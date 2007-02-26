@@ -48,6 +48,7 @@ import org.nightlabs.jdo.moduleregistry.ModuleMetaData;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.base.JFireBaseEAR;
 import org.nightlabs.jfire.config.id.ConfigID;
+import org.nightlabs.jfire.config.xml.XMLConfigFactory;
 import org.nightlabs.jfire.workstation.WorkstationFeaturesCfMod;
 import org.nightlabs.util.CollectionUtil;
 
@@ -637,6 +638,13 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 		PersistenceManager pm;
 		pm = getPersistenceManager();
 		try {
+			// BEGIN XML-Config
+			// The stuff for the XML config has nothing to do with the JFire config system. Instead, it makes
+			// the XML-based config from NightLabsBase available in the server. This should only be used for
+			// the DateFormatter and the NumberFormatter! Do not use it for anything else!!! Marco.
+			System.setProperty(org.nightlabs.config.Config.PROPERTY_KEY_CONFIG_FACTORY, XMLConfigFactory.class.getName());
+			// END XML-Config
+
 			String organisationID = getOrganisationID();
 
 			ModuleMetaData moduleMetaData = ModuleMetaData.getModuleMetaData(pm, JFireBaseEAR.MODULE_NAME);
