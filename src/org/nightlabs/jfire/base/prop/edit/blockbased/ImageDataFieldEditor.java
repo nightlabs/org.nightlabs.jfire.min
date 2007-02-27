@@ -12,6 +12,7 @@ import java.util.Locale;
 
 import org.apache.log4j.Logger;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.SWTException;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.SelectionEvent;
@@ -154,12 +155,20 @@ public class ImageDataFieldEditor extends AbstractDataFieldEditor<ImageDataField
 						mb.open();
 						return;
 					}
-					ImageData data = new ImageData(path);
-					setChanged(true);
-					filenameTextbox.setText(path);					
-					fileDialog.setFilterPath(file.getParent());
 					
-					displayImage(data);
+					try {
+						ImageData data = new ImageData(path);
+						setChanged(true);
+						filenameTextbox.setText(path);					
+						fileDialog.setFilterPath(file.getParent());
+						
+						displayImage(data);
+					} catch(SWTException swtex) {
+						MessageBox mb = new MessageBox(RCPUtil.getActiveWorkbenchShell(), SWT.ICON_ERROR | SWT.OK);
+						mb.setText("Invalid image file");
+						mb.setMessage("The given image file could not be loaded.\nPlease select a different one.");
+						mb.open();
+					}										
 				}				
 			}
 		});
