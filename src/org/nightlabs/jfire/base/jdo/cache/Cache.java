@@ -144,8 +144,10 @@ public class Cache
 									// JDOObjectID2PCClassNotificationInterceptor as an example, how this can be done
 									// (see the comment in the intercept(...) method): simply check whether the result of
 									// DirtyObjectID.getObjectID() implements org.nightlabs.jdo.ObjectID
+//									Class objectClass = cache.getObjectClassForObjectID(removedKey.getObjectID());
 									DirtyObjectID doid = new DirtyObjectID(
 											JDOLifecycleState.DIRTY, removedKey.getObjectID(),
+//											objectClass.getName(),
 											JDOObjectID2PCClassMap.sharedInstance().getPersistenceCapableClass(removedKey.getObjectID()).getName(),
 											null, -Long.MAX_VALUE);
 									indirectlyAffectedDirtyObjectIDs.put(doid.getObjectID(), doid);
@@ -1141,6 +1143,8 @@ public class Cache
 
 		if (objectID == null)
 			throw new NullPointerException("objectID must not be null!");
+
+		JDOObjectID2PCClassMap.sharedInstance().initPersistenceCapableClass(objectID, object.getClass());
 
 		Key key = new Key(scope, objectID, fetchGroups, maxFetchDepth);
 

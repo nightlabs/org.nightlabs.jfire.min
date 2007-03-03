@@ -30,11 +30,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-
 import org.nightlabs.jfire.base.login.Login;
 import org.nightlabs.jfire.jdo.JDOManager;
 import org.nightlabs.jfire.jdo.JDOManagerUtil;
-import org.nightlabs.jdo.ObjectID;
 
 /**
  * @author Marco Schulze - marco at nightlabs dot de
@@ -82,12 +80,13 @@ public class JDOObjectID2PCClassMap
 	 */
 	public synchronized void initPersistenceCapableClass(Object objectID, Class clazz)
 	{
-		if (!(objectID instanceof ObjectID)) {
-			if (logger.isDebugEnabled())
-				logger.debug("initPersistenceCapableClass: Won't register objectID, because it does not implement "+ObjectID.class.getName()+": " +  objectID);
-
-			return;
-		}
+		// we must register all, I think... Marco.
+//		if (!(objectID instanceof ObjectID)) {
+//			if (logger.isDebugEnabled())
+//				logger.debug("initPersistenceCapableClass: Won't register objectID, because it does not implement "+ObjectID.class.getName()+": " +  objectID);
+//
+//			return;
+//		}
 
 		if (objectID2PCClassMap.containsKey(objectID)) {
 			if (logger.isDebugEnabled())
