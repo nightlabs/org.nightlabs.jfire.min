@@ -346,72 +346,82 @@ public abstract class OrganisationManagerBean
 	 * applied for by the other organisation.
 	 *
 	 * @ejb.interface-method
-	 * @ejb.transaction type = "Required"
+	 * @ejb.transaction type="Required"
 	 * @ejb.permission role-name="OrganisationManager-write"
+	 * @!ejb.permission role-name="_Guest_"
 	 **/
 	public void acceptRegistration(String applicantOrganisationID)
 	throws JFireRemoteException
 	{
-		PersistenceManager pm = getPersistenceManager();
+		logger.info("acceptRegistration: entered (called by "+getPrincipal().getName()+")");
 		try {
-			LocalOrganisation localOrganisation = LocalOrganisation.getLocalOrganisation(pm);
-			
-			RegistrationStatus registrationStatus = localOrganisation
-					.getPendingRegistration(applicantOrganisationID);
-
-			if (registrationStatus == null)
-				throw new IllegalArgumentException("There is no pending registration for applicantOrganisation \""+applicantOrganisationID+"\" at grantOrganisation \""+getOrganisationID()+"\"!");
-
-			// We have to create a user for the new organisation. Therefore,
-			// generate a password with a random length between 15 and 20 characters.
-			String usrPassword = UserLocal.createPassword(15, 20);
-
-			// Create the user if it doesn't yet exist
-			String userID = User.USERID_PREFIX_TYPE_ORGANISATION + applicantOrganisationID;				
+			PersistenceManager pm = getPersistenceManager();
 			try {
-				User user = User.getUser(pm, getOrganisationID(), userID);
-				user.getUserLocal().setPasswordPlain(usrPassword); // set the new password, if the user already exists
-			} catch (JDOObjectNotFoundException x) {
-				// Create the user
-				User user = new User(getOrganisationID(), userID);
-				UserLocal userLocal = new UserLocal(user);
-				userLocal.setPasswordPlain(usrPassword);
-				pm.makePersistent(user);
+				LocalOrganisation localOrganisation = LocalOrganisation.getLocalOrganisation(pm);
+
+				RegistrationStatus registrationStatus = localOrganisation
+				.getPendingRegistration(applicantOrganisationID);
+
+				if (registrationStatus == null)
+					throw new IllegalArgumentException("There is no pending registration for applicantOrganisation \""+applicantOrganisationID+"\" at grantOrganisation \""+getOrganisationID()+"\"!");
+
+				// We have to create a user for the new organisation. Therefore,
+				// generate a password with a random length between 15 and 20 characters.
+				String usrPassword = UserLocal.createPassword(15, 20);
+
+				// Create the user if it doesn't yet exist
+				String userID = User.USERID_PREFIX_TYPE_ORGANISATION + applicantOrganisationID;				
+				try {
+					User user = User.getUser(pm, getOrganisationID(), userID);
+					user.getUserLocal().setPasswordPlain(usrPassword); // set the new password, if the user already exists
+				} catch (JDOObjectNotFoundException x) {
+					// Create the user
+					User user = new User(getOrganisationID(), userID);
+					UserLocal userLocal = new UserLocal(user);
+					userLocal.setPasswordPlain(usrPassword);
+					pm.makePersistent(user);
+				}
+
+				pm.getFetchPlan().addGroup(FetchPlan.ALL); // TODO fetch-groups?!
+				pm.getFetchPlan().setMaxFetchDepth(NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
+				Organisation grantOrganisation = (Organisation) pm.detachCopy(
+						localOrganisation.getOrganisation());
+//				Organisation grantOrganisation = localOrganisation.getOrganisation();
+//				grantOrganisation.getPerson();
+//				grantOrganisation.getServer();
+//				pm.makeTransient(grantOrganisation, true);
+
+//				// WORKAROUND Because of a JPOX bug, we need to do this here (it's not nice, though it should be ok, because the transaction should be rolled back if an error occurs)
+//				// We close the RegistrationStatus by accepting
+//				// and remove it from the pending ones.
+//				registrationStatus.accept(User.getUser(pm, getPrincipal()));
+//				localOrganisation.removePendingRegistration(applicantOrganisationID);
+
+				// Now, we notify the other organisation that its request has been
+				// accepted.
+				try {
+					OrganisationManager organisationManager = OrganisationManagerUtil.getHome(getInitialContextProperties(applicantOrganisationID)).create();
+					organisationManager.notifyAcceptRegistration(
+							registrationStatus.getRegistrationID(), grantOrganisation, usrPassword);
+				} catch (Exception e) {
+					throw new JFireRemoteException(e);
+				}
+
+				// WORKAROUND Because of a JPOX bug, we need to do this above.
+				// We close the RegistrationStatus by accepting
+				// and remove it from the pending ones.
+				registrationStatus.accept(User.getUser(pm, getPrincipal()));
+				localOrganisation.removePendingRegistration(applicantOrganisationID);
+
+			} finally {
+				pm.close();
 			}
-
-			pm.getFetchPlan().addGroup(FetchPlan.ALL); // TODO fetch-groups?!
-			pm.getFetchPlan().setMaxFetchDepth(NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
-			Organisation grantOrganisation = (Organisation) pm.detachCopy(
-					localOrganisation.getOrganisation());
-//			Organisation grantOrganisation = localOrganisation.getOrganisation();
-//			grantOrganisation.getPerson();
-//			grantOrganisation.getServer();
-//			pm.makeTransient(grantOrganisation, true);
-
-//			// WORKAROUND Because of a JPOX bug, we need to do this here (it's not nice, though it should be ok, because the transaction should be rolled back if an error occurs)
-//			// We close the RegistrationStatus by accepting
-//			// and remove it from the pending ones.
-//			registrationStatus.accept(User.getUser(pm, getPrincipal()));
-//			localOrganisation.removePendingRegistration(applicantOrganisationID);
-
-			// Now, we notify the other organisation that its request has been
-			// accepted.
-			try {
-				OrganisationManager organisationManager = OrganisationManagerUtil.getHome(getInitialContextProperties(applicantOrganisationID)).create();
-				organisationManager.notifyAcceptRegistration(
-					registrationStatus.getRegistrationID(), grantOrganisation, usrPassword);
-			} catch (Exception e) {
-				throw new JFireRemoteException(e);
-			}
-
-			// WORKAROUND Because of a JPOX bug, we need to do this above.
-			// We close the RegistrationStatus by accepting
-			// and remove it from the pending ones.
-			registrationStatus.accept(User.getUser(pm, getPrincipal()));
-			localOrganisation.removePendingRegistration(applicantOrganisationID);
-
-		} finally {
-			pm.close();
+		} catch (Exception x) {
+			logger.error("Accepting registration of applicant '"+applicantOrganisationID+"' at this organisation '" + getOrganisationID() + "' failed!", x);
+			if (x instanceof JFireRemoteException)
+				throw (JFireRemoteException)x;
+			else
+				throw new JFireRemoteException(x);
 		}
 	}
 
