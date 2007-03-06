@@ -40,7 +40,9 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.nightlabs.base.composite.XComposite;
+import org.nightlabs.jfire.base.jdo.JDOObjectID2PCClassMap;
 import org.nightlabs.jfire.base.login.Login;
+import org.nightlabs.jfire.config.ConfigGroup;
 import org.nightlabs.jfire.config.ConfigManager;
 import org.nightlabs.jfire.config.ConfigManagerUtil;
 import org.nightlabs.jfire.config.ConfigModule;
@@ -67,6 +69,8 @@ implements ConfigPreferenceChangedListener
 	protected Map<String, ConfigModule> involvedConfigModules = new HashMap<String, ConfigModule>();
 
 	protected Set<ConfigModule> dirtyConfigModules = new HashSet<ConfigModule>();
+	
+	private boolean editingConfigGroup = false;
 
 
 	/**
@@ -104,8 +108,9 @@ implements ConfigPreferenceChangedListener
 			return;
 		}
 		selectedPage.setCurrentConfigModule(getCurrentConfigModule());
-		if (!involvedPages.contains(selectedPage)) {
-			selectedPage.createContents(preferencesComposite.getWrapper(), true, true, true);
+		if (!involvedPages.contains(selectedPage)) 
+		{			
+			selectedPage.createContents(preferencesComposite.getWrapper(), true, editingConfigGroup, true);
 			selectedPage.addConfigPreferenceChangedListener(this);
 			involvedPages.add(selectedPage);
 		}
@@ -150,6 +155,8 @@ implements ConfigPreferenceChangedListener
 	public void setCurrentConfigID(ConfigID currentConfigID) {
 		this.currentConfigID = currentConfigID;
 		treeComposite.setConfigID(currentConfigID);
+		editingConfigGroup = ConfigGroup.class.equals(JDOObjectID2PCClassMap.sharedInstance().getPersistenceCapableClass(currentConfigID));
+
 	}
 
 //	public void setConfigGroup(ConfigID configGroupID) {		
