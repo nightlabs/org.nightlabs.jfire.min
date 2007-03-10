@@ -131,9 +131,9 @@ public class J2EEAdapterJBoss implements J2EEAdapter
 
 	private SecurityReflector userResolver = null;
 	/**
-	 * @see org.nightlabs.jfire.servermanager.j2ee.J2EEAdapter#getUserResolver()
+	 * @see org.nightlabs.jfire.servermanager.j2ee.J2EEAdapter#getSecurityReflector()
 	 */
-	public SecurityReflector getUserResolver()
+	public SecurityReflector getSecurityReflector()
 	{
 		if (userResolver == null)
 			userResolver = new SecurityReflectorJBoss();

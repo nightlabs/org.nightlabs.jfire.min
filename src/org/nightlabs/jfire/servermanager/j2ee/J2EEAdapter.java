@@ -57,7 +57,7 @@ public interface J2EEAdapter
 	public TransactionManager getTransactionManager(InitialContext initialContext)
 		throws Exception;
 
-	public SecurityReflector getUserResolver();
+	public SecurityReflector getSecurityReflector();
 
 	/**
 	 * This method shuts the server down. It should do so nicely.

@@ -331,7 +331,7 @@ public class JFireServerManagerFactoryImpl
 		}
 
 		try {
-			SecurityReflector userResolver = getJ2EEVendorAdapter().getUserResolver();
+			SecurityReflector userResolver = getJ2EEVendorAdapter().getSecurityReflector();
 			if (userResolver == null)
 				throw new NullPointerException("J2EEVendorAdapter "+getJ2EEVendorAdapter().getClass()+".getUserResolver() returned null!");
 			try
