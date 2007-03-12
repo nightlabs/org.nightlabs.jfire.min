@@ -77,6 +77,9 @@ public class LoginDialogStaticArea extends Composite {
 	private Text textPassword = null;
 	private LoginConfigModule runtimeLoginConfigModule = null;
 	private ErrorMessageComposite errMessage = null;
+//	private Label labelWorkstationID = null;
+//	private Text workstationID = null;
+	
 	public LoginDialogStaticArea(
 			Composite parent, 
 			int style, 
@@ -91,31 +94,33 @@ public class LoginDialogStaticArea extends Composite {
 	private void initValues() {
 		textUserID.setText(runtimeLoginConfigModule.getUserID());
 		textUserID.setFocus();
+//		workstationID.setText(runtimeLoginConfigModule.getWorkstationID());		
 	}
 	
 	GridData gridDataErr = new GridData(GridData.FILL_HORIZONTAL);
 	
 	private void initialize() {
-		GridData gridData5 = new GridData();
-		GridData gridData4 = new GridData();
 		GridLayout gridLayoutStatic = new GridLayout();
 		errMessage = new ErrorMessageComposite(this, SWT.NONE);
 		labelUserID = new Label(this, SWT.NONE);
 		textUserID = new Text(this, SWT.BORDER);
 		labelPassword = new Label(this, SWT.NONE);
 		textPassword = new Text(this, SWT.BORDER);
+//		labelWorkstationID = new Label(this, SWT.NONE);
+//		workstationID = new Text(this, SWT.BORDER);
+		
 		this.setLayout(gridLayoutStatic);
 		gridLayoutStatic.numColumns = 2;
 		labelUserID.setText(JFireBasePlugin.getResourceString("login.label.user"));
-		gridData4.horizontalAlignment = org.eclipse.swt.layout.GridData.FILL;
-		gridData4.grabExcessHorizontalSpace = true;
-		textUserID.setLayoutData(gridData4);
+		textUserID.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		
 		labelPassword.setText(JFireBasePlugin.getResourceString("login.label.pass"));
-		gridData5.grabExcessHorizontalSpace = true;
-		gridData5.horizontalAlignment = org.eclipse.swt.layout.GridData.FILL;
-		textPassword.setLayoutData(gridData5);
+		textPassword.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		textPassword.setEchoChar('*');
-//		setSize(new org.eclipse.swt.graphics.Point(150,62));
+		
+//		labelWorkstationID.setText(JFireBasePlugin.getResourceString("login.label.workstation"));
+//		workstationID.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		
 		gridDataErr.horizontalSpan = 2;
 		gridDataErr.verticalAlignment = GridData.BEGINNING;
 		gridDataErr.grabExcessHorizontalSpace = true;
@@ -144,16 +149,13 @@ public class LoginDialogStaticArea extends Composite {
 		
 	}
 	
-	public Label getLabelPassword() {
-		return labelPassword;
-	}
-	public Label getLabelUserID() {
-		return labelUserID;
-	}
 	public Text getTextPassword() {
 		return textPassword;
 	}
 	public Text getTextUserID() {
 		return textUserID;
 	}
+//	public Text getWorkstationID() {
+//		return workstationID;
+//	}
 }  //  @jve:decl-index=0:visual-constraint="10,10"

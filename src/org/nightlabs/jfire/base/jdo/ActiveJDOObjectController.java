@@ -157,10 +157,12 @@ public abstract class ActiveJDOObjectController<JDOObjectID, JDOObject>
 					Collection<JDOObject> jdoObjects = retrieveJDOObjects(jdoObjectIDsToLoad, getProgressMonitor());
 					loadedJDOObjects = jdoObjects;
 					ignoredJDOObjectIDs = new HashSet<JDOObjectID>(jdoObjectIDsToLoad);
-					for (JDOObject jdoObject : jdoObjects) {
-						JDOObjectID jdoObjectID = (JDOObjectID) JDOHelper.getObjectId(jdoObject);
-						ignoredJDOObjectIDs.remove(jdoObjectID);
-						jdoObjectID2jdoObject.put(jdoObjectID, jdoObject);
+					if (jdoObjects != null) {
+						for (JDOObject jdoObject : jdoObjects) {
+							JDOObjectID jdoObjectID = (JDOObjectID) JDOHelper.getObjectId(jdoObject);
+							ignoredJDOObjectIDs.remove(jdoObjectID);
+							jdoObjectID2jdoObject.put(jdoObjectID, jdoObject);
+						}						
 					}
 					if (ignoredJDOObjectIDs.isEmpty())
 						ignoredJDOObjects = null;

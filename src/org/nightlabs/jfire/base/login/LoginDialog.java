@@ -135,12 +135,11 @@ public class LoginDialog extends ExpandableAreaDialog {
 		runtimeLoginModule.setOrganisationID(getLoginDetailArea().getTextOrganisationID().getText());
 		runtimeLoginModule.setInitialContextFactory(getLoginDetailArea().getTextInitialContextFactory().getText());
 		runtimeLoginModule.setServerURL(getLoginDetailArea().getTextServerURL().getText());
+		runtimeLoginModule.setWorkstationID(getLoginDetailArea().getTextWorkstationID().getText());
+//		runtimeLoginModule.setWorkstationID(getLoginStaticArea().getWorkstationID().getText());
 //		runtimeLoginModule.setSecurityProtocol(getLoginDetailArea().getTextSecurityProtocol().getText());
 	}
 
-	
-	
-	
 	protected static final int BUTTON_LOGIN = 100;
 	protected static final int BUTTON_OFFLINE = 200;
 	protected static final int BUTTON_QUIT = 300;
@@ -248,6 +247,17 @@ public class LoginDialog extends ExpandableAreaDialog {
 			getLoginStaticArea().setErrMessage(JFireBasePlugin.getResourceString("login.error.missingServerURL"));
 			return;
 		}
+
+		if (getLoginDetailArea().getTextWorkstationID().getText().equals("")) {
+			getLoginStaticArea().setErrMessage(JFireBasePlugin.getResourceString("login.error.missingWorkstationID"));
+			return;
+		}
+		
+//		if (getLoginStaticArea().getWorkstationID().getText().equals("")) {
+//			getLoginStaticArea().setErrMessage(JFireBasePlugin.getResourceString("login.error.missingWorkstationID"));
+//			return;
+//		}
+		
 //		if (getLoginDetailArea().getTextSecurityProtocol().getText().equals("")) {
 //			getLoginStaticArea().setErrMessage(JFireBasePlugin.getResourceString("login.error.missingSecurityProtocol"));
 //			return;
