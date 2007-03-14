@@ -60,7 +60,7 @@ public abstract class ActiveJDOObjectController<JDOObjectID, JDOObject>
 	 */
 	protected abstract Collection<JDOObject> retrieveJDOObjects(IProgressMonitor monitor);
 
-	private ListenerList jdoObjectChangedListeners = null;
+	private ListenerList jdoObjectsChangedListeners = null;
 
 	/**
 	 * This method is always called on the UI thread. You can chose whether you override it in order to react on changes
@@ -83,8 +83,8 @@ public abstract class ActiveJDOObjectController<JDOObjectID, JDOObject>
 				this, loadedJDOObjects, ignoredJDOObjects, deletedJDOObjects);
 
 		onJDOObjectsChanged(event);
-		if (jdoObjectChangedListeners != null) {
-			Object[] listeners = jdoObjectChangedListeners.getListeners();
+		if (jdoObjectsChangedListeners != null) {
+			Object[] listeners = jdoObjectsChangedListeners.getListeners();
 			for (Object listener : listeners) {
 				JDOObjectsChangedListener<JDOObjectID, JDOObject> l = (JDOObjectsChangedListener<JDOObjectID, JDOObject>) listener;
 				l.onJDOObjectsChanged(event);
@@ -94,18 +94,18 @@ public abstract class ActiveJDOObjectController<JDOObjectID, JDOObject>
 
 	public void addJDOObjectsChangedListener(JDOObjectsChangedListener<JDOObjectID, JDOObject> listener)
 	{
-		if (jdoObjectChangedListeners == null)
-			jdoObjectChangedListeners = new ListenerList();
+		if (jdoObjectsChangedListeners == null)
+			jdoObjectsChangedListeners = new ListenerList();
 
-		jdoObjectChangedListeners.add(listener);
+		jdoObjectsChangedListeners.add(listener);
 	}
 
 	public void removeJDOObjectsChangedListener(JDOObjectsChangedListener<JDOObjectID, JDOObject> listener)
 	{
-		if (jdoObjectChangedListeners == null)
+		if (jdoObjectsChangedListeners == null)
 			return;
 
-		jdoObjectChangedListeners.remove(listener);
+		jdoObjectsChangedListeners.remove(listener);
 	}
 
 	protected abstract void sortJDOObjects(List<JDOObject> objects);
