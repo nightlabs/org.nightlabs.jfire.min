@@ -1,4 +1,4 @@
-package org.nightlabs.jfire.base.jdo;
+package org.nightlabs.jfire.base.jdo.tree;
 
 import java.util.List;
 
