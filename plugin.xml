@@ -134,7 +134,7 @@
          </menu>
          <action
                label="&amp;Login"
-               icon="icons/Login_login.gif"
+               icon="icons/login/action/LoginAction-Login.24x24.png"
                class="org.nightlabs.jfire.base.login.action.LoginAction"
                tooltip="%login.action.toolTip"
                menubarPath="loginMenu/loginGroup"

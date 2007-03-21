@@ -34,6 +34,9 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IWorkbenchWindow;
 
 import org.nightlabs.base.exceptionhandler.ExceptionHandlerRegistry;
+import org.nightlabs.base.resource.SharedImages;
+import org.nightlabs.base.resource.SharedImages.ImageDimension;
+import org.nightlabs.base.resource.SharedImages.ImageFormat;
 import org.nightlabs.jfire.base.JFireBasePlugin;
 import org.nightlabs.jfire.base.login.Login;
 
@@ -54,10 +57,12 @@ public class LoginAction extends LSDWorkbenchWindowActionDelegate {
 	public void init(IWorkbenchWindow window) {
 		super.init(window);
 		if (loginIcon == null) {
-			loginIcon = ImageDescriptor.createFromURL(JFireBasePlugin.getDefault().getBundle().getEntry(JFireBasePlugin.getResourceString("actions.login.icons.login")));
+//			loginIcon = ImageDescriptor.createFromURL(JFireBasePlugin.getDefault().getBundle().getEntry(JFireBasePlugin.getResourceString("actions.login.icons.login")));
+			loginIcon = SharedImages.getSharedImageDescriptor(JFireBasePlugin.getDefault(), LoginAction.class, "Login", ImageDimension._24x24, ImageFormat.png);
 		}
 		if (logoutIcon == null) {
-			logoutIcon = ImageDescriptor.createFromURL(JFireBasePlugin.getDefault().getBundle().getEntry(JFireBasePlugin.getResourceString("actions.login.icons.logout")));
+//			logoutIcon = ImageDescriptor.createFromURL(JFireBasePlugin.getDefault().getBundle().getEntry(JFireBasePlugin.getResourceString("actions.login.icons.logout")));
+			logoutIcon = SharedImages.getSharedImageDescriptor(JFireBasePlugin.getDefault(), LoginAction.class, "Logout", ImageDimension._24x24, ImageFormat.png);
 		}
 	}
 	
