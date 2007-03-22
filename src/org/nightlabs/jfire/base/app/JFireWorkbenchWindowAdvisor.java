@@ -27,6 +27,7 @@
 package org.nightlabs.jfire.base.app;
 
 import org.apache.log4j.Logger;
+import org.eclipse.ui.WorkbenchException;
 import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
@@ -82,6 +83,16 @@ extends SplashHandlingWorkbenchWindowAdvisor
 		} catch (EPProcessorException e) {
 			logger.error("There occured an error getting the ContributionItemSetRegistry", e);
 		}
+	}
+
+	@Override
+	public void postWindowRestore() throws WorkbenchException {
+		super.postWindowRestore();
+		try {
+			ContributionItemSetRegistry.sharedInstance().checkPerspectiveListenerAdded();
+		} catch (EPProcessorException e) {
+			logger.error("There occured an error getting the ContributionItemSetRegistry", e);
+		}		
 	}
 
 	/**
