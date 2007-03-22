@@ -31,13 +31,14 @@ import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 
+import org.nightlabs.base.action.ContributionItemSetRegistry;
+import org.nightlabs.base.extensionpoint.EPProcessorException;
 import org.nightlabs.base.part.PartVisibilityTracker;
 import org.nightlabs.rcp.splash.SplashHandlingWorkbenchWindowAdvisor;
 
-public class JFireWorkbenchWindowAdvisor extends
-		SplashHandlingWorkbenchWindowAdvisor 
-	{
-	
+public class JFireWorkbenchWindowAdvisor 
+extends SplashHandlingWorkbenchWindowAdvisor 
+{	
 	/**
 	 * LOG4J logger used by this class
 	 */
@@ -51,16 +52,12 @@ public class JFireWorkbenchWindowAdvisor extends
     configurer.setShowProgressIndicator(true);
 	}
 	
-	
-
 	/**
 	 * @see org.eclipse.ui.application.WorkbenchWindowAdvisor#createActionBarAdvisor(org.eclipse.ui.application.IActionBarConfigurer)
 	 */
 	public ActionBarAdvisor createActionBarAdvisor(IActionBarConfigurer configurer) {
 		return new JFireActionBuilder(configurer);
 	}
-
-
 
 	/**
 	 * @see org.eclipse.ui.application.WorkbenchWindowAdvisor#postWindowClose()
@@ -73,8 +70,6 @@ public class JFireWorkbenchWindowAdvisor extends
 //    }
 	}
 
-
-
 	/**
 	 * @see org.eclipse.ui.application.WorkbenchWindowAdvisor#postWindowCreate()
 	 */
@@ -82,9 +77,12 @@ public class JFireWorkbenchWindowAdvisor extends
 		super.postWindowCreate();
 		PartVisibilityTracker.sharedInstance().initialize();
 		logger.debug("Initialized part-visibibity-tracker");
+		try {
+			ContributionItemSetRegistry.sharedInstance().checkPerspectiveListenerAdded();
+		} catch (EPProcessorException e) {
+			logger.error("There occured an error getting the ContributionItemSetRegistry", e);
+		}
 	}
-
-
 
 	/**
 	 * @see org.eclipse.ui.application.WorkbenchWindowAdvisor#preWindowOpen()
@@ -95,8 +93,4 @@ public class JFireWorkbenchWindowAdvisor extends
 //		PlatformUI.getWorkbench().getProgressService().setJobErrorNotificationManager(new JobErrorNotificationManager());
 	}
 	
-	
-	
-	
-
 }

@@ -133,13 +133,20 @@
             </separator>
          </menu>
          <action
-               label="&amp;Login"
-               icon="icons/login/action/LoginAction-Login.24x24.png"
                class="org.nightlabs.jfire.base.login.action.LoginAction"
-               tooltip="%login.action.toolTip"
-               menubarPath="loginMenu/loginGroup"
+               icon="icons/login/action/LoginAction-Login.24x24.png"
+               id="org.nightlabs.jfire.base.login.actions.LoginAction#toolbar"
+               label="&amp;Login"
                toolbarPath="loginGroup"
-               id="org.nightlabs.jfire.base.login.actions.LoginAction">
+               tooltip="%login.action.toolTip">
+         </action>
+         <action
+               class="org.nightlabs.jfire.base.login.action.LoginAction"
+               icon="icons/login/action/LoginAction-Login.16x16.png"
+               id="org.nightlabs.jfire.base.login.actions.LoginAction#menu"
+               label="&amp;Login"
+               menubarPath="loginMenu/loginGroup"
+               tooltip="%login.action.toolTip">
          </action>
       </actionSet>
    </extension>   

@@ -42,28 +42,40 @@ import org.nightlabs.jfire.base.login.Login;
 
 /**
  * @author Alexander Bieber
+ * @author marco schulze - marco at nightlabs dot de
  */
-public class LoginAction extends LSDWorkbenchWindowActionDelegate {
+public class LoginAction 
+extends LSDWorkbenchWindowActionDelegate 
+{
 	/**
 	 * LOG4J logger used by this class
 	 */
 	private static final Logger logger = Logger.getLogger(LoginAction.class);
 
-	private static ImageDescriptor loginIcon = null;
-	private static ImageDescriptor logoutIcon = null;
+	private static ImageDescriptor loginIcon_menu = null;
+	private static ImageDescriptor logoutIcon_menu = null;
+
+	private static ImageDescriptor loginIcon_toolbar = null;
+	private static ImageDescriptor logoutIcon_toolbar = null;
+
+
 	/* (non-Javadoc)
 	 * @see org.eclipse.ui.IWorkbenchWindowActionDelegate#init(org.eclipse.ui.IWorkbenchWindow)
 	 */
 	public void init(IWorkbenchWindow window) {
 		super.init(window);
-		if (loginIcon == null) {
-//			loginIcon = ImageDescriptor.createFromURL(JFireBasePlugin.getDefault().getBundle().getEntry(JFireBasePlugin.getResourceString("actions.login.icons.login")));
-			loginIcon = SharedImages.getSharedImageDescriptor(JFireBasePlugin.getDefault(), LoginAction.class, "Login", ImageDimension._24x24, ImageFormat.png);
-		}
-		if (logoutIcon == null) {
-//			logoutIcon = ImageDescriptor.createFromURL(JFireBasePlugin.getDefault().getBundle().getEntry(JFireBasePlugin.getResourceString("actions.login.icons.logout")));
-			logoutIcon = SharedImages.getSharedImageDescriptor(JFireBasePlugin.getDefault(), LoginAction.class, "Logout", ImageDimension._24x24, ImageFormat.png);
-		}
+
+		if (loginIcon_menu == null)
+			loginIcon_menu = SharedImages.getSharedImageDescriptor(JFireBasePlugin.getDefault(), LoginAction.class, "Login", ImageDimension._16x16, ImageFormat.png);
+
+		if (logoutIcon_menu == null)
+			logoutIcon_menu = SharedImages.getSharedImageDescriptor(JFireBasePlugin.getDefault(), LoginAction.class, "Logout", ImageDimension._16x16, ImageFormat.png);
+
+		if (loginIcon_toolbar == null)
+			loginIcon_toolbar = SharedImages.getSharedImageDescriptor(JFireBasePlugin.getDefault(), LoginAction.class, "Login", ImageDimension._24x24, ImageFormat.png);
+
+		if (logoutIcon_toolbar == null)
+			logoutIcon_toolbar = SharedImages.getSharedImageDescriptor(JFireBasePlugin.getDefault(), LoginAction.class, "Logout", ImageDimension._24x24, ImageFormat.png);
 	}
 	
 	
@@ -85,8 +97,23 @@ public class LoginAction extends LSDWorkbenchWindowActionDelegate {
 			logger.error("Login failed",e);
 		}
 	}
-	
-	public void loginStateChanged(int loginState, IAction action) {
+
+	public void loginStateChanged(int loginState, IAction action)
+	{
+		ImageDescriptor loginIcon = null;
+		ImageDescriptor logoutIcon = null;
+
+		if (action.getId().endsWith("#menu")) {
+			loginIcon = loginIcon_menu;
+			logoutIcon = logoutIcon_menu;
+		}
+		else if (action.getId().endsWith("#toolbar")) {
+			loginIcon = loginIcon_toolbar;
+			logoutIcon = logoutIcon_toolbar;
+		}
+		else
+			throw new IllegalStateException("This action.id does not end on #menu or #toolbar!");
+
 		switch (loginState) {
 			case Login.LOGINSTATE_LOGGED_IN:
 				action.setImageDescriptor(logoutIcon);
