@@ -26,8 +26,12 @@
 
 package org.nightlabs.jfire.base.app;
 
+import org.eclipse.jface.action.IContributionItem;
+import org.eclipse.jface.action.IStatusLineManager;
+import org.eclipse.jface.action.StatusLineManager;
 import org.eclipse.ui.application.IActionBarConfigurer;
 import org.nightlabs.base.app.DefaultActionBuilder;
+import org.nightlabs.jfire.base.login.LoginStateStatusLineContribution;
 
 /**
  * Creates the Menu 
@@ -39,6 +43,15 @@ extends DefaultActionBuilder
 {
 	public JFireActionBuilder(IActionBarConfigurer configurer) {
 		super(configurer);
+	}
+	
+	@Override
+	protected void fillStatusLine(IStatusLineManager statusLine) {
+		super.fillStatusLine(statusLine);
+		IContributionItem beginGroup = statusLine.find(StatusLineManager.BEGIN_GROUP);
+		statusLine.prependToGroup(StatusLineManager.BEGIN_GROUP, new LoginStateStatusLineContribution("login status"));
+		statusLine.remove(beginGroup);
+		statusLine.prependToGroup(StatusLineManager.MIDDLE_GROUP, beginGroup);
 	}
 	
 }
