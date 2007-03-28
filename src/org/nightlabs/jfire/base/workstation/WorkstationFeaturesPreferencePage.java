@@ -131,5 +131,6 @@ public class WorkstationFeaturesPreferencePage extends
 		result.add(new WorkstationFeature(cfMod, "org.nightlabs.jfire.base", "1.0.0"));
 		result.add(new WorkstationFeature(cfMod, "org.nightlabs.jfire.base.admin", "1.0.0"));
 		return result;
-	}	
+	}
+	
 }
