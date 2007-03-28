@@ -103,17 +103,17 @@ extends BaseSessionBeanImpl implements SessionBean
 
 				String organisationID = getOrganisationID();
 
-				IDNamespace idNamespace = null;
-				try {
-					idNamespace = (IDNamespace) pm.getObjectById(IDNamespaceID.create(organisationID, namespace));
-					idNamespace.getCacheSizeServer(); // workaround for JPOX bug - the JDOObjectNotFoundException doesn't occur always in the above line
-				} catch (JDOObjectNotFoundException e) {
-					idNamespace = new IDNamespace(
-							getOrganisationID(),
-							namespace,
-							IDNamespaceDefault.getIDNamespaceDefault(pm, organisationID, namespace));
-					idNamespace = (IDNamespace) pm.makePersistent(idNamespace);
-				}
+				IDNamespace idNamespace = IDNamespace.getIDNamespace(pm, organisationID, namespace);
+//				try {
+//					idNamespace = (IDNamespace) pm.getObjectById(IDNamespaceID.create(organisationID, namespace));
+//					idNamespace.getCacheSizeServer(); // workaround for JPOX bug - the JDOObjectNotFoundException doesn't occur always in the above line
+//				} catch (JDOObjectNotFoundException e) {
+//					idNamespace = new IDNamespace(
+//							getOrganisationID(),
+//							namespace,
+//							IDNamespaceDefault.getIDNamespaceDefault(pm, organisationID, namespace));
+//					idNamespace = (IDNamespace) pm.makePersistent(idNamespace);
+//				}
 
 				int quantity = minCacheSize - currentCacheSize + idNamespace.getCacheSizeServer();
 				if (quantity <= 0)
