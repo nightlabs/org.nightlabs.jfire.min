@@ -45,7 +45,7 @@ public class StaticPersonSearchFilterProviderComposite extends org.eclipse.swt.w
 	private Composite firstRow;
 	private Composite secondRow;
 	private Composite thirdRow;
-	private Composite fourthRow;
+//	private Composite fourthRow;
 	
 	private LabeledText controlName;
 	private LabeledText controlPersonID;

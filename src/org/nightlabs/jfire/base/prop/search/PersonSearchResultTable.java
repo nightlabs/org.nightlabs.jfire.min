@@ -75,11 +75,11 @@ public class PersonSearchResultTable extends AbstractTableComposite {
 	 * Returns all selected Persons in a Set.
 	 * @return All selected Persons in a Set.
 	 */
-	public Set getSelectedPersons() {
-		Set result = new HashSet();
+	public Set<Person> getSelectedPersons() {
+		Set<Person> result = new HashSet<Person>();
 		TableItem[] items = getTable().getSelection();
 		for (int i = 0; i < items.length; i++) {
-			result.add(items[i].getData());
+			result.add((Person) items[i].getData());
 		}
 		return result;
 	}

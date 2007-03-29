@@ -26,14 +26,10 @@
 
 package org.nightlabs.jfire.base.prop.search;
 
-import javax.security.auth.login.LoginException;
-
-import org.apache.log4j.Logger;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.nightlabs.base.composite.SelectableComposite;
@@ -42,7 +38,6 @@ import org.nightlabs.base.composite.XComposite.LayoutMode;
 import org.nightlabs.jdo.search.SearchFilter;
 import org.nightlabs.jdo.search.SearchFilterProvider;
 import org.nightlabs.jdo.search.SearchResultFetcher;
-import org.nightlabs.jfire.base.login.Login;
 import org.nightlabs.jfire.prop.PropertyManager;
 import org.nightlabs.jfire.prop.search.PropSearchFilter;
 
@@ -60,10 +55,10 @@ public class PersonQuickSearch implements SearchFilterProvider {
 	/**
 	 * LOG4J logger used by this class
 	 */
-	private static final Logger logger = Logger.getLogger(PersonQuickSearch.class);
+//	private static final Logger logger = Logger.getLogger(PersonQuickSearch.class);
 	
 	private XComposite wrapperComposite;
-	private Button quickButton;
+//	private Button quickButton;
 	private String buttonText;
 	private PropSearchFilter personSearchFilter;
 	private SearchResultFetcher resultFetcher;
@@ -154,15 +149,7 @@ public class PersonQuickSearch implements SearchFilterProvider {
 		if (resultFetcher == null)
 			return;
 		
-		Login login;
-		try {
-			login = Login.getLogin();
-		} catch (LoginException e) {
-			logger.error("Could not log in, fetcher will not be triggered!",e);
-			return;
-		}
-		
-		resultFetcher.searchTriggered(this,login);
+		resultFetcher.searchTriggered(this);
 	}
 	
 	/**

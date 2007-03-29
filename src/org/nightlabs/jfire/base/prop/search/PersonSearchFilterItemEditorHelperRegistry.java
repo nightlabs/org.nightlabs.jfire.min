@@ -41,7 +41,7 @@ public class PersonSearchFilterItemEditorHelperRegistry {
 	 * key: Class AbstractPersonStructFieldClass<br/>
 	 * value: PropSearchFilterItemEditorHelper personSearchFilterItemEditorHelper<br/>
 	 */
-	private Map itemEditorHelpers = new HashMap();
+	private Map<Class, PropSearchFilterItemEditorHelper> itemEditorHelpers = new HashMap<Class, PropSearchFilterItemEditorHelper>();
 	
 	/**
 	 * Adds a PropSearchFilterItemEditorHelper linked to the
@@ -51,7 +51,7 @@ public class PersonSearchFilterItemEditorHelperRegistry {
 	 * @param itemEditor
 	 */
 	public void addItemEditor(Class structFieldClass, PropSearchFilterItemEditorHelper editorHelper) {
-		itemEditorHelpers.put(structFieldClass,editorHelper);
+		itemEditorHelpers.put(structFieldClass, editorHelper);
 	}
 	
 	/**

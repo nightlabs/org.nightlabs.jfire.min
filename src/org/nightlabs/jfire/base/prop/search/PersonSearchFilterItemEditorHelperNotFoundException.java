@@ -29,8 +29,9 @@ package org.nightlabs.jfire.base.prop.search;
 /**
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  */
-public class PersonSearchFilterItemEditorHelperNotFoundException extends
-		Exception {
+public class PersonSearchFilterItemEditorHelperNotFoundException extends Exception {
+
+	private static final long serialVersionUID = 1L;
 
 	/**
 	 * 

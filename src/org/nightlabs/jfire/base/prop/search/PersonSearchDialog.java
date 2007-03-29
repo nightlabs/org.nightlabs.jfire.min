@@ -29,7 +29,6 @@ package org.nightlabs.jfire.base.prop.search;
 import java.util.Collection;
 
 import javax.jdo.FetchPlan;
-import javax.security.auth.login.LoginException;
 
 import org.apache.log4j.Logger;
 import org.eclipse.jface.dialogs.Dialog;
@@ -40,7 +39,6 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.nightlabs.base.composite.XComposite;
 import org.nightlabs.base.composite.XComposite.LayoutMode;
-import org.nightlabs.j2ee.InitialContextProvider;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jdo.search.SearchFilterProvider;
 import org.nightlabs.jdo.search.SearchResultFetcher;
@@ -79,12 +77,7 @@ public class PersonSearchDialog extends Dialog implements SearchResultFetcher{
 		XComposite wrapper = new XComposite(parent, SWT.NONE, LayoutMode.TIGHT_WRAPPER);
 
 		filterProvider = new DynamicPersonSearchFilterProvider(new PropSearchFilterItemListMutator());
-		try {
-			filterProvider.setSearchResultFetcher(this,Login.getLogin());
-		} catch (LoginException e) {
-			logger.error("Error logging in ",e);
-			throw new RuntimeException(e);
-		}
+		filterProvider.setSearchResultFetcher(this);
 		Composite providerComp = filterProvider.createComposite(wrapper);
 		GridData gd = new GridData(GridData.FILL_BOTH);
 		gd.widthHint = 550;
@@ -102,7 +95,7 @@ public class PersonSearchDialog extends Dialog implements SearchResultFetcher{
 	/**
 	 * @see org.nightlabs.jdo.search.SearchResultFetcher#searchTriggered(org.nightlabs.jdo.search.SearchFilterProvider, org.nightlabs.j2ee.InitialContextProvider)
 	 */
-	public void searchTriggered(SearchFilterProvider filterProvider, InitialContextProvider login) {
+	public void searchTriggered(SearchFilterProvider filterProvider) {
 		logger.debug("Search triggered, getting PersonManager");
 		PropertyManagerHome home = null;
 		PropertyManager personManager = null;

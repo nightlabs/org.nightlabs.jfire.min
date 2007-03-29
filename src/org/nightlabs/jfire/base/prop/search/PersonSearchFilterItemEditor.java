@@ -114,7 +114,7 @@ public class PersonSearchFilterItemEditor extends SearchFilterItemEditor impleme
 	 * @return
 	 */
 	protected List buildSearchFieldList() {
-		List helperList = new ArrayList();
+		List<PropStructFieldSearchItemEditorManager> helperList = new ArrayList<PropStructFieldSearchItemEditorManager>();
 		for (Iterator iter = StructLocalDAO.sharedInstance().getStructLocal(Person.class.getName()).getStructBlocks().iterator(); iter.hasNext();) {
 			StructBlock structBlock = (StructBlock) iter.next();
 			for (Iterator iterator = structBlock.getStructFields().iterator(); iterator.hasNext();) {

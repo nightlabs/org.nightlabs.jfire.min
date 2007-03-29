@@ -29,8 +29,6 @@ package org.nightlabs.jfire.base.prop.search;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import javax.security.auth.login.LoginException;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -43,7 +41,6 @@ import org.nightlabs.jdo.search.SearchFilter;
 import org.nightlabs.jdo.search.SearchFilterItem;
 import org.nightlabs.jdo.search.SearchFilterProvider;
 import org.nightlabs.jdo.search.SearchResultFetcher;
-import org.nightlabs.jfire.base.login.Login;
 import org.nightlabs.jfire.person.PersonStruct;
 import org.nightlabs.jfire.prop.id.StructFieldID;
 import org.nightlabs.jfire.prop.search.PropSearchFilter;
@@ -64,11 +61,7 @@ public class StaticPersonSearchFilterProvider implements
 	private SelectionListener searchListener = new SelectionListener() {
 		public void widgetSelected(SelectionEvent e) {
 			if (resultFetcher != null) {
-				try {
-					resultFetcher.searchTriggered(StaticPersonSearchFilterProvider.this, Login.getLogin());
-				} catch (LoginException le) {
-					throw new RuntimeException(le);
-				}
+				resultFetcher.searchTriggered(StaticPersonSearchFilterProvider.this);
 			}
 		}
 		public void widgetDefaultSelected(SelectionEvent e) {

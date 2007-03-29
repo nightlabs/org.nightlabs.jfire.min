@@ -26,7 +26,6 @@
 
 package org.nightlabs.jfire.base.prop.search;
 
-import org.nightlabs.j2ee.InitialContextProvider;
 import org.nightlabs.jdo.search.ItemBasedSearchFilterProvider;
 import org.nightlabs.jdo.search.SearchFilter;
 import org.nightlabs.jdo.search.SearchFilterItemListMutator;
@@ -51,9 +50,9 @@ public class DynamicPersonSearchFilterProvider extends
 	 * @see DynamicPersonSearchFilterProvider#DynamicPersonSearchFilterProvider(SearchFilterItemListMutator)
 	 * @param listMutator
 	 */
-	public DynamicPersonSearchFilterProvider(SearchFilterItemListMutator listMutator, SearchResultFetcher resultFetcher, InitialContextProvider login) {
+	public DynamicPersonSearchFilterProvider(SearchFilterItemListMutator listMutator, SearchResultFetcher resultFetcher) {
 		super(listMutator);
-		setSearchResultFetcher(resultFetcher, login);
+		setSearchResultFetcher(resultFetcher);
 	}
 	
 	/**
