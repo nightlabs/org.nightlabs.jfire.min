@@ -151,8 +151,8 @@ implements SessionBean
   	if (User.USERID_OTHER.equals(user.getUserID()))
   		throw new IllegalArgumentException("Cannot change properties of special user \"" + User.USERID_OTHER + "\"!");
 
-    try
-    {
+//    try
+//    {
       if (user.getOrganisationID() != null && !user.getOrganisationID().equals(getOrganisationID()))
         throw new IllegalArgumentException("user.organisationID must be null or equal to your organisationID!!!");
 
@@ -186,10 +186,10 @@ implements SessionBean
       } finally {
       	pm.close();
       }
-    }
-    catch (ModuleException e) {
-      throw new SecurityException(e);
-    }
+//    }
+//    catch (ModuleException e) {
+//      throw new SecurityException(e);
+//    }
   }
   	
   /**
