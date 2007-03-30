@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import javax.jdo.JDOHelper;
 
@@ -16,6 +17,8 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.widgets.Display;
 import org.nightlabs.annotation.Implement;
+import org.nightlabs.base.exceptionhandler.ErrorTable.ContentProvider;
+import org.nightlabs.base.notification.NotificationAdapterJob;
 import org.nightlabs.jdo.ObjectID;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleAdapterJob;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleEvent;
@@ -26,17 +29,37 @@ import org.nightlabs.jfire.jdo.notification.IJDOLifecycleListenerFilter;
 import org.nightlabs.jfire.jdo.notification.JDOLifecycleState;
 import org.nightlabs.jfire.jdo.notification.TreeLifecycleListenerFilter;
 import org.nightlabs.jfire.jdo.notification.TreeNodeParentResolver;
+import org.nightlabs.notification.NotificationEvent;
+import org.nightlabs.notification.NotificationListener;
 
+/**
+ * A controller to be used as datasource for JDO tree datastructures. 
+ * For example it could be used as {@link ContentProvider} in a tree displaying this structure.
+ * The controller is <em>active</em> as it tracks changes to the structure (new/deleted objects, changed objects)
+ * keeps the data up-to-date and uses a callback to notify the user of the changes (see {@link #onJDOObjectsChanged(JDOTreeNodesChangedEvent)}). 
+ * <p> 
+ * The controller could be used
+ * 
+ * @author Marco Schulze 
+ * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] de -->
+ *
+ * @param <JDOObjectID> The type of the {@link ObjectID} the tree sturcture uses
+ * @param <JDOObject> The type of the JDO object used
+ * @param <TreeNode> The type of {@link JDOObjectTreeNode} used to hold the data
+ */
 public abstract class ActiveJDOObjectTreeController<JDOObjectID extends ObjectID, JDOObject, TreeNode extends JDOObjectTreeNode>
 {
 	/**
+	 * Retrieve the children of the given parent element.
+	 * If the parent is null this method should return the root element of the tree structure. 
+	 * 
 	 * @param parent <code>null</code> for the root elements or the parent element for which to load the children.
 	 */
 	protected abstract Collection<JDOObject> retrieveChildren(JDOObjectID parentID, JDOObject parent, IProgressMonitor monitor);
 
 	/**
 	 * This method is called on a worker thread and must retrieve JDO objects for
-	 * the given object-ids from the server.
+	 * the given object-ids from the server. It is called when changes to the structure were tracked.
 	 *
 	 * @param objectIDs The jdo object ids representing the desired objects.
 	 * @param monitor The monitor.
@@ -46,6 +69,11 @@ public abstract class ActiveJDOObjectTreeController<JDOObjectID extends ObjectID
 
 	protected abstract TreeNode createNode();
 
+	/**
+	 * Sort the retrieved JDOObjects in a custom manner. (Manipulate the list)
+	 * 
+	 * @param objects The objects to sort
+	 */
 	protected abstract void sortJDOObjects(List<JDOObject> objects);
 
 	private List<TreeNode> rootElements = null;
@@ -54,11 +82,19 @@ public abstract class ActiveJDOObjectTreeController<JDOObjectID extends ObjectID
 
 	/**
 	 * This method is called by the default implementation of {@link #createJDOLifecycleListenerFilter()}.
+	 * It is responsible for creating a {@link TreeNodeParentResolver} for the actual
+	 * type of JDOObject.
 	 */
 	protected abstract TreeNodeParentResolver createTreeNodeParentResolver();
 
 	private TreeNodeParentResolver treeNodeParentResolver = null;
 
+	/**
+	 * Get the {@link TreeNodeParentResolver} for this controller.
+	 * It will be created lazily by a call to {@link #createTreeNodeParentResolver()}.
+	 * 
+	 * @return The {@link TreeNodeParentResolver} for this controller.
+	 */
 	public TreeNodeParentResolver getTreeNodeParentResolver()
 	{
 		if (treeNodeParentResolver == null)
@@ -67,8 +103,24 @@ public abstract class ActiveJDOObjectTreeController<JDOObjectID extends ObjectID
 		return treeNodeParentResolver;
 	}
 
+	/**
+	 * Get the {@link Class} (type) of the JDO object this controller is for.
+	 * Should be the same this controller was typed with.
+	 * 
+	 * @return The {@link Class} (type) of the JDO object this controller is for.
+	 */
 	protected abstract Class getJDOObjectClass();
 
+	/**
+	 * Creates an {@link IJDOLifecycleListenerFilter} that will be used to
+	 * track new objects that are children of one of the objects referenced by
+	 * the given parentObjectIDs. 
+	 * By default this will create a {@link TreeLifecycleListenerFilter}
+	 * for {@link JDOLifecycleState#NEW}.  
+	 * 
+	 * @param parentObjectIDs The {@link ObjectID}s of the parent objects new children should be tracked for.
+	 * @return A new {@link IJDOLifecycleListenerFilter}
+	 */
 	protected IJDOLifecycleListenerFilter createJDOLifecycleListenerFilter(Set<? extends ObjectID> parentObjectIDs)
 	{
 		return new TreeLifecycleListenerFilter(
@@ -77,13 +129,87 @@ public abstract class ActiveJDOObjectTreeController<JDOObjectID extends ObjectID
 				new JDOLifecycleState[] { JDOLifecycleState.NEW });
 	}
 
+	/**
+	 * Creates a {@link JDOLifecycleListener} with the {@link IJDOLifecycleListenerFilter} obtained
+	 * by {@link #createJDOLifecycleListenerFilter(Set)}.
+	 * 
+	 * @param parentObjectIDs The {@link ObjectID}s of the parent objects new children should be tracked for.
+	 * @return  A new {@link JDOLifecycleListener}
+	 */
 	protected JDOLifecycleListener createJDOLifecycleListener(Set<? extends ObjectID> parentObjectIDs)
 	{
 		IJDOLifecycleListenerFilter filter = createJDOLifecycleListenerFilter(parentObjectIDs);
 		return new LifecycleListener(filter);
 	}
 
-	private JDOLifecycleListener lifecycleListener = null;
+	/**
+	 * This will be called when a change in the tree structure was tracked and after the changes
+	 * were retrieved. The {@link JDOTreeNodesChangedEvent} contains references to the
+	 * {@link TreeNode}s that need update or were removed.
+	 * 
+	 * @param changedEvent The {@link JDOTreeNodesChangedEvent} containing references to changed/new and deleted {@link TreeNode}s
+	 */
+	protected abstract void onJDOObjectsChanged(JDOTreeNodesChangedEvent<JDOObjectID, TreeNode> changedEvent);	
+	
+	private NotificationListener changeListener;
+	
+	protected class ChangeListener extends NotificationAdapterJob {		
+		
+		public ChangeListener(String name) {
+			super(name);
+		}
+		
+		@SuppressWarnings("unchecked")
+		public void notify(NotificationEvent notificationEvent) {
+			Collection<DirtyObjectID> dirtyObjectIDs = notificationEvent.getSubjects();
+			final Set<TreeNode> parentsToRefresh = new HashSet<TreeNode>();
+			final Map<JDOObjectID, TreeNode> dirtyNodes = new HashMap<JDOObjectID, TreeNode>();
+			final Map<JDOObjectID, TreeNode> deletedNodes = new HashMap<JDOObjectID, TreeNode>();
+			for (DirtyObjectID objectID : dirtyObjectIDs) {				
+				TreeNode dirtyNode = objectID2TreeNode.get(objectID.getObjectID());
+				if (dirtyNode == null)
+					continue;
+				JDOObjectID jdoObjectID = (JDOObjectID) objectID.getObjectID();
+				switch (objectID.getLifecycleState()) {
+					case DIRTY: dirtyNodes.put(jdoObjectID, dirtyNode); break;
+					case DELETED: deletedNodes.put(jdoObjectID, dirtyNode); break;
+				}
+			}
+			final Map<JDOObjectID, TreeNode> ignoredNodes = new HashMap<JDOObjectID, TreeNode>();
+			ignoredNodes.putAll(dirtyNodes);
+			Collection<JDOObject> retrievedObjects = retrieveJDOObjects(dirtyNodes.keySet(), getProgressMonitor());
+			for (JDOObject retrievedObject : retrievedObjects) {
+				JDOObjectID retrievedID = (JDOObjectID) JDOHelper.getObjectId(retrievedObject);
+				ignoredNodes.remove(retrievedID);
+				TreeNode node = dirtyNodes.get(retrievedID);
+				node.setJdoObject(retrievedObject);
+			}
+			for (Entry<JDOObjectID, TreeNode> deletedEntry : deletedNodes.entrySet()) {
+				JDOObjectID parentID = (JDOObjectID) treeNodeParentResolver.getParentObjectID(deletedEntry.getKey());
+				TreeNode parentNode = objectID2TreeNode.get(parentID);
+				objectID2TreeNode.remove(deletedEntry.getKey());
+				if (parentNode != null) {
+					parentNode.getChildNodes().remove(deletedEntry.getValue());
+					if (!parentsToRefresh.contains(parentNode)) {
+						parentsToRefresh.add(parentNode);
+					}
+				}
+			}
+			
+			Display.getDefault().asyncExec(new Runnable() {
+				public void run() {
+					fireJDOObjectsChangedEvent(new JDOTreeNodesChangedEvent<JDOObjectID, TreeNode>(
+							ActiveJDOObjectTreeController.this,
+							parentsToRefresh,
+							new ArrayList<TreeNode>(dirtyNodes.values()), 
+							ignoredNodes, 
+							deletedNodes
+						)
+					);
+				}
+			});
+		}
+	};
 
 	protected void registerJDOLifecycleListeners()
 	{
@@ -94,6 +220,11 @@ public abstract class ActiveJDOObjectTreeController<JDOObjectID extends ObjectID
 
 		lifecycleListener = createJDOLifecycleListener(activeParentObjectIDs);		
 		JDOLifecycleManager.sharedInstance().addLifecycleListener(lifecycleListener);
+				
+		if (changeListener == null) {
+			changeListener = new ChangeListener("Loading changes ...");
+			JDOLifecycleManager.sharedInstance().addNotificationListener(getJDOObjectClass(), changeListener);
+		}
 	}
 
 	public void close()
@@ -102,8 +233,14 @@ public abstract class ActiveJDOObjectTreeController<JDOObjectID extends ObjectID
 			JDOLifecycleManager.sharedInstance().removeLifecycleListener(lifecycleListener);
 			lifecycleListener = null;
 		}
+		
+		if (changeListener != null) {
+			JDOLifecycleManager.sharedInstance().removeNotificationListener(getJDOObjectClass(), changeListener);
+			changeListener = null;
+		}
 	}
 
+	private JDOLifecycleListener lifecycleListener = null;
 	protected class LifecycleListener extends JDOLifecycleAdapterJob
 	{
 		private IJDOLifecycleListenerFilter filter;
@@ -118,6 +255,7 @@ public abstract class ActiveJDOObjectTreeController<JDOObjectID extends ObjectID
 			return filter;
 		}
 
+		@SuppressWarnings("unchecked")
 		public void notify(JDOLifecycleEvent event)
 		{
 			Set<JDOObjectID> objectIDs = new HashSet<JDOObjectID>(event.getDirtyObjectIDs().size());
@@ -180,7 +318,7 @@ public abstract class ActiveJDOObjectTreeController<JDOObjectID extends ObjectID
 			{
 				public void run()
 				{
-					fireJDOObjectsChangedEvent(parentsToRefresh, loadedTreeNodes, null, null);
+					fireJDOObjectsChangedEvent(new JDOTreeNodesChangedEvent<JDOObjectID, TreeNode>(this, parentsToRefresh, loadedTreeNodes));
 				}
 			});
 		}
@@ -200,6 +338,7 @@ public abstract class ActiveJDOObjectTreeController<JDOObjectID extends ObjectID
 	 * @param parent The parent node or <code>null</code>.
 	 * @return A list of {@link TreeNode}s or <code>null</code>, if data is not yet ready.
 	 */
+	@SuppressWarnings("unchecked")
 	public List<TreeNode> getNodes(final TreeNode parent)
 	{
 		List<TreeNode> nodes = null;
@@ -275,7 +414,7 @@ public abstract class ActiveJDOObjectTreeController<JDOObjectID extends ObjectID
 				{
 					public void run()
 					{
-						fireJDOObjectsChangedEvent(parentsToRefresh, newNodes, null, null);
+						fireJDOObjectsChangedEvent(new JDOTreeNodesChangedEvent<JDOObjectID, TreeNode>(this, parentsToRefresh, newNodes));
 					}
 				});
 
@@ -286,10 +425,9 @@ public abstract class ActiveJDOObjectTreeController<JDOObjectID extends ObjectID
 		return null;
 	}
 
-	private void fireJDOObjectsChangedEvent(Set<TreeNode> parentsToRefresh, List<TreeNode> loadedTreeNodes, Map<JDOObjectID, TreeNode> ignoredJDOObjects, Map<JDOObjectID, TreeNode> deletedJDOObjects)
+	private void fireJDOObjectsChangedEvent(JDOTreeNodesChangedEvent<JDOObjectID, TreeNode> changedEvent)
 	{
-		onJDOObjectsChanged(parentsToRefresh, loadedTreeNodes);
+		onJDOObjectsChanged(changedEvent);
 	}
 
-	protected abstract void onJDOObjectsChanged(Set<TreeNode> parentsToRefresh, List<TreeNode> loadedTreeNodes); // TODO this must get ONE Event parameter
 }

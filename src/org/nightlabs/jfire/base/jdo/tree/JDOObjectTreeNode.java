@@ -2,6 +2,10 @@ package org.nightlabs.jfire.base.jdo.tree;
 
 import java.util.List;
 
+/**
+ * 
+ * @author Marco Schulze
+ */
 public class JDOObjectTreeNode<JDOObjectID, JDOObject, Controller extends ActiveJDOObjectTreeController>
 {
 	private Controller activeJDOObjectTreeController;
