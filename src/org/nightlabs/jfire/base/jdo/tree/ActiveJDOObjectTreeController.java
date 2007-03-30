@@ -13,6 +13,7 @@ import javax.jdo.JDOHelper;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.widgets.Display;
@@ -153,6 +154,56 @@ public abstract class ActiveJDOObjectTreeController<JDOObjectID extends ObjectID
 	
 	private NotificationListener changeListener;
 	
+	protected void handleChangeNotification(NotificationEvent notificationEvent, IProgressMonitor monitor) {
+		Collection<DirtyObjectID> dirtyObjectIDs = notificationEvent.getSubjects();
+		final Set<TreeNode> parentsToRefresh = new HashSet<TreeNode>();
+		final Map<JDOObjectID, TreeNode> dirtyNodes = new HashMap<JDOObjectID, TreeNode>();
+		final Map<JDOObjectID, TreeNode> deletedNodes = new HashMap<JDOObjectID, TreeNode>();
+		for (DirtyObjectID objectID : dirtyObjectIDs) {				
+			TreeNode dirtyNode = objectID2TreeNode.get(objectID.getObjectID());
+			if (dirtyNode == null)
+				continue;
+			JDOObjectID jdoObjectID = (JDOObjectID) objectID.getObjectID();
+			switch (objectID.getLifecycleState()) {
+				case DIRTY: dirtyNodes.put(jdoObjectID, dirtyNode); break;
+				case DELETED: deletedNodes.put(jdoObjectID, dirtyNode); break;
+			}
+		}
+		final Map<JDOObjectID, TreeNode> ignoredNodes = new HashMap<JDOObjectID, TreeNode>();
+		ignoredNodes.putAll(dirtyNodes);
+		Collection<JDOObject> retrievedObjects = retrieveJDOObjects(dirtyNodes.keySet(), monitor);
+		for (JDOObject retrievedObject : retrievedObjects) {
+			JDOObjectID retrievedID = (JDOObjectID) JDOHelper.getObjectId(retrievedObject);
+			ignoredNodes.remove(retrievedID);
+			TreeNode node = dirtyNodes.get(retrievedID);
+			node.setJdoObject(retrievedObject);
+		}
+		for (Entry<JDOObjectID, TreeNode> deletedEntry : deletedNodes.entrySet()) {
+			JDOObjectID parentID = (JDOObjectID) treeNodeParentResolver.getParentObjectID(deletedEntry.getKey());
+			TreeNode parentNode = objectID2TreeNode.get(parentID);
+			objectID2TreeNode.remove(deletedEntry.getKey());
+			if (parentNode != null) {
+				parentNode.getChildNodes().remove(deletedEntry.getValue());
+				if (!parentsToRefresh.contains(parentNode)) {
+					parentsToRefresh.add(parentNode);
+				}
+			}
+		}
+		
+		Display.getDefault().asyncExec(new Runnable() {
+			public void run() {
+				fireJDOObjectsChangedEvent(new JDOTreeNodesChangedEvent<JDOObjectID, TreeNode>(
+						ActiveJDOObjectTreeController.this,
+						parentsToRefresh,
+						new ArrayList<TreeNode>(dirtyNodes.values()), 
+						ignoredNodes, 
+						deletedNodes
+					)
+				);
+			}
+		});
+	}
+	
 	protected class ChangeListener extends NotificationAdapterJob {		
 		
 		public ChangeListener(String name) {
@@ -161,53 +212,7 @@ public abstract class ActiveJDOObjectTreeController<JDOObjectID extends ObjectID
 		
 		@SuppressWarnings("unchecked")
 		public void notify(NotificationEvent notificationEvent) {
-			Collection<DirtyObjectID> dirtyObjectIDs = notificationEvent.getSubjects();
-			final Set<TreeNode> parentsToRefresh = new HashSet<TreeNode>();
-			final Map<JDOObjectID, TreeNode> dirtyNodes = new HashMap<JDOObjectID, TreeNode>();
-			final Map<JDOObjectID, TreeNode> deletedNodes = new HashMap<JDOObjectID, TreeNode>();
-			for (DirtyObjectID objectID : dirtyObjectIDs) {				
-				TreeNode dirtyNode = objectID2TreeNode.get(objectID.getObjectID());
-				if (dirtyNode == null)
-					continue;
-				JDOObjectID jdoObjectID = (JDOObjectID) objectID.getObjectID();
-				switch (objectID.getLifecycleState()) {
-					case DIRTY: dirtyNodes.put(jdoObjectID, dirtyNode); break;
-					case DELETED: deletedNodes.put(jdoObjectID, dirtyNode); break;
-				}
-			}
-			final Map<JDOObjectID, TreeNode> ignoredNodes = new HashMap<JDOObjectID, TreeNode>();
-			ignoredNodes.putAll(dirtyNodes);
-			Collection<JDOObject> retrievedObjects = retrieveJDOObjects(dirtyNodes.keySet(), getProgressMonitor());
-			for (JDOObject retrievedObject : retrievedObjects) {
-				JDOObjectID retrievedID = (JDOObjectID) JDOHelper.getObjectId(retrievedObject);
-				ignoredNodes.remove(retrievedID);
-				TreeNode node = dirtyNodes.get(retrievedID);
-				node.setJdoObject(retrievedObject);
-			}
-			for (Entry<JDOObjectID, TreeNode> deletedEntry : deletedNodes.entrySet()) {
-				JDOObjectID parentID = (JDOObjectID) treeNodeParentResolver.getParentObjectID(deletedEntry.getKey());
-				TreeNode parentNode = objectID2TreeNode.get(parentID);
-				objectID2TreeNode.remove(deletedEntry.getKey());
-				if (parentNode != null) {
-					parentNode.getChildNodes().remove(deletedEntry.getValue());
-					if (!parentsToRefresh.contains(parentNode)) {
-						parentsToRefresh.add(parentNode);
-					}
-				}
-			}
-			
-			Display.getDefault().asyncExec(new Runnable() {
-				public void run() {
-					fireJDOObjectsChangedEvent(new JDOTreeNodesChangedEvent<JDOObjectID, TreeNode>(
-							ActiveJDOObjectTreeController.this,
-							parentsToRefresh,
-							new ArrayList<TreeNode>(dirtyNodes.values()), 
-							ignoredNodes, 
-							deletedNodes
-						)
-					);
-				}
-			});
+			handleChangeNotification(notificationEvent, getProgressMonitor());
 		}
 	};
 
@@ -221,9 +226,19 @@ public abstract class ActiveJDOObjectTreeController<JDOObjectID extends ObjectID
 		lifecycleListener = createJDOLifecycleListener(activeParentObjectIDs);		
 		JDOLifecycleManager.sharedInstance().addLifecycleListener(lifecycleListener);
 				
+	}
+	
+	protected void createRegisterChangeListener() {
 		if (changeListener == null) {
 			changeListener = new ChangeListener("Loading changes ...");
 			JDOLifecycleManager.sharedInstance().addNotificationListener(getJDOObjectClass(), changeListener);
+		}
+	}
+	
+	protected void unregisterChangeListener() {
+		if (changeListener != null) {
+			JDOLifecycleManager.sharedInstance().removeNotificationListener(getJDOObjectClass(), changeListener);
+			changeListener = null;
 		}
 	}
 
@@ -233,11 +248,7 @@ public abstract class ActiveJDOObjectTreeController<JDOObjectID extends ObjectID
 			JDOLifecycleManager.sharedInstance().removeLifecycleListener(lifecycleListener);
 			lifecycleListener = null;
 		}
-		
-		if (changeListener != null) {
-			JDOLifecycleManager.sharedInstance().removeNotificationListener(getJDOObjectClass(), changeListener);
-			changeListener = null;
-		}
+		unregisterChangeListener();
 	}
 
 	private JDOLifecycleListener lifecycleListener = null;
@@ -342,6 +353,9 @@ public abstract class ActiveJDOObjectTreeController<JDOObjectID extends ObjectID
 	public List<TreeNode> getNodes(final TreeNode parent)
 	{
 		List<TreeNode> nodes = null;
+		
+		createRegisterChangeListener();
+		
 		if (parent == null) {
 			if (activeParentObjectIDs.add(null))
 				registerJDOLifecycleListeners();
@@ -425,9 +439,33 @@ public abstract class ActiveJDOObjectTreeController<JDOObjectID extends ObjectID
 		return null;
 	}
 
+	private ListenerList treeNodesChangedListeners;
+	
+	public void addJDOTreeNodesChangedListener(JDOTreeNodesChangedListener<JDOObjectID, JDOObject, TreeNode> listener) {
+		if (treeNodesChangedListeners == null)
+			treeNodesChangedListeners = new ListenerList();
+		treeNodesChangedListeners.add(listener);
+	}
+	
+	public void removeJDOTreeNodesChangedListener(JDOTreeNodesChangedListener<JDOObjectID, JDOObject, TreeNode> listener) {
+		if (treeNodesChangedListeners == null)
+			return;
+		treeNodesChangedListeners.remove(listener);
+	}
+	
+	@SuppressWarnings("unchecked")
 	private void fireJDOObjectsChangedEvent(JDOTreeNodesChangedEvent<JDOObjectID, TreeNode> changedEvent)
 	{
 		onJDOObjectsChanged(changedEvent);
+		
+		if (treeNodesChangedListeners != null) {
+			Object[] listeners = treeNodesChangedListeners.getListeners();
+			for (Object listener : listeners) {
+				JDOTreeNodesChangedListener<JDOObjectID, JDOObject, TreeNode> l = (JDOTreeNodesChangedListener<JDOObjectID, JDOObject, TreeNode>) listener;
+				l.onJDOObjectsChanged(changedEvent);
+			}
+		}
+		
 	}
 
 }

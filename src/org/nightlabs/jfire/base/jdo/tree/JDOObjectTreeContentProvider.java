@@ -39,8 +39,11 @@ public abstract class JDOObjectTreeContentProvider<JDOObjectID extends ObjectID,
 			controller = (ActiveJDOObjectTreeController)parentElement;
 			parent = null;
 		}
+		else if (parentElement instanceof String) {
+			return null;
+		}
 		else {
-			parent = (TreeNode)parentElement;
+			parent = (TreeNode) parentElement;
 			controller = parent.getActiveJDOObjectTreeController();
 		}
 
