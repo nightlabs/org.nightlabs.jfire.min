@@ -20,6 +20,8 @@ public class JDOTreeNodesChangedEventHandler {
 	}
 	
 	public static void handle(TreeViewer treeViewer, JDOTreeNodesChangedEvent<? extends ObjectID, ? extends JDOObjectTreeNode> changedEvent) {
+		if (treeViewer.getTree().isDisposed())
+			return;
 		HashSet<JDOObjectTreeNode> refreshed = new HashSet<JDOObjectTreeNode>();
 		boolean refreshAll = false;
 		if (changedEvent.getParentsToRefresh() != null) {
