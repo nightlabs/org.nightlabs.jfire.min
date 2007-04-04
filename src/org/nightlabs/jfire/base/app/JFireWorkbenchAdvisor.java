@@ -71,8 +71,10 @@ extends AbstractWorkbenchAdvisor
 	{
 		this(display, true);
 	}
+	
 	public JFireWorkbenchAdvisor(Display display, boolean initLogin) 
 	{
+//		super();
 		try {
 			if (initLogin)
 				initLogin();

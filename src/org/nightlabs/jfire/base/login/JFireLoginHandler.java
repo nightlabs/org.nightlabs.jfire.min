@@ -70,6 +70,7 @@ public class JFireLoginHandler implements ILoginHandler {
 			String organisationID = null;
 			String initialContextFactory = null;
 			String serverURL = null;
+			String workstationID = null;
 
 			if (autoLoginWithParams) {
 				String[] args = NLBasePlugin.getDefault().getApplication().getArguments();
@@ -83,6 +84,8 @@ public class JFireLoginHandler implements ILoginHandler {
 						password = val;
 					else if ("--login.organisationID".equals(arg))
 						organisationID = val;
+					else if ("--login.workstationID".equals(arg))
+						workstationID = val;
 					else if ("--login.initialContextFactory".equals(arg))
 						initialContextFactory = val;
 					else if ("--login.serverURL".equals(arg))
@@ -93,6 +96,9 @@ public class JFireLoginHandler implements ILoginHandler {
 			}
 
 			if (password != null) {
+				if (workstationID != null)
+					loginConfigModule.setWorkstationID(workstationID);
+
 				if (userID == null)
 					userID = loginConfigModule.getUserID();
 				else
