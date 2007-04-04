@@ -237,6 +237,9 @@ public class CacheManagerFactory
 		this.organisationID = organisation.getOrganisationID();
 		this.cacheCfMod = cacheCfMod;
 		this.sysConfigDirectory = sysConfigDirectory;
+
+		logger.info("Creating instance of CacheManagerFactory for organisation " + organisationID);
+
 		activeCacheSessionContainer = new CacheSessionContainer(this);
 		cacheSessionContainers.addFirst(activeCacheSessionContainer);
 
@@ -260,16 +263,19 @@ public class CacheManagerFactory
 			// ignore
 		}
 
+		String jndiName = getJNDIName(organisationID);
 		try {
-			ctx.bind(getJNDIName(organisationID), this);
+			ctx.bind(jndiName, this);
 		} catch (NameAlreadyBoundException e) {
-			ctx.rebind(getJNDIName(organisationID), this);
+			ctx.rebind(jndiName, this);
 		}
 
 		// // TO DO do we really want this? We don't have a plan yet on how to make
 		// // the representative-organisations work.
 		// if (!organisationID.equals(organisation.getMasterOrganisationID()))
 		// ctx.bind(getJNDIName(organisation.getMasterOrganisationID()), this);
+
+		logger.info("CacheManagerFactory for organisation " + organisationID + " instantiated and bound into JNDI " + jndiName);
 	}
 
 	/**
