@@ -62,6 +62,11 @@ public class WorklockDAO
 		}
 	}
 
+	public Worklock getWorklock(WorklockID worklockID, String[] fetchGroups, int maxFetchDepth, IProgressMonitor monitor)
+	{
+		return getJDOObject(null, worklockID, fetchGroups, maxFetchDepth, monitor);
+	}
+
 	public AcquireWorklockResult acquireWorklock(WorklockTypeID worklockTypeID, ObjectID objectID, String[] fetchGroups, int maxFetchDepth)
 	{
 		try {
@@ -74,4 +79,13 @@ public class WorklockDAO
 		}
 	}
 
+	public void releaseWorklock(ObjectID objectID)
+	{
+		try {
+			WorklockManager wm = WorklockManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
+			wm.releaseWorklock(objectID);
+		} catch (Exception x) {
+			throw new RuntimeException(x);
+		}
+	}
 }

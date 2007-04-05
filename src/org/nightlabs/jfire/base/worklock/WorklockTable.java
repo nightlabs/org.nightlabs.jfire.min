@@ -34,7 +34,7 @@ extends AbstractTableComposite
 
 			switch (columnIndex) {
 				case 0:
-					return worklock.getLockOwner().getName();
+					return worklock.getLockOwnerUser().getName();
 				case 1:
 					return DateFormatter.formatDateShortTimeHMS(worklock.getCreateDT(), false);
 				case 2:
@@ -65,7 +65,7 @@ extends AbstractTableComposite
 		tc.setText("Last Refresh");
 
 		TableLayout tl = new TableLayout();
-		tl.addColumnData(new ColumnWeightData(60));
+		tl.addColumnData(new ColumnWeightData(1));
 		tl.addColumnData(new ColumnPixelData(120));
 		tl.addColumnData(new ColumnPixelData(120));
 		table.setLayout(tl);
