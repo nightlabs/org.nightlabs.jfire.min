@@ -71,6 +71,8 @@ extends AbstractTreeComposite<JDOObject>
 	
 	@Override
 	protected JDOObject getSelectionObject(Object obj) {
+		if (!(obj instanceof JDOObjectTreeNode))
+			return null;
 		return (JDOObject) ((TreeNode)obj).getJdoObject();
 	}
 	
