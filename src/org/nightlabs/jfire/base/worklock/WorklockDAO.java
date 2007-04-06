@@ -11,6 +11,7 @@ import org.nightlabs.jfire.base.jdo.JDOObjectDAO;
 import org.nightlabs.jfire.base.jdo.cache.Cache;
 import org.nightlabs.jfire.base.login.Login;
 import org.nightlabs.jfire.worklock.AcquireWorklockResult;
+import org.nightlabs.jfire.worklock.ReleaseReason;
 import org.nightlabs.jfire.worklock.Worklock;
 import org.nightlabs.jfire.worklock.WorklockManager;
 import org.nightlabs.jfire.worklock.WorklockManagerUtil;
@@ -67,11 +68,11 @@ public class WorklockDAO
 		return getJDOObject(null, worklockID, fetchGroups, maxFetchDepth, monitor);
 	}
 
-	public AcquireWorklockResult acquireWorklock(WorklockTypeID worklockTypeID, ObjectID objectID, String[] fetchGroups, int maxFetchDepth)
+	public AcquireWorklockResult acquireWorklock(WorklockTypeID worklockTypeID, ObjectID objectID, String description, String[] fetchGroups, int maxFetchDepth)
 	{
 		try {
 			WorklockManager wm = WorklockManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
-			AcquireWorklockResult acquireWorklockResult = wm.acquireWorklock(worklockTypeID, objectID, fetchGroups, maxFetchDepth);
+			AcquireWorklockResult acquireWorklockResult = wm.acquireWorklock(worklockTypeID, objectID, description, fetchGroups, maxFetchDepth);
 			Cache.sharedInstance().put(null, acquireWorklockResult.getWorklock(), fetchGroups, maxFetchDepth);
 			return acquireWorklockResult;
 		} catch (Exception x) {
@@ -79,11 +80,11 @@ public class WorklockDAO
 		}
 	}
 
-	public void releaseWorklock(ObjectID objectID)
+	public void releaseWorklock(ObjectID objectID, ReleaseReason releaseReason, IProgressMonitor monitor)
 	{
 		try {
 			WorklockManager wm = WorklockManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
-			wm.releaseWorklock(objectID);
+			wm.releaseWorklock(objectID, releaseReason);
 		} catch (Exception x) {
 			throw new RuntimeException(x);
 		}
