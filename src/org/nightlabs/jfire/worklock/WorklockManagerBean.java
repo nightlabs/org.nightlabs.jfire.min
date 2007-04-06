@@ -75,7 +75,7 @@ implements SessionBean
 		PersistenceManager pm = getPersistenceManager();
 		try {
 			for (Worklock worklock : Worklock.getExpiredWorklocks(pm)) {
-				worklock.getWorklockType().onReleaseWorklock(worklock);
+				worklock.getWorklockType().onReleaseWorklock(worklock, ReleaseReason.clientLost);
 				pm.deletePersistent(worklock);
 			}
 		} finally {
@@ -132,13 +132,14 @@ implements SessionBean
 	 * This method first searches for an existing {@link Worklock} on the JDO object
 	 * referenced by the given <code>objectID</code> and owned by the current user.
 	 * If none such <code>Worklock</code> exists, a new one will be created. If a previously
-	 * existing one could be found, its {@link Worklock#setLastUseDT()} method will be called
+	 * existing one could be found, its {@link Worklock#setLastAcquireDT()} method will be called
 	 * in order to renew it.
 	 * <p>
 	 * </p>
 	 * @param worklockTypeID If a new <code>Worklock</code> is created, it will be assigned the {@link WorklockType}
 	 *		referenced by this id. If the Worklock previously existed, this parameter is ignored.
 	 * @param objectID The id of the JDO object that shall be locked.
+	 * @param description The worklock's description which will be shown to the user and should make clear what is locked (e.g. the name of the object referenced by <code>objectID</code>).
 	 * @param fetchGroups The fetch-groups used for detaching the created/queried {@link Worklock}.
 	 * @param maxFetchDepth The maximum fetch-depth for detaching the created/queried {@link Worklock}.
 	 *
@@ -147,7 +148,7 @@ implements SessionBean
 	 * @ejb.permission role-name="_Guest_"
 	 */
 	public AcquireWorklockResult acquireWorklock(
-			WorklockTypeID worklockTypeID, ObjectID objectID,
+			WorklockTypeID worklockTypeID, ObjectID objectID, String description,
 			String[] fetchGroups, int maxFetchDepth)
 	{
 		PersistenceManager pm = getPersistenceManager();
@@ -157,11 +158,13 @@ implements SessionBean
 				pm.getFetchPlan().setGroups(fetchGroups);
 
 			Worklock worklock = Worklock.getWorklock(pm, objectID, UserID.create(getPrincipal()), getSessionID());
-			if (worklock != null)
-				worklock.setLastUseDT();
+			if (worklock != null) {
+				worklock.setLastAcquireDT();
+				worklock.setDescription(description);
+			}
 			else {
 				WorklockType worklockType = (WorklockType) pm.getObjectById(worklockTypeID);
-				worklock = (Worklock) pm.makePersistent(new Worklock(worklockType, User.getUser(pm, getPrincipal()), getSessionID(), objectID));
+				worklock = (Worklock) pm.makePersistent(new Worklock(worklockType, User.getUser(pm, getPrincipal()), getSessionID(), objectID, description));
 			}
 
 			long worklockCount = Worklock.getWorklockCount(pm, objectID);
@@ -177,7 +180,7 @@ implements SessionBean
 	 * @ejb.transaction type="Required"
 	 * @ejb.permission role-name="_Guest_"
 	 */
-	public void releaseWorklock(ObjectID objectID)
+	public void releaseWorklock(ObjectID objectID, ReleaseReason releaseReason)
 	{
 		PersistenceManager pm = getPersistenceManager();
 		try {
@@ -185,7 +188,7 @@ implements SessionBean
 			if (worklock == null)
 				return;
 
-			worklock.getWorklockType().onReleaseWorklock(worklock);
+			worklock.getWorklockType().onReleaseWorklock(worklock, releaseReason);
 			pm.deletePersistent(worklock);
 		} finally {
 			pm.close();
