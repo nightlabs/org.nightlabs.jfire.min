@@ -13,6 +13,7 @@ import javax.ejb.SessionContext;
 import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 
+import org.nightlabs.ModuleException;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jdo.ObjectID;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
@@ -71,6 +72,7 @@ implements SessionBean
 	 * @ejb.permission role-name="_System_"
 	 */
 	public void cleanupWorklocks(TaskID taskID)
+	throws Exception
 	{
 		PersistenceManager pm = getPersistenceManager();
 		try {
@@ -181,6 +183,7 @@ implements SessionBean
 	 * @ejb.permission role-name="_Guest_"
 	 */
 	public void releaseWorklock(ObjectID objectID, ReleaseReason releaseReason)
+	throws ModuleException
 	{
 		PersistenceManager pm = getPersistenceManager();
 		try {
