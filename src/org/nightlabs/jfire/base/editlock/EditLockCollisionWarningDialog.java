@@ -18,20 +18,20 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.nightlabs.base.dialog.CenteredDialog;
 import org.nightlabs.jdo.NLJDOHelper;
-import org.nightlabs.jfire.worklock.AcquireWorklockResult;
-import org.nightlabs.jfire.worklock.Worklock;
+import org.nightlabs.jfire.editlock.AcquireEditLockResult;
+import org.nightlabs.jfire.editlock.EditLock;
 
-public class WorklockCollisionWarningDialog
+public class EditLockCollisionWarningDialog
 extends CenteredDialog
 {
-	private AcquireWorklockResult acquireWorklockResult;
+	private AcquireEditLockResult acquireEditLockResult;
 
 	private EditLockTable editLockTable;
 
-	public WorklockCollisionWarningDialog(Shell parentShell, AcquireWorklockResult acquireWorklockResult)
+	public EditLockCollisionWarningDialog(Shell parentShell, AcquireEditLockResult acquireEditLockResult)
 	{
 		super(parentShell);
-		this.acquireWorklockResult = acquireWorklockResult;
+		this.acquireEditLockResult = acquireEditLockResult;
 		setShellStyle(getShellStyle() | SWT.RESIZE);
 		setBlockOnOpen(false);
 	}
@@ -46,7 +46,7 @@ extends CenteredDialog
 	}
 
 	private static final String[] FETCH_GROUPS_WORKLOCK = {
-		FetchPlan.DEFAULT, Worklock.FETCH_GROUP_LOCK_OWNER_USER
+		FetchPlan.DEFAULT, EditLock.FETCH_GROUP_LOCK_OWNER_USER
 	};
 
 	@Override
@@ -68,17 +68,17 @@ extends CenteredDialog
 		editLockTable = new EditLockTable(page, SWT.NONE);
 		editLockTable.setInput(new String[] {"Loading data..."});
 
-		Job job = new Job("Loading Worklocks") {
+		Job job = new Job("Loading EditLocks") {
 			@Override
 			protected IStatus run(IProgressMonitor monitor)
 			{
-				final List<Worklock> worklocks = WorklockDAO.sharedInstance().getWorklocks(
-						acquireWorklockResult.getWorklock().getLockedObjectID(),
+				final List<EditLock> editLocks = EditLockDAO.sharedInstance().getEditLocks(
+						acquireEditLockResult.getEditLock().getLockedObjectID(),
 						FETCH_GROUPS_WORKLOCK,
 						NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT,
 						monitor);
 
-				worklocks.remove(acquireWorklockResult.getWorklock()); // remove our own lock
+				editLocks.remove(acquireEditLockResult.getEditLock()); // remove our own lock
 
 				Display.getDefault().asyncExec(new Runnable()
 				{
@@ -87,12 +87,12 @@ extends CenteredDialog
 						if (editLockTable.isDisposed())
 							return;
 
-						if (worklocks.isEmpty()) { // in the mean time (while opening the dialog) the other worklock was released - close the dialog immediately
+						if (editLocks.isEmpty()) { // in the mean time (while opening the dialog) the other editLock was released - close the dialog immediately
 							close();
 							return;
 						}
 
-						editLockTable.setInput(worklocks);
+						editLockTable.setInput(editLocks);
 					}
 				});
 

@@ -12,39 +12,40 @@ import org.nightlabs.annotation.Implement;
 import org.nightlabs.base.table.AbstractTableComposite;
 import org.nightlabs.base.table.TableContentProvider;
 import org.nightlabs.base.table.TableLabelProvider;
+import org.nightlabs.jfire.editlock.EditLock;
 import org.nightlabs.l10n.DateFormatter;
 
-public class WorklockCarrierTable
+public class EditLockTable
 extends AbstractTableComposite
 {
-	private static class WorklockCarrierLabelProvider extends TableLabelProvider
+	private static class EditLockLabelProvider extends TableLabelProvider
 	{
 		@Implement
 		public String getColumnText(Object element, int columnIndex)
 		{
-			if (!(element instanceof WorklockCarrier)) {
+			if (!(element instanceof EditLock)) {
 				if (columnIndex == 0)
 					return String.valueOf(element);
 
 				return "";
 			}
 
-			WorklockCarrier worklockCarrier = (WorklockCarrier) element;
+			EditLock editLock = (EditLock) element;
 
 			switch (columnIndex) {
 				case 0:
-					return worklockCarrier.getWorklock().getDescription();
+					return editLock.getLockOwnerUser().getName();
 				case 1:
-					return DateFormatter.formatDateShortTimeHMS(worklockCarrier.getWorklock().getCreateDT(), false);
+					return DateFormatter.formatDateShortTimeHMS(editLock.getCreateDT(), false);
 				case 2:
-					return DateFormatter.formatDateShortTimeHMS(worklockCarrier.getLastUserActivityDT(), false);
+					return DateFormatter.formatDateShortTimeHMS(editLock.getLastAcquireDT(), false);
 				default:
 					return "";
 			}
 		}
 	}
 
-	public WorklockCarrierTable(Composite parent, int style)
+	public EditLockTable(Composite parent, int style)
 	{
 		super(parent, style);
 	}
@@ -55,13 +56,13 @@ extends AbstractTableComposite
 		TableColumn tc;
 
 		tc = new TableColumn(table, SWT.LEFT);
-		tc.setText("Description");
+		tc.setText("User");
 
 		tc = new TableColumn(table, SWT.LEFT);
 		tc.setText("Created");
 
 		tc = new TableColumn(table, SWT.LEFT);
-		tc.setText("Last User Activity");
+		tc.setText("Last Acquired");
 
 		TableLayout tl = new TableLayout();
 		tl.addColumnData(new ColumnWeightData(1));
@@ -74,6 +75,6 @@ extends AbstractTableComposite
 	protected void setTableProvider(TableViewer tableViewer)
 	{
 		tableViewer.setContentProvider(new TableContentProvider());
-		tableViewer.setLabelProvider(new WorklockCarrierLabelProvider());
+		tableViewer.setLabelProvider(new EditLockLabelProvider());
 	}
 }

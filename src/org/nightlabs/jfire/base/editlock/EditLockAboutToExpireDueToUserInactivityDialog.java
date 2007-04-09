@@ -16,20 +16,20 @@ import org.eclipse.swt.widgets.Shell;
 import org.nightlabs.base.composite.CountdownButton;
 import org.nightlabs.base.dialog.CenteredDialog;
 
-public class WorklockAboutToExpireDueToUserInactivityDialog
+public class EditLockAboutToExpireDueToUserInactivityDialog
 extends CenteredDialog
 {
-	private WorklockMan worklockMan;
+	private EditLockMan editLockMan;
 
 	private CountdownButton okButton;
 
-	private Set<WorklockCarrier> worklockCarriers = new HashSet<WorklockCarrier>();
-	private WorklockCarrierTable worklockCarrierTable;
+	private Set<EditLockCarrier> editLockCarriers = new HashSet<EditLockCarrier>();
+	private EditLockCarrierTable editLockCarrierTable;
 
-	public WorklockAboutToExpireDueToUserInactivityDialog(WorklockMan worklockMan, Shell parentShell)
+	public EditLockAboutToExpireDueToUserInactivityDialog(EditLockMan editLockMan, Shell parentShell)
 	{
 		super(parentShell);
-		this.worklockMan = worklockMan;
+		this.editLockMan = editLockMan;
 	}
 
 	@Override
@@ -44,7 +44,7 @@ extends CenteredDialog
 			@Override
 			public void widgetSelected(SelectionEvent e)
 			{
-				worklockMan.softReleaseWorklockOnUserInactivity(worklockCarriers);
+				editLockMan.softReleaseEditLockOnUserInactivity(editLockCarriers);
 
 				setReturnCode(OK);
 				close();
@@ -64,7 +64,7 @@ extends CenteredDialog
 	public boolean close()
 	{
 		if (super.close()) {
-			worklockMan.onCloseWorklockAboutToExpireDueToUserInactivityDialog();
+			editLockMan.onCloseEditLockAboutToExpireDueToUserInactivityDialog();
 			return true;
 		}
 
@@ -77,9 +77,9 @@ extends CenteredDialog
 		Composite page = (Composite) super.createDialogArea(parent);
 		Label l = new Label(page, SWT.WRAP);
 		l.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		l.setText("The following worklocks will be released because of user inactivity:");
+		l.setText("The following editLocks will be released because of user inactivity:");
 
-		worklockCarrierTable = new WorklockCarrierTable(page, SWT.NONE);
+		editLockCarrierTable = new EditLockCarrierTable(page, SWT.NONE);
 
 		return page;
 	}
@@ -88,12 +88,12 @@ extends CenteredDialog
 
 	/**
 	 * This method must be called on the UI thread!
-	 * @param worklockCarrier the {@link WorklockCarrier} to be added. If it was already added before, this method silently returns without any action.
+	 * @param editLockCarrier the {@link EditLockCarrier} to be added. If it was already added before, this method silently returns without any action.
 	 */
-	public void addWorklockCarrier(WorklockCarrier worklockCarrier)
+	public void addEditLockCarrier(EditLockCarrier editLockCarrier)
 	{
-		if (worklockCarriers.add(worklockCarrier)) {
-			worklockCarrierTable.setInput(worklockCarriers);
+		if (editLockCarriers.add(editLockCarrier)) {
+			editLockCarrierTable.setInput(editLockCarriers);
 			long rest = okButton.getCountdownRest();
 			if (rest < 10 && countdownPostponeCounter < 3) {
 				okButton.setCountdownRest(10);

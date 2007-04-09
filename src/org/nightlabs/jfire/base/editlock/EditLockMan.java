@@ -1,0 +1,323 @@
+package org.nightlabs.jfire.base.editlock;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.jdo.FetchPlan;
+import javax.jdo.JDOHelper;
+
+import org.apache.log4j.Logger;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
+import org.nightlabs.annotation.Implement;
+import org.nightlabs.base.util.RCPUtil;
+import org.nightlabs.jdo.NLJDOHelper;
+import org.nightlabs.jdo.ObjectID;
+import org.nightlabs.jfire.editlock.AcquireEditLockResult;
+import org.nightlabs.jfire.editlock.EditLock;
+import org.nightlabs.jfire.editlock.EditLockType;
+import org.nightlabs.jfire.editlock.ReleaseReason;
+import org.nightlabs.jfire.editlock.id.EditLockID;
+import org.nightlabs.jfire.editlock.id.EditLockTypeID;
+
+public class EditLockMan
+{
+	private static final Logger logger = Logger.getLogger(EditLockMan.class);
+
+	private static EditLockMan sharedInstance = null;
+	private EditLockDAO editLockDAO = EditLockDAO.sharedInstance();
+
+	public static EditLockMan sharedInstance()
+	{
+		if (sharedInstance == null) {
+			synchronized (EditLockMan.class) {
+				if (sharedInstance == null)
+					sharedInstance = new EditLockMan();
+			}
+		}
+		return sharedInstance;
+	}
+
+	protected void softReleaseEditLockOnUserInactivity(Collection<EditLockCarrier> editLockCarriers)
+	{
+		List<ObjectID> objectIDs = new ArrayList<ObjectID>(editLockCarriers.size());
+		for (EditLockCarrier editLockCarrier : editLockCarriers) {
+			boolean canReleaseEditLock = true;
+			EditLockCallback callbackListener = editLockCarrier.getEditLockCallbackListener();
+			if (callbackListener != null)
+				canReleaseEditLock = callbackListener.canReleaseEditLock(editLockCarrier);
+
+			if (canReleaseEditLock)	
+				objectIDs.add(editLockCarrier.getEditLock().getLockedObjectID());
+		}
+
+		releaseEditLockWithJob(objectIDs, ReleaseReason.userInactivity);
+	}
+
+	private class EditLockRefreshJob extends Job
+	{
+		private EditLockCarrier editLockCarrier;
+		private EditLockID editLockID;
+		private EditLock editLock;
+		private EditLockType editLockType;
+		private EditLockTypeID editLockTypeID;
+
+		public EditLockRefreshJob(EditLockCarrier editLockCarrier)
+		{
+			super("Refresh EditLocks");
+			setEditLockCarrier(editLockCarrier);
+		}
+
+		private void setEditLockCarrier(EditLockCarrier editLockCarrier)
+		{
+			this.editLockCarrier = editLockCarrier;
+			this.editLock = editLockCarrier.getEditLock();
+			this.editLockID = (EditLockID) JDOHelper.getObjectId(editLock);
+			this.editLockType = editLock.getEditLockType();
+			this.editLockTypeID = (EditLockTypeID) JDOHelper.getObjectId(editLockType);
+		}
+
+		public EditLockCarrier getEditLockCarrier()
+		{
+			return editLockCarrier;
+		}
+		public EditLockID getEditLockID()
+		{
+			return editLockID;
+		}
+		public EditLock getEditLock()
+		{
+			return editLock;
+		}
+
+		private void handleExpiredUserActivityIfNecessary(IProgressMonitor monitor)
+		{
+			long now = System.currentTimeMillis();
+			if (now >= expiryUserInactivityTimestamp) {
+				boolean userInactivityReachedLimit;
+				synchronized (editLockCarrierMutex) {
+					userInactivityReachedLimit = editLockCarrier.getLastUserActivityDT().getTime() + editLockType.getEditLockExpiryUserInactivityMSec() < now;
+					if (userInactivityReachedLimit)
+						editLockCarrier.setLastUserActivityDT();
+				}
+				if (userInactivityReachedLimit) {
+					Display.getDefault().asyncExec(new Runnable()
+					{
+						public void run()
+						{
+							boolean canPopupDialog = true;
+							EditLockCallback callbackListener = editLockCarrier.getEditLockCallbackListener();
+							if (callbackListener != null)
+								canPopupDialog = callbackListener.canPopupDialog(editLockCarrier);
+
+							if (!canPopupDialog) {
+								ArrayList<EditLockCarrier> carriers = new ArrayList<EditLockCarrier>(1);
+								carriers.add(editLockCarrier);
+								softReleaseEditLockOnUserInactivity(carriers);
+							}
+							else {
+								if (editLockAboutToExpireDueToUserInactivityDialog == null) {
+									editLockAboutToExpireDueToUserInactivityDialog = new EditLockAboutToExpireDueToUserInactivityDialog(EditLockMan.this, RCPUtil.getActiveWorkbenchShell());
+									editLockAboutToExpireDueToUserInactivityDialog.setBlockOnOpen(false);
+									editLockAboutToExpireDueToUserInactivityDialog.open();
+								}
+
+								// add the EditLock to the dialog
+								editLockAboutToExpireDueToUserInactivityDialog.addEditLockCarrier(editLockCarrier);
+							}
+						}
+					});
+				}
+			} // if (now >= expiryUserInactivityTimestamp) {
+		}
+
+		private void reacquireEditLockOnServerIfNecessary(IProgressMonitor monitor)
+		{
+			logger.info("reacquireEditLockOnServerIfNecessary: enter");
+			if (System.currentTimeMillis() >= expiryClientLostTimestamp) { // it's time to refresh the server-side editLock
+				logger.info("reacquireEditLockOnServerIfNecessary: reacquiring");
+				AcquireEditLockResult acquireEditLockResult = editLockDAO.acquireEditLock(
+						editLockTypeID, editLock.getLockedObjectID(), editLock.getDescription(),
+						FETCH_GROUPS_WORKLOCK, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
+
+				EditLockCarrier newEditLockCarrier = createEditLockCarrier(acquireEditLockResult.getEditLock(), editLockCarrier);
+				setEditLockCarrier(newEditLockCarrier);
+			}
+		}
+
+		@Implement
+		protected IStatus run(IProgressMonitor monitor)
+		{
+			synchronized (editLockID2Job) {
+				if (editLockID2Job.get(editLockID) != this) {
+					logger.info("EditLockRefreshJob.run: job has been replaced - cancelling.");
+					return Status.CANCEL_STATUS; // a new job has already been created - this job is out-of-charge now
+				}
+			}
+
+			handleExpiredUserActivityIfNecessary(monitor);
+			reacquireEditLockOnServerIfNecessary(monitor);
+
+			scheduleWithEditLockTypeDelay();
+			return Status.OK_STATUS;
+		}
+
+		public void scheduleWithEditLockTypeDelay()
+		{
+			EditLockType editLockType = editLock.getEditLockType();
+			long now = System.currentTimeMillis();
+
+			// Calculate when we need to wake-up in order to re-acquire the lock on the server in time.
+			expiryClientLostTimestamp = editLock.getLastAcquireDT().getTime() + editLockType.getEditLockExpiryClientLostMSec();
+			// TODO we should somehow handle time differences between client and server... As the time should be UTC (according to the javadoc of java.util.Date), this
+			// should work fine if client + server are synchronized with an internet clock, but otherwise this causes problems. We need to change this code
+			// somehow in order to take a wrong client-clock into account!
+			long delayClientLost = expiryClientLostTimestamp - now;
+//			long reduction = delayClientLost / 4;
+//			reduction = Math.max(reduction, 1L * 60L * 1000L); // 1 minute before the server releases - is hopefully enough to react in time TODO should be configurable!
+			long reduction = 2L * 60L * 1000L; // 2 minutes before the server releases - is hopefully enough to react in time TODO should be configurable!
+			delayClientLost = delayClientLost - reduction;
+			if (delayClientLost < 0) delayClientLost = 0;
+			expiryClientLostTimestamp = now + delayClientLost;
+
+			// Calculate when we need to wake-up in order to ask the user
+			expiryUserInactivityTimestamp = editLockCarrier.getLastUserActivityDT().getTime() + editLockType.getEditLockExpiryUserInactivityMSec();
+			// these times are managed within the client alone => no time-difference-problems
+			long delayUserInactivity = expiryUserInactivityTimestamp - now;
+			if (delayUserInactivity < 0) delayUserInactivity = 0;
+
+			long delay = Math.min(delayClientLost, delayUserInactivity);
+			logger.info("scheduleWithEditLockTypeDelay: delay="+delay+" delayClientLost="+delayClientLost + " delayUserInactivity="+delayUserInactivity);
+			schedule(delay); // wake up as soon as some action is required
+		}
+	}
+
+	private long expiryClientLostTimestamp;
+	private long expiryUserInactivityTimestamp;
+
+	private EditLockAboutToExpireDueToUserInactivityDialog editLockAboutToExpireDueToUserInactivityDialog = null;
+
+	protected void onCloseEditLockAboutToExpireDueToUserInactivityDialog()
+	{
+		this.editLockAboutToExpireDueToUserInactivityDialog = null;
+	}
+
+	private Map<EditLockID, EditLockRefreshJob> editLockID2Job = new HashMap<EditLockID, EditLockRefreshJob>();
+
+	private Map<ObjectID, EditLockCarrier> objectID2EditLockCarrier = new HashMap<ObjectID, EditLockCarrier>();
+	private Map<EditLockID, EditLockCarrier> editLockID2EditLockCarrier = new HashMap<EditLockID, EditLockCarrier>();
+	private Object editLockCarrierMutex = new Object();
+
+	public EditLockMan()
+	{
+	}
+
+	private static final String[] FETCH_GROUPS_WORKLOCK = {
+		FetchPlan.DEFAULT, EditLock.FETCH_GROUP_LOCK_OWNER_USER, EditLock.FETCH_GROUP_WORKLOCK_TYPE
+	};
+
+	private void createJob(EditLockCarrier editLockCarrier)
+	{
+		EditLockRefreshJob job = new EditLockRefreshJob(editLockCarrier);
+		EditLockID editLockID = job.getEditLockID();
+		EditLockRefreshJob oldJob;
+		synchronized (editLockID2Job) {
+			oldJob = editLockID2Job.put(editLockID, job);
+		}
+		if (oldJob != null)
+			oldJob.cancel();
+
+		job.scheduleWithEditLockTypeDelay();
+	}
+
+	private EditLockCarrier createEditLockCarrier(EditLock editLock, EditLockCarrier oldEditLockCarrier)
+	{
+		EditLockID editLockID = (EditLockID) JDOHelper.getObjectId(editLock);
+		EditLockCarrier editLockCarrier = new EditLockCarrier(editLock, oldEditLockCarrier); // copy properties from the old carrier
+
+		synchronized (editLockCarrierMutex) {
+			objectID2EditLockCarrier.put(editLock.getLockedObjectID(), editLockCarrier);
+			editLockID2EditLockCarrier.put(editLockID, editLockCarrier);
+		}
+
+		return editLockCarrier;
+	}
+
+	public void acquireEditLock(EditLockTypeID editLockTypeID, ObjectID objectID, String description, EditLockCallback editLockCallback, Shell parentShell)
+	{
+		EditLockCarrier oldEditLockCarrier;
+		synchronized (editLockCarrierMutex) {
+			oldEditLockCarrier = objectID2EditLockCarrier.get(objectID);
+			if (oldEditLockCarrier != null) { // If we already manage a lock, we only set the new lastUserActivity
+				oldEditLockCarrier.setLastUserActivityDT();
+				oldEditLockCarrier.setEditLockCallbackListener(editLockCallback);
+			}
+		}
+		if (oldEditLockCarrier == null) { // we only need to communicate with the server, if the object is not yet locked there. and we don't open a dialog when refreshing - only when new. 
+			AcquireEditLockResult acquireEditLockResult = editLockDAO.acquireEditLock(
+					editLockTypeID, objectID, description, FETCH_GROUPS_WORKLOCK, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
+
+			EditLockCarrier newEditLockCarrier;
+			synchronized (editLockCarrierMutex) {
+				newEditLockCarrier = createEditLockCarrier(acquireEditLockResult.getEditLock(), null); // we ignore the old carrier and create a clean one
+				newEditLockCarrier.setEditLockCallbackListener(editLockCallback);
+			}
+
+			if (acquireEditLockResult.getEditLockCount() > 1) { // there's another lock => we show a warning
+				EditLockCollisionWarningDialog dialog = new EditLockCollisionWarningDialog(parentShell, acquireEditLockResult);
+				dialog.open();
+			}
+			createJob(newEditLockCarrier);
+		}
+	}
+
+	private void releaseEditLockWithJob(final List<ObjectID> objectIDs, final ReleaseReason releaseReason)
+	{
+		Job job = new Job("Release EditLock") {
+			@Implement
+			protected IStatus run(IProgressMonitor monitor)
+			{
+				releaseEditLocks(objectIDs, releaseReason, monitor);
+				return Status.OK_STATUS;
+			}
+		};
+		job.schedule();
+	}
+
+	public void releaseEditLock(ObjectID objectID, IProgressMonitor monitor)
+	{
+		ArrayList<ObjectID> objectIDs = new ArrayList<ObjectID>(1);
+		objectIDs.add(objectID);
+		releaseEditLocks(objectIDs, ReleaseReason.normal, monitor);
+	}
+
+	private void releaseEditLocks(List<ObjectID> objectIDs, ReleaseReason releaseReason, IProgressMonitor monitor)
+	{
+		for (ObjectID objectID : objectIDs) {
+			EditLockCarrier editLockCarrier;
+			synchronized (editLockCarrierMutex) {
+				editLockCarrier = objectID2EditLockCarrier.remove(objectID);
+				if (editLockCarrier != null)
+					editLockCarrier.setLastUserActivityDT();
+			}
+
+			if (editLockCarrier != null) {
+				Job job;
+				synchronized (editLockID2Job) {
+					job = editLockID2Job.remove((EditLockID)JDOHelper.getObjectId(editLockCarrier.getEditLock()));
+				}
+				if (job != null)
+					job.cancel();
+			}
+
+			editLockDAO.releaseEditLock(objectID, ReleaseReason.normal, monitor);
+		}
+	}
+}
