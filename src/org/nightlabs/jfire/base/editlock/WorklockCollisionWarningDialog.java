@@ -1,4 +1,4 @@
-package org.nightlabs.jfire.base.worklock;
+package org.nightlabs.jfire.base.editlock;
 
 import java.util.List;
 
@@ -26,7 +26,7 @@ extends CenteredDialog
 {
 	private AcquireWorklockResult acquireWorklockResult;
 
-	private WorklockTable worklockTable;
+	private EditLockTable editLockTable;
 
 	public WorklockCollisionWarningDialog(Shell parentShell, AcquireWorklockResult acquireWorklockResult)
 	{
@@ -65,8 +65,8 @@ extends CenteredDialog
 		l.setText("The object that you are about to edit is currently edited by someone else, too. This might cause collisions and changes to get lost.");
 		l.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-		worklockTable = new WorklockTable(page, SWT.NONE);
-		worklockTable.setInput(new String[] {"Loading data..."});
+		editLockTable = new EditLockTable(page, SWT.NONE);
+		editLockTable.setInput(new String[] {"Loading data..."});
 
 		Job job = new Job("Loading Worklocks") {
 			@Override
@@ -84,7 +84,7 @@ extends CenteredDialog
 				{
 					public void run()
 					{
-						if (worklockTable.isDisposed())
+						if (editLockTable.isDisposed())
 							return;
 
 						if (worklocks.isEmpty()) { // in the mean time (while opening the dialog) the other worklock was released - close the dialog immediately
@@ -92,7 +92,7 @@ extends CenteredDialog
 							return;
 						}
 
-						worklockTable.setInput(worklocks);
+						editLockTable.setInput(worklocks);
 					}
 				});
 

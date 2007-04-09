@@ -1,4 +1,4 @@
-package org.nightlabs.jfire.base.worklock;
+package org.nightlabs.jfire.base.editlock;
 
 import java.util.Collection;
 import java.util.List;
