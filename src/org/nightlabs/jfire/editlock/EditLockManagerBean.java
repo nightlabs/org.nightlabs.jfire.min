@@ -17,16 +17,12 @@ import org.nightlabs.ModuleException;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jdo.ObjectID;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
-import org.nightlabs.jfire.editlock.EditLock;
-import org.nightlabs.jfire.editlock.EditLockType;
-import org.nightlabs.jfire.editlock.ReleaseReason;
 import org.nightlabs.jfire.editlock.id.EditLockID;
 import org.nightlabs.jfire.editlock.id.EditLockTypeID;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.security.id.UserID;
 import org.nightlabs.jfire.timer.Task;
 import org.nightlabs.jfire.timer.id.TaskID;
-import org.nightlabs.jfire.editlock.EditLockManagerHome;
 import org.nightlabs.timepattern.TimePatternFormatException;
 
 /**
@@ -148,6 +144,7 @@ implements SessionBean
 	 * @param description The editLock's description which will be shown to the user and should make clear what is locked (e.g. the name of the object referenced by <code>objectID</code>).
 	 * @param fetchGroups The fetch-groups used for detaching the created/queried {@link EditLock}.
 	 * @param maxFetchDepth The maximum fetch-depth for detaching the created/queried {@link EditLock}.
+	 * @throws ModuleException 
 	 *
 	 * @ejb.interface-method
 	 * @ejb.transaction type="Required"
@@ -156,6 +153,7 @@ implements SessionBean
 	public AcquireEditLockResult acquireEditLock(
 			EditLockTypeID editLockTypeID, ObjectID objectID, String description,
 			String[] fetchGroups, int maxFetchDepth)
+	throws ModuleException
 	{
 		PersistenceManager pm = getPersistenceManager();
 		try {
@@ -163,19 +161,7 @@ implements SessionBean
 			if (fetchGroups != null)
 				pm.getFetchPlan().setGroups(fetchGroups);
 
-			EditLock editLock = EditLock.getEditLock(pm, objectID, UserID.create(getPrincipal()), getSessionID());
-			if (editLock != null) {
-				editLock.setLastAcquireDT();
-				editLock.setDescription(description);
-			}
-			else {
-				EditLockType editLockType = (EditLockType) pm.getObjectById(editLockTypeID);
-				editLock = (EditLock) pm.makePersistent(new EditLock(editLockType, User.getUser(pm, getPrincipal()), getSessionID(), objectID, description));
-			}
-
-			long editLockCount = EditLock.getEditLockCount(pm, objectID);
-
-			return new AcquireEditLockResult((EditLock) pm.detachCopy(editLock), editLockCount);
+			return EditLock.acquireEditLock(pm, UserID.create(getPrincipal()), getSessionID(), editLockTypeID, objectID, description).detachCopy(pm);
 		} finally {
 			pm.close();
 		}
@@ -191,12 +177,7 @@ implements SessionBean
 	{
 		PersistenceManager pm = getPersistenceManager();
 		try {
-			EditLock editLock = EditLock.getEditLock(pm, objectID, UserID.create(getPrincipal()), getSessionID());
-			if (editLock == null)
-				return;
-
-			editLock.getEditLockType().onReleaseEditLock(editLock, releaseReason);
-			pm.deletePersistent(editLock);
+			EditLock.releaseEditLock(pm, UserID.create(getPrincipal()), getSessionID(), objectID, releaseReason);
 		} finally {
 			pm.close();
 		}
