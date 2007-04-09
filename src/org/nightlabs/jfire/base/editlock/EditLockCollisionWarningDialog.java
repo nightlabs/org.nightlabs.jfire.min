@@ -45,7 +45,7 @@ extends CenteredDialog
 		return super.createButton(parent, id, label, defaultButton);
 	}
 
-	private static final String[] FETCH_GROUPS_WORKLOCK = {
+	private static final String[] FETCH_GROUPS_EDIT_LOCK = {
 		FetchPlan.DEFAULT, EditLock.FETCH_GROUP_LOCK_OWNER_USER
 	};
 
@@ -74,7 +74,7 @@ extends CenteredDialog
 			{
 				final List<EditLock> editLocks = EditLockDAO.sharedInstance().getEditLocks(
 						acquireEditLockResult.getEditLock().getLockedObjectID(),
-						FETCH_GROUPS_WORKLOCK,
+						FETCH_GROUPS_EDIT_LOCK,
 						NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT,
 						monitor);
 

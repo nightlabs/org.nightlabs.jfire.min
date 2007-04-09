@@ -145,7 +145,7 @@ public class EditLockMan
 				logger.info("reacquireEditLockOnServerIfNecessary: reacquiring");
 				AcquireEditLockResult acquireEditLockResult = editLockDAO.acquireEditLock(
 						editLockTypeID, editLock.getLockedObjectID(), editLock.getDescription(),
-						FETCH_GROUPS_WORKLOCK, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
+						FETCH_GROUPS_EDIT_LOCK, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
 
 				EditLockCarrier newEditLockCarrier = createEditLockCarrier(acquireEditLockResult.getEditLock(), editLockCarrier);
 				setEditLockCarrier(newEditLockCarrier);
@@ -219,8 +219,8 @@ public class EditLockMan
 	{
 	}
 
-	private static final String[] FETCH_GROUPS_WORKLOCK = {
-		FetchPlan.DEFAULT, EditLock.FETCH_GROUP_LOCK_OWNER_USER, EditLock.FETCH_GROUP_WORKLOCK_TYPE
+	private static final String[] FETCH_GROUPS_EDIT_LOCK = {
+		FetchPlan.DEFAULT, EditLock.FETCH_GROUP_LOCK_OWNER_USER, EditLock.FETCH_GROUP_EDIT_LOCK_TYPE
 	};
 
 	private void createJob(EditLockCarrier editLockCarrier)
@@ -262,7 +262,7 @@ public class EditLockMan
 		}
 		if (oldEditLockCarrier == null) { // we only need to communicate with the server, if the object is not yet locked there. and we don't open a dialog when refreshing - only when new. 
 			AcquireEditLockResult acquireEditLockResult = editLockDAO.acquireEditLock(
-					editLockTypeID, objectID, description, FETCH_GROUPS_WORKLOCK, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
+					editLockTypeID, objectID, description, FETCH_GROUPS_EDIT_LOCK, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
 
 			EditLockCarrier newEditLockCarrier;
 			synchronized (editLockCarrierMutex) {
