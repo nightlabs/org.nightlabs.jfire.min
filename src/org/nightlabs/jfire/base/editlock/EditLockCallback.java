@@ -2,7 +2,7 @@ package org.nightlabs.jfire.base.editlock;
 
 import org.nightlabs.jfire.editlock.EditLock;
 
-public interface EditLockCallback
+public abstract class EditLockCallback
 {
 	/**
 	 * <p>
@@ -20,7 +20,10 @@ public interface EditLockCallback
 	 *
 	 * @return whether to popup the dialog.
 	 */
-	boolean canPopupDialog(EditLockCarrier editLockCarrier);
+	public boolean canPopupDialog(EditLockCarrier editLockCarrier)
+	{
+		return true;
+	}
 
 	/**
 	 * After the expiring editLock was shown in the {@link EditLockAboutToExpireDueToUserInactivityDialog} and
@@ -34,5 +37,8 @@ public interface EditLockCallback
 	 * @param editLockCarrier The {@link EditLockCarrier} referencing the {@link EditLock} that is about to be released.
 	 * @return whether or not to release the {@link EditLock}.
 	 */
-	boolean canReleaseEditLock(EditLockCarrier editLockCarrier);
+	boolean canReleaseEditLock(EditLockCarrier editLockCarrier)
+	{
+		return true;
+	}
 }

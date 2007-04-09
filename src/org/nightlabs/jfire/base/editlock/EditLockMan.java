@@ -291,6 +291,26 @@ public class EditLockMan
 		job.schedule();
 	}
 
+	/**
+	 * This method uses a {@link Job} to release the {@link EditLock} asynchronously.
+	 *
+	 * @param objectID The ID of the JDO object which has been locked.
+	 * @see #releaseEditLock(ObjectID, IProgressMonitor)
+	 */
+	public void releaseEditLock(ObjectID objectID)
+	{
+		ArrayList<ObjectID> objectIDs = new ArrayList<ObjectID>(1);
+		objectIDs.add(objectID);
+		releaseEditLockWithJob(objectIDs, ReleaseReason.normal);
+	}
+
+	/**
+	 * This method releases the {@link EditLock} synchronously and might thus block your UI if not called from
+	 * within a <code>Job</code> or worker-<code>Thread</code>.
+	 *
+	 * @param objectID The ID of the JDO object which has been locked.
+	 * @see #releaseEditLock(ObjectID)
+	 */
 	public void releaseEditLock(ObjectID objectID, IProgressMonitor monitor)
 	{
 		ArrayList<ObjectID> objectIDs = new ArrayList<ObjectID>(1);
