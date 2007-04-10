@@ -261,7 +261,7 @@ public class EditLockMan
 	 * @param parentShell This shell will be used as parent for the collision-dialog, if the object is already locked by someone else. It is not used
 	 * @param monitor As this method synchronously communicates with the server (if necessary), it takes this "tagging" parameter.
 	 */
-	public void acquireEditLock(EditLockTypeID editLockTypeID, ObjectID objectID, String description, EditLockCallback editLockCallback, Shell parentShell, IProgressMonitor monitor)
+	public void acquireEditLock(EditLockTypeID editLockTypeID, ObjectID objectID, String description, EditLockCallback editLockCallback, final Shell parentShell, IProgressMonitor monitor)
 	{
 		if (editLockTypeID == null)
 			throw new IllegalArgumentException("editLockTypeID must not be null!");
@@ -290,7 +290,7 @@ public class EditLockMan
 			}
 		}
 		if (oldEditLockCarrier == null) { // we only need to communicate with the server, if the object is not yet locked there. and we don't open a dialog when refreshing - only when new.
-			AcquireEditLockResult acquireEditLockResult;
+			final AcquireEditLockResult acquireEditLockResult;
 
 			monitor.beginTask("Acquire EditLock on Server", 1);
 			try {
@@ -307,8 +307,18 @@ public class EditLockMan
 			}
 
 			if (acquireEditLockResult.getEditLockCount() > 1) { // there's another lock => we show a warning
-				EditLockCollisionWarningDialog dialog = new EditLockCollisionWarningDialog(parentShell, acquireEditLockResult);
-				dialog.open();
+				Runnable dialogOpener = new Runnable() {
+					public void run() {
+						EditLockCollisionWarningDialog dialog = new EditLockCollisionWarningDialog(parentShell, acquireEditLockResult);
+						dialog.open();
+						dialog.setBlockOnOpen(false);
+					}
+				};
+
+				if (Display.getCurrent() == null)
+					Display.getDefault().asyncExec(dialogOpener);
+				else
+					dialogOpener.run();
 			}
 			createJob(newEditLockCarrier);
 		}
