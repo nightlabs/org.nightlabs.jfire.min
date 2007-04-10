@@ -250,8 +250,37 @@ public class EditLockMan
 		return editLockCarrier;
 	}
 
-	public void acquireEditLock(EditLockTypeID editLockTypeID, ObjectID objectID, String description, EditLockCallback editLockCallback, Shell parentShell)
+	/**
+	 * This method acquires an <code>EditLock</code> (or refreshs it in order to prevent release due to user-inactivity).
+	 *
+	 * @param editLockTypeID The ID referencing the {@link EditLockType} to which the new {@link EditLock} will belong. This parameter is ignored, if the
+	 *		<code>EditLock</code> already exists.
+	 * @param objectID The ID of the object that shall be locked.
+	 * @param description A human-readable description describing the object that is locked.
+	 * @param editLockCallback Either <code>null</code> or your callback-implementation.
+	 * @param parentShell This shell will be used as parent for the collision-dialog, if the object is already locked by someone else. It is not used
+	 * @param monitor As this method synchronously communicates with the server (if necessary), it takes this "tagging" parameter.
+	 */
+	public void acquireEditLock(EditLockTypeID editLockTypeID, ObjectID objectID, String description, EditLockCallback editLockCallback, Shell parentShell, IProgressMonitor monitor)
 	{
+		if (editLockTypeID == null)
+			throw new IllegalArgumentException("editLockTypeID must not be null!");
+
+		if (objectID == null)
+			throw new IllegalArgumentException("objectID must not be null!");
+
+		if (description == null)
+			throw new IllegalArgumentException("description must not be null!");
+
+		// callback can be null => don't check it
+
+		if (parentShell == null)
+			throw new IllegalArgumentException("parentShell must not be null!");
+
+		if (monitor == null)
+			throw new IllegalArgumentException("monitor must not be null!");
+
+
 		EditLockCarrier oldEditLockCarrier;
 		synchronized (editLockCarrierMutex) {
 			oldEditLockCarrier = objectID2EditLockCarrier.get(objectID);
@@ -260,9 +289,16 @@ public class EditLockMan
 				oldEditLockCarrier.setEditLockCallbackListener(editLockCallback);
 			}
 		}
-		if (oldEditLockCarrier == null) { // we only need to communicate with the server, if the object is not yet locked there. and we don't open a dialog when refreshing - only when new. 
-			AcquireEditLockResult acquireEditLockResult = editLockDAO.acquireEditLock(
-					editLockTypeID, objectID, description, FETCH_GROUPS_EDIT_LOCK, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
+		if (oldEditLockCarrier == null) { // we only need to communicate with the server, if the object is not yet locked there. and we don't open a dialog when refreshing - only when new.
+			AcquireEditLockResult acquireEditLockResult;
+
+			monitor.beginTask("Acquire EditLock on Server", 1);
+			try {
+				acquireEditLockResult = editLockDAO.acquireEditLock(
+						editLockTypeID, objectID, description, FETCH_GROUPS_EDIT_LOCK, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
+			} finally {
+				monitor.worked(1);
+			}
 
 			EditLockCarrier newEditLockCarrier;
 			synchronized (editLockCarrierMutex) {
