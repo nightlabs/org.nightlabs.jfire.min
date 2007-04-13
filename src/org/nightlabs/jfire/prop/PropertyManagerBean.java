@@ -26,9 +26,7 @@
 
 package org.nightlabs.jfire.prop;
 
-/**
- * @author Tobias Langner <tobias[DOT]langner[AT]nightlabs[DOT]de>
- */
+
 import java.rmi.RemoteException;
 import java.util.Collection;
 import java.util.Iterator;
@@ -57,6 +55,9 @@ import org.nightlabs.jfire.prop.id.StructID;
 import org.nightlabs.jfire.prop.id.StructLocalID;
 import org.nightlabs.jfire.prop.search.PropSearchFilter;
 
+/**
+ * @author Tobias Langner <tobias[DOT]langner[AT]nightlabs[DOT]de>
+ */
 /**
  * TODO: Manage access rights for Properties on object-link-type basis
  * 
