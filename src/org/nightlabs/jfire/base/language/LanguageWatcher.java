@@ -35,7 +35,6 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.eclipse.jface.action.IAction;
-
 import org.nightlabs.base.language.LanguageManager;
 import org.nightlabs.config.Config;
 import org.nightlabs.config.ConfigException;
@@ -50,7 +49,7 @@ import org.nightlabs.language.LanguageCf;
  * A shared instance of LanguageWatcher is used to create
  * the clients language on the server if not existent
  * and to ask the user to restart the client if it was
- * not started with his lanugage.
+ * not started with his language. ...really? Marco :-)
  * 
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  */
@@ -109,6 +108,7 @@ public class LanguageWatcher implements LoginStateListener {
 
 			// download all languages known to the organisation on the server
 			Collection languages = remoteLanguageManager.getLanguages();
+			Set<String> languageIDs = new HashSet<String>();
 			Set remoteLanguageIDSet = new HashSet(languages.size());
 			for (Iterator it = languages.iterator(); it.hasNext(); ) {
 				Language language = (Language) it.next();
@@ -117,8 +117,9 @@ public class LanguageWatcher implements LoginStateListener {
 				LanguageCf langCf = localLanguageManager.getLanguage(language.getLanguageID(), false);
 				if (langCf == null) {
 					// language does not exist in the client => create it and copy all properties.
-					langCf = new LanguageCf(languageID);
-					langCf.setNativeName(language.getNativeName());
+//					langCf = new LanguageCf(languageID);
+//					langCf.setNativeName(language.getNativeName());
+					langCf = language.createLanguageCf();
 					localLanguageManager.addLanguage(langCf);
 				}
 				else {
@@ -127,16 +128,31 @@ public class LanguageWatcher implements LoginStateListener {
 						langCf.setNativeName(language.getNativeName());
 						localLanguageManager.makeDirty(langCf);
 					}
+					if (langCf.getName().copyFrom(language.getName()))
+						localLanguageManager.makeDirty(langCf);
 				}
+			}
+
+			for (Iterator it = localLanguageManager.getLanguages().iterator(); it.hasNext(); ) {
+				LanguageCf langCf = (LanguageCf) it.next();
+				languageIDs.add(langCf.getLanguageID());
 			}
 
 			// check client's languages and create the ones which are missing on the server
 			for (Iterator it = localLanguageManager.getLanguages().iterator(); it.hasNext(); ) {
 				LanguageCf langCf = (LanguageCf) it.next();
+
+				{ // init langCf again
+					int namesCount = langCf.getName().getTexts().size();
+					langCf.init(languageIDs);
+					if (namesCount != langCf.getName().getTexts().size())
+						localLanguageManager.makeDirty(langCf);
+				}
+
 				String languageID = langCf.getLanguageID();
 				if (!remoteLanguageIDSet.contains(languageID)) {
 					// language does not exist in the organisation on the server => create it
-					remoteLanguageManager.createLanguage(langCf);
+					remoteLanguageManager.createLanguage(langCf); // TODO we should add additional translations of the language name to the server
 				}
 			}
 		} catch (Exception e) {
