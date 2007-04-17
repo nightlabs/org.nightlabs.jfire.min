@@ -37,6 +37,7 @@ import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 
 import org.apache.log4j.Logger;
+import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.language.Language;
 import org.nightlabs.jfire.language.LanguageException;
@@ -143,6 +144,7 @@ public abstract class LanguageManagerBean extends BaseSessionBeanImpl implements
 		try {
 		  PersistenceManager pm = getPersistenceManager();
 		  try {
+		  	pm.getFetchPlan().setMaxFetchDepth(NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
 			  pm.getFetchPlan().addGroup(FetchPlan.ALL);
 			  return pm.detachCopyAll((Collection)pm.newQuery(Language.class).execute());
 		  } finally {
