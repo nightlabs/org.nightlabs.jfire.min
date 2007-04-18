@@ -35,6 +35,8 @@ import javax.jdo.FetchPlan;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
@@ -150,7 +152,11 @@ implements IWorkbenchPreferencePage
 	 * @param configModule The {@link ConfigModule} to set.
 	 */
 	protected void setCurrentConfigModule(ConfigModule configModule) {
-		if (doCloneConfigModule())
+		setCurrentConfigModule(configModule, doCloneConfigModule());
+	}
+	
+	void setCurrentConfigModule(ConfigModule configModule, boolean doCloneConfigModule) {
+		if (doCloneConfigModule)
 			this.currentConfigModule = Utils.cloneSerializable(configModule);
 		else
 			this.currentConfigModule = configModule;
@@ -272,6 +278,14 @@ implements IWorkbenchPreferencePage
 	protected void createConfigGroupHeader(Composite parent) {
 		checkBoxAllowOverwrite = new Button(wrapper, SWT.CHECK);
 		checkBoxAllowOverwrite.setText("Allow this configuration to be overwritten.");
+		
+		checkBoxAllowOverwrite.addSelectionListener(new SelectionListener() {
+			public void widgetDefaultSelected(SelectionEvent e) {}
+			public void widgetSelected(SelectionEvent e) {
+				setConfigChanged(true);
+			}
+		});
+		
 		GridData gd = new GridData(GridData.FILL_HORIZONTAL);
 		gd.horizontalSpan = 2;
 		checkBoxAllowOverwrite.setLayoutData(gd);
@@ -298,9 +312,10 @@ implements IWorkbenchPreferencePage
 	/**
 	 * Will be called to determine whether the given ConfigModule is allowed
 	 * to be edited. The default implementation will return false only when
-	 * the group the given module's Config is part of set allowOverwrite to
+	 * the group of the given module's Config 
+	 * is part of set allowOverwrite to
 	 * false for the given configModule.
-	 * If false is returned {@link #makeUneditable()} will be called to 
+	 * If false is returned {@link #setEditable(boolean)} will be called to 
 	 * disable/hide the GUI elements.
 	 * This is intended to be overridden for different behaviour.
 	 * 
@@ -308,7 +323,7 @@ implements IWorkbenchPreferencePage
 	 * @return Wheter the configModule is allowed to be edited.
 	 */
 	protected boolean canEdit(ConfigModule configModule) {
-		return configModule.isGroupAllowOverwrite();
+		return configModule.isGroupConfigModule() || configModule.isGroupAllowsOverride();
 	}
 
 	/**
@@ -316,7 +331,7 @@ implements IWorkbenchPreferencePage
 	 * or an read-only version of the view of the current ConfigModule.
 	 * The default implementation recursively disables/enables 
 	 * all Buttons of this preference-page. 
-	 * Is intended to be extended for different behaviour on canEdit() == false.
+	 * This is intended to be extended for different behaviour on canEdit() == false.
 	 */
 	protected void setEditable(boolean editable) {
 		setEditable(wrapper, editable);
@@ -347,16 +362,31 @@ implements IWorkbenchPreferencePage
 	public void updatePreferencesGUI(ConfigModule configModule) {
 		updatePreferencePage(configModule);
 		setEditable(canEdit(configModule));
-		if (doCreateConfigGroupHeader)
-			checkBoxAllowOverwrite.setSelection(configModule.isAllowOverride());		
+		
+		if (checkBoxAllowOverwrite != null)
+			checkBoxAllowOverwrite.setSelection(configModule.isGroupMembersMayOverride());		
 	}
-
+	
+	
 	/**
-	 * Will be called to update the ConfigModule from the UI.
+	 * Updates the config module. 
 	 * 
-	 * @param configModule
+	 * @param configModule the ConfigModule to be updated.
 	 */
-	public abstract void updateConfigModule(ConfigModule configModule);
+	public void updateCurrentCfMod() {
+		boolean allowOverwrite = false;
+		if (checkBoxAllowOverwrite != null)
+			allowOverwrite = checkBoxAllowOverwrite.getSelection();
+		getCurrentConfigModule().setAllowUserOverride(allowOverwrite);
+				
+		updateConfigModule(getCurrentConfigModule());		
+	}
+	/**
+	 * Here you should update the config module with the data from specific UI.
+	 * 
+	 * @param configModule The config module to be updated.
+	 */
+	protected abstract void updateConfigModule(ConfigModule configModule);
 
 	/**
 	 * Returns the ConfigModule class this PreferencePage does edit.
@@ -422,11 +452,7 @@ implements IWorkbenchPreferencePage
 			throw new RuntimeException(e);
 		}
 		if (isConfigChanged())
-			updateConfigModule(getCurrentConfigModule());
-		boolean allowOverwrite = false;
-		if (checkBoxAllowOverwrite != null)
-			allowOverwrite = checkBoxAllowOverwrite.getSelection();
-		getCurrentConfigModule().setAllowUserOverride(allowOverwrite);
+			updateCurrentCfMod();		
 
 		try {
 			currentConfigModule = configManager.storeConfigModule(

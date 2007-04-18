@@ -72,7 +72,6 @@ implements ConfigPreferenceChangedListener
 	
 	private boolean editingConfigGroup = false;
 
-
 	/**
 	 * @param parent
 	 * @param style
@@ -101,13 +100,13 @@ implements ConfigPreferenceChangedListener
 		preferencesComposite = new ConfigPreferencesComposite(this, SWT.NONE, true);
 	}
 
-	private void updatePreferecesGUI() {
+	private void updatePreferencesGUI() {
 		AbstractConfigModulePreferencePage selectedPage = getSelectedPrefencePage();
 		if (selectedPage == null) {
 			preferencesComposite.setNoEditGUI();
 			return;
 		}
-		selectedPage.setCurrentConfigModule(getCurrentConfigModule());
+		selectedPage.setCurrentConfigModule(getCurrentConfigModule(), false);
 		if (!involvedPages.contains(selectedPage)) 
 		{			
 			selectedPage.createContents(preferencesComposite.getWrapper(), true, editingConfigGroup, true);
@@ -117,8 +116,7 @@ implements ConfigPreferenceChangedListener
 		else {
 			selectedPage.updatePreferencesGUI(getCurrentConfigModule());
 		}
-		// TODO: maybe have to trigger display still in selected page
-		selectedPage.setCurrentConfigID(currentConfigID, true);		
+//		selectedPage.setCurrentConfigID(currentConfigID, true);		
 
 		preferencesComposite.getStackLayout().topControl = selectedPage.getControl();		
 		preferencesComposite.getWrapper().layout();
@@ -126,8 +124,8 @@ implements ConfigPreferenceChangedListener
 
 	private void updateCurrentConfigModule() {
 		if (currentConfigModule != null && currentPage != null) {
-			if (currentConfigModule.getClass().equals(currentPage.getConfigModuleClass())) {
-				currentPage.updateConfigModule(currentConfigModule);
+			if (currentConfigModule.getClass().equals(currentPage.getConfigModuleClass())) {				
+				currentPage.updateCurrentCfMod();
 			}
 		}
 	}
@@ -135,11 +133,11 @@ implements ConfigPreferenceChangedListener
 	public void updatePreferencesComposite() {
 		fetchCurrentConfigModule();
 		if (Thread.currentThread() == Display.getDefault().getThread())
-			updatePreferecesGUI();
+			updatePreferencesGUI();
 		else 
 			Display.getDefault().asyncExec(new Runnable() {
 				public void run() {
-					updatePreferecesGUI();
+					updatePreferencesGUI();
 				}
 			});
 	}
@@ -203,6 +201,7 @@ implements ConfigPreferenceChangedListener
 			return;
 		
 		try {
+			// TODO: Use a DAO here and Utils.cloneSerializable()			
 			currentConfigModule = configManager.getConfigModule(
 					(ConfigID)currentConfigID,
 					selectedPage.getConfigModuleClass(), 

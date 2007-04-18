@@ -66,7 +66,7 @@ public class WorkstationFeaturesPreferencePage extends
 	}
 
 	@Override
-	public void updateConfigModule(ConfigModule configModule) {
+	protected void updateConfigModule(ConfigModule configModule) {
 		if (! (configModule instanceof WorkstationFeaturesCfMod))
 			throw new IllegalStateException("The WorkstationFeaturesPreference may only be used with WorkstationFeaturesCfMods!");
 		
