@@ -105,6 +105,17 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 			if (!JDOHelper.isDetached(configModule))
 				throw new IllegalArgumentException("Pass only detached ConfigModules to this method.");
 			
+			// All this could be checked by configModule.isGroupAllowsOver
+			
+			// Get the config of the given module
+			Config config = Config.getConfig(pm, configModule.getOrganisationID(), configModule.getConfigKey(), configModule.getConfigType());			
+			if (!(config instanceof ConfigGroup)) {
+				// Get the grou this config belongs to and the appropriate config module in this group
+				ConfigModule groupConfigModule = config.getConfigGroup().getConfigModule(configModule.getClass(), configModule.getCfModID(), false);
+				if (groupConfigModule != null && !groupConfigModule.isGroupMembersMayOverride())
+					throw new IllegalArgumentException("This ConfigModule is not allowed to be stored. It's ConfigGroup "+config.getConfigGroup().getName()+" does not allow this");
+			}
+			
 			ConfigModule pConfigModule = (ConfigModule)pm.makePersistent(configModule);
 			
 			if (pConfigModule.getConfig() instanceof ConfigGroup) {
@@ -355,21 +366,23 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 //		else
 //			pm.getFetchPlan().clearGroups();
 
-		ConfigGroup configGroup = ConfigGroup.getConfigGroupForConfig(
-				pm, 
-				ConfigID.create(
-						config.getOrganisationID(),
-						config.getConfigKey(),
-						config.getConfigType()
-					)
-			);
-		if (configGroup != null) {
-			ConfigModule groupModule = ConfigModule.getConfigModule(pm, configGroup, cfModClass, cfModID);
-			if (groupModule != null)
-				groupAllowOverwrite = groupModule.isAllowOverride();
-		}
+		
+		// No need to set groupAllowsOverride any more, this setting is now persistent.
+//		ConfigGroup configGroup = ConfigGroup.getConfigGroupForConfig(
+//				pm, 
+//				ConfigID.create(
+//						config.getOrganisationID(),
+//						config.getConfigKey(),
+//						config.getConfigType()
+//					)
+//			);
+//		if (configGroup != null) {
+//			ConfigModule groupModule = ConfigModule.getConfigModule(pm, configGroup, cfModClass, cfModID);
+//			if (groupModule != null)
+//				groupAllowOverwrite = groupModule.isGroupMembersMayOverride();
+//		}
 		ConfigModule result = (ConfigModule)pm.detachCopy(configModule);
-		result.setGroupAllowOverwrite(groupAllowOverwrite);
+//		result.setGroupAllowsOverride(groupAllowOverwrite);
 		return result;
 	}
 
