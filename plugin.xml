@@ -47,6 +47,7 @@
 	   name="propStructField" 
 	   schema="schema/propStructField.exsd"
 	/>
+   <extension-point id="overview" name="overview" schema="schema/overview.exsd"/>
 	
 	
    <!-- Extensions -->	
@@ -100,6 +101,12 @@
             fixed="false"
             name="%perspectives.jfireWelcome.name"
             id="org.nightlabs.jfire.base.perspective.JFireWelcomePerspective"/>
+      <perspective
+            class="org.nightlabs.jfire.base.overview.OverviewPerspective"
+            icon="icons/overview/overview.16x16.png"
+            id="org.nightlabs.jfire.base.overview.OverviewPerspective"
+            name="Overview">
+      </perspective>
    </extension>
    
    <extension
@@ -115,6 +122,18 @@
             class="org.nightlabs.jfire.base.JFireWelcomeView"
             id="org.nightlabs.jfire.base.view.JFireWelcomeView">
       </view>
+      <view
+            allowMultiple="false"
+            category="org.nightlabs.jfire.base.overview.Overview"
+            class="org.nightlabs.jfire.base.overview.OverviewView"
+            icon="icons/overview/overview.16x16.png"
+            id="org.nightlabs.jfire.base.overview.OverviewView"
+            name="Overview">
+      </view>
+      <category
+            id="org.nightlabs.jfire.base.overview.Overview"
+            name="Overview">
+      </category>
    </extension>   
 
    <!-- Actions 
