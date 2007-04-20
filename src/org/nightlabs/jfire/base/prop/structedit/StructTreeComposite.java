@@ -114,7 +114,7 @@ public class StructTreeComposite extends AbstractTreeComposite implements Langua
 				for (StructBlock psb : struct.getStructBlocks()) {
 					StructBlockNode newBlockNode = new StructBlockNode(psb);
 					blockNodes.add(newBlockNode);
-					for (AbstractStructField field : psb.getStructFields())
+					for (StructField field : psb.getStructFields())
 						newBlockNode.addField(new StructFieldNode(field, newBlockNode));
 				}
 			} else if (newInput instanceof String) {

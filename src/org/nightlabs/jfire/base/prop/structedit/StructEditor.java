@@ -49,7 +49,7 @@ import org.nightlabs.util.reflect.ReflectUtil;
 
 public class StructEditor {
 	private StructTree structTree;
-	private StructPartEditor currentStructPartEditor;
+	private StructPartEditor<?> currentStructPartEditor;
 	private StructBlockEditor structBlockEditor;	
 	private LanguageChooser languageChooser;
 	private TreeNode lastSelection;
@@ -215,7 +215,7 @@ public class StructEditor {
 		return propertyManager;
 	}
 
-	public void storeStructure() {
+	public void storeStructure() {		
 		try {
 			ReflectUtil.findContainedObjectsByClass(
 					currentStruct, Serializable.class, false, true,
@@ -300,7 +300,7 @@ public class StructEditor {
 	}
 	
 	private void addStructField(StructBlock toBlock, StructFieldMetaData newFieldMetaData, DynamicPathWizardPage detailsPage) {
-		long newFieldID = IDGenerator.nextID(StructEditorComposite.class.getName() + '/' + "newFieldID");
+		long newFieldID = IDGenerator.nextID(StructField.class.getName() + '/' + "newFieldID");
 		Base36Coder coder = Base36Coder.sharedInstance(false);
 
 		StructFieldFactory fieldFactory = newFieldMetaData.getFieldFactory();
@@ -311,6 +311,7 @@ public class StructEditor {
 		try {
 			newField = fieldFactory.createStructField(toBlock, Login.getLogin().getOrganisationID(), fieldID, detailsPage);
 			newField.getName().setText(languageChooser.getLanguage().getLanguageID(), "Change me");
+			toBlock.addStructField(newField);
 
 			structTree.addStructField(structTree.getCurrentBlockNode(), newField);
 			setChanged(true);
