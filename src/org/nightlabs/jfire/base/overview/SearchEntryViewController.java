@@ -56,4 +56,21 @@ implements EntryViewController
 			widgetSelected(e);
 		}	
 	};
+	
+	@Override
+	public boolean equals(Object obj) 
+	{
+		if (obj == null)
+			return false;
+		
+		if (!(obj instanceof EntryViewController))
+				return false;
+		
+		EntryViewController controller = (EntryViewController) obj;
+		if (controller.getID().equals(getID()))
+				return true;
+		
+		return false;
+	}
+	
 }

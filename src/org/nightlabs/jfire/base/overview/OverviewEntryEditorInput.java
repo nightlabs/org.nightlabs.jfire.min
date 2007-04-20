@@ -20,4 +20,20 @@ extends NullEditorInput
 		return entryViewController;
 	}
 	
+	@Override
+	public boolean equals(Object obj) 
+	{
+		if (obj == null)
+			return false;
+		
+		if (!(obj instanceof OverviewEntryEditorInput))
+			return false;
+	
+		OverviewEntryEditorInput input = (OverviewEntryEditorInput) obj;
+		if (entryViewController.equals(input.getEntryViewController()))
+			return true;
+		
+		return false;
+	}
+		
 }

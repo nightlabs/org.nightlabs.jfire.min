@@ -16,4 +16,10 @@ public interface EntryViewController
 	 * @return the Composite created by the controller
 	 */
 	Composite createComposite(Composite parent);
+	
+	/**
+	 * returns the id of the {@link EntryViewController}
+	 * @return the id of the {@link EntryViewController}
+	 */
+	String getID();
 }

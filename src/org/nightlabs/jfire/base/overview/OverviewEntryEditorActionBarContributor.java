@@ -46,10 +46,15 @@ extends EditorActionBarContributor
   	if (targetEditor instanceof OverviewEntryEditor) {
   		editor = (OverviewEntryEditor) targetEditor;
   		
-  		contributeToToolBar(getActionBars().getToolBarManager());
+  		if (!alreadyContributed) {
+  			contributeToToolBar(getActionBars().getToolBarManager());
+  			alreadyContributed = true;
+  		}
   	}
   }
-
+  
+  private boolean alreadyContributed = false;
+  
   protected EntryViewController getEntryViewController() 
   {
   	if (editor != null)
