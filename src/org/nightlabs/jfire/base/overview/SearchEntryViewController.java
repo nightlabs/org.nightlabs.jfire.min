@@ -7,6 +7,9 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.forms.widgets.Form;
+import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.nightlabs.base.composite.XComposite;
 
 /**
@@ -35,13 +38,18 @@ implements EntryViewController
 //		Button applyButton = new Button(parent, SWT.NONE);
 //		applyButton.setText("Apply");
 //		applyButton.addSelectionListener(applyListener);
+		 		
+		SashForm sashform = new SashForm(parent, SWT.VERTICAL);
+		sashform.setLayout(new FillLayout());
+		searchComposite = createSearchComposite(sashform);
+		resultComposite = createResultComposite(sashform);
+		sashform.setWeights(new int[] {1,3});
 		
-		SashForm form = new SashForm(parent, SWT.VERTICAL);
-		form.setLayout(new FillLayout());
-		searchComposite = createSearchComposite(form);
-		resultComposite = createResultComposite(form);
-		form.setWeights(new int[] {1,3});
-		return form;
+		if (searchComposite instanceof XComposite) {
+			((XComposite)searchComposite).setToolkit(new FormToolkit(Display.getDefault()));
+			((XComposite)searchComposite).adaptToToolkit();
+		}
+		return sashform;
 	}
 	
 	public abstract Composite createSearchComposite(Composite parent);	

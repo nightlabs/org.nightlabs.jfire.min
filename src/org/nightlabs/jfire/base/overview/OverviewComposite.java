@@ -16,10 +16,12 @@ import org.eclipse.nebula.widgets.pshelf.PShelf;
 import org.eclipse.nebula.widgets.pshelf.PShelfItem;
 import org.eclipse.nebula.widgets.pshelf.RedmondShelfRenderer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.Table;
 import org.nightlabs.base.composite.ListComposite;
@@ -55,6 +57,14 @@ extends XComposite
 		
 		shelf = new PShelf(parent, SWT.NONE);
 	  shelf.setRenderer(new RedmondShelfRenderer());
+//		RedmondShelfRenderer renderer = new RedmondShelfRenderer();
+//		renderer.setGradient1(new Color(null, 198, 223, 225));
+//		renderer.setGradient1(new Color(null, 255, 255, 255));
+//		renderer.setHoverGradient1(new Color(null, 198, 223, 225));
+//		renderer.setHoverGradient2(new Color(null, 255, 255, 255));
+//		renderer.setHover(true);
+//		shelf.setRenderer(renderer);
+		
 		shelf.setLayoutData(new GridData(GridData.FILL_BOTH));
 		
 		for (Category category : OverviewRegistry.sharedInstance().getCategories()) 
@@ -102,6 +112,7 @@ extends XComposite
 			if (!event.getSelection().isEmpty() && event.getSelection() instanceof StructuredSelection) {
 				StructuredSelection sel = (StructuredSelection) event.getSelection();
 				Entry entry = (Entry) sel.getFirstElement();
+				entry.openEntry();
 			}
 		}	
 	};

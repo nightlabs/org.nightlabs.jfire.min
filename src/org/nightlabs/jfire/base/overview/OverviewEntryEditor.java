@@ -1,10 +1,13 @@
 package org.nightlabs.jfire.base.overview;
 
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.action.MenuManager;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.part.EditorActionBarContributor;
 import org.eclipse.ui.part.EditorPart;
 
 /**
@@ -59,13 +62,23 @@ extends EditorPart
 	@Override
 	public void createPartControl(Composite parent) 
 	{
-		if (entryViewController != null)
+		if (entryViewController != null) {
 			composite = entryViewController.createComposite(parent);
+			EditorActionBarContributor actionBarContributor = 
+				(EditorActionBarContributor) getEditorSite().getActionBarContributor();
+			if (actionBarContributor != null) {
+				MenuManager menuManager = new MenuManager();
+				actionBarContributor.contributeToMenu(menuManager);
+				Menu contextMenu = menuManager.createContextMenu(composite);
+				composite.setMenu(contextMenu);
+			}
+		}
 	}
 
 	@Override
 	public void setFocus() {
 		if (composite != null && !composite.isDisposed())		
 			composite.setFocus();
-	}	
+	}
+		
 }

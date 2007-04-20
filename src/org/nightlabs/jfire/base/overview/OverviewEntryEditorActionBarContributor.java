@@ -41,6 +41,10 @@ extends EditorActionBarContributor
 	}
 
 	private OverviewEntryEditor editor;
+	protected OverviewEntryEditor getEditor() {
+		return editor;
+	}
+	
   public void setActiveEditor(IEditorPart targetEditor) 
   {
   	if (targetEditor instanceof OverviewEntryEditor) {
@@ -53,7 +57,7 @@ extends EditorActionBarContributor
   	}
   }
   
-  private boolean alreadyContributed = false;
+  protected boolean alreadyContributed = false;
   
   protected EntryViewController getEntryViewController() 
   {
