@@ -1,7 +1,7 @@
 package org.nightlabs.jfire.servermanager.db;
 
 /**
- * This exception is called by
+ * This exception is thrown by
  * {@link DatabaseAdapter#createDatabase(org.nightlabs.jfire.servermanager.config.JFireServerConfigModule, String)}
  * if the database cannot be created, because it already exists.
  *
