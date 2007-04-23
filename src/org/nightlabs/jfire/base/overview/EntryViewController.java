@@ -1,5 +1,9 @@
 package org.nightlabs.jfire.base.overview;
 
+import org.eclipse.jface.action.CoolBarManager;
+import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.ToolBarManager;
+import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.swt.widgets.Composite;
 
 /**
@@ -22,4 +26,29 @@ public interface EntryViewController
 	 * @return the id of the {@link EntryViewController}
 	 */
 	String getID();
+	
+	/**
+	 * returns the menuManager, may be null
+	 * @return the menuManager
+	 */
+	MenuManager getMenuManager();
+	
+	/**
+	 * returns the optional SelectionProvider, may be null
+	 * @return the optional SelectionProvider 
+	 */
+	ISelectionProvider getSelectionProvider();
+	
+//	/**
+//	 * returns the toolBarManager, may be null
+//	 * @return the toolBarManager
+//	 */
+//	ToolBarManager getToolBarManager();
+//
+//	/**
+//	 * returns the coolBarManager, may be null
+//	 * @return the coolBarManager
+//	 */
+//	CoolBarManager getCoolBarManager();
+	
 }

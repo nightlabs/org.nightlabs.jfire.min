@@ -1,11 +1,16 @@
 package org.nightlabs.jfire.base.overview;
 
+import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.action.CoolBarManager;
 import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
+import org.eclipse.ui.IPartListener;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.EditorActionBarContributor;
 import org.eclipse.ui.part.EditorPart;
@@ -17,6 +22,8 @@ import org.eclipse.ui.part.EditorPart;
 public class OverviewEntryEditor 
 extends EditorPart 
 {
+	private static final Logger logger = Logger.getLogger(OverviewEntryEditor.class);
+	
 	public OverviewEntryEditor() {
 		super();
 	}
@@ -50,7 +57,8 @@ extends EditorPart
 		if (input instanceof OverviewEntryEditorInput) {
 			OverviewEntryEditorInput entryInput = (OverviewEntryEditorInput) input;
 			entryViewController = entryInput.getEntryViewController();
-		} 
+		}
+		getSite().getPage().addPartListener(partListener);		
 	}
 	
 	private EntryViewController entryViewController;
@@ -64,21 +72,59 @@ extends EditorPart
 	{
 		if (entryViewController != null) {
 			composite = entryViewController.createComposite(parent);
-			EditorActionBarContributor actionBarContributor = 
-				(EditorActionBarContributor) getEditorSite().getActionBarContributor();
-			if (actionBarContributor != null) {
-				MenuManager menuManager = new MenuManager();
-				actionBarContributor.contributeToMenu(menuManager);
-				Menu contextMenu = menuManager.createContextMenu(composite);
-				composite.setMenu(contextMenu);
-			}
+//			updateContextMenu();
+			if (entryViewController.getSelectionProvider() != null)
+				getSite().setSelectionProvider(entryViewController.getSelectionProvider());
 		}
 	}
 
+	protected void updateContextMenu() 
+	{
+		EditorActionBarContributor actionBarContributor = 
+			(EditorActionBarContributor) getEditorSite().getActionBarContributor();
+		if (actionBarContributor != null) {
+			MenuManager menuManager = entryViewController.getMenuManager();
+			if (menuManager != null) {
+				actionBarContributor.contributeToMenu(menuManager);
+				menuManager.updateAll(true);				
+				logger.info("updateContextMenu, Number of entries = "+menuManager.getItems().length);
+			}				
+		}		
+	}
+	
+	protected void removeContextMenu() 
+	{
+		EditorActionBarContributor actionBarContributor = 
+			(EditorActionBarContributor) getEditorSite().getActionBarContributor();
+		if (actionBarContributor != null) {
+			MenuManager menuManager = entryViewController.getMenuManager();
+			if (menuManager != null) {
+				menuManager.removeAll();
+				menuManager.updateAll(true);				
+				logger.info("updateContextMenu, Number of entries = "+menuManager.getItems().length);
+			}							
+		}
+	}
+	
 	@Override
 	public void setFocus() {
 		if (composite != null && !composite.isDisposed())		
 			composite.setFocus();
 	}
 		
+	private IPartListener partListener = new IPartListener(){	
+		public void partOpened(IWorkbenchPart part) {			
+		}	
+		public void partDeactivated(IWorkbenchPart part) {		
+			removeContextMenu();
+		}	
+		public void partClosed(IWorkbenchPart part) {
+		}	
+		public void partBroughtToTop(IWorkbenchPart part) {
+		}
+		public void partActivated(IWorkbenchPart part) {
+			updateContextMenu();
+		}	
+	};
+	
 }
