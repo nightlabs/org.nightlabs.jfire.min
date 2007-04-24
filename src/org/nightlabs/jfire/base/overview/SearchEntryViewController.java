@@ -39,7 +39,7 @@ implements EntryViewController
 		sashform.setLayout(new FillLayout());
 		searchComposite = createSearchComposite(sashform);
 		resultComposite = createResultComposite(sashform);
-		sashform.setWeights(new int[] {1,3});
+		sashform.setWeights(new int[] {2,5});
 		
 		// Form Look & Feel
 		if (searchComposite instanceof XComposite) {
@@ -88,6 +88,5 @@ implements EntryViewController
 		}
 		return null;
 	}		
-	
 	
 }
