@@ -312,7 +312,8 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 			} else if (istruct instanceof StructLocal) {
 				StructLocal structLocal = (StructLocal) istruct;
 				structLocal.restoreAdoptedBlocks();
-				NLJDOHelper.storeJDO(pm, structLocal, false, null, -1);
+				pm.makePersistent(structLocal);
+//				NLJDOHelper.storeJDO(pm, structLocal, false, null, -1);
 			}
 		} finally {
 			pm.close();
