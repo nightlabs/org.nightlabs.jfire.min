@@ -87,7 +87,7 @@ extends EditorPart
 			if (menuManager != null) {
 				actionBarContributor.contributeToMenu(menuManager);
 				menuManager.updateAll(true);				
-				logger.info("updateContextMenu, Number of entries = "+menuManager.getItems().length);
+//				logger.info("updateContextMenu, Number of entries = "+menuManager.getItems().length);
 			}				
 		}		
 	}
