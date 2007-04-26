@@ -60,7 +60,7 @@
          <attribute name="name" type="string" use="required">
             <annotation>
                <documentation>
-                  
+                  the name of the category
                </documentation>
                <appInfo>
                   <meta.attribute translatable="true"/>
@@ -71,25 +71,30 @@
    </element>
 
    <element name="categoryEntry">
+      <annotation>
+         <documentation>
+            Register an overview entry (subelement of category)
+         </documentation>
+      </annotation>
       <complexType>
          <attribute name="categoryEntryID" type="string" use="required">
             <annotation>
                <documentation>
-                  
+                  the id of the category entry
                </documentation>
             </annotation>
          </attribute>
          <attribute name="categoryID" type="string" use="required">
             <annotation>
                <documentation>
-                  
+                  the id of the category
                </documentation>
             </annotation>
          </attribute>
          <attribute name="name" type="string" use="required">
             <annotation>
                <documentation>
-                  
+                  the name of the entry
                </documentation>
                <appInfo>
                   <meta.attribute translatable="true"/>
@@ -99,20 +104,20 @@
          <attribute name="icon" type="string">
             <annotation>
                <documentation>
-                  
+                  the icon of the entry
                </documentation>
                <appInfo>
                   <meta.attribute kind="resource"/>
                </appInfo>
             </annotation>
          </attribute>
-         <attribute name="entryFactory" type="string" use="required">
+         <attribute name="entry" type="string" use="required">
             <annotation>
                <documentation>
-                  
+                  An implementation of the interface org.nightlabs.jfire.base.overview.Entry
                </documentation>
                <appInfo>
-                  <meta.attribute kind="java" basedOn="org.nightlabs.jfire.base.overview.EntryFactory"/>
+                  <meta.attribute kind="java" basedOn="org.nightlabs.jfire.base.overview.Entry"/>
                </appInfo>
             </annotation>
          </attribute>

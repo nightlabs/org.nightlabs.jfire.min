@@ -7,7 +7,7 @@ import org.eclipse.ui.part.ViewPart;
 import org.nightlabs.base.part.ControllablePart;
 import org.nightlabs.base.part.PartVisibilityListener;
 import org.nightlabs.jfire.base.login.Login;
-import org.nightlabs.jfire.base.login.view.LSDViewController;
+import org.nightlabs.jfire.base.login.part.LSDViewController;
 import org.nightlabs.jfire.base.prop.StructLocalDAO;
 import org.nightlabs.jfire.base.prop.edit.fieldbased.FieldBasedEditor;
 import org.nightlabs.jfire.person.Person;

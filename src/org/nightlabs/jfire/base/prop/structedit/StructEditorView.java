@@ -8,7 +8,7 @@ import org.nightlabs.base.part.PartVisibilityListener;
 import org.nightlabs.base.part.PartVisibilityTracker;
 import org.nightlabs.base.selection.SelectionProviderProxy;
 import org.nightlabs.jfire.base.login.Login;
-import org.nightlabs.jfire.base.login.view.LSDViewController;
+import org.nightlabs.jfire.base.login.part.LSDViewController;
 
 public class StructEditorView
 extends ViewPart

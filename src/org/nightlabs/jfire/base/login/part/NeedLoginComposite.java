@@ -24,7 +24,7 @@
  *                                                                             *
  ******************************************************************************/
 
-package org.nightlabs.jfire.base.login.view;
+package org.nightlabs.jfire.base.login.part;
 
 import javax.security.auth.login.LoginException;
 
