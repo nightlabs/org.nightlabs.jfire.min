@@ -85,10 +85,11 @@ implements Serializable
 
 	/**
 	 * This method is a shortcut to <code>getPrincipal().getLookup().getPersistenceManager()</code>.
-	 * It might fail with stateless session beans!
+	 * <p>
+	 * <b>Important:</b> You must call {@link PersistenceManager#close()} at the end of your EJB method!
+	 * </p>
 	 * 
 	 * @return Returns the PersistenceManager assigned to the current user.
-	 * @throws ModuleException
 	 *
 	 * @see getPrincipal()
 	 */
