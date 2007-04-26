@@ -16,20 +16,20 @@ import org.nightlabs.jfire.base.login.Login;
  * @author Daniel.Mazurek [at] NightLabs [dot] de
  *
  */
-public abstract class LSDView 
+public abstract class LSDViewPart 
 extends ViewPart 
 implements PartVisibilityListener, ControllablePart 
 {
-	public LSDView() {
+	public LSDViewPart() {
 		super();
 		// Register the view at the view-controller
-		LSDViewController.sharedInstance().registerPart(this);		
+		LSDPartController.sharedInstance().registerPart(this);		
 	}
 	
 	@Override
 	public void createPartControl(Composite parent) {
     // Delegate this to the view-controller, to let him decide what to display
-    LSDViewController.sharedInstance().createPartControl(this, parent);
+    LSDPartController.sharedInstance().createPartControl(this, parent);
     // Add this view as visibility listener (optional)
     PartVisibilityTracker.sharedInstance().addVisibilityListener(this, this);
 	}

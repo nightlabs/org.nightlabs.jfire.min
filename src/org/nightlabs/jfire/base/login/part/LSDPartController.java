@@ -43,13 +43,13 @@ import org.nightlabs.jfire.base.login.LoginStateListener;
  * when the user logs out.
  * See {@link org.nightlabs.base.part.PartController} and
  * {@link org.nightlabs.base.part.ControllablePart} for detailed explanation on
- * how a PartController works, here is a exaple on how to use the LSDViewController.
+ * how a PartController works, here is a exaple on how to use the LSDPartController.
  * 
  * In the constructor of your WorkbenchPart you want to make LoginStateDependent register
- * it to the sharedInstance of LSDViewController:
+ * it to the sharedInstance of LSDPartController:
  * <pre>
  * 	public MyView() {
- * 		LSDViewController.sharedInstance().registerPart(this);
+ * 		LSDPartController.sharedInstance().registerPart(this);
  * 	}
  * </pre>
  * 
@@ -57,7 +57,7 @@ import org.nightlabs.jfire.base.login.LoginStateListener;
  * <pre>
  *  public void createPartControl(Composite parent)
  *  {
- *  	LSDViewController.sharedInstance().createPartControl(this, parent);
+ *  	LSDPartController.sharedInstance().createPartControl(this, parent);
  *  }
  * </pre>
  * And create the real WorkbenchPart contents in {@link org.nightlabs.base.part.ControllablePart#createPartContents(Composite)}.
@@ -65,7 +65,7 @@ import org.nightlabs.jfire.base.login.LoginStateListener;
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  *
  */
-public class LSDViewController extends PartController implements LoginStateListener {
+public class LSDPartController extends PartController implements LoginStateListener {
 
 	protected Composite createNewConditionUnsatisfiedComposite(Composite parent) {
 		return new NeedLoginComposite(parent, SWT.BORDER);
@@ -89,11 +89,11 @@ public class LSDViewController extends PartController implements LoginStateListe
 		updateParts();
 	}	
 	
-	private static LSDViewController sharedInstance;
+	private static LSDPartController sharedInstance;
 	
-	public static LSDViewController sharedInstance() {
+	public static LSDPartController sharedInstance() {
 		if (sharedInstance == null) {
-			sharedInstance = new LSDViewController();
+			sharedInstance = new LSDPartController();
 			Login login = null;
 			try {
 				login = Login.getLogin(false);

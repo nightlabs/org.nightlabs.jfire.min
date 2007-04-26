@@ -8,7 +8,7 @@ import org.nightlabs.base.part.PartVisibilityListener;
 import org.nightlabs.base.part.PartVisibilityTracker;
 import org.nightlabs.base.selection.SelectionProviderProxy;
 import org.nightlabs.jfire.base.login.Login;
-import org.nightlabs.jfire.base.login.part.LSDViewController;
+import org.nightlabs.jfire.base.login.part.LSDPartController;
 
 public class StructEditorView
 extends ViewPart
@@ -20,7 +20,7 @@ implements PartVisibilityListener, ControllablePart {
 
 	public StructEditorView() {
 		// Register the view at the view-controller
-		LSDViewController.sharedInstance().registerPart(this);
+		LSDPartController.sharedInstance().registerPart(this);
 		
 		structEditor = new StructEditor(this);		
 	}
@@ -28,7 +28,7 @@ implements PartVisibilityListener, ControllablePart {
 	@Override
 	public void createPartControl(Composite parent) {
 		// Delegate this to the view-controller, to let him decide what to display
-		LSDViewController.sharedInstance().createPartControl(this, parent);
+		LSDPartController.sharedInstance().createPartControl(this, parent);
 
 		// Add this view as visibility listener (optional)
 		PartVisibilityTracker.sharedInstance().addVisibilityListener(this, this);

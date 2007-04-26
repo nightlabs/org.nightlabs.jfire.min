@@ -7,7 +7,7 @@ import org.eclipse.ui.part.ViewPart;
 import org.nightlabs.base.part.ControllablePart;
 import org.nightlabs.base.part.PartVisibilityListener;
 import org.nightlabs.jfire.base.login.Login;
-import org.nightlabs.jfire.base.login.part.LSDViewController;
+import org.nightlabs.jfire.base.login.part.LSDPartController;
 import org.nightlabs.jfire.base.prop.StructLocalDAO;
 import org.nightlabs.jfire.base.prop.edit.fieldbased.FieldBasedEditor;
 import org.nightlabs.jfire.person.Person;
@@ -24,13 +24,13 @@ implements PartVisibilityListener, ControllablePart
 	private FieldBasedEditor fieldBasedEditor;
 	
 	public BlockBasedEditorView() {
-		LSDViewController.sharedInstance().registerPart(this);
+		LSDPartController.sharedInstance().registerPart(this);
 	}
 	
 	@Override
 	public void createPartControl(Composite parent) {
 		// Delegate this to the view-controller, to let him decide what to display
-		LSDViewController.sharedInstance().createPartControl(this, parent);
+		LSDPartController.sharedInstance().createPartControl(this, parent);
 	}
 
 	@Override
