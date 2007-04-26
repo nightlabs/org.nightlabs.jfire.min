@@ -1,8 +1,13 @@
 package org.nightlabs.jfire.base.overview;
 
+import java.util.Locale;
+
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Image;
-import org.nightlabs.i18n.I18nText;
-import org.nightlabs.i18n.I18nTextBuffer;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.nightlabs.base.extensionpoint.AbstractEPProcessor;
 
 /**
  * @author Daniel.Mazurek [at] NightLabs [dot] de
@@ -11,12 +16,16 @@ import org.nightlabs.i18n.I18nTextBuffer;
 public class CategoryImpl 
 implements Category 
 {
-
-	private I18nText name = new I18nTextBuffer();
-	public I18nText getName() {
+	public static final String ELEMENT_CATEGORY = "category";
+	public static final String ATTRIBUTE_NAME = "name";
+	public static final String ATTRIBUTE_CATEGORY_ID = "categoryID";
+	public static final String ATTRIBUTE_ICON = "icon";
+	
+	private String name;
+	public String getName() {
 		return name;
 	}
-	public void setName(I18nText name) {
+	public void setName(String name) {
 		this.name = name;
 	}
 
@@ -35,5 +44,26 @@ implements Category
 	public void setImage(Image image) {
 		this.image = image;
 	}
-		
+	
+	public void setInitializationData(IConfigurationElement element,
+			String propertyName, Object data) 
+	throws CoreException 
+	{
+		if (element.getName().equals(ELEMENT_CATEGORY)) 
+		{
+			String categoryID = element.getAttribute(ATTRIBUTE_CATEGORY_ID);
+			String name = element.getAttribute(ATTRIBUTE_NAME);
+			String iconString = element.getAttribute(ATTRIBUTE_ICON);			
+			CategoryImpl category = new CategoryImpl();
+			category.setName(name);
+			category.setCategoryID(categoryID);			
+			if (AbstractEPProcessor.checkString(iconString)) {
+				ImageDescriptor imageDescriptor = AbstractUIPlugin.imageDescriptorFromPlugin(
+						element.getNamespaceIdentifier(), iconString);
+				if (imageDescriptor != null)
+					category.setImage(imageDescriptor.createImage());										
+			}										
+		}
+	}
+			
 }

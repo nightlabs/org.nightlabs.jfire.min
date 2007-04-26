@@ -5,6 +5,8 @@ import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
@@ -34,13 +36,16 @@ implements EntryViewController
 	}
 	
 	public Composite createComposite(Composite parent) 
-	{		 		
-		SashForm sashform = new SashForm(parent, SWT.VERTICAL);
+	{		 		 
+		SashForm sashform = new SashForm(parent, SWT.VERTICAL);		
 		sashform.setLayout(new FillLayout());
 		searchComposite = createSearchComposite(sashform);
 		resultComposite = createResultComposite(sashform);
 //		sashform.setWeights(new int[] {2,5});
 		sashform.setWeights(new int[] {2,4});
+		
+		if (parent.getLayout() instanceof GridLayout)
+			sashform.setLayoutData(new GridData(GridData.FILL_BOTH));
 		
 		// Form Look & Feel
 		if (searchComposite instanceof XComposite) {

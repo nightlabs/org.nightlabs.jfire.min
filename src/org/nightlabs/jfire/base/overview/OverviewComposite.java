@@ -70,7 +70,7 @@ extends XComposite
 		for (Category category : OverviewRegistry.sharedInstance().getCategories()) 
 		{
 	    PShelfItem categoryItem = new PShelfItem(shelf,SWT.NONE);
-	    categoryItem.setText(category.getName().getText());
+	    categoryItem.setText(category.getName());
 	    categoryItem.setImage(category.getImage());
 	    categoryItem.getBody().setLayout(new FillLayout());
 	    
@@ -144,7 +144,7 @@ extends XComposite
 		{
 			if (columnIndex == 1) {
 				Entry entry = (Entry) element;
-				return entry.getName().getText();				
+				return entry.getName();				
 			}
 			return null;
 		}

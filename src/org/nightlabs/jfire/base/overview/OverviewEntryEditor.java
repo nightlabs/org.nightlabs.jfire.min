@@ -2,25 +2,23 @@ package org.nightlabs.jfire.base.overview;
 
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jface.action.CoolBarManager;
 import org.eclipse.jface.action.MenuManager;
-import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IPartListener;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.EditorActionBarContributor;
-import org.eclipse.ui.part.EditorPart;
+import org.nightlabs.jfire.base.login.part.LSDEditorPart;
 
 /**
  * @author Daniel.Mazurek [at] NightLabs [dot] de
  *
  */
 public class OverviewEntryEditor 
-extends EditorPart 
+//extends EditorPart 
+extends LSDEditorPart
 {
 	private static final Logger logger = Logger.getLogger(OverviewEntryEditor.class);
 	
@@ -67,17 +65,23 @@ extends EditorPart
 	}
 	
 	private Composite composite;
-	@Override
-	public void createPartControl(Composite parent) 
-	{
+//	@Override
+//	public void createPartControl(Composite parent) 
+//	{
+//		if (entryViewController != null) {
+//			composite = entryViewController.createComposite(parent);
+//			if (entryViewController.getSelectionProvider() != null)
+//				getSite().setSelectionProvider(entryViewController.getSelectionProvider());
+//		}
+//	}
+	public void createPartContents(Composite parent) {
 		if (entryViewController != null) {
 			composite = entryViewController.createComposite(parent);
-//			updateContextMenu();
 			if (entryViewController.getSelectionProvider() != null)
 				getSite().setSelectionProvider(entryViewController.getSelectionProvider());
-		}
+		}		
 	}
-
+		
 	protected void updateContextMenu() 
 	{
 		EditorActionBarContributor actionBarContributor = 
@@ -101,7 +105,7 @@ extends EditorPart
 			if (menuManager != null) {
 				menuManager.removeAll();
 				menuManager.updateAll(true);				
-				logger.info("updateContextMenu, Number of entries = "+menuManager.getItems().length);
+//				logger.info("updateContextMenu, Number of entries = "+menuManager.getItems().length);
 			}							
 		}
 	}

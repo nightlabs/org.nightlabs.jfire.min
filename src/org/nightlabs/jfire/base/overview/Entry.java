@@ -1,5 +1,6 @@
 package org.nightlabs.jfire.base.overview;
 
+import org.eclipse.core.runtime.IExecutableExtension;
 import org.eclipse.swt.graphics.Image;
 import org.nightlabs.i18n.I18nText;
 
@@ -10,6 +11,7 @@ import org.nightlabs.i18n.I18nText;
  *
  */
 public interface Entry 
+extends IExecutableExtension
 {
 	/**
 	 * opens the entry
@@ -30,13 +32,13 @@ public interface Entry
 	 * returns the multilanguage capable name as {@link I18nText}
 	 * @return the multilanguage capable name
 	 */
-	I18nText getName();
+	String getName();
 	
-	/**
-	 * sets the the multilanguage capable name as {@link I18nText}
-	 * @param name the {@link I18nText} to set
-	 */
-	void setName(I18nText name);
+//	/**
+//	 * sets the the multilanguage capable name as {@link I18nText}
+//	 * @param name the {@link I18nText} to set
+//	 */
+//	void setName(I18nText name);
 	
 	/**
 	 * returns the Image for the entry
@@ -44,9 +46,9 @@ public interface Entry
 	 */
 	Image getImage();
 	
-	/**
-	 * sets the image
-	 * @param image the image to set
-	 */
-	void setImage(Image image);	
+//	/**
+//	 * sets the image
+//	 * @param image the image to set
+//	 */
+//	void setImage(Image image);	
 }

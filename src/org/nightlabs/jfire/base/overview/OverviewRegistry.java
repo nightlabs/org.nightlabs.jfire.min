@@ -31,7 +31,7 @@ extends AbstractEPProcessor
 	public static final String ATTRIBUTE_NAME = "name";
 	public static final String ATTRIBUTE_CATEGORY_ID = "categoryID";
 	public static final String ATTRIBUTE_CATEGORY_ENTRY_ID = "categoryEntryID";
-	public static final String ATTRIBUTE_ENTRY_FACTORY = "entryFactory";
+	public static final String ATTRIBUTE_ENTRY = "entry";
 	public static final String ATTRIBUTE_ICON = "icon";
 	
 	private static OverviewRegistry sharedInstance;
@@ -47,7 +47,7 @@ extends AbstractEPProcessor
 	}
 	
 	protected OverviewRegistry() {
-		
+		super();
 	}
 
 	@Override
@@ -64,7 +64,7 @@ extends AbstractEPProcessor
 			String name = element.getAttribute(ATTRIBUTE_NAME);
 			String iconString = element.getAttribute(ATTRIBUTE_ICON);			
 			Category category = new CategoryImpl();
-			category.getName().setText(Locale.getDefault().getLanguage(), name);
+			category.setName(name);
 			category.setCategoryID(categoryID);			
 			if (checkString(iconString)) {
 				ImageDescriptor imageDescriptor = AbstractUIPlugin.imageDescriptorFromPlugin(
@@ -80,43 +80,33 @@ extends AbstractEPProcessor
 			String name = element.getAttribute(ATTRIBUTE_NAME);
 			String iconString = element.getAttribute(ATTRIBUTE_ICON);
 			try {
-				EntryFactory factory = (EntryFactory) element.createExecutableExtension(ATTRIBUTE_ENTRY_FACTORY);
-				factory.getName().setText(Locale.getDefault().getLanguage(), name);
-				if (checkString(iconString)) {
-					ImageDescriptor imageDescriptor = AbstractUIPlugin.imageDescriptorFromPlugin(
-							extension.getNamespaceIdentifier(), iconString);
-					if (imageDescriptor != null)
-						factory.setImage(imageDescriptor.createImage());										
-				}				
-				List<EntryFactory> factories = categoryID2EntryFactory.get(categoryID);
+				Entry entry = (Entry) element.createExecutableExtension(ATTRIBUTE_ENTRY);
+//				entry.setName(name);
+//				if (checkString(iconString)) {
+//					ImageDescriptor imageDescriptor = AbstractUIPlugin.imageDescriptorFromPlugin(
+//							extension.getNamespaceIdentifier(), iconString);
+//					if (imageDescriptor != null)
+//						entry.setImage(imageDescriptor.createImage());										
+//				}				
+				List<Entry> factories = categoryID2Entries.get(categoryID);
 				if (factories == null)
-					factories = new ArrayList<EntryFactory>();
-				factories.add(factory);			
-				categoryID2EntryFactory.put(categoryID, factories);
+					factories = new ArrayList<Entry>();
+				factories.add(entry);			
+				categoryID2Entries.put(categoryID, factories);
 			} catch (CoreException e) {
 				throw new RuntimeException(e);
 			}
 		}
 	}
 
-	private Map<String, Category> categoryID2Category = new HashMap<String, Category>();
-//	public Collection<Category> getCategories() {
-//		return categoryID2Category.values();
-//	}
-	
-	private Map<String, List<EntryFactory>> categoryID2EntryFactory = new HashMap<String, List<EntryFactory>>();
-//	public Set<String> getCategoryIDs() {
-//		return categoryID2EntryFactory.keySet();
-//	}
-//	public List<EntryFactory> getEntryFactories(String categoryID) {
-//		return categoryID2EntryFactory.get(categoryID);
-//	}
+	private Map<String, Category> categoryID2Category = new HashMap<String, Category>();	
+	private Map<String, List<Entry>> categoryID2Entries = new HashMap<String, List<Entry>>();
 	
 	private Category fallBackCategory = null;
 	public Category getFallbackCategory() {
 		if (fallBackCategory == null) {
 			fallBackCategory = new CategoryImpl();
-			fallBackCategory.getName().setText(Locale.getDefault().getLanguage(), "Other");
+			fallBackCategory.setName("Other");
 		}
 		return fallBackCategory;
 	}
@@ -127,24 +117,26 @@ extends AbstractEPProcessor
 		{
 			checkProcessing();
 			category2Entries = new HashMap<Category, List<Entry>>();
-			for (Map.Entry<String, List<EntryFactory>> mapEntry : categoryID2EntryFactory.entrySet()) {
+			for (Map.Entry<String, List<Entry>> mapEntry : categoryID2Entries.entrySet()) {
 				Category category = categoryID2Category.get(mapEntry.getKey());
-				List<EntryFactory> factories = mapEntry.getValue();
+				List<Entry> entries = mapEntry.getValue();
 				if (category == null)
 					category = getFallbackCategory();
-				for (EntryFactory entryFactory : factories) 
-				{
-					List<Entry> entries = category2Entries.get(category);
-					if (entries == null)
-						entries = new ArrayList<Entry>();
-					
-					Entry entry = entryFactory.createEntry();
-					entry.setName(entryFactory.getName());
-					entry.setImage(entryFactory.getImage());
-					entries.add(entry);
-					
-					category2Entries.put(category, entries);
-				}
+				
+				category2Entries.put(category, entries);				
+//				for (Entry entry : entries) 
+//				{
+//					List<Entry> entries = category2Entries.get(category);
+//					if (entries == null)
+//						entries = new ArrayList<Entry>();
+//					
+//					Entry entry = entryFactory.createEntry();
+//					entry.setName(entryFactory.getName());
+//					entry.setImage(entryFactory.getImage());
+//					entries.add(entry);
+//					
+//					category2Entries.put(category, entries);
+//				}
 			}			
 		}
 	}
