@@ -118,9 +118,11 @@ public class Lookup
 	/**
 	 * This method returns a PersistenceManager that is providing access to
 	 * the database that is linked to the organisationID of the current user.
-	 * Every sessionbean is
-	 * 
-	 * @return
+	 * <p>
+	 * <b>Important:</b> You must call {@link PersistenceManager#close()} at the end of your EJB method!
+	 * </p>
+	 *
+	 * @return a new {@link PersistenceManager} obtained from the {@link PersistenceManagerFactory} accessible via {@link #getPersistenceManagerFactory()}.
 	 */
 	public PersistenceManager getPersistenceManager()
 	{
