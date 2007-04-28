@@ -467,6 +467,8 @@ public class JFireServerManagerFactoryImpl
 				logger.error("Instantiating ServerConfigurator from class " + serverConfiguratorClassName + " (configured in JFireServerConfigModule) failed!", x);
 				throw x;
 			}
+
+			logger.info("Configuring server with ServerConfigurator " + serverConfiguratorClassName);
 	
 			try {
 				serverConfigurator.configureServer();
@@ -474,7 +476,7 @@ public class JFireServerManagerFactoryImpl
 				logger.error("Calling ServerConfigurator.configureServer() with instance of " + serverConfiguratorClassName + " (configured in JFireServerConfigModule) failed!", x);
 				throw x;
 			}
-	
+
 			if (serverConfigurator.isRebootRequired()) {
 				shuttingDown = true;
 

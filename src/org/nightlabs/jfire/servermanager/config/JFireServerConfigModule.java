@@ -123,7 +123,7 @@ public class JFireServerConfigModule extends ConfigModule
 	{
 		private JFireServerConfigModule cfMod;
 
-		public static final String DATABASE_NAME_VAR = "{databaseName}";
+		public static final String DATABASE_NAME_VAR = "${databaseName}";
 
 		public static String DEFAULTS_DEFAULT_KEY = "MySQL";
 		public static Map<String, Database> DEFAULTS = new HashMap<String, Database>();
@@ -376,7 +376,7 @@ public class JFireServerConfigModule extends ConfigModule
 	{
 		private JFireServerConfigModule cfMod;
 
-		public static final String ORGANISATION_ID_VAR = "{organisationID}";
+		public static final String ORGANISATION_ID_VAR = "${organisationID}";
 
 		private String jdoConfigDirectory;
 

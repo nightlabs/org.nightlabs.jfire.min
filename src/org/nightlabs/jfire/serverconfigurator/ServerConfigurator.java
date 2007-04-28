@@ -1,5 +1,6 @@
 package org.nightlabs.jfire.serverconfigurator;
 
+import org.apache.log4j.Logger;
 import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
 import org.nightlabs.jfire.servermanager.ra.JFireServerManagerFactoryImpl;
 
@@ -52,6 +53,8 @@ public abstract class ServerConfigurator
 	}
 	protected void setRebootRequired(boolean rebootRequired)
 	{
+		Logger.getLogger(ServerConfigurator.class).info("setRebootRequired: rebootRequired=" + rebootRequired);
+
 		this.rebootRequired = rebootRequired;
 	}
 
