@@ -156,6 +156,30 @@ public abstract class OrganisationManagerBean
 //	}
 
 	/**
+	 * @ejb.interface-method
+	 * @ejb.transaction type="Required"
+	 * @ejb.permission role-name="_ServerAdmin_"
+	 */
+	public void createOrganisationAfterReboot(String organisationID, String organisationDisplayName, String userID, String password, boolean isServerAdmin)
+	throws ModuleException
+	{
+		try {
+			JFireServerManager ism = getJFireServerManager();
+			try {
+				CreateOrganisationAfterRebootData coar = new CreateOrganisationAfterRebootData(ism);
+				coar.addOrganisation(organisationID, organisationDisplayName, userID, password, isServerAdmin);
+			} finally {
+				ism.close();
+			}
+		} catch (Exception x) {
+			if (x instanceof ModuleException)
+				throw (ModuleException)x;
+			else
+				throw new ModuleException(x);
+		}
+	}
+
+	/**
 	 * This method creates an organisation on this server.
 	 *
 	 * @param organisationID The ID of the new organisation. It must be unique in the whole world.
@@ -166,8 +190,7 @@ public abstract class OrganisationManagerBean
 	 * @throws ModuleException
 	 *
 	 * @ejb.interface-method
-	 * @!ejb.transaction type = "Required"
-	 * @ejb.transaction type = "Never"
+	 * @ejb.transaction type="Never"
 	 * @ejb.permission role-name="_ServerAdmin_"
 	 */
 	public void createOrganisation(String organisationID, String organisationDisplayName, String userID, String password, boolean isServerAdmin)
