@@ -1,4 +1,4 @@
-package org.nightlabs.jfire.base.overview;
+package org.nightlabs.jfire.base.overview.search;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.resource.ImageDescriptor;

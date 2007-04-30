@@ -6,6 +6,8 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.part.EditorActionBarContributor;
+import org.nightlabs.jfire.base.overview.search.ApplySearchAction;
+import org.nightlabs.jfire.base.overview.search.SearchEntryViewController;
 
 /**
  * @author Daniel.Mazurek [at] NightLabs [dot] de

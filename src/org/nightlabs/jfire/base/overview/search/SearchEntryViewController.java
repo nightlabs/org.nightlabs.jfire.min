@@ -1,4 +1,4 @@
-package org.nightlabs.jfire.base.overview;
+package org.nightlabs.jfire.base.overview.search;
 
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.viewers.ISelectionProvider;
@@ -13,6 +13,7 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.nightlabs.base.composite.XComposite;
 import org.nightlabs.base.table.AbstractTableComposite;
+import org.nightlabs.jfire.base.overview.EntryViewController;
 
 /**
  * @author Daniel.Mazurek [at] NightLabs [dot] de
@@ -94,5 +95,21 @@ implements EntryViewController
 		}
 		return null;
 	}		
+	
+//	public AbstractQueryFilterComposite getQueryFilterComposite() 
+//	{
+//		if (getSearchComposite() instanceof AbstractQueryFilterComposite)
+//			return (AbstractQueryFilterComposite) getSearchComposite();
+//		
+//		return null;
+//	}
+//	
+//	public AbstractTableComposite getResultTableComposite() 
+//	{
+//		if (getResultComposite() instanceof AbstractTableComposite)
+//			return (AbstractTableComposite) getResultComposite();
+//		
+//		return null;
+//	}	
 	
 }
