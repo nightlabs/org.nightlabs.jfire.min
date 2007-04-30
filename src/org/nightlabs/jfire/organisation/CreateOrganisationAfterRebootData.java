@@ -41,7 +41,7 @@ public class CreateOrganisationAfterRebootData
 	public CreateOrganisationAfterRebootData(JFireServerManager jfsm)
 	throws IOException
 	{
-		File dir = new File(jfsm.getJFireServerConfigModule().getJ2ee().getJ2eeDeployBaseDirectory(), JFireBaseEAR.MODULE_NAME + ".ear");
+		File dir = new File(new File(jfsm.getJFireServerConfigModule().getJ2ee().getJ2eeDeployBaseDirectory(), JFireBaseEAR.MODULE_NAME + ".ear"), "config");
 		if (!dir.isDirectory())
 			throw new IllegalStateException("The directory does not exist: " + dir.getAbsolutePath());
 
