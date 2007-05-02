@@ -8,7 +8,8 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Spinner;
+import org.nightlabs.base.composite.DoubleSpinnerComposite;
+import org.nightlabs.base.composite.NumberSpinnerComposite;
 import org.nightlabs.base.composite.XComposite;
 
 /**
@@ -35,9 +36,20 @@ extends XComposite
 
 	private String text = null;
 	private Button activeButton = null;
-	private Spinner spinner = null;
-	public Spinner getSpinner() {
-		return spinner;
+	
+//	private Spinner spinner = null;
+//	public Spinner getSpinner() {
+//		return spinner;
+//	}
+
+//	private DoubleSpinnerComposite spinnerComposite = null;
+//	public DoubleSpinnerComposite getSpinnerComposite() {
+//		return spinnerComposite;
+//	}
+	
+	private NumberSpinnerComposite spinnerComposite = null;
+	public NumberSpinnerComposite getSpinnerComposite() {
+		return spinnerComposite;
 	}
 	
 	protected void createComposite(Composite parent) 
@@ -51,14 +63,16 @@ extends XComposite
 		activeButton.setText("Active");
 		activeButton.addSelectionListener(activeButtonListener);
 		
-		spinner = new Spinner(group, SWT.BORDER);
-		spinner.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		spinner.setDigits(2);		
+		spinnerComposite = new NumberSpinnerComposite(group, SWT.NONE, SWT.BORDER, 2, -Double.MAX_VALUE, Double.MAX_VALUE, 0.1, LayoutMode.TOTAL_WRAPPER, LayoutDataMode.GRID_DATA);
+//		spinner = new Spinner(group, SWT.BORDER);
+//		spinner.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+//		spinner.setDigits(2);		
 	}
 	
 	private SelectionListener activeButtonListener = new SelectionListener(){	
 		public void widgetSelected(SelectionEvent e) {
-			spinner.setEnabled(activeButton.getSelection());
+//			spinner.setEnabled(activeButton.getSelection());
+			spinnerComposite.setEnabled(activeButton.getSelection());
 		}	
 		public void widgetDefaultSelected(SelectionEvent e) {
 			widgetSelected(e);
@@ -71,6 +85,7 @@ extends XComposite
 	
 	public void setActive(boolean active) {
 		activeButton.setSelection(active);
-		spinner.setEnabled(active);
+//		spinner.setEnabled(active);
+		spinnerComposite.setEnabled(active);
 	}
 }

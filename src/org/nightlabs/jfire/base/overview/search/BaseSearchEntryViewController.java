@@ -80,5 +80,12 @@ extends SearchEntryViewController
 		
 	}
 	
+	/**
+	 * return the result of the given queries
+	 * 
+	 * @param queries a collection of {@link JDOQuery}s
+	 * @param monitor the {@link IProgressMonitor} to display the progress
+	 * @return the result of the queries 
+	 */
 	protected abstract Object getQueryResult(Collection<JDOQuery> queries, IProgressMonitor monitor);	
 }
