@@ -44,7 +44,7 @@ import org.nightlabs.base.extensionpoint.EPProcessorException;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.jdo.JDOObjectID2PCClassMap;
 import org.nightlabs.jfire.base.jdo.cache.Cache;
-import org.nightlabs.jfire.base.jdo.notification.ChangeManager;
+import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleManager;
 import org.nightlabs.jfire.base.login.Login;
 import org.nightlabs.jfire.config.Config;
 import org.nightlabs.jfire.config.ConfigGroup;
@@ -53,6 +53,7 @@ import org.nightlabs.jfire.config.ConfigManagerUtil;
 import org.nightlabs.jfire.config.ConfigSetup;
 import org.nightlabs.jfire.config.id.ConfigID;
 import org.nightlabs.jfire.config.id.ConfigSetupID;
+import org.nightlabs.jfire.jdo.notification.DirtyObjectID;
 import org.nightlabs.notification.NotificationEvent;
 import org.nightlabs.notification.NotificationListener;
 import org.nightlabs.notification.NotificationListenerWorkerThreadAsync;
@@ -326,18 +327,21 @@ public class ConfigSetupRegistry extends AbstractEPProcessor {
 	 */
 	private NotificationListener setupChangeListener = new NotificationListenerWorkerThreadAsync() {
 		public void notify(NotificationEvent notificationEvent) {
-			if (notificationEvent.getFirstSubject() instanceof ConfigSetupID) {
-				String configSetupType = ((ConfigSetupID)notificationEvent.getFirstSubject()).configSetupType;				
-				try {
-					ConfigManager configManager = ConfigManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
-					ConfigSetup setup = configManager.getConfigSetup(
-							configSetupType, 
-							DEFAULT_FETCH_GROUP_GROUPS, 
-							DEFAULT_FETCH_GROUP_CONFIGS
+			if (notificationEvent.getFirstSubject() instanceof DirtyObjectID) {
+				DirtyObjectID dirtyObjectID = (DirtyObjectID) notificationEvent.getFirstSubject();
+				if (dirtyObjectID.getObjectID() instanceof ConfigSetupID) {
+					String configSetupType = ((ConfigSetupID)dirtyObjectID.getObjectID()).configSetupType;				
+					try {
+						ConfigManager configManager = ConfigManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
+						ConfigSetup setup = configManager.getConfigSetup(
+								configSetupType, 
+								DEFAULT_FETCH_GROUP_GROUPS, 
+								DEFAULT_FETCH_GROUP_CONFIGS
 						);
-					integrateConfigSetup(setup);
-				} catch (Exception e) {
-					throw new RuntimeException(e);
+						integrateConfigSetup(setup);	
+					} catch (Exception e) {
+						throw new RuntimeException(e);
+					}
 				}
 			}
 		}
@@ -431,9 +435,9 @@ public class ConfigSetupRegistry extends AbstractEPProcessor {
 	public static ConfigSetupRegistry sharedInstance() {
 		if (sharedInstance == null) {
 			sharedInstance = new ConfigSetupRegistry();
-//			ChangeManager.sharedInstance().addNotificationListener(ConfigSetup.class, sharedInstance.setupChangeListener);
-			ChangeManager.sharedInstance().addNotificationListener(Config.class, sharedInstance.configChangeListener);
-			ChangeManager.sharedInstance().addNotificationListener(ConfigGroup.class, sharedInstance.configGroupChangeListener);
+			JDOLifecycleManager.sharedInstance().addNotificationListener(ConfigSetup.class, sharedInstance.setupChangeListener);
+			JDOLifecycleManager.sharedInstance().addNotificationListener(Config.class, sharedInstance.configChangeListener);
+			JDOLifecycleManager.sharedInstance().addNotificationListener(ConfigGroup.class, sharedInstance.configGroupChangeListener);
 			try {
 				sharedInstance.process();
 			} catch (EPProcessorException e) {

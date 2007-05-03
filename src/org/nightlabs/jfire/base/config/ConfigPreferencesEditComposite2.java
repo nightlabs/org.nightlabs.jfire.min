@@ -63,7 +63,7 @@ implements ConfigPreferenceChangedListener
 	protected ConfigPreferencesComposite preferencesComposite;
 	protected ConfigModule currentConfigModule;
 	protected ConfigID currentConfigID;
-	protected Set involvedPages = new HashSet();
+	protected Set<AbstractConfigModulePreferencePage> involvedPages = new HashSet<AbstractConfigModulePreferencePage>();
 	protected AbstractConfigModulePreferencePage currentPage;
 
 	protected Map<String, ConfigModule> involvedConfigModules = new HashMap<String, ConfigModule>();
@@ -219,8 +219,8 @@ implements ConfigPreferenceChangedListener
 		String cfModKey = getCfModKey(preferencePage);
 		ConfigModule cfMod = involvedConfigModules.get(cfModKey);
 		if (cfMod != null)
-			notifyChangedListeners(cfMod);
-		dirtyConfigModules.add(cfMod);
+			dirtyConfigModules.add(cfMod);
+		notifyChangedListeners(cfMod);
 	}
 
 	public void addConfigModuleChangedListener(IConfigModuleChangedListener listener) {

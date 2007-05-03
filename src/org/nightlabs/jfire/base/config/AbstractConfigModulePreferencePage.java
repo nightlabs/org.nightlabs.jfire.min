@@ -320,7 +320,7 @@ implements IWorkbenchPreferencePage
 	 * This is intended to be overridden for different behaviour.
 	 * 
 	 * @param configModule
-	 * @return Wheter the configModule is allowed to be edited.
+	 * @return Whether the configModule is allowed to be edited.
 	 */
 	protected boolean canEdit(ConfigModule configModule) {
 		return configModule.isGroupConfigModule() || configModule.isGroupAllowsOverride();
@@ -489,7 +489,7 @@ implements IWorkbenchPreferencePage
 	}
 
 
-	private List configChangedListeners = new ArrayList();
+	private List<ConfigPreferenceChangedListener> configChangedListeners = new ArrayList<ConfigPreferenceChangedListener>();
 
 	/**
 	 * Call this when you modified the entity object.
