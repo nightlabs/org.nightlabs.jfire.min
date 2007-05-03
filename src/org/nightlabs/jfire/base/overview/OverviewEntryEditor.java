@@ -3,6 +3,8 @@ package org.nightlabs.jfire.base.overview;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.MenuManager;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
@@ -10,6 +12,7 @@ import org.eclipse.ui.IPartListener;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.EditorActionBarContributor;
+import org.nightlabs.base.action.registry.editor.XEditorActionBarContributor;
 import org.nightlabs.jfire.base.login.part.LSDEditorPart;
 
 /**
@@ -56,7 +59,7 @@ extends LSDEditorPart
 			OverviewEntryEditorInput entryInput = (OverviewEntryEditorInput) input;
 			entryViewController = entryInput.getEntryViewController();
 		}
-		getSite().getPage().addPartListener(partListener);		
+		getSite().getPage().addPartListener(partListener);			
 	}
 	
 	private EntryViewController entryViewController;
@@ -65,23 +68,23 @@ extends LSDEditorPart
 	}
 	
 	private Composite composite;
-//	@Override
-//	public void createPartControl(Composite parent) 
-//	{
-//		if (entryViewController != null) {
-//			composite = entryViewController.createComposite(parent);
-//			if (entryViewController.getSelectionProvider() != null)
-//				getSite().setSelectionProvider(entryViewController.getSelectionProvider());
-//		}
-//	}
-	public void createPartContents(Composite parent) {
+	public void createPartContents(Composite parent) 
+	{
 		if (entryViewController != null) {
 			composite = entryViewController.createComposite(parent);
 			if (entryViewController.getSelectionProvider() != null)
 				getSite().setSelectionProvider(entryViewController.getSelectionProvider());
+			
+			updateContextMenu();
 		}		
 	}
 		
+	@Override
+	public void setFocus() {
+		if (composite != null && !composite.isDisposed())		
+			composite.setFocus();
+	}
+	
 	protected void updateContextMenu() 
 	{
 		EditorActionBarContributor actionBarContributor = 
@@ -89,9 +92,13 @@ extends LSDEditorPart
 		if (actionBarContributor != null) {
 			MenuManager menuManager = entryViewController.getMenuManager();
 			if (menuManager != null) {
-				actionBarContributor.contributeToMenu(menuManager);
-				menuManager.updateAll(true);				
-//				logger.info("updateContextMenu, Number of entries = "+menuManager.getItems().length);
+				if (actionBarContributor instanceof XEditorActionBarContributor) {
+					XEditorActionBarContributor xEditorActionBarContributor = (XEditorActionBarContributor) actionBarContributor;
+					xEditorActionBarContributor.getActionRegistry().contributeToContextMenu(menuManager);
+					logger.info("updateContextMenu, Number of entries = "+menuManager.getItems().length+", actionBarContributor = "+actionBarContributor);
+				} else {
+					actionBarContributor.contributeToMenu(menuManager);
+				}
 			}				
 		}		
 	}
@@ -105,17 +112,11 @@ extends LSDEditorPart
 			if (menuManager != null) {
 				menuManager.removeAll();
 				menuManager.updateAll(true);				
-//				logger.info("updateContextMenu, Number of entries = "+menuManager.getItems().length);
+				logger.info("removeContextMenu, Number of entries = "+menuManager.getItems().length+", actionBarContributor = "+actionBarContributor);
 			}							
 		}
 	}
-	
-	@Override
-	public void setFocus() {
-		if (composite != null && !composite.isDisposed())		
-			composite.setFocus();
-	}
-		
+			
 	private IPartListener partListener = new IPartListener(){	
 		public void partOpened(IWorkbenchPart part) {			
 		}	
@@ -123,6 +124,7 @@ extends LSDEditorPart
 			removeContextMenu();
 		}	
 		public void partClosed(IWorkbenchPart part) {
+			editorDisposed();
 		}	
 		public void partBroughtToTop(IWorkbenchPart part) {
 		}
@@ -131,4 +133,14 @@ extends LSDEditorPart
 		}	
 	};
 	
+//	private DisposeListener disposeListener = new DisposeListener(){	
+//		public void widgetDisposed(DisposeEvent e) {
+//			getSite().getPage().removePartListener(partListener);
+//		}	
+//	};
+	
+	protected void editorDisposed() {
+		getSite().getPage().removePartListener(partListener);
+		getSite().setSelectionProvider(entryViewController.getSelectionProvider());		
+	}
 }

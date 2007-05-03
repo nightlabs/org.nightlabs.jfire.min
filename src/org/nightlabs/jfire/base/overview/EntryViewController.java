@@ -1,8 +1,6 @@
 package org.nightlabs.jfire.base.overview;
 
-import org.eclipse.jface.action.CoolBarManager;
 import org.eclipse.jface.action.MenuManager;
-import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.swt.widgets.Composite;
 
