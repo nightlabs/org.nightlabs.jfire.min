@@ -28,7 +28,9 @@ package org.nightlabs.jfire.config;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -48,6 +50,7 @@ import org.nightlabs.jdo.moduleregistry.ModuleMetaData;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.base.JFireBaseEAR;
 import org.nightlabs.jfire.config.id.ConfigID;
+import org.nightlabs.jfire.config.id.ConfigModuleID;
 import org.nightlabs.jfire.config.xml.XMLConfigFactory;
 import org.nightlabs.jfire.workstation.WorkstationFeaturesCfMod;
 import org.nightlabs.util.CollectionUtil;
@@ -634,6 +637,58 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 //			if (! getOrganisationID().equals(setup.getOrganisationID()) )
 //					throw new IllegalArgumentException("The given ConfigSetup does not belong to the current organisation, but to "+setup.getOrganisationID());
 			ConfigSetup.storeConfigSetup(pm, setup);
+		} finally {
+			pm.close();
+		}
+	}
+
+	/**
+	 * Applies the inheritence of a groupModule to the given ConfigModule if the Config corresponding to the 
+	 * given ModuleID is in a ConfigGroup. Finally, returns a detached copy of the ConfigModule corresponding 
+	 * to the given ConfigModuleID with the given <code>fetchGroups</code> and the given <code>maxFetchDepth</code>.   
+	 * @param IDOfModuleToInherit ID of the ConfigModule, which shall inherit. 
+	 * @param get Whether or not a detached Copy of the corresponding ConfigModule shall be returned. 
+	 * @param fetchGroups FetchGroups of detached copy to return.
+	 * @param maxFetchDepth FetchDepth of detached copy to return.
+	 * @return a detached Copy of the ConfigModule of the given ConfigModuleID after applying group inheritence.
+	 * 
+	 * @ejb.interface-method
+	 * @ejb.permission role-name="_Guest_"
+	 * @ejb.transaction type = "Required"
+	 */
+	public ConfigModule applyGroupInheritence(ConfigModuleID IDOfModuleToInherit, boolean get, String[] fetchGroups, int maxFetchDepth) {
+		PersistenceManager pm;
+		pm = getPersistenceManager();
+		try 
+		{
+			Set<String> fetchPlan = new HashSet<String>();
+			if (fetchGroups != null)
+				fetchPlan.addAll(Arrays.asList(fetchGroups));
+			fetchPlan.add(ConfigModule.FETCH_GROUP_CONFIG);
+			fetchPlan.add(Config.FETCH_GROUP_CONFIG_GROUP);
+			pm.getFetchPlan().setGroups(fetchPlan);
+			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
+			
+			ConfigModule moduleToUpdate = (ConfigModule) pm.getObjectById(IDOfModuleToInherit);
+
+			if (!getOrganisationID().equals(moduleToUpdate.getOrganisationID()))
+				throw new IllegalArgumentException("Attempt to store ConfigModule from a different organisation "+moduleToUpdate.getOrganisationID());
+			
+			// Get the config of the given module
+			ConfigGroup config = moduleToUpdate.getConfig().getConfigGroup();
+			// if given ConfigModule is in no group, simply return it
+			if (config != null) {
+				ConfigModule groupsModule = config.getConfigModule(moduleToUpdate.getClass());
+				ConfigModule.inheritConfigModule(groupsModule, moduleToUpdate);				
+			}
+			fetchPlan.remove(ConfigModule.FETCH_GROUP_CONFIG);
+			fetchPlan.remove(Config.FETCH_GROUP_CONFIG_GROUP);
+			pm.getFetchPlan().setGroups(fetchPlan);
+			
+			if (get)
+				return (ConfigModule) pm.detachCopy(moduleToUpdate);
+			else
+				return null;
 		} finally {
 			pm.close();
 		}
