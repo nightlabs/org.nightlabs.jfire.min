@@ -54,128 +54,129 @@ import org.nightlabs.jfire.workstation.id.WorkstationID;
  */
 public class WorkstationManagerBean extends BaseSessionBeanImpl implements SessionBean
 {
-  /**
-   * @ejb.create-method
-   * @ejb.permission role-name="_Guest_"  
-   */
-  public void ejbCreate() throws CreateException
-  {
-  }
-
-  /**
-   * @ejb.permission unchecked="true"
-   */
-  public void ejbRemove() throws EJBException, RemoteException
-  {
-  }
-
-  public void ejbActivate() throws EJBException, RemoteException
-  {
-  }
-
-  public void ejbPassivate() throws EJBException, RemoteException
-  {
-  }
-  
-  /**
-   * @ejb.interface-method
-   * @ejb.permission role-name="WorkstationManagerBean-write"
-   * @ejb.transaction type="Required"
-   **/
-  public Workstation saveWorkstation(Workstation ws, String [] fetchGroups)
-  throws ModuleException 
-  {
-    PersistenceManager pm = getPersistenceManager();
-    try 
-    {
-      if (fetchGroups != null) 
-        pm.getFetchPlan().setGroups(fetchGroups);
-
-      Workstation ret = Workstation.storeWorkstation(pm, ws);
-      return (Workstation)pm.detachCopy(ret);
-    } 
-    finally 
-    {
-      pm.close();
-    }
-  }
-
-  /**
-   * @throws ModuleException 
-   * @ejb.interface-method
-   * @ejb.permission role-name="WorkstationManagerBean-read"
-   * @ejb.transaction type="Required"
-   **/
-  public Workstation getWorkstation(String organisationID, String workstationID, String [] fetchGroups) 
-  {
-    PersistenceManager pm = getPersistenceManager();
-    try 
-    {
-      if (fetchGroups != null) 
-        pm.getFetchPlan().setGroups(fetchGroups);
-
-      Workstation ret = Workstation.getWorkstation(pm, organisationID, workstationID);
-      return (Workstation)pm.detachCopy(ret);
-    } 
-    finally 
-    {
-      pm.close();
-    }
-  }
-
-  /**
-   * @ejb.interface-method
-   * @ejb.permission role-name="WorkstationManagerBean-read"
-   * @ejb.transaction type="Required"
-   **/
-	public Collection getWorkstations(String[] fetchGroups, int maxFetchDepth)
-	{		
-    PersistenceManager pm = getPersistenceManager();
-    try 
-    {
-    	pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
-      if (fetchGroups != null) 
-        pm.getFetchPlan().setGroups(fetchGroups);
-
-      Collection ret = Workstation.getWorkstations(pm);
-      return (Collection)pm.detachCopyAll(ret);
-    } 
-    finally 
-    {
-      pm.close();
-    }
+	/**
+	 * @ejb.create-method
+	 * @ejb.permission role-name="_Guest_"  
+	 */
+	public void ejbCreate() throws CreateException
+	{
 	}
 
 	/**
-   * @ejb.interface-method
-   * @ejb.permission role-name="_Guest_"
-   * @ejb.transaction type="Required"
-   **/
+	 * @ejb.permission unchecked="true"
+	 */
+	public void ejbRemove() throws EJBException, RemoteException
+	{
+	}
+
+	public void ejbActivate() throws EJBException, RemoteException
+	{
+	}
+
+	public void ejbPassivate() throws EJBException, RemoteException
+	{
+	}
+
+	/**
+	 * @ejb.interface-method
+	 * @ejb.permission role-name="WorkstationManagerBean-write"
+	 * @ejb.transaction type="Required"
+	 **/
+	public Workstation saveWorkstation(Workstation ws, String [] fetchGroups)
+	throws ModuleException 
+	{
+		PersistenceManager pm = getPersistenceManager();
+		try 
+		{
+			if (fetchGroups != null) 
+				pm.getFetchPlan().setGroups(fetchGroups);
+
+			Workstation ret = Workstation.storeWorkstation(pm, ws);
+			return (Workstation)pm.detachCopy(ret);
+		} 
+		finally 
+		{
+			pm.close();
+		}
+	}
+
+	/**
+	 * @throws ModuleException 
+	 * @ejb.interface-method
+	 * @ejb.permission role-name="WorkstationManagerBean-read"
+	 * @ejb.transaction type="Required"
+	 **/
+	public Workstation getWorkstation(WorkstationID workstationID, String [] fetchGroups, int maxFetchDepth) 
+	{
+		PersistenceManager pm = getPersistenceManager();
+		try 
+		{
+			if (fetchGroups != null) 
+				pm.getFetchPlan().setGroups(fetchGroups);
+			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
+			
+			Workstation ret = (Workstation) pm.getObjectById(workstationID);
+			return (Workstation)pm.detachCopy(ret);
+		} 
+		finally 
+		{
+			pm.close();
+		}
+	}
+
+	/**
+	 * @ejb.interface-method
+	 * @ejb.permission role-name="WorkstationManagerBean-read"
+	 * @ejb.transaction type="Required"
+	 **/
+	public Collection getWorkstations(String[] fetchGroups, int maxFetchDepth)
+	{		
+		PersistenceManager pm = getPersistenceManager();
+		try 
+		{
+			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
+			if (fetchGroups != null) 
+				pm.getFetchPlan().setGroups(fetchGroups);
+
+			Collection ret = Workstation.getWorkstations(pm);
+			return (Collection)pm.detachCopyAll(ret);
+		} 
+		finally 
+		{
+			pm.close();
+		}
+	}
+
+	/**
+	 * @ejb.interface-method
+	 * @ejb.permission role-name="_Guest_"
+	 * @ejb.transaction type="Required"
+	 **/
 	public Set<WorkstationID> getWorkstationIDs()
 	{
 		PersistenceManager pm = getPersistenceManager();
-    try {
-    	Query q = pm.newQuery(Workstation.class);
-    	q.setResult("JDOHelper.getObjectId(this)");
-    	return new HashSet<WorkstationID>((Collection<? extends WorkstationID>) q.execute());
-    } finally {
-      pm.close();
-    }
+		try {
+			Query q = pm.newQuery(Workstation.class);
+			q.setResult("JDOHelper.getObjectId(this)");
+			return new HashSet<WorkstationID>((Collection<? extends WorkstationID>) q.execute());
+		} finally {
+			pm.close();
+		}
 	}
 
 	/**
-   * @ejb.interface-method
-   * @ejb.permission role-name="_Guest_"
-   * @ejb.transaction type="Required"
-   **/
+	 * @ejb.interface-method
+	 * @ejb.permission role-name="_Guest_"
+	 * @ejb.transaction type="Required"
+	 **/
 	@SuppressWarnings("unchecked")
 	public List<Workstation> getWorkstations(Set<WorkstationID> workstationIDs, String[] fetchGroups, int maxFetchDepth)
 	{
 		PersistenceManager pm = getPersistenceManager();
-    try {
-    	return NLJDOHelper.getDetachedObjectList(pm, workstationIDs, Workstation.class, fetchGroups, maxFetchDepth);
-    } finally {
-      pm.close();
-    }
+		try {
+			return NLJDOHelper.getDetachedObjectList(pm, workstationIDs, Workstation.class, fetchGroups, maxFetchDepth);
+		} finally {
+			pm.close();
+		}
 	}
 }
