@@ -31,7 +31,9 @@ import java.util.Iterator;
 import java.util.List;
 
 import javax.jdo.FetchPlan;
+import javax.jdo.JDOHelper;
 
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
@@ -39,6 +41,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
@@ -46,13 +49,16 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.nightlabs.base.composite.XComposite;
 import org.nightlabs.base.composite.XComposite.LayoutMode;
+import org.nightlabs.base.util.RCPUtil;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.login.Login;
+import org.nightlabs.jfire.base.resource.Messages;
 import org.nightlabs.jfire.config.ConfigGroup;
 import org.nightlabs.jfire.config.ConfigManager;
 import org.nightlabs.jfire.config.ConfigManagerUtil;
 import org.nightlabs.jfire.config.ConfigModule;
 import org.nightlabs.jfire.config.id.ConfigID;
+import org.nightlabs.jfire.config.id.ConfigModuleID;
 import org.nightlabs.util.Utils;
 
 /**
@@ -96,13 +102,15 @@ implements IWorkbenchPreferencePage
 	protected static String[] CONFIG_MODULE_FETCH_GROUPS = new String[] {FetchPlan.DEFAULT, FetchPlan.ALL}; // TODO are you sure you want FetchPlan.ALL?, Yes, as default, individual pages, can overwrite. 
 
 	private XComposite wrapper;
+	private XComposite header;
 	private Button checkBoxAllowOverwrite;
 
 
 	protected ConfigID currentConfigID;
 	protected ConfigModule currentConfigModule;
+	protected boolean currentConfigIsGroupMember = false;
 	protected boolean configChanged = false;
-
+	
 	/**
 	 * 
 	 */
@@ -160,6 +168,9 @@ implements IWorkbenchPreferencePage
 			this.currentConfigModule = Utils.cloneSerializable(configModule);
 		else
 			this.currentConfigModule = configModule;
+		ConfigID groupID = ConfigSetupRegistry.sharedInstance().getGroupForConfig(ConfigID.create(currentConfigModule.getOrganisationID(), currentConfigModule.getConfigKey(), currentConfigModule.getConfigType()));
+		currentConfigIsGroupMember = groupID != null;
+
 	}
 
 	/**
@@ -195,6 +206,9 @@ implements IWorkbenchPreferencePage
 	 * @param configChanged The changed flag for the Config.
 	 */
 	protected void setConfigChanged(boolean configChanged) {
+		if (!canEdit(currentConfigModule))
+			return;
+		
 		this.configChanged = configChanged;
 		if (configChanged)
 			notifyConfigChangedListeners();
@@ -241,11 +255,14 @@ implements IWorkbenchPreferencePage
 	 * @see org.eclipse.jface.preference.PreferencePage#createContents(org.eclipse.swt.widgets.Composite)
 	 */
 	protected Control createContents(Composite parent) {
-		wrapper = new XComposite(parent, SWT.NONE, LayoutMode.ORDINARY_WRAPPER);
+		XComposite x = new XComposite(parent, SWT.NONE, LayoutMode.TIGHT_WRAPPER);		
+		header = new XComposite(x, SWT.NONE, LayoutMode.ORDINARY_WRAPPER);
+		header.getGridData().grabExcessVerticalSpace = false;
+		wrapper = new XComposite(x, SWT.NONE, LayoutMode.TIGHT_WRAPPER);
 
 		if (doCreateConfigGroupHeader)
-			createConfigGroupHeader(wrapper);
-
+			createConfigGroupHeader(header);
+		
 		createPreferencePage(wrapper);
 
 		if (refreshConfigModule) {
@@ -254,8 +271,8 @@ implements IWorkbenchPreferencePage
 			updatePreferencesGUI(getCurrentConfigModule());
 		}
 		if (doSetControl)
-			setControl(wrapper);
-		return wrapper;
+			setControl(x);
+		return x;
 	}
 
 	protected ConfigModule retrieveConfigModule() {
@@ -267,6 +284,50 @@ implements IWorkbenchPreferencePage
 				getConfigModuleMaxFetchDepth()
 		);
 	}
+	
+	/**
+	 * Creates the header of any ConfigPreferncePage. If additional components are 
+	 * to be shown, then this method should be overwritten.
+	 * @param parent the wrapper composite to pack all components into.
+	 */
+	protected void updateConfigHeader() {
+		boolean headerCreated = false;
+		if (! canEdit(getCurrentConfigModule())) {
+			new Label(header, 0).setText(Messages.getString("AbstractConfigModulePreferencePage.GroupDisallowsOverwrite")); //$NON-NLS-1$
+			headerCreated = true;
+		} else if (currentConfigIsGroupMember) {
+			
+			Button resetToGroupDefaults = new Button(header, 0);
+			resetToGroupDefaults.setText(Messages.getString("AbstractConfigModulePreferencePage.ResetToGroupConfig_ButtonText")); //$NON-NLS-1$
+			resetToGroupDefaults.addSelectionListener(new SelectionListener() {
+				public void widgetDefaultSelected(SelectionEvent arg0) {}
+				public void widgetSelected(SelectionEvent arg0) {
+					boolean doIt = MessageDialog.openConfirm(RCPUtil.getActiveWorkbenchShell(), Messages.getString("AbstractConfigModulePreferencePage.ResetToGroupConfig_ConfirmationDialogHeading"),  //$NON-NLS-1$
+							Messages.getString("AbstractConfigModulePreferencePage.ResetToGroupConfig_ConfirmationDialogMessage")); //$NON-NLS-1$
+					if (! doIt)
+						return;
+					
+					ConfigManager cm;
+					try {
+					 cm = ConfigManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
+					 ConfigModuleID moduleID = (ConfigModuleID) JDOHelper.getObjectId(currentConfigModule);
+					 currentConfigModule = cm.applyGroupInheritence(moduleID, true, getConfigModuleFetchGroups(), getConfigModuleMaxFetchDepth());
+					} catch (Exception e) {
+						throw new RuntimeException(e);
+					}
+					updatePreferencePage(currentConfigModule);
+				}			
+			});
+			headerCreated = true;
+		}
+		else {
+			header.dispose();
+		}
+		if (headerCreated) {
+			(new Label(header, SWT.SEPARATOR | SWT.HORIZONTAL)).setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+			header.layout(true, true);
+		}
+	}
 
 	/**
 	 * Create the header showing controls for {@link ConfigModule}s of {@link ConfigGroup}s.
@@ -276,8 +337,8 @@ implements IWorkbenchPreferencePage
 	 * @param parent The parent to add the header to.
 	 */
 	protected void createConfigGroupHeader(Composite parent) {
-		checkBoxAllowOverwrite = new Button(wrapper, SWT.CHECK);
-		checkBoxAllowOverwrite.setText("Allow this configuration to be overwritten.");
+		checkBoxAllowOverwrite = new Button(parent, SWT.CHECK);
+		checkBoxAllowOverwrite.setText(Messages.getString("AbstractConfigModulePreferencePage.WhetherGroupAllowsConfigOverwrite")); //$NON-NLS-1$
 		
 		checkBoxAllowOverwrite.addSelectionListener(new SelectionListener() {
 			public void widgetDefaultSelected(SelectionEvent e) {}
@@ -285,11 +346,9 @@ implements IWorkbenchPreferencePage
 				setConfigChanged(true);
 			}
 		});
-		
 		GridData gd = new GridData(GridData.FILL_HORIZONTAL);
 		gd.horizontalSpan = 2;
 		checkBoxAllowOverwrite.setLayoutData(gd);
-		(new Label(wrapper, SWT.SEPARATOR | SWT.HORIZONTAL)).setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 	}
 
 
@@ -323,7 +382,7 @@ implements IWorkbenchPreferencePage
 	 * @return Whether the configModule is allowed to be edited.
 	 */
 	protected boolean canEdit(ConfigModule configModule) {
-		return configModule.isGroupConfigModule() || configModule.isGroupAllowsOverride();
+		return configModule.isGroupConfigModule() || configModule.isGroupAllowsOverride() || !currentConfigIsGroupMember;
 	}
 
 	/**
@@ -346,6 +405,9 @@ implements IWorkbenchPreferencePage
 	private void setEditable(Control control, boolean editable) {
 		if (control instanceof Button)
 			control.setEnabled(editable);
+		if (control instanceof Combo) 
+			control.setEnabled(editable);
+		
 		if (control instanceof Composite) {
 			Control[] children = ((Composite)control).getChildren();
 			for (int i = 0; i < children.length; i++) {
@@ -362,6 +424,8 @@ implements IWorkbenchPreferencePage
 	public void updatePreferencesGUI(ConfigModule configModule) {
 		updatePreferencePage(configModule);
 		setEditable(canEdit(configModule));
+		if (! currentConfigModule.isGroupConfigModule())
+			updateConfigHeader();
 		
 		if (checkBoxAllowOverwrite != null)
 			checkBoxAllowOverwrite.setSelection(configModule.isGroupMembersMayOverride());		

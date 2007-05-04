@@ -13,6 +13,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 import org.nightlabs.base.composite.XComposite;
+import org.nightlabs.base.composite.XComposite.LayoutMode;
 import org.nightlabs.base.table.AbstractTableComposite;
 import org.nightlabs.base.table.TableContentProvider;
 import org.nightlabs.base.table.TableLabelProvider;
@@ -51,7 +52,7 @@ public class WorkstationFeaturesPreferencePage extends
 	
 	@Override
 	protected void createPreferencePage(Composite parent) {
-		XComposite container = new XComposite(parent, SWT.NONE);
+		XComposite container = new XComposite(parent, SWT.NONE, LayoutMode.TIGHT_WRAPPER);
 		featureTable = new FeatureTable(container);
 	}
 
@@ -132,5 +133,11 @@ public class WorkstationFeaturesPreferencePage extends
 		result.add(new WorkstationFeature(cfMod, "org.nightlabs.jfire.base.admin", "1.0.0"));
 		return result;
 	}
-	
+
+	@Override
+	protected void setEditable(boolean editable) {
+		// TODO Auto-generated method stub
+		super.setEditable(editable);
+	}
+
 }

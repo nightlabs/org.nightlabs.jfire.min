@@ -122,6 +122,20 @@ public class ConfigSetupRegistry extends AbstractEPProcessor {
 		}
 		return null;
 	}
+	
+	/**
+	 * Returns the ConfigID if the given ConfigID corresponds to a Config, which is
+	 * a member of a group. Otherwise <code>null</code> is returned.
+	 * @param configID the ConfigID of the Config, whose ConfigGroup's ID is wanted.
+	 * @return the ID of the group of the corresponding Config of the given ConfigID.
+	 */
+	public ConfigID getGroupForConfig(ConfigID configID) {
+		ConfigSetup setup = getConfigSetupForConfigType(configID);
+		Config config = (Config) setup.getConfigsMap().get(configID);
+		if (config != null && config.getConfigGroup() != null)			
+			return (ConfigID) JDOHelper.getObjectId(config.getConfigGroup());
+		return null;
+	}
 		
 	
 	/**

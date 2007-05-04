@@ -78,7 +78,7 @@ implements ConfigPreferenceChangedListener
 	 * @param setLayoutData
 	 */
 	public ConfigPreferencesEditComposite2(Composite parent, int style, boolean setLayoutData) {
-		super(parent, style);
+		super(parent, style, LayoutMode.TIGHT_WRAPPER);
 		this.getGridLayout().numColumns = 2;
 		treeComposite = new ConfigPreferencesTreeComposite(this, SWT.BORDER, false, null);
 		GridData treeGD = new GridData(GridData.FILL_BOTH);
