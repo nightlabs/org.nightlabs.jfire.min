@@ -231,7 +231,8 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	
 	/**
 	 * Returns all Configs with the given configType. If the parameter
-	 * is null all Configs will be returned.
+	 * is null all Configs will be returned. 
+	 * {@link Config#getConfigsByType(PersistenceManager, String, String)}
 	 * 
 	 * @param configType If set, all Configs with the given configType
 	 * will be returned. If null, all Configs will be returned
@@ -244,26 +245,38 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	public Collection<Config> getConfigs(String configType, String[] fetchGroups, int maxFetchDepth)
 	throws ModuleException
 	{
-		PersistenceManager pm;
-		pm = getPersistenceManager();
-		try 
-		{
-			ConfigSetup.ensureAllPrerequisites(pm);
-			Query q = pm.newQuery(Config.class);
-			if (configType != null)
-				q.setFilter("this.configType == \""+configType+"\"");
-			
-			Collection configs = (Collection)q.execute();
-
-			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
-			if (fetchGroups != null)
-				pm.getFetchPlan().setGroups(fetchGroups);
-
-			Collection result = pm.detachCopyAll(configs);
-			return result;
-		} finally {
-			pm.close();
-		}
+		PersistenceManager pm = getPersistenceManager();
+		ConfigSetup.ensureAllPrerequisites(pm);
+		
+		pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
+		if (fetchGroups != null)
+			pm.getFetchPlan().setGroups(fetchGroups);
+		
+		Collection<Config> configs = CollectionUtil.castCollection(
+						Config.getConfigsByType(pm, getOrganisationID(), configType));
+		
+		return pm.detachCopyAll(configs);
+	}
+	
+	/**
+	 * Returns all ConfigIDs corresponding to Configs of the given <code>configType</code>.
+	 * {@link Config#getConfigIDsByConfigType(PersistenceManager, String, String)}
+	 * 
+	 * @ejb.interface-method
+	 * @ejb.permission role-name = "_Guest_"
+	 * @ejb.transaction type = "Required"
+	 */
+	public Collection<ConfigID> getConfigIDsByConfigtype(String configType, 
+			String[] fetchGroups,	int maxFetchDepth) {
+		PersistenceManager pm = getPersistenceManager();
+		ConfigSetup.ensureAllPrerequisites(pm);
+		pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
+		if (fetchGroups != null)
+			pm.getFetchPlan().setGroups(fetchGroups);
+		Collection<ConfigID> configIDs = CollectionUtil.castCollection(
+				Config.getConfigIDsByConfigType(pm, getOrganisationID(), configType));
+		
+		return configIDs;
 	}
 	
 	/**
