@@ -49,6 +49,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.nightlabs.base.composite.XComposite;
 import org.nightlabs.base.composite.XComposite.LayoutMode;
+import org.nightlabs.base.progress.XProgressMonitor;
 import org.nightlabs.base.util.RCPUtil;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.login.Login;
@@ -276,13 +277,12 @@ implements IWorkbenchPreferencePage
 	}
 
 	protected ConfigModule retrieveConfigModule() {
-		return ConfigModuleProvider.sharedInstance().getConfigModule(
-				currentConfigID,
-				getConfigModuleClass(),
-				getConfigModuleCfModID(),
+		return ConfigModuleDAO.sharedInstance().getConfigModule(
+				(ConfigModuleID) JDOHelper.getObjectId(currentConfigModule), 
 				getConfigModuleFetchGroups(),
-				getConfigModuleMaxFetchDepth()
-		);
+				getConfigModuleMaxFetchDepth(), 
+				new XProgressMonitor()
+				);
 	}
 	
 	/**

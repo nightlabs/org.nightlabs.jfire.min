@@ -26,6 +26,7 @@
 
 package org.nightlabs.jfire.base.config;
 
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.nightlabs.jfire.base.login.Login;
 import org.nightlabs.jfire.config.ConfigModule;
 import org.nightlabs.jfire.config.UserConfigSetup;
@@ -47,15 +48,17 @@ public class ConfigUtil {
 	 * @param cfModClass The class of the ConfigModule to get.
 	 * @param fetchGroups The fetch-groups the ConfigModule should be detached with
 	 */
-	public static ConfigModule getUserCfMod(Class cfModClass, String[] fetchGroups, int maxFetchDepth) {
+	public static ConfigModule getUserCfMod(Class cfModClass, String[] fetchGroups, int maxFetchDepth, 
+			IProgressMonitor monitor) {
 		try {
 			UserID userID = UserID.create(Login.getLogin().getOrganisationID(), Login.getLogin().getUserID());
-			return ConfigModuleProvider.sharedInstance().getConfigModule(
+			return ConfigModuleDAO.sharedInstance().getConfigModule(
 					UserConfigSetup.getUserConfigID(userID),
 					cfModClass,
 					null,
 					fetchGroups,
-					maxFetchDepth
+					maxFetchDepth,
+					monitor
 				);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
@@ -69,18 +72,20 @@ public class ConfigUtil {
 	 * @param cfModClass The class of the ConfigModule to get.
 	 * @param fetchGroups The fetch-groups the ConfigModule should be detached with
 	 */
-	public static ConfigModule getWorkstationCfMod(Class cfModClass, String[] fetchGroups, int maxFetchDepth) {
+	public static ConfigModule getWorkstationCfMod(Class cfModClass, String[] fetchGroups, 
+			int maxFetchDepth, IProgressMonitor monitor) {
 		try {
 			WorkstationID workstationID = WorkstationID.create(
 					Login.getLogin().getOrganisationID(), 
 					Login.getLogin().getWorkstationID()
 				);
-			return ConfigModuleProvider.sharedInstance().getConfigModule(
+			return ConfigModuleDAO.sharedInstance().getConfigModule(
 					WorkstationConfigSetup.getWorkstationConfigID(workstationID),
 					cfModClass,
 					null,
 					fetchGroups,
-					maxFetchDepth
+					maxFetchDepth,
+					monitor
 				);
 		} catch (Exception e) {
 			throw new RuntimeException(e);

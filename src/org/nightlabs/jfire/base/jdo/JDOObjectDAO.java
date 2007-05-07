@@ -28,13 +28,14 @@ package org.nightlabs.jfire.base.jdo;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.jdo.JDOHelper;
-import javax.jdo.spi.PersistenceCapable;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.nightlabs.jdo.NLJDOHelper;
@@ -162,56 +163,65 @@ public abstract class JDOObjectDAO<JDOObjectID, JDOObject>
 	@SuppressWarnings("unchecked")
 	protected synchronized List<JDOObject> getJDOObjects(String scope, Collection<JDOObjectID> objectIDs, String[] fetchGroups, int maxFetchDepth, IProgressMonitor monitor)
 	{
-		try	{
-			ArrayList<Object> objects = new ArrayList<Object>(objectIDs);
-
-			Set<JDOObjectID> fetchObjectIDs = new HashSet<JDOObjectID>();
-			for (int i = 0; i < objects.size(); i++) {
-				JDOObjectID objectID = (JDOObjectID) objects.get(i);
-				JDOObject res = (JDOObject)cache.get(scope, objectID, fetchGroups, maxFetchDepth);
-				if (res != null)
-					objects.set(i, res);
-				else
-					fetchObjectIDs.add(objectID);
-			}
-
-			if (fetchObjectIDs.size() > 0) {
-				if(fetchObjectIDs.size() == 1) {
-					JDOObjectID objectID = fetchObjectIDs.iterator().next();
-					JDOObject fetchedObject = retrieveJDOObject(objectID, fetchGroups, maxFetchDepth, monitor);
-					if (fetchedObject == null)
-						objects.remove(objectID);
-					else {
-						CollectionUtil.replaceAllInCollection(objects, objectID, fetchedObject);						
-						cache.put(scope, fetchedObject, fetchGroups, maxFetchDepth);
-					}
-					monitor.worked(1);
-				} else {
-					Collection<JDOObject> fetchedObjects = retrieveJDOObjects(fetchObjectIDs, fetchGroups, maxFetchDepth, monitor);
-					cache.putAll(scope, fetchedObjects, fetchGroups, maxFetchDepth);
-					for (JDOObject fetchedObject : fetchedObjects) {						
-						JDOObjectID id = (JDOObjectID) JDOHelper.getObjectId(fetchedObject);
-						CollectionUtil.replaceAllInCollection(objects, id, fetchedObject);
-					}
-					for (Iterator iter = objects.iterator(); iter.hasNext();) {
-						Object element = (Object) iter.next();
-						// we remove all entries that were not replaced by the actual object
-						// in this case the id-object is still in the Object collection
-						// this might happen, when the server does not return all objects
-						// it was asked for
-						if (!(element instanceof PersistenceCapable))
-							iter.remove();
-						
-					}
-					monitor.worked(fetchedObjects.size());
-				}
-			}
-			
-			return (List<JDOObject>) objects;
-			
-		} catch (Exception x)	{
-			throw new RuntimeException(x);
+		if (objectIDs == null  || objectIDs.isEmpty()) {
+			monitor.done();
+			return null;
 		}
+			
+		monitor.beginTask("Getting "+objectIDs.size()+" Objects through Cache", objectIDs.size());
+		ArrayList<JDOObject> objects = new ArrayList<JDOObject>(objectIDs.size());
+//		List<JDOObject> fromCache = new ArrayList<JDOObject>();
+		List<JDOObjectID> listetIDs = new ArrayList<JDOObjectID>(objectIDs);
+//		Set<JDOObjectID> notInCache = new HashSet<JDOObjectID>();
+		Map<JDOObjectID, Integer> notInCache = new HashMap<JDOObjectID, Integer>();
+		
+		// search the cache for the wanted Objects
+		for (int i=0; i < listetIDs.size(); i++) {
+			JDOObject cachedObject = (JDOObject) cache.get(scope, listetIDs.get(i), fetchGroups, maxFetchDepth);
+			if (cachedObject != null) {
+				objects.add(cachedObject);
+				monitor.worked(1);
+			}
+			else {
+				notInCache.put(listetIDs.get(i), i); // if not in cache save (objectID, position)
+				objects.add(null); // fill the result array, so that we're later able to replace the 
+													 // JDOObject at the correct position
+			}
+		}
+
+		if (notInCache.isEmpty())
+			return objects;
+
+		// fetch all missing objects from datastore
+		Collection<JDOObject> fetchedObjects;
+		try { //                               workaround for hashset.keyset != serializable
+			fetchedObjects = retrieveJDOObjects(new HashSet<JDOObjectID>(notInCache.keySet()), fetchGroups, maxFetchDepth, monitor);
+		} catch (Exception e) {
+			throw new RuntimeException("Error occured while fetching Objects from the data store!\n", e);
+		}
+		
+		// put remaining objects in correct position of the result list
+		int index;
+		for(JDOObject freshObject : fetchedObjects) {
+			if (freshObject == null)
+				continue;
+			index = notInCache.get(JDOHelper.getObjectId(freshObject));
+			objects.set(index, freshObject);
+			monitor.worked(1);
+		}
+
+		// Note: The server may not return all wanted Objects, if e.g. they are of a different organisation.
+		// 			 These objects are discarded! Hence, we're deleting the "null"-Objects of the list.
+		if (notInCache.size() != fetchedObjects.size()) {
+			for (Iterator<JDOObject> it = objects.iterator(); it.hasNext();) {
+				if (it.next() == null)
+					it.remove();
+			}
+		}
+		
+		monitor.done();
+		objects.trimToSize();	
+		return objects;		
 	}
 
 	/**

@@ -65,11 +65,12 @@ public class ConfigDAO extends JDOObjectDAO<ConfigID, Config>
 		return sharedInstance;
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.nightlabs.jfire.base.jdo.JDOObjectDAO#retrieveJDOObject(java.lang.Object, java.lang.String[], int, org.eclipse.core.runtime.IProgressMonitor)
+	/**
+	 * Helper Method to get one Config from the Datastore. 
+	 * @return the Config corresponding to the given ConfigID.
 	 */
-	@Override
-	protected Config retrieveJDOObject(ConfigID configID, String[] fetchGroups, int maxFetchDepth, IProgressMonitor monitor) throws Exception
+	private Config getConfigFromDatastore(ConfigID configID, String[] fetchGroups, int maxFetchDepth, 
+			IProgressMonitor monitor) throws Exception
 	{
 		Assert.isNotNull(cm);
 		Config config = cm.getConfig(configID, fetchGroups, maxFetchDepth);
@@ -85,10 +86,21 @@ public class ConfigDAO extends JDOObjectDAO<ConfigID, Config>
 			Set<ConfigID> configIDs, String[] fetchGroups, int maxFetchDepth,
 			IProgressMonitor monitor) throws Exception
 	{
+		try {
+			cm = ConfigManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
+		} catch (Exception e) {
+			throw new RuntimeException("Config download failed!\n", e);
+		} finally {
+			cm = null;
+		}
+		
+		monitor.beginTask("Fetching Configs", configIDs.size());
 		// ConfigManager does not provide a way to get multiple Configs...
 		Collection<Config> configs = new ArrayList<Config>(configIDs.size());
 		for (ConfigID configID : configIDs)
-			configs.add(retrieveJDOObject(configID, fetchGroups, maxFetchDepth, monitor));
+			configs.add(getConfigFromDatastore(configID, fetchGroups, maxFetchDepth, monitor));
+		
+		monitor.done();
 		return configs;
 	}
 	
@@ -103,16 +115,7 @@ public class ConfigDAO extends JDOObjectDAO<ConfigID, Config>
 	 */
   public synchronized Config getConfig(ConfigID configID, String[] fetchGroups, int maxFetchDepth, IProgressMonitor monitor)
   {
-  	try {
-  		cm = ConfigManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
-  		Config config = getJDOObject(null, configID, fetchGroups, maxFetchDepth, monitor);
-  		monitor.worked(1);
-  		return config;
-  	} catch(Exception e) {
-  		throw new RuntimeException("Config download failed", e);
-  	} finally {
-  		cm = null;
-  	}
+  	return getJDOObject(null, configID, fetchGroups, maxFetchDepth, monitor);
 	}
   
 	/**
@@ -126,16 +129,7 @@ public class ConfigDAO extends JDOObjectDAO<ConfigID, Config>
 	 */
   public synchronized Collection<Config> getConfigs (Set<ConfigID> configIDs, String[] fetchGroups, int maxFetchDepth, IProgressMonitor monitor)
   {
-  	try {
-  		cm = ConfigManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
-  		Collection<Config> configs = cm.getConfigs(configIDs, fetchGroups, maxFetchDepth);
-  		monitor.worked(1);
-  		return configs;
-  	} catch(Exception e) {
-  		throw new RuntimeException("Config download failed", e);
-  	} finally {
-  		cm = null;
-  	}
+		return getJDOObjects(null, configIDs, fetchGroups, maxFetchDepth, monitor);
 	}
   
 	/**
@@ -147,17 +141,21 @@ public class ConfigDAO extends JDOObjectDAO<ConfigID, Config>
 	 * 					object, <code>monitor.worked(1)</code> will be called.
 	 * @return a collection of all config of type <code>configType</code>
 	 */
-  public synchronized Collection<Config> getConfigs(String configType, String[] fetchGroups, int maxFetchDepth, IProgressMonitor monitor) {
+  public synchronized Collection<Config> getConfigs(String configType, 
+  			String[] fetchGroups, int maxFetchDepth, IProgressMonitor monitor) {
+  	// get all ConfigIDs of the corresponding Configs
+  	Collection<ConfigID> configIDs;
   	try {
   		cm = ConfigManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
-  		Collection<Config> configs = cm.getConfigGroups(configType, fetchGroups, maxFetchDepth);
-  		monitor.worked(1);
-  		return configs;
-  	} catch(Exception e) {
-  		throw new RuntimeException("Config download failed", e);
+  		configIDs = cm.getConfigIDsByConfigtype(configType, fetchGroups, maxFetchDepth);
+  	} catch (Exception e) {
+  		throw new RuntimeException("Error while downloading ConfigIDs!\n" ,e);
   	} finally {
   		cm = null;
   	}
-  			
+  	
+  	// ask the cache if there are already wanted Configs present
+  	return getJDOObjects(null, configIDs, fetchGroups, maxFetchDepth, monitor);
 	}
+  
 }
