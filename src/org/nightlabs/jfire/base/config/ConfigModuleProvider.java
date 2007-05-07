@@ -28,7 +28,6 @@ package org.nightlabs.jfire.base.config;
 
 import javax.jdo.JDOHelper;
 
-import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jdo.ObjectID;
 import org.nightlabs.jfire.base.jdo.JDOObjectProvider;
 import org.nightlabs.jfire.base.login.Login;
@@ -39,6 +38,11 @@ import org.nightlabs.jfire.config.ConfigModule;
 import org.nightlabs.jfire.config.id.ConfigID;
 import org.nightlabs.jfire.config.id.ConfigModuleID;
 
+/**
+ * @deprecated use {@link ConfigModuleDAO} instead
+ * @author marius
+ *
+ */
 public class ConfigModuleProvider extends JDOObjectProvider {
 
 	public ConfigModuleProvider() {
