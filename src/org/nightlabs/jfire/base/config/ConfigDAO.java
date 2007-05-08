@@ -23,11 +23,9 @@
  ******************************************************************************/
 package org.nightlabs.jfire.base.config;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
 
-import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.jdo.JDOObjectDAO;
@@ -45,11 +43,6 @@ import org.nightlabs.jfire.config.id.ConfigID;
 public class ConfigDAO extends JDOObjectDAO<ConfigID, Config>
 {
 	/**
-	 * The temporary used config manager.
-	 */
-	ConfigManager cm;
-	
-	/**
 	 * The shared instance.
 	 */
 	private static ConfigDAO sharedInstance = null;
@@ -65,19 +58,6 @@ public class ConfigDAO extends JDOObjectDAO<ConfigID, Config>
 		return sharedInstance;
 	}
 	
-	/**
-	 * Helper Method to get one Config from the Datastore. 
-	 * @return the Config corresponding to the given ConfigID.
-	 */
-	private Config getConfigFromDatastore(ConfigID configID, String[] fetchGroups, int maxFetchDepth, 
-			IProgressMonitor monitor) throws Exception
-	{
-		Assert.isNotNull(cm);
-		Config config = cm.getConfig(configID, fetchGroups, maxFetchDepth);
-		monitor.worked(1);
-		return config;
-	}
-
 	/* (non-Javadoc)
 	 * @see org.nightlabs.jfire.base.jdo.JDOObjectDAO#retrieveJDOObjects(java.util.Collection, java.lang.String[], int, org.eclipse.core.runtime.IProgressMonitor)
 	 */
@@ -86,20 +66,17 @@ public class ConfigDAO extends JDOObjectDAO<ConfigID, Config>
 			Set<ConfigID> configIDs, String[] fetchGroups, int maxFetchDepth,
 			IProgressMonitor monitor) throws Exception
 	{
-		try {
-			cm = ConfigManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
-		} catch (Exception e) {
-			throw new RuntimeException("Config download failed!\n", e);
-		} finally {
-			cm = null;
-		}
-		
+		Collection<Config> configs;
 		monitor.beginTask("Fetching Configs", configIDs.size());
-		// ConfigManager does not provide a way to get multiple Configs...
-		Collection<Config> configs = new ArrayList<Config>(configIDs.size());
-		for (ConfigID configID : configIDs)
-			configs.add(getConfigFromDatastore(configID, fetchGroups, maxFetchDepth, monitor));
-		
+		try {
+			ConfigManager cm = ConfigManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
+			// ConfigManager does not provide a way to get multiple Configs...
+			configs = cm.getConfigs(configIDs, fetchGroups, maxFetchDepth);
+		} catch (Exception e) {
+			monitor.setCanceled(true);
+			throw new RuntimeException("Config download failed!\n", e);
+		}
+				
 		monitor.done();
 		return configs;
 	}
@@ -146,12 +123,10 @@ public class ConfigDAO extends JDOObjectDAO<ConfigID, Config>
   	// get all ConfigIDs of the corresponding Configs
   	Collection<ConfigID> configIDs;
   	try {
-  		cm = ConfigManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
-  		configIDs = cm.getConfigIDsByConfigtype(configType, fetchGroups, maxFetchDepth);
+  		ConfigManager cm = ConfigManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
+  		configIDs = cm.getConfigIDsByConfigType(configType, fetchGroups, maxFetchDepth);
   	} catch (Exception e) {
   		throw new RuntimeException("Error while downloading ConfigIDs!\n" ,e);
-  	} finally {
-  		cm = null;
   	}
   	
   	// ask the cache if there are already wanted Configs present

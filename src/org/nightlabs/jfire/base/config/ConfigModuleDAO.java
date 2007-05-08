@@ -9,7 +9,6 @@ import java.util.Set;
 
 import javax.jdo.JDOHelper;
 
-import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.jdo.JDOObjectDAO;
@@ -28,8 +27,9 @@ import org.nightlabs.jfire.config.id.ConfigModuleID;
  */
 public class ConfigModuleDAO extends JDOObjectDAO<ConfigModuleID, ConfigModule> {
 
-	private ConfigManager configManager;
-	
+	/**
+	 * The shared instance of this DAO.
+	 */
 	private static ConfigModuleDAO sharedInstance = null;
 	
 	/**
@@ -50,15 +50,21 @@ public class ConfigModuleDAO extends JDOObjectDAO<ConfigModuleID, ConfigModule> 
 	protected Collection<ConfigModule> retrieveJDOObjects(Set<ConfigModuleID> configModuleIDs, 
 			String[] fetchGroups, int maxFetchDepth, IProgressMonitor monitor) 
 			throws Exception {
-		configManager = ConfigManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
 		if (configModuleIDs == null)
 			return null;
 		monitor.beginTask("Retrieving ConfigModules", configModuleIDs.size());
-		Collection<ConfigModule> result = new HashSet<ConfigModule>(configModuleIDs.size());
-		// ConfigManager is not able to retrieve a collection of ConfigModules by means of their IDs. 
-		for (ConfigModuleID moduleID : configModuleIDs)
-			result.add(getConfigModuleFromDataStore(moduleID, fetchGroups, maxFetchDepth, monitor));
-		// use the given monitor since the helper method is private and cannot be called from outside
+		Collection<ConfigModule> result;
+		try {
+			ConfigManager configManager = ConfigManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
+			result = new HashSet<ConfigModule>(configModuleIDs.size());
+			// ConfigManager is not able to retrieve a collection of ConfigModules by means of their IDs. 
+			for (ConfigModuleID moduleID : configModuleIDs)
+				result.add(getConfigModuleFromDataStore(configManager, moduleID, fetchGroups, maxFetchDepth, monitor));
+			// use the given monitor since the helper method is private and cannot be called from outside			
+		} catch (Exception e) {
+			monitor.setCanceled(true);
+			throw new RuntimeException("ConfigModule download failed!\n", e);
+		}
 		
 		monitor.done();
 		return result;
@@ -70,10 +76,11 @@ public class ConfigModuleDAO extends JDOObjectDAO<ConfigModuleID, ConfigModule> 
 	 * @return the ConfigModule corresponding to the given ConfigModuleID.
 	 * @throws Exception if ConfigModule class of the corresponding ConfigModule to the given 
 	 * 										ConfigModuleID is unknown.
+	 * 
+	 * FIXME: Delete this helper Method as soon as the Bean is able to fetch a bunch of ConfigModules at once! 
 	 */
-	private ConfigModule getConfigModuleFromDataStore(ConfigModuleID moduleID, String[] fetchGroups, 
+	private ConfigModule getConfigModuleFromDataStore(ConfigManager cm, ConfigModuleID moduleID, String[] fetchGroups, 
 			int maxFetchDepth, IProgressMonitor monitor) throws Exception {
-		Assert.isNotNull(configManager); // since this is only used as helper for retrieveJDOObjects
 		String className = ConfigModule.getClassNameOutOfCfModKey(moduleID.cfModKey);
 		Class cfModClass = null;
 		try {
@@ -83,9 +90,8 @@ public class ConfigModuleDAO extends JDOObjectDAO<ConfigModuleID, ConfigModule> 
 		}
 		String cfModID = ConfigModule.getCfModIDOutOfCfModKey(moduleID.cfModKey);		
 		ConfigID configID = ConfigID.create(moduleID.organisationID, moduleID.configKey, moduleID.configType);
-		ConfigManager configManager = ConfigManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
 		monitor.worked(1);
-		return configManager.getConfigModule(configID, cfModClass, cfModID, fetchGroups, maxFetchDepth);
+		return cm.getConfigModule(configID, cfModClass, cfModID, fetchGroups, maxFetchDepth);
 	}
 
 	/**
