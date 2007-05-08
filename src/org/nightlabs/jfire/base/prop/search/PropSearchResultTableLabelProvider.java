@@ -48,7 +48,7 @@ public class PropSearchResultTableLabelProvider implements ITableLabelProvider {
 	 * @see org.eclipse.jface.viewers.ITableLabelProvider#getColumnText(java.lang.Object, int)
 	 */
 	public String getColumnText(Object element, int columnIndex) {
-		// TODO: temporär -> columns, data ...
+		// TODO: temporär -> columns, data ... 
 		String label = "";
 		if ((element instanceof Person)) {
 //			throw new IllegalArgumentException("Element should be of type Person but is "+element.getClass().getName());
