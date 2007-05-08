@@ -45,6 +45,7 @@ import javax.jdo.Query;
 import org.apache.log4j.Logger;
 import org.nightlabs.ModuleException;
 import org.nightlabs.config.ConfigModuleNotFoundException;
+import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jdo.ObjectID;
 import org.nightlabs.jdo.moduleregistry.ModuleMetaData;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
@@ -252,10 +253,9 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 		if (fetchGroups != null)
 			pm.getFetchPlan().setGroups(fetchGroups);
 		
-		Collection<Config> configs = CollectionUtil.castCollection(
-						Config.getConfigsByType(pm, getOrganisationID(), configType));
+		Collection<Config> queryResult = Config.getConfigsByType(pm, getOrganisationID(), configType);
 		
-		return pm.detachCopyAll(configs);
+		return NLJDOHelper.getDetachedQueryResult(pm, queryResult);
 	}
 	
 	/**
@@ -266,17 +266,16 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 * @ejb.permission role-name = "_Guest_"
 	 * @ejb.transaction type = "Required"
 	 */
-	public Collection<ConfigID> getConfigIDsByConfigtype(String configType, 
+	public Collection<ConfigID> getConfigIDsByConfigType(String configType, 
 			String[] fetchGroups,	int maxFetchDepth) {
 		PersistenceManager pm = getPersistenceManager();
 		ConfigSetup.ensureAllPrerequisites(pm);
 		pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
 		if (fetchGroups != null)
 			pm.getFetchPlan().setGroups(fetchGroups);
-		Collection<ConfigID> configIDs = CollectionUtil.castCollection(
-				Config.getConfigIDsByConfigType(pm, getOrganisationID(), configType));
+		Collection<ConfigID> queryResult = Config.getConfigIDsByConfigType(pm, getOrganisationID(), configType);
 		
-		return configIDs;
+		return NLJDOHelper.getDetachedQueryResult(pm, queryResult);
 	}
 	
 	/**
@@ -337,78 +336,47 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type = "Required"
-	 * 
 	 */
 	public ConfigModule getConfigModule(ConfigID configID, Class cfModClass, String cfModID, String[] fetchGroups, int maxFetchDepth)
 	throws ModuleException
 	{
-		PersistenceManager pm;
-		pm = getPersistenceManager();
+		return getConfigModule(getPersistenceManager(), configID, cfModClass, cfModID, fetchGroups, maxFetchDepth);
+	}
+	
+	/**
+	 * Helper Method returning the ConfigModule corresponding to the given ConfigModuleID and if non-existant
+	 * creates a new ConfigModule and if necessary Config, too.
+	 * 
+	 * @param pm the {@link PersistenceManager} to use 
+	 * @param configID the ConfigID of the Config, which shall contain the searched ConfigModule.
+	 * @param cfModClass The ConfigModule's class
+	 * @param cfModID The ConfigModules cfModID (suffix)
+	 * @param fetchGroups The fetch-groups to be used to detach the ConfigModule
+	 * @return The ConfigModule of the given userConfig, cfModClass and cfModID
+	 * @throws ModuleException
+	 */
+	protected ConfigModule getConfigModule(PersistenceManager pm, ConfigID configID, Class cfModClass, String cfModID, 
+			String[] fetchGroups, int maxFetchDepth)
+	throws ModuleException
+	{
 		try 
 		{
 			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
 			if (fetchGroups != null)
 				pm.getFetchPlan().setGroups(fetchGroups);
-			else
-				pm.getFetchPlan().setGroup(FetchPlan.DEFAULT);
 			
 			ConfigSetup.ensureAllPrerequisites(pm);
 			Config config = (Config)pm.getObjectById(configID);
-			return getConfigModule(pm, config, cfModClass, cfModID, fetchGroups, maxFetchDepth);
+			return getCreateConfigModule(pm, config, cfModClass, cfModID, fetchGroups, maxFetchDepth);
+		} catch(Exception e) {
+			throw new RuntimeException("Could not download ConfigModules!\n", e);
 		} finally {
 			pm.close();
 		}
-	}	
+	}
 	
 	/**
-	 * Helper method for the other getConfigModule methods 
-	 */
-	protected ConfigModule getConfigModule(PersistenceManager pm, Config config, Class cfModClass, String cfModID, String[] fetchGroups, int maxFetchDepth)
-	throws ModuleException
-	{
-		logger.debug("config.organisatinID "+config.getOrganisationID());
-		ConfigModule configModule = null;
-		boolean groupAllowOverwrite = true;
-		configModule = config.createConfigModule(cfModClass, cfModID);
-//		configModule = ConfigModule.getAutoCreateConfigModule(pm, config, cfModClass, cfModID);
-
-		logger.debug("Have configmodule: "+configModule);
-		logger.debug("configModule.organisationID: "+configModule.getOrganisationID());
-		logger.debug("configModule.configType: "+configModule.getConfigType());
-		logger.debug("configModule.configKey: "+configModule.getConfigKey());
-		logger.debug("configModule.cfModID: "+configModule.getCfModID());
-		logger.debug("configModule.cfModKey: "+configModule.getCfModKey());
-		
-//		pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
-//		if (fetchGroups != null)
-//			pm.getFetchPlan().setGroups(fetchGroups);
-//		else
-//			pm.getFetchPlan().clearGroups();
-
-		
-		// No need to set groupAllowsOverride any more, this setting is now persistent.
-//		ConfigGroup configGroup = ConfigGroup.getConfigGroupForConfig(
-//				pm, 
-//				ConfigID.create(
-//						config.getOrganisationID(),
-//						config.getConfigKey(),
-//						config.getConfigType()
-//					)
-//			);
-//		if (configGroup != null) {
-//			ConfigModule groupModule = ConfigModule.getConfigModule(pm, configGroup, cfModClass, cfModID);
-//			if (groupModule != null)
-//				groupAllowOverwrite = groupModule.isGroupMembersMayOverride();
-//		}
-		ConfigModule result = (ConfigModule)pm.detachCopy(configModule);
-//		result.setGroupAllowsOverride(groupAllowOverwrite);
-		return result;
-	}
-
-	/**
-	 * Searches the ConfigModule for the given keyObject and inherits all its 
-	 * fields from the ConfigModule in the Configs configGroup according to its 
-	 * inheritance-settings. 
+	 * Searches the ConfigModule for the given keyObject and if there is none, one is created.
 	 * 
 	 * @param keyObjectID The ObjectID of the Object the Config holding the ConfigModule is assigned to. 
 	 * @param cfModClass The classname of the ConfigModule desired
@@ -444,9 +412,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	}
 
 	/**
-	 * Searches the ConfigModule for the given keyObject and inherits all its 
-	 * fields from the ConfigModule in the Configs configGroup according to its 
-	 * inheritance-settings. 
+	 * Searches the ConfigModule for the given keyObject.
 	 * 
 	 * @param keyObjectID The ObjectID of the Object the Config holding the ConfigModule is assigned to. 
 	 * @param cfModClass The classname of the ConfigModule desired
@@ -460,7 +426,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 * @ejb.transaction type = "Required"
 	 */
 	public ConfigModule getConfigModule(
-			ObjectID keyObjectID, Class cfModClass, String cfModID, boolean throwExceptionIfNotFound,
+			ConfigID keyObjectID, Class cfModClass, String cfModID, boolean throwExceptionIfNotFound,
 			String[] fetchGroups, int maxFetchDepth)
 	throws ModuleException
 	{
@@ -481,19 +447,57 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 
 			return (ConfigModule)pm.detachCopy(configModule);
 
-//
-//			return ConfigModule.getConfigModuleForKeyObject(
-//					pm, 
-//					getOrganisationID(), 
-//					keyObject, 
-//					cfModClass, 
-//					cfModID, 
-//					fetchGroups,
-//					maxFetchDepth
-//				);
 		} finally {
 			pm.close();
 		}
+	}
+
+	
+	/**
+	 * @param moduleIDs
+	 * @param fetchGroups
+	 * @param maxFetchDepth
+	 * @return
+	 * @throws ModuleException
+	 */
+	// FIXME: talk to Biber about how invalid IDs shall be handled, and what the create Stuff in Config (esp. the JDO-Queries) are doing there
+	public Collection<ConfigModule> getConfigModules(Set<ConfigModuleID> moduleIDs, String[] fetchGroups, int maxFetchDepth) 
+	throws ModuleException {
+		PersistenceManager pm = getPersistenceManager();
+		ArrayList<ConfigModule> searchedModules = new ArrayList<ConfigModule>(moduleIDs.size());
+		ArrayList<ConfigModuleID> invalidKeys = new ArrayList<ConfigModuleID>();
+		for (ConfigModuleID moduleID : moduleIDs) {
+			ConfigModule newMod = (ConfigModule) pm.getObjectById(moduleID);
+			if (newMod == null)
+				invalidKeys.add(moduleID);
+			else
+				searchedModules.add((ConfigModule)pm.detachCopy(newMod));
+		}
+		if (! invalidKeys.isEmpty())
+			throw new ModuleException("The following ConfigModuleIDs are invalid: "+invalidKeys);
+		
+		return searchedModules;
+	}
+
+	/**
+	 * Helper method for the other getConfigModule methods, which searches for ConfigModule 
+	 * corresponding to the given cfModID and if it doesn't exist creates one. 
+	 */
+	protected ConfigModule getCreateConfigModule(PersistenceManager pm, Config config, Class cfModClass, String cfModID, String[] fetchGroups, int maxFetchDepth)
+	throws ModuleException
+	{
+		logger.debug("config.organisatinID "+config.getOrganisationID());
+//		Config config = Config.getConfig(pm, getOrganisationID(), keyObject); // Config is autocreated, if necessary
+		ConfigModule configModule = config.createConfigModule(cfModClass, cfModID);
+
+		logger.debug("Have configmodule: "+configModule);
+		logger.debug("configModule.organisationID: "+configModule.getOrganisationID());
+		logger.debug("configModule.configType: "+configModule.getConfigType());
+		logger.debug("configModule.configKey: "+configModule.getConfigKey());
+		logger.debug("configModule.cfModID: "+configModule.getCfModID());
+		logger.debug("configModule.cfModKey: "+configModule.getCfModKey());
+		
+		return (ConfigModule)pm.detachCopy(configModule);
 	}
 
 	/* *********************************************************************** */
