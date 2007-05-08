@@ -3,8 +3,6 @@ package org.nightlabs.jfire.base.overview;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.MenuManager;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
@@ -89,13 +87,14 @@ extends LSDEditorPart
 	{
 		EditorActionBarContributor actionBarContributor = 
 			(EditorActionBarContributor) getEditorSite().getActionBarContributor();
-		if (actionBarContributor != null) {
+		if (actionBarContributor != null && entryViewController != null) {
 			MenuManager menuManager = entryViewController.getMenuManager();
 			if (menuManager != null) {
 				if (actionBarContributor instanceof XEditorActionBarContributor) {
 					XEditorActionBarContributor xEditorActionBarContributor = (XEditorActionBarContributor) actionBarContributor;
 					xEditorActionBarContributor.getActionRegistry().contributeToContextMenu(menuManager);
-					logger.info("updateContextMenu, Number of entries = "+menuManager.getItems().length+", actionBarContributor = "+actionBarContributor);
+					if (logger.isDebugEnabled())
+						logger.debug("updateContextMenu, Number of entries = "+menuManager.getItems().length+", actionBarContributor = "+actionBarContributor);
 				} else {
 					actionBarContributor.contributeToMenu(menuManager);
 				}
@@ -107,12 +106,13 @@ extends LSDEditorPart
 	{
 		EditorActionBarContributor actionBarContributor = 
 			(EditorActionBarContributor) getEditorSite().getActionBarContributor();
-		if (actionBarContributor != null) {
+		if (actionBarContributor != null && entryViewController != null) {
 			MenuManager menuManager = entryViewController.getMenuManager();
 			if (menuManager != null) {
 				menuManager.removeAll();
-				menuManager.updateAll(true);				
-				logger.info("removeContextMenu, Number of entries = "+menuManager.getItems().length+", actionBarContributor = "+actionBarContributor);
+				menuManager.updateAll(true);
+				if (logger.isDebugEnabled())
+					logger.debug("removeContextMenu, Number of entries = "+menuManager.getItems().length+", actionBarContributor = "+actionBarContributor);
 			}							
 		}
 	}
@@ -141,6 +141,7 @@ extends LSDEditorPart
 	
 	protected void editorDisposed() {
 		getSite().getPage().removePartListener(partListener);
-		getSite().setSelectionProvider(entryViewController.getSelectionProvider());		
+		if (entryViewController != null)
+			getSite().setSelectionProvider(entryViewController.getSelectionProvider());		
 	}
 }

@@ -35,7 +35,6 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 import org.nightlabs.base.app.AbstractWorkbenchAdvisor;
-import org.nightlabs.base.exceptionhandler.ExceptionHandlerRegistry;
 import org.nightlabs.base.exceptionhandler.ExceptionHandlingWorkbenchAdvisor;
 import org.nightlabs.jfire.base.JFireWelcomePerspective;
 import org.nightlabs.jfire.base.j2ee.RemoteResourceFilterRegistry;
@@ -87,12 +86,6 @@ extends AbstractWorkbenchAdvisor
 	{
 		// create log directory if not existent
 		JFireApplication.getLogDir();
-//		try {
-//			this.getClass().getClassLoader().loadClass("org.nightlabs.jfire.classloader.JFireRCDLDelegate");
-//		} catch (ClassNotFoundException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
 		try {	
 			org.nightlabs.jfire.classloader.JFireRCDLDelegate.
 					createSharedInstance(Login.getLogin(false), new File(JFireApplication.getRootDir(), "classloader.cache"))
@@ -117,10 +110,10 @@ extends AbstractWorkbenchAdvisor
 		return JFireWelcomePerspective.ID_PERSPECTIVE;
 	}
 			
-	protected void initializeLoginModule(){
+	protected void initializeLoginModule()
+	{
 		logger.debug("#initializeLoginModule: Declaring Configuration");
-		JFireSecurityConfiguration.declareConfiguration();
-		
+		JFireSecurityConfiguration.declareConfiguration();		
 		logger.debug("#initializeLoginModule: Setting LoginHandler");
 		try {
 			Login.getLogin(false).setLoginHandler(new JFireLoginHandler());
@@ -129,11 +122,6 @@ extends AbstractWorkbenchAdvisor
 		}
 	}
 	
-//	public void eventLoopException(Throwable exception) {
-//		if (!ExceptionHandlerRegistry.syncHandleException(exception))
-//			super.eventLoopException(exception);
-//	}
-
 	public WorkbenchWindowAdvisor createWorkbenchWindowAdvisor(IWorkbenchWindowConfigurer configurer) {
 		return new JFireWorkbenchWindowAdvisor(configurer);
 	}

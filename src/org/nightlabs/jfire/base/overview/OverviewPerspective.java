@@ -12,7 +12,8 @@ import org.nightlabs.base.util.RCPUtil;
 public class OverviewPerspective
 implements IPerspectiveFactory 
 {
-
+	public static final String ID_PERSPECTIVE = OverviewPerspective.class.getName();
+	
 	public void createInitialLayout(IPageLayout layout) 
 	{
 		layout.setEditorAreaVisible(true);

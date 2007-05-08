@@ -33,6 +33,7 @@ import org.eclipse.ui.application.IActionBarConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 
 import org.nightlabs.base.action.ContributionItemSetRegistry;
+import org.nightlabs.base.editor.Editor2PerspectiveRegistry;
 import org.nightlabs.base.extensionpoint.EPProcessorException;
 import org.nightlabs.base.part.PartVisibilityTracker;
 import org.nightlabs.rcp.splash.SplashHandlingWorkbenchWindowAdvisor;
@@ -61,17 +62,6 @@ extends SplashHandlingWorkbenchWindowAdvisor
 	}
 
 	/**
-	 * @see org.eclipse.ui.application.WorkbenchWindowAdvisor#postWindowClose()
-	 */
-	public void postWindowClose() {
-		super.postWindowClose();
-//    JFireActionBuilder builder = (JFireActionBuilder) configurer.getData(BUILDER_KEY);
-//    if (builder != null) {
-//        builder.dispose();
-//    }
-	}
-
-	/**
 	 * @see org.eclipse.ui.application.WorkbenchWindowAdvisor#postWindowCreate()
 	 */
 	public void postWindowCreate() {
@@ -83,6 +73,9 @@ extends SplashHandlingWorkbenchWindowAdvisor
 		} catch (EPProcessorException e) {
 			logger.error("There occured an error getting the ContributionItemSetRegistry", e);
 		}
+		
+		// activates the editor2Perspective check
+		Editor2PerspectiveRegistry.sharedInstance().activate();
 	}
 
 	@Override
@@ -101,7 +94,7 @@ extends SplashHandlingWorkbenchWindowAdvisor
 	public void preWindowOpen() {
 		super.preWindowOpen();
 		// TODO: dont forget JobErrorNotificationManager
-//		PlatformUI.getWorkbench().getProgressService().setJobErrorNotificationManager(new JobErrorNotificationManager());
+//		PlatformUI.getWorkbench().getProgressService().setJobErrorNotificationManager(new JobErrorNotificationManager());		
 	}
-	
+		
 }
