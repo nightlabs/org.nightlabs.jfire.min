@@ -163,13 +163,16 @@ public abstract class JDOObjectDAO<JDOObjectID, JDOObject>
 	@SuppressWarnings("unchecked")
 	protected synchronized List<JDOObject> getJDOObjects(String scope, Collection<JDOObjectID> objectIDs, String[] fetchGroups, int maxFetchDepth, IProgressMonitor monitor)
 	{
-		if (objectIDs == null  || objectIDs.isEmpty()) {
+		if (objectIDs == null)
+			throw new IllegalArgumentException("The given set of objectIDs is null!");
+		
+		ArrayList<JDOObject> objects = new ArrayList<JDOObject>(objectIDs.size());
+		if (objectIDs.isEmpty()) {
 			monitor.done();
-			return null;
+			return objects;
 		}
 			
 		monitor.beginTask("Getting "+objectIDs.size()+" Objects through Cache", objectIDs.size());
-		ArrayList<JDOObject> objects = new ArrayList<JDOObject>(objectIDs.size());
 //		List<JDOObject> fromCache = new ArrayList<JDOObject>();
 		List<JDOObjectID> listetIDs = new ArrayList<JDOObjectID>(objectIDs);
 //		Set<JDOObjectID> notInCache = new HashSet<JDOObjectID>();

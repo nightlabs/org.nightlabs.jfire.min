@@ -67,7 +67,7 @@ public class ConfigDAO extends JDOObjectDAO<ConfigID, Config>
 			IProgressMonitor monitor) throws Exception
 	{
 		Collection<Config> configs;
-		monitor.beginTask("Fetching Configs", configIDs.size());
+		monitor.beginTask("Fetching Configs", 1);
 		try {
 			ConfigManager cm = ConfigManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
 			// ConfigManager does not provide a way to get multiple Configs...
@@ -76,7 +76,7 @@ public class ConfigDAO extends JDOObjectDAO<ConfigID, Config>
 			monitor.setCanceled(true);
 			throw new RuntimeException("Config download failed!\n", e);
 		}
-				
+		monitor.worked(1);
 		monitor.done();
 		return configs;
 	}
