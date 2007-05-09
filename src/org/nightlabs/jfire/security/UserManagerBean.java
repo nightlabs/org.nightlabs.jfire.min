@@ -54,6 +54,7 @@ import org.nightlabs.jfire.security.id.AuthorityID;
 import org.nightlabs.jfire.security.id.RoleGroupID;
 import org.nightlabs.jfire.security.id.UserID;
 import org.nightlabs.jfire.security.id.UserRefID;
+import org.nightlabs.jfire.security.search.UserQuery;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 
 /**
@@ -108,33 +109,7 @@ implements SessionBean
    * @ejb.permission unchecked="true"
    */
   public void ejbRemove() throws EJBException, RemoteException { }
-  
-//  /**
-//   * 
-//   * 
-//   * @throws ModuleException
-//   * 
-//   * @deprecated use saveUser instead
-//   * 
-//   * @ejb.interface-method
-//   * @ejb.permission role-name="UserManager-write"
-//   * @ejb.transaction type = "Required"
-//   */
-//  public User saveDetachedUser(User user, String [] fetchGroups) 
-//  	throws ModuleException 
-//  {
-//    PersistenceManager pm = this.getPersistenceManager();
-//    try 
-//		{
-//    	User result = (User)NLJDOHelper.storeJDO(pm, user, true, fetchGroups);
-//    	return result;
-//    }
-//    finally 
-//		{
-//    	pm.close();
-//    }
-//  }
-  
+    
   /**
    * Create a new user or change an existing one.
    * @param user The user to save
@@ -194,6 +169,7 @@ implements SessionBean
   }
   	
   /**
+   * @deprecated should not be used anymore
    * @see User.USERTYPE_ORGANISATION
    * @see User.USERTYPE_USER
    * 
@@ -1620,4 +1596,29 @@ implements SessionBean
   //		}
   //	}
   
+	/**
+	 *
+	 * @ejb.interface-method
+	 * @ejb.permission role-name="_Guest_"
+	 * @ejb.transaction type="Supports"
+	 */	
+	public Set<UserID> getUserIDs(Collection<UserQuery> userQueries) {
+		PersistenceManager pm = getPersistenceManager();
+		try {
+			pm.getFetchPlan().setMaxFetchDepth(1);
+			pm.getFetchPlan().setGroup(FetchPlan.DEFAULT);
+
+			Set<User> users = null;
+			for (UserQuery query : userQueries) {
+				query.setPersistenceManager(pm);
+				query.setCandidates(users);
+				users = new HashSet<User>(query.getResult());
+			}
+
+			return NLJDOHelper.getObjectIDSet(users);
+		} finally {
+			pm.close();
+		}		
+	}
+	
 }
