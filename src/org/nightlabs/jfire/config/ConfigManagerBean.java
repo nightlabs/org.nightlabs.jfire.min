@@ -452,30 +452,32 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 		}
 	}
 
-	
 	/**
-	 * @param moduleIDs
-	 * @param fetchGroups
-	 * @param maxFetchDepth
-	 * @return
-	 * @throws ModuleException
+	 * Returns a Collection of {@link ConfigModule}s, corresponding to the set of {@link ConfigModuleID}s.
+	 * If a corresponding ConfigModule doesn't exists it and its surrounding {@link Config} are created.
+	 * 
+	 * @param moduleIDs the set of {@link ConfigModuleID}s for which to gather the corresponding {@link ConfigModule}s
+	 * @param fetchGroups the FetchGroups for the detached {@link ConfigModule}s
+	 * @param maxFetchDepth the maximum fetch depth for the detached ConfigModules.
+	 * @return a Collection of {@link ConfigModule}s, corresponding to the set of {@link ConfigModuleID}s.
+	 * @throws ModuleException a wrapper for many kinds of Exceptions.
+	 * 
+	 * @ejb.interface-method
+	 * @ejb.permission role-name="_Guest_"
+	 * @ejb.transaction type = "Required"
 	 */
-	// FIXME: talk to Biber about how invalid IDs shall be handled, and what the create Stuff in Config (esp. the JDO-Queries) are doing there
 	public Collection<ConfigModule> getConfigModules(Set<ConfigModuleID> moduleIDs, String[] fetchGroups, int maxFetchDepth) 
 	throws ModuleException {
 		PersistenceManager pm = getPersistenceManager();
-		ArrayList<ConfigModule> searchedModules = new ArrayList<ConfigModule>(moduleIDs.size());
-		ArrayList<ConfigModuleID> invalidKeys = new ArrayList<ConfigModuleID>();
-		for (ConfigModuleID moduleID : moduleIDs) {
-			ConfigModule newMod = (ConfigModule) pm.getObjectById(moduleID);
-			if (newMod == null)
-				invalidKeys.add(moduleID);
-			else
-				searchedModules.add((ConfigModule)pm.detachCopy(newMod));
-		}
-		if (! invalidKeys.isEmpty())
-			throw new ModuleException("The following ConfigModuleIDs are invalid: "+invalidKeys);
+		pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
+		if (fetchGroups != null)
+			pm.getFetchPlan().setGroups(fetchGroups);
 		
+		ArrayList<ConfigModule> searchedModules = new ArrayList<ConfigModule>(moduleIDs.size());
+
+		for (ConfigModuleID moduleID : moduleIDs)
+			searchedModules.add((ConfigModule)pm.detachCopy(Config.getConfigModule(pm, moduleID))); 
+
 		return searchedModules;
 	}
 
@@ -487,7 +489,6 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	throws ModuleException
 	{
 		logger.debug("config.organisatinID "+config.getOrganisationID());
-//		Config config = Config.getConfig(pm, getOrganisationID(), keyObject); // Config is autocreated, if necessary
 		ConfigModule configModule = config.createConfigModule(cfModClass, cfModID);
 
 		logger.debug("Have configmodule: "+configModule);

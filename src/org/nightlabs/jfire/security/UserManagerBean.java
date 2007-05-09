@@ -29,6 +29,7 @@ import java.rmi.RemoteException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
@@ -641,6 +642,29 @@ implements SessionBean
     finally {
       pm.close();
     }
+  }
+  
+  /**
+   * Returns a Collection of {@link User}s corresponding to the given set of {@link UserID}s.
+   * @param userIDs the {@link UserID}s for which to retrieve the {@link User}s
+   * @param fetchGroups the FetchGroups for the detached Users 
+   * @param maxFetchDepth the maximum fetch depth of the detached Users.
+   * @returna Collection of {@link User}s corresponding to the given set of {@link UserID}s.
+   * @throws ModuleException a wrapper for many kinds of Exceptions.
+   * 
+   * @ejb.interface-method
+   * @ejb.permission role-name="_Guest_"
+   * @ejb.transaction type="Required"
+   */
+  public Collection<User> getUsers(Set<UserID> userIDs, String[] fetchGroups, int maxFetchDepth)
+  	throws ModuleException 
+  {
+  	PersistenceManager pm = getPersistenceManager();
+  	try {
+  		return NLJDOHelper.getDetachedObjectSet(pm, userIDs, null, fetchGroups, maxFetchDepth);
+  	} finally {
+  		pm.close();
+  	}
   }
 
   /**
