@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.Set;
 
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.nightlabs.annotation.Implement;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.jdo.JDOObjectDAO;
 import org.nightlabs.jfire.base.login.Login;
@@ -61,7 +62,7 @@ public class ConfigDAO extends JDOObjectDAO<ConfigID, Config>
 	/* (non-Javadoc)
 	 * @see org.nightlabs.jfire.base.jdo.JDOObjectDAO#retrieveJDOObjects(java.util.Collection, java.lang.String[], int, org.eclipse.core.runtime.IProgressMonitor)
 	 */
-	@Override
+	@Implement
 	protected Collection<Config> retrieveJDOObjects(
 			Set<ConfigID> configIDs, String[] fetchGroups, int maxFetchDepth,
 			IProgressMonitor monitor) throws Exception
@@ -74,8 +75,9 @@ public class ConfigDAO extends JDOObjectDAO<ConfigID, Config>
 			configs = cm.getConfigs(configIDs, fetchGroups, maxFetchDepth);
 		} catch (Exception e) {
 			monitor.setCanceled(true);
-			throw new RuntimeException("Config download failed!\n", e);
+			throw new RuntimeException("User information download failed!\n", e);
 		}
+		
 		monitor.worked(1);
 		monitor.done();
 		return configs;

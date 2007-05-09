@@ -4,7 +4,6 @@
 package org.nightlabs.jfire.base.config;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Set;
 
 import javax.jdo.JDOHelper;
@@ -52,46 +51,19 @@ public class ConfigModuleDAO extends JDOObjectDAO<ConfigModuleID, ConfigModule> 
 			throws Exception {
 		if (configModuleIDs == null)
 			return null;
-		monitor.beginTask("Retrieving ConfigModules", configModuleIDs.size());
+		monitor.beginTask("Retrieving ConfigModules", 1);
 		Collection<ConfigModule> result;
 		try {
 			ConfigManager configManager = ConfigManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
-			result = new HashSet<ConfigModule>(configModuleIDs.size());
-			// ConfigManager is not able to retrieve a collection of ConfigModules by means of their IDs. 
-			for (ConfigModuleID moduleID : configModuleIDs)
-				result.add(getConfigModuleFromDataStore(configManager, moduleID, fetchGroups, maxFetchDepth, monitor));
-			// use the given monitor since the helper method is private and cannot be called from outside			
+			result = configManager.getConfigModules(configModuleIDs, fetchGroups, maxFetchDepth);
+			monitor.worked(1);
 		} catch (Exception e) {
 			monitor.setCanceled(true);
-			throw new RuntimeException("ConfigModule download failed!\n", e);
+			throw new RuntimeException("ConfigModule download failed!", e);
 		}
 		
 		monitor.done();
 		return result;
-	}
-
-	/**
-	 * Helper method to retrieve a ConfigModule used by {@link #retrieveJDOObjects(Set, String[], int, IProgressMonitor)}
-	 * 
-	 * @return the ConfigModule corresponding to the given ConfigModuleID.
-	 * @throws Exception if ConfigModule class of the corresponding ConfigModule to the given 
-	 * 										ConfigModuleID is unknown.
-	 * 
-	 * FIXME: Delete this helper Method as soon as the Bean is able to fetch a bunch of ConfigModules at once! 
-	 */
-	private ConfigModule getConfigModuleFromDataStore(ConfigManager cm, ConfigModuleID moduleID, String[] fetchGroups, 
-			int maxFetchDepth, IProgressMonitor monitor) throws Exception {
-		String className = ConfigModule.getClassNameOutOfCfModKey(moduleID.cfModKey);
-		Class cfModClass = null;
-		try {
-			cfModClass = Class.forName(className);
-		} catch (ClassNotFoundException e) {
-			throw new RuntimeException("Could resolve ConfigModule class "+className, e);
-		}
-		String cfModID = ConfigModule.getCfModIDOutOfCfModKey(moduleID.cfModKey);		
-		ConfigID configID = ConfigID.create(moduleID.organisationID, moduleID.configKey, moduleID.configType);
-		monitor.worked(1);
-		return cm.getConfigModule(configID, cfModClass, cfModID, fetchGroups, maxFetchDepth);
 	}
 
 	/**
