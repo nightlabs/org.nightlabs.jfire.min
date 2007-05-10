@@ -134,10 +134,4 @@ public class WorkstationFeaturesPreferencePage extends
 		return result;
 	}
 
-	@Override
-	protected void setEditable(boolean editable) {
-		// TODO Auto-generated method stub
-		super.setEditable(editable);
-	}
-
 }

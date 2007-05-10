@@ -33,6 +33,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
@@ -41,10 +45,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.nightlabs.base.composite.XComposite;
 import org.nightlabs.jfire.base.jdo.JDOObjectID2PCClassMap;
-import org.nightlabs.jfire.base.login.Login;
 import org.nightlabs.jfire.config.ConfigGroup;
-import org.nightlabs.jfire.config.ConfigManager;
-import org.nightlabs.jfire.config.ConfigManagerUtil;
 import org.nightlabs.jfire.config.ConfigModule;
 import org.nightlabs.jfire.config.id.ConfigID;
 
@@ -82,41 +83,37 @@ implements ConfigPreferenceChangedListener
 		this.getGridLayout().numColumns = 2;
 		treeComposite = new ConfigPreferencesTreeComposite(this, SWT.BORDER, false, null);
 		GridData treeGD = new GridData(GridData.FILL_BOTH);
-//		treeGD.minimumWidth = 150;
-//		treeGD.grabExcessHorizontalSpace = true;
 		treeComposite.setLayoutData(treeGD);
-//		treeComposite.getGridData().grabExcessHorizontalSpace = false;
-		treeComposite.getTreeViewer().addSelectionChangedListener(new ISelectionChangedListener(){
+		treeComposite.getTreeViewer().addSelectionChangedListener(new ISelectionChangedListener(){ 
 			public void selectionChanged(SelectionChangedEvent event) {
+				ConfigPreferenceNode selection = treeComposite.getFirstSelectedElement();
+				if (selection == null) {
+					currentPage = null;
+					return;					
+				}
+				currentPage = selection.getPreferencePage();
 				updateCurrentConfigModule();
-				currentPage = getSelectedPrefencePage();
 				updatePreferencesComposite();
 			}			
 		});
-//		TightWrapperComposite wrapper = new TightWrapperComposite(this, SWT.NONE, true);
-//		DialogMessageArea messageArea = new DialogMessageArea();
-//		messageArea.createContents(wrapper);
-//		messageArea.showTitle("Test", null);
 		preferencesComposite = new ConfigPreferencesComposite(this, SWT.NONE, true);
+		
 	}
 
 	private void updatePreferencesGUI() {
-		AbstractConfigModulePreferencePage selectedPage = getSelectedPrefencePage();
+		AbstractConfigModulePreferencePage selectedPage = getCurrentPage();
 		if (selectedPage == null) {
 			preferencesComposite.setNoEditGUI();
 			return;
 		}
-		selectedPage.setCurrentConfigModule(getCurrentConfigModule(), false);
+
 		if (!involvedPages.contains(selectedPage)) 
 		{			
-			selectedPage.createContents(preferencesComposite.getWrapper(), true, editingConfigGroup, true);
+			selectedPage.createContents(preferencesComposite.getWrapper(), editingConfigGroup, true, getCurrentConfigModule());
 			selectedPage.addConfigPreferenceChangedListener(this);
 			involvedPages.add(selectedPage);
 		}
-		else {
-			selectedPage.updatePreferencesGUI(getCurrentConfigModule());
-		}
-//		selectedPage.setCurrentConfigID(currentConfigID, true);		
+		selectedPage.updatePreferencesGUI(currentConfigModule);
 
 		preferencesComposite.getStackLayout().topControl = selectedPage.getControl();		
 		preferencesComposite.getWrapper().layout();
@@ -131,15 +128,19 @@ implements ConfigPreferenceChangedListener
 	}
 	
 	public void updatePreferencesComposite() {
-		fetchCurrentConfigModule();
-		if (Thread.currentThread() == Display.getDefault().getThread())
-			updatePreferencesGUI();
-		else 
-			Display.getDefault().asyncExec(new Runnable() {
-				public void run() {
-					updatePreferencesGUI();
-				}
-			});
+		Job job = new Job("Updating ConfigModule") {
+			@Override
+			protected IStatus run(IProgressMonitor monitor) {
+				fetchCurrentConfigModule(monitor);
+				Display.getDefault().asyncExec(new Runnable() {
+					public void run() {
+						updatePreferencesGUI();
+					}
+				});
+				return Status.OK_STATUS;
+			}
+		};
+		job.schedule();
 	}
 
 	protected ConfigModule getCurrentConfigModule() {
@@ -154,18 +155,10 @@ implements ConfigPreferenceChangedListener
 		this.currentConfigID = currentConfigID;
 		treeComposite.setConfigID(currentConfigID);
 		editingConfigGroup = ConfigGroup.class.equals(JDOObjectID2PCClassMap.sharedInstance().getPersistenceCapableClass(currentConfigID));
-
 	}
 
-//	public void setConfigGroup(ConfigID configGroupID) {		
-//	setCurrentConfigID(configGroupID);
-//	}
-
-	protected AbstractConfigModulePreferencePage getSelectedPrefencePage() {
-		ConfigPreferenceNode selectedNode = treeComposite.getSelectedPreferenceNode();
-		if (selectedNode == null)
-			return null;		
-		return selectedNode.getPreferencePage();
+	protected AbstractConfigModulePreferencePage getCurrentPage() {
+		return currentPage;
 	}
 
 	private String getCfModKey(AbstractConfigModulePreferencePage page) {
@@ -181,16 +174,11 @@ implements ConfigPreferenceChangedListener
 	 * 
 	 * @param userConfigID
 	 */
-	protected void fetchCurrentConfigModule() {
-		AbstractConfigModulePreferencePage selectedPage = getSelectedPrefencePage();
+	protected void fetchCurrentConfigModule(IProgressMonitor monitor) {
+		AbstractConfigModulePreferencePage selectedPage = getCurrentPage();
 		if (selectedPage == null)
 			return;
-		ConfigManager configManager = null;
-		try {
-			configManager = ConfigManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
-		} catch (Throwable e) {
-			throw new RuntimeException(e);
-		}
+
 		if (currentConfigID == null)
 			throw new IllegalStateException("Can not fetch ConfigModule, currentConfigID is null");
 		
@@ -201,14 +189,14 @@ implements ConfigPreferenceChangedListener
 			return;
 		
 		try {
-			// TODO: Use a DAO here and Utils.cloneSerializable()			
-			currentConfigModule = configManager.getConfigModule(
-					(ConfigID)currentConfigID,
-					selectedPage.getConfigModuleClass(), 
-					selectedPage.getConfigModuleCfModID(), 
-					selectedPage.getConfigModuleFetchGroups(),
-					selectedPage.getConfigModuleMaxFetchDepth()
-			);
+			currentConfigModule = ConfigModuleDAO.sharedInstance().getConfigModule(
+				currentConfigID, 
+				selectedPage.getConfigModuleClass(), 
+				selectedPage.getConfigModuleCfModID(), 
+				selectedPage.getConfigModuleFetchGroups(),
+				selectedPage.getConfigModuleMaxFetchDepth(),
+				monitor
+				);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -246,5 +234,9 @@ implements ConfigPreferenceChangedListener
 	public Set<ConfigModule> getDirtyConfigModules() {
 		updateCurrentConfigModule();
 		return new HashSet<ConfigModule>(dirtyConfigModules);
+	}
+
+	public Set<AbstractConfigModulePreferencePage> getInvolvedPages() {
+		return involvedPages;
 	}
 }

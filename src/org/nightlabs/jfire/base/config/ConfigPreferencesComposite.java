@@ -70,7 +70,7 @@ public class ConfigPreferencesComposite extends XComposite {
 		label.setText("This ConfigModule has no PreferencePage registered to edit it!");
 	}
 	
-	public void clear(){
+	public void clear() {
 		wrapper.dispose();
 		wrapper = null;
 		createWrapper();

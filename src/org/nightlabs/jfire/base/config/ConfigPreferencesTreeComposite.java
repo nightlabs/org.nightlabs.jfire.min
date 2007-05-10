@@ -26,27 +26,24 @@
 
 package org.nightlabs.jfire.base.config;
 
-import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeContentProvider;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-import org.nightlabs.base.composite.XComposite;
+import org.eclipse.swt.widgets.Tree;
+import org.nightlabs.base.tree.AbstractTreeComposite;
 import org.nightlabs.jfire.config.id.ConfigID;
 
 /**
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  *
  */
-public class ConfigPreferencesTreeComposite extends XComposite {
+public class ConfigPreferencesTreeComposite extends AbstractTreeComposite<ConfigPreferenceNode> {
 
-	private TreeViewer treeViewer;
 	private ContentProvider contentProvider;
 	private ConfigID currentConfigID;
 	
@@ -106,29 +103,20 @@ public class ConfigPreferencesTreeComposite extends XComposite {
 	 * @param setLayoutData
 	 */
 	public ConfigPreferencesTreeComposite(Composite parent, int style, boolean setLayoutData, ConfigID configID) {
-		super(parent, style, 
-				LayoutMode.TIGHT_WRAPPER, 
-				setLayoutData ? LayoutDataMode.GRID_DATA : LayoutDataMode.NONE
-		);
-//		this.currentConfigGroupID();
-		treeViewer = new TreeViewer(this, SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL);
-		GridData gridData = new GridData(GridData.FILL_BOTH);
-		treeViewer.getTree().setLayoutData(gridData);
-
+		super(parent, SWT.BORDER, true, true, false); 
+		setConfigID(configID);
+		this.parentCode = Integer.toHexString(parent.hashCode());
+	}
+	
+	@Override
+	public void createTreeColumns(Tree tree) {
+	}
+	
+	@Override
+	public void setTreeProvider(TreeViewer treeViewer) {
 		contentProvider = new ContentProvider();
 		treeViewer.setContentProvider(contentProvider);
 		treeViewer.setLabelProvider(new LabelProvider());
-		setConfigID(configID);
-		treeViewer.addSelectionChangedListener(new ISelectionChangedListener(){
-			public void selectionChanged(SelectionChangedEvent event) {
-				IStructuredSelection selection = (IStructuredSelection)treeViewer.getSelection();
-				if (selection.size() <= 0)
-					selectedPreferenceNode = null;
-				selectedPreferenceNode = (ConfigPreferenceNode)selection.getFirstElement();
-			}
-			
-		});
-		this.parentCode = Integer.toHexString(parent.hashCode());
 	}
 	
 	public void setConfigID(ConfigID configID) {
@@ -139,24 +127,15 @@ public class ConfigPreferencesTreeComposite extends XComposite {
 			final ConfigPreferenceNode rootNode = ConfigSetupRegistry.sharedInstance().getMergedPreferenceRootNode(parentCode, currentConfigID);
 			Display.getDefault().asyncExec(new Runnable(){
 				public void run() {
-					treeViewer.setInput(rootNode);
+					setInput(rootNode);
 				}
 			});
 	}
 	}
 	
 	public int getSelectionCount() {
-		IStructuredSelection selection = (IStructuredSelection)treeViewer.getSelection();
+		IStructuredSelection selection = (IStructuredSelection)getTreeViewer().getSelection();
 		return selection.size();
 	}
-	
-	private ConfigPreferenceNode selectedPreferenceNode;
-	
-	public ConfigPreferenceNode getSelectedPreferenceNode() {
-		return selectedPreferenceNode;
-	}
-	
-	public TreeViewer getTreeViewer() {
-		return treeViewer;
-	}
+
 }

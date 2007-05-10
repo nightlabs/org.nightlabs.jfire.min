@@ -72,6 +72,7 @@ public abstract class AbstractUserConfigModulePreferencePage extends
 		try {
 			Login login = Login.getLogin();
 			setCurrentConfigID(UserConfigSetup.getUserConfigID(UserID.create(login.getOrganisationID(), login.getUserID())), false);
+			
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
