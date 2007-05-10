@@ -65,7 +65,6 @@ import org.nightlabs.util.CollectionUtil;
  *
  * @ejb.util generate = "physical"
  **/
-
 public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements SessionBean 
 {
 	/**
