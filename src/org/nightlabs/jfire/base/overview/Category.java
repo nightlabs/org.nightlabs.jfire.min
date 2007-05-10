@@ -1,6 +1,5 @@
 package org.nightlabs.jfire.base.overview;
 
-import org.eclipse.core.runtime.IExecutableExtension;
 import org.eclipse.swt.graphics.Image;
 
 /**

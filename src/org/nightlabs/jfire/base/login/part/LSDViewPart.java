@@ -1,5 +1,6 @@
 package org.nightlabs.jfire.base.login.part;
 
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.part.ViewPart;
@@ -23,7 +24,7 @@ implements PartVisibilityListener, ControllablePart
 	public LSDViewPart() {
 		super();
 		// Register the view at the view-controller
-		LSDPartController.sharedInstance().registerPart(this);		
+		LSDPartController.sharedInstance().registerPart(this, new FillLayout());		
 	}
 	
 	@Override

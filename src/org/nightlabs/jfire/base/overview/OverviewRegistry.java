@@ -2,14 +2,10 @@ package org.nightlabs.jfire.base.overview;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
-import org.apache.log4j.lf5.viewer.categoryexplorer.CategoryImmediateEditor;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtension;
@@ -35,7 +31,6 @@ extends AbstractEPProcessor
 	public static final String ATTRIBUTE_ICON = "icon";
 	
 	private static OverviewRegistry sharedInstance;
-
 	public static OverviewRegistry sharedInstance() {
 		if (sharedInstance == null) {
 			synchronized (OverviewRegistry.class) {
@@ -75,10 +70,10 @@ extends AbstractEPProcessor
 			categoryID2Category.put(categoryID, category);
 		}		
 		if (element.getName().equals(ELEMENT_CATEGORY_ENTRY)) {
-			String categoryEntryID = element.getAttribute(ATTRIBUTE_CATEGORY_ENTRY_ID);
+//			String categoryEntryID = element.getAttribute(ATTRIBUTE_CATEGORY_ENTRY_ID);
 			String categoryID = element.getAttribute(ATTRIBUTE_CATEGORY_ID);
-			String name = element.getAttribute(ATTRIBUTE_NAME);
-			String iconString = element.getAttribute(ATTRIBUTE_ICON);
+//			String name = element.getAttribute(ATTRIBUTE_NAME);
+//			String iconString = element.getAttribute(ATTRIBUTE_ICON);
 			try {
 				Entry entry = (Entry) element.createExecutableExtension(ATTRIBUTE_ENTRY);
 //				entry.setName(name);
@@ -124,19 +119,6 @@ extends AbstractEPProcessor
 					category = getFallbackCategory();
 				
 				category2Entries.put(category, entries);				
-//				for (Entry entry : entries) 
-//				{
-//					List<Entry> entries = category2Entries.get(category);
-//					if (entries == null)
-//						entries = new ArrayList<Entry>();
-//					
-//					Entry entry = entryFactory.createEntry();
-//					entry.setName(entryFactory.getName());
-//					entry.setImage(entryFactory.getImage());
-//					entries.add(entry);
-//					
-//					category2Entries.put(category, entries);
-//				}
 			}			
 		}
 	}

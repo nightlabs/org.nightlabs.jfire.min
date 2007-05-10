@@ -26,8 +26,8 @@ public interface EntryViewController
 	String getID();
 	
 	/**
-	 * returns the menuManager, may be null
-	 * @return the menuManager
+	 * returns the optional menuManager, may be null
+	 * @return the optional menuManager
 	 */
 	MenuManager getMenuManager();
 	
