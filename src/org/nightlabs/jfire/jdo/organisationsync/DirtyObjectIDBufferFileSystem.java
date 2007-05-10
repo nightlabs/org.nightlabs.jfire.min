@@ -40,6 +40,10 @@ import org.apache.log4j.Logger;
 
 import org.nightlabs.jdo.ObjectIDUtil;
 
+/**
+ * @author unassigned
+ * @author Marc Klinger - marc[at]nightlabs[dot]de
+ */
 public class DirtyObjectIDBufferFileSystem
 implements DirtyObjectIDBuffer
 {
@@ -83,7 +87,7 @@ implements DirtyObjectIDBuffer
 	 * ignored in {@link #fetchDirtyObjectIDs()}. The file is unlocked at the end of
 	 * <code>addDirtyObjectIDs(Collection)</code> when it is closed and ready to be processed. 
 	 */
-	private Set lockedFiles = Collections.synchronizedSet(new HashSet());
+	private Set<File> lockedFiles = Collections.synchronizedSet(new HashSet<File>());
 
 	/**
 	 * @see org.nightlabs.jfire.jdo.organisationsync.DirtyObjectIDBuffer#addDirtyObjectIDs(java.util.Collection)
@@ -127,7 +131,7 @@ implements DirtyObjectIDBuffer
 	 * {@link #fetchDirtyObjectIDs()} stores all read files into this Set in order to delete these files
 	 * (after successful processing) in {@link #clearFetchedDirtyObjectIDs()}.
 	 */
-	private Set filesInProcess = null;
+	private Set<File> filesInProcess = null;
 
 	/**
 	 * @see org.nightlabs.jfire.jdo.organisationsync.DirtyObjectIDBuffer#fetchDirtyObjectIDs()
@@ -137,8 +141,8 @@ implements DirtyObjectIDBuffer
 		if (filesInProcess != null)
 			logger.warn("fetchDirtyObjectIDs() called again before clearFetchedDirtyObjectIDs()! Maybe there was an error during last execution cycle.", new Exception());
 
-		filesInProcess = new HashSet();
-		HashSet res = new HashSet();
+		filesInProcess = new HashSet<File>();
+		HashSet<Object> res = new HashSet<Object>();
 
 		try {
 			File[] files = workDirectory.listFiles();

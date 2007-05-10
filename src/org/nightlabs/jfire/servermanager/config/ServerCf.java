@@ -41,6 +41,11 @@ import org.nightlabs.jfire.server.id.ServerID;
 public class ServerCf
 implements Serializable, Cloneable
 {
+	/**
+	 * The serial version of this class.
+	 */
+	private static final long serialVersionUID = 1L;
+	
 	public ServerCf() { }
 
   public ServerCf(String _serverID)

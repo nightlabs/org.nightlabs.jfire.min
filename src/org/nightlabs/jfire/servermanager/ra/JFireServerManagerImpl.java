@@ -75,6 +75,9 @@ public class JFireServerManagerImpl
 	 */
 	private static final Logger logger = Logger.getLogger(JFireServerManagerImpl.class);
 	
+	/**
+	 * TODO: is this field needed?
+	 */
 	private ManagedConnectionFactoryImpl managedConnectionFactoryImpl;
 	private ManagedConnectionImpl managedConnectionImpl;
 	private JFireServerManagerFactoryImpl jfireServerManagerFactoryImpl;

@@ -42,6 +42,10 @@ import org.apache.log4j.Logger;
 
 import org.nightlabs.jdo.ObjectIDUtil;
 
+/**
+ * @author unassigned
+ * @author Marc Klinger - marc[at]nightlabs[dot]de
+ */
 public class DirtyObjectIDBufferMySQL
 implements DirtyObjectIDBuffer
 {
@@ -166,7 +170,7 @@ implements DirtyObjectIDBuffer
 	/**
 	 * @see org.nightlabs.jfire.jdo.organisationsync.DirtyObjectIDBuffer#fetchDirtyObjectIDs()
 	 */
-	public synchronized Set fetchDirtyObjectIDs() throws DirtyObjectIDBufferException
+	public synchronized Set<Object> fetchDirtyObjectIDs() throws DirtyObjectIDBufferException
 	{
 		if (!fetchDirtyObjectIDsClear)
 			logger.warn("fetchDirtyObjectIDs() called again before clearFetchedDirtyObjectIDs()! Maybe there was an error during last execution cycle.", new Exception());
@@ -174,7 +178,7 @@ implements DirtyObjectIDBuffer
 		fetchDirtyObjectIDsClear = false;
 
 		try {
-			HashSet res = new HashSet();
+			HashSet<Object> res = new HashSet<Object>();
 
 			if (connection_process == null)
 				connection_process = createConnection();

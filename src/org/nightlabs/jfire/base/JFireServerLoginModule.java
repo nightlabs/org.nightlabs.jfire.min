@@ -44,6 +44,7 @@ import org.nightlabs.jfire.servermanager.JFireServerManager;
 
 /**
  * @author nick@nightlabs.de
+ * @author Marc Klinger - marc[at]nightlabs[dot]de
  */
 public class JFireServerLoginModule extends AbstractServerLoginModule
 {
@@ -73,7 +74,6 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 		String userID;
 		String organisationID;
 		String sessionID = null;
-		boolean userIsOrganisation;
 
 		// get the login information via the callbacks
 		try 

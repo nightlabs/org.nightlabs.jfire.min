@@ -34,6 +34,11 @@ import org.nightlabs.config.InitException;
  */
 public class CreateOrganisationConfigModule extends ConfigModule
 {
+	/**
+	 * The serial version of this class.
+	 */
+	private static final long serialVersionUID = 1L;
+	
 	private int waitForPersistenceManager_tryCount = 0;
 	private int waitForPersistenceManager_timeout = 0; // default see init()
 	private int waitForPersistenceManager_checkPeriod = 0; // default see init()

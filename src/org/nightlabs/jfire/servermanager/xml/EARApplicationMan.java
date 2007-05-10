@@ -160,7 +160,8 @@ public class EARApplicationMan
 		return moduleType;
 	}
 
-	private Collection modules = new ArrayList();
+	private Collection<ModuleDef> modules = new ArrayList<ModuleDef>();
+	
 	/**
 	 * @return Returns the modules.
 	 */

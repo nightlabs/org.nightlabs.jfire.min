@@ -140,6 +140,7 @@ import org.xml.sax.SAXException;
 
 /**
  * @author marco
+ * @author Marc Klinger - marc[at]nightlabs[dot]de
  */
 public class JFireServerManagerFactoryImpl
 	implements
@@ -148,6 +149,11 @@ public class JFireServerManagerFactoryImpl
 		PersistenceManagerProvider,
 		ServerStartNotificationListener
 {
+	/**
+	 * The serial version of this class.
+	 */
+	private static final long serialVersionUID = 1L;
+	
 	/**
 	 * LOG4J logger used by this class
 	 */
@@ -828,7 +834,7 @@ public class JFireServerManagerFactoryImpl
 		File startDir = new File(mcf.getConfigModule().getJ2ee().getJ2eeDeployBaseDirectory());
 
 		EJBRoleGroupMan globalEJBRoleGroupMan = new EJBRoleGroupMan();
-		Map exceptions = new HashMap(); // key: File jar; value: Throwable exception
+		Map<String, Throwable> exceptions = new HashMap<String, Throwable>(); // key: File jar; value: Throwable exception
 		roleImport_prepare_collect(startDir, globalEJBRoleGroupMan, exceptions);
 
 		globalEJBRoleGroupMan.removeRole(User.USERID_SYSTEM); // the _System_ role should never be imported so that no real user can ever get this role!
@@ -862,7 +868,7 @@ public class JFireServerManagerFactoryImpl
 	private static String JAR_SUFFIX = ".jar";
 	private static FileFilterJARs fileFilterJARs = null;
 	
-	private void roleImport_prepare_collect(File directory, EJBRoleGroupMan globalEJBRoleGroupMan, Map exceptions)
+	private void roleImport_prepare_collect(File directory, EJBRoleGroupMan globalEJBRoleGroupMan, Map<String, Throwable> exceptions)
 	{
 		if (fileFilterDirectories == null)
 			fileFilterDirectories = new FileFilterDirectories();
@@ -1085,7 +1091,7 @@ public class JFireServerManagerFactoryImpl
 				if (getOrganisationCfsCloned().get(organisationID) != null)
 					throw new DuplicateOrganisationException("An organisation with the name \""+organisationID+"\" already exists!");
 		
-				boolean creatingFirstOrganisation = isOrganisationCfsEmpty();
+				//boolean creatingFirstOrganisation = isOrganisationCfsEmpty();
 
 				InitialContext ctx = new InitialContext();
 //				TransactionManager transactionManager = getJ2EEVendorAdapter().getTransactionManager(ctx);
@@ -1369,7 +1375,7 @@ public class JFireServerManagerFactoryImpl
 	{
 		// We create a new ArrayList to avoid any problems that might occur if
 		// resetOrganisationCfs() is executed (e.g. if a new organisation is added).
-		ArrayList l = new ArrayList(getOrganisationCfsCloned().values());
+		ArrayList<OrganisationCf> l = new ArrayList<OrganisationCf>(getOrganisationCfsCloned().values());
 		if (sorted)
 			Collections.sort(l);
 		return l;
@@ -1384,19 +1390,19 @@ public class JFireServerManagerFactoryImpl
 	 * key: ModuleType moduleType<br/>
 	 * value: List modules
 	 */
-	protected Map cachedModules = null;
+	protected Map<ModuleType, List<ModuleDef>> cachedModules = null;
 
 	public synchronized List getModules(ModuleType moduleType)
 		throws ModuleException
 	{
 		try {
 			if (cachedModules == null)
-				cachedModules = new HashMap();
+				cachedModules = new HashMap<ModuleType, List<ModuleDef>>();
 			
-			List modules = (List)cachedModules.get(moduleType);
+			List<ModuleDef> modules = cachedModules.get(moduleType);
 			if (modules == null) {
 				File startDir = new File(mcf.getConfigModule().getJ2ee().getJ2eeDeployBaseDirectory());
-				modules = new ArrayList();
+				modules = new ArrayList<ModuleDef>();
 				findModules(startDir, moduleType, modules);
 				Collections.sort(modules);
 				cachedModules.put(moduleType, modules);
@@ -1436,7 +1442,7 @@ public class JFireServerManagerFactoryImpl
 	}
 	private static FileFilterEARs fileFilterEARs = null;
 	
-	private void findModules(File directory, ModuleType moduleType, List modules)
+	private void findModules(File directory, ModuleType moduleType, List<ModuleDef> modules)
 		throws XMLReadException
 	{
 		if (fileFilterDirectoriesExcludingEARs == null)
@@ -1458,7 +1464,7 @@ public class JFireServerManagerFactoryImpl
 		} // if (ears != null) {
 	}
 
-	private void findModulesInEAR(File ear, ModuleType moduleType, List modules)
+	private void findModulesInEAR(File ear, ModuleType moduleType, List<ModuleDef> modules)
 		throws XMLReadException
 	{
 // TODO So far, we only support ear directories, but no ear jars.
@@ -1486,20 +1492,20 @@ public class JFireServerManagerFactoryImpl
 	 * key: String organisationID / String masterOrganisationID<br/>
 	 * value: OrganisationCf org
 	 */
-	private Map organisationCfsCloned = null;
+	private Map<String, OrganisationCf> organisationCfsCloned = null;
 	
 	protected synchronized void resetOrganisationCfs()
 	{
 		organisationCfsCloned = null;
 	}
 
-	protected synchronized Map getOrganisationCfsCloned()
+	protected synchronized Map<String, OrganisationCf> getOrganisationCfsCloned()
 	{
 		if (organisationCfsCloned == null)
 		{
 			organisationConfigModule.acquireReadLock();
 			try {
-				organisationCfsCloned = new HashMap();
+				organisationCfsCloned = new HashMap<String, OrganisationCf>();
 				for (Iterator it = organisationConfigModule.getOrganisations().iterator(); it.hasNext(); ) {
 					OrganisationCf org = (OrganisationCf)((OrganisationCf)it.next()).clone();
 					org.makeReadOnly();
@@ -2077,7 +2083,7 @@ public class JFireServerManagerFactoryImpl
 //					}
 
 			synchronized (jfireSecurity_roleCache) {
-				jfireSecurity_roleCache.put(userPK, new SoftReference(roleSet));
+				jfireSecurity_roleCache.put(userPK, new SoftReference<RoleSet>(roleSet));
 			}
 			return roleSet;
 

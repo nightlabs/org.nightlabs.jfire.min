@@ -53,6 +53,11 @@ import org.xml.sax.SAXParseException;
 public class EJBRoleGroupMan implements Serializable
 {
 	/**
+	 * The serial version of this class.
+	 */
+	private static final long serialVersionUID = 1L;
+	
+	/**
 	 * LOG4J logger used by this class
 	 */
 	private static final Logger logger = Logger.getLogger(EJBRoleGroupMan.class);
@@ -246,11 +251,6 @@ public class EJBRoleGroupMan implements Serializable
 		} // if (nl.getLength() > 0) { // ejb-rolegroup
 	}
 
-	private static String removeLeadingAndTrailingBlanks(String s)
-	{
-		return s.replaceAll("(^ )*( $)*", "");
-	}
-	
 	public RoleGroupDef getRoleGroup(String roleGroupID)
 	{
 		return (RoleGroupDef) roleGroups.get(roleGroupID);

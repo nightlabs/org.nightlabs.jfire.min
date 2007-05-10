@@ -32,7 +32,11 @@ import org.nightlabs.ModuleException;
  * @author marco
  */
 public class DuplicateOrganisationException extends ModuleException {
-
+	/**
+	 * The serial version of this class.
+	 */
+	private static final long serialVersionUID = 1L;
+	
 	public DuplicateOrganisationException() { }
 	/**
 	 * @param message

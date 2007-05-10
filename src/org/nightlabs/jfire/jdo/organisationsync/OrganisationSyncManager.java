@@ -26,6 +26,9 @@
 
 package org.nightlabs.jfire.jdo.organisationsync;
 
+/**
+ * TODO: is this class in use?
+ */
 public class OrganisationSyncManager
 {
 	private OrganisationSyncManagerFactory organisationSyncManagerFactory;

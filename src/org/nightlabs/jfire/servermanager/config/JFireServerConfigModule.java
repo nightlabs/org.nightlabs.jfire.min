@@ -55,12 +55,22 @@ import org.nightlabs.util.Utils;
 public class JFireServerConfigModule extends ConfigModule
 {
 	/**
+	 * The serial version of this class.
+	 */
+	private static final long serialVersionUID = 1L;
+	
+	/**
 	 * LOG4J logger used by this class
 	 */
 	public static final Logger logger = Logger.getLogger(JFireServerConfigModule.class);
 
 	public static class J2ee implements Serializable
 	{
+		/**
+		 * The serial version of this class.
+		 */
+		private static final long serialVersionUID = 1L;
+		
 		private JFireServerConfigModule cfMod;
 
 		private String j2eeDeployBaseDirectory;
@@ -121,6 +131,14 @@ public class JFireServerConfigModule extends ConfigModule
 
 	public static class Database implements Serializable
 	{
+		/**
+		 * The serial version of this class.
+		 */
+		private static final long serialVersionUID = 1L;
+		
+		/**
+		 * TODO: is this field in use?
+		 */
 		private JFireServerConfigModule cfMod;
 
 		public static final String DATABASE_NAME_VAR = "${databaseName}";
@@ -374,6 +392,11 @@ public class JFireServerConfigModule extends ConfigModule
 
 	public static class JDO implements Serializable
 	{
+		/**
+		 * The serial version of this class.
+		 */
+		private static final long serialVersionUID = 1L;
+		
 		private JFireServerConfigModule cfMod;
 
 		public static final String ORGANISATION_ID_VAR = "${organisationID}";

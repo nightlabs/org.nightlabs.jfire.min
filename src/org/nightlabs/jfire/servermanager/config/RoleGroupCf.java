@@ -45,9 +45,15 @@ import org.nightlabs.jdo.ObjectIDUtil;
 
 /**
  * @author marco
+ * @author Marc Klinger - marc[at]nightlabs[dot]de
  */
 public class RoleGroupCf implements Serializable, Initializable
 {
+	/**
+	 * The serial version of this class.
+	 */
+	private static final long serialVersionUID = 1L;
+	
 	/**
 	 * LOG4J logger used by this class
 	 */
@@ -56,7 +62,7 @@ public class RoleGroupCf implements Serializable, Initializable
 	private String roleGroupID;
 //	private String roleGroupName;
 //	private String description;
-	private List roles = null;
+	private List<RoleCf> roles = null;
 
 	public RoleGroupCf() { }
 	public RoleGroupCf(String _roleGroupID) // , String _roleGroupName, String _description)
@@ -117,7 +123,7 @@ public class RoleGroupCf implements Serializable, Initializable
 	/**
 	 * @param roles The roles to set.
 	 */
-	public void setRoles(List roles) {
+	public void setRoles(List<RoleCf> roles) {
 		this.roles = roles;
 	}
 
@@ -186,7 +192,7 @@ public class RoleGroupCf implements Serializable, Initializable
 			throw new InitException("roleGroupID must never be empty!");
 
 		if (roles == null)
-			roles = new ArrayList();
+			roles = new ArrayList<RoleCf>();
 
 		for (Iterator it = roles.iterator(); it.hasNext(); ) {
 			RoleCf roleCf = (RoleCf)it.next();

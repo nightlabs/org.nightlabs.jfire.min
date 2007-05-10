@@ -35,10 +35,16 @@ import org.nightlabs.config.InitException;
 
 /**
  * @author marco
+ * @author Marc Klinger - marc[at]nightlabs[dot]de
  */
 public class OrganisationConfigModule extends ConfigModule
 {
-	protected List organisations = null;
+	/**
+	 * The serial version of this class.
+	 */
+	private static final long serialVersionUID = 1L;
+	
+	protected List<OrganisationCf> organisations = null;
 
 	/**
 	 * @return Returns the organisations.
@@ -49,7 +55,7 @@ public class OrganisationConfigModule extends ConfigModule
 	/**
 	 * @param organisations The organisations to set.
 	 */
-	public void setOrganisations(List _organisations) {
+	public void setOrganisations(List<OrganisationCf> _organisations) {
 		if (this.organisations != null)
 			throw new IllegalStateException("Cannot override organisations after init()!");
 
@@ -89,6 +95,6 @@ public class OrganisationConfigModule extends ConfigModule
 	 */
 	public void init() throws InitException {
 		if (organisations == null)
-			setOrganisations(new ArrayList());
+			setOrganisations(new ArrayList<OrganisationCf>());
 	}
 }

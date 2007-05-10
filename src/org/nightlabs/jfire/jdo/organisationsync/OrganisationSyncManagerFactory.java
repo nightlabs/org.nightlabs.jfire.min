@@ -58,6 +58,11 @@ import org.nightlabs.jfire.servermanager.ra.JFireServerManagerFactoryImpl;
 public class OrganisationSyncManagerFactory implements Serializable
 {
 	/**
+	 * The serial version of this class.
+	 */
+	private static final long serialVersionUID = 1L;
+	
+	/**
 	 * LOG4J logger used by this class
 	 */
 	private static final Logger logger = Logger

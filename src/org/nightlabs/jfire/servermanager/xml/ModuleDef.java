@@ -26,11 +26,13 @@
 
 package org.nightlabs.jfire.servermanager.xml;
 
+
 /**
  * @author marco
+ * @author Marc Klinger - marc[at]nightlabs[dot]de
  */
 public class ModuleDef
-	implements Comparable
+	implements Comparable<ModuleDef>
 {
 
 	public ModuleDef() { }
@@ -89,13 +91,13 @@ public class ModuleDef
 		this.resourceURI = resourceURI;
 	}
 
-	/**
+	/* (non-Javadoc)
 	 * @see java.lang.Comparable#compareTo(java.lang.Object)
 	 */
-	public int compareTo(Object o) {
-		if (!(o instanceof ModuleDef))
-			return -1;
-		ModuleDef other = (ModuleDef)o;
+	public int compareTo(ModuleDef other) {
+//		if (!(o instanceof ModuleDef))
+//			return -1;
+//		ModuleDef other = (ModuleDef)o;
 		return this.getName().compareTo(other.getName());
 	}
 }

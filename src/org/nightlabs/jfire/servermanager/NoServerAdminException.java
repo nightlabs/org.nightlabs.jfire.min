@@ -38,7 +38,11 @@ import org.nightlabs.ModuleException;
  */
 public class NoServerAdminException extends ModuleException
 {
-
+	/**
+	 * The serial version of this class.
+	 */
+	private static final long serialVersionUID = 1L;
+	
 	public NoServerAdminException()
 	{
 		super();

@@ -50,6 +50,7 @@ import org.nightlabs.jfire.servermanager.config.OrganisationCf;
  * This class is a util to make it easier to look up important JFire objects from JNDI.
  * 
  * @author marco
+ * @author Marc Klinger - marc[at]nightlabs[dot]de
  */
 public class Lookup 
 {
@@ -226,12 +227,12 @@ public class Lookup
 			+ '@'
 			+ remoteOrganisationID;
 
-		Hashtable props = new Properties();
-		props.put(InitialContext.INITIAL_CONTEXT_FACTORY, initialContextFactory);
-		props.put(InitialContext.PROVIDER_URL, initialContextURL);
-		props.put(InitialContext.SECURITY_PRINCIPAL, username);
-		props.put(InitialContext.SECURITY_CREDENTIALS, password);
-		props.put(InitialContext.SECURITY_PROTOCOL, "jfire");
+		Properties props = new Properties();
+		props.setProperty(InitialContext.INITIAL_CONTEXT_FACTORY, initialContextFactory);
+		props.setProperty(InitialContext.PROVIDER_URL, initialContextURL);
+		props.setProperty(InitialContext.SECURITY_PRINCIPAL, username);
+		props.setProperty(InitialContext.SECURITY_CREDENTIALS, password);
+		props.setProperty(InitialContext.SECURITY_PROTOCOL, "jfire");
 		return props;
 	}
 

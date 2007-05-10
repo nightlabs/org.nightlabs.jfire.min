@@ -45,6 +45,11 @@ import org.nightlabs.jdo.ObjectIDUtil;
 public class RoleCf implements Serializable, Initializable
 {
 	/**
+	 * The serial version of this class.
+	 */
+	private static final long serialVersionUID = 1L;
+	
+	/**
 	 * LOG4J logger used by this class
 	 */
 	private static final Logger logger = Logger.getLogger(RoleCf.class);

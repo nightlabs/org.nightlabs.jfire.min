@@ -36,9 +36,15 @@ import org.nightlabs.util.Utils;
 
 /**
  * @author marco
+ * @author Marc Klinger - marc[at]nightlabs[dot]de
  */
 public class CLRegistryCfMod extends ConfigModule
 {
+	/**
+	 * The serial version of this class.
+	 */
+	private static final long serialVersionUID = 1L;
+	
 	public static class ResourceRepository
 	{
 		public ResourceRepository() { }
@@ -102,7 +108,7 @@ public class CLRegistryCfMod extends ConfigModule
 		}
 	}
 
-	private List resourceRepositories = null;
+	private List<ResourceRepository> resourceRepositories = null;
 
 	private ResourceRepository tempRepository = null;
 
@@ -116,7 +122,7 @@ public class CLRegistryCfMod extends ConfigModule
 	/**
 	 * @param resourceRepositories The resourceRepositories to set.
 	 */
-	public void setResourceRepositories(List resourceRepositories)
+	public void setResourceRepositories(List<ResourceRepository> resourceRepositories)
 	{
 		this.resourceRepositories = resourceRepositories;
 	}
@@ -147,7 +153,7 @@ public class CLRegistryCfMod extends ConfigModule
 	public void init() throws InitException
 	{
 		if (resourceRepositories == null) {
-			resourceRepositories = new ArrayList();
+			resourceRepositories = new ArrayList<ResourceRepository>();
 			resourceRepositories.add(
 					new ResourceRepository("server.lib", "../server/default/lib", true));
 			resourceRepositories.add(

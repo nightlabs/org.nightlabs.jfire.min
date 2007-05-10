@@ -35,10 +35,16 @@ import org.apache.log4j.Logger;
 
 /**
  * @author Marco Schulze - marco at nightlabs dot de
+ * @author Marc Klinger - marc[at]nightlabs[dot]de
  */
 public class CacheSessionContainer
 implements Serializable
 {
+	/**
+	 * The serial version of this class.
+	 */
+	private static final long serialVersionUID = 1L;
+	
 	/**
 	 * LOG4J logger used by this class
 	 */
@@ -68,7 +74,7 @@ implements Serializable
 	 * key: String cacheSessionID<br/>
 	 * value: CacheSession cacheSession
 	 */
-	private Map cacheSessions = new HashMap();
+	private Map<String, CacheSession> cacheSessions = new HashMap<String, CacheSession>();
 
 	/**
 	 * This method is called by

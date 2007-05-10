@@ -64,6 +64,9 @@ import org.nightlabs.jfire.servermanager.ra.JFireServerManagerFactoryImpl;
 
 public class PersistentNotificationManagerFactory implements Serializable
 {
+	/**
+	 * The serial version of this class.
+	 */
 	private static final long serialVersionUID = 1L;
 
 	/**
@@ -93,7 +96,7 @@ public class PersistentNotificationManagerFactory implements Serializable
 
 	private transient DirtyObjectIDBuffer dirtyObjectIDBuffer;
 	private transient Timer timerOutgoing = new Timer();
-	private transient Timer timerIncoming = new Timer();
+	//private transient Timer timerIncoming = new Timer();
 
 	public PersistentNotificationManagerFactory(InitialContext ctx,
 			String organisationID, JFireServerManagerFactory jFireServerManagerFactory,

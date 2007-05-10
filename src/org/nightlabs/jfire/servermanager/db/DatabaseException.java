@@ -34,6 +34,10 @@ import org.nightlabs.ModuleException;
  * @author Marco Schulze - marco at nightlabs dot de
  */
 public class DatabaseException extends ModuleException {
+	/**
+	 * The serial version of this class.
+	 */
+	private static final long serialVersionUID = 1L;
 	
 	public DatabaseException() { }
 	/**

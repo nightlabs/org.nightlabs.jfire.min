@@ -51,6 +51,11 @@ import org.nightlabs.xml.DOMParser;
 public class EJBJarMan implements Serializable
 {
 	/**
+	 * The serial version of this class.
+	 */
+	private static final long serialVersionUID = 1L;
+	
+	/**
 	 * LOG4J logger used by this class
 	 */
 	private static final Logger logger = Logger.getLogger(EJBJarMan.class);
@@ -69,7 +74,7 @@ public class EJBJarMan implements Serializable
 	 * key: String roleID
 	 * value: Role role
 	 */
-	protected Map roles = new HashMap();
+	protected Map<String, RoleDef> roles = new HashMap<String, RoleDef>();
 	
 	private SAXParseException parseException = null;
 	

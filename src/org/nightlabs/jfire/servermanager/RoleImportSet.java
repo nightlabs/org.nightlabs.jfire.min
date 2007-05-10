@@ -37,6 +37,11 @@ import org.nightlabs.jfire.servermanager.xml.EJBRoleGroupMan;
  */
 public class RoleImportSet implements Serializable
 {
+	/**
+	 * The serial version of this class.
+	 */
+	private static final long serialVersionUID = 1L;
+	
 	private String organisationID;
 	private EJBRoleGroupMan ejbRoleGroupMan;
 	private Map jarExceptions;

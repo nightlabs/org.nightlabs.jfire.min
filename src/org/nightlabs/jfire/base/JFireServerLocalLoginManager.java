@@ -39,10 +39,16 @@ import org.nightlabs.jfire.security.UserLocal;
 
 /**
  * @author Marco Schulze - marco at nightlabs dot de
+ * @author Marc Klinger - marc[at]nightlabs[dot]de
  */
 public class JFireServerLocalLoginManager
 implements Serializable
 {
+	/**
+	 * The serial version of this class.
+	 */
+	private static final long serialVersionUID = 1L;
+	
 	public static final String PRINCIPAL_LOCALQUEUEWRITER = "_LocalQueueWriter_";
 	public static final String PRINCIPAL_LOCALQUEUEREADER = "_LocalQueueReader_";
 
@@ -65,6 +71,11 @@ implements Serializable
 	}
 
 	public static class LocalPrincipal extends SimplePrincipal {
+		/**
+		 * The serial version of this class.
+		 */
+		private static final long serialVersionUID = 1L;
+		
 		private RoleSet roleSet = new RoleSet();
 
 		private String password;
@@ -103,11 +114,10 @@ implements Serializable
 	 * key: String userName<br/>
 	 * value: 
 	 */
-	protected Map principales = new HashMap(); 
+	protected Map<String, LocalPrincipal> principales = new HashMap<String, LocalPrincipal>(); 
 
 	public LocalPrincipal getPrincipal(String userName)
 	{
 		return (LocalPrincipal) principales.get(userName);
 	}
-
 }

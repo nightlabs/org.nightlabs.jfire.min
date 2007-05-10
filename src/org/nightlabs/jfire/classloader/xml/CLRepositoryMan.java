@@ -59,6 +59,7 @@ import org.xml.sax.SAXParseException;
 
 /**
  * @author Marco Schulze - marco at nightlabs dot de
+ * @author Marc Klinger - marc[at]nightlabs[dot]de
  */
 public class CLRepositoryMan
 {
@@ -70,7 +71,7 @@ public class CLRepositoryMan
 	public static class Publication {
 		private boolean inherit = true;
 		private boolean ignore = false;
-		private List resourcePatterns = new ArrayList();
+		private List<String> resourcePatterns = new ArrayList<String>();
 
 		public Publication()
 		{

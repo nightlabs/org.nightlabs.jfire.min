@@ -40,9 +40,15 @@ import org.nightlabs.jfire.security.id.RoleID;
 
 /**
  * @author marco
+ * @author Marc Klinger - marc[at]nightlabs[dot]de
  */
-public class RoleDef implements Serializable, Comparable
+public class RoleDef implements Serializable, Comparable<RoleDef>
 {
+	/**
+	 * The serial version of this class.
+	 */
+	private static final long serialVersionUID = 1L;
+	
 	public RoleDef() { }
 
 	public RoleDef(String _roleID)
@@ -58,7 +64,7 @@ public class RoleDef implements Serializable, Comparable
 	 * <br/><br/>
 	 * The key <code>null</code> defines the default value.
 	 */
-	private Map names = new HashMap();
+	private Map<String, String> names = new HashMap<String, String>();
 	
 	/**
 	 * key: String languageID<br/>
@@ -66,7 +72,7 @@ public class RoleDef implements Serializable, Comparable
 	 * <br/><br/>
 	 * The key <code>null</code> defines the default value.
 	 */
-	private Map descriptions = new HashMap();
+	private Map<String, String> descriptions = new HashMap<String, String>();
 
 	/**
 	 * @return Returns the roleID.
@@ -167,6 +173,7 @@ public class RoleDef implements Serializable, Comparable
 			pm.makePersistent(role);
 		}
 
+		// FIXME: what is this for ?
 		for (Iterator it = getNames().entrySet().iterator(); it.hasNext(); ) {
 			Map.Entry me = (Map.Entry)it.next();
 			String languageID = (String)me.getKey();
@@ -174,6 +181,7 @@ public class RoleDef implements Serializable, Comparable
 //			role.setName(languageID, name);
 		}
 		
+		// FIXME: what is this for ?
 		for (Iterator it = getDescriptions().entrySet().iterator(); it.hasNext(); ) {
 			Map.Entry me = (Map.Entry)it.next();
 			String languageID = (String)me.getKey();
@@ -187,11 +195,11 @@ public class RoleDef implements Serializable, Comparable
 	/**
 	 * @see java.lang.Comparable#compareTo(java.lang.Object)
 	 */
-	public int compareTo(Object o) {
-		if (!(o instanceof RoleGroupDef))
-			return -1;
-		
-		RoleGroupDef other = (RoleGroupDef)o;
+	public int compareTo(RoleDef other) {
+//		if (!(o instanceof RoleGroupDef))
+//			return -1;
+//		
+//		RoleGroupDef other = (RoleGroupDef)o;
 		String thisName = this.getName();
 		if (thisName == null)
 			thisName = this.getRoleID();

@@ -272,7 +272,7 @@ public class RoleGroupDef implements Serializable, Comparable
 
 	public List getAllRolesSorted()
 	{
-		List sortedList = new ArrayList(getAllRoles());
+		List<RoleDef> sortedList = new ArrayList<RoleDef>(getAllRoles());
 		Collections.sort(sortedList);
 		return sortedList;
 	}

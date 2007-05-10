@@ -54,6 +54,11 @@ public class ManagedConnectionFactoryImpl
 	implements ManagedConnectionFactory
 {
 	/**
+	 * The serial version of this class.
+	 */
+	private static final long serialVersionUID = 1L;
+	
+	/**
 	 * LOG4J logger used by this class
 	 */
 	public static final Logger logger = Logger.getLogger(ManagedConnectionFactoryImpl.class);

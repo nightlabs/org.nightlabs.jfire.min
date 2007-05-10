@@ -37,6 +37,11 @@ import java.io.Serializable;
 public class ChangeListenerDescriptor
 implements Serializable
 {
+	/**
+	 * The serial version of this class.
+	 */
+	private static final long serialVersionUID = 1L;
+	
 	private String sessionID;
 //	private String userID;
 	private Serializable objectID;

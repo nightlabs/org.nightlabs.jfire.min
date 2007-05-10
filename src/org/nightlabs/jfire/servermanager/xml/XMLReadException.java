@@ -32,6 +32,11 @@ import org.nightlabs.ModuleException;
  * @author marco
  */
 public class XMLReadException extends ModuleException {
+	/**
+	 * The serial version of this class.
+	 */
+	private static final long serialVersionUID = 1L;
+	
 	public XMLReadException() {
 		super();
 	}

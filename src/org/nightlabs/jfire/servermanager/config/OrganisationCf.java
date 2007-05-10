@@ -42,16 +42,21 @@ import org.nightlabs.jfire.person.Person;
 import org.nightlabs.jfire.person.PersonStruct;
 import org.nightlabs.jfire.prop.IStruct;
 import org.nightlabs.jfire.prop.Property;
-import org.nightlabs.jfire.prop.Struct;
 import org.nightlabs.jfire.prop.datafield.TextDataField;
 import org.nightlabs.jfire.server.Server;
 
 /**
  * @author marco
+ * @author Marc Klinger - marc[at]nightlabs[dot]de
  */
 public class OrganisationCf
-	implements Serializable, Comparable, Cloneable
+	implements Serializable, Comparable<OrganisationCf>, Cloneable
 {
+	/**
+	 * The serial version of this class.
+	 */
+	private static final long serialVersionUID = 1L;
+	
 	public static final String DATASOURCE_PREFIX_RELATIVE = "jfire/datasource/";
 	public static final String DATASOURCE_PREFIX_ABSOLUTE = "java:/jfire/datasource/";
 
@@ -62,7 +67,7 @@ public class OrganisationCf
 	private String organisationName;
 //	private String masterOrganisationID;
 //	private String persistenceManagerFactoryJNDIName;
-	private Set serverAdmins = null;
+	private Set<String> serverAdmins = null;
 
 	private boolean readOnly = false;
 
@@ -176,9 +181,9 @@ public class OrganisationCf
 	 * @see addServerAdmin(String userID)
 	 * @see removeServerAdmin(String userID)
 	 */
-	public Set getServerAdmins() {
+	public Set<String> getServerAdmins() {
 		if (readOnly && serverAdmins != null)
-			return new HashSet(serverAdmins);
+			return new HashSet<String>(serverAdmins);
 
 		return serverAdmins;
 	}
@@ -191,7 +196,7 @@ public class OrganisationCf
 	 * @see addServerAdmin(String userID)
 	 * @see removeServerAdmin(String userID)
 	 */
-	public void setServerAdmins(Set _serverAdmins) {
+	public void setServerAdmins(Set<String> _serverAdmins) {
 		assertWritable();
 		this.serverAdmins = _serverAdmins;
 		thisString = null;
@@ -201,7 +206,7 @@ public class OrganisationCf
 	{
 		assertWritable();
 		if (serverAdmins == null)
-			serverAdmins = new HashSet();
+			serverAdmins = new HashSet<String>();
 		serverAdmins.add(userID);
 		thisString = null;
 	}
@@ -296,19 +301,19 @@ public class OrganisationCf
 				// this.persistenceManagerFactoryJNDIName);
 
 		if (this.serverAdmins != null)
-			n.serverAdmins = new HashSet(this.serverAdmins);
+			n.serverAdmins = new HashSet<String>(this.serverAdmins);
 
 		return n;
 	}
 
-	/**
+	/* (non-Javadoc)
 	 * @see java.lang.Comparable#compareTo(java.lang.Object)
 	 */
-	public int compareTo(Object o) {
-		if (!(o instanceof OrganisationCf))
-			return -1;
+	public int compareTo(OrganisationCf other) {
+//		if (!(o instanceof OrganisationCf))
+//			return -1;
 
-		OrganisationCf other = (OrganisationCf)o;
+//		OrganisationCf other = (OrganisationCf)o;
 		if (this.organisationID == null) {
 			if (other.organisationID == null)
 				return 0;

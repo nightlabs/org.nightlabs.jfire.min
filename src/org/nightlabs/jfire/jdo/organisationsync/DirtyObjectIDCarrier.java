@@ -30,17 +30,26 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * @author unassigned
+ * @author Marc Klinger - marc[at]nightlabs[dot]de
+ */
 public class DirtyObjectIDCarrier
 implements Serializable
 {
+	/**
+	 * The serial version of this class.
+	 */
+	private static final long serialVersionUID = 1L;
+	
 	private String context;
 
-	private Set objectIDs;
+	private Set<Object> objectIDs;
 
 	public DirtyObjectIDCarrier(String context)
 	{
 		this.context = context;
-		this.objectIDs = new HashSet();
+		this.objectIDs = new HashSet<Object>();
 	}
 
 	public String getContext()
