@@ -6,9 +6,11 @@ package org.nightlabs.jfire.base.prop.edit.blockbased;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.zip.InflaterInputStream;
 
 import org.apache.log4j.Logger;
 import org.eclipse.swt.SWT;
@@ -32,7 +34,6 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Text;
 import org.nightlabs.base.composite.XComposite;
 import org.nightlabs.base.composite.XComposite.LayoutDataMode;
-import org.nightlabs.base.composite.XComposite.LayoutMode;
 import org.nightlabs.base.util.RCPUtil;
 import org.nightlabs.jfire.base.prop.edit.AbstractDataFieldEditor;
 import org.nightlabs.jfire.base.prop.edit.AbstractDataFieldEditorFactory;
@@ -214,7 +215,18 @@ public class ImageDataFieldEditor extends AbstractDataFieldEditor<ImageDataField
 		
 		if (!getDataField().isEmpty()) {
 			filenameTextbox.setText(getDataField().getFileName());
-			ImageData id = new ImageData(new ByteArrayInputStream(getDataField().getImageData()));
+			ImageData id = null;
+			InputStream in = new InflaterInputStream(new ByteArrayInputStream(getDataField().getContent()));
+			try {
+				id = new ImageData(in);
+			} finally {
+				if (in != null)
+					try {
+						in.close();
+					} catch (IOException e) {
+						LOGGER.error(e);
+					}
+			}
 			displayImage(id);	
 		}
 		

@@ -24,6 +24,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.MessageBox;
 import org.nightlabs.base.language.I18nTextEditor;
 import org.nightlabs.base.language.LanguageChooser;
+import org.nightlabs.base.notification.IDirtyStateManager;
 import org.nightlabs.base.util.RCPUtil;
 import org.nightlabs.base.wizard.DynamicPathWizardDialog;
 import org.nightlabs.base.wizard.DynamicPathWizardPage;
@@ -60,12 +61,12 @@ public class StructEditor {
 	private StructEditorComposite structEditorComposite;
 	private Collection<StructureChangedListener> changeListeners;
 	private boolean changed = false;
-	private StructEditorView structEditorView;
+	private IDirtyStateManager dirtyStateManager;
 	
-	public StructEditor(StructEditorView structEditorView) {
+	public StructEditor(IDirtyStateManager structEditorView) {
 		changeListeners = new ArrayList<StructureChangedListener>();
 		propertyManager = getPropertyManager();
-		this.structEditorView = structEditorView;
+		this.dirtyStateManager = structEditorView;
 		this.structBlockEditor = new StructBlockEditor();
 	}
 	
@@ -160,7 +161,7 @@ public class StructEditor {
 						structTree.setInput(currentStruct);						
 					}
 				});
-				structEditorView.triggerSiteSelection();
+				dirtyStateManager.markDirty();
 				return Status.OK_STATUS;
 			}
 		}.schedule();		

@@ -34,7 +34,7 @@ public class WorkstationFeaturesPreferencePage extends
 		}
 		
 		public FeatureTable(Composite parent) {
-			super(parent, SWT.NONE, true, AbstractTableComposite.DEFAULT_STYLE_SINGLE | SWT.CHECK);
+			super(parent, SWT.NONE, true, AbstractTableComposite.DEFAULT_STYLE_SINGLE_BORDER | SWT.CHECK);
 		}
 
 		@Override
@@ -132,6 +132,12 @@ public class WorkstationFeaturesPreferencePage extends
 		result.add(new WorkstationFeature(cfMod, "org.nightlabs.jfire.base", "1.0.0"));
 		result.add(new WorkstationFeature(cfMod, "org.nightlabs.jfire.base.admin", "1.0.0"));
 		return result;
+	}
+
+	@Override
+	protected void setEditable(boolean editable) {
+		// TODO Auto-generated method stub
+		super.setEditable(editable);
 	}
 
 }

@@ -3,6 +3,7 @@ package org.nightlabs.jfire.base.prop.structedit;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.part.ViewPart;
+import org.nightlabs.base.notification.IDirtyStateManager;
 import org.nightlabs.base.part.ControllablePart;
 import org.nightlabs.base.part.PartVisibilityListener;
 import org.nightlabs.base.part.PartVisibilityTracker;
@@ -12,7 +13,7 @@ import org.nightlabs.jfire.base.login.part.LSDPartController;
 
 public class StructEditorView
 extends ViewPart
-implements PartVisibilityListener, ControllablePart {
+implements PartVisibilityListener, ControllablePart, IDirtyStateManager {
 
 	private StructEditorComposite structEditComposite;
 	private StructEditor structEditor;
@@ -70,6 +71,17 @@ implements PartVisibilityListener, ControllablePart {
 	
 	public void triggerSiteSelection() {
 		selectionProviderProxy.clearSelection();
+	}
+
+	public boolean isDirty() {
+		return false;
+	}
+
+	public void markDirty() {
+		triggerSiteSelection();
+	}
+
+	public void markUndirty() {
 	}
 	
 }
