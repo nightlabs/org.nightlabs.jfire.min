@@ -136,6 +136,9 @@ extends BaseSessionBeanImpl implements SessionBean
 	{
 		PersistenceManager pm = getPersistenceManager();
 		try {
+			if (logger.isDebugEnabled())
+				logger.debug("storeNotificationFilter: user="+getPrincipalString() + " notificationFilter: " + notificationFilter.getPrimaryKey());
+
 			return (NotificationFilter) NLJDOHelper.storeJDO(pm, notificationFilter, get, fetchGroups, maxFetchDepth);
 		} finally {
 			pm.close();
