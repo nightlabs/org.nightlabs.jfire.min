@@ -231,7 +231,7 @@ implements IWorkbenchPreferencePage
 			
 			// Check if cache sent the same version of the GroupModule after the ChildModule got changed.
 			// This might happen, since the cache removes all objects depending on a changed one. 
-			if (currentConfigModule.isGroupConfigModule() && currentConfigModule.isEqualTo(updatedModule))
+			if (currentConfigModule.isGroupConfigModule() && currentConfigModule.isContentEqual(updatedModule))
 				return;
 				
 			checkAndSetIsGroupMember(updatedModule);
