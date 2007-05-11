@@ -13,6 +13,7 @@ import javax.naming.InitialContext;
 
 import org.apache.log4j.Logger;
 import org.apache.xpath.CachedXPathAPI;
+import org.nightlabs.datastructure.PrefixTree;
 import org.nightlabs.jfire.datastoreinit.Resolution;
 import org.nightlabs.jfire.init.AbstractInitManager;
 import org.nightlabs.jfire.init.DependencyCycleException;
@@ -21,7 +22,6 @@ import org.nightlabs.jfire.servermanager.JFireServerManagerFactory;
 import org.nightlabs.jfire.servermanager.j2ee.J2EEAdapter;
 import org.nightlabs.jfire.servermanager.ra.JFireServerManagerFactoryImpl;
 import org.nightlabs.jfire.servermanager.ra.ManagedConnectionFactoryImpl;
-import org.nightlabs.util.ds.PrefixTree;
 import org.nightlabs.xml.DOMParser;
 import org.nightlabs.xml.XMLReadException;
 import org.w3c.dom.Node;

@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import org.nightlabs.annotation.Implement;
-import org.nightlabs.util.ds.IDirectedGraphNode;
+import org.nightlabs.datastructure.IDirectedGraphNode;
 
 
 /**

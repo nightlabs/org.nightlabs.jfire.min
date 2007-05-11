@@ -5,10 +5,10 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.nightlabs.datastructure.CycleException;
+import org.nightlabs.datastructure.DirectedGraph;
+import org.nightlabs.datastructure.PrefixTree;
 import org.nightlabs.jfire.datastoreinit.Resolution;
-import org.nightlabs.util.ds.CycleException;
-import org.nightlabs.util.ds.DirectedGraph;
-import org.nightlabs.util.ds.PrefixTree;
 
 public abstract class AbstractInitManager<I extends AbstractInit<I, D>, D extends IDependency<I>> {
 	private Logger logger = Logger.getLogger(AbstractInitManager.class);
