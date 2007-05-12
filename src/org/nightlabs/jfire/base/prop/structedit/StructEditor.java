@@ -1,14 +1,13 @@
 package org.nightlabs.jfire.base.prop.structedit;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Set;
 
 import javax.jdo.JDOHelper;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -19,12 +18,12 @@ import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.MessageBox;
 import org.nightlabs.base.language.I18nTextEditor;
 import org.nightlabs.base.language.LanguageChooser;
-import org.nightlabs.base.notification.IDirtyStateManager;
 import org.nightlabs.base.util.RCPUtil;
 import org.nightlabs.base.wizard.DynamicPathWizardDialog;
 import org.nightlabs.base.wizard.DynamicPathWizardPage;
@@ -34,6 +33,7 @@ import org.nightlabs.jfire.base.prop.StructLocalDAO;
 import org.nightlabs.jfire.idgenerator.IDGenerator;
 import org.nightlabs.jfire.jdo.notification.DirtyObjectID;
 import org.nightlabs.jfire.prop.IStruct;
+import org.nightlabs.jfire.prop.Property;
 import org.nightlabs.jfire.prop.PropertyManager;
 import org.nightlabs.jfire.prop.PropertyManagerUtil;
 import org.nightlabs.jfire.prop.StructBlock;
@@ -46,8 +46,16 @@ import org.nightlabs.math.Base36Coder;
 import org.nightlabs.notification.NotificationEvent;
 import org.nightlabs.notification.NotificationListener;
 import org.nightlabs.notification.NotificationListenerCallerThread;
+import org.nightlabs.util.Utils;
 import org.nightlabs.util.reflect.ReflectUtil;
 
+/**
+ * Editor to change the {@link Property} structure ({@link IStruct}) linked to
+ * a certain {@link Class}. 
+ * 
+ * @author Tobias Langner <tobias[DOT]langner[AT]nightlabs[DOT]de>
+ * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] de -->
+ */
 public class StructEditor {
 	private StructTree structTree;
 	private StructPartEditor<?> currentStructPartEditor;
@@ -59,21 +67,32 @@ public class StructEditor {
 	private PropertyManager propertyManager;
 	private IStruct currentStruct;
 	private StructEditorComposite structEditorComposite;
-	private Collection<StructureChangedListener> changeListeners;
+	private ListenerList changeListeners;
 	private boolean changed = false;
-	private IDirtyStateManager dirtyStateManager;
 	
-	public StructEditor(IDirtyStateManager structEditorView) {
-		changeListeners = new ArrayList<StructureChangedListener>();
+	/**
+	 * Create a new StructEditor. The constructor does not create any
+	 * GUI components. Call {@link #createComposite(Composite, int)}
+	 * to add the graphical Editor to a parent of your choice.
+	 */
+	public StructEditor() {
+		changeListeners = new ListenerList();
 		propertyManager = getPropertyManager();
-		this.dirtyStateManager = structEditorView;
 		this.structBlockEditor = new StructBlockEditor();
 	}
 	
-	public StructEditorComposite createComposite(Composite parent, int style) {
+	/**
+	 * Create the {@link Composite} of this editor.
+	 * 
+	 * @param parent The parent to add the {@link Composite}.
+	 * @param style The style for the outer {@link Composite} of the Editors GUI.
+	 * @param createStructIDCombo Whether to create a {@link Combo} control that allows switching of the edited {@link IStruct}.
+	 * @return The newly created {@link StructEditorComposite}. 
+	 */
+	public StructEditorComposite createComposite(Composite parent, int style, boolean createStructIDCombo) {
 		if (structEditorComposite == null) {
 			structTree = new StructTree(this);
-			structEditorComposite = new StructEditorComposite(parent, style, this, structTree);
+			structEditorComposite = new StructEditorComposite(parent, style, this, structTree, createStructIDCombo);
 			languageChooser = structEditorComposite.getLanguageChooser();
 			JDOLifecycleManager.sharedInstance().addNotificationListener(StructLocal.class, changeListener);
 			structEditorComposite.addDisposeListener(new DisposeListener() {
@@ -157,14 +176,49 @@ public class StructEditor {
 				Display.getDefault().asyncExec(new Runnable() {
 					public void run() {
 						StructLocal struct = StructLocalDAO.sharedInstance().getStructLocal(structLocalID);
-						currentStruct = org.nightlabs.util.Utils.cloneSerializable(struct);
-						structTree.setInput(currentStruct);						
+						setStruct(struct);
 					}
 				});
-				dirtyStateManager.markDirty();
 				return Status.OK_STATUS;
 			}
 		}.schedule();		
+	}
+
+	/**
+	 * Sets the current Struct to be edited.
+	 * <p>
+	 * Note that the given {@link IStruct} will be
+	 * copied by {@link Utils#cloneSerializable(Object)}.
+	 * </p>
+	 * @param struct The {@link IStruct} to be edited.
+	 */
+	public void setStruct(IStruct struct) {
+		currentStruct = org.nightlabs.util.Utils.cloneSerializable(struct);
+		structTree.setInput(currentStruct);						
+	}
+	
+	/**
+	 * Sets the current Struct to be edited.
+	 * <p>
+	 * Note that the given {@link IStruct} will be
+	 * copied by {@link Utils#cloneSerializable(Object)}.
+	 * </p>
+	 * @param struct The {@link IStruct} to be edited.
+	 * @param doCloneSerializable Whether the given struct should be cloned before editing. 
+	 * 		Note, that if it is cloned {@link #getStruct()} will not return the same instance
+	 * 		that was passed to this method. 
+	 */
+	public void setStruct(IStruct struct, boolean doCloneSerializable) {
+		currentStruct = doCloneSerializable ? Utils.cloneSerializable(struct) : struct;  
+		structTree.setInput(currentStruct);						
+	}
+	
+	/**
+	 * Returns the currently edited {@link IStruct}.
+	 * @return The currently edited {@link IStruct}.
+	 */
+	public IStruct getStruct() {
+		return currentStruct;
 	}
 	
 	private boolean validatePartEditor() {
@@ -257,8 +311,7 @@ public class StructEditor {
 	}
 	
 	public void addStructureChangedListener(StructureChangedListener listener) {
-		if (!changeListeners.contains(listener))
-			changeListeners.add(listener);
+		changeListeners.add(listener);
 	}
 	
 	public void removeStructureChangedListener(StructureChangedListener listener) {
@@ -266,8 +319,10 @@ public class StructEditor {
 	}
 	
 	private synchronized void notifyChangeListeners() {
-		for (StructureChangedListener listener : changeListeners)
-			listener.structureChanged();
+		Object[] listeners = changeListeners.getListeners();
+		for (Object l : listeners) {
+			((StructureChangedListener)l).structureChanged();
+		}
 	}
 	
 	public void addStructBlock() {

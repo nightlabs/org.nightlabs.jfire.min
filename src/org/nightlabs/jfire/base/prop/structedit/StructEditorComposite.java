@@ -70,7 +70,10 @@ public class StructEditorComposite extends XComposite {
 		}
 	}
 
-	public StructEditorComposite(Composite parent, int style, StructEditor structEditor, StructTree structTree) {
+	public StructEditorComposite(
+			Composite parent, int style, 
+			StructEditor structEditor, StructTree structTree, boolean createStructIDCombo
+		) {
 		super(parent, style);
 		this.setLayout(new GridLayout(2, false));
 		this.structEditor = structEditor;
@@ -79,17 +82,19 @@ public class StructEditorComposite extends XComposite {
 		gd.horizontalSpan = 2;
 		gd.horizontalAlignment = SWT.CENTER;
 
-		structIDComposite = new ComboComposite<StructLocalID>(this, SWT.NONE, new StructLocalIDLabelProvider(), "Current struct: ");
-		structIDComposite.setLayoutData(gd);
-		structIDComposite.getCombo().addSelectionListener(new StructIDComboSelectionListener());
-		
-		gd = new GridData(GridData.FILL_HORIZONTAL);
-		gd.horizontalSpan = 2;
-		new Label(this, SWT.SEPARATOR | SWT.HORIZONTAL).setLayoutData(gd);
+		if (createStructIDCombo) {
+			structIDComposite = new ComboComposite<StructLocalID>(this, SWT.NONE, new StructLocalIDLabelProvider(), "Current struct: ");
+			structIDComposite.setLayoutData(gd);
+			structIDComposite.getCombo().addSelectionListener(new StructIDComboSelectionListener());
+
+			gd = new GridData(GridData.FILL_HORIZONTAL);
+			gd.horizontalSpan = 2;
+			new Label(this, SWT.SEPARATOR | SWT.HORIZONTAL).setLayoutData(gd);
+		}
 
 		gd = new GridData();
 		gd.horizontalSpan = 2;
-		gd.horizontalAlignment = SWT.CENTER;
+		gd.horizontalAlignment = SWT.RIGHT;
 
 		languageChooser = new LanguageChooserImageCombo(this, true, true);
 		languageChooser.setLayoutData(gd);
@@ -100,12 +105,15 @@ public class StructEditorComposite extends XComposite {
 		gd.widthHint = 200;
 		structTree.getComposite().setLayoutData(gd);
 
-		try {
-			structIDComposite.setInput(new LinkedList<StructLocalID>(StructEditorUtil.getAvailableStructLocalIDs()));
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new RuntimeException(e);
+		if (createStructIDCombo) {
+			try {
+				structIDComposite.setInput(new LinkedList<StructLocalID>(StructEditorUtil.getAvailableStructLocalIDs()));
+			} catch (Exception e) {
+				e.printStackTrace();
+				throw new RuntimeException(e);
+			}
 		}
+		partEditorComposite = new XComposite(this, SWT.NONE);		
 	}
 	
 	public void setLoadingText() {

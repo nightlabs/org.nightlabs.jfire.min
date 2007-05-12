@@ -48,7 +48,7 @@ implements PartVisibilityListener, ControllablePart
 	}
 
 	public void createPartContents(Composite parent) {
-		StructLocal structLocal = StructLocalDAO.sharedInstance().getStructLocal(StructLocalID.create("chezfrancois.jfire.org", Person.class.getName()));
+		StructLocal structLocal = StructLocalDAO.sharedInstance().getStructLocal(StructLocalID.create("chezfrancois.jfire.org", Person.class.getName(), StructLocal.DEFAULT_SCOPE));
 		Property prop = new Property("chezfrancois.jfire.org", 1);
 		structLocal.explodeProperty(prop);
 		parent.setLayout(new GridLayout());

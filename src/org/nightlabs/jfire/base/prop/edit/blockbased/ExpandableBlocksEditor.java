@@ -46,6 +46,7 @@ import org.nightlabs.jfire.prop.DataBlockGroup;
 import org.nightlabs.jfire.prop.IStruct;
 import org.nightlabs.jfire.prop.Property;
 import org.nightlabs.jfire.prop.Struct;
+import org.nightlabs.jfire.prop.StructLocal;
 import org.nightlabs.jfire.prop.id.StructBlockID;
 
 /**
@@ -72,7 +73,11 @@ public class ExpandableBlocksEditor implements PropertyEditor { // extends Scrol
 	public ExpandableBlocksEditor(Property prop, IStruct propStruct) {
 		this.prop = prop;
 		this.propStruct = propStruct;
-		structBlockRegistry = new EditorStructBlockRegistry(propStruct.getLinkClass());
+		propStruct.explodeProperty(prop);
+		String scope = StructLocal.DEFAULT_SCOPE;
+		if (propStruct instanceof StructLocal)
+			scope = ((StructLocal)propStruct).getScope();
+		structBlockRegistry = new EditorStructBlockRegistry(propStruct.getLinkClass(), scope);
 	}
 
 	
@@ -92,7 +97,11 @@ public class ExpandableBlocksEditor implements PropertyEditor { // extends Scrol
 	public void setProperty(Property prop, IStruct propStruct, boolean refresh) {
 		this.prop = prop;
 		this.propStruct = propStruct;
-		structBlockRegistry = new EditorStructBlockRegistry(propStruct.getLinkClass());
+		propStruct.explodeProperty(prop);
+		String scope = StructLocal.DEFAULT_SCOPE;
+		if (propStruct instanceof StructLocal)
+			scope = ((StructLocal)propStruct).getScope();
+		structBlockRegistry = new EditorStructBlockRegistry(propStruct.getLinkClass(), scope);
 		if (refresh)
 			refreshControl();		
 	}

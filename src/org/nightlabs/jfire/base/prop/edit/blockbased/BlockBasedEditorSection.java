@@ -14,10 +14,9 @@ import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 import org.nightlabs.base.editor.RestorableSectionPart;
 import org.nightlabs.base.entity.editor.EntityEditorUtil;
-import org.nightlabs.jfire.base.prop.StructLocalDAO;
 import org.nightlabs.jfire.base.prop.edit.DataFieldEditor;
-import org.nightlabs.jfire.person.Person;
 import org.nightlabs.jfire.prop.IStruct;
+import org.nightlabs.jfire.prop.Property;
 
 /**
  * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] de -->
@@ -88,14 +87,12 @@ public class BlockBasedEditorSection extends RestorableSectionPart
 		});
 	}
 	
-	public void setPerson(final Person person) {
+	public void setProperty(final Property property, final IStruct struct) {
 		Display.getDefault().asyncExec(new Runnable() {
 			public void run() {
-				if(person == null)
+				if(property == null)
 					return;
-				IStruct struct = StructLocalDAO.sharedInstance().getStructLocal(Person.class);
-				struct.explodeProperty(person);
-				blockBasedPersonEditor.setProperty(person, struct, true);
+				blockBasedPersonEditor.setProperty(property, struct, true);
 			}
 		});
 	}

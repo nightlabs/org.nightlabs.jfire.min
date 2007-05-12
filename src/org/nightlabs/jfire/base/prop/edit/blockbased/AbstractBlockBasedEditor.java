@@ -38,6 +38,7 @@ import org.nightlabs.jfire.prop.DataBlockGroup;
 import org.nightlabs.jfire.prop.IStruct;
 import org.nightlabs.jfire.prop.Property;
 import org.nightlabs.jfire.prop.Struct;
+import org.nightlabs.jfire.prop.StructLocal;
 import org.nightlabs.jfire.prop.id.StructBlockID;
 
 /**
@@ -56,8 +57,12 @@ public abstract class AbstractBlockBasedEditor implements PropertyEditor { // ex
 	public AbstractBlockBasedEditor(Property prop, IStruct propStruct) {
 		this.propStruct = propStruct;
 		this.prop = prop;
-		if (propStruct != null)
-			structBlockRegistry = new EditorStructBlockRegistry(propStruct.getLinkClass());
+		if (propStruct != null) {
+			String scope = StructLocal.DEFAULT_SCOPE;
+			if (propStruct instanceof StructLocal)
+				scope = ((StructLocal)propStruct).getScope();
+			structBlockRegistry = new EditorStructBlockRegistry(propStruct.getLinkClass(), scope);
+		}
 	}
 	
 	
@@ -74,8 +79,12 @@ public abstract class AbstractBlockBasedEditor implements PropertyEditor { // ex
 	 */
 	public void setProperty(Property prop, IStruct propStruct, boolean refresh) {
 		this.prop = prop;
-		this.propStruct = propStruct;
-		structBlockRegistry = new EditorStructBlockRegistry(propStruct.getLinkClass());
+		this.propStruct = propStruct;		
+		propStruct.explodeProperty(prop);
+		String scope = StructLocal.DEFAULT_SCOPE;
+		if (propStruct instanceof StructLocal)
+			scope = ((StructLocal)propStruct).getScope();
+		structBlockRegistry = new EditorStructBlockRegistry(propStruct.getLinkClass(), scope);
 		if (refresh)
 			refreshControl();
 	}

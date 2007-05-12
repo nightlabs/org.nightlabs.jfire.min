@@ -49,7 +49,7 @@ public class StructFieldFactoryRegistry extends AbstractEPProcessor {
 		// make sure the EP was already processed
 		checkProcessing();
 
-		StructFieldEditorFactory editorFactory;
+		StructFieldEditorFactory editorFactory = null;
 		Class current = fieldClass;
 		String currentName;
 		StructFieldMetaData sfmd;
@@ -58,6 +58,8 @@ public class StructFieldFactoryRegistry extends AbstractEPProcessor {
 		do {
 			currentName = current.getName();
 			sfmd = fieldMetaDataMap.get(currentName);
+			if (sfmd == null)
+				break;
 			editorFactory = sfmd.getEditorFactory();
 			current = current.getSuperclass();
 		} while (editorFactory == null && current != null);

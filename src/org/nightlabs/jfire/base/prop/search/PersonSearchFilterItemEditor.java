@@ -43,7 +43,7 @@ import org.nightlabs.base.composite.XComposite;
 import org.nightlabs.base.composite.XComposite.LayoutMode;
 import org.nightlabs.jdo.search.SearchFilterItem;
 import org.nightlabs.jdo.search.SearchFilterItemEditor;
-import org.nightlabs.jfire.base.prop.StructLocalDAO;
+import org.nightlabs.jfire.base.prop.StructDAO;
 import org.nightlabs.jfire.person.Person;
 import org.nightlabs.jfire.prop.AbstractStructField;
 import org.nightlabs.jfire.prop.StructBlock;
@@ -115,7 +115,9 @@ public class PersonSearchFilterItemEditor extends SearchFilterItemEditor impleme
 	 */
 	protected List buildSearchFieldList() {
 		List<PropStructFieldSearchItemEditorManager> helperList = new ArrayList<PropStructFieldSearchItemEditorManager>();
-		for (Iterator iter = StructLocalDAO.sharedInstance().getStructLocal(Person.class.getName()).getStructBlocks().iterator(); iter.hasNext();) {
+		// We query the Struct instead of the StructLocal, and search for common features
+		// TODO I think this is OK right now, but there should be a possibility to search for structfields defined in StructLocals
+		for (Iterator iter = StructDAO.sharedInstance().getStruct(Person.class.getName()).getStructBlocks().iterator(); iter.hasNext();) {
 			StructBlock structBlock = (StructBlock) iter.next();
 			for (Iterator iterator = structBlock.getStructFields().iterator(); iterator.hasNext();) {
 				AbstractStructField structField = (AbstractStructField) iterator.next();

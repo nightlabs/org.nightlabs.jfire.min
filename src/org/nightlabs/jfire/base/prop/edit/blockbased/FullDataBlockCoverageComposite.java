@@ -39,6 +39,7 @@ import org.eclipse.swt.widgets.Control;
 import org.nightlabs.base.composite.XComposite;
 import org.nightlabs.jfire.base.prop.edit.PropertyEditor;
 import org.nightlabs.jfire.prop.Property;
+import org.nightlabs.jfire.prop.StructLocal;
 import org.nightlabs.jfire.prop.id.StructBlockID;
 
 /**
@@ -55,7 +56,9 @@ public class FullDataBlockCoverageComposite extends Composite {
 	public FullDataBlockCoverageComposite(Composite parent, int style, String editorScope, Property prop) {
 		super(parent, style);
 		this.numColumns = 1;
-		structBlockRegistry = new EditorStructBlockRegistry(prop.getStructure().getLinkClass());
+		if (!(prop.getStructure() instanceof StructLocal))
+			throw new IllegalArgumentException("The given prop was not exploded by a StructLocal");
+		structBlockRegistry = new EditorStructBlockRegistry(prop.getStructure().getLinkClass(), ((StructLocal)prop.getStructure()).getScope());
 		StructBlockID[] fullCoverageBlockIDs = structBlockRegistry.getUnassignedBlockKeyArray();
 		createPropEditors();
 		List[] splitBlockIDs = new List[numColumns];

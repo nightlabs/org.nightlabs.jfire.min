@@ -68,14 +68,14 @@ public class StructLocalDAO extends JDOObjectDAO<StructLocalID, StructLocal> {
 		}
 	}
 
-	public StructLocal getStructLocal(Class linkClass)	{
-		return getStructLocal(linkClass.getName());
+	public StructLocal getStructLocal(Class linkClass, String scope)	{
+		return getStructLocal(linkClass.getName(), scope);
 	}
 	
-	public StructLocal getStructLocal(String linkClass)	{
+	public StructLocal getStructLocal(String linkClass, String scope)	{
 		StructLocalID structLocalID;
 		try {
-			structLocalID = StructLocalID.create(Login.getLogin().getOrganisationID(), linkClass);
+			structLocalID = StructLocalID.create(Login.getLogin().getOrganisationID(), linkClass, scope);
 		} catch (LoginException e) {
 			e.printStackTrace();
 			throw new RuntimeException(e);

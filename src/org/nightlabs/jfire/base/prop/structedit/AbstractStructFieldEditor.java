@@ -94,8 +94,12 @@ public abstract class AbstractStructFieldEditor<F extends StructField> implement
 		
 		fieldNameEditor.setEnabled(true);		
 		fieldNameEditor.setI18nText(field.getName(), EditMode.DIRECT);
-		String fieldName = StructFieldFactoryRegistry.sharedInstance().getFieldMetaDataMap().get(field.getClass().getName()).getFieldName();
-		editorGroup.setText(fieldName);
+		StructFieldMetaData sfmd = StructFieldFactoryRegistry.sharedInstance().getFieldMetaDataMap().get(field.getClass().getName());
+		if (sfmd != null) {
+			String fieldName = sfmd.getFieldName();
+			editorGroup.setText(fieldName);
+		} else
+			editorGroup.setText("Uknown field type");
 		
 		setSpecialData(field);
 	}

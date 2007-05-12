@@ -23,7 +23,7 @@ implements PartVisibilityListener, ControllablePart, IDirtyStateManager {
 		// Register the view at the view-controller
 		LSDPartController.sharedInstance().registerPart(this);
 		
-		structEditor = new StructEditor(this);		
+		structEditor = new StructEditor();		
 	}
 
 	@Override
@@ -64,7 +64,7 @@ implements PartVisibilityListener, ControllablePart, IDirtyStateManager {
 	}
 
 	public void createPartContents(Composite parent) {
-		structEditComposite = structEditor.createComposite(parent, parent.getStyle());
+		structEditComposite = structEditor.createComposite(parent, parent.getStyle(), true);
 //		structEditor.setCurrentStructLocalID(structLocalID)
 		getViewSite().setSelectionProvider(structEditor.getStructTree().getTreeViewer());
 	}

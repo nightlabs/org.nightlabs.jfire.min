@@ -44,6 +44,7 @@ import org.nightlabs.jfire.prop.IStruct;
 import org.nightlabs.jfire.prop.Property;
 import org.nightlabs.jfire.prop.PropertyManager;
 import org.nightlabs.jfire.prop.PropertyManagerUtil;
+import org.nightlabs.jfire.prop.StructLocal;
 import org.nightlabs.jfire.security.Authority;
 import org.nightlabs.jfire.security.RoleGroup;
 import org.nightlabs.jfire.security.User;
@@ -145,7 +146,7 @@ public class UserDAO extends JDOObjectDAO<UserID, User>
 			PropertyManager pm = PropertyManagerUtil.getHome(initialContextProperties).create();
 			monitor.worked(1);
 			Person person = user.getPerson();
-			IStruct struct = StructLocalDAO.sharedInstance().getStructLocal(Person.class.getName());
+			IStruct struct = person.getStructure(); // StructLocalDAO.sharedInstance().getStructLocal(Person.class.getName(), StructLocal.DEFAULT_SCOPE);
 			if (user.getPerson() != null)
 				struct.implodeProperty(user.getPerson());
 			long activePersonID = person.getPropertyID();
@@ -170,7 +171,7 @@ public class UserDAO extends JDOObjectDAO<UserID, User>
 //			user.setPerson(person);
 			um.saveUser(user, null);
 			monitor.worked(1);
-			StructLocalDAO.sharedInstance().getStructLocal(Person.class.getName()).explodeProperty(person);    
+			struct.explodeProperty(person);    
 			monitor.worked(1);
 			monitor.done();
 		} catch(Exception e) {
