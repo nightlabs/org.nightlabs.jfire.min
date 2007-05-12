@@ -153,12 +153,12 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type = "Required"
 	 */
-	public StructLocal getFullStructLocal(String organisationID, String linkClass) throws ModuleException {
+	public StructLocal getFullStructLocal(String organisationID, String linkClass, String scope) throws ModuleException {
 		PersistenceManager pm = getPersistenceManager();
 		try {
 			pm.getFetchPlan().addGroup(FetchPlan.ALL);
 			pm.getFetchPlan().setMaxFetchDepth(NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
-			StructLocal ps = StructLocal.getStructLocal(organisationID, linkClass, pm);
+			StructLocal ps = StructLocal.getStructLocal(organisationID, linkClass, scope, pm);
 			StructLocal result = (StructLocal) pm.detachCopy(ps);
 			return result;
 		} finally {
@@ -174,7 +174,7 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	 * @ejb.transaction type = "Required"
 	 */
 	public StructLocal getFullStructLocal(StructLocalID structLocalID) throws ModuleException {
-		return getFullStructLocal(structLocalID.organisationID, structLocalID.linkClass);
+		return getFullStructLocal(structLocalID.organisationID, structLocalID.linkClass, structLocalID.scope);
 	}
 
 	/**
