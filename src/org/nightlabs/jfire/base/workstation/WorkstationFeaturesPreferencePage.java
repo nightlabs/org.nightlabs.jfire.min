@@ -18,12 +18,11 @@ import org.nightlabs.base.table.AbstractTableComposite;
 import org.nightlabs.base.table.TableContentProvider;
 import org.nightlabs.base.table.TableLabelProvider;
 import org.nightlabs.jfire.base.config.AbstractWorkstationConfigModulePreferencePage;
-import org.nightlabs.jfire.config.ConfigModule;
 import org.nightlabs.jfire.workstation.WorkstationFeature;
 import org.nightlabs.jfire.workstation.WorkstationFeaturesCfMod;
 
 public class WorkstationFeaturesPreferencePage extends
-		AbstractWorkstationConfigModulePreferencePage {
+		AbstractWorkstationConfigModulePreferencePage<WorkstationFeaturesCfMod> {
 	
 	protected static class FeatureTable extends AbstractTableComposite<WorkstationFeature> {
 		
@@ -62,17 +61,13 @@ public class WorkstationFeaturesPreferencePage extends
 	}
 
 	@Override
-	public Class getConfigModuleClass() {
+	public Class<WorkstationFeaturesCfMod> getConfigModuleClass() {
 		return WorkstationFeaturesCfMod.class;
 	}
 
 	@Override
-	protected void updateConfigModule(ConfigModule configModule) {
-		if (! (configModule instanceof WorkstationFeaturesCfMod))
-			throw new IllegalStateException("The WorkstationFeaturesPreference may only be used with WorkstationFeaturesCfMods!");
-		
-		WorkstationFeaturesCfMod featuresCfMod = (WorkstationFeaturesCfMod) configModule;
-		Map<String, WorkstationFeature> oldFeatures = featuresCfMod.getFeatures();
+	protected void updateConfigModule(WorkstationFeaturesCfMod configModule) {
+		Map<String, WorkstationFeature> oldFeatures = configModule.getFeatures();
 		
 		// FIXME: JPOX is having Problems clearing the list before adding new entries => Duplicate Key Exeption!
 		// 				Workaround in WorkstationFeatureCfMod.JDOpreattach();
@@ -111,10 +106,10 @@ public class WorkstationFeaturesPreferencePage extends
 	}
 
 	@Override
-	protected void updatePreferencePage(ConfigModule configModule) {
+	protected void updatePreferencePage(WorkstationFeaturesCfMod configModule) {
 		featureTable.setInput(getAvailableFeatures());
 		featureTable.setCheckedElements(new ArrayList<WorkstationFeature>(
-				((WorkstationFeaturesCfMod)configModule).getFeatures().values())
+				configModule.getFeatures().values())
 				);
 		featureTable.addSelectionChangedListener(new ISelectionChangedListener() {
 			public void selectionChanged(SelectionChangedEvent arg0) {

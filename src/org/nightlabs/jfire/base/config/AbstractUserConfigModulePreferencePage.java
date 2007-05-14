@@ -30,6 +30,7 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IWorkbench;
 
 import org.nightlabs.jfire.base.login.Login;
+import org.nightlabs.jfire.config.ConfigModule;
 import org.nightlabs.jfire.config.UserConfigSetup;
 import org.nightlabs.jfire.security.id.UserID;
 
@@ -37,8 +38,8 @@ import org.nightlabs.jfire.security.id.UserID;
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  *
  */
-public abstract class AbstractUserConfigModulePreferencePage extends
-		AbstractConfigModulePreferencePage {
+public abstract class AbstractUserConfigModulePreferencePage<C extends ConfigModule> extends
+		AbstractConfigModulePreferencePage<C> {
 
 	/**
 	 * 

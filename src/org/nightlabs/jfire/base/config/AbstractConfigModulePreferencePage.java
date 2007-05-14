@@ -101,7 +101,7 @@ import org.nightlabs.util.Utils;
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  *
  */
-public abstract class AbstractConfigModulePreferencePage 
+public abstract class AbstractConfigModulePreferencePage<C extends ConfigModule> 
 extends PreferencePage 
 implements IWorkbenchPreferencePage
 {
@@ -116,7 +116,7 @@ implements IWorkbenchPreferencePage
 
 	protected ConfigModuleChangeListener changeListener = new ConfigModuleChangeListener();
 	protected ConfigID currentConfigID;
-	protected ConfigModule currentConfigModule;
+	protected C currentConfigModule;
 	protected boolean currentConfigIsGroupMember = false;
 	protected boolean configChanged = false;
 	
@@ -157,7 +157,7 @@ implements IWorkbenchPreferencePage
 	 * 
 	 * @return The current config module.
 	 */
-	protected ConfigModule getCurrentConfigModule() {
+	protected C getCurrentConfigModule() {
 		return currentConfigModule;
 	}
 
@@ -168,7 +168,7 @@ implements IWorkbenchPreferencePage
 	 * 
 	 * @param configModule The {@link ConfigModule} to set.
 	 */
-	protected void setCurrentConfigModule(ConfigModule configModule) {
+	protected void setCurrentConfigModule(C configModule) {
 		setCurrentConfigModule(configModule, doCloneConfigModule());
 	}
 	
@@ -178,14 +178,14 @@ implements IWorkbenchPreferencePage
 	 * @param configModule new ConfigModule to display
 	 * @param doCloneConfigModule whether or not the new ConfigModule shall be cloned before displaying
 	 */
-	void setCurrentConfigModule(ConfigModule configModule, boolean doCloneConfigModule) {
+	void setCurrentConfigModule(C configModule, boolean doCloneConfigModule) {
 		if (doCloneConfigModule)
 			this.currentConfigModule = Utils.cloneSerializable(configModule);
 		else
 			this.currentConfigModule = configModule;
 	}
 	
-	private void checkAndSetIsGroupMember(ConfigModule module) {
+	private void checkAndSetIsGroupMember(C module) {
 		ConfigID groupID = ConfigSetupRegistry.sharedInstance().getGroupForConfig(
 				ConfigID.create(module.getOrganisationID(), 
 						module.getConfigKey(), 
@@ -226,7 +226,7 @@ implements IWorkbenchPreferencePage
 			}
 			
 			ConfigModuleDAO moduleDAO = ConfigModuleDAO.sharedInstance();
-			ConfigModule updatedModule = moduleDAO.getConfigModule(currentModuleID, getConfigModuleFetchGroups(), 
+			C updatedModule = (C) moduleDAO.getConfigModule(currentModuleID, getConfigModuleFetchGroups(), 
 					getConfigModuleMaxFetchDepth(), getProgressMonitor());
 			
 			checkAndSetIsGroupMember(updatedModule);
@@ -379,7 +379,7 @@ implements IWorkbenchPreferencePage
 	 * @return The pages Top control.
 	 */
 	public Control createContents(Composite parent, boolean doCreateConfigGroupHeader, 
-			boolean doSetControl, ConfigModule configModule) {
+			boolean doSetControl, C configModule) {
 		
 		currentConfigModule = configModule;
 		checkAndSetIsGroupMember(currentConfigModule);
@@ -424,8 +424,8 @@ implements IWorkbenchPreferencePage
 		return x;
 	}
 
-	protected ConfigModule retrieveConfigModule() {
-		return ConfigModuleDAO.sharedInstance().getConfigModule(
+	protected C retrieveConfigModule() {
+		return (C) ConfigModuleDAO.sharedInstance().getConfigModule(
 				currentConfigID, 
 				getConfigModuleClass(),
 				getConfigModuleCfModID(),
@@ -443,11 +443,11 @@ implements IWorkbenchPreferencePage
 	protected void updateConfigHeader() {
 		boolean headerCreated = false;
 		if (! canEdit(getCurrentConfigModule())) {
-			ClearComposite(header);
+			clearComposite(header);
 			new Label(header, 0).setText(Messages.getString("AbstractConfigModulePreferencePage.GroupDisallowsOverwrite")); //$NON-NLS-1$
 			headerCreated = true;
 		} else if (currentConfigIsGroupMember) {
-			ClearComposite(header);
+			clearComposite(header);
 			Button resetToGroupDefaults = new Button(header, 0);
 			resetToGroupDefaults.setText(Messages.getString("AbstractConfigModulePreferencePage.ResetToGroupConfig_ButtonText")); //$NON-NLS-1$
 			resetToGroupDefaults.addSelectionListener(new SelectionListener() {
@@ -462,7 +462,7 @@ implements IWorkbenchPreferencePage
 					try {
 					 cm = ConfigManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
 					 ConfigModuleID moduleID = (ConfigModuleID) JDOHelper.getObjectId(currentConfigModule);
-					 setCurrentConfigModule( cm.applyGroupInheritence(
+					 setCurrentConfigModule( (C) cm.applyGroupInheritence(
 							 				moduleID, 
 							 				true, 
 							 				getConfigModuleFetchGroups(), 
@@ -489,7 +489,7 @@ implements IWorkbenchPreferencePage
 	 * Clears all contents of a given Composite.
 	 * @param comp the composite to clear.
 	 */
-	private void ClearComposite(Composite comp) {
+	private void clearComposite(Composite comp) {
 		Control[] children = comp.getChildren();
 		
 		if (comp.getChildren().length == 0)
@@ -536,7 +536,7 @@ implements IWorkbenchPreferencePage
 	 * 
 	 * @param configModule The currently edited ConfigModule
 	 */
-	protected abstract void updatePreferencePage(ConfigModule configModule);
+	protected abstract void updatePreferencePage(C configModule);
 
 	/**
 	 * Will be called to determine whether the given ConfigModule is allowed
@@ -551,7 +551,7 @@ implements IWorkbenchPreferencePage
 	 * @param configModule
 	 * @return Whether the configModule is allowed to be edited.
 	 */
-	protected boolean canEdit(ConfigModule configModule) {
+	protected boolean canEdit(C configModule) {
 		return configModule.isGroupConfigModule() || configModule.isGroupAllowsOverride() || !currentConfigIsGroupMember;
 	}
 
@@ -591,7 +591,7 @@ implements IWorkbenchPreferencePage
 	 *  
 	 * @param configModule The {@link ConfigModule} to set and display.
 	 */
-	public void updatePreferencesGUI(ConfigModule configModule) {
+	public void updatePreferencesGUI(C configModule) {
 		updatePreferencePage(configModule);
 		setEditable(canEdit(configModule));
 		if (! currentConfigModule.isGroupConfigModule())
@@ -621,14 +621,14 @@ implements IWorkbenchPreferencePage
 	 * 
 	 * @param configModule The config module to be updated.
 	 */
-	protected abstract void updateConfigModule(ConfigModule configModule);
+	protected abstract void updateConfigModule(C configModule);
 
 	/**
 	 * Returns the ConfigModule class this PreferencePage does edit.
 	 * 
 	 * @return The ConfigModule class this PreferencePage does edit.
 	 */
-	public abstract Class getConfigModuleClass();
+	public abstract Class<C> getConfigModuleClass();
 
 	/**
 	 * Should return the cfModID of the ConfigModule this preference page
@@ -700,7 +700,7 @@ implements IWorkbenchPreferencePage
 			return;
 
 		try {
-			currentConfigModule = configManager.storeConfigModule(
+			currentConfigModule = (C) configManager.storeConfigModule(
 					getCurrentConfigModule(), true, getConfigModuleFetchGroups(), getConfigModuleMaxFetchDepth());
 			recentlySaved = true;
 		} catch (Exception e) {
@@ -744,9 +744,9 @@ implements IWorkbenchPreferencePage
 	 */
 	public void notifyConfigChangedListeners()
 	{
-		Iterator i = configChangedListeners.iterator();
+		Iterator<ConfigPreferenceChangedListener> i = configChangedListeners.iterator();
 		while(i.hasNext())
-			((ConfigPreferenceChangedListener)i.next()).configPreferenceChanged(this);
+			i.next().configPreferenceChanged(this);
 	}
 
 	/**
