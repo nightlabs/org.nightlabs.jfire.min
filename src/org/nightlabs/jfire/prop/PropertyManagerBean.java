@@ -115,11 +115,12 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type = "Required"
 	 */
-	public Struct getFullStruct(String organisationID, String linkClass) throws ModuleException {
+	public Struct getFullStruct(String organisationID, String linkClass, String[] fetchGroups, int maxFetchDepth) throws ModuleException {
 		PersistenceManager pm = getPersistenceManager();
 		try {
-			pm.getFetchPlan().addGroup(FetchPlan.ALL);
-			pm.getFetchPlan().setMaxFetchDepth(NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
+			if (fetchGroups != null)
+				pm.getFetchPlan().setGroups(fetchGroups);
+			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
 			Struct ps = Struct.getStruct(organisationID, linkClass, pm);
 			Struct result = (Struct) pm.detachCopy(ps);
 			return result;
@@ -135,8 +136,8 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type = "Required"
 	 */
-	public Struct getFullStruct(StructID structID) throws ModuleException {
-		return getFullStruct(structID.organisationID, structID.linkClass);
+	public Struct getFullStruct(StructID structID, String[] fetchGroups, int maxFetchDepth) throws ModuleException {
+		return getFullStruct(structID.organisationID, structID.linkClass, fetchGroups, maxFetchDepth);
 	}
 
 	/**
@@ -153,11 +154,12 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type = "Required"
 	 */
-	public StructLocal getFullStructLocal(String organisationID, String linkClass, String scope) throws ModuleException {
+	public StructLocal getFullStructLocal(String organisationID, String linkClass, String scope, String[] fetchGroups, int maxFetchDepth) throws ModuleException {
 		PersistenceManager pm = getPersistenceManager();
 		try {
-			pm.getFetchPlan().addGroup(FetchPlan.ALL);
-			pm.getFetchPlan().setMaxFetchDepth(NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
+			if (fetchGroups != null)
+				pm.getFetchPlan().setGroups(fetchGroups);
+			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
 			StructLocal ps = StructLocal.getStructLocal(organisationID, linkClass, scope, pm);
 			StructLocal result = (StructLocal) pm.detachCopy(ps);
 			return result;
@@ -173,8 +175,8 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type = "Required"
 	 */
-	public StructLocal getFullStructLocal(StructLocalID structLocalID) throws ModuleException {
-		return getFullStructLocal(structLocalID.organisationID, structLocalID.linkClass, structLocalID.scope);
+	public StructLocal getFullStructLocal(StructLocalID structLocalID, String[] fetchGroups, int maxFetchDepth) throws ModuleException {
+		return getFullStructLocal(structLocalID.organisationID, structLocalID.linkClass, structLocalID.scope, fetchGroups, maxFetchDepth);
 	}
 
 	/**
