@@ -50,5 +50,11 @@ extends IExecutableExtension
 //	 * sets the image
 //	 * @param image the image to set
 //	 */
-//	void setImage(Image image);	
+//	void setImage(Image image);
+	
+	/**
+	 * returns the index of the entry
+	 * @return the index of the entry
+	 */
+	int getIndex();
 }

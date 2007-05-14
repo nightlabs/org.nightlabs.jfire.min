@@ -1,5 +1,6 @@
 package org.nightlabs.jfire.base.overview;
 
+import org.eclipse.core.runtime.IExecutableExtension;
 import org.eclipse.swt.graphics.Image;
 
 /**
@@ -10,7 +11,7 @@ import org.eclipse.swt.graphics.Image;
  *
  */
 public interface Category
-//extends IExecutableExtension
+extends IExecutableExtension
 {
 	/**
 	 * returns the name of the category
@@ -29,22 +30,28 @@ public interface Category
 	 * @return the id of the category
 	 */
 	public String getCategoryID();
-	
+
 	/**
-	 * sets the categoryID
-	 * @param categoryID the categoryID to set
+	 * returns the index of the category
+	 * @return the index of the category
 	 */
-	public void setCategoryID(String categoryID);
+	public int getIndex();
 	
-	/**
-	 * sets the name of the category
-	 * @param name the name to set
-	 */
-	public void setName(String name);
-	
-	/**
-	 * sets the image of the category
-	 * @param image the image to set
-	 */
-	public void setImage(Image image);
+//	/**
+//	 * sets the categoryID
+//	 * @param categoryID the categoryID to set
+//	 */
+//	public void setCategoryID(String categoryID);
+//	
+//	/**
+//	 * sets the name of the category
+//	 * @param name the name to set
+//	 */
+//	public void setName(String name);
+//	
+//	/**
+//	 * sets the image of the category
+//	 * @param image the image to set
+//	 */
+//	public void setImage(Image image);
 }

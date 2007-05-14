@@ -2,9 +2,12 @@ package org.nightlabs.jfire.base.overview;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -29,6 +32,7 @@ extends AbstractEPProcessor
 	public static final String ATTRIBUTE_CATEGORY_ENTRY_ID = "categoryEntryID";
 	public static final String ATTRIBUTE_ENTRY = "entry";
 	public static final String ATTRIBUTE_ICON = "icon";
+	public static final String ATTRIBUTE_INDEX = "index";
 	
 	private static OverviewRegistry sharedInstance;
 	public static OverviewRegistry sharedInstance() {
@@ -57,21 +61,26 @@ extends AbstractEPProcessor
 		if (element.getName().equals(ELEMENT_CATEGORY)) {
 			String categoryID = element.getAttribute(ATTRIBUTE_CATEGORY_ID);
 			String name = element.getAttribute(ATTRIBUTE_NAME);
-			String iconString = element.getAttribute(ATTRIBUTE_ICON);			
-			Category category = new CategoryImpl();
+			String iconString = element.getAttribute(ATTRIBUTE_ICON);
+			String indexString = element.getAttribute(ATTRIBUTE_INDEX);
+			CategoryImpl category = new CategoryImpl();
 			category.setName(name);
-			category.setCategoryID(categoryID);			
+			category.setCategoryID(categoryID);
 			if (checkString(iconString)) {
 				ImageDescriptor imageDescriptor = AbstractUIPlugin.imageDescriptorFromPlugin(
 						extension.getNamespaceIdentifier(), iconString);
 				if (imageDescriptor != null)
 					category.setImage(imageDescriptor.createImage());										
-			}					
+			}
+			if (checkString(indexString)) {
+				int index = Integer.valueOf(indexString);
+				category.setIndex(index);
+			}
 			categoryID2Category.put(categoryID, category);
 		}		
 		if (element.getName().equals(ELEMENT_CATEGORY_ENTRY)) {
-//			String categoryEntryID = element.getAttribute(ATTRIBUTE_CATEGORY_ENTRY_ID);
 			String categoryID = element.getAttribute(ATTRIBUTE_CATEGORY_ID);
+//			String categoryEntryID = element.getAttribute(ATTRIBUTE_CATEGORY_ENTRY_ID);
 //			String name = element.getAttribute(ATTRIBUTE_NAME);
 //			String iconString = element.getAttribute(ATTRIBUTE_ICON);
 			try {
@@ -83,35 +92,52 @@ extends AbstractEPProcessor
 //					if (imageDescriptor != null)
 //						entry.setImage(imageDescriptor.createImage());										
 //				}				
-				List<Entry> factories = categoryID2Entries.get(categoryID);
-				if (factories == null)
-					factories = new ArrayList<Entry>();
-				factories.add(entry);			
-				categoryID2Entries.put(categoryID, factories);
+				List<Entry> entries = categoryID2Entries.get(categoryID);
+				if (entries == null)
+					entries = new ArrayList<Entry>();
+								
+				try {
+					if (entry.getIndex() == -1 || entries.get(entry.getIndex()) != null) {
+						if (entry instanceof AbstractEntry) {
+							int index = entries.size();
+							AbstractEntry abstractEntry = (AbstractEntry) entry;
+							abstractEntry.setIndex(index);
+						}											
+					}					
+				} catch (IndexOutOfBoundsException e) {
+					if (entry instanceof AbstractEntry) {
+						int index = entries.size();
+						AbstractEntry abstractEntry = (AbstractEntry) entry;
+						abstractEntry.setIndex(index);
+					}										
+				}
+				
+				entries.add(entry.getIndex(), entry);				
+				categoryID2Entries.put(categoryID, entries);
 			} catch (CoreException e) {
-				throw new RuntimeException(e);
+				throw new EPProcessorException(e);
 			}
 		}
 	}
 
 	private Map<String, Category> categoryID2Category = new HashMap<String, Category>();	
 	private Map<String, List<Entry>> categoryID2Entries = new HashMap<String, List<Entry>>();
-	
+	private SortedMap<Category, List<Entry>> category2Entries = null;
 	private Category fallBackCategory = null;
+	
 	public Category getFallbackCategory() {
 		if (fallBackCategory == null) {
-			fallBackCategory = new CategoryImpl();
+			CategoryImpl fallBackCategory = new CategoryImpl();
 			fallBackCategory.setName("Other");
+			this.fallBackCategory = fallBackCategory;
 		}
 		return fallBackCategory;
 	}
 	
-	protected void check() 
-	{
-		if (category2Entries == null) 
-		{
+	protected void check() {
+		if (category2Entries == null) {
 			checkProcessing();
-			category2Entries = new HashMap<Category, List<Entry>>();
+			category2Entries = new TreeMap<Category, List<Entry>>(categoryComparator);
 			for (Map.Entry<String, List<Entry>> mapEntry : categoryID2Entries.entrySet()) {
 				Category category = categoryID2Category.get(mapEntry.getKey());
 				List<Entry> entries = mapEntry.getValue();
@@ -123,7 +149,6 @@ extends AbstractEPProcessor
 		}
 	}
 	
-	private Map<Category, List<Entry>> category2Entries = null;
 	public List<Entry> getEntries(Category category) {
 		check();
 		return category2Entries.get(category);
@@ -134,4 +159,9 @@ extends AbstractEPProcessor
 		return category2Entries.keySet();
 	}
 	
+	private Comparator<Category> categoryComparator = new Comparator<Category>(){	
+		public int compare(Category c1, Category c2) {
+			return c1.getIndex() - c2.getIndex();
+		}	
+	};
 }

@@ -67,6 +67,13 @@
                </appInfo>
             </annotation>
          </attribute>
+         <attribute name="index" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
       </complexType>
    </element>
 
@@ -119,6 +126,13 @@
                <appInfo>
                   <meta.attribute kind="java" basedOn="org.nightlabs.jfire.base.overview.Entry"/>
                </appInfo>
+            </annotation>
+         </attribute>
+         <attribute name="index" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
             </annotation>
          </attribute>
       </complexType>
