@@ -251,6 +251,7 @@ implements IWorkbenchPreferencePage
 							updatePreferencePage(currentConfigModule);								
 						}
 					});
+					return;
 					
 				} else {
 					doReloadConfigModule = false;
@@ -272,6 +273,7 @@ implements IWorkbenchPreferencePage
 							updatePreferencePage(currentConfigModule);								
 						}
 					});
+					return;
 				}
 			}				
 			// end of workaround
