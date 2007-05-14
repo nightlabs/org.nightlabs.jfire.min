@@ -174,7 +174,7 @@ public class WorkstationManagerBean extends BaseSessionBeanImpl implements Sessi
 	{
 		PersistenceManager pm = getPersistenceManager();
 		try {
-			return NLJDOHelper.getDetachedObjectList(pm, workstationIDs, Workstation.class, fetchGroups, maxFetchDepth);
+			return NLJDOHelper.getDetachedObjectList(pm, workstationIDs, null, fetchGroups, maxFetchDepth);
 		} finally {
 			pm.close();
 		}

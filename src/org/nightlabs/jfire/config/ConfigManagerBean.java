@@ -530,6 +530,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 			if (get) {
 				if (fetchGroups != null)
 					pm.getFetchPlan().setGroups(fetchGroups);
+				pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
 
 				ConfigGroup result = (ConfigGroup)pm.detachCopy(group);
 				
