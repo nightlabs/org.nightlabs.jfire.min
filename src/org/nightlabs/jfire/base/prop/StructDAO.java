@@ -4,10 +4,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
 
+import javax.jdo.FetchPlan;
 import javax.security.auth.login.LoginException;
 
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.jdo.JDOObjectDAO;
 import org.nightlabs.jfire.base.login.Login;
 import org.nightlabs.jfire.prop.PropertyManager;
@@ -47,7 +50,7 @@ public class StructDAO extends JDOObjectDAO<StructID, Struct> {
 	@Override
 	protected Struct retrieveJDOObject(StructID objectID, String[] fetchGroups, int maxFetchDepth, IProgressMonitor monitor) throws Exception {
 		assert pm != null : "pm == null";
-		Struct struct = pm.getFullStruct(objectID);
+		Struct struct = pm.getFullStruct(objectID, fetchGroups, maxFetchDepth);
 		if (monitor != null)
 			monitor.worked(1);
 		return struct;
@@ -79,10 +82,10 @@ public class StructDAO extends JDOObjectDAO<StructID, Struct> {
 			e.printStackTrace();
 			throw new RuntimeException(e);
 		}
-		return getStruct(structID, null, -1, null);
+		return getStruct(structID, new String[] {FetchPlan.ALL}, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT, new NullProgressMonitor());
 	}
 	
 	public Struct getStruct(StructID structID) {
-		return getStruct(structID, null, -1, null);
+		return getStruct(structID, new String[] {FetchPlan.ALL}, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT, new NullProgressMonitor());
 	}
 }
