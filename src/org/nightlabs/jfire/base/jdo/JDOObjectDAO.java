@@ -163,8 +163,8 @@ public abstract class JDOObjectDAO<JDOObjectID, JDOObject>
 	@SuppressWarnings("unchecked")
 	protected synchronized List<JDOObject> getJDOObjects(String scope, Collection<JDOObjectID> objectIDs, String[] fetchGroups, int maxFetchDepth, IProgressMonitor monitor)
 	{
-		if (objectIDs == null)
-			throw new IllegalArgumentException("The given set of objectIDs is null!");
+		if (objectIDs == null || objectIDs.isEmpty())
+			return new ArrayList<JDOObject>(1);
 		
 		ArrayList<JDOObject> objects = new ArrayList<JDOObject>(objectIDs.size());
 		if (objectIDs.isEmpty()) {

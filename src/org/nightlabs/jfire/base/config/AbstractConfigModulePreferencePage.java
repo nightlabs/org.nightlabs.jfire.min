@@ -229,12 +229,52 @@ implements IWorkbenchPreferencePage
 			ConfigModule updatedModule = moduleDAO.getConfigModule(currentModuleID, getConfigModuleFetchGroups(), 
 					getConfigModuleMaxFetchDepth(), getProgressMonitor());
 			
-			// Check if cache sent the same version of the GroupModule after the ChildModule got changed.
-			// This might happen, since the cache removes all objects depending on a changed one. 
-			if (currentConfigModule.isGroupConfigModule() && currentConfigModule.isContentEqual(updatedModule))
-				return;
-				
 			checkAndSetIsGroupMember(updatedModule);
+
+			// Check if cache sent the same version of the GroupModule after the ChildModule got changed.
+			// This might happen, since the cache removes all objects depending on a changed one.
+			// Child ConfigModule changes -> GroupModule will be removed from Cache as well.
+//			if (JDOHelper.getVersion(currentConfigModule) == JDOHelper.getVersion(updatedModule))
+			// --> not applicable, since change in ChildConfigModule results in new Version of GroupConfigModule
+//			if (currentConfigModule.isGroupConfigModule() && currentConfigModule.isContentEqual(updatedModule))
+			// --> not applicable either, since isContentEqual needs to rely on equals of the the members 
+			//     of every ConfigModule and equals of JDOObjects is agreed to be true iff the corresponding
+			//     JDOObjectIDs are equal.
+			// FIXME: Hence, we need a new way of checking whether the content of two given ConfigModules is equal!
+			// Until then we reload the page iff the currentModule hasn't changed, else we ask the user if the page shall be reloaded.
+			if (currentConfigModule.isGroupConfigModule()) {
+				if (! configChanged) {
+					setCurrentConfigModule(updatedModule);
+					Display.getDefault().asyncExec(new Runnable() {
+						public void run() {
+							updateConfigHeader();
+							updatePreferencePage(currentConfigModule);								
+						}
+					});
+					
+				} else {
+					doReloadConfigModule = false;
+					Display.getDefault().syncExec(new Runnable() {
+						public void run() {
+							doReloadConfigModule = MessageDialog.openConfirm(RCPUtil.getActiveWorkbenchShell(), "ConfigModule changed!",
+							"Do you want the config module to be reloaded?");
+						}
+					});
+					
+					if (!doReloadConfigModule)
+						return;
+					
+					setCurrentConfigModule(updatedModule);
+					
+					Display.getDefault().asyncExec(new Runnable() {
+						public void run() {
+							updateConfigHeader();
+							updatePreferencePage(currentConfigModule);								
+						}
+					});
+				}
+			}				
+			// end of workaround
 			
 			// if oldModule was not editable or new module isn't than simply update the page
 			if (! canEdit(currentConfigModule) || ! canEdit(updatedModule)) {
