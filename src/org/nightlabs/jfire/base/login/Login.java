@@ -61,6 +61,7 @@ import org.nightlabs.j2ee.InitialContextProvider;
 import org.nightlabs.jfire.base.JFireBasePlugin;
 import org.nightlabs.jfire.base.j2ee.JFireJ2EEPlugin;
 import org.nightlabs.jfire.base.jdo.cache.Cache;
+import org.nightlabs.jfire.base.jdo.login.IJFireLoginProvider;
 import org.nightlabs.jfire.base.security.UserDAO;
 import org.nightlabs.jfire.classloader.JFireRCDLDelegate;
 import org.nightlabs.jfire.classloader.JFireRCLBackend;
@@ -91,7 +92,7 @@ import org.nightlabs.math.Base62Coder;
  */
 public class Login
 extends AbstractEPProcessor
-implements InitialContextProvider
+implements InitialContextProvider, IJFireLoginProvider
 {
 	/**
 	 * LOG4J logger used by this class

@@ -1,0 +1,175 @@
+/**
+ * 
+ */
+package org.nightlabs.jfire.base.jdo.notification;
+
+import java.util.Collection;
+
+import org.apache.log4j.Logger;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.swt.widgets.Display;
+import org.nightlabs.base.extensionpoint.EPProcessorException;
+import org.nightlabs.base.notification.NotificationListenerJob;
+import org.nightlabs.base.notification.NotificationListenerSWTThreadAsync;
+import org.nightlabs.base.notification.NotificationListenerSWTThreadSync;
+import org.nightlabs.base.notification.NotificationManagerInterceptorEPProcessor;
+import org.nightlabs.notification.NotificationEvent;
+import org.nightlabs.notification.NotificationListener;
+
+/**
+ * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] de -->
+ *
+ */
+public class JDOLifecycleManagerRCP extends JDOLifecycleManager {
+
+	private static Logger logger = Logger.getLogger(JDOLifecycleManagerRCP.class);
+	/**
+	 * 
+	 */
+	public JDOLifecycleManagerRCP() {
+		try {
+			new NotificationManagerInterceptorEPProcessor(this).process();
+		} catch (EPProcessorException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
+	@Override
+	protected Collection<Class<? extends NotificationListener>> getValidListenerTypes() {
+		Collection<Class<? extends NotificationListener>> superResult = super.getValidListenerTypes();
+		superResult.add(NotificationListenerJob.class);
+		superResult.add(NotificationListenerSWTThreadAsync.class);
+		superResult.add(NotificationListenerSWTThreadAsync.class);
+		return superResult;
+	}
+	
+	@Override
+	protected Collection<Class<? extends JDOLifecycleListener>> getValidJDOListenerTypes() {
+		Collection<Class<? extends JDOLifecycleListener>> superResult = super.getValidJDOListenerTypes();
+		superResult.add(JDOLifecycleListenerJob.class);
+		superResult.add(JDOLifecycleListenerSWTThreadSync.class);
+		superResult.add(JDOLifecycleListenerSWTThreadAsync.class);
+		return superResult;
+	}
+
+	/**
+	 * @see org.nightlabs.notification.NotificationManager#performNotification(java.lang.String, org.nightlabs.notification.NotificationListener, org.nightlabs.notification.NotificationEvent)
+	 */
+	@Override
+	protected void performNotification(String notificationMode, final NotificationListener listener,
+			final NotificationEvent event)
+	{
+		if (NotificationListenerJob.class.getName().equals(notificationMode)) {
+			NotificationListenerJob l = (NotificationListenerJob) listener;
+
+			Job job = l.getJob(event);
+			if (job == null) {
+				String jobName = l.getJobName();
+				if (jobName == null)
+					jobName = "Processing Notification";
+
+				job = new Job(jobName) {
+					protected IStatus run(IProgressMonitor monitor)
+					{
+						((NotificationListenerJob)listener).setProgressMonitor(monitor);
+						((NotificationListenerJob)listener).notify(event);
+
+						return Status.OK_STATUS;
+					}
+				};
+				job.setRule(l.getRule());
+				job.setPriority(l.getPriority());
+				job.setUser(l.isUser());
+				job.setSystem(l.isSystem());
+			}
+			job.schedule(l.getDelay());
+		}
+		else if (NotificationListenerSWTThreadAsync.class.getName().equals(notificationMode)) {
+			Display.getDefault().asyncExec(new Runnable() {
+				public void run()
+				{
+					listener.notify(event);
+				}
+			});
+		}
+		else if (NotificationListenerSWTThreadSync.class.getName().equals(notificationMode)) {
+			Display.getDefault().syncExec(new Runnable() {
+				public void run()
+				{
+					listener.notify(event);
+				}
+			});
+		}
+		else
+			super.performNotification(notificationMode, listener, event);
+	}
+	
+	public void notify(Long filterID, final JDOLifecycleEvent event)
+	{
+		final JDOLifecycleListener listener = getLifecycleListener(filterID);
+		if (listener == null) {
+			logger.error("No listener found for filterID="+filterID);
+			return;
+		}
+
+		if (notifyRCP(filterID, event, listener))
+			return;
+	}	
+	
+	private boolean notifyRCP(Long filterID, final JDOLifecycleEvent event, final JDOLifecycleListener listener)
+	{
+		if (listener instanceof JDOLifecycleListenerJob) {
+			JDOLifecycleListenerJob l = (JDOLifecycleListenerJob) listener;
+
+			Job job = l.getJob(event);
+			if (job == null) {
+				String jobName = l.getJobName();
+				if (jobName == null)
+					jobName = "Processing JDOLifecycle";
+
+				job = new Job(jobName) {
+					protected IStatus run(IProgressMonitor monitor)
+					{
+						((JDOLifecycleListenerJob)listener).setProgressMonitor(monitor);
+						((JDOLifecycleListenerJob)listener).notify(event);
+
+						return Status.OK_STATUS;
+					}
+				};
+				job.setRule(l.getRule());
+				job.setPriority(l.getPriority());
+				job.setUser(l.isUser());
+				job.setSystem(l.isSystem());
+			}
+			job.schedule(l.getDelay());
+			return true;
+		}
+		else if (listener instanceof JDOLifecycleListenerSWTThreadAsync) {
+			Display.getDefault().asyncExec(new Runnable() {
+				public void run()
+				{
+					listener.notify(event);
+				}
+			});
+			return true;
+		}
+		else if (listener instanceof JDOLifecycleListenerSWTThreadSync) {
+			Display.getDefault().syncExec(new Runnable() {
+				public void run()
+				{
+					listener.notify(event);
+				}
+			});
+			return true;
+		}
+		else
+			return false;
+	}
+	
+
+	
+	
+}
