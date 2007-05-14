@@ -2,11 +2,7 @@ package org.nightlabs.jfire.base.overview.search;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-
-import javax.jdo.FetchPlan;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -14,7 +10,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.widgets.Display;
 import org.nightlabs.base.table.AbstractTableComposite;
-import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jdo.query.JDOQuery;
 
 /**

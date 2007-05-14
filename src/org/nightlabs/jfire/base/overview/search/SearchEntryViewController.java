@@ -36,14 +36,15 @@ implements EntryViewController
 		return resultComposite;
 	}
 	
+	private SashForm sashform = null;
 	public Composite createComposite(Composite parent) 
 	{		 		 
-		SashForm sashform = new SashForm(parent, SWT.VERTICAL);		
+		sashform = new SashForm(parent, SWT.VERTICAL);		
 		sashform.setLayout(new FillLayout());
 		searchComposite = createSearchComposite(sashform);
 		resultComposite = createResultComposite(sashform);
-//		sashform.setWeights(new int[] {2,5});
-		sashform.setWeights(new int[] {2,4});
+//		sashform.setWeights(new int[] {2,4});
+		configureSash(sashform);
 		
 		if (parent.getLayout() instanceof GridLayout)
 			sashform.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -96,20 +97,8 @@ implements EntryViewController
 		return null;
 	}		
 	
-//	public AbstractQueryFilterComposite getQueryFilterComposite() 
-//	{
-//		if (getSearchComposite() instanceof AbstractQueryFilterComposite)
-//			return (AbstractQueryFilterComposite) getSearchComposite();
-//		
-//		return null;
-//	}
-//	
-//	public AbstractTableComposite getResultTableComposite() 
-//	{
-//		if (getResultComposite() instanceof AbstractTableComposite)
-//			return (AbstractTableComposite) getResultComposite();
-//		
-//		return null;
-//	}	
+	protected void configureSash(SashForm sashform) {
+		sashform.setWeights(new int[] {2,4});		
+	}
 	
 }
