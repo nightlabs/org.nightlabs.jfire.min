@@ -8,7 +8,7 @@
     <ant path="org.nightlabs.jfire.base" file="build-nightlabs.xml" target="deploy"/>
     <requires/>
 	<requires path="/org.nightlabs.jfire.base.j2ee.osgi"/>
-	  
+	<requires path="/JFireBaseClientLib"/>	  
     <provides/>
 <!--    
 	<provides path="org.nightlabs.jfire.base" location="org.nightlabs.jfire.base/lib/NightLabsCascadedAuthenticationJBoss.jar"/>
