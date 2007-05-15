@@ -54,6 +54,7 @@ import org.eclipse.ui.PlatformUI;
 import org.nightlabs.ModuleException;
 import org.nightlabs.base.extensionpoint.AbstractEPProcessor;
 import org.nightlabs.base.extensionpoint.EPProcessorException;
+import org.nightlabs.base.progress.ProgressMonitorWrapper;
 import org.nightlabs.base.util.RCPUtil;
 import org.nightlabs.classloader.osgi.DelegatingClassLoaderOSGI;
 import org.nightlabs.config.Config;
@@ -62,11 +63,11 @@ import org.nightlabs.jfire.base.JFireBasePlugin;
 import org.nightlabs.jfire.base.j2ee.JFireJ2EEPlugin;
 import org.nightlabs.jfire.base.jdo.cache.Cache;
 import org.nightlabs.jfire.base.jdo.login.IJFireLoginProvider;
-import org.nightlabs.jfire.base.security.UserDAO;
 import org.nightlabs.jfire.classloader.JFireRCDLDelegate;
 import org.nightlabs.jfire.classloader.JFireRCLBackend;
 import org.nightlabs.jfire.classloader.JFireRCLBackendUtil;
 import org.nightlabs.jfire.security.User;
+import org.nightlabs.jfire.security.dao.UserDAO;
 import org.nightlabs.jfire.security.id.UserID;
 import org.nightlabs.math.Base62Coder;
 
@@ -656,7 +657,7 @@ implements InitialContextProvider, IJFireLoginProvider
 	public User getUser(String fetchGroups[], int maxFetchDepth, IProgressMonitor monitor) {
 		return UserDAO.sharedInstance().getUser(
 				UserID.create(organisationID, userID), 
-				fetchGroups, maxFetchDepth, monitor
+				fetchGroups, maxFetchDepth, new ProgressMonitorWrapper(monitor)
 			);
 	}
 	

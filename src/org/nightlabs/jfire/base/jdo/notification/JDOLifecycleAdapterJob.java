@@ -3,6 +3,8 @@ package org.nightlabs.jfire.base.jdo.notification;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.core.runtime.jobs.Job;
+import org.nightlabs.base.progress.ProgressMonitorWrapper;
+import org.nightlabs.progress.ProgressMonitor;
 
 public abstract class JDOLifecycleAdapterJob
 		implements JDOLifecycleListenerJob
@@ -27,6 +29,8 @@ public abstract class JDOLifecycleAdapterJob
 	}
 	
 	private IProgressMonitor progressMonitor;
+	
+	private ProgressMonitor progressMonitorWrapper;
 
 	/**
 	 * @see org.nightlabs.base.notification.NotificationListenerJob#setProgressMonitor(org.eclipse.core.runtime.IProgressMonitor)
@@ -42,6 +46,22 @@ public abstract class JDOLifecycleAdapterJob
 		return progressMonitor;
 	}
 
+	/**
+	 * Returns a {@link ProgressMonitor} implementation wrapping around the
+	 * {@link IProgressMonitor} set in {@link #setProgressMonitor(IProgressMonitor)}.
+	 * 
+	 * @return A {@link ProgressMonitor} implementation wrapping around the
+	 * 		{@link IProgressMonitor} set in {@link #setProgressMonitor(IProgressMonitor)}.
+	 */
+	public ProgressMonitor getProgressMontitorWrapper() {
+		if (progressMonitorWrapper == null) {
+			if (progressMonitor == null)
+				throw new IllegalStateException("getProgressMontitorWrapper must not be called before setProgressMonitor(IProgressMonitor).");
+			progressMonitorWrapper = new ProgressMonitorWrapper(progressMonitor);
+		}
+		return progressMonitorWrapper;
+	}
+	
 	/**
 	 * @see org.nightlabs.base.notification.NotificationListenerJob#getRule()
 	 */

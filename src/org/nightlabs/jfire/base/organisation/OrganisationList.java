@@ -5,19 +5,20 @@ import java.util.List;
 
 import javax.jdo.FetchPlan;
 
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.nightlabs.annotation.Implement;
 import org.nightlabs.base.composite.ListComposite;
+import org.nightlabs.base.job.Job;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.organisation.Organisation;
+import org.nightlabs.jfire.organisation.dao.OrganisationDAO;
 import org.nightlabs.jfire.organisation.id.OrganisationID;
+import org.nightlabs.progress.ProgressMonitor;
 
 public class OrganisationList
 		extends ListComposite<Organisation>
@@ -68,7 +69,7 @@ public class OrganisationList
 
 		new Job("Load Organisations") {
 			@Implement
-			protected IStatus run(IProgressMonitor monitor)
+			protected IStatus run(ProgressMonitor monitor)
 			{
 				final List<Organisation> organisations = organisationIDDataSource == null ?
 					OrganisationDAO.sharedInstance().getOrganisations(

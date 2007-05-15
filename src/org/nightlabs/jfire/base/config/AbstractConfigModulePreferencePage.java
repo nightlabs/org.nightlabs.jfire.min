@@ -62,10 +62,12 @@ import org.nightlabs.jfire.config.ConfigGroup;
 import org.nightlabs.jfire.config.ConfigManager;
 import org.nightlabs.jfire.config.ConfigManagerUtil;
 import org.nightlabs.jfire.config.ConfigModule;
+import org.nightlabs.jfire.config.dao.ConfigModuleDAO;
 import org.nightlabs.jfire.config.id.ConfigID;
 import org.nightlabs.jfire.config.id.ConfigModuleID;
 import org.nightlabs.jfire.jdo.notification.DirtyObjectID;
 import org.nightlabs.notification.NotificationEvent;
+import org.nightlabs.progress.NullProgressMonitor;
 import org.nightlabs.util.Utils;
 
 /**
@@ -227,7 +229,7 @@ implements IWorkbenchPreferencePage
 			
 			ConfigModuleDAO moduleDAO = ConfigModuleDAO.sharedInstance();
 			C updatedModule = (C) moduleDAO.getConfigModule(currentModuleID, getConfigModuleFetchGroups(), 
-					getConfigModuleMaxFetchDepth(), getProgressMonitor());
+					getConfigModuleMaxFetchDepth(), getProgressMonitorWrapper());
 			
 			checkAndSetIsGroupMember(updatedModule);
 
@@ -433,7 +435,7 @@ implements IWorkbenchPreferencePage
 				getConfigModuleCfModID(),
 				getConfigModuleFetchGroups(),
 				getConfigModuleMaxFetchDepth(), 
-				new XProgressMonitor()
+				new NullProgressMonitor() // TODO: Wrap a job around this ...
 				);
 	}
 	

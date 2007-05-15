@@ -31,6 +31,8 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -39,15 +41,18 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.nightlabs.base.composite.XComposite;
 import org.nightlabs.base.composite.XComposite.LayoutMode;
+import org.nightlabs.base.job.Job;
 import org.nightlabs.jdo.search.SearchFilterItem;
 import org.nightlabs.jdo.search.SearchFilterItemEditor;
-import org.nightlabs.jfire.base.prop.StructDAO;
 import org.nightlabs.jfire.person.Person;
 import org.nightlabs.jfire.prop.AbstractStructField;
 import org.nightlabs.jfire.prop.StructBlock;
+import org.nightlabs.jfire.prop.dao.StructDAO;
 import org.nightlabs.jfire.prop.structfield.TextStructField;
+import org.nightlabs.progress.ProgressMonitor;
 
 /**
  * Concrete SearchFilterItemEditor that represents a
@@ -81,29 +86,41 @@ public class PersonSearchFilterItemEditor extends SearchFilterItemEditor impleme
 			gdCombo.horizontalAlignment = GridData.FILL;
 			comboSearchField.setLayoutData(gdCombo);
 			
-			if (searchFieldList == null) {
-				try {
-					searchFieldList = buildSearchFieldList();
-				}
-				catch (Throwable t) {
-					searchFieldList = null;
-					wrapper.dispose();
-					wrapper = null;
-					throw new RuntimeException(t);
-				}
-			}
-			  
-			for (int i = 0; i<searchFieldList.size()-1; i++) {
-				PropSearchFilterItemEditorHelper helper = (PropSearchFilterItemEditorHelper) searchFieldList.get(i);
-				comboSearchField.add(helper.getDisplayName());
-			}
 			comboSearchField.addSelectionListener(this);
 			// TODO: temporär -> ExtensionPoint
 			PersonSearchFilterItemEditorHelperRegistry.sharedInstance().addItemEditor(TextStructField.class, new TextStructFieldSearchItemEditorHelper());
-			comboSearchField.select(0);
-			onComboChange();
+			fillSearchFieldCombo();
 		}
 		return wrapper;
+	}
+	
+	public void fillSearchFieldCombo() {
+		Job job = new Job("Load search fields") {
+			@Override
+			protected IStatus run(ProgressMonitor monitor) {
+				if (searchFieldList == null) {
+					try {
+						searchFieldList = buildSearchFieldList(monitor);
+					}
+					catch (Throwable t) {
+						searchFieldList = null;
+						throw new RuntimeException(t);
+					}
+				}
+				Display.getDefault().asyncExec(new Runnable() {
+					public void run() {
+						for (int i = 0; i<searchFieldList.size()-1; i++) {
+							PropSearchFilterItemEditorHelper helper = (PropSearchFilterItemEditorHelper) searchFieldList.get(i);
+							comboSearchField.add(helper.getDisplayName());
+						}
+						comboSearchField.select(0);
+						onComboChange();
+					}
+				});
+				return Status.OK_STATUS;
+			}
+		};
+		job.schedule();
 	}
 	
 	/**
@@ -113,11 +130,11 @@ public class PersonSearchFilterItemEditor extends SearchFilterItemEditor impleme
 	 * 
 	 * @return
 	 */
-	protected List buildSearchFieldList() {
+	protected List buildSearchFieldList(ProgressMonitor monitor) {
 		List<PropStructFieldSearchItemEditorManager> helperList = new ArrayList<PropStructFieldSearchItemEditorManager>();
 		// We query the Struct instead of the StructLocal, and search for common features
 		// TODO I think this is OK right now, but there should be a possibility to search for structfields defined in StructLocals
-		for (Iterator iter = StructDAO.sharedInstance().getStruct(Person.class.getName()).getStructBlocks().iterator(); iter.hasNext();) {
+		for (Iterator iter = StructDAO.sharedInstance().getStruct(Person.class.getName(), monitor).getStructBlocks().iterator(); iter.hasNext();) {
 			StructBlock structBlock = (StructBlock) iter.next();
 			for (Iterator iterator = structBlock.getStructFields().iterator(); iterator.hasNext();) {
 				AbstractStructField structField = (AbstractStructField) iterator.next();

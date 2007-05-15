@@ -10,11 +10,11 @@ import org.eclipse.swt.widgets.Composite;
 import org.nightlabs.base.composite.ComboComposite;
 import org.nightlabs.base.composite.XComposite;
 import org.nightlabs.jfire.base.login.Login;
-import org.nightlabs.jfire.base.prop.StructLocalDAO;
 import org.nightlabs.jfire.prop.Property;
 import org.nightlabs.jfire.prop.PropertyManager;
 import org.nightlabs.jfire.prop.PropertyManagerUtil;
 import org.nightlabs.jfire.prop.StructLocal;
+import org.nightlabs.jfire.prop.dao.StructLocalDAO;
 import org.nightlabs.jfire.prop.id.StructLocalID;
 
 public class PropertySelectionComposite extends XComposite {
@@ -51,7 +51,6 @@ public class PropertySelectionComposite extends XComposite {
 	
 	private void updateAvailableProperties() {
 		StructLocalID structLocalID = structLocalIDs.getSelectedElement();
-		StructLocal structLocal = StructLocalDAO.sharedInstance().getStructLocal(structLocalID);
 	}
 	
 	private PropertyManager getPropertyManager() {

@@ -45,6 +45,17 @@ public class BlockBasedEditorSection extends RestorableSectionPart
 		createClient(getSection(), page.getEditor().getToolkit(), sectionDescriptionText);
 	}
 
+	/**
+	 * Create an instance of UserPropertiesSection.
+	 * @param parent The parent for this section
+	 * @param toolkit The toolkit to use
+	 */
+	public BlockBasedEditorSection(FormPage page, Composite parent, int sectionType, String sectionDescriptionText)
+	{
+		super(parent, page.getEditor().getToolkit(), sectionType);
+		createClient(getSection(), page.getEditor().getToolkit(), sectionDescriptionText);
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.eclipse.ui.forms.AbstractFormPart#commit(boolean)
 	 */

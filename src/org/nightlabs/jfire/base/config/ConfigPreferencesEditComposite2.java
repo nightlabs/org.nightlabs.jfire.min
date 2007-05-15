@@ -33,10 +33,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
@@ -44,10 +42,13 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.nightlabs.base.composite.XComposite;
+import org.nightlabs.base.job.Job;
 import org.nightlabs.jfire.base.jdo.JDOObjectID2PCClassMap;
 import org.nightlabs.jfire.config.ConfigGroup;
 import org.nightlabs.jfire.config.ConfigModule;
+import org.nightlabs.jfire.config.dao.ConfigModuleDAO;
 import org.nightlabs.jfire.config.id.ConfigID;
+import org.nightlabs.progress.ProgressMonitor;
 
 /**
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
@@ -130,7 +131,7 @@ implements ConfigPreferenceChangedListener
 	public void updatePreferencesComposite() {
 		Job job = new Job("Updating ConfigModule") {
 			@Override
-			protected IStatus run(IProgressMonitor monitor) {
+			protected IStatus run(ProgressMonitor monitor) {
 				fetchCurrentConfigModule(monitor);
 				Display.getDefault().asyncExec(new Runnable() {
 					public void run() {
@@ -174,7 +175,7 @@ implements ConfigPreferenceChangedListener
 	 * 
 	 * @param userConfigID
 	 */
-	protected void fetchCurrentConfigModule(IProgressMonitor monitor) {
+	protected void fetchCurrentConfigModule(ProgressMonitor monitor) {
 		AbstractConfigModulePreferencePage selectedPage = getCurrentPage();
 		if (selectedPage == null)
 			return;

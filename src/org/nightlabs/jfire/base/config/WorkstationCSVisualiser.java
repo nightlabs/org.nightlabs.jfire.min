@@ -28,14 +28,14 @@ package org.nightlabs.jfire.base.config;
 
 import javax.jdo.FetchPlan;
 
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.nightlabs.jdo.NLJDOHelper;
-import org.nightlabs.jfire.base.workstation.WorkstationDAO;
 import org.nightlabs.jfire.config.ConfigGroup;
 import org.nightlabs.jfire.config.ConfigSetup;
 import org.nightlabs.jfire.config.id.ConfigID;
 import org.nightlabs.jfire.workstation.Workstation;
+import org.nightlabs.jfire.workstation.dao.WorkstationDAO;
 import org.nightlabs.jfire.workstation.id.WorkstationID;
+import org.nightlabs.progress.NullProgressMonitor;
 
 /**
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>

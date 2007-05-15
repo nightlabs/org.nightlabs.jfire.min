@@ -11,12 +11,11 @@ import java.util.Set;
 import javax.jdo.JDOHelper;
 
 import org.apache.log4j.Logger;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.widgets.Display;
+import org.nightlabs.base.job.Job;
 import org.nightlabs.base.notification.NotificationAdapterJob;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleAdapterJob;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleEvent;
@@ -29,6 +28,7 @@ import org.nightlabs.jfire.jdo.notification.SimpleLifecycleListenerFilter;
 import org.nightlabs.notification.NotificationEvent;
 import org.nightlabs.notification.NotificationListener;
 import org.nightlabs.notification.SubjectCarrier;
+import org.nightlabs.progress.ProgressMonitor;
 
 /**
  * @author Marco Schulze - marco at nightlabs dot de
@@ -45,7 +45,7 @@ public abstract class ActiveJDOObjectController<JDOObjectID, JDOObject>
 	 * @param monitor The monitor.
 	 * @return Returns the jdo objects that correspond to the requested <code>objectIDs</code>.
 	 */
-	protected abstract Collection<JDOObject> retrieveJDOObjects(Set<JDOObjectID> objectIDs, IProgressMonitor monitor);
+	protected abstract Collection<JDOObject> retrieveJDOObjects(Set<JDOObjectID> objectIDs, ProgressMonitor monitor);
 
 	/**
 	 * This method is called on a worker thread and must retrieve all JDO
@@ -58,7 +58,7 @@ public abstract class ActiveJDOObjectController<JDOObjectID, JDOObject>
 	 * @param monitor The monitor.
 	 * @return Returns all those jdo objects that this 
 	 */
-	protected abstract Collection<JDOObject> retrieveJDOObjects(IProgressMonitor monitor);
+	protected abstract Collection<JDOObject> retrieveJDOObjects(ProgressMonitor monitor);
 
 	private ListenerList jdoObjectsChangedListeners = null;
 
@@ -154,7 +154,7 @@ public abstract class ActiveJDOObjectController<JDOObjectID, JDOObject>
 				}
 
 				if (!jdoObjectIDsToLoad.isEmpty()) {
-					Collection<JDOObject> jdoObjects = retrieveJDOObjects(jdoObjectIDsToLoad, getProgressMonitor());
+					Collection<JDOObject> jdoObjects = retrieveJDOObjects(jdoObjectIDsToLoad, getProgressMontitorWrapper());
 					loadedJDOObjects = jdoObjects;
 					ignoredJDOObjectIDs = new HashSet<JDOObjectID>(jdoObjectIDsToLoad);
 					if (jdoObjects != null) {
@@ -224,7 +224,7 @@ public abstract class ActiveJDOObjectController<JDOObjectID, JDOObject>
 				}
 
 				if (!jdoObjectIDsToLoad.isEmpty()) {
-					Collection<JDOObject> jdoObjects = retrieveJDOObjects(jdoObjectIDsToLoad, getProgressMonitor());
+					Collection<JDOObject> jdoObjects = retrieveJDOObjects(jdoObjectIDsToLoad, getProgressMonitorWrapper());
 					ignoredJDOObjectIDs = new HashSet<JDOObjectID>(jdoObjectIDsToLoad);
 					loadedJDOObjects = jdoObjects;
 					for (JDOObject jdoObject : jdoObjects) {
@@ -323,7 +323,7 @@ public abstract class ActiveJDOObjectController<JDOObjectID, JDOObject>
 			return jdoObjects;
 
 		Job job = new Job("Loading Data") {
-			protected IStatus run(IProgressMonitor monitor)
+			protected IStatus run(ProgressMonitor monitor)
 			{
 				final Collection<JDOObject> jdoObjects = retrieveJDOObjects(monitor);
 

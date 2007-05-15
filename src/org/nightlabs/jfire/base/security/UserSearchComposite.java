@@ -7,12 +7,8 @@ import java.util.Set;
 
 import javax.jdo.FetchPlan;
 
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jface.viewers.DoubleClickEvent;
-import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -25,6 +21,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.nightlabs.base.composite.XComposite;
+import org.nightlabs.base.job.Job;
 import org.nightlabs.base.table.AbstractTableComposite;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.login.Login;
@@ -32,8 +29,10 @@ import org.nightlabs.jfire.base.resource.Messages;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.security.UserManager;
 import org.nightlabs.jfire.security.UserManagerUtil;
+import org.nightlabs.jfire.security.dao.UserDAO;
 import org.nightlabs.jfire.security.id.UserID;
 import org.nightlabs.jfire.security.search.UserQuery;
+import org.nightlabs.progress.ProgressMonitor;
 
 /**
  * @author Daniel.Mazurek [at] NightLabs [dot] de
@@ -148,7 +147,7 @@ extends XComposite
 	{		
 		userTable.setInput(Messages.getString("UserSearchComposite.LoadingEvent")); //$NON-NLS-1$
 		Job job = new Job(Messages.getString("UserSearchComposite.LoadingEvent")) { //$NON-NLS-1$
-			protected IStatus run(IProgressMonitor monitor){
+			protected IStatus run(ProgressMonitor monitor){
 				try {
 					UserManager um = UserManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
 					final Collection<UserQuery> queries = new ArrayList<UserQuery>(1);

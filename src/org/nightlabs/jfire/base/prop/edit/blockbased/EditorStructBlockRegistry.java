@@ -33,11 +33,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.nightlabs.jfire.base.prop.StructLocalDAO;
 import org.nightlabs.jfire.prop.IStruct;
 import org.nightlabs.jfire.prop.StructBlock;
 import org.nightlabs.jfire.prop.StructLocal;
+import org.nightlabs.jfire.prop.dao.StructLocalDAO;
 import org.nightlabs.jfire.prop.id.StructBlockID;
+import org.nightlabs.progress.NullProgressMonitor;
 
 /**
  * Temporal registry for PropStructBlocks to be displayed by block-based PropEditors.
@@ -130,7 +131,7 @@ public class EditorStructBlockRegistry
 	public List<StructBlockID> getUnassignedBlockKeyList()
 	{
 		List<StructBlockID> toReturn = new LinkedList<StructBlockID>();
-		IStruct struct = StructLocalDAO.sharedInstance().getStructLocal(linkClass.getName(), structLocalScope);
+		IStruct struct = StructLocalDAO.sharedInstance().getStructLocal(linkClass.getName(), structLocalScope, new NullProgressMonitor());
 		for (StructBlock structBlock : struct.getStructBlocks())
 		{
 			if (!hasEditorCoverage(structBlock))

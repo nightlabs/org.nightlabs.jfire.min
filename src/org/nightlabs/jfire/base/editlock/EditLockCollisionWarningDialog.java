@@ -4,10 +4,8 @@ import java.util.List;
 
 import javax.jdo.FetchPlan;
 
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
@@ -17,9 +15,12 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.nightlabs.base.dialog.CenteredDialog;
+import org.nightlabs.base.job.Job;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.editlock.AcquireEditLockResult;
 import org.nightlabs.jfire.editlock.EditLock;
+import org.nightlabs.jfire.editlock.dao.EditLockDAO;
+import org.nightlabs.progress.ProgressMonitor;
 
 public class EditLockCollisionWarningDialog
 extends CenteredDialog
@@ -70,7 +71,7 @@ extends CenteredDialog
 
 		Job job = new Job("Loading EditLocks") {
 			@Override
-			protected IStatus run(IProgressMonitor monitor)
+			protected IStatus run(ProgressMonitor monitor)
 			{
 				final List<EditLock> editLocks = EditLockDAO.sharedInstance().getEditLocks(
 						acquireEditLockResult.getEditLock().getLockedObjectID(),

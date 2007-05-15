@@ -5,11 +5,9 @@ import java.util.Set;
 
 import javax.jdo.JDOHelper;
 
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
@@ -22,6 +20,7 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.MessageBox;
+import org.nightlabs.base.job.Job;
 import org.nightlabs.base.language.I18nTextEditor;
 import org.nightlabs.base.language.LanguageChooser;
 import org.nightlabs.base.util.RCPUtil;
@@ -29,7 +28,6 @@ import org.nightlabs.base.wizard.DynamicPathWizardDialog;
 import org.nightlabs.base.wizard.DynamicPathWizardPage;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleManager;
 import org.nightlabs.jfire.base.login.Login;
-import org.nightlabs.jfire.base.prop.StructLocalDAO;
 import org.nightlabs.jfire.idgenerator.IDGenerator;
 import org.nightlabs.jfire.jdo.notification.DirtyObjectID;
 import org.nightlabs.jfire.prop.IStruct;
@@ -39,6 +37,7 @@ import org.nightlabs.jfire.prop.PropertyManagerUtil;
 import org.nightlabs.jfire.prop.StructBlock;
 import org.nightlabs.jfire.prop.StructField;
 import org.nightlabs.jfire.prop.StructLocal;
+import org.nightlabs.jfire.prop.dao.StructLocalDAO;
 import org.nightlabs.jfire.prop.exception.IllegalStructureModificationException;
 import org.nightlabs.jfire.prop.exception.PropertyException;
 import org.nightlabs.jfire.prop.id.StructLocalID;
@@ -46,6 +45,7 @@ import org.nightlabs.math.Base36Coder;
 import org.nightlabs.notification.NotificationEvent;
 import org.nightlabs.notification.NotificationListener;
 import org.nightlabs.notification.NotificationListenerCallerThread;
+import org.nightlabs.progress.ProgressMonitor;
 import org.nightlabs.util.Utils;
 import org.nightlabs.util.reflect.ReflectUtil;
 
@@ -172,10 +172,10 @@ public class StructEditor {
 		});
 		new Job("Fetching structure...") {
 			@Override
-			protected IStatus run(IProgressMonitor monitor) {
+			protected IStatus run(final ProgressMonitor monitor) {
 				Display.getDefault().asyncExec(new Runnable() {
 					public void run() {
-						StructLocal struct = StructLocalDAO.sharedInstance().getStructLocal(structLocalID);
+						StructLocal struct = StructLocalDAO.sharedInstance().getStructLocal(structLocalID, monitor);
 						setStruct(struct);
 					}
 				});

@@ -26,13 +26,14 @@
 
 package org.nightlabs.jfire.base.config;
 
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.nightlabs.jfire.base.login.Login;
 import org.nightlabs.jfire.config.ConfigModule;
 import org.nightlabs.jfire.config.UserConfigSetup;
 import org.nightlabs.jfire.config.WorkstationConfigSetup;
+import org.nightlabs.jfire.config.dao.ConfigModuleDAO;
 import org.nightlabs.jfire.security.id.UserID;
 import org.nightlabs.jfire.workstation.id.WorkstationID;
+import org.nightlabs.progress.ProgressMonitor;
 
 /**
  * Provides static convenience methods for retrieving ConfigModules.
@@ -49,7 +50,7 @@ public class ConfigUtil {
 	 * @param fetchGroups The fetch-groups the ConfigModule should be detached with
 	 */
 	public static ConfigModule getUserCfMod(Class cfModClass, String[] fetchGroups, int maxFetchDepth, 
-			IProgressMonitor monitor) {
+			ProgressMonitor monitor) {
 		try {
 			UserID userID = UserID.create(Login.getLogin().getOrganisationID(), Login.getLogin().getUserID());
 			return ConfigModuleDAO.sharedInstance().getConfigModule(
@@ -73,7 +74,7 @@ public class ConfigUtil {
 	 * @param fetchGroups The fetch-groups the ConfigModule should be detached with
 	 */
 	public static ConfigModule getWorkstationCfMod(Class cfModClass, String[] fetchGroups, 
-			int maxFetchDepth, IProgressMonitor monitor) {
+			int maxFetchDepth, ProgressMonitor monitor) {
 		try {
 			WorkstationID workstationID = WorkstationID.create(
 					Login.getLogin().getOrganisationID(), 

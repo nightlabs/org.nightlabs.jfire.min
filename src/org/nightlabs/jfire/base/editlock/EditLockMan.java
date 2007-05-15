@@ -13,10 +13,10 @@ import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.nightlabs.annotation.Implement;
+import org.nightlabs.base.job.Job;
 import org.nightlabs.base.util.RCPUtil;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jdo.ObjectID;
@@ -24,8 +24,10 @@ import org.nightlabs.jfire.editlock.AcquireEditLockResult;
 import org.nightlabs.jfire.editlock.EditLock;
 import org.nightlabs.jfire.editlock.EditLockType;
 import org.nightlabs.jfire.editlock.ReleaseReason;
+import org.nightlabs.jfire.editlock.dao.EditLockDAO;
 import org.nightlabs.jfire.editlock.id.EditLockID;
 import org.nightlabs.jfire.editlock.id.EditLockTypeID;
+import org.nightlabs.progress.ProgressMonitor;
 
 public class EditLockMan
 {
@@ -97,7 +99,7 @@ public class EditLockMan
 			return editLock;
 		}
 
-		private void handleExpiredUserActivityIfNecessary(IProgressMonitor monitor)
+		private void handleExpiredUserActivityIfNecessary(ProgressMonitor monitor)
 		{
 			long now = System.currentTimeMillis();
 			if (now >= expiryUserInactivityTimestamp) {
@@ -138,7 +140,7 @@ public class EditLockMan
 			} // if (now >= expiryUserInactivityTimestamp) {
 		}
 
-		private void reacquireEditLockOnServerIfNecessary(IProgressMonitor monitor)
+		private void reacquireEditLockOnServerIfNecessary(ProgressMonitor monitor)
 		{
 			logger.info("reacquireEditLockOnServerIfNecessary: enter");
 			if (System.currentTimeMillis() >= expiryClientLostTimestamp) { // it's time to refresh the server-side editLock
@@ -153,7 +155,7 @@ public class EditLockMan
 		}
 
 		@Implement
-		protected IStatus run(IProgressMonitor monitor)
+		protected IStatus run(ProgressMonitor monitor)
 		{
 			synchronized (editLockID2Job) {
 				if (editLockID2Job.get(editLockID) != this) {
@@ -328,7 +330,7 @@ public class EditLockMan
 	{
 		Job job = new Job("Release EditLock") {
 			@Implement
-			protected IStatus run(IProgressMonitor monitor)
+			protected IStatus run(ProgressMonitor monitor)
 			{
 				releaseEditLocks(objectIDs, releaseReason, monitor);
 				return Status.OK_STATUS;
@@ -357,14 +359,14 @@ public class EditLockMan
 	 * @param objectID The ID of the JDO object which has been locked.
 	 * @see #releaseEditLock(ObjectID)
 	 */
-	public void releaseEditLock(ObjectID objectID, IProgressMonitor monitor)
+	public void releaseEditLock(ObjectID objectID, ProgressMonitor monitor)
 	{
 		ArrayList<ObjectID> objectIDs = new ArrayList<ObjectID>(1);
 		objectIDs.add(objectID);
 		releaseEditLocks(objectIDs, ReleaseReason.normal, monitor);
 	}
 
-	private void releaseEditLocks(List<ObjectID> objectIDs, ReleaseReason releaseReason, IProgressMonitor monitor)
+	private void releaseEditLocks(List<ObjectID> objectIDs, ReleaseReason releaseReason, ProgressMonitor monitor)
 	{
 		for (ObjectID objectID : objectIDs) {
 			EditLockCarrier editLockCarrier;

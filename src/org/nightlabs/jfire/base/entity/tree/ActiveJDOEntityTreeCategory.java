@@ -5,7 +5,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
@@ -15,6 +14,7 @@ import org.nightlabs.base.tree.TreeContentProvider;
 import org.nightlabs.jfire.base.jdo.ActiveJDOObjectController;
 import org.nightlabs.jfire.base.jdo.JDOObjectsChangedEvent;
 import org.nightlabs.jfire.jdo.notification.IJDOLifecycleListenerFilter;
+import org.nightlabs.progress.ProgressMonitor;
 
 public abstract class ActiveJDOEntityTreeCategory<JDOObjectID, JDOObject>
 extends EntityTreeCategory
@@ -56,12 +56,12 @@ extends EntityTreeCategory
 			fireEntityTreeCategoryChange();
 		}
 
-		protected Collection<JDOObject> retrieveJDOObjects(Set<JDOObjectID> objectIDs, IProgressMonitor monitor)
+		protected Collection<JDOObject> retrieveJDOObjects(Set<JDOObjectID> objectIDs, ProgressMonitor monitor)
 		{
 			return ActiveJDOEntityTreeCategory.this.retrieveJDOObjects(objectIDs, monitor);
 		}
 
-		protected Collection<JDOObject> retrieveJDOObjects(IProgressMonitor monitor)
+		protected Collection<JDOObject> retrieveJDOObjects(ProgressMonitor monitor)
 		{
 			return ActiveJDOEntityTreeCategory.this.retrieveJDOObjects(monitor);
 		}
@@ -97,11 +97,11 @@ extends EntityTreeCategory
 	/**
 	 * @see ActiveJDOObjectController#retrieveJDOObjects(Set<JDOObjectID> objectIDs, IProgressMonitor monitor)
 	 */
-	protected abstract Collection<JDOObject> retrieveJDOObjects(Set<JDOObjectID> objectIDs, IProgressMonitor monitor);
+	protected abstract Collection<JDOObject> retrieveJDOObjects(Set<JDOObjectID> objectIDs, ProgressMonitor monitor);
 	/**
-	 * @see ActiveJDOObjectController#retrieveJDOObjects(IProgressMonitor monitor)
+	 * @see ActiveJDOObjectController#retrieveJDOObjects(ProgressMonitor monitor)
 	 */
-	protected abstract Collection<JDOObject> retrieveJDOObjects(IProgressMonitor monitor);
+	protected abstract Collection<JDOObject> retrieveJDOObjects(ProgressMonitor monitor);
 	/**
 	 * @see ActiveJDOObjectController#sortJDOObjects(List<JDOObject> objects)
 	 */
