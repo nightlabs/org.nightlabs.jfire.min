@@ -114,7 +114,33 @@ implements CategoryFactory
 	}
 	
 	public Category createCategory() {
+		// FIXME: Daniel, I've added missing methods here, maybe you forgot to checkin ?!?
 		return new Category() {
+
+			public String getCategoryID() {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			public Image getImage() {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			public int getIndex() {
+				// TODO Auto-generated method stub
+				return 0;
+			}
+
+			public String getName() {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			public void setInitializationData(IConfigurationElement config, String propertyName, Object data) throws CoreException {
+				// TODO Auto-generated method stub
+				
+			}
 		
 		};
 	}
