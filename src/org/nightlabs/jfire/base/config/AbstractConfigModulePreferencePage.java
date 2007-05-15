@@ -691,11 +691,13 @@ implements IWorkbenchPreferencePage
 		}
 		if (isConfigChanged()) {
 			if (Thread.currentThread() != Display.getDefault().getThread()) {
-				Display.getDefault().asyncExec( new Runnable() {
+				Display.getDefault().syncExec( new Runnable() {
 					public void run() {
 						updateCurrentCfMod();				
 					}
 				});				
+			} else {
+				updateCurrentCfMod(); 
 			} // if (Thread.currentThread() != Display.getDefault().getThread())
 		}
 		else 
