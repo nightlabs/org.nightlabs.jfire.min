@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE nightlybuild PUBLIC "-//NightLabs//DTD NightlyBuild V 0.10//EN" "http://www.nightlabs.de/dtd/nightlybuild_0_10.dtd">
 <nightlybuild>
-  <project name="JFireClientLib">
-    <ant path="JFireClientLib" file="build-nightlabs.xml" target="dist" />
+  <project name="JFireBaseClientLib">
+    <ant path="JFireBaseClientLib" file="build-nightlabs.xml" target="dist" />
     <provides />
     <requires />
-    <publishes location="JFireClientLib/dist/JFireClientLib.jar" />
-    <javadoc path="JFireClientLib/src" />
+    <publishes location="JFireBaseClientLib/dist/JFireBaseClientLib.jar" />
+    <javadoc path="JFireBaseClientLib/src" />
     <!-- <javadoc path="JFireFooBar/ejbsrc" />  -->
   </project>
 </nightlybuild>
