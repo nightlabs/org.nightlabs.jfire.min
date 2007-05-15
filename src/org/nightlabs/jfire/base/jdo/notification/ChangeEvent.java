@@ -33,6 +33,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import javax.security.auth.login.LoginException;
+
 import org.nightlabs.jfire.base.jdo.login.JFireLoginProvider;
 import org.nightlabs.notification.NotificationEvent;
 import org.nightlabs.notification.SubjectCarrier;
@@ -196,9 +198,15 @@ public class ChangeEvent extends NotificationEvent
 				if (sourceSessionIDs.size() > 1)
 					return true;
 
-				// TODO shouldn't we somehow make sure the listeners don't get unsubscribed by the cache, if we return false here?! 
+				// TODO shouldn't we somehow make sure the listeners don't get unsubscribed by the cache, if we return false here?!
+				String sessionID = null;
+				try {
+					sessionID = JFireLoginProvider.sharedInstance().getSessionID();
+				} catch (LoginException e) {
+					throw new RuntimeException(e);
+				}
 				return
-				  !sourceSessionIDs.contains(JFireLoginProvider.sharedInstance().getSessionID()) ||
+				  !sourceSessionIDs.contains(sessionID) ||
 					csc.getCreateTimestamp() - lastChangeTimestamp.getTime() > HANDLING_DEACTIVATION_PERIOD_MSEC;
 			}
 			else
