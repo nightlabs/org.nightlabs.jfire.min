@@ -331,6 +331,13 @@
             editorFactoryClass="org.nightlabs.jfire.base.prop.structedit.DefaultStructFieldEditor$DefaultStructFieldEditorFactory"
             factoryClass="org.nightlabs.jfire.base.prop.structedit.PhoneNumberStructFieldFactory"
             name="Phone number field"/>
+      <propStructField
+            class="org.nightlabs.jfire.prop.structfield.I18nTextStructField"
+            description="Field for multilingual textual input"
+            editorFactoryClass="org.nightlabs.jfire.base.prop.structedit.I18nTextStructFieldEditor$I18nTextStructFieldEditorFactory"
+            factoryClass="org.nightlabs.jfire.base.prop.structedit.I18nTextStructFieldFactory"
+            name="I18n Text field"/>
+            
    </extension>
  	<extension
        id="org.nightlabs.jfire.person.edit.blockbased.special.PersonalDataBlockEditor"
@@ -371,6 +378,9 @@
             class="org.nightlabs.jfire.base.prop.edit.blockbased.PhoneNumberDataFieldEditor$PhoneNumberDataFieldEditorFactory"
             targetType="org.nightlabs.jfire.prop.datafield.PhoneNumberDataField">
       </propDataFieldEditorFactory>
+      <propDataFieldEditorFactory
+            class="org.nightlabs.jfire.base.prop.edit.blockbased.I18nTextDataFieldEditor$Factory"
+            targetType="org.nightlabs.jfire.prop.datafield.I18nTextDataField"/>            
    </extension>
    <extension
          point="org.nightlabs.base.login">
