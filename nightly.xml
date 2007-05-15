@@ -5,7 +5,7 @@
     <ant path="JFireClientLib" file="build-nightlabs.xml" target="dist" />
     <provides />
     <requires />
-    <publishes location="JFireClientLib/dist/JFireFooBar.jar" />
+    <publishes location="JFireClientLib/dist/JFireClientLib.jar" />
     <javadoc path="JFireClientLib/src" />
     <!-- <javadoc path="JFireFooBar/ejbsrc" />  -->
   </project>
