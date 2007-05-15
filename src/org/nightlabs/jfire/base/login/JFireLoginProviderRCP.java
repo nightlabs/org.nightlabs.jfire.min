@@ -7,7 +7,6 @@ import java.util.Properties;
 
 import javax.security.auth.login.LoginException;
 
-import org.apache.log4j.Logger;
 import org.nightlabs.jfire.base.jdo.login.IJFireLoginProvider;
 
 /**
@@ -15,8 +14,6 @@ import org.nightlabs.jfire.base.jdo.login.IJFireLoginProvider;
  *
  */
 public class JFireLoginProviderRCP implements IJFireLoginProvider {
-	
-	private static Logger logger = Logger.getLogger(JFireLoginProviderRCP.class);
 
 	/**
 	 * 
@@ -27,22 +24,22 @@ public class JFireLoginProviderRCP implements IJFireLoginProvider {
 	/* (non-Javadoc)
 	 * @see org.nightlabs.jfire.base.jdo.login.IJFireLoginProvider#getInitialContextProperties()
 	 */
-	public Properties getInitialContextProperties() {
-		try {
-			return Login.getLogin().getInitialContextProperties();
-		} catch (LoginException e) {
-			throw new RuntimeException(e);
-		}
+	public Properties getInitialContextProperties() throws LoginException {
+		return Login.getLogin().getInitialContextProperties();
 	}
 
 	/* (non-Javadoc)
 	 * @see org.nightlabs.jfire.base.jdo.login.IJFireLoginProvider#getSessionID()
 	 */
-	public String getSessionID() {
-		try {
-			return Login.getLogin().getSessionID();
-		} catch (LoginException e) {
-			throw new RuntimeException(e);
-		}
+	public String getSessionID() throws LoginException {
+		return Login.getLogin().getSessionID();
+	}
+
+	public String getOrganisationID() throws LoginException {
+		return Login.getLogin().getOrganisationID();
+	}
+
+	public String getUserID() throws LoginException {
+		return Login.getLogin().getUserID();
 	}
 }
