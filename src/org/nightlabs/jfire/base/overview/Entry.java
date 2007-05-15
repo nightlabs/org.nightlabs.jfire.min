@@ -1,17 +1,16 @@
 package org.nightlabs.jfire.base.overview;
 
-import org.eclipse.core.runtime.IExecutableExtension;
-import org.eclipse.swt.graphics.Image;
-import org.nightlabs.i18n.I18nText;
+import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.viewers.ISelectionProvider;
+import org.eclipse.swt.widgets.Composite;
 
 /**
- * Represents an entry of an category in the overview perspective
- * 
+ * The Controller Object which is responsible for the handling of an Entry
+ *  
  * @author Daniel.Mazurek [at] NightLabs [dot] de
  *
  */
 public interface Entry 
-extends IExecutableExtension
 {
 	/**
 	 * opens the entry
@@ -22,39 +21,39 @@ extends IExecutableExtension
 	void openEntry();
 	
 	/**
-	 * returns the {@link EntryViewController} for the entry
-	 * 
-	 * @return the {@link EntryViewController} for the entry
+	 * returns the Composite created by the controller
+	 * @return the Composite created by the controller
 	 */
-	EntryViewController createEntryViewController();
+	Composite createComposite(Composite parent);
 	
 	/**
-	 * returns the multilanguage capable name as {@link I18nText}
-	 * @return the multilanguage capable name
+	 * returns the id of the {@link Entry}
+	 * @return the id of the {@link Entry}
 	 */
-	String getName();
+	String getID();
+	
+	/**
+	 * returns the optional menuManager, may be null
+	 * @return the optional menuManager
+	 */
+	MenuManager getMenuManager();
+	
+	/**
+	 * returns the optional SelectionProvider, may be null
+	 * @return the optional SelectionProvider 
+	 */
+	ISelectionProvider getSelectionProvider();
 	
 //	/**
-//	 * sets the the multilanguage capable name as {@link I18nText}
-//	 * @param name the {@link I18nText} to set
+//	 * returns the toolBarManager, may be null
+//	 * @return the toolBarManager
 //	 */
-//	void setName(I18nText name);
-	
-	/**
-	 * returns the Image for the entry
-	 * @return the Image for the entry
-	 */
-	Image getImage();
-	
+//	ToolBarManager getToolBarManager();
+//
 //	/**
-//	 * sets the image
-//	 * @param image the image to set
+//	 * returns the coolBarManager, may be null
+//	 * @return the coolBarManager
 //	 */
-//	void setImage(Image image);
+//	CoolBarManager getCoolBarManager();
 	
-	/**
-	 * returns the index of the entry
-	 * @return the index of the entry
-	 */
-	int getIndex();
 }

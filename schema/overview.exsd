@@ -124,7 +124,7 @@
                   An implementation of the interface org.nightlabs.jfire.base.overview.Entry
                </documentation>
                <appInfo>
-                  <meta.attribute kind="java" basedOn="org.nightlabs.jfire.base.overview.Entry"/>
+                  <meta.attribute kind="java" basedOn="org.nightlabs.jfire.base.overview.EntryFactory"/>
                </appInfo>
             </annotation>
          </attribute>

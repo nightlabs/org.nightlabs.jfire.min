@@ -55,23 +55,23 @@ extends LSDEditorPart
 		setInput(input);
 		if (input instanceof OverviewEntryEditorInput) {
 			OverviewEntryEditorInput entryInput = (OverviewEntryEditorInput) input;
-			entryViewController = entryInput.getEntryViewController();
+			entry = entryInput.getEntryViewController();
 		}
 		getSite().getPage().addPartListener(partListener);			
 	}
 	
-	private EntryViewController entryViewController;
-	public EntryViewController getEntryViewController() {
-		return entryViewController;
+	private Entry entry;
+	public Entry getEntryViewController() {
+		return entry;
 	}
 	
 	private Composite composite;
 	public void createPartContents(Composite parent) 
 	{
-		if (entryViewController != null) {
-			composite = entryViewController.createComposite(parent);
-			if (entryViewController.getSelectionProvider() != null)
-				getSite().setSelectionProvider(entryViewController.getSelectionProvider());
+		if (entry != null) {
+			composite = entry.createComposite(parent);
+			if (entry.getSelectionProvider() != null)
+				getSite().setSelectionProvider(entry.getSelectionProvider());
 			
 			updateContextMenu();
 		}		
@@ -87,8 +87,8 @@ extends LSDEditorPart
 	{
 		EditorActionBarContributor actionBarContributor = 
 			(EditorActionBarContributor) getEditorSite().getActionBarContributor();
-		if (actionBarContributor != null && entryViewController != null) {
-			MenuManager menuManager = entryViewController.getMenuManager();
+		if (actionBarContributor != null && entry != null) {
+			MenuManager menuManager = entry.getMenuManager();
 			if (menuManager != null) {
 				if (actionBarContributor instanceof XEditorActionBarContributor) {
 					XEditorActionBarContributor xEditorActionBarContributor = (XEditorActionBarContributor) actionBarContributor;
@@ -106,8 +106,8 @@ extends LSDEditorPart
 	{
 		EditorActionBarContributor actionBarContributor = 
 			(EditorActionBarContributor) getEditorSite().getActionBarContributor();
-		if (actionBarContributor != null && entryViewController != null) {
-			MenuManager menuManager = entryViewController.getMenuManager();
+		if (actionBarContributor != null && entry != null) {
+			MenuManager menuManager = entry.getMenuManager();
 			if (menuManager != null) {
 				menuManager.removeAll();
 				menuManager.updateAll(true);
@@ -141,7 +141,7 @@ extends LSDEditorPart
 	
 	protected void editorDisposed() {
 		getSite().getPage().removePartListener(partListener);
-		if (entryViewController != null)
-			getSite().setSelectionProvider(entryViewController.getSelectionProvider());		
+		if (entry != null)
+			getSite().setSelectionProvider(entry.getSelectionProvider());		
 	}
 }

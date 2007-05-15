@@ -67,21 +67,15 @@ extends XComposite
 		
 		shelf.setLayoutData(new GridData(GridData.FILL_BOTH));
 		
-		for (Category category : OverviewRegistry.sharedInstance().getCategories()) 
+		for (CategoryFactory categoryFactory : OverviewRegistry.sharedInstance().getCategories()) 
 		{
 	    PShelfItem categoryItem = new PShelfItem(shelf,SWT.NONE);
-	    categoryItem.setText(category.getName());
-	    categoryItem.setImage(category.getImage());
+	    categoryItem.setData(categoryFactory.createCategory());
+	    categoryItem.setText(categoryFactory.getName());
+	    categoryItem.setImage(categoryFactory.getImage());
 	    categoryItem.getBody().setLayout(new FillLayout());
-	    
-//	    ListComposite<Entry> listComp = new ListComposite<Entry>(
-//	    		categoryItem.getBody(), SWT.NONE, listLabelProvider);
-//	    listComp.setInput(OverviewRegistry.sharedInstance().getEntries(category));
-//	    listComp.addSelectionChangedListener(selectionListener);
-//	    ListViewer viewer = new ListViewer(listComp.getList());
-//	    viewer.addDoubleClickListener(doubleClickListener);
-	    
-	    AbstractTableComposite<Entry> tableComp = new AbstractTableComposite<Entry>(
+	    	    
+	    AbstractTableComposite<EntryFactory> tableComp = new AbstractTableComposite<EntryFactory>(
 	    		categoryItem.getBody(), SWT.NONE)
 	    {
 				@Override
@@ -103,7 +97,7 @@ extends XComposite
 	    tableViewer.getTable().setHeaderVisible(false);
 	    tableViewer.getTable().setLinesVisible(false);
 	    tableViewer.getTable().setLayout(new WeightedTableLayout(new int[] {1, 1}, new int[] {20, -1}));
-	    tableViewer.setInput(OverviewRegistry.sharedInstance().getEntries(category));	    
+	    tableViewer.setInput(OverviewRegistry.sharedInstance().getEntries(categoryFactory));	    
 		};
 	}
 	
@@ -111,8 +105,9 @@ extends XComposite
 		public void selectionChanged(SelectionChangedEvent event) {
 			if (!event.getSelection().isEmpty() && event.getSelection() instanceof StructuredSelection) {
 				StructuredSelection sel = (StructuredSelection) event.getSelection();
-				Entry entry = (Entry) sel.getFirstElement();
-				entry.openEntry();
+				EntryFactory entryFactory = (EntryFactory) sel.getFirstElement();
+//				entryFactory.openEntry();
+				entryFactory.createEntry().openEntry();
 			}
 		}	
 	};
@@ -121,8 +116,9 @@ extends XComposite
 		public void doubleClick(DoubleClickEvent event) {
 			if (!event.getSelection().isEmpty() && event.getSelection() instanceof StructuredSelection) {
 				StructuredSelection sel = (StructuredSelection) event.getSelection();
-				Entry entry = (Entry) sel.getFirstElement();
-				entry.openEntry();
+				EntryFactory entryFactory = (EntryFactory) sel.getFirstElement();
+//				entryFactory.openEntry();
+				entryFactory.createEntry().openEntry();
 			}
 		}	
 	};
@@ -132,7 +128,7 @@ extends XComposite
 		public Object[] getElements(Object inputElement) 
 		{
 			if (inputElement instanceof List) {
-				return ((List<Entry>) inputElement).toArray();
+				return ((List<EntryFactory>) inputElement).toArray();
 			}
 			return null;
 		}	
@@ -143,8 +139,8 @@ extends XComposite
 		public String getColumnText(Object element, int columnIndex) 
 		{
 			if (columnIndex == 1) {
-				Entry entry = (Entry) element;
-				return entry.getName();				
+				EntryFactory entryFactory = (EntryFactory) element;
+				return entryFactory.getName();				
 			}
 			return null;
 		}
@@ -152,8 +148,8 @@ extends XComposite
 		public Image getColumnImage(Object element, int columnIndex) 
 		{
 			if (columnIndex == 0) {
-				Entry entry = (Entry) element;
-				return entry.getImage();				
+				EntryFactory entryFactory = (EntryFactory) element;
+				return entryFactory.getImage();				
 			}			
 			return null;
 		}	
@@ -163,13 +159,13 @@ extends XComposite
 //	{	
 //		public String getText(Object element) 
 //		{
-//			Entry entry = (Entry) element;
+//			EntryFactory entry = (EntryFactory) element;
 //			return entry.getName().getText();				
 //		}
 //	
 //		public Image getImage(Object element) 
 //		{
-//			Entry entry = (Entry) element;
+//			EntryFactory entry = (EntryFactory) element;
 //			return entry.getImage();				
 //		}	
 //	};	

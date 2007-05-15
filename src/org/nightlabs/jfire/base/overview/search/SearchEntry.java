@@ -13,16 +13,16 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.nightlabs.base.composite.XComposite;
 import org.nightlabs.base.table.AbstractTableComposite;
-import org.nightlabs.jfire.base.overview.EntryViewController;
+import org.nightlabs.jfire.base.overview.Entry;
 
 /**
  * @author Daniel.Mazurek [at] NightLabs [dot] de
  *
  */
-public abstract class SearchEntryViewController
-implements EntryViewController 
+public abstract class SearchEntry
+implements Entry 
 {	
-	public SearchEntryViewController() {
+	public SearchEntry() {
 		super();
 	}
 	
@@ -74,10 +74,10 @@ implements EntryViewController
 		if (obj == null)
 			return false;
 		
-		if (!(obj instanceof EntryViewController))
+		if (!(obj instanceof Entry))
 				return false;
 		
-		EntryViewController controller = (EntryViewController) obj;
+		Entry controller = (Entry) obj;
 		if (controller.getID().equals(getID()))
 				return true;
 		

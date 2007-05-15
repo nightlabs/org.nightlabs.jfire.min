@@ -10,15 +10,15 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
  * @author Daniel.Mazurek [at] NightLabs [dot] de
  *
  */
-public abstract class AbstractEntry 
-implements Entry 
+public abstract class AbstractEntryFactory 
+implements EntryFactory 
 {
 	public static final String ELEMENT_CATEGORY_ENTRY = "categoryEntry";
 	public static final String ATTRIBUTE_NAME = "name";
 	public static final String ATTRIBUTE_ICON = "icon";
 	public static final String ATTRIBUTE_INDEX = "index";
 	
-	public AbstractEntry() {		
+	public AbstractEntryFactory() {		
 	}
 
 	private Image image;

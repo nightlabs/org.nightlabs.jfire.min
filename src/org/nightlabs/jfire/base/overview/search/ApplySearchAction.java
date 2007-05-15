@@ -16,14 +16,14 @@ public class ApplySearchAction
 extends WorkbenchPartAction
 {
 	public static final String ID = ApplySearchAction.class.getName(); 
-	private SearchEntryViewController searchController;
+	private SearchEntry searchController;
 
 	public ApplySearchAction() {
 		super();
 		init();
 	}	
 	
-	public ApplySearchAction(SearchEntryViewController searchController) {
+	public ApplySearchAction(SearchEntry searchController) {
 		super();
 		init();
 		this.searchController = searchController;
@@ -55,8 +55,8 @@ extends WorkbenchPartAction
 		super.setActivePart(part);
 		if (part instanceof OverviewEntryEditor) {
 			OverviewEntryEditor editor = (OverviewEntryEditor) part;
-			if (editor.getEntryViewController() instanceof SearchEntryViewController) {
-				this.searchController = (SearchEntryViewController) editor.getEntryViewController();
+			if (editor.getEntryViewController() instanceof SearchEntry) {
+				this.searchController = (SearchEntry) editor.getEntryViewController();
 			}
 		}
 	}

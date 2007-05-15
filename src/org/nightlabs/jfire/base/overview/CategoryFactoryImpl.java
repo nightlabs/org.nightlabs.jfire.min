@@ -11,8 +11,8 @@ import org.nightlabs.base.extensionpoint.AbstractEPProcessor;
  * @author Daniel.Mazurek [at] NightLabs [dot] de
  *
  */
-public class CategoryImpl 
-implements Category 
+public class CategoryFactoryImpl 
+implements CategoryFactory 
 {
 	public static final String ELEMENT_CATEGORY = "category";
 	public static final String ATTRIBUTE_NAME = "name";
@@ -100,7 +100,7 @@ implements Category
 			} catch (NumberFormatException e) {
 				// Do nothing if index not valid
 			}
-			CategoryImpl category = new CategoryImpl();
+			CategoryFactoryImpl category = new CategoryFactoryImpl();
 			category.setName(name);
 			category.setCategoryID(categoryID);
 			category.setIndex(index);
@@ -112,6 +112,13 @@ implements Category
 			}										
 		}
 	}
+	
+	public Category createCategory() {
+		return new Category() {
+		
+		};
+	}
+	
 	
 }
 

@@ -16,11 +16,11 @@ import org.nightlabs.jdo.query.JDOQuery;
  * @author Daniel.Mazurek [at] NightLabs [dot] de
  *
  */
-public abstract class BaseSearchEntryViewController 
-extends SearchEntryViewController 
+public abstract class BaseSearchEntry 
+extends SearchEntry 
 {
 
-	public BaseSearchEntryViewController() {
+	public BaseSearchEntry() {
 		super();
 	}
 

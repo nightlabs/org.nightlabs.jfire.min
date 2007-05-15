@@ -63,7 +63,7 @@ extends AbstractEPProcessor
 			String name = element.getAttribute(ATTRIBUTE_NAME);
 			String iconString = element.getAttribute(ATTRIBUTE_ICON);
 			String indexString = element.getAttribute(ATTRIBUTE_INDEX);
-			CategoryImpl category = new CategoryImpl();
+			CategoryFactoryImpl category = new CategoryFactoryImpl();
 			category.setName(name);
 			category.setCategoryID(categoryID);
 			if (checkString(iconString)) {
@@ -84,7 +84,7 @@ extends AbstractEPProcessor
 //			String name = element.getAttribute(ATTRIBUTE_NAME);
 //			String iconString = element.getAttribute(ATTRIBUTE_ICON);
 			try {
-				Entry entry = (Entry) element.createExecutableExtension(ATTRIBUTE_ENTRY);
+				EntryFactory entryFactory = (EntryFactory) element.createExecutableExtension(ATTRIBUTE_ENTRY);
 //				entry.setName(name);
 //				if (checkString(iconString)) {
 //					ImageDescriptor imageDescriptor = AbstractUIPlugin.imageDescriptorFromPlugin(
@@ -92,42 +92,42 @@ extends AbstractEPProcessor
 //					if (imageDescriptor != null)
 //						entry.setImage(imageDescriptor.createImage());										
 //				}				
-				List<Entry> entries = categoryID2Entries.get(categoryID);
-				if (entries == null)
-					entries = new ArrayList<Entry>();
+				List<EntryFactory> entryFactories = categoryID2Entries.get(categoryID);
+				if (entryFactories == null)
+					entryFactories = new ArrayList<EntryFactory>();
 								
 				try {
-					if (entry.getIndex() == -1 || entries.get(entry.getIndex()) != null) {
-						if (entry instanceof AbstractEntry) {
-							int index = entries.size();
-							AbstractEntry abstractEntry = (AbstractEntry) entry;
-							abstractEntry.setIndex(index);
+					if (entryFactory.getIndex() == -1 || entryFactories.get(entryFactory.getIndex()) != null) {
+						if (entryFactory instanceof AbstractEntryFactory) {
+							int index = entryFactories.size();
+							AbstractEntryFactory abstractEntryFactory = (AbstractEntryFactory) entryFactory;
+							abstractEntryFactory.setIndex(index);
 						}											
 					}					
 				} catch (IndexOutOfBoundsException e) {
-					if (entry instanceof AbstractEntry) {
-						int index = entries.size();
-						AbstractEntry abstractEntry = (AbstractEntry) entry;
-						abstractEntry.setIndex(index);
+					if (entryFactory instanceof AbstractEntryFactory) {
+						int index = entryFactories.size();
+						AbstractEntryFactory abstractEntryFactory = (AbstractEntryFactory) entryFactory;
+						abstractEntryFactory.setIndex(index);
 					}										
 				}
 				
-				entries.add(entry.getIndex(), entry);				
-				categoryID2Entries.put(categoryID, entries);
+				entryFactories.add(entryFactory.getIndex(), entryFactory);				
+				categoryID2Entries.put(categoryID, entryFactories);
 			} catch (CoreException e) {
 				throw new EPProcessorException(e);
 			}
 		}
 	}
 
-	private Map<String, Category> categoryID2Category = new HashMap<String, Category>();	
-	private Map<String, List<Entry>> categoryID2Entries = new HashMap<String, List<Entry>>();
-	private SortedMap<Category, List<Entry>> category2Entries = null;
-	private Category fallBackCategory = null;
+	private Map<String, CategoryFactory> categoryID2Category = new HashMap<String, CategoryFactory>();	
+	private Map<String, List<EntryFactory>> categoryID2Entries = new HashMap<String, List<EntryFactory>>();
+	private SortedMap<CategoryFactory, List<EntryFactory>> category2Entries = null;
+	private CategoryFactory fallBackCategory = null;
 	
-	public Category getFallbackCategory() {
+	public CategoryFactory getFallbackCategory() {
 		if (fallBackCategory == null) {
-			CategoryImpl fallBackCategory = new CategoryImpl();
+			CategoryFactoryImpl fallBackCategory = new CategoryFactoryImpl();
 			fallBackCategory.setName("Other");
 			this.fallBackCategory = fallBackCategory;
 		}
@@ -137,30 +137,30 @@ extends AbstractEPProcessor
 	protected void check() {
 		if (category2Entries == null) {
 			checkProcessing();
-			category2Entries = new TreeMap<Category, List<Entry>>(categoryComparator);
-			for (Map.Entry<String, List<Entry>> mapEntry : categoryID2Entries.entrySet()) {
-				Category category = categoryID2Category.get(mapEntry.getKey());
-				List<Entry> entries = mapEntry.getValue();
-				if (category == null)
-					category = getFallbackCategory();
+			category2Entries = new TreeMap<CategoryFactory, List<EntryFactory>>(categoryComparator);
+			for (Map.Entry<String, List<EntryFactory>> mapEntry : categoryID2Entries.entrySet()) {
+				CategoryFactory categoryFactory = categoryID2Category.get(mapEntry.getKey());
+				List<EntryFactory> entryFactories = mapEntry.getValue();
+				if (categoryFactory == null)
+					categoryFactory = getFallbackCategory();
 				
-				category2Entries.put(category, entries);				
+				category2Entries.put(categoryFactory, entryFactories);				
 			}			
 		}
 	}
 	
-	public List<Entry> getEntries(Category category) {
+	public List<EntryFactory> getEntries(CategoryFactory categoryFactory) {
 		check();
-		return category2Entries.get(category);
+		return category2Entries.get(categoryFactory);
 	}
 	
-	public Collection<Category> getCategories() {
+	public Collection<CategoryFactory> getCategories() {
 		check();
 		return category2Entries.keySet();
 	}
 	
-	private Comparator<Category> categoryComparator = new Comparator<Category>(){	
-		public int compare(Category c1, Category c2) {
+	private Comparator<CategoryFactory> categoryComparator = new Comparator<CategoryFactory>(){	
+		public int compare(CategoryFactory c1, CategoryFactory c2) {
 			return c1.getIndex() - c2.getIndex();
 		}	
 	};

@@ -11,13 +11,13 @@ public class OverviewEntryEditorInput
 extends NullEditorInput
 {
 
-	public OverviewEntryEditorInput(EntryViewController entryViewController) {
-		this.entryViewController = entryViewController;
+	public OverviewEntryEditorInput(Entry entry) {
+		this.entry = entry;
 	}
 
-	private EntryViewController entryViewController;
-	public EntryViewController getEntryViewController() {
-		return entryViewController;
+	private Entry entry;
+	public Entry getEntryViewController() {
+		return entry;
 	}
 	
 	@Override
@@ -30,7 +30,7 @@ extends NullEditorInput
 			return false;
 	
 		OverviewEntryEditorInput input = (OverviewEntryEditorInput) obj;
-		if (entryViewController.equals(input.getEntryViewController()))
+		if (entry.equals(input.getEntryViewController()))
 			return true;
 		
 		return false;
