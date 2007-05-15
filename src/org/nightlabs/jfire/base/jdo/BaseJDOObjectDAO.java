@@ -38,7 +38,9 @@ import java.util.Set;
 import javax.jdo.JDOHelper;
 
 import org.nightlabs.jdo.NLJDOHelper;
+import org.nightlabs.jdo.ObjectID;
 import org.nightlabs.jfire.base.jdo.cache.Cache;
+import org.nightlabs.progress.ProgressMonitor;
 import org.nightlabs.util.CollectionUtil;
 
 /**
@@ -50,8 +52,12 @@ import org.nightlabs.util.CollectionUtil;
  * 
  * @author Marco Schulze - marco at nightlabs dot de
  * @author Marc Klinger - marc[at]nightlabs[dot]de
+ * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] de -->
+ *
+ * @param <JDOObjectID> The type of {@link ObjectID} of the JDO object this DAO can provide
+ * @param <JDOObject> The type of JDO object this DAO can provide
  */
-public abstract class BaseJDOObjectDAO<JDOObjectID, JDOObject, MonitorType>
+public abstract class BaseJDOObjectDAO<JDOObjectID, JDOObject>
 {
 	/**
 	 * The cache shared instance.
@@ -83,7 +89,7 @@ public abstract class BaseJDOObjectDAO<JDOObjectID, JDOObject, MonitorType>
 	 * @return All requested and existing JDO objects.
 	 * @throws Exception in case of an error
 	 */
-	protected JDOObject retrieveJDOObject(JDOObjectID objectID, String[] fetchGroups, int maxFetchDepth, MonitorType monitor)
+	protected JDOObject retrieveJDOObject(JDOObjectID objectID, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
 	throws Exception
 	{
 		Set<JDOObjectID> objectIDs = new HashSet<JDOObjectID>(1);
@@ -107,7 +113,7 @@ public abstract class BaseJDOObjectDAO<JDOObjectID, JDOObject, MonitorType>
 	 * @return All requested and existing JDO objects.
 	 * @throws Exception in case of an error
 	 */
-	protected abstract Collection<JDOObject> retrieveJDOObjects(Set<JDOObjectID> objectIDs, String[] fetchGroups, int maxFetchDepth, MonitorType monitor)
+	protected abstract Collection<JDOObject> retrieveJDOObjects(Set<JDOObjectID> objectIDs, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
 	throws Exception;
 
 	/**
@@ -126,7 +132,7 @@ public abstract class BaseJDOObjectDAO<JDOObjectID, JDOObject, MonitorType>
 	 * @throws Exception in case of an error
 	 */
 	@SuppressWarnings("unchecked")
-	protected synchronized JDOObject getJDOObject(String scope, JDOObjectID objectID, String[] fetchGroups, int maxFetchDepth, MonitorType monitor)
+	protected synchronized JDOObject getJDOObject(String scope, JDOObjectID objectID, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
 	{
 		try {
 			JDOObject res = (JDOObject)cache.get(scope, objectID, fetchGroups, maxFetchDepth);
@@ -160,18 +166,18 @@ public abstract class BaseJDOObjectDAO<JDOObjectID, JDOObject, MonitorType>
 	 * @throws Exception in case of an error
 	 */
 	@SuppressWarnings("unchecked")
-	protected synchronized List<JDOObject> getJDOObjects(String scope, Collection<JDOObjectID> objectIDs, String[] fetchGroups, int maxFetchDepth, MonitorType monitor)
+	protected synchronized List<JDOObject> getJDOObjects(String scope, Collection<JDOObjectID> objectIDs, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
 	{
 		if (objectIDs == null || objectIDs.isEmpty())
 			return new ArrayList<JDOObject>(1);
 		
 		ArrayList<JDOObject> objects = new ArrayList<JDOObject>(objectIDs.size());
 		if (objectIDs.isEmpty()) {
-			monitorDone(monitor);
+			monitor.done();
 			return objects;
 		}
 			
-		monitorBeginTask(monitor, "Getting "+objectIDs.size()+" Objects through Cache", objectIDs.size());
+		monitor.beginTask("Getting "+objectIDs.size()+" Objects through Cache", objectIDs.size());
 //		List<JDOObject> fromCache = new ArrayList<JDOObject>();
 		List<JDOObjectID> listetIDs = new ArrayList<JDOObjectID>(objectIDs);
 //		Set<JDOObjectID> notInCache = new HashSet<JDOObjectID>();
@@ -182,7 +188,7 @@ public abstract class BaseJDOObjectDAO<JDOObjectID, JDOObject, MonitorType>
 			JDOObject cachedObject = (JDOObject) cache.get(scope, listetIDs.get(i), fetchGroups, maxFetchDepth);
 			if (cachedObject != null) {
 				objects.add(cachedObject);
-				monitorWorked(monitor, 1);
+				monitor.worked(1);
 			}
 			else {
 				notInCache.put(listetIDs.get(i), i); // if not in cache save (objectID, position)
@@ -209,7 +215,7 @@ public abstract class BaseJDOObjectDAO<JDOObjectID, JDOObject, MonitorType>
 				continue;
 			index = notInCache.get(JDOHelper.getObjectId(freshObject));
 			objects.set(index, freshObject);
-			monitorWorked(monitor, 1);
+			monitor.worked(1);
 		}
 
 		// Note: The server may not return all wanted Objects, if e.g. they are of a different organisation.
@@ -221,7 +227,7 @@ public abstract class BaseJDOObjectDAO<JDOObjectID, JDOObject, MonitorType>
 			}
 		}
 		
-		monitorDone(monitor);
+		monitor.done();
 		objects.trimToSize();	
 		return objects;		
 	}
@@ -244,7 +250,7 @@ public abstract class BaseJDOObjectDAO<JDOObjectID, JDOObject, MonitorType>
 	 * @return All requested and existing JDO objects.
 	 * @throws Exception in case of an error
 	 */
-	protected synchronized List<JDOObject> getJDOObjects(String scope, Collection<JDOObjectID> objectIDs, Set<String> fetchGroups, int maxFetchDepth, MonitorType monitor)
+	protected synchronized List<JDOObject> getJDOObjects(String scope, Collection<JDOObjectID> objectIDs, Set<String> fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
 	{
 		return getJDOObjects(
 				scope, 
@@ -272,7 +278,7 @@ public abstract class BaseJDOObjectDAO<JDOObjectID, JDOObject, MonitorType>
 	 * @return All requested and existing JDO objects.
 	 * @throws Exception in case of an error
 	 */
-	protected synchronized List<JDOObject> getJDOObjects(String scope, JDOObjectID[] objectIDs, Set<String> fetchGroups, int maxFetchDepth, MonitorType monitor)
+	protected synchronized List<JDOObject> getJDOObjects(String scope, JDOObjectID[] objectIDs, Set<String> fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
 	{
 		return getJDOObjects(
 				scope, 
@@ -300,7 +306,7 @@ public abstract class BaseJDOObjectDAO<JDOObjectID, JDOObject, MonitorType>
 	 * @return All requested and existing JDO objects.
 	 * @throws Exception in case of an error
 	 */
-	protected synchronized List<JDOObject> getJDOObjects(String scope, JDOObjectID[] objectIDs, String[] fetchGroups, int maxFetchDepth, MonitorType monitor)
+	protected synchronized List<JDOObject> getJDOObjects(String scope, JDOObjectID[] objectIDs, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
 	{
 		return getJDOObjects(
 				scope, 
@@ -318,20 +324,4 @@ public abstract class BaseJDOObjectDAO<JDOObjectID, JDOObject, MonitorType>
 	{
 		return cache;
 	}
-	
-	
-	protected abstract void monitorDone(MonitorType monitor);
-	
-	protected abstract void monitorBeginTask(MonitorType monitor, String taskName, int totalWork);
-	
-	protected abstract void monitorWorked(MonitorType monitor, int work);	
-	
-	protected abstract void monitorSetTaskName(MonitorType monitor, String name);
-	
-	protected abstract void monitorSubTask(MonitorType monitor, String name);
-	
-	protected abstract boolean monitorIsCanceled(MonitorType monitor);
-	
-	protected abstract void monitorSetCanceled(MonitorType monitor, boolean canceled);
-	
 }
