@@ -77,7 +77,7 @@ public class I18nTextDataFieldComposite extends AbstractDataFieldComposite {
 		fieldName.setLayoutData(nameData);
 		
 		i18nTextEditor = new I18nTextEditor(this);
-		i18nTextEditor.setEditMode(EditMode.BUFFERED);
+		i18nTextEditor.setI18nText(null, EditMode.BUFFERED);
 		GridData textData = new GridData(GridData.FILL_HORIZONTAL);
 		textData.grabExcessHorizontalSpace = true;
 		i18nTextEditor.setEditable(true);
