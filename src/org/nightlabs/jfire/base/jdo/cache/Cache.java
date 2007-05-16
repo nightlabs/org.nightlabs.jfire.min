@@ -47,8 +47,6 @@ import org.nightlabs.config.ConfigException;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jdo.ObjectID;
 import org.nightlabs.jfire.base.jdo.JDOObjectID2PCClassMap;
-import org.nightlabs.jfire.base.jdo.login.JFireLoginProvider;
-import org.nightlabs.jfire.base.jdo.notification.ChangeEvent;
 import org.nightlabs.jfire.base.jdo.notification.ChangeSubjectCarrier;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleEvent;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleListener;
@@ -59,6 +57,7 @@ import org.nightlabs.jfire.jdo.cache.NotificationBundle;
 import org.nightlabs.jfire.jdo.notification.DirtyObjectID;
 import org.nightlabs.jfire.jdo.notification.IJDOLifecycleListenerFilter;
 import org.nightlabs.jfire.jdo.notification.JDOLifecycleState;
+import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.notification.NotificationEvent;
 import org.nightlabs.util.CollectionUtil;
 
@@ -102,7 +101,7 @@ public class Cache
 			while (!isInterrupted()) {
 				try {
 					if (jdoManager == null)
-						jdoManager = JDOManagerUtil.getHome(JFireLoginProvider.sharedInstance().getInitialContextProperties()).create();
+						jdoManager = JDOManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
 
 					NotificationBundle notificationBundle = jdoManager.waitForChanges(
 							cache.getCacheCfMod().getWaitForChangesTimeoutMSec());
@@ -425,7 +424,7 @@ public class Cache
 						}
 
 						if (jdoManager == null)
-							jdoManager = JDOManagerUtil.getHome(JFireLoginProvider.sharedInstance().getInitialContextProperties()).create();
+							jdoManager = JDOManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
 
 						if (cache.isResubscribeAllListeners()) {
 							logger.info("Synchronizing all listeners.");
@@ -1378,7 +1377,7 @@ public class Cache
 	throws ModuleException
 	{
 		try {
-			JDOManager jm = JDOManagerUtil.getHome(JFireLoginProvider.sharedInstance().getInitialContextProperties()).create();
+			JDOManager jm = JDOManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
 
 			// remove all listeners for this session - done by remote closeCacheSession(...)
 			jm.closeCacheSession();

@@ -30,9 +30,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.nightlabs.jfire.base.jdo.login.JFireLoginProvider;
 import org.nightlabs.jfire.jdo.JDOManager;
 import org.nightlabs.jfire.jdo.JDOManagerUtil;
+import org.nightlabs.jfire.security.SecurityReflector;
 
 /**
  * @author Marco Schulze - marco at nightlabs dot de
@@ -117,7 +117,7 @@ public class JDOObjectID2PCClassMap
 			while (clazzName == null && retry < 2) {
 				try {
 					if (jdoManager == null)
-						jdoManager = JDOManagerUtil.getHome(JFireLoginProvider.sharedInstance().getInitialContextProperties()).create();
+						jdoManager = JDOManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
 
 					clazzName = jdoManager.getPersistenceCapableClassName(objectID);
 				} catch (Throwable t) {

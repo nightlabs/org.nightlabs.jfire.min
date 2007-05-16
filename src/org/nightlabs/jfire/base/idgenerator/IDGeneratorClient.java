@@ -29,11 +29,11 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
-import org.nightlabs.jfire.base.jdo.login.JFireLoginProvider;
 import org.nightlabs.jfire.idgenerator.IDGenerator;
 import org.nightlabs.jfire.idgenerator.IDGeneratorHelper;
 import org.nightlabs.jfire.idgenerator.IDGeneratorHelperBean;
 import org.nightlabs.jfire.idgenerator.IDGeneratorHelperUtil;
+import org.nightlabs.jfire.security.SecurityReflector;
 
 /**
  * This implementation of {@link IDGenerator} is used in on the client side for ID generation.
@@ -66,7 +66,7 @@ public class IDGeneratorClient
 	protected String _getOrganisationID()
 	{
 		try {
-			return JFireLoginProvider.sharedInstance().getOrganisationID();
+			return SecurityReflector.getUserDescriptor().getOrganisationID();
 		} catch (RuntimeException x) {
 			throw x;
 		} catch (Exception x) {
@@ -80,7 +80,7 @@ public class IDGeneratorClient
 		try {
 			LinkedList<Long> cachedIDs;
 			synchronized (namespace2cachedIDsMutex) {
-				String currentOrganisationID = JFireLoginProvider.sharedInstance().getOrganisationID();
+				String currentOrganisationID = getOrganisationID();
 
 				if (!currentOrganisationID.equals(organisationID))
 					namespace2cachedIDs = null;
@@ -99,7 +99,7 @@ public class IDGeneratorClient
 
 			synchronized (cachedIDs) {
 				if (quantity > cachedIDs.size()) {
-					IDGeneratorHelper idGeneratorHelper = IDGeneratorHelperUtil.getHome(JFireLoginProvider.sharedInstance().getInitialContextProperties()).create();
+					IDGeneratorHelper idGeneratorHelper = IDGeneratorHelperUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
 					long[] nextIDs = idGeneratorHelper.clientNextIDs(namespace, cachedIDs.size(), quantity);
 					for (int i = 0; i < nextIDs.length; i++) {
 						cachedIDs.add(new Long(nextIDs[i]));
