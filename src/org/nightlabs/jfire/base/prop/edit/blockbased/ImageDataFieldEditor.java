@@ -256,11 +256,21 @@ public class ImageDataFieldEditor extends AbstractDataFieldEditor<ImageDataField
 		if (path == null || "".equals(path))
 			throw new RuntimeException("Path must not be empty or null!");
 		
+		//FIXME: get content type somehow!
+		String contentType = "application/unknown";
+		String lowerPath = path.toLowerCase();
+		if(lowerPath.endsWith(".png"))
+			contentType = "image/png";
+		else if(lowerPath.endsWith(".jpg"))
+			contentType = "image/jpeg";
+		else if(lowerPath.endsWith(".gif"))
+			contentType = "image/gif";
+
 		// store the image as in the data field.
 		File imageFile = new File(path);
 		
 		try {
-			dataField.loadFile(imageFile);
+			dataField.loadFile(imageFile, contentType);
 		} catch (IOException e) {
 			e.printStackTrace();
 			throw new RuntimeException(e);
