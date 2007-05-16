@@ -34,26 +34,28 @@ import java.util.Set;
 import javax.jdo.FetchPlan;
 import javax.jdo.JDOHelper;
 
-import org.eclipse.jface.dialogs.MessageDialog;
+import org.apache.log4j.Logger;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
+import org.nightlabs.annotation.Implement;
+import org.nightlabs.base.composite.InheritanceToggleButton;
 import org.nightlabs.base.composite.XComposite;
 import org.nightlabs.base.composite.XComposite.LayoutMode;
 import org.nightlabs.base.notification.NotificationAdapterJob;
-import org.nightlabs.base.progress.XProgressMonitor;
-import org.nightlabs.base.util.RCPUtil;
+import org.nightlabs.inheritance.FieldMetaData;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleManager;
 import org.nightlabs.jfire.base.login.Login;
@@ -67,6 +69,7 @@ import org.nightlabs.jfire.config.id.ConfigID;
 import org.nightlabs.jfire.config.id.ConfigModuleID;
 import org.nightlabs.jfire.jdo.notification.DirtyObjectID;
 import org.nightlabs.notification.NotificationEvent;
+import org.nightlabs.notification.NotificationListener;
 import org.nightlabs.progress.NullProgressMonitor;
 import org.nightlabs.util.Utils;
 
@@ -107,24 +110,38 @@ public abstract class AbstractConfigModulePreferencePage<C extends ConfigModule>
 extends PreferencePage 
 implements IWorkbenchPreferencePage
 {
+	private static final Logger logger = Logger.getLogger(AbstractConfigModulePreferencePage.class);
 
 	// TODO: are you sure you want FetchPlan.ALL?, Yes, as default, individual pages, can overwrite.
 	protected static String[] CONFIG_MODULE_FETCH_GROUPS = new String[] {FetchPlan.DEFAULT, FetchPlan.ALL}; 
 
 	private XComposite wrapper;
-	private XComposite header;
+	private volatile XComposite header;
+
+	/**
+	 * This <code>Button</code> is only instantiated, if we're currently editing a group's ConfigModule.
+	 * Otherwise, the {@link #inheritMemberConfigModule} will be created instead. 
+	 */
 	private Button checkBoxAllowOverwrite;
 
+	/**
+	 * This <code>InheritanceToggleButton</code> is only instantiated, if we're currently editing
+	 * a member's ConfigModule (i.e. <b>not</b> in group context).
+	 *
+	 * @see #checkBoxAllowOverwrite
+	 */
+	private InheritanceToggleButton inheritMemberConfigModule;
 
-	protected ConfigModuleChangeListener changeListener = new ConfigModuleChangeListener();
+	/**
+	 * FIXME: Wozu ist diese ConfigID??? (scheint die Config des derzeitigen Nutzers zu sein, aber das bringt uns doch nix)
+	 */
 	protected ConfigID currentConfigID;
 	protected C currentConfigModule;
 	protected boolean currentConfigIsGroupMember = false;
 	protected boolean configChanged = false;
 	
-	/**
-	 * 
-	 */
+	protected IStoreChangedConfigModule pageController;
+	
 	public AbstractConfigModulePreferencePage() {
 		super();
 	}
@@ -145,7 +162,7 @@ implements IWorkbenchPreferencePage
 	}
 
 	/**
-	 * Checks if the user is allowed to changed configuration 
+	 * Checks if the user is allowed to change configuration 
 	 * for groups or other users.
 	 * 
 	 * @return Weather the user is allowed to change other configurations
@@ -159,7 +176,7 @@ implements IWorkbenchPreferencePage
 	 * 
 	 * @return The current config module.
 	 */
-	protected C getCurrentConfigModule() {
+	public C getCurrentConfigModule() {
 		return currentConfigModule;
 	}
 
@@ -196,11 +213,7 @@ implements IWorkbenchPreferencePage
 		currentConfigIsGroupMember = groupID != null;
 	}
 
-	/**
-	 * only needed for MessageBox result on Gui Thread
-	 */
-	private boolean doReloadConfigModule = false;
-	protected class ConfigModuleChangeListener extends NotificationAdapterJob {
+	private NotificationListener changeListener = new NotificationAdapterJob() {
 
 		public void notify(NotificationEvent notificationEvent) {
 			Set<DirtyObjectID> dirtyObjectIDs = notificationEvent.getSubjects();
@@ -222,13 +235,14 @@ implements IWorkbenchPreferencePage
 				return;
 			
 			// check if this module has been saved lately and is therefore already up to date.
+			// This is a workaround for the recently saved module being notified right after saving.
 			if (recentlySaved) {
 				recentlySaved = false;
 				return;
 			}
 			
 			ConfigModuleDAO moduleDAO = ConfigModuleDAO.sharedInstance();
-			C updatedModule = (C) moduleDAO.getConfigModule(currentModuleID, getConfigModuleFetchGroups(), 
+			final C updatedModule = (C) moduleDAO.getConfigModule(currentModuleID, getConfigModuleFetchGroups(), 
 					getConfigModuleMaxFetchDepth(), getProgressMonitorWrapper());
 			
 			checkAndSetIsGroupMember(updatedModule);
@@ -249,6 +263,9 @@ implements IWorkbenchPreferencePage
 					setCurrentConfigModule(updatedModule);
 					Display.getDefault().asyncExec(new Runnable() {
 						public void run() {
+							if (wrapper.isDisposed())
+								return;
+
 							updateConfigHeader();
 							updatePreferencePage(currentConfigModule);								
 						}
@@ -256,26 +273,18 @@ implements IWorkbenchPreferencePage
 					return;
 					
 				} else {
-					doReloadConfigModule = false;
-					Display.getDefault().syncExec(new Runnable() {
+					Display.getDefault().syncExec( new Runnable() {
 						public void run() {
-							doReloadConfigModule = MessageDialog.openConfirm(RCPUtil.getActiveWorkbenchShell(), "ConfigModule changed!",
-							"Do you want the config module to be reloaded?");
+							if (wrapper.isDisposed())
+								return;
+
+							ChangedConfigModulePagesDialog.addChangedConfigModule(
+									AbstractConfigModulePreferencePage.this, updatedModule, 
+									updatedModule.getConfig()
+									);
 						}
 					});
-					
-					if (!doReloadConfigModule)
-						return;
-					
-					setCurrentConfigModule(updatedModule);
-					
-					Display.getDefault().asyncExec(new Runnable() {
-						public void run() {
-							updateConfigHeader();
-							updatePreferencePage(currentConfigModule);								
-						}
-					});
-					return;
+//					pageController.addChangedConfigModule(updatedModule);
 				}
 			}				
 			// end of workaround
@@ -291,29 +300,20 @@ implements IWorkbenchPreferencePage
 				});
 			} else { 
 				// if module is affected by a groupmodule but may overwrite groupmodule's settings -> notify User
-				doReloadConfigModule = false;
-				Display.getDefault().syncExec(new Runnable() {
+				Display.getDefault().syncExec( new Runnable() {
 					public void run() {
-						doReloadConfigModule = MessageDialog.openConfirm(RCPUtil.getActiveWorkbenchShell(), "ConfigModule changed!",
-						"Do you want the config module to be reloaded?");
+						ChangedConfigModulePagesDialog.addChangedConfigModule(
+								AbstractConfigModulePreferencePage.this, 
+								updatedModule,
+								updatedModule.getConfig()
+								);
 					}
 				});
-
-				if (!doReloadConfigModule)
-					return;
-				
-				setCurrentConfigModule(updatedModule);
-				
-				Display.getDefault().asyncExec(new Runnable() {
-					public void run() {
-						updateConfigHeader();
-						updatePreferencePage(currentConfigModule);								
-					}
-				});
+//				pageController.addChangedConfigModule(updatedModule);
 			}
 		} // notify(NotificationEvent notificationEvent)
 		
-	} // ConfigModuleChangeListener
+	}; // ConfigModuleChangeListener
 
 	/**
 	 * Determines whether config modules are
@@ -383,8 +383,9 @@ implements IWorkbenchPreferencePage
 	 * @return The pages Top control.
 	 */
 	public Control createContents(Composite parent, boolean doCreateConfigGroupHeader, 
-			boolean doSetControl, C configModule) {
+			boolean doSetControl, C configModule, IStoreChangedConfigModule pageController) {
 		
+		this.pageController = pageController;
 		currentConfigModule = configModule;
 		checkAndSetIsGroupMember(currentConfigModule);
 		this.doCreateConfigGroupHeader = doCreateConfigGroupHeader;
@@ -399,20 +400,33 @@ implements IWorkbenchPreferencePage
 		}
 	}
 
-	/**
-	 * @see org.eclipse.jface.preference.PreferencePage#createContents(org.eclipse.swt.widgets.Composite)
-	 */
+	@Implement
 	protected Control createContents(Composite parent) {
 		XComposite x = new XComposite(parent, SWT.NONE, LayoutMode.TIGHT_WRAPPER);		
 		header = new XComposite(x, SWT.NONE, LayoutMode.ORDINARY_WRAPPER);
 		header.getGridData().grabExcessVerticalSpace = false;
 		wrapper = new XComposite(x, SWT.NONE, LayoutMode.TIGHT_WRAPPER);
 
+		if (logger.isDebugEnabled())
+			logger.debug("createContents: registering changeListener");
+
 		JDOLifecycleManager.sharedInstance().addNotificationListener(getConfigModuleClass(), changeListener);
+		x.addDisposeListener(new DisposeListener() {
+			public void widgetDisposed(DisposeEvent e) {
+				if (logger.isDebugEnabled())
+					logger.debug("widgetDisposed: UNregistering changeListener");
+
+				configChangedListeners.clear();
+				JDOLifecycleManager.sharedInstance().removeNotificationListener(getConfigModuleClass(), changeListener);
+				changeListener = null;
+			}
+		});
 
 		if (doCreateConfigGroupHeader)
 			createConfigGroupHeader(header);
-		
+		else
+			createConfigMemberHeader(header);
+
 		createPreferencePage(wrapper);
 
 		if (refreshConfigModule) {
@@ -438,70 +452,89 @@ implements IWorkbenchPreferencePage
 				new NullProgressMonitor() // TODO: Wrap a job around this ...
 				);
 	}
-	
-	/**
-	 * Creates the header of any ConfigPreferncePage. If additional components are 
-	 * to be shown, then this method should be overwritten.
-	 * @param parent the wrapper composite to pack all components into.
-	 */
-	protected void updateConfigHeader() {
-		boolean headerCreated = false;
-		if (! canEdit(getCurrentConfigModule())) {
-			clearComposite(header);
-			new Label(header, 0).setText(Messages.getString("AbstractConfigModulePreferencePage.GroupDisallowsOverwrite")); //$NON-NLS-1$
-			headerCreated = true;
-		} else if (currentConfigIsGroupMember) {
-			clearComposite(header);
-			Button resetToGroupDefaults = new Button(header, 0);
-			resetToGroupDefaults.setText(Messages.getString("AbstractConfigModulePreferencePage.ResetToGroupConfig_ButtonText")); //$NON-NLS-1$
-			resetToGroupDefaults.addSelectionListener(new SelectionListener() {
-				public void widgetDefaultSelected(SelectionEvent arg0) {}
-				public void widgetSelected(SelectionEvent arg0) {
-					boolean doIt = MessageDialog.openConfirm(RCPUtil.getActiveWorkbenchShell(), Messages.getString("AbstractConfigModulePreferencePage.ResetToGroupConfig_ConfirmationDialogHeading"),  //$NON-NLS-1$
-							Messages.getString("AbstractConfigModulePreferencePage.ResetToGroupConfig_ConfirmationDialogMessage")); //$NON-NLS-1$
-					if (! doIt)
-						return;
-					
-					ConfigManager cm;
-					try {
-					 cm = ConfigManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
-					 ConfigModuleID moduleID = (ConfigModuleID) JDOHelper.getObjectId(currentConfigModule);
-					 setCurrentConfigModule( (C) cm.applyGroupInheritence(
-							 				moduleID, 
-							 				true, 
-							 				getConfigModuleFetchGroups(), 
-							 				getConfigModuleMaxFetchDepth())
-							 );
-					} catch (Exception e) {
-						throw new RuntimeException(e);
-					}
-					updatePreferencePage(currentConfigModule);
-				}			
-			});
-			headerCreated = true;
-		}
-		else {
-			header.dispose();
-		}
-		if (headerCreated) {
-			(new Label(header, SWT.SEPARATOR | SWT.HORIZONTAL)).setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-			header.layout(true, true);
-		}
-	}
-	
-	/**
-	 * Clears all contents of a given Composite.
-	 * @param comp the composite to clear.
-	 */
-	private void clearComposite(Composite comp) {
-		Control[] children = comp.getChildren();
-		
-		if (comp.getChildren().length == 0)
+
+	public void updateConfigHeader() {
+		if (inheritMemberConfigModule == null || inheritMemberConfigModule.isDisposed())
 			return;
-		
-		for (Control child : children)
-			child.dispose();
+
+		inheritMemberConfigModule.setSelection(
+				currentConfigModule.getFieldMetaData(ConfigModule.class.getName()).isValueInherited());
+
+		inheritMemberConfigModule.setEnabled(canEdit(getCurrentConfigModule())); 
+		// TODO: set new ButtonText according to new state.
+		if (!inheritMemberConfigModule.isEnabled())
+			inheritMemberConfigModule.setCaption(Messages.getString("AbstractConfigModulePreferencePage.GroupDisallowsOverwrite")); //$NON-NLS-1$
+		else
+			inheritMemberConfigModule.setCaption("Inherit the settings of this config module from its group?");
 	}
+
+//	/**
+//	 * Creates the header of any ConfigPreferncePage. If additional components are 
+//	 * to be shown, then this method should be overwritten.
+//	 * @param parent the wrapper composite to pack all components into.
+//	 */
+//	public void updateConfigHeader() {
+//		boolean headerCreated = false;
+//		if (! canEdit(getCurrentConfigModule())) {
+//			clearComposite(header);
+//			new Label(header, 0).setText(Messages.getString("AbstractConfigModulePreferencePage.GroupDisallowsOverwrite")); //$NON-NLS-1$
+//			headerCreated = true;
+//		} else if (currentConfigIsGroupMember) {
+//			clearComposite(header);
+//			Button resetToGroupDefaults = new Button(header, 0);
+//			resetToGroupDefaults.setText(Messages.getString("AbstractConfigModulePreferencePage.ResetToGroupConfig_ButtonText")); //$NON-NLS-1$
+//			resetToGroupDefaults.addSelectionListener(new SelectionListener() {
+//				public void widgetDefaultSelected(SelectionEvent arg0) {}
+//				public void widgetSelected(SelectionEvent arg0) {
+//					boolean doIt = MessageDialog.openConfirm(RCPUtil.getActiveWorkbenchShell(), Messages.getString("AbstractConfigModulePreferencePage.ResetToGroupConfig_ConfirmationDialogHeading"),  //$NON-NLS-1$
+//							Messages.getString("AbstractConfigModulePreferencePage.ResetToGroupConfig_ConfirmationDialogMessage")); //$NON-NLS-1$
+//					if (! doIt)
+//						return;
+//					
+//					ConfigManager cm;
+//					try {
+//					 cm = ConfigManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
+//					 ConfigModuleID moduleID = (ConfigModuleID) JDOHelper.getObjectId(currentConfigModule);
+//					 setCurrentConfigModule( (C) cm.applyGroupInheritence(
+//							 				moduleID, 
+//							 				true, 
+//							 				getConfigModuleFetchGroups(), 
+//							 				getConfigModuleMaxFetchDepth())
+//							 );
+//					} catch (Exception e) {
+//						throw new RuntimeException(e);
+//					}
+//					updatePreferencePage(currentConfigModule);
+//				}			
+//			});
+//			headerCreated = true;
+//		}
+//		else {
+//			header.dispose();
+//		}
+//		if (headerCreated) {
+//			(new Label(header, SWT.SEPARATOR | SWT.HORIZONTAL)).setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+//			header.layout(true, true);
+//		}
+//	}
+	
+//	/**
+//	 * Clears all contents of a given Composite.
+//	 * @param comp the composite to clear.
+//	 */
+//	private void clearComposite(Composite comp) {
+//		if (comp.isDisposed()) {
+//			return;
+//		}
+//			
+//		Control[] children = comp.getChildren();
+//		
+//		if (comp.getChildren().length == 0)
+//			return;
+//		
+//		for (Control child : children)
+//			child.dispose();
+//	}
 
 	/**
 	 * Create the header showing controls for {@link ConfigModule}s of {@link ConfigGroup}s.
@@ -509,13 +542,14 @@ implements IWorkbenchPreferencePage
 	 * Default implementation adds a checkbox for controlling overwriting for the complete module.
 	 * 
 	 * @param parent The parent to add the header to.
+	 *
+	 * @see #createConfigMemberHeader(Composite)
 	 */
 	protected void createConfigGroupHeader(Composite parent) {
 		checkBoxAllowOverwrite = new Button(parent, SWT.CHECK);
 		checkBoxAllowOverwrite.setText(Messages.getString("AbstractConfigModulePreferencePage.WhetherGroupAllowsConfigOverwrite")); //$NON-NLS-1$
 		
-		checkBoxAllowOverwrite.addSelectionListener(new SelectionListener() {
-			public void widgetDefaultSelected(SelectionEvent e) {}
+		checkBoxAllowOverwrite.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				setConfigChanged(true);
 			}
@@ -525,6 +559,22 @@ implements IWorkbenchPreferencePage
 		checkBoxAllowOverwrite.setLayoutData(gd);
 	}
 
+	/**
+	 *
+	 * @see #createConfigGroupHeader(Composite)
+	 */
+	protected void createConfigMemberHeader(Composite parent) {
+		inheritMemberConfigModule = new InheritanceToggleButton(parent, "");
+		inheritMemberConfigModule.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				if (currentConfigModule == null || !currentConfigModule.getFieldMetaData(ConfigModule.class.getName()).isWritable())
+					return;
+
+				currentConfigModule.getFieldMetaData(ConfigModule.class.getName()).setValueInherited(inheritMemberConfigModule.getSelection());
+			}
+		});
+	}
 
 	/**
 	 * Called to ask the reciever to create its UI representation.
@@ -555,8 +605,13 @@ implements IWorkbenchPreferencePage
 	 * @param configModule
 	 * @return Whether the configModule is allowed to be edited.
 	 */
-	protected boolean canEdit(C configModule) {
-		return configModule.isGroupConfigModule() || configModule.isGroupAllowsOverride() || !currentConfigIsGroupMember;
+	protected boolean canEdit(C configModule) { // TODO we should NOT take a parameter here - there's only one configModule per page and we don't pass another one from the outside - or do we?
+		return
+				configModule.isGroupConfigModule() ||
+				configModule.getFieldMetaData(ConfigModule.class.getName()).isWritable() ||
+				!currentConfigIsGroupMember;
+		
+//		return configModule.isGroupConfigModule() || configModule.isGroupAllowsOverride() || !currentConfigIsGroupMember;
 	}
 
 	/**
@@ -602,7 +657,9 @@ implements IWorkbenchPreferencePage
 			updateConfigHeader();
 		
 		if (checkBoxAllowOverwrite != null)
-			checkBoxAllowOverwrite.setSelection(configModule.isGroupMembersMayOverride());		
+			checkBoxAllowOverwrite.setSelection(
+					(configModule.getFieldMetaData(ConfigModule.class.getName()).getWritableByChildren() & FieldMetaData.WRITABLEBYCHILDREN_YES) != 0);
+//			checkBoxAllowOverwrite.setSelection(configModule.isGroupMembersMayOverride());		
 	}
 	
 	
@@ -614,7 +671,9 @@ implements IWorkbenchPreferencePage
 	public void updateCurrentCfMod() {
 		if (checkBoxAllowOverwrite != null) {
 			boolean allowOverwrite = checkBoxAllowOverwrite.getSelection();
-			currentConfigModule.setAllowUserOverride(allowOverwrite);			
+			currentConfigModule.getFieldMetaData(ConfigModule.class.getName()).setWritableByChildren(
+					allowOverwrite ? FieldMetaData.WRITABLEBYCHILDREN_YES : FieldMetaData.WRITABLEBYCHILDREN_NO);
+//			currentConfigModule.setAllowUserOverride(allowOverwrite);			
 		}
 				
 		updateConfigModule(currentConfigModule);
@@ -678,38 +737,45 @@ implements IWorkbenchPreferencePage
 		return super.okToLeave();
 	}
 
-	private boolean recentlySaved = false;
 	/**
 	 * Calls implementors to {@link #updateConfigModule(ConfigModule)} and
 	 * stores the updatedConfig module to the server.
 	 * 
 	 */
 	public void storeConfigModule() {
+		if (isConfigChanged()) {
+			if (Thread.currentThread() != Display.getDefault().getThread()) {
+				// FIXME: soll das synchron laufen?? dachte nein.
+				Display.getDefault().asyncExec( new Runnable() {
+					public void run() {
+						updateCurrentCfMod();
+						storeModule();
+					}
+				});
+				return;
+				
+			}	else {
+				updateCurrentCfMod();
+				storeModule();
+			} // if (Thread.currentThread() != Display.getDefault().getThread())
+		} // if (isConfigCachanged()) 
+		else 
+			return;
+	}
+	
+	private boolean recentlySaved = false;
+
+	/**
+	 * Stores the <code>currentConfigModule</code> to the datastore.
+	 */
+	protected void storeModule() {
 		ConfigManager configManager = null;
 		try {
 			configManager = ConfigManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
-		} catch (Throwable e) {
-			throw new RuntimeException(e);
-		}
-		if (isConfigChanged()) {
-			if (Thread.currentThread() != Display.getDefault().getThread()) {
-				Display.getDefault().syncExec( new Runnable() {
-					public void run() {
-						updateCurrentCfMod();				
-					}
-				});				
-			} else {
-				updateCurrentCfMod(); 
-			} // if (Thread.currentThread() != Display.getDefault().getThread())
-		}
-		else 
-			return;
-
-		try {
 			currentConfigModule = (C) configManager.storeConfigModule(
 					getCurrentConfigModule(), true, getConfigModuleFetchGroups(), getConfigModuleMaxFetchDepth());
 			recentlySaved = true;
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -775,16 +841,16 @@ implements IWorkbenchPreferencePage
 			configChangedListeners.remove(listener);
 	}
 
-	public void dispose() {
-		configChangedListeners.clear();
-		JDOLifecycleManager.sharedInstance().removeNotificationListener(getConfigModuleClass(), changeListener);
-		changeListener = null;
-		super.dispose();
-	}
-
 	public void setCurrentConfigID(ConfigID currentConfigID, boolean retrieveNewConfigModule) {
 		this.currentConfigID = currentConfigID;
 		if (retrieveNewConfigModule) 
 			setCurrentConfigModule(retrieveConfigModule());
+	}
+
+	/**
+	 * @return the currentConfigID
+	 */
+	public ConfigID getCurrentConfigID() {
+		return currentConfigID;
 	}
 }

@@ -42,7 +42,8 @@ public class ConfigPreferenceNode {
 	private AbstractConfigModulePreferencePage preferencePage;
 	private String categoryID;
 	private ConfigPreferenceNode parent;
-	private List children = new ArrayList();
+	private List<ConfigPreferenceNode> children = 
+		new ArrayList<ConfigPreferenceNode>();
 	
 	private Image icon;
 	
