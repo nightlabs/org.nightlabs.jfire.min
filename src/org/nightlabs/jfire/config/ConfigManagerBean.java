@@ -45,6 +45,7 @@ import javax.jdo.Query;
 import org.apache.log4j.Logger;
 import org.nightlabs.ModuleException;
 import org.nightlabs.config.ConfigModuleNotFoundException;
+import org.nightlabs.inheritance.FieldMetaData;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jdo.ObjectID;
 import org.nightlabs.jdo.moduleregistry.ModuleMetaData;
@@ -117,7 +118,9 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 				ConfigGroup configGroup = config.getConfigGroup();
 				if (configGroup != null) {
 					ConfigModule groupConfigModule = config.getConfigGroup().getConfigModule(configModule.getClass(), configModule.getCfModID(), false);
-					if (groupConfigModule != null && !groupConfigModule.isGroupMembersMayOverride())
+//					if (groupConfigModule != null && !groupConfigModule.isGroupMembersMayOverride())
+//						throw new IllegalArgumentException("This ConfigModule is not allowed to be stored. It's ConfigGroup "+config.getConfigGroup().getName()+" does not allow this");
+					if (groupConfigModule != null && (groupConfigModule.getFieldMetaData(ConfigModule.class.getName()).getWritableByChildren() & FieldMetaData.WRITABLEBYCHILDREN_YES) == 0)
 						throw new IllegalArgumentException("This ConfigModule is not allowed to be stored. It's ConfigGroup "+config.getConfigGroup().getName()+" does not allow this");
 				}
 			}
