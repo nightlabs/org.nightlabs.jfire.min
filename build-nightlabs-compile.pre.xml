@@ -1,7 +1,7 @@
 <project>
 	<target name="compile.pre">
 	    <mkdir dir="${project.dir}/${lib.dir}"/>
-
 		<copy file="../JFireBaseClientLib/dist/JFireBaseClientLib.jar" todir="${project.dir}/${lib.dir}" failonerror="true" verbose="true"/>
+		<copy file="../JFireBaseDAO/dist/JFireBaseDAO.jar" todir="${project.dir}/${lib.dir}" failonerror="true" verbose="true"/>
 	</target>
 </project>

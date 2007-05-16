@@ -4,6 +4,7 @@ Bundle-Name: JFire Base Plug-in
 Bundle-SymbolicName: org.nightlabs.jfire.base; singleton:=true
 Bundle-Version: 1.0.0
 Bundle-ClassPath: org.nightlabs.jfire.base.jar,
+ lib/JFireBaseDAO.jar,
  lib/JFireBaseClientLib.jar
 Bundle-Activator: org.nightlabs.jfire.base.JFireBasePlugin
 Bundle-Vendor: NightLabs.org
@@ -36,10 +37,17 @@ Export-Package: org.nightlabs.jfire.base,
  org.nightlabs.jfire.base.prop.search,
  org.nightlabs.jfire.base.prop.structedit,
  org.nightlabs.jfire.base.prop.structedit.action,
+ org.nightlabs.jfire.base.resource,
  org.nightlabs.jfire.base.security,
  org.nightlabs.jfire.base.tree,
  org.nightlabs.jfire.base.update,
- org.nightlabs.jfire.base.workstation
+ org.nightlabs.jfire.base.workstation,
+ org.nightlabs.jfire.config.dao,
+ org.nightlabs.jfire.editlock.dao,
+ org.nightlabs.jfire.organisation.dao,
+ org.nightlabs.jfire.prop.dao,
+ org.nightlabs.jfire.security.dao,
+ org.nightlabs.jfire.workstation.dao
 Require-Bundle: org.eclipse.ui,
  org.eclipse.ui.forms,
  org.nightlabs.base;visibility:=reexport,
