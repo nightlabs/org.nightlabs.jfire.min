@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO;
-import org.nightlabs.jfire.base.jdo.login.JFireLoginProvider;
+import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.workstation.Workstation;
 import org.nightlabs.jfire.workstation.WorkstationManager;
 import org.nightlabs.jfire.workstation.WorkstationManagerUtil;
@@ -32,7 +32,7 @@ extends BaseJDOObjectDAO<WorkstationID, Workstation>
 			ProgressMonitor monitor)
 	throws Exception
 	{
-		WorkstationManager wm = WorkstationManagerUtil.getHome(JFireLoginProvider.sharedInstance().getInitialContextProperties()).create();
+		WorkstationManager wm = WorkstationManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
 		return wm.getWorkstations(workstationIDs, fetchGroups, maxFetchDepth);
 	}
 
@@ -42,7 +42,7 @@ extends BaseJDOObjectDAO<WorkstationID, Workstation>
 	{
 		if (workstationIDs == null) {
 			try {
-				WorkstationManager wm = WorkstationManagerUtil.getHome(JFireLoginProvider.sharedInstance().getInitialContextProperties()).create();
+				WorkstationManager wm = WorkstationManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
 				workstationIDs = wm.getWorkstationIDs();
 			} catch (Exception e) {
 				throw new RuntimeException(e);

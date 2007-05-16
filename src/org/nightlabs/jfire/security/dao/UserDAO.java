@@ -33,7 +33,6 @@ import javax.jdo.JDOHelper;
 import org.nightlabs.annotation.Implement;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO;
-import org.nightlabs.jfire.base.jdo.login.JFireLoginProvider;
 import org.nightlabs.jfire.idgenerator.IDGenerator;
 import org.nightlabs.jfire.person.Person;
 import org.nightlabs.jfire.prop.IStruct;
@@ -42,6 +41,7 @@ import org.nightlabs.jfire.prop.PropertyManager;
 import org.nightlabs.jfire.prop.PropertyManagerUtil;
 import org.nightlabs.jfire.security.Authority;
 import org.nightlabs.jfire.security.RoleGroup;
+import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.security.UserGroup;
 import org.nightlabs.jfire.security.UserManager;
@@ -94,7 +94,7 @@ public class UserDAO extends BaseJDOObjectDAO<UserID, User>
 		monitor.beginTask("Fetching "+objectIDs.size()+" user information", 1);
 		Collection<User> users;
 		try {
-			UserManager um = UserManagerUtil.getHome(JFireLoginProvider.sharedInstance().getInitialContextProperties()).create();
+			UserManager um = UserManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
 			users = um.getUsers(objectIDs, fetchGroups, maxFetchDepth);
 			monitor.worked(1);
 		} catch (Exception e) {
@@ -137,7 +137,7 @@ public class UserDAO extends BaseJDOObjectDAO<UserID, User>
 		
 		monitor.beginTask("Storing user: "+user.getName(), 4);
 		try {
-			Hashtable initialContextProperties = JFireLoginProvider.sharedInstance().getInitialContextProperties();
+			Hashtable initialContextProperties = SecurityReflector.getInitialContextProperties();
 			UserManager um = UserManagerUtil.getHome(initialContextProperties).create();
 			PropertyManager pm = PropertyManagerUtil.getHome(initialContextProperties).create();
 			monitor.worked(1);
@@ -188,7 +188,7 @@ public class UserDAO extends BaseJDOObjectDAO<UserID, User>
 	public synchronized List<User> getUsersByType(String type, String[] fetchgroups, int maxFetchDepth, ProgressMonitor monitor) 
 	{
 		try {
-			UserManager um = UserManagerUtil.getHome(JFireLoginProvider.sharedInstance().getInitialContextProperties()).create();
+			UserManager um = UserManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
 			Collection<UserID> ids = um.getUserIDsByType(type);
 			return getJDOObjects(null, ids, fetchgroups, maxFetchDepth, monitor);
 		} catch(Exception e) {
@@ -263,7 +263,7 @@ public class UserDAO extends BaseJDOObjectDAO<UserID, User>
 		assert userGroup != null : "User group to add user for must not be null";
 		monitor.beginTask("Adding user: "+user.getName()+" to group: "+userGroup.getName(), 1);
 		try {
-			Hashtable initialContextProperties = JFireLoginProvider.sharedInstance().getInitialContextProperties();
+			Hashtable initialContextProperties = SecurityReflector.getInitialContextProperties();
 			UserManager um = UserManagerUtil.getHome(initialContextProperties).create();
 			um.addUserToUserGroup(user.getUserID(), userGroup.getUserID());
 			monitor.done();
@@ -284,7 +284,7 @@ public class UserDAO extends BaseJDOObjectDAO<UserID, User>
 		assert userGroup != null : "User group to remove user from must not be null";
 		monitor.beginTask("Removing user: "+user.getName()+" from group: "+userGroup.getName(), 1);
 		try {
-			Hashtable initialContextProperties = JFireLoginProvider.sharedInstance().getInitialContextProperties();
+			Hashtable initialContextProperties = SecurityReflector.getInitialContextProperties();
 			UserManager um = UserManagerUtil.getHome(initialContextProperties).create();
 			um.removeUserFromUserGroup(user.getUserID(), userGroup.getUserID());
 			monitor.done();
@@ -314,13 +314,13 @@ public class UserDAO extends BaseJDOObjectDAO<UserID, User>
 	{
 		monitor.beginTask("Adding a user to a rolegroup", 1);
 		try {
-			String organisationID = JFireLoginProvider.sharedInstance().getOrganisationID();
+			String organisationID = SecurityReflector.getUserDescriptor().getOrganisationID();
 			if (!organisationID.equals(userID.organisationID))
 				throw new IllegalArgumentException("Cannot manage foreign user! user.organisationID=\""+userID.organisationID+"\" does not match our organisationID=\""+organisationID+"\"!");
 			if (!organisationID.equals(authorityID.organisationID))
 				throw new IllegalArgumentException("Cannot manage foreign authority! authority.organisationID=\""+authorityID.organisationID+"\" does not match our organisationID=\""+organisationID+"\"!");
 
-			Hashtable initialContextProperties = JFireLoginProvider.sharedInstance().getInitialContextProperties();
+			Hashtable initialContextProperties = SecurityReflector.getInitialContextProperties();
 			UserManager um = UserManagerUtil.getHome(initialContextProperties).create();
 			um.addUserToRoleGroup(userID.userID, authorityID.authorityID, roleGroupID.roleGroupID);
 			monitor.done();
@@ -337,13 +337,13 @@ public class UserDAO extends BaseJDOObjectDAO<UserID, User>
 	{
 		monitor.beginTask("Removing a user from a rolegroup", 1);
 		try {
-			String organisationID = JFireLoginProvider.sharedInstance().getOrganisationID();
+			String organisationID = SecurityReflector.getUserDescriptor().getOrganisationID();
 			if (!organisationID.equals(userID.organisationID))
 				throw new IllegalArgumentException("Cannot manage foreign user! user.organisationID=\""+userID.organisationID+"\" does not match our organisationID=\""+organisationID+"\"!");
 			if (!organisationID.equals(authorityID.organisationID))
 				throw new IllegalArgumentException("Cannot manage foreign authority! authority.organisationID=\""+authorityID.organisationID+"\" does not match our organisationID=\""+organisationID+"\"!");
 
-			Hashtable initialContextProperties = JFireLoginProvider.sharedInstance().getInitialContextProperties();
+			Hashtable initialContextProperties = SecurityReflector.getInitialContextProperties();
 			UserManager um = UserManagerUtil.getHome(initialContextProperties).create();
 			um.removeUserFromRoleGroup(userID.userID, authorityID.authorityID, roleGroupID.roleGroupID);
 			monitor.done();

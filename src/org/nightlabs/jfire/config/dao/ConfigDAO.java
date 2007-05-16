@@ -29,11 +29,11 @@ import java.util.Set;
 import org.nightlabs.annotation.Implement;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO;
-import org.nightlabs.jfire.base.jdo.login.JFireLoginProvider;
 import org.nightlabs.jfire.config.Config;
 import org.nightlabs.jfire.config.ConfigManager;
 import org.nightlabs.jfire.config.ConfigManagerUtil;
 import org.nightlabs.jfire.config.id.ConfigID;
+import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.progress.ProgressMonitor;
 
 /**
@@ -72,7 +72,7 @@ public class ConfigDAO extends BaseJDOObjectDAO<ConfigID, Config>
 		Collection<Config> configs;
 		monitor.beginTask("Fetching Configs", 1);
 		try {
-			ConfigManager cm = ConfigManagerUtil.getHome(JFireLoginProvider.sharedInstance().getInitialContextProperties()).create();
+			ConfigManager cm = ConfigManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
 			// ConfigManager does not provide a way to get multiple Configs...
 			configs = cm.getConfigs(configIDs, fetchGroups, maxFetchDepth);
 		} catch (Exception e) {
@@ -127,7 +127,7 @@ public class ConfigDAO extends BaseJDOObjectDAO<ConfigID, Config>
   	// get all ConfigIDs of the corresponding Configs
   	Collection<ConfigID> configIDs;
   	try {
-  		ConfigManager cm = ConfigManagerUtil.getHome(JFireLoginProvider.sharedInstance().getInitialContextProperties()).create();
+  		ConfigManager cm = ConfigManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
   		configIDs = cm.getConfigIDsByConfigType(configType, fetchGroups, maxFetchDepth);
   	} catch (Exception e) {
   		throw new RuntimeException("Error while downloading ConfigIDs!\n" ,e);

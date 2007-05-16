@@ -10,13 +10,13 @@ import javax.jdo.JDOHelper;
 
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO;
-import org.nightlabs.jfire.base.jdo.login.JFireLoginProvider;
 import org.nightlabs.jfire.config.Config;
 import org.nightlabs.jfire.config.ConfigManager;
 import org.nightlabs.jfire.config.ConfigManagerUtil;
 import org.nightlabs.jfire.config.ConfigModule;
 import org.nightlabs.jfire.config.id.ConfigID;
 import org.nightlabs.jfire.config.id.ConfigModuleID;
+import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.progress.ProgressMonitor;
 
 /**
@@ -54,7 +54,7 @@ public class ConfigModuleDAO extends BaseJDOObjectDAO<ConfigModuleID, ConfigModu
 		monitor.beginTask("Retrieving ConfigModules", 1);
 		Collection<ConfigModule> result;
 		try {
-			ConfigManager configManager = ConfigManagerUtil.getHome(JFireLoginProvider.sharedInstance().getInitialContextProperties()).create();
+			ConfigManager configManager = ConfigManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
 			result = configManager.getConfigModules(configModuleIDs, fetchGroups, maxFetchDepth);
 			monitor.worked(1);
 		} catch (Exception e) {

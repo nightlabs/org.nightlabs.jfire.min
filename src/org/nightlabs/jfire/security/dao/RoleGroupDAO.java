@@ -28,10 +28,10 @@ import java.util.Set;
 
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO;
-import org.nightlabs.jfire.base.jdo.login.JFireLoginProvider;
 import org.nightlabs.jfire.security.RoleGroup;
 import org.nightlabs.jfire.security.RoleGroupIDListCarrier;
 import org.nightlabs.jfire.security.RoleGroupListCarrier;
+import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.security.UserManager;
 import org.nightlabs.jfire.security.UserManagerUtil;
 import org.nightlabs.jfire.security.id.RoleGroupID;
@@ -92,7 +92,7 @@ public class RoleGroupDAO extends BaseJDOObjectDAO<RoleGroupID, RoleGroup>
   public synchronized RoleGroupListCarrier getUserRoleGroups(UserID userID, String authorityID, String[] fetchgroups, int maxFetchDepth, ProgressMonitor monitor)
   {
   	try {
-		  um = UserManagerUtil.getHome(JFireLoginProvider.sharedInstance().getInitialContextProperties()).create();
+		  um = UserManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
 		  RoleGroupIDListCarrier ids = um.getRoleGroupIDs(userID.userID, authorityID);
 		  monitor.worked(1);
 		  RoleGroupListCarrier x = new RoleGroupListCarrier();

@@ -5,15 +5,14 @@ import java.util.Collection;
 import java.util.Set;
 
 import javax.jdo.FetchPlan;
-import javax.security.auth.login.LoginException;
 
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO;
-import org.nightlabs.jfire.base.jdo.login.JFireLoginProvider;
 import org.nightlabs.jfire.prop.PropertyManager;
 import org.nightlabs.jfire.prop.PropertyManagerUtil;
 import org.nightlabs.jfire.prop.Struct;
 import org.nightlabs.jfire.prop.id.StructID;
+import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.progress.ProgressMonitor;
 
 public class StructDAO extends BaseJDOObjectDAO<StructID, Struct> {
@@ -39,7 +38,7 @@ public class StructDAO extends BaseJDOObjectDAO<StructID, Struct> {
 	@Override
 	protected Collection<Struct> retrieveJDOObjects(Set<StructID> objectIDs, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor) throws Exception {
 		if (pm == null)
-			pm = PropertyManagerUtil.getHome(JFireLoginProvider.sharedInstance().getInitialContextProperties()).create();
+			pm = PropertyManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
 		try {
 			ArrayList<Struct> structs = new ArrayList<Struct>(objectIDs.size());
 			for (StructID structID : objectIDs)
@@ -54,7 +53,7 @@ public class StructDAO extends BaseJDOObjectDAO<StructID, Struct> {
 	protected Struct retrieveJDOObject(StructID objectID, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor) throws Exception {
 		PropertyManager pm2 = pm;
 		if (pm2 == null)
-			pm2 = PropertyManagerUtil.getHome(JFireLoginProvider.sharedInstance().getInitialContextProperties()).create();			
+			pm2 = PropertyManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();			
 		Struct struct = pm2.getFullStruct(objectID, fetchGroups, maxFetchDepth);
 		if (monitor != null)
 			monitor.worked(1);
@@ -76,13 +75,7 @@ public class StructDAO extends BaseJDOObjectDAO<StructID, Struct> {
 	}
 	
 	public Struct getStruct(String linkClass, ProgressMonitor monitor)	{
-		StructID structID;
-		try {
-			structID = StructID.create(JFireLoginProvider.sharedInstance().getOrganisationID(), linkClass);
-		} catch (LoginException e) {
-			e.printStackTrace();
-			throw new RuntimeException(e);
-		}
+		StructID structID = StructID.create(SecurityReflector.getUserDescriptor().getOrganisationID(), linkClass);
 		return getStruct(structID, new String[] {FetchPlan.ALL}, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT, monitor);
 	}
 	

@@ -6,11 +6,11 @@ import java.util.Set;
 
 import org.nightlabs.annotation.Implement;
 import org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO;
-import org.nightlabs.jfire.base.jdo.login.JFireLoginProvider;
 import org.nightlabs.jfire.organisation.Organisation;
 import org.nightlabs.jfire.organisation.OrganisationManager;
 import org.nightlabs.jfire.organisation.OrganisationManagerUtil;
 import org.nightlabs.jfire.organisation.id.OrganisationID;
+import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.progress.ProgressMonitor;
 
 public class OrganisationDAO extends BaseJDOObjectDAO<OrganisationID, Organisation>
@@ -38,7 +38,7 @@ public class OrganisationDAO extends BaseJDOObjectDAO<OrganisationID, Organisati
 	{
 		OrganisationManager organisationManager = this.organisationManager;
 		if (organisationManager == null)
-			organisationManager = OrganisationManagerUtil.getHome(JFireLoginProvider.sharedInstance().getInitialContextProperties()).create();
+			organisationManager = OrganisationManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
 
 		return organisationManager.getOrganisations(organisationIDs, fetchGroups, maxFetchDepth);
 	}
@@ -51,7 +51,7 @@ public class OrganisationDAO extends BaseJDOObjectDAO<OrganisationID, Organisati
 		monitor.beginTask("Loading Organisations", 2);
 		try {
 			try {
-				organisationManager = OrganisationManagerUtil.getHome(JFireLoginProvider.sharedInstance().getInitialContextProperties()).create();
+				organisationManager = OrganisationManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
 				try {
 					Set<OrganisationID> organisationIDs = organisationManager.getOrganisationIDs();
 					monitor.worked(1); --restWorked;
