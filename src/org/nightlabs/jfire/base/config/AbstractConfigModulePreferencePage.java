@@ -57,6 +57,7 @@ import org.nightlabs.base.composite.XComposite.LayoutMode;
 import org.nightlabs.base.notification.NotificationAdapterJob;
 import org.nightlabs.inheritance.FieldMetaData;
 import org.nightlabs.jdo.NLJDOHelper;
+import org.nightlabs.jfire.base.jdo.cache.Cache;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleManager;
 import org.nightlabs.jfire.base.login.Login;
 import org.nightlabs.jfire.base.resource.Messages;
@@ -236,14 +237,16 @@ implements IWorkbenchPreferencePage
 			
 			// check if this module has been saved lately and is therefore already up to date.
 			// This is a workaround for the recently saved module being notified right after saving.
+			// TODO this should be no prob' anymore once the Cache uses Versioning - I will soon implement this - too busy right now. Marco.
 			if (recentlySaved) {
 				recentlySaved = false;
 				return;
 			}
 			
-			ConfigModuleDAO moduleDAO = ConfigModuleDAO.sharedInstance();
-			final C updatedModule = (C) moduleDAO.getConfigModule(currentModuleID, getConfigModuleFetchGroups(), 
-					getConfigModuleMaxFetchDepth(), getProgressMonitorWrapper());
+//			ConfigModuleDAO moduleDAO = ConfigModuleDAO.sharedInstance();
+//			final C updatedModule = (C) Utils.cloneSerializable(moduleDAO.getConfigModule(currentModuleID, getConfigModuleFetchGroups(), 
+//					getConfigModuleMaxFetchDepth(), getProgressMonitorWrapper()));
+			final C updatedModule = retrieveConfigModule();
 			
 			checkAndSetIsGroupMember(updatedModule);
 
@@ -302,6 +305,7 @@ implements IWorkbenchPreferencePage
 				// if module is affected by a groupmodule but may overwrite groupmodule's settings -> notify User
 				Display.getDefault().syncExec( new Runnable() {
 					public void run() {
+						// TODO we should not forget to replace the local working copy once the user decided to do so. Marco.
 						ChangedConfigModulePagesDialog.addChangedConfigModule(
 								AbstractConfigModulePreferencePage.this, 
 								updatedModule,
@@ -431,7 +435,7 @@ implements IWorkbenchPreferencePage
 
 		if (refreshConfigModule) {
 			if (getCurrentConfigModule() == null)
-				setCurrentConfigModule(retrieveConfigModule());
+				setCurrentConfigModule(retrieveConfigModule()); // TODO: Wrap a job around this ...
 			
 			updatePreferencesGUI(currentConfigModule);
 		}
@@ -442,15 +446,15 @@ implements IWorkbenchPreferencePage
 		return x;
 	}
 
-	protected C retrieveConfigModule() {
-		return (C) ConfigModuleDAO.sharedInstance().getConfigModule(
+	protected C retrieveConfigModule() { // TODO: Pass the ProgressMonitor
+		return Utils.cloneSerializable((C) ConfigModuleDAO.sharedInstance().getConfigModule(
 				currentConfigID, 
 				getConfigModuleClass(),
 				getConfigModuleCfModID(),
 				getConfigModuleFetchGroups(),
 				getConfigModuleMaxFetchDepth(), 
-				new NullProgressMonitor() // TODO: Wrap a job around this ...
-				);
+				new NullProgressMonitor()
+				));
 	}
 
 	public void updateConfigHeader() {
@@ -772,8 +776,11 @@ implements IWorkbenchPreferencePage
 		ConfigManager configManager = null;
 		try {
 			configManager = ConfigManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
-			currentConfigModule = (C) configManager.storeConfigModule(
+			C storedConfigModule = (C) configManager.storeConfigModule(
 					getCurrentConfigModule(), true, getConfigModuleFetchGroups(), getConfigModuleMaxFetchDepth());
+
+			Cache.sharedInstance().put(null, storedConfigModule, getConfigModuleFetchGroups(), getConfigModuleMaxFetchDepth());
+			currentConfigModule = Utils.cloneSerializable(storedConfigModule);
 			recentlySaved = true;
 		} catch (Throwable e) {
 			throw new RuntimeException(e);
