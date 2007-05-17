@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry exported="true" kind="lib" path="lib/JFireBaseClientLib.jar" sourcepath="/JFireBaseClientLib"/>
-	<classpathentry exported="true" kind="lib" path="lib/JFireBaseDAO.jar" sourcepath="/JFireBaseDAO"/>	
+	<classpathentry exported="true" sourcepath="/JFireBaseClientLib" kind="lib" path="lib/JFireBaseClientLib.jar"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="var" path="JDO2" sourcepath="JPOX_SRC"/>
-	<classpathentry kind="var" path="WORKSPACE/JFireBase/dist/JFireBase.jar" sourcepath="/WORKSPACE/JFireBase/src"/>
-	<classpathentry kind="var" path="WORKSPACE/NightLabsBase/dist/NightLabsBase.jar" sourcepath="WORKSPACE/NightLabsBase/src"/>
-	<classpathentry kind="var" path="WORKSPACE/NightLabsJDO/dist/NightLabsJDO.jar" sourcepath="WORKSPACE/NightLabsJDO/src"/>
-	<classpathentry kind="var" path="WORKSPACE/JFireBaseBean/dist/JFireBaseBean.jar" sourcepath="/WORKSPACE/JFireBaseBean"/>
-	<classpathentry kind="var" path="WORKSPACE/JFireServerManager/dist/JFireServerManager.jar" sourcepath="/WORKSPACE/JFireServerManager/src"/>
+	<classpathentry sourcepath="JPOX_SRC" kind="var" path="JDO2"/>
+	<classpathentry sourcepath="/WORKSPACE/JFireBase/src" kind="var" path="WORKSPACE/JFireBase/dist/JFireBase.jar"/>
+	<classpathentry sourcepath="WORKSPACE/NightLabsBase/src" kind="var" path="WORKSPACE/NightLabsBase/dist/NightLabsBase.jar"/>
+	<classpathentry sourcepath="WORKSPACE/NightLabsJDO/src" kind="var" path="WORKSPACE/NightLabsJDO/dist/NightLabsJDO.jar"/>
+	<classpathentry sourcepath="/WORKSPACE/JFireBaseBean" kind="var" path="WORKSPACE/JFireBaseBean/dist/JFireBaseBean.jar"/>
+	<classpathentry sourcepath="/WORKSPACE/JFireServerManager/src" kind="var" path="WORKSPACE/JFireServerManager/dist/JFireServerManager.jar"/>
+	<classpathentry kind="var" path="WORKSPACE/JFireBaseDAO/dist/JFireBaseDAO.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

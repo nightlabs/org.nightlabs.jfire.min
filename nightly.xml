@@ -9,10 +9,8 @@
     <requires/>
 	<requires path="/org.nightlabs.jfire.base.j2ee.osgi"/>
 	<requires path="/JFireBaseClientLib"/>	  
-	<requires path="/JFireBaseDAO"/>
     <provides/>
     <provides path="org.nightlabs.jfire.base" location="org.nightlabs.jfire.base/lib/JFireBaseClientLib.jar"/>
-    <provides path="org.nightlabs.jfire.base" location="org.nightlabs.jfire.base/lib/JFireBaseDAO.jar"/>
     
 <!--    
 	<provides path="org.nightlabs.jfire.base" location="org.nightlabs.jfire.base/lib/NightLabsCascadedAuthenticationJBoss.jar"/>
