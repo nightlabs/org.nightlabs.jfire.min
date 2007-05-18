@@ -59,7 +59,7 @@ public class ServerConfiguratorJBoss
 			// jbossDeployDir is ${jboss}/server/default/deploy - not ${jboss}/server/default/deploy/JFire.last
 			File jbossDeployDir = new File(getJFireServerConfigModule().getJ2ee().getJ2eeDeployBaseDirectory()).getParentFile().getAbsoluteFile();
 			File jbossConfDir = new File(jbossDeployDir.getParentFile(), "conf");
-			File jbossBinDir = new File(jbossDeployDir.getParentFile(), "bin");
+			File jbossBinDir = new File(jbossDeployDir.getParentFile().getParentFile().getParentFile(), "bin");
 	
 			File destFile;
 			String text;
