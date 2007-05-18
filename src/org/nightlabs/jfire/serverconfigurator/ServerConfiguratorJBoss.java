@@ -59,6 +59,7 @@ public class ServerConfiguratorJBoss
 			// jbossDeployDir is ${jboss}/server/default/deploy - not ${jboss}/server/default/deploy/JFire.last
 			File jbossDeployDir = new File(getJFireServerConfigModule().getJ2ee().getJ2eeDeployBaseDirectory()).getParentFile().getAbsoluteFile();
 			File jbossConfDir = new File(jbossDeployDir.getParentFile(), "conf");
+			File jbossBinDir = new File(jbossDeployDir.getParentFile(), "bin");
 	
 			File destFile;
 			String text;
@@ -168,8 +169,8 @@ public class ServerConfiguratorJBoss
 			}
 	
 			// create ${jboss.bin}/CascadedAuthenticationClientInterceptor.properties if not yet existent
-			// jboss' bin is our current working directory
-			destFile = new File("CascadedAuthenticationClientInterceptor.properties");
+			// jboss' bin is *NOT ALWAYS* our current working directory
+			destFile = new File(jbossBinDir, "CascadedAuthenticationClientInterceptor.properties");
 			if (!destFile.exists()) {
 				logger.info("File " + destFile.getAbsolutePath() + " does not exist. Will create it with enable=yes.");
 				Properties props = new Properties();
