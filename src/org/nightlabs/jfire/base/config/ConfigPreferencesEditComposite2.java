@@ -35,17 +35,13 @@ import java.util.Set;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.FocusEvent;
-import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.nightlabs.base.composite.XComposite;
-import org.nightlabs.base.util.RCPUtil;
 import org.nightlabs.base.job.Job;
 import org.nightlabs.jfire.base.jdo.JDOObjectID2PCClassMap;
 import org.nightlabs.jfire.config.ConfigGroup;
@@ -115,115 +111,8 @@ implements ConfigPreferenceChangedListener, IStoreChangedConfigModule
 		});
 		preferencesComposite = new ConfigPreferencesComposite(this, SWT.NONE, true);
 		
-//		RCPUtil.getActiveWorkbenchPage().addPartListener(focusListener2);
-		// FIXME: FUck !!!! 
-//		addFocusListener(focusListener);
-//		treeComposite.getTree().addFocusListener(focusListener);
-//		addDisposeListener(new DisposeListener() {
-//			public void widgetDisposed(DisposeEvent arg0) {
-//				treeComposite.getTree().removeFocusListener(focusListener);
-//				RCPUtil.getActiveWorkbenchPage().removePartListener(focusListener2);
-//			}
-//		});
 	}
 
-	protected FocusListener focusListener = new FocusListener() {
-	
-		private boolean doReloadConfigModule;
-
-		public void focusGained(FocusEvent arg0) {
-			if (changedModules != null && !changedModules.isEmpty()) {
-				doReloadConfigModule = false;
-				Display.getDefault().syncExec(new Runnable() {
-					public void run() {
-						doReloadConfigModule = MessageDialog.openConfirm(RCPUtil.getActiveWorkbenchShell(), 
-								"The following configuration modules changed: "+changedModules+" !\n",
-						"Do you want the config module to be reloaded?");
-					}
-				});
-				
-				if (!doReloadConfigModule) {
-					changedModules.clear();
-					return;
-				}
-				
-				AbstractConfigModulePreferencePage pageToUpdate;
-				for (ConfigModule changedModule : changedModules) {
-					dirtyConfigModules.remove(changedModule);
-					pageToUpdate = involvedPages.get(changedModules.getClass().getName());
-					pageToUpdate.setCurrentConfigModule(changedModule);
-					
-					Display.getDefault().asyncExec(new RefreshJob(pageToUpdate, changedModule));
-				}
-
-			}
-		}
-	
-		public void focusLost(FocusEvent arg0) {
-		}
-	};
-	
-//	protected IPartListener focusListener2 = new IPartListener() {
-//		private boolean doReloadConfigModule;
-//
-//		private void checkAndAskUser() {
-//			if (changedModules != null && !changedModules.isEmpty()) {
-//				doReloadConfigModule = false;
-//				Display.getDefault().syncExec(new Runnable() {
-//					public void run() {
-//						doReloadConfigModule = MessageDialog.openConfirm(RCPUtil.getActiveWorkbenchShell(), 
-//								"The following configuration modules changed: "+changedModules+" !\n",
-//						"Do you want the config module to be reloaded?");
-//					}
-//				});
-//				
-//				if (!doReloadConfigModule) {
-//					changedModules.clear();
-//					return;
-//				}
-//				
-//				AbstractConfigModulePreferencePage pageToUpdate;
-//				for (ConfigModule changedModule : changedModules) {
-//					dirtyConfigModules.remove(changedModule);
-//					pageToUpdate = involvedPages.get(changedModules.getClass().getName());
-//					pageToUpdate.setCurrentConfigModule(changedModule);
-//					
-//					Display.getDefault().asyncExec(new RefreshJob(pageToUpdate, changedModule));
-//				}
-//
-//			}
-//		}
-//	
-//		public void partOpened(IWorkbenchPart part) {
-//		}
-//		public void partDeactivated(IWorkbenchPart part) {
-//		}
-//		public void partClosed(IWorkbenchPart part) {
-//		}
-//	
-//		public void partBroughtToTop(IWorkbenchPart part) {
-//		}
-//	
-//		public void partActivated(IWorkbenchPart part) {
-//			if (part == ConfigPreferencesEditComposite2.this)
-//				checkAndAskUser();
-//		}
-//	};
-	
-	protected class RefreshJob implements Runnable {
-		AbstractConfigModulePreferencePage pageToRefresh;
-		ConfigModule updatedModule;
-		
-		public RefreshJob(AbstractConfigModulePreferencePage pageToRefresh, ConfigModule updatedModule) {
-			this.pageToRefresh = pageToRefresh;
-			this.updatedModule = updatedModule;
-		}
-		public void run() {
-			pageToRefresh.updateConfigHeader();
-			pageToRefresh.updatePreferencePage(updatedModule);											
-		}
-	};
-	
 	private void updatePreferencesGUI() {
 		AbstractConfigModulePreferencePage selectedPage = getCurrentPage();
 		if (selectedPage == null) {
@@ -232,13 +121,11 @@ implements ConfigPreferenceChangedListener, IStoreChangedConfigModule
 		}
 
 		if (!involvedPages.values().contains(selectedPage)) 
-		{			
-			selectedPage.createContents(preferencesComposite.getWrapper(), editingConfigGroup, true, 
-					currentConfigModule, this);
+		{
+			selectedPage.createContents(preferencesComposite.getWrapper(), currentConfigID);
 			selectedPage.addConfigPreferenceChangedListener(this);
 			involvedPages.put(currentConfigModule.getClass().getSimpleName().toString(), selectedPage);
 		}
-		selectedPage.updatePreferencesGUI(currentConfigModule);
 
 		preferencesComposite.getStackLayout().topControl = selectedPage.getControl();		
 		preferencesComposite.getWrapper().layout();
@@ -247,7 +134,7 @@ implements ConfigPreferenceChangedListener, IStoreChangedConfigModule
 	private void updateCurrentConfigModule() {
 		if (currentConfigModule != null && currentPage != null) {
 			if (currentConfigModule.getClass().equals(currentPage.getConfigModuleClass())) {				
-				currentPage.updateCurrentCfMod();
+				currentPage.updateCurrentConfigModule();
 			}
 		}
 	}

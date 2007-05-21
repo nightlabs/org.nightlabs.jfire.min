@@ -136,19 +136,18 @@ extends CenteredDialog // IconAndMessageDialog
 	 * @param updatedModule the updated {@link ConfigModule}
 	 * @param correspondingConfig the config corresponding to the changed module
 	 */
-	public static void addChangedConfigModule(AbstractConfigModulePreferencePage page, 
-			ConfigModule updatedModule, Config correspondingConfig) 
+	public static void addChangedConfigModule(AbstractConfigModulePreferencePage page, ConfigModule updatedModule) 
 	{
 		// TODO we should NOT pass the correspondingConfig because it allows inconsistent data to be passed
 		// to this dialog. Instead the correspondingConfig should be read from the config module.
 		// It should, however, only be detached with the primary keys (FetchPlan.DEFAULT) and NOT any other fields!
 		// TODO requires further thoughts because of modification notifications (the module would get dirty on the client side if the config is marked dirty)
 		try {
-			if (! updatedModule.getConfig().equals(correspondingConfig))
+			if (updatedModule.getConfig() == null)
 				throw new RuntimeException("The updated ConfigModule does not belong to the given Config!");
 		} catch (JDODetachedFieldAccessException e) {
-			// This may happen if the fetchDepth or the FetchGroups did not include the Config of the 
-			// ConfigModule. In these cases we believe the caller gives us the correct corresponding config. 
+			throw new RuntimeException("The ConfigModule passed to the ChangedConfigModuleDialog was not" +
+					" detached with its Config information! Please detach the Config as well; a flat copy is enough.", e);
 		}
 
 		if (sharedInstance == null) {
@@ -156,23 +155,24 @@ extends CenteredDialog // IconAndMessageDialog
 			sharedInstance.open();
 		}
 
-		sharedInstance._addChangedConfigModule(page, updatedModule, correspondingConfig);
+		sharedInstance._addChangedConfigModule(page, updatedModule);
 //		if (! sharedInstance.isDialogOpened()) {
 //			sharedInstance.open(); // TODO really blocking mode?! NO!!! We don't use blocking mode anymore!
 //		}
 	}
 
-	private void _addChangedConfigModule(AbstractConfigModulePreferencePage page, ConfigModule updatedModule,
-			Config correspondingConfig) {
-		Set<TreeItem> changedModulesOfConfig = updatedConfigs.get(correspondingConfig);
+	private void _addChangedConfigModule(AbstractConfigModulePreferencePage page, ConfigModule updatedModule)
+	{
+		Config correspConfig = updatedModule.getConfig();
+		Set<TreeItem> changedModulesOfConfig = updatedConfigs.get(correspConfig);
 		if (changedModulesOfConfig == null) {
 			changedModulesOfConfig = new HashSet<TreeItem>();
-			updatedConfigs.put(correspondingConfig, changedModulesOfConfig);			
+			updatedConfigs.put(correspConfig, changedModulesOfConfig);			
 		}
 		changedModulesOfConfig.add(new TreeItem(page, updatedModule));
 
 		treeViewer.refresh(updatedConfigs);
-		treeViewer.expandToLevel(correspondingConfig, 2);
+		treeViewer.expandToLevel(correspConfig, 2);
 	}
 
 	/* (non-Javadoc)

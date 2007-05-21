@@ -6,6 +6,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import javax.jdo.FetchPlan;
+
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TableViewer;
@@ -18,6 +20,7 @@ import org.nightlabs.base.table.AbstractTableComposite;
 import org.nightlabs.base.table.TableContentProvider;
 import org.nightlabs.base.table.TableLabelProvider;
 import org.nightlabs.jfire.base.config.AbstractWorkstationConfigModulePreferencePage;
+import org.nightlabs.jfire.config.ConfigModule;
 import org.nightlabs.jfire.workstation.WorkstationFeature;
 import org.nightlabs.jfire.workstation.WorkstationFeaturesCfMod;
 
@@ -56,18 +59,19 @@ public class WorkstationFeaturesPreferencePage extends
 	}
 
 	@Override
-	protected void discardPreferencePageWidgets() {
-		// do nothing now
-	}
-
-	@Override
 	public Class<WorkstationFeaturesCfMod> getConfigModuleClass() {
 		return WorkstationFeaturesCfMod.class;
 	}
+	
+	@Override
+	public String[] getConfigModuleFetchGroups() {
+		return new String[] {FetchPlan.DEFAULT, WorkstationFeaturesCfMod.FETCH_GROUP_THIS_FEATURES, 
+				ConfigModule.FETCH_GROUP_FIELDMETADATAMAP};
+	}
 
 	@Override
-	protected void updateConfigModule(WorkstationFeaturesCfMod configModule) {
-		Map<String, WorkstationFeature> oldFeatures = configModule.getFeatures();
+	protected void updateConfigModule() {
+		Map<String, WorkstationFeature> oldFeatures = currentConfigModule.getFeatures();
 		
 		// FIXME: JPOX is having Problems clearing the list before adding new entries => Duplicate Key Exeption!
 		// 				Workaround in WorkstationFeatureCfMod.JDOpreattach();
@@ -120,19 +124,13 @@ public class WorkstationFeaturesPreferencePage extends
 
 	protected List<WorkstationFeature> getAvailableFeatures() {
 		List<WorkstationFeature> result = new ArrayList<WorkstationFeature>();
-		if (!(getCurrentConfigModule() instanceof WorkstationFeaturesCfMod))
+		if (!(getConfigModule() instanceof WorkstationFeaturesCfMod))
 			return result;
-		WorkstationFeaturesCfMod cfMod = (WorkstationFeaturesCfMod) getCurrentConfigModule();
+		WorkstationFeaturesCfMod cfMod = (WorkstationFeaturesCfMod) getConfigModule();
 		result.add(new WorkstationFeature(cfMod, "org.nightlabs.base", "1.0.0"));
 		result.add(new WorkstationFeature(cfMod, "org.nightlabs.jfire.base", "1.0.0"));
 		result.add(new WorkstationFeature(cfMod, "org.nightlabs.jfire.base.admin", "1.0.0"));
 		return result;
-	}
-
-	@Override
-	protected void setEditable(boolean editable) {
-		// TODO Auto-generated method stub
-		super.setEditable(editable);
 	}
 
 }

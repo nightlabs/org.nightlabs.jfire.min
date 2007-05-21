@@ -72,7 +72,7 @@ public abstract class AbstractUserConfigModulePreferencePage<C extends ConfigMod
 	public void init(IWorkbench workbench) {
 		try {
 			Login login = Login.getLogin();
-			setCurrentConfigID(UserConfigSetup.getUserConfigID(UserID.create(login.getOrganisationID(), login.getUserID())), false);
+			initPage(UserConfigSetup.getUserConfigID(UserID.create(login.getOrganisationID(), login.getUserID())));
 			
 		} catch (Exception e) {
 			throw new RuntimeException(e);
