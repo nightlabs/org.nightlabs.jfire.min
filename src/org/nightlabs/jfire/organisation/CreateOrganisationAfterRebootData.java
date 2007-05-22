@@ -38,10 +38,10 @@ public class CreateOrganisationAfterRebootData
 	}
 
 	@SuppressWarnings("unchecked")
-	public CreateOrganisationAfterRebootData(JFireServerManager jfsm)
+	public CreateOrganisationAfterRebootData(File j2eeDeployBaseDirectory)
 	throws IOException
 	{
-		File dir = new File(new File(jfsm.getJFireServerConfigModule().getJ2ee().getJ2eeDeployBaseDirectory(), JFireBaseEAR.MODULE_NAME + ".ear"), "config");
+		File dir = new File(new File(j2eeDeployBaseDirectory, JFireBaseEAR.MODULE_NAME + ".ear"), "config");
 		if (!dir.isDirectory())
 			throw new IllegalStateException("The directory does not exist: " + dir.getAbsolutePath());
 
@@ -63,6 +63,12 @@ public class CreateOrganisationAfterRebootData
 				in.close();
 			}
 		}
+	}
+	
+	public CreateOrganisationAfterRebootData(JFireServerManager jfsm)
+	throws IOException
+	{
+		this(new File(jfsm.getJFireServerConfigModule().getJ2ee().getJ2eeDeployBaseDirectory()));
 	}
 
 	public void addOrganisation(String organisationID, String organisationDisplayName, String userID, String password, boolean isServerAdmin) throws IOException
