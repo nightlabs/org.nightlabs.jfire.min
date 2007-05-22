@@ -51,7 +51,6 @@ import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
-import org.nightlabs.ModuleException;
 import org.nightlabs.base.extensionpoint.AbstractEPProcessor;
 import org.nightlabs.base.extensionpoint.EPProcessorException;
 import org.nightlabs.base.progress.ProgressMonitorWrapper;
@@ -292,7 +291,7 @@ implements InitialContextProvider
 		Exception ex = null;
 		try {
 			Cache.sharedInstance().close();
-		} catch (ModuleException e) {
+		} catch (Exception e) {
 			ex = e;
 		}
 		if (doNotify) {
