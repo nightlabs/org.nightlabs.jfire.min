@@ -41,7 +41,6 @@ import java.util.TreeSet;
 import javax.jdo.JDOHelper;
 
 import org.apache.log4j.Logger;
-import org.nightlabs.ModuleException;
 import org.nightlabs.config.Config;
 import org.nightlabs.config.ConfigException;
 import org.nightlabs.jdo.NLJDOHelper;
@@ -434,6 +433,7 @@ public class Cache
 							try {
 								jdoManager.resubscribeAllListeners(
 										currentlySubscribedObjectIDs,
+										// TODO we should ensure JDOLifecycleManager works in server-mode as well!
 										JDOLifecycleManager.sharedInstance().getLifecycleListenerFilters());
 								resubscribeFailed = false;
 							} finally {
@@ -796,18 +796,58 @@ public class Cache
 		}
 	}
 
+	private static boolean serverMode = false;
+
+	public static synchronized void setServerMode(boolean serverMode)
+	{
+		if (serverMode && _sharedInstance != null)
+			throw new IllegalStateException("Cannot switch to serverMode after a client-mode-sharedInstance has been created!");
+
+		if (!serverMode && serverModeSharedInstances != null)
+			throw new IllegalStateException("Cannot switch to clientMode after a server-mode-sharedInstance has been created!");
+
+		Cache.serverMode = serverMode;
+	}
+
+	private static Map<String, Cache> serverModeSharedInstances = null;
+
+	private static String getCurrentUserName()
+	{
+		return SecurityReflector.getUserDescriptor().getCompleteUserID();
+	}
+
+	private static String getCurrentSessionID()
+	{
+		return SecurityReflector.getUserDescriptor().getSessionID();
+	}
+
 	/**
-	 * @return Returns the singleton of this class.
+	 * @return Returns the singleton of this class - or the pseudo-shared instance for the currently logged in user.
 	 *
 	 * @throws In case the cache needs to be created and a {@link ConfigException} occurs while obtaining {@link CacheCfMod}. 
 	 */
-	public static Cache sharedInstance()
+	public static synchronized Cache sharedInstance()
 	{
 		try {
-			if (_sharedInstance == null)
-				_sharedInstance = new Cache();
-	
-			return _sharedInstance;
+			if (serverMode) {
+				if (serverModeSharedInstances == null)
+					serverModeSharedInstances = new HashMap<String, Cache>();
+
+				String userName = getCurrentUserName();
+				Cache cache = serverModeSharedInstances.get(userName);
+				if (cache == null) {
+					cache = new Cache();
+					serverModeSharedInstances.put(userName, cache);
+					cache.open(getCurrentSessionID());
+				}
+				return cache;
+			}
+			else {
+				if (_sharedInstance == null)
+					_sharedInstance = new Cache();
+
+				return _sharedInstance;
+			}
 		} catch (ConfigException e) {
 			throw new RuntimeException(e);
 		}
@@ -1363,8 +1403,22 @@ public class Cache
 			throw new IllegalStateException("Cache is currently not open!");
 	}
 
+	/**
+	 * This method opens the cache for a given sessionID. If the cache is currently open
+	 * for another session, it will be closed and reopened. If it is already open for the
+	 * same sessionID, this method returns without any action.
+	 *
+	 * @param sessionID A unique ID for the current session.
+	 */
 	public synchronized void open(String sessionID)
 	{
+		if (this.sessionID != null) {
+			if (this.sessionID.equals(sessionID))
+				return;
+
+			close();
+		}
+
 		if (sessionID == null || sessionID.length() < 2)
 			throw new IllegalArgumentException("sessionID must be a String with at least 2 characters!");
 
@@ -1374,29 +1428,26 @@ public class Cache
 	}
 
 	public synchronized void close()
-	throws ModuleException
 	{
 		try {
 			JDOManager jm = JDOManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
 
 			// remove all listeners for this session - done by remote closeCacheSession(...)
 			jm.closeCacheSession();
-
-			// stop the threads
-			cacheManagerThread.interrupt();
-			cacheManagerThread = null;
-			notificationThread.interrupt();
-			notificationThread = null;
-
-			// clear the cache
-			removeAll();
-
-			// forget the sessionID - a new one will automatically be generated
-			sessionID = null;
-		} catch (ModuleException x) {
-			throw x;
 		} catch (Exception x) {
-			throw new ModuleException(x);
+			logger.warn("Closing CacheSession on server failed!", x); // the server closes cacheSessions after a certain expiry time anyway
 		}
+
+		// stop the threads
+		cacheManagerThread.interrupt();
+		cacheManagerThread = null;
+		notificationThread.interrupt();
+		notificationThread = null;
+
+		// clear the cache
+		removeAll();
+
+		// forget the sessionID - a new one will automatically be generated
+		sessionID = null;
 	}
 }

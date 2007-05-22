@@ -228,6 +228,7 @@ extends org.nightlabs.notification.NotificationManager
 			lifecycleListenerFilters = null;
 		}
 
+		// TODO we should ensure that this works in server-mode, too (is this method called asynchronously by another user/anonymously?)
 		Cache.sharedInstance().addLifecycleListenerFilter(jdoLifecycleListenerFilter, 0);
 	}
 
@@ -245,6 +246,7 @@ extends org.nightlabs.notification.NotificationManager
 			lifecycleListenerFilters = null;
 		}
 
+		// TODO we should ensure that this works in server-mode, too (is this method called asynchronously by another user/anonymously?)
 		Cache.sharedInstance().removeLifecycleListenerFilter(jdoLifecycleListenerFilter, 0);
 	}
 
