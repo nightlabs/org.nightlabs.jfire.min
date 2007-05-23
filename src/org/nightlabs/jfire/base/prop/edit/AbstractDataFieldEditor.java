@@ -73,7 +73,6 @@ public abstract class AbstractDataFieldEditor<F extends AbstractDataField> imple
 	public void setData(IStruct struct, F data) {
 		refreshing = true;
 		this.struct = struct;
-		structField = data.getStructField();
 		try  {
 			setDataField(data);
 		} finally {

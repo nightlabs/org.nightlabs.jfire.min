@@ -410,4 +410,8 @@
             elementPath="perspective"
             extensionPointID="org.eclipse.ui.perspectives"/>
    </extension>
+   <extension
+         point="org.nightlabs.jfire.base.j2ee.remoteResourceFilter">
+      <exclusion pattern="org.nightlabs.jfire.base.exclusion1"/>
+   </extension>
 </plugin>

@@ -32,8 +32,6 @@ import java.util.ResourceBundle;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
-import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleManager;
-import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleManagerRCP;
 import org.nightlabs.jfire.base.login.Login;
 import org.nightlabs.jfire.config.ConfigManager;
 import org.nightlabs.jfire.config.ConfigManagerUtil;
@@ -75,7 +73,7 @@ public class JFireBasePlugin
 		// and probably we're OFFLINE and can't do that!
 		System.setProperty("org.nightlabs.jfire.idgenerator.idGeneratorClass", "org.nightlabs.jfire.base.idgenerator.IDGeneratorClient");
 		System.setProperty("org.nightlabs.jfire.security.SecurityReflector", "org.nightlabs.jfire.base.security.SecurityReflectorClient");
-		System.setProperty(JDOLifecycleManager.PROPERTY_KEY_JDO_LIFECYCLE_MANAGER, JDOLifecycleManagerRCP.class.getName());
+		System.setProperty("org.nightlabs.jfire.base.jdo.notification.JDOLifecycleManager", "org.nightlabs.jfire.base.jdo.notification.JDOLifecycleManagerRCP");
 
 //		Login.addLoginStateListener(this);
 //		LOGGER.debug("Registered JFireBasePlugin as LoginStateListener");

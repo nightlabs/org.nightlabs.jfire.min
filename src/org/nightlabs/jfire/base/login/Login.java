@@ -881,6 +881,8 @@ implements InitialContextProvider
 						logger.error("Processing LoginStateListener extensions failed!", e);
 					}
 				}
+				// WORKAROUND: For classloading deadlock
+				Thread.sleep(200);
 				for (Iterator it = new LinkedList(loginStateListenerRegistry).iterator(); it.hasNext();) {
 					try {
 						LoginStateListenerRegistryItem item = (LoginStateListenerRegistryItem)it.next();
@@ -888,6 +890,8 @@ implements InitialContextProvider
 					} catch (Throwable t) {
 						logger.warn("Caught exception while notifying LoginStateListener. Continue.", t);
 					}
+					// WORKAROUND: For classloading deadlock
+					Thread.sleep(200);
 				}
 			} catch (Throwable t) {
 				logger.warn("Cought exception while notifying LoginStateListener. Abort.", t);
