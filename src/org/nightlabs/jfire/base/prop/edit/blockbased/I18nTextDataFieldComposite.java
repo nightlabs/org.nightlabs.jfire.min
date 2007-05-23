@@ -33,10 +33,13 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.nightlabs.base.language.I18nTextEditor;
+import org.nightlabs.base.language.I18nTextEditorMultiLine;
+import org.nightlabs.base.language.II18nTextEditor;
 import org.nightlabs.base.language.I18nTextEditor.EditMode;
 import org.nightlabs.i18n.I18nText;
 import org.nightlabs.jfire.base.prop.edit.AbstractDataFieldComposite;
 import org.nightlabs.jfire.prop.StructField;
+import org.nightlabs.jfire.prop.structfield.I18nTextStructField;
 
 /**
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
@@ -44,7 +47,7 @@ import org.nightlabs.jfire.prop.StructField;
 public class I18nTextDataFieldComposite extends AbstractDataFieldComposite {
 
 	private Label fieldName;
-	private I18nTextEditor i18nTextEditor;
+	private II18nTextEditor i18nTextEditor;
 	private I18nTextDataFieldEditor editor;
 	private ModifyListener modifyListener;
 	
@@ -76,13 +79,21 @@ public class I18nTextDataFieldComposite extends AbstractDataFieldComposite {
 		nameData.grabExcessHorizontalSpace = true;
 		fieldName.setLayoutData(nameData);
 		
-		i18nTextEditor = new I18nTextEditor(this);
+		I18nTextStructField field = (I18nTextStructField) editor.getStructField();
+		
+		if (field.getLineCount() > 1)		
+			i18nTextEditor = new I18nTextEditorMultiLine(this, null, null, field.getLineCount());
+		else
+			i18nTextEditor = new I18nTextEditor(this);
+		
 		i18nTextEditor.setI18nText(null, EditMode.BUFFERED);
 		GridData textData = new GridData(GridData.FILL_HORIZONTAL);
 		textData.grabExcessHorizontalSpace = true;
 		i18nTextEditor.setEditable(true);
-		i18nTextEditor.setEnabled(true);
-		i18nTextEditor.setLayoutData(textData);
+		if (i18nTextEditor instanceof Composite) {
+			((Composite)i18nTextEditor).setEnabled(true);
+			((Composite)i18nTextEditor).setLayoutData(textData);
+		}
 		this.modifyListener = modListener;
 		i18nTextEditor.addModifyListener(modifyListener);
 	}
