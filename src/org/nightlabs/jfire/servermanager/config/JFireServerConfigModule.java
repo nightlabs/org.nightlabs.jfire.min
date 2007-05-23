@@ -42,8 +42,6 @@ import org.nightlabs.config.InitException;
 import org.nightlabs.jfire.server.LocalServer;
 import org.nightlabs.jfire.server.Server;
 import org.nightlabs.jfire.serverconfigurator.ServerConfigurator;
-import org.nightlabs.jfire.serverconfigurator.ServerConfiguratorJBoss;
-import org.nightlabs.jfire.serverconfigurator.ServerConfiguratorJBossMySQL;
 import org.nightlabs.jfire.servermanager.db.DatabaseAdapter;
 import org.nightlabs.jfire.servermanager.db.DatabaseAdapterHSQL;
 import org.nightlabs.jfire.servermanager.db.DatabaseAdapterMySQL;
@@ -119,12 +117,12 @@ public class JFireServerConfigModule extends ConfigModule
 				setJ2eeDeployBaseDirectory("../server/default/deploy/JFire.last/");
 
 			if (serverConfigurator == null)
-				setServerConfigurator(ServerConfiguratorJBoss.class.getName());
+				setServerConfigurator("org.nightlabs.jfire.jboss.serverconfigurator.ServerConfiguratorJBoss");
 
 			if (availableServerConfigurators == null) {
 				availableServerConfigurators = new ArrayList<String>();
-				availableServerConfigurators.add(ServerConfiguratorJBoss.class.getName());
-				availableServerConfigurators.add(ServerConfiguratorJBossMySQL.class.getName());
+				availableServerConfigurators.add("org.nightlabs.jfire.jboss.serverconfigurator.ServerConfiguratorJBoss");
+				availableServerConfigurators.add("org.nightlabs.jfire.jboss.serverconfigurator.ServerConfiguratorJBossMySQL");
 			}
 		}
 	}

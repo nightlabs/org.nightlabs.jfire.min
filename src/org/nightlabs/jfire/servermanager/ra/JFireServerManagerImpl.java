@@ -43,12 +43,12 @@ import javax.resource.cci.ResultSetInfo;
 import javax.security.auth.login.LoginException;
 
 import org.apache.log4j.Logger;
-import org.jboss.security.SimplePrincipal;
 import org.nightlabs.ModuleException;
 import org.nightlabs.config.Config;
 import org.nightlabs.config.ConfigException;
 import org.nightlabs.jfire.base.JFirePrincipal;
 import org.nightlabs.jfire.base.Lookup;
+import org.nightlabs.jfire.base.SimplePrincipal;
 import org.nightlabs.jfire.classloader.CLRegistrar;
 import org.nightlabs.jfire.module.ModuleType;
 import org.nightlabs.jfire.security.RoleSet;

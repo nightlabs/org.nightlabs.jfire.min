@@ -37,7 +37,6 @@ import org.nightlabs.config.ConfigModule;
 import org.nightlabs.config.InitException;
 import org.nightlabs.config.Initializable;
 import org.nightlabs.jfire.server.Server;
-import org.nightlabs.jfire.servermanager.j2ee.J2EEAdapterJBoss;
 
 /**
  * @author Marco Schulze - marco at nightlabs dot de
@@ -237,13 +236,13 @@ public class J2eeServerTypeRegistryConfigModule extends ConfigModule
 			localServer = new J2eeLocalServer();
 			localServer.cfMod = this;
 			localServer.setJ2eeServerType(Server.J2EESERVERTYPE_JBOSS32X);
-			localServer.setJ2eeVendorAdapterClassName(J2EEAdapterJBoss.class.getName());
+			localServer.setJ2eeVendorAdapterClassName("org.nightlabs.jfire.jboss.j2ee.J2EEAdapterJBoss");
 			localServer.init();
 
 			remoteServer = new J2eeRemoteServer();
 			remoteServer.cfMod = this;
 			remoteServer.setJ2eeServerType(Server.J2EESERVERTYPE_JBOSS32X);
-			remoteServer.setInitialContextFactory("org.nightlabs.authentication.jboss.LoginInitialContextFactory");
+			remoteServer.setInitialContextFactory("org.nightlabs.jfire.jboss.cascadedauthentication.LoginInitialContextFactory");
 			remoteServer.setAnonymousInitialContextFactory("org.jnp.interfaces.NamingContextFactory");
 			remoteServer.init();
 			localServer.addJ2eeRemoteServer(remoteServer);
@@ -251,7 +250,7 @@ public class J2eeServerTypeRegistryConfigModule extends ConfigModule
 			remoteServer = new J2eeRemoteServer();
 			remoteServer.cfMod = this;
 			remoteServer.setJ2eeServerType(Server.J2EESERVERTYPE_JBOSS40X);
-			remoteServer.setInitialContextFactory("org.nightlabs.authentication.jboss.LoginInitialContextFactory");
+			remoteServer.setInitialContextFactory("org.nightlabs.jfire.jboss.cascadedauthentication.LoginInitialContextFactory");
 			remoteServer.setAnonymousInitialContextFactory("org.jnp.interfaces.NamingContextFactory");
 			remoteServer.init();
 			localServer.addJ2eeRemoteServer(remoteServer);
@@ -263,13 +262,13 @@ public class J2eeServerTypeRegistryConfigModule extends ConfigModule
 			localServer = new J2eeLocalServer();
 			localServer.cfMod = this;
 			localServer.setJ2eeServerType(Server.J2EESERVERTYPE_JBOSS40X);
-			localServer.setJ2eeVendorAdapterClassName(J2EEAdapterJBoss.class.getName());
+			localServer.setJ2eeVendorAdapterClassName("org.nightlabs.jfire.jboss.j2ee.J2EEAdapterJBoss");
 			localServer.init();
 
 			remoteServer = new J2eeRemoteServer();
 			remoteServer.cfMod = this;
 			remoteServer.setJ2eeServerType(Server.J2EESERVERTYPE_JBOSS32X);
-			remoteServer.setInitialContextFactory("org.nightlabs.authentication.jboss.LoginInitialContextFactory");
+			remoteServer.setInitialContextFactory("org.nightlabs.jfire.jboss.cascadedauthentication.LoginInitialContextFactory");
 			remoteServer.setAnonymousInitialContextFactory("org.jnp.interfaces.NamingContextFactory");
 			remoteServer.init();
 			localServer.addJ2eeRemoteServer(remoteServer);
@@ -277,7 +276,7 @@ public class J2eeServerTypeRegistryConfigModule extends ConfigModule
 			remoteServer = new J2eeRemoteServer();
 			remoteServer.cfMod = this;
 			remoteServer.setJ2eeServerType(Server.J2EESERVERTYPE_JBOSS40X);
-			remoteServer.setInitialContextFactory("org.nightlabs.authentication.jboss.LoginInitialContextFactory");
+			remoteServer.setInitialContextFactory("org.nightlabs.jfire.jboss.cascadedauthentication.LoginInitialContextFactory");
 			remoteServer.setAnonymousInitialContextFactory("org.jnp.interfaces.NamingContextFactory");
 			remoteServer.init();
 			localServer.addJ2eeRemoteServer(remoteServer);
