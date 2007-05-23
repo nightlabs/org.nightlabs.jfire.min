@@ -126,7 +126,7 @@ implements IWorkbenchPreferencePage
 	 * this method, the default contains solely {@link FetchPlan#DEFAULT} - causing a
 	 * {@link JDODetachedFieldAccessException} if required fields are accessed but not detached.
 	 */
-	private static final String[] CONFIG_MODULE_FETCH_GROUPS = new String[] {FetchPlan.DEFAULT}; 
+	private static final String[] CONFIG_MODULE_FETCH_GROUPS = new String[] {FetchPlan.DEFAULT, ConfigModule.FETCH_GROUP_FIELDMETADATAMAP}; 
 
 	/**
 	 * the outmost wrapper used to grey out the page while loading.
@@ -171,13 +171,6 @@ implements IWorkbenchPreferencePage
 	 */
 	protected C currentConfigModule;
 	
-	/**
-	 * This {@link ConfigModule} is used as a backup. If the Config is in a group and it may inherit
-	 * settings from a group module, then the user may edit the configuration of the {@link #currentConfigModule}
-	 * and later decide to inherit again.
-	 */
-//	private C backupConfigModule;
-
 	/**
 	 * Whether the <code>currentConfigModule</code> is in a ConfigGroup and therefore underlies the 
 	 * inheritence constrains.
@@ -423,22 +416,6 @@ implements IWorkbenchPreferencePage
 		} // notify(NotificationEvent notificationEvent)		
 	}; // ConfigModuleChangeListener
 
-//	/**
-//	 * Determines whether config modules are
-//	 * cloned by {@link Utils#cloneSerializable(Object)}
-//	 * after retrieval. Doing so allows pages to change
-//	 * the module directly, without changing the instance
-//	 * that might be in the Cache and used in other places
-//	 * throughout the application?
-//	 * The default implementation returns <code>true</code>.
-//	 * 
-//	 * @return Whether the config module should be cloned.
-//	 */
-//	// brauchen wir das? -> no
-//	protected boolean doCloneConfigModule() {
-//		return true;
-//	}
-
 	/**
 	 * Whether the current config has changed since it was last set.
 	 *  
@@ -485,7 +462,7 @@ implements IWorkbenchPreferencePage
 	public Control createContents(Composite parent, ConfigID configID) 
 	{
 		this.doSetControl = true;
-		initPage(configID);
+		this.configID = configID;
 		return createContents(parent);
 	}
 
@@ -550,7 +527,7 @@ implements IWorkbenchPreferencePage
 	
 	/**
 	 * Initialises the main GUI elements: The header and the body of the preference page.
-	 * It needs the {@link #currentConfigModule} to be set.
+	 * It will be called by the job fetching {@link #currentConfigModule} data.  
 	 */
 	private void setUpGui() {
 		if (currentConfigModule.isGroupConfigModule())
@@ -746,6 +723,8 @@ implements IWorkbenchPreferencePage
 	 * to be edited. The default implementation will return false only when
 	 * the {@link ConfigGroup} of the given module's Config disallows the member to overwrite the 
 	 * configuration.
+	 * This method is costly, since it calls {@link #checkIfIsGroupMember(ConfigModule)}, which needs 
+	 * to fetch data from the datastore. 
 	 * 
 	 * @param configModule the {@link ConfigModule} to be checked whether it is editable or not. 
 	 * @return Whether the <code>configModule</code> is allowed to be edited.
@@ -765,7 +744,6 @@ implements IWorkbenchPreferencePage
 	 * This is intended to be extended for different behaviour on canEdit() == false.
 	 */
 	protected void setEditable(boolean editable) {
-//		fadableWrapper.setFaded(! editable);
 		fadableWrapper.setEnabled(editable);
 	}
 
@@ -827,43 +805,32 @@ implements IWorkbenchPreferencePage
 	}
 
 	/**
-	 * Returns 2, since a flatly detached corresponding config is enough for most cases.
+	 * Returns the needed FetchDepth to include the FielMetaData of the Configmodules (2).  
 	 * If further information is necessary overwrite this method to return the correct maximal fetch 
 	 * depth.
 	 *  
-	 * @return 2.
+	 * @return the needed FetchDepth to include the FielMetaData of the Configmodules (2).
 	 */
 	public int getConfigModuleMaxFetchDepth() {
 		return 2;
 	}
 
 	/**
-	 * Default implementation does nothing. Subclasses (AbstractUser..., AbstractWorkstation...),
-	 * set a ConfigID for this PreferencePage. 
-	 * This method is called by the PreferencePage-Framework of Eclipse but
-	 * not by the Config-Framework of JFire. 
+	 * Default implementation does nothing. Subclasses (AbstractUser..., AbstractWorkstation...) have
+	 * to set the <code>configID</code> of the their context for this PreferencePage. The 
+	 * {@link AbstractUserConfigModulePreferencePage}, for example, sets the configID of the Config 
+	 * attached to the current Userdata.
+	 * <p> 
+	 * This method is called by the PreferencePage-Framework of Eclipse but not by the Config-Framework 
+	 * of JFire. <br> 
 	 * 
-	 * If this page shall be embeded in another Context use {@link #initPage(ConfigID)}!
+	 * If this page shall be embeded in another Context use {@link #createContents(Composite, ConfigID)}.
 	 *  
 	 * @see org.eclipse.ui.IWorkbenchPreferencePage#init(org.eclipse.ui.IWorkbench)
 	 */
 	public void init(IWorkbench workbench) {
 	}
 	
-	/**
-	 * Sets the <code>configID</code>, which is later used to retrieve the correct {@link ConfigModule}.
-	 * 
-	 *  This is used by the {@link ConfigPreferencesEditComposite2} to set up this page. Whereas 
-	 *  {@link #init(IWorkbench)} is used by the Eclipse Preference Page mechanism to initialise 
-	 *  this page.
-	 *    
-	 * @param configID the {@link ConfigID} corresponding to the {@link Config}, whose 
-	 * 	{@link ConfigModule} shall be displayed by this page.
-	 */
-	public void initPage(ConfigID configID) {
-		this.configID = configID;
-	}
-
 	/**
 	 * Calls implementors to {@link #updateConfigModule(ConfigModule)} and
 	 * stores the updatedConfig module to the server.
@@ -910,18 +877,6 @@ implements IWorkbenchPreferencePage
 		}
 	}
 
-//	protected abstract void discardPreferencePageWidgets();
-
-	// FIXME: Warum diese Methode? sie überschrieb nichts und wurde von nichts in JfireMax getriggeret?
-	// 	Ebenso discardPreferencePageWidgets() ???
-	
-//	public void discardWidgets() {
-//		body = null;
-//		checkBoxAllowOverwrite = null;
-//		setControl(null);
-//		discardPreferencePageWidgets();
-//	}
-
 	public boolean performOk() {
 		storeConfigModule();
 		return true;
@@ -931,7 +886,6 @@ implements IWorkbenchPreferencePage
 		updateCurrentConfigModule();
 		storeConfigModule();
 	}
-
 
 	/**
 	 * A list of listeners that shall be triggered if this module changes.  

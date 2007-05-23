@@ -72,7 +72,7 @@ public abstract class AbstractWorkstationConfigModulePreferencePage<C extends Co
 	public void init(IWorkbench workbench) {
 		try {
 			Login login = Login.getLogin();
-			initPage(WorkstationConfigSetup.getWorkstationConfigID(WorkstationID.create(login.getOrganisationID(), login.getWorkstationID())));
+			configID = WorkstationConfigSetup.getWorkstationConfigID(WorkstationID.create(login.getOrganisationID(), login.getWorkstationID()));
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
