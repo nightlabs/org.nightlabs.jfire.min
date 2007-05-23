@@ -2,7 +2,7 @@
 <!DOCTYPE nightlybuild PUBLIC "-//NightLabs//DTD NightlyBuild V 0.10//EN" "http://www.nightlabs.de/dtd/nightlybuild_0_10.dtd">
 <nightlybuild>
   <project name="JFireBaseDAO">
-    <ant path="JFireBaseDAO" file="build-nightlabs.xml" target="dist" />
+    <ant path="JFireBaseDAO" file="build-nightlabs.xml" target="deploy" />
     <provides />
     <requires />
     <publishes location="JFireBaseDAO/dist/JFireBaseDAO.jar" />
