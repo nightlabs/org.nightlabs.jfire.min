@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="var" path="JBOSS/lib/jboss-system.jar"/>
+	<classpathentry kind="var" path="JBOSS/server/default/lib/jboss.jar" sourcepath="/JBOSS_SRC"/>
+	<classpathentry kind="var" path="JBOSS/server/default/lib/jbosssx.jar" sourcepath="JBOSS_SRC/security/src/main"/>
+	<classpathentry kind="var" path="LOG4J" sourcepath="/LOG4J_SRC"/>
+	<classpathentry kind="var" path="WORKSPACE/JFireServerManager/dist/JFireServerManager.jar" sourcepath="/WORKSPACE/JFireServerManager/src"/>
+	<classpathentry kind="var" path="WORKSPACE/JFireBase/dist/JFireBase.jar" sourcepath="WORKSPACE/JFireBase/src"/>
+	<classpathentry kind="var" path="WORKSPACE/NightLabsBase/dist/NightLabsBase.jar" sourcepath="/WORKSPACE/NightLabsBase/src"/>
+	<classpathentry kind="var" path="JBOSS/server/default/lib/jnpserver.jar"/>
+	<classpathentry kind="var" path="JBOSS/client/jbossall-client.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

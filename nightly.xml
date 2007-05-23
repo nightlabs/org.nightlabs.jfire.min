@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE nightlybuild PUBLIC "-//NightLabs//DTD NightlyBuild V 0.10//EN" "http://www.nightlabs.de/dtd/nightlybuild_0_10.dtd">
+<nightlybuild>
+  <project name="JFireIntegrationJBoss">
+    <ant path="JFireIntegrationJBoss" file="build-nightlabs.xml" target="deploy" />
+    <provides />
+    <requires />
+    <publishes location="JFireIntegrationJBoss/dist/JFireIntegrationJBoss.jar" />
+    <javadoc path="JFireIntegrationJBoss/src" />
+  </project>
+</nightlybuild>
