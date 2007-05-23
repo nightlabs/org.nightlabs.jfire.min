@@ -86,7 +86,7 @@ import org.nightlabs.notification.NotificationManager;
 public class JDOLifecycleManager
 extends org.nightlabs.notification.NotificationManager
 {
-	public static final String PROPERTY_KEY_JDO_LIFECYCLE_MANAGER = JDOLifecycleListener.class.getName();
+	public static final String PROPERTY_KEY_JDO_LIFECYCLE_MANAGER = JDOLifecycleManager.class.getName();
 	
 	private static final Logger logger = Logger.getLogger(JDOLifecycleManager.class);
 	
@@ -311,7 +311,7 @@ extends org.nightlabs.notification.NotificationManager
 		if (_sharedInstance == null) {
 			String className = System.getProperty(PROPERTY_KEY_JDO_LIFECYCLE_MANAGER);
 			if (className == null)
-				return null;;
+				return null;
 
 			Class clazz;
 			try {
