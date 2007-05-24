@@ -1,14 +1,20 @@
 package org.nightlabs.jfire.base.overview;
 
+import java.util.List;
+
 import org.eclipse.core.runtime.IExecutableExtension;
 import org.eclipse.swt.graphics.Image;
 
 /**
- * a categoryFactory is a root entry displayed in the overview perspective
- * categoryfactories can be registered via the extension-point org.nightlabs.jfire.base.overview
+ * A {@link CategoryFactory} can be used to create {@link Category}s. It is used for example in
+ * the Overview perspective. CategoryFactories can be registered via the extension-points
+ * that use the schema like (schema/overview.exsd) and a extension point processor like
+ * {@link OverviewRegistry}.
+ * <p>
+ * One known extension-point ist org.nightlabs.jfire.base.overview.
  *  
  * @author Daniel.Mazurek [at] NightLabs [dot] de
- *
+ * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] de -->
  */
 public interface CategoryFactory
 extends IExecutableExtension
@@ -38,26 +44,23 @@ extends IExecutableExtension
 	public int getIndex();
 	
 	/**
-	 * returns the created Category
-	 * @return the created Category
+	 * Returns the list of {@link EntryFactory}s in this {@link CategoryFactory}. 
+	 * This list is modifyable. Changes will reflect on the next {@link Category}
+	 * created by this {@link CategoryFactory}.
+	 * 
+	 * @return The list of {@link EntryFactory}s in this {@link CategoryFactory}.
+	 */
+	List<EntryFactory> getEntryFactories();
+	
+	/**
+	 * Creates a new {@link Category}. The new Category will not have any {@link Entry}s, though.
+	 * @return A new {@link Category}.
 	 */
 	public Category createCategory();
 	
-//	/**
-//	 * sets the categoryID
-//	 * @param categoryID the categoryID to set
-//	 */
-//	public void setCategoryID(String categoryID);
-//	
-//	/**
-//	 * sets the name of the category
-//	 * @param name the name to set
-//	 */
-//	public void setName(String name);
-//	
-//	/**
-//	 * sets the image of the category
-//	 * @param image the image to set
-//	 */
-//	public void setImage(Image image);
+	/**
+	 * Creates a new {@link Category} along with all its entries defined by {@link #getEntryFactories()}.
+	 * @return A new {@link Category} with all its entries.
+	 */
+	public Category createCategoryWithEntries();
 }

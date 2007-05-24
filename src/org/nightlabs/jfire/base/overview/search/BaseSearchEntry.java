@@ -11,6 +11,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.widgets.Display;
 import org.nightlabs.base.table.AbstractTableComposite;
 import org.nightlabs.jdo.query.JDOQuery;
+import org.nightlabs.jfire.base.overview.EntryFactory;
 
 /**
  * @author Daniel.Mazurek [at] NightLabs [dot] de
@@ -20,8 +21,8 @@ public abstract class BaseSearchEntry
 extends SearchEntry 
 {
 
-	public BaseSearchEntry() {
-		super();
+	public BaseSearchEntry(EntryFactory entryFactory) {
+		super(entryFactory);
 	}
 
 	@Override

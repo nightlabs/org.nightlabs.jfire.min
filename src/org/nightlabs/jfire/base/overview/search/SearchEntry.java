@@ -13,17 +13,20 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.nightlabs.base.composite.XComposite;
 import org.nightlabs.base.table.AbstractTableComposite;
+import org.nightlabs.jfire.base.overview.AbstractEntry;
 import org.nightlabs.jfire.base.overview.Entry;
+import org.nightlabs.jfire.base.overview.EntryFactory;
 
 /**
  * @author Daniel.Mazurek [at] NightLabs [dot] de
  *
  */
 public abstract class SearchEntry
+extends AbstractEntry
 implements Entry 
 {	
-	public SearchEntry() {
-		super();
+	public SearchEntry(EntryFactory entryFactory) {
+		super(entryFactory);
 	}
 	
 	private Composite searchComposite;
@@ -37,7 +40,7 @@ implements Entry
 	}
 	
 	private SashForm sashform = null;
-	public Composite createComposite(Composite parent) 
+	public Composite createEntryComposite(Composite parent) 
 	{		 		 
 		sashform = new SashForm(parent, SWT.VERTICAL);		
 		sashform.setLayout(new FillLayout());
@@ -99,6 +102,10 @@ implements Entry
 	
 	protected void configureSash(SashForm sashform) {
 		sashform.setWeights(new int[] {2,4});		
+	}
+	
+	public Composite createCategoryEntryComposite(Composite parent) {
+		throw new UnsupportedOperationException("SearchEntry does not support custom Composites for the Category.");
 	}
 	
 }

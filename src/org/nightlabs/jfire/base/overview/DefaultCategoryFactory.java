@@ -1,5 +1,8 @@
 package org.nightlabs.jfire.base.overview;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -11,7 +14,7 @@ import org.nightlabs.base.extensionpoint.AbstractEPProcessor;
  * @author Daniel.Mazurek [at] NightLabs [dot] de
  *
  */
-public class CategoryFactoryImpl 
+public class DefaultCategoryFactory 
 implements CategoryFactory 
 {
 	public static final String ELEMENT_CATEGORY = "category";
@@ -100,7 +103,7 @@ implements CategoryFactory
 			} catch (NumberFormatException e) {
 				// Do nothing if index not valid
 			}
-			CategoryFactoryImpl category = new CategoryFactoryImpl();
+			DefaultCategoryFactory category = new DefaultCategoryFactory();
 			category.setName(name);
 			category.setCategoryID(categoryID);
 			category.setIndex(index);
@@ -113,9 +116,22 @@ implements CategoryFactory
 		}
 	}
 	
+	private List<EntryFactory> entryFactories = new ArrayList<EntryFactory>();
+	
+	public List<EntryFactory> getEntryFactories() {
+		return entryFactories;
+	}
+	
 	public Category createCategory() {
-		return new Category() {		
-		};
+		return new DefaultCategory(this);
+	}
+	
+	public Category createCategoryWithEntries() {
+		DefaultCategory category = new DefaultCategory(this);
+		for (EntryFactory factory : new ArrayList<EntryFactory>(entryFactories)) {
+			category.addEntry(factory.createEntry());
+		}
+		return category;
 	}
 	
 }

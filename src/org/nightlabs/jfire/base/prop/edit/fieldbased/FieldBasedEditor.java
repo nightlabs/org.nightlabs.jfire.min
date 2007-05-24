@@ -344,6 +344,8 @@ public class FieldBasedEditor implements PropertyEditor {
 	
 	private void createTitleLabel() {
 		if (propTitleLabel == null) {
+			if (titleComposite == null)
+				return;
 			propTitleLabel = new Label(titleComposite,SWT.NONE);
 			GridData gd = new GridData();
 			gd.horizontalAlignment = GridData.FILL;
@@ -365,12 +367,14 @@ public class FieldBasedEditor implements PropertyEditor {
 					
 					createTitleLabel();
 					
-					if (prop.getDisplayName() != null)
-						propTitleLabel.setText(prop.getDisplayName());
-					else 
-						propTitleLabel.setText("");
+					if (propTitleLabel != null) {
+						if (prop.getDisplayName() != null)
+							propTitleLabel.setText(prop.getDisplayName());
+						else 
+							propTitleLabel.setText("");
+						propTitleLabel.setBackground(new Color(Display.getDefault(), 155, 155, 155));
+					}
 					
-					propTitleLabel.setBackground(new Color(Display.getDefault(), 155, 155, 155));
 					
 					propStruct.explodeProperty(prop);
 					

@@ -5,7 +5,7 @@ import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.swt.widgets.Composite;
 
 /**
- * The Controller Object which is responsible for the handling of an Entry
+ * Object created by {@link EntryFactory}. Entrys are held b
  *  
  * @author Daniel.Mazurek [at] NightLabs [dot] de
  *
@@ -13,18 +13,22 @@ import org.eclipse.swt.widgets.Composite;
 public interface Entry 
 {
 	/**
-	 * opens the entry
-	 * 
-	 * Implementations should handle here what action should be performed
-	 * when the entry is opened
+	 * Performs what should be done when this {@link Entry} is activated. (e.g. by double-click etc.)
 	 */
-	void openEntry();
+	void handleActivation();
 	
 	/**
 	 * returns the Composite created by the controller
 	 * @return the Composite created by the controller
 	 */
-	Composite createComposite(Composite parent);
+	Composite createEntryComposite(Composite parent);
+	
+	/**
+	 * document
+	 * @param parent
+	 * @return
+	 */
+	Composite createCategoryEntryComposite(Composite parent);
 	
 	/**
 	 * returns the id of the {@link Entry}
@@ -44,16 +48,7 @@ public interface Entry
 	 */
 	ISelectionProvider getSelectionProvider();
 	
-//	/**
-//	 * returns the toolBarManager, may be null
-//	 * @return the toolBarManager
-//	 */
-//	ToolBarManager getToolBarManager();
-//
-//	/**
-//	 * returns the coolBarManager, may be null
-//	 * @return the coolBarManager
-//	 */
-//	CoolBarManager getCoolBarManager();
+	
+	EntryFactory getEntryFactory();
 	
 }

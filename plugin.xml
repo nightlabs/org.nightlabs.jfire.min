@@ -11,17 +11,7 @@
    	/>
    	
    		
-   <extension-point 
-   		id="person_edit_personDataFieldEditorFactory" 
-   		name="Defines a editor factory for a specific subclass of AbstractPersonDataField" 
-   		schema="schema/person_edit_personDataFieldEditorFactory.exsd"
-   	/>
    	
-   <extension-point 
-   		id="person_edit_specializedDataBlockEditor" 
-   		name="Specialized PersonDataBlockEditors" 
-   		schema="schema/person_edit_specializedDataBlockEditor.exsd"
-   	/>
 	
    <extension-point 
 	   id="configsetupvisualiser" 
@@ -201,28 +191,6 @@
 	
  	<!-- PersonDataFieldEditor extensions field-based-disguised -->
  
- 	<!-- Specialized PersonDataBlockEditors extensions -->
- 	<extension
-       id="org.nightlabs.jfire.person.edit.blockbased.special.PersonalDataBlockEditor"
-       point="org.nightlabs.jfire.base.person_edit_specializedDataBlockEditor">
-    <specializedDataBlockEditor
-          class="org.nightlabs.jfire.base.person.edit.blockbased.special.PersonalDataBlockEditor$Factory"
-	/>
-    <specializedDataBlockEditor class="org.nightlabs.jfire.base.person.edit.blockbased.special.CommentDataBlockEditor$Factory"/>
-	</extension>
-	
-	
-  <extension
-        point="org.nightlabs.jfire.base.loginstatelistener">
-     <loginStateListener class="org.nightlabs.jfire.base.language.LanguageWatcher"/>
-  </extension>
-  <extension
-        point="org.nightlabs.base.notificationinterceptor">
-     <notificationInterceptor
-           class="org.nightlabs.jfire.base.jdo.JDOObjectID2PCClassNotificationInterceptor"
-           name="JDO ObjectID to PersistenceCapable Interceptor"/>
-  </extension>
-	
   <extension
         point="org.nightlabs.jfire.base.configsetupvisualiser">
      <visualiser
@@ -413,5 +381,16 @@
    <extension
          point="org.nightlabs.jfire.base.j2ee.remoteResourceFilter">
       <exclusion pattern="org.nightlabs.jfire.base.exclusion1"/>
+   </extension>
+   <extension
+         point="org.nightlabs.jfire.base.overview">
+      <categoryEntry
+            categoryEntryID="org.nightlabs.jfire.base.categoryEntry1"
+            categoryID="org.nightlabs.jfire.base.categoryEntry1"
+            entry="org.nightlabs.jfire.base.EntryFactory1"
+            name="org.nightlabs.jfire.base.categoryEntry1"/>
+      <category
+            categoryID="org.nightlabs.jfire.base.category1"
+            name="org.nightlabs.jfire.base.category1"/>
    </extension>
 </plugin>

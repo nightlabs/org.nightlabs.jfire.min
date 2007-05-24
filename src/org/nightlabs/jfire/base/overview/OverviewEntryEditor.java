@@ -69,7 +69,7 @@ extends LSDEditorPart
 	public void createPartContents(Composite parent) 
 	{
 		if (entry != null) {
-			composite = entry.createComposite(parent);
+			composite = entry.createEntryComposite(parent);
 			if (entry.getSelectionProvider() != null)
 				getSite().setSelectionProvider(entry.getSelectionProvider());
 			
