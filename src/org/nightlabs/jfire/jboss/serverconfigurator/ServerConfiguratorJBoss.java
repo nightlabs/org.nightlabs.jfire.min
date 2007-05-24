@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Properties;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
@@ -79,8 +80,8 @@ public class ServerConfiguratorJBoss
 			configureStandardJBossXml(jbossConfDir);
 			configureJBossServiceXml(jbossConfDir);
 			configureCascadedAuthenticationClientInterceptorProperties(jbossBinDir);
-			configureRunSh(jbossConfDir);
-			configureRunBat(jbossConfDir);
+			configureRunSh(jbossBinDir);
+			configureRunBat(jbossBinDir);
 			removeUnneededFiles(jbossDeployDir);
 			
 		} catch(Exception e) {
@@ -252,7 +253,7 @@ public class ServerConfiguratorJBoss
 		}
 	}
 	
-	private void configureRunSh(File jbossConfDir) throws FileNotFoundException, IOException
+	private void configureRunSh(File jbossBinDir) throws FileNotFoundException, IOException
 	{
 		Properties serverConfiguratorSettings = getJFireServerConfigModule().getJ2ee().getServerConfiguratorSettings();
 		if(serverConfiguratorSettings == null)
@@ -261,11 +262,11 @@ public class ServerConfiguratorJBoss
 		if(rmiHost == null)
 			return;
 		
-		File destFile = new File(jbossConfDir, "run.sh");
+		File destFile = new File(jbossBinDir, "run.sh");
 		String text;
 		text = Utils.readTextFile(destFile);
 		String originalText = "JAVA_OPTS=\"$JAVA_OPTS -Dprogram.name=$PROGNAME\"";
-		if (text.indexOf(originalText) >= 0)
+		if (text.indexOf("-Djava.rmi.server.hostname") < 0)
 		{
 			setRebootRequired(true);
 			logger.info("File " + destFile.getAbsolutePath() + " does not contain the java.rmi.server.hostname setting. Adding it...");
@@ -274,13 +275,12 @@ public class ServerConfiguratorJBoss
 					"# Setting RMI host for JNDI to "+rmiHost+" (auto added by "+getClass().getName()+")\n"+
 					"JAVA_OPTS=\"$JAVA_OPTS -Djava.rmi.server.hostname="+rmiHost+"\"";
 
-			text = text.replaceAll(Pattern.quote(originalText), replacementText);
-
+			text = text.replaceAll(Pattern.quote(originalText), Matcher.quoteReplacement(replacementText));
 			Utils.writeTextFile(destFile, text);
 		}
 	}
 
-	private void configureRunBat(File jbossConfDir) throws FileNotFoundException, IOException
+	private void configureRunBat(File jbossBinDir) throws FileNotFoundException, IOException
 	{
 		Properties serverConfiguratorSettings = getJFireServerConfigModule().getJ2ee().getServerConfiguratorSettings();
 		if(serverConfiguratorSettings == null)
@@ -289,11 +289,11 @@ public class ServerConfiguratorJBoss
 		if(rmiHost == null)
 			return;
 		
-		File destFile = new File(jbossConfDir, "run.bat");
+		File destFile = new File(jbossBinDir, "run.bat");
 		String text;
 		text = Utils.readTextFile(destFile);
 		String originalText = "set JAVA_OPTS=%JAVA_OPTS% -Dprogram.name=%PROGNAME%";
-		if (text.indexOf(originalText) >= 0)
+		if (text.indexOf("-Djava.rmi.server.hostname") < 0)
 		{
 			setRebootRequired(true);
 			logger.info("File " + destFile.getAbsolutePath() + " does not contain the java.rmi.server.hostname setting. Adding it...");
@@ -302,7 +302,7 @@ public class ServerConfiguratorJBoss
 					"rem Setting RMI host for JNDI to "+rmiHost+" (auto added by "+getClass().getName()+")\r\n"+
 					"set JAVA_OPTS=%JAVA_OPTS% -Djava.rmi.server.hostname="+rmiHost+"\r\n";
 
-			text = text.replaceAll(Pattern.quote(originalText), replacementText);
+			text = text.replaceAll(Pattern.quote(originalText), Matcher.quoteReplacement(replacementText));
 
 			Utils.writeTextFile(destFile, text);
 		}
