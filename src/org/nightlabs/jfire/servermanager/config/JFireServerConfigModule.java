@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.log4j.Logger;
@@ -41,7 +42,6 @@ import org.nightlabs.config.ConfigModule;
 import org.nightlabs.config.InitException;
 import org.nightlabs.jfire.server.LocalServer;
 import org.nightlabs.jfire.server.Server;
-import org.nightlabs.jfire.serverconfigurator.ServerConfigurator;
 import org.nightlabs.jfire.servermanager.db.DatabaseAdapter;
 import org.nightlabs.jfire.servermanager.db.DatabaseAdapterHSQL;
 import org.nightlabs.jfire.servermanager.db.DatabaseAdapterMySQL;
@@ -49,6 +49,7 @@ import org.nightlabs.util.Utils;
 
 /**
  * @author marco
+ * @author Marc Klinger - marc[at]nightlabs[dot]de
  */
 public class JFireServerConfigModule extends ConfigModule
 {
@@ -73,42 +74,84 @@ public class JFireServerConfigModule extends ConfigModule
 
 		private String j2eeDeployBaseDirectory;
 		private String serverConfigurator;
+		private Properties serverConfiguratorSettings;
 		private List<String> availableServerConfigurators;
-
+		
 		/**
-		 * @return Returns the j2eeDeployBaseDirectory.
+		 * Get the availableServerConfigurators.
+		 * @return the availableServerConfigurators
 		 */
-		public String getJ2eeDeployBaseDirectory() {
+		public List<String> getAvailableServerConfigurators()
+		{
+			return availableServerConfigurators;
+		}
+		
+		/**
+		 * Set the availableServerConfigurators.
+		 * @param availableServerConfigurators the availableServerConfigurators to set
+		 */
+		public void setAvailableServerConfigurators(
+				List<String> availableServerConfigurators)
+		{
+			this.availableServerConfigurators = availableServerConfigurators;
+			if (cfMod != null) cfMod.setChanged();
+		}
+		
+		/**
+		 * Get the j2eeDeployBaseDirectory.
+		 * @return the j2eeDeployBaseDirectory
+		 */
+		public String getJ2eeDeployBaseDirectory()
+		{
 			return j2eeDeployBaseDirectory;
 		}
+		
 		/**
-		 * @param deployBaseDirectory The j2eeDeployBaseDirectory to set.
+		 * Set the j2eeDeployBaseDirectory.
+		 * @param deployBaseDirectory the j2eeDeployBaseDirectory to set
 		 */
-		public void setJ2eeDeployBaseDirectory(String deployBaseDirectory) {
+		public void setJ2eeDeployBaseDirectory(String deployBaseDirectory)
+		{
 			j2eeDeployBaseDirectory = deployBaseDirectory;
 			if (cfMod != null) cfMod.setChanged();
 		}
-
+		
 		/**
-		 * @return Returns the active (i.e. used) {@link ServerConfigurator}).
+		 * Get the serverConfigurator.
+		 * @return the serverConfigurator
 		 */
 		public String getServerConfigurator()
 		{
 			return serverConfigurator;
 		}
+		
+		/**
+		 * Set the serverConfigurator.
+		 * @param serverConfigurator the serverConfigurator to set
+		 */
 		public void setServerConfigurator(String serverConfigurator)
 		{
 			this.serverConfigurator = serverConfigurator;
 			if (cfMod != null) cfMod.setChanged();
 		}
-
-		public List<String> getAvailableServerConfigurators()
+		
+		/**
+		 * Get the serverConfiguratorSettings.
+		 * @return the serverConfiguratorSettings
+		 */
+		public Properties getServerConfiguratorSettings()
 		{
-			return availableServerConfigurators;
+			return serverConfiguratorSettings;
 		}
-		public void setAvailableServerConfigurators(List<String> serverConfigurators)
+		
+		/**
+		 * Set the serverConfiguratorSettings.
+		 * @param serverConfiguratorSettings the serverConfiguratorSettings to set
+		 */
+		public void setServerConfiguratorSettings(Properties serverConfiguratorSettings)
 		{
-			this.availableServerConfigurators = serverConfigurators;
+			this.serverConfiguratorSettings = serverConfiguratorSettings;
+			if (cfMod != null) cfMod.setChanged();
 		}
 
 		public void init()
@@ -124,6 +167,9 @@ public class JFireServerConfigModule extends ConfigModule
 				availableServerConfigurators.add("org.nightlabs.jfire.jboss.serverconfigurator.ServerConfiguratorJBoss");
 				availableServerConfigurators.add("org.nightlabs.jfire.jboss.serverconfigurator.ServerConfiguratorJBossMySQL");
 			}
+			
+			if(serverConfiguratorSettings == null)
+				serverConfiguratorSettings = new Properties();
 		}
 	}
 
@@ -134,9 +180,6 @@ public class JFireServerConfigModule extends ConfigModule
 		 */
 		private static final long serialVersionUID = 1L;
 		
-		/**
-		 * TODO: is this field in use?
-		 */
 		private JFireServerConfigModule cfMod;
 
 		public static final String DATABASE_NAME_VAR = "${databaseName}";
@@ -217,6 +260,7 @@ public class JFireServerConfigModule extends ConfigModule
 		 */
 		public void setDatabaseDriverName(String _databaseDriverName) {
 			this.databaseDriverName = _databaseDriverName;
+			if (cfMod != null) cfMod.setChanged();
 		}
 
 		public String getDatabaseURL()
@@ -248,6 +292,7 @@ public class JFireServerConfigModule extends ConfigModule
 				throw new IllegalArgumentException("databaseURL must contain \"" + DATABASE_NAME_VAR + "\"!");
 
 			this.databaseURL = databaseURL;
+			if (cfMod != null) cfMod.setChanged();
 		}
 		/**
 		 * @return Returns the databaseURLPrefix.
@@ -260,6 +305,7 @@ public class JFireServerConfigModule extends ConfigModule
 		 */
 		public void setDatabasePrefix(String _databasePrefix) {
 			this.databasePrefix = _databasePrefix;
+			if (cfMod != null) cfMod.setChanged();
 		}
 		/**
 		 * @return Returns the databaseURLSuffix.
@@ -272,6 +318,7 @@ public class JFireServerConfigModule extends ConfigModule
 		 */
 		public void setDatabaseSuffix(String _databaseSuffix) {
 			this.databaseSuffix = _databaseSuffix;
+			if (cfMod != null) cfMod.setChanged();
 		}
 		/**
 		 * @return Returns the databaseUserName.
@@ -284,6 +331,7 @@ public class JFireServerConfigModule extends ConfigModule
 		 */
 		public void setDatabaseUserName(String _databaseUserName) {
 			this.databaseUserName = _databaseUserName;
+			if (cfMod != null) cfMod.setChanged();
 		}
 		/**
 		 * @return Returns the databasePassword.
@@ -296,16 +344,19 @@ public class JFireServerConfigModule extends ConfigModule
 		 */
 		public void setDatabasePassword(String _databasePassword) {
 			this.databasePassword = _databasePassword;
+			if (cfMod != null) cfMod.setChanged();
 		}
 
 		public String getDatasourceMetadataTypeMapping()
 		{
 			return datasourceMetadataTypeMapping;
 		}
+		
 		public void setDatasourceMetadataTypeMapping(
 				String datasourceMetadataTypeMapping)
 		{
 			this.datasourceMetadataTypeMapping = datasourceMetadataTypeMapping;
+			if (cfMod != null) cfMod.setChanged();
 		}
 
 		/**
@@ -319,6 +370,7 @@ public class JFireServerConfigModule extends ConfigModule
 		 */
 		public void setDatabaseAdapter(String databaseCreator) {
 			this.databaseAdapter = databaseCreator;
+			if (cfMod != null) cfMod.setChanged();
 		}
 
 		public DatabaseAdapter instantiateDatabaseAdapter() throws ClassNotFoundException, InstantiationException, IllegalAccessException
@@ -413,6 +465,7 @@ public class JFireServerConfigModule extends ConfigModule
 		public String getJdoConfigDirectory() {
 			return jdoConfigDirectory;
 		}
+		
 		public String getJdoConfigDirectory(String organisationID)
 		{
 			if (organisationID == null || "".equals(organisationID))
@@ -420,6 +473,7 @@ public class JFireServerConfigModule extends ConfigModule
 
 			return jdoConfigDirectory.replace(ORGANISATION_ID_VAR, organisationID);
 		}
+		
 		/**
 		 * @param jdoConfigDirectory The jdoConfigDirectory to set.
 		 */
@@ -431,6 +485,7 @@ public class JFireServerConfigModule extends ConfigModule
 				throw new IllegalArgumentException("jdoConfigDirectory must contain \"" + ORGANISATION_ID_VAR + "\"!");
 
 			this.jdoConfigDirectory = _jdoConfigDirectory;
+			if (cfMod != null) cfMod.setChanged();
 		}
 
 		public String getDatasourceConfigFile(String organisationID)
@@ -455,6 +510,7 @@ public class JFireServerConfigModule extends ConfigModule
 				throw new IllegalArgumentException("datasourceConfigFile must contain \"" + ORGANISATION_ID_VAR + "\"!");
 
 			this.datasourceConfigFile = datasourceConfigFile;
+			if (cfMod != null) cfMod.setChanged();
 		}
 
 		public String getJdoConfigFile(String organisationID)
@@ -464,6 +520,7 @@ public class JFireServerConfigModule extends ConfigModule
 
 			return jdoConfigFile.replace(ORGANISATION_ID_VAR, organisationID);
 		}
+		
 		public String getJdoConfigFile()
 		{
 			return jdoConfigFile;
@@ -478,16 +535,19 @@ public class JFireServerConfigModule extends ConfigModule
 				throw new IllegalArgumentException("jdoConfigFile must contain \"" + ORGANISATION_ID_VAR + "\"!");
 
 			this.jdoConfigFile = jdoConfigFile;
+			if (cfMod != null) cfMod.setChanged();
 		}
 
 		public String getDatasourceTemplateDSXMLFile()
 		{
 			return datasourceTemplateDSXMLFile;
 		}
+		
 		public void setDatasourceTemplateDSXMLFile(
 				String datasourceTemplateDSXMLFile)
 		{
 			this.datasourceTemplateDSXMLFile = datasourceTemplateDSXMLFile;
+			if (cfMod != null) cfMod.setChanged();
 		}
 
 		/**
@@ -501,6 +561,7 @@ public class JFireServerConfigModule extends ConfigModule
 		 */
 		public void setJdoTemplateDSXMLFile(String jdoTemplateDSXMLFile) {
 			this.jdoTemplateDSXMLFile = jdoTemplateDSXMLFile;
+			if (cfMod != null) cfMod.setChanged();
 		}
 		
 		public void init()
@@ -533,14 +594,16 @@ public class JFireServerConfigModule extends ConfigModule
 	private J2ee j2ee;
 	private Database database;
 	private JDO jdo;
-
+	
 	public RootOrganisationCf getRootOrganisation()
 	{
 		return rootOrganisation;
 	}
+	
 	public void setRootOrganisation(RootOrganisationCf rootOrganisation)
 	{
 		this.rootOrganisation = rootOrganisation;
+		setChanged();
 	}
 
 	/**
@@ -549,14 +612,18 @@ public class JFireServerConfigModule extends ConfigModule
 	public ServerCf getLocalServer() {
 		return localServer;
 	}
+	
 	/**
 	 * @param localServer The localServer to set.
 	 */
-	public void setLocalServer(ServerCf _localServer) {
+	public void setLocalServer(ServerCf _localServer) 
+	{
 		if (_localServer == null)
 			throw new NullPointerException("localServer must not be null!");
 		this.localServer = _localServer;
+		setChanged();
 	}
+	
 	public LocalServer createJDOLocalServer()
 	throws ModuleException
 	{
@@ -579,49 +646,64 @@ public class JFireServerConfigModule extends ConfigModule
 	/**
 	 * @return Returns the j2ee.
 	 */
-	public J2ee getJ2ee() {
+	public J2ee getJ2ee() 
+	{
 		return j2ee;
 	}
+	
 	/**
 	 * @param j2ee The j2ee to set.
 	 */
-	public void setJ2ee(J2ee j2ee) {
+	public void setJ2ee(J2ee j2ee) 
+	{
 		this.j2ee = j2ee;
+		setChanged();
 	}
 
 	/**
 	 * @return Returns the database.
 	 */
-	public Database getDatabase() {
+	public Database getDatabase() 
+	{
 		return database;
 	}
+	
 	/**
 	 * @param database The database to set.
 	 */
-	public void setDatabase(Database database) {
+	public void setDatabase(Database database) 
+	{
 		this.database = database;
+		setChanged();
 	}
+	
 	/**
 	 * @return Returns the jdo.
 	 */
-	public JDO getJdo() {
+	public JDO getJdo() 
+	{
 		return jdo;
 	}
+	
 	/**
 	 * @param jdo The jdo to set.
 	 */
-	public void setJdo(JDO jdo) {
+	public void setJdo(JDO jdo) 
+	{
 		this.jdo = jdo;
+		setChanged();
 	}
 
 
 	// *********************************************
 	// *** Methods from ConfigModule             ***
 	// *********************************************	
-	/**
-	 * @see org.nightlabs.config.Initializable#init()
+	/* (non-Javadoc)
+	 * @see org.nightlabs.config.ConfigModule#init()
 	 */
-	public void init() throws InitException {
+	@Override
+	public void init() throws InitException 
+	{
 		if (rootOrganisation == null) {
 			ServerCf server = new ServerCf("jfire.nightlabs.org");
 			server.init();

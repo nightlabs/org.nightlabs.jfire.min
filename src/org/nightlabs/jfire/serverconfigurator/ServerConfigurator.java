@@ -19,57 +19,66 @@ public abstract class ServerConfigurator
 	 */
 	private static final Logger logger = Logger.getLogger(ServerConfigurator.class);
 	
-//	private JFireServerManagerFactoryImpl jfireServerManagerFactoryImpl;
+	/**
+	 * The config to use for configuration
+	 */
 	private JFireServerConfigModule jfireServerConfigModule;
+	
+	/**
+	 * Wether a reboot is required after doing the changes.
+	 */
+	private boolean rebootRequired = false;
 
+	/**
+	 * Get the jfireServerConfigModule.
+	 * @return the jfireServerConfigModule
+	 */
 	public JFireServerConfigModule getJFireServerConfigModule()
 	{
 		return jfireServerConfigModule;
 	}
 
-	public void setJFireServerConfigModule(
-			JFireServerConfigModule jfireServerConfigModule)
+	/**
+	 * Set the jfireServerConfigModule.
+	 * @param jfireServerConfigModule the jfireServerConfigModule to set
+	 */
+	public void setJFireServerConfigModule(JFireServerConfigModule jfireServerConfigModule)
 	{
 		this.jfireServerConfigModule = jfireServerConfigModule;
 	}
-
-//	public JFireServerManagerFactoryImpl getJFireServerManagerFactoryImpl()
-//	{
-//		return jfireServerManagerFactoryImpl;
-//	}
-//
-//	public void setJFireServerManagerFactoryImpl(
-//			JFireServerManagerFactoryImpl jfireServerManagerFactoryImpl)
-//	{
-//		this.jfireServerManagerFactoryImpl = jfireServerManagerFactoryImpl;
-//	}
-
-	private boolean rebootRequired = false;
-
+	
 	/**
 	 * This method indicates whether the j2ee server needs to be rebooted.
-	 *
-	 * @return Returns true after {@link #doConfigureServer()} has been called, if it modified
-	 *		the server configuration in a way that requires it to be rebooted.
+	 * @return Returns true after {@link #doConfigureServer()} has been called, 
+	 * 		if it modified the server configuration in a way that requires it to 
+	 * 		be rebooted.
 	 */
 	public boolean isRebootRequired()
 	{
 		return rebootRequired;
 	}
 	
+	/**
+	 * Set the reboot required value. If set to <code>true</code>, the
+	 * server will be stopped after all server configurations have happened.
+	 * @param rebootRequired <code>true</code> if a reboot is required - 
+	 * 		<code>false</code> otherwise
+	 */
 	protected void setRebootRequired(boolean rebootRequired)
 	{
-		Logger.getLogger(ServerConfigurator.class).info("setRebootRequired: rebootRequired=" + rebootRequired);
-
+		// NEVER REMOVE THIS LINE:
+		logger.info("setRebootRequired: rebootRequired=" + rebootRequired);
 		this.rebootRequired = rebootRequired;
 	}
 
 	/**
 	 * Configure the server using the {@link ServerConfigurator} defined in the
 	 * given server config module.
+	 * <p>
 	 * This method will return <code>true</code> if the server needs to be restarted.
+	 * 
 	 * @param jfireServerConfigModule The server config module
-	 * @return <code>true</code> if the server needs to be restarted, 
+	 * @return <code>true</code> if the server needs to be restarted -  
 	 * 		<code>false</code> otherwise.
 	 * @throws ServerConfigurationException In case of an error during configuration.
 	 */
@@ -94,31 +103,24 @@ public abstract class ServerConfigurator
 		ServerConfigurator serverConfigurator;
 		try {
 			serverConfigurator = (ServerConfigurator) serverConfiguratorClass.newInstance();
-			//serverConfigurator.setJFireServerManagerFactoryImpl(this);
 			serverConfigurator.setJFireServerConfigModule(jfireServerConfigModule);
 		} catch (Throwable x) {
 			throw new ServerConfigurationException("Instantiating ServerConfigurator from class " + serverConfiguratorClassName + " (configured in JFireServerConfigModule) failed!", x);
 		}
 
 		logger.info("Configuring server with ServerConfigurator " + serverConfiguratorClassName);
-
-//		try {
-			serverConfigurator.doConfigureServer();
-//		} catch (Throwable x) {
-//			throw new ServerConfigurationException("Calling ServerConfigurator.configureServer() with instance of " + serverConfiguratorClassName + " (configured in JFireServerConfigModule) failed!", x);
-//		}
+		serverConfigurator.doConfigureServer();
 		
 		return serverConfigurator.isRebootRequired();
 	}
 	
 	/**
 	 * This method is called as well explicitely by a GUI operation (via the web-frontend for
-	 * server initialization), as implicitely on every server start.
+	 * server initialization or the JFire installer), as implicitely on every server start.
 	 * <p>
 	 * Configuration changes might require the server to be rebooted. If you changed the
 	 * configuration in a way that renders the server non-workable or require a reboot for
 	 * another reason, you should call {@link #setRebootRequired(boolean)}.
-	 * </p>
 	 *
 	 * @throws ServerConfigurationException In case of an error during configuration.
 	 */
