@@ -36,10 +36,11 @@ public class ServerConfiguratorJBoss
 
 	protected static void waitForServer()
 	{
-		for (Object key : System.getProperties().keySet())
-			logger.info("SYSTEM PROPERTY: "+key+" -> "+System.getProperty((String)key));
-		logger.debug("Waiting for server...");
-		try { Thread.sleep(15000); } catch (InterruptedException ignore) { }
+		if(System.getProperty("jboss.home.dir") != null) {
+			// we are running in jboss!
+			logger.debug("Waiting for server...");
+			try { Thread.sleep(15000); } catch (InterruptedException ignore) { }
+		}
 	}
 	
 	protected static File backup(File f) throws IOException
@@ -156,6 +157,14 @@ public class ServerConfiguratorJBoss
 					"   $1>900<$2"
 					);
 
+			
+			pattern = Pattern.compile("(<property\\s+name\\s*=\\s*\"suffixes\">)([^<]*)(</property>)");
+			text = pattern.matcher(text).replaceAll(
+					"<!-- " + modificationMarker + "\n         " +
+					ServerConfiguratorJBoss.class.getName() + " has added -clrepository.xml\n         -->\n" +
+					"         $1$2,-clrepository.xml$3");
+			
+			
 			Utils.writeTextFile(destFile, text);
 		}
 	}
