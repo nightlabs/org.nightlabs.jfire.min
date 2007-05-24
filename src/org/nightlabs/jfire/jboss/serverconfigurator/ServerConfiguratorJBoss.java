@@ -42,6 +42,25 @@ public class ServerConfiguratorJBoss
 		try { Thread.sleep(15000); } catch (InterruptedException ignore) { }
 	}
 	
+	protected static File backup(File f) throws IOException
+	{
+		if(!f.exists() || !f.canRead())
+			throw new FileNotFoundException("Invalid file to backup: "+f);
+		File backupFile = new File(f.getAbsolutePath()+".bak");
+		Utils.copyFile(f, backupFile);
+		return backupFile;
+	}
+
+	protected static File moveToBackup(File f) throws IOException
+	{
+		if(!f.exists())
+			throw new FileNotFoundException("Invalid file to backup: "+f);
+		File backupFile = new File(f.getAbsolutePath()+".bak");
+		if(!f.renameTo(backupFile))
+			throw new IOException("Renaming file "+f.getAbsolutePath()+" to "+f.getName()+" failed");
+		return backupFile;
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.nightlabs.jfire.serverconfigurator.ServerConfigurator#doConfigureServer()
 	 */
@@ -59,6 +78,9 @@ public class ServerConfiguratorJBoss
 			configureStandardJBossXml(jbossConfDir);
 			configureJBossServiceXml(jbossConfDir);
 			configureCascadedAuthenticationClientInterceptorProperties(jbossBinDir);
+			configureRunSh(jbossConfDir);
+			configureRunBat(jbossConfDir);
+			removeUnneededFiles(jbossDeployDir);
 			
 		} catch(Exception e) {
 			throw new ServerConfigurationException("Server configuration failed in server configurator "+getClass().getName(), e);
@@ -218,6 +240,78 @@ public class ServerConfiguratorJBoss
 			text = text.replaceAll("</policy>", replacementText);
 
 			Utils.writeTextFile(destFile, text);
+		}
+	}
+	
+	private void configureRunSh(File jbossConfDir) throws FileNotFoundException, IOException
+	{
+		Properties serverConfiguratorSettings = getJFireServerConfigModule().getJ2ee().getServerConfiguratorSettings();
+		if(serverConfiguratorSettings == null)
+			return;
+		String rmiHost = serverConfiguratorSettings.getProperty("java.rmi.server.hostname");
+		if(rmiHost == null)
+			return;
+		
+		File destFile = new File(jbossConfDir, "run.sh");
+		String text;
+		text = Utils.readTextFile(destFile);
+		String originalText = "JAVA_OPTS=\"$JAVA_OPTS -Dprogram.name=$PROGNAME\"";
+		if (text.indexOf(originalText) >= 0)
+		{
+			setRebootRequired(true);
+			logger.info("File " + destFile.getAbsolutePath() + " does not contain the java.rmi.server.hostname setting. Adding it...");
+			String replacementText = 
+					originalText + "\n\n" +
+					"# Setting RMI host for JNDI to "+rmiHost+" (auto added by "+getClass().getName()+")\n"+
+					"JAVA_OPTS=\"$JAVA_OPTS -Djava.rmi.server.hostname="+rmiHost+"\"";
+
+			text = text.replaceAll(Pattern.quote(originalText), replacementText);
+
+			Utils.writeTextFile(destFile, text);
+		}
+	}
+
+	private void configureRunBat(File jbossConfDir) throws FileNotFoundException, IOException
+	{
+		Properties serverConfiguratorSettings = getJFireServerConfigModule().getJ2ee().getServerConfiguratorSettings();
+		if(serverConfiguratorSettings == null)
+			return;
+		String rmiHost = serverConfiguratorSettings.getProperty("java.rmi.server.hostname");
+		if(rmiHost == null)
+			return;
+		
+		File destFile = new File(jbossConfDir, "run.bat");
+		String text;
+		text = Utils.readTextFile(destFile);
+		String originalText = "set JAVA_OPTS=%JAVA_OPTS% -Dprogram.name=%PROGNAME%";
+		if (text.indexOf(originalText) >= 0)
+		{
+			setRebootRequired(true);
+			logger.info("File " + destFile.getAbsolutePath() + " does not contain the java.rmi.server.hostname setting. Adding it...");
+			String replacementText = 
+					originalText + "\r\n\r\n" +
+					"rem Setting RMI host for JNDI to "+rmiHost+" (auto added by "+getClass().getName()+")\r\n"+
+					"set JAVA_OPTS=%JAVA_OPTS% -Djava.rmi.server.hostname="+rmiHost+"\r\n";
+
+			text = text.replaceAll(Pattern.quote(originalText), replacementText);
+
+			Utils.writeTextFile(destFile, text);
+		}
+	}
+	
+	private void removeUnneededFiles(File jbossDeployDir) throws IOException
+	{
+		File[] filesToRemove = {
+				new File(jbossDeployDir, "uuid-key-generator.sar"),
+				new File(new File(jbossDeployDir, "jms"), "jbossmq-destinations-service.xml"),
+		};
+		
+		for (File f : filesToRemove) {
+			if(f.exists()) {
+				File backup = moveToBackup(f);
+				logger.info("Moved "+f.getAbsolutePath()+" to "+backup.getAbsolutePath()+" in order to deactivate it");
+				setRebootRequired(true);
+			}
 		}
 	}
 }
