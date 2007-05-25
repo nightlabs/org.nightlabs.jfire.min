@@ -1422,6 +1422,8 @@ public class Cache
 		if (sessionID == null || sessionID.length() < 2)
 			throw new IllegalArgumentException("sessionID must be a String with at least 2 characters!");
 
+		JDOLifecycleManager.sharedInstance(); // force this to be initialised :-)
+
 		this.sessionID = sessionID;
 		this.cacheManagerThread = new CacheManagerThread(this);
 		this.notificationThread = new NotificationThread(this);
