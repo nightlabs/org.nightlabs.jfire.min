@@ -21,8 +21,10 @@ import org.nightlabs.base.table.TableContentProvider;
 import org.nightlabs.base.table.TableLabelProvider;
 
 /**
+ * The default category composite displays a {@link Category}s {@link Entry}s
+ * in a Table with icon and name.
+ * 
  * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] de -->
- *
  */
 public class DefaultCategoryComposite extends AbstractTableComposite<Entry> {
 

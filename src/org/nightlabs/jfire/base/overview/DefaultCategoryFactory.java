@@ -17,7 +17,7 @@ import org.nightlabs.base.extensionpoint.AbstractEPProcessor;
 public class DefaultCategoryFactory 
 implements CategoryFactory 
 {
-	public static final String ELEMENT_CATEGORY = "category";
+	public static final String ELEMENT_CATEGORY = "categoryFactory";
 	public static final String ATTRIBUTE_NAME = "name";
 	public static final String ATTRIBUTE_CATEGORY_ID = "categoryID";
 	public static final String ATTRIBUTE_ICON = "icon";
@@ -103,15 +103,14 @@ implements CategoryFactory
 			} catch (NumberFormatException e) {
 				// Do nothing if index not valid
 			}
-			DefaultCategoryFactory category = new DefaultCategoryFactory();
-			category.setName(name);
-			category.setCategoryID(categoryID);
-			category.setIndex(index);
+			setName(name);
+			setCategoryID(categoryID);
+			setIndex(index);
 			if (AbstractEPProcessor.checkString(iconString)) {
 				ImageDescriptor imageDescriptor = AbstractUIPlugin.imageDescriptorFromPlugin(
 						element.getNamespaceIdentifier(), iconString);
 				if (imageDescriptor != null)
-					category.setImage(imageDescriptor.createImage());										
+					setImage(imageDescriptor.createImage());										
 			}										
 		}
 	}
@@ -127,7 +126,7 @@ implements CategoryFactory
 	}
 	
 	public Category createCategoryWithEntries() {
-		DefaultCategory category = new DefaultCategory(this);
+		Category category = createCategory();
 		for (EntryFactory factory : new ArrayList<EntryFactory>(entryFactories)) {
 			category.addEntry(factory.createEntry());
 		}

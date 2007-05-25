@@ -17,15 +17,15 @@ extends ViewPart
 		super();
 	}
 
-	private OverviewComposite overviewComposite;
+	private OverviewShelf overviewShelf;
 	@Override
 	public void createPartControl(Composite parent) {
-		overviewComposite = new OverviewComposite(parent, SWT.NONE);
+		overviewShelf = new OverviewShelf(parent, SWT.NONE);
 	}
 
 	@Override
 	public void setFocus() {
-		overviewComposite.setFocus();
+		overviewShelf.setFocus();
 	}
 
 }
