@@ -38,7 +38,7 @@ import org.nightlabs.jfire.prop.AbstractDataField;
 import org.nightlabs.jfire.prop.IStruct;
 
 /**
- * A Registry holding Associations from subclasses of {@link org.nightlabs.jfire.base.prop.AbstractDataField} to
+ * A Registry holding associations from subclasses of {@link org.nightlabs.jfire.base.prop.AbstractDataField} to
  * {@link org.nightlabs.jfire.base.prop.edit.DataFieldEditor}s grouped by editorTypes.<br/>
  * 
  * As EPProcessor it processes extensions to org.nightlabs.jfire.base.prop.edit.propDataFieldEditor.
@@ -55,16 +55,14 @@ public class DataFieldEditorFactoryRegistry extends AbstractEPProcessor {
 	/**
 	 * A Map holding the registries for all editorTypes.<br/>
 	 *   key: String editorType<br/>
-	 *   value: Map registry<br/>
-	 *     key: String context<br />
-	 *     value: Map registry<br />
-	 *       key: Class targetType<br/>
-	 *       value: DataFieldEditor editor<br/>
+	 *   value: Map registry<br />
+	 *     key: Class targetType<br/>
+	 *     value: DataFieldEditor editor<br/>
 	 */
 	private static Map<String, Map<Class, DataFieldEditorFactory>> registriesMap =
 		new HashMap<String, Map<Class,DataFieldEditorFactory>>();
 	
-	private Map<Class, DataFieldEditorFactory> getTypedRegistry(String type, String context)
+	private Map<Class, DataFieldEditorFactory> getTypedRegistry(String type)
 	{
 		Map registry = registriesMap.get(type);
 		if (registry == null)
@@ -87,10 +85,11 @@ public class DataFieldEditorFactoryRegistry extends AbstractEPProcessor {
 	 * @param targetType
 	 * @param editorFactory
 	 */
-	public synchronized void addDataFieldEditorFactory(String context, Class targetType, DataFieldEditorFactory editorFactory)
+	public synchronized void addDataFieldEditorFactory(DataFieldEditorFactory editorFactory)
 	{
 		if (editorFactory == null)
 			throw new IllegalArgumentException("Parameter editor must not be null!");
+		Class targetType = editorFactory.getPropDataFieldType();
 		if (targetType == null)
 			throw new IllegalArgumentException("Parameter targetType must not be null!");
 		
@@ -98,22 +97,19 @@ public class DataFieldEditorFactoryRegistry extends AbstractEPProcessor {
 			throw new IllegalArgumentException("TargetType must be subclass of AbstractDataField but is "+targetType.getName());
 		LOGGER.debug("Adding registration for "+targetType.getName()+" on editor "+editorFactory+" editorType is "+editorFactory.getEditorType());
 		
-		getTypedRegistry(editorFactory.getEditorType(), context).put(targetType, editorFactory);
+		getTypedRegistry(editorFactory.getEditorType()).put(targetType, editorFactory);
 	}
 		
-	private boolean extensionPointProcessed = false;
-	
 	/**
 	 * Find the editor for a specific PropDataField-type and editor type und a specific context.
 	 * context may be <code>null</code> to indicate the default context.
-	 *  
-	 * @param context The context - may be null to indicate default context. 
-	 * @param targetType
 	 * @param editorType
+	 * @param targetType
+	 *  
 	 * @return The registered DataFieldEditor for the given targetType
 	 * @throws DataFieldEditorNotFoundException
 	 */
-	public synchronized DataFieldEditorFactory getEditorFactory(String editorType, String context, Class targetType)
+	public synchronized DataFieldEditorFactory getEditorFactory(String editorType, Class targetType)
 	throws DataFieldEditorNotFoundException
 	{
 		checkProcessing();
@@ -121,7 +117,7 @@ public class DataFieldEditorFactoryRegistry extends AbstractEPProcessor {
 		if (targetType == null)
 			throw new IllegalArgumentException("Parameter targetType must not be null");
 		
-		Map<Class, DataFieldEditorFactory> registry = getTypedRegistry(editorType, context);
+		Map<Class, DataFieldEditorFactory> registry = getTypedRegistry(editorType);
 		
 		if (!registry.containsKey(targetType))
 			throw new DataFieldEditorNotFoundException("No editor found for class "+targetType.getName());
@@ -146,7 +142,7 @@ public class DataFieldEditorFactoryRegistry extends AbstractEPProcessor {
 		) 
 	throws DataFieldEditorNotFoundException 
 	{
-		DataFieldEditorFactory fieldEditorFactry = getEditorFactory(editorType, context, dataField.getClass());
+		DataFieldEditorFactory fieldEditorFactry = getEditorFactory(editorType, dataField.getClass());
 		return fieldEditorFactry.createPropDataFieldEditor(struct, dataField, setData);
 	}
 	
@@ -166,7 +162,7 @@ public class DataFieldEditorFactoryRegistry extends AbstractEPProcessor {
 		) 
 	throws DataFieldEditorNotFoundException 
 	{
-		DataFieldEditorFactory fieldEditorFactory = getEditorFactory(editorType, context, dataField.getClass());
+		DataFieldEditorFactory fieldEditorFactory = getEditorFactory(editorType, dataField.getClass());
 		return fieldEditorFactory.createPropDataFieldEditor(struct, dataField, true);
 	}
 	
@@ -178,7 +174,7 @@ public class DataFieldEditorFactoryRegistry extends AbstractEPProcessor {
 	 * @return Wether the registry has a registration for the given targetType and editorType
 	 */
 	public synchronized boolean hasRegistration(String editorType, String context, Class targetType) {
-		return getTypedRegistry(editorType, context).containsKey(targetType);
+		return getTypedRegistry(editorType).containsKey(targetType);
 	}
 	
 	private static DataFieldEditorFactoryRegistry sharedInstance;
@@ -210,12 +206,12 @@ public class DataFieldEditorFactoryRegistry extends AbstractEPProcessor {
 			if (element.getName().toLowerCase().equals(EXTENSION_POINT_ELEMENT_NAME))
 			{
 				DataFieldEditorFactory fieldEditorFactory = (DataFieldEditorFactory) element.createExecutableExtension("class");
-				Class targetType = Class.forName(element.getAttribute("targetType"));
-				if (targetType != fieldEditorFactory.getPropDataFieldType())
-					throw new IllegalStateException("Target type from extension point does not match editorFactory's target type.");
-				
-				String context = element.getAttribute("context");
-				sharedInstance().addDataFieldEditorFactory(context, targetType, fieldEditorFactory);
+//				Class targetType = Class.forName(element.getAttribute("targetType"));
+//				if (targetType != fieldEditorFactory.getPropDataFieldType())
+//					throw new IllegalStateException("Target type from extension point does not match editorFactory's target type.");
+//				
+//				String context = element.getAttribute("context");
+				sharedInstance().addDataFieldEditorFactory(fieldEditorFactory);
 			}
 			else
 			{

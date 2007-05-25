@@ -320,35 +320,21 @@
    <extension
          point="org.nightlabs.jfire.base.propDataFieldEditorFactory">
       <propDataFieldEditorFactory
-            class="org.nightlabs.jfire.base.prop.edit.blockbased.TextDataFieldEditor$Factory"
-            targetType="org.nightlabs.jfire.prop.datafield.TextDataField"/>
+            class="org.nightlabs.jfire.base.prop.edit.blockbased.TextDataFieldEditor$Factory"/>
       <propDataFieldEditorFactory
-            class="org.nightlabs.jfire.base.prop.edit.blockbased.SelectionDataFieldEditor$Factory"
-            targetType="org.nightlabs.jfire.prop.datafield.SelectionDataField">
-      </propDataFieldEditorFactory>
+            class="org.nightlabs.jfire.base.prop.edit.blockbased.SelectionDataFieldEditor$Factory"/>
       <propDataFieldEditorFactory
-            class="org.nightlabs.jfire.base.prop.edit.blockbased.ImageDataFieldEditor$Factory"
-            targetType="org.nightlabs.jfire.prop.datafield.ImageDataField">
-      </propDataFieldEditorFactory>
+            class="org.nightlabs.jfire.base.prop.edit.blockbased.ImageDataFieldEditor$Factory"/>
       <propDataFieldEditorFactory
-            class="org.nightlabs.jfire.base.prop.edit.blockbased.DateDataFieldEditor$Factory"
-            targetType="org.nightlabs.jfire.prop.datafield.DateDataField">
-      </propDataFieldEditorFactory>
+            class="org.nightlabs.jfire.base.prop.edit.blockbased.DateDataFieldEditor$Factory"/>
       <propDataFieldEditorFactory
-            class="org.nightlabs.jfire.base.prop.edit.blockbased.NumberDataFieldEditor$Factory"
-            targetType="org.nightlabs.jfire.prop.datafield.NumberDataField">
-      </propDataFieldEditorFactory>
+            class="org.nightlabs.jfire.base.prop.edit.blockbased.NumberDataFieldEditor$Factory"/>
       <propDataFieldEditorFactory
-            class="org.nightlabs.jfire.base.prop.edit.blockbased.RegexDataFieldEditor$Factory"
-            targetType="org.nightlabs.jfire.prop.datafield.RegexDataField">
-      </propDataFieldEditorFactory>
+            class="org.nightlabs.jfire.base.prop.edit.blockbased.RegexDataFieldEditor$Factory"/>
       <propDataFieldEditorFactory
-            class="org.nightlabs.jfire.base.prop.edit.blockbased.PhoneNumberDataFieldEditor$PhoneNumberDataFieldEditorFactory"
-            targetType="org.nightlabs.jfire.prop.datafield.PhoneNumberDataField">
-      </propDataFieldEditorFactory>
+            class="org.nightlabs.jfire.base.prop.edit.blockbased.PhoneNumberDataFieldEditor$PhoneNumberDataFieldEditorFactory"/>
       <propDataFieldEditorFactory
-            class="org.nightlabs.jfire.base.prop.edit.blockbased.I18nTextDataFieldEditor$Factory"
-            targetType="org.nightlabs.jfire.prop.datafield.I18nTextDataField"/>            
+            class="org.nightlabs.jfire.base.prop.edit.blockbased.I18nTextDataFieldEditor$Factory"/>            
    </extension>
    <extension
          point="org.nightlabs.base.login">

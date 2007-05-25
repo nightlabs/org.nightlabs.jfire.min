@@ -43,6 +43,11 @@
    </element>
 
    <element name="propDataFieldEditorFactory">
+      <annotation>
+         <documentation>
+            Register a new DataFieldEditorFactory. The factory will be used to create data field editors. It is responsible for returning the type of DataField the editor can be used for and the editorType this factory should be used for.
+         </documentation>
+      </annotation>
       <complexType>
          <attribute name="class" type="string" use="required">
             <annotation>
@@ -50,17 +55,7 @@
                   Subclass of AbstractPropDataFieldEditorFactory that should provided an DataFieldEditor for the given DataField.
                </documentation>
                <appInfo>
-                  <meta.attribute kind="java" basedOn="org.nightlabs.jfire.base.prop.edit.AbstractPropDataFieldEditorFactory"/>
-               </appInfo>
-            </annotation>
-         </attribute>
-         <attribute name="targetType" type="string" use="required">
-            <annotation>
-               <documentation>
-                  DataField whose Editor is to be registered.
-               </documentation>
-               <appInfo>
-                  <meta.attribute kind="java" basedOn="org.nightlabs.jfire.prop.AbstractPropDataField"/>
+                  <meta.attribute kind="java" basedOn="org.nightlabs.jfire.base.prop.edit.AbstractPropDataFieldEditorFactory:org.nightlabs.jfire.base.prop.edit.DataFieldEditorFactory"/>
                </appInfo>
             </annotation>
          </attribute>
