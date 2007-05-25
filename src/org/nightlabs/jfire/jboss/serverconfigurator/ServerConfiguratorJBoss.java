@@ -313,7 +313,7 @@ public class ServerConfiguratorJBoss
 					}
 					backup(destFile);
 					try {
-						Utils.writeTextFile(new File(jbossBinDir, "run-jfire.sh"), text);
+						Utils.writeTextFile(new File(jbossBinDir, "run.sh.jfire"), text);
 					} catch(IOException ignore) {}
 					Utils.writeTextFile(destFile, text);
 				}
@@ -328,12 +328,12 @@ public class ServerConfiguratorJBoss
 				text = text.replaceAll(Pattern.quote(originalText), Matcher.quoteReplacement(replacementText));
 				backup(destFile);
 				try {
-					Utils.writeTextFile(new File(jbossBinDir, "run-jfire.sh"), text);
+					Utils.writeTextFile(new File(jbossBinDir, "run.sh.jfire"), text);
 				} catch(IOException ignore) {}
 				Utils.writeTextFile(destFile, text);
 			}
 		} catch (IOException e) {
-			logger.error("Changing the run.bat file failed. Please set the rmi host by changing the file manually or use the file run-jfire.sh if it exists.");
+			logger.error("Changing the run.bat file failed. Please set the rmi host by changing the file manually or overwrite it with run.sh.jfire if it exists.");
 		}		
 	}
 
@@ -399,12 +399,12 @@ public class ServerConfiguratorJBoss
 						.quoteReplacement(replacementText));
 				backup(destFile);
 				try {
-					Utils.writeTextFile(new File(jbossBinDir, "run-jfire.bat"), text, "ISO-8859-1");
+					Utils.writeTextFile(new File(jbossBinDir, "run.bat.jfire"), text, "ISO-8859-1");
 				} catch(IOException ignore) {}
 				Utils.writeTextFile(destFile, text);
 			}
 		} catch (IOException e) {
-			logger.error("Changing the run.bat file failed. Please set the rmi host by changing the file manually or use the file run-jfire.bat if it exists.");
+			logger.error("Changing the run.bat file failed. Please set the rmi host by changing the file manually or overwrite it with run.bat.jfire if it exists.");
 		}		
 	}
 	
