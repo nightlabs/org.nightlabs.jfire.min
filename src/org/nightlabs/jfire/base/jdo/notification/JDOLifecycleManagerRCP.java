@@ -18,7 +18,6 @@ import org.nightlabs.base.notification.NotificationListenerSWTThreadSync;
 import org.nightlabs.base.notification.NotificationManagerInterceptorEPProcessor;
 import org.nightlabs.notification.NotificationEvent;
 import org.nightlabs.notification.NotificationListener;
-import org.nightlabs.progress.ProgressMonitor;
 
 /**
  * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] de -->

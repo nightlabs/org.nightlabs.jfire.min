@@ -53,6 +53,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.nightlabs.base.extensionpoint.AbstractEPProcessor;
 import org.nightlabs.base.extensionpoint.EPProcessorException;
+import org.nightlabs.base.notification.SelectionManager;
 import org.nightlabs.base.progress.ProgressMonitorWrapper;
 import org.nightlabs.base.util.RCPUtil;
 import org.nightlabs.classloader.osgi.DelegatingClassLoaderOSGI;
@@ -61,6 +62,7 @@ import org.nightlabs.j2ee.InitialContextProvider;
 import org.nightlabs.jfire.base.JFireBasePlugin;
 import org.nightlabs.jfire.base.j2ee.JFireJ2EEPlugin;
 import org.nightlabs.jfire.base.jdo.cache.Cache;
+import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleManager;
 import org.nightlabs.jfire.classloader.JFireRCDLDelegate;
 import org.nightlabs.jfire.classloader.JFireRCLBackend;
 import org.nightlabs.jfire.classloader.JFireRCLBackendUtil;
@@ -525,7 +527,9 @@ implements InitialContextProvider
 
 		logger.debug("Login OK. Thread "+Thread.currentThread());
 	}
-	
+
+	private org.nightlabs.jfire.base.jdo.JDOObjectID2PCClassNotificationInterceptor objectID2PCClassNotificationInterceptor = null;
+
 	/**
 	 * Sets whether to force login on next attempt even if login state is 
 	 * {@link #LOGINSTATE_OFFLINE}.
@@ -883,6 +887,19 @@ implements InitialContextProvider
 				}
 				// WORKAROUND: For classloading deadlock
 				Thread.sleep(200);
+
+				if (LOGINSTATE_LOGGED_IN == loginState && objectID2PCClassNotificationInterceptor == null) {
+						objectID2PCClassNotificationInterceptor = new org.nightlabs.jfire.base.jdo.JDOObjectID2PCClassNotificationInterceptor();
+						SelectionManager.sharedInstance().addInterceptor(objectID2PCClassNotificationInterceptor);
+						JDOLifecycleManager.sharedInstance().addInterceptor(objectID2PCClassNotificationInterceptor);
+				}
+
+				if (LOGINSTATE_LOGGED_IN != loginState && objectID2PCClassNotificationInterceptor != null) {
+					SelectionManager.sharedInstance().removeInterceptor(objectID2PCClassNotificationInterceptor);
+					JDOLifecycleManager.sharedInstance().removeInterceptor(objectID2PCClassNotificationInterceptor);
+					objectID2PCClassNotificationInterceptor = null;
+				}
+
 				for (Iterator it = new LinkedList(loginStateListenerRegistry).iterator(); it.hasNext();) {
 					try {
 						LoginStateListenerRegistryItem item = (LoginStateListenerRegistryItem)it.next();

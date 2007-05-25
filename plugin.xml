@@ -10,9 +10,20 @@
    		schema="schema/loginstatelistener.exsd"
    	/>
    	
-   		
+<!-- I think, these are really not necessary anymore...		
+   <extension-point 
+   		id="person_edit_personDataFieldEditorFactory" 
+   		name="Defines a editor factory for a specific subclass of AbstractPersonDataField" 
+   		schema="schema/person_edit_personDataFieldEditorFactory.exsd"
+   	/>
    	
-	
+   <extension-point 
+   		id="person_edit_specializedDataBlockEditor" 
+   		name="Specialized PersonDataBlockEditors" 
+   		schema="schema/person_edit_specializedDataBlockEditor.exsd"
+   	/>
+-->
+
    <extension-point 
 	   id="configsetupvisualiser" 
 	   name="ConfigSetupVisualiser extension-point" 
@@ -191,6 +202,33 @@
 	
  	<!-- PersonDataFieldEditor extensions field-based-disguised -->
  
+ 	<!-- Specialized PersonDataBlockEditors extensions -->
+<!-- I think, that fleque deleted these, is fine :-)
+ 	<extension
+       id="org.nightlabs.jfire.person.edit.blockbased.special.PersonalDataBlockEditor"
+       point="org.nightlabs.jfire.base.person_edit_specializedDataBlockEditor">
+    <specializedDataBlockEditor
+          class="org.nightlabs.jfire.base.person.edit.blockbased.special.PersonalDataBlockEditor$Factory"
+	/>
+    <specializedDataBlockEditor class="org.nightlabs.jfire.base.person.edit.blockbased.special.CommentDataBlockEditor$Factory"/>
+	</extension>
+-->
+	
+  <extension
+        point="org.nightlabs.jfire.base.loginstatelistener">
+     <loginStateListener class="org.nightlabs.jfire.base.language.LanguageWatcher"/>
+  </extension>
+<!--
+  This is registered now by the class Login programmatically, because this Interceptor is on the server and the SelectionManager
+  might be used already while still being offline. This would cause a ClassNotFoundException.
+  <extension
+        point="org.nightlabs.base.notificationinterceptor">
+     <notificationInterceptor
+           class="org.nightlabs.jfire.base.jdo.JDOObjectID2PCClassNotificationInterceptor"
+           name="JDO ObjectID to PersistenceCapable Interceptor"/>
+  </extension>
+-->
+	
   <extension
         point="org.nightlabs.jfire.base.configsetupvisualiser">
      <visualiser
@@ -322,19 +360,25 @@
       <propDataFieldEditorFactory
             class="org.nightlabs.jfire.base.prop.edit.blockbased.TextDataFieldEditor$Factory"/>
       <propDataFieldEditorFactory
-            class="org.nightlabs.jfire.base.prop.edit.blockbased.SelectionDataFieldEditor$Factory"/>
+            class="org.nightlabs.jfire.base.prop.edit.blockbased.SelectionDataFieldEditor$Factory">
+      </propDataFieldEditorFactory>
       <propDataFieldEditorFactory
-            class="org.nightlabs.jfire.base.prop.edit.blockbased.ImageDataFieldEditor$Factory"/>
+            class="org.nightlabs.jfire.base.prop.edit.blockbased.ImageDataFieldEditor$Factory">
+      </propDataFieldEditorFactory>
       <propDataFieldEditorFactory
-            class="org.nightlabs.jfire.base.prop.edit.blockbased.DateDataFieldEditor$Factory"/>
+            class="org.nightlabs.jfire.base.prop.edit.blockbased.DateDataFieldEditor$Factory">
+      </propDataFieldEditorFactory>
       <propDataFieldEditorFactory
-            class="org.nightlabs.jfire.base.prop.edit.blockbased.NumberDataFieldEditor$Factory"/>
+            class="org.nightlabs.jfire.base.prop.edit.blockbased.NumberDataFieldEditor$Factory">
+      </propDataFieldEditorFactory>
       <propDataFieldEditorFactory
-            class="org.nightlabs.jfire.base.prop.edit.blockbased.RegexDataFieldEditor$Factory"/>
+            class="org.nightlabs.jfire.base.prop.edit.blockbased.RegexDataFieldEditor$Factory">
+      </propDataFieldEditorFactory>
       <propDataFieldEditorFactory
-            class="org.nightlabs.jfire.base.prop.edit.blockbased.PhoneNumberDataFieldEditor$PhoneNumberDataFieldEditorFactory"/>
+            class="org.nightlabs.jfire.base.prop.edit.blockbased.PhoneNumberDataFieldEditor$PhoneNumberDataFieldEditorFactory">
+      </propDataFieldEditorFactory>
       <propDataFieldEditorFactory
-            class="org.nightlabs.jfire.base.prop.edit.blockbased.I18nTextDataFieldEditor$Factory"/>            
+            class="org.nightlabs.jfire.base.prop.edit.blockbased.I18nTextDataFieldEditor$Factory"/>
    </extension>
    <extension
          point="org.nightlabs.base.login">

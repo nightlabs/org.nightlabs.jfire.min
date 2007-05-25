@@ -118,10 +118,10 @@ public class DataFieldEditorFactoryRegistry extends AbstractEPProcessor {
 			throw new IllegalArgumentException("Parameter targetType must not be null");
 		
 		Map<Class, DataFieldEditorFactory> registry = getTypedRegistry(editorType);
-		
+
 		if (!registry.containsKey(targetType))
-			throw new DataFieldEditorNotFoundException("No editor found for class "+targetType.getName());
-		
+			throw new DataFieldEditorNotFoundException("No editor found for editorType=\""+editorType+"\" targetType=\""+targetType.getName()+"\"");
+
 		return registry.get(targetType);
 	}
 	
