@@ -43,13 +43,31 @@ public class ServerConfiguratorJBoss
 			try { Thread.sleep(15000); } catch (InterruptedException ignore) { }
 		}
 	}
+
+	private static File getNonExistingFile(String pattern)
+	{
+		if(pattern == null)
+			throw new NullPointerException("pattern is null");
+		synchronized(pattern) {
+			int idx = 1;
+			File f;
+			do {
+				f = new File(String.format(pattern, idx));
+				idx++;
+			} while(f.exists());
+			return f;
+		}
+	}
 	
 	protected static File backup(File f) throws IOException
 	{
 		if(!f.exists() || !f.canRead())
 			throw new FileNotFoundException("Invalid file to backup: "+f);
 		File backupFile = new File(f.getAbsolutePath()+".bak");
+		if(backupFile.exists())
+			backupFile = getNonExistingFile(f.getAbsolutePath()+".%d.bak");
 		Utils.copyFile(f, backupFile);
+		logger.info("Created backup of file "+f.getAbsolutePath()+": "+backupFile.getName());
 		return backupFile;
 	}
 
@@ -58,6 +76,8 @@ public class ServerConfiguratorJBoss
 		if(!f.exists())
 			throw new FileNotFoundException("Invalid file to backup: "+f);
 		File backupFile = new File(f.getAbsolutePath()+".bak");
+		if(backupFile.exists())
+			backupFile = getNonExistingFile(f.getAbsolutePath()+".%d.bak");
 		if(!f.renameTo(backupFile))
 			throw new IOException("Renaming file "+f.getAbsolutePath()+" to "+f.getName()+" failed");
 		return backupFile;
@@ -129,6 +149,9 @@ public class ServerConfiguratorJBoss
 		String text = Utils.readTextFile(destFile);
 		String modificationMarker = "!!!ModifiedByJFire!!!";
 		if (text.indexOf(modificationMarker) < 0) {
+			
+			backup(destFile);
+			
 			logger.info("File " + destFile.getAbsolutePath() + " was not yet updated. Will increase transaction timeout and reduce JAAS cache timeout to 5 min - we cannot deactivate the JAAS cache completely or reduce the timeout further, because that causes JPOX problems (though I don't understand why).");
 			setRebootRequired(true);
 
@@ -183,7 +206,11 @@ public class ServerConfiguratorJBoss
 		File destFile = new File(jbossConfDir, "standardjboss.xml");
 		String text = Utils.readTextFile(destFile);
 		if (text.indexOf(CascadedAuthenticationClientInterceptor.class.getName()) < 0) {
+			
+			backup(destFile);
+			
 			logger.info("File " + destFile.getAbsolutePath() + " does not contain an interceptor registration for "+CascadedAuthenticationClientInterceptor.class.getName()+". Will add it.");
+			
 			setRebootRequired(true); // this is a must, because the conf directory doesn't support redeployment
 			String replacementText = "$1\n            <interceptor>"+CascadedAuthenticationClientInterceptor.class.getName()+"</interceptor>";
 
@@ -212,6 +239,8 @@ public class ServerConfiguratorJBoss
 		text = Utils.readTextFile(destFile);
 		if (text.indexOf("jfireLocal") < 0)
 		{
+			backup(destFile);
+			
 			setRebootRequired(true);
 			logger.info("File " + destFile.getAbsolutePath() + " does not contain the security domain \"jfireLocal\". Will add both, \"jfireLocal\" and \"jfire\".");
 			String replacementText =
@@ -260,26 +289,60 @@ public class ServerConfiguratorJBoss
 			return;
 		String rmiHost = serverConfiguratorSettings.getProperty("java.rmi.server.hostname");
 		if(rmiHost == null)
-			return;
+			rmiHost = "";
 		
 		File destFile = new File(jbossBinDir, "run.sh");
 		String text;
 		text = Utils.readTextFile(destFile);
 		String originalText = "JAVA_OPTS=\"$JAVA_OPTS -Dprogram.name=$PROGNAME\"";
-		if (text.indexOf("-Djava.rmi.server.hostname") < 0)
-		{
+		String optSetting = "JAVA_OPTS=\"$JAVA_OPTS -Djava.rmi.server.hostname="+rmiHost+"\"";
+		
+		Pattern existingSetting = Pattern.compile("(.*)"+Pattern.quote("JAVA_OPTS=\"$JAVA_OPTS -Djava.rmi.server.hostname=")+"([^\"]+)\"(.*)", Pattern.DOTALL);
+		Matcher matcher = existingSetting.matcher(text);
+		if(matcher.matches()) {
+			if(!rmiHost.equals(matcher.group(2))) {
+				setRebootRequired(true);
+				if("".equals(rmiHost)) {
+					logger.info("File " + destFile.getAbsolutePath() + " does contain a java.rmi.server.hostname setting but none is needed. Removing it...");
+					text = matcher.replaceAll("$1$3");
+				} else {
+					logger.info("File " + destFile.getAbsolutePath() + " does contain the wrong java.rmi.server.hostname setting. Replacing it...");
+					text = matcher.replaceAll("$1"+Matcher.quoteReplacement(optSetting)+"$3");
+				}
+				backup(destFile);
+				Utils.writeTextFile(destFile, text);
+			}
+		} else if(!"".equals(rmiHost)) {
 			setRebootRequired(true);
 			logger.info("File " + destFile.getAbsolutePath() + " does not contain the java.rmi.server.hostname setting. Adding it...");
 			String replacementText = 
 					originalText + "\n\n" +
-					"# Setting RMI host for JNDI to "+rmiHost+" (auto added by "+getClass().getName()+")\n"+
-					"JAVA_OPTS=\"$JAVA_OPTS -Djava.rmi.server.hostname="+rmiHost+"\"";
+					"# Setting RMI host for JNDI (auto added by "+getClass().getName()+")\n"+
+					optSetting;
 
 			text = text.replaceAll(Pattern.quote(originalText), Matcher.quoteReplacement(replacementText));
+			backup(destFile);
 			Utils.writeTextFile(destFile, text);
 		}
 	}
 
+	/**
+	 * @param args
+	 */
+	public static void main(String[] args)
+	{
+		ServerConfiguratorJBoss serverConfiguratorJBoss = new ServerConfiguratorJBoss();
+		try {
+			serverConfiguratorJBoss.configureRunBat(new File("/home/marc/bin/jfire-server/bin"));
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
 	private void configureRunBat(File jbossBinDir) throws FileNotFoundException, IOException
 	{
 		Properties serverConfiguratorSettings = getJFireServerConfigModule().getJ2ee().getServerConfiguratorSettings();
@@ -287,23 +350,40 @@ public class ServerConfiguratorJBoss
 			return;
 		String rmiHost = serverConfiguratorSettings.getProperty("java.rmi.server.hostname");
 		if(rmiHost == null)
-			return;
+			rmiHost = "";
 		
 		File destFile = new File(jbossBinDir, "run.bat");
 		String text;
 		text = Utils.readTextFile(destFile);
 		String originalText = "set JAVA_OPTS=%JAVA_OPTS% -Dprogram.name=%PROGNAME%";
-		if (text.indexOf("-Djava.rmi.server.hostname") < 0)
-		{
+		String optSetting = "set JAVA_OPTS=%JAVA_OPTS% -Djava.rmi.server.hostname="+rmiHost+"";
+		
+		Pattern existingSetting = Pattern.compile("(.*)"+Pattern.quote("set JAVA_OPTS=%JAVA_OPTS% -Djava.rmi.server.hostname=")+"([^\r\n]+)\r?\n(.*)", Pattern.DOTALL);
+		Matcher matcher = existingSetting.matcher(text);
+		if(matcher.matches()) {
+			if(!rmiHost.equals(matcher.group(2))) {
+				setRebootRequired(true);
+				if("".equals(rmiHost)) {
+					logger.info("File " + destFile.getAbsolutePath() + " does contain a java.rmi.server.hostname setting but none is needed. Removing it...");
+					text = matcher.replaceAll("$1$3");
+				} else {
+					logger.info("File " + destFile.getAbsolutePath() + " does contain the wrong java.rmi.server.hostname setting. Replacing it...");
+					text = matcher.replaceAll("$1"+Matcher.quoteReplacement(optSetting)+"$3");
+				}
+				backup(destFile);
+				Utils.writeTextFile(destFile, text);
+			}
+		} else if(!"".equals(rmiHost)) {
 			setRebootRequired(true);
 			logger.info("File " + destFile.getAbsolutePath() + " does not contain the java.rmi.server.hostname setting. Adding it...");
 			String replacementText = 
 					originalText + "\r\n\r\n" +
-					"rem Setting RMI host for JNDI to "+rmiHost+" (auto added by "+getClass().getName()+")\r\n"+
-					"set JAVA_OPTS=%JAVA_OPTS% -Djava.rmi.server.hostname="+rmiHost+"\r\n";
-
+					"rem Setting RMI host for JNDI (auto added by "+getClass().getName()+")\r\n"+
+					optSetting+
+					"\r\n";
+	
 			text = text.replaceAll(Pattern.quote(originalText), Matcher.quoteReplacement(replacementText));
-
+			backup(destFile);
 			Utils.writeTextFile(destFile, text);
 		}
 	}
