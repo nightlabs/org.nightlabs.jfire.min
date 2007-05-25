@@ -284,46 +284,57 @@ public class ServerConfiguratorJBoss
 	
 	private void configureRunSh(File jbossBinDir) throws FileNotFoundException, IOException
 	{
-		Properties serverConfiguratorSettings = getJFireServerConfigModule().getJ2ee().getServerConfiguratorSettings();
-		if(serverConfiguratorSettings == null)
-			return;
-		String rmiHost = serverConfiguratorSettings.getProperty("java.rmi.server.hostname");
-		if(rmiHost == null)
-			rmiHost = "";
-		
-		File destFile = new File(jbossBinDir, "run.sh");
 		String text;
-		text = Utils.readTextFile(destFile);
-		String originalText = "JAVA_OPTS=\"$JAVA_OPTS -Dprogram.name=$PROGNAME\"";
-		String optSetting = "JAVA_OPTS=\"$JAVA_OPTS -Djava.rmi.server.hostname="+rmiHost+"\"";
 		
-		Pattern existingSetting = Pattern.compile("(.*)"+Pattern.quote("JAVA_OPTS=\"$JAVA_OPTS -Djava.rmi.server.hostname=")+"([^\"]+)\"(.*)", Pattern.DOTALL);
-		Matcher matcher = existingSetting.matcher(text);
-		if(matcher.matches()) {
-			if(!rmiHost.equals(matcher.group(2))) {
-				setRebootRequired(true);
-				if("".equals(rmiHost)) {
-					logger.info("File " + destFile.getAbsolutePath() + " does contain a java.rmi.server.hostname setting but none is needed. Removing it...");
-					text = matcher.replaceAll("$1$3");
-				} else {
-					logger.info("File " + destFile.getAbsolutePath() + " does contain the wrong java.rmi.server.hostname setting. Replacing it...");
-					text = matcher.replaceAll("$1"+Matcher.quoteReplacement(optSetting)+"$3");
+		try {
+			Properties serverConfiguratorSettings = getJFireServerConfigModule().getJ2ee().getServerConfiguratorSettings();
+			if(serverConfiguratorSettings == null)
+				return;
+			String rmiHost = serverConfiguratorSettings.getProperty("java.rmi.server.hostname");
+			if(rmiHost == null)
+				rmiHost = "";
+			
+			File destFile = new File(jbossBinDir, "run.sh");
+			text = Utils.readTextFile(destFile);
+			String originalText = "JAVA_OPTS=\"$JAVA_OPTS -Dprogram.name=$PROGNAME\"";
+			String optSetting = "JAVA_OPTS=\"$JAVA_OPTS -Djava.rmi.server.hostname="+rmiHost+"\"";
+			
+			Pattern existingSetting = Pattern.compile("(.*)"+Pattern.quote("JAVA_OPTS=\"$JAVA_OPTS -Djava.rmi.server.hostname=")+"([^\"]+)\"(.*)", Pattern.DOTALL);
+			Matcher matcher = existingSetting.matcher(text);
+			if(matcher.matches()) {
+				if(!rmiHost.equals(matcher.group(2))) {
+					setRebootRequired(true);
+					if("".equals(rmiHost)) {
+						logger.info("File " + destFile.getAbsolutePath() + " does contain a java.rmi.server.hostname setting but none is needed. Removing it...");
+						text = matcher.replaceAll("$1$3");
+					} else {
+						logger.info("File " + destFile.getAbsolutePath() + " does contain the wrong java.rmi.server.hostname setting. Replacing it...");
+						text = matcher.replaceAll("$1"+Matcher.quoteReplacement(optSetting)+"$3");
+					}
+					backup(destFile);
+					try {
+						Utils.writeTextFile(new File(jbossBinDir, "run-jfire.sh"), text);
+					} catch(IOException ignore) {}
+					Utils.writeTextFile(destFile, text);
 				}
+			} else if(!"".equals(rmiHost)) {
+				setRebootRequired(true);
+				logger.info("File " + destFile.getAbsolutePath() + " does not contain the java.rmi.server.hostname setting. Adding it...");
+				String replacementText = 
+						originalText + "\n\n" +
+						"# Setting RMI host for JNDI (auto added by "+getClass().getName()+")\n"+
+						optSetting;
+	
+				text = text.replaceAll(Pattern.quote(originalText), Matcher.quoteReplacement(replacementText));
 				backup(destFile);
+				try {
+					Utils.writeTextFile(new File(jbossBinDir, "run-jfire.sh"), text);
+				} catch(IOException ignore) {}
 				Utils.writeTextFile(destFile, text);
 			}
-		} else if(!"".equals(rmiHost)) {
-			setRebootRequired(true);
-			logger.info("File " + destFile.getAbsolutePath() + " does not contain the java.rmi.server.hostname setting. Adding it...");
-			String replacementText = 
-					originalText + "\n\n" +
-					"# Setting RMI host for JNDI (auto added by "+getClass().getName()+")\n"+
-					optSetting;
-
-			text = text.replaceAll(Pattern.quote(originalText), Matcher.quoteReplacement(replacementText));
-			backup(destFile);
-			Utils.writeTextFile(destFile, text);
-		}
+		} catch (IOException e) {
+			logger.error("Changing the run.bat file failed. Please set the rmi host by changing the file manually or use the file run-jfire.sh if it exists.");
+		}		
 	}
 
 	/**
@@ -332,60 +343,69 @@ public class ServerConfiguratorJBoss
 	public static void main(String[] args)
 	{
 		ServerConfiguratorJBoss serverConfiguratorJBoss = new ServerConfiguratorJBoss();
-		try {
 			serverConfiguratorJBoss.configureRunBat(new File("/home/marc/bin/jfire-server/bin"));
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 	
-	private void configureRunBat(File jbossBinDir) throws FileNotFoundException, IOException
+	private void configureRunBat(File jbossBinDir)
 	{
-		Properties serverConfiguratorSettings = getJFireServerConfigModule().getJ2ee().getServerConfiguratorSettings();
-		if(serverConfiguratorSettings == null)
-			return;
-		String rmiHost = serverConfiguratorSettings.getProperty("java.rmi.server.hostname");
-		if(rmiHost == null)
-			rmiHost = "";
-		
-		File destFile = new File(jbossBinDir, "run.bat");
 		String text;
-		text = Utils.readTextFile(destFile);
-		String originalText = "set JAVA_OPTS=%JAVA_OPTS% -Dprogram.name=%PROGNAME%";
-		String optSetting = "set JAVA_OPTS=%JAVA_OPTS% -Djava.rmi.server.hostname="+rmiHost+"";
-		
-		Pattern existingSetting = Pattern.compile("(.*)"+Pattern.quote("set JAVA_OPTS=%JAVA_OPTS% -Djava.rmi.server.hostname=")+"([^\r\n]+)\r?\n(.*)", Pattern.DOTALL);
-		Matcher matcher = existingSetting.matcher(text);
-		if(matcher.matches()) {
-			if(!rmiHost.equals(matcher.group(2))) {
-				setRebootRequired(true);
-				if("".equals(rmiHost)) {
-					logger.info("File " + destFile.getAbsolutePath() + " does contain a java.rmi.server.hostname setting but none is needed. Removing it...");
-					text = matcher.replaceAll("$1$3");
-				} else {
-					logger.info("File " + destFile.getAbsolutePath() + " does contain the wrong java.rmi.server.hostname setting. Replacing it...");
-					text = matcher.replaceAll("$1"+Matcher.quoteReplacement(optSetting)+"$3");
+		try {
+			Properties serverConfiguratorSettings = getJFireServerConfigModule().getJ2ee().getServerConfiguratorSettings();
+			if (serverConfiguratorSettings == null)
+				return;
+			String rmiHost = serverConfiguratorSettings.getProperty("java.rmi.server.hostname");
+			if (rmiHost == null)
+				rmiHost = "";
+			String optSetting = "set JAVA_OPTS=%JAVA_OPTS% -Djava.rmi.server.hostname="	+ rmiHost + "";
+			File destFile = new File(jbossBinDir, "run.bat");
+			text = Utils.readTextFile(destFile);
+			String originalText = "set JAVA_OPTS=%JAVA_OPTS% -Dprogram.name=%PROGNAME%";
+			Pattern existingSetting = Pattern.compile("(.*)"
+					+ Pattern
+							.quote("set JAVA_OPTS=%JAVA_OPTS% -Djava.rmi.server.hostname=")
+					+ "([^\r\n]+)\r?\n(.*)", Pattern.DOTALL);
+			Matcher matcher = existingSetting.matcher(text);
+			if (matcher.matches()) {
+				if (!rmiHost.equals(matcher.group(2))) {
+					setRebootRequired(true);
+					if ("".equals(rmiHost)) {
+						logger
+								.info("File "
+										+ destFile.getAbsolutePath()
+										+ " does contain a java.rmi.server.hostname setting but none is needed. Removing it...");
+						text = matcher.replaceAll("$1$3");
+					} else {
+						logger
+								.info("File "
+										+ destFile.getAbsolutePath()
+										+ " does contain the wrong java.rmi.server.hostname setting. Replacing it...");
+						text = matcher.replaceAll("$1"
+								+ Matcher.quoteReplacement(optSetting) + "$3");
+					}
+					backup(destFile);
+					Utils.writeTextFile(destFile, text);
 				}
+			} else if (!"".equals(rmiHost)) {
+				setRebootRequired(true);
+				logger
+						.info("File "
+								+ destFile.getAbsolutePath()
+								+ " does not contain the java.rmi.server.hostname setting. Adding it...");
+				String replacementText = originalText + "\r\n\r\n"
+						+ "rem Setting RMI host for JNDI (auto added by "
+						+ getClass().getName() + ")\r\n" + optSetting + "\r\n";
+
+				text = text.replaceAll(Pattern.quote(originalText), Matcher
+						.quoteReplacement(replacementText));
 				backup(destFile);
+				try {
+					Utils.writeTextFile(new File(jbossBinDir, "run-jfire.bat"), text, "ISO-8859-1");
+				} catch(IOException ignore) {}
 				Utils.writeTextFile(destFile, text);
 			}
-		} else if(!"".equals(rmiHost)) {
-			setRebootRequired(true);
-			logger.info("File " + destFile.getAbsolutePath() + " does not contain the java.rmi.server.hostname setting. Adding it...");
-			String replacementText = 
-					originalText + "\r\n\r\n" +
-					"rem Setting RMI host for JNDI (auto added by "+getClass().getName()+")\r\n"+
-					optSetting+
-					"\r\n";
-	
-			text = text.replaceAll(Pattern.quote(originalText), Matcher.quoteReplacement(replacementText));
-			backup(destFile);
-			Utils.writeTextFile(destFile, text);
-		}
+		} catch (IOException e) {
+			logger.error("Changing the run.bat file failed. Please set the rmi host by changing the file manually or use the file run-jfire.bat if it exists.");
+		}		
 	}
 	
 	private void removeUnneededFiles(File jbossDeployDir) throws IOException
