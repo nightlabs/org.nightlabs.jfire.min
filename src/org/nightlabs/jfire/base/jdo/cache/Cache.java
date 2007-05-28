@@ -61,6 +61,18 @@ import org.nightlabs.notification.NotificationEvent;
 import org.nightlabs.util.CollectionUtil;
 
 /**
+ * This cache was designed to hold JFire JDO objects on the client side
+ * <p>
+ * It stores the JDO objects by their object-id and the fetch-groups 
+ * used to detach the objects. Additionally a scope can be used in case
+ * the fetch-groups do not sufficently define how the object was detached 
+ * (for example they might be detached with detach-load-fields) 
+ * </p>
+ * <p>
+ * When the cache is asked for an object with a certain set of fecht-groups
+ * an object from the cache is returned if its found to have been detached
+ * with the same or more fetch-groups.
+ * </p>
  * A singleton of this class caches <b>all</b> JDO objects 
  * in the client. To use it, you should implement your own
  * {@link org.nightlabs.jfire.base.jdo.JDOObjectProvider}.
