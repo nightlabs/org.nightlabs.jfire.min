@@ -92,6 +92,7 @@ import org.nightlabs.util.Utils;
  * See 
  * <ul>
  * <li>{@link #getConfigModuleClass()}</li>
+ * <li>{@link #getConfigModuleFetchGroups()}</li>
  * <li>{@link #createPreferencePage(Composite)}</li>
  * <li>{@link #updatePreferencePage(ConfigModule)}</li>
  * <li>{@link #updateConfigModule(ConfigModule)}</li>
@@ -122,15 +123,6 @@ implements IWorkbenchPreferencePage
 {
 	private static final Logger logger = Logger.getLogger(AbstractConfigModulePreferencePage.class);
 
-	/**
-	 * This is the default Set of fetch groups needed for any ConfigModule it contains: 
-	 * {@link FetchPlan#DEFAULT}, {@link ConfigModule#FETCH_GROUP_FIELDMETADATAMAP},
-	 * {@link ConfigModule#FETCH_GROUP_CONFIG}.
-	 * 
-	 * If subclasses want to extend these default fetch groups they need to overwrite 
-	 * {@link #getConfigModuleFetchGroups()}. 
-	 */
-	private static final Set<String> CONFIG_MODULE_FETCH_GROUPS = new HashSet<String>(); 
 //	protected static final String[] CONFIG_MODULE_FETCH_GROUPS = new String[] 
 //    {FetchPlan.DEFAULT,	ConfigModule.FETCH_GROUP_FIELDMETADATAMAP, ConfigModule.FETCH_GROUP_CONFIG}; 
 
@@ -772,6 +764,29 @@ implements IWorkbenchPreferencePage
 	}
 
 	/**
+	 * This method should return all fetch groups necessary to display a detached {@link ConfigModule}
+	 * of type {@link #getConfigModuleClass()} for which this page is designed for. <br>
+	 * 
+	 * Note: You should use {@link #getCommonConfigModuleFetchGroups()} and create a new Set of fetch 
+	 * 	groups out of the given ones and add the specific fetch groups necessary for this kind of 
+	 * 	<code>ConfigModule</code>.
+	 * 
+	 * @return the Set of fetch groups necessary to properly display a detached {@link ConfigModule} 
+	 * 	of this kind.
+	 */
+	public abstract Set<String> getConfigModuleFetchGroups();
+	
+	/**
+	 * This is the default Set of fetch groups needed for any ConfigModule it contains: 
+	 * {@link FetchPlan#DEFAULT}, {@link ConfigModule#FETCH_GROUP_FIELDMETADATAMAP},
+	 * {@link ConfigModule#FETCH_GROUP_CONFIG}.
+	 * 
+	 * If subclasses want to extend these default fetch groups they need to overwrite 
+	 * {@link #getConfigModuleFetchGroups()}. 
+	 */
+	private static final Set<String> CONFIG_MODULE_FETCH_GROUPS = new HashSet<String>(); 
+
+	/**
 	 * Returns fetch-groups containing the FetchPlans, which are surely needed:
 	 * {@link #CONFIG_MODULE_FETCH_GROUPS}. <br>
 	 * Subclasses are intended to create a new set from this one and extend it with the fetch groups 
@@ -782,7 +797,7 @@ implements IWorkbenchPreferencePage
 	 * 
 	 * @return an unmodifiable Set of Strings containing the default ConfigModule fetch groups ({@value #CONFIG_MODULE_FETCH_GROUPS}.
 	 */
-	public Set<String> getConfigModuleFetchGroups() {
+	public static Set<String> getCommonConfigModuleFetchGroups() {
 		if (CONFIG_MODULE_FETCH_GROUPS.isEmpty()) {
 			CONFIG_MODULE_FETCH_GROUPS.add(FetchPlan.DEFAULT);
 			CONFIG_MODULE_FETCH_GROUPS.add(ConfigModule.FETCH_GROUP_FIELDMETADATAMAP);
