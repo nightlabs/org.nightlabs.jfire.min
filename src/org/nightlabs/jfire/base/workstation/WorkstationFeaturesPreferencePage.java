@@ -62,12 +62,12 @@ public class WorkstationFeaturesPreferencePage extends
 		return WorkstationFeaturesCfMod.class;
 	}
 	
-	private static HashSet<String> fetchGroups;
+	private static final Set<String> fetchGroups = new HashSet<String>();
 	
 	@Override
 	public Set<String> getConfigModuleFetchGroups() {
-		if (fetchGroups == null || fetchGroups.isEmpty()) {
-			fetchGroups = new HashSet<String>(super.getConfigModuleFetchGroups());
+		if (fetchGroups.isEmpty()) {
+			fetchGroups.addAll(getCommonConfigModuleFetchGroups());
 			fetchGroups.add(WorkstationFeaturesCfMod.FETCH_GROUP_THIS_FEATURES);			
 		}
 		
