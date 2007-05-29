@@ -43,10 +43,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.nightlabs.base.composite.XComposite;
 import org.nightlabs.base.job.Job;
-import org.nightlabs.jfire.base.jdo.JDOObjectID2PCClassMap;
-import org.nightlabs.jfire.config.ConfigGroup;
 import org.nightlabs.jfire.config.ConfigModule;
-import org.nightlabs.jfire.config.dao.ConfigModuleDAO;
 import org.nightlabs.jfire.config.id.ConfigID;
 import org.nightlabs.progress.ProgressMonitor;
 
@@ -71,14 +68,14 @@ implements ConfigPreferenceChangedListener, IStoreChangedConfigModule
 	protected Map<String, ConfigModule> involvedConfigModules = new HashMap<String, ConfigModule>();
 
 	/**
-	 * (ConfigModule.class.getSimpleName.toString(), AbstractConfigModulePreferencePage)
+	 * (ConfigModule.class.getSimpleName(), AbstractConfigModulePreferencePage)
 	 */
 	protected Map<String, AbstractConfigModulePreferencePage> 
 			involvedPages = new HashMap<String, AbstractConfigModulePreferencePage>(); 
 
 	protected Set<ConfigModule> dirtyConfigModules = new HashSet<ConfigModule>();
 	
-	private boolean editingConfigGroup = false;
+//	private boolean editingConfigGroup = false;
 
 	/** 
 	 * Set of ConfigModules that have been updated on the server side and for which the update 
@@ -124,7 +121,7 @@ implements ConfigPreferenceChangedListener, IStoreChangedConfigModule
 		{
 			selectedPage.createContents(preferencesComposite.getWrapper(), currentConfigID);
 			selectedPage.addConfigPreferenceChangedListener(this);
-			involvedPages.put(currentConfigModule.getClass().getSimpleName().toString(), selectedPage);
+			involvedPages.put(selectedPage.getConfigModuleClass().getSimpleName(), selectedPage);
 		}
 
 		preferencesComposite.getStackLayout().topControl = selectedPage.getControl();		
@@ -134,7 +131,7 @@ implements ConfigPreferenceChangedListener, IStoreChangedConfigModule
 	private void updateCurrentConfigModule() {
 		if (currentConfigModule != null && currentPage != null) {
 			if (currentConfigModule.getClass().equals(currentPage.getConfigModuleClass())) {				
-				currentPage.updateCurrentConfigModule();
+				currentPage.updateConfigModule();
 			}
 		}
 	}
@@ -143,7 +140,6 @@ implements ConfigPreferenceChangedListener, IStoreChangedConfigModule
 		Job job = new Job("Updating ConfigModule") {
 			@Override
 			protected IStatus run(ProgressMonitor monitor) {
-				fetchCurrentConfigModule(monitor);
 				Display.getDefault().asyncExec(new Runnable() {
 					public void run() {
 						updatePreferencesGUI();
@@ -166,9 +162,9 @@ implements ConfigPreferenceChangedListener, IStoreChangedConfigModule
 	public void setCurrentConfigID(ConfigID currentConfigID) {
 		this.currentConfigID = currentConfigID;
 		treeComposite.setConfigID(currentConfigID);
-		editingConfigGroup = ConfigGroup.class.equals(
-				JDOObjectID2PCClassMap.sharedInstance().getPersistenceCapableClass(currentConfigID) 
-				);
+//		editingConfigGroup = ConfigGroup.class.equals(
+//				JDOObjectID2PCClassMap.sharedInstance().getPersistenceCapableClass(currentConfigID) 
+//				);
 	}
 
 	protected AbstractConfigModulePreferencePage getCurrentPage() {
@@ -182,40 +178,40 @@ implements ConfigPreferenceChangedListener, IStoreChangedConfigModule
 		return cfModKey;
 	}
 	
-	/**
-	 * Sets currentConfigModule to the ConfigModule assigned to the
-	 * Config or ConfigGroup with the id of the given userConfigID.
-	 * 
-	 * @param userConfigID
-	 */
-	protected void fetchCurrentConfigModule(ProgressMonitor monitor) {
-		AbstractConfigModulePreferencePage selectedPage = getCurrentPage();
-		if (selectedPage == null)
-			return;
-
-		if (currentConfigID == null)
-			throw new IllegalStateException("Can not fetch ConfigModule, currentConfigID is null");
-		
-		String cfModKey = getCfModKey(selectedPage);
-		
-		currentConfigModule = involvedConfigModules.get(cfModKey);
-		if (currentConfigModule != null)
-			return;
-		
-		try {
-			currentConfigModule = ConfigModuleDAO.sharedInstance().getConfigModule(
-				currentConfigID, 
-				selectedPage.getConfigModuleClass(), 
-				selectedPage.getConfigModuleCfModID(), 
-				selectedPage.getConfigModuleFetchGroups(),
-				selectedPage.getConfigModuleMaxFetchDepth(),
-				monitor
-				);
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-		involvedConfigModules.put(cfModKey, currentConfigModule);
-	}
+//	/**
+//	 * Sets currentConfigModule to the ConfigModule assigned to the
+//	 * Config or ConfigGroup with the id of the given userConfigID.
+//	 * 
+//	 * @param userConfigID
+//	 */
+//	protected void fetchCurrentConfigModule(ProgressMonitor monitor) {
+//		AbstractConfigModulePreferencePage selectedPage = getCurrentPage();
+//		if (selectedPage == null)
+//			return;
+//
+//		if (currentConfigID == null)
+//			throw new IllegalStateException("Can not fetch ConfigModule, currentConfigID is null");
+//		
+//		String cfModKey = getCfModKey(selectedPage);
+//		
+//		currentConfigModule = involvedConfigModules.get(cfModKey);
+//		if (currentConfigModule != null)
+//			return;
+//		
+//		try {
+//			currentConfigModule = ConfigModuleDAO.sharedInstance().getConfigModule(
+//				currentConfigID, 
+//				selectedPage.getConfigModuleClass(), 
+//				selectedPage.getConfigModuleCfModID(), 
+//				selectedPage.getConfigModuleFetchGroups(),
+//				selectedPage.getConfigModuleMaxFetchDepth(),
+//				monitor
+//				);
+//		} catch (Exception e) {
+//			throw new RuntimeException(e);
+//		}
+//		involvedConfigModules.put(cfModKey, currentConfigModule);
+//	}
 
 	public void configPreferenceChanged(AbstractConfigModulePreferencePage preferencePage) {
 		String cfModKey = getCfModKey(preferencePage);

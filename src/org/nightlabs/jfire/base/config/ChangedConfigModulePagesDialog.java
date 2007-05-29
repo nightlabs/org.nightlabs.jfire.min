@@ -5,12 +5,16 @@ package org.nightlabs.jfire.base.config;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
 import javax.jdo.JDODetachedFieldAccessException;
 
+import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ITreeContentProvider;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
@@ -76,7 +80,6 @@ extends CenteredDialog // IconAndMessageDialog
 		}
 
 		public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-			System.out.println(newInput);
 		}
 	}
 	
@@ -115,14 +118,14 @@ extends CenteredDialog // IconAndMessageDialog
 
 	protected Map<Config, Set<TreeItem>> updatedConfigs = new HashMap<Config, Set<TreeItem>>();
 
-	protected TreeViewer treeViewer = null;
+	protected TreeViewer treeViewer;
 	
 	private static ChangedConfigModulePagesDialog sharedInstance = null;
 
 	@Override
 	protected void configureShell(Shell newShell) {
 		super.configureShell(newShell);
-		newShell.setText("Trallalitralla");
+		newShell.setText("Changed Config Modules");
 	}
 	
 	/**
@@ -156,9 +159,6 @@ extends CenteredDialog // IconAndMessageDialog
 		}
 
 		sharedInstance._addChangedConfigModule(page, updatedModule);
-//		if (! sharedInstance.isDialogOpened()) {
-//			sharedInstance.open(); // TODO really blocking mode?! NO!!! We don't use blocking mode anymore!
-//		}
 	}
 
 	private void _addChangedConfigModule(AbstractConfigModulePreferencePage page, ConfigModule updatedModule)
@@ -180,35 +180,23 @@ extends CenteredDialog // IconAndMessageDialog
 	 */
 	@Override
 	protected void okPressed() {
+		StructuredSelection selected = (StructuredSelection) treeViewer.getSelection();
+		for (Iterator it = selected.iterator(); it.hasNext();) {
+			Object markedEntry = it.next();
+			if (markedEntry instanceof Config) {
+				Config markedConfig = (Config) markedEntry;
+				for (TreeItem item : updatedConfigs.get(markedConfig)) {
+					// update each page with the updated ConfigModule
+					item.getCorrespondingPage().updateGuiWith(item.getUpdatedConfigModule());
+				}
+			} // (markedEntry instanceof Config)
+			else {
+				TreeItem item = (TreeItem) markedEntry;
+				item.getCorrespondingPage().updateGuiWith(item.getUpdatedConfigModule());
+			}
+		}
 		super.okPressed();
 	}
-
-//	@Override
-//	protected Image getImage() {
-//		return getInfoImage();
-//	}
-
-//	/* (non-Javadoc)
-//	 * @see org.eclipse.jface.dialogs.IconAndMessageDialog#createContents(org.eclipse.swt.widgets.Composite)
-//	 */
-//	@Override
-//	protected void createDialogAndButtonArea(Composite parent) {
-//		super.createDialogAndButtonArea(parent);
-//		Composite composite = new Composite(parent, SWT.NONE);
-//		GridLayout layout = new GridLayout(1, false);
-//		layout.marginHeight = convertVerticalDLUsToPixels(IDialogConstants.VERTICAL_MARGIN);
-//		layout.marginWidth = convertHorizontalDLUsToPixels(IDialogConstants.HORIZONTAL_MARGIN);
-//		layout.verticalSpacing = convertVerticalDLUsToPixels(IDialogConstants.VERTICAL_SPACING);
-//		layout.horizontalSpacing = convertHorizontalDLUsToPixels(IDialogConstants.HORIZONTAL_SPACING);
-//		composite.setLayout(layout);
-//		composite.setLayoutData(new GridData(GridData.FILL_BOTH));
-//		treeViewer = new TreeViewer(composite, SWT.CHECK);
-//		treeViewer.setContentProvider(new ContentProvider());
-//		treeViewer.setLabelProvider(new LabelProvider());
-//		if (updatedConfigs != null)
-//			treeViewer.setInput(updatedConfigs);
-//		applyDialogFont(composite);
-//	}
 
 	@Override
 	protected Control createDialogArea(Composite parent) {
@@ -218,6 +206,24 @@ extends CenteredDialog // IconAndMessageDialog
 		treeViewer.setContentProvider(new ContentProvider());
 		treeViewer.setLabelProvider(new LabelProvider());
 		treeViewer.setInput(updatedConfigs);
+		treeViewer.addSelectionChangedListener(new ISelectionChangedListener() {
+			public void selectionChanged(SelectionChangedEvent event) {
+				StructuredSelection selection = (StructuredSelection) event.getSelection();
+				if (selection.isEmpty())
+					return;
+				
+				for (Iterator it = selection.iterator(); it.hasNext();) {
+					Object markedEntry = it.next();
+					if (markedEntry instanceof Config) {
+						Config markedConfig = (Config) markedEntry;
+						treeViewer.setSelection(
+								new StructuredSelection(updatedConfigs.get(markedConfig).toArray()), 
+								true
+								);
+					}
+				}
+			}
+		});
 		return area;
 	}
 
@@ -229,12 +235,5 @@ extends CenteredDialog // IconAndMessageDialog
 
 		return res;
 	}
-
-//	/**
-//	 * @param dialogOpened the dialogOpened to set
-//	 */
-//	public void setDialogOpened(boolean dialogOpened) {
-//		this.dialogOpened = dialogOpened;
-//	}
 
 }

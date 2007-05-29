@@ -2,11 +2,11 @@ package org.nightlabs.jfire.base.workstation;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-
-import javax.jdo.FetchPlan;
+import java.util.Set;
 
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
@@ -20,7 +20,6 @@ import org.nightlabs.base.table.AbstractTableComposite;
 import org.nightlabs.base.table.TableContentProvider;
 import org.nightlabs.base.table.TableLabelProvider;
 import org.nightlabs.jfire.base.config.AbstractWorkstationConfigModulePreferencePage;
-import org.nightlabs.jfire.config.ConfigModule;
 import org.nightlabs.jfire.workstation.WorkstationFeature;
 import org.nightlabs.jfire.workstation.WorkstationFeaturesCfMod;
 
@@ -63,14 +62,20 @@ public class WorkstationFeaturesPreferencePage extends
 		return WorkstationFeaturesCfMod.class;
 	}
 	
+	private static HashSet<String> fetchGroups;
+	
 	@Override
-	public String[] getConfigModuleFetchGroups() {
-		return new String[] {FetchPlan.DEFAULT, WorkstationFeaturesCfMod.FETCH_GROUP_THIS_FEATURES, 
-				ConfigModule.FETCH_GROUP_FIELDMETADATAMAP};
+	public Set<String> getConfigModuleFetchGroups() {
+		if (fetchGroups == null || fetchGroups.isEmpty()) {
+			fetchGroups = new HashSet<String>(super.getConfigModuleFetchGroups());
+			fetchGroups.add(WorkstationFeaturesCfMod.FETCH_GROUP_THIS_FEATURES);			
+		}
+		
+		return fetchGroups;
 	}
 
 	@Override
-	protected void updateConfigModule() {
+	public void updateConfigModule() {
 		Map<String, WorkstationFeature> oldFeatures = currentConfigModule.getFeatures();
 		
 		// FIXME: JPOX is having Problems clearing the list before adding new entries => Duplicate Key Exeption!
