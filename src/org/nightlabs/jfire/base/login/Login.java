@@ -885,8 +885,6 @@ implements InitialContextProvider
 						logger.error("Processing LoginStateListener extensions failed!", e);
 					}
 				}
-				// WORKAROUND: For classloading deadlock
-				Thread.sleep(200);
 
 				if (LOGINSTATE_LOGGED_IN == loginState && objectID2PCClassNotificationInterceptor == null) {
 						objectID2PCClassNotificationInterceptor = new org.nightlabs.jfire.base.jdo.JDOObjectID2PCClassNotificationInterceptor();
@@ -900,6 +898,9 @@ implements InitialContextProvider
 					objectID2PCClassNotificationInterceptor = null;
 				}
 
+//				// WORKAROUND: For classloading deadlock (give the Cache some time to do its own classloading first)
+//				Thread.sleep(3000); This is now done in Cache.NotificationThread#run where it is much more effective (and more user-friendly). Marco.
+
 				for (Iterator it = new LinkedList(loginStateListenerRegistry).iterator(); it.hasNext();) {
 					try {
 						LoginStateListenerRegistryItem item = (LoginStateListenerRegistryItem)it.next();
@@ -907,8 +908,8 @@ implements InitialContextProvider
 					} catch (Throwable t) {
 						logger.warn("Caught exception while notifying LoginStateListener. Continue.", t);
 					}
-					// WORKAROUND: For classloading deadlock
-					Thread.sleep(200);
+//					// WORKAROUND: For classloading deadlock
+//					Thread.sleep(200);
 				}
 			} catch (Throwable t) {
 				logger.warn("Cought exception while notifying LoginStateListener. Abort.", t);
