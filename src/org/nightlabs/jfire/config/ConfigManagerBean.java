@@ -100,8 +100,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	public ConfigModule storeConfigModule(ConfigModule configModule, boolean get, String[] fetchGroups, int maxFetchDepth)
 	throws ModuleException
 	{
-		PersistenceManager pm;
-		pm = getPersistenceManager();
+		PersistenceManager pm = getPersistenceManager();
 		try 
 		{
 			if (!getOrganisationID().equals(configModule.getOrganisationID()))
@@ -110,20 +109,34 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 				throw new IllegalArgumentException("Pass only detached ConfigModules to this method.");
 			
 			// All this could be checked by configModule.isGroupAllowsOver
-			
-			// Get the config of the given module
-			Config config = Config.getConfig(pm, configModule.getOrganisationID(), configModule.getConfigKey(), configModule.getConfigType());			
-			if (!(config instanceof ConfigGroup)) {
-				// Get the group this config belongs to and the appropriate config module in this group
-				ConfigGroup configGroup = config.getConfigGroup();
-				if (configGroup != null) {
-					ConfigModule groupConfigModule = config.getConfigGroup().getConfigModule(configModule.getClass(), configModule.getCfModID(), false);
-//					if (groupConfigModule != null && !groupConfigModule.isGroupMembersMayOverride())
-//						throw new IllegalArgumentException("This ConfigModule is not allowed to be stored. It's ConfigGroup "+config.getConfigGroup().getName()+" does not allow this");
+
+			if (! configModule.isGroupConfigModule()) {
+				// check if module is allowed to be stored
+				Config config = Config.getConfig(pm, configModule.getOrganisationID(), configModule.getConfigKey(), configModule.getConfigType());
+				ConfigGroup group = config.getConfigGroup();
+				if (group != null) {
+					ConfigModule groupConfigModule = group.getConfigModule(configModule.getClass(), configModule.getCfModID(), false);					
 					if (groupConfigModule != null && (groupConfigModule.getFieldMetaData(ConfigModule.class.getName()).getWritableByChildren() & FieldMetaData.WRITABLEBYCHILDREN_YES) == 0)
 						throw new IllegalArgumentException("This ConfigModule is not allowed to be stored. It's ConfigGroup "+config.getConfigGroup().getName()+" does not allow this");
 				}
-			}
+			} 
+//			else {
+//				
+//				// Workaround for a Cache bug, in which the cache misses to notify all objects having a modified 
+//				// FieldMetaData in their object graph.
+//				// This simply notifies all member ConfigModules.
+//				ConfigGroup configGroup = (ConfigGroup) 
+//				Config.getConfig(pm, configModule.getOrganisationID(), configModule.getConfigKey(), configModule.getConfigType());
+//
+//				Collection members = Config.getConfigsForGroup(pm, configGroup);
+//				for (Iterator iter = members.iterator(); iter.hasNext();) {
+//					Config member = (Config) iter.next();
+//					ConfigModule memberModule = member.createConfigModule(configModule.getClass(), configModule.getCfModID());
+//					JDOHelper.makeDirty(memberModule, ConfigModule.FIELD_NAME_FIELDMETADATAMAP);
+////					if (JDOHelper.isDetached(memberModule))
+////					pm.makePersistent(memberModule);
+//				}
+//			}
 			
 			ConfigModule pConfigModule = (ConfigModule)pm.makePersistent(configModule);
 			
@@ -131,6 +144,21 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 				// is a ConfigModule of a ConfigGroup -> inherit all ConfigModules for 
 				// all its members
 				ConfigModule.inheritAllGroupMemberConfigModules(pm, (ConfigGroup)pConfigModule.getConfig(), pConfigModule);
+				
+				// Workaround for a Cache bug, in which the cache misses to notify all objects having a modified 
+				// FieldMetaData in their object graph.
+				// This simply notifies all member ConfigModules.
+				ConfigGroup configGroup = (ConfigGroup) 
+				Config.getConfig(pm, configModule.getOrganisationID(), configModule.getConfigKey(), configModule.getConfigType());
+
+				Collection members = Config.getConfigsForGroup(pm, configGroup);
+				for (Iterator iter = members.iterator(); iter.hasNext();) {
+					Config member = (Config) iter.next();
+					ConfigModule memberModule = member.createConfigModule(configModule.getClass(), configModule.getCfModID());
+					JDOHelper.makeDirty(memberModule, ConfigModule.FIELD_NAME_FIELDMETADATAMAP);
+//					if (JDOHelper.isDetached(memberModule))
+//					pm.makePersistent(memberModule);
+				}
 			}
 			
 			if (!get)
