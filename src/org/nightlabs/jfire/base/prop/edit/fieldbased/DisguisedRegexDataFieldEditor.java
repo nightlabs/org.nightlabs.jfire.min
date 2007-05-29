@@ -89,9 +89,7 @@ public class DisguisedRegexDataFieldEditor extends AbstractDataFieldEditor<Regex
 	}
 	
 	public RegexDataField getTextData() {
-		if (getDataField() instanceof RegexDataField)
-			return getDataField();
-		return null;
+		return getDataField();
 	}
 
 	/**
