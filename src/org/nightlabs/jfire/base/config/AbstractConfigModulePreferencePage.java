@@ -910,4 +910,9 @@ implements IWorkbenchPreferencePage
 		if(configChangedListeners.contains(listener))
 			configChangedListeners.remove(listener);
 	}
+	
+	private static Set<String> thisShit = new HashSet<String>();
+	public static Set<String> getThisShit() {
+		return thisShit;
+	}
 }
