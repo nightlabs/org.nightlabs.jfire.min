@@ -11,17 +11,18 @@ import java.util.Set;
 
 import javax.jdo.JDODetachedFieldAccessException;
 
-import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ITreeContentProvider;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.TreeItem;
 import org.nightlabs.base.dialog.CenteredDialog;
 import org.nightlabs.base.util.RCPUtil;
 import org.nightlabs.jfire.config.Config;
@@ -43,12 +44,12 @@ extends CenteredDialog // IconAndMessageDialog
 	}
 
 	protected static class ContentProvider implements ITreeContentProvider {		
-		Map<Config, Set<TreeItem>> updatedModules = null;
+		Map<Config, Set<PageModulePair>> updatedModules = null;
 		
 		@SuppressWarnings("unchecked")
 		public Object[] getElements(Object inputElement) {
 			if (inputElement instanceof Map) {
-				updatedModules = (Map<Config, Set<TreeItem>>) inputElement;
+				updatedModules = (Map<Config, Set<PageModulePair>>) inputElement;
 				return updatedModules.keySet().toArray();
 			}
 
@@ -93,15 +94,15 @@ extends CenteredDialog // IconAndMessageDialog
 			if (element instanceof Config)
 				return ((Config) element).getConfigKey();
 			
-			return ((TreeItem) element).getUpdatedConfigModule().getCfModKey();
+			return ((PageModulePair) element).getUpdatedConfigModule().getCfModKey();
 		}
 	}
 	
-	protected class TreeItem {
+	protected class PageModulePair {
 		private AbstractConfigModulePreferencePage page;
 		private ConfigModule updatedConfigModule;
 		
-		public TreeItem(AbstractConfigModulePreferencePage page, ConfigModule updatedModule) {
+		public PageModulePair(AbstractConfigModulePreferencePage page, ConfigModule updatedModule) {
 			this.page = page;
 			this.updatedConfigModule = updatedModule;
 		}
@@ -116,7 +117,7 @@ extends CenteredDialog // IconAndMessageDialog
 	}
 		
 
-	protected Map<Config, Set<TreeItem>> updatedConfigs = new HashMap<Config, Set<TreeItem>>();
+	protected Map<Config, Set<PageModulePair>> updatedConfigs = new HashMap<Config, Set<PageModulePair>>();
 
 	protected TreeViewer treeViewer;
 	
@@ -164,12 +165,12 @@ extends CenteredDialog // IconAndMessageDialog
 	private void _addChangedConfigModule(AbstractConfigModulePreferencePage page, ConfigModule updatedModule)
 	{
 		Config correspConfig = updatedModule.getConfig();
-		Set<TreeItem> changedModulesOfConfig = updatedConfigs.get(correspConfig);
+		Set<PageModulePair> changedModulesOfConfig = updatedConfigs.get(correspConfig);
 		if (changedModulesOfConfig == null) {
-			changedModulesOfConfig = new HashSet<TreeItem>();
+			changedModulesOfConfig = new HashSet<PageModulePair>();
 			updatedConfigs.put(correspConfig, changedModulesOfConfig);			
 		}
-		changedModulesOfConfig.add(new TreeItem(page, updatedModule));
+		changedModulesOfConfig.add(new PageModulePair(page, updatedModule));
 
 		treeViewer.refresh(updatedConfigs);
 		treeViewer.expandToLevel(correspConfig, 2);
@@ -185,13 +186,13 @@ extends CenteredDialog // IconAndMessageDialog
 			Object markedEntry = it.next();
 			if (markedEntry instanceof Config) {
 				Config markedConfig = (Config) markedEntry;
-				for (TreeItem item : updatedConfigs.get(markedConfig)) {
+				for (PageModulePair item : updatedConfigs.get(markedConfig)) {
 					// update each page with the updated ConfigModule
 					item.getCorrespondingPage().updateGuiWith(item.getUpdatedConfigModule());
 				}
 			} // (markedEntry instanceof Config)
 			else {
-				TreeItem item = (TreeItem) markedEntry;
+				PageModulePair item = (PageModulePair) markedEntry;
 				item.getCorrespondingPage().updateGuiWith(item.getUpdatedConfigModule());
 			}
 		}
@@ -206,24 +207,69 @@ extends CenteredDialog // IconAndMessageDialog
 		treeViewer.setContentProvider(new ContentProvider());
 		treeViewer.setLabelProvider(new LabelProvider());
 		treeViewer.setInput(updatedConfigs);
-		treeViewer.addSelectionChangedListener(new ISelectionChangedListener() {
-			public void selectionChanged(SelectionChangedEvent event) {
-				StructuredSelection selection = (StructuredSelection) event.getSelection();
-				if (selection.isEmpty())
-					return;
-				
-				for (Iterator it = selection.iterator(); it.hasNext();) {
-					Object markedEntry = it.next();
-					if (markedEntry instanceof Config) {
-						Config markedConfig = (Config) markedEntry;
-						treeViewer.setSelection(
-								new StructuredSelection(updatedConfigs.get(markedConfig).toArray()), 
-								true
-								);
+		treeViewer.getTree().addSelectionListener( new SelectionListener() {
+			public void widgetSelected(SelectionEvent e) {
+				TreeItem item = (TreeItem) e.item;
+				setCheckedStatus(item);
+			}
+			
+			public void widgetDefaultSelected(SelectionEvent e) {
+				// Following the javadoc, this should be called on a double click... well it isn't.
+				TreeItem item = (TreeItem) e.item;
+				setCheckedStatus(item);
+			}
+			
+			private void setCheckedStatus(TreeItem item) {
+				boolean checkedStatus = item.getChecked();
+				if (item.getData() instanceof Config) {
+					// clicked on a config -> mark / unmark all children
+					for (TreeItem child : item.getItems()) {
+						child.setChecked(checkedStatus);
 					}
-				}
+				} else {
+					// clicked on a ConfigModule -> mark / unmark Config if all / none are checked
+					TreeItem correspConfig = item.getParentItem();
+					if (! checkedStatus) { 
+						// item was made unchecked -> if parent was checked --> mark unchecked 
+						if (correspConfig.getChecked())
+							correspConfig.setChecked(false);
+					} else {
+						// item was marked checked -> if all ConfigModules are now checked --> check correspConfig
+						boolean allChecked = true;
+						for (int i = 0; i < correspConfig.getItemCount(); i++) {
+							TreeItem configModule = correspConfig.getItem(i);
+							if (! configModule.getChecked()) {
+								allChecked = false;
+								break;
+							}
+						}
+						
+						if (allChecked)
+							correspConfig.setChecked(true);
+					}
+				} // item == PageConfigModulePair
 			}
 		});
+		
+//		treeViewer.addSelectionChangedListener(new ISelectionChangedListener() {
+//			public void selectionChanged(SelectionChangedEvent event) {
+//				StructuredSelection selection = (StructuredSelection) event.getSelection();
+//				if (selection.isEmpty())
+//					return;
+//				
+//				for (Iterator it = selection.iterator(); it.hasNext();) {
+//					Object markedEntry = it.next();
+//					if (markedEntry instanceof Config) {
+//						// How to get to the widget which represents this Config??
+//						Config markedConfig = (Config) markedEntry;
+//						treeViewer.setSelection( // sets the selection no the checked state.
+//								new StructuredSelection(updatedConfigs.get(markedConfig).toArray()), 
+//								true
+//								);
+//					}
+//				}
+//			}
+//		});
 		return area;
 	}
 

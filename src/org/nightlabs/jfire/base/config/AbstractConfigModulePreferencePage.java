@@ -38,6 +38,7 @@ import javax.jdo.JDODetachedFieldAccessException;
 import javax.jdo.JDOHelper;
 
 import org.apache.log4j.Logger;
+import org.apache.log4j.Priority;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.preference.PreferencePage;
@@ -235,13 +236,16 @@ implements IWorkbenchPreferencePage
 	 * @param configModule The {@link ConfigModule} to set.
 	 */
 	public void updateGuiWith(C configModule) {
+		if (configModule == null)
+			throw new RuntimeException("The ConfigModule C passed to updateGuiWith(C) must not be null!");
+		
 		try {
 			ConfigID newConfigID = (ConfigID) JDOHelper.getObjectId(configModule.getConfig()); 
 			if (newConfigID != null && ! newConfigID.equals(configID))
 				throw new IllegalStateException("The given ConfigModule does not belong to the Config this page is editing!");
 		} catch (JDODetachedFieldAccessException e) {
-			if (logger.isInfoEnabled())
-				logger.info("The given ConfigModule has no Config detached with it! Module = "+configModule);			
+			if (logger.isEnabledFor(Priority.WARN))
+				logger.warn("The given ConfigModule has no Config detached with it! Module = "+configModule);			
 		} // if config is not in FetchGroups -> believe given configModule belongs to this config
 
 		currentConfigModule = configModule;
