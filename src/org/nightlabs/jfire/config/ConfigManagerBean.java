@@ -149,7 +149,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 				// FieldMetaData in their object graph.
 				// This simply notifies all member ConfigModules.
 				ConfigGroup configGroup = (ConfigGroup) 
-				Config.getConfig(pm, configModule.getOrganisationID(), configModule.getConfigKey(), configModule.getConfigType());
+					Config.getConfig(pm, configModule.getOrganisationID(), configModule.getConfigKey(), configModule.getConfigType());
 
 				Collection members = Config.getConfigsForGroup(pm, configGroup);
 				for (Iterator iter = members.iterator(); iter.hasNext();) {
