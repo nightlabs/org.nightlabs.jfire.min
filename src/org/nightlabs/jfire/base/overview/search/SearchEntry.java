@@ -81,6 +81,12 @@ implements Entry
 				return false;
 		
 		Entry controller = (Entry) obj;
+		if (controller == null)
+			return false;
+		
+		if (controller.getID() == null)
+			return false;
+		
 		if (controller.getID().equals(getID()))
 				return true;
 		
