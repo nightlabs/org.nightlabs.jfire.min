@@ -34,7 +34,6 @@ import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtension;
 import org.eclipse.ui.IWorkbenchPreferencePage;
-
 import org.nightlabs.base.extensionpoint.AbstractEPProcessor;
 import org.nightlabs.base.extensionpoint.EPProcessorException;
 
@@ -103,9 +102,9 @@ public class ConfigPreferencePageRegistry extends AbstractEPProcessor {
 			String name = element.getAttribute("name");
 			IWorkbenchPreferencePage page = null;			
 			try {
-					page = (IWorkbenchPreferencePage)element.createExecutableExtension("class");
-			} catch (Throwable e) {				
-				logger.warn("Could not instantiate preference-page extension of type "+element.getAttribute("class")+". Reason "+e.getClass().getName()+": "+e.getMessage());
+				page = (IWorkbenchPreferencePage)element.createExecutableExtension("class");
+			} catch (Throwable e) {
+				logger.error("Could not instantiate preference-page extension of type "+element.getAttribute("class")+"! Check, whether it has a default constructor!", e);
 				page = null;
 			}
 			if (page == null)

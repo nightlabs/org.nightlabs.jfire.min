@@ -231,16 +231,16 @@ public class ConfigSetupRegistry extends AbstractEPProcessor {
 			return rootNode;
 		ConfigPreferenceNode registeredRootNode = ConfigPreferencePageRegistry.sharedInstance().getPreferencesRootNode();
 		rootNode = new ConfigPreferenceNode("","","",null,null);
-		
+
 		Set mergeModules = new HashSet();
 		mergeModules.addAll(setup.getConfigModuleClasses());		
-		
+
 		for (Iterator iter = registeredRootNode.getChildren().iterator(); iter.hasNext();) {
 			ConfigPreferenceNode childNode = (ConfigPreferenceNode) iter.next();
 			// recursively merge
 			mergeSetupNodes(setup, mergeModules, childNode, rootNode);
 		}
-		
+
 		// for all remaining classes add a null-Node
 		for (Iterator iter = mergeModules.iterator(); iter.hasNext();) {
 			String moduleClassName = (String) iter.next();
