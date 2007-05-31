@@ -41,9 +41,6 @@ import org.nightlabs.jfire.security.id.UserID;
 public abstract class AbstractUserConfigModulePreferencePage<C extends ConfigModule> extends
 		AbstractConfigModulePreferencePage<C> {
 
-	/**
-	 * 
-	 */
 	public AbstractUserConfigModulePreferencePage() {
 		super();
 	}

@@ -67,6 +67,7 @@ import org.nightlabs.base.notification.NotificationAdapterJob;
 import org.nightlabs.inheritance.FieldMetaData;
 import org.nightlabs.inheritance.InheritanceManager;
 import org.nightlabs.jdo.NLJDOHelper;
+import org.nightlabs.jfire.base.editlock.EditLockMan;
 import org.nightlabs.jfire.base.jdo.cache.Cache;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleManager;
 import org.nightlabs.jfire.base.login.Login;
@@ -75,6 +76,7 @@ import org.nightlabs.jfire.config.ConfigGroup;
 import org.nightlabs.jfire.config.ConfigManager;
 import org.nightlabs.jfire.config.ConfigManagerUtil;
 import org.nightlabs.jfire.config.ConfigModule;
+import org.nightlabs.jfire.config.EditLockTypeConfigModule;
 import org.nightlabs.jfire.config.dao.ConfigModuleDAO;
 import org.nightlabs.jfire.config.id.ConfigID;
 import org.nightlabs.jfire.config.id.ConfigModuleID;
@@ -299,7 +301,7 @@ implements IWorkbenchPreferencePage
 			// check if this module has been saved lately and is therefore already up to date.
 			// This is a workaround for the recently saved module being notified right after saving.
 			// TODO: this should be no prob' anymore once the Cache uses Versioning - I will soon implement this - too busy right now. Marco.
-			if (recentlySaved && currentConfigModule.isGroupConfigModule()) {
+			if (recentlySaved) {
 				recentlySaved = false;
 				return;
 			}
@@ -437,8 +439,10 @@ implements IWorkbenchPreferencePage
 			currentConfigModule.getFieldMetaData(ConfigModule.FIELD_NAME_FIELDMETADATA_CONFIGMODULE).setValueInherited(false);
 		}
 		
-		if (configChanged)
+		if (configChanged) {
+			recentlySaved = false;
 			notifyConfigChangedListeners();
+		}
 	} 
 
 	/**
@@ -482,19 +486,29 @@ implements IWorkbenchPreferencePage
 		Job fetchJob = new Job("Fetch ConfigModule Information") {
 			@Override
 			protected IStatus run(ProgressMonitor monitor) {
+				monitor.beginTask("Getting the Module data", 3);
 				currentConfigModule = retrieveConfigModule(monitor);
 				currentConfigIsGroupMember = checkIfIsGroupMember(currentConfigModule);
 				currentConfigModuleIsEditable = canEdit(currentConfigModule);
 
 				Display.getDefault().asyncExec(new Runnable() {
 					public void run() {
+						if (currentConfigModuleIsEditable) {
+							EditLockMan.sharedInstance().acquireEditLock(EditLockTypeConfigModule.EDIT_LOCK_TYPE_ID, 
+									(ConfigModuleID) JDOHelper.getObjectId(currentConfigModule), "",
+									null, getShell(), getSubProgressMonitorWrapper(1));
+						}
 						setUpGui();
 						updateConfigHeader();
-						updatePreferencePage(currentConfigModule);						
+						updatePreferencePage(currentConfigModule);
+						getProgressMonitorWrapper().worked(1);
 						fadableWrapper.setFaded(false);
 						setEditable(currentConfigModuleIsEditable);
 					}
 				});
+				
+				monitor.worked(1);
+				monitor.done();
 				return Status.OK_STATUS;
 			}
 		};
@@ -513,6 +527,14 @@ implements IWorkbenchPreferencePage
 				configChangedListeners.clear();
 				JDOLifecycleManager.sharedInstance().removeNotificationListener(getConfigModuleClass(), changeListener);
 				changeListener = null;
+			}
+		});
+		fadableWrapper.addDisposeListener(new DisposeListener() {
+			public void widgetDisposed(DisposeEvent e) {
+				if (currentConfigModuleIsEditable) {
+					EditLockMan.sharedInstance().releaseEditLock(
+						(ConfigModuleID) JDOHelper.getObjectId(currentConfigModule));
+				}
 			}
 		});
 
@@ -660,11 +682,13 @@ implements IWorkbenchPreferencePage
 				boolean selected = inheritMemberConfigModule.getSelection();
 				currentConfigModule.getFieldMetaData(ConfigModule.class.getName()).setValueInherited(selected);				
 				
+//				FIXME: The first time inheritance is triggered, the valueInherited value is here set to true (look deeper)
 				if (selected) {
 					fadableWrapper.setFaded(true);
 					Job fetchJob = new Job("Fetch ConfigModule Information") {
 						@Override
 						protected IStatus run(ProgressMonitor monitor) {
+//						FIXME: and is in this job, when read, FALSE!!!! Damn f%&§$=! bug!
 							ConfigID groupID = ConfigSetupRegistry.sharedInstance().getGroupForConfig(
 									ConfigID.create(currentConfigModule.getOrganisationID(), 
 											currentConfigModule.getConfigKey(), 
@@ -682,7 +706,7 @@ implements IWorkbenchPreferencePage
 								public void run() {
 									updatePreferencePage(currentConfigModule);						
 									fadableWrapper.setFaded(false);
-									inheritMemberConfigModule.setSelection(true); // needed, since updatePrefPage may trigger setConfigChanged(true)
+									inheritMemberConfigModule.setSelection(true); 
 								}								
 							});							
 							return Status.OK_STATUS;
@@ -691,9 +715,9 @@ implements IWorkbenchPreferencePage
 					fetchJob.setPriority(Job.SHORT);
 					fetchJob.schedule();
 				}	else {
-					setConfigChanged(true); // <-- causes the ToggleButton to be resetet.
+					setConfigChanged(true); // <-- causes the ToggleButton to be reset.
 				}
-				inheritMemberConfigModule.setSelection(selected);
+//				inheritMemberConfigModule.setSelection(selected); // needed, since updatePrefPage may trigger setConfigChanged(true)
 			}
 		});
 	}
@@ -741,6 +765,12 @@ implements IWorkbenchPreferencePage
 	 */
 	protected void setEditable(boolean editable) {
 		fadableWrapper.setEnabled(editable);
+		
+		// Reset the ToggleButton state in case the config is in no group -> it is editable
+		// -> the fadableWrapper rekursively sets all elements enabled = true, although
+		// the togglebutton should not be enabled!
+		if (inheritMemberConfigModule != null && !currentConfigIsGroupMember)
+			inheritMemberConfigModule.setEnabled(false); 
 	}
 
 	/**
@@ -854,6 +884,7 @@ implements IWorkbenchPreferencePage
 			});
 
 			storeModule();
+			configChanged = false;
 		} // if (isConfigCachanged()) 
 	}
 	

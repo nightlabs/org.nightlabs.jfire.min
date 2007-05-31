@@ -29,7 +29,6 @@ import org.nightlabs.jfire.config.Config;
 import org.nightlabs.jfire.config.ConfigModule;
 
 /**
- * 
  * @author Marius Heinzmann <marius[AT]nightlabs[DOT]de>
  */
 public class ChangedConfigModulePagesDialog

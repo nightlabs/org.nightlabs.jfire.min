@@ -10,7 +10,6 @@ import javax.jdo.FetchPlan;
 import javax.jdo.JDOHelper;
 
 import org.apache.log4j.Logger;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.widgets.Display;
@@ -263,7 +262,7 @@ public class EditLockMan
 	 * @param parentShell This shell will be used as parent for the collision-dialog, if the object is already locked by someone else. It is not used
 	 * @param monitor As this method synchronously communicates with the server (if necessary), it takes this "tagging" parameter.
 	 */
-	public void acquireEditLock(EditLockTypeID editLockTypeID, ObjectID objectID, String description, EditLockCallback editLockCallback, final Shell parentShell, IProgressMonitor monitor)
+	public void acquireEditLock(EditLockTypeID editLockTypeID, ObjectID objectID, String description, EditLockCallback editLockCallback, final Shell parentShell, ProgressMonitor monitor)
 	{
 		if (editLockTypeID == null)
 			throw new IllegalArgumentException("editLockTypeID must not be null!");
