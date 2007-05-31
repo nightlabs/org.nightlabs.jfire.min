@@ -18,7 +18,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.widgets.Display;
 import org.nightlabs.annotation.Implement;
-import org.nightlabs.base.exceptionhandler.ErrorTable.ContentProvider;
 import org.nightlabs.base.notification.NotificationAdapterJob;
 import org.nightlabs.jdo.ObjectID;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleAdapterJob;

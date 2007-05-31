@@ -9,7 +9,7 @@
 	<classpathentry kind="var" path="WORKSPACE/NightLabsJDO/dist/NightLabsJDO.jar" sourcepath="WORKSPACE/NightLabsJDO/src"/>
 	<classpathentry kind="var" path="WORKSPACE/JFireBaseBean/dist/JFireBaseBean.jar" sourcepath="/WORKSPACE/JFireBaseBean"/>
 	<classpathentry kind="var" path="WORKSPACE/JFireServerManager/dist/JFireServerManager.jar" sourcepath="/WORKSPACE/JFireServerManager/src"/>
-	<classpathentry kind="var" path="WORKSPACE/JFireBaseDAO/dist/JFireBaseDAO.jar"/>
+	<classpathentry kind="var" path="WORKSPACE/JFireBaseDAO/dist/JFireBaseDAO.jar" sourcepath="/WORKSPACE/JFireBaseDAO/src"/>
 	<classpathentry kind="var" path="WORKSPACE/JFireBaseClientLib/dist/JFireBaseClientLib.jar" sourcepath="/WORKSPACE/JFireBaseClientLib/src"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

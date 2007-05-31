@@ -49,7 +49,7 @@ public class ConfigPreferencesTreeComposite extends AbstractTreeComposite<Config
 	
 	private String parentCode;
 	
-	public static class ContentProvider implements ITreeContentProvider {
+	private static class ContentProvider implements ITreeContentProvider {
 
 		public Object[] getChildren(Object parentElement) {
 			if (parentElement instanceof ConfigPreferenceNode)
@@ -80,7 +80,7 @@ public class ConfigPreferencesTreeComposite extends AbstractTreeComposite<Config
 		}		
 	}
 	
-	public static class LabelProvider extends org.eclipse.jface.viewers.LabelProvider {
+	private static class LabelProvider extends org.eclipse.jface.viewers.LabelProvider {
 
 		public Image getImage(Object element) {
 			if (element instanceof ConfigPreferenceNode)
