@@ -119,9 +119,9 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 					if (groupConfigModule != null && (groupConfigModule.getFieldMetaData(ConfigModule.class.getName()).getWritableByChildren() & FieldMetaData.WRITABLEBYCHILDREN_YES) == 0)
 						throw new IllegalArgumentException("This ConfigModule is not allowed to be stored. It's ConfigGroup "+config.getConfigGroup().getName()+" does not allow this");
 				}
-			} 
+			}
 //			else {
-//				
+//
 //				// Workaround for a Cache bug, in which the cache misses to notify all objects having a modified 
 //				// FieldMetaData in their object graph.
 //				// This simply notifies all member ConfigModules.
@@ -137,28 +137,26 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 ////					pm.makePersistent(memberModule);
 //				}
 //			}
-			
+		
 			ConfigModule pConfigModule = (ConfigModule)pm.makePersistent(configModule);
 			
 			if (pConfigModule.getConfig() instanceof ConfigGroup) {
 				// is a ConfigModule of a ConfigGroup -> inherit all ConfigModules for 
 				// all its members
-				ConfigModule.inheritAllGroupMemberConfigModules(pm, (ConfigGroup)pConfigModule.getConfig(), pConfigModule);
+				ConfigGroup configGroup = (ConfigGroup)pConfigModule.getConfig();
+				ConfigModule.inheritAllGroupMemberConfigModules(pm, configGroup, pConfigModule);
 				
 				// Workaround for a Cache bug, in which the cache misses to notify all objects having a modified 
-				// FieldMetaData in their object graph.
+				//  FieldMetaData in their object graph.
 				// This simply notifies all member ConfigModules.
-				ConfigGroup configGroup = (ConfigGroup) 
-					Config.getConfig(pm, configModule.getOrganisationID(), configModule.getConfigKey(), configModule.getConfigType());
-
 				Collection members = Config.getConfigsForGroup(pm, configGroup);
 				for (Iterator iter = members.iterator(); iter.hasNext();) {
 					Config member = (Config) iter.next();
 					ConfigModule memberModule = member.createConfigModule(configModule.getClass(), configModule.getCfModID());
-					JDOHelper.makeDirty(memberModule, ConfigModule.FIELD_NAME_FIELDMETADATAMAP);
-//					if (JDOHelper.isDetached(memberModule))
-//					pm.makePersistent(memberModule);
+					if (memberModule.getFieldMetaData(ConfigModule.FIELD_NAME_FIELDMETADATA_CONFIGMODULE).isValueInherited())
+						JDOHelper.makeDirty(memberModule, ConfigModule.FIELD_NAME_FIELDMETADATAMAP);
 				}
+				// END of workaround
 			}
 			
 			if (!get)
@@ -766,7 +764,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 			// END XML-Config
 
 			String organisationID = getOrganisationID();
-
+			
 			ModuleMetaData moduleMetaData = ModuleMetaData.getModuleMetaData(pm, JFireBaseEAR.MODULE_NAME);
 			if (moduleMetaData != null)
 				return;
@@ -784,6 +782,8 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 			WorkstationConfigSetup workstationConfigSetup = new WorkstationConfigSetup(organisationID);
 			pm.makePersistent(workstationConfigSetup);
 			workstationConfigSetup.getConfigModuleClasses().add(WorkstationFeaturesCfMod.class.getName());
+			
+			pm.makePersistent(new EditLockTypeConfigModule(EditLockTypeConfigModule.EDIT_LOCK_TYPE_ID));
 		} finally {
 			pm.close();
 		}
