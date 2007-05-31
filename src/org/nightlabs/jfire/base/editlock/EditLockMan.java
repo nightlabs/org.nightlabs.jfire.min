@@ -216,7 +216,7 @@ public class EditLockMan
 	private Map<EditLockID, EditLockCarrier> editLockID2EditLockCarrier = new HashMap<EditLockID, EditLockCarrier>();
 	private Object editLockCarrierMutex = new Object();
 
-	public EditLockMan()
+	protected EditLockMan()
 	{
 	}
 
