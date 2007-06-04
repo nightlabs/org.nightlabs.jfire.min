@@ -20,12 +20,14 @@ import org.nightlabs.base.table.AbstractTableComposite;
 import org.nightlabs.base.table.TableContentProvider;
 import org.nightlabs.base.table.TableLabelProvider;
 import org.nightlabs.jfire.base.config.AbstractWorkstationConfigModulePreferencePage;
+import org.nightlabs.jfire.config.ConfigModule;
 import org.nightlabs.jfire.workstation.WorkstationFeature;
 import org.nightlabs.jfire.workstation.WorkstationFeaturesCfMod;
 
-public class WorkstationFeaturesPreferencePage extends
-		AbstractWorkstationConfigModulePreferencePage<WorkstationFeaturesCfMod> {
-	
+public class WorkstationFeaturesPreferencePage 
+//extends AbstractWorkstationConfigModulePreferencePage<WorkstationFeaturesCfMod> {
+extends AbstractWorkstationConfigModulePreferencePage 
+{	
 	protected static class FeatureTable extends AbstractTableComposite<WorkstationFeature> {
 		
 		class LabelProvider extends TableLabelProvider {
@@ -57,9 +59,13 @@ public class WorkstationFeaturesPreferencePage extends
 		featureTable = new FeatureTable(container);
 	}
 
+//	@Override
+//	public Class<WorkstationFeaturesCfMod> getConfigModuleClass() {
+//		return WorkstationFeaturesCfMod.class;
+//	}
 	@Override
-	public Class<WorkstationFeaturesCfMod> getConfigModuleClass() {
-		return WorkstationFeaturesCfMod.class;
+	public String getConfigModuleClassName() {
+		return "org.nightlabs.jfire.workstation.WorkstationFeaturesCfMod";
 	}
 	
 	private static final Set<String> fetchGroups = new HashSet<String>();
@@ -75,8 +81,12 @@ public class WorkstationFeaturesPreferencePage extends
 	}
 
 	@Override
-	public void updateConfigModule() {
-		Map<String, WorkstationFeature> oldFeatures = currentConfigModule.getFeatures();
+	public void updateConfigModule() 
+	{
+//		WorkstationFeaturesCfMod wscfmod = (WorkstationFeaturesCfMod) currentConfigModule;
+		WorkstationFeaturesCfMod wscfmod = (WorkstationFeaturesCfMod) getConfigModuleController().getConfigModule();
+		Map<String, WorkstationFeature> oldFeatures = wscfmod.getFeatures();
+//		Map<String, WorkstationFeature> oldFeatures = currentConfigModule.getFeatures();
 		
 		// FIXME: JPOX is having Problems clearing the list before adding new entries => Duplicate Key Exeption!
 		// 				Workaround in WorkstationFeatureCfMod.JDOpreattach();
@@ -115,11 +125,16 @@ public class WorkstationFeaturesPreferencePage extends
 	}
 
 	@Override
-	protected void updatePreferencePage(WorkstationFeaturesCfMod configModule) {
+//	protected void updatePreferencePage(WorkstationFeaturesCfMod configModule) {
+//	protected void updatePreferencePage(ConfigModule configModule) 
+	protected void updatePreferencePage()
+	{
+		WorkstationFeaturesCfMod wscfmod = (WorkstationFeaturesCfMod) getConfigModuleController().getConfigModule();
 		featureTable.setInput(getAvailableFeatures());
 		featureTable.setCheckedElements(new ArrayList<WorkstationFeature>(
-				configModule.getFeatures().values())
-				);
+//				configModule.getFeatures().values())
+				wscfmod.getFeatures().values())
+		);
 		featureTable.addSelectionChangedListener(new ISelectionChangedListener() {
 			public void selectionChanged(SelectionChangedEvent arg0) {
 				setConfigChanged(true);
@@ -129,9 +144,9 @@ public class WorkstationFeaturesPreferencePage extends
 
 	protected List<WorkstationFeature> getAvailableFeatures() {
 		List<WorkstationFeature> result = new ArrayList<WorkstationFeature>();
-		if (!(getConfigModule() instanceof WorkstationFeaturesCfMod))
+		if (!(getConfigModuleController().getConfigModule() instanceof WorkstationFeaturesCfMod))
 			return result;
-		WorkstationFeaturesCfMod cfMod = (WorkstationFeaturesCfMod) getConfigModule();
+		WorkstationFeaturesCfMod cfMod = (WorkstationFeaturesCfMod) getConfigModuleController().getConfigModule();
 		result.add(new WorkstationFeature(cfMod, "org.nightlabs.base", "1.0.0"));
 		result.add(new WorkstationFeature(cfMod, "org.nightlabs.jfire.base", "1.0.0"));
 		result.add(new WorkstationFeature(cfMod, "org.nightlabs.jfire.base.admin", "1.0.0"));

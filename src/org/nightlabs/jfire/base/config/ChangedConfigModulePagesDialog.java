@@ -187,12 +187,14 @@ extends CenteredDialog // IconAndMessageDialog
 				Config markedConfig = (Config) markedEntry;
 				for (PageModulePair item : updatedConfigs.get(markedConfig)) {
 					// update each page with the updated ConfigModule
-					item.getCorrespondingPage().updateGuiWith(item.getUpdatedConfigModule());
+//					item.getCorrespondingPage().updateGuiWith(item.getUpdatedConfigModule());
+					item.getCorrespondingPage().getConfigModuleController().updateGuiWith(item.getUpdatedConfigModule());
 				}
 			} // (markedEntry instanceof Config)
 			else {
 				PageModulePair item = (PageModulePair) markedEntry;
-				item.getCorrespondingPage().updateGuiWith(item.getUpdatedConfigModule());
+//				item.getCorrespondingPage().updateGuiWith(item.getUpdatedConfigModule());
+				item.getCorrespondingPage().getConfigModuleController().updateGuiWith(item.getUpdatedConfigModule());
 			}
 		}
 		super.okPressed();

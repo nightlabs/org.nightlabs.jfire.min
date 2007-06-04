@@ -119,9 +119,12 @@ implements ConfigPreferenceChangedListener, IStoreChangedConfigModule
 
 		if (!involvedPages.values().contains(selectedPage)) 
 		{
-			selectedPage.createContents(preferencesComposite.getWrapper(), currentConfigID);
+//			selectedPage.doCreateContents(preferencesComposite.getWrapper(), currentConfigID);
+			selectedPage.getConfigModuleController().setConfigID(currentConfigID);
+			selectedPage.createPartContents(preferencesComposite.getWrapper());
+			
 			selectedPage.addConfigPreferenceChangedListener(this);
-			involvedPages.put(selectedPage.getConfigModuleClass().getSimpleName(), selectedPage);
+			involvedPages.put(selectedPage.getSimpleClassName(), selectedPage);
 		}
 
 		preferencesComposite.getStackLayout().topControl = selectedPage.getControl();		
@@ -130,7 +133,7 @@ implements ConfigPreferenceChangedListener, IStoreChangedConfigModule
 
 	private void updateCurrentConfigModule() {
 		if (currentConfigModule != null && currentPage != null) {
-			if (currentConfigModule.getClass().equals(currentPage.getConfigModuleClass())) {				
+			if (currentConfigModule.getClass().equals(currentPage.getConfigModuleClassName())) {				
 				currentPage.updateConfigModule();
 			}
 		}
@@ -172,47 +175,13 @@ implements ConfigPreferenceChangedListener, IStoreChangedConfigModule
 	}
 
 	private String getCfModKey(AbstractConfigModulePreferencePage page) {
-		String cfModKey = page.getConfigModuleClass().getName();
+//		String cfModKey = page.getConfigModuleClassName().getName();
+		String cfModKey = page.getSimpleClassName();
 		if (page.getConfigModuleCfModID() != null)
 			cfModKey = cfModKey + "_" + page.getConfigModuleCfModID();
 		return cfModKey;
 	}
 	
-//	/**
-//	 * Sets currentConfigModule to the ConfigModule assigned to the
-//	 * Config or ConfigGroup with the id of the given userConfigID.
-//	 * 
-//	 * @param userConfigID
-//	 */
-//	protected void fetchCurrentConfigModule(ProgressMonitor monitor) {
-//		AbstractConfigModulePreferencePage selectedPage = getCurrentPage();
-//		if (selectedPage == null)
-//			return;
-//
-//		if (currentConfigID == null)
-//			throw new IllegalStateException("Can not fetch ConfigModule, currentConfigID is null");
-//		
-//		String cfModKey = getCfModKey(selectedPage);
-//		
-//		currentConfigModule = involvedConfigModules.get(cfModKey);
-//		if (currentConfigModule != null)
-//			return;
-//		
-//		try {
-//			currentConfigModule = ConfigModuleDAO.sharedInstance().getConfigModule(
-//				currentConfigID, 
-//				selectedPage.getConfigModuleClass(), 
-//				selectedPage.getConfigModuleCfModID(), 
-//				selectedPage.getConfigModuleFetchGroups(),
-//				selectedPage.getConfigModuleMaxFetchDepth(),
-//				monitor
-//				);
-//		} catch (Exception e) {
-//			throw new RuntimeException(e);
-//		}
-//		involvedConfigModules.put(cfModKey, currentConfigModule);
-//	}
-
 	public void configPreferenceChanged(AbstractConfigModulePreferencePage preferencePage) {
 		String cfModKey = getCfModKey(preferencePage);
 		ConfigModule cfMod = involvedConfigModules.get(cfModKey);

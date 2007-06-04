@@ -34,14 +34,11 @@ import java.util.List;
 import java.util.Set;
 
 import javax.jdo.FetchPlan;
-import javax.jdo.JDODetachedFieldAccessException;
 import javax.jdo.JDOHelper;
 
 import org.apache.log4j.Logger;
-import org.apache.log4j.Priority;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StackLayout;
@@ -52,11 +49,9 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.nightlabs.annotation.Implement;
 import org.nightlabs.base.composite.FadeableComposite;
 import org.nightlabs.base.composite.InheritanceToggleButton;
@@ -71,6 +66,7 @@ import org.nightlabs.jfire.base.editlock.EditLockMan;
 import org.nightlabs.jfire.base.jdo.cache.Cache;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleManager;
 import org.nightlabs.jfire.base.login.Login;
+import org.nightlabs.jfire.base.preferences.LSDPreferencePage;
 import org.nightlabs.jfire.base.resource.Messages;
 import org.nightlabs.jfire.config.ConfigGroup;
 import org.nightlabs.jfire.config.ConfigManager;
@@ -94,11 +90,11 @@ import org.nightlabs.util.Utils;
  * <p>
  * See 
  * <ul>
- * <li>{@link #getConfigModuleClass()}</li>
+ * <li>{@link #getConfigModuleClassName()}</li>
  * <li>{@link #getConfigModuleFetchGroups()}</li>
  * <li>{@link #createPreferencePage(Composite)}</li>
- * <li>{@link #updatePreferencePage(ConfigModule)}</li>
- * <li>{@link #updateConfigModule(ConfigModule)}</li>
+ * <li>{@link #updatePreferencePage()}</li>
+ * <li>{@link #updateConfigModule()}</li>
  * </ul>
  * for methods you need to implement.
  * 
@@ -114,20 +110,15 @@ import org.nightlabs.util.Utils;
  * to implementors so they might be changed directly without
  * taking care of restorage when the user decides not to
  * store the configuration.
- * See {@link #doCloneConfigModule()} in order to change this
- * behaviour.
  * 
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
- *
+ * @author Marius Heizmann <marius[AT]nightlabs[DOT]de>
+ * @author Daniel Mazurek <daniel[AT]nightlabs[DOT]de>
  */
-public abstract class AbstractConfigModulePreferencePage<C extends ConfigModule> 
-extends PreferencePage 
-implements IWorkbenchPreferencePage
+public abstract class AbstractConfigModulePreferencePage
+extends LSDPreferencePage
 {
 	private static final Logger logger = Logger.getLogger(AbstractConfigModulePreferencePage.class);
-
-//	protected static final String[] CONFIG_MODULE_FETCH_GROUPS = new String[] 
-//    {FetchPlan.DEFAULT,	ConfigModule.FETCH_GROUP_FIELDMETADATAMAP, ConfigModule.FETCH_GROUP_CONFIG}; 
 
 	/**
 	 * the outmost wrapper used to grey out the page while loading.
@@ -160,17 +151,6 @@ implements IWorkbenchPreferencePage
 	 * @see #checkBoxAllowOverwrite
 	 */
 	private InheritanceToggleButton inheritMemberConfigModule;
-
-	/**
-	 * The {@link ConfigID} corresponding to the Config, whose {@link ConfigModule} is presented by 
-	 * this page.
-	 */
-	protected ConfigID configID;
-	
-	/**
-	 * The {@link ConfigModule}, which is presented by this page.
-	 */
-	protected C currentConfigModule;
 	
 	/**
 	 * Whether the <code>currentConfigModule</code> is in a ConfigGroup and therefore underlies the 
@@ -188,8 +168,8 @@ implements IWorkbenchPreferencePage
 	 * Whether the <code>currentConfigModule</code> was modified by the user. It is only saved iff
 	 * <code>configChanged == true</code>. 
 	 */
-	private boolean configChanged = false;
-	
+	protected boolean configChanged = false;
+
 	public AbstractConfigModulePreferencePage() {
 		super();
 	}
@@ -209,6 +189,18 @@ implements IWorkbenchPreferencePage
 		super(title, image);
 	}
 
+	private IConfigModuleController configModuleManager = null;
+	public IConfigModuleController getConfigModuleController() {
+		if (configModuleManager == null) {
+			configModuleManager = createConfigModuleController();
+		}
+		return configModuleManager;
+	}
+	
+	protected IConfigModuleController createConfigModuleController() {
+		return new ConfigModuleController(this);
+	}
+	 		
 	/**
 	 * Checks if the user is allowed to change configuration 
 	 * for groups or other users.
@@ -218,61 +210,7 @@ implements IWorkbenchPreferencePage
 	protected boolean isUserConfigSelectionAllowed() {
 		return true;
 	}
-
-	/**
-	 * Returns the config module currently displayed.
-	 * 
-	 * @return The config module currently displayed.
-	 */
-	public C getConfigModule() {
-		return currentConfigModule;
-	}
-
-	/**
-	 * Sets the current version of the {@link ConfigModule} to display and updates the page 
-	 * accordingly. 
-	 * The given ConfigModule should be a copy of the one from the cache, otherwise changes to this 
-	 * module will corrupt the state of the one in the cache! Use {@link Utils#cloneSerializable(Object)}
-	 * to create a copy.
-	 * 
-	 * @param configModule The {@link ConfigModule} to set.
-	 */
-	public void updateGuiWith(C configModule) {
-		if (configModule == null)
-			throw new RuntimeException("The ConfigModule C passed to updateGuiWith(C) must not be null!");
-		
-		try {
-			ConfigID newConfigID = (ConfigID) JDOHelper.getObjectId(configModule.getConfig()); 
-			if (newConfigID != null && ! newConfigID.equals(configID))
-				throw new IllegalStateException("The given ConfigModule does not belong to the Config this page is editing!");
-		} catch (JDODetachedFieldAccessException e) {
-			if (logger.isEnabledFor(Priority.WARN))
-				logger.warn("The given ConfigModule has no Config detached with it! Module = "+configModule);			
-		} // if config is not in FetchGroups -> believe given configModule belongs to this config
-
-		currentConfigModule = configModule;
-		currentConfigIsGroupMember = checkIfIsGroupMember(configModule);
-		currentConfigModuleIsEditable = canEdit(configModule);
-		configChanged = false;
-		
-		updateConfigHeader();
-		updatePreferencePage(configModule);
-		
-		setEditable(currentConfigModuleIsEditable);
-	}
 	
-	/**
-	 * Checks and sets the {@link #currentConfigIsGroupMember} flag.
-	 */
-	private boolean checkIfIsGroupMember(ConfigModule module) {
-		ConfigID groupID = ConfigSetupRegistry.sharedInstance().getGroupForConfig(
-				ConfigID.create(module.getOrganisationID(), 
-						module.getConfigKey(), 
-						module.getConfigType()
-						));
-		return groupID != null;
-	}
-
 	/**
 	 * Implicit Listener for the cache. This is needed in order to get notified when the 
 	 * {@link #currentConfigModule} changed in the database and to reflect this change in the GUI.
@@ -281,7 +219,8 @@ implements IWorkbenchPreferencePage
 
 		public void notify(NotificationEvent notificationEvent) {
 			Set<DirtyObjectID> dirtyObjectIDs = notificationEvent.getSubjects();
-			ConfigModuleID currentModuleID = (ConfigModuleID) JDOHelper.getObjectId(currentConfigModule);
+			ConfigModuleID currentModuleID = (ConfigModuleID) JDOHelper.getObjectId(
+					getConfigModuleController().getConfigModule());
 //		 there aren't many open ConfigModulePages showing the same kind of ConfigModule, this loop is 
 // 			therefore not as time consuming as one might think. But if the set of DirtyObjectIDs
 //			would be capable of efficiently checking whether a given ConfigID is contained inside itself,
@@ -306,12 +245,8 @@ implements IWorkbenchPreferencePage
 				return;
 			}
 			
-//			ConfigModuleDAO moduleDAO = ConfigModuleDAO.sharedInstance();
-//			final C updatedModule = (C) Utils.cloneSerializable(moduleDAO.getConfigModule(currentModuleID, getConfigModuleFetchGroups(), 
-//					getConfigModuleMaxFetchDepth(), getProgressMonitorWrapper()));
-			final C updatedModule = retrieveConfigModule(getProgressMonitorWrapper());
+			final ConfigModule updatedModule = getConfigModuleController().retrieveConfigModule(getProgressMonitorWrapper());
 			
-
 			// Check if cache sent the same version of the GroupModule after the ChildModule got changed.
 			// This might happen, since the cache removes all objects depending on a changed one.
 			// Child ConfigModule changes -> GroupModule will be removed from Cache as well.
@@ -328,8 +263,8 @@ implements IWorkbenchPreferencePage
 			 * FIXME: Do i get notified when the membership to a ConfigGroup ends?
 			 * 	if so -> change updateGUIwith(module) accordingly.
 			 */
-			boolean updatedModuleIsGroupMember = checkIfIsGroupMember(updatedModule);
-			final boolean updatedModuleIsEditable = canEdit(updatedModule);
+			boolean updatedModuleIsGroupMember = getConfigModuleController().checkIfIsGroupMember(updatedModule);
+			final boolean updatedModuleIsEditable = getConfigModuleController().canEdit(updatedModule);
 			
 			if (updatedModuleIsGroupMember) {
 				if (! updatedModuleIsEditable || ! currentConfigModuleIsEditable) { 
@@ -339,7 +274,7 @@ implements IWorkbenchPreferencePage
 							if (fadableWrapper.isDisposed())
 								return;
 
-							updateGuiWith(updatedModule);
+							getConfigModuleController().updateGuiWith(updatedModule);
 						}
 					});
 				} // (! updatedModuleIsEditable || ! currentConfigModuleIsEditable)
@@ -352,7 +287,7 @@ implements IWorkbenchPreferencePage
 								if (fadableWrapper.isDisposed())
 									return;
 
-								updateGuiWith(updatedModule);
+								getConfigModuleController().updateGuiWith(updatedModule);
 								setEditable(true);
 							}
 						});							
@@ -381,7 +316,7 @@ implements IWorkbenchPreferencePage
 			if (! currentConfigModuleIsEditable) {
 				Display.getDefault().asyncExec(new Runnable() {
 					public void run() {
-						updateGuiWith(updatedModule);
+						getConfigModuleController().updateGuiWith(updatedModule);
 						setEditable(true);
 					}
 				});
@@ -392,7 +327,7 @@ implements IWorkbenchPreferencePage
 							if (fadableWrapper.isDisposed())
 								return;
 
-							updateGuiWith(updatedModule);
+							getConfigModuleController().updateGuiWith(updatedModule);
 							setEditable(true);
 						}
 					});
@@ -436,7 +371,7 @@ implements IWorkbenchPreferencePage
 		this.configChanged = configChanged;
 		if (inheritMemberConfigModule != null && inheritMemberConfigModule.getSelection()) {
 			inheritMemberConfigModule.setSelection(false);
-			currentConfigModule.getFieldMetaData(ConfigModule.FIELD_NAME_FIELDMETADATA_CONFIGMODULE).setValueInherited(false);
+			getConfigModuleController().getConfigModule().getFieldMetaData(ConfigModule.FIELD_NAME_FIELDMETADATA_CONFIGMODULE).setValueInherited(false);
 		}
 		
 		if (configChanged) {
@@ -449,25 +384,13 @@ implements IWorkbenchPreferencePage
 	 * doSetControl Whether to call super.setControl() wich is only needed, when inside the Preferences Dialog.
 	 */
 	private boolean doSetControl = false;
-
-	/**
-	 * This might be called from outside in order to create the page, 
-	 * when the PreferencePage is not used within the Eclipse Preferences Dialog.
-	 * 
-	 * @param parent The parent to add the page to.
-	 * @param configID the {@link ConfigID} of the config for which this {@link #getConfigModuleClass()}
-	 * 		kind of page shall be loaded.
-	 * @return The pages Top control.
-	 */
-	public Control createContents(Composite parent, ConfigID configID) 
-	{
-		this.doSetControl = true;
-		this.configID = configID;
-		return createContents(parent);
-	}
-
+	
 	@Implement
-	public Control createContents(Composite parent) {
+	public void createPartContents(Composite parent) 
+	{
+		// WORKAROUND: done to set the configID
+		init(getWorkbench());
+		
 		fadableWrapper = new FadeableComposite(parent, SWT.NONE, LayoutMode.TIGHT_WRAPPER);
 		
 		// create temporary label for loading time
@@ -487,20 +410,20 @@ implements IWorkbenchPreferencePage
 			@Override
 			protected IStatus run(ProgressMonitor monitor) {
 				monitor.beginTask("Getting the Module data", 3);
-				currentConfigModule = retrieveConfigModule(monitor);
-				currentConfigIsGroupMember = checkIfIsGroupMember(currentConfigModule);
-				currentConfigModuleIsEditable = canEdit(currentConfigModule);
+				getConfigModuleController().setConfigModule(getConfigModuleController().retrieveConfigModule(monitor));
+				currentConfigIsGroupMember = getConfigModuleController().checkIfIsGroupMember(getConfigModuleController().getConfigModule());
+				currentConfigModuleIsEditable = getConfigModuleController().canEdit(getConfigModuleController().getConfigModule());
 
 				Display.getDefault().asyncExec(new Runnable() {
 					public void run() {
 						if (currentConfigModuleIsEditable) {
 							EditLockMan.sharedInstance().acquireEditLock(EditLockTypeConfigModule.EDIT_LOCK_TYPE_ID, 
-									(ConfigModuleID) JDOHelper.getObjectId(currentConfigModule), "",
+									(ConfigModuleID) JDOHelper.getObjectId(getConfigModuleController().getConfigModule()), "",
 									null, getShell(), getSubProgressMonitorWrapper(1));
 						}
 						setUpGui();
 						updateConfigHeader();
-						updatePreferencePage(currentConfigModule);
+						updatePreferencePage();
 						getProgressMonitorWrapper().worked(1);
 						fadableWrapper.setFaded(false);
 						setEditable(currentConfigModuleIsEditable);
@@ -533,22 +456,22 @@ implements IWorkbenchPreferencePage
 			public void widgetDisposed(DisposeEvent e) {
 				if (currentConfigModuleIsEditable) {
 					EditLockMan.sharedInstance().releaseEditLock(
-						(ConfigModuleID) JDOHelper.getObjectId(currentConfigModule));
+						(ConfigModuleID) JDOHelper.getObjectId(getConfigModuleController().getConfigModule()));
 				}
 			}
 		});
 
 		if (doSetControl)
 			setControl(fadableWrapper);
-		return fadableWrapper;
 	}
 	
 	/**
 	 * Initialises the main GUI elements: The header and the body of the preference page.
-	 * It will be called by the job fetching {@link #currentConfigModule} data.  
+	 * It will be called by the job fetching getConfigModuleController().getConfigModule() data.  
 	 */
-	private void setUpGui() {
-		if (currentConfigModule.isGroupConfigModule())
+	protected void setUpGui() 
+	{
+		if (getConfigModuleController().getConfigModule().isGroupConfigModule())
 			createConfigGroupHeader(header);
 		else
 			createConfigMemberHeader(header);
@@ -560,40 +483,16 @@ implements IWorkbenchPreferencePage
 	}
 
 	/**
-	 * Fetches and returns the ConfigModule of the Config with {@link ConfigID} == <code>configID</code> from the 
-	 * cache with ConfigModuleClass == {@link #getConfigModuleClass()}, cfModID == {@link #getConfigModuleCfModID()},
-	 * the FetchGroups returned by {@link #getConfigModuleFetchGroups()} and the FetchDepth returned by 
-	 * {@link #getConfigModuleMaxFetchDepth()}.
-	 * @param monitor the monitor showing the progress of the operation.
-	 * @return the ConfigModule of the Config with ID = <code>configID</code> and the parameter as set
-	 * 	by the abstract getters (e.g. {@link #getConfigModuleClass()}).
-	 */
-	@SuppressWarnings("unchecked")
-	protected C retrieveConfigModule(ProgressMonitor monitor) {
-		if (configID == null)
-			throw new RuntimeException("The configID of the Config for which the ConfigModule should be fetched is not set!");
-		
-		return Utils.cloneSerializable((C) ConfigModuleDAO.sharedInstance().getConfigModule(
-				configID, 
-				getConfigModuleClass(),
-				getConfigModuleCfModID(),
-				getConfigModuleFetchGroups().toArray(new String[] {}),
-				getConfigModuleMaxFetchDepth(), 
-				monitor
-				));
-	}
-
-	/**
 	 * Updates the {@link #header} of the preference page according to the state of 
 	 * {@link #currentConfigModule}.
 	 */
 	public void updateConfigHeader() {
-		if (currentConfigModule.isGroupConfigModule()) {
+		if (getConfigModuleController().getConfigModule().isGroupConfigModule()) {
 			if (checkBoxAllowOverwrite == null || checkBoxAllowOverwrite.isDisposed())
 				return;
 			
 			checkBoxAllowOverwrite.setSelection(
-					(currentConfigModule.getFieldMetaData(ConfigModule.class.getName()).getWritableByChildren()
+					(getConfigModuleController().getConfigModule().getFieldMetaData(ConfigModule.class.getName()).getWritableByChildren()
 					& FieldMetaData.WRITABLEBYCHILDREN_YES) != 0); 
 			
 		} else {
@@ -608,7 +507,7 @@ implements IWorkbenchPreferencePage
 			}
 
 			inheritMemberConfigModule.setSelection(
-					currentConfigModule.getFieldMetaData(ConfigModule.class.getName()).isValueInherited());
+					getConfigModuleController().getConfigModule().getFieldMetaData(ConfigModule.class.getName()).isValueInherited());
 
 			inheritMemberConfigModule.setEnabled(currentConfigModuleIsEditable); 
 
@@ -631,18 +530,18 @@ implements IWorkbenchPreferencePage
 	protected void createConfigGroupHeader(Composite parent) {
 		checkBoxAllowOverwrite = new Button(parent, SWT.CHECK);
 		checkBoxAllowOverwrite.setSelection( 
-				(currentConfigModule.getFieldMetaData(ConfigModule.class.getName()).getWritableByChildren() 
+				(getConfigModuleController().getConfigModule().getFieldMetaData(ConfigModule.class.getName()).getWritableByChildren() 
 						& FieldMetaData.WRITABLEBYCHILDREN_YES) != 0
 						);
 		checkBoxAllowOverwrite.setText(Messages.getString("AbstractConfigModulePreferencePage.WhetherGroupAllowsConfigOverwrite")); //$NON-NLS-1$
 		
 		checkBoxAllowOverwrite.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				if (currentConfigModule == null || ! currentConfigModule.isGroupConfigModule())
+				if (getConfigModuleController().getConfigModule() == null || ! getConfigModuleController().getConfigModule().isGroupConfigModule())
 					return;
 				
 				setConfigChanged(true);
-				currentConfigModule.getFieldMetaData(ConfigModule.class.getName()).setWritableByChildren(
+				getConfigModuleController().getConfigModule().getFieldMetaData(ConfigModule.class.getName()).setWritableByChildren(
 						checkBoxAllowOverwrite.getSelection() == true ? FieldMetaData.WRITABLEBYCHILDREN_YES
 																													:	FieldMetaData.WRITABLEBYCHILDREN_NO);
 			}
@@ -664,7 +563,7 @@ implements IWorkbenchPreferencePage
 	 */
 	protected void createConfigMemberHeader(Composite parent) {
 		inheritMemberConfigModule = new InheritanceToggleButton(parent, "");
-		inheritMemberConfigModule.setSelection(currentConfigModule.getFieldMetaData(ConfigModule.class.getName()).isValueInherited());
+		inheritMemberConfigModule.setSelection(getConfigModuleController().getConfigModule().getFieldMetaData(ConfigModule.class.getName()).isValueInherited());
 			
 		inheritMemberConfigModule.setEnabled(currentConfigModuleIsEditable); 
 
@@ -676,11 +575,11 @@ implements IWorkbenchPreferencePage
 		inheritMemberConfigModule.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				if (currentConfigModule == null || !currentConfigModule.getFieldMetaData(ConfigModule.class.getName()).isWritable())
+				if (getConfigModuleController().getConfigModule() == null || !getConfigModuleController().getConfigModule().getFieldMetaData(ConfigModule.class.getName()).isWritable())
 					return;
 
 				boolean selected = inheritMemberConfigModule.getSelection();
-				currentConfigModule.getFieldMetaData(ConfigModule.class.getName()).setValueInherited(selected);				
+				getConfigModuleController().getConfigModule().getFieldMetaData(ConfigModule.class.getName()).setValueInherited(selected);				
 				
 //				FIXME: The first time inheritance is triggered, the valueInherited value is here set to true (look deeper)
 				if (selected) {
@@ -690,21 +589,20 @@ implements IWorkbenchPreferencePage
 						protected IStatus run(ProgressMonitor monitor) {
 //						FIXME: and is in this job, when read, FALSE!!!! Damn f%&§$=! bug!
 							ConfigID groupID = ConfigSetupRegistry.sharedInstance().getGroupForConfig(
-									ConfigID.create(currentConfigModule.getOrganisationID(), 
-											currentConfigModule.getConfigKey(), 
-											currentConfigModule.getConfigType()
+									ConfigID.create(getConfigModuleController().getConfigModule().getOrganisationID(), 
+											getConfigModuleController().getConfigModule().getConfigKey(), 
+											getConfigModuleController().getConfigModule().getConfigType()
 									));
 							ConfigModule groupModule = ConfigModuleDAO.sharedInstance().getConfigModule(groupID, 
 									getConfigModuleClass(), getConfigModuleCfModID(), getConfigModuleFetchGroups().toArray(new String[] {}), 
 									getConfigModuleMaxFetchDepth(), monitor);
-
 							
 							InheritanceManager inheritanceManager = new InheritanceManager();
-							inheritanceManager.inheritAllFields(groupModule, currentConfigModule);
+							inheritanceManager.inheritAllFields(groupModule, getConfigModuleController().getConfigModule());
 							
 							Display.getDefault().asyncExec(new Runnable() {
 								public void run() {
-									updatePreferencePage(currentConfigModule);						
+									updatePreferencePage();
 									fadableWrapper.setFaded(false);
 									inheritMemberConfigModule.setSelection(true); 
 								}								
@@ -735,27 +633,9 @@ implements IWorkbenchPreferencePage
 	 * a new ConfigModule.
 	 * 
 	 * @param configModule The currently edited ConfigModule
-	 */
-	protected abstract void updatePreferencePage(C configModule);
-
-	/**
-	 * Will be called to determine whether the given ConfigModule is allowed
-	 * to be edited. The default implementation will return false only when
-	 * the {@link ConfigGroup} of the given module's Config disallows the member to overwrite the 
-	 * configuration.
-	 * This method is costly, since it calls {@link #checkIfIsGroupMember(ConfigModule)}, which needs 
-	 * to fetch data from the datastore. 
-	 * 
-	 * @param configModule the {@link ConfigModule} to be checked whether it is editable or not. 
-	 * @return Whether the <code>configModule</code> is allowed to be edited.
-	 */
-	protected boolean canEdit(ConfigModule configModule) { 
-		return
-				configModule.isGroupConfigModule() ||
-				configModule.getFieldMetaData(ConfigModule.class.getName()).isWritable()
-				|| ! checkIfIsGroupMember(configModule);
-	}
-
+	 */	
+	protected abstract void updatePreferencePage();
+	
 	/**
 	 * Should change the GUI to either an editable
 	 * or an read-only version of the view of the current ConfigModule.
@@ -763,7 +643,8 @@ implements IWorkbenchPreferencePage
 	 * all Buttons of this preference-page. 
 	 * This is intended to be extended for different behaviour on canEdit() == false.
 	 */
-	protected void setEditable(boolean editable) {
+	protected void setEditable(boolean editable) 
+	{
 		fadableWrapper.setEnabled(editable);
 		
 		// Reset the ToggleButton state in case the config is in no group -> it is editable
@@ -780,12 +661,26 @@ implements IWorkbenchPreferencePage
 	public abstract void updateConfigModule();
 
 	/**
-	 * Returns the ConfigModule class this PreferencePage does edit.
-	 * 
-	 * @return The ConfigModule class this PreferencePage does edit.
+	 * @return the full claified class name of the confi module class,
+	 * this must be given as String, and MUST not be implemente by Class.getName() 
 	 */
-	public abstract Class<C> getConfigModuleClass();
-
+	public abstract String getConfigModuleClassName();
+		
+	protected Class getConfigModuleClass() 
+	{
+		try {
+			return Class.forName(getConfigModuleClassName());
+		} catch (ClassNotFoundException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
+	public String getSimpleClassName() 
+	{
+		int index = getConfigModuleClassName().lastIndexOf(".");
+		return getConfigModuleClassName().substring(index+1, getConfigModuleClassName().length()-1);
+	}
+	
 	/**
 	 * Should return the cfModID of the ConfigModule this preference page
 	 * does edit. This method is intended to be overridden. The default 
@@ -799,7 +694,7 @@ implements IWorkbenchPreferencePage
 
 	/**
 	 * This method should return all fetch groups necessary to display a detached {@link ConfigModule}
-	 * of type {@link #getConfigModuleClass()} for which this page is designed for. <br>
+	 * of type {@link #getConfigModuleClassName()} for which this page is designed for. <br>
 	 * 
 	 * Note: You should use {@link #getCommonConfigModuleFetchGroups()} and create a new Set of fetch 
 	 * 	groups out of the given ones and add the specific fetch groups necessary for this kind of 
@@ -851,6 +746,11 @@ implements IWorkbenchPreferencePage
 		return NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT;
 	}
 
+	private IWorkbench workbench = null;
+	protected IWorkbench getWorkbench() {
+		return workbench;
+	}
+	
 	/**
 	 * Default implementation does nothing. Subclasses (AbstractUser..., AbstractWorkstation...) have
 	 * to set the <code>configID</code> of the their context for this PreferencePage. The 
@@ -865,6 +765,7 @@ implements IWorkbenchPreferencePage
 	 * @see org.eclipse.ui.IWorkbenchPreferencePage#init(org.eclipse.ui.IWorkbench)
 	 */
 	public void init(IWorkbench workbench) {
+		this.workbench = workbench;
 	}
 	
 	/**
@@ -874,7 +775,8 @@ implements IWorkbenchPreferencePage
 	 */
 	public void storeConfigModule() {
 		if (Thread.currentThread() == Display.getDefault().getThread()) {
-			logger.error("This method must not be called on the GUI-thread! Use a job!", new Exception("This method must not be called on the GUI-thread! Use a job!"));
+			logger.error("This method must not be called on the GUI-thread! Use a job!", 
+					new Exception("This method must not be called on the GUI-thread! Use a job!"));
 //			throw new IllegalStateException("This method must not be called on the GUI-thread! Use a job!");
 		}
 
@@ -905,11 +807,11 @@ implements IWorkbenchPreferencePage
 		ConfigManager configManager = null;
 		try {
 			configManager = ConfigManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
-			C storedConfigModule = (C) configManager.storeConfigModule(
-					getConfigModule(), true, getConfigModuleFetchGroups().toArray(new String[] {}), getConfigModuleMaxFetchDepth());
+			ConfigModule storedConfigModule = (ConfigModule) configManager.storeConfigModule(
+					getConfigModuleController().getConfigModule(), true, getConfigModuleFetchGroups().toArray(new String[] {}), getConfigModuleMaxFetchDepth());
 
 			Cache.sharedInstance().put(null, storedConfigModule, getConfigModuleFetchGroups(), getConfigModuleMaxFetchDepth());
-			currentConfigModule = Utils.cloneSerializable(storedConfigModule);
+			getConfigModuleController().setConfigModule(Utils.cloneSerializable(storedConfigModule));
 			recentlySaved = true;
 		} catch (Throwable e) {
 			throw new RuntimeException(e);
@@ -963,8 +865,4 @@ implements IWorkbenchPreferencePage
 			configChangedListeners.remove(listener);
 	}
 	
-	private static Set<String> thisShit = new HashSet<String>();
-	public static Set<String> getThisShit() {
-		return thisShit;
-	}
 }

@@ -264,7 +264,8 @@ public class ConfigSetupRegistry extends AbstractEPProcessor {
 			ConfigPreferenceNode orgNode,
 			ConfigPreferenceNode newNodeParent) 
 	{
-		String nodeClassName = orgNode.getPreferencePage().getConfigModuleClass().getName();
+//		String nodeClassName = orgNode.getPreferencePage().getConfigModuleClassName().getName();
+		String nodeClassName = orgNode.getPreferencePage().getSimpleClassName();
 		boolean hasRegistration = 
 			(orgNode.getPreferencePage() != null) && 
 			(setup.getConfigModuleClasses().contains(nodeClassName));

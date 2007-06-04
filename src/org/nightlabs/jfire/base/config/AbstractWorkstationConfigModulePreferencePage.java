@@ -26,11 +26,10 @@
 
 package org.nightlabs.jfire.base.config;
 
+import org.apache.log4j.Logger;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IWorkbench;
-
 import org.nightlabs.jfire.base.login.Login;
-import org.nightlabs.jfire.config.ConfigModule;
 import org.nightlabs.jfire.config.WorkstationConfigSetup;
 import org.nightlabs.jfire.workstation.id.WorkstationID;
 
@@ -38,9 +37,11 @@ import org.nightlabs.jfire.workstation.id.WorkstationID;
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  *
  */
-public abstract class AbstractWorkstationConfigModulePreferencePage<C extends ConfigModule> extends
-		AbstractConfigModulePreferencePage<C> {
-
+public abstract class AbstractWorkstationConfigModulePreferencePage 
+extends AbstractConfigModulePreferencePage 
+{
+	private static final Logger logger = Logger.getLogger(AbstractWorkstationConfigModulePreferencePage.class);
+	
 	/**
 	 * 
 	 */
@@ -72,9 +73,11 @@ public abstract class AbstractWorkstationConfigModulePreferencePage<C extends Co
 	public void init(IWorkbench workbench) {
 		try {
 			Login login = Login.getLogin();
-			configID = WorkstationConfigSetup.getWorkstationConfigID(WorkstationID.create(login.getOrganisationID(), login.getWorkstationID()));
+			getConfigModuleController().setConfigID(
+					WorkstationConfigSetup.getWorkstationConfigID(WorkstationID.create(
+							login.getOrganisationID(), login.getWorkstationID())));
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			logger.info("User decided to woro offline!");
 		}
 		super.init(workbench);
 	}
