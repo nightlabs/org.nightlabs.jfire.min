@@ -53,6 +53,7 @@ import javax.naming.NameAlreadyBoundException;
 import javax.naming.NamingException;
 import javax.security.auth.login.LoginContext;
 import javax.security.auth.login.LoginException;
+import javax.transaction.TransactionManager;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.jfire.base.AuthCallbackHandler;
@@ -2170,6 +2171,31 @@ public class CacheManagerFactory
 	private transient JdoCacheBridge bridge = null;
 
 	private transient Timer timerCheckPersistenceManagerFactory = null;
+
+	public TransactionManager getTransactionManager(InitialContext initialContext)
+	{
+		try {
+			return jFireServerManagerFactory.getJ2EEVendorAdapter().getTransactionManager(initialContext);
+		} catch (Exception x) {
+			throw new RuntimeException(x); // if we don't get a TransactionManager things are really odd - definitely not to be expected.
+		}
+	}
+
+	public TransactionManager getTransactionManager()
+	{
+		try {
+			InitialContext initialContext = new InitialContext();
+			try {
+				return getTransactionManager(initialContext);
+			} finally {
+				initialContext.close();
+			}
+		} catch (RuntimeException x) {
+			throw x;
+		} catch (Exception x) {
+			throw new RuntimeException(x); // if we don't get a TransactionManager things are really odd - definitely not to be expected.
+		}
+	}
 
 	public synchronized void setupJdoCacheBridge(PersistenceManagerFactory pmf)
 			throws ClassNotFoundException, InstantiationException,

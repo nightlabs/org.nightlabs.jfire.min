@@ -768,7 +768,7 @@ public class JFireServerManagerFactoryImpl
 	}
 
 	protected J2EEAdapter j2eeVendorAdapter = null;
-	protected synchronized J2EEAdapter getJ2EEVendorAdapter()
+	public synchronized J2EEAdapter getJ2EEVendorAdapter()
 		throws ModuleException
 	{
 		if (j2eeVendorAdapter == null) {

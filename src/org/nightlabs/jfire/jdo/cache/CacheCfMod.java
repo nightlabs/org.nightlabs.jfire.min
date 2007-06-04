@@ -29,7 +29,7 @@ package org.nightlabs.jfire.jdo.cache;
 import org.apache.log4j.Logger;
 import org.nightlabs.config.ConfigModule;
 import org.nightlabs.config.InitException;
-import org.nightlabs.jfire.jdo.cache.bridge.JdoCacheBridgeJPOX;
+import org.nightlabs.jfire.jdo.cache.bridge.JdoCacheBridgeDefault;
 
 /**
  * @author Marco Schulze - marco at nightlabs dot de
@@ -118,7 +118,7 @@ public class CacheCfMod extends ConfigModule
 				"    need to use a specialized JDO-cache-bridge. This bridge makes sure, the\n" +
 				"    CacheManagerFactory (the core of the cache) is notified whenever an object\n" +
 				"    is changed in datastore.\n" +
-				"    Default: org.nightlabs.jfire.jdo.cache.bridge.JdoCacheBridgeJPOX\n";
+				"    Default: org.nightlabs.jfire.jdo.cache.bridge.JdoCacheBridgeDefault\n";
 
 		if (notificationIntervalMSec < 100)
 			setNotificationIntervalMSec(3 * 1000);
@@ -142,7 +142,7 @@ public class CacheCfMod extends ConfigModule
 			setWaitForChangesTimeoutMax(60 * 60 * 1000);
 
 		if (jdoCacheBridgeClassName == null || "".equals(jdoCacheBridgeClassName))
-			setJdoCacheBridgeClassName(JdoCacheBridgeJPOX.class.getName());
+			setJdoCacheBridgeClassName(JdoCacheBridgeDefault.class.getName());
 
 		// 2 * 60000 < cacheSessionLifeTime < 300 * 30*60000
 		long cacheSessionLifeTime = cacheSessionContainerCount * cacheSessionContainerActivityMSec;

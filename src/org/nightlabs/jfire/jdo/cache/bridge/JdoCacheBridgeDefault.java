@@ -40,11 +40,12 @@ import javax.jdo.listener.InstanceLifecycleEvent;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.resource.ResourceException;
-import javax.resource.spi.ConnectionEvent;
-import javax.resource.spi.ConnectionEventListener;
+import javax.transaction.Status;
+import javax.transaction.Synchronization;
+import javax.transaction.TransactionManager;
 
 import org.apache.log4j.Logger;
-import org.jpox.resource.PersistenceManagerImpl;
+import org.nightlabs.annotation.Implement;
 import org.nightlabs.jfire.idgenerator.IDNamespace;
 import org.nightlabs.jfire.jdo.notification.DirtyObjectID;
 import org.nightlabs.jfire.jdo.notification.JDOLifecycleState;
@@ -55,105 +56,87 @@ import org.nightlabs.jfire.security.SecurityReflector;
 /**
  * @author Marco Schulze - marco at nightlabs dot de
  */
-public class JdoCacheBridgeJPOX extends JdoCacheBridge
+public class JdoCacheBridgeDefault extends JdoCacheBridge
 {
-	/**
-	 * LOG4J logger used by this class
-	 */
-	private static final Logger logger = Logger.getLogger(JdoCacheBridgeJPOX.class);
+	private static final Logger logger = Logger.getLogger(JdoCacheBridgeDefault.class);
 
-	public static class CacheTransactionListener implements ConnectionEventListener
+	public static class CacheTransactionListener
+	implements Synchronization
 	{
-		private JdoCacheBridgeJPOX bridge;
-//		private Synchronization previousSynchronization;
+		private JdoCacheBridgeDefault bridge;
+		private boolean dead = false;
 
 		/**
 		 * @param previousSynchronization In case there can only be one synchronization be registered,
 		 *		the previously registered one can be replaced by an instance of this one and
 		 *		passed here in order to be triggered indirectly.
 		 */
-		public CacheTransactionListener(JdoCacheBridgeJPOX bridge)
-//				Synchronization previousSynchronization)
+		public CacheTransactionListener(JdoCacheBridgeDefault bridge)
 		{
 			this.bridge = bridge;
-//			this.previousSynchronization = previousSynchronization;
 		}
 
-//		/**
-//		 * @see javax.transaction.Synchronization#beforeCompletion()
-//		 */
-//		public void beforeCompletion()
-//		{
-//			if (previousSynchronization != null) {
-//				if (LOGGER.isDebugEnabled())
-//					LOGGER.debug("beforeCompletion() will call previousSynchronization.beforeCompletion() first. previousSynchronization: " + previousSynchronization);
-//
-//				previousSynchronization.beforeCompletion();
-//			}
-//			else if (LOGGER.isDebugEnabled())
-//				LOGGER.debug("beforeCompletion(): No previousSynchronization to trigger.");
-//		}
-//
-//		/**
-//		 * @see javax.transaction.Synchronization#afterCompletion(int)
-//		 */
-//		public void afterCompletion(int status)
-//		{
-//			if (previousSynchronization != null) {
-//				if (LOGGER.isDebugEnabled())
-//					LOGGER.debug("afterCompletion("+status+") will call previousSynchronization.afterCompletion(...) first. previousSynchronization: " + previousSynchronization);
-//
-//				previousSynchronization.afterCompletion(status);
-//			}
-//			else if (LOGGER.isDebugEnabled())
-//				LOGGER.debug("afterCompletion("+status+"): No previousSynchronization to trigger.");
-//
-//			if (Status.STATUS_COMMITTED == status) {
-//				if (dirtyObjectIDsRaw != null)
-//					bridge.getCacheManagerFactory().addDirtyObjectIDs(dirtyObjectIDsRaw);
-//
-//				dirtyObjectIDsRaw = null;
-//			}
-//			else if (Status.STATUS_ROLLEDBACK == status) {
-//				dirtyObjectIDsRaw = null;
-//			}
-//		}
-
-		public void localTransactionCommitted(javax.resource.spi.ConnectionEvent event)
+		@Implement
+		public void beforeCompletion()
 		{
-			try {
-				if (dirtyObjectIDs == null) {
-					if (logger.isDebugEnabled())
-						logger.debug("localTransactionCommitted(...) called, but nothing to do.");
+			this.dead = true;
+		}
 
-					return;
+		/**
+		 * An instance of <code>CacheTransactionListener</code> should only be used for one transaction. Because
+		 * we unfortunately cannot unregister the listener in {@link #afterCompletion(int)} (and neither in
+		 * {@link #beforeCompletion()})
+		 * [calling {@link PersistenceManager#setUserObject(Object)} fails], we simply set this flag to
+		 * <code>true</code> instead.
+		 * <p>
+		 * This problem would be solved in the first place, if a <code>PersistenceManager</code> would not have any
+		 * user-object associated after a transaction has been completed. Unfortunately, the PMF does not clear this
+		 * field when reusing an old {@link PersistenceManager}.
+		 * </p>
+		 *
+		 * @return <code>false</code>, if this instance of <code>CacheTransactionListener</code> is still alive and
+		 * therefore must be used in the current transaction. <code>true</code>, if the transaction associated
+		 * to this instance has already been completed and therefore this listener should not be used anymore.
+		 */
+		public boolean isDead()
+		{
+			return dead;
+		}
+
+		@Implement
+		public void afterCompletion(int status)
+		{
+			if (status == Status.STATUS_COMMITTED) { 
+				try {
+					if (dirtyObjectIDs == null) {
+						if (logger.isDebugEnabled())
+							logger.debug("afterCompletion(STATUS_COMMITTED) called, but nothing to do.");
+
+						return;
+					}
+
+					String sessionID = bridge.securityReflector._getUserDescriptor().getSessionID();
+
+					if (objectID2Class != null) {
+						bridge.getCacheManagerFactory().addObjectID2ClassMap(objectID2Class);
+						objectID2Class = null;
+					}
+
+					if (dirtyObjectIDs != null) {
+						bridge.getCacheManagerFactory().addDirtyObjectIDs(sessionID, dirtyObjectIDs);
+						dirtyObjectIDs = null;
+					}
+				} catch (Throwable e) {
+					logger.error("afterCompletion(STATUS_COMMITTED): " + e.getMessage(), e);
 				}
-
-				String sessionID = bridge.securityReflector._getUserDescriptor().getSessionID();
-
-				if (objectID2Class != null) {
-					bridge.getCacheManagerFactory().addObjectID2ClassMap(objectID2Class);
-					objectID2Class = null;
-				}
-
-				if (dirtyObjectIDs != null) {
-					bridge.getCacheManagerFactory().addDirtyObjectIDs(sessionID, dirtyObjectIDs);
-					dirtyObjectIDs = null;
-				}
-			} catch (Throwable e) {
-				logger.error("", e);
 			}
+			else if (status == Status.STATUS_ROLLEDBACK) {
+				logger.debug("afterCompletion(STATUS_ROLLEDBACK) called.");
+				dirtyObjectIDs = null;
+			}
+			else
+				logger.error("afterCompletion(...) called with unknown status: " + status, new Exception("Unknown status (" + status + ") in afterCompletion!"));
 		}
-
-		public void localTransactionRolledback(javax.resource.spi.ConnectionEvent event)
-		{
-			logger.debug("localTransactionRolledback(...) called.");
-			dirtyObjectIDs = null;
-		}
-
-		public void connectionClosed(ConnectionEvent event) { }
-		public void connectionErrorOccurred(ConnectionEvent event) { }
-		public void localTransactionStarted(ConnectionEvent event) { }
 
 		// IMHO no sync necessary, because one transaction should only be used by one thread.
 		private Map<JDOLifecycleState, Map<Object, DirtyObjectID>> dirtyObjectIDs = null;
@@ -203,40 +186,31 @@ public class JdoCacheBridgeJPOX extends JdoCacheBridge
 		return objectID;
 	}
 
-	public JdoCacheBridgeJPOX()
+	public JdoCacheBridgeDefault()
 	{
 	}
 
-	private CacheTransactionListener getCacheTransactionListener(PersistenceManager _pm)
+	private CacheTransactionListener getCacheTransactionListener(PersistenceManager pm)
 	throws ResourceException
 	{
-		if (!(_pm instanceof PersistenceManagerImpl))
-			throw new ClassCastException("PersistenceManager is not an instance of " + PersistenceManagerImpl.class + " but " + _pm == null ? "null" : _pm.getClass().getName() + "!");
-
-		PersistenceManagerImpl pm = (PersistenceManagerImpl) _pm;
-//		JdoTransactionHandle th = (JdoTransactionHandle) pm.getLocalTransaction();
 		CacheTransactionListener listener = (CacheTransactionListener)pm.getUserObject();
-		if (listener == null) {
-			logger.debug("PersistenceManagerImpl.getUserObject() returned null. Will create and add a CacheTransactionListener.");
+		// we cannot unregister the CacheTransactionListener after the transaction is finished (pm.setUserObject fails) - hence we use the "dead" flag
+		if (listener == null || listener.isDead()) {
+			logger.debug("PersistenceManager.getUserObject() returned null or the returned listener is dead. Will create and add a CacheTransactionListener.");
 			listener = new CacheTransactionListener(this);
-			pm.addConnectionEventListener(listener);
-			pm.setUserObject(listener);
+			try {
+				TransactionManager tm = getCacheManagerFactory().getTransactionManager();
+				javax.transaction.Transaction tx = tm.getTransaction();
+				tx.registerSynchronization(listener);
+				pm.setUserObject(listener);
+			} catch (Exception x) {
+				logger.error("getCacheTransactionListener: Could not register Synchronization!", x);
+			}
 		}
 		else
-			logger.debug("PersistenceManagerImpl.getUserObject() returned a CacheTransactionListener. No registration necessary.");
+			logger.debug("PersistenceManager.getUserObject() returned a living CacheTransactionListener. No registration necessary.");
 
 		return listener;
-//		Synchronization oldSync = th.getSynchronization();
-//		if (oldSync instanceof CacheTransactionListener) {
-//			LOGGER.debug("JdoTransactionHandle.getSynchronization() returned already an instance of CacheTransactionListener. No registration necessary.");
-//			return (CacheTransactionListener)oldSync;
-//		}
-//		else {
-//			LOGGER.debug("JdoTransactionHandle.getSynchronization() returned \"" + oldSync + "\". Will register a new CacheTransactionListener.");
-//			CacheTransactionListener res = new CacheTransactionListener(this, oldSync);
-//			th.setSynchronization(res);
-//			return res;
-//		}
 	}
 
 	private void registerJDOObject(JDOLifecycleState lifecycleStage, Object object)
