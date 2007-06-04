@@ -2,8 +2,7 @@
 <?eclipse version="3.0"?>
 <plugin>   
 	<!-- Extension-points -->
-	
-   	
+	   	
    <extension-point 
    		id="loginstatelistener" 
    		name="Login State Listener" 
@@ -96,12 +95,14 @@
    -->
    <extension
          point="org.eclipse.ui.perspectives">
+
       <perspective
             icon="icons/JFire-Icon.16x16.png"
             class="org.nightlabs.jfire.base.JFireWelcomePerspective"
             fixed="false"
             name="%perspectives.jfireWelcome.name"
             id="org.nightlabs.jfire.base.perspective.JFireWelcomePerspective"/>
+
       <perspective
             class="org.nightlabs.jfire.base.overview.OverviewPerspective"
             icon="icons/overview/overview.16x16.png"
