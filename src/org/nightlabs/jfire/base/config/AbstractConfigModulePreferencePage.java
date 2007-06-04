@@ -745,11 +745,6 @@ extends LSDPreferencePage
 	public int getConfigModuleMaxFetchDepth() {
 		return NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT;
 	}
-
-	private IWorkbench workbench = null;
-	protected IWorkbench getWorkbench() {
-		return workbench;
-	}
 	
 	/**
 	 * Default implementation does nothing. Subclasses (AbstractUser..., AbstractWorkstation...) have
@@ -765,7 +760,7 @@ extends LSDPreferencePage
 	 * @see org.eclipse.ui.IWorkbenchPreferencePage#init(org.eclipse.ui.IWorkbench)
 	 */
 	public void init(IWorkbench workbench) {
-		this.workbench = workbench;
+		super.init(workbench);
 	}
 	
 	/**

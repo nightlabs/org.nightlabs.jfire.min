@@ -5,6 +5,7 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.nightlabs.annotation.Implement;
 import org.nightlabs.base.part.ControllablePart;
@@ -54,4 +55,15 @@ implements IWorkbenchPreferencePage, ControllablePart
 		LSDPartController.sharedInstance().createPartControl(this, parent);
 		return parent;
 	}
+	
+	private IWorkbench workbench;
+	public IWorkbench getWorkbench() {
+		return workbench;
+	}
+	
+	@Implement
+	public void init(IWorkbench workbench) {
+		this.workbench = workbench;
+	}
+	
 }
