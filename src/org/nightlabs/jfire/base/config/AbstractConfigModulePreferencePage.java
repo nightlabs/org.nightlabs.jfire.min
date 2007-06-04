@@ -873,8 +873,10 @@ implements IWorkbenchPreferencePage
 	 * 
 	 */
 	public void storeConfigModule() {
-		if (Thread.currentThread() == Display.getDefault().getThread())
-			throw new IllegalStateException("This method must not be called on the GUI-thread! Use a job!");
+		if (Thread.currentThread() == Display.getDefault().getThread()) {
+			logger.error("This method must not be called on the GUI-thread! Use a job!", new Exception("This method must not be called on the GUI-thread! Use a job!"));
+//			throw new IllegalStateException("This method must not be called on the GUI-thread! Use a job!");
+		}
 
 		if (isConfigChanged()) {
 			Display.getDefault().syncExec( new Runnable() {
