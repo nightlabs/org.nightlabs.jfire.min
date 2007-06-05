@@ -50,7 +50,6 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-import org.nightlabs.base.dialog.CenteredDialog;
 import org.nightlabs.config.Config;
 import org.nightlabs.config.ConfigException;
 import org.nightlabs.jfire.base.resource.Messages;
@@ -59,7 +58,7 @@ import org.nightlabs.jfire.base.resource.Messages;
  * @author Alexander Bieber
  * @author Marc Klinger - marc[at]nightlabs[dot]de
  */
-public class LoginDialog extends CenteredDialog 
+public class LoginDialog extends Dialog 
 {
 	/**
 	 * LOG4J logger used by this class
