@@ -42,6 +42,7 @@ import org.nightlabs.jfire.person.Person;
 import org.nightlabs.jfire.person.PersonStruct;
 import org.nightlabs.jfire.prop.IStruct;
 import org.nightlabs.jfire.prop.Property;
+import org.nightlabs.jfire.prop.StructLocal;
 import org.nightlabs.jfire.prop.datafield.TextDataField;
 import org.nightlabs.jfire.server.Server;
 
@@ -242,11 +243,6 @@ public class OrganisationCf
 			throw new IllegalStateException("This instance of OrganisationCf does not allow write!");
 	}
 
-	private IStruct getPersonStruct(PersistenceManager pm)
-	{
-		return PersonStruct.getPersonStruct(getOrganisationID(), pm);
-	}
-
 	/**
 	 * This method creates a JDO Organisation object with the given persistenceManager
 	 * in case it does not yet exist.
@@ -271,8 +267,8 @@ public class OrganisationCf
 
 		if (organisation.getPerson() == null) {
 			Person person = new Person(organisationID, IDGenerator.nextID(Property.class));
-			// FIXME: Should be LocalStruct !
-			IStruct struct = getPersonStruct(pm);
+			PersonStruct.getPersonStruct(getOrganisationID(), pm);
+			IStruct struct = StructLocal.getStructLocal(Person.class, StructLocal.DEFAULT_SCOPE, pm);
 			struct.explodeProperty(person);
 			try {
 				TextDataField f = (TextDataField) person.getDataField(PersonStruct.PERSONALDATA_COMPANY);
