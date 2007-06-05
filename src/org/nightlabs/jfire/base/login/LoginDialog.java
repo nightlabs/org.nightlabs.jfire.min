@@ -50,6 +50,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import org.nightlabs.base.dialog.CenteredDialog;
 import org.nightlabs.config.Config;
 import org.nightlabs.config.ConfigException;
 import org.nightlabs.jfire.base.resource.Messages;
@@ -58,7 +59,7 @@ import org.nightlabs.jfire.base.resource.Messages;
  * @author Alexander Bieber
  * @author Marc Klinger - marc[at]nightlabs[dot]de
  */
-public class LoginDialog extends Dialog 
+public class LoginDialog extends CenteredDialog 
 {
 	/**
 	 * LOG4J logger used by this class
@@ -74,9 +75,9 @@ public class LoginDialog extends Dialog
 	private Login.AsyncLoginResult loginResult = null;	
 	private JFireLoginContext loginContext = null;
 	
-	protected static final int BUTTON_LOGIN = 100;
-	protected static final int BUTTON_OFFLINE = 200;
-	protected static final int BUTTON_DETAILS = 300;
+	protected static final int BUTTON_LOGIN = IDialogConstants.CLIENT_ID + 1;
+	protected static final int BUTTON_OFFLINE = IDialogConstants.CLIENT_ID + 2;
+	protected static final int BUTTON_DETAILS = IDialogConstants.CLIENT_ID + 3;
 	
 	private Button loginButton;
 	private Button offlineButton;
