@@ -33,12 +33,12 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.IMessageProvider;
+import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -58,7 +58,7 @@ import org.nightlabs.jfire.base.resource.Messages;
  * @author Alexander Bieber
  * @author Marc Klinger - marc[at]nightlabs[dot]de
  */
-public class LoginDialog extends Dialog 
+public class LoginDialog extends TitleAreaDialog 
 {
 	/**
 	 * LOG4J logger used by this class
@@ -83,15 +83,10 @@ public class LoginDialog extends Dialog
 	private Button detailsButton;
 	
 	private Composite dialogArea;
-	private Composite messageArea;
-	private GridData messageAreaGridData;
 	private Composite mainArea;
 	private Composite detailsArea;
 	private GridData detailsAreaGridData;
 
-	private Label labelMessageIcon;
-	private Label labelMessage;
-	
 	private Label labelUserID = null;
 	private Text textUserID = null;
 	private Label labelPassword = null;
@@ -106,7 +101,6 @@ public class LoginDialog extends Dialog
 	private Text textInitialContextFactory = null;
 	private Label labelWorkstationID = null;
 	private Text textWorkstationID = null;
-	
 	
 	public LoginDialog(Shell parent) 
 	{
@@ -138,40 +132,24 @@ public class LoginDialog extends Dialog
 	}
 
 	/* (non-Javadoc)
-	 * @see org.eclipse.jface.dialogs.Dialog#createDialogArea(org.eclipse.swt.widgets.Composite)
+	 * @see org.eclipse.jface.dialogs.TitleAreaDialog#createDialogArea(org.eclipse.swt.widgets.Composite)
 	 */
 	@Override
 	protected Control createDialogArea(Composite parent) 
 	{
 		dialogArea = (Composite)super.createDialogArea(parent); 
-		createMessageArea(dialogArea);
+
 		createMainArea(dialogArea);
 		createDetailsArea(dialogArea);
 		
 		initializeWidgetValues();
 		setSmartFocus();
 		
+		setTitle("Please login");
+		
 		return dialogArea;
 	}
-	
-	protected Control createMessageArea(Composite parent)
-	{
-		messageArea = new Composite(parent, SWT.NONE);
-		GridLayout gridLayoutError = new GridLayout();
-		gridLayoutError.numColumns = 2;
-		messageArea.setLayout(gridLayoutError);
-		messageAreaGridData = new GridData(GridData.FILL_HORIZONTAL);
-		messageAreaGridData.heightHint = 0;
-		messageArea.setLayoutData(messageAreaGridData);
-		
-		labelMessageIcon = new Label(messageArea,SWT.PUSH);
-		
-		labelMessage = new Label(messageArea,SWT.PUSH);
-		labelMessage.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		
-		return messageArea;
-	}
-	
+
 	protected Control createMainArea(Composite parent)
 	{
 		mainArea = new Composite(parent, SWT.NONE);
@@ -239,6 +217,68 @@ public class LoginDialog extends Dialog
 		return detailsArea;
 	}
 	
+	private void createLoginButton(Composite parent) 
+	{
+		loginButton = new Button(parent, SWT.PUSH);
+		loginButton.setText(Messages.getString("login.LoginDialog.labelbutton.login")); //$NON-NLS-1$
+		loginButton.setData(new Integer(BUTTON_LOGIN));
+		loginButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent event) {
+				loginPressed(event);
+			}
+		});
+		Shell shell = parent.getShell();
+		if (shell != null)
+			shell.setDefaultButton(loginButton);
+	}		
+	
+	private void createOfflineButton(Composite parent) 
+	{
+		offlineButton = new Button(parent, SWT.PUSH);
+		offlineButton.setText(Messages.getString("login.LoginDialog.labelbutton.offline")); //$NON-NLS-1$
+		offlineButton.setData(new Integer(BUTTON_OFFLINE));
+		offlineButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent event) {
+				offlinePressed(event);
+			}
+		});
+	}
+	
+	private void createDetailsButton(Composite parent) 
+	{
+		detailsButton = new Button(parent, SWT.PUSH);
+		detailsButton.setText(IDialogConstants.SHOW_DETAILS_LABEL);
+		detailsButton.setData(new Integer(BUTTON_DETAILS));
+		detailsButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent event) {
+				detailsPressed(event);
+			}
+		});
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.eclipse.jface.dialogs.Dialog#createButtonsForButtonBar(org.eclipse.swt.widgets.Composite)
+	 */
+	@Override
+	protected void createButtonsForButtonBar(Composite parent) 
+	{
+		GridLayout parentLayout = (GridLayout) parent.getLayout();
+		parentLayout.numColumns = 2;
+		parentLayout.verticalSpacing = 0;
+		parentLayout.marginHeight = 0;
+		Composite left = new Composite(parent,SWT.NONE);
+		GridData leftData = new GridData(GridData.FILL_HORIZONTAL);
+		leftData.grabExcessHorizontalSpace = true;
+		left.setLayoutData(leftData);
+	  Composite right = new Composite(parent,SWT.NONE);
+		GridData rightData = new GridData(GridData.FILL_HORIZONTAL);
+		right.setLayoutData(rightData);
+		RowLayout layout = new RowLayout();
+		right.setLayout(layout);
+		createLoginButton(right);
+		createOfflineButton(right);
+		createDetailsButton(right);
+	}
 	
 	
 	
@@ -296,7 +336,7 @@ public class LoginDialog extends Dialog
 			showDetails(true);
 			textInitialContextFactory.setFocus();
 		}
-		if(EMPTY_STRING.equals(textUserID))
+		if(EMPTY_STRING.equals(textUserID.getText()))
 			textUserID.setFocus();
 	}
 	
@@ -315,96 +355,14 @@ public class LoginDialog extends Dialog
 		runtimeLoginModule.setWorkstationID(textWorkstationID.getText());
 	}
 
-	
-	private void createLoginButton(Composite parent) 
-	{
-		loginButton = new Button(parent, SWT.PUSH);
-		loginButton.setText(Messages.getString("login.LoginDialog.labelbutton.login")); //$NON-NLS-1$
-		loginButton.setData(new Integer(BUTTON_LOGIN));
-		loginButton.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(SelectionEvent event) {
-				loginPressed(event);
-			}
-		});
-		Shell shell = parent.getShell();
-		if (shell != null)
-			shell.setDefaultButton(loginButton);
-	}		
-	
-	private void createOfflineButton(Composite parent) 
-	{
-		offlineButton = new Button(parent, SWT.PUSH);
-		offlineButton.setText(Messages.getString("login.LoginDialog.labelbutton.offline")); //$NON-NLS-1$
-		offlineButton.setData(new Integer(BUTTON_OFFLINE));
-		offlineButton.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(SelectionEvent event) {
-				offlinePressed(event);
-			}
-		});
-	}
-	
-	private void createDetailsButton(Composite parent) 
-	{
-		detailsButton = new Button(parent, SWT.PUSH);
-		detailsButton.setText(IDialogConstants.SHOW_DETAILS_LABEL);
-		detailsButton.setData(new Integer(BUTTON_DETAILS));
-		detailsButton.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(SelectionEvent event) {
-				detailsPressed(event);
-			}
-		});
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.eclipse.jface.dialogs.Dialog#createButtonsForButtonBar(org.eclipse.swt.widgets.Composite)
-	 */
-	@Override
-	protected void createButtonsForButtonBar(Composite parent) 
-	{
-		GridLayout parentLayout = (GridLayout) parent.getLayout();
-		parentLayout.numColumns = 2;
-		parentLayout.verticalSpacing = 0;
-		parentLayout.marginHeight = 0;
-//		parentLayout.marginWidth = 0;
-		Composite left = new Composite(parent,SWT.NONE);
-		GridData leftData = new GridData(GridData.FILL_HORIZONTAL);
-		leftData.grabExcessHorizontalSpace = true;
-		left.setLayoutData(leftData);
-	  Composite right = new Composite(parent,SWT.NONE);
-		GridData rightData = new GridData(GridData.FILL_HORIZONTAL);
-		right.setLayoutData(rightData);
-		RowLayout layout = new RowLayout();
-		right.setLayout(layout);
-		createLoginButton(right);
-		createOfflineButton(right);
-		createDetailsButton(right);
-	}
-
 	private void showErrorMessage(String errorMessage)
 	{
-		showMessage(errorMessage, Dialog.getImage(Dialog.DLG_IMG_MESSAGE_ERROR));
+		setMessage(errorMessage, IMessageProvider.ERROR);
 	}
 
 	private void showInfoMessage(String errorMessage)
 	{
-		showMessage(errorMessage, Dialog.getImage(Dialog.DLG_IMG_MESSAGE_INFO));
-	}
-	
-	private void showMessage(String errorMessage, Image icon)
-	{
-		Point windowSize = getShell().getSize();
-		Point oldSize = getShell().computeSize(SWT.DEFAULT, SWT.DEFAULT);
-		if(errorMessage == null || EMPTY_STRING.equals(errorMessage)) {
-			labelMessage.setText(EMPTY_STRING);
-			messageAreaGridData.heightHint = 0;
-		} else {
-			labelMessageIcon.setImage(icon);
-			labelMessage.setText(errorMessage);
-			messageAreaGridData.heightHint = SWT.DEFAULT;
-			labelMessage.redraw();
-		}
-		Point newSize = getShell().computeSize(SWT.DEFAULT, SWT.DEFAULT);
-		getShell().setSize(new Point(windowSize.x, windowSize.y + (newSize.y - oldSize.y)));
+		setMessage(errorMessage, IMessageProvider.INFORMATION);
 	}
 	
 	protected void loginPressed(SelectionEvent event) 
