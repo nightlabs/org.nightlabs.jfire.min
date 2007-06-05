@@ -38,6 +38,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -64,6 +65,8 @@ public class LoginDialog extends Dialog
 	 */
 	private static final Logger logger = Logger.getLogger(LoginDialog.class);
 	
+	private static final String EMPTY_STRING = ""; //$NON-NLS-1$
+	
 	protected static LoginDialog sharedInstance = null;
 	
 	private LoginConfigModule persistentLoginModule = null;
@@ -79,17 +82,15 @@ public class LoginDialog extends Dialog
 	private Button offlineButton;
 	private Button detailsButton;
 	
-	
-	
 	private Composite dialogArea;
-	private Composite errorArea;
-	private GridData errorAreaGridData;
+	private Composite messageArea;
+	private GridData messageAreaGridData;
 	private Composite mainArea;
 	private Composite detailsArea;
 	private GridData detailsAreaGridData;
 
-	private Label labelErrorIcon;
-	private Label labelErrorMessage;
+	private Label labelMessageIcon;
+	private Label labelMessage;
 	
 	private Label labelUserID = null;
 	private Text textUserID = null;
@@ -143,11 +144,7 @@ public class LoginDialog extends Dialog
 	protected Control createDialogArea(Composite parent) 
 	{
 		dialogArea = (Composite)super.createDialogArea(parent); 
-//		GridData gd = new GridData(GridData.FILL_BOTH);
-//		gd.heightHint = 150;
-//		gd.widthHint = 550;
-//		dialogArea.setLayoutData(gd);
-		createErrorArea(dialogArea);
+		createMessageArea(dialogArea);
 		createMainArea(dialogArea);
 		createDetailsArea(dialogArea);
 		
@@ -157,24 +154,22 @@ public class LoginDialog extends Dialog
 		return dialogArea;
 	}
 	
-	protected Control createErrorArea(Composite parent)
+	protected Control createMessageArea(Composite parent)
 	{
-		errorArea = new Composite(parent, SWT.NONE);
+		messageArea = new Composite(parent, SWT.NONE);
 		GridLayout gridLayoutError = new GridLayout();
 		gridLayoutError.numColumns = 2;
-		errorArea.setLayout(gridLayoutError);
-		errorAreaGridData = new GridData(GridData.FILL_HORIZONTAL);
-		errorAreaGridData.heightHint = 0;
-		errorArea.setLayoutData(errorAreaGridData);
+		messageArea.setLayout(gridLayoutError);
+		messageAreaGridData = new GridData(GridData.FILL_HORIZONTAL);
+		messageAreaGridData.heightHint = 0;
+		messageArea.setLayoutData(messageAreaGridData);
 		
-		labelErrorIcon = new Label(errorArea,SWT.PUSH);
-		labelErrorIcon.setImage(Dialog.getImage(Dialog.DLG_IMG_MESSAGE_ERROR));
+		labelMessageIcon = new Label(messageArea,SWT.PUSH);
 		
-		labelErrorMessage = new Label(errorArea,SWT.PUSH);
-		labelErrorMessage.setText(""); //$NON-NLS-1$
-		labelErrorMessage.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		labelMessage = new Label(messageArea,SWT.PUSH);
+		labelMessage.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		
-		return errorArea;
+		return messageArea;
 	}
 	
 	protected Control createMainArea(Composite parent)
@@ -285,23 +280,23 @@ public class LoginDialog extends Dialog
 	private void setSmartFocus()
 	{
 		textPassword.setFocus();
-		if("".equals(textWorkstationID.getText())) { //$NON-NLS-1$
+		if(EMPTY_STRING.equals(textWorkstationID.getText())) {
 			showDetails(true);
 			textWorkstationID.setFocus();
 		}
-		else if("".equals(textOrganisationID.getText())) { //$NON-NLS-1$
+		else if(EMPTY_STRING.equals(textOrganisationID.getText())) {
 			showDetails(true);
 			textOrganisationID.setFocus();
 		}
-		else if("".equals(textServerURL.getText())) { //$NON-NLS-1$
+		else if(EMPTY_STRING.equals(textServerURL.getText())) {
 			showDetails(true);
 			textServerURL.setFocus();
 		}
-		else if("".equals(textInitialContextFactory.getText())) { //$NON-NLS-1$
+		else if(EMPTY_STRING.equals(textInitialContextFactory.getText())) {
 			showDetails(true);
 			textInitialContextFactory.setFocus();
 		}
-		if("".equals(textUserID)) //$NON-NLS-1$
+		if(EMPTY_STRING.equals(textUserID))
 			textUserID.setFocus();
 	}
 	
@@ -384,18 +379,29 @@ public class LoginDialog extends Dialog
 		createOfflineButton(right);
 		createDetailsButton(right);
 	}
+
+	private void showErrorMessage(String errorMessage)
+	{
+		showMessage(errorMessage, Dialog.getImage(Dialog.DLG_IMG_MESSAGE_ERROR));
+	}
+
+	private void showInfoMessage(String errorMessage)
+	{
+		showMessage(errorMessage, Dialog.getImage(Dialog.DLG_IMG_MESSAGE_INFO));
+	}
 	
-	private void setErrorMessage(String errorMessage)
+	private void showMessage(String errorMessage, Image icon)
 	{
 		Point windowSize = getShell().getSize();
 		Point oldSize = getShell().computeSize(SWT.DEFAULT, SWT.DEFAULT);
-		if(errorMessage == null || "".equals(errorMessage)) { //$NON-NLS-1$
-			labelErrorMessage.setText(""); //$NON-NLS-1$
-			errorAreaGridData.heightHint = 0;
+		if(errorMessage == null || EMPTY_STRING.equals(errorMessage)) {
+			labelMessage.setText(EMPTY_STRING);
+			messageAreaGridData.heightHint = 0;
 		} else {
-			labelErrorMessage.setText(errorMessage);
-			errorAreaGridData.heightHint = SWT.DEFAULT;
-			labelErrorMessage.redraw();
+			labelMessageIcon.setImage(icon);
+			labelMessage.setText(errorMessage);
+			messageAreaGridData.heightHint = SWT.DEFAULT;
+			labelMessage.redraw();
 		}
 		Point newSize = getShell().computeSize(SWT.DEFAULT, SWT.DEFAULT);
 		getShell().setSize(new Point(windowSize.x, windowSize.y + (newSize.y - oldSize.y)));
@@ -405,23 +411,24 @@ public class LoginDialog extends Dialog
 	{
 		// check entries
 		String errorMessage = null;
-		if (textUserID.getText().equals("")) //$NON-NLS-1$
+		if (textUserID.getText().equals(EMPTY_STRING))
 			errorMessage = Messages.getString("login.LoginDialog.errormissingUserID"); //$NON-NLS-1$
-		else if (textWorkstationID.getText().equals("")) //$NON-NLS-1$
+		else if (textWorkstationID.getText().equals(EMPTY_STRING))
 			errorMessage = Messages.getString("login.LoginDialog.errormissingWorkstationID"); //$NON-NLS-1$
-		else if (textOrganisationID.getText().equals("")) //$NON-NLS-1$
+		else if (textOrganisationID.getText().equals(EMPTY_STRING))
 			errorMessage = Messages.getString("login.LoginDialog.errormissingOrganisationID"); //$NON-NLS-1$
-		else if (textInitialContextFactory.getText().equals("")) //$NON-NLS-1$
+		else if (textInitialContextFactory.getText().equals(EMPTY_STRING))
 			errorMessage = Messages.getString("login.LoginDialog.errormissingContextFactory"); //$NON-NLS-1$
-		else if (textServerURL.getText().equals("")) //$NON-NLS-1$
+		else if (textServerURL.getText().equals(EMPTY_STRING))
 			errorMessage = Messages.getString("login.LoginDialog.errormissingServerURL"); //$NON-NLS-1$
 		if(errorMessage != null) {
-			setErrorMessage(errorMessage);
+			showErrorMessage(errorMessage);
 			setSmartFocus();
 			return;
 		}
 
 		boolean hadError = true;
+		showInfoMessage(Messages.getString("login.LoginDialog.tryingLogin")); //$NON-NLS-1$
 		enableAll(false);
 		try {
 
@@ -436,7 +443,7 @@ public class LoginDialog extends Dialog
 				}
 			}
 
-			Job job = new Job("Authentication...") {
+			Job job = new Job(Messages.getString("login.LoginDialog.authentication")) { //$NON-NLS-1$
 				@Override
 				protected IStatus run(IProgressMonitor arg0)
 				{
@@ -472,33 +479,32 @@ public class LoginDialog extends Dialog
 	{
 		// verify login done 
 
-		if ((!loginResult.isWasAuthenticationErr()) && (loginResult.isSuccess()))
+		if ((!loginResult.isWasAuthenticationErr()) && (loginResult.isSuccess())) {
 			close();
-		else {
+		} else {
 			// login failed
 			if (loginResult.isWasAuthenticationErr()) {
-				setErrorMessage(Messages.getString("login.LoginDialog.errorauthenticationFailed")); //$NON-NLS-1$
+				showErrorMessage(Messages.getString("login.LoginDialog.errorauthenticationFailed")); //$NON-NLS-1$
 			}
 			else if (loginResult.isWasCommunicationErr()) {
 				Throwable error = loginResult.getException();
 				while (error.getLocalizedMessage() == null && error.getCause() != null) {
 					error = ExceptionUtils.getCause(error);
 				}
-				setErrorMessage(String.format(Messages.getString("login.LoginDialog.errorcommunicatinError"), error.getLocalizedMessage())); //$NON-NLS-1$
+				showErrorMessage(String.format(Messages.getString("login.LoginDialog.errorcommunicatinError"), error.getLocalizedMessage())); //$NON-NLS-1$
 			}
 			else {
 				String message = loginResult.getMessage();
 				if (loginResult.getException() != null) {
-					message += String.format("\n%1$s: %2$s", loginResult.getException().getClass().getName(), loginResult.getException().getLocalizedMessage());
-					//message += "\n"+loginResult.getException().getClass().getName()+": "+loginResult.getException().getLocalizedMessage();
+					message += String.format(Messages.getString("login.LoginDialog.errorAppend"), loginResult.getException().getClass().getName(), loginResult.getException().getLocalizedMessage()); //$NON-NLS-1$
 					Throwable cause = loginResult.getException();
 					while ( cause != null ) {
-						message += "\n"+cause.getClass().getName()+": "+cause.getLocalizedMessage();
+						message += String.format(Messages.getString("login.LoginDialog.errorAppend"), cause.getClass().getName(), cause.getLocalizedMessage()); //$NON-NLS-1$
 						cause = cause.getCause();
 					}
 					loginResult.getException().printStackTrace();
 				}
-				setErrorMessage(message);
+				showErrorMessage(message);
 				
 			}
 			// show a message to the user
