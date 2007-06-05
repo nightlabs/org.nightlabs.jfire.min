@@ -41,21 +41,11 @@ import org.nightlabs.progress.ProgressMonitor;
 public class UserSearchComposite 
 extends XComposite 
 {
-	/**
-	 * @param parent
-	 * @param style
-	 */
 	public UserSearchComposite(Composite parent, int style) {
 		super(parent, style);
 		createComposite(this);
 	}
 
-	/**
-	 * @param parent
-	 * @param style
-	 * @param layoutMode
-	 * @param layoutDataMode
-	 */
 	public UserSearchComposite(Composite parent, int style,
 			LayoutMode layoutMode, LayoutDataMode layoutDataMode) {
 		super(parent, style, layoutMode, layoutDataMode);
@@ -98,12 +88,12 @@ extends XComposite
 		searchComp.setLayout(new GridLayout(3, true));
 		searchComp.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		
-		userIDText = createTextSearchEntry(searchComp, Messages.getString("UserSearchComposite.userID")); //$NON-NLS-1$
-		nameText = createTextSearchEntry(searchComp, Messages.getString("UserSearchComposite.name")); //$NON-NLS-1$
-//		userTypeText = createTextSearchEntry(searchComp, Messages.getString("UserSearchComposite.userType")); //$NON-NLS-1$
+		userIDText = createTextSearchEntry(searchComp, Messages.getString("security.UserSearchComposite.userID")); //$NON-NLS-1$
+		nameText = createTextSearchEntry(searchComp, Messages.getString("security.UserSearchComposite.name")); //$NON-NLS-1$
+//		userTypeText = createTextSearchEntry(searchComp, Messages.getString("security.UserSearchComposite.userType")); //$NON-NLS-1$
 		Composite wrapper = new XComposite(searchComp, SWT.NONE, LayoutMode.TOTAL_WRAPPER);
 		Label label = new Label(wrapper, SWT.NONE);
-		label.setText(Messages.getString("UserSearchComposite.userType")); //$NON-NLS-1$
+		label.setText(Messages.getString("security.UserSearchComposite.userType")); //$NON-NLS-1$
 		userTypeCombo = new Combo(wrapper, SWT.BORDER);
 		userTypeCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		userTypeCombo.setItems(new String[] {"User", "UserGroup", "Organisation"}); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
@@ -145,8 +135,8 @@ extends XComposite
 	
 	public void searchPressed() 
 	{		
-		userTable.setInput(Messages.getString("UserSearchComposite.LoadingEvent")); //$NON-NLS-1$
-		Job job = new Job(Messages.getString("UserSearchComposite.LoadingEvent")) { //$NON-NLS-1$
+		userTable.setInput(Messages.getString("security.UserSearchComposite.LoadingEvent")); //$NON-NLS-1$
+		Job job = new Job(Messages.getString("security.UserSearchComposite.LoadingEvent")) { //$NON-NLS-1$
 			protected IStatus run(ProgressMonitor monitor){
 				try {
 					UserManager um = UserManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();

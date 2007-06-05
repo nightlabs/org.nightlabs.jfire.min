@@ -47,6 +47,9 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtension;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Display;
@@ -63,6 +66,7 @@ import org.nightlabs.jfire.base.JFireBasePlugin;
 import org.nightlabs.jfire.base.j2ee.JFireJ2EEPlugin;
 import org.nightlabs.jfire.base.jdo.cache.Cache;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleManager;
+import org.nightlabs.jfire.base.resource.Messages;
 import org.nightlabs.jfire.classloader.JFireRCDLDelegate;
 import org.nightlabs.jfire.classloader.JFireRCLBackend;
 import org.nightlabs.jfire.classloader.JFireRCLBackendUtil;
@@ -543,7 +547,10 @@ implements InitialContextProvider
 	/**
 	 * If not logged in by now does so and
 	 * returns the static instance of Login.
-	 * 
+	 * <p>
+	 * This method can be called on every {@link Thread} (no matter, whether UI or not).
+	 * </p>
+	 *
 	 * @return
 	 * @throws LoginException
 	 */
@@ -553,6 +560,10 @@ implements InitialContextProvider
 		return getLogin(true);
 	}
 
+	/**
+	 * This method can be called on every {@link Thread} (no matter, whether UI or not). It returns the shared instance of Login
+	 * without causing a popup dialog to appear.
+	 */
 	public static Login sharedInstance()
 	{
 		if (sharedInstanceLogin == null)
@@ -563,6 +574,10 @@ implements InitialContextProvider
 	/**
 	 * Returns the static instance of Login.
 	 * If doLogin is true the login procedure is started.
+	 * <p>
+	 * This method can be called on every {@link Thread} (no matter, whether UI or not).
+	 * </p>
+	 *
 	 * @param doLogin specifies weather the login procedure should be started
 	 * @throws LoginException
 	 * @see Login#doLogin()
@@ -577,6 +592,33 @@ implements InitialContextProvider
 			sharedInstanceLogin.doLogin();
 		}
 		return sharedInstanceLogin;
+	}
+
+	/**
+	 * This method spawns a {@link Job} and calls {@link #getLogin()} on it. This method
+	 * should be used in login-aware UI to cause a login-dialog to popup without blocking
+	 * the UI.
+	 * <p>
+	 * This method can be called on every {@link Thread} (no matter, whether UI or not).
+	 * </p>
+	 */
+	public static void loginAsynchronously()
+	{
+		Job job = new Job("Authentication...") {
+			@Override
+			protected IStatus run(IProgressMonitor arg0)
+			{
+				try {
+					Login.getLogin();
+				} catch (LoginException e) {
+					// we ignore it as the UI should not required to be logged in (if it's implemented correctly)
+				}
+
+				return Status.OK_STATUS;
+			}
+		};
+		job.setPriority(Job.SHORT);
+		job.schedule();
 	}
 
 	private String organisationID;
@@ -1030,7 +1072,7 @@ implements InitialContextProvider
 				logger.warn("Login failed!", x);
 				LoginException loginE = new LoginException(x.getMessage());
 				loginE.initCause(x);
-				loginResult.setMessage(JFireBasePlugin.getResourceString("login.error.unhadledExceptionMessage"));
+				loginResult.setMessage(Messages.getString("login.Login.errorUnhandledExceptionMessage"));
 				loginResult.setException(loginE);
 			}
 		}

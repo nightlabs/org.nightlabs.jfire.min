@@ -107,12 +107,13 @@
             class="org.nightlabs.jfire.base.overview.OverviewPerspective"
             icon="icons/overview/overview.16x16.png"
             id="org.nightlabs.jfire.base.overview.OverviewPerspective"
-            name="Overview">
+            name="%perspectives.overview.name">
       </perspective>
    </extension>
    
    <extension
          point="org.eclipse.ui.views">
+      <!--
       <category
             name="%views.welcome.category.name"
             id="org.nightlabs.jfire.base.welcomecategory">
@@ -124,17 +125,18 @@
             class="org.nightlabs.jfire.base.JFireWelcomeView"
             id="org.nightlabs.jfire.base.view.JFireWelcomeView">
       </view>
+      -->
       <view
             allowMultiple="false"
             category="org.nightlabs.jfire.base.overview.Overview"
             class="org.nightlabs.jfire.base.overview.OverviewView"
             icon="icons/overview/overview.16x16.png"
             id="org.nightlabs.jfire.base.overview.OverviewView"
-            name="Overview">
+            name="%views.overview.name">
       </view>
       <category
             id="org.nightlabs.jfire.base.overview.Overview"
-            name="Overview">
+            name="%views.overview.category.name">
       </category>
    </extension>   
 
@@ -143,7 +145,7 @@
    <extension
          point="org.eclipse.ui.actionSets">
       <actionSet
-            label="%login.actionSet.label"
+            label="Login Action Set"
             visible="true"
             id="org.nightlabs.jfire.base.login.actions">
          <menu
@@ -157,7 +159,7 @@
                class="org.nightlabs.jfire.base.login.action.LoginAction"
                icon="icons/login/action/LoginAction-Login.24x24.png"
                id="org.nightlabs.jfire.base.login.actions.LoginAction#toolbar"
-               label="&amp;Login"
+               label="%login.action.label"
                toolbarPath="loginGroup"
                tooltip="%login.action.toolTip">
          </action>
@@ -165,7 +167,7 @@
                class="org.nightlabs.jfire.base.login.action.LoginAction"
                icon="icons/login/action/LoginAction-Login.16x16.png"
                id="org.nightlabs.jfire.base.login.actions.LoginAction#menu"
-               label="&amp;Login"
+               label="%login.action.label"
                menubarPath="loginMenu/loginGroup"
                tooltip="%login.action.toolTip">
          </action>

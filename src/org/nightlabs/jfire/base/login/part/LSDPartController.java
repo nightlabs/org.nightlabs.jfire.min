@@ -31,7 +31,7 @@ import javax.security.auth.login.LoginException;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
-
+import org.eclipse.swt.widgets.Layout;
 import org.nightlabs.base.part.ControllablePart;
 import org.nightlabs.base.part.PartController;
 import org.nightlabs.jfire.base.login.Login;
@@ -76,19 +76,15 @@ public class LSDPartController extends PartController implements LoginStateListe
 	 */
 	public void registerPart(ControllablePart part) {		
 		super.registerPart(part);
-		try {
-			Login.getLogin();
-		} catch (LoginException e) {
-			// TODO: Really ignore LoginExceptions here?
-		}
+		Login.loginAsynchronously();
 	}
-	
+
 	public void loginStateChanged(int loginState, IAction action) {
 		if (loginState != Login.LOGINSTATE_LOGGED_IN)
 			disposePartContents();
 		updateParts();
-	}	
-	
+	}
+
 	private static LSDPartController sharedInstance;
 	
 	public static LSDPartController sharedInstance() {
@@ -100,9 +96,16 @@ public class LSDPartController extends PartController implements LoginStateListe
 			} catch (LoginException e) {
 				throw new IllegalStateException("This should never happen as Login.getLogin(false) was called.");
 			}
-			login.addLoginStateListener(sharedInstance);
+			login.addLoginStateListener(sharedInstance); // maybe we should better register the listener via an extension?!
 		}
 		return sharedInstance;
 		
+	}
+
+	@Override
+	public void registerPart(ControllablePart part, Layout layout)
+	{
+		super.registerPart(part, layout);
+		Login.loginAsynchronously();
 	}
 }

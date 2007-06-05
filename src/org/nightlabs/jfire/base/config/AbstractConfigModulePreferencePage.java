@@ -512,7 +512,7 @@ extends LSDPreferencePage
 			inheritMemberConfigModule.setEnabled(currentConfigModuleIsEditable); 
 
 			if (! currentConfigModuleIsEditable)
-				inheritMemberConfigModule.setCaption(Messages.getString("AbstractConfigModulePreferencePage.GroupDisallowsOverwrite")); //$NON-NLS-1$
+				inheritMemberConfigModule.setCaption(Messages.getString("config.AbstractConfigModulePreferencePage.GroupDisallowsOverwrite")); //$NON-NLS-1$
 			else
 				inheritMemberConfigModule.setCaption("Inherit the settings of this config module from its group?");
 		}
@@ -533,7 +533,7 @@ extends LSDPreferencePage
 				(getConfigModuleController().getConfigModule().getFieldMetaData(ConfigModule.class.getName()).getWritableByChildren() 
 						& FieldMetaData.WRITABLEBYCHILDREN_YES) != 0
 						);
-		checkBoxAllowOverwrite.setText(Messages.getString("AbstractConfigModulePreferencePage.WhetherGroupAllowsConfigOverwrite")); //$NON-NLS-1$
+		checkBoxAllowOverwrite.setText(Messages.getString("config.AbstractConfigModulePreferencePage.WhetherGroupAllowsConfigOverwrite")); //$NON-NLS-1$
 		
 		checkBoxAllowOverwrite.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {

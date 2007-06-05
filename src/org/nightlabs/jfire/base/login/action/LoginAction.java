@@ -43,6 +43,7 @@ import org.nightlabs.jfire.base.login.Login;
 /**
  * @author Alexander Bieber
  * @author marco schulze - marco at nightlabs dot de
+ * @author Marc Klinger - marc[at]nightlabs[dot]de
  */
 public class LoginAction 
 extends LSDWorkbenchWindowActionDelegate 
@@ -121,7 +122,7 @@ extends LSDWorkbenchWindowActionDelegate
 				break;
 			case Login.LOGINSTATE_LOGGED_OUT:
 				action.setImageDescriptor(loginIcon);
-				action.setToolTipText("actions.login.tooltip.login");
+				action.setToolTipText(JFireBasePlugin.getResourceString("actions.login.tooltip.login"));
 			break;				
 			case Login.LOGINSTATE_OFFLINE:
 				action.setImageDescriptor(loginIcon);

@@ -45,7 +45,7 @@ extends CenteredDialog
 	public void create() {
 		setShellStyle(getShellStyle() | SWT.RESIZE);
 		super.create();
-		getShell().setText(Messages.getString("UserSearchDialog.SearchUser")); //$NON-NLS-1$
+		getShell().setText(Messages.getString("security.UserSearchDialog.SearchUser")); //$NON-NLS-1$
 		getShell().setSize(500, 350);
 	}
 
@@ -73,7 +73,7 @@ extends CenteredDialog
 	protected void createButtonsForButtonBar(Composite parent) 
 	{
 		super.createButtonsForButtonBar(parent);
-		Button searchButton = createButton(parent, SEARCH_ID, Messages.getString("UserSearchDialog.Search"), true); //$NON-NLS-1$
+		Button searchButton = createButton(parent, SEARCH_ID, Messages.getString("security.UserSearchDialog.Search"), true); //$NON-NLS-1$
 		searchButton.addSelectionListener(searchButtonListener);		
 	}
 	
