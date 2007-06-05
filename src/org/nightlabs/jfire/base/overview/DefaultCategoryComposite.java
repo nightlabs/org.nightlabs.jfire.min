@@ -86,7 +86,7 @@ public class DefaultCategoryComposite extends AbstractTableComposite<Entry> {
 	protected void setTableProvider(TableViewer tableViewer) {
 		tableViewer.setContentProvider(new ContentProvider());
 		tableViewer.setLabelProvider(new LabelProvider());		
-		tableViewer.addSelectionChangedListener(new SelectionListener());
+//		tableViewer.addSelectionChangedListener(new SelectionListener());
 		tableViewer.addDoubleClickListener(new DoubleClickListener());	    	    
 	}	    	
 
