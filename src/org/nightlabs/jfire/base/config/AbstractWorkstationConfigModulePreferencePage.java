@@ -75,7 +75,8 @@ extends AbstractConfigModulePreferencePage
 			Login login = Login.getLogin();
 			getConfigModuleController().setConfigID(
 					WorkstationConfigSetup.getWorkstationConfigID(WorkstationID.create(
-							login.getOrganisationID(), login.getWorkstationID())));
+							login.getOrganisationID(), login.getWorkstationID())),
+							false);
 		} catch (Exception e) {
 			logger.info("User decided to woro offline!");
 		}

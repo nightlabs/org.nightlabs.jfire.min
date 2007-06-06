@@ -130,7 +130,7 @@ public class ConfigPreferencesTreeComposite extends AbstractTreeComposite<Config
 					setInput(rootNode);
 				}
 			});
-	}
+		}
 	}
 	
 	public int getSelectionCount() {

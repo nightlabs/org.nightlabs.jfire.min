@@ -30,8 +30,11 @@ implements IConfigModuleController
 	public ConfigID getConfigID() {
 		return configID;
 	}
-	public void setConfigID(ConfigID configID) {
+	public void setConfigID(ConfigID configID, boolean useNotAsPreferencePage) {
 		this.configID = configID;
+		if (useNotAsPreferencePage) {
+			getPreferencePage().doSetControl = true;
+		}
 	}
 	
 	private ConfigModule configModule = null;

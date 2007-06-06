@@ -120,7 +120,7 @@ implements ConfigPreferenceChangedListener, IStoreChangedConfigModule
 		if (!involvedPages.values().contains(selectedPage)) 
 		{
 //			selectedPage.doCreateContents(preferencesComposite.getWrapper(), currentConfigID);
-			selectedPage.getConfigModuleController().setConfigID(currentConfigID);
+			selectedPage.getConfigModuleController().setConfigID(currentConfigID, true);
 			selectedPage.createPartContents(preferencesComposite.getWrapper());
 			
 			selectedPage.addConfigPreferenceChangedListener(this);

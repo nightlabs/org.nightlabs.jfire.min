@@ -70,7 +70,10 @@ extends AbstractConfigModulePreferencePage
 	public void init(IWorkbench workbench) {
 		try {
 			Login login = Login.getLogin();
-			getConfigModuleController().setConfigID(UserConfigSetup.getUserConfigID(UserID.create(login.getOrganisationID(), login.getUserID())));
+			getConfigModuleController().setConfigID(
+					UserConfigSetup.getUserConfigID(UserID.create(
+							login.getOrganisationID(), login.getUserID())),
+							false);
 		} catch (Exception e) {
 			logger.info("User decided to woro offline!");
 		}

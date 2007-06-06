@@ -25,7 +25,7 @@ public interface IConfigModuleController
 	 * sets the configID
 	 * @param configID the configID to set
 	 */
-	public void setConfigID(ConfigID configID);
+	public void setConfigID(ConfigID configID, boolean useNotAsPreferencePage);
 	
 	/**
 	 * returns the {@link ConfigModule}

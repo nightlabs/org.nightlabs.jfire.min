@@ -46,7 +46,7 @@ implements IWorkbenchPreferencePage, ControllablePart
 
 	@Implement
 	public void createPartContents(Composite parent) {
-		createContents(parent);
+//		createContents(parent);
 	}
 
 	@Override

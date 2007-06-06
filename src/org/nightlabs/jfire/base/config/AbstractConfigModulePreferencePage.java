@@ -383,7 +383,7 @@ extends LSDPreferencePage
 	/**
 	 * doSetControl Whether to call super.setControl() wich is only needed, when inside the Preferences Dialog.
 	 */
-	private boolean doSetControl = false;
+	protected boolean doSetControl = false;
 	
 	@Implement
 	public void createPartContents(Composite parent) 
