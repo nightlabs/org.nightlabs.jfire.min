@@ -30,7 +30,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.nightlabs.base.wizard.WizardHopPage;
-import org.nightlabs.jfire.prop.Property;
+import org.nightlabs.jfire.prop.PropertySet;
 
 /**
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
@@ -40,16 +40,16 @@ public class FullDataBlockCoverageWizardPage extends WizardHopPage {
 
 	protected String editorScope;
 	protected FullDataBlockCoverageComposite fullDataBlockCoverageComposite;
-	protected Property prop;
+	protected PropertySet prop;
 	
 	/**
 	 * @param pageName
 	 * @param title
 	 */
-	public FullDataBlockCoverageWizardPage(String pageName, String title, String editorScope, Property prop) {
+	public FullDataBlockCoverageWizardPage(String pageName, String title, String editorScope, PropertySet propSet) {
 		super(pageName, title);
 		this.editorScope = editorScope;
-		this.prop = prop;
+		this.prop = propSet;
 	}
 
 	/**

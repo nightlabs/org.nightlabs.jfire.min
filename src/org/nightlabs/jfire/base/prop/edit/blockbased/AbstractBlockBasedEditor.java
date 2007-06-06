@@ -36,7 +36,7 @@ import java.util.Map;
 import org.nightlabs.jfire.base.prop.edit.PropertyEditor;
 import org.nightlabs.jfire.prop.DataBlockGroup;
 import org.nightlabs.jfire.prop.IStruct;
-import org.nightlabs.jfire.prop.Property;
+import org.nightlabs.jfire.prop.PropertySet;
 import org.nightlabs.jfire.prop.Struct;
 import org.nightlabs.jfire.prop.StructLocal;
 import org.nightlabs.jfire.prop.id.StructBlockID;
@@ -54,9 +54,9 @@ public abstract class AbstractBlockBasedEditor implements PropertyEditor { // ex
 		this (null, null);
 	}
 	
-	public AbstractBlockBasedEditor(Property prop, IStruct propStruct) {
+	public AbstractBlockBasedEditor(PropertySet prop, IStruct propStruct) {
 		this.propStruct = propStruct;
-		this.prop = prop;
+		this.propSet = prop;
 		if (propStruct != null) {
 			String scope = StructLocal.DEFAULT_SCOPE;
 			if (propStruct instanceof StructLocal)
@@ -66,21 +66,21 @@ public abstract class AbstractBlockBasedEditor implements PropertyEditor { // ex
 	}
 	
 	
-	protected Property prop;
+	protected PropertySet propSet;
 	protected IStruct propStruct;
 	protected EditorStructBlockRegistry structBlockRegistry;
 	
 	/**
-	 * Sets the current prop of this editor.
+	 * Sets the current propSet of this editor.
 	 * If refresh is true {@link #refreshForm(DataBlockEditorChangedListener)} 
 	 * is called.
-	 * @param prop
+	 * @param propSet
 	 * @param refresh
 	 */
-	public void setProperty(Property prop, IStruct propStruct, boolean refresh) {
-		this.prop = prop;
+	public void setPropertySet(PropertySet propSet, IStruct propStruct, boolean refresh) {
+		this.propSet = propSet;
 		this.propStruct = propStruct;		
-		propStruct.explodeProperty(prop);
+		propStruct.explodeProperty(propSet);
 		String scope = StructLocal.DEFAULT_SCOPE;
 		if (propStruct instanceof StructLocal)
 			scope = ((StructLocal)propStruct).getScope();
@@ -90,18 +90,18 @@ public abstract class AbstractBlockBasedEditor implements PropertyEditor { // ex
 	}
 	
 	/**
-	 * Will only set the prop, no changes to the UI will be made.
-	 * @param prop
+	 * Will only set the propSet, no changes to the UI will be made.
+	 * @param propSet
 	 */
-	public void setProperty(Property prop, IStruct propStruct) {		
-		setProperty(prop, propStruct, false);		
+	public void setPropertySet(PropertySet propSet, IStruct propStruct) {		
+		setPropertySet(propSet, propStruct, false);		
 	}
 	/**
-	 * Returns the prop.
+	 * Returns the propSet.
 	 * @return
 	 */
-	public Property getProperty() {
-		return prop;
+	public PropertySet getProperty() {
+		return propSet;
 	}
 
 	/**
@@ -191,7 +191,7 @@ public abstract class AbstractBlockBasedEditor implements PropertyEditor { // ex
 	
 	protected Iterator getDataBlockGroupsIterator() {
 		buildDomainDataBlockGroups();
-		return prop.getDataBlockGroups().iterator();
+		return propSet.getDataBlockGroups().iterator();
 	}
 	
 	public Map getStructBlockDisplayOrder() {
@@ -208,8 +208,8 @@ public abstract class AbstractBlockBasedEditor implements PropertyEditor { // ex
 		
 		int maxIndex = 0;
 		int unmentionedCount = 0;
-		// all datablocks of this prop
-		for (Iterator it = prop.getDataBlockGroups().iterator(); it.hasNext(); ) {
+		// all datablocks of this propSet
+		for (Iterator it = propSet.getDataBlockGroups().iterator(); it.hasNext(); ) {
 			DataBlockGroup blockGroup = (DataBlockGroup)it.next();
 			boolean orderedAdd = false;
 			if (structBlockOrder.containsKey(blockGroup.getStructBlockKey())) {

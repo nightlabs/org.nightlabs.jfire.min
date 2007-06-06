@@ -38,7 +38,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.nightlabs.base.composite.XComposite;
 import org.nightlabs.jfire.base.prop.edit.PropertyEditor;
-import org.nightlabs.jfire.prop.Property;
+import org.nightlabs.jfire.prop.PropertySet;
 import org.nightlabs.jfire.prop.StructLocal;
 import org.nightlabs.jfire.prop.id.StructBlockID;
 
@@ -53,11 +53,11 @@ public class FullDataBlockCoverageComposite extends Composite {
 	private EditorStructBlockRegistry structBlockRegistry;
 	/**
 	 */
-	public FullDataBlockCoverageComposite(Composite parent, int style, String editorScope, Property prop) {
+	public FullDataBlockCoverageComposite(Composite parent, int style, String editorScope, PropertySet prop) {
 		super(parent, style);
 		this.numColumns = 1;
 		if (!(prop.getStructure() instanceof StructLocal))
-			throw new IllegalArgumentException("The given prop was not exploded by a StructLocal");
+			throw new IllegalArgumentException("The given propSet was not exploded by a StructLocal");
 		structBlockRegistry = new EditorStructBlockRegistry(prop.getStructure().getLinkClass(), ((StructLocal)prop.getStructure()).getScope());
 		StructBlockID[] fullCoverageBlockIDs = structBlockRegistry.getUnassignedBlockKeyArray();
 		createPropEditors();
@@ -79,7 +79,7 @@ public class FullDataBlockCoverageComposite extends Composite {
 		for (int i=0; i<numColumns; i++) {
 			XComposite wrapper = new XComposite(this,SWT.BORDER, XComposite.LayoutMode.TIGHT_WRAPPER);				
 			BlockBasedEditor propEditor = (BlockBasedEditor)propEditors.get(i);
-			propEditor.setProperty(prop, prop.getStructure());
+			propEditor.setPropertySet(prop, prop.getStructure());
 			propEditor.setEditorDomain(editorScope,"#FullDatBlockCoverageComposite"+i);
 			propEditor.setEditorPropStructBlockList(splitBlockIDs[i]);
 			Control propEditorControl = propEditor.createControl(wrapper,true);
@@ -100,7 +100,7 @@ public class FullDataBlockCoverageComposite extends Composite {
 	public void updateProp() {
 		for (Iterator iter = propEditors.iterator(); iter.hasNext();) {
 			PropertyEditor editor = (PropertyEditor) iter.next();
-			editor.updateProperty();
+			editor.updatePropertySet();
 		}
 	}
 	

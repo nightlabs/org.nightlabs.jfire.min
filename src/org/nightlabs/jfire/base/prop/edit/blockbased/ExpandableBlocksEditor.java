@@ -44,7 +44,7 @@ import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.nightlabs.jfire.base.prop.edit.PropertyEditor;
 import org.nightlabs.jfire.prop.DataBlockGroup;
 import org.nightlabs.jfire.prop.IStruct;
-import org.nightlabs.jfire.prop.Property;
+import org.nightlabs.jfire.prop.PropertySet;
 import org.nightlabs.jfire.prop.Struct;
 import org.nightlabs.jfire.prop.StructLocal;
 import org.nightlabs.jfire.prop.id.StructBlockID;
@@ -70,7 +70,7 @@ public class ExpandableBlocksEditor implements PropertyEditor { // extends Scrol
 		this (null, null);
 	}
 	
-	public ExpandableBlocksEditor(Property prop, IStruct propStruct) {
+	public ExpandableBlocksEditor(PropertySet prop, IStruct propStruct) {
 		this.prop = prop;
 		this.propStruct = propStruct;
 		propStruct.explodeProperty(prop);
@@ -83,18 +83,18 @@ public class ExpandableBlocksEditor implements PropertyEditor { // extends Scrol
 	
 	private FormToolkit toolkit = null;
 	
-	private Property prop;
+	private PropertySet prop;
 	private IStruct propStruct;
 	private EditorStructBlockRegistry structBlockRegistry;
 	
 	/**
-	 * Sets the current prop of this editor.
+	 * Sets the current propSet of this editor.
 	 * If refresh is true {@link #refreshForm(DataBlockEditorChangedListener)} 
 	 * is called.
-	 * @param prop
+	 * @param propSet
 	 * @param refresh
 	 */
-	public void setProperty(Property prop, IStruct propStruct, boolean refresh) {
+	public void setPropertySet(PropertySet prop, IStruct propStruct, boolean refresh) {
 		this.prop = prop;
 		this.propStruct = propStruct;
 		propStruct.explodeProperty(prop);
@@ -106,17 +106,17 @@ public class ExpandableBlocksEditor implements PropertyEditor { // extends Scrol
 			refreshControl();		
 	}
 	/**
-	 * Will only set the prop, no changes to the UI will be made.
-	 * @param prop
+	 * Will only set the propSet, no changes to the UI will be made.
+	 * @param propSet
 	 */
-	public void setProperty(Property prop, IStruct propStruct) {		
-		setProperty(prop, propStruct, false);
+	public void setPropertySet(PropertySet prop, IStruct propStruct) {		
+		setPropertySet(prop, propStruct, false);
 	}
 	/**
-	 * Returns the prop.
+	 * Returns the propSet.
 	 * @return
 	 */
-	public Property getProp() {
+	public PropertySet getProp() {
 		return prop;
 	}
 
@@ -238,7 +238,7 @@ public class ExpandableBlocksEditor implements PropertyEditor { // extends Scrol
 	}
 
 	/**
-	 * Will only create the Form. No prop data will be displayed
+	 * Will only create the Form. No propSet data will be displayed
 	 * 
 	 * @param parent
 	 * @param changeListener
@@ -250,7 +250,7 @@ public class ExpandableBlocksEditor implements PropertyEditor { // extends Scrol
 	
 	/**
 	 * Will create the form. No change listener will be set and 
-	 * no prop data will be displayed.
+	 * no propSet data will be displayed.
 	 * 
 	 * @param parent
 	 * @return
@@ -356,7 +356,7 @@ public class ExpandableBlocksEditor implements PropertyEditor { // extends Scrol
 		
 		int maxIndex = 0;
 		int unmentionedCount = 0;
-		// all datablocks of this prop
+		// all datablocks of this propSet
 		for (Iterator it = prop.getDataBlockGroups().iterator(); it.hasNext(); ) {
 			DataBlockGroup blockGroup = (DataBlockGroup)it.next();
 			boolean orderedAdd = false;
@@ -374,7 +374,7 @@ public class ExpandableBlocksEditor implements PropertyEditor { // extends Scrol
 		return result.iterator();
 	}
 
-	public void updateProperty() {
+	public void updatePropertySet() {
 		for (Iterator it = groupEditors.values().iterator(); it.hasNext(); ) {
 			ExpandableDataBlockGroupEditor groupEditor = (ExpandableDataBlockGroupEditor)it.next();
 			groupEditor.updateProp();

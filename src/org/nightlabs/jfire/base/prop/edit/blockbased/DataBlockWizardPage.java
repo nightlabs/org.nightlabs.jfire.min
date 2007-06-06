@@ -28,7 +28,7 @@ package org.nightlabs.jfire.base.prop.edit.blockbased;
 
 import org.nightlabs.jfire.prop.DataBlock;
 import org.nightlabs.jfire.prop.IStruct;
-import org.nightlabs.jfire.prop.Property;
+import org.nightlabs.jfire.prop.PropertySet;
 import org.nightlabs.jfire.prop.id.StructBlockID;
 
 /**
@@ -49,7 +49,7 @@ public class DataBlockWizardPage extends CompoundDataBlockWizardPage {
 		String pageName, 
 		String title, 
 		IStruct struct,
-		Property prop,
+		PropertySet prop,
 		StructBlockID structBlockID
 	) {
 		super(pageName, title, struct, prop, new StructBlockID[]{structBlockID});

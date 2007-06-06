@@ -28,7 +28,7 @@ package org.nightlabs.jfire.base.prop.edit.blockbased;
 
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
-import org.nightlabs.jfire.prop.Property;
+import org.nightlabs.jfire.prop.PropertySet;
 
 /**
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
@@ -36,7 +36,7 @@ import org.nightlabs.jfire.prop.Property;
  */
 public class FullDataBlockCoverageTabItem extends TabItem {
 
-	public FullDataBlockCoverageTabItem(TabFolder parent, int style, String editorScope, Property prop) {
+	public FullDataBlockCoverageTabItem(TabFolder parent, int style, String editorScope, PropertySet prop) {
 		super(parent, style);
 		FullDataBlockCoverageComposite comp = new FullDataBlockCoverageComposite(parent, style, editorScope, prop);
 		setControl(comp);

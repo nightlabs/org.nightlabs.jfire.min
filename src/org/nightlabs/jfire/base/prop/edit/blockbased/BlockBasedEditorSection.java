@@ -16,7 +16,7 @@ import org.nightlabs.base.editor.RestorableSectionPart;
 import org.nightlabs.base.entity.editor.EntityEditorUtil;
 import org.nightlabs.jfire.base.prop.edit.DataFieldEditor;
 import org.nightlabs.jfire.prop.IStruct;
-import org.nightlabs.jfire.prop.Property;
+import org.nightlabs.jfire.prop.PropertySet;
 
 /**
  * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] de -->
@@ -66,7 +66,7 @@ public class BlockBasedEditorSection extends RestorableSectionPart
 		System.err.println("Person properties: commit("+onSave+")");
 		System.err.println("***********************************");
 		super.commit(onSave);
-		blockBasedPersonEditor.updateProperty();
+		blockBasedPersonEditor.updatePropertySet();
 	}
 
 	/**
@@ -98,12 +98,12 @@ public class BlockBasedEditorSection extends RestorableSectionPart
 		});
 	}
 	
-	public void setProperty(final Property property, final IStruct struct) {
+	public void setProperty(final PropertySet property, final IStruct struct) {
 		Display.getDefault().asyncExec(new Runnable() {
 			public void run() {
 				if(property == null)
 					return;
-				blockBasedPersonEditor.setProperty(property, struct, true);
+				blockBasedPersonEditor.setPropertySet(property, struct, true);
 			}
 		});
 	}

@@ -52,7 +52,7 @@ import org.nightlabs.jfire.base.prop.edit.PropertyEditor;
 import org.nightlabs.jfire.base.prop.edit.blockbased.DataBlockEditorChangedListener;
 import org.nightlabs.jfire.prop.AbstractDataField;
 import org.nightlabs.jfire.prop.IStruct;
-import org.nightlabs.jfire.prop.Property;
+import org.nightlabs.jfire.prop.PropertySet;
 import org.nightlabs.jfire.prop.exception.DataNotFoundException;
 import org.nightlabs.jfire.prop.id.StructFieldID;
 
@@ -96,23 +96,23 @@ public class FieldBasedEditor implements PropertyEditor {
 	}
 
 	protected Object selectionObject;
-	private Property prop;
+	private PropertySet propSet;
 	private IStruct propStruct;
 	
 	/**
 	 * @see org.nightlabs.jfire.base.prop.edit.PropertyEditor#setProp(org.nightlabs.jfire.base.prop.Property)
 	 */
-	public void setProperty(Property prop, IStruct propStruct) {
-		this.prop = prop;
+	public void setPropertySet(PropertySet propSet, IStruct propStruct) {
+		this.propSet = propSet;
 		this.propStruct = propStruct;
-		this.selectionObject = prop;
+		this.selectionObject = propSet;
 	}
 
 	/**
-	 * @see org.nightlabs.jfire.base.prop.edit.PropertyEditor#setProperty(org.nightlabs.jfire.base.prop.Property, boolean)
+	 * @see org.nightlabs.jfire.base.prop.edit.PropertyEditor#setPropertySet(org.nightlabs.jfire.base.prop.Property, boolean)
 	 */
-	public void setProperty(Property prop, IStruct propStruct, boolean refresh) {
-		setProperty(prop, propStruct);
+	public void setPropertySet(PropertySet prop, IStruct propStruct, boolean refresh) {
+		setPropertySet(prop, propStruct);
 		if (refresh)
 			refreshControl();
 	}
@@ -120,13 +120,13 @@ public class FieldBasedEditor implements PropertyEditor {
 	private boolean showEmptyFields = true;
 	/**
 	 * 
-	 * @return Wheather empty fields of the associated prop should be displayed.
+	 * @return Wheather empty fields of the associated propSet should be displayed.
 	 */
 	public boolean isShowEmptyFields() {
 		return showEmptyFields;
 	}
 	/**
-	 * Defines weather empty fields of the associated prop should be displayed.
+	 * Defines weather empty fields of the associated propSet should be displayed.
 	 * @param showEmptyFields
 	 */
 	public void setShowEmptyFields(boolean showEmptyFields) {
@@ -362,27 +362,27 @@ public class FieldBasedEditor implements PropertyEditor {
 		Display.getDefault().syncExec( 
 			new Runnable() {
 				public void run() {
-					if (prop == null)
+					if (propSet == null)
 						return;
 					
 					createTitleLabel();
 					
 					if (propTitleLabel != null) {
-						if (prop.getDisplayName() != null)
-							propTitleLabel.setText(prop.getDisplayName());
+						if (propSet.getDisplayName() != null)
+							propTitleLabel.setText(propSet.getDisplayName());
 						else 
 							propTitleLabel.setText("");
 						propTitleLabel.setBackground(new Color(Display.getDefault(), 155, 155, 155));
 					}
 					
 					
-					propStruct.explodeProperty(prop);
+					propStruct.explodeProperty(propSet);
 					
 					for (Iterator iter = EditorStructFieldRegistry.sharedInstance().getStructFieldList(getEditorType()).iterator(); iter.hasNext();) {
 						StructFieldID structFieldID = (StructFieldID) iter.next();
 						AbstractDataField field = null;
 						try {
-							field = prop.getDataField(structFieldID);
+							field = propSet.getDataField(structFieldID);
 						} catch (DataNotFoundException e) {
 							LOGGER.error("Could not find PropDataField for "+structFieldID,e);
 							continue;
@@ -429,9 +429,9 @@ public class FieldBasedEditor implements PropertyEditor {
 	
 
 	/**
-	 * @see org.nightlabs.jfire.base.prop.edit.PropertyEditor#updateProperty()
+	 * @see org.nightlabs.jfire.base.prop.edit.PropertyEditor#updatePropertySet()
 	 */
-	public void updateProperty() {
+	public void updatePropertySet() {
 		for (Iterator iter = fieldEditors.values().iterator(); iter.hasNext();) {
 			DataFieldEditor editor = (DataFieldEditor) iter.next();
 			editor.updateProperty();

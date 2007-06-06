@@ -40,7 +40,7 @@ import org.nightlabs.base.composite.groupedcontent.GroupedContentComposite;
 import org.nightlabs.base.composite.groupedcontent.GroupedContentProvider;
 import org.nightlabs.jfire.prop.DataBlockGroup;
 import org.nightlabs.jfire.prop.IStruct;
-import org.nightlabs.jfire.prop.Property;
+import org.nightlabs.jfire.prop.PropertySet;
 
 /**
  * @see org.nightlabs.jfire.base.prop.edit.blockbased.DataBlockEditor
@@ -94,8 +94,8 @@ public class BlockBasedEditor extends AbstractBlockBasedEditor {
 		super (null, null);
 	}
 	
-	public BlockBasedEditor(Property prop, IStruct propStruct) {
-		super(prop, propStruct);
+	public BlockBasedEditor(PropertySet propSet, IStruct propStruct) {
+		super(propSet, propStruct);
 	}
 	
 	private Map groupContentProvider = new HashMap();
@@ -109,7 +109,7 @@ public class BlockBasedEditor extends AbstractBlockBasedEditor {
 		Display.getDefault().asyncExec( 
 			new Runnable() {
 				public void run() {
-					getPropStructure().explodeProperty(prop);
+					getPropStructure().explodeProperty(propSet);
 					
 					// get the ordered dataBlocks
 					for (Iterator it = BlockBasedEditor.this.getOrderedDataBlockGroupsIterator(); it.hasNext(); ) {
@@ -164,7 +164,7 @@ public class BlockBasedEditor extends AbstractBlockBasedEditor {
 		groupedContentComposite = null;
 	}
 
-	public void updateProperty() {
+	public void updatePropertySet() {
 		for (Iterator it = groupContentProvider.values().iterator(); it.hasNext(); ) {
 			ContentProvider contentProvider = (ContentProvider)it.next();
 			contentProvider.updateProp();

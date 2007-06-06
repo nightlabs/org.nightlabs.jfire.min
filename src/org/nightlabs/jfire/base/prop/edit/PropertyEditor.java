@@ -30,7 +30,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.nightlabs.jfire.base.prop.edit.blockbased.DataBlockEditorChangedListener;
 import org.nightlabs.jfire.prop.IStruct;
-import org.nightlabs.jfire.prop.Property;
+import org.nightlabs.jfire.prop.PropertySet;
 
 /**
  * A interface for common methods of all PropEditors, either
@@ -38,12 +38,12 @@ import org.nightlabs.jfire.prop.Property;
  * Common useage is:<br/>
  * <ul>
  * 	<li>Create a the Editor with parameterless constructor or one specific to the type your using.</li>
- *	<li>Link the editor to a prop by using {@link #setProp(Property)</li>
+ *	<li>Link the editor to a propSet by using {@link #setProp(Property)</li>
  *	<li>Create the UI representation by calling {@link #createControl(Composite, DataBlockEditorChangedListener, boolean)}</li>
  *	<li>If not done with {@link #createControl(Composite, DataBlockEditorChangedListener, boolean)} set the field values by
  * 		calling {@link #refreshControl(DataBlockEditorChangedListener)}.
  *	</li>
- *  <li>To update the prop with the values of the editor call {@link #updateProperty()}</li>
+ *  <li>To update the propSet with the values of the editor call {@link #updatePropertySet()}</li>
  * </ul>
  * 
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
@@ -53,18 +53,18 @@ public interface PropertyEditor {
 	
 	/**
 	 * Link the editor to a Property.
-	 * @param prop
+	 * @param propSet
 	 */
-	public void setProperty(Property prop, IStruct propStruct);
+	public void setPropertySet(PropertySet propSet, IStruct propStruct);
 	
 	/**
 	 * Link the editor to a Property and refresh the Control
 	 * if refresh is true.
 	 * 
-	 * @param prop
+	 * @param propSet
 	 * @param refresh
 	 */
-	public void setProperty(Property prop, IStruct propStruct, boolean refresh);
+	public void setPropertySet(PropertySet propSet, IStruct propStruct, boolean refresh);
 	
 	/**
 	 * Create the UI representation of the PropertyEditor and associate
@@ -94,5 +94,5 @@ public interface PropertyEditor {
 	 * is associated with.
 	 *
 	 */
-	public void updateProperty();
+	public void updatePropertySet();
 }

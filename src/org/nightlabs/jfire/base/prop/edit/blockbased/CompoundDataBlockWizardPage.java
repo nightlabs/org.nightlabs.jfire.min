@@ -40,7 +40,7 @@ import org.nightlabs.base.extensionpoint.EPProcessorException;
 import org.nightlabs.base.wizard.WizardHopPage;
 import org.nightlabs.jfire.prop.DataBlock;
 import org.nightlabs.jfire.prop.IStruct;
-import org.nightlabs.jfire.prop.Property;
+import org.nightlabs.jfire.prop.PropertySet;
 import org.nightlabs.jfire.prop.exception.DataNotFoundException;
 import org.nightlabs.jfire.prop.id.StructBlockID;
 
@@ -52,7 +52,7 @@ import org.nightlabs.jfire.prop.id.StructBlockID;
  */
 public class CompoundDataBlockWizardPage extends WizardHopPage {
 
-	private Property prop;
+	private PropertySet propSet;
 	private Map propDataBlockEditors = new HashMap();
 	private Map propDataBlocks = new HashMap();
 	private StructBlockID[] structBlockIDs;
@@ -76,7 +76,7 @@ public class CompoundDataBlockWizardPage extends WizardHopPage {
 	public CompoundDataBlockWizardPage ( 
 		String pageName, 
 		String title,
-		Property prop,
+		PropertySet prop,
 		IStruct struct,
 		List structBlockIDs
 	) {
@@ -91,19 +91,19 @@ public class CompoundDataBlockWizardPage extends WizardHopPage {
 		String pageName, 
 		String title, 
 		IStruct struct,
-		Property prop,
+		PropertySet propSet,
 		StructBlockID[] structBlockIDs
 	) {
 		super(pageName);
 		this.setTitle(title);
-		if (prop == null)
-			throw new IllegalArgumentException("Parameter prop must not be null");
+		if (propSet == null)
+			throw new IllegalArgumentException("Parameter propSet must not be null");
 		this.struct = struct;
-		this.prop = prop;
+		this.propSet = propSet;
 		this.structBlockIDs = structBlockIDs;
 		for (int i = 0; i < structBlockIDs.length; i++) {
 			try {
-				propDataBlocks.put(structBlockIDs[i],prop.getDataBlockGroup(structBlockIDs[i]).getDataBlock(0));
+				propDataBlocks.put(structBlockIDs[i],propSet.getDataBlockGroup(structBlockIDs[i]).getDataBlock(0));
 			} catch (DataNotFoundException e) {
 				ExceptionHandlerRegistry.syncHandleException(e);
 				throw new RuntimeException(e);
@@ -153,12 +153,12 @@ public class CompoundDataBlockWizardPage extends WizardHopPage {
 	}
 	
 	/**
-	 * Returns the prop passed in the constructor.
+	 * Returns the propSet passed in the constructor.
 	 * 
 	 * @return
 	 */
-	public Property getProp() {
-		return prop;
+	public PropertySet getPropSet() {
+		return propSet;
 	}
 	
 	/**
@@ -204,7 +204,7 @@ public class CompoundDataBlockWizardPage extends WizardHopPage {
 	}
 	
   /**
-   * Set all values to the prop.
+   * Set all values to the propSet.
    */
   public void updateProp() {
   	for (Iterator iter = propDataBlockEditors.values().iterator(); iter.hasNext();) {

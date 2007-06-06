@@ -10,17 +10,15 @@ import org.eclipse.swt.widgets.Composite;
 import org.nightlabs.base.composite.ComboComposite;
 import org.nightlabs.base.composite.XComposite;
 import org.nightlabs.jfire.base.login.Login;
-import org.nightlabs.jfire.prop.Property;
 import org.nightlabs.jfire.prop.PropertyManager;
 import org.nightlabs.jfire.prop.PropertyManagerUtil;
-import org.nightlabs.jfire.prop.StructLocal;
-import org.nightlabs.jfire.prop.dao.StructLocalDAO;
+import org.nightlabs.jfire.prop.PropertySet;
 import org.nightlabs.jfire.prop.id.StructLocalID;
 
 public class PropertySelectionComposite extends XComposite {
 
 	private ComboComposite<StructLocalID> structLocalIDs;
-	private ComboComposite<Property> availableProperties;
+	private ComboComposite<PropertySet> availableProperties;
 	private PropertyManager propertyManager;
 	
 	public PropertySelectionComposite(Composite parent, int style) {
@@ -29,7 +27,7 @@ public class PropertySelectionComposite extends XComposite {
 		this.setLayout(new GridLayout(2, true));
 		
 		structLocalIDs = new ComboComposite<StructLocalID>(this, SWT.NONE);
-		availableProperties = new ComboComposite<Property>(this, SWT.NONE);
+		availableProperties = new ComboComposite<PropertySet>(this, SWT.NONE);
 		
 		propertyManager = getPropertyManager();
 		
