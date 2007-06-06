@@ -187,18 +187,18 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type = "Required"
 	 */
-	public Property getProperty(PropertyID propID, String[] fetchGroups, int maxFetchDepth) throws ModuleException,
+	public PropertySet getProperty(PropertyID propID, String[] fetchGroups, int maxFetchDepth) throws ModuleException,
 			JDOObjectNotFoundException {
 		PersistenceManager pm = this.getPersistenceManager();
 		try {
-			pm.getExtent(Property.class, true);
-			Property prop = (Property) pm.getObjectById(propID, true);
+			pm.getExtent(PropertySet.class, true);
+			PropertySet prop = (PropertySet) pm.getObjectById(propID, true);
 
 			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
 			if (fetchGroups != null)
 				pm.getFetchPlan().setGroups(fetchGroups);
 
-			Property result = (Property) pm.detachCopy(prop);
+			PropertySet result = (PropertySet) pm.detachCopy(prop);
 			return result;
 		} finally {
 			pm.close();
@@ -213,14 +213,14 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type = "Required"
 	 */
-	public Property getProperty(PropertyID propID) throws ModuleException, JDOObjectNotFoundException {
+	public PropertySet getProperty(PropertyID propID) throws ModuleException, JDOObjectNotFoundException {
 		PersistenceManager pm = this.getPersistenceManager();
 		try {
 			Object o = pm.getObjectById(propID, true);
 			long startTime = System.currentTimeMillis();
 			// pm.getFetchPlan().resetGroups();
 			pm.getFetchPlan().addGroup(FetchPlan.ALL);
-			Property ret = (Property) pm.detachCopy(o);
+			PropertySet ret = (PropertySet) pm.detachCopy(o);
 			return ret;
 		} finally {
 			pm.close();
@@ -286,11 +286,11 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type = "Required"
 	 */
-	public Property storeProperty(Property prop, boolean get, String[] fetchGroups, int maxFetchDepth)
+	public PropertySet storeProperty(PropertySet prop, boolean get, String[] fetchGroups, int maxFetchDepth)
 			throws ModuleException {
 		PersistenceManager pm = getPersistenceManager();
 		try {
-			return (Property) NLJDOHelper.storeJDO(pm, prop, get, fetchGroups, maxFetchDepth);
+			return (PropertySet) NLJDOHelper.storeJDO(pm, prop, get, fetchGroups, maxFetchDepth);
 		} finally {
 			pm.close();
 		}
@@ -425,7 +425,7 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 		// MultiPageSearchResult();
 		PersistenceManager pm = getPersistenceManager();
 		try {
-			Query query = pm.newQuery(Property.class);
+			Query query = pm.newQuery(PropertySet.class);
 
 			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
 			if (fetchGroups != null)
