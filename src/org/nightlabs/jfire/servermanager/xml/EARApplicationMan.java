@@ -135,7 +135,7 @@ public class EARApplicationMan
 		throws XMLReadException, IOException
 	{
 		if (moduleDef.getResourceURI() == null)
-			throw new IllegalArgumentException("Property moduleDef.resourceURI of EAR \""+ear.getAbsolutePath()+"\" is null!");
+			throw new IllegalArgumentException("PropertySet moduleDef.resourceURI of EAR \""+ear.getAbsolutePath()+"\" is null!");
 		
 		File moduleFile = new File(ear, moduleDef.getResourceURI());
 		if (!moduleFile.exists())
