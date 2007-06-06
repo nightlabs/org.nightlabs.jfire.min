@@ -43,6 +43,7 @@ import org.nightlabs.rcp.splash.SplashScreen;
  * @see org.nightlabs.jfire.base.login.ILoginHandler
  * 
  * @author Alexander Bieber
+ * @author Marc Klinger - marc[at]nightlabs[dot]de
  */
 public class JFireLoginHandler implements ILoginHandler {
 	/**
@@ -144,20 +145,21 @@ public class JFireLoginHandler implements ILoginHandler {
 			handleSWTLogin(loginContext, loginConfigModule, loginResult);
 	}
 
+	// TODO: should the creation and registration of login dialog be synchronized?? 
 	protected void handleSWTLogin(JFireLoginContext loginContext, LoginConfigModule loginConfigModule, Login.AsyncLoginResult loginResult) throws LoginException {
-		LoginDialog loginDialog = new LoginDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
-		LoginDialog.registerSharedInstance(loginDialog);
-		try {
-			loginDialog.setLoginResult(loginResult);
-			loginDialog.setLoginModule(loginConfigModule);
-			loginDialog.setLoginContext(loginContext);
+		LoginDialog loginDialog = new LoginDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), loginResult, loginConfigModule, loginContext);
+//		LoginDialog.registerSharedInstance(loginDialog);
+//		try {
+//			loginDialog.setLoginResult(loginResult);
+//			loginDialog.setLoginModule(loginConfigModule);
+//			loginDialog.setLoginContext(loginContext);
 
 			// LoginDialog does all the work
 			loginDialog.open();
-		}
-		finally {
-			LoginDialog.deregisterSharedInstance();
-		}
+//		}
+//		finally {
+//			LoginDialog.deregisterSharedInstance();
+//		}
 	}
 
 	protected void handleSplashLogin(JFireLoginContext loginContext, LoginConfigModule loginConfigModule, final Login.AsyncLoginResult loginResult) throws LoginException 

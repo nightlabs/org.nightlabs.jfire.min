@@ -37,12 +37,9 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -74,34 +71,26 @@ public class LoginDialog extends TitleAreaDialog
 	private Login.AsyncLoginResult loginResult = null;	
 	private JFireLoginContext loginContext = null;
 	
-	protected static final int BUTTON_LOGIN = IDialogConstants.CLIENT_ID + 1;
-	protected static final int BUTTON_OFFLINE = IDialogConstants.CLIENT_ID + 2;
-	protected static final int BUTTON_DETAILS = IDialogConstants.CLIENT_ID + 3;
-	
-	private Button loginButton;
-	private Button offlineButton;
-	private Button detailsButton;
-	
-	private Composite dialogArea;
-	private Composite mainArea;
-	private Composite detailsArea;
-	private GridData detailsAreaGridData;
+	protected static final int DETAILS_ID = IDialogConstants.CLIENT_ID + 1;
 
-	private Label labelUserID = null;
+	/**
+	 * Used to set the details area visible or invisible 
+	 * by setting heightHint to 0 or SWT.DEFAULT.
+	 */
+	private GridData detailsAreaGridData = null;
+
 	private Text textUserID = null;
-	private Label labelPassword = null;
 	private Text textPassword = null;
-	
-	private Label labelOrganisationID = null;
 	private Text textOrganisationID = null;
-	private Label labelServerURL = null;
 	private Text textServerURL = null;
 	private Button checkBoxSaveSettings = null;
-	private Label labelInitialContextFactory = null;
 	private Text textInitialContextFactory = null;
-	private Label labelWorkstationID = null;
 	private Text textWorkstationID = null;
 	
+	/**
+	 * Create a new LoginDialog.
+	 * @param parent The dialogs parent
+	 */
 	public LoginDialog(Shell parent) 
 	{
 		super(parent);
@@ -113,14 +102,27 @@ public class LoginDialog extends TitleAreaDialog
 		}
 	}
 	
+	/**
+	 * @deprecated What is this constructor used for?
+	 */
 	public LoginDialog(Shell parent, Login.AsyncLoginResult loginResult, LoginConfigModule loginModule)
 	{
 		this(parent);
 		loginResult.reset();
-		setLoginResult(loginResult);
-		setLoginModule(loginModule);
+		this.loginResult = loginResult;
+		this.runtimeLoginModule = loginModule;
+//		setLoginResult(loginResult);
+//		setLoginModule(loginModule);
 	}
 
+	public LoginDialog(Shell parent, Login.AsyncLoginResult loginResult, LoginConfigModule loginModule, JFireLoginContext loginContext)
+	{
+		this(parent);
+		this.loginResult = loginResult;
+		this.runtimeLoginModule = loginModule;
+		this.loginContext = loginContext;
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.eclipse.jface.window.Window#configureShell(org.eclipse.swt.widgets.Shell)
 	 */
@@ -137,29 +139,30 @@ public class LoginDialog extends TitleAreaDialog
 	@Override
 	protected Control createDialogArea(Composite parent) 
 	{
-		dialogArea = (Composite)super.createDialogArea(parent); 
+		Composite area = (Composite)super.createDialogArea(parent); 
 
-		createMainArea(dialogArea);
-		createDetailsArea(dialogArea);
+		createMainArea(area);
+		createDetailsArea(area);
 		
 		initializeWidgetValues();
 		setSmartFocus();
 		
 		setTitle("Please login");
+		setMessage("Enter your user data and press login - or choose to work offline");
 		
 		return dialogArea;
 	}
 
 	protected Control createMainArea(Composite parent)
 	{
-		mainArea = new Composite(parent, SWT.NONE);
+		Composite mainArea = new Composite(parent, SWT.NONE);
 		GridData gd = new GridData(GridData.FILL_HORIZONTAL);
 		mainArea.setLayoutData(gd);
 		
 		GridLayout gridLayoutStatic = new GridLayout();
-		labelUserID = new Label(mainArea, SWT.NONE);
+		Label labelUserID = new Label(mainArea, SWT.NONE);
 		textUserID = new Text(mainArea, SWT.BORDER);
-		labelPassword = new Label(mainArea, SWT.NONE);
+		Label labelPassword = new Label(mainArea, SWT.NONE);
 		textPassword = new Text(mainArea, SWT.BORDER);
 		
 		mainArea.setLayout(gridLayoutStatic);
@@ -176,19 +179,19 @@ public class LoginDialog extends TitleAreaDialog
 	
 	protected Control createDetailsArea(Composite parent)
 	{
-		detailsArea = new Composite(parent, SWT.NONE);
+		Composite detailsArea = new Composite(parent, SWT.NONE);
 		
 		detailsAreaGridData = new GridData(GridData.FILL_HORIZONTAL);
 		detailsArea.setLayoutData(detailsAreaGridData);
 				
 		GridLayout gridLayoutExpand = new GridLayout();
-		labelWorkstationID = new Label(detailsArea, SWT.NONE);
+		Label labelWorkstationID = new Label(detailsArea, SWT.NONE);
 		textWorkstationID = new Text(detailsArea, SWT.BORDER);
-		labelOrganisationID = new Label(detailsArea, SWT.NONE);
+		Label labelOrganisationID = new Label(detailsArea, SWT.NONE);
 		textOrganisationID = new Text(detailsArea, SWT.BORDER);
-		labelServerURL = new Label(detailsArea, SWT.NONE);
+		Label labelServerURL = new Label(detailsArea, SWT.NONE);
 		textServerURL = new Text(detailsArea, SWT.BORDER);
-		labelInitialContextFactory = new Label(detailsArea, SWT.NONE);
+		Label labelInitialContextFactory = new Label(detailsArea, SWT.NONE);
 		textInitialContextFactory = new Text(detailsArea, SWT.BORDER);
 		checkBoxSaveSettings = new Button(detailsArea, SWT.CHECK);
 
@@ -217,95 +220,15 @@ public class LoginDialog extends TitleAreaDialog
 		return detailsArea;
 	}
 	
-	private void createLoginButton(Composite parent) 
-	{
-		loginButton = new Button(parent, SWT.PUSH);
-		loginButton.setText(Messages.getString("login.LoginDialog.labelbutton.login")); //$NON-NLS-1$
-		loginButton.setData(new Integer(BUTTON_LOGIN));
-		loginButton.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(SelectionEvent event) {
-				loginPressed(event);
-			}
-		});
-		Shell shell = parent.getShell();
-		if (shell != null)
-			shell.setDefaultButton(loginButton);
-	}		
-	
-	private void createOfflineButton(Composite parent) 
-	{
-		offlineButton = new Button(parent, SWT.PUSH);
-		offlineButton.setText(Messages.getString("login.LoginDialog.labelbutton.offline")); //$NON-NLS-1$
-		offlineButton.setData(new Integer(BUTTON_OFFLINE));
-		offlineButton.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(SelectionEvent event) {
-				offlinePressed(event);
-			}
-		});
-	}
-	
-	private void createDetailsButton(Composite parent) 
-	{
-		detailsButton = new Button(parent, SWT.PUSH);
-		detailsButton.setText(IDialogConstants.SHOW_DETAILS_LABEL);
-		detailsButton.setData(new Integer(BUTTON_DETAILS));
-		detailsButton.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(SelectionEvent event) {
-				detailsPressed(event);
-			}
-		});
-	}
-	
 	/* (non-Javadoc)
 	 * @see org.eclipse.jface.dialogs.Dialog#createButtonsForButtonBar(org.eclipse.swt.widgets.Composite)
 	 */
 	@Override
 	protected void createButtonsForButtonBar(Composite parent) 
 	{
-		GridLayout parentLayout = (GridLayout) parent.getLayout();
-		parentLayout.numColumns = 2;
-		parentLayout.verticalSpacing = 0;
-		parentLayout.marginHeight = 0;
-		Composite left = new Composite(parent,SWT.NONE);
-		GridData leftData = new GridData(GridData.FILL_HORIZONTAL);
-		leftData.grabExcessHorizontalSpace = true;
-		left.setLayoutData(leftData);
-	  Composite right = new Composite(parent,SWT.NONE);
-		GridData rightData = new GridData(GridData.FILL_HORIZONTAL);
-		right.setLayoutData(rightData);
-		RowLayout layout = new RowLayout();
-		right.setLayout(layout);
-		createLoginButton(right);
-		createOfflineButton(right);
-		createDetailsButton(right);
-	}
-	
-	
-	
-	
-	public void setLoginResult(Login.AsyncLoginResult loginResult) 
-	{
-		this.loginResult = loginResult;
-	}	
-	
-	public Login.AsyncLoginResult getLoginResult() 
-	{
-		return loginResult;
-	}
-	
-	public void setLoginContext(JFireLoginContext loginContext)
-	{
-		this.loginContext = loginContext;
-	}	
-	
-	public JFireLoginContext getLoginContext() 
-	{
-		return loginContext;
-	}
-	
-	public void setLoginModule(LoginConfigModule loginConfigModule) 
-	{
-		this.runtimeLoginModule = loginConfigModule;
+		createButton(parent, IDialogConstants.OK_ID, Messages.getString("login.LoginDialog.labelbutton.login"), true);
+		createButton(parent, IDialogConstants.CANCEL_ID, Messages.getString("login.LoginDialog.labelbutton.offline"), false);
+		createButton(parent, DETAILS_ID, IDialogConstants.SHOW_DETAILS_LABEL, false);
 	}
 	
 	private void initializeWidgetValues()
@@ -340,14 +263,13 @@ public class LoginDialog extends TitleAreaDialog
 			textUserID.setFocus();
 	}
 	
-	public void setActualValues()
+	public void storeUserInput()
 	{
 		loginContext.setCredentials(
 				textUserID.getText(),
 				textOrganisationID.getText(),
 				textPassword.getText()
 		);
-		
 		runtimeLoginModule.setUserID(textUserID.getText());
 		runtimeLoginModule.setOrganisationID(textOrganisationID.getText());
 		runtimeLoginModule.setInitialContextFactory(textInitialContextFactory.getText());
@@ -355,17 +277,54 @@ public class LoginDialog extends TitleAreaDialog
 		runtimeLoginModule.setWorkstationID(textWorkstationID.getText());
 	}
 
-	private void showErrorMessage(String errorMessage)
+	/* (non-Javadoc)
+	 * @see org.eclipse.jface.dialogs.Dialog#buttonPressed(int)
+	 */
+	@Override
+	protected void buttonPressed(int buttonId)
 	{
-		setMessage(errorMessage, IMessageProvider.ERROR);
+		super.buttonPressed(buttonId);
+		if(buttonId == DETAILS_ID)
+			detailsPressed();
 	}
 
-	private void showInfoMessage(String errorMessage)
+	/* (non-Javadoc)
+	 * @see org.eclipse.jface.dialogs.Dialog#okPressed()
+	 */
+	@Override
+	protected void okPressed() 
 	{
-		setMessage(errorMessage, IMessageProvider.INFORMATION);
+		if(!checkUserInput())
+			return;
+		checkLogin();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.jface.dialogs.Dialog#cancelPressed()
+	 */
+	@Override
+	protected void cancelPressed() 
+	{
+		loginResult.setSuccess(false);
+		loginResult.setWorkOffline(true);
+		close();
+	}
+
+	/**
+	 * Called when the "Details..." button was pressed.
+	 */
+	protected void detailsPressed() 
+	{
+		showDetails(detailsAreaGridData.heightHint == 0);
 	}
 	
-	protected void loginPressed(SelectionEvent event) 
+	@Override
+	public void setMessage(String newMessage, int newType)
+	{
+		super.setMessage(newMessage, newType);
+	}
+	
+	private boolean checkUserInput()
 	{
 		// check entries
 		String errorMessage = null;
@@ -380,21 +339,25 @@ public class LoginDialog extends TitleAreaDialog
 		else if (textServerURL.getText().equals(EMPTY_STRING))
 			errorMessage = Messages.getString("login.LoginDialog.errormissingServerURL"); //$NON-NLS-1$
 		if(errorMessage != null) {
-			showErrorMessage(errorMessage);
+			setMessage(errorMessage, IMessageProvider.ERROR);
 			setSmartFocus();
-			return;
+			return false;
 		}
+		return true;
+	}
 
+	private void checkLogin()
+	{
 		boolean hadError = true;
-		showInfoMessage(Messages.getString("login.LoginDialog.tryingLogin")); //$NON-NLS-1$
-		enableAll(false);
+		setMessage(Messages.getString("login.LoginDialog.tryingLogin"), IMessageProvider.INFORMATION); //$NON-NLS-1$
+		enableDualogUI(false);
 		try {
 
 			// use entries and log in
-			setActualValues();		
+			storeUserInput();		
 			if (checkBoxSaveSettings.getSelection()) {
 				try {
-					BeanUtils.copyProperties(persistentLoginModule,runtimeLoginModule);
+					BeanUtils.copyProperties(persistentLoginModule, runtimeLoginModule);
 					persistentLoginModule.setChanged();
 				} catch (Exception e) {
 					logger.error(Messages.getString("login.LoginDialog.errorSaveConfig"), e); //$NON-NLS-1$
@@ -411,7 +374,7 @@ public class LoginDialog extends TitleAreaDialog
 					Display.getDefault().asyncExec(new Runnable() {
 						public void run()
 						{
-							enableAll(true);
+							enableDualogUI(true);
 							updateUIAfterLogin();
 						}
 					});
@@ -424,11 +387,16 @@ public class LoginDialog extends TitleAreaDialog
 			hadError = false;
 		} finally {
 			if (hadError)
-				enableAll(true);
+				enableDualogUI(true);
 		}
 	}
-
-	private void enableAll(boolean enable)
+		
+	/**
+	 * Enable or disable all dialog UI elements.
+	 * @param enable <code>true</code> To enable all elements -
+	 * 		<code>false</code> otherwise.
+	 */
+	private void enableDualogUI(boolean enable)
 	{
 		getShell().setEnabled(enable);
 	}
@@ -436,20 +404,19 @@ public class LoginDialog extends TitleAreaDialog
 	private void updateUIAfterLogin()
 	{
 		// verify login done 
-
 		if ((!loginResult.isWasAuthenticationErr()) && (loginResult.isSuccess())) {
 			close();
 		} else {
 			// login failed
 			if (loginResult.isWasAuthenticationErr()) {
-				showErrorMessage(Messages.getString("login.LoginDialog.errorauthenticationFailed")); //$NON-NLS-1$
+				setMessage(Messages.getString("login.LoginDialog.errorauthenticationFailed"), IMessageProvider.ERROR); //$NON-NLS-1$
 			}
 			else if (loginResult.isWasCommunicationErr()) {
 				Throwable error = loginResult.getException();
 				while (error.getLocalizedMessage() == null && error.getCause() != null) {
 					error = ExceptionUtils.getCause(error);
 				}
-				showErrorMessage(String.format(Messages.getString("login.LoginDialog.errorcommunicatinError"), error.getLocalizedMessage())); //$NON-NLS-1$
+				setMessage(String.format(Messages.getString("login.LoginDialog.errorcommunicatinError"), error.getLocalizedMessage()), IMessageProvider.ERROR); //$NON-NLS-1$
 			}
 			else {
 				String message = loginResult.getMessage();
@@ -462,35 +429,28 @@ public class LoginDialog extends TitleAreaDialog
 					}
 					loginResult.getException().printStackTrace();
 				}
-				showErrorMessage(message);
+				setMessage(message, IMessageProvider.ERROR);
 				
 			}
 			// show a message to the user
 		}
 	}
 	
-	protected void offlinePressed(SelectionEvent event) 
-	{
-		loginResult.setSuccess(false);
-		loginResult.setWorkOffline(true);
-		close();
-	}
-
-	protected void detailsPressed(SelectionEvent event) 
-	{
-		showDetails(detailsAreaGridData.heightHint == 0);
-	}
-	
+	/**
+	 * Show or hide the details area.
+	 * @param visible <code>true</code> if the details should be shown
+	 * 		<code>false</code> otherwise.
+	 */
 	protected void showDetails(boolean visible) 
 	{
 		Point windowSize = getShell().getSize();
 		Point oldSize = getShell().computeSize(SWT.DEFAULT, SWT.DEFAULT);
 		if(visible) {
 			detailsAreaGridData.heightHint = SWT.DEFAULT;
-			detailsButton.setText(IDialogConstants.HIDE_DETAILS_LABEL);
+			getButton(DETAILS_ID).setText(IDialogConstants.HIDE_DETAILS_LABEL);
 		} else {
 			detailsAreaGridData.heightHint = 0;
-			detailsButton.setText(IDialogConstants.SHOW_DETAILS_LABEL);
+			getButton(DETAILS_ID).setText(IDialogConstants.SHOW_DETAILS_LABEL);
 		}
 		Point newSize = getShell().computeSize(SWT.DEFAULT, SWT.DEFAULT);
 		getShell().setSize(new Point(windowSize.x, windowSize.y + (newSize.y - oldSize.y)));
