@@ -23,6 +23,7 @@ import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleAdapterJob;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleEvent;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleListener;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleManager;
+import org.nightlabs.jfire.base.resource.Messages;
 import org.nightlabs.jfire.jdo.notification.DirtyObjectID;
 import org.nightlabs.jfire.jdo.notification.IJDOLifecycleListenerFilter;
 import org.nightlabs.jfire.jdo.notification.JDOLifecycleState;
@@ -71,7 +72,7 @@ extends TreeContentProvider
 	private Map<JDOObjectID, JDOObject> jdoObjectID2jdoObject = null;
 	private Object jdoObjectID2jdoObjectMutex = new Object();
 	private JDOObject[] jdoObjects = null;
-	private JDOLifecycleListener lifecycleListener = new JDOLifecycleAdapterJob("Loading New jdoObjects")
+	private JDOLifecycleListener lifecycleListener = new JDOLifecycleAdapterJob(Messages.getString("tree.ActiveTreeContentProvider.loadingNewJDOObjects")) //$NON-NLS-1$
 	{
 		private SimpleLifecycleListenerFilter lifecycleListenerFilter = new SimpleLifecycleListenerFilter(
 				getJdoObjectClass(), true,
@@ -114,7 +115,7 @@ extends TreeContentProvider
 		}
 	};
 
-	private NotificationListener notificationListener = new NotificationAdapterJob("Loading Changed jdoObjects")
+	private NotificationListener notificationListener = new NotificationAdapterJob(Messages.getString("tree.ActiveTreeContentProvider.loadingChangedJDOObjects")) //$NON-NLS-1$
 	{
 		public void notify(NotificationEvent notificationEvent)
 		{
@@ -157,7 +158,7 @@ extends TreeContentProvider
 	protected void assertOpen()
 	{
 		if (closed)
-			throw new IllegalStateException("This instance of ActiveTreeContentProvider is already closed: " + this);
+			throw new IllegalStateException("This instance of ActiveTreeContentProvider is already closed: " + this); //$NON-NLS-1$
 	}
 
 	public ActiveTreeContentProvider()
@@ -175,14 +176,14 @@ extends TreeContentProvider
 		assertOpen();
 		if (listenersExist) {
 			if (logger.isDebugEnabled())
-				logger.debug("close: unregistering listeners (" + getJdoObjectClass() + ')');
+				logger.debug("close: unregistering listeners (" + getJdoObjectClass() + ')'); //$NON-NLS-1$
 
 			JDOLifecycleManager.sharedInstance().removeLifecycleListener(lifecycleListener);
 			JDOLifecycleManager.sharedInstance().removeNotificationListener(getJdoObjectClass(), notificationListener);
 		}
 		else {
 			if (logger.isDebugEnabled())
-				logger.debug("close: there are no listeners - will not unregister (" + getJdoObjectClass() + ')');
+				logger.debug("close: there are no listeners - will not unregister (" + getJdoObjectClass() + ')'); //$NON-NLS-1$
 		}
 		closed = true;
 	}
@@ -190,7 +191,7 @@ extends TreeContentProvider
 	public void dispose()
 	{
 		if (logger.isDebugEnabled())
-			logger.debug("dispose");
+			logger.debug("dispose"); //$NON-NLS-1$
 		super.dispose();
 	}
 
@@ -206,7 +207,7 @@ extends TreeContentProvider
 		assertOpen();
 		if (!listenersExist) {
 			if (logger.isDebugEnabled())
-				logger.debug("getElements: registering listeners (" + getJdoObjectClass() + ')');
+				logger.debug("getElements: registering listeners (" + getJdoObjectClass() + ')'); //$NON-NLS-1$
 
 			listenersExist = true;
 			JDOLifecycleManager.sharedInstance().addLifecycleListener(lifecycleListener);
@@ -216,7 +217,7 @@ extends TreeContentProvider
 		if (jdoObjects != null)
 			return jdoObjects;
 
-		Job job = new Job("Loading Data") {
+		Job job = new Job(Messages.getString("tree.ActiveTreeContentProvider.loadingDataJob")) { //$NON-NLS-1$
 			protected IStatus run(IProgressMonitor monitor)
 			{
 				Collection<JDOObject> jdoObjects = getAllJDOObjects(monitor);
@@ -246,7 +247,7 @@ extends TreeContentProvider
 		job.setPriority(Job.SHORT);
 		job.schedule();
 
-		return new String[] { "Loading data..." };
+		return new String[] { Messages.getString("tree.ActiveTreeContentProvider.loadingData") }; //$NON-NLS-1$
 	}
 
 }

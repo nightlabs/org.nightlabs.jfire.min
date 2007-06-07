@@ -13,6 +13,7 @@ import org.nightlabs.base.entity.tree.IEntityTreeCategoryContentConsumer;
 import org.nightlabs.base.tree.TreeContentProvider;
 import org.nightlabs.jfire.base.jdo.ActiveJDOObjectController;
 import org.nightlabs.jfire.base.jdo.JDOObjectsChangedEvent;
+import org.nightlabs.jfire.base.resource.Messages;
 import org.nightlabs.jfire.jdo.notification.IJDOLifecycleListenerFilter;
 import org.nightlabs.progress.ProgressMonitor;
 
@@ -26,7 +27,7 @@ extends EntityTreeCategory
 		{
 			List<JDOObject> jdoObjects = getActiveJDOObjectController().getJDOObjects();
 			if (jdoObjects == null)
-				return new String[] { "Loading data..." };
+				return new String[] { Messages.getString("entity.tree.ActiveJDOEntityTreeCategory.loadingData") }; //$NON-NLS-1$
 
 			return jdoObjects.toArray();
 		}
