@@ -123,7 +123,19 @@ public class JdoCacheBridgeDefault extends JdoCacheBridge
 					}
 
 					if (dirtyObjectIDs != null) {
-						bridge.getCacheManagerFactory().addDirtyObjectIDs(sessionID, dirtyObjectIDs);
+						final String _sessionID = sessionID;
+						final Map<JDOLifecycleState, Map<Object, DirtyObjectID>> _dirtyObjectIDs = dirtyObjectIDs;
+						Thread t = new Thread() {
+							@Override
+							public void run()
+							{
+								// there seems to be a timing issue concerning the commit of a transaction - delaying a sec seems to help - TODO fix this problem in a CLEAN way!
+								try { Thread.sleep(1000); } catch (InterruptedException e) { } // ignore
+								bridge.getCacheManagerFactory().addDirtyObjectIDs(_sessionID, _dirtyObjectIDs);
+							}
+						};
+						t.start();
+//						bridge.getCacheManagerFactory().addDirtyObjectIDs(sessionID, dirtyObjectIDs);
 						dirtyObjectIDs = null;
 					}
 				} catch (Throwable e) {

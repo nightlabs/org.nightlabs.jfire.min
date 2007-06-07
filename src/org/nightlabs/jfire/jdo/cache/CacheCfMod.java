@@ -70,7 +70,7 @@ public class CacheCfMod extends ConfigModule
 				"\n" +
 				"* notificationIntervalMSec: The length of the interval in millisec, in which the\n" +
 				"    NotificationThread will check changed objects and trigger events. Default\n" +
-				"    is 3000 (3 sec). Minimum is 100.\n" +
+				"    is 2000 (2 sec). Minimum is 100.\n" +
 				"\n" +
 				"* cacheSessionContainerCount: CacheSessions expire after the client didn't use\n" +
 				"    them for a longer time. To avoid the need to iterate all CacheSessions in\n" +
@@ -121,7 +121,7 @@ public class CacheCfMod extends ConfigModule
 				"    Default: org.nightlabs.jfire.jdo.cache.bridge.JdoCacheBridgeDefault\n";
 
 		if (notificationIntervalMSec < 100)
-			setNotificationIntervalMSec(3 * 1000);
+			setNotificationIntervalMSec(2 * 1000);
 
 		if (cacheSessionContainerActivityMSec < 60 * 1000 || 30 * 60 * 1000 < cacheSessionContainerActivityMSec)
 			setCacheSessionContainerActivityMSec(5 * 60 * 1000);
