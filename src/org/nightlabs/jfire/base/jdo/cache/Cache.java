@@ -819,6 +819,27 @@ public class Cache
 
 	private static boolean serverMode = false;
 
+	private static boolean autoOpen = true;
+
+	public static synchronized boolean isAutoOpen()
+	{
+		return autoOpen;
+	}
+	/**
+	 * If the <code>Cache</code> is used in server-mode, it ignores this flag and always opens automatically.
+	 * In client-mode, however, the cache is only opened automatically, iff this flag is <code>true</code>.
+	 * <p>
+	 * The default value of <code>autoOpen</code> is <code>true</code>.
+	 * </p>
+	 *
+	 * @param autoOpen if <code>true</code>, automatically open the <code>Cache</code> as soon as
+	 *		the shared instance is created.
+	 */
+	public static synchronized void setAutoOpen(boolean autoOpen)
+	{
+		Cache.autoOpen = autoOpen;
+	}
+
 	public static synchronized void setServerMode(boolean serverMode)
 	{
 		if (serverMode && _sharedInstance != null)
@@ -864,8 +885,11 @@ public class Cache
 				return cache;
 			}
 			else {
-				if (_sharedInstance == null)
+				if (_sharedInstance == null) {
 					_sharedInstance = new Cache();
+					if (autoOpen)
+						_sharedInstance.open(getCurrentSessionID());
+				}
 
 				return _sharedInstance;
 			}
