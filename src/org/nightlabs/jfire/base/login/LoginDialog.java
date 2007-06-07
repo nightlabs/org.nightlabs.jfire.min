@@ -87,6 +87,14 @@ public class LoginDialog extends TitleAreaDialog
 	private Text textInitialContextFactory = null;
 	private Text textWorkstationID = null;
 	
+
+	private boolean contentCreated = false;
+	
+	/**
+	 * This is only used to be able to initially show details
+	 */
+	private boolean initiallyShowDetails = false;
+		
 	/**
 	 * Create a new LoginDialog.
 	 * @param parent The dialogs parent
@@ -134,6 +142,19 @@ public class LoginDialog extends TitleAreaDialog
 	}
 
 	/* (non-Javadoc)
+	 * @see org.eclipse.jface.dialogs.TitleAreaDialog#createContents(org.eclipse.swt.widgets.Composite)
+	 */
+	@Override
+	protected Control createContents(Composite parent)
+	{
+		contentCreated = false;
+		Control control = super.createContents(parent);
+		contentCreated = true;
+		showDetails(initiallyShowDetails);
+		return control;
+	}
+	
+	/* (non-Javadoc)
 	 * @see org.eclipse.jface.dialogs.TitleAreaDialog#createDialogArea(org.eclipse.swt.widgets.Composite)
 	 */
 	@Override
@@ -147,8 +168,9 @@ public class LoginDialog extends TitleAreaDialog
 		initializeWidgetValues();
 		setSmartFocus();
 		
-		setTitle("Please login");
-		setMessage("Enter your user data and press login - or choose to work offline");
+		setTitle(Messages.getString("login.LoginDialog.titleAreaTitle")); //$NON-NLS-1$
+		// TODO: information icon only because of redraw bug:
+		setMessage(Messages.getString("login.LoginDialog.titleAreaMessage"), IMessageProvider.INFORMATION); //$NON-NLS-1$
 		
 		return dialogArea;
 	}
@@ -318,12 +340,6 @@ public class LoginDialog extends TitleAreaDialog
 		showDetails(detailsAreaGridData.heightHint == 0);
 	}
 	
-	@Override
-	public void setMessage(String newMessage, int newType)
-	{
-		super.setMessage(newMessage, newType);
-	}
-	
 	private boolean checkUserInput()
 	{
 		// check entries
@@ -443,17 +459,26 @@ public class LoginDialog extends TitleAreaDialog
 	 */
 	protected void showDetails(boolean visible) 
 	{
+		System.out.println("show details"); //$NON-NLS-1$
+		if(!contentCreated) {
+			System.out.println("show details: content is not yet created"); //$NON-NLS-1$
+			initiallyShowDetails = true;
+			return;
+		}
+		System.out.println("show details: content is already created"); //$NON-NLS-1$
 		Point windowSize = getShell().getSize();
 		Point oldSize = getShell().computeSize(SWT.DEFAULT, SWT.DEFAULT);
+		Button detailsButton = getButton(DETAILS_ID);
 		if(visible) {
 			detailsAreaGridData.heightHint = SWT.DEFAULT;
-			getButton(DETAILS_ID).setText(IDialogConstants.HIDE_DETAILS_LABEL);
+			detailsButton.setText(IDialogConstants.HIDE_DETAILS_LABEL);
 		} else {
 			detailsAreaGridData.heightHint = 0;
-			getButton(DETAILS_ID).setText(IDialogConstants.SHOW_DETAILS_LABEL);
+			detailsButton.setText(IDialogConstants.SHOW_DETAILS_LABEL);
 		}
 		Point newSize = getShell().computeSize(SWT.DEFAULT, SWT.DEFAULT);
-		getShell().setSize(new Point(windowSize.x, windowSize.y + (newSize.y - oldSize.y)));
+		if(getShell().isVisible())
+			getShell().setSize(new Point(windowSize.x, windowSize.y + (newSize.y - oldSize.y)));
 	}
 	
 	public static void registerSharedInstance(LoginDialog dialog) 
