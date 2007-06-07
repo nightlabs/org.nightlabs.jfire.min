@@ -516,7 +516,8 @@ implements InitialContextProvider
 
 		// We should be logged in now, open the cache if not already open
 		if (currLoginState == LOGINSTATE_LOGGED_IN) {
-			Cache.sharedInstance().open(getSessionID());
+			Cache.sharedInstance(); // the cache is opened implicitely now by default.
+//			Cache.sharedInstance().open(getSessionID());
 		}
 
 		if (currLoginState != oldLoginstate) {
