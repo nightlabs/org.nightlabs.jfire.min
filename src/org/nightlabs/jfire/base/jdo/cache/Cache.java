@@ -89,6 +89,13 @@ public class Cache
 	private static Cache _sharedInstance = null;
 
 	private NotificationThread notificationThread;
+	private JDOLifecycleManager _jdoLifecycleManager;
+	protected JDOLifecycleManager getJDOLifecycleManager() {
+		if (_jdoLifecycleManager == null)
+			throw new IllegalStateException("No JDOLifecycleManager assigned!");
+
+		return _jdoLifecycleManager;
+	}
 
 	protected static class NotificationThread extends Thread
 	{
@@ -189,7 +196,7 @@ public class Cache
 
 							// notify via local class based notification mechanism
 							// the interceptor org.nightlabs.jfire.base.jdo.JDOObjectID2PCClassNotificationInterceptor takes care about correct class mapping
-							JDOLifecycleManager.sharedInstance().notify(new NotificationEvent(
+							cache.getJDOLifecycleManager().notify(new NotificationEvent(
 									cache,             // source
 									(String)null,     // zone
 									dirtyObjectIDsForNotification // dirtyObjectIDs    // subjects
@@ -233,7 +240,7 @@ public class Cache
 								Long filterID = me.getKey();
 								SortedSet<DirtyObjectID> dirtyObjectIDs = me.getValue();
 
-								JDOLifecycleManager.sharedInstance().notify(filterID, new JDOLifecycleEvent(cache, dirtyObjectIDs));
+								cache.getJDOLifecycleManager().notify(filterID, new JDOLifecycleEvent(cache, dirtyObjectIDs));
 //								JDOLifecycleListener listener = JDOLifecycleManager.sharedInstance().getLifecycleListener(filterID);
 //								if (listener == null)
 //									logger.error("No listener found for filterID="+filterID);
@@ -454,8 +461,7 @@ public class Cache
 							try {
 								jdoManager.resubscribeAllListeners(
 										currentlySubscribedObjectIDs,
-										// TODO we should ensure JDOLifecycleManager works in server-mode as well!
-										JDOLifecycleManager.sharedInstance().getLifecycleListenerFilters());
+										cache.getJDOLifecycleManager().getLifecycleListenerFilters());
 								resubscribeFailed = false;
 							} finally {
 								if (resubscribeFailed)
@@ -842,6 +848,8 @@ public class Cache
 
 	public static synchronized void setServerMode(boolean serverMode)
 	{
+		logger.info("setServerMode: serverMode="+serverMode);
+
 		if (serverMode && _sharedInstance != null)
 			throw new IllegalStateException("Cannot switch to serverMode after a client-mode-sharedInstance has been created!");
 
@@ -872,12 +880,15 @@ public class Cache
 	{
 		try {
 			if (serverMode) {
-				if (serverModeSharedInstances == null)
+				if (serverModeSharedInstances == null) {
 					serverModeSharedInstances = new HashMap<String, Cache>();
+					JDOLifecycleManager.setServerMode(true);
+				}
 
 				String userName = getCurrentUserName();
 				Cache cache = serverModeSharedInstances.get(userName);
 				if (cache == null) {
+					logger.info("sharedInstance: creating new Cache instance in serverMode");
 					cache = new Cache();
 					serverModeSharedInstances.put(userName, cache);
 					cache.open(getCurrentSessionID());
@@ -886,6 +897,7 @@ public class Cache
 			}
 			else {
 				if (_sharedInstance == null) {
+					logger.info("sharedInstance: creating new Cache instance in clientMode (not-serverMode)");
 					_sharedInstance = new Cache();
 					if (autoOpen)
 						_sharedInstance.open(getCurrentSessionID());
@@ -1467,9 +1479,10 @@ public class Cache
 		if (sessionID == null || sessionID.length() < 2)
 			throw new IllegalArgumentException("sessionID must be a String with at least 2 characters!");
 
-		JDOLifecycleManager.sharedInstance(); // force this to be initialised :-)
-
 		this.sessionID = sessionID;
+
+		this._jdoLifecycleManager = JDOLifecycleManager.sharedInstance(); // force this to be initialised :-)
+
 		this.cacheManagerThread = new CacheManagerThread(this);
 		this.notificationThread = new NotificationThread(this);
 	}

@@ -17,6 +17,7 @@ import org.nightlabs.jfire.base.jdo.cache.Cache;
 import org.nightlabs.jfire.jdo.notification.AbsoluteFilterID;
 import org.nightlabs.jfire.jdo.notification.DirtyObjectID;
 import org.nightlabs.jfire.jdo.notification.IJDOLifecycleListenerFilter;
+import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.notification.NotificationEvent;
 import org.nightlabs.notification.NotificationListener;
 import org.nightlabs.notification.NotificationManager;
@@ -219,7 +220,7 @@ extends org.nightlabs.notification.NotificationManager
 
 		// assign sessionID and a unique id
 		jdoLifecycleListenerFilter.setFilterID(
-				new AbsoluteFilterID(Cache.sharedInstance().getSessionID(), nextFilterID()));
+				new AbsoluteFilterID(cache.getSessionID(), nextFilterID()));
 
 		// add the listener
 		synchronized (lifecycleListeners) {
@@ -228,8 +229,7 @@ extends org.nightlabs.notification.NotificationManager
 			lifecycleListenerFilters = null;
 		}
 
-		// TODO we should ensure that this works in server-mode, too (is this method called asynchronously by another user/anonymously?)
-		Cache.sharedInstance().addLifecycleListenerFilter(jdoLifecycleListenerFilter, 0);
+		cache.addLifecycleListenerFilter(jdoLifecycleListenerFilter, 0);
 	}
 
 	public void removeLifecycleListener(JDOLifecycleListener listener)
@@ -246,8 +246,7 @@ extends org.nightlabs.notification.NotificationManager
 			lifecycleListenerFilters = null;
 		}
 
-		// TODO we should ensure that this works in server-mode, too (is this method called asynchronously by another user/anonymously?)
-		Cache.sharedInstance().removeLifecycleListenerFilter(jdoLifecycleListenerFilter, 0);
+		cache.removeLifecycleListenerFilter(jdoLifecycleListenerFilter, 0);
 	}
 
 	private Set<JDOLifecycleListener> lifecycleListeners = new HashSet<JDOLifecycleListener>();
@@ -289,47 +288,91 @@ extends org.nightlabs.notification.NotificationManager
 			return lifecycleListenerFilters;
 		}
 	}
-	
-	
+
+	private static boolean serverMode = false;
+
+	public static synchronized void setServerMode(boolean serverMode)
+	{
+		logger.info("setServerMode: serverMode="+serverMode);
+
+		if (serverMode && _sharedInstance != null)
+			throw new IllegalStateException("Cannot switch to serverMode after a client-mode-sharedInstance has been created!");
+
+		if (!serverMode && serverModeSharedInstances != null)
+			throw new IllegalStateException("Cannot switch to clientMode after a server-mode-sharedInstance has been created!");
+
+		JDOLifecycleManager.serverMode = serverMode;
+	}
+
+	public static boolean isServerMode()
+	{
+		return serverMode;
+	}
+
+	private static Map<String, JDOLifecycleManager> serverModeSharedInstances = null;
 	
 	/**
 	 * This is used, if we're not using JNDI, but a System property (i.e. in the client)
 	 */
 	private static JDOLifecycleManager _sharedInstance = null;
 
-	/**
-	 * This method calls {@link #lookupJDOLifecycleManager()}.
-	 */
+
 	public synchronized static JDOLifecycleManager sharedInstance()
 	{
-		return lookupJDOLifecycleManager();
-	}	
-	
-	
-	public static JDOLifecycleManager lookupJDOLifecycleManager()
+		if (serverMode) {
+			if (serverModeSharedInstances == null)
+				serverModeSharedInstances = new HashMap<String, JDOLifecycleManager>();
+
+			String userName = getCurrentUserName();
+			JDOLifecycleManager jdoLifecycleManager = serverModeSharedInstances.get(userName);
+			if (jdoLifecycleManager == null) {
+				logger.info("sharedInstance: creating new JDOLifecycleManager in serverMode");
+				jdoLifecycleManager = createJDOLifecycleManager();
+				serverModeSharedInstances.put(userName, jdoLifecycleManager);
+				jdoLifecycleManager.cache = Cache.sharedInstance();
+			}
+			return jdoLifecycleManager;
+		}
+		else {
+			if (_sharedInstance == null) {
+				logger.info("sharedInstance: creating new JDOLifecycleManager in clientMode (non-serverMode)");
+				_sharedInstance = createJDOLifecycleManager();
+				_sharedInstance.cache = Cache.sharedInstance();
+			}
+			return _sharedInstance;
+		}
+	}
+
+	private Cache cache;
+
+	private static Class jdoLifecycleManagerClass = null;
+
+	private static JDOLifecycleManager createJDOLifecycleManager()
 	{
-		if (_sharedInstance == null) {
+		if (jdoLifecycleManagerClass == null) {		
 			String className = System.getProperty(PROPERTY_KEY_JDO_LIFECYCLE_MANAGER);
 			if (className == null)
-				return null;
+				throw new IllegalStateException("System property PROPERTY_KEY_JDO_LIFECYCLE_MANAGER (" + PROPERTY_KEY_JDO_LIFECYCLE_MANAGER + ") not set!");
 
-			Class clazz;
 			try {
-				clazz = Class.forName(className);
+				jdoLifecycleManagerClass = Class.forName(className);
 			} catch (ClassNotFoundException e) {
-				throw new RuntimeException(e);
-			}
-
-			try {
-				_sharedInstance = (JDOLifecycleManager) clazz.newInstance();
-			} catch (InstantiationException e) {
-				throw new RuntimeException(e);
-			} catch (IllegalAccessException e) {
 				throw new RuntimeException(e);
 			}
 		}
 
-		return _sharedInstance;
+		try {
+			return (JDOLifecycleManager) jdoLifecycleManagerClass.newInstance();
+		} catch (InstantiationException e) {
+			throw new RuntimeException(e);
+		} catch (IllegalAccessException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	private static String getCurrentUserName()
+	{
+		return SecurityReflector.getUserDescriptor().getCompleteUserID();
 	}
 	
 }
