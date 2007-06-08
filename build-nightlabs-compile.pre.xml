@@ -2,6 +2,7 @@
 	<target name="compile.pre">
 	    <mkdir dir="${project.dir}/${lib.dir}"/>
 		<delete file="${project.dir}/${lib.dir}/JFireBaseClientLib.jar"/>
+		<delete file="${project.dir}/${lib.dir}/JFireBaseDAO.jar"/>
 <!--
 		<copy file="../JFireBaseClientLib/dist/JFireBaseClientLib.jar" todir="${project.dir}/${lib.dir}" failonerror="true" verbose="true"/>
 -->

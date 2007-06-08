@@ -125,6 +125,7 @@ extends CenteredDialog // IconAndMessageDialog
 	@Override
 	protected void configureShell(Shell newShell) {
 		super.configureShell(newShell);
+		setToCenteredLocationPreferredSize(400, 300);
 		newShell.setText("Changed Config Modules");
 	}
 	
