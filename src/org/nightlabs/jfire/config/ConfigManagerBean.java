@@ -784,8 +784,8 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 			pm.makePersistent(workstationConfigSetup);
 			workstationConfigSetup.getConfigModuleClasses().add(WorkstationFeaturesCfMod.class.getName());
 			
-			pm.makePersistent(new EditLockType(JFireBaseEAR.EDIT_LOCK_TYPE_CONFIGMODULE));
-			pm.makePersistent(new EditLockType(JFireBaseEAR.EDIT_LOCK_TYPE_CONFIG));
+			pm.makePersistent(new EditLockType(JFireBaseEAR.EDIT_LOCK_TYPE_ID_CONFIG_MODULE));
+			pm.makePersistent(new EditLockType(JFireBaseEAR.EDIT_LOCK_TYPE_ID_CONFIG));
 		} finally {
 			pm.close();
 		}
