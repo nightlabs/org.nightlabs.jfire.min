@@ -26,6 +26,8 @@
 
 package org.nightlabs.jfire.base.jdo.cache;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Set;
 
 /**
@@ -149,7 +151,7 @@ public class Key
 	 */
 	public Set<String> getFetchGroups()
 	{
-		return fetchGroups;
+		return Collections.unmodifiableSet(fetchGroups);
 	}
 	/**
 	 * @return Returns the objectID.
