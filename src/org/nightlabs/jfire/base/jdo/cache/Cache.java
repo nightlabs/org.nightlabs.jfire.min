@@ -73,9 +73,9 @@ import org.nightlabs.util.CollectionUtil;
  * an object from the cache is returned if its found to have been detached
  * with the same or more fetch-groups.
  * </p>
- * A singleton of this class caches <b>all</b> JDO objects 
+ * A singleton of this class caches (possibly) all JDO objects 
  * in the client. To use it, you should implement your own
- * {@link org.nightlabs.jfire.base.jdo.JDOObjectProvider}.
+ * {@link org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO}.
  *
  * @author Marco Schulze - marco at nightlabs dot de
  */
