@@ -1,0 +1,5 @@
+<project>
+	<target name="deploy.post">
+	    <delete dir="${j2ee.deploy.dir}/${j2ee.deploy.subdir}/JFireBaseClientLib.ear" verbose="true"/>
+	</target>
+</project>
