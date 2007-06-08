@@ -46,7 +46,9 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.nightlabs.base.composite.FadeableComposite;
 import org.nightlabs.base.job.Job;
+import org.nightlabs.jdo.ObjectID;
 import org.nightlabs.jfire.base.JFireBaseEAR;
+import org.nightlabs.jfire.base.editlock.EditLockCallback;
 import org.nightlabs.jfire.base.editlock.EditLockMan;
 import org.nightlabs.jfire.config.ConfigModule;
 import org.nightlabs.jfire.config.id.ConfigID;
@@ -187,8 +189,9 @@ implements ConfigPreferenceChangedListener, IStoreChangedConfigModule
 				treeComposite.setConfigID(currentConfigID);
 				monitor.worked(1);
 
-				EditLockMan.sharedInstance().acquireEditLock(JFireBaseEAR.EDIT_LOCK_TYPE_CONFIG, getCurrentConfigID(),
-						"This Config is currently edited by someone else!", null, new SubProgressMonitor(monitor, 1));
+				EditLockMan.sharedInstance().acquireEditLock(
+						JFireBaseEAR.EDIT_LOCK_TYPE_ID_CONFIG, getCurrentConfigID(),
+						"This Config is currently edited by someone else!", (EditLockCallback)null, new SubProgressMonitor(monitor, 1));
 
 				Display.getDefault().asyncExec(new Runnable() {
 					public void run() {

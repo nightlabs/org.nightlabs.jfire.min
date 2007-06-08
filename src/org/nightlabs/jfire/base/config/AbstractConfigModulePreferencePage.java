@@ -416,7 +416,7 @@ extends LSDPreferencePage
 					public void run() {
 						if (currentConfigModuleIsEditable) {
 							if (doSetControl) {
-								EditLockMan.sharedInstance().acquireEditLock(JFireBaseEAR.EDIT_LOCK_TYPE_CONFIGMODULE, 
+								EditLockMan.sharedInstance().acquireEditLock(JFireBaseEAR.EDIT_LOCK_TYPE_ID_CONFIG_MODULE, 
 										(ConfigModuleID) JDOHelper.getObjectId(getConfigModuleController().getConfigModule()), 
 										"This ConfigModule is already opened by someone else!",
 										null, getShell(), getSubProgressMonitorWrapper(1));								
