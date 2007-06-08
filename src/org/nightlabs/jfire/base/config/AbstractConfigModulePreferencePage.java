@@ -56,12 +56,14 @@ import org.nightlabs.annotation.Implement;
 import org.nightlabs.base.composite.FadeableComposite;
 import org.nightlabs.base.composite.InheritanceToggleButton;
 import org.nightlabs.base.composite.XComposite;
+import org.nightlabs.base.composite.XComposite.LayoutDataMode;
 import org.nightlabs.base.composite.XComposite.LayoutMode;
 import org.nightlabs.base.job.Job;
 import org.nightlabs.base.notification.NotificationAdapterJob;
 import org.nightlabs.inheritance.FieldMetaData;
 import org.nightlabs.inheritance.InheritanceManager;
 import org.nightlabs.jdo.NLJDOHelper;
+import org.nightlabs.jfire.base.JFireBaseEAR;
 import org.nightlabs.jfire.base.editlock.EditLockMan;
 import org.nightlabs.jfire.base.jdo.cache.Cache;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleManager;
@@ -72,7 +74,6 @@ import org.nightlabs.jfire.config.ConfigGroup;
 import org.nightlabs.jfire.config.ConfigManager;
 import org.nightlabs.jfire.config.ConfigManagerUtil;
 import org.nightlabs.jfire.config.ConfigModule;
-import org.nightlabs.jfire.config.EditLockTypeConfigModule;
 import org.nightlabs.jfire.config.dao.ConfigModuleDAO;
 import org.nightlabs.jfire.config.id.ConfigID;
 import org.nightlabs.jfire.config.id.ConfigModuleID;
@@ -388,10 +389,7 @@ extends LSDPreferencePage
 	@Implement
 	public void createPartContents(Composite parent) 
 	{
-		// WORKAROUND: done to set the configID
-		init(getWorkbench());
-		
-		fadableWrapper = new FadeableComposite(parent, SWT.NONE, LayoutMode.TIGHT_WRAPPER);
+		fadableWrapper = new FadeableComposite(parent, SWT.NONE, LayoutMode.NONE, LayoutDataMode.NONE);
 		
 		// create temporary label for loading time
 		StackLayout layout = new StackLayout();
@@ -417,9 +415,12 @@ extends LSDPreferencePage
 				Display.getDefault().asyncExec(new Runnable() {
 					public void run() {
 						if (currentConfigModuleIsEditable) {
-							EditLockMan.sharedInstance().acquireEditLock(EditLockTypeConfigModule.EDIT_LOCK_TYPE_ID, 
-									(ConfigModuleID) JDOHelper.getObjectId(getConfigModuleController().getConfigModule()), "",
-									null, getShell(), getSubProgressMonitorWrapper(1));
+							if (doSetControl) {
+								EditLockMan.sharedInstance().acquireEditLock(JFireBaseEAR.EDIT_LOCK_TYPE_CONFIGMODULE, 
+										(ConfigModuleID) JDOHelper.getObjectId(getConfigModuleController().getConfigModule()), 
+										"This ConfigModule is already opened by someone else!",
+										null, getShell(), getSubProgressMonitorWrapper(1));								
+							}
 						}
 						setUpGui();
 						updateConfigHeader();
@@ -452,17 +453,19 @@ extends LSDPreferencePage
 				changeListener = null;
 			}
 		});
-		fadableWrapper.addDisposeListener(new DisposeListener() {
-			public void widgetDisposed(DisposeEvent e) {
-				if (currentConfigModuleIsEditable) {
-					EditLockMan.sharedInstance().releaseEditLock(
-						(ConfigModuleID) JDOHelper.getObjectId(getConfigModuleController().getConfigModule()));
-				}
-			}
-		});
 
-		if (doSetControl)
+		if (doSetControl) {
 			setControl(fadableWrapper);
+			fadableWrapper.addDisposeListener(new DisposeListener() {
+				public void widgetDisposed(DisposeEvent e) {
+					if (currentConfigModuleIsEditable) {
+						EditLockMan.sharedInstance().releaseEditLock(
+							(ConfigModuleID) JDOHelper.getObjectId(getConfigModuleController().getConfigModule()));
+					}
+				}
+			});
+		}
+
 	}
 	
 	/**

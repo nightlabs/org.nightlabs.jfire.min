@@ -24,6 +24,8 @@ public interface IConfigModuleController
 	/**
 	 * sets the configID
 	 * @param configID the configID to set
+	 * @param useNotAsPreferencePage whether or not the page corresponding to this Controller is used 
+	 * 				inside the PreferencePage Dialog
 	 */
 	public void setConfigID(ConfigID configID, boolean useNotAsPreferencePage);
 	

@@ -45,6 +45,9 @@ import org.nightlabs.jfire.base.person.preferences.PersonStructOrderConfigModule
 
 /**
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
+ * @deprecated This class is currently not used (in plugin.xml
+ * {@link org.nightlabs.jfire.base.person.preferences.PersonStructOrderPreferencePage} is used).
+ * TODO @Carnage please decide which of these is still used (or whether both are necessary) 
  */
 public class PersonStructOrderPreferencePage 
 extends 

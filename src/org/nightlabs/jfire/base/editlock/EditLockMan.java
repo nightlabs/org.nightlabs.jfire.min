@@ -259,7 +259,22 @@ public class EditLockMan
 	 * @param objectID The ID of the object that shall be locked.
 	 * @param description A human-readable description describing the object that is locked.
 	 * @param editLockCallback Either <code>null</code> or your callback-implementation.
-	 * @param parentShell This shell will be used as parent for the collision-dialog, if the object is already locked by someone else. It is not used
+	 * @param monitor As this method synchronously communicates with the server (if necessary), it takes this "tagging" parameter.
+	 */
+	public void acquireEditLock(EditLockTypeID editLockTypeID, ObjectID objectID, String description, EditLockCallback editLockCallback, ProgressMonitor monitor)
+	{
+		acquireEditLock(editLockTypeID, objectID, description, editLockCallback, (Shell)null, monitor);
+	}
+
+	/**
+	 * This method acquires an <code>EditLock</code> (or refreshs it in order to prevent release due to user-inactivity).
+	 *
+	 * @param editLockTypeID The ID referencing the {@link EditLockType} to which the new {@link EditLock} will belong. This parameter is ignored, if the
+	 *		<code>EditLock</code> already exists.
+	 * @param objectID The ID of the object that shall be locked.
+	 * @param description A human-readable description describing the object that is locked.
+	 * @param editLockCallback Either <code>null</code> or your callback-implementation.
+	 * @param parentShell Can be <code>null</code>. If it's undefined, {@link RCPUtil#getActiveWorkbenchShell()} will be used to obtain the parent shell. This shell will be used as parent for the collision-dialog, if the object is already locked by someone else. It is not used
 	 * @param monitor As this method synchronously communicates with the server (if necessary), it takes this "tagging" parameter.
 	 */
 	public void acquireEditLock(EditLockTypeID editLockTypeID, ObjectID objectID, String description, EditLockCallback editLockCallback, final Shell parentShell, ProgressMonitor monitor)
@@ -275,8 +290,8 @@ public class EditLockMan
 
 		// callback can be null => don't check it
 
-		if (parentShell == null)
-			throw new IllegalArgumentException("parentShell must not be null!");
+//		if (parentShell == null)
+//			throw new IllegalArgumentException("parentShell must not be null!");
 
 		if (monitor == null)
 			throw new IllegalArgumentException("monitor must not be null!");
@@ -310,7 +325,11 @@ public class EditLockMan
 			if (acquireEditLockResult.getEditLockCount() > 1) { // there's another lock => we show a warning
 				Runnable dialogOpener = new Runnable() {
 					public void run() {
-						EditLockCollisionWarningDialog dialog = new EditLockCollisionWarningDialog(parentShell, acquireEditLockResult);
+						Shell pshell = parentShell;
+						if (pshell == null)
+							pshell = RCPUtil.getActiveWorkbenchShell();
+
+						EditLockCollisionWarningDialog dialog = new EditLockCollisionWarningDialog(pshell, acquireEditLockResult);
 						dialog.open();
 						dialog.setBlockOnOpen(false);
 					}

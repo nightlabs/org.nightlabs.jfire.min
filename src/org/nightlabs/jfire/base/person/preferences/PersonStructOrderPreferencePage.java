@@ -30,6 +30,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbench;
 import org.nightlabs.base.composite.XComposite;
+import org.nightlabs.base.composite.XComposite.LayoutDataMode;
 import org.nightlabs.base.composite.XComposite.LayoutMode;
 import org.nightlabs.jfire.base.preferences.LSDPreferencePage;
 
@@ -40,6 +41,7 @@ import org.nightlabs.jfire.base.preferences.LSDPreferencePage;
 public class PersonStructOrderPreferencePage 
 extends LSDPreferencePage
 {
+	// TODO what is this wrapper composite good for???
 	private XComposite wrapperComposite;
 	private PersonStructOrderComposite structOrderComposite;
 	
@@ -57,7 +59,7 @@ extends LSDPreferencePage
   protected void createWrapperComposite(Composite parent) 
   {
   	if (wrapperComposite == null)
-  		wrapperComposite = new XComposite(parent, SWT.NONE, LayoutMode.TIGHT_WRAPPER); 	
+  		wrapperComposite = new XComposite(parent, SWT.NONE, LayoutMode.TIGHT_WRAPPER, LayoutDataMode.NONE); 	
   }
 
 	/**

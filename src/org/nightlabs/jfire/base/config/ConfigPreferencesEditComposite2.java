@@ -38,21 +38,27 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-import org.nightlabs.base.composite.XComposite;
+import org.nightlabs.base.composite.FadeableComposite;
 import org.nightlabs.base.job.Job;
+import org.nightlabs.jfire.base.JFireBaseEAR;
+import org.nightlabs.jfire.base.editlock.EditLockMan;
 import org.nightlabs.jfire.config.ConfigModule;
 import org.nightlabs.jfire.config.id.ConfigID;
 import org.nightlabs.progress.ProgressMonitor;
+import org.nightlabs.progress.SubProgressMonitor;
 
 /**
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  *
  */
 public class ConfigPreferencesEditComposite2 
-extends XComposite
+extends FadeableComposite
 implements ConfigPreferenceChangedListener, IStoreChangedConfigModule
 {
 
@@ -60,9 +66,10 @@ implements ConfigPreferenceChangedListener, IStoreChangedConfigModule
 	
 	protected ConfigPreferencesTreeComposite treeComposite;
 	protected ConfigPreferencesComposite preferencesComposite;
+	private SashForm wrapper;
+	
 	protected ConfigModule currentConfigModule;
 	protected ConfigID currentConfigID;
-//	protected Set<AbstractConfigModulePreferencePage> involvedPages = new HashSet<AbstractConfigModulePreferencePage>();
 	protected AbstractConfigModulePreferencePage currentPage;
 
 	protected Map<String, ConfigModule> involvedConfigModules = new HashMap<String, ConfigModule>();
@@ -75,8 +82,6 @@ implements ConfigPreferenceChangedListener, IStoreChangedConfigModule
 
 	protected Set<ConfigModule> dirtyConfigModules = new HashSet<ConfigModule>();
 	
-//	private boolean editingConfigGroup = false;
-
 	/** 
 	 * Set of ConfigModules that have been updated on the server side and for which the update 
 	 * is not yet reflected by the gui.  
@@ -90,8 +95,11 @@ implements ConfigPreferenceChangedListener, IStoreChangedConfigModule
 	 */
 	public ConfigPreferencesEditComposite2(Composite parent, int style, boolean setLayoutData) {
 		super(parent, style, LayoutMode.TIGHT_WRAPPER);
-		this.getGridLayout().numColumns = 2;
-		treeComposite = new ConfigPreferencesTreeComposite(this, SWT.BORDER, false, null);
+		this.setLayoutData(new GridData(GridData.FILL_BOTH));
+		wrapper = new SashForm(this, SWT.HORIZONTAL);
+		wrapper.setLayoutData(new GridData(GridData.FILL_BOTH));
+		
+		treeComposite = new ConfigPreferencesTreeComposite(wrapper, SWT.BORDER, false, null);
 		GridData treeGD = new GridData(GridData.FILL_BOTH);
 		treeComposite.setLayoutData(treeGD);
 		treeComposite.getTreeViewer().addSelectionChangedListener(new ISelectionChangedListener(){ 
@@ -106,8 +114,9 @@ implements ConfigPreferenceChangedListener, IStoreChangedConfigModule
 				updatePreferencesComposite();
 			}			
 		});
-		preferencesComposite = new ConfigPreferencesComposite(this, SWT.NONE, true);
+		preferencesComposite = new ConfigPreferencesComposite(wrapper, SWT.NONE, true);
 		
+		wrapper.setWeights(new int[] {3, 7});
 	}
 
 	private void updatePreferencesGUI() {
@@ -119,7 +128,6 @@ implements ConfigPreferenceChangedListener, IStoreChangedConfigModule
 
 		if (!involvedPages.values().contains(selectedPage)) 
 		{
-//			selectedPage.doCreateContents(preferencesComposite.getWrapper(), currentConfigID);
 			selectedPage.getConfigModuleController().setConfigID(currentConfigID, true);
 			selectedPage.createPartContents(preferencesComposite.getWrapper());
 			
@@ -162,12 +170,44 @@ implements ConfigPreferenceChangedListener, IStoreChangedConfigModule
 		return currentConfigID;
 	}
 
-	public void setCurrentConfigID(ConfigID currentConfigID) {
+	/**
+	 * This method must be called on the UI thread.
+	 *
+	 * @param currentConfigID The new current configID.
+	 */
+	public void setCurrentConfigID(final ConfigID currentConfigID) {
 		this.currentConfigID = currentConfigID;
-		treeComposite.setConfigID(currentConfigID);
-//		editingConfigGroup = ConfigGroup.class.equals(
-//				JDOObjectID2PCClassMap.sharedInstance().getPersistenceCapableClass(currentConfigID) 
-//				);
+		setFaded(true);
+
+		Job lockJob = new Job("Checking for Locks") {
+			@Override
+			protected IStatus run(ProgressMonitor monitor) {
+				monitor.beginTask("Initialising...", 2);
+
+				treeComposite.setConfigID(currentConfigID);
+				monitor.worked(1);
+
+				EditLockMan.sharedInstance().acquireEditLock(JFireBaseEAR.EDIT_LOCK_TYPE_CONFIG, getCurrentConfigID(),
+						"This Config is currently edited by someone else!", null, new SubProgressMonitor(monitor, 1));
+
+				Display.getDefault().asyncExec(new Runnable() {
+					public void run() {
+						setFaded(false);
+					}
+				});
+
+				return Status.OK_STATUS;
+			}
+		};
+		lockJob.setPriority(Job.SHORT);
+//		lockJob.setUser(true);
+		lockJob.schedule();
+
+		wrapper.addDisposeListener(new DisposeListener() {
+			public void widgetDisposed(DisposeEvent e) {
+				EditLockMan.sharedInstance().releaseEditLock(currentConfigID);
+			}
+		});
 	}
 
 	protected AbstractConfigModulePreferencePage getCurrentPage() {
