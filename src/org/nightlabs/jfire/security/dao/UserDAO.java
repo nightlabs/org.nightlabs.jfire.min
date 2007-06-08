@@ -26,6 +26,7 @@ package org.nightlabs.jfire.security.dao;
 import java.util.Collection;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 
 import javax.jdo.JDOHelper;
@@ -137,7 +138,7 @@ public class UserDAO extends BaseJDOObjectDAO<UserID, User>
 		
 		monitor.beginTask("Storing user: "+user.getName(), 4);
 		try {
-			Hashtable initialContextProperties = SecurityReflector.getInitialContextProperties();
+			Properties initialContextProperties = SecurityReflector.getInitialContextProperties();
 			UserManager um = UserManagerUtil.getHome(initialContextProperties).create();
 			PropertyManager pm = PropertyManagerUtil.getHome(initialContextProperties).create();
 			monitor.worked(1);
