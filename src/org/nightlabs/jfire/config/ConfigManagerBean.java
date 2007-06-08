@@ -54,6 +54,7 @@ import org.nightlabs.jfire.base.JFireBaseEAR;
 import org.nightlabs.jfire.config.id.ConfigID;
 import org.nightlabs.jfire.config.id.ConfigModuleID;
 import org.nightlabs.jfire.config.xml.XMLConfigFactory;
+import org.nightlabs.jfire.editlock.EditLockType;
 import org.nightlabs.jfire.workstation.WorkstationFeaturesCfMod;
 import org.nightlabs.util.CollectionUtil;
 
@@ -783,7 +784,8 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 			pm.makePersistent(workstationConfigSetup);
 			workstationConfigSetup.getConfigModuleClasses().add(WorkstationFeaturesCfMod.class.getName());
 			
-			pm.makePersistent(new EditLockTypeConfigModule(EditLockTypeConfigModule.EDIT_LOCK_TYPE_ID));
+			pm.makePersistent(new EditLockType(JFireBaseEAR.EDIT_LOCK_TYPE_CONFIGMODULE));
+			pm.makePersistent(new EditLockType(JFireBaseEAR.EDIT_LOCK_TYPE_CONFIG));
 		} finally {
 			pm.close();
 		}
