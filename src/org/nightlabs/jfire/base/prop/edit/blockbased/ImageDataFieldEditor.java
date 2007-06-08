@@ -45,8 +45,9 @@ import org.nightlabs.language.LanguageCf;
 /**
  * @author Tobias Langner <!-- tobias[DOT]langner[AT]nightlabs[DOT]de -->
  */
-public class ImageDataFieldEditor extends AbstractDataFieldEditor<ImageDataField> {
-	
+public class ImageDataFieldEditor 
+extends AbstractDataFieldEditor<ImageDataField> 
+{
 	public static class Factory extends AbstractDataFieldEditorFactory<ImageDataField> {
 
 		@Override
@@ -245,36 +246,40 @@ public class ImageDataFieldEditor extends AbstractDataFieldEditor<ImageDataField
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.nightlabs.jfire.base.prop.edit.DataFieldEditor#updateProp()
+	 * @see org.nightlabs.jfire.base.prop.edit.DataFieldEditor#updateProperty()
 	 */
 	public void updateProperty() {
 		if (!isChanged())
 			return;
 		
-		ImageDataField dataField = getDataField();
-		String path = filenameTextbox.getText();		
-		if (path == null || "".equals(path))
-			throw new RuntimeException("Path must not be empty or null!");
-		
-		//FIXME: get content type somehow!
-		String contentType = "application/unknown";
-		String lowerPath = path.toLowerCase();
-		if(lowerPath.endsWith(".png"))
-			contentType = "image/png";
-		else if(lowerPath.endsWith(".jpg"))
-			contentType = "image/jpeg";
-		else if(lowerPath.endsWith(".gif"))
-			contentType = "image/gif";
+//		Display.getDefault().syncExec(new Runnable(){
+//			public void run() {
+				ImageDataField dataField = getDataField();
+				String path = filenameTextbox.getText();		
+				if (path == null || "".equals(path))
+					throw new RuntimeException("Path must not be empty or null!");
+				
+				//FIXME: get content type somehow!
+				String contentType = "application/unknown";
+				String lowerPath = path.toLowerCase();
+				if(lowerPath.endsWith(".png"))
+					contentType = "image/png";
+				else if(lowerPath.endsWith(".jpg"))
+					contentType = "image/jpeg";
+				else if(lowerPath.endsWith(".gif"))
+					contentType = "image/gif";
 
-		// store the image as in the data field.
-		File imageFile = new File(path);
-		
-		try {
-			dataField.loadFile(imageFile, contentType);
-		} catch (IOException e) {
-			e.printStackTrace();
-			throw new RuntimeException(e);
-		}
+				// store the image as in the data field.
+				File imageFile = new File(path);
+				
+				try {
+					dataField.loadFile(imageFile, contentType);
+				} catch (IOException e) {
+					e.printStackTrace();
+					throw new RuntimeException(e);
+				}				
+//			}
+//		});		
 	}
 	
 	public LanguageCf getLanguage() {

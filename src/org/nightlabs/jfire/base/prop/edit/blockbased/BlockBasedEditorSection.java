@@ -66,7 +66,13 @@ public class BlockBasedEditorSection extends RestorableSectionPart
 		System.err.println("Person properties: commit("+onSave+")");
 		System.err.println("***********************************");
 		super.commit(onSave);
-		blockBasedPersonEditor.updatePropertySet();
+		// TODO: done this to avoid Illegal Thread access in DataFieldEditors
+		// instead each DataFieldEditor should be threadsave
+		Display.getDefault().syncExec(new Runnable(){
+			public void run() {
+				blockBasedPersonEditor.updatePropertySet();
+			}		
+		});
 	}
 
 	/**
@@ -76,23 +82,16 @@ public class BlockBasedEditorSection extends RestorableSectionPart
 	 */
 	protected void createClient(Section section, FormToolkit toolkit, String sectionDescriptionText) 
 	{
-//		section.setText("User Properties");
-//		section.setExpanded(true);
 		section.setLayout(new GridLayout());
 		section.setLayoutData(new GridData(GridData.FILL_BOTH));
-
 		createDescriptionControl(section, toolkit, sectionDescriptionText);
-
 		Composite container = EntityEditorUtil.createCompositeClient(toolkit, section, 1);
 
 		blockBasedPersonEditor = new BlockBasedEditor();
 		blockBasedPersonEditorControl = blockBasedPersonEditor.createControl(container, false);
 		blockBasedPersonEditorControl.setLayoutData(new GridData(GridData.FILL_BOTH));
-
 		blockBasedPersonEditor.setChangeListener(new DataBlockEditorChangedListener() {
-
-			public void propDataBlockEditorChanged(DataBlockEditor dataBlockEditor, DataFieldEditor dataFieldEditor) 
-			{
+			public void propDataBlockEditorChanged(DataBlockEditor dataBlockEditor, DataFieldEditor dataFieldEditor) {
 				markDirty();
 			}
 		});

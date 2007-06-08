@@ -30,6 +30,7 @@ import org.apache.log4j.Logger;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.nightlabs.jfire.base.prop.edit.AbstractDataFieldEditor;
 import org.nightlabs.jfire.base.prop.edit.AbstractDataFieldEditorFactory;
 import org.nightlabs.jfire.prop.datafield.TextDataField;
@@ -97,8 +98,13 @@ public class TextDataFieldEditor extends AbstractDataFieldEditor<TextDataField> 
 	/**
 	 * @see org.nightlabs.jfire.base.prop.edit.DataFieldEditor#updateProperty()
 	 */
-	public void updateProperty() {
-		getDataField().setText(composite.getText());
+	public void updateProperty() 
+	{
+//		Display.getDefault().syncExec(new Runnable(){
+//			public void run() {
+				getDataField().setText(composite.getText());	
+//			}
+//		});
 	}
 
 

@@ -69,8 +69,11 @@ public interface DataFieldEditor<F extends AbstractDataField> {
 	
 	public void refresh();
 	
+	/**
+	 * updates the property
+	 * This method should be Threadsave
+	 */
 	public void updateProperty();
-	
 	
 	public void addDataFieldEditorChangedListener(DataFieldEditorChangeListener listener);
 	public void removeDataFieldEditorChangedListener(DataFieldEditorChangeListener listener);
