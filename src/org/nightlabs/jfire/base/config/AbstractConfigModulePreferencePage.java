@@ -395,7 +395,7 @@ extends LSDPreferencePage
 		StackLayout layout = new StackLayout();
 		fadableWrapper.setLayout(layout);
 		loading = new XComposite(fadableWrapper, SWT.NONE);
-		new Label(loading, SWT.NONE).setText("Loading...");
+		new Label(loading, SWT.NONE).setText(Messages.getString("config.AbstractConfigModulePreferencePage.loadingLabel")); //$NON-NLS-1$
 		layout.topControl = loading;
 		fadableWrapper.setFaded(true);
 		
@@ -404,10 +404,10 @@ extends LSDPreferencePage
 		header.getGridData().grabExcessVerticalSpace = false;
 		body = new XComposite(loadingDone, SWT.NONE, LayoutMode.TIGHT_WRAPPER);
 
-		Job fetchJob = new Job("Fetch ConfigModule Information") {
+		Job fetchJob = new Job(Messages.getString("config.AbstractConfigModulePreferencePage.fetchJobName")) { //$NON-NLS-1$
 			@Override
 			protected IStatus run(ProgressMonitor monitor) {
-				monitor.beginTask("Getting the Module data", 3);
+				monitor.beginTask(Messages.getString("config.AbstractConfigModulePreferencePage.gettingModuleDataTask"), 3); //$NON-NLS-1$
 				getConfigModuleController().setConfigModule(getConfigModuleController().retrieveConfigModule(monitor));
 				currentConfigIsGroupMember = getConfigModuleController().checkIfIsGroupMember(getConfigModuleController().getConfigModule());
 				currentConfigModuleIsEditable = getConfigModuleController().canEdit(getConfigModuleController().getConfigModule());
@@ -418,7 +418,7 @@ extends LSDPreferencePage
 							if (doSetControl) {
 								EditLockMan.sharedInstance().acquireEditLock(JFireBaseEAR.EDIT_LOCK_TYPE_ID_CONFIG_MODULE, 
 										(ConfigModuleID) JDOHelper.getObjectId(getConfigModuleController().getConfigModule()), 
-										"This ConfigModule is already opened by someone else!",
+										Messages.getString("config.AbstractConfigModulePreferencePage.editLockWarning"), //$NON-NLS-1$
 										null, getShell(), getSubProgressMonitorWrapper(1));								
 							}
 						}
@@ -440,13 +440,13 @@ extends LSDPreferencePage
 		fetchJob.schedule();
 	
 		if (logger.isDebugEnabled())
-			logger.debug("createContents: registering changeListener");
+			logger.debug("createContents: registering changeListener"); //$NON-NLS-1$
 		
 		JDOLifecycleManager.sharedInstance().addNotificationListener(getConfigModuleClass(), changeListener);
 		fadableWrapper.addDisposeListener(new DisposeListener() {
 			public void widgetDisposed(DisposeEvent e) {
 				if (logger.isDebugEnabled())
-					logger.debug("widgetDisposed: UNregistering changeListener");
+					logger.debug("widgetDisposed: UNregistering changeListener"); //$NON-NLS-1$
 
 				configChangedListeners.clear();
 				JDOLifecycleManager.sharedInstance().removeNotificationListener(getConfigModuleClass(), changeListener);
@@ -505,7 +505,7 @@ extends LSDPreferencePage
 			
 			if (! currentConfigIsGroupMember) {
 				inheritMemberConfigModule.setEnabled(false);
-				inheritMemberConfigModule.setCaption("The config is in no group.");
+				inheritMemberConfigModule.setCaption(Messages.getString("config.AbstractConfigModulePreferencePage.noGroup")); //$NON-NLS-1$
 				return;
 			}
 
@@ -517,7 +517,7 @@ extends LSDPreferencePage
 			if (! currentConfigModuleIsEditable)
 				inheritMemberConfigModule.setCaption(Messages.getString("config.AbstractConfigModulePreferencePage.GroupDisallowsOverwrite")); //$NON-NLS-1$
 			else
-				inheritMemberConfigModule.setCaption("Inherit the settings of this config module from its group?");
+				inheritMemberConfigModule.setCaption(Messages.getString("config.AbstractConfigModulePreferencePage.inheritFromGroup")); //$NON-NLS-1$
 		}
 	}
 
@@ -565,15 +565,15 @@ extends LSDPreferencePage
 	 * 	a GridLayout.
 	 */
 	protected void createConfigMemberHeader(Composite parent) {
-		inheritMemberConfigModule = new InheritanceToggleButton(parent, "");
+		inheritMemberConfigModule = new InheritanceToggleButton(parent, ""); //$NON-NLS-1$
 		inheritMemberConfigModule.setSelection(getConfigModuleController().getConfigModule().getFieldMetaData(ConfigModule.class.getName()).isValueInherited());
 			
 		inheritMemberConfigModule.setEnabled(currentConfigModuleIsEditable); 
 
 		if (! currentConfigModuleIsEditable)
-			inheritMemberConfigModule.setCaption(Messages.getString("AbstractConfigModulePreferencePage.GroupDisallowsOverwrite")); //$NON-NLS-1$
+			inheritMemberConfigModule.setCaption(Messages.getString("config.AbstractConfigModulePreferencePage.GroupDisallowsOverwrite")); //$NON-NLS-1$
 		else
-			inheritMemberConfigModule.setCaption("Inherit the settings of this config module from its group?");
+			inheritMemberConfigModule.setCaption(Messages.getString("config.AbstractConfigModulePreferencePage.inheritFromGroup")); //$NON-NLS-1$
 
 		inheritMemberConfigModule.addSelectionListener(new SelectionAdapter() {
 			@Override
@@ -587,7 +587,7 @@ extends LSDPreferencePage
 //				FIXME: The first time inheritance is triggered, the valueInherited value is here set to true (look deeper)
 				if (selected) {
 					fadableWrapper.setFaded(true);
-					Job fetchJob = new Job("Fetch ConfigModule Information") {
+					Job fetchJob = new Job(Messages.getString("config.AbstractConfigModulePreferencePage.fetchJobName")) { //$NON-NLS-1$
 						@Override
 						protected IStatus run(ProgressMonitor monitor) {
 //						FIXME: and is in this job, when read, FALSE!!!! Damn f%&§$=! bug!
@@ -680,7 +680,7 @@ extends LSDPreferencePage
 	
 	public String getSimpleClassName() 
 	{
-		int index = getConfigModuleClassName().lastIndexOf(".");
+		int index = getConfigModuleClassName().lastIndexOf("."); //$NON-NLS-1$
 		return getConfigModuleClassName().substring(index+1, getConfigModuleClassName().length()-1);
 	}
 	
@@ -773,8 +773,8 @@ extends LSDPreferencePage
 	 */
 	public void storeConfigModule() {
 		if (Thread.currentThread() == Display.getDefault().getThread()) {
-			logger.error("This method must not be called on the GUI-thread! Use a job!", 
-					new Exception("This method must not be called on the GUI-thread! Use a job!"));
+			logger.error("This method must not be called on the GUI-thread! Use a job!",  //$NON-NLS-1$
+					new Exception("This method must not be called on the GUI-thread! Use a job!")); //$NON-NLS-1$
 //			throw new IllegalStateException("This method must not be called on the GUI-thread! Use a job!");
 		}
 

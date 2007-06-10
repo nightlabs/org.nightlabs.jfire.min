@@ -63,7 +63,7 @@ public abstract class JDOObjectProvider
 	throws Exception
 	{
 		if (inRetrieveJDOObject_StringArray)
-			throw new IllegalStateException("You have to override at least one of the retrieveJDOObject(...) methods!");
+			throw new IllegalStateException("You have to override at least one of the retrieveJDOObject(...) methods!"); //$NON-NLS-1$
 
 		inRetrieveJDOObject_StringArray = true;
 		try {
@@ -84,7 +84,7 @@ public abstract class JDOObjectProvider
 	throws Exception
 	{
 		if (inRetrieveJDOObject_Set)
-			throw new IllegalStateException("You have to override at least one of the retrieveJDOObject(...) methods!");
+			throw new IllegalStateException("You have to override at least one of the retrieveJDOObject(...) methods!"); //$NON-NLS-1$
 
 		inRetrieveJDOObject_Set = true;
 		try {
@@ -99,7 +99,7 @@ public abstract class JDOObjectProvider
 	throws Exception
 	{
 		if(inRetrieveJDOObjects_StringArray_StringArray)
-			throw new IllegalStateException("You have to override at least one of the retrieveJDOObjects(...) methods!");
+			throw new IllegalStateException("You have to override at least one of the retrieveJDOObjects(...) methods!"); //$NON-NLS-1$
 
 		inRetrieveJDOObjects_StringArray_StringArray = true;
 		try {
@@ -114,7 +114,7 @@ public abstract class JDOObjectProvider
 	throws Exception
 	{
 		if (inRetrieveJDOObjects_Set_Set)
-			throw new IllegalStateException("You have to override at least one of retrieveJDOObjects(String, Object[], String[]) and retrieveJDOObjects(String, Set, Set)");
+			throw new IllegalStateException("You have to override at least one of retrieveJDOObjects(String, Object[], String[]) and retrieveJDOObjects(String, Set, Set)"); //$NON-NLS-1$
 
 		inRetrieveJDOObjects_Set_Set = true;
 		try {
@@ -129,7 +129,7 @@ public abstract class JDOObjectProvider
 	throws Exception
 	{
 		if (inRetrieveJDOObjects_Set_StringArray)
-			throw new IllegalStateException("You have to override at least one of retrieveJDOObjects(String, Object[], String[]) and retrieveJDOObjects(String, Set, Set)");
+			throw new IllegalStateException("You have to override at least one of retrieveJDOObjects(String, Object[], String[]) and retrieveJDOObjects(String, Set, Set)"); //$NON-NLS-1$
 
 		inRetrieveJDOObjects_Set_StringArray = true;
 		try {

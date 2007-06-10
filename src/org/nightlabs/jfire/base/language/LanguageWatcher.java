@@ -80,7 +80,7 @@ public class LanguageWatcher implements LoginStateListener {
 	public void loginStateChanged(int loginState, IAction action) {
 		switch (loginState) {
 			case Login.LOGINSTATE_LOGGED_IN:
-				logger.debug("loginStateChanged(..): syncing languages");
+				logger.debug("loginStateChanged(..): syncing languages"); //$NON-NLS-1$
 				String userName = Login.sharedInstance().getLoginContext().getUsername();
 				if (!isLanguageChecked(userName)) {
 					syncLanguages();
@@ -156,7 +156,7 @@ public class LanguageWatcher implements LoginStateListener {
 				}
 			}
 		} catch (Exception e) {
-			logger.error("Failed syncing languages: ",e);
+			logger.error("Failed syncing languages: ",e); //$NON-NLS-1$
 		}
 	}
 	
@@ -195,7 +195,7 @@ public class LanguageWatcher implements LoginStateListener {
 		try {
 			Config.sharedInstance().createConfigModule(GlobalL10nSettings.class);
 		} catch (ConfigException e) {
-			logger.error("Error creating GlobalL10nSettings Cf-Mod.",e);
+			logger.error("Error creating GlobalL10nSettings Cf-Mod.",e); //$NON-NLS-1$
 		}
 	}
 

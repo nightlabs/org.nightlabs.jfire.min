@@ -43,7 +43,7 @@ public class JFireApplicationThread
 //extends Thread
 extends AbstractApplicationThread
 {
-	public static final String DEFAULT_NAME = "JFireApplicationThread";
+	public static final String DEFAULT_NAME = "JFireApplicationThread"; //$NON-NLS-1$
 
 	public JFireApplicationThread()
 	{

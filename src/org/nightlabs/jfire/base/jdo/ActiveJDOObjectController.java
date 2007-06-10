@@ -21,6 +21,7 @@ import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleAdapterJob;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleEvent;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleListener;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleManager;
+import org.nightlabs.jfire.base.resource.Messages;
 import org.nightlabs.jfire.jdo.notification.DirtyObjectID;
 import org.nightlabs.jfire.jdo.notification.IJDOLifecycleListenerFilter;
 import org.nightlabs.jfire.jdo.notification.JDOLifecycleState;
@@ -75,7 +76,7 @@ public abstract class ActiveJDOObjectController<JDOObjectID, JDOObject>
 	private void fireJDOObjectsChangedEvent(Collection<JDOObject> loadedJDOObjects, Map<JDOObjectID, JDOObject> ignoredJDOObjects, Map<JDOObjectID, JDOObject> deletedJDOObjects)
 	{
 		if (closed) {
-			logger.warn("fireJDOObjectsChangedEvent: already closed: " + this);
+			logger.warn("fireJDOObjectsChangedEvent: already closed: " + this); //$NON-NLS-1$
 			return;
 		}
 
@@ -127,7 +128,7 @@ public abstract class ActiveJDOObjectController<JDOObjectID, JDOObject>
 	private Map<JDOObjectID, JDOObject> jdoObjectID2jdoObject = null;
 	private Object jdoObjectID2jdoObjectMutex = new Object();
 	private List<JDOObject> jdoObjects = null;
-	private JDOLifecycleListener lifecycleListener = new JDOLifecycleAdapterJob("Loading New jdoObjects")
+	private JDOLifecycleListener lifecycleListener = new JDOLifecycleAdapterJob(Messages.getString("jdo.ActiveJDOObjectController.loadingNewObjectsJob")) //$NON-NLS-1$
 	{
 		private IJDOLifecycleListenerFilter lifecycleListenerFilter = createJDOLifecycleListenerFilter();
 
@@ -193,7 +194,7 @@ public abstract class ActiveJDOObjectController<JDOObjectID, JDOObject>
 		}
 	};
 
-	private NotificationListener notificationListener = new NotificationAdapterJob("Loading Changed jdoObjects")
+	private NotificationListener notificationListener = new NotificationAdapterJob(Messages.getString("jdo.ActiveJDOObjectController.loadingChangedObjectsJob")) //$NON-NLS-1$
 	{
 		public void notify(final NotificationEvent notificationEvent)
 		{
@@ -270,7 +271,7 @@ public abstract class ActiveJDOObjectController<JDOObjectID, JDOObject>
 	protected void assertOpen()
 	{
 		if (closed)
-			throw new IllegalStateException("This instance of ActiveJDOObjectController is already closed: " + this);
+			throw new IllegalStateException("This instance of ActiveJDOObjectController is already closed: " + this); //$NON-NLS-1$
 	}
 
 	/**
@@ -282,14 +283,14 @@ public abstract class ActiveJDOObjectController<JDOObjectID, JDOObject>
 		assertOpen();
 		if (listenersExist) {
 			if (logger.isDebugEnabled())
-				logger.debug("close: unregistering listeners (" + getJDOObjectClass() + ')');
+				logger.debug("close: unregistering listeners (" + getJDOObjectClass() + ')'); //$NON-NLS-1$
 
 			JDOLifecycleManager.sharedInstance().removeLifecycleListener(lifecycleListener);
 			JDOLifecycleManager.sharedInstance().removeNotificationListener(getJDOObjectClass(), notificationListener);
 		}
 		else {
 			if (logger.isDebugEnabled())
-				logger.debug("close: there are no listeners - will not unregister (" + getJDOObjectClass() + ')');
+				logger.debug("close: there are no listeners - will not unregister (" + getJDOObjectClass() + ')'); //$NON-NLS-1$
 		}
 		closed = true;
 	}
@@ -312,7 +313,7 @@ public abstract class ActiveJDOObjectController<JDOObjectID, JDOObject>
 		assertOpen();
 		if (!listenersExist) {
 			if (logger.isDebugEnabled())
-				logger.debug("getElements: registering listeners (" + getJDOObjectClass() + ')');
+				logger.debug("getElements: registering listeners (" + getJDOObjectClass() + ')'); //$NON-NLS-1$
 
 			listenersExist = true;
 			JDOLifecycleManager.sharedInstance().addLifecycleListener(lifecycleListener);
@@ -322,7 +323,7 @@ public abstract class ActiveJDOObjectController<JDOObjectID, JDOObject>
 		if (jdoObjects != null)
 			return jdoObjects;
 
-		Job job = new Job("Loading Data") {
+		Job job = new Job(Messages.getString("jdo.ActiveJDOObjectController.loadingDataJob")) { //$NON-NLS-1$
 			protected IStatus run(ProgressMonitor monitor)
 			{
 				final Collection<JDOObject> jdoObjects = retrieveJDOObjects(monitor);

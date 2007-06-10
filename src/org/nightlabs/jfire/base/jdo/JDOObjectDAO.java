@@ -40,6 +40,7 @@ import javax.jdo.JDOHelper;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.jdo.cache.Cache;
+import org.nightlabs.jfire.base.resource.Messages;
 import org.nightlabs.util.CollectionUtil;
 
 /**
@@ -130,7 +131,7 @@ public abstract class JDOObjectDAO<JDOObjectID, JDOObject>
 	 * @return All requested and existing JDO objects.
 	 * @throws Exception in case of an error
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("unchecked") //$NON-NLS-1$
 	protected synchronized JDOObject getJDOObject(String scope, JDOObjectID objectID, String[] fetchGroups, int maxFetchDepth, IProgressMonitor monitor)
 	{
 		try {
@@ -164,7 +165,7 @@ public abstract class JDOObjectDAO<JDOObjectID, JDOObject>
 	 * @return All requested and existing JDO objects.
 	 * @throws Exception in case of an error
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("unchecked") //$NON-NLS-1$
 	protected synchronized List<JDOObject> getJDOObjects(String scope, Collection<JDOObjectID> objectIDs, String[] fetchGroups, int maxFetchDepth, IProgressMonitor monitor)
 	{
 		if (objectIDs == null || objectIDs.isEmpty())
@@ -176,7 +177,7 @@ public abstract class JDOObjectDAO<JDOObjectID, JDOObject>
 			return objects;
 		}
 			
-		monitor.beginTask("Getting "+objectIDs.size()+" Objects through Cache", objectIDs.size());
+		monitor.beginTask(String.format(Messages.getString("jdo.JDOObjectDAO.gettingObjects"), objectIDs.size()), objectIDs.size()); //$NON-NLS-1$
 //		List<JDOObject> fromCache = new ArrayList<JDOObject>();
 		List<JDOObjectID> listetIDs = new ArrayList<JDOObjectID>(objectIDs);
 //		Set<JDOObjectID> notInCache = new HashSet<JDOObjectID>();
@@ -204,7 +205,7 @@ public abstract class JDOObjectDAO<JDOObjectID, JDOObject>
 		try { //                               workaround for hashset.keyset != serializable
 			fetchedObjects = retrieveJDOObjects(new HashSet<JDOObjectID>(notInCache.keySet()), fetchGroups, maxFetchDepth, monitor);
 		} catch (Exception e) {
-			throw new RuntimeException("Error occured while fetching Objects from the data store!\n", e);
+			throw new RuntimeException("Error occured while fetching Objects from the data store!\n", e); //$NON-NLS-1$
 		}
 		
 		// put remaining objects in correct position of the result list

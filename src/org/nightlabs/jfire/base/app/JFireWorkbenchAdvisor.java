@@ -88,7 +88,7 @@ extends AbstractWorkbenchAdvisor
 		JFireApplication.getLogDir();
 		try {	
 			org.nightlabs.jfire.classloader.JFireRCDLDelegate.
-					createSharedInstance(Login.getLogin(false), new File(JFireApplication.getRootDir(), "classloader.cache"))
+					createSharedInstance(Login.getLogin(false), new File(JFireApplication.getRootDir(), "classloader.cache")) //$NON-NLS-1$
 					.setFilter(RemoteResourceFilterRegistry.sharedInstance());
 		} catch (LoginException e) {
 			throw e;
@@ -112,13 +112,13 @@ extends AbstractWorkbenchAdvisor
 			
 	protected void initializeLoginModule()
 	{
-		logger.debug("#initializeLoginModule: Declaring Configuration");
+		logger.debug("#initializeLoginModule: Declaring Configuration"); //$NON-NLS-1$
 		JFireSecurityConfiguration.declareConfiguration();		
-		logger.debug("#initializeLoginModule: Setting LoginHandler");
+		logger.debug("#initializeLoginModule: Setting LoginHandler"); //$NON-NLS-1$
 		try {
 			Login.getLogin(false).setLoginHandler(new JFireLoginHandler());
 		} catch (LoginException e) {
-			throw new RuntimeException("How the hell could this happen?!", e);
+			throw new RuntimeException("How the hell could this happen?!", e); //$NON-NLS-1$
 		}
 	}
 	

@@ -57,7 +57,7 @@ public abstract class LSDWorkbenchWindowActionDelegate implements
 		try {
 			Login.getLogin(false).removeLoginStateListener(this);
 		} catch (LoginException e) {
-			throw new RuntimeException("Login.getLogin(false) should never throw this exception!", e);
+			throw new RuntimeException("Login.getLogin(false) should never throw this exception!", e); //$NON-NLS-1$
 		}
 	}
 	

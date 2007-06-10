@@ -12,6 +12,7 @@ import org.nightlabs.annotation.Implement;
 import org.nightlabs.base.table.AbstractTableComposite;
 import org.nightlabs.base.table.TableContentProvider;
 import org.nightlabs.base.table.TableLabelProvider;
+import org.nightlabs.jfire.base.resource.Messages;
 import org.nightlabs.l10n.DateFormatter;
 
 public class EditLockCarrierTable
@@ -26,7 +27,7 @@ extends AbstractTableComposite
 				if (columnIndex == 0)
 					return String.valueOf(element);
 
-				return "";
+				return ""; //$NON-NLS-1$
 			}
 
 			EditLockCarrier editLockCarrier = (EditLockCarrier) element;
@@ -39,7 +40,7 @@ extends AbstractTableComposite
 				case 2:
 					return DateFormatter.formatDateShortTimeHMS(editLockCarrier.getLastUserActivityDT(), false);
 				default:
-					return "";
+					return ""; //$NON-NLS-1$
 			}
 		}
 	}
@@ -55,13 +56,13 @@ extends AbstractTableComposite
 		TableColumn tc;
 
 		tc = new TableColumn(table, SWT.LEFT);
-		tc.setText("Description");
+		tc.setText(Messages.getString("editlock.EditLockCarrierTable.description")); //$NON-NLS-1$
 
 		tc = new TableColumn(table, SWT.LEFT);
-		tc.setText("Created");
+		tc.setText(Messages.getString("editlock.EditLockCarrierTable.created")); //$NON-NLS-1$
 
 		tc = new TableColumn(table, SWT.LEFT);
-		tc.setText("Last User Activity");
+		tc.setText(Messages.getString("editlock.EditLockCarrierTable.lastActivity")); //$NON-NLS-1$
 
 		TableLayout tl = new TableLayout();
 		tl.addColumnData(new ColumnWeightData(1));

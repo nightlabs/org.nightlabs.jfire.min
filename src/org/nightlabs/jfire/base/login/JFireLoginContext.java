@@ -79,7 +79,7 @@ public class JFireLoginContext extends LoginContext {
 	private String userID = null;
 	private String organisationID = null;
 	private String password = null;
-	public static final String USERID_MIDFIX = "@";
+	public static final String USERID_MIDFIX = "@"; //$NON-NLS-1$
 	
 	/**
 	 * Sets the user credentials.

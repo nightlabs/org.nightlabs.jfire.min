@@ -38,17 +38,18 @@ import org.eclipse.swt.widgets.Label;
 
 import org.nightlabs.base.composite.XComposite;
 import org.nightlabs.jfire.base.login.Login;
+import org.nightlabs.jfire.base.resource.Messages;
 
 public class NeedLoginComposite extends XComposite {
 
 	public NeedLoginComposite(Composite parent, int style) {
 		super(parent, style);		
 		Label label = new Label(this, SWT.WRAP);
-		label.setText("You need to login to use this view!");
+		label.setText(Messages.getString("login.part.NeedLoginComposite.loginToUseView")); //$NON-NLS-1$
 		label.setLayoutData(new GridData());
 		
 		Button loginButton = new Button(this, SWT.PUSH);
-		loginButton.setText("Login");
+		loginButton.setText(Messages.getString("login.part.NeedLoginComposite.login")); //$NON-NLS-1$
 		loginButton.addSelectionListener(new SelectionListener() {
 			public void widgetSelected(SelectionEvent e) {
 				try {
@@ -62,6 +63,4 @@ public class NeedLoginComposite extends XComposite {
 			}
 		});
 	}
-	
-	
 }

@@ -102,11 +102,11 @@ implements IConfigModuleController
 	 * @return the ConfigModule of the Config with ID = <code>configID</code> and the parameter as set
 	 * 	by the abstract getters (e.g. <code>getPreferencePage().getConfigModuleClassName()</code>).
 	 */	
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("unchecked") //$NON-NLS-1$
 	public ConfigModule retrieveConfigModule(ProgressMonitor monitor) 
 	{
 		if (getConfigID() == null)
-			throw new RuntimeException("The configID of the Config for which the ConfigModule should be fetched is not set!");
+			throw new RuntimeException("The configID of the Config for which the ConfigModule should be fetched is not set!"); //$NON-NLS-1$
 		
 		return Utils.cloneSerializable((ConfigModule) ConfigModuleDAO.sharedInstance().getConfigModule(
 				getConfigID(), 
@@ -135,15 +135,15 @@ implements IConfigModuleController
 	public void updateGuiWith(ConfigModule configModule) 
 	{
 		if (configModule == null)
-			throw new RuntimeException("The ConfigModule configModule passed to updateGuiWith(configModule) must not be null!");
+			throw new RuntimeException("The ConfigModule configModule passed to updateGuiWith(configModule) must not be null!"); //$NON-NLS-1$
 		
 		try {
 			ConfigID newConfigID = (ConfigID) JDOHelper.getObjectId(configModule.getConfig()); 
 			if (newConfigID != null && ! newConfigID.equals(getConfigID()))
-				throw new IllegalStateException("The given ConfigModule does not belong to the Config this page is editing!");
+				throw new IllegalStateException("The given ConfigModule does not belong to the Config this page is editing!"); //$NON-NLS-1$
 		} catch (JDODetachedFieldAccessException e) {
 			if (logger.isEnabledFor(Priority.WARN))
-				logger.warn("The given ConfigModule has no Config detached with it! Module = "+configModule);			
+				logger.warn("The given ConfigModule has no Config detached with it! Module = "+configModule);			 //$NON-NLS-1$
 		} // if config is not in FetchGroups -> believe given configModule belongs to this config
 
 		setConfigModule(configModule);

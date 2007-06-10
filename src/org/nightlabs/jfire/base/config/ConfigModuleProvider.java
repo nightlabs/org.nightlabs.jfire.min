@@ -54,14 +54,14 @@ public class ConfigModuleProvider extends JDOObjectProvider {
 	 */
 	protected Object retrieveJDOObject(String scope, Object objectID, String[] fetchGroups, int maxFetchDepth) throws Exception {
 		if (!(objectID instanceof ConfigModuleID))
-			throw new IllegalArgumentException("Expected ConfigModuleID as objectID-parameter but found "+objectID.getClass().getName()+": "+objectID);
+			throw new IllegalArgumentException("Expected ConfigModuleID as objectID-parameter but found "+objectID.getClass().getName()+": "+objectID); //$NON-NLS-1$ //$NON-NLS-2$
 		ConfigModuleID moduleID = (ConfigModuleID)objectID;
 		String className = ConfigModule.getClassNameOutOfCfModKey(moduleID.cfModKey);
 		Class cfModClass = null;
 		try {
 			cfModClass = Class.forName(className);
 		} catch (ClassNotFoundException e) {
-			throw new RuntimeException("Could resolve ConfigModule class "+className, e);
+			throw new RuntimeException("Could resolve ConfigModule class "+className, e); //$NON-NLS-1$
 		}
 		String cfModID = ConfigModule.getCfModIDOutOfCfModKey(moduleID.cfModKey);		
 		ConfigID configID = ConfigID.create(moduleID.organisationID, moduleID.configKey, moduleID.configType);

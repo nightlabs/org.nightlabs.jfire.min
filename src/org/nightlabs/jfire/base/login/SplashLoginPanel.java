@@ -45,6 +45,7 @@ import org.apache.log4j.Logger;
 
 import org.nightlabs.config.Config;
 import org.nightlabs.config.ConfigException;
+import org.nightlabs.jfire.base.resource.Messages;
 import org.nightlabs.rcp.splash.SplashScreen;
 import org.nightlabs.util.SpringUtilities;
 
@@ -127,28 +128,28 @@ public class SplashLoginPanel extends JPanel
 		messagePanel = new JPanel();
 		messagePanel.setOpaque(false);
 		messagePanel.setLayout(new FlowLayout(FlowLayout.LEADING, 10, 10));
-		labelMessage = new JLabel("Welcome to JFire! Please log in now.");
+		labelMessage = new JLabel(Messages.getString("login.SplashLoginPanel.pleaseLogin")); //$NON-NLS-1$
 		messagePanel.add(labelMessage);
 		fieldWrapperPanel.add(messagePanel, BorderLayout.NORTH);
 
 		fieldWrapperPanel.add(editPanel, BorderLayout.SOUTH);
 
-		labelUsername = new JLabel("Username:", JLabel.LEADING);
+		labelUsername = new JLabel(Messages.getString("login.SplashLoginPanel.username"), JLabel.LEADING); //$NON-NLS-1$
 		editPanel.add(labelUsername);
 		textUsername = new JTextField(15);
 		labelUsername.setLabelFor(textUsername);
 		textUsername.setText(persistentLoginModule.getUserID());
 		editPanel.add(textUsername);
 
-		labelPassword = new JLabel("Password:", JLabel.LEADING);
+		labelPassword = new JLabel(Messages.getString("login.SplashLoginPanel.password"), JLabel.LEADING); //$NON-NLS-1$
 		editPanel.add(labelPassword);
 		textPassword = new JPasswordField(15);
 		labelPassword.setLabelFor(textPassword);
-		textPassword.setText("");
+		textPassword.setText(""); //$NON-NLS-1$
 		textPassword.setEchoChar('*');
 		editPanel.add(textPassword);
 
-		labelWorkstation = new JLabel("Workstation:", JLabel.LEADING);
+		labelWorkstation = new JLabel(Messages.getString("login.SplashLoginPanel.workstation"), JLabel.LEADING); //$NON-NLS-1$
 		editPanel.add(labelWorkstation);
 		textWorkstation = new JTextField(15);
 		labelWorkstation.setLabelFor(textWorkstation);
@@ -170,28 +171,28 @@ public class SplashLoginPanel extends JPanel
 		detailPanel.setLayout(new SpringLayout());
 		detailWrapper.add(detailPanel, BorderLayout.NORTH);
 
-		labelOrganisationID = new JLabel("Organisation:", JLabel.LEADING);
+		labelOrganisationID = new JLabel(Messages.getString("login.SplashLoginPanel.organisation"), JLabel.LEADING); //$NON-NLS-1$
 		detailPanel.add(labelOrganisationID);
 		textOrganisationID = new JTextField(15);
 		labelOrganisationID.setLabelFor(textOrganisationID);
 		textOrganisationID.setText(persistentLoginModule.getOrganisationID());
 		detailPanel.add(textOrganisationID);
 
-		labelSecurityProtocol = new JLabel("SecurityProtocol:", JLabel.LEADING);
+		labelSecurityProtocol = new JLabel(Messages.getString("login.SplashLoginPanel.securityProtocol"), JLabel.LEADING); //$NON-NLS-1$
 //		detailPanel.add(labelSecurityProtocol);
 		textSecurityProtocol = new JTextField(15);
 		labelSecurityProtocol.setLabelFor(textSecurityProtocol);
 		textSecurityProtocol.setText(persistentLoginModule.getSecurityProtocol());
 //		detailPanel.add(textSecurityProtocol);
 
-		labelServerURL = new JLabel("ServerURL:", JLabel.LEADING);
+		labelServerURL = new JLabel(Messages.getString("login.SplashLoginPanel.serverURL"), JLabel.LEADING); //$NON-NLS-1$
 		detailPanel.add(labelServerURL);
 		textServerURL = new JTextField(15);
 		labelServerURL.setLabelFor(textServerURL);
 		textServerURL.setText(persistentLoginModule.getServerURL());
 		detailPanel.add(textServerURL);
 
-		labelInitialContextFactory = new JLabel("InitialContextFactory:", JLabel.LEADING);
+		labelInitialContextFactory = new JLabel(Messages.getString("login.SplashLoginPanel.initialContextFactory"), JLabel.LEADING); //$NON-NLS-1$
 		detailPanel.add(labelInitialContextFactory);		
 		textInitialContextFactory = new JTextField(15);
 		labelInitialContextFactory.setLabelFor(textInitialContextFactory);
@@ -206,7 +207,7 @@ public class SplashLoginPanel extends JPanel
 		checkBoxPanel = new JPanel();
 		checkBoxPanel.setOpaque(false);
 		checkBoxPanel.setLayout(new FlowLayout(FlowLayout.LEADING));
-		checkBoxSaveSettings = new JCheckBox("Save settings to config", false);
+		checkBoxSaveSettings = new JCheckBox(Messages.getString("login.SplashLoginPanel.saveSettings"), false); //$NON-NLS-1$
 		checkBoxSaveSettings.setOpaque(false);
 		checkBoxPanel.add(checkBoxSaveSettings);
 		detailWrapper.add(checkBoxPanel, BorderLayout.SOUTH);
@@ -227,7 +228,7 @@ public class SplashLoginPanel extends JPanel
 		buttonPanel.setAlignmentX(JPanel.RIGHT_ALIGNMENT);
 		buttonPanel.setLayout(new FlowLayout(FlowLayout.TRAILING));
 		southPanel.add(buttonPanel, BorderLayout.SOUTH);
-		buttonLogin = new JButton("Login");
+		buttonLogin = new JButton(Messages.getString("login.SplashLoginPanel.login")); //$NON-NLS-1$
 		buttonPanel.add(buttonLogin);
 		buttonLogin.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e) {
@@ -237,7 +238,7 @@ public class SplashLoginPanel extends JPanel
 			}
 		});
 
-		buttonWorkOffline = new JButton("Work OFFLINE");
+		buttonWorkOffline = new JButton(Messages.getString("login.SplashLoginPanel.workOffline")); //$NON-NLS-1$
 		buttonPanel.add(buttonWorkOffline);
 		buttonWorkOffline.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e) {
@@ -248,14 +249,14 @@ public class SplashLoginPanel extends JPanel
 			}
 		});
 
-		buttonQuit = new JButton("Quit");
+		buttonQuit = new JButton(Messages.getString("login.SplashLoginPanel.quit")); //$NON-NLS-1$
 		buttonPanel.add(buttonQuit);
 		buttonQuit.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e) {
 				System.exit(0);
 			}
 		});
-		buttonShowDetails = new JToggleButton("Details");
+		buttonShowDetails = new JToggleButton(Messages.getString("login.SplashLoginPanel.details")); //$NON-NLS-1$
 		buttonPanel.add(buttonShowDetails);
 		buttonShowDetails.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -292,7 +293,7 @@ public class SplashLoginPanel extends JPanel
 				BeanUtils.copyProperties(persistentLoginModule,loginConfigModule);
 				persistentLoginModule.setChanged();
 			} catch (Exception e) {
-				logger.error("Saving config failed!", e);
+				logger.error("Saving config failed!", e); //$NON-NLS-1$
 			}
 		}
 

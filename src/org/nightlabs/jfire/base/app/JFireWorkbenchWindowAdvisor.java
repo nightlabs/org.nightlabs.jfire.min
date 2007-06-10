@@ -67,11 +67,11 @@ extends SplashHandlingWorkbenchWindowAdvisor
 	public void postWindowCreate() {
 		super.postWindowCreate();
 		PartVisibilityTracker.sharedInstance().initialize();
-		logger.debug("Initialized part-visibibity-tracker");
+		logger.debug("Initialized part-visibibity-tracker"); //$NON-NLS-1$
 		try {
 			ContributionItemSetRegistry.sharedInstance().checkPerspectiveListenerAdded();
 		} catch (EPProcessorException e) {
-			logger.error("There occured an error getting the ContributionItemSetRegistry", e);
+			logger.error("There occured an error getting the ContributionItemSetRegistry", e); //$NON-NLS-1$
 		}
 		
 		// activates the editor2Perspective check
@@ -84,7 +84,7 @@ extends SplashHandlingWorkbenchWindowAdvisor
 		try {
 			ContributionItemSetRegistry.sharedInstance().checkPerspectiveListenerAdded();
 		} catch (EPProcessorException e) {
-			logger.error("There occured an error getting the ContributionItemSetRegistry", e);
+			logger.error("There occured an error getting the ContributionItemSetRegistry", e); //$NON-NLS-1$
 		}		
 	}
 

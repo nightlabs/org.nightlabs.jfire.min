@@ -56,7 +56,7 @@ public abstract class JDOLifecycleAdapterJob
 	public ProgressMonitor getProgressMontitorWrapper() {
 		if (progressMonitorWrapper == null) {
 			if (progressMonitor == null)
-				throw new IllegalStateException("getProgressMontitorWrapper must not be called before setProgressMonitor(IProgressMonitor).");
+				throw new IllegalStateException("getProgressMontitorWrapper must not be called before setProgressMonitor(IProgressMonitor)."); //$NON-NLS-1$
 			progressMonitorWrapper = new ProgressMonitorWrapper(progressMonitor);
 		}
 		return progressMonitorWrapper;

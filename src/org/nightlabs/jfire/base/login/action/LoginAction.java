@@ -67,16 +67,16 @@ extends LSDWorkbenchWindowActionDelegate
 		super.init(window);
 
 		if (loginIcon_menu == null)
-			loginIcon_menu = SharedImages.getSharedImageDescriptor(JFireBasePlugin.getDefault(), LoginAction.class, "Login", ImageDimension._16x16, ImageFormat.png);
+			loginIcon_menu = SharedImages.getSharedImageDescriptor(JFireBasePlugin.getDefault(), LoginAction.class, "Login", ImageDimension._16x16, ImageFormat.png); //$NON-NLS-1$
 
 		if (logoutIcon_menu == null)
-			logoutIcon_menu = SharedImages.getSharedImageDescriptor(JFireBasePlugin.getDefault(), LoginAction.class, "Logout", ImageDimension._16x16, ImageFormat.png);
+			logoutIcon_menu = SharedImages.getSharedImageDescriptor(JFireBasePlugin.getDefault(), LoginAction.class, "Logout", ImageDimension._16x16, ImageFormat.png); //$NON-NLS-1$
 
 		if (loginIcon_toolbar == null)
-			loginIcon_toolbar = SharedImages.getSharedImageDescriptor(JFireBasePlugin.getDefault(), LoginAction.class, "Login", ImageDimension._24x24, ImageFormat.png);
+			loginIcon_toolbar = SharedImages.getSharedImageDescriptor(JFireBasePlugin.getDefault(), LoginAction.class, "Login", ImageDimension._24x24, ImageFormat.png); //$NON-NLS-1$
 
 		if (logoutIcon_toolbar == null)
-			logoutIcon_toolbar = SharedImages.getSharedImageDescriptor(JFireBasePlugin.getDefault(), LoginAction.class, "Logout", ImageDimension._24x24, ImageFormat.png);
+			logoutIcon_toolbar = SharedImages.getSharedImageDescriptor(JFireBasePlugin.getDefault(), LoginAction.class, "Logout", ImageDimension._24x24, ImageFormat.png); //$NON-NLS-1$
 	}
 	
 	
@@ -95,7 +95,7 @@ extends LSDWorkbenchWindowActionDelegate
 			
 		} catch (LoginException e) {
 			ExceptionHandlerRegistry.asyncHandleException(e);
-			logger.error("Login failed",e);
+			logger.error("Login failed",e); //$NON-NLS-1$
 		}
 	}
 
@@ -104,16 +104,16 @@ extends LSDWorkbenchWindowActionDelegate
 		ImageDescriptor loginIcon = null;
 		ImageDescriptor logoutIcon = null;
 
-		if (action.getId().endsWith("#menu")) {
+		if (action.getId().endsWith("#menu")) { //$NON-NLS-1$
 			loginIcon = loginIcon_menu;
 			logoutIcon = logoutIcon_menu;
 		}
-		else if (action.getId().endsWith("#toolbar")) {
+		else if (action.getId().endsWith("#toolbar")) { //$NON-NLS-1$
 			loginIcon = loginIcon_toolbar;
 			logoutIcon = logoutIcon_toolbar;
 		}
 		else
-			throw new IllegalStateException("This action.id does not end on #menu or #toolbar!");
+			throw new IllegalStateException("This action.id does not end on #menu or #toolbar!"); //$NON-NLS-1$
 
 		switch (loginState) {
 			case Login.LOGINSTATE_LOGGED_IN:

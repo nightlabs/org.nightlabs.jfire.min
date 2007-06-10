@@ -16,6 +16,7 @@ import org.nightlabs.base.notification.NotificationListenerJob;
 import org.nightlabs.base.notification.NotificationListenerSWTThreadAsync;
 import org.nightlabs.base.notification.NotificationListenerSWTThreadSync;
 import org.nightlabs.base.notification.NotificationManagerInterceptorEPProcessor;
+import org.nightlabs.jfire.base.resource.Messages;
 import org.nightlabs.notification.NotificationEvent;
 import org.nightlabs.notification.NotificationListener;
 
@@ -69,7 +70,7 @@ public class JDOLifecycleManagerRCP extends JDOLifecycleManager {
 			if (job == null) {
 				String jobName = l.getJobName();
 				if (jobName == null)
-					jobName = "Processing Notification";
+					jobName = Messages.getString("jdo.notification.JDOLifecycleManagerRCP.notificationJob"); //$NON-NLS-1$
 
 				job = new Job(jobName) {
 					protected IStatus run(IProgressMonitor monitor)
@@ -111,7 +112,7 @@ public class JDOLifecycleManagerRCP extends JDOLifecycleManager {
 	{
 		final JDOLifecycleListener listener = getLifecycleListener(filterID);
 		if (listener == null) {
-			logger.error("No listener found for filterID="+filterID);
+			logger.error("No listener found for filterID="+filterID); //$NON-NLS-1$
 			return;
 		}
 
@@ -128,7 +129,7 @@ public class JDOLifecycleManagerRCP extends JDOLifecycleManager {
 			if (job == null) {
 				String jobName = l.getJobName();
 				if (jobName == null)
-					jobName = "Processing JDOLifecycle";
+					jobName = Messages.getString("jdo.notification.JDOLifecycleManagerRCP.lifecycleJob"); //$NON-NLS-1$
 
 				job = new Job(jobName) {
 					protected IStatus run(IProgressMonitor monitor)

@@ -114,7 +114,7 @@ extends AbstractTreeComposite<JDOObject>
 		 * 
 		 * The {@link LoadListener} created here recurses into this method. 
 		 */
-		@SuppressWarnings("unchecked")
+		@SuppressWarnings("unchecked") //$NON-NLS-1$
 		private void internalExpand(Object root, Object elementOrTreePath, int level, int totalLevel, Set<LoadListener> listenerStack) {
 			LoadListener listener = new LoadListener(root, elementOrTreePath, level, totalLevel, listenerStack);
 			getJDOObjectTreeController().addJDOTreeNodesChangedListener(listener);

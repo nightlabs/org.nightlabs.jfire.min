@@ -76,11 +76,11 @@ import org.nightlabs.jfire.security.id.UserID;
 import org.nightlabs.math.Base62Coder;
 
 /**
- * Defines a client login to the JFire server<br/>
- * 
+ * Defines a client login to the JFire server
+ * <p>
  * Use the static function getLogin. If logged in an instance of this class is returned. 
  * If not and all attempts to authenticate on the server fail a {@link javax.security.auth.login.LoginException} is thrown.
- * 
+ * <p>
  * In general all code that requires the user to log in should place a line like
  * <code>Login.getLogin();</code>
  * somewhere before. If the user is already logged in this method immediately exits and returns
@@ -99,6 +99,9 @@ public class Login
 extends AbstractEPProcessor
 implements InitialContextProvider
 {
+	private static final String CLASS_ELEMENT = "class"; //$NON-NLS-1$
+	private static final String LOGIN_STATE_LISTENER_ELEMENT = "loginStateListener"; //$NON-NLS-1$
+
 	/**
 	 * LOG4J logger used by this class
 	 */
@@ -142,7 +145,7 @@ implements InitialContextProvider
 	public static class AsyncLoginResult {
 		private Throwable exception = null;
 		private boolean success = false;
-		private String message = "";
+		private String message = ""; //$NON-NLS-1$
 		private boolean workOffline = false;
 
 		private boolean wasAuthenticationErr = false;
@@ -152,7 +155,7 @@ implements InitialContextProvider
 		public void reset() {
 			exception = null;
 			success = false;
-			message = "";
+			message = ""; //$NON-NLS-1$
 			workOffline = false;
 
 			wasAuthenticationErr = false;
@@ -368,13 +371,13 @@ implements InitialContextProvider
 
 					loginResult.reset();
 					// create a loginContext
-					loginContext = new JFireLoginContext("jfire", new LoginCallbackHandler());
+					loginContext = new JFireLoginContext("jfire", new LoginCallbackHandler()); //$NON-NLS-1$
 
 					ILoginHandler lHandler = getLoginHandler();
 					if (lHandler == null)
-						throw new LoginException("Cannot login, loginHandler is not set!");
+						throw new LoginException("Cannot login, loginHandler is not set!"); //$NON-NLS-1$
 
-					logger.debug("Calling login handler");
+					logger.debug("Calling login handler"); //$NON-NLS-1$
 					lHandler.handleLogin(loginContext,sharedInstanceLogin.getRuntimeConfigModule(), loginResult);
 
 
@@ -401,8 +404,8 @@ implements InitialContextProvider
 							{
 								MessageDialog.openInformation(
 										RCPUtil.getActiveWorkbenchShell(),
-										"Reboot Required",
-										"Your class loading configuration was changed in order to make all published server classes available. A restart is required.");
+										Messages.getString("login.Login.rebootDialogTitle"), //$NON-NLS-1$
+										Messages.getString("login.Login.rebootDialogMessage")); //$NON-NLS-1$
 								PlatformUI.getWorkbench().restart();
 							}
 						});
@@ -411,13 +414,13 @@ implements InitialContextProvider
 					currLoginState = LOGINSTATE_LOGGED_IN;
 				} catch(Throwable t){
 					loginContext = null;
-					logger.error("Exception thrown while logging in.",t);
+					logger.error("Exception thrown while logging in.",t); //$NON-NLS-1$
 					loginResult.setException(t);
 				}
 			} finally {
 				handlingLogin = false;
 				synchronized (loginResult) {
-					logger.debug("Login handler done notifying loginResult");
+					logger.debug("Login handler done notifying loginResult"); //$NON-NLS-1$
 					loginResult.notifyAll();
 				}
 			}
@@ -457,7 +460,7 @@ implements InitialContextProvider
 	 */
 	private void doLogin(final boolean forceLogoutFirst) throws LoginException {
 		int oldLoginstate = currLoginState;
-		logger.debug("Login requested by thread "+Thread.currentThread());		
+		logger.debug("Login requested by thread "+Thread.currentThread());		 //$NON-NLS-1$
 		if ((currLoginState == LOGINSTATE_OFFLINE)){
 			long elapsedTime = System.currentTimeMillis() - lastWorkOfflineDecisionTime;			
 			if (!forceLogin && elapsedTime < WORK_OFFLINE_TIMEOUT) {
@@ -468,7 +471,7 @@ implements InitialContextProvider
 		}
 
 		if (getLoginState() == LOGINSTATE_LOGGED_IN) {
-			logger.debug("Already logged in, returnning. Thread "+Thread.currentThread());
+			logger.debug("Already logged in, returnning. Thread "+Thread.currentThread()); //$NON-NLS-1$
 			if (forceLogin) forceLogin = false;
 			return;
 		}
@@ -477,7 +480,7 @@ implements InitialContextProvider
 			Display.getDefault().asyncExec(loginHandlerRunnable);
 		}
 		if (!Display.getDefault().getThread().equals(Thread.currentThread())) {
-			logger.debug("Login requestor-thread "+Thread.currentThread()+" waiting for login handler");		
+			logger.debug("Login requestor-thread "+Thread.currentThread()+" waiting for login handler");		 //$NON-NLS-1$ //$NON-NLS-2$
 			synchronized (loginResult) {
 				while (handlingLogin) {
 					try {
@@ -485,7 +488,7 @@ implements InitialContextProvider
 					} catch (InterruptedException e) { }
 				}
 			}
-			logger.debug("Login requestor-thread "+Thread.currentThread()+" returned");		
+			logger.debug("Login requestor-thread "+Thread.currentThread()+" returned");		 //$NON-NLS-1$ //$NON-NLS-2$
 		}
 		else {
 			while (handlingLogin) {
@@ -497,7 +500,7 @@ implements InitialContextProvider
 			if (loginResult.getException() instanceof LoginException)
 				throw (LoginException)loginResult.getException();
 			else
-				logger.error("Exception thrown while logging in.",loginResult.getException());
+				logger.error("Exception thrown while logging in.",loginResult.getException()); //$NON-NLS-1$
 			throw new LoginException(loginResult.getException().getMessage());
 		}
 		if (!loginResult.isSuccess()) {
@@ -530,7 +533,7 @@ implements InitialContextProvider
 			}
 		}
 
-		logger.debug("Login OK. Thread "+Thread.currentThread());
+		logger.debug("Login OK. Thread "+Thread.currentThread()); //$NON-NLS-1$
 	}
 
 	private org.nightlabs.jfire.base.jdo.JDOObjectID2PCClassNotificationInterceptor objectID2PCClassNotificationInterceptor = null;
@@ -568,7 +571,7 @@ implements InitialContextProvider
 	public static Login sharedInstance()
 	{
 		if (sharedInstanceLogin == null)
-			throw new NullPointerException("createLogin has not been called! SharedInstance is null!");
+			throw new NullPointerException("createLogin has not been called! SharedInstance is null!"); //$NON-NLS-1$
 		return sharedInstanceLogin;
 	}
 
@@ -587,7 +590,7 @@ implements InitialContextProvider
 	throws LoginException
 	{
 		if (sharedInstanceLogin == null)
-			throw new NullPointerException("createLogin not called! sharedInstance is null!");
+			throw new NullPointerException("createLogin not called! sharedInstance is null!"); //$NON-NLS-1$
 
 		if (doLogin) {
 			sharedInstanceLogin.doLogin();
@@ -605,7 +608,7 @@ implements InitialContextProvider
 	 */
 	public static void loginAsynchronously()
 	{
-		Job job = new Job("Authentication...") {
+		Job job = new Job(Messages.getString("login.Login.authenticationJob")) { //$NON-NLS-1$
 			@Override
 			protected IStatus run(IProgressMonitor arg0)
 			{
@@ -779,13 +782,13 @@ implements InitialContextProvider
 	 */
 	public InitialContext getInitialContext() throws NamingException, LoginException
 	{
-		logger.debug("getInitialContext(): begin");
+		logger.debug("getInitialContext(): begin"); //$NON-NLS-1$
 		doLogin();
-		logger.debug("getInitialContext(): logged in");
+		logger.debug("getInitialContext(): logged in"); //$NON-NLS-1$
 		if (initialContext != null)
 			return initialContext;
 
-		logger.debug("getInitialContext(): creating new initctx.");
+		logger.debug("getInitialContext(): creating new initctx."); //$NON-NLS-1$
 		initialContext = new InitialContext(getInitialContextProperties());
 		return initialContext;
 	}
@@ -925,7 +928,7 @@ implements InitialContextProvider
 					try {
 						process();
 					} catch (EPProcessorException e) {
-						logger.error("Processing LoginStateListener extensions failed!", e);
+						logger.error("Processing LoginStateListener extensions failed!", e); //$NON-NLS-1$
 					}
 				}
 
@@ -949,13 +952,13 @@ implements InitialContextProvider
 						LoginStateListenerRegistryItem item = (LoginStateListenerRegistryItem)it.next();
 						item.getLoginStateListener().loginStateChanged(loginState,item.getAction());
 					} catch (Throwable t) {
-						logger.warn("Caught exception while notifying LoginStateListener. Continue.", t);
+						logger.warn("Caught exception while notifying LoginStateListener. Continue.", t); //$NON-NLS-1$
 					}
 //					// WORKAROUND: For classloading deadlock
 //					Thread.sleep(200);
 				}
 			} catch (Throwable t) {
-				logger.warn("Cought exception while notifying LoginStateListener. Abort.", t);
+				logger.warn("Cought exception while notifying LoginStateListener. Abort.", t); //$NON-NLS-1$
 			}
 		}
 	}
@@ -976,7 +979,7 @@ implements InitialContextProvider
 	 */
 	public String getExtensionPointID()
 	{
-		return "org.nightlabs.jfire.base.loginstatelistener";
+		return "org.nightlabs.jfire.base.loginstatelistener"; //$NON-NLS-1$
 	}
 
 	/**
@@ -984,9 +987,9 @@ implements InitialContextProvider
 	 */
 	public void processElement(IExtension extension, IConfigurationElement element) throws EPProcessorException
 	{
-		if ("loginStateListener".equals(element.getName())) {
+		if (LOGIN_STATE_LISTENER_ELEMENT.equals(element.getName())) {
 			try {
-				LoginStateListener listener = (LoginStateListener) element.createExecutableExtension("class");
+				LoginStateListener listener = (LoginStateListener) element.createExecutableExtension(CLASS_ELEMENT);
 				addLoginStateListener(listener);
 			} catch (CoreException e) {
 				throw new EPProcessorException(e);
@@ -1001,13 +1004,13 @@ implements InitialContextProvider
 		try {
 			login = Login.getLogin(false);
 		} catch (LoginException e) {
-			logger.error("Obtaining shared instance of Login failed!", e);
+			logger.error("Obtaining shared instance of Login failed!", e); //$NON-NLS-1$
 		}
 
 		if ( login != null)
 			login.copyPropertiesFrom(loginContext);
 		else
-			throw new IllegalStateException("Shared instance of Login must not be null");
+			throw new IllegalStateException("Shared instance of Login must not be null"); //$NON-NLS-1$
 
 		loginResult.setSuccess(false);
 		loginResult.setMessage(null);
@@ -1070,10 +1073,10 @@ implements InitialContextProvider
 					loginResult.setWasSocketTimeout(true);
 				}
 				// cant create local bean stub
-				logger.warn("Login failed!", x);
+				logger.warn("Login failed!", x); //$NON-NLS-1$
 				LoginException loginE = new LoginException(x.getMessage());
 				loginE.initCause(x);
-				loginResult.setMessage(Messages.getString("login.Login.errorUnhandledExceptionMessage"));
+				loginResult.setMessage(Messages.getString("login.Login.errorUnhandledExceptionMessage")); //$NON-NLS-1$
 				loginResult.setException(loginE);
 			}
 		}

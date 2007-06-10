@@ -17,7 +17,7 @@ public class LoginDelegate implements ILoginDelegate {
 			case Login.LOGINSTATE_OFFLINE:
 				return LoginState.OFFLINE;
 			default:
-				throw new IllegalStateException("Unknown login state: " + Login.sharedInstance().getLoginState());
+				throw new IllegalStateException("Unknown login state: " + Login.sharedInstance().getLoginState()); //$NON-NLS-1$
 		}
 	}
 

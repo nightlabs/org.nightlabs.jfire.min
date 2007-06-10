@@ -58,7 +58,7 @@ public class LoginCallbackHandler implements CallbackHandler {
 								((PasswordCallback)callbacks[i]).setPassword(Login.getLogin(false).getLoginContext().getPassword().toCharArray());			
 			}
 		} catch (LoginException x) {
-			throw new RuntimeException("Login.getLogin(false) should never throw this exception!", x);
+			throw new RuntimeException("Login.getLogin(false) should never throw this exception!", x); //$NON-NLS-1$
 		}
 			// TODO Maybe more data has to be set ??
 	}

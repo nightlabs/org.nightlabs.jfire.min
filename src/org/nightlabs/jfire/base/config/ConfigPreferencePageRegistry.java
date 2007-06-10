@@ -38,11 +38,16 @@ import org.nightlabs.base.extensionpoint.AbstractEPProcessor;
 import org.nightlabs.base.extensionpoint.EPProcessorException;
 
 /**
- * 
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
- *
+ * @author Marc Klinger - marc[at]nightlabs[dot]de
  */
-public class ConfigPreferencePageRegistry extends AbstractEPProcessor {
+public class ConfigPreferencePageRegistry extends AbstractEPProcessor 
+{
+	private static final String CLASS_ELEMENT = "class"; //$NON-NLS-1$
+	private static final String NAME_ELEMENT = "name"; //$NON-NLS-1$
+	private static final String CATEGORY_ELEMENT = "category"; //$NON-NLS-1$
+	private static final String ID_ELEMENT = "id"; //$NON-NLS-1$
+	private static final String PAGE_ELEMENT = "page"; //$NON-NLS-1$
 
 	/**
 	 * LOG4J logger used by this class
@@ -55,21 +60,15 @@ public class ConfigPreferencePageRegistry extends AbstractEPProcessor {
 	 * key: String id<br/>
 	 * value: ConfigPreferenceNode preferenceNode
 	 */
-	private Map preferencePagesByIDs;
+	private Map<String, ConfigPreferenceNode> preferencePagesByIDs;
 	
-	/**
-	 * 
-	 */
-	public ConfigPreferencePageRegistry() {
-		super();
-	}
-
-	/**
+	/* (non-Javadoc)
 	 * @see org.nightlabs.base.extensionpoint.AbstractEPProcessor#getExtensionPointID()
 	 */
-	public String getExtensionPointID() {
-		// TODO: find static final
-		return "org.eclipse.ui.preferencePages";
+	@Override
+	public String getExtensionPointID() 
+	{
+		return "org.eclipse.ui.preferencePages"; //$NON-NLS-1$
 	}
 	
 	/**
@@ -89,22 +88,23 @@ public class ConfigPreferencePageRegistry extends AbstractEPProcessor {
 		return preferencesRootNode;
 	}
 
-	/**
-	 * @see org.nightlabs.base.extensionpoint.AbstractEPProcessor#processElement(IExtension, org.eclipse.core.runtime.IConfigurationElement)
+	/* (non-Javadoc)
+	 * @see org.nightlabs.base.extensionpoint.AbstractEPProcessor#processElement(org.eclipse.core.runtime.IExtension, org.eclipse.core.runtime.IConfigurationElement)
 	 */
-	public void processElement(IExtension extension, IConfigurationElement element)
-			throws EPProcessorException {
-		if (element.getName().equals("page")) {
-			String id = element.getAttribute("id");
-			String category = element.getAttribute("category");
-			if (id == null || "".equals(id))
-				throw new EPProcessorException("Element page has to define an attribute id.");
-			String name = element.getAttribute("name");
+	@Override
+	public void processElement(IExtension extension, IConfigurationElement element) throws EPProcessorException 
+	{
+		if (element.getName().equals(PAGE_ELEMENT)) {
+			String id = element.getAttribute(ID_ELEMENT);
+			String category = element.getAttribute(CATEGORY_ELEMENT);
+			if (id == null || "".equals(id)) //$NON-NLS-1$
+				throw new EPProcessorException("Element page has to define an attribute id."); //$NON-NLS-1$
+			String name = element.getAttribute(NAME_ELEMENT);
 			IWorkbenchPreferencePage page = null;			
 			try {
-				page = (IWorkbenchPreferencePage)element.createExecutableExtension("class");
+				page = (IWorkbenchPreferencePage)element.createExecutableExtension(CLASS_ELEMENT);
 			} catch (Throwable e) {
-				logger.error("Could not instantiate preference-page extension of type "+element.getAttribute("class")+"! Check, whether it has a default constructor!", e);
+				logger.error("Could not instantiate preference-page extension of type "+element.getAttribute(CLASS_ELEMENT)+"! Check, whether it has a default constructor!", e); //$NON-NLS-1$ //$NON-NLS-2$
 				page = null;
 			}
 			if (page == null)
@@ -117,16 +117,20 @@ public class ConfigPreferencePageRegistry extends AbstractEPProcessor {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see org.nightlabs.base.extensionpoint.AbstractEPProcessor#process()
+	 */
+	@Override
 	public synchronized void process() throws EPProcessorException {
 		preferencesRootNode = new ConfigPreferenceNode(
-				"",
-				"",
-				"",
+				"", //$NON-NLS-1$
+				"", //$NON-NLS-1$
+				"", //$NON-NLS-1$
 				null,
 				null
 		);		
 		
-		preferencePagesByIDs = new HashMap();
+		preferencePagesByIDs = new HashMap<String, ConfigPreferenceNode>();
 		super.process();
 		
 		for (Iterator iter = preferencePagesByIDs.values().iterator(); iter.hasNext();) {
@@ -146,5 +150,4 @@ public class ConfigPreferencePageRegistry extends AbstractEPProcessor {
 			sharedInstance = new ConfigPreferencePageRegistry();
 		return sharedInstance;
 	}
-
 }

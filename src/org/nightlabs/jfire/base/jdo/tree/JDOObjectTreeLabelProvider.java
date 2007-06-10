@@ -21,7 +21,7 @@ extends TableLabelProvider
 	public JDOObjectTreeLabelProvider() {
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("unchecked") //$NON-NLS-1$
 	public String getColumnText(Object element, int columnIndex)
 	{
 		if (element instanceof String)
@@ -46,7 +46,7 @@ extends TableLabelProvider
 	}
 	
 	@Override
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("unchecked") //$NON-NLS-1$
 	public Image getColumnImage(Object element, int columnIndex) {
 		if (element instanceof String)
 			return null;

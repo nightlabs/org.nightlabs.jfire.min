@@ -104,7 +104,7 @@ public class ConfigLinkSelectionNotificationProxy extends
 			// get ObjectID for PC class
 			Object idObject = JDOHelper.getObjectId(object); 
 			if (!(idObject instanceof ObjectID)) {
-				logger.warn("ID-object of PersistenceCapable selection object was not an instance of ObjectID but "+idObject.getClass().getName()+" and was ignored.");
+				logger.warn("ID-object of PersistenceCapable selection object was not an instance of ObjectID but "+idObject.getClass().getName()+" and was ignored."); //$NON-NLS-1$ //$NON-NLS-2$
 				return null;				
 			}
 			objectID = (ObjectID)idObject;

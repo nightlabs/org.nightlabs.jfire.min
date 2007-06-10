@@ -60,11 +60,15 @@ import org.nightlabs.notification.NotificationListenerWorkerThreadAsync;
 
 /**
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
- *
+ * @author Marc Klinger - marc[at]nightlabs[dot]de
  */
-public class ConfigSetupRegistry extends AbstractEPProcessor {
+public class ConfigSetupRegistry extends AbstractEPProcessor 
+{
+	private static final String CLASS_ELEMENT = "class"; //$NON-NLS-1$
+	private static final String CONFIG_SETUP_TYPE_ELEMENT = "configSetupType"; //$NON-NLS-1$
+	private static final String VISUALISER_ELEMENT = "visualiser"; //$NON-NLS-1$
 
-	public static final String EXTENSION_POINT_ID = "org.nightlabs.jfire.base.configsetupvisualiser";
+	public static final String EXTENSION_POINT_ID = "org.nightlabs.jfire.base.configsetupvisualiser"; //$NON-NLS-1$
 	
 	private static final String[] DEFAULT_FETCH_GROUP_GROUPS = new String[] 
 	  { FetchPlan.DEFAULT };
@@ -150,8 +154,8 @@ public class ConfigSetupRegistry extends AbstractEPProcessor {
 		if (configSetupsByType == null)
 			getConfigSetups();
 		boolean result = false;
-		if (linkClassName == null || "".equals(linkClassName))
-			throw new IllegalArgumentException("Parameter linkClassName must not be null or empty!");
+		if (linkClassName == null || "".equals(linkClassName)) //$NON-NLS-1$
+			throw new IllegalArgumentException("Parameter linkClassName must not be null or empty!"); //$NON-NLS-1$
 		for (Iterator iter = configSetupsByType.values().iterator(); iter.hasNext();) {
 			ConfigSetup setup = (ConfigSetup) iter.next();
 			result = linkClassName.equals(setup.getConfigType());
@@ -172,7 +176,6 @@ public class ConfigSetupRegistry extends AbstractEPProcessor {
 	public ConfigSetup getConfigSetupForConfigType(ConfigID configID) {
 		if (configSetupsByType == null)
 			getConfigSetups();
-		boolean result = false;
 		for (Iterator iter = configSetupsByType.values().iterator(); iter.hasNext();) {
 			ConfigSetup setup = (ConfigSetup) iter.next();
 			if (setup.getConfigType().equals(configID.configType) ||
@@ -230,7 +233,7 @@ public class ConfigSetupRegistry extends AbstractEPProcessor {
 		if (rootNode != null)
 			return rootNode;
 		ConfigPreferenceNode registeredRootNode = ConfigPreferencePageRegistry.sharedInstance().getPreferencesRootNode();
-		rootNode = new ConfigPreferenceNode("","","",null,null);
+		rootNode = new ConfigPreferenceNode("","","",null,null); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 
 		Set mergeModules = new HashSet();
 		mergeModules.addAll(setup.getConfigModuleClasses());		
@@ -244,7 +247,7 @@ public class ConfigSetupRegistry extends AbstractEPProcessor {
 		// for all remaining classes add a null-Node
 		for (Iterator iter = mergeModules.iterator(); iter.hasNext();) {
 			String moduleClassName = (String) iter.next();
-			ConfigPreferenceNode node = new ConfigPreferenceNode("", moduleClassName, "", rootNode, null);
+			ConfigPreferenceNode node = new ConfigPreferenceNode("", moduleClassName, "", rootNode, null); //$NON-NLS-1$ //$NON-NLS-2$
 			rootNode.addChild(node);
 		}
 		mergedTreeNodes.put(scope+setup.getConfigSetupType(), rootNode);
@@ -467,15 +470,15 @@ public class ConfigSetupRegistry extends AbstractEPProcessor {
 	}
 
 	public void processElement(IExtension extension, IConfigurationElement element) throws EPProcessorException {
-		if (element.getName().equals("visualiser")) {
-			String configSetupType = element.getAttribute("configSetupType");
-			if (configSetupType == null || "".equals(configSetupType))
-				throw new EPProcessorException("Attribute configSetupType is invalid for a configsetupvisualiser");
+		if (element.getName().equals(VISUALISER_ELEMENT)) {
+			String configSetupType = element.getAttribute(CONFIG_SETUP_TYPE_ELEMENT);
+			if (configSetupType == null || "".equals(configSetupType)) //$NON-NLS-1$
+				throw new EPProcessorException("Attribute configSetupType is invalid for a configsetupvisualiser"); //$NON-NLS-1$
 			ConfigSetupVisualiser visualiser = null;
 			try {
-				visualiser = (ConfigSetupVisualiser)element.createExecutableExtension("class");
+				visualiser = (ConfigSetupVisualiser)element.createExecutableExtension(CLASS_ELEMENT);
 			} catch (CoreException e) {
-				throw new EPProcessorException("Could not instatiate ConfigSetupVisualiser",e);
+				throw new EPProcessorException("Could not instatiate ConfigSetupVisualiser",e); //$NON-NLS-1$
 			}
 			setupVisualiserByType.put(configSetupType, visualiser);
 		}

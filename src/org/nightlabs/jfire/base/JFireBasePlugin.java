@@ -43,8 +43,8 @@ import org.osgi.framework.BundleContext;
 public class JFireBasePlugin
 	extends AbstractUIPlugin
 {
-	
-	public static final String ZONE_ADMIN = JFireBasePlugin.class.getName() + "#ZONE_ADMIN";
+	public static final String PLUGIN_ID = "org.nightlabs.jfire.base"; //$NON-NLS-1$
+	public static final String ZONE_ADMIN = JFireBasePlugin.class.getName() + "#ZONE_ADMIN"; //$NON-NLS-1$
 	
 	
 	//The shared instance.
@@ -71,9 +71,9 @@ public class JFireBasePlugin
 		// We cannot use org.nightlabs.jfire.idgenerator.IDGenerator.PROPERTY_KEY_ID_GENERATOR_CLASS
 		// or IDGeneratorClient,  because this would cause the server side class to be loaded -
 		// and probably we're OFFLINE and can't do that!
-		System.setProperty("org.nightlabs.jfire.idgenerator.idGeneratorClass", "org.nightlabs.jfire.base.idgenerator.IDGeneratorClient");
-		System.setProperty("org.nightlabs.jfire.security.SecurityReflector", "org.nightlabs.jfire.base.security.SecurityReflectorClient");
-		System.setProperty("org.nightlabs.jfire.base.jdo.notification.JDOLifecycleManager", "org.nightlabs.jfire.base.jdo.notification.JDOLifecycleManagerRCP");
+		System.setProperty("org.nightlabs.jfire.idgenerator.idGeneratorClass", "org.nightlabs.jfire.base.idgenerator.IDGeneratorClient"); //$NON-NLS-1$ //$NON-NLS-2$
+		System.setProperty("org.nightlabs.jfire.security.SecurityReflector", "org.nightlabs.jfire.base.security.SecurityReflectorClient"); //$NON-NLS-1$ //$NON-NLS-2$
+		System.setProperty("org.nightlabs.jfire.base.jdo.notification.JDOLifecycleManager", "org.nightlabs.jfire.base.jdo.notification.JDOLifecycleManagerRCP"); //$NON-NLS-1$ //$NON-NLS-2$
 
 //		Login.addLoginStateListener(this);
 //		LOGGER.debug("Registered JFireBasePlugin as LoginStateListener");
@@ -138,8 +138,8 @@ public class JFireBasePlugin
 	 * @param path the path
 	 * @return the image descriptor
 	 */
-	public static ImageDescriptor getImageDescriptor(String path) {
-		return AbstractUIPlugin.imageDescriptorFromPlugin("org.nightlabs.jfire.base", path);
+	public static ImageDescriptor getImageDescriptor(String path) 
+	{
+		return AbstractUIPlugin.imageDescriptorFromPlugin(PLUGIN_ID, path);
 	}
-	
 }

@@ -20,21 +20,20 @@ import org.nightlabs.base.composite.XComposite;
 import org.nightlabs.base.resource.SharedImages;
 import org.nightlabs.jfire.base.JFireBasePlugin;
 import org.nightlabs.jfire.base.login.action.LoginAction;
+import org.nightlabs.jfire.base.resource.Messages;
 
 /**
  * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] de -->
- *
+ * @author Marc Klinger - marc[at]nightlabs[dot]de
  */
 public class LoginStateStatusLineContribution 
 extends AbstractContributionItem
 implements LoginStateListener
 {
-
 	private XComposite wrapper;
 	private Label image;
 	private Label text;
 	
-
 	public LoginStateStatusLineContribution(String name, boolean fillToolBar, boolean fillCoolBar, boolean fillMenuBar, boolean fillComposite) {
 		super(LoginStateStatusLineContribution.class.getName(), name, fillToolBar, fillCoolBar, fillMenuBar, fillComposite);
 		init();
@@ -55,6 +54,9 @@ implements LoginStateListener
 
 	private String earlyLoginText;
 	
+	/* (non-Javadoc)
+	 * @see org.nightlabs.base.action.AbstractContributionItem#createControl(org.eclipse.swt.widgets.Composite)
+	 */
 	@Override
 	protected Control createControl(Composite parent) {
 		wrapper = new XComposite(parent, SWT.NONE);
@@ -64,7 +66,7 @@ implements LoginStateListener
 		wrapper.getGridLayout().numColumns = 2;
 		wrapper.getGridLayout().makeColumnsEqualWidth = false;
 		image = new Label(wrapper, SWT.ICON);
-		image.setImage(SharedImages.getSharedImage(JFireBasePlugin.getDefault(), LoginAction.class, "Login"));
+		image.setImage(SharedImages.getSharedImage(JFireBasePlugin.getDefault(), LoginAction.class, "Login")); //$NON-NLS-1$
 		image.setLayoutData(new GridData());
 		text = new Label(wrapper, SWT.NONE);		
 		text.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -82,7 +84,11 @@ implements LoginStateListener
 		return wrapper;
 	}
 
-	public void loginStateChanged(final int loginState, final IAction action) {
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.base.login.LoginStateListener#loginStateChanged(int, org.eclipse.jface.action.IAction)
+	 */
+	public void loginStateChanged(final int loginState, final IAction action) 
+	{
 		Display.getDefault().asyncExec(new Runnable() {
 			public void run() {
 				Login login = null;
@@ -91,14 +97,12 @@ implements LoginStateListener
 				} catch (LoginException e) {
 					throw new RuntimeException(e);
 				}
-				String userStr = login.getUserID() + "@" +login.getWorkstationID();
 				switch (loginState) {
-					case Login.LOGINSTATE_LOGGED_IN: text.setText("Logged in "+userStr); break;
-					case Login.LOGINSTATE_LOGGED_OUT: text.setText("Logged out"); break;
-					case Login.LOGINSTATE_OFFLINE: text.setText("Working offline"); break;
+					case Login.LOGINSTATE_LOGGED_IN: text.setText(String.format(Messages.getString("login.LoginStateStatusLineContribution.loggedInStatus"), login.getUserID(), login.getWorkstationID(), login.getOrganisationID())); break; //$NON-NLS-1$
+					case Login.LOGINSTATE_LOGGED_OUT: text.setText(Messages.getString("login.LoginStateStatusLineContribution.loggedOutStatus")); break; //$NON-NLS-1$
+					case Login.LOGINSTATE_OFFLINE: text.setText(Messages.getString("login.LoginStateStatusLineContribution.offlineStatus")); break; //$NON-NLS-1$
 				}
 			}
 		});
 	}	
-	
 }

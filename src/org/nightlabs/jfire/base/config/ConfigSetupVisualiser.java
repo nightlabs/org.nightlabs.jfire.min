@@ -30,7 +30,6 @@ import org.nightlabs.jfire.config.id.ConfigID;
 
 /**
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
- *
  */
 public interface ConfigSetupVisualiser {
 	
@@ -54,6 +53,4 @@ public interface ConfigSetupVisualiser {
 	 * an empty String.
 	 */
 	String getConfigDescription(ConfigID configID);
-	
-	
 }

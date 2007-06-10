@@ -32,6 +32,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.nightlabs.base.composite.XComposite;
+import org.nightlabs.jfire.base.resource.Messages;
 
 /**
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
@@ -67,7 +68,7 @@ public class ConfigPreferencesComposite extends XComposite {
 		noEditGUIComposite = new XComposite(wrapper, SWT.NONE, LayoutMode.TIGHT_WRAPPER);
 		Label label = new Label(noEditGUIComposite, SWT.WRAP);
 		label.setLayoutData(new GridData());
-		label.setText("This ConfigModule has no PreferencePage registered to edit it!");
+		label.setText(Messages.getString("config.ConfigPreferencesComposite.noPreferencePage")); //$NON-NLS-1$
 	}
 	
 	public void clear() {

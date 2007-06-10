@@ -15,6 +15,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.nightlabs.base.composite.CountdownButton;
 import org.nightlabs.base.dialog.CenteredDialog;
+import org.nightlabs.jfire.base.resource.Messages;
 
 public class EditLockAboutToExpireDueToUserInactivityDialog
 extends CenteredDialog
@@ -77,7 +78,7 @@ extends CenteredDialog
 		Composite page = (Composite) super.createDialogArea(parent);
 		Label l = new Label(page, SWT.WRAP);
 		l.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		l.setText("The following editLocks will be released because of user inactivity:");
+		l.setText(Messages.getString("EditLockAboutToExpireDueToUserInactivityDialog.locksToRelease")); //$NON-NLS-1$
 
 		editLockCarrierTable = new EditLockCarrierTable(page, SWT.NONE);
 

@@ -25,6 +25,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TreeItem;
 import org.nightlabs.base.dialog.CenteredDialog;
 import org.nightlabs.base.util.RCPUtil;
+import org.nightlabs.jfire.base.resource.Messages;
 import org.nightlabs.jfire.config.Config;
 import org.nightlabs.jfire.config.ConfigModule;
 
@@ -45,7 +46,7 @@ extends CenteredDialog // IconAndMessageDialog
 	protected static class ContentProvider implements ITreeContentProvider {		
 		Map<Config, Set<PageModulePair>> updatedModules = null;
 		
-		@SuppressWarnings("unchecked")
+		@SuppressWarnings("unchecked") //$NON-NLS-1$
 		public Object[] getElements(Object inputElement) {
 			if (inputElement instanceof Map) {
 				updatedModules = (Map<Config, Set<PageModulePair>>) inputElement;
@@ -126,7 +127,7 @@ extends CenteredDialog // IconAndMessageDialog
 	protected void configureShell(Shell newShell) {
 		super.configureShell(newShell);
 		setToCenteredLocationPreferredSize(400, 300);
-		newShell.setText("Changed Config Modules");
+		newShell.setText(Messages.getString("config.ChangedConfigModulePagesDialog.title")); //$NON-NLS-1$
 	}
 	
 	/**
@@ -148,10 +149,10 @@ extends CenteredDialog // IconAndMessageDialog
 		// TODO requires further thoughts because of modification notifications (the module would get dirty on the client side if the config is marked dirty)
 		try {
 			if (updatedModule.getConfig() == null)
-				throw new RuntimeException("The updated ConfigModule does not belong to the given Config!");
+				throw new RuntimeException("The updated ConfigModule does not belong to the given Config!"); //$NON-NLS-1$
 		} catch (JDODetachedFieldAccessException e) {
-			throw new RuntimeException("The ConfigModule passed to the ChangedConfigModuleDialog was not" +
-					" detached with its Config information! Please detach the Config as well; a flat copy is enough.", e);
+			throw new RuntimeException("The ConfigModule passed to the ChangedConfigModuleDialog was not" + //$NON-NLS-1$
+					" detached with its Config information! Please detach the Config as well; a flat copy is enough.", e); //$NON-NLS-1$
 		}
 
 		if (sharedInstance == null) {

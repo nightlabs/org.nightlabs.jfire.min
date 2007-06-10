@@ -33,15 +33,15 @@ import java.util.HashMap;
  * @author Alexander Bieber
  */
 public class JFireSecurityConfigurationEntry implements Serializable {
-	public static final String MODULE_CONTROL_FLAG_REQUIRED = "required";
-	public static final String MODULE_CONTROL_FLAG_REQUISITE  = "requisite";
-	public static final String MODULE_CONTROL_FLAG_SUFFICIENT = "sufficient";
-	public static final String MODULE_CONTROL_FLAG_OPTIONAL = "optional";
-	public static final String MODULE_CONTROL_FLAG_NONE = "";
+	public static final String MODULE_CONTROL_FLAG_REQUIRED = "required"; //$NON-NLS-1$
+	public static final String MODULE_CONTROL_FLAG_REQUISITE  = "requisite"; //$NON-NLS-1$
+	public static final String MODULE_CONTROL_FLAG_SUFFICIENT = "sufficient"; //$NON-NLS-1$
+	public static final String MODULE_CONTROL_FLAG_OPTIONAL = "optional"; //$NON-NLS-1$
+	public static final String MODULE_CONTROL_FLAG_NONE = ""; //$NON-NLS-1$
 	
 	
-	private String applicationName = "";
-	private String loginModuleName = "";
+	private String applicationName = ""; //$NON-NLS-1$
+	private String loginModuleName = ""; //$NON-NLS-1$
 	private String controlFlag = null;
 	private HashMap options = null;
 	

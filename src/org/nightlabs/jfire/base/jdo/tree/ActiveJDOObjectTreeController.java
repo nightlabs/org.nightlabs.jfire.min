@@ -24,6 +24,7 @@ import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleAdapterJob;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleEvent;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleListener;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleManager;
+import org.nightlabs.jfire.base.resource.Messages;
 import org.nightlabs.jfire.jdo.notification.DirtyObjectID;
 import org.nightlabs.jfire.jdo.notification.IJDOLifecycleListenerFilter;
 import org.nightlabs.jfire.jdo.notification.JDOLifecycleState;
@@ -209,7 +210,7 @@ public abstract class ActiveJDOObjectTreeController<JDOObjectID extends ObjectID
 			super(name);
 		}
 		
-		@SuppressWarnings("unchecked")
+		@SuppressWarnings("unchecked") //$NON-NLS-1$
 		public void notify(NotificationEvent notificationEvent) {
 			handleChangeNotification(notificationEvent, getProgressMonitor());
 		}
@@ -229,7 +230,7 @@ public abstract class ActiveJDOObjectTreeController<JDOObjectID extends ObjectID
 	
 	protected void createRegisterChangeListener() {
 		if (changeListener == null) {
-			changeListener = new ChangeListener("Loading changes ...");
+			changeListener = new ChangeListener(Messages.getString("jdo.tree.ActiveJDOObjectTreeController.loadingChanges")); //$NON-NLS-1$
 			JDOLifecycleManager.sharedInstance().addNotificationListener(getJDOObjectClass(), changeListener);
 		}
 	}
@@ -265,7 +266,7 @@ public abstract class ActiveJDOObjectTreeController<JDOObjectID extends ObjectID
 			return filter;
 		}
 
-		@SuppressWarnings("unchecked")
+		@SuppressWarnings("unchecked") //$NON-NLS-1$
 		public void notify(JDOLifecycleEvent event)
 		{
 			Set<JDOObjectID> objectIDs = new HashSet<JDOObjectID>(event.getDirtyObjectIDs().size());
@@ -348,7 +349,7 @@ public abstract class ActiveJDOObjectTreeController<JDOObjectID extends ObjectID
 	 * @param parent The parent node or <code>null</code>.
 	 * @return A list of {@link TreeNode}s or <code>null</code>, if data is not yet ready.
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("unchecked") //$NON-NLS-1$
 	public List<TreeNode> getNodes(final TreeNode parent)
 	{
 		List<TreeNode> nodes = null;
@@ -371,7 +372,7 @@ public abstract class ActiveJDOObjectTreeController<JDOObjectID extends ObjectID
 		if (nodes != null)
 			return nodes;
 
-		Job job = new Job("Loading Data") {
+		Job job = new Job(Messages.getString("jdo.tree.ActiveJDOObjectTreeController.loadingDataJob")) { //$NON-NLS-1$
 			@Implement
 			protected IStatus run(IProgressMonitor monitor)
 			{
@@ -381,7 +382,7 @@ public abstract class ActiveJDOObjectTreeController<JDOObjectID extends ObjectID
 				Collection<JDOObject> jdoObjects = retrieveChildren(parentJDOID, parentJDO, monitor);
 
 				if (jdoObjects == null)
-					throw new IllegalStateException("Your implementation of retrieveChildren(...) returned null! The error is probably in class " + ActiveJDOObjectTreeController.this.getClass().getName());
+					throw new IllegalStateException("Your implementation of retrieveChildren(...) returned null! The error is probably in class " + ActiveJDOObjectTreeController.this.getClass().getName()); //$NON-NLS-1$
 
 				List<JDOObject> jdoObjectList;
 				if (jdoObjects instanceof List)
@@ -452,7 +453,7 @@ public abstract class ActiveJDOObjectTreeController<JDOObjectID extends ObjectID
 		treeNodesChangedListeners.remove(listener);
 	}
 	
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("unchecked") //$NON-NLS-1$
 	private void fireJDOObjectsChangedEvent(JDOTreeNodesChangedEvent<JDOObjectID, TreeNode> changedEvent)
 	{
 		onJDOObjectsChanged(changedEvent);

@@ -37,6 +37,7 @@ import org.apache.log4j.Logger;
 import org.eclipse.ui.PlatformUI;
 import org.nightlabs.base.NLBasePlugin;
 import org.nightlabs.jfire.base.JFireBasePlugin;
+import org.nightlabs.jfire.base.resource.Messages;
 import org.nightlabs.rcp.splash.SplashScreen;
 
 /**
@@ -79,17 +80,17 @@ public class JFireLoginHandler implements ILoginHandler {
 					String arg = args[i];
 					String val = i + 1 < args.length ? args[i + 1] : null;
 
-					if ("--login.userID".equals(arg))
+					if ("--login.userID".equals(arg)) //$NON-NLS-1$
 						userID = val;
-					else if ("--login.password".equals(arg))
+					else if ("--login.password".equals(arg)) //$NON-NLS-1$
 						password = val;
-					else if ("--login.organisationID".equals(arg))
+					else if ("--login.organisationID".equals(arg)) //$NON-NLS-1$
 						organisationID = val;
-					else if ("--login.workstationID".equals(arg))
+					else if ("--login.workstationID".equals(arg)) //$NON-NLS-1$
 						workstationID = val;
-					else if ("--login.initialContextFactory".equals(arg))
+					else if ("--login.initialContextFactory".equals(arg)) //$NON-NLS-1$
 						initialContextFactory = val;
-					else if ("--login.serverURL".equals(arg))
+					else if ("--login.serverURL".equals(arg)) //$NON-NLS-1$
 						serverURL = val;
 				}
 
@@ -132,11 +133,11 @@ public class JFireLoginHandler implements ILoginHandler {
 				else if ((res.getMessage() != null))
 					throw new LoginException(res.getMessage());
 				else
-					throw new LoginException("Login failed and I have no idea, why!!!");
+					throw new LoginException("Login failed and I have no idea, why!!!"); //$NON-NLS-1$
 			}
 		} catch (Throwable x) {
 			// sth. went wrong => log and show normal login dialog
-			logger.error("Could not login using the specified program arguments!", x);
+			logger.error("Could not login using the specified program arguments!", x); //$NON-NLS-1$
 		}
 
 		if (SplashScreen.waitForVisibleSplash()) // isSplashVisible())
@@ -174,7 +175,7 @@ public class JFireLoginHandler implements ILoginHandler {
 					SplashScreen.setProgressIndeterminite(false);
 					SplashScreen.setProgressMinMax(0,1);
 					SplashScreen.setProgressValue(0);
-					SplashScreen.setSplashMessage("");
+					SplashScreen.setSplashMessage(""); //$NON-NLS-1$
 				}
 			};
 			if (EventQueue.isDispatchThread())
@@ -183,11 +184,11 @@ public class JFireLoginHandler implements ILoginHandler {
 				SwingUtilities.invokeAndWait(runLogin);
 
 		} catch (InterruptedException e) {
-			LoginException x = new LoginException("Error in SplashLogin: "+e.getMessage());
+			LoginException x = new LoginException("Error in SplashLogin: "+e.getMessage()); //$NON-NLS-1$
 			x.initCause(e);
 			throw x;
 		} catch (InvocationTargetException e) {
-			LoginException x = new LoginException("Error in SplashLogin: "+e.getMessage());
+			LoginException x = new LoginException("Error in SplashLogin: "+e.getMessage()); //$NON-NLS-1$
 			x.initCause(e);
 			throw x;
 		}
@@ -200,22 +201,22 @@ public class JFireLoginHandler implements ILoginHandler {
 					SplashScreen.getMutex().wait();
 				}
 			} catch (InterruptedException e) {
-				LoginException x = new LoginException("Caught InterruptedException while waiting for login: "+e.getMessage());
+				LoginException x = new LoginException("Caught InterruptedException while waiting for login: "+e.getMessage()); //$NON-NLS-1$
 				x.initCause(e);
 				throw x;
 			}
 			if(loginPanel.isWorkOffline()) {
-				SplashScreen.setSplashMessage("Work OFFLINE");
+				SplashScreen.setSplashMessage(Messages.getString("login.JFireLoginHandler.workOffline")); //$NON-NLS-1$
 				loginResult.setWorkOffline(true);
 				break;
 			}
 			loginPanel.assignLoginValues();
-			SplashScreen.setSplashMessage("Try to log in ...");
+			SplashScreen.setSplashMessage(Messages.getString("login.JFireLoginHandler.tryToLogin")); //$NON-NLS-1$
 			Login.AsyncLoginResult testResult = Login.testLogin(loginContext);
 			testResult.copyValuesTo(loginResult);
 			loggedIn = testResult.isSuccess();
 			if (loggedIn) {
-				SplashScreen.setSplashMessage("Login successful");
+				SplashScreen.setSplashMessage(Messages.getString("login.JFireLoginHandler.loginSuccessful")); //$NON-NLS-1$
 				break;
 			}
 			loginTries++;

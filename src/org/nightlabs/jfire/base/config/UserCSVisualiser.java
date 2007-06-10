@@ -29,6 +29,7 @@ package org.nightlabs.jfire.base.config;
 import javax.jdo.FetchPlan;
 
 import org.nightlabs.jdo.NLJDOHelper;
+import org.nightlabs.jfire.base.resource.Messages;
 import org.nightlabs.jfire.base.security.UserProvider;
 import org.nightlabs.jfire.config.ConfigGroup;
 import org.nightlabs.jfire.config.ConfigSetup;
@@ -38,19 +39,12 @@ import org.nightlabs.jfire.security.id.UserID;
 
 /**
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
- *
+ * @author Marc Klinger - marc[at]nightlabs[dot]de
  */
-public class UserCSVisualiser implements ConfigSetupVisualiser {
-
+public class UserCSVisualiser implements ConfigSetupVisualiser 
+{
 	private static String[] USER_FETCH_GROUPS = new String[] {FetchPlan.DEFAULT}; 	
 	
-	/**
-	 * 
-	 */
-	public UserCSVisualiser() {
-		super();
-	}
-
 	/**
 	 * @see org.nightlabs.jfire.base.config.ConfigSetupVisualiser#getKeyObjectName(org.nightlabs.jfire.base.config.id.ConfigID)
 	 */
@@ -58,21 +52,21 @@ public class UserCSVisualiser implements ConfigSetupVisualiser {
 		try {
 			UserID userID = new UserID(configID.configKey);
 			User user = UserProvider.sharedInstance().getUser(userID, USER_FETCH_GROUPS, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
-			return user.getUserID()+" ("+user.getName()+")";
+			return String.format(Messages.getString("config.UserCSVisualiser.keyObjectName"), user.getUserID(), user.getName()); //$NON-NLS-1$
 		} catch (Exception e) {
 			return configID.configKey;
 		} 
 	}
 
-	public String getConfigDescription(ConfigID configID) {
+	public String getConfigDescription(ConfigID configID)
+	{
 		ConfigSetup setup = ConfigSetupRegistry.sharedInstance().getConfigSetupForConfigType(configID);
 		if (setup == null)
 			return configID.configKey;
 		if (ConfigSetupRegistry.sharedInstance().isConfigGroup(configID)) {
 			ConfigGroup group = setup.getConfigGroup(configID.configKey);
-			return "ConfigGroup "+group.getName();
+			return String.format(Messages.getString("config.UserCSVisualiser.configGroupDescription"), group.getName()); //$NON-NLS-1$
 		}		
-		return "Config for user "+getKeyObjectName(configID);
+		return String.format(Messages.getString("config.UserCSVisualiser.userConfigDescription")+getKeyObjectName(configID)); //$NON-NLS-1$
 	}
-	
 }

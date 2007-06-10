@@ -32,6 +32,7 @@ import org.eclipse.jface.action.StatusLineManager;
 import org.eclipse.ui.application.IActionBarConfigurer;
 import org.nightlabs.base.app.DefaultActionBuilder;
 import org.nightlabs.jfire.base.login.LoginStateStatusLineContribution;
+import org.nightlabs.jfire.base.resource.Messages;
 
 /**
  * Creates the Menu 
@@ -49,7 +50,7 @@ extends DefaultActionBuilder
 	protected void fillStatusLine(IStatusLineManager statusLine) {
 		super.fillStatusLine(statusLine);
 		IContributionItem beginGroup = statusLine.find(StatusLineManager.BEGIN_GROUP);
-		statusLine.prependToGroup(StatusLineManager.BEGIN_GROUP, new LoginStateStatusLineContribution("login status"));
+		statusLine.prependToGroup(StatusLineManager.BEGIN_GROUP, new LoginStateStatusLineContribution(Messages.getString("app.JFireActionBuilder.loginStatus"))); //$NON-NLS-1$
 		statusLine.remove(beginGroup);
 		statusLine.prependToGroup(StatusLineManager.MIDDLE_GROUP, beginGroup);
 	}

@@ -19,6 +19,7 @@ import org.nightlabs.base.job.Job;
 import org.nightlabs.base.util.RCPUtil;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jdo.ObjectID;
+import org.nightlabs.jfire.base.resource.Messages;
 import org.nightlabs.jfire.editlock.AcquireEditLockResult;
 import org.nightlabs.jfire.editlock.EditLock;
 import org.nightlabs.jfire.editlock.EditLockType;
@@ -72,7 +73,7 @@ public class EditLockMan
 
 		public EditLockRefreshJob(EditLockCarrier editLockCarrier)
 		{
-			super("Refresh EditLocks");
+			super(Messages.getString("editlock.EditLockMan.jobName")); //$NON-NLS-1$
 			setEditLockCarrier(editLockCarrier);
 		}
 
@@ -141,9 +142,9 @@ public class EditLockMan
 
 		private void reacquireEditLockOnServerIfNecessary(ProgressMonitor monitor)
 		{
-			logger.info("reacquireEditLockOnServerIfNecessary: enter");
+			logger.info("reacquireEditLockOnServerIfNecessary: enter"); //$NON-NLS-1$
 			if (System.currentTimeMillis() >= expiryClientLostTimestamp) { // it's time to refresh the server-side editLock
-				logger.info("reacquireEditLockOnServerIfNecessary: reacquiring");
+				logger.info("reacquireEditLockOnServerIfNecessary: reacquiring"); //$NON-NLS-1$
 				AcquireEditLockResult acquireEditLockResult = editLockDAO.acquireEditLock(
 						editLockTypeID, editLock.getLockedObjectID(), editLock.getDescription(),
 						FETCH_GROUPS_EDIT_LOCK, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
@@ -158,7 +159,7 @@ public class EditLockMan
 		{
 			synchronized (editLockID2Job) {
 				if (editLockID2Job.get(editLockID) != this) {
-					logger.info("EditLockRefreshJob.run: job has been replaced - cancelling.");
+					logger.info("EditLockRefreshJob.run: job has been replaced - cancelling."); //$NON-NLS-1$
 					return Status.CANCEL_STATUS; // a new job has already been created - this job is out-of-charge now
 				}
 			}
@@ -195,7 +196,7 @@ public class EditLockMan
 			if (delayUserInactivity < 0) delayUserInactivity = 0;
 
 			long delay = Math.min(delayClientLost, delayUserInactivity);
-			logger.info("scheduleWithEditLockTypeDelay: delay="+delay+" delayClientLost="+delayClientLost + " delayUserInactivity="+delayUserInactivity);
+			logger.info("scheduleWithEditLockTypeDelay: delay="+delay+" delayClientLost="+delayClientLost + " delayUserInactivity="+delayUserInactivity); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 			schedule(delay); // wake up as soon as some action is required
 		}
 	}
@@ -280,13 +281,13 @@ public class EditLockMan
 	public void acquireEditLock(EditLockTypeID editLockTypeID, ObjectID objectID, String description, EditLockCallback editLockCallback, final Shell parentShell, ProgressMonitor monitor)
 	{
 		if (editLockTypeID == null)
-			throw new IllegalArgumentException("editLockTypeID must not be null!");
+			throw new IllegalArgumentException("editLockTypeID must not be null!"); //$NON-NLS-1$
 
 		if (objectID == null)
-			throw new IllegalArgumentException("objectID must not be null!");
+			throw new IllegalArgumentException("objectID must not be null!"); //$NON-NLS-1$
 
 		if (description == null)
-			throw new IllegalArgumentException("description must not be null!");
+			throw new IllegalArgumentException("description must not be null!"); //$NON-NLS-1$
 
 		// callback can be null => don't check it
 
@@ -294,7 +295,7 @@ public class EditLockMan
 //			throw new IllegalArgumentException("parentShell must not be null!");
 
 		if (monitor == null)
-			throw new IllegalArgumentException("monitor must not be null!");
+			throw new IllegalArgumentException("monitor must not be null!"); //$NON-NLS-1$
 
 
 		EditLockCarrier oldEditLockCarrier;
@@ -308,7 +309,7 @@ public class EditLockMan
 		if (oldEditLockCarrier == null) { // we only need to communicate with the server, if the object is not yet locked there. and we don't open a dialog when refreshing - only when new.
 			final AcquireEditLockResult acquireEditLockResult;
 
-			monitor.beginTask("Acquire EditLock on Server", 1);
+			monitor.beginTask(Messages.getString("editlock.EditLockMan.aquireLockTask"), 1); //$NON-NLS-1$
 			try {
 				acquireEditLockResult = editLockDAO.acquireEditLock(
 						editLockTypeID, objectID, description, FETCH_GROUPS_EDIT_LOCK, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
@@ -346,7 +347,7 @@ public class EditLockMan
 
 	private void releaseEditLockWithJob(final List<ObjectID> objectIDs, final ReleaseReason releaseReason)
 	{
-		Job job = new Job("Release EditLock") {
+		Job job = new Job(Messages.getString("editlock.EditLockMan.releaseLockJob")) { //$NON-NLS-1$
 			@Implement
 			protected IStatus run(ProgressMonitor monitor)
 			{

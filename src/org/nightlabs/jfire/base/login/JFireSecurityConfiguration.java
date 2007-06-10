@@ -63,13 +63,13 @@ public class JFireSecurityConfiguration extends Configuration {
 	 * @see javax.security.auth.login.Configuration#refresh()
 	 */
 	public void refresh() {
-		logger.debug("Refreshing entries");
+		logger.debug("Refreshing entries"); //$NON-NLS-1$
 		ArrayList configEntries = loginConfigModule.getSecurityConfigurations();
 		this.entries.clear();
 		for (int i=0; i<configEntries.size(); i++){
 			JFireSecurityConfigurationEntry confEntry = (JFireSecurityConfigurationEntry)configEntries.get(i);
-			logger.debug("Adding entry for "+confEntry.getApplicationName()+"("+confEntry.getLoginModuleName()+", "+confEntry.getControlFlag()+", "+confEntry.getOptions()+")");
-			logger.debug("Control Flag is: "+strToLoginModuleControlFlag(confEntry.getControlFlag()));
+			logger.debug("Adding entry for "+confEntry.getApplicationName()+"("+confEntry.getLoginModuleName()+", "+confEntry.getControlFlag()+", "+confEntry.getOptions()+")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
+			logger.debug("Control Flag is: "+strToLoginModuleControlFlag(confEntry.getControlFlag())); //$NON-NLS-1$
 			this.entries.put(
 				confEntry.getApplicationName(),
 				new AppConfigurationEntry(
@@ -97,14 +97,14 @@ public class JFireSecurityConfiguration extends Configuration {
 	public static void declareConfiguration(){
 		Class configClass = null; //Configuration.getConfiguration().getClass();
 		if (configClass == null)
-			logger.debug("Current security configuration is null");
+			logger.debug("Current security configuration is null"); //$NON-NLS-1$
 		else 
-			logger.debug("Current security configuration is of type: "+configClass.getName());
+			logger.debug("Current security configuration is of type: "+configClass.getName()); //$NON-NLS-1$
 		
 		if (configClass != JFireSecurityConfiguration.class){
 			configInstance = new JFireSecurityConfiguration();
 			Configuration.setConfiguration(configInstance);
-			logger.debug("Set configuration to type: "+Configuration.getConfiguration().getClass().getName());
+			logger.debug("Set configuration to type: "+Configuration.getConfiguration().getClass().getName()); //$NON-NLS-1$
 		}
 	}
 	

@@ -29,6 +29,7 @@ package org.nightlabs.jfire.base.config;
 import javax.jdo.FetchPlan;
 
 import org.nightlabs.jdo.NLJDOHelper;
+import org.nightlabs.jfire.base.resource.Messages;
 import org.nightlabs.jfire.config.ConfigGroup;
 import org.nightlabs.jfire.config.ConfigSetup;
 import org.nightlabs.jfire.config.id.ConfigID;
@@ -39,19 +40,12 @@ import org.nightlabs.progress.NullProgressMonitor;
 
 /**
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
- *
+ * @author Marc Klinger - marc[at]nightlabs[dot]de
  */
-public class WorkstationCSVisualiser implements ConfigSetupVisualiser {
-
+public class WorkstationCSVisualiser implements ConfigSetupVisualiser 
+{
 	private static String[] WORKSTATION_FETCH_GROUPS = new String[] {FetchPlan.DEFAULT}; 	
 	
-	/**
-	 * 
-	 */
-	public WorkstationCSVisualiser() {
-		super();
-	}
-
 	/**
 	 * @see org.nightlabs.jfire.base.config.ConfigSetupVisualiser#getKeyObjectName(org.nightlabs.jfire.base.config.id.ConfigID)
 	 */
@@ -69,15 +63,15 @@ public class WorkstationCSVisualiser implements ConfigSetupVisualiser {
 		} 
 	}
 	
-	public String getConfigDescription(ConfigID configID) {
+	public String getConfigDescription(ConfigID configID) 
+	{
 		ConfigSetup setup = ConfigSetupRegistry.sharedInstance().getConfigSetupForConfigType(configID);
 		if (setup == null)
 			return configID.configKey;
 		if (ConfigSetupRegistry.sharedInstance().isConfigGroup(configID)) {
 			ConfigGroup group = setup.getConfigGroup(configID.configKey);
-			return "ConfigGroup "+group.getName();
+			return String.format(Messages.getString("config.WorkstationCSVisualiser.configGroupDescription"), group.getName()); //$NON-NLS-1$
 		}		
-		return "Config for workstation "+getKeyObjectName(configID);
+		return String.format(Messages.getString("config.WorkstationCSVisualiser.workstationConfigDescription"), getKeyObjectName(configID)); //$NON-NLS-1$
 	}
-
 }

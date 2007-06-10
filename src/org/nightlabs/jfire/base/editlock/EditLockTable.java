@@ -12,6 +12,7 @@ import org.nightlabs.annotation.Implement;
 import org.nightlabs.base.table.AbstractTableComposite;
 import org.nightlabs.base.table.TableContentProvider;
 import org.nightlabs.base.table.TableLabelProvider;
+import org.nightlabs.jfire.base.resource.Messages;
 import org.nightlabs.jfire.editlock.EditLock;
 import org.nightlabs.l10n.DateFormatter;
 
@@ -27,7 +28,7 @@ extends AbstractTableComposite
 				if (columnIndex == 0)
 					return String.valueOf(element);
 
-				return "";
+				return ""; //$NON-NLS-1$
 			}
 
 			EditLock editLock = (EditLock) element;
@@ -40,7 +41,7 @@ extends AbstractTableComposite
 				case 2:
 					return DateFormatter.formatDateShortTimeHMS(editLock.getLastAcquireDT(), false);
 				default:
-					return "";
+					return ""; //$NON-NLS-1$
 			}
 		}
 	}
@@ -56,13 +57,13 @@ extends AbstractTableComposite
 		TableColumn tc;
 
 		tc = new TableColumn(table, SWT.LEFT);
-		tc.setText("User");
+		tc.setText(Messages.getString("editlock.EditLockTable.user")); //$NON-NLS-1$
 
 		tc = new TableColumn(table, SWT.LEFT);
-		tc.setText("Created");
+		tc.setText(Messages.getString("editlock.EditLockTable.created")); //$NON-NLS-1$
 
 		tc = new TableColumn(table, SWT.LEFT);
-		tc.setText("Last Acquired");
+		tc.setText(Messages.getString("editlock.EditLockTable.lastAquired")); //$NON-NLS-1$
 
 		TableLayout tl = new TableLayout();
 		tl.addColumnData(new ColumnWeightData(1));

@@ -55,28 +55,28 @@ public class LoginConfigModule extends ConfigModule
 		super.init();
 
 		if(workstationID == null)
-			workstationID = "";
+			workstationID = ""; //$NON-NLS-1$
 
 		if (organisationID == null)
-			organisationID = "";
+			organisationID = ""; //$NON-NLS-1$
 
 		if (userID == null)
-			userID = "";
+			userID = ""; //$NON-NLS-1$
 
 		// default values
 		if(initialContextFactory == null)
-			initialContextFactory = "org.jboss.security.jndi.LoginInitialContextFactory";
-		if (securityProtocol == null || "".equals(securityProtocol))
-			securityProtocol = "jfire";
+			initialContextFactory = "org.jboss.security.jndi.LoginInitialContextFactory"; //$NON-NLS-1$
+		if (securityProtocol == null || "".equals(securityProtocol)) //$NON-NLS-1$
+			securityProtocol = "jfire"; //$NON-NLS-1$
 		if(serverURL == null)
-			serverURL = "jnp://localhost:1099";
+			serverURL = "jnp://localhost:1099"; //$NON-NLS-1$
 
 		if (securityConfigurations == null) {
 			securityConfigurations = new ArrayList();
 			securityConfigurations.add(
 					new JFireSecurityConfigurationEntry(
-							"jfire",
-							"org.jboss.security.ClientLoginModule"							
+							"jfire", //$NON-NLS-1$
+							"org.jboss.security.ClientLoginModule"							 //$NON-NLS-1$
 					)
 			);
 		}

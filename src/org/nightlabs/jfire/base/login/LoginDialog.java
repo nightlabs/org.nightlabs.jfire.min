@@ -248,8 +248,8 @@ public class LoginDialog extends TitleAreaDialog
 	@Override
 	protected void createButtonsForButtonBar(Composite parent) 
 	{
-		createButton(parent, IDialogConstants.OK_ID, Messages.getString("login.LoginDialog.labelbutton.login"), true);
-		createButton(parent, IDialogConstants.CANCEL_ID, Messages.getString("login.LoginDialog.labelbutton.offline"), false);
+		createButton(parent, IDialogConstants.OK_ID, Messages.getString("login.LoginDialog.labelbutton.login"), true); //$NON-NLS-1$
+		createButton(parent, IDialogConstants.CANCEL_ID, Messages.getString("login.LoginDialog.labelbutton.offline"), false); //$NON-NLS-1$
 		createButton(parent, DETAILS_ID, IDialogConstants.SHOW_DETAILS_LABEL, false);
 	}
 	

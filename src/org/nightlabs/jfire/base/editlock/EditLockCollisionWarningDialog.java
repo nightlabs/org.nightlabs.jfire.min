@@ -17,6 +17,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.nightlabs.base.dialog.CenteredDialog;
 import org.nightlabs.base.job.Job;
 import org.nightlabs.jdo.NLJDOHelper;
+import org.nightlabs.jfire.base.resource.Messages;
 import org.nightlabs.jfire.editlock.AcquireEditLockResult;
 import org.nightlabs.jfire.editlock.EditLock;
 import org.nightlabs.jfire.editlock.dao.EditLockDAO;
@@ -63,13 +64,13 @@ extends CenteredDialog
 		Composite page = (Composite) super.createDialogArea(parent);
 
 		Label l = new Label(page, SWT.WRAP);
-		l.setText("The object that you are about to edit is currently edited by someone else, too. This might cause collisions and changes to get lost.");
+		l.setText(Messages.getString("editlock.EditLockCollisionWarningDialog.warningText")); //$NON-NLS-1$
 		l.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
 		editLockTable = new EditLockTable(page, SWT.NONE);
-		editLockTable.setInput(new String[] {"Loading data..."});
+		editLockTable.setInput(new String[] {Messages.getString("editlock.EditLockCollisionWarningDialog.loadingLabel")}); //$NON-NLS-1$
 
-		Job job = new Job("Loading EditLocks") {
+		Job job = new Job(Messages.getString("editlock.EditLockCollisionWarningDialog.loadingJob")) { //$NON-NLS-1$
 			@Override
 			protected IStatus run(ProgressMonitor monitor)
 			{

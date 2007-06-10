@@ -78,7 +78,7 @@ extends AbstractConfigModulePreferencePage
 							login.getOrganisationID(), login.getWorkstationID())),
 							false);
 		} catch (Exception e) {
-			logger.info("User decided to woro offline!");
+			logger.info("User decided to work offline!"); //$NON-NLS-1$
 		}
 		super.init(workbench);
 	}

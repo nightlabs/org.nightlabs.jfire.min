@@ -38,7 +38,7 @@ import org.nightlabs.base.util.RCPUtil;
 public class JFireWelcomePerspective implements IPerspectiveFactory {
 
 	
-    public static final String ID_PERSPECTIVE = "org.nightlabs.jfire.base.perspective.JFireWelcomePerspective";
+    public static final String ID_PERSPECTIVE = "org.nightlabs.jfire.base.perspective.JFireWelcomePerspective"; //$NON-NLS-1$
     
 	/**
 	 * Creates the initial layout of the JFireWelcomePerspective.<br/>

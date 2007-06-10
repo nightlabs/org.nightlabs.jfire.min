@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.nightlabs.base.tree.TreeContentProvider;
 import org.nightlabs.jdo.ObjectID;
+import org.nightlabs.jfire.base.resource.Messages;
 
 /**
  * A ContentProvider that can be used with a TreeViewer that is driven by an {@link ActiveJDOObjectTreeController}.
@@ -28,7 +29,7 @@ public abstract class JDOObjectTreeContentProvider<JDOObjectID extends ObjectID,
 		return getChildren(inputElement);
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("unchecked") //$NON-NLS-1$
 	@Override
 	public Object[] getChildren(Object parentElement)
 	{
@@ -52,12 +53,12 @@ public abstract class JDOObjectTreeContentProvider<JDOObjectID extends ObjectID,
 
 		List<TreeNode> res = controller.getNodes(parent);
 		if (res == null)
-			return new String[] { "Loading ..." };
+			return new String[] { Messages.getString("jdo.tree.JDOObjectTreeContentProvider.loading") }; //$NON-NLS-1$
 		else
 			return res.toArray();
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("unchecked") //$NON-NLS-1$
 	@Override
 	public boolean hasChildren(Object element) {
 		if (element instanceof String)

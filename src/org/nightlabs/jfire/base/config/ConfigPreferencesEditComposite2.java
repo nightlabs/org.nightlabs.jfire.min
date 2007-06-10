@@ -50,6 +50,7 @@ import org.nightlabs.jdo.ObjectID;
 import org.nightlabs.jfire.base.JFireBaseEAR;
 import org.nightlabs.jfire.base.editlock.EditLockCallback;
 import org.nightlabs.jfire.base.editlock.EditLockMan;
+import org.nightlabs.jfire.base.resource.Messages;
 import org.nightlabs.jfire.config.ConfigModule;
 import org.nightlabs.jfire.config.id.ConfigID;
 import org.nightlabs.progress.ProgressMonitor;
@@ -150,7 +151,7 @@ implements ConfigPreferenceChangedListener, IStoreChangedConfigModule
 	}
 	
 	public void updatePreferencesComposite() {
-		Job job = new Job("Updating ConfigModule") {
+		Job job = new Job(Messages.getString("config.ConfigPreferencesEditComposite2.updateingJob")) { //$NON-NLS-1$
 			@Override
 			protected IStatus run(ProgressMonitor monitor) {
 				Display.getDefault().asyncExec(new Runnable() {
@@ -181,17 +182,17 @@ implements ConfigPreferenceChangedListener, IStoreChangedConfigModule
 		this.currentConfigID = currentConfigID;
 		setFaded(true);
 
-		Job lockJob = new Job("Checking for Locks") {
+		Job lockJob = new Job(Messages.getString("config.ConfigPreferencesEditComposite2.lockCheckJob")) { //$NON-NLS-1$
 			@Override
 			protected IStatus run(ProgressMonitor monitor) {
-				monitor.beginTask("Initialising...", 2);
+				monitor.beginTask(Messages.getString("config.ConfigPreferencesEditComposite2.initialising"), 2); //$NON-NLS-1$
 
 				treeComposite.setConfigID(currentConfigID);
 				monitor.worked(1);
 
 				EditLockMan.sharedInstance().acquireEditLock(
 						JFireBaseEAR.EDIT_LOCK_TYPE_ID_CONFIG, getCurrentConfigID(),
-						"This Config is currently edited by someone else!", (EditLockCallback)null, new SubProgressMonitor(monitor, 1));
+						Messages.getString("config.ConfigPreferencesEditComposite2.editLockWarning"), (EditLockCallback)null, new SubProgressMonitor(monitor, 1)); //$NON-NLS-1$
 
 				Display.getDefault().asyncExec(new Runnable() {
 					public void run() {
@@ -221,7 +222,7 @@ implements ConfigPreferenceChangedListener, IStoreChangedConfigModule
 //		String cfModKey = page.getConfigModuleClassName().getName();
 		String cfModKey = page.getSimpleClassName();
 		if (page.getConfigModuleCfModID() != null)
-			cfModKey = cfModKey + "_" + page.getConfigModuleCfModID();
+			cfModKey = cfModKey + "_" + page.getConfigModuleCfModID(); //$NON-NLS-1$
 		return cfModKey;
 	}
 	

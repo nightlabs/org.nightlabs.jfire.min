@@ -79,7 +79,7 @@ public abstract class LSDEditorActionDelegate implements IEditorActionDelegate, 
 		try {
 			Login.getLogin(false).addLoginStateListener(this,action);
 		} catch (LoginException e) {
-			throw new RuntimeException("Login.getLogin(false) should never throw this exception!", e);
+			throw new RuntimeException("Login.getLogin(false) should never throw this exception!", e); //$NON-NLS-1$
 		}
 	}
 	
