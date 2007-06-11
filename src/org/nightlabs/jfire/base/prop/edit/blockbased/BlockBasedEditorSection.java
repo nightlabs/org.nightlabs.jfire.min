@@ -62,17 +62,8 @@ public class BlockBasedEditorSection extends RestorableSectionPart
 	@Override
 	public void commit(boolean onSave)
 	{
-		System.err.println("***********************************");
-		System.err.println("Person properties: commit("+onSave+")");
-		System.err.println("***********************************");
 		super.commit(onSave);
-		// TODO: done this to avoid Illegal Thread access in DataFieldEditors
-		// instead each DataFieldEditor should be threadsave
-		Display.getDefault().syncExec(new Runnable(){
-			public void run() {
-				blockBasedPersonEditor.updatePropertySet();
-			}		
-		});
+		blockBasedPersonEditor.updatePropertySet();
 	}
 
 	/**
