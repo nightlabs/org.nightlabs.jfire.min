@@ -187,7 +187,7 @@ implements SessionBean
         UserSearchResult result = User.searchUsers(
             pm, userType, searchStr, exact, itemsPerPage, pageIndex, userIncludeMask);
         
-        result.makeTransient(userIncludeMask);
+//        result.makeTransient(userIncludeMask);
         return result;
       } finally {
         if (AuthorityManagerBean.CLOSE_PM) pm.close();
@@ -779,10 +779,17 @@ implements SessionBean
     	Collection roleGroupsUserGroups = new HashSet();
     	pm.getExtent(User.class);
     	User user = (User) pm.getObjectById(UserID.create(getOrganisationID(), userID));
-    	for (Iterator iter = user.getUserGroups().iterator(); iter.hasNext();) {
-				UserGroup userGroup = (UserGroup) iter.next();
-				roleGroupsUserGroups.addAll(
-						getRoleGroupsForUserRef(pm, userGroup.getOrganisationID(), userGroup.getUserID(), authorityID));
+    	for (Iterator iter = user.getUserGroups().iterator(); iter.hasNext();) 
+    	{
+    		Object o = iter.next();
+    		if (o instanceof UserGroup) {
+  				UserGroup userGroup = (UserGroup) iter.next();
+  				roleGroupsUserGroups.addAll(
+  						getRoleGroupsForUserRef(pm, userGroup.getOrganisationID(), userGroup.getUserID(), authorityID));    			
+    		}
+    		else {
+    			logger.error("entry in user.getUserGroups() is not instanceof UserGroup but is a "+o.getClass());
+    		}
 			}
 
       //FIXME: JPOX bug (INNER JOIN instead of LEFT JOIN)
@@ -1192,7 +1199,7 @@ implements SessionBean
         try {
           User user = (User) pm.getObjectById(UserID.create(getOrganisationID(), userID), true);
           //					user = (User)pm.detachCopy(user);
-          user.makeTransient(includeMask);
+//          user.makeTransient(includeMask);
 //          user.setPassword(null);
           return user;
         } catch (JDOObjectNotFoundException x) {
