@@ -11,5 +11,6 @@
 	<classpathentry kind="var" path="WORKSPACE/NightLabsBase/dist/NightLabsBase.jar" sourcepath="/WORKSPACE/NightLabsBase/src"/>
 	<classpathentry kind="var" path="JBOSS/server/default/lib/jnpserver.jar"/>
 	<classpathentry kind="var" path="JBOSS/client/jbossall-client.jar"/>
+	<classpathentry kind="var" path="XERCES"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
