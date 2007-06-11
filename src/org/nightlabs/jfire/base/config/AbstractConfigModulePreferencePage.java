@@ -402,6 +402,7 @@ extends LSDPreferencePage
 		loadingDone = new XComposite(fadableWrapper, SWT.NONE, LayoutMode.TIGHT_WRAPPER);
 		header = new XComposite(loadingDone, SWT.NONE, LayoutMode.ORDINARY_WRAPPER);
 		header.getGridData().grabExcessVerticalSpace = false;
+		header.setBackgroundMode(SWT.INHERIT_FORCE); // doesn't seem to work
 		body = new XComposite(loadingDone, SWT.NONE, LayoutMode.TIGHT_WRAPPER);
 
 		Job fetchJob = new Job(Messages.getString("config.AbstractConfigModulePreferencePage.fetchJobName")) { //$NON-NLS-1$
@@ -498,6 +499,7 @@ extends LSDPreferencePage
 					(getConfigModuleController().getConfigModule().getFieldMetaData(ConfigModule.class.getName()).getWritableByChildren()
 					& FieldMetaData.WRITABLEBYCHILDREN_YES) != 0); 
 			
+			checkBoxAllowOverwrite.setBackground(header.getBackground());
 		} else {
 			
 			if (inheritMemberConfigModule == null || inheritMemberConfigModule.isDisposed())
@@ -518,6 +520,9 @@ extends LSDPreferencePage
 				inheritMemberConfigModule.setCaption(Messages.getString("config.AbstractConfigModulePreferencePage.GroupDisallowsOverwrite")); //$NON-NLS-1$
 			else
 				inheritMemberConfigModule.setCaption(Messages.getString("config.AbstractConfigModulePreferencePage.inheritFromGroup")); //$NON-NLS-1$
+			
+			inheritMemberConfigModule.adaptToToolkit();
+			inheritMemberConfigModule.layout(true, true);
 		}
 	}
 

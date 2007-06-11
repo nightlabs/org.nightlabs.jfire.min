@@ -126,7 +126,7 @@ extends CenteredDialog // IconAndMessageDialog
 	@Override
 	protected void configureShell(Shell newShell) {
 		super.configureShell(newShell);
-		setToCenteredLocationPreferredSize(400, 300);
+		setToCenteredLocationPreferredSize(newShell, 400, 300);
 		newShell.setText(Messages.getString("config.ChangedConfigModulePagesDialog.title")); //$NON-NLS-1$
 	}
 	
