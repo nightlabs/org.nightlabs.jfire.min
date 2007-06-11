@@ -121,13 +121,13 @@ implements SessionBean, TimedObject
 	 * @throws ModuleException 
 	 * @ejb.interface-method
 	 * @ejb.transaction type="Required"
-	 * @ejb.permission unchecked="true"
+	 * @ejb.permission role-name="_System_"
 	 **/
 	public void startTimer()
 	throws ModuleException
 	{
-		if (!User.USERID_SYSTEM.equals(getUserID()))
-			throw new SecurityException("This method can only be called by user " + User.USERID_SYSTEM);
+//		if (!User.USERID_SYSTEM.equals(getUserID()))
+//			throw new SecurityException("This method can only be called by user " + User.USERID_SYSTEM);
 
 		TimerService timerService = sessionContext.getTimerService();
 
