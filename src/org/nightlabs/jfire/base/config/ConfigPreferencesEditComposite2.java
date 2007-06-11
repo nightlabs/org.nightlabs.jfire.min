@@ -46,7 +46,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.nightlabs.base.composite.FadeableComposite;
 import org.nightlabs.base.job.Job;
-import org.nightlabs.jdo.ObjectID;
 import org.nightlabs.jfire.base.JFireBaseEAR;
 import org.nightlabs.jfire.base.editlock.EditLockCallback;
 import org.nightlabs.jfire.base.editlock.EditLockMan;
@@ -192,7 +191,9 @@ implements ConfigPreferenceChangedListener, IStoreChangedConfigModule
 
 				EditLockMan.sharedInstance().acquireEditLock(
 						JFireBaseEAR.EDIT_LOCK_TYPE_ID_CONFIG, getCurrentConfigID(),
-						Messages.getString("config.ConfigPreferencesEditComposite2.editLockWarning"), (EditLockCallback)null, new SubProgressMonitor(monitor, 1)); //$NON-NLS-1$
+						Messages.getString("config.ConfigPreferencesEditComposite2.editLockWarning"), 
+						(EditLockCallback)null, new SubProgressMonitor(monitor, 1) //$NON-NLS-1$
+				);
 
 				Display.getDefault().asyncExec(new Runnable() {
 					public void run() {

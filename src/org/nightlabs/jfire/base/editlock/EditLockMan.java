@@ -253,6 +253,32 @@ public class EditLockMan
 	}
 
 	/**
+	 * Asynchronously checks for <code>EditLock</code>s of the given type corresponding to the {@link EditLockTypeID}
+	 * of the object corresponding to the given {@link ObjectID}.
+	 *  
+	 * @param editLockTypeID The ID referencing the {@link EditLockType} to which the new {@link EditLock} will belong. This parameter is ignored, if the
+	 *		<code>EditLock</code> already exists.
+	 * @param objectID The ID of the object that shall be locked.
+	 * @param description A human-readable description describing the object that is locked.
+	 * @param editLockCallback Either <code>null</code> or your callback-implementation.
+	 */
+	public void acquireEditLockAsynchronously(final EditLockTypeID editLockTypeID, 
+			final ObjectID objectID, final String description, final EditLockCallback editLockCallback)
+	{
+		Job lockJob = new Job("Checking for EditLocks...") {
+			@Override
+			protected IStatus run(ProgressMonitor monitor) {
+				acquireEditLock(editLockTypeID, objectID, description, editLockCallback, monitor);
+				return Status.OK_STATUS;
+			}
+		};
+		
+	lockJob.setPriority(Job.SHORT);
+//	lockJob.setUser(true); // notify user of checking locks?
+	lockJob.schedule();
+	}
+	
+	/**
 	 * This method acquires an <code>EditLock</code> (or refreshs it in order to prevent release due to user-inactivity).
 	 *
 	 * @param editLockTypeID The ID referencing the {@link EditLockType} to which the new {@link EditLock} will belong. This parameter is ignored, if the
