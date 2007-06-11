@@ -26,9 +26,9 @@ import java.util.Set;
  * 	Also {@link #getParentsToRefresh()} contains their parent nodes. 
  * </li>
  * </ul>
- *  
- * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] de -->
  *
+ * @author Marco Schulze - Marco at NightLabs dot de
+ * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] de -->
  */
 public class JDOTreeNodesChangedEvent<JDOObjectID, TreeNode> extends EventObject {
 
