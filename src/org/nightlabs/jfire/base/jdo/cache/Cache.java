@@ -710,6 +710,7 @@ public class Cache
 					filterID,
 					new SubscriptionChangeRequest(
 							SubscriptionChangeRequest.ACTION_ADD,
+							null, // we have no JDO object-id
 							filter,
 							delayMSec));
 		}
@@ -750,7 +751,8 @@ public class Cache
 					filterID,
 					new SubscriptionChangeRequest(
 							SubscriptionChangeRequest.ACTION_REMOVE,
-							filter,
+							null, // the objectID
+							null, // filter, // we better don't pass filter anymore in order to ensure noone accesses this objec anymore
 							delayMSec));
 		}
 	}
@@ -786,6 +788,7 @@ public class Cache
 						objectID,
 						new SubscriptionChangeRequest(SubscriptionChangeRequest.ACTION_ADD,
 								objectID,
+								null, // no filter
 								delayMSec));
 			}
 		}
@@ -818,6 +821,7 @@ public class Cache
 						objectID,
 						new SubscriptionChangeRequest(SubscriptionChangeRequest.ACTION_REMOVE,
 								objectID,
+								null, // no filter
 								delayMSec));
 			}
 		}
@@ -876,38 +880,40 @@ public class Cache
 	 *
 	 * @throws In case the cache needs to be created and a {@link ConfigException} occurs while obtaining {@link CacheCfMod}. 
 	 */
-	public static synchronized Cache sharedInstance()
+	public static Cache sharedInstance()
 	{
-		try {
-			if (serverMode) {
-				if (serverModeSharedInstances == null) {
-					serverModeSharedInstances = new HashMap<String, Cache>();
-					JDOLifecycleManager.setServerMode(true);
-				}
+		synchronized (Cache.class) { // we synchronise both sharedInstance-methods (of JDOLifecycleManager and Cache) via the same mutex in order to prevent dead-locks
+			try {
+				if (serverMode) {
+					if (serverModeSharedInstances == null) {
+						serverModeSharedInstances = new HashMap<String, Cache>();
+						JDOLifecycleManager.setServerMode(true);
+					}
 
-				String userName = getCurrentUserName();
-				Cache cache = serverModeSharedInstances.get(userName);
-				if (cache == null) {
-					logger.info("sharedInstance: creating new Cache instance in serverMode");
-					cache = new Cache();
-					serverModeSharedInstances.put(userName, cache);
-					cache.open(getCurrentSessionID());
+					String userName = getCurrentUserName();
+					Cache cache = serverModeSharedInstances.get(userName);
+					if (cache == null) {
+						logger.info("sharedInstance: creating new Cache instance in serverMode");
+						cache = new Cache();
+						serverModeSharedInstances.put(userName, cache);
+						cache.open(getCurrentSessionID());
+					}
+					return cache;
 				}
-				return cache;
-			}
-			else {
-				if (_sharedInstance == null) {
-					logger.info("sharedInstance: creating new Cache instance in clientMode (not-serverMode)");
-					_sharedInstance = new Cache();
-					if (autoOpen)
-						_sharedInstance.open(getCurrentSessionID());
-				}
+				else {
+					if (_sharedInstance == null) {
+						logger.info("sharedInstance: creating new Cache instance in clientMode (not-serverMode)");
+						_sharedInstance = new Cache();
+						if (autoOpen)
+							_sharedInstance.open(getCurrentSessionID());
+					}
 
-				return _sharedInstance;
+					return _sharedInstance;
+				}
+			} catch (ConfigException e) {
+				throw new RuntimeException(e);
 			}
-		} catch (ConfigException e) {
-			throw new RuntimeException(e);
-		}
+		} // synchronized (Cache.class) {
 	}
 
 	private String sessionID = null;

@@ -317,30 +317,32 @@ extends org.nightlabs.notification.NotificationManager
 	private static JDOLifecycleManager _sharedInstance = null;
 
 
-	public synchronized static JDOLifecycleManager sharedInstance()
+	public static JDOLifecycleManager sharedInstance()
 	{
-		if (serverMode) {
-			if (serverModeSharedInstances == null)
-				serverModeSharedInstances = new HashMap<String, JDOLifecycleManager>();
-
-			String userName = getCurrentUserName();
-			JDOLifecycleManager jdoLifecycleManager = serverModeSharedInstances.get(userName);
-			if (jdoLifecycleManager == null) {
-				logger.info("sharedInstance: creating new JDOLifecycleManager in serverMode");
-				jdoLifecycleManager = createJDOLifecycleManager();
-				serverModeSharedInstances.put(userName, jdoLifecycleManager);
-				jdoLifecycleManager.cache = Cache.sharedInstance();
+		synchronized (Cache.class) { // we synchronise both sharedInstance-methods (of JDOLifecycleManager and Cache) via the same mutex in order to prevent dead-locks 
+			if (serverMode) {
+				if (serverModeSharedInstances == null)
+					serverModeSharedInstances = new HashMap<String, JDOLifecycleManager>();
+	
+				String userName = getCurrentUserName();
+				JDOLifecycleManager jdoLifecycleManager = serverModeSharedInstances.get(userName);
+				if (jdoLifecycleManager == null) {
+					logger.info("sharedInstance: creating new JDOLifecycleManager in serverMode");
+					jdoLifecycleManager = createJDOLifecycleManager();
+					serverModeSharedInstances.put(userName, jdoLifecycleManager);
+					jdoLifecycleManager.cache = Cache.sharedInstance();
+				}
+				return jdoLifecycleManager;
 			}
-			return jdoLifecycleManager;
-		}
-		else {
-			if (_sharedInstance == null) {
-				logger.info("sharedInstance: creating new JDOLifecycleManager in clientMode (non-serverMode)");
-				_sharedInstance = createJDOLifecycleManager();
-				_sharedInstance.cache = Cache.sharedInstance();
+			else {
+				if (_sharedInstance == null) {
+					logger.info("sharedInstance: creating new JDOLifecycleManager in clientMode (non-serverMode)");
+					_sharedInstance = createJDOLifecycleManager();
+					_sharedInstance.cache = Cache.sharedInstance();
+				}
+				return _sharedInstance;
 			}
-			return _sharedInstance;
-		}
+		} // synchronized (Cache.class) {
 	}
 
 	private Cache cache;

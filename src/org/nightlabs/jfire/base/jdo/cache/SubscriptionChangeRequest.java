@@ -64,20 +64,25 @@ public class SubscriptionChangeRequest
 	 *		because it's async and periodical) or it can be delayed for a certain time
 	 *		specified in millisec.
 	 */
-	public SubscriptionChangeRequest(byte action, Object objectID, long delayMSec)
+	public SubscriptionChangeRequest(byte action, Object objectID, IJDOLifecycleListenerFilter jdoLifecycleListenerFilter, long delayMSec)
 	{
 		if (action != ACTION_ADD && action != ACTION_REMOVE)
 			throw new IllegalArgumentException("action \""+action+"\" invalid! Must be either ACTION_ADD=\""+ACTION_ADD+"\" or ACTION_REMOVE=\""+ACTION_REMOVE+"\"");
 
 		this.action = action;
 
-		if (null == objectID)
-			throw new IllegalArgumentException("objectID is null");
+//		if (null == objectID)
+//			throw new IllegalArgumentException("objectID is null");
+		this.objectID = objectID;
+		this.filter = jdoLifecycleListenerFilter;
 
-		if (objectID instanceof IJDOLifecycleListenerFilter)
-			this.filter = (IJDOLifecycleListenerFilter) objectID;
-		else
-			this.objectID = objectID;
+		if (this.objectID != null && this.filter != null)
+			throw new IllegalArgumentException("You cannot pass both, a jdo-object-id and a jdo-lifecycle-listener-filter!");
+
+//		if (objectID instanceof IJDOLifecycleListenerFilter)
+//			this.filter = (IJDOLifecycleListenerFilter) objectID;
+//		else
+//			this.objectID = objectID;
 
 		if (delayMSec < 0)
 			throw new IllegalArgumentException("delayMSec < 0!!! Must be >= 0!");
