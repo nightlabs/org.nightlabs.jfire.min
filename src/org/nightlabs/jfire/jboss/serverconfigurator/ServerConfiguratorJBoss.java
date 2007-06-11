@@ -1,6 +1,7 @@
 package org.nightlabs.jfire.jboss.serverconfigurator;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -15,6 +16,13 @@ import org.nightlabs.jfire.jboss.cascadedauthentication.CascadedAuthenticationCl
 import org.nightlabs.jfire.serverconfigurator.ServerConfigurationException;
 import org.nightlabs.jfire.serverconfigurator.ServerConfigurator;
 import org.nightlabs.util.Utils;
+import org.nightlabs.xml.DOMParser;
+import org.nightlabs.xml.NLDOMUtil;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 /**
  * This implementation of {@link ServerConfigurator} performs the following tasks in order
@@ -133,27 +141,105 @@ public class ServerConfiguratorJBoss
 			CascadedAuthenticationClientInterceptor.reloadProperties(); // reboot should not be necessary anymore after this extension
 		}
 	}
+	
+	private static void setMBeanAttribute(Document document, String mbeanCode, String attributeName, String comment, String content)
+	{
+		Node attributeNode = getMBeanAttributeNode(document, mbeanCode, attributeName);
+		if(attributeNode != null)
+			NLDOMUtil.setTextContentWithComment(attributeNode, comment, content);
+	}
 
+	private static Node getMBeanAttributeNode(Document document, String mbeanCode, String attributeName)
+	{
+		Node mbeanNode = NLDOMUtil.findNodeByAttribute(document, "server/mbean", "code", mbeanCode);
+		if(mbeanNode == null) {
+			logger.error("mbean node not found for code=\""+mbeanCode+"\"");
+			return null;
+		}
+		Node attributeNode = NLDOMUtil.findNodeByAttribute(mbeanNode, "attribute", "name", attributeName);
+		if(attributeNode == null) {
+			logger.error("attribute node not found for name=\""+attributeName+"\"");
+			return null;
+		}
+		return attributeNode;
+	}
+	
 	/**
 	 * We deactivate the JAAS cache, because we have our own cache that is
 	 * proactively managed and reflects changes immediately.
 	 * Additionally, we extend the transaction timeout to 15 min (default is 5 min).
 	 * 
 	 * @param jbossConfDir The JBoss config dir
-	 * @throws FileNotFoundException If the file eas not found
+	 * @throws FileNotFoundException If the file was not found
 	 * @throws IOException In case of an io error
+	 * @throws SAXException In case of a sax error
 	 */
-	private void configureJBossServiceXml(File jbossConfDir) throws FileNotFoundException, IOException
+	private void configureJBossServiceXml(File jbossConfDir) throws FileNotFoundException, IOException, SAXException
 	{
 		File destFile = new File(jbossConfDir, "jboss-service.xml");
 		String text = Utils.readTextFile(destFile);
 		String modificationMarker = "!!!ModifiedByJFire!!!";
-		if (text.indexOf(modificationMarker) < 0) {
+		if (text.indexOf(modificationMarker) >= 0)
+			return;
 			
-			backup(destFile);
+		backup(destFile);
+
+		logger.info("File " + destFile.getAbsolutePath() + " was not yet updated. Will increase transaction timeout and reduce JAAS cache timeout to 5 min - we cannot deactivate the JAAS cache completely or reduce the timeout further, because that causes JPOX problems (though I don't understand why).");
+		setRebootRequired(true);
+		
+		DOMParser parser = new DOMParser();
+		parser.parse(new InputSource(new FileInputStream(destFile)));
+		Document document = parser.getDocument();
+		
+		// JAAS TIMEOUT
+		setMBeanAttribute(
+				document, 
+				"org.jboss.security.plugins.JaasSecurityManagerService", 
+				"DefaultCacheTimeout", 
+				" " + 
+						modificationMarker + "\n " +
+						ServerConfiguratorJBoss.class.getName() + " has reduced the JAAS cache timeout to 5 min.\n" +
+						" JFire has its own cache, which is updated immediately. We cannot completely deactivate the JAAS cache, however,\n" +
+						" because that causes JPOX bugs (why?!).\n Marco :-) ", 
+				"300");
+		
+		// TRANSACTION TIMEOUT
+		setMBeanAttribute(
+				document, 
+				"org.jboss.tm.TransactionManagerService", 
+				"TransactionTimeout", 
+				" " + 
+						modificationMarker + "\n " +
+						ServerConfiguratorJBoss.class.getName() + " has increased the transaction timeout to 15 min. ", 
+				"900");
+		
+		// IGNORE SUFFIX
+		Node n = getMBeanAttributeNode(document, "org.jboss.deployment.scanner.URLDeploymentScanner", "FilterInstance");
+		Node p = NLDOMUtil.findNodeByAttribute(n, "property", "name", "suffixes");
+		if(p == null) {
+			Element newPropertyElement = document.createElement("property");
+			newPropertyElement.setAttribute("name", "suffixes");
+			newPropertyElement.setTextContent("#,$,%,~,\\,v,.BAK,.bak,.old,.orig,.tmp,.rej,.sh");
+			n.appendChild(newPropertyElement);
+			p = newPropertyElement;
+		}
+		String oldText = p.getTextContent();
+		String newText = oldText+",-clrepository.xml";
+		NLDOMUtil.setTextContentWithComment(
+				p, 
+				" " + 
+						modificationMarker + "\n         " +
+						ServerConfiguratorJBoss.class.getName() + " has added -clrepository.xml ",
+				newText);
 			
-			logger.info("File " + destFile.getAbsolutePath() + " was not yet updated. Will increase transaction timeout and reduce JAAS cache timeout to 5 min - we cannot deactivate the JAAS cache completely or reduce the timeout further, because that causes JPOX problems (though I don't understand why).");
-			setRebootRequired(true);
+		
+		
+		String xmlEncoding = document.getXmlEncoding();
+		if(xmlEncoding == null)
+			xmlEncoding = "UTF-8";
+		NLDOMUtil.writeDocument(document, new FileOutputStream(destFile), xmlEncoding);
+			
+			/*
 
 			Pattern pattern = Pattern.compile(
 					"(<mbean[^>]*?org\\.jboss.security\\.plugins\\.JaasSecurityManagerService(?:\\n|.)*?<attribute +?name *?= *?\"DefaultCacheTimeout\")>[0-9]*<((?:\\n|.)*?</mbean>)"
@@ -190,7 +276,7 @@ public class ServerConfiguratorJBoss
 			
 			
 			Utils.writeTextFile(destFile, text);
-		}
+			*/
 	}
 
 	/**
@@ -337,15 +423,6 @@ public class ServerConfiguratorJBoss
 		}		
 	}
 
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args)
-	{
-		ServerConfiguratorJBoss serverConfiguratorJBoss = new ServerConfiguratorJBoss();
-			serverConfiguratorJBoss.configureRunBat(new File("/home/marc/bin/jfire-server/bin"));
-	}
-	
 	private void configureRunBat(File jbossBinDir)
 	{
 		String text;
