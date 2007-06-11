@@ -200,7 +200,7 @@ public class DataFieldEditorFactoryRegistry extends AbstractEPProcessor {
 	/**
 	 * @see org.nightlabs.base.extensionpoint.AbstractEPProcessor#processElement(IExtension, org.eclipse.core.runtime.IConfigurationElement)
 	 */
-	public void processElement(IExtension extension, IConfigurationElement element) throws EPProcessorException {
+	public void processElement(IExtension extension, IConfigurationElement element) throws Exception {
 		try
 		{
 			if (element.getName().toLowerCase().equals(EXTENSION_POINT_ELEMENT_NAME))

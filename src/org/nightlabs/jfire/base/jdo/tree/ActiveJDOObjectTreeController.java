@@ -55,6 +55,7 @@ public abstract class ActiveJDOObjectTreeController<JDOObjectID extends ObjectID
 	 * If the parent is null this method should return the root element of the tree structure. 
 	 * 
 	 * @param parent <code>null</code> for the root elements or the parent element for which to load the children.
+	 * @return The children of the the JDOObject with the given parentID, but never <code>null</code>.
 	 */
 	protected abstract Collection<JDOObject> retrieveChildren(JDOObjectID parentID, JDOObject parent, IProgressMonitor monitor);
 

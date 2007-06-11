@@ -80,11 +80,7 @@ public class ConfigPreferencePageRegistry extends AbstractEPProcessor
 	 * @return A new ConfigPreferenceNode
 	 */
 	public ConfigPreferenceNode getPreferencesRootNode() {
-		try {
-			process();
-		} catch (EPProcessorException e) {
-			throw new RuntimeException(e);
-		}
+		checkProcessing();
 		return preferencesRootNode;
 	}
 
@@ -92,7 +88,7 @@ public class ConfigPreferencePageRegistry extends AbstractEPProcessor
 	 * @see org.nightlabs.base.extensionpoint.AbstractEPProcessor#processElement(org.eclipse.core.runtime.IExtension, org.eclipse.core.runtime.IConfigurationElement)
 	 */
 	@Override
-	public void processElement(IExtension extension, IConfigurationElement element) throws EPProcessorException 
+	public void processElement(IExtension extension, IConfigurationElement element) throws Exception 
 	{
 		if (element.getName().equals(PAGE_ELEMENT)) {
 			String id = element.getAttribute(ID_ELEMENT);
@@ -121,7 +117,7 @@ public class ConfigPreferencePageRegistry extends AbstractEPProcessor
 	 * @see org.nightlabs.base.extensionpoint.AbstractEPProcessor#process()
 	 */
 	@Override
-	public synchronized void process() throws EPProcessorException {
+	public synchronized void process() {
 		preferencesRootNode = new ConfigPreferenceNode(
 				"", //$NON-NLS-1$
 				"", //$NON-NLS-1$

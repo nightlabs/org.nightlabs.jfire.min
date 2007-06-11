@@ -11,7 +11,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.widgets.Display;
-import org.nightlabs.base.extensionpoint.EPProcessorException;
 import org.nightlabs.base.notification.NotificationListenerJob;
 import org.nightlabs.base.notification.NotificationListenerSWTThreadAsync;
 import org.nightlabs.base.notification.NotificationListenerSWTThreadSync;
@@ -31,11 +30,7 @@ public class JDOLifecycleManagerRCP extends JDOLifecycleManager {
 	 * 
 	 */
 	public JDOLifecycleManagerRCP() {
-		try {
-			new NotificationManagerInterceptorEPProcessor(this).process();
-		} catch (EPProcessorException e) {
-			throw new RuntimeException(e);
-		}
+		new NotificationManagerInterceptorEPProcessor(this).process();
 	}
 	
 	@Override

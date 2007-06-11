@@ -924,13 +924,7 @@ implements InitialContextProvider
 				if (currLoginState == LOGINSTATE_OFFLINE)
 					lastWorkOfflineDecisionTime = System.currentTimeMillis();
 
-				if (!isProcessed()) {
-					try {
-						process();
-					} catch (EPProcessorException e) {
-						logger.error("Processing LoginStateListener extensions failed!", e); //$NON-NLS-1$
-					}
-				}
+				checkProcessing();
 
 				if (LOGINSTATE_LOGGED_IN == loginState && objectID2PCClassNotificationInterceptor == null) {
 						objectID2PCClassNotificationInterceptor = new org.nightlabs.jfire.base.jdo.JDOObjectID2PCClassNotificationInterceptor();
@@ -985,7 +979,7 @@ implements InitialContextProvider
 	/**
 	 * @see org.nightlabs.base.extensionpoint.AbstractEPProcessor#processElement(IExtension, org.eclipse.core.runtime.IConfigurationElement)
 	 */
-	public void processElement(IExtension extension, IConfigurationElement element) throws EPProcessorException
+	public void processElement(IExtension extension, IConfigurationElement element) throws Exception
 	{
 		if (LOGIN_STATE_LISTENER_ELEMENT.equals(element.getName())) {
 			try {

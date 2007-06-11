@@ -79,7 +79,7 @@ public class StructFieldFactoryRegistry extends AbstractEPProcessor {
 	}
 
 	@Override
-	public void processElement(IExtension extension, IConfigurationElement element) throws EPProcessorException {
+	public void processElement(IExtension extension, IConfigurationElement element) throws Exception {
 		try {
 			if (element.getName().toLowerCase().equals(EXTENSION_POINT_ELEMENT_NAME)) {
 				StructFieldEditorFactory editorFactory = (StructFieldEditorFactory) element

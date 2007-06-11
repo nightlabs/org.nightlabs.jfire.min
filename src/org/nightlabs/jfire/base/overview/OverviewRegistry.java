@@ -55,7 +55,7 @@ extends AbstractEPProcessor
 
 	@Override
 	public void processElement(IExtension extension, IConfigurationElement element)
-	throws EPProcessorException 
+	throws Exception 
 	{
 		if (element.getName().equals(ELEMENT_CATEGORY)) {
 			String categoryID = element.getAttribute(ATTRIBUTE_CATEGORY_ID);
@@ -148,7 +148,7 @@ extends AbstractEPProcessor
 	}
 
 	@Override
-	public synchronized void process() throws EPProcessorException {
+	public synchronized void process() {
 		super.process();
 		assignEntryFactoriesToCategoryFactories();
 	}

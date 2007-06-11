@@ -456,11 +456,7 @@ public class ConfigSetupRegistry extends AbstractEPProcessor
 			JDOLifecycleManager.sharedInstance().addNotificationListener(ConfigSetup.class, sharedInstance.setupChangeListener);
 			JDOLifecycleManager.sharedInstance().addNotificationListener(Config.class, sharedInstance.configChangeListener);
 			JDOLifecycleManager.sharedInstance().addNotificationListener(ConfigGroup.class, sharedInstance.configGroupChangeListener);
-			try {
-				sharedInstance.process();
-			} catch (EPProcessorException e) {
-				throw new RuntimeException(e);
-			}
+			sharedInstance.process();
 		}
 		return sharedInstance;
 	}
@@ -469,7 +465,7 @@ public class ConfigSetupRegistry extends AbstractEPProcessor
 		return EXTENSION_POINT_ID;
 	}
 
-	public void processElement(IExtension extension, IConfigurationElement element) throws EPProcessorException {
+	public void processElement(IExtension extension, IConfigurationElement element) throws Exception {
 		if (element.getName().equals(VISUALISER_ELEMENT)) {
 			String configSetupType = element.getAttribute(CONFIG_SETUP_TYPE_ELEMENT);
 			if (configSetupType == null || "".equals(configSetupType)) //$NON-NLS-1$
