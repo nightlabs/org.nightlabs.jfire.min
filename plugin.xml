@@ -244,7 +244,7 @@
 	
   <extension
         point="org.nightlabs.base.cache">
-     <cacheFactory class="org.nightlabs.jdo.cache.CacheFactory"/>
+     <cacheFactory class="org.nightlabs.jfire.base.jdo.cache.CacheFactory"/>
   </extension>
 
 	
