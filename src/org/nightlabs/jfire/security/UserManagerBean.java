@@ -783,7 +783,7 @@ implements SessionBean
     	{
     		Object o = iter.next();
     		if (o instanceof UserGroup) {
-  				UserGroup userGroup = (UserGroup) iter.next();
+  				UserGroup userGroup = (UserGroup)o;
   				roleGroupsUserGroups.addAll(
   						getRoleGroupsForUserRef(pm, userGroup.getOrganisationID(), userGroup.getUserID(), authorityID));    			
     		}
