@@ -49,13 +49,15 @@ import org.eclipse.core.runtime.IExtension;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
+import org.nightlabs.base.exceptionhandler.ExceptionHandlerRegistry;
+import org.nightlabs.base.exceptionhandler.ExceptionHandlerRegistry.Mode;
 import org.nightlabs.base.extensionpoint.AbstractEPProcessor;
 import org.nightlabs.base.extensionpoint.EPProcessorException;
+import org.nightlabs.base.job.Job;
 import org.nightlabs.base.notification.SelectionManager;
 import org.nightlabs.base.progress.ProgressMonitorWrapper;
 import org.nightlabs.base.util.RCPUtil;
@@ -74,6 +76,7 @@ import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.security.dao.UserDAO;
 import org.nightlabs.jfire.security.id.UserID;
 import org.nightlabs.math.Base62Coder;
+import org.nightlabs.progress.ProgressMonitor;
 
 /**
  * Defines a client login to the JFire server
@@ -398,6 +401,8 @@ implements InitialContextProvider
 					}
 					boolean needRestart = JFireJ2EEPlugin.getDefault().updateManifest();
 					if (needRestart) {
+						// Set the exception-handler mode to bypass
+						ExceptionHandlerRegistry.sharedInstance().setMode(Mode.bypass);
 						Display.getDefault().asyncExec(new Runnable()
 						{
 							public void run()
@@ -610,7 +615,7 @@ implements InitialContextProvider
 	{
 		Job job = new Job(Messages.getString("login.Login.authenticationJob")) { //$NON-NLS-1$
 			@Override
-			protected IStatus run(IProgressMonitor arg0)
+			protected IStatus run(ProgressMonitor arg0)
 			{
 				try {
 					Login.getLogin();
