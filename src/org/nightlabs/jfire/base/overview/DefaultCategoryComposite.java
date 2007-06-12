@@ -70,6 +70,17 @@ public class DefaultCategoryComposite extends AbstractTableComposite<Entry> {
 		setInput(category.getEntries());
 	}
 
+	/**
+	 * @param parent
+	 * @param style
+	 * @param category
+	 * @param viewerStyle
+	 */
+	public DefaultCategoryComposite(Composite parent, int style, Category category, int viewerStyle) {
+		super(parent, style, true, viewerStyle);
+		setInput(category.getEntries());
+	}
+	
 	@Override
 	protected void createTableColumns(TableViewer tableViewer, Table table) {					
 		TableColumn iconColumn = new TableColumn(table, SWT.NONE);

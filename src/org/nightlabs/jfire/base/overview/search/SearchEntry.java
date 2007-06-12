@@ -46,7 +46,6 @@ implements Entry
 		sashform.setLayout(new FillLayout());
 		searchComposite = createSearchComposite(sashform);
 		resultComposite = createResultComposite(sashform);
-//		sashform.setWeights(new int[] {2,4});
 		configureSash(sashform);
 		
 		if (parent.getLayout() instanceof GridLayout)

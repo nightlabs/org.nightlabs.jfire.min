@@ -20,7 +20,6 @@ import org.nightlabs.jfire.base.overview.EntryFactory;
 public abstract class BaseSearchEntry 
 extends SearchEntry 
 {
-
 	public BaseSearchEntry(EntryFactory entryFactory) {
 		super(entryFactory);
 	}

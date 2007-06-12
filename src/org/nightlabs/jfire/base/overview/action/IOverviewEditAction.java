@@ -10,6 +10,15 @@ import org.nightlabs.base.action.ISelectionAction;
 public interface IOverviewEditAction 
 extends ISelectionAction 
 {
+	/**
+	 * returns the {@link IEditorInput}
+	 * @return the input of the editor
+	 */
 	IEditorInput getEditorInput();	
+	
+	/**
+	 * return the id of the editor to edit
+	 * @return the id of the editor to edit
+	 */
 	String getEditorID();
 }

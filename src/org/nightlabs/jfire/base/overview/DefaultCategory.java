@@ -9,6 +9,7 @@ import java.util.List;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
+import org.nightlabs.base.table.AbstractTableComposite;
 
 /**
  * The default {@link Category} displays its {@link Entry}s in
@@ -47,7 +48,8 @@ public class DefaultCategory implements Category {
 	 * @see org.nightlabs.jfire.base.overview.Category#createCategoryComposite(org.eclipse.swt.widgets.Composite)
 	 */
 	public Composite createCategoryComposite(Composite composite) {
-		categoryComposite = new DefaultCategoryComposite(composite, SWT.NONE, this);
+		categoryComposite = new DefaultCategoryComposite(composite, SWT.NONE, this, 
+				AbstractTableComposite.DEFAULT_STYLE_SINGLE);
 		return categoryComposite;
 	}
 
