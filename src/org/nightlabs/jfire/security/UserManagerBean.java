@@ -585,13 +585,11 @@ implements SessionBean
   }
 
   /**
-   * @throws ModuleException
-   * 
    * @ejb.interface-method
    * @ejb.permission role-name="UserManager-read"
+   * @ejb.transaction type="Supports"
    **/
-  public Collection getUserGroups(Object[] userGroupIDs, String[] fetchGroups, int maxFetchDepth) 
-    throws ModuleException
+  public Collection getUserGroups(Set<UserID> userGroupIDs, String[] fetchGroups, int maxFetchDepth) 
   {
     PersistenceManager pm = getPersistenceManager();
     try {
@@ -601,25 +599,7 @@ implements SessionBean
       pm.close();
     }
   }
-
-  /**
-   * @throws ModuleException
-   * 
-   * @ejb.interface-method
-   * @ejb.permission role-name="UserManager-read"
-   **/
-  public Collection getUsers(Object[] userIDs, String[] fetchGroups, int maxFetchDepth) 
-    throws ModuleException
-  {
-    PersistenceManager pm = getPersistenceManager();
-    try {
-      return NLJDOHelper.getDetachedObjectList(pm, userIDs, null, fetchGroups, maxFetchDepth);
-    } 
-    finally {
-      pm.close();
-    }
-  }
-  
+ 
   /**
    * Returns a Collection of {@link User}s corresponding to the given set of {@link UserID}s.
    * @param userIDs the {@link UserID}s for which to retrieve the {@link User}s
@@ -630,10 +610,9 @@ implements SessionBean
    * 
    * @ejb.interface-method
    * @ejb.permission role-name="_Guest_"
-   * @ejb.transaction type="Required"
+   * @ejb.transaction type="Supports"
    */
   public Collection<User> getUsers(Set<UserID> userIDs, String[] fetchGroups, int maxFetchDepth)
-  	throws ModuleException 
   {
   	PersistenceManager pm = getPersistenceManager();
   	try {
@@ -644,13 +623,11 @@ implements SessionBean
   }
 
   /**
-   * @throws ModuleException
-   * 
    * @ejb.interface-method
    * @ejb.permission role-name="UserManager-read"
+   * @ejb.transaction type="Supports"
    **/
   public UserGroupIDListCarrier getUserGroupIDs(String userID, String authorityID) 
-    throws ModuleException
   {
     PersistenceManager pm = getPersistenceManager();
     try 
@@ -726,13 +703,11 @@ implements SessionBean
   }
 
   /**
-   * @throws ModuleException
-   * 
    * @ejb.interface-method
    * @ejb.permission role-name="UserManager-read"
+   * @ejb.transaction type="Supports"
    **/
   public RoleGroupIDListCarrier getRoleGroupIDs(String userID, String authorityID) 
-    throws ModuleException
   {
     PersistenceManager pm = getPersistenceManager();
     try 
@@ -847,20 +822,16 @@ implements SessionBean
 
 
   /**
-   * @throws ModuleException
-   * 
    * @ejb.interface-method
    * @ejb.permission role-name="UserManager-read"
-   **/
-  public Collection getRoleGroups(Object[] roleGroupIDs, String [] fetchGroups, int maxFetchDepth)
-    throws ModuleException
+   * @ejb.transaction type="Supports"
+   */
+  public Collection getRoleGroups(Set<RoleGroupID> roleGroupIDs, String [] fetchGroups, int maxFetchDepth)
   {
     PersistenceManager pm = getPersistenceManager();
-    try 
-    {
+    try {
       return NLJDOHelper.getDetachedObjectList(pm, roleGroupIDs, null, fetchGroups, maxFetchDepth);
-    } 
-    finally {
+    } finally {
       pm.close();
     }
   }
@@ -874,7 +845,6 @@ implements SessionBean
    * @ejb.permission role-name="UserManager-read"
    **/
   public Collection getExcludedRoleGroups(String userID, String authorityID) 
-  	throws ModuleException 
   {
   	return getExcludedRoleGroups(userID, authorityID, null);
   }
@@ -886,7 +856,6 @@ implements SessionBean
    * @ejb.permission role-name="UserManager-read"
    **/
   public Collection getExcludedRoleGroups(String userID, String authorityID, String [] fetchGroups) 
-  	throws ModuleException
   {
     PersistenceManager pm = getPersistenceManager();
     try 
@@ -983,7 +952,6 @@ implements SessionBean
    * @ejb.permission role-name="UserManager-read"
    **/
   public Collection getUserGroups(String userID) 
-  	throws ModuleException
   {
   	return getUserGroups(userID, null);
   }  
@@ -996,7 +964,6 @@ implements SessionBean
    * @ejb.permission role-name="UserManager-read"
    **/
   public Collection getUserGroups(String userID, String [] fetchGroups) 
-  	throws ModuleException
   {
     PersistenceManager pm = getPersistenceManager();
     try 
@@ -1029,7 +996,6 @@ implements SessionBean
    * @ejb.permission role-name="UserManager-read"
    **/
   public Collection getExcludedUserGroups(String userID) 
-  	throws ModuleException
   {
   	return getExcludedUserGroups(userID, null);
   }
@@ -1042,7 +1008,6 @@ implements SessionBean
    * @ejb.permission role-name="UserManager-read"
    **/
   public Collection getExcludedUserGroups(String userID, String [] fetchGroups) 
-  	throws ModuleException
   {
   	PersistenceManager pm = getPersistenceManager();
     try 
@@ -1101,7 +1066,6 @@ implements SessionBean
    * @ejb.permission role-name="UserManager-write"
    **/
   public boolean userIDAlreadyRegistered(UserID userID) 
-  throws ModuleException, ObjectIDException
   {
     PersistenceManager pm = getPersistenceManager();
     try
@@ -1129,7 +1093,6 @@ implements SessionBean
    * @ejb.permission role-name="UserManager-read"
    */
   public User getUser(UserID userID, String[] fetchGroups, int maxFetchDepth)
-  	throws ModuleException
   {
     PersistenceManager pm = this.getPersistenceManager();	    
     try
@@ -1168,13 +1131,7 @@ implements SessionBean
       // workaround end
       
       return usr;
-    }
-    catch(JDOObjectNotFoundException e) 
-    {
-      throw new ModuleException(e);
-    }
-    finally
-    {
+    } finally {
       pm.close();
     }
   }
@@ -1227,7 +1184,6 @@ implements SessionBean
    * @ejb.permission role-name="UserManager-write"
    **/
   public void addUserToRoleGroups(String userID, String authorityID, Collection roleGroupIDs) 
-  	throws ModuleException
   {
   	Iterator i = roleGroupIDs.iterator();
   	while(i.hasNext())
@@ -1249,7 +1205,6 @@ implements SessionBean
    * @ejb.permission role-name="UserManager-write"
    **/
   public void addUserToRoleGroup(String userID, String authorityID, String roleGroupID) 
-  	throws ModuleException
   {
   	if (User.USERID_SYSTEM.equals(userID))
   		throw new IllegalArgumentException("Cannot manipulate system user \"" + User.USERID_SYSTEM + "\"!");
@@ -1257,8 +1212,7 @@ implements SessionBean
 //  	logger.info("********* addUserToRoleGroup");
 
   	PersistenceManager pm = getPersistenceManager();
-  	try 
-		{
+  	try {
   		pm.getFetchPlan().setGroup(FetchPlan.DEFAULT);
   		pm.getExtent(Authority.class, true);
  			Authority auth = (Authority)pm.getObjectById(AuthorityID.create(getOrganisationID(), authorityID), true);
@@ -1276,11 +1230,7 @@ implements SessionBean
   		} finally {
   			jfsm.close();
   		}
-		} 
-    catch(JDOObjectNotFoundException e) {
-      throw new ModuleException(e);
-    }
-  	finally {
+		} finally {
   		pm.close();
 		}
   }
@@ -1400,7 +1350,6 @@ implements SessionBean
    * @ejb.permission role-name="UserManager-write"
    **/
   public void removeUserFromRoleGroups(String userID, String authorityID, Collection roleGroupIDs) 
-  	throws ModuleException
   {
   	Iterator i = roleGroupIDs.iterator();
   	while(i.hasNext())
@@ -1422,7 +1371,6 @@ implements SessionBean
    * @ejb.permission role-name="UserManager-write"
    **/
   public void removeUserFromRoleGroup(String userID, String authorityID, String roleGroupID)
-  	throws ModuleException
   {
   	PersistenceManager pm = getPersistenceManager();
   	try 
@@ -1437,11 +1385,7 @@ implements SessionBean
   		} finally {
   			jfsm.close();
   		}
-		} 
-    catch(JDOObjectNotFoundException e) {
-      throw new ModuleException(e);
-    }
-  	finally {
+		} finally {
   		pm.close();
 		}
   }
@@ -1457,7 +1401,6 @@ implements SessionBean
    * @ejb.permission role-name="UserManager-write"
    **/
   public void removeUsersFromUserGroup(String userGroupID, Collection userIDs) 
-  	throws ModuleException
   {
   	Iterator i = userIDs.iterator();
   	while(i.hasNext())
@@ -1478,7 +1421,6 @@ implements SessionBean
    * @ejb.permission role-name="UserManager-write"
    **/
   public void removeUserFromUserGroups(String userID, Collection userGroupIDs) 
-  	throws ModuleException
   {
   	Iterator i = userGroupIDs.iterator();
   	while(i.hasNext())
@@ -1501,7 +1443,6 @@ implements SessionBean
    **/
   
   public void removeUserFromUserGroup(String userID, String userGroupID)
-  throws ModuleException
   {
   	PersistenceManager pm = getPersistenceManager();
   	try 
@@ -1520,9 +1461,6 @@ implements SessionBean
   			jfsm.close();
   		}
 		}
-  	catch(JDOObjectNotFoundException e) {
-  		throw new ModuleException(e);
-		}
   	finally {
   		pm.close();
 		}
@@ -1540,7 +1478,6 @@ implements SessionBean
    **/
   
   public void assignPersonToUser(String userID, long personID)
-  	throws ModuleException
   {
   	PersistenceManager pm = getPersistenceManager();
   	try 
@@ -1553,21 +1490,17 @@ implements SessionBean
   		
   		usr.setPerson(ps);
 		}
-  	catch(JDOObjectNotFoundException e) {
-  		throw new ModuleException(e);
-		}
   	finally {
   		pm.close();
 		}
   }
 
-  
+
   /**
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
 	 */
 	public void whoami()
-		throws ModuleException
 	{
 		logger.info("******** WHOAMI: "+getPrincipalString());
 	}
