@@ -28,6 +28,7 @@ package org.nightlabs.jfire.base.security;
 
 import java.rmi.RemoteException;
 import java.util.Collection;
+import java.util.Set;
 
 import javax.ejb.CreateException;
 import javax.naming.NamingException;
@@ -87,8 +88,8 @@ public class RoleGroupProvider extends JDOObjectProvider
     else
       return null;
   }
-  
-  protected Collection retrieveJDOObjects(String scope, Object[] objectIDs, String[] fetchGroups, int maxFetchDepth)
+
+  protected Collection retrieveJDOObjects(String scope, Set objectIDs, String[] fetchGroups, int maxFetchDepth)
   throws Exception
   {
     return um.getUserGroups(objectIDs, fetchGroups, maxFetchDepth);
