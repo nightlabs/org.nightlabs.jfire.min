@@ -172,7 +172,7 @@ public class StructEditor {
 		});
 		new Job("Fetching structure...") {
 			@Override
-			protected IStatus run(final ProgressMonitor monitor) {
+			protected IStatus run(final ProgressMonitor monitor) throws Exception {
 				Display.getDefault().asyncExec(new Runnable() {
 					public void run() {
 						StructLocal struct = StructLocalDAO.sharedInstance().getStructLocal(structLocalID, monitor);

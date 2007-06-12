@@ -69,7 +69,7 @@ public class OrganisationList
 
 		new Job("Load Organisations") {
 			@Implement
-			protected IStatus run(ProgressMonitor monitor)
+			protected IStatus run(ProgressMonitor monitor) throws Exception
 			{
 				final List<Organisation> organisations = organisationIDDataSource == null ?
 					OrganisationDAO.sharedInstance().getOrganisations(

@@ -97,7 +97,7 @@ public class PersonSearchFilterItemEditor extends SearchFilterItemEditor impleme
 	public void fillSearchFieldCombo() {
 		Job job = new Job("Load search fields") {
 			@Override
-			protected IStatus run(ProgressMonitor monitor) {
+			protected IStatus run(ProgressMonitor monitor) throws Exception {
 				if (searchFieldList == null) {
 					try {
 						searchFieldList = buildSearchFieldList(monitor);

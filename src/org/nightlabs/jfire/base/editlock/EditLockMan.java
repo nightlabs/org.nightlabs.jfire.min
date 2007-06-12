@@ -155,7 +155,7 @@ public class EditLockMan
 		}
 
 		@Implement
-		protected IStatus run(ProgressMonitor monitor)
+		protected IStatus run(ProgressMonitor monitor) throws Exception
 		{
 			synchronized (editLockID2Job) {
 				if (editLockID2Job.get(editLockID) != this) {
@@ -267,7 +267,7 @@ public class EditLockMan
 	{
 		Job lockJob = new Job("Checking for EditLocks...") {
 			@Override
-			protected IStatus run(ProgressMonitor monitor) {
+			protected IStatus run(ProgressMonitor monitor) throws Exception {
 				acquireEditLock(editLockTypeID, objectID, description, editLockCallback, monitor);
 				return Status.OK_STATUS;
 			}
@@ -375,7 +375,7 @@ public class EditLockMan
 	{
 		Job job = new Job(Messages.getString("editlock.EditLockMan.releaseLockJob")) { //$NON-NLS-1$
 			@Implement
-			protected IStatus run(ProgressMonitor monitor)
+			protected IStatus run(ProgressMonitor monitor) throws Exception
 			{
 				releaseEditLocks(objectIDs, releaseReason, monitor);
 				return Status.OK_STATUS;

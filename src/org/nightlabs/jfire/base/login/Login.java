@@ -615,7 +615,7 @@ implements InitialContextProvider
 	{
 		Job job = new Job(Messages.getString("login.Login.authenticationJob")) { //$NON-NLS-1$
 			@Override
-			protected IStatus run(ProgressMonitor arg0)
+			protected IStatus run(ProgressMonitor arg0) throws Exception
 			{
 				try {
 					Login.getLogin();
