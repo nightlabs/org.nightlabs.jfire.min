@@ -26,7 +26,6 @@
 
 package org.nightlabs.jfire.base.jdo.cache;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 
@@ -63,7 +62,7 @@ public class Key
 //					"objectID (class " + objectID.getClass().getName() + ") does not implement " + ObjectID.class.getName() + "!");
 //		}
 
-		this.fetchGroups = fetchGroups;
+		this.fetchGroups = fetchGroups == null ? null : Collections.unmodifiableSet(fetchGroups);
 		this.maxFetchDepth = maxFetchDepth;
 	}
 
@@ -145,13 +144,17 @@ public class Key
 	}
 
 	/**
-	 * Note, that you MUST NOT change the returned <tt>Set</tt>! 
+	 * Note, that you MUST NOT change the returned <tt>Set</tt>! It is unmodifiable - so you can't change it anyway.
 	 *
 	 * @return Returns the fetchGroups.
 	 */
 	public Set<String> getFetchGroups()
 	{
-		return Collections.unmodifiableSet(fetchGroups);
+		return fetchGroups;
+//		if (fetchGroups == null)
+//			return null;
+//
+//		return Collections.unmodifiableSet(fetchGroups);
 	}
 	/**
 	 * @return Returns the objectID.
