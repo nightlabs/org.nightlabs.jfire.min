@@ -21,7 +21,6 @@ import org.nightlabs.jdo.query.JDOQuery;
 public abstract class AbstractQueryFilterComposite 
 extends AbstractFormFilterComposite 
 {
-
 	/**
 	 * @param parent
 	 * @param style
@@ -48,6 +47,7 @@ extends AbstractFormFilterComposite
 			button2Section = new HashMap<Button, Section>();
 		return button2Section;
 	}
+	
 	private Map<Button, JDOQueryComposite> button2Composite = null;
 	protected Map<Button, JDOQueryComposite> getButton2QueryComposite() {
 		if (button2Composite == null)

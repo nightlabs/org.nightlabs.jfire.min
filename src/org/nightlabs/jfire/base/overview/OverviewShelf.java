@@ -68,14 +68,6 @@ extends XComposite
 
 		shelf = new PShelf(parent, SWT.NONE);
 		shelf.setRenderer(new RedmondShelfRenderer());
-//		RedmondShelfRenderer renderer = new RedmondShelfRenderer();
-//		renderer.setGradient1(new Color(null, 198, 223, 225));
-//		renderer.setGradient1(new Color(null, 255, 255, 255));
-//		renderer.setHoverGradient1(new Color(null, 198, 223, 225));
-//		renderer.setHoverGradient2(new Color(null, 255, 255, 255));
-//		renderer.setHover(true);
-//		shelf.setRenderer(renderer);
-
 		shelf.setLayoutData(new GridData(GridData.FILL_BOTH));
 
 		for (Category category: getOverviewRegistry().getCategoriesWithEntries()) {

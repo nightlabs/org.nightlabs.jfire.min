@@ -16,7 +16,6 @@ import org.nightlabs.jfire.base.overview.search.SearchEntry;
 public class OverviewEntryEditorActionBarContributor  
 extends EditorActionBarContributor
 {
-
 	public OverviewEntryEditorActionBarContributor() {
 		super();
 	}

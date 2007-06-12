@@ -3,6 +3,7 @@ package org.nightlabs.jfire.base.overview;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
@@ -18,7 +19,6 @@ import org.nightlabs.jfire.base.login.part.LSDEditorPart;
  *
  */
 public class OverviewEntryEditor 
-//extends EditorPart 
 extends LSDEditorPart
 {
 	private static final Logger logger = Logger.getLogger(OverviewEntryEditor.class);
@@ -74,6 +74,7 @@ extends LSDEditorPart
 				getSite().setSelectionProvider(entry.getSelectionProvider());
 			
 			updateContextMenu();
+			updateToolbar();
 		}		
 	}
 		
@@ -116,12 +117,47 @@ extends LSDEditorPart
 			}							
 		}
 	}
-			
+
+	protected void updateToolbar() 
+	{
+		EditorActionBarContributor actionBarContributor = 
+			(EditorActionBarContributor) getEditorSite().getActionBarContributor();
+		if (actionBarContributor != null && entry != null) {
+			ToolBarManager toolbarManager = entry.getToolBarManager();
+			if (toolbarManager != null) {
+				if (actionBarContributor instanceof XEditorActionBarContributor) {
+					XEditorActionBarContributor xEditorActionBarContributor = (XEditorActionBarContributor) actionBarContributor;
+					xEditorActionBarContributor.getActionRegistry().contributeToToolBar(toolbarManager);
+					if (logger.isDebugEnabled())
+						logger.debug("updateToolbar, Number of entries = "+toolbarManager.getItems().length+", actionBarContributor = "+actionBarContributor);
+				} else {
+					actionBarContributor.contributeToToolBar(toolbarManager);
+				}
+			}				
+		}		
+	}
+	
+	protected void removeToolbar() 
+	{
+		EditorActionBarContributor actionBarContributor = 
+			(EditorActionBarContributor) getEditorSite().getActionBarContributor();
+		if (actionBarContributor != null && entry != null) {
+			ToolBarManager toolbarManager = entry.getToolBarManager();
+			if (toolbarManager != null) {
+				toolbarManager.removeAll();
+				toolbarManager.update(true);
+				if (logger.isDebugEnabled())
+					logger.debug("removeToolbar, Number of entries = "+toolbarManager.getItems().length+", actionBarContributor = "+actionBarContributor);
+			}							
+		}
+	}	
+	
 	private IPartListener partListener = new IPartListener(){	
 		public void partOpened(IWorkbenchPart part) {			
 		}	
 		public void partDeactivated(IWorkbenchPart part) {		
 			removeContextMenu();
+			removeToolbar();
 		}	
 		public void partClosed(IWorkbenchPart part) {
 			editorDisposed();
@@ -130,15 +166,10 @@ extends LSDEditorPart
 		}
 		public void partActivated(IWorkbenchPart part) {
 			updateContextMenu();
+			updateToolbar();
 		}	
 	};
-	
-//	private DisposeListener disposeListener = new DisposeListener(){	
-//		public void widgetDisposed(DisposeEvent e) {
-//			getSite().getPage().removePartListener(partListener);
-//		}	
-//	};
-	
+		
 	protected void editorDisposed() {
 		getSite().getPage().removePartListener(partListener);
 		if (entry != null)
