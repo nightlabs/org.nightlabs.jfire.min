@@ -56,7 +56,7 @@ import org.nightlabs.jfire.prop.id.StructBlockID;
  * Control wich blocks a editor displays by associating a list of blocks
  * to a editor-domain.
  * 
- * @see org.nightlabs.jfire.base.prop.edit.blockbased.DataBlockEditor
+ * @see org.nightlabs.jfire.base.prop.edit.blockbased.AbstractDataBlockEditor
  * @see org.nightlabs.jfire.base.prop.edit.blockbased.EditorStructBlockRegistry
  * @see org.nightlabs.jfire.base.prop.edit.PropertyEditor
  *  

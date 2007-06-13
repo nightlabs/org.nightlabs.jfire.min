@@ -115,7 +115,7 @@ public class StructEditor {
 					}
 					
 					IStructuredSelection selection = (IStructuredSelection) event.getSelection();
-					if (selection.isEmpty()) {
+					if (selection.isEmpty() && currentStructPartEditor != null) {
 						currentStructPartEditor.setEnabled(false);
 						return;
 					}

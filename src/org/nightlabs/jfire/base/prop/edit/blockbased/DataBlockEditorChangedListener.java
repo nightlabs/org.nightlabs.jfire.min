@@ -32,5 +32,5 @@ import org.nightlabs.jfire.base.prop.edit.DataFieldEditor;
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  */
 public interface DataBlockEditorChangedListener {
-	public void propDataBlockEditorChanged(DataBlockEditor dataBlockEditor, DataFieldEditor dataFieldEditor);
+	public void propDataBlockEditorChanged(AbstractDataBlockEditor dataBlockEditor, DataFieldEditor dataFieldEditor);
 }

@@ -76,4 +76,9 @@ public class StructBlockNode extends TreeNode implements Comparable<StructBlockN
 //		Login.getLogin().
 		return false;
 	}
+	
+//	@Override
+//	public String toString() {
+//		return block.toString();
+//	}
 }

@@ -38,11 +38,12 @@ import org.nightlabs.jfire.prop.DataBlockGroup;
 import org.nightlabs.jfire.prop.IStruct;
 import org.nightlabs.jfire.prop.PropertySet;
 import org.nightlabs.jfire.prop.Struct;
+import org.nightlabs.jfire.prop.StructBlock;
 import org.nightlabs.jfire.prop.StructLocal;
 import org.nightlabs.jfire.prop.id.StructBlockID;
 
 /**
- * @see org.nightlabs.jfire.base.prop.edit.blockbased.DataBlockEditor
+ * @see org.nightlabs.jfire.base.prop.edit.blockbased.AbstractDataBlockEditor
  * @see org.nightlabs.jfire.base.prop.edit.blockbased.EditorStructBlockRegistry
  * @see org.nightlabs.jfire.base.prop.edit.PropertyEditor
  *  
@@ -194,24 +195,30 @@ public abstract class AbstractBlockBasedEditor implements PropertyEditor { // ex
 		return propSet.getDataBlockGroups().iterator();
 	}
 	
-	public Map getStructBlockDisplayOrder() {
+	public Map<String, Integer> getStructBlockDisplayOrder(IStruct struct) {
 		//return AbstractPropStructOrderConfigModule.sharedInstance().structBlockDisplayOrder();
-		return new HashMap();
+		List<StructBlock> structBlocks = struct.getStructBlocks();
+		Map<String, Integer> result = new HashMap<String, Integer>();
+		for (int i = 0; i < structBlocks.size(); i++) {
+			result.put(structBlocks.get(i).getPrimaryKey(), i);
+		}
+		return result;
 	}
 	
 	protected Iterator getOrderedDataBlockGroupsIterator() {
 		buildDomainDataBlockGroups();
 	
 		int allStructBlockCount = getPropStructure().getStructBlocks().size();
-		List result = new LinkedList();
-		Map structBlockOrder = getStructBlockDisplayOrder();
+		List<DataBlockGroup> result = new LinkedList<DataBlockGroup>();
+		IStruct struct = propSet.getStructure();
+		if (struct == null)
+			throw new IllegalStateException("The PropertySet was not exploded yet");
+		Map<String, Integer> structBlockOrder = getStructBlockDisplayOrder(struct);
 		
-		int maxIndex = 0;
 		int unmentionedCount = 0;
 		// all datablocks of this propSet
 		for (Iterator it = propSet.getDataBlockGroups().iterator(); it.hasNext(); ) {
 			DataBlockGroup blockGroup = (DataBlockGroup)it.next();
-			boolean orderedAdd = false;
 			if (structBlockOrder.containsKey(blockGroup.getStructBlockKey())) {
 				// block mentioned in structBlockOrder
 				Integer index = (Integer)structBlockOrder.get(blockGroup.getStructBlockKey());

@@ -58,13 +58,13 @@ public class DataBlockWizardPage extends CompoundDataBlockWizardPage {
 	
 	
 	/**
-	 * Retruns the DataBlockEditor created by
+	 * Retruns the AbstractDataBlockEditor created by
 	 * {@link #createPropDataBlockEditors()}, thus null
 	 * before a call to this method.
 	 * 
 	 * @return
 	 */
-	public DataBlockEditor getPropDataBlockEditor() {
+	public AbstractDataBlockEditor getPropDataBlockEditor() {
 		return super.getPropDataBlockEditor(structBlockID);
 	}
 	

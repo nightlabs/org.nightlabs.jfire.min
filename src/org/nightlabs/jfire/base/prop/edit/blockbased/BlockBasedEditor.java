@@ -43,7 +43,7 @@ import org.nightlabs.jfire.prop.IStruct;
 import org.nightlabs.jfire.prop.PropertySet;
 
 /**
- * @see org.nightlabs.jfire.base.prop.edit.blockbased.DataBlockEditor
+ * @see org.nightlabs.jfire.base.prop.edit.blockbased.AbstractDataBlockEditor
  * @see org.nightlabs.jfire.base.prop.edit.blockbased.EditorStructBlockRegistry
  * @see org.nightlabs.jfire.base.prop.edit.PropertyEditor
  *  

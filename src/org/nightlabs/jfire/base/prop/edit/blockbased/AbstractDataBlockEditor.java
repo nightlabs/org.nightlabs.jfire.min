@@ -41,6 +41,7 @@ import org.nightlabs.jfire.base.prop.edit.DataFieldEditorChangeListener;
 import org.nightlabs.jfire.prop.AbstractDataField;
 import org.nightlabs.jfire.prop.DataBlock;
 import org.nightlabs.jfire.prop.IStruct;
+import org.nightlabs.jfire.prop.StructField;
 
 /**
  * A Composite presenting all fields a propSet has within a DataBlock to
@@ -48,13 +49,13 @@ import org.nightlabs.jfire.prop.IStruct;
  * 
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  */
-public abstract class DataBlockEditor extends Composite implements DataFieldEditorChangeListener {
+public abstract class AbstractDataBlockEditor extends Composite implements DataFieldEditorChangeListener {
 	
-	private static Logger LOGGER = Logger.getLogger(DataBlockEditor.class);
+	private static Logger LOGGER = Logger.getLogger(AbstractDataBlockEditor.class);
 	
 	private IStruct struct;
 	
-	protected DataBlockEditor(IStruct struct, DataBlock dataBlock, Composite parent, int style) {
+	protected AbstractDataBlockEditor(IStruct struct, DataBlock dataBlock, Composite parent, int style) {
 		super(parent,style);
 		this.dataBlock = dataBlock;
 		this.struct = struct;
@@ -68,7 +69,7 @@ public abstract class DataBlockEditor extends Composite implements DataFieldEdit
 	 * key: String AbstractDataField.getPropRelativePK<br/>
 	 * value: DataFieldEditor fieldEditor
 	 */
-	private Map fieldEditors = new HashMap();
+	private Map<String, DataFieldEditor> fieldEditors = new HashMap<String, DataFieldEditor>();
 	
 	
 	protected void addFieldEditor(AbstractDataField dataField, DataFieldEditor fieldEditor) {
@@ -102,10 +103,18 @@ public abstract class DataBlockEditor extends Composite implements DataFieldEdit
 		}
 	}
 
-	public Map getStructFieldDisplayOrder() {
+	public Map<String, Integer> getStructFieldDisplayOrder() {
 		// TODO re-enable this
 		//return AbstractPropStructOrderConfigModule.sharedInstance().structFieldDisplayOrder();
-		return new HashMap();
+		List<StructField> fields = struct.getStructBlock(dataBlock.getDataBlockGroup()).getStructFields();
+		Map<String, Integer> fieldOrdering = new HashMap<String, Integer>(fields.size());
+		int index = 0;
+		for (StructField field : fields) {
+			fieldOrdering.put(field.getPrimaryKey(), index);
+			index++;
+		}
+		
+		return fieldOrdering;
 	}
 	
 	/**
@@ -116,12 +125,12 @@ public abstract class DataBlockEditor extends Composite implements DataFieldEdit
 	}
 	
 	public Iterator getOrderedPropDataFieldsIterator() {
-		List result = new LinkedList();
-		Map structFieldOrder = getStructFieldDisplayOrder();
+		List<AbstractDataField> result = new LinkedList<AbstractDataField>();
+		Map<String, Integer> structFieldOrder = getStructFieldDisplayOrder();
 		for (Iterator it = dataBlock.getDataFields().iterator(); it.hasNext(); ) {
 			AbstractDataField dataField = (AbstractDataField)it.next();
 			if (structFieldOrder.containsKey(dataField.getStructFieldPK())) {
-				Integer index = (Integer)structFieldOrder.get(dataField.getStructFieldPK());
+				Integer index = structFieldOrder.get(dataField.getStructFieldPK());
 				dataField.setPriority(index.intValue());
 			}
 			result.add(dataField);

@@ -26,12 +26,7 @@
 
 package org.nightlabs.jfire.base.prop.edit.blockbased;
 
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.eclipse.swt.SWT;
@@ -52,7 +47,7 @@ import org.nightlabs.jfire.prop.IStruct;
  * 
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  */
-public class GenericDataBlockEditor extends DataBlockEditor {
+public class GenericDataBlockEditor extends AbstractDataBlockEditor {
 	
 	private static Logger LOGGER = Logger.getLogger(GenericDataBlockEditor.class);
 
@@ -121,7 +116,7 @@ public class GenericDataBlockEditor extends DataBlockEditor {
 	
 	/*
 	 * (non-Javadoc)
-	 * @see org.nightlabs.jfire.base.prop.edit.blockbased.DataBlockEditor#refresh(org.nightlabs.jfire.prop.IStruct, org.nightlabs.jfire.prop.DataBlock)
+	 * @see org.nightlabs.jfire.base.prop.edit.blockbased.AbstractDataBlockEditor#refresh(org.nightlabs.jfire.prop.IStruct, org.nightlabs.jfire.prop.DataBlock)
 	 */
 	@Override
 	public void refresh(IStruct struct, DataBlock dataBlock) {
@@ -132,25 +127,4 @@ public class GenericDataBlockEditor extends DataBlockEditor {
 		createFieldEditors();
 	}
 	
-	public Map getStructFieldDisplayOrder() {
-		//return AbstractPropStructOrderConfigModule.sharedInstance().structFieldDisplayOrder();
-		return new HashMap();
-	}
-	
-	public Iterator getOrderedPropDataFieldsIterator() {
-		List result = new LinkedList();
-		Map structFieldOrder = getStructFieldDisplayOrder();
-		for (Iterator it = dataBlock.getDataFields().iterator(); it.hasNext(); ) {
-			AbstractDataField dataField = (AbstractDataField)it.next();
-			if (structFieldOrder.containsKey(dataField.getStructFieldPK())) {
-				Integer index = (Integer)structFieldOrder.get(dataField.getStructFieldPK());
-				dataField.setPriority(index.intValue());
-			}
-			result.add(dataField);
-		}
-		Collections.sort(result);
-		return result.iterator();
-	}
-
-
 }

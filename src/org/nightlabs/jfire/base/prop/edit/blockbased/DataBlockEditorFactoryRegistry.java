@@ -59,7 +59,7 @@ public class DataBlockEditorFactoryRegistry extends AbstractEPProcessor {
 		providerRegistry.put(provider.getProviderStructBlockID(), provider);
 	}
 	
-	public DataBlockEditor getPropDataBlockEditor(
+	public AbstractDataBlockEditor getPropDataBlockEditor(
 		IStruct struct,
 		DataBlock dataBlock,
 		Composite parent, 

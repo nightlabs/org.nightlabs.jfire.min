@@ -97,7 +97,7 @@ implements DataBlockEditorChangedListener
 		
 	}
 
-	public void propDataBlockEditorChanged(DataBlockEditor dataBlockEditor, DataFieldEditor dataFieldEditor) {
+	public void propDataBlockEditorChanged(AbstractDataBlockEditor dataBlockEditor, DataFieldEditor dataFieldEditor) {
 		blockGroupEditor.propDataBlockEditorChanged(dataBlockEditor, dataFieldEditor);
 	}
 	

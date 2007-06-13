@@ -37,5 +37,5 @@ import org.nightlabs.jfire.prop.id.StructBlockID;
  */
 public interface DataBlockEditorFactory {
 	public StructBlockID getProviderStructBlockID();
-	public DataBlockEditor createPropDataBlockEditor(IStruct struct, DataBlock dataBlock, Composite parent, int style);
+	public AbstractDataBlockEditor createPropDataBlockEditor(IStruct struct, DataBlock dataBlock, Composite parent, int style);
 }

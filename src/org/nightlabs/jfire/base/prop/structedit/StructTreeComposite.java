@@ -1,7 +1,6 @@
 package org.nightlabs.jfire.base.prop.structedit;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -16,14 +15,11 @@ import org.nightlabs.base.language.LanguageChooser;
 import org.nightlabs.base.table.TableLabelProvider;
 import org.nightlabs.base.tree.AbstractTreeComposite;
 import org.nightlabs.base.tree.TreeContentProvider;
-import org.nightlabs.jfire.prop.AbstractStructField;
 import org.nightlabs.jfire.prop.IStruct;
 import org.nightlabs.jfire.prop.StructBlock;
 import org.nightlabs.jfire.prop.StructField;
-import org.nightlabs.jfire.prop.id.StructID;
 
 public class StructTreeComposite extends AbstractTreeComposite implements LanguageChangeListener {
-	private StructID id;
 	private List<StructBlockNode> blockNodes;
 	private String currLanguageId;
 
@@ -125,8 +121,8 @@ public class StructTreeComposite extends AbstractTreeComposite implements Langua
 
 		public Object[] getElements(Object inputElement) {
 			if (blockNodes != null) {
-				Collections.sort(blockNodes);
-				return blockNodes.toArray(new Object[0]);
+//				Collections.sort(blockNodes);
+				return blockNodes.toArray(new StructBlockNode[blockNodes.size()]);
 			}
 			else if (text != null) {
 				return new Object[] { text };

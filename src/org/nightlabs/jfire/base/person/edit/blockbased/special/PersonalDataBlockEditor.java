@@ -34,7 +34,7 @@ import org.eclipse.swt.widgets.Control;
 import org.nightlabs.jfire.base.prop.edit.DataFieldEditor;
 import org.nightlabs.jfire.base.prop.edit.DataFieldEditorFactoryRegistry;
 import org.nightlabs.jfire.base.prop.edit.DataFieldEditorNotFoundException;
-import org.nightlabs.jfire.base.prop.edit.blockbased.DataBlockEditor;
+import org.nightlabs.jfire.base.prop.edit.blockbased.AbstractDataBlockEditor;
 import org.nightlabs.jfire.base.prop.edit.blockbased.DataBlockEditorFactory;
 import org.nightlabs.jfire.base.prop.edit.blockbased.ExpandableBlocksEditor;
 import org.nightlabs.jfire.person.PersonStruct;
@@ -50,7 +50,7 @@ import org.nightlabs.jfire.prop.id.StructFieldID;
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  *
  */
-public class PersonalDataBlockEditor extends DataBlockEditor {
+public class PersonalDataBlockEditor extends AbstractDataBlockEditor {
 
 	/**
 	 * LOG4J logger used by this class
@@ -138,7 +138,7 @@ public class PersonalDataBlockEditor extends DataBlockEditor {
 		/**
 		 * @see org.nightlabs.jfire.base.person.edit.blockbased.PersonDataBlockEditorFactory#createPersonDataBlockEditor(org.nightlabs.jfire.base.person.PersonDataBlock, org.eclipse.swt.widgets.Composite, int)
 		 */
-		public DataBlockEditor createPropDataBlockEditor(IStruct struct, DataBlock dataBlock, Composite parent, int style) {
+		public AbstractDataBlockEditor createPropDataBlockEditor(IStruct struct, DataBlock dataBlock, Composite parent, int style) {
 			return new PersonalDataBlockEditor(struct, dataBlock, parent, style);
 		}
 	}

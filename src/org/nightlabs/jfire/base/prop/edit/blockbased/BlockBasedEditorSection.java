@@ -82,7 +82,7 @@ public class BlockBasedEditorSection extends RestorableSectionPart
 		blockBasedPersonEditorControl = blockBasedPersonEditor.createControl(container, false);
 		blockBasedPersonEditorControl.setLayoutData(new GridData(GridData.FILL_BOTH));
 		blockBasedPersonEditor.setChangeListener(new DataBlockEditorChangedListener() {
-			public void propDataBlockEditorChanged(DataBlockEditor dataBlockEditor, DataFieldEditor dataFieldEditor) {
+			public void propDataBlockEditorChanged(AbstractDataBlockEditor dataBlockEditor, DataFieldEditor dataFieldEditor) {
 				markDirty();
 			}
 		});

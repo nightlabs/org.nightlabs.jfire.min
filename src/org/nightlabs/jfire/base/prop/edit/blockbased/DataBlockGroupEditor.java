@@ -81,7 +81,7 @@ implements DataBlockEditorChangedListener
 		this.blockGroup = blockGroup;
 		createDataBlockEditors(struct, wrapperComposite);
 		for (int i=0; i<propDataBlockEditors.size(); i++){
-			DataBlockEditor dataBlockEditor = (DataBlockEditor)propDataBlockEditors.get(i);
+			AbstractDataBlockEditor dataBlockEditor = (AbstractDataBlockEditor)propDataBlockEditors.get(i);
 			try {
 				dataBlockEditor.refresh(struct, blockGroup.getDataBlock(i));
 			} catch (DataBlockNotFoundException e) {
@@ -100,7 +100,7 @@ implements DataBlockEditorChangedListener
 			for (i=0; i<blockGroup.getDataBlocks().size(); i++){
 				if (propDataBlockEditors.size() <= i) {
 					try {
-						DataBlockEditor blockEditor = DataBlockEditorFactoryRegistry.sharedInstance().getPropDataBlockEditor(
+						AbstractDataBlockEditor blockEditor = DataBlockEditorFactoryRegistry.sharedInstance().getPropDataBlockEditor(
 								struct,
 								blockGroup.getDataBlock(0),
 								wrapperComp,
@@ -118,7 +118,7 @@ implements DataBlockEditorChangedListener
 				j = i;
 			}				
 			for (int k=propDataBlockEditors.size()-1; k>j; k--) {
-				DataBlockEditor dataBlockEditor = (DataBlockEditor)propDataBlockEditors.get(k);
+				AbstractDataBlockEditor dataBlockEditor = (AbstractDataBlockEditor)propDataBlockEditors.get(k);
 				dataBlockEditor.dispose();
 				propDataBlockEditors.remove(k);
 			}
@@ -140,22 +140,22 @@ implements DataBlockEditorChangedListener
 	public synchronized void removePropDataBlockEditorChangedListener(DataBlockEditorChangedListener listener) {
 		changeListener.add(listener);
 	}
-	protected synchronized void notifyChangeListeners(DataBlockEditor dataBlockEditor, DataFieldEditor dataFieldEditor) {
+	protected synchronized void notifyChangeListeners(AbstractDataBlockEditor dataBlockEditor, DataFieldEditor dataFieldEditor) {
 		for (Iterator it = changeListener.iterator(); it.hasNext(); ) {
 			DataBlockEditorChangedListener listener = (DataBlockEditorChangedListener)it.next();
 			listener.propDataBlockEditorChanged(dataBlockEditor,dataFieldEditor);
 		}
 	}
 	/**
-	 * @see org.nightlabs.jfire.base.prop.edit.blockbased.DataBlockEditorChangedListener#propDataBlockEditorChanged(org.nightlabs.jfire.base.admin.widgets.prop.edit.DataBlockEditor, org.nightlabs.jfire.base.admin.widgets.prop.edit.AbstractPropDataFieldEditor)
+	 * @see org.nightlabs.jfire.base.prop.edit.blockbased.DataBlockEditorChangedListener#propDataBlockEditorChanged(org.nightlabs.jfire.base.admin.widgets.prop.edit.AbstractDataBlockEditor, org.nightlabs.jfire.base.admin.widgets.prop.edit.AbstractPropDataFieldEditor)
 	 */
-	public void propDataBlockEditorChanged(DataBlockEditor dataBlockEditor, DataFieldEditor dataFieldEditor) {
+	public void propDataBlockEditorChanged(AbstractDataBlockEditor dataBlockEditor, DataFieldEditor dataFieldEditor) {
 		notifyChangeListeners(dataBlockEditor,dataFieldEditor);
 	}
 	
 	public void updateProp() {
 		for (Iterator it = propDataBlockEditors.iterator(); it.hasNext(); ) {
-			DataBlockEditor blockEditor = (DataBlockEditor)it.next();
+			AbstractDataBlockEditor blockEditor = (AbstractDataBlockEditor)it.next();
 			blockEditor.updateProperty();
 		}
 	}

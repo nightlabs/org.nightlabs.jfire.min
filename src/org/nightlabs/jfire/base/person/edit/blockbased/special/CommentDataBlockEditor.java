@@ -43,7 +43,7 @@ import org.eclipse.swt.widgets.Text;
 import org.nightlabs.jfire.base.prop.edit.DataFieldEditor;
 import org.nightlabs.jfire.base.prop.edit.DataFieldEditorChangeListener;
 import org.nightlabs.jfire.base.prop.edit.DataFieldEditorFactory;
-import org.nightlabs.jfire.base.prop.edit.blockbased.DataBlockEditor;
+import org.nightlabs.jfire.base.prop.edit.blockbased.AbstractDataBlockEditor;
 import org.nightlabs.jfire.base.prop.edit.blockbased.DataBlockEditorFactory;
 import org.nightlabs.jfire.base.prop.edit.blockbased.ExpandableBlocksEditor;
 import org.nightlabs.jfire.person.PersonStruct;
@@ -58,7 +58,7 @@ import org.nightlabs.jfire.prop.id.StructBlockID;
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  *
  */
-public class CommentDataBlockEditor extends DataBlockEditor
+public class CommentDataBlockEditor extends AbstractDataBlockEditor
 	implements 
 		ModifyListener,
 		DataFieldEditor
@@ -89,7 +89,7 @@ public class CommentDataBlockEditor extends DataBlockEditor
 	}
 
 	/**
-	 * @see org.nightlabs.jfire.base.person.edit.blockbased.DataBlockEditor#refresh(org.nightlabs.jfire.base.person.DataBlock)
+	 * @see org.nightlabs.jfire.base.person.edit.blockbased.AbstractDataBlockEditor#refresh(org.nightlabs.jfire.base.person.DataBlock)
 	 */
 	public void refresh(IStruct struct, DataBlock block) {
 		this.dataBlock = block;
@@ -226,7 +226,7 @@ public class CommentDataBlockEditor extends DataBlockEditor
 		/**
 		 * @see org.nightlabs.jfire.base.person.edit.blockbased.DataBlockEditorFactory#createDataBlockEditor(org.nightlabs.jfire.base.person.DataBlock, org.eclipse.swt.widgets.Composite, int)
 		 */
-		public DataBlockEditor createPropDataBlockEditor(IStruct struct, DataBlock dataBlock, Composite parent, int style) {
+		public AbstractDataBlockEditor createPropDataBlockEditor(IStruct struct, DataBlock dataBlock, Composite parent, int style) {
 			return new CommentDataBlockEditor(struct, dataBlock,parent,style);
 		}
 	}

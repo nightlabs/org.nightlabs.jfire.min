@@ -124,7 +124,7 @@ public class CompoundDataBlockWizardPage extends WizardHopPage {
 	}
 	
 	/**
-	 * Creates a composite with the DataBlockEditor according
+	 * Creates a composite with the AbstractDataBlockEditor according
 	 * to the StructBlockID passed to the constructor.
 	 */
 	protected void createPropDataBlockEditors() {
@@ -132,7 +132,7 @@ public class CompoundDataBlockWizardPage extends WizardHopPage {
 		for (int i = 0; i < structBlockIDs.length; i++) {
 			DataBlock dataBlock = (DataBlock)propDataBlocks.get(structBlockIDs[i]);
 			try {
-				DataBlockEditor editor = 
+				AbstractDataBlockEditor editor = 
 					DataBlockEditorFactoryRegistry.sharedInstance().getPropDataBlockEditor(
 								struct,
 								dataBlock,
@@ -170,8 +170,8 @@ public class CompoundDataBlockWizardPage extends WizardHopPage {
 	 * 
 	 * @return
 	 */
-	public DataBlockEditor getPropDataBlockEditor(StructBlockID structBlockID) {
-		return (DataBlockEditor)propDataBlockEditors.get(structBlockID);
+	public AbstractDataBlockEditor getPropDataBlockEditor(StructBlockID structBlockID) {
+		return (AbstractDataBlockEditor)propDataBlockEditors.get(structBlockID);
 	}
 	
 	/**
@@ -186,7 +186,7 @@ public class CompoundDataBlockWizardPage extends WizardHopPage {
 	
 	/**
 	 * Get the hint for the column count of the
-	 * DataBlockEditor. Default is 2.
+	 * AbstractDataBlockEditor. Default is 2.
 	 * @return
 	 */
 	public int getPropDataBlockEditorColumnHint() {
@@ -194,7 +194,7 @@ public class CompoundDataBlockWizardPage extends WizardHopPage {
 	}
 	/**
 	 * Set the hint for the column count of the
-	 * DataBlockEditor. Default is 2.
+	 * AbstractDataBlockEditor. Default is 2.
 	 * 
 	 * @param propDataBlockEditorColumnHint
 	 */
@@ -208,7 +208,7 @@ public class CompoundDataBlockWizardPage extends WizardHopPage {
    */
   public void updateProp() {
   	for (Iterator iter = propDataBlockEditors.values().iterator(); iter.hasNext();) {
-			DataBlockEditor editor = (DataBlockEditor) iter.next();
+			AbstractDataBlockEditor editor = (AbstractDataBlockEditor) iter.next();
 			editor.updateProperty();
 		}
   }

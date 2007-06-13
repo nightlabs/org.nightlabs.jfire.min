@@ -14,7 +14,7 @@ import org.nightlabs.base.composite.LabeledText;
 import org.nightlabs.base.exceptionhandler.ExceptionHandlerRegistry;
 import org.nightlabs.jfire.base.JFireBasePlugin;
 import org.nightlabs.jfire.base.prop.edit.DataFieldEditor;
-import org.nightlabs.jfire.base.prop.edit.blockbased.DataBlockEditor;
+import org.nightlabs.jfire.base.prop.edit.blockbased.AbstractDataBlockEditor;
 import org.nightlabs.jfire.base.prop.edit.blockbased.DataBlockEditorChangedListener;
 import org.nightlabs.jfire.base.prop.edit.blockbased.DataBlockWizardPage;
 import org.nightlabs.jfire.person.Person;
@@ -118,7 +118,7 @@ implements DataBlockEditorChangedListener
 		getPropSet().setDisplayName(displayName.getTextControl().getText(), StructLocalDAO.sharedInstance().getStructLocal(Person.class, structLocalScope, new NullProgressMonitor()));
 	}
 
-	public void propDataBlockEditorChanged(DataBlockEditor dataBlockEditor, DataFieldEditor dataFieldEditor) {
+	public void propDataBlockEditorChanged(AbstractDataBlockEditor dataBlockEditor, DataFieldEditor dataFieldEditor) {
 		pageChanged();
 	}
 	
