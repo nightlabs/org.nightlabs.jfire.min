@@ -75,7 +75,7 @@ public class RoleGroupDAO extends BaseJDOObjectDAO<RoleGroupID, RoleGroup>
 			String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
 			throws Exception
 	{
-		return um.getRoleGroups(objectIDs.toArray(), fetchGroups, maxFetchDepth);
+		return um.getRoleGroups(objectIDs, fetchGroups, maxFetchDepth);
 	}
 
 	/**
