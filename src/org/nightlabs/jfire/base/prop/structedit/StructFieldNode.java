@@ -3,10 +3,10 @@ package org.nightlabs.jfire.base.prop.structedit;
 import java.util.Locale;
 
 import org.nightlabs.i18n.I18nText;
-import org.nightlabs.jfire.prop.AbstractStructField;
 import org.nightlabs.jfire.prop.StructField;
+import org.nightlabs.util.Utils;
 
-public class StructFieldNode extends TreeNode implements Comparable<StructFieldNode>
+public class StructFieldNode extends TreeNode //implements Comparable<StructFieldNode>
 {
 	private StructField field;
 	private StructBlockNode parentBlock;
@@ -20,6 +20,9 @@ public class StructFieldNode extends TreeNode implements Comparable<StructFieldN
 	 */
 	public StructFieldNode(StructField field, StructBlockNode parent)
 	{
+		if (field == null)
+			throw new IllegalArgumentException("field must not be null!");
+		
 		this.field = field;
 		this.parentBlock = parent;		
 	}
@@ -59,18 +62,27 @@ public class StructFieldNode extends TreeNode implements Comparable<StructFieldN
 		return parentBlock;
 	}
 
-	/**
-	 * Compares to StructBlockNodes with respect to their label
-	 */
-	public int compareTo(StructFieldNode o)
-	{
-		return getLabel().compareTo(o.getLabel());
-	}
-
 	@Override
 	public boolean isEditable()
 	{
-		// TODO Auto-generated method stub
 		return false;
+	}
+	
+	@Override
+	public String toString() {
+		return field.toString();
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == this) return true;
+		if (!(obj instanceof StructFieldNode)) return false;
+		
+		return field.equals(((StructFieldNode)obj).field);
+	}
+	
+	@Override
+	public int hashCode() {
+		return Utils.hashCode(field);
 	}
 }

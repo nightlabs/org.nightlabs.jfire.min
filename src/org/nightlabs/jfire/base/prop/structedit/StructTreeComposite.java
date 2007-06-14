@@ -1,3 +1,4 @@
+
 package org.nightlabs.jfire.base.prop.structedit;
 
 import java.util.ArrayList;
@@ -97,14 +98,24 @@ public class StructTreeComposite extends AbstractTreeComposite implements Langua
 
 	private class ContentProvider extends TreeContentProvider {
 		private String text;
-		
+		private IStruct struct;
+
 		@Override
 		public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
 			super.inputChanged(viewer, oldInput, newInput);
+			blockNodes = null;
 
 			if (newInput instanceof IStruct) {
 				text = null;
-				IStruct struct = (IStruct) newInput;
+				struct = (IStruct) newInput;
+			} else if (newInput instanceof String) {
+				struct = null;
+				text = (String) newInput;
+			}
+		}
+
+		public Object[] getElements(Object inputElement) {
+			if (struct != null && blockNodes == null) {
 				blockNodes = new ArrayList<StructBlockNode>(struct.getStructBlocks().size());
 
 				for (StructBlock psb : struct.getStructBlocks()) {
@@ -113,13 +124,8 @@ public class StructTreeComposite extends AbstractTreeComposite implements Langua
 					for (StructField field : psb.getStructFields())
 						newBlockNode.addField(new StructFieldNode(field, newBlockNode));
 				}
-			} else if (newInput instanceof String) {
-				blockNodes = null;
-				text = (String) newInput;
 			}
-		}
 
-		public Object[] getElements(Object inputElement) {
 			if (blockNodes != null) {
 //				Collections.sort(blockNodes);
 				return blockNodes.toArray(new StructBlockNode[blockNodes.size()]);
@@ -151,5 +157,31 @@ public class StructTreeComposite extends AbstractTreeComposite implements Langua
 	public void languageChanged(LanguageChangeEvent event) {
 		currLanguageId = event.getNewLanguage().getLanguageID();
 		refresh(true);
+	}
+
+	protected void clearCache()
+	{
+		blockNodes = null;
+	}
+
+	@Override
+	public void refresh() {
+		clearCache();
+		super.refresh();
+	}
+	@Override
+	public void refresh(boolean updateLabels) {
+		clearCache();
+		super.refresh(updateLabels);
+	}
+	@Override
+	public void refresh(Object element) {
+		clearCache();
+		super.refresh(element);
+	}
+	@Override
+	public void refresh(Object element, boolean updateLabels) {
+		clearCache();
+		super.refresh(element, updateLabels);
 	}
 }

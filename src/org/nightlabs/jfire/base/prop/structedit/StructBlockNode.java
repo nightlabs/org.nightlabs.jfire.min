@@ -1,23 +1,26 @@
 package org.nightlabs.jfire.base.prop.structedit;
 
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 
 import org.nightlabs.i18n.I18nText;
 import org.nightlabs.jfire.prop.StructBlock;
+import org.nightlabs.util.Utils;
 
 /**
  * @author Tobias Langner <tobias[DOT]langner[AT]nightlabs[DOT]de>
  */
-public class StructBlockNode extends TreeNode implements Comparable<StructBlockNode>
+public class StructBlockNode extends TreeNode //implements Comparable<StructBlockNode>
 {
 	private StructBlock block;
 	private List<StructFieldNode> fields;
 	
 	public StructBlockNode(StructBlock block)
 	{
+		if (block == null)
+			throw new IllegalArgumentException("block must not be null!");
+
 		this.block = block;
 		fields = new LinkedList<StructFieldNode>();		
 	}	
@@ -47,7 +50,6 @@ public class StructBlockNode extends TreeNode implements Comparable<StructBlockN
 	@Override
 	public TreeNode[] getChildren()
 	{
-		Collections.sort(fields);
 		return fields.toArray(new TreeNode[0]);
 	}
 
@@ -62,14 +64,6 @@ public class StructBlockNode extends TreeNode implements Comparable<StructBlockN
 		return block;
 	}
 
-	/**
-	 * Compares to StructBlockNodes with respect to their label
-	 */
-	public int compareTo(StructBlockNode o)
-	{
-		return getLabel().compareTo(o.getLabel());
-	}
-
 	@Override
 	public boolean isEditable()
 	{
@@ -77,8 +71,20 @@ public class StructBlockNode extends TreeNode implements Comparable<StructBlockN
 		return false;
 	}
 	
-//	@Override
-//	public String toString() {
-//		return block.toString();
-//	}
+	@Override
+	public String toString() {
+		return block.toString();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == this) return true;
+		if (!(obj instanceof StructBlockNode)) return false;
+		StructBlockNode o = (StructBlockNode) obj;
+		return Utils.equals(o.block, this.block);
+	}
+	@Override
+	public int hashCode() {
+		return Utils.hashCode(this.block);
+	}
 }

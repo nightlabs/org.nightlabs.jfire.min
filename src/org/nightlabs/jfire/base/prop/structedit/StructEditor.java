@@ -24,6 +24,7 @@ import org.jboss.util.property.Property;
 import org.nightlabs.base.job.Job;
 import org.nightlabs.base.language.I18nTextEditor;
 import org.nightlabs.base.language.LanguageChooser;
+import org.nightlabs.base.notification.NotificationAdapterJob;
 import org.nightlabs.base.util.RCPUtil;
 import org.nightlabs.base.wizard.DynamicPathWizardDialog;
 import org.nightlabs.base.wizard.DynamicPathWizardPage;
@@ -44,7 +45,6 @@ import org.nightlabs.jfire.prop.id.StructLocalID;
 import org.nightlabs.math.Base36Coder;
 import org.nightlabs.notification.NotificationEvent;
 import org.nightlabs.notification.NotificationListener;
-import org.nightlabs.notification.NotificationListenerCallerThread;
 import org.nightlabs.progress.ProgressMonitor;
 import org.nightlabs.util.Utils;
 import org.nightlabs.util.reflect.ReflectUtil;
@@ -173,15 +173,20 @@ public class StructEditor {
 		new Job("Fetching structure...") {
 			@Override
 			protected IStatus run(final ProgressMonitor monitor) throws Exception {
+				final IStruct struct = fetchStructure(structLocalID, monitor);
+				
 				Display.getDefault().asyncExec(new Runnable() {
 					public void run() {
-						StructLocal struct = StructLocalDAO.sharedInstance().getStructLocal(structLocalID, monitor);
-						setStruct(struct);
+						setStruct( struct );
 					}
 				});
 				return Status.OK_STATUS;
 			}
 		}.schedule();		
+	}
+	
+	protected IStruct fetchStructure(final StructLocalID structLocalID, ProgressMonitor monitor) {
+		return StructLocalDAO.sharedInstance().getStructLocal(structLocalID, monitor);
 	}
 
 	/**
@@ -247,15 +252,27 @@ public class StructEditor {
 		return true;
 	}
 
-	private NotificationListener changeListener = new NotificationListenerCallerThread() {
+	private NotificationListener changeListener = new NotificationAdapterJob() {
+		
 		public void notify(NotificationEvent notificationEvent) {
 			for (DirtyObjectID dirtyObjectID : (Set<DirtyObjectID>)notificationEvent.getSubjects()) {
-				Object currentStructID = currentStruct == null ? null : JDOHelper.getObjectId(currentStruct);
+				final StructLocalID currentStructID = (StructLocalID) (currentStruct == null ? null : JDOHelper.getObjectId(currentStruct));
 				if (dirtyObjectID.getObjectID().equals(currentStructID)) {
-					setCurrentStructLocalID((StructLocalID) dirtyObjectID.getObjectID());
+					final IStruct struct = fetchStructure(currentStructID, getProgressMonitorWrapper());
+//				 TODO: Same problem as with ConfigModules: we cannot check whether the content of two IStructs are identical or not.
+//					if (currentStruct.equals(struct)) 
+//						return;
+						
+					Display.getDefault().asyncExec(new Runnable() {
+						public void run() {
+							setStruct(struct);
+						}
+					});						
+			
 				}
 			}
 		}
+		
 	};
 	
 	private PropertyManager getPropertyManager() {

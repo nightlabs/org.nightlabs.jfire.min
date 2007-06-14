@@ -112,8 +112,8 @@ public class BlockBasedEditor extends AbstractBlockBasedEditor {
 					getPropStructure().explodeProperty(propSet);
 					
 					// get the ordered dataBlocks
-					for (Iterator it = BlockBasedEditor.this.getOrderedDataBlockGroupsIterator(); it.hasNext(); ) {
-						DataBlockGroup blockGroup = (DataBlockGroup)it.next();
+					for (Iterator<DataBlockGroup> it = BlockBasedEditor.this.getOrderedDataBlockGroupsIterator(); it.hasNext(); ) {
+						DataBlockGroup blockGroup = it.next();
 						if (shouldDisplayStructBlock(blockGroup)) {
 							if (!groupContentProvider.containsKey(blockGroup.getStructBlockKey())) {
 								ContentProvider contentProvider = new ContentProvider(blockGroup);

@@ -205,7 +205,7 @@ public abstract class AbstractBlockBasedEditor implements PropertyEditor { // ex
 		return result;
 	}
 	
-	protected Iterator getOrderedDataBlockGroupsIterator() {
+	protected Iterator<DataBlockGroup> getOrderedDataBlockGroupsIterator() {
 		buildDomainDataBlockGroups();
 	
 		int allStructBlockCount = getPropStructure().getStructBlocks().size();
@@ -217,11 +217,11 @@ public abstract class AbstractBlockBasedEditor implements PropertyEditor { // ex
 		
 		int unmentionedCount = 0;
 		// all datablocks of this propSet
-		for (Iterator it = propSet.getDataBlockGroups().iterator(); it.hasNext(); ) {
-			DataBlockGroup blockGroup = (DataBlockGroup)it.next();
+		for (Iterator<DataBlockGroup> it = propSet.getDataBlockGroups().iterator(); it.hasNext(); ) {
+			DataBlockGroup blockGroup = it.next();
 			if (structBlockOrder.containsKey(blockGroup.getStructBlockKey())) {
 				// block mentioned in structBlockOrder
-				Integer index = (Integer)structBlockOrder.get(blockGroup.getStructBlockKey());
+				Integer index = structBlockOrder.get(blockGroup.getStructBlockKey());
 				blockGroup.setPriority(index.intValue());
 			}
 			else {
