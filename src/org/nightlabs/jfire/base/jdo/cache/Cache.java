@@ -1505,10 +1505,14 @@ public class Cache
 		}
 
 		// stop the threads
-		cacheManagerThread.interrupt();
-		cacheManagerThread = null;
-		notificationThread.interrupt();
-		notificationThread = null;
+		if (cacheManagerThread != null) {
+			cacheManagerThread.interrupt();
+			cacheManagerThread = null;
+		}
+		if (notificationThread != null) {
+			notificationThread.interrupt();
+			notificationThread = null;
+		}
 
 		// clear the cache
 		removeAll();
