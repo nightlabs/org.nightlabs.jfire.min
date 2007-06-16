@@ -106,38 +106,42 @@ public class JdoCacheBridgeDefault extends JdoCacheBridge
 		@Implement
 		public void afterCompletion(int status)
 		{
-			if (status == Status.STATUS_COMMITTED) { 
+			if (status == Status.STATUS_COMMITTED) {
 				try {
-					if (dirtyObjectIDs == null) {
+					if (this.dirtyObjectIDs == null) {
 						if (logger.isDebugEnabled())
 							logger.debug("afterCompletion(STATUS_COMMITTED) called, but nothing to do.");
 
 						return;
 					}
 
-					String sessionID = bridge.securityReflector._getUserDescriptor().getSessionID();
+					final String _sessionID = bridge.securityReflector._getUserDescriptor().getSessionID();
+					final Map<JDOLifecycleState, Map<Object, DirtyObjectID>> _dirtyObjectIDs = this.dirtyObjectIDs;
+					this.dirtyObjectIDs = null;
+					final Map<Object, Class> _objectID2Class = this.objectID2Class;
+					this.objectID2Class = null;
 
-					if (objectID2Class != null) {
-						bridge.getCacheManagerFactory().addObjectID2ClassMap(objectID2Class);
-						objectID2Class = null;
-					}
+					Thread t = new Thread() {
+						@Override
+						public void run()
+						{
+							try {
+								if (logger.isDebugEnabled())
+									logger.debug("CacheTransactionListener.afterCompletion.Thread: entered with _dirtyObjectIDs.size()=" + _dirtyObjectIDs.size());
 
-					if (dirtyObjectIDs != null) {
-						final String _sessionID = sessionID;
-						final Map<JDOLifecycleState, Map<Object, DirtyObjectID>> _dirtyObjectIDs = dirtyObjectIDs;
-						Thread t = new Thread() {
-							@Override
-							public void run()
-							{
+								if (_objectID2Class != null)
+									bridge.getCacheManagerFactory().addObjectID2ClassMap(_objectID2Class);
+
 								// there seems to be a timing issue concerning the commit of a transaction - delaying a sec seems to help - TODO fix this problem in a CLEAN way!
-								try { Thread.sleep(1000); } catch (InterruptedException e) { } // ignore
+								try { Thread.sleep(2000); } catch (InterruptedException e) { } // ignore
 								bridge.getCacheManagerFactory().addDirtyObjectIDs(_sessionID, _dirtyObjectIDs);
+							} catch (Throwable e) {
+								logger.error("afterCompletion(STATUS_COMMITTED).Thread: " + e.getMessage(), e);
 							}
-						};
-						t.start();
-//						bridge.getCacheManagerFactory().addDirtyObjectIDs(sessionID, dirtyObjectIDs);
-						dirtyObjectIDs = null;
-					}
+						}
+					};
+					t.start();
+
 				} catch (Throwable e) {
 					logger.error("afterCompletion(STATUS_COMMITTED): " + e.getMessage(), e);
 				}
