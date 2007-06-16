@@ -53,7 +53,7 @@ extends AbstractApplication
 	}
 	
 	public static final int APPLICATION_EVENTTYPE_STARTED = 1;
-	
+
 	void notifyApplicationListeners(int applicationEventType) {
 		for (Iterator iter = applicationListener.iterator(); iter.hasNext();) {
 			JFireApplicationListener listener = (JFireApplicationListener) iter.next();
@@ -61,7 +61,7 @@ extends AbstractApplication
 				case APPLICATION_EVENTTYPE_STARTED: 
 					listener.applicationStarted();
 					break;					
-			}			
+			}
 		}
 	}
 
@@ -73,5 +73,4 @@ extends AbstractApplication
 //		RMIClassLoader.getDefaultProviderInstance().
 		return new JFireApplicationThread(group);
 	}
-	
 }

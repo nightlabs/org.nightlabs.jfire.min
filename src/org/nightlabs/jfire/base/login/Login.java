@@ -299,7 +299,7 @@ implements InitialContextProvider
 		// logout
 		loginContext = null;
 		nullUserMembers();
-		sessionID = null;
+//		sessionID = null;
 		Exception ex = null;
 		try {
 			Cache.sharedInstance().close();
@@ -332,6 +332,7 @@ implements InitialContextProvider
 	private void nullUserMembers() {
 		organisationID = null;
 		userID = null;
+		sessionID = null;
 		loginName = null;
 		password = null;
 		serverURL = null;
@@ -524,8 +525,7 @@ implements InitialContextProvider
 
 		// We should be logged in now, open the cache if not already open
 		if (currLoginState == LOGINSTATE_LOGGED_IN) {
-			Cache.sharedInstance(); // the cache is opened implicitely now by default.
-//			Cache.sharedInstance().open(getSessionID());
+			Cache.sharedInstance().open(getSessionID()); // the cache is opened implicitely now by default, but it is closed *after* a logout.
 		}
 
 		if (currLoginState != oldLoginstate) {

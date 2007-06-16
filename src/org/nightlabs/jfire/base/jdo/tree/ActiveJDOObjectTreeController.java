@@ -22,6 +22,7 @@ import org.eclipse.swt.widgets.Display;
 import org.nightlabs.annotation.Implement;
 import org.nightlabs.base.notification.NotificationAdapterJob;
 import org.nightlabs.jdo.ObjectID;
+import org.nightlabs.jfire.base.DeadlockWorkaroundSharedJobMutex;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleAdapterJob;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleEvent;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleListener;
@@ -526,7 +527,7 @@ public abstract class ActiveJDOObjectTreeController<JDOObjectID extends ObjectID
 			{
 				if (logger.isDebugEnabled())
 					logger.debug("getNodes.Job#run: entered for parentTreeNode.jdoObjectID=\"" + (parent == null ? null : JDOHelper.getObjectId(parent.getJdoObject())) + "\"");
-
+				synchronized (DeadlockWorkaroundSharedJobMutex.sharedInstance()) {
 				synchronized (objectID2TreeNode) {
 					JDOObject parentJDO = parent == null ? null : (JDOObject) parent.getJdoObject();
 					JDOObjectID parentJDOID = (JDOObjectID) JDOHelper.getObjectId(parentJDO);
@@ -600,6 +601,8 @@ public abstract class ActiveJDOObjectTreeController<JDOObjectID extends ObjectID
 						}
 					});
 				} // synchronized (objectID2TreeNode) {
+				
+				}
 
 				return Status.OK_STATUS;
 			}
