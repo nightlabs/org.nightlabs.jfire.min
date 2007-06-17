@@ -103,9 +103,10 @@ public class ServerConfiguratorJBoss
 			File jbossDeployDir = new File(getJFireServerConfigModule().getJ2ee().getJ2eeDeployBaseDirectory()).getParentFile().getAbsoluteFile();
 			File jbossConfDir = new File(jbossDeployDir.getParentFile(), "conf");
 			File jbossBinDir = new File(jbossDeployDir.getParentFile().getParentFile().getParentFile(), "bin");
-	
+
 			configureLoginConfigXml(jbossConfDir);
 			configureStandardJBossXml(jbossConfDir);
+			configureJBossjtaPropertiesXml(jbossConfDir);
 			configureJBossServiceXml(jbossConfDir);
 			configureCascadedAuthenticationClientInterceptorProperties(jbossBinDir);
 			configureRunSh(jbossBinDir);
@@ -304,6 +305,28 @@ public class ServerConfiguratorJBoss
 			text = pattern.matcher(text).replaceAll(replacementText);			
 
 			pattern = Pattern.compile("(<client-interceptors>[^<]*?<home>(.|\\n)*?</home>[^<]*?<bean>)");
+			text = pattern.matcher(text).replaceAll(replacementText);
+
+			Utils.writeTextFile(destFile, text);
+		}
+	}
+
+	private void configureJBossjtaPropertiesXml(File jbossConfDir)
+	throws FileNotFoundException, IOException
+	{
+		File destFile = new File(jbossConfDir, "jbossjta-properties.xml");
+		if (!destFile.exists()) {
+			logger.info("The JTA configuration file does not exist");
+		}
+
+		String text = Utils.readTextFile(destFile);
+		if (text.indexOf("com.arjuna.ats.jta.allowMultipleLastResources") < 0) {
+			backup(destFile);
+			logger.info("File " + destFile.getAbsolutePath() + " does not contain property \"com.arjuna.ats.jta.allowMultipleLastResources\". Will add it.");
+			setRebootRequired(true); // I'm not sure whether the arjuna JTA controller would be reinitialised... this is at least safe.
+
+			Pattern pattern = Pattern.compile("(<properties depends=\"arjuna\" name=\"jta\">)");
+			String replacementText = "$1\n        <property name=\"com.arjuna.ats.jta.allowMultipleLastResources\" value=\"true\"/>";
 			text = pattern.matcher(text).replaceAll(replacementText);
 
 			Utils.writeTextFile(destFile, text);
