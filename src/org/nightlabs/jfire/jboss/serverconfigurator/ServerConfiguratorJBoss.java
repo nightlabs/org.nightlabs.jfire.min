@@ -316,7 +316,7 @@ public class ServerConfiguratorJBoss
 	{
 		File destFile = new File(jbossConfDir, "jbossjta-properties.xml");
 		if (!destFile.exists()) {
-			logger.info("The JTA configuration file does not exist. Assuming that this is JBoss is older than 4.2.0.GA and not updating the file!");
+			logger.info("The JTA configuration file \""+ destFile.getAbsolutePath() +"\" does not exist. Assuming that this is JBoss is older than 4.2.0.GA and not updating the file!");
 			return;
 		}
 
