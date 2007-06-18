@@ -251,52 +251,6 @@
 
   <!-- Prop extensions -->
    <extension
-         point="org.eclipse.ui.views">
-      <view
-            class="org.nightlabs.jfire.base.prop.structedit.StructEditorView"
-            id="org.nightlabs.jfire.base.prop.structedit.StructEditView"
-            name="StructEditView"/>
-      <view
-            class="org.nightlabs.jfire.prop.edit.blockbased.BlockBasedEditorView"
-            id="org.nightlabs.jfire.prop.edit.blockbased.BlockBasedEditorView"
-            name="BlockBasedEditorView"/>
-   </extension>
-   <extension
-         point="org.eclipse.ui.viewActions">
-      <viewContribution
-            id="org.nightlabs.jfire.base.prop.structedit.StructEditView"
-            targetID="org.nightlabs.jfire.base.prop.structedit.StructEditView">
-         <action
-               class="org.nightlabs.jfire.base.prop.structedit.action.AddStructBlockAction"
-               icon="icons/prop/structedit/action/AddStructFieldAction.16x16.gif"
-               id="org.nightlabs.jfire.base.prop.structedit.action.AddStructBlockAction"
-               label="Add a new StructBlock"
-               style="push"
-               toolbarPath="additions"/>
-         <action
-               class="org.nightlabs.jfire.base.prop.structedit.action.AddStructFieldAction"
-               icon="icons/prop/structedit/action/AddStructFieldAction.16x16.png"
-               id="org.nightlabs.jfire.base.prop.structedit.action.AddStructFieldAction"
-               label="Add a new StructField"
-               style="push"
-               toolbarPath="additions"/>
-         <action
-               class="org.nightlabs.jfire.base.prop.structedit.action.RemoveStructElementAction"
-               icon="icons/prop/structedit/action/RemoveStructElementAction.16x16.png"
-               id="org.nightlabs.jfire.base.prop.structedit.action.RemoveStructElementAction"
-               label="Remove the selected struct element"
-               style="push"
-               toolbarPath="additions"/>
-         <action
-               class="org.nightlabs.jfire.base.prop.structedit.action.StoreStructure"
-               icon="icons/prop/structedit/action/StoreStructure.16x16.png"
-               id="org.nightlabs.jfire.base.prop.structedit.action.StoreStructure"
-               label="Store the current structure on the server"
-               style="push"
-               toolbarPath="additions"/>
-      </viewContribution>
-   </extension>
-   <extension
          point="org.nightlabs.jfire.base.propStructField">
       <propStructField
             class="org.nightlabs.jfire.prop.structfield.TextStructField"
