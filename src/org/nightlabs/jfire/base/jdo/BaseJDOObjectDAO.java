@@ -168,19 +168,15 @@ public abstract class BaseJDOObjectDAO<JDOObjectID, JDOObject>
 	@SuppressWarnings("unchecked")
 	protected synchronized List<JDOObject> getJDOObjects(String scope, Collection<JDOObjectID> objectIDs, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
 	{
-		if (objectIDs == null || objectIDs.isEmpty())
-			return new ArrayList<JDOObject>(1);
-		
-		ArrayList<JDOObject> objects = new ArrayList<JDOObject>(objectIDs.size());
-		if (objectIDs.isEmpty()) {
+		if (objectIDs == null || objectIDs.isEmpty()) {
 			monitor.done();
-			return objects;
+			return new ArrayList<JDOObject>(0);
 		}
-			
+		
 		monitor.beginTask("Getting "+objectIDs.size()+" Objects through Cache", objectIDs.size());
-//		List<JDOObject> fromCache = new ArrayList<JDOObject>();
+		ArrayList<JDOObject> objects = new ArrayList<JDOObject>(objectIDs.size());
+			
 		List<JDOObjectID> listetIDs = new ArrayList<JDOObjectID>(objectIDs);
-//		Set<JDOObjectID> notInCache = new HashSet<JDOObjectID>();
 		Map<JDOObjectID, Integer> notInCache = new HashMap<JDOObjectID, Integer>();
 		
 		// search the cache for the wanted Objects
@@ -213,7 +209,11 @@ public abstract class BaseJDOObjectDAO<JDOObjectID, JDOObject>
 		for(JDOObject freshObject : fetchedObjects) {
 			if (freshObject == null)
 				continue;
-			index = notInCache.get(JDOHelper.getObjectId(freshObject));
+			JDOObjectID freshObjectID = (JDOObjectID) JDOHelper.getObjectId(freshObject);
+			if (freshObjectID == null)
+				throw new IllegalStateException("It seems like the Objects returned from the Bean are not detached, since one of their IDs is null!");
+			
+			index = notInCache.get(freshObjectID);
 			objects.set(index, freshObject);
 			monitor.worked(1);
 		}
