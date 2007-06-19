@@ -32,12 +32,12 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.SessionBean;
-import javax.jdo.FetchPlan;
 import javax.jdo.JDOHelper;
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
@@ -53,6 +53,7 @@ import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.base.JFireBaseEAR;
 import org.nightlabs.jfire.config.id.ConfigID;
 import org.nightlabs.jfire.config.id.ConfigModuleID;
+import org.nightlabs.jfire.config.id.ConfigSetupID;
 import org.nightlabs.jfire.config.xml.XMLConfigFactory;
 import org.nightlabs.jfire.editlock.EditLockType;
 import org.nightlabs.jfire.workstation.WorkstationFeaturesCfMod;
@@ -529,6 +530,46 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 		
 		return (ConfigModule)pm.detachCopy(configModule);
 	}
+	
+	/**
+	 * Returns the ConfigModule of the ConfigGroup of the Config corresponding to the given ConfigID
+	 * and with the given Class and moduleID.
+	 * 
+	 * @param childID the {@link ConfigID} of the child's {@link Config}.
+	 * @param configModuleClass the Class of the ConfigModule to return.
+	 * @param moduleID the module ID in the case there is more than one instance of that ConfigModule. 
+	 * @param fetchGroups the fetchGroups with which to detach the ConfigModule.
+	 * @param maxFetchDepth the maximum fetch depth while detaching.
+	 * @return the ConfigModule of the ConfigGroup of the Config corresponding to the given ConfigID
+	 * and with the given Class and moduleID.
+	 * 
+	 * @ejb.interface-method
+	 * @ejb.permission role-name="_Guest_"
+	 * @ejb.transaction type = "Required"
+	 */
+	public ConfigModule getGroupConfigModule(ConfigID childID, Class configModuleClass, String moduleID, 
+			String[] fetchGroups, int maxFetchDepth) throws ModuleException
+	{
+		PersistenceManager pm = getPersistenceManager();
+		if (fetchGroups != null)
+			pm.getFetchPlan().setGroups(fetchGroups);
+		pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
+		
+		try {
+			Config config = (Config) pm.getObjectById(childID);
+			if (config == null)
+				throw new ModuleException("There is no corresponding Config to the given ConfigID!");
+			
+			if (config.getConfigGroup() == null)
+				return null; // just return null to enable the client to check whether there is a group or not.
+			
+			ConfigGroup group = config.getConfigGroup();
+			ConfigModule groupsModule = group.getConfigModule(configModuleClass, moduleID);
+			return (ConfigModule) pm.detachCopy(groupsModule);
+		} finally {
+			pm.close();
+		}
+	}
 
 	/* *********************************************************************** */
 	/* ************************** ConfigSetup stuff ************************** */
@@ -577,39 +618,23 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	}
 	
 	/**
-	 * Returns a Collection of all complete ConfigSetups known. A complete
-	 * ConfigSetup contains all Configs and ConfigGroups of that setup.
+	 * Returns a Collection of all ConfigSetups known. 
 	 * 
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type = "Required"
 	 */
-	public Collection getConfigSetups(
-			String[] groupsFetchGropus, 
-			String[] configsFetchGroups
-		)
+	public Collection getConfigSetups(String[] fetchGroups, int maxFetchDepth)
 	throws ModuleException
 	{		
-		PersistenceManager pm;
-		pm = getPersistenceManager();
-		try 
-		{		
-			// Maybe its wise to set default to the fetchplan befor doing anything :-)
-			pm.getFetchPlan().setGroups(new String[] {FetchPlan.DEFAULT});			
-			Collection result = new ArrayList();
-			Collection setups = ConfigSetup.getConfigSetups(pm);
-			for (Iterator iter = setups.iterator(); iter.hasNext();) {
-				ConfigSetup setup = (ConfigSetup) iter.next();
-				result.add(
-						setup.getCompleteConfigSetup(
-								pm, 
-								getOrganisationID(),
-								groupsFetchGropus,
-								configsFetchGroups
-						)
-				);
-			}
-			return result;
+		PersistenceManager pm = getPersistenceManager();
+		try	{		
+			if (fetchGroups != null)
+				pm.getFetchPlan().setGroups(fetchGroups);
+			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
+				
+			return ConfigSetup.getConfigSetups(pm);
+			
 		} finally {
 			pm.close();
 		}
@@ -666,6 +691,46 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 		}
 	}
 	
+	/**
+	 * Returns a list of ConfigSetups for the given {@link ConfigSetupID}s.
+	 * 
+	 * @param setupIDs The set of {@link ConfigSetupID}s for which to retrieve the corresponding ConfigSetups.
+	 * @param fetchGroups The fetch groups with which to detach the object.
+	 * @param maxFetchDepth The maximal fetch depth. 
+	 * @return a list of ConfigSetups for the given {@link ConfigSetupID}s.
+	 * 
+	 * @ejb.interface-method 
+	 * @ejb.permission role-name="_Guest_"
+	 * @ejb.transaction type = "Required"
+	 */
+	public List<ConfigSetup> getConfigSetups(Set<ConfigSetupID> setupIDs, String[] fetchGroups, int maxFetchDepth) {
+		PersistenceManager pm = getPersistenceManager();
+		try {
+			return NLJDOHelper.getDetachedObjectList(pm, setupIDs, ConfigSetup.class, fetchGroups, maxFetchDepth);
+		} finally {
+			pm.close();
+		}
+	}
+	
+	/**
+	 * Returns the {@link ConfigSetupID}s of all ConfigSetups.
+	 *  
+	 * @param fetchGroups the fetch groups, with which the ConfigSetups shall be detached.
+	 * @param maxFetchDepth the maximum fetch depth to use for detaching. 
+	 * @return the {@link ConfigSetupID}s of all ConfigSetups.
+	 * 
+	 * @ejb.interface-method 
+	 * @ejb.permission role-name="_Guest_"
+	 * @ejb.transaction type = "Required"
+	 */
+	public Collection<ConfigSetupID> getAllConfigSetupIDs(String[] fetchGroups, int maxFetchDepth) {
+		PersistenceManager pm = getPersistenceManager();
+		if (fetchGroups != null)
+			pm.getFetchPlan().setGroups(fetchGroups);
+		pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
+		
+		return ConfigSetup.getAllConfigSetupIDs(pm);
+	}
 	
 	/**
 	 * Stores the given ConfigSetup if belonging to the current organisation and
