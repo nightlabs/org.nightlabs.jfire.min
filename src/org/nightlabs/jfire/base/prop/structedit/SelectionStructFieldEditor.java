@@ -90,7 +90,7 @@ class SelectionStructFieldEditComposite extends XComposite implements LanguageCh
 		});
 		wrapper.layout(true, true);
 
-		wrapper = new XComposite(this, SWT.NONE, LayoutMode.ORDINARY_WRAPPER, LayoutDataMode.GRID_DATA_HORIZONTAL, 2);
+		wrapper = new XComposite(this, SWT.NONE, LayoutMode.TIGHT_WRAPPER, LayoutDataMode.GRID_DATA_HORIZONTAL, 2);
 		addValueButton = new Button(wrapper, SWT.NONE);
 		addValueButton.setText("+");
 		data.widthHint = 30;
@@ -105,7 +105,10 @@ class SelectionStructFieldEditComposite extends XComposite implements LanguageCh
 		});
 
 		valueText = new Text(wrapper, SWT.BORDER);
-		valueText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		data = new GridData(GridData.FILL_HORIZONTAL);
+		data.verticalSpan = 2;
+		data.verticalAlignment = SWT.CENTER;
+		valueText.setLayoutData(data);
 		valueText.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
 				if (!ignoreModify)
@@ -116,6 +119,8 @@ class SelectionStructFieldEditComposite extends XComposite implements LanguageCh
 
 		remValueButton = new Button(wrapper, SWT.NONE);
 		remValueButton.setText("-");
+		data = new GridData();
+		data.widthHint = 30;
 		remValueButton.setLayoutData(data);
 		remValueButton.addSelectionListener(new SelectionListener() {
 			public void widgetDefaultSelected(SelectionEvent e) {

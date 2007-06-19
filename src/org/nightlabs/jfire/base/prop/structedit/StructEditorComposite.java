@@ -13,7 +13,8 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.nightlabs.base.composite.ComboComposite;
 import org.nightlabs.base.composite.XComposite;
 import org.nightlabs.base.language.LanguageChooser;
-import org.nightlabs.base.language.LanguageChooserImageCombo;
+import org.nightlabs.base.language.LanguageChooserCombo;
+import org.nightlabs.base.language.LanguageChooserCombo.Mode;
 import org.nightlabs.jfire.prop.IStruct;
 import org.nightlabs.jfire.prop.id.StructID;
 import org.nightlabs.jfire.prop.id.StructLocalID;
@@ -26,7 +27,7 @@ public class StructEditorComposite extends XComposite {
 	private StructEditor structEditor;
 	
 	private Composite partEditorComposite;
-	private LanguageChooserImageCombo languageChooser;	
+	private LanguageChooserCombo languageChooser;	
 	protected ComboComposite<StructLocalID> structIDComposite;
 	private Label errorLabel;
 
@@ -96,7 +97,7 @@ public class StructEditorComposite extends XComposite {
 		gd.horizontalSpan = 2;
 		gd.horizontalAlignment = SWT.RIGHT;
 
-		languageChooser = new LanguageChooserImageCombo(this, true, true);
+		languageChooser = new LanguageChooserCombo(this, Mode.iconAndText);
 		languageChooser.setLayoutData(gd);
 
 		this.structTree = structTree;

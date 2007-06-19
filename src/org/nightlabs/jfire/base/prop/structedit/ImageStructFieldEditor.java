@@ -85,20 +85,21 @@ class ImageStructFieldEditorComposite extends XComposite implements Serializable
 	private ImageStructFieldEditor editor;
 	
 	public ImageStructFieldEditorComposite(Composite parent, ImageStructFieldEditor imageStructFieldEditor) {
-		super(parent, SWT.NONE, LayoutMode.TIGHT_WRAPPER, LayoutDataMode.GRID_DATA_HORIZONTAL, 2);
+		super(parent, SWT.NONE, LayoutMode.TIGHT_WRAPPER, LayoutDataMode.GRID_DATA, 2);
 		
 		this.editor = imageStructFieldEditor;
 		new Label(this, SWT.NONE).setText("Maximum size (KB): ");
 		sizeSpinner = new Spinner(this, SWT.BORDER);
 		sizeSpinner.setMaximum(Integer.MAX_VALUE);		
 		
-		XComposite comp = new XComposite(this, SWT.NONE, LayoutMode.TIGHT_WRAPPER, LayoutDataMode.GRID_DATA_HORIZONTAL);
-		comp.getGridData().heightHint = 250;
-		comp.getGridData().horizontalSpan = 2;
+//		XComposite comp = new XComposite(this, SWT.NONE, LayoutMode.TIGHT_WRAPPER, LayoutDataMode.GRID_DATA);
+//		comp.getGridData().heightHint = 250;
+//		comp.getGridData().horizontalSpan = 2;
 		
-		new Label(comp, SWT.NONE);
-		new Label(comp, SWT.NONE).setText("Allowed extensions: ");
-		XComposite extComp = new XComposite(comp, SWT.NONE, LayoutMode.TIGHT_WRAPPER, LayoutDataMode.GRID_DATA, 2);
+		new Label(this, SWT.NONE); new Label(this, SWT.NONE); // Spacers
+		
+		new Label(this, SWT.NONE).setText("Allowed extensions: ");
+		XComposite extComp = new XComposite(this, SWT.NONE, LayoutMode.TIGHT_WRAPPER, LayoutDataMode.GRID_DATA, 2);
 		extComp.getGridData().horizontalSpan = 2;
 		
 		GridData gd = new GridData();
