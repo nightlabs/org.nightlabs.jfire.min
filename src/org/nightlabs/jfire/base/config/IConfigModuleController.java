@@ -27,7 +27,7 @@ public interface IConfigModuleController
 	 * @param useNotAsPreferencePage whether or not the page corresponding to this Controller is used 
 	 * 				inside the PreferencePage Dialog
 	 */
-	public void setConfigID(ConfigID configID, boolean useNotAsPreferencePage);
+	public void setConfigID(ConfigID configID, boolean useNotAsPreferencePage, String configModuleID);
 	
 	/**
 	 * returns the {@link ConfigModule}
@@ -41,6 +41,12 @@ public interface IConfigModuleController
 	 */
 	public void setConfigModule(ConfigModule configModule);
 
+	/**
+	 * Returns the cfModID of the managed {@link ConfigModule}. 
+	 * @return the cfModID of the managed {@link ConfigModule}.
+	 */
+	public String getConfigModuleID();
+	
 	/**
 	 * adds an {@link IConfigModuleChangedListener} to listen for config changes 
 	 * listener are notified when {@link #setConfigModule(ConfigModule)} is called
@@ -72,12 +78,21 @@ public interface IConfigModuleController
 	 * @param configModule the {@link ConfigModule} to be checked whether it is editable or not. 
 	 * @return Whether the <code>configModule</code> is allowed to be edited.
 	 */
-	boolean canEdit(ConfigModule configModule);
+	public boolean canEdit(ConfigModule configModule);
 	
 	/**
 	 * Checks if the configModule is member of a configGroup 
 	 */
-	boolean checkIfIsGroupMember(ConfigModule module);
+	public boolean checkIfIsGroupMember(ConfigModule module);
+	
+	/**
+	 * Returns the ConfigModule of the the ConfigGroup, where the corresponding Config of the 
+	 * <code>memberModule</code> is in.
+	 * @param memberModule the ConfigModule for which to retrieve the GroupConfigModule.
+	 * @return the ConfigModule of the the ConfigGroup, where the corresponding Config of the 
+	 * <code>memberModule</code> is in.
+	 */
+	public ConfigModule getGroupConfigModule(ConfigModule memberModule);
 	
 	/**
 	 * Fetches and returns the ConfigModule of the Config with {@link ConfigID} == <code>configID</code> from the 

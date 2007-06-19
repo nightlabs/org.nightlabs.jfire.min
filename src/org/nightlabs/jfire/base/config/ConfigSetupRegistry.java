@@ -34,29 +34,23 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.jdo.FetchPlan;
-import javax.jdo.JDOHelper;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtension;
 import org.nightlabs.base.extensionpoint.AbstractEPProcessor;
 import org.nightlabs.base.extensionpoint.EPProcessorException;
+import org.nightlabs.base.notification.NotificationAdapterJob;
 import org.nightlabs.jdo.NLJDOHelper;
-import org.nightlabs.jfire.base.jdo.JDOObjectID2PCClassMap;
-import org.nightlabs.jfire.base.jdo.cache.Cache;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleManager;
-import org.nightlabs.jfire.base.login.Login;
-import org.nightlabs.jfire.config.Config;
-import org.nightlabs.jfire.config.ConfigGroup;
-import org.nightlabs.jfire.config.ConfigManager;
-import org.nightlabs.jfire.config.ConfigManagerUtil;
 import org.nightlabs.jfire.config.ConfigSetup;
+import org.nightlabs.jfire.config.dao.ConfigSetupDAO;
 import org.nightlabs.jfire.config.id.ConfigID;
 import org.nightlabs.jfire.config.id.ConfigSetupID;
 import org.nightlabs.jfire.jdo.notification.DirtyObjectID;
 import org.nightlabs.notification.NotificationEvent;
 import org.nightlabs.notification.NotificationListener;
-import org.nightlabs.notification.NotificationListenerWorkerThreadAsync;
+import org.nightlabs.progress.NullProgressMonitor;
 
 /**
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
@@ -70,28 +64,48 @@ public class ConfigSetupRegistry extends AbstractEPProcessor
 
 	public static final String EXTENSION_POINT_ID = "org.nightlabs.jfire.base.configsetupvisualiser"; //$NON-NLS-1$
 	
-	private static final String[] DEFAULT_FETCH_GROUP_GROUPS = new String[] 
-	  { FetchPlan.DEFAULT };
-	private static final String[] DEFAULT_FETCH_GROUP_CONFIGS = new String[]
-    { FetchPlan.DEFAULT, Config.FETCH_GROUP_CONFIG_GROUP };
+	private static final String[] CONFIG_SETUP_FETCH_GROUPS = new String[] 
+	  { FetchPlan.DEFAULT, ConfigSetup.FETCH_GROUP_CONFIG_MODULE_CLASSES };
+//	private static final String[] DEFAULT_FETCH_GROUP_CONFIGS = new String[]
+//    { FetchPlan.DEFAULT, Config.FETCH_GROUP_CONFIG_GROUP };
 	
 	/**
-	 * key: String configSetupType
+	 * IMPORTANT: The following registry does only work correctly if the following properties are true...<br>
+	 * 
+	 * <p>There can be at most one ConfigSetup linked to a given <code>Objectclass</code> in the JDO-Datastore.</p>
+	 * <p>This means that there is at most one ConfigSetup with the <code>configType</code> (exclusive)or 
+	 * 		<code>groupConfigType</code> equal to <code>Objectclass</code>.</p> 
+	 */
+	
+	/**
+	 * key: String ConfigSetup.configType
 	 * value: ConfigSetup configSetup
 	 */
-	private Map configSetupsByType = null;
+	private Map<String, ConfigSetup> configSetupsByType = null;
+	
+	/**
+	 * key: String ConfigSetup.groupConfigType
+	 */
+	private Map<String, ConfigSetup> configSetupsByGroupType = null;
 	
 	/**
 	 * key: String configSetupType
 	 * value: ConfigSetupVisualiser setupVisualiser
 	 */
-	private Map setupVisualiserByType = new HashMap();
+	private Map<String, ConfigSetupVisualiser> setupVisualiserByType = new HashMap<String, ConfigSetupVisualiser>();
 	
 	/**
 	 * key: String configSetupType
 	 * value: ConfigPreferencesNode mergedTreeNode
 	 */
-	private Map mergedTreeNodes = new HashMap();
+	private Map<String, ConfigPreferenceNode> mergedTreeNodes = new HashMap<String, ConfigPreferenceNode>();
+	
+	/**
+	 * 
+	 */
+	public ConfigSetupRegistry() {
+		super();
+	}
 	
 	/**
 	 * Returns the ConfigSetup of the given type if existent, null otherwise.
@@ -105,7 +119,7 @@ public class ConfigSetupRegistry extends AbstractEPProcessor
 		if (configSetupsByType == null)
 			getConfigSetups();
 		
-		return (ConfigSetup)configSetupsByType.get(configSetupType);
+		return configSetupsByType.get(configSetupType);
 	}
 	
 	/**
@@ -119,12 +133,7 @@ public class ConfigSetupRegistry extends AbstractEPProcessor
 	public ConfigSetup getConfigSetupForGroup(ConfigID configGroupID) {
 		if (configSetupsByType == null)
 			getConfigSetups();
-		for (Iterator iter = configSetupsByType.values().iterator(); iter.hasNext();) {
-			ConfigSetup configSetup = (ConfigSetup) iter.next();
-			if (configSetup.getConfigGroupType().equals(configGroupID.configType))
-				return configSetup;
-		}
-		return null;
+		return configSetupsByGroupType.get(configGroupID.configType);
 	}
 	
 	/**
@@ -133,13 +142,13 @@ public class ConfigSetupRegistry extends AbstractEPProcessor
 	 * @param configID the ConfigID of the Config, whose ConfigGroup's ID is wanted.
 	 * @return the ID of the group of the corresponding Config of the given ConfigID.
 	 */
-	public ConfigID getGroupForConfig(ConfigID configID) {
-		ConfigSetup setup = getConfigSetupForConfigType(configID);
-		Config config = (Config) setup.getConfigsMap().get(configID);
-		if (config != null && config.getConfigGroup() != null)			
-			return (ConfigID) JDOHelper.getObjectId(config.getConfigGroup());
-		return null;
-	}
+//	public ConfigID getGroupForConfig(ConfigID configID) {
+//		ConfigSetup setup = getConfigSetupForConfigType(configID);
+//		Config config = (Config) setup.getConfigsMap().get(configID);
+//		if (config != null && config.getConfigGroup() != null)			
+//			return (ConfigID) JDOHelper.getObjectId(config.getConfigGroup());
+//		return null;
+//	}
 		
 	
 	/**
@@ -151,18 +160,7 @@ public class ConfigSetupRegistry extends AbstractEPProcessor
 	 * given class.
 	 */
 	public boolean containsRegistrationForLinkClass(String linkClassName) {
-		if (configSetupsByType == null)
-			getConfigSetups();
-		boolean result = false;
-		if (linkClassName == null || "".equals(linkClassName)) //$NON-NLS-1$
-			throw new IllegalArgumentException("Parameter linkClassName must not be null or empty!"); //$NON-NLS-1$
-		for (Iterator iter = configSetupsByType.values().iterator(); iter.hasNext();) {
-			ConfigSetup setup = (ConfigSetup) iter.next();
-			result = linkClassName.equals(setup.getConfigType());
-			if (result)
-				break;
-		}
-		return result;
+		return getConfigSetupForConfigType(linkClassName) != null;
 	}
 	
 	/**
@@ -174,32 +172,41 @@ public class ConfigSetupRegistry extends AbstractEPProcessor
 	 * the configType of the given ConfigID.
 	 */
 	public ConfigSetup getConfigSetupForConfigType(ConfigID configID) {
+		return getConfigSetupForConfigType(configID.configType);
+	}
+	
+	/**
+	 * Returns the ConfigSetup, which links to the Object whose classname == <code>configType</code>.
+	 * 
+	 * @param configType the configType(full classname) of the Object to check for Linkage of ConfigSetups.
+	 * @return the ConfigSetup, which links to the Object with classname == <code>configType</code>.
+	 */
+	public ConfigSetup getConfigSetupForConfigType(String configType) {
+		if (configType == null || "".equals(configType))
+			throw new IllegalArgumentException("Parameter configType must not be null or empty!");
+		
 		if (configSetupsByType == null)
 			getConfigSetups();
-		for (Iterator iter = configSetupsByType.values().iterator(); iter.hasNext();) {
-			ConfigSetup setup = (ConfigSetup) iter.next();
-			if (setup.getConfigType().equals(configID.configType) ||
-					setup.getConfigGroupType().equals(configID.configType))
-				return setup;
-		}
-		return null;
+		
+		ConfigSetup tmpSetup = configSetupsByType.get(configType);
+		if (tmpSetup != null)
+			return tmpSetup;
+		
+		return configSetupsByGroupType.get(configType);
 	}
 	
 	/**
 	 * Checks whether the given ConfigID is the id-object of a ConfigGroup.
 	 */
 	public boolean isConfigGroup(ConfigID configID) {		
-		ConfigSetup setup = getConfigSetupForConfigType(configID);
-		if (setup == null)
-			return false;
-		return setup.getConfigGroupType().equals(configID.configType);
+		return getConfigSetupForGroup(configID) != null;
 	}
 	
 	/**
 	 * Checks whether a ConfigSetup is registered that has a Config linked to 
 	 * the given linkObject.
 	 * 
-	 * @param linkObject The object to check lingage for.
+	 * @param linkObject The object to check linkage for.
 	 * @return Whether there is a ConfigSetup registered that links the given
 	 * linkObject.
 	 */
@@ -227,15 +234,20 @@ public class ConfigSetupRegistry extends AbstractEPProcessor
 	 * in the found ConfigSetup will be added to the returned node, but these
 	 * won't contain a PreferencePage and therefore will not be editable.
 	 */
-	public ConfigPreferenceNode getMergedPreferenceRootNode(String scope, ConfigID configID) {
+	public ConfigPreferenceNode getMergedPreferenceRootNode(String scope, ConfigID configID)
+	throws NoSetupPresentException
+	{
 		ConfigSetup setup = getConfigSetupForConfigType(configID);
-		ConfigPreferenceNode rootNode = (ConfigPreferenceNode)mergedTreeNodes.get(scope+setup.getConfigSetupType());
+		if (setup == null)
+			throw new NoSetupPresentException("No Setup found related to this configID: "+configID);
+		
+		ConfigPreferenceNode rootNode = mergedTreeNodes.get(scope+setup.getConfigSetupType());
 		if (rootNode != null)
 			return rootNode;
 		ConfigPreferenceNode registeredRootNode = ConfigPreferencePageRegistry.sharedInstance().getPreferencesRootNode();
-		rootNode = new ConfigPreferenceNode("","","",null,null); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		rootNode = new ConfigPreferenceNode("","","",null,null, null, null);
 
-		Set mergeModules = new HashSet();
+		Set<String> mergeModules = new HashSet<String>();
 		mergeModules.addAll(setup.getConfigModuleClasses());		
 
 		for (Iterator iter = registeredRootNode.getChildren().iterator(); iter.hasNext();) {
@@ -247,7 +259,7 @@ public class ConfigSetupRegistry extends AbstractEPProcessor
 		// for all remaining classes add a null-Node
 		for (Iterator iter = mergeModules.iterator(); iter.hasNext();) {
 			String moduleClassName = (String) iter.next();
-			ConfigPreferenceNode node = new ConfigPreferenceNode("", moduleClassName, "", rootNode, null); //$NON-NLS-1$ //$NON-NLS-2$
+			ConfigPreferenceNode node = new ConfigPreferenceNode("", moduleClassName, "", rootNode, null, moduleClassName, null);
 			rootNode.addChild(node);
 		}
 		mergedTreeNodes.put(scope+setup.getConfigSetupType(), rootNode);
@@ -263,15 +275,13 @@ public class ConfigSetupRegistry extends AbstractEPProcessor
 	 */
 	private void mergeSetupNodes(
 			ConfigSetup setup, 
-			Set mergeModules, 
+			Set<String> mergeModules, 
 			ConfigPreferenceNode orgNode,
 			ConfigPreferenceNode newNodeParent) 
 	{
-//		String nodeClassName = orgNode.getPreferencePage().getConfigModuleClassName().getName();
-		String nodeClassName = orgNode.getPreferencePage().getConfigModuleClassName();
-		boolean hasRegistration = 
-			(orgNode.getPreferencePage() != null) && 
-			(setup.getConfigModuleClasses().contains(nodeClassName));
+		String nodeClassName = orgNode.getConfigModuleClassName();
+		boolean hasRegistration = setup.getConfigModuleClasses().contains(nodeClassName); 
+//			(orgNode.createPreferencePage() != null) && 
 		if (hasRegistration) {
 			mergeModules.remove(nodeClassName);
 			ConfigPreferenceNode newNode = new ConfigPreferenceNode(
@@ -279,7 +289,8 @@ public class ConfigSetupRegistry extends AbstractEPProcessor
 					orgNode.getConfigPreferenceName(),
 					orgNode.getCategoryID(),
 					newNodeParent,
-					orgNode.getPreferencePage()
+					orgNode.getElement(),
+					nodeClassName, null // FIXME: insert here the modID stuff?
 				);			
 			newNodeParent.addChild(newNode);
 			for (Iterator iter = orgNode.getChildren().iterator(); iter.hasNext();) {
@@ -287,13 +298,6 @@ public class ConfigSetupRegistry extends AbstractEPProcessor
 				mergeSetupNodes(setup, mergeModules, child, newNode);
 			}
 		}
-	}
-
-	/**
-	 * 
-	 */
-	public ConfigSetupRegistry() {
-		super();
 	}
 
 	/**
@@ -305,35 +309,25 @@ public class ConfigSetupRegistry extends AbstractEPProcessor
 	private void integrateConfigSetup(ConfigSetup setup) 
 	{
 		if (configSetupsByType == null)
-			configSetupsByType = new HashMap();
-		// add the setup to the
-		configSetupsByType.put(setup.getConfigSetupType(), setup);
+			configSetupsByType = new HashMap<String, ConfigSetup>();
+		if (configSetupsByGroupType == null)
+			configSetupsByGroupType = new HashMap<String, ConfigSetup>();
 		
-		// Add the setup itself to the Cache for notifications
-		Cache.sharedInstance().put(null, setup, DEFAULT_FETCH_GROUP_GROUPS, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
-		// now add all Configs to the Cache
-		for (Iterator iterator = setup.getConfigs().iterator(); iterator.hasNext();) {
-			Config config = (Config) iterator.next();
-			Cache.sharedInstance().put(null, config, DEFAULT_FETCH_GROUP_CONFIGS, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
-		}
-		// and finally all ConfigGroups
-		for (Iterator iterator = setup.getConfigGroups().iterator(); iterator.hasNext();) {
-			ConfigGroup group = (ConfigGroup) iterator.next();
-			Cache.sharedInstance().put(null, group, DEFAULT_FETCH_GROUP_GROUPS, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
-		}
-		mergedTreeNodes.remove(setup.getConfigSetupType());
+		// add the setup to the
+		configSetupsByType.put(setup.getConfigType(), setup);
+		configSetupsByGroupType.put(setup.getConfigGroupType(), setup);
+				
+		mergedTreeNodes.remove(setup.getConfigSetupType()); // FIXME: why removing this?
 	}
 	
 	private void getConfigSetups() {
 		if (configSetupsByType != null)
 			return;
-		Collection setups = null;
-		try {
-			ConfigManager configManager = ConfigManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
-			setups = configManager.getConfigSetups(DEFAULT_FETCH_GROUP_GROUPS, DEFAULT_FETCH_GROUP_CONFIGS);			
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
+		Collection setups = ConfigSetupDAO.sharedInstance().getAllConfigSetups(
+				CONFIG_SETUP_FETCH_GROUPS, 
+				NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT, 
+				new NullProgressMonitor());
+
 		for (Iterator iter = setups.iterator(); iter.hasNext();) {
 			ConfigSetup setup = (ConfigSetup) iter.next();
 			integrateConfigSetup(setup);
@@ -343,20 +337,16 @@ public class ConfigSetupRegistry extends AbstractEPProcessor
 	/**
 	 * Listener for changes of ConfigSetups.
 	 */
-	private NotificationListener setupChangeListener = new NotificationListenerWorkerThreadAsync() {
+	private NotificationListener setupChangeListener = new NotificationAdapterJob() {
 		public void notify(NotificationEvent notificationEvent) {
 			if (notificationEvent.getFirstSubject() instanceof DirtyObjectID) {
 				DirtyObjectID dirtyObjectID = (DirtyObjectID) notificationEvent.getFirstSubject();
 				if (dirtyObjectID.getObjectID() instanceof ConfigSetupID) {
-					String configSetupType = ((ConfigSetupID)dirtyObjectID.getObjectID()).configSetupType;				
+					ConfigSetupID setupID = (ConfigSetupID)dirtyObjectID.getObjectID();				
 					try {
-						ConfigManager configManager = ConfigManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
-						ConfigSetup setup = configManager.getConfigSetup(
-								configSetupType, 
-								DEFAULT_FETCH_GROUP_GROUPS, 
-								DEFAULT_FETCH_GROUP_CONFIGS
-						);
-						integrateConfigSetup(setup);	
+						ConfigSetup newSetup = ConfigSetupDAO.sharedInstance().getConfigSetup(setupID, 
+								CONFIG_SETUP_FETCH_GROUPS, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT, getProgressMonitorWrapper());
+						integrateConfigSetup(newSetup);	
 					} catch (Exception e) {
 						throw new RuntimeException(e);
 					}
@@ -365,69 +355,69 @@ public class ConfigSetupRegistry extends AbstractEPProcessor
 		}
 	};  
 	
-	/**
-	 * Listener for changes of Configs
-	 */
-	private NotificationListener configChangeListener = new NotificationListenerWorkerThreadAsync() {
-		public void notify(NotificationEvent notificationEvent) {
-			if (notificationEvent.getFirstSubject() instanceof ConfigID) {
-				ConfigID configID = (ConfigID)notificationEvent.getFirstSubject();
-				Class jdoObjectClass = JDOObjectID2PCClassMap.sharedInstance().getPersistenceCapableClass(configID);
-				if (jdoObjectClass != Config.class)
-					return;
-				Config config = null;
-				try {
-					ConfigManager configManager = ConfigManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
-					config = configManager.getConfig(configID, DEFAULT_FETCH_GROUP_CONFIGS, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
-				} catch (Exception e) {
-					throw new RuntimeException(e);
-				}
-				Cache.sharedInstance().put(null, config, DEFAULT_FETCH_GROUP_CONFIGS, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
-				for (Iterator iter = configSetupsByType.values().iterator(); iter.hasNext();) {
-					ConfigSetup setup = (ConfigSetup) iter.next();
-					if (setup.getConfigsMap().get(configID) == null)
-						continue;
-					setup.getConfigsMap().put(configID, config);
-					if (config.getConfigGroup() != null)
-						config.setConfigGroup(setup.getConfigGroup(config.getConfigGroup().getConfigKey()));
-				}
-			}
-		}
-	};  
+//	/**
+//	 * Listener for changes of Configs
+//	 */
+//	private NotificationListener configChangeListener = new NotificationAdapterJob() {
+//		public void notify(NotificationEvent notificationEvent) {
+//			if (notificationEvent.getFirstSubject() instanceof ConfigID) {
+//				ConfigID configID = (ConfigID)notificationEvent.getFirstSubject();
+//				Class jdoObjectClass = JDOObjectID2PCClassMap.sharedInstance().getPersistenceCapableClass(configID);
+//				if (jdoObjectClass != Config.class)
+//					return;
+//				Config config = null;
+//				try {
+//					ConfigManager configManager = ConfigManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
+//					config = configManager.getConfig(configID, DEFAULT_FETCH_GROUP_CONFIGS, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
+//				} catch (Exception e) {
+//					throw new RuntimeException(e);
+//				}
+//				Cache.sharedInstance().put(null, config, DEFAULT_FETCH_GROUP_CONFIGS, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
+//				for (Iterator iter = configSetupsByType.values().iterator(); iter.hasNext();) {
+//					ConfigSetup setup = (ConfigSetup) iter.next();
+//					if (setup.getConfigsMap().get(configID) == null)
+//						continue;
+//					setup.getConfigsMap().put(configID, config);
+//					if (config.getConfigGroup() != null)
+//						config.setConfigGroup(setup.getConfigGroup(config.getConfigGroup().getConfigKey()));
+//				}
+//			}
+//		}
+//	};  
 
-	/**
-	 * Listener for changes of ConfigGroups
-	 */
-	private NotificationListener configGroupChangeListener = new NotificationListenerWorkerThreadAsync() {
-		public void notify(NotificationEvent notificationEvent) {
-			if (notificationEvent.getFirstSubject() instanceof ConfigID) {
-				ConfigID configID = (ConfigID)notificationEvent.getFirstSubject();
-				ConfigGroup group = null;
-				try {
-					ConfigManager configManager = ConfigManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
-					group = (ConfigGroup)configManager.getConfig(configID, DEFAULT_FETCH_GROUP_GROUPS, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
-				} catch (Exception e) {
-					throw new RuntimeException(e);
-				}
-				Cache.sharedInstance().put(null, group, DEFAULT_FETCH_GROUP_GROUPS, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
-				
-				for (Iterator iter = configSetupsByType.values().iterator(); iter.hasNext();) {
-					ConfigSetup setup = (ConfigSetup) iter.next();
-					if (setup.getConfigGroupsByID().get(configID) == null)
-						continue;					
-					setup.getConfigGroupsMap().put(group.getConfigKey(), group);
-					setup.getConfigGroupsByID().put(configID, group);
-					for (Iterator iterator = setup.getConfigs().iterator(); iterator.hasNext();) {
-						Config config = (Config) iterator.next();
-						if (config.getConfigGroup() == null)
-							continue;
-						if (configID.equals(JDOHelper.getObjectId(config.getConfigGroup())))
-							config.setConfigGroup(group);
-					}
-				}
-			}
-		}
-	};  
+//	/**
+//	 * Listener for changes of ConfigGroups
+//	 */
+//	private NotificationListener configGroupChangeListener = new NotificationListenerWorkerThreadAsync() {
+//		public void notify(NotificationEvent notificationEvent) {
+//			if (notificationEvent.getFirstSubject() instanceof ConfigID) {
+//				ConfigID configID = (ConfigID)notificationEvent.getFirstSubject();
+//				ConfigGroup group = null;
+//				try {
+//					ConfigManager configManager = ConfigManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
+//					group = (ConfigGroup)configManager.getConfig(configID, DEFAULT_FETCH_GROUP_GROUPS, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
+//				} catch (Exception e) {
+//					throw new RuntimeException(e);
+//				}
+//				Cache.sharedInstance().put(null, group, DEFAULT_FETCH_GROUP_GROUPS, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
+//				
+//				for (Iterator iter = configSetupsByType.values().iterator(); iter.hasNext();) {
+//					ConfigSetup setup = (ConfigSetup) iter.next();
+//					if (setup.getConfigGroupsByID().get(configID) == null)
+//						continue;					
+//					setup.getConfigGroupsMap().put(group.getConfigKey(), group);
+//					setup.getConfigGroupsByID().put(configID, group);
+//					for (Iterator iterator = setup.getConfigs().iterator(); iterator.hasNext();) {
+//						Config config = (Config) iterator.next();
+//						if (config.getConfigGroup() == null)
+//							continue;
+//						if (configID.equals(JDOHelper.getObjectId(config.getConfigGroup())))
+//							config.setConfigGroup(group);
+//					}
+//				}
+//			}
+//		}
+//	};  
 	
 	/**
 	 * Returns a ConfigSetupVisualiser for the ConfigSetup of the given
@@ -454,8 +444,9 @@ public class ConfigSetupRegistry extends AbstractEPProcessor
 		if (sharedInstance == null) {
 			sharedInstance = new ConfigSetupRegistry();
 			JDOLifecycleManager.sharedInstance().addNotificationListener(ConfigSetup.class, sharedInstance.setupChangeListener);
-			JDOLifecycleManager.sharedInstance().addNotificationListener(Config.class, sharedInstance.configChangeListener);
-			JDOLifecycleManager.sharedInstance().addNotificationListener(ConfigGroup.class, sharedInstance.configGroupChangeListener);
+//			JDOLifecycleManager.sharedInstance().addNotificationListener(Config.class, sharedInstance.configChangeListener);
+//			JDOLifecycleManager.sharedInstance().addNotificationListener(ConfigGroup.class, sharedInstance.configGroupChangeListener);
+			// FIXME: where are these listeners deregistered?
 			sharedInstance.process();
 		}
 		return sharedInstance;
@@ -480,4 +471,19 @@ public class ConfigSetupRegistry extends AbstractEPProcessor
 		}
 	}
 	
+	public class NoSetupPresentException extends Exception {
+		private static final long serialVersionUID = 1L;
+
+		public NoSetupPresentException() {
+			super();
+		}
+		
+		public NoSetupPresentException(String message) {
+			super(message);
+		}
+		
+		public NoSetupPresentException(String message, Throwable cause) {
+			super(message, cause);
+		}
+	}
 }

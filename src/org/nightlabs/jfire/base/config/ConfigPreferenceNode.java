@@ -29,6 +29,8 @@ package org.nightlabs.jfire.base.config;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.swt.graphics.Image;
 
 /**
@@ -39,7 +41,9 @@ public class ConfigPreferenceNode {
 
 	private String configPreferenceID;
 	private String configPreferenceName;
-	private AbstractConfigModulePreferencePage preferencePage;
+	private IConfigurationElement element;
+	private String configModuleClassName;
+	private String configModuleCfModID;
 	private String categoryID;
 	private ConfigPreferenceNode parent;
 	private List<ConfigPreferenceNode> children = 
@@ -55,14 +59,18 @@ public class ConfigPreferenceNode {
 		String configPreferenceName,
 		String categoryID,
 		ConfigPreferenceNode parent,
-		AbstractConfigModulePreferencePage preferencePage
+		IConfigurationElement element,
+		String configModuleClassName,
+		String configModuleCfModID
 	) {
 		super();
 		this.configPreferenceID = configPreferenceID;
 		this.configPreferenceName = configPreferenceName;
 		this.categoryID = categoryID;
 		this.parent = parent;
-		this.preferencePage = preferencePage;
+		this.element = element;
+		this.configModuleClassName = configModuleClassName;
+		this.configModuleCfModID = configModuleCfModID;
 	}
 	
 	public ConfigPreferenceNode getParent() {
@@ -113,9 +121,29 @@ public class ConfigPreferenceNode {
 	public void setIcon(Image icon) {
 		this.icon = icon;
 	}
+
+	public String getConfigModuleClassName() {
+		return configModuleClassName;
+	}
 	
-	public AbstractConfigModulePreferencePage getPreferencePage() {
-		return preferencePage;
+	public String getConfigModuleCfModID() {
+		return configModuleCfModID;
+	}
+	
+	public IConfigurationElement getElement() {
+		return element;
+	}
+	
+	/**
+	 * Creates a new {@link AbstractConfigModulePreferencePage} by invoking
+	 * {@link IConfigurationElement#createExecutableExtension(String)} of
+	 * the element of the contributing extension. 
+	 * 
+	 * @return A new {@link AbstractConfigModulePreferencePage}.
+	 * @throws CoreException If something fails.
+	 */
+	public AbstractConfigModulePreferencePage createPreferencePage() throws CoreException {
+		return (AbstractConfigModulePreferencePage) element.createExecutableExtension(ConfigPreferencePageRegistry.CLASS_ELEMENT);
 	}
 
 }

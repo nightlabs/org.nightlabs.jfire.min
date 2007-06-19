@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -71,6 +72,7 @@ implements ConfigPreferenceChangedListener, IStoreChangedConfigModule
 	private SashForm wrapper;
 	
 	protected ConfigModule currentConfigModule;
+	protected String currentcfModID;
 	protected ConfigID currentConfigID;
 	protected AbstractConfigModulePreferencePage currentPage;
 
@@ -111,7 +113,12 @@ implements ConfigPreferenceChangedListener, IStoreChangedConfigModule
 					currentPage = null;
 					return;					
 				}
-				currentPage = selection.getPreferencePage();
+				try {
+					currentPage = selection.createPreferencePage();
+					currentcfModID = selection.getConfigModuleCfModID();
+				} catch (CoreException e) {
+					throw new RuntimeException("Couldn't create an AbstractPreferencePage: ", e);
+				}
 				updateCurrentConfigModule();
 				updatePreferencesComposite();
 			}			
@@ -130,7 +137,8 @@ implements ConfigPreferenceChangedListener, IStoreChangedConfigModule
 
 		if (!involvedPages.values().contains(selectedPage)) 
 		{
-			selectedPage.getConfigModuleController().setConfigID(currentConfigID, true);
+			// FIXME: store ConfigPrefNode instead of page only or somehow get the moduleID.
+			selectedPage.getConfigModuleController().setConfigID(currentConfigID, true, currentcfModID);
 			selectedPage.createPartContents(preferencesComposite.getWrapper());
 			
 			selectedPage.addConfigPreferenceChangedListener(this);
@@ -220,11 +228,8 @@ implements ConfigPreferenceChangedListener, IStoreChangedConfigModule
 	}
 
 	private String getCfModKey(AbstractConfigModulePreferencePage page) {
-//		String cfModKey = page.getConfigModuleClassName().getName();
-		String cfModKey = page.getSimpleClassName();
-		if (page.getConfigModuleCfModID() != null)
-			cfModKey = cfModKey + "_" + page.getConfigModuleCfModID(); //$NON-NLS-1$
-		return cfModKey;
+		return ConfigModule.getCfModKey(page.getConfigModuleClass(), 
+							page.getConfigModuleController().getConfigModuleID());
 	}
 	
 	public void configPreferenceChanged(AbstractConfigModulePreferencePage preferencePage) {

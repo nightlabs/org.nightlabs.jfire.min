@@ -43,7 +43,7 @@ import org.nightlabs.base.extensionpoint.EPProcessorException;
  */
 public class ConfigPreferencePageRegistry extends AbstractEPProcessor 
 {
-	private static final String CLASS_ELEMENT = "class"; //$NON-NLS-1$
+	public static final String CLASS_ELEMENT = "class"; //$NON-NLS-1$
 	private static final String NAME_ELEMENT = "name"; //$NON-NLS-1$
 	private static final String CATEGORY_ELEMENT = "category"; //$NON-NLS-1$
 	private static final String ID_ELEMENT = "id"; //$NON-NLS-1$
@@ -60,7 +60,7 @@ public class ConfigPreferencePageRegistry extends AbstractEPProcessor
 	 * key: String id<br/>
 	 * value: ConfigPreferenceNode preferenceNode
 	 */
-	private Map<String, ConfigPreferenceNode> preferencePagesByIDs;
+	private Map<String, ConfigPreferenceNode> preferenceNodesByIDs;
 	
 	/* (non-Javadoc)
 	 * @see org.nightlabs.base.extensionpoint.AbstractEPProcessor#getExtensionPointID()
@@ -107,9 +107,13 @@ public class ConfigPreferencePageRegistry extends AbstractEPProcessor
 				return;
 			if (!(page instanceof AbstractConfigModulePreferencePage))
 				return;
-			
-			ConfigPreferenceNode preferenceNode = new ConfigPreferenceNode(id, name, category, null, (AbstractConfigModulePreferencePage)page);
-			preferencePagesByIDs.put(id, preferenceNode);
+			AbstractConfigModulePreferencePage configPage = (AbstractConfigModulePreferencePage) page;
+			ConfigPreferenceNode preferenceNode = new ConfigPreferenceNode(
+					id, name, category, 
+					null, element,
+					configPage.getConfigModuleClassName(), null // cfModIDs are set later when the merging takes place
+			);
+			preferenceNodesByIDs.put(id, preferenceNode);
 		}
 	}
 
@@ -123,15 +127,17 @@ public class ConfigPreferencePageRegistry extends AbstractEPProcessor
 				"", //$NON-NLS-1$
 				"", //$NON-NLS-1$
 				null,
+				null,
+				null,
 				null
 		);		
 		
-		preferencePagesByIDs = new HashMap<String, ConfigPreferenceNode>();
+		preferenceNodesByIDs = new HashMap<String, ConfigPreferenceNode>();
 		super.process();
 		
-		for (Iterator iter = preferencePagesByIDs.values().iterator(); iter.hasNext();) {
+		for (Iterator iter = preferenceNodesByIDs.values().iterator(); iter.hasNext();) {
 			ConfigPreferenceNode node = (ConfigPreferenceNode) iter.next();
-			ConfigPreferenceNode parentNode = (ConfigPreferenceNode)preferencePagesByIDs.get(node.getCategoryID());			
+			ConfigPreferenceNode parentNode = (ConfigPreferenceNode)preferenceNodesByIDs.get(node.getCategoryID());			
 			if (parentNode != null)
 				parentNode.addChild(node);
 			else

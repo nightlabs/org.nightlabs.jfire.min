@@ -36,6 +36,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Tree;
 import org.nightlabs.base.tree.AbstractTreeComposite;
+import org.nightlabs.jfire.base.config.ConfigSetupRegistry.NoSetupPresentException;
 import org.nightlabs.jfire.config.id.ConfigID;
 
 /**
@@ -124,7 +125,12 @@ public class ConfigPreferencesTreeComposite extends AbstractTreeComposite<Config
 			return;
 		this.currentConfigID = configID;
 		if (currentConfigID != null) {			
-			final ConfigPreferenceNode rootNode = ConfigSetupRegistry.sharedInstance().getMergedPreferenceRootNode(parentCode, currentConfigID);
+			final ConfigPreferenceNode rootNode;
+			try {
+				rootNode = ConfigSetupRegistry.sharedInstance().getMergedPreferenceRootNode(parentCode, currentConfigID);
+			} catch (NoSetupPresentException e) {
+				throw new RuntimeException("Can't build a tree of ConfigModules when there is no ConfigSetup providing the information!", e);
+			}
 			Display.getDefault().asyncExec(new Runnable(){
 				public void run() {
 					setInput(rootNode);

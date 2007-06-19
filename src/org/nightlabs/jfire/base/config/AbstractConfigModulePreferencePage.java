@@ -451,7 +451,7 @@ extends LSDPreferencePage
 
 				configChangedListeners.clear();
 				JDOLifecycleManager.sharedInstance().removeNotificationListener(getConfigModuleClass(), changeListener);
-				changeListener = null;
+//				changeListener = null;
 			}
 		});
 
@@ -459,10 +459,8 @@ extends LSDPreferencePage
 			setControl(fadableWrapper);
 			fadableWrapper.addDisposeListener(new DisposeListener() {
 				public void widgetDisposed(DisposeEvent e) {
-					if (currentConfigModuleIsEditable) {
-						EditLockMan.sharedInstance().releaseEditLock(
+					EditLockMan.sharedInstance().releaseEditLock(
 							(ConfigModuleID) JDOHelper.getObjectId(getConfigModuleController().getConfigModule()));
-					}
 				}
 			});
 		}
@@ -596,14 +594,17 @@ extends LSDPreferencePage
 						@Override
 						protected IStatus run(ProgressMonitor monitor) {
 //						FIXME: and is in this job, when read, FALSE!!!! Damn f%&§$=! bug!
-							ConfigID groupID = ConfigSetupRegistry.sharedInstance().getGroupForConfig(
-									ConfigID.create(getConfigModuleController().getConfigModule().getOrganisationID(), 
-											getConfigModuleController().getConfigModule().getConfigKey(), 
-											getConfigModuleController().getConfigModule().getConfigType()
-									));
-							ConfigModule groupModule = ConfigModuleDAO.sharedInstance().getConfigModule(groupID, 
-									getConfigModuleClass(), getConfigModuleCfModID(), getConfigModuleFetchGroups().toArray(new String[] {}), 
-									getConfigModuleMaxFetchDepth(), monitor);
+//							ConfigID groupID = ConfigSetupRegistry.sharedInstance().getGroupForConfig(
+//									ConfigID.create(getConfigModuleController().getConfigModule().getOrganisationID(), 
+//											getConfigModuleController().getConfigModule().getConfigKey(), 
+//											getConfigModuleController().getConfigModule().getConfigType()
+//									));
+//							ConfigModule(groupID, 
+//									getConfigModuleClass(), configModuleManager.getConfigModuleID(), getConfigModuleFetchGroups().toArray(new String[] {}), 
+//									getConfigModuleMaxFetchDepth(), monitor);
+							ConfigModule groupModule = ConfigModuleDAO.sharedInstance().getGroupsCorrespondingModule(
+									configModuleManager.getConfigID(), getConfigModuleClass(), 
+									configModuleManager.getConfigModuleID(), getConfigModuleFetchGroups().toArray(new String[0]), getConfigModuleMaxFetchDepth(), monitor);
 							
 							InheritanceManager inheritanceManager = new InheritanceManager();
 							inheritanceManager.inheritAllFields(groupModule, getConfigModuleController().getConfigModule());
@@ -696,9 +697,9 @@ extends LSDPreferencePage
 	 * 
 	 * @return null
 	 */
-	public String getConfigModuleCfModID() {
-		return null;
-	}
+//	public String getConfigModuleCfModID() {
+//		return null;
+//	}
 
 	/**
 	 * This method should return all fetch groups necessary to display a detached {@link ConfigModule}

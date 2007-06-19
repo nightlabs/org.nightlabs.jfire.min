@@ -10,6 +10,7 @@ import org.nightlabs.jfire.config.ConfigGroup;
 import org.nightlabs.jfire.config.ConfigModule;
 import org.nightlabs.jfire.config.dao.ConfigModuleDAO;
 import org.nightlabs.jfire.config.id.ConfigID;
+import org.nightlabs.progress.NullProgressMonitor;
 import org.nightlabs.progress.ProgressMonitor;
 import org.nightlabs.util.Utils;
 
@@ -30,8 +31,16 @@ implements IConfigModuleController
 	public ConfigID getConfigID() {
 		return configID;
 	}
-	public void setConfigID(ConfigID configID, boolean useNotAsPreferencePage) {
+	
+	private String configModuleID;
+	public String getConfigModuleID() {
+		return configModuleID;
+	}
+	
+	public void setConfigID(ConfigID configID, boolean useNotAsPreferencePage, String configModuleID) {
 		this.configID = configID;
+		this.configModuleID = configModuleID;
+		
 		if (useNotAsPreferencePage) {
 			getPreferencePage().doSetControl = true;
 		}
@@ -81,15 +90,21 @@ implements IConfigModuleController
 	/**
 	 * Checks if the configModule is member of a configGroup 
 	 */
-	public boolean checkIfIsGroupMember(ConfigModule module) 
-	{
-		ConfigID groupID = ConfigSetupRegistry.sharedInstance().getGroupForConfig(
-				ConfigID.create(module.getOrganisationID(), 
-						module.getConfigKey(), 
-						module.getConfigType()
-						));
-		return groupID != null;
-	}	
+	public boolean checkIfIsGroupMember(ConfigModule module) {
+		return getGroupConfigModule(module) != null;
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see org.nightlabs.jfire.base.config.IConfigModuleController#getGroupConfigModule(org.nightlabs.jfire.config.ConfigModule)
+	 */
+	public ConfigModule getGroupConfigModule(ConfigModule memberModule) {
+		return ConfigModuleDAO.sharedInstance().getGroupsCorrespondingModule(
+				configID, preferencePage.getConfigModuleClass(), configModuleID, 
+				preferencePage.getConfigModuleFetchGroups().toArray(new String[0]), 
+				preferencePage.getConfigModuleMaxFetchDepth(), new NullProgressMonitor()
+				);
+	}
 			
 	/**
 	 * Fetches and returns the ConfigModule of the Config with {@link ConfigID} == <code>configID</code> from the 
@@ -111,7 +126,7 @@ implements IConfigModuleController
 		return Utils.cloneSerializable((ConfigModule) ConfigModuleDAO.sharedInstance().getConfigModule(
 				getConfigID(), 
 				getPreferencePage().getConfigModuleClass(),
-				getPreferencePage().getConfigModuleCfModID(),
+				configModuleID,
 				getPreferencePage().getConfigModuleFetchGroups().toArray(new String[] {}),
 				getPreferencePage().getConfigModuleMaxFetchDepth(), 
 				monitor

@@ -76,7 +76,7 @@ extends AbstractConfigModulePreferencePage
 			getConfigModuleController().setConfigID(
 					WorkstationConfigSetup.getWorkstationConfigID(WorkstationID.create(
 							login.getOrganisationID(), login.getWorkstationID())),
-							false);
+							false, (String) null); // TODO: how to get the ConfigModule's id (number) or create several pages with all ids there are
 		} catch (Exception e) {
 			logger.info("User decided to work offline!"); //$NON-NLS-1$
 		}
