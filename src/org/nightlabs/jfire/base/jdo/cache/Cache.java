@@ -81,6 +81,8 @@ import org.nightlabs.util.CollectionUtil;
  */
 public class Cache
 {
+	private static final boolean DEBUG_TEST = false;
+
 	/**
 	 * LOG4J logger used by this class
 	 */
@@ -125,6 +127,9 @@ public class Cache
 			}
 			logger.info("NotificationThread.run: WORKAROUND for java classloading bug: delayed start of NotificationThread - continuing now!");
 
+			if (logger.isDebugEnabled())
+				logger.debug("NotificationThread.run: DEBUG_TEST=" + DEBUG_TEST);
+
 			while (!isInterrupted()) {
 				try {
 					if (jdoManager == null)
@@ -140,10 +145,10 @@ public class Cache
 						SortedSet<DirtyObjectID> dirtyObjectIDs = notificationBundle == null ? null : notificationBundle.getDirtyObjectIDs();
 
 						if (dirtyObjectIDs != null) {
-							logger.info("Received notification for implicit listeners with " + dirtyObjectIDs.size() + " DirtyObjectIDs.");
+							logger.info("NotificationThread.run: Received notification for implicit listeners with " + dirtyObjectIDs.size() + " DirtyObjectIDs.");
 							if (logger.isDebugEnabled()) {
 								for (DirtyObjectID dirtyObjectID : dirtyObjectIDs)
-									logger.debug("  " + dirtyObjectID);
+									logger.debug("NotificationThread.run:   " + dirtyObjectID);
 							}
 
 							Map<Object, DirtyObjectID> indirectlyAffectedDirtyObjectIDs = new HashMap<Object, DirtyObjectID>();
@@ -174,12 +179,15 @@ public class Cache
 									DirtyObjectID doid = new DirtyObjectID(
 											JDOLifecycleState.DIRTY, removedKey.getObjectID(),
 //											objectClass.getName(),
-											JDOObjectID2PCClassMap.sharedInstance().getPersistenceCapableClass(removedKey.getObjectID()).getName(),
+											JDOObjectID2PCClassMap.sharedInstance().getPersistenceCapableClass(removedKey.getObjectID()).getName(), // TODO can't this line cause problems if it's not a JDOObjectID?
 											null, -Long.MAX_VALUE);
 									indirectlyAffectedDirtyObjectIDs.put(doid.getObjectID(), doid);
+
+									if (logger.isDebugEnabled())
+										logger.debug("NotificationThread.run:   created synthetic \"" + doid + "\" for real \"" + objectID + "\"");
 								}
 							}
-							logger.info("Removed " + removedCarrierCount + " carriers from the cache.");
+							logger.info("NotificationThread.run: Removed " + removedCarrierCount + " carriers from the cache.");
 
 							cache.unsubscribeObjectIDs(
 									objectIDs,
@@ -193,6 +201,12 @@ public class Cache
 							// create a set with all dirtyObjectIDs - the direct and the indirect=synthetic
 							SortedSet<DirtyObjectID> dirtyObjectIDsForNotification = new TreeSet<DirtyObjectID>(dirtyObjectIDs);
 							dirtyObjectIDsForNotification.addAll(indirectlyAffectedDirtyObjectIDs.values());
+
+							if (logger.isDebugEnabled()) {
+								logger.debug("NotificationThread.run: about to notify implicit listeners for " + dirtyObjectIDsForNotification.size() + " DirtyObjectIDs:");
+								for (DirtyObjectID dirtyObjectID : dirtyObjectIDsForNotification)
+									logger.debug("NotificationThread.run:   * " + dirtyObjectID);
+							}
 
 							// notify via local class based notification mechanism
 							// the interceptor org.nightlabs.jfire.base.jdo.JDOObjectID2PCClassNotificationInterceptor takes care about correct class mapping
@@ -235,7 +249,7 @@ public class Cache
 					{ // explicit listeners
 						Map<Long, SortedSet<DirtyObjectID>> filterID2DirtyObjectIDs = notificationBundle == null ? null : notificationBundle.getFilterID2dirtyObjectIDs();
 						if (filterID2DirtyObjectIDs != null) {
-							logger.info("Received notification for " + filterID2DirtyObjectIDs.size() + " explicit listeners.");
+							logger.info("NotificationThread.run: Received notification for " + filterID2DirtyObjectIDs.size() + " explicit listeners.");
 							for (Map.Entry<Long, SortedSet<DirtyObjectID>> me : filterID2DirtyObjectIDs.entrySet()) {
 								Long filterID = me.getKey();
 								SortedSet<DirtyObjectID> dirtyObjectIDs = me.getValue();
@@ -519,11 +533,11 @@ public class Cache
 									}
 								}
 
-								jdoManager.removeAddListeners(
+								jdoManager.removeOrAddListeners(
 										objectIDsToUnsubscribe,
 										objectIDsToSubscribe,
-										filtersToSubscribe,
-										filterIDsToUnsubscribe);
+										filterIDsToUnsubscribe,
+										filtersToSubscribe);
 							}
 						}
 
@@ -1361,8 +1375,10 @@ public class Cache
 			if (keySet != null) {
 				keySet.remove(key);
 
-				if (keySet.isEmpty())
-					objectID2KeySet_dependency.remove(objectID);
+				if (!DEBUG_TEST) {
+					if (keySet.isEmpty())
+						objectID2KeySet_dependency.remove(objectID);
+				}
 			}
 		}
 
@@ -1430,13 +1446,23 @@ public class Cache
 	 */
 	public synchronized Set<Key> removeByObjectID(Object objectID)
 	{
-		logger.debug("Removing all Carriers for objectID: " + objectID);
+		if (logger.isDebugEnabled())
+			logger.debug("removeByObjectID: Removing all Carriers for: " + objectID);
 
 		objectID2KeySet_alternative.remove(objectID);
 
-		Set<Key> keySet = objectID2KeySet_dependency.remove(objectID);
-		if (keySet == null)
+		Set<Key> keySet;
+		if (DEBUG_TEST)
+			keySet = objectID2KeySet_dependency.get(objectID);
+		else
+			keySet = objectID2KeySet_dependency.remove(objectID);
+
+		if (keySet == null) {
+			if (logger.isDebugEnabled())
+				logger.debug("removeByObjectID: No entry in objectID2KeySet_dependency for: " + objectID);
+
 			return emptyKeySet;
+		}
 
 		int removedCarrierCount = 0;
 		for (Iterator it = keySet.iterator(); it.hasNext(); ) {
@@ -1444,13 +1470,13 @@ public class Cache
 			Carrier carrier = (Carrier) key2Carrier.remove(key);
 			if (carrier != null) {
 				if (logger.isDebugEnabled())
-					logger.debug("Removing Carrier: key=\""+key.toString()+"\"");
+					logger.debug("removeByObjectID: Removing Carrier: key=\"" + key + "\"");
 
 				carrier.setCarrierContainer(null);
 				removedCarrierCount++;
 			}
 			else
-				logger.warn("There was a key in the objectID2KeySet_dependency, but no carrier for it in key2Carrier! key=\""+key.toString()+"\"");
+				logger.warn("removeByObjectID: There was a key in the objectID2KeySet_dependency, but no carrier for it in key2Carrier! key=\"" + key + "\"");
 		}
 		return keySet;
 	}
