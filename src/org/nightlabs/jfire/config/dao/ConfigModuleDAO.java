@@ -123,4 +123,35 @@ public class ConfigModuleDAO extends BaseJDOObjectDAO<ConfigModuleID, ConfigModu
 														fetchGroups, maxFetchDepth, monitor);
 	}
 
+	/**
+	 * Returns the ConfigModule of the ConfigGroup of the Config corresponding to the given ConfigID
+	 * and with the given Class and moduleID or <code>null</code>.
+	 * 
+	 * @param childID the {@link ConfigID} of the child's {@link Config}.
+	 * @param configModuleClass the Class of the ConfigModule to return.
+	 * @param moduleID the module ID in the case there is more than one instance of that ConfigModule. 
+	 * @param fetchGroups the fetchGroups with which to detach the ConfigModule.
+	 * @param maxFetchDepth the maximum fetch depth while detaching.
+	 * @param monitor the ProgressMonitor to use for showing the progress of the operation.
+	 * @return the ConfigModule of the ConfigGroup of the Config corresponding to the given ConfigID
+	 * and with the given Class and moduleID or <code>null</code>.
+	 */
+	public ConfigModule getGroupsCorrespondingModule(ConfigID childID, Class configModuleClass, 
+			String moduleID, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor) 
+	{
+		monitor.beginTask("Getting Groups ConfigModule...", 1);
+		try {
+			ConfigManager cm = ConfigManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
+			ConfigModule searchedModule = cm.getGroupConfigModule(childID, configModuleClass, moduleID,
+					fetchGroups, maxFetchDepth);
+			monitor.worked(1); 
+			monitor.done();
+			
+			return searchedModule;
+		} catch (Exception e) {
+			monitor.setCanceled(true);
+			throw new RuntimeException("ConfigModule download failed: ", e);
+		} 
+	}
+	
 }
