@@ -47,9 +47,11 @@ import javax.transaction.TransactionManager;
 import org.apache.log4j.Logger;
 import org.nightlabs.annotation.Implement;
 import org.nightlabs.jfire.idgenerator.IDNamespace;
+import org.nightlabs.jfire.jdo.cache.CacheManagerFactory;
 import org.nightlabs.jfire.jdo.notification.DirtyObjectID;
 import org.nightlabs.jfire.jdo.notification.JDOLifecycleState;
 import org.nightlabs.jfire.security.SecurityReflector;
+import org.nightlabs.math.Base62Coder;
 
 
 
@@ -59,6 +61,14 @@ import org.nightlabs.jfire.security.SecurityReflector;
 public class JdoCacheBridgeDefault extends JdoCacheBridge
 {
 	private static final Logger logger = Logger.getLogger(JdoCacheBridgeDefault.class);
+
+	/**
+	 * If this is &lt;= 0, the {@link CacheTransactionListener#afterCompletion(int)} will
+	 * directly forward all collected events to the {@link CacheManagerFactory}. If this
+	 * is &gt; 0, the said method will spawn a {@link Thread} and execute it asynchronously
+	 * after the given delay in milliseconds.
+	 */
+	private static final int notificationDelayAfterCompletionMSec = 0;
 
 	public static class CacheTransactionListener
 	implements Synchronization
@@ -76,10 +86,25 @@ public class JdoCacheBridgeDefault extends JdoCacheBridge
 			this.bridge = bridge;
 		}
 
+		public String getIdentityString()
+		{
+			return Base62Coder.sharedInstance().encode(System.identityHashCode(this), 1);
+		}
+
+		private void debug(String msg)
+		{
+			logger.debug("CacheTransactionListener[" + getIdentityString() + "]" + msg);
+		}
+		private void error(String msg, Throwable t)
+		{
+			logger.error("CacheTransactionListener[" + getIdentityString() + "]" + msg, t);
+		}
+
 		@Implement
 		public void beforeCompletion()
 		{
-			this.dead = true;
+			if (logger.isDebugEnabled())
+				debug("beforeCompletion: called");
 		}
 
 		/**
@@ -106,14 +131,19 @@ public class JdoCacheBridgeDefault extends JdoCacheBridge
 		@Implement
 		public void afterCompletion(int status)
 		{
+			this.dead = true;
+
 			if (status == Status.STATUS_COMMITTED) {
 				try {
 					if (this.dirtyObjectIDs == null) {
 						if (logger.isDebugEnabled())
-							logger.debug("afterCompletion(STATUS_COMMITTED) called, but nothing to do.");
+							debug("afterCompletion(STATUS_COMMITTED) called, but nothing to do.");
 
 						return;
 					}
+
+					if (logger.isDebugEnabled())
+						debug("afterCompletion(STATUS_COMMITTED) called.");
 
 					final String _sessionID = bridge.securityReflector._getUserDescriptor().getSessionID();
 					final Map<JDOLifecycleState, Map<Object, DirtyObjectID>> _dirtyObjectIDs = this.dirtyObjectIDs;
@@ -121,37 +151,56 @@ public class JdoCacheBridgeDefault extends JdoCacheBridge
 					final Map<Object, Class> _objectID2Class = this.objectID2Class;
 					this.objectID2Class = null;
 
-					Thread t = new Thread() {
-						@Override
+					Runnable runnable = new Runnable() {
+						@Implement
 						public void run()
 						{
 							try {
-								if (logger.isDebugEnabled())
-									logger.debug("CacheTransactionListener.afterCompletion.Thread: entered with _dirtyObjectIDs.size()=" + _dirtyObjectIDs.size());
-
 								if (_objectID2Class != null)
 									bridge.getCacheManagerFactory().addObjectID2ClassMap(_objectID2Class);
 
 								// there seems to be a timing issue concerning the commit of a transaction - delaying a sec seems to help - TODO fix this problem in a CLEAN way!
-								try { Thread.sleep(2000); } catch (InterruptedException e) { } // ignore
+								if (notificationDelayAfterCompletionMSec > 0) {
+									try { Thread.sleep(1000); } catch (InterruptedException e) { } // ignore
+								}
+
 								bridge.getCacheManagerFactory().addDirtyObjectIDs(_sessionID, _dirtyObjectIDs);
+
+								if (logger.isDebugEnabled()) {
+									debug("afterCompletion(STATUS_COMMITTED).Runnable: pumped DirtyObjectIDs into CacheManagerFactory: _dirtyObjectIDs.size()=" + _dirtyObjectIDs.size());
+									for (Map.Entry<JDOLifecycleState, Map<Object, DirtyObjectID>> me : _dirtyObjectIDs.entrySet()) {
+										debug("afterCompletion(STATUS_COMMITTED).Runnable:   * " + me.getKey());
+										for (Object oid : me.getValue().keySet()) {
+											debug("afterCompletion(STATUS_COMMITTED).Runnable:     - " + oid);
+										}
+									}
+								}
+
 							} catch (Throwable e) {
-								logger.error("afterCompletion(STATUS_COMMITTED).Thread: " + e.getMessage(), e);
+								error("afterCompletion(STATUS_COMMITTED).Runnable: " + e.getMessage(), e);
 							}
 						}
 					};
-					t.start();
+
+					if (notificationDelayAfterCompletionMSec > 0) {
+						Thread t = new Thread(runnable);
+						t.start();
+					}
+					else
+						runnable.run();
 
 				} catch (Throwable e) {
-					logger.error("afterCompletion(STATUS_COMMITTED): " + e.getMessage(), e);
+					error("afterCompletion(STATUS_COMMITTED): " + e.getMessage(), e);
 				}
 			}
 			else if (status == Status.STATUS_ROLLEDBACK) {
-				logger.debug("afterCompletion(STATUS_ROLLEDBACK) called.");
+				if (logger.isDebugEnabled())
+					debug("afterCompletion(STATUS_ROLLEDBACK) called.");
+
 				dirtyObjectIDs = null;
 			}
 			else
-				logger.error("afterCompletion(...) called with unknown status: " + status, new Exception("Unknown status (" + status + ") in afterCompletion!"));
+				error("afterCompletion(...) called with unknown status: " + status, new Exception("Unknown status (" + status + ") in afterCompletion!"));
 		}
 
 		// IMHO no sync necessary, because one transaction should only be used by one thread.
@@ -190,7 +239,7 @@ public class JdoCacheBridgeDefault extends JdoCacheBridge
 
 			m.put(objectID, new DirtyObjectID(lifecycleStage, objectID, clazz.getName(), version, bridge.getCacheManagerFactory().nextDirtyObjectIDSerial()));
 		}
-	}
+	} // public static class CacheTransactionListener
 
 	private static Object getObjectID(Object object)
 	{
@@ -212,19 +261,30 @@ public class JdoCacheBridgeDefault extends JdoCacheBridge
 		CacheTransactionListener listener = (CacheTransactionListener)pm.getUserObject();
 		// we cannot unregister the CacheTransactionListener after the transaction is finished (pm.setUserObject fails) - hence we use the "dead" flag
 		if (listener == null || listener.isDead()) {
-			logger.debug("PersistenceManager.getUserObject() returned null or the returned listener is dead. Will create and add a CacheTransactionListener.");
+			if (logger.isDebugEnabled()) {
+				if (listener == null)
+					logger.debug("getCacheTransactionListener: PersistenceManager.getUserObject() returned null. Will create and add a CacheTransactionListener.");
+				else
+					logger.debug("getCacheTransactionListener: PersistenceManager.getUserObject() returned a dead listener ["+listener.getIdentityString()+"]. Will create and add a new CacheTransactionListener.");
+			}
+
 			listener = new CacheTransactionListener(this);
 			try {
 				TransactionManager tm = getCacheManagerFactory().getTransactionManager();
 				javax.transaction.Transaction tx = tm.getTransaction();
 				tx.registerSynchronization(listener);
 				pm.setUserObject(listener);
+
+				if (logger.isDebugEnabled())
+					logger.debug("getCacheTransactionListener: CacheTransactionListener ["+listener.getIdentityString()+"] registered as Synchronization in current transaction.");
 			} catch (Exception x) {
-				logger.error("getCacheTransactionListener: Could not register Synchronization!", x);
+				logger.error("getCacheTransactionListener: Could not register Synchronization! The CacheTransactionListener ["+listener.getIdentityString()+"] was NOT registered!", x);
 			}
 		}
-		else
-			logger.debug("PersistenceManager.getUserObject() returned a living CacheTransactionListener. No registration necessary.");
+		else {
+			if (logger.isDebugEnabled())
+				logger.debug("getCacheTransactionListener: PersistenceManager.getUserObject() returned a living CacheTransactionListener ["+listener.getIdentityString()+"]. No registration necessary.");
+		}
 
 		return listener;
 	}
