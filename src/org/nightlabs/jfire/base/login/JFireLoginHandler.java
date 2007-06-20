@@ -33,11 +33,13 @@ import javax.security.auth.login.LoginException;
 import javax.swing.SwingUtilities;
 
 import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.ui.PlatformUI;
 import org.nightlabs.base.NLBasePlugin;
 import org.nightlabs.jfire.base.JFireBasePlugin;
 import org.nightlabs.jfire.base.resource.Messages;
+import org.nightlabs.rcp.splash.SplashAlreadyTerminatedException;
 import org.nightlabs.rcp.splash.SplashScreen;
 
 /**
@@ -140,9 +142,28 @@ public class JFireLoginHandler implements ILoginHandler {
 			logger.error("Could not login using the specified program arguments!", x); //$NON-NLS-1$
 		}
 
-		if (SplashScreen.waitForVisibleSplash()) // isSplashVisible())
-			handleSplashLogin(loginContext, loginConfigModule, loginResult);
-		else
+		boolean loginDone = false;
+		if (SplashScreen.waitForVisibleSplash()) { // isSplashVisible())
+			try {
+				handleSplashLogin(loginContext, loginConfigModule, loginResult);
+				loginDone = true;
+			} catch (Exception x) {
+				// if it's a SplashAlreadyTerminatedException, we ignore it and silently switch to SWT login
+				if (ExceptionUtils.indexOfThrowable(x, SplashAlreadyTerminatedException.class) < 0) {
+					if (x instanceof LoginException)
+						throw (LoginException)x;
+					else if (x instanceof RuntimeException)
+						throw (RuntimeException)x;
+					else {
+						LoginException n = new LoginException(x.getMessage());
+						n.initCause(x);
+						throw n;
+					}
+				}
+			}
+		}
+
+		if (!loginDone)
 			handleSWTLogin(loginContext, loginConfigModule, loginResult);
 	}
 
