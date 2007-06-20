@@ -83,8 +83,8 @@ Here is an example:
 				10 and above 89, if you don't know what you're doing.
 -->
 <!ELEMENT init (depends*)>
-<!ATTLIST init bean CDATA>
-<!ATTLIST init method CDATA>
+<!ATTLIST init bean CDATA #REQUIRED>
+<!ATTLIST init method CDATA #REQUIRED>
 <!ATTLIST init priority CDATA #IMPLIED>
 
 <!--
@@ -115,8 +115,8 @@ Here is an example:
 				Same as the one in the other init declaration.
 -->
 <!ELEMENT depends EMPTY>
-<!ATTLIST depends module CDATA>
-<!ATTLIST depends archive CDATA>
-<!ATTLIST depends bean CDATA>
-<!ATTLIST depends method CDATA>
+<!ATTLIST depends module CDATA #REQUIRED>
+<!ATTLIST depends archive CDATA #REQUIRED>
+<!ATTLIST depends bean CDATA #REQUIRED>
+<!ATTLIST depends method CDATA #REQUIRED>
 

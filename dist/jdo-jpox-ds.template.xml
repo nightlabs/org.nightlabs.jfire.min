@@ -43,11 +43,11 @@ JBoss 3.2.x: end -->
 		<config-property name="DetachOnClose" type="boolean">false</config-property>
 		<config-property name="StringDefaultLength" type="int">255</config-property>
 
-<!-- we currently don't use any connection pooling at all, because there still is a jpox bug (deletions fail) -->
-<!--
+<!-- we currently don't use any connection pooling at all, because there still is a jpox bug (deletions fail)
+  Does this bug really still exist? Can't we workaround at that specific location with PeristenceManager.flush()?
+-->
 		<config-property name="ConnectionPoolingType" type="java.lang.String">Proxool</config-property>
 		<config-property name="ConnectionPoolingConfigurationFile" type="java.lang.String">jpox-proxool.properties</config-property>
--->
 <!--
 		<config-property name="ConnectionPoolingType" type="java.lang.String">DBCP</config-property>
 		<config-property name="ConnectionPoolingConfigurationFile" type="java.lang.String">jpox-dbcp.properties</config-property>
