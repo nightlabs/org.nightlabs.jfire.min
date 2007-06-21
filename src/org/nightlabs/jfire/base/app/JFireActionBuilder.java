@@ -51,6 +51,7 @@ extends DefaultActionBuilder
 		super.fillStatusLine(statusLine);
 		IContributionItem beginGroup = statusLine.find(StatusLineManager.BEGIN_GROUP);
 		statusLine.prependToGroup(StatusLineManager.BEGIN_GROUP, new LoginStateStatusLineContribution(Messages.getString("app.JFireActionBuilder.loginStatus"))); //$NON-NLS-1$
+		statusLine.prependToGroup(StatusLineManager.BEGIN_GROUP, new LocaleStatusLineContribution("Locale")); //$NON-NLS-1$
 		statusLine.remove(beginGroup);
 		statusLine.prependToGroup(StatusLineManager.MIDDLE_GROUP, beginGroup);
 	}

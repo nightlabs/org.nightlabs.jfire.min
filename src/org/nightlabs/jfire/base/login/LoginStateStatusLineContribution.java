@@ -98,10 +98,12 @@ implements LoginStateListener
 					throw new RuntimeException(e);
 				}
 				switch (loginState) {
-					case Login.LOGINSTATE_LOGGED_IN: text.setText(String.format(Messages.getString("login.LoginStateStatusLineContribution.loggedInStatus"), login.getUserID(), login.getWorkstationID(), login.getOrganisationID())); break; //$NON-NLS-1$
+					case Login.LOGINSTATE_LOGGED_IN: 
+						text.setText(String.format(Messages.getString("login.LoginStateStatusLineContribution.loggedInStatus"), login.getUserID(), login.getWorkstationID(), login.getOrganisationID())); break; //$NON-NLS-1$ 
 					case Login.LOGINSTATE_LOGGED_OUT: text.setText(Messages.getString("login.LoginStateStatusLineContribution.loggedOutStatus")); break; //$NON-NLS-1$
 					case Login.LOGINSTATE_OFFLINE: text.setText(Messages.getString("login.LoginStateStatusLineContribution.offlineStatus")); break; //$NON-NLS-1$
 				}
+				text.setToolTipText(text.getText());
 			}
 		});
 	}	
