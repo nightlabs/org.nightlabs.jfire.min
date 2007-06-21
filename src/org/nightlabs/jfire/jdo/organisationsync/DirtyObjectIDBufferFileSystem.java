@@ -41,7 +41,7 @@ import org.apache.log4j.Logger;
 import org.nightlabs.jdo.ObjectIDUtil;
 
 /**
- * @author unassigned
+ * @author Marco Schulze - Marco at NightLabs dot de
  * @author Marc Klinger - marc[at]nightlabs[dot]de
  */
 public class DirtyObjectIDBufferFileSystem
