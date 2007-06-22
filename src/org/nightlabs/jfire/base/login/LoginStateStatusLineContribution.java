@@ -72,8 +72,11 @@ implements LoginStateListener
 		text.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		// Set some dummy text to give the item some width.
 		text.setText("********@************ on *********************"); //$NON-NLS-1$
-		if (earlyLoginText != null)
+		if (earlyLoginText != null) { // if the login happened already before UI creation
 			text.setText(earlyLoginText);
+			text.setToolTipText(earlyLoginText);
+			earlyLoginText = null;
+		}
 		wrapper.addDisposeListener(new DisposeListener() {
 			public void widgetDisposed(DisposeEvent arg0) {
 				try {
@@ -93,19 +96,30 @@ implements LoginStateListener
 	{
 		Display.getDefault().asyncExec(new Runnable() {
 			public void run() {
-				Login login = null;
-				try {
-					login = Login.getLogin(false);
-				} catch (LoginException e) {
-					throw new RuntimeException(e);
-				}
+				Login login = Login.sharedInstance();
+
+				String txt = null;
 				switch (loginState) {
 					case Login.LOGINSTATE_LOGGED_IN: 
-						text.setText(String.format(Messages.getString("login.LoginStateStatusLineContribution.loggedInStatus"), login.getUserID(), login.getWorkstationID(), login.getOrganisationID())); break; //$NON-NLS-1$ 
-					case Login.LOGINSTATE_LOGGED_OUT: text.setText(Messages.getString("login.LoginStateStatusLineContribution.loggedOutStatus")); break; //$NON-NLS-1$
-					case Login.LOGINSTATE_OFFLINE: text.setText(Messages.getString("login.LoginStateStatusLineContribution.offlineStatus")); break; //$NON-NLS-1$
+						txt = String.format(Messages.getString("login.LoginStateStatusLineContribution.loggedInStatus"), login.getUserID(), login.getWorkstationID(), login.getOrganisationID()); //$NON-NLS-1$
+						break; 
+					case Login.LOGINSTATE_LOGGED_OUT: 
+						txt = Messages.getString("login.LoginStateStatusLineContribution.loggedOutStatus"); //$NON-NLS-1$
+						break; 
+					case Login.LOGINSTATE_OFFLINE: 
+						txt = Messages.getString("login.LoginStateStatusLineContribution.offlineStatus"); //$NON-NLS-1$
+						break; 
 				}
-				text.setToolTipText(text.getText());
+
+				if (text == null || text.isDisposed()) {
+					earlyLoginText = txt;
+					return;
+				}
+
+				if (txt != null) {
+					text.setText(txt);
+					text.setToolTipText(txt);
+				}
 			}
 		});
 	}	
