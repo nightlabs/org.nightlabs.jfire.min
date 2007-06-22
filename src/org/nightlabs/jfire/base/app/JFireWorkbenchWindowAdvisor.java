@@ -27,15 +27,19 @@
 package org.nightlabs.jfire.base.app;
 
 import org.apache.log4j.Logger;
+import org.eclipse.jface.action.StatusLineManager;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.WorkbenchException;
 import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
-
 import org.nightlabs.base.action.ContributionItemSetRegistry;
 import org.nightlabs.base.editor.Editor2PerspectiveRegistry;
 import org.nightlabs.base.extensionpoint.EPProcessorException;
 import org.nightlabs.base.part.PartVisibilityTracker;
+import org.nightlabs.base.resource.Messages;
+import org.nightlabs.base.util.RCPUtil;
+import org.nightlabs.jfire.base.login.LoginStateStatusLineContribution;
 import org.nightlabs.rcp.splash.SplashHandlingWorkbenchWindowAdvisor;
 
 public class JFireWorkbenchWindowAdvisor 
@@ -51,9 +55,9 @@ extends SplashHandlingWorkbenchWindowAdvisor
 		configurer.setShowPerspectiveBar(true);
 		configurer.setShowMenuBar(true);
 		configurer.setShowCoolBar(true);
-    configurer.setShowProgressIndicator(true);
+		configurer.setShowProgressIndicator(true);
 	}
-	
+
 	/**
 	 * @see org.eclipse.ui.application.WorkbenchWindowAdvisor#createActionBarAdvisor(org.eclipse.ui.application.IActionBarConfigurer)
 	 */
@@ -73,7 +77,7 @@ extends SplashHandlingWorkbenchWindowAdvisor
 		} catch (EPProcessorException e) {
 			logger.error("There occured an error getting the ContributionItemSetRegistry", e); //$NON-NLS-1$
 		}
-		
+
 		// activates the editor2Perspective check
 		Editor2PerspectiveRegistry.sharedInstance().activate();
 	}
@@ -96,5 +100,21 @@ extends SplashHandlingWorkbenchWindowAdvisor
 		// TODO: dont forget JobErrorNotificationManager
 //		PlatformUI.getWorkbench().getProgressService().setJobErrorNotificationManager(new JobErrorNotificationManager());		
 	}
-		
+
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * Additionally adds IWindowTrims to the created Window for displaying the logged in user and current locale 
+	 * </p>
+	 * @see org.eclipse.ui.application.WorkbenchWindowAdvisor#createWindowContents(org.eclipse.swt.widgets.Shell)
+	 */
+	@Override
+	public void createWindowContents(Shell shell) {
+		super.createWindowContents(shell);
+		LocaleStatusLineContribution locale = new LocaleStatusLineContribution("Locale");
+		LoginStateStatusLineContribution loginState = new LoginStateStatusLineContribution(Messages.getString("app.JFireActionBuilder.loginStatus"));
+		RCPUtil.addContributionItemTrim(shell, loginState, StatusLineManager.class.getName());
+		RCPUtil.addContributionItemTrim(shell, locale, StatusLineManager.class.getName());
+	}
+
 }

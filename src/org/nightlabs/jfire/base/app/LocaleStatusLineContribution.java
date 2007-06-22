@@ -16,8 +16,9 @@ import org.nightlabs.base.composite.XComposite;
 import org.nightlabs.base.language.LanguageManager;
 
 /**
+ * StatusLine Contribution that displays the current Locale to the user.
+ * 
  * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] de -->
- * @author Marc Klinger - marc[at]nightlabs[dot]de
  */
 public class LocaleStatusLineContribution 
 extends AbstractContributionItem
@@ -55,7 +56,7 @@ extends AbstractContributionItem
 		image.setLayoutData(new GridData());
 		text = new Label(wrapper, SWT.NONE);		
 		text.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		text.setText(Locale.getDefault().getDisplayName());
+		text.setText(Locale.getDefault().getDisplayCountry());
 		return wrapper;
 	}
 

@@ -70,6 +70,8 @@ implements LoginStateListener
 		image.setLayoutData(new GridData());
 		text = new Label(wrapper, SWT.NONE);		
 		text.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		// Set some dummy text to give the item some width.
+		text.setText("********@************ on *********************"); //$NON-NLS-1$
 		if (earlyLoginText != null)
 			text.setText(earlyLoginText);
 		wrapper.addDisposeListener(new DisposeListener() {
