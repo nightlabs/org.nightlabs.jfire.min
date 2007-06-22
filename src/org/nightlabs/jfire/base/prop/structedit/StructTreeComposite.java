@@ -25,7 +25,9 @@ public class StructTreeComposite extends AbstractTreeComposite implements Langua
 	private String currLanguageId;
 
 	public StructTreeComposite(Composite parent, boolean init, LanguageChooser langChooser) {
-		super(parent, SWT.BORDER | SWT.H_SCROLL, true, init, false);
+		super(parent, getBorderStyle(parent) | SWT.H_SCROLL, true, init, false);
+		getGridLayout().marginHeight = 2;
+		getGridLayout().marginWidth = 2;
 		langChooser.addLanguageChangeListener(this);
 		this.currLanguageId = langChooser.getLanguage().getLanguageID();		
 	}

@@ -56,7 +56,7 @@ extends AbstractContributionItem
 		image.setLayoutData(new GridData());
 		text = new Label(wrapper, SWT.NONE);		
 		text.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		text.setText(Locale.getDefault().getDisplayCountry());
+		text.setText(Locale.getDefault().getDisplayLanguage());
 		return wrapper;
 	}
 
