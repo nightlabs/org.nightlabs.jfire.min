@@ -32,12 +32,12 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusAdapter;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
-import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.nightlabs.base.composite.DisguisedText;
+import org.nightlabs.base.composite.XComposite;
 import org.nightlabs.base.composite.DisguisedText.LabeledDisguisedText;
 import org.nightlabs.jfire.base.prop.edit.AbstractDataFieldEditor;
 import org.nightlabs.jfire.base.prop.edit.AbstractDataFieldEditorFactory;
@@ -77,7 +77,7 @@ public class DisguisedRegexDataFieldEditor extends AbstractDataFieldEditor<Regex
 	 * @see org.nightlabs.jfire.base.prop.edit.DataFieldEditor#createControl(org.eclipse.swt.widgets.Composite)
 	 */
 	public Control createControl(Composite parent) {
-		composite = new DisguisedTextEditorComposite(parent,this);
+		composite = new DisguisedTextEditorComposite(parent, this);
 		return composite;
 	}
 
@@ -106,7 +106,7 @@ public class DisguisedRegexDataFieldEditor extends AbstractDataFieldEditor<Regex
 		data.setText(composite.getText());
 	}
 	
-	protected class DisguisedTextEditorComposite extends Composite {
+	protected class DisguisedTextEditorComposite extends XComposite {
 		
 		private Text editorText;
 		private Label editorLabel;
@@ -119,17 +119,17 @@ public class DisguisedRegexDataFieldEditor extends AbstractDataFieldEditor<Regex
 		};
 		
 		public DisguisedTextEditorComposite(Composite parent, DisguisedRegexDataFieldEditor editor) {
-			super(parent,SWT.NONE);
+			super(parent, SWT.NONE, LayoutMode.TIGHT_WRAPPER, LayoutDataMode.NONE);
 			this.editor = editor;
-			this.setSize(0,0);
-			GridData gd = new GridData();
-			gd.widthHint = 0;
-			gd.heightHint = 0;
-			this.setLayoutData(gd);
+			// TODO: this is a quickfix for the Formtoolkit Boarderpainter, which paints to the outside of the elements -> there needs to be space in the enclosing composite for the borders
+			getGridLayout().verticalSpacing = 2;
+			getGridLayout().marginHeight = 2;
+			getGridLayout().marginWidth = 2;
+
 //			LabeledDisguisedText ldt = DisguisedText.createLabeledText(getPropStructField().getFieldName().getText(),parent);
 			// TODO: Reactivate above line
 			StructField field = editor.getStructField();
-			LabeledDisguisedText ldt = DisguisedText.createLabeledText(field.getName().getText(Locale.getDefault().getLanguage()),parent);
+			LabeledDisguisedText ldt = DisguisedText.createLabeledText(field.getName().getText(Locale.getDefault().getLanguage()), parent);
 			editorLabel = ldt.getLabelControl();
 			editorText = ldt.getTextControl(); 
 			editorText.addFocusListener(focusListener);

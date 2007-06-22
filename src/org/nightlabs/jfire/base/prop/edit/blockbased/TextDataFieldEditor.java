@@ -30,7 +30,6 @@ import org.apache.log4j.Logger;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Display;
 import org.nightlabs.jfire.base.prop.edit.AbstractDataFieldEditor;
 import org.nightlabs.jfire.base.prop.edit.AbstractDataFieldEditorFactory;
 import org.nightlabs.jfire.prop.datafield.TextDataField;
@@ -82,7 +81,7 @@ public class TextDataFieldEditor extends AbstractDataFieldEditor<TextDataField> 
 	 */
 	public Control createControl(Composite parent) {
 		if (composite == null) {
-			composite = new TextDataFieldComposite(this,parent,SWT.NONE,this);
+			composite = new TextDataFieldComposite(this, parent, SWT.NONE, this);
 		}
 		composite.refresh();
 		return composite;

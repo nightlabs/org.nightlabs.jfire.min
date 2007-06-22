@@ -1,14 +1,16 @@
 package org.nightlabs.jfire.base.prop.structedit;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 
-import org.eclipse.jface.viewers.ISelectionChangedListener;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
-import org.nightlabs.base.composite.ComboComposite;
+import org.nightlabs.base.composite.CComboComposite;
 import org.nightlabs.base.composite.XComposite;
 import org.nightlabs.jfire.prop.structfield.DateStructField;
 import org.nightlabs.l10n.DateFormatter;
@@ -20,7 +22,6 @@ public class DateStructFieldEditor extends AbstractStructFieldEditor<DateStructF
 		}
 	}
 
-	private DateStructField dateField;
 	private DateStructFieldEditComposite comp;
 
 	@Override
@@ -31,33 +32,38 @@ public class DateStructFieldEditor extends AbstractStructFieldEditor<DateStructF
 
 	@Override
 	protected void setSpecialData(DateStructField field) {
-		dateField = field;
 		comp.setField(field);
 	}
 }
 
 class DateStructFieldEditComposite extends XComposite {
 	private DateStructField dateField;
-	private ComboComposite<String> dateFormatCombo;
+	private CComboComposite<String> dateFormatCombo;
 	private Label exampleLabel;
 	private XComposite comp;
 	private DateStructFieldEditor dateStructFieldEditor;
 	
 	public DateStructFieldEditComposite(Composite parent, int style, DateStructFieldEditor editor) {
-		super(parent, style | SWT.NONE, LayoutMode.LEFT_RIGHT_WRAPPER, LayoutDataMode.GRID_DATA_HORIZONTAL);
+		super(parent, style | SWT.NONE, LayoutMode.ORDINARY_WRAPPER, LayoutDataMode.GRID_DATA_HORIZONTAL);
 		
 		this.dateStructFieldEditor = editor;
 		
-		dateFormatCombo = new ComboComposite<String>(this, SWT.NONE);
-		System.out.println(dateFormatCombo.getGridData().widthHint);
+		dateFormatCombo = new CComboComposite<String>(new ArrayList<String>(0), this, SWT.NONE);
+		GridLayout layout = dateFormatCombo.getGridLayout();
+//	 TODO: this is a quickfix for the Formtoolkit Boarderpainter, which paints to the outside of the 
+//					elements -> there needs to be space in the enclosing composite for the borders
+		layout.verticalSpacing = 0;
+		layout.marginHeight = 2;
+		layout.marginWidth = 2;
+		
 		comp = new XComposite(this, SWT.NONE, LayoutMode.LEFT_RIGHT_WRAPPER, LayoutDataMode.GRID_DATA_HORIZONTAL);
 		exampleLabel = new Label(comp, SWT.NONE);
 		exampleLabel.setText("Preview:  ");
 		
-		dateFormatCombo.setInput(Arrays.asList(DateFormatter.FLAG_NAMES));
+		dateFormatCombo.setItems(Arrays.asList(DateFormatter.FLAG_NAMES));
 		
-		dateFormatCombo.addSelectionChangedListener(new ISelectionChangedListener() {
-			public void selectionChanged(SelectionChangedEvent event) {
+		dateFormatCombo.addSelectionListener(new SelectionListener() {
+			private void selectionChanged(SelectionEvent event) {
 				int selectionIndex = dateFormatCombo.getSelectionIndex();
 				dateField.setDateTimeEditFlags(DateFormatter.FLAGS[selectionIndex]);
 				dateStructFieldEditor.setChanged();
@@ -65,6 +71,14 @@ class DateStructFieldEditComposite extends XComposite {
 				exampleLabel.setText("Preview:  " + DateFormatter.formatDate(new Date(), DateFormatter.FLAGS[selectionIndex]));
 				exampleLabel.pack();
 				exampleLabel.getParent().layout();
+			}
+
+			public void widgetDefaultSelected(SelectionEvent e) {
+				selectionChanged(e);
+			}
+
+			public void widgetSelected(SelectionEvent e) {
+				selectionChanged(e);
 			}
 		});
 	}

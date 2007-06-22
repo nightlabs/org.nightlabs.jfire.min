@@ -112,10 +112,10 @@ extends AbstractDataFieldEditor<ImageDataField>
 		gd.horizontalSpan = 3;
 		gd.horizontalAlignment = SWT.LEFT;
 		
-		filenameTextbox = new Text(group, SWT.BORDER);
+		filenameTextbox = new Text(group, XComposite.getBorderStyle(parent));
 		filenameTextbox.setEditable(false);
 		filenameTextbox.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		openFileChooserButton = new Button(group, SWT.PUSH);		
+		openFileChooserButton = new Button(group, SWT.NONE);		
 		sizeLabel = new Label(group, SWT.NONE);
 		
 		imageLabel = new Label(group, SWT.NONE);

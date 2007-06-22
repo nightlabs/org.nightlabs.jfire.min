@@ -80,9 +80,13 @@ public class RegexDataFieldEditor extends AbstractDataFieldEditor<RegexDataField
 	public Control createControl(Composite parent) {
 		comp = new XComposite(parent, SWT.NONE, LayoutMode.TIGHT_WRAPPER, LayoutDataMode.GRID_DATA_HORIZONTAL);
 		comp.getGridLayout().horizontalSpacing = 0;
-		comp.getGridLayout().verticalSpacing = 0;
+// TODO: this is a quickfix for the Formtoolkit Boarderpainter, which paints to the 
+// 	outside of the elements -> there needs to be space in the enclosing composite for the borders
+		comp.getGridLayout().verticalSpacing = 2;
+		comp.getGridLayout().marginHeight = 2;
+		comp.getGridLayout().marginWidth = 2;
 		title = new Label(comp, SWT.NONE);
-		valueText = new Text(comp, SWT.BORDER);
+		valueText = new Text(comp, comp.getBorderStyle());
 		valueText.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
 				if (!ignoreModify)

@@ -60,11 +60,11 @@ class RegexStructFieldEditComposite extends XComposite {
 	private String regexOrig;
 
 	public RegexStructFieldEditComposite(Composite parent, int style, RegexStructFieldEditor editor) {
-		super(parent, style, LayoutMode.LEFT_RIGHT_WRAPPER, LayoutDataMode.GRID_DATA_HORIZONTAL);
+		super(parent, style, LayoutMode.ORDINARY_WRAPPER, LayoutDataMode.GRID_DATA_HORIZONTAL);
 		this.editor = editor;
 
 		new Label(this, SWT.NONE).setText("Regular expression:");
-		regexTextField = new Text(this, SWT.BORDER);
+		regexTextField = new Text(this, getBorderStyle());
 		regexTextField.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		
 		regexTextField.addModifyListener(new ModifyListener() {

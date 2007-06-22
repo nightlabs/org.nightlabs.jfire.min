@@ -10,7 +10,7 @@ import org.apache.log4j.Logger;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
@@ -91,7 +91,7 @@ public class DateDataFieldEditor extends AbstractDataFieldEditor<DateDataField> 
 		
 		title.setText(dateStructField.getName().getText(language.getLanguageID()));		
 		dateTimeEdit = new DateTimeEdit(comp, dateStructField.getDateTimeEditFlags());
-		dateTimeEdit.getGridData().grabExcessHorizontalSpace = true;
+		dateTimeEdit.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));		
 		dateTimeEdit.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
 				setChanged(true);

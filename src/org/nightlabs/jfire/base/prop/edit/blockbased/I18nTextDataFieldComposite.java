@@ -67,14 +67,14 @@ public class I18nTextDataFieldComposite extends AbstractDataFieldComposite {
 		
 		GridLayout layout = new GridLayout();
 		setLayout(layout);
-		layout.horizontalSpacing = 0;
+		layout.horizontalSpacing = 2;
 		layout.verticalSpacing = 0;
-		layout.marginHeight = 0;
-		layout.marginWidth = 0;
+		layout.marginHeight = 2;
+		layout.marginWidth = 2;
 		GridData gridData = new GridData(GridData.FILL_BOTH);
 		setLayoutData(gridData);
 		
-		fieldName = new Label(this,SWT.PUSH);
+		fieldName = new Label(this, SWT.NONE);
 		GridData nameData = new GridData(GridData.FILL_HORIZONTAL);
 		nameData.grabExcessHorizontalSpace = true;
 		fieldName.setLayoutData(nameData);

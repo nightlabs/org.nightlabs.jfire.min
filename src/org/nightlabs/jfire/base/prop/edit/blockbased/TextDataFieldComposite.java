@@ -43,6 +43,7 @@ public class TextDataFieldComposite extends AbstractDataFieldComposite {
 
 	private Label fieldName;
 	private Text fieldText;
+//	private LabeledText fieldText;
 	private TextDataFieldEditor editor;
 	private ModifyListener modifyListener;
 	
@@ -58,23 +59,24 @@ public class TextDataFieldComposite extends AbstractDataFieldComposite {
 		if (!(parent.getLayout() instanceof GridLayout))
 			throw new IllegalArgumentException("Parent should have a GridLayout!");
 		
-		this.editor = editor;
+		this.editor = editor; 
 		
 		GridLayout layout = new GridLayout();
 		setLayout(layout);
 		layout.horizontalSpacing = 0;
-		layout.verticalSpacing = 0;
-		layout.marginHeight = 0;
-		layout.marginWidth = 0;
+// TODO: this is a quickfix for the Formtoolkit Boarderpainter, which paints to the outside of the elements -> there needs to be space in the enclosing composite for the borders
+		layout.verticalSpacing = 2;
+		layout.marginHeight = 2;
+		layout.marginWidth = 2;
 		GridData gridData = new GridData(GridData.FILL_BOTH);
 		setLayoutData(gridData);
 		
-		fieldName = new Label(this,SWT.PUSH);
+		fieldName = new Label(this, SWT.NONE);
 		GridData nameData = new GridData(GridData.FILL_HORIZONTAL);
 		nameData.grabExcessHorizontalSpace = true;
 		fieldName.setLayoutData(nameData);
 		
-		fieldText = new Text(this, SWT.PUSH | SWT.BORDER | SWT.SINGLE);
+		fieldText = new Text(this, getBorderStyle());
 		GridData textData = new GridData(GridData.FILL_HORIZONTAL);
 		textData.grabExcessHorizontalSpace = true;
 		fieldText.setEditable(true);
@@ -82,6 +84,8 @@ public class TextDataFieldComposite extends AbstractDataFieldComposite {
 		fieldText.setLayoutData(textData);
 		this.modifyListener = modListener;
 		fieldText.addModifyListener(modifyListener);
+		
+//		fieldText = new LabeledText(this, "");
 	}
 
 	/**
@@ -89,6 +93,12 @@ public class TextDataFieldComposite extends AbstractDataFieldComposite {
 	 */
 	public void refresh() {
 		StructField field = editor.getStructField();
+//		fieldText.setCaption(field.getName().getText());
+//		if (editor.getDataField().getText() == null)
+//			fieldText.setText("");
+//		else
+//			fieldText.setText(editor.getDataField().getText());
+		
 		fieldName.setText(field.getName().getText());
 		if (editor.getDataField().getText() == null)
 			fieldText.setText("");

@@ -40,6 +40,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+import org.nightlabs.base.composite.XComposite;
 import org.nightlabs.jfire.base.prop.edit.DataFieldEditor;
 import org.nightlabs.jfire.base.prop.edit.DataFieldEditorChangeListener;
 import org.nightlabs.jfire.base.prop.edit.DataFieldEditorFactory;
@@ -133,7 +134,7 @@ public class CommentDataBlockEditor extends AbstractDataBlockEditor
 			labelTitle = new Label(parent,SWT.NONE);
 			labelTitle.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 			
-			textComment = new Text(parent, SWT.MULTI | SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);
+			textComment = new Text(parent, SWT.MULTI | XComposite.getBorderStyle(parent) | SWT.V_SCROLL | SWT.H_SCROLL);
 			GridData commentLData = new GridData();
 			commentLData.grabExcessHorizontalSpace = true;
 			commentLData.grabExcessVerticalSpace = true;

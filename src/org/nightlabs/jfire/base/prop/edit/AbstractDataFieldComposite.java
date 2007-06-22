@@ -27,11 +27,12 @@
 package org.nightlabs.jfire.base.prop.edit;
 
 import org.eclipse.swt.widgets.Composite;
+import org.nightlabs.base.composite.XComposite;
 
 /**
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  */
-public abstract class AbstractDataFieldComposite extends Composite { 
+public abstract class AbstractDataFieldComposite extends XComposite { 
 	public abstract void refresh();
 	
 	/**

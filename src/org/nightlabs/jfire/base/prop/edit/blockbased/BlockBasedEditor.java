@@ -109,6 +109,9 @@ public class BlockBasedEditor extends AbstractBlockBasedEditor {
 		Display.getDefault().asyncExec( 
 			new Runnable() {
 				public void run() {
+					if (groupedContentComposite == null || groupedContentComposite.isDisposed())
+						return;
+					
 					getPropStructure().explodeProperty(propSet);
 					
 					// get the ordered dataBlocks

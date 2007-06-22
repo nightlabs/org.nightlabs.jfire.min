@@ -103,7 +103,7 @@ class NumberStructFieldEditComposite extends XComposite {
 		
 		comp = new XComposite(parent, SWT.NONE, LayoutMode.TIGHT_WRAPPER, LayoutDataMode.GRID_DATA_HORIZONTAL, 5);
 		new Label(comp, SWT.NONE).setText("Digits: ");
-		digitSpinner = new Spinner(comp, SWT.BORDER);
+		digitSpinner = new Spinner(comp, getBorderStyle());
 		digitSpinner.setMinimum(0);
 		digitSpinner.setMaximum(5);
 		digitSpinner.setSelection(0);

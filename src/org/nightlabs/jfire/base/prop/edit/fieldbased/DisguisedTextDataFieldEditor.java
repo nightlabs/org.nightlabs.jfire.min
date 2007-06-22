@@ -38,6 +38,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.nightlabs.base.composite.DisguisedText;
+import org.nightlabs.base.composite.XComposite;
 import org.nightlabs.base.composite.DisguisedText.LabeledDisguisedText;
 import org.nightlabs.jfire.base.prop.edit.AbstractDataFieldEditor;
 import org.nightlabs.jfire.base.prop.edit.AbstractDataFieldEditorFactory;
@@ -104,7 +105,7 @@ public class DisguisedTextDataFieldEditor extends AbstractDataFieldEditor<TextDa
 		data.setText(composite.getText());
 	}
 	
-	protected class DisguisedTextEditorComposite extends Composite {
+	protected class DisguisedTextEditorComposite extends XComposite {
 		
 		private Text editorText;
 		private Label editorLabel;
@@ -117,13 +118,9 @@ public class DisguisedTextDataFieldEditor extends AbstractDataFieldEditor<TextDa
 		};
 		
 		public DisguisedTextEditorComposite(Composite parent, DisguisedTextDataFieldEditor editor) {
-			super(parent,SWT.NONE);
+			super(parent, SWT.NONE);
 			this.editor = editor;
-			this.setSize(0,0);
-			GridData gd = new GridData();
-			gd.widthHint = 0;
-			gd.heightHint = 0;
-			this.setLayoutData(gd);
+			
 //			LabeledDisguisedText ldt = DisguisedText.createLabeledText(getPropStructField().getFieldName().getText(),parent);
 			// TODO: Reactivate above line
 			StructField field = editor.getStructField();

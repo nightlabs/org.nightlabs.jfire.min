@@ -79,22 +79,19 @@ public class ImageStructFieldEditor extends AbstractStructFieldEditor<ImageStruc
 }
 
 class ImageStructFieldEditorComposite extends XComposite implements Serializable {
+	private static final long serialVersionUID = 1L;
 	private Spinner sizeSpinner;
 	private ListComposite<String> formatList;
 	private ImageStructField imageField;
 	private ImageStructFieldEditor editor;
 	
 	public ImageStructFieldEditorComposite(Composite parent, ImageStructFieldEditor imageStructFieldEditor) {
-		super(parent, SWT.NONE, LayoutMode.TIGHT_WRAPPER, LayoutDataMode.GRID_DATA, 2);
+		super(parent, SWT.NONE, LayoutMode.ORDINARY_WRAPPER, LayoutDataMode.GRID_DATA, 2);
 		
 		this.editor = imageStructFieldEditor;
 		new Label(this, SWT.NONE).setText("Maximum size (KB): ");
-		sizeSpinner = new Spinner(this, SWT.BORDER);
+		sizeSpinner = new Spinner(this, getBorderStyle());
 		sizeSpinner.setMaximum(Integer.MAX_VALUE);		
-		
-//		XComposite comp = new XComposite(this, SWT.NONE, LayoutMode.TIGHT_WRAPPER, LayoutDataMode.GRID_DATA);
-//		comp.getGridData().heightHint = 250;
-//		comp.getGridData().horizontalSpan = 2;
 		
 		new Label(this, SWT.NONE); new Label(this, SWT.NONE); // Spacers
 		
@@ -105,6 +102,7 @@ class ImageStructFieldEditorComposite extends XComposite implements Serializable
 		GridData gd = new GridData();
 		
 		XComposite editComp = new XComposite(extComp, SWT.NONE, LayoutMode.TIGHT_WRAPPER, LayoutDataMode.GRID_DATA, 3);
+		editComp.getGridLayout().marginWidth = 2;
 		formatList = new ListComposite<String>(editComp, SWT.V_SCROLL);
 		formatList.setLabelProvider(new LabelProvider() {
 			@Override
@@ -122,7 +120,7 @@ class ImageStructFieldEditorComposite extends XComposite implements Serializable
 		remButton.setText("-");
 		remButton.setLayoutData(gd);
 		
-		final Text newFormat = new Text(editComp, SWT.BORDER);
+		final Text newFormat = new Text(editComp, getBorderStyle());
 		gd = new GridData(GridData.FILL_HORIZONTAL);
 		gd.verticalSpan = 2;
 		gd.verticalAlignment = SWT.CENTER;

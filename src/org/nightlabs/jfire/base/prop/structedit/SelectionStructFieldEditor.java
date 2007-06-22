@@ -68,16 +68,18 @@ class SelectionStructFieldEditComposite extends XComposite implements LanguageCh
 
 	public SelectionStructFieldEditComposite(Composite parent, int style, SelectionStructFieldEditor editor,
 			LanguageChooser langChooser) {
-		super(parent, style, LayoutMode.TIGHT_WRAPPER, LayoutDataMode.GRID_DATA, 2);
+		super(parent, style, LayoutMode.ORDINARY_WRAPPER, LayoutDataMode.GRID_DATA, 2);
+		getGridLayout().horizontalSpacing = 2;
+		
 		currLanguage = langChooser.getLanguage();
 		langChooser.addLanguageChangeListener(this);
 		this.editor = editor;
 
 		GridData data = new GridData();
 
-		Composite wrapper = new XComposite(this, SWT.NONE, LayoutMode.TIGHT_WRAPPER, LayoutDataMode.GRID_DATA);
+		XComposite wrapper = new XComposite(this, SWT.NONE, LayoutMode.TIGHT_WRAPPER, LayoutDataMode.GRID_DATA);
 		new Label(wrapper, SWT.NONE).setText("Possible values:");
-		valueList = new ListComposite<StructFieldValueName>(wrapper, SWT.SINGLE | SWT.BORDER | SWT.H_SCROLL);
+		valueList = new ListComposite<StructFieldValueName>(wrapper, SWT.SINGLE | getBorderStyle() | SWT.H_SCROLL);
 		valueList.setLabelProvider(new MyLabelProvider());
 		valueList.setLayoutData(new GridData(GridData.FILL_BOTH));
 		valueList.getList().addSelectionListener(new SelectionListener() {
@@ -91,6 +93,7 @@ class SelectionStructFieldEditComposite extends XComposite implements LanguageCh
 		wrapper.layout(true, true);
 
 		wrapper = new XComposite(this, SWT.NONE, LayoutMode.TIGHT_WRAPPER, LayoutDataMode.GRID_DATA_HORIZONTAL, 2);
+		wrapper.getGridLayout().marginWidth = 2;
 		addValueButton = new Button(wrapper, SWT.NONE);
 		addValueButton.setText("+");
 		data.widthHint = 30;
@@ -104,8 +107,9 @@ class SelectionStructFieldEditComposite extends XComposite implements LanguageCh
 			}
 		});
 
-		valueText = new Text(wrapper, SWT.BORDER);
+		valueText = new Text(wrapper, getBorderStyle());
 		data = new GridData(GridData.FILL_HORIZONTAL);
+		data.grabExcessHorizontalSpace = true;
 		data.verticalSpan = 2;
 		data.verticalAlignment = SWT.CENTER;
 		valueText.setLayoutData(data);
