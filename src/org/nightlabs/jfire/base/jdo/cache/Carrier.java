@@ -198,6 +198,9 @@ public class Carrier
 	private void collectObjectIDs(Set processedObjects, Set objectIDs, Object object)
 	throws IllegalArgumentException, IllegalAccessException
 	{
+		if (object == null) // silently ignore nulls since we call this method recursively (see below) and this really might be null
+			return;
+
 		if (processedObjects.contains(object))
 			return;
 

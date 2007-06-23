@@ -118,14 +118,14 @@ public class Cache
 			long lastErrorDT = 0;
 			JDOManager jdoManager = null;
 
-			// WORKAROUND: For classloading deadlock (java/osgi bug - give the Login some time to do its own classloading necessary due to LoginStateListeners being triggered)
-			logger.info("NotificationThread.run: WORKAROUND for java classloading bug: delaying start of NotificationThread...");
-			try {
-				Thread.sleep(10000);
-			} catch (InterruptedException e1) {
-				// ignore silently
-			}
-			logger.info("NotificationThread.run: WORKAROUND for java classloading bug: delayed start of NotificationThread - continuing now!");
+//			// WORKAROUND: For classloading deadlock (java/osgi bug - give the Login some time to do its own classloading necessary due to LoginStateListeners being triggered)
+//			logger.info("NotificationThread.run: WORKAROUND for java classloading bug: delaying start of NotificationThread...");
+//			try {
+//				Thread.sleep(10000);
+//			} catch (InterruptedException e1) {
+//				// ignore silently
+//			}
+//			logger.info("NotificationThread.run: WORKAROUND for java classloading bug: delayed start of NotificationThread - continuing now!");
 
 			if (logger.isDebugEnabled())
 				logger.debug("NotificationThread.run: DEBUG_TEST=" + DEBUG_TEST);
