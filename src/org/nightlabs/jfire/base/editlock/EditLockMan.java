@@ -20,7 +20,7 @@ import org.nightlabs.base.job.Job;
 import org.nightlabs.base.util.RCPUtil;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jdo.ObjectID;
-import org.nightlabs.jfire.base.DeadlockWorkaroundSharedJobMutex;
+import org.nightlabs.jfire.base.DeadlockWorkaroundSharedMutex;
 import org.nightlabs.jfire.base.resource.Messages;
 import org.nightlabs.jfire.editlock.AcquireEditLockResult;
 import org.nightlabs.jfire.editlock.EditLock;
@@ -327,7 +327,7 @@ public class EditLockMan
 
 
 		EditLockCarrier oldEditLockCarrier;
-		synchronized (DeadlockWorkaroundSharedJobMutex.sharedInstance()) // FIXME: Deadlock workaround 
+		synchronized (DeadlockWorkaroundSharedMutex.getMutex()) // FIXME: Deadlock workaround 
 		{
 			synchronized (editLockCarrierMutex) {
 				oldEditLockCarrier = objectID2EditLockCarrier.get(objectID);

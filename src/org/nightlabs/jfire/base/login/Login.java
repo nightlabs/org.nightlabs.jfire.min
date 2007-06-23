@@ -52,6 +52,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 import org.nightlabs.base.exceptionhandler.ExceptionHandlerRegistry;
 import org.nightlabs.base.exceptionhandler.ExceptionHandlerRegistry.Mode;
@@ -408,11 +409,13 @@ implements InitialContextProvider
 						{
 							public void run()
 							{
+								Shell shell = RCPUtil.getActiveWorkbenchShell();
 								MessageDialog.openInformation(
-										RCPUtil.getActiveWorkbenchShell(),
+										shell,
 										Messages.getString("login.Login.rebootDialogTitle"), //$NON-NLS-1$
 										Messages.getString("login.Login.rebootDialogMessage")); //$NON-NLS-1$
-								PlatformUI.getWorkbench().restart();
+
+								safeRestart();
 							}
 						});
 					}
@@ -433,6 +436,37 @@ implements InitialContextProvider
 		}
 	};
 	// not logged in by now
+
+	/**
+	 * This method is necessary, because the restart may be required at a very early stage. Thus,
+	 * this method will recursively delay the restart until it can be performed without an exception.
+	 */
+	private void safeRestart()
+	{
+		if (RCPUtil.getActiveWorkbenchShell() != null)
+			PlatformUI.getWorkbench().restart();
+		else { // too early!
+			new org.eclipse.core.runtime.jobs.Job("Restart") {
+				protected IStatus run(IProgressMonitor monitor)
+				{
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						// ignore
+					}
+					Display.getDefault().asyncExec(new Runnable()
+					{
+						public void run()
+						{
+							safeRestart();
+						}
+					});
+					return Status.OK_STATUS;
+				}
+			}.schedule();
+		}
+	}
+
 	/**
 	 * Actually performs the login procedure.<br/>
 	 * This method calls {@link #doLogin(boolean)} with parameter forceLogoutFirst
