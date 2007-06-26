@@ -7,7 +7,6 @@ import java.util.Date;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.nightlabs.base.composite.CComboComposite;
@@ -44,17 +43,11 @@ class DateStructFieldEditComposite extends XComposite {
 	private DateStructFieldEditor dateStructFieldEditor;
 	
 	public DateStructFieldEditComposite(Composite parent, int style, DateStructFieldEditor editor) {
-		super(parent, style | SWT.NONE, LayoutMode.ORDINARY_WRAPPER, LayoutDataMode.GRID_DATA_HORIZONTAL);
+		super(parent, style | SWT.NONE, LayoutMode.LEFT_RIGHT_WRAPPER, LayoutDataMode.GRID_DATA_HORIZONTAL);
 		
 		this.dateStructFieldEditor = editor;
 		
-		dateFormatCombo = new CComboComposite<String>(new ArrayList<String>(0), this, SWT.NONE);
-		GridLayout layout = dateFormatCombo.getGridLayout();
-//	 TODO: this is a quickfix for the Formtoolkit Boarderpainter, which paints to the outside of the 
-//					elements -> there needs to be space in the enclosing composite for the borders
-		layout.verticalSpacing = 0;
-		layout.marginHeight = 2;
-		layout.marginWidth = 2;
+		dateFormatCombo = new CComboComposite<String>(new ArrayList<String>(0), this, SWT.NONE, (String) null);
 		
 		comp = new XComposite(this, SWT.NONE, LayoutMode.LEFT_RIGHT_WRAPPER, LayoutDataMode.GRID_DATA_HORIZONTAL);
 		exampleLabel = new Label(comp, SWT.NONE);

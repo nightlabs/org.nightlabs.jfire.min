@@ -68,7 +68,7 @@ class SelectionStructFieldEditComposite extends XComposite implements LanguageCh
 
 	public SelectionStructFieldEditComposite(Composite parent, int style, SelectionStructFieldEditor editor,
 			LanguageChooser langChooser) {
-		super(parent, style, LayoutMode.ORDINARY_WRAPPER, LayoutDataMode.GRID_DATA, 2);
+		super(parent, style, LayoutMode.TIGHT_WRAPPER, LayoutDataMode.GRID_DATA, 2);
 		getGridLayout().horizontalSpacing = 2;
 		
 		currLanguage = langChooser.getLanguage();
@@ -93,7 +93,6 @@ class SelectionStructFieldEditComposite extends XComposite implements LanguageCh
 		wrapper.layout(true, true);
 
 		wrapper = new XComposite(this, SWT.NONE, LayoutMode.TIGHT_WRAPPER, LayoutDataMode.GRID_DATA_HORIZONTAL, 2);
-		wrapper.getGridLayout().marginWidth = 2;
 		addValueButton = new Button(wrapper, SWT.NONE);
 		addValueButton.setText("+");
 		data.widthHint = 30;

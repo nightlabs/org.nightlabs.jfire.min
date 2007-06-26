@@ -17,6 +17,7 @@ import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.nightlabs.base.composite.XComposite;
 import org.nightlabs.base.composite.XComposite.LayoutDataMode;
 import org.nightlabs.base.composite.XComposite.LayoutMode;
+import org.nightlabs.base.form.NightlabsFormsToolkit;
 import org.nightlabs.base.table.AbstractTableComposite;
 import org.nightlabs.jfire.base.overview.AbstractEntry;
 import org.nightlabs.jfire.base.overview.Entry;
@@ -59,7 +60,7 @@ implements Entry
 		
 		// Form Look & Feel
 		if (searchComposite instanceof XComposite) {
-			((XComposite)searchComposite).setToolkit(new FormToolkit(Display.getDefault()));
+			((XComposite)searchComposite).setToolkit(new NightlabsFormsToolkit(Display.getDefault()));
 			((XComposite)searchComposite).adaptToToolkit();
 		}
 				

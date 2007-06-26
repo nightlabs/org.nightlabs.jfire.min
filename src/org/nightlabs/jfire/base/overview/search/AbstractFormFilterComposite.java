@@ -5,12 +5,12 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.forms.events.ExpansionAdapter;
 import org.eclipse.ui.forms.events.ExpansionEvent;
-import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.forms.widgets.TableWrapData;
 import org.eclipse.ui.forms.widgets.TableWrapLayout;
 import org.nightlabs.base.composite.XComposite;
+import org.nightlabs.base.form.NightlabsFormsToolkit;
 
 /**
  * This abstract implementation can be used to build form based search filter composites 
@@ -33,11 +33,6 @@ extends XComposite
 		super(parent, style);
 		createComposite(this);
 	}
-
-	private FormToolkit toolkit;
-	protected FormToolkit getToolkit() {
-		return toolkit;
-	}
 	
 	private ScrolledForm form;
 	protected ScrolledForm getForm() {
@@ -48,7 +43,7 @@ extends XComposite
 	
 	protected void createComposite(Composite parent) 
 	{
-		toolkit = new FormToolkit(Display.getDefault());
+		toolkit = new NightlabsFormsToolkit(Display.getDefault());
 		form = toolkit.createScrolledForm(parent);
 		form.setLayoutData(new GridData(GridData.FILL_BOTH));
 		form.getBody().setLayout(new TableWrapLayout());

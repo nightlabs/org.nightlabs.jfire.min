@@ -51,7 +51,7 @@ class NumberStructFieldEditComposite extends XComposite {
 	private Composite boundsComp;
 
 	public NumberStructFieldEditComposite(Composite parent, int style, NumberStructFieldEditor editor) {
-		super(parent, style, LayoutMode.LEFT_RIGHT_WRAPPER, LayoutDataMode.GRID_DATA_HORIZONTAL);
+		super(parent, style, LayoutMode.TIGHT_WRAPPER, LayoutDataMode.GRID_DATA_HORIZONTAL);
 		this.editor = editor;
 		comp = createSpinnerComposite(this, true);
 	}

@@ -66,7 +66,8 @@ public class SelectionDataFieldComposite extends AbstractDataFieldComposite {
 				new ArrayList<StructFieldValue>(0),
 				labelProvider,
 				this, 
-				SWT.SINGLE
+				SWT.SINGLE,
+				(String) null 
 //				, LayoutMode.ORDINARY_WRAPPER, LayoutDataMode.NONE
 				);
 		// TODO: this is a workaround for the problem of the FormToolkit painting the borders at the outside of the bounding box of the CComboComposite 

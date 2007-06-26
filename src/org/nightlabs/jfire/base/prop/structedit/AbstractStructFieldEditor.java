@@ -38,7 +38,7 @@ public abstract class AbstractStructFieldEditor<F extends StructField> implement
 		editorGroup = new Group(parent, SWT.NONE);		
 		editorGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
 		GridLayout gl = new GridLayout();
-		XComposite.configureLayout(LayoutMode.TOP_BOTTOM_WRAPPER, gl);
+		XComposite.configureLayout(LayoutMode.ORDINARY_WRAPPER, gl);
 		editorGroup.setLayout(gl);
 		((GridLayout)editorGroup.getLayout()).marginTop = 15;
 				
@@ -50,7 +50,6 @@ public abstract class AbstractStructFieldEditor<F extends StructField> implement
 		specialComposite = createSpecialComposite(editorGroup, style);
 
 		errorComp = new ErrorComposite(editorGroup);
-		
 		return editorGroup;
 	}
 	
@@ -171,18 +170,16 @@ class ErrorComposite extends XComposite {
 	private Image errorImage;
 	private Label errorLabel;
 	private Label errorImageLabel;
-	private Composite parent;
 	
 	public ErrorComposite(Composite parent) {
 		super(parent, SWT.NONE, LayoutMode.ORDINARY_WRAPPER, LayoutDataMode.GRID_DATA_HORIZONTAL, 2);
 		
-		this.parent = parent;
 		errorImage = JFireBasePlugin.getImageDescriptor("icons/Validation_error.gif").createImage();
 		
 		errorImageLabel = new Label(this, SWT.NONE);
 		errorLabel = new Label(this, SWT.NONE);		
 		errorImageLabel.setImage(errorImage);
-		errorLabel.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_CENTER));
+		errorLabel.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_END));
 		setVisible(false);
 		
 		addDisposeListener(new DisposeListener() {
@@ -202,6 +199,6 @@ class ErrorComposite extends XComposite {
 		}
 		errorLabel.pack();
 		pack();
-		parent.layout();
+		layout();
 	}
 }

@@ -86,7 +86,7 @@ class ImageStructFieldEditorComposite extends XComposite implements Serializable
 	private ImageStructFieldEditor editor;
 	
 	public ImageStructFieldEditorComposite(Composite parent, ImageStructFieldEditor imageStructFieldEditor) {
-		super(parent, SWT.NONE, LayoutMode.ORDINARY_WRAPPER, LayoutDataMode.GRID_DATA, 2);
+		super(parent, SWT.NONE, LayoutMode.TIGHT_WRAPPER, LayoutDataMode.GRID_DATA, 2);
 		
 		this.editor = imageStructFieldEditor;
 		new Label(this, SWT.NONE).setText("Maximum size (KB): ");
@@ -102,7 +102,6 @@ class ImageStructFieldEditorComposite extends XComposite implements Serializable
 		GridData gd = new GridData();
 		
 		XComposite editComp = new XComposite(extComp, SWT.NONE, LayoutMode.TIGHT_WRAPPER, LayoutDataMode.GRID_DATA, 3);
-		editComp.getGridLayout().marginWidth = 2;
 		formatList = new ListComposite<String>(editComp, SWT.V_SCROLL);
 		formatList.setLabelProvider(new LabelProvider() {
 			@Override

@@ -2,9 +2,9 @@ package org.nightlabs.jfire.base.prop.structedit;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
-import org.nightlabs.base.composite.LabeledCheckboxComposite;
 import org.nightlabs.base.composite.XComposite;
 import org.nightlabs.base.language.I18nTextEditor;
 import org.nightlabs.base.language.LanguageChooser;
@@ -13,7 +13,7 @@ import org.nightlabs.jfire.prop.StructBlock;
 
 public class StructBlockEditorComposite extends XComposite {
 	private I18nTextEditor blockNameEditor;
-	LabeledCheckboxComposite checkComp;
+	Button checkComp;
 	private StructBlock block;
 
 	public StructBlockEditorComposite(Composite parent, int style, LanguageChooser languageChooser) {
@@ -25,15 +25,15 @@ public class StructBlockEditorComposite extends XComposite {
 		
 		new Label(this, SWT.SEPARATOR | SWT.HORIZONTAL).setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		
-		checkComp = new LabeledCheckboxComposite(this, style, true);
+		checkComp = new Button(this, SWT.CHECK);
 		checkComp.setLayoutData((new GridData(GridData.HORIZONTAL_ALIGN_CENTER)));
-		checkComp.getLabel().setText("Is unique?");
+		checkComp.setText("Is unique?");
 	}
 
 	public void setStructBlock(StructBlock psb) {
 		block = psb;
 		blockNameEditor.setI18nText(psb.getName(), EditMode.DIRECT);
-		checkComp.getCheckbox().setSelection(block.isUnique());
+		checkComp.setSelection(block.isUnique());
 		this.setVisible(true);
 	}
 

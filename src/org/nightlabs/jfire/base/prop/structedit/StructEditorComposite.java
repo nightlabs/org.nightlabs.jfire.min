@@ -1,5 +1,6 @@
 package org.nightlabs.jfire.base.prop.structedit;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 
 import org.eclipse.swt.SWT;
@@ -10,26 +11,22 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.MessageBox;
-import org.nightlabs.base.composite.ComboComposite;
+import org.nightlabs.base.composite.CComboComposite;
 import org.nightlabs.base.composite.XComposite;
 import org.nightlabs.base.language.LanguageChooser;
 import org.nightlabs.base.language.LanguageChooserCombo;
 import org.nightlabs.base.language.LanguageChooserCombo.Mode;
-import org.nightlabs.jfire.prop.IStruct;
 import org.nightlabs.jfire.prop.id.StructID;
 import org.nightlabs.jfire.prop.id.StructLocalID;
 
 public class StructEditorComposite extends XComposite {
 
-	private StructPartEditor<?> structPartEditor;
 	private StructTree structTree;
-	private IStruct struct;
 	private StructEditor structEditor;
 	
 	private Composite partEditorComposite;
 	private LanguageChooserCombo languageChooser;	
-	protected ComboComposite<StructLocalID> structIDComposite;
-	private Label errorLabel;
+	protected CComboComposite<StructLocalID> structIDComposite;
 
 	private static class StructLocalIDLabelProvider extends org.eclipse.jface.viewers.LabelProvider {
 		@Override
@@ -84,9 +81,10 @@ public class StructEditorComposite extends XComposite {
 		gd.horizontalAlignment = SWT.CENTER;
 
 		if (createStructIDCombo) {
-			structIDComposite = new ComboComposite<StructLocalID>(this, SWT.NONE, new StructLocalIDLabelProvider(), "Current struct: ");
+//			structIDComposite = new ComboComposite<StructLocalID>(this, SWT.NONE, new StructLocalIDLabelProvider(), "Current struct: ");
+			structIDComposite = new CComboComposite<StructLocalID>(new ArrayList<StructLocalID>(0), new StructLocalIDLabelProvider(), this, SWT.NONE, (String) null);
 			structIDComposite.setLayoutData(gd);
-			structIDComposite.getCombo().addSelectionListener(new StructIDComboSelectionListener());
+			structIDComposite.addSelectionListener(new StructIDComboSelectionListener());
 
 			gd = new GridData(GridData.FILL_HORIZONTAL);
 			gd.horizontalSpan = 2;
@@ -126,7 +124,6 @@ public class StructEditorComposite extends XComposite {
 			partEditorComposite.dispose();
 		}
 		
-		this.structPartEditor = structPartEditor;
 		this.partEditorComposite = structPartEditor.createComposite(this, this.getStyle(), structEditor, languageChooser);
 		((GridData)this.partEditorComposite.getLayoutData()).verticalAlignment = SWT.TOP;
 		this.partEditorComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
