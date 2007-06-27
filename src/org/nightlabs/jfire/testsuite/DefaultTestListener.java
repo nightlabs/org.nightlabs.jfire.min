@@ -87,6 +87,7 @@ public class DefaultTestListener implements JFireTestListener {
 		private Date startTime;
 		private Date endTime;
 		private boolean hasFailures;
+		private Throwable suiteStartError;
 		private List<TestCaseResult> testCaseResults = new LinkedList<TestCaseResult>();
 		/**
 		 * Returns the endTime of this DefaultTestListener.TestSuiteResult.
@@ -172,7 +173,20 @@ public class DefaultTestListener implements JFireTestListener {
 		public void setTestCaseResults(List<TestCaseResult> testCaseResults) {
 			this.testCaseResults = testCaseResults;
 		}
-		
+		/**
+		 * Returns the suiteStartError of this DefaultTestListener.TestSuiteResult.
+		 * @return the suiteStartError.
+		 */
+		public Throwable getSuiteStartError() {
+			return suiteStartError;
+		}
+		/**
+		 * Sets the suiteStartError of this DefaultTestListener.TestSuiteResult.
+		 * @param suiteStartError the suiteStartError to set.
+		 */
+		public void setSuiteStartError(Throwable suiteStartError) {
+			this.suiteStartError = suiteStartError;
+		}
 	}
 	
 	/**
@@ -440,6 +454,13 @@ public class DefaultTestListener implements JFireTestListener {
 			suiteElement.setAttribute("endTime", ISO_DATE_FORMAT.format(suiteResult.getEndTime()));
 			suiteElement.setAttribute("executionTime", Long.toString(suiteResult.getEndTime().getTime() - suiteResult.getStartTime().getTime()));
 			suiteElement.setAttribute("hasFailures", Boolean.toString(suiteResult.isHasFailures()));
+			if (suiteResult.getSuiteStartError() != null) {
+				Element exceptionElement = doc.createElement("TestSuiteResultDetail");
+				exceptionElement.setAttribute("message", suiteResult.getSuiteStartError().getLocalizedMessage());
+				Node stackTrace = doc.createCDATASection(Utils.getStackTraceAsString(suiteResult.getSuiteStartError()));
+				exceptionElement.appendChild(stackTrace);
+				suiteElement.appendChild(exceptionElement);
+			}
 			rootNode.appendChild(suiteElement);
 			for (TestCaseResult caseResult : suiteResult.getTestCaseResults()) {
 				Element caseElement = doc.createElement("TestCaseResult");
@@ -512,6 +533,16 @@ public class DefaultTestListener implements JFireTestListener {
 		
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * @see org.nightlabs.jfire.testsuite.JFireTestListener#addSuiteStartError(org.nightlabs.jfire.testsuite.TestSuite, java.lang.Throwable)
+	 */
+	public void addSuiteStartError(TestSuite suite, Throwable t) {
+		if (currSuiteResult != null) {
+			currSuiteResult.setSuiteStartError(t);
+		}
+	}
+	
 	/**
 	 * {@inheritDoc}
 	 * @see junit.framework.TestListener#addError(junit.framework.Test, java.lang.Throwable)

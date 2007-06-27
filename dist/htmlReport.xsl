@@ -6,19 +6,18 @@
 	<html>
 		<head>
 			<meta http-equiv="content-type" content="text/html; charset=UTF-8"></meta>
+			<title>TestReport</title>
 		</head>
-		<body style="font-family:arial,sans-serif">
+		<body style="font-family:arial,sans-serif;">
 		<xsl:value-of select="@startTime"/>
-	<xsl:apply-templates select="TestSuiteResult"/>
+		<xsl:apply-templates select="TestSuiteResult"/>
 		</body>
 	</html>
 </xsl:template>
 
 <xsl:template match="TestSuiteResult">
-	
-	<table cellpadding="4" cellspacing="5" style="border:1px solid #AAAAAA;font-family:arial,sans-serif">
+	<table cellpadding="4" cellspacing="5" style="border:1px solid #AAAAAA;font-family:arial,sans-serif;width:80%;margin-top:10px;">
 	<xsl:variable name="suiteState" select="@suiteStatus"></xsl:variable> 
-	
 	<xsl:choose>
 		<xsl:when test="$suiteState='SKIP'">
 			<tr>
@@ -42,6 +41,7 @@
 			</tr>
 		</xsl:otherwise>	
 	</xsl:choose>
+	<xsl:apply-templates select="TestSuiteResultDetail"/>
 	<xsl:apply-templates select="TestCaseResult"/>
 	</table>
 </xsl:template>
@@ -55,31 +55,44 @@
 	</tr>
 	<xsl:apply-templates select="TestResult"/>
 </xsl:template>
+
 <xsl:template match="TestResult">
-	<tr><td style="width:30px;"></td><td style="border:1px solid #AAAAAA;background-color:#DDDDDD">
+	<tr>
+	<td style="width:30px;"></td>
+	<td style="border:1px solid #AAAAAA;background-color:#DDDDDD">
 	<xsl:value-of select="@testName"/> 
 	<small><i> (<xsl:value-of select="@executionTime"/>ms)</i></small>
 	</td>
 	<xsl:variable name="isSuccess" select="@success"></xsl:variable> 
 		<xsl:choose>
 	  	<xsl:when test="$isSuccess='true'">
-			<td style="border:1px solid #AAAAAA;background-color:green;color:fff">SUCCESS <br/>
+			<td style="border:1px solid #AAAAAA;background-color:green;color:fff;width:50px">SUCCESS<br/></td>
 			<xsl:apply-templates select="TestResultDetail"/>
-			</td>
 		</xsl:when>
 		<xsl:otherwise>
-			<td style="border:1px solid #AAAAAA;color:fff;background-color:red">FAILED <br/>
+			<td style="border:1px solid #AAAAAA;color:fff;background-color:red">FAILED<br/></td>
 	 		<xsl:apply-templates select="TestResultDetail"/>
-	 	</td>
     	</xsl:otherwise>
 		</xsl:choose>
 	</tr>	
 </xsl:template>
 
 <xsl:template match="TestResultDetail">
-	<xsl:value-of select="@message"/> 
+	<tr>
+		<td></td>
+		<td colspan="3" style="background-color:#DDDDDD;">  
+			<div style="overflow:auto"><pre><xsl:value-of select="."/></pre></div>
+		</td>
+	</tr>
 </xsl:template>
 
+<xsl:template match="TestSuiteResultDetail">
+	<tr>
+		<td style="border:1px solid #AAAAAA">
+			<div style="overflow:auto"><pre><xsl:value-of select="."/></pre></div>
+		</td>
+	</tr>
+</xsl:template>
 
 </xsl:stylesheet> 
 

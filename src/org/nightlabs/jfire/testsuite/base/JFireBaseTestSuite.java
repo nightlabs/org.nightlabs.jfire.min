@@ -33,7 +33,7 @@ public class JFireBaseTestSuite extends TestSuite {
 	 * @see org.nightlabs.jfire.testsuite.TestSuite#canRunTests(PersistenceManager)
 	 */
 	@Override
-	public boolean canRunTests(PersistenceManager pm) {
+	public boolean canRunTests(PersistenceManager pm) throws Exception {
 		try {
 			Class.forName("org.nightlabs.jfire.security.User");
 		} catch (ClassNotFoundException x) {			

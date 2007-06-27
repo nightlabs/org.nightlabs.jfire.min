@@ -51,6 +51,16 @@ public class JFireTestRunner extends BaseTestRunner {
 		}
 	}
 	
+	private void notifySuiteStartError(TestSuite suite, Throwable t) {
+		for (JFireTestListener listener : new ArrayList<JFireTestListener>(testListeners)) {
+			try {
+				listener.addSuiteStartError(suite, t);
+			} catch (Exception e) {
+				logger.error("Error notifying JFireTestListener!", e);
+			}
+		}
+	}
+	
 	/**
 	 * Add a {@link JFireTestListener} to this runner.
 	 * @param listener The listener to add.
@@ -79,8 +89,19 @@ public class JFireTestRunner extends BaseTestRunner {
 	 * @param pm The PersistenceManager that can be passed to the test suites.
 	 */
 	public void run(TestSuite suite, PersistenceManager pm) {
-		if (!suite.canRunTests(pm)) {
+		boolean doRun = true;
+		Throwable checkError = null;
+		try {
+			doRun = suite.canRunTests(pm);
+		} catch (Exception e) {
+			doRun = false;
+			checkError = e;
+		}
+		if (!doRun) {
 			notifyTestSuiteStatus(suite, Status.SKIP);
+			if (checkError != null) {
+				notifySuiteStartError(suite, checkError);
+			}
 			return;
 		}
 		notifyTestSuiteStatus(suite, Status.START);

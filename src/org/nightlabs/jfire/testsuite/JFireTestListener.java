@@ -5,9 +5,9 @@ package org.nightlabs.jfire.testsuite;
 
 import java.util.Properties;
 
-import org.nightlabs.jfire.testsuite.TestSuite.Status;
-
 import junit.framework.TestListener;
+
+import org.nightlabs.jfire.testsuite.TestSuite.Status;
 
 /**
  * A special JUnit test listener used within the JFireTestSuite.
@@ -54,6 +54,16 @@ public interface JFireTestListener extends TestListener {
 	 * @throws Exception When something went wrong.
 	 */
 	void testSuiteStatus(TestSuite suite, TestSuite.Status status) throws Exception;
+	
+	/**
+	 * Notifies the listnener that the start of the testsuite was skipped, because
+	 * {@link TestSuite#canRunTests(javax.jdo.PersistenceManager)} threw the given
+	 * exception.
+	 * 
+	 * @param suite The suite whose check for prerequisites failed.
+	 * @param t The Throwable that was thrown.
+	 */
+	void addSuiteStartError(TestSuite suite, Throwable t);
 
 	/**
 	 * Notifies the listener that the test run has ended.

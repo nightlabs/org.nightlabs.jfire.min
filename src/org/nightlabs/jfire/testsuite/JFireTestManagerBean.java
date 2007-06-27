@@ -26,16 +26,12 @@
 
 package org.nightlabs.jfire.testsuite;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.rmi.RemoteException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -177,19 +173,11 @@ implements SessionBean
 				runSuites.add(testSuite);
 			}
 		}
-		
-		// find the listener and configure them
-		Properties mainProps = new Properties();
-		FileInputStream in = new FileInputStream(new File(JFireTestSuiteEAR.getEARDir(), "jfireTestSuite.properties"));
-		try {
-			mainProps.load(in);
-		} finally {
-			in.close();
-		}
-		Collection<Matcher> listenerMatches = getPropertyKeyMatches(mainProps, Pattern.compile("(listener\\.(?:[^.]*?)\\.)class"));
+		Properties mainProps = JFireTestSuiteEAR.getJFireTestSuiteProperties();
+		Collection<Matcher> listenerMatches = JFireTestSuiteEAR.getPropertyKeyMatches(mainProps, Pattern.compile("(listener\\.(?:[^.]*?)\\.)class"));
 		List<JFireTestListener> listeners = new LinkedList<JFireTestListener>();
 		for (Matcher matcher : listenerMatches) {
-			Properties listenerProps = getProperties(mainProps, matcher.group(1));
+			Properties listenerProps = JFireTestSuiteEAR.getProperties(mainProps, matcher.group(1));
 			Class clazz = null;
 			try {
 				clazz = Class.forName(listenerProps.getProperty("class"));
@@ -232,28 +220,6 @@ implements SessionBean
 				continue;
 			}
 		}
-	}
-	
-	
-	public static Collection<Matcher> getPropertyKeyMatches(Properties properties, Pattern pattern)
-	{
-		Collection<Matcher> matches = new ArrayList<Matcher>();
-		for (Iterator iter = properties.keySet().iterator(); iter.hasNext();) {
-			String key = (String) iter.next();
-			Matcher m = pattern.matcher(key);
-			if(m.matches())
-				matches.add(m);
-		}
-		return matches;
-	}
-	
-	public static Properties getProperties(Properties properties, String keyPrefix)
-	{
-		Properties newProperties = new Properties();
-		Collection<Matcher> matches = getPropertyKeyMatches(properties, Pattern.compile("^"+Pattern.quote(keyPrefix)+"(.*)$"));
-		for (Matcher m : matches)
-			newProperties.put(m.group(1), properties.get(m.group(0)));
-		return newProperties;
 	}
 	
 }
