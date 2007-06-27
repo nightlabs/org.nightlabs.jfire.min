@@ -3,6 +3,8 @@
  */
 package org.nightlabs.jfire.testsuite;
 
+import javax.jdo.PersistenceManager;
+
 import junit.framework.TestCase;
 
 /**
@@ -22,10 +24,10 @@ public class DefaultTestSuite extends TestSuite {
 	
 	/**
 	 * {@inheritDoc}
-	 * @see org.nightlabs.jfire.testsuite.TestSuite#canRunTests()
+	 * @see org.nightlabs.jfire.testsuite.TestSuite#canRunTests(PersistenceManager)
 	 */
 	@Override
-	public boolean canRunTests() {
+	public boolean canRunTests(PersistenceManager pm) {
 		return true;
 	}
 

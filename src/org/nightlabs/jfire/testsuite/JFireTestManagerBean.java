@@ -47,6 +47,7 @@ import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
+import javax.jdo.PersistenceManager;
 
 import junit.framework.TestCase;
 
@@ -109,13 +110,18 @@ implements SessionBean
 	public void initialise()
 	throws Exception 
 	{
-		runTestSuites();
+		PersistenceManager pm = getPersistenceManager();
+		try {
+			runTestSuites(pm);
+		} finally {
+			pm.close();
+		}
 	}
 
 	/**
 	 * Runs all TestSuites and TestCases found in the classpath under org.nightlabs.jfire.testsuite. 
 	 */
-	public static void runTestSuites() 
+	public static void runTestSuites(PersistenceManager pm) 
 	throws ClassNotFoundException, SecurityException, NoSuchMethodException, IllegalArgumentException, InstantiationException, IllegalAccessException, InvocationTargetException, ModuleException, IOException 
 	{
 		logger.debug("Scanning classpath for TestSuites and TestCases");
@@ -216,7 +222,7 @@ implements SessionBean
 			for (JFireTestListener listener : listeners) {
 				runner.addListener(listener);
 			}
-			runner.run(suite);
+			runner.run(suite, pm);
 		}
 		for (JFireTestListener listener : listeners) {
 			try {

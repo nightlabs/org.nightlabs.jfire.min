@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import javax.jdo.PersistenceManager;
+
 import junit.framework.Test;
 import junit.framework.TestResult;
 import junit.runner.BaseTestRunner;
@@ -74,9 +76,10 @@ public class JFireTestRunner extends BaseTestRunner {
 	 * registered {@link JFireTestListener}s of the status.
 	 * 
 	 * @param suite The suite to run.
+	 * @param pm The PersistenceManager that can be passed to the test suites.
 	 */
-	public void run(TestSuite suite) {
-		if (!suite.canRunTests()) {
+	public void run(TestSuite suite, PersistenceManager pm) {
+		if (!suite.canRunTests(pm)) {
 			notifyTestSuiteStatus(suite, Status.SKIP);
 			return;
 		}
