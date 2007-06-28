@@ -3,7 +3,7 @@
 		"http://www.nightlabs.de/dtd/datastoreinit_1_2.dtd">
 <datastore-initialisation>
 
-	<init bean="jfire/ejb/JFireTestSuite/JFireTestManager" method="initialise">
+	<init bean="jfire/ejb/JFireTestSuite/JFireTestManager" method="initialise" priority="950">
 		<depends module="JFireSimpleTrade.ear" resolution="optional" />
 		<depends module="JFireVoucher.ear" resolution="optional" />
 		<depends module="JFireDynamicTrade.ear" resolution="optional" />

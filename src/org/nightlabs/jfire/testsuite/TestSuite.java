@@ -11,7 +11,7 @@ import junit.framework.TestCase;
  * A JFire {@link TestSuite} is a {@link junit.framework.TestSuite} that
  * might decide not to be run under certain circumstances. (See {@link #canRunTests(PersistenceManager)})
  * <p>
- * Additionally a JFire {@link TestSuite} knows {@link Status} that reflects
+ * Additionally a JFire {@link TestSuite} knows a {@link Status} that reflects
  * whether the suite was run or skipped.
  * </p>
  * <p>
@@ -36,7 +36,7 @@ public abstract class TestSuite extends junit.framework.TestSuite {
 		 */
 		END,
 		/**
-		 * The TestSuite NOT run, it decided to be skipped.
+		 * The TestSuite did NOT run, it decided to be skipped.
 		 */
 		SKIP
 	}
