@@ -31,8 +31,8 @@ import javax.security.auth.login.LoginException;
 import org.apache.log4j.Logger;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IWorkbenchWindow;
-
 import org.nightlabs.base.exceptionhandler.ExceptionHandlerRegistry;
 import org.nightlabs.base.resource.SharedImages;
 import org.nightlabs.base.resource.SharedImages.ImageDimension;
@@ -65,7 +65,7 @@ extends LSDWorkbenchWindowActionDelegate
 	 */
 	public void init(IWorkbenchWindow window) {
 		super.init(window);
-
+		
 		if (loginIcon_menu == null)
 			loginIcon_menu = SharedImages.getSharedImageDescriptor(JFireBasePlugin.getDefault(), LoginAction.class, "Login", ImageDimension._16x16, ImageFormat.png); //$NON-NLS-1$
 
@@ -77,6 +77,10 @@ extends LSDWorkbenchWindowActionDelegate
 
 		if (logoutIcon_toolbar == null)
 			logoutIcon_toolbar = SharedImages.getSharedImageDescriptor(JFireBasePlugin.getDefault(), LoginAction.class, "Logout", ImageDimension._24x24, ImageFormat.png); //$NON-NLS-1$
+		
+		if (Login.isLoggedIn() && action != null) {
+			loginStateChanged(Login.sharedInstance().getLoginState(), action);
+		}
 	}
 	
 	
@@ -86,13 +90,18 @@ extends LSDWorkbenchWindowActionDelegate
 	public void run(IAction action) {
 		try {			
 			Login login = Login.getLogin(false);
-			if (Login.isLoggedIn()) 
+			if (Login.isLoggedIn())
 				login.workOffline();
 			else {
-				Login.getLogin(false).setForceLogin(true);
-				Login.getLogin();
+				try {
+					Login.getLogin(false).setForceLogin(true);
+					Login.getLogin();
+				} catch (LoginException e) {
+					if (Login.sharedInstance().getLoginState() != Login.LOGINSTATE_OFFLINE)
+						ExceptionHandlerRegistry.asyncHandleException(e);
+					logger.error("Login failed",e); //$NON-NLS-1$
+				}
 			}
-			
 		} catch (LoginException e) {
 			ExceptionHandlerRegistry.asyncHandleException(e);
 			logger.error("Login failed",e); //$NON-NLS-1$
@@ -101,6 +110,8 @@ extends LSDWorkbenchWindowActionDelegate
 
 	public void loginStateChanged(int loginState, IAction action)
 	{
+		super.loginStateChanged(loginState, action);
+		
 		ImageDescriptor loginIcon = null;
 		ImageDescriptor logoutIcon = null;
 
@@ -119,15 +130,24 @@ extends LSDWorkbenchWindowActionDelegate
 			case Login.LOGINSTATE_LOGGED_IN:
 				action.setImageDescriptor(logoutIcon);
 				action.setToolTipText(JFireBasePlugin.getResourceString("actions.login.tooltip.logout"));
+				action.setHoverImageDescriptor(logoutIcon);
 				break;
 			case Login.LOGINSTATE_LOGGED_OUT:
 				action.setImageDescriptor(loginIcon);
 				action.setToolTipText(JFireBasePlugin.getResourceString("actions.login.tooltip.login"));
+				action.setHoverImageDescriptor(loginIcon);
 			break;				
 			case Login.LOGINSTATE_OFFLINE:
 				action.setImageDescriptor(loginIcon);
 				action.setToolTipText(JFireBasePlugin.getResourceString("actions.login.tooltip.login"));
+				action.setHoverImageDescriptor(loginIcon);
 				break;				
 		}
+	}
+	
+	private IAction action = null;
+	public void selectionChanged(IAction action, ISelection selection) {
+		this.action = action;
+		super.selectionChanged(action, selection);
 	}
 }

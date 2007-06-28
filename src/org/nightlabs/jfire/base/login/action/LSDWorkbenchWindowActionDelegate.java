@@ -28,6 +28,7 @@ package org.nightlabs.jfire.base.login.action;
 
 import javax.security.auth.login.LoginException;
 
+import org.apache.log4j.Logger;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -36,6 +37,7 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
+import org.nightlabs.base.util.RCPUtil;
 import org.nightlabs.jfire.base.login.Login;
 import org.nightlabs.jfire.base.login.LoginStateListener;
 
@@ -45,9 +47,11 @@ import org.nightlabs.jfire.base.login.LoginStateListener;
  * 
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  */
-public abstract class LSDWorkbenchWindowActionDelegate implements
-		IWorkbenchWindowActionDelegate, LoginStateListener {
-
+public abstract class LSDWorkbenchWindowActionDelegate 
+implements IWorkbenchWindowActionDelegate, LoginStateListener 
+{
+	private static final Logger logger = Logger.getLogger(LSDWorkbenchWindowActionDelegate.class);
+	
 	/**
 	 * Default implementation of dispose removes this instance
 	 * as LoginStateListener, so make sure to always call super.dispose(). 
@@ -131,13 +135,17 @@ public abstract class LSDWorkbenchWindowActionDelegate implements
 	 */
 	public void selectionChanged(IAction action, ISelection selection) {
 		Login.sharedInstance().addLoginStateListener(this,action);
+//		if (Login.isLoggedIn()) {
+//			loginStateChanged(Login.sharedInstance().getLoginState(), action);						
+//		}
 	}
 	
 	/**
 	 * Default implementation of loginStateChanged does nothing.
 	 * @see LoginStateListener#loginStateChanged(int, IAction)
 	 */
-	public void loginStateChanged(int loginState, IAction action) {		
+	public void loginStateChanged(int loginState, IAction action) {	
+		logger.info("loginStateChanged to "+loginState+" for action "+action.getId());
 	}
 
 }
