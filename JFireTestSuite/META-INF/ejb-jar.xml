@@ -160,7 +160,7 @@
          <method-params>
          </method-params>
       </method>
-      <trans-attribute>Supports</trans-attribute>
+      <trans-attribute>Required</trans-attribute>
    </container-transaction>
    <container-transaction >
       <method >
@@ -170,7 +170,7 @@
          <method-params>
          </method-params>
       </method>
-      <trans-attribute>Supports</trans-attribute>
+      <trans-attribute>Required</trans-attribute>
    </container-transaction>
 
    <!-- finder transactions -->

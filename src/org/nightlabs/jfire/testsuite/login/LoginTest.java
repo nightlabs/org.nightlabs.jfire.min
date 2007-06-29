@@ -3,10 +3,6 @@
  */
 package org.nightlabs.jfire.testsuite.login;
 
-import java.rmi.RemoteException;
-
-import javax.ejb.CreateException;
-import javax.naming.NamingException;
 import javax.security.auth.login.LoginException;
 
 import junit.framework.TestCase;
@@ -28,8 +24,8 @@ public class LoginTest extends TestCase {
 	public LoginTest() {
 	}
 
-	public void testCorrectLogin() throws LoginException, RemoteException, CreateException, NamingException {
-		JFireLogin login = new JFireLogin("chezfrancois.jfire.org", "francois", "test");
+	public void testCorrectLogin() throws Exception {
+		JFireLogin login = JFireTestLogin.getUserLogin(JFireTestLogin.USER_QUALIFIER_SERVER_ADMIN);
 		login.login();
 		UserManagerUtil.getHome(login.getInitialContextProperties()).create();		
 	}
