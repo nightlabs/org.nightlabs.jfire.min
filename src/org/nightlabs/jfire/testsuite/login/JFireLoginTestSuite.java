@@ -37,7 +37,7 @@ public class JFireLoginTestSuite extends TestSuite {
 		} catch (ClassNotFoundException x) {			
 			return false;
 		}
-		return JFireTestLogin.checkCreateLoginUsers(pm);
+		return JFireTestLogin.checkCreateLoginsAndRegisterInAuthorities(pm);
 	}
 
 }

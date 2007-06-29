@@ -15,6 +15,7 @@ import javax.naming.NamingException;
 import org.apache.log4j.Logger;
 import org.apache.log4j.Priority;
 import org.nightlabs.ModuleException;
+import org.nightlabs.jfire.base.InitException;
 import org.nightlabs.jfire.base.login.JFireLogin;
 import org.nightlabs.jfire.config.ConfigSetup;
 import org.nightlabs.jfire.security.Authority;
@@ -77,7 +78,7 @@ public class JFireTestLogin {
 	 * @return Whether it succeeded.
 	 * @throws NamingException 
 	 */
-	public static boolean checkCreateLoginUsers(PersistenceManager pm) throws ModuleException, IOException, NamingException {
+	public static boolean checkCreateLoginsAndRegisterInAuthorities(PersistenceManager pm) throws ModuleException, IOException, NamingException {
 		Properties properties = JFireTestSuiteEAR.getProperties(JFireTestSuiteEAR.getJFireTestSuiteProperties(), PROP_TEST_USER_PREFIX + ".");
 		Pattern findUserPropName = Pattern.compile("([^.]*).*");
 		Set<String> userPropNames = new HashSet<String>();
@@ -89,8 +90,17 @@ public class JFireTestLogin {
 				userPropNames.add(userPropName);
 			}
 		}
+		boolean result = true;
+		result &= checkCreateLoginUsers(pm, properties, userPropNames);
+		result &= checkSetRoleGroupRegistrationToAuthorities(pm, properties, userPropNames); 
+		return result;
+	}
+	
+	private static boolean checkCreateLoginUsers(PersistenceManager pm, Properties userProperties, 
+			Set<String> userPropNames) throws InitException, ModuleException, NamingException 
+	{
 		for (String userPropName : userPropNames) {
-			Properties userProps = JFireTestSuiteEAR.getProperties(properties, userPropName + ".");
+			Properties userProps = JFireTestSuiteEAR.getProperties(userProperties, userPropName + ".");
 			String _userID = userProps.getProperty(JFireLogin.PROP_USER_ID);
 			String password = userProps.getProperty(JFireLogin.PROP_PASSWORD);
 			String organisationID = SecurityReflector.getUserDescriptor().getOrganisationID();
@@ -140,7 +150,7 @@ public class JFireTestLogin {
 		}
 
 		for (String userPropName : userPropNames) {
-			Properties userProps = JFireTestSuiteEAR.getProperties(properties, userPropName + ".");
+			Properties userProps = JFireTestSuiteEAR.getProperties(userProperties, userPropName + ".");
 			String _userID = userProps.getProperty(JFireLogin.PROP_USER_ID);
 			String organisationID = SecurityReflector.getUserDescriptor().getOrganisationID();
 			UserID userID = UserID.create(organisationID, _userID);
@@ -152,5 +162,10 @@ public class JFireTestLogin {
 		}
 		return true;
 	}
-	
+
+	private static boolean checkSetRoleGroupRegistrationToAuthorities(PersistenceManager pm, 
+			Properties userProperties, Set<String> userPropNames) 
+	{
+		return false;
+	}
 }
