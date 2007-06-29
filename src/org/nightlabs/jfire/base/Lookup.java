@@ -29,12 +29,14 @@ package org.nightlabs.jfire.base;
 import java.util.Hashtable;
 import java.util.Properties;
 
+import javax.jdo.FetchPlan;
 import javax.jdo.PersistenceManager;
 import javax.jdo.PersistenceManagerFactory;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.nightlabs.ModuleException;
+import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.jdo.cache.CacheManager;
 import org.nightlabs.jfire.jdo.cache.CacheManagerFactory;
 import org.nightlabs.jfire.organisation.LocalOrganisation;
@@ -128,6 +130,67 @@ public class Lookup
 	public PersistenceManager getPersistenceManager()
 	{
 		PersistenceManager pm = getPersistenceManagerFactory().getPersistenceManager();
+		
+		// TODO check whether we can set these options as configuration settings of the JDO implementation
+		pm.getFetchPlan().setDetachmentOptions(FetchPlan.DETACH_LOAD_FIELDS | FetchPlan.DETACH_UNLOAD_FIELDS);
+
+		// JPOX WORKAROUND - some pk-fields are sometimes null otherwise
+		pm.getFetchPlan().setGroup(FetchPlan.DEFAULT);
+		pm.getFetchPlan().setMaxFetchDepth(NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
+
+		// example stack trace for this:
+//		17:09:19,475 ERROR [LogInterceptor] RuntimeException in method: public abstract void org.nightlabs.jfire.editlock.EditLockManager.releaseEditLock(org.nightlabs.jdo.ObjectID,org.nightlabs.jfire.editlock.ReleaseReason) throws org.nightlabs.ModuleException,java.rmi.RemoteException:
+//			javax.jdo.JDOObjectNotFoundException: No such database row
+//			FailedObject:jdo/org.nightlabs.jfire.editlock.id.EditLockID?organisationID=null&editLockID=44355
+//			        at org.jpox.store.rdbms.request.FetchRequest.execute(FetchRequest.java:194)
+//			        at org.jpox.store.rdbms.table.ClassTable.fetch(ClassTable.java:2552)
+//			        at org.jpox.store.StoreManager.fetch(StoreManager.java:941)
+//			        at org.jpox.state.StateManagerImpl.loadNonDFGFields(StateManagerImpl.java:1734)
+//			        at org.jpox.state.StateManagerImpl.isLoaded(StateManagerImpl.java:2034)
+//			        at org.nightlabs.jfire.editlock.EditLock.jdoGeteditLockType(EditLock.java)
+//			        at org.nightlabs.jfire.editlock.EditLock.getEditLockType(EditLock.java:329)
+//			        at org.nightlabs.jfire.editlock.EditLock.releaseEditLock(EditLock.java:193)
+//			        at org.nightlabs.jfire.editlock.EditLockManagerBean.releaseEditLock(EditLockManagerBean.java:180)
+//			        at sun.reflect.GeneratedMethodAccessor163.invoke(Unknown Source)
+//			        at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+//			        at java.lang.reflect.Method.invoke(Method.java:585)
+//			        at org.jboss.invocation.Invocation.performCall(Invocation.java:359)
+//			        at org.jboss.ejb.StatelessSessionContainer$ContainerInterceptor.invoke(StatelessSessionContainer.java:237)
+//			        at org.jboss.resource.connectionmanager.CachedConnectionInterceptor.invoke(CachedConnectionInterceptor.java:158)
+//			        at org.jboss.ejb.plugins.StatelessSessionInstanceInterceptor.invoke(StatelessSessionInstanceInterceptor.java:169)
+//			        at org.jboss.ejb.plugins.CallValidationInterceptor.invoke(CallValidationInterceptor.java:63)
+//			        at org.jboss.ejb.plugins.AbstractTxInterceptor.invokeNext(AbstractTxInterceptor.java:121)
+//			        at org.jboss.ejb.plugins.TxInterceptorCMT.runWithTransactions(TxInterceptorCMT.java:350)
+//			        at org.jboss.ejb.plugins.TxInterceptorCMT.invoke(TxInterceptorCMT.java:181)
+//			        at org.jboss.ejb.plugins.SecurityInterceptor.invoke(SecurityInterceptor.java:168)
+//			        at org.jboss.ejb.plugins.LogInterceptor.invoke(LogInterceptor.java:205)
+//			        at org.jboss.ejb.plugins.ProxyFactoryFinderInterceptor.invoke(ProxyFactoryFinderInterceptor.java:138)
+//			        at org.jboss.ejb.SessionContainer.internalInvoke(SessionContainer.java:648)
+//			        at org.jboss.ejb.Container.invoke(Container.java:960)
+//			        at sun.reflect.GeneratedMethodAccessor111.invoke(Unknown Source)
+//			        at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+//			        at java.lang.reflect.Method.invoke(Method.java:585)
+//			        at org.jboss.mx.interceptor.ReflectedDispatcher.invoke(ReflectedDispatcher.java:155)
+//			        at org.jboss.mx.server.Invocation.dispatch(Invocation.java:94)
+//			        at org.jboss.mx.server.Invocation.invoke(Invocation.java:86)
+//			        at org.jboss.mx.server.AbstractMBeanInvoker.invoke(AbstractMBeanInvoker.java:264)
+//			        at org.jboss.mx.server.MBeanServerImpl.invoke(MBeanServerImpl.java:659)
+//			        at org.jboss.invocation.unified.server.UnifiedInvoker.invoke(UnifiedInvoker.java:231)
+//			        at sun.reflect.GeneratedMethodAccessor148.invoke(Unknown Source)
+//			        at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+//			        at java.lang.reflect.Method.invoke(Method.java:585)
+//			        at org.jboss.mx.interceptor.ReflectedDispatcher.invoke(ReflectedDispatcher.java:155)
+//			        at org.jboss.mx.server.Invocation.dispatch(Invocation.java:94)
+//			        at org.jboss.mx.server.Invocation.invoke(Invocation.java:86)
+//			        at org.jboss.mx.server.AbstractMBeanInvoker.invoke(AbstractMBeanInvoker.java:264)
+//			        at org.jboss.mx.server.MBeanServerImpl.invoke(MBeanServerImpl.java:659)
+//			        at javax.management.MBeanServerInvocationHandler.invoke(MBeanServerInvocationHandler.java:201)
+//			        at $Proxy16.invoke(Unknown Source)
+//			        at org.jboss.remoting.ServerInvoker.invoke(ServerInvoker.java:734)
+//			        at org.jboss.remoting.transport.socket.ServerThread.processInvocation(ServerThread.java:560)
+//			        at org.jboss.remoting.transport.socket.ServerThread.dorun(ServerThread.java:383)
+//			        at org.jboss.remoting.transport.socket.ServerThread.run(ServerThread.java:165)
+
 		return pm;
 	}
 
