@@ -27,13 +27,10 @@
 package org.nightlabs.jfire.base.config;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import javax.jdo.FetchPlan;
 import javax.jdo.JDOHelper;
 
 import org.apache.log4j.Logger;
@@ -62,7 +59,6 @@ import org.nightlabs.base.job.Job;
 import org.nightlabs.base.notification.NotificationAdapterJob;
 import org.nightlabs.inheritance.FieldMetaData;
 import org.nightlabs.inheritance.InheritanceManager;
-import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.JFireBaseEAR;
 import org.nightlabs.jfire.base.editlock.EditLockMan;
 import org.nightlabs.jfire.base.jdo.cache.Cache;
@@ -91,8 +87,6 @@ import org.nightlabs.util.Utils;
  * <p>
  * See 
  * <ul>
- * <li>{@link #getConfigModuleClassName()}</li>
- * <li>{@link #getConfigModuleFetchGroups()}</li>
  * <li>{@link #createPreferencePage(Composite)}</li>
  * <li>{@link #updatePreferencePage()}</li>
  * <li>{@link #updateConfigModule()}</li>
@@ -198,9 +192,7 @@ extends LSDPreferencePage
 		return configModuleManager;
 	}
 	
-	protected IConfigModuleController createConfigModuleController() {
-		return new ConfigModuleController(this);
-	}
+	protected abstract IConfigModuleController createConfigModuleController();
 	 		
 	/**
 	 * Checks if the user is allowed to change configuration 
@@ -443,14 +435,14 @@ extends LSDPreferencePage
 		if (logger.isDebugEnabled())
 			logger.debug("createContents: registering changeListener"); //$NON-NLS-1$
 		
-		JDOLifecycleManager.sharedInstance().addNotificationListener(getConfigModuleClass(), changeListener);
+		JDOLifecycleManager.sharedInstance().addNotificationListener(getConfigModuleController().getConfigModuleClass(), changeListener);
 		fadableWrapper.addDisposeListener(new DisposeListener() {
 			public void widgetDisposed(DisposeEvent e) {
 				if (logger.isDebugEnabled())
 					logger.debug("widgetDisposed: UNregistering changeListener"); //$NON-NLS-1$
 
 				configChangedListeners.clear();
-				JDOLifecycleManager.sharedInstance().removeNotificationListener(getConfigModuleClass(), changeListener);
+				JDOLifecycleManager.sharedInstance().removeNotificationListener(getConfigModuleController().getConfigModuleClass(), changeListener);
 //				changeListener = null;
 			}
 		});
@@ -603,8 +595,10 @@ extends LSDPreferencePage
 //									getConfigModuleClass(), configModuleManager.getConfigModuleID(), getConfigModuleFetchGroups().toArray(new String[] {}), 
 //									getConfigModuleMaxFetchDepth(), monitor);
 							ConfigModule groupModule = ConfigModuleDAO.sharedInstance().getGroupsCorrespondingModule(
-									configModuleManager.getConfigID(), getConfigModuleClass(), 
-									configModuleManager.getConfigModuleID(), getConfigModuleFetchGroups().toArray(new String[0]), getConfigModuleMaxFetchDepth(), monitor);
+									configModuleManager.getConfigID(), getConfigModuleController().getConfigModuleClass(), 
+									configModuleManager.getConfigModuleID(), getConfigModuleController().getConfigModuleFetchGroups().toArray(new String[0]), 
+									getConfigModuleController().getConfigModuleMaxFetchDepth(), monitor
+							);
 							
 							InheritanceManager inheritanceManager = new InheritanceManager();
 							inheritanceManager.inheritAllFields(groupModule, getConfigModuleController().getConfigModule());
@@ -669,25 +663,10 @@ extends LSDPreferencePage
 	 */
 	public abstract void updateConfigModule();
 
-	/**
-	 * @return the full claified class name of the confi module class,
-	 * this must be given as String, and MUST not be implemente by Class.getName() 
-	 */
-	public abstract String getConfigModuleClassName();
-		
-	protected Class getConfigModuleClass() 
-	{
-		try {
-			return Class.forName(getConfigModuleClassName());
-		} catch (ClassNotFoundException e) {
-			throw new RuntimeException(e);
-		}
-	}
-	
 	public String getSimpleClassName() 
 	{
-		int index = getConfigModuleClassName().lastIndexOf("."); //$NON-NLS-1$
-		return getConfigModuleClassName().substring(index+1, getConfigModuleClassName().length()-1);
+		int index = getConfigModuleController().getConfigModuleClass().getName().lastIndexOf("."); //$NON-NLS-1$
+		return getConfigModuleController().getConfigModuleClass().getName().substring(index+1, getConfigModuleController().getConfigModuleClass().getName().length()-1);
 	}
 	
 	/**
@@ -700,60 +679,6 @@ extends LSDPreferencePage
 //	public String getConfigModuleCfModID() {
 //		return null;
 //	}
-
-	/**
-	 * This method should return all fetch groups necessary to display a detached {@link ConfigModule}
-	 * of type {@link #getConfigModuleClassName()} for which this page is designed for. <br>
-	 * 
-	 * Note: You should use {@link #getCommonConfigModuleFetchGroups()} and create a new Set of fetch 
-	 * 	groups out of the given ones and add the specific fetch groups necessary for this kind of 
-	 * 	<code>ConfigModule</code>.
-	 * 
-	 * @return the Set of fetch groups necessary to properly display a detached {@link ConfigModule} 
-	 * 	of this kind.
-	 */
-	public abstract Set<String> getConfigModuleFetchGroups();
-	
-	/**
-	 * This is the default Set of fetch groups needed for any ConfigModule it contains: 
-	 * {@link FetchPlan#DEFAULT}, {@link ConfigModule#FETCH_GROUP_FIELDMETADATAMAP},
-	 * {@link ConfigModule#FETCH_GROUP_CONFIG}.
-	 * 
-	 * If subclasses want to extend these default fetch groups they need to overwrite 
-	 * {@link #getConfigModuleFetchGroups()}. 
-	 */
-	private static final Set<String> CONFIG_MODULE_FETCH_GROUPS = new HashSet<String>(); 
-
-	/**
-	 * Returns fetch-groups containing the FetchPlans, which are surely needed:
-	 * {@link #CONFIG_MODULE_FETCH_GROUPS}. <br>
-	 * Subclasses are intended to create a new set from this one and extend it with the fetch groups 
-	 * covering the fields their class extended {@link ConfigModule} with. <p>
-	 * 
-	 * Note: To omit the growth of this set, as it is being used in different contexts, the returned set is 
-	 * unmodifiable! 
-	 * 
-	 * @return an unmodifiable Set of Strings containing the default ConfigModule fetch groups ({@value #CONFIG_MODULE_FETCH_GROUPS}.
-	 */
-	public static Set<String> getCommonConfigModuleFetchGroups() {
-		if (CONFIG_MODULE_FETCH_GROUPS.isEmpty()) {
-			CONFIG_MODULE_FETCH_GROUPS.add(FetchPlan.DEFAULT);
-			CONFIG_MODULE_FETCH_GROUPS.add(ConfigModule.FETCH_GROUP_FIELDMETADATAMAP);
-			CONFIG_MODULE_FETCH_GROUPS.add(ConfigModule.FETCH_GROUP_CONFIG);
-		}
-		
-		return Collections.unmodifiableSet(CONFIG_MODULE_FETCH_GROUPS);
-	}
-
-	/**
-	 * Returns the unlimited fetch depth. If subclasses need to restrict the fetch depth, then
-	 * they need overwrite this method. 
-	 *  
-	 * @return the unlimited fetch depth.
-	 */
-	public int getConfigModuleMaxFetchDepth() {
-		return NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT;
-	}
 	
 	/**
 	 * Default implementation does nothing. Subclasses (AbstractUser..., AbstractWorkstation...) have
@@ -812,10 +737,20 @@ extends LSDPreferencePage
 		try {
 			configManager = ConfigManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
 			ConfigModule storedConfigModule = (ConfigModule) configManager.storeConfigModule(
-					getConfigModuleController().getConfigModule(), true, getConfigModuleFetchGroups().toArray(new String[] {}), getConfigModuleMaxFetchDepth());
+					getConfigModuleController().getConfigModule(), true, getConfigModuleController().getConfigModuleFetchGroups().toArray(new String[] {}), 
+					getConfigModuleController().getConfigModuleMaxFetchDepth()
+			);
 
-			Cache.sharedInstance().put(null, storedConfigModule, getConfigModuleFetchGroups(), getConfigModuleMaxFetchDepth());
-			getConfigModuleController().setConfigModule(Utils.cloneSerializable(storedConfigModule));
+			Cache.sharedInstance().put(null, storedConfigModule, getConfigModuleController().getConfigModuleFetchGroups(), 
+					getConfigModuleController().getConfigModuleMaxFetchDepth()
+			);
+//			getConfigModuleController().setConfigModule(Utils.cloneSerializable(storedConfigModule));
+			getConfigModuleController().setConfigModule(storedConfigModule);
+			Display.getDefault().asyncExec(new Runnable() {
+				public void run() {
+					updatePreferencePage();
+				}
+			});
 			recentlySaved = true;
 		} catch (Throwable e) {
 			throw new RuntimeException(e);

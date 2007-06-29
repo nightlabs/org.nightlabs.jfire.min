@@ -1,11 +1,17 @@
 package org.nightlabs.jfire.base.config;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.jdo.FetchPlan;
 import javax.jdo.JDODetachedFieldAccessException;
 import javax.jdo.JDOHelper;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.Priority;
 import org.eclipse.core.runtime.ListenerList;
+import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.config.ConfigGroup;
 import org.nightlabs.jfire.config.ConfigModule;
 import org.nightlabs.jfire.config.dao.ConfigModuleDAO;
@@ -18,12 +24,12 @@ import org.nightlabs.util.Utils;
  * @author Daniel.Mazurek [at] NightLabs [dot] de
  *
  */
-public class ConfigModuleController 
+public abstract class AbstractConfigModuleController 
 implements IConfigModuleController 
 {
-	private static final Logger logger = Logger.getLogger(ConfigModuleController.class);
+	private static final Logger logger = Logger.getLogger(AbstractConfigModuleController.class);
 	
-	public ConfigModuleController(AbstractConfigModulePreferencePage preferencePage) {
+	public AbstractConfigModuleController(AbstractConfigModulePreferencePage preferencePage) {
 		this.preferencePage = preferencePage;
 	}
 
@@ -100,12 +106,53 @@ implements IConfigModuleController
 	 */
 	public ConfigModule getGroupConfigModule(ConfigModule memberModule) {
 		return ConfigModuleDAO.sharedInstance().getGroupsCorrespondingModule(
-				configID, preferencePage.getConfigModuleClass(), configModuleID, 
-				preferencePage.getConfigModuleFetchGroups().toArray(new String[0]), 
-				preferencePage.getConfigModuleMaxFetchDepth(), new NullProgressMonitor()
+				configID, getConfigModuleClass(), configModuleID, 
+				getConfigModuleFetchGroups().toArray(new String[0]), 
+				getConfigModuleMaxFetchDepth(), new NullProgressMonitor()
 				);
 	}
-			
+	
+	/**
+	 * This is the default Set of fetch groups needed for any ConfigModule it contains: 
+	 * {@link FetchPlan#DEFAULT}, {@link ConfigModule#FETCH_GROUP_FIELDMETADATAMAP},
+	 * {@link ConfigModule#FETCH_GROUP_CONFIG}.
+	 * 
+	 * If subclasses want to extend these default fetch groups they need to overwrite 
+	 * {@link #getConfigModuleFetchGroups()}. 
+	 */
+	private static final Set<String> CONFIG_MODULE_FETCH_GROUPS = new HashSet<String>(); 
+
+	/**
+	 * Returns fetch-groups containing the FetchPlans, which are surely needed:
+	 * {@link #CONFIG_MODULE_FETCH_GROUPS}. <br>
+	 * Subclasses are intended to create a new set from this one and extend it with the fetch groups 
+	 * covering the fields their class extended {@link ConfigModule} with. <p>
+	 * 
+	 * Note: To omit the growth of this set, as it is being used in different contexts, the returned set is 
+	 * unmodifiable! 
+	 * 
+	 * @return an unmodifiable Set of Strings containing the default ConfigModule fetch groups ({@value #CONFIG_MODULE_FETCH_GROUPS}.
+	 */
+	public static Set<String> getCommonConfigModuleFetchGroups() {
+		if (CONFIG_MODULE_FETCH_GROUPS.isEmpty()) {
+			CONFIG_MODULE_FETCH_GROUPS.add(FetchPlan.DEFAULT);
+			CONFIG_MODULE_FETCH_GROUPS.add(ConfigModule.FETCH_GROUP_FIELDMETADATAMAP);
+			CONFIG_MODULE_FETCH_GROUPS.add(ConfigModule.FETCH_GROUP_CONFIG);
+		}
+		
+		return Collections.unmodifiableSet(CONFIG_MODULE_FETCH_GROUPS);
+	}
+	
+	/**
+	 * Returns the unlimited fetch depth. If subclasses need to restrict the fetch depth, then
+	 * they need overwrite this method.
+	 *  
+	 * @return the unlimited fetch depth.
+	 */
+	public int getConfigModuleMaxFetchDepth() {
+		return NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT;
+	}
+	
 	/**
 	 * Fetches and returns the ConfigModule of the Config with {@link ConfigID} == <code>configID</code> from the 
 	 * cache with ConfigModuleClass == <code>getPreferencePage().getConfigModuleClassName()</code>, 
@@ -125,10 +172,10 @@ implements IConfigModuleController
 		
 		return Utils.cloneSerializable((ConfigModule) ConfigModuleDAO.sharedInstance().getConfigModule(
 				getConfigID(), 
-				getPreferencePage().getConfigModuleClass(),
+				getConfigModuleClass(),
 				configModuleID,
-				getPreferencePage().getConfigModuleFetchGroups().toArray(new String[] {}),
-				getPreferencePage().getConfigModuleMaxFetchDepth(), 
+				getConfigModuleFetchGroups().toArray(new String[] {}),
+				getConfigModuleMaxFetchDepth(), 
 				monitor
 				));
 	}

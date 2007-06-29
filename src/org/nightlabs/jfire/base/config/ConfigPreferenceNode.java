@@ -32,6 +32,7 @@ import java.util.List;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.swt.graphics.Image;
+import org.nightlabs.jfire.base.login.Login;
 
 /**
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
@@ -42,12 +43,14 @@ public class ConfigPreferenceNode {
 	private String configPreferenceID;
 	private String configPreferenceName;
 	private IConfigurationElement element;
-	private String configModuleClassName;
+	private Class configModuleClass;
 	private String configModuleCfModID;
 	private String categoryID;
 	private ConfigPreferenceNode parent;
 	private List<ConfigPreferenceNode> children = 
 		new ArrayList<ConfigPreferenceNode>();
+	
+	private AbstractConfigModulePreferencePage preferencePage;
 	
 	private Image icon;
 	
@@ -60,7 +63,7 @@ public class ConfigPreferenceNode {
 		String categoryID,
 		ConfigPreferenceNode parent,
 		IConfigurationElement element,
-		String configModuleClassName,
+		AbstractConfigModulePreferencePage preferencePage,
 		String configModuleCfModID
 	) {
 		super();
@@ -69,8 +72,8 @@ public class ConfigPreferenceNode {
 		this.categoryID = categoryID;
 		this.parent = parent;
 		this.element = element;
-		this.configModuleClassName = configModuleClassName;
 		this.configModuleCfModID = configModuleCfModID;
+		this.preferencePage = preferencePage;
 	}
 	
 	public ConfigPreferenceNode getParent() {
@@ -122,8 +125,13 @@ public class ConfigPreferenceNode {
 		this.icon = icon;
 	}
 
-	public String getConfigModuleClassName() {
-		return configModuleClassName;
+	public Class getConfigModuleClass() {
+		if (configModuleClass == null) {
+			if (Login.isLoggedIn() && preferencePage != null && preferencePage.getConfigModuleController() != null) {
+				configModuleClass = preferencePage.getConfigModuleController().getConfigModuleClass();
+			}
+		}
+		return configModuleClass;
 	}
 	
 	public String getConfigModuleCfModID() {
@@ -146,4 +154,8 @@ public class ConfigPreferenceNode {
 		return (AbstractConfigModulePreferencePage) element.createExecutableExtension(ConfigPreferencePageRegistry.CLASS_ELEMENT);
 	}
 
+	public AbstractConfigModulePreferencePage getPreferencePage() {
+		return preferencePage;
+	}
+	
 }

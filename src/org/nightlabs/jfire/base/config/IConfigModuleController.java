@@ -1,5 +1,7 @@
 package org.nightlabs.jfire.base.config;
 
+import java.util.Set;
+
 import org.nightlabs.jfire.config.Config;
 import org.nightlabs.jfire.config.ConfigGroup;
 import org.nightlabs.jfire.config.ConfigModule;
@@ -13,6 +15,33 @@ import org.nightlabs.util.Utils;
  */
 public interface IConfigModuleController 
 {
+	
+	/**
+	 * @return The Class of ConfigModule this controller and its associated page is designed for.  
+	 */
+	public abstract Class getConfigModuleClass();
+	
+	/**
+	 * This method should return all fetch groups necessary to display a detached {@link ConfigModule}
+	 * of type {@link #getConfigModuleClass()} for which this controller is designed for.
+	 * <p> 
+	 * Note: You should use {@link #getCommonConfigModuleFetchGroups()} and create a new Set of fetch 
+	 * 	groups out of the given ones and add the specific fetch groups necessary for this kind of 
+	 * 	<code>ConfigModule</code>.
+	 * </p>
+	 * @return the Set of fetch groups necessary to properly display a detached {@link ConfigModule} 
+	 * 	of this kind.
+	 */
+	public abstract Set<String> getConfigModuleFetchGroups();
+	
+	/**
+	 * Returns the unlimited fetch depth. If subclasses need to restrict the fetch depth, then
+	 * they need overwrite this method.
+	 *  
+	 * @return the unlimited fetch depth.
+	 */
+	public int getConfigModuleMaxFetchDepth();	
+	
 	/**
 	 * returns the id object {@link ConfigID} of the {@link Config} where
 	 * the {@link ConfigModule} belongs to, which is controlled by this IConfigModuleController

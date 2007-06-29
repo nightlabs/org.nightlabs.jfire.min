@@ -45,6 +45,7 @@ import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.jboss.aop.joinpoint.Invocation;
 import org.nightlabs.base.composite.FadeableComposite;
 import org.nightlabs.base.job.Job;
 import org.nightlabs.jfire.base.JFireBaseEAR;
@@ -79,10 +80,10 @@ implements ConfigPreferenceChangedListener, IStoreChangedConfigModule
 	protected Map<String, ConfigModule> involvedConfigModules = new HashMap<String, ConfigModule>();
 
 	/**
-	 * (ConfigModule.class.getSimpleName(), AbstractConfigModulePreferencePage)
+	 * (ConfigPreferenceNode, AbstractConfigModulePreferencePage)
 	 */
-	protected Map<String, AbstractConfigModulePreferencePage> 
-			involvedPages = new HashMap<String, AbstractConfigModulePreferencePage>(); 
+	protected Map<ConfigPreferenceNode, AbstractConfigModulePreferencePage> 
+			involvedPages = new HashMap<ConfigPreferenceNode, AbstractConfigModulePreferencePage>(); 
 
 	protected Set<ConfigModule> dirtyConfigModules = new HashSet<ConfigModule>();
 	
@@ -109,13 +110,28 @@ implements ConfigPreferenceChangedListener, IStoreChangedConfigModule
 		treeComposite.getTreeViewer().addSelectionChangedListener(new ISelectionChangedListener(){ 
 			public void selectionChanged(SelectionChangedEvent event) {
 				ConfigPreferenceNode selection = treeComposite.getFirstSelectedElement();
-				if (selection == null) {
+				if (selection == null || selection.getElement() == null) {
 					currentPage = null;
+					updatePreferencesComposite();
 					return;					
 				}
 				try {
-					currentPage = selection.createPreferencePage();
-					currentcfModID = selection.getConfigModuleCfModID();
+					if (!involvedPages.containsKey(selection)) 
+					{
+						currentPage = selection.createPreferencePage();
+						currentcfModID = selection.getConfigModuleCfModID();
+						
+						// FIXME: store ConfigPrefNode instead of page only or somehow get the moduleID.
+						currentPage.getConfigModuleController().setConfigID(currentConfigID, true, currentcfModID);
+						currentPage.createPartContents(preferencesComposite.getWrapper());
+						
+						currentPage.addConfigPreferenceChangedListener(ConfigPreferencesEditComposite2.this);
+						involvedPages.put(selection, currentPage);
+					} else {
+						currentPage = involvedPages.get(selection);
+					}
+					
+					
 				} catch (CoreException e) {
 					throw new RuntimeException("Couldn't create an AbstractPreferencePage: ", e);
 				}
@@ -135,23 +151,13 @@ implements ConfigPreferenceChangedListener, IStoreChangedConfigModule
 			return;
 		}
 
-		if (!involvedPages.values().contains(selectedPage)) 
-		{
-			// FIXME: store ConfigPrefNode instead of page only or somehow get the moduleID.
-			selectedPage.getConfigModuleController().setConfigID(currentConfigID, true, currentcfModID);
-			selectedPage.createPartContents(preferencesComposite.getWrapper());
-			
-			selectedPage.addConfigPreferenceChangedListener(this);
-			involvedPages.put(selectedPage.getSimpleClassName(), selectedPage);
-		}
-
 		preferencesComposite.getStackLayout().topControl = selectedPage.getControl();		
 		preferencesComposite.getWrapper().layout();
 	}
 
 	private void updateCurrentConfigModule() {
 		if (currentConfigModule != null && currentPage != null) {
-			if (currentConfigModule.getClass().equals(currentPage.getConfigModuleClassName())) {				
+			if (currentConfigModule.getClass().equals(currentPage.getConfigModuleController().getClass())) {				
 				currentPage.updateConfigModule();
 			}
 		}
@@ -228,7 +234,7 @@ implements ConfigPreferenceChangedListener, IStoreChangedConfigModule
 	}
 
 	private String getCfModKey(AbstractConfigModulePreferencePage page) {
-		return ConfigModule.getCfModKey(page.getConfigModuleClass(), 
+		return ConfigModule.getCfModKey(page.getConfigModuleController().getConfigModuleClass(), 
 							page.getConfigModuleController().getConfigModuleID());
 	}
 	

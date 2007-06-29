@@ -245,7 +245,7 @@ public class ConfigSetupRegistry extends AbstractEPProcessor
 		if (rootNode != null)
 			return rootNode;
 		ConfigPreferenceNode registeredRootNode = ConfigPreferencePageRegistry.sharedInstance().getPreferencesRootNode();
-		rootNode = new ConfigPreferenceNode("","","",null,null, null, null);
+		rootNode = new ConfigPreferenceNode("", "", "", null, null, null, null);
 
 		Set<String> mergeModules = new HashSet<String>();
 		mergeModules.addAll(setup.getConfigModuleClasses());		
@@ -259,7 +259,7 @@ public class ConfigSetupRegistry extends AbstractEPProcessor
 		// for all remaining classes add a null-Node
 		for (Iterator iter = mergeModules.iterator(); iter.hasNext();) {
 			String moduleClassName = (String) iter.next();
-			ConfigPreferenceNode node = new ConfigPreferenceNode("", moduleClassName, "", rootNode, null, moduleClassName, null);
+			ConfigPreferenceNode node = new ConfigPreferenceNode("", moduleClassName, "", rootNode, null, null, null);
 			rootNode.addChild(node);
 		}
 		mergedTreeNodes.put(scope+setup.getConfigSetupType(), rootNode);
@@ -279,7 +279,7 @@ public class ConfigSetupRegistry extends AbstractEPProcessor
 			ConfigPreferenceNode orgNode,
 			ConfigPreferenceNode newNodeParent) 
 	{
-		String nodeClassName = orgNode.getConfigModuleClassName();
+		String nodeClassName = orgNode.getConfigModuleClass() != null ? orgNode.getConfigModuleClass().getName() : ""; 
 		boolean hasRegistration = setup.getConfigModuleClasses().contains(nodeClassName); 
 //			(orgNode.createPreferencePage() != null) && 
 		if (hasRegistration) {
@@ -290,7 +290,8 @@ public class ConfigSetupRegistry extends AbstractEPProcessor
 					orgNode.getCategoryID(),
 					newNodeParent,
 					orgNode.getElement(),
-					nodeClassName, null // FIXME: insert here the modID stuff?
+					orgNode.getPreferencePage(),
+					null // FIXME: insert here the modID stuff?
 				);			
 			newNodeParent.addChild(newNode);
 			for (Iterator iter = orgNode.getChildren().iterator(); iter.hasNext();) {

@@ -111,7 +111,8 @@ public class ConfigPreferencePageRegistry extends AbstractEPProcessor
 			ConfigPreferenceNode preferenceNode = new ConfigPreferenceNode(
 					id, name, category, 
 					null, element,
-					configPage.getConfigModuleClassName(), null // cfModIDs are set later when the merging takes place
+					configPage,
+					null // cfModIDs are set later when the merging takes place
 			);
 			preferenceNodesByIDs.put(id, preferenceNode);
 		}

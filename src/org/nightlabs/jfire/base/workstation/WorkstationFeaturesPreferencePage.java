@@ -2,11 +2,9 @@ package org.nightlabs.jfire.base.workstation;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
@@ -20,7 +18,7 @@ import org.nightlabs.base.table.AbstractTableComposite;
 import org.nightlabs.base.table.TableContentProvider;
 import org.nightlabs.base.table.TableLabelProvider;
 import org.nightlabs.jfire.base.config.AbstractWorkstationConfigModulePreferencePage;
-import org.nightlabs.jfire.config.ConfigModule;
+import org.nightlabs.jfire.base.config.IConfigModuleController;
 import org.nightlabs.jfire.workstation.WorkstationFeature;
 import org.nightlabs.jfire.workstation.WorkstationFeaturesCfMod;
 
@@ -57,27 +55,6 @@ extends AbstractWorkstationConfigModulePreferencePage
 	protected void createPreferencePage(Composite parent) {
 		XComposite container = new XComposite(parent, SWT.NONE, LayoutMode.TIGHT_WRAPPER);
 		featureTable = new FeatureTable(container);
-	}
-
-//	@Override
-//	public Class<WorkstationFeaturesCfMod> getConfigModuleClass() {
-//		return WorkstationFeaturesCfMod.class;
-//	}
-	@Override
-	public String getConfigModuleClassName() {
-		return "org.nightlabs.jfire.workstation.WorkstationFeaturesCfMod";
-	}
-	
-	private static final Set<String> fetchGroups = new HashSet<String>();
-	
-	@Override
-	public Set<String> getConfigModuleFetchGroups() {
-		if (fetchGroups.isEmpty()) {
-			fetchGroups.addAll(getCommonConfigModuleFetchGroups());
-			fetchGroups.add(WorkstationFeaturesCfMod.FETCH_GROUP_THIS_FEATURES);			
-		}
-		
-		return fetchGroups;
 	}
 
 	@Override
@@ -151,6 +128,11 @@ extends AbstractWorkstationConfigModulePreferencePage
 		result.add(new WorkstationFeature(cfMod, "org.nightlabs.jfire.base", "1.0.0"));
 		result.add(new WorkstationFeature(cfMod, "org.nightlabs.jfire.base.admin", "1.0.0"));
 		return result;
+	}
+
+	@Override
+	protected IConfigModuleController createConfigModuleController() {
+		return new WorkstationFeaturesController(this);
 	}
 
 }
