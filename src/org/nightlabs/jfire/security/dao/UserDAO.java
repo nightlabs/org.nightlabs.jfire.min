@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.jdo.JDODetachedFieldAccessException;
 import javax.jdo.JDOHelper;
 
 import org.nightlabs.annotation.Implement;
@@ -131,7 +132,7 @@ public class UserDAO extends BaseJDOObjectDAO<UserID, User>
 	 * @param monitor The progress monitor to use. This method will
 	 * 		make a progress of 5 work units per user.
 	 */
-	public synchronized void storeUser(User user, ProgressMonitor monitor)
+	public synchronized User storeUser(User user, boolean get, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
 	{
 		if(user == null)
 			throw new NullPointerException("User to save must not be null");
@@ -166,11 +167,18 @@ public class UserDAO extends BaseJDOObjectDAO<UserID, User>
 			// FIXME: how to do this?
 			// set person to call User.setNameAuto()
 //			user.setPerson(person);
-			um.saveUser(user, null);
+			String userPassword = null;
+			try {
+				userPassword = user.getUserLocal().getPassword();
+			} catch (JDODetachedFieldAccessException e) {
+				userPassword = null;
+			}
+			User result = um.storeUser(user, userPassword, get, fetchGroups, maxFetchDepth);
 			monitor.worked(1);
 			struct.explodeProperty(person);    
 			monitor.worked(1);
 			monitor.done();
+			return result;
 		} catch(Exception e) {
 			monitor.done();
 			throw new RuntimeException("User upload failed", e);
@@ -237,7 +245,7 @@ public class UserDAO extends BaseJDOObjectDAO<UserID, User>
 	 */
 	public synchronized void storeUserGroup(UserGroup userGroup, ProgressMonitor monitor)
 	{
-		storeUser(userGroup, monitor);
+		storeUser(userGroup, false, null, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT, monitor);
 	}
 
 	/**
