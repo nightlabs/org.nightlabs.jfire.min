@@ -38,7 +38,7 @@ public abstract class EditLockCallback
 	 * @param editLockCarrier The {@link EditLockCarrier} referencing the {@link EditLock} that is about to be released.
 	 * @return whether or not to release the {@link EditLock}.
 	 */
-	boolean canReleaseEditLock(EditLockCarrier editLockCarrier)
+	public boolean canReleaseEditLock(EditLockCarrier editLockCarrier)
 	{
 		return true;
 	}
