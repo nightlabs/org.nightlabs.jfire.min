@@ -39,9 +39,9 @@ import org.apache.log4j.Logger;
 /**
  * Helper class to login to a JFire server.
  * <p>
- * It can be instantiated an serve IntialContextProperties 
+ * It can be instantiated and serves IntialContextProperties 
  * that developers will need for example to create EJB proxies to
- * the services the jfire server provides. (See {@link #getInitialContextProperties()})
+ * the services, the jfire server provides. (See {@link #getInitialContextProperties()})
  * </p>
  * <p>
  * The Login can be configured via a {@link Properties} instance where it expects the following keys:
@@ -83,7 +83,7 @@ public class JFireLogin
 	private String initialContextFactory;
 	private String securityProtocol;
 	
-	private Properties loginProperties;
+//	private Properties loginProperties;
 
 	/**
 	 * Creates a new {@link JFireLogin}.
@@ -95,13 +95,13 @@ public class JFireLogin
 	 */
 	public JFireLogin(Properties loginProperties)
 	{
-		this.loginProperties = loginProperties;
-		this.organisationID = getProperty(PROP_ORGANISATION_ID, "");
-		this.userID = getProperty(PROP_USER_ID, "");
-		this.password = getProperty(PROP_PASSWORD, "");
-		this.providerURL = getProperty(PROP_PROVIDER_URL, null);
-		this.initialContextFactory = getProperty(PROP_INITIAL_CONTEXT_FACTORY, "org.nightlabs.jfire.jboss.cascadedauthentication.LoginInitialContextFactory");
-		this.securityProtocol = getProperty(PROP_SECURITY_PROTOCOL, "jfire");
+//		this.loginProperties = loginProperties;
+		this.organisationID = loginProperties.getProperty(PROP_ORGANISATION_ID, "");
+		this.userID = loginProperties.getProperty(PROP_USER_ID, "");
+		this.password = loginProperties.getProperty(PROP_PASSWORD, "");
+		this.providerURL = loginProperties.getProperty(PROP_PROVIDER_URL, null);
+		this.initialContextFactory = loginProperties.getProperty(PROP_INITIAL_CONTEXT_FACTORY, "org.nightlabs.jfire.jboss.cascadedauthentication.LoginInitialContextFactory");
+		this.securityProtocol = loginProperties.getProperty(PROP_SECURITY_PROTOCOL, "jfire");
 //		// TODO is this correct here or should we 
 //		this.sessionID = Base62Coder.sharedInstance().encode(System.currentTimeMillis(), 1) + '-' + Base62Coder.sharedInstance().encode((long)(10000 * Math.random()), 1);
 		this.sessionID = JFireLogin.class.getName(); // TODO how do we handle the sessionID?!?!
@@ -134,16 +134,6 @@ public class JFireLogin
 		props.setProperty(PROP_USER_ID, _userID);
 		props.setProperty(PROP_PASSWORD, _password);
 		return props;
-	}
-
-	/**
-	 * Used internally to define config default values.
-	 */
-	private String getProperty(String key, String def) {
-		String result = def;
-		if (loginProperties.containsKey(key))
-			result = loginProperties.getProperty(key);
-		return result;
 	}
 	
 	/**
