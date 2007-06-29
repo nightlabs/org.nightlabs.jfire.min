@@ -169,6 +169,73 @@ implements SessionBean
   }
   	
   /**
+   * Create a new user or change an existing one.
+   * 
+   * @param user The user to save
+   * @param passwd The password for the user. This might be <code>null</code> for an existing user.
+   * @param get Whether to return the newly saved user.
+   * @param fetchGroups The fetch-groups to detach the returned User with.
+   * @param maxFetchDepth The maximum fetch-depth to use when detaching.
+   * 
+   * @ejb.interface-method
+   * @ejb.permission role-name="UserManager-write"
+   * @ejb.transaction type = "Required"
+   **/
+  public User storeUser(User user, String passwd, boolean get, String[] fetchGroups, int maxFetchDepth)
+  	throws SecurityException
+  {
+  	if (User.USERID_SYSTEM.equals(user.getUserID()))
+  		throw new IllegalArgumentException("Cannot manipulate system user \"" + User.USERID_SYSTEM + "\"!");
+  	if (User.USERID_OTHER.equals(user.getUserID()))
+  		throw new IllegalArgumentException("Cannot change properties of special user \"" + User.USERID_OTHER + "\"!");
+
+//    try
+//    {
+      if (user.getOrganisationID() != null && !user.getOrganisationID().equals(getOrganisationID()))
+        throw new IllegalArgumentException("user.organisationID must be null or equal to your organisationID!!!");
+
+      if (user.getOrganisationID() == null)
+      	user.setOrganisationID(getOrganisationID());
+
+      PersistenceManager pm = this.getPersistenceManager();
+      try {
+	      if (JDOHelper.isDetached(user))
+	      {
+	//        if(user.passwdChanged)
+	//        {
+	//          String password = user.getPassword();
+	//          if(user instanceof UserGroup)
+	//            throw new IllegalArgumentException("You cannot set a password for a UserGroup! userGroup.password must be null!");
+	//          if(user.passwdChanged)
+	//            user.setPassword(User.encryptPassword(user.getPassword()));
+	//        }
+	        user = (User) pm.makePersistent(user);
+	        if (passwd != null)
+	        	user.getUserLocal().setPasswordPlain(passwd);
+	      }
+	      else
+	      {
+	//        user.setPassword(User.encryptPassword(user.getPassword()));
+	      	UserLocal userLocal = new UserLocal(user);
+	      	userLocal.setPasswordPlain(passwd);
+	        user = (User) pm.makePersistent(user);
+	        ConfigSetup.ensureAllPrerequisites(pm);
+	      }
+	      
+	      if (get) {
+	    	  if (fetchGroups != null) {
+	    		  pm.getFetchPlan().setGroups(fetchGroups);
+	    		  pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
+	    	  }
+	    	  return (User) pm.detachCopy(user);
+	      }
+	      return null;
+      } finally {
+      	pm.close();
+      }
+  }
+  
+  /**
    * @deprecated should not be used anymore
    * @see User.USERTYPE_ORGANISATION
    * @see User.USERTYPE_USER
