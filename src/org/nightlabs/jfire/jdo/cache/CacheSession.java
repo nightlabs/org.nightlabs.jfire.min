@@ -348,7 +348,11 @@ implements Serializable
 	 */
 	public void addDirtyObjectIDs(Map<AbsoluteFilterID, Collection<DirtyObjectID>> filterID2DirtyObjectIDs)
 	{
-		assertOpen();
+		try {
+			assertOpen();
+		} catch (Exception e) {
+			logger.warn("Abortig addDiryObjectIDs, assertOpen() failed!", e);
+		}
 
 		synchronized (dirtyObjectIDsMutex) {
 			for (Map.Entry<AbsoluteFilterID, Collection<DirtyObjectID>> me : filterID2DirtyObjectIDs.entrySet()) {
