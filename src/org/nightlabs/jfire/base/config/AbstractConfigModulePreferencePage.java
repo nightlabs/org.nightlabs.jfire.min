@@ -701,8 +701,10 @@ extends LSDPreferencePage
 	 * Calls implementors to {@link #updateConfigModule(ConfigModule)} and
 	 * stores the updatedConfig module to the server.
 	 * 
+	 * @param doUpdateGUI Whether the {@link #updatePreferencePage()} method should be invoked
+	 * 		to cause the page to re-display the recently stored ConfigModule.
 	 */
-	public void storeConfigModule() {
+	public void storeConfigModule(boolean doUpdateGUI) {
 		if (Thread.currentThread() == Display.getDefault().getThread()) {
 			logger.error("This method must not be called on the GUI-thread! Use a job!",  //$NON-NLS-1$
 					new Exception("This method must not be called on the GUI-thread! Use a job!")); //$NON-NLS-1$
@@ -716,7 +718,7 @@ extends LSDPreferencePage
 				}
 			});
 
-			storeModule();
+			storeModule(doUpdateGUI);
 			configChanged = false;
 		} // if (isConfigCachanged()) 
 	}
@@ -731,8 +733,10 @@ extends LSDPreferencePage
 
 	/**
 	 * Stores the <code>currentConfigModule</code> to the datastore.
+	 * @param doUpdateGUI Whether the {@link #updatePreferencePage()} method should be invoked
+	 * 		to cause the page to re-display the recently stored ConfigModule.
 	 */
-	protected void storeModule() {
+	protected void storeModule(boolean doUpdateGUI) {
 		ConfigManager configManager = null;
 		try {
 			configManager = ConfigManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
@@ -746,11 +750,13 @@ extends LSDPreferencePage
 			);
 //			getConfigModuleController().setConfigModule(Utils.cloneSerializable(storedConfigModule));
 			getConfigModuleController().setConfigModule(storedConfigModule);
-			Display.getDefault().asyncExec(new Runnable() {
-				public void run() {
-					updatePreferencePage();
-				}
-			});
+			if (doUpdateGUI) {
+				Display.getDefault().asyncExec(new Runnable() {
+					public void run() {
+						updatePreferencePage();
+					}
+				});
+			}
 			recentlySaved = true;
 		} catch (Throwable e) {
 			throw new RuntimeException(e);
@@ -758,13 +764,13 @@ extends LSDPreferencePage
 	}
 
 	public boolean performOk() {
-		storeConfigModule();
+		storeConfigModule(false);
 		return true;
 	}
 
 	protected void updateApplyButton() {
 		updateConfigModule();
-		storeConfigModule();
+		storeConfigModule(true);
 	}
 
 	/**
