@@ -100,7 +100,7 @@ public class ConfigPreferencePageRegistry extends AbstractEPProcessor
 			try {
 				page = (IWorkbenchPreferencePage)element.createExecutableExtension(CLASS_ELEMENT);
 			} catch (Throwable e) {
-				logger.error("Could not instantiate preference-page extension of type "+element.getAttribute(CLASS_ELEMENT)+"! Check, whether it has a default constructor!", e); //$NON-NLS-1$ //$NON-NLS-2$
+				logger.warn("Could not instantiate preference-page extension of type "+element.getAttribute(CLASS_ELEMENT)+"! Check, whether it has a default constructor!", e); //$NON-NLS-1$ //$NON-NLS-2$
 				page = null;
 			}
 			if (page == null)
