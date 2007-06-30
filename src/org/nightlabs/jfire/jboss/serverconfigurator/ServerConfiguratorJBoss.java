@@ -10,6 +10,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
+import org.nightlabs.annotation.Implement;
 import org.nightlabs.jfire.jboss.authentication.JFireServerLocalLoginModule;
 import org.nightlabs.jfire.jboss.authentication.JFireServerLoginModule;
 import org.nightlabs.jfire.jboss.cascadedauthentication.CascadedAuthenticationClientInterceptor;
@@ -90,11 +91,18 @@ public class ServerConfiguratorJBoss
 			throw new IOException("Renaming file "+f.getAbsolutePath()+" to "+f.getName()+" failed");
 		return backupFile;
 	}
-	
+
+	public static enum ServerVersion {
+		JBOSS_4_0_x,
+		JBOSS_4_2_x
+	}
+
+	private ServerVersion serverVersion;
+
 	/* (non-Javadoc)
 	 * @see org.nightlabs.jfire.serverconfigurator.ServerConfigurator#doConfigureServer()
 	 */
-	@Override
+	@Implement
 	protected void doConfigureServer()
 			throws ServerConfigurationException
 	{
@@ -102,7 +110,14 @@ public class ServerConfiguratorJBoss
 			// jbossDeployDir is ${jboss}/server/default/deploy - not ${jboss}/server/default/deploy/JFire.last
 			File jbossDeployDir = new File(getJFireServerConfigModule().getJ2ee().getJ2eeDeployBaseDirectory()).getParentFile().getAbsoluteFile();
 			File jbossConfDir = new File(jbossDeployDir.getParentFile(), "conf");
-			File jbossBinDir = new File(jbossDeployDir.getParentFile().getParentFile().getParentFile(), "bin");
+			File jbossBaseDir = jbossDeployDir.getParentFile().getParentFile().getParentFile();
+			File jbossBinDir = new File(jbossBaseDir, "bin");
+
+			discoverServerVersion(jbossBaseDir);
+			if (serverVersion == null) {
+				logger.error("Could not find out the server version!", new Exception("Could not find out the server version: jbossDeployDir=" + jbossDeployDir.getAbsolutePath()));
+				return;
+			}
 
 			configureLoginConfigXml(jbossConfDir);
 			configureStandardJBossXml(jbossConfDir);
@@ -112,10 +127,36 @@ public class ServerConfiguratorJBoss
 			configureRunSh(jbossBinDir);
 			configureRunBat(jbossBinDir);
 			removeUnneededFiles(jbossDeployDir);
-			
+
 		} catch(Exception e) {
 			throw new ServerConfigurationException("Server configuration failed in server configurator "+getClass().getName(), e);
 		}
+	}
+
+	private void discoverServerVersion(File jbossBaseDir) throws SAXException, FileNotFoundException, IOException
+	{
+		DOMParser parser = new DOMParser();
+		File jarVersionsFile = new File(jbossBaseDir, "jar-versions.xml");
+		parser.parse(new InputSource(new FileInputStream(jarVersionsFile)));
+		Document document = parser.getDocument();
+		Node node = NLDOMUtil.findNodeByAttribute(document, "jar-versions/jar", "name", "run.jar");
+		if (node == null) {
+			logger.error("File does not contain a node matching path=\"jar-versions/jar\" attributeName=\"name\" attributeValue=\"run.jar\": " + jarVersionsFile.getAbsolutePath());
+			return;
+		}
+
+		String specVersion = NLDOMUtil.getAttributeValue(node, "specVersion");
+		if (specVersion == null) {
+			logger.error("File does contain a node matching path=\"jar-versions/jar\" attributeName=\"name\" attributeValue=\"run.jar\", but it does not have the attribute \"specVersion\": " + jarVersionsFile.getAbsolutePath());
+			return;
+		}
+
+		if (specVersion.startsWith("4.0."))
+			serverVersion=ServerVersion.JBOSS_4_0_x;
+		else if (specVersion.startsWith("4.2."))
+			serverVersion=ServerVersion.JBOSS_4_2_x;
+		else
+			logger.error("File does contain a node matching path=\"jar-versions/jar\" attributeName=\"name\" attributeValue=\"run.jar\", but its attribute \"specVersion\" has the unknown value \"" + specVersion + "\": " + jarVersionsFile.getAbsolutePath());
 	}
 
 	/**
@@ -391,8 +432,79 @@ public class ServerConfiguratorJBoss
 			Utils.writeTextFile(destFile, text);
 		}
 	}
-	
+
 	private void configureRunSh(File jbossBinDir) throws FileNotFoundException, IOException
+	{
+		switch (serverVersion) {
+			case JBOSS_4_0_x:
+				configureRunSh_4_0_4(jbossBinDir);
+				break;
+			case JBOSS_4_2_x:
+				configureRunSh_4_2_0(jbossBinDir);
+				break;
+
+			default:
+				throw new IllegalStateException("Unknown server-version: " + serverVersion);
+		}
+	}
+	
+
+	private void configureRunSh_4_2_0(File jbossBinDir) throws FileNotFoundException, IOException
+	{
+		String text;
+		
+		try {
+			Properties serverConfiguratorSettings = getJFireServerConfigModule().getJ2ee().getServerConfiguratorSettings();
+			if(serverConfiguratorSettings == null)
+				return;
+			String rmiHost = serverConfiguratorSettings.getProperty("java.rmi.server.hostname");
+			if(rmiHost == null)
+				rmiHost = "";
+			
+			File destFile = new File(jbossBinDir, "run.sh");
+			text = Utils.readTextFile(destFile);
+			String originalText = "JAVA_OPTS=\"$JAVA_OPTS -Dprogram.name=$PROGNAME\"";
+			String optSetting = "JAVA_OPTS=\"$JAVA_OPTS -Djava.rmi.server.hostname="+rmiHost+"\"";
+			
+			Pattern existingSetting = Pattern.compile("(.*)"+Pattern.quote("JAVA_OPTS=\"$JAVA_OPTS -Djava.rmi.server.hostname=")+"([^\"]+)\"(.*)", Pattern.DOTALL);
+			Matcher matcher = existingSetting.matcher(text);
+			if(matcher.matches()) {
+				if(!rmiHost.equals(matcher.group(2))) {
+					setRebootRequired(true);
+					if("".equals(rmiHost)) {
+						logger.info("File " + destFile.getAbsolutePath() + " does contain a java.rmi.server.hostname setting but none is needed. Removing it...");
+						text = matcher.replaceAll("$1$3");
+					} else {
+						logger.info("File " + destFile.getAbsolutePath() + " does contain the wrong java.rmi.server.hostname setting. Replacing it...");
+						text = matcher.replaceAll("$1"+Matcher.quoteReplacement(optSetting)+"$3");
+					}
+					backup(destFile);
+					try {
+						Utils.writeTextFile(new File(jbossBinDir, "run.sh.jfire"), text);
+					} catch(IOException ignore) {}
+					Utils.writeTextFile(destFile, text);
+				}
+			} else if(!"".equals(rmiHost)) {
+				setRebootRequired(true);
+				logger.info("File " + destFile.getAbsolutePath() + " does not contain the java.rmi.server.hostname setting. Adding it...");
+				String replacementText = 
+						originalText + "\n\n" +
+						"# Setting RMI host for JNDI (auto added by "+getClass().getName()+")\n"+
+						optSetting;
+	
+				text = text.replaceAll(Pattern.quote(originalText), Matcher.quoteReplacement(replacementText));
+				backup(destFile);
+				try {
+					Utils.writeTextFile(new File(jbossBinDir, "run.sh.jfire"), text);
+				} catch(IOException ignore) {}
+				Utils.writeTextFile(destFile, text);
+			}
+		} catch (IOException e) {
+			logger.error("Changing the run.sh file failed. Please set the rmi host by changing the file manually or overwrite it with run.sh.jfire if it exists.");
+		}		
+	}
+
+	private void configureRunSh_4_0_4(File jbossBinDir) throws FileNotFoundException, IOException
 	{
 		String text;
 		
