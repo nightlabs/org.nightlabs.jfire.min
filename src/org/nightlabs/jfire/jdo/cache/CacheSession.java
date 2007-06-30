@@ -351,7 +351,8 @@ implements Serializable
 		try {
 			assertOpen();
 		} catch (Exception e) {
-			logger.warn("Abortig addDiryObjectIDs, assertOpen() failed!", e);
+			logger.warn("addDirtyObjectIDs: assertOpen() failed!", e);
+			return;
 		}
 
 		synchronized (dirtyObjectIDsMutex) {

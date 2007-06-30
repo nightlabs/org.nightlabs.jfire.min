@@ -611,6 +611,11 @@ public class CacheManagerFactory
 
 		CacheSession session = null;
 		for (IJDOLifecycleListenerFilter filter : filters) {
+			if (filter.getFilterID() == null) {
+				logger.warn("addLifecycleListenerFilters: Filter has no filterID assigned: " + filter);
+				continue;
+			}
+
 			if (session == null || !session.getSessionID().equals(filter.getFilterID().getSessionID()))
 				session = createCacheSession(filter.getFilterID().getSessionID(), userID);
 
