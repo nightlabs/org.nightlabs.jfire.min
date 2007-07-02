@@ -29,7 +29,7 @@
 -->
 <!--	<provides path="org.nightlabs.jfire.base" location="org.nightlabs.jfire.base/lib/jbossall-client.jar"/> -->
     
-    <publishes description="..." location="org.nightlabs.jfire.base/dist/org.nightlabs.jfire.base_1.0.0.tar.gz"/>
+    <publishes description="..." location="org.nightlabs.jfire.base/dist/org.nightlabs.jfire.base_0.9.0.tar.gz"/>
     <javadoc path="org.nightlabs.jfire.base/src"/>
   </project>
 

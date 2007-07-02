@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: JFire Base Plug-in
 Bundle-SymbolicName: org.nightlabs.jfire.base; singleton:=true
-Bundle-Version: 1.0.0
+Bundle-Version: 0.9.0
 Bundle-ClassPath: org.nightlabs.jfire.base.jar
 Bundle-Activator: org.nightlabs.jfire.base.JFireBasePlugin
 Bundle-Vendor: NightLabs.org
