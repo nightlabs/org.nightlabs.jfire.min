@@ -7,11 +7,12 @@ import java.util.List;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.widgets.Display;
+import org.nightlabs.base.job.Job;
 import org.nightlabs.base.table.AbstractTableComposite;
 import org.nightlabs.jdo.query.JDOQuery;
 import org.nightlabs.jfire.base.overview.EntryFactory;
+import org.nightlabs.progress.ProgressMonitor;
 
 /**
  * @author Daniel.Mazurek [at] NightLabs [dot] de
@@ -32,7 +33,7 @@ extends SearchEntry
 			getListComposite().getTableViewer().setInput(new String[] {"Loading!"});
 			new Job("Loading"){			
 				@Override
-				protected IStatus run(IProgressMonitor monitor) 
+				protected IStatus run(ProgressMonitor monitor) 
 				{	
 					final List<JDOQuery> queries = new ArrayList<JDOQuery>(2);
 					Display.getDefault().syncExec(new Runnable() {
@@ -82,5 +83,5 @@ extends SearchEntry
 	 * @param monitor the {@link IProgressMonitor} to display the progress
 	 * @return the result of the queries 
 	 */
-	protected abstract Object getQueryResult(Collection<JDOQuery> queries, IProgressMonitor monitor);	
+	protected abstract Object getQueryResult(Collection<JDOQuery> queries, ProgressMonitor monitor);	
 }
