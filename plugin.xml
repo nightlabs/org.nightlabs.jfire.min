@@ -105,6 +105,7 @@
 
       <perspective
             class="org.nightlabs.jfire.base.overview.OverviewPerspective"
+            fixed="true"
             icon="icons/overview/overview.16x16.png"
             id="org.nightlabs.jfire.base.overview.OverviewPerspective"
             name="%perspectives.overview.name">
