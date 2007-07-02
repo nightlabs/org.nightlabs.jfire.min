@@ -454,7 +454,7 @@ public class ServerConfiguratorJBoss
 			javaOpts = "";
 		
 		// --- TODO: for backwards compatability only - remove in later versions:
-		String rmiHost = serverConfiguratorSettings.getProperty("java.rmi.server.hostname");
+		String rmiHost = serverConfiguratorSettings == null ? null : serverConfiguratorSettings.getProperty("java.rmi.server.hostname");
 		if (rmiHost != null) {
 			javaOpts = "-Djava.rmi.server.hostname="+rmiHost+" "+javaOpts;
 			// issue #87:
