@@ -33,7 +33,7 @@ import org.xml.sax.SAXException;
  * <li>Add the <code>CascadedAuthenticationClientInterceptor</code> to the <code>standard-jboss.xml</code></li>
  * <li>Add the <code>CascadedAuthenticationClientInterceptor.properties</code> file, if it does not yet exist (in JBoss' bin directory)</li>
  * </ul>
- * Note, that it has been tested only with the JBoss version 4.0.4.
+ * Note, that it has been tested only with the JBoss version 4.0.4 and 4.2.0.
  *
  * @author Marco Schulze - marco at nightlabs dot de
  * @author Marc Klinger - marc[at]nightlabs[dot]de
