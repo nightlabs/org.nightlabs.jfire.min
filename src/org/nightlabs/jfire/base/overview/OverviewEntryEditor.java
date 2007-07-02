@@ -2,8 +2,11 @@ package org.nightlabs.jfire.base.overview;
 
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.ToolBarManager;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
@@ -70,8 +73,18 @@ extends LSDEditorPart
 	{
 		if (entry != null) {
 			composite = entry.createEntryComposite(parent);
-			if (entry.getSelectionProvider() != null)
+			if (entry.getSelectionProvider() != null) {
 				getSite().setSelectionProvider(entry.getSelectionProvider());
+				entry.getSelectionProvider().addSelectionChangedListener(selectionChangedListener);
+			}
+			
+			if (getEditorSite().getActionBarContributor() != null && 
+					getEditorSite().getActionBarContributor() instanceof XEditorActionBarContributor) 
+			{
+				XEditorActionBarContributor editorActionBarContributor = 
+					(XEditorActionBarContributor) getEditorSite().getActionBarContributor();
+				addSelectionChangedListener(editorActionBarContributor);
+			}
 			
 			updateContextMenu();
 			updateToolbar();
@@ -174,5 +187,26 @@ extends LSDEditorPart
 		getSite().getPage().removePartListener(partListener);
 		if (entry != null)
 			getSite().setSelectionProvider(entry.getSelectionProvider());		
+	}
+	
+	private ISelectionChangedListener selectionChangedListener = new ISelectionChangedListener(){
+		public void selectionChanged(SelectionChangedEvent event) {
+			logger.debug("selection changed "+event.getSelection());
+			fireSelectionChanged(event);
+		}
+	};
+	
+	private ListenerList listeners = new ListenerList();
+	public void addSelectionChangedListener(ISelectionChangedListener listener) {
+		listeners.add(listener);
+	}	
+	public void removeSelectionChangedListener(ISelectionChangedListener listener) {
+		listeners.remove(listener);
+	}
+	protected void fireSelectionChanged(SelectionChangedEvent event) {
+		for (int i=0; i<listeners.size(); i++) {
+			ISelectionChangedListener listener = (ISelectionChangedListener) listeners.getListeners()[i];
+			listener.selectionChanged(event);
+		}
 	}
 }
