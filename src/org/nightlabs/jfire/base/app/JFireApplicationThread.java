@@ -27,6 +27,7 @@
 package org.nightlabs.jfire.base.app;
 
 import javax.security.auth.login.LoginException;
+import javax.swing.UIManager;
 
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
@@ -122,7 +123,14 @@ extends AbstractApplicationThread
 	protected Display display;
 
 	@Override
-	protected void preCreateWorkbench() {
+	protected void preCreateWorkbench() 
+	{
+		try {
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());	
+		} catch (Exception e) {
+			// Do nothing
+		}  
+		
 		try
 		{
 			Login.getLogin(); // we always login in order to prevent our class-loading problems.
