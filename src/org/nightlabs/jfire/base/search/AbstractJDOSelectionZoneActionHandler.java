@@ -20,15 +20,17 @@ extends AbstractSelectionZoneActionHandler
 {
 	public void run() {
 		Collection selectedObjects = getSearchResultProvider().getSelectedObjects();
-		Collection selectedObjectIDs = NLJDOHelper.getObjectIDSet(selectedObjects);
-		Collection<Class> subjectClassesToClear = new ArrayList<Class>();
-		subjectClassesToClear.add(getSearchResultProvider().getFactory().getResultTypeClass());
 		if (selectedObjects != null) {
-			SelectionManager.sharedInstance().notify(new NotificationEvent(
-					AbstractJDOSelectionZoneActionHandler.this, 
-					getSelectionZone(), 
-					selectedObjectIDs, 
-					subjectClassesToClear));
+			Collection selectedObjectIDs = NLJDOHelper.getObjectIDSet(selectedObjects);
+			Collection<Class> subjectClassesToClear = new ArrayList<Class>();
+			subjectClassesToClear.add(getSearchResultProvider().getFactory().getResultTypeClass());
+			if (selectedObjects != null) {
+				SelectionManager.sharedInstance().notify(new NotificationEvent(
+						AbstractJDOSelectionZoneActionHandler.this, 
+						getSelectionZone(), 
+						selectedObjectIDs, 
+						subjectClassesToClear));
+			}			
 		}
 	}
 
