@@ -80,6 +80,9 @@ extends ConfigFactory
 				if (userConfigBaseDir == null) {
 					JFireServerManager jfsm = new Lookup(userID.organisationID).getJFireServerManagerFactory().getJFireServerManager();
 					try {
+						// TODO: isn't this code better:
+						//userConfigBaseDir = new File(jfsm.getJFireServerConfigModule()._getConfig().getConfigDir().getParentFile(), "user-config");
+						// than this ?:
 						userConfigBaseDir = new File(jfsm.getJFireServerConfigModule().getJ2ee().getJ2eeDeployBaseDirectory(),  "JFireBase.ear" + File.separatorChar + "user-config");
 					} finally {
 						jfsm.close();
