@@ -357,36 +357,42 @@ public class ManagedConnectionFactoryImpl
 		// Test connection to sql server.
 		JFireServerConfigModule.Database dbCf = cfMod.getDatabase();
 		try {
-			Class.forName(dbCf.getDatabaseDriverName());
+			Class.forName(dbCf.getDatabaseDriverName_noTx());
 		} catch (ClassNotFoundException e) {
-			throw new ConfigException("Database driver class \""+dbCf.getDatabaseDriverName()+"\" could not be found!", e);
+			throw new ConfigException("Database driver class (no-tx) \""+dbCf.getDatabaseDriverName_noTx()+"\" could not be found!", e);
+		}
+		try {
+			Class.forName(dbCf.getDatabaseDriverName_localTx());
+		} catch (ClassNotFoundException e) {
+			throw new ConfigException("Database driver class (local-tx) \""+dbCf.getDatabaseDriverName_localTx()+"\" could not be found!", e);
+		}
+		try {
+			Class.forName(dbCf.getDatabaseDriverName_xa());
+		} catch (ClassNotFoundException e) {
+			throw new ConfigException("Database driver class (xa) \""+dbCf.getDatabaseDriverName_xa()+"\" could not be found!", e);
 		}
 
 		String dbAdapterClassName = dbCf.getDatabaseAdapter();
 		DatabaseAdapter databaseAdapter;
 		try {
-			Class dbAdapterClass = Class.forName(dbAdapterClassName);
-			if (!DatabaseAdapter.class.isAssignableFrom(dbAdapterClass))
-				throw new ClassCastException("DatabaseAdapterClass does not implement interface \""+DatabaseAdapter.class.getName()+"\"!");
-
-			databaseAdapter = (DatabaseAdapter) dbAdapterClass.newInstance();
+			databaseAdapter = dbCf.instantiateDatabaseAdapter();
 		} catch (Exception x) {
 			throw new ConfigException("DatabaseAdapter \""+dbAdapterClassName+"\" is not correct!", x);
 		}
 
 		try {
 			databaseAdapter.test(cfMod);
-//			Connection sqlConn = DriverManager.getConnection(
-//					dbCf.getDatabaseURL(null),
-////			    "jdbc:"+dbCf.getDatabaseProtocol()+"://"+dbCf.getDatabaseHost()+"/",
-//			    dbCf.getDatabaseUserName(),
-//			    dbCf.getDatabasePassword()
-//			  );			
-//			sqlConn.close();
 		} catch (DatabaseException e) {
 			logger.error("Connecting to database server failed!", e);
 			throw new ConfigException(e);
 		}
+
+		try {
+			databaseAdapter.close();
+		} catch (Exception e) {
+			logger.warn("Closing DatabaseAdaptor \""+dbAdapterClassName+"\" failed.", e);
+		}
+		databaseAdapter = null;
 
 //		File jdoConfigDir = new File(cfMod.getJdo().getJdoConfigDirectory());
 //		if (!jdoConfigDir.exists())

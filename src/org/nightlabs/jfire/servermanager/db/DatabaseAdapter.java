@@ -71,4 +71,18 @@ public interface DatabaseAdapter
 	 */
 	void dropDatabase()
 	throws DatabaseException;
+
+	/**
+	 * This method is always called at the end of the usage of a DatabaseAdapter and allows to cleanup.
+	 * After this method has been called, no other method must work anymore (a
+	 * {@link DatabaseAdapterClosedException} should be thrown) - except for this method and {@link #isClosed()}.
+	 * Subsequent calls to this method must be silently ignored by implementors of this interface.
+	 */
+	void close()
+	throws DatabaseException;
+
+	/**
+	 * @return <code>true</code> after {@link #close()} had been called - <code>false</code> before.
+	 */
+	boolean isClosed();
 }

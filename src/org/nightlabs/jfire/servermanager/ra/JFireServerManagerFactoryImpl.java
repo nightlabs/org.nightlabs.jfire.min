@@ -1073,9 +1073,19 @@ public class JFireServerManagerFactoryImpl
 					JFireServerConfigModule.JDO jdoCf = mcf.getConfigModule().getJdo();
 
 					try {
-						Class.forName(dbCf.getDatabaseDriverName());
+						Class.forName(dbCf.getDatabaseDriverName_noTx());
 					} catch (ClassNotFoundException e) {
-						throw new ConfigException("Database driver class \""+dbCf.getDatabaseDriverName()+"\" could not be found!", e);
+						throw new ConfigException("Database driver class (no-tx) \""+dbCf.getDatabaseDriverName_noTx()+"\" could not be found!", e);
+					}
+					try {
+						Class.forName(dbCf.getDatabaseDriverName_localTx());
+					} catch (ClassNotFoundException e) {
+						throw new ConfigException("Database driver class (local-tx) \""+dbCf.getDatabaseDriverName_localTx()+"\" could not be found!", e);
+					}
+					try {
+						Class.forName(dbCf.getDatabaseDriverName_xa());
+					} catch (ClassNotFoundException e) {
+						throw new ConfigException("Database driver class (xa) \""+dbCf.getDatabaseDriverName_xa()+"\" could not be found!", e);
 					}
 
 					// create database
@@ -1091,12 +1101,12 @@ public class JFireServerManagerFactoryImpl
 					}
 
 					jdoConfigDir = new File(jdoCf.getJdoConfigDirectory(organisationID)).getAbsoluteFile();
-					File datasourceDSXML = new File(jdoConfigDir, jdoCf.getDatasourceConfigFile(organisationID));
+					File datasourceDSXML = new File(jdoConfigDir, dbCf.getDatasourceConfigFile(organisationID));
 					File jdoDSXML = new File(jdoConfigDir, jdoCf.getJdoConfigFile(organisationID));
 
 					// creating deployment descriptor for datasource
 					createDeploymentDescriptor(organisationID, datasourceDSXML,
-							new File(jdoCf.getDatasourceTemplateDSXMLFile()), null, DeployOverwriteBehaviour.EXCEPTION);
+							new File(dbCf.getDatasourceTemplateDSXMLFile()), null, DeployOverwriteBehaviour.EXCEPTION);
 
 					// creating deployment descriptor for JDO PersistenceManagerFactory
 					createDeploymentDescriptor(organisationID, jdoDSXML,
@@ -1237,6 +1247,8 @@ public class JFireServerManagerFactoryImpl
 		    			}
 		    		}
 		    	}
+		    	databaseAdapter.close();
+		    	databaseAdapter = null;
 		    } // } finally {
 
 			} catch (RuntimeException x) {
@@ -1637,12 +1649,21 @@ public class JFireServerManagerFactoryImpl
 
 		Map<String, String> variables = new HashMap<String, String>();
 		variables.put("organisationID", organisationID);
-		variables.put("datasourceJNDIName_relative", datasourceJNDIName_relative);
-		variables.put("datasourceJNDIName_absolute", datasourceJNDIName_absolute);
+//		variables.put("datasourceJNDIName_relative", datasourceJNDIName_relative);
+//		variables.put("datasourceJNDIName_absolute", datasourceJNDIName_absolute);
+		variables.put("datasourceJNDIName_relative_noTx", datasourceJNDIName_relative + "/no-tx");
+		variables.put("datasourceJNDIName_absolute_noTx", datasourceJNDIName_absolute + "/no-tx");
+		variables.put("datasourceJNDIName_relative_localTx", datasourceJNDIName_relative + "/local-tx");
+		variables.put("datasourceJNDIName_absolute_localTx", datasourceJNDIName_absolute + "/local-tx");
+		variables.put("datasourceJNDIName_relative_xa", datasourceJNDIName_relative + "/xa");
+		variables.put("datasourceJNDIName_absolute_xa", datasourceJNDIName_absolute + "/xa");
 		variables.put("datasourceMetadataTypeMapping", dbCf.getDatasourceMetadataTypeMapping());
 		variables.put("jdoPersistenceManagerFactoryJNDIName_relative", jdoPersistenceManagerFactoryJNDIName_relative);
 		variables.put("jdoPersistenceManagerFactoryJNDIName_absolute", jdoPersistenceManagerFactoryJNDIName_absolute);
 		variables.put("databaseDriverName", dbCf.getDatabaseDriverName());
+		variables.put("databaseDriverName_noTx", dbCf.getDatabaseDriverName_noTx());
+		variables.put("databaseDriverName_localTx", dbCf.getDatabaseDriverName_localTx());
+		variables.put("databaseDriverName_xa", dbCf.getDatabaseDriverName_xa());
 		variables.put("databaseURL", dbURL);
 		variables.put("databaseUserName", dbCf.getDatabaseUserName());
 		variables.put("databasePassword", dbCf.getDatabasePassword());

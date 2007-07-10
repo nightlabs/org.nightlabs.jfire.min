@@ -26,7 +26,6 @@
 
 package org.nightlabs.jfire.servermanager.config;
 
-import java.io.File;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -43,9 +42,8 @@ import org.nightlabs.config.InitException;
 import org.nightlabs.jfire.server.LocalServer;
 import org.nightlabs.jfire.server.Server;
 import org.nightlabs.jfire.servermanager.db.DatabaseAdapter;
-import org.nightlabs.jfire.servermanager.db.DatabaseAdapterHSQL;
+import org.nightlabs.jfire.servermanager.db.DatabaseAdapterDerby;
 import org.nightlabs.jfire.servermanager.db.DatabaseAdapterMySQL;
-import org.nightlabs.util.Utils;
 
 /**
  * @author marco
@@ -190,54 +188,77 @@ public class JFireServerConfigModule extends ConfigModule
 			try {
 				Database db;
 
-				// Default values for Mckoi
-				db = new Database();
-				db._init();
-				db.setDatabaseDriverName("com.mckoi.JDBCDriver");
-				db.setDatabaseURL("jdbc:mckoi:local:/" + new File(Utils.getTempDir(), "jfire-mckoi").getAbsolutePath() + File.separatorChar + DATABASE_NAME_VAR + File.separatorChar + "db.conf");
-//				db.setDatabaseUserName("jfire");
-//				db.setDatabasePassword("jfire_password");
-				db.setDatabaseAdapter("org.nightlabs.jfire.databaseadaptermckoi.DatabaseAdapterMckoi");
-				db.setDatasourceMetadataTypeMapping("mySQL"); // TODO - i have no idea???!! 
-				DEFAULTS.put("Mckoi", db);
+// Mckoi caused problem with JPOX and we use now Derby instead.
+//				// Default values for Mckoi
+//				db = new Database();
+//				db._init();
+//				db.setDatabaseDriverName("com.mckoi.JDBCDriver");
+//				db.setDatabaseURL("jdbc:mckoi:local:/" + new File(Utils.getTempDir(), "jfire-mckoi").getAbsolutePath() + File.separatorChar + DATABASE_NAME_VAR + File.separatorChar + "db.conf");
+////				db.setDatabaseUserName("jfire");
+////				db.setDatabasePassword("jfire_password");
+//				db.setDatabaseAdapter("org.nightlabs.jfire.databaseadaptermckoi.DatabaseAdapterMckoi");
+//				db.setDatasourceMetadataTypeMapping("mySQL"); // TODO - i have no idea???!! 
+//				DEFAULTS.put("Mckoi", db);
 
-				// Default values for HSQLDB (file)
-				db = new Database();
-				db._init();
-				db.setDatabaseDriverName("org.hsqldb.jdbcDriver");
-				db.setDatabaseURL("jdbc:hsqldb:file:" + new File(Utils.getTempDir(), "jfire-hsqldb").getAbsolutePath() + File.separatorChar + DATABASE_NAME_VAR);
-				db.setDatabaseUserName("sa");
-				db.setDatabasePassword("");
-				db.setDatabaseAdapter(DatabaseAdapterHSQL.class.getName());
-				db.setDatasourceMetadataTypeMapping("mySQL"); // TODO - what value??!
-				DEFAULTS.put("HSQL (file)", db);
+// HSQL supports only the transaction isolation level "read uncommitted" and therefore cannot be used with JFire :-( We use Derby instead now
+//				// Default values for HSQLDB (file)
+//				db = new Database();
+//				db._init();
+//				db.setDatabaseDriverName("org.hsqldb.jdbcDriver");
+//				db.setDatabaseURL("jdbc:hsqldb:file:" + new File(Utils.getTempDir(), "jfire-hsqldb").getAbsolutePath() + File.separatorChar + DATABASE_NAME_VAR);
+//				db.setDatabaseUserName("sa");
+//				db.setDatabasePassword("");
+//				db.setDatabaseAdapter(DatabaseAdapterHSQL.class.getName());
+//				db.setDatasourceMetadataTypeMapping("mySQL"); // TODO - what value??!
+//				DEFAULTS.put("HSQL (file)", db);
+//
+//				// Default values for HSQLDB (memory)
+//				db = new Database();
+//				db._init();
+//				db.setDatabaseDriverName("org.hsqldb.jdbcDriver");
+//				db.setDatabaseURL("jdbc:hsqldb:mem:" + new File(Utils.getTempDir(), "jfire-hsqldb").getAbsolutePath() + File.separatorChar + DATABASE_NAME_VAR);
+//				db.setDatabaseUserName("sa");
+//				db.setDatabasePassword("");
+//				db.setDatabaseAdapter(DatabaseAdapterHSQL.class.getName());
+//				db.setDatasourceMetadataTypeMapping("mySQL"); // TODO - what value??!
+//				DEFAULTS.put("HSQL (memory)", db);
 
-				// Default values for HSQLDB (memory)
+				// Default values for Derby
 				db = new Database();
 				db._init();
-				db.setDatabaseDriverName("org.hsqldb.jdbcDriver");
-				db.setDatabaseURL("jdbc:hsqldb:mem:" + new File(Utils.getTempDir(), "jfire-hsqldb").getAbsolutePath() + File.separatorChar + DATABASE_NAME_VAR);
-				db.setDatabaseUserName("sa");
-				db.setDatabasePassword("");
-				db.setDatabaseAdapter(DatabaseAdapterHSQL.class.getName());
-				db.setDatasourceMetadataTypeMapping("mySQL"); // TODO - what value??!
-				DEFAULTS.put("HSQL (memory)", db);
+				db.setDatabaseDriverName_noTx("org.apache.derby.jdbc.EmbeddedDriver");
+				db.setDatabaseDriverName_localTx("org.apache.derby.jdbc.EmbeddedDriver");
+				db.setDatabaseDriverName_xa("org.apache.derby.jdbc.EmbeddedXADataSource");
+				db.setDatabaseURL("jdbc:derby:../server/default/data/derby/" + DATABASE_NAME_VAR);
+				db.setDatabaseAdapter(DatabaseAdapterDerby.class.getName());
+				db.setDatasourceMetadataTypeMapping("Derby");
+//				db.setDatasourceConfigFile("db-derby-" + ORGANISATION_ID_VAR + "-ds.xml");
+//				db.setDatasourceTemplateDSXMLFile("../server/default/deploy/JFire.last/JFireBase.ear/db-derby-ds.template.xml");
+				DEFAULTS.put("Derby", db);
 
 				// Default values for MySQL
 				db = new Database();
 				db._init();
-				db.setDatabaseDriverName("com.mysql.jdbc.Driver");
+				db.setDatabaseDriverName_noTx("com.mysql.jdbc.Driver");
+				db.setDatabaseDriverName_localTx("com.mysql.jdbc.Driver");
+				db.setDatabaseDriverName_xa("com.mysql.jdbc.jdbc2.optional.MysqlXADataSource");
 				db.setDatabaseURL("jdbc:mysql://localhost/" + DATABASE_NAME_VAR);
 //				db.setDatabaseUserName("jfire");
 //				db.setDatabasePassword("jfire_password");
 				db.setDatabaseAdapter(DatabaseAdapterMySQL.class.getName());
 				db.setDatasourceMetadataTypeMapping("mySQL");
+//				db.setDatasourceConfigFile("db-mysql-" + ORGANISATION_ID_VAR + "-ds.xml");
+//				db.setDatasourceTemplateDSXMLFile("../server/default/deploy/JFire.last/JFireBase.ear/db-mysql-ds.template.xml");
 				DEFAULTS.put("MySQL", db);
 
 			} catch (Throwable t) {
 				logger.error("Creating database default values failed!", t);
 			}
 		}
+
+		private String databaseDriverName_noTx;
+		private String databaseDriverName_localTx;
+		private String databaseDriverName_xa;
 
 		private String databaseDriverName;
 		private String databaseURL;
@@ -249,14 +270,49 @@ public class JFireServerConfigModule extends ConfigModule
 		private String databaseAdapter;
 		private String datasourceMetadataTypeMapping;
 
+		private String datasourceConfigFile;
+		private String datasourceTemplateDSXMLFile;
+
+		// TODO remove the metadatatypemapping and instead make the template file configurable! Hmmm.. this is already configurable but not in Database but in Jdo - shall we change this?
+
+		public String getDatabaseDriverName_noTx()
+		{
+			return databaseDriverName_noTx;
+		}
+		public void setDatabaseDriverName_noTx(String databaseDriverName_noTx)
+		{
+			this.databaseDriverName_noTx = databaseDriverName_noTx;
+			if (cfMod != null) cfMod.setChanged();
+		}
+		public String getDatabaseDriverName_localTx()
+		{
+			return databaseDriverName_localTx;
+		}
+		public void setDatabaseDriverName_localTx(String databaseDriverName_localTx)
+		{
+			this.databaseDriverName_localTx = databaseDriverName_localTx;
+			if (cfMod != null) cfMod.setChanged();
+		}
+		public String getDatabaseDriverName_xa()
+		{
+			return databaseDriverName_xa;
+		}
+		public void setDatabaseDriverName_xa(String databaseDriverName_xa)
+		{
+			this.databaseDriverName_xa = databaseDriverName_xa;
+			if (cfMod != null) cfMod.setChanged();
+		}
+
 		/**
 		 * @return Returns the databaseDriverName.
+		 * @deprecated Use {@link #getDatabaseDriverName_noTx()}, {@link #getDatabaseDriverName_localTx()} or {@link #getDatabaseDriverName_xa()}
 		 */
 		public String getDatabaseDriverName() {
 			return databaseDriverName;
 		}
 		/**
 		 * @param databaseDriverName The databaseDriverName to set.
+		 * @deprecated Use {@link #setDatabaseDriverName_noTx(String)}. {@link #setDatabaseDriverName_localTx(String)} or {@link #setDatabaseDriverName_xa(String)}
 		 */
 		public void setDatabaseDriverName(String _databaseDriverName) {
 			this.databaseDriverName = _databaseDriverName;
@@ -383,10 +439,52 @@ public class JFireServerConfigModule extends ConfigModule
 			return (DatabaseAdapter) dbAdapterClass.newInstance();
 		}
 
+		public String getDatasourceConfigFile(String organisationID)
+		{
+			if (organisationID == null || "".equals(organisationID))
+				throw new IllegalArgumentException("organisationID must not be null or empty string!");
+
+			return datasourceConfigFile.replace(ORGANISATION_ID_VAR, organisationID);
+		}
+
+		public String getDatasourceConfigFile()
+		{
+			return datasourceConfigFile;
+		}
+
+		public void setDatasourceConfigFile(String datasourceConfigFile)
+		{
+			if (datasourceConfigFile == null)
+				throw new IllegalArgumentException("datasourceConfigFile must not be null!");
+
+			if (datasourceConfigFile.indexOf(ORGANISATION_ID_VAR) < 0)
+				throw new IllegalArgumentException("datasourceConfigFile must contain \"" + ORGANISATION_ID_VAR + "\"!");
+
+			this.datasourceConfigFile = datasourceConfigFile;
+			if (cfMod != null) cfMod.setChanged();
+		}
+
+		public String getDatasourceTemplateDSXMLFile()
+		{
+			return datasourceTemplateDSXMLFile;
+		}
+		
+		public void setDatasourceTemplateDSXMLFile(
+				String datasourceTemplateDSXMLFile)
+		{
+			this.datasourceTemplateDSXMLFile = datasourceTemplateDSXMLFile;
+			if (cfMod != null) cfMod.setChanged();
+		}
+
 		protected void _init()
 		{
-			if (databaseDriverName == null)
-				setDatabaseDriverName("com.mysql.jdbc.Driver");
+			if (databaseDriverName == null) {
+				if (databaseDriverName_noTx == null && databaseDriverName_localTx == null && databaseDriverName_xa == null)
+					setDatabaseDriverName("com.mysql.jdbc.Driver");
+
+				if (databaseDriverName_xa == null)
+					setDatabaseDriverName_xa("com.mysql.jdbc.jdbc2.optional.MysqlXADataSource");
+			}
 
 			if (databaseURL == null)
 				setDatabaseURL("jdbc:mysql://localhost/" + DATABASE_NAME_VAR);
@@ -408,6 +506,47 @@ public class JFireServerConfigModule extends ConfigModule
 
 			if (databaseAdapter == null)
 				setDatabaseAdapter(DatabaseAdapterMySQL.class.getName());
+
+			// downward compatibility: copy databaseDriveName to all others
+			if (databaseDriverName != null) {
+				if (databaseDriverName_noTx == null)
+					setDatabaseDriverName_noTx(databaseDriverName);
+
+				if (databaseDriverName_localTx == null)
+					setDatabaseDriverName_localTx(databaseDriverName);
+
+				if (databaseDriverName_xa == null)
+					setDatabaseDriverName_xa(databaseDriverName);
+			}
+			// end downward compatibility
+
+			if (databaseDriverName_noTx == null && databaseDriverName_localTx == null && databaseDriverName_xa == null) {
+				setDatabaseDriverName_noTx("com.mysql.jdbc.Driver");
+				setDatabaseDriverName_localTx("com.mysql.jdbc.Driver");
+				setDatabaseDriverName_xa("com.mysql.jdbc.jdbc2.optional.MysqlXADataSource");
+			}
+			else if (databaseDriverName_noTx == null || databaseDriverName_localTx == null || databaseDriverName_xa == null) {
+				String d = databaseDriverName_noTx;
+				if (d == null)
+					d = databaseDriverName_localTx;
+				if (d == null)
+					d = databaseDriverName_xa;
+
+				if (databaseDriverName_noTx == null)
+					setDatabaseDriverName_noTx(d);
+
+				if (databaseDriverName_localTx == null)
+					setDatabaseDriverName_localTx(d);
+
+				if (databaseDriverName_xa == null)
+					setDatabaseDriverName_xa(d);
+			}
+
+			if (datasourceConfigFile == null)
+				setDatasourceConfigFile("db-" + ORGANISATION_ID_VAR + "-ds.xml");
+
+			if (datasourceTemplateDSXMLFile == null)
+				setDatasourceTemplateDSXMLFile("../server/default/deploy/JFire.last/JFireBase.ear/db-all-ds.template.xml");
 		}
 
 		public void init()
@@ -431,14 +570,22 @@ public class JFireServerConfigModule extends ConfigModule
 				throw new IllegalArgumentException("No defaults known with defaultKey=" + defaultKey);
 
 			setDatabaseDriverName(db.getDatabaseDriverName());
+			setDatabaseDriverName_noTx(db.getDatabaseDriverName_noTx());
+			setDatabaseDriverName_localTx(db.getDatabaseDriverName_localTx());
+			setDatabaseDriverName_xa(db.getDatabaseDriverName_xa());
 			setDatabaseURL(db.getDatabaseURL());
 			setDatabasePrefix(db.getDatabasePrefix());
 			setDatabaseSuffix(db.getDatabaseSuffix());
 			setDatabaseUserName(db.getDatabaseUserName());
 			setDatabasePassword(db.getDatabasePassword());
 			setDatabaseAdapter(db.getDatabaseAdapter());
+			setDatasourceMetadataTypeMapping(db.getDatasourceMetadataTypeMapping());
+			setDatasourceTemplateDSXMLFile(db.getDatasourceTemplateDSXMLFile());
+			setDatasourceConfigFile(db.getDatasourceConfigFile());
 		}
 	}
+
+	public static final String ORGANISATION_ID_VAR = "${organisationID}";
 
 	public static class JDO implements Serializable
 	{
@@ -449,12 +596,10 @@ public class JFireServerConfigModule extends ConfigModule
 		
 		private JFireServerConfigModule cfMod;
 
-		public static final String ORGANISATION_ID_VAR = "${organisationID}";
-
 		private String jdoConfigDirectory;
 
-		private String datasourceConfigFile;
-		private String datasourceTemplateDSXMLFile;
+//		private String datasourceConfigFile;
+//		private String datasourceTemplateDSXMLFile;
 
 		private String jdoConfigFile;
 		private String jdoTemplateDSXMLFile;
@@ -488,30 +633,30 @@ public class JFireServerConfigModule extends ConfigModule
 			if (cfMod != null) cfMod.setChanged();
 		}
 
-		public String getDatasourceConfigFile(String organisationID)
-		{
-			if (organisationID == null || "".equals(organisationID))
-				throw new IllegalArgumentException("organisationID must not be null or empty string!");
-
-			return datasourceConfigFile.replace(ORGANISATION_ID_VAR, organisationID);
-		}
-
-		public String getDatasourceConfigFile()
-		{
-			return datasourceConfigFile;
-		}
-
-		public void setDatasourceConfigFile(String datasourceConfigFile)
-		{
-			if (datasourceConfigFile == null)
-				throw new IllegalArgumentException("datasourceConfigFile must not be null!");
-
-			if (datasourceConfigFile.indexOf(ORGANISATION_ID_VAR) < 0)
-				throw new IllegalArgumentException("datasourceConfigFile must contain \"" + ORGANISATION_ID_VAR + "\"!");
-
-			this.datasourceConfigFile = datasourceConfigFile;
-			if (cfMod != null) cfMod.setChanged();
-		}
+//		public String getDatasourceConfigFile(String organisationID)
+//		{
+//			if (organisationID == null || "".equals(organisationID))
+//				throw new IllegalArgumentException("organisationID must not be null or empty string!");
+//
+//			return datasourceConfigFile.replace(ORGANISATION_ID_VAR, organisationID);
+//		}
+//
+//		public String getDatasourceConfigFile()
+//		{
+//			return datasourceConfigFile;
+//		}
+//
+//		public void setDatasourceConfigFile(String datasourceConfigFile)
+//		{
+//			if (datasourceConfigFile == null)
+//				throw new IllegalArgumentException("datasourceConfigFile must not be null!");
+//
+//			if (datasourceConfigFile.indexOf(ORGANISATION_ID_VAR) < 0)
+//				throw new IllegalArgumentException("datasourceConfigFile must contain \"" + ORGANISATION_ID_VAR + "\"!");
+//
+//			this.datasourceConfigFile = datasourceConfigFile;
+//			if (cfMod != null) cfMod.setChanged();
+//		}
 
 		public String getJdoConfigFile(String organisationID)
 		{
@@ -538,17 +683,17 @@ public class JFireServerConfigModule extends ConfigModule
 			if (cfMod != null) cfMod.setChanged();
 		}
 
-		public String getDatasourceTemplateDSXMLFile()
-		{
-			return datasourceTemplateDSXMLFile;
-		}
-		
-		public void setDatasourceTemplateDSXMLFile(
-				String datasourceTemplateDSXMLFile)
-		{
-			this.datasourceTemplateDSXMLFile = datasourceTemplateDSXMLFile;
-			if (cfMod != null) cfMod.setChanged();
-		}
+//		public String getDatasourceTemplateDSXMLFile()
+//		{
+//			return datasourceTemplateDSXMLFile;
+//		}
+//		
+//		public void setDatasourceTemplateDSXMLFile(
+//				String datasourceTemplateDSXMLFile)
+//		{
+//			this.datasourceTemplateDSXMLFile = datasourceTemplateDSXMLFile;
+//			if (cfMod != null) cfMod.setChanged();
+//		}
 
 		/**
 		 * @return Returns the jdoTemplateDSXMLFile.
@@ -569,21 +714,21 @@ public class JFireServerConfigModule extends ConfigModule
 			if (jdoConfigDirectory == null)
 				setJdoConfigDirectory("../server/default/deploy/JFire_JDO_" + ORGANISATION_ID_VAR + ".last/");
 
-			if (datasourceConfigFile == null)
-				datasourceConfigFile = "db-" + ORGANISATION_ID_VAR + "-ds.xml";
+//			if (datasourceConfigFile == null)
+//				datasourceConfigFile = "db-" + ORGANISATION_ID_VAR + "-ds.xml";
+//
+//			if (datasourceTemplateDSXMLFile == null)
+//				datasourceTemplateDSXMLFile = "../server/default/deploy/JFire.last/JFireBase.ear/db-all-ds.template.xml";
 
 			if (jdoConfigFile == null)
 				jdoConfigFile = "jdo-" + ORGANISATION_ID_VAR + "-ds.xml";
-
-			if (datasourceTemplateDSXMLFile == null)
-				datasourceTemplateDSXMLFile = "../server/default/deploy/JFire.last/JFireBase.ear/db-all-ds.template.xml";
 
 			if (jdoTemplateDSXMLFile == null)
 				jdoTemplateDSXMLFile = "../server/default/deploy/JFire.last/JFireBase.ear/jdo-jpox-ds.template.xml";
 
 			logger.info("jdoConfigDirectory = "+jdoConfigDirectory);
-			logger.info("datasourceConfigFile = "+datasourceConfigFile);
-			logger.info("datasourceTemplateDSXMLFile = "+datasourceTemplateDSXMLFile);
+//			logger.info("datasourceConfigFile = "+datasourceConfigFile);
+//			logger.info("datasourceTemplateDSXMLFile = "+datasourceTemplateDSXMLFile);
 			logger.info("jdoConfigFile = "+jdoConfigFile);
 			logger.info("jdoTemplateDSXMLFile = "+jdoTemplateDSXMLFile);
 		}

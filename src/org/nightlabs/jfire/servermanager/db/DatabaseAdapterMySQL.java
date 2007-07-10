@@ -32,6 +32,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import org.apache.log4j.Logger;
+import org.nightlabs.annotation.Implement;
 import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
 
 
@@ -39,8 +40,9 @@ import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
  * @author Marco Schulze - marco at nightlabs dot de
  */
 public class DatabaseAdapterMySQL
-implements DatabaseAdapter
+extends AbstractDatabaseAdapter
 {
+	@Implement
 	public void test(JFireServerConfigModule jfireServerConfigModule)
 	throws DatabaseException
 	{
@@ -48,11 +50,10 @@ implements DatabaseAdapter
 			JFireServerConfigModule.Database dbCf = jfireServerConfigModule.getDatabase();
 			Connection sqlConn = DriverManager.getConnection(
 					dbCf.getDatabaseURL(null),
-//					"jdbc:"+dbCf.getDatabaseProtocol()+"://"+dbCf.getDatabaseHost()+"/",
 					dbCf.getDatabaseUserName(),
 					dbCf.getDatabasePassword()
 			);			
-			
+
 			sqlConn.close();
 		} catch (SQLException e) {
 			throw new DatabaseException(e);
@@ -63,11 +64,14 @@ implements DatabaseAdapter
 	private Connection connCreateDB = null;
 	private String databaseName = null;
 
+	@Implement
 	public void createDatabase(
 			JFireServerConfigModule jfireServerConfigModule,
 			String databaseURL)
 	throws DatabaseAlreadyExistsException, DatabaseException
 	{
+		assertOpen();
+
 		this.databaseName = null;
 		Logger logger = Logger.getLogger(DatabaseAdapterMySQL.class);
 
@@ -102,7 +106,7 @@ implements DatabaseAdapter
 // We check the error code here instead of querying before: http://dev.mysql.com/doc/refman/5.1/en/error-messages-server.html
 			if (1007 == e.getErrorCode()) {
 				logger.info("Database \""+databaseName+"\" on server \""+dbServerURL+"\" could not be created, because it already exists.");
-				throw new DatabaseAlreadyExistsException(dbServerURL, databaseName);
+				throw new DatabaseAlreadyExistsException(databaseURL);
 			}
 
 			logger.info("Database \""+databaseName+"\" on server \""+dbServerURL+"\" could not be created, because of an unexpected failure!", e);
@@ -110,11 +114,15 @@ implements DatabaseAdapter
 		}
 		// It's no problem that we don't close the connCreateDB, if dropDatabase() is not called.
 		// According to the javadoc, the resources will be closed, when the object is garbage-collected.
+		// new: we close it now in the close() method. it's cleaner. Marco.
 	}
 
+	@Implement
 	public void dropDatabase()
-			throws DatabaseException
+	throws DatabaseException
 	{
+		assertOpen();
+
 		try {
 			if (connCreateDB != null) {
 				try {
@@ -127,6 +135,20 @@ implements DatabaseAdapter
 					connCreateDB.close();
 					connCreateDB = null;
 				}
+			}
+		} catch (SQLException e) {
+			throw new DatabaseException(e);
+		}
+	}
+
+	@Override
+	public void close() throws DatabaseException
+	{
+		super.close();
+		try {
+			if (connCreateDB != null) {
+				connCreateDB.close();
+				connCreateDB = null;
 			}
 		} catch (SQLException e) {
 			throw new DatabaseException(e);

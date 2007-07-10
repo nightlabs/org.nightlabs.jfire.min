@@ -14,11 +14,11 @@ JBoss 3.2.x: end -->
 
 <!-- indirect connection via datasource
 		<config-property name="ConnectionDriverName" type="java.lang.String">org.jpox.driver.JPOXDriver</config-property>
-		<config-property name="ConnectionURL" type="java.lang.String">jpox:{datasourceJNDIName_absolute}</config-property>
+		<config-property name="ConnectionURL" type="java.lang.String">jpox:{datasourceJNDIName_absolute_localTx}</config-property>
 -->
 
 <!-- direct connection -->
-		<config-property name="ConnectionDriverName" type="java.lang.String">${databaseDriverName}</config-property>
+		<config-property name="ConnectionDriverName" type="java.lang.String">${databaseDriverName_localTx}</config-property>
 		<config-property name="ConnectionURL" type="java.lang.String">${databaseURL}</config-property>
 		<config-property name="ConnectionUserName" type="java.lang.String">${databaseUserName}</config-property>
 		<config-property name="ConnectionPassword" type="java.lang.String">${databasePassword}</config-property>
@@ -50,7 +50,6 @@ JBoss 3.2.x: end -->
 -->
 		<config-property name="ConnectionPoolingType" type="java.lang.String">DBCP</config-property>
 		<config-property name="ConnectionPoolingConfigurationFile" type="java.lang.String">jpox-dbcp.properties</config-property>
-
 <!--
 		<config-property name="ConnectionPoolingType" type="java.lang.String">C3P0</config-property>
 		<config-property name="ConnectionPoolingConfigurationFile" type="java.lang.String">jpox-c3p0.properties</config-property>

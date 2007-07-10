@@ -31,57 +31,72 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import org.apache.log4j.Logger;
 import org.nightlabs.annotation.Implement;
 import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
+import org.nightlabs.util.Utils;
 
 
 /**
  * @author Marco Schulze - marco at nightlabs dot de
- * @deprecated We don't use HQL anymore, since it doesn't support transaction isolation level read-committed.
  */
-public class DatabaseAdapterHSQL
+public class DatabaseAdapterDerby
 extends AbstractDatabaseAdapter
 {
+	private static final Logger logger = Logger.getLogger(DatabaseAdapterDerby.class);
+
 	public void test(JFireServerConfigModule jfireServerConfigModule)
 	throws DatabaseException
 	{
 		try {
 			JFireServerConfigModule.Database dbCf = jfireServerConfigModule.getDatabase();
 			Connection sqlConn = DriverManager.getConnection(
-					dbCf.getDatabaseURL("test"),
+					dbCf.getDatabaseURL("test")+ ";create=true",
 					dbCf.getDatabaseUserName(),
 					dbCf.getDatabasePassword()
-			);			
-			
+			);
+
 			sqlConn.close();
 		} catch (SQLException e) {
 			throw new DatabaseException(e);
 		}
 	}
 
-	private java.sql.Connection connCreateDB = null; 
+	private String databaseURL;
 
 	public void createDatabase(
 			JFireServerConfigModule jfireServerConfigModule,
 			String databaseURL)
 	throws DatabaseAlreadyExistsException, DatabaseException
 	{
-//		Logger logger = Logger.getLogger(DatabaseAdapterHSQL.class);
-
+		assertOpen();
+		this.databaseURL = databaseURL;
 		JFireServerConfigModule.Database dbCf = jfireServerConfigModule.getDatabase();
 
-		if (!databaseURL.startsWith("jdbc:hsqldb:"))
-			throw new IllegalArgumentException("databaseURL must start with 'jdbc:hsqldb:'!");
+		if (!databaseURL.startsWith("jdbc:derby:"))
+			throw new IllegalArgumentException("databaseURL must start with 'jdbc:derby:'!");
+
+		// Find out whether the db already exists
+		try {
+			java.sql.Connection testDBConn = DriverManager.getConnection(
+					databaseURL, dbCf.getDatabaseUserName(), dbCf.getDatabasePassword());
+			testDBConn.close();
+			throw new DatabaseAlreadyExistsException("");
+		} catch (SQLException e) {
+			// fine, it exists => ignore
+		}
 
 		try {
-			connCreateDB = DriverManager.getConnection(
-					databaseURL, dbCf.getDatabaseUserName(), dbCf.getDatabasePassword());
+//			DriverPropertyInfo[] propertyInfos = java.sql.DriverManager.getDriver("jdbc:derby:").getPropertyInfo(databaseURL, new Properties());
+			java.sql.Connection connCreateDB = DriverManager.getConnection(
+					databaseURL + ";create=true", dbCf.getDatabaseUserName(), dbCf.getDatabasePassword());
 
 			Statement stmt = connCreateDB.createStatement();
 			stmt.execute("create table MY_FIRST_TABLE (a int not null)");
 			stmt.execute("drop table MY_FIRST_TABLE");
+			stmt.close();
+			connCreateDB.close();
 		} catch (SQLException e) {
-			// TODO throw a DatabaseAlreadyExistsException, if this is the cause of the failure. Is there a way to know which databases exist?!
 			throw new DatabaseException(e);
 		}
 	}
@@ -91,15 +106,19 @@ extends AbstractDatabaseAdapter
 			throws DatabaseException
 	{
 		assertOpen();
-		// TODO how can I drop a HSQL database - or delete all its tables???
-		try {
-			if (connCreateDB != null) {
-				Statement stmt = connCreateDB.createStatement();
-//				stmt.execute("dropall");
-				stmt.close();
+		if (databaseURL != null) {
+			String databaseURL_shutdown = databaseURL + ";shutdown=true";
+			try {
+				DriverManager.getConnection(databaseURL_shutdown);
+			} catch (SQLException x) {
+				// according to http://db.apache.org/derby/docs/dev/devguide/tdevdvlp40464.html this always causes an SQL exception if it was successful - strange ;-)
+				logger.debug("Shutting down the database was successful. Strange, but true, this causes an SQLException.", x);
 			}
-		} catch (SQLException e) {
-			throw new DatabaseException(e);
+
+			if (databaseURL.startsWith("jdbc:derby:")) {
+				String dir = databaseURL.substring("jdbc:derby:".length());
+				Utils.deleteDirectoryRecursively(dir);
+			}
 		}
 	}
 
@@ -108,13 +127,7 @@ extends AbstractDatabaseAdapter
 			throws DatabaseException
 	{
 		super.close();
-		try {
-			if (connCreateDB != null) {
-				connCreateDB.close();
-				connCreateDB = null;
-			}
-		} catch (SQLException e) {
-			throw new DatabaseException(e);
-		}
+		databaseURL = null;
 	}
+
 }

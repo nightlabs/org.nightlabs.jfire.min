@@ -12,30 +12,26 @@ public class DatabaseAlreadyExistsException
 {
 	private static final long serialVersionUID = 1L;
 
-	private String dbServerURL;
-	private String databaseName;
+//	private String dbServerURL;
+//	private String databaseName;
+	private String databaseURL;
 
 	/**
 	 * @param databaseName The name of the database that should have been created, but does already exist.
 	 */
-	public DatabaseAlreadyExistsException(String dbServerURL, String databaseName)
+	public DatabaseAlreadyExistsException(String databaseURL)
 	{
-		this(dbServerURL, databaseName, null);
+		this(databaseURL, null);
 	}
 
-	public DatabaseAlreadyExistsException(String dbServerURL, String databaseName, Throwable cause)
+	public DatabaseAlreadyExistsException(String databaseURL, Throwable cause)
 	{
-		super("Database \"" + databaseName + "\" cannot be created, because it already exists!", cause);
-		this.databaseName = databaseName;
+		super("Database \"" + databaseURL + "\" cannot be created, because it already exists!", cause);
+		this.databaseURL = databaseURL;
 	}
 
-	public String getDbServerURL()
+	public String getDatabaseURL()
 	{
-		return dbServerURL;
-	}
-
-	public String getDatabaseName()
-	{
-		return databaseName;
+		return databaseURL;
 	}
 }
