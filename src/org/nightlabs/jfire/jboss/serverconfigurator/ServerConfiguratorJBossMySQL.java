@@ -9,6 +9,7 @@ import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.jfire.serverconfigurator.ServerConfigurationException;
+import org.nightlabs.jfire.serverconfigurator.ServerConfigurator;
 import org.nightlabs.jfire.servermanager.db.DatabaseAdapter;
 import org.nightlabs.jfire.servermanager.db.DatabaseAlreadyExistsException;
 import org.nightlabs.util.Utils;
@@ -259,7 +260,7 @@ extends ServerConfiguratorJBoss
 			// not very efficient mechanism, but it should work
 			text = text.replaceAll("\\{databaseDriverName\\}",
 					getJFireServerConfigModule().getDatabase()
-							.getDatabaseDriverName());
+							.getDatabaseDriverName_xa()); // TODO really XA here?
 			text = text.replaceAll("\\{databaseURL\\}", databaseURL);
 			text = text.replaceAll("\\{databaseUserName\\}",
 					getJFireServerConfigModule().getDatabase().getDatabaseUserName());
