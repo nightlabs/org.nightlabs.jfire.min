@@ -60,7 +60,7 @@ public class JDOObjectID2PCClassMap
 	 * key: JDOObjectID objectID<br/>
 	 * value: Class objectClass
 	 */
-	private Map objectID2PCClassMap = new HashMap();
+	private Map<Object, Class> objectID2PCClassMap = new HashMap<Object, Class>();
 
 	/**
 	 * You should not use this method if you don't really need it. The

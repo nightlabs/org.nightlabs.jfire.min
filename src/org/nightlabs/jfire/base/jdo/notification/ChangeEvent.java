@@ -39,6 +39,7 @@ import org.nightlabs.notification.SubjectCarrier;
 
 public class ChangeEvent extends NotificationEvent
 {
+	private static final long serialVersionUID = 1L;
 
 	public ChangeEvent(Object source, Object subject)
 	{
@@ -170,7 +171,7 @@ public class ChangeEvent extends NotificationEvent
 			return false;
 
 		if (carriersBySubject == null) {
-			Map cbs = new HashMap(getSubjectCarriers().size());
+			Map<Object, SubjectCarrier> cbs = new HashMap<Object, SubjectCarrier>(getSubjectCarriers().size());
 			for (Iterator it = getSubjectCarriers().iterator(); it.hasNext(); ) {
 				SubjectCarrier subjectCarrier = (SubjectCarrier) it.next();
 				Object subj = subjectCarrier.getSubject();

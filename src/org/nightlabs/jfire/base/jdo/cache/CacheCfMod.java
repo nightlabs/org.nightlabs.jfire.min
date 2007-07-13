@@ -35,9 +35,7 @@ import org.nightlabs.config.InitException;
  */
 public class CacheCfMod extends ConfigModule
 {
-	/**
-	 * LOG4J logger used by this class
-	 */
+	private static final long serialVersionUID = 1L;
 	private static final Logger logger = Logger.getLogger(CacheCfMod.class);
 
 	private String documentation;
@@ -53,6 +51,9 @@ public class CacheCfMod extends ConfigModule
 	public static final String REFERENCE_TYPE_HARD = "hard";
 	public static final String REFERENCE_TYPE_SOFT = "soft";
 	private String referenceType = null;
+
+	private int oldGraphDependencyContainerCount = 0;
+	private long oldGraphDependencyContainerActivityMSec = 0;
 
 	public CacheCfMod()
 	{
@@ -85,7 +86,8 @@ public class CacheCfMod extends ConfigModule
 				"    being active. Default is 3000 (3 sec). This means, in periods of 3 sec, new\n" +
 				"    remote-listeners will be added to the server or old ones removed and all 3 sec\n" +
 				"    it will be checked, whether the CarrierContainers need to be rolled (and\n" +
-				"    therefore old ones be dropped).\n" +
+				"    therefore old ones be dropped). Since the same thread rolls the\n" +
+				"    oldGraphDependencyContainer s, this setting affects them, too.\n" +
 //				"\n" +
 //				"* resyncRemoteListenersIntervalMSec: In which intervals shall the Cache sync all\n" +
 //				"    the listeners (means drop all remote ones and resubscribe the ones in its local\n" +
@@ -107,7 +109,28 @@ public class CacheCfMod extends ConfigModule
 				"    can release objects when memory is getting short. But, you should recalibrate\n" +
 				"    carrierContainerCount and carrierContainerActivityMSec, if the garbage\n" +
 				"    collector often releases objects. Default is "+REFERENCE_TYPE_HARD+" which means, objects are\n" +
-				"    only released by the cache (and cannot be released by the garbage collector).\n";
+				"    only released by the cache (and cannot be released by the garbage collector).\n" +
+				"\n" +
+				"* oldGraphDependencyContainerCount: When an object is put into the Cache, its complete\n" +
+				"    object graph is indexed in order to notify a change of the container object\n" +
+				"    when its content changed. When one of the objects in the graph is modified,\n" +
+				"    the container is removed from the cache. If now another object in the same graph\n" +
+				"    (or the same object again) is changed, the Cache needs to notify the listeners\n" +
+				"    registered on the container about the modification again. Therefore, even after\n" +
+				"    the deletion of the container, the dependency information still needs to be present. This means\n" +
+				"    even after deletion, it must still be kept for a while. Hence, we store a deleted\n" +
+				"    dependency record in a container which expires after a while. Just like the main\n" +
+				"    object carriers, we have a list of these containers, where each container is active\n" +
+				"    for a while (see oldGraphDependencyContainerActivityMSec) and then pushed back within\n" +
+				"    its queue. oldGraphDependencyContainerCount controls the length of this queue (i.e.\n" +
+				"    how many containers are kept within the list).\n" +
+				"    see https://www.jfire.org/modules/bugs/view.php?id=84\n" +
+				"\n" +
+				"* oldGraphDependencyContainerActivityMSec: Together with oldGraphDependencyContainerCount\n" +
+				"    this controls how long a deleted dependency record is kept. This setting defines the\n" +
+				"    life time of the first container. Therefore, a dependency record lives at least\n" +
+				"    (oldGraphDependencyContainerCount - 1) * oldGraphDependencyContainerActivityMSec millisec\n" +
+				"    and at most oldGraphDependencyContainerCount * oldGraphDependencyContainerActivityMSec ms.\n";
 
 		if (threadErrorWaitMSec <= 0)
 			setThreadErrorWaitMSec(60 * 1000);
@@ -129,6 +152,12 @@ public class CacheCfMod extends ConfigModule
 
 		if (carrierContainerActivityMSec < 60 * 1000 || 30 * 60 * 1000 < carrierContainerActivityMSec)
 			setCarrierContainerActivityMSec(5 * 60 * 1000);
+
+		if (oldGraphDependencyContainerActivityMSec < 30 * 1000 || 10 * 60 * 1000 < oldGraphDependencyContainerActivityMSec)
+			setOldGraphDependencyContainerActivityMSec(60 * 1000);
+
+		if (oldGraphDependencyContainerCount < 3 || 10 < oldGraphDependencyContainerCount)
+			setOldGraphDependencyContainerCount(5);
 
 		if (!REFERENCE_TYPE_SOFT.equals(referenceType) &&
 				!REFERENCE_TYPE_HARD.equals(referenceType))
@@ -278,6 +307,29 @@ public class CacheCfMod extends ConfigModule
 	public void setReferenceType(String referenceType)
 	{
 		this.referenceType = referenceType;
+		setChanged();
+	}
+
+	public long getOldGraphDependencyContainerActivityMSec()
+	{
+		return oldGraphDependencyContainerActivityMSec;
+	}
+
+	public void setOldGraphDependencyContainerActivityMSec(
+			long oldSyntheticDirtyObjectIDContainerActivityMSec)
+	{
+		this.oldGraphDependencyContainerActivityMSec = oldSyntheticDirtyObjectIDContainerActivityMSec;
+		setChanged();
+	}
+
+	public int getOldGraphDependencyContainerCount()
+	{
+		return oldGraphDependencyContainerCount;
+	}
+	public void setOldGraphDependencyContainerCount(
+			int oldSyntheticDirtyObjectIDContainerCount)
+	{
+		this.oldGraphDependencyContainerCount = oldSyntheticDirtyObjectIDContainerCount;
 		setChanged();
 	}
 }

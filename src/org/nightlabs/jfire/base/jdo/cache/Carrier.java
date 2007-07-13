@@ -187,7 +187,7 @@ public class Carrier
 			set.add(key.getObjectID()); // this might be a special key (non-jdo-objectID) as soon as we support to store arbitrary objects into the cache.
 
 			if (object != null)
-				collectObjectIDs(new HashSet(), set, object);
+				collectObjectIDs(new HashSet<Object>(), set, object);
 
 			objectIDs = set;
 		}
@@ -195,7 +195,7 @@ public class Carrier
 		return objectIDs;
 	}
 
-	private void collectObjectIDs(Set processedObjects, Set objectIDs, Object object)
+	private void collectObjectIDs(Set<Object> processedObjects, Set<Object> objectIDs, Object object)
 	throws IllegalArgumentException, IllegalAccessException
 	{
 		if (object == null) // silently ignore nulls since we call this method recursively (see below) and this really might be null

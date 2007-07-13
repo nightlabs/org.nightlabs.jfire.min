@@ -77,7 +77,7 @@ public class CarrierContainer
 	 * key: {@link Key} key<br/>
 	 * value: {@link Carrier} carrier
 	 */
-	private Map carriersByKey = new HashMap();
+	private Map<Key, Carrier> carriersByKey = new HashMap<Key, Carrier>();
 
 	/**
 	 * @param carrier The <tt>Carrier</tt> to add - never <tt>null</tt>.

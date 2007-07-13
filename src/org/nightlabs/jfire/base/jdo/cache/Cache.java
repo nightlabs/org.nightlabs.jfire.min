@@ -81,7 +81,7 @@ import org.nightlabs.util.CollectionUtil;
  */
 public class Cache
 {
-	private static final boolean DEBUG_TEST = false;
+//	private static final boolean DEBUG_TEST = true;
 
 	/**
 	 * LOG4J logger used by this class
@@ -127,8 +127,8 @@ public class Cache
 //			}
 //			logger.info("NotificationThread.run: WORKAROUND for java classloading bug: delayed start of NotificationThread - continuing now!");
 
-			if (logger.isDebugEnabled())
-				logger.debug("NotificationThread.run: DEBUG_TEST=" + DEBUG_TEST);
+//			if (logger.isDebugEnabled())
+//				logger.debug("NotificationThread.run: DEBUG_TEST=" + DEBUG_TEST);
 
 			while (!isInterrupted()) {
 				try {
@@ -162,7 +162,7 @@ public class Cache
 								if (JDOLifecycleState.DIRTY.equals(dirtyObjectID.getLifecycleState()))
 									objectIDsWithLifecycleStageDirty.add(objectID);
 
-								Set<Key> removedKeys = cache.removeByObjectID(objectID);
+								Set<Key> removedKeys = cache.removeByObjectID(objectID, true);
 								removedCarrierCount += removedKeys.size();
 								for (Key removedKey : removedKeys) {
 									if (objectID.equals(removedKey.getObjectID()))
@@ -372,19 +372,25 @@ public class Cache
 					}
 					// *** container management above ***
 
-					// *** listener management below ***
-					// fill in the object graph for all new objects 
-					Map<Key, Carrier> newCarriersByKey = cache.fetchNewCarriersByKey();
-					if (newCarriersByKey != null) {
-						for (Map.Entry<Key, Carrier> me : newCarriersByKey.entrySet()) {
-							Key key = me.getKey();
-							Carrier carrier = me.getValue();
+					// *** dependency container management below *** 
+					if (System.currentTimeMillis() - cache.objectID2KeySet_dependency_removed_active_createTimestamp > cache.getCacheCfMod().getOldGraphDependencyContainerActivityMSec()) {
+						cache.roll_objectID2KeySet_dependency_removed_history();
+					}
+					// *** dependency container management above *** 
 
-							Set objectIDs = carrier.getObjectIDs();
-							cache.mapObjectIDs2Key(objectIDs, key);
-							cache.subscribeObjectIDs(objectIDs, 0);
-						}
-					} // if (newCarriersByKey != null) {
+					// *** listener management below ***
+//					// fill in the object graph for all new objects - we do this synchronous now. 
+//					Map<Key, Carrier> newCarriersByKey = cache.fetchNewCarriersByKey();
+//					if (newCarriersByKey != null) {
+//						for (Map.Entry<Key, Carrier> me : newCarriersByKey.entrySet()) {
+//							Key key = me.getKey();
+//							Carrier carrier = me.getValue();
+//
+//							Set objectIDs = carrier.getObjectIDs();
+//							cache.mapObjectIDs2Key(objectIDs, key);
+//							cache.subscribeObjectIDs(objectIDs, 0);
+//						}
+//					} // if (newCarriersByKey != null) {
 
 //					resync = System.currentTimeMillis() - lastResyncDT > cache.getCacheCfMod().getResyncRemoteListenersIntervalMSec();
 
@@ -965,23 +971,37 @@ public class Cache
 	private Map<Object, Set<Key>> objectID2KeySet_dependency = new HashMap<Object, Set<Key>>();
 
 	/**
+	 * This LinkedList of synthetic objectIDs stores temporarily all entries that are deleted from
+	 * {@link #objectID2KeySet_dependency}. Since they are still needed a while, they will be kept
+	 * in this <code>LinkedList</code>. The length of this list is limited and every minute (configurable via
+	 * {@link CacheCfMod#getOldGraphDependencyContainerActivityMSec()} and {@link CacheCfMod#getOldGraphDependencyContainerCount()}),
+	 * a new <code>Map</code> is created and added to the beginning of the list, while all old <code>Map</code>s
+	 * are deleted from the end of the list. 
+	 *
+	 * see https://www.jfire.org/modules/bugs/view.php?id=84
+	 */
+	private LinkedList<Map<Object, Set<Key>>> objectID2KeySet_dependency_removed_history = new LinkedList<Map<Object,Set<Key>>>();
+	private Map<Object, Set<Key>> objectID2KeySet_dependency_removed_active = null;
+	private long objectID2KeySet_dependency_removed_active_createTimestamp = System.currentTimeMillis();
+
+	/**
 	 * In contrast to {@link #objectID2KeySet_dependency}, this map references only those {@link Key}s,
 	 * that point to the same objectID. And this map is only used for scope <code>null</code>.
 	 */
 	private Map<Object, Set<Key>> objectID2KeySet_alternative = new HashMap<Object, Set<Key>>();
 
-	/**
-	 * When a new object is put into the Cache, it is immediately registered in
-	 * {@link #key2Carrier}, {@link #objectID2KeySet_dependency} and here. In {@link #objectID2KeySet_dependency}
-	 * however, there is only the main <code>objectID</code> registered immediately.
-	 * All contained objects within the object graph are added later in the
-	 * {@link CacheManagerThread}. This thread replaces this Map using
-	 * {@link #fetchNewCarriersByKey()}.
-	 *
-	 * key: {@link Key} key<br/>
-	 * value: {@link Carrier} carrier
-	 */
-	private Map<Key, Carrier> newCarriersByKey = new HashMap<Key, Carrier>();
+//	/**
+//	 * When a new object is put into the Cache, it is immediately registered in
+//	 * {@link #key2Carrier}, {@link #objectID2KeySet_dependency} and here. In {@link #objectID2KeySet_dependency}
+//	 * however, there is only the main <code>objectID</code> registered immediately.
+//	 * All contained objects within the object graph are added later in the
+//	 * {@link CacheManagerThread}. This thread replaces this Map using
+//	 * {@link #fetchNewCarriersByKey()}.
+//	 *
+//	 * key: {@link Key} key<br/>
+//	 * value: {@link Carrier} carrier
+//	 */
+//	private Map<Key, Carrier> newCarriersByKey = new HashMap<Key, Carrier>();
 
 	/**
 	 * This is a rolling carrier-registration with the activeCarrierContainer
@@ -995,20 +1015,20 @@ public class Cache
 		return activeCarrierContainer;
 	}
 
-	/**
-	 * @return If the Map is empty, it returns <code>null</code>,
-	 *		otherwise it replaces the current map by a new one and
-	 *		returns it.
-	 */
-	protected synchronized Map<Key, Carrier> fetchNewCarriersByKey()
-	{
-		if (newCarriersByKey.isEmpty())
-			return null;
-
-		Map<Key, Carrier> res = newCarriersByKey;
-		newCarriersByKey = new HashMap<Key, Carrier>();
-		return res;
-	}
+//	/**
+//	 * @return If the Map is empty, it returns <code>null</code>,
+//	 *		otherwise it replaces the current map by a new one and
+//	 *		returns it.
+//	 */
+//	protected synchronized Map<Key, Carrier> fetchNewCarriersByKey()
+//	{
+//		if (newCarriersByKey.isEmpty())
+//			return null;
+//
+//		Map<Key, Carrier> res = newCarriersByKey;
+//		newCarriersByKey = new HashMap<Key, Carrier>();
+//		return res;
+//	}
 
 	protected synchronized void rollCarrierContainers()
 	{
@@ -1029,6 +1049,27 @@ public class Cache
 		}
 	}
 
+	protected synchronized void roll_objectID2KeySet_dependency_removed_history()
+	{
+		objectID2KeySet_dependency_removed_active = new HashMap<Object, Set<Key>>();
+		objectID2KeySet_dependency_removed_active_createTimestamp = System.currentTimeMillis();
+		objectID2KeySet_dependency_removed_history.addFirst(objectID2KeySet_dependency_removed_active);
+
+		long oldGraphDependencyContainerCount = cacheCfMod.getOldGraphDependencyContainerCount();
+
+		if (oldGraphDependencyContainerCount < 3)
+			throw new IllegalStateException("carrierContainerCount = "+oldGraphDependencyContainerCount+" but must be at least 3!!!");
+
+		int removedContainerCount = 0; long removedObjectIDCount = 0;
+		while (objectID2KeySet_dependency_removed_history.size() > oldGraphDependencyContainerCount) {
+			removedObjectIDCount += objectID2KeySet_dependency_removed_history.removeLast().size();
+			++removedContainerCount;
+		}
+
+		if (logger.isInfoEnabled())
+			logger.info("roll_objectID2KeySet_dependency_removed_history: created new container and removed " + removedContainerCount + " with " + removedObjectIDCount + " dependency records.");
+	}
+
 	private CacheCfMod cacheCfMod;
 
 	protected CacheCfMod getCacheCfMod()
@@ -1046,8 +1087,10 @@ public class Cache
 		logger.info("Creating new Cache instance.");
 		cacheCfMod = (CacheCfMod) Config.sharedInstance().createConfigModule(CacheCfMod.class);
 		Config.sharedInstance().save(); // TODO remove this as soon as we have a thread that periodically saves it.
-		activeCarrierContainer = new CarrierContainer(this);
-		carrierContainers.addFirst(activeCarrierContainer);
+
+		// set initial active containers
+		rollCarrierContainers();
+		roll_objectID2KeySet_dependency_removed_history();
 //		notificationThread.start();
 //		cacheManagerThread.start();
 	}
@@ -1272,7 +1315,7 @@ public class Cache
 			Carrier oldCarrier = (Carrier) key2Carrier.get(key);
 			if (oldCarrier != null) {
 				if (logger.isDebugEnabled())
-					logger.debug("There was an old carrier for the same key in the cache; removing it. key: " + key.toString());
+					logger.info("There was an old carrier for the same key in the cache; removing it. key: " + key.toString());
 
 				oldCarrier.setCarrierContainer(null);
 			}
@@ -1282,8 +1325,26 @@ public class Cache
 
 			// store the new carrier in our main cache map
 			key2Carrier.put(key, carrier);
-			// ...and in the newCarriers map
-			newCarriersByKey.put(key, carrier);
+//			// ...and in the newCarriers map
+//			newCarriersByKey.put(key, carrier);
+
+			// fill in the object graph
+			long start_fillObjectGraph = System.currentTimeMillis();
+			Set objectIDs;
+			try {
+				objectIDs = carrier.getObjectIDs();
+			} catch (Exception e) {
+				objectIDs = null;
+				logger.error("carrier.getObjectIDs() failed!", e);
+			}
+			if (objectIDs != null) {
+				this.mapObjectIDs2Key(objectIDs, key);
+				this.subscribeObjectIDs(objectIDs, 0);
+			}
+			long duration_fillObjectGraph = System.currentTimeMillis() - start_fillObjectGraph;
+			if (duration_fillObjectGraph > 50)
+				logger.warn("put: fillObjectGraph took more than 50 msec! it took " + duration_fillObjectGraph + " msec!");
+
 
 			// register the key by its objectID (for fast removal if the object changed)
 			// note that the whole object graph is filled in later by the CacheManagerThread
@@ -1341,6 +1402,39 @@ public class Cache
 	}
 
 	/**
+	 * @param objectID Remove one or all dependencies for the object referenced by this objectID.
+	 * @param key If <code>null</code>, all keys depending on the given <code>objectID</code> will be removed. If non-<code>null</code>, only this one
+	 *		key will be removed.
+	 */
+	protected synchronized void removeDependency(Object objectID, Key key)
+	{
+		if (objectID == null)
+			throw new IllegalArgumentException("objectID must not be null!");
+
+		// key can be null => no check
+
+		Set<Key> keySet = objectID2KeySet_dependency.get(objectID);
+		if (keySet != null) {
+			Set<Key> keySetRemoved = objectID2KeySet_dependency_removed_active.get(objectID);
+			if (keySetRemoved == null) {
+				keySetRemoved = new HashSet<Key>();
+				objectID2KeySet_dependency_removed_active.put(objectID, keySetRemoved);
+			}
+
+			if (key == null) {
+				keySetRemoved.addAll(keySet);
+				objectID2KeySet_dependency.remove(objectID);
+			}
+			else {
+				keySetRemoved.add(key);
+				keySet.remove(key);
+				if (keySet.isEmpty())
+					objectID2KeySet_dependency.remove(objectID);
+			}
+		}
+	}
+
+	/**
 	 * This method is called by {@link CarrierContainer#close()} and removes
 	 * the <code>Carrier</code> specified by the given <code>Key</code> from the <code>Cache</code>.
 	 * Note, that this method DOES NOT unregister server-sided listeners in any case!
@@ -1370,16 +1464,16 @@ public class Cache
 
 		for (Iterator it = objectIDs.iterator(); it.hasNext(); ) {
 			Object objectID = it.next(); // key.getObjectID();
-
-			Set<Key> keySet = objectID2KeySet_dependency.get(objectID);
-			if (keySet != null) {
-				keySet.remove(key);
-
-				if (!DEBUG_TEST) {
-					if (keySet.isEmpty())
-						objectID2KeySet_dependency.remove(objectID);
-				}
-			}
+			removeDependency(objectID, key);
+//			Set<Key> keySet = objectID2KeySet_dependency.get(objectID);
+//			if (keySet != null) {
+//				keySet.remove(key);
+//
+//				if (!DEBUG_TEST) {
+//					if (keySet.isEmpty())
+//						objectID2KeySet_dependency.remove(objectID);
+//				}
+//			}
 		}
 
 		Set<Key> keySet = objectID2KeySet_alternative.get(key.getObjectID());
@@ -1394,7 +1488,15 @@ public class Cache
 			oldCarrier.setCarrierContainer(null);
 	}
 
+	/**
+	 * This method calls {@link #removeByObjectIDClass(Class, boolean)} with <code>returnRemovedDependencies == false</code>,
+	 * thus only returning really deleted <code>Key</code>s - no history entries.
+	 */
 	public synchronized Set<Key> removeByObjectIDClass(Class clazz)
+	{
+		return removeByObjectIDClass(clazz, false);
+	}
+	public synchronized Set<Key> removeByObjectIDClass(Class clazz, boolean returnRemovedDependencies)
 	{
 		// TODO we need an index for this feature!!! Iterating all objectIDs is too inefficient!
 		Set<Object> objectIDsToRemove = new HashSet<Object>();
@@ -1405,7 +1507,7 @@ public class Cache
 
 		Set<Key> res = new HashSet<Key>();
 		for (Object objectID : objectIDsToRemove)
-			res.addAll(removeByObjectID(objectID));
+			res.addAll(removeByObjectID(objectID, returnRemovedDependencies));
 
 		return res;
 	}
@@ -1414,6 +1516,8 @@ public class Cache
 	{
 		carrierContainers.clear();
 		rollCarrierContainers();
+		objectID2KeySet_dependency_removed_history.clear();
+		roll_objectID2KeySet_dependency_removed_history();
 		key2Carrier.clear();
 		objectID2KeySet_dependency.clear();
 		objectID2KeySet_alternative.clear();
@@ -1444,41 +1548,63 @@ public class Cache
 	 * @param objectID The JDO object-id of the persistance-capable object.
 	 * @return a Set of all removed {@link Key}s - never null
 	 */
-	public synchronized Set<Key> removeByObjectID(Object objectID)
+	public synchronized Set<Key> removeByObjectID(Object objectID, boolean returnRemovedDependencies)
 	{
 		if (logger.isDebugEnabled())
 			logger.debug("removeByObjectID: Removing all Carriers for: " + objectID);
 
 		objectID2KeySet_alternative.remove(objectID);
 
-		Set<Key> keySet;
-		if (DEBUG_TEST)
-			keySet = objectID2KeySet_dependency.get(objectID);
-		else
-			keySet = objectID2KeySet_dependency.remove(objectID);
+		Set<Key> res = null;
+		Set<Key> keySet = objectID2KeySet_dependency.get(objectID);
+		if (keySet != null)
+			res = new HashSet<Key>(keySet);
 
-		if (keySet == null) {
+//		Set<Key> keySet;
+//		if (DEBUG_TEST)
+//			keySet = objectID2KeySet_dependency.get(objectID);
+//		else
+//			keySet = objectID2KeySet_dependency.remove(objectID);
+
+		if (returnRemovedDependencies) {
+			for (Map<Object, Set<Key>> objectID2KeySet_dependency_removed : objectID2KeySet_dependency_removed_history) {
+				Set<Key> keySetRemoved = objectID2KeySet_dependency_removed.get(objectID);
+				if (keySetRemoved != null) {
+					if (res == null)
+						res = new HashSet<Key>(keySetRemoved);
+					else
+						res.addAll(keySetRemoved);
+				}
+			}
+		} // if (returnRemovedDependencies) {
+
+		if (res == null) {
 			if (logger.isDebugEnabled())
 				logger.debug("removeByObjectID: No entry in objectID2KeySet_dependency for: " + objectID);
 
 			return emptyKeySet;
 		}
 
-		int removedCarrierCount = 0;
-		for (Iterator it = keySet.iterator(); it.hasNext(); ) {
-			Key key = (Key) it.next();
-			Carrier carrier = (Carrier) key2Carrier.remove(key);
-			if (carrier != null) {
-				if (logger.isDebugEnabled())
-					logger.debug("removeByObjectID: Removing Carrier: key=\"" + key + "\"");
+		if (keySet != null) {
+			for (Iterator it = keySet.iterator(); it.hasNext(); ) {
+				Key key = (Key) it.next();
+				Carrier carrier = (Carrier) key2Carrier.remove(key);
+				if (carrier != null) {
+					if (logger.isDebugEnabled())
+						logger.debug("removeByObjectID: Removing Carrier: key=\"" + key + "\"");
 
-				carrier.setCarrierContainer(null);
-				removedCarrierCount++;
+					carrier.setCarrierContainer(null);
+				}
+				else {
+					if (logger.isDebugEnabled())
+						logger.debug("removeByObjectID: There was a key in the objectID2KeySet_dependency, but no carrier for it in key2Carrier! key=\"" + key + "\"");
+				}
 			}
-			else
-				logger.warn("removeByObjectID: There was a key in the objectID2KeySet_dependency, but no carrier for it in key2Carrier! key=\"" + key + "\"");
 		}
-		return keySet;
+
+		removeDependency(objectID, null);
+
+		return res;
 	}
 
 	public synchronized boolean isOpen()
