@@ -50,7 +50,7 @@ public class CacheFactory implements ICacheFactory {
 		}
 
 		public void remove(Object key) {
-			cache.removeByObjectID(key);
+			cache.removeByObjectID(key, false);
 		}
 
 		public void removeAll() {
