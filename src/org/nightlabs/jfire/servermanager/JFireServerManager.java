@@ -166,6 +166,9 @@ public interface JFireServerManager
 	public JFirePrincipal login(String _organisationID, String _userID, String _sessionID, String _password)
 		throws LoginException;
 
+	public void undeploy(File deployment)
+	throws IOException;
+
 	public void createDeploymentDescriptor(
 			File deploymentDescriptorFile, File templateFile, Map<String, String> additionalVariables, DeployOverwriteBehaviour deployOverwriteBehaviour)
 	throws IOException;

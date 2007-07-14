@@ -1498,9 +1498,37 @@ public class JFireServerManagerFactoryImpl
 		return organisationCfsCloned;
 	}
 
+	public void undeploy(File deployment)
+	throws IOException
+	{
+		if (deployment.isAbsolute())
+			logger.warn("deployment should not be an absolute file: " + deployment.getPath(), new IllegalArgumentException("deployment should not be an absolute file: " + deployment.getPath()));
+
+		if (!deployment.isAbsolute()) {
+			deployment = new File(
+					new File(mcf.getConfigModule().getJ2ee().getJ2eeDeployBaseDirectory()).getAbsoluteFile().getParentFile(),
+					deployment.getPath());
+		}
+
+		if (!deployment.exists()) {
+			logger.warn("deployment does not exist: " + deployment.getPath(), new IllegalArgumentException("deployment does not exist: " + deployment.getPath()));
+			return;
+		}
+
+		if (!Utils.deleteDirectoryRecursively(deployment)) {
+			if (deployment.exists())
+				throw new IOException("The deployment could not be undeployed: " + deployment.getPath());
+			else
+				logger.warn("deleting deployment failed, but it does not exist anymore (which is fine): " + deployment.getPath(), new IOException("deleting deployment failed, but it does not exist anymore (which is fine): " + deployment.getPath()));
+		}
+	}
+
 	public void createDeploymentJar(String organisationID, File deploymentJar, Collection<DeploymentJarItem> deploymentJarItems, DeployOverwriteBehaviour deployOverwriteBehaviour)
 	throws IOException
 	{
+		if (deploymentJar.isAbsolute())
+			logger.warn("deploymentJar should not be an absolute file: " + deploymentJar.getPath(), new IllegalArgumentException("deploymentJar should not be an absolute file: " + deploymentJar.getPath()));
+
 		if (!deploymentJar.isAbsolute()) {
 			deploymentJar = new File(
 					new File(mcf.getConfigModule().getJ2ee().getJ2eeDeployBaseDirectory()).getAbsoluteFile().getParentFile(),
@@ -1596,7 +1624,7 @@ public class JFireServerManagerFactoryImpl
 
 	/**
 	 * @param organisationID The organisation for which a new deployment-descriptor is created.
-	 * @param deploymentDescriptorFile The deployment-descriptor-file (absolute or relative) that shall be created. The parent-directories are implicitely created.
+	 * @param deploymentDescriptorFile The deployment-descriptor-file (relative recommended) that shall be created. The parent-directories are implicitely created.
 	 *		If this is relative, it will be created inside the deploy-directory of the jee server (i.e. within a subdirectory, if it contains a path, and as sibling
 	 *		to JFire.last).
 	 * @param templateFile The template file.
@@ -1609,6 +1637,9 @@ public class JFireServerManagerFactoryImpl
 	throws IOException
 	{
 		JFireServerConfigModule.Database dbCf = mcf.getConfigModule().getDatabase();
+
+		if (deploymentDescriptorFile.isAbsolute())
+			logger.warn("deploymentDescriptorFile should not be an absolute file: " + deploymentDescriptorFile.getPath(), new IllegalArgumentException("deploymentDescriptorFile should not be an absolute file: " + deploymentDescriptorFile.getPath()));
 
 		if (!deploymentDescriptorFile.isAbsolute()) {
 			deploymentDescriptorFile = new File(

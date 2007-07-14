@@ -516,4 +516,13 @@ public class JFireServerManagerImpl
 
 		jfireServerManagerFactoryImpl.createDeploymentJar(principal.getOrganisationID(), deploymentJar, deploymentJarItems, deployOverwriteBehaviour);
 	}
+
+	public void undeploy(File deployment)
+			throws IOException
+	{
+		assertOpen();
+		assertAuthenticated();
+
+		jfireServerManagerFactoryImpl.undeploy(deployment);
+	}
 }
