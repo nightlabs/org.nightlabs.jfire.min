@@ -7,7 +7,8 @@ import org.nightlabs.base.progress.ProgressMonitorWrapper;
 import org.nightlabs.progress.ProgressMonitor;
 
 public abstract class JDOLifecycleAdapterJob
-		implements JDOLifecycleListenerJob
+extends JDOLifecycleAdapter
+implements JDOLifecycleListenerJob
 {
 	private String jobName = null;
 
