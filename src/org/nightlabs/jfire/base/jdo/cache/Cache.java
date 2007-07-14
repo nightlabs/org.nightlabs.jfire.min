@@ -1240,16 +1240,21 @@ public class Cache
 
 	public void putAll(String scope, Collection objects, String[] fetchGroups, int maxFetchDepth)
 	{
-		putAll(scope, objects, CollectionUtil.array2HashSet(fetchGroups), maxFetchDepth);
+		_putAll(scope, objects, CollectionUtil.array2HashSet(fetchGroups), maxFetchDepth);
 	}
-
 	public void putAll(String scope, Collection objects, Set<String> fetchGroups, int maxFetchDepth)
+	{
+		_putAll(scope, objects, new HashSet<String>(fetchGroups), maxFetchDepth);
+	}
+	protected void _putAll(String scope, Collection objects, Set<String> fetchGroups, int maxFetchDepth)
 	{
 		if (objects == null)
 			throw new NullPointerException("objects must not be null!");
 
-		for (Iterator it = objects.iterator(); it.hasNext(); )
-			put(scope, it.next(), fetchGroups, maxFetchDepth);
+		for (Iterator it = objects.iterator(); it.hasNext(); ) {
+			Object object = it.next();
+			_put(scope, JDOHelper.getObjectId(object), object, fetchGroups, maxFetchDepth);
+		}
 	}
 
 	/**
@@ -1257,7 +1262,7 @@ public class Cache
 	 */
 	public void put(String scope, Object object, String[] fetchGroups, int maxFetchDepth)
 	{
-		put(scope, object, CollectionUtil.array2HashSet(fetchGroups), maxFetchDepth);
+		_put(scope, JDOHelper.getObjectId(object), object, CollectionUtil.array2HashSet(fetchGroups), maxFetchDepth);
 	}
 
 	/**
@@ -1266,7 +1271,7 @@ public class Cache
 	 */
 	public void put(String scope, Object object, Set<String> fetchGroups, int maxFetchDepth)
 	{
-		put(scope, JDOHelper.getObjectId(object), object, fetchGroups, maxFetchDepth);
+		_put(scope, JDOHelper.getObjectId(object), object, new HashSet<String>(fetchGroups), maxFetchDepth);
 	}
 
 	/**
@@ -1274,7 +1279,7 @@ public class Cache
 	 */
 	public void put(String scope, Object objectID, Object object, String[] fetchGroups, int maxFetchDepth)
 	{
-		put(scope, objectID, object, CollectionUtil.array2HashSet(fetchGroups), maxFetchDepth);
+		_put(scope, objectID, object, CollectionUtil.array2HashSet(fetchGroups), maxFetchDepth);
 	}
 
 	/**
@@ -1295,13 +1300,17 @@ public class Cache
 	 */
 	public void put(String scope, Object objectID, Object object, Set<String> fetchGroups, int maxFetchDepth)
 	{
+		_put(scope, objectID, object, new HashSet<String>(fetchGroups), maxFetchDepth);
+	}
+	protected void _put(String scope, Object objectID, Object object, Set<String> fetchGroups, int maxFetchDepth)
+	{
 		assertOpen();
-
-		if (object == null)
-			throw new NullPointerException("object must not be null!");
 
 		if (objectID == null)
 			throw new NullPointerException("objectID must not be null!");
+
+		if (object == null)
+			throw new NullPointerException("object must not be null!");
 
 		JDOObjectID2PCClassMap.sharedInstance().initPersistenceCapableClass(objectID, object.getClass());
 
@@ -1328,26 +1337,8 @@ public class Cache
 //			// ...and in the newCarriers map
 //			newCarriersByKey.put(key, carrier);
 
-			// fill in the object graph
-			long start_fillObjectGraph = System.currentTimeMillis();
-			Set objectIDs;
-			try {
-				objectIDs = carrier.getObjectIDs();
-			} catch (Exception e) {
-				objectIDs = null;
-				logger.error("carrier.getObjectIDs() failed!", e);
-			}
-			if (objectIDs != null) {
-				this.mapObjectIDs2Key(objectIDs, key);
-				this.subscribeObjectIDs(objectIDs, 0);
-			}
-			long duration_fillObjectGraph = System.currentTimeMillis() - start_fillObjectGraph;
-			if (duration_fillObjectGraph > 50)
-				logger.warn("put: fillObjectGraph took more than 50 msec! it took " + duration_fillObjectGraph + " msec!");
-
-
 			// register the key by its objectID (for fast removal if the object changed)
-			// note that the whole object graph is filled in later by the CacheManagerThread
+			// note that the whole object graph is filled in later by the CacheManagerThread - no more! it's one below in this method since it's not expensive!
 			{
 				Set<Key> keySet = objectID2KeySet_dependency.get(objectID);
 				if (keySet == null) {
@@ -1366,7 +1357,26 @@ public class Cache
 				}
 				keySet.add(key);
 			}
-		}
+
+			// fill in the object graph
+			{
+				long start_fillObjectGraph = System.currentTimeMillis();
+				Set objectIDs;
+				try {
+					objectIDs = carrier.getObjectIDs();
+				} catch (Exception e) {
+					objectIDs = null;
+					logger.error("carrier.getObjectIDs() failed!", e);
+				}
+				if (objectIDs != null) {
+					this.mapObjectIDs2Key(objectIDs, key);
+					this.subscribeObjectIDs(objectIDs, 0);
+				}
+				long duration_fillObjectGraph = System.currentTimeMillis() - start_fillObjectGraph;
+				if (duration_fillObjectGraph > 50)
+					logger.warn("put: fillObjectGraph took more than 50 msec! it took " + duration_fillObjectGraph + " msec!");
+			}
+		} // synchronized (this) {
 
 //		// register the class of the pc object in the JDOObjectID2PCClassMap to minimize lookups.
 //		JDOObjectID2PCClassMap.sharedInstance().initPersistenceCapableClass(

@@ -184,7 +184,7 @@ public class Carrier
 		if (objectIDs == null) {
 			Object object = getObject();
 			Set<Object> set = new HashSet<Object>();
-			set.add(key.getObjectID()); // this might be a special key (non-jdo-objectID) as soon as we support to store arbitrary objects into the cache.
+			set.add(key.getObjectID()); // this might be a special key (non-jdo-objectID), because we support to store arbitrary objects into the cache.
 
 			if (object != null)
 				collectObjectIDs(new HashSet<Object>(), set, object);

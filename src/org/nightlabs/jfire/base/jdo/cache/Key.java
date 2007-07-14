@@ -47,7 +47,7 @@ public class Key
 	 * @param objectID A JDO object ID - must not be <tt>null</tt>. Note, that you MUST NOT change
 	 *		the objectID after you called this constructor!
 	 * @param fetchGroups Can be <tt>null</tt> or must be a <tt>Set</tt> of <tt>String</tt>.
-	 *		Note, that you MUST NOT change the set after you called this constructor!
+	 *		Note, that you MUST NOT change the set after you called this constructor! The {@link Cache} ensures this now and this method should never be called outside anyway.
 	 */
 	public Key(String scope, Object objectID, Set<String> fetchGroups, int maxFetchDepth)
 	{

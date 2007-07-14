@@ -124,6 +124,7 @@ extends org.nightlabs.notification.NotificationManager
 			logger.error("No listener found for filterID="+filterID);
 			return;
 		}
+		listener.setActiveJDOLifecycleEvent(event);
 
 		if (listener instanceof JDOLifecycleListenerCallerThread) {
 			listener.notify(event);
