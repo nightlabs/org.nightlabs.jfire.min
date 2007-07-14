@@ -813,7 +813,7 @@ public class CacheManagerFactory
 
 	private void after_addChangeListener(CacheSession session, ChangeListenerDescriptor l, boolean excludeLocalSessionFromNotification)
 	{
-//		excludeLocalSessionFromNotification = false; // TODO remove this
+		excludeLocalSessionFromNotification = false; // TODO remove this - hmmmm... it seems I must never exclude local sessions! this causes notifications to get lost!
 
 		String sessionID = session.getSessionID();
 		Object objectID = l.getObjectID();
