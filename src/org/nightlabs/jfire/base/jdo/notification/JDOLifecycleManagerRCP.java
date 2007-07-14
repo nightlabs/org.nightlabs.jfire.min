@@ -58,6 +58,8 @@ public class JDOLifecycleManagerRCP extends JDOLifecycleManager {
 	protected void performNotification(String notificationMode, final NotificationListener listener,
 			final NotificationEvent event)
 	{
+		listener.setActiveNotificationEvent(event);
+
 		if (NotificationListenerJob.class.getName().equals(notificationMode)) {
 			NotificationListenerJob l = (NotificationListenerJob) listener;
 
@@ -117,6 +119,8 @@ public class JDOLifecycleManagerRCP extends JDOLifecycleManager {
 	
 	private boolean notifyRCP(Long filterID, final JDOLifecycleEvent event, final JDOLifecycleListener listener)
 	{
+		listener.setActiveJDOLifecycleEvent(event);
+
 		if (listener instanceof JDOLifecycleListenerJob) {
 			JDOLifecycleListenerJob l = (JDOLifecycleListenerJob) listener;
 
