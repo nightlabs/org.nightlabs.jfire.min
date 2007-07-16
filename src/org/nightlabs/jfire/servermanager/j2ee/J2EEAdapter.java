@@ -26,19 +26,29 @@
 
 package org.nightlabs.jfire.servermanager.j2ee;
 
+import java.io.Serializable;
+
 import javax.naming.InitialContext;
 import javax.transaction.TransactionManager;
 
 import org.nightlabs.jfire.security.SecurityReflector;
+import org.nightlabs.jfire.servermanager.j2ee.monitor.J2EEServerMonitor;
+import org.nightlabs.jfire.servermanager.ra.JFireServerManagerFactoryImpl;
 
 
 /**
  * This interface defines an adapter for vendor specific functionality.
  * 
  * @author Marco Schulze - marco at nightlabs dot de
+ * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] de -->
  */
-public interface J2EEAdapter
-{
+public interface J2EEAdapter extends Serializable {
+	/**
+	 * The appropriate {@link J2EEAdapter} will be bound to JNDI under this name.
+	 * This is done by {@link JFireServerManagerFactoryImpl}.
+	 */
+	public static final String JNDI_NAME = "java:/jfire/system/J2EEAdapter";
+	
 	public void flushAuthenticationCache()
 		throws Exception;
 
@@ -58,6 +68,12 @@ public interface J2EEAdapter
 		throws Exception;
 
 	public SecurityReflector getSecurityReflector();
+	
+	/**
+	 * @return The {@link J2EEServerMonitor} implementation
+	 * 		of this adapter. 
+	 */
+	public J2EEServerMonitor getServerMonitor();
 
 	/**
 	 * This method shuts the server down. It should do so nicely.

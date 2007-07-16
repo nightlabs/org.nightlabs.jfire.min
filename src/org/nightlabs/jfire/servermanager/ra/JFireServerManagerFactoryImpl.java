@@ -335,11 +335,27 @@ public class JFireServerManagerFactoryImpl
 			logger.error("Binding some config settings into JNDI failed!", e);
 			throw new ResourceException(e.getMessage());
 		}
+		
+		J2EEAdapter j2EEAdapter;
+		try {
+			j2EEAdapter = getJ2EEVendorAdapter();
+		} catch (ModuleException e) {
+			logger.error("Creating J2EEAdapter failed!", e);
+			throw new ResourceException(e.getMessage());
+		}
+		try 
+		{
+			initialContext.bind(J2EEAdapter.JNDI_NAME, j2EEAdapter);
+		}
+		catch (NamingException e) {
+			logger.error("Binding J2EEAdapter into JNDI failed!", e);
+			throw new ResourceException(e.getMessage());
+		}
 
 		try {
-			SecurityReflector userResolver = getJ2EEVendorAdapter().getSecurityReflector();
+			SecurityReflector userResolver = j2EEAdapter.getSecurityReflector();
 			if (userResolver == null)
-				throw new NullPointerException("J2EEVendorAdapter "+getJ2EEVendorAdapter().getClass()+".getUserResolver() returned null!");
+				throw new NullPointerException("J2EEVendorAdapter "+j2EEAdapter.getClass()+".getUserResolver() returned null!");
 			try
 			{
 				initialContext.bind(SecurityReflector.JNDI_NAME, userResolver);
