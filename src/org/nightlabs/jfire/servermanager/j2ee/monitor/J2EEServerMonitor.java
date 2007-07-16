@@ -33,4 +33,16 @@ public interface J2EEServerMonitor {
 	 * @return All messages in the given Queue
 	 */
 	Collection<Message> listQueueMessages(Queue queue) throws NamingException, JMSException;
+	
+	/**
+	 * Returns the number of messages in the given queue.
+	 * This might be obtained in a more optimized way than
+	 * getting all Messages (see {@link #listQueueMessages(Queue)})
+	 * and returning their count.
+	 * 
+	 * @param queue The {@link Queue} to find the message count for.
+	 * @return The number of messages in the given queue.
+	 */
+	int getQueueDepth(Queue queue) throws NamingException, JMSException;
+	
 }
