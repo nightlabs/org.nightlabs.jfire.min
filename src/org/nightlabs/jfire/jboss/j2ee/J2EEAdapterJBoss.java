@@ -37,15 +37,19 @@ import javax.management.ObjectName;
 import javax.naming.InitialContext;
 import javax.transaction.TransactionManager;
 
+import org.nightlabs.jfire.jboss.j2ee.monitor.J2EEServerMonitorJBoss;
 import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.servermanager.j2ee.J2EEAdapter;
 import org.nightlabs.jfire.servermanager.j2ee.ServerStartNotificationListener;
+import org.nightlabs.jfire.servermanager.j2ee.monitor.J2EEServerMonitor;
 
 /**
  * @author Marco Schulze - marco at nightlabs dot de
  */
 public class J2EEAdapterJBoss implements J2EEAdapter
 {
+	private static final long serialVersionUID = 1L;
+
 	public void flushAuthenticationCache()
 	throws Exception
 	{
@@ -146,5 +150,21 @@ public class J2EEAdapterJBoss implements J2EEAdapter
 	public void shutdown()
 	{
 		System.exit(-1);
+	}
+
+	private J2EEServerMonitorJBoss serverMonitor;
+
+	/**
+	 * {@inheritDoc}
+	 * @see org.nightlabs.jfire.servermanager.j2ee.J2EEAdapter#getServerMonitor()
+	 */
+	public J2EEServerMonitor getServerMonitor() {
+		if (serverMonitor == null) {
+			synchronized (J2EEAdapterJBoss.class) {
+				if (serverMonitor == null)
+					serverMonitor = new J2EEServerMonitorJBoss();
+			}
+		}
+		return serverMonitor;
 	}
 }
