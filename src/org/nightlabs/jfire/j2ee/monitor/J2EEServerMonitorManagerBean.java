@@ -129,4 +129,25 @@ implements SessionBean
 		return null;
 	}
 	
+	/**
+	 * Returns the count of messages in the queue with the given queueName.
+	 * 
+	 * @param queueName The name of the queue to list Messages for.
+	 * @return The count of messages in the queue with the given queueName.
+	 * 
+	 * @ejb.interface-method
+	 * @ejb.permission role-name="_Guest_"
+	 * @ejb.transaction type = "Supports"
+	 */
+	public int getQueueDepth(String queueName) throws NamingException, JMSException {
+		J2EEAdapter adapter = getJ2EEAdapter();
+		Collection<Queue> queues = adapter.getServerMonitor().listQueues();
+		for (Queue queue : queues) {
+			if (queue.getQueueName().equals(queueName)) {
+				Collection<Message> msgs = adapter.getServerMonitor().listQueueMessages(queue);
+				return adapter.getServerMonitor().getQueueDepth(queue);
+			}
+		}
+		return 0;
+	}
 }
