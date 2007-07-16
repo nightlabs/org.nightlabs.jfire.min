@@ -81,12 +81,12 @@ public class J2EEServerMonitorJBoss implements J2EEServerMonitor {
 	}
 
 	private void listQueues(InitialContext ic, String base, Collection<Queue> queues) throws NamingException {
-		logger.info("Listing for " + base);
+		logger.debug("Listing for " + base);
 		NamingEnumeration<NameClassPair> ne = null;
 		try {
 			ne = ic.list(base);
 		} catch (NameNotFoundException e) {
-			logger.info("Listing failed for " + base + ", probably not really bound ...");
+			logger.debug("Listing failed for " + base + ", probably not really bound ...");
 			return;
 		} catch (Exception ex) {
 //			logger.error("Listing failed for " + base + ", unknown error.", ex);
@@ -95,14 +95,14 @@ public class J2EEServerMonitorJBoss implements J2EEServerMonitor {
 		while(ne.hasMoreElements()){
 			NameClassPair ncp = ne.nextElement();
 			String lookupPath = base == null || "".equals(base) ? ncp.getName() : base + "/" + ncp.getName(); 
-			logger.info("Have NameClassPair: " + ncp.getName() + " " + ncp.getClassName());
+			logger.debug("Have NameClassPair: " + ncp.getName() + " " + ncp.getClassName());
 			Object jndiObj = null;
 			try {
 				jndiObj = ic.lookup(lookupPath);
 			} catch (NameNotFoundException e) {
-				logger.info("Lookup of " + ncp.getName() + " failed, probably not really bound ...");
+				logger.debug("Lookup of " + ncp.getName() + " failed, probably not really bound ...");
 			} catch (Exception ex) {
-				logger.error("Lookup of " + ncp.getName() + " failed, unknown error.", ex);
+				logger.debug("Lookup of " + ncp.getName() + " failed, unknown error.", ex);
 			}
 			if (jndiObj instanceof Queue) {
 				Queue queue = (Queue) jndiObj;
@@ -111,6 +111,17 @@ public class J2EEServerMonitorJBoss implements J2EEServerMonitor {
 				listQueues(ic, lookupPath, queues);
 			}
 		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see org.nightlabs.jfire.servermanager.j2ee.monitor.J2EEServerMonitor#getQueueDepth(javax.jms.Queue)
+	 */
+	public int getQueueDepth(Queue queue) throws NamingException, JMSException {
+		Collection<Message> msgs = listQueueMessages(queue);
+		if (msgs == null)
+			return 0;
+		return msgs.size();
 	}
 	
 }
