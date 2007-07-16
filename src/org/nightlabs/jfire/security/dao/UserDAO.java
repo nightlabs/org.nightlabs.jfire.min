@@ -38,8 +38,6 @@ import org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO;
 import org.nightlabs.jfire.idgenerator.IDGenerator;
 import org.nightlabs.jfire.person.Person;
 import org.nightlabs.jfire.prop.IStruct;
-import org.nightlabs.jfire.prop.PropertyManager;
-import org.nightlabs.jfire.prop.PropertyManagerUtil;
 import org.nightlabs.jfire.prop.PropertySet;
 import org.nightlabs.jfire.security.Authority;
 import org.nightlabs.jfire.security.RoleGroup;
@@ -177,6 +175,7 @@ public class UserDAO extends BaseJDOObjectDAO<UserID, User>
 			}
 			User result = um.storeUser(user, userPassword, get, fetchGroups, maxFetchDepth);
 			monitor.worked(1);
+			person = result.getPerson();
 			struct.explodeProperty(person);    
 			monitor.worked(1);
 			monitor.done();
