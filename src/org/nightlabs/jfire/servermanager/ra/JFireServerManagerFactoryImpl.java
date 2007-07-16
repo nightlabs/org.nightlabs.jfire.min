@@ -1654,8 +1654,8 @@ public class JFireServerManagerFactoryImpl
 	{
 		JFireServerConfigModule.Database dbCf = mcf.getConfigModule().getDatabase();
 
-		if (deploymentDescriptorFile.isAbsolute())
-			logger.warn("deploymentDescriptorFile should not be an absolute file: " + deploymentDescriptorFile.getPath(), new IllegalArgumentException("deploymentDescriptorFile should not be an absolute file: " + deploymentDescriptorFile.getPath()));
+//		if (deploymentDescriptorFile.isAbsolute()) // this method is used by createDeploymentJar with an absolute file, hence we cannot warn here.
+//			logger.warn("deploymentDescriptorFile should not be an absolute file: " + deploymentDescriptorFile.getPath(), new IllegalArgumentException("deploymentDescriptorFile should not be an absolute file: " + deploymentDescriptorFile.getPath()));
 
 		if (!deploymentDescriptorFile.isAbsolute()) {
 			deploymentDescriptorFile = new File(
