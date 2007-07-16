@@ -233,7 +233,7 @@ public class JFireServerConfigModule extends ConfigModule
 				db.setDatabaseAdapter(DatabaseAdapterDerby.class.getName());
 				db.setDatasourceMetadataTypeMapping("Derby");
 //				db.setDatasourceConfigFile("db-derby-" + ORGANISATION_ID_VAR + "-ds.xml");
-//				db.setDatasourceTemplateDSXMLFile("../server/default/deploy/JFire.last/JFireBase.ear/db-derby-ds.template.xml");
+				db.setDatasourceTemplateDSXMLFile("../server/default/deploy/JFire.last/JFireBase.ear/db-derby-ds.template.xml");
 				DEFAULTS.put("Derby", db);
 
 				// Default values for MySQL
@@ -248,7 +248,7 @@ public class JFireServerConfigModule extends ConfigModule
 				db.setDatabaseAdapter(DatabaseAdapterMySQL.class.getName());
 				db.setDatasourceMetadataTypeMapping("mySQL");
 //				db.setDatasourceConfigFile("db-mysql-" + ORGANISATION_ID_VAR + "-ds.xml");
-//				db.setDatasourceTemplateDSXMLFile("../server/default/deploy/JFire.last/JFireBase.ear/db-mysql-ds.template.xml");
+				db.setDatasourceTemplateDSXMLFile("../server/default/deploy/JFire.last/JFireBase.ear/db-mysql-ds.template.xml");
 				DEFAULTS.put("MySQL", db);
 
 			} catch (Throwable t) {
@@ -546,7 +546,7 @@ public class JFireServerConfigModule extends ConfigModule
 				setDatasourceConfigFile("db-" + ORGANISATION_ID_VAR + "-ds.xml");
 
 			if (datasourceTemplateDSXMLFile == null)
-				setDatasourceTemplateDSXMLFile("../server/default/deploy/JFire.last/JFireBase.ear/db-all-ds.template.xml");
+				setDatasourceTemplateDSXMLFile("../server/default/deploy/JFire.last/JFireBase.ear/db-default-ds.template.xml");
 		}
 
 		public void init()
@@ -724,7 +724,7 @@ public class JFireServerConfigModule extends ConfigModule
 				jdoConfigFile = "jdo-" + ORGANISATION_ID_VAR + "-ds.xml";
 
 			if (jdoTemplateDSXMLFile == null)
-				jdoTemplateDSXMLFile = "../server/default/deploy/JFire.last/JFireBase.ear/jdo-jpox-ds.template.xml";
+				jdoTemplateDSXMLFile = "../server/default/deploy/JFire.last/JFireBase.ear/jdo-jpox-1.1-ds.template.xml";
 
 			logger.info("jdoConfigDirectory = "+jdoConfigDirectory);
 //			logger.info("datasourceConfigFile = "+datasourceConfigFile);

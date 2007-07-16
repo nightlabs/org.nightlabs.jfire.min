@@ -2,5 +2,8 @@
 	<target name="deploy.post">
 		<mkdir dir="${j2ee.deploy.dir}/${j2ee.deploy.subdir}/${j2ee.ear}/config"/>
 		<copy file="${project.dir}/${dist.dir}/Config-README.txt" todir="${j2ee.deploy.dir}/${j2ee.deploy.subdir}/${j2ee.ear}/config" />
+
+		<delete file="${j2ee.deploy.dir}/${j2ee.deploy.subdir}/${j2ee.ear}/db-all-ds.template.xml"/>
+		<delete file="${j2ee.deploy.dir}/${j2ee.deploy.subdir}/${j2ee.ear}/jdo-jpox-ds.template.xml"/>
 	</target>
 </project>

@@ -3,30 +3,12 @@
 	<tx-connection-factory>
 		<jndi-name>${jdoPersistenceManagerFactoryJNDIName_relative}</jndi-name>
 
-<!-- JBoss 3.2.x: begin
-		<adapter-display-name>JPOX Connector</adapter-display-name>
-JBoss 3.2.x: end -->
-
-<!-- JBoss 4.x: begin -->
 		<rar-name>jpox.rar</rar-name>
 		<connection-definition>javax.resource.cci.ConnectionFactory</connection-definition>
-<!-- JBoss 4.x: end -->
-
-<!-- indirect connection via datasource - old (JPOX 1.1)
-		<config-property name="ConnectionDriverName" type="java.lang.String">org.jpox.driver.JPOXDriver</config-property>
-		<config-property name="ConnectionURL" type="java.lang.String">jpox:{datasourceJNDIName_absolute}</config-property>
--->
 
 <!-- indirect connection via datasource - new (JPOX 1.2) with 2 datasources - noTx for DDL, xa for normal communication -->
 		<config-property name="ConnectionFactoryName" type="java.lang.String">${datasourceJNDIName_absolute_xa}</config-property>
 		<config-property name="ConnectionFactory2Name" type="java.lang.String">${datasourceJNDIName_absolute_noTx}</config-property>
-
-<!-- direct connection
-		<config-property name="ConnectionDriverName" type="java.lang.String">${databaseDriverName}</config-property>
-		<config-property name="ConnectionURL" type="java.lang.String">${databaseURL}</config-property>
-		<config-property name="ConnectionUserName" type="java.lang.String">${databaseUserName}</config-property>
-		<config-property name="ConnectionPassword" type="java.lang.String">${databasePassword}</config-property>
--->
 
 		<config-property name="AutoStartMechanism" type="java.lang.String">none</config-property>
 

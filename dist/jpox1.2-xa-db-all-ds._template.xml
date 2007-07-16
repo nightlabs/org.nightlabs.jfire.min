@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <datasources>
 	<local-tx-datasource>
-		<jndi-name>${datasourceJNDIName_relative}_xa</jndi-name>
+		<jndi-name>${datasourceJNDIName_relative_xa}</jndi-name>
 		<connection-url>${databaseURL}</connection-url>
 		<driver-class>${databaseDriverName}</driver-class>
 

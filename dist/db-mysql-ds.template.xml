@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<datasources>
+    <no-tx-datasource>
+        <jndi-name>${datasourceJNDIName_relative_noTx}</jndi-name>
+        <connection-url>${databaseURL}</connection-url>
+        <driver-class>${databaseDriverName_noTx}</driver-class>
+
+        <user-name>${databaseUserName}</user-name>
+        <password>${databasePassword}</password>
+
+        <connection-property name="autoReconnect">false</connection-property>
+        <connection-property name="auto-commit">false</connection-property>
+
+        <metadata>
+            <type-mapping>${datasourceMetadataTypeMapping}</type-mapping>
+        </metadata>
+        <max-pool-size>100</max-pool-size>
+    </no-tx-datasource>
+
+    <local-tx-datasource>
+        <jndi-name>${datasourceJNDIName_relative_localTx}</jndi-name>
+        <connection-url>${databaseURL}</connection-url>
+        <driver-class>${databaseDriverName_localTx}</driver-class>
+
+        <user-name>${databaseUserName}</user-name>
+        <password>${databasePassword}</password>
+
+        <connection-property name="autoReconnect">false</connection-property>
+        <connection-property name="auto-commit">false</connection-property>
+
+        <metadata>
+            <type-mapping>${datasourceMetadataTypeMapping}</type-mapping>
+        </metadata>
+        <max-pool-size>100</max-pool-size>
+    </local-tx-datasource>
+
+    <xa-datasource>
+        <jndi-name>${datasourceJNDIName_relative_xa}</jndi-name>
+    	<xa-datasource-class>${databaseDriverName_xa}</xa-datasource-class>
+    	<xa-datasource-property name="URL">${databaseURL}</xa-datasource-property>
+
+        <user-name>${databaseUserName}</user-name>
+        <password>${databasePassword}</password>
+
+    	<track-connection-by-tx>true</track-connection-by-tx>
+    	<exception-sorter-class-name>org.jboss.resource.adapter.jdbc.vendor.MySQLExceptionSorter</exception-sorter-class-name>
+    	<metadata>
+    		<type-mapping>${datasourceMetadataTypeMapping}</type-mapping>
+    	</metadata>
+    </xa-datasource>
+</datasources>
