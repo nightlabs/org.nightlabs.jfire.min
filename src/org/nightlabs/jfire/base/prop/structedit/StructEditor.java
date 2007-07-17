@@ -53,7 +53,7 @@ import org.nightlabs.util.reflect.ReflectUtil;
  * Editor to change the {@link Property} structure ({@link IStruct}) linked to
  * a certain {@link Class}. 
  * 
- * @author Tobias Langner <tobias[DOT]langner[AT]nightlabs[DOT]de>
+ * @author Tobias Langner <!-- tobias[dot]langner[at]nightlabs[dot]de -->
  * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] de -->
  */
 public class StructEditor {

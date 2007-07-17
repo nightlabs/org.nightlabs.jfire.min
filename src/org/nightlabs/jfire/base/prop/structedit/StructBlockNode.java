@@ -9,7 +9,7 @@ import org.nightlabs.jfire.prop.StructBlock;
 import org.nightlabs.util.Utils;
 
 /**
- * @author Tobias Langner <tobias[DOT]langner[AT]nightlabs[DOT]de>
+ * @author Tobias Langner <!-- tobias[dot]langner[at]nightlabs[dot]de -->
  */
 public class StructBlockNode extends TreeNode //implements Comparable<StructBlockNode>
 {

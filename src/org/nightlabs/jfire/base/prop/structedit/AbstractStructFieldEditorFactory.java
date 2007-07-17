@@ -8,7 +8,7 @@ import org.eclipse.core.runtime.IConfigurationElement;
 
 /**
  * 
- * @author Tobias Langner <tobias[DOT]langner[AT]nightlabs[DOT]de>
+ * @author Tobias Langner <!-- tobias[dot]langner[at]nightlabs[dot]de -->
  */
 public abstract class AbstractStructFieldEditorFactory implements StructFieldEditorFactory {
 	protected String editorClass = null;

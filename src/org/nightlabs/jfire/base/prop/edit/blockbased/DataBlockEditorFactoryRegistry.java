@@ -40,7 +40,7 @@ import org.nightlabs.jfire.prop.id.StructBlockID;
 
 /**
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
- * @author Tobias Langner <tobias[DOT]langner[AT]nightlabs[DOT]de>
+ * @author Tobias Langner <!-- tobias[dot]langner[at]nightlabs[dot]de -->
  */
 public class DataBlockEditorFactoryRegistry extends AbstractEPProcessor {
 	

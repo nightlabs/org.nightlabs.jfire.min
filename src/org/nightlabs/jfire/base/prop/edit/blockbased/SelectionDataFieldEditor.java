@@ -16,7 +16,7 @@ import org.nightlabs.jfire.prop.datafield.SelectionDataField;
 import org.nightlabs.language.LanguageCf;
 
 /**
- * @author Tobias Langner <!-- tobias[DOT]langner[AT]nightlabs[DOT]de -->
+ * @author Tobias Langner <!-- tobias[dot]langner[at]nightlabs[dot]de -->
  */
 public class SelectionDataFieldEditor extends AbstractDataFieldEditor<SelectionDataField> {
 	

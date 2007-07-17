@@ -43,7 +43,7 @@ import org.nightlabs.progress.NullProgressMonitor;
 /**
  * Temporal registry for PropStructBlocks to be displayed by block-based PropEditors.
  * 
- * @author Tobias Langner <tobias[DOT]langner[AT]nightlabs[DOT]de>
+ * @author Tobias Langner <!-- tobias[dot]langner[at]nightlabs[dot]de -->
  */
 public class EditorStructBlockRegistry
 {

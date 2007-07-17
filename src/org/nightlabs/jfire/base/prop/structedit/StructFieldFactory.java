@@ -7,7 +7,7 @@ import org.nightlabs.jfire.prop.AbstractStructField;
 import org.nightlabs.jfire.prop.StructBlock;
 
 /**
- * @author Tobias Langner <tobias[DOT]langner[AT]nightlabs[DOT]de> 
+ * @author Tobias Langner <!-- tobias[dot]langner[at]nightlabs[dot]de --> 
  */
 public interface StructFieldFactory extends IExecutableExtension
 {

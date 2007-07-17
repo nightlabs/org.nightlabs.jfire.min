@@ -26,7 +26,7 @@ import org.nightlabs.jfire.prop.structfield.DateStructField;
 import org.nightlabs.language.LanguageCf;
 
 /**
- * @author Tobias Langner <!-- tobias[DOT]langner[AT]nightlabs[DOT]de -->
+ * @author Tobias Langner <!-- tobias[dot]langner[at]nightlabs[dot]de -->
  */
 public class DateDataFieldEditor extends AbstractDataFieldEditor<DateDataField> {
 	

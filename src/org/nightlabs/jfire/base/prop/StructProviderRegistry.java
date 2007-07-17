@@ -31,7 +31,7 @@ package org.nightlabs.jfire.base.prop;
 //import org.nightlabs.jfire.base.jdo.JDOObjectProvider;
 //
 ///**
-// * @author Tobias Langner <tobias[DOT]langner[AT]nightlabs[DOT]de>
+// * @author Tobias Langner <!-- tobias[dot]langner[at]nightlabs[dot]de -->
 // *
 // */
 //public class PropStructProviderRegistry

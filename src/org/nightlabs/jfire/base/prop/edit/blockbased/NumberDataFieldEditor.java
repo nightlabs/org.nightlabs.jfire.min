@@ -26,7 +26,7 @@ import org.nightlabs.language.LanguageCf;
 import sun.security.action.GetBooleanAction;
 
 /**
- * @author Tobias Langner <!-- tobias[DOT]langner[AT]nightlabs[DOT]de -->
+ * @author Tobias Langner <!-- tobias[dot]langner[at]nightlabs[dot]de -->
  */
 public class NumberDataFieldEditor extends AbstractDataFieldEditor<NumberDataField> {
 	

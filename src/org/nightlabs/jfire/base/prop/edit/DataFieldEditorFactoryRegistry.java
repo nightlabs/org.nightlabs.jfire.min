@@ -44,7 +44,7 @@ import org.nightlabs.jfire.prop.IStruct;
  * As EPProcessor it processes extensions to org.nightlabs.jfire.base.prop.edit.propDataFieldEditor.
  *  
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
- * @author Tobias Langner <tobias[DOT]langner[AT]nightlabs[DOT]de>
+ * @author Tobias Langner <!-- tobias[dot]langner[at]nightlabs[dot]de -->
  */
 public class DataFieldEditorFactoryRegistry extends AbstractEPProcessor {
 	private Logger LOGGER = Logger.getLogger(DataFieldEditorFactoryRegistry.class);

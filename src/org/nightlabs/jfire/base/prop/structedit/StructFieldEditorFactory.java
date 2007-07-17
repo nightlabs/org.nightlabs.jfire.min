@@ -30,7 +30,7 @@ import org.eclipse.core.runtime.IExecutableExtension;
 import org.nightlabs.jfire.prop.AbstractStructField;
 
 /**
- * @author Tobias Langner <tobias[DOT]langner[AT]nightlabs[DOT]de>
+ * @author Tobias Langner <!-- tobias[dot]langner[at]nightlabs[dot]de -->
  */
 public interface StructFieldEditorFactory extends IExecutableExtension
 {	
