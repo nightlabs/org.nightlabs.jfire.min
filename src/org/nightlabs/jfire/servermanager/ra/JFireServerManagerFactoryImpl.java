@@ -1652,14 +1652,15 @@ public class JFireServerManagerFactoryImpl
 			String organisationID, File deploymentDescriptorFile, File templateFile, Map<String, String> additionalVariables, DeployOverwriteBehaviour deployOverwriteBehaviour)
 	throws IOException
 	{
-		JFireServerConfigModule.Database dbCf = mcf.getConfigModule().getDatabase();
+		JFireServerConfigModule cfMod = mcf.getConfigModule();
+		JFireServerConfigModule.Database dbCf = cfMod.getDatabase();
 
 //		if (deploymentDescriptorFile.isAbsolute()) // this method is used by createDeploymentJar with an absolute file, hence we cannot warn here.
 //			logger.warn("deploymentDescriptorFile should not be an absolute file: " + deploymentDescriptorFile.getPath(), new IllegalArgumentException("deploymentDescriptorFile should not be an absolute file: " + deploymentDescriptorFile.getPath()));
 
 		if (!deploymentDescriptorFile.isAbsolute()) {
 			deploymentDescriptorFile = new File(
-					new File(mcf.getConfigModule().getJ2ee().getJ2eeDeployBaseDirectory()).getAbsoluteFile().getParentFile(),
+					new File(cfMod.getJ2ee().getJ2eeDeployBaseDirectory()).getAbsoluteFile().getParentFile(),
 					deploymentDescriptorFile.getPath());
 		}
 
@@ -1714,6 +1715,9 @@ public class JFireServerManagerFactoryImpl
 		variables.put("databaseURL", dbURL);
 		variables.put("databaseUserName", dbCf.getDatabaseUserName());
 		variables.put("databasePassword", dbCf.getDatabasePassword());
+
+		variables.put("deploymentDescriptorDirectory", deploymentDescriptorFile.getParent());
+		variables.put("deploymentDescriptorFileName", deploymentDescriptorFile.getName());
 
 		if (additionalVariables != null)
 			variables.putAll(additionalVariables); // we put them afterwards to allow overriding

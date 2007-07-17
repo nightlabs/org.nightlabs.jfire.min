@@ -10,7 +10,9 @@
 		<config-property name="ConnectionFactoryName" type="java.lang.String">${datasourceJNDIName_absolute_xa}</config-property>
 		<config-property name="ConnectionFactory2Name" type="java.lang.String">${datasourceJNDIName_absolute_noTx}</config-property>
 
-		<config-property name="AutoStartMechanism" type="java.lang.String">none</config-property>
+<!--		<config-property name="AutoStartMechanism" type="java.lang.String">none</config-property> -->
+		<config-property name="AutoStartMechanism" type="java.lang.String">XML</config-property>
+		<config-property name="AutoStartMechanismXmlFile" type="java.lang.String">${deploymentDescriptorDirectory}/jpoxAutoStart.xml</config-property>
 
 		<config-property name="AutoCreateSchema" type="boolean">true</config-property>
 		<config-property name="AutoCreateTables" type="boolean">true</config-property>
