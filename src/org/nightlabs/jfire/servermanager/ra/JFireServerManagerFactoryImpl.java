@@ -135,7 +135,7 @@ import org.nightlabs.jfire.servermanager.xml.RoleDef;
 import org.nightlabs.jfire.servermanager.xml.RoleGroupDef;
 import org.nightlabs.jfire.servermanager.xml.XMLReadException;
 import org.nightlabs.math.Base62Coder;
-import org.nightlabs.util.Utils;
+import org.nightlabs.util.IOUtil;
 import org.xml.sax.SAXException;
 
 /**
@@ -1245,7 +1245,7 @@ public class JFireServerManagerFactoryImpl
 
 		    		try {
 			    		if (jdoConfigDir != null) {
-			    			if (!Utils.deleteDirectoryRecursively(jdoConfigDir))
+			    			if (!IOUtil.deleteDirectoryRecursively(jdoConfigDir))
 			    				logger.error("Deleting JDO config directory \"" + jdoConfigDir.getAbsolutePath() + "\" failed!");;
 			    		}
 		    		} catch (Throwable t) {
@@ -1531,7 +1531,7 @@ public class JFireServerManagerFactoryImpl
 			return;
 		}
 
-		if (!Utils.deleteDirectoryRecursively(deployment)) {
+		if (!IOUtil.deleteDirectoryRecursively(deployment)) {
 			if (deployment.exists())
 				throw new IOException("The deployment could not be undeployed: " + deployment.getPath());
 			else
@@ -1572,7 +1572,7 @@ public class JFireServerManagerFactoryImpl
 		File tmpDir;
 		do {
 			tmpDir = new File(
-					Utils.getTempDir(),
+					IOUtil.getTempDir(),
 					"jfire_" +
 					Base62Coder.sharedInstance().encode(System.currentTimeMillis(), 1) + '-' +
 					Base62Coder.sharedInstance().encode((int)(Math.random() * Integer.MAX_VALUE), 1) + ".tmp");
@@ -1632,9 +1632,9 @@ public class JFireServerManagerFactoryImpl
 					throw new IOException("Deleting deploymentJar failed: " + deploymentJar.getAbsolutePath());
 			}
 
-			Utils.zipFolder(deploymentJar, tmpDir);
+			IOUtil.zipFolder(deploymentJar, tmpDir);
 		} finally {
-			Utils.deleteDirectoryRecursively(tmpDir);
+			IOUtil.deleteDirectoryRecursively(tmpDir);
 		}
 	}
 
