@@ -33,7 +33,7 @@ import org.xml.sax.SAXParseException;
 
 /**
  * 
- * @author Tobias Langner <!-- tobias[DOT]langner[AT]nightlabs[DOT]de -->
+ * @author Tobias Langner <!-- tobias[dot]langner[at]nightlabs[dot]de -->
  */
 public class ServerInitManager extends AbstractInitManager<ServerInit, ServerInitDependency> {
 	/**

@@ -6,7 +6,7 @@ import org.nightlabs.jfire.init.InitException;
 /**
  * Interface for server initialiser classes.
  * 
- * @author Tobias Langner <!-- tobias[DOT]langner[AT]nightlabs[DOT]de -->
+ * @author Tobias Langner <!-- tobias[dot]langner[at]nightlabs[dot]de -->
  */
 public interface IServerInitialiser {
 	/**

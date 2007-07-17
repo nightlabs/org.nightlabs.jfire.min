@@ -8,7 +8,7 @@ import org.nightlabs.datastructure.IDirectedGraphNode;
 
 
 /**
- * @author Tobias Langner <!-- tobias[DOT]langner[AT]nightlabs[DOT]de -->
+ * @author Tobias Langner <!-- tobias[dot]langner[at]nightlabs[dot]de -->
  */
 public abstract class AbstractInit<I extends AbstractInit, D extends IDependency<I>>
 implements IDirectedGraphNode<I>
