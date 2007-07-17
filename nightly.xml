@@ -11,7 +11,11 @@
     <provides path="/JFireServerManager/dist/JFireServerManager.jar" location="JFireServerManager/dist/JFireServerManager.jar"/>
     <provides path="WORKSPACE/JFireServerManager/dist/JFireServerManager.jar" location="JFireServerManager/dist/JFireServerManager.jar"/>
     <publishes location="JFireServerManager/dist/JFireServerManager.jar"/>
-    <publishes location="JFireServerManager/dist/jdo-jpox-ds.template.xml"/>
+    <publishes location="JFireServerManager/dist/db-default-ds.template.xml"/>
+    <publishes location="JFireServerManager/dist/db-derby-ds.template.xml"/>
+    <publishes location="JFireServerManager/dist/db-mysql-ds.template.xml"/>
+    <publishes location="JFireServerManager/dist/jdo-jpox-1.1-ds.template.xml"/>
+    <publishes location="JFireServerManager/dist/jdo-jpox-1.2-ds.template.xml"/>
     <javadoc path="JFireServerManager/src"/>
   </project>
 
