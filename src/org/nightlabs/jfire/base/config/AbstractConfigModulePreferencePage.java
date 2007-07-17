@@ -764,7 +764,17 @@ extends LSDPreferencePage
 	}
 
 	public boolean performOk() {
-		storeConfigModule(false);
+		Job storeJob = new Job("Storing ConfigModule") {
+			@Override
+			protected IStatus run(ProgressMonitor monitor) throws Exception {
+				storeConfigModule(false);
+				return Status.OK_STATUS;
+			}			
+		};
+		
+		storeJob.setPriority(Job.SHORT);		
+		storeJob.schedule();
+		
 		return true;
 	}
 
