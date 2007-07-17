@@ -95,6 +95,7 @@ implements SessionBean
 	{
 		PersistenceManager pm = getPersistenceManager();
 		try {
+			pm.getExtent(Task.class);
 			TaskID taskID = TaskID.create(
 					// Organisation.DEVIL_ORGANISATION_ID, // the task can be modified by the organisation and thus it's maybe more logical to use the real organisationID - not devil
 					getOrganisationID(),
