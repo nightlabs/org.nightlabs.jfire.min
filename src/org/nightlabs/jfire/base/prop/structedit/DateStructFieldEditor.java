@@ -8,7 +8,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
-import org.nightlabs.base.composite.CComboComposite;
+import org.nightlabs.base.composite.XComboComposite;
 import org.nightlabs.base.composite.XComposite;
 import org.nightlabs.jfire.prop.structfield.DateStructField;
 import org.nightlabs.l10n.DateFormatter;
@@ -36,7 +36,7 @@ public class DateStructFieldEditor extends AbstractStructFieldEditor<DateStructF
 
 class DateStructFieldEditComposite extends XComposite {
 	private DateStructField dateField;
-	private CComboComposite<String> dateFormatCombo;
+	private XComboComposite<String> dateFormatCombo;
 	private Label exampleLabel;
 	private XComposite comp;
 	private DateStructFieldEditor dateStructFieldEditor;
@@ -46,7 +46,7 @@ class DateStructFieldEditComposite extends XComposite {
 		
 		this.dateStructFieldEditor = editor;
 		
-		dateFormatCombo = new CComboComposite<String>(this, CComboComposite.getDefaultWidgetStyle(this), (String) null);
+		dateFormatCombo = new XComboComposite<String>(this, XComboComposite.getDefaultWidgetStyle(this), (String) null);
 		
 		comp = new XComposite(this, SWT.NONE, LayoutMode.LEFT_RIGHT_WRAPPER, LayoutDataMode.GRID_DATA_HORIZONTAL);
 		exampleLabel = new Label(comp, SWT.NONE);

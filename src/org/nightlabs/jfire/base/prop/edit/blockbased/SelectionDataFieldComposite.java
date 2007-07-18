@@ -7,7 +7,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
-import org.nightlabs.base.composite.CComboComposite;
+import org.nightlabs.base.composite.XComboComposite;
 import org.nightlabs.jfire.base.prop.edit.AbstractDataFieldComposite;
 import org.nightlabs.jfire.prop.exception.StructFieldValueNotFoundException;
 import org.nightlabs.jfire.prop.structfield.SelectionStructField;
@@ -16,7 +16,7 @@ import org.nightlabs.jfire.prop.structfield.StructFieldValue;
 public class SelectionDataFieldComposite extends AbstractDataFieldComposite {
 
 	private Label fieldName;
-	private CComboComposite<StructFieldValue> fieldValueCombo;
+	private XComboComposite<StructFieldValue> fieldValueCombo;
 	private SelectionDataFieldEditor editor;
 	private ModifyListener modifyListener;
 	
@@ -60,9 +60,9 @@ public class SelectionDataFieldComposite extends AbstractDataFieldComposite {
 			}
 		};
 		
-		fieldValueCombo = new CComboComposite<StructFieldValue>(
+		fieldValueCombo = new XComboComposite<StructFieldValue>(
 				this, 
-				CComboComposite.getDefaultWidgetStyle(this),
+				XComboComposite.getDefaultWidgetStyle(this),
 				(String) null,
 				labelProvider
 //				, LayoutMode.ORDINARY_WRAPPER, LayoutDataMode.NONE
@@ -98,7 +98,7 @@ public class SelectionDataFieldComposite extends AbstractDataFieldComposite {
 		}
 	}
 	
-	public CComboComposite<StructFieldValue> getFieldValueCombo() {
+	public XComboComposite<StructFieldValue> getFieldValueCombo() {
 		return fieldValueCombo;
 	}
 	

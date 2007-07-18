@@ -9,7 +9,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-import org.nightlabs.base.composite.CComboComposite;
+import org.nightlabs.base.composite.XComboComposite;
 import org.nightlabs.base.job.Job;
 import org.nightlabs.jfire.base.login.Login;
 import org.nightlabs.jfire.j2ee.monitor.J2EEServerMonitorManager;
@@ -20,7 +20,7 @@ import org.nightlabs.progress.ProgressMonitor;
  * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] de -->
  *
  */
-public class JMSQeuesCombo extends CComboComposite<String> {
+public class JMSQeuesCombo extends XComboComposite<String> {
 
 	/**
 	 * @param types

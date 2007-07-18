@@ -6,7 +6,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.nightlabs.base.composite.CComboComposite;
+import org.nightlabs.base.composite.XComboComposite;
 import org.nightlabs.base.composite.XComposite;
 import org.nightlabs.jfire.base.login.Login;
 import org.nightlabs.jfire.prop.PropertyManager;
@@ -16,8 +16,8 @@ import org.nightlabs.jfire.prop.id.StructLocalID;
 
 public class PropertySelectionComposite extends XComposite {
 
-	private CComboComposite<StructLocalID> structLocalIDs;
-	private CComboComposite<PropertySet> availableProperties;
+	private XComboComposite<StructLocalID> structLocalIDs;
+	private XComboComposite<PropertySet> availableProperties;
 	private PropertyManager propertyManager;
 	
 	public PropertySelectionComposite(Composite parent, int style) {
@@ -25,8 +25,8 @@ public class PropertySelectionComposite extends XComposite {
 		
 		this.setLayout(new GridLayout(2, true));
 		
-		structLocalIDs = new CComboComposite<StructLocalID>(this, CComboComposite.getDefaultWidgetStyle(parent));
-		availableProperties = new CComboComposite<PropertySet>(this, CComboComposite.getDefaultWidgetStyle(parent));
+		structLocalIDs = new XComboComposite<StructLocalID>(this, XComboComposite.getDefaultWidgetStyle(parent));
+		availableProperties = new XComboComposite<PropertySet>(this, XComboComposite.getDefaultWidgetStyle(parent));
 		
 		propertyManager = getPropertyManager();
 		

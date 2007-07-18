@@ -10,7 +10,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.MessageBox;
-import org.nightlabs.base.composite.CComboComposite;
+import org.nightlabs.base.composite.XComboComposite;
 import org.nightlabs.base.composite.XComposite;
 import org.nightlabs.base.language.LanguageChooser;
 import org.nightlabs.base.language.LanguageChooserCombo;
@@ -25,7 +25,7 @@ public class StructEditorComposite extends XComposite {
 	
 	private Composite partEditorComposite;
 	private LanguageChooserCombo languageChooser;	
-	protected CComboComposite<StructLocalID> structIDComposite;
+	protected XComboComposite<StructLocalID> structIDComposite;
 
 	private static class StructLocalIDLabelProvider extends org.eclipse.jface.viewers.LabelProvider {
 		@Override
@@ -80,8 +80,8 @@ public class StructEditorComposite extends XComposite {
 		gd.horizontalAlignment = SWT.CENTER;
 
 		if (createStructIDCombo) {
-			structIDComposite = new CComboComposite<StructLocalID>(this, 
-					CComboComposite.getDefaultWidgetStyle(this), (String) null, new StructLocalIDLabelProvider());
+			structIDComposite = new XComboComposite<StructLocalID>(this, 
+					XComboComposite.getDefaultWidgetStyle(this), (String) null, new StructLocalIDLabelProvider());
 			structIDComposite.setLayoutData(gd);
 			structIDComposite.addSelectionListener(new StructIDComboSelectionListener());
 
