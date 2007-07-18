@@ -8,7 +8,6 @@ import javax.jdo.FetchPlan;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.viewers.LabelProvider;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.nightlabs.annotation.Implement;
@@ -52,7 +51,7 @@ public class OrganisationList
 	 */
 	public OrganisationList(Composite parent, OrganisationIDDataSource _organisationIDDataSource, OrganisationFilter _organisationFilter)
 	{
-		super(parent, SWT.NONE, new LabelProvider() {
+		super(parent, ListComposite.getDefaultWidgetStyle(parent), (String) null, new LabelProvider() {
 			@Override
 			public String getText(Object element)
 			{

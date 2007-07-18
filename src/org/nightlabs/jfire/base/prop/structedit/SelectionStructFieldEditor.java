@@ -79,7 +79,7 @@ class SelectionStructFieldEditComposite extends XComposite implements LanguageCh
 
 		XComposite wrapper = new XComposite(this, SWT.NONE, LayoutMode.TIGHT_WRAPPER, LayoutDataMode.GRID_DATA);
 		new Label(wrapper, SWT.NONE).setText("Possible values:");
-		valueList = new ListComposite<StructFieldValueName>(wrapper, SWT.SINGLE | getBorderStyle() | SWT.H_SCROLL);
+		valueList = new ListComposite<StructFieldValueName>(wrapper, ListComposite.getDefaultWidgetStyle(this));
 		valueList.setLabelProvider(new MyLabelProvider());
 		valueList.setLayoutData(new GridData(GridData.FILL_BOTH));
 		valueList.getList().addSelectionListener(new SelectionListener() {

@@ -1,6 +1,5 @@
 package org.nightlabs.jfire.base.prop.structedit;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 
@@ -47,13 +46,13 @@ class DateStructFieldEditComposite extends XComposite {
 		
 		this.dateStructFieldEditor = editor;
 		
-		dateFormatCombo = new CComboComposite<String>(new ArrayList<String>(0), this, SWT.NONE, (String) null);
+		dateFormatCombo = new CComboComposite<String>(this, CComboComposite.getDefaultWidgetStyle(this), (String) null);
 		
 		comp = new XComposite(this, SWT.NONE, LayoutMode.LEFT_RIGHT_WRAPPER, LayoutDataMode.GRID_DATA_HORIZONTAL);
 		exampleLabel = new Label(comp, SWT.NONE);
 		exampleLabel.setText("Preview:  ");
 		
-		dateFormatCombo.setItems(Arrays.asList(DateFormatter.FLAG_NAMES));
+		dateFormatCombo.setInput( Arrays.asList(DateFormatter.FLAG_NAMES) );
 		
 		dateFormatCombo.addSelectionListener(new SelectionListener() {
 			private void selectionChanged(SelectionEvent event) {

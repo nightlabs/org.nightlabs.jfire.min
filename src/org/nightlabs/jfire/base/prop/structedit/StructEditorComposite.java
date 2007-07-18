@@ -1,6 +1,5 @@
 package org.nightlabs.jfire.base.prop.structedit;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 
 import org.eclipse.swt.SWT;
@@ -81,8 +80,8 @@ public class StructEditorComposite extends XComposite {
 		gd.horizontalAlignment = SWT.CENTER;
 
 		if (createStructIDCombo) {
-//			structIDComposite = new ComboComposite<StructLocalID>(this, SWT.NONE, new StructLocalIDLabelProvider(), "Current struct: ");
-			structIDComposite = new CComboComposite<StructLocalID>(new ArrayList<StructLocalID>(0), new StructLocalIDLabelProvider(), this, SWT.NONE, (String) null);
+			structIDComposite = new CComboComposite<StructLocalID>(this, 
+					CComboComposite.getDefaultWidgetStyle(this), (String) null, new StructLocalIDLabelProvider());
 			structIDComposite.setLayoutData(gd);
 			structIDComposite.addSelectionListener(new StructIDComboSelectionListener());
 

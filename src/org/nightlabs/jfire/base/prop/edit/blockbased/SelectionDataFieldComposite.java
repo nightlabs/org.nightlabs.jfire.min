@@ -1,7 +1,5 @@
 package org.nightlabs.jfire.base.prop.edit.blockbased;
 
-import java.util.ArrayList;
-
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
@@ -63,18 +61,12 @@ public class SelectionDataFieldComposite extends AbstractDataFieldComposite {
 		};
 		
 		fieldValueCombo = new CComboComposite<StructFieldValue>(
-				new ArrayList<StructFieldValue>(0),
-				labelProvider,
 				this, 
-				SWT.SINGLE,
-				(String) null 
+				CComboComposite.getDefaultWidgetStyle(this),
+				(String) null,
+				labelProvider
 //				, LayoutMode.ORDINARY_WRAPPER, LayoutDataMode.NONE
 				);
-		// TODO: this is a workaround for the problem of the FormToolkit painting the borders at the outside of the bounding box of the CComboComposite 
-		GridLayout comboLayout = fieldValueCombo.getGridLayout();
-		comboLayout.verticalSpacing = 2;
-		comboLayout.marginWidth = 2;
-		comboLayout.marginHeight = 2;
 		
 //		SelectionStructField field = (SelectionStructField) editor.getStructField();
 		refresh();
@@ -93,16 +85,16 @@ public class SelectionDataFieldComposite extends AbstractDataFieldComposite {
 	public void refresh() {
 		SelectionStructField field = (SelectionStructField) editor.getStructField();
 		fieldName.setText(field.getName().getText(editor.getLanguage().getLanguageID()));
-		fieldValueCombo.setItems(new ArrayList<StructFieldValue>(field.getStructFieldValues()));
+		fieldValueCombo.setInput( field.getStructFieldValues() );
 		if (editor.getDataField().getStructFieldValueID() != null) {
 			try {
 				fieldValueCombo.selectElement(field.getStructFieldValue(editor.getDataField().getStructFieldValueID()));
 			} catch (StructFieldValueNotFoundException e) {
-				fieldValueCombo.select(-1);
+				fieldValueCombo.selectElement(-1);
 				throw new RuntimeException("Could not find the referenced structFieldValue with id "+editor.getDataField().getStructFieldValueID());
 			}
 		} else {
-			fieldValueCombo.select(-1);
+			fieldValueCombo.selectElement(-1);
 		}
 	}
 	
