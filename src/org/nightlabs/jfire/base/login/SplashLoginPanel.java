@@ -117,6 +117,8 @@ public class SplashLoginPanel extends JPanel
 		this.setLayout(new BorderLayout());
 		
 		LoginConfiguration lastLoginConfiguration = persistentLoginModule.getLastLoginConfiguration();
+		if (lastLoginConfiguration == null)
+			lastLoginConfiguration = new LoginConfiguration();
 
 		fieldWrapperPanel = new JPanel();
 		fieldWrapperPanel.setOpaque(false);
@@ -305,7 +307,6 @@ public class SplashLoginPanel extends JPanel
 				loginConfigModule.persistCurrentConfiguration();
 				
 				BeanUtils.copyProperties(persistentLoginModule, loginConfigModule);
-//				BeanUtils.copyProperties(persistentLoginModule,loginConfigModule);
 				persistentLoginModule.setChanged();
 			} catch (Exception e) {
 				logger.error("Saving config failed!", e); //$NON-NLS-1$

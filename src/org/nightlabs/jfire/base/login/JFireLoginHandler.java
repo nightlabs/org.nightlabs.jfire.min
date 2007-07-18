@@ -101,28 +101,28 @@ public class JFireLoginHandler implements ILoginHandler {
 
 			if (password != null) {
 				
-				loginConfigModule.setCurrentLoginConfiguration(userID, workstationID, organisationID, serverURL, initialContextFactory, null);
+				LoginConfiguration lastConfig = loginConfigModule.getLastLoginConfiguration();
 				
 //				if (workstationID != null)
 //					loginConfigModule.setWorkstationID(workstationID);
-//
-//				if (userID == null)
-//					userID = loginConfigModule.getUserID();
+
+				if (userID == null)
+					userID = lastConfig.getUserID();
 //				else
 //					loginConfigModule.setUserID(userID);
-//
-//				if (organisationID == null)
-//					organisationID = loginConfigModule.getOrganisationID();
+
+				if (organisationID == null)
+					organisationID = lastConfig.getOrganisationID();
 //				else
 //					loginConfigModule.setOrganisationID(organisationID);
-//
-//				if (initialContextFactory == null)
-//					initialContextFactory = loginConfigModule.getInitialContextFactory();
+
+				if (initialContextFactory == null)
+					initialContextFactory = lastConfig.getInitialContextFactory();
 //				else
 //					loginConfigModule.setInitialContextFactory(initialContextFactory);
-//
-//				if (serverURL == null)
-//					serverURL = loginConfigModule.getServerURL();
+
+				if (serverURL == null)
+					serverURL = lastConfig.getServerURL();
 //				else
 //					loginConfigModule.setServerURL(serverURL);
 

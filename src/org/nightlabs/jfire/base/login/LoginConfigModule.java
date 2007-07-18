@@ -40,6 +40,12 @@ public class LoginConfigModule extends ConfigModule
 
 	private LinkedList<LoginConfiguration> loginConfigurations;
 	private transient LoginConfiguration currentLoginConfiguration;
+	
+	/**
+	 * This method indicates whether a call to {@link #persistCurrentConfiguration()} is required
+	 * to add the currentLoginConfiguration to the list of persistent LoginConfigurations
+	 */
+	private static final boolean MANUAL_PERSISTING = true;
 
 //	private String organisationID = null;
 //	private String serverURL = null;
@@ -99,13 +105,15 @@ public class LoginConfigModule extends ConfigModule
 			String securityProtocol) {
 		acquireReadLock();
 		currentLoginConfiguration = new LoginConfiguration(userID, workstationID, organisationID, serverURL, initialContextFactory, securityProtocol);
+		if (!MANUAL_PERSISTING)
+			persistCurrentConfiguration();
 		releaseLock();
 	}
 	
 	public void persistCurrentConfiguration() {
 		loginConfigurations.remove(currentLoginConfiguration);
 		loginConfigurations.addFirst(currentLoginConfiguration);
-		setChanged();
+		setLoginConfigurations(getLoginConfigurations());
 		ensureCapacity();
 	}
 	
@@ -115,6 +123,7 @@ public class LoginConfigModule extends ConfigModule
 	
 	public void setLoginConfigurations(LinkedList<LoginConfiguration> loginConfigurations) {
 		this.loginConfigurations = loginConfigurations;
+		setChanged();
 	}
 	
 	public LoginConfiguration getCurrentLoginConfiguration() {
@@ -129,6 +138,7 @@ public class LoginConfigModule extends ConfigModule
 	
 	public void setCurrentLoginConfiguration(LoginConfiguration currentLoginConfiguration) {
 		this.currentLoginConfiguration = currentLoginConfiguration;
+		setChanged();
 	}
 
 	public int getMaxLoginConfigurations() {
@@ -144,7 +154,7 @@ public class LoginConfigModule extends ConfigModule
 	
 	public LoginConfiguration getLastLoginConfiguration() {
 		if (loginConfigurations.isEmpty())
-			return new LoginConfiguration();
+			return null;
 		else
 			return loginConfigurations.getFirst();
 	}

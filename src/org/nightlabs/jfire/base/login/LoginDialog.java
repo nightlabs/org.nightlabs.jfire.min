@@ -26,8 +26,6 @@
 
 package org.nightlabs.jfire.base.login;
 
-import java.io.File;
-
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
@@ -49,6 +47,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
@@ -94,6 +93,8 @@ public class LoginDialog extends TitleAreaDialog
 	private Button checkBoxSaveSettings = null;
 	private Text textInitialContextFactory = null;
 	private Text textWorkstationID = null;
+	
+	private Group loginInfoGroup = null;
 	
 
 	private boolean contentCreated = false;
@@ -204,12 +205,16 @@ public class LoginDialog extends TitleAreaDialog
 		
 		Label labelRecentLoginConfigs = new Label(mainArea, SWT.NONE);
 		labelRecentLoginConfigs.setText("Recent Logins: ");
-		recentLoginConfigs = new ComboComposite<LoginConfiguration>(mainArea, SWT.NONE, loginConfigLabelProv);
+		recentLoginConfigs = new ComboComposite<LoginConfiguration>(mainArea, SWT.READ_ONLY, loginConfigLabelProv);		
 		recentLoginConfigs.addSelectionChangedListener(new ISelectionChangedListener() {
 			public void selectionChanged(SelectionChangedEvent event) {
 				updateTextFieldsWithLoginConfiguration(recentLoginConfigs.getSelectedElement());
 			}
 		});
+		
+		gd = new GridData(GridData.FILL_HORIZONTAL);
+		gd.horizontalSpan = 2;
+		new Label(mainArea, SWT.SEPARATOR | SWT.HORIZONTAL).setLayoutData(gd);
 		
 		Label labelUserID = new Label(mainArea, SWT.NONE);
 		textUserID = new Text(mainArea, SWT.BORDER);
@@ -292,7 +297,14 @@ public class LoginDialog extends TitleAreaDialog
 	
 	private void initializeWidgetValues()
 	{
-		updateTextFieldsWithLoginConfiguration(runtimeLoginModule.getLastLoginConfiguration());
+		recentLoginConfigs.setInput(runtimeLoginModule.getLoginConfigurations());
+		if (runtimeLoginModule.getLastLoginConfiguration() != null) {
+			recentLoginConfigs.setSelection(runtimeLoginModule.getLastLoginConfiguration());
+			updateTextFieldsWithLoginConfiguration(runtimeLoginModule.getLastLoginConfiguration());
+		} else {
+			updateTextFieldsWithLoginConfiguration(new LoginConfiguration());
+		}
+			
 		
 //		textUserID.setText(runtimeLoginModule.getUserID());
 //		textOrganisationID.setText(runtimeLoginModule.getOrganisationID());
@@ -407,18 +419,8 @@ public class LoginDialog extends TitleAreaDialog
 		try {
 
 			// use entries and log in
-			storeUserInput();		
-			if (checkBoxSaveSettings.getSelection()) {
-				try {
-					runtimeLoginModule.persistCurrentConfiguration();
-					
-					BeanUtils.copyProperties(persistentLoginModule, runtimeLoginModule);
-//					BeanUtils.copyProperties(persistentLoginModule, runtimeLoginModule);
-					persistentLoginModule.setChanged();
-				} catch (Exception e) {
-					logger.error(Messages.getString("login.LoginDialog.errorSaveConfig"), e); //$NON-NLS-1$
-				}
-			}
+			storeUserInput();
+			final boolean saveSettings = checkBoxSaveSettings.getSelection();
 
 			Job job = new Job(Messages.getString("login.LoginDialog.authentication")) { //$NON-NLS-1$
 				@Override
@@ -426,6 +428,17 @@ public class LoginDialog extends TitleAreaDialog
 				{
 					Login.AsyncLoginResult testResult = Login.testLogin(loginContext);
 					testResult.copyValuesTo(loginResult);
+					
+					if (testResult.isSuccess() && saveSettings) {
+						try {
+							runtimeLoginModule.persistCurrentConfiguration();
+							
+							BeanUtils.copyProperties(persistentLoginModule, runtimeLoginModule);
+							persistentLoginModule.setChanged();
+						} catch (Exception e) {
+							logger.error(Messages.getString("login.LoginDialog.errorSaveConfig"), e); //$NON-NLS-1$
+						}
+					}
 
 					Display.getDefault().asyncExec(new Runnable() {
 						public void run()
