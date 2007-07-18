@@ -354,6 +354,7 @@ implements InitialContextProvider
 				if (_loginConfigModule != null) {
 					_runtimeConfigModule = new LoginConfigModule();
 					BeanUtils.copyProperties(_runtimeConfigModule, _loginConfigModule);
+//					BeanUtils.copyProperties(_runtimeConfigModule, _loginConfigModule);
 				}
 			} catch (Exception e) {
 				throw new RuntimeException(e);
@@ -763,13 +764,12 @@ implements InitialContextProvider
 	}
 
 	private void copyPropertiesFromConfig(){
-		this.serverURL = getRuntimeConfigModule().getServerURL();
-		this.contextFactory = getRuntimeConfigModule().getInitialContextFactory();
-		this.securityProtocol = getRuntimeConfigModule().getSecurityProtocol();
-		this.workstationID = getRuntimeConfigModule().getWorkstationID();
+		LoginConfiguration currentConfig = getRuntimeConfigModule().getCurrentLoginConfiguration();
+		this.serverURL = currentConfig.getServerURL();
+		this.contextFactory = currentConfig.getInitialContextFactory();
+		this.securityProtocol = currentConfig.getSecurityProtocol();
+		this.workstationID = currentConfig.getWorkstationID();
 	}
-
-
 
 	protected transient Properties initialContextProperties = null;
 	protected transient InitialContext initialContext = null;

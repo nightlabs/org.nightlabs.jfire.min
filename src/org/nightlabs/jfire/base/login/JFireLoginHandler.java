@@ -100,28 +100,31 @@ public class JFireLoginHandler implements ILoginHandler {
 			}
 
 			if (password != null) {
-				if (workstationID != null)
-					loginConfigModule.setWorkstationID(workstationID);
-
-				if (userID == null)
-					userID = loginConfigModule.getUserID();
-				else
-					loginConfigModule.setUserID(userID);
-
-				if (organisationID == null)
-					organisationID = loginConfigModule.getOrganisationID();
-				else
-					loginConfigModule.setOrganisationID(organisationID);
-
-				if (initialContextFactory == null)
-					initialContextFactory = loginConfigModule.getInitialContextFactory();
-				else
-					loginConfigModule.setInitialContextFactory(initialContextFactory);
-
-				if (serverURL == null)
-					serverURL = loginConfigModule.getServerURL();
-				else
-					loginConfigModule.setServerURL(serverURL);
+				
+				loginConfigModule.setCurrentLoginConfiguration(userID, workstationID, organisationID, serverURL, initialContextFactory, null);
+				
+//				if (workstationID != null)
+//					loginConfigModule.setWorkstationID(workstationID);
+//
+//				if (userID == null)
+//					userID = loginConfigModule.getUserID();
+//				else
+//					loginConfigModule.setUserID(userID);
+//
+//				if (organisationID == null)
+//					organisationID = loginConfigModule.getOrganisationID();
+//				else
+//					loginConfigModule.setOrganisationID(organisationID);
+//
+//				if (initialContextFactory == null)
+//					initialContextFactory = loginConfigModule.getInitialContextFactory();
+//				else
+//					loginConfigModule.setInitialContextFactory(initialContextFactory);
+//
+//				if (serverURL == null)
+//					serverURL = loginConfigModule.getServerURL();
+//				else
+//					loginConfigModule.setServerURL(serverURL);
 
 				// perform a test login
 				loginContext.setCredentials(userID, organisationID, password);

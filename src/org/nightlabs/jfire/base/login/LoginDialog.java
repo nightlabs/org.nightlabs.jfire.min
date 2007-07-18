@@ -26,6 +26,8 @@
 
 package org.nightlabs.jfire.base.login;
 
+import java.io.File;
+
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
@@ -36,6 +38,9 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
@@ -47,6 +52,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import org.nightlabs.base.composite.ComboComposite;
 import org.nightlabs.config.Config;
 import org.nightlabs.config.ConfigException;
 import org.nightlabs.jfire.base.resource.Messages;
@@ -79,6 +85,8 @@ public class LoginDialog extends TitleAreaDialog
 	 */
 	private GridData detailsAreaGridData = null;
 
+	private ComboComposite<LoginConfiguration> recentLoginConfigs;
+	
 	private Text textUserID = null;
 	private Text textPassword = null;
 	private Text textOrganisationID = null;
@@ -182,6 +190,27 @@ public class LoginDialog extends TitleAreaDialog
 		mainArea.setLayoutData(gd);
 		
 		GridLayout gridLayoutStatic = new GridLayout();
+		
+		LabelProvider loginConfigLabelProv = new LabelProvider() {
+			@Override
+			public String getText(Object element) {
+				if (element instanceof LoginConfiguration) {
+					LoginConfiguration loginConfig = (LoginConfiguration) element;
+					return loginConfig.toString();					
+				} else
+					return "";
+			}
+		};
+		
+		Label labelRecentLoginConfigs = new Label(mainArea, SWT.NONE);
+		labelRecentLoginConfigs.setText("Recent Logins: ");
+		recentLoginConfigs = new ComboComposite<LoginConfiguration>(mainArea, SWT.NONE, loginConfigLabelProv);
+		recentLoginConfigs.addSelectionChangedListener(new ISelectionChangedListener() {
+			public void selectionChanged(SelectionChangedEvent event) {
+				updateTextFieldsWithLoginConfiguration(recentLoginConfigs.getSelectedElement());
+			}
+		});
+		
 		Label labelUserID = new Label(mainArea, SWT.NONE);
 		textUserID = new Text(mainArea, SWT.BORDER);
 		Label labelPassword = new Label(mainArea, SWT.NONE);
@@ -197,6 +226,14 @@ public class LoginDialog extends TitleAreaDialog
 		textPassword.setEchoChar('*');
 		
 		return mainArea;
+	}
+	
+	private void updateTextFieldsWithLoginConfiguration(LoginConfiguration loginConfiguration) {
+		textUserID.setText(loginConfiguration.getUserID());
+		textOrganisationID.setText(loginConfiguration.getOrganisationID());
+		textServerURL.setText(loginConfiguration.getServerURL());
+		textInitialContextFactory.setText(loginConfiguration.getInitialContextFactory());
+		textWorkstationID.setText(loginConfiguration.getWorkstationID());
 	}
 	
 	protected Control createDetailsArea(Composite parent)
@@ -255,11 +292,13 @@ public class LoginDialog extends TitleAreaDialog
 	
 	private void initializeWidgetValues()
 	{
-		textUserID.setText(runtimeLoginModule.getUserID());
-		textOrganisationID.setText(runtimeLoginModule.getOrganisationID());
-		textServerURL.setText(runtimeLoginModule.getServerURL());
-		textInitialContextFactory.setText(runtimeLoginModule.getInitialContextFactory());
-		textWorkstationID.setText(runtimeLoginModule.getWorkstationID());
+		updateTextFieldsWithLoginConfiguration(runtimeLoginModule.getLastLoginConfiguration());
+		
+//		textUserID.setText(runtimeLoginModule.getUserID());
+//		textOrganisationID.setText(runtimeLoginModule.getOrganisationID());
+//		textServerURL.setText(runtimeLoginModule.getServerURL());
+//		textInitialContextFactory.setText(runtimeLoginModule.getInitialContextFactory());
+//		textWorkstationID.setText(runtimeLoginModule.getWorkstationID());
 	}
 	
 	private void setSmartFocus()
@@ -292,11 +331,9 @@ public class LoginDialog extends TitleAreaDialog
 				textOrganisationID.getText(),
 				textPassword.getText()
 		);
-		runtimeLoginModule.setUserID(textUserID.getText());
-		runtimeLoginModule.setOrganisationID(textOrganisationID.getText());
-		runtimeLoginModule.setInitialContextFactory(textInitialContextFactory.getText());
-		runtimeLoginModule.setServerURL(textServerURL.getText());
-		runtimeLoginModule.setWorkstationID(textWorkstationID.getText());
+		
+		runtimeLoginModule.setCurrentLoginConfiguration(textUserID.getText(), textWorkstationID.getText(), textOrganisationID.getText(),
+				textServerURL.getText(), textInitialContextFactory.getText(), null);
 	}
 
 	/* (non-Javadoc)
@@ -373,7 +410,10 @@ public class LoginDialog extends TitleAreaDialog
 			storeUserInput();		
 			if (checkBoxSaveSettings.getSelection()) {
 				try {
+					runtimeLoginModule.persistCurrentConfiguration();
+					
 					BeanUtils.copyProperties(persistentLoginModule, runtimeLoginModule);
+//					BeanUtils.copyProperties(persistentLoginModule, runtimeLoginModule);
 					persistentLoginModule.setChanged();
 				} catch (Exception e) {
 					logger.error(Messages.getString("login.LoginDialog.errorSaveConfig"), e); //$NON-NLS-1$

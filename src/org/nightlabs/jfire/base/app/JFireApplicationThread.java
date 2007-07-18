@@ -136,7 +136,7 @@ extends AbstractApplicationThread
 			Login.getLogin(); // we always login in order to prevent our class-loading problems.
 
 			LoginConfigModule lcm = Login.sharedInstance().getLoginConfigModule();
-			if(lcm.getAutomaticUpdate() == true)
+			if(lcm.getLastLoginConfiguration().isAutomaticUpdate() == true)
 			{
 				Login.getLogin();
 				StartupUpdateManager updateManager = new StartupUpdateManager(lcm);

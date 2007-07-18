@@ -28,12 +28,12 @@ package org.nightlabs.jfire.base.login;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.security.auth.login.AppConfigurationEntry;
 import javax.security.auth.login.Configuration;
 
 import org.apache.log4j.Logger;
-
 import org.nightlabs.config.Config;
 import org.nightlabs.config.ConfigException;
 
@@ -64,10 +64,14 @@ public class JFireSecurityConfiguration extends Configuration {
 	 */
 	public void refresh() {
 		logger.debug("Refreshing entries"); //$NON-NLS-1$
-		ArrayList configEntries = loginConfigModule.getSecurityConfigurations();
 		this.entries.clear();
-		for (int i=0; i<configEntries.size(); i++){
-			JFireSecurityConfigurationEntry confEntry = (JFireSecurityConfigurationEntry)configEntries.get(i);
+
+		// TODO Reimplement LoginModule to make it indepenent of JBoss.
+		
+		List<JFireSecurityConfigurationEntry> configEntries = new ArrayList<JFireSecurityConfigurationEntry>();
+		configEntries.add(new JFireSecurityConfigurationEntry("jfire", "org.jboss.security.ClientLoginModule")); //$NON-NLS-1$
+		
+		for (JFireSecurityConfigurationEntry confEntry : configEntries) {
 			logger.debug("Adding entry for "+confEntry.getApplicationName()+"("+confEntry.getLoginModuleName()+", "+confEntry.getControlFlag()+", "+confEntry.getOptions()+")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
 			logger.debug("Control Flag is: "+strToLoginModuleControlFlag(confEntry.getControlFlag())); //$NON-NLS-1$
 			this.entries.put(

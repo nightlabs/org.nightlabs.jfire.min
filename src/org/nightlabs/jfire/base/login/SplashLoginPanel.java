@@ -115,6 +115,8 @@ public class SplashLoginPanel extends JPanel
 		}
 		setOpaque(false);
 		this.setLayout(new BorderLayout());
+		
+		LoginConfiguration lastLoginConfiguration = persistentLoginModule.getLastLoginConfiguration();
 
 		fieldWrapperPanel = new JPanel();
 		fieldWrapperPanel.setOpaque(false);
@@ -138,7 +140,7 @@ public class SplashLoginPanel extends JPanel
 		editPanel.add(labelUsername);
 		textUsername = new JTextField(15);
 		labelUsername.setLabelFor(textUsername);
-		textUsername.setText(persistentLoginModule.getUserID());
+		textUsername.setText(lastLoginConfiguration.getUserID());
 		editPanel.add(textUsername);
 
 		labelPassword = new JLabel(Messages.getString("login.SplashLoginPanel.password"), JLabel.LEADING); //$NON-NLS-1$
@@ -153,7 +155,7 @@ public class SplashLoginPanel extends JPanel
 		editPanel.add(labelWorkstation);
 		textWorkstation = new JTextField(15);
 		labelWorkstation.setLabelFor(textWorkstation);
-		textWorkstation.setText(persistentLoginModule.getWorkstationID());
+		textWorkstation.setText(lastLoginConfiguration.getWorkstationID());
 		editPanel.add(textWorkstation);
 
 		SpringUtilities.makeCompactGrid(
@@ -175,28 +177,28 @@ public class SplashLoginPanel extends JPanel
 		detailPanel.add(labelOrganisationID);
 		textOrganisationID = new JTextField(15);
 		labelOrganisationID.setLabelFor(textOrganisationID);
-		textOrganisationID.setText(persistentLoginModule.getOrganisationID());
+		textOrganisationID.setText(lastLoginConfiguration.getOrganisationID());
 		detailPanel.add(textOrganisationID);
 
 		labelSecurityProtocol = new JLabel(Messages.getString("login.SplashLoginPanel.securityProtocol"), JLabel.LEADING); //$NON-NLS-1$
 //		detailPanel.add(labelSecurityProtocol);
 		textSecurityProtocol = new JTextField(15);
 		labelSecurityProtocol.setLabelFor(textSecurityProtocol);
-		textSecurityProtocol.setText(persistentLoginModule.getSecurityProtocol());
+		textSecurityProtocol.setText(lastLoginConfiguration.getSecurityProtocol());
 //		detailPanel.add(textSecurityProtocol);
 
 		labelServerURL = new JLabel(Messages.getString("login.SplashLoginPanel.serverURL"), JLabel.LEADING); //$NON-NLS-1$
 		detailPanel.add(labelServerURL);
 		textServerURL = new JTextField(15);
 		labelServerURL.setLabelFor(textServerURL);
-		textServerURL.setText(persistentLoginModule.getServerURL());
+		textServerURL.setText(lastLoginConfiguration.getServerURL());
 		detailPanel.add(textServerURL);
 
 		labelInitialContextFactory = new JLabel(Messages.getString("login.SplashLoginPanel.initialContextFactory"), JLabel.LEADING); //$NON-NLS-1$
 		detailPanel.add(labelInitialContextFactory);		
 		textInitialContextFactory = new JTextField(15);
 		labelInitialContextFactory.setLabelFor(textInitialContextFactory);
-		textInitialContextFactory.setText(persistentLoginModule.getInitialContextFactory());
+		textInitialContextFactory.setText(lastLoginConfiguration.getInitialContextFactory());
 		detailPanel.add(textInitialContextFactory);
 		SpringUtilities.makeCompactGrid(
 				detailPanel,
@@ -281,27 +283,38 @@ public class SplashLoginPanel extends JPanel
 	 * and JFireLoginContext passed in the constructor.
 	 */
 	public void assignLoginValues() {
-		loginConfigModule.setUserID(textUsername.getText());
-		loginConfigModule.setOrganisationID(textOrganisationID.getText());
-		loginConfigModule.setSecurityProtocol(textSecurityProtocol.getText());
-		loginConfigModule.setServerURL(textServerURL.getText());
-		loginConfigModule.setInitialContextFactory(textInitialContextFactory.getText());
-		loginConfigModule.setWorkstationID(textWorkstation.getText());
+		
+		String userID = textUsername.getText();
+		String organisationID = textOrganisationID.getText();
+		String securityProtocol = textSecurityProtocol.getText();
+		String serverURL = textServerURL.getText();
+		String initialContextFactory = textInitialContextFactory.getText();
+		String workstationID = textWorkstation.getText();
+		
+//		loginConfigModule.setUserID(textUsername.getText());
+//		loginConfigModule.setOrganisationID(textOrganisationID.getText());
+//		loginConfigModule.setSecurityProtocol(textSecurityProtocol.getText());
+//		loginConfigModule.setServerURL(textServerURL.getText());
+//		loginConfigModule.setInitialContextFactory(textInitialContextFactory.getText());
+//		loginConfigModule.setWorkstationID(textWorkstation.getText());
+		
+		loginConfigModule.setCurrentLoginConfiguration(userID, workstationID, organisationID, serverURL, initialContextFactory, securityProtocol);
 
 		if (checkBoxSaveSettings.isSelected()) {
 			try {
-				BeanUtils.copyProperties(persistentLoginModule,loginConfigModule);
+				loginConfigModule.persistCurrentConfiguration();
+				
+				BeanUtils.copyProperties(persistentLoginModule, loginConfigModule);
+//				BeanUtils.copyProperties(persistentLoginModule,loginConfigModule);
 				persistentLoginModule.setChanged();
 			} catch (Exception e) {
 				logger.error("Saving config failed!", e); //$NON-NLS-1$
 			}
 		}
+		
+		LoginConfiguration loginConfig = loginConfigModule.getCurrentLoginConfiguration();
 
-		loginContext.setCredentials(
-				loginConfigModule.getUserID(), 
-				loginConfigModule.getOrganisationID(), 
-				new String(textPassword.getPassword())
-		);
+		loginContext.setCredentials(loginConfig.getUserID(), loginConfig.getOrganisationID(), new String(textPassword.getPassword()));
 	}
 
 	public void setErrMessage(String message) {
