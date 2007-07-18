@@ -994,7 +994,48 @@ public class JFireServerManagerFactoryImpl
 	private transient Object createOrganisation_mutex = new Object();
 
 	/**
-	 * This method either creates an organisation.
+	 * This method generates a database-name out of the organisationID. Therefore,
+	 * it replaces all characters which are not allowed in a database name by '_'.
+	 * <p>
+	 * <b>Warning:</b> This method allows name clashes, because e.g. both "a.b" and "a-b"
+	 * are translated to "a_b".
+	 * </p>
+	 *
+	 * @param organisationID The organisationID to be translated.
+	 * @return the database name resulting from the given <code>organisationID</code>.
+	 */
+	protected String createDatabaseName(String organisationID, boolean appendDatabasePrefixAndSuffix)
+	{
+		StringBuffer databaseName = new StringBuffer((int) (1.5 * organisationID.length()));
+
+		databaseName.append(organisationID.replaceAll("[^A-Za-z0-9_]", "_"));
+
+// the following alternative code prevents name clashes. it translates all non-allowed characters are into their
+// hex-value with the prefix "_" and the suffix "_". 
+//
+//		for (char c : organisationID.toCharArray()) {
+//			if (('A' <= c && c <= 'Z') || ('a' <= c && c <= 'z') || ('0' <= c && c <= '9'))
+//				databaseName.append(c);
+//			else {
+//				databaseName.append('_');
+//				databaseName.append(ObjectIDUtil.longObjectIDFieldToString(c));
+//				databaseName.append('_');
+//			}
+//		}
+
+		if (appendDatabasePrefixAndSuffix) {
+			JFireServerConfigModule.Database dbCf = mcf.getConfigModule().getDatabase();
+			databaseName.insert(0, dbCf.getDatabasePrefix());
+			databaseName.append(dbCf.getDatabaseSuffix());
+		}
+
+		return databaseName.toString();
+	}
+
+	/**
+	 * This method creates a new organisation. What exactly happens, is documented in our wiki:
+	 * https://www.jfire.org/modules/phpwiki/index.php/NewOrganisationCreation
+	 *
 	 * @param organisationID The ID of the new organsitation, which must not be <code>null</code>. Example: "RioDeJaneiro.NightLabs.org"
 	 * @param organisationName The "human" name of the organisation. Example: "NightLabs GmbH, Rio de Janeiro"
 	 * @param userID The userID of the first user to be created. This will be the new organisation's administrator.
@@ -1023,10 +1064,10 @@ public class JFireServerManagerFactoryImpl
 					throw new IllegalArgumentException("organisationID must not be an empty string!");
 
 				if (organisationID.indexOf('.') < 0)
-					throw new IllegalArgumentException("organisationID is invalid! Must have domain-style form (e.g. \"de.nightlabs.fr\")!");
+					throw new IllegalArgumentException("organisationID is invalid! Must have domain-style form (e.g. \"jfire.nightlabs.de\")!");
 
-				if (!ObjectIDUtil.isValidIDString(organisationID))
-					throw new IllegalArgumentException("organisationID is not a valid ID! Make sure it does not contain special characters. It should have a domain-style form!");
+				if (!Organisation.isValidOrganisationID(organisationID))
+					throw new IllegalArgumentException("organisationID is not valid! Make sure it does not contain special characters. It should have a domain-style form!");
 
 				if (organisationID.length() > 50)
 					throw new IllegalArgumentException("organisationID has "+organisationID.length()+" chars and is too long! Maximum is 50 characters.");
@@ -1072,6 +1113,11 @@ public class JFireServerManagerFactoryImpl
 				// network, thus we check only locally.
 				if (getOrganisationCfsCloned().get(organisationID) != null)
 					throw new DuplicateOrganisationException("An organisation with the name \""+organisationID+"\" already exists!");
+
+				// TODO we now have root-organisation-support, hence the root-organisation should be asked.
+				// But before implementing this, it should be possible to declare a stand-alone-mode in the
+				// configuration, meaning that there is no root-organisation and thus, all root-organisation-dependent
+				// actions should be deactivated.
 		
 				//boolean creatingFirstOrganisation = isOrganisationCfsEmpty();
 
@@ -1105,7 +1151,7 @@ public class JFireServerManagerFactoryImpl
 					}
 
 					// create database
-					String databaseName = dbCf.getDatabasePrefix() + organisationID.replace('.', '_') + dbCf.getDatabaseSuffix();
+					String databaseName = createDatabaseName(organisationID, true);
 					String dbURL = dbCf.getDatabaseURL(databaseName);
 					databaseAdapter = dbCf.instantiateDatabaseAdapter();
 
@@ -1679,14 +1725,15 @@ public class JFireServerManagerFactoryImpl
 			}
 		}
 
-		String organisationID_simpleChars = organisationID.replace('.', '_');
-
-		// generate databaseName
-		StringBuffer databaseNameSB = new StringBuffer();
-		databaseNameSB.append(dbCf.getDatabasePrefix());
-		databaseNameSB.append(organisationID_simpleChars);
-		databaseNameSB.append(dbCf.getDatabaseSuffix());
-		String databaseName = databaseNameSB.toString();
+//		String organisationID_simpleChars = organisationID.replace('.', '_');
+//
+//		// generate databaseName
+//		StringBuffer databaseNameSB = new StringBuffer();
+//		databaseNameSB.append(dbCf.getDatabasePrefix());
+//		databaseNameSB.append(organisationID_simpleChars);
+//		databaseNameSB.append(dbCf.getDatabaseSuffix());
+//		String databaseName = databaseNameSB.toString();
+		String databaseName = createDatabaseName(organisationID, true);
 
 		// get jdbc url
 		String dbURL = dbCf.getDatabaseURL(databaseName);
@@ -1708,7 +1755,7 @@ public class JFireServerManagerFactoryImpl
 		variables.put("datasourceMetadataTypeMapping", dbCf.getDatasourceMetadataTypeMapping());
 		variables.put("jdoPersistenceManagerFactoryJNDIName_relative", jdoPersistenceManagerFactoryJNDIName_relative);
 		variables.put("jdoPersistenceManagerFactoryJNDIName_absolute", jdoPersistenceManagerFactoryJNDIName_absolute);
-		variables.put("databaseDriverName", dbCf.getDatabaseDriverName());
+//		variables.put("databaseDriverName", dbCf.getDatabaseDriverName());
 		variables.put("databaseDriverName_noTx", dbCf.getDatabaseDriverName_noTx());
 		variables.put("databaseDriverName_localTx", dbCf.getDatabaseDriverName_localTx());
 		variables.put("databaseDriverName_xa", dbCf.getDatabaseDriverName_xa());

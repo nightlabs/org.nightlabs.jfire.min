@@ -34,7 +34,7 @@ import java.sql.Statement;
 import org.apache.log4j.Logger;
 import org.nightlabs.annotation.Implement;
 import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
-import org.nightlabs.util.Utils;
+import org.nightlabs.util.IOUtil;
 
 
 /**
@@ -81,9 +81,9 @@ extends AbstractDatabaseAdapter
 			java.sql.Connection testDBConn = DriverManager.getConnection(
 					databaseURL, dbCf.getDatabaseUserName(), dbCf.getDatabasePassword());
 			testDBConn.close();
-			throw new DatabaseAlreadyExistsException("");
+			throw new DatabaseAlreadyExistsException(databaseURL);
 		} catch (SQLException e) {
-			// fine, it exists => ignore
+			// fine, it does not yet exist => ignore
 		}
 
 		try {
@@ -117,7 +117,7 @@ extends AbstractDatabaseAdapter
 
 			if (databaseURL.startsWith("jdbc:derby:")) {
 				String dir = databaseURL.substring("jdbc:derby:".length());
-				Utils.deleteDirectoryRecursively(dir);
+				IOUtil.deleteDirectoryRecursively(dir);
 			}
 		}
 	}
