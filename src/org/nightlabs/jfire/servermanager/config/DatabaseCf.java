@@ -1,6 +1,5 @@
 package org.nightlabs.jfire.servermanager.config;
 
-import java.io.File;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -8,7 +7,6 @@ import java.util.Map;
 import org.nightlabs.jfire.servermanager.db.DatabaseAdapter;
 import org.nightlabs.jfire.servermanager.db.DatabaseAdapterDerby;
 import org.nightlabs.jfire.servermanager.db.DatabaseAdapterMySQL;
-import org.nightlabs.util.IOUtil;
 
 /**
  * The server core database configuration
@@ -37,7 +35,6 @@ public class DatabaseCf extends JFireServerConfigPart implements Serializable
 	private String databaseDriverName_localTx;
 	private String databaseDriverName_xa;
 
-	private String databaseDriverName;
 	private String databaseURL;
 	private String databasePrefix;
 	private String databaseSuffix;
@@ -110,34 +107,34 @@ public class DatabaseCf extends JFireServerConfigPart implements Serializable
 		return db;
 	}
 
-	/**
-	 * Create default values for the Mckoi DB type.
-	 * @return The database defaults
-	 * @deprecated Mckoi caused problem with JPOX and we use now Derby instead.
-	 */
-	@SuppressWarnings("unused")
-	private static DatabaseCf createMckoiDefaults()
-	{
-		DatabaseCf db = new DatabaseCf();
-		db._init();
-		db.setDatabaseDriverName("com.mckoi.JDBCDriver");
-		db.setDatabaseURL("jdbc:mckoi:local:/" + new File(IOUtil.getTempDir(), "jfire-mckoi").getAbsolutePath() + File.separatorChar + DATABASE_NAME_VAR + File.separatorChar + "db.conf");
-//		db.setDatabaseUserName("jfire");
-//		db.setDatabasePassword("jfire_password");
-		db.setDatabaseAdapter("org.nightlabs.jfire.databaseadaptermckoi.DatabaseAdapterMckoi");
-		db.setDatasourceMetadataTypeMapping("mySQL"); // TODO - i have no idea???!! 
-		return db;
-	}
+//	/**
+//	 * Create default values for the Mckoi DB type.
+//	 * @return The database defaults
+//	 * @deprecated Mckoi caused problem with JPOX and we use now Derby instead.
+//	 */
+//	@SuppressWarnings("unused")
+//	private static DatabaseCf createMckoiDefaults()
+//	{
+//		DatabaseCf db = new DatabaseCf();
+//		db._init();
+//		db.setDatabaseDriverName("com.mckoi.JDBCDriver");
+//		db.setDatabaseURL("jdbc:mckoi:local:/" + new File(IOUtil.getTempDir(), "jfire-mckoi").getAbsolutePath() + File.separatorChar + DATABASE_NAME_VAR + File.separatorChar + "db.conf");
+////		db.setDatabaseUserName("jfire");
+////		db.setDatabasePassword("jfire_password");
+//		db.setDatabaseAdapter("org.nightlabs.jfire.databaseadaptermckoi.DatabaseAdapterMckoi");
+//		db.setDatasourceMetadataTypeMapping("mySQL"); // TODO - i have no idea???!! 
+//		return db;
+//	}
 	
 	protected void _init()
 	{
-		if (databaseDriverName == null) {
-			if (databaseDriverName_noTx == null && databaseDriverName_localTx == null && databaseDriverName_xa == null)
-				setDatabaseDriverName("com.mysql.jdbc.Driver");
-
-			if (databaseDriverName_xa == null)
-				setDatabaseDriverName_xa("com.mysql.jdbc.jdbc2.optional.MysqlXADataSource");
-		}
+//		if (databaseDriverName == null) {
+//			if (databaseDriverName_noTx == null && databaseDriverName_localTx == null && databaseDriverName_xa == null)
+//				setDatabaseDriverName("com.mysql.jdbc.Driver");
+//
+//			if (databaseDriverName_xa == null)
+//				setDatabaseDriverName_xa("com.mysql.jdbc.jdbc2.optional.MysqlXADataSource");
+//		}
 
 		if (databaseURL == null)
 			setDatabaseURL("jdbc:mysql://localhost/" + DATABASE_NAME_VAR);
@@ -160,18 +157,18 @@ public class DatabaseCf extends JFireServerConfigPart implements Serializable
 		if (databaseAdapter == null)
 			setDatabaseAdapter(DatabaseAdapterMySQL.class.getName());
 
-		// downward compatibility: copy databaseDriveName to all others
-		if (databaseDriverName != null) {
-			if (databaseDriverName_noTx == null)
-				setDatabaseDriverName_noTx(databaseDriverName);
-
-			if (databaseDriverName_localTx == null)
-				setDatabaseDriverName_localTx(databaseDriverName);
-
-			if (databaseDriverName_xa == null)
-				setDatabaseDriverName_xa(databaseDriverName);
-		}
-		// end downward compatibility
+//		// downward compatibility: copy databaseDriveName to all others
+//		if (databaseDriverName != null) {
+//			if (databaseDriverName_noTx == null)
+//				setDatabaseDriverName_noTx(databaseDriverName);
+//
+//			if (databaseDriverName_localTx == null)
+//				setDatabaseDriverName_localTx(databaseDriverName);
+//
+//			if (databaseDriverName_xa == null)
+//				setDatabaseDriverName_xa(databaseDriverName);
+//		}
+//		// end downward compatibility
 
 		if (databaseDriverName_noTx == null && databaseDriverName_localTx == null && databaseDriverName_xa == null) {
 			setDatabaseDriverName_noTx("com.mysql.jdbc.Driver");
@@ -210,7 +207,9 @@ public class DatabaseCf extends JFireServerConfigPart implements Serializable
 	{
 		_init();
 
-		logger.info("databaseDriverName = "+databaseDriverName);
+		logger.info("databaseDriverName_noTx = "+databaseDriverName_noTx);
+		logger.info("databaseDriverName_localTx = "+databaseDriverName_localTx);
+		logger.info("databaseDriverName_xa = "+databaseDriverName_xa);
 		logger.info("databaseURL = "+databaseURL);
 		logger.info("databasePrefix = "+databasePrefix);
 		logger.info("databaseSuffix = "+databaseSuffix);
@@ -226,7 +225,7 @@ public class DatabaseCf extends JFireServerConfigPart implements Serializable
 		if (db == null)
 			throw new IllegalArgumentException("No defaults known with defaultKey=" + defaultKey);
 
-		setDatabaseDriverName(db.getDatabaseDriverName());
+//		setDatabaseDriverName(db.getDatabaseDriverName());
 		setDatabaseDriverName_noTx(db.getDatabaseDriverName_noTx());
 		setDatabaseDriverName_localTx(db.getDatabaseDriverName_localTx());
 		setDatabaseDriverName_xa(db.getDatabaseDriverName_xa());
@@ -278,24 +277,24 @@ public class DatabaseCf extends JFireServerConfigPart implements Serializable
 		setChanged();
 	}
 
-	/**
-	 * @return Returns the databaseDriverName.
-	 * @deprecated Use {@link #getDatabaseDriverName_noTx()}, {@link #getDatabaseDriverName_localTx()} or {@link #getDatabaseDriverName_xa()}
-	 */
-	public String getDatabaseDriverName() 
-	{
-		return databaseDriverName;
-	}
-	
-	/**
-	 * @param databaseDriverName The databaseDriverName to set.
-	 * @deprecated Use {@link #setDatabaseDriverName_noTx(String)}. {@link #setDatabaseDriverName_localTx(String)} or {@link #setDatabaseDriverName_xa(String)}
-	 */
-	public void setDatabaseDriverName(String _databaseDriverName) 
-	{
-		this.databaseDriverName = _databaseDriverName;
-		setChanged();
-	}
+//	/**
+//	 * @return Returns the databaseDriverName.
+//	 * @deprecated Use {@link #getDatabaseDriverName_noTx()}, {@link #getDatabaseDriverName_localTx()} or {@link #getDatabaseDriverName_xa()}
+//	 */
+//	public String getDatabaseDriverName() 
+//	{
+//		return databaseDriverName;
+//	}
+//	
+//	/**
+//	 * @param databaseDriverName The databaseDriverName to set.
+//	 * @deprecated Use {@link #setDatabaseDriverName_noTx(String)}. {@link #setDatabaseDriverName_localTx(String)} or {@link #setDatabaseDriverName_xa(String)}
+//	 */
+//	public void setDatabaseDriverName(String _databaseDriverName) 
+//	{
+//		this.databaseDriverName = _databaseDriverName;
+//		setChanged();
+//	}
 	
 	/**
 	 * Get the databaseDriverName_localTx.
