@@ -62,13 +62,26 @@ public class LoginConfigModule extends ConfigModule
 	private int maxLoginConfigurations = 5;
 	
 	public LoginConfigModule() {
-		currentLoginConfiguration = new LoginConfiguration();
-		loginConfigurations = new LinkedList<LoginConfiguration>();
+//		currentLoginConfiguration = new LoginConfiguration();
+//		loginConfigurations = new LinkedList<LoginConfiguration>();
+		// this initialisation should not be done here, but in init! Marco.
 	}
-	
+
 	public void init() throws InitException {
 		super.init();
-		
+
+		if (loginConfigurations == null)
+			setLoginConfigurations(new LinkedList<LoginConfiguration>());
+
+		if (currentLoginConfiguration == null) {
+			setCurrentLoginConfiguration(new LoginConfiguration());
+//			loginConfigurations.addFirst(currentLoginConfiguration);
+			currentLoginConfiguration.init();
+		}
+
+		for (LoginConfiguration loginConfiguration : loginConfigurations)
+			loginConfiguration.init();
+
 //		loginConfigurations = new LinkedList<LoginConfiguration>();
 		
 		
@@ -105,22 +118,23 @@ public class LoginConfigModule extends ConfigModule
 			String securityProtocol) {
 		acquireReadLock();
 		currentLoginConfiguration = new LoginConfiguration(userID, workstationID, organisationID, serverURL, initialContextFactory, securityProtocol);
+		currentLoginConfiguration.init();
 		if (!MANUAL_PERSISTING)
 			persistCurrentConfiguration();
 		releaseLock();
 	}
-	
+
 	public void persistCurrentConfiguration() {
 		loginConfigurations.remove(currentLoginConfiguration);
 		loginConfigurations.addFirst(currentLoginConfiguration);
 		setLoginConfigurations(getLoginConfigurations());
 		ensureCapacity();
 	}
-	
+
 	public LinkedList<LoginConfiguration> getLoginConfigurations() {
 		return loginConfigurations;
 	}
-	
+
 	public void setLoginConfigurations(LinkedList<LoginConfiguration> loginConfigurations) {
 		this.loginConfigurations = loginConfigurations;
 		setChanged();

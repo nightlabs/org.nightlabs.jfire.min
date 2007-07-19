@@ -37,8 +37,21 @@ public class LoginConfiguration implements Serializable {
 	 * @param securityConfigurationEntries
 	 */
 	public LoginConfiguration(String userID, String workstationID, String organisationID, String serverURL, String initialContextFactory,
-			String securityProtocol) {
+			String securityProtocol)
+	{
+		this.userID = userID;
+		this.workstationID = workstationID;
+		this.organisationID = organisationID;
+		this.serverURL = serverURL;
+		this.initialContextFactory = initialContextFactory;
+		this.securityProtocol = securityProtocol;
+	}
 
+	/**
+	 * Using the init method additionally, it will cause the default values to be written to the ConfigModule.
+	 */
+	public void init()
+	{
 		if(workstationID == null)
 			workstationID = ""; //$NON-NLS-1$
 
@@ -55,13 +68,6 @@ public class LoginConfiguration implements Serializable {
 			securityProtocol = "jfire"; //$NON-NLS-1$
 		if(serverURL == null)
 			serverURL = "jnp://localhost:1099"; //$NON-NLS-1$
-
-		this.userID = userID;
-		this.workstationID = workstationID;
-		this.organisationID = organisationID;
-		this.serverURL = serverURL;
-		this.initialContextFactory = initialContextFactory;
-		this.securityProtocol = securityProtocol;
 	}
 
 //	public void copyFrom(LoginConfiguration source) {
@@ -133,7 +139,7 @@ public class LoginConfiguration implements Serializable {
 
 	@Override
 	public String toString() {
-		return userID + "@" + workstationID + " (" + serverURL + ")";
+		return userID + "@" + organisationID + " (" + workstationID + ") (" + serverURL + ")";
 	}
 
 	@Override

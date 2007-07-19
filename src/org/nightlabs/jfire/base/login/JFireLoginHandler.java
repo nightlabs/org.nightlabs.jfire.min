@@ -101,7 +101,9 @@ public class JFireLoginHandler implements ILoginHandler {
 
 			if (password != null) {
 				
-				LoginConfiguration lastConfig = loginConfigModule.getLastLoginConfiguration();
+//				LoginConfiguration lastConfig = loginConfigModule.getLastLoginConfiguration(); // TODO shouldn't this be the current one instead?! - imho this is a bug, because the last one can be null here, which isnot checked below!
+				LoginConfiguration lastConfig = loginConfigModule.getCurrentLoginConfiguration();
+				
 				
 //				if (workstationID != null)
 //					loginConfigModule.setWorkstationID(workstationID);

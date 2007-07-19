@@ -197,6 +197,11 @@ public class LoginDialog extends TitleAreaDialog
 			public String getText(Object element) {
 				if (element instanceof LoginConfiguration) {
 					LoginConfiguration loginConfig = (LoginConfiguration) element;
+					if (loginConfig.equals(runtimeLoginModule.getCurrentLoginConfiguration())) {
+						if (!runtimeLoginModule.getLoginConfigurations().contains(loginConfig))
+							return "[UNSAVED!] " + loginConfig.toString();
+					}
+
 					return loginConfig.toString();					
 				} else
 					return "";
@@ -298,11 +303,20 @@ public class LoginDialog extends TitleAreaDialog
 	private void initializeWidgetValues()
 	{
 		recentLoginConfigs.setInput(runtimeLoginModule.getLoginConfigurations());
-		if (runtimeLoginModule.getLastLoginConfiguration() != null) {
-			recentLoginConfigs.setSelection(runtimeLoginModule.getLastLoginConfiguration());
-			updateTextFieldsWithLoginConfiguration(runtimeLoginModule.getLastLoginConfiguration());
+		// TODO shouldn't we better use the current one for initialisation? Marco.
+//		LoginConfiguration loginConfigurationForInit = runtimeLoginModule.getLastLoginConfiguration();
+		LoginConfiguration loginConfigurationForInit = runtimeLoginModule.getCurrentLoginConfiguration();
+		if (loginConfigurationForInit != null) {
+			if (!recentLoginConfigs.contains(loginConfigurationForInit)) {
+				recentLoginConfigs.addElement(0, loginConfigurationForInit);
+			}
+
+			recentLoginConfigs.setSelection(loginConfigurationForInit);
+			updateTextFieldsWithLoginConfiguration(loginConfigurationForInit);
 		} else {
-			updateTextFieldsWithLoginConfiguration(new LoginConfiguration());
+			LoginConfiguration loginConfiguration = new LoginConfiguration();
+			loginConfiguration.init();
+			updateTextFieldsWithLoginConfiguration(loginConfiguration);
 		}
 			
 		
