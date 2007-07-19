@@ -34,6 +34,7 @@ import java.util.Set;
 import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 
+import org.nightlabs.config.ConfigModule;
 import org.nightlabs.jdo.ObjectIDUtil;
 import org.nightlabs.jfire.idgenerator.IDGenerator;
 import org.nightlabs.jfire.organisation.Organisation;
@@ -72,6 +73,12 @@ public class OrganisationCf
 
 	private boolean readOnly = false;
 
+	/**
+	 * The parent config module. This is only set if a config module
+	 * owns this instance.
+	 */
+	private ConfigModule parentConfigModule = null;
+	
 	public OrganisationCf() { }
 
 	public OrganisationCf(
@@ -99,27 +106,33 @@ public class OrganisationCf
 	/**
 	 * @return Returns the organisationID.
 	 */
-	public String getOrganisationID() {
+	public String getOrganisationID() 
+	{
 		return organisationID;
 	}
+	
 	/**
 	 * @param organisationID The organisationID to set.
 	 */
-	public void setOrganisationID(String _organisationID) {
+	public void setOrganisationID(String _organisationID) 
+	{
 		assertWritable();
 		if (_organisationID == null)
 			throw new NullPointerException("organisationID must not be null!");
 		if (!ObjectIDUtil.isValidIDString(_organisationID))
 			throw new IllegalArgumentException("organisationID \""+_organisationID+"\" is not a valid id!");
 		this.organisationID = _organisationID;
-		thisString = null;
+		setChanged();
 	}
+	
 	/**
 	 * @return Returns the organisationName.
 	 */
-	public String getOrganisationName() {
+	public String getOrganisationName() 
+	{
 		return organisationName;
 	}
+	
 	/**
 	 * @param organisationName The organisationName to set.
 	 */
@@ -129,8 +142,9 @@ public class OrganisationCf
 		if (_organisationCaption == null)
 			throw new NullPointerException("organisationName must not be null!");
 		this.organisationName = _organisationCaption;
-		thisString = null;
+		setChanged();
 	}
+	
 //	/**
 //	 * @return Returns the masterOrganisationID.
 //	 */
@@ -182,12 +196,14 @@ public class OrganisationCf
 	 * @see addServerAdmin(String userID)
 	 * @see removeServerAdmin(String userID)
 	 */
-	public Set<String> getServerAdmins() {
+	public Set<String> getServerAdmins() 
+	{
 		if (readOnly && serverAdmins != null)
 			return new HashSet<String>(serverAdmins);
 
 		return serverAdmins;
 	}
+	
 	/**
 	 * After having set a new list of serverAdmins, don't manipulate
 	 * the Set directly anymore! Use the methods addServerAdmin(...) and
@@ -197,10 +213,11 @@ public class OrganisationCf
 	 * @see addServerAdmin(String userID)
 	 * @see removeServerAdmin(String userID)
 	 */
-	public void setServerAdmins(Set<String> _serverAdmins) {
+	public void setServerAdmins(Set<String> _serverAdmins) 
+	{
 		assertWritable();
 		this.serverAdmins = _serverAdmins;
-		thisString = null;
+		setChanged();
 	}
 	
 	public void addServerAdmin(String userID)
@@ -209,7 +226,7 @@ public class OrganisationCf
 		if (serverAdmins == null)
 			serverAdmins = new HashSet<String>();
 		serverAdmins.add(userID);
-		thisString = null;
+		setChanged();
 	}
 
 	public boolean removeServerAdmin(String userID)
@@ -220,7 +237,7 @@ public class OrganisationCf
 		boolean res = serverAdmins.remove(userID);
 		if (serverAdmins.size() == 0)
 			serverAdmins = null;
-		thisString = null;
+		setChanged();
 		return res;
 	}
 	
@@ -344,10 +361,13 @@ public class OrganisationCf
 	}
 
 	protected String thisString = null;
-	/**
+	
+	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
-	public String toString() {
+	@Override
+	public String toString() 
+	{
 		if (thisString == null) {
 			StringBuffer sb = new StringBuffer();
 			sb.append(this.getClass().getName());
@@ -374,5 +394,31 @@ public class OrganisationCf
 
 		return thisString;
 	}
+	
 
+	/**
+	 * Get the parentConfigModule.
+	 * @return the parentConfigModule
+	 */
+	public ConfigModule getParentConfigModule()
+	{
+		return parentConfigModule;
+	}
+	
+
+	/**
+	 * Set the parentConfigModule.
+	 * @param parentConfigModule the parentConfigModule to set
+	 */
+	public void setParentConfigModule(ConfigModule parentConfigModule)
+	{
+		this.parentConfigModule = parentConfigModule;
+	}
+
+	public void setChanged()
+	{
+		if(parentConfigModule != null)
+			parentConfigModule.setChanged();
+		thisString = null;
+	}
 }

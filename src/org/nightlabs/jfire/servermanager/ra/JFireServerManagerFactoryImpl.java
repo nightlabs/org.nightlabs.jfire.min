@@ -115,7 +115,9 @@ import org.nightlabs.jfire.servermanager.NoServerAdminException;
 import org.nightlabs.jfire.servermanager.OrganisationNotFoundException;
 import org.nightlabs.jfire.servermanager.RoleImportSet;
 import org.nightlabs.jfire.servermanager.config.CreateOrganisationConfigModule;
+import org.nightlabs.jfire.servermanager.config.DatabaseCf;
 import org.nightlabs.jfire.servermanager.config.J2eeServerTypeRegistryConfigModule;
+import org.nightlabs.jfire.servermanager.config.JDOCf;
 import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
 import org.nightlabs.jfire.servermanager.config.OrganisationCf;
 import org.nightlabs.jfire.servermanager.config.OrganisationConfigModule;
@@ -1024,7 +1026,7 @@ public class JFireServerManagerFactoryImpl
 //		}
 
 		if (appendDatabasePrefixAndSuffix) {
-			JFireServerConfigModule.Database dbCf = mcf.getConfigModule().getDatabase();
+			DatabaseCf dbCf = mcf.getConfigModule().getDatabase();
 			databaseName.insert(0, dbCf.getDatabasePrefix());
 			databaseName.append(dbCf.getDatabaseSuffix());
 		}
@@ -1131,8 +1133,8 @@ public class JFireServerManagerFactoryImpl
 //				transactionManager.begin();
 		    try {
 
-					JFireServerConfigModule.Database dbCf = mcf.getConfigModule().getDatabase();
-					JFireServerConfigModule.JDO jdoCf = mcf.getConfigModule().getJdo();
+					DatabaseCf dbCf = mcf.getConfigModule().getDatabase();
+					JDOCf jdoCf = mcf.getConfigModule().getJdo();
 
 					try {
 						Class.forName(dbCf.getDatabaseDriverName_noTx());
@@ -1699,7 +1701,7 @@ public class JFireServerManagerFactoryImpl
 	throws IOException
 	{
 		JFireServerConfigModule cfMod = mcf.getConfigModule();
-		JFireServerConfigModule.Database dbCf = cfMod.getDatabase();
+		DatabaseCf dbCf = cfMod.getDatabase();
 
 //		if (deploymentDescriptorFile.isAbsolute()) // this method is used by createDeploymentJar with an absolute file, hence we cannot warn here.
 //			logger.warn("deploymentDescriptorFile should not be an absolute file: " + deploymentDescriptorFile.getPath(), new IllegalArgumentException("deploymentDescriptorFile should not be an absolute file: " + deploymentDescriptorFile.getPath()));

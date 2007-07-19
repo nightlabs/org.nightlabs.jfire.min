@@ -33,6 +33,7 @@ import java.sql.Statement;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.annotation.Implement;
+import org.nightlabs.jfire.servermanager.config.DatabaseCf;
 import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
 
 
@@ -47,7 +48,7 @@ extends AbstractDatabaseAdapter
 	throws DatabaseException
 	{
 		try {
-			JFireServerConfigModule.Database dbCf = jfireServerConfigModule.getDatabase();
+			DatabaseCf dbCf = jfireServerConfigModule.getDatabase();
 			Connection sqlConn = DriverManager.getConnection(
 					dbCf.getDatabaseURL(null),
 					dbCf.getDatabaseUserName(),
@@ -75,7 +76,7 @@ extends AbstractDatabaseAdapter
 		this.databaseName = null;
 		Logger logger = Logger.getLogger(DatabaseAdapterMySQL.class);
 
-		JFireServerConfigModule.Database dbCf = jfireServerConfigModule.getDatabase();
+		DatabaseCf dbCf = jfireServerConfigModule.getDatabase();
 
 		if (!databaseURL.startsWith("jdbc:mysql:"))
 			throw new IllegalArgumentException("databaseURL must start with 'jdbc:mysql:'!");

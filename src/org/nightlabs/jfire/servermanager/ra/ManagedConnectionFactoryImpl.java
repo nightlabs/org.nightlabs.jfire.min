@@ -43,12 +43,15 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.nightlabs.config.Config;
 import org.nightlabs.config.ConfigException;
+import org.nightlabs.jfire.servermanager.config.DatabaseCf;
+import org.nightlabs.jfire.servermanager.config.J2eeCf;
 import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
 import org.nightlabs.jfire.servermanager.db.DatabaseAdapter;
 import org.nightlabs.jfire.servermanager.db.DatabaseException;
 
 /**
  * @author marco
+ * @author Marc Klinger - marc[at]nightlabs[dot]de
  */
 public class ManagedConnectionFactoryImpl
 	implements ManagedConnectionFactory
@@ -295,7 +298,7 @@ public class ManagedConnectionFactoryImpl
 		if (!fileSysConfDir.canWrite())
 			throw new ConfigException("SysConfigDirectory \""+sysConfigDirectoryAbsolute+"\" defined in JFireServerManager-ds.xml is not writeable!");
 
-		config = new Config("Config.xml", true, sysConfigDirectory);
+		config = new Config(new File(sysConfigDirectory, "Config.xml"), true);
 
 		configurable = false;
 
@@ -315,7 +318,7 @@ public class ManagedConnectionFactoryImpl
 		JFireServerConfigModule cfMod = (JFireServerConfigModule)
 			config.createConfigModule(JFireServerConfigModule.class);
 
-		config.saveConfFile();
+		config.save();
 
 		try {
 			testConfiguration(cfMod);
@@ -328,7 +331,7 @@ public class ManagedConnectionFactoryImpl
 		throws ConfigException
 	{
 		// Test j2ee settings.
-		JFireServerConfigModule.J2ee j2eeCf = cfMod.getJ2ee();
+		J2eeCf j2eeCf = cfMod.getJ2ee();
 
 		File j2eeDeployBaseDir = new File(j2eeCf.getJ2eeDeployBaseDirectory());
 		if (!j2eeDeployBaseDir.exists())
@@ -355,7 +358,7 @@ public class ManagedConnectionFactoryImpl
 
 
 		// Test connection to sql server.
-		JFireServerConfigModule.Database dbCf = cfMod.getDatabase();
+		DatabaseCf dbCf = cfMod.getDatabase();
 		try {
 			Class.forName(dbCf.getDatabaseDriverName_noTx());
 		} catch (ClassNotFoundException e) {

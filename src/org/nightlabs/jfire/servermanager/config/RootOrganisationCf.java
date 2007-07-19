@@ -29,7 +29,7 @@ package org.nightlabs.jfire.servermanager.config;
 import java.util.Set;
 
 /**
- * @author unassigned
+ * @author unascribed
  * @author Marc Klinger - marc[at]nightlabs[dot]de
  */
 public class RootOrganisationCf extends OrganisationCf
@@ -59,6 +59,7 @@ public class RootOrganisationCf extends OrganisationCf
 	public void setServer(ServerCf server)
 	{
 		this.server = server;
+		setChanged();
 	}
 
 	/* (non-Javadoc)
@@ -68,6 +69,7 @@ public class RootOrganisationCf extends OrganisationCf
 	public void setServerAdmins(Set<String> _serverAdmins)
 	{
 		super.setServerAdmins(null);
+		setChanged();
 	}
 	
 	/* (non-Javadoc)
@@ -85,5 +87,6 @@ public class RootOrganisationCf extends OrganisationCf
 	@Override
 	public void addServerAdmin(String userID)
 	{
+		setChanged();
 	}
 }

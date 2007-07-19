@@ -47,6 +47,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author marco
+ * @author Marc Klinger - marc[at]nightlabs[dot]de
  */
 public class ManagedConnectionImpl
 	implements LocalTransaction, ManagedConnection
@@ -58,9 +59,9 @@ public class ManagedConnectionImpl
 	
 	private final PasswordCredential credential;
 	
-	private final List handles = new ArrayList();
+	private final List<JFireServerManagerImpl> handles = new ArrayList<JFireServerManagerImpl>();
 
-	private final Collection cels = new ArrayList();
+	private final Collection<ConnectionEventListener> cels = new ArrayList<ConnectionEventListener>();
 	
 	public ManagedConnectionImpl(PasswordCredential credential)
 	throws ResourceException
@@ -135,11 +136,9 @@ public class ManagedConnectionImpl
 		if(logger.isDebugEnabled())
 			logger.debug(this.getClass().getName()+": associateConnection(...)");
 		if (!(c instanceof JFireServerManagerImpl)) 
-		{
 			throw new ResourceException("Wrong Connection type! Expected \""+JFireServerManagerImpl.class.getName()+"\" Found \""+(c==null?"null":c.getClass().getName())+"\"");
-		}
 		((JFireServerManagerImpl)c).setManagedConnection(this);
-		handles.add(0, c);
+		handles.add(0, (JFireServerManagerImpl)c);
 	}
 
 	/**
@@ -192,7 +191,7 @@ public class ManagedConnectionImpl
 //			throw new ResourceException("wrong subject");
 //		}
 
-		Object o = new JFireServerManagerImpl(getManagedConnectionFactory(), this);
+		JFireServerManagerImpl o = new JFireServerManagerImpl(this);
 		handles.add(0, o);
 		return o;
 	}
@@ -243,10 +242,10 @@ public class ManagedConnectionImpl
 	{
 		ConnectionEvent ce = new ConnectionEvent(this, ConnectionEvent.CONNECTION_CLOSED, null);
 		ce.setConnectionHandle(handle);
-		Collection localCels = null;
+		Collection<ConnectionEventListener> localCels = null;
 		synchronized (cels)
 		{
-			localCels = new ArrayList(cels);
+			localCels = new ArrayList<ConnectionEventListener>(cels);
 		}
 
 		for (Iterator i = localCels.iterator(); i.hasNext(); )
@@ -262,10 +261,10 @@ public class ManagedConnectionImpl
 	{
 		ConnectionEvent ce = new ConnectionEvent(this, ConnectionEvent.LOCAL_TRANSACTION_STARTED, null);
 		ce.setConnectionHandle(handle);
-		Collection localCels = null;
+		Collection<ConnectionEventListener> localCels = null;
 		synchronized (cels)
 		{
-			localCels = new ArrayList(cels);
+			localCels = new ArrayList<ConnectionEventListener>(cels);
 		}
 
 		for (Iterator i = localCels.iterator(); i.hasNext(); )
@@ -279,10 +278,10 @@ public class ManagedConnectionImpl
 	{
 		ConnectionEvent ce = new ConnectionEvent(this, ConnectionEvent.LOCAL_TRANSACTION_COMMITTED, null);
 		ce.setConnectionHandle(handle);
-		Collection localCels = null;
+		Collection<ConnectionEventListener> localCels = null;
 		synchronized (cels)
 		{
-			localCels = new ArrayList(cels);
+			localCels = new ArrayList<ConnectionEventListener>(cels);
 		}
 		for (Iterator i = localCels.iterator(); i.hasNext(); )
 		{
@@ -295,10 +294,10 @@ public class ManagedConnectionImpl
 	{
 		ConnectionEvent ce = new ConnectionEvent(this, ConnectionEvent.LOCAL_TRANSACTION_ROLLEDBACK, null);
 		ce.setConnectionHandle(handle);
-		Collection localCels = null;
+		Collection<ConnectionEventListener> localCels = null;
 		synchronized (cels)
 		{
-			localCels = new ArrayList(cels);
+			localCels = new ArrayList<ConnectionEventListener>(cels);
 		}
 
 		for (Iterator i = localCels.iterator(); i.hasNext(); )

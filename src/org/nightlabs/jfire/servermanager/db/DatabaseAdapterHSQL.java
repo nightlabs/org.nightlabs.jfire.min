@@ -32,6 +32,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import org.nightlabs.annotation.Implement;
+import org.nightlabs.jfire.servermanager.config.DatabaseCf;
 import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
 
 
@@ -46,7 +47,7 @@ extends AbstractDatabaseAdapter
 	throws DatabaseException
 	{
 		try {
-			JFireServerConfigModule.Database dbCf = jfireServerConfigModule.getDatabase();
+			DatabaseCf dbCf = jfireServerConfigModule.getDatabase();
 			Connection sqlConn = DriverManager.getConnection(
 					dbCf.getDatabaseURL("test"),
 					dbCf.getDatabaseUserName(),
@@ -68,7 +69,7 @@ extends AbstractDatabaseAdapter
 	{
 //		Logger logger = Logger.getLogger(DatabaseAdapterHSQL.class);
 
-		JFireServerConfigModule.Database dbCf = jfireServerConfigModule.getDatabase();
+		DatabaseCf dbCf = jfireServerConfigModule.getDatabase();
 
 		if (!databaseURL.startsWith("jdbc:hsqldb:"))
 			throw new IllegalArgumentException("databaseURL must start with 'jdbc:hsqldb:'!");

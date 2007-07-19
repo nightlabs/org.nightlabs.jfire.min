@@ -28,7 +28,6 @@ package org.nightlabs.jfire.servermanager.xml;
 
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 import javax.jdo.JDOObjectNotFoundException;
@@ -173,21 +172,19 @@ public class RoleDef implements Serializable, Comparable<RoleDef>
 			pm.makePersistent(role);
 		}
 
-		// FIXME: what is this for ?
-		for (Iterator it = getNames().entrySet().iterator(); it.hasNext(); ) {
-			Map.Entry me = (Map.Entry)it.next();
-			String languageID = (String)me.getKey();
-			String name = (String)me.getValue();
+//		for (Iterator it = getNames().entrySet().iterator(); it.hasNext(); ) {
+//			Map.Entry me = (Map.Entry)it.next();
+//			String languageID = (String)me.getKey();
+//			String name = (String)me.getValue();
 //			role.setName(languageID, name);
-		}
+//		}
 		
-		// FIXME: what is this for ?
-		for (Iterator it = getDescriptions().entrySet().iterator(); it.hasNext(); ) {
-			Map.Entry me = (Map.Entry)it.next();
-			String languageID = (String)me.getKey();
-			String description = (String)me.getValue();
+//		for (Iterator it = getDescriptions().entrySet().iterator(); it.hasNext(); ) {
+//			Map.Entry me = (Map.Entry)it.next();
+//			String languageID = (String)me.getKey();
+//			String description = (String)me.getValue();
 //			role.setDescription(languageID, description);
-		}
+//		}
 
 		return role;
 	}

@@ -33,6 +33,7 @@ import java.sql.Statement;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.annotation.Implement;
+import org.nightlabs.jfire.servermanager.config.DatabaseCf;
 import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
 import org.nightlabs.util.IOUtil;
 
@@ -49,7 +50,7 @@ extends AbstractDatabaseAdapter
 	throws DatabaseException
 	{
 		try {
-			JFireServerConfigModule.Database dbCf = jfireServerConfigModule.getDatabase();
+			DatabaseCf dbCf = jfireServerConfigModule.getDatabase();
 			Connection sqlConn = DriverManager.getConnection(
 					dbCf.getDatabaseURL("test")+ ";create=true",
 					dbCf.getDatabaseUserName(),
@@ -71,7 +72,7 @@ extends AbstractDatabaseAdapter
 	{
 		assertOpen();
 		this.databaseURL = databaseURL;
-		JFireServerConfigModule.Database dbCf = jfireServerConfigModule.getDatabase();
+		DatabaseCf dbCf = jfireServerConfigModule.getDatabase();
 
 		if (!databaseURL.startsWith("jdbc:derby:"))
 			throw new IllegalArgumentException("databaseURL must start with 'jdbc:derby:'!");

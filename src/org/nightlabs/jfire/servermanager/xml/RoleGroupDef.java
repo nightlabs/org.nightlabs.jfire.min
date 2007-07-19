@@ -224,7 +224,6 @@ public class RoleGroupDef implements Serializable, Comparable
 		return roles.values();
 	}
 
-	private static List EMPTYLIST = new ArrayList();
 	/**
 	 * If this RoleGroup is the default group, this method will return all
 	 * roles that have not been declared in ejb-rolegroup.xml, but in ejb-jar.xml.
@@ -234,10 +233,11 @@ public class RoleGroupDef implements Serializable, Comparable
 	 *
 	 * @return A Collection with instances of type RoleDef.
 	 */
+	@SuppressWarnings("unchecked")
 	public Collection<RoleDef> getDefaultRoles()
 	{
 		if (!defaultGroup)
-			return EMPTYLIST;
+			return Collections.EMPTY_LIST;
 		
 		return owner.getRolesInDefaultGroup();
 	}

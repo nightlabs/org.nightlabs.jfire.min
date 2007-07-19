@@ -66,6 +66,7 @@ import org.nightlabs.jfire.servermanager.deploy.DeploymentJarItem;
 
 /**
  * @author marco
+ * @author Marc Klinger - marc[at]nightlabs[dot]de
  */
 public class JFireServerManagerImpl
 	implements Connection, JFireServerManager
@@ -75,21 +76,14 @@ public class JFireServerManagerImpl
 	 */
 	private static final Logger logger = Logger.getLogger(JFireServerManagerImpl.class);
 	
-	/**
-	 * TODO: is this field needed?
-	 */
-	private ManagedConnectionFactoryImpl managedConnectionFactoryImpl;
 	private ManagedConnectionImpl managedConnectionImpl;
 	private JFireServerManagerFactoryImpl jfireServerManagerFactoryImpl;
 	
 	private boolean closed = false;
 
-	public JFireServerManagerImpl(
-			ManagedConnectionFactoryImpl _managedConnectionFactoryImpl, 
-			ManagedConnectionImpl _managedConnectionImpl)
+	public JFireServerManagerImpl(ManagedConnectionImpl managedConnectionImpl)
 	{
-		this.managedConnectionFactoryImpl = _managedConnectionFactoryImpl;
-		this.managedConnectionImpl = _managedConnectionImpl;
+		this.managedConnectionImpl = managedConnectionImpl;
 	}
 
 	/**
