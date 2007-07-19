@@ -42,8 +42,15 @@ public class LoginConfigModule extends ConfigModule
 {
 	private static final long serialVersionUID = 3L;
 
+	/**
+	 * Holds the login configurations that have been saved upon request by the user.
+	 */
 	private LinkedList<LoginConfiguration> loginConfigurations;
-	private transient LoginConfiguration currentLoginConfiguration;
+	
+	/**
+	 * Holds the login configuration that is currently used.
+	 */
+	private LoginConfiguration currentLoginConfiguration;
 	
 	/**
 	 * This method indicates whether a call to {@link #persistCurrentConfiguration()} is required
