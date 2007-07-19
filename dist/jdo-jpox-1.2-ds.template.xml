@@ -3,7 +3,7 @@
 	<tx-connection-factory>
 		<jndi-name>${jdoPersistenceManagerFactoryJNDIName_relative}</jndi-name>
 
-		<rar-name>jpox.rar</rar-name>
+		<rar-name>jpox-jca.rar</rar-name>
 		<connection-definition>javax.resource.cci.ConnectionFactory</connection-definition>
 
 <!-- indirect connection via datasource - new (JPOX 1.2) with 2 datasources - noTx for DDL, xa for normal communication -->
