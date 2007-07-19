@@ -26,6 +26,8 @@
 
 package org.nightlabs.jfire.base.login;
 
+import java.util.LinkedList;
+
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
@@ -40,6 +42,8 @@ import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -50,8 +54,13 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
-import org.nightlabs.base.composite.ComboComposite;
+import org.nightlabs.base.composite.NumberSpinnerComposite;
+import org.nightlabs.base.composite.XComboComposite;
+import org.nightlabs.base.composite.XComposite;
+import org.nightlabs.base.composite.XComposite.LayoutDataMode;
+import org.nightlabs.base.composite.XComposite.LayoutMode;
 import org.nightlabs.config.Config;
 import org.nightlabs.config.ConfigException;
 import org.nightlabs.jfire.base.resource.Messages;
@@ -84,7 +93,7 @@ public class LoginDialog extends TitleAreaDialog
 	 */
 	private GridData detailsAreaGridData = null;
 
-	private ComboComposite<LoginConfiguration> recentLoginConfigs;
+	private XComboComposite<LoginConfiguration> recentLoginConfigs;
 	
 	private Text textUserID = null;
 	private Text textPassword = null;
@@ -93,9 +102,11 @@ public class LoginDialog extends TitleAreaDialog
 	private Button checkBoxSaveSettings = null;
 	private Text textInitialContextFactory = null;
 	private Text textWorkstationID = null;
+	private Text textIdentityName = null;
 	
 	private Group loginInfoGroup = null;
 	
+	private NumberSpinnerComposite recentLoginCountSpinner = null;
 
 	private boolean contentCreated = false;
 	
@@ -199,18 +210,18 @@ public class LoginDialog extends TitleAreaDialog
 					LoginConfiguration loginConfig = (LoginConfiguration) element;
 					if (loginConfig.equals(runtimeLoginModule.getCurrentLoginConfiguration())) {
 						if (!runtimeLoginModule.getLoginConfigurations().contains(loginConfig))
-							return "[UNSAVED!] " + loginConfig.toString();
+							return Messages.getString("LoginDialog.currentIdentityMarker"); //$NON-NLS-1$
 					}
-
 					return loginConfig.toString();					
 				} else
-					return "";
+					return ""; //$NON-NLS-1$
 			}
 		};
 		
 		Label labelRecentLoginConfigs = new Label(mainArea, SWT.NONE);
-		labelRecentLoginConfigs.setText("Recent Logins: ");
-		recentLoginConfigs = new ComboComposite<LoginConfiguration>(mainArea, SWT.READ_ONLY, loginConfigLabelProv);		
+		labelRecentLoginConfigs.setText(Messages.getString("LoginDialog.recentLoginsComboLabel")); //$NON-NLS-1$
+		recentLoginConfigs = new XComboComposite<LoginConfiguration>(mainArea, SWT.READ_ONLY);
+		recentLoginConfigs.setLabelProvider(loginConfigLabelProv);		
 		recentLoginConfigs.addSelectionChangedListener(new ISelectionChangedListener() {
 			public void selectionChanged(SelectionChangedEvent event) {
 				updateTextFieldsWithLoginConfiguration(recentLoginConfigs.getSelectedElement());
@@ -262,7 +273,6 @@ public class LoginDialog extends TitleAreaDialog
 		textServerURL = new Text(detailsArea, SWT.BORDER);
 		Label labelInitialContextFactory = new Label(detailsArea, SWT.NONE);
 		textInitialContextFactory = new Text(detailsArea, SWT.BORDER);
-		checkBoxSaveSettings = new Button(detailsArea, SWT.CHECK);
 
 		detailsArea.setLayout(gridLayoutExpand);
 		gridLayoutExpand.numColumns = 2;
@@ -276,13 +286,35 @@ public class LoginDialog extends TitleAreaDialog
 		labelServerURL.setText(Messages.getString("login.LoginDialog.labelserverURL")); //$NON-NLS-1$
 		textServerURL.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		
-		checkBoxSaveSettings.setText(Messages.getString("login.LoginDialog.labelsaveSettings")); //$NON-NLS-1$
-		GridData checkBoxGridData = new GridData(GridData.FILL_HORIZONTAL);
-		checkBoxGridData.horizontalSpan = 2;
-		checkBoxSaveSettings.setLayoutData(checkBoxGridData);
-		
 		labelInitialContextFactory.setText(Messages.getString("login.LoginDialog.labelinitialContext")); //$NON-NLS-1$
 		textInitialContextFactory.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		
+		GridData spanHorizontalGD = new GridData(GridData.FILL_HORIZONTAL);
+		spanHorizontalGD.horizontalSpan = 2;
+
+		new Label(detailsArea, SWT.SEPARATOR | SWT.HORIZONTAL).setLayoutData(spanHorizontalGD);
+//		checkBoxSaveSettings.setLayoutData(spanHorizontalGD);
+		
+		checkBoxSaveSettings = new Button(detailsArea, SWT.CHECK);
+		checkBoxSaveSettings.setSelection(false);
+		checkBoxSaveSettings.setText(Messages.getString("login.LoginDialog.labelsaveSettings")); //$NON-NLS-1$
+		checkBoxSaveSettings.addSelectionListener(new SelectionListener() {
+			public void widgetDefaultSelected(SelectionEvent e) {
+			}
+
+			public void widgetSelected(SelectionEvent e) {
+				textIdentityName.setEnabled(checkBoxSaveSettings.getSelection());
+			}
+		});
+		
+		XComposite wrapper = new XComposite(detailsArea, SWT.READ_ONLY, LayoutMode.LEFT_RIGHT_WRAPPER, LayoutDataMode.GRID_DATA_HORIZONTAL, 2);
+		new Label(wrapper, SWT.NONE).setText(Messages.getString("LoginDialog.identityNameTextLabel")); //$NON-NLS-1$
+		textIdentityName = new Text(wrapper, SWT.BORDER);
+		textIdentityName.setEnabled(false);
+		textIdentityName.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+						
+		new Label(detailsArea, SWT.NONE).setText(Messages.getString("LoginDialog.recentLoginCountLabel")); //$NON-NLS-1$
+		recentLoginCountSpinner = new NumberSpinnerComposite(detailsArea, SWT.NONE, SWT.BORDER, 0, 1, 20, 1, LayoutMode.TIGHT_WRAPPER, LayoutDataMode.NONE);		
 		
 		detailsAreaGridData.heightHint = 0;
 		
@@ -302,30 +334,26 @@ public class LoginDialog extends TitleAreaDialog
 	
 	private void initializeWidgetValues()
 	{
-		recentLoginConfigs.setInput(runtimeLoginModule.getLoginConfigurations());
-		// TODO shouldn't we better use the current one for initialisation? Marco.
-//		LoginConfiguration loginConfigurationForInit = runtimeLoginModule.getLastLoginConfiguration();
-		LoginConfiguration loginConfigurationForInit = runtimeLoginModule.getCurrentLoginConfiguration();
-		if (loginConfigurationForInit != null) {
-			if (!recentLoginConfigs.contains(loginConfigurationForInit)) {
-				recentLoginConfigs.addElement(0, loginConfigurationForInit);
-			}
-
-			recentLoginConfigs.setSelection(loginConfigurationForInit);
-			updateTextFieldsWithLoginConfiguration(loginConfigurationForInit);
+		LinkedList<LoginConfiguration> loginConfigurations = new LinkedList<LoginConfiguration>(runtimeLoginModule.getLoginConfigurations());		
+		LoginConfiguration currentLoginConfiguration = runtimeLoginModule.getCurrentLoginConfiguration();
+		
+		if (!loginConfigurations.contains(runtimeLoginModule.getCurrentLoginConfiguration()))
+			loginConfigurations.addFirst(runtimeLoginModule.getCurrentLoginConfiguration());
+		
+		recentLoginConfigs.setInput(loginConfigurations);
+		
+		if (currentLoginConfiguration != null) {
+			recentLoginConfigs.setSelection(currentLoginConfiguration);
+			updateTextFieldsWithLoginConfiguration(currentLoginConfiguration);
 		} else {
 			LoginConfiguration loginConfiguration = new LoginConfiguration();
 			loginConfiguration.init();
 			updateTextFieldsWithLoginConfiguration(loginConfiguration);
 		}
-			
 		
-//		textUserID.setText(runtimeLoginModule.getUserID());
-//		textOrganisationID.setText(runtimeLoginModule.getOrganisationID());
-//		textServerURL.setText(runtimeLoginModule.getServerURL());
-//		textInitialContextFactory.setText(runtimeLoginModule.getInitialContextFactory());
-//		textWorkstationID.setText(runtimeLoginModule.getWorkstationID());
+		recentLoginCountSpinner.setValue(runtimeLoginModule.getMaxLoginConfigurations());
 	}
+	
 	
 	private void setSmartFocus()
 	{
@@ -359,7 +387,9 @@ public class LoginDialog extends TitleAreaDialog
 		);
 		
 		runtimeLoginModule.setCurrentLoginConfiguration(textUserID.getText(), textWorkstationID.getText(), textOrganisationID.getText(),
-				textServerURL.getText(), textInitialContextFactory.getText(), null);
+				textServerURL.getText(), textInitialContextFactory.getText(), null, textIdentityName.getText());
+		
+		runtimeLoginModule.setMaxLoginConfigurations(recentLoginCountSpinner.getValue().intValue());
 	}
 
 	/* (non-Javadoc)

@@ -2,15 +2,17 @@ package org.nightlabs.jfire.base.login;
 
 import java.io.Serializable;
 
+import org.nightlabs.config.Initializable;
+
 /**
  * This class holds a single login configuration without the password. It is intended to be used in {@link LoginConfigModule} to
  * be able to store multiple login identities to let the user select the one to be used for the next login.
  * 
  * @author Tobias Langner <!-- tobias[dot]langner[at]nightlabs[dot]de -->
  */
-public class LoginConfiguration implements Serializable {
+public class LoginConfiguration implements Serializable, Initializable {
 
-	private static final long serialVersionUID = 2L;
+	private static final long serialVersionUID = 4L;
 
 	private String userID = null;
 	private String workstationID;
@@ -19,9 +21,11 @@ public class LoginConfiguration implements Serializable {
 	private String initialContextFactory = null;
 	private String securityProtocol = null;
 	private boolean automaticUpdate = false;
+	
+	private String configurationName = null;
 
 	public LoginConfiguration() {
-		this(null, null, null, null, null, null);
+		this(null, null, null, null, null, null, null);
 	}
 
 	/**
@@ -37,7 +41,7 @@ public class LoginConfiguration implements Serializable {
 	 * @param securityConfigurationEntries
 	 */
 	public LoginConfiguration(String userID, String workstationID, String organisationID, String serverURL, String initialContextFactory,
-			String securityProtocol)
+			String securityProtocol, String configurationName)
 	{
 		this.userID = userID;
 		this.workstationID = workstationID;
@@ -45,6 +49,7 @@ public class LoginConfiguration implements Serializable {
 		this.serverURL = serverURL;
 		this.initialContextFactory = initialContextFactory;
 		this.securityProtocol = securityProtocol;
+		this.configurationName = configurationName;
 	}
 
 	/**
@@ -69,17 +74,6 @@ public class LoginConfiguration implements Serializable {
 		if(serverURL == null)
 			serverURL = "jnp://localhost:1099"; //$NON-NLS-1$
 	}
-
-//	public void copyFrom(LoginConfiguration source) {
-//	this.userID = source.userID;
-//	this.workstationID = source.workstationID;
-//	this.organisationID = source.organisationID;
-//	this.serverURL = source.serverURL;
-//	this.initialContextFactory = source.initialContextFactory;
-//	this.securityProtocol = source.securityProtocol;
-//	this.securityConfigurationEntries = new LinkedList(source.securityConfigurationEntries);
-//	this.automaticUpdate = source.automaticUpdate;
-//	}
 
 	public boolean isAutomaticUpdate() {
 		return automaticUpdate;
@@ -136,10 +130,40 @@ public class LoginConfiguration implements Serializable {
 	public void setWorkstationID(String workstationID) {
 		this.workstationID = workstationID;
 	}
+	
+	public String getConfigurationName() {
+		return configurationName;
+	}
+	
+	public void setConfigurationName(String configurationName) {
+		this.configurationName = configurationName;
+	}
 
 	@Override
 	public String toString() {
-		return userID + "@" + organisationID + " (" + workstationID + ") (" + serverURL + ")";
+		if (configurationName == null || "".equals(configurationName))
+			return userID + "@" + organisationID + " (" + workstationID + ") (" + serverURL + ")";
+		else
+			return configurationName;
+	}
+	
+	public String toShortString() {
+		if (configurationName == null || "".equals(configurationName))
+			return configurationName;
+		
+		String _serverURL = serverURL.substring(serverURL.indexOf("://")+3);
+		return shorten(userID, 8) +	"@" + shorten(organisationID, 8) + " (" + shorten(workstationID, 8) + ") (" + shorten(_serverURL, 10) + ")";
+	}
+	
+	public String shorten(String target, int count) {
+		if (target.length() <= count)
+			return target;
+		
+		int tailCount = count/2;
+		int headCount = count - tailCount;
+		String front = target.substring(0, headCount);
+		String tail = target.substring(target.length()-tailCount);
+		return front + ".." + tail;
 	}
 
 	@Override

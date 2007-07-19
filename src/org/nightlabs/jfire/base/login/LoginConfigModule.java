@@ -32,6 +32,10 @@ import org.nightlabs.config.ConfigModule;
 import org.nightlabs.config.InitException;
 
 /**
+ * This class holds all user specific data relevant for login in into JFIre. It holds a list of
+ * {@link LoginConfiguration}s that may be presented to the user upon login to reuse. 
+ * 
+ * @author Tobias Langner <!-- tobias[dot]langner[at]nightlabs[dot]de -->
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  */
 public class LoginConfigModule extends ConfigModule 
@@ -46,27 +50,8 @@ public class LoginConfigModule extends ConfigModule
 	 * to add the currentLoginConfiguration to the list of persistent LoginConfigurations
 	 */
 	private static final boolean MANUAL_PERSISTING = true;
-
-//	private String organisationID = null;
-//	private String serverURL = null;
-//	private String initialContextFactory = null;
-//	private String securityProtocol = null;
-////	private String loginModuleName = null;
-//	private String userID = null;
-//
-//	private String workstationID;
-//	private boolean automaticUpdate;
-//
-//	private ArrayList securityConfigurations = null;
-
 	private int maxLoginConfigurations = 5;
 	
-	public LoginConfigModule() {
-//		currentLoginConfiguration = new LoginConfiguration();
-//		loginConfigurations = new LinkedList<LoginConfiguration>();
-		// this initialisation should not be done here, but in init! Marco.
-	}
-
 	public void init() throws InitException {
 		super.init();
 
@@ -81,43 +66,12 @@ public class LoginConfigModule extends ConfigModule
 
 		for (LoginConfiguration loginConfiguration : loginConfigurations)
 			loginConfiguration.init();
-
-//		loginConfigurations = new LinkedList<LoginConfiguration>();
-		
-		
-
-//		if(workstationID == null)
-//			workstationID = ""; //$NON-NLS-1$
-//
-//		if (organisationID == null)
-//			organisationID = ""; //$NON-NLS-1$
-//
-//		if (userID == null)
-//			userID = ""; //$NON-NLS-1$
-//
-//		// default values
-//		if(initialContextFactory == null)
-//			initialContextFactory = "org.jboss.security.jndi.LoginInitialContextFactory"; //$NON-NLS-1$
-//		if (securityProtocol == null || "".equals(securityProtocol)) //$NON-NLS-1$
-//			securityProtocol = "jfire"; //$NON-NLS-1$
-//		if(serverURL == null)
-//			serverURL = "jnp://localhost:1099"; //$NON-NLS-1$
-//
-//		if (securityConfigurations == null) {
-//			securityConfigurations = new ArrayList();
-//			securityConfigurations.add(
-//					new JFireSecurityConfigurationEntry(
-//							"jfire", //$NON-NLS-1$
-//							"org.jboss.security.ClientLoginModule"							 //$NON-NLS-1$
-//					)
-//			);
-//		}
 	}
 
 	public void setCurrentLoginConfiguration(String userID, String workstationID, String organisationID, String serverURL, String initialContextFactory,
-			String securityProtocol) {
+			String securityProtocol, String configurationName) {
 		acquireReadLock();
-		currentLoginConfiguration = new LoginConfiguration(userID, workstationID, organisationID, serverURL, initialContextFactory, securityProtocol);
+		currentLoginConfiguration = new LoginConfiguration(userID, workstationID, organisationID, serverURL, initialContextFactory, securityProtocol, configurationName);
 		currentLoginConfiguration.init();
 		if (!MANUAL_PERSISTING)
 			persistCurrentConfiguration();
@@ -125,13 +79,18 @@ public class LoginConfigModule extends ConfigModule
 	}
 
 	public void persistCurrentConfiguration() {
+		acquireReadLock();
+		
 		loginConfigurations.remove(currentLoginConfiguration);
 		loginConfigurations.addFirst(currentLoginConfiguration);
-		setLoginConfigurations(getLoginConfigurations());
+//		setLoginConfigurations(getLoginConfigurations());
+		setChanged();
+		releaseLock();
 		ensureCapacity();
 	}
 
 	public LinkedList<LoginConfiguration> getLoginConfigurations() {
+//		return new LinkedList<LoginConfiguration>(loginConfigurations);
 		return loginConfigurations;
 	}
 
@@ -150,7 +109,7 @@ public class LoginConfigModule extends ConfigModule
 		ensureCapacity();
 	}
 	
-	public void setCurrentLoginConfiguration(LoginConfiguration currentLoginConfiguration) {
+	private void setCurrentLoginConfiguration(LoginConfiguration currentLoginConfiguration) {
 		this.currentLoginConfiguration = currentLoginConfiguration;
 		setChanged();
 	}
@@ -161,8 +120,10 @@ public class LoginConfigModule extends ConfigModule
 	
 	private void ensureCapacity() {
 		acquireReadLock();
-		while (loginConfigurations.size() > maxLoginConfigurations)
+		
+		while (loginConfigurations.size() > maxLoginConfigurations && !loginConfigurations.isEmpty())
 			loginConfigurations.removeLast();
+		
 		releaseLock();
 	}
 	
@@ -172,81 +133,4 @@ public class LoginConfigModule extends ConfigModule
 		else
 			return loginConfigurations.getFirst();
 	}
-	
-//	public void copyFrom(LoginConfigModule source) {
-//		this.currentLoginConfiguration = source.currentLoginConfiguration;
-//		this.loginConfigurations = new LinkedList<LoginConfiguration>(source.loginConfigurations);
-//		this.maxLoginConfigurations = source.maxLoginConfigurations;
-//		setChanged();
-//	}
-
-//	public String getOrganisationID() {
-//		return organisationID;
-//	}
-//	public void setOrganisationID(String organisationID) {
-//		this.organisationID = organisationID;
-//		setChanged();
-//	}
-//	public String getInitialContextFactory() {
-//		return initialContextFactory;
-//	}
-//	public void setInitialContextFactory(String initialContextFactory) {
-//		this.initialContextFactory = initialContextFactory;
-//		setChanged();
-//	}
-//	public String getServerURL() {
-//		return serverURL;
-//	}
-//	public void setServerURL(String serverURL) {
-//		this.serverURL = serverURL;
-//		setChanged();
-//	}		
-//	public String getSecurityProtocol() {
-//		return securityProtocol;
-//	}
-//	public void setSecurityProtocol(String securityProtocol) {
-//		this.securityProtocol = securityProtocol;
-//		setChanged();
-//	}		
-//	public ArrayList getSecurityConfigurations() {
-//		return securityConfigurations;
-//	}
-//	public void setSecurityConfigurations(ArrayList securityConfigurations) {
-//		this.securityConfigurations = securityConfigurations;
-//		setChanged();
-//	}
-//
-//	public String getUserID() {
-//		return userID;
-//	}
-//	public void setUserID(String userID) {
-//		this.userID = userID;
-//		setChanged();
-//	}
-//
-//
-//	public String getWorkstationID()
-//	{
-//		return workstationID;
-//	}
-//
-//
-//	public void setWorkstationID(String workstationID)
-//	{
-//		this.workstationID = workstationID;
-//		setChanged();
-//	}
-//
-//
-//	public boolean getAutomaticUpdate()
-//	{
-//		return automaticUpdate;
-//	}
-//
-//
-//	public void setAutomaticUpdate(boolean automaticUpdate)
-//	{
-//		this.automaticUpdate = automaticUpdate;
-//		setChanged();
-//	}
 }

@@ -37,6 +37,8 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.ui.PlatformUI;
 import org.nightlabs.base.NLBasePlugin;
+import org.nightlabs.config.Config;
+import org.nightlabs.config.ConfigException;
 import org.nightlabs.jfire.base.JFireBasePlugin;
 import org.nightlabs.jfire.base.resource.Messages;
 import org.nightlabs.rcp.splash.SplashAlreadyTerminatedException;
@@ -100,13 +102,24 @@ public class JFireLoginHandler implements ILoginHandler {
 			}
 
 			if (password != null) {
+//				Marco: shouldn't this be the current one instead?! - imho this is a bug, because the last one can be null here, which isnot checked below!
 				
-//				LoginConfiguration lastConfig = loginConfigModule.getLastLoginConfiguration(); // TODO shouldn't this be the current one instead?! - imho this is a bug, because the last one can be null here, which isnot checked below!
-				LoginConfiguration lastConfig = loginConfigModule.getCurrentLoginConfiguration();
+//				LoginConfiguration lastConfig = loginConfigModule.getLastLoginConfiguration();
 				
+//				Tobias: It should be the last one, but of course there should be proper handling in case this one is null. Done that now.
+				
+				LoginConfiguration lastConfig = loginConfigModule.getLastLoginConfiguration();
+				
+				if (lastConfig == null) {
+					lastConfig = new LoginConfiguration();
+					lastConfig.init();
+				}
 				
 //				if (workstationID != null)
 //					loginConfigModule.setWorkstationID(workstationID);
+				
+				if (workstationID == null)
+					workstationID = lastConfig.getWorkstationID();
 
 				if (userID == null)
 					userID = lastConfig.getUserID();
@@ -127,6 +140,8 @@ public class JFireLoginHandler implements ILoginHandler {
 					serverURL = lastConfig.getServerURL();
 //				else
 //					loginConfigModule.setServerURL(serverURL);
+				
+				loginConfigModule.setCurrentLoginConfiguration(userID, workstationID, organisationID, serverURL, initialContextFactory, null, null);				
 
 				// perform a test login
 				loginContext.setCredentials(userID, organisationID, password);
@@ -135,6 +150,8 @@ public class JFireLoginHandler implements ILoginHandler {
 					BeanUtils.copyProperties(loginResult, res);
 					return;
 				}
+				else if (res.isWasAuthenticationErr())
+					throw new LoginException("Authentication error");
 				else if (res.getException() != null)
 					throw res.getException();
 				else if ((res.getMessage() != null))
@@ -236,12 +253,32 @@ public class JFireLoginHandler implements ILoginHandler {
 				loginResult.setWorkOffline(true);
 				break;
 			}
-			loginPanel.assignLoginValues();
+			
+			boolean saveConfig = loginPanel.assignLoginValues();
+			
 			SplashScreen.setSplashMessage(Messages.getString("login.JFireLoginHandler.tryToLogin")); //$NON-NLS-1$
 			Login.AsyncLoginResult testResult = Login.testLogin(loginContext);
 			testResult.copyValuesTo(loginResult);
 			loggedIn = testResult.isSuccess();
 			if (loggedIn) {
+				LoginConfigModule persistentLoginModule;
+				try {
+					persistentLoginModule = ((LoginConfigModule)Config.sharedInstance().createConfigModule(LoginConfigModule.class));
+				} catch (ConfigException e) {
+					throw new RuntimeException(e);
+				}
+				
+				if (saveConfig) {
+					try {
+						loginConfigModule.persistCurrentConfiguration();
+						
+						BeanUtils.copyProperties(persistentLoginModule, loginConfigModule);
+						persistentLoginModule.setChanged();
+					} catch (Exception e) {
+						logger.error("Saving config failed!", e); //$NON-NLS-1$
+					}
+				}
+				
 				SplashScreen.setSplashMessage(Messages.getString("login.JFireLoginHandler.loginSuccessful")); //$NON-NLS-1$
 				break;
 			}

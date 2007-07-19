@@ -26,12 +26,22 @@
 
 package org.nightlabs.jfire.base.login;
 
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -40,9 +50,7 @@ import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.SpringLayout;
 
-import org.apache.commons.beanutils.BeanUtils;
 import org.apache.log4j.Logger;
-
 import org.nightlabs.config.Config;
 import org.nightlabs.config.ConfigException;
 import org.nightlabs.jfire.base.resource.Messages;
@@ -98,6 +106,10 @@ public class SplashLoginPanel extends JPanel
 	private JToggleButton buttonShowDetails;
 
 	private JPanel southPanel;
+	
+	private JLabel labelRecentLogins;
+	private JComboBox comboRecentLogins;
+	private Map<String, LoginConfiguration> loginConfigMap;
 
 	private LoginConfigModule persistentLoginModule;
 
@@ -117,8 +129,10 @@ public class SplashLoginPanel extends JPanel
 		this.setLayout(new BorderLayout());
 		
 		LoginConfiguration lastLoginConfiguration = persistentLoginModule.getLastLoginConfiguration();
-		if (lastLoginConfiguration == null)
+		if (lastLoginConfiguration == null) {
 			lastLoginConfiguration = new LoginConfiguration();
+			lastLoginConfiguration.init();
+		}
 
 		fieldWrapperPanel = new JPanel();
 		fieldWrapperPanel.setOpaque(false);
@@ -137,12 +151,33 @@ public class SplashLoginPanel extends JPanel
 		fieldWrapperPanel.add(messagePanel, BorderLayout.NORTH);
 
 		fieldWrapperPanel.add(editPanel, BorderLayout.SOUTH);
+		
+		loginConfigMap = new HashMap<String, LoginConfiguration>();		
+		String[] loginConfigNames = new String[loginConfigModule.getLoginConfigurations().size()];
+		int i = 0;
+		for (LoginConfiguration config : loginConfigModule.getLoginConfigurations()) {
+			loginConfigMap.put(config.toShortString(), config);
+			loginConfigNames[i++] = config.toShortString();
+		}
+		labelRecentLogins = new JLabel(Messages.getString("SplashLoginPanel.recentLoginsComboLabel"), JLabel.LEADING); //$NON-NLS-1$
+		editPanel.add(labelRecentLogins);
+		comboRecentLogins = new JComboBox(loginConfigNames);
+		comboRecentLogins.addItemListener(new ItemListener() {
+			public void itemStateChanged(ItemEvent e) {
+				String selectedConfigName = (String) comboRecentLogins.getSelectedItem();
+				if (selectedConfigName == null)
+					return;
+				fillGUI(loginConfigMap.get(selectedConfigName));
+			}
+		});
+		comboRecentLogins.setEditable(false);
+		editPanel.add(comboRecentLogins);
 
 		labelUsername = new JLabel(Messages.getString("login.SplashLoginPanel.username"), JLabel.LEADING); //$NON-NLS-1$
 		editPanel.add(labelUsername);
 		textUsername = new JTextField(15);
 		labelUsername.setLabelFor(textUsername);
-		textUsername.setText(lastLoginConfiguration.getUserID());
+		
 		editPanel.add(textUsername);
 
 		labelPassword = new JLabel(Messages.getString("login.SplashLoginPanel.password"), JLabel.LEADING); //$NON-NLS-1$
@@ -157,12 +192,11 @@ public class SplashLoginPanel extends JPanel
 		editPanel.add(labelWorkstation);
 		textWorkstation = new JTextField(15);
 		labelWorkstation.setLabelFor(textWorkstation);
-		textWorkstation.setText(lastLoginConfiguration.getWorkstationID());
 		editPanel.add(textWorkstation);
 
 		SpringUtilities.makeCompactGrid(
 				editPanel,
-				3, 2,
+				4, 2,
 				10, 20,
 				10, 10
 		);				
@@ -179,28 +213,25 @@ public class SplashLoginPanel extends JPanel
 		detailPanel.add(labelOrganisationID);
 		textOrganisationID = new JTextField(15);
 		labelOrganisationID.setLabelFor(textOrganisationID);
-		textOrganisationID.setText(lastLoginConfiguration.getOrganisationID());
+		
 		detailPanel.add(textOrganisationID);
 
 		labelSecurityProtocol = new JLabel(Messages.getString("login.SplashLoginPanel.securityProtocol"), JLabel.LEADING); //$NON-NLS-1$
 //		detailPanel.add(labelSecurityProtocol);
 		textSecurityProtocol = new JTextField(15);
 		labelSecurityProtocol.setLabelFor(textSecurityProtocol);
-		textSecurityProtocol.setText(lastLoginConfiguration.getSecurityProtocol());
 //		detailPanel.add(textSecurityProtocol);
 
 		labelServerURL = new JLabel(Messages.getString("login.SplashLoginPanel.serverURL"), JLabel.LEADING); //$NON-NLS-1$
 		detailPanel.add(labelServerURL);
 		textServerURL = new JTextField(15);
 		labelServerURL.setLabelFor(textServerURL);
-		textServerURL.setText(lastLoginConfiguration.getServerURL());
 		detailPanel.add(textServerURL);
 
 		labelInitialContextFactory = new JLabel(Messages.getString("login.SplashLoginPanel.initialContextFactory"), JLabel.LEADING); //$NON-NLS-1$
 		detailPanel.add(labelInitialContextFactory);		
 		textInitialContextFactory = new JTextField(15);
 		labelInitialContextFactory.setLabelFor(textInitialContextFactory);
-		textInitialContextFactory.setText(lastLoginConfiguration.getInitialContextFactory());
 		detailPanel.add(textInitialContextFactory);
 		SpringUtilities.makeCompactGrid(
 				detailPanel,
@@ -276,15 +307,25 @@ public class SplashLoginPanel extends JPanel
 				SplashScreen.setSplashPanel(SplashLoginPanel.this);
 			}
 		});
-
+		
+		fillGUI(lastLoginConfiguration);
 		setComponentFont(this, this.getFont());
+	}
+	
+	private void fillGUI(LoginConfiguration config) {
+		textUsername.setText(config.getUserID());
+		textWorkstation.setText(config.getWorkstationID());
+		textOrganisationID.setText(config.getOrganisationID());
+		textSecurityProtocol.setText(config.getSecurityProtocol());
+		textServerURL.setText(config.getServerURL());
+		textInitialContextFactory.setText(config.getInitialContextFactory());
 	}
 
 	/**
 	 * Assigns the values in the GUI to the LoginConfigModule
 	 * and JFireLoginContext passed in the constructor.
 	 */
-	public void assignLoginValues() {
+	public boolean assignLoginValues() {
 		
 		String userID = textUsername.getText();
 		String organisationID = textOrganisationID.getText();
@@ -293,29 +334,11 @@ public class SplashLoginPanel extends JPanel
 		String initialContextFactory = textInitialContextFactory.getText();
 		String workstationID = textWorkstation.getText();
 		
-//		loginConfigModule.setUserID(textUsername.getText());
-//		loginConfigModule.setOrganisationID(textOrganisationID.getText());
-//		loginConfigModule.setSecurityProtocol(textSecurityProtocol.getText());
-//		loginConfigModule.setServerURL(textServerURL.getText());
-//		loginConfigModule.setInitialContextFactory(textInitialContextFactory.getText());
-//		loginConfigModule.setWorkstationID(textWorkstation.getText());
-		
-		loginConfigModule.setCurrentLoginConfiguration(userID, workstationID, organisationID, serverURL, initialContextFactory, securityProtocol);
-
-		if (checkBoxSaveSettings.isSelected()) {
-			try {
-				loginConfigModule.persistCurrentConfiguration();
-				
-				BeanUtils.copyProperties(persistentLoginModule, loginConfigModule);
-				persistentLoginModule.setChanged();
-			} catch (Exception e) {
-				logger.error("Saving config failed!", e); //$NON-NLS-1$
-			}
-		}
-		
+		loginConfigModule.setCurrentLoginConfiguration(userID, workstationID, organisationID, serverURL, initialContextFactory, securityProtocol, null);
 		LoginConfiguration loginConfig = loginConfigModule.getCurrentLoginConfiguration();
-
 		loginContext.setCredentials(loginConfig.getUserID(), loginConfig.getOrganisationID(), new String(textPassword.getPassword()));
+		
+		return checkBoxSaveSettings.isSelected();
 	}
 
 	public void setErrMessage(String message) {
