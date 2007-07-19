@@ -12,7 +12,7 @@ import org.nightlabs.jfire.serverconfigurator.ServerConfigurationException;
 import org.nightlabs.jfire.serverconfigurator.ServerConfigurator;
 import org.nightlabs.jfire.servermanager.db.DatabaseAdapter;
 import org.nightlabs.jfire.servermanager.db.DatabaseAlreadyExistsException;
-import org.nightlabs.util.Utils;
+import org.nightlabs.util.IOUtil;
 
 /**
  * This implementation of {@link ServerConfigurator} will modify your JBossMQ
@@ -109,12 +109,12 @@ extends ServerConfiguratorJBoss
 	{
 		// check/modify ${jboss.conf}/login-config.xml and REBOOT if changes occured
 		File destFile = new File(jbossConfDir, "login-config.xml");
-		String text = Utils.readTextFile(destFile);
+		String text = IOUtil.readTextFile(destFile);
 		if (text.indexOf("java:/DefaultDS") >= 0) {
 			setRebootRequired(true); // this is a must, because the conf directory doesn't support redeployment
 			text = text.replaceAll("java:/DefaultDS", "java:/JFireJBossMQDS");
 
-			Utils.writeTextFile(destFile, text);
+			IOUtil.writeTextFile(destFile, text);
 		}
 	}
 
@@ -123,7 +123,7 @@ extends ServerConfiguratorJBoss
 		// modify the timer service - it shouldn't use persistence
 		// ${jboss.deploy}/ejb-deployer.xml
 		File destFile = new File(jbossDeployDir, "ejb-deployer.xml");
-		String text = Utils.readTextFile(destFile);
+		String text = IOUtil.readTextFile(destFile);
 		String modifiedMarker = "!!!ModifiedByJFire!!!";
 		if (text.indexOf(modifiedMarker) < 0) {
 			if (rebootOnDeployDirChanges)
@@ -137,7 +137,7 @@ extends ServerConfiguratorJBoss
 					+ "  <!-- A persistence policy that persistes timers to a database\n"
 					+ "  <mbean code=\"org.jboss.ejb.txtimer.DatabasePersistencePolicy\" name=\"jboss.ejb:service=EJBTimerService,persistencePolicy=database\">\n"
 					+ "    <!- DataSource JNDI name ->\n"
-					+ "    <depends optional-attribute-name=\"DataSource\">jboss.jca:service=DataSourceBinding,name=JFireJBossMQDS</depends>\n"
+					+ "    <depends optional-attribute-name=\"DataSource\"JFire_JBossMQ>jboss.jca:service=DataSourceBinding,name=JFireJBossMQDS</depends>\n"
 					+ "    <!- The plugin that handles database persistence ->\n"
 					+ "    <attribute name=\"DatabasePersistencePlugin\">org.jboss.ejb.txtimer.GeneralPurposeDatabasePersistencePlugin</attribute>\n"
 					+ "  </mbean>\n"
@@ -149,7 +149,7 @@ extends ServerConfiguratorJBoss
 					.compile("<mbean[^<]*?EJBTimerService,persistencePolicy=database(.|\\n)*?</mbean>");
 			text = pattern.matcher(text).replaceAll(replacementText);
 
-			Utils.writeTextFile(destFile, text);
+			IOUtil.writeTextFile(destFile, text);
 		}
 	}
 
@@ -161,7 +161,7 @@ extends ServerConfiguratorJBoss
 			if (rebootOnDeployDirChanges)
 				setRebootRequired(true);
 
-			Utils.copyResource(ServerConfiguratorJBossMySQL.class,
+			IOUtil.copyResource(ServerConfiguratorJBossMySQL.class,
 					"mysql-jdbc2-service.xml.jfire", destFile);
 		}
 	}
@@ -176,7 +176,7 @@ extends ServerConfiguratorJBoss
 			if (rebootOnDeployDirChanges)
 				setRebootRequired(true);
 
-			Utils.copyResource(ServerConfiguratorJBossMySQL.class,
+			IOUtil.copyResource(ServerConfiguratorJBossMySQL.class,
 					"jfire-jbossmq-mysql-jdbc-state-service.xml.jfire", destFile);
 		}
 	}
@@ -254,7 +254,7 @@ extends ServerConfiguratorJBoss
 
 			InputStream in = ServerConfiguratorJBossMySQL.class
 					.getResourceAsStream("mysql-ds.xml.jfire");
-			String text = Utils.readTextFile(in);
+			String text = IOUtil.readTextFile(in);
 			in.close();
 
 			// not very efficient mechanism, but it should work
@@ -267,7 +267,7 @@ extends ServerConfiguratorJBoss
 			text = text.replaceAll("\\{databasePassword\\}",
 					getJFireServerConfigModule().getDatabase().getDatabasePassword());
 
-			Utils.writeTextFile(destFile, text);
+			IOUtil.writeTextFile(destFile, text);
 		}
 	}
 

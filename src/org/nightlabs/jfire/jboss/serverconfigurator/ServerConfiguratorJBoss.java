@@ -16,7 +16,7 @@ import org.nightlabs.jfire.jboss.authentication.JFireServerLoginModule;
 import org.nightlabs.jfire.jboss.cascadedauthentication.CascadedAuthenticationClientInterceptor;
 import org.nightlabs.jfire.serverconfigurator.ServerConfigurationException;
 import org.nightlabs.jfire.serverconfigurator.ServerConfigurator;
-import org.nightlabs.util.Utils;
+import org.nightlabs.util.IOUtil;
 import org.nightlabs.xml.DOMParser;
 import org.nightlabs.xml.NLDOMUtil;
 import org.w3c.dom.Document;
@@ -75,7 +75,7 @@ public class ServerConfiguratorJBoss
 		File backupFile = new File(f.getAbsolutePath()+".bak");
 		if(backupFile.exists())
 			backupFile = getNonExistingFile(f.getAbsolutePath()+".%d.bak");
-		Utils.copyFile(f, backupFile);
+		IOUtil.copyFile(f, backupFile);
 		logger.info("Created backup of file "+f.getAbsolutePath()+": "+backupFile.getName());
 		return backupFile;
 	}
@@ -223,7 +223,7 @@ public class ServerConfiguratorJBoss
 	private void configureJBossServiceXml(File jbossConfDir) throws FileNotFoundException, IOException, SAXException
 	{
 		File destFile = new File(jbossConfDir, "jboss-service.xml");
-		String text = Utils.readTextFile(destFile);
+		String text = IOUtil.readTextFile(destFile);
 		String modificationMarker = "!!!ModifiedByJFire!!!";
 		if (text.indexOf(modificationMarker) >= 0)
 			return;
@@ -336,7 +336,7 @@ public class ServerConfiguratorJBoss
 	private void configureStandardJBossXml(File jbossConfDir) throws FileNotFoundException, IOException
 	{
 		File destFile = new File(jbossConfDir, "standardjboss.xml");
-		String text = Utils.readTextFile(destFile);
+		String text = IOUtil.readTextFile(destFile);
 		if (text.indexOf(CascadedAuthenticationClientInterceptor.class.getName()) < 0) {
 			
 			backup(destFile);
@@ -352,7 +352,7 @@ public class ServerConfiguratorJBoss
 			pattern = Pattern.compile("(<client-interceptors>[^<]*?<home>(.|\\n)*?</home>[^<]*?<bean>)");
 			text = pattern.matcher(text).replaceAll(replacementText);
 
-			Utils.writeTextFile(destFile, text);
+			IOUtil.writeTextFile(destFile, text);
 		}
 	}
 
@@ -365,7 +365,7 @@ public class ServerConfiguratorJBoss
 			return;
 		}
 
-		String text = Utils.readTextFile(destFile);
+		String text = IOUtil.readTextFile(destFile);
 		if (text.indexOf("com.arjuna.ats.jta.allowMultipleLastResources") < 0) {
 			backup(destFile);
 			logger.info("File " + destFile.getAbsolutePath() + " does not contain property \"com.arjuna.ats.jta.allowMultipleLastResources\". Will add it.");
@@ -375,7 +375,7 @@ public class ServerConfiguratorJBoss
 			String replacementText = "$1\n        <property name=\"com.arjuna.ats.jta.allowMultipleLastResources\" value=\"true\"/>";
 			text = pattern.matcher(text).replaceAll(replacementText);
 
-			Utils.writeTextFile(destFile, text);
+			IOUtil.writeTextFile(destFile, text);
 		}
 	}
 
@@ -391,7 +391,7 @@ public class ServerConfiguratorJBoss
 	{
 		File destFile = new File(jbossConfDir, "login-config.xml");
 		String text;
-		text = Utils.readTextFile(destFile);
+		text = IOUtil.readTextFile(destFile);
 		if (text.indexOf("jfireLocal") < 0)
 		{
 			backup(destFile);
@@ -433,7 +433,7 @@ public class ServerConfiguratorJBoss
 
 			text = text.replaceAll("</policy>", replacementText);
 
-			Utils.writeTextFile(destFile, text);
+			IOUtil.writeTextFile(destFile, text);
 		}
 	}
 	
@@ -478,7 +478,7 @@ public class ServerConfiguratorJBoss
 				Pattern.MULTILINE);
 		
 		File destFile = new File(jbossBinDir, "run.conf");
-		String text = Utils.readTextFile(destFile);
+		String text = IOUtil.readTextFile(destFile);
 
 		String newSetting = optsBegin+javaOpts+optsEnd+"\n";
 		Matcher m = oldOpts.matcher(text);
@@ -494,7 +494,7 @@ public class ServerConfiguratorJBoss
 		if(changed) {
 			setRebootRequired(true);
 			backup(destFile);
-			Utils.writeTextFile(destFile, text);
+			IOUtil.writeTextFile(destFile, text);
 		}
 	}
 	
@@ -511,18 +511,18 @@ public class ServerConfiguratorJBoss
 					Pattern.MULTILINE);
 			
 			File destFile = new File(jbossBinDir, "run.bat");
-			text = Utils.readTextFile(destFile);
+			text = IOUtil.readTextFile(destFile);
 
 			String newSetting = optsBegin+javaOpts+optsEnd;
 			Matcher m = oldOpts.matcher(text);
 			boolean changed = false;
 			boolean found = m.find();
 			if(found && !m.group(1).equals(javaOpts)) {
-				System.out.println("change!");
+				logger.debug("Have change in "+destFile.getAbsolutePath());
 				text = m.replaceFirst(Matcher.quoteReplacement(newSetting));
 				changed = true;
 			} else if(!found) {
-				System.out.println("new!");
+				logger.debug("Have new entry in "+destFile.getAbsolutePath());
 				Matcher m2 = lastJavaOpts.matcher(text);
 				text = m2.replaceFirst("$0"+Matcher.quoteReplacement("\r\n"+newSetting+"\r\n"));
 				changed = true;
@@ -530,7 +530,7 @@ public class ServerConfiguratorJBoss
 			if(changed) {
 				setRebootRequired(true);
 				backup(destFile);
-				Utils.writeTextFile(destFile, text);
+				IOUtil.writeTextFile(destFile, text);
 			}
 		} catch (IOException e) {
 			logger.error("Changing the run.bat file failed. Please set the rmi host by changing the file manually or overwrite it with run.bat.jfire if it exists.");
