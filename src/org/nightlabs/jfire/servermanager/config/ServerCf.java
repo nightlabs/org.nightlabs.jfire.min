@@ -38,28 +38,25 @@ import org.nightlabs.jfire.server.id.ServerID;
 /**
  * @author marco
  */
-public class ServerCf
-implements Serializable, Cloneable
-{
+public class ServerCf implements Serializable, Cloneable {
 	/**
 	 * The serial version of this class.
 	 */
 	private static final long serialVersionUID = 1L;
-	
-	public ServerCf() { }
 
-  public ServerCf(String _serverID)
-  {
-  	if (!ObjectIDUtil.isValidIDString(_serverID))
-			throw new IllegalArgumentException("serverID \""+_serverID+"\" is not a valid id!");
-  	this.serverID = _serverID;
-  }
+	public ServerCf() {
+	}
 
-  private String serverID = null;
+	public ServerCf(String _serverID) {
+		if (!ObjectIDUtil.isValidIDString(_serverID))
+			throw new IllegalArgumentException("serverID \"" + _serverID + "\" is not a valid id!");
+		this.serverID = _serverID;
+	}
+
+	private String serverID = null;
 	private String serverName = null;
 	private String j2eeServerType = null;
 	private String initialContextURL = null;
-
 
 	/**
 	 * @return Returns the serverID.
@@ -67,14 +64,16 @@ implements Serializable, Cloneable
 	public String getServerID() {
 		return serverID;
 	}
+
 	/**
 	 * @param serverID The serverID to set.
 	 */
 	public void setServerID(String _serverID) {
 		if (!ObjectIDUtil.isValidIDString(_serverID))
-			throw new IllegalArgumentException("serverID \""+_serverID+"\" is not a valid id!");
+			throw new IllegalArgumentException("serverID \"" + _serverID + "\" is not a valid id!");
 		this.serverID = _serverID;
 	}
+
 	/**
 	 * @return Returns the serverName.
 	 */
@@ -85,8 +84,7 @@ implements Serializable, Cloneable
 	/**
 	 * @param serverName The serverName to set.
 	 */
-	public void setServerName(String _serverName)
-	{
+	public void setServerName(String _serverName) {
 		if (_serverName == null)
 			throw new NullPointerException("serverName must not be null!");
 		if ("".equals(_serverName))
@@ -107,37 +105,36 @@ implements Serializable, Cloneable
 	public void setInitialContextURL(String initialContextURL) {
 		this.initialContextURL = initialContextURL;
 	}
+
 	/**
 	 * @return Returns the j2eeServerType.
 	 */
-	public String getJ2eeServerType()
-	{
+	public String getJ2eeServerType() {
 		return j2eeServerType;
 	}
+
 	/**
 	 * @param serverType The j2eeServerType to set.
 	 */
-	public void setJ2eeServerType(String serverType)
-	{
+	public void setJ2eeServerType(String serverType) {
 		j2eeServerType = serverType;
 	}
 
 	/**
 	 * This method creates a JDO Server object with the given persistenceManager
 	 * in case it does not yet exist.
-	 *
+	 * 
 	 * @param pm The PersistenceManager in which's datastore the Server should be
-	 * 	created.
+	 *          created.
 	 */
-	public Server createServer(PersistenceManager pm)
-	{
+	public Server createServer(PersistenceManager pm) {
 		// Initialize meta data.
 		pm.getExtent(Server.class, true);
 
 		// Fetch/create Server instance.
 		Server server;
 		try {
-			server = (Server)pm.getObjectById(ServerID.create(getServerID()), true);
+			server = (Server) pm.getObjectById(ServerID.create(getServerID()), true);
 		} catch (JDOObjectNotFoundException x) {
 			server = new Server(getServerID());
 			server.setServerName(getServerName());
@@ -148,8 +145,7 @@ implements Serializable, Cloneable
 		return server;
 	}
 
-	public void init()
-	{
+	public void init() {
 		if (serverID == null)
 			serverID = "rename.me." + Long.toHexString(System.currentTimeMillis()) + ".jfire.org";
 
@@ -162,16 +158,15 @@ implements Serializable, Cloneable
 		if (initialContextURL == null)
 			initialContextURL = "jnp://127.0.0.1:1099";
 	}
-	
+
 	/**
 	 * @see java.lang.Object#clone()
 	 */
-	public Object clone()
-	{
+	public Object clone() {
 		ServerCf res = new ServerCf(this.serverID);
 		res.serverName = this.serverName;
 		res.j2eeServerType = this.j2eeServerType;
 		res.initialContextURL = this.initialContextURL;
-		return res; 
+		return res;
 	}
 }

@@ -50,6 +50,7 @@ public class JFireServerConfigModule extends ConfigModule
 	public static final String ORGANISATION_ID_VAR = "${organisationID}";
 
 	private J2eeCf j2ee = null;
+	private SMTPMailServiceCf smtp = null;
 	private JDOCf jdo = null;
 	private DatabaseCf database = null;
 	private RootOrganisationCf rootOrganisation = null;
@@ -70,6 +71,8 @@ public class JFireServerConfigModule extends ConfigModule
 		} // if (rootOrganisation == null) {
 		if (j2ee == null)
 			setJ2ee(new J2eeCf());
+		if (smtp == null)
+			setSmtp(new SMTPMailServiceCf());
 		if (database == null)
 			setDatabase(new DatabaseCf());
 		if (jdo == null)
@@ -168,6 +171,26 @@ public class JFireServerConfigModule extends ConfigModule
 		this.j2ee.setParentConfigModule(this);
 		this.j2ee.init();
 		setChanged();
+	}
+	
+	/**
+	 * Set the smtp.
+	 * @param smtp The Smtp to set
+	 */
+	public void setSmtp(SMTPMailServiceCf smtp)
+	{
+		this.smtp = smtp;
+		this.smtp.setParentConfigModule(this);
+		this.smtp.init();
+		setChanged();
+	}
+	
+	/**
+	 * Get the smtp.
+	 * @return the smtp
+	 */
+	public SMTPMailServiceCf getSmtp() {
+		return smtp;
 	}
 
 	/**

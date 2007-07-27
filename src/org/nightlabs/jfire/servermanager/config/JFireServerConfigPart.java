@@ -1,5 +1,7 @@
 package org.nightlabs.jfire.servermanager.config;
 
+import java.io.Serializable;
+
 import org.nightlabs.config.InitException;
 
 /**
@@ -7,7 +9,7 @@ import org.nightlabs.config.InitException;
  * that are owned by the core config module {@link JFireServerConfigModule}.
  * @author Marc Klinger - marc[at]nightlabs[dot]de
  */
-public abstract class JFireServerConfigPart
+public abstract class JFireServerConfigPart implements Serializable
 {
 	/**
 	 * The parent config module.
