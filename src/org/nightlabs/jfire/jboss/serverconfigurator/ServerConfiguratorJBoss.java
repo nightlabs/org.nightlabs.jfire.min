@@ -16,6 +16,7 @@ import org.nightlabs.jfire.jboss.authentication.JFireServerLoginModule;
 import org.nightlabs.jfire.jboss.cascadedauthentication.CascadedAuthenticationClientInterceptor;
 import org.nightlabs.jfire.serverconfigurator.ServerConfigurationException;
 import org.nightlabs.jfire.serverconfigurator.ServerConfigurator;
+import org.nightlabs.jfire.servermanager.config.SMTPMailServiceCf;
 import org.nightlabs.util.IOUtil;
 import org.nightlabs.xml.DOMParser;
 import org.nightlabs.xml.NLDOMUtil;
@@ -124,6 +125,7 @@ public class ServerConfiguratorJBoss
 
 			configureLoginConfigXml(jbossConfDir);
 			configureStandardJBossXml(jbossConfDir);
+			configureMailServiceXml(jbossDeployDir);
 			configureJBossjtaPropertiesXml(jbossConfDir);
 			configureJBossServiceXml(jbossConfDir);
 			configureCascadedAuthenticationClientInterceptorProperties(jbossBinDir);
@@ -356,6 +358,71 @@ public class ServerConfiguratorJBoss
 		}
 	}
 
+	private void configureMailServiceXml(File jbossDeployDir) throws FileNotFoundException, IOException, SAXException
+	{
+		File destFile = new File(jbossDeployDir, "mail-service.xml");
+		String text = IOUtil.readTextFile(destFile);
+	//	String modificationMarker = "!!!ModifiedByJFire!!!";
+	//	if (text.indexOf(modificationMarker) >= 0)
+	//		return;
+			
+		backup(destFile);
+		logger.info("File " + destFile.getAbsolutePath() + " was not yet updated. Will change SMTP settings.");
+		//  No reboot necessary as JBoss will automaticly notice any changes on the mail-services.xml
+		setRebootRequired(false);
+		
+		DOMParser parser = new DOMParser();
+		parser.parse(new InputSource(new FileInputStream(destFile)));
+		Document document = parser.getDocument();
+		
+		//document.getDocumentElement().appendChild(document.createComment(modificationMarker));
+		
+		SMTPMailServiceCf smtp = getJFireServerConfigModule().getSmtp();
+		Node propertyElement;
+	
+		System.out.println("Password: "+ smtp.getPassword());
+		System.out.println("Username: "+ smtp.getUsername());
+		System.out.println("UsAuthentication: "+ smtp.getUseAuthentication());
+		System.out.println("Host: "+smtp.getHost());
+		System.out.println("Port: "+String.valueOf(smtp.getPort()));
+		System.out.println("From: "+smtp.getMailFrom());
+		System.out.println("Debug: "+String.valueOf(smtp.getDebug()));
+		
+		propertyElement = NLDOMUtil.findNodeByAttribute(document, "server/mbean/attribute", "name", "User");
+		
+		/*
+		}
+		if(propertyElement.getFirstChild() == null) {
+			Node textNode = document.createTextNode(smtp.getUsername());
+			propertyElement.appendChild(textNode);
+		} else propertyElement.getFirstChild().setNodeValue(smtp.getUsername());
+		
+		propertyElement = NLDOMUtil.findNodeByAttribute(document, "server/mbean/attribute", "name", "Password");
+		if(propertyElement.getFirstChild() == null) {
+			Node textNode = document.createTextNode(smtp.getPassword());
+			propertyElement.appendChild(textNode);
+		} else propertyElement.getFirstChild().setNodeValue(smtp.getPassword());
+		*/
+		propertyElement = NLDOMUtil.findNodeByAttribute(document, "server/mbean/attribute/configuration/property", "name", "mail.smtp.host");
+		propertyElement.getAttributes().getNamedItem("value").setNodeValue(smtp.getHost());
+		
+		propertyElement = NLDOMUtil.findNodeByAttribute(document, "server/mbean/attribute/configuration/property", "name", "mail.smtp.port");
+		propertyElement.getAttributes().getNamedItem("value").setNodeValue(String.valueOf(smtp.getPort()));
+		
+		propertyElement = NLDOMUtil.findNodeByAttribute(document, "server/mbean/attribute/configuration/property", "name", "mail.from");
+		propertyElement.getAttributes().getNamedItem("value").setNodeValue(smtp.getMailFrom());
+		
+		propertyElement = NLDOMUtil.findNodeByAttribute(document, "server/mbean/attribute/configuration/property", "name", "mail.debug");
+		propertyElement.getAttributes().getNamedItem("value").setNodeValue(String.valueOf(smtp.getDebug()));
+		
+		FileOutputStream out = new FileOutputStream(destFile);
+		try {
+			NLDOMUtil.writeDocument(document, out, "UTF-8");
+		} finally {
+			out.close();
+		}
+	}
+	
 	private void configureJBossjtaPropertiesXml(File jbossConfDir)
 	throws FileNotFoundException, IOException
 	{
