@@ -147,8 +147,10 @@ public class JFireServerConfigModule extends ConfigModule
 	public void setDatabase(DatabaseCf database)
 	{
 		this.database = database;
-		this.database.setParentConfigModule(this);
-		this.database.init();
+		if(database != null) {
+			this.database.setParentConfigModule(this);
+			this.database.init();
+		}
 		setChanged();
 	}
 
@@ -168,8 +170,10 @@ public class JFireServerConfigModule extends ConfigModule
 	public void setJ2ee(J2eeCf j2ee)
 	{
 		this.j2ee = j2ee;
-		this.j2ee.setParentConfigModule(this);
-		this.j2ee.init();
+		if(j2ee != null) {
+			this.j2ee.setParentConfigModule(this);
+			this.j2ee.init();
+		}
 		setChanged();
 	}
 	
@@ -180,8 +184,10 @@ public class JFireServerConfigModule extends ConfigModule
 	public void setSmtp(SMTPMailServiceCf smtp)
 	{
 		this.smtp = smtp;
-		this.smtp.setParentConfigModule(this);
-		this.smtp.init();
+		if (smtp != null) {
+			this.smtp.setParentConfigModule(this);
+			this.smtp.init();
+		}
 		setChanged();
 	}
 	
@@ -209,8 +215,10 @@ public class JFireServerConfigModule extends ConfigModule
 	public void setJdo(JDOCf jdo)
 	{
 		this.jdo = jdo;
-		this.jdo.setParentConfigModule(this);
-		this.jdo.init();
+		if(jdo != null) {
+			this.jdo.setParentConfigModule(this);
+			this.jdo.init();
+		}
 		setChanged();
 	}
 }
