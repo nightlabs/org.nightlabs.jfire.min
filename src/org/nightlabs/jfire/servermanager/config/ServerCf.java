@@ -48,8 +48,8 @@ public class ServerCf implements Serializable, Cloneable {
 	}
 
 	public ServerCf(String _serverID) {
-		if (!ObjectIDUtil.isValidIDString(_serverID))
-			throw new IllegalArgumentException("serverID \"" + _serverID + "\" is not a valid id!");
+		if (!Server.isValidServerID(_serverID))
+			throw new IllegalArgumentException("serverID \"" + _serverID + "\" is not valid!");
 		this.serverID = _serverID;
 	}
 
@@ -159,14 +159,18 @@ public class ServerCf implements Serializable, Cloneable {
 			initialContextURL = "jnp://127.0.0.1:1099";
 	}
 
-	/**
-	 * @see java.lang.Object#clone()
-	 */
-	public Object clone() {
-		ServerCf res = new ServerCf(this.serverID);
-		res.serverName = this.serverName;
-		res.j2eeServerType = this.j2eeServerType;
-		res.initialContextURL = this.initialContextURL;
-		return res;
+	public Object clone()
+	{
+		try {
+			return super.clone();
+		} catch (CloneNotSupportedException e) {
+			throw new RuntimeException(e); // should never happen since we implement clone()
+		}
+
+//		ServerCf res = new ServerCf(this.serverID);
+//		res.serverName = this.serverName;
+//		res.j2eeServerType = this.j2eeServerType;
+//		res.initialContextURL = this.initialContextURL;
+//		return res;
 	}
 }

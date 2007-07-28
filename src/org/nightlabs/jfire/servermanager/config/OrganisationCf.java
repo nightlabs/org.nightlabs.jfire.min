@@ -307,14 +307,24 @@ public class OrganisationCf
 	 */
 	public Object clone()
 	{
-		OrganisationCf n = new OrganisationCf(
-				this.organisationID,
-				this.organisationName);
-//				this.masterOrganisationID);
-				// this.persistenceManagerFactoryJNDIName);
+		OrganisationCf n;
+		try {
+			n = (OrganisationCf) super.clone();
+		} catch (CloneNotSupportedException e) {
+			throw new RuntimeException(e); // should never happen since we implement clone()
+		}
 
-		if (this.serverAdmins != null)
+		if (this.serverAdmins != null) // deep copy
 			n.serverAdmins = new HashSet<String>(this.serverAdmins);
+
+//		OrganisationCf n = new OrganisationCf(
+//				this.organisationID,
+//				this.organisationName);
+////				this.masterOrganisationID);
+//				// this.persistenceManagerFactoryJNDIName);
+//
+//		if (this.serverAdmins != null)
+//			n.serverAdmins = new HashSet<String>(this.serverAdmins);
 
 		return n;
 	}
