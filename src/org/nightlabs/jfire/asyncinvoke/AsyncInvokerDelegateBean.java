@@ -44,7 +44,7 @@ import org.nightlabs.jfire.base.BaseSessionBeanImpl;
  *           transaction-type="Container"
  *
  * @ejb.interface extends="org.nightlabs.jfire.asyncinvoke.DelegateR" local-extends="org.nightlabs.jfire.asyncinvoke.DelegateL"
- * @!ejb.interface generate="local" // causes the Util class to have compile errors :-(((
+ * @!ejb.interface generate="local" // causes the Util class to have compile errors :-((( ... we now need to execute it pseudo-remotely anyway - otherwise there's a problem with cascaded authentication
  *
  * @ejb.util generate="physical" 
  */
@@ -87,7 +87,8 @@ implements SessionBean
 	/**
 	 * @throws ModuleException
 	 *
-	 * @ejb.interface-method view-type="local"
+	 * @!ejb.interface-method view-type="local"
+	 * @ejb.interface-method
 	 * @ejb.transaction type = "Required"
 	 * @ejb.permission role-name="_Guest_"
 	 */
@@ -105,7 +106,8 @@ implements SessionBean
 	/**
 	 * @throws ModuleException
 	 *
-	 * @ejb.interface-method view-type="local"
+	 * @!ejb.interface-method view-type="local"
+	 * @ejb.interface-method
 	 * @ejb.transaction type = "Required"
 	 * @ejb.permission role-name="_Guest_"
 	 */
@@ -126,7 +128,8 @@ implements SessionBean
 	/**
 	 * @throws ModuleException
 	 *
-	 * @ejb.interface-method view-type="local"
+	 * @!ejb.interface-method view-type="local"
+	 * @ejb.interface-method
 	 * @ejb.transaction type = "Required"
 	 * @ejb.permission role-name="_Guest_"
 	 */
@@ -147,7 +150,8 @@ implements SessionBean
 	/**
 	 * @throws ModuleException
 	 *
-	 * @ejb.interface-method view-type="local"
+	 * @!ejb.interface-method view-type="local"
+	 * @ejb.interface-method
 	 * @ejb.transaction type = "Required"
 	 * @ejb.permission role-name="_Guest_"
 	 */

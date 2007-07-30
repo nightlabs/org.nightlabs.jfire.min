@@ -51,7 +51,7 @@ extends AsyncInvokerBaseBean
 			if (invokerDelegate != null)
 				invokerDelegate.doErrorCallback(envelope, envelope.getError());
 		} catch (Throwable x) {
-			logger.fatal("ErrorCallback failed!", x);
+			logger().fatal("ErrorCallback failed!", x);
 			messageContext.setRollbackOnly();
 		}
 	}

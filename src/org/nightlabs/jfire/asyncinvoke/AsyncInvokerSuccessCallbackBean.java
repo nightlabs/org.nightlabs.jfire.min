@@ -50,7 +50,7 @@ extends AsyncInvokerBaseBean
 		try {
 			invokerDelegate.doSuccessCallback(envelope, envelope.getResult());
 		} catch (Throwable x) {
-			logger.fatal("SuccessCallback failed!", x);
+			logger().fatal("SuccessCallback failed!", x);
 			messageContext.setRollbackOnly();
 		}
 	}

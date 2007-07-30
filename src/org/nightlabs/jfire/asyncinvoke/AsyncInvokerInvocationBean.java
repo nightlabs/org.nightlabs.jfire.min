@@ -54,13 +54,13 @@ extends AsyncInvokerBaseBean
 			envelope.setResult(result);
 			success = true;
 		} catch (Throwable x) {
-			logger.error("Invocation failed!", x);
+			logger().error("Invocation failed!", x);
 			messageContext.setRollbackOnly();
 			try {
 				envelope.setError(x);
 				invokerDelegate.enqueueErrorCallback(envelope);
 			} catch (Throwable x2) {
-				logger.fatal("invokerDelegate.enqueueErrorCallback(...) failed!", x2);
+				logger().fatal("invokerDelegate.enqueueErrorCallback(...) failed!", x2);
 			}
 		}
 
@@ -70,7 +70,7 @@ extends AsyncInvokerBaseBean
 				try {
 					AsyncInvoke.enqueue(AsyncInvoke.QUEUE_SUCCESSCALLBACK, envelope, true);
 				} catch (Throwable x) {
-					logger.fatal("Failed to enqueue in AsyncInvoke.QUEUE_SUCCESSCALLBACK!", x);
+					logger().fatal("Failed to enqueue in AsyncInvoke.QUEUE_SUCCESSCALLBACK!", x);
 					messageContext.setRollbackOnly();
 				}
 			} // if (successCallback != null) {

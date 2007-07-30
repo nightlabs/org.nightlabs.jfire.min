@@ -26,7 +26,6 @@
 
 package org.nightlabs.jfire.asyncinvoke;
 
-import org.nightlabs.jfire.asyncinvoke.AsyncInvokerDelegateLocal;
 
 /**
  * @ejb.bean name="jfire/mdb/JFireBaseBean/AsyncInvokerUndeliverableCallback"
@@ -52,7 +51,7 @@ extends AsyncInvokerBaseBean
 		try {
 			invokerDelegate.doUndeliverableCallback(envelope);
 		} catch (Throwable x) {
-			logger.fatal("UndeliverableCallback failed!", x);
+			logger().fatal("UndeliverableCallback failed!", x);
 			messageContext.setRollbackOnly();
 		}
 	}
