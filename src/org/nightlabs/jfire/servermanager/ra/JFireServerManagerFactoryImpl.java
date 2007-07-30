@@ -121,6 +121,7 @@ import org.nightlabs.jfire.servermanager.config.JDOCf;
 import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
 import org.nightlabs.jfire.servermanager.config.OrganisationCf;
 import org.nightlabs.jfire.servermanager.config.OrganisationConfigModule;
+import org.nightlabs.jfire.servermanager.config.SMTPMailServiceCf;
 import org.nightlabs.jfire.servermanager.config.ServerCf;
 import org.nightlabs.jfire.servermanager.db.DatabaseAdapter;
 import org.nightlabs.jfire.servermanager.deploy.DeployOverwriteBehaviour;
@@ -770,6 +771,18 @@ public class JFireServerManagerFactoryImpl
 				if (cfMod.getLocalServer().getServerID() == null)
 					throw new NullPointerException("localServer.serverID must not be null at first call to this method!");
 			
+			// ensure a reasonable SMTP-Config is set.
+			if (cfMod.getSmtp() == null) {
+				if (orgCfMod.getSmtp() == null) {
+					logger.warn("There are no SMTP settings set! Using fallback values. ", new NullPointerException());
+					SMTPMailServiceCf fallback = new SMTPMailServiceCf();
+					fallback.init();
+					cfMod.setSmtp(fallback);
+				} else {
+					cfMod.setSmtp(orgCfMod.getSmtp());
+				}
+			}
+				
 			try {
 				BeanUtils.copyProperties(orgCfMod, cfMod);
 			} catch (IllegalAccessException e) {
