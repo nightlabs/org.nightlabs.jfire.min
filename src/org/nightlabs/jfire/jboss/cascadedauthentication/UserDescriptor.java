@@ -38,7 +38,7 @@ public class UserDescriptor
 {
 	public static final long serialVersionUID = 1L;
 
-	public static final String CONTEXT_KEY = "IPANEMA_USER_DESCRIPTOR";
+	public static final String CONTEXT_KEY = "JFIRE_USER_DESCRIPTOR";
 
 	protected static Map<Thread, UserDescriptor> userDescriptors = new HashMap<Thread, UserDescriptor>();
 
