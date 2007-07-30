@@ -361,15 +361,15 @@ public class ServerConfiguratorJBoss
 	private void configureMailServiceXml(File jbossDeployDir) throws FileNotFoundException, IOException, SAXException
 	{
 		File destFile = new File(jbossDeployDir, "mail-service.xml");
-		String text = IOUtil.readTextFile(destFile);
+//		String text = IOUtil.readTextFile(destFile);
 	//	String modificationMarker = "!!!ModifiedByJFire!!!";
 	//	if (text.indexOf(modificationMarker) >= 0)
 	//		return;
 			
 		backup(destFile);
 		logger.info("File " + destFile.getAbsolutePath() + " was not yet updated. Will change SMTP settings.");
-		//  No reboot necessary as JBoss will automaticly notice any changes on the mail-services.xml
-		setRebootRequired(false);
+		//  No reboot necessary as JBoss will automatically notice any changes on the mail-services.xml
+//		setRebootRequired(false);
 		
 		DOMParser parser = new DOMParser();
 		parser.parse(new InputSource(new FileInputStream(destFile)));
@@ -380,16 +380,18 @@ public class ServerConfiguratorJBoss
 		SMTPMailServiceCf smtp = getJFireServerConfigModule().getSmtp();
 		Node propertyElement;
 	
-		System.out.println("Password: "+ smtp.getPassword());
-		System.out.println("Username: "+ smtp.getUsername());
-		System.out.println("UsAuthentication: "+ smtp.getUseAuthentication());
-		System.out.println("Host: "+smtp.getHost());
-		System.out.println("Port: "+String.valueOf(smtp.getPort()));
-		System.out.println("From: "+smtp.getMailFrom());
-		System.out.println("Debug: "+String.valueOf(smtp.getDebug()));
+		if (logger.isInfoEnabled()) {
+			logger.info("Password: "+ smtp.getPassword());
+			logger.info("Username: "+ smtp.getUsername());
+			logger.info("UsAuthentication: "+ smtp.getUseAuthentication());
+			logger.info("Host: "+smtp.getHost());
+			logger.info("Port: "+String.valueOf(smtp.getPort()));
+			logger.info("From: "+smtp.getMailFrom());
+			logger.info("Debug: "+String.valueOf(smtp.getDebug()));
+		}
 		
 		propertyElement = NLDOMUtil.findNodeByAttribute(document, "server/mbean/attribute", "name", "User");
-		
+
 		/*
 		}
 		if(propertyElement.getFirstChild() == null) {
