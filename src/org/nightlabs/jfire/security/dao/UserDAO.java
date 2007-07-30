@@ -50,6 +50,7 @@ import org.nightlabs.jfire.security.id.AuthorityID;
 import org.nightlabs.jfire.security.id.RoleGroupID;
 import org.nightlabs.jfire.security.id.UserID;
 import org.nightlabs.progress.ProgressMonitor;
+import org.nightlabs.progress.SubProgressMonitor;
 import org.nightlabs.util.CollectionUtil;
 
 /**
@@ -118,8 +119,7 @@ public class UserDAO extends BaseJDOObjectDAO<UserID, User>
 	public synchronized User getUser(UserID userID, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
 	{
 		monitor.beginTask("Loading user "+userID.userID, 1);
-		User user = getJDOObject(null, userID, fetchGroups, maxFetchDepth, monitor);
-		monitor.worked(1);
+		User user = getJDOObject(null, userID, fetchGroups, maxFetchDepth, new SubProgressMonitor(monitor, 1));
 		monitor.done();
 		return user;
 	}
