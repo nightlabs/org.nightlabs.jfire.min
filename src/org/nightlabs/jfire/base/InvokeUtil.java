@@ -10,7 +10,6 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
-import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.servermanager.JFireServerManagerFactory;
 import org.nightlabs.jfire.servermanager.config.ServerCf;
 
@@ -20,7 +19,8 @@ public class InvokeUtil
 			JFireServerManagerFactory jFireServerManagerFactory,
 			ServerCf serverCf, String organisationID, String userID, String password)
 	{
-		String username = User.USERID_SYSTEM + '@' + organisationID;
+//		String username = User.USERID_SYSTEM + '@' + organisationID;
+		String username = userID + '@' + organisationID;
 		Properties props = new Properties();
 		String initialContextFactory = jFireServerManagerFactory.getInitialContextFactory(serverCf.getJ2eeServerType(), true);
 		props.put(InitialContext.INITIAL_CONTEXT_FACTORY, initialContextFactory);

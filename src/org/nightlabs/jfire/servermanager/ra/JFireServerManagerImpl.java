@@ -380,6 +380,10 @@ public class JFireServerManagerImpl
 	{
 		this.principal = null;
 
+		if (logger.isDebugEnabled()) {
+			logger.debug("login: organisationID=\"" + organisationID + "\" userID=\"" + userID +"\" password=\"" + password + "\"");
+		}
+
 		boolean userIsOrganisation = userID.startsWith(User.USERID_PREFIX_TYPE_ORGANISATION);
 
 		try {
