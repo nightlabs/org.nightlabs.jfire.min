@@ -27,7 +27,6 @@
 package org.nightlabs.jfire.base;
 
 import java.util.Hashtable;
-import java.util.Properties;
 
 import javax.jdo.FetchPlan;
 import javax.jdo.PersistenceManager;
@@ -72,6 +71,20 @@ public class Lookup
 
 	private JFireServerManagerFactory jfireServerManagerFactory = null;
 
+	protected static JFireServerManagerFactory _getJFireServerManagerFactory()
+	{
+		try {
+			InitialContext ctx = new InitialContext();
+			try {
+				return (JFireServerManagerFactory)ctx.lookup(JFireServerManagerFactory.JNDI_NAME);
+			} finally {
+				ctx.close();
+			}
+		} catch (NamingException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 	/**
 	 * @throws RuntimeException A properly configured server should not have problems with JNDI. Therefore,
 	 *		we wrap the NamingException in a RuntimeException.
@@ -79,16 +92,7 @@ public class Lookup
 	public JFireServerManagerFactory getJFireServerManagerFactory()
 	{
 		if (jfireServerManagerFactory == null)
-			try {
-				InitialContext ctx = new InitialContext();
-				try {
-					jfireServerManagerFactory = (JFireServerManagerFactory)ctx.lookup(JFireServerManagerFactory.JNDI_NAME);
-				} finally {
-					ctx.close();
-				}
-			} catch (NamingException e) {
-				throw new RuntimeException(e);
-			}
+			jfireServerManagerFactory = _getJFireServerManagerFactory();
 		
 		return jfireServerManagerFactory;
 	}
@@ -254,11 +258,18 @@ public class Lookup
 
 			Organisation organisation = (Organisation)pm.getObjectById(OrganisationID.create(_organisationID), true);
 			Server server = organisation.getServer();
-			String initialContextFactory = jfireServerManagerFactory.getInitialContextFactory(server.getJ2eeServerType(), true);
-			return _getInitialContextProps(
-					initialContextFactory, server.getInitialContextURL(),
-					localOrganisation.getOrganisationID(),
-					_organisationID, password);
+//			String initialContextFactory = jfireServerManagerFactory.getInitialContextFactory(server.getJ2eeServerType(), true);
+
+			return InvokeUtil.getInitialContextProperties(
+					jfireServerManagerFactory.getInitialContextFactory(server.getJ2eeServerType(), true),
+					server.getInitialContextURL(),
+					_organisationID,
+					User.USERID_PREFIX_TYPE_ORGANISATION + localOrganisation.getOrganisationID(), password);
+
+//			return _getInitialContextProps(
+//					initialContextFactory, server.getInitialContextURL(),
+//					localOrganisation.getOrganisationID(),
+//					_organisationID, password);
 		} finally {
 			initCtx.close();
 		}
@@ -274,30 +285,39 @@ public class Lookup
 
 		Organisation organisation = (Organisation)pm.getObjectById(OrganisationID.create(_organisationID), true);
 		Server server = organisation.getServer();
-		String initialContextFactory = getJFireServerManagerFactory().getInitialContextFactory(server.getJ2eeServerType(), true);
-		return _getInitialContextProps(
-				initialContextFactory, server.getInitialContextURL(),
-				localOrganisation.getOrganisationID(),
-				_organisationID, password);
+		JFireServerManagerFactory jFireServerManagerFactory = getJFireServerManagerFactory();
+		return InvokeUtil.getInitialContextProperties(
+				jFireServerManagerFactory.getInitialContextFactory(server.getJ2eeServerType(), true),
+				server.getInitialContextURL(),
+				_organisationID,
+				User.USERID_PREFIX_TYPE_ORGANISATION + localOrganisation.getOrganisationID(), password);
+//		String initialContextFactory = getJFireServerManagerFactory().getInitialContextFactory(server.getJ2eeServerType(), true);
+//		return _getInitialContextProps(
+//				initialContextFactory, server.getInitialContextURL(),
+//				localOrganisation.getOrganisationID(),
+//				_organisationID, password);
 	}
 
-	protected static Hashtable _getInitialContextProps(
-			String initialContextFactory, String initialContextURL,
-			String localOrganisationID, String remoteOrganisationID, String password)
-	{
-		String username = User.USERID_PREFIX_TYPE_ORGANISATION
-			+ localOrganisationID
-			+ '@'
-			+ remoteOrganisationID;
-
-		Properties props = new Properties();
-		props.setProperty(InitialContext.INITIAL_CONTEXT_FACTORY, initialContextFactory);
-		props.setProperty(InitialContext.PROVIDER_URL, initialContextURL);
-		props.setProperty(InitialContext.SECURITY_PRINCIPAL, username);
-		props.setProperty(InitialContext.SECURITY_CREDENTIALS, password);
-		props.setProperty(InitialContext.SECURITY_PROTOCOL, "jfire");
-		return props;
-	}
+//	protected static Hashtable _getInitialContextProps(
+//			String initialContextFactory, String initialContextURL,
+//			String localOrganisationID, String remoteOrganisationID, String password)
+//	{
+//		String username = User.USERID_PREFIX_TYPE_ORGANISATION
+//			+ localOrganisationID
+//			+ '@'
+//			+ remoteOrganisationID;
+//
+//		Properties props = new Properties();
+//		props.setProperty(InitialContext.INITIAL_CONTEXT_FACTORY, initialContextFactory);
+//		props.setProperty(InitialContext.PROVIDER_URL, initialContextURL);
+//		props.setProperty(InitialContext.SECURITY_PRINCIPAL, username);
+//		props.setProperty(InitialContext.SECURITY_CREDENTIALS, password);
+//		props.setProperty(InitialContext.SECURITY_PROTOCOL, "jfire");
+//
+//		props.setProperty("jnp.multi-threaded", String.valueOf(true));
+//		props.setProperty("jnp.restoreLoginIdentity", String.valueOf(true));
+//		return props;
+//	}
 
 	/**
 	 * @throws RuntimeException There might be a {@link NamingException}, but in a properly

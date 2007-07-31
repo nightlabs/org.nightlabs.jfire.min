@@ -771,7 +771,7 @@ public class JFireServerManagerFactoryImpl
 				if (cfMod.getLocalServer().getServerID() == null)
 					throw new NullPointerException("localServer.serverID must not be null at first call to this method!");
 			
-			// ensure a reasonable SMTP-Config is set.
+			// ensure a reasonable SMTP-Config is set. // TODO shouldn't this code better be in the init method of the JFireServerConfigModule?! IMHO that's wrong here. Marco.
 			if (cfMod.getSmtp() == null) {
 				if (orgCfMod.getSmtp() == null) {
 					logger.warn("There are no SMTP settings set! Using fallback values. ", new NullPointerException());
