@@ -27,11 +27,14 @@
 package org.nightlabs.jfire.organisation;
 
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -53,12 +56,10 @@ import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.base.JFireException;
 import org.nightlabs.jfire.base.JFirePrincipal;
 import org.nightlabs.jfire.base.JFireRemoteException;
+import org.nightlabs.jfire.base.Lookup;
 import org.nightlabs.jfire.organisation.id.OrganisationID;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.security.UserLocal;
-import org.nightlabs.jfire.security.UserManager;
-import org.nightlabs.jfire.security.UserManagerHome;
-import org.nightlabs.jfire.security.UserManagerUtil;
 import org.nightlabs.jfire.security.id.UserID;
 import org.nightlabs.jfire.server.Server;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
@@ -67,7 +68,9 @@ import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
 import org.nightlabs.jfire.servermanager.config.OrganisationCf;
 import org.nightlabs.jfire.servermanager.config.RootOrganisationCf;
 import org.nightlabs.jfire.servermanager.config.ServerCf;
+import org.nightlabs.jfire.test.cascadedauthentication.TestRequestResultTreeNode;
 import org.nightlabs.math.Base62Coder;
+import org.nightlabs.util.Util;
 
 /**
  * @author Niklas Schiffler - nick at nightlabs dot de
@@ -647,66 +650,147 @@ public abstract class OrganisationManagerBean
 		}
 	}
 	
+//	/**
+//	 * @ejb.interface-method
+//	 * @ejb.transaction type="Required"
+//	 * @ejb.permission role-name="_Guest_"
+//	 **/
+//	public void testBackhand(String[] organisationIDs)
+//	throws ModuleException
+//	{
+//		logger.info("testBackhand ("+organisationIDs.length+"): begin: principal="+getPrincipalString());
+//		if (organisationIDs != null && organisationIDs.length > 0) {
+//			String organisationID = organisationIDs[0];
+//			String[] bhOrgaIDs = new String[organisationIDs.length - 1];
+//			for (int i = 1; i < organisationIDs.length; ++i) {
+//				bhOrgaIDs[i-1] = organisationIDs[i];
+//			}
+//
+//			logger.info("testBackhand ("+organisationIDs.length+"): backhanding to organisation \""+organisationID+"\"");
+//			try {
+//				logger.info("testBackhand ("+organisationIDs.length+"): OrganisationManagerUtil.getHome(...)");
+//				OrganisationManager organisationManager = OrganisationManagerUtil.getHome(getInitialContextProperties(organisationID)).create();
+//
+//				logger.info("testBackhand ("+organisationIDs.length+"): UserManagerUtil.getHome()");
+//				UserManagerHome userManagerHome = UserManagerUtil.getHome();
+//
+//				logger.info("testBackhand ("+organisationIDs.length+"): userManagerHome.create()");
+//				UserManager userManager = userManagerHome.create();
+//
+//				logger.info("testBackhand ("+organisationIDs.length+"): organisationManager.testBackhand(...)");
+//				organisationManager.testBackhand(bhOrgaIDs);
+//
+//				logger.info("testBackhand ("+organisationIDs.length+"): userManager.whoami()");
+//				userManager.whoami();
+//
+//				organisationManager.remove();
+//				userManager.remove();
+//			} catch (RuntimeException e) {
+//				throw e;
+//			} catch (ModuleException e) {
+//				throw e;
+//			} catch (Exception e) {
+//				throw new ModuleException(e);			
+//			}
+//		}
+//		logger.info("testBackhand ("+organisationIDs.length+"): end: principal="+getPrincipalString());
+//	}
+
 	/**
 	 * @ejb.interface-method
-	 * @ejb.transaction type = "Required"
+	 * @ejb.transaction type="Required"
 	 * @ejb.permission role-name="_Guest_"
 	 **/
-	public void testBackhand(String[] organisationIDs)
-		throws ModuleException
+	@SuppressWarnings("unchecked")
+	public TestRequestResultTreeNode testCascadedAuthentication(TestRequestResultTreeNode node)
+	throws Exception
 	{
-		logger.info("testBackhand ("+organisationIDs.length+"): begin: principal="+getPrincipalString());
-		if (organisationIDs != null && organisationIDs.length > 0) {
-			String organisationID = organisationIDs[0];
-			String[] bhOrgaIDs = new String[organisationIDs.length - 1];
-			for (int i = 1; i < organisationIDs.length; ++i) {
-				bhOrgaIDs[i-1] = organisationIDs[i];
-			}
+		return internal_testCascadedAuthentication(node, -1); 
+	}
 
-//			String username;
-//			String password;
-//			PersistenceManager pm = getPersistenceManager();
-//			try {
-//				LocalOrganisation localOrganisation = LocalOrganisation.getLocalOrganisation(pm);
-//	
-//				password = localOrganisation.getPassword(organisationID);
-//	
-//				username = User.USERID_PREFIX_TYPE_ORGANISATION
-//						+ localOrganisation.getOrganisationID()
-//						+ '@'
-//						+ organisationID;
-//			} finally {
-//				pm.close();
-//			}
+	/**
+	 * @ejb.interface-method
+	 * @ejb.transaction type="Required"
+	 * @ejb.permission role-name="_Guest_"
+	 **/
+	@SuppressWarnings("unchecked")
+	public TestRequestResultTreeNode internal_testCascadedAuthentication(TestRequestResultTreeNode node, int level)
+	throws Exception
+	{
+		logger.info("testCascadedAuthentication (level="+level+") (principal="+getPrincipalString() +"): begin");
+		if (node == null)
+			throw new IllegalArgumentException("node must not be null!");
 
-			logger.info("testBackhand ("+organisationIDs.length+"): backhanding to organisation \""+organisationID+"\"");
+		if (level < -1)
+			throw new IllegalArgumentException("level < -1 : level=" + level);
+
+		node = Util.cloneSerializable(node); // we clone, because it may not be serialized due to optimizations of JBoss
+
+		String organisationIDBeforeRecursion = getOrganisationID();
+
+		List<TestRequestResultTreeNode> children = node.getChildren();
+		if (level < 0) {
+			children = new ArrayList<TestRequestResultTreeNode>();
+			children.add(node);
+			node = null;
+		}
+
+		if (!children.isEmpty()) {
+			PersistenceManager pm = getPersistenceManager();
 			try {
-				logger.info("testBackhand ("+organisationIDs.length+"): OrganisationManagerUtil.getHome(...)");
-				OrganisationManager organisationManager = OrganisationManagerUtil.getHome(getInitialContextProperties(organisationID)).create();
-				
-				logger.info("testBackhand ("+organisationIDs.length+"): UserManagerUtil.getHome()");
-				UserManagerHome userManagerHome = UserManagerUtil.getHome();
-				
-				logger.info("testBackhand ("+organisationIDs.length+"): userManagerHome.create()");
-				UserManager userManager = userManagerHome.create();
+				Map<String, OrganisationManager> organisationManagers = new HashMap<String, OrganisationManager>();
 
-				logger.info("testBackhand ("+organisationIDs.length+"): organisationManager.testBackhand(...)");
-				organisationManager.testBackhand(bhOrgaIDs);
+				for (TestRequestResultTreeNode childNode : children) {
+					String organisationID = childNode.getRequest_organisationID();
+					logger.info("testCascadedAuthentication (level="+level+") (principal="+getPrincipalString()+"): creating organisationManager for organisationID=" + organisationID);
+					OrganisationManagerHome home = OrganisationManagerUtil.getHome(Lookup.getInitialContextProperties(pm, organisationID));
+					OrganisationManager organisationManager = home.create();
+					organisationManagers.put(organisationID, organisationManager);
+					logger.info("testCascadedAuthentication (level="+level+") (principal="+getPrincipalString()+"): created organisationManager for organisationID=" + organisationID);
+				}
 
-				logger.info("testBackhand ("+organisationIDs.length+"): userManager.whoami()");
-				userManager.whoami();
+				for (TestRequestResultTreeNode childNode : children) {
+					logger.info("testCascadedAuthentication (level="+level+") (principal="+getPrincipalString()+"): calling organisationManager.testCascadedAuthentication() for organisationID=" + childNode.getRequest_organisationID());
+					OrganisationManager organisationManager = organisationManagers.get(childNode.getRequest_organisationID());
+					TestRequestResultTreeNode resultChildNode = organisationManager.internal_testCascadedAuthentication(childNode, level + 1);
 
-				organisationManager.remove();
-				userManager.remove();
-			} catch (RuntimeException e) {
-				throw e;
-			} catch (ModuleException e) {
-				throw e;
-			} catch (Exception e) {
-				throw new ModuleException(e);			
+					if (childNode.getParent() == null) {
+						if (children.size() != 1)
+							throw new IllegalStateException("children.size() != 1");
+
+						children.clear();
+						children.add(resultChildNode);
+					}
+					else {
+						if (node != childNode.getParent())
+							throw new IllegalStateException("node != childNode.getParent()");
+
+						node.replaceChild(childNode, resultChildNode);
+					}
+
+					logger.info("testCascadedAuthentication (level="+level+") (principal="+getPrincipalString()+"): called organisationManager.testCascadedAuthentication() for organisationID=" + childNode.getRequest_organisationID());
+				}
+			} finally {
+				pm.close();
 			}
 		}
-		logger.info("testBackhand ("+organisationIDs.length+"): end: principal="+getPrincipalString());
+
+		logger.info("testCascadedAuthentication (level="+level+") (principal="+getPrincipalString() +"): end");
+
+		if (node != null) {
+			node.setResult_organisationID_beforeRecursion(organisationIDBeforeRecursion);
+			node.setResult_organisationID_afterRecursion(getOrganisationID());
+		}
+		else {
+			if (children.size() != 1)
+				throw new IllegalStateException("children.size() != 1");
+
+			node = children.get(0);
+			if (node.getParent() != null)
+				throw new IllegalStateException("node is not root: node.getParent() != null");			
+		}
+
+		return node;
 	}
 
 	/**
