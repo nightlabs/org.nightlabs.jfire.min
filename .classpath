@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="src" path="ejbsrc"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/JFireServerManager"/>
 	<classpathentry kind="var" path="JDK_TOOLS"/>
@@ -12,29 +11,31 @@
 	<classpathentry kind="var" path="JBOSS/lib/jboss-system.jar"/>
 	<classpathentry kind="var" path="JBOSS/lib/jboss-jmx.jar"/>
 	<classpathentry kind="var" path="JBOSS/server/default/lib/bcel.jar"/>
-	<classpathentry kind="var" path="JBOSS/server/default/lib/jboss.jar" sourcepath="/JBOSS_SRC"/>
+	<classpathentry sourcepath="/JBOSS_SRC" kind="var" path="JBOSS/server/default/lib/jboss.jar"/>
 	<classpathentry kind="var" path="JBOSS/server/default/lib/jboss-transaction.jar"/>
 	<classpathentry kind="var" path="JBOSS/server/default/lib/jnpserver.jar"/>
 	<classpathentry kind="var" path="JBOSS/server/default/lib/jpl-pattern.jar"/>
 	<classpathentry kind="var" path="JBOSS/server/default/lib/jpl-util.jar"/>
-	<classpathentry kind="var" path="JBOSS/server/default/lib/jbosssx.jar" sourcepath="JBOSS_SRC/security/src/main"/>
-	<classpathentry kind="var" path="WORKSPACE/JFireBase/dist/JFireBase.jar" sourcepath="/WORKSPACE/JFireBase/src"/>
-	<classpathentry kind="var" path="WORKSPACE/JFireBaseBean/dist/JFireBaseBean.jar" sourcepath="/WORKSPACE/JFireBaseBean/src"/>
-	<classpathentry kind="var" path="WORKSPACE/NightLabsBase/dist/NightLabsBase.jar" sourcepath="/WORKSPACE/NightLabsBase/src"/>
+	<classpathentry sourcepath="JBOSS_SRC/security/src/main" kind="var" path="JBOSS/server/default/lib/jbosssx.jar"/>
+	<classpathentry sourcepath="/WORKSPACE/JFireBase/src" kind="var" path="WORKSPACE/JFireBase/dist/JFireBase.jar"/>
+	<classpathentry sourcepath="/WORKSPACE/JFireBaseBean/src" kind="var" path="WORKSPACE/JFireBaseBean/dist/JFireBaseBean.jar"/>
+	<classpathentry sourcepath="/WORKSPACE/NightLabsBase/src" kind="var" path="WORKSPACE/NightLabsBase/dist/NightLabsBase.jar"/>
 	<classpathentry kind="var" path="LOG4J"/>
-	<classpathentry kind="var" path="WORKSPACE/NightLabsJDO/dist/NightLabsJDO.jar" sourcepath="WORKSPACE/NightLabsJDO/src"/>
-	<classpathentry kind="var" path="WORKSPACE/JFireTrade/dist/JFireTrade.jar" sourcepath="/WORKSPACE/JFireTrade"/>
-	<classpathentry kind="var" path="WORKSPACE/JFireSimpleTrade/dist/JFireSimpleTrade.jar" sourcepath="/WORKSPACE/JFireSimpleTrade/src"/>
-	<classpathentry kind="var" path="JDO2" sourcepath="JPOX_SRC"/>
+	<classpathentry sourcepath="WORKSPACE/NightLabsJDO/src" kind="var" path="WORKSPACE/NightLabsJDO/dist/NightLabsJDO.jar"/>
+	<classpathentry sourcepath="/WORKSPACE/JFireTrade" kind="var" path="WORKSPACE/JFireTrade/dist/JFireTrade.jar"/>
+	<classpathentry sourcepath="/WORKSPACE/JFireSimpleTrade/src" kind="var" path="WORKSPACE/JFireSimpleTrade/dist/JFireSimpleTrade.jar"/>
+	<classpathentry sourcepath="JPOX_SRC" kind="var" path="JDO2"/>
 	<classpathentry kind="var" path="WORKSPACE/JFireJbpm/dist/JFireJbpm.jar"/>
 	<classpathentry kind="var" path="WORKSPACE/JFireJbpm/lib/jbpm/jbpm-3.1.4.jar"/>
 	<classpathentry kind="var" path="WORKSPACE/JFireDynamicTrade/dist/JFireDynamicTrade.jar"/>
-	<classpathentry kind="var" path="WORKSPACE/JFireVoucher/dist/JFireVoucher.jar" sourcepath="/WORKSPACE/JFireVoucher/src"/>
-	<classpathentry kind="var" path="WORKSPACE/JFireReporting/dist/JFireReporting.jar" sourcepath="/WORKSPACE/JFireReporting"/>
+	<classpathentry sourcepath="/WORKSPACE/JFireVoucher/src" kind="var" path="WORKSPACE/JFireVoucher/dist/JFireVoucher.jar"/>
+	<classpathentry sourcepath="/WORKSPACE/JFireReporting" kind="var" path="WORKSPACE/JFireReporting/dist/JFireReporting.jar"/>
 	<classpathentry kind="var" path="WORKSPACE/JFireReportingTrade/dist/JFireReportingTrade.jar"/>
-	<classpathentry kind="lib" path="dist/lib/junit-4.3.1.jar" sourcepath="dist/lib/junit-4.3.1-src.jar"/>
+	<classpathentry sourcepath="dist/lib/junit-4.3.1-src.jar" kind="lib" path="dist/lib/junit-4.3.1.jar"/>
 	<classpathentry kind="var" path="JBOSS/server/default/lib/mail.jar"/>
-	<classpathentry kind="var" path="WORKSPACE/JFireBaseClientLib/dist/JFireBaseClientLib.jar" sourcepath="/WORKSPACE/JFireBaseClientLib/src"/>
+	<classpathentry sourcepath="/WORKSPACE/JFireBaseClientLib/src" kind="var" path="WORKSPACE/JFireBaseClientLib/dist/JFireBaseClientLib.jar"/>
 	<classpathentry kind="var" path="JBOSS/server/default/lib/activation.jar"/>
+	<classpathentry sourcepath="/JPOX_SRC" kind="var" path="JPOX"/>
+	<classpathentry sourcepath="/JPOXENHANCER_SRC" kind="var" path="JPOXENHANCER"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

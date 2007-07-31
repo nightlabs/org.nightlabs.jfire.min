@@ -166,6 +166,6 @@ public class JFireTestLogin {
 	private static boolean checkSetRoleGroupRegistrationToAuthorities(PersistenceManager pm, 
 			Properties userProperties, Set<String> userPropNames) 
 	{
-		return false;
+		return true; // TODO implement this method!
 	}
 }
