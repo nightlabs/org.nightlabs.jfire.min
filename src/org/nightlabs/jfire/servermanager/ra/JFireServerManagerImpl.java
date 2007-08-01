@@ -243,7 +243,7 @@ public class JFireServerManagerImpl
 		return jfireServerManagerFactoryImpl.isOrganisationCfsEmpty();
 	}
 
-	public List getOrganisationCfs(boolean sorted)
+	public List<OrganisationCf> getOrganisationCfs(boolean sorted)
 	{
 		assertOpen();
 		return jfireServerManagerFactoryImpl.getOrganisationCfs(sorted);

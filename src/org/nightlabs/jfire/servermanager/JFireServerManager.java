@@ -114,7 +114,7 @@ public interface JFireServerManager
 	 */
 	public boolean isOrganisationCfsEmpty();
 
-	public List getOrganisationCfs(boolean sorted);
+	public List<OrganisationCf> getOrganisationCfs(boolean sorted);
 
 	public List getModules(ModuleType moduleType)
 		throws ModuleException;
