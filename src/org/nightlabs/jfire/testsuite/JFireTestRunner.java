@@ -89,16 +89,16 @@ public class JFireTestRunner extends BaseTestRunner {
 	 * @param pm The PersistenceManager that can be passed to the test suites.
 	 */
 	public void run(TestSuite suite, PersistenceManager pm) {
-		boolean doRun = true;
+		String skipReason;
 		Throwable checkError = null;
 		try {
-			doRun = suite.canRunTests(pm);
+			skipReason = suite.canRunTests(pm);
 		} catch (Exception e) {
-			doRun = false;
+			skipReason = e.getClass().getName() + ": " + e.getMessage();
 			checkError = e;
 		}
-		if (!doRun) {
-			notifyTestSuiteStatus(suite, Status.SKIP);
+		if (skipReason != null) {
+			notifyTestSuiteStatus(suite, Status.SKIP); // TODO we need to pass an Event object here in order to pass the skipReason
 			if (checkError != null) {
 				notifySuiteStartError(suite, checkError);
 			}

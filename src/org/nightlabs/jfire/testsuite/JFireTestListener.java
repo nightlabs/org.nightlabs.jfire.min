@@ -53,7 +53,7 @@ public interface JFireTestListener extends TestListener {
 	 * @param status The new status of the suite.
 	 * @throws Exception When something went wrong.
 	 */
-	void testSuiteStatus(TestSuite suite, TestSuite.Status status) throws Exception;
+	void testSuiteStatus(TestSuite suite, TestSuite.Status status) throws Exception; // TODO we need to use an Event object parameter here in order to pass the skipReason and other additional information
 	
 	/**
 	 * Notifies the listnener that the start of the testsuite was skipped, because

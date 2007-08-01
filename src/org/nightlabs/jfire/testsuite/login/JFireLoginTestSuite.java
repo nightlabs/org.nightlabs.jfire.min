@@ -31,13 +31,14 @@ public class JFireLoginTestSuite extends TestSuite {
 	 * @see org.nightlabs.jfire.testsuite.TestSuite#canRunTests(PersistenceManager)
 	 */
 	@Override
-	public boolean canRunTests(PersistenceManager pm) throws Exception {
+	public String canRunTests(PersistenceManager pm) throws Exception {
+		String className = "org.nightlabs.jfire.security.User";
 		try {
-			Class.forName("org.nightlabs.jfire.security.User");
+			Class.forName(className);
 		} catch (ClassNotFoundException x) {			
-			return false;
+			return "The module JFireBase seems not to be installed (Class \"" + className + "\" could not be found)!";
 		}
-		return JFireTestLogin.checkCreateLoginsAndRegisterInAuthorities(pm);
+		return null;
 	}
 
 }

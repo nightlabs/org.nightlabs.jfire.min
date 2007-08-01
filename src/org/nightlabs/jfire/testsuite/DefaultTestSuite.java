@@ -27,8 +27,8 @@ public class DefaultTestSuite extends TestSuite {
 	 * @see org.nightlabs.jfire.testsuite.TestSuite#canRunTests(PersistenceManager)
 	 */
 	@Override
-	public boolean canRunTests(PersistenceManager pm) throws Exception {
-		return true;
+	public String canRunTests(PersistenceManager pm) throws Exception {
+		return null;
 	}
 
 }

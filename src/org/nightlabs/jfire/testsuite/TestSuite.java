@@ -52,8 +52,8 @@ public abstract class TestSuite extends junit.framework.TestSuite {
 	 * their prerequisites.
 	 * </p>
 	 * @param pm The persistenceManager to use.
-	 * @return Whether this suite should be run or skipped.
+	 * @return <code>null</code>, if everything is fine and this suite should be run or a <code>String</code> describing why it should be skipped.
 	 * @throws Exception When something fails
 	 */
-	public abstract boolean canRunTests(PersistenceManager pm) throws Exception;
+	public abstract String canRunTests(PersistenceManager pm) throws Exception;
 }
