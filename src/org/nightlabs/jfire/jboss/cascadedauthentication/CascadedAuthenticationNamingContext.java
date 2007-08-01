@@ -67,12 +67,13 @@ public class CascadedAuthenticationNamingContext implements Context
 //		if(logger.isDebugEnabled())
 //			logger.debug("Lookup: InvocationHandler: "+invocationHandler.toString());
 		ClientContainer clientContainer = (ClientContainer)invocationHandler;
-		
+
 		if(logger.isDebugEnabled())
-			logger.debug("afterLookup: mark invocation context: username=" + userDescriptor.userName + "  context="+clientContainer.context.toString());
+			logger.debug("afterLookup: mark invocation context: username=" + userDescriptor.userName + " clientContainer=" +
+					clientContainer + " context=" + // (clientContainer.context == null ? null : clientContainer.context.getClass().getName())+'@'+System.identityHashCode(clientContainer.context) + "#"+
+					clientContainer.context.toString());
 
 		clientContainer.context.setValue(UserDescriptor.CONTEXT_KEY, userDescriptor);
-
 		return obj;
 	}
 

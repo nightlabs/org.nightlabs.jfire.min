@@ -407,10 +407,13 @@ public class ServerConfiguratorJBoss
 		*/
 		propertyElement = NLDOMUtil.findNodeByAttribute(document, "server/mbean/attribute/configuration/property", "name", "mail.smtp.host");
 		propertyElement.getAttributes().getNamedItem("value").setNodeValue(smtp.getHost());
-		
+
 		propertyElement = NLDOMUtil.findNodeByAttribute(document, "server/mbean/attribute/configuration/property", "name", "mail.smtp.port");
-		propertyElement.getAttributes().getNamedItem("value").setNodeValue(String.valueOf(smtp.getPort()));
-		
+		if (propertyElement != null)
+			propertyElement.getAttributes().getNamedItem("value").setNodeValue(String.valueOf(smtp.getPort()));
+		else
+			logger.warn("server/mbean/attribute/configuration/property not found with name=\"mail.smtp.port\"!", new RuntimeException("server/mbean/attribute/configuration/property not found with name=\"mail.smtp.port\"!")); // TODO add the missing element! only necessary for JBoss 4.0.4
+
 		propertyElement = NLDOMUtil.findNodeByAttribute(document, "server/mbean/attribute/configuration/property", "name", "mail.from");
 		propertyElement.getAttributes().getNamedItem("value").setNodeValue(smtp.getMailFrom());
 		

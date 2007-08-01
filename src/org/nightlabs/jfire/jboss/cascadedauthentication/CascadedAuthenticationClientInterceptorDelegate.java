@@ -26,17 +26,18 @@
 
 package org.nightlabs.jfire.jboss.cascadedauthentication;
 
-import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
 import java.security.Principal;
 
 import org.apache.log4j.Logger;
 import org.jboss.invocation.Invocation;
+import org.jboss.invocation.InvocationContext;
 import org.jboss.proxy.ClientContainer;
 import org.jboss.proxy.Interceptor;
 import org.jboss.proxy.ejb.GenericEJBInterceptor;
 import org.jboss.security.SecurityAssociation;
 import org.jboss.security.SimplePrincipal;
+import org.nightlabs.util.Util;
 
 /**
  * @author Marco Schulze - marco at nightlabs dot de
@@ -76,6 +77,13 @@ public class CascadedAuthenticationClientInterceptorDelegate extends GenericEJBI
 		}
 	}
 
+	private static long nextCapsuledCallerThreadID = 0;
+	protected static synchronized long nextCapsuledCallerThreadID()
+	{
+		long res = nextCapsuledCallerThreadID++;
+		return res;
+	}
+
 	public static class CapsuledCaller extends Thread 
 	{
 		public Throwable exception = null;
@@ -88,6 +96,7 @@ public class CascadedAuthenticationClientInterceptorDelegate extends GenericEJBI
 
 		public CapsuledCaller(Interceptor _interceptor, Invocation _invocation, UserDescriptor _userDescriptor, Mutex _notifyThisOnFinish)
 		{
+			this.setName("CapsuledCaller-" + Long.toString(nextCapsuledCallerThreadID(), 36));
 			this.interceptor = _interceptor;
 			this.invocation = _invocation;
 			this.notifyThisOnFinish = _notifyThisOnFinish;
@@ -97,9 +106,17 @@ public class CascadedAuthenticationClientInterceptorDelegate extends GenericEJBI
 
 		public void run()
 		{
-			if(logger.isDebugEnabled())
+//			Principal orig_callerPrincipal = SecurityAssociation.getCallerPrincipal();
+//			Principal orig_principal = SecurityAssociation.getPrincipal();
+//			Object orig_credential = SecurityAssociation.getCredential();
+
+			if(logger.isDebugEnabled()) {
 				logger.debug("run: >>>>>>>>>>>>>>>> begin invoke on wrapper thread: method="+invocation.getMethod().getDeclaringClass().getName()+"#"+invocation.getMethod().getName()+" username=" + userDescriptor.userName);
+//				logger.debug("run: >> orig_callerPrincipal=" + orig_callerPrincipal);
+//				logger.debug("run: >> orig_principal=" + orig_principal);
+			}
 			try {
+
 				SecurityAssociation.setPrincipal(new SimplePrincipal(userDescriptor.userName));
 				SecurityAssociation.setCredential(userDescriptor.password.toCharArray());
 				result = interceptor.getNext().invoke(invocation);
@@ -133,9 +150,13 @@ public class CascadedAuthenticationClientInterceptorDelegate extends GenericEJBI
 //				}
 			} catch (Throwable e) {
 				exception = e;
-			}
+			} finally {
 			if(logger.isDebugEnabled())
 				logger.debug("run: <<<<<<<<<<<<<<<< end invoke on wrapper thread: method="+invocation.getMethod().getDeclaringClass().getName()+"#"+invocation.getMethod().getName()+" username=" + userDescriptor.userName);
+
+//				SecurityAssociation.setPrincipal(orig_principal);
+//				SecurityAssociation.setCredential(orig_credential);
+			}
 
 			// notify the other thread, thus he can continue
 			notifyThisOnFinish.setFinished(true);
@@ -153,11 +174,23 @@ public class CascadedAuthenticationClientInterceptorDelegate extends GenericEJBI
 		// If there is no UserDescriptor sticking to the current thread, we check the
 		// InvocationContext.
 		if (userDescriptor == null) {
-			userDescriptor = (UserDescriptor)invocation.getInvocationContext().getValue(
-					UserDescriptor.CONTEXT_KEY);
+			InvocationContext context = invocation.getInvocationContext();
+			userDescriptor = (UserDescriptor)context.getValue(UserDescriptor.CONTEXT_KEY);
+//			userDescriptor = (UserDescriptor)invocation.getInvocationContext().getValue(UserDescriptor.CONTEXT_KEY);
 
 			if(logger.isDebugEnabled())
-				logger.debug("invoke: method="+invocation.getMethod().getDeclaringClass().getName()+"#"+invocation.getMethod().getName()+" SecurityAssociation.principal="+SecurityAssociation.getPrincipal()+" SecurityAssociation.callerPrincipal="+SecurityAssociation.getCallerPrincipal()+": No UserDescriptor associated with current thread. Fetched "+(userDescriptor == null ? null : userDescriptor.userName)+" from invocationContext: " + invocation.getInvocationContext());
+				logger.debug("invoke: method="+invocation.getMethod().getDeclaringClass().getName()+"#"+invocation.getMethod().getName()+
+						" SecurityAssociation.principal="+SecurityAssociation.getPrincipal()+
+						" SecurityAssociation.callerPrincipal="+SecurityAssociation.getCallerPrincipal()+": No UserDescriptor associated with current thread. Fetched "+
+						(userDescriptor == null ? null : userDescriptor.userName)+" from invocationContext: " + // (context == null ? null : context.getClass().getName())+'@'+System.identityHashCode(context) + "#" +
+						invocation.getInvocationContext());
+		}
+		else {
+			if(logger.isDebugEnabled())
+				logger.debug("invoke: method="+invocation.getMethod().getDeclaringClass().getName()+"#"+invocation.getMethod().getName()+
+						" SecurityAssociation.principal="+SecurityAssociation.getPrincipal()+
+						" SecurityAssociation.callerPrincipal="+SecurityAssociation.getCallerPrincipal()+": UserDescriptor associated with current thread: "+
+						(userDescriptor == null ? null : userDescriptor.userName));
 		}
 
 		// If there's still no UserDescriptor, it means that we do sth. locally within the server.
@@ -177,34 +210,34 @@ public class CascadedAuthenticationClientInterceptorDelegate extends GenericEJBI
 
 				userDescriptor = new UserDescriptor(principal.getName(), (String) pw);
 			}
+
+			if(logger.isDebugEnabled())
+				logger.debug("invoke: method="+invocation.getMethod().getDeclaringClass().getName()+"#"+invocation.getMethod().getName()+
+						" SecurityAssociation.principal="+SecurityAssociation.getPrincipal()+
+						" SecurityAssociation.callerPrincipal="+SecurityAssociation.getCallerPrincipal()+": UserDescriptor could not be obtained from invocation and not from Thread! Using current principal.");
 		}
 
-//		if (userDescriptor == null) {
-//			userDescriptor = (UserDescriptor) invocation.getPayload().get(
-//					UserDescriptor.CONTEXT_KEY);
-//		}
-//
-//		if (userDescriptor != null)
-//			invocation.getPayload().put(UserDescriptor.CONTEXT_KEY, userDescriptor);
-
+		Object result;
 		if (userDescriptor == null) {
 			if(logger.isDebugEnabled())
-				logger.debug("invoke: method="+invocation.getMethod().getDeclaringClass().getName()+"#"+invocation.getMethod().getName()+": userDescriptor == null => invoking directly (no wrapper thread)", new Exception("debug"));
-			return getNext().invoke(invocation);
+				logger.debug("invoke: method="+invocation.getMethod().getDeclaringClass().getName()+"#"+invocation.getMethod().getName()+": userDescriptor == null => invoking directly (no wrapper thread)");
+
+			result = getNext().invoke(invocation);
 		}
-
-		Mutex waitForNotification = new Mutex();
-		CapsuledCaller cc = new CapsuledCaller(this, invocation, userDescriptor, waitForNotification);
-		while (cc.isAlive() && !waitForNotification.isFinished()) {
-			synchronized(waitForNotification) {
-				try { waitForNotification.wait(10000); } catch (InterruptedException x) { }
-			} // synchronized(waitForNotification) {
-		} // while (!waitForNotification.isFinished()) {
-
-		if (cc.exception != null)
-			throw new RuntimeException("Cascaded invocation via CapsuledCaller thread failed!", cc.exception);
-
-		Object result = cc.result;
+		else { // invoke on wrapper thread
+			Mutex waitForNotification = new Mutex();
+			CapsuledCaller cc = new CapsuledCaller(this, invocation, userDescriptor, waitForNotification);
+			while (cc.isAlive() && !waitForNotification.isFinished()) {
+				synchronized(waitForNotification) {
+					try { waitForNotification.wait(10000); } catch (InterruptedException x) { }
+				} // synchronized(waitForNotification) {
+			} // while (!waitForNotification.isFinished()) {
+	
+			if (cc.exception != null)
+				throw new RuntimeException("Cascaded invocation via CapsuledCaller thread failed!", cc.exception);
+	
+			result = cc.result;
+		}
 
 		if (!(result instanceof Proxy)) {
 			if(logger.isDebugEnabled())
@@ -212,13 +245,34 @@ public class CascadedAuthenticationClientInterceptorDelegate extends GenericEJBI
 			return result;
 		}
 
-		InvocationHandler invocationHandler = Proxy.getInvocationHandler(result);
-//		if(logger.isDebugEnabled())
-//			logger.debug("invoke: after invocation: InvocationHandler = "+invocationHandler.toString());
-		ClientContainer clientContainer = (ClientContainer)invocationHandler;
+		ClientContainer clientContainer = (ClientContainer) Proxy.getInvocationHandler(result);
+
+		// Check whether it's necessary to clone the result. Since the EJBHome.create() method returns the same instance of
+		// the EJB proxy if we're communicating with the same server, we have to clone it, if it already has a different
+		// UserDescriptor assigned (not the current).
+		// Obviously, the server pools stateless session bean proxies and ignores the information of the
+		// initial-context-properties (there are different user names + different credentials).
+		UserDescriptor oldUserDescriptor = (UserDescriptor) clientContainer.context.getValue(UserDescriptor.CONTEXT_KEY);
+		if (oldUserDescriptor != null && !oldUserDescriptor.equals(userDescriptor)) {
+			if(logger.isDebugEnabled())
+				logger.debug("invoke: method="+invocation.getMethod().getDeclaringClass().getName()+"#"+invocation.getMethod().getName()+
+						": after invocation: The clientContainer already contains a UserDescriptor in its context, but it is referencing another user (\"" +
+						oldUserDescriptor.userName +
+						"\" instead of \"" +
+						(userDescriptor == null ? null : userDescriptor.userName) +
+						"\")! Will clone the result. clientContainer="+clientContainer+" context=" +
+						clientContainer.context.toString());
+
+			result = Util.cloneSerializable(result);
+			clientContainer = (ClientContainer) Proxy.getInvocationHandler(result);
+		}
 
 		if(logger.isDebugEnabled())
-			logger.debug("invoke: method="+invocation.getMethod().getDeclaringClass().getName()+"#"+invocation.getMethod().getName()+": after invocation: copying UserDescriptor (username="+userDescriptor.userName+") to context "+clientContainer.context.toString());
+			logger.debug("invoke: method="+invocation.getMethod().getDeclaringClass().getName()+"#"+invocation.getMethod().getName()+
+					": after invocation: copying UserDescriptor (username="+userDescriptor.userName+") to context: clientContainer="+clientContainer+" context=" +
+					// (clientContainer.context == null ? null : clientContainer.context.getClass().getName())+'@'+System.identityHashCode(clientContainer.context) + "#"+
+					clientContainer.context.toString());
+
 		clientContainer.context.setValue(UserDescriptor.CONTEXT_KEY, userDescriptor);
 
 		return result;
