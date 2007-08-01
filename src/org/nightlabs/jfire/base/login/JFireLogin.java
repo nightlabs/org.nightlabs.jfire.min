@@ -192,8 +192,11 @@ public class JFireLogin
 		if (initialContextProperties == null) {
 			logger.debug(this.getClass().getName()+"#getInitialContextProperties(): generating props");
 
-			if (providerURL == null)
-				providerURL = (String) new InitialContext().getEnvironment().get(InitialContext.PROVIDER_URL);
+			if (providerURL == null) {
+				InitialContext initialContext = new InitialContext();
+				providerURL = (String) initialContext.getEnvironment().get(InitialContext.PROVIDER_URL); // TODO does this really work? Alternatively, we might read it from a registry - in the server, this registry exists already (but this is a client lib)...
+				initialContext.close();
+			}
 
 			if (providerURL == null)
 				providerURL = "jnp://127.0.0.1:1099";
@@ -216,6 +219,11 @@ public class JFireLogin
 	
 	/**
 	 * Performs a login via {@link LoginContext}.
+	 *
+	 * TODO I doubt that this will work fine when used in the server (project JFireTestSuite): IMHO, it's a
+	 * bad idea to switch the user within a running
+	 * transaction, already having a PersistenceManager. Especially logout will probably fail, since I doubt
+	 * that the previous identity will really be restored.
 	 * 
 	 * @throws LoginException When login fails
 	 */
