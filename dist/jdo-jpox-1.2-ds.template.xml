@@ -17,7 +17,9 @@
 		<config-property name="AutoCreateSchema" type="boolean">true</config-property>
 		<config-property name="AutoCreateTables" type="boolean">true</config-property>
 		<config-property name="AutoCreateColumns" type="boolean">true</config-property>
-		<config-property name="ValidateColumns" type="boolean">false</config-property>
+		<config-property name="ValidateColumns" type="boolean">true</config-property>
+		<config-property name="AutoCreateConstraints" type="boolean">true</config-property>
+		<config-property name="ValidateConstraints" type="boolean">true</config-property>
 
 		<config-property name="JdoCacheCollections" type="boolean">true</config-property>
 		<config-property name="NontransactionalRead" type="boolean">true</config-property>
@@ -47,6 +49,8 @@
 		<config-property name="ConnectionPoolingType" type="java.lang.String">C3P0</config-property>
 		<config-property name="ConnectionPoolingConfigurationFile" type="java.lang.String">jpox-c3p0.properties</config-property>
 -->
+
+		<config-property name="JdoCacheLevel2" type="boolean">true</config-property>
 
 <!--
 		<config-property name="JdoCacheLevel2" type="boolean">true</config-property>
