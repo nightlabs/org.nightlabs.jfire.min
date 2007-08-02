@@ -75,7 +75,7 @@ implements SessionBean
 	 * @throws ModuleException
 	 *
 	 * @ejb.interface-method view-type="local"
-	 * @ejb.transaction type = "RequiresNew"
+	 * @ejb.transaction type="RequiresNew"
 	 * @ejb.permission role-name="_Guest_"
 	 */
 	public void enqueueErrorCallback(AsyncInvokeEnvelope envelope)
@@ -89,7 +89,7 @@ implements SessionBean
 	 *
 	 * @!ejb.interface-method view-type="local"
 	 * @ejb.interface-method
-	 * @ejb.transaction type = "Required"
+	 * @ejb.transaction type="Required"
 	 * @ejb.permission role-name="_Guest_"
 	 */
 	public Serializable doInvocation(AsyncInvokeEnvelope envelope)
@@ -108,7 +108,7 @@ implements SessionBean
 	 *
 	 * @!ejb.interface-method view-type="local"
 	 * @ejb.interface-method
-	 * @ejb.transaction type = "Required"
+	 * @ejb.transaction type="Required"
 	 * @ejb.permission role-name="_Guest_"
 	 */
 	public void doErrorCallback(AsyncInvokeEnvelope envelope, Throwable error)
@@ -130,7 +130,7 @@ implements SessionBean
 	 *
 	 * @!ejb.interface-method view-type="local"
 	 * @ejb.interface-method
-	 * @ejb.transaction type = "Required"
+	 * @ejb.transaction type="Required"
 	 * @ejb.permission role-name="_Guest_"
 	 */
 	public void doSuccessCallback(AsyncInvokeEnvelope envelope, Object result)
@@ -152,7 +152,7 @@ implements SessionBean
 	 *
 	 * @!ejb.interface-method view-type="local"
 	 * @ejb.interface-method
-	 * @ejb.transaction type = "Required"
+	 * @ejb.transaction type="Required"
 	 * @ejb.permission role-name="_Guest_"
 	 */
 	public void doUndeliverableCallback(AsyncInvokeEnvelope envelope)
