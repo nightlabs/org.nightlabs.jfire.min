@@ -10,7 +10,7 @@ import org.nightlabs.config.Initializable;
  * 
  * @author Tobias Langner <!-- tobias[dot]langner[at]nightlabs[dot]de -->
  */
-public class LoginConfiguration implements Serializable, Initializable {
+public class LoginConfiguration implements Serializable, Initializable, Cloneable {
 
 	private static final long serialVersionUID = 4L;
 
@@ -74,6 +74,13 @@ public class LoginConfiguration implements Serializable, Initializable {
 		if(serverURL == null)
 			serverURL = "jnp://localhost:1099"; //$NON-NLS-1$
 	}
+	
+//	public boolean isEmpty() {
+//		return	(workstationID == null || workstationID.equals("")) &&
+//						(organisationID == null || organisationID.equals("")) &&
+//						(userID == null || userID.equals("")) &&
+//						(initialContextFactory == null ||)
+//	}
 
 	public boolean isAutomaticUpdate() {
 		return automaticUpdate;
@@ -148,11 +155,11 @@ public class LoginConfiguration implements Serializable, Initializable {
 	}
 	
 	public String toShortString() {
-		if (configurationName == null || "".equals(configurationName))
-			return configurationName;
-		
-		String _serverURL = serverURL.substring(serverURL.indexOf("://")+3);
-		return shorten(userID, 8) +	"@" + shorten(organisationID, 8) + " (" + shorten(workstationID, 8) + ") (" + shorten(_serverURL, 10) + ")";
+		if (configurationName == null || "".equals(configurationName)) {
+			String _serverURL = serverURL.substring(serverURL.indexOf("://")+3);
+			return shorten(userID, 8) +	"@" + shorten(organisationID, 8) + " (" + shorten(workstationID, 8) + ") (" + shorten(_serverURL, 10) + ")";
+		}
+		return configurationName;
 	}
 	
 	public String shorten(String target, int count) {
@@ -207,5 +214,10 @@ public class LoginConfiguration implements Serializable, Initializable {
 		} else if (!workstationID.equals(other.workstationID))
 			return false;
 		return true;
+	}
+	
+	@Override
+	protected Object clone() throws CloneNotSupportedException {
+		return super.clone();
 	}
 }

@@ -764,7 +764,7 @@ implements InitialContextProvider
 	}
 
 	private void copyPropertiesFromConfig(){
-		LoginConfiguration currentConfig = getRuntimeConfigModule().getCurrentLoginConfiguration();
+		LoginConfiguration currentConfig = getRuntimeConfigModule().getLatestLoginConfiguration();
 		this.serverURL = currentConfig.getServerURL();
 		this.contextFactory = currentConfig.getInitialContextFactory();
 		this.securityProtocol = currentConfig.getSecurityProtocol();

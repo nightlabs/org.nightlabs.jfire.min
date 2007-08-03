@@ -102,46 +102,40 @@ public class JFireLoginHandler implements ILoginHandler {
 			}
 
 			if (password != null) {
-//				Marco: shouldn't this be the current one instead?! - imho this is a bug, because the last one can be null here, which isnot checked below!
+				LoginConfiguration latestConfig = loginConfigModule.getLatestLoginConfiguration();
 				
-//				LoginConfiguration lastConfig = loginConfigModule.getLastLoginConfiguration();
-				
-//				Tobias: It should be the last one, but of course there should be proper handling in case this one is null. Done that now.
-				
-				LoginConfiguration lastConfig = loginConfigModule.getLastLoginConfiguration();
-				
-				if (lastConfig == null) {
-					lastConfig = new LoginConfiguration();
-					lastConfig.init();
+				if (latestConfig == null) {
+					latestConfig = new LoginConfiguration();
+					latestConfig.init();
 				}
 				
 //				if (workstationID != null)
 //					loginConfigModule.setWorkstationID(workstationID);
 				
 				if (workstationID == null)
-					workstationID = lastConfig.getWorkstationID();
+					workstationID = latestConfig.getWorkstationID();
 
 				if (userID == null)
-					userID = lastConfig.getUserID();
+					userID = latestConfig.getUserID();
 //				else
 //					loginConfigModule.setUserID(userID);
 
 				if (organisationID == null)
-					organisationID = lastConfig.getOrganisationID();
+					organisationID = latestConfig.getOrganisationID();
 //				else
 //					loginConfigModule.setOrganisationID(organisationID);
 
 				if (initialContextFactory == null)
-					initialContextFactory = lastConfig.getInitialContextFactory();
+					initialContextFactory = latestConfig.getInitialContextFactory();
 //				else
 //					loginConfigModule.setInitialContextFactory(initialContextFactory);
 
 				if (serverURL == null)
-					serverURL = lastConfig.getServerURL();
+					serverURL = latestConfig.getServerURL();
 //				else
 //					loginConfigModule.setServerURL(serverURL);
 				
-				loginConfigModule.setCurrentLoginConfiguration(userID, workstationID, organisationID, serverURL, initialContextFactory, null, null);				
+				loginConfigModule.setLatestLoginConfiguration(userID, workstationID, organisationID, serverURL, initialContextFactory, null, null);				
 
 				// perform a test login
 				loginContext.setCredentials(userID, organisationID, password);
@@ -268,15 +262,14 @@ public class JFireLoginHandler implements ILoginHandler {
 					throw new RuntimeException(e);
 				}
 				
-				if (saveConfig) {
-					try {
-						loginConfigModule.persistCurrentConfiguration();
-						
-						BeanUtils.copyProperties(persistentLoginModule, loginConfigModule);
-						persistentLoginModule.setChanged();
-					} catch (Exception e) {
-						logger.error("Saving config failed!", e); //$NON-NLS-1$
-					}
+				if (saveConfig)
+					loginConfigModule.saveLatestConfiguration();
+				
+				try {
+					BeanUtils.copyProperties(persistentLoginModule, loginConfigModule);
+					persistentLoginModule.setChanged();
+				} catch (Exception e) {
+					logger.error("Saving config failed!", e); //$NON-NLS-1$
 				}
 				
 				SplashScreen.setSplashMessage(Messages.getString("login.JFireLoginHandler.loginSuccessful")); //$NON-NLS-1$

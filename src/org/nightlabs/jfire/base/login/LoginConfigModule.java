@@ -50,13 +50,8 @@ public class LoginConfigModule extends ConfigModule
 	/**
 	 * Holds the login configuration that is currently used.
 	 */
-	private LoginConfiguration currentLoginConfiguration;
+	private LoginConfiguration latestLoginConfiguration;
 	
-	/**
-	 * This method indicates whether a call to {@link #persistCurrentConfiguration()} is required
-	 * to add the currentLoginConfiguration to the list of persistent LoginConfigurations
-	 */
-	private static final boolean MANUAL_PERSISTING = true;
 	private int maxLoginConfigurations = 5;
 	
 	public void init() throws InitException {
@@ -65,32 +60,31 @@ public class LoginConfigModule extends ConfigModule
 		if (loginConfigurations == null)
 			setLoginConfigurations(new LinkedList<LoginConfiguration>());
 
-		if (currentLoginConfiguration == null) {
-			setCurrentLoginConfiguration(new LoginConfiguration());
-//			loginConfigurations.addFirst(currentLoginConfiguration);
-			currentLoginConfiguration.init();
-		}
-
 		for (LoginConfiguration loginConfiguration : loginConfigurations)
 			loginConfiguration.init();
 	}
 
-	public void setCurrentLoginConfiguration(String userID, String workstationID, String organisationID, String serverURL, String initialContextFactory,
+	public void setLatestLoginConfiguration(String userID, String workstationID, String organisationID, String serverURL, String initialContextFactory,
 			String securityProtocol, String configurationName) {
 		acquireReadLock();
-		currentLoginConfiguration = new LoginConfiguration(userID, workstationID, organisationID, serverURL, initialContextFactory, securityProtocol, configurationName);
-		currentLoginConfiguration.init();
-		if (!MANUAL_PERSISTING)
-			persistCurrentConfiguration();
+		
+		LoginConfiguration loginConfiguration = new LoginConfiguration(userID, workstationID, organisationID, serverURL, initialContextFactory, securityProtocol, configurationName);
+		loginConfiguration.init();		
+		setLatestLoginConfiguration(loginConfiguration);
+		
 		releaseLock();
 	}
 
-	public void persistCurrentConfiguration() {
+	public void saveLatestConfiguration() {
 		acquireReadLock();
 		
-		loginConfigurations.remove(currentLoginConfiguration);
-		loginConfigurations.addFirst(currentLoginConfiguration);
-//		setLoginConfigurations(getLoginConfigurations());
+		try {
+			LoginConfiguration copy = (LoginConfiguration) latestLoginConfiguration.clone();
+			loginConfigurations.remove(copy);
+			loginConfigurations.addFirst(copy);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}		
 		setChanged();
 		releaseLock();
 		ensureCapacity();
@@ -106,8 +100,13 @@ public class LoginConfigModule extends ConfigModule
 		setChanged();
 	}
 	
-	public LoginConfiguration getCurrentLoginConfiguration() {
-		return currentLoginConfiguration;
+	public LoginConfiguration getLatestLoginConfiguration() {
+		return latestLoginConfiguration;
+	}
+	
+	public void setLatestLoginConfiguration(LoginConfiguration currentLoginConfiguration) {
+		this.latestLoginConfiguration = currentLoginConfiguration;
+		setChanged();
 	}
 	
 	public void setMaxLoginConfigurations(int maxLoginConfigurations) {
@@ -116,11 +115,6 @@ public class LoginConfigModule extends ConfigModule
 		ensureCapacity();
 	}
 	
-	private void setCurrentLoginConfiguration(LoginConfiguration currentLoginConfiguration) {
-		this.currentLoginConfiguration = currentLoginConfiguration;
-		setChanged();
-	}
-
 	public int getMaxLoginConfigurations() {
 		return maxLoginConfigurations;
 	}
@@ -134,10 +128,21 @@ public class LoginConfigModule extends ConfigModule
 		releaseLock();
 	}
 	
-	public LoginConfiguration getLastLoginConfiguration() {
+	public LoginConfiguration getLastSavedLoginConfiguration() {
 		if (loginConfigurations.isEmpty())
 			return null;
 		else
 			return loginConfigurations.getFirst();
+	}
+	
+
+	public void makeLatestFirst() {
+//		if (loginConfigurations.remove(latestLoginConfiguration)) {
+//			try {
+//				loginConfigurations.addFirst((LoginConfiguration) latestLoginConfiguration.clone());
+//			} catch (CloneNotSupportedException e) {
+//				throw new RuntimeException(e);
+//			}
+//		}
 	}
 }

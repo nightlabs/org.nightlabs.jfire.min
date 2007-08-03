@@ -37,6 +37,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import javax.swing.JButton;
@@ -49,8 +51,10 @@ import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.SpringLayout;
+import javax.swing.SwingConstants;
 
 import org.apache.log4j.Logger;
+import org.eclipse.swt.widgets.Link;
 import org.nightlabs.config.Config;
 import org.nightlabs.config.ConfigException;
 import org.nightlabs.jfire.base.resource.Messages;
@@ -128,12 +132,6 @@ public class SplashLoginPanel extends JPanel
 		setOpaque(false);
 		this.setLayout(new BorderLayout());
 		
-		LoginConfiguration lastLoginConfiguration = persistentLoginModule.getLastLoginConfiguration();
-		if (lastLoginConfiguration == null) {
-			lastLoginConfiguration = new LoginConfiguration();
-			lastLoginConfiguration.init();
-		}
-
 		fieldWrapperPanel = new JPanel();
 		fieldWrapperPanel.setOpaque(false);
 		fieldWrapperPanel.setLayout(new BorderLayout());
@@ -153,15 +151,25 @@ public class SplashLoginPanel extends JPanel
 		fieldWrapperPanel.add(editPanel, BorderLayout.SOUTH);
 		
 		loginConfigMap = new HashMap<String, LoginConfiguration>();		
-		String[] loginConfigNames = new String[loginConfigModule.getLoginConfigurations().size()];
-		int i = 0;
+		
+		LoginConfiguration latestLoginConfig = persistentLoginModule.getLatestLoginConfiguration();
+		List<String> loginConfigNames = new LinkedList<String>();
+		if (latestLoginConfig == null) {
+			latestLoginConfig = new LoginConfiguration();
+			latestLoginConfig.init();
+		} else {
+			final String lastUsed = Messages.getString("login.LoginDialog.currentIdentityMarker"); //$NON-NLS-1$
+			loginConfigNames.add(lastUsed);
+			loginConfigMap.put(lastUsed, latestLoginConfig);
+		}
+		
 		for (LoginConfiguration config : loginConfigModule.getLoginConfigurations()) {
 			loginConfigMap.put(config.toShortString(), config);
-			loginConfigNames[i++] = config.toShortString();
+			loginConfigNames.add(config.toShortString());
 		}
-		labelRecentLogins = new JLabel(Messages.getString("SplashLoginPanel.recentLoginsComboLabel"), JLabel.LEADING); //$NON-NLS-1$
+		labelRecentLogins = new JLabel(Messages.getString("login.SplashLoginPanel.recentLoginsComboLabel"), SwingConstants.LEADING); //$NON-NLS-1$
 		editPanel.add(labelRecentLogins);
-		comboRecentLogins = new JComboBox(loginConfigNames);
+		comboRecentLogins = new JComboBox(loginConfigNames.toArray(new String[loginConfigNames.size()]));
 		comboRecentLogins.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent e) {
 				String selectedConfigName = (String) comboRecentLogins.getSelectedItem();
@@ -173,14 +181,14 @@ public class SplashLoginPanel extends JPanel
 		comboRecentLogins.setEditable(false);
 		editPanel.add(comboRecentLogins);
 
-		labelUsername = new JLabel(Messages.getString("login.SplashLoginPanel.username"), JLabel.LEADING); //$NON-NLS-1$
+		labelUsername = new JLabel(Messages.getString("login.SplashLoginPanel.username"), SwingConstants.LEADING); //$NON-NLS-1$
 		editPanel.add(labelUsername);
 		textUsername = new JTextField(15);
 		labelUsername.setLabelFor(textUsername);
 		
 		editPanel.add(textUsername);
 
-		labelPassword = new JLabel(Messages.getString("login.SplashLoginPanel.password"), JLabel.LEADING); //$NON-NLS-1$
+		labelPassword = new JLabel(Messages.getString("login.SplashLoginPanel.password"), SwingConstants.LEADING); //$NON-NLS-1$
 		editPanel.add(labelPassword);
 		textPassword = new JPasswordField(15);
 		labelPassword.setLabelFor(textPassword);
@@ -188,7 +196,7 @@ public class SplashLoginPanel extends JPanel
 		textPassword.setEchoChar('*');
 		editPanel.add(textPassword);
 
-		labelWorkstation = new JLabel(Messages.getString("login.SplashLoginPanel.workstation"), JLabel.LEADING); //$NON-NLS-1$
+		labelWorkstation = new JLabel(Messages.getString("login.SplashLoginPanel.workstation"), SwingConstants.LEADING); //$NON-NLS-1$
 		editPanel.add(labelWorkstation);
 		textWorkstation = new JTextField(15);
 		labelWorkstation.setLabelFor(textWorkstation);
@@ -308,7 +316,7 @@ public class SplashLoginPanel extends JPanel
 			}
 		});
 		
-		fillGUI(lastLoginConfiguration);
+		fillGUI(latestLoginConfig);
 		setComponentFont(this, this.getFont());
 	}
 	
@@ -334,8 +342,8 @@ public class SplashLoginPanel extends JPanel
 		String initialContextFactory = textInitialContextFactory.getText();
 		String workstationID = textWorkstation.getText();
 		
-		loginConfigModule.setCurrentLoginConfiguration(userID, workstationID, organisationID, serverURL, initialContextFactory, securityProtocol, null);
-		LoginConfiguration loginConfig = loginConfigModule.getCurrentLoginConfiguration();
+		loginConfigModule.setLatestLoginConfiguration(userID, workstationID, organisationID, serverURL, initialContextFactory, securityProtocol, null);
+		LoginConfiguration loginConfig = loginConfigModule.getLatestLoginConfiguration();
 		loginContext.setCredentials(loginConfig.getUserID(), loginConfig.getOrganisationID(), new String(textPassword.getPassword()));
 		
 		return checkBoxSaveSettings.isSelected();

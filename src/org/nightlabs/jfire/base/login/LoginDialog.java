@@ -208,18 +208,17 @@ public class LoginDialog extends TitleAreaDialog
 			public String getText(Object element) {
 				if (element instanceof LoginConfiguration) {
 					LoginConfiguration loginConfig = (LoginConfiguration) element;
-					if (loginConfig.equals(runtimeLoginModule.getCurrentLoginConfiguration())) {
-						if (!runtimeLoginModule.getLoginConfigurations().contains(loginConfig))
-							return Messages.getString("LoginDialog.currentIdentityMarker"); //$NON-NLS-1$
+					if (loginConfig == runtimeLoginModule.getLatestLoginConfiguration()) {
+						return Messages.getString("login.LoginDialog.currentIdentityMarker"); //$NON-NLS-1$
 					}
-					return loginConfig.toString();					
+					return loginConfig.toString();
 				} else
 					return ""; //$NON-NLS-1$
 			}
 		};
 		
 		Label labelRecentLoginConfigs = new Label(mainArea, SWT.NONE);
-		labelRecentLoginConfigs.setText(Messages.getString("LoginDialog.recentLoginsComboLabel")); //$NON-NLS-1$
+		labelRecentLoginConfigs.setText(Messages.getString("login.LoginDialog.recentLoginsComboLabel")); //$NON-NLS-1$
 		recentLoginConfigs = new XComboComposite<LoginConfiguration>(mainArea, SWT.READ_ONLY);
 		recentLoginConfigs.setLabelProvider(loginConfigLabelProv);		
 		recentLoginConfigs.addSelectionChangedListener(new ISelectionChangedListener() {
@@ -308,12 +307,12 @@ public class LoginDialog extends TitleAreaDialog
 		});
 		
 		XComposite wrapper = new XComposite(detailsArea, SWT.READ_ONLY, LayoutMode.LEFT_RIGHT_WRAPPER, LayoutDataMode.GRID_DATA_HORIZONTAL, 2);
-		new Label(wrapper, SWT.NONE).setText(Messages.getString("LoginDialog.identityNameTextLabel")); //$NON-NLS-1$
+		new Label(wrapper, SWT.NONE).setText(Messages.getString("login.LoginDialog.identityNameTextLabel")); //$NON-NLS-1$
 		textIdentityName = new Text(wrapper, SWT.BORDER);
 		textIdentityName.setEnabled(false);
 		textIdentityName.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 						
-		new Label(detailsArea, SWT.NONE).setText(Messages.getString("LoginDialog.recentLoginCountLabel")); //$NON-NLS-1$
+		new Label(detailsArea, SWT.NONE).setText(Messages.getString("login.LoginDialog.recentLoginCountLabel")); //$NON-NLS-1$
 		recentLoginCountSpinner = new NumberSpinnerComposite(detailsArea, SWT.NONE, SWT.BORDER, 0, 1, 20, 1, LayoutMode.TIGHT_WRAPPER, LayoutDataMode.NONE);		
 		
 		detailsAreaGridData.heightHint = 0;
@@ -335,16 +334,16 @@ public class LoginDialog extends TitleAreaDialog
 	private void initializeWidgetValues()
 	{
 		LinkedList<LoginConfiguration> loginConfigurations = new LinkedList<LoginConfiguration>(runtimeLoginModule.getLoginConfigurations());		
-		LoginConfiguration currentLoginConfiguration = runtimeLoginModule.getCurrentLoginConfiguration();
+		LoginConfiguration latestLoginConfiguration = runtimeLoginModule.getLatestLoginConfiguration();
 		
-		if (!loginConfigurations.contains(runtimeLoginModule.getCurrentLoginConfiguration()))
-			loginConfigurations.addFirst(runtimeLoginModule.getCurrentLoginConfiguration());
+		if (latestLoginConfiguration != null)
+			loginConfigurations.addFirst(latestLoginConfiguration);
 		
 		recentLoginConfigs.setInput(loginConfigurations);
 		
-		if (currentLoginConfiguration != null) {
-			recentLoginConfigs.setSelection(currentLoginConfiguration);
-			updateTextFieldsWithLoginConfiguration(currentLoginConfiguration);
+		if (latestLoginConfiguration != null) {
+			recentLoginConfigs.setSelection(latestLoginConfiguration);
+			updateTextFieldsWithLoginConfiguration(latestLoginConfiguration);
 		} else {
 			LoginConfiguration loginConfiguration = new LoginConfiguration();
 			loginConfiguration.init();
@@ -386,7 +385,7 @@ public class LoginDialog extends TitleAreaDialog
 				textPassword.getText()
 		);
 		
-		runtimeLoginModule.setCurrentLoginConfiguration(textUserID.getText(), textWorkstationID.getText(), textOrganisationID.getText(),
+		runtimeLoginModule.setLatestLoginConfiguration(textUserID.getText(), textWorkstationID.getText(), textOrganisationID.getText(),
 				textServerURL.getText(), textInitialContextFactory.getText(), null, textIdentityName.getText());
 		
 		runtimeLoginModule.setMaxLoginConfigurations(recentLoginCountSpinner.getValue().intValue());
@@ -473,15 +472,18 @@ public class LoginDialog extends TitleAreaDialog
 					Login.AsyncLoginResult testResult = Login.testLogin(loginContext);
 					testResult.copyValuesTo(loginResult);
 					
-					if (testResult.isSuccess() && saveSettings) {
-						try {
-							runtimeLoginModule.persistCurrentConfiguration();
+					try {
+						if (testResult.isSuccess()) {
+							runtimeLoginModule.makeLatestFirst();
 							
-							BeanUtils.copyProperties(persistentLoginModule, runtimeLoginModule);
-							persistentLoginModule.setChanged();
-						} catch (Exception e) {
-							logger.error(Messages.getString("login.LoginDialog.errorSaveConfig"), e); //$NON-NLS-1$
+							if (saveSettings)
+								runtimeLoginModule.saveLatestConfiguration();
 						}
+
+						BeanUtils.copyProperties(persistentLoginModule, runtimeLoginModule);
+						persistentLoginModule.setChanged();
+					} catch (Exception e) {
+						logger.error(Messages.getString("login.LoginDialog.errorSaveConfig"), e); //$NON-NLS-1$
 					}
 
 					Display.getDefault().asyncExec(new Runnable() {
