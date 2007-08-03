@@ -137,12 +137,12 @@ public class LoginConfigModule extends ConfigModule
 	
 
 	public void makeLatestFirst() {
-//		if (loginConfigurations.remove(latestLoginConfiguration)) {
-//			try {
-//				loginConfigurations.addFirst((LoginConfiguration) latestLoginConfiguration.clone());
-//			} catch (CloneNotSupportedException e) {
-//				throw new RuntimeException(e);
-//			}
-//		}
+		for (LoginConfiguration cfg : loginConfigurations) {
+			if (cfg.equals(latestLoginConfiguration)) {
+				loginConfigurations.remove(cfg);
+				loginConfigurations.addFirst(cfg);
+				return;
+			}
+		}
 	}
 }
