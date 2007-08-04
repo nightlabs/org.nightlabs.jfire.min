@@ -61,6 +61,10 @@ import org.nightlabs.jfire.servermanager.OrganisationNotFoundException;
 import org.nightlabs.jfire.servermanager.RoleImportSet;
 import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
 import org.nightlabs.jfire.servermanager.config.OrganisationCf;
+import org.nightlabs.jfire.servermanager.createorganisation.BusyCreatingOrganisationException;
+import org.nightlabs.jfire.servermanager.createorganisation.CreateOrganisationProgress;
+import org.nightlabs.jfire.servermanager.createorganisation.CreateOrganisationProgressID;
+import org.nightlabs.jfire.servermanager.createorganisation.CreateOrganisationStatus;
 import org.nightlabs.jfire.servermanager.deploy.DeployOverwriteBehaviour;
 import org.nightlabs.jfire.servermanager.deploy.DeploymentJarItem;
 
@@ -190,14 +194,37 @@ public class JFireServerManagerImpl
 //				null, null, false); // isServerAdmin is ignored
 //	}
 
+	public CreateOrganisationProgressID createOrganisationAsync(String organisationID, String organisationCaption, String userID, String password, boolean isServerAdmin)
+	throws BusyCreatingOrganisationException
+	{
+		assertOpen();
+		return jfireServerManagerFactoryImpl.createOrganisationAsync(
+				organisationID,
+				organisationCaption, userID, password, isServerAdmin);
+	}
+
+	public CreateOrganisationProgress getCreateOrganisationProgress(CreateOrganisationProgressID createOrganisationProgressID)
+	{
+		assertOpen();
+		return jfireServerManagerFactoryImpl.getCreateOrganisationProgress(createOrganisationProgressID);
+	}
+
+	public void createOrganisationProgress_addCreateOrganisationStatus(
+			CreateOrganisationProgressID createOrganisationProgressID, CreateOrganisationStatus createOrganisationStatus)
+	{
+		assertOpen();
+		jfireServerManagerFactoryImpl.createOrganisationProgress_addCreateOrganisationStatus(
+				createOrganisationProgressID, createOrganisationStatus);
+	}
+
 	/**
 	 * @see org.nightlabs.jfire.servermanager.JFireServerManager#createOrganisation(String, String, String, String, boolean)
 	 */
 	public void createOrganisation(String organisationID, String organisationCaption, String userID, String password, boolean isServerAdmin) throws ModuleException {
 		assertOpen();
 		jfireServerManagerFactoryImpl.createOrganisation(
-				organisationID, organisationCaption,
-				userID, password, isServerAdmin);
+				new CreateOrganisationProgress(organisationID), organisationID,
+				organisationCaption, userID, password, isServerAdmin);
 	}
 
 	/**

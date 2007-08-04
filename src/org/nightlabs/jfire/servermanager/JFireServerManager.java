@@ -34,6 +34,7 @@ import java.util.Map;
 
 import javax.security.auth.login.LoginException;
 
+import org.nightlabs.ModuleException;
 import org.nightlabs.config.ConfigException;
 import org.nightlabs.jfire.base.JFirePrincipal;
 import org.nightlabs.jfire.classloader.CLRegistrar;
@@ -41,10 +42,12 @@ import org.nightlabs.jfire.module.ModuleType;
 import org.nightlabs.jfire.security.registry.SecurityRegistrar;
 import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
 import org.nightlabs.jfire.servermanager.config.OrganisationCf;
+import org.nightlabs.jfire.servermanager.createorganisation.BusyCreatingOrganisationException;
+import org.nightlabs.jfire.servermanager.createorganisation.CreateOrganisationProgress;
+import org.nightlabs.jfire.servermanager.createorganisation.CreateOrganisationProgressID;
+import org.nightlabs.jfire.servermanager.createorganisation.CreateOrganisationStatus;
 import org.nightlabs.jfire.servermanager.deploy.DeployOverwriteBehaviour;
 import org.nightlabs.jfire.servermanager.deploy.DeploymentJarItem;
-
-import org.nightlabs.ModuleException;
 
 /**
  * @author marco
@@ -80,8 +83,32 @@ public interface JFireServerManager
 //		throws ModuleException;
 
 	/**
-	 * This method creates a real organisation on this server. It cannot be converted into
-	 * a representative afterwards!
+	 * Create a new organisation. In contrast to {@link #createOrganisation(String, String, String, String, boolean)},
+	 * this method will return immediately. the progress of the organisation-creation can be tracked using the result
+	 * of this method and {@link #getCreateOrganisationProgress(CreateOrganisationProgressID)}
+	 */
+	public CreateOrganisationProgressID createOrganisationAsync(String organisationID, String organisationCaption, String userID, String password, boolean isServerAdmin)
+	throws BusyCreatingOrganisationException;
+
+	/**
+	 * Get the progress information for a currently running or during this server session started and already ended
+	 * organisation-creation.
+	 *
+	 * @param createOrganisationProgressID The result of the previously called {@link #createOrganisationAsync(String, String, String, String, boolean)}
+	 * @return progress information about the creation of an organisation or <code>null</code>, if there is none for the given <code>createOrganisationProgressID</code>
+	 */
+	public CreateOrganisationProgress getCreateOrganisationProgress(CreateOrganisationProgressID createOrganisationProgressID);
+
+	public void createOrganisationProgress_addCreateOrganisationStatus(
+			CreateOrganisationProgressID createOrganisationProgressID, CreateOrganisationStatus createOrganisationStatus);
+
+	/**
+	 * Create a new organisation on this server.
+	 * <p>
+	 * This method is blocking - i.e. it will not return before the creation is complete. It is therefore
+	 * recommended to use {@link #createOrganisationAsync(String, String, String, String, boolean)} when writing
+	 * UI.
+	 * </p>
 	 *
 	 * @param organisationID The ID of the new organisation. It must be unique in the whole world.
 	 * @param organisationName A nice name that will be used to display the new representative organisation.

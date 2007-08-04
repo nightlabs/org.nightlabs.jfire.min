@@ -123,6 +123,11 @@ import org.nightlabs.jfire.servermanager.config.OrganisationCf;
 import org.nightlabs.jfire.servermanager.config.OrganisationConfigModule;
 import org.nightlabs.jfire.servermanager.config.SMTPMailServiceCf;
 import org.nightlabs.jfire.servermanager.config.ServerCf;
+import org.nightlabs.jfire.servermanager.createorganisation.BusyCreatingOrganisationException;
+import org.nightlabs.jfire.servermanager.createorganisation.CreateOrganisationProgress;
+import org.nightlabs.jfire.servermanager.createorganisation.CreateOrganisationProgressID;
+import org.nightlabs.jfire.servermanager.createorganisation.CreateOrganisationStatus;
+import org.nightlabs.jfire.servermanager.createorganisation.CreateOrganisationStep;
 import org.nightlabs.jfire.servermanager.db.DatabaseAdapter;
 import org.nightlabs.jfire.servermanager.deploy.DeployOverwriteBehaviour;
 import org.nightlabs.jfire.servermanager.deploy.DeployedFileAlreadyExistsException;
@@ -138,7 +143,9 @@ import org.nightlabs.jfire.servermanager.xml.RoleDef;
 import org.nightlabs.jfire.servermanager.xml.RoleGroupDef;
 import org.nightlabs.jfire.servermanager.xml.XMLReadException;
 import org.nightlabs.math.Base62Coder;
+import org.nightlabs.util.CollectionUtil;
 import org.nightlabs.util.IOUtil;
+import org.nightlabs.util.Util;
 import org.xml.sax.SAXException;
 
 /**
@@ -602,7 +609,7 @@ public class JFireServerManagerFactoryImpl
 					try {
 						datastoreInitManager.initialiseDatastore(this, mcf.getConfigModule().getLocalServer(), organisationID,
 							jfireSecurity_createTempUserPassword(organisationID, User.USERID_SYSTEM));
-						
+
 						// OLD INIT STUFF
 //						datastoreInitializer.initializeDatastore(
 //								this, mcf.getConfigModule().getLocalServer(), organisationID,
@@ -1047,10 +1054,62 @@ public class JFireServerManagerFactoryImpl
 		return databaseName.toString();
 	}
 
+	private Map<CreateOrganisationProgressID, CreateOrganisationProgress> createOrganisationProgressMap = Collections.synchronizedMap(new HashMap<CreateOrganisationProgressID, CreateOrganisationProgress>());
+	private CreateOrganisationProgressID createOrganisationProgressID = null;
+	private transient Object createOrganisationProgressID_mutex = new Object();
+
+	// TODO this method should already check all parameter - simply as much as possible in order reduce the possibility of a later failure.
+	protected CreateOrganisationProgressID createOrganisationAsync(
+			final String organisationID,
+			final String organisationName, final String userID, final String password, final boolean isServerAdmin)
+	throws BusyCreatingOrganisationException
+	{
+		synchronized (createOrganisationProgressID_mutex) {
+			if (createOrganisationProgressID != null) {
+				String busyOrganisationID = createOrganisationProgressMap.get(createOrganisationProgressID).getOrganisationID();
+				throw new BusyCreatingOrganisationException(organisationID, CollectionUtil.array2HashSet(new String[] { busyOrganisationID }));
+			}
+
+			final CreateOrganisationProgress createOrganisationProgress = new CreateOrganisationProgress(organisationID);
+			createOrganisationProgressMap.put(createOrganisationProgress.getCreateOrganisationProgressID(), createOrganisationProgress);
+			createOrganisationProgressID = createOrganisationProgress.getCreateOrganisationProgressID();
+
+			Thread thread = new Thread() {
+				@Override
+				public void run()
+				{
+					try {
+						createOrganisation(createOrganisationProgress, organisationID, organisationName, userID, password, isServerAdmin);
+					} catch (Throwable e) {
+						logger.error("createOrganisationAsync.Thread.run: creating organisation \"" + organisationID + "\" failed!", e);
+					}
+				}
+			};
+			thread.start();
+
+			return createOrganisationProgress.getCreateOrganisationProgressID();
+		}
+	}
+
+	protected CreateOrganisationProgress getCreateOrganisationProgress(CreateOrganisationProgressID createOrganisationProgressID)
+	{
+		return createOrganisationProgressMap.get(createOrganisationProgressID);
+	}
+
+	protected void createOrganisationProgress_addCreateOrganisationStatus(
+			CreateOrganisationProgressID createOrganisationProgressID, CreateOrganisationStatus createOrganisationStatus)
+	{
+		CreateOrganisationProgress createOrganisationProgress = createOrganisationProgressMap.get(createOrganisationProgressID);
+		if (createOrganisationProgress == null)
+			throw new IllegalArgumentException("No CreateOrganisationProgress known with this id: " + createOrganisationProgressID);
+
+		createOrganisationProgress.addCreateOrganisationStatus(createOrganisationStatus);
+	}
+
 	/**
 	 * This method creates a new organisation. What exactly happens, is documented in our wiki:
 	 * https://www.jfire.org/modules/phpwiki/index.php/NewOrganisationCreation
-	 *
+	 * @param createOrganisationProgress <code>null</code> or an instance of {@link CreateOrganisationProgress} in order to track the status.
 	 * @param organisationID The ID of the new organsitation, which must not be <code>null</code>. Example: "RioDeJaneiro.NightLabs.org"
 	 * @param organisationName The "human" name of the organisation. Example: "NightLabs GmbH, Rio de Janeiro"
 	 * @param userID The userID of the first user to be created. This will be the new organisation's administrator.
@@ -1058,8 +1117,8 @@ public class JFireServerManagerFactoryImpl
 	 * @param isServerAdmin Whether the organisation's admin will have server-administrator privileges. This must be <tt>true</tt> if you create the first organisation on a server.
 	 */
 	protected void createOrganisation(
-			String organisationID, String organisationName,
-			String userID, String password, boolean isServerAdmin)
+			CreateOrganisationProgress createOrganisationProgress, String organisationID,
+			String organisationName, String userID, String password, boolean isServerAdmin)
 //			String masterOrganisationID
 //			) 
 		throws ModuleException
@@ -1067,287 +1126,344 @@ public class JFireServerManagerFactoryImpl
 		if (!createOrganisationAllowed)
 			throw new IllegalStateException("This method cannot be called yet. The creation of organisations is not allowed, before the datastore inits are run. If you get this exception in an early-server-init, you should switch to a late-server-init.");
 
-		synchronized (createOrganisation_mutex) {
-			
-			try {
-			
-				// check the parameters
-				if (organisationID == null)
-					throw new IllegalArgumentException("organisationID must not be null!");
-
-				if ("".equals(organisationID))
-					throw new IllegalArgumentException("organisationID must not be an empty string!");
-
-				if (organisationID.indexOf('.') < 0)
-					throw new IllegalArgumentException("organisationID is invalid! Must have domain-style form (e.g. \"jfire.nightlabs.de\")!");
-
-				if (!Organisation.isValidOrganisationID(organisationID))
-					throw new IllegalArgumentException("organisationID is not valid! Make sure it does not contain special characters. It should have a domain-style form!");
-
-				if (organisationID.length() > 50)
-					throw new IllegalArgumentException("organisationID has "+organisationID.length()+" chars and is too long! Maximum is 50 characters.");
-// TODO Though the database definition currently allows 100 chars, we'll probably have to reduce it to 50 because of
-// primary key constraints (max 1024 bytes with InnoDB) and the fact that MySQL uses 3 bytes per char when activating
-// UTF8!
-
-				if (organisationName == null)
-					throw new IllegalArgumentException("organisationName must not be null!");
-
-				if ("".equals(organisationName))
-					throw new IllegalArgumentException("organisationName must not be an empty string!");
+		// check the parameters (only some here - some will be checked below)
+		if (createOrganisationProgress == null)
+			throw new IllegalArgumentException("createOrganisationProgress must not be null!");
 		
-				if (userID == null)
-					throw new IllegalArgumentException("userID must not be null!");
+		if (organisationID == null)
+			throw new IllegalArgumentException("organisationID must not be null!");
 
-				if ("".equals(userID))
-					throw new IllegalArgumentException("userID must not be an empty string!");
+		if ("".equals(organisationID))
+			throw new IllegalArgumentException("organisationID must not be an empty string!");
 
-				if (!ObjectIDUtil.isValidIDString(userID))
-					throw new IllegalArgumentException("userID is not a valid ID! Make sure it does not contain special characters!");
+		if (organisationID.indexOf('.') < 0)
+			throw new IllegalArgumentException("organisationID is invalid! Must have domain-style form (e.g. \"jfire.nightlabs.de\")!");
 
-				if (userID.length() > 50)
-					throw new IllegalArgumentException("userID has "+userID.length()+" chars and is too long! Maximum is 50 characters.");
+		if (!Organisation.isValidOrganisationID(organisationID))
+			throw new IllegalArgumentException("organisationID is not valid! Make sure it does not contain special characters. It should have a domain-style form!");
 
-				if (password == null)
-					throw new IllegalArgumentException("password must NOT be null!");
+		if (organisationID.length() > 50)
+			throw new IllegalArgumentException("organisationID has "+organisationID.length()+" chars and is too long! Maximum is 50 characters.");
+//TODO Though the database definition currently allows 100 chars, we'll probably have to reduce it to 50 because of
+//primary key constraints (max 1024 bytes with InnoDB) and the fact that MySQL uses 3 bytes per char when activating
+//UTF8!
 
-				if (password.length() < 4)
-					throw new IllegalArgumentException("password is too short! At least 4 characters are required! At least 8 characters are recommended!");
+		if (organisationName == null)
+			throw new IllegalArgumentException("organisationName must not be null!");
 
-				if (isNewServerNeedingSetup())
-					throw new IllegalStateException("This server is not yet set up! Please complete the basic setup before creating organisations!");
+		if ("".equals(organisationName))
+			throw new IllegalArgumentException("organisationName must not be an empty string!");
 
-				if (!isServerAdmin && organisationConfigModule.getOrganisations().isEmpty())
-					throw new NoServerAdminException(
-							"You create the first organisation, hence 'isServerAdmin' must be true! " +
-							"Otherwise, you would end up locked out, without any possibility to " +
-							"create another organisation or change the server-configuration.");
+		if (!organisationID.equals(createOrganisationProgress.getOrganisationID()))
+			throw new IllegalArgumentException("organisationID does not match createOrganisationProgress.getOrganisationID()!");
 
-				// Check whether another organisation with the same name already exists.
-				// Unfortunately, there is currently no possibility to check in the whole
-				// network, thus we check only locally.
-				if (getOrganisationCfsCloned().get(organisationID) != null)
-					throw new DuplicateOrganisationException("An organisation with the name \""+organisationID+"\" already exists!");
+		DatastoreInitManager datastoreInitManager;
+		try {
+			datastoreInitManager = new DatastoreInitManager(this, mcf, getJ2EEVendorAdapter());
+		} catch (DatastoreInitException e) {
+			logger.error("Creation of DatastoreInitManager failed!", e);
+			throw new ModuleException(e);
+		}
 
-				// TODO we now have root-organisation-support, hence the root-organisation should be asked.
-				// But before implementing this, it should be possible to declare a stand-alone-mode in the
-				// configuration, meaning that there is no root-organisation and thus, all root-organisation-dependent
-				// actions should be deactivated.
-		
-				//boolean creatingFirstOrganisation = isOrganisationCfsEmpty();
+		// the steps before DatastoreInit are defined in org.nightlabs.jfire.servermanager.createorganisation.CreateOrganisationStep
+		int stepsBeforeDatastoreInit = 10;
+		int stepsDuringDatastoreInit = 2 * datastoreInitManager.getInits().size(); // 2 * because we track begin and end
 
-				InitialContext ctx = new InitialContext();
-//				TransactionManager transactionManager = getJ2EEVendorAdapter().getTransactionManager(ctx);
-				File jdoConfigDir = null;
-				DatabaseAdapter databaseAdapter = null;
-				boolean dropDatabase = false; // will be set true, AFTER the databaseAdapter has really created the database - this prevents a database to be dropped that was already previously existing
-				OrganisationCf organisationCf = null;
-				boolean doCommit = false;
-//				transactionManager.begin();
-		    try {
+		createOrganisationProgress.setStepsTotal(stepsBeforeDatastoreInit + stepsDuringDatastoreInit);
 
-					DatabaseCf dbCf = mcf.getConfigModule().getDatabase();
-					JDOCf jdoCf = mcf.getConfigModule().getJdo();
-
-					try {
-						Class.forName(dbCf.getDatabaseDriverName_noTx());
-					} catch (ClassNotFoundException e) {
-						throw new ConfigException("Database driver class (no-tx) \""+dbCf.getDatabaseDriverName_noTx()+"\" could not be found!", e);
-					}
-					try {
-						Class.forName(dbCf.getDatabaseDriverName_localTx());
-					} catch (ClassNotFoundException e) {
-						throw new ConfigException("Database driver class (local-tx) \""+dbCf.getDatabaseDriverName_localTx()+"\" could not be found!", e);
-					}
-					try {
-						Class.forName(dbCf.getDatabaseDriverName_xa());
-					} catch (ClassNotFoundException e) {
-						throw new ConfigException("Database driver class (xa) \""+dbCf.getDatabaseDriverName_xa()+"\" could not be found!", e);
+		try { // finally will clear this.createOrganisationProgressID, if it matches our current one
+			synchronized (createOrganisation_mutex) { // TODO this is not nice and might cause the below error in extremely rare situations (because between this line and the next, createOrganisationAsync might be called)
+				synchronized (createOrganisationProgressID_mutex) {
+					if (createOrganisationProgressID != null && !createOrganisationProgressID.equals(createOrganisationProgress.getCreateOrganisationProgressID())) {
+						String busyOrganisationID = createOrganisationProgressMap.get(createOrganisationProgressID).getOrganisationID();
+						BusyCreatingOrganisationException x = new BusyCreatingOrganisationException(organisationID, CollectionUtil.array2HashSet(new String[] { busyOrganisationID }));
+						logger.error("THIS SHOULD NEVER HAPPEN!", x);
+						throw x;
 					}
 
-					// create database
-					String databaseName = createDatabaseName(organisationID, true);
-					String dbURL = dbCf.getDatabaseURL(databaseName);
-					databaseAdapter = dbCf.instantiateDatabaseAdapter();
+					createOrganisationProgressMap.put(createOrganisationProgress.getCreateOrganisationProgressID(), createOrganisationProgress);
+					createOrganisationProgressID = createOrganisationProgress.getCreateOrganisationProgressID();
+				}
 
+				try {
+					// check the parameters (only some here - some are already checked above)
+
+					if (userID == null)
+						throw new IllegalArgumentException("userID must not be null!");
+
+					if ("".equals(userID))
+						throw new IllegalArgumentException("userID must not be an empty string!");
+
+					if (!ObjectIDUtil.isValidIDString(userID))
+						throw new IllegalArgumentException("userID is not a valid ID! Make sure it does not contain special characters!");
+
+					if (userID.length() > 50)
+						throw new IllegalArgumentException("userID has "+userID.length()+" chars and is too long! Maximum is 50 characters.");
+
+					if (password == null)
+						throw new IllegalArgumentException("password must NOT be null!");
+
+					if (password.length() < 4)
+						throw new IllegalArgumentException("password is too short! At least 4 characters are required! At least 8 characters are recommended!");
+
+					if (isNewServerNeedingSetup())
+						throw new IllegalStateException("This server is not yet set up! Please complete the basic setup before creating organisations!");
+
+					if (!isServerAdmin && organisationConfigModule.getOrganisations().isEmpty())
+						throw new NoServerAdminException(
+								"You create the first organisation, hence 'isServerAdmin' must be true! " +
+								"Otherwise, you would end up locked out, without any possibility to " +
+						"create another organisation or change the server-configuration.");
+
+					// Check whether another organisation with the same name already exists.
+					// Unfortunately, there is currently no possibility to check in the whole
+					// network, thus we check only locally.
+					if (getOrganisationCfsCloned().get(organisationID) != null)
+						throw new DuplicateOrganisationException("An organisation with the name \""+organisationID+"\" already exists!");
+
+					// TODO we now have root-organisation-support, hence the root-organisation should be asked.
+					// But before implementing this, it should be possible to declare a stand-alone-mode in the
+					// configuration, meaning that there is no root-organisation and thus, all root-organisation-dependent
+					// actions should be deactivated.
+
+					//boolean creatingFirstOrganisation = isOrganisationCfsEmpty();
+
+					InitialContext ctx = new InitialContext();
+//					TransactionManager transactionManager = getJ2EEVendorAdapter().getTransactionManager(ctx);
+					File jdoConfigDir = null;
+					DatabaseAdapter databaseAdapter = null;
+					boolean dropDatabase = false; // will be set true, AFTER the databaseAdapter has really created the database - this prevents a database to be dropped that was already previously existing
+					OrganisationCf organisationCf = null;
+					boolean doCommit = false;
+//					transactionManager.begin();
 					try {
-						databaseAdapter.createDatabase(mcf.getConfigModule(), dbURL);
-						dropDatabase = true;
-					} catch (Exception x) {
-						throw new ModuleException("Creating database with DatabaseAdapter \"" + databaseAdapter.getClass().getName() + "\" failed!", x);
-					}
 
-					jdoConfigDir = new File(jdoCf.getJdoConfigDirectory(organisationID)).getAbsoluteFile();
-					File datasourceDSXML = new File(jdoConfigDir, dbCf.getDatasourceConfigFile(organisationID));
-					File jdoDSXML = new File(jdoConfigDir, jdoCf.getJdoConfigFile(organisationID));
+						DatabaseCf dbCf = mcf.getConfigModule().getDatabase();
+						JDOCf jdoCf = mcf.getConfigModule().getJdo();
 
-					// creating deployment descriptor for datasource
-					createDeploymentDescriptor(organisationID, datasourceDSXML,
-							new File(dbCf.getDatasourceTemplateDSXMLFile()), null, DeployOverwriteBehaviour.EXCEPTION);
+						try {
+							Class.forName(dbCf.getDatabaseDriverName_noTx());
+						} catch (ClassNotFoundException e) {
+							throw new ConfigException("Database driver class (no-tx) \""+dbCf.getDatabaseDriverName_noTx()+"\" could not be found!", e);
+						}
+						try {
+							Class.forName(dbCf.getDatabaseDriverName_localTx());
+						} catch (ClassNotFoundException e) {
+							throw new ConfigException("Database driver class (local-tx) \""+dbCf.getDatabaseDriverName_localTx()+"\" could not be found!", e);
+						}
+						try {
+							Class.forName(dbCf.getDatabaseDriverName_xa());
+						} catch (ClassNotFoundException e) {
+							throw new ConfigException("Database driver class (xa) \""+dbCf.getDatabaseDriverName_xa()+"\" could not be found!", e);
+						}
 
-					// creating deployment descriptor for JDO PersistenceManagerFactory
-					createDeploymentDescriptor(organisationID, jdoDSXML,
-							new File(jdoCf.getJdoTemplateDSXMLFile()), null, DeployOverwriteBehaviour.EXCEPTION);
+						// create database
+						String databaseName = createDatabaseName(organisationID, true);
+						String dbURL = dbCf.getDatabaseURL(databaseName);
 
-					organisationCf = organisationConfigModule.addOrganisation(
-							organisationID, organisationName);
+						createOrganisationProgress.addCreateOrganisationStatus(
+								new CreateOrganisationStatus(
+										CreateOrganisationStep.JFireServerManagerFactory_createOrganisation_createDatabase_begin,
+										databaseName, dbURL));
 
-					if (userID != null && isServerAdmin) organisationCf.addServerAdmin(userID);
-					resetOrganisationCfs();
-					try {
-						getConfig().save(true); // TODO really force all modules to be written???
-					} catch (ConfigException e) {
-						logger.fatal("Saving config failed!", e);
-					}
-					logger.info("Empty organisation \""+organisationID+"\" (\""+organisationName+"\") has been created. Waiting for deployment...");
+						databaseAdapter = dbCf.instantiateDatabaseAdapter();
 
-					PersistenceManager pm = null;
-					try {
-						// Now, we need to wait until the deployment of the x-ds.xml is complete and our
-						// jdo persistencemanager is existing in JNDI.
-						int tryCount = createOrganisationConfigModule.getWaitForPersistenceManager_tryCount();
+						try {
+							databaseAdapter.createDatabase(mcf.getConfigModule(), dbURL);
+							dropDatabase = true;
+						} catch (Exception x) {
+							throw new ModuleException("Creating database with DatabaseAdapter \"" + databaseAdapter.getClass().getName() + "\" failed!", x);
+						}
+						createOrganisationProgress.addCreateOrganisationStatus(
+								new CreateOrganisationStatus(
+										CreateOrganisationStep.JFireServerManagerFactory_createOrganisation_createDatabase_end,
+										databaseName, dbURL));
 
-						int tryNr = 0;
-						while (pm == null) {
-							++tryNr;
-							try {
-								pm = waitForPersistenceManager(OrganisationCf.PERSISTENCE_MANAGER_FACTORY_PREFIX_ABSOLUTE + organisationID); // org.getPersistenceManagerFactoryJNDIName());
-							} catch (ModuleException x) {
-								if (tryNr >= tryCount) throw x;
+						createOrganisationProgress.addCreateOrganisationStatus(
+								new CreateOrganisationStatus(
+										CreateOrganisationStep.JFireServerManagerFactory_createOrganisation_deployJDO_begin,
+										databaseName, dbURL));
 
-								logger.info("Obtaining PersistenceManagerFactory failed! Touching jdo-ds-file and its directory and trying it again...");
-								long now = System.currentTimeMillis();
-								datasourceDSXML.setLastModified(now);
-								jdoDSXML.setLastModified(now);
-								jdoConfigDir.setLastModified(now);
+						jdoConfigDir = new File(jdoCf.getJdoConfigDirectory(organisationID)).getAbsoluteFile();
+						File datasourceDSXML = new File(jdoConfigDir, dbCf.getDatasourceConfigFile(organisationID));
+						File jdoDSXML = new File(jdoConfigDir, jdoCf.getJdoConfigFile(organisationID));
+
+						// creating deployment descriptor for datasource
+						createDeploymentDescriptor(organisationID, datasourceDSXML,
+								new File(dbCf.getDatasourceTemplateDSXMLFile()), null, DeployOverwriteBehaviour.EXCEPTION);
+
+						// creating deployment descriptor for JDO PersistenceManagerFactory
+						createDeploymentDescriptor(organisationID, jdoDSXML,
+								new File(jdoCf.getJdoTemplateDSXMLFile()), null, DeployOverwriteBehaviour.EXCEPTION);
+
+						organisationCf = organisationConfigModule.addOrganisation(
+								organisationID, organisationName);
+
+						if (userID != null && isServerAdmin) organisationCf.addServerAdmin(userID);
+						resetOrganisationCfs();
+						try {
+							getConfig().save(true); // TODO really force all modules to be written???
+						} catch (ConfigException e) {
+							logger.fatal("Saving config failed!", e);
+						}
+						logger.info("Empty organisation \""+organisationID+"\" (\""+organisationName+"\") has been created. Waiting for deployment...");
+
+						PersistenceManager pm = null;
+						try {
+							// Now, we need to wait until the deployment of the x-ds.xml is complete and our
+							// jdo persistencemanager is existing in JNDI.
+							int tryCount = createOrganisationConfigModule.getWaitForPersistenceManager_tryCount();
+
+							int tryNr = 0;
+							while (pm == null) {
+								++tryNr;
+								try {
+									pm = waitForPersistenceManager(OrganisationCf.PERSISTENCE_MANAGER_FACTORY_PREFIX_ABSOLUTE + organisationID); // org.getPersistenceManagerFactoryJNDIName());
+								} catch (ModuleException x) {
+									if (tryNr >= tryCount) throw x;
+
+									logger.info("Obtaining PersistenceManagerFactory failed! Touching jdo-ds-file and its directory and trying it again...");
+									long now = System.currentTimeMillis();
+									datasourceDSXML.setLastModified(now);
+									jdoDSXML.setLastModified(now);
+									jdoConfigDir.setLastModified(now);
+								}
+							}
+							logger.info("PersistenceManagerFactory of organisation \""+organisationID+"\" (\""+organisationName+"\") has been deployed.");
+
+						} finally {
+							if (pm != null) {
+								pm.close();
+								pm = null;
 							}
 						}
-						logger.info("PersistenceManagerFactory of organisation \""+organisationID+"\" (\""+organisationName+"\") has been deployed.");
 
-					} finally {
-						if (pm != null) {
-							pm.close();
-							pm = null;
+						createOrganisationProgress.addCreateOrganisationStatus(
+								new CreateOrganisationStatus(
+										CreateOrganisationStep.JFireServerManagerFactory_createOrganisation_deployJDO_end,
+										databaseName, dbURL));
+
+						// populating essential data (Server, Organisation, User etc.) via OrganisationManagerBean.
+						// we cannot reference the classes directly, because the project JFireBaseBean is dependent on JFireServerManager.
+						// therefore, we reference it via the names.
+						ServerCf localServerCf = mcf.getConfigModule().getLocalServer();
+						Properties props = InvokeUtil.getInitialContextProperties(
+								this, localServerCf, organisationID, User.USERID_SYSTEM,
+								jfireSecurity_createTempUserPassword(organisationID, User.USERID_SYSTEM));
+						InitialContext authInitCtx = new InitialContext(props);
+						try {
+							Object bean = InvokeUtil.createBean(authInitCtx, "jfire/ejb/JFireBaseBean/OrganisationManager");
+							Method beanMethod = bean.getClass().getMethod(
+									"internalInitializeEmptyOrganisation",
+									new Class[] { CreateOrganisationProgressID.class, ServerCf.class, OrganisationCf.class, String.class, String.class }
+							);
+							beanMethod.invoke(bean, new Object[] { createOrganisationProgress.getCreateOrganisationProgressID(), localServerCf, organisationCf, userID, password});
+							InvokeUtil.removeBean(bean);
+						} finally {
+							authInitCtx.close();
 						}
-					}
 
+						// there has been a role import, hence we need to flush the cache
+						// (actually, it would be sufficient to flush it for the new organisation only, but there's no API yet and this doesn't harm)
+						jfireSecurity_flushCache();
 
-					// populating essential data (Server, Organisation, User etc.) via OrganisationManagerBean.
-					// we cannot reference the classes directly, because the project JFireBaseBean is dependent on JFireServerManager.
-					// therefore, we reference it via the names.
-					ServerCf localServerCf = mcf.getConfigModule().getLocalServer();
-					Properties props = InvokeUtil.getInitialContextProperties(
-							this, localServerCf, organisationID, User.USERID_SYSTEM,
-							jfireSecurity_createTempUserPassword(organisationID, User.USERID_SYSTEM));
-					InitialContext authInitCtx = new InitialContext(props);
-					try {
-						Object bean = InvokeUtil.createBean(authInitCtx, "jfire/ejb/JFireBaseBean/OrganisationManager");
-						Method beanMethod = bean.getClass().getMethod(
-								"internalInitializeEmptyOrganisation",
-								new Class[] { ServerCf.class, OrganisationCf.class, String.class, String.class }
-								);
-						beanMethod.invoke(bean, new Object[] { localServerCf, organisationCf, userID, password});
-						InvokeUtil.removeBean(bean);
+						// Because flushing the authentication cache causes trouble to currently logged in
+						// clients, we only do that if we are creating the first organisation of a new server.
+						// ***
+						// it seems, the problem described above doesn't exist anymore. but in case it pops up again,
+						// we need to uncomment the following line again
+//						if (creatingFirstOrganisation)
+						j2ee_flushAuthenticationCache();
+
+						// create the CacheManagerFactory for the new organisation
+						try {
+							CacheManagerFactory cmf = new CacheManagerFactory(
+									this, ctx, organisationCf, cacheCfMod, new File(mcf.getSysConfigDirectory())); // registers itself in JNDI
+
+							// register the cache's JDO-listeners in the PersistenceManagerFactory
+							PersistenceManagerFactory pmf = getPersistenceManagerFactory(organisationID);
+							cmf.setupJdoCacheBridge(pmf);
+
+//							new OrganisationSyncManagerFactory(ctx, organisationID,
+//							getJ2EEVendorAdapter().getTransactionManager(ctx), pmf); // registers itself in JNDI
+
+							new PersistentNotificationManagerFactory(ctx, organisationID, this,
+									getJ2EEVendorAdapter().getTransactionManager(ctx), pmf); // registers itself in JNDI
+						} catch (Exception e) {
+							logger.error("Creating CacheManagerFactory or PersistentNotificationManagerFactory for organisation \""+organisationID+"\" failed!", e);
+							throw new ResourceException(e.getMessage());
+						}
+
+						doCommit = true;
 					} finally {
-						authInitCtx.close();
-					}
+						if (doCommit) {
+//							transactionManager.commit();
+						}
+						else {
+//							try {
+//							transactionManager.rollback();
+//							} catch (Throwable t) {
+//							logger.error("Rolling back transaction failed!", t);
+//							}
 
-					// there has been a role import, hence we need to flush the cache
-					// (actually, it would be sufficient to flush it for the new organisation only, but there's no API yet and this doesn't harm)
-					jfireSecurity_flushCache();
+							// We drop the database after rollback(), because it might be the case that JDO tries to do sth. with
+							// the database during rollback.
+							try {
+								if (dropDatabase && databaseAdapter != null)
+									databaseAdapter.dropDatabase();
+							} catch (Throwable t) {
+								logger.error("Dropping database failed!", t);
+							}
 
-					// Because flushing the authentication cache causes trouble to currently logged in
-					// clients, we only do that if we are creating the first organisation of a new server.
-					// ***
-					// it seems, the problem described above doesn't exist anymore. but in case it pops up again,
-					// we need to uncomment the following line again
-//					if (creatingFirstOrganisation)
-					j2ee_flushAuthenticationCache();
+							try {
+								if (jdoConfigDir != null) {
+									if (!IOUtil.deleteDirectoryRecursively(jdoConfigDir))
+										logger.error("Deleting JDO config directory \"" + jdoConfigDir.getAbsolutePath() + "\" failed!");;
+								}
+							} catch (Throwable t) {
+								logger.error("Deleting JDO config directory \"" + jdoConfigDir.getAbsolutePath() + "\" failed!", t);
+							}
 
-					// create the CacheManagerFactory for the new organisation
-					try {
-						CacheManagerFactory cmf = new CacheManagerFactory(
-								this, ctx, organisationCf, cacheCfMod, new File(mcf.getSysConfigDirectory())); // registers itself in JNDI
+							if (organisationCf != null) {
+								try {
+									if (!organisationConfigModule.removeOrganisation(organisationCf.getOrganisationID()))
+										throw new IllegalStateException("Organisation was not registered in ConfigModule!");
 
-						// register the cache's JDO-listeners in the PersistenceManagerFactory
-						PersistenceManagerFactory pmf = getPersistenceManagerFactory(organisationID);
-						cmf.setupJdoCacheBridge(pmf);
+									organisationConfigModule._getConfig().save();
+								} catch (Throwable t) {
+									logger.error("Removing organisation \"" + organisationCf.getOrganisationID() + "\" from JFire server configuration failed!", t);
+								}
+							}
+						}
+						databaseAdapter.close();
+						databaseAdapter = null;
+					} // } finally {
 
-//						new OrganisationSyncManagerFactory(ctx, organisationID,
-//								getJ2EEVendorAdapter().getTransactionManager(ctx), pmf); // registers itself in JNDI
+				} catch (RuntimeException x) {
+					createOrganisationProgress.addCreateOrganisationStatus(
+							new CreateOrganisationStatus(CreateOrganisationStep.JFireServerManagerFactory_createOrganisation_error, x));
+					throw x;
+				} catch (ModuleException x) {
+					createOrganisationProgress.addCreateOrganisationStatus(
+							new CreateOrganisationStatus(CreateOrganisationStep.JFireServerManagerFactory_createOrganisation_error, x));
+					throw x;
+				} catch (Exception x) {
+					createOrganisationProgress.addCreateOrganisationStatus(
+							new CreateOrganisationStatus(CreateOrganisationStep.JFireServerManagerFactory_createOrganisation_error, x));
+					throw new ModuleException(x);
+				}
 
-						new PersistentNotificationManagerFactory(ctx, organisationID, this,
-								getJ2EEVendorAdapter().getTransactionManager(ctx), pmf); // registers itself in JNDI
-					} catch (Exception e) {
-						logger.error("Creating CacheManagerFactory or PersistentNotificationManagerFactory for organisation \""+organisationID+"\" failed!", e);
-						throw new ResourceException(e.getMessage());
-					}
+			} // synchronized (this) {
 
-					doCommit = true;
-		    } finally {
-		    	if (doCommit) {
-//		    		transactionManager.commit();
-		    	}
-		    	else {
-//		    		try {
-//		    			transactionManager.rollback();
-//		    		} catch (Throwable t) {
-//		    			logger.error("Rolling back transaction failed!", t);
-//		    		}
+//			String deployBaseDir = mcf.getConfigModule().getJ2ee().getJ2eeDeployBaseDirectory();
 
-		    		// We drop the database after rollback(), because it might be the case that JDO tries to do sth. with
-		    		// the database during rollback.
-		    		try {
-		    			if (dropDatabase && databaseAdapter != null)
-		    				databaseAdapter.dropDatabase();
-		    		} catch (Throwable t) {
-		    			logger.error("Dropping database failed!", t);
-		    		}
-
-		    		try {
-			    		if (jdoConfigDir != null) {
-			    			if (!IOUtil.deleteDirectoryRecursively(jdoConfigDir))
-			    				logger.error("Deleting JDO config directory \"" + jdoConfigDir.getAbsolutePath() + "\" failed!");;
-			    		}
-		    		} catch (Throwable t) {
-		    			logger.error("Deleting JDO config directory \"" + jdoConfigDir.getAbsolutePath() + "\" failed!", t);
-		    		}
-
-		    		if (organisationCf != null) {
-		    			try {
-		    				if (!organisationConfigModule.removeOrganisation(organisationCf.getOrganisationID()))
-		    					throw new IllegalStateException("Organisation was not registered in ConfigModule!");
-
-		    				organisationConfigModule._getConfig().save();
-		    			} catch (Throwable t) {
-		    				logger.error("Removing organisation \"" + organisationCf.getOrganisationID() + "\" from JFire server configuration failed!", t);
-		    			}
-		    		}
-		    	}
-		    	databaseAdapter.close();
-		    	databaseAdapter = null;
-		    } // } finally {
-
-			} catch (RuntimeException x) {
-				throw x;
-			} catch (ModuleException x) {
-				throw x;
-			} catch (Exception x) {
-				throw new ModuleException(x);
+			try {
+				datastoreInitManager.initialiseDatastore(this, mcf.getConfigModule().getLocalServer(), organisationID,
+						jfireSecurity_createTempUserPassword(organisationID, User.USERID_SYSTEM), createOrganisationProgress);
+			} catch (ModuleException e) {
+				logger.error("Datastore initialization for new organisation \""+organisationID+"\" failed!", e);
 			}
 
-		} // synchronized (this) {
-
-//		String deployBaseDir = mcf.getConfigModule().getJ2ee().getJ2eeDeployBaseDirectory();
-		
-		try {
-			DatastoreInitManager datastoreInitManager = new DatastoreInitManager(this, mcf, getJ2EEVendorAdapter());
-			datastoreInitManager.initialiseDatastore(this, mcf.getConfigModule().getLocalServer(), organisationID,
-					jfireSecurity_createTempUserPassword(organisationID, User.USERID_SYSTEM));
-		} catch (DatastoreInitException e) {
-			logger.error("Datastore initialization for new organisation \""+organisationID+"\" failed!", e);
-		}
-		
 		// OLD INIT STUFF
 		// DatastoreInitializer datastoreInitializer = new DatastoreInitializer(this, mcf, getJ2EEVendorAdapter());
 
@@ -1358,6 +1474,14 @@ public class JFireServerManagerFactoryImpl
 //		} catch (Exception x) {
 //			logger.error("Datastore initialization for new organisation \""+organisationID+"\" failed!", x);
 //		}
+		} finally {
+			synchronized (createOrganisationProgressID_mutex) {
+				if (Util.equals(createOrganisationProgressID, createOrganisationProgress.getCreateOrganisationProgressID()))
+					createOrganisationProgressID = null;
+
+				createOrganisationProgress.done();
+			}
+		}
 	}
 
 

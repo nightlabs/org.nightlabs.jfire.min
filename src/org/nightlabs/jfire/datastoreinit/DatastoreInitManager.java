@@ -5,6 +5,7 @@ import java.io.FileFilter;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Properties;
@@ -24,6 +25,9 @@ import org.nightlabs.jfire.init.InitException;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.servermanager.JFireServerManagerFactory;
 import org.nightlabs.jfire.servermanager.config.ServerCf;
+import org.nightlabs.jfire.servermanager.createorganisation.CreateOrganisationProgress;
+import org.nightlabs.jfire.servermanager.createorganisation.CreateOrganisationStatus;
+import org.nightlabs.jfire.servermanager.createorganisation.CreateOrganisationStep;
 import org.nightlabs.jfire.servermanager.j2ee.J2EEAdapter;
 import org.nightlabs.jfire.servermanager.ra.JFireServerManagerFactoryImpl;
 import org.nightlabs.jfire.servermanager.ra.ManagedConnectionFactoryImpl;
@@ -137,10 +141,15 @@ public class DatastoreInitManager extends AbstractInitManager<DatastoreInit, Dat
 		}
 	}
 
-	public List<DatastoreInit> parseDatastoreInitXML(String jfireEAR, String jfireJAR, InputStream ejbJarIn)
+	public List<DatastoreInit> getInits()
+	{
+		return Collections.unmodifiableList(inits);
+	}
+
+	protected List<DatastoreInit> parseDatastoreInitXML(String jfireEAR, String jfireJAR, InputStream ejbJarIn)
 	throws XMLReadException
 	{
-		List<DatastoreInit> serverInits = new ArrayList<DatastoreInit>();
+		List<DatastoreInit> _inits = new ArrayList<DatastoreInit>();
 		
 		try {
 			InputSource inputSource = new InputSource(ejbJarIn);
@@ -281,7 +290,7 @@ public class DatastoreInitManager extends AbstractInitManager<DatastoreInit, Dat
 					nDepends = niDepends.nextNode();
 				}
 
-				serverInits.add(init);
+				_inits.add(init);
 
 				nInit = ni.nextNode();
 			}
@@ -291,7 +300,7 @@ public class DatastoreInitManager extends AbstractInitManager<DatastoreInit, Dat
 			throw new XMLReadException("jfireEAR '"+jfireEAR+"' jfireJAR '"+jfireJAR+"': Reading datastoreinit.xml failed!", x);
 		}
 		
-		return serverInits;
+		return _inits;
 	}
 
 	@Override
@@ -317,28 +326,49 @@ public class DatastoreInitManager extends AbstractInitManager<DatastoreInit, Dat
 		
 		return toReturn.toArray(new String[0]);
 	}
-	
-	public void initialiseDatastore(JFireServerManagerFactory ismf, ServerCf localServer, String organisationID, String systemUserPassword)
+
+	public void initialiseDatastore(
+			JFireServerManagerFactory ismf, ServerCf localServer, String organisationID, String systemUserPassword)
+	throws ModuleException
+	{
+		initialiseDatastore(ismf, localServer, organisationID, systemUserPassword, null);
+	}
+
+	public void initialiseDatastore(
+			JFireServerManagerFactory ismf, ServerCf localServer, String organisationID, String systemUserPassword, CreateOrganisationProgress createOrganisationProgress)
 	throws ModuleException
 	{
 		if (!canPerformInit) {
 			logger.error("Datastore initialisation can not be performed due to errors above.");
 			return;
 		}
-		
+
 		try {
 			Properties props = InvokeUtil.getInitialContextProperties(ismf, localServer, organisationID, User.USERID_SYSTEM, systemUserPassword);
 			InitialContext initCtx = new InitialContext(props);
 			try {
 				for (DatastoreInit init : inits) {
 					logger.info("Invoking DatastoreInit: " + init);
+
+					if (createOrganisationProgress != null)
+						createOrganisationProgress.addCreateOrganisationStatus(
+								new CreateOrganisationStatus(CreateOrganisationStep.DatastoreInitManager_initialiseDatastore_begin, new String[] { init.getName() }));
+
 					try {
 						Object bean = InvokeUtil.createBean(initCtx, init.getBean());
 						Method beanMethod = bean.getClass().getMethod(init.getMethod(), (Class[]) null);
 						beanMethod.invoke(bean, (Object[]) null);
 						InvokeUtil.removeBean(bean);
+
+						if (createOrganisationProgress != null)
+							createOrganisationProgress.addCreateOrganisationStatus(
+									new CreateOrganisationStatus(CreateOrganisationStep.DatastoreInitManager_initialiseDatastore_endWithSuccess, new String[] { init.getName() }));
 					} catch (Exception x) {
 						logger.error("Init failed! " + init, x);
+
+						if (createOrganisationProgress != null)
+							createOrganisationProgress.addCreateOrganisationStatus(
+									new CreateOrganisationStatus(CreateOrganisationStep.DatastoreInitManager_initialiseDatastore_endWithError, x));
 					}
 				}
 
