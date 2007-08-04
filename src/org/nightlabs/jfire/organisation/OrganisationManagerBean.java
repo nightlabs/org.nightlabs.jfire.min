@@ -68,6 +68,11 @@ import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
 import org.nightlabs.jfire.servermanager.config.OrganisationCf;
 import org.nightlabs.jfire.servermanager.config.RootOrganisationCf;
 import org.nightlabs.jfire.servermanager.config.ServerCf;
+import org.nightlabs.jfire.servermanager.createorganisation.BusyCreatingOrganisationException;
+import org.nightlabs.jfire.servermanager.createorganisation.CreateOrganisationProgress;
+import org.nightlabs.jfire.servermanager.createorganisation.CreateOrganisationProgressID;
+import org.nightlabs.jfire.servermanager.createorganisation.CreateOrganisationStatus;
+import org.nightlabs.jfire.servermanager.createorganisation.CreateOrganisationStep;
 import org.nightlabs.jfire.test.cascadedauthentication.TestRequestResultTreeNode;
 import org.nightlabs.math.Base62Coder;
 import org.nightlabs.util.Util;
@@ -207,6 +212,46 @@ public abstract class OrganisationManagerBean
 		}
 	}
 
+	/**
+	 * This method creates an organisation on this server. In contrast to {@link OrganisationManager#createOrganisation(String, String, String, String, boolean)},
+	 * this method works asynchronously and you can track the progress using {@link OrganisationManager#getCreateOrganisationProgress(CreateOrganisationProgressID)}.
+	 *
+	 * @param organisationID The ID of the new organisation. It must be unique in the whole world.
+	 * @param organisationDisplayName A nice name that will be used to display the new representative organisation.
+	 * @param userID The userID of the first user to create within the new organisation. It will have all necessary permissions to manage users and roles within the new organisation. 
+	 * @param password The password of the new user.
+	 * @param isServerAdmin Whether this user should have global server administration permissions.
+	 * @throws BusyCreatingOrganisationException 
+	 *
+	 * @ejb.interface-method
+	 * @ejb.transaction type="Never"
+	 * @ejb.permission role-name="_ServerAdmin_"
+	 */
+	public CreateOrganisationProgressID createOrganisationAsync(String organisationID, String organisationDisplayName, String userID, String password, boolean isServerAdmin)
+	throws BusyCreatingOrganisationException
+	{
+		JFireServerManager ism = getJFireServerManager();
+		try {
+			return ism.createOrganisationAsync(organisationID, organisationDisplayName, userID, password, isServerAdmin);
+		} finally {
+			ism.close();
+		}
+	}
+
+	/**
+	 * @ejb.interface-method
+	 * @ejb.transaction type="Supports"
+	 * @ejb.permission role-name="_ServerAdmin_"
+	 */
+	public CreateOrganisationProgress getCreateOrganisationProgress(CreateOrganisationProgressID createOrganisationProgressID)
+	{
+		JFireServerManager ism = getJFireServerManager();
+		try {
+			return ism.getCreateOrganisationProgress(createOrganisationProgressID);
+		} finally {
+			ism.close();
+		}
+	}
 
 	/**
 	 * @ejb.interface-method
@@ -1010,6 +1055,7 @@ public abstract class OrganisationManagerBean
 	 * @ejb.permission role-name="_System_"
 	 **/
 	public void internalInitializeEmptyOrganisation(
+			CreateOrganisationProgressID createOrganisationProgressID,
 			ServerCf localServerCf,
 			OrganisationCf organisationCf,
 			String userID, String password
@@ -1017,10 +1063,36 @@ public abstract class OrganisationManagerBean
 	throws CreateException, NamingException
 	{
 		OrganisationManagerHelperLocal m = OrganisationManagerHelperUtil.getLocalHome().create();
-		m.internalInitializeEmptyOrganisation_step1(localServerCf, organisationCf, userID, password);
-		m.internalInitializeEmptyOrganisation_step2();
-		m.internalInitializeEmptyOrganisation_step3(localServerCf, organisationCf, userID);
-//		OrganisationManager organisationManager = OrganisationManagerUtil.ge
+		JFireServerManager jfsm = getJFireServerManager();
+		try {
+			jfsm.createOrganisationProgress_addCreateOrganisationStatus(createOrganisationProgressID,
+					new CreateOrganisationStatus(CreateOrganisationStep.OrganisationManagerHelper_initializeEmptyOrganisation_step1_begin));
+
+			m.internalInitializeEmptyOrganisation_step1(localServerCf, organisationCf, userID, password);
+
+			jfsm.createOrganisationProgress_addCreateOrganisationStatus(createOrganisationProgressID,
+					new CreateOrganisationStatus(CreateOrganisationStep.OrganisationManagerHelper_initializeEmptyOrganisation_step1_end));
+
+
+			jfsm.createOrganisationProgress_addCreateOrganisationStatus(createOrganisationProgressID,
+					new CreateOrganisationStatus(CreateOrganisationStep.OrganisationManagerHelper_initializeEmptyOrganisation_step2_begin));
+
+			m.internalInitializeEmptyOrganisation_step2();
+
+			jfsm.createOrganisationProgress_addCreateOrganisationStatus(createOrganisationProgressID,
+					new CreateOrganisationStatus(CreateOrganisationStep.OrganisationManagerHelper_initializeEmptyOrganisation_step2_end));
+
+
+			jfsm.createOrganisationProgress_addCreateOrganisationStatus(createOrganisationProgressID,
+					new CreateOrganisationStatus(CreateOrganisationStep.OrganisationManagerHelper_initializeEmptyOrganisation_step3_begin));
+
+			m.internalInitializeEmptyOrganisation_step3(localServerCf, organisationCf, userID);
+
+			jfsm.createOrganisationProgress_addCreateOrganisationStatus(createOrganisationProgressID,
+					new CreateOrganisationStatus(CreateOrganisationStep.OrganisationManagerHelper_initializeEmptyOrganisation_step3_end));
+		} finally {
+			jfsm.close();
+		}
 	}
 
 //	/**
