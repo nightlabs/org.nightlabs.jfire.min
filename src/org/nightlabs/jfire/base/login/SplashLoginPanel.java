@@ -163,7 +163,7 @@ public class SplashLoginPanel extends JPanel
 			loginConfigMap.put(lastUsed, latestLoginConfig);
 		}
 		
-		for (LoginConfiguration config : loginConfigModule.getLoginConfigurations()) {
+		for (LoginConfiguration config : loginConfigModule.getSavedLoginConfigurations()) {
 			loginConfigMap.put(config.toShortString(), config);
 			loginConfigNames.add(config.toShortString());
 		}

@@ -22,7 +22,7 @@ public class LoginConfiguration implements Serializable, Initializable, Cloneabl
 	private String securityProtocol = null;
 	private boolean automaticUpdate = false;
 	
-	private String configurationName = null;
+	private String name = null;
 
 	public LoginConfiguration() {
 		this(null, null, null, null, null, null, null);
@@ -49,7 +49,7 @@ public class LoginConfiguration implements Serializable, Initializable, Cloneabl
 		this.serverURL = serverURL;
 		this.initialContextFactory = initialContextFactory;
 		this.securityProtocol = securityProtocol;
-		this.configurationName = configurationName;
+		this.name = configurationName;
 	}
 
 	/**
@@ -138,28 +138,30 @@ public class LoginConfiguration implements Serializable, Initializable, Cloneabl
 		this.workstationID = workstationID;
 	}
 	
-	public String getConfigurationName() {
-		return configurationName;
+	public String getName() {
+		return name;
 	}
 	
-	public void setConfigurationName(String configurationName) {
-		this.configurationName = configurationName;
+	public void setName(String configurationName) {
+		if (configurationName == null || "".equals(configurationName))
+			throw new IllegalArgumentException("Configuration name must be non-null and non-empty.");
+		
+		this.name = configurationName;
 	}
 
 	@Override
 	public String toString() {
-		if (configurationName == null || "".equals(configurationName))
+		if (name == null || "".equals(name))
 			return userID + "@" + organisationID + " (" + workstationID + ") (" + serverURL + ")";
 		else
-			return configurationName;
+			return name;
 	}
 	
 	public String toShortString() {
-		if (configurationName == null || "".equals(configurationName)) {
-			String _serverURL = serverURL.substring(serverURL.indexOf("://")+3);
-			return shorten(userID, 8) +	"@" + shorten(organisationID, 8) + " (" + shorten(workstationID, 8) + ") (" + shorten(_serverURL, 10) + ")";
+		if (name == null || "".equals(name)) {
+			return shorten(userID, 8) +	"@" + shorten(organisationID, 8) + " (" + shorten(workstationID, 8) + ")";
 		}
-		return configurationName;
+		return name;
 	}
 	
 	public String shorten(String target, int count) {
@@ -193,27 +195,8 @@ public class LoginConfiguration implements Serializable, Initializable, Cloneabl
 		if (getClass() != obj.getClass())
 			return false;
 		final LoginConfiguration other = (LoginConfiguration) obj;
-		if (organisationID == null) {
-			if (other.organisationID != null)
-				return false;
-		} else if (!organisationID.equals(other.organisationID))
-			return false;
-		if (serverURL == null) {
-			if (other.serverURL != null)
-				return false;
-		} else if (!serverURL.equals(other.serverURL))
-			return false;
-		if (userID == null) {
-			if (other.userID != null)
-				return false;
-		} else if (!userID.equals(other.userID))
-			return false;
-		if (workstationID == null) {
-			if (other.workstationID != null)
-				return false;
-		} else if (!workstationID.equals(other.workstationID))
-			return false;
-		return true;
+		
+		return other.name.equals(this.name);
 	}
 	
 	@Override

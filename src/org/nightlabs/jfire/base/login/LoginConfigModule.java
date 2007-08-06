@@ -45,22 +45,20 @@ public class LoginConfigModule extends ConfigModule
 	/**
 	 * Holds the login configurations that have been saved upon request by the user.
 	 */
-	private LinkedList<LoginConfiguration> loginConfigurations;
+	private LinkedList<LoginConfiguration> savedLoginConfigurations;
 	
 	/**
 	 * Holds the login configuration that is currently used.
 	 */
 	private LoginConfiguration latestLoginConfiguration;
 	
-	private int maxLoginConfigurations = 5;
-	
 	public void init() throws InitException {
 		super.init();
 
-		if (loginConfigurations == null)
-			setLoginConfigurations(new LinkedList<LoginConfiguration>());
+		if (savedLoginConfigurations == null)
+			setSavedLoginConfigurations(new LinkedList<LoginConfiguration>());
 
-		for (LoginConfiguration loginConfiguration : loginConfigurations)
+		for (LoginConfiguration loginConfiguration : savedLoginConfigurations)
 			loginConfiguration.init();
 	}
 
@@ -80,23 +78,21 @@ public class LoginConfigModule extends ConfigModule
 		
 		try {
 			LoginConfiguration copy = (LoginConfiguration) latestLoginConfiguration.clone();
-			loginConfigurations.remove(copy);
-			loginConfigurations.addFirst(copy);
+			savedLoginConfigurations.remove(copy);
+			savedLoginConfigurations.addFirst(copy);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}		
 		setChanged();
 		releaseLock();
-		ensureCapacity();
 	}
 
-	public LinkedList<LoginConfiguration> getLoginConfigurations() {
-//		return new LinkedList<LoginConfiguration>(loginConfigurations);
-		return loginConfigurations;
+	public LinkedList<LoginConfiguration> getSavedLoginConfigurations() {
+		return savedLoginConfigurations;
 	}
 
-	public void setLoginConfigurations(LinkedList<LoginConfiguration> loginConfigurations) {
-		this.loginConfigurations = loginConfigurations;
+	public void setSavedLoginConfigurations(LinkedList<LoginConfiguration> loginConfigurations) {
+		this.savedLoginConfigurations = loginConfigurations;
 		setChanged();
 	}
 	
@@ -109,40 +105,32 @@ public class LoginConfigModule extends ConfigModule
 		setChanged();
 	}
 	
-	public void setMaxLoginConfigurations(int maxLoginConfigurations) {
-		this.maxLoginConfigurations = maxLoginConfigurations;
-		setChanged();
-		ensureCapacity();
-	}
-	
-	public int getMaxLoginConfigurations() {
-		return maxLoginConfigurations;
-	}
-	
-	private void ensureCapacity() {
-		acquireReadLock();
-		
-		while (loginConfigurations.size() > maxLoginConfigurations && !loginConfigurations.isEmpty())
-			loginConfigurations.removeLast();
-		
-		releaseLock();
+	public boolean hasConfigWithName(String name) {
+		for (LoginConfiguration conf : savedLoginConfigurations)
+			if (conf.getName().equals(name))
+				return true;
+		return false;
 	}
 	
 	public LoginConfiguration getLastSavedLoginConfiguration() {
-		if (loginConfigurations.isEmpty())
+		if (savedLoginConfigurations.isEmpty())
 			return null;
 		else
-			return loginConfigurations.getFirst();
+			return savedLoginConfigurations.getFirst();
 	}
-	
 
 	public void makeLatestFirst() {
-		for (LoginConfiguration cfg : loginConfigurations) {
+		for (LoginConfiguration cfg : savedLoginConfigurations) {
 			if (cfg.equals(latestLoginConfiguration)) {
-				loginConfigurations.remove(cfg);
-				loginConfigurations.addFirst(cfg);
+				savedLoginConfigurations.remove(cfg);
+				savedLoginConfigurations.addFirst(cfg);
 				return;
 			}
 		}
+	}
+
+	public void deleteSavedLoginConfiguration(LoginConfiguration toBeDeleted) {
+		savedLoginConfigurations.remove(toBeDeleted);
+		setChanged();
 	}
 }

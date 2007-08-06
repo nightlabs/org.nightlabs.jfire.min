@@ -26,6 +26,7 @@
 
 package org.nightlabs.jfire.base.login;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.LinkedList;
 
 import org.apache.commons.beanutils.BeanUtils;
@@ -42,6 +43,8 @@ import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Point;
@@ -54,9 +57,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
-import org.nightlabs.base.composite.NumberSpinnerComposite;
 import org.nightlabs.base.composite.XComboComposite;
 import org.nightlabs.base.composite.XComposite;
 import org.nightlabs.base.composite.XComposite.LayoutDataMode;
@@ -78,6 +79,8 @@ public class LoginDialog extends TitleAreaDialog
 	
 	private static final String EMPTY_STRING = ""; //$NON-NLS-1$
 	
+	private static final int DELETE_BUTTON_ID = IDialogConstants.CLIENT_ID+1;
+	
 	protected static LoginDialog sharedInstance = null;
 	
 	private LoginConfigModule persistentLoginModule = null;
@@ -95,6 +98,7 @@ public class LoginDialog extends TitleAreaDialog
 
 	private XComboComposite<LoginConfiguration> recentLoginConfigs;
 	
+	
 	private Text textUserID = null;
 	private Text textPassword = null;
 	private Text textOrganisationID = null;
@@ -103,17 +107,27 @@ public class LoginDialog extends TitleAreaDialog
 	private Text textInitialContextFactory = null;
 	private Text textWorkstationID = null;
 	private Text textIdentityName = null;
+	private Button deleteButton = null;
 	
 	private Group loginInfoGroup = null;
 	
-	private NumberSpinnerComposite recentLoginCountSpinner = null;
-
 	private boolean contentCreated = false;
 	
 	/**
 	 * This is only used to be able to initially show details
 	 */
 	private boolean initiallyShowDetails = false;
+	
+	
+	private boolean manuallyUpdating = false;
+	private ModifyListener loginDataModifyListener = new ModifyListener() {
+		public void modifyText(ModifyEvent e) {
+			if (!manuallyUpdating) {
+				recentLoginConfigs.setSelection(-1);
+				deleteButton.setEnabled(false);
+			}
+		}
+	};
 		
 	/**
 	 * Create a new LoginDialog.
@@ -171,6 +185,7 @@ public class LoginDialog extends TitleAreaDialog
 		Control control = super.createContents(parent);
 		contentCreated = true;
 		showDetails(initiallyShowDetails);
+		initializeWidgetValues();
 		return control;
 	}
 	
@@ -185,7 +200,6 @@ public class LoginDialog extends TitleAreaDialog
 		createMainArea(area);
 		createDetailsArea(area);
 		
-		initializeWidgetValues();
 		setSmartFocus();
 		
 		setTitle(Messages.getString("login.LoginDialog.titleAreaTitle")); //$NON-NLS-1$
@@ -194,7 +208,7 @@ public class LoginDialog extends TitleAreaDialog
 		
 		return dialogArea;
 	}
-
+	
 	protected Control createMainArea(Composite parent)
 	{
 		Composite mainArea = new Composite(parent, SWT.NONE);
@@ -223,7 +237,7 @@ public class LoginDialog extends TitleAreaDialog
 		recentLoginConfigs.setLabelProvider(loginConfigLabelProv);		
 		recentLoginConfigs.addSelectionChangedListener(new ISelectionChangedListener() {
 			public void selectionChanged(SelectionChangedEvent event) {
-				updateTextFieldsWithLoginConfiguration(recentLoginConfigs.getSelectedElement());
+				updateGuiWithLoginConfiguration(recentLoginConfigs.getSelectedElement());
 			}
 		});
 		
@@ -245,15 +259,27 @@ public class LoginDialog extends TitleAreaDialog
 		textPassword.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		textPassword.setEchoChar('*');
 		
+		textUserID.addModifyListener(loginDataModifyListener);
+		
 		return mainArea;
 	}
 	
-	private void updateTextFieldsWithLoginConfiguration(LoginConfiguration loginConfiguration) {
+	private void updateGuiWithLoginConfiguration(LoginConfiguration loginConfiguration) {
+		manuallyUpdating = true;
 		textUserID.setText(loginConfiguration.getUserID());
 		textOrganisationID.setText(loginConfiguration.getOrganisationID());
 		textServerURL.setText(loginConfiguration.getServerURL());
 		textInitialContextFactory.setText(loginConfiguration.getInitialContextFactory());
 		textWorkstationID.setText(loginConfiguration.getWorkstationID());
+		if (runtimeLoginModule.getLatestLoginConfiguration() != loginConfiguration) {
+			textIdentityName.setText(loginConfiguration.getName());
+			deleteButton.setEnabled(true);
+		}	else {
+			textIdentityName.setText(""); //$NON-NLS-1$
+			deleteButton.setEnabled(false);
+		}
+		
+		manuallyUpdating = false;
 	}
 	
 	protected Control createDetailsArea(Composite parent)
@@ -303,6 +329,7 @@ public class LoginDialog extends TitleAreaDialog
 
 			public void widgetSelected(SelectionEvent e) {
 				textIdentityName.setEnabled(checkBoxSaveSettings.getSelection());
+				checkIdentityName();
 			}
 		});
 		
@@ -311,13 +338,34 @@ public class LoginDialog extends TitleAreaDialog
 		textIdentityName = new Text(wrapper, SWT.BORDER);
 		textIdentityName.setEnabled(false);
 		textIdentityName.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-						
-		new Label(detailsArea, SWT.NONE).setText(Messages.getString("login.LoginDialog.recentLoginCountLabel")); //$NON-NLS-1$
-		recentLoginCountSpinner = new NumberSpinnerComposite(detailsArea, SWT.NONE, SWT.BORDER, 0, 1, 20, 1, LayoutMode.TIGHT_WRAPPER, LayoutDataMode.NONE);		
+		textIdentityName.addModifyListener(new ModifyListener() {
+			public void modifyText(ModifyEvent e) {
+				checkIdentityName();
+			}
+		});
 		
+		textWorkstationID.addModifyListener(loginDataModifyListener);
+		textOrganisationID.addModifyListener(loginDataModifyListener);
+		textServerURL.addModifyListener(loginDataModifyListener);
+		textInitialContextFactory.addModifyListener(loginDataModifyListener);
+						
 		detailsAreaGridData.heightHint = 0;
 		
 		return detailsArea;
+	}
+	
+	private void checkIdentityName() {
+		String name = textIdentityName.getText();
+		if (checkBoxSaveSettings.getSelection() && (name == null || "".equals(name))) { //$NON-NLS-1$
+			getButton(IDialogConstants.OK_ID).setEnabled(false);
+			setErrorMessage(Messages.getString("login.LoginDialog.validNameMissingErrorMessage")); //$NON-NLS-1$
+		} else {
+			getButton(IDialogConstants.OK_ID).setEnabled(true);
+			if (checkBoxSaveSettings.getSelection() && runtimeLoginModule.hasConfigWithName(name))
+				setErrorMessage(Messages.getString("login.LoginDialog.loginConfigurationAlreadyExists")); //$NON-NLS-1$
+			else
+				setErrorMessage(null);
+		}
 	}
 	
 	/* (non-Javadoc)
@@ -326,14 +374,35 @@ public class LoginDialog extends TitleAreaDialog
 	@Override
 	protected void createButtonsForButtonBar(Composite parent) 
 	{
+		deleteButton = createButton(parent, DELETE_BUTTON_ID, Messages.getString("login.LoginDialog.deleteButtonLabel"), false); //$NON-NLS-1$
+		deleteButton.addSelectionListener(new SelectionListener() {
+			public void widgetDefaultSelected(SelectionEvent e) {
+			}
+			public void widgetSelected(SelectionEvent e) {
+				LoginConfiguration toBeDeleted = recentLoginConfigs.getSelectedElement();
+				if (toBeDeleted != null) {
+					runtimeLoginModule.deleteSavedLoginConfiguration(toBeDeleted);
+					try {
+						BeanUtils.copyProperties(persistentLoginModule, runtimeLoginModule);
+					} catch (Exception e1) {
+						e1.printStackTrace();
+						throw new RuntimeException(e1);
+					}
+					persistentLoginModule.setChanged();
+					recentLoginConfigs.removeAllSelected();
+					recentLoginConfigs.setSelection(-1);
+					textIdentityName.setText(""); //$NON-NLS-1$
+					showDetails(true);
+				}
+			}
+		});
 		createButton(parent, IDialogConstants.OK_ID, Messages.getString("login.LoginDialog.labelbutton.login"), true); //$NON-NLS-1$
 		createButton(parent, IDialogConstants.CANCEL_ID, Messages.getString("login.LoginDialog.labelbutton.offline"), false); //$NON-NLS-1$
-		createButton(parent, DETAILS_ID, IDialogConstants.SHOW_DETAILS_LABEL, false);
+		createButton(parent, DETAILS_ID, IDialogConstants.SHOW_DETAILS_LABEL, false);		
 	}
 	
-	private void initializeWidgetValues()
-	{
-		LinkedList<LoginConfiguration> loginConfigurations = new LinkedList<LoginConfiguration>(runtimeLoginModule.getLoginConfigurations());		
+	private void initializeWidgetValues()	{
+		LinkedList<LoginConfiguration> loginConfigurations = new LinkedList<LoginConfiguration>(runtimeLoginModule.getSavedLoginConfigurations());		
 		LoginConfiguration latestLoginConfiguration = runtimeLoginModule.getLatestLoginConfiguration();
 		
 		if (latestLoginConfiguration != null)
@@ -343,14 +412,12 @@ public class LoginDialog extends TitleAreaDialog
 		
 		if (latestLoginConfiguration != null) {
 			recentLoginConfigs.setSelection(latestLoginConfiguration);
-			updateTextFieldsWithLoginConfiguration(latestLoginConfiguration);
+			updateGuiWithLoginConfiguration(latestLoginConfiguration);
 		} else {
 			LoginConfiguration loginConfiguration = new LoginConfiguration();
 			loginConfiguration.init();
-			updateTextFieldsWithLoginConfiguration(loginConfiguration);
+			updateGuiWithLoginConfiguration(loginConfiguration);
 		}
-		
-		recentLoginCountSpinner.setValue(runtimeLoginModule.getMaxLoginConfigurations());
 	}
 	
 	
@@ -387,8 +454,6 @@ public class LoginDialog extends TitleAreaDialog
 		
 		runtimeLoginModule.setLatestLoginConfiguration(textUserID.getText(), textWorkstationID.getText(), textOrganisationID.getText(),
 				textServerURL.getText(), textInitialContextFactory.getText(), null, textIdentityName.getText());
-		
-		runtimeLoginModule.setMaxLoginConfigurations(recentLoginCountSpinner.getValue().intValue());
 	}
 
 	/* (non-Javadoc)
