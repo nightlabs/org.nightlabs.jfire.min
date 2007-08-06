@@ -22,8 +22,7 @@ implements Serializable
 
 	public CreateOrganisationStatus(CreateOrganisationStep createOrganisationStep, Throwable throwable)
 	{
-		this(
-				createOrganisationStep, throwable, (String[])null);
+		this(createOrganisationStep, throwable, (String[])null);
 	}
 
 	public CreateOrganisationStatus(CreateOrganisationStep createOrganisationStep,
@@ -47,7 +46,7 @@ implements Serializable
 			}
 
 			this.throwableTransient = throwable;
-			this.throwableStackTrace = ExceptionUtils.getStackTrace(throwable);
+			this.throwableStackTrace = ExceptionUtils.getFullStackTrace(throwable);
 
 			try {
 				this.throwable = Util.cloneSerializable(throwable);
