@@ -6,15 +6,15 @@
 	<classpathentry kind="var" path="JDK_TOOLS"/>
 	<classpathentry kind="var" path="JBOSS/server/default/lib/bcel.jar"/>
 	<classpathentry kind="var" path="LOG4J"/>
-	<classpathentry sourcepath="JPOX_SRC" kind="var" path="JDO2"/>
+	<classpathentry kind="var" path="JDO2" sourcepath="JPOX_SRC"/>
 	<classpathentry kind="var" path="XERCES"/>
 	<classpathentry kind="var" path="XALAN"/>
-	<classpathentry sourcepath="WORKSPACE/NightLabsBase/src" kind="var" path="WORKSPACE/NightLabsBase/dist/NightLabsBase.jar"/>
-	<classpathentry sourcepath="WORKSPACE/NightLabsJDO/src" kind="var" path="WORKSPACE/NightLabsJDO/dist/NightLabsJDO.jar"/>
+	<classpathentry kind="var" path="WORKSPACE/NightLabsBase/dist/NightLabsBase.jar" sourcepath="WORKSPACE/NightLabsBase/src"/>
+	<classpathentry kind="var" path="WORKSPACE/NightLabsJDO/dist/NightLabsJDO.jar" sourcepath="WORKSPACE/NightLabsJDO/src"/>
 	<classpathentry kind="var" path="WORKSPACE/JFireRCLBackend/dist/JFireRCLBackend.jar"/>
 	<classpathentry kind="var" path="APACHE_COMMONS/commons-beanutils.jar"/>
-	<classpathentry sourcepath="JPOX_SRC" kind="var" path="JPOX"/>
+	<classpathentry kind="var" path="JPOX" sourcepath="JPOX_SRC"/>
 	<classpathentry kind="var" path="JBOSS/client/jboss-j2ee.jar"/>
-	<classpathentry kind="var" path="APACHE_COMMONS/commons-lang-2.1.jar"/>
+	<classpathentry kind="var" path="APACHE_COMMONS/commons-lang.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
