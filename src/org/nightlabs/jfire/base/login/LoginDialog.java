@@ -361,9 +361,11 @@ public class LoginDialog extends TitleAreaDialog
 		} else {
 			getButton(IDialogConstants.OK_ID).setEnabled(true);
 			if (checkBoxSaveSettings.getSelection() && runtimeLoginModule.hasConfigWithName(name))
-				setErrorMessage(Messages.getString("login.LoginDialog.loginConfigurationAlreadyExists")); //$NON-NLS-1$
-			else
+				setMessage(Messages.getString("login.LoginDialog.loginConfigurationAlreadyExists"), IMessageProvider.WARNING); //$NON-NLS-1$
+			else {
+				setMessage(null, IMessageProvider.WARNING);
 				setErrorMessage(null);
+			}
 		}
 	}
 	
@@ -510,7 +512,7 @@ public class LoginDialog extends TitleAreaDialog
 		else if (textServerURL.getText().equals(EMPTY_STRING))
 			errorMessage = Messages.getString("login.LoginDialog.errormissingServerURL"); //$NON-NLS-1$
 		if(errorMessage != null) {
-			setMessage(errorMessage, IMessageProvider.ERROR);
+			setErrorMessage(errorMessage);
 			setSmartFocus();
 			return false;
 		}
@@ -587,14 +589,14 @@ public class LoginDialog extends TitleAreaDialog
 		} else {
 			// login failed
 			if (loginResult.isWasAuthenticationErr()) {
-				setMessage(Messages.getString("login.LoginDialog.errorauthenticationFailed"), IMessageProvider.ERROR); //$NON-NLS-1$
+				setErrorMessage(Messages.getString("login.LoginDialog.errorauthenticationFailed")); //$NON-NLS-1$
 			}
 			else if (loginResult.isWasCommunicationErr()) {
 				Throwable error = loginResult.getException();
 				while (error.getLocalizedMessage() == null && error.getCause() != null) {
 					error = ExceptionUtils.getCause(error);
 				}
-				setMessage(String.format(Messages.getString("login.LoginDialog.errorcommunicatinError"), error.getLocalizedMessage()), IMessageProvider.ERROR); //$NON-NLS-1$
+				setErrorMessage(String.format(Messages.getString("login.LoginDialog.errorcommunicatinError"), error.getLocalizedMessage())); //$NON-NLS-1$
 			}
 			else {
 				String message = loginResult.getMessage();
@@ -607,7 +609,7 @@ public class LoginDialog extends TitleAreaDialog
 					}
 					loginResult.getException().printStackTrace();
 				}
-				setMessage(message, IMessageProvider.ERROR);
+				setErrorMessage(message);
 				
 			}
 			// show a message to the user
