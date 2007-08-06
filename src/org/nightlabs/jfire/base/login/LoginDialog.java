@@ -79,8 +79,6 @@ public class LoginDialog extends TitleAreaDialog
 	
 	private static final String EMPTY_STRING = ""; //$NON-NLS-1$
 	
-	private static final int DELETE_BUTTON_ID = IDialogConstants.CLIENT_ID+1;
-	
 	protected static LoginDialog sharedInstance = null;
 	
 	private LoginConfigModule persistentLoginModule = null;
@@ -89,6 +87,7 @@ public class LoginDialog extends TitleAreaDialog
 	private JFireLoginContext loginContext = null;
 	
 	protected static final int DETAILS_ID = IDialogConstants.CLIENT_ID + 1;
+	private static final int DELETE_BUTTON_ID = IDialogConstants.CLIENT_ID+2;
 
 	/**
 	 * Used to set the details area visible or invisible 
@@ -184,8 +183,9 @@ public class LoginDialog extends TitleAreaDialog
 		contentCreated = false;
 		Control control = super.createContents(parent);
 		contentCreated = true;
-		showDetails(initiallyShowDetails);
 		initializeWidgetValues();
+		setSmartFocus();
+		showDetails(initiallyShowDetails);
 		return control;
 	}
 	
@@ -199,8 +199,6 @@ public class LoginDialog extends TitleAreaDialog
 
 		createMainArea(area);
 		createDetailsArea(area);
-		
-		setSmartFocus();
 		
 		setTitle(Messages.getString("login.LoginDialog.titleAreaTitle")); //$NON-NLS-1$
 		// TODO: information icon only because of redraw bug:
@@ -237,7 +235,7 @@ public class LoginDialog extends TitleAreaDialog
 		recentLoginConfigs.setLabelProvider(loginConfigLabelProv);		
 		recentLoginConfigs.addSelectionChangedListener(new ISelectionChangedListener() {
 			public void selectionChanged(SelectionChangedEvent event) {
-				updateGuiWithLoginConfiguration(recentLoginConfigs.getSelectedElement());
+				updateUIWithLoginConfiguration(recentLoginConfigs.getSelectedElement());
 			}
 		});
 		
@@ -264,13 +262,14 @@ public class LoginDialog extends TitleAreaDialog
 		return mainArea;
 	}
 	
-	private void updateGuiWithLoginConfiguration(LoginConfiguration loginConfiguration) {
+	private void updateUIWithLoginConfiguration(LoginConfiguration loginConfiguration) {
 		manuallyUpdating = true;
 		textUserID.setText(loginConfiguration.getUserID());
 		textOrganisationID.setText(loginConfiguration.getOrganisationID());
 		textServerURL.setText(loginConfiguration.getServerURL());
 		textInitialContextFactory.setText(loginConfiguration.getInitialContextFactory());
 		textWorkstationID.setText(loginConfiguration.getWorkstationID());
+		textPassword.setText("");
 		if (runtimeLoginModule.getLatestLoginConfiguration() != loginConfiguration) {
 			textIdentityName.setText(loginConfiguration.getName());
 			deleteButton.setEnabled(true);
@@ -392,7 +391,6 @@ public class LoginDialog extends TitleAreaDialog
 					recentLoginConfigs.removeAllSelected();
 					recentLoginConfigs.setSelection(-1);
 					textIdentityName.setText(""); //$NON-NLS-1$
-					showDetails(true);
 				}
 			}
 		});
@@ -412,11 +410,11 @@ public class LoginDialog extends TitleAreaDialog
 		
 		if (latestLoginConfiguration != null) {
 			recentLoginConfigs.setSelection(latestLoginConfiguration);
-			updateGuiWithLoginConfiguration(latestLoginConfiguration);
+			updateUIWithLoginConfiguration(latestLoginConfiguration);
 		} else {
 			LoginConfiguration loginConfiguration = new LoginConfiguration();
 			loginConfiguration.init();
-			updateGuiWithLoginConfiguration(loginConfiguration);
+			updateUIWithLoginConfiguration(loginConfiguration);
 		}
 	}
 	
