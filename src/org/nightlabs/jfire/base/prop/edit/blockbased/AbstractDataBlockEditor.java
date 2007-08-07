@@ -163,10 +163,10 @@ public abstract class AbstractDataBlockEditor extends Composite implements DataF
 	 * and calls their updateProp method.<br/>
 	 * Implementors might override if no registered PropDataFieldEditors are used.
 	 */
-	public void updateProperty() {
+	public void updatePropertySet() {
 		for (Iterator it = fieldEditors.values().iterator(); it.hasNext(); ) {
 			DataFieldEditor fieldEditor = (DataFieldEditor)it.next();
-			fieldEditor.updateProperty();
+			fieldEditor.updatePropertySet();
 		}
 	}	
 }

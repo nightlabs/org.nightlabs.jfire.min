@@ -36,7 +36,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.nightlabs.base.composite.XComposite;
 import org.nightlabs.base.exceptionhandler.ExceptionHandlerRegistry;
-import org.nightlabs.base.extensionpoint.EPProcessorException;
 import org.nightlabs.base.wizard.WizardHopPage;
 import org.nightlabs.jfire.prop.DataBlock;
 import org.nightlabs.jfire.prop.IStruct;
@@ -53,8 +52,8 @@ import org.nightlabs.jfire.prop.id.StructBlockID;
 public class CompoundDataBlockWizardPage extends WizardHopPage {
 
 	private PropertySet propSet;
-	private Map propDataBlockEditors = new HashMap();
-	private Map propDataBlocks = new HashMap();
+	private Map<StructBlockID, AbstractDataBlockEditor> propDataBlockEditors = new HashMap<StructBlockID, AbstractDataBlockEditor>();
+	private Map<StructBlockID, DataBlock> propDataBlocks = new HashMap<StructBlockID, DataBlock>();
 	private StructBlockID[] structBlockIDs;
 	private int propDataBlockEditorColumnHint = 2;
 	private IStruct struct;
@@ -131,24 +130,20 @@ public class CompoundDataBlockWizardPage extends WizardHopPage {
 		propDataBlockEditors.clear();
 		for (int i = 0; i < structBlockIDs.length; i++) {
 			DataBlock dataBlock = (DataBlock)propDataBlocks.get(structBlockIDs[i]);
-			try {
-				AbstractDataBlockEditor editor = 
-					DataBlockEditorFactoryRegistry.sharedInstance().getPropDataBlockEditor(
-								struct,
-								dataBlock,
-								wrapperComp,
-								SWT.NONE,
-								getPropDataBlockEditorColumnHint()
-							);
-				
-				editor.refresh(struct, dataBlock);
-				propDataBlockEditors.put(
+			AbstractDataBlockEditor editor = 
+				DataBlockEditorFactoryRegistry.sharedInstance().getPropDataBlockEditor(
+						struct,
+						dataBlock,
+						wrapperComp,
+						SWT.NONE,
+						getPropDataBlockEditorColumnHint()
+				);
+
+			editor.refresh(struct, dataBlock);
+			propDataBlockEditors.put(
 					structBlockIDs[i],
 					editor
-				);
-			} catch (EPProcessorException e) {
-				ExceptionHandlerRegistry.asyncHandleException(e);
-			}			
+			);
 		}
 	}
 	
@@ -209,7 +204,7 @@ public class CompoundDataBlockWizardPage extends WizardHopPage {
   public void updateProp() {
   	for (Iterator iter = propDataBlockEditors.values().iterator(); iter.hasNext();) {
 			AbstractDataBlockEditor editor = (AbstractDataBlockEditor) iter.next();
-			editor.updateProperty();
+			editor.updatePropertySet();
 		}
   }
 

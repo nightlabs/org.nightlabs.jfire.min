@@ -100,9 +100,9 @@ public class DisguisedRegexDataFieldEditor extends AbstractDataFieldEditor<Regex
 	}
 
 	/**
-	 * @see org.nightlabs.jfire.base.prop.edit.DataFieldEditor#updateProperty()
+	 * @see org.nightlabs.jfire.base.prop.edit.DataFieldEditor#updatePropertySet()
 	 */
-	public void updateProperty() {
+	public void updatePropertySet() {
 		data.setText(composite.getText());
 	}
 	

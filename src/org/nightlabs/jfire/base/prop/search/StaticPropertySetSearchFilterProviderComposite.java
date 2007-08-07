@@ -41,7 +41,7 @@ import org.nightlabs.base.composite.XComposite.LayoutMode;
  * 
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  */
-public class StaticPersonSearchFilterProviderComposite extends org.eclipse.swt.widgets.Composite {
+public class StaticPropertySetSearchFilterProviderComposite extends org.eclipse.swt.widgets.Composite {
 	private Composite firstRow;
 	private Composite secondRow;
 	private Composite thirdRow;
@@ -56,7 +56,7 @@ public class StaticPersonSearchFilterProviderComposite extends org.eclipse.swt.w
 	private LabeledText controlEmail;
 	private Button searchButton;
 
-	public StaticPersonSearchFilterProviderComposite(Composite parent, int style, boolean createSearchButton) {
+	public StaticPropertySetSearchFilterProviderComposite(Composite parent, int style, boolean createSearchButton) {
 		super(parent, style);
 		GridLayout thisLayout = new GridLayout();
 		thisLayout.verticalSpacing = 0;

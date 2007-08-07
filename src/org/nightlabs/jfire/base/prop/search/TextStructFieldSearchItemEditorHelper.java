@@ -43,7 +43,7 @@ import org.nightlabs.jfire.prop.search.TextPropSearchFilterItem;
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  */
 public class TextStructFieldSearchItemEditorHelper 
-		extends PropStructFieldSearchItemEditorHelper {
+		extends PropertySetStructFieldSearchItemEditorHelper {
 
 	private Composite helperComposite;
 	private Combo comboMatchType;
@@ -80,7 +80,7 @@ public class TextStructFieldSearchItemEditorHelper
 	}
 	
 	/**
-	 * @see org.nightlabs.jfire.base.prop.search.PropSearchFilterItemEditorHelper#getControl(org.eclipse.swt.widgets.Composite)
+	 * @see org.nightlabs.jfire.base.prop.search.ProperySetSearchFilterItemEditorHelper#getControl(org.eclipse.swt.widgets.Composite)
 	 */
 	public Control getControl(Composite parent) {
 		if (helperComposite == null) {
@@ -116,7 +116,7 @@ public class TextStructFieldSearchItemEditorHelper
 	}
 
 	/**
-	 * @see org.nightlabs.jfire.base.prop.search.PropSearchFilterItemEditorHelper#getSearchFilterItem()
+	 * @see org.nightlabs.jfire.base.prop.search.ProperySetSearchFilterItemEditorHelper#getSearchFilterItem()
 	 */
 	public SearchFilterItem getSearchFilterItem() {
 		StructFieldID id = StructFieldID.create(
@@ -136,7 +136,7 @@ public class TextStructFieldSearchItemEditorHelper
 	}
 
 	/**
-	 * @see org.nightlabs.jfire.base.prop.search.PropSearchFilterItemEditorHelper#close()
+	 * @see org.nightlabs.jfire.base.prop.search.ProperySetSearchFilterItemEditorHelper#close()
 	 */
 	public void close() {
 	}

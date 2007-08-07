@@ -51,11 +51,11 @@ import org.nightlabs.jfire.prop.search.PropSearchFilter;
  * 
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  */
-public class PersonQuickSearch implements SearchFilterProvider {
+public class PropertySetQuickSearch implements SearchFilterProvider {
 	/**
 	 * LOG4J logger used by this class
 	 */
-//	private static final Logger logger = Logger.getLogger(PersonQuickSearch.class);
+//	private static final Logger logger = Logger.getLogger(PropertySetQuickSearch.class);
 	
 	private XComposite wrapperComposite;
 //	private Button quickButton;
@@ -66,21 +66,21 @@ public class PersonQuickSearch implements SearchFilterProvider {
 	protected PropertyManager propManager;
 	
 	/**
-	 * Construct a PersonQuickSearch with buttonText as label for the Button,
+	 * Construct a PropertySetQuickSearch with buttonText as label for the Button,
 	 * @param buttonText
 	 */
-	public PersonQuickSearch(String buttonText) {
+	public PropertySetQuickSearch(String buttonText) {
 		this.buttonText = buttonText;
 	}
 	
 	/**
-	 * Construct a PersonQuickSearch with button-text and an optional (null possible)
+	 * Construct a PropertySetQuickSearch with button-text and an optional (null possible)
 	 * PersonSearchResultFetcher for callback on user interaction.
 	 * 
 	 * @param buttonText
 	 * @param resultFetcher
 	 */
-	public PersonQuickSearch(String buttonText, SearchResultFetcher resultFetcher) {
+	public PropertySetQuickSearch(String buttonText, SearchResultFetcher resultFetcher) {
 		this.buttonText = buttonText;
 		this.resultFetcher = resultFetcher;
 	}

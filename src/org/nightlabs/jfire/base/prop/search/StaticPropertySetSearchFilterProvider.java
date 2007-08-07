@@ -49,10 +49,10 @@ import org.nightlabs.jfire.prop.search.TextPropSearchFilterItem;
 /**
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  */
-public class StaticPersonSearchFilterProvider implements
+public class StaticPropertySetSearchFilterProvider implements
 		SearchFilterProvider {
 
-	private StaticPersonSearchFilterProviderComposite criteriaBuilderComposite;
+	private StaticPropertySetSearchFilterProviderComposite criteriaBuilderComposite;
 	private boolean createOwnSearchButton;
 	private XComposite wrapper;
 	private Button searchButton;
@@ -61,7 +61,7 @@ public class StaticPersonSearchFilterProvider implements
 	private SelectionListener searchListener = new SelectionListener() {
 		public void widgetSelected(SelectionEvent e) {
 			if (resultFetcher != null) {
-				resultFetcher.searchTriggered(StaticPersonSearchFilterProvider.this);
+				resultFetcher.searchTriggered(StaticPropertySetSearchFilterProvider.this);
 			}
 		}
 		public void widgetDefaultSelected(SelectionEvent e) {
@@ -72,9 +72,9 @@ public class StaticPersonSearchFilterProvider implements
 	 * Create a new static person SearchFilterProvider.
 	 * 
 	 * @param resultFetcher A ResultFetcher to be triggered on search.
-	 * @param createOwnSearchButton Whether to create an own search button, or to use the default one of {@link StaticPersonSearchFilterProviderComposite}.
+	 * @param createOwnSearchButton Whether to create an own search button, or to use the default one of {@link StaticPropertySetSearchFilterProviderComposite}.
 	 */
-	public StaticPersonSearchFilterProvider(SearchResultFetcher resultFetcher, boolean createOwnSearchButton) {
+	public StaticPropertySetSearchFilterProvider(SearchResultFetcher resultFetcher, boolean createOwnSearchButton) {
 		this.resultFetcher = resultFetcher;
 		this.createOwnSearchButton = createOwnSearchButton;
 	}
@@ -85,7 +85,7 @@ public class StaticPersonSearchFilterProvider implements
 	public Composite createComposite(Composite parent) {
 		wrapper = new XComposite(parent, SWT.NONE, LayoutMode.TIGHT_WRAPPER);
 		
-		criteriaBuilderComposite = new StaticPersonSearchFilterProviderComposite(wrapper, SWT.NONE, !createOwnSearchButton);
+		criteriaBuilderComposite = new StaticPropertySetSearchFilterProviderComposite(wrapper, SWT.NONE, !createOwnSearchButton);
 		if (createOwnSearchButton) {
 			searchButton = new Button(criteriaBuilderComposite, SWT.PUSH);
 			searchButton.setText("&Search");

@@ -35,31 +35,31 @@ import org.nightlabs.jfire.prop.AbstractStructField;
  * A concrete StructFieldSearchItemEditorHelper that
  * serves as a manager for other StructFieldSearchItemEditorHelper.
  * It searches for StructFieldSearchItemEditorHelper in
- * the PersonSearchFilterItemEditorHelperRegistry liked to
+ * the PropertySetSearchFilterItemEditorHelperRegistry liked to
  * a class of PersonStructFields.
  * 
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  */
-public class PropStructFieldSearchItemEditorManager extends
-		PropStructFieldSearchItemEditorHelper {
+public class PropertySetStructFieldSearchItemEditorManager extends
+		PropertySetStructFieldSearchItemEditorHelper {
 
 	/**
 	 * 
 	 */
-	public PropStructFieldSearchItemEditorManager() {
+	public PropertySetStructFieldSearchItemEditorManager() {
 		super();
 	}
 
 	/**
 	 * @param personStructField
 	 */
-	public PropStructFieldSearchItemEditorManager(
+	public PropertySetStructFieldSearchItemEditorManager(
 			AbstractStructField personStructField) {
 		super(personStructField);
 	}
 
 	
-	private PropSearchFilterItemEditorHelper helper;
+	private ProperySetSearchFilterItemEditorHelper helper;
 	private Control helperControl;
 	
 	/**
@@ -67,27 +67,27 @@ public class PropStructFieldSearchItemEditorManager extends
 	 * gets and remembers a new instance of it
 	 * and the Control it returned.
 	 * 
-	 * @see org.nightlabs.jfire.base.prop.search.PropSearchFilterItemEditorHelper#getControl(org.eclipse.swt.widgets.Composite)
+	 * @see org.nightlabs.jfire.base.prop.search.ProperySetSearchFilterItemEditorHelper#getControl(org.eclipse.swt.widgets.Composite)
 	 */
 	public Control getControl(Composite parent) {
 		if (helper != null)
 			if (helperControl != null)
 				return helperControl;
 			
-		PersonSearchFilterItemEditorHelperRegistry registry = PersonSearchFilterItemEditorHelperRegistry.sharedInstance();
+		PropertySetSearchFilterItemEditorHelperRegistry registry = PropertySetSearchFilterItemEditorHelperRegistry.sharedInstance();
 		if (personStructField == null)			
 			throw new IllegalStateException("Member personStructField is null. init(personStructField) might not have been called.");
 		
 		try {
 			helper = registry.getEditorHelper(personStructField.getClass());
-		} catch (PersonSearchFilterItemEditorHelperNotFoundException e) {
+		} catch (PropertySetSearchFilterItemEditorHelperNotFoundException e) {
 			IllegalStateException ill = new IllegalStateException("No helper found for class "+personStructField.getClass().getName());
 			ill.initCause(e);
 			throw ill;
 		}
 		helper = helper.newInstance();
-		if (helper instanceof PropStructFieldSearchItemEditorHelper)
-			((PropStructFieldSearchItemEditorHelper)helper).init(this.personStructField);
+		if (helper instanceof PropertySetStructFieldSearchItemEditorHelper)
+			((PropertySetStructFieldSearchItemEditorHelper)helper).init(this.personStructField);
 		helperControl = helper.getControl(parent); 
 		return helperControl;
 	}
@@ -95,7 +95,7 @@ public class PropStructFieldSearchItemEditorManager extends
 	/**
 	 * Delegates to the helper from the registry.
 	 * @see #getControl(Composite)	
-	 * @see org.nightlabs.jfire.base.prop.search.PropSearchFilterItemEditorHelper#getSearchFilterItem()
+	 * @see org.nightlabs.jfire.base.prop.search.ProperySetSearchFilterItemEditorHelper#getSearchFilterItem()
 	 */
 	public SearchFilterItem getSearchFilterItem() {
 		if (helper == null)
@@ -105,7 +105,7 @@ public class PropStructFieldSearchItemEditorManager extends
 	}
 
 	/**
-	 * @see org.nightlabs.jfire.base.prop.search.PropSearchFilterItemEditorHelper#close()
+	 * @see org.nightlabs.jfire.base.prop.search.ProperySetSearchFilterItemEditorHelper#close()
 	 */
 	public void close() {
 	}

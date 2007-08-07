@@ -26,40 +26,29 @@
 
 package org.nightlabs.jfire.base.prop.search;
 
-import org.nightlabs.jdo.search.ItemBasedSearchFilterProvider;
-import org.nightlabs.jdo.search.SearchFilter;
+import org.nightlabs.jdo.search.SearchFilterItemList;
 import org.nightlabs.jdo.search.SearchFilterItemListMutator;
-import org.nightlabs.jdo.search.SearchResultFetcher;
-import org.nightlabs.jfire.prop.search.PropSearchFilter;
 
 /**
+ * Small class to change PersonSearchFilterItemLists.
+ * 
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  */
-public class DynamicPersonSearchFilterProvider extends
-		ItemBasedSearchFilterProvider {
+public class PropertySetSearchFilterItemListMutator implements
+		SearchFilterItemListMutator {
 
 	/**
-	 * @see DynamicPersonSearchFilterProvider#DynamicPersonSearchFilterProvider(SearchFilterItemListMutator)
-	 * @param listMutator
+	 * 
 	 */
-	public DynamicPersonSearchFilterProvider(SearchFilterItemListMutator listMutator) {
-		super(listMutator);
+	public PropertySetSearchFilterItemListMutator() {
+		super();
 	}
 
 	/**
-	 * @see DynamicPersonSearchFilterProvider#DynamicPersonSearchFilterProvider(SearchFilterItemListMutator)
-	 * @param listMutator
+	 * @see org.nightlabs.jdo.search.SearchFilterItemListMutator#addItemEditor(org.nightlabs.jdo.search.SearchFilterItemList)
 	 */
-	public DynamicPersonSearchFilterProvider(SearchFilterItemListMutator listMutator, SearchResultFetcher resultFetcher) {
-		super(listMutator);
-		setSearchResultFetcher(resultFetcher);
+	public void addItemEditor(SearchFilterItemList list) {
+		list.addItemEditor(new PropertySetSearchFilterItemEditor());
 	}
-	
-	/**
-	 * @see org.nightlabs.jdo.search.ItemBasedSearchFilterProvider#createSearchFilter()
-	 */
-	protected SearchFilter createSearchFilter() {
-		return new PropSearchFilter(SearchFilter.CONJUNCTION_DEFAULT);
-	}	
 
 }

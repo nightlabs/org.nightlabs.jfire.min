@@ -39,6 +39,9 @@ import org.nightlabs.jfire.prop.IStruct;
 import org.nightlabs.jfire.prop.id.StructBlockID;
 
 /**
+ * Registrz for specialized DataBlockEditors registered to a certain {@link StructBlockID}.
+ * This registry processes the extension-point <code>org.nightlabs.jfire.base.specialisedDataBlockEditor</code>.
+ * 
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  * @author Tobias Langner <!-- tobias[dot]langner[at]nightlabs[dot]de -->
  */
@@ -52,7 +55,7 @@ public class DataBlockEditorFactoryRegistry extends AbstractEPProcessor {
 	 * key: StructBlockID: providerID<br/>
 	 * value: DataBlockEditorFactory provider
 	 */
-	private Map providerRegistry = new HashMap();
+	private Map<StructBlockID, DataBlockEditorFactory> providerRegistry = new HashMap<StructBlockID, DataBlockEditorFactory>();
 
 	public void addPropDataBlockEditorProvider(DataBlockEditorFactory provider)
 	{
@@ -65,11 +68,8 @@ public class DataBlockEditorFactoryRegistry extends AbstractEPProcessor {
 		Composite parent, 
 		int style,
 		int columnHint
-	) 
-	throws EPProcessorException 
-	{
-		if (!isProcessed())
-			process();
+	) {
+		checkProcessing();
 		StructBlockID blockID = StructBlockID.create(dataBlock.getStructBlockOrganisationID(),dataBlock.getStructBlockID());
 		DataBlockEditorFactory provider = (DataBlockEditorFactory)providerRegistry.get(blockID);
 		if (provider != null)

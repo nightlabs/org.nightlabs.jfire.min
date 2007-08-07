@@ -26,71 +26,52 @@
 
 package org.nightlabs.jfire.base.prop.search;
 
-import java.util.HashMap;
-import java.util.Map;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+
+import org.nightlabs.jdo.search.SearchFilterItem;
 
 /**
- * This registry holds PropSearchFilterItemEditorHelper 
- * linked to classes of PersonStructFields.
- * 
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  */
-public class PersonSearchFilterItemEditorHelperRegistry {
+public interface ProperySetSearchFilterItemEditorHelper {
 
 	/**
-	 * key: Class AbstractPersonStructFieldClass<br/>
-	 * value: PropSearchFilterItemEditorHelper personSearchFilterItemEditorHelper<br/>
-	 */
-	private Map<Class, PropSearchFilterItemEditorHelper> itemEditorHelpers = new HashMap<Class, PropSearchFilterItemEditorHelper>();
-	
-	/**
-	 * Adds a PropSearchFilterItemEditorHelper linked to the
-	 * given class name to the registry. 
+	 * Should return the GUI-representation of this helper.
 	 * 
-	 * @param itemClassName
-	 * @param itemEditor
-	 */
-	public void addItemEditor(Class structFieldClass, PropSearchFilterItemEditorHelper editorHelper) {
-		itemEditorHelpers.put(structFieldClass, editorHelper);
-	}
-	
-	/**
-	 * Removes the PropSearchFilterItemEditorHelper from the
-	 * registry.
-	 * 
-	 * @param itemClassName
-	 */
-	public void removeItemEditor(Class structFieldClass) {
-		if (!itemEditorHelpers.containsKey(structFieldClass))
-			return;
-		itemEditorHelpers.remove(structFieldClass);
-	}
-	
-	
-	/**
-	 * Returns a new instance of a PropSearchFilterItemEditorHelper.
-	 * 
-	 * @param searchFieldClass
+	 * @param parent
 	 * @return
-	 * @throws SearchFilterItemEditorNotFoundException
 	 */
-	public PropSearchFilterItemEditorHelper getEditorHelper(Class structFieldClass) 
-	throws PersonSearchFilterItemEditorHelperNotFoundException {
-		PropSearchFilterItemEditorHelper editorHelper = (PropSearchFilterItemEditorHelper)itemEditorHelpers.get(structFieldClass);
-		if (editorHelper != null)
-			return editorHelper.newInstance();
-		else
-			throw new PersonSearchFilterItemEditorHelperNotFoundException("Registry does not contain an entry for "+structFieldClass.getName());
-	}
+	public Control getControl(Composite parent);
+	
+	/**
+	 * Will be called to return results within
+	 * {@link org.nightlabs.jdo.search.SearchFilterItemEditor#getSearchFilterItem()}  
+	 * @return
+	 */
+	public SearchFilterItem getSearchFilterItem();
+	
+	/**
+	 * Should return a new instance of a ProperySetSearchFilterItemEditorHelper.
+	 * @return
+	 */
+	public ProperySetSearchFilterItemEditorHelper newInstance();
+	
+	/**
+	 * Should return a string that can be displayed 
+	 * within the combo of PropertySetSearchFilterItemEditor.
+	 * 
+	 * @return
+	 */
+	public String getDisplayName();
+	
+	/**
+	 * Will be called when the
+	 * helper is closed. It should be
+	 * used for cleanup (removing listeners), 
+	 * not for disposing widgets.
+	 */	
+	public void close();
 	
 	
-	private static PersonSearchFilterItemEditorHelperRegistry sharedInstance;
-	
-	public static PersonSearchFilterItemEditorHelperRegistry sharedInstance() {
-		if (sharedInstance == null) {
-			sharedInstance = new PersonSearchFilterItemEditorHelperRegistry();
-		}
-		return sharedInstance;
-	}
-
 }

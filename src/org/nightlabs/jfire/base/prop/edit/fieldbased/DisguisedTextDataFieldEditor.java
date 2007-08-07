@@ -99,9 +99,9 @@ public class DisguisedTextDataFieldEditor extends AbstractDataFieldEditor<TextDa
 	}
 
 	/**
-	 * @see org.nightlabs.jfire.base.prop.edit.DataFieldEditor#updateProperty()
+	 * @see org.nightlabs.jfire.base.prop.edit.DataFieldEditor#updatePropertySet()
 	 */
-	public void updateProperty() {
+	public void updatePropertySet() {
 		data.setText(composite.getText());
 	}
 	

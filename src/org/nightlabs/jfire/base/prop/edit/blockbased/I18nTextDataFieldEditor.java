@@ -96,9 +96,9 @@ public class I18nTextDataFieldEditor extends AbstractDataFieldEditor<I18nTextDat
 	}
 
 	/**
-	 * @see org.nightlabs.jfire.base.prop.edit.DataFieldEditor#updateProperty()
+	 * @see org.nightlabs.jfire.base.prop.edit.DataFieldEditor#updatePropertySet()
 	 */
-	public void updateProperty() 
+	public void updatePropertySet() 
 	{
 //		Display.getDefault().syncExec(new Runnable(){		
 //			public void run() {

@@ -41,7 +41,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
-import org.nightlabs.jfire.base.prop.edit.PropertyEditor;
+import org.nightlabs.jfire.base.prop.edit.PropertySetEditor;
 import org.nightlabs.jfire.prop.DataBlockGroup;
 import org.nightlabs.jfire.prop.IStruct;
 import org.nightlabs.jfire.prop.PropertySet;
@@ -50,7 +50,7 @@ import org.nightlabs.jfire.prop.StructLocal;
 import org.nightlabs.jfire.prop.id.StructBlockID;
 
 /**
- * A PropertyEditor based on PropStructBlocks/PropDataBlocks.
+ * A PropertySetEditor based on PropStructBlocks/PropDataBlocks.
  * This will present one expandable Composite with all PropDataFields
  * for all StructBlock/DataBlock it gets assosiated with.<br/>
  * Control wich blocks a editor displays by associating a list of blocks
@@ -58,11 +58,11 @@ import org.nightlabs.jfire.prop.id.StructBlockID;
  * 
  * @see org.nightlabs.jfire.base.prop.edit.blockbased.AbstractDataBlockEditor
  * @see org.nightlabs.jfire.base.prop.edit.blockbased.EditorStructBlockRegistry
- * @see org.nightlabs.jfire.base.prop.edit.PropertyEditor
+ * @see org.nightlabs.jfire.base.prop.edit.PropertySetEditor
  *  
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  */
-public class ExpandableBlocksEditor implements PropertyEditor { // extends ScrolledComposite {
+public class ExpandableBlocksEditor implements PropertySetEditor { // extends ScrolledComposite {
 	private static Logger LOGGER = Logger.getLogger(ExpandableBlocksEditor.class);
 	public static final String EDITORTYPE_BLOCK_BASED_EXPANDABLE = "block-based-expandable";
 	
@@ -228,7 +228,7 @@ public class ExpandableBlocksEditor implements PropertyEditor { // extends Scrol
 	
 	/**
 	 * 
-	 * @see org.nightlabs.jfire.base.prop.edit.PropertyEditor#disposeControl()
+	 * @see org.nightlabs.jfire.base.prop.edit.PropertySetEditor#disposeControl()
 	 */
 	public void disposeControl() {
 		if (form != null && !form.isDisposed()) {

@@ -28,7 +28,6 @@ package org.nightlabs.jfire.base.prop.edit;
 
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.nightlabs.jfire.base.prop.edit.blockbased.DataBlockEditorChangedListener;
 import org.nightlabs.jfire.prop.IStruct;
 import org.nightlabs.jfire.prop.PropertySet;
 
@@ -38,22 +37,23 @@ import org.nightlabs.jfire.prop.PropertySet;
  * Common useage is:<br/>
  * <ul>
  * 	<li>Create a the Editor with parameterless constructor or one specific to the type your using.</li>
- *	<li>Link the editor to a propSet by using {@link #setProp(Property)</li>
- *	<li>Create the UI representation by calling {@link #createControl(Composite, DataBlockEditorChangedListener, boolean)}</li>
- *	<li>If not done with {@link #createControl(Composite, DataBlockEditorChangedListener, boolean)} set the field values by
- * 		calling {@link #refreshControl(DataBlockEditorChangedListener)}.
+ *	<li>Link the editor to a PropertySet by using {@link #setPropertySet(PropertySet, IStruct)</li>
+ *	<li>Create the UI representation by calling {@link #createControl(Composite, boolean)}</li>
+ *	<li>If not done with {@link #createControl(Composite, boolean)} set the field values by
+ * 		calling {@link #refreshControl()}.
  *	</li>
- *  <li>To update the propSet with the values of the editor call {@link #updatePropertySet()}</li>
+ *  <li> To update the PropertySet with the values of the editor call {@link #updatePropertySet()}</li>
  * </ul>
  * 
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  *
  */
-public interface PropertyEditor {
+public interface PropertySetEditor {
 	
 	/**
-	 * Link the editor to a Property.
-	 * @param propSet
+	 * Link the editor to a {@link PropertySet}.
+	 * @param propSet The PropertySet this editor should modify
+	 * @param propStruct The structure the given property is built from.
 	 */
 	public void setPropertySet(PropertySet propSet, IStruct propStruct);
 	
@@ -61,38 +61,39 @@ public interface PropertyEditor {
 	 * Link the editor to a Property and refresh the Control
 	 * if refresh is true.
 	 * 
-	 * @param propSet
-	 * @param refresh
+	 * @param propSet The PropertySet this editor should modify
+	 * @param propStruct The structure the given property is built from.
+	 * @param refresh Whether to refresh the control with the values of the new PropertySet
 	 */
 	public void setPropertySet(PropertySet propSet, IStruct propStruct, boolean refresh);
 	
 	/**
-	 * Create the UI representation of the PropertyEditor and associate
+	 * Create the UI representation of the PropertySetEditor and associate
 	 * the passed changeListener with the fields. If refresh is true
 	 * refresh the UI representation. This should be done synchronously
 	 * on the GUI-Thread to avoid InvalidThreadAccessExceptions.
 	 * 
-	 * @param parent
-	 * @param refresh
-	 * @return
+	 * @param parent The parent to use.
+	 * @param refresh Whether to refresh the control with the PropertySet previously set (if it was set).
+	 * @return A newly created control for this editor.
 	 */
 	public Control createControl(Composite parent, boolean refresh);
 	
+	/**
+	 * Dispose this editors Control. 
+	 */
 	public void disposeControl();
 	
 	/**
 	 * Refresh the UI representation.
 	 * Implementors should refresh on the GUI-Thread to avoid 
 	 * InvalidThreadAccessExceptions.
-	 * 
-	 * @param changeListener
 	 */
 	public void refreshControl();
 	
 	/**
-	 * Set the values from the editor to the Property it
+	 * Set the values from the editor to the PropertySet it
 	 * is associated with.
-	 *
 	 */
 	public void updatePropertySet();
 }

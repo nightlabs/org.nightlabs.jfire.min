@@ -60,11 +60,11 @@ import org.nightlabs.progress.ProgressMonitor;
  * 
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  */
-public class PersonSearchFilterItemEditor extends SearchFilterItemEditor implements SelectionListener{
+public class PropertySetSearchFilterItemEditor extends SearchFilterItemEditor implements SelectionListener{
 	/**
 	 * LOG4J logger used by this class
 	 */
-	private static final Logger logger = Logger.getLogger(PersonSearchFilterItemEditor.class);
+	private static final Logger logger = Logger.getLogger(PropertySetSearchFilterItemEditor.class);
 
 	private XComposite wrapper;
 	private List searchFieldList;
@@ -88,7 +88,7 @@ public class PersonSearchFilterItemEditor extends SearchFilterItemEditor impleme
 			
 			comboSearchField.addSelectionListener(this);
 			// TODO: temporär -> ExtensionPoint
-			PersonSearchFilterItemEditorHelperRegistry.sharedInstance().addItemEditor(TextStructField.class, new TextStructFieldSearchItemEditorHelper());
+			PropertySetSearchFilterItemEditorHelperRegistry.sharedInstance().addItemEditor(TextStructField.class, new TextStructFieldSearchItemEditorHelper());
 			fillSearchFieldCombo();
 		}
 		return wrapper;
@@ -110,7 +110,7 @@ public class PersonSearchFilterItemEditor extends SearchFilterItemEditor impleme
 				Display.getDefault().asyncExec(new Runnable() {
 					public void run() {
 						for (int i = 0; i<searchFieldList.size()-1; i++) {
-							PropSearchFilterItemEditorHelper helper = (PropSearchFilterItemEditorHelper) searchFieldList.get(i);
+							ProperySetSearchFilterItemEditorHelper helper = (ProperySetSearchFilterItemEditorHelper) searchFieldList.get(i);
 							comboSearchField.add(helper.getDisplayName());
 						}
 						comboSearchField.select(0);
@@ -124,28 +124,28 @@ public class PersonSearchFilterItemEditor extends SearchFilterItemEditor impleme
 	}
 	
 	/**
-	 * Builds a list of PropSearchFilterItemEditorHelper
+	 * Builds a list of ProperySetSearchFilterItemEditorHelper
 	 * that are used to build the contents of the search field combo
 	 * and the right part of the editor.
 	 * 
 	 * @return
 	 */
 	protected List buildSearchFieldList(ProgressMonitor monitor) {
-		List<PropStructFieldSearchItemEditorManager> helperList = new ArrayList<PropStructFieldSearchItemEditorManager>();
+		List<PropertySetStructFieldSearchItemEditorManager> helperList = new ArrayList<PropertySetStructFieldSearchItemEditorManager>();
 		// We query the Struct instead of the StructLocal, and search for common features
 		// TODO I think this is OK right now, but there should be a possibility to search for structfields defined in StructLocals
 		for (Iterator iter = StructDAO.sharedInstance().getStruct(Person.class.getName(), monitor).getStructBlocks().iterator(); iter.hasNext();) {
 			StructBlock structBlock = (StructBlock) iter.next();
 			for (Iterator iterator = structBlock.getStructFields().iterator(); iterator.hasNext();) {
 				AbstractStructField structField = (AbstractStructField) iterator.next();
-				helperList.add(new PropStructFieldSearchItemEditorManager(structField));
+				helperList.add(new PropertySetStructFieldSearchItemEditorManager(structField));
 			}
 		}
 		return helperList;
 	}
 
 	/**
-	 * Delegates to the current PropSearchFilterItemEditorHelper.
+	 * Delegates to the current ProperySetSearchFilterItemEditorHelper.
 	 * 
 	 * @see org.nightlabs.jdo.search.SearchFilterItemEditor#getSearchFilterItem()
 	 */
@@ -154,14 +154,14 @@ public class PersonSearchFilterItemEditor extends SearchFilterItemEditor impleme
 	}
 
 	
-	private PropSearchFilterItemEditorHelper lastHelper;
+	private ProperySetSearchFilterItemEditorHelper lastHelper;
 	private int lastIdx = -1;
 	
-	private PropSearchFilterItemEditorHelper getCurrentHelper() {
+	private ProperySetSearchFilterItemEditorHelper getCurrentHelper() {
 		int idx = comboSearchField.getSelectionIndex();
 		if ((idx < 0) || (idx >= searchFieldList.size()))
 			throw new ArrayIndexOutOfBoundsException("Selection index of search field combo is out of range of searchFieldList.S");
-		return (PropSearchFilterItemEditorHelper) searchFieldList.get(idx);
+		return (ProperySetSearchFilterItemEditorHelper) searchFieldList.get(idx);
 	}
 	
 	private void onComboChange() {
@@ -170,7 +170,7 @@ public class PersonSearchFilterItemEditor extends SearchFilterItemEditor impleme
 			return;
 		if (idx < 0)
 			return;			
-		PropSearchFilterItemEditorHelper helper = getCurrentHelper();
+		ProperySetSearchFilterItemEditorHelper helper = getCurrentHelper();
 		if (lastHelper != null) {
 			lastHelper.close();
 			try {

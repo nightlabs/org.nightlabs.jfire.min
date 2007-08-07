@@ -59,7 +59,7 @@ public class PhoneNumberDataFieldEditor extends AbstractDataFieldEditor<PhoneNum
 		return comp;
 	}
 
-	public void updateProperty() {
+	public void updatePropertySet() {
 		PhoneNumberDataField dataField = getDataField();
 		dataField.setCountryCode(comp.countryCodeTextBox.getText());
 		dataField.setAreaCode(comp.areaCodeTextBox.getText());

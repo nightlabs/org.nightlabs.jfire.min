@@ -26,71 +26,49 @@
 
 package org.nightlabs.jfire.base.prop.search;
 
-import org.eclipse.jface.viewers.ILabelProviderListener;
-import org.eclipse.jface.viewers.ITableLabelProvider;
-import org.eclipse.swt.graphics.Image;
-import org.nightlabs.jfire.person.Person;
-import org.nightlabs.jfire.prop.datafield.TextDataField;
+import java.util.Collection;
+
+import org.eclipse.jface.viewers.IStructuredContentProvider;
+import org.eclipse.jface.viewers.Viewer;
 
 /**
+ * This is a ContentProvider for person lists obtained
+ * by a person search. The inputElement should be a 
+ * Collecion of Person.
+ * 
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  */
-public class PropSearchResultTableLabelProvider implements ITableLabelProvider {
+public class PropertySetResultTableContentProvider implements IStructuredContentProvider{
 
 	/**
-	 * @see org.eclipse.jface.viewers.ITableLabelProvider#getColumnImage(java.lang.Object, int)
+	 * 
+	 * 
+	 * @see org.eclipse.jface.viewers.IStructuredContentProvider#getElements(java.lang.Object)
 	 */
-	public Image getColumnImage(Object element, int columnIndex) {
-		return null;
-	}
-
-	/**
-	 * @see org.eclipse.jface.viewers.ITableLabelProvider#getColumnText(java.lang.Object, int)
-	 */
-	public String getColumnText(Object element, int columnIndex) {
-		// TODO: temporär -> columns, data ... 
-		String label = "";
-		if ((element instanceof Person)) {
-//			throw new IllegalArgumentException("Element should be of type Person but is "+element.getClass().getName());
-			Person person = (Person)element;
-			label = person.getOrganisationID()+": "+person.getPropertyID();
+	public Object[] getElements(Object inputElement) {
+		if (inputElement instanceof Collection) { 
+			Object[] result = ((Collection)inputElement).toArray();
+//			if (result.length > 0)
+//				if (! (result[0] instanceof Person))
+//					throw new IllegalArgumentException("Elements of the passed collections have to be of type Person but are "+result[0].getClass().getName());
+				
+			return result;
 		} 
-		else if (element instanceof Object[]) {
-			Object[] array = (Object[])element;
-			if (array.length > columnIndex) {
-				if (array[columnIndex] instanceof TextDataField) {
-					label = ((TextDataField)array[columnIndex]).getText();
-				}
-			}
-			else
-				label = array[columnIndex].toString();
-		}
-		return label;
+		else
+			throw new IllegalArgumentException("InputElement should be a collection but is "+inputElement.getClass().getName());
+		
 	}
 
 	/**
-	 * @see org.eclipse.jface.viewers.IBaseLabelProvider#addListener(org.eclipse.jface.viewers.ILabelProviderListener)
-	 */
-	public void addListener(ILabelProviderListener listener) {
-	}
-
-	/**
-	 * @see org.eclipse.jface.viewers.IBaseLabelProvider#dispose()
+	 * @see org.eclipse.jface.viewers.IContentProvider#dispose()
 	 */
 	public void dispose() {
 	}
 
 	/**
-	 * @see org.eclipse.jface.viewers.IBaseLabelProvider#isLabelProperty(java.lang.Object, java.lang.String)
+	 * @see org.eclipse.jface.viewers.IContentProvider#inputChanged(org.eclipse.jface.viewers.Viewer, java.lang.Object, java.lang.Object)
 	 */
-	public boolean isLabelProperty(Object element, String property) {
-		return false;
-	}
-
-	/**
-	 * @see org.eclipse.jface.viewers.IBaseLabelProvider#removeListener(org.eclipse.jface.viewers.ILabelProviderListener)
-	 */
-	public void removeListener(ILabelProviderListener listener) {
+	public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
 	}
 
 }

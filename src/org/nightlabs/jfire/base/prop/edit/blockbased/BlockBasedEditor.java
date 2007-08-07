@@ -45,7 +45,7 @@ import org.nightlabs.jfire.prop.PropertySet;
 /**
  * @see org.nightlabs.jfire.base.prop.edit.blockbased.AbstractDataBlockEditor
  * @see org.nightlabs.jfire.base.prop.edit.blockbased.EditorStructBlockRegistry
- * @see org.nightlabs.jfire.base.prop.edit.PropertyEditor
+ * @see org.nightlabs.jfire.base.prop.edit.PropertySetEditor
  *  
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  */

@@ -37,7 +37,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.nightlabs.base.composite.XComposite;
-import org.nightlabs.jfire.base.prop.edit.PropertyEditor;
+import org.nightlabs.jfire.base.prop.edit.PropertySetEditor;
 import org.nightlabs.jfire.prop.PropertySet;
 import org.nightlabs.jfire.prop.StructLocal;
 import org.nightlabs.jfire.prop.id.StructBlockID;
@@ -99,7 +99,7 @@ public class FullDataBlockCoverageComposite extends Composite {
 	
 	public void updateProp() {
 		for (Iterator iter = propEditors.iterator(); iter.hasNext();) {
-			PropertyEditor editor = (PropertyEditor) iter.next();
+			PropertySetEditor editor = (PropertySetEditor) iter.next();
 			editor.updatePropertySet();
 		}
 	}

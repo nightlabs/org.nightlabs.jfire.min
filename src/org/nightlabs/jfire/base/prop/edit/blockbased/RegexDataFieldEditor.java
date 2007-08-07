@@ -145,7 +145,7 @@ public class RegexDataFieldEditor extends AbstractDataFieldEditor<RegexDataField
 	 * (non-Javadoc)
 	 * @see org.nightlabs.jfire.base.prop.edit.DataFieldEditor#updateProp()
 	 */
-	public void updateProperty() {
+	public void updatePropertySet() {
 		if (!isChanged())
 			return;
 		

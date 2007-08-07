@@ -26,42 +26,41 @@
 
 package org.nightlabs.jfire.base.prop.search;
 
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Composite;
-
-import org.nightlabs.jfire.base.login.Login;
-
 /**
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  */
-public class PersonStartsWithQuickSearchComposite extends Composite {
+public class PropertySetSearchFilterItemEditorHelperNotFoundException extends Exception {
+
+	private static final long serialVersionUID = 1L;
 
 	/**
-	 * @param parent
-	 * @param style
+	 * 
 	 */
-	public PersonStartsWithQuickSearchComposite(Composite arg0, int arg1) {
-		super(arg0, arg1);
-		try {
-			Login.getLogin();
-			
-			GridLayout layout = new GridLayout();
-			layout.horizontalSpacing = 0;
-			layout.verticalSpacing = 0;
-			layout.marginHeight = 0;
-			layout.marginWidth = 0;
-			setLayout(layout);
-			
-			for (int i=97; i<=122; i++) {
-				String ch;
-				ch = new String(new byte[]{(byte)i}, "UTF8");
-				
-				PersonStartsWithQuickSearch pswqs = new PersonStartsWithQuickSearch(null,ch);				
-				pswqs.createComposite(this);								
-			}
-		} catch (Throwable t) {
-			throw new RuntimeException(t);
-		}
+	public PropertySetSearchFilterItemEditorHelperNotFoundException() {
+		super();
+	}
+
+	/**
+	 * @param message
+	 */
+	public PropertySetSearchFilterItemEditorHelperNotFoundException(String message) {
+		super(message);
+	}
+
+	/**
+	 * @param cause
+	 */
+	public PropertySetSearchFilterItemEditorHelperNotFoundException(Throwable cause) {
+		super(cause);
+	}
+
+	/**
+	 * @param message
+	 * @param cause
+	 */
+	public PropertySetSearchFilterItemEditorHelperNotFoundException(String message,
+			Throwable cause) {
+		super(message, cause);
 	}
 
 }

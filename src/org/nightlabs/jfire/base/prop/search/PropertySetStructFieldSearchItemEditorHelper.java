@@ -28,50 +28,70 @@ package org.nightlabs.jfire.base.prop.search;
 
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-
 import org.nightlabs.jdo.search.SearchFilterItem;
+import org.nightlabs.jfire.prop.AbstractStructField;
 
 /**
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  */
-public interface PropSearchFilterItemEditorHelper {
+public abstract class PropertySetStructFieldSearchItemEditorHelper implements
+		ProperySetSearchFilterItemEditorHelper {
+
+	
+	protected AbstractStructField personStructField;
+	
+	
+	protected PropertySetStructFieldSearchItemEditorHelper() {
+		super();
+	}	
+	
+	/**
+	 * Constructs a new StructFieldSearchItemEditorHelper
+	 * and calls {@link #init(AbstractPersonStructField)}.
+	 * 
+	 * @param personStructField 
+	 */
+	public PropertySetStructFieldSearchItemEditorHelper(AbstractStructField _personStructField) {
+		super();
+		init(_personStructField);
+	}
+	
+	
+	public void init(AbstractStructField personStructField) {
+		this.personStructField = personStructField;
+	}
 
 	/**
-	 * Should return the GUI-representation of this helper.
-	 * 
-	 * @param parent
-	 * @return
+	 * @see org.nightlabs.jfire.base.prop.search.ProperySetSearchFilterItemEditorHelper#getControl(org.eclipse.swt.widgets.Composite)
 	 */
-	public Control getControl(Composite parent);
-	
+	public abstract Control getControl(Composite parent);
+
 	/**
-	 * Will be called to return results within
-	 * {@link org.nightlabs.jdo.search.SearchFilterItemEditor#getSearchFilterItem()}  
-	 * @return
+	 * @see org.nightlabs.jfire.base.prop.search.ProperySetSearchFilterItemEditorHelper#getSearchFilterItem()
 	 */
-	public SearchFilterItem getSearchFilterItem();
-	
+	public abstract SearchFilterItem getSearchFilterItem();
+
 	/**
-	 * Should return a new instance of a PropSearchFilterItemEditorHelper.
-	 * @return
+	 * @see org.nightlabs.jfire.base.prop.search.ProperySetSearchFilterItemEditorHelper#newInstance()
 	 */
-	public PropSearchFilterItemEditorHelper newInstance();
-	
+	public ProperySetSearchFilterItemEditorHelper newInstance() {
+		PropertySetStructFieldSearchItemEditorHelper result;
+		try {
+			result = (PropertySetStructFieldSearchItemEditorHelper)this.getClass().newInstance();
+		} catch (Throwable t) {
+			IllegalStateException ill = new IllegalStateException("Error instatiating new StructFieldSearchItemEditorHelper "+this);
+			ill.initCause(t);
+			throw ill;
+		}
+		result.init(this.personStructField);
+		return result;
+	}
+
 	/**
-	 * Should return a string that can be displayed 
-	 * within the combo of PersonSearchFilterItemEditor.
-	 * 
-	 * @return
+	 * @see org.nightlabs.jfire.base.prop.search.ProperySetSearchFilterItemEditorHelper#getDisplayName()
 	 */
-	public String getDisplayName();
-	
-	/**
-	 * Will be called when the
-	 * helper is closed. It should be
-	 * used for cleanup (removing listeners), 
-	 * not for disposing widgets.
-	 */	
-	public void close();
-	
-	
+	public String getDisplayName() {
+		return personStructField.getStructBlockID()+": "+personStructField.getStructFieldKey();
+	}
+
 }

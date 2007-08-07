@@ -26,41 +26,71 @@
 
 package org.nightlabs.jfire.base.prop.search;
 
+import org.eclipse.jface.viewers.ILabelProviderListener;
+import org.eclipse.jface.viewers.ITableLabelProvider;
+import org.eclipse.swt.graphics.Image;
+import org.nightlabs.jfire.person.Person;
+import org.nightlabs.jfire.prop.datafield.TextDataField;
+
 /**
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  */
-public class PersonSearchFilterItemEditorHelperNotFoundException extends Exception {
-
-	private static final long serialVersionUID = 1L;
+public class PropertySetSearchResultTableLabelProvider implements ITableLabelProvider {
 
 	/**
-	 * 
+	 * @see org.eclipse.jface.viewers.ITableLabelProvider#getColumnImage(java.lang.Object, int)
 	 */
-	public PersonSearchFilterItemEditorHelperNotFoundException() {
-		super();
+	public Image getColumnImage(Object element, int columnIndex) {
+		return null;
 	}
 
 	/**
-	 * @param message
+	 * @see org.eclipse.jface.viewers.ITableLabelProvider#getColumnText(java.lang.Object, int)
 	 */
-	public PersonSearchFilterItemEditorHelperNotFoundException(String message) {
-		super(message);
+	public String getColumnText(Object element, int columnIndex) {
+		// TODO: temporär -> columns, data ... 
+		String label = "";
+		if ((element instanceof Person)) {
+//			throw new IllegalArgumentException("Element should be of type Person but is "+element.getClass().getName());
+			Person person = (Person)element;
+			label = person.getOrganisationID()+": "+person.getPropertyID();
+		} 
+		else if (element instanceof Object[]) {
+			Object[] array = (Object[])element;
+			if (array.length > columnIndex) {
+				if (array[columnIndex] instanceof TextDataField) {
+					label = ((TextDataField)array[columnIndex]).getText();
+				}
+			}
+			else
+				label = array[columnIndex].toString();
+		}
+		return label;
 	}
 
 	/**
-	 * @param cause
+	 * @see org.eclipse.jface.viewers.IBaseLabelProvider#addListener(org.eclipse.jface.viewers.ILabelProviderListener)
 	 */
-	public PersonSearchFilterItemEditorHelperNotFoundException(Throwable cause) {
-		super(cause);
+	public void addListener(ILabelProviderListener listener) {
 	}
 
 	/**
-	 * @param message
-	 * @param cause
+	 * @see org.eclipse.jface.viewers.IBaseLabelProvider#dispose()
 	 */
-	public PersonSearchFilterItemEditorHelperNotFoundException(String message,
-			Throwable cause) {
-		super(message, cause);
+	public void dispose() {
+	}
+
+	/**
+	 * @see org.eclipse.jface.viewers.IBaseLabelProvider#isLabelProperty(java.lang.Object, java.lang.String)
+	 */
+	public boolean isLabelProperty(Object element, String property) {
+		return false;
+	}
+
+	/**
+	 * @see org.eclipse.jface.viewers.IBaseLabelProvider#removeListener(org.eclipse.jface.viewers.ILabelProviderListener)
+	 */
+	public void removeListener(ILabelProviderListener listener) {
 	}
 
 }

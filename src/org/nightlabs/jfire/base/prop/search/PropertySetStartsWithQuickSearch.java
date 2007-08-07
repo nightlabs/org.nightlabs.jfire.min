@@ -26,72 +26,66 @@
 
 package org.nightlabs.jfire.base.prop.search;
 
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
+import org.nightlabs.jdo.search.SearchFilter;
 import org.nightlabs.jdo.search.SearchFilterItem;
-import org.nightlabs.jfire.prop.AbstractStructField;
+import org.nightlabs.jdo.search.SearchResultFetcher;
+import org.nightlabs.jfire.person.PersonStruct;
+import org.nightlabs.jfire.prop.search.PropSearchFilter;
+import org.nightlabs.jfire.prop.search.PropSearchFilterItem;
+import org.nightlabs.jfire.prop.search.TextPropSearchFilterItem;
 
 /**
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  */
-public abstract class PropStructFieldSearchItemEditorHelper implements
-		PropSearchFilterItemEditorHelper {
+public class PropertySetStartsWithQuickSearch extends PropertySetQuickSearch {
 
 	
-	protected AbstractStructField personStructField;
-	
-	
-	protected PropStructFieldSearchItemEditorHelper() {
-		super();
-	}	
+	private String startWithNeedle;
 	
 	/**
-	 * Constructs a new StructFieldSearchItemEditorHelper
-	 * and calls {@link #init(AbstractPersonStructField)}.
+	 * Construct a PropertySetQuickSearch for persons begining with startWithNeedle.<br/>
+	 * The resultFetcher will be called when the quick-button is pressed.<br/>
+	 * If buttonText is not null or an empty string this will be the Buttons text,
+	 * otherwise the startWithNeedle will be used. 
 	 * 
-	 * @param personStructField 
+	 * @param buttonText
+	 * @param resultFetcher
+	 * @param startWithNeedle
 	 */
-	public PropStructFieldSearchItemEditorHelper(AbstractStructField _personStructField) {
-		super();
-		init(_personStructField);
-	}
-	
-	
-	public void init(AbstractStructField personStructField) {
-		this.personStructField = personStructField;
-	}
-
-	/**
-	 * @see org.nightlabs.jfire.base.prop.search.PropSearchFilterItemEditorHelper#getControl(org.eclipse.swt.widgets.Composite)
-	 */
-	public abstract Control getControl(Composite parent);
-
-	/**
-	 * @see org.nightlabs.jfire.base.prop.search.PropSearchFilterItemEditorHelper#getSearchFilterItem()
-	 */
-	public abstract SearchFilterItem getSearchFilterItem();
-
-	/**
-	 * @see org.nightlabs.jfire.base.prop.search.PropSearchFilterItemEditorHelper#newInstance()
-	 */
-	public PropSearchFilterItemEditorHelper newInstance() {
-		PropStructFieldSearchItemEditorHelper result;
-		try {
-			result = (PropStructFieldSearchItemEditorHelper)this.getClass().newInstance();
-		} catch (Throwable t) {
-			IllegalStateException ill = new IllegalStateException("Error instatiating new StructFieldSearchItemEditorHelper "+this);
-			ill.initCause(t);
-			throw ill;
+	public PropertySetStartsWithQuickSearch(String buttonText, SearchResultFetcher resultFetcher, String startWithNeedle) {
+		super(buttonText, resultFetcher);
+		this.startWithNeedle = startWithNeedle;
+		if ((buttonText == null) || buttonText.equals("")) {
+			setButtonText(startWithNeedle);
 		}
-		result.init(this.personStructField);
-		return result;
 	}
-
+	
 	/**
-	 * @see org.nightlabs.jfire.base.prop.search.PropSearchFilterItemEditorHelper#getDisplayName()
+	 * Construct a PropertySetQuickSearch for persons begining with startWithNeedle.<br/>
+	 * The resultFetcher will be called when the quick-button is pressed.
+	 *  
+	 * @param resultFetcher
+	 * @param startWithNeedle
 	 */
-	public String getDisplayName() {
-		return personStructField.getStructBlockID()+": "+personStructField.getStructFieldKey();
+	public PropertySetStartsWithQuickSearch(SearchResultFetcher resultFetcher, String startWithNeedle) {
+		super(startWithNeedle,resultFetcher);
+		this.startWithNeedle = startWithNeedle;
 	}
-
+	
+	/**
+	 * Overrides and adds TextPersonSearchFilter for PersonalData/Name and PersonalData/Company to
+	 * begin with startWithNeedle.
+	 * 
+	 * @see org.nightlabs.jdo.search.SearchFilterProvider#getPersonSearchFilter()
+	 */
+	public SearchFilter getSearchFilter() {
+		PropSearchFilter filter =  super.getSearchFilter(false);
+		// add Name filter
+		PropSearchFilterItem item = new TextPropSearchFilterItem(PersonStruct.PERSONALDATA_NAME,SearchFilterItem.MATCHTYPE_BEGINSWITH,startWithNeedle);
+		filter.addSearchFilterItem(item);
+		// add Company filter
+		item = new TextPropSearchFilterItem(PersonStruct.PERSONALDATA_COMPANY,SearchFilterItem.MATCHTYPE_BEGINSWITH,startWithNeedle);
+		filter.addSearchFilterItem(item);
+		return filter;
+	}
 }

@@ -248,7 +248,7 @@ extends AbstractDataFieldEditor<ImageDataField>
 	 * (non-Javadoc)
 	 * @see org.nightlabs.jfire.base.prop.edit.DataFieldEditor#updateProperty()
 	 */
-	public void updateProperty() {
+	public void updatePropertySet() {
 		if (!isChanged())
 			return;
 		

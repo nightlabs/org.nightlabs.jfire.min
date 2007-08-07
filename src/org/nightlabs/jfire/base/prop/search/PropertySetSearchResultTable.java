@@ -46,9 +46,9 @@ import org.nightlabs.jfire.person.Person;
 /**
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  */
-public class PersonSearchResultTable extends AbstractTableComposite {
+public class PropertySetSearchResultTable extends AbstractTableComposite {
 	
-	public PersonSearchResultTable(Composite parent, int style) {
+	public PropertySetSearchResultTable(Composite parent, int style) {
 		super(parent, style, true);
 	}
 
@@ -93,15 +93,15 @@ public class PersonSearchResultTable extends AbstractTableComposite {
 	}
 
 	protected void setTableProvider(TableViewer tableViewer) {
-		tableViewer.setContentProvider(new PersonSearchResultTableContentProvider());
-		tableViewer.setLabelProvider(new PropSearchResultTableLabelProvider());
+		tableViewer.setContentProvider(new PropertySetResultTableContentProvider());
+		tableViewer.setLabelProvider(new PropertySetSearchResultTableLabelProvider());
 	}
 	
-	public PersonSearchResultTableContentProvider getContentProvider() {
+	public PropertySetResultTableContentProvider getContentProvider() {
 		IContentProvider contentProvider = getTableViewer().getContentProvider();
-		if (!(contentProvider instanceof PersonSearchResultTableContentProvider))
-			throw new IllegalStateException("This PersonSearchTable's contentProvider is an instance of "+contentProvider.getClass().getName()+" instead of PersonSearchResultTableContentProvider.");
-		return (PersonSearchResultTableContentProvider)contentProvider;
+		if (!(contentProvider instanceof PropertySetResultTableContentProvider))
+			throw new IllegalStateException("This PersonSearchTable's contentProvider is an instance of "+contentProvider.getClass().getName()+" instead of PropertySetResultTableContentProvider.");
+		return (PropertySetResultTableContentProvider)contentProvider;
 	}
 
 }

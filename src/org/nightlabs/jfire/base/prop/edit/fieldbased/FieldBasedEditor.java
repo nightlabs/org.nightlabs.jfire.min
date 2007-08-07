@@ -48,7 +48,7 @@ import org.nightlabs.base.composite.SelectableCompositeListener;
 import org.nightlabs.jfire.base.prop.edit.DataFieldEditor;
 import org.nightlabs.jfire.base.prop.edit.DataFieldEditorFactoryRegistry;
 import org.nightlabs.jfire.base.prop.edit.DataFieldEditorNotFoundException;
-import org.nightlabs.jfire.base.prop.edit.PropertyEditor;
+import org.nightlabs.jfire.base.prop.edit.PropertySetEditor;
 import org.nightlabs.jfire.base.prop.edit.blockbased.DataBlockEditorChangedListener;
 import org.nightlabs.jfire.prop.AbstractDataField;
 import org.nightlabs.jfire.prop.IStruct;
@@ -57,14 +57,14 @@ import org.nightlabs.jfire.prop.exception.DataNotFoundException;
 import org.nightlabs.jfire.prop.id.StructFieldID;
 
 /**
- * A field based PropertyEditor that will set its look depending
+ * A field based PropertySetEditor that will set its look depending
  * on the editorType and the PropDataFieldEditors registered
  * by the propDataField-extension-point.
  * 
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  *
  */
-public class FieldBasedEditor implements PropertyEditor {
+public class FieldBasedEditor implements PropertySetEditor {
 
 	public static final Logger LOGGER = Logger.getLogger(FieldBasedEditor.class);
 	
@@ -100,7 +100,7 @@ public class FieldBasedEditor implements PropertyEditor {
 	private IStruct propStruct;
 	
 	/**
-	 * @see org.nightlabs.jfire.base.prop.edit.PropertyEditor#setProp(org.nightlabs.jfire.base.prop.Property)
+	 * @see org.nightlabs.jfire.base.prop.edit.PropertySetEditor#setProp(org.nightlabs.jfire.base.prop.Property)
 	 */
 	public void setPropertySet(PropertySet propSet, IStruct propStruct) {
 		this.propSet = propSet;
@@ -109,7 +109,7 @@ public class FieldBasedEditor implements PropertyEditor {
 	}
 
 	/**
-	 * @see org.nightlabs.jfire.base.prop.edit.PropertyEditor#setPropertySet(org.nightlabs.jfire.base.prop.Property, boolean)
+	 * @see org.nightlabs.jfire.base.prop.edit.PropertySetEditor#setPropertySet(org.nightlabs.jfire.base.prop.Property, boolean)
 	 */
 	public void setPropertySet(PropertySet prop, IStruct propStruct, boolean refresh) {
 		setPropertySet(prop, propStruct);
@@ -268,7 +268,7 @@ public class FieldBasedEditor implements PropertyEditor {
 	}
 	
 	/**
-	 * @see org.nightlabs.jfire.base.prop.edit.PropertyEditor#createControl(org.eclipse.swt.widgets.Composite, boolean)
+	 * @see org.nightlabs.jfire.base.prop.edit.PropertySetEditor#createControl(org.eclipse.swt.widgets.Composite, boolean)
 	 */
 	public Control createControl(Composite parent, boolean refresh) {
 		if (editorWrapper == null) {
@@ -356,7 +356,7 @@ public class FieldBasedEditor implements PropertyEditor {
 	}
 	
 	/**
-	 * @see org.nightlabs.jfire.base.prop.edit.PropertyEditor#refreshControl()
+	 * @see org.nightlabs.jfire.base.prop.edit.PropertySetEditor#refreshControl()
 	 */
 	public void refreshControl() {
 		Display.getDefault().syncExec( 
@@ -429,12 +429,12 @@ public class FieldBasedEditor implements PropertyEditor {
 	
 
 	/**
-	 * @see org.nightlabs.jfire.base.prop.edit.PropertyEditor#updatePropertySet()
+	 * @see org.nightlabs.jfire.base.prop.edit.PropertySetEditor#updatePropertySet()
 	 */
 	public void updatePropertySet() {
 		for (Iterator iter = fieldEditors.values().iterator(); iter.hasNext();) {
 			DataFieldEditor editor = (DataFieldEditor) iter.next();
-			editor.updateProperty();
+			editor.updatePropertySet();
 		}
 	}
 }

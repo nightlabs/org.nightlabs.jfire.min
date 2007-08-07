@@ -119,7 +119,7 @@ public class NumberDataFieldEditor extends AbstractDataFieldEditor<NumberDataFie
 	 * (non-Javadoc)
 	 * @see org.nightlabs.jfire.base.prop.edit.DataFieldEditor#updateProp()
 	 */
-	public void updateProperty() {
+	public void updatePropertySet() {
 		if (!isChanged())
 			return;
 		

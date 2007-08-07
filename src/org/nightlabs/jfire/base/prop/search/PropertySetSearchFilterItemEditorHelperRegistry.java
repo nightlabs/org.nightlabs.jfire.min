@@ -26,49 +26,71 @@
 
 package org.nightlabs.jfire.base.prop.search;
 
-import java.util.Collection;
-
-import org.eclipse.jface.viewers.IStructuredContentProvider;
-import org.eclipse.jface.viewers.Viewer;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * This is a ContentProvider for person lists obtained
- * by a person search. The inputElement should be a 
- * Collecion of Person.
+ * This registry holds ProperySetSearchFilterItemEditorHelper 
+ * linked to classes of PersonStructFields.
  * 
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  */
-public class PersonSearchResultTableContentProvider implements IStructuredContentProvider{
+public class PropertySetSearchFilterItemEditorHelperRegistry {
 
 	/**
-	 * 
-	 * 
-	 * @see org.eclipse.jface.viewers.IStructuredContentProvider#getElements(java.lang.Object)
+	 * key: Class AbstractPersonStructFieldClass<br/>
+	 * value: ProperySetSearchFilterItemEditorHelper personSearchFilterItemEditorHelper<br/>
 	 */
-	public Object[] getElements(Object inputElement) {
-		if (inputElement instanceof Collection) { 
-			Object[] result = ((Collection)inputElement).toArray();
-//			if (result.length > 0)
-//				if (! (result[0] instanceof Person))
-//					throw new IllegalArgumentException("Elements of the passed collections have to be of type Person but are "+result[0].getClass().getName());
-				
-			return result;
-		} 
+	private Map<Class, ProperySetSearchFilterItemEditorHelper> itemEditorHelpers = new HashMap<Class, ProperySetSearchFilterItemEditorHelper>();
+	
+	/**
+	 * Adds a ProperySetSearchFilterItemEditorHelper linked to the
+	 * given class name to the registry. 
+	 * 
+	 * @param itemClassName
+	 * @param itemEditor
+	 */
+	public void addItemEditor(Class structFieldClass, ProperySetSearchFilterItemEditorHelper editorHelper) {
+		itemEditorHelpers.put(structFieldClass, editorHelper);
+	}
+	
+	/**
+	 * Removes the ProperySetSearchFilterItemEditorHelper from the
+	 * registry.
+	 * 
+	 * @param itemClassName
+	 */
+	public void removeItemEditor(Class structFieldClass) {
+		if (!itemEditorHelpers.containsKey(structFieldClass))
+			return;
+		itemEditorHelpers.remove(structFieldClass);
+	}
+	
+	
+	/**
+	 * Returns a new instance of a ProperySetSearchFilterItemEditorHelper.
+	 * 
+	 * @param searchFieldClass
+	 * @return
+	 * @throws SearchFilterItemEditorNotFoundException
+	 */
+	public ProperySetSearchFilterItemEditorHelper getEditorHelper(Class structFieldClass) 
+	throws PropertySetSearchFilterItemEditorHelperNotFoundException {
+		ProperySetSearchFilterItemEditorHelper editorHelper = (ProperySetSearchFilterItemEditorHelper)itemEditorHelpers.get(structFieldClass);
+		if (editorHelper != null)
+			return editorHelper.newInstance();
 		else
-			throw new IllegalArgumentException("InputElement should be a collection but is "+inputElement.getClass().getName());
-		
+			throw new PropertySetSearchFilterItemEditorHelperNotFoundException("Registry does not contain an entry for "+structFieldClass.getName());
 	}
-
-	/**
-	 * @see org.eclipse.jface.viewers.IContentProvider#dispose()
-	 */
-	public void dispose() {
-	}
-
-	/**
-	 * @see org.eclipse.jface.viewers.IContentProvider#inputChanged(org.eclipse.jface.viewers.Viewer, java.lang.Object, java.lang.Object)
-	 */
-	public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+	
+	
+	private static PropertySetSearchFilterItemEditorHelperRegistry sharedInstance;
+	
+	public static PropertySetSearchFilterItemEditorHelperRegistry sharedInstance() {
+		if (sharedInstance == null) {
+			sharedInstance = new PropertySetSearchFilterItemEditorHelperRegistry();
+		}
+		return sharedInstance;
 	}
 
 }

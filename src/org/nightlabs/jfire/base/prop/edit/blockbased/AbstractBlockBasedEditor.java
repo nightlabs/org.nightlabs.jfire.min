@@ -33,7 +33,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.nightlabs.jfire.base.prop.edit.PropertyEditor;
+import org.nightlabs.jfire.base.prop.edit.PropertySetEditor;
 import org.nightlabs.jfire.prop.DataBlockGroup;
 import org.nightlabs.jfire.prop.IStruct;
 import org.nightlabs.jfire.prop.PropertySet;
@@ -45,11 +45,11 @@ import org.nightlabs.jfire.prop.id.StructBlockID;
 /**
  * @see org.nightlabs.jfire.base.prop.edit.blockbased.AbstractDataBlockEditor
  * @see org.nightlabs.jfire.base.prop.edit.blockbased.EditorStructBlockRegistry
- * @see org.nightlabs.jfire.base.prop.edit.PropertyEditor
+ * @see org.nightlabs.jfire.base.prop.edit.PropertySetEditor
  *  
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  */
-public abstract class AbstractBlockBasedEditor implements PropertyEditor { // extends ScrolledComposite {
+public abstract class AbstractBlockBasedEditor implements PropertySetEditor { // extends ScrolledComposite {
 	
 	public AbstractBlockBasedEditor() {
 		this (null, null);
@@ -101,7 +101,7 @@ public abstract class AbstractBlockBasedEditor implements PropertyEditor { // ex
 	 * Returns the propSet.
 	 * @return
 	 */
-	public PropertySet getProperty() {
+	public PropertySet getPropertySet() {
 		return propSet;
 	}
 

@@ -26,17 +26,15 @@
 
 package org.nightlabs.jfire.base.prop.edit.blockbased;
 
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.nightlabs.base.composite.XComposite;
-import org.nightlabs.base.extensionpoint.EPProcessorException;
 import org.nightlabs.jfire.base.prop.edit.DataFieldEditor;
 import org.nightlabs.jfire.prop.DataBlockGroup;
 import org.nightlabs.jfire.prop.IStruct;
@@ -75,7 +73,7 @@ implements DataBlockEditorChangedListener
 	
 	XComposite wrapperComposite;
 	
-	private List propDataBlockEditors = new LinkedList();
+	private List<AbstractDataBlockEditor> propDataBlockEditors = new LinkedList<AbstractDataBlockEditor>();
 	
 	public void refresh(IStruct struct, DataBlockGroup blockGroup) {
 		this.blockGroup = blockGroup;
@@ -111,8 +109,6 @@ implements DataBlockEditorChangedListener
 						propDataBlockEditors.add(blockEditor);
 					} catch (DataBlockNotFoundException e) {
 						LOGGER.error("Could not find DataBlock (idx = 0) for "+blockGroup.getStructBlockKey());
-					} catch (EPProcessorException e1) {
-						LOGGER.error("Caught EPProcessorException when trying to findnot find DataBlock (idx = 0) for "+blockGroup.getStructBlockKey(), e1);
 					}
 				}
 				j = i;
@@ -127,13 +123,13 @@ implements DataBlockEditorChangedListener
 	}
 	
 	
-	private ScrolledForm owner = null;
+//	private ScrolledForm owner = null;
+//	
+//	public void setOwner(ScrolledForm owner) {
+//		this.owner = owner;
+//	}
 	
-	public void setOwner(ScrolledForm owner) {
-		this.owner = owner;
-	}
-	
-	private Collection changeListener = new LinkedList();	
+	private ListenerList changeListener = new ListenerList();	
 	public synchronized void addPropDataBlockEditorChangedListener(DataBlockEditorChangedListener listener) {
 		changeListener.add(listener);
 	}
@@ -141,9 +137,9 @@ implements DataBlockEditorChangedListener
 		changeListener.add(listener);
 	}
 	protected synchronized void notifyChangeListeners(AbstractDataBlockEditor dataBlockEditor, DataFieldEditor dataFieldEditor) {
-		for (Iterator it = changeListener.iterator(); it.hasNext(); ) {
-			DataBlockEditorChangedListener listener = (DataBlockEditorChangedListener)it.next();
-			listener.propDataBlockEditorChanged(dataBlockEditor,dataFieldEditor);
+		Object[] listeners = changeListener.getListeners();
+		for (Object listener : listeners) {
+			((DataBlockEditorChangedListener) listener).propDataBlockEditorChanged(dataBlockEditor,dataFieldEditor);
 		}
 	}
 	/**
@@ -156,7 +152,7 @@ implements DataBlockEditorChangedListener
 	public void updateProp() {
 		for (Iterator it = propDataBlockEditors.iterator(); it.hasNext(); ) {
 			AbstractDataBlockEditor blockEditor = (AbstractDataBlockEditor)it.next();
-			blockEditor.updateProperty();
+			blockEditor.updatePropertySet();
 		}
 	}
 	

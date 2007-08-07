@@ -53,30 +53,30 @@ import org.nightlabs.jfire.prop.search.PropSearchFilter;
 /**
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  */
-public class PersonSearchDialog extends Dialog implements SearchResultFetcher{
+public class PropertySetSearchDialog extends Dialog implements SearchResultFetcher{
 
 	/**
 	 * LOG4J logger used by this class
 	 */
-	private static final Logger logger = Logger.getLogger(PersonSearchDialog.class);
+	private static final Logger logger = Logger.getLogger(PropertySetSearchDialog.class);
 
 	/**
 	 * @param parentShell
 	 */
-	public PersonSearchDialog(Shell parentShell) {
+	public PropertySetSearchDialog(Shell parentShell) {
 		super(parentShell);
 		setShellStyle(SWT.RESIZE);
 	}
 
 
-	private DynamicPersonSearchFilterProvider filterProvider;
-	private PersonSearchResultTable resultTable;
+	private DynamicPropertySetSearchFilterProvider filterProvider;
+	private PropertySetSearchResultTable resultTable;
 
 	protected Control createDialogArea(Composite parent) {
 
 		XComposite wrapper = new XComposite(parent, SWT.NONE, LayoutMode.TIGHT_WRAPPER);
 
-		filterProvider = new DynamicPersonSearchFilterProvider(new PropSearchFilterItemListMutator());
+		filterProvider = new DynamicPropertySetSearchFilterProvider(new PropertySetSearchFilterItemListMutator());
 		filterProvider.setSearchResultFetcher(this);
 		Composite providerComp = filterProvider.createComposite(wrapper);
 		GridData gd = new GridData(GridData.FILL_BOTH);
@@ -84,7 +84,7 @@ public class PersonSearchDialog extends Dialog implements SearchResultFetcher{
 		gd.heightHint = 200;
 		providerComp.setLayoutData(gd);
 
-		resultTable = new PersonSearchResultTable(wrapper,SWT.NONE	);		
+		resultTable = new PropertySetSearchResultTable(wrapper,SWT.NONE	);		
 		GridData tgd = new GridData(GridData.FILL_BOTH);
 		tgd.heightHint = 300;
 		resultTable.setLayoutData(tgd);

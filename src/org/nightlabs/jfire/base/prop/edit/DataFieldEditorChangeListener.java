@@ -27,8 +27,16 @@
 package org.nightlabs.jfire.base.prop.edit;
 
 /**
+ * Listener that can be used to monitor changes in {@link DataFieldEditor}s.
+ * 
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  */
 public interface DataFieldEditorChangeListener {
+	/**
+	 * Called when the value of the {@link DataFieldEditor} this listener is 
+	 * associated with has changed.
+	 * 
+	 * @param editor The field editor whose value has changed.
+	 */
 	public void dataFieldEditorChanged(DataFieldEditor editor);
 }

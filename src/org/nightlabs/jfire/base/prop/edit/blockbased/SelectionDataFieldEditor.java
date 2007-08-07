@@ -82,7 +82,7 @@ public class SelectionDataFieldEditor extends AbstractDataFieldEditor<SelectionD
 	 * (non-Javadoc)
 	 * @see org.nightlabs.jfire.base.prop.edit.DataFieldEditor#updateProp()
 	 */
-	public void updateProperty() {
+	public void updatePropertySet() {
 		getDataField().setSelection(composite.getFieldValueCombo().getSelectedElement());
 	}
 	
