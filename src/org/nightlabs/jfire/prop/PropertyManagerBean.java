@@ -32,6 +32,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
@@ -364,9 +365,9 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	 * @return Collection of the {@link StructID}s of all available
 	 *         {@link Struct}s.
 	 */
-	private Collection<StructID> getAvailableStructIDs(PersistenceManager pm) {
-		Collection<StructID> structIDs;
-		structIDs = NLJDOHelper.getDetachedQueryResult(pm, Struct.getAllStructIDs(pm));
+	private Set<StructID> getAvailableStructIDs(PersistenceManager pm) {
+		Set<StructID> structIDs;
+		structIDs = NLJDOHelper.getDetachedQueryResultAsSet(pm, Struct.getAllStructIDs(pm));
 		return structIDs;
 	}
 
@@ -391,9 +392,9 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	 * @return Collection of the {@link StructLocalID}s of all available
 	 *         {@link StructLocal}s.
 	 */
-	private Collection<StructLocalID> getAvailableStructLocalIDs(PersistenceManager pm) {
-		Collection<StructLocalID> structLocalIDs;
-		structLocalIDs = NLJDOHelper.getDetachedQueryResult(pm, StructLocal.getAllStructLocalIDs(pm));
+	private Set<StructLocalID> getAvailableStructLocalIDs(PersistenceManager pm) {
+		Set<StructLocalID> structLocalIDs;
+		structLocalIDs = NLJDOHelper.getDetachedQueryResultAsSet(pm, StructLocal.getAllStructLocalIDs(pm));
 		return structLocalIDs;
 	}
 

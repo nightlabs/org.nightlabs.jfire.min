@@ -273,7 +273,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type = "Required"
 	 */
-	public Collection<Config> getConfigs(String configType, String[] fetchGroups, int maxFetchDepth)
+	public Set<Config> getConfigs(String configType, String[] fetchGroups, int maxFetchDepth)
 	throws ModuleException
 	{
 		PersistenceManager pm = getPersistenceManager();
@@ -285,7 +285,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 		
 		Collection<Config> queryResult = Config.getConfigsByType(pm, getOrganisationID(), configType);
 		
-		return NLJDOHelper.getDetachedQueryResult(pm, queryResult);
+		return NLJDOHelper.getDetachedQueryResultAsSet(pm, queryResult);
 	}
 	
 	/**
@@ -296,7 +296,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 * @ejb.permission role-name = "_Guest_"
 	 * @ejb.transaction type = "Required"
 	 */
-	public Collection<ConfigID> getConfigIDsByConfigType(String configType, 
+	public Set<ConfigID> getConfigIDsByConfigType(String configType, 
 			String[] fetchGroups,	int maxFetchDepth) {
 		PersistenceManager pm = getPersistenceManager();
 		ConfigSetup.ensureAllPrerequisites(pm);
@@ -305,7 +305,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 			pm.getFetchPlan().setGroups(fetchGroups);
 		Collection<ConfigID> queryResult = Config.getConfigIDsByConfigType(pm, getOrganisationID(), configType);
 		
-		return NLJDOHelper.getDetachedQueryResult(pm, queryResult);
+		return NLJDOHelper.getDetachedQueryResultAsSet(pm, queryResult);
 	}
 	
 	/**
