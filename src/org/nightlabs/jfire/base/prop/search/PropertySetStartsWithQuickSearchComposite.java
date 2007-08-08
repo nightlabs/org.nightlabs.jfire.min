@@ -26,21 +26,29 @@
 
 package org.nightlabs.jfire.base.prop.search;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-
+import org.nightlabs.jdo.search.SearchResultFetcher;
 import org.nightlabs.jfire.base.login.Login;
+import org.nightlabs.jfire.base.person.search.PersonStartsWithQuickSearch;
 
 /**
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  */
 public class PropertySetStartsWithQuickSearchComposite extends Composite {
 
+	private List<PersonStartsWithQuickSearch> quickSearches;
+	public PropertySetStartsWithQuickSearchComposite(Composite arg0, int arg1) {
+		this(arg0, arg1, null);
+	}
 	/**
 	 * @param parent
 	 * @param style
 	 */
-	public PropertySetStartsWithQuickSearchComposite(Composite arg0, int arg1) {
+	public PropertySetStartsWithQuickSearchComposite(Composite arg0, int arg1, SearchResultFetcher resultFetcher) {
 		super(arg0, arg1);
 		try {
 			Login.getLogin();
@@ -51,17 +59,25 @@ public class PropertySetStartsWithQuickSearchComposite extends Composite {
 			layout.marginHeight = 0;
 			layout.marginWidth = 0;
 			setLayout(layout);
-			
+			quickSearches = new LinkedList<PersonStartsWithQuickSearch>();
 			for (int i=97; i<=122; i++) {
 				String ch;
 				ch = new String(new byte[]{(byte)i}, "UTF8");
 				
-				PropertySetStartsWithQuickSearch pswqs = new PropertySetStartsWithQuickSearch(null,ch);				
-				pswqs.createComposite(this);								
+				PersonStartsWithQuickSearch pswqs = createQuickSearch(resultFetcher, ch); 				
+				pswqs.createComposite(this);
+				quickSearches.add(pswqs);
 			}
 		} catch (Throwable t) {
 			throw new RuntimeException(t);
 		}
 	}
+	
+	protected PersonStartsWithQuickSearch createQuickSearch(SearchResultFetcher resultFetcher, String start) {
+		return new PersonStartsWithQuickSearch(resultFetcher, start);
+	}
 
+	public List<PersonStartsWithQuickSearch> getQuickSearches() {
+		return quickSearches;
+	}
 }

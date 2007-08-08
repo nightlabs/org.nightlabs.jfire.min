@@ -24,11 +24,12 @@
  *                                                                             *
  ******************************************************************************/
 
-package org.nightlabs.jfire.base.prop.search;
+package org.nightlabs.jfire.base.person.search;
 
 import org.nightlabs.jdo.search.SearchFilter;
 import org.nightlabs.jdo.search.SearchFilterItem;
 import org.nightlabs.jdo.search.SearchResultFetcher;
+import org.nightlabs.jfire.base.prop.search.PropertySetQuickSearch;
 import org.nightlabs.jfire.person.PersonStruct;
 import org.nightlabs.jfire.prop.search.PropSearchFilter;
 import org.nightlabs.jfire.prop.search.PropSearchFilterItem;
@@ -37,13 +38,13 @@ import org.nightlabs.jfire.prop.search.TextPropSearchFilterItem;
 /**
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  */
-public class PropertySetStartsWithQuickSearch extends PropertySetQuickSearch {
+public class PersonStartsWithQuickSearch extends PropertySetQuickSearch {
 
 	
 	private String startWithNeedle;
 	
 	/**
-	 * Construct a PropertySetQuickSearch for persons begining with startWithNeedle.<br/>
+	 * Construct a PersonStartsWithQuickSearch for persons begining with startWithNeedle.<br/>
 	 * The resultFetcher will be called when the quick-button is pressed.<br/>
 	 * If buttonText is not null or an empty string this will be the Buttons text,
 	 * otherwise the startWithNeedle will be used. 
@@ -52,7 +53,7 @@ public class PropertySetStartsWithQuickSearch extends PropertySetQuickSearch {
 	 * @param resultFetcher
 	 * @param startWithNeedle
 	 */
-	public PropertySetStartsWithQuickSearch(String buttonText, SearchResultFetcher resultFetcher, String startWithNeedle) {
+	public PersonStartsWithQuickSearch(String buttonText, SearchResultFetcher resultFetcher, String startWithNeedle) {
 		super(buttonText, resultFetcher);
 		this.startWithNeedle = startWithNeedle;
 		if ((buttonText == null) || buttonText.equals("")) {
@@ -61,13 +62,13 @@ public class PropertySetStartsWithQuickSearch extends PropertySetQuickSearch {
 	}
 	
 	/**
-	 * Construct a PropertySetQuickSearch for persons begining with startWithNeedle.<br/>
+	 * Construct a PersonStartsWithQuickSearch for persons begining with startWithNeedle.<br/>
 	 * The resultFetcher will be called when the quick-button is pressed.
 	 *  
 	 * @param resultFetcher
 	 * @param startWithNeedle
 	 */
-	public PropertySetStartsWithQuickSearch(SearchResultFetcher resultFetcher, String startWithNeedle) {
+	public PersonStartsWithQuickSearch(SearchResultFetcher resultFetcher, String startWithNeedle) {
 		super(startWithNeedle,resultFetcher);
 		this.startWithNeedle = startWithNeedle;
 	}
@@ -79,13 +80,22 @@ public class PropertySetStartsWithQuickSearch extends PropertySetQuickSearch {
 	 * @see org.nightlabs.jdo.search.SearchFilterProvider#getPersonSearchFilter()
 	 */
 	public SearchFilter getSearchFilter() {
-		PropSearchFilter filter =  super.getSearchFilter(false);
+		PropSearchFilter filter = createSearchFilter();
 		// add Name filter
-		PropSearchFilterItem item = new TextPropSearchFilterItem(PersonStruct.PERSONALDATA_NAME,SearchFilterItem.MATCHTYPE_BEGINSWITH,startWithNeedle);
+		PropSearchFilterItem item = new TextPropSearchFilterItem(PersonStruct.PERSONALDATA_NAME, SearchFilterItem.MATCHTYPE_BEGINSWITH, startWithNeedle);
 		filter.addSearchFilterItem(item);
-		// add Company filter
-		item = new TextPropSearchFilterItem(PersonStruct.PERSONALDATA_COMPANY,SearchFilterItem.MATCHTYPE_BEGINSWITH,startWithNeedle);
-		filter.addSearchFilterItem(item);
+		// TODO: WORKAROUND: Add other items when JPOX query bug (mixed || and && in query) is fixed
+//		// add Firstname filter
+//		item = new TextPropSearchFilterItem(PersonStruct.PERSONALDATA_FIRSTNAME, SearchFilterItem.MATCHTYPE_BEGINSWITH, startWithNeedle);
+//		filter.addSearchFilterItem(item);
+//		// add Company filter
+//		item = new TextPropSearchFilterItem(PersonStruct.PERSONALDATA_COMPANY,SearchFilterItem.MATCHTYPE_BEGINSWITH,startWithNeedle);
+//		filter.addSearchFilterItem(item);
+		filter.setConjunction(SearchFilter.CONJUNCTION_OR);
 		return filter;
+	}
+	
+	protected PropSearchFilter createSearchFilter() {
+		return super.getSearchFilter(false);
 	}
 }

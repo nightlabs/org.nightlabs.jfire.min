@@ -27,6 +27,8 @@
 package org.nightlabs.jfire.base.prop.search;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -116,6 +118,15 @@ public class PropertySetQuickSearch implements SearchFilterProvider {
 		layout.marginWidth = 0;
 		comp.setLayout(layout);
 		Label label = new Label(comp,SWT.NONE);
+		label.addMouseListener(new MouseListener() {
+			public void mouseDoubleClick(MouseEvent arg0) {
+			}
+			public void mouseDown(MouseEvent arg0) {
+			}
+			public void mouseUp(MouseEvent arg0) {
+				quickSearchButtonPressed(null);
+			}
+		});
 		label.setText(buttonText);
 		GridData gd = new GridData(GridData.FILL_HORIZONTAL);
 		gd.heightHint = 15;
