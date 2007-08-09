@@ -26,7 +26,6 @@
 
 package org.nightlabs.jfire.base.login;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.LinkedList;
 
 import org.apache.commons.beanutils.BeanUtils;
@@ -69,6 +68,7 @@ import org.nightlabs.jfire.base.resource.Messages;
 /**
  * @author Alexander Bieber
  * @author Marc Klinger - marc[at]nightlabs[dot]de
+ * @author Tobias Langner <!-- tobias[dot]langner[at]nightlabs[dot]de -->
  */
 public class LoginDialog extends TitleAreaDialog 
 {
@@ -202,7 +202,7 @@ public class LoginDialog extends TitleAreaDialog
 		
 		setTitle(Messages.getString("login.LoginDialog.titleAreaTitle")); //$NON-NLS-1$
 		// TODO: information icon only because of redraw bug:
-		setMessage(Messages.getString("login.LoginDialog.titleAreaMessage"), IMessageProvider.INFORMATION); //$NON-NLS-1$
+		setInfoMessage(Messages.getString("login.LoginDialog.titleAreaMessage")); //$NON-NLS-1$
 		
 		return dialogArea;
 	}
@@ -361,9 +361,9 @@ public class LoginDialog extends TitleAreaDialog
 		} else {
 			getButton(IDialogConstants.OK_ID).setEnabled(true);
 			if (checkBoxSaveSettings.getSelection() && runtimeLoginModule.hasConfigWithName(name))
-				setMessage(Messages.getString("login.LoginDialog.loginConfigurationAlreadyExists"), IMessageProvider.WARNING); //$NON-NLS-1$
+				setWarningMessage(Messages.getString("login.LoginDialog.loginConfigurationAlreadyExists")); //$NON-NLS-1$
 			else {
-				setMessage(null, IMessageProvider.WARNING);
+				setWarningMessage(null);
 				setErrorMessage(null);
 			}
 		}
@@ -522,7 +522,7 @@ public class LoginDialog extends TitleAreaDialog
 	private void checkLogin()
 	{
 		boolean hadError = true;
-		setMessage(Messages.getString("login.LoginDialog.tryingLogin"), IMessageProvider.INFORMATION); //$NON-NLS-1$
+		setInfoMessage(Messages.getString("login.LoginDialog.tryingLogin")); //$NON-NLS-1$
 		enableDualogUI(false);
 		try {
 
@@ -569,6 +569,16 @@ public class LoginDialog extends TitleAreaDialog
 			if (hadError)
 				enableDualogUI(true);
 		}
+	}
+	
+	/**
+	 * Helper methods that make the use of JFace message methods consistent. 
+	 */
+	private void setWarningMessage(String message) {
+		setMessage(message, IMessageProvider.WARNING);
+	}	
+	private void setInfoMessage(String message) {
+		setMessage(message, IMessageProvider.INFORMATION);
 	}
 		
 	/**
