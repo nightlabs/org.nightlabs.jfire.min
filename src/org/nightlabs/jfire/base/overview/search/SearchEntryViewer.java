@@ -13,26 +13,23 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.ToolBar;
-import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.nightlabs.base.composite.XComposite;
 import org.nightlabs.base.composite.XComposite.LayoutDataMode;
 import org.nightlabs.base.composite.XComposite.LayoutMode;
 import org.nightlabs.base.form.NightlabsFormsToolkit;
 import org.nightlabs.base.table.AbstractTableComposite;
-import org.nightlabs.jfire.base.overview.AbstractEntry;
+import org.nightlabs.jfire.base.overview.AbstractEntryViewer;
 import org.nightlabs.jfire.base.overview.Entry;
-import org.nightlabs.jfire.base.overview.EntryFactory;
 
 /**
  * @author Daniel.Mazurek [at] NightLabs [dot] de
  *
  */
-public abstract class SearchEntry
-extends AbstractEntry
-implements Entry 
+public abstract class SearchEntryViewer
+extends AbstractEntryViewer
 {	
-	public SearchEntry(EntryFactory entryFactory) {
-		super(entryFactory);
+	public SearchEntryViewer(Entry entry) {
+		super(entry);
 	}
 	
 	private Composite searchComposite;
@@ -46,7 +43,7 @@ implements Entry
 	}
 	
 	private SashForm sashform = null;
-	public Composite createEntryComposite(Composite parent) 
+	public Composite createComposite(Composite parent) 
 	{		 		 
 		sashform = new SashForm(parent, SWT.VERTICAL);		
 		sashform.setLayout(new FillLayout());
@@ -72,7 +69,13 @@ implements Entry
 				
 		return sashform;
 	}
-			
+
+	public Composite getComposite() {
+		if (sashform == null)
+			throw new IllegalStateException("createComposite() was not called before getComposite()!");
+		return sashform;
+	}
+		
 	private ToolBarManager toolBarManager = null;
 	public ToolBarManager getToolBarManager() {
 		return toolBarManager;
@@ -97,28 +100,6 @@ implements Entry
 	public abstract Composite createResultComposite(Composite parent);
 	public abstract void applySearch();
 	
-	@Override
-	public boolean equals(Object obj) 
-	{
-		if (obj == null)
-			return false;
-		
-		if (!(obj instanceof Entry))
-				return false;
-		
-		Entry controller = (Entry) obj;
-		if (controller == null)
-			return false;
-		
-		if (controller.getID() == null)
-			return false;
-		
-		if (controller.getID().equals(getID()))
-				return true;
-		
-		return false;
-	}
-
 	private MenuManager menuManager;
 	public MenuManager getMenuManager() {
 		return menuManager;
@@ -138,7 +119,7 @@ implements Entry
 	}
 	
 	public Composite createCategoryEntryComposite(Composite parent) {
-		throw new UnsupportedOperationException("SearchEntry does not support custom Composites for the Category.");
+		throw new UnsupportedOperationException("SearchEntryViewer does not support custom Composites for the Category.");
 	}
 	
 }

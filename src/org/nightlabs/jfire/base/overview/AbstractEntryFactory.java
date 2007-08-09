@@ -7,8 +7,11 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 /**
+ * Base class for {@link EntryFactory}s that manages
+ * the properties defined in the extension (id, name, icon).
+ * 
  * @author Daniel.Mazurek [at] NightLabs [dot] de
- *
+ * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] de -->
  */
 public abstract class AbstractEntryFactory 
 implements EntryFactory 
@@ -17,6 +20,7 @@ implements EntryFactory
 	public static final String ATTRIBUTE_NAME = "name";
 	public static final String ATTRIBUTE_ICON = "icon";
 	public static final String ATTRIBUTE_INDEX = "index";
+	public static final String ATTRIBUTE_ID = "categoryEntryID";
 	
 	public AbstractEntryFactory() {		
 	}
@@ -69,6 +73,23 @@ implements EntryFactory
 		this.index = index;
 	}
 	
+	private String id = null;
+	/**
+	 * returns the id.
+	 * @return the id
+	 */
+	public String getID() {
+		return id;
+	}
+	/**
+	 * sets the id
+	 * @param name the id to set
+	 */
+	public void setID(String id) {
+		this.id = id;
+	}  
+	
+	
 	public void setInitializationData(IConfigurationElement element,
 			String propertyName, Object data) 
 	throws CoreException 
@@ -76,6 +97,7 @@ implements EntryFactory
 		String name = element.getAttribute(ATTRIBUTE_NAME);
 		String iconString = element.getAttribute(ATTRIBUTE_ICON);
 		String indexString = element.getAttribute(ATTRIBUTE_INDEX);
+		String id = element.getAttribute(ATTRIBUTE_ID);
 		if (checkString(name))
 			setName(name);
 		if (checkString(iconString)) {
@@ -92,6 +114,11 @@ implements EntryFactory
 				
 			}			
 		}
+		if (checkString(id))
+			setID(id);
+		else
+			throw new IllegalArgumentException("An EntryFactory has to have an id set. Extension came from " + element.getNamespaceIdentifier());
+		
 	}
 	
 	protected boolean checkString(String s) 

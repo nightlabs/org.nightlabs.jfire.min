@@ -124,14 +124,5 @@ implements CategoryFactory
 	public Category createCategory() {
 		return new DefaultCategory(this);
 	}
-	
-	public Category createCategoryWithEntries() {
-		Category category = createCategory();
-		for (EntryFactory factory : new ArrayList<EntryFactory>(entryFactories)) {
-			category.addEntry(factory.createEntry());
-		}
-		return category;
-	}
-	
 }
 

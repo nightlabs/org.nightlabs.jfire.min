@@ -70,14 +70,14 @@
          <attribute name="index" type="string">
             <annotation>
                <documentation>
-                  
+                  The sorting-index of the category
                </documentation>
             </annotation>
          </attribute>
          <attribute name="class" type="string">
             <annotation>
                <documentation>
-                  
+                  Use this to overwrite the CategoryFactory implementation used. If omitted, the framework will use the &lt;code&gt;DefaultCategoryFactory&lt;/code&gt; wich will lead to the display of all entries in a Table within the category.
                </documentation>
                <appInfo>
                   <meta.attribute kind="java" basedOn="org.nightlabs.jfire.base.overview.CategoryFactory"/>

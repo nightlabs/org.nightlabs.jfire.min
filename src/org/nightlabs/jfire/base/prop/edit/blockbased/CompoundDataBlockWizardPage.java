@@ -75,8 +75,8 @@ public class CompoundDataBlockWizardPage extends WizardHopPage {
 	public CompoundDataBlockWizardPage ( 
 		String pageName, 
 		String title,
-		PropertySet prop,
 		IStruct struct,
+		PropertySet prop,
 		List structBlockIDs
 	) {
 		this(pageName, title, struct, prop, getArrayFromList(structBlockIDs));
@@ -94,7 +94,8 @@ public class CompoundDataBlockWizardPage extends WizardHopPage {
 		StructBlockID[] structBlockIDs
 	) {
 		super(pageName);
-		this.setTitle(title);
+		if (title != null)
+			this.setTitle(title);
 		if (propSet == null)
 			throw new IllegalArgumentException("Parameter propSet must not be null");
 		this.struct = struct;
@@ -201,7 +202,7 @@ public class CompoundDataBlockWizardPage extends WizardHopPage {
   /**
    * Set all values to the propSet.
    */
-  public void updateProp() {
+  public void updatePropertySet() {
   	for (Iterator iter = propDataBlockEditors.values().iterator(); iter.hasNext();) {
 			AbstractDataBlockEditor editor = (AbstractDataBlockEditor) iter.next();
 			editor.updatePropertySet();

@@ -7,7 +7,7 @@ import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.part.EditorActionBarContributor;
 import org.nightlabs.jfire.base.overview.search.ApplySearchAction;
-import org.nightlabs.jfire.base.overview.search.SearchEntry;
+import org.nightlabs.jfire.base.overview.search.SearchEntryViewer;
 
 /**
  * @author Daniel.Mazurek [at] NightLabs [dot] de
@@ -60,17 +60,17 @@ extends EditorActionBarContributor
   
   protected boolean alreadyContributed = false;
   
-  protected Entry getEntryViewController() 
+  protected EntryViewer getEntryViewer() 
   {
   	if (editor != null)
-  		return editor.getEntryViewController();
+  		return editor.getEntryViewer();
   	return null;
   }
   
   private ApplySearchAction applySearchAction;
   public Action getApplySearchAction() {
-  	if (applySearchAction == null && getEntryViewController() instanceof SearchEntry) {
-  		applySearchAction = new ApplySearchAction((SearchEntry)getEntryViewController());
+  	if (applySearchAction == null && getEntryViewer() instanceof SearchEntryViewer) {
+  		applySearchAction = new ApplySearchAction((SearchEntryViewer) getEntryViewer());
   	}
   	return applySearchAction;
   }

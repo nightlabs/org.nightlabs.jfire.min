@@ -16,7 +16,7 @@ extends NullEditorInput
 	}
 
 	private Entry entry;
-	public Entry getEntryViewController() {
+	public Entry getEntry() {
 		return entry;
 	}
 	
@@ -30,7 +30,7 @@ extends NullEditorInput
 			return false;
 	
 		OverviewEntryEditorInput input = (OverviewEntryEditorInput) obj;
-		if (entry.equals(input.getEntryViewController()))
+		if (entry.getEntryFactory().getID().equals(input.getEntry().getEntryFactory().getID()))
 			return true;
 		
 		return false;

@@ -16,10 +16,15 @@ import org.nightlabs.base.extensionpoint.AbstractEPProcessor;
 import org.nightlabs.base.extensionpoint.EPProcessorException;
 
 /**
+ * {@link OverviewRegistry} processes extension points with a schema according
+ * to overview.exsd in this plugin. It holds the registered 
+ * {@link CategoryFactory} - {@link EntryFactory} structure and can build 
+ * {@link Category} - {@link Entry} instances out of it.
+ * 
  * @author Daniel.Mazurek [at] NightLabs [dot] de
  *
  */
-public class OverviewRegistry 
+public abstract class OverviewRegistry 
 extends AbstractEPProcessor 
 {
 	public static final String EXTENSION_POINT_ID = "org.nightlabs.jfire.base.overview";
@@ -33,24 +38,8 @@ extends AbstractEPProcessor
 	public static final String ATTRIBUTE_INDEX = "index";
 	public static final String ATTRIBUTE_CATEGORY_FACTORY_CLASS = "class";
 	
-	private static OverviewRegistry sharedInstance;
-	public static OverviewRegistry sharedInstance() {
-		if (sharedInstance == null) {
-			synchronized (OverviewRegistry.class) {
-				if (sharedInstance == null)
-					sharedInstance = new OverviewRegistry();
-			}
-		}
-		return sharedInstance;
-	}
-	
 	protected OverviewRegistry() {
 		super();
-	}
-
-	@Override
-	public String getExtensionPointID() {
-		return EXTENSION_POINT_ID;
 	}
 
 	@Override
@@ -177,20 +166,11 @@ extends AbstractEPProcessor
 		return new ArrayList<EntryFactory>(categoryID2CategoryFactory.get(categoryID).getEntryFactories());
 	}
 	
-	public List<Category> getCategories() {
+	public List<Category> createCategories() {
 		List<CategoryFactory> factories = getCategoryFacories();
 		List<Category> categories = new ArrayList<Category>(factories.size());
 		for (CategoryFactory factory : factories) {
 			categories.add(factory.createCategory());
-		}
-		return categories;
-	}
-	
-	public List<Category> getCategoriesWithEntries() {
-		List<CategoryFactory> factories = getCategoryFacories();
-		List<Category> categories = new ArrayList<Category>(factories.size());
-		for (CategoryFactory factory : factories) {
-			categories.add(factory.createCategoryWithEntries());
 		}
 		return categories;
 	}

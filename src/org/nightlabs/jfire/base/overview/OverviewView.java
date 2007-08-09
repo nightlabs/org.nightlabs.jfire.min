@@ -8,11 +8,9 @@ import org.eclipse.ui.part.ViewPart;
  * @author Daniel.Mazurek [at] NightLabs [dot] de
  *
  */
-public class OverviewView 
+public abstract class OverviewView 
 extends ViewPart 
 {
-	public static final String VIEW_ID = OverviewView.class.getName();
-	
 	public OverviewView() {
 		super();
 	}
@@ -20,7 +18,12 @@ extends ViewPart
 	private OverviewShelf overviewShelf;
 	@Override
 	public void createPartControl(Composite parent) {
-		overviewShelf = new OverviewShelf(parent, SWT.NONE);
+		overviewShelf = new OverviewShelf(parent, SWT.NONE) {
+			@Override
+			protected OverviewRegistry getOverviewRegistry() {
+				return OverviewView.this.getOverviewRegistry();
+			}
+		};
 	}
 
 	@Override
@@ -28,4 +31,5 @@ extends ViewPart
 		overviewShelf.setFocus();
 	}
 
+	protected abstract OverviewRegistry getOverviewRegistry();
 }

@@ -7,6 +7,11 @@ import org.eclipse.swt.widgets.Composite;
 /**
  * The object created by a {@link CategoryFactory}. The {@link Category} holds its
  * {@link Entry}s and is responsible of creating its own {@link Composite} that represents it.
+ * <p>
+ * The {@link DefaultCategory}, which is usually used 
+ * (default registration with no differing class specified for the {@link CategoryFactory}),
+ * creates a Composite that displays all entries in a Table. ({@link DefaultCategoryComposite}).
+ * </p>
  * 
  * @author Daniel.Mazurek [at] NightLabs [dot] de
  * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] de -->
@@ -14,16 +19,46 @@ import org.eclipse.swt.widgets.Composite;
 public interface Category {
 
 	/**
-	 * Create the {@link Composite} of this Category that is responsible for displaying its entries.
+	 * Create the {@link Composite} of this Category that is 
+	 * responsible for displaying its entries.
+	 * <p>
+	 * This method should only be called once per Category.
+	 * Note, that implementations might ensure this and
+	 * throw an exception if it is called more than once.
+	 * </p>
 	 * 
 	 * @param composite The parent Composite
-	 * @return The category {@link Composite}.
+	 * @return The newly created category {@link Composite}.
 	 */
-	Composite createCategoryComposite(Composite composite);
+	Composite createComposite(Composite composite);
+	
+	/**
+	 * Returns the {@link Composite} of this Category that
+	 * was created by {@link #createComposite(Composite)}.
+	 * <p>
+	 * This method should only be called after {@link #createComposite(Composite)} was called.
+	 * Note, that implementations might ensure this and
+	 * throw an exception if it is called before {@link #createComposite(Composite)}.
+	 * </p>
+	 * @return
+	 */
+	Composite getComposite();	
+
+	/**
+	 * Create the entries according to the extension registrations.
+	 * <p>
+	 * This method should only be called once per Category. 
+	 * Note, that implementations might ensure this an throw an
+	 * expception if createEntries() is called more than once.
+	 * </p>
+	 */
+	void createEntries();
 
 	/**
 	 * Adds a new {@link Entry} for this {@link Category}.
-	 * 
+	 * <p>
+	 * This is usually called when the Category is created by {@link #createEntries()}.
+	 * </p>
 	 * @param entry The entry to add.
 	 */
 	void addEntry(Entry entry);
@@ -36,7 +71,12 @@ public interface Category {
 	void removeEntry(Entry entry);
 	
 	/**
-	 * Returns an unmodifiable list of the {@link Entry}s of this {@link Category}. 
+	 * Returns an unmodifiable list of the current {@link Entry}s of this {@link Category}.
+	 * <p>
+	 * This should not be called before {@link #createEntries()} was called.
+	 * Note that implementations might ensure this and
+	 * throw an exception if it is called before.
+	 * </p> 
 	 * @return An unmodifiable list of {@link Entry}s of this {@link Category}.
 	 */
 	List<Entry> getEntries();

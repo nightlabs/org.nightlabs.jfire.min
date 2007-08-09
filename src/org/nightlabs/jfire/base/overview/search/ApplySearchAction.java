@@ -1,7 +1,5 @@
 package org.nightlabs.jfire.base.overview.search;
 
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IWorkbenchPart;
 import org.nightlabs.base.action.WorkbenchPartAction;
 import org.nightlabs.base.resource.SharedImages;
@@ -16,17 +14,17 @@ public class ApplySearchAction
 extends WorkbenchPartAction
 {
 	public static final String ID = ApplySearchAction.class.getName(); 
-	private SearchEntry searchController;
+	private SearchEntryViewer searchViewer;
 
 	public ApplySearchAction() {
 		super();
 		init();
 	}	
 	
-	public ApplySearchAction(SearchEntry searchController) {
+	public ApplySearchAction(SearchEntryViewer searchController) {
 		super();
 		init();
-		this.searchController = searchController;
+		this.searchViewer = searchController;
 	}
 
 	protected void init() {
@@ -38,12 +36,12 @@ extends WorkbenchPartAction
 	@Override
 	public void run() 
 	{
-		if (searchController != null)
-			searchController.applySearch();
+		if (searchViewer != null)
+			searchViewer.applySearch();
 	}
 
 	public boolean calculateEnabled() {
-		return searchController != null;
+		return searchViewer != null;
 	}
 
 	public boolean calculateVisible() {
@@ -55,8 +53,8 @@ extends WorkbenchPartAction
 		super.setActivePart(part);
 		if (part instanceof OverviewEntryEditor) {
 			OverviewEntryEditor editor = (OverviewEntryEditor) part;
-			if (editor.getEntryViewController() instanceof SearchEntry) {
-				this.searchController = (SearchEntry) editor.getEntryViewController();
+			if (editor.getEntryViewer() instanceof SearchEntryViewer) {
+				this.searchViewer = (SearchEntryViewer) editor.getEntryViewer();
 			}
 		}
 	}

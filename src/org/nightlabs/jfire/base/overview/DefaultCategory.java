@@ -3,40 +3,35 @@
  */
 package org.nightlabs.jfire.base.overview;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.nightlabs.base.table.AbstractTableComposite;
 
 /**
  * The default {@link Category} displays its {@link Entry}s in
- * an {@link DefaultCategoryComposite}.
- * <p>
- * This class is intended to be subclassed to inherit the 
- * handling of the entry list and overriding the {@link Composite}
- * used to display the entries. 
- * </p>
+ * a {@link DefaultCategoryComposite}.
  * 
  * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] de -->
  *
  */
-public class DefaultCategory implements Category {
+public class DefaultCategory extends AbstractCategory {
 
-	private List<Entry> entries = new ArrayList<Entry>();
-	private CategoryFactory categoryFactory;
-	private Composite categoryComposite = null;
+	private DefaultCategoryComposite categoryComposite = null;
 	
 
 	/**
-	 * Create a new {@link DefaultCategoryComposite}
+	 * Create a new {@link DefaultCategoryComposite}.
+	 * <p>
+	 * Note that the {@link DefaultCategory} will 
+	 * create its entries in the constructor.
+	 * </p>
 	 * 
 	 * @param categoryFactory The factory creating this category.
 	 */
 	public DefaultCategory(CategoryFactory categoryFactory) {
-		this.categoryFactory = categoryFactory;
+		super(categoryFactory);
+		createEntries();
 	}
 
 	/** 
@@ -45,9 +40,9 @@ public class DefaultCategory implements Category {
 	 * This method is intended to be overridden in order to use
 	 * other GUI to display the categorys entries.
 	 * </p>
-	 * @see org.nightlabs.jfire.base.overview.Category#createCategoryComposite(org.eclipse.swt.widgets.Composite)
+	 * @see org.nightlabs.jfire.base.overview.Category#createComposite(org.eclipse.swt.widgets.Composite)
 	 */
-	public Composite createCategoryComposite(Composite composite) {
+	public Composite createComposite(Composite composite) {
 		categoryComposite = new DefaultCategoryComposite(composite, SWT.NONE, this, 
 				AbstractTableComposite.DEFAULT_STYLE_SINGLE);
 		return categoryComposite;
@@ -55,42 +50,26 @@ public class DefaultCategory implements Category {
 
 	/**
 	 * {@inheritDoc}
-	 * @see org.nightlabs.jfire.base.overview.Category#addEntry(org.nightlabs.jfire.base.overview.Entry)
+	 * @see org.nightlabs.jfire.base.overview.Category#getComposite()
 	 */
-	public void addEntry(Entry entry) {
-		if (categoryComposite != null)
-			throw new UnsupportedOperationException("This category (DefaultCategory) does not support adding/removing of entries when its Composite was already created");
-		synchronized (entries) {
-			entries.add(entry);
-		}
+	public Composite getComposite() {
+		return categoryComposite;
 	}
-
+	
 	/**
 	 * {@inheritDoc}
-	 * @see org.nightlabs.jfire.base.overview.Category#getEntries()
+	 * @see org.nightlabs.jfire.base.overview.AbstractCategory#updateCategoryComposite()
 	 */
-	public List<Entry> getEntries() {
-		return Collections.unmodifiableList(entries);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @see org.nightlabs.jfire.base.overview.Category#removeEntry(org.nightlabs.jfire.base.overview.Entry)
-	 */
-	public void removeEntry(Entry entry) {
-		if (categoryComposite != null)
-			throw new UnsupportedOperationException("This category (DefaultCategory) does not support adding/removing of entries when its Composite was already created");
-		synchronized (entries) {
-			entries.remove(entry);
-		}
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @see org.nightlabs.jfire.base.overview.Category#getCategoryFactory()
-	 */
-	public CategoryFactory getCategoryFactory() {
-		return categoryFactory;
+	@Override
+	protected void updateCategoryComposite() {
+		if (categoryComposite == null)
+			return;
+		Display.getDefault().asyncExec(new Runnable() {
+			public void run() {
+				if (categoryComposite != null && !categoryComposite.isDisposed()) 
+					categoryComposite.setInput(getEntries());
+			}
+		});
 	}
 
 }

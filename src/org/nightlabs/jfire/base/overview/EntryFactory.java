@@ -4,7 +4,12 @@ import org.eclipse.core.runtime.IExecutableExtension;
 import org.eclipse.swt.graphics.Image;
 
 /**
- * Represents an factory which creates entries for a category.
+ * Represents a factory which creates entries for a category.
+ * <p>
+ * {@link EntryFactory}s are registered as extensions an have 
+ * the scope of a {@link CategoryFactory} (its id, in fact).
+ * This way entries are linked to categories.
+ * </p>
  * 
  * @author Daniel.Mazurek [at] NightLabs [dot] de
  * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] de -->
@@ -26,14 +31,20 @@ extends IExecutableExtension
 	String getName();
 		
 	/**
-	 * returns the Image for this factory.
-	 * @return the Image for this factory.
+	 * Returns the Image for this factory.
+	 * @return The Image for this factory.
 	 */
 	Image getImage();
 		
 	/**
-	 * returns the index of this factory.
-	 * @return the index of this factory.
+	 * Returns the index of this factory.
+	 * @return Te index of this factory.
 	 */
 	int getIndex();
+	
+	/**
+	 * Returns the id of this factory.
+	 * @return Tthe id of this factory.
+	 */
+	String getID();
 }

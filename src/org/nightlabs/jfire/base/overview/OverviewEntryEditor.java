@@ -18,8 +18,12 @@ import org.nightlabs.base.action.registry.editor.XEditorActionBarContributor;
 import org.nightlabs.jfire.base.login.part.LSDEditorPart;
 
 /**
+ * Editor displaying the {@link EntryViewer} of an {@link Entry}.
+ * It therefore requires an {@link OverviewEntryEditorInput} as input.
+ * Each editor instance will create its own {@link EntryViewer} instance.
+ * 
  * @author Daniel.Mazurek [at] NightLabs [dot] de
- *
+ * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] de -->
  */
 public class OverviewEntryEditor 
 extends LSDEditorPart
@@ -58,24 +62,24 @@ extends LSDEditorPart
 		setInput(input);
 		if (input instanceof OverviewEntryEditorInput) {
 			OverviewEntryEditorInput entryInput = (OverviewEntryEditorInput) input;
-			entry = entryInput.getEntryViewController();
+			entryViewer = entryInput.getEntry().createEntryViewer();
 		}
 		getSite().getPage().addPartListener(partListener);			
 	}
 	
-	private Entry entry;
-	public Entry getEntryViewController() {
-		return entry;
+	private EntryViewer entryViewer;
+	public EntryViewer getEntryViewer() {
+		return entryViewer;
 	}
 	
 	private Composite composite;
 	public void createPartContents(Composite parent) 
 	{
-		if (entry != null) {
-			composite = entry.createEntryComposite(parent);
-			if (entry.getSelectionProvider() != null) {
-				getSite().setSelectionProvider(entry.getSelectionProvider());
-				entry.getSelectionProvider().addSelectionChangedListener(selectionChangedListener);
+		if (entryViewer != null) {
+			composite = entryViewer.createComposite(parent);
+			if (entryViewer.getSelectionProvider() != null) {
+				getSite().setSelectionProvider(entryViewer.getSelectionProvider());
+				entryViewer.getSelectionProvider().addSelectionChangedListener(selectionChangedListener);
 			}
 			
 			if (getEditorSite().getActionBarContributor() != null && 
@@ -101,8 +105,8 @@ extends LSDEditorPart
 	{
 		EditorActionBarContributor actionBarContributor = 
 			(EditorActionBarContributor) getEditorSite().getActionBarContributor();
-		if (actionBarContributor != null && entry != null) {
-			MenuManager menuManager = entry.getMenuManager();
+		if (actionBarContributor != null && entryViewer != null) {
+			MenuManager menuManager = entryViewer.getMenuManager();
 			if (menuManager != null) {
 				if (actionBarContributor instanceof XEditorActionBarContributor) {
 					XEditorActionBarContributor xEditorActionBarContributor = (XEditorActionBarContributor) actionBarContributor;
@@ -120,8 +124,8 @@ extends LSDEditorPart
 	{
 		EditorActionBarContributor actionBarContributor = 
 			(EditorActionBarContributor) getEditorSite().getActionBarContributor();
-		if (actionBarContributor != null && entry != null) {
-			MenuManager menuManager = entry.getMenuManager();
+		if (actionBarContributor != null && entryViewer != null) {
+			MenuManager menuManager = entryViewer.getMenuManager();
 			if (menuManager != null) {
 				menuManager.removeAll();
 				menuManager.updateAll(true);
@@ -135,8 +139,8 @@ extends LSDEditorPart
 	{
 		EditorActionBarContributor actionBarContributor = 
 			(EditorActionBarContributor) getEditorSite().getActionBarContributor();
-		if (actionBarContributor != null && entry != null) {
-			ToolBarManager toolbarManager = entry.getToolBarManager();
+		if (actionBarContributor != null && entryViewer != null) {
+			ToolBarManager toolbarManager = entryViewer.getToolBarManager();
 			if (toolbarManager != null) {
 				if (actionBarContributor instanceof XEditorActionBarContributor) {
 					XEditorActionBarContributor xEditorActionBarContributor = (XEditorActionBarContributor) actionBarContributor;
@@ -154,8 +158,8 @@ extends LSDEditorPart
 	{
 		EditorActionBarContributor actionBarContributor = 
 			(EditorActionBarContributor) getEditorSite().getActionBarContributor();
-		if (actionBarContributor != null && entry != null) {
-			ToolBarManager toolbarManager = entry.getToolBarManager();
+		if (actionBarContributor != null && entryViewer != null) {
+			ToolBarManager toolbarManager = entryViewer.getToolBarManager();
 			if (toolbarManager != null) {
 				toolbarManager.removeAll();
 				toolbarManager.update(true);
@@ -185,8 +189,8 @@ extends LSDEditorPart
 		
 	protected void editorDisposed() {
 		getSite().getPage().removePartListener(partListener);
-		if (entry != null)
-			getSite().setSelectionProvider(entry.getSelectionProvider());		
+		if (entryViewer != null)
+			getSite().setSelectionProvider(entryViewer.getSelectionProvider());		
 	}
 	
 	private ISelectionChangedListener selectionChangedListener = new ISelectionChangedListener(){

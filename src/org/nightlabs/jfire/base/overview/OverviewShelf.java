@@ -22,7 +22,7 @@ import org.nightlabs.base.composite.XComposite;
  * @author Daniel.Mazurek [at] NightLabs [dot] de
  * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] de -->
  */
-public class OverviewShelf 
+public abstract class OverviewShelf 
 extends XComposite 
 {
 	/**
@@ -70,26 +70,19 @@ extends XComposite
 		shelf.setRenderer(new RedmondShelfRenderer());
 		shelf.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-		for (Category category: getOverviewRegistry().getCategoriesWithEntries()) {
+		for (Category category: getOverviewRegistry().createCategories()) {
 			PShelfItem categoryItem = new PShelfItem(shelf,SWT.NONE);
 			categoryItem.setData(category);
 			categoryItem.setText(category.getCategoryFactory().getName());
 			categoryItem.setImage(category.getCategoryFactory().getImage());
 			categoryItem.getBody().setLayout(new FillLayout());
-			category.createCategoryComposite(categoryItem.getBody());
+			category.createComposite(categoryItem.getBody());
 		}
 	}
 	
 	/**
 	 * Callback method to define the {@link OverviewRegistry} that should be used
 	 * by this shelf.
-	 * <p>
-	 * This method is intended to be overridden by subclasses, the default implementation
-	 * returns {@link OverviewRegistry#sharedInstance()}.
-	 * </p>
-	 * @return
 	 */
-	protected OverviewRegistry getOverviewRegistry() {
-		return OverviewRegistry.sharedInstance();
-	}
+	protected abstract OverviewRegistry getOverviewRegistry();
 }

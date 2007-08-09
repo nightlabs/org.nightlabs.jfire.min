@@ -11,18 +11,18 @@ import org.eclipse.swt.widgets.Display;
 import org.nightlabs.base.job.Job;
 import org.nightlabs.base.table.AbstractTableComposite;
 import org.nightlabs.jdo.query.JDOQuery;
-import org.nightlabs.jfire.base.overview.EntryFactory;
+import org.nightlabs.jfire.base.overview.Entry;
 import org.nightlabs.progress.ProgressMonitor;
 
 /**
  * @author Daniel.Mazurek [at] NightLabs [dot] de
  *
  */
-public abstract class BaseSearchEntry 
-extends SearchEntry 
+public abstract class BaseSearchEntryViewer 
+extends SearchEntryViewer 
 {
-	public BaseSearchEntry(EntryFactory entryFactory) {
-		super(entryFactory);
+	public BaseSearchEntryViewer(Entry entry) {
+		super(entry);
 	}
 
 	@Override
