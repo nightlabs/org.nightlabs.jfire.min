@@ -4,8 +4,9 @@
 package org.nightlabs.jfire.base.overview;
 
 /**
+ * Abstract base for {@link EntryViewer}s holding the entry that created it.
+ * 
  * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] de -->
- *
  */
 public abstract class AbstractEntryViewer implements EntryViewer {
 

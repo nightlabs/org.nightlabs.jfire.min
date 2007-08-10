@@ -11,6 +11,15 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.nightlabs.base.extensionpoint.AbstractEPProcessor;
 
 /**
+ * The default {@link CategoryFactory} is used for &lt;categoryFactory&gt; registrations
+ * that do not specify a different class. It will then create a {@link DefaultCategory}
+ * in {@link #createCategory()}. 
+ * <p>
+ * This class is also intended to be subclassed when developing custom {@link Category}s
+ * as it manages the registration attributes (name, icon, index). Override {@link #createCategory()}
+ * to change the {@link Category} that should be created.
+ * </p>
+ * 
  * @author Daniel.Mazurek [at] NightLabs [dot] de
  *
  */
@@ -25,8 +34,8 @@ implements CategoryFactory
 	
 	private String name;
 	/**
-	 * returns the name.
-	 * @return the name
+	 * {@inheritDoc}
+	 * @see org.nightlabs.jfire.base.overview.CategoryFactory#getName()
 	 */
 	public String getName() {
 		return name;
@@ -41,8 +50,8 @@ implements CategoryFactory
 
 	private String categoryID;
 	/**
-	 * returns the categoryID.
-	 * @return the categoryID
+	 * {@inheritDoc}
+	 * @see org.nightlabs.jfire.base.overview.CategoryFactory#getCategoryID()
 	 */
 	public String getCategoryID() {
 		return categoryID;
@@ -56,9 +65,10 @@ implements CategoryFactory
 	}
 	
 	private Image image;
+
 	/**
-	 * returns the image.
-	 * @return the image
+	 * {@inheritDoc}
+	 * @see org.nightlabs.jfire.base.overview.CategoryFactory#getImage()
 	 */
 	public Image getImage() {
 		return image;
@@ -71,10 +81,11 @@ implements CategoryFactory
 		this.image = image;
 	}
 	
-	private int index;	
+	private int index;
+
 	/**
-	 * returns the index.
-	 * @return the index
+	 * {@inheritDoc}
+	 * @see org.nightlabs.jfire.base.overview.CategoryFactory#getIndex()
 	 */
 	public int getIndex() {
 		return index;
@@ -86,7 +97,14 @@ implements CategoryFactory
 	public void setIndex(int index) {
 		this.index = index;
 	}
-	
+
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * Initializes the registration attributes categoryID, name, icon and index.
+	 * </p>
+	 * @see org.eclipse.core.runtime.IExecutableExtension#setInitializationData(org.eclipse.core.runtime.IConfigurationElement, java.lang.String, java.lang.Object)
+	 */
 	public void setInitializationData(IConfigurationElement element,
 			String propertyName, Object data) 
 	throws CoreException 
@@ -117,10 +135,18 @@ implements CategoryFactory
 	
 	private List<EntryFactory> entryFactories = new ArrayList<EntryFactory>();
 	
+	/**
+	 * {@inheritDoc}
+	 * @see org.nightlabs.jfire.base.overview.CategoryFactory#getEntryFactories()
+	 */
 	public List<EntryFactory> getEntryFactories() {
 		return entryFactories;
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 * @see org.nightlabs.jfire.base.overview.CategoryFactory#createCategory()
+	 */
 	public Category createCategory() {
 		return new DefaultCategory(this);
 	}

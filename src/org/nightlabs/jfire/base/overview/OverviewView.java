@@ -5,6 +5,9 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.part.ViewPart;
 
 /**
+ * Abstract base {@link ViewPart} that will display an {@link OverviewShelf}
+ * with the {@link OverviewRegistry} returned in {@link #getOverviewRegistry()}.
+ * 
  * @author Daniel.Mazurek [at] NightLabs [dot] de
  *
  */
@@ -31,5 +34,12 @@ extends ViewPart
 		overviewShelf.setFocus();
 	}
 
+	/**
+	 * Returns the {@link OverviewRegistry} this Views {@link OverviewShelf}
+	 * should be created with.
+	 * 
+	 * @return The {@link OverviewRegistry} this Views {@link OverviewShelf}
+	 * 		should be created with.
+	 */
 	protected abstract OverviewRegistry getOverviewRegistry();
 }
