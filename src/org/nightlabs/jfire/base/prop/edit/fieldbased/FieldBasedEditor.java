@@ -53,8 +53,11 @@ import org.nightlabs.jfire.base.prop.edit.blockbased.DataBlockEditorChangedListe
 import org.nightlabs.jfire.prop.AbstractDataField;
 import org.nightlabs.jfire.prop.IStruct;
 import org.nightlabs.jfire.prop.PropertySet;
+import org.nightlabs.jfire.prop.dao.StructLocalDAO;
 import org.nightlabs.jfire.prop.exception.DataNotFoundException;
 import org.nightlabs.jfire.prop.id.StructFieldID;
+import org.nightlabs.progress.NullProgressMonitor;
+import org.nightlabs.progress.ProgressMonitor;
 
 /**
  * A field based PropertySetEditor that will set its look depending
@@ -96,23 +99,21 @@ public class FieldBasedEditor implements PropertySetEditor {
 	}
 
 	protected Object selectionObject;
-	private PropertySet propSet;
-	private IStruct propStruct;
+	private PropertySet propertySet;
 	
 	/**
 	 * @see org.nightlabs.jfire.base.prop.edit.PropertySetEditor#setProp(org.nightlabs.jfire.base.prop.Property)
 	 */
-	public void setPropertySet(PropertySet propSet, IStruct propStruct) {
-		this.propSet = propSet;
-		this.propStruct = propStruct;
+	public void setPropertySet(PropertySet propSet) {
+		this.propertySet = propSet;
 		this.selectionObject = propSet;
 	}
 
 	/**
-	 * @see org.nightlabs.jfire.base.prop.edit.PropertySetEditor#setPropertySet(org.nightlabs.jfire.base.prop.Property, boolean)
+	 * @see org.nightlabs.jfire.base.prop.edit.PropertySetEditor#setPropertySet(org.nightlabs.jfire.base.prop.Property)
 	 */
-	public void setPropertySet(PropertySet prop, IStruct propStruct, boolean refresh) {
-		setPropertySet(prop, propStruct);
+	public void setPropertySet(PropertySet prop, boolean refresh) {
+		setPropertySet(prop);
 		if (refresh)
 			refreshControl();
 	}
@@ -120,13 +121,13 @@ public class FieldBasedEditor implements PropertySetEditor {
 	private boolean showEmptyFields = true;
 	/**
 	 * 
-	 * @return Wheather empty fields of the associated propSet should be displayed.
+	 * @return Wheather empty fields of the associated propertySet should be displayed.
 	 */
 	public boolean isShowEmptyFields() {
 		return showEmptyFields;
 	}
 	/**
-	 * Defines weather empty fields of the associated propSet should be displayed.
+	 * Defines weather empty fields of the associated propertySet should be displayed.
 	 * @param showEmptyFields
 	 */
 	public void setShowEmptyFields(boolean showEmptyFields) {
@@ -362,27 +363,27 @@ public class FieldBasedEditor implements PropertySetEditor {
 		Display.getDefault().syncExec( 
 			new Runnable() {
 				public void run() {
-					if (propSet == null)
+					if (propertySet == null)
 						return;
 					
 					createTitleLabel();
 					
 					if (propTitleLabel != null) {
-						if (propSet.getDisplayName() != null)
-							propTitleLabel.setText(propSet.getDisplayName());
+						if (propertySet.getDisplayName() != null)
+							propTitleLabel.setText(propertySet.getDisplayName());
 						else 
 							propTitleLabel.setText("");
 						propTitleLabel.setBackground(new Color(Display.getDefault(), 155, 155, 155));
 					}
 					
-					
-					propStruct.explodeProperty(propSet);
+					if (!propertySet.isExploded())
+						getPropStructure(new NullProgressMonitor()).explodePropertySet(propertySet);
 					
 					for (Iterator iter = EditorStructFieldRegistry.sharedInstance().getStructFieldList(getEditorType()).iterator(); iter.hasNext();) {
 						StructFieldID structFieldID = (StructFieldID) iter.next();
 						AbstractDataField field = null;
 						try {
-							field = propSet.getDataField(structFieldID);
+							field = propertySet.getDataField(structFieldID);
 						} catch (DataNotFoundException e) {
 							LOGGER.error("Could not find PropDataField for "+structFieldID,e);
 							continue;
@@ -400,14 +401,14 @@ public class FieldBasedEditor implements PropertySetEditor {
 						if (!fieldEditors.containsKey(structFieldID)) {
 							try {
 								editor = DataFieldEditorFactoryRegistry.sharedInstance().getNewEditorInstance(
-										propStruct, getEditorType(), null, 
+										propertySet.getStructure(), getEditorType(), null, 
 										field, false
 									);
 							} catch (DataFieldEditorNotFoundException e) {
 								LOGGER.error("Could not find DataFieldEditor for "+field.getClass().getName(),e);
 								continue;
 							}
-							editor.setData(propStruct, field);
+							editor.setData(propertySet.getStructure(), field);
 							Control editorControl = editor.createControl(editorComposite);
 							GridData editorGD = FieldBasedEditor.this.getGridDataForField(field);
 							if (editorGD != null)
@@ -416,7 +417,7 @@ public class FieldBasedEditor implements PropertySetEditor {
 						} else {
 							editor = (DataFieldEditor)fieldEditors.get(structFieldID);
 						}
-						editor.setData(propStruct, field);
+						editor.setData(propertySet.getStructure(), field);
 						editor.refresh();
 					}
 //					editorWrapper.setSize(editorComposite.computeSize(SWT.DEFAULT,fieldEditors.size()*35+35));
@@ -426,6 +427,16 @@ public class FieldBasedEditor implements PropertySetEditor {
 		);
 	}
 	
+	protected IStruct getPropStructure(ProgressMonitor monitor) {
+		if (propertySet.isExploded())
+			return propertySet.getStructure();
+		monitor.beginTask("Loading propertySet structure", 1);
+		IStruct structure = StructLocalDAO.sharedInstance().getStructLocal(
+				propertySet.getStructLocalLinkClass(), propertySet.getStructLocalScope(), monitor
+		);
+		monitor.worked(1);
+		return structure;
+	}
 	
 
 	/**

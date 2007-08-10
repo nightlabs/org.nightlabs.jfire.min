@@ -41,6 +41,7 @@ import org.nightlabs.base.composite.groupedcontent.GroupedContentProvider;
 import org.nightlabs.jfire.prop.DataBlockGroup;
 import org.nightlabs.jfire.prop.IStruct;
 import org.nightlabs.jfire.prop.PropertySet;
+import org.nightlabs.progress.NullProgressMonitor;
 
 /**
  * @see org.nightlabs.jfire.base.prop.edit.blockbased.AbstractDataBlockEditor
@@ -59,9 +60,11 @@ public class BlockBasedEditor extends AbstractBlockBasedEditor {
 	private class ContentProvider implements GroupedContentProvider {
 		private DataBlockGroupEditor groupEditor;
 		private DataBlockGroup blockGroup;
+		private IStruct struct;
 		
-		public ContentProvider(DataBlockGroup blockGroup) {
-			this.blockGroup = blockGroup;			
+		public ContentProvider(DataBlockGroup blockGroup, IStruct struct) {
+			this.blockGroup = blockGroup;
+			this.struct = struct;
 		}
 		
 		public Image getGroupIcon() {
@@ -69,17 +72,17 @@ public class BlockBasedEditor extends AbstractBlockBasedEditor {
 		}
 		public String getGroupTitle() {
 			//return blockGroup.getStructBlock(getPropStructure()).getID();
-			return blockGroup.getStructBlock(getPropStructure()).getName().getText();
+			return blockGroup.getStructBlock(struct).getName().getText();
 		}
 		public Composite createGroupContent(Composite parent) {
-			groupEditor = new DataBlockGroupEditor(getPropStructure(), blockGroup, parent);
+			groupEditor = new DataBlockGroupEditor(struct, blockGroup, parent);
 			if (changeListener != null)
 				groupEditor.addPropDataBlockEditorChangedListener(changeListener);
 			return groupEditor;
 		}
 		public void refresh(DataBlockGroup blockGroup) {
 			if (groupEditor != null) {
-				groupEditor.refresh(getPropStructure(), blockGroup);
+				groupEditor.refresh(struct, blockGroup);
 			}
 			this.blockGroup = blockGroup;
 		}
@@ -98,7 +101,7 @@ public class BlockBasedEditor extends AbstractBlockBasedEditor {
 		super(propSet, propStruct);
 	}
 	
-	private Map groupContentProvider = new HashMap();
+	private Map<String, ContentProvider> groupContentProvider = new HashMap<String, ContentProvider>();
 	
 	/**
 	 * Refreshes the UI-Representation of the given Property.
@@ -112,14 +115,15 @@ public class BlockBasedEditor extends AbstractBlockBasedEditor {
 					if (groupedContentComposite == null || groupedContentComposite.isDisposed())
 						return;
 					
-					getPropStructure().explodeProperty(propSet);
+					if (!propertySet.isExploded())
+						getPropStructure(new NullProgressMonitor()).explodePropertySet(propertySet);
 					
 					// get the ordered dataBlocks
 					for (Iterator<DataBlockGroup> it = BlockBasedEditor.this.getOrderedDataBlockGroupsIterator(); it.hasNext(); ) {
 						DataBlockGroup blockGroup = it.next();
 						if (shouldDisplayStructBlock(blockGroup)) {
 							if (!groupContentProvider.containsKey(blockGroup.getStructBlockKey())) {
-								ContentProvider contentProvider = new ContentProvider(blockGroup);
+								ContentProvider contentProvider = new ContentProvider(blockGroup, propertySet.getStructure());
 								groupContentProvider.put(blockGroup.getStructBlockKey(),contentProvider);
 								groupedContentComposite.addGroupedContentProvider(contentProvider);
 							}

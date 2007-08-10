@@ -40,9 +40,15 @@ import org.nightlabs.jfire.prop.PropertySet;
 import org.nightlabs.jfire.prop.Struct;
 import org.nightlabs.jfire.prop.StructBlock;
 import org.nightlabs.jfire.prop.StructLocal;
+import org.nightlabs.jfire.prop.dao.StructLocalDAO;
 import org.nightlabs.jfire.prop.id.StructBlockID;
+import org.nightlabs.progress.ProgressMonitor;
 
 /**
+ * Abstract base for block based {@link PropertySetEditor}s.
+ * It manages (holds) the {@link PropertySet} to edit and the StructBlocks
+ * that should be visible when editing the propertySet. 
+ * 
  * @see org.nightlabs.jfire.base.prop.edit.blockbased.AbstractDataBlockEditor
  * @see org.nightlabs.jfire.base.prop.edit.blockbased.EditorStructBlockRegistry
  * @see org.nightlabs.jfire.base.prop.edit.PropertySetEditor
@@ -51,13 +57,22 @@ import org.nightlabs.jfire.prop.id.StructBlockID;
  */
 public abstract class AbstractBlockBasedEditor implements PropertySetEditor { // extends ScrolledComposite {
 	
+	protected PropertySet propertySet;
+	protected EditorStructBlockRegistry structBlockRegistry;
+		
 	public AbstractBlockBasedEditor() {
 		this (null, null);
 	}
 	
+	/**
+	 * Create a new {@link AbstractBlockBasedEditor} for the given 
+	 * propertySet. 
+	 * 
+	 * @param prop
+	 * @param propStruct
+	 */
 	public AbstractBlockBasedEditor(PropertySet prop, IStruct propStruct) {
-		this.propStruct = propStruct;
-		this.propSet = prop;
+		this.propertySet = prop;
 		if (propStruct != null) {
 			String scope = StructLocal.DEFAULT_SCOPE;
 			if (propStruct instanceof StructLocal)
@@ -67,50 +82,48 @@ public abstract class AbstractBlockBasedEditor implements PropertySetEditor { //
 	}
 	
 	
-	protected PropertySet propSet;
-	protected IStruct propStruct;
-	protected EditorStructBlockRegistry structBlockRegistry;
 	
 	/**
-	 * Sets the current propSet of this editor.
+	 * Sets the current propertySet of this editor.
 	 * If refresh is true {@link #refreshForm(DataBlockEditorChangedListener)} 
 	 * is called.
-	 * @param propSet
 	 * @param refresh
+	 * @param propertySet
 	 */
-	public void setPropertySet(PropertySet propSet, IStruct propStruct, boolean refresh) {
-		this.propSet = propSet;
-		this.propStruct = propStruct;		
-		propStruct.explodeProperty(propSet);
-		String scope = StructLocal.DEFAULT_SCOPE;
-		if (propStruct instanceof StructLocal)
-			scope = ((StructLocal)propStruct).getScope();
-		structBlockRegistry = new EditorStructBlockRegistry(propStruct.getLinkClass(), scope);
+	public void setPropertySet(PropertySet propSet, boolean refresh) {
+		this.propertySet = propSet;
 		if (refresh)
 			refreshControl();
 	}
 	
 	/**
-	 * Will only set the propSet, no changes to the UI will be made.
-	 * @param propSet
+	 * Will only set the propertySet, no changes to the UI will be made.
+	 * @param propertySet
 	 */
-	public void setPropertySet(PropertySet propSet, IStruct propStruct) {		
-		setPropertySet(propSet, propStruct, false);		
+	public void setPropertySet(PropertySet propSet) {		
+		setPropertySet(propSet, false);		
 	}
 	/**
-	 * Returns the propSet.
+	 * Returns the propertySet.
 	 * @return
 	 */
 	public PropertySet getPropertySet() {
-		return propSet;
+		return propertySet;
 	}
 
 	/**
 	 * Returns a version of the {@link Struct}.
 	 * @return
 	 */
-	protected IStruct getPropStructure() {
-		return propStruct;
+	protected IStruct getPropStructure(ProgressMonitor monitor) {
+		if (propertySet.isExploded())
+			return propertySet.getStructure();
+		monitor.beginTask("Loading propertySet structure", 1);
+		IStruct structure = StructLocalDAO.sharedInstance().getStructLocal(
+				propertySet.getStructLocalLinkClass(), propertySet.getStructLocalScope(), monitor
+		);
+		monitor.worked(1);
+		return structure;
 	}
 	
 	
@@ -121,23 +134,7 @@ public abstract class AbstractBlockBasedEditor implements PropertySetEditor { //
 	 */
 	public abstract void refreshControl();
 	
-	private String editorScope;
 	private String editorName;
-	
-	/**
-	 * Set the scope and the name of the editor.
-	 * This can be used by to limit the PropStructBlocks
-	 * a editor shows by registering it in the {@link EditorStructBlockRegistry}
-	 * and calling this function with the appropriate values.<br/>
-	 * Default will be all PropStructBlocks.
-	 * 
-	 * @param editorScope
-	 * @param editorName
-	 */
-	public void setEditorDomain(String editorScope, String editorName) {
-		this.editorScope = editorScope;
-		this.editorName = editorName;
-	}
 	
 	/**
 	 * Sets the editor domain for this editor and additionally
@@ -146,12 +143,12 @@ public abstract class AbstractBlockBasedEditor implements PropertySetEditor { //
 	 * @param editorName
 	 * @param propStructBlockKeys
 	 */
-	public void setEditorDomain(String editorScope, String editorName, StructBlockID[] propStructBlockKeys) {
-		setEditorDomain(editorScope,editorName);
-		structBlockRegistry.addEditorStructBlocks(editorName,propStructBlockKeys);
+	public void setEditorDomain(String editorName, EditorStructBlockRegistry structBlockRegistry) {
+		this.editorName = editorName;
+		this.structBlockRegistry = structBlockRegistry;
 	}
 	
-	private List domainPropStructBlocks;
+	private List<StructBlockID> domainPropStructBlocks;
 	
 	protected boolean shouldDisplayStructBlock(DataBlockGroup blockGroup) {
 		// default is all PropStructBlocks
@@ -163,7 +160,7 @@ public abstract class AbstractBlockBasedEditor implements PropertySetEditor { //
 	
 	protected void buildDomainDataBlockGroups() {
 		if (domainPropStructBlocks == null) {
-			if ((editorScope != null ) && (editorName != null)) {
+			if (editorName != null && structBlockRegistry != null) {
 				List structBlockList = structBlockRegistry.getEditorStructBlocks(editorName);
 				if (!structBlockList.isEmpty())
 					domainPropStructBlocks = structBlockList;
@@ -178,10 +175,10 @@ public abstract class AbstractBlockBasedEditor implements PropertySetEditor { //
 	 * 
 	 * @param structBlockList
 	 */	
-	public void setEditorPropStructBlockList(List structBlockList) {
-		if (structBlockList != null && structBlockList.size() > 0)
+	public void setEditorPropStructBlockList(List<StructBlockID> structBlockIDs) {
+		if (structBlockIDs != null && structBlockIDs.size() > 0)
 		{
-			domainPropStructBlocks = structBlockList;
+			domainPropStructBlocks = structBlockIDs;
 		}
 		else
 		{
@@ -192,7 +189,7 @@ public abstract class AbstractBlockBasedEditor implements PropertySetEditor { //
 	
 	protected Iterator getDataBlockGroupsIterator() {
 		buildDomainDataBlockGroups();
-		return propSet.getDataBlockGroups().iterator();
+		return propertySet.getDataBlockGroups().iterator();
 	}
 	
 	public Map<String, Integer> getStructBlockDisplayOrder(IStruct struct) {
@@ -208,16 +205,16 @@ public abstract class AbstractBlockBasedEditor implements PropertySetEditor { //
 	protected Iterator<DataBlockGroup> getOrderedDataBlockGroupsIterator() {
 		buildDomainDataBlockGroups();
 	
-		int allStructBlockCount = getPropStructure().getStructBlocks().size();
-		List<DataBlockGroup> result = new LinkedList<DataBlockGroup>();
-		IStruct struct = propSet.getStructure();
+		IStruct struct = propertySet.getStructure();
 		if (struct == null)
 			throw new IllegalStateException("The PropertySet was not exploded yet");
+		int allStructBlockCount = struct.getStructBlocks().size();
+		List<DataBlockGroup> result = new LinkedList<DataBlockGroup>();
 		Map<String, Integer> structBlockOrder = getStructBlockDisplayOrder(struct);
 		
 		int unmentionedCount = 0;
-		// all datablocks of this propSet
-		for (Iterator<DataBlockGroup> it = propSet.getDataBlockGroups().iterator(); it.hasNext(); ) {
+		// all datablocks of this propertySet
+		for (Iterator<DataBlockGroup> it = propertySet.getDataBlockGroups().iterator(); it.hasNext(); ) {
 			DataBlockGroup blockGroup = it.next();
 			if (structBlockOrder.containsKey(blockGroup.getStructBlockKey())) {
 				// block mentioned in structBlockOrder

@@ -38,7 +38,6 @@ import org.nightlabs.base.composite.XComposite;
 import org.nightlabs.base.exceptionhandler.ExceptionHandlerRegistry;
 import org.nightlabs.base.wizard.WizardHopPage;
 import org.nightlabs.jfire.prop.DataBlock;
-import org.nightlabs.jfire.prop.IStruct;
 import org.nightlabs.jfire.prop.PropertySet;
 import org.nightlabs.jfire.prop.exception.DataNotFoundException;
 import org.nightlabs.jfire.prop.id.StructBlockID;
@@ -56,8 +55,6 @@ public class CompoundDataBlockWizardPage extends WizardHopPage {
 	private Map<StructBlockID, DataBlock> propDataBlocks = new HashMap<StructBlockID, DataBlock>();
 	private StructBlockID[] structBlockIDs;
 	private int propDataBlockEditorColumnHint = 2;
-	private IStruct struct;
-		
 	
 	XComposite wrapperComp;
 	
@@ -75,11 +72,10 @@ public class CompoundDataBlockWizardPage extends WizardHopPage {
 	public CompoundDataBlockWizardPage ( 
 		String pageName, 
 		String title,
-		IStruct struct,
 		PropertySet prop,
 		List structBlockIDs
 	) {
-		this(pageName, title, struct, prop, getArrayFromList(structBlockIDs));
+		this(pageName, title, prop, getArrayFromList(structBlockIDs));
 	}
 
 	/**
@@ -89,7 +85,6 @@ public class CompoundDataBlockWizardPage extends WizardHopPage {
 	public CompoundDataBlockWizardPage (
 		String pageName, 
 		String title, 
-		IStruct struct,
 		PropertySet propSet,
 		StructBlockID[] structBlockIDs
 	) {
@@ -97,8 +92,7 @@ public class CompoundDataBlockWizardPage extends WizardHopPage {
 		if (title != null)
 			this.setTitle(title);
 		if (propSet == null)
-			throw new IllegalArgumentException("Parameter propSet must not be null");
-		this.struct = struct;
+			throw new IllegalArgumentException("Parameter propertySet must not be null");
 		this.propSet = propSet;
 		this.structBlockIDs = structBlockIDs;
 		for (int i = 0; i < structBlockIDs.length; i++) {
@@ -133,14 +127,14 @@ public class CompoundDataBlockWizardPage extends WizardHopPage {
 			DataBlock dataBlock = (DataBlock)propDataBlocks.get(structBlockIDs[i]);
 			AbstractDataBlockEditor editor = 
 				DataBlockEditorFactoryRegistry.sharedInstance().getPropDataBlockEditor(
-						struct,
+						propSet.getStructure(),
 						dataBlock,
 						wrapperComp,
 						SWT.NONE,
 						getPropDataBlockEditorColumnHint()
 				);
 
-			editor.refresh(struct, dataBlock);
+			editor.refresh(propSet.getStructure(), dataBlock);
 			propDataBlockEditors.put(
 					structBlockIDs[i],
 					editor
@@ -149,7 +143,7 @@ public class CompoundDataBlockWizardPage extends WizardHopPage {
 	}
 	
 	/**
-	 * Returns the propSet passed in the constructor.
+	 * Returns the propertySet passed in the constructor.
 	 * 
 	 * @return
 	 */
@@ -200,7 +194,7 @@ public class CompoundDataBlockWizardPage extends WizardHopPage {
 	}
 	
   /**
-   * Set all values to the propSet.
+   * Set all values to the propertySet.
    */
   public void updatePropertySet() {
   	for (Iterator iter = propDataBlockEditors.values().iterator(); iter.hasNext();) {

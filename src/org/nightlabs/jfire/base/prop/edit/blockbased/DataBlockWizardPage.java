@@ -52,7 +52,7 @@ public class DataBlockWizardPage extends CompoundDataBlockWizardPage {
 		PropertySet prop,
 		StructBlockID structBlockID
 	) {
-		super(pageName, title, struct, prop, new StructBlockID[]{structBlockID});
+		super(pageName, title, prop, new StructBlockID[]{structBlockID});
 		this.structBlockID = structBlockID;
 	}
 	

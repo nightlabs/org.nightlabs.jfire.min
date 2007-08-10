@@ -50,7 +50,7 @@ public class EditorStructBlockRegistry
 	/**
 	 * The class whose property's structBlock is to be edited.
 	 */		
-	private Class linkClass;
+	private String linkClass;
 	/**
 	 * The {@link StructLocal} scope to use.
 	 */
@@ -64,11 +64,15 @@ public class EditorStructBlockRegistry
 	
 	public EditorStructBlockRegistry(Class linkClass, String stuctLocalScope)
 	{
+		this(linkClass.getName(), stuctLocalScope);
+	}
+	
+	public EditorStructBlockRegistry(String linkClass, String stuctLocalScope)
+	{
 		this.linkClass = linkClass;
 		this.structLocalScope = stuctLocalScope;
 		editorsStructBlocks = new HashMap<String, List<StructBlockID>>();
 	}
-	
 	
 	/**
 	 * Registers the given structBlockIDs for the editor with the given name.
@@ -131,7 +135,7 @@ public class EditorStructBlockRegistry
 	public List<StructBlockID> getUnassignedBlockKeyList()
 	{
 		List<StructBlockID> toReturn = new LinkedList<StructBlockID>();
-		IStruct struct = StructLocalDAO.sharedInstance().getStructLocal(linkClass.getName(), structLocalScope, new NullProgressMonitor());
+		IStruct struct = StructLocalDAO.sharedInstance().getStructLocal(linkClass, structLocalScope, new NullProgressMonitor());
 		for (StructBlock structBlock : struct.getStructBlocks())
 		{
 			if (!hasEditorCoverage(structBlock))

@@ -36,9 +36,13 @@ import org.nightlabs.jfire.prop.PropertySet;
  */
 public class FullDataBlockCoverageTabItem extends TabItem {
 
-	public FullDataBlockCoverageTabItem(TabFolder parent, int style, String editorScope, PropertySet prop) {
+	public FullDataBlockCoverageTabItem(
+			TabFolder parent, int style, 
+			PropertySet propertySet,
+			EditorStructBlockRegistry editorStructBlockRegistry
+	) {
 		super(parent, style);
-		FullDataBlockCoverageComposite comp = new FullDataBlockCoverageComposite(parent, style, editorScope, prop);
+		FullDataBlockCoverageComposite comp = new FullDataBlockCoverageComposite(parent, style, propertySet, editorStructBlockRegistry);
 		setControl(comp);
 	}
 

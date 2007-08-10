@@ -28,7 +28,6 @@ package org.nightlabs.jfire.base.prop.edit;
 
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.nightlabs.jfire.prop.IStruct;
 import org.nightlabs.jfire.prop.PropertySet;
 
 /**
@@ -37,7 +36,7 @@ import org.nightlabs.jfire.prop.PropertySet;
  * Common useage is:<br/>
  * <ul>
  * 	<li>Create a the Editor with parameterless constructor or one specific to the type your using.</li>
- *	<li>Link the editor to a PropertySet by using {@link #setPropertySet(PropertySet, IStruct)</li>
+ *	<li>Link the editor to a PropertySet by using {@link #setPropertySet(PropertySet)</li>
  *	<li>Create the UI representation by calling {@link #createControl(Composite, boolean)}</li>
  *	<li>If not done with {@link #createControl(Composite, boolean)} set the field values by
  * 		calling {@link #refreshControl()}.
@@ -52,20 +51,25 @@ public interface PropertySetEditor {
 	
 	/**
 	 * Link the editor to a {@link PropertySet}.
-	 * @param propSet The PropertySet this editor should modify
-	 * @param propStruct The structure the given property is built from.
+	 * <p>
+	 * Note that it is recommended to pass an already exploded {@link PropertySet}
+	 * to the editor.
+	 * </p>
+	 * @param propertySet The PropertySet this editor should modify
 	 */
-	public void setPropertySet(PropertySet propSet, IStruct propStruct);
+	public void setPropertySet(PropertySet propertySet);
 	
 	/**
 	 * Link the editor to a Property and refresh the Control
 	 * if refresh is true.
-	 * 
-	 * @param propSet The PropertySet this editor should modify
-	 * @param propStruct The structure the given property is built from.
+	 * <p>
+	 * Note that it is recommended to pass an already exploded {@link PropertySet}
+	 * to the editor.
+	 * </p>
+	 * @param propertySet The PropertySet this editor should modify
 	 * @param refresh Whether to refresh the control with the values of the new PropertySet
 	 */
-	public void setPropertySet(PropertySet propSet, IStruct propStruct, boolean refresh);
+	public void setPropertySet(PropertySet propSet, boolean refresh);
 	
 	/**
 	 * Create the UI representation of the PropertySetEditor and associate

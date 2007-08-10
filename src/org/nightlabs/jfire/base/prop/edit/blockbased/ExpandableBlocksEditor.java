@@ -45,9 +45,10 @@ import org.nightlabs.jfire.base.prop.edit.PropertySetEditor;
 import org.nightlabs.jfire.prop.DataBlockGroup;
 import org.nightlabs.jfire.prop.IStruct;
 import org.nightlabs.jfire.prop.PropertySet;
-import org.nightlabs.jfire.prop.Struct;
-import org.nightlabs.jfire.prop.StructLocal;
+import org.nightlabs.jfire.prop.dao.StructLocalDAO;
 import org.nightlabs.jfire.prop.id.StructBlockID;
+import org.nightlabs.progress.NullProgressMonitor;
+import org.nightlabs.progress.ProgressMonitor;
 
 /**
  * A PropertySetEditor based on PropStructBlocks/PropDataBlocks.
@@ -67,68 +68,49 @@ public class ExpandableBlocksEditor implements PropertySetEditor { // extends Sc
 	public static final String EDITORTYPE_BLOCK_BASED_EXPANDABLE = "block-based-expandable";
 	
 	public ExpandableBlocksEditor() {
-		this (null, null);
+		this(null);
 	}
 	
-	public ExpandableBlocksEditor(PropertySet prop, IStruct propStruct) {
+	public ExpandableBlocksEditor(PropertySet prop) {
 		this.prop = prop;
-		this.propStruct = propStruct;
-		propStruct.explodeProperty(prop);
-		String scope = StructLocal.DEFAULT_SCOPE;
-		if (propStruct instanceof StructLocal)
-			scope = ((StructLocal)propStruct).getScope();
-		structBlockRegistry = new EditorStructBlockRegistry(propStruct.getLinkClass(), scope);
+		structBlockRegistry = new EditorStructBlockRegistry(prop.getStructLocalLinkClass(), prop.getStructLocalScope());
 	}
 
 	
 	private FormToolkit toolkit = null;
 	
 	private PropertySet prop;
-	private IStruct propStruct;
 	private EditorStructBlockRegistry structBlockRegistry;
 	
 	/**
-	 * Sets the current propSet of this editor.
+	 * Sets the current propertySet of this editor.
 	 * If refresh is true {@link #refreshForm(DataBlockEditorChangedListener)} 
 	 * is called.
-	 * @param propSet
 	 * @param refresh
+	 * @param propertySet
 	 */
-	public void setPropertySet(PropertySet prop, IStruct propStruct, boolean refresh) {
+	public void setPropertySet(PropertySet prop, boolean refresh) {
 		this.prop = prop;
-		this.propStruct = propStruct;
-		propStruct.explodeProperty(prop);
-		String scope = StructLocal.DEFAULT_SCOPE;
-		if (propStruct instanceof StructLocal)
-			scope = ((StructLocal)propStruct).getScope();
-		structBlockRegistry = new EditorStructBlockRegistry(propStruct.getLinkClass(), scope);
+		structBlockRegistry = new EditorStructBlockRegistry(prop.getStructLocalLinkClass(), prop.getStructLocalScope());
 		if (refresh)
 			refreshControl();		
 	}
+	
 	/**
-	 * Will only set the propSet, no changes to the UI will be made.
-	 * @param propSet
+	 * Will only set the propertySet, no changes to the UI will be made.
+	 * @param propertySet
 	 */
-	public void setPropertySet(PropertySet prop, IStruct propStruct) {		
-		setPropertySet(prop, propStruct, false);
+	public void setPropertySet(PropertySet prop) {		
+		setPropertySet(prop, false);
 	}
 	/**
-	 * Returns the propSet.
+	 * Returns the propertySet.
 	 * @return
 	 */
 	public PropertySet getProp() {
 		return prop;
 	}
 
-	/**
-	 * Returns a cached version of the {@link Struct}.
-	 * @return
-	 */
-	protected IStruct getPropStructure() {
-		return propStruct;
-	}
-	
-	
 	private ScrolledForm form = null;
 	/**
 	 * Returns the {@link ScrolledForm}. 
@@ -149,6 +131,18 @@ public class ExpandableBlocksEditor implements PropertySetEditor { // extends Sc
 		return groupEditors;
 	}
 	
+	protected IStruct getPropStructure(ProgressMonitor monitor) {
+		if (prop.isExploded())
+			return prop.getStructure();
+		monitor.beginTask("Loading propertySet structure", 1);
+		IStruct structure = StructLocalDAO.sharedInstance().getStructLocal(
+				prop.getStructLocalLinkClass(), prop.getStructLocalScope(), monitor
+		);
+		monitor.worked(1);
+		return structure;
+	}
+	
+	
 //	public void refreshControl() {
 //		refreshControl(null);
 //	}
@@ -162,14 +156,15 @@ public class ExpandableBlocksEditor implements PropertySetEditor { // extends Sc
 		Display.getDefault().asyncExec( 
 			new Runnable() {
 				public void run() {
-					getPropStructure().explodeProperty(prop);
+					if (!prop.isExploded())
+						getPropStructure(new NullProgressMonitor()).explodePropertySet(prop);
 					
 					// get the ordered dataBlocks
 					for (Iterator it = ExpandableBlocksEditor.this.getOrderedDataBlockGroupsIterator(); it.hasNext(); ) {
 						DataBlockGroup blockGroup = (DataBlockGroup)it.next();
 						if (shouldDisplayStructBlock(blockGroup)) {
 							if (!groupEditors.containsKey(blockGroup.getStructBlockKey())) {
-								ExpandableDataBlockGroupEditor groupEditor = new ExpandableDataBlockGroupEditor(propStruct, blockGroup, form.getBody());
+								ExpandableDataBlockGroupEditor groupEditor = new ExpandableDataBlockGroupEditor(prop.getStructure(), blockGroup, form.getBody());
 								groupEditor.setOwner(form);
 								if (ExpandableBlocksEditor.this.changeListener != null) 
 									groupEditor.addPropDataBlockEditorChangedListener(ExpandableBlocksEditor.this.changeListener);
@@ -238,7 +233,7 @@ public class ExpandableBlocksEditor implements PropertySetEditor { // extends Sc
 	}
 
 	/**
-	 * Will only create the Form. No propSet data will be displayed
+	 * Will only create the Form. No propertySet data will be displayed
 	 * 
 	 * @param parent
 	 * @param changeListener
@@ -250,7 +245,7 @@ public class ExpandableBlocksEditor implements PropertySetEditor { // extends Sc
 	
 	/**
 	 * Will create the form. No change listener will be set and 
-	 * no propSet data will be displayed.
+	 * no propertySet data will be displayed.
 	 * 
 	 * @param parent
 	 * @return
@@ -349,14 +344,14 @@ public class ExpandableBlocksEditor implements PropertySetEditor { // extends Sc
 	
 	protected Iterator getOrderedDataBlockGroupsIterator() {
 		buildDomainDataBlockGroups();
-	
-		int allStructBlockCount = getPropStructure().getStructBlocks().size();
+
+		int allStructBlockCount = prop.getStructure().getStructBlocks().size();
 		List result = new LinkedList();
 		Map structBlockOrder = getStructBlockDisplayOrder();
 		
 		int maxIndex = 0;
 		int unmentionedCount = 0;
-		// all datablocks of this propSet
+		// all datablocks of this propertySet
 		for (Iterator it = prop.getDataBlockGroups().iterator(); it.hasNext(); ) {
 			DataBlockGroup blockGroup = (DataBlockGroup)it.next();
 			boolean orderedAdd = false;

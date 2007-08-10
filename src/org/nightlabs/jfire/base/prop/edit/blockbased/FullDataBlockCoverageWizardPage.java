@@ -38,25 +38,28 @@ import org.nightlabs.jfire.prop.PropertySet;
  */
 public class FullDataBlockCoverageWizardPage extends WizardHopPage {
 
-	protected String editorScope;
 	protected FullDataBlockCoverageComposite fullDataBlockCoverageComposite;
 	protected PropertySet prop;
+	protected EditorStructBlockRegistry editorStructBlockRegistry;
 	
 	/**
 	 * @param pageName
 	 * @param title
 	 */
-	public FullDataBlockCoverageWizardPage(String pageName, String title, String editorScope, PropertySet propSet) {
+	public FullDataBlockCoverageWizardPage(
+			String pageName, String title, PropertySet propSet, EditorStructBlockRegistry editorStructBlockRegistry
+			
+	) {
 		super(pageName, title);
-		this.editorScope = editorScope;
 		this.prop = propSet;
+		this.editorStructBlockRegistry = editorStructBlockRegistry;
 	}
 
 	/**
 	 * @see org.nightlabs.base.wizard.DynamicPathWizardPage#createPageContents(org.eclipse.swt.widgets.Composite)
 	 */
 	public Control createPageContents(Composite parent) {
-		fullDataBlockCoverageComposite = new FullDataBlockCoverageComposite(parent, SWT.NONE, editorScope, prop);
+		fullDataBlockCoverageComposite = new FullDataBlockCoverageComposite(parent, SWT.NONE, prop, editorStructBlockRegistry);
 		return fullDataBlockCoverageComposite;
 	}
 
@@ -64,7 +67,7 @@ public class FullDataBlockCoverageWizardPage extends WizardHopPage {
 		return super.isPageComplete();
 	}
 	
-	public void updateProp() {
+	public void updatePropertySet() {
 		if (fullDataBlockCoverageComposite != null)
 			fullDataBlockCoverageComposite.updateProp();
 	}	

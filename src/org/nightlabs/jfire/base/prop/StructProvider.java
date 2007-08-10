@@ -136,7 +136,7 @@
 //	}
 //
 //	/**
-//	 * Returns a ordered list of the StructBlocks for the current propSet structure.
+//	 * Returns a ordered list of the StructBlocks for the current propertySet structure.
 //	 */
 //	public List getOrderedPropStructBlocks()
 //	{

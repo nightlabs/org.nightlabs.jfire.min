@@ -93,7 +93,7 @@ public class BlockBasedEditorSection extends RestorableSectionPart
 			public void run() {
 				if(property == null)
 					return;
-				blockBasedPersonEditor.setPropertySet(property, struct, true);
+				blockBasedPersonEditor.setPropertySet(property, true);
 			}
 		});
 	}

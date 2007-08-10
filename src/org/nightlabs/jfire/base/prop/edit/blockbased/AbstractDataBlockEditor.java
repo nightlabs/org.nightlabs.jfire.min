@@ -44,7 +44,7 @@ import org.nightlabs.jfire.prop.IStruct;
 import org.nightlabs.jfire.prop.StructField;
 
 /**
- * A Composite presenting all fields a propSet has within a DataBlock to
+ * A Composite presenting all fields a propertySet has within a DataBlock to
  * the user for editing.
  * 
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>

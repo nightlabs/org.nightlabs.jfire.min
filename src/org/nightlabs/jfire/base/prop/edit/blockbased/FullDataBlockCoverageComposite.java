@@ -53,13 +53,20 @@ public class FullDataBlockCoverageComposite extends Composite {
 	private EditorStructBlockRegistry structBlockRegistry;
 	/**
 	 */
-	public FullDataBlockCoverageComposite(Composite parent, int style, String editorScope, PropertySet prop) {
+	public FullDataBlockCoverageComposite(
+			Composite parent, int style, 
+			PropertySet propertySet,
+			EditorStructBlockRegistry structBlockRegistry
+	) {
 		super(parent, style);
 		this.numColumns = 1;
-		if (!(prop.getStructure() instanceof StructLocal))
-			throw new IllegalArgumentException("The given propSet was not exploded by a StructLocal");
-		structBlockRegistry = new EditorStructBlockRegistry(prop.getStructure().getLinkClass(), ((StructLocal)prop.getStructure()).getScope());
-		StructBlockID[] fullCoverageBlockIDs = structBlockRegistry.getUnassignedBlockKeyArray();
+		if (!(propertySet.getStructure() instanceof StructLocal))
+			throw new IllegalArgumentException("The given propertySet was not exploded by a StructLocal");
+		this.structBlockRegistry = structBlockRegistry;
+		if (structBlockRegistry == null) {
+			this.structBlockRegistry = new EditorStructBlockRegistry(propertySet.getStructLocalLinkClass(), propertySet.getStructLocalScope());
+		}
+		StructBlockID[] fullCoverageBlockIDs = this.structBlockRegistry.getUnassignedBlockKeyArray();
 		createPropEditors();
 		List[] splitBlockIDs = new List[numColumns];
 		for (int i=0; i<numColumns; i++) {
@@ -79,8 +86,8 @@ public class FullDataBlockCoverageComposite extends Composite {
 		for (int i=0; i<numColumns; i++) {
 			XComposite wrapper = new XComposite(this,SWT.BORDER, XComposite.LayoutMode.TIGHT_WRAPPER);				
 			BlockBasedEditor propEditor = (BlockBasedEditor)propEditors.get(i);
-			propEditor.setPropertySet(prop, prop.getStructure());
-			propEditor.setEditorDomain(editorScope,"#FullDatBlockCoverageComposite"+i);
+			propEditor.setPropertySet(propertySet);
+//			propEditor.setEditorDomain(editorScope,"#FullDatBlockCoverageComposite"+i);
 			propEditor.setEditorPropStructBlockList(splitBlockIDs[i]);
 			Control propEditorControl = propEditor.createControl(wrapper,true);
 			GridData editorControlGD = new GridData(GridData.FILL_BOTH);
