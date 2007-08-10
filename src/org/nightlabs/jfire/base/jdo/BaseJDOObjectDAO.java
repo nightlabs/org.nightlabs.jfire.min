@@ -206,9 +206,12 @@ public abstract class BaseJDOObjectDAO<JDOObjectID, JDOObject>
 		
 		// put remaining objects in correct position of the result list
 		int index;
-		for(JDOObject freshObject : fetchedObjects) {
-			if (freshObject == null)
+		for(Iterator<JDOObject> it = fetchedObjects.iterator(); it.hasNext(); ) {
+			JDOObject freshObject = it.next();
+			if (freshObject == null) {
+				it.remove();
 				continue;
+			}
 			JDOObjectID freshObjectID = (JDOObjectID) JDOHelper.getObjectId(freshObject);
 			if (freshObjectID == null)
 				throw new IllegalStateException("It seems like the Objects returned from the Bean are not detached, since one of their IDs is null!");
@@ -226,7 +229,9 @@ public abstract class BaseJDOObjectDAO<JDOObjectID, JDOObject>
 					it.remove();
 			}
 		}
-		
+
+		Cache.sharedInstance().putAll(scope, fetchedObjects, fetchGroups, maxFetchDepth);
+
 		monitor.done();
 		objects.trimToSize();	
 		return objects;		
