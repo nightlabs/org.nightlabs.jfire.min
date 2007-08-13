@@ -110,9 +110,14 @@ extends LSDEditorPart
 			if (menuManager != null) {
 				if (actionBarContributor instanceof XEditorActionBarContributor) {
 					XEditorActionBarContributor xEditorActionBarContributor = (XEditorActionBarContributor) actionBarContributor;
-					xEditorActionBarContributor.getActionRegistry().contributeToContextMenu(menuManager);
-					if (logger.isDebugEnabled())
-						logger.debug("updateContextMenu, Number of entries = "+menuManager.getItems().length+", actionBarContributor = "+actionBarContributor);
+
+					if (xEditorActionBarContributor.getActionRegistry() == null)
+						logger.warn("updateContextMenu: xEditorActionBarContributor.getActionRegistry() returned null!");
+					else {
+						xEditorActionBarContributor.getActionRegistry().contributeToContextMenu(menuManager);
+						if (logger.isDebugEnabled())
+							logger.debug("updateContextMenu, Number of entries = "+menuManager.getItems().length+", actionBarContributor = "+actionBarContributor);
+					}
 				} else {
 					actionBarContributor.contributeToMenu(menuManager);
 				}
@@ -144,9 +149,14 @@ extends LSDEditorPart
 			if (toolbarManager != null) {
 				if (actionBarContributor instanceof XEditorActionBarContributor) {
 					XEditorActionBarContributor xEditorActionBarContributor = (XEditorActionBarContributor) actionBarContributor;
-					xEditorActionBarContributor.getActionRegistry().contributeToToolBar(toolbarManager);
-					if (logger.isDebugEnabled())
-						logger.debug("updateToolbar, Number of entries = "+toolbarManager.getItems().length+", actionBarContributor = "+actionBarContributor);
+
+					if (xEditorActionBarContributor.getActionRegistry() == null)
+						logger.warn("updateToolbar: xEditorActionBarContributor.getActionRegistry() returned null!");
+					else {
+						xEditorActionBarContributor.getActionRegistry().contributeToToolBar(toolbarManager);
+						if (logger.isDebugEnabled())
+							logger.debug("updateToolbar, Number of entries = "+toolbarManager.getItems().length+", actionBarContributor = "+actionBarContributor);
+					}
 				} else {
 					actionBarContributor.contributeToToolBar(toolbarManager);
 				}
