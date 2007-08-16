@@ -37,9 +37,9 @@ import org.nightlabs.base.action.ContributionItemSetRegistry;
 import org.nightlabs.base.editor.Editor2PerspectiveRegistry;
 import org.nightlabs.base.extensionpoint.EPProcessorException;
 import org.nightlabs.base.part.PartVisibilityTracker;
-import org.nightlabs.base.resource.Messages;
 import org.nightlabs.base.util.RCPUtil;
 import org.nightlabs.jfire.base.login.LoginStateStatusLineContribution;
+import org.nightlabs.jfire.base.resource.Messages;
 import org.nightlabs.rcp.splash.SplashHandlingWorkbenchWindowAdvisor;
 
 public class JFireWorkbenchWindowAdvisor 
