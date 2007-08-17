@@ -31,7 +31,7 @@
 //
 //import javax.security.auth.login.LoginException;
 //
-//import org.nightlabs.jdo.NLJDOHelper;
+//import org.nightlabs.jdo.ui.NLJDOHelper;
 //import org.nightlabs.jfire.base.jdo.JDOObjectProvider;
 //import org.nightlabs.jfire.base.login.Login;
 //import org.nightlabs.jfire.base.prop.id.StructBlockID;

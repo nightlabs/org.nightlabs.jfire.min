@@ -26,10 +26,10 @@
 
 package org.nightlabs.jfire.base.prop.search;
 
-import org.nightlabs.jdo.search.ItemBasedSearchFilterProvider;
 import org.nightlabs.jdo.search.SearchFilter;
-import org.nightlabs.jdo.search.SearchFilterItemListMutator;
-import org.nightlabs.jdo.search.SearchResultFetcher;
+import org.nightlabs.jdo.ui.search.ItemBasedSearchFilterProvider;
+import org.nightlabs.jdo.ui.search.SearchFilterItemListMutator;
+import org.nightlabs.jdo.ui.search.SearchResultFetcher;
 import org.nightlabs.jfire.prop.search.PropSearchFilter;
 
 /**
@@ -56,7 +56,7 @@ public class DynamicPropertySetSearchFilterProvider extends
 	}
 	
 	/**
-	 * @see org.nightlabs.jdo.search.ItemBasedSearchFilterProvider#createSearchFilter()
+	 * @see org.nightlabs.jdo.ui.search.ItemBasedSearchFilterProvider#createSearchFilter()
 	 */
 	protected SearchFilter createSearchFilter() {
 		return new PropSearchFilter(SearchFilter.CONJUNCTION_DEFAULT);

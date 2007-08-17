@@ -26,8 +26,8 @@
 
 package org.nightlabs.jfire.base.prop.search;
 
-import org.nightlabs.jdo.search.SearchFilterItemList;
-import org.nightlabs.jdo.search.SearchFilterItemListMutator;
+import org.nightlabs.jdo.ui.search.SearchFilterItemList;
+import org.nightlabs.jdo.ui.search.SearchFilterItemListMutator;
 
 /**
  * Small class to change PersonSearchFilterItemLists.
@@ -45,7 +45,7 @@ public class PropertySetSearchFilterItemListMutator implements
 	}
 
 	/**
-	 * @see org.nightlabs.jdo.search.SearchFilterItemListMutator#addItemEditor(org.nightlabs.jdo.search.SearchFilterItemList)
+	 * @see org.nightlabs.jdo.ui.search.SearchFilterItemListMutator#addItemEditor(org.nightlabs.jdo.ui.search.SearchFilterItemList)
 	 */
 	public void addItemEditor(SearchFilterItemList list) {
 		list.addItemEditor(new PropertySetSearchFilterItemEditor());

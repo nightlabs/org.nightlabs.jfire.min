@@ -28,7 +28,7 @@ package org.nightlabs.jfire.base.person.search;
 
 import org.nightlabs.jdo.search.SearchFilter;
 import org.nightlabs.jdo.search.SearchFilterItem;
-import org.nightlabs.jdo.search.SearchResultFetcher;
+import org.nightlabs.jdo.ui.search.SearchResultFetcher;
 import org.nightlabs.jfire.base.prop.search.PropertySetQuickSearch;
 import org.nightlabs.jfire.person.PersonStruct;
 import org.nightlabs.jfire.prop.search.PropSearchFilter;
@@ -77,7 +77,7 @@ public class PersonStartsWithQuickSearch extends PropertySetQuickSearch {
 	 * Overrides and adds TextPersonSearchFilter for PersonalData/Name and PersonalData/Company to
 	 * begin with startWithNeedle.
 	 * 
-	 * @see org.nightlabs.jdo.search.SearchFilterProvider#getPersonSearchFilter()
+	 * @see org.nightlabs.jdo.ui.search.SearchFilterProvider#getPersonSearchFilter()
 	 */
 	public SearchFilter getSearchFilter() {
 		PropSearchFilter filter = createSearchFilter();

@@ -11,8 +11,8 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.forms.widgets.Section;
-import org.nightlabs.jdo.JDOQueryComposite;
 import org.nightlabs.jdo.query.JDOQuery;
+import org.nightlabs.jdo.ui.JDOQueryComposite;
 
 /**
  * @author Daniel.Mazurek [at] NightLabs [dot] de

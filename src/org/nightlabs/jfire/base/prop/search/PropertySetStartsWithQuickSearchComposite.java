@@ -31,7 +31,7 @@ import java.util.List;
 
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.nightlabs.jdo.search.SearchResultFetcher;
+import org.nightlabs.jdo.ui.search.SearchResultFetcher;
 import org.nightlabs.jfire.base.login.Login;
 import org.nightlabs.jfire.base.person.search.PersonStartsWithQuickSearch;
 

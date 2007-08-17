@@ -40,8 +40,8 @@ import org.eclipse.swt.widgets.Shell;
 import org.nightlabs.base.composite.XComposite;
 import org.nightlabs.base.composite.XComposite.LayoutMode;
 import org.nightlabs.jdo.NLJDOHelper;
-import org.nightlabs.jdo.search.SearchFilterProvider;
-import org.nightlabs.jdo.search.SearchResultFetcher;
+import org.nightlabs.jdo.ui.search.SearchFilterProvider;
+import org.nightlabs.jdo.ui.search.SearchResultFetcher;
 import org.nightlabs.jfire.base.login.Login;
 import org.nightlabs.jfire.person.PersonStruct;
 import org.nightlabs.jfire.prop.PropertyManager;
@@ -93,7 +93,7 @@ public class PropertySetSearchDialog extends Dialog implements SearchResultFetch
 	}
 
 	/**
-	 * @see org.nightlabs.jdo.search.SearchResultFetcher#searchTriggered(org.nightlabs.jdo.search.SearchFilterProvider, org.nightlabs.j2ee.InitialContextProvider)
+	 * @see org.nightlabs.jdo.ui.search.SearchResultFetcher#searchTriggered(org.nightlabs.jdo.ui.search.SearchFilterProvider, org.nightlabs.j2ee.InitialContextProvider)
 	 */
 	public void searchTriggered(SearchFilterProvider filterProvider) {
 		logger.debug("Search triggered, getting PersonManager");

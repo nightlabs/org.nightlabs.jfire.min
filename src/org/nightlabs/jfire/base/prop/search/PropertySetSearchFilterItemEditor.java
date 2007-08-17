@@ -46,7 +46,7 @@ import org.nightlabs.base.composite.XComposite;
 import org.nightlabs.base.composite.XComposite.LayoutMode;
 import org.nightlabs.base.job.Job;
 import org.nightlabs.jdo.search.SearchFilterItem;
-import org.nightlabs.jdo.search.SearchFilterItemEditor;
+import org.nightlabs.jdo.ui.search.SearchFilterItemEditor;
 import org.nightlabs.jfire.person.Person;
 import org.nightlabs.jfire.prop.AbstractStructField;
 import org.nightlabs.jfire.prop.StructBlock;
@@ -71,7 +71,7 @@ public class PropertySetSearchFilterItemEditor extends SearchFilterItemEditor im
 	private Combo comboSearchField;
 	
 	/**
-	 * @see org.nightlabs.jdo.search.SearchFilterItemEditor#getControl(org.eclipse.swt.widgets.Composite, int)
+	 * @see org.nightlabs.jdo.ui.search.SearchFilterItemEditor#getControl(org.eclipse.swt.widgets.Composite, int)
 	 */
 	public Control getControl(Composite parent) {
 		if (wrapper == null) {
@@ -147,7 +147,7 @@ public class PropertySetSearchFilterItemEditor extends SearchFilterItemEditor im
 	/**
 	 * Delegates to the current ProperySetSearchFilterItemEditorHelper.
 	 * 
-	 * @see org.nightlabs.jdo.search.SearchFilterItemEditor#getSearchFilterItem()
+	 * @see org.nightlabs.jdo.ui.search.SearchFilterItemEditor#getSearchFilterItem()
 	 */
 	public SearchFilterItem getSearchFilterItem() {
 		return getCurrentHelper().getSearchFilterItem();
@@ -200,7 +200,7 @@ public class PropertySetSearchFilterItemEditor extends SearchFilterItemEditor im
 	}
 
 	/**
-	 * @see org.nightlabs.jdo.search.SearchFilterItemEditor#close()
+	 * @see org.nightlabs.jdo.ui.search.SearchFilterItemEditor#close()
 	 */
 	public void close() {
 		comboSearchField.removeSelectionListener(this);

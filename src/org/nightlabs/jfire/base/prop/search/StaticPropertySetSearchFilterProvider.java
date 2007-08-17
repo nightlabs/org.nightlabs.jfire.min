@@ -39,8 +39,8 @@ import org.nightlabs.base.composite.XComposite;
 import org.nightlabs.base.composite.XComposite.LayoutMode;
 import org.nightlabs.jdo.search.SearchFilter;
 import org.nightlabs.jdo.search.SearchFilterItem;
-import org.nightlabs.jdo.search.SearchFilterProvider;
-import org.nightlabs.jdo.search.SearchResultFetcher;
+import org.nightlabs.jdo.ui.search.SearchFilterProvider;
+import org.nightlabs.jdo.ui.search.SearchResultFetcher;
 import org.nightlabs.jfire.person.PersonStruct;
 import org.nightlabs.jfire.prop.id.StructFieldID;
 import org.nightlabs.jfire.prop.search.PropSearchFilter;
@@ -80,7 +80,7 @@ public class StaticPropertySetSearchFilterProvider implements
 	}
 	
 	/**
-	 * @see org.nightlabs.jdo.search.SearchFilterProvider#getComposite(org.eclipse.swt.widgets.Composite)
+	 * @see org.nightlabs.jdo.ui.search.SearchFilterProvider#getComposite(org.eclipse.swt.widgets.Composite)
 	 */	
 	public Composite createComposite(Composite parent) {
 		wrapper = new XComposite(parent, SWT.NONE, LayoutMode.TIGHT_WRAPPER);
@@ -107,7 +107,7 @@ public class StaticPropertySetSearchFilterProvider implements
 	}
 
 	/**
-	 * @see org.nightlabs.jdo.search.SearchFilterProvider#getPersonSearchFilter()
+	 * @see org.nightlabs.jdo.ui.search.SearchFilterProvider#getPersonSearchFilter()
 	 */
 	public SearchFilter getSearchFilter() {
 		return buildPersonSearchFilter();

@@ -40,7 +40,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.nightlabs.base.notification.SelectionManager;
 import org.nightlabs.jdo.ObjectID;
-import org.nightlabs.jdo.notification.SelectionNotificationProxy;
+import org.nightlabs.jdo.ui.notification.SelectionNotificationProxy;
 import org.nightlabs.jfire.base.jdo.JDOObjectID2PCClassMap;
 import org.nightlabs.jfire.base.login.Login;
 import org.nightlabs.jfire.config.id.ConfigID;
