@@ -33,7 +33,6 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Text;
-import org.nightlabs.jdo.JdoPlugin;
 import org.nightlabs.jdo.search.SearchFilterItem;
 import org.nightlabs.jfire.prop.AbstractStructField;
 import org.nightlabs.jfire.prop.id.StructFieldID;
@@ -73,8 +72,9 @@ public class TextStructFieldSearchItemEditorHelper
 		}
 	}
 	private MatchTypeOrderEntry[] matchTypeOrder = new MatchTypeOrderEntry[6];
-	private MatchTypeOrderEntry setMatchTypeOrderEntry(int idx, int matchType, String displayName) {
-		MatchTypeOrderEntry result = new MatchTypeOrderEntry(matchType,displayName);
+	private MatchTypeOrderEntry setMatchTypeOrderEntry(int idx, int matchType) {
+		String displayName = SearchFilterItem.getLocalisedMatchType(matchType);
+		MatchTypeOrderEntry result = new MatchTypeOrderEntry(matchType, displayName);
 		matchTypeOrder[idx] = result;
 		return result;
 	}
@@ -92,12 +92,12 @@ public class TextStructFieldSearchItemEditorHelper
 			helperComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
 			
 			comboMatchType = new Combo(helperComposite,SWT.READ_ONLY);
-			comboMatchType.add(setMatchTypeOrderEntry(0,SearchFilterItem.MATCHTYPE_CONTAINS,JdoPlugin.getResourceString("search.matchType"+SearchFilterItem.MATCHTYPE_CONTAINS)).displayName);
-			comboMatchType.add(setMatchTypeOrderEntry(1,SearchFilterItem.MATCHTYPE_NOTCONTAINS,JdoPlugin.getResourceString("search.matchType"+SearchFilterItem.MATCHTYPE_NOTCONTAINS)).displayName);
-			comboMatchType.add(setMatchTypeOrderEntry(2,SearchFilterItem.MATCHTYPE_BEGINSWITH,JdoPlugin.getResourceString("search.matchType"+SearchFilterItem.MATCHTYPE_BEGINSWITH)).displayName);
-			comboMatchType.add(setMatchTypeOrderEntry(3,SearchFilterItem.MATCHTYPE_ENDSWITH,JdoPlugin.getResourceString("search.matchType"+SearchFilterItem.MATCHTYPE_ENDSWITH)).displayName);
-			comboMatchType.add(setMatchTypeOrderEntry(4,SearchFilterItem.MATCHTYPE_EQUALS,JdoPlugin.getResourceString("search.matchType"+SearchFilterItem.MATCHTYPE_EQUALS)).displayName);
-			comboMatchType.add(setMatchTypeOrderEntry(5,SearchFilterItem.MATCHTYPE_NOTEQUALS,JdoPlugin.getResourceString("search.matchType"+SearchFilterItem.MATCHTYPE_NOTEQUALS)).displayName);
+			comboMatchType.add(setMatchTypeOrderEntry(0, SearchFilterItem.MATCHTYPE_CONTAINS).displayName);
+			comboMatchType.add(setMatchTypeOrderEntry(1, SearchFilterItem.MATCHTYPE_NOTCONTAINS).displayName);
+			comboMatchType.add(setMatchTypeOrderEntry(2, SearchFilterItem.MATCHTYPE_BEGINSWITH).displayName);
+			comboMatchType.add(setMatchTypeOrderEntry(3, SearchFilterItem.MATCHTYPE_ENDSWITH).displayName);
+			comboMatchType.add(setMatchTypeOrderEntry(4, SearchFilterItem.MATCHTYPE_EQUALS).displayName);
+			comboMatchType.add(setMatchTypeOrderEntry(5, SearchFilterItem.MATCHTYPE_NOTEQUALS).displayName);
 			
 			GridData gdCombo = new GridData();
 			gdCombo.grabExcessHorizontalSpace = true;
