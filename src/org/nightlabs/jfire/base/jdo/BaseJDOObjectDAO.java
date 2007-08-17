@@ -41,6 +41,7 @@ import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jdo.ObjectID;
 import org.nightlabs.jfire.base.jdo.cache.Cache;
 import org.nightlabs.progress.ProgressMonitor;
+import org.nightlabs.progress.SubProgressMonitor;
 import org.nightlabs.util.CollectionUtil;
 
 /**
@@ -172,8 +173,8 @@ public abstract class BaseJDOObjectDAO<JDOObjectID, JDOObject>
 			monitor.done();
 			return new ArrayList<JDOObject>(0);
 		}
-		
-		monitor.beginTask("Getting "+objectIDs.size()+" Objects through Cache", objectIDs.size());
+//		objectIDs.size * 2, so that the retrieval be at least as important, as the processing 
+		monitor.beginTask("Getting "+objectIDs.size()+" Objects through Cache", objectIDs.size() * 2);
 		ArrayList<JDOObject> objects = new ArrayList<JDOObject>(objectIDs.size());
 			
 		List<JDOObjectID> listetIDs = new ArrayList<JDOObjectID>(objectIDs);
@@ -199,7 +200,8 @@ public abstract class BaseJDOObjectDAO<JDOObjectID, JDOObject>
 		// fetch all missing objects from datastore
 		Collection<JDOObject> fetchedObjects;
 		try { //                               workaround for hashset.keyset != serializable
-			fetchedObjects = retrieveJDOObjects(new HashSet<JDOObjectID>(notInCache.keySet()), fetchGroups, maxFetchDepth, monitor);
+			fetchedObjects = retrieveJDOObjects(new HashSet<JDOObjectID>(notInCache.keySet()), 
+					fetchGroups, maxFetchDepth, new SubProgressMonitor(monitor, objectIDs.size()));
 		} catch (Exception e) {
 			throw new RuntimeException("Error occured while fetching Objects from the data store!\n", e);
 		}
