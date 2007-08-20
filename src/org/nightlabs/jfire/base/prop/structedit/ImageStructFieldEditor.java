@@ -18,6 +18,7 @@ import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
 import org.nightlabs.base.composite.ListComposite;
 import org.nightlabs.base.composite.XComposite;
+import org.nightlabs.jfire.base.resource.Messages;
 import org.nightlabs.jfire.prop.ModifyListener;
 import org.nightlabs.jfire.prop.structfield.ImageStructField;
 
@@ -57,7 +58,7 @@ public class ImageStructFieldEditor extends AbstractStructFieldEditor<ImageStruc
 		if (!imageField.validateData()) {
 			setErrorMessage(imageField.getValidationError());
 		}	else {
-			setErrorMessage("");
+			setErrorMessage(""); //$NON-NLS-1$
 		}
 	}
 	
@@ -74,7 +75,7 @@ public class ImageStructFieldEditor extends AbstractStructFieldEditor<ImageStruc
 	@Override
 	public void restoreData() {
 		imageField.clearImageFormats();
-		imageField.addImageFormat("*");
+		imageField.addImageFormat("*"); //$NON-NLS-1$
 	}
 }
 
@@ -89,13 +90,13 @@ class ImageStructFieldEditorComposite extends XComposite implements Serializable
 		super(parent, SWT.NONE, LayoutMode.TIGHT_WRAPPER, LayoutDataMode.GRID_DATA, 2);
 		
 		this.editor = imageStructFieldEditor;
-		new Label(this, SWT.NONE).setText("Maximum size (KB): ");
+		new Label(this, SWT.NONE).setText(Messages.getString("org.nightlabs.jfire.base.prop.structedit.ImageStructFieldEditor.maximumSizeLabel.text")); //$NON-NLS-1$
 		sizeSpinner = new Spinner(this, getBorderStyle());
 		sizeSpinner.setMaximum(Integer.MAX_VALUE);		
 		
 		new Label(this, SWT.NONE); new Label(this, SWT.NONE); // Spacers
 		
-		new Label(this, SWT.NONE).setText("Allowed extensions: ");
+		new Label(this, SWT.NONE).setText(Messages.getString("org.nightlabs.jfire.base.prop.structedit.ImageStructFieldEditor.allowedExtensionsLabel.text")); //$NON-NLS-1$
 		XComposite extComp = new XComposite(this, SWT.NONE, LayoutMode.TIGHT_WRAPPER, LayoutDataMode.GRID_DATA, 2);
 		extComp.getGridData().horizontalSpan = 2;
 		
@@ -106,17 +107,17 @@ class ImageStructFieldEditorComposite extends XComposite implements Serializable
 		formatList.setLabelProvider(new LabelProvider() {
 			@Override
 			public String getText(Object element) {
-				return "*." + element;
+				return "*." + element; //$NON-NLS-1$
 			}
 		});
 		
 		XComposite buttonComp = new XComposite(editComp, SWT.NONE, LayoutMode.TIGHT_WRAPPER, LayoutDataMode.NONE);
 		gd.widthHint = 25;
 		final Button addButton = new Button(buttonComp, SWT.PUSH);
-		addButton.setText("+");
+		addButton.setText(Messages.getString("org.nightlabs.jfire.base.prop.structedit.ImageStructFieldEditor.addButton.text")); //$NON-NLS-1$
 		addButton.setLayoutData(gd);		
 		final Button remButton = new Button(buttonComp, SWT.PUSH);
-		remButton.setText("-");
+		remButton.setText(Messages.getString("org.nightlabs.jfire.base.prop.structedit.ImageStructFieldEditor.removeButton.text")); //$NON-NLS-1$
 		remButton.setLayoutData(gd);
 		
 		final Text newFormat = new Text(editComp, getBorderStyle());
@@ -136,7 +137,7 @@ class ImageStructFieldEditorComposite extends XComposite implements Serializable
 			public void widgetDefaultSelected(SelectionEvent e) {}
 			public void widgetSelected(SelectionEvent e) {
 				if (addExtension(newFormat.getText())) {
-					newFormat.setText("");
+					newFormat.setText(""); //$NON-NLS-1$
 					newFormat.setFocus();
 				}
 				editor.setChanged();
@@ -156,7 +157,7 @@ class ImageStructFieldEditorComposite extends XComposite implements Serializable
 		newFormat.addSelectionListener(new SelectionListener() {
 			public void widgetDefaultSelected(SelectionEvent e) {
 				if (addExtension(newFormat.getText())) {
-					newFormat.setText("");
+					newFormat.setText(""); //$NON-NLS-1$
 					newFormat.setFocus();
 				}
 			}
@@ -179,7 +180,7 @@ class ImageStructFieldEditorComposite extends XComposite implements Serializable
 	
 	protected boolean addExtension(String ext) {
 		String text = ext;
-		Matcher extMatcher = Pattern.compile("(?:\\*\\.|\\.)?([\\w\\*]+)").matcher(text);
+		Matcher extMatcher = Pattern.compile("(?:\\*\\.|\\.)?([\\w\\*]+)").matcher(text); //$NON-NLS-1$
 		if (extMatcher.matches()) {
 			text = extMatcher.group(1);
 			imageField.addImageFormat(text);

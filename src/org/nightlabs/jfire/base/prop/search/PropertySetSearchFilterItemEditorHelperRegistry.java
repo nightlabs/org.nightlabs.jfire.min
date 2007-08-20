@@ -80,7 +80,7 @@ public class PropertySetSearchFilterItemEditorHelperRegistry {
 		if (editorHelper != null)
 			return editorHelper.newInstance();
 		else
-			throw new PropertySetSearchFilterItemEditorHelperNotFoundException("Registry does not contain an entry for "+structFieldClass.getName());
+			throw new PropertySetSearchFilterItemEditorHelperNotFoundException("Registry does not contain an entry for "+structFieldClass.getName()); //$NON-NLS-1$
 	}
 	
 	

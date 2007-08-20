@@ -69,7 +69,7 @@ public class JFireSecurityConfiguration extends Configuration {
 		// TODO Reimplement LoginModule to make it indepenent of JBoss.
 		
 		List<JFireSecurityConfigurationEntry> configEntries = new ArrayList<JFireSecurityConfigurationEntry>();
-		configEntries.add(new JFireSecurityConfigurationEntry("jfire", "org.jboss.security.ClientLoginModule")); //$NON-NLS-1$
+		configEntries.add(new JFireSecurityConfigurationEntry("jfire", "org.jboss.security.ClientLoginModule")); //$NON-NLS-1$ //$NON-NLS-2$
 		
 		for (JFireSecurityConfigurationEntry confEntry : configEntries) {
 			logger.debug("Adding entry for "+confEntry.getApplicationName()+"("+confEntry.getLoginModuleName()+", "+confEntry.getControlFlag()+", "+confEntry.getOptions()+")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$

@@ -23,8 +23,8 @@ public class StructFieldFactoryRegistry extends AbstractEPProcessor {
 	 * Value: Field class name
 	 */
 	private static Map<String, String> fieldClassMap;
-	private static final String EXTENSION_POINT_ID = "org.nightlabs.jfire.base.propStructField";
-	private static final String EXTENSION_POINT_ELEMENT_NAME = "propstructfield"; // lower case for error tolerance
+	private static final String EXTENSION_POINT_ID = "org.nightlabs.jfire.base.propStructField"; //$NON-NLS-1$
+	private static final String EXTENSION_POINT_ELEMENT_NAME = "propstructfield"; // lower case for error tolerance //$NON-NLS-1$
 
 	private static final Logger logger = Logger.getLogger(StructFieldFactoryRegistry.class);
 
@@ -67,7 +67,7 @@ public class StructFieldFactoryRegistry extends AbstractEPProcessor {
 		if (editorFactory != null)
 			return editorFactory;
 		else {
-			logger.warn("No editor found for class " + fieldClass.getName() + ". Using DefaultStructFieldEditor instead.");
+			logger.warn("No editor found for class " + fieldClass.getName() + ". Using DefaultStructFieldEditor instead."); //$NON-NLS-1$ //$NON-NLS-2$
 			return new DefaultStructFieldEditor.DefaultStructFieldEditorFactory();
 			//throw new StructFieldEditorFactoryNotFoundException("No editor found for class "+fieldClass.getName());
 		}
@@ -83,17 +83,17 @@ public class StructFieldFactoryRegistry extends AbstractEPProcessor {
 		try {
 			if (element.getName().toLowerCase().equals(EXTENSION_POINT_ELEMENT_NAME)) {
 				StructFieldEditorFactory editorFactory = (StructFieldEditorFactory) element
-						.createExecutableExtension("editorFactoryClass");
-				StructFieldFactory fieldFactory = (StructFieldFactory) element.createExecutableExtension("factoryClass");
-				String structFieldClass = element.getAttribute("class");
-				String fieldName = element.getAttribute("name");
-				String description = element.getAttribute("description");
-				description = description == null ? "" : description;
+						.createExecutableExtension("editorFactoryClass"); //$NON-NLS-1$
+				StructFieldFactory fieldFactory = (StructFieldFactory) element.createExecutableExtension("factoryClass"); //$NON-NLS-1$
+				String structFieldClass = element.getAttribute("class"); //$NON-NLS-1$
+				String fieldName = element.getAttribute("name"); //$NON-NLS-1$
+				String description = element.getAttribute("description"); //$NON-NLS-1$
+				description = description == null ? "" : description; //$NON-NLS-1$
 				editorFactory.setStructFieldClass(structFieldClass);
 
 				sharedInstance().addFieldMetadata(structFieldClass, fieldFactory, editorFactory, fieldName, description);
 			} else {
-				throw new IllegalArgumentException("Element " + element.getName() + " is not supported by extension-point "
+				throw new IllegalArgumentException("Element " + element.getName() + " is not supported by extension-point " //$NON-NLS-1$ //$NON-NLS-2$
 						+ EXTENSION_POINT_ID);
 			}
 		} catch (Throwable e) {

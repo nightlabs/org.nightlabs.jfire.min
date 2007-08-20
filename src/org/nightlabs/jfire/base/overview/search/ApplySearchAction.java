@@ -4,6 +4,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.nightlabs.base.action.WorkbenchPartAction;
 import org.nightlabs.base.resource.SharedImages;
 import org.nightlabs.jfire.base.overview.OverviewEntryEditor;
+import org.nightlabs.jfire.base.resource.Messages;
 
 /**
  * @author Daniel.Mazurek [at] NightLabs [dot] de
@@ -29,7 +30,7 @@ extends WorkbenchPartAction
 
 	protected void init() {
 		setId(ID);
-		setText("Apply Search");
+		setText(Messages.getString("org.nightlabs.jfire.base.overview.search.ApplySearchAction.text")); //$NON-NLS-1$
 		setImageDescriptor(SharedImages.SEARCH_24x24);		
 	}
 	

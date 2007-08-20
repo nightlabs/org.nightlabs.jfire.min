@@ -55,7 +55,7 @@ public class PropertySetResultTableContentProvider implements IStructuredContent
 			return result;
 		} 
 		else
-			throw new IllegalArgumentException("InputElement should be a collection but is "+inputElement.getClass().getName());
+			throw new IllegalArgumentException("InputElement should be a collection but is "+inputElement.getClass().getName()); //$NON-NLS-1$
 		
 	}
 

@@ -12,6 +12,7 @@ import org.nightlabs.base.job.Job;
 import org.nightlabs.base.table.AbstractTableComposite;
 import org.nightlabs.jdo.query.JDOQuery;
 import org.nightlabs.jfire.base.overview.Entry;
+import org.nightlabs.jfire.base.resource.Messages;
 import org.nightlabs.progress.ProgressMonitor;
 
 /**
@@ -30,8 +31,8 @@ extends SearchEntryViewer
 	{
 		if (getFilterComposite() != null && getListComposite() != null) 
 		{
-			getListComposite().getTableViewer().setInput(new String[] {"Loading!"});
-			new Job("Loading"){			
+			getListComposite().getTableViewer().setInput(new String[] {Messages.getString("org.nightlabs.jfire.base.overview.search.BaseSearchEntryViewer.applySearch.listComposite_loading")}); //$NON-NLS-1$
+			new Job(Messages.getString("org.nightlabs.jfire.base.overview.search.BaseSearchEntryViewer.job.name")){			 //$NON-NLS-1$
 				@Override
 				protected IStatus run(ProgressMonitor monitor) 
 				{	

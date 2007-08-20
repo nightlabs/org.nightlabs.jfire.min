@@ -4,7 +4,7 @@ import java.util.Locale;
 
 import org.nightlabs.i18n.I18nText;
 import org.nightlabs.jfire.prop.StructField;
-import org.nightlabs.util.Utils;
+import org.nightlabs.util.Util;
 
 public class StructFieldNode extends TreeNode //implements Comparable<StructFieldNode>
 {
@@ -21,7 +21,7 @@ public class StructFieldNode extends TreeNode //implements Comparable<StructFiel
 	public StructFieldNode(StructField field, StructBlockNode parent)
 	{
 		if (field == null)
-			throw new IllegalArgumentException("field must not be null!");
+			throw new IllegalArgumentException("field must not be null!"); //$NON-NLS-1$
 		
 		this.field = field;
 		this.parentBlock = parent;		
@@ -77,12 +77,12 @@ public class StructFieldNode extends TreeNode //implements Comparable<StructFiel
 	public boolean equals(Object obj) {
 		if (obj == this) return true;
 		if (!(obj instanceof StructFieldNode)) return false;
-		
-		return field.equals(((StructFieldNode)obj).field);
+
+		return Util.equals(field, ((StructFieldNode)obj).field);
 	}
 	
 	@Override
 	public int hashCode() {
-		return Utils.hashCode(field);
+		return Util.hashCode(field);
 	}
 }

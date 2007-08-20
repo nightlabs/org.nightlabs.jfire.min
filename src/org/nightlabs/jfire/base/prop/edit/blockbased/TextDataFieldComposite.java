@@ -57,7 +57,7 @@ public class TextDataFieldComposite extends AbstractDataFieldComposite {
 	public TextDataFieldComposite(TextDataFieldEditor editor, Composite parent, int style, ModifyListener modListener) {
 		super(parent, style);
 		if (!(parent.getLayout() instanceof GridLayout))
-			throw new IllegalArgumentException("Parent should have a GridLayout!");
+			throw new IllegalArgumentException("Parent should have a GridLayout!"); //$NON-NLS-1$
 		
 		this.editor = editor; 
 		
@@ -101,7 +101,7 @@ public class TextDataFieldComposite extends AbstractDataFieldComposite {
 		
 		fieldName.setText(field.getName().getText());
 		if (editor.getDataField().getText() == null)
-			fieldText.setText("");
+			fieldText.setText(""); //$NON-NLS-1$
 		else
 			fieldText.setText(editor.getDataField().getText());
 		

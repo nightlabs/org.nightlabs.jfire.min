@@ -32,7 +32,7 @@ public class StructFieldMetaData
 
 	public String getFieldName()
 	{
-		if (fieldName == null || fieldName == "")
+		if (fieldName == null || fieldName == "") //$NON-NLS-1$
 			return editorFactory.getStructFieldClass();
 		else
 			return fieldName;

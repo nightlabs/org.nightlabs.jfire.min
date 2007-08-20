@@ -238,7 +238,7 @@ public class PersonStructOrderConfigModule extends ConfigModule {
 			try {
 				sharedInstance = ((PersonStructOrderConfigModule)Config.sharedInstance().createConfigModule(PersonStructOrderConfigModule.class));
 			} catch (ConfigException e) {
-				IllegalStateException ill = new IllegalStateException("Error creating ConfigModule");
+				IllegalStateException ill = new IllegalStateException("Error creating ConfigModule"); //$NON-NLS-1$
 				ill.initCause(e);
 				throw ill;
 			}

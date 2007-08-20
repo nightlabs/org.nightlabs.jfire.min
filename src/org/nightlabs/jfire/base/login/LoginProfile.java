@@ -2,7 +2,7 @@ package org.nightlabs.jfire.base.login;
 
 import java.io.Serializable;
 
-import org.eclipse.jface.viewers.TreeViewer;
+import org.nightlabs.util.Util;
 
 public class LoginProfile implements Serializable {
 	
@@ -55,7 +55,7 @@ public class LoginProfile implements Serializable {
 	}
 	
 	public String getLabel() {
-		return username + ":" + organisationID + "@" + workstationID;
+		return username + "@" + organisationID + " (" + workstationID + ")"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 	}
 
 	/* (non-Javadoc)
@@ -84,32 +84,12 @@ public class LoginProfile implements Serializable {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		final LoginProfile other = (LoginProfile) obj;
-		if (initialContextFactory == null) {
-			if (other.initialContextFactory != null)
-				return false;
-		} else if (!initialContextFactory.equals(other.initialContextFactory))
-			return false;
-		if (organisationID == null) {
-			if (other.organisationID != null)
-				return false;
-		} else if (!organisationID.equals(other.organisationID))
-			return false;
-		if (serverURL == null) {
-			if (other.serverURL != null)
-				return false;
-		} else if (!serverURL.equals(other.serverURL))
-			return false;
-		if (username == null) {
-			if (other.username != null)
-				return false;
-		} else if (!username.equals(other.username))
-			return false;
-		if (workstationID == null) {
-			if (other.workstationID != null)
-				return false;
-		} else if (!workstationID.equals(other.workstationID))
-			return false;
-		return true;
+		final LoginProfile o = (LoginProfile) obj;
+		return
+				Util.equals(o.initialContextFactory, this.initialContextFactory) &&
+				Util.equals(o.organisationID, this.organisationID) &&
+				Util.equals(o.serverURL, this.serverURL) &&
+				Util.equals(o.username, this.username) &&
+				Util.equals(o.workstationID, this.workstationID);
 	}
 }

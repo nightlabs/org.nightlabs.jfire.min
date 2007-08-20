@@ -93,17 +93,17 @@ class PhoneNumberDataFieldEditorComposite extends XComposite {
 		
 		XComposite.setLayoutDataMode(LayoutDataMode.GRID_DATA_HORIZONTAL, compGroup);
 		
-		new Label(compGroup, SWT.NONE).setText("+ ");
+		new Label(compGroup, SWT.NONE).setText("+ "); //$NON-NLS-1$
 		countryCodeTextBox = new Text(compGroup, getBorderStyle());
 		GridData gd = new GridData();
 		gd.widthHint = 30;
 		countryCodeTextBox.setLayoutData(gd);
 		gd = new GridData();
 		gd.widthHint = 60;
-		new Label(compGroup, SWT.NONE).setText(" - ");
+		new Label(compGroup, SWT.NONE).setText(" - "); //$NON-NLS-1$
 		areaCodeTextBox = new Text(compGroup, getBorderStyle());
 		areaCodeTextBox.setLayoutData(gd);
-		new Label(compGroup, SWT.NONE).setText(" - ");
+		new Label(compGroup, SWT.NONE).setText(" - "); //$NON-NLS-1$
 		localNumberTextBox = new Text(compGroup, getBorderStyle());
 		//XComposite.setLayoutDataMode(LayoutDataMode.GRID_DATA_HORIZONTAL, areaCodeTextBox);
 		XComposite.setLayoutDataMode(LayoutDataMode.GRID_DATA_HORIZONTAL, localNumberTextBox);

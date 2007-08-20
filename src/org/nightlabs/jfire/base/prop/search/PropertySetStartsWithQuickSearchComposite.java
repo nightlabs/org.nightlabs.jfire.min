@@ -34,6 +34,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.nightlabs.jdo.ui.search.SearchResultFetcher;
 import org.nightlabs.jfire.base.login.Login;
 import org.nightlabs.jfire.base.person.search.PersonStartsWithQuickSearch;
+import org.nightlabs.util.IOUtil;
 
 /**
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
@@ -59,10 +60,10 @@ public class PropertySetStartsWithQuickSearchComposite extends Composite {
 			layout.marginHeight = 0;
 			layout.marginWidth = 0;
 			setLayout(layout);
-			quickSearches = new LinkedList<PersonStartsWithQuickSearch>();
+			quickSearches = new LinkedList<PersonStartsWithQuickSearch>(); // TODO why is this "Person*"? Shouldn't it be "PropertySet*"? 
 			for (int i=97; i<=122; i++) {
 				String ch;
-				ch = new String(new byte[]{(byte)i}, "UTF8");
+				ch = new String(new byte[]{(byte)i}, IOUtil.CHARSET_NAME_UTF_8);
 				
 				PersonStartsWithQuickSearch pswqs = createQuickSearch(resultFetcher, ch); 				
 				pswqs.createComposite(this);

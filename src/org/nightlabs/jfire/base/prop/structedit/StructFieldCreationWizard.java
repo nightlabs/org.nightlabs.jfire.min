@@ -16,6 +16,7 @@ import org.eclipse.swt.widgets.Label;
 import org.nightlabs.base.composite.ListComposite;
 import org.nightlabs.base.wizard.DynamicPathWizard;
 import org.nightlabs.base.wizard.DynamicPathWizardPage;
+import org.nightlabs.jfire.base.resource.Messages;
 
 public class StructFieldCreationWizard extends DynamicPathWizard {
 	private static class StructFieldTypePage extends DynamicPathWizardPage {
@@ -24,7 +25,7 @@ public class StructFieldCreationWizard extends DynamicPathWizard {
 		private Label description;
 
 		public StructFieldTypePage() {
-			super("StructFieldTypePage", "Select the type of the struct field!");
+			super(StructFieldTypePage.class.getName(), Messages.getString("org.nightlabs.jfire.base.prop.structedit.StructFieldCreationWizard.StructFieldTypePage.title")); //$NON-NLS-1$
 			fieldCreationWizardPages = new HashMap<StructFieldMetaData, DynamicPathWizardPage>();
 		}
 
@@ -36,7 +37,7 @@ public class StructFieldCreationWizard extends DynamicPathWizard {
 		public Control createPageContents(Composite parent) {
 			Composite comp = new Composite(parent, SWT.NONE);
 			comp.setLayout(new GridLayout(1, false));
-			new Label(comp, SWT.NONE).setText("Available struct fields:");
+			new Label(comp, SWT.NONE).setText(Messages.getString("org.nightlabs.jfire.base.prop.structedit.StructFieldCreationWizard.StructFieldTypePage.availableTypesLabel.text")); //$NON-NLS-1$
 			Collection<StructFieldMetaData> fields = StructFieldFactoryRegistry.sharedInstance().getFieldMetaDataMap()
 					.values();
 			fieldList = new ListComposite<StructFieldMetaData>(comp, SWT.NONE);

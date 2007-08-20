@@ -269,7 +269,7 @@ public class LoginDialog extends TitleAreaDialog
 		textServerURL.setText(loginConfiguration.getServerURL());
 		textInitialContextFactory.setText(loginConfiguration.getInitialContextFactory());
 		textWorkstationID.setText(loginConfiguration.getWorkstationID());
-		textPassword.setText("");
+		textPassword.setText(""); //$NON-NLS-1$
 		if (runtimeLoginModule.getLatestLoginConfiguration() != loginConfiguration) {
 			textIdentityName.setText(loginConfiguration.getName());
 			deleteButton.setEnabled(true);

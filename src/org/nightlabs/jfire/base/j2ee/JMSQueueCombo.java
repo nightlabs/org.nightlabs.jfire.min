@@ -12,25 +12,20 @@ import org.eclipse.swt.widgets.Display;
 import org.nightlabs.base.composite.XComboComposite;
 import org.nightlabs.base.job.Job;
 import org.nightlabs.jfire.base.login.Login;
+import org.nightlabs.jfire.base.resource.Messages;
 import org.nightlabs.jfire.j2ee.monitor.J2EEServerMonitorManager;
 import org.nightlabs.jfire.j2ee.monitor.J2EEServerMonitorManagerUtil;
 import org.nightlabs.progress.ProgressMonitor;
 
 /**
  * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] de -->
- *
  */
-public class JMSQeuesCombo extends XComboComposite<String> {
+public class JMSQueueCombo extends XComboComposite<String> {
 
-	/**
-	 * @param types
-	 * @param parent
-	 * @param comboStyle
-	 * @param caption
-	 */
-	public JMSQeuesCombo(Composite parent, int comboStyle, String caption) {
+	public JMSQueueCombo(Composite parent, int comboStyle, String caption) {
 		super(parent, comboStyle, caption);
-		Job loadJob = new Job("Loading queues") {
+		Job loadJob = new Job(Messages.getString("org.nightlabs.jfire.base.j2ee.JMSQueueCombo.loadJob.name")) { //$NON-NLS-1$
+			@SuppressWarnings("unchecked") //$NON-NLS-1$
 			@Override
 			protected IStatus run(ProgressMonitor monitor) throws Exception {
 				Login login = Login.getLogin();

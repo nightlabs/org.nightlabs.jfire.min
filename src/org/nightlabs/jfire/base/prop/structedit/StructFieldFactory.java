@@ -24,11 +24,9 @@ public interface StructFieldFactory extends IExecutableExtension
 	 * no additional information for this struct field is needed to create it.
 	 *  
 	 * @param block The {@link StructBlock} in which this struct field should be created.
-	 * @param organisationID The ID of the organisation that creates the struct field.
-	 * @param fieldID The ID of the struct field to be created. Must be unique!
 	 * @param wizardPage A {@link WizardPage} that serves to acquire additional information for the creation of
 	 * 				the struct field.	 * 
 	 * @return The {@link AbstractStructField} that has just been created.
 	 */
-	public AbstractStructField createStructField(StructBlock block, String organisationID, String fieldID, WizardPage wizardPage);
+	public AbstractStructField createStructField(StructBlock block, WizardPage wizardPage);
 }

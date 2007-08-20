@@ -32,7 +32,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusAdapter;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
-import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
@@ -139,7 +138,7 @@ public class DisguisedTextDataFieldEditor extends AbstractDataFieldEditor<TextDa
 			if (editorText != null)
 				this.editorText.setText(editorText);
 			else
-				this.editorText.setText("");
+				this.editorText.setText(""); //$NON-NLS-1$
 		}
 		
 		public void dispose() {

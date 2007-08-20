@@ -37,10 +37,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
-
 import org.nightlabs.base.layout.WeightedTableLayout;
 import org.nightlabs.base.table.AbstractTableComposite;
-import org.nightlabs.jfire.base.JFireBasePlugin;
 import org.nightlabs.jfire.person.Person;
 
 /**
@@ -85,10 +83,11 @@ public class PropertySetSearchResultTable extends AbstractTableComposite {
 	}
 
 	protected void createTableColumns(TableViewer tableViewer, Table table) {
-		new TableColumn(table, SWT.LEFT, 0).setText(JFireBasePlugin.getResourceString("person.search.result.table.col0"));
-		new TableColumn(table, SWT.LEFT, 0).setText(JFireBasePlugin.getResourceString("person.search.result.table.col0"));
-		new TableColumn(table, SWT.LEFT, 0).setText(JFireBasePlugin.getResourceString("person.search.result.table.col0"));
-		new TableColumn(table, SWT.LEFT, 0).setText(JFireBasePlugin.getResourceString("person.search.result.table.col0"));
+		// TODO what is this?! Incomplete?! The LabelProvider seems not to use 4 columns!
+		new TableColumn(table, SWT.LEFT).setText("TODO Col 0"); //$NON-NLS-1$
+		new TableColumn(table, SWT.LEFT).setText("TODO Col 1"); //$NON-NLS-1$
+		new TableColumn(table, SWT.LEFT).setText("TODO Col 2"); //$NON-NLS-1$
+		new TableColumn(table, SWT.LEFT).setText("TODO Col 3"); //$NON-NLS-1$
 		table.setLayout(new WeightedTableLayout(new int[] {1,1,1,1}));
 	}
 
@@ -100,7 +99,7 @@ public class PropertySetSearchResultTable extends AbstractTableComposite {
 	public PropertySetResultTableContentProvider getContentProvider() {
 		IContentProvider contentProvider = getTableViewer().getContentProvider();
 		if (!(contentProvider instanceof PropertySetResultTableContentProvider))
-			throw new IllegalStateException("This PersonSearchTable's contentProvider is an instance of "+contentProvider.getClass().getName()+" instead of PropertySetResultTableContentProvider.");
+			throw new IllegalStateException("This PersonSearchTable's contentProvider is an instance of "+contentProvider.getClass().getName()+" instead of PropertySetResultTableContentProvider."); //$NON-NLS-1$ //$NON-NLS-2$
 		return (PropertySetResultTableContentProvider)contentProvider;
 	}
 

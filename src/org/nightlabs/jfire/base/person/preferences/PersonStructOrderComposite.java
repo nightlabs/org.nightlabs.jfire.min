@@ -48,34 +48,28 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
-
-import org.nightlabs.jfire.base.JFireBasePlugin;
-
-
+import org.nightlabs.jfire.base.resource.Messages;
 
 /**
- * 
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  */
 public class PersonStructOrderComposite extends Composite {
 	private Composite titleComposite;
-	private Label labelTitle;
-	private Group groupStructBlocks;
-	private Button buttonFieldDown;
-	private Button buttonFieldUp;
+	private Label titleLabel;
+	private Group structBlocksGroup;
+	private Button fieldDownButton;
+	private Button fieldUpButton;
 	private Composite fieldsTableComposite;
 	private Composite fieldsButtonsComposite;
-	private Button buttonBlockDown;
-	private Button buttonBlockUp;
+	private Button blockDownButton;
+	private Button blockUpButton;
 	private Composite blocksButtonsComposite;
 	private Composite blocksTableComposite;
-	private Group groupStructFields;
-	
-	
-	private TableViewer tableViewerBlocks;
-	private TableViewer tableViewerFields;
-	
-	
+	private Group structFieldsGroup;
+
+	private TableViewer blocksTableViewer;
+	private TableViewer fieldsTableViewer;
+
 	public static void showGUI() {
 		Display display = Display.getDefault();
 		Shell shell = new Shell(display);
@@ -125,10 +119,10 @@ public class PersonStructOrderComposite extends Composite {
 		titleComposite.setLayoutData(titleCompositeLData);
 		titleComposite.setLayout(titleCompositeLayout);
 		
-		labelTitle = new Label(titleComposite, SWT.NONE | SWT.WRAP);
-		labelTitle.setText("Define the display order of the person structure");
+		titleLabel = new Label(titleComposite, SWT.NONE | SWT.WRAP);
+		titleLabel.setText(Messages.getString("org.nightlabs.jfire.base.person.preferences.PersonStructOrderComposite.titleLabel.text")); //$NON-NLS-1$
 		
-		groupStructBlocks = new Group(this, SWT.NONE);
+		structBlocksGroup = new Group(this, SWT.NONE);
 		GridLayout groupStructBlocksLayout = new GridLayout();
 		groupStructBlocksLayout.numColumns = 2;
 		groupStructBlocksLayout.horizontalSpacing = 0;
@@ -139,11 +133,11 @@ public class PersonStructOrderComposite extends Composite {
 		groupStructBlocksLData.grabExcessVerticalSpace = true;
 		groupStructBlocksLData.verticalAlignment = GridData.FILL;
 		groupStructBlocksLData.horizontalAlignment = GridData.FILL;
-		groupStructBlocks.setLayoutData(groupStructBlocksLData);
-		groupStructBlocks.setLayout(groupStructBlocksLayout);
-		groupStructBlocks.setText("struct blocks");
+		structBlocksGroup.setLayoutData(groupStructBlocksLData);
+		structBlocksGroup.setLayout(groupStructBlocksLayout);
+		structBlocksGroup.setText(Messages.getString("org.nightlabs.jfire.base.person.preferences.PersonStructOrderComposite.structBlocksGroup.text")); //$NON-NLS-1$
 		
-		blocksTableComposite = new Composite(groupStructBlocks, SWT.NONE);
+		blocksTableComposite = new Composite(structBlocksGroup, SWT.NONE);
 		GridLayout blocksTableCompositeLayout = new GridLayout();
 		GridData blocksTableCompositeLData = new GridData();
 		blocksTableCompositeLData.grabExcessVerticalSpace = true;
@@ -154,7 +148,7 @@ public class PersonStructOrderComposite extends Composite {
 		blocksTableCompositeLayout.makeColumnsEqualWidth = true;
 		blocksTableComposite.setLayout(blocksTableCompositeLayout);
 		
-		blocksButtonsComposite = new Composite(groupStructBlocks, SWT.NONE);
+		blocksButtonsComposite = new Composite(structBlocksGroup, SWT.NONE);
 		GridLayout blocksButtonsCompositeLayout = new GridLayout();
 		GridData blocksButtonsCompositeLData = new GridData();
 		blocksButtonsCompositeLData.grabExcessVerticalSpace = true;
@@ -170,13 +164,13 @@ public class PersonStructOrderComposite extends Composite {
 		blocksButtonsCompositeLayout.marginWidth = 0;
 		blocksButtonsCompositeLayout.marginHeight = 0;
 		
-		buttonBlockUp = new Button(blocksButtonsComposite, SWT.PUSH);
-		buttonBlockUp.setText("Up");
+		blockUpButton = new Button(blocksButtonsComposite, SWT.PUSH);
+		blockUpButton.setText(Messages.getString("org.nightlabs.jfire.base.person.preferences.PersonStructOrderComposite.blockUpButton.text")); //$NON-NLS-1$
 		GridData buttonLData = new GridData(GridData.FILL_HORIZONTAL);
 		buttonLData.horizontalIndent = 0;
 		buttonLData.horizontalIndent = 0;
-		buttonBlockUp.setLayoutData(buttonLData);
-		buttonBlockUp.addSelectionListener(new SelectionListener() {
+		blockUpButton.setLayoutData(buttonLData);
+		blockUpButton.addSelectionListener(new SelectionListener() {
 
 			public void widgetSelected(SelectionEvent evt) {
 				buttonUpPressed(evt);
@@ -186,13 +180,13 @@ public class PersonStructOrderComposite extends Composite {
 			}
 		});
 		
-		buttonBlockDown = new Button(blocksButtonsComposite, SWT.PUSH);
-		buttonBlockDown.setText("Down");
+		blockDownButton = new Button(blocksButtonsComposite, SWT.PUSH);
+		blockDownButton.setText(Messages.getString("org.nightlabs.jfire.base.person.preferences.PersonStructOrderComposite.blockDownButton.text")); //$NON-NLS-1$
 		buttonLData = new GridData(GridData.FILL_HORIZONTAL);
 		buttonLData.horizontalIndent = 0;
 		buttonLData.horizontalIndent = 0;
-		buttonBlockDown.setLayoutData(buttonLData);
-		buttonBlockDown.addSelectionListener(new SelectionListener() {
+		blockDownButton.setLayoutData(buttonLData);
+		blockDownButton.addSelectionListener(new SelectionListener() {
 
 			public void widgetSelected(SelectionEvent evt) {
 				buttonDownPressed(evt);
@@ -203,7 +197,7 @@ public class PersonStructOrderComposite extends Composite {
 		});
 
 		
-		groupStructFields = new Group(this, SWT.NONE);
+		structFieldsGroup = new Group(this, SWT.NONE);
 		GridLayout groupStructFieldsLayout = new GridLayout();
 		groupStructFieldsLayout.numColumns = 2;
 		groupStructFieldsLayout.horizontalSpacing = 0;
@@ -215,11 +209,11 @@ public class PersonStructOrderComposite extends Composite {
 		groupStructFieldsLData.horizontalAlignment = GridData.FILL;
 		groupStructFieldsLData.grabExcessVerticalSpace = true;
 		groupStructFieldsLData.verticalAlignment = GridData.FILL;
-		groupStructFields.setLayoutData(groupStructFieldsLData);
-		groupStructFields.setLayout(groupStructFieldsLayout);
-		groupStructFields.setText("struct fields");
+		structFieldsGroup.setLayoutData(groupStructFieldsLData);
+		structFieldsGroup.setLayout(groupStructFieldsLayout);
+		structFieldsGroup.setText(Messages.getString("org.nightlabs.jfire.base.person.preferences.PersonStructOrderComposite.structFieldsGroup.text")); //$NON-NLS-1$
 		
-		fieldsTableComposite = new Composite(groupStructFields, SWT.NONE);
+		fieldsTableComposite = new Composite(structFieldsGroup, SWT.NONE);
 		GridLayout fieldsTableCompositeLayout = new GridLayout();
 		GridData fieldsTableCompositeLData = new GridData();
 		fieldsTableCompositeLData.grabExcessVerticalSpace = true;
@@ -230,7 +224,7 @@ public class PersonStructOrderComposite extends Composite {
 		fieldsTableCompositeLayout.makeColumnsEqualWidth = true;
 		fieldsTableComposite.setLayout(fieldsTableCompositeLayout);
 		
-		fieldsButtonsComposite = new Composite(groupStructFields, SWT.NONE);
+		fieldsButtonsComposite = new Composite(structFieldsGroup, SWT.NONE);
 		GridLayout fieldsButtonsCompositeLayout = new GridLayout();
 		GridData fieldsButtonsCompositeLData = new GridData();
 		fieldsButtonsCompositeLData.verticalAlignment = GridData.FILL;
@@ -240,79 +234,79 @@ public class PersonStructOrderComposite extends Composite {
 		fieldsButtonsCompositeLayout.makeColumnsEqualWidth = true;
 		fieldsButtonsComposite.setLayout(fieldsButtonsCompositeLayout);
 		
-		buttonFieldUp = new Button(fieldsButtonsComposite, SWT.PUSH);
-		buttonFieldUp.setText("Up");
+		fieldUpButton = new Button(fieldsButtonsComposite, SWT.PUSH);
+		fieldUpButton.setText(Messages.getString("org.nightlabs.jfire.base.person.preferences.PersonStructOrderComposite.fieldUpButton.text")); //$NON-NLS-1$
 		buttonLData = new GridData(GridData.FILL_HORIZONTAL);
 		buttonLData.horizontalIndent = 0;
 		buttonLData.horizontalIndent = 0;
-		buttonFieldUp.setLayoutData(buttonLData);
+		fieldUpButton.setLayoutData(buttonLData);
 		
-		buttonFieldDown = new Button(fieldsButtonsComposite, SWT.PUSH);
-		buttonFieldDown.setText("Down");
+		fieldDownButton = new Button(fieldsButtonsComposite, SWT.PUSH);
+		fieldDownButton.setText(Messages.getString("org.nightlabs.jfire.base.person.preferences.PersonStructOrderComposite.fieldDownButton.text")); //$NON-NLS-1$
 		buttonLData = new GridData(GridData.FILL_HORIZONTAL);
 		buttonLData.horizontalIndent = 0;
 		buttonLData.horizontalIndent = 0;
-		buttonFieldDown.setLayoutData(buttonLData);
+		fieldDownButton.setLayoutData(buttonLData);
 		
 		// Blocks table
-		tableViewerBlocks = new TableViewer(blocksTableComposite, SWT.BORDER | SWT.H_SCROLL | SWT.FULL_SELECTION | SWT.MULTI);    
+		blocksTableViewer = new TableViewer(blocksTableComposite, SWT.BORDER | SWT.H_SCROLL | SWT.FULL_SELECTION | SWT.MULTI);    
 		GridData tgd = new GridData(GridData.FILL_BOTH);    
-		Table t = tableViewerBlocks.getTable(); 
+		Table t = blocksTableViewer.getTable(); 
 		t.setHeaderVisible(true);
 		t.setLinesVisible(true);
 		t.setLayoutData(tgd);
 		t.setLayout(new TableLayout());    
-		tableViewerBlocks.setContentProvider(new BlockOrderListContentProvider());
-		tableViewerBlocks.setLabelProvider(new BlockOrderListLabelProvider());
-		new TableColumn(t, SWT.LEFT, 0).setText(JFireBasePlugin.getResourceString("person.preferences.pages.PersonStructOrder.blockstable.col0"));
-		tableViewerBlocks.setInput(
+		blocksTableViewer.setContentProvider(new BlockOrderListContentProvider());
+		blocksTableViewer.setLabelProvider(new BlockOrderListLabelProvider());
+		new TableColumn(t, SWT.LEFT, 0).setText(Messages.getString("org.nightlabs.jfire.base.person.preferences.PersonStructOrderComposite.blockTableColumn.text")); //$NON-NLS-1$
+		blocksTableViewer.setInput(
 				PersonStructOrderConfigModule.sharedInstance()
 				.structBlockDisplayOrder()
 		);
 		
 		
 		// Fields table
-		tableViewerFields = new TableViewer(fieldsTableComposite, SWT.BORDER | SWT.H_SCROLL | SWT.FULL_SELECTION | SWT.MULTI);
+		fieldsTableViewer = new TableViewer(fieldsTableComposite, SWT.BORDER | SWT.H_SCROLL | SWT.FULL_SELECTION | SWT.MULTI);
 		tgd = new GridData(GridData.FILL_BOTH);    
-		t = tableViewerFields.getTable(); 
+		t = fieldsTableViewer.getTable(); 
 		t.setHeaderVisible(true);
 		t.setLinesVisible(true);
 		t.setLayoutData(tgd);
 		t.setLayout(new TableLayout());    
-		new TableColumn(t, SWT.LEFT, 0).setText(JFireBasePlugin.getResourceString("person.preferences.pages.PersonStructOrder.fieldstable.col0"));
+		new TableColumn(t, SWT.LEFT, 0).setText(Messages.getString("org.nightlabs.jfire.base.person.preferences.PersonStructOrderComposite.fieldTableColumn.text")); //$NON-NLS-1$
 		
 		this.layout();
 	}
 	
 	
 	protected void buttonUpPressed(SelectionEvent evt) {
-		if (evt.getSource().equals(buttonBlockUp)) {
-			tableViewerBlocks.getElementAt(0);
-			IStructuredSelection selection = (IStructuredSelection)tableViewerBlocks.getSelection();
+		if (evt.getSource().equals(blockUpButton)) {
+			blocksTableViewer.getElementAt(0);
+			IStructuredSelection selection = (IStructuredSelection)blocksTableViewer.getSelection();
 			if (!selection.isEmpty()) {
 				Map.Entry entry = (Map.Entry)selection.getFirstElement();
 				int priority = ((Integer)entry.getValue()).intValue();
-	//			tableViewerBlocks.getSelection();
-				((BlockOrderListContentProvider)tableViewerBlocks.getContentProvider()).moveUp(priority);
-				tableViewerBlocks.refresh();
-	//			tableViewerBlocks.getContentProvider().
-	//			tableViewerBlocks.
+	//			blocksTableViewer.getSelection();
+				((BlockOrderListContentProvider)blocksTableViewer.getContentProvider()).moveUp(priority);
+				blocksTableViewer.refresh();
+	//			blocksTableViewer.getContentProvider().
+	//			blocksTableViewer.
 			}
 		}
 	}
 	
 	protected void buttonDownPressed(SelectionEvent evt) {
-		if (evt.getSource().equals(buttonBlockDown)) {
-			tableViewerBlocks.getElementAt(0);
-			IStructuredSelection selection = (IStructuredSelection)tableViewerBlocks.getSelection();
+		if (evt.getSource().equals(blockDownButton)) {
+			blocksTableViewer.getElementAt(0);
+			IStructuredSelection selection = (IStructuredSelection)blocksTableViewer.getSelection();
 			if (!selection.isEmpty()) {
 				Map.Entry entry = (Map.Entry)selection.getFirstElement();
 				int priority = ((Integer)entry.getValue()).intValue();
-	//			tableViewerBlocks.getSelection();
-				((BlockOrderListContentProvider)tableViewerBlocks.getContentProvider()).moveDown(priority);
-				tableViewerBlocks.refresh();
-	//			tableViewerBlocks.getContentProvider().
-	//			tableViewerBlocks.
+	//			blocksTableViewer.getSelection();
+				((BlockOrderListContentProvider)blocksTableViewer.getContentProvider()).moveDown(priority);
+				blocksTableViewer.refresh();
+	//			blocksTableViewer.getContentProvider().
+	//			blocksTableViewer.
 			}
 		}
 	}
@@ -321,6 +315,6 @@ public class PersonStructOrderComposite extends Composite {
 	 * 
 	 */
 	public Map getStructBlockOrder() {
-		return ((BlockOrderListContentProvider)tableViewerBlocks.getContentProvider()).getStructBlockOrder();
+		return ((BlockOrderListContentProvider)blocksTableViewer.getContentProvider()).getStructBlockOrder();
 	}
 }

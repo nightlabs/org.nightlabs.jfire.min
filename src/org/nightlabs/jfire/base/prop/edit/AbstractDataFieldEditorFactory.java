@@ -63,7 +63,7 @@ public abstract class AbstractDataFieldEditorFactory<F extends AbstractDataField
 		try {
 			editor = getDataFieldEditorClass().newInstance();
 		} catch (Throwable t) {
-			IllegalStateException ill = new IllegalStateException("Error instantiating "+getDataFieldEditorClass().getName());
+			IllegalStateException ill = new IllegalStateException("Error instantiating "+getDataFieldEditorClass().getName()); //$NON-NLS-1$
 			ill.initCause(t);
 			throw ill;
 		}

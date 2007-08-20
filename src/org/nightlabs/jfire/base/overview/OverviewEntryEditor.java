@@ -112,11 +112,11 @@ extends LSDEditorPart
 					XEditorActionBarContributor xEditorActionBarContributor = (XEditorActionBarContributor) actionBarContributor;
 
 					if (xEditorActionBarContributor.getActionRegistry() == null)
-						logger.warn("updateContextMenu: xEditorActionBarContributor.getActionRegistry() returned null!");
+						logger.warn("updateContextMenu: xEditorActionBarContributor.getActionRegistry() returned null!"); //$NON-NLS-1$
 					else {
 						xEditorActionBarContributor.getActionRegistry().contributeToContextMenu(menuManager);
 						if (logger.isDebugEnabled())
-							logger.debug("updateContextMenu, Number of entries = "+menuManager.getItems().length+", actionBarContributor = "+actionBarContributor);
+							logger.debug("updateContextMenu, Number of entries = "+menuManager.getItems().length+", actionBarContributor = "+actionBarContributor); //$NON-NLS-1$ //$NON-NLS-2$
 					}
 				} else {
 					actionBarContributor.contributeToMenu(menuManager);
@@ -135,7 +135,7 @@ extends LSDEditorPart
 				menuManager.removeAll();
 				menuManager.updateAll(true);
 				if (logger.isDebugEnabled())
-					logger.debug("removeContextMenu, Number of entries = "+menuManager.getItems().length+", actionBarContributor = "+actionBarContributor);
+					logger.debug("removeContextMenu, Number of entries = "+menuManager.getItems().length+", actionBarContributor = "+actionBarContributor); //$NON-NLS-1$ //$NON-NLS-2$
 			}							
 		}
 	}
@@ -151,11 +151,11 @@ extends LSDEditorPart
 					XEditorActionBarContributor xEditorActionBarContributor = (XEditorActionBarContributor) actionBarContributor;
 
 					if (xEditorActionBarContributor.getActionRegistry() == null)
-						logger.warn("updateToolbar: xEditorActionBarContributor.getActionRegistry() returned null!");
+						logger.warn("updateToolbar: xEditorActionBarContributor.getActionRegistry() returned null!"); //$NON-NLS-1$
 					else {
 						xEditorActionBarContributor.getActionRegistry().contributeToToolBar(toolbarManager);
 						if (logger.isDebugEnabled())
-							logger.debug("updateToolbar, Number of entries = "+toolbarManager.getItems().length+", actionBarContributor = "+actionBarContributor);
+							logger.debug("updateToolbar, Number of entries = "+toolbarManager.getItems().length+", actionBarContributor = "+actionBarContributor); //$NON-NLS-1$ //$NON-NLS-2$
 					}
 				} else {
 					actionBarContributor.contributeToToolBar(toolbarManager);
@@ -174,7 +174,7 @@ extends LSDEditorPart
 				toolbarManager.removeAll();
 				toolbarManager.update(true);
 				if (logger.isDebugEnabled())
-					logger.debug("removeToolbar, Number of entries = "+toolbarManager.getItems().length+", actionBarContributor = "+actionBarContributor);
+					logger.debug("removeToolbar, Number of entries = "+toolbarManager.getItems().length+", actionBarContributor = "+actionBarContributor); //$NON-NLS-1$ //$NON-NLS-2$
 			}							
 		}
 	}	
@@ -205,7 +205,7 @@ extends LSDEditorPart
 	
 	private ISelectionChangedListener selectionChangedListener = new ISelectionChangedListener(){
 		public void selectionChanged(SelectionChangedEvent event) {
-			logger.debug("selection changed "+event.getSelection());
+			logger.debug("selection changed "+event.getSelection()); //$NON-NLS-1$
 			fireSelectionChanged(event);
 		}
 	};

@@ -56,7 +56,7 @@ public class PersonStartsWithQuickSearch extends PropertySetQuickSearch {
 	public PersonStartsWithQuickSearch(String buttonText, SearchResultFetcher resultFetcher, String startWithNeedle) {
 		super(buttonText, resultFetcher);
 		this.startWithNeedle = startWithNeedle;
-		if ((buttonText == null) || buttonText.equals("")) {
+		if ((buttonText == null) || buttonText.equals("")) { //$NON-NLS-1$
 			setButtonText(startWithNeedle);
 		}
 	}

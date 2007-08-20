@@ -76,12 +76,12 @@ public class PropertySetStructFieldSearchItemEditorManager extends
 			
 		PropertySetSearchFilterItemEditorHelperRegistry registry = PropertySetSearchFilterItemEditorHelperRegistry.sharedInstance();
 		if (personStructField == null)			
-			throw new IllegalStateException("Member personStructField is null. init(personStructField) might not have been called.");
+			throw new IllegalStateException("Member personStructField is null. init(personStructField) might not have been called."); //$NON-NLS-1$
 		
 		try {
 			helper = registry.getEditorHelper(personStructField.getClass());
 		} catch (PropertySetSearchFilterItemEditorHelperNotFoundException e) {
-			IllegalStateException ill = new IllegalStateException("No helper found for class "+personStructField.getClass().getName());
+			IllegalStateException ill = new IllegalStateException("No helper found for class "+personStructField.getClass().getName()); //$NON-NLS-1$
 			ill.initCause(e);
 			throw ill;
 		}
@@ -99,7 +99,7 @@ public class PropertySetStructFieldSearchItemEditorManager extends
 	 */
 	public SearchFilterItem getSearchFilterItem() {
 		if (helper == null)
-			throw new IllegalStateException("SearchItemEditorHelper is null and can not be asked for the SearchFilterItem");
+			throw new IllegalStateException("SearchItemEditorHelper is null and can not be asked for the SearchFilterItem"); //$NON-NLS-1$
 		
 		return helper.getSearchFilterItem();
 	}

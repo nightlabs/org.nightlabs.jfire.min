@@ -16,11 +16,11 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 public abstract class AbstractEntryFactory 
 implements EntryFactory 
 {
-	public static final String ELEMENT_CATEGORY_ENTRY = "categoryEntry";
-	public static final String ATTRIBUTE_NAME = "name";
-	public static final String ATTRIBUTE_ICON = "icon";
-	public static final String ATTRIBUTE_INDEX = "index";
-	public static final String ATTRIBUTE_ID = "categoryEntryID";
+	public static final String ELEMENT_CATEGORY_ENTRY = "categoryEntry"; //$NON-NLS-1$
+	public static final String ATTRIBUTE_NAME = "name"; //$NON-NLS-1$
+	public static final String ATTRIBUTE_ICON = "icon"; //$NON-NLS-1$
+	public static final String ATTRIBUTE_INDEX = "index"; //$NON-NLS-1$
+	public static final String ATTRIBUTE_ID = "categoryEntryID"; //$NON-NLS-1$
 	
 	public AbstractEntryFactory() {		
 	}
@@ -117,13 +117,13 @@ implements EntryFactory
 		if (checkString(id))
 			setID(id);
 		else
-			throw new IllegalArgumentException("An EntryFactory has to have an id set. Extension came from " + element.getNamespaceIdentifier());
+			throw new IllegalArgumentException("An EntryFactory has to have an id set. Extension came from " + element.getNamespaceIdentifier()); //$NON-NLS-1$
 		
 	}
 	
 	protected boolean checkString(String s) 
 	{
-		if (s == null || s.trim().equals("") )
+		if (s == null || s.trim().equals("") ) //$NON-NLS-1$
 			return false;
 		
 		return true;

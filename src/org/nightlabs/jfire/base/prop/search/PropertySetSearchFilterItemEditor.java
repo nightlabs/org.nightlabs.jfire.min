@@ -47,6 +47,7 @@ import org.nightlabs.base.composite.XComposite.LayoutMode;
 import org.nightlabs.base.job.Job;
 import org.nightlabs.jdo.search.SearchFilterItem;
 import org.nightlabs.jdo.ui.search.SearchFilterItemEditor;
+import org.nightlabs.jfire.base.resource.Messages;
 import org.nightlabs.jfire.person.Person;
 import org.nightlabs.jfire.prop.AbstractStructField;
 import org.nightlabs.jfire.prop.StructBlock;
@@ -95,7 +96,7 @@ public class PropertySetSearchFilterItemEditor extends SearchFilterItemEditor im
 	}
 	
 	public void fillSearchFieldCombo() {
-		Job job = new Job("Load search fields") {
+		Job job = new Job(Messages.getString("org.nightlabs.jfire.base.prop.search.PropertySetSearchFilterItemEditor.fillSearchFieldCombo.job.name")) { //$NON-NLS-1$
 			@Override
 			protected IStatus run(ProgressMonitor monitor) throws Exception {
 				if (searchFieldList == null) {
@@ -160,7 +161,7 @@ public class PropertySetSearchFilterItemEditor extends SearchFilterItemEditor im
 	private ProperySetSearchFilterItemEditorHelper getCurrentHelper() {
 		int idx = comboSearchField.getSelectionIndex();
 		if ((idx < 0) || (idx >= searchFieldList.size()))
-			throw new ArrayIndexOutOfBoundsException("Selection index of search field combo is out of range of searchFieldList.S");
+			throw new ArrayIndexOutOfBoundsException("Selection index of search field combo is out of range of searchFieldList.S"); //$NON-NLS-1$
 		return (ProperySetSearchFilterItemEditorHelper) searchFieldList.get(idx);
 	}
 	
@@ -176,7 +177,7 @@ public class PropertySetSearchFilterItemEditor extends SearchFilterItemEditor im
 			try {
 				lastHelper.getControl(null).dispose();
 			} catch (Throwable t) {
-				logger.error("Error disposing helper control.",t);
+				logger.error("Error disposing helper control.",t); //$NON-NLS-1$
 			}				
 		}
 		helper.getControl(wrapper);

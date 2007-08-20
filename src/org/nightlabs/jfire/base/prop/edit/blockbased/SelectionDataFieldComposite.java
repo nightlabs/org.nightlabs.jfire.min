@@ -31,7 +31,7 @@ public class SelectionDataFieldComposite extends AbstractDataFieldComposite {
 			ModifyListener modListener) {
 		super(parent, style);
 		if (!(parent.getLayout() instanceof GridLayout))
-			throw new IllegalArgumentException("Parent should have a GridLayout!");
+			throw new IllegalArgumentException("Parent should have a GridLayout!"); //$NON-NLS-1$
 		
 		this.editor = editor;
 		
@@ -56,7 +56,7 @@ public class SelectionDataFieldComposite extends AbstractDataFieldComposite {
 					StructFieldValue value = (StructFieldValue) element;
 					return value.getValueName().getText(editor.getLanguage().getLanguageID());					
 				}
-				return "";
+				return ""; //$NON-NLS-1$
 			}
 		};
 		
@@ -91,7 +91,7 @@ public class SelectionDataFieldComposite extends AbstractDataFieldComposite {
 				fieldValueCombo.selectElement(field.getStructFieldValue(editor.getDataField().getStructFieldValueID()));
 			} catch (StructFieldValueNotFoundException e) {
 				fieldValueCombo.selectElement(-1);
-				throw new RuntimeException("Could not find the referenced structFieldValue with id "+editor.getDataField().getStructFieldValueID());
+				throw new RuntimeException("Could not find the referenced structFieldValue with id "+editor.getDataField().getStructFieldValueID()); //$NON-NLS-1$
 			}
 		} else {
 			fieldValueCombo.selectElement(-1);

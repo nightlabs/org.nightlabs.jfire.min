@@ -14,6 +14,7 @@ import org.nightlabs.jfire.base.prop.structedit.StructEditor;
 import org.nightlabs.jfire.base.prop.structedit.StructFieldNode;
 import org.nightlabs.jfire.base.prop.structedit.StructureChangedListener;
 import org.nightlabs.jfire.base.prop.structedit.TreeNode;
+import org.nightlabs.jfire.base.resource.Messages;
 import org.nightlabs.jfire.prop.StructBlock;
 import org.nightlabs.jfire.prop.StructField;
 
@@ -37,10 +38,10 @@ public class MoveStructElementAction
 		this.editor = editor;
 		this.up = up;
 		
-		setText(up ? "Move element up" : "Move element down"); 
+		setText(up ? Messages.getString("org.nightlabs.jfire.base.prop.structedit.action.MoveStructElementAction.text_up") : Messages.getString("org.nightlabs.jfire.base.prop.structedit.action.MoveStructElementAction.text_down"));  //$NON-NLS-1$ //$NON-NLS-2$
 		setImageDescriptor( up ? SharedImages.UP_16x16 : SharedImages.DOWN_16x16 );
-		setToolTipText( up ? "Moves the selected Struct element one position up." : 
-												 "Moves the selected Struct element one position down.");
+		setToolTipText( up ? Messages.getString("org.nightlabs.jfire.base.prop.structedit.action.MoveStructElementAction.toolTipText_up") :  //$NON-NLS-1$
+												 Messages.getString("org.nightlabs.jfire.base.prop.structedit.action.MoveStructElementAction.toolTipText_down")); //$NON-NLS-1$
 	}
 
 	@Override
@@ -75,8 +76,8 @@ public class MoveStructElementAction
 			fieldList.set( movingFieldIndex, exchangedField );
 			
 		} else {
-			throw new IllegalArgumentException("The returned selected TreeNode is neither a StructBlockNode " +
-					"nor a StructFieldNode! Seems like the NodeTypes have changed!");
+			throw new IllegalArgumentException("The returned selected TreeNode is neither a StructBlockNode " + //$NON-NLS-1$
+					"nor a StructFieldNode! Seems like the NodeTypes have changed!"); //$NON-NLS-1$
 		}
 
 		editor.getStructTree().refresh();

@@ -32,7 +32,7 @@ public abstract class AbstractStructFieldEditorFactory implements StructFieldEdi
 			try {
 				editor = (StructFieldEditor) Class.forName(getStructFieldEditorClass()).newInstance();
 			} catch (Throwable t) {
-				IllegalStateException ill = new IllegalStateException("Error instantiating " + getStructFieldEditorClass());
+				IllegalStateException ill = new IllegalStateException("Error instantiating " + getStructFieldEditorClass()); //$NON-NLS-1$
 				ill.initCause(t);
 				throw ill;
 			}

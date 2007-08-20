@@ -66,7 +66,7 @@ extends AbstractApplication
 	}
 
 	public String initApplicationName() {
-		return "jfire";
+		return "jfire"; //$NON-NLS-1$
 	}
 
 	public AbstractApplicationThread initApplicationThread(ThreadGroup group) {

@@ -129,7 +129,7 @@ public class ConfigPreferencesTreeComposite extends AbstractTreeComposite<Config
 			try {
 				rootNode = ConfigSetupRegistry.sharedInstance().getMergedPreferenceRootNode(parentCode, currentConfigID);
 			} catch (NoSetupPresentException e) {
-				throw new RuntimeException("Can't build a tree of ConfigModules when there is no ConfigSetup providing the information!", e);
+				throw new RuntimeException("Can't build a tree of ConfigModules when there is no ConfigSetup providing the information!", e); //$NON-NLS-1$
 			}
 			Display.getDefault().asyncExec(new Runnable(){
 				public void run() {

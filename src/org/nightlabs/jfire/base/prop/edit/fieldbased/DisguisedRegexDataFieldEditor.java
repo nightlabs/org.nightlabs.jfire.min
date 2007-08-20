@@ -144,7 +144,7 @@ public class DisguisedRegexDataFieldEditor extends AbstractDataFieldEditor<Regex
 			if (editorText != null)
 				this.editorText.setText(editorText);
 			else
-				this.editorText.setText("");
+				this.editorText.setText(""); //$NON-NLS-1$
 		}
 		
 		public void dispose() {

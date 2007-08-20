@@ -96,7 +96,7 @@ public class PropertySetSearchDialog extends Dialog implements SearchResultFetch
 	 * @see org.nightlabs.jdo.ui.search.SearchResultFetcher#searchTriggered(org.nightlabs.jdo.ui.search.SearchFilterProvider, org.nightlabs.j2ee.InitialContextProvider)
 	 */
 	public void searchTriggered(SearchFilterProvider filterProvider) {
-		logger.debug("Search triggered, getting PersonManager");
+		logger.debug("Search triggered, getting PersonManager"); //$NON-NLS-1$
 		PropertyManagerHome home = null;
 		PropertyManager personManager = null;
 		try {
@@ -105,10 +105,10 @@ public class PropertySetSearchDialog extends Dialog implements SearchResultFetch
 			home = PropertyManagerUtil.getHome(Login.getLogin().getInitialContextProperties());
 			personManager = home.create();
 		} catch (Exception e) {
-			logger.error("Error creating PersonManagerUtil.",e);
+			logger.error("Error creating PersonManagerUtil.",e); //$NON-NLS-1$
 			throw new RuntimeException(e);
 		}
-		logger.debug("Have PersonManager searching");
+		logger.debug("Have PersonManager searching"); //$NON-NLS-1$
 
 		PropSearchFilter searchFilter = (PropSearchFilter)filterProvider.getSearchFilter();
 		searchFilter.clearResultFields();
@@ -120,12 +120,12 @@ public class PropertySetSearchDialog extends Dialog implements SearchResultFetch
 		try {
 			long start = System.currentTimeMillis();
 			Collection persons = personManager.searchProperty(searchFilter, new String[] {FetchPlan.ALL}, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
-			logger.debug("Person search for "+persons.size()+" entries took "+(System.currentTimeMillis()-start)/1000+" s.");
+			logger.debug("Person search for "+persons.size()+" entries took "+(System.currentTimeMillis()-start)/1000+" s."); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 			start = System.currentTimeMillis();
 			resultTable.setInput(persons);
-			logger.debug("Setting results to table for "+persons.size()+" entries took "+(System.currentTimeMillis()-start)/1000+" s.");
+			logger.debug("Setting results to table for "+persons.size()+" entries took "+(System.currentTimeMillis()-start)/1000+" s."); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		} catch (Exception e) {
-			logger.error("Error searching person.",e);
+			logger.error("Error searching person.",e); //$NON-NLS-1$
 			throw new RuntimeException(e);
 		}
 

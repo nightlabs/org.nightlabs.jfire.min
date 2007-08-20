@@ -23,6 +23,7 @@ import org.nightlabs.base.util.RCPUtil;
 import org.nightlabs.jfire.base.prop.edit.AbstractDataFieldEditor;
 import org.nightlabs.jfire.base.prop.edit.AbstractDataFieldEditorFactory;
 import org.nightlabs.jfire.base.prop.edit.DataFieldEditor;
+import org.nightlabs.jfire.base.resource.Messages;
 import org.nightlabs.jfire.prop.datafield.RegexDataField;
 import org.nightlabs.jfire.prop.structfield.RegexStructField;
 import org.nightlabs.language.LanguageCf;
@@ -49,8 +50,6 @@ public class RegexDataFieldEditor extends AbstractDataFieldEditor<RegexDataField
 			return RegexDataField.class;
 		}
 	}
-	
-	private static Logger LOGGER = Logger.getLogger(RegexDataFieldEditor.class);
 	
 	private LanguageCf language;
 	private XComposite comp;
@@ -101,9 +100,8 @@ public class RegexDataFieldEditor extends AbstractDataFieldEditor<RegexDataField
 					String text = valueText.getText();
 					if (!regexStructField.validateValue(text)) {
 						MessageBox box = new MessageBox(RCPUtil.getActiveWorkbenchShell(), SWT.OK);
-						box.setMessage("The given input does not match the regular expression assigned to the field.\n\n" +
-								"The regular expression can be seen in the tool tip of the text box.");
-						box.setText("Validation error");
+						box.setMessage(Messages.getString("org.nightlabs.jfire.base.prop.edit.blockbased.RegexDataFieldEditor.invalidInputMessageBox.message")); //$NON-NLS-1$
+						box.setText(Messages.getString("org.nightlabs.jfire.base.prop.edit.blockbased.RegexDataFieldEditor.invalidInputMessageBox.text")); //$NON-NLS-1$
 						box.open();
 					} else if (modified) {
 						setChanged(true);
@@ -126,7 +124,12 @@ public class RegexDataFieldEditor extends AbstractDataFieldEditor<RegexDataField
 		regexDataField = getDataField();
 		regexStructField = (RegexStructField) getStructField();
 		title.setText(regexStructField.getName().getText(language.getLanguageID()));
-		valueText.setToolTipText("Regex: " + regexStructField.getRegex());
+		valueText.setToolTipText(
+				String.format(
+						Messages.getString("org.nightlabs.jfire.base.prop.edit.blockbased.RegexDataFieldEditor.valueText.toolTipText"), //$NON-NLS-1$
+						new Object[] { regexStructField.getRegex() }
+				)
+		);
 		ignoreModify = true;
 		if (!regexDataField.isEmpty())
 			valueText.setText(regexDataField.getText());

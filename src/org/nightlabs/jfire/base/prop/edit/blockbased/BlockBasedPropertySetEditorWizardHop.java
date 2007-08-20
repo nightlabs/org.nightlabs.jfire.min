@@ -108,13 +108,13 @@ public class BlockBasedPropertySetEditorWizardHop extends WizardHop {
 	
 	private String getGenericPageName() {
 		if (getEntryPage() == null)
-			return BlockBasedPropertySetEditorWizardHop.class.getName() + "#0";
-		return BlockBasedPropertySetEditorWizardHop.class.getName() + "#" + String.valueOf(getHopPages().size());
+			return BlockBasedPropertySetEditorWizardHop.class.getName() + "#0"; //$NON-NLS-1$
+		return BlockBasedPropertySetEditorWizardHop.class.getName() + "#" + String.valueOf(getHopPages().size()); //$NON-NLS-1$
 	}
 	
 	private String getEditorScope() {
 		if (editorScope == null) {
-			editorScope = this.getClass().getName() + "#" + System.identityHashCode(this);
+			editorScope = this.getClass().getName() + "#" + System.identityHashCode(this); //$NON-NLS-1$
 		}
 		return editorScope;
 	}

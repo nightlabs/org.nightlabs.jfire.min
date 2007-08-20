@@ -94,7 +94,7 @@ public class LSDPartController extends PartController implements LoginStateListe
 			try {
 				login = Login.getLogin(false);
 			} catch (LoginException e) {
-				throw new IllegalStateException("This should never happen as Login.getLogin(false) was called.");
+				throw new IllegalStateException("This should never happen as Login.getLogin(false) was called."); //$NON-NLS-1$
 			}
 			login.addLoginStateListener(sharedInstance); // maybe we should better register the listener via an extension?!
 		}

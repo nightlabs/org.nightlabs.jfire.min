@@ -111,8 +111,8 @@ extends SplashHandlingWorkbenchWindowAdvisor
 	@Override
 	public void createWindowContents(Shell shell) {
 		super.createWindowContents(shell);
-		LocaleStatusLineContribution locale = new LocaleStatusLineContribution("Locale");
-		LoginStateStatusLineContribution loginState = new LoginStateStatusLineContribution(Messages.getString("app.JFireActionBuilder.loginStatus"));
+		LocaleStatusLineContribution locale = new LocaleStatusLineContribution("Locale"); //$NON-NLS-1$
+		LoginStateStatusLineContribution loginState = new LoginStateStatusLineContribution(Messages.getString("app.JFireActionBuilder.loginStatus")); //$NON-NLS-1$
 		RCPUtil.addContributionItemTrim(shell, locale, StatusLineManager.class.getName());
 		RCPUtil.addContributionItemTrim(shell, loginState, StatusLineManager.class.getName());
 	}

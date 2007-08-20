@@ -47,9 +47,9 @@ import org.nightlabs.jfire.prop.id.StructBlockID;
  */
 public class DataBlockEditorFactoryRegistry extends AbstractEPProcessor {
 	
-	public static final String EXTENSION_POINT_ID = "org.nightlabs.jfire.base.specialisedDataBlockEditor";
-	public static final String EXTENSION_POINT_ELEMENT_NAME = "specialisedDataBlockEditor"; // lower case for error tolerance
-	public static final String EXTENSION_POINT_CLASS_ATTRIBUTE_NAME = "class"; // lower case for error tolerance
+	public static final String EXTENSION_POINT_ID = "org.nightlabs.jfire.base.specialisedDataBlockEditor"; //$NON-NLS-1$
+	public static final String EXTENSION_POINT_ELEMENT_NAME = "specialisedDataBlockEditor"; // lower case for error tolerance //$NON-NLS-1$
+	public static final String EXTENSION_POINT_CLASS_ATTRIBUTE_NAME = "class"; // lower case for error tolerance //$NON-NLS-1$
 	
 	/**
 	 * key: StructBlockID: providerID<br/>
@@ -106,7 +106,7 @@ public class DataBlockEditorFactoryRegistry extends AbstractEPProcessor {
 			}
 			else
 			{
-				throw new IllegalArgumentException("Element "+element.getName()+" is not supported by extension-point "+EXTENSION_POINT_ID);
+				throw new IllegalArgumentException("Element "+element.getName()+" is not supported by extension-point "+EXTENSION_POINT_ID); //$NON-NLS-1$ //$NON-NLS-2$
 			}
 		}
 		catch(Throwable e)

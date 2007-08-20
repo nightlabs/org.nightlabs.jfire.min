@@ -143,23 +143,23 @@ public class LoginConfiguration implements Serializable, Initializable, Cloneabl
 	}
 	
 	public void setName(String configurationName) {
-		if (configurationName == null || "".equals(configurationName))
-			throw new IllegalArgumentException("Configuration name must be non-null and non-empty.");
+		if (configurationName == null || "".equals(configurationName)) //$NON-NLS-1$
+			throw new IllegalArgumentException("Configuration name must be non-null and non-empty."); //$NON-NLS-1$
 		
 		this.name = configurationName;
 	}
 
 	@Override
 	public String toString() {
-		if (name == null || "".equals(name))
-			return userID + "@" + organisationID + " (" + workstationID + ") (" + serverURL + ")";
+		if (name == null || "".equals(name)) //$NON-NLS-1$
+			return userID + "@" + organisationID + " (" + workstationID + ") (" + serverURL + ")"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 		else
 			return name;
 	}
 	
 	public String toShortString() {
-		if (name == null || "".equals(name)) {
-			return shorten(userID, 8) +	"@" + shorten(organisationID, 8) + " (" + shorten(workstationID, 8) + ")";
+		if (name == null || "".equals(name)) { //$NON-NLS-1$
+			return shorten(userID, 8) +	"@" + shorten(organisationID, 8) + " (" + shorten(workstationID, 8) + ")"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		}
 		return name;
 	}
@@ -172,7 +172,7 @@ public class LoginConfiguration implements Serializable, Initializable, Cloneabl
 		int headCount = count - tailCount;
 		String front = target.substring(0, headCount);
 		String tail = target.substring(target.length()-tailCount);
-		return front + ".." + tail;
+		return front + ".." + tail; //$NON-NLS-1$
 	}
 
 	@Override

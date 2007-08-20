@@ -15,6 +15,7 @@ import org.nightlabs.base.language.I18nTextEditor;
 import org.nightlabs.base.language.LanguageChooser;
 import org.nightlabs.base.language.I18nTextEditor.EditMode;
 import org.nightlabs.jfire.base.JFireBasePlugin;
+import org.nightlabs.jfire.base.resource.Messages;
 import org.nightlabs.jfire.prop.StructField;
 
 public abstract class AbstractStructFieldEditor<F extends StructField> implements StructFieldEditor<F> {
@@ -42,7 +43,7 @@ public abstract class AbstractStructFieldEditor<F extends StructField> implement
 		editorGroup.setLayout(gl);
 		((GridLayout)editorGroup.getLayout()).marginTop = 15;
 				
-		fieldNameEditor = new I18nTextEditor(editorGroup, this.languageChooser, "Field name:");
+		fieldNameEditor = new I18nTextEditor(editorGroup, this.languageChooser, Messages.getString("org.nightlabs.jfire.base.prop.structedit.AbstractStructFieldEditor.fieldNameEditor.caption")); //$NON-NLS-1$
 		fieldNameEditor.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		
 		new Label(editorGroup, SWT.SEPARATOR | SWT.HORIZONTAL).setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -80,7 +81,7 @@ public abstract class AbstractStructFieldEditor<F extends StructField> implement
 
 	public void setData(F field) {
 		if (editorGroup == null)
-			throw new IllegalStateException("You have to call createComposite(...) prior to calling setData(...)");
+			throw new IllegalStateException("You have to call createComposite(...) prior to calling setData(...)"); //$NON-NLS-1$
 		
 		if (field == null)
 		{
@@ -98,7 +99,7 @@ public abstract class AbstractStructFieldEditor<F extends StructField> implement
 			String fieldName = sfmd.getFieldName();
 			editorGroup.setText(fieldName);
 		} else
-			editorGroup.setText("Uknown field type");
+			editorGroup.setText("Uknown field type"); //$NON-NLS-1$
 		
 		setSpecialData(field);
 	}
@@ -174,7 +175,7 @@ class ErrorComposite extends XComposite {
 	public ErrorComposite(Composite parent) {
 		super(parent, SWT.NONE, LayoutMode.ORDINARY_WRAPPER, LayoutDataMode.GRID_DATA_HORIZONTAL, 2);
 		
-		errorImage = JFireBasePlugin.getImageDescriptor("icons/Validation_error.gif").createImage();
+		errorImage = JFireBasePlugin.getImageDescriptor("icons/Validation_error.gif").createImage(); //$NON-NLS-1$
 		
 		errorImageLabel = new Label(this, SWT.NONE);
 		errorLabel = new Label(this, SWT.NONE);		
@@ -191,7 +192,7 @@ class ErrorComposite extends XComposite {
 	}
 	
 	protected void setErrorMessage(String error) {
-		if (error == null || error.equals("")) {
+		if (error == null || error.equals("")) { //$NON-NLS-1$
 			setVisible(false);
 		} else {
 			errorLabel.setText(error);

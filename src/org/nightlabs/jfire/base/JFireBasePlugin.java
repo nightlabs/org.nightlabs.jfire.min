@@ -26,10 +26,6 @@
 
 package org.nightlabs.jfire.base;
 
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
-
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.nightlabs.jfire.base.login.Login;
@@ -49,8 +45,8 @@ public class JFireBasePlugin
 	
 	//The shared instance.
 	private static JFireBasePlugin plugin;
-	//Resource bundle.
-	private ResourceBundle resourceBundle;
+//	//Resource bundle.
+//	private ResourceBundle resourceBundle;
 	
 	/**
 	 * The constructor registeres this plugin
@@ -75,16 +71,11 @@ public class JFireBasePlugin
 		System.setProperty("org.nightlabs.jfire.security.SecurityReflector", "org.nightlabs.jfire.base.security.SecurityReflectorClient"); //$NON-NLS-1$ //$NON-NLS-2$
 		System.setProperty("org.nightlabs.jfire.base.jdo.notification.JDOLifecycleManager", "org.nightlabs.jfire.base.jdo.notification.JDOLifecycleManagerRCP"); //$NON-NLS-1$ //$NON-NLS-2$
 
-//		Login.addLoginStateListener(this);
-//		LOGGER.debug("Registered JFireBasePlugin as LoginStateListener");
-//		LanguageWatcher.registerAsLoginStateListener();
-//		LOGGER.debug("Registered LanguageWatcher as LoginStateListener");
-		
-		try {
-			resourceBundle = Platform.getResourceBundle(getBundle());
-		} catch (MissingResourceException x) {
-			resourceBundle = null;
-		}
+//		try {
+//			resourceBundle = Platform.getResourceBundle(getBundle());
+//		} catch (MissingResourceException x) {
+//			resourceBundle = null;
+//		}
 	}
 
 	/**
@@ -101,25 +92,25 @@ public class JFireBasePlugin
 		return plugin;
 	}
 
-	/**
-	 * Returns the string from the plugin's resource bundle,
-	 * or 'key' if not found.
-	 */
-	public static String getResourceString(String key) {
-		ResourceBundle bundle = JFireBasePlugin.getDefault().getResourceBundle();
-		try {
-			return (bundle != null) ? bundle.getString(key) : key;
-		} catch (MissingResourceException e) {
-			return key;
-		}
-	}
+//	/**
+//	 * Returns the string from the plugin's resource bundle,
+//	 * or 'key' if not found.
+//	 */
+//	public static String getResourceString(String key) {
+//		ResourceBundle bundle = JFireBasePlugin.getDefault().getResourceBundle();
+//		try {
+//			return (bundle != null) ? bundle.getString(key) : key;
+//		} catch (MissingResourceException e) {
+//			return key;
+//		}
+//	}
 
-	/**
-	 * Returns the plugin's resource bundle,
-	 */
-	public ResourceBundle getResourceBundle() {
-		return resourceBundle;
-	}
+//	/**
+//	 * Returns the plugin's resource bundle,
+//	 */
+//	public ResourceBundle getResourceBundle() {
+//		return resourceBundle;
+//	}
 
 	public static ConfigManager getConfigManager() {
 		try {

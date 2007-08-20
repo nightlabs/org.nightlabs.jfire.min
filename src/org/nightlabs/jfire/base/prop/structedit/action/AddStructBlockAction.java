@@ -6,6 +6,7 @@ package org.nightlabs.jfire.base.prop.structedit.action;
 import org.nightlabs.base.action.SelectionAction;
 import org.nightlabs.base.resource.SharedImages;
 import org.nightlabs.jfire.base.prop.structedit.StructEditor;
+import org.nightlabs.jfire.base.resource.Messages;
 import org.nightlabs.jfire.prop.Struct;
 import org.nightlabs.jfire.prop.StructBlock;
 
@@ -19,9 +20,11 @@ public class AddStructBlockAction extends SelectionAction {
 	private StructEditor editor;
 	
 	public AddStructBlockAction(StructEditor editor) {
-		super("Add a StructBlock", SharedImages.ADD_16x16); // TODO: needs an own icon!
+		super(
+				Messages.getString("org.nightlabs.jfire.base.prop.structedit.action.AddStructBlockAction.text"), //$NON-NLS-1$
+				SharedImages.ADD_16x16); // TODO: needs an own icon!
 		this.editor = editor;
-		setToolTipText("Add a new StructBlock");
+		setToolTipText(Messages.getString("org.nightlabs.jfire.base.prop.structedit.action.AddStructBlockAction.toolTipText")); //$NON-NLS-1$
 	}
 	
 	@Override

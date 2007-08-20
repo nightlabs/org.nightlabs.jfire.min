@@ -49,8 +49,8 @@ import org.nightlabs.jfire.prop.IStruct;
 public class DataFieldEditorFactoryRegistry extends AbstractEPProcessor {
 	private Logger LOGGER = Logger.getLogger(DataFieldEditorFactoryRegistry.class);
 	
-	public static final String EXTENSION_POINT_ID = "org.nightlabs.jfire.base.propDataFieldEditorFactory";
-	public static final String EXTENSION_POINT_ELEMENT_NAME = "propdatafieldeditorfactory"; // lower case for error tolerance
+	public static final String EXTENSION_POINT_ID = "org.nightlabs.jfire.base.propDataFieldEditorFactory"; //$NON-NLS-1$
+	public static final String EXTENSION_POINT_ELEMENT_NAME = "propdatafieldeditorfactory"; // lower case for error tolerance //$NON-NLS-1$
 	
 	/**
 	 * A Map holding the registries for all editorTypes.<br/>
@@ -88,14 +88,14 @@ public class DataFieldEditorFactoryRegistry extends AbstractEPProcessor {
 	public synchronized void addDataFieldEditorFactory(DataFieldEditorFactory editorFactory)
 	{
 		if (editorFactory == null)
-			throw new IllegalArgumentException("Parameter editor must not be null!");
+			throw new IllegalArgumentException("Parameter editor must not be null!"); //$NON-NLS-1$
 		Class targetType = editorFactory.getPropDataFieldType();
 		if (targetType == null)
-			throw new IllegalArgumentException("Parameter targetType must not be null!");
+			throw new IllegalArgumentException("Parameter targetType must not be null!"); //$NON-NLS-1$
 		
 		if (!(AbstractDataField.class.isAssignableFrom(targetType)))
-			throw new IllegalArgumentException("TargetType must be subclass of AbstractDataField but is "+targetType.getName());
-		LOGGER.debug("Adding registration for "+targetType.getName()+" on editor "+editorFactory+" editorType is "+editorFactory.getEditorType());
+			throw new IllegalArgumentException("TargetType must be subclass of AbstractDataField but is "+targetType.getName()); //$NON-NLS-1$
+		LOGGER.debug("Adding registration for "+targetType.getName()+" on editor "+editorFactory+" editorType is "+editorFactory.getEditorType()); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		
 		getTypedRegistry(editorFactory.getEditorType()).put(targetType, editorFactory);
 	}
@@ -115,12 +115,12 @@ public class DataFieldEditorFactoryRegistry extends AbstractEPProcessor {
 		checkProcessing();
 		
 		if (targetType == null)
-			throw new IllegalArgumentException("Parameter targetType must not be null");
+			throw new IllegalArgumentException("Parameter targetType must not be null"); //$NON-NLS-1$
 		
 		Map<Class, DataFieldEditorFactory> registry = getTypedRegistry(editorType);
 
 		if (!registry.containsKey(targetType))
-			throw new DataFieldEditorNotFoundException("No editor found for editorType=\""+editorType+"\" targetType=\""+targetType.getName()+"\"");
+			throw new DataFieldEditorNotFoundException("No editor found for editorType=\""+editorType+"\" targetType=\""+targetType.getName()+"\""); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 
 		return registry.get(targetType);
 	}
@@ -205,7 +205,7 @@ public class DataFieldEditorFactoryRegistry extends AbstractEPProcessor {
 		{
 			if (element.getName().toLowerCase().equals(EXTENSION_POINT_ELEMENT_NAME))
 			{
-				DataFieldEditorFactory fieldEditorFactory = (DataFieldEditorFactory) element.createExecutableExtension("class");
+				DataFieldEditorFactory fieldEditorFactory = (DataFieldEditorFactory) element.createExecutableExtension("class"); //$NON-NLS-1$
 //				Class targetType = Class.forName(element.getAttribute("targetType"));
 //				if (targetType != fieldEditorFactory.getPropDataFieldType())
 //					throw new IllegalStateException("Target type from extension point does not match editorFactory's target type.");
@@ -215,7 +215,7 @@ public class DataFieldEditorFactoryRegistry extends AbstractEPProcessor {
 			}
 			else
 			{
-				throw new IllegalArgumentException("Element "+element.getName()+" is not supported by extension-point "+EXTENSION_POINT_ID);
+				throw new IllegalArgumentException("Element "+element.getName()+" is not supported by extension-point "+EXTENSION_POINT_ID); //$NON-NLS-1$ //$NON-NLS-2$
 			}
 		}
 		catch(Throwable e)

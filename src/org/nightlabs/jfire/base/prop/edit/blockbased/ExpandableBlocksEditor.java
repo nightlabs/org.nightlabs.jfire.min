@@ -33,7 +33,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -42,6 +41,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.nightlabs.jfire.base.prop.edit.PropertySetEditor;
+import org.nightlabs.jfire.base.resource.Messages;
 import org.nightlabs.jfire.prop.DataBlockGroup;
 import org.nightlabs.jfire.prop.IStruct;
 import org.nightlabs.jfire.prop.PropertySet;
@@ -64,9 +64,8 @@ import org.nightlabs.progress.ProgressMonitor;
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  */
 public class ExpandableBlocksEditor implements PropertySetEditor { // extends ScrolledComposite {
-	private static Logger LOGGER = Logger.getLogger(ExpandableBlocksEditor.class);
-	public static final String EDITORTYPE_BLOCK_BASED_EXPANDABLE = "block-based-expandable";
-	
+	public static final String EDITORTYPE_BLOCK_BASED_EXPANDABLE = "block-based-expandable"; //$NON-NLS-1$
+
 	public ExpandableBlocksEditor() {
 		this(null);
 	}
@@ -134,7 +133,7 @@ public class ExpandableBlocksEditor implements PropertySetEditor { // extends Sc
 	protected IStruct getPropStructure(ProgressMonitor monitor) {
 		if (prop.isExploded())
 			return prop.getStructure();
-		monitor.beginTask("Loading propertySet structure", 1);
+		monitor.beginTask(Messages.getString("org.nightlabs.jfire.base.prop.edit.blockbased.ExpandableBlocksEditor.getPropStructure.monitor.taskName"), 1); //$NON-NLS-1$
 		IStruct structure = StructLocalDAO.sharedInstance().getStructLocal(
 				prop.getStructLocalLinkClass(), prop.getStructLocalScope(), monitor
 		);

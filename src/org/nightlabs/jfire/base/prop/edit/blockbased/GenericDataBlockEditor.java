@@ -93,7 +93,7 @@ public class GenericDataBlockEditor extends AbstractDataBlockEditor {
 						);
 				} catch (DataFieldEditorNotFoundException e) {
 					// could not find editor for class log the error
-					LOGGER.error("Editor not found for one field, continuing",e);
+					LOGGER.error("Editor not found for one field, continuing",e); //$NON-NLS-1$
 					continue;
 				}
 				addFieldEditor(dataField, fieldEditor,true);
@@ -121,7 +121,7 @@ public class GenericDataBlockEditor extends AbstractDataBlockEditor {
 	@Override
 	public void refresh(IStruct struct, DataBlock dataBlock) {
 		if (dataBlock == null) 
-			throw new IllegalStateException("Parameter dataBlock must not be null");		
+			throw new IllegalStateException("Parameter dataBlock must not be null");		 //$NON-NLS-1$
 		this.dataBlock = dataBlock;
 		setStruct(struct);
 		createFieldEditors();

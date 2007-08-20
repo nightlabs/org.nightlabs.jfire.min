@@ -35,9 +35,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
-
 import org.nightlabs.base.composite.XComposite;
-import org.nightlabs.jfire.base.JFireBasePlugin;
 import org.nightlabs.jfire.base.login.Login;
 import org.nightlabs.jfire.base.person.preferences.PersonStructOrderComposite;
 import org.nightlabs.jfire.base.person.preferences.PersonStructOrderConfigModule;
@@ -47,7 +45,7 @@ import org.nightlabs.jfire.base.person.preferences.PersonStructOrderConfigModule
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  * @deprecated This class is currently not used (in plugin.xml
  * {@link org.nightlabs.jfire.base.person.preferences.PersonStructOrderPreferencePage} is used).
- * TODO @Carnage please decide which of these is still used (or whether both are necessary) 
+ * TODO @Carnage please decide which of these is still used (or whether both are necessary) If this class is used, please externalize the strings! I've marked them NON-NLS!
  */
 public class PersonStructOrderPreferencePage 
 extends 
@@ -60,7 +58,7 @@ implements
 	
 	public PersonStructOrderPreferencePage() {
 		super();
-		System.out.println("Constructor of PersonStructOrderPreferencePage called");
+		System.out.println("Constructor of PersonStructOrderPreferencePage called"); //$NON-NLS-1$
 	}
 	
   protected Control createContents(Composite parent) {
@@ -73,7 +71,7 @@ implements
 		} catch (LoginException e) {
 			Composite tmpComp = new Composite(wrapperComposite,SWT.BORDER);
 			Label tmpLabel = new Label(tmpComp,SWT.NONE);
-			tmpLabel.setText(JFireBasePlugin.getResourceString("person.preferences.structorder.labels.error.notloggedin"));
+			tmpLabel.setText("Not logged in! Login to use this page!"); //$NON-NLS-1$
 		}
   	
   	return wrapperComposite;		

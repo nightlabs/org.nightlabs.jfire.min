@@ -12,11 +12,11 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.nightlabs.base.composite.LabeledText;
 import org.nightlabs.base.exceptionhandler.ExceptionHandlerRegistry;
-import org.nightlabs.jfire.base.JFireBasePlugin;
 import org.nightlabs.jfire.base.prop.edit.DataFieldEditor;
 import org.nightlabs.jfire.base.prop.edit.blockbased.AbstractDataBlockEditor;
 import org.nightlabs.jfire.base.prop.edit.blockbased.DataBlockEditorChangedListener;
 import org.nightlabs.jfire.base.prop.edit.blockbased.DataBlockWizardPage;
+import org.nightlabs.jfire.base.resource.Messages;
 import org.nightlabs.jfire.person.Person;
 import org.nightlabs.jfire.person.PersonStruct;
 import org.nightlabs.jfire.prop.StructLocal;
@@ -53,7 +53,7 @@ implements DataBlockEditorChangedListener
 	public Control createPageContents(Composite parent) {
 		createWrapper(parent);
 		
-		displayName = new LabeledText(getWrapperComp(), JFireBasePlugin.getResourceString("person.edit.wizard.pages.PersonalDataPage.labels.displayName"));
+		displayName = new LabeledText(getWrapperComp(), Messages.getString("org.nightlabs.jfire.base.person.edit.blockbased.special.PersonPersonalDataWizardPage.displayName.caption")); //$NON-NLS-1$
 		GridData displayNameGD = new GridData();
 //		displayNameGD.grabExcessHorizontalSpace = true;
 		displayNameGD.horizontalAlignment = GridData.FILL;
@@ -66,7 +66,7 @@ implements DataBlockEditorChangedListener
 //		autoCreateDisplayNameGD.grabExcessHorizontalSpace = true;
 //		autoCreateDisplayNameGD.horizontalAlignment = GridData.FILL;
 		autoCreateDisplayName.setLayoutData(autoCreateDisplayNameGD);
-		autoCreateDisplayName.setText(JFireBasePlugin.getResourceString("person.edit.wizard.pages.PersonalDataPage.labels.autoCreateDisplayName"));
+		autoCreateDisplayName.setText(Messages.getString("org.nightlabs.jfire.base.person.edit.blockbased.special.PersonPersonalDataWizardPage.autoCreateDisplayName.text")); //$NON-NLS-1$
 		autoCreateDisplayName.addSelectionListener(
 			new SelectionListener() {
 
@@ -100,9 +100,9 @@ implements DataBlockEditorChangedListener
 			displayName.getTextControl().setText(getPropSet().getDisplayName());
 
 			if (firstName.isEmpty())
-				updateStatus(JFireBasePlugin.getResourceString("person.edit.wizard.pages.PersonalDataPage.errormessage.specifyFirstName"));
+				updateStatus(Messages.getString("org.nightlabs.jfire.base.person.edit.blockbased.special.PersonPersonalDataWizardPage.errorFirstNameMissing")); //$NON-NLS-1$
 			else if (name.isEmpty())
-				updateStatus(JFireBasePlugin.getResourceString("person.edit.wizard.pages.PersonalDataPage.errormessage.specifyName"));
+				updateStatus(Messages.getString("org.nightlabs.jfire.base.person.edit.blockbased.special.PersonPersonalDataWizardPage.errorNameMissing")); //$NON-NLS-1$
 			else
 				updateStatus(null);
 		} catch (Throwable t) {

@@ -124,9 +124,10 @@ extends AbstractWorkstationConfigModulePreferencePage
 		if (!(getConfigModuleController().getConfigModule() instanceof WorkstationFeaturesCfMod))
 			return result;
 		WorkstationFeaturesCfMod cfMod = (WorkstationFeaturesCfMod) getConfigModuleController().getConfigModule();
-		result.add(new WorkstationFeature(cfMod, "org.nightlabs.base", "1.0.0"));
-		result.add(new WorkstationFeature(cfMod, "org.nightlabs.jfire.base", "1.0.0"));
-		result.add(new WorkstationFeature(cfMod, "org.nightlabs.jfire.base.admin", "1.0.0"));
+		// TODO this data should be read from the server! Remove the following hard-coded test-entries!
+		result.add(new WorkstationFeature(cfMod, "org.nightlabs.base", "1.0.0")); //$NON-NLS-1$ //$NON-NLS-2$
+		result.add(new WorkstationFeature(cfMod, "org.nightlabs.jfire.base", "1.0.0")); //$NON-NLS-1$ //$NON-NLS-2$
+		result.add(new WorkstationFeature(cfMod, "org.nightlabs.jfire.base.admin", "1.0.0")); //$NON-NLS-1$ //$NON-NLS-2$
 		return result;
 	}
 

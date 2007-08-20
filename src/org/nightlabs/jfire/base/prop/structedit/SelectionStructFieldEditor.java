@@ -16,12 +16,11 @@ import org.nightlabs.base.composite.XComposite;
 import org.nightlabs.base.language.LanguageChangeEvent;
 import org.nightlabs.base.language.LanguageChangeListener;
 import org.nightlabs.base.language.LanguageChooser;
-import org.nightlabs.jfire.idgenerator.IDGenerator;
+import org.nightlabs.jfire.base.resource.Messages;
 import org.nightlabs.jfire.prop.i18n.StructFieldValueName;
 import org.nightlabs.jfire.prop.structfield.SelectionStructField;
 import org.nightlabs.jfire.prop.structfield.StructFieldValue;
 import org.nightlabs.language.LanguageCf;
-import org.nightlabs.math.Base36Coder;
 
 public class SelectionStructFieldEditor extends AbstractStructFieldEditor<SelectionStructField> {
 	public static class SelectionStructFieldEditorFactory extends AbstractStructFieldEditorFactory {
@@ -62,7 +61,7 @@ class SelectionStructFieldEditComposite extends XComposite implements LanguageCh
 				StructFieldValueName valueName = (StructFieldValueName) element;
 				return valueName.getText(currLanguage.getLanguageID());
 			}
-			return "";
+			return ""; //$NON-NLS-1$
 		}
 	}
 
@@ -78,7 +77,7 @@ class SelectionStructFieldEditComposite extends XComposite implements LanguageCh
 		GridData data = new GridData();
 
 		XComposite wrapper = new XComposite(this, SWT.NONE, LayoutMode.TIGHT_WRAPPER, LayoutDataMode.GRID_DATA);
-		new Label(wrapper, SWT.NONE).setText("Possible values:");
+		new Label(wrapper, SWT.NONE).setText(Messages.getString("org.nightlabs.jfire.base.prop.structedit.SelectionStructFieldEditor.possibleValuesLabel.text")); //$NON-NLS-1$
 		valueList = new ListComposite<StructFieldValueName>(wrapper, ListComposite.getDefaultWidgetStyle(this));
 		valueList.setLabelProvider(new MyLabelProvider());
 		valueList.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -94,7 +93,7 @@ class SelectionStructFieldEditComposite extends XComposite implements LanguageCh
 
 		wrapper = new XComposite(this, SWT.NONE, LayoutMode.TIGHT_WRAPPER, LayoutDataMode.GRID_DATA_HORIZONTAL, 2);
 		addValueButton = new Button(wrapper, SWT.NONE);
-		addValueButton.setText("+");
+		addValueButton.setText(Messages.getString("org.nightlabs.jfire.base.prop.structedit.SelectionStructFieldEditor.addValueButton.text")); //$NON-NLS-1$
 		data.widthHint = 30;
 		addValueButton.setLayoutData(data);
 		addValueButton.addSelectionListener(new SelectionListener() {
@@ -121,7 +120,7 @@ class SelectionStructFieldEditComposite extends XComposite implements LanguageCh
 		valueText.setEnabled(false);
 
 		remValueButton = new Button(wrapper, SWT.NONE);
-		remValueButton.setText("-");
+		remValueButton.setText(Messages.getString("org.nightlabs.jfire.base.prop.structedit.SelectionStructFieldEditor.removeValueButton.text")); //$NON-NLS-1$
 		data = new GridData();
 		data.widthHint = 30;
 		remValueButton.setLayoutData(data);
@@ -172,12 +171,9 @@ class SelectionStructFieldEditComposite extends XComposite implements LanguageCh
 	 * Adds a new value to the list and also to the structure.
 	 */
 	private void addNewValue() {
-		long newValueID = IDGenerator.nextID(StructEditorComposite.class.getName() + '/' + "newBlockID");
-		Base36Coder coder = Base36Coder.sharedInstance(false);
-
-		StructFieldValue value = selectionField.newStructFieldValue("sv_" + coder.encode(newValueID, 2));
+		StructFieldValue value = selectionField.newStructFieldValue();
 		StructFieldValueName valueName = value.getValueName();
-		valueName.setText(currLanguage.getLanguageID(), "<new>");
+		valueName.setText(currLanguage.getLanguageID(), Messages.getString("org.nightlabs.jfire.base.prop.structedit.SelectionStructFieldEditor.newValue.text")); //$NON-NLS-1$
 
 		valueList.addElement(valueName);
 		valueList.selectElement(valueName);

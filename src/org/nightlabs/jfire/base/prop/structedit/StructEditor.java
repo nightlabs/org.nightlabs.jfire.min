@@ -5,6 +5,7 @@ import java.util.Set;
 
 import javax.jdo.JDOHelper;
 
+import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.core.runtime.Status;
@@ -28,8 +29,10 @@ import org.nightlabs.base.notification.NotificationAdapterJob;
 import org.nightlabs.base.util.RCPUtil;
 import org.nightlabs.base.wizard.DynamicPathWizardDialog;
 import org.nightlabs.base.wizard.DynamicPathWizardPage;
+import org.nightlabs.jdo.ObjectIDUtil;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleManager;
 import org.nightlabs.jfire.base.login.Login;
+import org.nightlabs.jfire.base.resource.Messages;
 import org.nightlabs.jfire.idgenerator.IDGenerator;
 import org.nightlabs.jfire.jdo.notification.DirtyObjectID;
 import org.nightlabs.jfire.prop.IStruct;
@@ -42,11 +45,10 @@ import org.nightlabs.jfire.prop.dao.StructLocalDAO;
 import org.nightlabs.jfire.prop.exception.IllegalStructureModificationException;
 import org.nightlabs.jfire.prop.exception.PropertyException;
 import org.nightlabs.jfire.prop.id.StructLocalID;
-import org.nightlabs.math.Base36Coder;
 import org.nightlabs.notification.NotificationEvent;
 import org.nightlabs.notification.NotificationListener;
 import org.nightlabs.progress.ProgressMonitor;
-import org.nightlabs.util.Utils;
+import org.nightlabs.util.Util;
 import org.nightlabs.util.reflect.ReflectUtil;
 
 /**
@@ -102,6 +104,7 @@ public class StructEditor {
 			});
 			
 			structTree.addSelectionChangedListener(new ISelectionChangedListener() {				
+				@SuppressWarnings("unchecked") //$NON-NLS-1$
 				public void selectionChanged(SelectionChangedEvent event) {
 					if (ignoreChangeEvent)
 						return;
@@ -170,7 +173,7 @@ public class StructEditor {
 				structEditorComposite.setLoadingText();
 			}
 		});
-		new Job("Fetching structure...") {
+		new Job(Messages.getString("org.nightlabs.jfire.base.prop.structedit.StructEditor.loadStructJob.name")) { //$NON-NLS-1$
 			@Override
 			protected IStatus run(final ProgressMonitor monitor) throws Exception {
 				final IStruct struct = fetchStructure(structLocalID, monitor);
@@ -193,12 +196,12 @@ public class StructEditor {
 	 * Sets the current Struct to be edited.
 	 * <p>
 	 * Note that the given {@link IStruct} will be
-	 * copied by {@link Utils#cloneSerializable(Object)}.
+	 * copied by {@link Util#cloneSerializable(Object)}.
 	 * </p>
 	 * @param struct The {@link IStruct} to be edited.
 	 */
 	public void setStruct(IStruct struct) {
-		currentStruct = org.nightlabs.util.Utils.cloneSerializable(struct);
+		currentStruct = Util.cloneSerializable(struct);
 		structTree.setInput(currentStruct);						
 	}
 	
@@ -206,7 +209,7 @@ public class StructEditor {
 	 * Sets the current Struct to be edited.
 	 * <p>
 	 * Note that the given {@link IStruct} will be
-	 * copied by {@link Utils#cloneSerializable(Object)}.
+	 * copied by {@link Util#cloneSerializable(Object)}.
 	 * </p>
 	 * @param struct The {@link IStruct} to be edited.
 	 * @param doCloneSerializable Whether the given struct should be cloned before editing. 
@@ -214,7 +217,7 @@ public class StructEditor {
 	 * 		that was passed to this method. 
 	 */
 	public void setStruct(IStruct struct, boolean doCloneSerializable) {
-		currentStruct = doCloneSerializable ? Utils.cloneSerializable(struct) : struct;  
+		currentStruct = doCloneSerializable ? Util.cloneSerializable(struct) : struct;  
 		structTree.setInput(currentStruct);						
 	}
 	
@@ -229,21 +232,22 @@ public class StructEditor {
 	private boolean validatePartEditor() {
 		if (currentStructPartEditor instanceof StructBlockEditor)
 			return true;
-		
+
 		if (currentStructPartEditor instanceof StructFieldEditor<?>) {
 			StructFieldEditor<?> structFieldEditor = (StructFieldEditor<?>) currentStructPartEditor;
 			if (!structFieldEditor.validateInput()) {
 				MessageBox mb = new MessageBox(RCPUtil.getActiveWorkbenchShell(), SWT.YES | SWT.NO );
-				String message = "The entered data is not valid.\nError: " + structFieldEditor.getErrorMessage();
-				message += "\nDo you want to discard all changes regarding this field?";
-				mb.setMessage(message);
-				mb.setText("Validation error");
+				mb.setMessage(
+						String.format(Messages.getString("org.nightlabs.jfire.base.prop.structedit.StructEditor.messageBoxInvalidInput.message"), //$NON-NLS-1$
+						new Object[] { structFieldEditor.getErrorMessage() })
+				);
+				mb.setText(Messages.getString("org.nightlabs.jfire.base.prop.structedit.StructEditor.messageBoxInvalidInput.text")); //$NON-NLS-1$
 				switch (mb.open()) {
-				case SWT.YES:
-					structFieldEditor.restoreData();
-					return true;
-				case SWT.NO:					
-					return false;
+					case SWT.YES:
+						structFieldEditor.restoreData();
+						return true;
+					case SWT.NO:					
+						return false;
 				}
 			}
 			return true;
@@ -255,7 +259,7 @@ public class StructEditor {
 	private NotificationListener changeListener = new NotificationAdapterJob() {
 		
 		public void notify(NotificationEvent notificationEvent) {
-			for (DirtyObjectID dirtyObjectID : (Set<DirtyObjectID>)notificationEvent.getSubjects()) {
+			for (DirtyObjectID dirtyObjectID : (Set<? extends DirtyObjectID>)notificationEvent.getSubjects()) {
 				final StructLocalID currentStructID = (StructLocalID) (currentStruct == null ? null : JDOHelper.getObjectId(currentStruct));
 				if (dirtyObjectID.getObjectID().equals(currentStructID)) {
 					final IStruct struct = fetchStructure(currentStructID, getProgressMonitorWrapper());
@@ -293,7 +297,7 @@ public class StructEditor {
 					currentStruct, Serializable.class, false, true,
 					new ReflectUtil.IObjectFoundHandler() {
 						public void objectFound(String path, Object object) {
-							System.out.println("found not Serializable: "+path+"="+object.getClass());
+							System.out.println("found not Serializable: "+path+"="+object.getClass()); //$NON-NLS-1$ //$NON-NLS-2$
 						}
 					}
 				);
@@ -343,14 +347,11 @@ public class StructEditor {
 	}
 	
 	public void addStructBlock() {
-		long newBlockID = IDGenerator.nextID(StructEditor.class.getName() + '/' + "newBlockID");
-		Base36Coder coder = Base36Coder.sharedInstance(false);
-
+		long newBlockID = IDGenerator.nextID(StructBlock.class);
 		StructBlock newBlock;
 		try {
-			newBlock = new StructBlock(currentStruct, Login.getLogin().getOrganisationID(), "sb_"
-					+ coder.encode(newBlockID, 1));
-			newBlock.getName().setText(languageChooser.getLanguage().getLanguageID(), "Change me");
+			newBlock = new StructBlock(currentStruct, Login.getLogin().getOrganisationID(), ObjectIDUtil.longObjectIDFieldToString(newBlockID));
+			newBlock.getName().setText(languageChooser.getLanguage().getLanguageID(), Messages.getString("org.nightlabs.jfire.base.prop.structedit.StructEditor.newStructBlock.name")); //$NON-NLS-1$
 			currentStruct.addStructBlock(newBlock);
 			structTree.addStructBlock(newBlock);
 			setChanged(true);
@@ -373,17 +374,11 @@ public class StructEditor {
 	}
 	
 	private void addStructField(StructBlock toBlock, StructFieldMetaData newFieldMetaData, DynamicPathWizardPage detailsPage) {
-		long newFieldID = IDGenerator.nextID(StructField.class.getName() + '/' + "newFieldID");
-		Base36Coder coder = Base36Coder.sharedInstance(false);
-
 		StructFieldFactory fieldFactory = newFieldMetaData.getFieldFactory();
-		String fieldID = "sf_" + coder.encode(newFieldID, 3);
-
 		StructField newField;
-		
 		try {
-			newField = fieldFactory.createStructField(toBlock, Login.getLogin().getOrganisationID(), fieldID, detailsPage);
-			newField.getName().setText(languageChooser.getLanguage().getLanguageID(), "Change me");
+			newField = fieldFactory.createStructField(toBlock, detailsPage);
+			newField.getName().setText(languageChooser.getLanguage().getLanguageID(), Messages.getString("org.nightlabs.jfire.base.prop.structedit.StructEditor.newStructField.name")); //$NON-NLS-1$
 			toBlock.addStructField(newField);
 
 			structTree.addStructField(structTree.getCurrentBlockNode(), newField);
@@ -410,17 +405,18 @@ public class StructEditor {
 	
 	private void removeStructBlock(StructBlockNode blockNode) {
 		MessageBox mb = new MessageBox(RCPUtil.getActiveWorkbenchShell(), SWT.ICON_QUESTION | SWT.YES | SWT.NO);
-		mb.setMessage("Are you sure you want to delete the selected struct block and all of its contained struct fields?");
-		mb.setText("Confirm deletion");
+		mb.setMessage(Messages.getString("org.nightlabs.jfire.base.prop.structedit.StructEditor.messageBoxRemoveStructBlockConfirmation.message")); //$NON-NLS-1$
+		mb.setText(Messages.getString("org.nightlabs.jfire.base.prop.structedit.StructEditor.messageBoxRemoveStructBlockConfirmation.text")); //$NON-NLS-1$
 		int result = mb.open();
 		if (result == SWT.YES) {
 			try {
 				currentStruct.removeStructBlock(blockNode.getBlock());
 			} catch (IllegalStructureModificationException e) {
-				e.printStackTrace();
+				Logger.getLogger(StructEditor.class).error("Structure modification failed!", e); //$NON-NLS-1$
 				mb = new MessageBox(null, SWT.ICON_ERROR | SWT.OK);
-				mb.setMessage("Block could not be deleted: " + e.getMessage());
-				mb.setText("Deleting failed");
+				// TODO Shouldn't we simply rethrow this exception as RuntimeException and leave the work to our general exception handler? 
+				mb.setMessage("Block could not be deleted: " + e.getMessage()); //$NON-NLS-1$
+				mb.setText("Deleting failed"); //$NON-NLS-1$
 				mb.open();
 				return;
 			}
@@ -433,13 +429,14 @@ public class StructEditor {
 	private void removeStructField(StructFieldNode fieldNode) {
 		MessageBox mb = new MessageBox(RCPUtil.getActiveWorkbenchShell(), SWT.ICON_QUESTION | SWT.YES | SWT.NO);
 		String fieldName = fieldNode.getI18nText().getText(languageChooser.getLanguage().getLanguageID());
-		String message = "Are you sure you want to delete the struct field named '" + fieldName + "'?";
 		long dataFieldInstanceCount;
 		dataFieldInstanceCount = StructEditorUtil.getDataFieldInstanceCount(fieldNode.getField().getStructFieldIDObj());
-		
-		message += "\n\n" + dataFieldInstanceCount + " instances of this struct field will be also deleted if you continue.";
-		mb.setMessage(message);
-		mb.setText("Confirm deletion");
+
+		mb.setMessage(String.format(
+				Messages.getString("org.nightlabs.jfire.base.prop.structedit.StructEditor.messageBoxRemoveStructFieldConfirmation.message"), //$NON-NLS-1$
+				new Object[] { fieldName, new Long(dataFieldInstanceCount) }));
+
+		mb.setText(Messages.getString("org.nightlabs.jfire.base.prop.structedit.StructEditor.messageBoxRemoveStructFieldConfirmation.text")); //$NON-NLS-1$
 		int result = mb.open();
 		if (result == SWT.YES) {
 			try {
@@ -448,8 +445,10 @@ public class StructEditor {
 				currentStructPartEditor.setData(null);
 			} catch (IllegalStructureModificationException e) {
 				mb = new MessageBox(RCPUtil.getActiveWorkbenchShell(), SWT.ICON_ERROR | SWT.OK);
-				mb.setMessage("You cannot delete a struct block that has already been persisted.");
-				mb.setText("Deletion failed");
+				// TODO this message contradicts the information above which says "[...] instances of this struct field will be also deleted if you continue."
+				// Maybe we should simply rethrow this exception and have our exception-handling-framework handle it? Is this exception really expected?
+				mb.setMessage("You cannot delete a struct block that has already been persisted."); //$NON-NLS-1$
+				mb.setText("Deletion failed"); //$NON-NLS-1$
 				mb.open();
 				return;
 			}

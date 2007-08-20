@@ -68,7 +68,7 @@ public class JDOObjectTreeNode<JDOObjectID, JDOObject, Controller extends Active
 		this.childNodes_ro = null;
 
 		if (logger.isDebugEnabled())
-			logger.debug("setChildNodes: childNodes.size()=\"" + (childNodes == null ? null : childNodes.size()) + "\" this.jdoObjectID=\"" + JDOHelper.getObjectId(this.jdoObject) + "\"");
+			logger.debug("setChildNodes: childNodes.size()=\"" + (childNodes == null ? null : childNodes.size()) + "\" this.jdoObjectID=\"" + JDOHelper.getObjectId(this.jdoObject) + "\""); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 	}
 
 	/**
@@ -81,7 +81,7 @@ public class JDOObjectTreeNode<JDOObjectID, JDOObject, Controller extends Active
 	{
 		if (childNodes == null) {
 			if (logger.isDebugEnabled())
-				logger.debug("addChildNode: this.childNodes=null => do nothing + return false! childNode.jdoObjectID=\"" + JDOHelper.getObjectId(childNode.getJdoObject()) + "\" this.jdoObjectID=\"" + JDOHelper.getObjectId(this.jdoObject) + "\"");
+				logger.debug("addChildNode: this.childNodes=null => do nothing + return false! childNode.jdoObjectID=\"" + JDOHelper.getObjectId(childNode.getJdoObject()) + "\" this.jdoObjectID=\"" + JDOHelper.getObjectId(this.jdoObject) + "\""); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 
 			return false;
 		}
@@ -90,7 +90,7 @@ public class JDOObjectTreeNode<JDOObjectID, JDOObject, Controller extends Active
 		this.childNodes_ro = null;
 
 		if (logger.isDebugEnabled())
-			logger.debug("addChildNode: added childNode! childNode.jdoObjectID=\"" + JDOHelper.getObjectId(childNode.getJdoObject()) + "\" this.jdoObjectID=\"" + JDOHelper.getObjectId(this.jdoObject) + "\"");
+			logger.debug("addChildNode: added childNode! childNode.jdoObjectID=\"" + JDOHelper.getObjectId(childNode.getJdoObject()) + "\" this.jdoObjectID=\"" + JDOHelper.getObjectId(this.jdoObject) + "\""); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 
 		return true;
 	}
@@ -106,7 +106,7 @@ public class JDOObjectTreeNode<JDOObjectID, JDOObject, Controller extends Active
 	{
 		if (childNodes == null) {
 			if (logger.isDebugEnabled())
-				logger.debug("removeChildNode: this.childNodes=null => do nothing + return false! childNode.jdoObjectID=\"" + JDOHelper.getObjectId(childNode.getJdoObject()) + "\" this.jdoObjectID=\"" + JDOHelper.getObjectId(this.jdoObject) + "\"");
+				logger.debug("removeChildNode: this.childNodes=null => do nothing + return false! childNode.jdoObjectID=\"" + JDOHelper.getObjectId(childNode.getJdoObject()) + "\" this.jdoObjectID=\"" + JDOHelper.getObjectId(this.jdoObject) + "\""); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 
 			return false;
 		}
@@ -115,7 +115,7 @@ public class JDOObjectTreeNode<JDOObjectID, JDOObject, Controller extends Active
 		this.childNodes_ro = null;
 
 		if (logger.isDebugEnabled())
-			logger.debug("removeChildNode: removed childNode (return " + res + ")! childNode.jdoObjectID=\"" + JDOHelper.getObjectId(childNode.getJdoObject()) + "\" this.jdoObjectID=\"" + JDOHelper.getObjectId(this.jdoObject) + "\"");
+			logger.debug("removeChildNode: removed childNode (return " + res + ")! childNode.jdoObjectID=\"" + JDOHelper.getObjectId(childNode.getJdoObject()) + "\" this.jdoObjectID=\"" + JDOHelper.getObjectId(this.jdoObject) + "\""); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 
 		return res;
 	} 

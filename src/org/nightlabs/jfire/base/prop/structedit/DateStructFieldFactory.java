@@ -7,8 +7,8 @@ import org.nightlabs.l10n.DateFormatter;
 
 public class DateStructFieldFactory extends AbstractStructFieldFactory {
 
-	public DateStructField createStructField(StructBlock block, String organisationID, String fieldID, WizardPage wizardPage) {
-		DateStructField field = new DateStructField(block, organisationID, fieldID);
+	public DateStructField createStructField(StructBlock block, WizardPage wizardPage) {
+		DateStructField field = new DateStructField(block);
 		field.setDateTimeEditFlags(DateFormatter.FLAGS_DATE_LONG);
 		return field;
 	}

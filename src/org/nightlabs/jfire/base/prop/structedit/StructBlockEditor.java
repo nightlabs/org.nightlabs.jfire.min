@@ -24,7 +24,7 @@ public class StructBlockEditor implements StructPartEditor<StructBlock> {
 	 */
 	public void setData(StructBlock data) {
 		if (structBlockEditorComposite == null)
-			throw new IllegalStateException("You have to call createComposite(...) prior to calling setData(...)");
+			throw new IllegalStateException("You have to call createComposite(...) prior to calling setData(...)"); //$NON-NLS-1$
 		
 		structBlockEditorComposite.setStructBlock(data);
 	}

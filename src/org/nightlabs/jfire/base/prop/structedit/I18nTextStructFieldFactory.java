@@ -7,7 +7,7 @@ import org.nightlabs.jfire.prop.structfield.I18nTextStructField;
 
 public class I18nTextStructFieldFactory extends AbstractStructFieldFactory {
 	
-	public AbstractStructField createStructField(StructBlock block, String organisationID, String fieldID, WizardPage wizardPage) {
-		return new I18nTextStructField(block, organisationID, fieldID);
+	public AbstractStructField createStructField(StructBlock block, WizardPage wizardPage) {
+		return new I18nTextStructField(block);
 	}
 }

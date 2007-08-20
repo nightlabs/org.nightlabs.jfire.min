@@ -197,15 +197,15 @@ implements IConfigModuleController
 	public void updateGuiWith(ConfigModule configModule) 
 	{
 		if (configModule == null)
-			throw new RuntimeException("The ConfigModule configModule passed to updateGuiWith(configModule) must not be null!");
+			throw new RuntimeException("The ConfigModule configModule passed to updateGuiWith(configModule) must not be null!"); //$NON-NLS-1$
 		
 		try {
 			ConfigID newConfigID = (ConfigID) JDOHelper.getObjectId(configModule.getConfig()); 
 			if (newConfigID != null && ! newConfigID.equals(getConfigID()))
-				throw new IllegalStateException("The given ConfigModule does not belong to the Config this page is editing!");
+				throw new IllegalStateException("The given ConfigModule does not belong to the Config this page is editing!"); //$NON-NLS-1$
 		} catch (JDODetachedFieldAccessException e) {
 			if (logger.isEnabledFor(Priority.WARN))
-				logger.warn("The given ConfigModule has no Config detached with it! Module = "+configModule);
+				logger.warn("The given ConfigModule has no Config detached with it! Module = "+configModule); //$NON-NLS-1$
 		} // if config is not in FetchGroups -> believe given configModule belongs to this config
 
 		setConfigModule(configModule);

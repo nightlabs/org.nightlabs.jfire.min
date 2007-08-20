@@ -9,6 +9,7 @@ import org.nightlabs.base.composite.XComposite;
 import org.nightlabs.base.language.I18nTextEditor;
 import org.nightlabs.base.language.LanguageChooser;
 import org.nightlabs.base.language.I18nTextEditor.EditMode;
+import org.nightlabs.jfire.base.resource.Messages;
 import org.nightlabs.jfire.prop.StructBlock;
 
 public class StructBlockEditorComposite extends XComposite {
@@ -21,13 +22,13 @@ public class StructBlockEditorComposite extends XComposite {
 
 		this.setVisible(false);
 
-		blockNameEditor = new I18nTextEditor(this, languageChooser, "Block name:");
+		blockNameEditor = new I18nTextEditor(this, languageChooser, Messages.getString("org.nightlabs.jfire.base.prop.structedit.StructBlockEditorComposite.blockNameEditor.caption")); //$NON-NLS-1$
 		
 		new Label(this, SWT.SEPARATOR | SWT.HORIZONTAL).setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		
 		checkComp = new Button(this, SWT.CHECK);
 		checkComp.setLayoutData((new GridData(GridData.HORIZONTAL_ALIGN_CENTER)));
-		checkComp.setText("Is unique?");
+		checkComp.setText(Messages.getString("org.nightlabs.jfire.base.prop.structedit.StructBlockEditorComposite.unique.text")); //$NON-NLS-1$
 	}
 
 	public void setStructBlock(StructBlock psb) {

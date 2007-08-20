@@ -36,10 +36,11 @@ import org.nightlabs.base.composite.LabeledText;
 import org.nightlabs.base.composite.XComposite;
 import org.nightlabs.base.composite.XComposite.LayoutDataMode;
 import org.nightlabs.base.composite.XComposite.LayoutMode;
+import org.nightlabs.jfire.base.resource.Messages;
 
 /**
- * 
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
+ * TODO @Alex: Shouldn't this be named "*Person*" instead of "*PropertySet*"? It looks pretty specialised for Person. If you refactor DO NOT forget to include ALL files ("*"), so that the messages are refactored correctly!
  */
 public class StaticPropertySetSearchFilterProviderComposite extends org.eclipse.swt.widgets.Composite {
 	private Composite firstRow;
@@ -78,13 +79,13 @@ public class StaticPropertySetSearchFilterProviderComposite extends org.eclipse.
 		firstRow.setLayoutData(firstRowLData);
 //		firstRow.setLayout(firstRowLayout);
 
-		controlName = new LabeledText(firstRow, "Name");
+		controlName = new LabeledText(firstRow, Messages.getString("org.nightlabs.jfire.base.prop.search.StaticPropertySetSearchFilterProviderComposite.name.caption")); //$NON-NLS-1$
 		GridData labeledTextComposite1LData = new GridData();
 		labeledTextComposite1LData.horizontalAlignment = GridData.FILL;
 		labeledTextComposite1LData.grabExcessHorizontalSpace = true;
 		controlName.setLayoutData(labeledTextComposite1LData);
 
-		controlPersonID = new LabeledText(firstRow, "PersonID");
+		controlPersonID = new LabeledText(firstRow, Messages.getString("org.nightlabs.jfire.base.prop.search.StaticPropertySetSearchFilterProviderComposite.personID.caption")); //$NON-NLS-1$
 		GridData controlPersonIDLData = new GridData();
 		controlPersonIDLData.horizontalAlignment = GridData.FILL;
 		controlPersonIDLData.grabExcessHorizontalSpace = true;
@@ -107,18 +108,18 @@ public class StaticPropertySetSearchFilterProviderComposite extends org.eclipse.
 		secondRow.setLayoutData(secondRowLData);
 //		secondRow.setLayout(secondRowLayout);
 
-		controlAddress = new LabeledText(secondRow, "Address");
+		controlAddress = new LabeledText(secondRow, Messages.getString("org.nightlabs.jfire.base.prop.search.StaticPropertySetSearchFilterProviderComposite.address.caption")); //$NON-NLS-1$
 		GridData controlAddressLData = new GridData();
 		controlAddressLData.grabExcessHorizontalSpace = true;
 		controlAddressLData.horizontalAlignment = GridData.FILL;
 		controlAddress.setLayoutData(controlAddressLData);
 
-		controlPostCode = new LabeledText(secondRow, "PostCode");
+		controlPostCode = new LabeledText(secondRow, Messages.getString("org.nightlabs.jfire.base.prop.search.StaticPropertySetSearchFilterProviderComposite.postcode.caption")); //$NON-NLS-1$
 		GridData controlPostCodeLData = new GridData();
 		controlPostCodeLData.widthHint = 90;
 		controlPostCode.setLayoutData(controlPostCodeLData);
 
-		controlCity = new LabeledText(secondRow, "City");
+		controlCity = new LabeledText(secondRow, Messages.getString("org.nightlabs.jfire.base.prop.search.StaticPropertySetSearchFilterProviderComposite.city.caption")); //$NON-NLS-1$
 		GridData controlCityLData = new GridData();
 		controlCityLData.horizontalAlignment = GridData.FILL;
 		controlCityLData.grabExcessHorizontalSpace = true;
@@ -138,14 +139,14 @@ public class StaticPropertySetSearchFilterProviderComposite extends org.eclipse.
 		thirdRowLData.horizontalAlignment = GridData.FILL;
 		thirdRow.setLayoutData(thirdRowLData);
 
-		controlPhone = new LabeledText(thirdRow, "Phone");
+		controlPhone = new LabeledText(thirdRow, Messages.getString("org.nightlabs.jfire.base.prop.search.StaticPropertySetSearchFilterProviderComposite.phone.caption")); //$NON-NLS-1$
 		GridData controlPhoneLData = new GridData();
 		controlPhoneLData.grabExcessHorizontalSpace = true;
 		controlPhoneLData.horizontalAlignment = GridData.FILL;
 //		controlPhoneLData.widthHint = 160;
 		controlPhone.setLayoutData(controlPhoneLData);
 
-		controlEmail = new LabeledText(thirdRow, "EMail");
+		controlEmail = new LabeledText(thirdRow, Messages.getString("org.nightlabs.jfire.base.prop.search.StaticPropertySetSearchFilterProviderComposite.email.caption")); //$NON-NLS-1$
 		GridData controlEmailLData = new GridData();
 		controlEmailLData.grabExcessHorizontalSpace = true;
 		controlEmailLData.horizontalAlignment = GridData.FILL;
@@ -154,7 +155,7 @@ public class StaticPropertySetSearchFilterProviderComposite extends org.eclipse.
 
 		if (createSearchButton) {
 			searchButton = new Button(thirdRow, SWT.PUSH);
-			searchButton.setText("Search");
+			searchButton.setText(Messages.getString("org.nightlabs.jfire.base.prop.search.StaticPropertySetSearchFilterProviderComposite.searchButton.text")); //$NON-NLS-1$
 			GridData searchButtonLData = new GridData(GridData.VERTICAL_ALIGN_END);
 			searchButtonLData.grabExcessHorizontalSpace = false;
 			searchButton.setLayoutData(searchButtonLData);

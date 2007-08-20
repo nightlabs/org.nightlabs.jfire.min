@@ -72,7 +72,7 @@ extends AbstractEntryViewer
 
 	public Composite getComposite() {
 		if (sashform == null)
-			throw new IllegalStateException("createComposite() was not called before getComposite()!");
+			throw new IllegalStateException("createComposite() was not called before getComposite()!"); //$NON-NLS-1$
 		return sashform;
 	}
 		
@@ -119,7 +119,7 @@ extends AbstractEntryViewer
 	}
 	
 	public Composite createCategoryEntryComposite(Composite parent) {
-		throw new UnsupportedOperationException("SearchEntryViewer does not support custom Composites for the Category.");
+		throw new UnsupportedOperationException("SearchEntryViewer does not support custom Composites for the Category."); //$NON-NLS-1$
 	}
 	
 }

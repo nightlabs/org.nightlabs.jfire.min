@@ -45,7 +45,6 @@ import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-import org.jboss.aop.joinpoint.Invocation;
 import org.nightlabs.base.composite.FadeableComposite;
 import org.nightlabs.base.job.Job;
 import org.nightlabs.jfire.base.JFireBaseEAR;
@@ -133,7 +132,7 @@ implements ConfigPreferenceChangedListener, IStoreChangedConfigModule
 					
 					
 				} catch (CoreException e) {
-					throw new RuntimeException("Couldn't create an AbstractPreferencePage: ", e);
+					throw new RuntimeException("Couldn't create an AbstractPreferencePage: ", e); //$NON-NLS-1$
 				}
 				updateCurrentConfigModule();
 				updatePreferencesComposite();
@@ -205,8 +204,8 @@ implements ConfigPreferenceChangedListener, IStoreChangedConfigModule
 
 				EditLockMan.sharedInstance().acquireEditLock(
 						JFireBaseEAR.EDIT_LOCK_TYPE_ID_CONFIG, getCurrentConfigID(),
-						Messages.getString("config.ConfigPreferencesEditComposite2.editLockWarning"), 
-						(EditLockCallback)null, new SubProgressMonitor(monitor, 1) //$NON-NLS-1$
+						Messages.getString("config.ConfigPreferencesEditComposite2.editLockWarning"), //$NON-NLS-1$ 
+						(EditLockCallback)null, new SubProgressMonitor(monitor, 1)
 				);
 
 				Display.getDefault().asyncExec(new Runnable() {

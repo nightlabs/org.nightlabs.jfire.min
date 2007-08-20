@@ -14,6 +14,7 @@ import org.nightlabs.annotation.Implement;
 import org.nightlabs.base.composite.ListComposite;
 import org.nightlabs.base.job.Job;
 import org.nightlabs.jdo.NLJDOHelper;
+import org.nightlabs.jfire.base.resource.Messages;
 import org.nightlabs.jfire.organisation.Organisation;
 import org.nightlabs.jfire.organisation.dao.OrganisationDAO;
 import org.nightlabs.jfire.organisation.id.OrganisationID;
@@ -66,7 +67,7 @@ public class OrganisationList
 		this.organisationIDDataSource = _organisationIDDataSource;
 		this.organisationFilter = _organisationFilter;
 
-		new Job("Load Organisations") {
+		new Job(Messages.getString("org.nightlabs.jfire.base.organisation.OrganisationList.loadJob.name")) { //$NON-NLS-1$
 			@Implement
 			protected IStatus run(ProgressMonitor monitor) throws Exception
 			{

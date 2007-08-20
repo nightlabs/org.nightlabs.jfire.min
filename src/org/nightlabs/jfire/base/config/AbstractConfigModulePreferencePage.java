@@ -764,7 +764,7 @@ extends LSDPreferencePage
 	}
 
 	public boolean performOk() {
-		Job storeJob = new Job("Storing ConfigModule") {
+		Job storeJob = new Job(Messages.getString("org.nightlabs.jfire.base.config.AbstractConfigModulePreferencePage.storeJob.name")) { //$NON-NLS-1$
 			@Override
 			protected IStatus run(ProgressMonitor monitor) throws Exception {
 				storeConfigModule(false);

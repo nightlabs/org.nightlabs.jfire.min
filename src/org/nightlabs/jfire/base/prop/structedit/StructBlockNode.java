@@ -6,7 +6,7 @@ import java.util.Locale;
 
 import org.nightlabs.i18n.I18nText;
 import org.nightlabs.jfire.prop.StructBlock;
-import org.nightlabs.util.Utils;
+import org.nightlabs.util.Util;
 
 /**
  * @author Tobias Langner <!-- tobias[dot]langner[at]nightlabs[dot]de -->
@@ -19,7 +19,7 @@ public class StructBlockNode extends TreeNode //implements Comparable<StructBloc
 	public StructBlockNode(StructBlock block)
 	{
 		if (block == null)
-			throw new IllegalArgumentException("block must not be null!");
+			throw new IllegalArgumentException("block must not be null!"); //$NON-NLS-1$
 
 		this.block = block;
 		fields = new LinkedList<StructFieldNode>();		
@@ -81,10 +81,10 @@ public class StructBlockNode extends TreeNode //implements Comparable<StructBloc
 		if (obj == this) return true;
 		if (!(obj instanceof StructBlockNode)) return false;
 		StructBlockNode o = (StructBlockNode) obj;
-		return Utils.equals(o.block, this.block);
+		return Util.equals(o.block, this.block);
 	}
 	@Override
 	public int hashCode() {
-		return Utils.hashCode(this.block);
+		return Util.hashCode(this.block);
 	}
 }

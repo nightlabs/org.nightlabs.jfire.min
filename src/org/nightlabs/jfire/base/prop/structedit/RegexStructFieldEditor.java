@@ -8,6 +8,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.nightlabs.base.composite.XComposite;
+import org.nightlabs.jfire.base.resource.Messages;
 import org.nightlabs.jfire.prop.structfield.RegexStructField;
 
 public class RegexStructFieldEditor extends AbstractStructFieldEditor<RegexStructField> {
@@ -63,7 +64,7 @@ class RegexStructFieldEditComposite extends XComposite {
 		super(parent, style, LayoutMode.TIGHT_WRAPPER, LayoutDataMode.GRID_DATA);
 		this.editor = editor;
 
-		new Label(this, SWT.NONE).setText("Regular expression:");
+		new Label(this, SWT.NONE).setText(Messages.getString("org.nightlabs.jfire.base.prop.structedit.RegexStructFieldEditor.regexLabel.text")); //$NON-NLS-1$
 		regexTextField = new Text(this, getBorderStyle());
 		regexTextField.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		
@@ -106,7 +107,7 @@ class RegexStructFieldEditComposite extends XComposite {
 		}		
 		this.setEnabled(true);
 
-		String patternStr = field.getRegex() == null ? "" : field.getRegex();		
+		String patternStr = field.getRegex() == null ? "" : field.getRegex();		 //$NON-NLS-1$
 		regexTextField.setText(patternStr);
 	}
 }

@@ -39,7 +39,6 @@ import org.eclipse.ui.PlatformUI;
 import org.nightlabs.base.NLBasePlugin;
 import org.nightlabs.config.Config;
 import org.nightlabs.config.ConfigException;
-import org.nightlabs.jfire.base.JFireBasePlugin;
 import org.nightlabs.jfire.base.resource.Messages;
 import org.nightlabs.rcp.splash.SplashAlreadyTerminatedException;
 import org.nightlabs.rcp.splash.SplashScreen;
@@ -145,7 +144,7 @@ public class JFireLoginHandler implements ILoginHandler {
 					return;
 				}
 				else if (res.isWasAuthenticationErr())
-					throw new LoginException("Authentication error");
+					throw new LoginException("Authentication error"); //$NON-NLS-1$
 				else if (res.getException() != null)
 					throw res.getException();
 				else if ((res.getMessage() != null))
@@ -284,18 +283,21 @@ public class JFireLoginHandler implements ILoginHandler {
 					else {
 						// login failed
 						if (loginResult.isWasAuthenticationErr()) {
-							loginPanel.setErrMessage(JFireBasePlugin.getResourceString("login.error.authenticationFailed"));
+							loginPanel.setErrMessage(Messages.getString("org.nightlabs.jfire.base.login.JFireLoginHandler.loginPanel.errMessage_authenticationFailed")); //$NON-NLS-1$
 						}
 						else if (loginResult.isWasCommunicationErr()) {
-							loginPanel.setErrMessage(JFireBasePlugin.getResourceString("login.error.communicatinError")+" "+loginResult.getException().getMessage());
+							loginPanel.setErrMessage(
+									String.format(Messages.getString("org.nightlabs.jfire.base.login.JFireLoginHandler.loginPanel.errMessage_communicationError"), //$NON-NLS-1$
+									new Object[] { loginResult.getException().getMessage() }
+							));
 						}
 						else {
 							String message = loginResult.getMessage();
 							if (loginResult.getException() != null) {
-								message += "\n"+loginResult.getException().getClass().getName()+": "+loginResult.getException().getLocalizedMessage();
+								message += "\n"+loginResult.getException().getClass().getName()+": "+loginResult.getException().getLocalizedMessage(); //$NON-NLS-1$ //$NON-NLS-2$
 								Throwable cause = loginResult.getException().getCause();
 								while ( cause != null ) {
-									message += "\n"+cause.getClass().getName()+": "+cause.getLocalizedMessage();
+									message += "\n"+cause.getClass().getName()+": "+cause.getLocalizedMessage(); //$NON-NLS-1$ //$NON-NLS-2$
 									cause = cause.getCause();
 								}
 								loginResult.getException().printStackTrace();

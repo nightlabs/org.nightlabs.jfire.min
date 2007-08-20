@@ -400,7 +400,7 @@ implements InitialContextProvider
 					JFireRCDLDelegate.sharedInstance().register(DelegatingClassLoaderOSGI.getSharedInstance()); // this method does nothing, if already registered.
 					Set<String> test = JFireRCDLDelegate.sharedInstance().getPublishedRemotePackages();
 					for (String pkg : test) {
-						System.out.println(" "+pkg+",");
+						System.out.println(" "+pkg+","); //$NON-NLS-1$ //$NON-NLS-2$
 					}
 					boolean needRestart = JFireJ2EEPlugin.getDefault().updateManifest();
 					if (needRestart) {
@@ -447,7 +447,7 @@ implements InitialContextProvider
 		if (RCPUtil.getActiveWorkbenchShell() != null)
 			PlatformUI.getWorkbench().restart();
 		else { // too early!
-			new org.eclipse.core.runtime.jobs.Job("Restart") {
+			new org.eclipse.core.runtime.jobs.Job("Restart") { //$NON-NLS-1$
 				protected IStatus run(IProgressMonitor monitor)
 				{
 					try {
@@ -1061,11 +1061,11 @@ implements InitialContextProvider
 //				RMIClassLoader.loadClass("org.jboss.security.jndi.LoginInitialContextFactory");
 //				RMIClassLoader.getDefaultProviderInstance().loadClass(codebase, name, defaultLoader));
 //				Thread.currentThread().setContextClassLoader(Login.class.getClass().getClassLoader());
-				System.out.println("**********************************************************");
-				System.out.println("Create testing login");
+				System.out.println("**********************************************************"); //$NON-NLS-1$
+				System.out.println("Create testing login"); //$NON-NLS-1$
 				jfireCLBackend = JFireRCLBackendUtil.getHome(
 						login.getInitialContextProperties()).create();
-				System.out.println("**********************************************************");
+				System.out.println("**********************************************************"); //$NON-NLS-1$
 //				languageManager = LanguageManagerUtil.getHome(
 //				login.getInitialContextProperties()).create();
 				loginResult.setSuccess(true);

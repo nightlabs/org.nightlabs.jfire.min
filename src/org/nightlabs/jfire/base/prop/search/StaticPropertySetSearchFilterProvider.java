@@ -41,6 +41,7 @@ import org.nightlabs.jdo.search.SearchFilter;
 import org.nightlabs.jdo.search.SearchFilterItem;
 import org.nightlabs.jdo.ui.search.SearchFilterProvider;
 import org.nightlabs.jdo.ui.search.SearchResultFetcher;
+import org.nightlabs.jfire.base.resource.Messages;
 import org.nightlabs.jfire.person.PersonStruct;
 import org.nightlabs.jfire.prop.id.StructFieldID;
 import org.nightlabs.jfire.prop.search.PropSearchFilter;
@@ -48,6 +49,7 @@ import org.nightlabs.jfire.prop.search.TextPropSearchFilterItem;
 
 /**
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
+ * TODO @Alex: Shouldn't this class be named StaticPerson* and be in the person package? It looks pretty much specialised for person stuff...
  */
 public class StaticPropertySetSearchFilterProvider implements
 		SearchFilterProvider {
@@ -88,7 +90,7 @@ public class StaticPropertySetSearchFilterProvider implements
 		criteriaBuilderComposite = new StaticPropertySetSearchFilterProviderComposite(wrapper, SWT.NONE, !createOwnSearchButton);
 		if (createOwnSearchButton) {
 			searchButton = new Button(criteriaBuilderComposite, SWT.PUSH);
-			searchButton.setText("&Search");
+			searchButton.setText(Messages.getString("org.nightlabs.jfire.base.prop.search.StaticPropertySetSearchFilterProvider.searchButton.text")); //$NON-NLS-1$
 			searchButton.addSelectionListener(searchListener);
 			GridData gd = new GridData();
 			gd.horizontalAlignment = GridData.END;
@@ -122,7 +124,7 @@ public class StaticPropertySetSearchFilterProvider implements
 	}
 	
 	public static Collection<String> parseNameNeedles(String needle) {
-		String[] toks = needle.split("[:;,. ]+");
+		String[] toks = needle.split("[:;,. ]+"); //$NON-NLS-1$
 		Collection<String> result = new ArrayList<String>(toks.length);
 		for (int i = 0; i < toks.length; i++) {
 			result.add(toks[i]);
@@ -134,13 +136,13 @@ public class StaticPropertySetSearchFilterProvider implements
 //		String text = criteriaBuilderComposite.getControlName().getTextControl().getText();
 		// sTok will return Delims
 		ParsedNameCriteria result = new ParsedNameCriteria();
-		String[] toks = needle.split("[:;,. ]+");
+		String[] toks = needle.split("[:;,. ]+"); //$NON-NLS-1$
 		result.completeString = needle;
 		for (int i = 0; i < toks.length; i++) {
 			try {
 				long tmpLong = Long.parseLong(toks[i]);
 				result.personID = tmpLong;
-				result.completeString.replace(toks[i], "");
+				result.completeString.replace(toks[i], ""); //$NON-NLS-1$
 			} catch (NumberFormatException e) {}
 		} 
 		switch (toks.length) {
@@ -150,20 +152,20 @@ public class StaticPropertySetSearchFilterProvider implements
 				result.firstName = toks[2];
 				break;
 			case 2: 
-				result.company = "";
+				result.company = ""; //$NON-NLS-1$
 				result.name = toks[0];
 				result.firstName = toks[1];
 				break;
 			case 1:
-				if (needle.indexOf(":") > 0 || needle.indexOf(";") > 0) {
+				if (needle.indexOf(":") > 0 || needle.indexOf(";") > 0) { //$NON-NLS-1$ //$NON-NLS-2$
 					result.company = toks[0];
-					result.name = "";
+					result.name = ""; //$NON-NLS-1$
 				}
 				else {
-					result.company = "";
+					result.company = ""; //$NON-NLS-1$
 					result.name = toks[0];
 				}
-				result.firstName = "";
+				result.firstName = ""; //$NON-NLS-1$
 				break;
 			default:
 				if (toks.length != 0) {
@@ -221,17 +223,17 @@ public class StaticPropertySetSearchFilterProvider implements
 //		}
 //		if (!criteriaBuilderComposite.getControlCompany().getTextControl().getText().equals(""))
 //			filter.addSearchFilterItem(new TextPersonSearchFilterItem(PersonStruct.PERSONALDATA_COMPANY,SearchFilterItem.MATCHTYPE_CONTAINS,criteriaBuilderComposite.getControlCompany().getTextControl().getText()));
-		if (!criteriaBuilderComposite.getControlAddress().getTextControl().getText().equals(""))
+		if (!criteriaBuilderComposite.getControlAddress().getTextControl().getText().equals("")) //$NON-NLS-1$
 			filter.addSearchFilterItem(new TextPropSearchFilterItem(PersonStruct.POSTADDRESS_ADDRESS,SearchFilterItem.MATCHTYPE_CONTAINS,criteriaBuilderComposite.getControlAddress().getTextControl().getText()));
-		if (!criteriaBuilderComposite.getControlCity().getTextControl().getText().equals(""))
+		if (!criteriaBuilderComposite.getControlCity().getTextControl().getText().equals("")) //$NON-NLS-1$
 			filter.addSearchFilterItem(new TextPropSearchFilterItem(PersonStruct.POSTADDRESS_CITY,SearchFilterItem.MATCHTYPE_CONTAINS,criteriaBuilderComposite.getControlCity().getTextControl().getText()));
-		if (!criteriaBuilderComposite.getControlPostCode().getTextControl().getText().equals(""))
+		if (!criteriaBuilderComposite.getControlPostCode().getTextControl().getText().equals("")) //$NON-NLS-1$
 			filter.addSearchFilterItem(new TextPropSearchFilterItem(PersonStruct.POSTADDRESS_POSTCODE,SearchFilterItem.MATCHTYPE_CONTAINS,criteriaBuilderComposite.getControlPostCode().getTextControl().getText()));
 //		if (!criteriaBuilderComposite.getControlPhonePre().getTextControl().getText().equals(""))
 //			filter.addSearchFilterItem(new TextPersonSearchFilterItem(PersonStruct.PHONE_AREACODE,SearchFilterItem.MATCHTYPE_CONTAINS,criteriaBuilderComposite.getControlPhonePre().getTextControl().getText()));
 //		if (!criteriaBuilderComposite.getControlPhone().getTextControl().getText().equals(""))
 //			filter.addSearchFilterItem(new TextPropSearchFilterItem(PersonStruct.PHONE_LOCALNUMBER,SearchFilterItem.MATCHTYPE_CONTAINS,criteriaBuilderComposite.getControlPhone().getTextControl().getText()));
-		if (!criteriaBuilderComposite.getControlEmail().getTextControl().getText().equals(""))
+		if (!criteriaBuilderComposite.getControlEmail().getTextControl().getText().equals("")) //$NON-NLS-1$
 			filter.addSearchFilterItem(new TextPropSearchFilterItem(PersonStruct.INTERNET_EMAIL,SearchFilterItem.MATCHTYPE_CONTAINS,criteriaBuilderComposite.getControlEmail().getTextControl().getText()));
 		
 		return filter;

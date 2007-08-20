@@ -53,7 +53,7 @@ import org.nightlabs.progress.NullProgressMonitor;
 public class BlockBasedEditor extends AbstractBlockBasedEditor {
 	
 	private static Logger LOGGER = Logger.getLogger(BlockBasedEditor.class);
-	public static final String EDITORTYPE_BLOCK_BASED = "block-based";
+	public static final String EDITORTYPE_BLOCK_BASED = "block-based"; //$NON-NLS-1$
 	
 	private GroupedContentComposite groupedContentComposite;
 	
@@ -157,7 +157,7 @@ public class BlockBasedEditor extends AbstractBlockBasedEditor {
 	public Control createControl(Composite parent, boolean refresh) {
 		if (groupedContentComposite == null) {
 			groupedContentComposite = new GroupedContentComposite(parent, SWT.NONE, true);
-			groupedContentComposite.setGroupTitle("propTail");
+			groupedContentComposite.setGroupTitle("propTail"); //$NON-NLS-1$
 		}
 		if (refresh)
 			refreshControl();

@@ -49,11 +49,11 @@ public class PropertySetSearchResultTableLabelProvider implements ITableLabelPro
 	 */
 	public String getColumnText(Object element, int columnIndex) {
 		// TODO: temporär -> columns, data ... 
-		String label = "";
+		String label = ""; //$NON-NLS-1$
 		if ((element instanceof Person)) {
 //			throw new IllegalArgumentException("Element should be of type Person but is "+element.getClass().getName());
 			Person person = (Person)element;
-			label = person.getOrganisationID()+": "+person.getPropertySetID();
+			label = person.getOrganisationID()+": "+person.getPropertySetID(); //$NON-NLS-1$
 		} 
 		else if (element instanceof Object[]) {
 			Object[] array = (Object[])element;

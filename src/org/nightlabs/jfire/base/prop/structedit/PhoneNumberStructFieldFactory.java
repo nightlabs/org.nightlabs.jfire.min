@@ -7,7 +7,7 @@ import org.nightlabs.jfire.prop.structfield.PhoneNumberStructField;
 
 public class PhoneNumberStructFieldFactory extends AbstractStructFieldFactory {
 
-	public AbstractStructField createStructField(StructBlock block, String organisationID, String fieldID, WizardPage wizardPage) {
-		return new PhoneNumberStructField(block, organisationID, fieldID);
+	public AbstractStructField createStructField(StructBlock block, WizardPage wizardPage) {
+		return new PhoneNumberStructField(block);
 	}
 }

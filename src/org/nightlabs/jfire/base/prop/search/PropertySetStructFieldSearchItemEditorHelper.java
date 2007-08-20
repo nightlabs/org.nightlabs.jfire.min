@@ -79,7 +79,7 @@ public abstract class PropertySetStructFieldSearchItemEditorHelper implements
 		try {
 			result = (PropertySetStructFieldSearchItemEditorHelper)this.getClass().newInstance();
 		} catch (Throwable t) {
-			IllegalStateException ill = new IllegalStateException("Error instatiating new StructFieldSearchItemEditorHelper "+this);
+			IllegalStateException ill = new IllegalStateException("Error instatiating new StructFieldSearchItemEditorHelper "+this); //$NON-NLS-1$
 			ill.initCause(t);
 			throw ill;
 		}
@@ -91,7 +91,7 @@ public abstract class PropertySetStructFieldSearchItemEditorHelper implements
 	 * @see org.nightlabs.jfire.base.prop.search.ProperySetSearchFilterItemEditorHelper#getDisplayName()
 	 */
 	public String getDisplayName() {
-		return personStructField.getStructBlockID()+": "+personStructField.getStructFieldKey();
+		return personStructField.getStructBlockID()+": "+personStructField.getStructFieldKey(); //$NON-NLS-1$
 	}
 
 }

@@ -8,9 +8,9 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
-import org.nightlabs.base.composite.DoubleSpinnerComposite;
 import org.nightlabs.base.composite.NumberSpinnerComposite;
 import org.nightlabs.base.composite.XComposite;
+import org.nightlabs.jfire.base.resource.Messages;
 
 /**
  * @author Daniel.Mazurek [at] NightLabs [dot] de
@@ -60,7 +60,7 @@ extends XComposite
 		group.setLayout(new GridLayout());
 		
 		activeButton = new Button(group, SWT.CHECK);
-		activeButton.setText("Active");
+		activeButton.setText(Messages.getString("org.nightlabs.jfire.base.overview.search.SpinnerSearchEntry.activeButton.text")); //$NON-NLS-1$
 		activeButton.addSelectionListener(activeButtonListener);
 		
 		spinnerComposite = new NumberSpinnerComposite(group, SWT.NONE, SWT.BORDER, 2, -Double.MAX_VALUE, Double.MAX_VALUE, 0.1, LayoutMode.TOTAL_WRAPPER, LayoutDataMode.GRID_DATA);

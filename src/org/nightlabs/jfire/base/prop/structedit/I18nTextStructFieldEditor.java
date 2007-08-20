@@ -7,6 +7,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Spinner;
 import org.nightlabs.base.composite.XComposite;
+import org.nightlabs.jfire.base.resource.Messages;
 import org.nightlabs.jfire.prop.structfield.I18nTextStructField;
 
 public class I18nTextStructFieldEditor extends AbstractStructFieldEditor<I18nTextStructField> {
@@ -24,7 +25,7 @@ public class I18nTextStructFieldEditor extends AbstractStructFieldEditor<I18nTex
 	protected Composite createSpecialComposite(Composite parent, int style) {
 		XComposite comp = new XComposite(parent, style);
 		comp.getGridLayout().numColumns = 3;		
-		new Label(comp, SWT.NONE).setText("Line count: ");
+		new Label(comp, SWT.NONE).setText(Messages.getString("org.nightlabs.jfire.base.prop.structedit.I18nTextStructFieldEditor.lineCountLabel.text")); //$NON-NLS-1$
 		lineCountSpinner = new Spinner(comp, comp.getBorderStyle());
 		lineCountSpinner.setMinimum(1);
 		lineCountSpinner.setIncrement(1);

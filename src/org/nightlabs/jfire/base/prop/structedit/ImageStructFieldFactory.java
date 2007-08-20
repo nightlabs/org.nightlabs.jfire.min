@@ -6,10 +6,10 @@ import org.nightlabs.jfire.prop.structfield.ImageStructField;
 
 public class ImageStructFieldFactory extends AbstractStructFieldFactory {
 
-	public ImageStructField createStructField(StructBlock block, String organisationID, String fieldID, WizardPage wizardPage) {
-		ImageStructField field = new ImageStructField(block, organisationID, fieldID);
+	public ImageStructField createStructField(StructBlock block, WizardPage wizardPage) {
+		ImageStructField field = new ImageStructField(block);
 		field.setMaxSizeKB(1024);
-		field.addImageFormat("*");
+		field.addImageFormat("*"); //$NON-NLS-1$
 		return field;
 	}
 }

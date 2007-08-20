@@ -61,7 +61,7 @@ public class I18nTextDataFieldComposite extends AbstractDataFieldComposite {
 	public I18nTextDataFieldComposite(I18nTextDataFieldEditor editor, Composite parent, int style, ModifyListener modListener) {
 		super(parent, style);
 		if (!(parent.getLayout() instanceof GridLayout))
-			throw new IllegalArgumentException("Parent should have a GridLayout!");
+			throw new IllegalArgumentException("Parent should have a GridLayout!"); //$NON-NLS-1$
 		
 		this.editor = editor;
 		

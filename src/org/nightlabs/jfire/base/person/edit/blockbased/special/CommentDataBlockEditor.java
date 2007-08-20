@@ -98,7 +98,7 @@ public class CommentDataBlockEditor extends AbstractDataBlockEditor
 			commentData = (TextDataField)dataBlock.getDataField(PersonStruct.COMMENT_COMMENT);
 			refresh();
 		} catch (DataFieldNotFoundException e) {
-			logger.error("DataField not found. ",e);
+			logger.error("DataField not found. ",e); //$NON-NLS-1$
 			commentData = null;
 		}
 	}
@@ -160,7 +160,7 @@ public class CommentDataBlockEditor extends AbstractDataBlockEditor
 			createControl(this);
 			if (commentData != null) {
 				if (commentData.getText() == null)
-					textComment.setText("");
+					textComment.setText(""); //$NON-NLS-1$
 				else
 					textComment.setText(commentData.getText());
 			}

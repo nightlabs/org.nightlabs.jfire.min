@@ -7,7 +7,7 @@ import org.nightlabs.jfire.prop.structfield.NumberStructField;
 
 public class NumberStructFieldFactory extends AbstractStructFieldFactory {
 
-	public AbstractStructField createStructField(StructBlock block, String organisationID, String fieldID, WizardPage wizardPage) {
-		return new NumberStructField(block, organisationID, fieldID);
+	public AbstractStructField createStructField(StructBlock block, WizardPage wizardPage) {
+		return new NumberStructField(block);
 	}
 }

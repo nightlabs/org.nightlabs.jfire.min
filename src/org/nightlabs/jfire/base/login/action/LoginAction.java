@@ -39,6 +39,7 @@ import org.nightlabs.base.resource.SharedImages.ImageDimension;
 import org.nightlabs.base.resource.SharedImages.ImageFormat;
 import org.nightlabs.jfire.base.JFireBasePlugin;
 import org.nightlabs.jfire.base.login.Login;
+import org.nightlabs.jfire.base.resource.Messages;
 
 /**
  * @author Alexander Bieber
@@ -129,19 +130,19 @@ extends LSDWorkbenchWindowActionDelegate
 		switch (loginState) {
 			case Login.LOGINSTATE_LOGGED_IN:
 				action.setImageDescriptor(logoutIcon);
-				action.setToolTipText(JFireBasePlugin.getResourceString("actions.login.tooltip.logout"));
+				action.setToolTipText(Messages.getString("org.nightlabs.jfire.base.login.action.LoginAction.action.toolTipText_loggedIn")); //$NON-NLS-1$
 				action.setHoverImageDescriptor(logoutIcon);
-				break;
+			break;
 			case Login.LOGINSTATE_LOGGED_OUT:
 				action.setImageDescriptor(loginIcon);
-				action.setToolTipText(JFireBasePlugin.getResourceString("actions.login.tooltip.login"));
+				action.setToolTipText(Messages.getString("org.nightlabs.jfire.base.login.action.LoginAction.action.toolTipText_loggedOut")); //$NON-NLS-1$
 				action.setHoverImageDescriptor(loginIcon);
-			break;				
+			break;
 			case Login.LOGINSTATE_OFFLINE:
 				action.setImageDescriptor(loginIcon);
-				action.setToolTipText(JFireBasePlugin.getResourceString("actions.login.tooltip.login"));
+				action.setToolTipText(Messages.getString("org.nightlabs.jfire.base.login.action.LoginAction.action.toolTipText_offline")); //$NON-NLS-1$
 				action.setHoverImageDescriptor(loginIcon);
-				break;				
+			break;
 		}
 	}
 	

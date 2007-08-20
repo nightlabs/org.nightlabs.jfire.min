@@ -13,6 +13,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.forms.widgets.Section;
 import org.nightlabs.jdo.query.JDOQuery;
 import org.nightlabs.jdo.ui.JDOQueryComposite;
+import org.nightlabs.jfire.base.resource.Messages;
 
 /**
  * @author Daniel.Mazurek [at] NightLabs [dot] de
@@ -65,7 +66,7 @@ extends AbstractFormFilterComposite
 	protected void configureSection(Section section, JDOQueryComposite comp) 
 	{
 		Button activeButton = new Button(section, SWT.CHECK);
-		activeButton.setText("Active");
+		activeButton.setText(Messages.getString("org.nightlabs.jfire.base.overview.search.AbstractQueryFilterComposite.activeButton.text")); //$NON-NLS-1$
 		activeButton.setSelection(comp.isActive());
 		activeButton.addSelectionListener(new SelectionListener(){	
 			public void widgetSelected(SelectionEvent e) {

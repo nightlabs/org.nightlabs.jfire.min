@@ -15,6 +15,7 @@ import org.nightlabs.base.composite.XComposite;
 import org.nightlabs.base.language.LanguageChooser;
 import org.nightlabs.base.language.LanguageChooserCombo;
 import org.nightlabs.base.language.LanguageChooserCombo.Mode;
+import org.nightlabs.jfire.base.resource.Messages;
 import org.nightlabs.jfire.prop.id.StructID;
 import org.nightlabs.jfire.prop.id.StructLocalID;
 
@@ -32,7 +33,7 @@ public class StructEditorComposite extends XComposite {
 		public String getText(Object element) {
 			if (element instanceof StructID) {
 				StructID structID = (StructID) element;
-				return structID.organisationID + "#" + structID.linkClass;
+				return structID.organisationID + "#" + structID.linkClass; //$NON-NLS-1$
 			}
 			if (element instanceof StructLocalID) {
 				StructLocalID structLocalID = (StructLocalID) element;
@@ -49,8 +50,8 @@ public class StructEditorComposite extends XComposite {
 		public void widgetSelected(SelectionEvent e) {
 			if (structEditor.isChanged()) {
 				MessageBox mb = new MessageBox(getShell(), SWT.YES | SWT.NO | SWT.CANCEL | SWT.ICON_QUESTION);
-				mb.setText("Current structure was modified.");
-				mb.setMessage("The current structure was modified. Save changes?");
+				mb.setText(Messages.getString("org.nightlabs.jfire.base.prop.structedit.StructEditorComposite.messageBoxStructModifiedSaveConfirmation.text")); //$NON-NLS-1$
+				mb.setMessage(Messages.getString("org.nightlabs.jfire.base.prop.structedit.StructEditorComposite.messageBoxStructModifiedSaveConfirmation.message")); //$NON-NLS-1$
 				switch (mb.open())
 				{
 				case SWT.YES:
@@ -115,7 +116,7 @@ public class StructEditorComposite extends XComposite {
 	}
 	
 	public void setLoadingText() {
-		structTree.setInput("Loading structure...");
+		structTree.setInput(Messages.getString("org.nightlabs.jfire.base.prop.structedit.StructEditorComposite.structTree.input_loadingStructure")); //$NON-NLS-1$
 	}
 	
 	public void setPartEditor(StructPartEditor structPartEditor) {

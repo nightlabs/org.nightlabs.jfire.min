@@ -19,6 +19,7 @@ import org.nightlabs.base.layout.WeightedTableLayout;
 import org.nightlabs.base.table.AbstractTableComposite;
 import org.nightlabs.base.table.TableContentProvider;
 import org.nightlabs.base.table.TableLabelProvider;
+import org.nightlabs.jfire.base.resource.Messages;
 
 /**
  * The default category composite displays a {@link Category}s {@link Entry}s
@@ -84,9 +85,9 @@ public class DefaultCategoryComposite extends AbstractTableComposite<Entry> {
 	@Override
 	protected void createTableColumns(TableViewer tableViewer, Table table) {					
 		TableColumn iconColumn = new TableColumn(table, SWT.NONE);
-		iconColumn.setText("Icon");
+		iconColumn.setText(Messages.getString("org.nightlabs.jfire.base.overview.DefaultCategoryComposite.iconTableColumn.text")); //$NON-NLS-1$
 		TableColumn nameItem = new TableColumn(table, SWT.NONE);
-		nameItem.setText("Text");    				
+		nameItem.setText(Messages.getString("org.nightlabs.jfire.base.overview.DefaultCategoryComposite.nameTableColumn.text"));    				 //$NON-NLS-1$
 		table.setHeaderVisible(false);
 		table.setLinesVisible(false);
 		table.setLayout(new WeightedTableLayout(new int[] {1, 1}, new int[] {20, -1}));

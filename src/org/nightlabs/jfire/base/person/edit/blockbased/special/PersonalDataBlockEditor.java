@@ -92,18 +92,18 @@ public class PersonalDataBlockEditor extends AbstractDataBlockEditor {
 		try {
 			field = dataBlock.getDataField(fieldID);
 		} catch (DataFieldNotFoundException e) {
-			logger.error("addDataFieldEditor(StructFieldID fieldID) DataField not found for fieldID continuing: "+fieldID.toString(),e);
+			logger.error("addDataFieldEditor(StructFieldID fieldID) DataField not found for fieldID continuing: "+fieldID.toString(),e); //$NON-NLS-1$
 		}
 		DataFieldEditor editor = null;
 		if (!hasFieldEditorFor(field)) { 
 			try {
 				editor = DataFieldEditorFactoryRegistry.sharedInstance().getNewEditorInstance(
 						getStruct(), ExpandableBlocksEditor.EDITORTYPE_BLOCK_BASED_EXPANDABLE,
-						"", // TODO: Context ?!?
+						"", // TODO: Context ?!? //$NON-NLS-1$
 						field					
 				);
 			} catch (DataFieldEditorNotFoundException e1) {
-				logger.error("addPersonalDataFieldEditor(PersonStructFieldID fieldID) PersonDataFieldEditor not found for fieldID continuing: "+fieldID.toString(),e1);
+				logger.error("addPersonalDataFieldEditor(PersonStructFieldID fieldID) PersonDataFieldEditor not found for fieldID continuing: "+fieldID.toString(),e1); //$NON-NLS-1$
 			}
 			Control editorControl = editor.createControl(this);
 			GridData editorLData = new GridData();

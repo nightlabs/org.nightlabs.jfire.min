@@ -14,6 +14,7 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.nightlabs.base.extensionpoint.AbstractEPProcessor;
 import org.nightlabs.base.extensionpoint.EPProcessorException;
+import org.nightlabs.jfire.base.resource.Messages;
 
 /**
  * {@link OverviewRegistry} processes extension points with a schema according
@@ -27,16 +28,16 @@ import org.nightlabs.base.extensionpoint.EPProcessorException;
 public abstract class OverviewRegistry 
 extends AbstractEPProcessor 
 {
-	public static final String EXTENSION_POINT_ID = "org.nightlabs.jfire.base.overview";
-	public static final String ELEMENT_CATEGORY = "categoryFactory";
-	public static final String ELEMENT_CATEGORY_ENTRY = "entryFactory";
-	public static final String ATTRIBUTE_NAME = "name";
-	public static final String ATTRIBUTE_CATEGORY_ID = "categoryID";
-	public static final String ATTRIBUTE_CATEGORY_ENTRY_ID = "categoryEntryID";
-	public static final String ATTRIBUTE_ENTRY_FACTORY_CLASS = "class";
-	public static final String ATTRIBUTE_ICON = "icon";
-	public static final String ATTRIBUTE_INDEX = "index";
-	public static final String ATTRIBUTE_CATEGORY_FACTORY_CLASS = "class";
+	public static final String EXTENSION_POINT_ID = "org.nightlabs.jfire.base.overview"; //$NON-NLS-1$
+	public static final String ELEMENT_CATEGORY = "categoryFactory"; //$NON-NLS-1$
+	public static final String ELEMENT_CATEGORY_ENTRY = "entryFactory"; //$NON-NLS-1$
+	public static final String ATTRIBUTE_NAME = "name"; //$NON-NLS-1$
+	public static final String ATTRIBUTE_CATEGORY_ID = "categoryID"; //$NON-NLS-1$
+	public static final String ATTRIBUTE_CATEGORY_ENTRY_ID = "categoryEntryID"; //$NON-NLS-1$
+	public static final String ATTRIBUTE_ENTRY_FACTORY_CLASS = "class"; //$NON-NLS-1$
+	public static final String ATTRIBUTE_ICON = "icon"; //$NON-NLS-1$
+	public static final String ATTRIBUTE_INDEX = "index"; //$NON-NLS-1$
+	public static final String ATTRIBUTE_CATEGORY_FACTORY_CLASS = "class"; //$NON-NLS-1$
 	
 	protected OverviewRegistry() {
 		super();
@@ -53,7 +54,7 @@ extends AbstractEPProcessor
 			String indexString = element.getAttribute(ATTRIBUTE_INDEX);
 			CategoryFactory categoryFactory = null;
 			String className = element.getAttribute(ATTRIBUTE_CATEGORY_FACTORY_CLASS);
-			if (className == null || "".equals(className)) {
+			if (className == null || "".equals(className)) { //$NON-NLS-1$
 				DefaultCategoryFactory defaultCategory = new DefaultCategoryFactory();
 				defaultCategory.setName(name);
 				defaultCategory.setCategoryID(categoryID);
@@ -130,7 +131,7 @@ extends AbstractEPProcessor
 	public CategoryFactory getFallbackCategory() {
 		if (fallBackCategory == null) {
 			DefaultCategoryFactory fallBackCategory = new DefaultCategoryFactory();
-			fallBackCategory.setName("Other");
+			fallBackCategory.setName(Messages.getString("org.nightlabs.jfire.base.overview.OverviewRegistry.fallBackCategory.name")); //$NON-NLS-1$
 			this.fallBackCategory = fallBackCategory;
 		}
 		return fallBackCategory;

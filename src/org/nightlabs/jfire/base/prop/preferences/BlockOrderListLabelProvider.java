@@ -49,12 +49,12 @@ public class BlockOrderListLabelProvider implements ITableLabelProvider{
 	 */
 	public String getColumnText(Object element, int columnIndex) {
 		if (!(element instanceof Map.Entry))
-			return "";
+			return ""; //$NON-NLS-1$
 		Map.Entry entry = (Map.Entry)element;
-		String name = ((String)entry.getKey()).substring(((String)entry.getKey()).lastIndexOf("/")+1);
+		String name = ((String)entry.getKey()).substring(((String)entry.getKey()).lastIndexOf("/")+1); //$NON-NLS-1$
 		switch(columnIndex) {
-			case 0: return name+" ("+(((Integer)entry.getValue()).intValue())+")";
-			default: return "";
+			case 0: return name+" ("+(((Integer)entry.getValue()).intValue())+")"; //$NON-NLS-1$ //$NON-NLS-2$
+			default: return ""; //$NON-NLS-1$
 		}
 	}
 

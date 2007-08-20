@@ -267,7 +267,7 @@ public class EditLockMan
 	public void acquireEditLockAsynchronously(final EditLockTypeID editLockTypeID, 
 			final ObjectID objectID, final String description, final EditLockCallback editLockCallback)
 	{
-		Job lockJob = new Job("Checking for EditLocks...") {
+		Job lockJob = new Job(Messages.getString("org.nightlabs.jfire.base.editlock.EditLockMan.acquireEditLockAsynchronously.job.name")) { //$NON-NLS-1$
 			@Override
 			protected IStatus run(ProgressMonitor monitor) throws Exception {
 				acquireEditLock(editLockTypeID, objectID, description, editLockCallback, monitor);

@@ -40,7 +40,7 @@ public abstract class AbstractCategory implements Category {
 	 */
 	public void createEntries() {
 		if (entries != null) {
-			throw new IllegalStateException("createEntries() should not be called more than once for a Category.");
+			throw new IllegalStateException("createEntries() should not be called more than once for a Category."); //$NON-NLS-1$
 		}
 		entries = new ArrayList<Entry>();
 		for (EntryFactory entryFactory : getCategoryFactory().getEntryFactories()) {

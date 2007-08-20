@@ -100,7 +100,7 @@ public class BlockBasedEditorSection extends RestorableSectionPart
 
 	private void createDescriptionControl(Section section, FormToolkit toolkit, String sectionDescriptionText)
 	{
-		if (sectionDescriptionText == null || "".equals(sectionDescriptionText))
+		if (sectionDescriptionText == null || "".equals(sectionDescriptionText)) //$NON-NLS-1$
 			return;
 
 		section.setText(sectionDescriptionText);

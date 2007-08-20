@@ -28,6 +28,7 @@ import org.nightlabs.base.table.AbstractTableComposite;
 import org.nightlabs.base.table.TableContentProvider;
 import org.nightlabs.base.table.TableLabelProvider;
 import org.nightlabs.jfire.base.login.Login;
+import org.nightlabs.jfire.base.resource.Messages;
 import org.nightlabs.jfire.j2ee.monitor.J2EEServerMonitorManager;
 import org.nightlabs.jfire.j2ee.monitor.J2EEServerMonitorManagerUtil;
 import org.nightlabs.progress.ProgressMonitor;
@@ -36,7 +37,7 @@ import org.nightlabs.progress.ProgressMonitor;
  * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] de -->
  *
  */
-public class ListJMSQueuesComposite extends XComposite {
+public class JMSQueueMessageList extends XComposite {
 
 	public static class MessagesTable extends AbstractTableComposite<JMSMessageDescriptor> {
 
@@ -54,11 +55,11 @@ public class ListJMSQueuesComposite extends XComposite {
 //						case 1: return msg.getJMSType();
 						case 1: return msg.getDescription();
 					}
-					return "";
+					return ""; //$NON-NLS-1$
 				} else {
 					if (colIdx == 0)
 						return String.valueOf(element);
-					return "";
+					return ""; //$NON-NLS-1$
 				}
 			}
 			
@@ -66,9 +67,9 @@ public class ListJMSQueuesComposite extends XComposite {
 		
 		@Override
 		protected void createTableColumns(TableViewer tableViewer, Table table) {
-			new TableColumn(table, SWT.LEFT).setText("ID");
+			new TableColumn(table, SWT.LEFT).setText(Messages.getString("org.nightlabs.jfire.base.j2ee.JMSQueueMessageList.idTableColumn.text")); //$NON-NLS-1$
 //			new TableColumn(table, SWT.LEFT).setText("Type");
-			new TableColumn(table, SWT.LEFT).setText("Description");
+			new TableColumn(table, SWT.LEFT).setText(Messages.getString("org.nightlabs.jfire.base.j2ee.JMSQueueMessageList.descriptionTableColumn.text")); //$NON-NLS-1$
 			TableLayout l = new TableLayout();
 			l.addColumnData(new ColumnWeightData(1));
 //			l.addColumnData(new ColumnWeightData(1));
@@ -83,7 +84,7 @@ public class ListJMSQueuesComposite extends XComposite {
 		}
 	}
 	
-	private JMSQeuesCombo queuesCombo;
+	private JMSQueueCombo queuesCombo;
 	private MessagesTable messagesTable;
 	private XComposite summaryComposite;
 	private Label summaryLabel;
@@ -94,9 +95,9 @@ public class ListJMSQueuesComposite extends XComposite {
 	 * @param parent
 	 * @param style
 	 */
-	public ListJMSQueuesComposite(Composite parent, int style) {
+	public JMSQueueMessageList(Composite parent, int style) {
 		super(parent, style);
-		queuesCombo = new JMSQeuesCombo(this, SWT.NONE, "Messages");
+		queuesCombo = new JMSQueueCombo(this, SWT.NONE, Messages.getString("org.nightlabs.jfire.base.j2ee.JMSQueueMessageList.queueCombo.caption")); //$NON-NLS-1$
 		queuesCombo.addSelectionListener(new SelectionListener() {
 			public void widgetDefaultSelected(SelectionEvent e) {
 			}
@@ -113,12 +114,12 @@ public class ListJMSQueuesComposite extends XComposite {
 	}
 	
 	private void loadQueueMessaged(final String queueName) {
-		Job loadJob = new Job("Loading Messages") {
+		Job loadJob = new Job(Messages.getString("org.nightlabs.jfire.base.j2ee.JMSQueueMessageList.loadJob.name")) { //$NON-NLS-1$
 			@Override
 			protected IStatus run(ProgressMonitor monitor) throws Exception {
 				Display.getDefault().asyncExec(new Runnable() {
 					public void run() {
-						messagesTable.setInput(new String[] {"loading ..."});
+						messagesTable.setInput(new String[] {Messages.getString("org.nightlabs.jfire.base.j2ee.JMSQueueMessageList.messagesTable.input_loading")}); //$NON-NLS-1$
 					}
 				});
 				J2EEServerMonitorManager manager = J2EEServerMonitorManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
@@ -126,7 +127,7 @@ public class ListJMSQueuesComposite extends XComposite {
 				Display.getDefault().asyncExec(new Runnable() {
 					public void run() {
 						messagesTable.setInput(messages);
-						summaryLabel.setText(String.format("%d messages in queue", messages.size()));
+						summaryLabel.setText(String.format(Messages.getString("org.nightlabs.jfire.base.j2ee.JMSQueueMessageList.summaryLabel.text"), messages.size())); //$NON-NLS-1$
 					}
 				});
 				return Status.OK_STATUS;

@@ -9,6 +9,7 @@ import org.nightlabs.jfire.base.prop.structedit.StructBlockNode;
 import org.nightlabs.jfire.base.prop.structedit.StructEditor;
 import org.nightlabs.jfire.base.prop.structedit.StructFieldNode;
 import org.nightlabs.jfire.base.prop.structedit.TreeNode;
+import org.nightlabs.jfire.base.resource.Messages;
 
 /**
  * @author Marius Heinzmann [marius<at>NightLabs<dot>de]
@@ -18,9 +19,11 @@ public class AddStructFieldAction extends SelectionAction {
 	private StructEditor editor;
 	
 	public AddStructFieldAction(StructEditor editor) {
-		super("Add a StructField", SharedImages.ADD_16x16); // TODO: needs an own icon!
+		super(
+				Messages.getString("org.nightlabs.jfire.base.prop.structedit.action.AddStructFieldAction.text"), //$NON-NLS-1$
+				SharedImages.ADD_16x16); // TODO: needs an own icon!
 		this.editor = editor;
-		setToolTipText("Add a new StructField to the currently selected StructBlock");
+		setToolTipText(Messages.getString("org.nightlabs.jfire.base.prop.structedit.action.AddStructFieldAction.toolTipText")); //$NON-NLS-1$
 	}
 	
 	@Override

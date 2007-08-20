@@ -26,11 +26,11 @@ import org.nightlabs.base.extensionpoint.AbstractEPProcessor;
 public class DefaultCategoryFactory 
 implements CategoryFactory 
 {
-	public static final String ELEMENT_CATEGORY = "categoryFactory";
-	public static final String ATTRIBUTE_NAME = "name";
-	public static final String ATTRIBUTE_CATEGORY_ID = "categoryID";
-	public static final String ATTRIBUTE_ICON = "icon";
-	public static final String ATTRIBUTE_INDEX = "index";
+	public static final String ELEMENT_CATEGORY = "categoryFactory"; //$NON-NLS-1$
+	public static final String ATTRIBUTE_NAME = "name"; //$NON-NLS-1$
+	public static final String ATTRIBUTE_CATEGORY_ID = "categoryID"; //$NON-NLS-1$
+	public static final String ATTRIBUTE_ICON = "icon"; //$NON-NLS-1$
+	public static final String ATTRIBUTE_INDEX = "index"; //$NON-NLS-1$
 	
 	private String name;
 	/**

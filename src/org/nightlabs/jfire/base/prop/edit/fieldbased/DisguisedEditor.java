@@ -34,7 +34,7 @@ package org.nightlabs.jfire.base.prop.edit.fieldbased;
  */
 public class DisguisedEditor extends FieldBasedEditor {
 
-	public static final String EDITORTYPE_FIELD_BASED_DISGUISED = "field-based-disguised";
+	public static final String EDITORTYPE_FIELD_BASED_DISGUISED = "field-based-disguised"; //$NON-NLS-1$
 	
 	/**
 	 * 

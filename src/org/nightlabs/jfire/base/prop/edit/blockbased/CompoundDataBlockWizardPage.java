@@ -92,7 +92,7 @@ public class CompoundDataBlockWizardPage extends WizardHopPage {
 		if (title != null)
 			this.setTitle(title);
 		if (propSet == null)
-			throw new IllegalArgumentException("Parameter propertySet must not be null");
+			throw new IllegalArgumentException("Parameter propertySet must not be null"); //$NON-NLS-1$
 		this.propSet = propSet;
 		this.structBlockIDs = structBlockIDs;
 		for (int i = 0; i < structBlockIDs.length; i++) {

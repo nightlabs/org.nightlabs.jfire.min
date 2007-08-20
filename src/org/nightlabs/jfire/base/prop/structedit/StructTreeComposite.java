@@ -88,7 +88,7 @@ public class StructTreeComposite extends AbstractTreeComposite implements Langua
 		}
 
 		public String getColumnText(Object element, int columnIndex) {
-			String label = "";
+			String label = ""; //$NON-NLS-1$
 			if (element instanceof TreeNode)
 				label = ((TreeNode) element).getI18nText().getText(currLanguageId);
 			if (element instanceof String)

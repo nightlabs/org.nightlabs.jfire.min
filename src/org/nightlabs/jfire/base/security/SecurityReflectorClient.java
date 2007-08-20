@@ -20,7 +20,7 @@ extends SecurityReflector
 
 	public UserDescriptor _getUserDescriptor() {
 		if (logger.isDebugEnabled())
-			logger.debug("_getUserDescriptor: enter");
+			logger.debug("_getUserDescriptor: enter"); //$NON-NLS-1$
 
 		Login l = Login.sharedInstance();
 		return new UserDescriptor(l.getOrganisationID(), l.getUserID(), l.getSessionID());

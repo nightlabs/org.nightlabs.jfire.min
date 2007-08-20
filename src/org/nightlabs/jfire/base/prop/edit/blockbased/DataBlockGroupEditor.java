@@ -83,7 +83,7 @@ implements DataBlockEditorChangedListener
 			try {
 				dataBlockEditor.refresh(struct, blockGroup.getDataBlock(i));
 			} catch (DataBlockNotFoundException e) {
-				IllegalStateException ill = new IllegalStateException("No no datablock found on pos "+i);
+				IllegalStateException ill = new IllegalStateException("No no datablock found on pos "+i); //$NON-NLS-1$
 				ill.initCause(e);
 				throw ill;
 			}
@@ -108,7 +108,7 @@ implements DataBlockEditorChangedListener
 						blockEditor.addPropDataBlockEditorChangedListener(this);
 						propDataBlockEditors.add(blockEditor);
 					} catch (DataBlockNotFoundException e) {
-						LOGGER.error("Could not find DataBlock (idx = 0) for "+blockGroup.getStructBlockKey());
+						LOGGER.error("Could not find DataBlock (idx = 0) for "+blockGroup.getStructBlockKey()); //$NON-NLS-1$
 					}
 				}
 				j = i;

@@ -180,7 +180,7 @@ public abstract class AbstractDataFieldEditor<F extends AbstractDataField> imple
 		}
 		
 		if (structField == null)
-			throw new IllegalStateException("The StructField can only be retrieved if the Editor has already been assigned a DataField.");
+			throw new IllegalStateException("The StructField can only be retrieved if the Editor has already been assigned a DataField."); //$NON-NLS-1$
 		
 		return structField;
 	}

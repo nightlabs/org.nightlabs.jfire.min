@@ -182,8 +182,8 @@ public class ConfigSetupRegistry extends AbstractEPProcessor
 	 * @return the ConfigSetup, which links to the Object with classname == <code>configType</code>.
 	 */
 	public ConfigSetup getConfigSetupForConfigType(String configType) {
-		if (configType == null || "".equals(configType))
-			throw new IllegalArgumentException("Parameter configType must not be null or empty!");
+		if (configType == null || "".equals(configType)) //$NON-NLS-1$
+			throw new IllegalArgumentException("Parameter configType must not be null or empty!"); //$NON-NLS-1$
 		
 		if (configSetupsByType == null)
 			getConfigSetups();
@@ -239,13 +239,13 @@ public class ConfigSetupRegistry extends AbstractEPProcessor
 	{
 		ConfigSetup setup = getConfigSetupForConfigType(configID);
 		if (setup == null)
-			throw new NoSetupPresentException("No Setup found related to this configID: "+configID);
+			throw new NoSetupPresentException("No Setup found related to this configID: "+configID); //$NON-NLS-1$
 		
 		ConfigPreferenceNode rootNode = mergedTreeNodes.get(scope+setup.getConfigSetupType());
 		if (rootNode != null)
 			return rootNode;
 		ConfigPreferenceNode registeredRootNode = ConfigPreferencePageRegistry.sharedInstance().getPreferencesRootNode();
-		rootNode = new ConfigPreferenceNode("", "", "", null, null, null, null);
+		rootNode = new ConfigPreferenceNode("", "", "", null, null, null, null); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 
 		Set<String> mergeModules = new HashSet<String>();
 		mergeModules.addAll(setup.getConfigModuleClasses());		
@@ -259,7 +259,7 @@ public class ConfigSetupRegistry extends AbstractEPProcessor
 		// for all remaining classes add a null-Node
 		for (Iterator iter = mergeModules.iterator(); iter.hasNext();) {
 			String moduleClassName = (String) iter.next();
-			ConfigPreferenceNode node = new ConfigPreferenceNode("", moduleClassName, "", rootNode, null, null, null);
+			ConfigPreferenceNode node = new ConfigPreferenceNode("", moduleClassName, "", rootNode, null, null, null); //$NON-NLS-1$ //$NON-NLS-2$
 			rootNode.addChild(node);
 		}
 		mergedTreeNodes.put(scope+setup.getConfigSetupType(), rootNode);
@@ -279,7 +279,7 @@ public class ConfigSetupRegistry extends AbstractEPProcessor
 			ConfigPreferenceNode orgNode,
 			ConfigPreferenceNode newNodeParent) 
 	{
-		String nodeClassName = orgNode.getConfigModuleClass() != null ? orgNode.getConfigModuleClass().getName() : ""; 
+		String nodeClassName = orgNode.getConfigModuleClass() != null ? orgNode.getConfigModuleClass().getName() : "";  //$NON-NLS-1$
 		boolean hasRegistration = setup.getConfigModuleClasses().contains(nodeClassName); 
 //			(orgNode.createPreferencePage() != null) && 
 		if (hasRegistration) {

@@ -50,6 +50,7 @@ import org.nightlabs.jfire.base.prop.edit.DataFieldEditorFactoryRegistry;
 import org.nightlabs.jfire.base.prop.edit.DataFieldEditorNotFoundException;
 import org.nightlabs.jfire.base.prop.edit.PropertySetEditor;
 import org.nightlabs.jfire.base.prop.edit.blockbased.DataBlockEditorChangedListener;
+import org.nightlabs.jfire.base.resource.Messages;
 import org.nightlabs.jfire.prop.AbstractDataField;
 import org.nightlabs.jfire.prop.IStruct;
 import org.nightlabs.jfire.prop.PropertySet;
@@ -71,7 +72,7 @@ public class FieldBasedEditor implements PropertySetEditor {
 
 	public static final Logger LOGGER = Logger.getLogger(FieldBasedEditor.class);
 	
-	public static final String EDITORTYPE_FIELD_BASED = "field-based";
+	public static final String EDITORTYPE_FIELD_BASED = "field-based"; //$NON-NLS-1$
 
 	/**
 	 * 
@@ -290,7 +291,7 @@ public class FieldBasedEditor implements PropertySetEditor {
 			gridLayout = createGridLayout();
 			
 			if (gridLayout == null)
-				throw new IllegalStateException("createGridLayout() returned null!!");
+				throw new IllegalStateException("createGridLayout() returned null!!"); //$NON-NLS-1$
 			
 			editorWrapper.setLayout(gridLayout);			
 			editorWrapper.addSelectionChangeListener(editorWrapperListener);
@@ -372,7 +373,7 @@ public class FieldBasedEditor implements PropertySetEditor {
 						if (propertySet.getDisplayName() != null)
 							propTitleLabel.setText(propertySet.getDisplayName());
 						else 
-							propTitleLabel.setText("");
+							propTitleLabel.setText(""); //$NON-NLS-1$
 						propTitleLabel.setBackground(new Color(Display.getDefault(), 155, 155, 155));
 					}
 					
@@ -385,7 +386,7 @@ public class FieldBasedEditor implements PropertySetEditor {
 						try {
 							field = propertySet.getDataField(structFieldID);
 						} catch (DataNotFoundException e) {
-							LOGGER.error("Could not find PropDataField for "+structFieldID,e);
+							LOGGER.error("Could not find PropDataField for "+structFieldID,e); //$NON-NLS-1$
 							continue;
 						}
 						if (field.isEmpty()) {
@@ -405,7 +406,7 @@ public class FieldBasedEditor implements PropertySetEditor {
 										field, false
 									);
 							} catch (DataFieldEditorNotFoundException e) {
-								LOGGER.error("Could not find DataFieldEditor for "+field.getClass().getName(),e);
+								LOGGER.error("Could not find DataFieldEditor for "+field.getClass().getName(),e); //$NON-NLS-1$
 								continue;
 							}
 							editor.setData(propertySet.getStructure(), field);
@@ -430,7 +431,7 @@ public class FieldBasedEditor implements PropertySetEditor {
 	protected IStruct getPropStructure(ProgressMonitor monitor) {
 		if (propertySet.isExploded())
 			return propertySet.getStructure();
-		monitor.beginTask("Loading propertySet structure", 1);
+		monitor.beginTask(Messages.getString("org.nightlabs.jfire.base.prop.edit.fieldbased.FieldBasedEditor.getPropStructure.monitor.taskName"), 1); //$NON-NLS-1$
 		IStruct structure = StructLocalDAO.sharedInstance().getStructLocal(
 				propertySet.getStructLocalLinkClass(), propertySet.getStructLocalScope(), monitor
 		);

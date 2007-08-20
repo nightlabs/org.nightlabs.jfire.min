@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.nightlabs.jfire.base.prop.edit.PropertySetEditor;
+import org.nightlabs.jfire.base.resource.Messages;
 import org.nightlabs.jfire.prop.DataBlockGroup;
 import org.nightlabs.jfire.prop.IStruct;
 import org.nightlabs.jfire.prop.PropertySet;
@@ -118,7 +119,7 @@ public abstract class AbstractBlockBasedEditor implements PropertySetEditor { //
 	protected IStruct getPropStructure(ProgressMonitor monitor) {
 		if (propertySet.isExploded())
 			return propertySet.getStructure();
-		monitor.beginTask("Loading propertySet structure", 1);
+		monitor.beginTask(Messages.getString("org.nightlabs.jfire.base.prop.edit.blockbased.AbstractBlockBasedEditor.getPropStructure.monitor.taskName"), 1); //$NON-NLS-1$
 		IStruct structure = StructLocalDAO.sharedInstance().getStructLocal(
 				propertySet.getStructLocalLinkClass(), propertySet.getStructLocalScope(), monitor
 		);
@@ -207,7 +208,7 @@ public abstract class AbstractBlockBasedEditor implements PropertySetEditor { //
 	
 		IStruct struct = propertySet.getStructure();
 		if (struct == null)
-			throw new IllegalStateException("The PropertySet was not exploded yet");
+			throw new IllegalStateException("The PropertySet was not exploded yet"); //$NON-NLS-1$
 		int allStructBlockCount = struct.getStructBlocks().size();
 		List<DataBlockGroup> result = new LinkedList<DataBlockGroup>();
 		Map<String, Integer> structBlockOrder = getStructBlockDisplayOrder(struct);

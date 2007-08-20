@@ -48,8 +48,6 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
-
-import org.nightlabs.jfire.base.JFireBasePlugin;
 import org.nightlabs.jfire.base.person.preferences.BlockOrderListContentProvider;
 import org.nightlabs.jfire.base.person.preferences.BlockOrderListLabelProvider;
 import org.nightlabs.jfire.base.person.preferences.PersonStructOrderConfigModule;
@@ -57,8 +55,8 @@ import org.nightlabs.jfire.base.person.preferences.PersonStructOrderConfigModule
 
 
 /**
- * 
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
+ * @deprecated Is this class still used? Shouldn't it either be renamed or put into a different package? If it is still used, please externalise the strings! I've marked them with NON-NLS.
  */
 public class PersonStructOrderComposite extends Composite {
 	private Composite titleComposite;
@@ -78,7 +76,7 @@ public class PersonStructOrderComposite extends Composite {
 	private TableViewer tableViewerBlocks;
 	private TableViewer tableViewerFields;
 	
-	
+
 	public static void showGUI() {
 		Display display = Display.getDefault();
 		Shell shell = new Shell(display);
@@ -129,7 +127,7 @@ public class PersonStructOrderComposite extends Composite {
 		titleComposite.setLayout(titleCompositeLayout);
 		
 		labelTitle = new Label(titleComposite, SWT.NONE | SWT.WRAP);
-		labelTitle.setText("Define the display order of the person structure");
+		labelTitle.setText("Define the display order of the person structure"); //$NON-NLS-1$
 		
 		groupStructBlocks = new Group(this, SWT.NONE);
 		GridLayout groupStructBlocksLayout = new GridLayout();
@@ -144,7 +142,7 @@ public class PersonStructOrderComposite extends Composite {
 		groupStructBlocksLData.horizontalAlignment = GridData.FILL;
 		groupStructBlocks.setLayoutData(groupStructBlocksLData);
 		groupStructBlocks.setLayout(groupStructBlocksLayout);
-		groupStructBlocks.setText("struct blocks");
+		groupStructBlocks.setText("struct blocks"); //$NON-NLS-1$
 		
 		blocksTableComposite = new Composite(groupStructBlocks, SWT.NONE);
 		GridLayout blocksTableCompositeLayout = new GridLayout();
@@ -174,7 +172,7 @@ public class PersonStructOrderComposite extends Composite {
 		blocksButtonsCompositeLayout.marginHeight = 0;
 		
 		buttonBlockUp = new Button(blocksButtonsComposite, SWT.PUSH);
-		buttonBlockUp.setText("Up");
+		buttonBlockUp.setText("Up"); //$NON-NLS-1$
 		GridData buttonLData = new GridData(GridData.FILL_HORIZONTAL);
 		buttonLData.horizontalIndent = 0;
 		buttonLData.horizontalIndent = 0;
@@ -190,7 +188,7 @@ public class PersonStructOrderComposite extends Composite {
 		});
 		
 		buttonBlockDown = new Button(blocksButtonsComposite, SWT.PUSH);
-		buttonBlockDown.setText("Down");
+		buttonBlockDown.setText("Down"); //$NON-NLS-1$
 		buttonLData = new GridData(GridData.FILL_HORIZONTAL);
 		buttonLData.horizontalIndent = 0;
 		buttonLData.horizontalIndent = 0;
@@ -220,7 +218,7 @@ public class PersonStructOrderComposite extends Composite {
 		groupStructFieldsLData.verticalAlignment = GridData.FILL;
 		groupStructFields.setLayoutData(groupStructFieldsLData);
 		groupStructFields.setLayout(groupStructFieldsLayout);
-		groupStructFields.setText("struct fields");
+		groupStructFields.setText("struct fields"); //$NON-NLS-1$
 		
 		fieldsTableComposite = new Composite(groupStructFields, SWT.NONE);
 		GridLayout fieldsTableCompositeLayout = new GridLayout();
@@ -244,14 +242,14 @@ public class PersonStructOrderComposite extends Composite {
 		fieldsButtonsComposite.setLayout(fieldsButtonsCompositeLayout);
 		
 		buttonFieldUp = new Button(fieldsButtonsComposite, SWT.PUSH);
-		buttonFieldUp.setText("Up");
+		buttonFieldUp.setText("Up"); //$NON-NLS-1$
 		buttonLData = new GridData(GridData.FILL_HORIZONTAL);
 		buttonLData.horizontalIndent = 0;
 		buttonLData.horizontalIndent = 0;
 		buttonFieldUp.setLayoutData(buttonLData);
 		
 		buttonFieldDown = new Button(fieldsButtonsComposite, SWT.PUSH);
-		buttonFieldDown.setText("Down");
+		buttonFieldDown.setText("Down"); //$NON-NLS-1$
 		buttonLData = new GridData(GridData.FILL_HORIZONTAL);
 		buttonLData.horizontalIndent = 0;
 		buttonLData.horizontalIndent = 0;
@@ -267,7 +265,7 @@ public class PersonStructOrderComposite extends Composite {
 		t.setLayout(new TableLayout());    
 		tableViewerBlocks.setContentProvider(new BlockOrderListContentProvider());
 		tableViewerBlocks.setLabelProvider(new BlockOrderListLabelProvider());
-		new TableColumn(t, SWT.LEFT, 0).setText(JFireBasePlugin.getResourceString("person.preferences.pages.PersonStructOrder.blockstable.col0"));
+		new TableColumn(t, SWT.LEFT, 0).setText("Structure block"); //$NON-NLS-1$
 		tableViewerBlocks.setInput(
 				PersonStructOrderConfigModule.sharedInstance()
 				.structBlockDisplayOrder()
@@ -282,7 +280,7 @@ public class PersonStructOrderComposite extends Composite {
 		t.setLinesVisible(true);
 		t.setLayoutData(tgd);
 		t.setLayout(new TableLayout());    
-		new TableColumn(t, SWT.LEFT, 0).setText(JFireBasePlugin.getResourceString("person.preferences.pages.PersonStructOrder.fieldstable.col0"));
+		new TableColumn(t, SWT.LEFT, 0).setText("Structure field"); //$NON-NLS-1$
 		
 		this.layout();
 	}
