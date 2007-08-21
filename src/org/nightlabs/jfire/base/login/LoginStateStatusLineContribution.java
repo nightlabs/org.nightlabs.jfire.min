@@ -101,13 +101,13 @@ implements LoginStateListener
 				String txt = null;
 				switch (loginState) {
 					case Login.LOGINSTATE_LOGGED_IN: 
-						txt = String.format(Messages.getString("login.LoginStateStatusLineContribution.loggedInStatus"), login.getUserID(), login.getWorkstationID(), login.getOrganisationID()); //$NON-NLS-1$
+						txt = String.format(Messages.getString("org.nightlabs.jfire.base.login.LoginStateStatusLineContribution.loggedInStatus"), login.getUserID(), login.getWorkstationID(), login.getOrganisationID()); //$NON-NLS-1$
 						break; 
 					case Login.LOGINSTATE_LOGGED_OUT: 
-						txt = Messages.getString("login.LoginStateStatusLineContribution.loggedOutStatus"); //$NON-NLS-1$
+						txt = Messages.getString("org.nightlabs.jfire.base.login.LoginStateStatusLineContribution.loggedOutStatus"); //$NON-NLS-1$
 						break; 
 					case Login.LOGINSTATE_OFFLINE: 
-						txt = Messages.getString("login.LoginStateStatusLineContribution.offlineStatus"); //$NON-NLS-1$
+						txt = Messages.getString("org.nightlabs.jfire.base.login.LoginStateStatusLineContribution.offlineStatus"); //$NON-NLS-1$
 						break; 
 				}
 

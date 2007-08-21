@@ -52,7 +52,7 @@ public class UserCSVisualiser implements ConfigSetupVisualiser
 		try {
 			UserID userID = new UserID(configID.configKey);
 			User user = UserProvider.sharedInstance().getUser(userID, USER_FETCH_GROUPS, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
-			return String.format(Messages.getString("config.UserCSVisualiser.keyObjectName"), user.getUserID(), user.getName()); //$NON-NLS-1$
+			return String.format(Messages.getString("org.nightlabs.jfire.base.config.UserCSVisualiser.keyObjectName"), user.getUserID(), user.getName()); //$NON-NLS-1$
 		} catch (Exception e) {
 			return configID.configKey;
 		} 
@@ -65,8 +65,8 @@ public class UserCSVisualiser implements ConfigSetupVisualiser
 			return configID.configKey;
 		if (ConfigSetupRegistry.sharedInstance().isConfigGroup(configID)) {
 			ConfigGroup group = setup.getConfigGroup(configID.configKey);
-			return String.format(Messages.getString("config.UserCSVisualiser.configGroupDescription"), group.getName()); //$NON-NLS-1$
+			return String.format(Messages.getString("org.nightlabs.jfire.base.config.UserCSVisualiser.configGroupDescription"), group.getName()); //$NON-NLS-1$
 		}		
-		return String.format(Messages.getString("config.UserCSVisualiser.userConfigDescription")+getKeyObjectName(configID)); //$NON-NLS-1$
+		return String.format(Messages.getString("org.nightlabs.jfire.base.config.UserCSVisualiser.userConfigDescription")+getKeyObjectName(configID)); //$NON-NLS-1$
 	}
 }

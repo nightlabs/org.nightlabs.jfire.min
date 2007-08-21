@@ -60,7 +60,7 @@
    <extension
          point="org.eclipse.core.runtime.applications"
          id="app"
-         name="%appName">
+         name="%app.name">
       <application>
          <run
             class="org.nightlabs.jfire.base.app.JFireApplication">
@@ -72,10 +72,10 @@
          id="product">
       <product
             application="org.nightlabs.jfire.base.app"
-            name="%swtAppName">
+            name="%app.name">
          <property
                name="appName"
-               value="%swtAppName"/>
+               value="%app.name"/>
          <property
                name="windowImages"
                value="icons/JFire-Logo.16x16.png"/>
@@ -100,8 +100,8 @@
             icon="icons/JFire-Icon.16x16.png"
             class="org.nightlabs.jfire.base.JFireWelcomePerspective"
             fixed="false"
-            name="%perspectives.jfireWelcome.name"
-            id="org.nightlabs.jfire.base.perspective.JFireWelcomePerspective"/>
+            name="%org.nightlabs.jfire.base.JFireWelcomePerspective.name"
+            id="org.nightlabs.jfire.base.JFireWelcomePerspective"/>
    </extension>
    
    <!-- Actions 
@@ -113,7 +113,7 @@
             visible="true"
             id="org.nightlabs.jfire.base.login.actions">
          <menu
-               label="%login.menu.label"
+               label="%loginMenu.label"
                id="loginMenu">
             <separator
                   name="loginGroup">
@@ -122,18 +122,18 @@
          <action
                class="org.nightlabs.jfire.base.login.action.LoginAction"
                icon="icons/login/action/LoginAction-Login.24x24.png"
-               id="org.nightlabs.jfire.base.login.actions.LoginAction#toolbar"
-               label="%login.action.label"
+               id="org.nightlabs.jfire.base.login.action.LoginAction#toolbar"
+               label="%org.nightlabs.jfire.base.login.action.LoginAction.label"
                toolbarPath="loginGroup"
-               tooltip="%login.action.toolTip">
+               tooltip="%org.nightlabs.jfire.base.login.action.LoginAction.toolTip">
          </action>
          <action
                class="org.nightlabs.jfire.base.login.action.LoginAction"
                icon="icons/login/action/LoginAction-Login.16x16.png"
-               id="org.nightlabs.jfire.base.login.actions.LoginAction#menu"
-               label="%login.action.label"
+               id="org.nightlabs.jfire.base.login.action.LoginAction#menu"
+               label="%org.nightlabs.jfire.base.login.action.LoginAction.label"
                menubarPath="loginMenu/loginGroup"
-               tooltip="%login.action.toolTip">
+               tooltip="%org.nightlabs.jfire.base.login.action.LoginAction.toolTip">
          </action>
       </actionSet>
    </extension>   
@@ -146,15 +146,15 @@
 	<extension
     	point="org.eclipse.ui.preferencePages">
     	<page
-		name="%person.preferences.pages.PersonManagement.name"
+		name="%org.nightlabs.jfire.base.person.preferences.PersonManagementPreferencePage.name"
 		class="org.nightlabs.jfire.base.person.preferences.PersonManagementPreferencePage"
-		id="org.nightlabs.jfire.person.preferences.PersonManagementPreferencePage">
+		id="org.nightlabs.jfire.base.person.preferences.PersonManagementPreferencePage">
       </page>
       <page
-            name="%person.preferences.pages.PersonStructOrder.name"
+            name="%org.nightlabs.jfire.base.person.preferences.PersonStructOrderPreferencePage.name"
             category="org.nightlabs.jfire.person.preferences.PersonManagementPreferencePage"
             class="org.nightlabs.jfire.base.person.preferences.PersonStructOrderPreferencePage"
-            id="org.nightlabs.jfire.person.preferences.PersonStructOrderPreferencePage">
+            id="org.nightlabs.jfire.base.person.preferences.PersonStructOrderPreferencePage">
       </page>  
       <page
             name="Feature Set"

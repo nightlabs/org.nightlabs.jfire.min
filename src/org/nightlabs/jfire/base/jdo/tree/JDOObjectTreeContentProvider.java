@@ -53,7 +53,7 @@ public abstract class JDOObjectTreeContentProvider<JDOObjectID extends ObjectID,
 
 		List<TreeNode> res = controller.getNodes(parent);
 		if (res == null)
-			return new String[] { Messages.getString("jdo.tree.JDOObjectTreeContentProvider.loading") }; //$NON-NLS-1$
+			return new String[] { Messages.getString("org.nightlabs.jfire.base.jdo.tree.JDOObjectTreeContentProvider.loading") }; //$NON-NLS-1$
 		else
 			return res.toArray();
 	}

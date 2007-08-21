@@ -51,11 +51,11 @@ extends AbstractTableComposite<User>
 	@Override
 	protected void createTableColumns(TableViewer tableViewer, Table table) 
 	{
-		new TableColumn(table, SWT.LEFT).setText(Messages.getString("security.UserTable.userID")); //$NON-NLS-1$
-		new TableColumn(table, SWT.LEFT).setText(Messages.getString("security.UserTable.name")); //$NON-NLS-1$
-		new TableColumn(table, SWT.LEFT).setText(Messages.getString("security.UserTable.description")); //$NON-NLS-1$
-		new TableColumn(table, SWT.LEFT).setText(Messages.getString("security.UserTable.userType")); //$NON-NLS-1$
-		new TableColumn(table, SWT.LEFT).setText(Messages.getString("security.UserTable.changeDT")); //$NON-NLS-1$
+		new TableColumn(table, SWT.LEFT).setText(Messages.getString("org.nightlabs.jfire.base.security.UserTable.userID")); //$NON-NLS-1$
+		new TableColumn(table, SWT.LEFT).setText(Messages.getString("org.nightlabs.jfire.base.security.UserTable.name")); //$NON-NLS-1$
+		new TableColumn(table, SWT.LEFT).setText(Messages.getString("org.nightlabs.jfire.base.security.UserTable.description")); //$NON-NLS-1$
+		new TableColumn(table, SWT.LEFT).setText(Messages.getString("org.nightlabs.jfire.base.security.UserTable.userType")); //$NON-NLS-1$
+		new TableColumn(table, SWT.LEFT).setText(Messages.getString("org.nightlabs.jfire.base.security.UserTable.changeDT")); //$NON-NLS-1$
 		
 		table.setLayout(new WeightedTableLayout(new int[] {10, 10, 10, 10, 10}));
 	}

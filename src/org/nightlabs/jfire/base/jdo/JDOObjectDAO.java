@@ -177,7 +177,7 @@ public abstract class JDOObjectDAO<JDOObjectID, JDOObject>
 			return objects;
 		}
 			
-		monitor.beginTask(String.format(Messages.getString("jdo.JDOObjectDAO.gettingObjects"), objectIDs.size()), objectIDs.size()); //$NON-NLS-1$
+		monitor.beginTask(String.format(Messages.getString("org.nightlabs.jfire.base.jdo.JDOObjectDAO.gettingObjects"), objectIDs.size()), objectIDs.size()); //$NON-NLS-1$
 //		List<JDOObject> fromCache = new ArrayList<JDOObject>();
 		List<JDOObjectID> listetIDs = new ArrayList<JDOObjectID>(objectIDs);
 //		Set<JDOObjectID> notInCache = new HashSet<JDOObjectID>();

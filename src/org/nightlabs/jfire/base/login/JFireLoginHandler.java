@@ -242,14 +242,14 @@ public class JFireLoginHandler implements ILoginHandler {
 				throw x;
 			}
 			if(loginPanel.isWorkOffline()) {
-				SplashScreen.setSplashMessage(Messages.getString("login.JFireLoginHandler.workOffline")); //$NON-NLS-1$
+				SplashScreen.setSplashMessage(Messages.getString("org.nightlabs.jfire.base.login.JFireLoginHandler.workOffline")); //$NON-NLS-1$
 				loginResult.setWorkOffline(true);
 				break;
 			}
 			
 			boolean saveConfig = loginPanel.assignLoginValues();
 			
-			SplashScreen.setSplashMessage(Messages.getString("login.JFireLoginHandler.tryToLogin")); //$NON-NLS-1$
+			SplashScreen.setSplashMessage(Messages.getString("org.nightlabs.jfire.base.login.JFireLoginHandler.tryToLogin")); //$NON-NLS-1$
 			Login.AsyncLoginResult testResult = Login.testLogin(loginContext);
 			testResult.copyValuesTo(loginResult);
 			loggedIn = testResult.isSuccess();
@@ -271,7 +271,7 @@ public class JFireLoginHandler implements ILoginHandler {
 					logger.error("Saving config failed!", e); //$NON-NLS-1$
 				}
 				
-				SplashScreen.setSplashMessage(Messages.getString("login.JFireLoginHandler.loginSuccessful")); //$NON-NLS-1$
+				SplashScreen.setSplashMessage(Messages.getString("org.nightlabs.jfire.base.login.JFireLoginHandler.loginSuccessful")); //$NON-NLS-1$
 				break;
 			}
 			loginTries++;

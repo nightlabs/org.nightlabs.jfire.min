@@ -68,7 +68,7 @@ public class ConfigPreferencesComposite extends XComposite {
 		noEditGUIComposite = new XComposite(wrapper, SWT.NONE, LayoutMode.TIGHT_WRAPPER);
 		Label label = new Label(noEditGUIComposite, SWT.WRAP);
 		label.setLayoutData(new GridData());
-		label.setText(Messages.getString("config.ConfigPreferencesComposite.noPreferencePage")); //$NON-NLS-1$
+		label.setText(Messages.getString("org.nightlabs.jfire.base.config.ConfigPreferencesComposite.noPreferencePage")); //$NON-NLS-1$
 	}
 	
 	public void clear() {

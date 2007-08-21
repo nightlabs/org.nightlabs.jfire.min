@@ -128,7 +128,7 @@ public abstract class ActiveJDOObjectController<JDOObjectID, JDOObject>
 	private Map<JDOObjectID, JDOObject> jdoObjectID2jdoObject = null;
 	private Object jdoObjectID2jdoObjectMutex = new Object();
 	private List<JDOObject> jdoObjects = null;
-	private JDOLifecycleListener lifecycleListener = new JDOLifecycleAdapterJob(Messages.getString("jdo.ActiveJDOObjectController.loadingNewObjectsJob")) //$NON-NLS-1$
+	private JDOLifecycleListener lifecycleListener = new JDOLifecycleAdapterJob(Messages.getString("org.nightlabs.jfire.base.jdo.ActiveJDOObjectController.loadingNewObjectsJob")) //$NON-NLS-1$
 	{
 		private IJDOLifecycleListenerFilter lifecycleListenerFilter = createJDOLifecycleListenerFilter();
 
@@ -194,7 +194,7 @@ public abstract class ActiveJDOObjectController<JDOObjectID, JDOObject>
 		}
 	};
 
-	private NotificationListener notificationListener = new NotificationAdapterJob(Messages.getString("jdo.ActiveJDOObjectController.loadingChangedObjectsJob")) //$NON-NLS-1$
+	private NotificationListener notificationListener = new NotificationAdapterJob(Messages.getString("org.nightlabs.jfire.base.jdo.ActiveJDOObjectController.loadingChangedObjectsJob")) //$NON-NLS-1$
 	{
 		public void notify(final NotificationEvent notificationEvent)
 		{
@@ -323,7 +323,7 @@ public abstract class ActiveJDOObjectController<JDOObjectID, JDOObject>
 		if (jdoObjects != null)
 			return jdoObjects;
 
-		Job job = new Job(Messages.getString("jdo.ActiveJDOObjectController.loadingDataJob")) { //$NON-NLS-1$
+		Job job = new Job(Messages.getString("org.nightlabs.jfire.base.jdo.ActiveJDOObjectController.loadingDataJob")) { //$NON-NLS-1$
 			protected IStatus run(ProgressMonitor monitor)
 			{
 				final Collection<JDOObject> jdoObjects = retrieveJDOObjects(monitor);

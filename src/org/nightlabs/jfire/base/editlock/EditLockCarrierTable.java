@@ -56,13 +56,13 @@ extends AbstractTableComposite
 		TableColumn tc;
 
 		tc = new TableColumn(table, SWT.LEFT);
-		tc.setText(Messages.getString("editlock.EditLockCarrierTable.description")); //$NON-NLS-1$
+		tc.setText(Messages.getString("org.nightlabs.jfire.base.editlock.EditLockCarrierTable.description")); //$NON-NLS-1$
 
 		tc = new TableColumn(table, SWT.LEFT);
-		tc.setText(Messages.getString("editlock.EditLockCarrierTable.created")); //$NON-NLS-1$
+		tc.setText(Messages.getString("org.nightlabs.jfire.base.editlock.EditLockCarrierTable.created")); //$NON-NLS-1$
 
 		tc = new TableColumn(table, SWT.LEFT);
-		tc.setText(Messages.getString("editlock.EditLockCarrierTable.lastActivity")); //$NON-NLS-1$
+		tc.setText(Messages.getString("org.nightlabs.jfire.base.editlock.EditLockCarrierTable.lastActivity")); //$NON-NLS-1$
 
 		TableLayout tl = new TableLayout();
 		tl.addColumnData(new ColumnWeightData(1));

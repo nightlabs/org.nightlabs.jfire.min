@@ -171,7 +171,7 @@ public class LoginDialog extends TitleAreaDialog
 	protected void configureShell(Shell shell) 
 	{
 		super.configureShell(shell);
-		shell.setText(Messages.getString("login.LoginDialog.labellogin")); //$NON-NLS-1$
+		shell.setText(Messages.getString("org.nightlabs.jfire.base.login.LoginDialog.labellogin")); //$NON-NLS-1$
 	}
 
 	/* (non-Javadoc)
@@ -200,9 +200,9 @@ public class LoginDialog extends TitleAreaDialog
 		createMainArea(area);
 		createDetailsArea(area);
 		
-		setTitle(Messages.getString("login.LoginDialog.titleAreaTitle")); //$NON-NLS-1$
+		setTitle(Messages.getString("org.nightlabs.jfire.base.login.LoginDialog.titleAreaTitle")); //$NON-NLS-1$
 		// TODO: information icon only because of redraw bug:
-		setInfoMessage(Messages.getString("login.LoginDialog.titleAreaMessage")); //$NON-NLS-1$
+		setInfoMessage(Messages.getString("org.nightlabs.jfire.base.login.LoginDialog.titleAreaMessage")); //$NON-NLS-1$
 		
 		return dialogArea;
 	}
@@ -221,7 +221,7 @@ public class LoginDialog extends TitleAreaDialog
 				if (element instanceof LoginConfiguration) {
 					LoginConfiguration loginConfig = (LoginConfiguration) element;
 					if (loginConfig == runtimeLoginModule.getLatestLoginConfiguration()) {
-						return Messages.getString("login.LoginDialog.currentIdentityMarker"); //$NON-NLS-1$
+						return Messages.getString("org.nightlabs.jfire.base.login.LoginDialog.currentIdentityMarker"); //$NON-NLS-1$
 					}
 					return loginConfig.toString();
 				} else
@@ -230,7 +230,7 @@ public class LoginDialog extends TitleAreaDialog
 		};
 		
 		Label labelRecentLoginConfigs = new Label(mainArea, SWT.NONE);
-		labelRecentLoginConfigs.setText(Messages.getString("login.LoginDialog.recentLoginsComboLabel")); //$NON-NLS-1$
+		labelRecentLoginConfigs.setText(Messages.getString("org.nightlabs.jfire.base.login.LoginDialog.recentLoginsComboLabel")); //$NON-NLS-1$
 		recentLoginConfigs = new XComboComposite<LoginConfiguration>(mainArea, SWT.READ_ONLY);
 		recentLoginConfigs.setLabelProvider(loginConfigLabelProv);		
 		recentLoginConfigs.addSelectionChangedListener(new ISelectionChangedListener() {
@@ -250,10 +250,10 @@ public class LoginDialog extends TitleAreaDialog
 		
 		mainArea.setLayout(gridLayoutStatic);
 		gridLayoutStatic.numColumns = 2;
-		labelUserID.setText(Messages.getString("login.LoginDialog.labeluser")); //$NON-NLS-1$
+		labelUserID.setText(Messages.getString("org.nightlabs.jfire.base.login.LoginDialog.labeluser")); //$NON-NLS-1$
 		textUserID.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		
-		labelPassword.setText(Messages.getString("login.LoginDialog.labelpass")); //$NON-NLS-1$
+		labelPassword.setText(Messages.getString("org.nightlabs.jfire.base.login.LoginDialog.labelpass")); //$NON-NLS-1$
 		textPassword.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		textPassword.setEchoChar('*');
 		
@@ -301,16 +301,16 @@ public class LoginDialog extends TitleAreaDialog
 		detailsArea.setLayout(gridLayoutExpand);
 		gridLayoutExpand.numColumns = 2;
 		
-		labelOrganisationID.setText(Messages.getString("login.LoginDialog.labelorganisation")); //$NON-NLS-1$
+		labelOrganisationID.setText(Messages.getString("org.nightlabs.jfire.base.login.LoginDialog.labelorganisation")); //$NON-NLS-1$
 		textOrganisationID.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));		
 		
-		labelWorkstationID.setText(Messages.getString("login.LoginDialog.labelworkstation")); //$NON-NLS-1$
+		labelWorkstationID.setText(Messages.getString("org.nightlabs.jfire.base.login.LoginDialog.labelworkstation")); //$NON-NLS-1$
 		textWorkstationID.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		
-		labelServerURL.setText(Messages.getString("login.LoginDialog.labelserverURL")); //$NON-NLS-1$
+		labelServerURL.setText(Messages.getString("org.nightlabs.jfire.base.login.LoginDialog.labelserverURL")); //$NON-NLS-1$
 		textServerURL.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		
-		labelInitialContextFactory.setText(Messages.getString("login.LoginDialog.labelinitialContext")); //$NON-NLS-1$
+		labelInitialContextFactory.setText(Messages.getString("org.nightlabs.jfire.base.login.LoginDialog.labelinitialContext")); //$NON-NLS-1$
 		textInitialContextFactory.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		
 		GridData spanHorizontalGD = new GridData(GridData.FILL_HORIZONTAL);
@@ -321,7 +321,7 @@ public class LoginDialog extends TitleAreaDialog
 		
 		checkBoxSaveSettings = new Button(detailsArea, SWT.CHECK);
 		checkBoxSaveSettings.setSelection(false);
-		checkBoxSaveSettings.setText(Messages.getString("login.LoginDialog.labelsaveSettings")); //$NON-NLS-1$
+		checkBoxSaveSettings.setText(Messages.getString("org.nightlabs.jfire.base.login.LoginDialog.labelsaveSettings")); //$NON-NLS-1$
 		checkBoxSaveSettings.addSelectionListener(new SelectionListener() {
 			public void widgetDefaultSelected(SelectionEvent e) {
 			}
@@ -333,7 +333,7 @@ public class LoginDialog extends TitleAreaDialog
 		});
 		
 		XComposite wrapper = new XComposite(detailsArea, SWT.READ_ONLY, LayoutMode.LEFT_RIGHT_WRAPPER, LayoutDataMode.GRID_DATA_HORIZONTAL, 2);
-		new Label(wrapper, SWT.NONE).setText(Messages.getString("login.LoginDialog.identityNameTextLabel")); //$NON-NLS-1$
+		new Label(wrapper, SWT.NONE).setText(Messages.getString("org.nightlabs.jfire.base.login.LoginDialog.identityNameTextLabel")); //$NON-NLS-1$
 		textIdentityName = new Text(wrapper, SWT.BORDER);
 		textIdentityName.setEnabled(false);
 		textIdentityName.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -357,11 +357,11 @@ public class LoginDialog extends TitleAreaDialog
 		String name = textIdentityName.getText();
 		if (checkBoxSaveSettings.getSelection() && (name == null || "".equals(name))) { //$NON-NLS-1$
 			getButton(IDialogConstants.OK_ID).setEnabled(false);
-			setErrorMessage(Messages.getString("login.LoginDialog.validNameMissingErrorMessage")); //$NON-NLS-1$
+			setErrorMessage(Messages.getString("org.nightlabs.jfire.base.login.LoginDialog.validNameMissingErrorMessage")); //$NON-NLS-1$
 		} else {
 			getButton(IDialogConstants.OK_ID).setEnabled(true);
 			if (checkBoxSaveSettings.getSelection() && runtimeLoginModule.hasConfigWithName(name))
-				setWarningMessage(Messages.getString("login.LoginDialog.loginConfigurationAlreadyExists")); //$NON-NLS-1$
+				setWarningMessage(Messages.getString("org.nightlabs.jfire.base.login.LoginDialog.loginConfigurationAlreadyExists")); //$NON-NLS-1$
 			else {
 				setWarningMessage(null);
 				setErrorMessage(null);
@@ -375,7 +375,7 @@ public class LoginDialog extends TitleAreaDialog
 	@Override
 	protected void createButtonsForButtonBar(Composite parent) 
 	{
-		deleteButton = createButton(parent, DELETE_BUTTON_ID, Messages.getString("login.LoginDialog.deleteButtonLabel"), false); //$NON-NLS-1$
+		deleteButton = createButton(parent, DELETE_BUTTON_ID, Messages.getString("org.nightlabs.jfire.base.login.LoginDialog.deleteButtonLabel"), false); //$NON-NLS-1$
 		deleteButton.addSelectionListener(new SelectionListener() {
 			public void widgetDefaultSelected(SelectionEvent e) {
 			}
@@ -396,8 +396,8 @@ public class LoginDialog extends TitleAreaDialog
 				}
 			}
 		});
-		createButton(parent, IDialogConstants.OK_ID, Messages.getString("login.LoginDialog.labelbutton.login"), true); //$NON-NLS-1$
-		createButton(parent, IDialogConstants.CANCEL_ID, Messages.getString("login.LoginDialog.labelbutton.offline"), false); //$NON-NLS-1$
+		createButton(parent, IDialogConstants.OK_ID, Messages.getString("org.nightlabs.jfire.base.login.LoginDialog.labelbutton.login"), true); //$NON-NLS-1$
+		createButton(parent, IDialogConstants.CANCEL_ID, Messages.getString("org.nightlabs.jfire.base.login.LoginDialog.labelbutton.offline"), false); //$NON-NLS-1$
 		createButton(parent, DETAILS_ID, IDialogConstants.SHOW_DETAILS_LABEL, false);		
 	}
 	
@@ -502,15 +502,15 @@ public class LoginDialog extends TitleAreaDialog
 		// check entries
 		String errorMessage = null;
 		if (textUserID.getText().equals(EMPTY_STRING))
-			errorMessage = Messages.getString("login.LoginDialog.errormissingUserID"); //$NON-NLS-1$
+			errorMessage = Messages.getString("org.nightlabs.jfire.base.login.LoginDialog.errormissingUserID"); //$NON-NLS-1$
 		else if (textWorkstationID.getText().equals(EMPTY_STRING))
-			errorMessage = Messages.getString("login.LoginDialog.errormissingWorkstationID"); //$NON-NLS-1$
+			errorMessage = Messages.getString("org.nightlabs.jfire.base.login.LoginDialog.errormissingWorkstationID"); //$NON-NLS-1$
 		else if (textOrganisationID.getText().equals(EMPTY_STRING))
-			errorMessage = Messages.getString("login.LoginDialog.errormissingOrganisationID"); //$NON-NLS-1$
+			errorMessage = Messages.getString("org.nightlabs.jfire.base.login.LoginDialog.errormissingOrganisationID"); //$NON-NLS-1$
 		else if (textInitialContextFactory.getText().equals(EMPTY_STRING))
-			errorMessage = Messages.getString("login.LoginDialog.errormissingContextFactory"); //$NON-NLS-1$
+			errorMessage = Messages.getString("org.nightlabs.jfire.base.login.LoginDialog.errormissingContextFactory"); //$NON-NLS-1$
 		else if (textServerURL.getText().equals(EMPTY_STRING))
-			errorMessage = Messages.getString("login.LoginDialog.errormissingServerURL"); //$NON-NLS-1$
+			errorMessage = Messages.getString("org.nightlabs.jfire.base.login.LoginDialog.errormissingServerURL"); //$NON-NLS-1$
 		if(errorMessage != null) {
 			setErrorMessage(errorMessage);
 			setSmartFocus();
@@ -522,7 +522,7 @@ public class LoginDialog extends TitleAreaDialog
 	private void checkLogin()
 	{
 		boolean hadError = true;
-		setInfoMessage(Messages.getString("login.LoginDialog.tryingLogin")); //$NON-NLS-1$
+		setInfoMessage(Messages.getString("org.nightlabs.jfire.base.login.LoginDialog.tryingLogin")); //$NON-NLS-1$
 		enableDualogUI(false);
 		try {
 
@@ -530,7 +530,7 @@ public class LoginDialog extends TitleAreaDialog
 			storeUserInput();
 			final boolean saveSettings = checkBoxSaveSettings.getSelection();
 
-			Job job = new Job(Messages.getString("login.LoginDialog.authentication")) { //$NON-NLS-1$
+			Job job = new Job(Messages.getString("org.nightlabs.jfire.base.login.LoginDialog.authentication")) { //$NON-NLS-1$
 				@Override
 				protected IStatus run(IProgressMonitor arg0)
 				{
@@ -548,7 +548,7 @@ public class LoginDialog extends TitleAreaDialog
 						BeanUtils.copyProperties(persistentLoginModule, runtimeLoginModule);
 						persistentLoginModule.setChanged();
 					} catch (Exception e) {
-						logger.error(Messages.getString("login.LoginDialog.errorSaveConfig"), e); //$NON-NLS-1$
+						logger.error(Messages.getString("org.nightlabs.jfire.base.login.LoginDialog.errorSaveConfig"), e); //$NON-NLS-1$
 					}
 
 					Display.getDefault().asyncExec(new Runnable() {
@@ -599,22 +599,22 @@ public class LoginDialog extends TitleAreaDialog
 		} else {
 			// login failed
 			if (loginResult.isWasAuthenticationErr()) {
-				setErrorMessage(Messages.getString("login.LoginDialog.errorauthenticationFailed")); //$NON-NLS-1$
+				setErrorMessage(Messages.getString("org.nightlabs.jfire.base.login.LoginDialog.errorauthenticationFailed")); //$NON-NLS-1$
 			}
 			else if (loginResult.isWasCommunicationErr()) {
 				Throwable error = loginResult.getException();
 				while (error.getLocalizedMessage() == null && error.getCause() != null) {
 					error = ExceptionUtils.getCause(error);
 				}
-				setErrorMessage(String.format(Messages.getString("login.LoginDialog.errorcommunicatinError"), error.getLocalizedMessage())); //$NON-NLS-1$
+				setErrorMessage(String.format(Messages.getString("org.nightlabs.jfire.base.login.LoginDialog.errorcommunicatinError"), error.getLocalizedMessage())); //$NON-NLS-1$
 			}
 			else {
 				String message = loginResult.getMessage();
 				if (loginResult.getException() != null) {
-					message += String.format(Messages.getString("login.LoginDialog.errorAppend"), loginResult.getException().getClass().getName(), loginResult.getException().getLocalizedMessage()); //$NON-NLS-1$
+					message += String.format(Messages.getString("org.nightlabs.jfire.base.login.LoginDialog.errorAppend"), loginResult.getException().getClass().getName(), loginResult.getException().getLocalizedMessage()); //$NON-NLS-1$
 					Throwable cause = loginResult.getException();
 					while ( cause != null ) {
-						message += String.format(Messages.getString("login.LoginDialog.errorAppend"), cause.getClass().getName(), cause.getLocalizedMessage()); //$NON-NLS-1$
+						message += String.format(Messages.getString("org.nightlabs.jfire.base.login.LoginDialog.errorAppend"), cause.getClass().getName(), cause.getLocalizedMessage()); //$NON-NLS-1$
 						cause = cause.getCause();
 					}
 					loginResult.getException().printStackTrace();

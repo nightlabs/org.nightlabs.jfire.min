@@ -67,7 +67,7 @@ public class JDOLifecycleManagerRCP extends JDOLifecycleManager {
 			if (job == null) {
 				String jobName = l.getJobName();
 				if (jobName == null)
-					jobName = Messages.getString("jdo.notification.JDOLifecycleManagerRCP.notificationJob"); //$NON-NLS-1$
+					jobName = Messages.getString("org.nightlabs.jfire.base.jdo.notification.JDOLifecycleManagerRCP.notificationJob"); //$NON-NLS-1$
 
 				job = new Job(jobName) {
 					protected IStatus run(IProgressMonitor monitor)
@@ -128,7 +128,7 @@ public class JDOLifecycleManagerRCP extends JDOLifecycleManager {
 			if (job == null) {
 				String jobName = l.getJobName();
 				if (jobName == null)
-					jobName = Messages.getString("jdo.notification.JDOLifecycleManagerRCP.lifecycleJob"); //$NON-NLS-1$
+					jobName = Messages.getString("org.nightlabs.jfire.base.jdo.notification.JDOLifecycleManagerRCP.lifecycleJob"); //$NON-NLS-1$
 
 				job = new Job(jobName) {
 					protected IStatus run(IProgressMonitor monitor)

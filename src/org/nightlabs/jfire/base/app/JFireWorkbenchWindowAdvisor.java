@@ -112,7 +112,7 @@ extends SplashHandlingWorkbenchWindowAdvisor
 	public void createWindowContents(Shell shell) {
 		super.createWindowContents(shell);
 		LocaleStatusLineContribution locale = new LocaleStatusLineContribution("Locale"); //$NON-NLS-1$
-		LoginStateStatusLineContribution loginState = new LoginStateStatusLineContribution(Messages.getString("app.JFireActionBuilder.loginStatus")); //$NON-NLS-1$
+		LoginStateStatusLineContribution loginState = new LoginStateStatusLineContribution(Messages.getString("org.nightlabs.jfire.base.app.JFireActionBuilder.loginStatus")); //$NON-NLS-1$
 		RCPUtil.addContributionItemTrim(shell, locale, StatusLineManager.class.getName());
 		RCPUtil.addContributionItemTrim(shell, loginState, StatusLineManager.class.getName());
 	}

@@ -70,8 +70,8 @@ public class WorkstationCSVisualiser implements ConfigSetupVisualiser
 			return configID.configKey;
 		if (ConfigSetupRegistry.sharedInstance().isConfigGroup(configID)) {
 			ConfigGroup group = setup.getConfigGroup(configID.configKey);
-			return String.format(Messages.getString("config.WorkstationCSVisualiser.configGroupDescription"), group.getName()); //$NON-NLS-1$
+			return String.format(Messages.getString("org.nightlabs.jfire.base.config.WorkstationCSVisualiser.configGroupDescription"), group.getName()); //$NON-NLS-1$
 		}		
-		return String.format(Messages.getString("config.WorkstationCSVisualiser.workstationConfigDescription"), getKeyObjectName(configID)); //$NON-NLS-1$
+		return String.format(Messages.getString("org.nightlabs.jfire.base.config.WorkstationCSVisualiser.workstationConfigDescription"), getKeyObjectName(configID)); //$NON-NLS-1$
 	}
 }

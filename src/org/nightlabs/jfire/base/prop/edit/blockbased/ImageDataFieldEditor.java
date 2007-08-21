@@ -38,6 +38,7 @@ import org.nightlabs.base.util.RCPUtil;
 import org.nightlabs.jfire.base.prop.edit.AbstractDataFieldEditor;
 import org.nightlabs.jfire.base.prop.edit.AbstractDataFieldEditorFactory;
 import org.nightlabs.jfire.base.prop.edit.DataFieldEditor;
+import org.nightlabs.jfire.base.resource.Messages;
 import org.nightlabs.jfire.prop.datafield.ImageDataField;
 import org.nightlabs.jfire.prop.structfield.ImageStructField;
 import org.nightlabs.language.LanguageCf;
@@ -135,7 +136,7 @@ extends AbstractDataFieldEditor<ImageDataField>
 		
 		gd = new GridData();
 		gd.widthHint = 40;
-		openFileChooserButton.setText("...");
+		openFileChooserButton.setText(Messages.getString("org.nightlabs.jfire.base.prop.edit.blockbased.ImageDataFieldEditor.openFileChooserButton.text")); //$NON-NLS-1$
 		openFileChooserButton.setLayoutData(gd);
 		openFileChooserButton.addSelectionListener(new SelectionListener() {
 			public void widgetDefaultSelected(SelectionEvent e) {}
@@ -149,12 +150,14 @@ extends AbstractDataFieldEditor<ImageDataField>
 					// check if the image fulfills the size requirements
 					ImageStructField imageStructField = (ImageStructField) getStructField();
 					if (!imageStructField.validateSize(file.length()/1024)) {
-						MessageBox mb = new MessageBox(RCPUtil.getActiveWorkbenchShell(), SWT.OK | SWT.ICON_ERROR);
-						mb.setText("Error");
-						String msg = "The maximum image size is " + imageStructField.getMaxSizeKB() + "KB.\n";
-						msg += "\nThe selected image's size is "+ file.length()/1024 + "KB. Please choose a smaller one.";
-						mb.setMessage(msg);
-						mb.open();
+						MessageBox messageBoxImageExceedsMaxSizeKB = new MessageBox(RCPUtil.getActiveWorkbenchShell(), SWT.OK | SWT.ICON_ERROR);
+						messageBoxImageExceedsMaxSizeKB.setText(Messages.getString("org.nightlabs.jfire.base.prop.edit.blockbased.ImageDataFieldEditor.messageBoxImageExceedsMaxSizeKB.text")); //$NON-NLS-1$
+						messageBoxImageExceedsMaxSizeKB.setMessage(
+								String.format(
+										Messages.getString("org.nightlabs.jfire.base.prop.edit.blockbased.ImageDataFieldEditor.messageBoxImageExceedsMaxSizeKB.message"), //$NON-NLS-1$
+										new Object[] { new Long(imageStructField.getMaxSizeKB()), new Long((long)(file.length() / 1024)) })
+						);
+						messageBoxImageExceedsMaxSizeKB.open();
 						return;
 					}
 					
@@ -166,10 +169,10 @@ extends AbstractDataFieldEditor<ImageDataField>
 						
 						displayImage(data);
 					} catch(SWTException swtex) {
-						MessageBox mb = new MessageBox(RCPUtil.getActiveWorkbenchShell(), SWT.ICON_ERROR | SWT.OK);
-						mb.setText("Invalid image file");
-						mb.setMessage("The given image file could not be loaded.\nPlease select a different one.");
-						mb.open();
+						MessageBox messageBoxInvalidImageFile = new MessageBox(RCPUtil.getActiveWorkbenchShell(), SWT.ICON_ERROR | SWT.OK);
+						messageBoxInvalidImageFile.setText(Messages.getString("org.nightlabs.jfire.base.prop.edit.blockbased.ImageDataFieldEditor.messageBoxInvalidImageFile.text")); //$NON-NLS-1$
+						messageBoxInvalidImageFile.setMessage(Messages.getString("org.nightlabs.jfire.base.prop.edit.blockbased.ImageDataFieldEditor.messageBoxInvalidImageFile.message")); //$NON-NLS-1$
+						messageBoxInvalidImageFile.open();
 					}										
 				}				
 			}
@@ -209,7 +212,7 @@ extends AbstractDataFieldEditor<ImageDataField>
 		String[] extensions = new String[extList.size()];		
 		int i = 0;
 		for (String ext : extList)		
-			extensions[i++] = "*." + ext;
+			extensions[i++] = "*." + ext; //$NON-NLS-1$
 		
 		Arrays.sort(extensions);		
 		fileDialog.setFilterExtensions(extensions);
@@ -230,12 +233,14 @@ extends AbstractDataFieldEditor<ImageDataField>
 			}
 			displayImage(id);	
 		}
-		
-		sizeLabel.setText("(max " + imageStructField.getMaxSizeKB() + " KB)");
+
+		sizeLabel.setText(
+				String.format(Messages.getString("org.nightlabs.jfire.base.prop.edit.blockbased.ImageDataFieldEditor.sizeMaxKBLabel"), //$NON-NLS-1$
+						new Object[] { new Long(imageStructField.getMaxSizeKB()) }));
 		sizeLabel.pack();
 		sizeLabel.getParent().layout(true, true);
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * @see org.nightlabs.jfire.base.prop.edit.DataFieldEditor#getControl()
@@ -256,18 +261,18 @@ extends AbstractDataFieldEditor<ImageDataField>
 //			public void run() {
 				ImageDataField dataField = getDataField();
 				String path = filenameTextbox.getText();		
-				if (path == null || "".equals(path))
-					throw new RuntimeException("Path must not be empty or null!");
+				if (path == null || "".equals(path)) //$NON-NLS-1$
+					throw new RuntimeException("Path must not be empty or null!"); //$NON-NLS-1$
 				
 				//FIXME: get content type somehow!
-				String contentType = "application/unknown";
+				String contentType = "application/unknown"; //$NON-NLS-1$
 				String lowerPath = path.toLowerCase();
-				if(lowerPath.endsWith(".png"))
-					contentType = "image/png";
-				else if(lowerPath.endsWith(".jpg"))
-					contentType = "image/jpeg";
-				else if(lowerPath.endsWith(".gif"))
-					contentType = "image/gif";
+				if(lowerPath.endsWith(".png")) //$NON-NLS-1$
+					contentType = "image/png"; //$NON-NLS-1$
+				else if(lowerPath.endsWith(".jpg")) //$NON-NLS-1$
+					contentType = "image/jpeg"; //$NON-NLS-1$
+				else if(lowerPath.endsWith(".gif")) //$NON-NLS-1$
+					contentType = "image/gif"; //$NON-NLS-1$
 
 				// store the image as in the data field.
 				File imageFile = new File(path);

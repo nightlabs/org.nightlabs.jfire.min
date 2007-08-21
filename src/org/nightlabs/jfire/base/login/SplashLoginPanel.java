@@ -144,7 +144,7 @@ public class SplashLoginPanel extends JPanel
 		messagePanel = new JPanel();
 		messagePanel.setOpaque(false);
 		messagePanel.setLayout(new FlowLayout(FlowLayout.LEADING, 10, 10));
-		labelMessage = new JLabel(Messages.getString("login.SplashLoginPanel.pleaseLogin")); //$NON-NLS-1$
+		labelMessage = new JLabel(Messages.getString("org.nightlabs.jfire.base.login.SplashLoginPanel.pleaseLogin")); //$NON-NLS-1$
 		messagePanel.add(labelMessage);
 		fieldWrapperPanel.add(messagePanel, BorderLayout.NORTH);
 
@@ -158,7 +158,7 @@ public class SplashLoginPanel extends JPanel
 			latestLoginConfig = new LoginConfiguration();
 			latestLoginConfig.init();
 		} else {
-			final String lastUsed = Messages.getString("login.LoginDialog.currentIdentityMarker"); //$NON-NLS-1$
+			final String lastUsed = Messages.getString("org.nightlabs.jfire.base.login.LoginDialog.currentIdentityMarker"); //$NON-NLS-1$
 			loginConfigNames.add(lastUsed);
 			loginConfigMap.put(lastUsed, latestLoginConfig);
 		}
@@ -167,7 +167,7 @@ public class SplashLoginPanel extends JPanel
 			loginConfigMap.put(config.toShortString(), config);
 			loginConfigNames.add(config.toShortString());
 		}
-		labelRecentLogins = new JLabel(Messages.getString("login.SplashLoginPanel.recentLoginsComboLabel"), SwingConstants.LEADING); //$NON-NLS-1$
+		labelRecentLogins = new JLabel(Messages.getString("org.nightlabs.jfire.base.login.SplashLoginPanel.recentLoginsComboLabel"), SwingConstants.LEADING); //$NON-NLS-1$
 		editPanel.add(labelRecentLogins);
 		comboRecentLogins = new JComboBox(loginConfigNames.toArray(new String[loginConfigNames.size()]));
 		comboRecentLogins.addItemListener(new ItemListener() {
@@ -181,14 +181,14 @@ public class SplashLoginPanel extends JPanel
 		comboRecentLogins.setEditable(false);
 		editPanel.add(comboRecentLogins);
 
-		labelUsername = new JLabel(Messages.getString("login.SplashLoginPanel.username"), SwingConstants.LEADING); //$NON-NLS-1$
+		labelUsername = new JLabel(Messages.getString("org.nightlabs.jfire.base.login.SplashLoginPanel.username"), SwingConstants.LEADING); //$NON-NLS-1$
 		editPanel.add(labelUsername);
 		textUsername = new JTextField(15);
 		labelUsername.setLabelFor(textUsername);
 		
 		editPanel.add(textUsername);
 
-		labelPassword = new JLabel(Messages.getString("login.SplashLoginPanel.password"), SwingConstants.LEADING); //$NON-NLS-1$
+		labelPassword = new JLabel(Messages.getString("org.nightlabs.jfire.base.login.SplashLoginPanel.password"), SwingConstants.LEADING); //$NON-NLS-1$
 		editPanel.add(labelPassword);
 		textPassword = new JPasswordField(15);
 		labelPassword.setLabelFor(textPassword);
@@ -196,7 +196,7 @@ public class SplashLoginPanel extends JPanel
 		textPassword.setEchoChar('*');
 		editPanel.add(textPassword);
 
-		labelWorkstation = new JLabel(Messages.getString("login.SplashLoginPanel.workstation"), SwingConstants.LEADING); //$NON-NLS-1$
+		labelWorkstation = new JLabel(Messages.getString("org.nightlabs.jfire.base.login.SplashLoginPanel.workstation"), SwingConstants.LEADING); //$NON-NLS-1$
 		editPanel.add(labelWorkstation);
 		textWorkstation = new JTextField(15);
 		labelWorkstation.setLabelFor(textWorkstation);
@@ -217,26 +217,26 @@ public class SplashLoginPanel extends JPanel
 		detailPanel.setLayout(new SpringLayout());
 		detailWrapper.add(detailPanel, BorderLayout.NORTH);
 
-		labelOrganisationID = new JLabel(Messages.getString("login.SplashLoginPanel.organisation"), JLabel.LEADING); //$NON-NLS-1$
+		labelOrganisationID = new JLabel(Messages.getString("org.nightlabs.jfire.base.login.SplashLoginPanel.organisation"), JLabel.LEADING); //$NON-NLS-1$
 		detailPanel.add(labelOrganisationID);
 		textOrganisationID = new JTextField(15);
 		labelOrganisationID.setLabelFor(textOrganisationID);
 		
 		detailPanel.add(textOrganisationID);
 
-		labelSecurityProtocol = new JLabel(Messages.getString("login.SplashLoginPanel.securityProtocol"), JLabel.LEADING); //$NON-NLS-1$
+		labelSecurityProtocol = new JLabel(Messages.getString("org.nightlabs.jfire.base.login.SplashLoginPanel.securityProtocol"), JLabel.LEADING); //$NON-NLS-1$
 //		detailPanel.add(labelSecurityProtocol);
 		textSecurityProtocol = new JTextField(15);
 		labelSecurityProtocol.setLabelFor(textSecurityProtocol);
 //		detailPanel.add(textSecurityProtocol);
 
-		labelServerURL = new JLabel(Messages.getString("login.SplashLoginPanel.serverURL"), JLabel.LEADING); //$NON-NLS-1$
+		labelServerURL = new JLabel(Messages.getString("org.nightlabs.jfire.base.login.SplashLoginPanel.serverURL"), JLabel.LEADING); //$NON-NLS-1$
 		detailPanel.add(labelServerURL);
 		textServerURL = new JTextField(15);
 		labelServerURL.setLabelFor(textServerURL);
 		detailPanel.add(textServerURL);
 
-		labelInitialContextFactory = new JLabel(Messages.getString("login.SplashLoginPanel.initialContextFactory"), JLabel.LEADING); //$NON-NLS-1$
+		labelInitialContextFactory = new JLabel(Messages.getString("org.nightlabs.jfire.base.login.SplashLoginPanel.initialContextFactory"), JLabel.LEADING); //$NON-NLS-1$
 		detailPanel.add(labelInitialContextFactory);		
 		textInitialContextFactory = new JTextField(15);
 		labelInitialContextFactory.setLabelFor(textInitialContextFactory);
@@ -250,7 +250,7 @@ public class SplashLoginPanel extends JPanel
 		checkBoxPanel = new JPanel();
 		checkBoxPanel.setOpaque(false);
 		checkBoxPanel.setLayout(new FlowLayout(FlowLayout.LEADING));
-		checkBoxSaveSettings = new JCheckBox(Messages.getString("login.SplashLoginPanel.saveSettings"), false); //$NON-NLS-1$
+		checkBoxSaveSettings = new JCheckBox(Messages.getString("org.nightlabs.jfire.base.login.SplashLoginPanel.saveSettings"), false); //$NON-NLS-1$
 		checkBoxSaveSettings.setOpaque(false);
 		checkBoxPanel.add(checkBoxSaveSettings);
 		detailWrapper.add(checkBoxPanel, BorderLayout.SOUTH);
@@ -271,7 +271,7 @@ public class SplashLoginPanel extends JPanel
 		buttonPanel.setAlignmentX(JPanel.RIGHT_ALIGNMENT);
 		buttonPanel.setLayout(new FlowLayout(FlowLayout.TRAILING));
 		southPanel.add(buttonPanel, BorderLayout.SOUTH);
-		buttonLogin = new JButton(Messages.getString("login.SplashLoginPanel.login")); //$NON-NLS-1$
+		buttonLogin = new JButton(Messages.getString("org.nightlabs.jfire.base.login.SplashLoginPanel.login")); //$NON-NLS-1$
 		buttonPanel.add(buttonLogin);
 		buttonLogin.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e) {
@@ -281,7 +281,7 @@ public class SplashLoginPanel extends JPanel
 			}
 		});
 
-		buttonWorkOffline = new JButton(Messages.getString("login.SplashLoginPanel.workOffline")); //$NON-NLS-1$
+		buttonWorkOffline = new JButton(Messages.getString("org.nightlabs.jfire.base.login.SplashLoginPanel.workOffline")); //$NON-NLS-1$
 		buttonPanel.add(buttonWorkOffline);
 		buttonWorkOffline.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e) {
@@ -292,14 +292,14 @@ public class SplashLoginPanel extends JPanel
 			}
 		});
 
-		buttonQuit = new JButton(Messages.getString("login.SplashLoginPanel.quit")); //$NON-NLS-1$
+		buttonQuit = new JButton(Messages.getString("org.nightlabs.jfire.base.login.SplashLoginPanel.quit")); //$NON-NLS-1$
 		buttonPanel.add(buttonQuit);
 		buttonQuit.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e) {
 				System.exit(0);
 			}
 		});
-		buttonShowDetails = new JToggleButton(Messages.getString("login.SplashLoginPanel.details")); //$NON-NLS-1$
+		buttonShowDetails = new JToggleButton(Messages.getString("org.nightlabs.jfire.base.login.SplashLoginPanel.details")); //$NON-NLS-1$
 		buttonPanel.add(buttonShowDetails);
 		buttonShowDetails.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {

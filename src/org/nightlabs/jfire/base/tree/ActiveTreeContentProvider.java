@@ -72,7 +72,7 @@ extends TreeContentProvider
 	private Map<JDOObjectID, JDOObject> jdoObjectID2jdoObject = null;
 	private Object jdoObjectID2jdoObjectMutex = new Object();
 	private JDOObject[] jdoObjects = null;
-	private JDOLifecycleListener lifecycleListener = new JDOLifecycleAdapterJob(Messages.getString("tree.ActiveTreeContentProvider.loadingNewJDOObjects")) //$NON-NLS-1$
+	private JDOLifecycleListener lifecycleListener = new JDOLifecycleAdapterJob(Messages.getString("org.nightlabs.jfire.base.tree.ActiveTreeContentProvider.loadingNewJDOObjects")) //$NON-NLS-1$
 	{
 		private SimpleLifecycleListenerFilter lifecycleListenerFilter = new SimpleLifecycleListenerFilter(
 				getJdoObjectClass(), true,
@@ -115,7 +115,7 @@ extends TreeContentProvider
 		}
 	};
 
-	private NotificationListener notificationListener = new NotificationAdapterJob(Messages.getString("tree.ActiveTreeContentProvider.loadingChangedJDOObjects")) //$NON-NLS-1$
+	private NotificationListener notificationListener = new NotificationAdapterJob(Messages.getString("org.nightlabs.jfire.base.tree.ActiveTreeContentProvider.loadingChangedJDOObjects")) //$NON-NLS-1$
 	{
 		public void notify(NotificationEvent notificationEvent)
 		{
@@ -217,7 +217,7 @@ extends TreeContentProvider
 		if (jdoObjects != null)
 			return jdoObjects;
 
-		Job job = new Job(Messages.getString("tree.ActiveTreeContentProvider.loadingDataJob")) { //$NON-NLS-1$
+		Job job = new Job(Messages.getString("org.nightlabs.jfire.base.tree.ActiveTreeContentProvider.loadingDataJob")) { //$NON-NLS-1$
 			protected IStatus run(IProgressMonitor monitor)
 			{
 				Collection<JDOObject> jdoObjects = getAllJDOObjects(monitor);
@@ -247,7 +247,7 @@ extends TreeContentProvider
 		job.setPriority(Job.SHORT);
 		job.schedule();
 
-		return new String[] { Messages.getString("tree.ActiveTreeContentProvider.loadingData") }; //$NON-NLS-1$
+		return new String[] { Messages.getString("org.nightlabs.jfire.base.tree.ActiveTreeContentProvider.loadingData") }; //$NON-NLS-1$
 	}
 
 }

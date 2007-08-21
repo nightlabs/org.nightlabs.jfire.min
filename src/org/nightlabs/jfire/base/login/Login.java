@@ -413,8 +413,8 @@ implements InitialContextProvider
 								Shell shell = RCPUtil.getActiveWorkbenchShell();
 								MessageDialog.openInformation(
 										shell,
-										Messages.getString("login.Login.rebootDialogTitle"), //$NON-NLS-1$
-										Messages.getString("login.Login.rebootDialogMessage")); //$NON-NLS-1$
+										Messages.getString("org.nightlabs.jfire.base.login.Login.rebootDialogTitle"), //$NON-NLS-1$
+										Messages.getString("org.nightlabs.jfire.base.login.Login.rebootDialogMessage")); //$NON-NLS-1$
 
 								safeRestart();
 							}
@@ -648,7 +648,7 @@ implements InitialContextProvider
 	 */
 	public static void loginAsynchronously()
 	{
-		Job job = new Job(Messages.getString("login.Login.authenticationJob")) { //$NON-NLS-1$
+		Job job = new Job(Messages.getString("org.nightlabs.jfire.base.login.Login.authenticationJob")) { //$NON-NLS-1$
 			@Override
 			protected IStatus run(ProgressMonitor arg0) throws Exception
 			{
@@ -1109,7 +1109,7 @@ implements InitialContextProvider
 				logger.warn("Login failed!", x); //$NON-NLS-1$
 				LoginException loginE = new LoginException(x.getMessage());
 				loginE.initCause(x);
-				loginResult.setMessage(Messages.getString("login.Login.errorUnhandledExceptionMessage")); //$NON-NLS-1$
+				loginResult.setMessage(Messages.getString("org.nightlabs.jfire.base.login.Login.errorUnhandledExceptionMessage")); //$NON-NLS-1$
 				loginResult.setException(loginE);
 			}
 		}

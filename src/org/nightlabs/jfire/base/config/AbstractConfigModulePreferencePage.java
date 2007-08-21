@@ -387,7 +387,7 @@ extends LSDPreferencePage
 		StackLayout layout = new StackLayout();
 		fadableWrapper.setLayout(layout);
 		loading = new XComposite(fadableWrapper, SWT.NONE);
-		new Label(loading, SWT.NONE).setText(Messages.getString("config.AbstractConfigModulePreferencePage.loadingLabel")); //$NON-NLS-1$
+		new Label(loading, SWT.NONE).setText(Messages.getString("org.nightlabs.jfire.base.config.AbstractConfigModulePreferencePage.loadingLabel")); //$NON-NLS-1$
 		layout.topControl = loading;
 		fadableWrapper.setFaded(true);
 		
@@ -397,10 +397,10 @@ extends LSDPreferencePage
 		header.setBackgroundMode(SWT.INHERIT_FORCE); // doesn't seem to work
 		body = new XComposite(loadingDone, SWT.NONE, LayoutMode.TIGHT_WRAPPER);
 
-		Job fetchJob = new Job(Messages.getString("config.AbstractConfigModulePreferencePage.fetchJobName")) { //$NON-NLS-1$
+		Job fetchJob = new Job(Messages.getString("org.nightlabs.jfire.base.config.AbstractConfigModulePreferencePage.fetchJobName")) { //$NON-NLS-1$
 			@Override
 			protected IStatus run(ProgressMonitor monitor) {
-				monitor.beginTask(Messages.getString("config.AbstractConfigModulePreferencePage.gettingModuleDataTask"), 3); //$NON-NLS-1$
+				monitor.beginTask(Messages.getString("org.nightlabs.jfire.base.config.AbstractConfigModulePreferencePage.gettingModuleDataTask"), 3); //$NON-NLS-1$
 				getConfigModuleController().setConfigModule(getConfigModuleController().retrieveConfigModule(monitor));
 				currentConfigIsGroupMember = getConfigModuleController().checkIfIsGroupMember(getConfigModuleController().getConfigModule());
 				currentConfigModuleIsEditable = getConfigModuleController().canEdit(getConfigModuleController().getConfigModule());
@@ -411,7 +411,7 @@ extends LSDPreferencePage
 							if (doSetControl) {
 								EditLockMan.sharedInstance().acquireEditLock(JFireBaseEAR.EDIT_LOCK_TYPE_ID_CONFIG_MODULE, 
 										(ConfigModuleID) JDOHelper.getObjectId(getConfigModuleController().getConfigModule()), 
-										Messages.getString("config.AbstractConfigModulePreferencePage.editLockWarning"), //$NON-NLS-1$
+										Messages.getString("org.nightlabs.jfire.base.config.AbstractConfigModulePreferencePage.editLockWarning"), //$NON-NLS-1$
 										null, getShell(), getSubProgressMonitorWrapper(1));								
 							}
 						}
@@ -497,7 +497,7 @@ extends LSDPreferencePage
 			
 			if (! currentConfigIsGroupMember) {
 				inheritMemberConfigModule.setEnabled(false);
-				inheritMemberConfigModule.setCaption(Messages.getString("config.AbstractConfigModulePreferencePage.noGroup")); //$NON-NLS-1$
+				inheritMemberConfigModule.setCaption(Messages.getString("org.nightlabs.jfire.base.config.AbstractConfigModulePreferencePage.noGroup")); //$NON-NLS-1$
 				return;
 			}
 
@@ -507,9 +507,9 @@ extends LSDPreferencePage
 			inheritMemberConfigModule.setEnabled(currentConfigModuleIsEditable); 
 
 			if (! currentConfigModuleIsEditable)
-				inheritMemberConfigModule.setCaption(Messages.getString("config.AbstractConfigModulePreferencePage.GroupDisallowsOverwrite")); //$NON-NLS-1$
+				inheritMemberConfigModule.setCaption(Messages.getString("org.nightlabs.jfire.base.config.AbstractConfigModulePreferencePage.GroupDisallowsOverwrite")); //$NON-NLS-1$
 			else
-				inheritMemberConfigModule.setCaption(Messages.getString("config.AbstractConfigModulePreferencePage.inheritFromGroup")); //$NON-NLS-1$
+				inheritMemberConfigModule.setCaption(Messages.getString("org.nightlabs.jfire.base.config.AbstractConfigModulePreferencePage.inheritFromGroup")); //$NON-NLS-1$
 			
 			inheritMemberConfigModule.adaptToToolkit();
 			inheritMemberConfigModule.layout(true, true);
@@ -531,8 +531,8 @@ extends LSDPreferencePage
 				(getConfigModuleController().getConfigModule().getFieldMetaData(ConfigModule.class.getName()).getWritableByChildren() 
 						& FieldMetaData.WRITABLEBYCHILDREN_YES) != 0
 						);
-		checkBoxAllowOverwrite.setText(Messages.getString("config.AbstractConfigModulePreferencePage.WhetherGroupAllowsConfigOverwrite")); //$NON-NLS-1$
-		
+		checkBoxAllowOverwrite.setText(Messages.getString("org.nightlabs.jfire.base.config.AbstractConfigModulePreferencePage.WhetherGroupAllowsConfigOverwrite")); //$NON-NLS-1$
+
 		checkBoxAllowOverwrite.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				if (getConfigModuleController().getConfigModule() == null || ! getConfigModuleController().getConfigModule().isGroupConfigModule())
@@ -566,9 +566,9 @@ extends LSDPreferencePage
 		inheritMemberConfigModule.setEnabled(currentConfigModuleIsEditable); 
 
 		if (! currentConfigModuleIsEditable)
-			inheritMemberConfigModule.setCaption(Messages.getString("config.AbstractConfigModulePreferencePage.GroupDisallowsOverwrite")); //$NON-NLS-1$
+			inheritMemberConfigModule.setCaption(Messages.getString("org.nightlabs.jfire.base.config.AbstractConfigModulePreferencePage.GroupDisallowsOverwrite")); //$NON-NLS-1$
 		else
-			inheritMemberConfigModule.setCaption(Messages.getString("config.AbstractConfigModulePreferencePage.inheritFromGroup")); //$NON-NLS-1$
+			inheritMemberConfigModule.setCaption(Messages.getString("org.nightlabs.jfire.base.config.AbstractConfigModulePreferencePage.inheritFromGroup")); //$NON-NLS-1$
 
 		inheritMemberConfigModule.addSelectionListener(new SelectionAdapter() {
 			@Override
@@ -582,7 +582,7 @@ extends LSDPreferencePage
 //				FIXME: The first time inheritance is triggered, the valueInherited value is here set to true (look deeper)
 				if (selected) {
 					fadableWrapper.setFaded(true);
-					Job fetchJob = new Job(Messages.getString("config.AbstractConfigModulePreferencePage.fetchJobName")) { //$NON-NLS-1$
+					Job fetchJob = new Job(Messages.getString("org.nightlabs.jfire.base.config.AbstractConfigModulePreferencePage.fetchJobName")) { //$NON-NLS-1$
 						@Override
 						protected IStatus run(ProgressMonitor monitor) {
 //						FIXME: and is in this job, when read, FALSE!!!! Damn f%&§$=! bug!

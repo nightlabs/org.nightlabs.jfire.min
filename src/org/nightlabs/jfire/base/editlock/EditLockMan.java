@@ -75,7 +75,7 @@ public class EditLockMan
 
 		public EditLockRefreshJob(EditLockCarrier editLockCarrier)
 		{
-			super(Messages.getString("editlock.EditLockMan.jobName")); //$NON-NLS-1$
+			super(Messages.getString("org.nightlabs.jfire.base.editlock.EditLockMan.jobName")); //$NON-NLS-1$
 			setEditLockCarrier(editLockCarrier);
 		}
 
@@ -339,7 +339,7 @@ public class EditLockMan
 			if (oldEditLockCarrier == null) { // we only need to communicate with the server, if the object is not yet locked there. and we don't open a dialog when refreshing - only when new.
 				final AcquireEditLockResult acquireEditLockResult;
 	
-				monitor.beginTask(Messages.getString("editlock.EditLockMan.aquireLockTask"), 1); //$NON-NLS-1$
+				monitor.beginTask(Messages.getString("org.nightlabs.jfire.base.editlock.EditLockMan.aquireLockTask"), 1); //$NON-NLS-1$
 				try {
 					acquireEditLockResult = editLockDAO.acquireEditLock(
 							editLockTypeID, objectID, description, FETCH_GROUPS_EDIT_LOCK, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
@@ -378,7 +378,7 @@ public class EditLockMan
 
 	private void releaseEditLockWithJob(final List<ObjectID> objectIDs, final ReleaseReason releaseReason)
 	{
-		Job job = new Job(Messages.getString("editlock.EditLockMan.releaseLockJob")) { //$NON-NLS-1$
+		Job job = new Job(Messages.getString("org.nightlabs.jfire.base.editlock.EditLockMan.releaseLockJob")) { //$NON-NLS-1$
 			@Implement
 			protected IStatus run(ProgressMonitor monitor) throws Exception
 			{

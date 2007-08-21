@@ -78,7 +78,7 @@ extends CenteredDialog
 		Composite page = (Composite) super.createDialogArea(parent);
 		Label l = new Label(page, SWT.WRAP);
 		l.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		l.setText(Messages.getString("EditLockAboutToExpireDueToUserInactivityDialog.locksToRelease")); //$NON-NLS-1$
+		l.setText(Messages.getString("org.nightlabs.jfire.base.editlock.EditLockAboutToExpireDueToUserInactivityDialog.locksToRelease")); //$NON-NLS-1$
 
 		editLockCarrierTable = new EditLockCarrierTable(page, SWT.NONE);
 

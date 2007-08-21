@@ -45,11 +45,11 @@ public class NeedLoginComposite extends XComposite {
 	public NeedLoginComposite(Composite parent, int style) {
 		super(parent, style);		
 		Label label = new Label(this, SWT.WRAP);
-		label.setText(Messages.getString("login.part.NeedLoginComposite.loginToUseView")); //$NON-NLS-1$
+		label.setText(Messages.getString("org.nightlabs.jfire.base.login.part.NeedLoginComposite.loginToUseView")); //$NON-NLS-1$
 		label.setLayoutData(new GridData());
 		
 		Button loginButton = new Button(this, SWT.PUSH);
-		loginButton.setText(Messages.getString("login.part.NeedLoginComposite.login")); //$NON-NLS-1$
+		loginButton.setText(Messages.getString("org.nightlabs.jfire.base.login.part.NeedLoginComposite.login")); //$NON-NLS-1$
 		loginButton.addSelectionListener(new SelectionListener() {
 			public void widgetSelected(SelectionEvent e) {
 				try {

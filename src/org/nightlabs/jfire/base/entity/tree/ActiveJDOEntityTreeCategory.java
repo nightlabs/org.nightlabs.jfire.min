@@ -27,7 +27,7 @@ extends EntityTreeCategory
 		{
 			List<JDOObject> jdoObjects = getActiveJDOObjectController().getJDOObjects();
 			if (jdoObjects == null)
-				return new String[] { Messages.getString("entity.tree.ActiveJDOEntityTreeCategory.loadingData") }; //$NON-NLS-1$
+				return new String[] { Messages.getString("org.nightlabs.jfire.base.entity.tree.ActiveJDOEntityTreeCategory.loadingData") }; //$NON-NLS-1$
 
 			return jdoObjects.toArray();
 		}

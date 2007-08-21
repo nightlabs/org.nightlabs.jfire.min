@@ -127,7 +127,7 @@ extends CenteredDialog // IconAndMessageDialog
 	protected void configureShell(Shell newShell) {
 		super.configureShell(newShell);
 		setToCenteredLocationPreferredSize(newShell, 400, 300);
-		newShell.setText(Messages.getString("config.ChangedConfigModulePagesDialog.title")); //$NON-NLS-1$
+		newShell.setText(Messages.getString("org.nightlabs.jfire.base.config.ChangedConfigModulePagesDialog.title")); //$NON-NLS-1$
 	}
 	
 	/**

@@ -64,13 +64,13 @@ extends CenteredDialog
 		Composite page = (Composite) super.createDialogArea(parent);
 
 		Label l = new Label(page, SWT.WRAP);
-		l.setText(Messages.getString("editlock.EditLockCollisionWarningDialog.warningText")); //$NON-NLS-1$
+		l.setText(Messages.getString("org.nightlabs.jfire.base.editlock.EditLockCollisionWarningDialog.warningText")); //$NON-NLS-1$
 		l.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
 		editLockTable = new EditLockTable(page, SWT.NONE);
-		editLockTable.setInput(new String[] {Messages.getString("editlock.EditLockCollisionWarningDialog.loadingLabel")}); //$NON-NLS-1$
+		editLockTable.setInput(new String[] {Messages.getString("org.nightlabs.jfire.base.editlock.EditLockCollisionWarningDialog.loadingLabel")}); //$NON-NLS-1$
 
-		Job job = new Job(Messages.getString("editlock.EditLockCollisionWarningDialog.loadingJob")) { //$NON-NLS-1$
+		Job job = new Job(Messages.getString("org.nightlabs.jfire.base.editlock.EditLockCollisionWarningDialog.loadingJob")) { //$NON-NLS-1$
 			@Override
 			protected IStatus run(ProgressMonitor monitor)
 			{

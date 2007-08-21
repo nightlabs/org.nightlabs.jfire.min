@@ -163,7 +163,7 @@ implements ConfigPreferenceChangedListener, IStoreChangedConfigModule
 	}
 	
 	public void updatePreferencesComposite() {
-		Job job = new Job(Messages.getString("config.ConfigPreferencesEditComposite2.updateingJob")) { //$NON-NLS-1$
+		Job job = new Job(Messages.getString("org.nightlabs.jfire.base.config.ConfigPreferencesEditComposite2.updateingJob")) { //$NON-NLS-1$
 			@Override
 			protected IStatus run(ProgressMonitor monitor) {
 				Display.getDefault().asyncExec(new Runnable() {
@@ -194,17 +194,17 @@ implements ConfigPreferenceChangedListener, IStoreChangedConfigModule
 		this.currentConfigID = currentConfigID;
 		setFaded(true);
 
-		Job lockJob = new Job(Messages.getString("config.ConfigPreferencesEditComposite2.lockCheckJob")) { //$NON-NLS-1$
+		Job lockJob = new Job(Messages.getString("org.nightlabs.jfire.base.config.ConfigPreferencesEditComposite2.lockCheckJob")) { //$NON-NLS-1$
 			@Override
 			protected IStatus run(ProgressMonitor monitor) {
-				monitor.beginTask(Messages.getString("config.ConfigPreferencesEditComposite2.initialising"), 2); //$NON-NLS-1$
+				monitor.beginTask(Messages.getString("org.nightlabs.jfire.base.config.ConfigPreferencesEditComposite2.initialising"), 2); //$NON-NLS-1$
 
 				treeComposite.setConfigID(currentConfigID);
 				monitor.worked(1);
 
 				EditLockMan.sharedInstance().acquireEditLock(
 						JFireBaseEAR.EDIT_LOCK_TYPE_ID_CONFIG, getCurrentConfigID(),
-						Messages.getString("config.ConfigPreferencesEditComposite2.editLockWarning"), //$NON-NLS-1$ 
+						Messages.getString("org.nightlabs.jfire.base.config.ConfigPreferencesEditComposite2.editLockWarning"), //$NON-NLS-1$ 
 						(EditLockCallback)null, new SubProgressMonitor(monitor, 1)
 				);
 

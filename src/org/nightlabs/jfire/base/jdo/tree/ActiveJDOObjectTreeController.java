@@ -268,7 +268,7 @@ public abstract class ActiveJDOObjectTreeController<JDOObjectID extends ObjectID
 	 */
 	protected void createRegisterChangeListener() {
 		if (changeListener == null) {
-			changeListener = new ChangeListener(Messages.getString("jdo.tree.ActiveJDOObjectTreeController.loadingChanges")); //$NON-NLS-1$
+			changeListener = new ChangeListener(Messages.getString("org.nightlabs.jfire.base.jdo.tree.ActiveJDOObjectTreeController.loadingChanges")); //$NON-NLS-1$
 			JDOLifecycleManager.sharedInstance().addNotificationListener(getJDOObjectClass(), changeListener);
 		}
 	}
@@ -521,7 +521,7 @@ public abstract class ActiveJDOObjectTreeController<JDOObjectID extends ObjectID
 		if (logger.isDebugEnabled())
 			logger.debug("getNodes: returning null and spawning Job."); //$NON-NLS-1$
 
-		Job job = new Job(Messages.getString("jdo.tree.ActiveJDOObjectTreeController.loadingDataJob")) { //$NON-NLS-1$
+		Job job = new Job(Messages.getString("org.nightlabs.jfire.base.jdo.tree.ActiveJDOObjectTreeController.loadingDataJob")) { //$NON-NLS-1$
 			@Implement
 			protected IStatus run(IProgressMonitor monitor)
 			{
