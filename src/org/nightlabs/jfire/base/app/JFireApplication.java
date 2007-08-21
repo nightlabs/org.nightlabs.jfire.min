@@ -30,8 +30,15 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import javax.security.auth.login.LoginException;
+
+import org.eclipse.equinox.app.IApplication;
+import org.eclipse.swt.widgets.Display;
 import org.nightlabs.base.app.AbstractApplication;
-import org.nightlabs.base.app.AbstractApplicationThread;
+import org.nightlabs.base.app.AbstractWorkbenchAdvisor;
+import org.nightlabs.jfire.base.login.Login;
+import org.nightlabs.jfire.base.login.LoginConfigModule;
+import org.nightlabs.jfire.base.update.StartupUpdateManager;
 
 /**
  * JFireApplication is the main executed class {@see JFireApplication#run(Object)}. 
@@ -69,8 +76,40 @@ extends AbstractApplication
 		return "jfire"; //$NON-NLS-1$
 	}
 
-	public AbstractApplicationThread initApplicationThread(ThreadGroup group) {
-//		RMIClassLoader.getDefaultProviderInstance().
-		return new JFireApplicationThread(group);
+	
+	@Override
+	protected void preCreateWorkbench() 
+	{
+//		try {
+//			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());	
+//		} catch (Exception e) {
+//			// Do nothing
+//		}  
+		
+		try
+		{
+//			Login.getLogin(); // we always login in order to prevent our class-loading problems.
+
+			LoginConfigModule lcm = Login.sharedInstance().getLoginConfigModule();
+			if(lcm.getLastSavedLoginConfiguration().isAutomaticUpdate() == true)
+			{
+				Login.getLogin();
+				StartupUpdateManager updateManager = new StartupUpdateManager(lcm);
+				updateManager.run();
+				if(updateManager.doRestart())
+				{
+					setPlatformReturnCode(IApplication.EXIT_RESTART);
+					return;
+				}
+			}
+		}
+		catch(LoginException e)
+		{
+		}
 	}
+	
+	public AbstractWorkbenchAdvisor initWorkbenchAdvisor(Display display) {
+		return new JFireWorkbenchAdvisor(display);
+	}
+	
 }

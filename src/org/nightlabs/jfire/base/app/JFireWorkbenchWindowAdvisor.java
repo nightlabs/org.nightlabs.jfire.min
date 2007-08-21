@@ -33,6 +33,7 @@ import org.eclipse.ui.WorkbenchException;
 import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
+import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 import org.nightlabs.base.action.ContributionItemSetRegistry;
 import org.nightlabs.base.editor.Editor2PerspectiveRegistry;
 import org.nightlabs.base.extensionpoint.EPProcessorException;
@@ -40,10 +41,10 @@ import org.nightlabs.base.part.PartVisibilityTracker;
 import org.nightlabs.base.util.RCPUtil;
 import org.nightlabs.jfire.base.login.LoginStateStatusLineContribution;
 import org.nightlabs.jfire.base.resource.Messages;
-import org.nightlabs.rcp.splash.SplashHandlingWorkbenchWindowAdvisor;
 
 public class JFireWorkbenchWindowAdvisor 
-extends SplashHandlingWorkbenchWindowAdvisor 
+//extends SplashHandlingWorkbenchWindowAdvisor 
+extends WorkbenchWindowAdvisor
 {	
 	/**
 	 * LOG4J logger used by this class
