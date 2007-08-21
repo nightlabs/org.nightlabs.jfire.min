@@ -57,7 +57,7 @@ public class LoginConfiguration implements Serializable, Initializable, Cloneabl
 	 */
 	public void init()
 	{
-		if(workstationID == null)
+		if (workstationID == null)
 			workstationID = ""; //$NON-NLS-1$
 
 		if (organisationID == null)
@@ -65,6 +65,9 @@ public class LoginConfiguration implements Serializable, Initializable, Cloneabl
 
 		if (userID == null)
 			userID = ""; //$NON-NLS-1$
+
+		if (name == null)
+			name = ""; //$NON-NLS-1$
 
 //		default values
 		if(initialContextFactory == null)

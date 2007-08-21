@@ -32,14 +32,11 @@ import org.nightlabs.base.util.RCPUtil;
 
 /**
  * The perspective factory for the RCP Browser Example's perspective.
- * 
- * @since 3.0
  */
-public class JFireWelcomePerspective implements IPerspectiveFactory {
+public class JFireWelcomePerspective implements IPerspectiveFactory
+{
+	public static final String ID_PERSPECTIVE = JFireWelcomePerspective.class.getName();
 
-	
-    public static final String ID_PERSPECTIVE = "org.nightlabs.jfire.base.perspective.JFireWelcomePerspective"; //$NON-NLS-1$
-    
 	/**
 	 * Creates the initial layout of the JFireWelcomePerspective.<br/>
 	 * By now nothing no view is in the Perspective

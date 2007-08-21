@@ -30,15 +30,9 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import javax.security.auth.login.LoginException;
-
-import org.eclipse.equinox.app.IApplication;
 import org.eclipse.swt.widgets.Display;
 import org.nightlabs.base.app.AbstractApplication;
 import org.nightlabs.base.app.AbstractWorkbenchAdvisor;
-import org.nightlabs.jfire.base.login.Login;
-import org.nightlabs.jfire.base.login.LoginConfigModule;
-import org.nightlabs.jfire.base.update.StartupUpdateManager;
 
 /**
  * JFireApplication is the main executed class {@see JFireApplication#run(Object)}. 
@@ -76,36 +70,32 @@ extends AbstractApplication
 		return "jfire"; //$NON-NLS-1$
 	}
 
-	
 	@Override
 	protected void preCreateWorkbench() 
-	{
-//		try {
-//			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());	
-//		} catch (Exception e) {
-//			// Do nothing
-//		}  
-		
-		try
-		{
-//			Login.getLogin(); // we always login in order to prevent our class-loading problems.
+	{		
+//		try
+//		{
+			// TODO put the Update stuff into a LoginStateListener!
 
-			LoginConfigModule lcm = Login.sharedInstance().getLoginConfigModule();
-			if(lcm.getLastSavedLoginConfiguration().isAutomaticUpdate() == true)
-			{
-				Login.getLogin();
-				StartupUpdateManager updateManager = new StartupUpdateManager(lcm);
-				updateManager.run();
-				if(updateManager.doRestart())
-				{
-					setPlatformReturnCode(IApplication.EXIT_RESTART);
-					return;
-				}
-			}
-		}
-		catch(LoginException e)
-		{
-		}
+//			Login.getLogin(); // we always login in order to prevent our class-loading problems.
+//			LoginConfigModule lcm = Login.sharedInstance().getLoginConfigModule();
+//			// TODO @Carnage lcm.getLastSavedLoginConfiguration() can return null, but this was not handled in the
+//			// following if clause => NPE. I added the check for null, but I don't know whether it's correct with == + || or whether
+//			// it should be != + && 
+//			if (lcm.getLastSavedLoginConfiguration() == null || lcm.getLastSavedLoginConfiguration().isAutomaticUpdate())
+//			{
+//				Login.getLogin();
+//				StartupUpdateManager updateManager = new StartupUpdateManager(lcm);
+//				updateManager.run();
+//				if(updateManager.doRestart())
+//				{
+//					setPlatformReturnCode(IApplication.EXIT_RESTART);
+//					return;
+//				}
+//			}
+//		} catch(LoginException e) {
+//			e.printStackTrace(); // TODO what should be here? There was nothing in this catch block! because there is no logger, I dump at least to std-out. Marco. ;-)
+//		}
 	}
 	
 	public AbstractWorkbenchAdvisor initWorkbenchAdvisor(Display display) {
