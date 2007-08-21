@@ -41,10 +41,6 @@ import org.eclipse.update.standalone.DisableCommand;
 import org.eclipse.update.standalone.InstallCommand;
 import org.eclipse.update.standalone.UninstallCommand;
 import org.nightlabs.jfire.base.login.LoginConfigModule;
-import org.nightlabs.jfire.base.resource.Messages;
-import org.nightlabs.rcp.splash.SplashDialog;
-import org.nightlabs.rcp.splash.SplashScreen;
-import org.nightlabs.rcp.splash.SplashDialog.SplashDialogResult;
 
 /**
  * @author Niklas Schiffler <nick@nightlabs.de>
@@ -69,7 +65,7 @@ public class StartupUpdateManager implements IProgressMonitor, Runnable
 
 	public void run()
 	{
-		SplashScreen.setSplashMessage(Messages.getString("org.nightlabs.jfire.base.update.StartupUpdateManager.splashScreen.message_checkingForUpdates")); //$NON-NLS-1$
+//		SplashScreen.setSplashMessage(Messages.getString("org.nightlabs.jfire.base.update.StartupUpdateManager.splashScreen.message_checkingForUpdates")); //$NON-NLS-1$
 		try
 		{
 			IConfiguredSite[] localSites =
@@ -118,15 +114,15 @@ public class StartupUpdateManager implements IProgressMonitor, Runnable
 			}
 			if(doRestart)
 			{
-				SplashDialog.showSplashDialog(
-						Messages.getString("org.nightlabs.jfire.base.update.StartupUpdateManager.splashDialog.message_needRestart"), //$NON-NLS-1$
-						new SplashDialog.DialogListener() {
-							public boolean finish(SplashDialogResult dialogResult) 
-							{
-								return true;
-							}
-						}
-				);
+//				SplashDialog.showSplashDialog(
+//						Messages.getString("org.nightlabs.jfire.base.update.StartupUpdateManager.splashDialog.message_needRestart"), //$NON-NLS-1$
+//						new SplashDialog.DialogListener() {
+//							public boolean finish(SplashDialogResult dialogResult) 
+//							{
+//								return true;
+//							}
+//						}
+//				);
 			}
 		}
 		catch(CoreException e)
@@ -143,7 +139,7 @@ public class StartupUpdateManager implements IProgressMonitor, Runnable
 		}
 		finally
 		{
-			SplashScreen.resetSplashPanel();
+//			SplashScreen.resetSplashPanel();
 		}
 	}
 
@@ -195,7 +191,7 @@ public class StartupUpdateManager implements IProgressMonitor, Runnable
 	public void beginTask(String name, int totalWork)
 	{
 		worked = 0;
-		SplashScreen.setProgressMinMax(0, totalWork * 1000);
+//		SplashScreen.setProgressMinMax(0, totalWork * 1000);
 	}
 
 	public void done()
@@ -205,7 +201,7 @@ public class StartupUpdateManager implements IProgressMonitor, Runnable
 	public void internalWorked(double work)
 	{
 		worked += work;
-		SplashScreen.setProgressValue((int)(worked * 1000));
+//		SplashScreen.setProgressValue((int)(worked * 1000));
 //		try
 //		{
 //		Thread.sleep(1000);
@@ -233,11 +229,11 @@ public class StartupUpdateManager implements IProgressMonitor, Runnable
 
 	public void subTask(String name)
 	{
-		if(name != null && !("".equals(name))) //$NON-NLS-1$
-			SplashScreen.setSplashMessage(name);
-		else
-			if(taskName != null && !("".equals(taskName))) //$NON-NLS-1$
-				SplashScreen.setSplashMessage(taskName);
+//		if(name != null && !("".equals(name))) //$NON-NLS-1$
+//			SplashScreen.setSplashMessage(name);
+//		else
+//			if(taskName != null && !("".equals(taskName))) //$NON-NLS-1$
+//				SplashScreen.setSplashMessage(taskName);
 
 //		try
 //		{
