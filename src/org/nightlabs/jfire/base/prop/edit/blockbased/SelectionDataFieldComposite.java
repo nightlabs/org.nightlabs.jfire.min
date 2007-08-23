@@ -90,11 +90,11 @@ public class SelectionDataFieldComposite extends AbstractDataFieldComposite {
 			try {
 				fieldValueCombo.selectElement(field.getStructFieldValue(editor.getDataField().getStructFieldValueID()));
 			} catch (StructFieldValueNotFoundException e) {
-				fieldValueCombo.selectElement(-1);
+				fieldValueCombo.selectElementByIndex(-1);
 				throw new RuntimeException("Could not find the referenced structFieldValue with id "+editor.getDataField().getStructFieldValueID()); //$NON-NLS-1$
 			}
 		} else {
-			fieldValueCombo.selectElement(-1);
+			fieldValueCombo.selectElementByIndex(-1);
 		}
 	}
 	
