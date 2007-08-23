@@ -99,11 +99,19 @@ implements IMessageContainer
 		}
 	}
 
+	/**
+	 * is called when an login should be displayed inside the splash
+	 * 
+	 * @param loginContext
+	 * @param loginConfigModule
+	 * @param loginResult
+	 * @throws LoginException
+	 */
 	public void handleSplashLogin(JFireLoginContext loginContext, 
 			LoginConfigModule loginConfigModule, final Login.AsyncLoginResult loginResult) 
 	throws LoginException 
 	{
-		loginComp = showLoginComposite(getSplash(), loginResult, 
+		loginComp = createLoginComposite(getSplash(), loginResult, 
 				loginConfigModule, loginContext, Mode.SHOW_ONLY_LOGIN_AREA);
 		loginComp.setBackgroundMode(backgroundMode);
 		stackLayout.topControl = loginComp; 		
@@ -111,7 +119,7 @@ implements IMessageContainer
 		doEventLoop();
 	}
 			
-	private Composite showLoginComposite(Composite parent, Login.AsyncLoginResult loginResult, 
+	private Composite createLoginComposite(Composite parent, Login.AsyncLoginResult loginResult, 
 			LoginConfigModule loginModule, JFireLoginContext loginContext, Mode mode) 
 	{
 		Composite wrapper = new Composite(parent, SWT.NONE);
@@ -119,8 +127,7 @@ implements IMessageContainer
 		wrapper.setLayoutData(new GridData(GridData.FILL_BOTH));
 		wrapper.setLayout(new GridLayout());		
 		
-		messageLabel = new Label(wrapper, SWT.NONE);
-//		messageLabel.setText("           ");
+		messageLabel = new Label(wrapper, SWT.WRAP);
 		messageLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		
 		loginComposite = new LoginComposite(wrapper, SWT.NONE, loginResult, 
@@ -185,12 +192,15 @@ implements IMessageContainer
 	}
 	
 	private void okPressed() {
-		boolean successfulAuthentication = loginComposite.checkLogin(false);
+		boolean successfulAuthentication = loginComposite.checkLogin(
+				false, getBundleProgressMonitor(), null
+		);
 		if (successfulAuthentication) {
-			setAuthenticationPending(false);
-			loginComp.dispose();
 			showProgressMonitor();
-		}		
+			setAuthenticationPending(false);
+		} else {
+			showLoginComposite();
+		}
 	}
 	
 	private SelectionListener okListener = new SelectionListener(){
@@ -253,13 +263,18 @@ implements IMessageContainer
 	
 	@Override
 	public IProgressMonitor getBundleProgressMonitor() {
-//		return new ProgressMonitorPart(getSplash(), stackLayout);
 		return progressMonitor;
 	}
 	
 	private void showProgressMonitor() {
-		stackLayout.topControl = progressWrapper;
+		stackLayout.topControl = progressWrapper;		
 		getSplash().layout(true, true);
+		getSplash().redraw();
 	}
 	
+	private void showLoginComposite() {
+		stackLayout.topControl = loginComp;
+		getSplash().layout(true, true);
+		getSplash().redraw();
+	}
 }

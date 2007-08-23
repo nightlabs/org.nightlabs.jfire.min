@@ -29,6 +29,7 @@ public class SplashProgressMonitor implements IProgressMonitor {
 		Display.getDefault().syncExec(new Runnable() {
 			public void run() {
 				progressMonitorPart.beginTask(name, totalWork);
+				progressMonitorPart.getParent().layout(true, true);
 			}
 		});
 	}
@@ -102,6 +103,7 @@ public class SplashProgressMonitor implements IProgressMonitor {
 		Display.getDefault().syncExec(new Runnable() {
 			public void run() {
 				progressMonitorPart.worked(work);
+				progressMonitorPart.getParent().redraw();
 			}
 		});
 	}

@@ -5,8 +5,11 @@ package org.nightlabs.jfire.base.login;
 
 import java.util.LinkedList;
 
+import javax.security.auth.login.LoginContext;
+
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -34,18 +37,26 @@ import org.nightlabs.base.composite.XComposite;
 import org.nightlabs.base.composite.XComposite.LayoutMode;
 import org.nightlabs.config.Config;
 import org.nightlabs.config.ConfigException;
+import org.nightlabs.jfire.base.login.splash.LoginSplashHandler;
 import org.nightlabs.jfire.base.resource.Messages;
 
 /**
+ * LoginComposite displayes all necessary information for Login
+ * Is used in The {@link LoginDialog} as well as in the {@link LoginSplashHandler}
+ * 
  * @author Daniel Mazurek - daniel <at> nightlabs <dot> de
- *
+ * @author Tobias Langner <!-- tobias[dot]langner[at]nightlabs[dot]de -->
  */
 public class LoginComposite 
-//extends XComposite 
 extends Composite
 {
+	public static final Logger logger = Logger.getLogger(LoginComposite.class);
+	
 	public static final String EMPTY_STRING = ""; //$NON-NLS-1$
 	
+	/**
+	 * Mode which controls how the LoginComposite should be created
+	 */
 	public enum Mode 
 	{
 		SHOW_ONLY_LOGIN_AREA,
@@ -53,6 +64,17 @@ extends Composite
 		SHOW_LOGIN_AND_DETAIL_AREA
 	}
 	
+	/**
+	 * Creates a LoginComposite for login to an JFire Application
+	 * 
+	 * @param parent the parent Composite
+	 * @param style teh SWT style falg
+	 * @param loginResult the loginResult
+	 * @param loginModule the LoginConfigMoudle
+	 * @param loginContext the loginContext
+	 * @param messageContainer the IMEssageContainer for displaying messages
+	 * @param mode the mode in which the loginComposite should be created
+	 */
 	public LoginComposite(Composite parent, int style, Login.AsyncLoginResult loginResult, 
 			LoginConfigModule loginModule, JFireLoginContext loginContext, 
 			IMessageContainer messageContainer, Mode mode) 
@@ -102,12 +124,7 @@ extends Composite
 	private Text textWorkstationID = null;
 	private Text textIdentityName = null;
 	private int backgroundMode = SWT.INHERIT_DEFAULT;
-	
-//	/**
-//	 * This is only used to be able to initially show details
-//	 */
-//	private boolean initiallyShowDetails = false;
-	
+		
 	private boolean manuallyUpdating = false;
 	private ModifyListener loginDataModifyListener = new ModifyListener() {
 		public void modifyText(ModifyEvent e) {
@@ -346,6 +363,7 @@ extends Composite
 	}
 
 	/**
+	 * returns the {@link Text} which displayes the user id
 	 * @return the textIdentityName
 	 */
 	public Text getTextIdentityName() {
@@ -361,41 +379,35 @@ extends Composite
 	}
 
 	/**
+	 * return the {@link XComboComposite} which displayes the
+	 * recent {@link LoginConfiguration}s
+	 *  
 	 * @return the recentLoginConfigs
 	 */
 	public XComboComposite<LoginConfiguration> getRecentLoginConfigs() {
 		return recentLoginConfigs;
 	}
-
-//	/**
-//	 * @return the detailsAreaGridData
-//	 */
-//	private GridData getDetailsAreaGridData() {
-//		return detailsAreaGridData;
-//	}
-//
-//	/**
-//	 * @return the initiallyShowDetails
-//	 */
-//	private boolean isInitiallyShowDetails() {
-//		return initiallyShowDetails;
-//	}
-//
-//	/**
-//	 * @param initiallyShowDetails the initiallyShowDetails to set
-//	 */
-//	private void setInitiallyShowDetails(boolean initiallyShowDetails) {
-//		this.initiallyShowDetails = initiallyShowDetails;
-//	}
 	
-	public boolean checkLogin(boolean async)
+	/**
+	 * tryies to perform a Login with the given values displayed in the LoginComposite
+	 * and returns if it was sucessful or not
+	 * 
+	 * @param async determines if the login should be performed asynchron or not
+	 * @param monitor the optional IPOrgressMonitor for displaying the progress, may be null
+	 * @param loginStateListener the optional {@link LoginStateListener} to get notifyied about the login result
+	 * @return true if the login was a sucess or false if not
+	 */
+	public boolean checkLogin(boolean async, final IProgressMonitor monitor, 
+			final LoginStateListener loginStateListener)
 	{
 		boolean hadError = true;
 		setInfoMessage(Messages.getString("org.nightlabs.jfire.base.login.LoginDialog.tryingLogin")); //$NON-NLS-1$
 		enableDialogUI(false);
 		try {
 			// use entries and log in
+			monitor.beginTask("Login", 4);
 			storeUserInput();
+			monitor.worked(1);
 			final boolean saveSettings = checkBoxSaveSettings.getSelection();
 
 			if (async) {
@@ -403,7 +415,7 @@ extends Composite
 					@Override
 					protected IStatus run(IProgressMonitor arg0)
 					{
-						doCheckLogin(saveSettings);
+						doCheckLogin(saveSettings, monitor, loginStateListener);
 						return Status.OK_STATUS;
 					}
 				};
@@ -412,18 +424,21 @@ extends Composite
 				return false;
 			} else {
 				hadError = false;
-				return doCheckLogin(saveSettings);
+				return doCheckLogin(saveSettings, monitor, loginStateListener);
 			}
 		} finally {
 			if (hadError)
 				enableDialogUI(true);
-		}
+			monitor.done();
+		}		
 	}	
 	
-	private boolean doCheckLogin(boolean saveSettings) 
+	private boolean doCheckLogin(boolean saveSettings, IProgressMonitor monitor, LoginStateListener loginStateListener) 
 	{
 		Login.AsyncLoginResult testResult = Login.testLogin(loginContext);
+		monitor.worked(1);
 		testResult.copyValuesTo(loginResult);
+		monitor.worked(1);
 		
 		try {
 			if (testResult.isSuccess()) {
@@ -431,12 +446,18 @@ extends Composite
 				
 				if (saveSettings)
 					runtimeLoginModule.saveLatestConfiguration();
+				
+				if (loginStateListener != null)
+					loginStateListener.loginStateChanged(Login.LOGINSTATE_LOGGED_IN, null);
+			} else {
+				if (loginStateListener != null)
+					loginStateListener.loginStateChanged(Login.LOGINSTATE_LOGGED_OUT, null);
 			}
 
 			BeanUtils.copyProperties(persistentLoginModule, runtimeLoginModule);
 			persistentLoginModule.setChanged();
 		} catch (Exception e) {
-//			logger.error(Messages.getString("org.nightlabs.jfire.base.login.LoginDialog.errorSaveConfig"), e); //$NON-NLS-1$
+			logger.error(Messages.getString("org.nightlabs.jfire.base.login.LoginDialog.errorSaveConfig"), e); //$NON-NLS-1$
 		}
 		
 		Display.getDefault().syncExec(new Runnable() {
@@ -446,6 +467,7 @@ extends Composite
 				updateUIAfterLogin();
 			}
 		});
+		monitor.worked(1);
 		
 		return testResult.isSuccess();
 	}
@@ -457,10 +479,14 @@ extends Composite
 	 */
 	private void enableDialogUI(boolean enable)
 	{
-		if (!getShell().isDisposed())
+		if (!isDisposed())
 			getShell().setEnabled(enable);
 	}	
 	
+	/**
+	 * stores the values in the {@link LoginContext} as well as in the
+	 * {@link LoginConfigModule} as lastest Login Configuration 
+	 */
 	public void storeUserInput()
 	{		
 		loginContext.setCredentials(
@@ -480,6 +506,7 @@ extends Composite
 	{
 		// verify login done 
 		if ((!loginResult.isWasAuthenticationErr()) && (loginResult.isSuccess())) {
+			// is now done by LoginStateListener in doCheckLogin
 //			close();
 		} 
 		else {
@@ -510,7 +537,11 @@ extends Composite
 			// show a message to the user
 		}
 	}
-	
+
+	/**
+	 * returns the loginResult 
+	 * @return the loginResult
+	 */
 	public Login.AsyncLoginResult getLoginResult() {
 		return loginResult;
 	}
@@ -574,6 +605,12 @@ extends Composite
 			setMode(Mode.SHOW_ONLY_LOGIN_AREA);
 	}	
 	
+	/**
+	 * checks if the user input is valid and if not displays an 
+	 * errorMessage in the given {@link IMessageContainer}
+	 * 
+	 * @return true if user input is ok, false if not
+	 */
 	public boolean checkUserInput()
 	{
 		// check entries
@@ -608,6 +645,13 @@ extends Composite
 		messageContainer.setMessage(message, IMessageProvider.INFORMATION);
 	}
 	
+	/**
+	 * sets the mode in which the LoginComposite should be visible
+	 * the values {@link Mode#SHOW_LOGIN_AND_DETAIL_AREA}, {@link Mode#SHOW_ONLY_DETAIL_AREA} and
+	 * {@link Mode#SHOW_ONLY_LOGIN_AREA} are legal
+	 * 
+	 * @param mode the mode to display
+	 */
 	public void setMode(Mode mode) 
 	{
 		this.mode = mode;

@@ -28,6 +28,8 @@ package org.nightlabs.jfire.base.login;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.log4j.Logger;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
@@ -38,6 +40,7 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.nightlabs.base.composite.IMessageContainer;
 import org.nightlabs.config.Config;
@@ -164,7 +167,17 @@ implements IMessageContainer
 	{
 		if(!loginComposite.checkUserInput())
 			return;
-		if (loginComposite.checkLogin(false)) {
+		if (loginComposite.checkLogin(true, new NullProgressMonitor(), new LoginStateListener() {
+			public void loginStateChanged(int loginState, IAction action) {
+				if (loginState == Login.LOGINSTATE_LOGGED_IN) {
+					Display.getDefault().asyncExec(new Runnable() {
+						public void run() {
+							close();
+						}
+					});
+				}
+			}
+		})) {
 			super.okPressed();
 		}
 	}
