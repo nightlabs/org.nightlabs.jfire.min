@@ -6,8 +6,10 @@ package org.nightlabs.jfire.base.login.splash;
 import javax.security.auth.login.LoginException;
 
 import org.apache.log4j.Logger;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IMessageProvider;
+import org.eclipse.jface.wizard.ProgressMonitorPart;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StackLayout;
 import org.eclipse.swt.events.DisposeEvent;
@@ -54,9 +56,10 @@ implements IMessageContainer
 	private StackLayout stackLayout;
 	private Composite loginComp;
 	private Button detailsButton;
-//	private int backgroundMode = SWT.INHERIT_DEFAULT;
 	private int backgroundMode = SWT.INHERIT_FORCE;
-	
+	private Composite progressWrapper;
+	private SplashProgressMonitor progressMonitor = null;
+
 	private static LoginSplashHandler _sharedInstance;
 	public static LoginSplashHandler sharedInstance() {
 		return _sharedInstance;
@@ -81,8 +84,14 @@ implements IMessageContainer
 		getSplash().setBackgroundMode(backgroundMode);
 		canShowSplashLogin = true;
 		
-//		progressMonitor = new ProgressMonitorPart(getSplash(), stackLayout);
+		progressWrapper = new Composite(getSplash(), SWT.NONE);
+		progressWrapper.setLayout(new GridLayout());
+		Composite spacer = new Composite(progressWrapper, SWT.NONE);
+		spacer.setLayoutData(new GridData(GridData.FILL_BOTH));
+		progressMonitor = new SplashProgressMonitor(new ProgressMonitorPart(progressWrapper, null));
+		progressMonitor.getProgressMonitorPart().setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		
+		showProgressMonitor();
 		try {
 			Login.getLogin();
 		} catch (LoginException e) {
@@ -180,6 +189,7 @@ implements IMessageContainer
 		if (successfulAuthentication) {
 			setAuthenticationPending(false);
 			loginComp.dispose();
+			showProgressMonitor();
 		}		
 	}
 	
@@ -197,6 +207,7 @@ implements IMessageContainer
 			loginComposite.getLoginResult().setSuccess(false);
 			loginComposite.getLoginResult().setWorkOffline(true);
 			setAuthenticationPending(false);
+			showProgressMonitor();
 		}
 		public void widgetDefaultSelected(SelectionEvent e) {
 			widgetSelected(e);
@@ -240,11 +251,15 @@ implements IMessageContainer
 			messageLabel.setText(newMessage == null ? "" : newMessage);
 	}
 	
-//	private IProgressMonitor progressMonitor = null;
-//	@Override
-//	public IProgressMonitor getBundleProgressMonitor() {
-////		return new ProgressMonitorPart(getSplash(), stackLayout);
-//		return progressMonitor;
-//	}
+	@Override
+	public IProgressMonitor getBundleProgressMonitor() {
+//		return new ProgressMonitorPart(getSplash(), stackLayout);
+		return progressMonitor;
+	}
+	
+	private void showProgressMonitor() {
+		stackLayout.topControl = progressWrapper;
+		getSplash().layout(true, true);
+	}
 	
 }
