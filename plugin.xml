@@ -87,7 +87,16 @@
                value="icons/JFire-Logo.16x16.png"/>
 		 <property 
 			   name="preferenceCustomization" 
-			   value="plugin_customization.ini"/>   
+			   value="plugin_customization.ini"/>
+		<property 
+			   name="startupForegroundColor" 
+			   value="000000"/>   			   
+		<property 
+			   name="startupMessageRect" 
+			   value="7,238,400,20"/>   
+		<property 
+			   name="startupProgressRect" 
+			   value="0,258,400,15"/>   
       </product>
    </extension>
 
@@ -344,4 +353,17 @@
             categoryID="org.nightlabs.jfire.base.category1"
             name="org.nightlabs.jfire.base.category1"/>
    </extension>
+   
+   <extension
+         point="org.eclipse.ui.splashHandlers">
+      <splashHandler
+            class="org.nightlabs.jfire.base.login.splash.LoginSplashHandler"
+            id="org.nightlabs.jfire.base.login.splash.LoginSplashHandler">
+      </splashHandler>
+      <splashHandlerProductBinding
+            productId="org.nightlabs.jfire.base.product"
+            splashId="org.nightlabs.jfire.base.login.splash.LoginSplashHandler">
+      </splashHandlerProductBinding>
+   </extension>
+
 </plugin>

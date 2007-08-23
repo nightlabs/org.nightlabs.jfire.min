@@ -26,13 +26,21 @@
 
 package org.nightlabs.jfire.base.app;
 
+import java.io.File;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import javax.security.auth.login.LoginException;
+
 import org.eclipse.swt.widgets.Display;
 import org.nightlabs.base.app.AbstractApplication;
 import org.nightlabs.base.app.AbstractWorkbenchAdvisor;
+import org.nightlabs.jfire.base.j2ee.RemoteResourceFilterRegistry;
+import org.nightlabs.jfire.base.login.JFireLoginHandler;
+import org.nightlabs.jfire.base.login.JFireSecurityConfiguration;
+import org.nightlabs.jfire.base.login.Login;
+import org.nightlabs.jfire.base.login.WorkOfflineException;
 
 /**
  * JFireApplication is the main executed class {@see JFireApplication#run(Object)}. 
@@ -73,10 +81,10 @@ extends AbstractApplication
 	@Override
 	protected void preCreateWorkbench() 
 	{		
-//		try
-//		{
+		try
+		{
+			initLogin();
 			// TODO put the Update stuff into a LoginStateListener!
-
 //			Login.getLogin(); // we always login in order to prevent our class-loading problems.
 //			LoginConfigModule lcm = Login.sharedInstance().getLoginConfigModule();
 //			// TODO @Carnage lcm.getLastSavedLoginConfiguration() can return null, but this was not handled in the
@@ -93,13 +101,44 @@ extends AbstractApplication
 //					return;
 //				}
 //			}
-//		} catch(LoginException e) {
-//			e.printStackTrace(); // TODO what should be here? There was nothing in this catch block! because there is no logger, I dump at least to std-out. Marco. ;-)
-//		}
+		} catch(Exception e) {
+			e.printStackTrace(); // TODO what should be here? There was nothing in this catch block! because there is no logger, I dump at least to std-out. Marco. ;-)
+		}
 	}
 	
 	public AbstractWorkbenchAdvisor initWorkbenchAdvisor(Display display) {
-		return new JFireWorkbenchAdvisor(display);
+		return new JFireWorkbenchAdvisor();
 	}
+	
+	protected void initLogin() throws LoginException, WorkOfflineException
+	{
+		// create log directory if not existent
+		JFireApplication.getLogDir();
+		try {	
+			org.nightlabs.jfire.classloader.JFireRCDLDelegate.
+					createSharedInstance(Login.getLogin(false), new File(JFireApplication.getRootDir(), "classloader.cache")) //$NON-NLS-1$
+					.setFilter(RemoteResourceFilterRegistry.sharedInstance());
+		} catch (LoginException e) {
+			throw e;
+		} catch (RuntimeException e) {
+			throw e;
+		} catch (Exception e) {
+			LoginException x = new LoginException(e.getMessage());
+			x.initCause(e);
+			throw x;
+		}
+		initializeLoginModule();
+	}
+	   	    			
+	protected void initializeLoginModule()
+	{
+		JFireSecurityConfiguration.declareConfiguration();		
+		try {
+			Login.getLogin(false).setLoginHandler(new JFireLoginHandler());
+		} catch (LoginException e) {
+			throw new RuntimeException("How the hell could this happen?!", e); //$NON-NLS-1$
+		}
+	}	
+	
 	
 }

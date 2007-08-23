@@ -52,6 +52,9 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.nightlabs.jfire.base.j2ee;visibility:=reexport,
  org.nightlabs.jfire.base.intro,
- org.eclipse.nebula.widgets.pshelf;visibility:=reexport
+ org.eclipse.nebula.widgets.pshelf;visibility:=reexport,
+ org.eclipse.swt,
+ org.eclipse.jface,
+ org.eclipse.ui.workbench
 Eclipse-RegisterBuddy: org.nightlabs.base, org.nightlabs.jfire.base.j2ee
 Eclipse-LazyStart: true

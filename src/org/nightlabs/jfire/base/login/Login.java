@@ -518,7 +518,8 @@ implements InitialContextProvider
 		}
 		if (!handlingLogin) {
 			handlingLogin = true;
-			Display.getDefault().asyncExec(loginHandlerRunnable);
+//			Display.getDefault().asyncExec(loginHandlerRunnable);
+			Display.getDefault().syncExec(loginHandlerRunnable);
 		}
 		if (!Display.getDefault().getThread().equals(Thread.currentThread())) {
 			logger.debug("Login requestor-thread "+Thread.currentThread()+" waiting for login handler");		 //$NON-NLS-1$ //$NON-NLS-2$
@@ -560,7 +561,11 @@ implements InitialContextProvider
 
 		// We should be logged in now, open the cache if not already open
 		if (currLoginState == LOGINSTATE_LOGGED_IN) {
-			Cache.sharedInstance().open(getSessionID()); // the cache is opened implicitely now by default, but it is closed *after* a logout.
+			try {
+				Cache.sharedInstance().open(getSessionID()); // the cache is opened implicitely now by default, but it is closed *after* a logout.
+			} catch (Throwable t) {
+				logger.debug("Cache could not be opened!", t);
+			}
 		}
 
 		if (currLoginState != oldLoginstate) {

@@ -30,8 +30,9 @@ import javax.security.auth.login.LoginException;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.log4j.Logger;
-import org.eclipse.ui.PlatformUI;
+import org.eclipse.swt.widgets.Display;
 import org.nightlabs.base.NLBasePlugin;
+import org.nightlabs.jfire.base.login.splash.LoginSplashHandler;
 
 /**
  * @see org.nightlabs.jfire.base.login.ILoginHandler
@@ -148,6 +149,26 @@ public class JFireLoginHandler implements ILoginHandler {
 		}
 
 		boolean loginDone = false;
+		
+		if (LoginSplashHandler.canShowSplashLogin()) {
+			try {
+				handleSplashLogin(loginContext, loginConfigModule, loginResult);
+				loginDone = true;
+			} catch (Exception x) {
+				if (!x.getMessage().contains("Widget is disposed")) {
+					if (x instanceof LoginException)
+						throw (LoginException)x;
+					else if (x instanceof RuntimeException)
+						throw (RuntimeException)x;
+					else {
+						LoginException n = new LoginException(x.getMessage());
+						n.initCause(x);
+						throw n;
+					}
+				}
+			}
+		}
+		
 //		if (SplashScreen.waitForVisibleSplash()) { // isSplashVisible())
 //			try {
 //				handleSplashLogin(loginContext, loginConfigModule, loginResult);
@@ -173,22 +194,20 @@ public class JFireLoginHandler implements ILoginHandler {
 	}
 
 	// TODO: should the creation and registration of login dialog be synchronized?? 
-	protected void handleSWTLogin(JFireLoginContext loginContext, LoginConfigModule loginConfigModule, Login.AsyncLoginResult loginResult) throws LoginException {
-		LoginDialog loginDialog = new LoginDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), loginResult, loginConfigModule, loginContext);
-//		LoginDialog.registerSharedInstance(loginDialog);
-//		try {
-//			loginDialog.setLoginResult(loginResult);
-//			loginDialog.setLoginModule(loginConfigModule);
-//			loginDialog.setLoginContext(loginContext);
-
-			// LoginDialog does all the work
-			loginDialog.open();
-//		}
-//		finally {
-//			LoginDialog.deregisterSharedInstance();
-//		}
+	protected void handleSWTLogin(JFireLoginContext loginContext, LoginConfigModule loginConfigModule, Login.AsyncLoginResult loginResult) 
+	throws LoginException 
+	{		
+//		LoginDialog loginDialog = new LoginDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), loginResult, loginConfigModule, loginContext);
+		LoginDialog loginDialog = new LoginDialog(Display.getDefault().getActiveShell(), loginResult, loginConfigModule, loginContext);
+		// LoginDialog does all the work
+		loginDialog.open();
 	}
 
+	protected void handleSplashLogin(JFireLoginContext loginContext, LoginConfigModule loginConfigModule, final Login.AsyncLoginResult loginResult) throws LoginException 
+	{
+		LoginSplashHandler.sharedInstance().handleSplashLogin(loginContext, loginConfigModule, loginResult);
+	}
+	
 //	protected void handleSplashLogin(JFireLoginContext loginContext, LoginConfigModule loginConfigModule, final Login.AsyncLoginResult loginResult) throws LoginException 
 //	{
 //		final SplashLoginPanel loginPanel = new SplashLoginPanel(loginContext, loginConfigModule);
