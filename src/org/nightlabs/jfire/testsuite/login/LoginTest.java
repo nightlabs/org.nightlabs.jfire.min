@@ -27,7 +27,7 @@ public class LoginTest extends TestCase
 		UserManagerUtil.getHome(login.getInitialContextProperties()).create();		
 	}
 
-	public void testInCorrectLogin() {
+	public void testIncorrectLogin() {
 		JFireLogin login = new JFireLogin("chezfrancois.jfire.org", "francoiz", "text");
 		try {
 			login.login(); // Warning! even though it's fine for testing here, switching the identity during a running transaction might cause trouble.
