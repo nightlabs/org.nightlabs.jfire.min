@@ -9,9 +9,12 @@ import java.util.Set;
 
 import javax.jdo.FetchPlan;
 import javax.jdo.JDOHelper;
+import javax.security.auth.login.LoginException;
 
 import junit.framework.TestCase;
 
+import org.apache.log4j.Logger;
+import org.junit.Test;
 import org.nightlabs.ModuleException;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.accounting.AccountingManager;
@@ -23,24 +26,28 @@ import org.nightlabs.jfire.accounting.id.TariffID;
 import org.nightlabs.jfire.accounting.pay.ModeOfPaymentConst;
 import org.nightlabs.jfire.accounting.pay.ModeOfPaymentFlavour;
 import org.nightlabs.jfire.accounting.pay.Payment;
+import org.nightlabs.jfire.accounting.pay.PaymentController;
+import org.nightlabs.jfire.accounting.pay.PaymentData;
 import org.nightlabs.jfire.accounting.pay.id.ModeOfPaymentFlavourID;
+import org.nightlabs.jfire.accounting.pay.id.ServerPaymentProcessorID;
 import org.nightlabs.jfire.accounting.priceconfig.id.PriceConfigID;
 import org.nightlabs.jfire.idgenerator.IDGenerator;
 import org.nightlabs.jfire.organisation.Organisation;
 import org.nightlabs.jfire.simpletrade.SimpleTradeManager;
 import org.nightlabs.jfire.simpletrade.SimpleTradeManagerUtil;
 import org.nightlabs.jfire.simpletrade.store.SimpleProductType;
+import org.nightlabs.jfire.simpletrade.store.search.SimpleProductTypeQuery;
 import org.nightlabs.jfire.store.ProductType;
 import org.nightlabs.jfire.store.StoreManager;
 import org.nightlabs.jfire.store.StoreManagerUtil;
 import org.nightlabs.jfire.store.deliver.Delivery;
+import org.nightlabs.jfire.store.deliver.DeliveryController;
+import org.nightlabs.jfire.store.deliver.DeliveryData;
 import org.nightlabs.jfire.store.deliver.ModeOfDeliveryFlavour;
-import org.nightlabs.jfire.store.deliver.ServerDeliveryProcessorManual;
 import org.nightlabs.jfire.store.deliver.ModeOfDeliveryFlavour.ModeOfDeliveryFlavourProductTypeGroupCarrier;
 import org.nightlabs.jfire.store.deliver.id.ModeOfDeliveryFlavourID;
 import org.nightlabs.jfire.store.deliver.id.ServerDeliveryProcessorID;
 import org.nightlabs.jfire.store.id.ProductTypeID;
-import org.nightlabs.jfire.store.search.ProductTypeQuery;
 import org.nightlabs.jfire.trade.Article;
 import org.nightlabs.jfire.trade.LegalEntity;
 import org.nightlabs.jfire.trade.Offer;
@@ -51,31 +58,55 @@ import org.nightlabs.jfire.trade.id.ArticleID;
 import org.nightlabs.jfire.trade.id.CustomerGroupID;
 import org.nightlabs.jfire.trade.id.OfferID;
 import org.nightlabs.jfire.trade.id.OrderID;
+import org.nightlabs.jfire.trade.id.SegmentID;
+import org.nightlabs.jfire.trade.id.SegmentTypeID;
+import org.nightlabs.jfire.transfer.Stage;
 import org.nightlabs.jfire.transfer.id.AnchorID;
 
 public class PaymentDeliveryTestCase extends TestCase {
-	public TestEnvironment prepareTestEnvironment() throws RemoteException, ModuleException {
-		ServerOnlyDeliveryController deliveryController = new ServerOnlyDeliveryController();
-		ServerOnlyPaymentController paymentController = new ServerOnlyPaymentController();
 
+	private static final Logger logger = Logger.getLogger(PaymentDeliveryTestCase.class);
+
+	@Test
+	public synchronized void testPaymentAndDeliveryResults() throws RemoteException, ModuleException, LoginException {
+		logger.debug("testPaymentAndDeliveryResults");
+		TestEnvironment te = prepareTestEnvironment();
+		PaymentData paymentData = new PaymentDataTestCase(te.payment, Stage.ServerBegin);
+		DeliveryData deliveryData = new DeliveryDataTestCase(te.delivery, Stage.ServerBegin);
+
+		ServerOnlyDeliveryController deliveryController = new ServerOnlyDeliveryController(deliveryData);
+		ServerOnlyPaymentController paymentController = new ServerOnlyPaymentController(paymentData);
+
+		performStages(deliveryController, paymentController);
+
+		Delivery delivery = deliveryData.getDelivery();
+		Payment payment = paymentData.getPayment();
+
+		if (true)
+			return;
+	}
+
+	public TestEnvironment prepareTestEnvironment() throws RemoteException, ModuleException {
 		TradeManager tm = getTradeManager();
 		SimpleTradeManager stm = getSimpleTradeManager();
 		StoreManager sm = getStoreManager();
 		AccountingManager am = getAccountingManager();
-
+		
 		AnchorID anonymousCustomerID = AnchorID.create(IDGenerator.getOrganisationID(), LegalEntity.ANCHOR_TYPE_ID_PARTNER,
 				LegalEntity.ANCHOR_ID_ANONYMOUS);
 
 		CurrencyID euroID = CurrencyID.create("EUR");
-		Order order = tm.createOrder(anonymousCustomerID, null, euroID, null, new String[] { Order.FETCH_GROUP_THIS_ORDER },
+		Order order = tm.createOrder(
+				anonymousCustomerID, (String) null, euroID,
+				new SegmentTypeID[] { null }, // this will create one default segment
+				new String[] { Order.FETCH_GROUP_THIS_ORDER },
 				NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
 		OrderID orderID = (OrderID) JDOHelper.getObjectId(order);
 
-		Offer offer = tm.createOffer(orderID, null, new String[] { Offer.FETCH_GROUP_THIS_OFFER }, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
+		Offer offer = tm.createOffer(orderID, null, new String[] { Offer.FETCH_GROUP_THIS_OFFER , FetchPlan.DEFAULT}, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
 		OfferID offerID = (OfferID) JDOHelper.getObjectId(offer);
 
-		ProductTypeQuery<SimpleProductType> query = new ProductTypeQuery<SimpleProductType>();
-		query.setAvailable(true);
+		SimpleProductTypeQuery query = new SimpleProductTypeQuery();
 		query.setSaleable(true);
 		Set<ProductTypeID> productTypeIDs = sm.getProductTypeIDs(Collections.singletonList(query));
 		ProductTypeID productTypeID = productTypeIDs.iterator().next();
@@ -88,8 +119,9 @@ public class PaymentDeliveryTestCase extends TestCase {
 				(CustomerGroupID) JDOHelper.getObjectId(order.getCustomerGroup()), euroID, new String[] { FetchPlan.DEFAULT },
 				new String[] { FetchPlan.DEFAULT });
 		Tariff tariff = tariffPricePairs.iterator().next().getTariff();
-		Collection<Article> articles = stm.createArticles(null, offerID, productTypeID, (int) (1 + Math.random() * 9), (TariffID) JDOHelper
-				.getObjectId(tariff), true, true, new String[] { Article.FETCH_GROUP_ARTICLE_LOCAL }, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
+		Collection<Article> articles = stm.createArticles((SegmentID) JDOHelper.getObjectId(order.getSegments().iterator().next()), offerID,
+				productTypeID, (int) (1 + Math.random() * 9), (TariffID) JDOHelper.getObjectId(tariff), true, true,
+				new String[] { Article.FETCH_GROUP_ARTICLE_LOCAL, FetchPlan.DEFAULT }, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
 
 		Collection<ArticleID> articleIDs = new LinkedList<ArticleID>();
 		for (Article art : articles)
@@ -113,8 +145,7 @@ public class PaymentDeliveryTestCase extends TestCase {
 		delivery.setPartner(order.getCustomer());
 
 		delivery.setClientDeliveryProcessorFactoryID("dummy"); // should not matter
-		delivery.setServerDeliveryProcessorID(ServerDeliveryProcessorID.create(Organisation.DEVIL_ORGANISATION_ID, ServerDeliveryProcessorManual.class
-				.getName()));
+		delivery.setServerDeliveryProcessorID(ServerDeliveryProcessorID.create(Organisation.DEVIL_ORGANISATION_ID, ServerDeliveryProcessorTest.class.getName()));
 
 		//		productType.get
 		//		DeliveryNote deliveryNote = sm.createDeliveryNote(articleIDs, null, true, new String[] { FetchPlan.DEFAULT },
@@ -124,26 +155,90 @@ public class PaymentDeliveryTestCase extends TestCase {
 		delivery.setDeliveryDirection(Delivery.DELIVERY_DIRECTION_OUTGOING);
 
 		Payment payment = new Payment(IDGenerator.getOrganisationID(), IDGenerator.nextID(Payment.class));
-		Collection<ModeOfPaymentFlavour> mopFlavours = am.getAvailableModeOfPaymentFlavoursForOneCustomerGroup(
-				(CustomerGroupID) JDOHelper.getObjectId(order.getCustomerGroup()), new String[] { FetchPlan.DEFAULT }, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
-		
+		Collection<ModeOfPaymentFlavour> mopFlavours = am.getAvailableModeOfPaymentFlavoursForOneCustomerGroup((CustomerGroupID) JDOHelper
+				.getObjectId(order.getCustomerGroup()), new String[] { FetchPlan.DEFAULT }, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
+
 		ModeOfPaymentFlavourID mopIDToBeUsed = null;
 		for (ModeOfPaymentFlavour flavour : mopFlavours) {
 			if (JDOHelper.getObjectId(flavour).equals(ModeOfPaymentConst.MODE_OF_PAYMENT_FLAVOUR_ID_CASH))
 				mopIDToBeUsed = ModeOfPaymentConst.MODE_OF_PAYMENT_FLAVOUR_ID_CASH;
 		}
-		
-		if (mopIDToBeUsed == null)			
+
+		if (mopIDToBeUsed == null)
 			throw new IllegalStateException("Payment works only with cash payment available.");
-		
+
 		payment.setAmount(offer.getPrice().getAmount());
 		payment.setPartner(order.getCustomer());
 		payment.setClientPaymentProcessorFactoryID("dummy");
+		payment.setServerPaymentProcessorID(ServerPaymentProcessorID.create(Organisation.DEVIL_ORGANISATION_ID, ServerPaymentProcessorTest.class.getName()));
 		payment.setCurrencyID(euroID);
 		payment.setModeOfPaymentFlavourID(mopIDToBeUsed);
-//		payment.setPartnerAccount()
-		
+
 		return new TestEnvironment(delivery, payment);
+	}
+
+	public void performStages(DeliveryController deliveryController, PaymentController paymentController) throws LoginException {
+		boolean skipServerPayment = false;
+		boolean skipServerDelivery = false;
+
+		///////////
+		// BEGIN //
+		///////////
+
+		// if the client approve failed on ALL client payments, we don't do anything
+		// in the server, but call the client's payEnd to allow clean-up.
+		skipServerPayment = !paymentController.clientBegin();
+
+		// if the client approve failed for ALL deliveries, we don't do anything
+		// in the server, but call the client's deliverEnd to allow clean-up.
+		skipServerDelivery = !deliveryController.clientBegin();
+
+		if (skipServerDelivery)
+			deliveryController.skipServerStages();
+		if (skipServerPayment)
+			paymentController.skipServerStages();
+
+		//	TODO perform Server-Payment and -Delivery in one step if both must be done
+
+		deliveryController.serverBegin();
+		paymentController.serverBegin();
+
+		if (paymentController.isRollbackRequired() || deliveryController.isRollbackRequired()) {
+			paymentController.forceRollback();
+			deliveryController.forceRollback();
+		}
+
+		////////////
+		// DOWORK //
+		////////////
+
+		deliveryController.clientDoWork();
+		paymentController.clientDoWork();
+
+		deliveryController.serverDoWork();
+		paymentController.serverDoWork();
+
+		if (paymentController.isRollbackRequired() || deliveryController.isRollbackRequired()) {
+			paymentController.forceRollback();
+			deliveryController.forceRollback();
+		}
+
+		/////////
+		// END //
+		/////////
+
+		deliveryController.clientEnd();
+		paymentController.clientEnd();
+
+		deliveryController.serverEnd();
+		paymentController.serverEnd();
+
+		////////////
+		// VERIFY //
+		////////////
+
+		paymentController.verifyData();
+		deliveryController.verifyData();
 	}
 
 	private TradeManager getTradeManager() {
@@ -182,7 +277,7 @@ public class PaymentDeliveryTestCase extends TestCase {
 class TestEnvironment {
 	public Delivery delivery;
 	public Payment payment;
-	
+
 	public TestEnvironment(Delivery delivery, Payment payment) {
 		super();
 		this.delivery = delivery;

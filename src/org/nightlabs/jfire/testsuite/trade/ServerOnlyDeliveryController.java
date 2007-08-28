@@ -1,22 +1,27 @@
 package org.nightlabs.jfire.testsuite.trade;
 
-import javax.security.auth.login.LoginException;
+import java.util.Collections;
 
 import org.nightlabs.jfire.store.deliver.AbstractDeliveryController;
+import org.nightlabs.jfire.store.deliver.DeliveryData;
 
 public class ServerOnlyDeliveryController extends AbstractDeliveryController {
+	
+	public ServerOnlyDeliveryController(DeliveryData deliveryData) {
+		setTransferDatas(Collections.singletonList(deliveryData));
+	}
 
 	@Override
-	public boolean clientBegin() throws LoginException {
+	protected boolean _clientBegin() {
 		return true;
 	}
 
 	@Override
-	public void clientDoWork() throws LoginException {
+	protected void _clientDoWork() {
 	}
 
 	@Override
-	public void clientEnd() throws LoginException {
+	protected void _clientEnd() {
 	}
 
 	@Override

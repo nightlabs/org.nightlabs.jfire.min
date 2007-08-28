@@ -1,22 +1,31 @@
 package org.nightlabs.jfire.testsuite.trade;
 
-import javax.security.auth.login.LoginException;
+import java.util.Collections;
 
 import org.nightlabs.jfire.accounting.pay.AbstractPaymentController;
+import org.nightlabs.jfire.accounting.pay.PaymentData;
+import org.nightlabs.jfire.accounting.pay.PaymentResult;
 
 public class ServerOnlyPaymentController extends AbstractPaymentController {
+	
+	public ServerOnlyPaymentController(PaymentData paymentData) {
+		setTransferDatas(Collections.singletonList(paymentData));
+	}
 
 	@Override
-	public boolean clientBegin() throws LoginException {
+	protected boolean _clientBegin() {
+		for (PaymentData data : getTransferDatas()) {
+			// TODO set pay begin results
+		}
 		return true;
 	}
 
 	@Override
-	public void clientDoWork() throws LoginException {
+	protected void _clientDoWork() {
 	}
 
 	@Override
-	public void clientEnd() throws LoginException {
+	protected void _clientEnd() {
 	}
 
 	@Override

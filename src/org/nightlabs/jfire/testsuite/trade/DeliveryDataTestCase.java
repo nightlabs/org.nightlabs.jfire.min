@@ -4,10 +4,10 @@ import org.nightlabs.jfire.store.deliver.Delivery;
 import org.nightlabs.jfire.store.deliver.DeliveryData;
 import org.nightlabs.jfire.transfer.Stage;
 
-public class TestDeliveryData extends DeliveryData {
+public class DeliveryDataTestCase extends DeliveryData {
 	private Stage failureStage;
 
-	public TestDeliveryData(Delivery delivery, Stage failureStage) {
+	public DeliveryDataTestCase(Delivery delivery, Stage failureStage) {
 		super(delivery);
 		this.failureStage = failureStage;
 	}
