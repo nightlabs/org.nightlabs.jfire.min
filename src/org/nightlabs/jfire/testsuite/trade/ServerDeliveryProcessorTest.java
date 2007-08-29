@@ -30,40 +30,40 @@ class ServerDeliveryProcessorTest extends ServerDeliveryProcessor {
 			serverDeliveryProcessorTest = (ServerDeliveryProcessorTest) pm.getObjectById(ServerDeliveryProcessorID.create(
 					Organisation.DEVIL_ORGANISATION_ID, ServerDeliveryProcessorTest.class.getName()));
 		} catch (JDOObjectNotFoundException e) {
-			serverDeliveryProcessorTest = new ServerDeliveryProcessorTest(Organisation.DEVIL_ORGANISATION_ID, ServerDeliveryProcessorTest.class.getName());
+			serverDeliveryProcessorTest = new ServerDeliveryProcessorTest(OBJECT_ID.organisationID, OBJECT_ID.serverDeliveryProcessorID);
 			serverDeliveryProcessorTest = (ServerDeliveryProcessorTest) pm.makePersistent(serverDeliveryProcessorTest);
 		}
 
 		return serverDeliveryProcessorTest;
 	}
-
-	private static final long serialVersionUID = 1L;
+	
+	private static final long serialVersionUID = 2L;
+	
+	public static final ServerDeliveryProcessorID OBJECT_ID =
+		ServerDeliveryProcessorID.create(Organisation.DEVIL_ORGANISATION_ID, ServerDeliveryProcessorTest.class.getName());
 
 	@Deprecated
 	protected ServerDeliveryProcessorTest() {
 
 	}
 
-	public ServerDeliveryProcessorTest(String organisationID, String serverDeliveryProcessorID) {
+	protected ServerDeliveryProcessorTest(String organisationID, String serverDeliveryProcessorID) {
 		super(organisationID, serverDeliveryProcessorID);
 	}
 
 	@Override
 	protected DeliveryResult externalDeliverBegin(DeliverParams deliverParams) throws DeliveryException {
-		checkStatus(deliverParams, Stage.ServerBegin);
-		return null;
+		return getDeliveryResult(deliverParams, Stage.ServerBegin);
 	}
 
 	@Override
 	protected DeliveryResult externalDeliverDoWork(DeliverParams deliverParams) throws DeliveryException {
-		checkStatus(deliverParams, Stage.ServerDoWork);
-		return null;
+		return getDeliveryResult(deliverParams, Stage.ServerDoWork);
 	}
 
 	@Override
 	protected DeliveryResult externalDeliverCommit(DeliverParams deliverParams) throws DeliveryException {
-		checkStatus(deliverParams, Stage.ServerEnd);
-		return null;
+		return getDeliveryResult(deliverParams, Stage.ServerEnd);
 	}
 
 	@Override
@@ -73,13 +73,14 @@ class ServerDeliveryProcessorTest extends ServerDeliveryProcessor {
 
 	@Override
 	public Anchor getAnchorOutside(DeliverParams deliverParams) {
-		// TODO Auto-generated method stub
-		return null;
+		return getRepositoryOutside(deliverParams, "anchorOutside.test");
 	}
 
-	private void checkStatus(DeliverParams deliverParams, Stage stage) {
-		if (getDeliveryData(deliverParams).getFailureStage() == stage)
-			throw new RuntimeException("Sabotaged delivery in stage " + stage.toString());
+	private DeliveryResult getDeliveryResult(DeliverParams deliverParams, Stage stage) {
+		if (getDeliveryData(deliverParams).getFailureStage() == stage) {
+			return new DeliveryResult(DeliveryResult.CODE_FAILED, "Delivery sabotaged in stage " + stage, null);
+		}
+		return null;
 	}
 
 	private DeliveryDataTestCase getDeliveryData(DeliverParams deliverParams) {

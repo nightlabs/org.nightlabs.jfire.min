@@ -8,6 +8,8 @@ import org.nightlabs.jfire.accounting.pay.PaymentResult;
 import org.nightlabs.jfire.accounting.pay.ServerPaymentProcessor;
 import org.nightlabs.jfire.accounting.pay.id.ServerPaymentProcessorID;
 import org.nightlabs.jfire.organisation.Organisation;
+import org.nightlabs.jfire.store.deliver.DeliveryResult;
+import org.nightlabs.jfire.store.deliver.ServerDeliveryProcessor.DeliverParams;
 import org.nightlabs.jfire.transfer.Anchor;
 import org.nightlabs.jfire.transfer.Stage;
 
@@ -30,40 +32,40 @@ public class ServerPaymentProcessorTest extends ServerPaymentProcessor {
 			serverPaymentProcessorTest = (ServerPaymentProcessorTest) pm.getObjectById(ServerPaymentProcessorID.create(
 					Organisation.DEVIL_ORGANISATION_ID, ServerPaymentProcessorTest.class.getName()));
 		} catch (JDOObjectNotFoundException e) {
-			serverPaymentProcessorTest = new ServerPaymentProcessorTest(Organisation.DEVIL_ORGANISATION_ID, ServerPaymentProcessorTest.class.getName());
+			serverPaymentProcessorTest = new ServerPaymentProcessorTest(OBJECT_ID.organisationID, OBJECT_ID.serverPaymentProcessorID);
 			serverPaymentProcessorTest = (ServerPaymentProcessorTest) pm.makePersistent(serverPaymentProcessorTest);
 		}
 
 		return serverPaymentProcessorTest;
 	}
 
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 2L;
+	
+	public static ServerPaymentProcessorID OBJECT_ID =
+		ServerPaymentProcessorID.create(Organisation.DEVIL_ORGANISATION_ID, ServerPaymentProcessorTest.class.getName());
 
 	@Deprecated
 	protected ServerPaymentProcessorTest() {
 
 	}
 
-	public ServerPaymentProcessorTest(String organisationID, String serverPaymentProcessorID) {
+	protected ServerPaymentProcessorTest(String organisationID, String serverPaymentProcessorID) {
 		super(organisationID, serverPaymentProcessorID);
 	}
 
 	@Override
 	protected PaymentResult externalPayBegin(PayParams payParams) throws PaymentException {
-		checkStatus(payParams, Stage.ServerBegin);
-		return null;
+		return getPaymentResult(payParams, Stage.ServerBegin);
 	}
 
 	@Override
 	protected PaymentResult externalPayDoWork(PayParams payParams) throws PaymentException {
-		checkStatus(payParams, Stage.ServerDoWork);
-		return null;
+		return getPaymentResult(payParams, Stage.ServerDoWork);
 	}
 	
 	@Override
 	protected PaymentResult externalPayCommit(PayParams payParams) throws PaymentException {
-		checkStatus(payParams, Stage.ServerEnd);
-		return null;
+		return getPaymentResult(payParams, Stage.ServerEnd);
 	}
 
 	@Override
@@ -72,16 +74,17 @@ public class ServerPaymentProcessorTest extends ServerPaymentProcessor {
 	}
 
 	@Override
-	public Anchor getAnchorOutside(PayParams deliverParams) {
-		// TODO Auto-generated method stub
+	public Anchor getAnchorOutside(PayParams payParams) {
+		return getAccountOutside(payParams, "anchorOutside.test");
+	}
+	
+	private PaymentResult getPaymentResult(PayParams payParams, Stage stage) {
+		if (getPaymentData(payParams).getFailureStage() == stage) {
+			return new PaymentResult(PaymentResult.CODE_FAILED, "Delivery sabotaged in stage " + stage, null);
+		}
 		return null;
 	}
 	
-	private void checkStatus(PayParams payParams, Stage stage) {
-		if (getPaymentData(payParams).getFailureStage() == stage)
-			throw new RuntimeException("Sabotaged payment in stage " + stage.toString());
-	}
-
 	private PaymentDataTestCase getPaymentData(PayParams payParams) {
 		if (payParams.paymentData instanceof PaymentDataTestCase)
 			return (PaymentDataTestCase) payParams.paymentData;

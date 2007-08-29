@@ -29,6 +29,8 @@ import org.nightlabs.jfire.accounting.pay.Payment;
 import org.nightlabs.jfire.accounting.pay.PaymentController;
 import org.nightlabs.jfire.accounting.pay.PaymentData;
 import org.nightlabs.jfire.accounting.pay.id.ModeOfPaymentFlavourID;
+import org.nightlabs.jfire.accounting.pay.id.PaymentDataID;
+import org.nightlabs.jfire.accounting.pay.id.PaymentID;
 import org.nightlabs.jfire.accounting.pay.id.ServerPaymentProcessorID;
 import org.nightlabs.jfire.accounting.priceconfig.id.PriceConfigID;
 import org.nightlabs.jfire.idgenerator.IDGenerator;
@@ -45,15 +47,18 @@ import org.nightlabs.jfire.store.deliver.DeliveryController;
 import org.nightlabs.jfire.store.deliver.DeliveryData;
 import org.nightlabs.jfire.store.deliver.ModeOfDeliveryFlavour;
 import org.nightlabs.jfire.store.deliver.ModeOfDeliveryFlavour.ModeOfDeliveryFlavourProductTypeGroupCarrier;
+import org.nightlabs.jfire.store.deliver.id.DeliveryDataID;
 import org.nightlabs.jfire.store.deliver.id.ModeOfDeliveryFlavourID;
 import org.nightlabs.jfire.store.deliver.id.ServerDeliveryProcessorID;
 import org.nightlabs.jfire.store.id.ProductTypeID;
+import org.nightlabs.jfire.testsuite.JFireTestSuite;
 import org.nightlabs.jfire.trade.Article;
 import org.nightlabs.jfire.trade.LegalEntity;
 import org.nightlabs.jfire.trade.Offer;
 import org.nightlabs.jfire.trade.Order;
 import org.nightlabs.jfire.trade.TradeManager;
 import org.nightlabs.jfire.trade.TradeManagerUtil;
+import org.nightlabs.jfire.trade.id.ArticleContainerID;
 import org.nightlabs.jfire.trade.id.ArticleID;
 import org.nightlabs.jfire.trade.id.CustomerGroupID;
 import org.nightlabs.jfire.trade.id.OfferID;
@@ -63,6 +68,7 @@ import org.nightlabs.jfire.trade.id.SegmentTypeID;
 import org.nightlabs.jfire.transfer.Stage;
 import org.nightlabs.jfire.transfer.id.AnchorID;
 
+@JFireTestSuite(JFireTradeTestSuite.class)
 public class PaymentDeliveryTestCase extends TestCase {
 
 	private static final Logger logger = Logger.getLogger(PaymentDeliveryTestCase.class);
@@ -70,20 +76,48 @@ public class PaymentDeliveryTestCase extends TestCase {
 	@Test
 	public synchronized void testPaymentAndDeliveryResults() throws RemoteException, ModuleException, LoginException {
 		logger.debug("testPaymentAndDeliveryResults");
+		
+		runPaymentAndDelivery(null, null);
+		runPaymentAndDelivery(null, Stage.ServerBegin);
+		runPaymentAndDelivery(Stage.ServerBegin, Stage.ServerBegin);
+		runPaymentAndDelivery(Stage.ServerDoWork, Stage.ServerBegin);
+		runPaymentAndDelivery(Stage.ServerEnd, Stage.ServerBegin);
+		
+		runPaymentAndDelivery(null, Stage.ServerDoWork);
+		runPaymentAndDelivery(Stage.ServerBegin, Stage.ServerDoWork);
+		runPaymentAndDelivery(Stage.ServerDoWork, Stage.ServerDoWork);
+		runPaymentAndDelivery(Stage.ServerEnd, Stage.ServerDoWork);
+		
+		runPaymentAndDelivery(null, Stage.ServerEnd);
+		runPaymentAndDelivery(Stage.ServerBegin, Stage.ServerEnd);
+		runPaymentAndDelivery(Stage.ServerDoWork, Stage.ServerEnd);
+		runPaymentAndDelivery(Stage.ServerEnd, Stage.ServerEnd);
+
+		runPaymentAndDelivery(Stage.ServerBegin, null);
+		runPaymentAndDelivery(Stage.ServerDoWork, null);
+		runPaymentAndDelivery(Stage.ServerEnd, null);
+		
+	}
+	
+	private void runPaymentAndDelivery(Stage deliveryFailureStage, Stage paymentFailureStage) throws RemoteException, ModuleException, LoginException {
 		TestEnvironment te = prepareTestEnvironment();
-		PaymentData paymentData = new PaymentDataTestCase(te.payment, Stage.ServerBegin);
-		DeliveryData deliveryData = new DeliveryDataTestCase(te.delivery, Stage.ServerBegin);
+		PaymentData paymentData = new PaymentDataTestCase(te.payment, paymentFailureStage);
+		DeliveryData deliveryData = new DeliveryDataTestCase(te.delivery, deliveryFailureStage);
 
 		ServerOnlyDeliveryController deliveryController = new ServerOnlyDeliveryController(deliveryData);
 		ServerOnlyPaymentController paymentController = new ServerOnlyPaymentController(paymentData);
 
 		performStages(deliveryController, paymentController);
 
-		Delivery delivery = deliveryData.getDelivery();
-		Payment payment = paymentData.getPayment();
+		PaymentDataID paymentDataID = PaymentDataID.create(paymentData.getOrganisationID(), paymentData.getPaymentID());
+		DeliveryDataID deliveryDataID = DeliveryDataID.create(deliveryData.getOrganisationID(), deliveryData.getDeliveryID());
 
-		if (true)
-			return;
+		// ask the bean to check the payment + delivery
+		
+//		// get the current server version of paymentData + deliveryData
+//		paymentData = getAccountingManager().getPaymentData(paymentDataID, new String[] { FetchPlan.DEFAULT, PaymentData.FETCH_GROUP_PAYMENT, Payment.FET });
+//		deliveryData =  getStoreManager().getDeliveryData(deliveryDataID);
+		
 	}
 
 	public TestEnvironment prepareTestEnvironment() throws RemoteException, ModuleException {
@@ -127,6 +161,7 @@ public class PaymentDeliveryTestCase extends TestCase {
 		for (Article art : articles)
 			articleIDs.add((ArticleID) JDOHelper.getObjectId(art));
 
+		sm.createDeliveryNote((ArticleContainerID) JDOHelper.getObjectId(offer), (String)null, false, new String[0], NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
 		Delivery delivery = new Delivery(IDGenerator.getOrganisationID(), IDGenerator.nextID(Delivery.class));
 		ModeOfDeliveryFlavourProductTypeGroupCarrier modfProductTypeGroupCarrier = sm.getModeOfDeliveryFlavourProductTypeGroupCarrier(productTypeIDs,
 				Collections.singleton(JDOHelper.getObjectId(order.getCustomerGroup())), ModeOfDeliveryFlavour.MERGE_MODE_SUBTRACTIVE,
@@ -173,6 +208,7 @@ public class PaymentDeliveryTestCase extends TestCase {
 		payment.setServerPaymentProcessorID(ServerPaymentProcessorID.create(Organisation.DEVIL_ORGANISATION_ID, ServerPaymentProcessorTest.class.getName()));
 		payment.setCurrencyID(euroID);
 		payment.setModeOfPaymentFlavourID(mopIDToBeUsed);
+		payment.setPaymentDirection(Payment.PAYMENT_DIRECTION_INCOMING);
 
 		return new TestEnvironment(delivery, payment);
 	}

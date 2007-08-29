@@ -18,6 +18,14 @@ import junit.framework.TestCase;
  * Only the overridden constructor {@link #TestSuite(Class[])} is used and should be
  * implemented by subclasses.
  * </p>
+ * <p>
+ * <b>Important:</b> Extendors of this class must provide the constructor
+ * <pre>
+ * public MyTestSuite(Class&lt;? extends TestCase&gt;... classes) {
+ *   super(classes);
+ * }</pre>
+ * in order to be able to be ran.
+ * </p>
  * 
  * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] de -->
  */
