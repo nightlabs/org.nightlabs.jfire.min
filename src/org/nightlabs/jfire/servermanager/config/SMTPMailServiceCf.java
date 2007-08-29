@@ -51,7 +51,7 @@ public class SMTPMailServiceCf extends JFireServerConfigPart {
 			}
 		}
 		if(mailFrom == null)
-			mailFrom = "nobody@nosuchhost.nosuchdomaino.com";
+			mailFrom = "nobody@nosuchhost.nosuchdomain.com";
 		if(useAuthentication == null)
 			useAuthentication = false;
 		if(useAuthentication) {
