@@ -10,7 +10,7 @@ import org.nightlabs.jfire.security.SecurityReflector;
 
 /**
  * 
- * @author Tobias Langner <!-- tobias[dot]langner[at]nightlabs[dot]de -->
+ * @author Marco Schulze
  */
 public class SecurityReflectorClient
 extends SecurityReflector

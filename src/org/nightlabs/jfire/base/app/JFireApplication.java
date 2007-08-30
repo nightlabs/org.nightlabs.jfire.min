@@ -132,7 +132,7 @@ extends AbstractApplication
 	   	    			
 	protected void initializeLoginModule()
 	{
-		JFireSecurityConfiguration.declareConfiguration();		
+		JFireSecurityConfiguration.declareConfiguration();
 		try {
 			Login.getLogin(false).setLoginHandler(new JFireLoginHandler());
 		} catch (LoginException e) {

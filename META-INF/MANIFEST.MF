@@ -3,7 +3,8 @@ Bundle-ManifestVersion: 2
 Bundle-Name: JFire Base Plug-in
 Bundle-SymbolicName: org.nightlabs.jfire.base; singleton:=true
 Bundle-Version: 0.9.1
-Bundle-ClassPath: org.nightlabs.jfire.base.jar
+Bundle-ClassPath: org.nightlabs.jfire.base.jar,
+ lib/JFireBaseClientLib.jar
 Bundle-Activator: org.nightlabs.jfire.base.JFireBasePlugin
 Bundle-Vendor: NightLabs.org
 Bundle-Localization: plugin
@@ -12,15 +13,18 @@ Export-Package: org.nightlabs.jfire.base,
  org.nightlabs.jfire.base.config,
  org.nightlabs.jfire.base.editlock,
  org.nightlabs.jfire.base.entity.tree,
+ org.nightlabs.jfire.base.idgenerator,
  org.nightlabs.jfire.base.j2ee,
  org.nightlabs.jfire.base.jdo,
  org.nightlabs.jfire.base.jdo.cache,
  org.nightlabs.jfire.base.jdo.notification,
+ org.nightlabs.jfire.base.jdo.notification.queue,
  org.nightlabs.jfire.base.jdo.tree,
  org.nightlabs.jfire.base.language,
  org.nightlabs.jfire.base.login,
  org.nightlabs.jfire.base.login.action,
  org.nightlabs.jfire.base.login.part,
+ org.nightlabs.jfire.base.login.splash,
  org.nightlabs.jfire.base.organisation,
  org.nightlabs.jfire.base.overview,
  org.nightlabs.jfire.base.overview.action,
