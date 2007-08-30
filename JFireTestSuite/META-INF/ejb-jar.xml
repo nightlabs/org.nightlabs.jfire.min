@@ -13,6 +13,21 @@
       <session >
          <description><![CDATA[]]></description>
 
+         <ejb-name>jfire/ejb/JFireTestSuite/JFireTradeTestSuiteManager</ejb-name>
+
+         <home>org.nightlabs.jfire.testsuite.trade.JFireTradeTestSuiteManagerHome</home>
+         <remote>org.nightlabs.jfire.testsuite.trade.JFireTradeTestSuiteManager</remote>
+         <local-home>org.nightlabs.jfire.testsuite.trade.JFireTradeTestSuiteManagerLocalHome</local-home>
+         <local>org.nightlabs.jfire.testsuite.trade.JFireTradeTestSuiteManagerLocal</local>
+         <ejb-class>org.nightlabs.jfire.testsuite.trade.JFireTradeTestSuiteManagerSession</ejb-class>
+         <session-type>Stateless</session-type>
+         <transaction-type>Container</transaction-type>
+
+      </session>
+
+      <session >
+         <description><![CDATA[]]></description>
+
          <ejb-name>jfire/ejb/JFireTestSuite/JFireTestManager</ejb-name>
 
          <home>org.nightlabs.jfire.testsuite.JFireTestManagerHome</home>
@@ -81,6 +96,85 @@
          <role-name>_Guest_</role-name>
       <method >
          <description><![CDATA[]]></description>
+         <ejb-name>jfire/ejb/JFireTestSuite/JFireTradeTestSuiteManager</ejb-name>
+         <method-intf>Local</method-intf>
+         <method-name>checkDeliveryAndPayment</method-name>
+         <method-params>
+            <method-param>org.nightlabs.jfire.store.deliver.id.DeliveryDataID</method-param>
+            <method-param>org.nightlabs.jfire.accounting.pay.id.PaymentDataID</method-param>
+            <method-param>org.nightlabs.jfire.transfer.Stage</method-param>
+            <method-param>org.nightlabs.jfire.transfer.Stage</method-param>
+         </method-params>
+      </method>
+   </method-permission>
+   <method-permission >
+      <description><![CDATA[description not supported yet by ejbdoclet]]></description>
+         <role-name>_Guest_</role-name>
+      <method >
+         <description><![CDATA[]]></description>
+         <ejb-name>jfire/ejb/JFireTestSuite/JFireTradeTestSuiteManager</ejb-name>
+         <method-intf>Remote</method-intf>
+         <method-name>checkDeliveryAndPayment</method-name>
+         <method-params>
+            <method-param>org.nightlabs.jfire.store.deliver.id.DeliveryDataID</method-param>
+            <method-param>org.nightlabs.jfire.accounting.pay.id.PaymentDataID</method-param>
+            <method-param>org.nightlabs.jfire.transfer.Stage</method-param>
+            <method-param>org.nightlabs.jfire.transfer.Stage</method-param>
+         </method-params>
+      </method>
+   </method-permission>
+   <method-permission >
+      <description><![CDATA[description not supported yet by ejbdoclet]]></description>
+         <role-name>_Guest_</role-name>
+      <method >
+         <description><![CDATA[]]></description>
+         <ejb-name>jfire/ejb/JFireTestSuite/JFireTradeTestSuiteManager</ejb-name>
+         <method-intf>LocalHome</method-intf>
+         <method-name>create</method-name>
+         <method-params>
+         </method-params>
+      </method>
+   </method-permission>
+   <method-permission >
+      <description><![CDATA[description not supported yet by ejbdoclet]]></description>
+         <role-name>_Guest_</role-name>
+      <method >
+         <description><![CDATA[]]></description>
+         <ejb-name>jfire/ejb/JFireTestSuite/JFireTradeTestSuiteManager</ejb-name>
+         <method-intf>Home</method-intf>
+         <method-name>create</method-name>
+         <method-params>
+         </method-params>
+      </method>
+   </method-permission>
+   <method-permission >
+      <description><![CDATA[description not supported yet by ejbdoclet]]></description>
+      <unchecked/>
+      <method >
+         <description><![CDATA[]]></description>
+         <ejb-name>jfire/ejb/JFireTestSuite/JFireTradeTestSuiteManager</ejb-name>
+         <method-name>remove</method-name>
+         <method-params>
+         </method-params>
+      </method>
+   </method-permission>
+   <method-permission >
+      <description><![CDATA[description not supported yet by ejbdoclet]]></description>
+      <unchecked/>
+      <method >
+         <description><![CDATA[]]></description>
+         <ejb-name>jfire/ejb/JFireTestSuite/JFireTradeTestSuiteManager</ejb-name>
+         <method-name>remove</method-name>
+         <method-params>
+         </method-params>
+      </method>
+   </method-permission>
+
+   <method-permission >
+      <description><![CDATA[description not supported yet by ejbdoclet]]></description>
+         <role-name>_Guest_</role-name>
+      <method >
+         <description><![CDATA[]]></description>
          <ejb-name>jfire/ejb/JFireTestSuite/JFireTestManager</ejb-name>
          <method-intf>LocalHome</method-intf>
          <method-name>create</method-name>
@@ -143,6 +237,56 @@
          <method-intf>Remote</method-intf>
          <method-name>initialise</method-name>
          <method-params>
+         </method-params>
+      </method>
+   </method-permission>
+   <method-permission >
+      <description><![CDATA[description not supported yet by ejbdoclet]]></description>
+         <role-name>_Guest_</role-name>
+      <method >
+         <description><![CDATA[Runs all TestSuits and TestCases found in the classpath under org.nightlabs.jfire.testsuite.]]></description>
+         <ejb-name>jfire/ejb/JFireTestSuite/JFireTestManager</ejb-name>
+         <method-intf>Local</method-intf>
+         <method-name>runAllTestSuites</method-name>
+         <method-params>
+         </method-params>
+      </method>
+   </method-permission>
+   <method-permission >
+      <description><![CDATA[description not supported yet by ejbdoclet]]></description>
+         <role-name>_Guest_</role-name>
+      <method >
+         <description><![CDATA[Runs all TestSuits and TestCases found in the classpath under org.nightlabs.jfire.testsuite.]]></description>
+         <ejb-name>jfire/ejb/JFireTestSuite/JFireTestManager</ejb-name>
+         <method-intf>Remote</method-intf>
+         <method-name>runAllTestSuites</method-name>
+         <method-params>
+         </method-params>
+      </method>
+   </method-permission>
+   <method-permission >
+      <description><![CDATA[description not supported yet by ejbdoclet]]></description>
+         <role-name>_Guest_</role-name>
+      <method >
+         <description><![CDATA[Runs TestCases found in the classpath under org.nightlabs.jfire.testsuite that belong to the given TestSuites..]]></description>
+         <ejb-name>jfire/ejb/JFireTestSuite/JFireTestManager</ejb-name>
+         <method-intf>Local</method-intf>
+         <method-name>runTestSuites</method-name>
+         <method-params>
+            <method-param>java.util.List</method-param>
+         </method-params>
+      </method>
+   </method-permission>
+   <method-permission >
+      <description><![CDATA[description not supported yet by ejbdoclet]]></description>
+         <role-name>_Guest_</role-name>
+      <method >
+         <description><![CDATA[Runs TestCases found in the classpath under org.nightlabs.jfire.testsuite that belong to the given TestSuites..]]></description>
+         <ejb-name>jfire/ejb/JFireTestSuite/JFireTestManager</ejb-name>
+         <method-intf>Remote</method-intf>
+         <method-name>runTestSuites</method-name>
+         <method-params>
+            <method-param>java.util.List</method-param>
          </method-params>
       </method>
    </method-permission>

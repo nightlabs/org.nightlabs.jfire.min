@@ -5,20 +5,25 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Properties;
 import java.util.Set;
 
+import javax.ejb.CreateException;
 import javax.jdo.FetchPlan;
 import javax.jdo.JDOHelper;
+import javax.naming.NamingException;
 import javax.security.auth.login.LoginException;
 
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
 import org.junit.Test;
 import org.nightlabs.ModuleException;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.accounting.AccountingManager;
 import org.nightlabs.jfire.accounting.AccountingManagerUtil;
+import org.nightlabs.jfire.accounting.Invoice;
 import org.nightlabs.jfire.accounting.Tariff;
 import org.nightlabs.jfire.accounting.gridpriceconfig.TariffPricePair;
 import org.nightlabs.jfire.accounting.id.CurrencyID;
@@ -30,9 +35,10 @@ import org.nightlabs.jfire.accounting.pay.PaymentController;
 import org.nightlabs.jfire.accounting.pay.PaymentData;
 import org.nightlabs.jfire.accounting.pay.id.ModeOfPaymentFlavourID;
 import org.nightlabs.jfire.accounting.pay.id.PaymentDataID;
-import org.nightlabs.jfire.accounting.pay.id.PaymentID;
 import org.nightlabs.jfire.accounting.pay.id.ServerPaymentProcessorID;
 import org.nightlabs.jfire.accounting.priceconfig.id.PriceConfigID;
+import org.nightlabs.jfire.base.login.JFireLogin;
+import org.nightlabs.jfire.base.login.JFireSecurityConfiguration;
 import org.nightlabs.jfire.idgenerator.IDGenerator;
 import org.nightlabs.jfire.organisation.Organisation;
 import org.nightlabs.jfire.simpletrade.SimpleTradeManager;
@@ -51,7 +57,9 @@ import org.nightlabs.jfire.store.deliver.id.DeliveryDataID;
 import org.nightlabs.jfire.store.deliver.id.ModeOfDeliveryFlavourID;
 import org.nightlabs.jfire.store.deliver.id.ServerDeliveryProcessorID;
 import org.nightlabs.jfire.store.id.ProductTypeID;
+import org.nightlabs.jfire.testsuite.JFireTestManagerUtil;
 import org.nightlabs.jfire.testsuite.JFireTestSuite;
+import org.nightlabs.jfire.testsuite.login.JFireTestLogin;
 import org.nightlabs.jfire.trade.Article;
 import org.nightlabs.jfire.trade.LegalEntity;
 import org.nightlabs.jfire.trade.Offer;
@@ -72,10 +80,29 @@ import org.nightlabs.jfire.transfer.id.AnchorID;
 public class PaymentDeliveryTestCase extends TestCase {
 
 	private static final Logger logger = Logger.getLogger(PaymentDeliveryTestCase.class);
-
+	
+	private JFireLogin login;
+	
+	public static void main(String[] args) throws Exception {
+		PropertyConfigurator.configure(new Properties());
+		JFireLogin login = new JFireLogin("chezfrancois.jfire.org", "francois", "test");
+		JFireSecurityConfiguration.declareConfiguration();
+		Logger.getLogger(PaymentDeliveryTestCase.class).error("Huga");
+		try {
+			login.login();
+		} catch (Throwable t) {
+			t.printStackTrace();
+		}
+		
+		JFireTestManagerUtil.getHome(login.getInitialContextProperties()).create().runTestSuites(Collections.singletonList(JFireTradeTestSuite.class));
+	}
+	
 	@Test
-	public synchronized void testPaymentAndDeliveryResults() throws RemoteException, ModuleException, LoginException {
+	public void testPaymentAndDeliveryResults() throws Exception {
 		logger.debug("testPaymentAndDeliveryResults");
+		
+		login = JFireTestLogin.getUserLogin(JFireTestLogin.USER_QUALIFIER_SERVER_ADMIN); // which user does not matter for this test.
+		login.login();
 		
 		runPaymentAndDelivery(null, null);
 		runPaymentAndDelivery(null, Stage.ServerBegin);
@@ -99,7 +126,7 @@ public class PaymentDeliveryTestCase extends TestCase {
 		
 	}
 	
-	private void runPaymentAndDelivery(Stage deliveryFailureStage, Stage paymentFailureStage) throws RemoteException, ModuleException, LoginException {
+	private void runPaymentAndDelivery(Stage deliveryFailureStage, Stage paymentFailureStage) throws Exception {
 		TestEnvironment te = prepareTestEnvironment();
 		PaymentData paymentData = new PaymentDataTestCase(te.payment, paymentFailureStage);
 		DeliveryData deliveryData = new DeliveryDataTestCase(te.delivery, deliveryFailureStage);
@@ -113,11 +140,16 @@ public class PaymentDeliveryTestCase extends TestCase {
 		DeliveryDataID deliveryDataID = DeliveryDataID.create(deliveryData.getOrganisationID(), deliveryData.getDeliveryID());
 
 		// ask the bean to check the payment + delivery
+		getJFireTradeTestSuiteManager().checkDeliveryAndPayment(deliveryDataID, paymentDataID, deliveryFailureStage, paymentFailureStage);
 		
 //		// get the current server version of paymentData + deliveryData
 //		paymentData = getAccountingManager().getPaymentData(paymentDataID, new String[] { FetchPlan.DEFAULT, PaymentData.FETCH_GROUP_PAYMENT, Payment.FET });
 //		deliveryData =  getStoreManager().getDeliveryData(deliveryDataID);
 		
+	}
+	
+	private JFireTradeTestSuiteManager getJFireTradeTestSuiteManager() throws RemoteException, CreateException, NamingException {
+		return JFireTradeTestSuiteManagerUtil.getHome(login.getInitialContextProperties()).create();
 	}
 
 	public TestEnvironment prepareTestEnvironment() throws RemoteException, ModuleException {
@@ -209,6 +241,8 @@ public class PaymentDeliveryTestCase extends TestCase {
 		payment.setCurrencyID(euroID);
 		payment.setModeOfPaymentFlavourID(mopIDToBeUsed);
 		payment.setPaymentDirection(Payment.PAYMENT_DIRECTION_INCOMING);
+		Invoice invoice = am.createInvoice((ArticleContainerID) JDOHelper.getObjectId(offer), (String)null, true, new String[] { FetchPlan.DEFAULT }, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
+		payment.setInvoices(Collections.singleton(invoice));
 
 		return new TestEnvironment(delivery, payment);
 	}
