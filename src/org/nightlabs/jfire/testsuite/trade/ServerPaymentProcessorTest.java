@@ -8,8 +8,6 @@ import org.nightlabs.jfire.accounting.pay.PaymentResult;
 import org.nightlabs.jfire.accounting.pay.ServerPaymentProcessor;
 import org.nightlabs.jfire.accounting.pay.id.ServerPaymentProcessorID;
 import org.nightlabs.jfire.organisation.Organisation;
-import org.nightlabs.jfire.store.deliver.DeliveryResult;
-import org.nightlabs.jfire.store.deliver.ServerDeliveryProcessor.DeliverParams;
 import org.nightlabs.jfire.transfer.Anchor;
 import org.nightlabs.jfire.transfer.Stage;
 
@@ -81,6 +79,15 @@ public class ServerPaymentProcessorTest extends ServerPaymentProcessor {
 	private PaymentResult getPaymentResult(PayParams payParams, Stage stage) {
 		if (getPaymentData(payParams).getFailureStage() == stage) {
 			return new PaymentResult(PaymentResult.CODE_FAILED, "Delivery sabotaged in stage " + stage, null);
+		} else {
+			switch (stage) {
+			case ServerBegin:
+				return new PaymentResult(PaymentResult.CODE_APPROVED_WITH_EXTERNAL, null, null);
+			case ServerDoWork:
+				return new PaymentResult(PaymentResult.CODE_PAID_WITH_EXTERNAL, null, null);
+			case ServerEnd:
+				return new PaymentResult(PaymentResult.CODE_COMMITTED_WITH_EXTERNAL, null, null);
+			}
 		}
 		return null;
 	}

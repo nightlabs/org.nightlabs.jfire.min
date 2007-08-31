@@ -3,6 +3,7 @@ package org.nightlabs.jfire.testsuite.trade;
 import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 
+import org.nightlabs.jfire.accounting.pay.PaymentResult;
 import org.nightlabs.jfire.organisation.Organisation;
 import org.nightlabs.jfire.store.deliver.DeliveryException;
 import org.nightlabs.jfire.store.deliver.DeliveryResult;
@@ -79,6 +80,15 @@ class ServerDeliveryProcessorTest extends ServerDeliveryProcessor {
 	private DeliveryResult getDeliveryResult(DeliverParams deliverParams, Stage stage) {
 		if (getDeliveryData(deliverParams).getFailureStage() == stage) {
 			return new DeliveryResult(DeliveryResult.CODE_FAILED, "Delivery sabotaged in stage " + stage, null);
+		} else {
+			switch (stage) {
+			case ServerBegin:
+				return new DeliveryResult(DeliveryResult.CODE_APPROVED_WITH_EXTERNAL, null, null);
+			case ServerDoWork:
+				return new DeliveryResult(DeliveryResult.CODE_DELIVERED_WITH_EXTERNAL, null, null);
+			case ServerEnd:
+				return new DeliveryResult(DeliveryResult.CODE_COMMITTED_WITH_EXTERNAL, null, null);
+			}
 		}
 		return null;
 	}

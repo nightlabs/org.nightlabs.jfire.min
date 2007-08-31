@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.Properties;
 import java.util.Set;
 
 import javax.ejb.CreateException;
@@ -16,8 +15,8 @@ import javax.security.auth.login.LoginException;
 
 import junit.framework.TestCase;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
 import org.junit.Test;
 import org.nightlabs.ModuleException;
 import org.nightlabs.jdo.NLJDOHelper;
@@ -84,7 +83,7 @@ public class PaymentDeliveryTestCase extends TestCase {
 	private JFireLogin login;
 	
 	public static void main(String[] args) throws Exception {
-		PropertyConfigurator.configure(new Properties());
+//		PropertyConfigurator.configure(new Properties());
 		JFireLogin login = new JFireLogin("chezfrancois.jfire.org", "francois", "test");
 		JFireSecurityConfiguration.declareConfiguration();
 		Logger.getLogger(PaymentDeliveryTestCase.class).error("Huga");
@@ -104,26 +103,34 @@ public class PaymentDeliveryTestCase extends TestCase {
 		login = JFireTestLogin.getUserLogin(JFireTestLogin.USER_QUALIFIER_SERVER_ADMIN); // which user does not matter for this test.
 		login.login();
 		
-		runPaymentAndDelivery(null, null);
-		runPaymentAndDelivery(null, Stage.ServerBegin);
-		runPaymentAndDelivery(Stage.ServerBegin, Stage.ServerBegin);
-		runPaymentAndDelivery(Stage.ServerDoWork, Stage.ServerBegin);
-		runPaymentAndDelivery(Stage.ServerEnd, Stage.ServerBegin);
-		
-		runPaymentAndDelivery(null, Stage.ServerDoWork);
-		runPaymentAndDelivery(Stage.ServerBegin, Stage.ServerDoWork);
-		runPaymentAndDelivery(Stage.ServerDoWork, Stage.ServerDoWork);
-		runPaymentAndDelivery(Stage.ServerEnd, Stage.ServerDoWork);
-		
-		runPaymentAndDelivery(null, Stage.ServerEnd);
-		runPaymentAndDelivery(Stage.ServerBegin, Stage.ServerEnd);
-		runPaymentAndDelivery(Stage.ServerDoWork, Stage.ServerEnd);
-		runPaymentAndDelivery(Stage.ServerEnd, Stage.ServerEnd);
-
-		runPaymentAndDelivery(Stage.ServerBegin, null);
-		runPaymentAndDelivery(Stage.ServerDoWork, null);
-		runPaymentAndDelivery(Stage.ServerEnd, null);
-		
+		try {
+			runPaymentAndDelivery(null, null);
+			runPaymentAndDelivery(null, Stage.ServerBegin);
+			runPaymentAndDelivery(Stage.ServerBegin, Stage.ServerBegin);
+			runPaymentAndDelivery(Stage.ServerDoWork, Stage.ServerBegin);
+			runPaymentAndDelivery(Stage.ServerEnd, Stage.ServerBegin);
+			
+			runPaymentAndDelivery(null, Stage.ServerDoWork);
+			runPaymentAndDelivery(Stage.ServerBegin, Stage.ServerDoWork);
+			runPaymentAndDelivery(Stage.ServerDoWork, Stage.ServerDoWork);
+			runPaymentAndDelivery(Stage.ServerEnd, Stage.ServerDoWork);
+			
+			runPaymentAndDelivery(null, Stage.ServerEnd);
+			runPaymentAndDelivery(Stage.ServerBegin, Stage.ServerEnd);
+			runPaymentAndDelivery(Stage.ServerDoWork, Stage.ServerEnd);
+			runPaymentAndDelivery(Stage.ServerEnd, Stage.ServerEnd);
+	
+			runPaymentAndDelivery(Stage.ServerBegin, null);
+			runPaymentAndDelivery(Stage.ServerDoWork, null);
+			runPaymentAndDelivery(Stage.ServerEnd, null);
+		} catch (Exception e) {
+			int exIndex = ExceptionUtils.indexOfThrowable(e, DeliveryAndPaymentVerificationException.class);
+			if (exIndex >= 0) {
+				DeliveryAndPaymentVerificationException exception = (DeliveryAndPaymentVerificationException) ExceptionUtils.getThrowables(e)[exIndex];
+				fail(exception.getMessage());
+			} else
+				throw e;
+		}
 	}
 	
 	private void runPaymentAndDelivery(Stage deliveryFailureStage, Stage paymentFailureStage) throws Exception {
