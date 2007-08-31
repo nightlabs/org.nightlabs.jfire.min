@@ -35,7 +35,6 @@ import javax.security.auth.login.Configuration;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.config.ConfigException;
-import org.nightlabs.jfire.test.util.JFireSecurityConfigurationEntry;
 
 /**
  * @author Alexander Bieber
