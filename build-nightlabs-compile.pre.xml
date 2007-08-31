@@ -13,5 +13,8 @@
 		<copy file="../JFireBaseDAO/dist/JFireBaseDAO.jar" todir="${project.dir}/${lib.dir}" failonerror="true" verbose="true"/>
 -->
 		<delete file="${project.dir}/${lib.dir}/JFireBaseDAO.jar"/>
+		
+		<copy file="../JFireBaseClientLib/src/org/nightlabs/jfire/base/login/JFireSecurityConfiguration.java" todir="${project.dir}/src/org/nightlabs/jfire/base/login" failonerror="true" verbose="true" /> 
+		<copy file="../JFireBaseClientLib/src/org/nightlabs/jfire/base/login/JFireSecurityConfigurationEntry.java" todir="${project.dir}/src/org/nightlabs/jfire/base/login" failonerror="true" verbose="true" />
 	</target>
 </project>
