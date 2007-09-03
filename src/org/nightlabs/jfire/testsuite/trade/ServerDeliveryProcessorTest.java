@@ -69,7 +69,7 @@ class ServerDeliveryProcessorTest extends ServerDeliveryProcessor {
 
 	@Override
 	protected DeliveryResult externalDeliverRollback(DeliverParams deliverParams) throws DeliveryException {
-		return null;
+		return new DeliveryResult(DeliveryResult.CODE_ROLLED_BACK_WITH_EXTERNAL, null, null);
 	}
 
 	@Override

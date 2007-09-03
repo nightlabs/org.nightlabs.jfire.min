@@ -11,7 +11,7 @@ import org.nightlabs.jfire.store.deliver.DeliveryResult;
 public class ServerOnlyDeliveryController extends AbstractDeliveryController {
 
 	public ServerOnlyDeliveryController(DeliveryData deliveryData) {
-		setTransferDatas(Collections.singletonList(deliveryData));
+		super(Collections.singletonList(deliveryData));
 	}
 
 	@Override

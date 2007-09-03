@@ -31,7 +31,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.rmi.RemoteException;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -49,7 +48,6 @@ import javax.jdo.PersistenceManager;
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
-import org.jboss.ejb.plugins.cmp.jdbc.keygen.GetTCLAction;
 import org.nightlabs.ModuleException;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.util.reflect.ReflectUtil;
@@ -145,96 +143,6 @@ implements SessionBean
 		}
 	}
 
-//	/**
-//	 * Runs all TestSuites and TestCases found in the classpath under org.nightlabs.jfire.testsuite. 
-//	 */
-//	public static void runTestSuites(PersistenceManager pm) 
-//	throws ClassNotFoundException, SecurityException, NoSuchMethodException, IllegalArgumentException, InstantiationException, IllegalAccessException, InvocationTargetException, ModuleException, IOException 
-//	{
-////		logger.debug("Scanning classpath for TestSuites and TestCases");
-////		Collection<Class> classes = ReflectUtil.listClassesInPackage("org.nightlabs.jfire.testsuite", true);
-////		logger.debug("Found " + classes.size() + " classes");
-////		List<Class> testSuites = new LinkedList<Class>();
-////		Map<Class, List<Class>> suites2TestCases = new HashMap<Class, List<Class>>();
-////		for (Class<?> clazz : classes) {
-////			if (TestSuite.class.isAssignableFrom(clazz)) {
-////				logger.debug("Found testSuite " + clazz.getName());
-////				testSuites.add(clazz);
-////			} else if (TestCase.class.isAssignableFrom(clazz)) {
-////				JFireTestSuite testSuiteAnnotation = (JFireTestSuite) clazz.getAnnotation(JFireTestSuite.class);
-////				Class suiteClass = DefaultTestSuite.class; // Default value, if not annotated.
-////				if (testSuiteAnnotation != null) {					
-////					suiteClass = testSuiteAnnotation.value();
-////				}
-////				List<Class> testCaseClasses = suites2TestCases.get(suiteClass);
-////				if (testCaseClasses == null) {
-////					testCaseClasses = new LinkedList<Class>();
-////					suites2TestCases.put(suiteClass, testCaseClasses);
-////				}
-////				testCaseClasses.add(clazz);
-////			}
-////		}
-////
-////		// now iterate all registrations and find TestCases that have a Suite set that's not in the classpath
-////		for (Class suiteClass : suites2TestCases.keySet()) {
-////			if (!testSuites.contains(suiteClass)) {
-////				testSuites.add(suiteClass);
-////			}
-////		}
-////		
-////		List<TestSuite> runSuites = new LinkedList<TestSuite>();
-////		for (Class<? extends TestSuite> clazz : testSuites) {
-////			if (suites2TestCases.containsKey(clazz)) {
-////				List<Class> suiteClasses = suites2TestCases.get(clazz);
-//////				Constructor<Class<? extends TestCase>[]> con =
-////				Constructor c = null;
-////				try {
-////					c = clazz.getConstructor(new Class[] {Class[].class});
-////				} catch (Exception e) {
-////					logger.error("Could not find (Class<? extends TestCase> ... classes) constructor for TestSuite " + clazz.getName(), e);
-////					continue;
-////				}
-////				TestSuite testSuite = null;
-////				try {
-////					testSuite = (TestSuite) c.newInstance(new Object[] {suiteClasses.toArray(new Class[suiteClasses.size()])});
-////				} catch (Exception e) {
-////					logger.error("Could not instantiate TestSuite " + clazz.getName(), e);
-////					continue;
-////				}
-////				runSuites.add(testSuite);
-////			}
-////		}
-//		
-//		List<TestSuite> runSuites = createTestSuites(null);		
-////		List<JFireTestListener> listeners = getTestListeners();
-////
-////		// Run the suites
-////		for (JFireTestListener listener : listeners) {
-////			try {
-////				listener.startTestRun();
-////			} catch (Exception e) {
-////				logger.error("Error notifing JFireTestListener!", e);
-////				continue;
-////			}
-////		}
-////		for (TestSuite suite : runSuites) {
-////			JFireTestRunner runner = new JFireTestRunner();
-////			for (JFireTestListener listener : listeners) {
-////				runner.addListener(listener);
-////			}
-////			runner.run(suite, pm);
-////		}
-////		for (JFireTestListener listener : listeners) {
-////			try {
-////				listener.endTestRun();
-////			} catch (Exception e) {
-////				logger.error("Error notifing JFireTestListener!", e);
-////				continue;
-////			}
-////		}
-//		runTestSuites(runSuites, pm);
-//	}
-	
 	public static void runTestSuites(List<TestSuite> testSuites, PersistenceManager pm) throws ModuleException, IOException {
 		List<JFireTestListener> listeners = getTestListeners();
 
@@ -270,7 +178,7 @@ implements SessionBean
 		List<JFireTestListener> listeners = new LinkedList<JFireTestListener>();
 		for (Matcher matcher : listenerMatches) {
 			Properties listenerProps = JFireTestSuiteEAR.getProperties(mainProps, matcher.group(1));
-			Class clazz = null;
+			Class<?> clazz = null;
 			try {
 				clazz = Class.forName(listenerProps.getProperty("class"));
 			} catch (Exception e) {
@@ -306,7 +214,7 @@ implements SessionBean
 		Collection<Class> classes = ReflectUtil.listClassesInPackage("org.nightlabs.jfire.testsuite", true);
 		logger.debug("Found " + classes.size() + " classes");
 		
-		List<Class> testSuiteClasses = new LinkedList<Class>();
+		List<Class<? extends TestSuite>> testSuiteClasses = new LinkedList<Class<? extends TestSuite>>();
 		
 		Map<Class<? extends TestSuite>, List<Class<? extends TestCase>>> suites2TestCases = new HashMap<Class<? extends TestSuite>, List<Class<? extends TestCase>>>();
 		for (Class<?> clazz : classes) {
@@ -316,7 +224,7 @@ implements SessionBean
 			} else if (TestCase.class.isAssignableFrom(clazz)) {
 				Class<? extends TestCase> testCaseClass = (Class<? extends TestCase>) clazz;
 				JFireTestSuite testSuiteAnnotation = (JFireTestSuite) clazz.getAnnotation(JFireTestSuite.class);
-				Class suiteClass = DefaultTestSuite.class; // Default value, if not annotated.
+				Class<? extends TestSuite> suiteClass = DefaultTestSuite.class; // Default value, if not annotated.
 				if (testSuiteAnnotation != null) {					
 					suiteClass = testSuiteAnnotation.value();
 				}
@@ -338,11 +246,7 @@ implements SessionBean
 		
 		// if a filter has been set, remove all test suites that are filtered out
 		if (testSuiteClassesFilter != null) {
-			List<Class<? extends TestSuite>> copy = new LinkedList<Class<? extends TestSuite>>(testSuiteClassesFilter);
-			for (Class<? extends TestSuite> testSuiteClass : copy) {
-				if (!testSuiteClassesFilter.contains(testSuiteClass))
-					testSuiteClassesFilter.remove(testSuiteClass);
-			}
+			testSuiteClasses.retainAll(testSuiteClassesFilter);
 		}
 		
 		List<TestSuite> runSuites = new LinkedList<TestSuite>();

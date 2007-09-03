@@ -83,14 +83,11 @@ public class PaymentDeliveryTestCase extends TestCase {
 	private JFireLogin login;
 	
 	public static void main(String[] args) throws Exception {
-//		PropertyConfigurator.configure(new Properties());
 		JFireLogin login = new JFireLogin("chezfrancois.jfire.org", "francois", "test");
 		JFireSecurityConfiguration.declareConfiguration();
-		Logger.getLogger(PaymentDeliveryTestCase.class).error("Huga");
 		try {
 			login.login();
-		} catch (Throwable t) {
-			t.printStackTrace();
+		} catch (Throwable ignore) {
 		}
 		
 		JFireTestManagerUtil.getHome(login.getInitialContextProperties()).create().runTestSuites(Collections.singletonList(JFireTradeTestSuite.class));
@@ -241,15 +238,15 @@ public class PaymentDeliveryTestCase extends TestCase {
 		if (mopIDToBeUsed == null)
 			throw new IllegalStateException("Payment works only with cash payment available.");
 
-		payment.setAmount(offer.getPrice().getAmount());
 		payment.setPartner(order.getCustomer());
 		payment.setClientPaymentProcessorFactoryID("dummy");
 		payment.setServerPaymentProcessorID(ServerPaymentProcessorID.create(Organisation.DEVIL_ORGANISATION_ID, ServerPaymentProcessorTest.class.getName()));
 		payment.setCurrencyID(euroID);
 		payment.setModeOfPaymentFlavourID(mopIDToBeUsed);
 		payment.setPaymentDirection(Payment.PAYMENT_DIRECTION_INCOMING);
-		Invoice invoice = am.createInvoice((ArticleContainerID) JDOHelper.getObjectId(offer), (String)null, true, new String[] { FetchPlan.DEFAULT }, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
+		Invoice invoice = am.createInvoice((ArticleContainerID) JDOHelper.getObjectId(offer), (String)null, true, new String[] { FetchPlan.DEFAULT, Invoice.FETCH_GROUP_PRICE }, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
 		payment.setInvoices(Collections.singleton(invoice));
+		payment.setAmount(invoice.getPrice().getAmount());
 
 		return new TestEnvironment(delivery, payment);
 	}

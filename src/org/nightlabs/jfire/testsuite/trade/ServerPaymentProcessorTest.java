@@ -68,7 +68,7 @@ public class ServerPaymentProcessorTest extends ServerPaymentProcessor {
 
 	@Override
 	protected PaymentResult externalPayRollback(PayParams payParams) throws PaymentException {
-		return null;
+		return new PaymentResult(PaymentResult.CODE_ROLLED_BACK_WITH_EXTERNAL, null, null);
 	}
 
 	@Override

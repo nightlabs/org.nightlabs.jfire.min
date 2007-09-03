@@ -11,7 +11,7 @@ import org.nightlabs.jfire.accounting.pay.PaymentResult;
 public class ServerOnlyPaymentController extends AbstractPaymentController {
 	
 	public ServerOnlyPaymentController(PaymentData paymentData) {
-		setTransferDatas(Collections.singletonList(paymentData));
+		super(Collections.singletonList(paymentData));
 	}
 	
 	@Override
