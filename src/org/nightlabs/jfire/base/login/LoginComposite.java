@@ -96,6 +96,8 @@ extends Composite
 		setLayoutData(new GridData(GridData.FILL_BOTH));
 		
 		createContent(this);
+//		layout(true, true);
+		pack(true);
 	}
 	
 	/**
@@ -236,6 +238,9 @@ extends Composite
 		detailsAreaGridData = new GridData(GridData.FILL_HORIZONTAL);
 		detailsArea.setLayoutData(detailsAreaGridData);
 				
+		if (mode == Mode.SHOW_ONLY_LOGIN_AREA)
+			detailsAreaGridData.heightHint = 0;
+		
 		GridLayout gridLayoutExpand = new GridLayout();
 		Label labelWorkstationID = new Label(detailsArea, SWT.NONE);
 		textWorkstationID = new Text(detailsArea, SWT.BORDER);
@@ -574,7 +579,7 @@ extends Composite
 			if(EMPTY_STRING.equals(getTextUserID().getText()))
 				getTextUserID().setFocus();
 		
-			if(EMPTY_STRING.equals(getTextWorkstationID().getText())) {
+			else if(EMPTY_STRING.equals(getTextWorkstationID().getText())) {
 				showDetails(true);
 				getTextWorkstationID().setFocus();
 			}

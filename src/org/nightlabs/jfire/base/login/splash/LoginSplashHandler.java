@@ -24,11 +24,14 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.splash.AbstractSplashHandler;
 import org.nightlabs.base.composite.IMessageContainer;
+import org.nightlabs.jfire.base.JFireBasePlugin;
 import org.nightlabs.jfire.base.login.JFireLoginContext;
 import org.nightlabs.jfire.base.login.Login;
 import org.nightlabs.jfire.base.login.LoginComposite;
 import org.nightlabs.jfire.base.login.LoginConfigModule;
 import org.nightlabs.jfire.base.login.LoginComposite.Mode;
+import org.osgi.framework.BundleEvent;
+import org.osgi.framework.BundleListener;
 
 /**
  * This Implementation of AbstractSplashHandler shows a login inside
@@ -40,6 +43,7 @@ import org.nightlabs.jfire.base.login.LoginComposite.Mode;
 public class LoginSplashHandler 
 extends AbstractSplashHandler
 implements IMessageContainer
+//,BundleListener
 {
 	private static Logger logger = Logger.getLogger(LoginSplashHandler.class);
 
@@ -91,6 +95,8 @@ implements IMessageContainer
 		progressMonitor = new SplashProgressMonitor(new ProgressMonitorPart(progressWrapper, null));
 		progressMonitor.getProgressMonitorPart().setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		
+//		JFireBasePlugin.getDefault().getBundle().getBundleContext().addBundleListener(this);
+		
 		showProgressMonitor();
 		try {
 			Login.getLogin();
@@ -115,7 +121,7 @@ implements IMessageContainer
 				loginConfigModule, loginContext, Mode.SHOW_ONLY_LOGIN_AREA);
 		loginComp.setBackgroundMode(backgroundMode);
 		stackLayout.topControl = loginComp; 		
-		getSplash().layout(true);
+		getSplash().layout(true, true);
 		doEventLoop();
 	}
 			
@@ -277,4 +283,31 @@ implements IMessageContainer
 		getSplash().layout(true, true);
 		getSplash().redraw();
 	}
+
+//	public void bundleChanged(BundleEvent event) 
+//	{		
+//			System.err.println(event.getBundle().getSymbolicName()+" "+bundleEventTypeToString(event.getType()));
+//	}
+//	
+//	private static final String EVENT_TYPE_INSTALLED = "installed";
+//	private static final String EVENT_TYPE_RESOLVED = "resolved";
+//	private static final String EVENT_TYPE_STARTED = "started";
+//	private static final String EVENT_TYPE_STOPPED = "stopped";
+//	private static final String EVENT_TYPE_UNINSTALLED = "uninstalled";
+//	private static final String EVENT_TYPE_UNRESOLVED = "unresolved";
+//	private static final String EVENT_TYPE_UPDATED = "updated";
+//	private static final String EVENT_TYPE_UNKNOWN = "unknown type";
+//
+//	public static String bundleEventTypeToString(int eventType) {
+//		switch (eventType) {
+//			case BundleEvent.INSTALLED: return EVENT_TYPE_INSTALLED;
+//			case BundleEvent.RESOLVED: return EVENT_TYPE_RESOLVED;
+//			case BundleEvent.STARTED: return EVENT_TYPE_STARTED;
+//			case BundleEvent.STOPPED: return EVENT_TYPE_STOPPED;
+//			case BundleEvent.UNINSTALLED: return EVENT_TYPE_UNINSTALLED;
+//			case BundleEvent.UNRESOLVED: return EVENT_TYPE_UNRESOLVED;
+//			case BundleEvent.UPDATED: return EVENT_TYPE_UPDATED;		 
+//		}
+//		return EVENT_TYPE_UNKNOWN;
+//	}	
 }
