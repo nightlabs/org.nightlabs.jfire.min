@@ -1244,7 +1244,10 @@ public class Cache
 	}
 	public void putAll(String scope, Collection objects, Set<String> fetchGroups, int maxFetchDepth)
 	{
-		_putAll(scope, objects, new HashSet<String>(fetchGroups), maxFetchDepth);
+		_putAll(
+				scope, objects,
+				(fetchGroups == null ? null : new HashSet<String>(fetchGroups)),
+				maxFetchDepth);
 	}
 	protected void _putAll(String scope, Collection objects, Set<String> fetchGroups, int maxFetchDepth)
 	{
@@ -1271,7 +1274,10 @@ public class Cache
 	 */
 	public void put(String scope, Object object, Set<String> fetchGroups, int maxFetchDepth)
 	{
-		_put(scope, JDOHelper.getObjectId(object), object, fetchGroups == null ? null : new HashSet<String>(fetchGroups), maxFetchDepth);
+		_put(
+				scope, JDOHelper.getObjectId(object), object,
+				(fetchGroups == null ? null : new HashSet<String>(fetchGroups)),
+				maxFetchDepth);
 	}
 
 	/**
@@ -1300,7 +1306,10 @@ public class Cache
 	 */
 	public void put(String scope, Object objectID, Object object, Set<String> fetchGroups, int maxFetchDepth)
 	{
-		_put(scope, objectID, object, new HashSet<String>(fetchGroups), maxFetchDepth);
+		_put(
+				scope, objectID, object,
+				(fetchGroups == null ? null : new HashSet<String>(fetchGroups)),
+				maxFetchDepth);
 	}
 	protected void _put(String scope, Object objectID, Object object, Set<String> fetchGroups, int maxFetchDepth)
 	{
