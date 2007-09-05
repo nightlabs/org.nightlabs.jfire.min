@@ -365,6 +365,9 @@ public class ServerConfiguratorJBoss
 	//	String modificationMarker = "!!!ModifiedByJFire!!!";
 	//	if (text.indexOf(modificationMarker) >= 0)
 	//		return;
+		
+		// Issue 239: https://www.jfire.org/modules/bugs/view.php?id=239
+		// TODO Check whether the settings in the configuration file are the same as the settings in the config module
 			
 		backup(destFile);
 		logger.info("File " + destFile.getAbsolutePath() + " was not yet updated. Will change SMTP settings.");
