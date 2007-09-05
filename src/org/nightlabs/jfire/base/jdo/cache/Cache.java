@@ -1271,7 +1271,7 @@ public class Cache
 	 */
 	public void put(String scope, Object object, Set<String> fetchGroups, int maxFetchDepth)
 	{
-		_put(scope, JDOHelper.getObjectId(object), object, new HashSet<String>(fetchGroups), maxFetchDepth);
+		_put(scope, JDOHelper.getObjectId(object), object, fetchGroups == null ? null : new HashSet<String>(fetchGroups), maxFetchDepth);
 	}
 
 	/**
