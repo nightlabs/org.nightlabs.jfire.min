@@ -38,7 +38,7 @@ extends WorkbenchPartAction
 	public void run() 
 	{
 		if (searchViewer != null)
-			searchViewer.applySearch();
+			searchViewer.search();
 	}
 
 	public boolean calculateEnabled() {

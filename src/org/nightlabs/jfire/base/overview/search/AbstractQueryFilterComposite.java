@@ -1,6 +1,7 @@
 package org.nightlabs.jfire.base.overview.search;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +12,7 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.forms.widgets.Section;
+import org.nightlabs.base.composite.XComposite;
 import org.nightlabs.jdo.query.JDOQuery;
 import org.nightlabs.jdo.ui.JDOQueryComposite;
 import org.nightlabs.jfire.base.resource.Messages;
@@ -20,7 +22,7 @@ import org.nightlabs.jfire.base.resource.Messages;
  *
  */
 public abstract class AbstractQueryFilterComposite 
-extends AbstractFormFilterComposite 
+extends XComposite 
 {
 	/**
 	 * @param parent
@@ -31,6 +33,7 @@ extends AbstractFormFilterComposite
 	public AbstractQueryFilterComposite(Composite parent, int style,
 			LayoutMode layoutMode, LayoutDataMode layoutDataMode) {
 		super(parent, style, layoutMode, layoutDataMode);
+		createComposite(this);
 	}
 
 	/**
@@ -39,28 +42,34 @@ extends AbstractFormFilterComposite
 	 */
 	public AbstractQueryFilterComposite(Composite parent, int style) {
 		super(parent, style);
+		createComposite(this);
 	}
 
 	private List<JDOQueryComposite> queryComposites;
 	private Map<Button, Section> button2Section;
+	private Map<Button, JDOQueryComposite> button2Composite = null;
+	private List<QuickSearchEntryType> quickSearchEntryTypes = null;
+	
+	public List<QuickSearchEntryType> getQuickSearchEntryTypes() {
+		return quickSearchEntryTypes;
+	}
+	
 	protected Map<Button, Section> getButton2Section() {
 		if (button2Section == null)
 			button2Section = new HashMap<Button, Section>();
 		return button2Section;
 	}
 	
-	private Map<Button, JDOQueryComposite> button2Composite = null;
 	protected Map<Button, JDOQueryComposite> getButton2QueryComposite() {
 		if (button2Composite == null)
 			button2Composite = new HashMap<Button, JDOQueryComposite>();
 		return button2Composite;
 	}
 
-	
-	@Override
 	protected void createComposite(Composite parent) {
-		super.createComposite(parent);
-		this.queryComposites = registerJDOQueryComposites();
+		createContents(parent);
+		queryComposites = registerJDOQueryComposites();
+//		quickSearchEntryTypes = registerQuickSearchEntryTypes(); 
 	}
 	
 	protected void configureSection(Section section, JDOQueryComposite comp) 
@@ -86,22 +95,7 @@ extends AbstractFormFilterComposite
 		getButton2QueryComposite().put(activeButton, comp);		
 		getButton2Section().put(activeButton, section);		
 	}
-	
-//	private SelectionListener selectionListener = new SelectionListener(){	
-//		public void widgetSelected(SelectionEvent e) {
-//			Button b = (Button) e.getSource();
-//			JDOQueryComposite comp = button2Composite.get(b);
-//			if (comp != null)
-//				comp.setActive(b.getSelection());
-//			Section section = button2Section.get(b);
-//			if (section != null)
-//				section.setExpanded(b.getSelection());
-//		}	
-//		public void widgetDefaultSelected(SelectionEvent e) {
-//			widgetSelected(e);
-//		}	
-//	};
-	
+		
 	public List<JDOQuery> getJDOQueries() 
 	{
 		if (queryComposites != null) 
@@ -118,4 +112,9 @@ extends AbstractFormFilterComposite
 	
 	protected abstract List<JDOQueryComposite> registerJDOQueryComposites();
 	protected abstract Class getQueryClass();
+	protected abstract void createContents(Composite parent);
+	
+//	protected List<QuickSearchEntryType> registerQuickSearchEntryTypes() {
+//		return Collections.EMPTY_LIST;
+//	}
 }
