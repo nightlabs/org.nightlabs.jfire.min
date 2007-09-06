@@ -43,6 +43,8 @@ import org.apache.log4j.Logger;
  * that developers will need for example to create EJB proxies to
  * the services, the jfire server provides. (See {@link #getInitialContextProperties()})
  * </p>
+ * <b>Important:</b> When you want to use this Login outside the ServerVM, you have to call {@link JFireSecurityConfiguration#declareConfiguration()}
+ * before trying to log in or put a valid SecurityConfiguration where your Java VM expects it ;-).
  * <p>
  * The Login can be configured via a {@link Properties} instance where it expects the following keys:
  * <ul>
@@ -55,7 +57,7 @@ import org.apache.log4j.Logger;
  *   	defaults to "org.nightlabs.jfire.jboss.cascadedauthentication.LoginInitialContextFactory"</li>
  *   <li><b>jfire.login.securityProtocol</b> (The value of {@link #PROP_SECURITY_PROTOCOL}), defines the security protocol to use, defaults to "jfire".</li>
  * </ul>
- * </p>
+ * </p> * 
  * 
  * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] de -->
  */
