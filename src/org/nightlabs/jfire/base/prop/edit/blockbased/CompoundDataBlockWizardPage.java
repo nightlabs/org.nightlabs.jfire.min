@@ -27,7 +27,6 @@
 package org.nightlabs.jfire.base.prop.edit.blockbased;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -37,8 +36,9 @@ import org.eclipse.swt.widgets.Control;
 import org.nightlabs.base.composite.XComposite;
 import org.nightlabs.base.exceptionhandler.ExceptionHandlerRegistry;
 import org.nightlabs.base.wizard.WizardHopPage;
-import org.nightlabs.jfire.prop.DataBlock;
+import org.nightlabs.jfire.prop.DataBlockGroup;
 import org.nightlabs.jfire.prop.PropertySet;
+import org.nightlabs.jfire.prop.exception.DataBlockGroupNotFoundException;
 import org.nightlabs.jfire.prop.exception.DataNotFoundException;
 import org.nightlabs.jfire.prop.id.StructBlockID;
 
@@ -51,31 +51,20 @@ import org.nightlabs.jfire.prop.id.StructBlockID;
 public class CompoundDataBlockWizardPage extends WizardHopPage {
 
 	private PropertySet propSet;
-	private Map<StructBlockID, AbstractDataBlockEditor> propDataBlockEditors = new HashMap<StructBlockID, AbstractDataBlockEditor>();
-	private Map<StructBlockID, DataBlock> propDataBlocks = new HashMap<StructBlockID, DataBlock>();
+	private Map<StructBlockID, DataBlockGroup> propDataBlockGroups = new HashMap<StructBlockID, DataBlockGroup>();
+	private Map<StructBlockID, DataBlockGroupEditor> propDataBlockGroupEditors = new HashMap<StructBlockID, DataBlockGroupEditor>();
 	private StructBlockID[] structBlockIDs;
 	private int propDataBlockEditorColumnHint = 2;
-	
+
 	XComposite wrapperComp;
-	
-	private static StructBlockID[] getArrayFromList(List structBlockIDs) {
-		StructBlockID[] blockIDs = new StructBlockID[structBlockIDs.size()];
-		int i = 0;
-		for (Iterator iter = structBlockIDs.iterator(); iter.hasNext();) {
-			StructBlockID structBlockID = (StructBlockID) iter.next();
-			blockIDs[i] = structBlockID;
-			i++;
-		}
-		return blockIDs;
-	}
-	
+
 	public CompoundDataBlockWizardPage ( 
-		String pageName, 
-		String title,
-		PropertySet prop,
-		List structBlockIDs
+			String pageName, 
+			String title,
+			PropertySet prop,
+			List<StructBlockID> structBlockIDs
 	) {
-		this(pageName, title, prop, getArrayFromList(structBlockIDs));
+		this(pageName, title, prop, structBlockIDs.toArray(new StructBlockID[structBlockIDs.size()]));
 	}
 
 	/**
@@ -83,10 +72,10 @@ public class CompoundDataBlockWizardPage extends WizardHopPage {
 	 * StructBlock identified by the dataBlockID 
 	 */
 	public CompoundDataBlockWizardPage (
-		String pageName, 
-		String title, 
-		PropertySet propSet,
-		StructBlockID[] structBlockIDs
+			String pageName, 
+			String title, 
+			PropertySet propSet,
+			StructBlockID[] structBlockIDs
 	) {
 		super(pageName);
 		if (title != null)
@@ -97,14 +86,14 @@ public class CompoundDataBlockWizardPage extends WizardHopPage {
 		this.structBlockIDs = structBlockIDs;
 		for (int i = 0; i < structBlockIDs.length; i++) {
 			try {
-				propDataBlocks.put(structBlockIDs[i],propSet.getDataBlockGroup(structBlockIDs[i]).getDataBlock(0));
+				propDataBlockGroups.put(structBlockIDs[i],propSet.getDataBlockGroup(structBlockIDs[i]));
 			} catch (DataNotFoundException e) {
 				ExceptionHandlerRegistry.syncHandleException(e);
 				throw new RuntimeException(e);
 			}
 		}
 	}
-	
+
 	/**
 	 * Creates the wrapper Composite.
 	 * Has to be called when {@link #createControl(Composite)} is
@@ -116,43 +105,35 @@ public class CompoundDataBlockWizardPage extends WizardHopPage {
 		wrapperComp = new XComposite(parent, SWT.NONE, XComposite.LayoutMode.TIGHT_WRAPPER);
 		setControl(wrapperComp);
 	}
-	
+
 	/**
 	 * Creates a composite with the AbstractDataBlockEditor according
 	 * to the StructBlockID passed to the constructor.
 	 */
 	protected void createPropDataBlockEditors() {
-		propDataBlockEditors.clear();
+		propDataBlockGroupEditors.clear();
 		for (int i = 0; i < structBlockIDs.length; i++) {
-			DataBlock dataBlock = (DataBlock)propDataBlocks.get(structBlockIDs[i]);
-			AbstractDataBlockEditor editor = 
-				DataBlockEditorFactoryRegistry.sharedInstance().getPropDataBlockEditor(
-						propSet.getStructure(),
-						dataBlock,
-						wrapperComp,
-						SWT.NONE,
-						getPropDataBlockEditorColumnHint()
-				);
-
-			editor.refresh(propSet.getStructure(), dataBlock);
-			propDataBlockEditors.put(
+			DataBlockGroup dataBlockGroup = propDataBlockGroups.get(structBlockIDs[i]);
+			DataBlockGroupEditor editor = new DataBlockGroupEditor(propSet.getStructure(), dataBlockGroup, wrapperComp); 
+			editor.refresh(propSet.getStructure(), dataBlockGroup);
+			propDataBlockGroupEditors.put(
 					structBlockIDs[i],
 					editor
 			);
 		}
 	}
-	
+
 	/**
 	 * Returns the propertySet passed in the constructor.
 	 * 
 	 * @return
 	 */
-	public PropertySet getPropSet() {
+	public PropertySet getPropertySet() {
 		return propSet;
 	}
-	
+
 	/**
-	 * Retruns one of the PropDataBlockEditors created by
+	 * Returns one of the DataBlockGroupEditors created by
 	 * {@link #createPropDataBlockEditors()}, thus null
 	 * before a call to this method. Null can be returned
 	 * as well when a StructBlockID is passed here
@@ -160,20 +141,20 @@ public class CompoundDataBlockWizardPage extends WizardHopPage {
 	 * 
 	 * @return
 	 */
-	public AbstractDataBlockEditor getPropDataBlockEditor(StructBlockID structBlockID) {
-		return (AbstractDataBlockEditor)propDataBlockEditors.get(structBlockID);
+	public DataBlockGroupEditor getDataBlockGroupEditor(StructBlockID structBlockID) {
+		return propDataBlockGroupEditors.get(structBlockID);
 	}
-	
+
 	/**
-	 * Returns the propDataBlock within the given
+	 * Returns the propDataBlockGorup within the given
 	 * Property this Page is associated with.
 	 * 
 	 * @return
 	 */
-	public DataBlock getPropDataBlock(StructBlockID structBlockID) {
-		return (DataBlock)propDataBlocks.get(structBlockID);
+	public DataBlockGroup getDataBlockGroup(StructBlockID structBlockID) {
+		return propDataBlockGroups.get(structBlockID);
 	}	
-	
+
 	/**
 	 * Get the hint for the column count of the
 	 * AbstractDataBlockEditor. Default is 2.
@@ -192,16 +173,27 @@ public class CompoundDataBlockWizardPage extends WizardHopPage {
 			int propDataBlockEditorColumnHint) {
 		this.propDataBlockEditorColumnHint = propDataBlockEditorColumnHint;
 	}
-	
-  /**
-   * Set all values to the propertySet.
-   */
-  public void updatePropertySet() {
-  	for (Iterator iter = propDataBlockEditors.values().iterator(); iter.hasNext();) {
-			AbstractDataBlockEditor editor = (AbstractDataBlockEditor) iter.next();
-			editor.updatePropertySet();
+
+	/**
+	 * Set all values to the propertySet.
+	 */
+	public void updatePropertySet() {
+		for (DataBlockGroupEditor editor : propDataBlockGroupEditors.values()) {
+			editor.updatePropopertySet();
 		}
-  }
+	}
+	
+	public void refresh(PropertySet propertySet) {
+		for (Map.Entry<StructBlockID, DataBlockGroupEditor> entry : propDataBlockGroupEditors.entrySet()) {
+			try {
+				DataBlockGroup blockGroup = propertySet.getDataBlockGroup(entry.getKey());
+				propDataBlockGroups.put(entry.getKey(), blockGroup);
+				entry.getValue().refresh(propertySet.getStructure(), blockGroup);
+			} catch (DataBlockGroupNotFoundException e) {
+				throw new RuntimeException(e);
+			}
+		}		
+	}
 
 	/**
 	 * This implementation of createControl 
@@ -215,7 +207,7 @@ public class CompoundDataBlockWizardPage extends WizardHopPage {
 		createPropDataBlockEditors();
 		return wrapperComp;
 	}
-	
+
 	public XComposite getWrapperComp() {
 		return wrapperComp;
 	}

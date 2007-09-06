@@ -26,7 +26,6 @@
 
 package org.nightlabs.jfire.base.prop.edit.blockbased;
 
-import org.apache.log4j.Logger;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -36,6 +35,7 @@ import org.eclipse.ui.forms.events.ExpansionEvent;
 import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.nightlabs.jfire.base.prop.edit.DataFieldEditor;
+import org.nightlabs.jfire.prop.AbstractDataField;
 import org.nightlabs.jfire.prop.DataBlockGroup;
 import org.nightlabs.jfire.prop.IStruct;
 
@@ -47,13 +47,12 @@ extends ExpandableComposite
 implements DataBlockEditorChangedListener
 {
 	
-	private static final Logger LOGGER = Logger.getLogger(ExpandableDataBlockGroupEditor.class);
 	
 	private DataBlockGroupEditor blockGroupEditor;
-	/**
-	 * The class whose properties are to be edited.
-	 */
-	private Class linkClass;
+//	/**
+//	 * The class whose properties are to be edited.
+//	 */
+//	private Class<?> linkClass;
 	
 	/**
 	 * @param parent
@@ -97,12 +96,12 @@ implements DataBlockEditorChangedListener
 		
 	}
 
-	public void propDataBlockEditorChanged(AbstractDataBlockEditor dataBlockEditor, DataFieldEditor dataFieldEditor) {
+	public void propDataBlockEditorChanged(AbstractDataBlockEditor dataBlockEditor, DataFieldEditor<? extends AbstractDataField> dataFieldEditor) {
 		blockGroupEditor.propDataBlockEditorChanged(dataBlockEditor, dataFieldEditor);
 	}
 	
 	public void updateProp() {
-		blockGroupEditor.updateProp();
+		blockGroupEditor.updatePropopertySet();
 	}
 	
 	public synchronized void addPropDataBlockEditorChangedListener(DataBlockEditorChangedListener listener) {

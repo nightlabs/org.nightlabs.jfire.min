@@ -27,7 +27,6 @@
 package org.nightlabs.jfire.base.prop.edit.blockbased;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -53,6 +52,7 @@ public class FullDataBlockCoverageComposite extends Composite {
 	private EditorStructBlockRegistry structBlockRegistry;
 	/**
 	 */
+	@SuppressWarnings("unchecked")
 	public FullDataBlockCoverageComposite(
 			Composite parent, int style, 
 			PropertySet propertySet,
@@ -68,9 +68,9 @@ public class FullDataBlockCoverageComposite extends Composite {
 		}
 		StructBlockID[] fullCoverageBlockIDs = this.structBlockRegistry.getUnassignedBlockKeyArray();
 		createPropEditors();
-		List[] splitBlockIDs = new List[numColumns];
+		List<StructBlockID>[] splitBlockIDs = new List[numColumns];
 		for (int i=0; i<numColumns; i++) {
-			splitBlockIDs[i] = new ArrayList();
+			splitBlockIDs[i] = new ArrayList<StructBlockID>();
 		}
 		for (int i=0; i<fullCoverageBlockIDs.length; i++){
 			splitBlockIDs[i % numColumns].add(fullCoverageBlockIDs[i]);
@@ -95,7 +95,7 @@ public class FullDataBlockCoverageComposite extends Composite {
 		}
 	}
 	
-	private List propEditors = new LinkedList();
+	private List<PropertySetEditor> propEditors = new LinkedList<PropertySetEditor>();
 	
 	private void createPropEditors() {
 		propEditors.clear();
@@ -104,10 +104,24 @@ public class FullDataBlockCoverageComposite extends Composite {
 		}
 	}
 	
-	public void updateProp() {
-		for (Iterator iter = propEditors.iterator(); iter.hasNext();) {
-			PropertySetEditor editor = (PropertySetEditor) iter.next();
+	/**
+	 * Set the values from the editor to the PropertySet it
+	 * is associated with.
+	 */
+	public void updatePropertySet() {
+		for (PropertySetEditor editor : propEditors) {			
 			editor.updatePropertySet();
+		}
+	}
+	
+	/**
+	 * Link the Composite to a PropertySet and refresh the Control.
+	 * 
+	 * @param propertySet The PropertySet to link to.
+	 */
+	public void refresh(PropertySet propertySet) {
+		for (PropertySetEditor editor : propEditors) {
+			editor.setPropertySet(propertySet, true);
 		}
 	}
 	

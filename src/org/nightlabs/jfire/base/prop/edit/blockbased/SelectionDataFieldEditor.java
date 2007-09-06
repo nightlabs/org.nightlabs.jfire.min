@@ -5,7 +5,6 @@ package org.nightlabs.jfire.base.prop.edit.blockbased;
 
 import java.util.Locale;
 
-import org.apache.log4j.Logger;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -38,8 +37,6 @@ public class SelectionDataFieldEditor extends AbstractDataFieldEditor<SelectionD
 		}
 		
 	};
-	
-	private static Logger LOGGER = Logger.getLogger(SelectionDataFieldEditor.class);
 	
 	private SelectionDataFieldComposite composite;
 	

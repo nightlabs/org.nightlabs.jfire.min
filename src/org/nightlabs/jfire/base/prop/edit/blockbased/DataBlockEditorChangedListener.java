@@ -27,10 +27,12 @@
 package org.nightlabs.jfire.base.prop.edit.blockbased;
 
 import org.nightlabs.jfire.base.prop.edit.DataFieldEditor;
+import org.nightlabs.jfire.prop.AbstractDataField;
 
 /**
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  */
 public interface DataBlockEditorChangedListener {
-	public void propDataBlockEditorChanged(AbstractDataBlockEditor dataBlockEditor, DataFieldEditor dataFieldEditor);
+	
+	public void propDataBlockEditorChanged(AbstractDataBlockEditor dataBlockEditor, DataFieldEditor<? extends AbstractDataField> dataFieldEditor);
 }

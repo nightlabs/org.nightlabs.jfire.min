@@ -5,7 +5,6 @@ package org.nightlabs.jfire.base.prop.edit.blockbased;
 
 import java.util.Locale;
 
-import org.apache.log4j.Logger;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -22,8 +21,6 @@ import org.nightlabs.jfire.base.prop.edit.DataFieldEditor;
 import org.nightlabs.jfire.prop.datafield.NumberDataField;
 import org.nightlabs.jfire.prop.structfield.NumberStructField;
 import org.nightlabs.language.LanguageCf;
-
-import sun.security.action.GetBooleanAction;
 
 /**
  * @author Tobias Langner <!-- tobias[dot]langner[at]nightlabs[dot]de -->
@@ -47,8 +44,6 @@ public class NumberDataFieldEditor extends AbstractDataFieldEditor<NumberDataFie
 			return NumberDataField.class;
 		}
 	}
-	
-	private static Logger LOGGER = Logger.getLogger(NumberDataFieldEditor.class);
 	
 	private LanguageCf language;
 	private XComposite comp;

@@ -5,7 +5,6 @@ package org.nightlabs.jfire.base.prop.edit.blockbased;
 
 import java.util.Locale;
 
-import org.apache.log4j.Logger;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;

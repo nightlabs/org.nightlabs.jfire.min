@@ -123,10 +123,10 @@ public class ExpandableBlocksEditor implements PropertySetEditor { // extends Sc
 	/**
 	 * Holds the GroupEditors.
 	 */
-	private Map groupEditors = new HashMap();
+	private Map<String, ExpandableDataBlockGroupEditor> groupEditors = new HashMap<String, ExpandableDataBlockGroupEditor>();
 	
 	
-	public Map getGroupEditors() {
+	public Map<String, ExpandableDataBlockGroupEditor> getGroupEditors() {
 		return groupEditors;
 	}
 	
@@ -167,7 +167,7 @@ public class ExpandableBlocksEditor implements PropertySetEditor { // extends Sc
 								groupEditor.setOwner(form);
 								if (ExpandableBlocksEditor.this.changeListener != null) 
 									groupEditor.addPropDataBlockEditorChangedListener(ExpandableBlocksEditor.this.changeListener);
-								groupEditors.put(blockGroup.getStructBlockKey(),groupEditor);
+								groupEditors.put(blockGroup.getStructBlockKey(), groupEditor);
 							}
 							else {			
 								ExpandableDataBlockGroupEditor groupEditor = (ExpandableDataBlockGroupEditor)groupEditors.get(blockGroup.getStructBlockKey());								
@@ -331,29 +331,29 @@ public class ExpandableBlocksEditor implements PropertySetEditor { // extends Sc
 	}
 	
 	
-	protected Iterator getDataBlockGroupsIterator() {
+	protected Iterator<DataBlockGroup> getDataBlockGroupsIterator() {
 		buildDomainDataBlockGroups();
 		return prop.getDataBlockGroups().iterator();
 	}
 	
-	public Map getStructBlockDisplayOrder() {
+	public Map<String, Integer> getStructBlockDisplayOrder() {
 		//return AbstractPropStructOrderConfigModule.sharedInstance().structBlockDisplayOrder();
-		return new HashMap();
+		return new HashMap<String, Integer>();
 	}
 	
-	protected Iterator getOrderedDataBlockGroupsIterator() {
+	protected Iterator<DataBlockGroup> getOrderedDataBlockGroupsIterator() {
 		buildDomainDataBlockGroups();
 
 		int allStructBlockCount = prop.getStructure().getStructBlocks().size();
-		List result = new LinkedList();
-		Map structBlockOrder = getStructBlockDisplayOrder();
+		List<DataBlockGroup> result = new LinkedList<DataBlockGroup>();
+		Map<String, Integer> structBlockOrder = getStructBlockDisplayOrder();
 		
-		int maxIndex = 0;
+//		int maxIndex = 0;
 		int unmentionedCount = 0;
 		// all datablocks of this propertySet
-		for (Iterator it = prop.getDataBlockGroups().iterator(); it.hasNext(); ) {
+		for (Iterator<DataBlockGroup> it = prop.getDataBlockGroups().iterator(); it.hasNext(); ) {
 			DataBlockGroup blockGroup = (DataBlockGroup)it.next();
-			boolean orderedAdd = false;
+//			boolean orderedAdd = false;
 			if (structBlockOrder.containsKey(blockGroup.getStructBlockKey())) {
 				// block mentioned in structBlockOrder
 				Integer index = (Integer)structBlockOrder.get(blockGroup.getStructBlockKey());
@@ -369,8 +369,7 @@ public class ExpandableBlocksEditor implements PropertySetEditor { // extends Sc
 	}
 
 	public void updatePropertySet() {
-		for (Iterator it = groupEditors.values().iterator(); it.hasNext(); ) {
-			ExpandableDataBlockGroupEditor groupEditor = (ExpandableDataBlockGroupEditor)it.next();
+		for (ExpandableDataBlockGroupEditor groupEditor : groupEditors.values()) {
 			groupEditor.updateProp();
 		}
 	}

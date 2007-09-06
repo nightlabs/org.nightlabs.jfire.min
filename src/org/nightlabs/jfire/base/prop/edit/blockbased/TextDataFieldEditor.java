@@ -26,7 +26,6 @@
 
 package org.nightlabs.jfire.base.prop.edit.blockbased;
 
-import org.apache.log4j.Logger;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -45,8 +44,6 @@ public class TextDataFieldEditor extends AbstractDataFieldEditor<TextDataField> 
 	public TextDataFieldEditor() {		
 	}
 
-	private static Logger LOGGER = Logger.getLogger(TextDataFieldEditor.class);
-	
 	public static class Factory extends AbstractDataFieldEditorFactory<TextDataField> {
 		/**
 		 * @see org.nightlabs.jfire.base.prop.edit.DataFieldEditorFactory#getPropDataFieldType()

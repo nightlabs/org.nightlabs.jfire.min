@@ -26,7 +26,6 @@
 
 package org.nightlabs.jfire.base.prop.edit.blockbased;
 
-import org.nightlabs.jfire.prop.DataBlock;
 import org.nightlabs.jfire.prop.IStruct;
 import org.nightlabs.jfire.prop.PropertySet;
 import org.nightlabs.jfire.prop.id.StructBlockID;
@@ -58,17 +57,6 @@ public class DataBlockWizardPage extends CompoundDataBlockWizardPage {
 	
 	
 	/**
-	 * Retruns the AbstractDataBlockEditor created by
-	 * {@link #createPropDataBlockEditors()}, thus null
-	 * before a call to this method.
-	 * 
-	 * @return
-	 */
-	public AbstractDataBlockEditor getPropDataBlockEditor() {
-		return super.getPropDataBlockEditor(structBlockID);
-	}
-	
-	/**
 	 * Returns the PropsStructBlockID this WizardPage is 
 	 * associated to.
 	 * 
@@ -78,13 +66,4 @@ public class DataBlockWizardPage extends CompoundDataBlockWizardPage {
 		return structBlockID;
 	}
 	
-	/**
-	 * Returns the propDataBlock within the given
-	 * Property this Page is associated with.
-	 * 
-	 * @return
-	 */
-	public DataBlock getPropDataBlock() {
-		return super.getPropDataBlock(structBlockID);
-	}	
 }

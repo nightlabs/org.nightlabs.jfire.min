@@ -26,7 +26,6 @@
 
 package org.nightlabs.jfire.base.prop.edit.blockbased;
 
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -36,6 +35,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.nightlabs.base.composite.XComposite;
 import org.nightlabs.jfire.base.prop.edit.DataFieldEditor;
+import org.nightlabs.jfire.prop.AbstractDataField;
 import org.nightlabs.jfire.prop.DataBlockGroup;
 import org.nightlabs.jfire.prop.IStruct;
 import org.nightlabs.jfire.prop.exception.DataBlockNotFoundException;
@@ -133,25 +133,27 @@ implements DataBlockEditorChangedListener
 	public synchronized void addPropDataBlockEditorChangedListener(DataBlockEditorChangedListener listener) {
 		changeListener.add(listener);
 	}
+	
 	public synchronized void removePropDataBlockEditorChangedListener(DataBlockEditorChangedListener listener) {
 		changeListener.add(listener);
 	}
-	protected synchronized void notifyChangeListeners(AbstractDataBlockEditor dataBlockEditor, DataFieldEditor dataFieldEditor) {
+	
+	protected synchronized void notifyChangeListeners(AbstractDataBlockEditor dataBlockEditor, DataFieldEditor<? extends AbstractDataField> dataFieldEditor) {
 		Object[] listeners = changeListener.getListeners();
 		for (Object listener : listeners) {
 			((DataBlockEditorChangedListener) listener).propDataBlockEditorChanged(dataBlockEditor,dataFieldEditor);
 		}
 	}
+	
 	/**
 	 * @see org.nightlabs.jfire.base.prop.edit.blockbased.DataBlockEditorChangedListener#propDataBlockEditorChanged(org.nightlabs.jfire.base.admin.widgets.prop.edit.AbstractDataBlockEditor, org.nightlabs.jfire.base.admin.widgets.prop.edit.AbstractPropDataFieldEditor)
 	 */
-	public void propDataBlockEditorChanged(AbstractDataBlockEditor dataBlockEditor, DataFieldEditor dataFieldEditor) {
+	public void propDataBlockEditorChanged(AbstractDataBlockEditor dataBlockEditor, DataFieldEditor<? extends AbstractDataField> dataFieldEditor) {
 		notifyChangeListeners(dataBlockEditor,dataFieldEditor);
 	}
 	
-	public void updateProp() {
-		for (Iterator it = propDataBlockEditors.iterator(); it.hasNext(); ) {
-			AbstractDataBlockEditor blockEditor = (AbstractDataBlockEditor)it.next();
+	public void updatePropopertySet() {
+		for (AbstractDataBlockEditor blockEditor : propDataBlockEditors) {
 			blockEditor.updatePropertySet();
 		}
 	}

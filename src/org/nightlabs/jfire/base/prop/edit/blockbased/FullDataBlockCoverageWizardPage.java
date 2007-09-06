@@ -67,9 +67,19 @@ public class FullDataBlockCoverageWizardPage extends WizardHopPage {
 		return super.isPageComplete();
 	}
 	
+	/**
+	 * See {@link FullDataBlockCoverageComposite#updatePropertySet()}
+	 */
 	public void updatePropertySet() {
 		if (fullDataBlockCoverageComposite != null)
-			fullDataBlockCoverageComposite.updateProp();
+			fullDataBlockCoverageComposite.updatePropertySet();
 	}	
 
+	/**
+	 * See {@link FullDataBlockCoverageComposite#refresh(PropertySet)}
+	 */
+	public void refresh(PropertySet propertySet) {
+		if (fullDataBlockCoverageComposite != null)
+			fullDataBlockCoverageComposite.refresh(propertySet);
+	}
 }

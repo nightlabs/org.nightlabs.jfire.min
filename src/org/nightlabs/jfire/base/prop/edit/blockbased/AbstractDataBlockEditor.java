@@ -26,6 +26,7 @@
 
 package org.nightlabs.jfire.base.prop.edit.blockbased;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -34,7 +35,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
 import org.eclipse.swt.widgets.Composite;
 import org.nightlabs.jfire.base.prop.edit.DataFieldEditor;
 import org.nightlabs.jfire.base.prop.edit.DataFieldEditorChangeListener;
@@ -51,8 +51,6 @@ import org.nightlabs.jfire.prop.StructField;
  */
 public abstract class AbstractDataBlockEditor extends Composite implements DataFieldEditorChangeListener {
 	
-	private static Logger LOGGER = Logger.getLogger(AbstractDataBlockEditor.class);
-	
 	private IStruct struct;
 	
 	protected AbstractDataBlockEditor(IStruct struct, DataBlock dataBlock, Composite parent, int style) {
@@ -61,7 +59,7 @@ public abstract class AbstractDataBlockEditor extends Composite implements DataF
 		this.struct = struct;
 	}
 	
-	public abstract void refresh(IStruct struct, DataBlock block);	
+	public abstract void refresh(IStruct struct, DataBlock block);
 
 	protected DataBlock dataBlock;
 	
@@ -69,36 +67,35 @@ public abstract class AbstractDataBlockEditor extends Composite implements DataF
 	 * key: String AbstractDataField.getPropRelativePK<br/>
 	 * value: DataFieldEditor fieldEditor
 	 */
-	private Map<String, DataFieldEditor> fieldEditors = new HashMap<String, DataFieldEditor>();
+	private Map<String, DataFieldEditor<? extends AbstractDataField>> fieldEditors = new HashMap<String, DataFieldEditor<? extends AbstractDataField>>();
 	
 	
-	protected void addFieldEditor(AbstractDataField dataField, DataFieldEditor fieldEditor) {
-		addFieldEditor(dataField,fieldEditor, true);
+	protected void addFieldEditor(AbstractDataField dataField, DataFieldEditor<? extends AbstractDataField> fieldEditor) {
+		addFieldEditor(dataField, fieldEditor, true);
 	}
 	
-	protected void addFieldEditor(AbstractDataField dataField, DataFieldEditor fieldEditor, boolean addListener) {		
+	protected void addFieldEditor(AbstractDataField dataField, DataFieldEditor<? extends AbstractDataField> fieldEditor, boolean addListener) {		
 		fieldEditors.put(dataField.getPropRelativePK(),fieldEditor);
 		fieldEditor.addDataFieldEditorChangedListener(this);
 	}
 	
-	protected DataFieldEditor getFieldEditor(AbstractDataField dataField) {
-		return (DataFieldEditor)fieldEditors.get(dataField.getPropRelativePK());
+	protected DataFieldEditor<? extends AbstractDataField> getFieldEditor(AbstractDataField dataField) {
+		return (DataFieldEditor<? extends AbstractDataField>)fieldEditors.get(dataField.getPropRelativePK());
 	}
 	
 	protected boolean hasFieldEditorFor(AbstractDataField dataField) {
 		return fieldEditors.containsKey(dataField.getPropRelativePK());
 	}
 	
-	private Collection changeListener = new LinkedList();	
+	private Collection<DataBlockEditorChangedListener> changeListener = new LinkedList<DataBlockEditorChangedListener>();	
 	public synchronized void addPropDataBlockEditorChangedListener(DataBlockEditorChangedListener listener) {
 		changeListener.add(listener);
 	}
 	public synchronized void removePropDataBlockEditorChangedListener(DataBlockEditorChangedListener listener) {
 		changeListener.add(listener);
 	}
-	protected synchronized void notifyChangeListeners(DataFieldEditor dataFieldEditor) {
-		for (Iterator it = changeListener.iterator(); it.hasNext(); ) {
-			DataBlockEditorChangedListener listener = (DataBlockEditorChangedListener)it.next();
+	protected synchronized void notifyChangeListeners(DataFieldEditor<? extends AbstractDataField> dataFieldEditor) {
+		for (DataBlockEditorChangedListener listener : new ArrayList<DataBlockEditorChangedListener>(changeListener)) {
 			listener.propDataBlockEditorChanged(this,dataFieldEditor);
 		}
 	}
@@ -124,10 +121,10 @@ public abstract class AbstractDataBlockEditor extends Composite implements DataF
 		notifyChangeListeners(editor);
 	}
 	
-	public Iterator getOrderedPropDataFieldsIterator() {
+	public Iterator<AbstractDataField> getOrderedPropDataFieldsIterator() {
 		List<AbstractDataField> result = new LinkedList<AbstractDataField>();
 		Map<String, Integer> structFieldOrder = getStructFieldDisplayOrder();
-		for (Iterator it = dataBlock.getDataFields().iterator(); it.hasNext(); ) {
+		for (Iterator<AbstractDataField> it = dataBlock.getDataFields().iterator(); it.hasNext(); ) {
 			AbstractDataField dataField = (AbstractDataField)it.next();
 			if (structFieldOrder.containsKey(dataField.getStructFieldPK())) {
 				Integer index = structFieldOrder.get(dataField.getStructFieldPK());

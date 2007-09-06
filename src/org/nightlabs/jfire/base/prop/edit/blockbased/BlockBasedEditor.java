@@ -88,7 +88,7 @@ public class BlockBasedEditor extends AbstractBlockBasedEditor {
 		}
 		public void updateProp() {
 			if (groupEditor != null) {
-				groupEditor.updateProp();
+				groupEditor.updatePropopertySet();
 			}
 		}
 	}
