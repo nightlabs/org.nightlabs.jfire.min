@@ -15,6 +15,7 @@ import org.eclipse.ui.forms.widgets.Section;
 import org.nightlabs.base.editor.RestorableSectionPart;
 import org.nightlabs.base.entity.editor.EntityEditorUtil;
 import org.nightlabs.jfire.base.prop.edit.DataFieldEditor;
+import org.nightlabs.jfire.prop.AbstractDataField;
 import org.nightlabs.jfire.prop.IStruct;
 import org.nightlabs.jfire.prop.PropertySet;
 
@@ -82,7 +83,7 @@ public class BlockBasedEditorSection extends RestorableSectionPart
 		blockBasedPersonEditorControl = blockBasedPersonEditor.createControl(container, false);
 		blockBasedPersonEditorControl.setLayoutData(new GridData(GridData.FILL_BOTH));
 		blockBasedPersonEditor.setChangeListener(new DataBlockEditorChangedListener() {
-			public void propDataBlockEditorChanged(AbstractDataBlockEditor dataBlockEditor, DataFieldEditor dataFieldEditor) {
+			public void propDataBlockEditorChanged(AbstractDataBlockEditor dataBlockEditor, DataFieldEditor<? extends AbstractDataField> dataFieldEditor) {
 				markDirty();
 			}
 		});

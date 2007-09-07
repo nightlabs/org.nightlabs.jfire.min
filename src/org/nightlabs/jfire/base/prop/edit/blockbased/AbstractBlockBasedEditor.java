@@ -162,7 +162,7 @@ public abstract class AbstractBlockBasedEditor implements PropertySetEditor { //
 	protected void buildDomainDataBlockGroups() {
 		if (domainPropStructBlocks == null) {
 			if (editorName != null && structBlockRegistry != null) {
-				List structBlockList = structBlockRegistry.getEditorStructBlocks(editorName);
+				List<StructBlockID> structBlockList = structBlockRegistry.getEditorStructBlocks(editorName);
 				if (!structBlockList.isEmpty())
 					domainPropStructBlocks = structBlockList;
 			}
@@ -188,7 +188,7 @@ public abstract class AbstractBlockBasedEditor implements PropertySetEditor { //
 	}
 	
 	
-	protected Iterator getDataBlockGroupsIterator() {
+	protected Iterator<DataBlockGroup> getDataBlockGroupsIterator() {
 		buildDomainDataBlockGroups();
 		return propertySet.getDataBlockGroups().iterator();
 	}

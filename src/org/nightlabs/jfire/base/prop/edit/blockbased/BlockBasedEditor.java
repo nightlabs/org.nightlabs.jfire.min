@@ -30,7 +30,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
@@ -52,7 +51,6 @@ import org.nightlabs.progress.NullProgressMonitor;
  */
 public class BlockBasedEditor extends AbstractBlockBasedEditor {
 	
-	private static Logger LOGGER = Logger.getLogger(BlockBasedEditor.class);
 	public static final String EDITORTYPE_BLOCK_BASED = "block-based"; //$NON-NLS-1$
 	
 	private GroupedContentComposite groupedContentComposite;
@@ -172,8 +170,7 @@ public class BlockBasedEditor extends AbstractBlockBasedEditor {
 	}
 
 	public void updatePropertySet() {
-		for (Iterator it = groupContentProvider.values().iterator(); it.hasNext(); ) {
-			ContentProvider contentProvider = (ContentProvider)it.next();
+		for (ContentProvider contentProvider : groupContentProvider.values()) {
 			contentProvider.updateProp();
 		}
 	}

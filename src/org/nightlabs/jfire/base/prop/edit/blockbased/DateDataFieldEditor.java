@@ -6,7 +6,6 @@ package org.nightlabs.jfire.base.prop.edit.blockbased;
 import java.util.Date;
 import java.util.Locale;
 
-import org.apache.log4j.Logger;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -48,7 +47,6 @@ public class DateDataFieldEditor extends AbstractDataFieldEditor<DateDataField> 
 		}
 	}
 	
-	private static Logger LOGGER = Logger.getLogger(DateDataFieldEditor.class);
 	
 	private LanguageCf language;
 	private XComposite comp;

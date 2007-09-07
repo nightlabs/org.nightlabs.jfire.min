@@ -117,10 +117,11 @@ public abstract class AbstractDataBlockEditor extends Composite implements DataF
 	/**
 	 * @see org.nightlabs.jfire.base.prop.edit.DataFieldEditorChangeListener#dataFieldEditorChanged(org.nightlabs.jfire.base.admin.widgets.prop.edit.AbstractPropDataFieldEditor)
 	 */
-	public void dataFieldEditorChanged(DataFieldEditor editor) {
+	public void dataFieldEditorChanged(DataFieldEditor<? extends AbstractDataField> editor) {
 		notifyChangeListeners(editor);
 	}
 	
+	@SuppressWarnings("unchecked")
 	public Iterator<AbstractDataField> getOrderedPropDataFieldsIterator() {
 		List<AbstractDataField> result = new LinkedList<AbstractDataField>();
 		Map<String, Integer> structFieldOrder = getStructFieldDisplayOrder();
@@ -145,12 +146,10 @@ public abstract class AbstractDataBlockEditor extends Composite implements DataF
 	}
 	
 	public void dispose() {
-		Object[] editors = fieldEditors.values().toArray();
-		fieldEditors.clear();
-		for (int i=0; i<editors.length; i++) {
-			DataFieldEditor editor = (DataFieldEditor)editors[i];
+		for (DataFieldEditor<? extends AbstractDataField> editor : fieldEditors.values()) {
 			editor.removeDataFieldEditorChangedListener(this);
 		}
+		fieldEditors.clear();
 		super.dispose();
 	}
 	
@@ -161,9 +160,8 @@ public abstract class AbstractDataBlockEditor extends Composite implements DataF
 	 * Implementors might override if no registered PropDataFieldEditors are used.
 	 */
 	public void updatePropertySet() {
-		for (Iterator it = fieldEditors.values().iterator(); it.hasNext(); ) {
-			DataFieldEditor fieldEditor = (DataFieldEditor)it.next();
-			fieldEditor.updatePropertySet();
+		for (DataFieldEditor<? extends AbstractDataField> editor : fieldEditors.values()) {
+			editor.updatePropertySet();
 		}
 	}	
 }

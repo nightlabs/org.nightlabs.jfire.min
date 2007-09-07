@@ -62,7 +62,7 @@ public class EditorStructBlockRegistry
 	 */
 	private Map<String, List<StructBlockID>> editorsStructBlocks;
 	
-	public EditorStructBlockRegistry(Class linkClass, String stuctLocalScope)
+	public EditorStructBlockRegistry(Class<?> linkClass, String stuctLocalScope)
 	{
 		this(linkClass.getName(), stuctLocalScope);
 	}
@@ -100,7 +100,10 @@ public class EditorStructBlockRegistry
 	public List<StructBlockID> getEditorStructBlocks(String editorName)
 	{
 		List<StructBlockID> toReturn = editorsStructBlocks.get(editorName);
-		return toReturn != null ? toReturn : Collections.EMPTY_LIST;
+		if (toReturn != null)
+			return toReturn;
+		else 
+			return Collections.emptyList();		
 	}
 	 
 	/**

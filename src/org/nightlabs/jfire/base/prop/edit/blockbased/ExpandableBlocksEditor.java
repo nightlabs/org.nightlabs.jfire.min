@@ -159,8 +159,8 @@ public class ExpandableBlocksEditor implements PropertySetEditor { // extends Sc
 						getPropStructure(new NullProgressMonitor()).explodePropertySet(prop);
 					
 					// get the ordered dataBlocks
-					for (Iterator it = ExpandableBlocksEditor.this.getOrderedDataBlockGroupsIterator(); it.hasNext(); ) {
-						DataBlockGroup blockGroup = (DataBlockGroup)it.next();
+					for (Iterator<DataBlockGroup> it = ExpandableBlocksEditor.this.getOrderedDataBlockGroupsIterator(); it.hasNext(); ) {
+						DataBlockGroup blockGroup = it.next();
 						if (shouldDisplayStructBlock(blockGroup)) {
 							if (!groupEditors.containsKey(blockGroup.getStructBlockKey())) {
 								ExpandableDataBlockGroupEditor groupEditor = new ExpandableDataBlockGroupEditor(prop.getStructure(), blockGroup, form.getBody());
@@ -291,7 +291,7 @@ public class ExpandableBlocksEditor implements PropertySetEditor { // extends Sc
 		structBlockRegistry.addEditorStructBlocks(editorName,propStructBlockKeys);
 	}
 	
-	private List domainPropStructBlocks;
+	private List<StructBlockID> domainPropStructBlocks;
 	
 	protected boolean shouldDisplayStructBlock(DataBlockGroup blockGroup) {
 		// default is all PropStructBlocks
@@ -304,7 +304,7 @@ public class ExpandableBlocksEditor implements PropertySetEditor { // extends Sc
 	protected void buildDomainDataBlockGroups() {
 		if (domainPropStructBlocks == null) {
 			if ((editorScope != null ) && (editorName != null)) {
-				List structBlockList = structBlockRegistry.getEditorStructBlocks(editorName);
+				List<StructBlockID> structBlockList = structBlockRegistry.getEditorStructBlocks(editorName);
 				if (!structBlockList.isEmpty())
 					domainPropStructBlocks = structBlockList;
 			}
@@ -319,7 +319,7 @@ public class ExpandableBlocksEditor implements PropertySetEditor { // extends Sc
 	 * 
 	 * @param structBlockList
 	 */	
-	public void setEditorPropStructBlockList(List structBlockList) {
+	public void setEditorPropStructBlockList(List<StructBlockID> structBlockList) {
 		if (structBlockList != null) {
 			if (structBlockList.size() > 0)
 				domainPropStructBlocks = structBlockList;

@@ -24,7 +24,7 @@
  *                                                                             *
  ******************************************************************************/
 
-package org.nightlabs.jfire.base.prop.search;
+package org.nightlabs.jfire.base.person.search;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -48,14 +48,14 @@ import org.nightlabs.jfire.prop.search.PropSearchFilter;
 import org.nightlabs.jfire.prop.search.TextPropSearchFilterItem;
 
 /**
- * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
- * TODO @Alex: Shouldn't this class be named StaticPerson* and be in the person package? It looks pretty much specialised for person stuff...
+ * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] de -->
  */
-public class StaticPropertySetSearchFilterProvider implements
+public class StaticPersonSearchFilterProvider implements
 		SearchFilterProvider {
 
-	private StaticPropertySetSearchFilterProviderComposite criteriaBuilderComposite;
+	private StaticPersonSearchFilterProviderComposite searchFilterProviderComposite;
 	private boolean createOwnSearchButton;
+	private boolean createFilterProviderCompositeSearchButton;
 	private XComposite wrapper;
 	private Button searchButton;
 	private SearchResultFetcher resultFetcher;
@@ -63,7 +63,7 @@ public class StaticPropertySetSearchFilterProvider implements
 	private SelectionListener searchListener = new SelectionListener() {
 		public void widgetSelected(SelectionEvent e) {
 			if (resultFetcher != null) {
-				resultFetcher.searchTriggered(StaticPropertySetSearchFilterProvider.this);
+				resultFetcher.searchTriggered(StaticPersonSearchFilterProvider.this);
 			}
 		}
 		public void widgetDefaultSelected(SelectionEvent e) {
@@ -74,11 +74,25 @@ public class StaticPropertySetSearchFilterProvider implements
 	 * Create a new static person SearchFilterProvider.
 	 * 
 	 * @param resultFetcher A ResultFetcher to be triggered on search.
-	 * @param createOwnSearchButton Whether to create an own search button, or to use the default one of {@link StaticPropertySetSearchFilterProviderComposite}.
+	 * @param createOwnSearchButton Whether to create an own search button, or to use the default one of {@link StaticPersonSearchFilterProviderComposite}.
 	 */
-	public StaticPropertySetSearchFilterProvider(SearchResultFetcher resultFetcher, boolean createOwnSearchButton) {
+	public StaticPersonSearchFilterProvider(SearchResultFetcher resultFetcher, boolean createOwnSearchButton) {
 		this.resultFetcher = resultFetcher;
 		this.createOwnSearchButton = createOwnSearchButton;
+		this.createFilterProviderCompositeSearchButton = false;
+	}
+	
+	/**
+	 * Create a new static person SearchFilterProvider.
+	 * 
+	 * @param resultFetcher A ResultFetcher to be triggered on search.
+	 * @param createOwnSearchButton Whether to create an own search button, or to use the default one of {@link StaticPersonSearchFilterProviderComposite}.
+	 * @param createFilterProviderCompositeSearchButton Whether to create the search button in the filter provider composite.
+	 */
+	public StaticPersonSearchFilterProvider(SearchResultFetcher resultFetcher, boolean createOwnSearchButton, boolean createFilterProviderCompositeSearchButton) {
+		this.resultFetcher = resultFetcher;
+		this.createOwnSearchButton = createOwnSearchButton;
+		this.createFilterProviderCompositeSearchButton = createFilterProviderCompositeSearchButton;
 	}
 	
 	/**
@@ -87,20 +101,21 @@ public class StaticPropertySetSearchFilterProvider implements
 	public Composite createComposite(Composite parent) {
 		wrapper = new XComposite(parent, SWT.NONE, LayoutMode.TIGHT_WRAPPER);
 		
-		criteriaBuilderComposite = new StaticPropertySetSearchFilterProviderComposite(wrapper, SWT.NONE, !createOwnSearchButton);
+		searchFilterProviderComposite = new StaticPersonSearchFilterProviderComposite(wrapper, SWT.NONE, createFilterProviderCompositeSearchButton);
 		if (createOwnSearchButton) {
-			searchButton = new Button(criteriaBuilderComposite, SWT.PUSH);
-			searchButton.setText(Messages.getString("org.nightlabs.jfire.base.prop.search.StaticPropertySetSearchFilterProvider.searchButton.text")); //$NON-NLS-1$
+			searchButton = new Button(searchFilterProviderComposite, SWT.PUSH);
+			searchButton.setText(Messages.getString("org.nightlabs.jfire.base.person.search.StaticPersonSearchFilterProvider.searchButton.text")); //$NON-NLS-1$
 			searchButton.addSelectionListener(searchListener);
 			GridData gd = new GridData();
 			gd.horizontalAlignment = GridData.END;
 			gd.widthHint = 80;
 			searchButton.setLayoutData(gd);
 		}
-		else
-			criteriaBuilderComposite.getSearchButton().addSelectionListener(searchListener);
+		if (createFilterProviderCompositeSearchButton) {
+			searchFilterProviderComposite.getSearchButton().addSelectionListener(searchListener);
+		}
 			
-		criteriaBuilderComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		searchFilterProviderComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		return wrapper;
 	}
 	
@@ -133,7 +148,7 @@ public class StaticPropertySetSearchFilterProvider implements
 	}
 	
 	public static ParsedNameCriteria parseNameNeedle(String needle) {
-//		String text = criteriaBuilderComposite.getControlName().getTextControl().getText();
+//		String text = searchFilterProviderComposite.getControlName().getTextControl().getText();
 		// sTok will return Delims
 		ParsedNameCriteria result = new ParsedNameCriteria();
 		String[] toks = needle.split("[:;,. ]+"); //$NON-NLS-1$
@@ -184,7 +199,7 @@ public class StaticPropertySetSearchFilterProvider implements
 	}
 	
 	public void setQuickSearchText(ParsedNameCriteria nameCriteria) {
-		criteriaBuilderComposite.getControlName().getTextControl().setText(nameCriteria.completeString);
+		searchFilterProviderComposite.getControlName().getTextControl().setText(nameCriteria.completeString);
 		// TODO: add personID criteria
 	}
 	
@@ -194,9 +209,9 @@ public class StaticPropertySetSearchFilterProvider implements
 		
 		filter.setConjunction(SearchFilter.CONJUNCTION_AND);
 		
-//		ParsedNameCriteria nameCriteria = parseNameNeedle(criteriaBuilderComposite.getControlName().getTextControl().getText());
+//		ParsedNameCriteria nameCriteria = parseNameNeedle(searchFilterProviderComposite.getControlName().getTextControl().getText());
 		
-		Collection<String> needles = parseNameNeedles(criteriaBuilderComposite.getControlName().getTextControl().getText());
+		Collection<String> needles = parseNameNeedles(searchFilterProviderComposite.getControlName().getTextControl().getText());
 		
 		
 		StructFieldID[] nameCriteriaFieldIDs = new StructFieldID[] {
@@ -217,24 +232,24 @@ public class StaticPropertySetSearchFilterProvider implements
 //			filter.addSearchFilterItem(new TextPersonSearchFilterItem(nameCriteriaFieldIDs, SearchFilterItem.MATCHTYPE_CONTAINS, nameCriteria.firstName));
 		
 		// add items if neccessary
-//		if (!criteriaBuilderComposite.getControlName().getTextControl().getText().equals("")) {
+//		if (!searchFilterProviderComposite.getControlName().getTextControl().getText().equals("")) {
 ////			TextPersonSearchFilterItem nameSearchFilterItem = new TextPersonSearchFilterItem();
-//			filter.addSearchFilterItem(new TextPersonSearchFilterItem(PersonStruct.PERSONALDATA_NAME,SearchFilterItem.MATCHTYPE_CONTAINS,criteriaBuilderComposite.getControlName().getTextControl().getText()));
+//			filter.addSearchFilterItem(new TextPersonSearchFilterItem(PersonStruct.PERSONALDATA_NAME,SearchFilterItem.MATCHTYPE_CONTAINS,searchFilterProviderComposite.getControlName().getTextControl().getText()));
 //		}
-//		if (!criteriaBuilderComposite.getControlCompany().getTextControl().getText().equals(""))
-//			filter.addSearchFilterItem(new TextPersonSearchFilterItem(PersonStruct.PERSONALDATA_COMPANY,SearchFilterItem.MATCHTYPE_CONTAINS,criteriaBuilderComposite.getControlCompany().getTextControl().getText()));
-		if (!criteriaBuilderComposite.getControlAddress().getTextControl().getText().equals("")) //$NON-NLS-1$
-			filter.addSearchFilterItem(new TextPropSearchFilterItem(PersonStruct.POSTADDRESS_ADDRESS,SearchFilterItem.MATCHTYPE_CONTAINS,criteriaBuilderComposite.getControlAddress().getTextControl().getText()));
-		if (!criteriaBuilderComposite.getControlCity().getTextControl().getText().equals("")) //$NON-NLS-1$
-			filter.addSearchFilterItem(new TextPropSearchFilterItem(PersonStruct.POSTADDRESS_CITY,SearchFilterItem.MATCHTYPE_CONTAINS,criteriaBuilderComposite.getControlCity().getTextControl().getText()));
-		if (!criteriaBuilderComposite.getControlPostCode().getTextControl().getText().equals("")) //$NON-NLS-1$
-			filter.addSearchFilterItem(new TextPropSearchFilterItem(PersonStruct.POSTADDRESS_POSTCODE,SearchFilterItem.MATCHTYPE_CONTAINS,criteriaBuilderComposite.getControlPostCode().getTextControl().getText()));
-//		if (!criteriaBuilderComposite.getControlPhonePre().getTextControl().getText().equals(""))
-//			filter.addSearchFilterItem(new TextPersonSearchFilterItem(PersonStruct.PHONE_AREACODE,SearchFilterItem.MATCHTYPE_CONTAINS,criteriaBuilderComposite.getControlPhonePre().getTextControl().getText()));
-//		if (!criteriaBuilderComposite.getControlPhone().getTextControl().getText().equals(""))
-//			filter.addSearchFilterItem(new TextPropSearchFilterItem(PersonStruct.PHONE_LOCALNUMBER,SearchFilterItem.MATCHTYPE_CONTAINS,criteriaBuilderComposite.getControlPhone().getTextControl().getText()));
-		if (!criteriaBuilderComposite.getControlEmail().getTextControl().getText().equals("")) //$NON-NLS-1$
-			filter.addSearchFilterItem(new TextPropSearchFilterItem(PersonStruct.INTERNET_EMAIL,SearchFilterItem.MATCHTYPE_CONTAINS,criteriaBuilderComposite.getControlEmail().getTextControl().getText()));
+//		if (!searchFilterProviderComposite.getControlCompany().getTextControl().getText().equals(""))
+//			filter.addSearchFilterItem(new TextPersonSearchFilterItem(PersonStruct.PERSONALDATA_COMPANY,SearchFilterItem.MATCHTYPE_CONTAINS,searchFilterProviderComposite.getControlCompany().getTextControl().getText()));
+		if (!searchFilterProviderComposite.getControlAddress().getTextControl().getText().equals("")) //$NON-NLS-1$
+			filter.addSearchFilterItem(new TextPropSearchFilterItem(PersonStruct.POSTADDRESS_ADDRESS,SearchFilterItem.MATCHTYPE_CONTAINS,searchFilterProviderComposite.getControlAddress().getTextControl().getText()));
+		if (!searchFilterProviderComposite.getControlCity().getTextControl().getText().equals("")) //$NON-NLS-1$
+			filter.addSearchFilterItem(new TextPropSearchFilterItem(PersonStruct.POSTADDRESS_CITY,SearchFilterItem.MATCHTYPE_CONTAINS,searchFilterProviderComposite.getControlCity().getTextControl().getText()));
+		if (!searchFilterProviderComposite.getControlPostCode().getTextControl().getText().equals("")) //$NON-NLS-1$
+			filter.addSearchFilterItem(new TextPropSearchFilterItem(PersonStruct.POSTADDRESS_POSTCODE,SearchFilterItem.MATCHTYPE_CONTAINS,searchFilterProviderComposite.getControlPostCode().getTextControl().getText()));
+//		if (!searchFilterProviderComposite.getControlPhonePre().getTextControl().getText().equals(""))
+//			filter.addSearchFilterItem(new TextPersonSearchFilterItem(PersonStruct.PHONE_AREACODE,SearchFilterItem.MATCHTYPE_CONTAINS,searchFilterProviderComposite.getControlPhonePre().getTextControl().getText()));
+//		if (!searchFilterProviderComposite.getControlPhone().getTextControl().getText().equals(""))
+//			filter.addSearchFilterItem(new TextPropSearchFilterItem(PersonStruct.PHONE_LOCALNUMBER,SearchFilterItem.MATCHTYPE_CONTAINS,searchFilterProviderComposite.getControlPhone().getTextControl().getText()));
+		if (!searchFilterProviderComposite.getControlEmail().getTextControl().getText().equals("")) //$NON-NLS-1$
+			filter.addSearchFilterItem(new TextPropSearchFilterItem(PersonStruct.INTERNET_EMAIL,SearchFilterItem.MATCHTYPE_CONTAINS,searchFilterProviderComposite.getControlEmail().getTextControl().getText()));
 		
 		return filter;
 	}
