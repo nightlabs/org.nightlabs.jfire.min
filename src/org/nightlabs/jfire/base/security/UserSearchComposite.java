@@ -135,8 +135,8 @@ extends XComposite
 	
 	public void searchPressed() 
 	{		
-		userTable.setInput(Messages.getString("org.nightlabs.jfire.base.security.UserSearchComposite.LoadingEvent")); //$NON-NLS-1$
-		Job job = new Job(Messages.getString("org.nightlabs.jfire.base.security.UserSearchComposite.LoadingEvent")) { //$NON-NLS-1$
+		userTable.setInput(Messages.getString("org.nightlabs.jfire.base.security.UserSearchComposite.input_loading")); //$NON-NLS-1$
+		Job job = new Job(Messages.getString("org.nightlabs.jfire.base.security.UserSearchComposite.loadJob.name")) { //$NON-NLS-1$
 			protected IStatus run(ProgressMonitor monitor){
 				try {
 					UserManager um = UserManagerUtil.getHome(Login.getLogin().getInitialContextProperties()).create();
