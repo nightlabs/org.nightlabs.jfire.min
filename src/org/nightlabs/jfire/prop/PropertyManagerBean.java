@@ -29,6 +29,7 @@ package org.nightlabs.jfire.prop;
 
 import java.rmi.RemoteException;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -43,8 +44,10 @@ import javax.jdo.JDOHelper;
 import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
+import javax.jdo.spi.PersistenceCapable;
 
 import org.apache.log4j.Logger;
+import org.apache.log4j.config.PropertySetterException;
 import org.nightlabs.ModuleException;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
@@ -55,6 +58,7 @@ import org.nightlabs.jfire.prop.id.StructFieldID;
 import org.nightlabs.jfire.prop.id.StructID;
 import org.nightlabs.jfire.prop.id.StructLocalID;
 import org.nightlabs.jfire.prop.search.PropSearchFilter;
+import org.nightlabs.util.Util;
 
 /**
  * @author Tobias Langner <!-- tobias[dot]langner[at]nightlabs[dot]de -->
@@ -176,20 +180,20 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type = "Required"
 	 */
-	public StructLocal getFullStructLocal(StructLocalID structLocalID, String[] fetchGroups, int maxFetchDepth) throws ModuleException {
+	public StructLocal getFullStructLocal(StructLocalID structLocalID, String[] fetchGroups, int maxFetchDepth) throws ModuleException
+	{
 		return getFullStructLocal(structLocalID.organisationID, structLocalID.linkClass, structLocalID.scope, fetchGroups, maxFetchDepth);
 	}
 
 	/**
 	 * Retrieve the person with the given ID
 	 * 
-	 * @throws ModuleException
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type = "Required"
 	 */
-	public PropertySet getProperty(PropertyID propID, String[] fetchGroups, int maxFetchDepth) throws ModuleException,
-			JDOObjectNotFoundException {
+	public PropertySet getPropertySet(PropertyID propID, String[] fetchGroups, int maxFetchDepth)
+	{
 		PersistenceManager pm = this.getPersistenceManager();
 		try {
 			pm.getExtent(PropertySet.class, true);
@@ -207,70 +211,54 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	}
 
 	/**
-	 * Retrieve the person with the given ID
-	 * 
-	 * @throws ModuleException
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type = "Required"
-	 */
-	public PropertySet getProperty(PropertyID propID) throws ModuleException, JDOObjectNotFoundException {
-		PersistenceManager pm = this.getPersistenceManager();
-		try {
-			Object o = pm.getObjectById(propID, true);
-			long startTime = System.currentTimeMillis();
-			// pm.getFetchPlan().resetGroups();
-			pm.getFetchPlan().addGroup(FetchPlan.ALL);
-			PropertySet ret = (PropertySet) pm.detachCopy(o);
-			return ret;
-		} finally {
-			pm.close();
-		}
-	}
-
-	/**
-	 * 
-	 * Retrieve a list Objects searchable by PropSearchFilter.
-	 * 
-	 * @throws ModuleException
+	 * Returns those objects found by the given search filter.
+	 * The results therefore might not be an instance
+	 * of {@link PropertySet}, this depends on the result columns
+	 * set in the search filter.
+	 * <p>
+	 * All found objects are detached with the given fetch-groups
+	 * if they are {@link PersistenceCapable}. 
+	 * </p>
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="PropManager-read"
 	 * @ejb.transaction type = "Required"
 	 */
-	public Collection searchProperty(PropSearchFilter propSearchFilter, String[] fetchGroups, int maxFetchDepth)
-			throws ModuleException, JDOObjectNotFoundException {
+	public Set<?> searchPropertySets(PropSearchFilter propSearchFilter, String[] fetchGroups, int maxFetchDepth)
+	{
 		PersistenceManager pm = this.getPersistenceManager();
 		try {
-			Collection props = propSearchFilter.executeQuery(pm);
-
 			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
 			if (fetchGroups != null)
 				pm.getFetchPlan().setGroups(fetchGroups);
-
-			Collection result = pm.detachCopyAll(props);
-			return result;
+			
+			Collection<PropertySet> props = propSearchFilter.executeQuery(pm);
+			return NLJDOHelper.getDetachedQueryResultAsSet(pm, props);
 		} finally {
 			pm.close();
 		}
 	}
-
+	
 	/**
-	 * 
-	 * Retrieve a list of of ObjectIDs of Objects searchable by a PropSearchFilter
-	 * 
-	 * @throws ModuleException
+	 * Executes the given search filter and assumes it will return instances
+	 * of {@link PropertySet}. It will return the {@link PropertyID}s of the
+	 * found {@link PropertySet}s then.
+	 * <p>
+	 * Note, that if the given search filter does not return instances 
+	 * of {@link PropertySet} (its result columns might be set to something different)
+	 * this method will fail with a {@link ClassCastException}. 
+	 * </p>
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="PropManager-read"
 	 * @ejb.transaction type = "Required"
 	 */
-	public Collection searchProperty(PropSearchFilter propSearchFilter) throws ModuleException,
-			JDOObjectNotFoundException {
+	public Set<PropertyID> searchPropertySetIDs(PropSearchFilter propSearchFilter)
+	{
 		PersistenceManager pm = this.getPersistenceManager();
 		try {
-			Collection props = propSearchFilter.executeQuery(pm);
-			Collection result = new LinkedList();
-			for (Iterator iter = props.iterator(); iter.hasNext();) {
-				result.add(JDOHelper.getObjectId(iter.next()));
+			Collection<PropertySet> props = propSearchFilter.executeQuery(pm);
+			Set<PropertyID> result = new HashSet<PropertyID>();
+			for (PropertySet propertySet : props) {
+				result.add((PropertyID) JDOHelper.getObjectId(propertySet));
 			}
 			return result;
 		} finally {
@@ -279,19 +267,17 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	}
 
 	/**
-	 * Store a prop either detached or not made persistent yet.
-	 * 
-	 * @throws ModuleException
+	 * Store a {@link PropertySet} either detached or not made persistent yet.
 	 * 
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type = "Required"
 	 */
-	public PropertySet storeProperty(PropertySet prop, boolean get, String[] fetchGroups, int maxFetchDepth)
-			throws ModuleException {
+	public PropertySet storePropertySet(PropertySet propertySet, boolean get, String[] fetchGroups, int maxFetchDepth)
+	{
 		PersistenceManager pm = getPersistenceManager();
 		try {
-			return (PropertySet) NLJDOHelper.storeJDO(pm, prop, get, fetchGroups, maxFetchDepth);
+			return (PropertySet) NLJDOHelper.storeJDO(pm, propertySet, get, fetchGroups, maxFetchDepth);
 		} finally {
 			pm.close();
 		}
@@ -304,7 +290,8 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type="Required"
 	 */
-	public void storeStruct(IStruct istruct) throws ModuleException {
+	public void storeStruct(IStruct istruct)
+	{
 		PersistenceManager pm = getPersistenceManager();
 		try {
 			if (istruct instanceof Struct) {
@@ -413,68 +400,22 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	}
 
 	/**
-	 * Get a Collection of all Props
-	 * 
-	 * @throws ModuleException
-	 * 
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type = "Required"
-	 */
-	public Collection getProperties(String[] fetchGroups, int maxFetchDepth) throws ModuleException {
-		// MultiPageSearchResult multiPageSearchResult = new
-		// MultiPageSearchResult();
-		PersistenceManager pm = getPersistenceManager();
-		try {
-			Query query = pm.newQuery(PropertySet.class);
-
-			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
-			if (fetchGroups != null)
-				pm.getFetchPlan().setGroups(fetchGroups);
-
-			Collection elements = (Collection) query.execute();
-
-			long time = System.currentTimeMillis();
-			Collection result = pm.detachCopyAll(elements);
-			time = System.currentTimeMillis() - time;
-			logger.info("Detach of " + result.size() + " Props took " + ((double) time / (double) 1000));
-			return result;
-		} finally {
-			pm.close();
-		}
-	}
-
-	/**
-	 * Returns all props for the given propIDs, detached with the given
+	 * Returns all {@link PropertySet}s for the given propIDs, detached with the given
 	 * fetchGroups
 	 * 
-	 * @throws ModuleException
-	 * 
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type = "Required"
 	 */
-	public Collection getProperties(Object[] propIDs, String[] fetchGroups, int maxFetchDepth) throws ModuleException {
+	public Set<PropertySet> getPropertySets(Set<PropertyID> propIDs, String[] fetchGroups, int maxFetchDepth) 
+	{
 		// MultiPageSearchResult multiPageSearchResult = new
 		// MultiPageSearchResult();
 		PersistenceManager pm = getPersistenceManager();
 		try {
-			Collection props = new LinkedList();
-
-			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
-			if (fetchGroups != null)
-				pm.getFetchPlan().setGroups(fetchGroups);
-
-			for (int i = 0; i < propIDs.length; i++) {
-				if (!(propIDs[i] instanceof PropertyID))
-					throw new IllegalArgumentException("propIDs[" + i + " is not of type PropertyID");
-				props.add(pm.getObjectById(propIDs[i]));
-			}
-
 			long time = System.currentTimeMillis();
-			Collection result = pm.detachCopyAll(props);
-			time = System.currentTimeMillis() - time;
-			logger.debug("Detach of " + result.size() + " Props took " + ((double) time / (double) 1000));
+			Set<PropertySet> result = NLJDOHelper.getDetachedObjectSet(pm, propIDs, null, fetchGroups, maxFetchDepth);
+			logger.debug("Detach of " + result.size() + " Props took " + Util.getTimeDiffString(time));
 			return result;
 		} finally {
 			pm.close();
