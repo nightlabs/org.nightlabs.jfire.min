@@ -23,7 +23,7 @@ public interface IJDOObjectDAO<JDOObject> {
 	 * @param monitor A monitor to report progress to.
 	 * @return A detached copy of the newly stored object or <code>null</code> if get is <code>false</code>.
 	 */
-	public JDOObject storeJDOObject(
+	JDOObject storeJDOObject(
 			JDOObject jdoObject, 
 			boolean get, 
 			String[] fetchGroups, 
