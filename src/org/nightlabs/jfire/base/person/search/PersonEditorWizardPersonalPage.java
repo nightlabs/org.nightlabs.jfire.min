@@ -26,43 +26,44 @@
 
 package org.nightlabs.jfire.base.person.search;
 
-import org.nightlabs.jdo.search.SearchFilter;
-import org.nightlabs.jdo.ui.search.SearchFilterItemListMutator;
-import org.nightlabs.jdo.ui.search.SearchResultFetcher;
-import org.nightlabs.jfire.base.prop.search.DynamicPropertySetSearchFilterProvider;
-import org.nightlabs.jfire.prop.search.PropSearchFilter;
+import org.nightlabs.base.resource.SharedImages;
+import org.nightlabs.jfire.base.JFireBasePlugin;
+import org.nightlabs.jfire.base.person.edit.blockbased.special.PersonPersonalDataWizardPage;
+import org.nightlabs.jfire.person.Person;
+import org.nightlabs.jfire.person.PersonStruct;
+import org.nightlabs.jfire.prop.id.StructBlockID;
 
 /**
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  *
  */
-public class DynamicPersonSearchFilterProvider extends DynamicPropertySetSearchFilterProvider {
+public class PersonEditorWizardPersonalPage extends PersonPersonalDataWizardPage {
 
+	public static final StructBlockID[] BLOCKIDS = 
+		new StructBlockID[] {PersonStruct.PERSONALDATA};
+	
 	/**
-	 * @param listMutator
+	 * @param title
+	 * @param pageName
+	 * @param titleImage
 	 */
-	public DynamicPersonSearchFilterProvider(
-			SearchFilterItemListMutator listMutator) {
-		super(listMutator);
-	}
+	public PersonEditorWizardPersonalPage(Person person) {
+		super(
+				PersonEditorWizardPersonalPage.class.getName(),
+				"Edit personal data",
+				person);
+		setImageDescriptor(
+				SharedImages.getSharedImageDescriptor(
+						JFireBasePlugin.getDefault(),
+						PersonEditorWizardPersonalPage.class, null, SharedImages.ImageDimension._75x70));
 
-	/**
-	 * @param listMutator
-	 * @param resultFetcher
-	 * @param login
-	 */
-	public DynamicPersonSearchFilterProvider(
-			SearchFilterItemListMutator listMutator,
-			SearchResultFetcher resultFetcher) {
-		super(listMutator, resultFetcher);
-	}
+		// TODO: Add editor struct block registry as throw-away object
 
-	
-	
-	protected SearchFilter createPersonSearchFilter() {
-		return new PropSearchFilter();
+//		EditorStructBlockRegistry.sharedInstance().addEditorStructBlocks(
+//			LegalEntityEditorWizard.WIZARD_EDITOR_DOMAIN,
+//			this.getClass().getName(),
+//			BLOCKIDS
+//		);
 	}
-	
-	
 
 }

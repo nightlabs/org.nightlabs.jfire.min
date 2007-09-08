@@ -38,23 +38,24 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
-import org.jboss.mq.il.uil2.msgs.CreateDestMsg;
 import org.nightlabs.base.composite.XComposite;
 import org.nightlabs.base.job.Job;
-import org.nightlabs.base.table.AbstractTableComposite;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jdo.ui.search.SearchFilterProvider;
 import org.nightlabs.jdo.ui.search.SearchResultFetcher;
 import org.nightlabs.jfire.base.login.Login;
+import org.nightlabs.jfire.base.prop.PropertySetTable;
 import org.nightlabs.jfire.base.prop.search.PropertySetSearchFilterItemListMutator;
-import org.nightlabs.jfire.person.Person;
 import org.nightlabs.jfire.prop.PropertyManager;
 import org.nightlabs.jfire.prop.PropertyManagerHome;
 import org.nightlabs.jfire.prop.PropertyManagerUtil;
@@ -65,12 +66,13 @@ import org.nightlabs.jfire.prop.search.PropSearchFilter;
 import org.nightlabs.progress.NullProgressMonitor;
 import org.nightlabs.progress.ProgressMonitor;
 import org.nightlabs.util.ObjectCarrier;
+import org.nightlabs.util.Util;
 
 /**
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  *
  */
-public class PersonSearchComposite extends XComposite {
+public class PersonSearchComposite<PersonLinkType> extends XComposite {
 	
 	/**
 	 * LOG4J logger used by this class
@@ -82,19 +84,34 @@ public class PersonSearchComposite extends XComposite {
 	private XComposite wrapper;
 	private TabFolder filterProviderFolder;
 	private XComposite buttonBar;
-	private PersonResultTable resultTable;
+	private PropertySetTable<PersonLinkType> resultTable;
 	private String quickSearchText;
 	private XComposite resultLabelWrapper;
 	private Label resultLabel;
+	private boolean doIDSearchAndUsePropertySetCache = true;
 	
 	/**
 	 * @param title The pages title
 	 * @param quickSearchText The initial quick search text
 	 */
-	public PersonSearchComposite(Composite parent, int style, String quickSearchText) {
+	public PersonSearchComposite(
+			Composite parent, int style, String quickSearchText,
+			boolean doIDSearchAndUsePropertySetCache
+	) {
 		super(parent, style);
 		this.quickSearchText = quickSearchText;
+		this.doIDSearchAndUsePropertySetCache = doIDSearchAndUsePropertySetCache;
 		init(this);
+	}
+	
+	/**
+	 * @param title The pages title
+	 * @param quickSearchText The initial quick search text
+	 */
+	public PersonSearchComposite(
+			Composite parent, int style, String quickSearchText
+	) {
+		this(parent, style, quickSearchText, true);
 	}
 	
 //	protected void createNewCreation
@@ -177,10 +194,10 @@ public class PersonSearchComposite extends XComposite {
 				}
 			});	
 			PropertyManagerHome home = null;
-			PropertyManager personManager = null;
+			PropertyManager propertyManager = null;
 			try {
 				home = PropertyManagerUtil.getHome(Login.getLogin().getInitialContextProperties());
-				personManager = home.create();
+				propertyManager = home.create();
 			} catch (Exception e) {
 				logger.error("Error creating PersonManagerUtil.",e); //$NON-NLS-1$
 				throw new RuntimeException(e);
@@ -196,20 +213,28 @@ public class PersonSearchComposite extends XComposite {
 
 			try {
 				long start = System.currentTimeMillis();
-				Set<PropertyID> persons = new HashSet<PropertyID>(personManager.searchPropertySetIDs(searchFilter));
-				logger.debug("Customer search for "+persons.size()+" entries took "+(System.currentTimeMillis()-start)/1000+" s."); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+				Collection<?> input;
+				if (doIDSearchAndUsePropertySetCache) {
+					Set<PropertyID> propIDs = new HashSet<PropertyID>(propertyManager.searchPropertySetIDs(searchFilter));
+					logger.debug("ID search for "+propIDs.size()+" entries took " + Util.getTimeDiffString(start)); //$NON-NLS-1$ //$NON-NLS-2$
+					start = System.currentTimeMillis();
+					input = PropertySetDAO.sharedInstance().getPropertySets(
+							propIDs, 
+							getFetchGroups(), 
+							NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT,
+							new NullProgressMonitor()
+					);
+					start = System.currentTimeMillis();
+					logger.debug("Getting "+input.size()+" from cache took " + Util.getTimeDiffString(start)); //$NON-NLS-1$ //$NON-NLS-2$
+				} else {
+					input = propertyManager.searchPropertySets(searchFilter, getFetchGroups(), NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
+					logger.debug("Object search for " + input.size() + " entries took " + Util.getTimeDiffString(start)); //$NON-NLS-1$ //$NON-NLS-2$
+				}
 				start = System.currentTimeMillis();
-				final Collection pers = PropertySetDAO.sharedInstance().getPropertySets(
-						persons, 
-						getFetchGroups(), 
-						NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT,
-						new NullProgressMonitor()
-				);
-				logger.debug("Getting "+pers.size()+" from cache took "+(System.currentTimeMillis()-start)/1000+" s."); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-				start = System.currentTimeMillis();
+				final Collection<?> finalInput = input;
 				Display.getDefault().asyncExec(new Runnable() {
 					public void run() {
-						resultTable.setInput(pers);
+						resultTable.setInput(finalInput);
 					}
 				});				
 			} catch (Exception e) {
@@ -268,7 +293,7 @@ public class PersonSearchComposite extends XComposite {
 		resultLabel.setLayoutData(new GridData());
 		resultLabel.setText("Search results");
 		
-		resultTable = new PersonResultTable(getWrapper(),SWT.NONE);
+		resultTable = createResultTable(parent);
 		resultTable.getTableViewer().addSelectionChangedListener(new ISelectionChangedListener() {
 			public void selectionChanged(SelectionChangedEvent arg0) {
 //				selectedLegalEntity = resultTable.getSelectedLegalEntity();
@@ -284,12 +309,25 @@ public class PersonSearchComposite extends XComposite {
 		return getWrapper();
 	}
 
+	public Button createSearchButton(Composite parent) {
+		Button searchButton = new Button(parent, SWT.PUSH);
+		searchButton.setText("&Search");
+		searchButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+		searchButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				performSearch();
+			}
+		});
+		return searchButton;
+	}
+	
 	/* ************************************************************************
 	 * Configuration methods, TODO: Document
 	 * ************************************************************************/
 	
-	protected AbstractTableComposite<Person> createResultTable(Composite parent) {
-		return new PersonResultTable(parent, SWT.NONE);
+	protected PropertySetTable<PersonLinkType> createResultTable(Composite parent) {
+		return (PropertySetTable<PersonLinkType>) new PersonResultTable(parent, SWT.NONE);
 	}
 	
 	protected SearchFilterProvider createStaticSearchFilterProvider(SearchResultFetcher resultFetcher) {
@@ -300,7 +338,7 @@ public class PersonSearchComposite extends XComposite {
 		return new DynamicPersonSearchFilterProvider(new PropertySetSearchFilterItemListMutator(), resultFetcher);
 	}
 	
-	public AbstractTableComposite<Person> getResultTable() {
+	public PropertySetTable<PersonLinkType> getResultTable() {
 		return resultTable;
 	}
 

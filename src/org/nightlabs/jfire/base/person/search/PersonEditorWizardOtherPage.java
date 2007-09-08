@@ -26,43 +26,36 @@
 
 package org.nightlabs.jfire.base.person.search;
 
-import org.nightlabs.jdo.search.SearchFilter;
-import org.nightlabs.jdo.ui.search.SearchFilterItemListMutator;
-import org.nightlabs.jdo.ui.search.SearchResultFetcher;
-import org.nightlabs.jfire.base.prop.search.DynamicPropertySetSearchFilterProvider;
-import org.nightlabs.jfire.prop.search.PropSearchFilter;
+import org.nightlabs.base.resource.SharedImages;
+import org.nightlabs.jfire.base.JFireBasePlugin;
+import org.nightlabs.jfire.base.prop.edit.blockbased.FullDataBlockCoverageWizardPage;
+import org.nightlabs.jfire.person.Person;
 
 /**
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  *
  */
-public class DynamicPersonSearchFilterProvider extends DynamicPropertySetSearchFilterProvider {
+public class PersonEditorWizardOtherPage extends
+		FullDataBlockCoverageWizardPage {
 
 	/**
-	 * @param listMutator
+	 * @param pageName
+	 * @param person
+	 * @param structBlockIDs
 	 */
-	public DynamicPersonSearchFilterProvider(
-			SearchFilterItemListMutator listMutator) {
-		super(listMutator);
-	}
+	public PersonEditorWizardOtherPage(Person person) {
+		super(
+			PersonEditorWizardOtherPage.class.getName(),
+			"Edit person properties",
+			person,
+			null
+		);
 
-	/**
-	 * @param listMutator
-	 * @param resultFetcher
-	 * @param login
-	 */
-	public DynamicPersonSearchFilterProvider(
-			SearchFilterItemListMutator listMutator,
-			SearchResultFetcher resultFetcher) {
-		super(listMutator, resultFetcher);
+		setImageDescriptor(
+				SharedImages.getSharedImageDescriptor(
+						JFireBasePlugin.getDefault(),
+						PersonEditorWizardOtherPage.class, null, SharedImages.ImageDimension._75x70));
 	}
-
-	
-	
-	protected SearchFilter createPersonSearchFilter() {
-		return new PropSearchFilter();
-	}
-	
 	
 
 }
