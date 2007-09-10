@@ -217,4 +217,10 @@ public class CompoundDataBlockWizardPage extends WizardHopPage {
 		super.onHide();
 		updatePropertySet();
 	}
+	
+	@Override
+	public void onShow() {		
+		super.onShow();
+		refresh(propSet);
+	}
 }

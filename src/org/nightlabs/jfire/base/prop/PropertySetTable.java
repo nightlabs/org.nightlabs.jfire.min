@@ -195,8 +195,8 @@ public class PropertySetTable<ProperySetType> extends AbstractTableComposite<Pro
 			if (dataField != null && dataField instanceof II18nTextDataField) {
 				return ((II18nTextDataField) dataField).getText(Locale.getDefault());
 			} else
-				return "";
+				return ""; //$NON-NLS-1$
 		} else
-			return "";
+			return ""; //$NON-NLS-1$
 	}
 }

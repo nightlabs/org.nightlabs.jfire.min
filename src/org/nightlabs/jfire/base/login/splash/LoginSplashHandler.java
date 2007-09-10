@@ -30,6 +30,7 @@ import org.nightlabs.jfire.base.login.Login;
 import org.nightlabs.jfire.base.login.LoginComposite;
 import org.nightlabs.jfire.base.login.LoginConfigModule;
 import org.nightlabs.jfire.base.login.LoginComposite.Mode;
+import org.nightlabs.jfire.base.resource.Messages;
 import org.osgi.framework.BundleEvent;
 import org.osgi.framework.BundleListener;
 
@@ -152,10 +153,10 @@ implements IMessageContainer
 		Label spacer = new Label(buttonComp, SWT.NONE);
 		spacer.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));		
 		Button okButton = new Button(buttonComp, SWT.NONE);
-		okButton.setText("OK");
+		okButton.setText(Messages.getString("org.nightlabs.jfire.base.login.splash.LoginSplashHandler.okButton.text")); //$NON-NLS-1$
 		okButton.addSelectionListener(okListener);
 		Button cancelButton = new Button(buttonComp, SWT.NONE);
-		cancelButton.setText("Cancel");
+		cancelButton.setText(Messages.getString("org.nightlabs.jfire.base.login.splash.LoginSplashHandler.cancelButton.text")); //$NON-NLS-1$
 		cancelButton.addSelectionListener(cancelListener);
 		detailsButton = new Button(buttonComp, SWT.NONE);
 		detailsButton.addSelectionListener(detailsListener);
@@ -179,7 +180,7 @@ implements IMessageContainer
 	private void doEventLoop() 
 	{
 		if (logger.isDebugEnabled())
-			logger.debug("doEventLoop: begin");
+			logger.debug("doEventLoop: begin"); //$NON-NLS-1$
 
 		Shell splash = getSplash();
 		while (isAuthenticationPending()) {
@@ -188,13 +189,13 @@ implements IMessageContainer
 					splash.getDisplay().sleep();
 				}
 			} catch (Throwable t) {
-				logger.error("Caught exception in event loop!", t);
+				logger.error("Caught exception in event loop!", t); //$NON-NLS-1$
 				setMessage(t.getMessage(), IMessageProvider.ERROR);
 			}
 		}
 
 		if (logger.isDebugEnabled())
-			logger.debug("doEventLoop: end");
+			logger.debug("doEventLoop: end"); //$NON-NLS-1$
 	}
 	
 	private void okPressed() {
@@ -264,7 +265,7 @@ implements IMessageContainer
 	public void setMessage(String newMessage, int newType) 
 	{
 		if (messageLabel != null && !messageLabel.isDisposed())
-			messageLabel.setText(newMessage == null ? "" : newMessage);
+			messageLabel.setText(newMessage == null ? "" : newMessage); //$NON-NLS-1$
 	}
 	
 	@Override

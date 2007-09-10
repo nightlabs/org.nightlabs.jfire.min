@@ -82,4 +82,16 @@ public class FullDataBlockCoverageWizardPage extends WizardHopPage {
 		if (fullDataBlockCoverageComposite != null)
 			fullDataBlockCoverageComposite.refresh(propertySet);
 	}
+	
+	@Override
+	public void onShow() {
+		super.onShow();
+		refresh(prop);
+	}
+	
+	@Override
+	public void onHide() {
+		super.onHide();
+		updatePropertySet();
+	}
 }

@@ -76,7 +76,7 @@ extends AbstractEntryViewer
 		IToolkit toolkit = new NightlabsFormsToolkit(Display.getDefault());
 		searchCriteriaSection = toolkit.createSection(searchWrapper, Section.TITLE_BAR | Section.TWISTIE);
 		searchCriteriaSection.setLayout(new GridLayout());
-		searchCriteriaSection.setText("Advanced");
+		searchCriteriaSection.setText(Messages.getString("org.nightlabs.jfire.base.overview.search.SearchEntryViewer.searchCriteriaSection.text")); //$NON-NLS-1$
 		searchCriteriaSection.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));	
 		searchCriteriaSection.addExpansionListener(expansionListener);
 		configureSection(searchCriteriaSection);
@@ -152,7 +152,7 @@ extends AbstractEntryViewer
 		wrapperLayout.marginTop = 3;
 		wrapper.setLayout(wrapperLayout);		
 		Label searchLabel = new Label(wrapper, SWT.NONE);
-		searchLabel.setText("Search");
+		searchLabel.setText(Messages.getString("org.nightlabs.jfire.base.overview.search.SearchEntryViewer.searchLabel.text")); //$NON-NLS-1$
 		searchText = new Text(wrapper, SWT.BORDER);
 		searchText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		searchText.addSelectionListener(searchTextListener);
@@ -165,7 +165,7 @@ extends AbstractEntryViewer
 		
 		Composite rangeWrapper = new XComposite(searchTextToolBar, SWT.NONE, 
 				LayoutMode.TOP_BOTTOM_WRAPPER, LayoutDataMode.NONE, 2);
-		new Label(rangeWrapper, SWT.NONE).setText("Limit number of results (0 = unlimited): ");
+		new Label(rangeWrapper, SWT.NONE).setText(Messages.getString("org.nightlabs.jfire.base.overview.search.SearchEntryViewer.limitLabel.text")); //$NON-NLS-1$
 		limit = new Spinner(rangeWrapper, SWT.BORDER);
 		limit.setMinimum(0);
 		limit.setMaximum(Integer.MAX_VALUE);

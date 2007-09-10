@@ -29,6 +29,7 @@ package org.nightlabs.jfire.base.person.search;
 import org.nightlabs.base.resource.SharedImages;
 import org.nightlabs.jfire.base.JFireBasePlugin;
 import org.nightlabs.jfire.base.person.edit.blockbased.special.PersonPersonalDataWizardPage;
+import org.nightlabs.jfire.base.resource.Messages;
 import org.nightlabs.jfire.person.Person;
 import org.nightlabs.jfire.person.PersonStruct;
 import org.nightlabs.jfire.prop.id.StructBlockID;
@@ -50,7 +51,7 @@ public class PersonEditorWizardPersonalPage extends PersonPersonalDataWizardPage
 	public PersonEditorWizardPersonalPage(Person person) {
 		super(
 				PersonEditorWizardPersonalPage.class.getName(),
-				"Edit personal data",
+				Messages.getString("org.nightlabs.jfire.base.person.search.PersonEditorWizardPersonalPage.title"), //$NON-NLS-1$
 				person);
 		setImageDescriptor(
 				SharedImages.getSharedImageDescriptor(

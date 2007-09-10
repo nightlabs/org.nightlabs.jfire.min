@@ -55,6 +55,7 @@ import org.nightlabs.jdo.ui.search.EarlySearchFilterProvider;
 import org.nightlabs.jdo.ui.search.SearchFilterProvider;
 import org.nightlabs.jdo.ui.search.SearchResultFetcher;
 import org.nightlabs.jfire.base.login.Login;
+import org.nightlabs.jfire.base.resource.Messages;
 import org.nightlabs.jfire.prop.PropertyManager;
 import org.nightlabs.jfire.prop.PropertyManagerHome;
 import org.nightlabs.jfire.prop.PropertyManagerUtil;
@@ -223,12 +224,12 @@ public abstract class PropertySetSearchComposite<PropertySetType> extends XCompo
 	 * that will search using the {@link PropertyManager}.
 	 */
 	private SearchResultFetcher resultFetcher = new SearchResultFetcher() {
-		@SuppressWarnings("unchecked")
+		@SuppressWarnings("unchecked") //$NON-NLS-1$
 		public void searchTriggered(final SearchFilterProvider filterProvider) {
 			logger.debug("Search triggered, getting PersonManager"); //$NON-NLS-1$
 			Display.getDefault().asyncExec(new Runnable() {
 				public void run() {
-					resultTable.setInput(new String[] {"Searching ..."});
+					resultTable.setInput(new String[] {Messages.getString("org.nightlabs.jfire.base.prop.PropertySetSearchComposite.statusMessage.searching")}); //$NON-NLS-1$
 				}
 			});	
 			PropertyManagerHome home = null;
@@ -291,7 +292,7 @@ public abstract class PropertySetSearchComposite<PropertySetType> extends XCompo
 	 */
 	public void performSearch() {
 		final SearchFilterProvider filterProvider = ((FilterProviderTab) filterProviderFolder.getSelection()[0].getData()).getFilterProvider();		
-		Job job = new Job("Searching LegalEntities") {
+		Job job = new Job(Messages.getString("org.nightlabs.jfire.base.prop.PropertySetSearchComposite.searchJob.name")) { //$NON-NLS-1$
 			@Override
 			protected IStatus run(ProgressMonitor monitor) throws Exception {
 				resultFetcher.searchTriggered(filterProvider);
@@ -332,11 +333,11 @@ public abstract class PropertySetSearchComposite<PropertySetType> extends XCompo
 		filterProviderFolder = new TabFolder(getWrapper(), SWT.NONE);
 		filterProviderFolder.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		staticTab = new StaticProviderTabItem(filterProviderFolder, resultFetcher);
-		staticTab.getTabItem().setText("Normal search");
+		staticTab.getTabItem().setText(Messages.getString("org.nightlabs.jfire.base.prop.PropertySetSearchComposite.staticTab.text")); //$NON-NLS-1$
 		staticTab.setQuickSearchText(earlySearchText);
 		
 		dynamicTab = new DynamicProviderTabItem(filterProviderFolder, resultFetcher);
-		dynamicTab.getTabItem().setText("Advanced search");
+		dynamicTab.getTabItem().setText(Messages.getString("org.nightlabs.jfire.base.prop.PropertySetSearchComposite.dynamicTab.text")); //$NON-NLS-1$
 		
 		buttonBar = new XComposite(getWrapper(), SWT.NONE, XComposite.LayoutMode.LEFT_RIGHT_WRAPPER, XComposite.LayoutDataMode.GRID_DATA_HORIZONTAL);
 		
@@ -348,7 +349,7 @@ public abstract class PropertySetSearchComposite<PropertySetType> extends XCompo
 		resultLabelWrapper.getGridData().grabExcessVerticalSpace = false;
 		resultLabel = new Label(resultLabelWrapper, SWT.NONE | SWT.WRAP);		
 		resultLabel.setLayoutData(new GridData());
-		resultLabel.setText("Search results");
+		resultLabel.setText(Messages.getString("org.nightlabs.jfire.base.prop.PropertySetSearchComposite.resultLabel.text")); //$NON-NLS-1$
 		
 		resultTable = createResultTable(parent);
 		resultTable.getTableViewer().addSelectionChangedListener(new ISelectionChangedListener() {
@@ -377,7 +378,7 @@ public abstract class PropertySetSearchComposite<PropertySetType> extends XCompo
 	 */
 	public Button createSearchButton(Composite parent) {
 		Button searchButton = new Button(parent, SWT.PUSH);
-		searchButton.setText("&Search");
+		searchButton.setText(Messages.getString("org.nightlabs.jfire.base.prop.PropertySetSearchComposite.searchButton.text")); //$NON-NLS-1$
 		searchButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 		searchButton.addSelectionListener(new SelectionAdapter() {
 			@Override

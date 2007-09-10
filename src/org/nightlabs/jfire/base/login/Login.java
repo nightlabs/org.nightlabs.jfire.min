@@ -564,7 +564,7 @@ implements InitialContextProvider
 			try {
 				Cache.sharedInstance().open(getSessionID()); // the cache is opened implicitely now by default, but it is closed *after* a logout.
 			} catch (Throwable t) {
-				logger.debug("Cache could not be opened!", t);
+				logger.debug("Cache could not be opened!", t); //$NON-NLS-1$
 			}
 		}
 

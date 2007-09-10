@@ -16,6 +16,7 @@ import org.nightlabs.base.composite.XComposite;
 import org.nightlabs.jfire.base.prop.edit.AbstractDataFieldEditor;
 import org.nightlabs.jfire.base.prop.edit.AbstractDataFieldEditorFactory;
 import org.nightlabs.jfire.base.prop.edit.DataFieldEditor;
+import org.nightlabs.jfire.base.prop.edit.fieldbased.FieldBasedEditor;
 import org.nightlabs.jfire.prop.datafield.PhoneNumberDataField;
 
 public class PhoneNumberDataFieldEditor extends AbstractDataFieldEditor<PhoneNumberDataField> {
@@ -26,9 +27,12 @@ public class PhoneNumberDataFieldEditor extends AbstractDataFieldEditor<PhoneNum
 			return PhoneNumberDataFieldEditor.class;
 		}
 
+		/**
+		 * {@inheritDoc}
+		 */
 		@Override
-		public String getEditorType() {
-			return ExpandableBlocksEditor.EDITORTYPE_BLOCK_BASED_EXPANDABLE;
+		public String[] getEditorTypes() {
+			return new String[] {ExpandableBlocksEditor.EDITORTYPE_BLOCK_BASED_EXPANDABLE, FieldBasedEditor.EDITORTYPE_FIELD_BASED};
 		}
 
 		@Override

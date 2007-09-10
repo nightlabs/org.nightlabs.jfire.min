@@ -3,6 +3,8 @@
  */
 package org.nightlabs.jfire.base.person.search;
 
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -16,6 +18,7 @@ import org.nightlabs.base.composite.XComposite.LayoutDataMode;
 import org.nightlabs.base.composite.XComposite.LayoutMode;
 import org.nightlabs.base.wizard.WizardHop;
 import org.nightlabs.base.wizard.WizardHopPage;
+import org.nightlabs.jfire.base.resource.Messages;
 import org.nightlabs.jfire.idgenerator.IDGenerator;
 import org.nightlabs.jfire.person.Person;
 import org.nightlabs.jfire.prop.PropertySet;
@@ -38,7 +41,7 @@ public class PersonSearchWizardPage extends WizardHopPage {
 	public PersonSearchWizardPage(String quickSearchText) {
 		super(
 			PersonSearchWizardPage.class.getName(),
-			"Search person"
+			Messages.getString("org.nightlabs.jfire.base.person.search.PersonSearchWizardPage.title") //$NON-NLS-1$
 		);		
 		this.quickSearchText = quickSearchText;
 		new WizardHop(this);
@@ -80,13 +83,24 @@ public class PersonSearchWizardPage extends WizardHopPage {
 		
 		new XComposite(buttonBar, SWT.NONE, LayoutDataMode.GRID_DATA_HORIZONTAL);
 		
-		searchComposite.createSearchButton(buttonBar);		
+		searchComposite.createSearchButton(buttonBar);
+		searchComposite.getResultTable().addSelectionChangedListener(new ISelectionChangedListener() {
+			public void selectionChanged(SelectionChangedEvent event) {
+				getContainer().updateButtons();
+			}
+		});
 		return searchComposite;
 	}
 
 	@Override
 	public void onShow() {
 		getWizardHop().removeAllHopPages();
+		getContainer().updateButtons();
+	}
+	
+	@Override
+	public boolean isPageComplete() {
+		return searchComposite.getResultTable().getFirstSelectedElement() != null;
 	}
 	
 	/**
@@ -102,7 +116,7 @@ public class PersonSearchWizardPage extends WizardHopPage {
 	}
 	
 	protected String getCreateNewButtonText() {
-		return "Create &new person";
+		return Messages.getString("org.nightlabs.jfire.base.person.search.PersonSearchWizardPage.createNewButton.text"); //$NON-NLS-1$
 	}
 	
 }

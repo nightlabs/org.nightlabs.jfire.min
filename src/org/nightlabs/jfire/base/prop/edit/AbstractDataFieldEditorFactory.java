@@ -49,7 +49,7 @@ public abstract class AbstractDataFieldEditorFactory<F extends AbstractDataField
 	/**
 	 * @see org.nightlabs.jfire.base.prop.edit.DataFieldEditor#getEditorType()
 	 */
-	public abstract String getEditorType();
+	public abstract String[] getEditorTypes();
 	
 	public abstract Class<? extends DataFieldEditor<F>> getDataFieldEditorClass();
 

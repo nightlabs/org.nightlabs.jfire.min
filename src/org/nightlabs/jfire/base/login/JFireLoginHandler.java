@@ -155,7 +155,7 @@ public class JFireLoginHandler implements ILoginHandler {
 				handleSplashLogin(loginContext, loginConfigModule, loginResult);
 				loginDone = true;
 			} catch (Exception x) {
-				if (!x.getMessage().contains("Widget is disposed")) {
+				if (!x.getMessage().contains("Widget is disposed")) { //$NON-NLS-1$
 					if (x instanceof LoginException)
 						throw (LoginException)x;
 					else if (x instanceof RuntimeException)

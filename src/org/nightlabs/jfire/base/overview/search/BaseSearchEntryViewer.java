@@ -131,7 +131,7 @@ extends SearchEntryViewer
 		}
 
 		public String getName() {
-			return "Advanced Search";
+			return Messages.getString("org.nightlabs.jfire.base.overview.search.BaseSearchEntryViewer.advancedEntry.name"); //$NON-NLS-1$
 		}
 	}
 		

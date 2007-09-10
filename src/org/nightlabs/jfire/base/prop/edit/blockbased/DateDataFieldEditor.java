@@ -20,6 +20,7 @@ import org.nightlabs.base.composite.XComposite.LayoutMode;
 import org.nightlabs.jfire.base.prop.edit.AbstractDataFieldEditor;
 import org.nightlabs.jfire.base.prop.edit.AbstractDataFieldEditorFactory;
 import org.nightlabs.jfire.base.prop.edit.DataFieldEditor;
+import org.nightlabs.jfire.base.prop.edit.fieldbased.FieldBasedEditor;
 import org.nightlabs.jfire.prop.datafield.DateDataField;
 import org.nightlabs.jfire.prop.structfield.DateStructField;
 import org.nightlabs.language.LanguageCf;
@@ -32,8 +33,8 @@ public class DateDataFieldEditor extends AbstractDataFieldEditor<DateDataField> 
 	public static class Factory extends AbstractDataFieldEditorFactory<DateDataField> {
 
 		@Override
-		public String getEditorType() {
-			return ExpandableBlocksEditor.EDITORTYPE_BLOCK_BASED_EXPANDABLE;
+		public String[] getEditorTypes() {
+			return new String[] {ExpandableBlocksEditor.EDITORTYPE_BLOCK_BASED_EXPANDABLE, FieldBasedEditor.EDITORTYPE_FIELD_BASED};
 		}
 
 		@Override

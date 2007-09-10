@@ -410,7 +410,7 @@ extends Composite
 		enableDialogUI(false);
 		try {
 			// use entries and log in
-			monitor.beginTask("Login", 4);
+			monitor.beginTask(Messages.getString("org.nightlabs.jfire.base.login.LoginComposite.loginTask.name"), 4); //$NON-NLS-1$
 			storeUserInput();
 			monitor.worked(1);
 			final boolean saveSettings = checkBoxSaveSettings.getSelection();

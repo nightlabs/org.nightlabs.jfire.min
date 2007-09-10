@@ -31,6 +31,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.nightlabs.jfire.base.prop.edit.AbstractDataFieldEditor;
 import org.nightlabs.jfire.base.prop.edit.AbstractDataFieldEditorFactory;
+import org.nightlabs.jfire.base.prop.edit.fieldbased.FieldBasedEditor;
 import org.nightlabs.jfire.prop.datafield.I18nTextDataField;
 import org.nightlabs.jfire.prop.datafield.TextDataField;
 
@@ -53,10 +54,11 @@ public class I18nTextDataFieldEditor extends AbstractDataFieldEditor<I18nTextDat
 			return I18nTextDataField.class;
 		}
 		/**
-		 * @see org.nightlabs.jfire.base.prop.edit.DataFieldEditorFactory#getEditorType()
+		 * {@inheritDoc}
 		 */
-		public String getEditorType() {
-			return ExpandableBlocksEditor.EDITORTYPE_BLOCK_BASED_EXPANDABLE;
+		@Override
+		public String[] getEditorTypes() {
+			return new String[] {ExpandableBlocksEditor.EDITORTYPE_BLOCK_BASED_EXPANDABLE, FieldBasedEditor.EDITORTYPE_FIELD_BASED};
 		}
 		/**
 		 * @see org.nightlabs.jfire.base.prop.edit.AbstractDataFieldEditorFactory#getDataFieldEditorClass()

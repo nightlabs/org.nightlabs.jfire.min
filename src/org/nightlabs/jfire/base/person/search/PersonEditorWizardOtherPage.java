@@ -29,6 +29,7 @@ package org.nightlabs.jfire.base.person.search;
 import org.nightlabs.base.resource.SharedImages;
 import org.nightlabs.jfire.base.JFireBasePlugin;
 import org.nightlabs.jfire.base.prop.edit.blockbased.FullDataBlockCoverageWizardPage;
+import org.nightlabs.jfire.base.resource.Messages;
 import org.nightlabs.jfire.person.Person;
 
 /**
@@ -46,7 +47,7 @@ public class PersonEditorWizardOtherPage extends
 	public PersonEditorWizardOtherPage(Person person) {
 		super(
 			PersonEditorWizardOtherPage.class.getName(),
-			"Edit person properties",
+			Messages.getString("org.nightlabs.jfire.base.person.search.PersonEditorWizardOtherPage.title"), //$NON-NLS-1$
 			person,
 			null
 		);

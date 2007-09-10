@@ -32,9 +32,6 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.MouseAdapter;
-import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -45,6 +42,8 @@ import org.eclipse.swt.widgets.Label;
 import org.nightlabs.base.composite.CompositeSelectionEvent;
 import org.nightlabs.base.composite.SelectableComposite;
 import org.nightlabs.base.composite.SelectableCompositeListener;
+import org.nightlabs.base.composite.XComposite;
+import org.nightlabs.base.composite.XComposite.LayoutMode;
 import org.nightlabs.jfire.base.prop.edit.DataFieldEditor;
 import org.nightlabs.jfire.base.prop.edit.DataFieldEditorFactoryRegistry;
 import org.nightlabs.jfire.base.prop.edit.DataFieldEditorNotFoundException;
@@ -85,7 +84,7 @@ public class FieldBasedEditor implements PropertySetEditor {
 	private String editorType;
 	/**
 	 * Get the editorType.
-	 * @return
+	 * @return The editorType.
 	 */
 	public String getEditorType() {
 		return editorType;
@@ -93,13 +92,12 @@ public class FieldBasedEditor implements PropertySetEditor {
 	/**
 	 * Set the editorType.
 	 * Use the static finals. 
-	 * @param editorType
+	 * @param editorType The editorType to set.
 	 */
 	public void setEditorType(String editorType) {
 		this.editorType = editorType;
 	}
 
-	protected Object selectionObject;
 	private PropertySet propertySet;
 	
 	/**
@@ -107,7 +105,6 @@ public class FieldBasedEditor implements PropertySetEditor {
 	 */
 	public void setPropertySet(PropertySet propSet) {
 		this.propertySet = propSet;
-		this.selectionObject = propSet;
 	}
 
 	/**
@@ -135,73 +132,14 @@ public class FieldBasedEditor implements PropertySetEditor {
 		this.showEmptyFields = showEmptyFields;
 	}
 	
-	private Label propTitleLabel;
-	
-	public Label getPropTitleLabel() {
-		return propTitleLabel;
-	}
-	
-
-	private SelectableComposite editorWrapper;
+	private XComposite editorWrapper;
 	private Color wrapperSelectedColor = new Color(Display.getDefault(), 155, 155, 155);
 	private Color wrapperNormalColor;
 	
-	private SelectableComposite editorComposite;
-	private SelectableComposite titleComposite;
+	private XComposite editorComposite;
 	
 	private boolean selectionCallback = false;
 	
-	/**
-	 * Delegates selections to the underlying Composite
-	 */
-	private SelectableCompositeListener editorCompositeListener = new SelectableCompositeListener() {
-		public void selectionStateChanged(CompositeSelectionEvent evt) {
-			if (evt.getSource() == editorComposite) {
-				selectionCallback = true;
-				try {
-					editorWrapper.setSelected(evt.isSelected());
-				}
-				finally {
-					selectionCallback = false;
-				}
-			}
-		}
-	};
-	
-	private MouseListener titleMouseAdapter = new MouseAdapter() {
-		public void mouseUp(MouseEvent evt) {
-				selectionCallback = true;
-				if (evt.button != 1)
-					return;
-				try {
-					editorWrapper.setSelected(true,evt.stateMask);
-				}
-				finally {
-					selectionCallback = false;
-				}
-		}
-	};
-	
-	/**
-	 * Changes the background of the editor Wrapper for a dynamic Border
-	 */
-	private SelectableCompositeListener editorWrapperListener = new SelectableCompositeListener() {		
-		public void selectionStateChanged(CompositeSelectionEvent evt) {
-			if (!selectionCallback)
-				editorComposite.setSelected(evt.isSelected());
-			if (evt.isSelected())
-				evt.getSource().setBackground(wrapperSelectedColor);
-			else
-				evt.getSource().setBackground(wrapperNormalColor);
-		}
-	};
-	
-	
-	private GridLayout gridLayout;
-	
-	public GridLayout getGridLayout() {
-		return gridLayout;
-	}
 	
 	/**
 	 * Creates a new GridLayout wich will be applied to the Editor.
@@ -210,9 +148,7 @@ public class FieldBasedEditor implements PropertySetEditor {
 	 */
 	protected GridLayout createGridLayout() {
 		GridLayout wrapperLayout = new GridLayout();
-		wrapperLayout.marginHeight = 1;
-		wrapperLayout.marginWidth = 1;
-		wrapperLayout.verticalSpacing = 0;
+		XComposite.configureLayout(LayoutMode.ORDINARY_WRAPPER, wrapperLayout);
 		return wrapperLayout;
 	}
 	
@@ -251,16 +187,13 @@ public class FieldBasedEditor implements PropertySetEditor {
 	public void disposeControl() {
 		for (Iterator iter = fieldEditors.values().iterator(); iter.hasNext();) {
 			DataFieldEditor editor = (DataFieldEditor) iter.next();
-			editor.getControl().dispose();
-			iter.remove();
-		}
-		if (titleComposite != null) {
-			titleComposite.dispose();
-			titleComposite = null;
-			propTitleLabel = null;
+			if (editor != null) {
+				if (editor.getControl() != null && !editor.getControl().isDisposed())
+					editor.getControl().dispose();
+				iter.remove();
+			}
 		}
 		if (editorComposite != null) {
-			editorComposite.removeSelectionChangeListener(editorCompositeListener);
 			editorComposite = null;
 		}
 		if (editorWrapper != null) {
@@ -275,8 +208,7 @@ public class FieldBasedEditor implements PropertySetEditor {
 	public Control createControl(Composite parent, boolean refresh) {
 		if (editorWrapper == null) {
 			
-			editorWrapper = new SelectableComposite(parent,SWT.NONE);
-			editorWrapper.setSelectionObject(selectionObject);
+			editorWrapper = new XComposite(parent, SWT.NONE);
 			wrapperNormalColor = editorWrapper.getBackground();
 			
 			if (setLayoutDataForWrapper()) {
@@ -288,35 +220,24 @@ public class FieldBasedEditor implements PropertySetEditor {
 				editorWrapper.setLayoutData(wrapperGridData);
 			}
 			
-			gridLayout = createGridLayout();
+			GridLayout gridLayout = createGridLayout();
 			
 			if (gridLayout == null)
 				throw new IllegalStateException("createGridLayout() returned null!!"); //$NON-NLS-1$
 			
 			editorWrapper.setLayout(gridLayout);			
-			editorWrapper.addSelectionChangeListener(editorWrapperListener);
 			
-			titleComposite = new SelectableComposite(editorWrapper,SWT.NONE);
-			titleComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
-			GridLayout titleLayout = new GridLayout();
-			titleLayout.verticalSpacing = 0;
-			titleLayout.marginHeight = 0;
-			titleLayout.marginWidth = 0;
-			titleLayout.horizontalSpacing = 0;
-			titleComposite.setLayout(titleLayout);
-			
-			editorComposite = new SelectableComposite(editorWrapper,SWT.NONE);
-			editorComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
-			GridLayout layout = new GridLayout();
-//			layout.horizontalSpacing = 0;
-			layout.verticalSpacing = 0;
-			layout.marginHeight = 0;
-			layout.marginWidth = 0;
-			layout.horizontalSpacing = 3;
+			editorComposite = new XComposite(editorWrapper, SWT.NONE);
+//			editorComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
+//			GridLayout layout = new GridLayout();
+////			layout.horizontalSpacing = 0;
+//			layout.verticalSpacing = 0;
+//			layout.marginHeight = 0;
 //			layout.marginWidth = 0;
-			layout.numColumns = 3;
-			editorComposite.setLayout(layout);
-			editorComposite.addSelectionChangeListener(editorCompositeListener);
+//			layout.horizontalSpacing = 3;
+////			layout.marginWidth = 0;
+//			layout.numColumns = 2;
+//			editorComposite.setLayout(layout);
 		}
 		if (refresh)
 			refreshControl();
@@ -341,21 +262,8 @@ public class FieldBasedEditor implements PropertySetEditor {
 	 * key: StructFieldID structFieldID<br/>
 	 * value: DataFieldEditor fieldEditor
 	 */
-	private Map fieldEditors = new HashMap();
+	private Map<StructFieldID, DataFieldEditor<AbstractDataField>> fieldEditors = new HashMap<StructFieldID, DataFieldEditor<AbstractDataField>>();
 	
-	
-	private void createTitleLabel() {
-		if (propTitleLabel == null) {
-			if (titleComposite == null)
-				return;
-			propTitleLabel = new Label(titleComposite,SWT.NONE);
-			GridData gd = new GridData();
-			gd.horizontalAlignment = GridData.FILL;
-			gd.grabExcessHorizontalSpace = true;
-			propTitleLabel.setLayoutData(gd);
-			propTitleLabel.addMouseListener(titleMouseAdapter);
-		}
-	}
 	
 	/**
 	 * @see org.nightlabs.jfire.base.prop.edit.PropertySetEditor#refreshControl()
@@ -366,16 +274,6 @@ public class FieldBasedEditor implements PropertySetEditor {
 				public void run() {
 					if (propertySet == null)
 						return;
-					
-					createTitleLabel();
-					
-					if (propTitleLabel != null) {
-						if (propertySet.getDisplayName() != null)
-							propTitleLabel.setText(propertySet.getDisplayName());
-						else 
-							propTitleLabel.setText(""); //$NON-NLS-1$
-						propTitleLabel.setBackground(new Color(Display.getDefault(), 155, 155, 155));
-					}
 					
 					if (!propertySet.isExploded())
 						getPropStructure(new NullProgressMonitor()).explodePropertySet(propertySet);
@@ -392,13 +290,13 @@ public class FieldBasedEditor implements PropertySetEditor {
 						if (field.isEmpty()) {
 							if (!showEmptyFields) {
 								if (fieldEditors.containsKey(structFieldID)) {
-									((DataFieldEditor)fieldEditors.get(structFieldID)).getControl().dispose();
+									fieldEditors.get(structFieldID).getControl().dispose();
 									fieldEditors.remove(structFieldID);
 								}
 								continue;
 							}
 						}
-						DataFieldEditor editor = null;
+						DataFieldEditor<AbstractDataField> editor = null;
 						if (!fieldEditors.containsKey(structFieldID)) {
 							try {
 								editor = DataFieldEditorFactoryRegistry.sharedInstance().getNewEditorInstance(
@@ -414,9 +312,9 @@ public class FieldBasedEditor implements PropertySetEditor {
 							GridData editorGD = FieldBasedEditor.this.getGridDataForField(field);
 							if (editorGD != null)
 								editorControl.setLayoutData(editorGD);
-							fieldEditors.put(structFieldID,editor);
+							fieldEditors.put(structFieldID, editor);
 						} else {
-							editor = (DataFieldEditor)fieldEditors.get(structFieldID);
+							editor = fieldEditors.get(structFieldID);
 						}
 						editor.setData(propertySet.getStructure(), field);
 						editor.refresh();

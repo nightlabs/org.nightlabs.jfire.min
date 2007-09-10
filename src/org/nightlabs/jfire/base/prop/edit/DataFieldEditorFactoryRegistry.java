@@ -95,9 +95,10 @@ public class DataFieldEditorFactoryRegistry extends AbstractEPProcessor {
 		
 		if (!(AbstractDataField.class.isAssignableFrom(targetType)))
 			throw new IllegalArgumentException("TargetType must be subclass of AbstractDataField but is "+targetType.getName()); //$NON-NLS-1$
-		LOGGER.debug("Adding registration for "+targetType.getName()+" on editor "+editorFactory+" editorType is "+editorFactory.getEditorType()); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		
-		getTypedRegistry(editorFactory.getEditorType()).put(targetType, editorFactory);
+		for (String editorType : editorFactory.getEditorTypes()) {
+			getTypedRegistry(editorType).put(targetType, editorFactory);
+		}
 	}
 		
 	/**

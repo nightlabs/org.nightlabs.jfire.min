@@ -121,7 +121,7 @@ public abstract class AbstractDataBlockEditor extends Composite implements DataF
 		notifyChangeListeners(editor);
 	}
 	
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("unchecked") //$NON-NLS-1$
 	public Iterator<AbstractDataField> getOrderedPropDataFieldsIterator() {
 		List<AbstractDataField> result = new LinkedList<AbstractDataField>();
 		Map<String, Integer> structFieldOrder = getStructFieldDisplayOrder();

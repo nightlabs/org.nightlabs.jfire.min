@@ -48,10 +48,10 @@ public interface DataFieldEditorFactory<F extends AbstractDataField> {
 	public Class<F> getPropDataFieldType();
 
 	/**
-	 * Should return one static final type from {@link DataFieldEditorFactoryRegistry}.
-	 * @return
+	 * Returns the editor types the field editor can be used with.
+	 * @return Tthe editor types the field editor can be used with.
 	 */
-	public String getEditorType();
+	public String[] getEditorTypes();
 
 	/**
 	 * Should return a new Instace of the editor for the supplied data.
