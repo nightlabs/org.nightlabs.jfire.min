@@ -39,7 +39,7 @@ import org.nightlabs.base.composite.XComposite;
 import org.nightlabs.base.composite.XComposite.LayoutMode;
 import org.nightlabs.jdo.search.SearchFilter;
 import org.nightlabs.jdo.search.SearchFilterItem;
-import org.nightlabs.jdo.ui.search.SearchFilterProvider;
+import org.nightlabs.jdo.ui.search.EarlySearchFilterProvider;
 import org.nightlabs.jdo.ui.search.SearchResultFetcher;
 import org.nightlabs.jfire.base.resource.Messages;
 import org.nightlabs.jfire.person.PersonStruct;
@@ -51,7 +51,7 @@ import org.nightlabs.jfire.prop.search.TextPropSearchFilterItem;
  * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] de -->
  */
 public class StaticPersonSearchFilterProvider implements
-		SearchFilterProvider {
+		EarlySearchFilterProvider {
 
 	private StaticPersonSearchFilterProviderComposite searchFilterProviderComposite;
 	private boolean createOwnSearchButton;
@@ -194,7 +194,8 @@ public class StaticPersonSearchFilterProvider implements
 		return result;
 	}
 	
-	protected PropSearchFilter createPersonSearchFilter() {
+	
+	protected PropSearchFilter createSearchFilter() {
 		return new PropSearchFilter();
 	}
 	
@@ -205,7 +206,7 @@ public class StaticPersonSearchFilterProvider implements
 	
 	protected PropSearchFilter buildPersonSearchFilter() {
 		// new filter
-		PropSearchFilter filter = createPersonSearchFilter();
+		PropSearchFilter filter = createSearchFilter();
 		
 		filter.setConjunction(SearchFilter.CONJUNCTION_AND);
 		
@@ -252,6 +253,13 @@ public class StaticPersonSearchFilterProvider implements
 			filter.addSearchFilterItem(new TextPropSearchFilterItem(PersonStruct.INTERNET_EMAIL,SearchFilterItem.MATCHTYPE_CONTAINS,searchFilterProviderComposite.getControlEmail().getTextControl().getText()));
 		
 		return filter;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public void setEarlySearchText(String earlySearchText) {
+		searchFilterProviderComposite.getControlName().getTextControl().setText(earlySearchText);
 	}
 	
 }

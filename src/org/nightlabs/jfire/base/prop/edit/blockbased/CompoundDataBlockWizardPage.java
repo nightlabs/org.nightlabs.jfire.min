@@ -211,4 +211,10 @@ public class CompoundDataBlockWizardPage extends WizardHopPage {
 	public XComposite getWrapperComp() {
 		return wrapperComp;
 	}
+	
+	@Override
+	public void onHide() {
+		super.onHide();
+		updatePropertySet();
+	}
 }

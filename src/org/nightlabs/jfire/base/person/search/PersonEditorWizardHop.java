@@ -42,6 +42,11 @@ public class PersonEditorWizardHop extends WizardHop {
 	}
 
 	public void updatePerson() {
+		if (getWizard().getContainer().getCurrentPage() == personalPage) {
+			personalPage.updatePropertySet();
+		} else if (getWizard().getContainer().getCurrentPage() == otherPage) {
+			otherPage.updatePropertySet();
+		}
 		
 	}
 }

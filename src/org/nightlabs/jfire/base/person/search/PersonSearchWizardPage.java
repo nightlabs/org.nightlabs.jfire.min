@@ -31,7 +31,7 @@ import org.nightlabs.progress.NullProgressMonitor;
 public class PersonSearchWizardPage extends WizardHopPage {
 
 	private PersonEditorWizardHop editorWizardHop;
-	private PersonSearchComposite<Person> searchComposite;
+	private PersonSearchComposite searchComposite;
 	private String quickSearchText;
 	private Person newPerson;
 	
@@ -49,7 +49,7 @@ public class PersonSearchWizardPage extends WizardHopPage {
 	 */
 	@Override
 	public Control createPageContents(Composite parent) {
-		searchComposite = new PersonSearchComposite<Person>(parent, SWT.NONE, quickSearchText);
+		searchComposite = new PersonSearchComposite(parent, SWT.NONE, quickSearchText);
 		Composite buttonBar = searchComposite.getButtonBar();
 		GridLayout gl = new GridLayout();
 		XComposite.configureLayout(LayoutMode.LEFT_RIGHT_WRAPPER, gl);
