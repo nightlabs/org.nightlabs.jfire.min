@@ -27,6 +27,7 @@
 package org.nightlabs.jfire.base.prop;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -263,10 +264,14 @@ public abstract class PropertySetSearchComposite<PropertySetType> extends XCompo
 							NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT,
 							new NullProgressMonitor()
 					);
+					if(input == null)
+						input = Collections.emptyList();
 					start = System.currentTimeMillis();
 					logger.debug("Getting "+input.size()+" from cache took " + Util.getTimeDiffString(start)); //$NON-NLS-1$ //$NON-NLS-2$
 				} else {
 					input = propertyManager.searchPropertySets(searchFilter, getFetchGroups(), NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
+					if(input == null)
+						input = Collections.emptyList();
 					logger.debug("Object search for " + input.size() + " entries took " + Util.getTimeDiffString(start)); //$NON-NLS-1$ //$NON-NLS-2$
 				}
 				start = System.currentTimeMillis();
