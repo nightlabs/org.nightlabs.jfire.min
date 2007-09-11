@@ -7,8 +7,15 @@
 		<connection-definition>javax.resource.cci.ConnectionFactory</connection-definition>
 
 <!-- indirect connection via datasource - new (JPOX 1.2) with 2 datasources - noTx for DDL, xa for normal communication -->
+<!-- Because of a JPOX bug, we temporarily use direct connections.
 		<config-property name="ConnectionFactoryName" type="java.lang.String">${datasourceJNDIName_absolute_xa}</config-property>
 		<config-property name="ConnectionFactory2Name" type="java.lang.String">${datasourceJNDIName_absolute_noTx}</config-property>
+-->
+		<config-property name="ConnectionDriverName" type="java.lang.String">${databaseDriverName_localTx}</config-property>
+		<config-property name="ConnectionURL" type="java.lang.String">${databaseURL}</config-property>
+		<config-property name="ConnectionUserName" type="java.lang.String">${databaseUserName}</config-property>
+		<config-property name="ConnectionPassword" type="java.lang.String">${databasePassword}</config-property>
+
 
 <!--		<config-property name="AutoStartMechanism" type="java.lang.String">none</config-property> -->
 		<config-property name="AutoStartMechanism" type="java.lang.String">XML</config-property>
