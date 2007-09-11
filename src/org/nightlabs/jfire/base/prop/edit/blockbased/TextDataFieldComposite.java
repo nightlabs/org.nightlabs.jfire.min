@@ -38,18 +38,19 @@ import org.eclipse.swt.widgets.Layout;
 import org.eclipse.swt.widgets.Text;
 import org.nightlabs.jfire.base.prop.edit.AbstractDataFieldComposite;
 import org.nightlabs.jfire.base.prop.edit.AbstractDataFieldEditor;
+import org.nightlabs.jfire.prop.AbstractDataField;
 import org.nightlabs.jfire.prop.StructField;
 import org.nightlabs.jfire.prop.datafield.II18nTextDataField;
 
 /**
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  */
-public class TextDataFieldComposite extends AbstractDataFieldComposite {
+public class TextDataFieldComposite<DataFieldType extends AbstractDataField & II18nTextDataField> extends AbstractDataFieldComposite {
 
 	private Label fieldName;
 	private Text fieldText;
 //	private LabeledText fieldText;
-	private AbstractDataFieldEditor<? extends II18nTextDataField> editor;
+	private AbstractDataFieldEditor<DataFieldType> editor;
 	private ModifyListener modifyListener;
 	
 	/**
@@ -59,7 +60,7 @@ public class TextDataFieldComposite extends AbstractDataFieldComposite {
 	 * @param parent
 	 * @param style
 	 */
-	public TextDataFieldComposite(AbstractDataFieldEditor<? extends II18nTextDataField> editor, Composite parent, int style, ModifyListener modListener) {
+	public TextDataFieldComposite(AbstractDataFieldEditor<DataFieldType> editor, Composite parent, int style, ModifyListener modListener) {
 		super(parent, style);
 		if (!(parent.getLayout() instanceof GridLayout))
 			throw new IllegalArgumentException("Parent should have a GridLayout!"); //$NON-NLS-1$

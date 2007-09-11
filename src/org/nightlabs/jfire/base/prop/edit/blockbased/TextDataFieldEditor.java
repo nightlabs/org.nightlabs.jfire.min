@@ -74,13 +74,13 @@ public class TextDataFieldEditor extends AbstractDataFieldEditor<TextDataField> 
 		return ExpandableBlocksEditor.EDITORTYPE_BLOCK_BASED_EXPANDABLE;
 	}	
 	
-	private TextDataFieldComposite composite;
+	private TextDataFieldComposite<TextDataField> composite;
 	/**
 	 * @see org.nightlabs.jfire.base.prop.edit.DataFieldEditor#createControl(org.eclipse.swt.widgets.Composite)
 	 */
 	public Control createControl(Composite parent) {
 		if (composite == null) {
-			composite = new TextDataFieldComposite(this, parent, SWT.NONE, this);
+			composite = new TextDataFieldComposite<TextDataField>(this, parent, SWT.NONE, this);
 		}
 		composite.refresh();
 		return composite;
