@@ -499,7 +499,8 @@ implements InitialContextProvider
 	 * @see ILoginHandler
 	 * @see Login#setLoginHandler(ILoginHandler)
 	 */
-	private void doLogin(final boolean forceLogoutFirst) throws LoginException {
+	private void doLogin(final boolean forceLogoutFirst) throws LoginException 
+	{
 		int oldLoginstate = currLoginState;
 		logger.debug("Login requested by thread "+Thread.currentThread());		 //$NON-NLS-1$
 		if ((currLoginState == LOGINSTATE_OFFLINE)){

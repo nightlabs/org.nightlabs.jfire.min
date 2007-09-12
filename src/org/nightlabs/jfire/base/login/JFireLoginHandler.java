@@ -148,26 +148,28 @@ public class JFireLoginHandler implements ILoginHandler {
 			logger.error("Could not login using the specified program arguments!", x); //$NON-NLS-1$
 		}
 
-		boolean loginDone = false;
+		// splash login removed:
 		
-		if (LoginSplashHandler.canShowSplashLogin()) {
-			try {
-				handleSplashLogin(loginContext, loginConfigModule, loginResult);
-				loginDone = true;
-			} catch (Exception x) {
-				if (!x.getMessage().contains("Widget is disposed")) { //$NON-NLS-1$
-					if (x instanceof LoginException)
-						throw (LoginException)x;
-					else if (x instanceof RuntimeException)
-						throw (RuntimeException)x;
-					else {
-						LoginException n = new LoginException(x.getMessage());
-						n.initCause(x);
-						throw n;
-					}
-				}
-			}
-		}
+//		boolean loginDone = false;
+//		
+//		if (LoginSplashHandler.canShowSplashLogin()) {
+//			try {
+//				handleSplashLogin(loginContext, loginConfigModule, loginResult);
+//				loginDone = true;
+//			} catch (Exception x) {
+//				if (!x.getMessage().contains("Widget is disposed")) { //$NON-NLS-1$
+//					if (x instanceof LoginException)
+//						throw (LoginException)x;
+//					else if (x instanceof RuntimeException)
+//						throw (RuntimeException)x;
+//					else {
+//						LoginException n = new LoginException(x.getMessage());
+//						n.initCause(x);
+//						throw n;
+//					}
+//				}
+//			}
+//		}
 		
 //		if (SplashScreen.waitForVisibleSplash()) { // isSplashVisible())
 //			try {
@@ -189,7 +191,7 @@ public class JFireLoginHandler implements ILoginHandler {
 //			}
 //		}
 
-		if (!loginDone)
+//		if (!loginDone)
 			handleSWTLogin(loginContext, loginConfigModule, loginResult);
 	}
 
@@ -203,10 +205,10 @@ public class JFireLoginHandler implements ILoginHandler {
 		loginDialog.open();
 	}
 
-	protected void handleSplashLogin(JFireLoginContext loginContext, LoginConfigModule loginConfigModule, final Login.AsyncLoginResult loginResult) throws LoginException 
-	{
-		LoginSplashHandler.sharedInstance().handleSplashLogin(loginContext, loginConfigModule, loginResult);
-	}
+//	protected void handleSplashLogin(JFireLoginContext loginContext, LoginConfigModule loginConfigModule, final Login.AsyncLoginResult loginResult) throws LoginException 
+//	{
+//		LoginSplashHandler.sharedInstance().handleSplashLogin(loginContext, loginConfigModule, loginResult);
+//	}
 	
 //	protected void handleSplashLogin(JFireLoginContext loginContext, LoginConfigModule loginConfigModule, final Login.AsyncLoginResult loginResult) throws LoginException 
 //	{

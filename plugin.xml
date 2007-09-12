@@ -354,16 +354,5 @@
             name="org.nightlabs.jfire.base.category1"/>
    </extension>
    
-   <extension
-         point="org.eclipse.ui.splashHandlers">
-      <splashHandler
-            class="org.nightlabs.jfire.base.login.splash.LoginSplashHandler"
-            id="org.nightlabs.jfire.base.login.splash.LoginSplashHandler">
-      </splashHandler>
-      <splashHandlerProductBinding
-            productId="org.nightlabs.jfire.base.product"
-            splashId="org.nightlabs.jfire.base.login.splash.LoginSplashHandler">
-      </splashHandlerProductBinding>
-   </extension>
 
 </plugin>

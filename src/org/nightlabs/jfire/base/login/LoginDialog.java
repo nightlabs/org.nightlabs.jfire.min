@@ -43,6 +43,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.nightlabs.base.composite.IMessageContainer;
+import org.nightlabs.base.util.RCPUtil;
 import org.nightlabs.config.Config;
 import org.nightlabs.config.ConfigException;
 import org.nightlabs.jfire.base.login.LoginComposite.Mode;
@@ -75,10 +76,18 @@ implements IMessageContainer
 	private Login.AsyncLoginResult loginResult = null;	
 	private JFireLoginContext loginContext = null;	
 	private boolean detailsVisible = false;
+	
+	/**
+	 * The parent shell. This is needed because {@link #getParentShell()} does not always
+	 * return the shell given in the constructor and we need it to know whether there is
+	 * already at least a main window.
+	 */
+	private Shell parentShell;
 		
 	public LoginDialog(Shell parent, Login.AsyncLoginResult loginResult, LoginConfigModule loginModule, JFireLoginContext loginContext)
 	{
 		super(parent);
+		this.parentShell = parent;
 		setShellStyle(getShellStyle()|SWT.RESIZE);
 		try {
 			persistentLoginModule = ((LoginConfigModule)Config.sharedInstance().createConfigModule(LoginConfigModule.class));
@@ -167,7 +176,10 @@ implements IMessageContainer
 	{
 		if(!loginComposite.checkUserInput())
 			return;
-		if (loginComposite.checkLogin(true, new NullProgressMonitor(), new LoginStateListener() {
+		// execute login asynchronously only if parent shell is not null - i.e. when at least the workbench window is existent.
+		System.out.println("parent shell: "+parentShell);
+		boolean async = parentShell != null;
+		if (loginComposite.checkLogin(async, new NullProgressMonitor(), new LoginStateListener() {
 			public void loginStateChanged(int loginState, IAction action) {
 				if (loginState == Login.LOGINSTATE_LOGGED_IN) {
 					Display.getDefault().asyncExec(new Runnable() {

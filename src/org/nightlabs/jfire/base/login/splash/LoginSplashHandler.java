@@ -99,11 +99,13 @@ implements IMessageContainer
 //		JFireBasePlugin.getDefault().getBundle().getBundleContext().addBundleListener(this);
 		
 		showProgressMonitor();
-		try {
-			Login.getLogin();
-		} catch (LoginException e) {
-			e.printStackTrace();
-		}
+		
+		// commented: don't show the splash automatically at startup
+//		try {
+//			Login.getLogin();
+//		} catch (LoginException e) {
+//			e.printStackTrace();
+//		}
 	}
 
 	/**

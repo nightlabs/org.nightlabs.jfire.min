@@ -44,6 +44,7 @@ import org.nightlabs.jfire.base.resource.Messages;
  * LoginComposite displayes all necessary information for Login
  * Is used in The {@link LoginDialog} as well as in the {@link LoginSplashHandler}
  * 
+ * @author Marc Klinger - marc[at]nightlabs[dot]de
  * @author Daniel Mazurek - daniel <at> nightlabs <dot> de
  * @author Tobias Langner <!-- tobias[dot]langner[at]nightlabs[dot]de -->
  */
@@ -394,13 +395,13 @@ extends Composite
 	}
 	
 	/**
-	 * tryies to perform a Login with the given values displayed in the LoginComposite
-	 * and returns if it was sucessful or not
+	 * Tries to perform a Login with the given values displayed in the LoginComposite
+	 * and returns if it was successful or not
 	 * 
-	 * @param async determines if the login should be performed asynchron or not
+	 * @param async determines if the login should be performed asynchronously or not
 	 * @param monitor the optional IPOrgressMonitor for displaying the progress, may be null
-	 * @param loginStateListener the optional {@link LoginStateListener} to get notifyied about the login result
-	 * @return true if the login was a sucess or false if not
+	 * @param loginStateListener the optional {@link LoginStateListener} to get notified about the login result
+	 * @return true if the login was a success or false if not
 	 */
 	public boolean checkLogin(boolean async, final IProgressMonitor monitor, 
 			final LoginStateListener loginStateListener)
