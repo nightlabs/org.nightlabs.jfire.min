@@ -361,16 +361,13 @@ public class ServerConfiguratorJBoss
 	private void configureMailServiceXml(File jbossDeployDir) throws FileNotFoundException, IOException, SAXException
 	{
 		File destFile = new File(jbossDeployDir, "mail-service.xml");
-//		String text = IOUtil.readTextFile(destFile);
-	//	String modificationMarker = "!!!ModifiedByJFire!!!";
-	//	if (text.indexOf(modificationMarker) >= 0)
-	//		return;
 		
-		// Issue 239: https://www.jfire.org/modules/bugs/view.php?id=239
-		// TODO Check whether the settings in the configuration file are the same as the settings in the config module
-			
-		backup(destFile);
-		logger.info("File " + destFile.getAbsolutePath() + " was not yet updated. Will change SMTP settings.");
+		/**
+		 * Set this variable to true if at least one setting in the config module does not equal
+		 * the respective setting in the configuration file. Doing so will cause the current
+		 * version of the file to be backed up and the new one to be written at the end of this method.
+		 */
+		boolean changed = false;
 		//  No reboot necessary as JBoss will automatically notice any changes on the mail-services.xml
 //		setRebootRequired(false);
 		
@@ -378,10 +375,7 @@ public class ServerConfiguratorJBoss
 		parser.parse(new InputSource(new FileInputStream(destFile)));
 		Document document = parser.getDocument();
 		
-		//document.getDocumentElement().appendChild(document.createComment(modificationMarker));
-		
 		SMTPMailServiceCf smtp = getJFireServerConfigModule().getSmtp();
-		Node propertyElement;
 	
 		if (logger.isInfoEnabled()) {
 			logger.info("Password: "+ smtp.getPassword());
@@ -393,42 +387,76 @@ public class ServerConfiguratorJBoss
 			logger.info("Debug: "+String.valueOf(smtp.getDebug()));
 		}
 		
-		propertyElement = NLDOMUtil.findNodeByAttribute(document, "server/mbean/attribute", "name", "User");
-
-		/*
+//		Tobias: Replaced this code by the four method calls below.
+//		propertyElement = NLDOMUtil.findNodeByAttribute(document, "server/mbean/attribute", "name", "User");
+//		/*
+//		}
+//		if(propertyElement.getFirstChild() == null) {
+//			Node textNode = document.createTextNode(smtp.getUsername());
+//			propertyElement.appendChild(textNode);
+//		} else propertyElement.getFirstChild().setNodeValue(smtp.getUsername());
+//		
+//		propertyElement = NLDOMUtil.findNodeByAttribute(document, "server/mbean/attribute", "name", "Password");
+//		if(propertyElement.getFirstChild() == null) {
+//			Node textNode = document.createTextNode(smtp.getPassword());
+//			propertyElement.appendChild(textNode);
+//		} else propertyElement.getFirstChild().setNodeValue(smtp.getPassword());
+//		*/
+//		propertyElement = NLDOMUtil.findNodeByAttribute(document, "server/mbean/attribute/configuration/property", "name", "mail.smtp.host");
+//		valueItem = propertyElement.getAttributes().getNamedItem("value");
+//		changed |= !smtp.getHost().equals(valueItem.getNodeValue());
+//		valueItem.setNodeValue(smtp.getHost());
+//
+//		propertyElement = NLDOMUtil.findNodeByAttribute(document, "server/mbean/attribute/configuration/property", "name", "mail.smtp.port");
+//		if (propertyElement != null) {
+//			valueItem = propertyElement.getAttributes().getNamedItem("value");
+//			valueItem.setNodeValue(String.valueOf(smtp.getPort()));
+//			changed |= !smtp.getPort().equals(valueItem.getNodeValue());
+//		}
+//		else
+//			logger.warn("server/mbean/attribute/configuration/property not found with name=\"mail.smtp.port\"!", new RuntimeException("server/mbean/attribute/configuration/property not found with name=\"mail.smtp.port\"!")); // TODO add the missing element! only necessary for JBoss 4.0.4
+//		
+//		propertyElement = NLDOMUtil.findNodeByAttribute(document, "server/mbean/attribute/configuration/property", "name", "mail.from");
+//		valueItem = propertyElement.getAttributes().getNamedItem("value");
+//		changed |= !smtp.getMailFrom().equals(valueItem.getNodeValue());
+//		valueItem.setNodeValue(smtp.getMailFrom());
+//		
+//		propertyElement = NLDOMUtil.findNodeByAttribute(document, "server/mbean/attribute/configuration/property", "name", "mail.debug");
+//		valueItem = propertyElement.getAttributes().getNamedItem("value");
+//		changed |= !smtp.getDebug().equals(valueItem.getNodeValue());
+//		valueItem.setNodeValue(String.valueOf(smtp.getDebug()));
+		
+		changed |= setMailConfigurationAttribute(document, "mail.smtp.host", smtp.getHost());
+		changed |= setMailConfigurationAttribute(document, "mail.smtp.port", String.valueOf(smtp.getPort()));
+		changed |= setMailConfigurationAttribute(document, "mail.from", smtp.getMailFrom());
+		changed |= setMailConfigurationAttribute(document, "mail.debug", String.valueOf(smtp.getDebug()));
+		
+		if (changed) {
+			backup(destFile);
+			FileOutputStream out = new FileOutputStream(destFile);
+			try {				
+				logger.info("File " + destFile.getAbsolutePath() + " was not yet updated. Will change SMTP settings.");
+				NLDOMUtil.writeDocument(document, out, "UTF-8");
+			} finally {
+				out.close();
+			}
 		}
-		if(propertyElement.getFirstChild() == null) {
-			Node textNode = document.createTextNode(smtp.getUsername());
-			propertyElement.appendChild(textNode);
-		} else propertyElement.getFirstChild().setNodeValue(smtp.getUsername());
-		
-		propertyElement = NLDOMUtil.findNodeByAttribute(document, "server/mbean/attribute", "name", "Password");
-		if(propertyElement.getFirstChild() == null) {
-			Node textNode = document.createTextNode(smtp.getPassword());
-			propertyElement.appendChild(textNode);
-		} else propertyElement.getFirstChild().setNodeValue(smtp.getPassword());
-		*/
-		propertyElement = NLDOMUtil.findNodeByAttribute(document, "server/mbean/attribute/configuration/property", "name", "mail.smtp.host");
-		propertyElement.getAttributes().getNamedItem("value").setNodeValue(smtp.getHost());
-
-		propertyElement = NLDOMUtil.findNodeByAttribute(document, "server/mbean/attribute/configuration/property", "name", "mail.smtp.port");
-		if (propertyElement != null)
-			propertyElement.getAttributes().getNamedItem("value").setNodeValue(String.valueOf(smtp.getPort()));
-		else
-			logger.warn("server/mbean/attribute/configuration/property not found with name=\"mail.smtp.port\"!", new RuntimeException("server/mbean/attribute/configuration/property not found with name=\"mail.smtp.port\"!")); // TODO add the missing element! only necessary for JBoss 4.0.4
-
-		propertyElement = NLDOMUtil.findNodeByAttribute(document, "server/mbean/attribute/configuration/property", "name", "mail.from");
-		propertyElement.getAttributes().getNamedItem("value").setNodeValue(smtp.getMailFrom());
-		
-		propertyElement = NLDOMUtil.findNodeByAttribute(document, "server/mbean/attribute/configuration/property", "name", "mail.debug");
-		propertyElement.getAttributes().getNamedItem("value").setNodeValue(String.valueOf(smtp.getDebug()));
-		
-		FileOutputStream out = new FileOutputStream(destFile);
-		try {
-			NLDOMUtil.writeDocument(document, out, "UTF-8");
-		} finally {
-			out.close();
+	}
+	
+	private boolean setMailConfigurationAttribute(Document document, String name, String value) {
+		Node propertyElement;
+		Node valueItem;
+		propertyElement = NLDOMUtil.findNodeByAttribute(document, "server/mbean/attribute/configuration/property", "name", name);
+		boolean changed = false;
+		if (propertyElement != null) {
+			valueItem = propertyElement.getAttributes().getNamedItem("value");
+			changed = !value.equals(valueItem.getNodeValue());
+			valueItem.setNodeValue(value);
+		} else {
+			logger.warn("server/mbean/attribute/configuration/property not found with name=\""+name+"\"!", new RuntimeException("server/mbean/attribute/configuration/property not found with name=\""+name+"\"!"));
 		}
+		
+		return changed;
 	}
 	
 	private void configureJBossjtaPropertiesXml(File jbossConfDir)
