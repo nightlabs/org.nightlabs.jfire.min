@@ -43,15 +43,15 @@
 		<config-property name="DetachOnClose" type="boolean">false</config-property>
 		<config-property name="StringDefaultLength" type="int">255</config-property>
 
-<!-- we currently don't use any connection pooling at all, because there still is a jpox bug (deletions fail) -->
+<!-- We don't need any connection pooling at all, if we use container-managed connections. Right now, however, we need to use direct connections because of a JPOX bug (see above). -->
 <!--
 		<config-property name="ConnectionPoolingType" type="java.lang.String">Proxool</config-property>
 		<config-property name="ConnectionPoolingConfigurationFile" type="java.lang.String">jpox-proxool.properties</config-property>
 -->
-<!--
+
 		<config-property name="ConnectionPoolingType" type="java.lang.String">DBCP</config-property>
 		<config-property name="ConnectionPoolingConfigurationFile" type="java.lang.String">jpox-dbcp.properties</config-property>
--->
+
 <!--
 		<config-property name="ConnectionPoolingType" type="java.lang.String">C3P0</config-property>
 		<config-property name="ConnectionPoolingConfigurationFile" type="java.lang.String">jpox-c3p0.properties</config-property>
