@@ -32,7 +32,6 @@ import org.apache.commons.beanutils.BeanUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.swt.widgets.Display;
 import org.nightlabs.base.NLBasePlugin;
-import org.nightlabs.jfire.base.login.splash.LoginSplashHandler;
 
 /**
  * @see org.nightlabs.jfire.base.login.ILoginHandler
@@ -148,51 +147,7 @@ public class JFireLoginHandler implements ILoginHandler {
 			logger.error("Could not login using the specified program arguments!", x); //$NON-NLS-1$
 		}
 
-		// splash login removed:
-		
-//		boolean loginDone = false;
-//		
-//		if (LoginSplashHandler.canShowSplashLogin()) {
-//			try {
-//				handleSplashLogin(loginContext, loginConfigModule, loginResult);
-//				loginDone = true;
-//			} catch (Exception x) {
-//				if (!x.getMessage().contains("Widget is disposed")) { //$NON-NLS-1$
-//					if (x instanceof LoginException)
-//						throw (LoginException)x;
-//					else if (x instanceof RuntimeException)
-//						throw (RuntimeException)x;
-//					else {
-//						LoginException n = new LoginException(x.getMessage());
-//						n.initCause(x);
-//						throw n;
-//					}
-//				}
-//			}
-//		}
-		
-//		if (SplashScreen.waitForVisibleSplash()) { // isSplashVisible())
-//			try {
-//				handleSplashLogin(loginContext, loginConfigModule, loginResult);
-//				loginDone = true;
-//			} catch (Exception x) {
-//				// if it's a SplashAlreadyTerminatedException, we ignore it and silently switch to SWT login
-//				if (ExceptionUtils.indexOfThrowable(x, SplashAlreadyTerminatedException.class) < 0) {
-//					if (x instanceof LoginException)
-//						throw (LoginException)x;
-//					else if (x instanceof RuntimeException)
-//						throw (RuntimeException)x;
-//					else {
-//						LoginException n = new LoginException(x.getMessage());
-//						n.initCause(x);
-//						throw n;
-//					}
-//				}
-//			}
-//		}
-
-//		if (!loginDone)
-			handleSWTLogin(loginContext, loginConfigModule, loginResult);
+		handleSWTLogin(loginContext, loginConfigModule, loginResult);
 	}
 
 	// TODO: should the creation and registration of login dialog be synchronized?? 
@@ -204,123 +159,4 @@ public class JFireLoginHandler implements ILoginHandler {
 		// LoginDialog does all the work
 		loginDialog.open();
 	}
-
-//	protected void handleSplashLogin(JFireLoginContext loginContext, LoginConfigModule loginConfigModule, final Login.AsyncLoginResult loginResult) throws LoginException 
-//	{
-//		LoginSplashHandler.sharedInstance().handleSplashLogin(loginContext, loginConfigModule, loginResult);
-//	}
-	
-//	protected void handleSplashLogin(JFireLoginContext loginContext, LoginConfigModule loginConfigModule, final Login.AsyncLoginResult loginResult) throws LoginException 
-//	{
-//		final SplashLoginPanel loginPanel = new SplashLoginPanel(loginContext, loginConfigModule);
-//		loginPanel.doLayout();
-////		Object mutex = new Object();
-//		try {
-//			Runnable runLogin =  new Runnable() {
-//				public void run() {
-//					SplashScreen.setSplashPanel(loginPanel);
-//					SplashScreen.setProgressIndeterminite(false);
-//					SplashScreen.setProgressMinMax(0,1);
-//					SplashScreen.setProgressValue(0);
-//					SplashScreen.setSplashMessage(""); //$NON-NLS-1$
-//				}
-//			};
-//			if (EventQueue.isDispatchThread())
-//				runLogin.run();
-//			else
-//				SwingUtilities.invokeAndWait(runLogin);
-//
-//		} catch (InterruptedException e) {
-//			LoginException x = new LoginException("Error in SplashLogin: "+e.getMessage()); //$NON-NLS-1$
-//			x.initCause(e);
-//			throw x;
-//		} catch (InvocationTargetException e) {
-//			LoginException x = new LoginException("Error in SplashLogin: "+e.getMessage()); //$NON-NLS-1$
-//			x.initCause(e);
-//			throw x;
-//		}
-//		boolean loggedIn = false;
-//		int loginTries = 0;
-//		// Wait for the login
-//		while ((!loggedIn) && (loginTries < 3)) {
-//			try {
-//				synchronized (SplashScreen.getMutex()) {
-//					SplashScreen.getMutex().wait();
-//				}
-//			} catch (InterruptedException e) {
-//				LoginException x = new LoginException("Caught InterruptedException while waiting for login: "+e.getMessage()); //$NON-NLS-1$
-//				x.initCause(e);
-//				throw x;
-//			}
-//			if(loginPanel.isWorkOffline()) {
-//				SplashScreen.setSplashMessage(Messages.getString("login.JFireLoginHandler.workOffline")); //$NON-NLS-1$
-//				loginResult.setWorkOffline(true);
-//				break;
-//			}
-//			
-//			boolean saveConfig = loginPanel.assignLoginValues();
-//			
-//			SplashScreen.setSplashMessage(Messages.getString("login.JFireLoginHandler.tryToLogin")); //$NON-NLS-1$
-//			Login.AsyncLoginResult testResult = Login.testLogin(loginContext);
-//			testResult.copyValuesTo(loginResult);
-//			loggedIn = testResult.isSuccess();
-//			if (loggedIn) {
-//				LoginConfigModule persistentLoginModule;
-//				try {
-//					persistentLoginModule = ((LoginConfigModule)Config.sharedInstance().createConfigModule(LoginConfigModule.class));
-//				} catch (ConfigException e) {
-//					throw new RuntimeException(e);
-//				}
-//				
-//				if (saveConfig)
-//					loginConfigModule.saveLatestConfiguration();
-//				
-//				try {
-//					BeanUtils.copyProperties(persistentLoginModule, loginConfigModule);
-//					persistentLoginModule.setChanged();
-//				} catch (Exception e) {
-//					logger.error("Saving config failed!", e); //$NON-NLS-1$
-//				}
-//				
-//				SplashScreen.setSplashMessage(Messages.getString("login.JFireLoginHandler.loginSuccessful")); //$NON-NLS-1$
-//				break;
-//			}
-//			loginTries++;
-//
-//			SwingUtilities.invokeLater(new Runnable(){
-//				public void run() {
-//					if ((!loginResult.isWasAuthenticationErr()) && (loginResult.isSuccess()))
-//						return;
-//					else {
-//						// login failed
-//						if (loginResult.isWasAuthenticationErr()) {
-//							loginPanel.setErrMessage(Messages.getString("org.nightlabs.jfire.base.login.JFireLoginHandler.loginPanel.errMessage_authenticationFailed")); //$NON-NLS-1$
-//						}
-//						else if (loginResult.isWasCommunicationErr()) {
-//							loginPanel.setErrMessage(
-//									String.format(Messages.getString("org.nightlabs.jfire.base.login.JFireLoginHandler.loginPanel.errMessage_communicationError"), //$NON-NLS-1$
-//									new Object[] { loginResult.getException().getMessage() }
-//							));
-//						}
-//						else {
-//							String message = loginResult.getMessage();
-//							if (loginResult.getException() != null) {
-//								message += "\n"+loginResult.getException().getClass().getName()+": "+loginResult.getException().getLocalizedMessage(); //$NON-NLS-1$ //$NON-NLS-2$
-//								Throwable cause = loginResult.getException().getCause();
-//								while ( cause != null ) {
-//									message += "\n"+cause.getClass().getName()+": "+cause.getLocalizedMessage(); //$NON-NLS-1$ //$NON-NLS-2$
-//									cause = cause.getCause();
-//								}
-//								loginResult.getException().printStackTrace();
-//							}
-//							loginPanel.setErrMessage(message);
-//
-//						}
-//					}
-//				}
-//			});
-//		}
-//		SplashScreen.resetSplashPanel();
-//	}
-
 }
