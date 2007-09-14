@@ -41,5 +41,6 @@
 	<classpathentry kind="var" path="WORKSPACE/JFireChezFrancois/dist/JFireChezFrancois.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/JFireIntegrationJBoss"/>
 	<classpathentry kind="var" path="APACHE_COMMONS/commons-lang.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/JFireBaseDAO"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
