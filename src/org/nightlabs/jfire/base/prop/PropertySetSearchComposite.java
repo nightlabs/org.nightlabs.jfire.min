@@ -38,6 +38,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -279,6 +280,9 @@ public abstract class PropertySetSearchComposite<PropertySetType> extends XCompo
 				Display.getDefault().asyncExec(new Runnable() {
 					public void run() {
 						resultTable.setInput(finalInput);
+						if (finalInput != null && finalInput.size() == 1) {
+							resultTable.setSelection(new StructuredSelection(finalInput.iterator().next()));
+						}
 					}
 				});				
 			} catch (Exception e) {
