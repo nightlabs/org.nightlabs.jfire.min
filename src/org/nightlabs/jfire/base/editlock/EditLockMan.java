@@ -20,7 +20,6 @@ import org.nightlabs.base.job.Job;
 import org.nightlabs.base.util.RCPUtil;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jdo.ObjectID;
-import org.nightlabs.jfire.base.DeadlockWorkaroundSharedMutex;
 import org.nightlabs.jfire.base.resource.Messages;
 import org.nightlabs.jfire.editlock.AcquireEditLockResult;
 import org.nightlabs.jfire.editlock.EditLock;
@@ -327,52 +326,49 @@ public class EditLockMan
 
 
 		EditLockCarrier oldEditLockCarrier;
-		synchronized (DeadlockWorkaroundSharedMutex.getMutex()) // FIXME: Deadlock workaround 
-		{
+		synchronized (editLockCarrierMutex) {
+			oldEditLockCarrier = objectID2EditLockCarrier.get(objectID);
+			if (oldEditLockCarrier != null) { // If we already manage a lock, we only set the new lastUserActivity
+				oldEditLockCarrier.setLastUserActivityDT();
+				oldEditLockCarrier.setEditLockCallbackListener(editLockCallback);
+			}
+		}
+		if (oldEditLockCarrier == null) { // we only need to communicate with the server, if the object is not yet locked there. and we don't open a dialog when refreshing - only when new.
+			final AcquireEditLockResult acquireEditLockResult;
+
+			monitor.beginTask(Messages.getString("org.nightlabs.jfire.base.editlock.EditLockMan.aquireLockTask"), 1); //$NON-NLS-1$
+			try {
+				acquireEditLockResult = editLockDAO.acquireEditLock(
+						editLockTypeID, objectID, description, FETCH_GROUPS_EDIT_LOCK, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
+			} finally {
+				monitor.worked(1);
+			}
+
+			EditLockCarrier newEditLockCarrier;
 			synchronized (editLockCarrierMutex) {
-				oldEditLockCarrier = objectID2EditLockCarrier.get(objectID);
-				if (oldEditLockCarrier != null) { // If we already manage a lock, we only set the new lastUserActivity
-					oldEditLockCarrier.setLastUserActivityDT();
-					oldEditLockCarrier.setEditLockCallbackListener(editLockCallback);
-				}
+				newEditLockCarrier = createEditLockCarrier(acquireEditLockResult.getEditLock(), null); // we ignore the old carrier and create a clean one
+				newEditLockCarrier.setEditLockCallbackListener(editLockCallback);
 			}
-			if (oldEditLockCarrier == null) { // we only need to communicate with the server, if the object is not yet locked there. and we don't open a dialog when refreshing - only when new.
-				final AcquireEditLockResult acquireEditLockResult;
-	
-				monitor.beginTask(Messages.getString("org.nightlabs.jfire.base.editlock.EditLockMan.aquireLockTask"), 1); //$NON-NLS-1$
-				try {
-					acquireEditLockResult = editLockDAO.acquireEditLock(
-							editLockTypeID, objectID, description, FETCH_GROUPS_EDIT_LOCK, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
-				} finally {
-					monitor.worked(1);
-				}
-	
-				EditLockCarrier newEditLockCarrier;
-				synchronized (editLockCarrierMutex) {
-					newEditLockCarrier = createEditLockCarrier(acquireEditLockResult.getEditLock(), null); // we ignore the old carrier and create a clean one
-					newEditLockCarrier.setEditLockCallbackListener(editLockCallback);
-				}
-	
-				if (acquireEditLockResult.getEditLockCount() > 1) { // there's another lock => we show a warning
-					Runnable dialogOpener = new Runnable() {
-						public void run() {
-							Shell pshell = parentShell;
-							if (pshell == null)
-								pshell = RCPUtil.getActiveWorkbenchShell();
-	
-							EditLockCollisionWarningDialog dialog = new EditLockCollisionWarningDialog(pshell, acquireEditLockResult);
-							dialog.open();
-							dialog.setBlockOnOpen(false);
-						}
-					};
-	
-					if (Display.getCurrent() == null)
-						Display.getDefault().asyncExec(dialogOpener);
-					else
-						dialogOpener.run();
-				}
-				createJob(newEditLockCarrier);
+
+			if (acquireEditLockResult.getEditLockCount() > 1) { // there's another lock => we show a warning
+				Runnable dialogOpener = new Runnable() {
+					public void run() {
+						Shell pshell = parentShell;
+						if (pshell == null)
+							pshell = RCPUtil.getActiveWorkbenchShell();
+
+						EditLockCollisionWarningDialog dialog = new EditLockCollisionWarningDialog(pshell, acquireEditLockResult);
+						dialog.open();
+						dialog.setBlockOnOpen(false);
+					}
+				};
+
+				if (Display.getCurrent() == null)
+					Display.getDefault().asyncExec(dialogOpener);
+				else
+					dialogOpener.run();
 			}
+			createJob(newEditLockCarrier);
 		}
 	}
 
