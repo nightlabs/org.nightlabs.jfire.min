@@ -57,8 +57,13 @@ public abstract class AbstractInlineDataFieldComposite<Editor extends DataFieldE
 		title = new Label(this, SWT.NONE);
 	}
 	
-	public final void refresh() {
-		title.setText(getEditor().getStructField().getName().getText());
+	/**
+	 * Do not override this method, use {@link #_refresh()} instead.
+	 */
+	public void refresh() {
+		if (getEditor().getStructField() != null)
+			title.setText(getEditor().getStructField().getName().getText());
+		
 		_refresh();
 	}
 	
