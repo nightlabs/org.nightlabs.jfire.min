@@ -31,6 +31,8 @@ import org.eclipse.swt.widgets.Control;
 import org.nightlabs.jfire.prop.AbstractDataField;
 import org.nightlabs.jfire.prop.IStruct;
 import org.nightlabs.jfire.prop.PropertySet;
+import org.nightlabs.jfire.prop.StructField;
+import org.nightlabs.language.LanguageCf;
 
 
 /**
@@ -46,12 +48,12 @@ public interface DataFieldEditor<F extends AbstractDataField> {
 	 * Set the factory this field editor is associated with.
 	 * @param factory The factory to set.
 	 */
-	public void setPropDataFieldEditorFactory(DataFieldEditorFactory factory);
+	public void setPropDataFieldEditorFactory(DataFieldEditorFactory<F> factory);
 	/**
 	 * Get the factory this field editor is associated with.
 	 * @return The factory this field editor is associated with.
 	 */
-	public DataFieldEditorFactory getPropDataFieldEditorFactory();
+	public DataFieldEditorFactory<F> getPropDataFieldEditorFactory();
 	
 	/**
 	 * Here a data field editor should add its
@@ -81,7 +83,19 @@ public interface DataFieldEditor<F extends AbstractDataField> {
 	 * @param data The {@link AbstractDataField} this field editor should modify
 	 */
 	public void setData(IStruct struct, F data);
-
+	
+	/**
+	 * Editors should return the currently managed {@link AbstractDataField} here.
+	 * @return the currently managed {@link AbstractDataField} here.
+	 */
+	public F getDataField();
+	
+	/**
+	 * Editors should return the {@link StructField} that corresponds to the currently managed {@link AbstractDataField}.
+	 * @return the {@link StructField} that corresponds to the currently managed {@link AbstractDataField}.
+	 */
+	public StructField getStructField();
+	
 	/**
 	 * Refresh the control with the data currently set.
 	 */
@@ -91,7 +105,7 @@ public interface DataFieldEditor<F extends AbstractDataField> {
 	 * Updates the PropertySet, sets the data from the UI control 
 	 * to the {@link AbstractDataField} currently set.
 	 * <p>
-	 * This method should be threadsave (access GUI on the GUI-Thread).
+	 * This method should be threadsafe (access GUI on the GUI-Thread).
 	 * </p>
 	 */
 	public void updatePropertySet();

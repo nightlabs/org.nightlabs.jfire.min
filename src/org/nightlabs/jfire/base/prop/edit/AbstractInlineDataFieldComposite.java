@@ -26,21 +26,63 @@
 
 package org.nightlabs.jfire.base.prop.edit;
 
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
 import org.nightlabs.base.composite.XComposite;
+import org.nightlabs.jfire.prop.AbstractDataField;
 
 /**
+ * Abstract base composite for composites that are supposed to edit a single {@link AbstractDataField} in an <b>inline</b> style,
+ * that means they consist of a label for the respective data field and a single input element like a textbox. Extending this
+ * class makes it easy to create different composites that look similar according to insets and spacing.
+ *  
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
+ * @author Tobias Langner <!-- tobias[dot]langner[at]nightlabs[dot]de -->
  */
-public abstract class AbstractDataFieldComposite extends XComposite { 
-	public abstract void refresh();
+public abstract class AbstractInlineDataFieldComposite<Editor extends DataFieldEditor<DataField>, DataField extends AbstractDataField> extends XComposite {
+	private Editor editor;
+	private Label title;
 	
 	/**
 	 * @param parent
 	 * @param style
 	 * @see Composite#Composite(org.eclipse.swt.widgets.Composite, int)
 	 */
-	public AbstractDataFieldComposite(Composite parent, int style) {
+	public AbstractInlineDataFieldComposite(Composite parent, int style, Editor editor) {
 		super(parent, style);
+		this.editor = editor;
+		setLayout(getDefaultLayout());		
+		title = new Label(this, SWT.NONE);
 	}
+	
+	public final void refresh() {
+		title.setText(getEditor().getStructField().getName().getText());
+		_refresh();
+	}
+	
+	protected abstract void _refresh();
+	
+	protected Editor getEditor() {
+		return this.editor;
+	}
+	
+	/**
+	 * Creates a standard {@link GridLayout} for DataFieldEditComposites.
+	 * @return a standard {@link GridLayout} to be used in DataFieldEditors
+	 */
+	public static GridLayout getDefaultLayout() {
+		GridLayout layout = new GridLayout();
+		layout.horizontalSpacing = 0;
+// TODO: this is a quickfix for the Formtoolkit Boarderpainter, which paints to the outside of the elements -> there needs to be space in the enclosing composite for the borders
+		layout.verticalSpacing = 4;
+		layout.marginHeight = 0;
+		layout.marginWidth = 2;
+		return layout;
+	}
+	
+//	protected final getInputControlLayoutData() {
+//		
+//	}
 }

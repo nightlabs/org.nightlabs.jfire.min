@@ -36,6 +36,7 @@ import org.eclipse.swt.widgets.Control;
 import org.nightlabs.jfire.prop.AbstractDataField;
 import org.nightlabs.jfire.prop.IStruct;
 import org.nightlabs.jfire.prop.StructField;
+import org.nightlabs.language.LanguageCf;
 
 /**
  * Abstract base class for all  {@link DataFieldEditor} s with implementations for the listener stuff and other
@@ -47,6 +48,7 @@ public abstract class AbstractDataFieldEditor<F extends AbstractDataField> imple
 {
 	private StructField structField;
 	private IStruct struct;
+	private LanguageCf language;
 	
 	public AbstractDataFieldEditor()
 	{
@@ -106,7 +108,7 @@ public abstract class AbstractDataFieldEditor<F extends AbstractDataField> imple
 	 * 
 	 * @see #doRefresh(AbstractDataField) 
 	 */
-	public void refresh() {
+	public final void refresh() {
 		refreshing = true;
 		try {
 			doRefresh();

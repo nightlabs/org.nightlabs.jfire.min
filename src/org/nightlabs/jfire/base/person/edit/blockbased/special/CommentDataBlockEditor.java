@@ -51,6 +51,7 @@ import org.nightlabs.jfire.person.PersonStruct;
 import org.nightlabs.jfire.prop.AbstractDataField;
 import org.nightlabs.jfire.prop.DataBlock;
 import org.nightlabs.jfire.prop.IStruct;
+import org.nightlabs.jfire.prop.StructField;
 import org.nightlabs.jfire.prop.datafield.TextDataField;
 import org.nightlabs.jfire.prop.exception.DataFieldNotFoundException;
 import org.nightlabs.jfire.prop.id.StructBlockID;
@@ -250,6 +251,14 @@ public class CommentDataBlockEditor extends AbstractDataBlockEditor
 	public void setData(IStruct struct, AbstractDataField data) {
 		commentData = (TextDataField)data;
 		refresh();
+	}
+
+	public AbstractDataField getDataField() {
+		return null;
+	}
+
+	public StructField getStructField() {
+		return null;
 	}
 
 }

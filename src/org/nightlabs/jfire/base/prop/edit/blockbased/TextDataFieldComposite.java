@@ -28,30 +28,55 @@ package org.nightlabs.jfire.base.prop.edit.blockbased;
 
 import java.util.Locale;
 
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Layout;
 import org.eclipse.swt.widgets.Text;
-import org.nightlabs.jfire.base.prop.edit.AbstractDataFieldComposite;
 import org.nightlabs.jfire.base.prop.edit.AbstractDataFieldEditor;
+import org.nightlabs.jfire.base.prop.edit.AbstractInlineDataFieldComposite;
 import org.nightlabs.jfire.prop.AbstractDataField;
-import org.nightlabs.jfire.prop.StructField;
 import org.nightlabs.jfire.prop.datafield.II18nTextDataField;
 
 /**
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  */
-public class TextDataFieldComposite<DataFieldType extends AbstractDataField & II18nTextDataField> extends AbstractDataFieldComposite {
+public class TextDataFieldComposite<DataFieldType extends AbstractDataField & II18nTextDataField> extends AbstractInlineDataFieldComposite<AbstractDataFieldEditor<DataFieldType>, DataFieldType> {
 
-	private Label fieldName;
+//	private Label fieldName;
 	private Text fieldText;
 //	private LabeledText fieldText;
-	private AbstractDataFieldEditor<DataFieldType> editor;
+//	private AbstractDataFieldEditor<DataFieldType> editor;
 	private ModifyListener modifyListener;
+	
+	
+	public TextDataFieldComposite(AbstractDataFieldEditor<DataFieldType> editor, Composite parent, int style, ModifyListener modListener, GridLayout gl) {
+		super(parent, style, editor);
+		if (!(parent.getLayout() instanceof GridLayout))
+			throw new IllegalArgumentException("Parent should have a GridLayout!"); //$NON-NLS-1$
+		
+//		this.editor = editor; 
+//		
+//		Layout layout = createLayout();
+//		setLayout(layout);
+//		GridData gridData = new GridData(GridData.FILL_HORIZONTAL);
+//		setLayoutData(gridData);
+//		
+//		fieldName = new Label(this, SWT.NONE);
+//		fieldName.setLayoutData(createLabelLayoutData());
+		
+		fieldText = new Text(this, getTextBorderStyle());
+//		fieldText.setEditable(true);
+		fieldText.setEnabled(true);
+		fieldText.setLayoutData(createTextLayoutData());
+		this.modifyListener = modListener;
+		fieldText.addModifyListener(modifyListener);
+		
+		if (gl != null)
+			setLayout(gl);
+		
+//		fieldText = new LabeledText(this, "");
+	}
 	
 	/**
 	 * Assumes to have a parent composite with GridLaout and
@@ -61,38 +86,7 @@ public class TextDataFieldComposite<DataFieldType extends AbstractDataField & II
 	 * @param style
 	 */
 	public TextDataFieldComposite(AbstractDataFieldEditor<DataFieldType> editor, Composite parent, int style, ModifyListener modListener) {
-		super(parent, style);
-		if (!(parent.getLayout() instanceof GridLayout))
-			throw new IllegalArgumentException("Parent should have a GridLayout!"); //$NON-NLS-1$
-		
-		this.editor = editor; 
-		
-		Layout layout = createLayout();
-		setLayout(layout);
-		GridData gridData = new GridData(GridData.FILL_HORIZONTAL);
-		setLayoutData(gridData);
-		
-		fieldName = new Label(this, SWT.NONE);
-		fieldName.setLayoutData(createLabelLayoutData());
-		
-		fieldText = new Text(this, getTextBorderStyle());
-//		fieldText.setEditable(true);
-		fieldText.setEnabled(true);
-		fieldText.setLayoutData(createTextLayoutData());
-		this.modifyListener = modListener;
-		fieldText.addModifyListener(modifyListener);
-		
-//		fieldText = new LabeledText(this, "");
-	}
-	
-	protected Layout createLayout() {
-		GridLayout layout = new GridLayout();
-		layout.horizontalSpacing = 0;
-// TODO: this is a quickfix for the Formtoolkit Boarderpainter, which paints to the outside of the elements -> there needs to be space in the enclosing composite for the borders
-		layout.verticalSpacing = 2;
-		layout.marginHeight = 2;
-		layout.marginWidth = 2;
-		return layout;
+		this(editor, parent, style, modListener, null);
 	}
 	
 	protected Object createLabelLayoutData() {
@@ -112,21 +106,21 @@ public class TextDataFieldComposite<DataFieldType extends AbstractDataField & II
 	}
 	
 	/**
-	 * @see org.nightlabs.jfire.base.prop.edit.AbstractDataFieldComposite#refresh()
+	 * @see org.nightlabs.jfire.base.prop.edit.AbstractInlineDataFieldComposite#refresh()
 	 */
-	public void refresh() {
-		StructField field = editor.getStructField();
+	public void _refresh() {
+//		StructField field = getEditor().getStructField();
 //		fieldText.setCaption(field.getName().getText());
 //		if (editor.getDataField().getText() == null)
 //			fieldText.setText("");
 //		else
 //			fieldText.setText(editor.getDataField().getText());
 		
-		fieldName.setText(field.getName().getText());
-		if (editor.getDataField().getText(Locale.getDefault()) == null)
+//		fieldName.setText(field.getName().getText());
+		if (getEditor().getDataField().getText(Locale.getDefault()) == null)
 			fieldText.setText(""); //$NON-NLS-1$
 		else
-			fieldText.setText(editor.getDataField().getText(Locale.getDefault()));
+			fieldText.setText(getEditor().getDataField().getText(Locale.getDefault()));
 		
 		// TODO set the text fields maximum line count to the one given by the struct field 
 		// ((TextStructField)editor.getDataField().getStructField()).getLineCount();
@@ -135,8 +129,6 @@ public class TextDataFieldComposite<DataFieldType extends AbstractDataField & II
 	public String getText() {
 		return fieldText.getText();
 	}
-	
-	
 	
 	public void dispose() {
 		fieldText.removeModifyListener(modifyListener);

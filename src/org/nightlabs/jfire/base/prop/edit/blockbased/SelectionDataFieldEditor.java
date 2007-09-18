@@ -3,8 +3,6 @@
  */
 package org.nightlabs.jfire.base.prop.edit.blockbased;
 
-import java.util.Locale;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -13,7 +11,6 @@ import org.nightlabs.jfire.base.prop.edit.AbstractDataFieldEditorFactory;
 import org.nightlabs.jfire.base.prop.edit.DataFieldEditor;
 import org.nightlabs.jfire.base.prop.edit.fieldbased.FieldBasedEditor;
 import org.nightlabs.jfire.prop.datafield.SelectionDataField;
-import org.nightlabs.language.LanguageCf;
 
 /**
  * @author Tobias Langner <!-- tobias[dot]langner[at]nightlabs[dot]de -->
@@ -44,11 +41,8 @@ public class SelectionDataFieldEditor extends AbstractDataFieldEditor<SelectionD
 	
 	private SelectionDataFieldComposite composite;
 	
-	private LanguageCf language;
-	
 	public SelectionDataFieldEditor() {
 		super();
-		language = new LanguageCf(Locale.getDefault().getLanguage());
 	}
 	
 	/*
@@ -85,10 +79,6 @@ public class SelectionDataFieldEditor extends AbstractDataFieldEditor<SelectionD
 	 */
 	public void updatePropertySet() {
 		getDataField().setSelection(composite.getFieldValueCombo().getSelectedElement());
-	}
-	
-	public LanguageCf getLanguage() {
-		return language;
 	}
 }
 

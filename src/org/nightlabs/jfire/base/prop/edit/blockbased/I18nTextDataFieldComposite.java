@@ -26,30 +26,25 @@
 
 package org.nightlabs.jfire.base.prop.edit.blockbased;
 
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
 import org.nightlabs.base.language.I18nTextEditor;
 import org.nightlabs.base.language.I18nTextEditorMultiLine;
-import org.nightlabs.base.language.II18nTextEditor;
 import org.nightlabs.base.language.I18nTextEditor.EditMode;
 import org.nightlabs.i18n.I18nText;
-import org.nightlabs.jfire.base.prop.edit.AbstractDataFieldComposite;
-import org.nightlabs.jfire.prop.StructField;
+import org.nightlabs.jfire.base.prop.edit.AbstractInlineDataFieldComposite;
+import org.nightlabs.jfire.prop.datafield.I18nTextDataField;
 import org.nightlabs.jfire.prop.structfield.I18nTextStructField;
 
 /**
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  */
-public class I18nTextDataFieldComposite extends AbstractDataFieldComposite {
+public class I18nTextDataFieldComposite extends AbstractInlineDataFieldComposite<I18nTextDataFieldEditor, I18nTextDataField> {
 
-	private Label fieldName;
-	private II18nTextEditor i18nTextEditor;
-	private I18nTextDataFieldEditor editor;
 	private ModifyListener modifyListener;
+	private I18nTextEditor i18nTextEditor;
 	
 	/**
 	 * Assumes to have a parent composite with GridLaout and
@@ -59,28 +54,29 @@ public class I18nTextDataFieldComposite extends AbstractDataFieldComposite {
 	 * @param style
 	 */
 	public I18nTextDataFieldComposite(I18nTextDataFieldEditor editor, Composite parent, int style, ModifyListener modListener) {
-		super(parent, style);
+		super(parent, style, editor);
 		if (!(parent.getLayout() instanceof GridLayout))
 			throw new IllegalArgumentException("Parent should have a GridLayout!"); //$NON-NLS-1$
 		
-		this.editor = editor;
-		
-		GridLayout layout = new GridLayout();
-		setLayout(layout);
-		layout.horizontalSpacing = 2;
-		layout.verticalSpacing = 0;
-		layout.marginHeight = 2;
-		layout.marginWidth = 2;
-		GridData gridData = new GridData(GridData.FILL_BOTH);
-		setLayoutData(gridData);
-		
-		fieldName = new Label(this, SWT.NONE);
-		GridData nameData = new GridData(GridData.FILL_HORIZONTAL);
-		nameData.grabExcessHorizontalSpace = true;
-		fieldName.setLayoutData(nameData);
-		
-		I18nTextStructField field = (I18nTextStructField) editor.getStructField();
-		
+//		GridLayout layout = new GridLayout();
+//		setLayout(layout);
+//		layout.horizontalSpacing = 2;
+//		layout.verticalSpacing = 0;
+//		layout.marginHeight = 2;
+//		layout.marginWidth = 2;
+//		GridData gridData = new GridData(GridData.FILL_BOTH);
+//		setLayoutData(gridData);
+//		
+//		fieldName = new Label(this, SWT.NONE);
+//		GridData nameData = new GridData(GridData.FILL_HORIZONTAL);
+//		nameData.grabExcessHorizontalSpace = true;
+//		fieldName.setLayoutData(nameData);
+//
+		createEditor(modListener);
+	}
+	
+	private void createEditor(ModifyListener modListener) {
+		I18nTextStructField field = (I18nTextStructField) getEditor().getStructField();		
 		if (field.getLineCount() > 1)		
 			i18nTextEditor = new I18nTextEditorMultiLine(this, null, null, field.getLineCount());
 		else
@@ -99,12 +95,17 @@ public class I18nTextDataFieldComposite extends AbstractDataFieldComposite {
 	}
 
 	/**
-	 * @see org.nightlabs.jfire.base.prop.edit.AbstractDataFieldComposite#refresh()
+	 * @see org.nightlabs.jfire.base.prop.edit.AbstractInlineDataFieldComposite#refresh()
 	 */
-	public void refresh() {
-		StructField field = editor.getStructField();
-		fieldName.setText(field.getName().getText());
-		i18nTextEditor.getI18nText().copyFrom(editor.getDataField().getI18nText());
+	public void _refresh() {
+		if (i18nTextEditor != null)
+			i18nTextEditor.dispose();
+		
+		createEditor(modifyListener);
+		
+//		StructField field = getEditor().getStructField();
+//		fieldName.setText(field.getName().getText());
+		i18nTextEditor.getI18nText().copyFrom(getEditor().getDataField().getI18nText());
 		i18nTextEditor.refresh();
 		// TODO set the text fields maximum line count to the one given by the struct field 
 		// ((TextStructField)editor.getDataField().getStructField()).getLineCount();

@@ -4,26 +4,23 @@
 package org.nightlabs.jfire.base.prop.edit.blockbased;
 
 import java.util.Date;
-import java.util.Locale;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Label;
 import org.nightlabs.base.composite.DateTimeEdit;
 import org.nightlabs.base.composite.XComposite;
-import org.nightlabs.base.composite.XComposite.LayoutDataMode;
-import org.nightlabs.base.composite.XComposite.LayoutMode;
 import org.nightlabs.jfire.base.prop.edit.AbstractDataFieldEditor;
 import org.nightlabs.jfire.base.prop.edit.AbstractDataFieldEditorFactory;
+import org.nightlabs.jfire.base.prop.edit.AbstractInlineDataFieldComposite;
 import org.nightlabs.jfire.base.prop.edit.DataFieldEditor;
 import org.nightlabs.jfire.base.prop.edit.fieldbased.FieldBasedEditor;
 import org.nightlabs.jfire.prop.datafield.DateDataField;
 import org.nightlabs.jfire.prop.structfield.DateStructField;
-import org.nightlabs.language.LanguageCf;
 
 /**
  * @author Tobias Langner <!-- tobias[dot]langner[at]nightlabs[dot]de -->
@@ -49,21 +46,16 @@ public class DateDataFieldEditor extends AbstractDataFieldEditor<DateDataField> 
 	}
 	
 	
-	private LanguageCf language;
-	private XComposite comp;
-	private Label title;
-	
-	private DateTimeEdit dateTimeEdit;
+	private DateDataFieldComposite comp;
 	
 	public DateDataFieldEditor() {
 		super();
-		language = new LanguageCf(Locale.getDefault().getLanguage());
 	}
 	
-	@Override
-	protected void setDataField(DateDataField dataField) {
-		super.setDataField(dataField);
-	}
+//	@Override
+//	protected void setDataField(DateDataField dataField) {
+//		super.setDataField(dataField);
+//	}
 	
 	/*
 	 * (non-Javadoc)
@@ -71,10 +63,9 @@ public class DateDataFieldEditor extends AbstractDataFieldEditor<DateDataField> 
 	 */
 	@Override
 	public Control createControl(Composite parent) {
-		comp = new XComposite(parent, SWT.NONE, LayoutMode.TIGHT_WRAPPER, LayoutDataMode.GRID_DATA_HORIZONTAL);
-		comp.getGridLayout().horizontalSpacing = 0;
-		comp.getGridLayout().verticalSpacing = 0;
-		title = new Label(comp, SWT.NONE);		
+		if (comp == null)
+			comp = new DateDataFieldComposite(parent, this);
+		
 		return comp;
 	}
 
@@ -84,23 +75,8 @@ public class DateDataFieldEditor extends AbstractDataFieldEditor<DateDataField> 
 	 */
 	@Override
 	public void doRefresh() {
-		DateStructField dateStructField = (DateStructField) getStructField();
-		if (dateTimeEdit != null)
-			dateTimeEdit.dispose();
-		
-		title.setText(dateStructField.getName().getText(language.getLanguageID()));		
-		dateTimeEdit = new DateTimeEdit(comp, dateStructField.getDateTimeEditFlags());
-		dateTimeEdit.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));		
-		dateTimeEdit.addModifyListener(new ModifyListener() {
-			public void modifyText(ModifyEvent e) {
-				setChanged(true);
-			}
-		});
-		dateTimeEdit.getParent().layout();
-		if (getDataField().getDate() == null)
-			dateTimeEdit.setDate(new Date());
-		else
-			dateTimeEdit.setDate(getDataField().getDate());
+		if (comp != null)
+			comp.refresh();
 	}
 	
 	/*
@@ -119,11 +95,42 @@ public class DateDataFieldEditor extends AbstractDataFieldEditor<DateDataField> 
 		if (!isChanged())
 			return;
 		
-		getDataField().setDate(dateTimeEdit.getDate());
+		getDataField().setDate(comp.getDate());
+	}
+}
+
+class DateDataFieldComposite extends AbstractInlineDataFieldComposite<DateDataFieldEditor, DateDataField> {
+
+	private DateTimeEdit dateTimeEdit;
+	
+	public DateDataFieldComposite(Composite parent, DateDataFieldEditor editor) {
+		super(parent, SWT.NONE, editor);
+	}
+
+	@Override
+	public void _refresh() {
+		DateStructField dateStructField = (DateStructField) getEditor().getStructField();
+		if (dateTimeEdit != null)
+			dateTimeEdit.dispose();
+		
+		dateTimeEdit = new DateTimeEdit(this, dateStructField.getDateTimeEditFlags());
+		XComposite.configureLayout(LayoutMode.TIGHT_WRAPPER, dateTimeEdit.getGridLayout());
+		dateTimeEdit.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));		
+		dateTimeEdit.addModifyListener(new ModifyListener() {
+			public void modifyText(ModifyEvent e) {
+				getEditor().setChanged(true);
+			}
+		});
+		dateTimeEdit.getParent().layout();
+		if (getEditor().getDataField().getDate() == null)
+			dateTimeEdit.setDate(new Date());
+		else
+			dateTimeEdit.setDate(getEditor().getDataField().getDate());
+		
 	}
 	
-	public LanguageCf getLanguage() {
-		return language;
+	public Date getDate() {
+		return dateTimeEdit.getDate();
 	}
 }
 
