@@ -26,7 +26,6 @@
 
 package org.nightlabs.jfire.base.app;
 
-import org.apache.log4j.Logger;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 import org.nightlabs.base.app.AbstractWorkbenchAdvisor;

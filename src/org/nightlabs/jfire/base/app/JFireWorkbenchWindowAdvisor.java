@@ -81,6 +81,7 @@ extends WorkbenchWindowAdvisor
 
 		// activates the editor2Perspective check
 		Editor2PerspectiveRegistry.sharedInstance().activate();
+		workbenchCreated = true;
 	}
 
 	@Override
@@ -118,4 +119,8 @@ extends WorkbenchWindowAdvisor
 		RCPUtil.addContributionItemTrim(shell, loginState, StatusLineManager.class.getName());
 	}
 
+	private static boolean workbenchCreated = false;
+	public static boolean isWorkbenchCreated() {
+		return workbenchCreated;
+	}
 }

@@ -398,10 +398,10 @@ implements InitialContextProvider
 
 					// at the end, we register the JFireRCDLDelegate
 					JFireRCDLDelegate.sharedInstance().register(DelegatingClassLoaderOSGI.getSharedInstance()); // this method does nothing, if already registered.
-					Set<String> test = JFireRCDLDelegate.sharedInstance().getPublishedRemotePackages();
-					for (String pkg : test) {
-						System.out.println(" "+pkg+","); //$NON-NLS-1$ //$NON-NLS-2$
-					}
+//					Set<String> test = JFireRCDLDelegate.sharedInstance().getPublishedRemotePackages();
+//					for (String pkg : test) {
+//						System.out.println(" "+pkg+","); //$NON-NLS-1$ //$NON-NLS-2$
+//					}
 					boolean needRestart = JFireJ2EEPlugin.getDefault().updateManifest();
 					if (needRestart) {
 						// Set the exception-handler mode to bypass
