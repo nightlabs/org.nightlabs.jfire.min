@@ -6,10 +6,13 @@
     <!-- source repository is defined in JFireBuildAll/nightly-jfire-server.xml -->
     <ant path="JFireTestSuite" file="build-nightlabs.xml" target="deploy"/>
     <requires/> <!-- default requires: uses .classpath file -->
+    <provides/>
+    <!-- 
     <provides path="/JFireTestSuite" location="JFireTestSuite/dist/JFireTestSuite.jar"/>
     <provides path="/JFireTestSuite/dist/JFireTestSuite.jar" location="JFireTestSuite/dist/JFireTestSuite.jar"/>
     <provides path="WORKSPACE/JFireTestSuite/dist/JFireTestSuite.jar" location="JFireTestSuite/dist/JFireTestSuite.jar"/>
     <publishes location="JFireTestSuite/dist/JFireTestSuite.jar"/>
+    -->
     <javadoc path="JFireTestSuite/src"/>
   </project>
 
