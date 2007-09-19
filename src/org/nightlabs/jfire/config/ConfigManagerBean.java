@@ -38,6 +38,7 @@ import java.util.Set;
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.SessionBean;
+import javax.jdo.FetchPlan;
 import javax.jdo.JDOHelper;
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
@@ -617,65 +618,79 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 		}
 	}
 	
-	/**
-	 * Returns a Collection of all ConfigSetups known. 
-	 * 
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type = "Required"
-	 */
-	public Collection getConfigSetups(String[] fetchGroups, int maxFetchDepth)
-	throws ModuleException
-	{		
-		PersistenceManager pm = getPersistenceManager();
-		try	{		
-			if (fetchGroups != null)
-				pm.getFetchPlan().setGroups(fetchGroups);
-			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
-				
-			return ConfigSetup.getConfigSetups(pm);
-			
-		} finally {
-			pm.close();
-		}
-	}
+// This method did not detach its result, it would not have worked!	
+//	/**
+//	 * Returns a Collection of all ConfigSetups known. 
+//	 * 
+//	 * @ejb.interface-method
+//	 * @ejb.permission role-name="_Guest_"
+//	 * @ejb.transaction type = "Required"
+//	 */
+//	public Collection getConfigSetups(String[] fetchGroups, int maxFetchDepth)
+//	throws ModuleException
+//	{		
+//		PersistenceManager pm = getPersistenceManager();
+//		try	{		
+//			if (fetchGroups != null)
+//				pm.getFetchPlan().setGroups(fetchGroups);
+//			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
+//				
+//			return ConfigSetup.getConfigSetups(pm);
+//			
+//		} finally {
+//			pm.close();
+//		}
+//	}
+	
+// Duplicate method. = getConfigSetup	
+//	/**
+//	 * Returns a complete ConfigSetup of the given type. A complete
+//	 * ConfigSetup contains all Configs and ConfigGroups of that setup.
+//	 * 
+//	 * @ejb.interface-method
+//	 * @ejb.permission role-name="_Guest_"
+//	 * @ejb.transaction type = "Required"
+//	 */
+//	public ConfigSetup getCompleteConfigSetup(
+//			String configSetupType, 
+//			String[] groupsFetchGropus, 
+//			String[] configsFetchGroups
+//		)
+//	throws ModuleException
+//	{		
+//		PersistenceManager pm;
+//		pm = getPersistenceManager();
+//		try 
+//		{		
+//			return 
+//				ConfigSetup.getConfigSetup(pm, getOrganisationID(), configSetupType)
+//					.getCompleteConfigSetup(pm, getOrganisationID(), groupsFetchGropus, configsFetchGroups);
+//		} finally {
+//			pm.close();
+//		}
+//	}
 	
 	/**
-	 * Returns a complete ConfigSetup of the given type. A complete
-	 * ConfigSetup contains all Configs and ConfigGroups of that setup.
+	 * Returns the ConfigSetup with the given configSetupID.
+	 * <p>
+	 * The {@link ConfigSetup} will hereby be prepared by
+	 * its {@link ConfigSetup#getCompleteConfigSetup(PersistenceManager, String, String[], String[])}.
+	 * </p>
 	 * 
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type = "Required"
-	 */
-	public ConfigSetup getCompleteConfigSetup(
-			String configSetupType, 
-			String[] groupsFetchGropus, 
-			String[] configsFetchGroups
-		)
-	throws ModuleException
-	{		
-		PersistenceManager pm;
-		pm = getPersistenceManager();
-		try 
-		{		
-			return 
-				ConfigSetup.getConfigSetup(pm, getOrganisationID(), configSetupType)
-					.getCompleteConfigSetup(pm, getOrganisationID(), groupsFetchGropus, configsFetchGroups);
-		} finally {
-			pm.close();
-		}
-	}
-	
-	/**
+	 * @param configSetupID The id of the {@link ConfigSetup} to return.
+	 * @param groupsFetchGropus Fetch-groups to detach the {@link ConfigGroup}s with, that are part of the setup.
+	 * 		If this is <code>null</code>, {@link FetchPlan#DEFAULT} will be used.
+	 * @param configsFetchGroups Fetch-groups to detach the {@link Config}s with, that are part of the setup.
+	 * 		If this is <code>null</code>, {@link FetchPlan#DEFAULT} will be used.
+	 * 
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type = "Required"
 	 */
 	public ConfigSetup getConfigSetup(
-			String configSetupType, 
-			String[] groupsFetchGropus, 
-			String[] configsFetchGroups
+			ConfigSetupID configSetupID, 
+			String[] groupsFetchGropus, int groupsMaxFetchDepth,
+			String[] configsFetchGroups, int configsMaxFetchDepth
 		)
 	throws ModuleException
 	{		
@@ -683,9 +698,13 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 		pm = getPersistenceManager();
 		try 
 		{			
+			ConfigSetup configSetup = (ConfigSetup) pm.getObjectById(configSetupID);
 			return 
-				ConfigSetup.getConfigSetup(pm, getOrganisationID(), configSetupType)
-					.getCompleteConfigSetup(pm, getOrganisationID(), groupsFetchGropus, configsFetchGroups);
+				configSetup
+					.getCompleteConfigSetup(
+							pm, 
+							groupsFetchGropus, groupsMaxFetchDepth, 
+							configsFetchGroups, configsMaxFetchDepth);
 		} finally {
 			pm.close();
 		}
@@ -723,13 +742,13 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type = "Required"
 	 */
-	public Collection<ConfigSetupID> getAllConfigSetupIDs(String[] fetchGroups, int maxFetchDepth) {
+	public Collection<ConfigSetupID> getAllConfigSetupIDs() {
 		PersistenceManager pm = getPersistenceManager();
-		if (fetchGroups != null)
-			pm.getFetchPlan().setGroups(fetchGroups);
-		pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
-		
-		return ConfigSetup.getAllConfigSetupIDs(pm);
+		try {
+			return ConfigSetup.getAllConfigSetupIDs(pm);
+		} finally {
+			pm.close();
+		}
 	}
 	
 	/**
