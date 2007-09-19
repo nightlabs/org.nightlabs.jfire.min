@@ -32,6 +32,16 @@ import org.nightlabs.notification.SubjectCarrier;
 import org.nightlabs.progress.ProgressMonitor;
 
 /**
+ * A subclass should be instantiated to show data in an UI element ({@link org.eclipse.swt.widgets.List}, {@link org.eclipse.swt.widgets.Combo}, table and the like).
+ * This controller will retrieve the data and update the UI element whenever this data changes or new instances are created (matching the filter criteria).
+ * <p>
+ * Note, that this class is not appropriate for tree structures. For managing trees, use the {@link org.nightlabs.jfire.base.jdo.tree.ActiveJDOObjectTreeController} instead.
+ * </p>
+ * <p>
+ * More details about how to use this class can be found in our wiki:
+ * <a href="https://www.jfire.org/modules/phpwiki/index.php/ActiveJDOObjectController">https://www.jfire.org/modules/phpwiki/index.php/ActiveJDOObjectController</a>
+ * </p>
+ *
  * @author Marco Schulze - marco at nightlabs dot de
  */
 public abstract class ActiveJDOObjectController<JDOObjectID, JDOObject>
@@ -61,7 +71,7 @@ public abstract class ActiveJDOObjectController<JDOObjectID, JDOObject>
 	 */
 	protected abstract Collection<JDOObject> retrieveJDOObjects(ProgressMonitor monitor);
 
-	private ListenerList jdoObjectsChangedListeners = null;
+	private ListenerList jdoObjectsChangedListeners = new ListenerList();
 
 	/**
 	 * This method is always called on the UI thread. You can chose whether you override it in order to react on changes
@@ -84,7 +94,7 @@ public abstract class ActiveJDOObjectController<JDOObjectID, JDOObject>
 				this, loadedJDOObjects, ignoredJDOObjects, deletedJDOObjects);
 
 		onJDOObjectsChanged(event);
-		if (jdoObjectsChangedListeners != null) {
+		if (!jdoObjectsChangedListeners.isEmpty()) {
 			Object[] listeners = jdoObjectsChangedListeners.getListeners();
 			for (Object listener : listeners) {
 				JDOObjectsChangedListener<JDOObjectID, JDOObject> l = (JDOObjectsChangedListener<JDOObjectID, JDOObject>) listener;
@@ -95,17 +105,11 @@ public abstract class ActiveJDOObjectController<JDOObjectID, JDOObject>
 
 	public void addJDOObjectsChangedListener(JDOObjectsChangedListener<JDOObjectID, JDOObject> listener)
 	{
-		if (jdoObjectsChangedListeners == null)
-			jdoObjectsChangedListeners = new ListenerList();
-
 		jdoObjectsChangedListeners.add(listener);
 	}
 
 	public void removeJDOObjectsChangedListener(JDOObjectsChangedListener<JDOObjectID, JDOObject> listener)
 	{
-		if (jdoObjectsChangedListeners == null)
-			return;
-
 		jdoObjectsChangedListeners.remove(listener);
 	}
 
@@ -275,7 +279,7 @@ public abstract class ActiveJDOObjectController<JDOObjectID, JDOObject>
 	}
 
 	/**
-	 * You <b>must</b> call this method once you don't need this content provider anymore.
+	 * You <b>must</b> call this method once you don't need this controller anymore.
 	 * It performs some clean-ups, e.g. unregistering all listeners. 
 	 */
 	public void close()

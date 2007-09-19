@@ -36,13 +36,16 @@ import org.nightlabs.notification.NotificationEvent;
 import org.nightlabs.notification.NotificationListener;
 
 /**
- * A controller to be used as datasource for JDO tree datastructures. 
- * For example it could be used in a tree displaying this structure.
+ * A controller to be used as datasource for JDO tree datastructures.
+ * <p>
  * The controller is <em>active</em> as it tracks changes to the structure (new/deleted objects, changed objects)
- * keeps the data up-to-date and uses a callback to notify the user of the changes (see {@link #onJDOObjectsChanged(JDOTreeNodesChangedEvent)}). 
- * <p> 
- * The controller could be used
- * 
+ * keeps the data up-to-date and uses a callback to notify the user of the changes (see {@link #onJDOObjectsChanged(JDOTreeNodesChangedEvent)}).
+ * </p> 
+ * <p>
+ * More details about how to use this class can be found in our wiki:
+ * <a href="https://www.jfire.org/modules/phpwiki/index.php/ActiveJDOObjectTreeController">https://www.jfire.org/modules/phpwiki/index.php/ActiveJDOObjectTreeController</a>
+ * </p>
+ *
  * @author Marco Schulze 
  * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] de -->
  *
@@ -50,6 +53,7 @@ import org.nightlabs.notification.NotificationListener;
  * @param <JDOObject> The type of the JDO object used
  * @param <TreeNode> The type of {@link JDOObjectTreeNode} used to hold the data
  */
+@SuppressWarnings("unchecked")
 public abstract class ActiveJDOObjectTreeController<JDOObjectID extends ObjectID, JDOObject, TreeNode extends JDOObjectTreeNode>
 {
 	private static final Logger logger = Logger.getLogger(ActiveJDOObjectTreeController.class);
@@ -121,7 +125,7 @@ public abstract class ActiveJDOObjectTreeController<JDOObjectID extends ObjectID
 	 * 
 	 * @return The {@link Class} (type) of the JDO object this controller is for.
 	 */
-	protected abstract Class getJDOObjectClass();
+	protected abstract Class<JDOObject> getJDOObjectClass();
 
 	/**
 	 * Creates an {@link IJDOLifecycleListenerFilter} that will be used to
@@ -158,13 +162,22 @@ public abstract class ActiveJDOObjectTreeController<JDOObjectID extends ObjectID
 	 * This will be called when a change in the tree structure was tracked and after the changes
 	 * were retrieved. The {@link JDOTreeNodesChangedEvent} contains references to the
 	 * {@link TreeNode}s that need update or were removed.
-	 * 
+	 * <p>
+	 * This method is called on the UI thread.
+	 * </p>
+	 * <p>
+	 * You can choose whether you want to override this method or register listeners via {@link #addJDOTreeNodesChangedListener(JDOTreeNodesChangedListener)}.
+	 * In most use cases, simply overriding this method is easier and less code.
+	 * </p>
+	 *
 	 * @param changedEvent The {@link JDOTreeNodesChangedEvent} containing references to changed/new and deleted {@link TreeNode}s
 	 */
-	protected abstract void onJDOObjectsChanged(JDOTreeNodesChangedEvent<JDOObjectID, TreeNode> changedEvent);	
-	
+	protected void onJDOObjectsChanged(JDOTreeNodesChangedEvent<JDOObjectID, TreeNode> changedEvent)
+	{
+	}
+
 	private NotificationListener changeListener;
-	
+
 	@SuppressWarnings("unchecked") //$NON-NLS-1$
 	protected void handleChangeNotification(NotificationEvent notificationEvent, IProgressMonitor monitor) {
 		synchronized (objectID2TreeNode) {
@@ -608,17 +621,32 @@ public abstract class ActiveJDOObjectTreeController<JDOObjectID extends ObjectID
 		return null;
 	}
 
-	private ListenerList treeNodesChangedListeners;
-	
+	private ListenerList treeNodesChangedListeners = new ListenerList();
+
+	/**
+	 * This method can be used to add {@link JDOTreeNodesChangedListener}s which will be called on the UI thread whenever
+	 * the tree's data has been changed.
+	 * <p>
+	 * This method is thread-safe.
+	 * </p>
+	 *
+	 * @param listener The listener to be added.
+	 * @see #removeJDOTreeNodesChangedListener(JDOTreeNodesChangedListener)
+	 */
 	public void addJDOTreeNodesChangedListener(JDOTreeNodesChangedListener<JDOObjectID, JDOObject, TreeNode> listener) {
-		if (treeNodesChangedListeners == null)
-			treeNodesChangedListeners = new ListenerList();
 		treeNodesChangedListeners.add(listener);
 	}
-	
+
+	/**
+	 * This method can be used to remove listeners which have been previously added by {@link #addJDOTreeNodesChangedListener(JDOTreeNodesChangedListener)}.
+	 * <p>
+	 * This method is thread-safe.
+	 * </p>
+	 *
+	 * @param listener The listener to be removed.
+	 * @see #addJDOTreeNodesChangedListener(JDOTreeNodesChangedListener)
+	 */
 	public void removeJDOTreeNodesChangedListener(JDOTreeNodesChangedListener<JDOObjectID, JDOObject, TreeNode> listener) {
-		if (treeNodesChangedListeners == null)
-			return;
 		treeNodesChangedListeners.remove(listener);
 	}
 	
@@ -664,8 +692,8 @@ public abstract class ActiveJDOObjectTreeController<JDOObjectID extends ObjectID
 		}
 
 		onJDOObjectsChanged(changedEvent);
-		
-		if (treeNodesChangedListeners != null) {
+
+		if (!treeNodesChangedListeners.isEmpty()) {
 			Object[] listeners = treeNodesChangedListeners.getListeners();
 			for (Object listener : listeners) {
 				JDOTreeNodesChangedListener<JDOObjectID, JDOObject, TreeNode> l = (JDOTreeNodesChangedListener<JDOObjectID, JDOObject, TreeNode>) listener;
