@@ -38,11 +38,7 @@ public class JFireLoginTestSuite extends TestSuite {
 		} catch (ClassNotFoundException x) {			
 			return "The module JFireBase seems not to be installed (Class \"" + className + "\" could not be found)!";
 		}
-
-		if (JFireTestLogin.checkCreateLoginsAndRegisterInAuthorities(pm))
-			return null;
-		else
-			return "Creating users was not successful!";
+		return null;
 	}
 
 }

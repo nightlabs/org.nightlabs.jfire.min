@@ -50,6 +50,8 @@ import junit.framework.TestCase;
 import org.apache.log4j.Logger;
 import org.nightlabs.ModuleException;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
+import org.nightlabs.jfire.testsuite.login.JFireTestLogin;
+import org.nightlabs.jfire.testsuite.prop.PropertySetTestStruct;
 import org.nightlabs.util.reflect.ReflectUtil;
 
 
@@ -92,6 +94,28 @@ implements SessionBean
 	 * @ejb.permission unchecked="true"
 	 */
 	public void ejbRemove() throws EJBException, RemoteException { }
+
+	/**
+	 * This method is called by the datastore initialisation mechanism.
+	 * It initializes the users needed for Test logins and other prerequisites for the Test system.
+	 * 
+	 * @throws Exception When something went wrong. 
+	 * 
+	 * @ejb.interface-method
+	 * @ejb.permission role-name="_System_"
+	 * @ejb.transaction type="Required"
+	 */
+	public void initialiseTestSystem()
+	throws Exception 
+	{
+		PersistenceManager pm = getPersistenceManager();
+		try {
+			JFireTestLogin.checkCreateLoginsAndRegisterInAuthorities(pm);
+			PropertySetTestStruct.getTestStruct(getOrganisationID(), pm);
+		} finally {
+			pm.close();
+		}
+	}
 
 	/**
 	 * This method is called by the datastore initialisation mechanism.

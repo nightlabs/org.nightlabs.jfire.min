@@ -32,9 +32,9 @@ import org.nightlabs.jfire.servermanager.JFireServerManagerUtil;
 import org.nightlabs.jfire.testsuite.JFireTestSuiteEAR;
 
 /**
+ * This class is used to initialse users for the JFireTestSuite.
  * 
  * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] de -->
- *
  */
 public class JFireTestLogin {
 
