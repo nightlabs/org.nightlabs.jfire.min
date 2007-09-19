@@ -32,11 +32,13 @@ import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.resource.Messages;
 import org.nightlabs.jfire.config.ConfigGroup;
 import org.nightlabs.jfire.config.ConfigSetup;
+import org.nightlabs.jfire.config.dao.ConfigSetupDAO;
 import org.nightlabs.jfire.config.id.ConfigID;
 import org.nightlabs.jfire.workstation.Workstation;
 import org.nightlabs.jfire.workstation.dao.WorkstationDAO;
 import org.nightlabs.jfire.workstation.id.WorkstationID;
 import org.nightlabs.progress.NullProgressMonitor;
+import org.nightlabs.progress.ProgressMonitor;
 
 /**
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
@@ -65,10 +67,11 @@ public class WorkstationCSVisualiser implements ConfigSetupVisualiser
 	
 	public String getConfigDescription(ConfigID configID) 
 	{
-		ConfigSetup setup = ConfigSetupRegistry.sharedInstance().getConfigSetupForConfigType(configID);
+		ProgressMonitor monitor = new NullProgressMonitor();
+		ConfigSetup setup = ConfigSetupDAO.sharedInstance().getConfigSetupForConfigType(configID, monitor);
 		if (setup == null)
 			return configID.configKey;
-		if (ConfigSetupRegistry.sharedInstance().isConfigGroup(configID)) {
+		if (ConfigSetupDAO.sharedInstance().isConfigGroup(configID, monitor)) {
 			ConfigGroup group = setup.getConfigGroup(configID.configKey);
 			return String.format(Messages.getString("org.nightlabs.jfire.base.config.WorkstationCSVisualiser.configGroupDescription"), group.getName()); //$NON-NLS-1$
 		}		

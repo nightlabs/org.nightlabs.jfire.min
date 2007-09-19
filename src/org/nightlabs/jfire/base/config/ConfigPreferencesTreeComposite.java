@@ -38,6 +38,8 @@ import org.eclipse.swt.widgets.Tree;
 import org.nightlabs.base.tree.AbstractTreeComposite;
 import org.nightlabs.jfire.base.config.ConfigSetupRegistry.NoSetupPresentException;
 import org.nightlabs.jfire.config.id.ConfigID;
+import org.nightlabs.progress.NullProgressMonitor;
+import org.nightlabs.progress.ProgressMonitor;
 
 /**
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
@@ -105,7 +107,7 @@ public class ConfigPreferencesTreeComposite extends AbstractTreeComposite<Config
 	 */
 	public ConfigPreferencesTreeComposite(Composite parent, int style, boolean setLayoutData, ConfigID configID) {
 		super(parent, SWT.BORDER, true, true, false); 
-		setConfigID(configID);
+		setConfigID(configID, new NullProgressMonitor());
 		this.parentCode = Integer.toHexString(parent.hashCode());
 	}
 	
@@ -120,14 +122,14 @@ public class ConfigPreferencesTreeComposite extends AbstractTreeComposite<Config
 		treeViewer.setLabelProvider(new LabelProvider());
 	}
 	
-	public void setConfigID(ConfigID configID) {
+	public void setConfigID(ConfigID configID, ProgressMonitor monitor) {
 		if (configID == null || configID.equals(currentConfigID))
 			return;
 		this.currentConfigID = configID;
 		if (currentConfigID != null) {			
 			final ConfigPreferenceNode rootNode;
 			try {
-				rootNode = ConfigSetupRegistry.sharedInstance().getMergedPreferenceRootNode(parentCode, currentConfigID);
+				rootNode = ConfigSetupRegistry.sharedInstance().getMergedPreferenceRootNode(parentCode, currentConfigID, monitor);
 			} catch (NoSetupPresentException e) {
 				throw new RuntimeException("Can't build a tree of ConfigModules when there is no ConfigSetup providing the information!", e); //$NON-NLS-1$
 			}

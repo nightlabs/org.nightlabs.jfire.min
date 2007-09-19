@@ -43,9 +43,11 @@ import org.nightlabs.jdo.ObjectID;
 import org.nightlabs.jdo.ui.notification.SelectionNotificationProxy;
 import org.nightlabs.jfire.base.jdo.JDOObjectID2PCClassMap;
 import org.nightlabs.jfire.base.login.Login;
+import org.nightlabs.jfire.config.dao.ConfigSetupDAO;
 import org.nightlabs.jfire.config.id.ConfigID;
 import org.nightlabs.notification.NotificationEvent;
 import org.nightlabs.notification.SubjectCarrier;
+import org.nightlabs.progress.NullProgressMonitor;
 
 /**
  * SelectionListener based on SelectionNotificationProxy that additionally
@@ -115,7 +117,7 @@ public class ConfigLinkSelectionNotificationProxy extends
 			return null;
 		
 		// Exit when no registration on the current class is found 
-		if (!ConfigSetupRegistry.sharedInstance().containsRegistrationForLinkClass(objectClass))
+		if (!ConfigSetupDAO.sharedInstance().containsRegistrationForLinkClass(objectClass, new NullProgressMonitor()))
 			return null;
 		
 		// TODO: Ensure here always the current users organisationID can be used 

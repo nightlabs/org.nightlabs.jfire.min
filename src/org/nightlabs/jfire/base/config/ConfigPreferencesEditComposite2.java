@@ -199,7 +199,7 @@ implements ConfigPreferenceChangedListener, IStoreChangedConfigModule
 			protected IStatus run(ProgressMonitor monitor) {
 				monitor.beginTask(Messages.getString("org.nightlabs.jfire.base.config.ConfigPreferencesEditComposite2.initialising"), 2); //$NON-NLS-1$
 
-				treeComposite.setConfigID(currentConfigID);
+				treeComposite.setConfigID(currentConfigID, monitor);
 				monitor.worked(1);
 
 				EditLockMan.sharedInstance().acquireEditLock(
