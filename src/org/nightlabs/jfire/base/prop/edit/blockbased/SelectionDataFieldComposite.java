@@ -1,13 +1,10 @@
 package org.nightlabs.jfire.base.prop.edit.blockbased;
 
-import java.util.Locale;
-
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
 import org.nightlabs.base.composite.AbstractListComposite;
 import org.nightlabs.base.composite.XComboComposite;
 import org.nightlabs.jfire.base.prop.edit.AbstractInlineDataFieldComposite;
