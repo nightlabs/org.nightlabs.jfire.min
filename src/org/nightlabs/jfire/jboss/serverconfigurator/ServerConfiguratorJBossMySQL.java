@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 import org.apache.log4j.Logger;
 import org.nightlabs.jfire.serverconfigurator.ServerConfigurationException;
 import org.nightlabs.jfire.serverconfigurator.ServerConfigurator;
+import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
 import org.nightlabs.jfire.servermanager.db.DatabaseAdapter;
 import org.nightlabs.jfire.servermanager.db.DatabaseAlreadyExistsException;
 import org.nightlabs.util.IOUtil;
@@ -18,7 +19,8 @@ import org.nightlabs.util.IOUtil;
  * This implementation of {@link ServerConfigurator} will modify your JBossMQ
  * and Timer configuration as described in
  * https://www.jfire.org/modules/phpwiki/index.php/Switch%20JBossMQ%20from%20HSQL%20to%20MySQL
- * and it creates the database <code>JFire_JBossMQ</code> (as defined by {@link #DATABASE_NAME})
+ * and it creates the database <code>${databasePrefix}JBossMQ${databaseSuffix}</code> (prefix + suffix
+ * are taken from the {@link JFireServerConfigModule})
  * in your MySQL server (if it does not yet exist).
  *
  * @author Marco Schulze - marco at nightlabs dot de
@@ -28,7 +30,6 @@ public class ServerConfiguratorJBossMySQL
 extends ServerConfiguratorJBoss
 {
 	private static final Logger logger = Logger.getLogger(ServerConfiguratorJBossMySQL.class);
-	public static String DATABASE_NAME = "JFire_JBossMQ";
 
 	/* (non-Javadoc)
 	 * @see org.nightlabs.jfire.jboss.serverconfigurator.ServerConfiguratorJBoss#doConfigureServer()
@@ -47,7 +48,8 @@ extends ServerConfiguratorJBoss
 			boolean redeployJMS = false;
 	
 			// create the database
-			String databaseURL = getJFireServerConfigModule().getDatabase().getDatabaseURL(DATABASE_NAME);
+			String databaseName = getJFireServerConfigModule().getDatabase().getDatabasePrefix() + "JBossMQ" + getJFireServerConfigModule().getDatabase().getDatabaseSuffix();
+			String databaseURL = getJFireServerConfigModule().getDatabase().getDatabaseURL(databaseName);
 			DatabaseAdapter databaseAdapter = getJFireServerConfigModule().getDatabase().instantiateDatabaseAdapter();
 			try {
 				databaseAdapter.createDatabase(getJFireServerConfigModule(), databaseURL);
@@ -247,25 +249,19 @@ extends ServerConfiguratorJBoss
 		// ${jboss.deploy}/mysql-ds.xml
 		File destFile = new File(jbossDeployDir, "mysql-ds.xml");
 		if (!destFile.exists()) {
-			logger.info("File " + destFile.getAbsolutePath()
-					+ " does not exist. Will create it from template.");
+			logger.info("File " + destFile.getAbsolutePath() + " does not exist. Will create it from template.");
 			if (rebootOnDeployDirChanges)
 				setRebootRequired(true);
 
-			InputStream in = ServerConfiguratorJBossMySQL.class
-					.getResourceAsStream("mysql-ds.xml.jfire");
+			InputStream in = ServerConfiguratorJBossMySQL.class.getResourceAsStream("mysql-ds.xml.jfire");
 			String text = IOUtil.readTextFile(in);
 			in.close();
 
 			// not very efficient mechanism, but it should work
-			text = text.replaceAll("\\{databaseDriverName\\}",
-					getJFireServerConfigModule().getDatabase()
-							.getDatabaseDriverName_xa()); // TODO really XA here?
-			text = text.replaceAll("\\{databaseURL\\}", databaseURL);
-			text = text.replaceAll("\\{databaseUserName\\}",
-					getJFireServerConfigModule().getDatabase().getDatabaseUserName());
-			text = text.replaceAll("\\{databasePassword\\}",
-					getJFireServerConfigModule().getDatabase().getDatabasePassword());
+			text = text.replaceAll("\\$\\{databaseDriverName\\}", getJFireServerConfigModule().getDatabase().getDatabaseDriverName_xa()); // TODO really XA here? Yes, I think so and it seems to work. Marco. 2007-09-21
+			text = text.replaceAll("\\$\\{databaseURL\\}", databaseURL);
+			text = text.replaceAll("\\$\\{databaseUserName\\}", getJFireServerConfigModule().getDatabase().getDatabaseUserName());
+			text = text.replaceAll("\\$\\{databasePassword\\}", getJFireServerConfigModule().getDatabase().getDatabasePassword());
 
 			IOUtil.writeTextFile(destFile, text);
 		}
