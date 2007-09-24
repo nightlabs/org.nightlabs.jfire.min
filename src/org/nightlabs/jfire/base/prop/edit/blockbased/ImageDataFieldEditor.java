@@ -218,7 +218,7 @@ extends AbstractDataFieldEditor<ImageDataField>
 		for (String ext : extList)		
 			extensions[i++] = "*." + ext; //$NON-NLS-1$
 		
-		Arrays.sort(extensions);		
+		Arrays.sort(extensions);
 		fileDialog.setFilterExtensions(extensions);
 		
 		if (!getDataField().isEmpty()) {
