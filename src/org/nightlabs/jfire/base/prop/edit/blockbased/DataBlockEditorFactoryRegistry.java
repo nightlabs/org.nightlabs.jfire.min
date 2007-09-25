@@ -39,7 +39,7 @@ import org.nightlabs.jfire.prop.IStruct;
 import org.nightlabs.jfire.prop.id.StructBlockID;
 
 /**
- * Registrz for specialized DataBlockEditors registered to a certain {@link StructBlockID}.
+ * Registry for specialized DataBlockEditors registered to a certain {@link StructBlockID}.
  * This registry processes the extension-point <code>org.nightlabs.jfire.base.specialisedDataBlockEditor</code>.
  * 
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>

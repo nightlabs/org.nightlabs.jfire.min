@@ -9,7 +9,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.nightlabs.base.composite.DateTimeEdit;
@@ -113,7 +112,7 @@ class DateDataFieldComposite extends AbstractInlineDataFieldComposite<DateDataFi
 		if (dateTimeEdit != null)
 			dateTimeEdit.dispose();
 		
-		dateTimeEdit = new DateTimeEdit(this, dateStructField.getDateTimeEditFlags());
+		dateTimeEdit = new DateTimeEdit(this, dateStructField.getDateTimeEditFlags(), (Date) null);
 		XComposite.configureLayout(LayoutMode.TIGHT_WRAPPER, dateTimeEdit.getGridLayout());
 		dateTimeEdit.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));		
 		dateTimeEdit.addModifyListener(new ModifyListener() {
@@ -122,11 +121,7 @@ class DateDataFieldComposite extends AbstractInlineDataFieldComposite<DateDataFi
 			}
 		});
 		dateTimeEdit.getParent().layout();
-		if (getEditor().getDataField().getDate() == null)
-			dateTimeEdit.setDate(new Date());
-		else
-			dateTimeEdit.setDate(getEditor().getDataField().getDate());
-		
+		dateTimeEdit.setDate(getEditor().getDataField().getDate());
 	}
 	
 	public Date getDate() {
