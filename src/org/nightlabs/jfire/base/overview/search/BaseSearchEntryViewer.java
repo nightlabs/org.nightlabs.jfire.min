@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.nightlabs.base.table.AbstractTableComposite;
 import org.nightlabs.jdo.query.JDOQuery;
@@ -43,20 +43,48 @@ extends SearchEntryViewer
 		return new AdvancedQuickSearchEntryType();
 	}
 
-	public AbstractQueryFilterComposite getFilterComposite() 
-	{
-		if (getSearchComposite() instanceof AbstractQueryFilterComposite)
-			return (AbstractQueryFilterComposite) getSearchComposite();
-		
-		return null;
+	@Override
+	public Composite createResultComposite(Composite parent) {
+		return createListComposite(parent);
 	}
+
+	@Override
+	public Composite createSearchComposite(Composite parent) {
+		return createFilterComposite(parent);
+	}
+
+	/**
+	 * creates an {@link AbstractQueryFilterComposite} which is used as search composite
+	 * this Method is called by {@link SearchEntryViewer#createSearchComposite(Composite)
+	 * 
+	 * @param parent the parent Composite
+	 * @return the {@link AbstractQueryFilterComposite} which is used as search composite
+	 */
+	public abstract AbstractQueryFilterComposite createFilterComposite(Composite parent); 
 	
-	public AbstractTableComposite getListComposite() 
-	{
-		if (getResultComposite() instanceof AbstractTableComposite)
-			return (AbstractTableComposite) getResultComposite();
-		
-		return null;
+	/**
+	 * creates an {@link AbstractTableComposite} which is used as result composite
+	 * this Method is called by {@link SearchEntryViewer#createResultComposite(Composite)}
+	 * 
+	 * @param parent the parent Composite
+	 * @return the {@link AbstractTableComposite} which is used as result composite
+	 */
+	public abstract AbstractTableComposite createListComposite(Composite parent); 
+	
+	/**
+	 * returns the AbstractTableComposite created by {@link #createListComposite(Composite)}
+	 * @return the AbstractTableComposite created by {@link #createListComposite(Composite)}
+	 */
+	public AbstractTableComposite getListComposite() {
+		return (AbstractTableComposite) getResultComposite();
+	}
+
+	/**
+	 * returns the {@link AbstractQueryFilterComposite} created by {@link #createFilterComposite(Composite)}
+	 * @return the {@link AbstractQueryFilterComposite} created by {@link #createFilterComposite(Composite)}  
+	 */
+	public AbstractQueryFilterComposite getFilterComposite() {
+		return (AbstractQueryFilterComposite) getSearchComposite();
 	}
 	
 	/**
