@@ -5,8 +5,6 @@ package org.nightlabs.jfire.base.overview.search;
 
 import org.eclipse.swt.graphics.Image;
 import org.nightlabs.base.search.SearchCompositeImage;
-import org.nightlabs.i18n.I18nText;
-import org.nightlabs.i18n.I18nTextBuffer;
 
 
 /**

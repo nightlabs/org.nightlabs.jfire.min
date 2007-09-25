@@ -34,6 +34,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.nightlabs.jdo.ui.search.SearchResultFetcher;
 import org.nightlabs.jfire.base.login.Login;
 import org.nightlabs.jfire.base.person.search.PersonStartsWithQuickSearch;
+import org.nightlabs.jfire.prop.PropertySet;
 import org.nightlabs.util.IOUtil;
 
 /**
@@ -41,15 +42,12 @@ import org.nightlabs.util.IOUtil;
  */
 public class PropertySetStartsWithQuickSearchComposite extends Composite {
 
-	private List<PersonStartsWithQuickSearch> quickSearches;
+	private List<PropertySetQuickSearch> quickSearches;
 	public PropertySetStartsWithQuickSearchComposite(Composite arg0, int arg1) {
 		this(arg0, arg1, null);
 	}
-	/**
-	 * @param parent
-	 * @param style
-	 */
-	public PropertySetStartsWithQuickSearchComposite(Composite arg0, int arg1, SearchResultFetcher resultFetcher) {
+	
+	public PropertySetStartsWithQuickSearchComposite(Composite arg0, int arg1, SearchResultFetcher resultFetcher, boolean showShowAllButton) {
 		super(arg0, arg1);
 		try {
 			Login.getLogin();
@@ -60,12 +58,21 @@ public class PropertySetStartsWithQuickSearchComposite extends Composite {
 			layout.marginHeight = 0;
 			layout.marginWidth = 0;
 			setLayout(layout);
-			quickSearches = new LinkedList<PersonStartsWithQuickSearch>(); // TODO why is this "Person*"? Shouldn't it be "PropertySet*"? 
+			quickSearches = new LinkedList<PropertySetQuickSearch>(); // TODO why is this "Person*"? Shouldn't it be "PropertySet*"?
+			
+			PropertySetQuickSearch pswqs;
+			
+			if (showShowAllButton) {
+				pswqs = getShowAllQuickSearch(resultFetcher);
+				pswqs.createComposite(this);
+				quickSearches.add(pswqs);
+			}
+			
 			for (int i=97; i<=122; i++) {
 				String ch;
 				ch = new String(new byte[]{(byte)i}, IOUtil.CHARSET_NAME_UTF_8);
 				
-				PersonStartsWithQuickSearch pswqs = createQuickSearch(resultFetcher, ch); 				
+				pswqs = createQuickSearch(resultFetcher, ch); 				
 				pswqs.createComposite(this);
 				quickSearches.add(pswqs);
 			}
@@ -74,11 +81,29 @@ public class PropertySetStartsWithQuickSearchComposite extends Composite {
 		}
 	}
 	
+	/**
+	 * @param parent
+	 * @param style
+	 */
+	public PropertySetStartsWithQuickSearchComposite(Composite arg0, int arg1, SearchResultFetcher resultFetcher) {
+		this(arg0, arg1, resultFetcher, false);
+	}
+	
 	protected PersonStartsWithQuickSearch createQuickSearch(SearchResultFetcher resultFetcher, String start) {
 		return new PersonStartsWithQuickSearch(resultFetcher, start);
 	}
 
-	public List<PersonStartsWithQuickSearch> getQuickSearches() {
+	public List<PropertySetQuickSearch> getQuickSearches() {
 		return quickSearches;
+	}
+	
+	/**
+	 * Overwrite this method in subclasses and return a {@link PropertySetQuickSearch} that is suitable
+	 * for the {@link PropertySet} for which quick searches should be provided.
+	 * @param resultFetcher The {@link SearchResultFetcher} to be used.
+	 * @return A {@link PropertySetQuickSearch} that is suitable for the {@link PropertySet} for which quick searches should be provided.
+	 */
+	protected PropertySetQuickSearch getShowAllQuickSearch(SearchResultFetcher resultFetcher) {
+		return new PropertySetShowAllQuickSearch(resultFetcher);
 	}
 }

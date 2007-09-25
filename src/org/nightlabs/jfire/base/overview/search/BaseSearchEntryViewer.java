@@ -87,6 +87,7 @@ extends SearchEntryViewer
 		
 	}
 	
+	@SuppressWarnings("unchecked")
 	/**
 	 * return the result of the given queries
 	 * 
