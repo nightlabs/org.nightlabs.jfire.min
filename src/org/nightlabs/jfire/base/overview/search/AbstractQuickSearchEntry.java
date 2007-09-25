@@ -21,11 +21,6 @@ implements QuickSearchEntryType
 	public void setSearchText(String searchText) {
 		this.searchText = searchText;
 	}
-
-//	private I18nText name = new I18nTextBuffer();
-//	public I18nText getName() {
-//		return name;
-//	}
 	
 	public Image getDecoratorImage() {
 		return null;

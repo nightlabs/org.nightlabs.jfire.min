@@ -44,10 +44,24 @@ import org.nightlabs.base.toolkit.IToolkit;
 import org.nightlabs.base.util.RCPUtil;
 import org.nightlabs.jfire.base.overview.AbstractEntryViewer;
 import org.nightlabs.jfire.base.overview.Entry;
+import org.nightlabs.jfire.base.overview.EntryViewer;
 import org.nightlabs.jfire.base.resource.Messages;
 import org.nightlabs.progress.ProgressMonitor;
 
 /**
+ * Base class for creating {@link EntryViewer}s which are responsible for searching
+ *  
+ * Subclasses must implement 4 Methods:
+ * 
+ * {@link #createResultComposite(Composite)} which creates a Composite
+ * which displayes the result of the search 
+ * {@link #createSearchComposite(Composite)} which creates a Composite
+ * which displayes the search criteria
+ * {@link #displaySearchResult(Object)} must display the search result
+ * passed to this method
+ * {@link #getAdvancedQuickSearchEntryType()} must return a
+ * {@link QuickSearchEntryType} which will be used by default
+ *  
  * @author Daniel.Mazurek [at] NightLabs [dot] de
  *
  */
@@ -115,11 +129,10 @@ extends AbstractEntryViewer
 		return sashform;
 	}
 
-//	protected abstract QuickSearchEntryType getDefaultSearchEntryType();
 	/**
 	 * Inheritans my override this method to return the default search entry type
-	 * by default {@link QuickSearchEntryType} returned by {@link #getAdvancedQuickSearchEntryType()}
-	 * is used 
+	 * by default the {@link QuickSearchEntryType} returned by 
+	 * {@link #getAdvancedQuickSearchEntryType()} is used 
 	 */
 	protected QuickSearchEntryType getDefaultSearchEntryType() {
 		return getAdvancedQuickSearchEntryType();
@@ -137,6 +150,13 @@ extends AbstractEntryViewer
 	}
 	
 	private Spinner limit;
+	/**
+	 * creates the top toolbar including the search text, the search item where
+	 * all the quickSearchEntries will be displayed, the limit spinner and 
+	 * an aditional toolbar where custom actions can be added
+	 * 
+	 * @param searchComposite the parent Composite where the toolbar will be located in 
+	 */
 	protected void createToolBar(final Composite searchComposite) 
 	{		
 		Composite toolBarWrapper = new XComposite(searchComposite, SWT.NONE, 
@@ -184,7 +204,20 @@ extends AbstractEntryViewer
 		
 	protected Text searchText = null;
 	
-	public abstract Composite createSearchComposite(Composite parent);	
+	/**
+	 * Implement this method for displaying the search criteria 
+	 * 
+	 * @param parent the parent {@link Composite}
+	 * @return a Composite which displays the search criteria
+	 */
+	public abstract Composite createSearchComposite(Composite parent);
+	
+	/**
+	 * Implement this method for displaying the result of a search
+	 * 
+	 * @param parent the parent {@link Composite}
+	 * @return a Composite which displayes the result of a search
+	 */
 	public abstract Composite createResultComposite(Composite parent);
 	
 	private Composite searchComposite;
@@ -196,7 +229,15 @@ extends AbstractEntryViewer
 		return resultComposite;
 	}	
 	
-//	public abstract void search();
+	/**
+	 * performs a search with the current criteria
+	 * 
+	 * This is done by calling {@link QuickSearchEntryType#search(ProgressMonitor)} of the
+	 * current selected {@link QuickSearchEntryType}
+	 * 
+	 * Furthermore the selected result ranges are set
+	 * and after the search is done {@link #displaySearchResult(Object)} is called
+	 */
 	public void search() 
 	{
 		new Job(Messages.getString("org.nightlabs.jfire.base.overview.search.BaseSearchEntryViewer.job.name")){			 //$NON-NLS-1$
@@ -226,6 +267,14 @@ extends AbstractEntryViewer
 	}			
 	
 	private QuickSearchEntryType searchEntryType;
+	
+	/**
+	 * will be called after the search of the current {@link QuickSearchEntryType} 
+	 * {@link #searchEntryType} is done and the result should be displayed 
+	 * in the Composite returned by {@link #createResultComposite(Composite)}
+	 * 
+	 * @param result the search result to display
+	 */
 	public abstract void displaySearchResult(Object result);
 	
 	private MenuManager menuManager;
@@ -338,10 +387,23 @@ extends AbstractEntryViewer
 		}		 
 	}
 	
+	/**
+	 * Inheritans can return here their implementations of {@link QuickSearchEntryType}
+	 * which can be used for searching
+	 *  
+	 * @return a List of {@link QuickSearchEntryType}s will can be used for quick searching
+	 */
 	protected List<QuickSearchEntryType> getQuickSearchEntryTypes() {
 		return Collections.EMPTY_LIST;
 	}
 	
+	/**
+	 * Inheritans must implement this method to return at least one {@link QuickSearchEntryType}
+	 * which will be used for searching 
+	 * 
+	 * @return the {@link QuickSearchEntryType} which is used by this implementation by default
+	 * To change this behaviour override {@link #getDefaultSearchEntryType()} 
+	 */
 	protected abstract QuickSearchEntryType getAdvancedQuickSearchEntryType();
 	
 	protected void configureSection(final Section section) 

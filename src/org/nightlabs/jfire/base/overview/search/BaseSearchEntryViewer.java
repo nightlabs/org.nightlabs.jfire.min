@@ -13,6 +13,13 @@ import org.nightlabs.jfire.base.resource.Messages;
 import org.nightlabs.progress.ProgressMonitor;
 
 /**
+ * Base Implementation of a {@link SearchEntryViewer} which is designed
+ * to work with an implementation of {@link AbstractQueryFilterComposite} as
+ * Composite returned by {@link #createSearchComposite(org.eclipse.swt.widgets.Composite)}
+ * and an implementation of {@link AbstractTableComposite} as Composite returned
+ * by {@link #createResultComposite(org.eclipse.swt.widgets.Composite)}
+ *  
+ * 
  * @author Daniel.Mazurek [at] NightLabs [dot] de
  *
  */
@@ -23,36 +30,6 @@ extends SearchEntryViewer
 		super(entry);
 	}
 
-//	@Override
-//	public void search() 
-//	{
-//		if (getFilterComposite() != null && getListComposite() != null) 
-//		{
-//			getListComposite().getTableViewer().setInput(new String[] {Messages.getString("org.nightlabs.jfire.base.overview.search.BaseSearchEntryViewer.applySearch.listComposite_loading")}); //$NON-NLS-1$
-//			new Job(Messages.getString("org.nightlabs.jfire.base.overview.search.BaseSearchEntryViewer.job.name")){			 //$NON-NLS-1$
-//				@Override
-//				protected IStatus run(ProgressMonitor monitor) 
-//				{	
-//					final List<JDOQuery> queries = new ArrayList<JDOQuery>(2);
-//					Display.getDefault().syncExec(new Runnable() {
-//						public void run() {
-//							queries.addAll(getFilterComposite().getJDOQueries());
-//						}
-//					});
-//					
-//					final Object result = getQueryResult(queries, monitor);
-//					optimizeSearchResults(result);
-//					Display.getDefault().asyncExec(new Runnable() {
-//						public void run() {
-//							getListComposite().getTableViewer().setInput(result);							
-//						}					
-//					});
-//					return Status.OK_STATUS;
-//				}			
-//			}.schedule();
-//		}			
-//	}
-	
 	@Override
 	public void displaySearchResult(Object result) 
 	{
@@ -82,7 +59,12 @@ extends SearchEntryViewer
 		return null;
 	}
 	
-	// default implementation does nothing
+	/**
+	 * can be overridden by inheritans to optimize their search results
+	 * by default this method does nothing
+	 * 
+	 * @param result the search result to optimize
+	 */
 	protected void optimizeSearchResults(Object result) {
 		
 	}
@@ -97,6 +79,14 @@ extends SearchEntryViewer
 	 */
 	protected abstract Object getQueryResult(Collection<JDOQuery> queries, ProgressMonitor monitor);
 
+	/**
+	 * Implementation of an {@link AbstractQuickSearchEntry} which 
+	 * takes the queries returned from the {@link AbstractQueryFilterComposite}
+	 * which should be returned by {@link SearchEntryViewer#createSearchComposite(org.eclipse.swt.widgets.Composite)}
+	 * and use these for searching
+	 *  
+	 * @author Daniel Mazurek - daniel [at] nightlabs [dot] de
+	 */
 	private class AdvancedQuickSearchEntryType
 	extends AbstractQuickSearchEntry 
 	{

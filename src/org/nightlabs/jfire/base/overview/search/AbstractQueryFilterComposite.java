@@ -1,7 +1,6 @@
 package org.nightlabs.jfire.base.overview.search;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,8 +17,10 @@ import org.nightlabs.jdo.ui.JDOQueryComposite;
 import org.nightlabs.jfire.base.resource.Messages;
 
 /**
+ * Abstract Base Class for a Composite which return {@link JDOQuery}s for searching 
+ * It uses {@link JDOQueryComposite}s which are displayed in a {@link Section}
+ * 
  * @author Daniel.Mazurek [at] NightLabs [dot] de
- *
  */
 public abstract class AbstractQueryFilterComposite 
 extends XComposite 
@@ -69,7 +70,6 @@ extends XComposite
 	protected void createComposite(Composite parent) {
 		createContents(parent);
 		queryComposites = registerJDOQueryComposites();
-//		quickSearchEntryTypes = registerQuickSearchEntryTypes(); 
 	}
 	
 	protected void configureSection(Section section, JDOQueryComposite comp) 
@@ -110,11 +110,24 @@ extends XComposite
 		return null;
 	}
 	
+	/**
+	 * returns a List of {@link JDOQueryComposite}s which should be displayed
+	 * @return a List of {@link JDOQueryComposite}s which should be displayed
+	 */
 	protected abstract List<JDOQueryComposite> registerJDOQueryComposites();
-	protected abstract Class getQueryClass();
-	protected abstract void createContents(Composite parent);
 	
-//	protected List<QuickSearchEntryType> registerQuickSearchEntryTypes() {
-//		return Collections.EMPTY_LIST;
-//	}
+	/**
+	 * returns the {@link Class} of the type of object which should queried
+	 * @return the {@link Class} of the type of object which should queried
+	 */
+	protected abstract Class getQueryClass();
+	
+	/**
+	 * creates the contents, usually the same composites like 
+	 * returned in {@link #registerJDOQueryComposites()} 
+	 * but here here can the layout be defined
+	 * 
+	 * @param parent the parent Composite
+	 */
+	protected abstract void createContents(Composite parent);	
 }
