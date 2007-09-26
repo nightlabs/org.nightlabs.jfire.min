@@ -49,10 +49,10 @@ extends XComposite
 	private List<JDOQueryComposite> queryComposites;
 	private Map<Button, Section> button2Section;
 	private Map<Button, JDOQueryComposite> button2Composite = null;
-	private List<QuickSearchEntryType> quickSearchEntryTypes = null;
+	private List<QuickSearchEntry> quickSearchEntries = null;
 	
-	public List<QuickSearchEntryType> getQuickSearchEntryTypes() {
-		return quickSearchEntryTypes;
+	public List<QuickSearchEntry> getQuickSearchEntryTypes() {
+		return quickSearchEntries;
 	}
 	
 	protected Map<Button, Section> getButton2Section() {

@@ -1,7 +1,7 @@
 package org.nightlabs.jfire.base.overview.search;
 
-import java.util.Collections;
-import java.util.List;
+import java.util.Collection;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IStatus;
@@ -59,8 +59,8 @@ import org.nightlabs.progress.ProgressMonitor;
  * which displayes the search criteria
  * {@link #displaySearchResult(Object)} must display the search result
  * passed to this method
- * {@link #getAdvancedQuickSearchEntryType()} must return a
- * {@link QuickSearchEntryType} which will be used by default
+ * {@link #getDefaultQuickSearchEntryFactory()} must return a
+ * {@link QuickSearchEntry} which will be used by default
  *  
  * @author Daniel.Mazurek [at] NightLabs [dot] de
  *
@@ -124,18 +124,9 @@ extends AbstractEntryViewer
 		sashform.setWeights(new int[] {1, 10});		
 		
 		configureQuickSearchEntries(searchItem);
-		searchEntryType = getDefaultSearchEntryType();
+		searchEntryType = getDefaultQuickSearchEntryFactory().createQuickSearchEntry();
 		
 		return sashform;
-	}
-
-	/**
-	 * Inheritans my override this method to return the default search entry type
-	 * by default the {@link QuickSearchEntryType} returned by 
-	 * {@link #getAdvancedQuickSearchEntryType()} is used 
-	 */
-	protected QuickSearchEntryType getDefaultSearchEntryType() {
-		return getAdvancedQuickSearchEntryType();
 	}
 	
 	public Composite getComposite() {
@@ -190,10 +181,6 @@ extends AbstractEntryViewer
 		limit.setMinimum(0);
 		limit.setMaximum(Integer.MAX_VALUE);
 		limit.setSelection(00);
-//		refreshButton = new Button(rangeWrapper, SWT.NONE);
-////		refreshButton.setImage(SharedImages.getSharedImage(TradePlugin.getDefault(), ProductTransferFilterSection.class, "refreshButton"));
-//		refreshButton.setText("Refresh");
-//		refreshButton.setToolTipText("Apply the filter modifications and refresh the list of ProductTransfers.");		
 		ToolItem rangeItem = new ToolItem(searchTextToolBar, SWT.SEPARATOR);
 		rangeItem.setControl(rangeWrapper);
 		rangeItem.setWidth(350);
@@ -202,7 +189,7 @@ extends AbstractEntryViewer
 		toolBarManager = new ToolBarManager(toolBar);	
 	}
 		
-	protected Text searchText = null;
+	private Text searchText = null;
 	
 	/**
 	 * Implement this method for displaying the search criteria 
@@ -232,15 +219,15 @@ extends AbstractEntryViewer
 	/**
 	 * performs a search with the current criteria
 	 * 
-	 * This is done by calling {@link QuickSearchEntryType#search(ProgressMonitor)} of the
-	 * current selected {@link QuickSearchEntryType}
+	 * This is done by calling {@link QuickSearchEntry#search(ProgressMonitor)} of the
+	 * current selected {@link QuickSearchEntry}
 	 * 
 	 * Furthermore the selected result ranges are set
 	 * and after the search is done {@link #displaySearchResult(Object)} is called
 	 */
 	public void search() 
 	{
-		new Job(Messages.getString("org.nightlabs.jfire.base.overview.search.BaseSearchEntryViewer.job.name")){			 //$NON-NLS-1$
+		new Job(Messages.getString("org.nightlabs.jfire.base.overview.search.JDOQuerySearchEntryViewer.job.name")){			 //$NON-NLS-1$
 			@Override
 			protected IStatus run(final ProgressMonitor monitor) 
 			{
@@ -266,10 +253,10 @@ extends AbstractEntryViewer
 		}.schedule();
 	}			
 	
-	private QuickSearchEntryType searchEntryType;
+	private QuickSearchEntry searchEntryType;
 	
 	/**
-	 * will be called after the search of the current {@link QuickSearchEntryType} 
+	 * will be called after the search of the current {@link QuickSearchEntry} 
 	 * {@link #searchEntryType} is done and the result should be displayed 
 	 * in the Composite returned by {@link #createResultComposite(Composite)}
 	 * 
@@ -291,7 +278,6 @@ extends AbstractEntryViewer
 	}		
 	
 	protected void configureSash(SashForm sashform) {
-//		sashform.setWeights(new int[] {1, 10});
 		int searchHeight = searchWrapper.getSize().y;
 		int resultHeight = resultComposite.getSize().y;
 		sashform.setWeights(new int[] {searchHeight, resultHeight});
@@ -336,7 +322,6 @@ extends AbstractEntryViewer
 		int completeHeight = sashform.getSize().y;
 		int searchHeight = 1;
 		int resultHeight = 10;
-//		if (e.getState()) {
 		if (searchCriteriaSection.isExpanded()) {
 			searchHeight = initalSearchHeight + searchComposite.getSize().y;
 		} else {
@@ -349,18 +334,18 @@ extends AbstractEntryViewer
 	
 	protected void configureQuickSearchEntries(final ToolItem searchItem) 
 	{
-		if (getQuickSearchEntryTypes() != null && !getQuickSearchEntryTypes().isEmpty()) { 
-			List<QuickSearchEntryType> quickSearchEntryTypes = getQuickSearchEntryTypes();
+		if (getQuickSearchEntryFactories() != null && !getQuickSearchEntryFactories().isEmpty()) { 
+			Collection<QuickSearchEntryFactory> quickSearchEntryFactories = getQuickSearchEntryFactories();
 			final Menu menu = new Menu(RCPUtil.getActiveWorkbenchShell(), SWT.POP_UP);
-			for (final QuickSearchEntryType quickSearchEntryType : quickSearchEntryTypes) {
+			for (final QuickSearchEntryFactory quickSearchEntryFactory : quickSearchEntryFactories) {
 				final MenuItem menuItem = new MenuItem(menu, SWT.CHECK);			
-//				menuItem.setText(quickSearchEntryType.getName().getText());
-				menuItem.setText(quickSearchEntryType.getName());
-				menuItem.setImage(quickSearchEntryType.getImage());
-				menuItem.setData(quickSearchEntryType);
+				menuItem.setText(quickSearchEntryFactory.getName());
+				menuItem.setImage(quickSearchEntryFactory.getImage());
+				final QuickSearchEntry quickSearchEntry = quickSearchEntryFactory.createQuickSearchEntry(); 
+				menuItem.setData(quickSearchEntry);
 				menuItem.addSelectionListener(new SelectionListener(){			
 					public void widgetSelected(SelectionEvent e) {
-						searchEntryType = quickSearchEntryType;
+						searchEntryType = quickSearchEntry;
 						for (int i=0; i<menu.getItems().length; i++) {
 							MenuItem mi = menu.getItem(i);
 							mi.setSelection(false);
@@ -387,25 +372,45 @@ extends AbstractEntryViewer
 		}		 
 	}
 	
-	/**
-	 * Inheritans can return here their implementations of {@link QuickSearchEntryType}
+//	/** 
+//	 * Subclasses can return here their implementations of {@link QuickSearchEntryFactory}
+//	 * which can be used for searching
+//	 *  
+//	 * @return a List of {@link QuickSearchEntryFactory}s will can be used for quick searching
+//	 */
+//	protected List<QuickSearchEntryFactory> getQuickSearchEntryFactories() {
+//		return Collections.EMPTY_LIST;
+//	}
+	/** 
+	 * Subclasses can return here their implementations of {@link QuickSearchEntryFactory}
 	 * which can be used for searching
 	 *  
-	 * @return a List of {@link QuickSearchEntryType}s will can be used for quick searching
+	 * @return a List of {@link QuickSearchEntryFactory}s will can be used for quick searching
 	 */
-	protected List<QuickSearchEntryType> getQuickSearchEntryTypes() {
-		return Collections.EMPTY_LIST;
+	protected Collection<QuickSearchEntryFactory> getQuickSearchEntryFactories() 
+	{
+		Set<QuickSearchEntryFactory> factories = 
+			QuickSearchEntryRegistry.sharedInstance().getFactories(this.getClass().getName());
+		return factories;
 	}
 	
 	/**
-	 * Inheritans must implement this method to return at least one {@link QuickSearchEntryType}
-	 * which will be used for searching 
+	 * Subclasses must implement this method to return at least one 
+	 * {@link QuickSearchEntryFactory} which will be used for searching by default 
 	 * 
-	 * @return the {@link QuickSearchEntryType} which is used by this implementation by default
-	 * To change this behaviour override {@link #getDefaultSearchEntryType()} 
+	 * @return the {@link QuickSearchEntryFactory} which is used by this implementation by default 
 	 */
-	protected abstract QuickSearchEntryType getAdvancedQuickSearchEntryType();
+	protected abstract QuickSearchEntryFactory getDefaultQuickSearchEntryFactory();
 	
+//	/**
+//	 * Subclasses my override this method to return the default search entry factory
+//	 * by default the {@link QuickSearchEntryFactory} returned by 
+//	 * {@link #getAdvancedQuickSearchEntryFactory()} is used 
+//	 */
+//	protected QuickSearchEntryFactory getDefaultSearchEntryFactory() {
+//		return getAdvancedQuickSearchEntryFactory();
+//	}
+		
 	protected void configureSection(final Section section) 
 	{
 		Button activeButton = new Button(section, SWT.CHECK);

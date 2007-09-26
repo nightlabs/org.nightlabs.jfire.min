@@ -23,13 +23,17 @@ import org.nightlabs.progress.ProgressMonitor;
  * @author Daniel.Mazurek [at] NightLabs [dot] de
  *
  */
-public abstract class BaseSearchEntryViewer 
+public abstract class JDOQuerySearchEntryViewer 
 extends SearchEntryViewer 
 {
-	public BaseSearchEntryViewer(Entry entry) {
+	public JDOQuerySearchEntryViewer(Entry entry) {
 		super(entry);
 	}
 
+	/**
+	 * takes the given result and calls setInput(Object input)
+	 * with it 
+	 */
 	@Override
 	public void displaySearchResult(Object result) 
 	{
@@ -39,8 +43,8 @@ extends SearchEntryViewer
 	}
 
 	@Override
-	public QuickSearchEntryType getAdvancedQuickSearchEntryType() {
-		return new AdvancedQuickSearchEntryType();
+	public QuickSearchEntryFactory getDefaultQuickSearchEntryFactory() {
+		return new AdvancedQuickSearchEntryFactory();
 	}
 
 	@Override
@@ -107,6 +111,18 @@ extends SearchEntryViewer
 	 */
 	protected abstract Object getQueryResult(Collection<JDOQuery> queries, ProgressMonitor monitor);
 
+	private class AdvancedQuickSearchEntryFactory
+	extends AbstractQuickSearchEntryFactory
+	{
+		public String getName() {
+			return Messages.getString("org.nightlabs.jfire.base.overview.search.JDOQuerySearchEntryViewer.advancedEntry.name"); //$NON-NLS-1$
+		}
+
+		public QuickSearchEntry createQuickSearchEntry() {
+			return new AdvancedQuickSearchEntryType(this);
+		}
+	}
+	
 	/**
 	 * Implementation of an {@link AbstractQuickSearchEntry} which 
 	 * takes the queries returned from the {@link AbstractQueryFilterComposite}
@@ -118,11 +134,15 @@ extends SearchEntryViewer
 	private class AdvancedQuickSearchEntryType
 	extends AbstractQuickSearchEntry 
 	{
+		public AdvancedQuickSearchEntryType(QuickSearchEntryFactory factory) {
+			super(factory);
+		}
+		
 		public Object search(ProgressMonitor monitor) 
 		{
 			Display.getDefault().syncExec(new Runnable(){
 				public void run() {
-					getListComposite().getTableViewer().setInput(new String[] {Messages.getString("org.nightlabs.jfire.base.overview.search.BaseSearchEntryViewer.applySearch.listComposite_loading")}); //$NON-NLS-1$					
+					getListComposite().getTableViewer().setInput(new String[] {Messages.getString("org.nightlabs.jfire.base.overview.search.JDOQuerySearchEntryViewer.applySearch.listComposite_loading")}); //$NON-NLS-1$					
 				}
 			});
 			
@@ -134,8 +154,8 @@ extends SearchEntryViewer
 			});
 			
 			for (JDOQuery query : queries) {
-				query.setFromInclude(minInclude);
-				query.setToExclude(maxExclude);				
+				query.setFromInclude(getMinIncludeRange());
+				query.setToExclude(getMaxExcludeRange());				
 			}
 			
 			final Object result = getQueryResult(queries, monitor);
@@ -147,10 +167,6 @@ extends SearchEntryViewer
 			});
 			
 			return result;
-		}
-
-		public String getName() {
-			return Messages.getString("org.nightlabs.jfire.base.overview.search.BaseSearchEntryViewer.advancedEntry.name"); //$NON-NLS-1$
 		}
 	}
 		

@@ -11,7 +11,6 @@ import org.nightlabs.jfire.base.resource.Messages;
  *
  */
 public class ApplySearchAction 
-//extends Action 
 extends WorkbenchPartAction
 {
 	public static final String ID = ApplySearchAction.class.getName(); 

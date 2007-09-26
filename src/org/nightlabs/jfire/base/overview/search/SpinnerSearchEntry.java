@@ -19,7 +19,6 @@ import org.nightlabs.jfire.base.resource.Messages;
 public class SpinnerSearchEntry 
 extends XComposite 
 {
-
 	public SpinnerSearchEntry(Composite parent, int style, LayoutMode layoutMode,
 			LayoutDataMode layoutDataMode, String text) 
 	{

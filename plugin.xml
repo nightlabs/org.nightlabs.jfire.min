@@ -48,6 +48,7 @@
 	   schema="schema/propStructField.exsd"
 	/>
    <extension-point id="overview" name="overview" schema="schema/overview.exsd"/>
+   <extension-point id="quickSearchEntry" name="quickSearchEntry" schema="schema/quicksearchentry.exsd"/>
 	
 	
    <!-- Extensions -->	

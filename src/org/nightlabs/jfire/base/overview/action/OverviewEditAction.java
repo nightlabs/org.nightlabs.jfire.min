@@ -7,11 +7,14 @@ import org.nightlabs.base.action.SelectionAction;
 import org.nightlabs.base.util.RCPUtil;
 
 /**
+ * Abstract base implementation of {@link IOverviewEditAction}
+ * 
  * @author Daniel.Mazurek [at] NightLabs [dot] de
  *
  */
 public abstract class OverviewEditAction 
 extends SelectionAction 
+implements IOverviewEditAction
 {
 	public OverviewEditAction() {
 	}
@@ -43,6 +46,10 @@ extends SelectionAction
 	
 	public abstract String getEditorID();
 
+	/**
+	 * Opens an Editor with the ID returned by {@link #getEditorID()} 
+	 * with the input returned by {@link #getEditorInput()}
+	 */
 	@Override
 	public void run() {
 		try {
