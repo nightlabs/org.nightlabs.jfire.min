@@ -58,7 +58,7 @@ public class PropertySetStartsWithQuickSearchComposite extends Composite {
 			layout.marginHeight = 0;
 			layout.marginWidth = 0;
 			setLayout(layout);
-			quickSearches = new LinkedList<PropertySetQuickSearch>(); // TODO why is this "Person*"? Shouldn't it be "PropertySet*"?
+			quickSearches = new LinkedList<PropertySetQuickSearch>();
 			
 			PropertySetQuickSearch pswqs;
 			

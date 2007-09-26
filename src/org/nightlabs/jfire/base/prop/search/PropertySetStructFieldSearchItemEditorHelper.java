@@ -35,7 +35,7 @@ import org.nightlabs.jfire.prop.AbstractStructField;
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  */
 public abstract class PropertySetStructFieldSearchItemEditorHelper implements
-		ProperySetSearchFilterItemEditorHelper {
+		PropertySetSearchFilterItemEditorHelper {
 
 	
 	protected AbstractStructField personStructField;
@@ -62,19 +62,19 @@ public abstract class PropertySetStructFieldSearchItemEditorHelper implements
 	}
 
 	/**
-	 * @see org.nightlabs.jfire.base.prop.search.ProperySetSearchFilterItemEditorHelper#getControl(org.eclipse.swt.widgets.Composite)
+	 * @see org.nightlabs.jfire.base.prop.search.PropertySetSearchFilterItemEditorHelper#getControl(org.eclipse.swt.widgets.Composite)
 	 */
 	public abstract Control getControl(Composite parent);
 
 	/**
-	 * @see org.nightlabs.jfire.base.prop.search.ProperySetSearchFilterItemEditorHelper#getSearchFilterItem()
+	 * @see org.nightlabs.jfire.base.prop.search.PropertySetSearchFilterItemEditorHelper#getSearchFilterItem()
 	 */
 	public abstract SearchFilterItem getSearchFilterItem();
 
 	/**
-	 * @see org.nightlabs.jfire.base.prop.search.ProperySetSearchFilterItemEditorHelper#newInstance()
+	 * @see org.nightlabs.jfire.base.prop.search.PropertySetSearchFilterItemEditorHelper#newInstance()
 	 */
-	public ProperySetSearchFilterItemEditorHelper newInstance() {
+	public PropertySetSearchFilterItemEditorHelper newInstance() {
 		PropertySetStructFieldSearchItemEditorHelper result;
 		try {
 			result = (PropertySetStructFieldSearchItemEditorHelper)this.getClass().newInstance();
@@ -88,7 +88,7 @@ public abstract class PropertySetStructFieldSearchItemEditorHelper implements
 	}
 
 	/**
-	 * @see org.nightlabs.jfire.base.prop.search.ProperySetSearchFilterItemEditorHelper#getDisplayName()
+	 * @see org.nightlabs.jfire.base.prop.search.PropertySetSearchFilterItemEditorHelper#getDisplayName()
 	 */
 	public String getDisplayName() {
 		return personStructField.getStructBlockID()+": "+personStructField.getStructFieldKey(); //$NON-NLS-1$

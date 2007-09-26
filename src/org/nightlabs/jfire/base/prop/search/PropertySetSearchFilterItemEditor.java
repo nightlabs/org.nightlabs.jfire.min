@@ -89,7 +89,7 @@ public class PropertySetSearchFilterItemEditor extends SearchFilterItemEditor im
 			
 			comboSearchField.addSelectionListener(this);
 			// TODO: temporär -> ExtensionPoint
-			PropertySetSearchFilterItemEditorHelperRegistry.sharedInstance().addItemEditor(TextStructField.class, new TextStructFieldSearchItemEditorHelper());
+			PropertySetSearchFilterItemEditorHelperRegistry.sharedInstance().addEditorFactory(TextStructField.class, new TextStructFieldSearchItemEditorHelper.Factory());
 			fillSearchFieldCombo();
 		}
 		return wrapper;
@@ -111,7 +111,7 @@ public class PropertySetSearchFilterItemEditor extends SearchFilterItemEditor im
 				Display.getDefault().asyncExec(new Runnable() {
 					public void run() {
 						for (int i = 0; i<searchFieldList.size()-1; i++) {
-							ProperySetSearchFilterItemEditorHelper helper = (ProperySetSearchFilterItemEditorHelper) searchFieldList.get(i);
+							PropertySetSearchFilterItemEditorHelper helper = (PropertySetSearchFilterItemEditorHelper) searchFieldList.get(i);
 							comboSearchField.add(helper.getDisplayName());
 						}
 						comboSearchField.select(0);
@@ -125,7 +125,7 @@ public class PropertySetSearchFilterItemEditor extends SearchFilterItemEditor im
 	}
 	
 	/**
-	 * Builds a list of ProperySetSearchFilterItemEditorHelper
+	 * Builds a list of PropertySetSearchFilterItemEditorHelper
 	 * that are used to build the contents of the search field combo
 	 * and the right part of the editor.
 	 * 
@@ -139,14 +139,15 @@ public class PropertySetSearchFilterItemEditor extends SearchFilterItemEditor im
 			StructBlock structBlock = (StructBlock) iter.next();
 			for (Iterator iterator = structBlock.getStructFields().iterator(); iterator.hasNext();) {
 				AbstractStructField structField = (AbstractStructField) iterator.next();
-				helperList.add(new PropertySetStructFieldSearchItemEditorManager(structField));
+				if (PropertySetSearchFilterItemEditorHelperRegistry.sharedInstance().hasHelper(structField.getClass()))
+					helperList.add(new PropertySetStructFieldSearchItemEditorManager(structField));
 			}
 		}
 		return helperList;
 	}
 
 	/**
-	 * Delegates to the current ProperySetSearchFilterItemEditorHelper.
+	 * Delegates to the current PropertySetSearchFilterItemEditorHelper.
 	 * 
 	 * @see org.nightlabs.jdo.ui.search.SearchFilterItemEditor#getSearchFilterItem()
 	 */
@@ -155,14 +156,14 @@ public class PropertySetSearchFilterItemEditor extends SearchFilterItemEditor im
 	}
 
 	
-	private ProperySetSearchFilterItemEditorHelper lastHelper;
+	private PropertySetSearchFilterItemEditorHelper lastHelper;
 	private int lastIdx = -1;
 	
-	private ProperySetSearchFilterItemEditorHelper getCurrentHelper() {
+	private PropertySetSearchFilterItemEditorHelper getCurrentHelper() {
 		int idx = comboSearchField.getSelectionIndex();
 		if ((idx < 0) || (idx >= searchFieldList.size()))
 			throw new ArrayIndexOutOfBoundsException("Selection index of search field combo is out of range of searchFieldList.S"); //$NON-NLS-1$
-		return (ProperySetSearchFilterItemEditorHelper) searchFieldList.get(idx);
+		return (PropertySetSearchFilterItemEditorHelper) searchFieldList.get(idx);
 	}
 	
 	private void onComboChange() {
@@ -171,7 +172,7 @@ public class PropertySetSearchFilterItemEditor extends SearchFilterItemEditor im
 			return;
 		if (idx < 0)
 			return;			
-		ProperySetSearchFilterItemEditorHelper helper = getCurrentHelper();
+		PropertySetSearchFilterItemEditorHelper helper = getCurrentHelper();
 		if (lastHelper != null) {
 			lastHelper.close();
 			try {
@@ -180,7 +181,7 @@ public class PropertySetSearchFilterItemEditor extends SearchFilterItemEditor im
 				logger.error("Error disposing helper control.",t); //$NON-NLS-1$
 			}				
 		}
-		helper.getControl(wrapper);
+ 		helper.getControl(wrapper);
 		wrapper.layout();
 		lastIdx = idx;
 		lastHelper = helper;

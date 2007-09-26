@@ -28,9 +28,10 @@ package org.nightlabs.jfire.base.prop.search;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.nightlabs.jfire.base.prop.search.PropertySetSearchFilterItemEditorHelperFactory;
 
 /**
- * This registry holds ProperySetSearchFilterItemEditorHelper 
+ * This registry holds PropertySetSearchFilterItemEditorHelper 
  * linked to classes of PersonStructFields.
  * 
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
@@ -39,48 +40,52 @@ public class PropertySetSearchFilterItemEditorHelperRegistry {
 
 	/**
 	 * key: Class AbstractPersonStructFieldClass<br/>
-	 * value: ProperySetSearchFilterItemEditorHelper personSearchFilterItemEditorHelper<br/>
+	 * value: PropertySetSearchFilterItemEditorHelper personSearchFilterItemEditorHelper<br/>
 	 */
-	private Map<Class, ProperySetSearchFilterItemEditorHelper> itemEditorHelpers = new HashMap<Class, ProperySetSearchFilterItemEditorHelper>();
+	private Map<Class, PropertySetSearchFilterItemEditorHelperFactory<?>> helperFactories = new HashMap<Class, PropertySetSearchFilterItemEditorHelperFactory<?>>();
 	
 	/**
-	 * Adds a ProperySetSearchFilterItemEditorHelper linked to the
+	 * Adds a PropertySetSearchFilterItemEditorHelper linked to the
 	 * given class name to the registry. 
 	 * 
 	 * @param itemClassName
 	 * @param itemEditor
 	 */
-	public void addItemEditor(Class structFieldClass, ProperySetSearchFilterItemEditorHelper editorHelper) {
-		itemEditorHelpers.put(structFieldClass, editorHelper);
+	public void addEditorFactory(Class structFieldClass, PropertySetSearchFilterItemEditorHelperFactory<?> helperFactory) {
+		helperFactories.put(structFieldClass, helperFactory);
 	}
 	
 	/**
-	 * Removes the ProperySetSearchFilterItemEditorHelper from the
+	 * Removes the PropertySetSearchFilterItemEditorHelper from the
 	 * registry.
 	 * 
 	 * @param itemClassName
 	 */
-	public void removeItemEditor(Class structFieldClass) {
-		if (!itemEditorHelpers.containsKey(structFieldClass))
-			return;
-		itemEditorHelpers.remove(structFieldClass);
+	public void removeEditorFactory(Class structFieldClass) {
+//		if (!helperFactories.containsKey(structFieldClass))
+//			return;
+		helperFactories.remove(structFieldClass);
 	}
 	
 	
 	/**
-	 * Returns a new instance of a ProperySetSearchFilterItemEditorHelper.
+	 * Returns a new instance of a PropertySetSearchFilterItemEditorHelper.
 	 * 
 	 * @param searchFieldClass
 	 * @return
 	 * @throws SearchFilterItemEditorNotFoundException
 	 */
-	public ProperySetSearchFilterItemEditorHelper getEditorHelper(Class structFieldClass) 
+	public PropertySetSearchFilterItemEditorHelper createEditorHelper(Class structFieldClass) 
 	throws PropertySetSearchFilterItemEditorHelperNotFoundException {
-		ProperySetSearchFilterItemEditorHelper editorHelper = (ProperySetSearchFilterItemEditorHelper)itemEditorHelpers.get(structFieldClass);
-		if (editorHelper != null)
-			return editorHelper.newInstance();
+		PropertySetSearchFilterItemEditorHelperFactory<? extends PropertySetSearchFilterItemEditorHelper> factory = (PropertySetSearchFilterItemEditorHelperFactory<?>) helperFactories.get(structFieldClass);
+		if (factory != null)
+			return factory.createHelper();
 		else
 			throw new PropertySetSearchFilterItemEditorHelperNotFoundException("Registry does not contain an entry for "+structFieldClass.getName()); //$NON-NLS-1$
+	}
+	
+	public boolean hasHelper(Class structFieldClass) {
+		return helperFactories.containsKey(structFieldClass);
 	}
 	
 	

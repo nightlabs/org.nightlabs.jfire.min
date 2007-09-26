@@ -34,7 +34,7 @@ import org.nightlabs.jdo.search.SearchFilterItem;
 /**
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  */
-public interface ProperySetSearchFilterItemEditorHelper {
+public interface PropertySetSearchFilterItemEditorHelper {
 
 	/**
 	 * Should return the GUI-representation of this helper.
@@ -50,12 +50,6 @@ public interface ProperySetSearchFilterItemEditorHelper {
 	 * @return
 	 */
 	public SearchFilterItem getSearchFilterItem();
-	
-	/**
-	 * Should return a new instance of a ProperySetSearchFilterItemEditorHelper.
-	 * @return
-	 */
-	public ProperySetSearchFilterItemEditorHelper newInstance();
 	
 	/**
 	 * Should return a string that can be displayed 

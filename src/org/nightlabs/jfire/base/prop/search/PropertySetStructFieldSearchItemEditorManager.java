@@ -59,7 +59,7 @@ public class PropertySetStructFieldSearchItemEditorManager extends
 	}
 
 	
-	private ProperySetSearchFilterItemEditorHelper helper;
+	private PropertySetSearchFilterItemEditorHelper helper;
 	private Control helperControl;
 	
 	/**
@@ -67,7 +67,7 @@ public class PropertySetStructFieldSearchItemEditorManager extends
 	 * gets and remembers a new instance of it
 	 * and the Control it returned.
 	 * 
-	 * @see org.nightlabs.jfire.base.prop.search.ProperySetSearchFilterItemEditorHelper#getControl(org.eclipse.swt.widgets.Composite)
+	 * @see org.nightlabs.jfire.base.prop.search.PropertySetSearchFilterItemEditorHelper#getControl(org.eclipse.swt.widgets.Composite)
 	 */
 	public Control getControl(Composite parent) {
 		if (helper != null)
@@ -79,13 +79,13 @@ public class PropertySetStructFieldSearchItemEditorManager extends
 			throw new IllegalStateException("Member personStructField is null. init(personStructField) might not have been called."); //$NON-NLS-1$
 		
 		try {
-			helper = registry.getEditorHelper(personStructField.getClass());
+			helper = registry.createEditorHelper(personStructField.getClass());
 		} catch (PropertySetSearchFilterItemEditorHelperNotFoundException e) {
 			IllegalStateException ill = new IllegalStateException("No helper found for class "+personStructField.getClass().getName()); //$NON-NLS-1$
 			ill.initCause(e);
 			throw ill;
 		}
-		helper = helper.newInstance();
+		
 		if (helper instanceof PropertySetStructFieldSearchItemEditorHelper)
 			((PropertySetStructFieldSearchItemEditorHelper)helper).init(this.personStructField);
 		helperControl = helper.getControl(parent); 
@@ -95,7 +95,7 @@ public class PropertySetStructFieldSearchItemEditorManager extends
 	/**
 	 * Delegates to the helper from the registry.
 	 * @see #getControl(Composite)	
-	 * @see org.nightlabs.jfire.base.prop.search.ProperySetSearchFilterItemEditorHelper#getSearchFilterItem()
+	 * @see org.nightlabs.jfire.base.prop.search.PropertySetSearchFilterItemEditorHelper#getSearchFilterItem()
 	 */
 	public SearchFilterItem getSearchFilterItem() {
 		if (helper == null)
@@ -105,7 +105,7 @@ public class PropertySetStructFieldSearchItemEditorManager extends
 	}
 
 	/**
-	 * @see org.nightlabs.jfire.base.prop.search.ProperySetSearchFilterItemEditorHelper#close()
+	 * @see org.nightlabs.jfire.base.prop.search.PropertySetSearchFilterItemEditorHelper#close()
 	 */
 	public void close() {
 	}
