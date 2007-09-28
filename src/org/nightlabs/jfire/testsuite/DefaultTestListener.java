@@ -704,40 +704,41 @@ public class DefaultTestListener implements JFireTestListener {
 	 */
 	public void sendReportAsMail() throws Exception {
 		// create the html report
-		TransformerFactory factory = TransformerFactory.newInstance();
-		String xslFileName = getProperty("mail.htmlReportXSL", "htmlReport.xsl"); 
-		Transformer transformer = factory.newTransformer(new StreamSource(new File(JFireTestSuiteEAR.getEARDir(), xslFileName)));
-		File tmpFile = new File(JFireTestSuiteEAR.getEARDir(), "tmpReport.xml");
-		FileOutputStream out = new FileOutputStream(tmpFile);
 		try {
-			writeReportAsXML(out);
-		} finally {
-			out.close();
-		}
-		StringWriter writer = new StringWriter();
-		transformer.transform(new StreamSource(tmpFile), new StreamResult(writer));
-		
-		// create/send the message
-		Session session = Session.getInstance(config, null);
-		MimeMessage message = new MimeMessage(session);
-		
-		message.setFrom(new InternetAddress(getProperty("mail.from", "info@jfire.org")));
-
-		String to = config.getProperty("mail.to", "info@jfire.org");
-		if(to.contains(",")) {
-			StringTokenizer t = new StringTokenizer(to, ",");
-			while(t.hasMoreTokens())
-				message.addRecipient(RecipientType.TO, new InternetAddress(t.nextToken().trim()));
-		} else {
-			message.addRecipient(RecipientType.TO, new InternetAddress(to));
-		}
-		
-		String subject = getProperty("mail.subject", "JFireTestSuite Testreport");
-		message.setSubject(subject);
-				
-//		message.setContent(writer.toString(), "text/html");
-		
-		// set html report
+			TransformerFactory factory = TransformerFactory.newInstance();
+			String xslFileName = getProperty("mail.htmlReportXSL", "htmlReport.xsl"); 
+			Transformer transformer = factory.newTransformer(new StreamSource(new File(JFireTestSuiteEAR.getEARDir(), xslFileName)));
+			File tmpFile = new File(JFireTestSuiteEAR.getEARDir(), "tmpReport.xml");
+			FileOutputStream out = new FileOutputStream(tmpFile);
+			try {
+				writeReportAsXML(out);
+			} finally {
+				out.close();
+			}
+			StringWriter writer = new StringWriter();
+			transformer.transform(new StreamSource(tmpFile), new StreamResult(writer));
+			
+			// create/send the message
+			Session session = Session.getInstance(config, null);
+			MimeMessage message = new MimeMessage(session);
+			
+			message.setFrom(new InternetAddress(getProperty("mail.from", "info@jfire.org")));
+	
+			String to = config.getProperty("mail.to", "info@jfire.org");
+			if(to.contains(",")) {
+				StringTokenizer t = new StringTokenizer(to, ",");
+				while(t.hasMoreTokens())
+					message.addRecipient(RecipientType.TO, new InternetAddress(t.nextToken().trim()));
+			} else {
+				message.addRecipient(RecipientType.TO, new InternetAddress(to));
+			}
+			
+			String subject = getProperty("mail.subject", "JFireTestSuite Testreport");
+			message.setSubject(subject);
+					
+	//		message.setContent(writer.toString(), "text/html");
+			
+			// set html report
 	    MimeBodyPart mimebodypart = new MimeBodyPart();
 	    mimebodypart.setContent(writer.toString(), "text/html");
 	    
@@ -745,15 +746,19 @@ public class DefaultTestListener implements JFireTestListener {
 	    MimeMultipart mimemultipart = new MimeMultipart();
 	    mimemultipart.addBodyPart(mimebodypart);
 	    mimebodypart = new MimeBodyPart();
-        FileDataSource filedatasource = new FileDataSource(tmpFile);
-        mimebodypart.setDataHandler(new DataHandler(filedatasource));
+	    FileDataSource filedatasource = new FileDataSource(tmpFile);
+	    mimebodypart.setDataHandler(new DataHandler(filedatasource));
 	    
 	    mimebodypart.setFileName("jfire-test-report.xml"); 
 	    mimemultipart.addBodyPart(mimebodypart);
 	    message.setContent(mimemultipart);
-	    
-		Transport.send(message);
-		
-		tmpFile.delete();
+	
+	    logger.info("Sending TestSuite report email to: "+to);
+			Transport.send(message);
+			
+			tmpFile.delete();
+		} catch(Exception e) {
+			logger.error("Sending TestSuite report email failed! Escalating exception...", e);
+		}
 	}
 }
