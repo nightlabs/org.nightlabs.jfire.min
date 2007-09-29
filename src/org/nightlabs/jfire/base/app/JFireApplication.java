@@ -34,8 +34,8 @@ import java.util.List;
 import javax.security.auth.login.LoginException;
 
 import org.eclipse.swt.widgets.Display;
-import org.nightlabs.base.app.AbstractApplication;
-import org.nightlabs.base.app.AbstractWorkbenchAdvisor;
+import org.nightlabs.base.ui.app.AbstractApplication;
+import org.nightlabs.base.ui.app.AbstractWorkbenchAdvisor;
 import org.nightlabs.jfire.base.j2ee.RemoteResourceFilterRegistry;
 import org.nightlabs.jfire.base.login.JFireLoginHandler;
 import org.nightlabs.jfire.base.login.JFireSecurityConfiguration;

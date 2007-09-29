@@ -3,9 +3,9 @@ package org.nightlabs.jfire.base.login.part;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.part.EditorPart;
-import org.nightlabs.base.part.ControllablePart;
-import org.nightlabs.base.part.PartVisibilityListener;
-import org.nightlabs.base.part.PartVisibilityTracker;
+import org.nightlabs.base.ui.part.ControllablePart;
+import org.nightlabs.base.ui.part.PartVisibilityListener;
+import org.nightlabs.base.ui.part.PartVisibilityTracker;
 import org.nightlabs.jfire.base.login.Login;
 
 /**

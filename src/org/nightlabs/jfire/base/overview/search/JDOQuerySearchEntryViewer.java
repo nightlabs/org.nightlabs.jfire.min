@@ -6,7 +6,7 @@ import java.util.List;
 
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-import org.nightlabs.base.table.AbstractTableComposite;
+import org.nightlabs.base.ui.table.AbstractTableComposite;
 import org.nightlabs.jdo.query.JDOQuery;
 import org.nightlabs.jfire.base.overview.Entry;
 import org.nightlabs.jfire.base.resource.Messages;

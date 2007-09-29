@@ -3,7 +3,7 @@ package org.nightlabs.jfire.base.jdo.notification;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.core.runtime.jobs.Job;
-import org.nightlabs.base.progress.ProgressMonitorWrapper;
+import org.nightlabs.base.ui.progress.ProgressMonitorWrapper;
 import org.nightlabs.progress.ProgressMonitor;
 
 public abstract class JDOLifecycleAdapterJob
@@ -34,14 +34,14 @@ implements JDOLifecycleListenerJob
 	private ProgressMonitor progressMonitorWrapper;
 
 	/**
-	 * @see org.nightlabs.base.notification.NotificationListenerJob#setProgressMonitor(org.eclipse.core.runtime.IProgressMonitor)
+	 * @see org.nightlabs.base.ui.notification.NotificationListenerJob#setProgressMonitor(org.eclipse.core.runtime.IProgressMonitor)
 	 */
 	public void setProgressMonitor(IProgressMonitor progressMonitor) {
 		this.progressMonitor = progressMonitor;
 	}
 
 	/**
-	 * @see org.nightlabs.base.notification.NotificationListenerJob#getProgressMonitor()
+	 * @see org.nightlabs.base.ui.notification.NotificationListenerJob#getProgressMonitor()
 	 */
 	public IProgressMonitor getProgressMonitor() {
 		return progressMonitor;
@@ -64,7 +64,7 @@ implements JDOLifecycleListenerJob
 	}
 	
 	/**
-	 * @see org.nightlabs.base.notification.NotificationListenerJob#getRule()
+	 * @see org.nightlabs.base.ui.notification.NotificationListenerJob#getRule()
 	 */
 	public ISchedulingRule getRule()
 	{
@@ -74,7 +74,7 @@ implements JDOLifecycleListenerJob
 	/**
 	 * The default implementation of this method returns {@link Job#SHORT}.
 	 *
-	 * @see org.nightlabs.base.notification.NotificationListenerJob#getPriority()
+	 * @see org.nightlabs.base.ui.notification.NotificationListenerJob#getPriority()
 	 */
 	public int getPriority()
 	{
@@ -84,7 +84,7 @@ implements JDOLifecycleListenerJob
 	/**
 	 * The default implementation of this method returns 0.
 	 *
-	 * @see org.nightlabs.base.notification.NotificationListenerJob#getDelay()
+	 * @see org.nightlabs.base.ui.notification.NotificationListenerJob#getDelay()
 	 */
 	public long getDelay()
 	{
@@ -94,7 +94,7 @@ implements JDOLifecycleListenerJob
 	/**
 	 * The default implementation of this method returns false.
 	 *
-	 * @see org.nightlabs.base.notification.NotificationListenerJob#isUser()
+	 * @see org.nightlabs.base.ui.notification.NotificationListenerJob#isUser()
 	 */
 	public boolean isUser()
 	{
@@ -104,7 +104,7 @@ implements JDOLifecycleListenerJob
 	/**
 	 * The default implementation of this method returns false.
 	 *
-	 * @see org.nightlabs.base.notification.NotificationListenerJob#isSystem()
+	 * @see org.nightlabs.base.ui.notification.NotificationListenerJob#isSystem()
 	 */
 	public boolean isSystem()
 	{

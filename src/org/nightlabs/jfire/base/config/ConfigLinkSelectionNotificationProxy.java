@@ -38,7 +38,7 @@ import org.apache.log4j.Logger;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
-import org.nightlabs.base.notification.SelectionManager;
+import org.nightlabs.base.ui.notification.SelectionManager;
 import org.nightlabs.jdo.ObjectID;
 import org.nightlabs.jdo.ui.notification.SelectionNotificationProxy;
 import org.nightlabs.jfire.base.jdo.JDOObjectID2PCClassMap;

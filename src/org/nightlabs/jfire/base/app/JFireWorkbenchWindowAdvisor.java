@@ -34,11 +34,11 @@ import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
-import org.nightlabs.base.action.ContributionItemSetRegistry;
-import org.nightlabs.base.editor.Editor2PerspectiveRegistry;
-import org.nightlabs.base.extensionpoint.EPProcessorException;
-import org.nightlabs.base.part.PartVisibilityTracker;
-import org.nightlabs.base.util.RCPUtil;
+import org.nightlabs.base.ui.action.ContributionItemSetRegistry;
+import org.nightlabs.base.ui.editor.Editor2PerspectiveRegistry;
+import org.nightlabs.base.ui.extensionpoint.EPProcessorException;
+import org.nightlabs.base.ui.part.PartVisibilityTracker;
+import org.nightlabs.base.ui.util.RCPUtil;
 import org.nightlabs.jfire.base.login.LoginStateStatusLineContribution;
 import org.nightlabs.jfire.base.resource.Messages;
 

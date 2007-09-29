@@ -28,7 +28,7 @@ package org.nightlabs.jfire.base;
 
 import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.IPerspectiveFactory;
-import org.nightlabs.base.util.RCPUtil;
+import org.nightlabs.base.ui.util.RCPUtil;
 
 /**
  * The perspective factory for the RCP Browser Example's perspective.

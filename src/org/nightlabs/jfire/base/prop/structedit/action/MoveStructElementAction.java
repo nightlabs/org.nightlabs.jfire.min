@@ -7,8 +7,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.nightlabs.base.action.SelectionListenerAction;
-import org.nightlabs.base.resource.SharedImages;
+import org.nightlabs.base.ui.action.SelectionListenerAction;
+import org.nightlabs.base.ui.resource.SharedImages;
 import org.nightlabs.jfire.base.prop.structedit.StructBlockNode;
 import org.nightlabs.jfire.base.prop.structedit.StructEditor;
 import org.nightlabs.jfire.base.prop.structedit.StructFieldNode;
@@ -85,14 +85,14 @@ public class MoveStructElementAction
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.nightlabs.base.action.IUpdateActionOrContributionItem#calculateEnabled()
+	 * @see org.nightlabs.base.ui.action.IUpdateActionOrContributionItem#calculateEnabled()
 	 */
 	public boolean calculateEnabled() {
 		return getSelection() != null ? true : false;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.nightlabs.base.action.IUpdateActionOrContributionItem#calculateVisible()
+	 * @see org.nightlabs.base.ui.action.IUpdateActionOrContributionItem#calculateVisible()
 	 */
 	public boolean calculateVisible() {
 		return true;

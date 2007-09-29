@@ -11,7 +11,7 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtension;
-import org.nightlabs.base.extensionpoint.AbstractEPProcessor;
+import org.nightlabs.base.ui.extensionpoint.AbstractEPProcessor;
 
 /**
  * registry for the extension-point org.nightlabs.jfire.base.quickSearchEntry 

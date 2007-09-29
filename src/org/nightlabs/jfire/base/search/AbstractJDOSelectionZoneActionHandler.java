@@ -6,8 +6,8 @@ package org.nightlabs.jfire.base.search;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import org.nightlabs.base.notification.SelectionManager;
-import org.nightlabs.base.search.AbstractSelectionZoneActionHandler;
+import org.nightlabs.base.ui.notification.SelectionManager;
+import org.nightlabs.base.ui.search.AbstractSelectionZoneActionHandler;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.notification.NotificationEvent;
 

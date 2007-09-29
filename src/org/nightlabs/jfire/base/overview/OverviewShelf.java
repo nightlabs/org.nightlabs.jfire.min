@@ -7,7 +7,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
-import org.nightlabs.base.composite.XComposite;
+import org.nightlabs.base.ui.composite.XComposite;
 
 /**
  * The {@link OverviewShelf} displays categories and entry registered to 

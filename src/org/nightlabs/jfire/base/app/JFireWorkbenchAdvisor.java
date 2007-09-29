@@ -28,7 +28,7 @@ package org.nightlabs.jfire.base.app;
 
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
-import org.nightlabs.base.app.AbstractWorkbenchAdvisor;
+import org.nightlabs.base.ui.app.AbstractWorkbenchAdvisor;
 import org.nightlabs.jfire.base.JFireWelcomePerspective;
 
 /**

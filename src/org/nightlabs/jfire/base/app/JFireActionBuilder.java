@@ -28,7 +28,7 @@ package org.nightlabs.jfire.base.app;
 
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.ui.application.IActionBarConfigurer;
-import org.nightlabs.base.app.DefaultActionBuilder;
+import org.nightlabs.base.ui.app.DefaultActionBuilder;
 
 /**
  * Creates the Menu 

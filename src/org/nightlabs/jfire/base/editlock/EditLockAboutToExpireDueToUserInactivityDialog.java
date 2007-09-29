@@ -13,8 +13,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
-import org.nightlabs.base.composite.CountdownButton;
-import org.nightlabs.base.dialog.CenteredDialog;
+import org.nightlabs.base.ui.composite.CountdownButton;
+import org.nightlabs.base.ui.dialog.CenteredDialog;
 import org.nightlabs.jfire.base.resource.Messages;
 
 public class EditLockAboutToExpireDueToUserInactivityDialog

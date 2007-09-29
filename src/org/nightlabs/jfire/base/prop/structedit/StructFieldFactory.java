@@ -2,7 +2,7 @@ package org.nightlabs.jfire.base.prop.structedit;
 
 import org.eclipse.core.runtime.IExecutableExtension;
 import org.eclipse.jface.wizard.WizardPage;
-import org.nightlabs.base.wizard.DynamicPathWizardPage;
+import org.nightlabs.base.ui.wizard.DynamicPathWizardPage;
 import org.nightlabs.jfire.prop.AbstractStructField;
 import org.nightlabs.jfire.prop.StructBlock;
 

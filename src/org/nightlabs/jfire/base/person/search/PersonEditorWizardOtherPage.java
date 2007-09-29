@@ -26,7 +26,7 @@
 
 package org.nightlabs.jfire.base.person.search;
 
-import org.nightlabs.base.resource.SharedImages;
+import org.nightlabs.base.ui.resource.SharedImages;
 import org.nightlabs.jfire.base.JFireBasePlugin;
 import org.nightlabs.jfire.base.prop.edit.blockbased.FullDataBlockCoverageWizardPage;
 import org.nightlabs.jfire.base.resource.Messages;

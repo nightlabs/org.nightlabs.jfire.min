@@ -32,8 +32,8 @@ import org.eclipse.jface.action.IAction;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Layout;
-import org.nightlabs.base.part.ControllablePart;
-import org.nightlabs.base.part.PartController;
+import org.nightlabs.base.ui.part.ControllablePart;
+import org.nightlabs.base.ui.part.PartController;
 import org.nightlabs.jfire.base.login.Login;
 import org.nightlabs.jfire.base.login.LoginStateListener;
 
@@ -41,8 +41,8 @@ import org.nightlabs.jfire.base.login.LoginStateListener;
  * PartController that will update the registered parts whenever the
  * LoginState changes. It will dispose the contents of all controlled parts
  * when the user logs out.
- * See {@link org.nightlabs.base.part.PartController} and
- * {@link org.nightlabs.base.part.ControllablePart} for detailed explanation on
+ * See {@link org.nightlabs.base.ui.part.PartController} and
+ * {@link org.nightlabs.base.ui.part.ControllablePart} for detailed explanation on
  * how a PartController works, here is a exaple on how to use the LSDPartController.
  * 
  * In the constructor of your WorkbenchPart you want to make LoginStateDependent register
@@ -60,7 +60,7 @@ import org.nightlabs.jfire.base.login.LoginStateListener;
  *  	LSDPartController.sharedInstance().createPartControl(this, parent);
  *  }
  * </pre>
- * And create the real WorkbenchPart contents in {@link org.nightlabs.base.part.ControllablePart#createPartContents(Composite)}.
+ * And create the real WorkbenchPart contents in {@link org.nightlabs.base.ui.part.ControllablePart#createPartContents(Composite)}.
  *  
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  *
@@ -72,7 +72,7 @@ public class LSDPartController extends PartController implements LoginStateListe
 	}
 
 	/**
-	 * @see org.nightlabs.base.part.PartController#registerPart(org.nightlabs.base.part.ControllablePart)
+	 * @see org.nightlabs.base.ui.part.PartController#registerPart(org.nightlabs.base.ui.part.ControllablePart)
 	 */
 	public void registerPart(ControllablePart part) {		
 		super.registerPart(part);

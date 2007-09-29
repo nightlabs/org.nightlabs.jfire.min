@@ -12,11 +12,11 @@ import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
-import org.nightlabs.base.composite.XComposite;
-import org.nightlabs.base.composite.XComposite.LayoutMode;
-import org.nightlabs.base.table.AbstractTableComposite;
-import org.nightlabs.base.table.TableContentProvider;
-import org.nightlabs.base.table.TableLabelProvider;
+import org.nightlabs.base.ui.composite.XComposite;
+import org.nightlabs.base.ui.composite.XComposite.LayoutMode;
+import org.nightlabs.base.ui.table.AbstractTableComposite;
+import org.nightlabs.base.ui.table.TableContentProvider;
+import org.nightlabs.base.ui.table.TableLabelProvider;
 import org.nightlabs.jfire.base.config.AbstractWorkstationConfigModulePreferencePage;
 import org.nightlabs.jfire.base.config.IConfigModuleController;
 import org.nightlabs.jfire.workstation.WorkstationFeature;
@@ -125,7 +125,7 @@ extends AbstractWorkstationConfigModulePreferencePage
 			return result;
 		WorkstationFeaturesCfMod cfMod = (WorkstationFeaturesCfMod) getConfigModuleController().getConfigModule();
 		// TODO this data should be read from the server! Remove the following hard-coded test-entries!
-		result.add(new WorkstationFeature(cfMod, "org.nightlabs.base", "1.0.0")); //$NON-NLS-1$ //$NON-NLS-2$
+		result.add(new WorkstationFeature(cfMod, "org.nightlabs.base.ui", "1.0.0")); //$NON-NLS-1$ //$NON-NLS-2$
 		result.add(new WorkstationFeature(cfMod, "org.nightlabs.jfire.base", "1.0.0")); //$NON-NLS-1$ //$NON-NLS-2$
 		result.add(new WorkstationFeature(cfMod, "org.nightlabs.jfire.base.admin", "1.0.0")); //$NON-NLS-1$ //$NON-NLS-2$
 		return result;

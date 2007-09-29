@@ -1,8 +1,8 @@
 package org.nightlabs.jfire.base.overview.search;
 
 import org.eclipse.ui.IWorkbenchPart;
-import org.nightlabs.base.action.WorkbenchPartAction;
-import org.nightlabs.base.resource.SharedImages;
+import org.nightlabs.base.ui.action.WorkbenchPartAction;
+import org.nightlabs.base.ui.resource.SharedImages;
 import org.nightlabs.jfire.base.overview.OverviewEntryEditor;
 import org.nightlabs.jfire.base.resource.Messages;
 

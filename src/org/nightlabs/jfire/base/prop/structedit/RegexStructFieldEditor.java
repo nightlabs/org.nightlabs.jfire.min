@@ -7,7 +7,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-import org.nightlabs.base.composite.XComposite;
+import org.nightlabs.base.ui.composite.XComposite;
 import org.nightlabs.jfire.base.resource.Messages;
 import org.nightlabs.jfire.prop.structfield.RegexStructField;
 

@@ -3,8 +3,8 @@ package org.nightlabs.jfire.base.overview.action;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.PartInitException;
-import org.nightlabs.base.action.SelectionAction;
-import org.nightlabs.base.util.RCPUtil;
+import org.nightlabs.base.ui.action.SelectionAction;
+import org.nightlabs.base.ui.util.RCPUtil;
 
 /**
  * Abstract base implementation of {@link IOverviewEditAction}

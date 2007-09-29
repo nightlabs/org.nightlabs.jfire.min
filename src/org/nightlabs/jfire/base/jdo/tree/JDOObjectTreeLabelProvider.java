@@ -4,7 +4,7 @@
 package org.nightlabs.jfire.base.jdo.tree;
 
 import org.eclipse.swt.graphics.Image;
-import org.nightlabs.base.table.TableLabelProvider;
+import org.nightlabs.base.ui.table.TableLabelProvider;
 import org.nightlabs.jdo.ObjectID;
 
 /**

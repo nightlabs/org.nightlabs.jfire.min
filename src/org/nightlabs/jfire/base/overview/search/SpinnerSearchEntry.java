@@ -8,8 +8,8 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
-import org.nightlabs.base.composite.NumberSpinnerComposite;
-import org.nightlabs.base.composite.XComposite;
+import org.nightlabs.base.ui.composite.NumberSpinnerComposite;
+import org.nightlabs.base.ui.composite.XComposite;
 import org.nightlabs.jfire.base.resource.Messages;
 
 /**

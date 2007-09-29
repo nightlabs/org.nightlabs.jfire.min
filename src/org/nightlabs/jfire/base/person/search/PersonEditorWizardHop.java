@@ -3,7 +3,7 @@
  */
 package org.nightlabs.jfire.base.person.search;
 
-import org.nightlabs.base.wizard.WizardHop;
+import org.nightlabs.base.ui.wizard.WizardHop;
 import org.nightlabs.jfire.person.Person;
 
 /**

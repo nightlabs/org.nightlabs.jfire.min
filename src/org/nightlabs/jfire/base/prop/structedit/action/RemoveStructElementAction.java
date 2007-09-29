@@ -3,8 +3,8 @@
  */
 package org.nightlabs.jfire.base.prop.structedit.action;
 
-import org.nightlabs.base.action.SelectionAction;
-import org.nightlabs.base.resource.SharedImages;
+import org.nightlabs.base.ui.action.SelectionAction;
+import org.nightlabs.base.ui.resource.SharedImages;
 import org.nightlabs.jfire.base.prop.structedit.StructEditor;
 import org.nightlabs.jfire.base.resource.Messages;
 import org.nightlabs.jfire.prop.Struct;

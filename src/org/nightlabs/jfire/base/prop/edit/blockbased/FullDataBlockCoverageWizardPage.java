@@ -29,7 +29,7 @@ package org.nightlabs.jfire.base.prop.edit.blockbased;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.nightlabs.base.wizard.WizardHopPage;
+import org.nightlabs.base.ui.wizard.WizardHopPage;
 import org.nightlabs.jfire.prop.PropertySet;
 
 /**
@@ -56,7 +56,7 @@ public class FullDataBlockCoverageWizardPage extends WizardHopPage {
 	}
 
 	/**
-	 * @see org.nightlabs.base.wizard.DynamicPathWizardPage#createPageContents(org.eclipse.swt.widgets.Composite)
+	 * @see org.nightlabs.base.ui.wizard.DynamicPathWizardPage#createPageContents(org.eclipse.swt.widgets.Composite)
 	 */
 	public Control createPageContents(Composite parent) {
 		fullDataBlockCoverageComposite = new FullDataBlockCoverageComposite(parent, SWT.NONE, prop, editorStructBlockRegistry);

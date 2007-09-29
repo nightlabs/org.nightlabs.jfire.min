@@ -2,7 +2,7 @@ package org.nightlabs.jfire.base.prop.structedit;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.nightlabs.base.wizard.DynamicPathWizardPage;
+import org.nightlabs.base.ui.wizard.DynamicPathWizardPage;
 
 
 public abstract class AbstractStructFieldFactory implements StructFieldFactory

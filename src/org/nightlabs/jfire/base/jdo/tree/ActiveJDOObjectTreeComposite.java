@@ -10,7 +10,7 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.widgets.Composite;
-import org.nightlabs.base.tree.AbstractTreeComposite;
+import org.nightlabs.base.ui.tree.AbstractTreeComposite;
 import org.nightlabs.jdo.ObjectID;
 import org.nightlabs.util.Utils;
 

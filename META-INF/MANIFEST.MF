@@ -56,5 +56,5 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.swt,
  org.eclipse.jface,
  org.eclipse.ui.workbench
-Eclipse-RegisterBuddy: org.nightlabs.base, org.nightlabs.jfire.base.j2ee
+Eclipse-RegisterBuddy: org.nightlabs.base.ui, org.nightlabs.jfire.base.j2ee
 Eclipse-LazyStart: true

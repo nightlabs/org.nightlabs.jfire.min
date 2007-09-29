@@ -31,7 +31,7 @@ import javax.security.auth.login.LoginException;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.swt.widgets.Display;
-import org.nightlabs.base.NLBasePlugin;
+import org.nightlabs.base.ui.NLBasePlugin;
 
 /**
  * @see org.nightlabs.jfire.base.login.ILoginHandler

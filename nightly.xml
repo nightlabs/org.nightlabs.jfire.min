@@ -19,11 +19,11 @@
     <provides path="org.nightlabs.jfire.base" location="org.nightlabs.jfire.base/lib/JFireRCLBackendBean.jar"/>
 -->
 	  
-<!-- original, as copied from org.nightlabs.base/nightly.xml:
-    <provides path="org.nightlabs.base" location="org.nightlabs.base/lib/jboss-j2ee.jar"/>
-    <provides path="org.nightlabs.base" location="org.nightlabs.base/lib/jbosssx.jar"/>
-    <provides path="org.nightlabs.base" location="lib/jboss/client/jbossall-client.jar"/>
-    ...important: path is still org.nightlabs.base instead of org.nightlabs.jfire.base!!!
+<!-- original, as copied from org.nightlabs.base.ui/nightly.xml:
+    <provides path="org.nightlabs.base.ui" location="org.nightlabs.base.ui/lib/jboss-j2ee.jar"/>
+    <provides path="org.nightlabs.base.ui" location="org.nightlabs.base.ui/lib/jbosssx.jar"/>
+    <provides path="org.nightlabs.base.ui" location="lib/jboss/client/jbossall-client.jar"/>
+    ...important: path is still org.nightlabs.base.ui instead of org.nightlabs.jfire.base!!!
 
     ... and I believe, the following line should be fine:
 -->

@@ -6,8 +6,8 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtension;
-import org.nightlabs.base.extensionpoint.AbstractEPProcessor;
-import org.nightlabs.base.extensionpoint.EPProcessorException;
+import org.nightlabs.base.ui.extensionpoint.AbstractEPProcessor;
+import org.nightlabs.base.ui.extensionpoint.EPProcessorException;
 import org.nightlabs.jfire.prop.StructField;
 import org.nightlabs.jfire.prop.exception.PropertyException;
 
@@ -114,7 +114,7 @@ public class StructFieldFactoryRegistry extends AbstractEPProcessor {
 	}
 
 	/**
-	 * @see org.nightlabs.base.extensionpoint.AbstractEPProcessor#getExtensionPointID()
+	 * @see org.nightlabs.base.ui.extensionpoint.AbstractEPProcessor#getExtensionPointID()
 	 */
 	@Override
 	public String getExtensionPointID() {

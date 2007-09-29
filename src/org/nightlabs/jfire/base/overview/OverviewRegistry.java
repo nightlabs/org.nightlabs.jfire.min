@@ -12,8 +12,8 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtension;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
-import org.nightlabs.base.extensionpoint.AbstractEPProcessor;
-import org.nightlabs.base.extensionpoint.EPProcessorException;
+import org.nightlabs.base.ui.extensionpoint.AbstractEPProcessor;
+import org.nightlabs.base.ui.extensionpoint.EPProcessorException;
 import org.nightlabs.jfire.base.resource.Messages;
 
 /**

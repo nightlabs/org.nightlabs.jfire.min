@@ -5,8 +5,8 @@ package org.nightlabs.jfire.base.jdo.cache;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.nightlabs.base.cache.ICache;
-import org.nightlabs.base.cache.ICacheFactory;
+import org.nightlabs.base.ui.cache.ICache;
+import org.nightlabs.base.ui.cache.ICacheFactory;
 
 /**
  * This implementation of {@link ICacheFactory} uses the JFire JDO {@link Cache}
@@ -71,7 +71,7 @@ public class CacheFactory implements ICacheFactory {
 	private CacheDelegate delegate;
 	
 	/* (non-Javadoc)
-	 * @see org.nightlabs.base.cache.ICacheFactory#createCache()
+	 * @see org.nightlabs.base.ui.cache.ICacheFactory#createCache()
 	 */
 	public ICache createCache() {
 		if (delegate == null)

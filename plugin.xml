@@ -199,7 +199,7 @@
   This is registered now by the class Login programmatically, because this Interceptor is on the server and the SelectionManager
   might be used already while still being offline. This would cause a ClassNotFoundException.
   <extension
-        point="org.nightlabs.base.notificationinterceptor">
+        point="org.nightlabs.base.ui.notificationinterceptor">
      <notificationInterceptor
            class="org.nightlabs.jfire.base.jdo.JDOObjectID2PCClassNotificationInterceptor"
            name="JDO ObjectID to PersistenceCapable Interceptor"/>
@@ -217,7 +217,7 @@
   </extension>
 	
   <extension
-        point="org.nightlabs.base.cache">
+        point="org.nightlabs.base.ui.cache">
      <cacheFactory class="org.nightlabs.jfire.base.jdo.cache.CacheFactory"/>
   </extension>
 
@@ -312,12 +312,12 @@
             class="org.nightlabs.jfire.base.prop.edit.blockbased.I18nTextDataFieldEditor$Factory"/>
    </extension>
    <extension
-         point="org.nightlabs.base.login">
+         point="org.nightlabs.base.ui.login">
       <login class="org.nightlabs.jfire.base.login.LoginDelegate"/>
    </extension>		
    
    <extension
-         point="org.nightlabs.base.removeExtension">
+         point="org.nightlabs.base.ui.removeExtension">
       <removeExtension
             attributeName="id"
             attributePattern="org.eclipse.ui.edit.text.actionSet.navigation"

@@ -6,7 +6,7 @@ package org.nightlabs.jfire.base.overview;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-import org.nightlabs.base.table.AbstractTableComposite;
+import org.nightlabs.base.ui.table.AbstractTableComposite;
 
 /**
  * The default {@link Category} displays its {@link Entry}s in

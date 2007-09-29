@@ -35,7 +35,7 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.eclipse.jface.action.IAction;
-import org.nightlabs.base.language.LanguageManager;
+import org.nightlabs.base.ui.language.LanguageManager;
 import org.nightlabs.config.Config;
 import org.nightlabs.config.ConfigException;
 import org.nightlabs.jfire.base.login.Login;

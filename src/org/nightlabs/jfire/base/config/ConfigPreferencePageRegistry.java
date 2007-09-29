@@ -34,8 +34,8 @@ import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtension;
 import org.eclipse.ui.IWorkbenchPreferencePage;
-import org.nightlabs.base.extensionpoint.AbstractEPProcessor;
-import org.nightlabs.base.extensionpoint.EPProcessorException;
+import org.nightlabs.base.ui.extensionpoint.AbstractEPProcessor;
+import org.nightlabs.base.ui.extensionpoint.EPProcessorException;
 
 /**
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
@@ -63,7 +63,7 @@ public class ConfigPreferencePageRegistry extends AbstractEPProcessor
 	private Map<String, ConfigPreferenceNode> preferenceNodesByIDs;
 	
 	/* (non-Javadoc)
-	 * @see org.nightlabs.base.extensionpoint.AbstractEPProcessor#getExtensionPointID()
+	 * @see org.nightlabs.base.ui.extensionpoint.AbstractEPProcessor#getExtensionPointID()
 	 */
 	@Override
 	public String getExtensionPointID() 
@@ -85,7 +85,7 @@ public class ConfigPreferencePageRegistry extends AbstractEPProcessor
 	}
 
 	/* (non-Javadoc)
-	 * @see org.nightlabs.base.extensionpoint.AbstractEPProcessor#processElement(org.eclipse.core.runtime.IExtension, org.eclipse.core.runtime.IConfigurationElement)
+	 * @see org.nightlabs.base.ui.extensionpoint.AbstractEPProcessor#processElement(org.eclipse.core.runtime.IExtension, org.eclipse.core.runtime.IConfigurationElement)
 	 */
 	@Override
 	public void processElement(IExtension extension, IConfigurationElement element) throws Exception 
@@ -119,7 +119,7 @@ public class ConfigPreferencePageRegistry extends AbstractEPProcessor
 	}
 
 	/* (non-Javadoc)
-	 * @see org.nightlabs.base.extensionpoint.AbstractEPProcessor#process()
+	 * @see org.nightlabs.base.ui.extensionpoint.AbstractEPProcessor#process()
 	 */
 	@Override
 	public synchronized void process() {

@@ -1,6 +1,6 @@
 package org.nightlabs.jfire.base.prop.structedit;
 
-import org.nightlabs.base.language.I18nTextEditor;
+import org.nightlabs.base.ui.language.I18nTextEditor;
 import org.nightlabs.jfire.prop.StructField;
 
 public interface StructFieldEditor<F extends StructField> extends StructPartEditor<F>

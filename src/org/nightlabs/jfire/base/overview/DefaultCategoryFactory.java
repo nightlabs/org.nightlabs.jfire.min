@@ -8,7 +8,7 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
-import org.nightlabs.base.extensionpoint.AbstractEPProcessor;
+import org.nightlabs.base.ui.extensionpoint.AbstractEPProcessor;
 
 /**
  * The default {@link CategoryFactory} is used for &lt;categoryFactory&gt; registrations

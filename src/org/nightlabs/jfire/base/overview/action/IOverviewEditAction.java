@@ -1,7 +1,7 @@
 package org.nightlabs.jfire.base.overview.action;
 
 import org.eclipse.ui.IEditorInput;
-import org.nightlabs.base.action.ISelectionAction;
+import org.nightlabs.base.ui.action.ISelectionAction;
 
 /**
  * @author Daniel.Mazurek [at] NightLabs [dot] de

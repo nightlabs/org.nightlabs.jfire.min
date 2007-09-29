@@ -40,7 +40,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-import org.nightlabs.base.composite.XComposite;
+import org.nightlabs.base.ui.composite.XComposite;
 import org.nightlabs.jfire.base.prop.edit.DataFieldEditor;
 import org.nightlabs.jfire.base.prop.edit.DataFieldEditorChangeListener;
 import org.nightlabs.jfire.base.prop.edit.DataFieldEditorFactory;

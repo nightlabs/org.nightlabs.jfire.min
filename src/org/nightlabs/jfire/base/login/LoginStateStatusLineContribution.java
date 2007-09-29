@@ -15,9 +15,9 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
-import org.nightlabs.base.action.AbstractContributionItem;
-import org.nightlabs.base.composite.XComposite;
-import org.nightlabs.base.resource.SharedImages;
+import org.nightlabs.base.ui.action.AbstractContributionItem;
+import org.nightlabs.base.ui.composite.XComposite;
+import org.nightlabs.base.ui.resource.SharedImages;
 import org.nightlabs.jfire.base.JFireBasePlugin;
 import org.nightlabs.jfire.base.login.action.LoginAction;
 import org.nightlabs.jfire.base.resource.Messages;
@@ -55,7 +55,7 @@ implements LoginStateListener
 	private String earlyLoginText;
 	
 	/* (non-Javadoc)
-	 * @see org.nightlabs.base.action.AbstractContributionItem#createControl(org.eclipse.swt.widgets.Composite)
+	 * @see org.nightlabs.base.ui.action.AbstractContributionItem#createControl(org.eclipse.swt.widgets.Composite)
 	 */
 	@Override
 	protected Control createControl(Composite parent) {

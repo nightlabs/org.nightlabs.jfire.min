@@ -35,7 +35,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Tree;
-import org.nightlabs.base.tree.AbstractTreeComposite;
+import org.nightlabs.base.ui.tree.AbstractTreeComposite;
 import org.nightlabs.jfire.base.config.ConfigSetupRegistry.NoSetupPresentException;
 import org.nightlabs.jfire.config.id.ConfigID;
 import org.nightlabs.progress.NullProgressMonitor;

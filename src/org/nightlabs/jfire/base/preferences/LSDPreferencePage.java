@@ -8,7 +8,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.nightlabs.annotation.Implement;
-import org.nightlabs.base.part.ControllablePart;
+import org.nightlabs.base.ui.part.ControllablePart;
 import org.nightlabs.jfire.base.login.Login;
 import org.nightlabs.jfire.base.login.part.LSDPartController;
 

@@ -54,14 +54,14 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
-import org.nightlabs.base.exceptionhandler.ExceptionHandlerRegistry;
-import org.nightlabs.base.exceptionhandler.ExceptionHandlerRegistry.Mode;
-import org.nightlabs.base.extensionpoint.AbstractEPProcessor;
-import org.nightlabs.base.extensionpoint.EPProcessorException;
-import org.nightlabs.base.job.Job;
-import org.nightlabs.base.notification.SelectionManager;
-import org.nightlabs.base.progress.ProgressMonitorWrapper;
-import org.nightlabs.base.util.RCPUtil;
+import org.nightlabs.base.ui.exceptionhandler.ExceptionHandlerRegistry;
+import org.nightlabs.base.ui.exceptionhandler.ExceptionHandlerRegistry.Mode;
+import org.nightlabs.base.ui.extensionpoint.AbstractEPProcessor;
+import org.nightlabs.base.ui.extensionpoint.EPProcessorException;
+import org.nightlabs.base.ui.job.Job;
+import org.nightlabs.base.ui.notification.SelectionManager;
+import org.nightlabs.base.ui.progress.ProgressMonitorWrapper;
+import org.nightlabs.base.ui.util.RCPUtil;
 import org.nightlabs.classloader.osgi.DelegatingClassLoaderOSGI;
 import org.nightlabs.config.Config;
 import org.nightlabs.j2ee.InitialContextProvider;
@@ -247,7 +247,7 @@ implements InitialContextProvider
 	 */
 	protected static void createLogin(){
 		sharedInstanceLogin = new Login();
-		org.nightlabs.base.login.Login.sharedInstance(); // force processing of extension point
+		org.nightlabs.base.ui.login.Login.sharedInstance(); // force processing of extension point
 	}
 
 	static {
@@ -1014,7 +1014,7 @@ implements InitialContextProvider
 	}
 
 	/**
-	 * @see org.nightlabs.base.extensionpoint.AbstractEPProcessor#getExtensionPointID()
+	 * @see org.nightlabs.base.ui.extensionpoint.AbstractEPProcessor#getExtensionPointID()
 	 */
 	public String getExtensionPointID()
 	{
@@ -1022,7 +1022,7 @@ implements InitialContextProvider
 	}
 
 	/**
-	 * @see org.nightlabs.base.extensionpoint.AbstractEPProcessor#processElement(IExtension, org.eclipse.core.runtime.IConfigurationElement)
+	 * @see org.nightlabs.base.ui.extensionpoint.AbstractEPProcessor#processElement(IExtension, org.eclipse.core.runtime.IConfigurationElement)
 	 */
 	public void processElement(IExtension extension, IConfigurationElement element) throws Exception
 	{

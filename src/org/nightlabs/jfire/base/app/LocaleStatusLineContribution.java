@@ -11,9 +11,9 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
-import org.nightlabs.base.action.AbstractContributionItem;
-import org.nightlabs.base.composite.XComposite;
-import org.nightlabs.base.language.LanguageManager;
+import org.nightlabs.base.ui.action.AbstractContributionItem;
+import org.nightlabs.base.ui.composite.XComposite;
+import org.nightlabs.base.ui.language.LanguageManager;
 
 /**
  * StatusLine Contribution that displays the current Locale to the user.
@@ -41,7 +41,7 @@ extends AbstractContributionItem
 	}
 
 	/* (non-Javadoc)
-	 * @see org.nightlabs.base.action.AbstractContributionItem#createControl(org.eclipse.swt.widgets.Composite)
+	 * @see org.nightlabs.base.ui.action.AbstractContributionItem#createControl(org.eclipse.swt.widgets.Composite)
 	 */
 	@Override
 	protected Control createControl(Composite parent) {

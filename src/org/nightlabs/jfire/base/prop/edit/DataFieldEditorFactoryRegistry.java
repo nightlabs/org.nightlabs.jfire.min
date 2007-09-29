@@ -32,8 +32,8 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtension;
-import org.nightlabs.base.extensionpoint.AbstractEPProcessor;
-import org.nightlabs.base.extensionpoint.EPProcessorException;
+import org.nightlabs.base.ui.extensionpoint.AbstractEPProcessor;
+import org.nightlabs.base.ui.extensionpoint.EPProcessorException;
 import org.nightlabs.jfire.prop.AbstractDataField;
 import org.nightlabs.jfire.prop.IStruct;
 
@@ -192,14 +192,14 @@ public class DataFieldEditorFactoryRegistry extends AbstractEPProcessor {
 	}
 	
 	/**
-	 * @see org.nightlabs.base.extensionpoint.AbstractEPProcessor#getExtensionPointID()
+	 * @see org.nightlabs.base.ui.extensionpoint.AbstractEPProcessor#getExtensionPointID()
 	 */
 	public String getExtensionPointID() {
 		return EXTENSION_POINT_ID;
 	}
 
 	/**
-	 * @see org.nightlabs.base.extensionpoint.AbstractEPProcessor#processElement(IExtension, org.eclipse.core.runtime.IConfigurationElement)
+	 * @see org.nightlabs.base.ui.extensionpoint.AbstractEPProcessor#processElement(IExtension, org.eclipse.core.runtime.IConfigurationElement)
 	 */
 	public void processElement(IExtension extension, IConfigurationElement element) throws Exception {
 		try

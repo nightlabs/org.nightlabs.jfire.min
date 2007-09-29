@@ -5,7 +5,7 @@ package org.nightlabs.jfire.base.jdo.tree;
 
 import java.util.List;
 
-import org.nightlabs.base.tree.TreeContentProvider;
+import org.nightlabs.base.ui.tree.TreeContentProvider;
 import org.nightlabs.jdo.ObjectID;
 import org.nightlabs.jfire.base.resource.Messages;
 

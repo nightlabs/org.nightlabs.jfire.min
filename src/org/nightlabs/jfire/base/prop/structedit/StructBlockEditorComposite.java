@@ -5,10 +5,10 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
-import org.nightlabs.base.composite.XComposite;
-import org.nightlabs.base.language.I18nTextEditor;
-import org.nightlabs.base.language.LanguageChooser;
-import org.nightlabs.base.language.I18nTextEditor.EditMode;
+import org.nightlabs.base.ui.composite.XComposite;
+import org.nightlabs.base.ui.language.I18nTextEditor;
+import org.nightlabs.base.ui.language.LanguageChooser;
+import org.nightlabs.base.ui.language.I18nTextEditor.EditMode;
 import org.nightlabs.jfire.base.resource.Messages;
 import org.nightlabs.jfire.prop.StructBlock;
 

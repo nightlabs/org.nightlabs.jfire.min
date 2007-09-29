@@ -3,8 +3,8 @@
  */
 package org.nightlabs.jfire.base.prop.structedit.action;
 
-import org.nightlabs.base.action.SelectionAction;
-import org.nightlabs.base.resource.SharedImages;
+import org.nightlabs.base.ui.action.SelectionAction;
+import org.nightlabs.base.ui.resource.SharedImages;
 import org.nightlabs.jfire.base.prop.structedit.StructBlockNode;
 import org.nightlabs.jfire.base.prop.structedit.StructEditor;
 import org.nightlabs.jfire.base.prop.structedit.StructFieldNode;
@@ -44,14 +44,14 @@ public class AddStructFieldAction extends SelectionAction {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.nightlabs.base.action.IUpdateActionOrContributionItem#calculateEnabled()
+	 * @see org.nightlabs.base.ui.action.IUpdateActionOrContributionItem#calculateEnabled()
 	 */
 	public boolean calculateEnabled() {
 		return true;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.nightlabs.base.action.IUpdateActionOrContributionItem#calculateVisible()
+	 * @see org.nightlabs.base.ui.action.IUpdateActionOrContributionItem#calculateVisible()
 	 */
 	public boolean calculateVisible() {
 		return true;

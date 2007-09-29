@@ -1,8 +1,8 @@
 package org.nightlabs.jfire.base.prop.structedit;
 
 import org.eclipse.swt.widgets.Composite;
-import org.nightlabs.base.language.I18nTextEditor;
-import org.nightlabs.base.language.LanguageChooser;
+import org.nightlabs.base.ui.language.I18nTextEditor;
+import org.nightlabs.base.ui.language.LanguageChooser;
 import org.nightlabs.jfire.prop.StructBlock;
 
 public class StructBlockEditor implements StructPartEditor<StructBlock> {

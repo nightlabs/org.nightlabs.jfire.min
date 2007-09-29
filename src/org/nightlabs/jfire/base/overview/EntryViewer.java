@@ -7,7 +7,7 @@ import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.swt.widgets.Composite;
-import org.nightlabs.base.selection.SelectionProvider;
+import org.nightlabs.base.ui.selection.SelectionProvider;
 
 /**
  * {@link EntryViewer}s might be used to create a detailed

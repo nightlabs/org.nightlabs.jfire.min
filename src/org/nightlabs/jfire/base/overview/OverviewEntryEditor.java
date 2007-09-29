@@ -14,7 +14,7 @@ import org.eclipse.ui.IPartListener;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.EditorActionBarContributor;
-import org.nightlabs.base.action.registry.editor.XEditorActionBarContributor;
+import org.nightlabs.base.ui.action.registry.editor.XEditorActionBarContributor;
 import org.nightlabs.jfire.base.login.part.LSDEditorPart;
 
 /**

@@ -13,9 +13,9 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
-import org.nightlabs.base.composite.ListComposite;
-import org.nightlabs.base.wizard.DynamicPathWizard;
-import org.nightlabs.base.wizard.DynamicPathWizardPage;
+import org.nightlabs.base.ui.composite.ListComposite;
+import org.nightlabs.base.ui.wizard.DynamicPathWizard;
+import org.nightlabs.base.ui.wizard.DynamicPathWizardPage;
 import org.nightlabs.jfire.base.resource.Messages;
 
 public class StructFieldCreationWizard extends DynamicPathWizard {

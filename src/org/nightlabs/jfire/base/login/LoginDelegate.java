@@ -2,8 +2,8 @@ package org.nightlabs.jfire.base.login;
 
 import javax.security.auth.login.LoginException;
 
-import org.nightlabs.base.login.ILoginDelegate;
-import org.nightlabs.base.login.LoginState;
+import org.nightlabs.base.ui.login.ILoginDelegate;
+import org.nightlabs.base.ui.login.LoginState;
 
 public class LoginDelegate implements ILoginDelegate {
 
