@@ -45,7 +45,7 @@ Export-Package: org.nightlabs.jfire.base,
  org.nightlabs.jfire.base.workstation
 Require-Bundle: org.eclipse.ui,
  org.eclipse.ui.forms,
- org.nightlabs.base;visibility:=reexport,
+ org.nightlabs.base.ui;visibility:=reexport,
  org.nightlabs.jdo.ui;visibility:=reexport,
  org.eclipse.update.configurator,
  org.eclipse.update.core,
