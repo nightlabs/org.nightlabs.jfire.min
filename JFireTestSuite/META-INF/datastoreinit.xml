@@ -11,6 +11,6 @@
 		<depends module="JFireVoucher.ear" resolution="optional" />
 		<depends module="JFireDynamicTrade.ear" resolution="optional" />
 		<depends module="JFireChezFrancois.ear" resolution="optional" />
-		<depends module="IpanemaWonderland.ear" resolution="optional" />
+		<depends module="CrossTicketWonderland.ear" resolution="optional" />
 	</init>
 </datastore-initialisation>	
