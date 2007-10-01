@@ -6,17 +6,16 @@ import org.nightlabs.config.InitException;
  * @author Marc Klinger - marc[at]nightlabs[dot]de
  * @author Khaled Soliman
  */
-public class SMTPMailServiceCf extends JFireServerConfigPart {
+public class SMTPMailServiceCf extends JFireServerConfigPart 
+{
 	/**
-	 * 
+	 * The serial version of this class.
 	 */
 	private static final long serialVersionUID = 1L;
 
-	public enum EncryptionMethod {
-		NONE,
-		SSL,
-		TLS
-	}
+	public static final String ENCRYPTION_METHOD_NONE = "none";
+	public static final String ENCRYPTION_METHOD_SSL = "ssl";
+	public static final String ENCRYPTION_METHOD_TLS = "tls";
 	
 	private Boolean debug = null;
 	private String host = null;
@@ -25,7 +24,7 @@ public class SMTPMailServiceCf extends JFireServerConfigPart {
 	private Boolean useAuthentication = null;
 	private String username = null;
 	private String password = null;
-	private EncryptionMethod encryptionMethod = null;
+	private String encryptionMethod = null;
 	
 	/* (non-Javadoc)
 	 * @see org.nightlabs.jfire.servermanager.config.JFireServerConfigPart#init()
@@ -38,17 +37,12 @@ public class SMTPMailServiceCf extends JFireServerConfigPart {
 		if(host == null)
 			host = "127.0.0.1";
 		if(encryptionMethod == null)
-			encryptionMethod = EncryptionMethod.NONE;
+			encryptionMethod = ENCRYPTION_METHOD_NONE;
 		if(port == null) {
-			switch(encryptionMethod) {
-			case NONE:
-			case TLS:
-				port = 25;
-				break;
-			case SSL:
+			if(ENCRYPTION_METHOD_SSL.equals(encryptionMethod))
 				port = 443;
-				break;
-			}
+			else
+				port = 25;
 		}
 		if(mailFrom == null)
 			mailFrom = "nobody@nosuchhost.nosuchdomain.com";
@@ -83,7 +77,7 @@ public class SMTPMailServiceCf extends JFireServerConfigPart {
 	 * Get the encryptionMethod.
 	 * @return the encryptionMethod
 	 */
-	public EncryptionMethod getEncryptionMethod() {
+	public String getEncryptionMethod() {
 		return encryptionMethod;
 	}
 
@@ -91,7 +85,7 @@ public class SMTPMailServiceCf extends JFireServerConfigPart {
 	 * Set the encryptionMethod.
 	 * @param encryptionMethod the encryptionMethod to set
 	 */
-	public void setEncryptionMethod(EncryptionMethod encryptionMethod) {
+	public void setEncryptionMethod(String encryptionMethod) {
 		this.encryptionMethod = encryptionMethod;
 		setChanged();
 	}
