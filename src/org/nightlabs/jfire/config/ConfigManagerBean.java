@@ -500,16 +500,20 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	public Collection<ConfigModule> getConfigModules(Set<ConfigModuleID> moduleIDs, String[] fetchGroups, int maxFetchDepth) 
 	throws ModuleException {
 		PersistenceManager pm = getPersistenceManager();
-		pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
-		if (fetchGroups != null)
-			pm.getFetchPlan().setGroups(fetchGroups);
-		
-		ArrayList<ConfigModule> searchedModules = new ArrayList<ConfigModule>(moduleIDs.size());
+		try {
+			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
+			if (fetchGroups != null)
+				pm.getFetchPlan().setGroups(fetchGroups);
 
-		for (ConfigModuleID moduleID : moduleIDs)
-			searchedModules.add((ConfigModule)pm.detachCopy(Config.getConfigModule(pm, moduleID))); 
+			ArrayList<ConfigModule> searchedModules = new ArrayList<ConfigModule>(moduleIDs.size());
 
-		return searchedModules;
+			for (ConfigModuleID moduleID : moduleIDs)
+				searchedModules.add((ConfigModule)pm.detachCopy(Config.getConfigModule(pm, moduleID))); 
+
+			return searchedModules;
+		} finally {
+			pm.close();
+		}
 	}
 
 	/**
