@@ -498,7 +498,8 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 * @ejb.transaction type = "Required"
 	 */
 	public Collection<ConfigModule> getConfigModules(Set<ConfigModuleID> moduleIDs, String[] fetchGroups, int maxFetchDepth) 
-	throws ModuleException {
+	throws ModuleException
+	{
 		PersistenceManager pm = getPersistenceManager();
 		try {
 			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
