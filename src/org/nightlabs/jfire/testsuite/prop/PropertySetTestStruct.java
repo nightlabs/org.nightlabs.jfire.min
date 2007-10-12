@@ -35,7 +35,7 @@ import org.apache.log4j.Logger;
 import org.nightlabs.jfire.idgenerator.IDGenerator;
 import org.nightlabs.jfire.organisation.Organisation;
 import org.nightlabs.jfire.prop.AbstractStruct;
-import org.nightlabs.jfire.prop.AbstractStructField;
+import org.nightlabs.jfire.prop.StructField;
 import org.nightlabs.jfire.prop.DisplayNamePart;
 import org.nightlabs.jfire.prop.IStruct;
 import org.nightlabs.jfire.prop.PropHelper;
@@ -74,7 +74,7 @@ public class PropertySetTestStruct
 			// WORKAROUND: Workaround for JPOX error 'cannot delete/update child row', foreign key problem, maybe this is also wron tagging problem
 			if (struct instanceof AbstractStruct) {
 				try {
-					struct.addDisplayNamePart(new DisplayNamePart(organisationID, IDGenerator.nextID(DisplayNamePart.class), struct, (AbstractStructField) struct.getStructField(TESTBLOCK_TEXT), ": "));
+					struct.addDisplayNamePart(new DisplayNamePart(organisationID, IDGenerator.nextID(DisplayNamePart.class), struct, (StructField) struct.getStructField(TESTBLOCK_TEXT), ": "));
 				} catch (Exception e1) {
 					logger.error("Error createing PropertySetTestStruct DisplayNameParts: ", e);
 				}
