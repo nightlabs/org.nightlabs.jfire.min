@@ -424,7 +424,7 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 
 	/**
 	 * Returns the number of data field instances that have been created for the
-	 * given {@link AbstractStructField}.
+	 * given {@link StructField}.
 	 * 
 	 * @param field
 	 *          The struct field
@@ -437,7 +437,7 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	public long getDataFieldInstanceCount(StructFieldID fieldID) {
 		PersistenceManager pm = getPersistenceManager();
 		try {
-			return AbstractDataField.getDataFieldInstanceCountByStructFieldType(pm, fieldID);
+			return DataField.getDataFieldInstanceCountByStructFieldType(pm, fieldID);
 		} finally {
 			pm.close();
 		}
@@ -531,7 +531,7 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 //		Struct struct;
 //		try {
 //			struct = new Struct(structID.organisationID, structID.linkClass);
-//			AbstractStructField field;
+//			StructField field;
 //			StructBlock block;
 //			block = new StructBlock(struct, structID.organisationID, "block1");
 //			struct.addStructBlock(block);
