@@ -96,7 +96,7 @@ public class JFirePropertySetTestCase extends TestCase {
 	}
 
 	/**
-	 * Fetch and explode the {@link PropertySet} used for this test.
+	 * Fetch and inflate the {@link PropertySet} used for this test.
 	 * @return The propertySet used for this test.
 	 */
 	private PropertySet fetchPropertySet() {
@@ -112,7 +112,7 @@ public class JFirePropertySetTestCase extends TestCase {
 					propertySet.getStructLocalScope(), 
 					new NullProgressMonitor()
 			);
-			structLocal.explodePropertySet(propertySet);
+			propertySet.inflate(structLocal);
 		} catch (Exception e) {
 			throw new RuntimeException("Exploding propertySet failed", e);
 		}
@@ -135,7 +135,7 @@ public class JFirePropertySetTestCase extends TestCase {
 			throw new RuntimeException("Setting text of TextDataField failed", e);
 		}
 		try {
-			propertySet.getStructure().implodePropertySet(propertySet);
+			propertySet.deflate();
 			getPropertyManager().storePropertySet(propertySet, true, FETCH_GROUPS, FETCH_DEPTH);
 		} catch (Exception e) {
 			throw new RuntimeException("Storing PropertySet with TextDataField failed", e);
@@ -150,7 +150,7 @@ public class JFirePropertySetTestCase extends TestCase {
 			throw new RuntimeException("Setting text of RegexDataField failed", e);
 		}
 		try {
-			propertySet.getStructure().implodePropertySet(propertySet);
+			propertySet.deflate();
 			getPropertyManager().storePropertySet(propertySet, true, FETCH_GROUPS, FETCH_DEPTH);
 		} catch (Exception e) {
 			throw new RuntimeException("Storing PropertySet with RegexDataField failed", e);
@@ -165,7 +165,7 @@ public class JFirePropertySetTestCase extends TestCase {
 			throw new RuntimeException("Setting number of NumberDataField failed", e);
 		}
 		try {
-			propertySet.getStructure().implodePropertySet(propertySet);
+			propertySet.deflate();
 			getPropertyManager().storePropertySet(propertySet, true, FETCH_GROUPS, FETCH_DEPTH);
 		} catch (Exception e) {
 			throw new RuntimeException("Storing PropertySet with NumberDataField failed", e);
@@ -183,7 +183,7 @@ public class JFirePropertySetTestCase extends TestCase {
 			throw new RuntimeException("Setting numbers of PhoneNumberDataField failed", e);
 		}
 		try {
-			propertySet.getStructure().implodePropertySet(propertySet);
+			propertySet.deflate();
 			getPropertyManager().storePropertySet(propertySet, true, FETCH_GROUPS, FETCH_DEPTH);
 		} catch (Exception e) {
 			throw new RuntimeException("Storing PropertySet with PhoneNumberDataField failed", e);
@@ -200,7 +200,7 @@ public class JFirePropertySetTestCase extends TestCase {
 			throw new RuntimeException("Setting selection of SelectionDataField failed", e);
 		}
 		try {
-			propertySet.getStructure().implodePropertySet(propertySet);
+			propertySet.deflate();
 			getPropertyManager().storePropertySet(propertySet, true, FETCH_GROUPS, FETCH_DEPTH);
 		} catch (Exception e) {
 			throw new RuntimeException("Storing PropertySet with SelectionDataField failed", e);
@@ -216,7 +216,7 @@ public class JFirePropertySetTestCase extends TestCase {
 			throw new RuntimeException("Setting date of DateDataField failed", e);
 		}
 		try {
-			propertySet.getStructure().implodePropertySet(propertySet);
+			propertySet.deflate();
 			getPropertyManager().storePropertySet(propertySet, true, FETCH_GROUPS, FETCH_DEPTH);
 		} catch (Exception e) {
 			throw new RuntimeException("Storing PropertySet with DateDataField failed", e);
@@ -240,7 +240,7 @@ public class JFirePropertySetTestCase extends TestCase {
 			throw new RuntimeException("Setting image of ImageDataField failed", e);
 		}
 		try {
-			propertySet.getStructure().implodePropertySet(propertySet);
+			propertySet.deflate();
 			getPropertyManager().storePropertySet(propertySet, true, FETCH_GROUPS, FETCH_DEPTH);
 		} catch (Exception e) {
 			throw new RuntimeException("Storing PropertySet with ImageDataField failed", e);
