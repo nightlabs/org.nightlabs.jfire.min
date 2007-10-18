@@ -9,9 +9,9 @@
 	<classpathentry kind="var" path="JDO2" sourcepath="JPOX_SRC"/>
 	<classpathentry kind="var" path="XERCES"/>
 	<classpathentry kind="var" path="XALAN"/>
-	<classpathentry kind="var" path="WORKSPACE/NightLabsBase/dist/NightLabsBase.jar" sourcepath="WORKSPACE/NightLabsBase/src"/>
-	<classpathentry kind="var" path="WORKSPACE/NightLabsJDO/dist/NightLabsJDO.jar" sourcepath="WORKSPACE/NightLabsJDO/src"/>
-	<classpathentry kind="var" path="WORKSPACE/JFireRCLBackend/dist/JFireRCLBackend.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/NightLabsBase"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/NightLabsJDO"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/JFireRCLBackend"/>
 	<classpathentry kind="var" path="APACHE_COMMONS/commons-beanutils.jar"/>
 	<classpathentry kind="var" path="JPOX" sourcepath="JPOX_SRC"/>
 	<classpathentry kind="var" path="JBOSS/client/jboss-j2ee.jar"/>
