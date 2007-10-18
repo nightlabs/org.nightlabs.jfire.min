@@ -7,8 +7,8 @@
 	<classpathentry kind="var" path="JBOSS/client/jboss-j2ee.jar"/>
 	<classpathentry kind="var" path="JBOSS/server/default/lib/bcel.jar"/>
 	<classpathentry kind="var" path="JBOSS/server/default/lib/jboss.jar"/>
-	<classpathentry sourcepath="WORKSPACE/NightLabsBase/src" kind="var" path="WORKSPACE/NightLabsBase/dist/NightLabsBase.jar"/>
-	<classpathentry sourcepath="WORKSPACE/NightLabsJDO/src" kind="var" path="WORKSPACE/NightLabsJDO/dist/NightLabsJDO.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/NightLabsBase"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/NightLabsJDO"/>
 	<classpathentry kind="src" path="/JFireBase"/>
 	<classpathentry kind="src" path="/JFireServerManager"/>
 	<classpathentry kind="var" path="LOG4J"/>
