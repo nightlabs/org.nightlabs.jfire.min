@@ -3,9 +3,9 @@
 	<classpathentry path="src" kind="src"/>
 	<classpathentry path="org.eclipse.jdt.launching.JRE_CONTAINER" kind="con"/>
 	<classpathentry sourcepath="/LOG4J_SRC" path="LOG4J" kind="var"/>
-	<classpathentry sourcepath="/WORKSPACE/JFireServerManager/src" path="WORKSPACE/JFireServerManager/dist/JFireServerManager.jar" kind="var"/>
-	<classpathentry sourcepath="WORKSPACE/JFireBase/src" path="WORKSPACE/JFireBase/dist/JFireBase.jar" kind="var"/>
-	<classpathentry sourcepath="/WORKSPACE/NightLabsBase/src" path="WORKSPACE/NightLabsBase/dist/NightLabsBase.jar" kind="var"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/JFireServerManager"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/JFireBase"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/NightLabsBase"/>
 	<classpathentry path="XERCES" kind="var"/>
 	<classpathentry sourcepath="JBOSS_SRC/security/src/main" path="JBOSS/server/default/lib/jbosssx.jar" kind="var"/>
 	<classpathentry path="JBOSS/client/jbossall-client.jar" kind="var"/>
