@@ -7,7 +7,7 @@
 	<classpathentry kind="var" path="JBOSS/client/jboss-j2ee.jar"/>
 	<classpathentry kind="var" path="JBOSS/server/default/lib/jboss.jar"/>
 	<classpathentry kind="src" path="/JFireRCLBackend"/>
-	<classpathentry kind="var" path="WORKSPACE/NightLabsBase/dist/NightLabsBase.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/NightLabsBase"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/JFireBase"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/JFireBaseBean"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/JFireServerManager"/>
