@@ -30,6 +30,7 @@ public class OrganisationDAO extends BaseJDOObjectDAO<OrganisationID, Organisati
 
 	protected OrganisationDAO() { }
 
+	@Override
 	@Implement
 	protected Collection<Organisation> retrieveJDOObjects(
 			Set<OrganisationID> organisationIDs, String[] fetchGroups, int maxFetchDepth,

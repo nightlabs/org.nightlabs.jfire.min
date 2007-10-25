@@ -33,6 +33,7 @@ public class EditLockDAO extends BaseJDOObjectDAO<EditLockID, EditLock>
 		return sharedInstance;
 	}
 
+	@Override
 	@SuppressWarnings("unchecked")
 	@Implement
 	protected Collection<EditLock> retrieveJDOObjects(Set<EditLockID> editLockIDs,

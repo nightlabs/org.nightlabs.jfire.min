@@ -64,6 +64,7 @@ public class ConfigDAO extends BaseJDOObjectDAO<ConfigID, Config>
 	/* (non-Javadoc)
 	 * @see org.nightlabs.jfire.base.jdo.JDOObjectDAO#retrieveJDOObjects(java.util.Collection, java.lang.String[], int, org.eclipse.core.runtime.IProgressMonitor)
 	 */
+	@Override
 	@Implement
 	protected Collection<Config> retrieveJDOObjects(
 			Set<ConfigID> configIDs, String[] fetchGroups, int maxFetchDepth,

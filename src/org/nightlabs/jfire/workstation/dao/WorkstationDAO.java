@@ -26,6 +26,7 @@ extends BaseJDOObjectDAO<WorkstationID, Workstation>
 		return sharedInstance;
 	}
 
+	@Override
 	@SuppressWarnings("unchecked")
 	protected Collection<Workstation> retrieveJDOObjects(
 			Set<WorkstationID> workstationIDs, String[] fetchGroups, int maxFetchDepth,
