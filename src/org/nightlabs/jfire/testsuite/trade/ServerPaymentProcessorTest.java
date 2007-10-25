@@ -31,7 +31,7 @@ public class ServerPaymentProcessorTest extends ServerPaymentProcessor {
 					Organisation.DEVIL_ORGANISATION_ID, ServerPaymentProcessorTest.class.getName()));
 		} catch (JDOObjectNotFoundException e) {
 			serverPaymentProcessorTest = new ServerPaymentProcessorTest(OBJECT_ID.organisationID, OBJECT_ID.serverPaymentProcessorID);
-			serverPaymentProcessorTest = (ServerPaymentProcessorTest) pm.makePersistent(serverPaymentProcessorTest);
+			serverPaymentProcessorTest = pm.makePersistent(serverPaymentProcessorTest);
 		}
 
 		return serverPaymentProcessorTest;

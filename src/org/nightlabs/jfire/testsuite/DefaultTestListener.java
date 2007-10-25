@@ -36,6 +36,7 @@ import junit.framework.Test;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.jfire.testsuite.TestSuite.Status;
+import org.nightlabs.util.Util;
 import org.nightlabs.util.Utils;
 import org.nightlabs.xml.NLDOMUtil;
 import org.w3c.dom.Document;
@@ -457,7 +458,7 @@ public class DefaultTestListener implements JFireTestListener {
 			if (suiteResult.getSuiteStartError() != null) {
 				Element exceptionElement = doc.createElement("TestSuiteResultDetail");
 				exceptionElement.setAttribute("message", suiteResult.getSuiteStartError().getLocalizedMessage());
-				Node stackTrace = doc.createCDATASection(Utils.getStackTraceAsString(suiteResult.getSuiteStartError()));
+				Node stackTrace = doc.createCDATASection(Util.getStackTraceAsString(suiteResult.getSuiteStartError()));
 				exceptionElement.appendChild(stackTrace);
 				suiteElement.appendChild(exceptionElement);
 			}
@@ -480,7 +481,7 @@ public class DefaultTestListener implements JFireTestListener {
 					if (testResult.getError() != null) {
 						Element exceptionElement = doc.createElement("TestResultDetail");
 						exceptionElement.setAttribute("message", testResult.getError().getLocalizedMessage());
-						Node stackTrace = doc.createCDATASection(Utils.getStackTraceAsString(testResult.getError()));
+						Node stackTrace = doc.createCDATASection(Util.getStackTraceAsString(testResult.getError()));
 						exceptionElement.appendChild(stackTrace);
 						testElement.appendChild(exceptionElement);
 					}
@@ -728,9 +729,9 @@ public class DefaultTestListener implements JFireTestListener {
 			if(to.contains(",")) {
 				StringTokenizer t = new StringTokenizer(to, ",");
 				while(t.hasMoreTokens())
-					message.addRecipient(RecipientType.TO, new InternetAddress(t.nextToken().trim()));
+					message.addRecipient(javax.mail.Message.RecipientType.TO, new InternetAddress(t.nextToken().trim()));
 			} else {
-				message.addRecipient(RecipientType.TO, new InternetAddress(to));
+				message.addRecipient(javax.mail.Message.RecipientType.TO, new InternetAddress(to));
 			}
 			
 			String subject = getProperty("mail.subject", "JFireTestSuite Testreport");

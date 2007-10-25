@@ -162,10 +162,12 @@ public class JFireTradeTestSuiteManagerBean extends BaseSessionBeanImpl implemen
 	public void ejbRemove() throws EJBException, RemoteException {
 	}
 
+	@Override
 	public void setSessionContext(SessionContext sessionContext) throws EJBException, RemoteException {
 		super.setSessionContext(sessionContext);
 	}
 
+	@Override
 	public void unsetSessionContext() {
 		super.unsetSessionContext();
 	}

@@ -117,7 +117,7 @@ public class JFireTestLogin {
 			user = new User(userID.organisationID, userID.userID);
 			UserLocal userLocal = new UserLocal(user);
 			userLocal.setPasswordPlain(password);
-			user = (User) pm.makePersistent(user);
+			user = pm.makePersistent(user);
 			if (USER_QUALIFIER_SERVER_ADMIN.equals(userPropName)) {
 				JFireServerManager jFireServerManager = JFireServerManagerUtil.getJFireServerManager();
 				jFireServerManager.addServerAdmin(userID.organisationID, userID.userID);

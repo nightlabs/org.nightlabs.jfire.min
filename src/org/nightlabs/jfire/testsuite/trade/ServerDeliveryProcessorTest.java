@@ -3,7 +3,6 @@ package org.nightlabs.jfire.testsuite.trade;
 import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 
-import org.nightlabs.jfire.accounting.pay.PaymentResult;
 import org.nightlabs.jfire.organisation.Organisation;
 import org.nightlabs.jfire.store.deliver.DeliveryException;
 import org.nightlabs.jfire.store.deliver.DeliveryResult;
@@ -32,7 +31,7 @@ class ServerDeliveryProcessorTest extends ServerDeliveryProcessor {
 					Organisation.DEVIL_ORGANISATION_ID, ServerDeliveryProcessorTest.class.getName()));
 		} catch (JDOObjectNotFoundException e) {
 			serverDeliveryProcessorTest = new ServerDeliveryProcessorTest(OBJECT_ID.organisationID, OBJECT_ID.serverDeliveryProcessorID);
-			serverDeliveryProcessorTest = (ServerDeliveryProcessorTest) pm.makePersistent(serverDeliveryProcessorTest);
+			serverDeliveryProcessorTest = pm.makePersistent(serverDeliveryProcessorTest);
 		}
 
 		return serverDeliveryProcessorTest;

@@ -69,12 +69,12 @@ public class PropertySetTestStruct
 			// person struct not persisted yet.
 			struct = new Struct(organisationID, PropertySetTestStruct.class.getName());
 			PropertySetTestStruct.createStandardStructure(struct);
-			struct = (Struct) pm.makePersistent(struct);
+			struct = pm.makePersistent(struct);
 			
 			// WORKAROUND: Workaround for JPOX error 'cannot delete/update child row', foreign key problem, maybe this is also wron tagging problem
 			if (struct instanceof AbstractStruct) {
 				try {
-					struct.addDisplayNamePart(new DisplayNamePart(organisationID, IDGenerator.nextID(DisplayNamePart.class), struct, (StructField) struct.getStructField(TESTBLOCK_TEXT), ": "));
+					struct.addDisplayNamePart(new DisplayNamePart(organisationID, IDGenerator.nextID(DisplayNamePart.class), struct, struct.getStructField(TESTBLOCK_TEXT), ": "));
 				} catch (Exception e1) {
 					logger.error("Error createing PropertySetTestStruct DisplayNameParts: ", e);
 				}

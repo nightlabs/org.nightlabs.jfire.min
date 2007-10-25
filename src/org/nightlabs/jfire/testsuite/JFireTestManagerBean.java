@@ -72,11 +72,13 @@ implements SessionBean
 	 */
 	private static final Logger logger = Logger.getLogger(JFireTestManagerBean.class);
 
+	@Override
 	public void setSessionContext(SessionContext sessionContext)
 	throws EJBException, RemoteException
 	{
 		super.setSessionContext(sessionContext);
 	}
+	@Override
 	public void unsetSessionContext() {
 		super.unsetSessionContext();
 	}
@@ -247,7 +249,7 @@ implements SessionBean
 				testSuiteClasses.add(suiteClass);
 			} else if (TestCase.class.isAssignableFrom(clazz)) {
 				Class<? extends TestCase> testCaseClass = (Class<? extends TestCase>) clazz;
-				JFireTestSuite testSuiteAnnotation = (JFireTestSuite) clazz.getAnnotation(JFireTestSuite.class);
+				JFireTestSuite testSuiteAnnotation = clazz.getAnnotation(JFireTestSuite.class);
 				Class<? extends TestSuite> suiteClass = DefaultTestSuite.class; // Default value, if not annotated.
 				if (testSuiteAnnotation != null) {					
 					suiteClass = testSuiteAnnotation.value();
