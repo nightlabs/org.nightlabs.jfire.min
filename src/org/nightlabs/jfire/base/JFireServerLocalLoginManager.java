@@ -118,6 +118,6 @@ implements Serializable
 
 	public LocalPrincipal getPrincipal(String userName)
 	{
-		return (LocalPrincipal) principales.get(userName);
+		return principales.get(userName);
 	}
 }

@@ -40,6 +40,7 @@ import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
  * @author Marco Schulze - marco at nightlabs dot de
  * @deprecated We don't use HQL anymore, since it doesn't support transaction isolation level read-committed.
  */
+@Deprecated
 public class DatabaseAdapterHSQL
 extends AbstractDatabaseAdapter
 {

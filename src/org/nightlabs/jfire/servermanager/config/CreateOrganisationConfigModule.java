@@ -99,6 +99,7 @@ public class CreateOrganisationConfigModule extends ConfigModule
 	/**
 	 * @see org.nightlabs.config.Initializable#init()
 	 */
+	@Override
 	public void init() throws InitException
 	{
 		if (waitForPersistenceManager_tryCount < 1)

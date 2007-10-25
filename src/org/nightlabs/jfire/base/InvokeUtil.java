@@ -6,6 +6,7 @@ import java.util.Properties;
 
 import javax.ejb.EJBLocalObject;
 import javax.ejb.EJBObject;
+import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
@@ -25,11 +26,11 @@ public class InvokeUtil
 		
 		String username = userID + '@' + organisationID;
 		Properties props = new Properties();
-		props.put(InitialContext.INITIAL_CONTEXT_FACTORY, initialContextFactory);
-		props.put(InitialContext.PROVIDER_URL, initialContextURL);
-		props.put(InitialContext.SECURITY_PRINCIPAL, username);
-		props.put(InitialContext.SECURITY_CREDENTIALS, password);
-		props.put(InitialContext.SECURITY_PROTOCOL, "jfire");
+		props.put(Context.INITIAL_CONTEXT_FACTORY, initialContextFactory);
+		props.put(Context.PROVIDER_URL, initialContextURL);
+		props.put(Context.SECURITY_PRINCIPAL, username);
+		props.put(Context.SECURITY_CREDENTIALS, password);
+		props.put(Context.SECURITY_PROTOCOL, "jfire");
 
 //		props.setProperty("jnp.multi-threaded", String.valueOf(true));
 //		props.setProperty("jnp.restoreLoginIdentity", String.valueOf(true));

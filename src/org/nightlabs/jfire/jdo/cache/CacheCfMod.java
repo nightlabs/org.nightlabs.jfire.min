@@ -64,6 +64,7 @@ public class CacheCfMod extends ConfigModule
 	/**
 	 * @see org.nightlabs.config.ConfigModule#init()
 	 */
+	@Override
 	public void init() throws InitException
 	{
 		documentation = "This is the documentation for the settings in this ConfigModule.\n" +

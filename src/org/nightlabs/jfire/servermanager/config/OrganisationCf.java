@@ -305,6 +305,7 @@ public class OrganisationCf
 	/**
 	 * @see java.lang.Object#clone()
 	 */
+	@Override
 	public Object clone()
 	{
 		OrganisationCf n;
@@ -353,6 +354,7 @@ public class OrganisationCf
 	/**
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
+	@Override
 	public boolean equals(Object obj) {
 		if (obj == this)
 			return true;
@@ -366,6 +368,7 @@ public class OrganisationCf
 	/**
 	 * @see java.lang.Object#hashCode()
 	 */
+	@Override
 	public int hashCode() {
 		return toString().hashCode();
 	}

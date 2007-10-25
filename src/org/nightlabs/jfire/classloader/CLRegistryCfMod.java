@@ -32,6 +32,7 @@ import java.util.List;
 
 import org.nightlabs.config.ConfigModule;
 import org.nightlabs.config.InitException;
+import org.nightlabs.util.Util;
 import org.nightlabs.util.Utils;
 
 /**
@@ -150,6 +151,7 @@ public class CLRegistryCfMod extends ConfigModule
 	/**
 	 * @see org.nightlabs.config.Initializable#init()
 	 */
+	@Override
 	public void init() throws InitException
 	{
 		if (resourceRepositories == null) {
@@ -163,7 +165,7 @@ public class CLRegistryCfMod extends ConfigModule
 		}
 
 		if (tempRepository == null) {
-			tempRepository = new ResourceRepository("temp", Utils.addFinalSlash(System.getProperty("java.io.tmpdir")) + "jfire" + File.separatorChar + "classloader", true);
+			tempRepository = new ResourceRepository("temp", Util.addFinalSlash(System.getProperty("java.io.tmpdir")) + "jfire" + File.separatorChar + "classloader", true);
 		}
 	}
 

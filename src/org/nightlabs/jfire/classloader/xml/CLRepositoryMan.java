@@ -316,7 +316,7 @@ public class CLRepositoryMan
 		if (inheritedPublications != null)
 			res.addAll(inheritedPublications);
 
-		Publication publication = (Publication)localPublications.get(".");
+		Publication publication = localPublications.get(".");
 		if (publication != null) {
 			if (!publication.isInherit())
 				res.clear();
@@ -332,7 +332,7 @@ public class CLRepositoryMan
 		}
 //		else {
 		else if (!".".equals(targetFileName)) {
-			publication = (Publication)localPublications.get(targetFileName);
+			publication = localPublications.get(targetFileName);
 			if (publication != null) {
 				if (!publication.isInherit())
 					res.clear();

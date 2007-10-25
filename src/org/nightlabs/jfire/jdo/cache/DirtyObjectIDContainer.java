@@ -102,7 +102,7 @@ implements Serializable
 					lifecycleState2dirtyObjectIDMap.put(newDirtyObjectID.getLifecycleState(), dirtyObjectIDs);
 				}
 
-				DirtyObjectID dirtyObjectID = (DirtyObjectID) dirtyObjectIDs.get(objectID);
+				DirtyObjectID dirtyObjectID = dirtyObjectIDs.get(objectID);
 				// we add the old sourceSessionIDs to the new DirtyObjectID and then we overwrite the old one
 				if (dirtyObjectID != null)
 					newDirtyObjectID.addSourceSessionIDs(dirtyObjectID.getSourceSessionIDs());
@@ -160,7 +160,7 @@ implements Serializable
 		if (m == null)
 			return null;
 
-		return (DirtyObjectID) m.get(objectID);
+		return m.get(objectID);
 	}
 
 	public void close()

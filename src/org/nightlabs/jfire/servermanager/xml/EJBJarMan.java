@@ -159,7 +159,7 @@ public class EJBJarMan implements Serializable
 
 	public RoleDef getRole(String roleID)
 	{
-		return (RoleDef)roles.get(roleID);
+		return roles.get(roleID);
 	}
 
 	public void addRole(RoleDef role)
@@ -169,7 +169,7 @@ public class EJBJarMan implements Serializable
 
 	public RoleDef removeRole(String roleID)
 	{
-		return (RoleDef)roles.remove(roleID);
+		return roles.remove(roleID);
 	}
 
 }

@@ -93,6 +93,7 @@ public class OrganisationConfigModule extends ConfigModule
 	/**
 	 * @see org.nightlabs.config.Initializable#init()
 	 */
+	@Override
 	public void init() throws InitException {
 		if (organisations == null)
 			setOrganisations(new ArrayList<OrganisationCf>());

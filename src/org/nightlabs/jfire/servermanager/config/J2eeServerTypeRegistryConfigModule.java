@@ -145,7 +145,7 @@ public class J2eeServerTypeRegistryConfigModule extends ConfigModule
 				j2eeRemoteServersByServerType = m;
 			}
 
-			return (J2eeRemoteServer) j2eeRemoteServersByServerType.get(j2eeServerType);
+			return j2eeRemoteServersByServerType.get(j2eeServerType);
 		}
 	}
 
@@ -224,6 +224,7 @@ public class J2eeServerTypeRegistryConfigModule extends ConfigModule
 	/**
 	 * @see org.nightlabs.config.ConfigModule#init()
 	 */
+	@Override
 	public void init() throws InitException
 	{
 		if (j2eeLocalServers == null) {

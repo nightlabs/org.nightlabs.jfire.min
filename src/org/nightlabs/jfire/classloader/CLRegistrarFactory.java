@@ -55,6 +55,7 @@ import org.nightlabs.jfire.classloader.xml.CLRepositoryFileFilter;
 import org.nightlabs.jfire.classloader.xml.CLRepositoryMan;
 import org.nightlabs.jfire.classloader.xml.CLRepositoryMan.Publication;
 import org.nightlabs.util.CacheDirTag;
+import org.nightlabs.util.Util;
 import org.nightlabs.util.Utils;
 import org.nightlabs.xml.XMLReadException;
 import org.xml.sax.SAXException;
@@ -162,7 +163,7 @@ public class CLRegistrarFactory
 
 		// we recursively delete our temp repository if it exists
 		File tempRepositoryFile = new File(clRegistryCfMod.getTempRepository().getPath());
-		if (!Utils.deleteDirectoryRecursively(tempRepositoryFile))
+		if (!Util.deleteDirectoryRecursively(tempRepositoryFile))
 			logger.error("Deleting temporary repository \""+clRegistryCfMod.getTempRepository().getPath()+"\" failed!");
 	}
 
@@ -200,7 +201,7 @@ public class CLRegistrarFactory
 			// We cannot use an iterator here, because items are added to the List while
 			// it is iterated.
 			for (int i = 0; i < tempJarFiles.size(); ++i) {
-				File tmpJarFile = (File)tempJarFiles.get(i); // must be within temp repository
+				File tmpJarFile = tempJarFiles.get(i); // must be within temp repository
 				scanDirectory(clRegistryCfMod.getTempRepository(), tmpJarFile.getAbsoluteFile(), null);
 			}
 			tempJarFiles = null;
@@ -268,7 +269,7 @@ public class CLRegistrarFactory
 				}
 			}
 			else {
-				String relativePath = Utils.getRelativePath(absoluteRepositoryFile, dir.getPath());
+				String relativePath = Util.getRelativePath(absoluteRepositoryFile, dir.getPath());
 				ResourceMetaData fmd = new ResourceMetaData(repository.getName(), null, relativePath, dir.length(), dir.lastModified());				
 
 				boolean publishResource = false;
@@ -406,7 +407,7 @@ public class CLRegistrarFactory
 							try {
 								InputStream in = jar.getInputStream(je);
 								try {
-									Utils.transferStreamData(in, out);
+									Util.transferStreamData(in, out);
 								} finally {
 									in.close();
 								}
@@ -445,7 +446,7 @@ public class CLRegistrarFactory
 			if (!loaded)
 				scan();
 
-			ResourceRepository repository = (ResourceRepository)resourceRepositories.get(rmd.getRepositoryName());
+			ResourceRepository repository = resourceRepositories.get(rmd.getRepositoryName());
 			if (repository == null)
 				throw new IllegalArgumentException("There is no resource repository existing with the name \"" + rmd.getRepositoryName() + "\"!");
 

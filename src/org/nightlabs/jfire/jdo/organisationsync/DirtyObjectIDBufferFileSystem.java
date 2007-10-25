@@ -158,8 +158,8 @@ implements DirtyObjectIDBuffer
 				try {
 					StreamTokenizer st = new StreamTokenizer(fr);
 					st.resetSyntax();
-					st.wordChars(0, ((int)'\n') - 1);
-					st.wordChars(((int)'\n') + 1, Integer.MAX_VALUE);
+					st.wordChars(0, ('\n') - 1);
+					st.wordChars(('\n') + 1, Integer.MAX_VALUE);
 //					st.whitespaceChars('\n', '\n');
 					while (StreamTokenizer.TT_EOF != st.nextToken()) {
 						if (StreamTokenizer.TT_EOL != st.ttype && st.sval != null) {

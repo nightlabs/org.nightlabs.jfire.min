@@ -107,16 +107,16 @@ public class RoleGroupDef implements Serializable, Comparable
 	
 	public String getName()
 	{
-		return (String)names.get(null);
+		return names.get(null);
 	}
 	
 	public String getName(String languageID)
 	{
 		if ("".equals(languageID))
 			languageID = null;
-		String res = (String)names.get(languageID);
+		String res = names.get(languageID);
 		if (res == null)
-			res = (String)names.get(null);
+			res = names.get(null);
 		return res;
 	}
 	
@@ -145,7 +145,7 @@ public class RoleGroupDef implements Serializable, Comparable
 	 * @return Returns the description.
 	 */
 	public String getDescription() {
-		return (String)descriptions.get(null);
+		return descriptions.get(null);
 	}
 	/**
 	 * @return Returns the description.
@@ -153,9 +153,9 @@ public class RoleGroupDef implements Serializable, Comparable
 	public String getDescription(String languageID) {
 		if ("".equals(languageID))
 			languageID = null;
-		String res = (String)descriptions.get(languageID);
+		String res = descriptions.get(languageID);
 		if (res == null)
-			res = (String)descriptions.get(null);
+			res = descriptions.get(null);
 		return res;
 	}
 	/**
@@ -188,7 +188,7 @@ public class RoleGroupDef implements Serializable, Comparable
 	
 	public RoleGroupDef getIncludedRoleGroup(String roleGroupName)
 	{
-		RoleGroupDef roleGroupDef = (RoleGroupDef) includedRoleGroups.get(roleGroupName);
+		RoleGroupDef roleGroupDef = includedRoleGroups.get(roleGroupName);
 		if (roleGroupDef == null && includedRoleGroups.containsKey(roleGroupName)) {
 			roleGroupDef = owner.getRoleGroup(roleGroupName);
 			if (roleGroupDef == null)
@@ -201,7 +201,7 @@ public class RoleGroupDef implements Serializable, Comparable
 
 	protected RoleDef removeRole(String roleID)
 	{
-		return (RoleDef) roles.remove(roleID);
+		return roles.remove(roleID);
 	}
 
 	protected void addRole(RoleDef roleDef)
@@ -211,7 +211,7 @@ public class RoleGroupDef implements Serializable, Comparable
 	
 	public RoleDef getRole(String roleID)
 	{
-		return (RoleDef)roles.get(roleID);
+		return roles.get(roleID);
 	}
 
 	/**

@@ -365,6 +365,7 @@ public class JdoCacheBridgeDefault extends JdoCacheBridge
 	/**
 	 * @see org.nightlabs.jfire.jdo.cache.bridge.JdoCacheBridge#init()
 	 */
+	@Override
 	public void init()
 	{
 		InitialContext initialContext;
@@ -405,6 +406,7 @@ public class JdoCacheBridgeDefault extends JdoCacheBridge
 	/**
 	 * @see org.nightlabs.jfire.jdo.cache.bridge.JdoCacheBridge#close()
 	 */
+	@Override
 	public void close()
 	{
 		PersistenceManagerFactory pmf = getPersistenceManagerFactory();

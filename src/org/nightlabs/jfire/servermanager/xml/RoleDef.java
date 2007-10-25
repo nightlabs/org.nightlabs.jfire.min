@@ -88,16 +88,16 @@ public class RoleDef implements Serializable, Comparable<RoleDef>
 
 	public String getName()
 	{
-		return (String)names.get(null);
+		return names.get(null);
 	}
 	
 	public String getName(String languageID)
 	{
 		if ("".equals(languageID))
 			languageID = null;
-		String res = (String)names.get(languageID);
+		String res = names.get(languageID);
 		if (res == null)
-			res = (String)names.get(null);
+			res = names.get(null);
 		return res;
 	}
 	
@@ -117,7 +117,7 @@ public class RoleDef implements Serializable, Comparable<RoleDef>
 	 * @return Returns the description.
 	 */
 	public String getDescription() {
-		return (String)descriptions.get(null);
+		return descriptions.get(null);
 	}
 
 	/**
@@ -135,9 +135,9 @@ public class RoleDef implements Serializable, Comparable<RoleDef>
 	public String getDescription(String languageID) {
 		if ("".equals(languageID))
 			languageID = null;
-		String res = (String)descriptions.get(languageID);
+		String res = descriptions.get(languageID);
 		if (res == null)
-			res = (String)descriptions.get(null);
+			res = descriptions.get(null);
 		return res;
 	}
 	

@@ -159,6 +159,7 @@ public class ServerCf implements Serializable, Cloneable {
 			initialContextURL = "jnp://127.0.0.1:1099";
 	}
 
+	@Override
 	public Object clone()
 	{
 		try {

@@ -150,6 +150,7 @@ public class PersistentNotificationManagerFactory implements Serializable
 				});
 
 		timerOutgoing.schedule(new TimerTask() {
+			@Override
 			public void run()
 			{
 				processDirtyObjectIDsOutgoing();
@@ -439,7 +440,7 @@ public class PersistentNotificationManagerFactory implements Serializable
 									++filterCount;
 
 									if (dirtyObjectIDsFiltered != null && !dirtyObjectIDsFiltered.isEmpty()) {
-										NotificationBundle notificationBundle = (NotificationBundle) pm.makePersistent(
+										NotificationBundle notificationBundle = pm.makePersistent(
 												new NotificationBundle(notificationFilter, dirtyObjectIDsFiltered));
 
 										filteredDirtyObjectIDCount += dirtyObjectIDsFiltered.size();

@@ -253,7 +253,7 @@ public class EJBRoleGroupMan implements Serializable
 
 	public RoleGroupDef getRoleGroup(String roleGroupID)
 	{
-		return (RoleGroupDef) roleGroups.get(roleGroupID);
+		return roleGroups.get(roleGroupID);
 	}
 
 	public Collection getRoleGroups()
@@ -273,7 +273,7 @@ public class EJBRoleGroupMan implements Serializable
 		for (Iterator itRoleGroups = other.roleGroups.values().iterator(); itRoleGroups.hasNext(); ) {
 			RoleGroupDef otherRoleGroupDef = (RoleGroupDef)itRoleGroups.next();
 			String roleGroupID = otherRoleGroupDef.getRoleGroupID();
-			RoleGroupDef thisRoleGroupDef = (RoleGroupDef)roleGroups.get(roleGroupID);
+			RoleGroupDef thisRoleGroupDef = roleGroups.get(roleGroupID);
 			if (thisRoleGroupDef == null) {
 				thisRoleGroupDef = new RoleGroupDef(this, roleGroupID, false);
 				addRoleGroup(thisRoleGroupDef);
@@ -321,7 +321,7 @@ public class EJBRoleGroupMan implements Serializable
 	
 	public RoleDef getRole(String roleID)
 	{
-		return (RoleDef)roles.get(roleID);
+		return roles.get(roleID);
 	}
 
 	/**
