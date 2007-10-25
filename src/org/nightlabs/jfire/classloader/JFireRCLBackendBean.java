@@ -59,11 +59,13 @@ public abstract class JFireRCLBackendBean
 	 */
 	private static final Logger logger = Logger.getLogger(JFireRCLBackendBean.class);
 
+	@Override
 	public void setSessionContext(SessionContext sessionContext)
 			throws EJBException, RemoteException
 	{
 		super.setSessionContext(sessionContext);
 	}
+	@Override
 	public void unsetSessionContext() {
 		super.unsetSessionContext();
 	}
