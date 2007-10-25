@@ -110,7 +110,7 @@ public class JDOObjectID2PCClassMap
 	 */
 	public synchronized Class getPersistenceCapableClass(Object objectID)
 	{
-		Class jdoObjectClass = (Class) objectID2PCClassMap.get(objectID);
+		Class jdoObjectClass = objectID2PCClassMap.get(objectID);
 		if (jdoObjectClass == null) {
 			int retry = 0;
 			String clazzName = null;

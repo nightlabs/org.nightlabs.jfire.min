@@ -28,6 +28,7 @@ package org.nightlabs.jfire.base.login;
 
 import java.util.Properties;
 
+import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.security.auth.callback.CallbackHandler;
@@ -196,7 +197,7 @@ public class JFireLogin
 
 			if (providerURL == null) {
 				InitialContext initialContext = new InitialContext();
-				providerURL = (String) initialContext.getEnvironment().get(InitialContext.PROVIDER_URL); // TODO does this really work? Alternatively, we might read it from a registry - in the server, this registry exists already (but this is a client lib)...
+				providerURL = (String) initialContext.getEnvironment().get(Context.PROVIDER_URL); // TODO does this really work? Alternatively, we might read it from a registry - in the server, this registry exists already (but this is a client lib)...
 				initialContext.close();
 			}
 
@@ -206,11 +207,11 @@ public class JFireLogin
 
 			Properties props = new Properties();
 //			props.put(InitialContext.INITIAL_CONTEXT_FACTORY,	"org.jboss.security.jndi.LoginInitialContextFactory");
-			props.put(InitialContext.INITIAL_CONTEXT_FACTORY, initialContextFactory);
-			props.put(InitialContext.PROVIDER_URL, providerURL);
-			props.put(InitialContext.SECURITY_PRINCIPAL, username);
-			props.put(InitialContext.SECURITY_CREDENTIALS, password);
-			props.put(InitialContext.SECURITY_PROTOCOL, securityProtocol);
+			props.put(Context.INITIAL_CONTEXT_FACTORY, initialContextFactory);
+			props.put(Context.PROVIDER_URL, providerURL);
+			props.put(Context.SECURITY_PRINCIPAL, username);
+			props.put(Context.SECURITY_CREDENTIALS, password);
+			props.put(Context.SECURITY_PROTOCOL, securityProtocol);
 
 			initialContextProperties = props;
 		}

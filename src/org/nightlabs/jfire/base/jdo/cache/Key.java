@@ -71,6 +71,7 @@ public class Key
 	/**
 	 * @see java.lang.Object#hashCode()
 	 */
+	@Override
 	public int hashCode()
 	{
 		if (_hashCode == 0) {
@@ -87,6 +88,7 @@ public class Key
 	/**
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
+	@Override
 	public boolean equals(Object obj)
 	{
 		if (obj == this)
@@ -115,6 +117,7 @@ public class Key
 	/**
 	 * @see java.lang.Object#toString()
 	 */
+	@Override
 	public String toString()
 	{
 		if (thisString == null) {

@@ -59,6 +59,7 @@ public class JFireSecurityConfiguration extends Configuration {
 	/* (non-Javadoc)
 	 * @see javax.security.auth.login.Configuration#refresh()
 	 */
+	@Override
 	public void refresh() {
 		logger.debug("Refreshing entries"); //$NON-NLS-1$
 		this.entries.clear();
@@ -85,11 +86,12 @@ public class JFireSecurityConfiguration extends Configuration {
 	/* (non-Javadoc)
 	 * @see javax.security.auth.login.Configuration#getAppConfigurationEntry(java.lang.String)
 	 */
+	@Override
 	public AppConfigurationEntry[] getAppConfigurationEntry(String applicationName) {
 //		LOGGER.debug("Having request for "+applicationName);
 		if (entries.containsKey(applicationName)){
 //			LOGGER.debug("Found entry for "+applicationName);
-			return new AppConfigurationEntry[]{(AppConfigurationEntry)entries.get(applicationName)};
+			return new AppConfigurationEntry[]{entries.get(applicationName)};
 		}
 		return null;
 	}

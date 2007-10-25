@@ -131,6 +131,7 @@ extends org.nightlabs.notification.NotificationManager
 		}
 		else if (listener instanceof JDOLifecycleListenerWorkerThreadAsync) {
 			Thread worker = new Thread() {
+				@Override
 				public void run() {
 					listener.notify(event);
 				}

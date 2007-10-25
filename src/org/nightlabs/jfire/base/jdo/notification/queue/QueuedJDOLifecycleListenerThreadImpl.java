@@ -62,6 +62,7 @@ extends QueuedJDOLifecycleListener
 		}
 	};
 
+	@Override
 	@Implement
 	protected void wakeupProcessEvents()
 	{
