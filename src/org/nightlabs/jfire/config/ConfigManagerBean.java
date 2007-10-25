@@ -57,7 +57,6 @@ import org.nightlabs.jfire.config.id.ConfigModuleID;
 import org.nightlabs.jfire.config.id.ConfigSetupID;
 import org.nightlabs.jfire.config.xml.XMLConfigFactory;
 import org.nightlabs.jfire.editlock.EditLockType;
-import org.nightlabs.jfire.workstation.WorkstationFeaturesCfMod;
 import org.nightlabs.util.CollectionUtil;
 
 /**
@@ -141,7 +140,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 //				}
 //			}
 		
-			ConfigModule pConfigModule = pm.makePersistent(configModule);
+			ConfigModule pConfigModule = (ConfigModule)pm.makePersistent(configModule);
 			
 			if (pConfigModule.getConfig() instanceof ConfigGroup) {
 				// is a ConfigModule of a ConfigGroup -> inherit all ConfigModules for 
@@ -168,7 +167,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 				pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
 				if (fetchGroups != null)
 					pm.getFetchPlan().setGroups(fetchGroups);
-				return pm.detachCopy(pConfigModule);
+				return (ConfigModule)pm.detachCopy(pConfigModule);
 			}
 		} finally {
 			pm.close();
@@ -341,7 +340,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 			
 			Config config = (Config)pm.getObjectById(configID);
 			
-			return pm.detachCopy(config);
+			return (Config)pm.detachCopy(config);
 			
 		} finally {
 			pm.close();
@@ -436,7 +435,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 				pm.getFetchPlan().setGroups(fetchGroups);
 
 			ConfigModule configModule = config.createConfigModule(cfModClass, cfModID);
-			return pm.detachCopy(configModule);
+			return (ConfigModule)pm.detachCopy(configModule);
 		} finally {
 			pm.close();
 		}
@@ -476,7 +475,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 			if (configModule == null)
 				return null;
 
-			return pm.detachCopy(configModule);
+			return (ConfigModule)pm.detachCopy(configModule);
 
 		} finally {
 			pm.close();
@@ -509,7 +508,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 			ArrayList<ConfigModule> searchedModules = new ArrayList<ConfigModule>(moduleIDs.size());
 
 			for (ConfigModuleID moduleID : moduleIDs)
-				searchedModules.add(pm.detachCopy(Config.getConfigModule(pm, moduleID))); 
+				searchedModules.add((ConfigModule)pm.detachCopy(Config.getConfigModule(pm, moduleID))); 
 
 			return searchedModules;
 		} finally {
@@ -534,7 +533,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 		logger.debug("configModule.cfModID: "+configModule.getCfModID());
 		logger.debug("configModule.cfModKey: "+configModule.getCfModKey());
 		
-		return pm.detachCopy(configModule);
+		return (ConfigModule)pm.detachCopy(configModule);
 	}
 	
 	/**
@@ -571,7 +570,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 			
 			ConfigGroup group = config.getConfigGroup();
 			ConfigModule groupsModule = group.getConfigModule(configModuleClass, moduleID);
-			return pm.detachCopy(groupsModule);
+			return (ConfigModule) pm.detachCopy(groupsModule);
 		} finally {
 			pm.close();
 		}
@@ -609,7 +608,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 					pm.getFetchPlan().setGroups(fetchGroups);
 				pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
 
-				ConfigGroup result = pm.detachCopy(group);
+				ConfigGroup result = (ConfigGroup)pm.detachCopy(group);
 				
 				ConfigSetup.ensureAllPrerequisites(pm);
 				
@@ -823,7 +822,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 			pm.getFetchPlan().setGroups(fetchPlan);
 			
 			if (get)
-				return pm.detachCopy(moduleToUpdate);
+				return (ConfigModule) pm.detachCopy(moduleToUpdate);
 			else
 				return null;
 		} finally {
@@ -871,7 +870,6 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 
 			WorkstationConfigSetup workstationConfigSetup = new WorkstationConfigSetup(organisationID);
 			pm.makePersistent(workstationConfigSetup);
-			workstationConfigSetup.getConfigModuleClasses().add(WorkstationFeaturesCfMod.class.getName());
 			
 			pm.makePersistent(new EditLockType(JFireBaseEAR.EDIT_LOCK_TYPE_ID_CONFIG_MODULE));
 			pm.makePersistent(new EditLockType(JFireBaseEAR.EDIT_LOCK_TYPE_ID_CONFIG));
