@@ -72,7 +72,7 @@ public class UserDescriptor
 	protected static synchronized UserDescriptor getUserDescriptor()
 	{
 		Thread t = Thread.currentThread();
-		return (UserDescriptor)userDescriptors.get(t);
+		return userDescriptors.get(t);
 	}
 
 

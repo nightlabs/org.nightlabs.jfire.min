@@ -52,6 +52,7 @@ public class LoginInitialContextFactory extends NamingContextFactory
 	/**
 	 * @see org.jnp.interfaces.NamingContextFactory#getInitialContext(java.util.Hashtable)
 	 */
+	@Override
 	public Context getInitialContext(Hashtable env) throws NamingException
 	{
 		if(logger.isDebugEnabled())
@@ -70,6 +71,7 @@ public class LoginInitialContextFactory extends NamingContextFactory
 	/**
 	 * @see org.jnp.interfaces.NamingContextFactory#getObjectInstance(java.lang.Object, javax.naming.Name, javax.naming.Context, java.util.Hashtable)
 	 */
+	@Override
 	public Object getObjectInstance(Object obj, Name name, Context nameCtx,
 			Hashtable environment) throws Exception
 	{

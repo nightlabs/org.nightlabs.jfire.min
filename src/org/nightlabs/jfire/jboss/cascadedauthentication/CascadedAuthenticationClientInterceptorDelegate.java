@@ -104,6 +104,7 @@ public class CascadedAuthenticationClientInterceptorDelegate extends GenericEJBI
 			this.start();
 		}
 
+		@Override
 		public void run()
 		{
 //			Principal orig_callerPrincipal = SecurityAssociation.getCallerPrincipal();
@@ -166,6 +167,7 @@ public class CascadedAuthenticationClientInterceptorDelegate extends GenericEJBI
 	/**
 	 * @see org.jboss.proxy.Interceptor#invoke(org.jboss.invocation.Invocation)
 	 */
+	@Override
 	public Object invoke(Invocation invocation) throws Throwable
 	{
 		// First we check, whether we have a UserDescriptor associated to the current thread.
@@ -208,7 +210,7 @@ public class CascadedAuthenticationClientInterceptorDelegate extends GenericEJBI
 				else
 					throw new IllegalStateException("SecurityAssociation.getCredential() returned an object of invalid type (" + (pwo == null ? null : pwo.getClass().getName()) + ")! Expected: java.lang.String or char[]");
 
-				userDescriptor = new UserDescriptor(principal.getName(), (String) pw);
+				userDescriptor = new UserDescriptor(principal.getName(), pw);
 			}
 
 			if(logger.isDebugEnabled())

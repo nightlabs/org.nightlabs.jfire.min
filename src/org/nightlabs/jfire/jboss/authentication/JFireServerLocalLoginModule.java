@@ -54,6 +54,7 @@ public class JFireServerLocalLoginModule extends AbstractServerLoginModule
 	protected JFireServerLocalLoginManager.LocalPrincipal principal = null;
 	protected Object loginCredential = null;
 
+	@Override
 	public boolean login() throws LoginException
 	{
 		super.loginOk = false;
@@ -89,7 +90,7 @@ public class JFireServerLocalLoginModule extends AbstractServerLoginModule
 		}
 
 		try {
-			principal = (JFireServerLocalLoginManager.LocalPrincipal) JFireServerLocalLoginManager
+			principal = JFireServerLocalLoginManager
 					.getJFireServerLocalLoginManager(initialContext).getPrincipal(username);
 		} catch (NamingException e) {
 			LoginException x = new LoginException("Unable to find JFireServerLocalLoginManager in JNDI!");
@@ -113,12 +114,14 @@ public class JFireServerLocalLoginModule extends AbstractServerLoginModule
 		return true;
 	}
 
+	@Override
 	protected Principal getIdentity()
 	{
 		logger.debug("getIdentity() returning Principal: "+principal);
 		return principal;
 	}
 
+	@Override
 	protected Group[] getRoleSets()
 		throws LoginException
 	{

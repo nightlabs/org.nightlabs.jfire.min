@@ -95,6 +95,7 @@ public class CascadedAuthenticationClientInterceptor extends GenericEJBIntercept
 
 	protected transient Interceptor delegateInstance = null;
 
+	@Override
 	public Object invoke(Invocation invocation) throws Throwable
 	{
 		Class _delegateClass = delegateClass;

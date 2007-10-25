@@ -61,6 +61,7 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 
 //	protected static Pattern SPLIT_USERNAME_PATTERN = Pattern.compile("[*@*]");
 
+	@Override
 	public boolean login() throws LoginException
 	{
 //		LOGGER.info(Thread.currentThread().toString() + ": login()");
@@ -151,6 +152,7 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 	/**
 	 * @see org.jboss.security.auth.spi.AbstractServerLoginModule#commit()
 	 */
+	@Override
 	public boolean commit() throws LoginException
 	{
 		if (!super.commit()) {
@@ -173,6 +175,7 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 	/**
 	 * @see org.jboss.security.auth.spi.AbstractServerLoginModule#logout()
 	 */
+	@Override
 	public boolean logout() throws LoginException
 	{
 // Well, the real client login module does SecurityAssociation.clear(), but
@@ -184,6 +187,7 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 		return super.logout();
 	}
 
+	@Override
 	protected Principal getIdentity()
 	{
 		logger.debug("*********************************************************");
@@ -191,6 +195,7 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 		return ip;
 	}
 
+	@Override
 	protected Group[] getRoleSets()
 		throws LoginException
 	{

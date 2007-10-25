@@ -44,6 +44,7 @@ public class SecurityReflectorJBoss extends SecurityReflector
 {
 	private static final long serialVersionUID = 1L;
 
+	@Override
 	public UserDescriptor _getUserDescriptor()
 	{
 		Principal principal = SecurityAssociation.getPrincipal();
@@ -61,6 +62,7 @@ public class SecurityReflectorJBoss extends SecurityReflector
 //				(parts.length < 3 || "".equals(parts[2])) ? (parts[1] + '_' + parts[0]) : parts[2]);
 	}
 
+	@Override
 	public InitialContext _createInitialContext() {
 		try {
 			return new InitialContext();
@@ -69,6 +71,7 @@ public class SecurityReflectorJBoss extends SecurityReflector
 		}
 	}
 
+	@Override
 	public Properties _getInitialContextProperties() {
 		return null; // TODO null should be a valid argument (i.e. new InitialContext(null) is legal), but maybe its error prone for other users - maybe an empty map would be better?! Is that possible???
 	}
