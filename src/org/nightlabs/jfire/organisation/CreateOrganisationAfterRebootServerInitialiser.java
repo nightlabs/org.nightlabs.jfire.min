@@ -13,6 +13,7 @@ import org.nightlabs.jfire.servermanager.OrganisationNotFoundException;
 public class CreateOrganisationAfterRebootServerInitialiser
 		extends ServerInitialiserDelegate
 {
+	@Override
 	@Implement
 	public void initialise() throws InitException
 	{

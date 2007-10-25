@@ -43,11 +43,13 @@ implements SessionBean
 	 */
 	private static final Logger logger = Logger.getLogger(TimerManagerBean.class);
 
+	@Override
 	public void setSessionContext(SessionContext sessionContext)
 	throws EJBException, RemoteException
 	{
 		super.setSessionContext(sessionContext);
 	}
+	@Override
 	public void unsetSessionContext() {
 		super.unsetSessionContext();
 	}
@@ -161,7 +163,7 @@ implements SessionBean
 					pm.getFetchPlan().setGroups(fetchGroups);
 
 				Task task = (Task) pm.getObjectById(taskID);
-				task = (Task) pm.detachCopy(task);
+				task = pm.detachCopy(task);
 				try {
 					task.getUser().getUserLocal().setPassword("********");
 				} catch (NullPointerException x) {
@@ -282,7 +284,7 @@ implements SessionBean
 		try {
 			PersistenceManager pm = getPersistenceManager();
 			try {
-				task = (Task) NLJDOHelper.storeJDO(pm, task, get, fetchGroups, maxFetchDepth);
+				task = NLJDOHelper.storeJDO(pm, task, get, fetchGroups, maxFetchDepth);
 
 				try {
 					task.getUser().getUserLocal().setPassword("********");

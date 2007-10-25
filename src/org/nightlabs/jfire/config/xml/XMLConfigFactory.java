@@ -47,6 +47,7 @@ extends ConfigFactory
 		});
 	}
 
+	@Override
 	@Implement
 	public Config createSharedInstance(File configFile)
 			throws ConfigException
@@ -54,6 +55,7 @@ extends ConfigFactory
 		throw new UnsupportedOperationException("Not supported!");
 	}
 
+	@Override
 	@Implement
 	public Config createSharedInstance(File configFile, boolean loadConfFile)
 			throws ConfigException
@@ -61,6 +63,7 @@ extends ConfigFactory
 		throw new UnsupportedOperationException("Not supported!");
 	}
 
+	@Override
 	@Implement
 	public boolean isSharedInstanceExisting()
 	{
@@ -69,6 +72,7 @@ extends ConfigFactory
 
 	private File userConfigBaseDir = null;
 
+	@Override
 	@Implement
 	public Config sharedInstance(boolean throwExceptionIfNotExisting)
 	{

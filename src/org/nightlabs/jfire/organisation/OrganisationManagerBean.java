@@ -46,6 +46,7 @@ import javax.jdo.FetchPlan;
 import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
+import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
@@ -624,7 +625,7 @@ public abstract class OrganisationManagerBean
 
 		pm.getFetchPlan().addGroup(FetchPlan.ALL); // TODO fetch-groups?!
 		pm.getFetchPlan().setMaxFetchDepth(NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
-		myOrganisation = (Organisation) pm.detachCopy(localOrganisation.getOrganisation());
+		myOrganisation = pm.detachCopy(localOrganisation.getOrganisation());
 
 		RegistrationStatus registrationStatus = new RegistrationStatus(
 				registrationID,
@@ -652,8 +653,8 @@ public abstract class OrganisationManagerBean
 
 		// Create the initial context properties to connect to the remote server.
 		Properties props = new Properties();
-		props.put(InitialContext.INITIAL_CONTEXT_FACTORY, initialContextFactory);
-		props.put(InitialContext.PROVIDER_URL, initialContextURL);
+		props.put(Context.INITIAL_CONTEXT_FACTORY, initialContextFactory);
+		props.put(Context.PROVIDER_URL, initialContextURL);
 
 		// Obtain the OrganisationLinker EJB and request registration
 		try {

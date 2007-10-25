@@ -19,7 +19,6 @@ import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.security.UserLocal;
 import org.nightlabs.jfire.security.UserRef;
 import org.nightlabs.jfire.security.id.AuthorityID;
-import org.nightlabs.jfire.security.id.AuthorityTypeID;
 import org.nightlabs.jfire.security.id.UserID;
 import org.nightlabs.jfire.server.LocalServer;
 import org.nightlabs.jfire.server.Server;
@@ -45,6 +44,7 @@ public abstract class OrganisationManagerHelperBean
 {
 	private static final Logger logger = Logger.getLogger(OrganisationManagerBean.class);
 	
+	@Override
 	public void setSessionContext(SessionContext sessionContext)
 			throws EJBException, RemoteException
 	{
@@ -123,7 +123,7 @@ public abstract class OrganisationManagerHelperBean
 			if(logger.isDebugEnabled())
 				logger.debug("Creating JDO object Authority with ID \""+Authority.AUTHORITY_ID_ORGANISATION+"\"...");
 			Authority authority = new Authority(organisationID, Authority.AUTHORITY_ID_ORGANISATION, authorityType);
-			authority = (Authority) pm.makePersistent(authority);
+			authority = pm.makePersistent(authority);
 			if(logger.isDebugEnabled())
 				logger.debug("pm.makePersistent(authority) done.");
 		} finally {

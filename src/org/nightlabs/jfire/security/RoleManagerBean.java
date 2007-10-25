@@ -65,6 +65,7 @@ public abstract class RoleManagerBean extends BaseSessionBeanImpl implements Ses
 	/**
 	 * @see org.nightlabs.jfire.base.BaseSessionBeanImpl#setSessionContext(javax.ejb.SessionContext)
 	 */
+	@Override
 	public void setSessionContext(SessionContext sessionContext)
 			throws EJBException, RemoteException
 	{

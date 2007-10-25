@@ -30,8 +30,6 @@ package org.nightlabs.jfire.prop;
 import java.rmi.RemoteException;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -39,15 +37,11 @@ import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
-import javax.jdo.FetchPlan;
 import javax.jdo.JDOHelper;
-import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
-import javax.jdo.Query;
 import javax.jdo.spi.PersistenceCapable;
 
 import org.apache.log4j.Logger;
-import org.apache.log4j.config.PropertySetterException;
 import org.nightlabs.ModuleException;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
@@ -80,6 +74,7 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	/**
 	 * @see org.nightlabs.jfire.base.BaseSessionBeanImpl#setSessionContext(javax.ejb.SessionContext)
 	 */
+	@Override
 	public void setSessionContext(SessionContext sessionContext) throws EJBException, RemoteException {
 		super.setSessionContext(sessionContext);
 	}
@@ -87,6 +82,7 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	/**
 	 * @see org.nightlabs.jfire.base.BaseSessionBeanImpl#unsetSessionContext()
 	 */
+	@Override
 	public void unsetSessionContext() {
 		super.unsetSessionContext();
 	}
@@ -127,7 +123,7 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 				pm.getFetchPlan().setGroups(fetchGroups);
 			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
 			Struct ps = Struct.getStruct(organisationID, linkClass, pm);
-			Struct result = (Struct) pm.detachCopy(ps);
+			Struct result = pm.detachCopy(ps);
 			return result;
 		} finally {
 			pm.close();
@@ -166,7 +162,7 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 				pm.getFetchPlan().setGroups(fetchGroups);
 			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
 			StructLocal ps = StructLocal.getStructLocal(organisationID, linkClass, scope, pm);
-			StructLocal result = (StructLocal) pm.detachCopy(ps);
+			StructLocal result = pm.detachCopy(ps);
 			return result;
 		} finally {
 			pm.close();
@@ -203,7 +199,7 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 			if (fetchGroups != null)
 				pm.getFetchPlan().setGroups(fetchGroups);
 
-			PropertySet result = (PropertySet) pm.detachCopy(prop);
+			PropertySet result = pm.detachCopy(prop);
 			return result;
 		} finally {
 			pm.close();
@@ -277,7 +273,7 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	{
 		PersistenceManager pm = getPersistenceManager();
 		try {
-			return (PropertySet) NLJDOHelper.storeJDO(pm, propertySet, get, fetchGroups, maxFetchDepth);
+			return NLJDOHelper.storeJDO(pm, propertySet, get, fetchGroups, maxFetchDepth);
 		} finally {
 			pm.close();
 		}

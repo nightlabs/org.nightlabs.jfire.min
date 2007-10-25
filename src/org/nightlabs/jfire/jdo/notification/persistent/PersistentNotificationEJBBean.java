@@ -58,6 +58,7 @@ extends BaseSessionBeanImpl implements SessionBean
 {
 	private static final Logger logger = Logger.getLogger(PersistentNotificationEJBBean.class);
 
+	@Override
 	public void setSessionContext(SessionContext sessionContext)
 	throws EJBException, RemoteException
 	{
@@ -139,7 +140,7 @@ extends BaseSessionBeanImpl implements SessionBean
 			if (logger.isDebugEnabled())
 				logger.debug("storeNotificationFilter: user="+getPrincipalString() + " notificationFilter: " + notificationFilter.getPrimaryKey());
 
-			return (NotificationFilter) NLJDOHelper.storeJDO(pm, notificationFilter, get, fetchGroups, maxFetchDepth);
+			return NLJDOHelper.storeJDO(pm, notificationFilter, get, fetchGroups, maxFetchDepth);
 		} finally {
 			pm.close();
 		}

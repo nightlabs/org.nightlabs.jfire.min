@@ -58,6 +58,7 @@ public abstract class ServerManagerBean
 	/**
 	 * @see org.nightlabs.jfire.base.BaseSessionBeanImpl#setSessionContext(javax.ejb.SessionContext)
 	 */
+	@Override
 	public void setSessionContext(SessionContext sessionContext)
 			throws EJBException, RemoteException
 	{
@@ -116,7 +117,7 @@ public abstract class ServerManagerBean
 	{
 		JFireServerManager ism = getJFireServerManager();
 		try {
-			return (JFireServerConfigModule) ism.getJFireServerConfigModule();
+			return ism.getJFireServerConfigModule();
 		} finally {
 			ism.close();
 		}

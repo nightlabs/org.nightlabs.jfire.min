@@ -43,11 +43,13 @@ implements SessionBean, TimedObject
 	 */
 	private static final Logger logger = Logger.getLogger(JFireTimerBean.class);
 
+	@Override
 	public void setSessionContext(SessionContext sessionContext)
 	throws EJBException, RemoteException
 	{
 		super.setSessionContext(sessionContext);
 	}
+	@Override
 	public void unsetSessionContext() {
 		super.unsetSessionContext();
 	}
@@ -134,7 +136,7 @@ implements SessionBean, TimedObject
 		PersistenceManager pm = getPersistenceManager();
 		try {
 			// before we start the timer, we clear all Task.executing flags (it's not possible that there's sth. executing before we start the timer)
-			List<Task> tasks = (List<Task>) Task.getTasksByExecuting(pm, true);
+			List<Task> tasks = Task.getTasksByExecuting(pm, true);
 			if (!tasks.isEmpty()) {
 				logger.warn("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 				logger.warn("There are " + tasks.size() + " Tasks currently marked with executing=true! This is impossible! Will clear that flag now:");

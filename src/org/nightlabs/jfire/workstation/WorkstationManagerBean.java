@@ -92,7 +92,7 @@ public class WorkstationManagerBean extends BaseSessionBeanImpl implements Sessi
 				pm.getFetchPlan().setGroups(fetchGroups);
 
 			Workstation ret = Workstation.storeWorkstation(pm, ws);
-			return (Workstation)pm.detachCopy(ret);
+			return pm.detachCopy(ret);
 		} 
 		finally 
 		{
@@ -116,7 +116,7 @@ public class WorkstationManagerBean extends BaseSessionBeanImpl implements Sessi
 			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
 			
 			Workstation ret = (Workstation) pm.getObjectById(workstationID);
-			return (Workstation)pm.detachCopy(ret);
+			return pm.detachCopy(ret);
 		} 
 		finally 
 		{
@@ -139,7 +139,7 @@ public class WorkstationManagerBean extends BaseSessionBeanImpl implements Sessi
 				pm.getFetchPlan().setGroups(fetchGroups);
 
 			Collection ret = Workstation.getWorkstations(pm);
-			return (Collection)pm.detachCopyAll(ret);
+			return pm.detachCopyAll(ret);
 		} 
 		finally 
 		{
