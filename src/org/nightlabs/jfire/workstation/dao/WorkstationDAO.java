@@ -64,4 +64,13 @@ extends BaseJDOObjectDAO<WorkstationID, Workstation>
 		return getJDOObject(null, workstationID, fetchGroups, maxFetchDepth, monitor);
 	}
 	
+	public Workstation storeWorkstation(Workstation workstation, boolean get, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor) {
+		try {
+			WorkstationManager wm = WorkstationManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
+			return wm.storeWorkstation(workstation, get, fetchGroups, maxFetchDepth);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
 }

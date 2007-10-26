@@ -23,8 +23,12 @@
  ******************************************************************************/
 package org.nightlabs.jfire.config.dao;
 
+import java.rmi.RemoteException;
 import java.util.Collection;
 import java.util.Set;
+
+import javax.ejb.CreateException;
+import javax.naming.NamingException;
 
 import org.nightlabs.annotation.Implement;
 import org.nightlabs.jdo.NLJDOHelper;
@@ -138,4 +142,23 @@ public class ConfigDAO extends BaseJDOObjectDAO<ConfigID, Config>
   	return getJDOObjects(null, configIDs, fetchGroups, maxFetchDepth, monitor);
 	}
   
+  /**
+   * Stores the given {@link Config}.
+   * @param config The {@link Config} to be stored.
+	 * @param get A boolean indicating whether a detached copy of the stored {@link Config} should be returned.
+	 * @param fetchGroups The fetch groups to be used
+	 * @param maxFetchDepth The maximal fetch depth to be used
+	 * @return A detached copy of the stored {@link Config} if <code>get == true</code> and <code>null</code> otherwise.
+   */
+  public synchronized Config storeConfig(Config config, boolean get, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor) {
+  	monitor.beginTask("Saving config...", 10);
+  	try {
+  		ConfigManager cm = ConfigManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
+  		return cm.storeConfig(config, get, fetchGroups, maxFetchDepth);
+		} catch (Exception e) {
+			throw new RuntimeException("Error while saving the config.");
+		} finally {
+  		monitor.done();
+  	}
+	}
 }
