@@ -355,9 +355,16 @@ public class JFireServerManagerFactoryImpl
 		}
 		try 
 		{
-			initialContext.bind(J2EEAdapter.JNDI_NAME, j2EEAdapter);
+			try
+			{
+				initialContext.bind(J2EEAdapter.JNDI_NAME, j2EEAdapter);
+			}
+			catch (NameAlreadyBoundException nabe)
+			{
+				initialContext.rebind(J2EEAdapter.JNDI_NAME, j2EEAdapter);
+			}
 		}
-		catch (NamingException e) {
+		catch (Exception e) {
 			logger.error("Binding J2EEAdapter into JNDI failed!", e);
 			throw new ResourceException(e.getMessage());
 		}
