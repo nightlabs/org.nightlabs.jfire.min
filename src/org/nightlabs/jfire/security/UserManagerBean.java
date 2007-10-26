@@ -1426,7 +1426,14 @@ implements SessionBean
 		try 
 		{
 			pm.getFetchPlan().setGroup(FetchPlan.DEFAULT);
-			UserRef uref = (UserRef)pm.getObjectById(UserRefID.create(authorityID, getOrganisationID(), userID), true);
+			
+			UserRef uref;
+			try {
+				uref = (UserRef)pm.getObjectById(UserRefID.create(authorityID, getOrganisationID(), userID), true);
+			} catch (JDOObjectNotFoundException ignore) {
+				return;
+			}
+			
 			uref.removeRoleGroupRef(roleGroupID);
 
 			JFireServerManager jfsm = getJFireServerManager();

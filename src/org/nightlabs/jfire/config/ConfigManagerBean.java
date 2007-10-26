@@ -57,6 +57,7 @@ import org.nightlabs.jfire.config.id.ConfigModuleID;
 import org.nightlabs.jfire.config.id.ConfigSetupID;
 import org.nightlabs.jfire.config.xml.XMLConfigFactory;
 import org.nightlabs.jfire.editlock.EditLockType;
+import org.nightlabs.progress.ProgressMonitor;
 import org.nightlabs.util.CollectionUtil;
 
 /**
@@ -773,6 +774,36 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 //			if (! getOrganisationID().equals(setup.getOrganisationID()) )
 //					throw new IllegalArgumentException("The given ConfigSetup does not belong to the current organisation, but to "+setup.getOrganisationID());
 			ConfigSetup.storeConfigSetup(pm, setup);
+		} finally {
+			pm.close();
+		}
+	}
+	
+	/**
+	 * Stores the given {@link Config} and returns a detached copy if the caller requests it.
+	 * @param config The {@link Config} to be stored.
+	 * @param get A boolean indicating whether a detached copy of the stored {@link Config} should be returned.
+	 * @param fetchGroups The fetch groups to be used
+	 * @param maxFetchDepth The maximal fetch depth to be used
+	 * @return A detached copy of the stored {@link Config} if <code>get == true</code> and <code>null</code> otherwise.
+	 * 
+	 * @ejb.interface-method
+	 * @ejb.permission role-name="_Guest_"
+	 * @ejb.transaction type = "Required"
+	 */
+	public Config storeConfig(Config config, boolean get, String[] fetchGroups, int maxFetchDepth) {
+		PersistenceManager pm;
+		pm = getPersistenceManager();
+		try {
+			config = pm.makePersistent(config);
+			if (!get)
+				return null;
+			
+			if (fetchGroups != null)
+				pm.getFetchPlan().setGroups(fetchGroups);
+			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
+			
+			return pm.detachCopy(config);
 		} finally {
 			pm.close();
 		}

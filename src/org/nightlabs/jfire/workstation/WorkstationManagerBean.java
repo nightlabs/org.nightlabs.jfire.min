@@ -82,7 +82,7 @@ public class WorkstationManagerBean extends BaseSessionBeanImpl implements Sessi
 	 * @ejb.permission role-name="WorkstationManagerBean-write"
 	 * @ejb.transaction type="Required"
 	 **/
-	public Workstation saveWorkstation(Workstation ws, String [] fetchGroups)
+	public Workstation storeWorkstation(Workstation ws, boolean get, String[] fetchGroups, int maxFetchDepth)
 	throws ModuleException 
 	{
 		PersistenceManager pm = getPersistenceManager();
@@ -90,9 +90,13 @@ public class WorkstationManagerBean extends BaseSessionBeanImpl implements Sessi
 		{
 			if (fetchGroups != null) 
 				pm.getFetchPlan().setGroups(fetchGroups);
+			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
 
 			Workstation ret = Workstation.storeWorkstation(pm, ws);
-			return pm.detachCopy(ret);
+			if (get)
+				return pm.detachCopy(ret);
+			else
+				return null;
 		} 
 		finally 
 		{

@@ -12,7 +12,7 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/NightLabsJDO"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/JFireBasePublicBean"/>
 	<classpathentry kind="var" path="JBOSS/client/jboss-j2ee.jar"/>
-	<classpathentry kind="var" path="JDO2" sourcepath="/JPOX_SRC"/>
+	<classpathentry kind="var" path="JDO2" sourcepath="/JDO2_SRC"/>
 	<classpathentry kind="var" path="JUNIT_HOME/junit.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
