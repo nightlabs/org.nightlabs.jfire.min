@@ -23,12 +23,8 @@
  ******************************************************************************/
 package org.nightlabs.jfire.config.dao;
 
-import java.rmi.RemoteException;
 import java.util.Collection;
 import java.util.Set;
-
-import javax.ejb.CreateException;
-import javax.naming.NamingException;
 
 import org.nightlabs.annotation.Implement;
 import org.nightlabs.jdo.NLJDOHelper;
