@@ -38,10 +38,12 @@ import org.apache.log4j.Logger;
 import org.jboss.security.SecurityAssociation;
 import org.jboss.security.SimpleGroup;
 import org.jboss.security.auth.spi.AbstractServerLoginModule;
+import org.nightlabs.j2ee.LoginData;
 import org.nightlabs.jfire.base.JFirePrincipal;
 import org.nightlabs.jfire.base.Lookup;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
+import org.nightlabs.util.URLParameterMap;
 
 
 /**
@@ -59,24 +61,18 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 	protected JFirePrincipal ip = null;
 	protected Object loginCredential = null;
 
-//	protected static Pattern SPLIT_USERNAME_PATTERN = Pattern.compile("[*@*]");
-
 	@Override
 	public boolean login() throws LoginException
 	{
-//		LOGGER.info(Thread.currentThread().toString() + ": login()");
-
 		super.loginOk = false;
 		NameCallback nc = new NameCallback("username: ");
 		PasswordCallback pc = new PasswordCallback("password: ", false);
 		
 		Callback[] callbacks = {nc, pc};
 		
+		LoginData loginData;
 		String login;
 		String password;
-		String userID;
-		String organisationID;
-		String sessionID = null;
 
 		// get the login information via the callbacks
 		try 
@@ -96,45 +92,30 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 		}
 
 		logger.info(Thread.currentThread().toString() + ": Login requested by " + login);
-//		Principal previousPrincipal = SecurityAssociation.getPrincipal();
-//		if (previousPrincipal != null && username.equals(previousPrincipal.getName()))
-//			previousPrincipal = null;
-//
-////		Principal runAsPrincipal = SecurityAssociation.peekRunAsRole();
-//		if (previousPrincipal != null) {
-////			SecurityAssociation.pushRunAsRole(new SimplePrincipal("test"));
-//			LOGGER.info("Already logged in as "+previousPrincipal+"! Ignoring login as "+username+"!!!");
-////			super.loginOk = true; // this caused a bad exception!
-////			LOGGER.debug("SecurityAssociation.peekRunAsRole(): "+runAsPrincipal);
-//			return true;
-//		}
-//
-//
-//		LOGGER.info("Not yet logged in. Trying to login "+username);
 
 		// set username and organisationID + userIsOrganisation
 		String[] txt = User.PATTERN_SPLIT_LOGIN.split(login);
 		if(txt.length != 2 && txt.length != 3)
-			throw new LoginException("Invalid login - not two or three parts (use user@organisation/session, session is optional): " + login);
+			throw new IllegalArgumentException("Invalid login - not two or three parts (use user@organisation?sessionID=xxx&moreParams=yyy&..., session is optional): " + login);
 		if(txt[0].length() == 0 || txt[1].length() == 0)
-			throw new LoginException("Invalid login - empty userID or empty organisationID (use user@organisation/session, session is optional): " + login);
-		userID = txt[0];
-		organisationID = txt[1];
-
+			throw new LoginException("Invalid login - empty userID or empty organisationID (use user@organisation?sessionID=xxx&moreParams=yyy&..., session is optional): " + login);
+		
+		loginData = new LoginData(txt[1], txt[0], password);
 		if (txt.length < 3 || "".equals(txt[2]))
-			sessionID = userID + '!' + organisationID;
-		else
-			sessionID = txt[2];
+			loginData.setSessionID(loginData.getUserID() + '!' + loginData.getOrganisationID());
+		else {
+			loginData.setAdditionalParams(new URLParameterMap(txt[2]));
+		}
 
 		try
 		{
 			// create lookup object for user's organisationID
-			this.lookup = new Lookup(organisationID);
+			this.lookup = new Lookup(loginData.getOrganisationID());
 
 			// and delegate the login to the jfireServerManager
 			JFireServerManager jfireServerManager = lookup.getJFireServerManager();
 			try {
-				this.ip = jfireServerManager.login(organisationID, userID, sessionID, password);
+				this.ip = jfireServerManager.login(loginData);
 				super.subject.getPrincipals().add(ip);
 				super.loginOk = true;
 				return true;
