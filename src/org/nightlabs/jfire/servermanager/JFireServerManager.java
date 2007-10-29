@@ -36,6 +36,7 @@ import javax.security.auth.login.LoginException;
 
 import org.nightlabs.ModuleException;
 import org.nightlabs.config.ConfigException;
+import org.nightlabs.j2ee.LoginData;
 import org.nightlabs.jfire.base.JFirePrincipal;
 import org.nightlabs.jfire.classloader.CLRegistrar;
 import org.nightlabs.jfire.module.ModuleType;
@@ -190,7 +191,7 @@ public interface JFireServerManager
 
 	public String jfireSecurity_createTempUserPassword(String organisationID, String userID);
 	
-	public JFirePrincipal login(String _organisationID, String _userID, String _sessionID, String _password)
+	public JFirePrincipal login(LoginData loginData)
 		throws LoginException;
 
 	public void undeploy(File deployment)

@@ -46,6 +46,7 @@ import org.apache.log4j.Logger;
 import org.nightlabs.ModuleException;
 import org.nightlabs.config.Config;
 import org.nightlabs.config.ConfigException;
+import org.nightlabs.j2ee.LoginData;
 import org.nightlabs.jfire.base.JFirePrincipal;
 import org.nightlabs.jfire.base.Lookup;
 import org.nightlabs.jfire.base.SimplePrincipal;
@@ -402,9 +403,12 @@ public class JFireServerManagerImpl
 		this.principal = jfirePrincipal;
 	}
 
-	public JFirePrincipal login(String organisationID, String userID, String sessionID, String password)
+	public JFirePrincipal login(LoginData loginData)
 		throws LoginException
 	{
+		String organisationID = loginData.getOrganisationID();
+		String userID = loginData.getUserID();
+		String password = loginData.getPassword();
 		this.principal = null;
 
 		if (logger.isDebugEnabled()) {
@@ -426,8 +430,7 @@ public class JFireServerManagerImpl
 
 				// setup mode login, create principal
 				this.principal = new JFirePrincipal(
-						userID, organisationID, 
-						sessionID,
+						loginData,
 						userIsOrganisation, 
 						lookup,
 						roleSet
@@ -481,7 +484,7 @@ public class JFireServerManagerImpl
 						RoleSet roleSet = jfireServerManagerFactoryImpl.jfireSecurity_getRoleSet(organisationID, userID);
 
 						// login succeeded, create principal
-						this.principal = new JFirePrincipal(userID, organisationID, sessionID, userIsOrganisation, lookup, roleSet);
+						this.principal = new JFirePrincipal(loginData, userIsOrganisation, lookup, roleSet);
 						if(logger.isDebugEnabled())
 							logger.debug("Created JFirePrincipal \""+principal+"\".");
 					}

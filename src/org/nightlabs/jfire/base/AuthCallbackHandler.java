@@ -34,7 +34,7 @@ import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 
-import org.nightlabs.jdo.ObjectIDUtil;
+import org.nightlabs.j2ee.LoginData;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 
 /**
@@ -42,16 +42,12 @@ import org.nightlabs.jfire.servermanager.JFireServerManager;
  */
 public class AuthCallbackHandler implements CallbackHandler
 {
-	private String organisationID;
-	private String userID;
-	private String sessionID;
-	private String userName;
-	private char[] password;
+	private LoginData loginData;
 
 	public AuthCallbackHandler(JFireServerManager ism,
 			String organisationID, String userID)
 	{
-		this(ism, organisationID, userID, ObjectIDUtil.makeValidIDString(null, true));
+		this(ism, organisationID, userID, (String)null);
 	}
 
 	public AuthCallbackHandler(JFireServerManager ism,
@@ -64,11 +60,8 @@ public class AuthCallbackHandler implements CallbackHandler
 
 	public AuthCallbackHandler(String _organisationID, String _userID, String _sessionID, char[] password)
 	{
-		this.organisationID = _organisationID;
-		this.userID = _userID;
-		this.sessionID = _sessionID;
-		this.userName = userID + '@' + organisationID + '/' + sessionID;
-		this.password = password;
+		this.loginData = new LoginData(_organisationID, _userID, String.valueOf(password));
+		loginData.setSessionID(_sessionID);
 	}
 
 	/**
@@ -84,10 +77,10 @@ public class AuthCallbackHandler implements CallbackHandler
 		for (int i = 0; i < callbacks.length; ++i) {
 			Callback cb = callbacks[i];
 			if (cb instanceof NameCallback) {
-				((NameCallback)cb).setName(userName);
+				((NameCallback)cb).setName(loginData.getLoginDataURL());
 			}
 			else if (cb instanceof PasswordCallback) {
-				((PasswordCallback)cb).setPassword(password);
+				((PasswordCallback)cb).setPassword(loginData.getPassword().toCharArray());
 			}
 			else throw new UnsupportedCallbackException(cb);
 		}

@@ -28,7 +28,7 @@ package org.nightlabs.jfire.base;
 
 import java.security.Principal;
 
-import org.nightlabs.jfire.base.JFireBasePrincipal;
+import org.nightlabs.j2ee.LoginData;
 import org.nightlabs.jfire.security.RoleSet;
 
 
@@ -41,9 +41,9 @@ public class JFirePrincipal
 {
 	protected Lookup lookup;
 
-	public JFirePrincipal(String _userID, String _organisationID, String _sessionID, boolean _userIsOrganisation, Lookup _lookup, RoleSet _roleSet)
+	public JFirePrincipal(LoginData loginData, boolean _userIsOrganisation, Lookup _lookup, RoleSet _roleSet)
 	{
-		super(_userID, _organisationID, _sessionID, _userIsOrganisation, _roleSet);
+		super(loginData, _userIsOrganisation, _roleSet);
 
 		if (_lookup == null)
 			throw new NullPointerException("lookup must not be null!");
