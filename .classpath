@@ -43,4 +43,5 @@
 	<classpathentry kind="var" path="APACHE_COMMONS/commons-lang.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/JFireBaseDAO"/>
 	<classpathentry kind="output" path="bin"/>
+  <classpathentry kind="var" path="ASM"/>
 </classpath>
