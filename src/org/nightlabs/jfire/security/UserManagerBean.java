@@ -1616,5 +1616,25 @@ implements SessionBean
 			pm.close();
 		}		
 	}
+	
+	/**
+	 * Sets the password of the user that is calling this method to the given password.
+	 * 
+	 * @ejb.interface-method
+	 * @ejb.permission role-name="_Guest_"
+	 * @ejb.transaction type="Required"
+	 */
+	public void setUserPassword(String password) {
+		String userID = SecurityReflector.getUserDescriptor().getUserID();
+		String organisationID = SecurityReflector.getUserDescriptor().getOrganisationID();
+		
+		PersistenceManager pm = getPersistenceManager();
+		try {
+			User user = (User) pm.getObjectById(UserID.create(organisationID, userID));
+			user.getUserLocal().setPasswordPlain(password);
+		} finally {
+			pm.close();
+		}
+	}
 
 }
