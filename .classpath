@@ -17,4 +17,5 @@
 	<classpathentry kind="var" path="JBOSS/client/jboss-j2ee.jar"/>
 	<classpathentry kind="var" path="APACHE_COMMONS/commons-lang.jar"/>
 	<classpathentry kind="output" path="bin"/>
+  <classpathentry kind="var" path="ASM"/>
 </classpath>
