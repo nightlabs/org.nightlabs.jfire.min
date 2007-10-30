@@ -73,13 +73,22 @@ public class JFireLogin
 	private static final Logger logger = Logger.getLogger(JFireLogin.class);
 	
 	public static final String LOGIN_PREFIX = "jfire.login.";
-	public static final String PROP_ORGANISATION_ID = LOGIN_PREFIX + "organisationID";
-	public static final String PROP_USER_ID = LOGIN_PREFIX + "userID";
-	public static final String PROP_PASSWORD = LOGIN_PREFIX + "password";
-	public static final String PROP_PROVIDER_URL = LOGIN_PREFIX + "providerURL";
-	public static final String PROP_INITIAL_CONTEXT_FACTORY = LOGIN_PREFIX + "initialContextFactory";
-	public static final String PROP_SECURITY_PROTOCOL = LOGIN_PREFIX + "securityProtocol";
-	public static final String PROP_WORKSTATION_ID = LOGIN_PREFIX + LoginData.WORKSTATION_ID;
+	
+	public static final String ORGANISATION_ID = "organisationID";
+	public static final String USER_ID = "userID";
+	public static final String PASSWORD = "password";
+	public static final String PROVIDER_URL = "providerURL";
+	public static final String INITIAL_CONTEXT_FACTORY = "initialContextFactory";
+	public static final String SECURITY_PROTOCOL = "securityProtocol";
+	public static final String WORKSTATION_ID = LoginData.WORKSTATION_ID;
+	
+	public static final String PROP_ORGANISATION_ID = LOGIN_PREFIX + ORGANISATION_ID;
+	public static final String PROP_USER_ID = LOGIN_PREFIX + USER_ID;
+	public static final String PROP_PASSWORD = LOGIN_PREFIX + PASSWORD;
+	public static final String PROP_PROVIDER_URL = LOGIN_PREFIX + PROVIDER_URL;
+	public static final String PROP_INITIAL_CONTEXT_FACTORY = LOGIN_PREFIX + INITIAL_CONTEXT_FACTORY;
+	public static final String PROP_SECURITY_PROTOCOL = LOGIN_PREFIX + SECURITY_PROTOCOL;
+	public static final String PROP_WORKSTATION_ID = LOGIN_PREFIX + WORKSTATION_ID;
 	
 	/**
 	 * Encapsulates all necessary login information.
@@ -98,18 +107,21 @@ public class JFireLogin
 	{
 		Properties loginProps = org.nightlabs.util.Properties.getProperties(properties, LOGIN_PREFIX);
 		String organisationID, userID, password;
-		organisationID = loginProps.getProperty(PROP_ORGANISATION_ID, "");
-		userID = loginProps.getProperty(PROP_USER_ID, "");
-		password = loginProps.getProperty(PROP_PASSWORD, "");
+		organisationID = loginProps.getProperty(ORGANISATION_ID, "");
+		userID = loginProps.getProperty(USER_ID, "");
+		password = loginProps.getProperty(PASSWORD, "");
 		loginData = new LoginData(organisationID, userID, password);
 		
 		for (Object propKey : loginProps.keySet()) {
-			if (PROP_PROVIDER_URL.equals(propKey))
-				loginData.setProviderURL(loginProps.getProperty(PROP_PROVIDER_URL, null));
-			else if (PROP_INITIAL_CONTEXT_FACTORY.equals(propKey))
-				loginData.setInitialContextFactory(loginProps.getProperty(PROP_INITIAL_CONTEXT_FACTORY, "org.nightlabs.jfire.jboss.cascadedauthentication.LoginInitialContextFactory"));
-			else if (PROP_SECURITY_PROTOCOL.equals(propKey))
-				loginData.setSecurityProtocol(loginProps.getProperty(PROP_SECURITY_PROTOCOL, "jfire"));
+			if (USER_ID.equals(propKey) || PASSWORD.equals(propKey) || ORGANISATION_ID.equals(propKey))
+				continue;
+			
+			if (PROVIDER_URL.equals(propKey))
+				loginData.setProviderURL(loginProps.getProperty(PROVIDER_URL, null));
+			else if (INITIAL_CONTEXT_FACTORY.equals(propKey))
+				loginData.setInitialContextFactory(loginProps.getProperty(INITIAL_CONTEXT_FACTORY, "org.nightlabs.jfire.jboss.cascadedauthentication.LoginInitialContextFactory"));
+			else if (SECURITY_PROTOCOL.equals(propKey))
+				loginData.setSecurityProtocol(loginProps.getProperty(SECURITY_PROTOCOL, "jfire"));
 			else {
 				loginData.getAdditionalParams().put(
 						(String) propKey, 
@@ -117,6 +129,22 @@ public class JFireLogin
 						);
 			}
 		}
+		
+		// set default values if login information is incomplete
+		if (loginData.getInitialContextFactory() == null)
+			loginData.setInitialContextFactory(LoginData.DEFAULT_INITIAL_CONTEXT_FACTORY);
+		if (loginData.getProviderURL() == null)
+			loginData.setProviderURL(LoginData.DEFAULT_PROVIDER_URL);
+		if (loginData.getSecurityProtocol() == null)
+			loginData.setSecurityProtocol(LoginData.DEFAULT_SECURITY_PROTOCOL);
+
+//		alternatively we can use this method if it works.
+//		if (providerURL == null) {
+//			InitialContext initialContext = new InitialContext();
+//			providerURL = (String) initialContext.getEnvironment().get(Context.PROVIDER_URL); // TODO does this really work? Alternatively, we might read it from a registry - in the server, this registry exists already (but this is a client lib)...
+//			initialContext.close();
+//		}
+
 	}
 
 	/**
@@ -196,20 +224,9 @@ public class JFireLogin
 		if (initialContextProperties == null) {
 			logger.debug(this.getClass().getName()+"#getInitialContextProperties(): generating props");
 
-			String providerURL = loginData.getProviderURL();
-			if (providerURL == null) {
-				InitialContext initialContext = new InitialContext();
-				providerURL = (String) initialContext.getEnvironment().get(Context.PROVIDER_URL); // TODO does this really work? Alternatively, we might read it from a registry - in the server, this registry exists already (but this is a client lib)...
-				initialContext.close();
-			}
-
-			if (providerURL == null)
-				providerURL = "jnp://127.0.0.1:1099";
-			
-
 			Properties props = new Properties();
 			props.put(Context.INITIAL_CONTEXT_FACTORY, loginData.getInitialContextFactory());
-			props.put(Context.PROVIDER_URL, providerURL);
+			props.put(Context.PROVIDER_URL, loginData.getProviderURL());
 			props.put(Context.SECURITY_PRINCIPAL, loginData.getPrincipalName());
 			props.put(Context.SECURITY_CREDENTIALS, loginData.getPassword());
 			props.put(Context.SECURITY_PROTOCOL, loginData.getSecurityProtocol());
