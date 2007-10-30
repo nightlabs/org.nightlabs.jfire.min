@@ -112,7 +112,7 @@ public class JFireLogin
 				loginData.setSecurityProtocol(loginProps.getProperty(PROP_SECURITY_PROTOCOL, "jfire"));
 			else {
 				loginData.getAdditionalParams().put(
-						((String)propKey).substring(LOGIN_PREFIX.length()), 
+						(String) propKey, 
 						loginProps.getProperty((String)propKey)
 						);
 			}
