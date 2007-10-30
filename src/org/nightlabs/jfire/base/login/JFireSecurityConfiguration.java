@@ -55,7 +55,6 @@ public class JFireSecurityConfiguration extends Configuration {
 		}
 	}
 	
-	
 	/* (non-Javadoc)
 	 * @see javax.security.auth.login.Configuration#refresh()
 	 */
