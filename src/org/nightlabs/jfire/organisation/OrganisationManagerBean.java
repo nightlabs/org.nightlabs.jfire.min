@@ -990,6 +990,20 @@ public abstract class OrganisationManagerBean
 	public void registerInRootOrganisation(boolean force)
 	throws OrganisationAlreadyRegisteredException, JFireRemoteException
 	{
+		try {
+			InitialContext initialContext = new InitialContext();
+			try {
+				if (!Organisation.hasRootOrganisation(initialContext)) {
+					logger.info("registerInRootOrganisation: This server is in stand-alone mode (no root-organisation); we do not register.");
+					return;
+				}
+			} finally {
+				initialContext.close();
+			}
+		} catch (NamingException e) {
+			throw new RuntimeException("Fucking shit! Our own JNDI isn't available!");
+		}
+		
 		JFireServerManager ism = getJFireServerManager();
 		try {
 			JFireServerConfigModule jfireServerConfigModule = ism.getJFireServerConfigModule();
