@@ -43,7 +43,7 @@ import org.nightlabs.jfire.base.JFirePrincipal;
 import org.nightlabs.jfire.base.Lookup;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
-import org.nightlabs.util.URLParameterMap;
+import org.nightlabs.util.ParameterMap;
 
 
 /**
@@ -104,7 +104,7 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 		if (txt.length < 3 || "".equals(txt[2]))
 			loginData.setSessionID(loginData.getUserID() + '!' + loginData.getOrganisationID());
 		else {
-			loginData.setAdditionalParams(new URLParameterMap(txt[2]));
+			loginData.setAdditionalParams(new ParameterMap(txt[2]));
 		}
 
 		try
