@@ -67,8 +67,6 @@ public class OrganisationCf
 
 	private String organisationID;
 	private String organisationName;
-//	private String masterOrganisationID;
-//	private String persistenceManagerFactoryJNDIName;
 	private Set<String> serverAdmins = null;
 
 	private boolean readOnly = false;
@@ -83,24 +81,9 @@ public class OrganisationCf
 
 	public OrganisationCf(
 			String _organisationID, String _organisationName)
-//			String _masterOrganisationID) // , String _persistenceManagerJNDIName)
 	{
-		if (_organisationID == null)
-			throw new NullPointerException("organisationID must not be null!");
-		if (_organisationName == null)
-			throw new NullPointerException("organisationName must not be null!");
-//		if (_persistenceManagerJNDIName == null)
-//			throw new NullPointerException("persistenceManagerFactoryJNDIName must not be null!");
-
-		if (!ObjectIDUtil.isValidIDString(_organisationID))
-			throw new IllegalArgumentException("organisationID \""+_organisationID+"\" is not a valid id!");
-
-		this.organisationID = _organisationID;
-		this.organisationName = _organisationName;
-//		if (_masterOrganisationID == null)
-//			_masterOrganisationID = _organisationID;
-//		this.masterOrganisationID = _masterOrganisationID;
-//		this.persistenceManagerFactoryJNDIName = _persistenceManagerJNDIName;
+		this.setOrganisationID(_organisationID);
+		this.setOrganisationName(_organisationName);
 	}
 
 	/**
@@ -110,7 +93,7 @@ public class OrganisationCf
 	{
 		return organisationID;
 	}
-	
+
 	/**
 	 * @param organisationID The organisationID to set.
 	 */
@@ -119,7 +102,7 @@ public class OrganisationCf
 		assertWritable();
 		if (_organisationID == null)
 			throw new NullPointerException("organisationID must not be null!");
-		if (!ObjectIDUtil.isValidIDString(_organisationID))
+		if (!"".equals(_organisationID) && !ObjectIDUtil.isValidIDString(_organisationID)) // we allow "" in order to make the stand-alone-mode (root-organisation-id == "") possible 
 			throw new IllegalArgumentException("organisationID \""+_organisationID+"\" is not a valid id!");
 		this.organisationID = _organisationID;
 		setChanged();
@@ -132,52 +115,18 @@ public class OrganisationCf
 	{
 		return organisationName;
 	}
-	
+
 	/**
 	 * @param organisationName The organisationName to set.
 	 */
-	public void setOrganisationName(String _organisationCaption)
+	public void setOrganisationName(String _organisationName)
 	{
 		assertWritable();
-		if (_organisationCaption == null)
+		if (_organisationName == null)
 			throw new NullPointerException("organisationName must not be null!");
-		this.organisationName = _organisationCaption;
+		this.organisationName = _organisationName;
 		setChanged();
 	}
-	
-//	/**
-//	 * @return Returns the masterOrganisationID.
-//	 */
-//	public String getMasterOrganisationID() {
-//		return masterOrganisationID;
-//	}
-//	/**
-//	 * @param masterOrganisationID The masterOrganisationID to set.
-//	 */
-//	public void setMasterOrganisationID(String _masterOrganisationID) {
-//		assertWritable();
-//		if (_masterOrganisationID == null)
-//			throw new NullPointerException("masterOrganisationID must not be null!");
-//		this.masterOrganisationID = _masterOrganisationID;
-//		thisString = null;
-//	}
-//	/**
-//	 * @return Returns the persistenceManagerFactoryJNDIName.
-//	 */
-//	public String getPersistenceManagerFactoryJNDIName() {
-//		return persistenceManagerFactoryJNDIName;
-//	}
-//	/**
-//	 * @param persistenceManagerFactoryJNDIName The persistenceManagerFactoryJNDIName to set.
-//	 */
-//	public void setPersistenceManagerFactoryJNDIName(String _persistenceManagerJNDIName)
-//	{
-//		assertWritable();
-//		if (_persistenceManagerJNDIName == null)
-//			throw new NullPointerException("persistenceManagerFactoryJNDIName must not be null!");
-//		this.persistenceManagerFactoryJNDIName = _persistenceManagerJNDIName;
-//		thisString = null;
-//	}
 
 	/**
 	 * If this instance is set readOnly, this method will return a copy of
@@ -318,15 +267,6 @@ public class OrganisationCf
 		if (this.serverAdmins != null) // deep copy
 			n.serverAdmins = new HashSet<String>(this.serverAdmins);
 
-//		OrganisationCf n = new OrganisationCf(
-//				this.organisationID,
-//				this.organisationName);
-////				this.masterOrganisationID);
-//				// this.persistenceManagerFactoryJNDIName);
-//
-//		if (this.serverAdmins != null)
-//			n.serverAdmins = new HashSet<String>(this.serverAdmins);
-
 		return n;
 	}
 
@@ -334,10 +274,6 @@ public class OrganisationCf
 	 * @see java.lang.Comparable#compareTo(java.lang.Object)
 	 */
 	public int compareTo(OrganisationCf other) {
-//		if (!(o instanceof OrganisationCf))
-//			return -1;
-
-//		OrganisationCf other = (OrganisationCf)o;
 		if (this.organisationID == null) {
 			if (other.organisationID == null)
 				return 0;
@@ -351,7 +287,7 @@ public class OrganisationCf
 		return this.organisationID.compareTo(other.organisationID);
 	}
 
-	/**
+	/* (non-Javadoc)
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
@@ -365,7 +301,7 @@ public class OrganisationCf
 		return this.toString().equals(obj.toString());
 	}
 
-	/**
+	/* (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
 	 */
 	@Override

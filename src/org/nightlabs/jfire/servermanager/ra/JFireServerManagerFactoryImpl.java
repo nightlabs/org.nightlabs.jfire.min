@@ -810,6 +810,21 @@ public class JFireServerManagerFactoryImpl
 		}
 
 		getConfig().save(true); // TODO force all modules to be written???
+
+		try {
+			InitialContext initialContext = new InitialContext();
+			try {
+				String newRootOrganisationID = cfMod.getRootOrganisation().getOrganisationID();
+				String oldRootOrganisationID = Organisation.getRootOrganisationID(initialContext);
+				if (!newRootOrganisationID.equals(oldRootOrganisationID)) {
+					initialContext.rebind(Organisation.ROOT_ORGANISATION_ID_JNDI_NAME, newRootOrganisationID);
+				}
+			} finally {
+				initialContext.close();
+			}
+		} catch (NamingException e) {
+			throw new RuntimeException(e); // should never happen => RuntimeException
+		}
 	}
 
 	protected J2EEAdapter j2eeVendorAdapter = null;
