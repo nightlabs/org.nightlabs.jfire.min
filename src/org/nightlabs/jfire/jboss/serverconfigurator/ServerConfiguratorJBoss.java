@@ -10,6 +10,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
+import org.hibernate.search.backend.UpdateWork;
 import org.nightlabs.annotation.Implement;
 import org.nightlabs.jfire.jboss.authentication.JFireServerLocalLoginModule;
 import org.nightlabs.jfire.jboss.authentication.JFireServerLoginModule;
@@ -213,6 +214,21 @@ public class ServerConfiguratorJBoss
 	}
 	
 	/**
+	 * Replace an MBean attribute value.
+	 * @return <code>true</code> if there are changes in the document - <code>false</code> otherwise.
+	 */
+	private static boolean replaceMBeanAttribute(Document document, String mbeanCode, String attributeName, String comment, String content)
+	{
+		String oldValue = getMBeanAttributeNode(document, mbeanCode, attributeName).getTextContent().trim();
+		if(oldValue == null || !oldValue.equals(content)) {
+			logger.info("Updating mbean attribute: "+mbeanCode+" -> "+attributeName+": "+content);
+			setMBeanAttribute(document, mbeanCode, attributeName, comment, content);
+			return true;
+		}
+		return false;
+	}
+	
+	/**
 	 * We deactivate the JAAS cache, because we have our own cache that is
 	 * proactively managed and reflects changes immediately.
 	 * Additionally, we extend the transaction timeout to 15 min (default is 5 min).
@@ -225,22 +241,25 @@ public class ServerConfiguratorJBoss
 	private void configureJBossServiceXml(File jbossConfDir) throws FileNotFoundException, IOException, SAXException
 	{
 		File destFile = new File(jbossConfDir, "jboss-service.xml");
-		String text = IOUtil.readTextFile(destFile);
+//		String text = IOUtil.readTextFile(destFile);
 		String modificationMarker = "!!!ModifiedByJFire!!!";
-		if (text.indexOf(modificationMarker) >= 0)
-			return;
+//		if (text.indexOf(modificationMarker) >= 0)
+//			return;
 			
-		backup(destFile);
+//		backup(destFile);
 
-		logger.info("File " + destFile.getAbsolutePath() + " was not yet updated. Will increase transaction timeout and reduce JAAS cache timeout to 5 min - we cannot deactivate the JAAS cache completely or reduce the timeout further, because that causes JPOX problems (though I don't understand why).");
-		setRebootRequired(true);
+//		logger.info("File " + destFile.getAbsolutePath() + " was not yet updated. Will increase transaction timeout and reduce JAAS cache timeout to 5 min - we cannot deactivate the JAAS cache completely or reduce the timeout further, because that causes JPOX problems (though I don't understand why).");
+//		setRebootRequired(true);
 		
 		DOMParser parser = new DOMParser();
 		parser.parse(new InputSource(new FileInputStream(destFile)));
 		Document document = parser.getDocument();
 		
+		boolean needRestart = false;
+		boolean haveChanges = false;
+		
 		// JAAS TIMEOUT
-		setMBeanAttribute(
+		needRestart = replaceMBeanAttribute(
 				document, 
 				"org.jboss.security.plugins.JaasSecurityManagerService", 
 				"DefaultCacheTimeout", 
@@ -249,17 +268,21 @@ public class ServerConfiguratorJBoss
 						ServerConfiguratorJBoss.class.getName() + " has reduced the JAAS cache timeout to 5 min.\n" +
 						" JFire has its own cache, which is updated immediately. We cannot completely deactivate the JAAS cache, however,\n" +
 						" because that causes JPOX bugs (why?!).\n Marco :-) ", 
-				"300");
+				"300") || needRestart;
+		if(needRestart)
+			logger.info("Need restart after DefaultCacheTimeout update");
 		
 		// TRANSACTION TIMEOUT
-		setMBeanAttribute(
+		needRestart = replaceMBeanAttribute(
 				document, 
 				"org.jboss.tm.TransactionManagerService", 
 				"TransactionTimeout", 
 				" " + 
 						modificationMarker + "\n " +
 						ServerConfiguratorJBoss.class.getName() + " has increased the transaction timeout to 15 min. ", 
-				"900");
+				"900") || needRestart;
+		if(needRestart)
+			logger.info("Need restart after TransactionTimeout update");
 		
 		// IGNORE SUFFIX
 		Node n = getMBeanAttributeNode(document, "org.jboss.deployment.scanner.URLDeploymentScanner", "FilterInstance");
@@ -272,20 +295,34 @@ public class ServerConfiguratorJBoss
 			p = newPropertyElement;
 		}
 		String oldText = p.getTextContent();
-		String newText = oldText+",-clrepository.xml";
-		NLDOMUtil.setTextContentWithComment(
-				p, 
-				" " + 
-						modificationMarker + "\n         " +
-						ServerConfiguratorJBoss.class.getName() + " has added -clrepository.xml ",
-				newText);
-			
+		if(!oldText.contains(",-clrepository.xml")) {
+			// this change is not critical - no restart required.
+			haveChanges = true;
+			String newText = oldText+",-clrepository.xml";
+			NLDOMUtil.setTextContentWithComment(
+					p, 
+					" " + 
+							modificationMarker + "\n         " +
+							ServerConfiguratorJBoss.class.getName() + " has added -clrepository.xml ",
+					newText);
+		}
+		
+		// RMI HOST
+		// TODO: continue...
+//		needRestart = replaceMBeanAttribute(document, "org.jboss.naming.NamingService", attributeName, comment, content)
 		
 		
-		String xmlEncoding = document.getXmlEncoding();
-		if(xmlEncoding == null)
-			xmlEncoding = "UTF-8";
-		NLDOMUtil.writeDocument(document, new FileOutputStream(destFile), xmlEncoding);
+		// write changes
+		if(haveChanges || needRestart) {
+			backup(destFile);
+			String xmlEncoding = document.getXmlEncoding();
+			if(xmlEncoding == null)
+				xmlEncoding = "UTF-8";
+			NLDOMUtil.writeDocument(document, new FileOutputStream(destFile), xmlEncoding);
+		}
+		
+		if(needRestart)
+			setRebootRequired(true);
 			
 			/*
 
