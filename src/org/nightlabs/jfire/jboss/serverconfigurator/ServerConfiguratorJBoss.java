@@ -189,24 +189,53 @@ public class ServerConfiguratorJBoss
 			CascadedAuthenticationClientInterceptor.reloadProperties(); // reboot should not be necessary anymore after this extension
 		}
 	}
-	
-	private static void setMBeanAttribute(Document document, String mbeanCode, String attributeName, String comment, String content)
+
+	private static boolean setMBeanAttribute(Document document, String mbeanCode, String attributeName, String comment, String content)
 	{
-		Node attributeNode = getMBeanAttributeNode(document, mbeanCode, attributeName);
-		if(attributeNode != null)
-			NLDOMUtil.setTextContentWithComment(attributeNode, comment, content);
+		return setMBeanChild(document, mbeanCode, "attribute", attributeName, comment, content);
 	}
+	
+	private static boolean setMBeanChild(Document document, String mbeanCode, String childTag, String childName, String comment, String content)
+	{
+		Node mbeanNode = NLDOMUtil.findNodeByAttribute(document, "server/mbean", "code", mbeanCode);
+		if(mbeanNode == null) {
+			logger.error("mbean node not found for code=\""+mbeanCode+"\"");
+			return false;
+		}
+		Node attributeNode = NLDOMUtil.findNodeByAttribute(mbeanNode, childTag, "name", childName);
+		if(attributeNode == null) {
+			logger.error("attribute node not found for name=\""+childName+"\" - creating it...");
+			Element newElement = document.createElement("attribute");
+			newElement.setAttribute("name", childName);
+			mbeanNode.appendChild(newElement);
+			attributeNode = newElement;
+		}
+		NLDOMUtil.setTextContentWithComment(attributeNode, comment, content);
+		return true;
+	}
+	
+//	private static void setMBeanAttribute(Document document, String mbeanCode, String attributeName, String comment, String content)
+//	{
+//		Node attributeNode = getMBeanAttributeNode(document, mbeanCode, attributeName);
+//		if(attributeNode != null)
+//			NLDOMUtil.setTextContentWithComment(attributeNode, comment, content);
+//	}
 
 	private static Node getMBeanAttributeNode(Document document, String mbeanCode, String attributeName)
+	{
+		return getMBeanChildNode(document, mbeanCode, "attribute", attributeName);
+	}
+	
+	private static Node getMBeanChildNode(Document document, String mbeanCode, String childTag, String childName)
 	{
 		Node mbeanNode = NLDOMUtil.findNodeByAttribute(document, "server/mbean", "code", mbeanCode);
 		if(mbeanNode == null) {
 			logger.error("mbean node not found for code=\""+mbeanCode+"\"");
 			return null;
 		}
-		Node attributeNode = NLDOMUtil.findNodeByAttribute(mbeanNode, "attribute", "name", attributeName);
+		Node attributeNode = NLDOMUtil.findNodeByAttribute(mbeanNode, childTag, "name", childName);
 		if(attributeNode == null) {
-			logger.error("attribute node not found for name=\""+attributeName+"\"");
+			logger.error("Tag "+childTag+" node not found for name=\""+childName+"\"");
 			return null;
 		}
 		return attributeNode;
@@ -218,17 +247,13 @@ public class ServerConfiguratorJBoss
 	 */
 	private static boolean replaceMBeanAttribute(Document document, String mbeanCode, String attributeName, String comment, String content)
 	{
-		Node selectedNode = getMBeanAttributeNode(document, mbeanCode, attributeName);
-		if (selectedNode == null) {
-			logger.warn("Cannot update mbean: "+mbeanCode+", because no such node can be found!");
-			return false;
-		}
-			
-		String oldValue = selectedNode.getTextContent().trim();
+		Node node = getMBeanAttributeNode(document, mbeanCode, attributeName);
+		String oldValue = null;
+		if(node != null)
+			oldValue = node.getTextContent().trim();
 		if(oldValue == null || !oldValue.equals(content)) {
 			logger.info("Updating mbean attribute: "+mbeanCode+" -> "+attributeName+": "+content);
-			setMBeanAttribute(document, mbeanCode, attributeName, comment, content);
-			return true;
+			return setMBeanAttribute(document, mbeanCode, attributeName, comment, content);
 		}
 		return false;
 	}
@@ -262,9 +287,10 @@ public class ServerConfiguratorJBoss
 		
 		boolean needRestart = false;
 		boolean haveChanges = false;
+		boolean changed;
 		
 		// JAAS TIMEOUT
-		needRestart = replaceMBeanAttribute(
+		changed = replaceMBeanAttribute(
 				document, 
 				"org.jboss.security.plugins.JaasSecurityManagerService", 
 				"DefaultCacheTimeout", 
@@ -274,56 +300,61 @@ public class ServerConfiguratorJBoss
 						" JFire has its own cache, which is updated immediately. We cannot completely deactivate the JAAS cache, however,\n" +
 						" because that causes JPOX bugs (why?!).\n Marco :-) ", 
 				"300") || needRestart;
-		if(needRestart)
-			logger.info("Need restart after DefaultCacheTimeout update");
+		if(changed)
+			logger.info("Have changes after DefaultCacheTimeout update");
+		needRestart |= changed;
+		haveChanges |= changed;
 		
 		// TRANSACTION TIMEOUT
-		// FIXME: do we want to extend the connection timeout to 15 mins? the default one is shortend to 5 mins! (marius)
-//		this is a test to prove that the initialisation is not started if the configuration was not successful.
-//		if (true)
-//			throw new RuntimeException("muahaha! ;)");
-		
-		needRestart = replaceMBeanAttribute(
+		final String newTransactionManagerService = "com.arjuna.ats.jbossatx.jta.TransactionManagerService";
+		final String oldTransactionManagerService = "org.jboss.tm.TransactionManagerService";
+		String transactionManagerService;
+		if(getMBeanAttributeNode(document, newTransactionManagerService, "TransactionTimeout") != null)
+			transactionManagerService = newTransactionManagerService;
+		else
+			transactionManagerService = oldTransactionManagerService;
+		changed = replaceMBeanAttribute(
 				document, 
-				"com.arjuna.ats.jbossatx.jta.TransactionManagerService", 
+				transactionManagerService, 
 				"TransactionTimeout", 
 				" " + 
 						modificationMarker + "\n " +
 						ServerConfiguratorJBoss.class.getName() + " has increased the transaction timeout to 15 min. ", 
 				"900") || needRestart;
-		if(needRestart)
-			logger.info("Need restart after TransactionTimeout update");
+		if(changed)
+			logger.info("Have changes after TransactionTimeout update");
+		needRestart |= changed;
+		haveChanges |= changed;
 		
 		// IGNORE SUFFIX
 		Node n = getMBeanAttributeNode(document, "org.jboss.deployment.scanner.URLDeploymentScanner", "FilterInstance");
-		Node p = NLDOMUtil.findNodeByAttribute(n, "property", "name", "suffixes");
-		if(p == null) {
-			Element newPropertyElement = document.createElement("property");
-			newPropertyElement.setAttribute("name", "suffixes");
-			newPropertyElement.setTextContent("#,$,%,~,\\,v,.BAK,.bak,.old,.orig,.tmp,.rej,.sh");
-			n.appendChild(newPropertyElement);
-			p = newPropertyElement;
+		if(n == null) {
+			logger.error("MBean attribute node org.jboss.deployment.scanner.URLDeploymentScanner -> FilterInstance not found");
+		} else {
+			Node p = NLDOMUtil.findNodeByAttribute(n, "property", "name", "suffixes");
+			if(p == null) {
+				Element newPropertyElement = document.createElement("property");
+				newPropertyElement.setAttribute("name", "suffixes");
+				newPropertyElement.setTextContent("#,$,%,~,\\,v,.BAK,.bak,.old,.orig,.tmp,.rej,.sh");
+				n.appendChild(newPropertyElement);
+				p = newPropertyElement;
+			}
+			String oldText = p.getTextContent();
+			if(!oldText.contains(",-clrepository.xml")) {
+				// this change is not critical - no restart required.
+				haveChanges = true;
+				String newText = oldText+",-clrepository.xml";
+				NLDOMUtil.setTextContentWithComment(
+						p, 
+						" " + 
+								modificationMarker + "\n         " +
+								ServerConfiguratorJBoss.class.getName() + " has added -clrepository.xml ",
+						newText);
+			}
 		}
-		String oldText = p.getTextContent();
-		if(!oldText.contains(",-clrepository.xml")) {
-			// this change is not critical - no restart required.
-			haveChanges = true;
-			String newText = oldText+",-clrepository.xml";
-			NLDOMUtil.setTextContentWithComment(
-					p, 
-					" " + 
-							modificationMarker + "\n         " +
-							ServerConfiguratorJBoss.class.getName() + " has added -clrepository.xml ",
-					newText);
-		}
-		
-		// RMI HOST
-		// TODO: continue...
-//		needRestart = replaceMBeanAttribute(document, "org.jboss.naming.NamingService", attributeName, comment, content)
-		
 		
 		// write changes
-		if(haveChanges || needRestart) {
+		if(haveChanges) {
 			backup(destFile);
 			String xmlEncoding = document.getXmlEncoding();
 			if(xmlEncoding == null)
@@ -414,7 +445,7 @@ public class ServerConfiguratorJBoss
 		 * the respective setting in the configuration file. Doing so will cause the current
 		 * version of the file to be backed up and the new one to be written at the end of this method.
 		 */
-		boolean changed = false;
+		boolean haveChanges = false;
 		//  No reboot necessary as JBoss will automatically notice any changes on the mail-services.xml
 //		setRebootRequired(false);
 		
@@ -427,7 +458,7 @@ public class ServerConfiguratorJBoss
 		if (logger.isInfoEnabled()) {
 			logger.info("Password: "+ smtp.getPassword());
 			logger.info("Username: "+ smtp.getUsername());
-			logger.info("UsAuthentication: "+ smtp.getUseAuthentication());
+			logger.info("UseAuthentication: "+ smtp.getUseAuthentication());
 			logger.info("Host: "+smtp.getHost());
 			logger.info("Port: "+String.valueOf(smtp.getPort()));
 			logger.info("From: "+smtp.getMailFrom());
@@ -473,12 +504,17 @@ public class ServerConfiguratorJBoss
 //		changed |= !smtp.getDebug().equals(valueItem.getNodeValue());
 //		valueItem.setNodeValue(String.valueOf(smtp.getDebug()));
 		
-		changed |= setMailConfigurationAttribute(document, "mail.smtp.host", smtp.getHost());
-		changed |= setMailConfigurationAttribute(document, "mail.smtp.port", String.valueOf(smtp.getPort()));
-		changed |= setMailConfigurationAttribute(document, "mail.from", smtp.getMailFrom());
-		changed |= setMailConfigurationAttribute(document, "mail.debug", String.valueOf(smtp.getDebug()));
+		boolean changed;
+		changed = setMailConfigurationAttribute(document, "mail.smtp.host", smtp.getHost());
+		haveChanges |= changed;
+		changed = setMailConfigurationAttribute(document, "mail.smtp.port", String.valueOf(smtp.getPort()));
+		haveChanges |= changed;
+		changed = setMailConfigurationAttribute(document, "mail.from", smtp.getMailFrom());
+		haveChanges |= changed;
+		changed = setMailConfigurationAttribute(document, "mail.debug", String.valueOf(smtp.getDebug()));
+		haveChanges |= changed;
 		
-		if (changed) {
+		if (haveChanges) {
 			backup(destFile);
 			FileOutputStream out = new FileOutputStream(destFile);
 			try {				
@@ -490,7 +526,8 @@ public class ServerConfiguratorJBoss
 		}
 	}
 	
-	private boolean setMailConfigurationAttribute(Document document, String name, String value) {
+	private boolean setMailConfigurationAttribute(Document document, String name, String value) 
+	{
 		Node propertyElement;
 		Node valueItem;
 		propertyElement = NLDOMUtil.findNodeByAttribute(document, "server/mbean/attribute/configuration/property", "name", name);
@@ -603,15 +640,19 @@ public class ServerConfiguratorJBoss
 		if(javaOpts == null)
 			javaOpts = "";
 		
-		// --- TODO: for backwards compatability only - remove in later versions:
 		String rmiHost = serverConfiguratorSettings == null ? null : serverConfiguratorSettings.getProperty("java.rmi.server.hostname");
 		if (rmiHost != null) {
-			javaOpts = "-Djava.rmi.server.hostname="+rmiHost+" "+javaOpts;
+			javaOpts += " -Djava.rmi.server.hostname="+rmiHost+" "+javaOpts;
 			// issue #87:
 			javaOpts += " -Djava.rmi.server.useLocalHostname=true";
 		}
-		// ---
 
+		// not working :-( - see #374
+//		String bindAddress = serverConfiguratorSettings == null ? null : serverConfiguratorSettings.getProperty("j2ee.bind.address");
+//		if(bindAddress != null) {
+//			javaOpts += " -Djboss.bind.address="+bindAddress;
+//		}
+		
 		// issue #58:
 		javaOpts += " -XX:PermSize=64m -XX:MaxPermSize=128m";
 		
