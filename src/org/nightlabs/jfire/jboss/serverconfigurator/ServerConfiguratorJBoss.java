@@ -218,7 +218,13 @@ public class ServerConfiguratorJBoss
 	 */
 	private static boolean replaceMBeanAttribute(Document document, String mbeanCode, String attributeName, String comment, String content)
 	{
-		String oldValue = getMBeanAttributeNode(document, mbeanCode, attributeName).getTextContent().trim();
+		Node selectedNode = getMBeanAttributeNode(document, mbeanCode, attributeName);
+		if (selectedNode == null) {
+			logger.warn("Cannot update mbean: "+mbeanCode+", because no such node can be found!");
+			return false;
+		}
+			
+		String oldValue = selectedNode.getTextContent().trim();
 		if(oldValue == null || !oldValue.equals(content)) {
 			logger.info("Updating mbean attribute: "+mbeanCode+" -> "+attributeName+": "+content);
 			setMBeanAttribute(document, mbeanCode, attributeName, comment, content);
@@ -272,9 +278,14 @@ public class ServerConfiguratorJBoss
 			logger.info("Need restart after DefaultCacheTimeout update");
 		
 		// TRANSACTION TIMEOUT
+		// FIXME: do we want to extend the connection timeout to 15 mins? the default one is shortend to 5 mins! (marius)
+//		this is a test to prove that the initialisation is not started if the configuration was not successful.
+//		if (true)
+//			throw new RuntimeException("muahaha! ;)");
+		
 		needRestart = replaceMBeanAttribute(
 				document, 
-				"org.jboss.tm.TransactionManagerService", 
+				"com.arjuna.ats.jbossatx.jta.TransactionManagerService", 
 				"TransactionTimeout", 
 				" " + 
 						modificationMarker + "\n " +
