@@ -26,6 +26,7 @@
 
 package org.nightlabs.jfire.base.login;
 
+import java.util.Hashtable;
 import java.util.Properties;
 
 import javax.naming.Context;
@@ -131,20 +132,22 @@ public class JFireLogin
 		}
 		
 		// set default values if login information is incomplete
-		if (loginData.getInitialContextFactory() == null)
-			loginData.setInitialContextFactory(LoginData.DEFAULT_INITIAL_CONTEXT_FACTORY);
-		if (loginData.getProviderURL() == null)
-			loginData.setProviderURL(LoginData.DEFAULT_PROVIDER_URL);
-		if (loginData.getSecurityProtocol() == null)
+		if (loginData.getProviderURL() == null || loginData.getProviderURL().length() == 0) {
+			try {
+				InitialContext initContext = new InitialContext();
+				Hashtable<?,?> initialContextProperties = initContext.getEnvironment();
+				// TODO does this really work? Alternatively, we might read it from a registry - in the server, this registry exists already (but this is a client lib)...
+				loginData.setProviderURL((String) initialContextProperties.get(Context.PROVIDER_URL));
+				loginData.setInitialContextFactory((String) initialContextProperties.get(Context.INITIAL_CONTEXT_FACTORY));
+				initContext.close();
+			} catch (NamingException e) {
+				throw new RuntimeException("Could not retrieve the missing connection information " +
+						"via an initial context!", e);
+			}
+		}
+
+		if (loginData.getSecurityProtocol() == null || loginData.getSecurityProtocol().length() == 0)
 			loginData.setSecurityProtocol(LoginData.DEFAULT_SECURITY_PROTOCOL);
-
-//		alternatively we can use this method if it works.
-//		if (providerURL == null) {
-//			InitialContext initialContext = new InitialContext();
-//			providerURL = (String) initialContext.getEnvironment().get(Context.PROVIDER_URL); // TODO does this really work? Alternatively, we might read it from a registry - in the server, this registry exists already (but this is a client lib)...
-//			initialContext.close();
-//		}
-
 	}
 
 	/**
@@ -224,14 +227,7 @@ public class JFireLogin
 		if (initialContextProperties == null) {
 			logger.debug(this.getClass().getName()+"#getInitialContextProperties(): generating props");
 
-			Properties props = new Properties();
-			props.put(Context.INITIAL_CONTEXT_FACTORY, loginData.getInitialContextFactory());
-			props.put(Context.PROVIDER_URL, loginData.getProviderURL());
-			props.put(Context.SECURITY_PRINCIPAL, loginData.getPrincipalName());
-			props.put(Context.SECURITY_CREDENTIALS, loginData.getPassword());
-			props.put(Context.SECURITY_PROTOCOL, loginData.getSecurityProtocol());
-
-			initialContextProperties = props;
+			initialContextProperties = loginData.getInitialContextProperties();
 		}
 		return initialContextProperties;
 	}
