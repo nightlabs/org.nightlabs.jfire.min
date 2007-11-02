@@ -213,13 +213,6 @@ public class ServerConfiguratorJBoss
 		NLDOMUtil.setTextContentWithComment(attributeNode, comment, content);
 		return true;
 	}
-	
-//	private static void setMBeanAttribute(Document document, String mbeanCode, String attributeName, String comment, String content)
-//	{
-//		Node attributeNode = getMBeanAttributeNode(document, mbeanCode, attributeName);
-//		if(attributeNode != null)
-//			NLDOMUtil.setTextContentWithComment(attributeNode, comment, content);
-//	}
 
 	private static Node getMBeanAttributeNode(Document document, String mbeanCode, String attributeName)
 	{
@@ -271,15 +264,7 @@ public class ServerConfiguratorJBoss
 	private void configureJBossServiceXml(File jbossConfDir) throws FileNotFoundException, IOException, SAXException
 	{
 		File destFile = new File(jbossConfDir, "jboss-service.xml");
-//		String text = IOUtil.readTextFile(destFile);
 		String modificationMarker = "!!!ModifiedByJFire!!!";
-//		if (text.indexOf(modificationMarker) >= 0)
-//			return;
-			
-//		backup(destFile);
-
-//		logger.info("File " + destFile.getAbsolutePath() + " was not yet updated. Will increase transaction timeout and reduce JAAS cache timeout to 5 min - we cannot deactivate the JAAS cache completely or reduce the timeout further, because that causes JPOX problems (though I don't understand why).");
-//		setRebootRequired(true);
 		
 		DOMParser parser = new DOMParser();
 		parser.parse(new InputSource(new FileInputStream(destFile)));
@@ -364,45 +349,6 @@ public class ServerConfiguratorJBoss
 		
 		if(needRestart)
 			setRebootRequired(true);
-			
-			/*
-
-			Pattern pattern = Pattern.compile(
-					"(<mbean[^>]*?org\\.jboss.security\\.plugins\\.JaasSecurityManagerService(?:\\n|.)*?<attribute +?name *?= *?\"DefaultCacheTimeout\")>[0-9]*<((?:\\n|.)*?</mbean>)"
-					);
-			text = pattern.matcher(text).replaceAll(
-					"<!-- " + modificationMarker + "\n " +
-					ServerConfiguratorJBoss.class.getName() + " has reduced the JAAS cache timeout to 5 min.\n" +
-					" JFire has its own cache, which is updated immediately. We cannot completely deactivate the JAAS cache, however,\n" +
-					" because that causes JPOX bugs (why?!).\n Marco :-)\n-->\n" +
-					"   $1>300<$2"
-					);
-
-// IMHO 60 is the default - Marco.
-//			pattern = Pattern.compile(
-//					"(<mbean[^>]*?org\\.jboss\\.security\\.plugins\\.JaasSecurityManagerService(?:\\n|.)*?<attribute +?name *?= *?\"DefaultCacheResolution\")>[0-9]*<((?:\\n|.)*?</mbean>)"
-//					);
-//			text = pattern.matcher(text).replaceAll("$1>60<$2");
-
-			pattern = Pattern.compile(
-					"(<mbean[^>]*?org\\.jboss\\.tm\\.TransactionManagerService(?:\\n|.)*?<attribute +?name *?= *?\"TransactionTimeout\")>[0-9]*<((?:\\n|.)*?</mbean>)"
-					);
-			text = pattern.matcher(text).replaceAll(
-					"<!-- " + modificationMarker + "\n " +
-					ServerConfiguratorJBoss.class.getName() + " has increased the transaction timeout to 15 min.\n-->\n" +
-					"   $1>900<$2"
-					);
-
-			
-			pattern = Pattern.compile("(<property\\s+name\\s*=\\s*\"suffixes\">)([^<]*)(</property>)");
-			text = pattern.matcher(text).replaceAll(
-					"<!-- " + modificationMarker + "\n         " +
-					ServerConfiguratorJBoss.class.getName() + " has added -clrepository.xml\n         -->\n" +
-					"         $1$2,-clrepository.xml$3");
-			
-			
-			Utils.writeTextFile(destFile, text);
-			*/
 	}
 
 	/**
@@ -418,6 +364,8 @@ public class ServerConfiguratorJBoss
 		File destFile = new File(jbossConfDir, "standardjboss.xml");
 		String text = IOUtil.readTextFile(destFile);
 		if (text.indexOf(CascadedAuthenticationClientInterceptor.class.getName()) < 0) {
+			
+			// TODO: use XML document instead of regular expressions
 			
 			backup(destFile);
 			
@@ -447,7 +395,6 @@ public class ServerConfiguratorJBoss
 		 */
 		boolean haveChanges = false;
 		//  No reboot necessary as JBoss will automatically notice any changes on the mail-services.xml
-//		setRebootRequired(false);
 		
 		DOMParser parser = new DOMParser();
 		parser.parse(new InputSource(new FileInputStream(destFile)));
@@ -464,45 +411,6 @@ public class ServerConfiguratorJBoss
 			logger.info("From: "+smtp.getMailFrom());
 			logger.info("Debug: "+String.valueOf(smtp.getDebug()));
 		}
-		
-//		Tobias: Replaced this code by the four method calls below.
-//		propertyElement = NLDOMUtil.findNodeByAttribute(document, "server/mbean/attribute", "name", "User");
-//		/*
-//		}
-//		if(propertyElement.getFirstChild() == null) {
-//			Node textNode = document.createTextNode(smtp.getUsername());
-//			propertyElement.appendChild(textNode);
-//		} else propertyElement.getFirstChild().setNodeValue(smtp.getUsername());
-//		
-//		propertyElement = NLDOMUtil.findNodeByAttribute(document, "server/mbean/attribute", "name", "Password");
-//		if(propertyElement.getFirstChild() == null) {
-//			Node textNode = document.createTextNode(smtp.getPassword());
-//			propertyElement.appendChild(textNode);
-//		} else propertyElement.getFirstChild().setNodeValue(smtp.getPassword());
-//		*/
-//		propertyElement = NLDOMUtil.findNodeByAttribute(document, "server/mbean/attribute/configuration/property", "name", "mail.smtp.host");
-//		valueItem = propertyElement.getAttributes().getNamedItem("value");
-//		changed |= !smtp.getHost().equals(valueItem.getNodeValue());
-//		valueItem.setNodeValue(smtp.getHost());
-//
-//		propertyElement = NLDOMUtil.findNodeByAttribute(document, "server/mbean/attribute/configuration/property", "name", "mail.smtp.port");
-//		if (propertyElement != null) {
-//			valueItem = propertyElement.getAttributes().getNamedItem("value");
-//			valueItem.setNodeValue(String.valueOf(smtp.getPort()));
-//			changed |= !smtp.getPort().equals(valueItem.getNodeValue());
-//		}
-//		else
-//			logger.warn("server/mbean/attribute/configuration/property not found with name=\"mail.smtp.port\"!", new RuntimeException("server/mbean/attribute/configuration/property not found with name=\"mail.smtp.port\"!")); // TODO add the missing element! only necessary for JBoss 4.0.4
-//		
-//		propertyElement = NLDOMUtil.findNodeByAttribute(document, "server/mbean/attribute/configuration/property", "name", "mail.from");
-//		valueItem = propertyElement.getAttributes().getNamedItem("value");
-//		changed |= !smtp.getMailFrom().equals(valueItem.getNodeValue());
-//		valueItem.setNodeValue(smtp.getMailFrom());
-//		
-//		propertyElement = NLDOMUtil.findNodeByAttribute(document, "server/mbean/attribute/configuration/property", "name", "mail.debug");
-//		valueItem = propertyElement.getAttributes().getNamedItem("value");
-//		changed |= !smtp.getDebug().equals(valueItem.getNodeValue());
-//		valueItem.setNodeValue(String.valueOf(smtp.getDebug()));
 		
 		boolean changed;
 		changed = setMailConfigurationAttribute(document, "mail.smtp.host", smtp.getHost());
@@ -554,6 +462,9 @@ public class ServerConfiguratorJBoss
 
 		String text = IOUtil.readTextFile(destFile);
 		if (text.indexOf("com.arjuna.ats.jta.allowMultipleLastResources") < 0) {
+
+			// TODO: use XML document instead of regular expressions
+			
 			backup(destFile);
 			logger.info("File " + destFile.getAbsolutePath() + " does not contain property \"com.arjuna.ats.jta.allowMultipleLastResources\". Will add it.");
 			setRebootRequired(true); // I'm not sure whether the arjuna JTA controller would be reinitialised... this is at least safe.
