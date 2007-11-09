@@ -69,7 +69,7 @@ import org.nightlabs.jfire.jdo.notification.JDOLifecycleState;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.servermanager.config.OrganisationCf;
 import org.nightlabs.jfire.servermanager.ra.JFireServerManagerFactoryImpl;
-import org.nightlabs.util.Utils;
+import org.nightlabs.util.IOUtil;
 
 /**
  * @author Marco Schulze - marco at nightlabs dot de
@@ -698,11 +698,11 @@ public class CacheManagerFactory
 						continue;
 					}
 
-					Class jdoObjectClass = getClassByObjectID(objectID);
+					Class<?> jdoObjectClass = getClassByObjectID(objectID);
 
 					boolean includeSubclasses = filter.includeSubclasses();
 					boolean classMatches = false;
-					for (Class candidateClass : filter.getCandidateClasses()) {
+					for (Class<?> candidateClass : filter.getCandidateClasses()) {
 						if (includeSubclasses) {
 							if (candidateClass.isAssignableFrom(jdoObjectClass)) {
 								classMatches = true;
@@ -1438,10 +1438,10 @@ public class CacheManagerFactory
 			Map<Object, DirtyObjectID> objectIDsWaitingForNotification = me1.getValue();
 
 			// group the DirtyObjectIDs by the class of the corresponding JDO object
-			Map<Class, LinkedList<DirtyObjectID>> class2DirtyObjectID = new HashMap<Class, LinkedList<DirtyObjectID>>();
+			Map<Class<?>, LinkedList<DirtyObjectID>> class2DirtyObjectID = new HashMap<Class<?>, LinkedList<DirtyObjectID>>();
 			for (DirtyObjectID dirtyObjectID : objectIDsWaitingForNotification.values()) {
 				Object objectID = dirtyObjectID.getObjectID();
-				Class jdoObjectClass = getClassByObjectID(objectID);
+				Class<?> jdoObjectClass = getClassByObjectID(objectID);
 
 				LinkedList<DirtyObjectID> dirtyObjectIDs = class2DirtyObjectID.get(jdoObjectClass);
 				if (dirtyObjectIDs == null) {
@@ -1453,8 +1453,8 @@ public class CacheManagerFactory
 
 			// fetch the filters from the filterRegistry and populate
 			// sessionID2FilterID2FilterWithDirtyObjectIDs
-			for (Map.Entry<Class, LinkedList<DirtyObjectID>> me2 : class2DirtyObjectID.entrySet()) {
-				Class jdoObjectClass = me2.getKey();
+			for (Map.Entry<Class<?>, LinkedList<DirtyObjectID>> me2 : class2DirtyObjectID.entrySet()) {
+				Class<?> jdoObjectClass = me2.getKey();
 				List<DirtyObjectID> dirtyObjectIDs = me2.getValue();
 
 				Collection<IJDOLifecycleListenerFilter> filters = filterRegistry.getMatchingFilters(lifecycleStage, jdoObjectClass);
@@ -1699,7 +1699,7 @@ public class CacheManagerFactory
 	 * This map caches the classes of the jdo objects referenced by already known
 	 * object IDs. key: object-id, value: Class classOfJDOObject
 	 */
-	private Map<Object, Class> objectID2Class = new HashMap<Object, Class>();
+	private Map<Object, Class<?>> objectID2Class = new HashMap<Object, Class<?>>();
 
 	/**
 	 * This method must be called by the {@link JdoCacheBridge} for all objectIDs
@@ -1709,7 +1709,7 @@ public class CacheManagerFactory
 	 * @param objectID2ClassMap
 	 *          A map from JDO object-id to class of the referenced JDO object.
 	 */
-	public void addObjectID2ClassMap(Map<Object, Class> objectID2ClassMap)
+	public void addObjectID2ClassMap(Map<Object, Class<?>> objectID2ClassMap)
 	{
 		if (objectID2ClassMap == null)
 			throw new IllegalArgumentException("objectID2ClassMap must not be null");
@@ -1723,14 +1723,14 @@ public class CacheManagerFactory
 	 * This method is only usable for objectIDs that have been passed to
 	 * {@link #ensureAllClassesAreKnown(Set)} before.
 	 */
-	public Class getClassByObjectID(Object objectID)
+	public Class<?> getClassByObjectID(Object objectID)
 	{
 		return getClassByObjectID(objectID, true);
 	}
 
-	public Class getClassByObjectID(Object objectID, boolean throwExceptionIfNotFound)
+	public Class<?> getClassByObjectID(Object objectID, boolean throwExceptionIfNotFound)
 	{
-		Class res;
+		Class<?> res;
 		synchronized (objectID2Class) {
 			res = objectID2Class.get(objectID);
 		}
@@ -1772,7 +1772,7 @@ public class CacheManagerFactory
 			try {				
 				if (nextDirtyObjectIDSerial_ram == -Long.MAX_VALUE) {
 					if (f.exists()) {
-						String s = Utils.readTextFile(f);
+						String s = IOUtil.readTextFile(f);
 						nextDirtyObjectIDSerial_file = Long.parseLong(s);
 						nextDirtyObjectIDSerial_ram = nextDirtyObjectIDSerial_file;
 					}
@@ -1793,7 +1793,7 @@ public class CacheManagerFactory
 				// as soon as the ram-value gets higher than the value stored in the file, we rewrite the file
 				if (nextDirtyObjectIDSerial_file < nextDirtyObjectIDSerial_ram) {
 					nextDirtyObjectIDSerial_file = nextDirtyObjectIDSerial_ram + DIRTY_OBJECT_ID_SERIAL_FILE_INTERVAL;
-					Writer w = new OutputStreamWriter(new FileOutputStream(f2), Utils.CHARSET_UTF_8);
+					Writer w = new OutputStreamWriter(new FileOutputStream(f2), IOUtil.CHARSET_UTF_8);
 					try {
 						w.write(Long.toString(nextDirtyObjectIDSerial_file));
 					} finally {

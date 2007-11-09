@@ -27,7 +27,9 @@
 package org.nightlabs.jfire.jdo.cache.bridge;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import javax.jdo.JDOHelper;
 import javax.jdo.PersistenceManager;
@@ -37,9 +39,9 @@ import javax.jdo.listener.CreateLifecycleListener;
 import javax.jdo.listener.DeleteLifecycleListener;
 import javax.jdo.listener.DirtyLifecycleListener;
 import javax.jdo.listener.InstanceLifecycleEvent;
+import javax.jdo.listener.StoreLifecycleListener;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.resource.ResourceException;
 import javax.transaction.Status;
 import javax.transaction.Synchronization;
 import javax.transaction.TransactionManager;
@@ -52,8 +54,6 @@ import org.nightlabs.jfire.jdo.notification.DirtyObjectID;
 import org.nightlabs.jfire.jdo.notification.JDOLifecycleState;
 import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.math.Base62Coder;
-
-
 
 /**
  * @author Marco Schulze - marco at nightlabs dot de
@@ -133,6 +133,8 @@ public class JdoCacheBridgeDefault extends JdoCacheBridge
 		{
 			this.dead = true;
 
+			objectIDs_preStoreCalled.clear();
+
 			if (status == Status.STATUS_COMMITTED) {
 				try {
 					if (this.dirtyObjectIDs == null) {
@@ -148,7 +150,7 @@ public class JdoCacheBridgeDefault extends JdoCacheBridge
 					final String _sessionID = bridge.securityReflector._getUserDescriptor().getSessionID();
 					final Map<JDOLifecycleState, Map<Object, DirtyObjectID>> _dirtyObjectIDs = this.dirtyObjectIDs;
 					this.dirtyObjectIDs = null;
-					final Map<Object, Class> _objectID2Class = this.objectID2Class;
+					final Map<Object, Class<?>> _objectID2Class = this.objectID2Class;
 					this.objectID2Class = null;
 
 					Runnable runnable = new Runnable() {
@@ -205,11 +207,11 @@ public class JdoCacheBridgeDefault extends JdoCacheBridge
 
 		// IMHO no sync necessary, because one transaction should only be used by one thread.
 		private Map<JDOLifecycleState, Map<Object, DirtyObjectID>> dirtyObjectIDs = null;
-		private Map<Object, Class> objectID2Class = null;
+		private Map<Object, Class<?>> objectID2Class = null;
 
-		protected void registerClass(Object objectID, Class clazz) {
+		protected void registerClass(Object objectID, Class<?> clazz) {
 			if (objectID2Class == null)
-				objectID2Class = new HashMap<Object, Class>();
+				objectID2Class = new HashMap<Object, Class<?>>();
 
 			if (objectID2Class.containsKey(objectID))
 				return;
@@ -219,7 +221,7 @@ public class JdoCacheBridgeDefault extends JdoCacheBridge
 
 		public void addObject(JDOLifecycleState lifecycleStage, Object object)
 		{
-			Class clazz = object.getClass();
+			Class<?> clazz = object.getClass();
 			if (clazz == IDNamespace.class) // we MUST ignore the IDNamespace changes, because we use the IDGenerator below in: bridge.getCacheManagerFactory().nextDirtyObjectIDSerial()
 				return;
 
@@ -239,6 +241,17 @@ public class JdoCacheBridgeDefault extends JdoCacheBridge
 
 			m.put(objectID, new DirtyObjectID(lifecycleStage, objectID, clazz.getName(), version, bridge.getCacheManagerFactory().nextDirtyObjectIDSerial()));
 		}
+
+		private Set<Object> objectIDs_preStoreCalled = new HashSet<Object>();
+
+		public void registerPreStoreCallForObjectID(Object objectID)
+		{
+			objectIDs_preStoreCalled.add(objectID);
+		}
+		public boolean isPreStoreCallRegisteredForObjectID(Object objectID)
+		{
+			return objectIDs_preStoreCalled.contains(objectID);
+		}
 	} // public static class CacheTransactionListener
 
 	private static Object getObjectID(Object object)
@@ -256,7 +269,6 @@ public class JdoCacheBridgeDefault extends JdoCacheBridge
 	}
 
 	private CacheTransactionListener getCacheTransactionListener(PersistenceManager pm)
-	throws ResourceException
 	{
 		CacheTransactionListener listener = (CacheTransactionListener)pm.getUserObject();
 		// we cannot unregister the CacheTransactionListener after the transaction is finished (pm.setUserObject fails) - hence we use the "dead" flag
@@ -309,32 +321,36 @@ public class JdoCacheBridgeDefault extends JdoCacheBridge
 		public void postCreate(InstanceLifecycleEvent event)
 		{
 			if (logger.isDebugEnabled())
-				logger.debug("postCreate: " + event.getPersistentInstance());
+				logger.debug("CreateLifecycleListener.postCreate: " + JDOHelper.getObjectId(event.getPersistentInstance()));
 
 			registerJDOObject(JDOLifecycleState.NEW, event.getPersistentInstance());
 		}
 	};
 
-//	private StoreLifecycleListener storeLifecycleListener = new StoreLifecycleListener() {
-//		public void preStore(InstanceLifecycleEvent event) { }
-//		public void postStore(InstanceLifecycleEvent event)
-//		{
-//			if (logger.isDebugEnabled())
-//				logger.debug("postStore: " + event.getPersistentInstance() + " isNew=" + JDOHelper.isNew(event.getPersistentInstance()));
-//
-//			if (!JDOHelper.isNew(event.getPersistentInstance()))
-//				return;
-//
-//			registerJDOObject(JDOLifecycleState.NEW, event.getPersistentInstance());
-//		}
-//	};
+	private StoreLifecycleListener storeLifecycleListener = new StoreLifecycleListener() {
+		public void preStore(InstanceLifecycleEvent event) {
+			Object object = event.getPersistentInstance();
+			Object objectID = JDOHelper.getObjectId(object);
+			if (objectID != null) {
+				PersistenceManager pm = JDOHelper.getPersistenceManager(object);
+				if (pm == null)
+					throw new IllegalArgumentException("Could not obtain a PersistenceManager from this object!");
+
+				getCacheTransactionListener(pm).registerPreStoreCallForObjectID(objectID);
+
+				if (logger.isDebugEnabled())
+					logger.debug("StoreLifecycleListener.preStore: " + objectID);
+			}
+		}
+		public void postStore(InstanceLifecycleEvent event) { }
+	};
 
 	private DirtyLifecycleListener dirtyLifecycleListener = new DirtyLifecycleListener() {
 		public void preDirty(InstanceLifecycleEvent event) { }
 		public void postDirty(javax.jdo.listener.InstanceLifecycleEvent event)
 		{
 			if (logger.isDebugEnabled())
-				logger.debug("postDirty: " + event.getPersistentInstance());
+				logger.debug("DirtyLifecycleListener.postDirty: " + JDOHelper.getObjectId(event.getPersistentInstance()));
 
 			registerJDOObject(JDOLifecycleState.DIRTY, event.getPersistentInstance());
 		}
@@ -342,21 +358,28 @@ public class JdoCacheBridgeDefault extends JdoCacheBridge
 
 	private AttachLifecycleListener attachLifecycleListener = new AttachLifecycleListener() {
 		public void preAttach(InstanceLifecycleEvent event) {
-//
-//			Object persistent = event.getPersistentInstance();
-//			Object detached = event.getDetachedInstance();
-//			if (persistent == null);
-//			PersistenceManager pm1 = persistent == null ? null : JDOHelper.getPersistenceManager(persistent);
-//			PersistenceManager pm2 = detached == null ? null : JDOHelper.getPersistenceManager(detached);
-//			logger.info("attached: persistent[pm="+(pm1 != null)+"]=\"" + persistent + "\" detached[pm="+(pm2 != null)+"]=\"" + detached + "\"");
-//
 		}
 		public void postAttach(InstanceLifecycleEvent event)
 		{
-			if (logger.isDebugEnabled())
-				logger.debug("postAttach: " + event.getPersistentInstance());
+			Object object = event.getPersistentInstance();
+			Object objectID = JDOHelper.getObjectId(object);
+			PersistenceManager pm = JDOHelper.getPersistenceManager(object);
+			if (pm == null)
+				throw new IllegalArgumentException("Could not obtain a PersistenceManager from this object!");
 
-			registerJDOObject(JDOLifecycleState.DIRTY, event.getPersistentInstance());
+			CacheTransactionListener cacheTransactionListener = getCacheTransactionListener(pm);
+			if (cacheTransactionListener.isPreStoreCallRegisteredForObjectID(objectID)) {				
+				cacheTransactionListener.addObject(JDOLifecycleState.NEW, event.getPersistentInstance());
+
+				if (logger.isDebugEnabled())
+					logger.debug("AttachLifecycleListener.postAttach [new]: " + objectID);
+			}
+			else {
+				cacheTransactionListener.addObject(JDOLifecycleState.DIRTY, event.getPersistentInstance());
+
+				if (logger.isDebugEnabled())
+					logger.debug("AttachLifecycleListener.postAttach [dirty]: " + objectID);
+			}
 		}
 	};
 
@@ -364,14 +387,14 @@ public class JdoCacheBridgeDefault extends JdoCacheBridge
 		public void preDelete(InstanceLifecycleEvent event)
 		{
 			if (logger.isDebugEnabled())
-				logger.debug("preDelete: " + event.getPersistentInstance());
+				logger.debug("DeleteLifecycleListener.preDelete: " + JDOHelper.getObjectId(event.getPersistentInstance()));
 
 			registerJDOObject(JDOLifecycleState.DELETED, event.getPersistentInstance());
 		}
 		public void postDelete(InstanceLifecycleEvent event) { }
 	};
 
-	/**
+	/* non-javadoc
 	 * @see org.nightlabs.jfire.jdo.cache.bridge.JdoCacheBridge#init()
 	 */
 	@Override
@@ -394,9 +417,9 @@ public class JdoCacheBridgeDefault extends JdoCacheBridge
 		pmf.addInstanceLifecycleListener(
 				createLifecycleListener,
 				objectClassArray);
-//		pmf.addInstanceLifecycleListener(
-//				storeLifecycleListener,
-//				null);
+		pmf.addInstanceLifecycleListener(
+				storeLifecycleListener,
+				objectClassArray);
 		pmf.addInstanceLifecycleListener(
 				dirtyLifecycleListener,
 				objectClassArray);
@@ -408,11 +431,11 @@ public class JdoCacheBridgeDefault extends JdoCacheBridge
 				objectClassArray);
 	}
 
-	private static final Class[] objectClassArray = new Class[] { Object.class };
+	private static final Class<?>[] objectClassArray = null; // new Class[] { Object.class };
 
 	private SecurityReflector securityReflector;
 
-	/**
+	/* non-javadoc
 	 * @see org.nightlabs.jfire.jdo.cache.bridge.JdoCacheBridge#close()
 	 */
 	@Override
@@ -421,8 +444,11 @@ public class JdoCacheBridgeDefault extends JdoCacheBridge
 		PersistenceManagerFactory pmf = getPersistenceManagerFactory();
 
 		if (pmf != null) {
+			pmf.removeInstanceLifecycleListener(createLifecycleListener);
+			pmf.removeInstanceLifecycleListener(storeLifecycleListener);
 			pmf.removeInstanceLifecycleListener(dirtyLifecycleListener);
 			pmf.removeInstanceLifecycleListener(attachLifecycleListener);
+			pmf.removeInstanceLifecycleListener(deleteLifecycleListener);
 		}
 	}
 }
