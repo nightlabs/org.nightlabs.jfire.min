@@ -341,7 +341,16 @@ public class JdoCacheBridgeDefault extends JdoCacheBridge
 	};
 
 	private AttachLifecycleListener attachLifecycleListener = new AttachLifecycleListener() {
-		public void preAttach(InstanceLifecycleEvent event) { }
+		public void preAttach(InstanceLifecycleEvent event) {
+//
+//			Object persistent = event.getPersistentInstance();
+//			Object detached = event.getDetachedInstance();
+//			if (persistent == null);
+//			PersistenceManager pm1 = persistent == null ? null : JDOHelper.getPersistenceManager(persistent);
+//			PersistenceManager pm2 = detached == null ? null : JDOHelper.getPersistenceManager(detached);
+//			logger.info("attached: persistent[pm="+(pm1 != null)+"]=\"" + persistent + "\" detached[pm="+(pm2 != null)+"]=\"" + detached + "\"");
+//
+		}
 		public void postAttach(InstanceLifecycleEvent event)
 		{
 			if (logger.isDebugEnabled())
