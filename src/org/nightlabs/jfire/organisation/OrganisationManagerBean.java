@@ -50,6 +50,7 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
 import org.nightlabs.ModuleException;
 import org.nightlabs.jdo.NLJDOHelper;
@@ -549,7 +550,7 @@ public abstract class OrganisationManagerBean
 			LocalOrganisation localOrganisation = LocalOrganisation.getLocalOrganisation(pm);
 			RegistrationStatus registrationStatus = localOrganisation.getPendingRegistration(grantOrganisationID);
 			if (registrationStatus == null)
-				throw new IllegalArgumentException("There is no pending registration for grantOrganisation \""+grantOrganisationID+"\" at applicantOrganisation \""+getOrganisationID()+"\"!");
+				throw new NoPendingRegistrationExistingException("There is no pending registration for grantOrganisation \""+grantOrganisationID+"\" at applicantOrganisation \""+getOrganisationID()+"\"!");
 
 			// Create the initial context properties to connect to the remote server.
 			Properties props = new Properties();
@@ -563,7 +564,10 @@ public abstract class OrganisationManagerBean
 						registrationStatus.getRegistrationID(),
 						getOrganisationID(), grantOrganisationID);
 			} catch (Exception e) {
-				throw new JFireRemoteException(e);
+				if (ExceptionUtils.indexOfThrowable(e, NoPendingRegistrationExistingException.class) >= 0)
+					logger.warn("There is no pending organisation-registration on the remote side. Will ignore this problem and remove the pending registration locally.", e);
+				else
+					throw new JFireRemoteException(e);
 			}
 
 			// Delete the user we previously created.
