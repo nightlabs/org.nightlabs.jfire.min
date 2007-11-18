@@ -152,7 +152,7 @@ public abstract class OrganisationLinkerBean implements javax.ejb.SessionBean
 			LocalOrganisation localOrganisation = LocalOrganisation.getLocalOrganisation(pm);
 			RegistrationStatus registrationStatus = localOrganisation.getPendingRegistration(applicantOrganisationID);
 			if (registrationStatus == null)
-				throw new IllegalArgumentException("No pending registration existing for applicantOrganisation \""+applicantOrganisationID+"\" at grantOrganisation \""+grantOrganisationID+"\"!");
+				throw new NoPendingRegistrationExistingException("No pending registration existing for applicantOrganisation \""+applicantOrganisationID+"\" at grantOrganisation \""+grantOrganisationID+"\"!");
 
 			if (!registrationID.equals(registrationStatus.getRegistrationID()))
 				throw new IllegalArgumentException("Pending registration \""+registrationStatus.getRegistrationID()+"\" for applicantOrganisation \""+applicantOrganisationID+"\" at grantOrganisation \""+grantOrganisationID+"\" does not match given registrationID=\""+registrationID+"\"!");
