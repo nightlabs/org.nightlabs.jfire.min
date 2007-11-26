@@ -5,7 +5,9 @@
 
 		<rar-name>jpox-jca.rar</rar-name>
 		<connection-definition>javax.resource.cci.ConnectionFactory</connection-definition>
+<!-- Doesn't work with old JPOX - need it for the new JPOX though.
 		<xa-transaction/>
+-->
 
 <!-- indirect connection via datasource - new (JPOX 1.2) with 2 datasources - noTx for DDL, xa for normal communication -->
 		<config-property name="ConnectionFactoryName" type="java.lang.String">${datasourceJNDIName_absolute_xa}</config-property>
