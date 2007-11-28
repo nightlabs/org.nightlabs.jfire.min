@@ -11,7 +11,7 @@ import org.nightlabs.jfire.transfer.Stage;
  *		identity-type="application"
  *		persistence-capable-superclass="org.nightlabs.jfire.store.deliver.DeliveryData"
  *		detachable="true"
- *		table="JFireTestSuite_DeliveryDataDataTestCase"
+ *		table="JFireTestSuite_DeliveryDataTestCase"
  *
  * @jdo.inheritance strategy="new-table"
  */

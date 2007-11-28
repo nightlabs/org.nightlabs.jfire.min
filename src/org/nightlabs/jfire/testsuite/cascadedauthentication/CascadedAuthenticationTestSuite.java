@@ -9,6 +9,7 @@ import javax.naming.InitialContext;
 
 import junit.framework.TestCase;
 
+import org.nightlabs.jfire.organisation.Organisation;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.servermanager.JFireServerManagerFactory;
 import org.nightlabs.jfire.servermanager.config.OrganisationCf;
@@ -18,13 +19,27 @@ import org.nightlabs.jfire.testsuite.login.JFireTestLogin;
 public class CascadedAuthenticationTestSuite
 extends TestSuite
 {
+	private boolean hasRootOrganisation;
+
 	/**
 	 * @param classes
 	 */
 	public CascadedAuthenticationTestSuite(Class<? extends TestCase>... classes) {
 		super(classes);
 		setName("Test JFire Cascaded Authentication (cross organisation communication)");
-		requiredOrganisationIDs.add("jfire.nightlabs.org"); // TODO fetch from config
+
+		try {
+			InitialContext initialContext = new InitialContext();
+
+			hasRootOrganisation = Organisation.hasRootOrganisation(initialContext);
+			if (hasRootOrganisation)
+				requiredOrganisationIDs.add(Organisation.getRootOrganisationID(initialContext));
+
+			initialContext.close();
+		} catch (Exception x) {
+			throw new RuntimeException(x);
+		}
+
 		requiredOrganisationIDs.add("chezfrancois.jfire.org");
 		requiredOrganisationIDs.add("reseller.jfire.org");
 	}
@@ -45,7 +60,9 @@ extends TestSuite
 
 // TODO if I activate the following code, the tests fail - otherwise they succeed. I assume that's due to a mistake in the TestSuite framework: It should execute every test somehow in its own scope (maybe use a helper-bean?). Marco.
 // The above mentioned problem should be solved by now (I'm using sub-transactions). Is it really?
- 
+		if (!hasRootOrganisation)
+			return "This server is in standalone mode (has no root organisation)";
+
 		// then we check whether the required organisations all exist and know each other.
 		JFireServerManager jfsm = null;
 		InitialContext initialContext = new InitialContext();

@@ -40,8 +40,7 @@ public class JFireBaseTestSuite extends TestSuite {
 		} catch (ClassNotFoundException x) {			
 			return "The module JFireBase seems not to be installed (Class \"" + className + "\" could not be found)!";
 		}
-//		return null;
-		return "Temporarily deactivated!";
+		return null;
 	}
 
 }

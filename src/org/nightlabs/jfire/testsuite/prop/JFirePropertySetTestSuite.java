@@ -7,6 +7,7 @@ import javax.jdo.PersistenceManager;
 
 import junit.framework.TestCase;
 
+import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.testsuite.TestSuite;
 
 /**
@@ -26,10 +27,9 @@ public class JFirePropertySetTestSuite extends TestSuite {
 	 */
 	@Override
 	public String canRunTests(PersistenceManager pm) throws Exception {
-//		PropertySetTestStruct.getTestStruct(SecurityReflector.getUserDescriptor().getOrganisationID(), pm);
-//		pm.flush();
-//		return null;
-		return "Temporarily deactivated!";
+		PropertySetTestStruct.getTestStruct(SecurityReflector.getUserDescriptor().getOrganisationID(), pm);
+		pm.flush();
+		return null;
 	}
 
 }
