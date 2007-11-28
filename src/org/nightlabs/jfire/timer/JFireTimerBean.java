@@ -128,8 +128,12 @@ implements SessionBean, TimedObject
 	public void startTimer()
 	throws ModuleException
 	{
-//		if (!User.USERID_SYSTEM.equals(getUserID()))
-//			throw new SecurityException("This method can only be called by user " + User.USERID_SYSTEM);
+		String property_JFireTimerStart_key = JFireTimer.class.getName() + ".start";
+		String property_JFireTimerStart_value = System.getProperty(property_JFireTimerStart_key);
+		if ("false".equals(property_JFireTimerStart_value)) {
+			logger.warn("The system property \"" + property_JFireTimerStart_key + "\" has been set to \"" + property_JFireTimerStart_value + "\"; the timer will *not* be started!");
+			return;
+		}
 
 		TimerService timerService = sessionContext.getTimerService();
 
