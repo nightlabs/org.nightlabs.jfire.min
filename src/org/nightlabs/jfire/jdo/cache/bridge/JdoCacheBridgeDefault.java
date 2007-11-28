@@ -44,7 +44,6 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.transaction.Status;
 import javax.transaction.Synchronization;
-import javax.transaction.TransactionManager;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.annotation.Implement;
@@ -105,6 +104,9 @@ public class JdoCacheBridgeDefault extends JdoCacheBridge
 		{
 			if (logger.isDebugEnabled())
 				debug("beforeCompletion: called");
+
+			if (synchronization != null)
+				synchronization.beforeCompletion();
 		}
 
 		/**
@@ -128,10 +130,15 @@ public class JdoCacheBridgeDefault extends JdoCacheBridge
 			return dead;
 		}
 
+		private Synchronization synchronization;
+
 		@Implement
 		public void afterCompletion(int status)
 		{
 			this.dead = true;
+
+			if (synchronization != null)
+				synchronization.afterCompletion(status);
 
 			objectIDs_preStoreCalled.clear();
 
@@ -270,6 +277,7 @@ public class JdoCacheBridgeDefault extends JdoCacheBridge
 
 	private CacheTransactionListener getCacheTransactionListener(PersistenceManager pm)
 	{
+		
 		CacheTransactionListener listener = (CacheTransactionListener)pm.getUserObject();
 		// we cannot unregister the CacheTransactionListener after the transaction is finished (pm.setUserObject fails) - hence we use the "dead" flag
 		if (listener == null || listener.isDead()) {
@@ -282,9 +290,11 @@ public class JdoCacheBridgeDefault extends JdoCacheBridge
 
 			listener = new CacheTransactionListener(this);
 			try {
-				TransactionManager tm = getCacheManagerFactory().getTransactionManager();
-				javax.transaction.Transaction tx = tm.getTransaction();
-				tx.registerSynchronization(listener);
+//				TransactionManager tm = getCacheManagerFactory().getTransactionManager();
+//				javax.transaction.Transaction tx = tm.getTransaction();
+//				tx.registerSynchronization(listener);
+				listener.synchronization = pm.currentTransaction().getSynchronization();
+				pm.currentTransaction().setSynchronization(listener);
 				pm.setUserObject(listener);
 
 				if (logger.isDebugEnabled())

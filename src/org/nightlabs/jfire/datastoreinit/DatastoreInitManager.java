@@ -355,10 +355,16 @@ public class DatastoreInitManager extends AbstractInitManager<DatastoreInit, Dat
 								new CreateOrganisationStatus(CreateOrganisationStep.DatastoreInitManager_initialiseDatastore_begin, new String[] { init.getName() }));
 
 					try {
-						Object bean = InvokeUtil.createBean(initCtx, init.getBean());
-						Method beanMethod = bean.getClass().getMethod(init.getMethod(), (Class[]) null);
-						beanMethod.invoke(bean, (Object[]) null);
-						InvokeUtil.removeBean(bean);
+//						Object bean = InvokeUtil.createBean(initCtx, init.getBean());
+//						Method beanMethod = bean.getClass().getMethod(init.getMethod(), (Class[]) null);
+//						beanMethod.invoke(bean, (Object[]) null);
+//						InvokeUtil.removeBean(bean);
+
+						// we force a new (nested) transaction by using a delegate-ejb with the appropriate tags
+						Object delegateBean = InvokeUtil.createBean(initCtx, "jfire/ejb/JFireBaseBean/DatastoreInitDelegate");
+						Method beanMethod = delegateBean.getClass().getMethod("invokeDatastoreInitInNestedTransaction", DatastoreInit.class);
+						beanMethod.invoke(delegateBean, init);
+						InvokeUtil.removeBean(delegateBean);
 
 						if (createOrganisationProgress != null)
 							createOrganisationProgress.addCreateOrganisationStatus(

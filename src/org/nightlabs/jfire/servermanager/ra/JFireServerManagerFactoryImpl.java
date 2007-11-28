@@ -1707,6 +1707,11 @@ public class JFireServerManagerFactoryImpl
 		organisationCfsCloned = null;
 	}
 
+	public boolean containsOrganisation(String organisationID)
+	{
+		return getOrganisationCfsCloned().containsKey(organisationID);
+	}
+
 	protected synchronized Map<String, OrganisationCf> getOrganisationCfsCloned()
 	{
 		if (organisationCfsCloned == null)

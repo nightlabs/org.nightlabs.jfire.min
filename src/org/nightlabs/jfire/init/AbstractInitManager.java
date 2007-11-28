@@ -20,10 +20,10 @@ public abstract class AbstractInitManager<I extends AbstractInit<I, D>, D extend
 				Collection<I> reqInits = initTrie.getSubtrieElements(getTriePath(dep));
 				if (reqInits.isEmpty()) { // dependency could not be resolved
 					if (dep.getResolution() == Resolution.Optional)
-						logger.debug("Optional dependency "+dep+" could not be resolved.");
+						logger.debug("Optional dependency "+dep+" could not be resolved (declared by init " + init + ").");
 					else {
-						logger.error("Required dependency "+dep+" could not be resolved.");
-						throw new InitException("Required dependency "+dep+" could not be resolved.");
+						logger.error("Required dependency "+dep+" could not be resolved (declared by init " + init + ").");
+						throw new InitException("Required dependency "+dep+" could not be resolved (declared by init " + init + ").");
 					}
 				}
 				for (I reqInit : reqInits)
@@ -41,7 +41,7 @@ public abstract class AbstractInitManager<I extends AbstractInit<I, D>, D extend
 			inits = dependencyGraph.sortElementsTopologically(comp);
 		} catch (CycleException e) {
 			throw new DependencyCycleException("Server initialisation failed because a dependency cycle has been detected."
-					+"Revise the serverinit.xml files and remove the cycle.", e.getCycleInfo());
+					+"Revise the *init.xml files and remove the cycle.", e.getCycleInfo());
 		}
 		
 		return inits;

@@ -5,19 +5,25 @@
 
 		<rar-name>jpox-jca.rar</rar-name>
 		<connection-definition>javax.resource.cci.ConnectionFactory</connection-definition>
-<!-- Doesn't work with old JPOX - need it for the new JPOX though.
+<!-- Doesn't work with old JPOX - but is needed for the new JPOX!
 		<xa-transaction/>
 -->
-
 <!-- indirect connection via datasource - new (JPOX 1.2) with 2 datasources - noTx for DDL, xa for normal communication -->
+<!-- XA
 		<config-property name="ConnectionFactoryName" type="java.lang.String">${datasourceJNDIName_absolute_xa}</config-property>
 		<config-property name="ConnectionFactory2Name" type="java.lang.String">${datasourceJNDIName_absolute_noTx}</config-property>
-<!--
+-->
+<!-- local-Tx
+		<config-property name="ConnectionFactoryName" type="java.lang.String">${datasourceJNDIName_absolute_localTx}</config-property>
+		<config-property name="ConnectionFactory2Name" type="java.lang.String">${datasourceJNDIName_absolute_noTx}</config-property>
+-->
+<!-- direct connection -->
 		<config-property name="ConnectionDriverName" type="java.lang.String">${databaseDriverName_localTx}</config-property>
 		<config-property name="ConnectionURL" type="java.lang.String">${databaseURL}</config-property>
 		<config-property name="ConnectionUserName" type="java.lang.String">${databaseUserName}</config-property>
 		<config-property name="ConnectionPassword" type="java.lang.String">${databasePassword}</config-property>
--->
+
+
 <!--		<config-property name="AutoStartMechanism" type="java.lang.String">none</config-property> -->
 		<config-property name="AutoStartMechanism" type="java.lang.String">XML</config-property>
 		<config-property name="AutoStartMechanismXmlFile" type="java.lang.String">${deploymentDescriptorDirectory}/jpoxAutoStart.xml</config-property>
@@ -29,11 +35,14 @@
 		<config-property name="AutoCreateConstraints" type="boolean">true</config-property>
 		<config-property name="ValidateConstraints" type="boolean">true</config-property>
 
+<!--		<config-property name="StatementBatchLimit" type="int">0</config-property> -->
+
 		<config-property name="JdoCacheCollections" type="boolean">true</config-property>
 		<config-property name="NontransactionalRead" type="boolean">true</config-property>
 <!--		<config-property name="UseUpdateLock" type="boolean">true</config-property>
 -->
-<!--		<config-property name="Optimistic" type="boolean">true</config-property>
+<!--
+		<config-property name="Optimistic" type="boolean">true</config-property>
 -->
 
 <!--

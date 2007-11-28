@@ -54,4 +54,6 @@ public interface JFireServerManagerFactory
 	public boolean isUpAndRunning();
 
 	public boolean isShuttingDown();
+
+	public boolean containsOrganisation(String organisationID);
 }

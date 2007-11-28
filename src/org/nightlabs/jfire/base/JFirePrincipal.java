@@ -34,12 +34,15 @@ import org.nightlabs.jfire.security.RoleSet;
 
 /**
  * @author nick@nightlabs.de
+ *
+ * TODO this needs refactoring. I don't understand, what the "getLookup()" method is good for. We should improve the API. Marco.
  */
 public class JFirePrincipal
 	extends JFireBasePrincipal
 	implements Principal
 {
-	protected Lookup lookup;
+	private static final long serialVersionUID = 1L;
+	private transient Lookup lookup;
 
 	public JFirePrincipal(LoginData loginData, boolean _userIsOrganisation, Lookup _lookup, RoleSet _roleSet)
 	{
@@ -53,7 +56,11 @@ public class JFirePrincipal
 
 	public Lookup getLookup()
 	{
+		if (lookup == null) {
+			lookup = new Lookup(getOrganisationID());
+			lookup.setJFirePrincipal(this);
+		}
+
 		return lookup;
 	}
-
 }
