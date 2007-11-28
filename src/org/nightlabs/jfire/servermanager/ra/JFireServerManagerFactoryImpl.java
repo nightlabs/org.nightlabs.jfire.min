@@ -403,16 +403,23 @@ public class JFireServerManagerFactoryImpl
 			throw new ResourceException(e.getMessage());
 		}
 
-		for (Iterator it = organisationConfigModule.getOrganisations().iterator(); it.hasNext(); ) {
-			OrganisationCf organisation = (OrganisationCf) it.next();
-			String organisationID = organisation.getOrganisationID();
+		String property_CacheManagerFactoryCreate_key = CacheManagerFactory.class.getName() + ".create";
+		String property_CacheManagerFactoryCreate_value = System.getProperty(property_CacheManagerFactoryCreate_key);
+		if ("false".equals(property_CacheManagerFactoryCreate_value)) {
+			logger.warn("The system property \"" + property_CacheManagerFactoryCreate_key + "\" has been set to \"" + property_CacheManagerFactoryCreate_value + "\"; the CacheManagerFactory will *not* be created!");
+		}
+		else {
+			for (Iterator<OrganisationCf> it = organisationConfigModule.getOrganisations().iterator(); it.hasNext(); ) {
+				OrganisationCf organisation = it.next();
+				String organisationID = organisation.getOrganisationID();
 
-			try {
-				new CacheManagerFactory(
-						this, initialContext, organisation, cacheCfMod, new File(mcf.getSysConfigDirectory())); // registers itself in JNDI
-			} catch (Exception e) {
-				logger.error("Creating CacheManagerFactory for organisation \""+organisationID+"\" failed!", e);
-				throw new ResourceException(e.getMessage());
+				try {
+					new CacheManagerFactory(
+							this, initialContext, organisation, cacheCfMod, new File(mcf.getSysConfigDirectory())); // registers itself in JNDI
+				} catch (Exception e) {
+					logger.error("Creating CacheManagerFactory for organisation \""+organisationID+"\" failed!", e);
+					throw new ResourceException(e.getMessage());
+				}
 			}
 		}
 

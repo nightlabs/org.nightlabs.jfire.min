@@ -49,7 +49,7 @@ public class OrganisationConfigModule extends ConfigModule
 	/**
 	 * @return Returns the organisations.
 	 */
-	public List getOrganisations() {
+	public List<OrganisationCf> getOrganisations() {
 		return organisations;
 	}
 	/**
@@ -79,8 +79,8 @@ public class OrganisationConfigModule extends ConfigModule
 
 	public boolean removeOrganisation(String organisationID)
 	{
-		for (Iterator it = organisations.iterator(); it.hasNext(); ) {
-			if (organisationID.equals(((OrganisationCf)it.next()).getOrganisationID())) {
+		for (Iterator<OrganisationCf> it = organisations.iterator(); it.hasNext(); ) {
+			if (organisationID.equals((it.next()).getOrganisationID())) {
 				it.remove();
 				setChanged();
 				return true;
