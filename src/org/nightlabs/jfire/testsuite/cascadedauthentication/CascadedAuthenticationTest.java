@@ -1,9 +1,12 @@
 package org.nightlabs.jfire.testsuite.cascadedauthentication;
 
+import javax.naming.InitialContext;
+
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.jfire.base.login.JFireLogin;
+import org.nightlabs.jfire.organisation.Organisation;
 import org.nightlabs.jfire.organisation.OrganisationManager;
 import org.nightlabs.jfire.organisation.OrganisationManagerUtil;
 import org.nightlabs.jfire.test.cascadedauthentication.TestRequestResultTreeNode;
@@ -17,14 +20,29 @@ extends TestCase
 {
 	private static final Logger logger = Logger.getLogger(CascadedAuthenticationTest.class);
 
+	private String organisationID_root = null;
+	private String organisationID_chezfrancois = "chezfrancois.jfire.org";
+	private String organisationID_reseller = "reseller.jfire.org";
+	private String organisationID_a = "a.jfire.org";
+	private String organisationID_b = "b.jfire.org";
+
+	@Override
+	protected void setUp()
+			throws Exception
+	{
+		InitialContext initialContext = new InitialContext();
+		organisationID_root = Organisation.getRootOrganisationID(initialContext);
+		initialContext.close();
+	}
+
 	public void testCascadedAuthenticationOneOrganisationPerLevel()
 	throws Exception
 	{
 		JFireLogin login = JFireTestLogin.getUserLogin(JFireTestLogin.USER_QUALIFIER_SALESMAN); // which user does not matter for this test.
 		login.login();
 
-		TestRequestResultTreeNode tree = new TestRequestResultTreeNode(null, "chezfrancois.jfire.org");
-		tree.createChildTestRequestResultTree("reseller.jfire.org").createChildTestRequestResultTree("jfire.nightlabs.org");
+		TestRequestResultTreeNode tree = new TestRequestResultTreeNode(null, organisationID_chezfrancois);
+		tree.createChildTestRequestResultTree(organisationID_reseller).createChildTestRequestResultTree(organisationID_root);
 		OrganisationManager organisationManager = OrganisationManagerUtil.getHome(login.getInitialContextProperties()).create();
 		tree = organisationManager.testCascadedAuthentication(tree);
 		checkResult(tree);
@@ -37,13 +55,13 @@ extends TestCase
 		JFireLogin login = JFireTestLogin.getUserLogin(JFireTestLogin.USER_QUALIFIER_SALESMAN); // which user does not matter for this test.
 		login.login();
 
-		TestRequestResultTreeNode tree = new TestRequestResultTreeNode(null, "chezfrancois.jfire.org");
-		TestRequestResultTreeNode child_0 = tree.createChildTestRequestResultTree("jfire.nightlabs.org");
-		TestRequestResultTreeNode child_1 = tree.createChildTestRequestResultTree("reseller.jfire.org");
+		TestRequestResultTreeNode tree = new TestRequestResultTreeNode(null, organisationID_chezfrancois);
+		TestRequestResultTreeNode child_0 = tree.createChildTestRequestResultTree(organisationID_root);
+		TestRequestResultTreeNode child_1 = tree.createChildTestRequestResultTree(organisationID_reseller);
 
-		TestRequestResultTreeNode child_0_0 = child_0.createChildTestRequestResultTree("chezfrancois.jfire.org");
-		TestRequestResultTreeNode child_0_1 = child_0.createChildTestRequestResultTree("reseller.jfire.org");
-		TestRequestResultTreeNode child_0_2 = child_0.createChildTestRequestResultTree("chezfrancois.jfire.org");
+		TestRequestResultTreeNode child_0_0 = child_0.createChildTestRequestResultTree(organisationID_chezfrancois);
+		TestRequestResultTreeNode child_0_1 = child_0.createChildTestRequestResultTree(organisationID_reseller);
+		TestRequestResultTreeNode child_0_2 = child_0.createChildTestRequestResultTree(organisationID_chezfrancois);
 
 		OrganisationManager organisationManager = OrganisationManagerUtil.getHome(login.getInitialContextProperties()).create();
 		tree = organisationManager.testCascadedAuthentication(tree);
@@ -57,27 +75,85 @@ extends TestCase
 		JFireLogin login = JFireTestLogin.getUserLogin(JFireTestLogin.USER_QUALIFIER_SALESMAN); // which user does not matter for this test.
 		login.login();
 
-		TestRequestResultTreeNode tree = new TestRequestResultTreeNode(null, "chezfrancois.jfire.org");
-		TestRequestResultTreeNode child_0 = tree.createChildTestRequestResultTree("chezfrancois.jfire.org");
-		TestRequestResultTreeNode child_1 = tree.createChildTestRequestResultTree("reseller.jfire.org");
+		TestRequestResultTreeNode tree = new TestRequestResultTreeNode(null, organisationID_chezfrancois);
+		TestRequestResultTreeNode child_0 = tree.createChildTestRequestResultTree(organisationID_chezfrancois);
+		TestRequestResultTreeNode child_1 = tree.createChildTestRequestResultTree(organisationID_reseller);
 
-		TestRequestResultTreeNode child_0_0 = child_0.createChildTestRequestResultTree("reseller.jfire.org");
-		TestRequestResultTreeNode child_0_1 = child_0.createChildTestRequestResultTree("chezfrancois.jfire.org");
+		TestRequestResultTreeNode child_0_0 = child_0.createChildTestRequestResultTree(organisationID_reseller);
+		TestRequestResultTreeNode child_0_1 = child_0.createChildTestRequestResultTree(organisationID_chezfrancois);
 
-		TestRequestResultTreeNode child_1_0 = child_1.createChildTestRequestResultTree("reseller.jfire.org");
-		TestRequestResultTreeNode child_1_1 = child_1.createChildTestRequestResultTree("chezfrancois.jfire.org");
+		TestRequestResultTreeNode child_1_0 = child_1.createChildTestRequestResultTree(organisationID_reseller);
+		TestRequestResultTreeNode child_1_1 = child_1.createChildTestRequestResultTree(organisationID_chezfrancois);
 
-		TestRequestResultTreeNode child_0_0_0 = child_0_0.createChildTestRequestResultTree("jfire.nightlabs.org");
-		TestRequestResultTreeNode child_0_0_1 = child_0_0.createChildTestRequestResultTree("chezfrancois.jfire.org");
-		TestRequestResultTreeNode child_0_0_2 = child_0_0.createChildTestRequestResultTree("reseller.jfire.org"); 
+		TestRequestResultTreeNode child_0_0_0 = child_0_0.createChildTestRequestResultTree(organisationID_root);
+		TestRequestResultTreeNode child_0_0_1 = child_0_0.createChildTestRequestResultTree(organisationID_chezfrancois);
+		TestRequestResultTreeNode child_0_0_2 = child_0_0.createChildTestRequestResultTree(organisationID_reseller); 
 
-		TestRequestResultTreeNode child_0_1_0 = child_0_1.createChildTestRequestResultTree("chezfrancois.jfire.org");
-		TestRequestResultTreeNode child_0_1_1 = child_0_1.createChildTestRequestResultTree("jfire.nightlabs.org");
-		TestRequestResultTreeNode child_0_1_2 = child_0_1.createChildTestRequestResultTree("reseller.jfire.org");
+		TestRequestResultTreeNode child_0_1_0 = child_0_1.createChildTestRequestResultTree(organisationID_chezfrancois);
+		TestRequestResultTreeNode child_0_1_1 = child_0_1.createChildTestRequestResultTree(organisationID_root);
+		TestRequestResultTreeNode child_0_1_2 = child_0_1.createChildTestRequestResultTree(organisationID_reseller);
 
-		TestRequestResultTreeNode child_1_0_0 = child_0_0.createChildTestRequestResultTree("reseller.jfire.org");
-		TestRequestResultTreeNode child_1_0_1 = child_0_0.createChildTestRequestResultTree("jfire.nightlabs.org");
-		TestRequestResultTreeNode child_1_0_2 = child_0_0.createChildTestRequestResultTree("chezfrancois.jfire.org");
+		TestRequestResultTreeNode child_1_0_0 = child_1_0.createChildTestRequestResultTree(organisationID_reseller);
+		TestRequestResultTreeNode child_1_0_1 = child_1_0.createChildTestRequestResultTree(organisationID_root);
+		TestRequestResultTreeNode child_1_0_2 = child_1_0.createChildTestRequestResultTree(organisationID_chezfrancois);
+
+		OrganisationManager organisationManager = OrganisationManagerUtil.getHome(login.getInitialContextProperties()).create();
+		tree = organisationManager.testCascadedAuthentication(tree);
+		checkResult(tree);
+	}
+
+	@SuppressWarnings("unused")
+	public void testCascadedAuthenticationMultipleOrganisationsPerLevelWithLoopbacksMultiServer()
+	throws Exception
+	{
+		JFireLogin login = JFireTestLogin.getUserLogin(JFireTestLogin.USER_QUALIFIER_SALESMAN); // which user does not matter for this test.
+		login.login();
+
+		TestRequestResultTreeNode tree = new TestRequestResultTreeNode(null, organisationID_chezfrancois);
+		TestRequestResultTreeNode child_0 = tree.createChildTestRequestResultTree(organisationID_chezfrancois);
+		TestRequestResultTreeNode child_1 = tree.createChildTestRequestResultTree(organisationID_reseller);
+
+		TestRequestResultTreeNode child_0_0 = child_0.createChildTestRequestResultTree(organisationID_reseller);
+		TestRequestResultTreeNode child_0_1 = child_0.createChildTestRequestResultTree(organisationID_chezfrancois);
+		TestRequestResultTreeNode child_0_2 = child_0.createChildTestRequestResultTree(organisationID_a);
+		TestRequestResultTreeNode child_0_3 = child_0.createChildTestRequestResultTree(organisationID_b);
+
+		TestRequestResultTreeNode child_1_0 = child_1.createChildTestRequestResultTree(organisationID_reseller);
+		TestRequestResultTreeNode child_1_1 = child_1.createChildTestRequestResultTree(organisationID_chezfrancois);
+		TestRequestResultTreeNode child_1_2 = child_1.createChildTestRequestResultTree(organisationID_b);
+		TestRequestResultTreeNode child_1_3 = child_1.createChildTestRequestResultTree(organisationID_a);
+
+		TestRequestResultTreeNode child_0_0_0 = child_0_0.createChildTestRequestResultTree(organisationID_root);
+		TestRequestResultTreeNode child_0_0_1 = child_0_0.createChildTestRequestResultTree(organisationID_chezfrancois);
+		TestRequestResultTreeNode child_0_0_2 = child_0_0.createChildTestRequestResultTree(organisationID_reseller);
+		TestRequestResultTreeNode child_0_0_3 = child_0_0.createChildTestRequestResultTree(organisationID_a);
+
+		TestRequestResultTreeNode child_0_1_0 = child_0_1.createChildTestRequestResultTree(organisationID_chezfrancois);
+		TestRequestResultTreeNode child_0_1_1 = child_0_1.createChildTestRequestResultTree(organisationID_root);
+		TestRequestResultTreeNode child_0_1_2 = child_0_1.createChildTestRequestResultTree(organisationID_reseller);
+		TestRequestResultTreeNode child_0_1_3 = child_0_1.createChildTestRequestResultTree(organisationID_b);
+
+		TestRequestResultTreeNode child_0_2_0 = child_0_2.createChildTestRequestResultTree(organisationID_chezfrancois);
+		TestRequestResultTreeNode child_0_2_1 = child_0_2.createChildTestRequestResultTree(organisationID_root);
+		TestRequestResultTreeNode child_0_2_2 = child_0_2.createChildTestRequestResultTree(organisationID_reseller);
+		TestRequestResultTreeNode child_0_2_3 = child_0_2.createChildTestRequestResultTree(organisationID_a);
+		TestRequestResultTreeNode child_0_2_4 = child_0_2.createChildTestRequestResultTree(organisationID_b);
+
+		TestRequestResultTreeNode child_1_0_0 = child_1_0.createChildTestRequestResultTree(organisationID_reseller);
+		TestRequestResultTreeNode child_1_0_1 = child_1_0.createChildTestRequestResultTree(organisationID_root);
+		TestRequestResultTreeNode child_1_0_2 = child_1_0.createChildTestRequestResultTree(organisationID_chezfrancois);
+		TestRequestResultTreeNode child_1_0_3 = child_1_0.createChildTestRequestResultTree(organisationID_a);
+		TestRequestResultTreeNode child_1_0_4 = child_1_0.createChildTestRequestResultTree(organisationID_b);
+
+		TestRequestResultTreeNode child_1_2_0 = child_1_2.createChildTestRequestResultTree(organisationID_b);
+		TestRequestResultTreeNode child_1_2_1 = child_1_2.createChildTestRequestResultTree(organisationID_reseller);
+		TestRequestResultTreeNode child_1_2_2 = child_1_2.createChildTestRequestResultTree(organisationID_chezfrancois);
+		TestRequestResultTreeNode child_1_2_3 = child_1_2.createChildTestRequestResultTree(organisationID_a);
+
+		TestRequestResultTreeNode child_1_3_0 = child_1_3.createChildTestRequestResultTree(organisationID_reseller);
+		TestRequestResultTreeNode child_1_3_1 = child_1_3.createChildTestRequestResultTree(organisationID_root);
+		TestRequestResultTreeNode child_1_3_2 = child_1_3.createChildTestRequestResultTree(organisationID_a);
+		TestRequestResultTreeNode child_1_3_3 = child_1_3.createChildTestRequestResultTree(organisationID_b);
 
 		OrganisationManager organisationManager = OrganisationManagerUtil.getHome(login.getInitialContextProperties()).create();
 		tree = organisationManager.testCascadedAuthentication(tree);

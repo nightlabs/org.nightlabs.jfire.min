@@ -5,6 +5,7 @@ package org.nightlabs.jfire.testsuite.base;
 
 import junit.framework.TestCase;
 
+import org.apache.log4j.Logger;
 import org.junit.Test;
 import org.nightlabs.jfire.testsuite.JFireTestSuite;
 
@@ -15,12 +16,24 @@ import org.nightlabs.jfire.testsuite.JFireTestSuite;
  * if JFireBase is deployed.
  */
 @JFireTestSuite(JFireBaseTestSuite.class)
-public class UserTest extends TestCase {
+public class UserTest extends TestCase
+{
+	Logger logger = Logger.getLogger(UserTest.class);
 
-	/**
-	 * 
-	 */
 	public UserTest() {
+	}
+
+	@Override
+	protected void setUp() throws Exception
+	{
+		logger.info("setUp: invoked");
+	}
+
+	@Override
+	protected void tearDown()
+			throws Exception
+	{
+		logger.info("tearDown: invoked");
 	}
 
 	/**
@@ -28,7 +41,10 @@ public class UserTest extends TestCase {
 	 * as its name starts with test!
 	 */
 	public void testCreateUser() {
+		logger.info("testCreateUser: begin");
+		// TODO implement!
 		// It does not do very much, though
+		logger.info("testCreateUser: end");
 	}
 	
 	/**
@@ -39,5 +55,9 @@ public class UserTest extends TestCase {
 	public void testListUser() {
 		// if fails, however ;-)
 		// fail("Well, somewhere is an error.");
+
+		logger.info("testListUser: begin");
+		// TODO implement!
+		logger.info("testListUser: end");
 	}
 }

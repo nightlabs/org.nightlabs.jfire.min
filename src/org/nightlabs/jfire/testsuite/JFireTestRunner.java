@@ -4,10 +4,9 @@
 package org.nightlabs.jfire.testsuite;
 
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
-
-import javax.jdo.PersistenceManager;
 
 import junit.framework.Test;
 import junit.framework.TestResult;
@@ -80,6 +79,30 @@ public class JFireTestRunner extends BaseTestRunner {
 			testListeners.remove(listener);
 		}
 	}
+
+	private static class TestSuiteWithNestedTx extends junit.framework.TestSuite {
+
+		/**
+		 * This implementation of {@link #runTest(Test, TestResult)} delegates to an EJB which ensures a nested transaction.
+		 * It is used by the {@link JFireTestRunner#run(TestSuite)} method to repackage all tests, since
+		 * jUnit already repackages them once. Hence, subclassing this TestSuite doesn't help - the actual tests
+		 * will still end up in an instance of {@link junit.framework.TestSuite} (not {@link TestSuite}). Hence,
+		 * we repackage again and put them in an instance of this class.
+		 */
+		@Override
+		public void runTest(Test test, TestResult result)
+		{
+			// TestResult is not serialisable. We pray that the container will pass the reference
+			// *directly* to the *local* EJB without serialising/deserialising.
+
+			try {
+				JFireTestManagerLocal m = JFireTestManagerUtil.getLocalHome().create();
+				m.runTestInNestedTransaction(test, result);
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		}
+	}
 	
 	/**
 	 * Runs the given JFire {@link TestSuite} and notifies the
@@ -88,11 +111,13 @@ public class JFireTestRunner extends BaseTestRunner {
 	 * @param suite The suite to run.
 	 * @param pm The PersistenceManager that can be passed to the test suites.
 	 */
-	public void run(TestSuite suite, PersistenceManager pm) {
+	public void run(TestSuite suite) {
 		String skipReason;
 		Throwable checkError = null;
 		try {
-			skipReason = suite.canRunTests(pm);
+				JFireTestManagerLocal m = JFireTestManagerUtil.getLocalHome().create();
+				skipReason = m.evaluateCanRunTestsInNestedTransaction(suite);
+//			skipReason = suite.canRunTests(pm);
 		} catch (Exception e) {
 			skipReason = e.getClass().getName() + ": " + e.getMessage();
 			checkError = e;
@@ -112,7 +137,32 @@ public class JFireTestRunner extends BaseTestRunner {
 				for (JFireTestListener listener : new ArrayList<JFireTestListener>(testListeners)) {
 					result.addListener(listener);
 				}
-				test.run(result);
+//				test.run(result);
+				// We cannot directly call it, because we want separate transactions => need to delegate to an EJB with transaction-tag "RequiresNew"
+				// Here, test is normally an instance of TestSuite. If we directly passed this TestSuite to an EJB, it would execute all test-methods
+				// in the same transaction - which we don't want.
+
+				if (test instanceof junit.framework.TestSuite) { // this should always be the case, but just to play safe.
+					junit.framework.TestSuite ts = (junit.framework.TestSuite) test;
+					TestSuiteWithNestedTx testSuiteWithNestedTx = new TestSuiteWithNestedTx();
+					testSuiteWithNestedTx.setName(ts.getName());
+					for (Enumeration<Test> te = ts.tests(); te.hasMoreElements(); ) {
+						Test t = te.nextElement();
+						testSuiteWithNestedTx.addTest(t);
+					}
+
+					testSuiteWithNestedTx.run(result);
+				}
+				else {
+					// TestResult is not serialisable. We pray that the container will pass the reference
+					// *directly* to the *local* EJB without serialising/deserialising.
+					try {
+						JFireTestManagerLocal m = JFireTestManagerUtil.getLocalHome().create();
+						m.runTestInNestedTransaction(test, result);
+					} catch (Exception e) {
+						throw new RuntimeException(e);
+					}
+				}
 			}
 		} finally {
 			notifyTestSuiteStatus(suite, Status.END);

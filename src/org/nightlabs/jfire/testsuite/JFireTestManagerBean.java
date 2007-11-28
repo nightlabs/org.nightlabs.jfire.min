@@ -27,6 +27,7 @@
 package org.nightlabs.jfire.testsuite;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.rmi.RemoteException;
@@ -45,7 +46,9 @@ import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
 import javax.jdo.PersistenceManager;
 
+import junit.framework.Test;
 import junit.framework.TestCase;
+import junit.framework.TestResult;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.ModuleException;
@@ -143,15 +146,15 @@ implements SessionBean
 	 */
 	public void runAllTestSuites()
 	throws SecurityException, IllegalArgumentException, ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException, ModuleException, IOException {
-		PersistenceManager pm = getPersistenceManager();
-		try {
+//		PersistenceManager pm = getPersistenceManager();
+//		try {
 			List<TestSuite> runSuites = createTestSuites(null);
-			runTestSuites(runSuites, pm);
-		} finally {
-			pm.close();
-		}
+			runTestSuiteInstances(runSuites);
+//		} finally {
+//			pm.close();
+//		}
 	}
-	
+
 	/**
 	 * Runs TestCases found in the classpath under org.nightlabs.jfire.testsuite that belong to the given TestSuites..
 	 * 
@@ -160,16 +163,16 @@ implements SessionBean
 	 */
 	public void runTestSuites(List<Class<? extends TestSuite>> testSuitesClasses)
 	throws SecurityException, IllegalArgumentException, ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException, ModuleException, IOException {
-		PersistenceManager pm = getPersistenceManager();
-		try {
+//		PersistenceManager pm = getPersistenceManager();
+//		try {
 			List<TestSuite> runSuites = createTestSuites(testSuitesClasses);
-			runTestSuites(runSuites, pm);
-		} finally {
-			pm.close();
-		}
+			runTestSuiteInstances(runSuites);
+//		} finally {
+//			pm.close();
+//		}
 	}
 
-	public static void runTestSuites(List<TestSuite> testSuites, PersistenceManager pm) throws ModuleException, IOException {
+	private static void runTestSuiteInstances(List<TestSuite> testSuites) throws ModuleException, IOException {
 		List<JFireTestListener> listeners = getTestListeners();
 
 		// Run the suites
@@ -186,7 +189,7 @@ implements SessionBean
 			for (JFireTestListener listener : listeners) {
 				runner.addListener(listener);
 			}
-			runner.run(suite, pm);
+			runner.run(suite);
 		}
 		for (JFireTestListener listener : listeners) {
 			try {
@@ -196,6 +199,49 @@ implements SessionBean
 				continue;
 			}
 		}
+	}
+
+	/**
+	 * Executes {@link TestSuite#canRunTests(PersistenceManager)} within a nested transaction. It is invoked by
+	 * {@link JFireTestRunner#run(TestSuite, PersistenceManager)}
+	 * <p>
+	 * This only works if the JavaEE container passes the references, because {@link junit.framework.TestSuite}
+	 * is not {@link Serializable}.
+	 * </p>
+	 *
+	 * @ejb.interface-method view-type="local"
+	 * @ejb.permission unchecked="true"
+	 * @ejb.transaction type="RequiresNew"
+	 */
+	public String evaluateCanRunTestsInNestedTransaction(TestSuite testSuite)
+	throws Exception 
+	{
+		logger.info("evaluateCanRunTestsInNestedTransaction: " + testSuite.toString());
+		PersistenceManager pm = getPersistenceManager();
+		try {
+			return testSuite.canRunTests(pm);
+		} finally {
+			pm.close();
+		}
+	}
+
+	/**
+	 * This only works if the JavaEE container passes the references, because neither {@link org.junit.Test} nor {@link TestResult}
+	 * are {@link Serializable}, the {@link TestResult} is not a return value, but the data is directly written into it and
+	 * there are listeners passed inside the parameter-objects.
+	 *
+	 * @param test The test to be run.
+	 * @param result The result into which the test's execution result will be written.
+	 * 
+	 * @ejb.interface-method view-type="local"
+	 * @ejb.permission unchecked="true"
+	 * @ejb.transaction type="RequiresNew"
+	 */
+	public void runTestInNestedTransaction(Test test, TestResult result)
+	throws Exception 
+	{
+		logger.info("runTestInNestedTransaction: " + test.toString());
+		test.run(result);
 	}
 	
 	private static List<JFireTestListener> getTestListeners() throws ModuleException, IOException {

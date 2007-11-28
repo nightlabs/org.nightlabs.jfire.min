@@ -29,8 +29,8 @@ import junit.framework.TestCase;
  * 
  * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] de -->
  */
-public abstract class TestSuite extends junit.framework.TestSuite {
-
+public abstract class TestSuite extends junit.framework.TestSuite
+{
 	/**
 	 * The status of a {@link TestSuite}.
 	 */
@@ -64,4 +64,5 @@ public abstract class TestSuite extends junit.framework.TestSuite {
 	 * @throws Exception When something fails
 	 */
 	public abstract String canRunTests(PersistenceManager pm) throws Exception;
+
 }

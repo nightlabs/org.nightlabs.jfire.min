@@ -24,7 +24,6 @@
          <transaction-type>Container</transaction-type>
 
       </session>
-
       <session >
          <description><![CDATA[]]></description>
 
@@ -39,7 +38,6 @@
          <transaction-type>Container</transaction-type>
 
       </session>
-
      <!--
        To add session beans that you have deployment descriptor info for, add
        a file to your XDoclet merge directory called session-beans.xml that contains
@@ -314,6 +312,33 @@
          </method-params>
       </method>
    </method-permission>
+   <method-permission >
+      <description><![CDATA[description not supported yet by ejbdoclet]]></description>
+      <unchecked/>
+      <method >
+         <description><![CDATA[Executes {@link TestSuite#canRunTests(PersistenceManager)} within a nested transaction.]]></description>
+         <ejb-name>jfire/ejb/JFireTestSuite/JFireTestManager</ejb-name>
+         <method-intf>Local</method-intf>
+         <method-name>evaluateCanRunTestsInNestedTransaction</method-name>
+         <method-params>
+            <method-param>org.nightlabs.jfire.testsuite.TestSuite</method-param>
+         </method-params>
+      </method>
+   </method-permission>
+   <method-permission >
+      <description><![CDATA[description not supported yet by ejbdoclet]]></description>
+      <unchecked/>
+      <method >
+         <description><![CDATA[This only works if the JavaEE container passes the references, because neither {@link org.junit.Test} nor {@link TestResult} are {@link Serializable}, the {@link TestResult} is not a return value, but the data is directly written into it and there are listeners passed inside the parameter-objects.]]></description>
+         <ejb-name>jfire/ejb/JFireTestSuite/JFireTestManager</ejb-name>
+         <method-intf>Local</method-intf>
+         <method-name>runTestInNestedTransaction</method-name>
+         <method-params>
+            <method-param>junit.framework.Test</method-param>
+            <method-param>junit.framework.TestResult</method-param>
+         </method-params>
+      </method>
+   </method-permission>
 
    <!-- transactions -->
      <!--
@@ -359,6 +384,29 @@
          </method-params>
       </method>
       <trans-attribute>Required</trans-attribute>
+   </container-transaction>
+   <container-transaction >
+      <method >
+         <ejb-name>jfire/ejb/JFireTestSuite/JFireTestManager</ejb-name>
+         <method-intf>Local</method-intf>
+         <method-name>evaluateCanRunTestsInNestedTransaction</method-name>
+         <method-params>
+            <method-param>org.nightlabs.jfire.testsuite.TestSuite</method-param>
+         </method-params>
+      </method>
+      <trans-attribute>RequiresNew</trans-attribute>
+   </container-transaction>
+   <container-transaction >
+      <method >
+         <ejb-name>jfire/ejb/JFireTestSuite/JFireTestManager</ejb-name>
+         <method-intf>Local</method-intf>
+         <method-name>runTestInNestedTransaction</method-name>
+         <method-params>
+            <method-param>junit.framework.Test</method-param>
+            <method-param>junit.framework.TestResult</method-param>
+         </method-params>
+      </method>
+      <trans-attribute>RequiresNew</trans-attribute>
    </container-transaction>
 
    <!-- finder transactions -->

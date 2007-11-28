@@ -29,7 +29,7 @@
      -->
 
       <session>
-         <ejb-name>jfire/ejb/JFireTestSuite/JFireTradeTestSuiteManager</ejb-name>
+                <ejb-name>jfire/ejb/JFireTestSuite/JFireTradeTestSuiteManager</ejb-name>
          <jndi-name>jfire/ejb/JFireTestSuite/JFireTradeTestSuiteManager</jndi-name>
          <local-jndi-name>jfire/ejb/JFireTestSuite/JFireTradeTestSuiteManagerLocal</local-jndi-name>
 
@@ -37,7 +37,7 @@
         </method-attributes>
       </session>
       <session>
-         <ejb-name>jfire/ejb/JFireTestSuite/JFireTestManager</ejb-name>
+                <ejb-name>jfire/ejb/JFireTestSuite/JFireTestManager</ejb-name>
          <jndi-name>jfire/ejb/JFireTestSuite/JFireTestManager</jndi-name>
          <local-jndi-name>jfire/ejb/JFireTestSuite/JFireTestManagerLocal</local-jndi-name>
 

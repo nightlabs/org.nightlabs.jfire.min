@@ -1,16 +1,9 @@
 package org.nightlabs.jfire.testsuite.trade;
 
-import java.util.Locale;
-
-import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 
 import junit.framework.TestCase;
 
-import org.nightlabs.jfire.accounting.pay.ModeOfPayment;
-import org.nightlabs.jfire.accounting.pay.ModeOfPaymentConst;
-import org.nightlabs.jfire.store.deliver.ModeOfDelivery;
-import org.nightlabs.jfire.store.deliver.ModeOfDeliveryConst;
 import org.nightlabs.jfire.testsuite.TestSuite;
 
 public class JFireTradeTestSuite extends TestSuite {
@@ -24,28 +17,29 @@ public class JFireTradeTestSuite extends TestSuite {
 	 */
 	@Override
 	public String canRunTests(PersistenceManager pm) throws Exception {
-		boolean init = false;
-		ServerDeliveryProcessorTest deliveryProcessorTest;
-		try {
-			deliveryProcessorTest = (ServerDeliveryProcessorTest) pm.getObjectById(ServerDeliveryProcessorTest.OBJECT_ID);
-		} catch (JDOObjectNotFoundException e) {
-			init = true;		
-		}
-		
-		if (!init)
-			return null;
-		
-		deliveryProcessorTest = ServerDeliveryProcessorTest.getServerDeliveryProcessorTest(pm);		
-		ModeOfDelivery modManual = (ModeOfDelivery) pm.getObjectById(ModeOfDeliveryConst.MODE_OF_DELIVERY_ID_MANUAL);
-		deliveryProcessorTest.addModeOfDelivery(modManual);
-		deliveryProcessorTest.getName().setText(Locale.ENGLISH.getLanguage(), "TestCase DeliveryProcessor");
-		
-		ServerPaymentProcessorTest paymentProcessorTest = ServerPaymentProcessorTest.getServerPaymentProcessorTest(pm);
-		ModeOfPayment mopCash = (ModeOfPayment) pm.getObjectById(ModeOfPaymentConst.MODE_OF_PAYMENT_ID_CASH);
-		paymentProcessorTest.addModeOfPayment(mopCash);
-		paymentProcessorTest.getName().setText(Locale.ENGLISH.getLanguage(), "TestCase PaymentProcessor");
-		
-		return null;
+		return "Temporarily deactivated!";
+//		boolean init = false;
+//		ServerDeliveryProcessorTest deliveryProcessorTest;
+//		try {
+//			deliveryProcessorTest = (ServerDeliveryProcessorTest) pm.getObjectById(ServerDeliveryProcessorTest.OBJECT_ID);
+//		} catch (JDOObjectNotFoundException e) {
+//			init = true;		
+//		}
+//		
+//		if (!init)
+//			return null;
+//		
+//		deliveryProcessorTest = ServerDeliveryProcessorTest.getServerDeliveryProcessorTest(pm);		
+//		ModeOfDelivery modManual = (ModeOfDelivery) pm.getObjectById(ModeOfDeliveryConst.MODE_OF_DELIVERY_ID_MANUAL);
+//		deliveryProcessorTest.addModeOfDelivery(modManual);
+//		deliveryProcessorTest.getName().setText(Locale.ENGLISH.getLanguage(), "TestCase DeliveryProcessor");
+//		
+//		ServerPaymentProcessorTest paymentProcessorTest = ServerPaymentProcessorTest.getServerPaymentProcessorTest(pm);
+//		ModeOfPayment mopCash = (ModeOfPayment) pm.getObjectById(ModeOfPaymentConst.MODE_OF_PAYMENT_ID_CASH);
+//		paymentProcessorTest.addModeOfPayment(mopCash);
+//		paymentProcessorTest.getName().setText(Locale.ENGLISH.getLanguage(), "TestCase PaymentProcessor");
+//		
+//		return null;
 	}
 
 }
