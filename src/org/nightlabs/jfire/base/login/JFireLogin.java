@@ -150,6 +150,10 @@ public class JFireLogin
 			loginData.setSecurityProtocol(LoginData.DEFAULT_SECURITY_PROTOCOL);
 	}
 
+	public JFireLogin(LoginData loginData) {
+		this.loginData = loginData;
+	}
+
 	/**
 	 * A convenience method that creates {@link Properties} from the given
 	 * parameters and calls {@link #JFireLogin(Properties)}.
