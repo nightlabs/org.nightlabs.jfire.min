@@ -99,12 +99,12 @@ implements SessionBean
 	}
 
 	/**
-	 * Because the method {@link #ejbTimeout(Timer)} is called without authentication
+	 * Because the method {@link JFireTimerBean#ejbTimeout(Timer)} is called without authentication
 	 * and thus accessing the datastore doesn't work properly, we use this method as
 	 * a delegate.
 	 *
 	 * @ejb.interface-method view-type="local"
-	 * @ejb.transaction type="Required"
+	 * @ejb.transaction type="RequiresNew"
 	 * @ejb.permission unchecked="true"
 	 **/
 	public void ejbTimeoutDelegate(TimerParam timerParam)

@@ -70,7 +70,7 @@ public class IDGeneratorServer
 
 					securityReflector = SecurityReflector.lookupSecurityReflector(initialContext);
 				}
-				return securityReflector.whoAmI().getOrganisationID();
+				return securityReflector._getUserDescriptor().getOrganisationID();
 			} finally {
 				if (initialContext != null)
 					initialContext.close();
@@ -103,7 +103,7 @@ public class IDGeneratorServer
 
 					securityReflector = SecurityReflector.lookupSecurityReflector(initialContext);
 				}
-				organisationID = securityReflector.whoAmI().getOrganisationID();
+				organisationID = securityReflector._getUserDescriptor().getOrganisationID();
 
 				Map<String, LinkedList<Long>> namespace2cachedIDs;
 				synchronized (organisationID2IDCache) {
@@ -131,7 +131,8 @@ public class IDGeneratorServer
 						Object objRef = initialContext.lookup(IDGeneratorHelperLocalHome.JNDI_NAME);
 						IDGeneratorHelperLocalHome home;
 		        // only narrow if necessary
-		        if (java.rmi.Remote.class.isAssignableFrom(IDGeneratorHelperLocalHome.class))
+//		        if (java.rmi.Remote.class.isAssignableFrom(IDGeneratorHelperLocalHome.class)) // this was wrong - wasn't it?
+						if (!(objRef instanceof IDGeneratorHelperLocalHome))
 		           home = (IDGeneratorHelperLocalHome) javax.rmi.PortableRemoteObject.narrow(objRef, IDGeneratorHelperLocalHome.class);
 		        else
 		           home = (IDGeneratorHelperLocalHome) objRef;

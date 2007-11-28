@@ -200,7 +200,6 @@ public abstract class ServerManagerBean
 		return getJFireServerManagerFactory().getJ2eeRemoteServers();
 	}
 
-
 //	/**
 //	 * @return The instance of the local host.
 //	 * 

@@ -868,7 +868,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 *
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_System_"
-	 * @ejb.transaction type = "Required"
+	 * @ejb.transaction type="Required"
 	 */
 	public void initialise() 
 	throws ModuleException 

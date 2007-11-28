@@ -64,7 +64,6 @@ import org.nightlabs.util.Util;
  *           jndi-name="jfire/ejb/JFireBaseBean/PropertyManager" 
  *           type="Stateless"
  *           transaction-type="Container"
- *           display-name="jfire/ejb/JBaseBean/PropertyManager"
  * 
  * @ejb.util generate="physical"
  */
