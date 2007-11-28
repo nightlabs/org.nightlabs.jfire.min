@@ -41,9 +41,7 @@ import org.jboss.security.auth.spi.AbstractServerLoginModule;
 import org.nightlabs.j2ee.LoginData;
 import org.nightlabs.jfire.base.JFirePrincipal;
 import org.nightlabs.jfire.base.Lookup;
-import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
-import org.nightlabs.util.ParameterMap;
 
 
 /**
@@ -67,9 +65,9 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 		super.loginOk = false;
 		NameCallback nc = new NameCallback("username: ");
 		PasswordCallback pc = new PasswordCallback("password: ", false);
-		
+
 		Callback[] callbacks = {nc, pc};
-		
+
 		LoginData loginData;
 		String login;
 		String password;
@@ -93,19 +91,20 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 
 		logger.info(Thread.currentThread().toString() + ": Login requested by " + login);
 
-		// set username and organisationID + userIsOrganisation
-		String[] txt = User.PATTERN_SPLIT_LOGIN.split(login);
-		if(txt.length != 2 && txt.length != 3)
-			throw new IllegalArgumentException("Invalid login - not two or three parts (use user@organisation?sessionID=xxx&moreParams=yyy&..., session is optional): " + login);
-		if(txt[0].length() == 0 || txt[1].length() == 0)
-			throw new LoginException("Invalid login - empty userID or empty organisationID (use user@organisation?sessionID=xxx&moreParams=yyy&..., session is optional): " + login);
-		
-		loginData = new LoginData(txt[1], txt[0], password);
-		if (txt.length < 3 || "".equals(txt[2]))
-			loginData.setSessionID(loginData.getUserID() + '!' + loginData.getOrganisationID());
-		else {
-			loginData.setAdditionalParams(new ParameterMap(txt[2]));
-		}
+//		// set username and organisationID + userIsOrganisation
+//		String[] txt = User.PATTERN_SPLIT_LOGIN.split(login);
+//		if(txt.length != 2 && txt.length != 3)
+//			throw new IllegalArgumentException("Invalid login - not two or three parts (use user@organisation?sessionID=xxx&moreParams=yyy&..., session is optional): " + login);
+//		if(txt[0].length() == 0 || txt[1].length() == 0)
+//			throw new LoginException("Invalid login - empty userID or empty organisationID (use user@organisation?sessionID=xxx&moreParams=yyy&..., session is optional): " + login);
+//		
+//		loginData = new LoginData(txt[1], txt[0], password);
+//		if (txt.length < 3 || "".equals(txt[2]))
+//			loginData.setSessionID(loginData.getUserID() + '!' + loginData.getOrganisationID());
+//		else {
+//			loginData.setAdditionalParams(new ParameterMap(txt[2]));
+//		}
+		loginData = new LoginData(login, password);
 
 		try
 		{

@@ -27,8 +27,6 @@
 package org.nightlabs.jfire.jboss.cascadedauthentication;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.nightlabs.util.Util;
 
@@ -42,15 +40,17 @@ public class UserDescriptor
 
 	public static final String CONTEXT_KEY = "JFIRE_USER_DESCRIPTOR";
 
-	protected static Map<Thread, UserDescriptor> userDescriptors = new HashMap<Thread, UserDescriptor>();
+//	protected static Map<Thread, UserDescriptor> userDescriptors = new HashMap<Thread, UserDescriptor>();
+	private static ThreadLocal<UserDescriptor> userDescriptors = new ThreadLocal<UserDescriptor>();
 
 	/**
 	 * Clears the current user for current thread.
 	 */
 	public static synchronized void unsetUserDescriptor()
 	{
-		Thread t = Thread.currentThread();
-		userDescriptors.remove(t);
+//		Thread t = Thread.currentThread();
+//		userDescriptors.remove(t);
+		userDescriptors.remove();
 	}
 	
 	/**
@@ -61,8 +61,9 @@ public class UserDescriptor
 	 */
 	public static synchronized void setUserDescriptor(UserDescriptor userDescriptor)
 	{
-		Thread t = Thread.currentThread();
-		userDescriptors.put(t, userDescriptor);
+//		Thread t = Thread.currentThread();
+//		userDescriptors.put(t, userDescriptor);
+		userDescriptors.set(userDescriptor);
 	}
 	
 	/**
@@ -71,10 +72,10 @@ public class UserDescriptor
 	 */
 	protected static synchronized UserDescriptor getUserDescriptor()
 	{
-		Thread t = Thread.currentThread();
-		return userDescriptors.get(t);
+//		Thread t = Thread.currentThread();
+//		return userDescriptors.get(t);
+		return userDescriptors.get();
 	}
-
 
 	public UserDescriptor(String userName, String password)
 	{

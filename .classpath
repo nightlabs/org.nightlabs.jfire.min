@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry path="src" kind="src"/>
-	<classpathentry path="org.eclipse.jdt.launching.JRE_CONTAINER" kind="con"/>
-	<classpathentry sourcepath="/LOG4J_SRC" path="LOG4J" kind="var"/>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="var" path="LOG4J" sourcepath="/LOG4J_SRC"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/JFireServerManager"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/JFireBase"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/NightLabsBase"/>
-	<classpathentry path="XERCES" kind="var"/>
-	<classpathentry sourcepath="JBOSS_SRC/security/src/main" path="JBOSS/server/default/lib/jbosssx.jar" kind="var"/>
-	<classpathentry path="JBOSS/client/jbossall-client.jar" kind="var"/>
-	<classpathentry path="bin" kind="output"/>
+	<classpathentry kind="var" path="XERCES"/>
+	<classpathentry kind="var" path="JBOSS/server/default/lib/jbosssx.jar" sourcepath="JBOSS_SRC/security/src/main"/>
+	<classpathentry kind="var" path="JBOSS/client/jbossall-client.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/JFireBaseClientLib"/>
+	<classpathentry kind="output" path="bin"/>
 </classpath>
