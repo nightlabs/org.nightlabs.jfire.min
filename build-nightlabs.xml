@@ -1,6 +1,6 @@
 <!--
   Generic j2ee and webapp (jboss/tomcat/jpox/xdoclet) ant build file 
-  Version: 2007-11-28.00
+  Version: 2007-11-28.01
   Author: marc [at] nightlabs [dot] de
   Author: marco [at] nightlabs [dot] de
   Author: tobias [at] nightlabs [dot] de
@@ -400,18 +400,31 @@
       <session/>
     	<axisdeploy destdir="${ejb.dd.dir}" validatexml="false" mergedir="${ejb.dd.dir}" /> <!-- prefixWithPackageStructure="false" destinationFile="deploy.wsdd" /> -->
     	<axisundeploy destdir="${ejb.dd.dir}" validatexml="false" mergedir="${ejb.dd.dir}" /> <!-- prefixWithPackageStructure="false" destinationFile="undeploy.wsdd" /> -->
+<!--
       <deploymentdescriptor
-      	secondDeploymentNamePrefix=""
+      	secondDeploymentNamePrefix="ssl-ejb/"
       	destdir="${ejb.dd.dir}" validatexml="false" mergedir="${ejb.dd.dir}" />
+-->
+      <deploymentdescriptor
+        destdir="${ejb.dd.dir}" validatexml="false" mergedir="${ejb.dd.dir}" />
+
 <!--      <strutsform /> -->
 <!--      <castormapping destdir="${ejb.dd.dir}" validatexml="false" /> -->
+<!--
       <jboss version="4.0" unauthenticatedPrincipal="nobody"
-      	secondDeploymentNamePrefix=""
-      	secondDeploymentInvokerProxy=""
+      	secondDeploymentNamePrefix="ssl-ejb/"
+      	secondDeploymentInvokerProxy="ssl-compression-invoker"
         xmlencoding="UTF-8" destdir="${ejb.dd.dir}" validatexml="false" 
         datasource="PLEASE_MODIFY_THIS" 
         datasourcemapping="PLEASE_MODIFY_THIS" 
         preferredrelationmapping="PLEASE_MODIFY_THIS" />
+-->
+      <jboss version="4.0" unauthenticatedPrincipal="nobody"
+       	xmlencoding="UTF-8" destdir="${ejb.dd.dir}" validatexml="false" 
+        datasource="PLEASE_MODIFY_THIS" 
+        datasourcemapping="PLEASE_MODIFY_THIS" 
+        preferredrelationmapping="PLEASE_MODIFY_THIS" />
+
 <!--      <weblogic version="6.1" xmlencoding="UTF-8" destdir="${ejb.dd.dir}" 
         validatexml="false" datasource="PLEASE_MODIFY_THIS" 
         mergedir="${ejb.dd.dir}" persistence="weblogic" />
