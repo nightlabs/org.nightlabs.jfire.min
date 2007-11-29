@@ -11,7 +11,7 @@ import org.nightlabs.jfire.base.jdo.IJDOObjectDAO;
 import org.nightlabs.jfire.prop.PropertyManager;
 import org.nightlabs.jfire.prop.PropertyManagerUtil;
 import org.nightlabs.jfire.prop.PropertySet;
-import org.nightlabs.jfire.prop.id.PropertyID;
+import org.nightlabs.jfire.prop.id.PropertySetID;
 import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.progress.ProgressMonitor;
 
@@ -20,7 +20,7 @@ import org.nightlabs.progress.ProgressMonitor;
  *
  */
 public class PropertySetDAO 
-extends BaseJDOObjectDAO<PropertyID, PropertySet>
+extends BaseJDOObjectDAO<PropertySetID, PropertySet>
 implements IJDOObjectDAO<PropertySet>
 {
 
@@ -35,18 +35,18 @@ implements IJDOObjectDAO<PropertySet>
 	 */
 	@Override
 	protected Collection<PropertySet> retrieveJDOObjects(
-			Set<PropertyID> objectIDs, String[] fetchGroups, int maxFetchDepth,
+			Set<PropertySetID> objectIDs, String[] fetchGroups, int maxFetchDepth,
 			ProgressMonitor monitor) throws Exception {
 		PropertyManager pm = PropertyManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
 		return pm.getPropertySets(objectIDs, fetchGroups, maxFetchDepth);		
 	}
 	
-	public Collection<PropertySet> getPropertySets(Collection<PropertyID> propertySetIDs, String[] fetchGroups,
+	public Collection<PropertySet> getPropertySets(Collection<PropertySetID> propertySetIDs, String[] fetchGroups,
 			int maxFetchDepth, ProgressMonitor monitor) {
 		return getJDOObjects(null, propertySetIDs, fetchGroups, maxFetchDepth, monitor);
 	}
 	
-	public PropertySet getPropertySet(PropertyID propertySetID, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor) {
+	public PropertySet getPropertySet(PropertySetID propertySetID, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor) {
 		return super.getJDOObject(null, propertySetID, fetchGroups, maxFetchDepth, monitor);
 	}
 

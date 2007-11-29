@@ -168,7 +168,7 @@ public class UserDAO extends BaseJDOObjectDAO<UserID, User>
 // is this really necessary?
 //				monitor.worked(1);
 //				pm.storeProperty(person, false, null, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
-//				um.assignPersonToUser(user.getUserID(), person.getPropertyID());
+//				um.assignPersonToUser(user.getUserID(), person.getPropertySetID());
 //				monitor.worked(1);
 			
 			// FIXME: how to do this?
