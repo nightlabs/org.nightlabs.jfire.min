@@ -227,6 +227,25 @@ public class BaseSessionBeanImpl
 		return getPrincipal().toString();
 	}
 
+	private static Boolean hasRootOrganisation = null;
+
+	protected boolean hasRootOrganisation()
+	{
+		if (hasRootOrganisation == null) {
+			try {
+				InitialContext ctx = new InitialContext();
+				try {
+					hasRootOrganisation = new Boolean(Organisation.hasRootOrganisation(ctx));
+				} finally {
+					ctx.close();
+				}
+			} catch (Exception x) {
+				throw new RuntimeException(x);
+			}
+		}
+		return hasRootOrganisation.booleanValue();
+	}
+
 	private static String rootOrganisationID = null;
 
 	/**
