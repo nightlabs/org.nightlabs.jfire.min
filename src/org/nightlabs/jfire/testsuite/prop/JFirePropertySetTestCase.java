@@ -14,8 +14,6 @@ import javax.jdo.FetchPlan;
 import javax.jdo.JDOHelper;
 import javax.naming.NamingException;
 
-import junit.framework.TestCase;
-
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.jdo.cache.Cache;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleManager;
@@ -34,12 +32,13 @@ import org.nightlabs.jfire.prop.datafield.PhoneNumberDataField;
 import org.nightlabs.jfire.prop.datafield.RegexDataField;
 import org.nightlabs.jfire.prop.datafield.SelectionDataField;
 import org.nightlabs.jfire.prop.datafield.TextDataField;
-import org.nightlabs.jfire.prop.id.PropertyID;
+import org.nightlabs.jfire.prop.id.PropertySetID;
 import org.nightlabs.jfire.prop.structfield.SelectionStructField;
 import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.testsuite.JFireTestManager;
 import org.nightlabs.jfire.testsuite.JFireTestManagerUtil;
 import org.nightlabs.jfire.testsuite.JFireTestSuite;
+import org.nightlabs.jfire.testsuite.TestCase;
 import org.nightlabs.jfire.testsuite.login.JFireTestLogin;
 import org.nightlabs.progress.NullProgressMonitor;
 
@@ -66,7 +65,7 @@ public class JFirePropertySetTestCase extends TestCase {
 	private static final String[] FETCH_GROUPS = new String[] {FetchPlan.DEFAULT, PropertySet.FETCH_GROUP_FULL_DATA};
 	private static final int FETCH_DEPTH = NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT;
 	
-	private PropertyID propertySetID;
+	private PropertySetID propertySetID;
 	private JFireLogin login;
 	private boolean isSetup = false;
 	
@@ -83,7 +82,7 @@ public class JFirePropertySetTestCase extends TestCase {
 		login.login();
 		PropertySet propertySet = new PropertySet(login.getOrganisationID(), IDGenerator.nextID(PropertySet.class), PropertySetTestStruct.class.getName(), StructLocal.DEFAULT_SCOPE);
 		propertySet = getPropertyManager().storePropertySet(propertySet, true, FETCH_GROUPS, FETCH_DEPTH);
-		propertySetID = (PropertyID) JDOHelper.getObjectId(propertySet);
+		propertySetID = (PropertySetID) JDOHelper.getObjectId(propertySet);
 		Cache.setServerMode(true);
 		String className = System.getProperty(JDOLifecycleManager.PROPERTY_KEY_JDO_LIFECYCLE_MANAGER);
 		if (className == null) {

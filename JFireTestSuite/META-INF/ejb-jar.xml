@@ -339,6 +339,45 @@
          </method-params>
       </method>
    </method-permission>
+   <method-permission >
+      <description><![CDATA[description not supported yet by ejbdoclet]]></description>
+      <unchecked/>
+      <method >
+         <description><![CDATA[]]></description>
+         <ejb-name>jfire/ejb/JFireTestSuite/JFireTestManager</ejb-name>
+         <method-intf>Local</method-intf>
+         <method-name>runTestInNestedTransaction_setUp</method-name>
+         <method-params>
+            <method-param>org.nightlabs.jfire.testsuite.TestCase</method-param>
+         </method-params>
+      </method>
+   </method-permission>
+   <method-permission >
+      <description><![CDATA[description not supported yet by ejbdoclet]]></description>
+      <unchecked/>
+      <method >
+         <description><![CDATA[]]></description>
+         <ejb-name>jfire/ejb/JFireTestSuite/JFireTestManager</ejb-name>
+         <method-intf>Local</method-intf>
+         <method-name>runTestInNestedTransaction_tearDown</method-name>
+         <method-params>
+            <method-param>org.nightlabs.jfire.testsuite.TestCase</method-param>
+         </method-params>
+      </method>
+   </method-permission>
+   <method-permission >
+      <description><![CDATA[description not supported yet by ejbdoclet]]></description>
+      <unchecked/>
+      <method >
+         <description><![CDATA[]]></description>
+         <ejb-name>jfire/ejb/JFireTestSuite/JFireTestManager</ejb-name>
+         <method-intf>Local</method-intf>
+         <method-name>runTestInNestedTransaction_runTest</method-name>
+         <method-params>
+            <method-param>org.nightlabs.jfire.testsuite.TestCase</method-param>
+         </method-params>
+      </method>
+   </method-permission>
 
    <!-- transactions -->
      <!--
@@ -404,6 +443,39 @@
          <method-params>
             <method-param>junit.framework.Test</method-param>
             <method-param>junit.framework.TestResult</method-param>
+         </method-params>
+      </method>
+      <trans-attribute>RequiresNew</trans-attribute>
+   </container-transaction>
+   <container-transaction >
+      <method >
+         <ejb-name>jfire/ejb/JFireTestSuite/JFireTestManager</ejb-name>
+         <method-intf>Local</method-intf>
+         <method-name>runTestInNestedTransaction_setUp</method-name>
+         <method-params>
+            <method-param>org.nightlabs.jfire.testsuite.TestCase</method-param>
+         </method-params>
+      </method>
+      <trans-attribute>RequiresNew</trans-attribute>
+   </container-transaction>
+   <container-transaction >
+      <method >
+         <ejb-name>jfire/ejb/JFireTestSuite/JFireTestManager</ejb-name>
+         <method-intf>Local</method-intf>
+         <method-name>runTestInNestedTransaction_tearDown</method-name>
+         <method-params>
+            <method-param>org.nightlabs.jfire.testsuite.TestCase</method-param>
+         </method-params>
+      </method>
+      <trans-attribute>RequiresNew</trans-attribute>
+   </container-transaction>
+   <container-transaction >
+      <method >
+         <ejb-name>jfire/ejb/JFireTestSuite/JFireTestManager</ejb-name>
+         <method-intf>Local</method-intf>
+         <method-name>runTestInNestedTransaction_runTest</method-name>
+         <method-params>
+            <method-param>org.nightlabs.jfire.testsuite.TestCase</method-param>
          </method-params>
       </method>
       <trans-attribute>RequiresNew</trans-attribute>

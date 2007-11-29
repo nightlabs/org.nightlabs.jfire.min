@@ -95,11 +95,19 @@ public class JFireTestRunner extends BaseTestRunner {
 			// TestResult is not serialisable. We pray that the container will pass the reference
 			// *directly* to the *local* EJB without serialising/deserialising.
 
-			try {
-				JFireTestManagerLocal m = JFireTestManagerUtil.getLocalHome().create();
-				m.runTestInNestedTransaction(test, result);
-			} catch (Exception e) {
-				throw new RuntimeException(e);
+			if (test instanceof TestCase) {
+				// If it's a JFire-TestCase, the TestCase-implementation takes care about the transactions, so we directly
+				// call the test's run method (done by super.runTest(...)).
+				super.runTest(test, result);
+			}
+			else {
+				// If it's an ordinary TestCase, we run it in a nested transaction here.
+				try {
+					JFireTestManagerLocal m = JFireTestManagerUtil.getLocalHome().create();
+					m.runTestInNestedTransaction(test, result);
+				} catch (Exception e) {
+					throw new RuntimeException(e);
+				}
 			}
 		}
 	}

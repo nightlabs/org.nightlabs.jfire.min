@@ -243,7 +243,46 @@ implements SessionBean
 		logger.info("runTestInNestedTransaction: " + test.toString());
 		test.run(result);
 	}
-	
+
+	/**
+	 * @ejb.interface-method view-type="local"
+	 * @ejb.permission unchecked="true"
+	 * @ejb.transaction type="RequiresNew"
+	 */
+	public void runTestInNestedTransaction_setUp(org.nightlabs.jfire.testsuite.TestCase test)
+	throws Exception 
+	{
+		test.setUp();
+	}
+
+	/**
+	 * @ejb.interface-method view-type="local"
+	 * @ejb.permission unchecked="true"
+	 * @ejb.transaction type="RequiresNew"
+	 */
+	public void runTestInNestedTransaction_tearDown(org.nightlabs.jfire.testsuite.TestCase test)
+	throws Exception 
+	{
+		test.tearDown();
+	}
+
+	/**
+	 * @ejb.interface-method view-type="local"
+	 * @ejb.permission unchecked="true"
+	 * @ejb.transaction type="RequiresNew"
+	 */
+	public void runTestInNestedTransaction_runTest(org.nightlabs.jfire.testsuite.TestCase test)
+	throws Exception
+	{
+		try {
+			test.runTest();
+		} catch (Exception x) {
+			throw x;
+		} catch (Throwable t) {
+			throw new InternalWrapperException(t);
+		}
+	}
+
 	private static List<JFireTestListener> getTestListeners() throws ModuleException, IOException {
 		Properties mainProps = JFireTestSuiteEAR.getJFireTestSuiteProperties();
 		Collection<Matcher> listenerMatches = JFireTestSuiteEAR.getPropertyKeyMatches(mainProps, Pattern.compile("(listener\\.(?:[^.]*?)\\.)class"));
