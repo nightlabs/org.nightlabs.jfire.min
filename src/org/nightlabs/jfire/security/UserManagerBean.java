@@ -1542,7 +1542,7 @@ implements SessionBean
 //			User usr = (User) pm.getObjectById(UserID.create(getOrganisationID(), userID), true);
 //
 //			pm.getExtent(Person.class, true);
-//			Person ps = (Person) pm.getObjectById(PropertyID.create(getOrganisationID(), personID), true);
+//			Person ps = (Person) pm.getObjectById(PropertySetID.create(getOrganisationID(), personID), true);
 //
 //			usr.setPerson(ps);
 //		}

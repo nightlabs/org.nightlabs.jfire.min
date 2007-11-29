@@ -47,7 +47,7 @@ import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.organisation.Organisation;
 import org.nightlabs.jfire.person.PersonStruct;
-import org.nightlabs.jfire.prop.id.PropertyID;
+import org.nightlabs.jfire.prop.id.PropertySetID;
 import org.nightlabs.jfire.prop.id.StructFieldID;
 import org.nightlabs.jfire.prop.id.StructID;
 import org.nightlabs.jfire.prop.id.StructLocalID;
@@ -187,7 +187,7 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type = "Required"
 	 */
-	public PropertySet getPropertySet(PropertyID propID, String[] fetchGroups, int maxFetchDepth)
+	public PropertySet getPropertySet(PropertySetID propID, String[] fetchGroups, int maxFetchDepth)
 	{
 		PersistenceManager pm = this.getPersistenceManager();
 		try {
@@ -235,7 +235,7 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	
 	/**
 	 * Executes the given search filter and assumes it will return instances
-	 * of {@link PropertySet}. It will return the {@link PropertyID}s of the
+	 * of {@link PropertySet}. It will return the {@link PropertySetID}s of the
 	 * found {@link PropertySet}s then.
 	 * <p>
 	 * Note, that if the given search filter does not return instances 
@@ -246,14 +246,14 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	 * @ejb.permission role-name="PropManager-read"
 	 * @ejb.transaction type = "Required"
 	 */
-	public Set<PropertyID> searchPropertySetIDs(PropSearchFilter propSearchFilter)
+	public Set<PropertySetID> searchPropertySetIDs(PropSearchFilter propSearchFilter)
 	{
 		PersistenceManager pm = this.getPersistenceManager();
 		try {
 			Collection<PropertySet> props = propSearchFilter.executeQuery(pm);
-			Set<PropertyID> result = new HashSet<PropertyID>();
+			Set<PropertySetID> result = new HashSet<PropertySetID>();
 			for (PropertySet propertySet : props) {
-				result.add((PropertyID) JDOHelper.getObjectId(propertySet));
+				result.add((PropertySetID) JDOHelper.getObjectId(propertySet));
 			}
 			return result;
 		} finally {
@@ -402,7 +402,7 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type = "Required"
 	 */
-	public Set<PropertySet> getPropertySets(Set<PropertyID> propIDs, String[] fetchGroups, int maxFetchDepth) 
+	public Set<PropertySet> getPropertySets(Set<PropertySetID> propIDs, String[] fetchGroups, int maxFetchDepth) 
 	{
 		// MultiPageSearchResult multiPageSearchResult = new
 		// MultiPageSearchResult();
