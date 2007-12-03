@@ -453,7 +453,14 @@ public class CascadedAuthenticationClientInterceptorDelegate extends GenericEJBI
 				if (oldPrincipal != null) {
 					loginData = new LoginData(oldPrincipal.getName(), oldPassword);
 					loginContext = new LoginContext(LoginData.DEFAULT_SECURITY_PROTOCOL, new JFireLogin(loginData).getAuthCallbackHandler());
-					loginContext.login();
+					try {
+						loginContext.login();
+					} catch (Exception x) {
+						// During server-setup it might happen that we cannot re-login at the organisation "__foobar_organisation_for_initial_login__",
+						// hence, we ignore this problem (leaving us simply unauthenticated) and simply log a .
+						if (!"__foobar_organisation_for_initial_login__".equals(loginData.getOrganisationID())) // not so clean, but at least a good way to prevent the message at every server-setup
+							logger.error("Cannot re-login as \"" + (loginData == null ? null : loginData.getPrincipalName()) + "\" after having executed a bean method as a different user (\"" + (userDescriptor == null ? null : userDescriptor.userName) + "\")!", x);
+					}
 				}
 			}
 			else {
