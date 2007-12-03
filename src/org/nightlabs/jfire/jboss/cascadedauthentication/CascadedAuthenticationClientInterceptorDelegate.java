@@ -291,18 +291,18 @@ public class CascadedAuthenticationClientInterceptorDelegate extends GenericEJBI
 //	}
 
 	private static Set<String> organisationIDs_thisServer = Collections.synchronizedSet(new HashSet<String>());
-	private static Set<String> organisationIDs_otherServer = Collections.synchronizedSet(new HashSet<String>());
+//	private static Set<String> organisationIDs_otherServer = Collections.synchronizedSet(new HashSet<String>());
 
 	private static Set<String> userNames_thisServer = Collections.synchronizedSet(new HashSet<String>());
-	private static Set<String> userNames_otherServer = Collections.synchronizedSet(new HashSet<String>());
+//	private static Set<String> userNames_otherServer = Collections.synchronizedSet(new HashSet<String>());
 
 	private static boolean isUserOnThisServer(String userName)
 	{
 		if (userNames_thisServer.contains(userName))
 			return true;
 
-		if (userNames_otherServer.contains(userName))
-			return false;
+//		if (userNames_otherServer.contains(userName))
+//			return false;
 
 		String organisationID = LoginData.PATTERN_SPLIT_LOGIN.split(userName)[1];
 		if (organisationIDs_thisServer.contains(organisationID)) {
@@ -310,10 +310,10 @@ public class CascadedAuthenticationClientInterceptorDelegate extends GenericEJBI
 			return true;
 		}
 
-		if (organisationIDs_otherServer.contains(organisationID)) {
-			userNames_otherServer.add(userName);
-			return false;
-		}
+//		if (organisationIDs_otherServer.contains(organisationID)) {
+//			userNames_otherServer.add(userName);
+//			return false;
+//		}
 
 		// TODO how can we find out, whether it's another server? Not being local doesn't mean other, because it might not yet exist and be created later here.
 		try {
@@ -457,7 +457,7 @@ public class CascadedAuthenticationClientInterceptorDelegate extends GenericEJBI
 						loginContext.login();
 					} catch (Exception x) {
 						// During server-setup it might happen that we cannot re-login at the organisation "__foobar_organisation_for_initial_login__",
-						// hence, we ignore this problem (leaving us simply unauthenticated) and simply log a .
+						// hence, we ignore this problem (leaving us simply unauthenticated).
 						if (!"__foobar_organisation_for_initial_login__".equals(loginData.getOrganisationID())) // not so clean, but at least a good way to prevent the message at every server-setup
 							logger.error("Cannot re-login as \"" + (loginData == null ? null : loginData.getPrincipalName()) + "\" after having executed a bean method as a different user (\"" + (userDescriptor == null ? null : userDescriptor.userName) + "\")!", x);
 					}
