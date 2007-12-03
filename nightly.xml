@@ -7,12 +7,7 @@
     <ant path="JFireTestSuite" file="build-nightlabs.xml" target="deploy"/>
     <requires/> <!-- default requires: uses .classpath file -->
     <provides/>
-    <!-- 
-    <provides path="/JFireTestSuite" location="JFireTestSuite/dist/JFireTestSuite.jar"/>
-    <provides path="/JFireTestSuite/dist/JFireTestSuite.jar" location="JFireTestSuite/dist/JFireTestSuite.jar"/>
-    <provides path="WORKSPACE/JFireTestSuite/dist/JFireTestSuite.jar" location="JFireTestSuite/dist/JFireTestSuite.jar"/>
-    <publishes location="JFireTestSuite/dist/JFireTestSuite.jar"/>
-    -->
+    <provides path="WORKSPACE/JFireTestSuite/dist/lib/junit-4.3.1.jar" location="JFireTestSuite/dist/lib/junit-4.3.1.jar"/>
     <javadoc path="JFireTestSuite/src"/>
   </project>
 
