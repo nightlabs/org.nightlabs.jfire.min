@@ -20,9 +20,6 @@ public class UserTest extends TestCase
 {
 	Logger logger = Logger.getLogger(UserTest.class);
 
-	public UserTest() {
-	}
-
 	@Override
 	protected void setUp() throws Exception
 	{
@@ -52,12 +49,12 @@ public class UserTest extends TestCase
 	 * as it is annotated with the Test annotation.
 	 */
 	@Test
-	public void testListUser() {
+	public void listUsers() {
 		// if fails, however ;-)
 		// fail("Well, somewhere is an error.");
 
-		logger.info("testListUser: begin");
+		logger.info("listUsers: begin");
 		// TODO implement!
-		logger.info("testListUser: end");
+		logger.info("listUsers: end");
 	}
 }

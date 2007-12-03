@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Modifier;
 import java.rmi.RemoteException;
 import java.util.Collection;
 import java.util.HashMap;
@@ -322,7 +323,7 @@ implements SessionBean
 	 */
 	private static List<TestSuite> createTestSuites(List<Class<? extends TestSuite>> testSuiteClassesFilter) throws ClassNotFoundException {
 		logger.debug("Scanning classpath for TestSuites and TestCases");
-		Collection<Class> classes = ReflectUtil.listClassesInPackage("org.nightlabs.jfire.testsuite", true);
+		Collection<Class<?>> classes = ReflectUtil.listClassesInPackage("org.nightlabs.jfire.testsuite", true);
 		logger.debug("Found " + classes.size() + " classes");
 		
 		List<Class<? extends TestSuite>> testSuiteClasses = new LinkedList<Class<? extends TestSuite>>();
@@ -333,6 +334,9 @@ implements SessionBean
 				Class<? extends TestSuite> suiteClass = (Class<? extends TestSuite>) clazz;
 				testSuiteClasses.add(suiteClass);
 			} else if (TestCase.class.isAssignableFrom(clazz)) {
+				if ((clazz.getModifiers() & Modifier.ABSTRACT) != 0) // ignore abstract classes since they are base-classes and no test-cases themselves
+					continue;
+
 				Class<? extends TestCase> testCaseClass = (Class<? extends TestCase>) clazz;
 				JFireTestSuite testSuiteAnnotation = clazz.getAnnotation(JFireTestSuite.class);
 				Class<? extends TestSuite> suiteClass = DefaultTestSuite.class; // Default value, if not annotated.

@@ -13,13 +13,11 @@ import org.nightlabs.jfire.testsuite.TestSuite;
  * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] de -->
  *
  */
-public class JFireBaseTestSuite extends TestSuite {
+public class JFireBaseTestSuite extends TestSuite
+{
 
-	/**
-	 * 
-	 */
-	public JFireBaseTestSuite() {
-	}
+//	public JFireBaseTestSuite() {
+//	}
 
 	/**
 	 * @param classes

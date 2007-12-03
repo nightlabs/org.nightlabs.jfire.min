@@ -16,7 +16,7 @@ import org.apache.commons.lang.exception.ExceptionUtils;
  *
  * @author marco schulze - marco at nightlabs dot de
  */
-public class TestCase
+public abstract class TestCase
 extends junit.framework.TestCase
 {
 	public TestCase()

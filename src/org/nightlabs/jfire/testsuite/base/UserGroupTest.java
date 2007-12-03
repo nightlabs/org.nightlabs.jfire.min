@@ -14,9 +14,6 @@ import junit.framework.TestCase;
 @JFireTestSuite(JFireBaseTestSuite.class)
 public class UserGroupTest extends TestCase {
 
-	/**
-	 * 
-	 */
 	public UserGroupTest() {
 		this("Testing the functionality around usergroups.");
 	}
