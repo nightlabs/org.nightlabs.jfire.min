@@ -23,25 +23,17 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/NightLabsBase"/>
 	<classpathentry kind="var" path="LOG4J"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/NightLabsJDO"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/JFireTrade"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/JFireSimpleTrade"/>
 	<classpathentry kind="var" path="JDO2" sourcepath="/JDO2_SRC"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/JFireJbpm"/>
 	<classpathentry kind="var" path="WORKSPACE/JFireJbpm/lib/jbpm/jbpm-3.1.4.jar"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/JFireDynamicTrade"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/JFireVoucher"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/JFireReporting"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/JFireReportingTrade"/>
 	<classpathentry kind="lib" path="dist/lib/junit-4.3.1.jar" sourcepath="dist/lib/junit-4.3.1-src.jar"/>
 	<classpathentry kind="var" path="JBOSS/server/default/lib/mail.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/JFireBaseClientLib"/>
 	<classpathentry kind="var" path="JBOSS/server/default/lib/activation.jar"/>
 	<classpathentry kind="var" path="JPOX" sourcepath="/JPOX_SRC"/>
 	<classpathentry kind="var" path="JPOXENHANCER" sourcepath="/JPOXENHANCER_SRC"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/JFireChezFrancois"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/JFireIntegrationJBoss"/>
 	<classpathentry kind="var" path="APACHE_COMMONS/commons-lang.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/JFireBaseDAO"/>
+	<classpathentry kind="var" path="ASM"/>
 	<classpathentry kind="output" path="bin"/>
-  <classpathentry kind="var" path="ASM"/>
 </classpath>
