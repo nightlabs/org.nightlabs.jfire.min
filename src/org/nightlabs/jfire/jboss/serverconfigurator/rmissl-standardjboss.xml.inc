@@ -1,0 +1,24 @@
+
+		<invoker-proxy-binding>
+			<name>stateless-compression-invoker</name>
+			<invoker-mbean>
+				jboss:service=invoker,type=jrmp,socketType=CompressionSocketFactory
+			</invoker-mbean>
+			<proxy-factory>org.jboss.proxy.ejb.ProxyFactory</proxy-factory>
+			<proxy-factory-config>
+				<client-interceptors>
+					<home>
+						<interceptor>org.jboss.proxy.ejb.HomeInterceptor</interceptor>
+						<interceptor>org.jboss.proxy.SecurityInterceptor</interceptor>
+						<interceptor>org.jboss.proxy.TransactionInterceptor</interceptor>
+						<interceptor>org.jboss.invocation.InvokerInterceptor</interceptor>
+					</home>
+					<bean>
+						<interceptor>org.jboss.proxy.ejb.StatelessSessionInterceptor</interceptor>
+						<interceptor>org.jboss.proxy.SecurityInterceptor</interceptor>
+						<interceptor>org.jboss.proxy.TransactionInterceptor</interceptor>
+						<interceptor>org.jboss.invocation.InvokerInterceptor</interceptor>
+					</bean>
+				</client-interceptors>
+			</proxy-factory-config>
+		</invoker-proxy-binding>
