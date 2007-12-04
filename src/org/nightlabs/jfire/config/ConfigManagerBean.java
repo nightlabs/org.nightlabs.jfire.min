@@ -893,7 +893,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 
 			// version is {major}.{minor}.{release}-{patchlevel}-{suffix}
 			moduleMetaData = new ModuleMetaData(
-					JFireBaseEAR.MODULE_NAME, "0.9.1-0-beta", "0.9.1-0-beta");
+					JFireBaseEAR.MODULE_NAME, "0.9.2-0-beta", "0.9.2-0-beta");
 			pm.makePersistent(moduleMetaData);
 
 			UserConfigSetup userConfigSetup = new UserConfigSetup(organisationID);
