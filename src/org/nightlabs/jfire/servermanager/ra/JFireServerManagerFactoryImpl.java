@@ -121,7 +121,6 @@ import org.nightlabs.jfire.servermanager.config.JDOCf;
 import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
 import org.nightlabs.jfire.servermanager.config.OrganisationCf;
 import org.nightlabs.jfire.servermanager.config.OrganisationConfigModule;
-import org.nightlabs.jfire.servermanager.config.SmtpMailServiceCf;
 import org.nightlabs.jfire.servermanager.config.ServerCf;
 import org.nightlabs.jfire.servermanager.createorganisation.BusyCreatingOrganisationException;
 import org.nightlabs.jfire.servermanager.createorganisation.CreateOrganisationProgress;
@@ -792,17 +791,18 @@ public class JFireServerManagerFactoryImpl
 				if (cfMod.getLocalServer().getServerID() == null)
 					throw new NullPointerException("localServer.serverID must not be null at first call to this method!");
 			
-			// ensure a reasonable SMTP-Config is set. // TODO shouldn't this code better be in the init method of the JFireServerConfigModule?! IMHO that's wrong here. Marco.
-			if (cfMod.getSmtp() == null) {
-				if (orgCfMod.getSmtp() == null) {
-					logger.warn("There are no SMTP settings set! Using fallback values. ", new NullPointerException());
-					SmtpMailServiceCf fallback = new SmtpMailServiceCf();
-					fallback.init();
-					cfMod.setSmtp(fallback);
-				} else {
-					cfMod.setSmtp(orgCfMod.getSmtp());
-				}
-			}
+			// ensure a reasonable SMTP-Config is set. // TODO shouldn't this code better be in the init method of the JFireServerConfigModule?! or in ManagedConnectionFactory.testConfiguration(...)? IMHO that's wrong here. Marco.
+//			if (cfMod.getSmtp() == null) {
+//				if (orgCfMod.getSmtp() == null) {
+//					logger.warn("There are no SMTP settings set! Using fallback values. ", new NullPointerException());
+//					SmtpMailServiceCf fallback = new SmtpMailServiceCf();
+//					fallback.init();
+//					cfMod.setSmtp(fallback);
+//				} else {
+//					cfMod.setSmtp(orgCfMod.getSmtp());
+//				}
+//			}
+			// I think the above code (checking the SMTP-config) is not necessary, because it actually is already done in the init() method.
 				
 			try {
 				BeanUtils.copyProperties(orgCfMod, cfMod);

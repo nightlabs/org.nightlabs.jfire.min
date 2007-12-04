@@ -509,7 +509,7 @@ public class JFireServerManagerImpl
 		} catch (LoginException e) {
 			throw e;
 		} catch(Throwable e) {
-			logger.fatal("Login failed!", e);
+			logger.warn("Login failed!", e);
 			throw new LoginException(e.getMessage());
 		}
 
