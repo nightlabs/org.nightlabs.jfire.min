@@ -121,7 +121,7 @@ import org.nightlabs.jfire.servermanager.config.JDOCf;
 import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
 import org.nightlabs.jfire.servermanager.config.OrganisationCf;
 import org.nightlabs.jfire.servermanager.config.OrganisationConfigModule;
-import org.nightlabs.jfire.servermanager.config.SMTPMailServiceCf;
+import org.nightlabs.jfire.servermanager.config.SmtpMailServiceCf;
 import org.nightlabs.jfire.servermanager.config.ServerCf;
 import org.nightlabs.jfire.servermanager.createorganisation.BusyCreatingOrganisationException;
 import org.nightlabs.jfire.servermanager.createorganisation.CreateOrganisationProgress;
@@ -796,7 +796,7 @@ public class JFireServerManagerFactoryImpl
 			if (cfMod.getSmtp() == null) {
 				if (orgCfMod.getSmtp() == null) {
 					logger.warn("There are no SMTP settings set! Using fallback values. ", new NullPointerException());
-					SMTPMailServiceCf fallback = new SMTPMailServiceCf();
+					SmtpMailServiceCf fallback = new SmtpMailServiceCf();
 					fallback.init();
 					cfMod.setSmtp(fallback);
 				} else {
