@@ -426,18 +426,38 @@ public class CascadedAuthenticationClientInterceptorDelegate extends GenericEJBI
 //		result = cc.result;
 //		}
 
+		String oldUserName = oldPrincipal == null ? null : oldPrincipal.getName();
+		if (oldUserName != null) {
+			int idx = oldUserName.indexOf('?');
+			if (idx >= 0)
+				oldUserName = oldUserName.substring(0, idx);
+		}
+
+		String newUserName = userDescriptor == null ? null : userDescriptor.userName;
+		boolean changeIdentity = newUserName != null;
+		if (changeIdentity) {
+			int idx = newUserName.indexOf('?');
+			if (idx >= 0)
+				newUserName = newUserName.substring(0, idx);
+
+			if (Util.equals(newUserName, oldUserName))
+				changeIdentity = false;
+		} // if (changeIdentity) {
+
 		LoginData loginData = null;
 		LoginContext loginContext = null;
-		if (userDescriptor != null) {
-			boolean localLogin = isUserOnThisServer(userDescriptor.userName);
-			if (localLogin) {
-				loginData = new LoginData(userDescriptor.userName, userDescriptor.password);
-				loginContext = new LoginContext(LoginData.DEFAULT_SECURITY_PROTOCOL, new JFireLogin(loginData).getAuthCallbackHandler());
-				loginContext.login();
-			}
-			else { // if we logged in to a remote-server, it would try it locally and fail => hence we only set the identity without a real login
-				SecurityAssociation.setPrincipal(new SimplePrincipal(userDescriptor.userName));
-				SecurityAssociation.setCredential(userDescriptor.password.toCharArray());
+		if (changeIdentity) {
+			if (userDescriptor != null) {
+				boolean localLogin = isUserOnThisServer(newUserName);
+				if (localLogin) {
+					loginData = new LoginData(userDescriptor.userName, userDescriptor.password);
+					loginContext = new LoginContext(LoginData.DEFAULT_SECURITY_PROTOCOL, new JFireLogin(loginData).getAuthCallbackHandler());
+					loginContext.login();
+				}
+				else { // if we logged in to a remote-server, it would try it locally and fail => hence we only set the identity without a real login
+					SecurityAssociation.setPrincipal(new SimplePrincipal(userDescriptor.userName));
+					SecurityAssociation.setCredential(userDescriptor.password.toCharArray());
+				}
 			}
 		}
 
@@ -447,26 +467,28 @@ public class CascadedAuthenticationClientInterceptorDelegate extends GenericEJBI
 			result = this.getNext().invoke(invocation);
 
 		} finally {
-			if (loginContext != null) {
-				loginContext.logout(); // we don't need to logout, because we don't use restore-login-identity => but we need to re-login, though
-				// maybe better always logout - just in case we don't login below, we still should forget the current login-data
-				if (oldPrincipal != null) {
-					loginData = new LoginData(oldPrincipal.getName(), oldPassword);
-					loginContext = new LoginContext(LoginData.DEFAULT_SECURITY_PROTOCOL, new JFireLogin(loginData).getAuthCallbackHandler());
-					try {
-						loginContext.login();
-					} catch (Exception x) {
-						// During server-setup it might happen that we cannot re-login at the organisation "__foobar_organisation_for_initial_login__",
-						// hence, we ignore this problem (leaving us simply unauthenticated).
-						if (!"__foobar_organisation_for_initial_login__".equals(loginData.getOrganisationID())) // not so clean, but at least a good way to prevent the message at every server-setup
-							logger.error("Cannot re-login as \"" + (loginData == null ? null : loginData.getPrincipalName()) + "\" after having executed a bean method as a different user (\"" + (userDescriptor == null ? null : userDescriptor.userName) + "\")!", x);
+			if (changeIdentity) {
+				if (loginContext != null) {
+					loginContext.logout(); // we don't need to logout, because we don't use restore-login-identity => but we need to re-login, though
+					// maybe better always logout - just in case we don't login below, we still should forget the current login-data
+					if (oldPrincipal != null) {
+						loginData = new LoginData(oldPrincipal.getName(), oldPassword);
+						loginContext = new LoginContext(LoginData.DEFAULT_SECURITY_PROTOCOL, new JFireLogin(loginData).getAuthCallbackHandler());
+						try {
+							loginContext.login();
+						} catch (Exception x) {
+							// During server-setup it might happen that we cannot re-login at the organisation "__foobar_organisation_for_initial_login__",
+							// hence, we ignore this problem (leaving us simply unauthenticated).
+							if (!"__foobar_organisation_for_initial_login__".equals(loginData.getOrganisationID())) // not so clean, but at least a good way to prevent the message at every server-setup
+								logger.error("Cannot re-login as \"" + (loginData == null ? null : loginData.getPrincipalName()) + "\" after having executed a bean method as a different user (\"" + (userDescriptor == null ? null : userDescriptor.userName) + "\")!", x);
+						}
 					}
 				}
-			}
-			else {
-				SecurityAssociation.setPrincipal(oldPrincipal);
-				SecurityAssociation.setCredential(oldCredential);
-			}
+				else {
+					SecurityAssociation.setPrincipal(oldPrincipal);
+					SecurityAssociation.setCredential(oldCredential);
+				}
+			} // if (restoreOldLogin) {
 		}
 
 		if (!(result instanceof Proxy)) {
