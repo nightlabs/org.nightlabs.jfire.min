@@ -25,7 +25,6 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
-import javax.mail.internet.MimeMessage.RecipientType;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
@@ -37,7 +36,6 @@ import junit.framework.Test;
 import org.apache.log4j.Logger;
 import org.nightlabs.jfire.testsuite.TestSuite.Status;
 import org.nightlabs.util.Util;
-import org.nightlabs.util.Utils;
 import org.nightlabs.xml.NLDOMUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -195,7 +193,7 @@ public class DefaultTestListener implements JFireTestListener {
 	 */
 	public static class TestCaseResult {
 		private TestSuiteResult testSuiteResult;
-		private Class testCaseClass;
+		private Class<? extends Test> testCaseClass;
 		private Date startTime;
 		private Date endTime;
 		private boolean hasFailures;
@@ -250,14 +248,14 @@ public class DefaultTestListener implements JFireTestListener {
 		 * Returns the testCaseClass of this DefaultTestListener.TestCaseResult.
 		 * @return the testCaseClass.
 		 */
-		public Class getTestCaseClass() {
+		public Class<? extends Test> getTestCaseClass() {
 			return testCaseClass;
 		}
 		/**
 		 * Sets the testCaseClass of this DefaultTestListener.TestCaseResult.
 		 * @param testCaseClass the testCaseClass to set.
 		 */
-		public void setTestCaseClass(Class testCaseClass) {
+		public void setTestCaseClass(Class<? extends Test> testCaseClass) {
 			this.testCaseClass = testCaseClass;
 		}
 		/**
