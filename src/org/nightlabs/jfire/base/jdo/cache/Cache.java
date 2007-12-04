@@ -1170,56 +1170,62 @@ public class Cache
 			// If and only if the scope is null, we search for a record that contains
 			// AT LEAST our required fetch groups and AT LEAST our maxFetchDepth.
 			if (scope == null) {
-				if (logger.isDebugEnabled())
-					logger.debug("scope == null => searching for alternative entries (which contain at least the required fetch groups)...");
+				if (cacheCfMod.getExactFetchGroupsOnly().booleanValue()) {
+					if (logger.isDebugEnabled())
+						logger.debug("exactFetchGroupsOnly is enabled => not searching for alternative entries having more than the desired fetch-groups.");
+				}
+				else {
+					if (logger.isDebugEnabled())
+						logger.debug("scope == null => searching for alternative entries (which contain at least the required fetch groups)...");
 
-				Set<Key> keySet = objectID2KeySet_alternative.get(objectID);
-				if (keySet != null) {
-					iterateCandidateKey: for (Key candidateKey : keySet) {
-						// is the scope correct?
-						if (candidateKey.getScope() != null)
-							continue iterateCandidateKey;
-						
-						// is the maxFetchDepth sufficient?
-						if (maxFetchDepth < 0) {
-							if (maxFetchDepth != NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT)
-								throw new IllegalArgumentException("maxFetchDepth < 0 but maxFetchDepth != NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT");
-	
-							if (maxFetchDepth != candidateKey.getMaxFetchDepth())
+					Set<Key> keySet = objectID2KeySet_alternative.get(objectID);
+					if (keySet != null) {
+						iterateCandidateKey: for (Key candidateKey : keySet) {
+							// is the scope correct?
+							if (candidateKey.getScope() != null)
 								continue iterateCandidateKey;
-						}
-						else if (maxFetchDepth > candidateKey.getMaxFetchDepth())
-							continue iterateCandidateKey;
-	
-						// does the candidateKey contain all required fetchgroups?
-						if (fetchGroups != null) {
-							if (candidateKey.getFetchGroups() == null || !candidateKey.getFetchGroups().containsAll(fetchGroups))
-								continue iterateCandidateKey;
-						}
-	
-						carrier = (Carrier) key2Carrier.get(candidateKey);
-						if (carrier != null) {
-							object = carrier.getObject();
-							if (object == null) {
-								logger.warn("Found Carrier, but object has already been released by the garbage collector! If this message occurs often, give the VM more memory or the Cache a shorter object-lifetime! Alternatively, you may switch to hard references. searched key: " + key.toString() + " candidateKey: " + candidateKey.toString());
 
-								removeByKey(candidateKey);
-								carrier = null;
+							// is the maxFetchDepth sufficient?
+							if (maxFetchDepth < 0) {
+								if (maxFetchDepth != NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT)
+									throw new IllegalArgumentException("maxFetchDepth < 0 but maxFetchDepth != NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT");
+
+								if (maxFetchDepth != candidateKey.getMaxFetchDepth())
+									continue iterateCandidateKey;
 							}
-							else {
-								if (logger.isDebugEnabled())
-									logger.debug("Found alternative entry with at least the required fetch groups: searched key: " + key.toString() + " candidateKey: " + candidateKey.toString());
+							else if (maxFetchDepth > candidateKey.getMaxFetchDepth())
+								continue iterateCandidateKey;
 
-								carrier.setAccessDT();
-								return object;
+							// does the candidateKey contain all required fetchgroups?
+							if (fetchGroups != null) {
+								if (candidateKey.getFetchGroups() == null || !candidateKey.getFetchGroups().containsAll(fetchGroups))
+									continue iterateCandidateKey;
 							}
 
-						} // if (carrier != null) {
-					} // iterateCandidateKey
-				} // if (keySet != null) {
+							carrier = (Carrier) key2Carrier.get(candidateKey);
+							if (carrier != null) {
+								object = carrier.getObject();
+								if (object == null) {
+									logger.warn("Found Carrier, but object has already been released by the garbage collector! If this message occurs often, give the VM more memory or the Cache a shorter object-lifetime! Alternatively, you may switch to hard references. searched key: " + key.toString() + " candidateKey: " + candidateKey.toString());
 
-				if (logger.isDebugEnabled())
-					logger.debug("...no alternative entry found.");
+									removeByKey(candidateKey);
+									carrier = null;
+								}
+								else {
+									if (logger.isDebugEnabled())
+										logger.debug("Found alternative entry with at least the required fetch groups: searched key: " + key.toString() + " candidateKey: " + candidateKey.toString());
+
+									carrier.setAccessDT();
+									return object;
+								}
+
+							} // if (carrier != null) {
+						} // iterateCandidateKey
+					} // if (keySet != null) {
+
+					if (logger.isDebugEnabled())
+						logger.debug("...no alternative entry found.");
+				} // if (!"true".equals(property_CacheExactFetchGroups_value)) {
 			} // if (scope == null) {
 
 			return null;

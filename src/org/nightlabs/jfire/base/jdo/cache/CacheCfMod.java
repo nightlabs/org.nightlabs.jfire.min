@@ -55,6 +55,8 @@ public class CacheCfMod extends ConfigModule
 	private int oldGraphDependencyContainerCount = 0;
 	private long oldGraphDependencyContainerActivityMSec = 0;
 
+	private Boolean exactFetchGroupsOnly;
+
 	public CacheCfMod()
 	{
 	}
@@ -131,7 +133,14 @@ public class CacheCfMod extends ConfigModule
 				"    this controls how long a deleted dependency record is kept. This setting defines the\n" +
 				"    life time of the first container. Therefore, a dependency record lives at least\n" +
 				"    (oldGraphDependencyContainerCount - 1) * oldGraphDependencyContainerActivityMSec millisec\n" +
-				"    and at most oldGraphDependencyContainerCount * oldGraphDependencyContainerActivityMSec ms.\n";
+				"    and at most oldGraphDependencyContainerCount * oldGraphDependencyContainerActivityMSec ms.\n" +
+				"\n" +
+				"* exactFetchGroupsOnly: Normally (with the default value \"false\"), the cache will search for\n" +
+				"    alternative entries having more than the desired fetch-groups set. However, this behaviour\n" +
+				"    can cause Heisenbugs (the accessed fields are there solely because other code has already\n" +
+				"    fetched the object before with more fetch-groups). During development, you should set this\n" +
+				"    option to \"true\" in order to prevent the Heisenbugs and reliably cause exceptions when\n" +
+				"    fetch-groups are missing in your code.\n";
 
 		if (threadErrorWaitMSec <= 0)
 			setThreadErrorWaitMSec(60 * 1000);
@@ -164,6 +173,9 @@ public class CacheCfMod extends ConfigModule
 				!REFERENCE_TYPE_HARD.equals(referenceType))
 			setReferenceType(REFERENCE_TYPE_HARD);
 
+		if (exactFetchGroupsOnly == null)
+			setExactFetchGroupsOnly(Boolean.FALSE);
+
 		if (logger.isDebugEnabled()) {
 			logger.debug("The Cache settings are:");
 			logger.debug("    threadErrorWaitMSec=" + threadErrorWaitMSec);
@@ -174,6 +186,7 @@ public class CacheCfMod extends ConfigModule
 			logger.debug("    carrierContainerCount=" + carrierContainerCount);
 			logger.debug("    carrierContainerActivityMSec=" + carrierContainerActivityMSec);
 			logger.debug("    referenceType=" + referenceType);
+			logger.debug("    exactFetchGroupsOnly=" + exactFetchGroupsOnly);
 		}
 	}
 
@@ -331,6 +344,16 @@ public class CacheCfMod extends ConfigModule
 			int oldSyntheticDirtyObjectIDContainerCount)
 	{
 		this.oldGraphDependencyContainerCount = oldSyntheticDirtyObjectIDContainerCount;
+		setChanged();
+	}
+
+	public Boolean getExactFetchGroupsOnly()
+	{
+		return exactFetchGroupsOnly;
+	}
+	public void setExactFetchGroupsOnly(Boolean exactFetchGroupsOnly)
+	{
+		this.exactFetchGroupsOnly = exactFetchGroupsOnly;
 		setChanged();
 	}
 }
