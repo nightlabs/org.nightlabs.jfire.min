@@ -16,7 +16,7 @@ import org.nightlabs.jfire.jboss.authentication.JFireServerLoginModule;
 import org.nightlabs.jfire.jboss.cascadedauthentication.CascadedAuthenticationClientInterceptor;
 import org.nightlabs.jfire.serverconfigurator.ServerConfigurationException;
 import org.nightlabs.jfire.serverconfigurator.ServerConfigurator;
-import org.nightlabs.jfire.servermanager.config.SMTPMailServiceCf;
+import org.nightlabs.jfire.servermanager.config.SmtpMailServiceCf;
 import org.nightlabs.util.IOUtil;
 import org.nightlabs.xml.DOMParser;
 import org.nightlabs.xml.NLDOMUtil;
@@ -400,7 +400,7 @@ public class ServerConfiguratorJBoss
 		parser.parse(new InputSource(new FileInputStream(destFile)));
 		Document document = parser.getDocument();
 		
-		SMTPMailServiceCf smtp = getJFireServerConfigModule().getSmtp();
+		SmtpMailServiceCf smtp = getJFireServerConfigModule().getSmtp();
 	
 		if (logger.isInfoEnabled()) {
 			logger.info("Password: "+ smtp.getPassword());
