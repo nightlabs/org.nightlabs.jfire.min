@@ -29,9 +29,8 @@ package org.nightlabs.jfire.classloader;
 import java.io.IOException;
 import java.util.List;
 
-import org.nightlabs.jfire.base.JFireBasePrincipal;
-
 import org.nightlabs.ModuleException;
+import org.nightlabs.jfire.base.JFireBasePrincipal;
 
 /**
  * @author marco schulze - marco at nightlabs dot de

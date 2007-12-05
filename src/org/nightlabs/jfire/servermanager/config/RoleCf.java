@@ -32,12 +32,11 @@ import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 
 import org.apache.log4j.Logger;
-import org.nightlabs.jfire.security.Role;
-import org.nightlabs.jfire.security.id.RoleID;
-
 import org.nightlabs.config.InitException;
 import org.nightlabs.config.Initializable;
 import org.nightlabs.jdo.ObjectIDUtil;
+import org.nightlabs.jfire.security.Role;
+import org.nightlabs.jfire.security.id.RoleID;
 
 /**
  * @author marco

@@ -39,14 +39,13 @@ import java.util.jar.JarFile;
 import org.apache.log4j.Logger;
 import org.apache.xpath.CachedXPathAPI;
 import org.nightlabs.jfire.module.ModuleType;
+import org.nightlabs.xml.DOMParser;
 import org.w3c.dom.Node;
 import org.w3c.dom.traversal.NodeIterator;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
-
-import org.nightlabs.xml.DOMParser;
 
 /**
  * This class manages application.xml resources form EARs. It reads additional information

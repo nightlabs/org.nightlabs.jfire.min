@@ -48,7 +48,6 @@ import org.nightlabs.annotation.Implement;
 import org.nightlabs.jfire.jdo.notification.DirtyObjectID;
 import org.nightlabs.jfire.jdo.notification.JDOLifecycleState;
 import org.nightlabs.util.Util;
-import org.nightlabs.util.Utils;
 
 public class DirtyObjectIDBufferFileSystem
 implements DirtyObjectIDBuffer

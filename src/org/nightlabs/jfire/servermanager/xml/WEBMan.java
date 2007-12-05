@@ -30,13 +30,12 @@ import java.io.InputStream;
 
 import org.apache.log4j.Logger;
 import org.apache.xpath.CachedXPathAPI;
+import org.nightlabs.xml.DOMParser;
 import org.w3c.dom.Node;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
-
-import org.nightlabs.xml.DOMParser;
 
 /**
  * This class manages web.xml resources.

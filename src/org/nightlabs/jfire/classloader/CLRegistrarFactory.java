@@ -56,7 +56,6 @@ import org.nightlabs.jfire.classloader.xml.CLRepositoryMan;
 import org.nightlabs.jfire.classloader.xml.CLRepositoryMan.Publication;
 import org.nightlabs.util.CacheDirTag;
 import org.nightlabs.util.Util;
-import org.nightlabs.util.Utils;
 import org.nightlabs.xml.XMLReadException;
 import org.xml.sax.SAXException;
 
