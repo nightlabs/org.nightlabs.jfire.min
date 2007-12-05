@@ -33,15 +33,10 @@ import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
 import javax.jdo.PersistenceManager;
 
+import org.nightlabs.ModuleException;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
-import org.nightlabs.jfire.security.Role;
-import org.nightlabs.jfire.security.RoleGroup;
-import org.nightlabs.jfire.security.RoleGroupSearchResult;
-import org.nightlabs.jfire.security.SecurityException;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.servermanager.RoleImportSet;
-
-import org.nightlabs.ModuleException;
 
 /**
  * @author nick

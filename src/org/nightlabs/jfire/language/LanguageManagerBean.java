@@ -39,11 +39,7 @@ import javax.jdo.PersistenceManager;
 import org.apache.log4j.Logger;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
-import org.nightlabs.jfire.language.Language;
-import org.nightlabs.jfire.language.LanguageException;
-import org.nightlabs.jfire.language.LanguageNotFoundException;
 import org.nightlabs.jfire.language.id.LanguageID;
-
 import org.nightlabs.language.LanguageCf;
 
 /**

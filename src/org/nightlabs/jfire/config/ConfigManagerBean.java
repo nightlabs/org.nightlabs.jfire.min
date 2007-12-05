@@ -57,7 +57,6 @@ import org.nightlabs.jfire.config.id.ConfigModuleID;
 import org.nightlabs.jfire.config.id.ConfigSetupID;
 import org.nightlabs.jfire.config.xml.XMLConfigFactory;
 import org.nightlabs.jfire.editlock.EditLockType;
-import org.nightlabs.progress.ProgressMonitor;
 import org.nightlabs.util.CollectionUtil;
 
 /**

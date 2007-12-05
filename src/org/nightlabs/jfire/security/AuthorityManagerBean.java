@@ -38,26 +38,12 @@ import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
 
+import org.nightlabs.ModuleException;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
-import org.nightlabs.jfire.security.Authority;
-import org.nightlabs.jfire.security.AuthorityNotFoundException;
-import org.nightlabs.jfire.security.AuthoritySearchResult;
-import org.nightlabs.jfire.security.RoleGroup;
-import org.nightlabs.jfire.security.RoleGroupRef;
-import org.nightlabs.jfire.security.RoleGroupRefNotFoundException;
-import org.nightlabs.jfire.security.RoleGroupRefSearchResult;
-import org.nightlabs.jfire.security.SecurityException;
-import org.nightlabs.jfire.security.User;
-import org.nightlabs.jfire.security.UserNotFoundException;
-import org.nightlabs.jfire.security.UserRef;
-import org.nightlabs.jfire.security.UserRefNotFoundException;
-import org.nightlabs.jfire.security.UserRefSearchResult;
 import org.nightlabs.jfire.security.id.AuthorityID;
 import org.nightlabs.jfire.security.id.RoleGroupID;
 import org.nightlabs.jfire.security.id.UserID;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
-
-import org.nightlabs.ModuleException;
 
 /**
  * @ejb.bean name="jfire/ejb/JFireBaseBean/AuthorityManager"
