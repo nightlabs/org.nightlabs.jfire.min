@@ -37,9 +37,7 @@ import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
 
 import org.apache.log4j.Logger;
-import org.nightlabs.jfire.classloader.ClassLoaderException;
-import org.nightlabs.jfire.classloader.ResourceMetaData;
-
+import org.nightlabs.ModuleException;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 
