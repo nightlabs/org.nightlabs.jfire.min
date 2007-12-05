@@ -35,7 +35,6 @@ import org.apache.log4j.Logger;
 import org.nightlabs.jfire.idgenerator.IDGenerator;
 import org.nightlabs.jfire.organisation.Organisation;
 import org.nightlabs.jfire.prop.AbstractStruct;
-import org.nightlabs.jfire.prop.StructField;
 import org.nightlabs.jfire.prop.DisplayNamePart;
 import org.nightlabs.jfire.prop.IStruct;
 import org.nightlabs.jfire.prop.PropHelper;

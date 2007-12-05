@@ -3,9 +3,9 @@
  */
 package org.nightlabs.jfire.testsuite.base;
 
-import org.nightlabs.jfire.testsuite.JFireTestSuite;
-
 import junit.framework.TestCase;
+
+import org.nightlabs.jfire.testsuite.JFireTestSuite;
 
 /**
  * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] de -->
