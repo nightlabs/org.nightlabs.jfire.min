@@ -36,6 +36,9 @@ import org.apache.log4j.Logger;
 import org.jnp.interfaces.NamingContextFactory;
 
 /**
+ * This initial context factory is used within the server to allow for cascaded authentication.
+ * Cascaded authentication is described here:
+ *
  * @author Marco Schulze - marco at nightlabs dot de
  */
 public class LoginInitialContextFactory extends NamingContextFactory

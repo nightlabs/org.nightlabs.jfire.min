@@ -1,4 +1,4 @@
-package org.nightlabs.jndi.rmissl;
+package org.nightlabs.jfire.jboss.jndi.rmissl;
 
 
 import java.util.Hashtable;
