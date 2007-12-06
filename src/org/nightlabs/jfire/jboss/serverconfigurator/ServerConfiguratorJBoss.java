@@ -16,10 +16,11 @@ import org.nightlabs.jfire.jboss.authentication.JFireServerLoginModule;
 import org.nightlabs.jfire.jboss.cascadedauthentication.CascadedAuthenticationClientInterceptor;
 import org.nightlabs.jfire.serverconfigurator.ServerConfigurationException;
 import org.nightlabs.jfire.serverconfigurator.ServerConfigurator;
-import org.nightlabs.jfire.servermanager.config.SmtpMailServiceCf;
+import org.nightlabs.jfire.servermanager.config.SMTPMailServiceCf;
 import org.nightlabs.util.IOUtil;
 import org.nightlabs.xml.DOMParser;
 import org.nightlabs.xml.NLDOMUtil;
+import org.w3c.dom.Comment;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -274,6 +275,63 @@ public class ServerConfiguratorJBoss
 		boolean haveChanges = false;
 		boolean changed;
 		
+		
+		// add the custom compression socket mbean service
+		// find if we already wrote the node 
+		
+		Node jrmp_node = NLDOMUtil.findNodeByAttribute(document, "server/mbean", "name", 
+		"jboss:service=invoker,type=jrmp,socketType=CompressionSocketFactory");
+		
+		if(jrmp_node == null) {
+
+			changed = true;
+
+			Element root = document.getDocumentElement();
+
+
+			// find the Node JRMP invoker to add our custom invoker before that node
+			jrmp_node = NLDOMUtil.findNodeByAttribute(document, "server/mbean", "code", 
+			"org.jboss.invocation.jrmp.server.JRMPInvoker");
+
+			if(jrmp_node == null) {
+				logger.error("MBean attribute node org.jboss.invocation.jrmp.server.JRMPInvoker->code not found");
+			}    
+			else
+			{
+				Element newnode = document.createElement("mbean");// Create Root Element
+				newnode.setAttribute("code", "org.jboss.invocation.jrmp.server.JRMPInvoker");
+				newnode.setAttribute("name", "jboss:service=invoker,type=jrmp,socketType=CompressionSocketFactory");
+
+
+				Comment comment = document.createComment("Add the Custom Compression SSL Socket mbean invoker");
+				newnode.appendChild(comment);
+
+				Element item = document.createElement("attribute");       // Create element
+				item.setAttribute("name", "RMIObjectPort");
+				item.appendChild( document.createTextNode("24445") ); 
+				newnode.appendChild( item );  
+
+				item = document.createElement("attribute");       // Create element
+				item.setAttribute("name", "RMIClientSocketFactory");
+				item.appendChild( document.createTextNode("org.nightlabs.rmissl.socket.SSLCompressionRMIClientSocketFactory") );         
+				newnode.appendChild( item );  
+
+				item = document.createElement("attribute");       // Create element
+				item.setAttribute("name", "RMIServerSocketFactory");
+				item.appendChild( document.createTextNode("org.nightlabs.rmissl.socket.SSLCompressionRMIServerSocketFactory") );         
+				newnode.appendChild( item );  
+
+
+				root.insertBefore(newnode,jrmp_node); 
+
+				logger.info("Added Custom MBean Invoker for the JRMP Compression invoker");
+			}
+
+		}
+       
+       
+		
+		
 		// JAAS TIMEOUT
 		changed = replaceMBeanAttribute(
 				document, 
@@ -359,10 +417,123 @@ public class ServerConfiguratorJBoss
 	 * @throws FileNotFoundException If the file eas not found
 	 * @throws IOException In case of an io error
 	 */
-	private void configureStandardJBossXml(File jbossConfDir) throws FileNotFoundException, IOException
+	
+	
+	
+	private void configureStandardJBossXml(File jbossConfDir) throws FileNotFoundException, IOException ,SAXException
 	{
+		
+		
 		File destFile = new File(jbossConfDir, "standardjboss.xml");
 		String text = IOUtil.readTextFile(destFile);
+			
+		DOMParser parser = new DOMParser();
+		parser.parse(new InputSource(new FileInputStream(destFile)));
+		Document document = parser.getDocument();
+		
+		//check if we already had the stateless container for the SSL Compression Invoker
+		if (text.indexOf("<name>stateless-compression-invoker</name>") < 0) 
+		{
+				
+			logger.info("File " + destFile.getAbsolutePath() + "will add Compression SSL invoker");
+			
+			//configure the ssl compression invoker	
+			
+			Node root = document.getDocumentElement();
+
+			Node proxynode = NLDOMUtil.findSingleNode(root, "invoker-proxy-bindings");;
+
+			Element newnode = document.createElement("invoker-proxy-binding");// Create Root Element
+
+			Comment comment = document.createComment("Add the Custom Compression SSL Socket proxy Bindings");
+			newnode.appendChild(comment);
+
+			Element item = document.createElement("name");       // Create element
+			item.appendChild( document.createTextNode("stateless-compression-invoker") ); 
+			newnode.appendChild( item );  
+
+			item = document.createElement("invoker-mbean");       // Create element
+			item.appendChild( document.createTextNode("jboss:service=invoker,type=jrmp,socketType=CompressionSocketFactory") );         
+			newnode.appendChild( item );  
+
+			item = document.createElement("proxy-factory");       // Create element
+			item.appendChild( document.createTextNode("org.jboss.proxy.ejb.ProxyFactory") );         
+			newnode.appendChild( item );  
+
+
+			item = document.createElement("proxy-factory-config");
+
+			Element item_sub = document.createElement("client-interceptors");
+
+			// add the home tag
+			
+			Element item_sub1 = document.createElement("home");
+
+			Element item_value = document.createElement("interceptor");
+			item_value.appendChild( document.createTextNode("org.jboss.proxy.ejb.HomeInterceptor") );    
+			item_sub1.appendChild(item_value);
+
+			item_value = document.createElement("interceptor");
+			item_value.appendChild( document.createTextNode("org.jboss.proxy.SecurityInterceptor") );             
+			item_sub1.appendChild(item_value);
+
+			item_value = document.createElement("interceptor");
+			item_value.appendChild( document.createTextNode("org.jboss.proxy.TransactionInterceptor") );             
+			item_sub1.appendChild(item_value);
+
+			item_value = document.createElement("interceptor");
+			item_value.appendChild( document.createTextNode("org.jboss.invocation.InvokerInterceptor") );             
+			item_sub1.appendChild(item_value);
+
+
+			item_sub.appendChild(item_sub1);
+
+
+			// add the bean tag   
+
+			item_sub1 = document.createElement("bean");
+
+			item_value = document.createElement("interceptor");
+			item_value.appendChild( document.createTextNode("org.jboss.proxy.ejb.StatelessSessionInterceptor") );             
+			item_sub1.appendChild(item_value);
+
+			item_value = document.createElement("interceptor");
+			item_value.appendChild( document.createTextNode("org.jboss.proxy.SecurityInterceptor") );    
+			item_sub1.appendChild(item_value);
+
+			item_value = document.createElement("interceptor");
+			item_value.appendChild( document.createTextNode("org.jboss.proxy.TransactionInterceptor") );    
+			item_sub1.appendChild(item_value);
+
+			item_value = document.createElement("interceptor");
+			item_value.appendChild( document.createTextNode("org.jboss.invocation.InvokerInterceptor") );    
+			item_sub1.appendChild(item_value);
+
+			item_sub.appendChild(item_sub1);
+
+
+			item.appendChild( item_sub );
+
+			newnode.appendChild( item );
+
+			proxynode.appendChild(newnode); 
+			
+			
+		}	
+		
+		
+		FileOutputStream out = new FileOutputStream(destFile);
+		try {				
+			NLDOMUtil.writeDocument(document, out, "UTF-8","-//JBoss//DTD JBOSS 4.0//EN",
+			"http://www.jboss.org/j2ee/dtd/jboss_4_0.dtd");
+		} finally {
+			out.close();
+	      }
+		
+		// reload the file
+		text = IOUtil.readTextFile(destFile);
+		
+		
 		if (text.indexOf(CascadedAuthenticationClientInterceptor.class.getName()) < 0) {
 			
 			// TODO: use XML document instead of regular expressions
@@ -400,7 +571,7 @@ public class ServerConfiguratorJBoss
 		parser.parse(new InputSource(new FileInputStream(destFile)));
 		Document document = parser.getDocument();
 		
-		SmtpMailServiceCf smtp = getJFireServerConfigModule().getSmtp();
+		SMTPMailServiceCf smtp = getJFireServerConfigModule().getSmtp();
 	
 		if (logger.isInfoEnabled()) {
 			logger.info("Password: "+ smtp.getPassword());
