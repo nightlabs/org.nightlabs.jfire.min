@@ -1,4 +1,5 @@
 <project>
+	<!-- It has been deployed to the wrong destination before. Make sure, it will be deleted there, because it's now a part of the module JFireBase.ear -->
 	<target name="deploy.post">
 	    <delete dir="${j2ee.deploy.dir}/${j2ee.deploy.subdir}/JFireBaseClientLib.ear" verbose="true"/>
 	</target>
