@@ -24,6 +24,8 @@
 package org.nightlabs.jfire.security.dao;
 
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Set;
 
 import org.nightlabs.jdo.NLJDOHelper;
@@ -32,10 +34,12 @@ import org.nightlabs.jfire.security.RoleGroup;
 import org.nightlabs.jfire.security.RoleGroupIDListCarrier;
 import org.nightlabs.jfire.security.RoleGroupListCarrier;
 import org.nightlabs.jfire.security.SecurityReflector;
+import org.nightlabs.jfire.security.UserGroup;
 import org.nightlabs.jfire.security.UserManager;
 import org.nightlabs.jfire.security.UserManagerUtil;
 import org.nightlabs.jfire.security.id.RoleGroupID;
 import org.nightlabs.jfire.security.id.UserID;
+import org.nightlabs.progress.NullProgressMonitor;
 import org.nightlabs.progress.ProgressMonitor;
 
 /**
@@ -94,11 +98,13 @@ public class RoleGroupDAO extends BaseJDOObjectDAO<RoleGroupID, RoleGroup>
   	try {
 		  um = UserManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
 		  RoleGroupIDListCarrier ids = um.getRoleGroupIDs(userID.userID, authorityID);
+		  
 		  monitor.worked(1);
 		  RoleGroupListCarrier x = new RoleGroupListCarrier();
 		  x.assigned = getJDOObjects(null, ids.assignedToUser, fetchgroups, maxFetchDepth, monitor);
 		  System.err.println("HAVE "+x.assigned.size()+" ASSIGNED ROLE GROUPS");
 		  monitor.worked(1);
+		  
 		  x.assignedByUserGroup = getJDOObjects(null, ids.assignedToUserGroups, fetchgroups, maxFetchDepth, monitor);
 		  System.err.println("HAVE "+x.assignedByUserGroup.size()+" ASSIGNED ROLE GROUPS BY USER GROUP");
 		  monitor.worked(1);
@@ -106,6 +112,32 @@ public class RoleGroupDAO extends BaseJDOObjectDAO<RoleGroupID, RoleGroup>
 		  System.err.println("HAVE "+x.excluded.size()+" EXCLUDED ROLE GROUPS");
 		  monitor.worked(1);
 		  return x;
+  	} catch(Exception e) {
+  		throw new RuntimeException("Role group download failed", e);
+  	} finally {
+  		um = null;
+  	}
+  }
+  
+  /**
+   * Returns a collection of all role groups for the given user groups.
+   * 
+   * @param userGroupIDs A collection of the user group IDs whose {@link RoleGroup}s are to be returned.
+   * @param authorityID The authority
+	 * @param fetchgroups The fetch groups to use
+	 * @param maxFetchDepth Fetch depth or {@link NLJDOHelper#MAX_FETCH_DEPTH_NO_LIMIT} 
+   * @return a collection of all role groups for the given user groups.
+   */
+  public synchronized Collection<RoleGroup> getRoleGroupsForUserGroups(Collection<UserID> userGroupIDs, String authorityID, String[] fetchGroups, int maxFetchDepth) {
+  	try {
+		  um = UserManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
+		  Collection<RoleGroup> roleGroups = new HashSet<RoleGroup>();
+		  
+		  for (UserID userGroupID : userGroupIDs) {
+		  	RoleGroupIDListCarrier groupIDs = um.getRoleGroupIDs(userGroupID.userID, authorityID);
+		  	roleGroups.addAll(getJDOObjects(null, groupIDs.assignedToUser, fetchGroups, maxFetchDepth, new NullProgressMonitor()));
+		  }
+		  return roleGroups;
   	} catch(Exception e) {
   		throw new RuntimeException("Role group download failed", e);
   	} finally {
