@@ -1463,6 +1463,7 @@ public class JFireServerManagerFactoryImpl
 										if (!organisationConfigModule.removeOrganisation(organisationCf.getOrganisationID()))
 											throw new IllegalStateException("Organisation was not registered in ConfigModule!");
 
+										resetOrganisationCfs();
 										organisationConfigModule._getConfig().save();
 									} catch (Throwable t) {
 										logger.error("Removing organisation \"" + organisationCf.getOrganisationID() + "\" from JFire server configuration failed!", t);
