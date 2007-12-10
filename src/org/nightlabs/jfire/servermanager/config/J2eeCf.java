@@ -31,9 +31,11 @@ public class J2eeCf extends JFireServerConfigPart implements Serializable
 		if (j2eeDeployBaseDirectory == null)
 			setJ2eeDeployBaseDirectory("../server/default/deploy/JFire.last/");
 
-		// TODO We should change handling of the default server configurator 
+		// TODO We should change handling of the default server configurator
+		// We use the ServerConfiguratorJBoss as default, because it is possible to switch from this to the ServerConfiguratorJBossMySQL, while
+		// it is impossible to switch back from ServerConfiguratorJBossMySQL to another ServerConfigurator.
 		if (serverConfigurator == null)
-			setServerConfigurator("org.nightlabs.jfire.jboss.serverconfigurator.ServerConfiguratorJBossMySQL");
+			setServerConfigurator("org.nightlabs.jfire.jboss.serverconfigurator.ServerConfiguratorJBoss");
 
 		if (availableServerConfigurators == null) {
 			availableServerConfigurators = new ArrayList<String>();
