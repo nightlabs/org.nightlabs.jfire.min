@@ -5,7 +5,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="src" path="/JFireBase"/>
 	<classpathentry kind="src" path="/JFireServerManager"/>
-	<classpathentry kind="var" path="JDK_TOOLS"/>
 	<classpathentry kind="var" path="JBOSS/server/default/lib/jboss.jar"/>
 	<classpathentry kind="var" path="LOG4J"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/NightLabsBase"/>
