@@ -12,6 +12,7 @@
 <!-- XA
 		<config-property name="ConnectionFactoryName" type="java.lang.String">${datasourceJNDIName_absolute_xa}</config-property>
 		<config-property name="ConnectionFactory2Name" type="java.lang.String">${datasourceJNDIName_absolute_noTx}</config-property>
+		<config-property name="StoreManagerType" type="java.lang.String">rdbms</config-property>
 -->
 <!-- local-Tx
 		<config-property name="ConnectionFactoryName" type="java.lang.String">${datasourceJNDIName_absolute_localTx}</config-property>
