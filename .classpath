@@ -3,7 +3,6 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="ejbsrc"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="var" path="JDK_TOOLS"/>
 	<classpathentry kind="var" path="JBOSS/client/jboss-j2ee.jar"/>
 	<classpathentry kind="var" path="JBOSS/server/default/lib/bcel.jar"/>
 	<classpathentry kind="var" path="JBOSS/server/default/lib/jboss.jar"/>
@@ -12,6 +11,6 @@
 	<classpathentry kind="src" path="/JFireBase"/>
 	<classpathentry kind="src" path="/JFireServerManager"/>
 	<classpathentry kind="var" path="LOG4J"/>
-	<classpathentry sourcepath="JPOX_SRC" kind="var" path="JDO2"/>
+	<classpathentry kind="var" path="JDO2" sourcepath="JPOX_SRC"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
