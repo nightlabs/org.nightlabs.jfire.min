@@ -1940,6 +1940,7 @@ public class JFireServerManagerFactoryImpl
 		variables.put("databaseDriverName_localTx", dbCf.getDatabaseDriverName_localTx());
 		variables.put("databaseDriverName_xa", dbCf.getDatabaseDriverName_xa());
 		variables.put("databaseURL", dbURL);
+		variables.put("databaseName", databaseName);
 		variables.put("databaseUserName", dbCf.getDatabaseUserName());
 		variables.put("databasePassword", dbCf.getDatabasePassword());
 

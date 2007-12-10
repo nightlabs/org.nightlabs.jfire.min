@@ -99,7 +99,8 @@ public class DatabaseCf extends JFireServerConfigPart implements Serializable
 		db.setDatabaseDriverName_noTx("org.apache.derby.jdbc.EmbeddedDriver");
 		db.setDatabaseDriverName_localTx("org.apache.derby.jdbc.EmbeddedDriver");
 		db.setDatabaseDriverName_xa("org.apache.derby.jdbc.EmbeddedXADataSource");
-		db.setDatabaseURL("jdbc:derby:../server/default/data/derby/" + DATABASE_NAME_VAR);
+		db.setDatabasePrefix("../server/default/data/derby/" + db.getDatabasePrefix());
+		db.setDatabaseURL("jdbc:derby:" + DATABASE_NAME_VAR);
 		db.setDatabaseAdapter(DatabaseAdapterDerby.class.getName());
 		db.setDatasourceMetadataTypeMapping("Derby");
 //				db.setDatasourceConfigFile("db-derby-" + ORGANISATION_ID_VAR + "-ds.xml");

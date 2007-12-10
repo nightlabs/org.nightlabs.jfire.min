@@ -34,11 +34,11 @@
         <max-pool-size>100</max-pool-size>
     </local-tx-datasource>
 
-<!-- doesn't work :-(
     <xa-datasource>
         <jndi-name>${datasourceJNDIName_relative_xa}</jndi-name>
     	<xa-datasource-class>${databaseDriverName_xa}</xa-datasource-class>
-    	<xa-datasource-property name="URL">${databaseURL}</xa-datasource-property>
+<!--    	<xa-datasource-property name="URL">${databaseURL}</xa-datasource-property> -->
+    	<xa-datasource-property name="DatabaseName">${databaseName}</xa-datasource-property>
 
         <user-name>${databaseUserName}</user-name>
         <password>${databasePassword}</password>
@@ -48,8 +48,8 @@
     		<type-mapping>${datasourceMetadataTypeMapping}</type-mapping>
     	</metadata>
     </xa-datasource>
--->
 
+<!-- workaround (not necessary anymore, xa seems to work now)
     <local-tx-datasource>
         <jndi-name>${datasourceJNDIName_relative_xa}</jndi-name>
         <connection-url>${databaseURL}</connection-url>
@@ -66,5 +66,6 @@
         </metadata>
         <max-pool-size>100</max-pool-size>
     </local-tx-datasource>
+-->
 
 </datasources>
