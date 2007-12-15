@@ -2274,7 +2274,7 @@ public class JFireServerManagerFactoryImpl
 
 			roleSet = new RoleSet();
 
-			roleSet.addMember(new SimplePrincipal("_Guest_")); // EVERYONE has this role!
+			roleSet.addMember(new SimplePrincipal("_Guest_")); // EVERYONE has this role (if he's logged in)!
 
 //					boolean doCommit = false;
 //					TransactionManager tx = lookup.getTransactionManager();
