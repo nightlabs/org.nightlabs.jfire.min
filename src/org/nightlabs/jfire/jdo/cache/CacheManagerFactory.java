@@ -111,6 +111,7 @@ public class CacheManagerFactory
 		public NotificationThread(CacheManagerFactory cacheManagerFactory)
 		{
 			this.cacheManagerFactory = cacheManagerFactory;
+			setDaemon(true);
 			setName("CacheManagerFactory.NotificationThread-" + (nextID++) + " ("
 					+ cacheManagerFactory.organisationID + ')');
 		}
@@ -213,8 +214,7 @@ public class CacheManagerFactory
 		// LOGGER.info("***********************************************************");
 	}
 
-	private transient NotificationThread notificationThread = new NotificationThread(
-			this);
+	private transient NotificationThread notificationThread;
 
 	private CacheCfMod cacheCfMod;
 
@@ -248,8 +248,11 @@ public class CacheManagerFactory
 		activeFreshDirtyObjectIDContainer = new DirtyObjectIDContainer(freshDirtyObjectIDContainerMaster);
 		freshDirtyObjectIDContainers.addFirst(activeFreshDirtyObjectIDContainer);
 
+		notificationThread = new NotificationThread(this);
 		notificationThread.start();
+		cacheSessionContainerManagerThread = new CacheSessionContainerManagerThread(this);
 		cacheSessionContainerManagerThread.start();
+		freshDirtyObjectIDContainerManagerThread = new FreshDirtyObjectIDContainerManagerThread(this);
 		freshDirtyObjectIDContainerManagerThread.start();
 
 		try {
@@ -291,8 +294,7 @@ public class CacheManagerFactory
 	 */
 	private Map<Object, Map<String, ChangeListenerDescriptor>> listenersByObjectID = new HashMap<Object, Map<String, ChangeListenerDescriptor>>();
 
-	private transient FreshDirtyObjectIDContainerManagerThread freshDirtyObjectIDContainerManagerThread = new FreshDirtyObjectIDContainerManagerThread(
-			this);
+	private transient FreshDirtyObjectIDContainerManagerThread freshDirtyObjectIDContainerManagerThread;
 
 	protected static class FreshDirtyObjectIDContainerManagerThread
 			extends Thread
@@ -305,6 +307,7 @@ public class CacheManagerFactory
 				CacheManagerFactory cacheManagerFactory)
 		{
 			this.cacheManagerFactory = cacheManagerFactory;
+			setDaemon(true);
 			setName("CacheManagerFactory.FreshDirtyObjectIDContainerManagerThread-"
 					+ (nextID++) + " (" + cacheManagerFactory.organisationID + ')');
 		}
@@ -380,8 +383,7 @@ public class CacheManagerFactory
 		}
 	}
 
-	private transient CacheSessionContainerManagerThread cacheSessionContainerManagerThread = new CacheSessionContainerManagerThread(
-			this);
+	private transient CacheSessionContainerManagerThread cacheSessionContainerManagerThread;
 
 	protected static class CacheSessionContainerManagerThread
 			extends Thread
@@ -394,6 +396,7 @@ public class CacheManagerFactory
 				CacheManagerFactory cacheManagerFactory)
 		{
 			this.cacheManagerFactory = cacheManagerFactory;
+			setDaemon(true);
 			setName("CacheManagerFactory.CacheSessionContainerManagerThread-"
 					+ (nextID++) + " (" + cacheManagerFactory.organisationID + ')');
 		}
