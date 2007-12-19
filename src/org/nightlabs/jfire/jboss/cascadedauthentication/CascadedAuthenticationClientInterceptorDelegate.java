@@ -40,7 +40,6 @@ import org.apache.log4j.Logger;
 import org.jboss.invocation.Invocation;
 import org.jboss.invocation.InvocationContext;
 import org.jboss.proxy.ClientContainer;
-import org.jboss.proxy.Interceptor;
 import org.jboss.proxy.ejb.GenericEJBInterceptor;
 import org.jboss.security.SecurityAssociation;
 import org.jboss.security.SimplePrincipal;
@@ -94,85 +93,85 @@ public class CascadedAuthenticationClientInterceptorDelegate extends GenericEJBI
 		return res;
 	}
 
-	public static class CapsuledCaller extends Thread 
-	{
-		public Throwable exception = null;
-		public Object result = null;
-
-		private Interceptor interceptor;
-		private Invocation invocation;
-		private Mutex notifyThisOnFinish;
-		private UserDescriptor userDescriptor;
-
-		public CapsuledCaller(Interceptor _interceptor, Invocation _invocation, UserDescriptor _userDescriptor, Mutex _notifyThisOnFinish)
-		{
-			this.setName("CapsuledCaller-" + Long.toString(nextCapsuledCallerThreadID(), 36));
-			this.interceptor = _interceptor;
-			this.invocation = _invocation;
-			this.notifyThisOnFinish = _notifyThisOnFinish;
-			this.userDescriptor = _userDescriptor;
-			this.start();
-		}
-
-		@Override
-		public void run()
-		{
-//			Principal orig_callerPrincipal = SecurityAssociation.getCallerPrincipal();
-//			Principal orig_principal = SecurityAssociation.getPrincipal();
-//			Object orig_credential = SecurityAssociation.getCredential();
-
-			if(logger.isDebugEnabled()) {
-				logger.debug("run: >>>>>>>>>>>>>>>> begin invoke on wrapper thread: method="+invocation.getMethod().getDeclaringClass().getName()+"#"+invocation.getMethod().getName()+" username=" + userDescriptor.userName);
-//				logger.debug("run: >> orig_callerPrincipal=" + orig_callerPrincipal);
-//				logger.debug("run: >> orig_principal=" + orig_principal);
-			}
-			try {
-
-				SecurityAssociation.setPrincipal(new SimplePrincipal(userDescriptor.userName));
-				SecurityAssociation.setCredential(userDescriptor.password.toCharArray());
-				result = interceptor.getNext().invoke(invocation);
-
-//				LoginContext loginContext = new LoginContext("jfire", new CallbackHandler() {
-//					public void handle(Callback[] callbacks)
-//							throws IOException, UnsupportedCallbackException
-//					{
-//						 for (int i = 0; i < callbacks.length; i++) {
-//		            if (callbacks[i] instanceof NameCallback) {
-//		                NameCallback nc = (NameCallback)callbacks[i];
-//		                nc.setName(userDescriptor.userName);
-//		            } else if (callbacks[i] instanceof PasswordCallback) {
-//		                PasswordCallback pc = (PasswordCallback)callbacks[i];
-//		                pc.setPassword(userDescriptor.password.toCharArray());
-//		            } else {
-//		                throw new UnsupportedCallbackException(callbacks[i], "Unrecognized Callback");
-//		            }
-//		        }
-//					}
-//				});
+//	public static class CapsuledCaller extends Thread 
+//	{
+//		public Throwable exception = null;
+//		public Object result = null;
 //
-//				loginContext.login();
-//				try {
-//					Subject subject = loginContext.getSubject();
+//		private Interceptor interceptor;
+//		private Invocation invocation;
+//		private Mutex notifyThisOnFinish;
+//		private UserDescriptor userDescriptor;
 //
-//					result = interceptor.getNext().invoke(invocation);
+//		public CapsuledCaller(Interceptor _interceptor, Invocation _invocation, UserDescriptor _userDescriptor, Mutex _notifyThisOnFinish)
+//		{
+//			this.setName("CapsuledCaller-" + Long.toString(nextCapsuledCallerThreadID(), 36));
+//			this.interceptor = _interceptor;
+//			this.invocation = _invocation;
+//			this.notifyThisOnFinish = _notifyThisOnFinish;
+//			this.userDescriptor = _userDescriptor;
+//			this.start();
+//		}
 //
-//				} finally {
-//					loginContext.logout();
-//				}
-			} catch (Throwable e) {
-				exception = e;
-			} finally {
-			if(logger.isDebugEnabled())
-				logger.debug("run: <<<<<<<<<<<<<<<< end invoke on wrapper thread: method="+invocation.getMethod().getDeclaringClass().getName()+"#"+invocation.getMethod().getName()+" username=" + userDescriptor.userName);
-
-//				SecurityAssociation.setPrincipal(orig_principal);
-//				SecurityAssociation.setCredential(orig_credential);
-			}
-
-			// notify the other thread, thus he can continue
-			notifyThisOnFinish.setFinished(true);
-		}
-	}
+//		@Override
+//		public void run()
+//		{
+////			Principal orig_callerPrincipal = SecurityAssociation.getCallerPrincipal();
+////			Principal orig_principal = SecurityAssociation.getPrincipal();
+////			Object orig_credential = SecurityAssociation.getCredential();
+//
+//			if(logger.isDebugEnabled()) {
+//				logger.debug("run: >>>>>>>>>>>>>>>> begin invoke on wrapper thread: method="+invocation.getMethod().getDeclaringClass().getName()+"#"+invocation.getMethod().getName()+" username=" + userDescriptor.userName);
+////				logger.debug("run: >> orig_callerPrincipal=" + orig_callerPrincipal);
+////				logger.debug("run: >> orig_principal=" + orig_principal);
+//			}
+//			try {
+//
+//				SecurityAssociation.setPrincipal(new SimplePrincipal(userDescriptor.userName));
+//				SecurityAssociation.setCredential(userDescriptor.password.toCharArray());
+//				result = interceptor.getNext().invoke(invocation);
+//
+////				LoginContext loginContext = new LoginContext("jfire", new CallbackHandler() {
+////					public void handle(Callback[] callbacks)
+////							throws IOException, UnsupportedCallbackException
+////					{
+////						 for (int i = 0; i < callbacks.length; i++) {
+////		            if (callbacks[i] instanceof NameCallback) {
+////		                NameCallback nc = (NameCallback)callbacks[i];
+////		                nc.setName(userDescriptor.userName);
+////		            } else if (callbacks[i] instanceof PasswordCallback) {
+////		                PasswordCallback pc = (PasswordCallback)callbacks[i];
+////		                pc.setPassword(userDescriptor.password.toCharArray());
+////		            } else {
+////		                throw new UnsupportedCallbackException(callbacks[i], "Unrecognized Callback");
+////		            }
+////		        }
+////					}
+////				});
+////
+////				loginContext.login();
+////				try {
+////					Subject subject = loginContext.getSubject();
+////
+////					result = interceptor.getNext().invoke(invocation);
+////
+////				} finally {
+////					loginContext.logout();
+////				}
+//			} catch (Throwable e) {
+//				exception = e;
+//			} finally {
+//			if(logger.isDebugEnabled())
+//				logger.debug("run: <<<<<<<<<<<<<<<< end invoke on wrapper thread: method="+invocation.getMethod().getDeclaringClass().getName()+"#"+invocation.getMethod().getName()+" username=" + userDescriptor.userName);
+//
+////				SecurityAssociation.setPrincipal(orig_principal);
+////				SecurityAssociation.setCredential(orig_credential);
+//			}
+//
+//			// notify the other thread, thus he can continue
+//			notifyThisOnFinish.setFinished(true);
+//		}
+//	}
 
 //	/**
 //	 * @see org.jboss.proxy.Interceptor#invoke(org.jboss.invocation.Invocation)
@@ -364,7 +363,7 @@ public class CascadedAuthenticationClientInterceptorDelegate extends GenericEJBI
 //			userDescriptor = (UserDescriptor)invocation.getInvocationContext().getValue(UserDescriptor.CONTEXT_KEY);
 
 			if(logger.isDebugEnabled())
-				logger.debug("invoke: method="+invocation.getMethod().getDeclaringClass().getName()+"#"+invocation.getMethod().getName()+
+				logger.debug("invoke: > method="+invocation.getMethod().getDeclaringClass().getName()+"#"+invocation.getMethod().getName()+
 						" SecurityAssociation.principal="+SecurityAssociation.getPrincipal()+
 						" SecurityAssociation.callerPrincipal="+SecurityAssociation.getCallerPrincipal()+": No UserDescriptor associated with current thread. Fetched "+
 						(userDescriptor == null ? null : userDescriptor.userName)+" from invocationContext: " + // (context == null ? null : context.getClass().getName())+'@'+System.identityHashCode(context) + "#" +
@@ -372,7 +371,7 @@ public class CascadedAuthenticationClientInterceptorDelegate extends GenericEJBI
 		}
 		else {
 			if(logger.isDebugEnabled())
-				logger.debug("invoke: method="+invocation.getMethod().getDeclaringClass().getName()+"#"+invocation.getMethod().getName()+
+				logger.debug("invoke: > method="+invocation.getMethod().getDeclaringClass().getName()+"#"+invocation.getMethod().getName()+
 						" SecurityAssociation.principal="+SecurityAssociation.getPrincipal()+
 						" SecurityAssociation.callerPrincipal="+SecurityAssociation.getCallerPrincipal()+": UserDescriptor associated with current thread: "+
 						(userDescriptor == null ? null : userDescriptor.userName));
@@ -399,7 +398,7 @@ public class CascadedAuthenticationClientInterceptorDelegate extends GenericEJBI
 			}
 
 			if(logger.isDebugEnabled())
-				logger.debug("invoke: method="+invocation.getMethod().getDeclaringClass().getName()+"#"+invocation.getMethod().getName()+
+				logger.debug("invoke: > method="+invocation.getMethod().getDeclaringClass().getName()+"#"+invocation.getMethod().getName()+
 						" SecurityAssociation.principal="+SecurityAssociation.getPrincipal()+
 						" SecurityAssociation.callerPrincipal="+SecurityAssociation.getCallerPrincipal()+": UserDescriptor could not be obtained from invocation and not from Thread! Using current principal.");
 		}
@@ -489,6 +488,12 @@ public class CascadedAuthenticationClientInterceptorDelegate extends GenericEJBI
 					SecurityAssociation.setCredential(oldCredential);
 				}
 			} // if (restoreOldLogin) {
+
+			if(logger.isDebugEnabled())
+				logger.debug("invoke: < method="+invocation.getMethod().getDeclaringClass().getName()+"#"+invocation.getMethod().getName()+
+						" SecurityAssociation.principal="+SecurityAssociation.getPrincipal()+
+						" SecurityAssociation.callerPrincipal="+SecurityAssociation.getCallerPrincipal()+
+						" oldPrincipal="+oldPrincipal);
 		}
 
 		if (!(result instanceof Proxy)) {
