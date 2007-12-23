@@ -675,7 +675,16 @@ public class CacheManagerFactory
 
 		Map<String, Map<AbsoluteFilterID, FilterWithDirtyObjectIDs>> sessionID2FilterID2FilterWithDirtyObjectIDs = null;
 		for (IJDOLifecycleListenerFilter filter : filters) {
-			String sessionID = filter.getFilterID().getSessionID();
+			if (filter == null) {
+				logger.error("filter in filters collection is null!!!", new Exception("STACKTRACE"));
+				continue;
+			}
+			AbsoluteFilterID filterID = filter.getFilterID();
+			if (filterID == null) {
+				logger.error("filter.getFilterID returned null!!! filter class: " + filter.getClass().getName(), new Exception("STACKTRACE"));
+				continue;
+			}
+			String sessionID = filterID.getSessionID();
 
 			if (logger.isDebugEnabled())
 				logger.debug("after_addLifecycleListenerFilters:   filterID=" + filter.getFilterID());
