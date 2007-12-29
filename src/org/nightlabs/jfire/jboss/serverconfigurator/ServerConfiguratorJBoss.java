@@ -683,6 +683,9 @@ public class ServerConfiguratorJBoss
 					"    <application-policy name = \"jfire\">\n" +
 					"        <authentication>\n" +
 					"            <login-module code = \""+JFireServerLoginModule.class.getName()+"\" flag = \"required\"/>\n" +
+					"            <login-module code = \"org.jboss.security.ClientLoginModule\" flag = \"required\">\n" +
+          "                  <module-option name=\"restore-login-identity\">true</module-option>\n" +
+          "            </login-module>\n" +
 					"\n" +
 					"<!--                    <login-module code = \"org.jboss.security.ClientLoginModule\" flag = \"required\">\n" +
 					"                <module-option name=\"multi-threaded\">true</module-option>\n" +

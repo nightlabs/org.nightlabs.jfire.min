@@ -468,8 +468,7 @@ public class CascadedAuthenticationClientInterceptorDelegate extends GenericEJBI
 		} finally {
 			if (changeIdentity) {
 				if (loginContext != null) {
-					loginContext.logout(); // we don't need to logout, because we don't use restore-login-identity => but we need to re-login, though
-					// maybe better always logout - just in case we don't login below, we still should forget the current login-data
+					loginContext.logout(); // we have to logout, because we must use restore-login-identity, since it otherwise doesn't work with a mix of local beans (e.g. StoreManagerHelperLocal) and foreign-organisation non-local beans (e.g. TradeManager on another organisation)
 					if (oldPrincipal != null) {
 						loginData = new LoginData(oldPrincipal.getName(), oldPassword);
 						loginContext = new LoginContext(LoginData.DEFAULT_SECURITY_PROTOCOL, new JFireLogin(loginData).getAuthCallbackHandler());
