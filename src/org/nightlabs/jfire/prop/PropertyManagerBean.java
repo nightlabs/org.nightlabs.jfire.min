@@ -307,7 +307,7 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 
 	/**
 	 * Checks if the changes reflected by <code>modifiedStruct</code> are
-	 * adequate, i.e. that they did not touch blocks that are owned by the devil
+	 * adequate, i.e. that they did not touch blocks that are owned by the dev
 	 * organisation and thus aren't modifyable. Changes to such blocks are
 	 * discarded. The "corrected" structure containing only legal changes is
 	 * returned.
