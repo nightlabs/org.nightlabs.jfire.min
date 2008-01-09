@@ -117,7 +117,7 @@ public class PropertySetTestStruct
 	}
 
 
-	public static final String DEVIL_ORGANISATION_ID = Organisation.DEVIL_ORGANISATION_ID;
+	public static final String DEVIL_ORGANISATION_ID = Organisation.DEV_ORGANISATION_ID;
 	
 	public static final StructBlockID INTERNALBLOCK = StructBlockID.create(DEVIL_ORGANISATION_ID,"InternalBlock"); 
 	public static final StructFieldID INTERNALBLOCK_DISPLAYNAME = StructFieldID.create(INTERNALBLOCK,"DisplayName");
