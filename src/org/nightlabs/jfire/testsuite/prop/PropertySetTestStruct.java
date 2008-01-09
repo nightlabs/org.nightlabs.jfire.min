@@ -117,12 +117,12 @@ public class PropertySetTestStruct
 	}
 
 
-	public static final String DEVIL_ORGANISATION_ID = Organisation.DEV_ORGANISATION_ID;
+	public static final String DEV_ORGANISATION_ID = Organisation.DEV_ORGANISATION_ID;
 	
-	public static final StructBlockID INTERNALBLOCK = StructBlockID.create(DEVIL_ORGANISATION_ID,"InternalBlock"); 
+	public static final StructBlockID INTERNALBLOCK = StructBlockID.create(DEV_ORGANISATION_ID,"InternalBlock"); 
 	public static final StructFieldID INTERNALBLOCK_DISPLAYNAME = StructFieldID.create(INTERNALBLOCK,"DisplayName");
 
-	public static final StructBlockID TESTBLOCK = StructBlockID.create(DEVIL_ORGANISATION_ID, "TestBlock");
+	public static final StructBlockID TESTBLOCK = StructBlockID.create(DEV_ORGANISATION_ID, "TestBlock");
 	public static final StructFieldID TESTBLOCK_TEXT = StructFieldID.create(TESTBLOCK, "TestTextField");
 	public static final StructFieldID TESTBLOCK_REGEX = StructFieldID.create(TESTBLOCK, "TestRegexField");
 	public static final StructFieldID TESTBLOCK_NUMBER = StructFieldID.create(TESTBLOCK, "TestNumberField");
