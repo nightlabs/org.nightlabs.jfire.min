@@ -66,7 +66,7 @@ public class JFireServerConfigModule extends ConfigModule
 			ServerCf server = new ServerCf("jfire.nightlabs.org");
 			server.init();
 			server.setServerID("jfire.nightlabs.org");
-			server.setServerName("JFire Devil Server");
+			server.setServerName("JFire Dev Server");
 			rootOrganisation = new RootOrganisationCf("", "Leave root-organisation-id empty for stand-alone mode or ask your administrator for the correct values.", server);
 		} // if (rootOrganisation == null) {
 		if (j2ee == null)
