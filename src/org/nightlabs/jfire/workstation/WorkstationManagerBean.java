@@ -35,6 +35,7 @@ import java.util.Set;
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.SessionBean;
+import javax.jdo.FetchPlan;
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
 
@@ -42,6 +43,7 @@ import org.nightlabs.ModuleException;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.workstation.id.WorkstationID;
+import org.nightlabs.jfire.workstation.search.WorkstationQuery;
 
 /**
  * @author Niklas Schiffler <nick@nightlabs.de>
@@ -183,4 +185,29 @@ public class WorkstationManagerBean extends BaseSessionBeanImpl implements Sessi
 			pm.close();
 		}
 	}
+	
+	/**
+	 *
+	 * @ejb.interface-method
+	 * @ejb.permission role-name="_Guest_"
+	 * @ejb.transaction type="Supports"
+	 */	
+	public Set<WorkstationID> getWorkstaionIDs(Collection<WorkstationQuery> workstationQueries) {
+		PersistenceManager pm = getPersistenceManager();
+		try {
+			pm.getFetchPlan().setMaxFetchDepth(1);
+			pm.getFetchPlan().setGroup(FetchPlan.DEFAULT);
+
+			Set<Workstation> workstations = null;
+			for (WorkstationQuery query : workstationQueries) {
+				query.setPersistenceManager(pm);
+				query.setCandidates(workstations);
+				workstations = new HashSet<Workstation>(query.getResult());
+			}
+
+			return NLJDOHelper.getObjectIDSet(workstations);
+		} finally {
+			pm.close();
+		}		
+	}	
 }
