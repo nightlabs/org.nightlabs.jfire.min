@@ -154,4 +154,19 @@ public class ConfigModuleDAO extends BaseJDOObjectDAO<ConfigModuleID, ConfigModu
 		} 
 	}
 	
+	public ConfigModule storeConfigModule(ConfigModule configModule, boolean get, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor) {
+		monitor.beginTask("Storing ConfigModule...", 1);
+		try {
+			ConfigManager cm = ConfigManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
+			ConfigModule storedModule = cm.storeConfigModule(configModule, get, 
+					fetchGroups, maxFetchDepth);
+			monitor.worked(1); 
+			monitor.done();
+			
+			return storedModule;
+		} catch (Exception e) {
+			monitor.setCanceled(true);
+			throw new RuntimeException("ConfigModule store failed: ", e);
+		}
+	}
 }
