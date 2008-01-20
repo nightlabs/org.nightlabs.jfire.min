@@ -46,37 +46,57 @@ public class J2EEServerMonitorJBoss implements J2EEServerMonitor {
 
 	/**
 	 * {@inheritDoc}
-	 * @see org.nightlabs.jfire.servermanager.j2ee.monitor.J2EEServerMonitor#listQueueMessages(javax.jms.Queue)
 	 */
+	@Override
 	public Collection<Message> listQueueMessages(Queue queue)  throws NamingException, JMSException {
 		List<Message> msgs = new ArrayList<Message>();
 		InitialContext initialContext = SecurityReflector.createInitialContext();
-		QueueConnectionFactory connectionFactory = JMSConnectionFactoryLookup.lookupQueueConnectionFactory(initialContext);
-		Connection connection = connectionFactory.createConnection();
-		Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-		QueueBrowser queueBrowser = session.createBrowser(queue);
-//		session.setMessageListener(arg0)
-//		SpySession
-		Enumeration en = queueBrowser.getEnumeration();
-		while (en.hasMoreElements()) {
-			Object el = en.nextElement();
-			if (el instanceof Message) {
-				msgs.add((Message) el);
+		try {
+			QueueConnectionFactory connectionFactory = JMSConnectionFactoryLookup.lookupQueueConnectionFactory(initialContext);
+			Connection connection = connectionFactory.createConnection();
+			try {
+//				connection.start();
+				Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+				try {
+					QueueBrowser queueBrowser = session.createBrowser(queue);
+					try {
+						//				session.setMessageListener(arg0)
+						//				SpySession
+						Enumeration<?> en = queueBrowser.getEnumeration();
+						while (en.hasMoreElements()) {
+							Object el = en.nextElement();
+							if (el instanceof Message) {
+								msgs.add((Message) el);
+							}
+						}
+					} finally {
+						queueBrowser.close();
+					}
+				} finally {
+					session.close();
+				}
+			} finally {
+				connection.close();
 			}
+		} finally {
+			initialContext.close();
 		}
 		return msgs;
 	}
 
 	/**
 	 * {@inheritDoc}
-	 * @throws NamingException 
-	 * @see org.nightlabs.jfire.servermanager.j2ee.monitor.J2EEServerMonitor#listQueues()
 	 */
+	@Override
 	public Collection<Queue> listQueues() throws NamingException, JMSException {
 		logger.debug("Try getting queues");
-		InitialContext ic = SecurityReflector.createInitialContext();
 		Collection<Queue> result = new LinkedList<Queue>();
-		listQueues(ic, "", result);
+		InitialContext ic = SecurityReflector.createInitialContext();
+		try {
+			listQueues(ic, "", result);
+		} finally {
+			ic.close();
+		}
 		return result;
 	}
 
@@ -115,8 +135,8 @@ public class J2EEServerMonitorJBoss implements J2EEServerMonitor {
 
 	/**
 	 * {@inheritDoc}
-	 * @see org.nightlabs.jfire.servermanager.j2ee.monitor.J2EEServerMonitor#getQueueDepth(javax.jms.Queue)
 	 */
+	@Override
 	public int getQueueDepth(Queue queue) throws NamingException, JMSException {
 		Collection<Message> msgs = listQueueMessages(queue);
 		if (msgs == null)
