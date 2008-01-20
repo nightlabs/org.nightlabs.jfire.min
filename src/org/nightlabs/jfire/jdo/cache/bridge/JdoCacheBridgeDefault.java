@@ -30,6 +30,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import javax.jdo.JDOHelper;
 import javax.jdo.PersistenceManager;
@@ -67,7 +71,10 @@ public class JdoCacheBridgeDefault extends JdoCacheBridge
 	 * is &gt; 0, the said method will spawn a {@link Thread} and execute it asynchronously
 	 * after the given delay in milliseconds.
 	 */
-	private static final int notificationDelayAfterCompletionMSec = 0;
+	private static final int notificationDelayAfterCompletionMSec = 2000;
+
+	private BlockingQueue<Runnable> flush_queue = new LinkedBlockingDeque<Runnable>();
+	private ThreadPoolExecutor flush_threadPoolExecutor = new ThreadPoolExecutor(10, 20, 60000, TimeUnit.MILLISECONDS, flush_queue);
 
 	public static class CacheTransactionListener
 	implements Synchronization
@@ -170,7 +177,7 @@ public class JdoCacheBridgeDefault extends JdoCacheBridge
 
 								// there seems to be a timing issue concerning the commit of a transaction - delaying a sec seems to help - TODO fix this problem in a CLEAN way!
 								if (notificationDelayAfterCompletionMSec > 0) {
-									try { Thread.sleep(1000); } catch (InterruptedException e) { } // ignore
+									try { Thread.sleep(notificationDelayAfterCompletionMSec); } catch (InterruptedException e) { } // ignore
 								}
 
 								bridge.getCacheManagerFactory().addDirtyObjectIDs(_sessionID, _dirtyObjectIDs);
@@ -192,8 +199,9 @@ public class JdoCacheBridgeDefault extends JdoCacheBridge
 					};
 
 					if (notificationDelayAfterCompletionMSec > 0) {
-						Thread t = new Thread(runnable);
-						t.start();
+//						Thread t = new Thread(runnable);
+//						t.start();
+						bridge.flush_threadPoolExecutor.execute(runnable);
 					}
 					else
 						runnable.run();
