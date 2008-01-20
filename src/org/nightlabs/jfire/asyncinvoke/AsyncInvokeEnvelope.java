@@ -27,20 +27,37 @@
 package org.nightlabs.jfire.asyncinvoke;
 
 import java.io.Serializable;
+import java.util.Date;
 
-import javax.naming.InitialContext;
+import javax.jdo.JDOObjectNotFoundException;
+import javax.jdo.PersistenceManager;
 import javax.naming.NamingException;
 
+import org.nightlabs.jfire.asyncinvoke.id.AsyncInvokeProblemID;
 import org.nightlabs.jfire.security.SecurityReflector;
+import org.nightlabs.math.Base62Coder;
 
 
 /**
  * @author Marco Schulze - marco at nightlabs dot de
  */
 public class AsyncInvokeEnvelope
-implements Serializable
+implements Serializable, IAsyncInvokeEnvelopeReference
 {
-	public static final long serialVersionUID = 1;
+	public static final long serialVersionUID = 5;
+
+	private static class AsyncInvokeEnvelopeIDGenerator {
+		private static String prefix = Base62Coder.sharedInstance().encode(System.currentTimeMillis()) + '.' + Base62Coder.sharedInstance().encode((long)(Math.random() * Base62Coder.sharedInstance().decode("zzzz"))) + '.';
+		private static long nextLocalID = 0;
+		public static synchronized String nextAsyncInvokeEnvelopeID()
+		{
+			return prefix + Base62Coder.sharedInstance().encode(nextLocalID++);
+		}
+	};
+
+	private String asyncInvokeEnvelopeID = AsyncInvokeEnvelopeIDGenerator.nextAsyncInvokeEnvelopeID();
+
+	private Date createDT = new Date();
 
 	private SecurityReflector.UserDescriptor caller;
 
@@ -64,10 +81,18 @@ implements Serializable
 	 */
 	private ErrorCallback errorCallback = null;
 
-	/**
-	 * This is used to pass the last exception to the error callback.
-	 */
-	private Throwable error = null;
+//	/**
+//	 * This is used to pass the last exception to the error callback.
+//	 */
+//	private Throwable error = null;
+//
+//	private String errorRootCauseClassName = null;
+//
+//	private String errorClassName = null;
+//
+//	private String errorMessage = null;
+//
+//	private String errorStackTrace = null;
 
 	/**
 	 * The callback which is triggered when the invocation has been given up after
@@ -78,12 +103,7 @@ implements Serializable
 	protected static SecurityReflector.UserDescriptor getUserDescriptor()
 	throws NamingException
 	{
-		InitialContext initialContext = new InitialContext();
-		try {
-			return SecurityReflector.lookupSecurityReflector(initialContext).whoAmI();
-		} finally {
-			initialContext.close();
-		}
+		return SecurityReflector.getUserDescriptor();
 	}
 
 	public AsyncInvokeEnvelope(
@@ -103,11 +123,24 @@ implements Serializable
 			SuccessCallback successCallback, ErrorCallback errorCallback,
 			UndeliverableCallback undeliverableCallback)
 	{
+		assert caller != null : "caller != null";
+		assert invocation != null : "invocation != null";
+
 		this.caller = caller;
 		this.invocation = invocation;
 		this.successCallback = successCallback;
 		this.errorCallback = errorCallback;
 		this.undeliverableCallback = undeliverableCallback;
+	}
+
+	public String getAsyncInvokeEnvelopeID()
+	{
+		return asyncInvokeEnvelopeID;
+	}
+
+	public Date getCreateDT()
+	{
+		return createDT;
 	}
 
 	/**
@@ -189,18 +222,85 @@ implements Serializable
 	{
 		this.result = invocationResult;
 	}
-	/**
-	 * @return Returns the error.
-	 */
-	public Throwable getError()
+
+	public AsyncInvokeProblem getAsyncInvokeProblem(PersistenceManager pm)
 	{
-		return error;
+		pm.getExtent(AsyncInvokeProblem.class);
+		try {
+			return (AsyncInvokeProblem) pm.getObjectById(AsyncInvokeProblemID.create(getAsyncInvokeEnvelopeID()));
+		} catch (JDOObjectNotFoundException x) {
+			return null;
+		}
 	}
-	/**
-	 * @param error The error to set.
-	 */
-	public void setError(Throwable error)
-	{
-		this.error = error;
-	}
+
+//	/**
+//	 * Get the last error. If there was no error or if the <code>Throwable</code> was not serializable, this returns <code>null</code>.
+//	 *
+//	 * @return the error or <code>null</code>.
+//	 * @see #getErrorClassName()
+//	 * @see #getErrorRootCauseClassName()
+//	 * @see #getErrorMessage()
+//	 * @see #getErrorStackTrace()
+//	 */
+//	public Throwable getError()
+//	{
+//		return error;
+//	}
+//	/**
+//	 * @param error The error to set.
+//	 */
+//	public void setError(Throwable error)
+//	{
+//		this.error = null;
+//		this.errorClassName = null;
+//		this.errorRootCauseClassName = null;
+//		this.errorMessage = null;
+//		this.errorStackTrace = null;
+//
+//		if (error == null)
+//			return;
+//
+//		this.errorMessage = error.getMessage();
+//		this.errorClassName = error.getClass().getName();
+//
+//		Throwable rootCause = ExceptionUtils.getRootCause(error);
+//		this.errorRootCauseClassName = rootCause == null ? null : rootCause.getClass().getName();
+//
+//		this.errorStackTrace = Util.getStackTraceAsString(error);
+//		try {
+//			this.error = Util.cloneSerializable(error); // ensure that we can serialize it
+//		} catch (Throwable x) {
+//			Logger.getLogger(AsyncInvokeEnvelope.class).warn("Could not save the error! Probably it's not entirely serializable.", x);
+//		}
+//	}
+//
+//	public String getErrorClassName()
+//	{
+//		return errorClassName;
+//	}
+//
+//	public String getErrorRootCauseClassName()
+//	{
+//		return errorRootCauseClassName;
+//	}
+//
+//	public String getErrorMessage()
+//	{
+//		return errorMessage;
+//	}
+//
+//	/**
+//	 * Get the stacktrace of the last error or <code>null</code>, if there was no error.
+//	 * <p>
+//	 * In contrast to {@link #getError()}, this method always returns a non-<code>null</code> value, after an error occured. This is,
+//	 * because even if the occured error is not serializable (i.e. the {@link Throwable} itself or one of objects in the object-graph
+//	 * does not implement {@link Serializable}), the String-representation of its stack trace can be serialised.
+//	 * </p>
+//	 *
+//	 * @return the stacktrace of the last error assigned by {@link #setError(Throwable)}
+//	 */
+//	public String getErrorStackTrace()
+//	{
+//		return errorStackTrace;
+//	}
 }

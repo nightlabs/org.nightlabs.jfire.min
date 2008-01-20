@@ -16,8 +16,10 @@ import org.apache.log4j.Logger;
 import org.nightlabs.jdo.ObjectIDUtil;
 import org.nightlabs.jfire.asyncinvoke.AsyncInvoke;
 import org.nightlabs.jfire.asyncinvoke.AsyncInvokeEnvelope;
+import org.nightlabs.jfire.asyncinvoke.AsyncInvokeProblem;
 import org.nightlabs.jfire.asyncinvoke.ErrorCallback;
 import org.nightlabs.jfire.asyncinvoke.Invocation;
+import org.nightlabs.jfire.asyncinvoke.InvocationError;
 import org.nightlabs.jfire.asyncinvoke.SuccessCallback;
 import org.nightlabs.jfire.asyncinvoke.UndeliverableCallback;
 import org.nightlabs.jfire.security.SecurityReflector.UserDescriptor;
@@ -226,7 +228,7 @@ public class TimerAsyncInvoke
 		}
 
 		@Override
-		public void handle(AsyncInvokeEnvelope envelope, Throwable error)
+		public void handle(AsyncInvokeEnvelope envelope)
 				throws Exception
 		{
 			PersistenceManager pm = getPersistenceManager();
@@ -236,7 +238,11 @@ public class TimerAsyncInvoke
 					return; // no changes, if we're not active anymore!!!
 				}
 
-				task.lastExecFailed(error);
+				InvocationError invocationError = envelope.getAsyncInvokeProblem(pm).getLastError();
+				if (invocationError.getError() != null) // maybe it was not serializable
+					task.lastExecFailed(invocationError.getError());
+				else
+					task.lastExecFailed(invocationError.getErrorMessage(), invocationError.getErrorStackTrace());
 			} finally {
 				pm.close();
 			}

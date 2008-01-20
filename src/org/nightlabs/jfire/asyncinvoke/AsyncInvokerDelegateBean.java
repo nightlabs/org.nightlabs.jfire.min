@@ -32,9 +32,9 @@ import java.rmi.RemoteException;
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.SessionBean;
+import javax.jdo.PersistenceManager;
 
 import org.apache.log4j.Logger;
-import org.nightlabs.ModuleException;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 
 /**
@@ -72,23 +72,31 @@ implements SessionBean
 	}
 
 	/**
-	 * @throws ModuleException
-	 *
 	 * @ejb.interface-method view-type="local"
 	 * @ejb.transaction type="RequiresNew"
 	 * @ejb.permission role-name="_Guest_"
 	 */
-	public void enqueueErrorCallback(AsyncInvokeEnvelope envelope)
+	public void enqueueErrorCallback(AsyncInvokeEnvelope envelope, InvocationError error)
 	throws Exception
 	{
-		AsyncInvoke.enqueue(AsyncInvoke.QUEUE_ERRORCALLBACK, envelope, true);
+		PersistenceManager pm = getPersistenceManager();
+		try {
+			AsyncInvokeProblem asyncInvokeProblem = AsyncInvokeProblem.createAsyncInvokeProblem(pm, envelope);
+			asyncInvokeProblem.addError(error);
+
+			AsyncInvoke.enqueue(AsyncInvoke.QUEUE_ERRORCALLBACK, envelope, true);
+		} finally {
+			pm.close();
+		}
 	}
 
 	/**
-	 * @throws ModuleException
+	 * Since it is documented in {@link Invocation#invoke()} that {@link AsyncInvokeProblem} must never be accessed there, it
+	 * is not necessary to perform a sub-transaction here. Hence it is much cleaner not to do so, hence if this transaction fails,
+	 * the queue-item will not be deleted and re-executed in a new try. In other words, popping from the queue and invocating is
+	 * done in the same transaction.
 	 *
-	 * @!ejb.interface-method view-type="local"
-	 * @ejb.interface-method
+	 * @ejb.interface-method view-type="local"
 	 * @ejb.transaction type="Required"
 	 * @ejb.permission role-name="_Guest_"
 	 */
@@ -104,14 +112,11 @@ implements SessionBean
 	}
 
 	/**
-	 * @throws ModuleException
-	 *
-	 * @!ejb.interface-method view-type="local"
-	 * @ejb.interface-method
+	 * @ejb.interface-method view-type="local"
 	 * @ejb.transaction type="Required"
 	 * @ejb.permission role-name="_Guest_"
 	 */
-	public void doErrorCallback(AsyncInvokeEnvelope envelope, Throwable error)
+	public void doErrorCallback(AsyncInvokeEnvelope envelope)
 	throws Exception
 	{
 		ErrorCallback callback = envelope.getErrorCallback();
@@ -122,15 +127,16 @@ implements SessionBean
 			logger.debug("doErrorCallback: principal.organisationID="+getOrganisationID()+" principal.userID="+getUserID()+" envelope.caller.organisationID=" + envelope.getCaller().getOrganisationID() + " envelope.caller.userID=" + envelope.getCaller().getUserID());
 
 		callback.setPrincipal(getPrincipal());
-		callback.handle(envelope, error);
+		callback.handle(envelope);
 	}
 
 	/**
-	 * @throws ModuleException
+	 * This method is executed in a sub-transaction, because {@link #deleteAsyncInvokeProblem(AsyncInvokeEnvelope)} is
+	 * called by the container-transaction afterwards in a separate sub-transaction as well. We therefore must have a separate transaction here in order
+	 * to safely access the {@link AsyncInvokeProblem} (=> prevent deadlocks).
 	 *
-	 * @!ejb.interface-method view-type="local"
-	 * @ejb.interface-method
-	 * @ejb.transaction type="Required"
+	 * @ejb.interface-method view-type="local"
+	 * @ejb.transaction type="RequiresNew"
 	 * @ejb.permission role-name="_Guest_"
 	 */
 	public void doSuccessCallback(AsyncInvokeEnvelope envelope, Object result)
@@ -148,11 +154,12 @@ implements SessionBean
 	}
 
 	/**
-	 * @throws ModuleException
+	 * This method is executed in a sub-transaction, because {@link #markAsyncInvokeProblemUndeliverable(AsyncInvokeEnvelope)} is
+	 * called by the container-transaction before in a separate sub-transaction as well. We therefore must have a separate transaction here in order
+	 * to safely access the {@link AsyncInvokeProblem} (=> prevent deadlocks).
 	 *
-	 * @!ejb.interface-method view-type="local"
-	 * @ejb.interface-method
-	 * @ejb.transaction type="Required"
+	 * @ejb.interface-method view-type="local"
+	 * @ejb.transaction type="RequiresNew"
 	 * @ejb.permission role-name="_Guest_"
 	 */
 	public void doUndeliverableCallback(AsyncInvokeEnvelope envelope)
@@ -167,5 +174,41 @@ implements SessionBean
 
 		callback.setPrincipal(getPrincipal());
 		callback.handle(envelope);
+	}
+
+	/**
+	 * Mark the {@link AsyncInvokeProblem} which is corresponding to the given <code>envelope</code> being undeliverable.
+	 *
+	 * @ejb.interface-method view-type="local"
+	 * @ejb.transaction type="RequiresNew"
+	 * @ejb.permission role-name="_Guest_"
+	 */
+  public void markAsyncInvokeProblemUndeliverable(org.nightlabs.jfire.asyncinvoke.AsyncInvokeEnvelope envelope, boolean undeliverable)
+	throws Exception
+	{
+		PersistenceManager pm = getPersistenceManager();
+		try {
+			AsyncInvokeProblem.createAsyncInvokeProblem(pm, envelope).setUndeliverable(undeliverable);
+		} finally {
+			pm.close();
+		}
+	}
+
+	/**
+	 * @ejb.interface-method view-type="local"
+	 * @ejb.transaction type="RequiresNew"
+	 * @ejb.permission role-name="_Guest_"
+	 */
+	public void deleteAsyncInvokeProblem(AsyncInvokeEnvelope envelope)
+  throws java.lang.Exception
+	{
+		PersistenceManager pm = getPersistenceManager();
+		try {
+			AsyncInvokeProblem asyncInvokeProblem = envelope.getAsyncInvokeProblem(pm);
+			if (asyncInvokeProblem != null)
+				pm.deletePersistent(asyncInvokeProblem);
+		} finally {
+			pm.close();
+		}
 	}
 }

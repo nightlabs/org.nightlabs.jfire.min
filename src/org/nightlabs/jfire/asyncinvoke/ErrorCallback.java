@@ -40,6 +40,6 @@ extends BaseInvocation
 	{
 	}
 
-	public abstract void handle(AsyncInvokeEnvelope envelope, Throwable error)
+	public abstract void handle(AsyncInvokeEnvelope envelope)
 	throws Exception;
 }

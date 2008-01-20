@@ -139,7 +139,7 @@ implements Serializable
 	 * 
 	 * @see getInitialContext(String organisationID)
 	 */
-	protected Hashtable getInitialContextProperties(String organisationID)
+	protected Hashtable<?, ?> getInitialContextProperties(String organisationID)
 	throws NamingException
 	{
 		boolean managePM = false;

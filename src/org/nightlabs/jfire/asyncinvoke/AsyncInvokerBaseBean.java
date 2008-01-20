@@ -29,11 +29,12 @@ package org.nightlabs.jfire.asyncinvoke;
 import javax.jms.ObjectMessage;
 import javax.naming.InitialContext;
 import javax.naming.NameNotFoundException;
+import javax.security.auth.login.LoginContext;
 
 import org.apache.log4j.Logger;
+import org.nightlabs.j2ee.LoginData;
 import org.nightlabs.jdo.ObjectIDUtil;
 import org.nightlabs.jfire.base.AuthCallbackHandler;
-import org.nightlabs.jfire.base.InvokeUtil;
 import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.servermanager.JFireServerManagerFactory;
@@ -154,66 +155,66 @@ implements javax.ejb.MessageDrivenBean, javax.jms.MessageListener
 
 			AsyncInvokeEnvelope envelope = (AsyncInvokeEnvelope) obj;
 
-////			if (pseudoExternalInvoke) {
-////				JFireServerManager ism = ismf.getJFireServerManager();
-////				try {
-////					SecurityReflector.UserDescriptor caller = envelope.getCaller();
-////					Hashtable props = new Properties();
-////					ServerCf localServer = ismf.getLocalServer();
-////					String initialContextFactory = ismf.getInitialContextFactory(localServer.getJ2eeServerType(), true);
-////					props.put(InitialContext.INITIAL_CONTEXT_FACTORY, initialContextFactory);
-////					props.put(InitialContext.PROVIDER_URL, localServer.getInitialContextURL());
-////					props.put(InitialContext.SECURITY_PRINCIPAL, caller.getUserID() + '@' + caller.getOrganisationID());
-////					props.put(InitialContext.SECURITY_CREDENTIALS, ism.jfireSecurity_createTempUserPassword(caller.getOrganisationID(), caller.getUserID()));
-////					props.put(InitialContext.SECURITY_PROTOCOL, "jfire");
-////
-////					AsyncInvokerDelegate invokerDelegate = null;
-////
-////					try {
-////						invokerDelegate = AsyncInvokerDelegateUtil.getHome(props).create();
-////					} catch (Exception x) {
-////						logger().fatal("Obtaining stateless session bean AsyncInvokerDelegate failed!", x);
-////						messageContext.setRollbackOnly();
-////					}
-////
-////					if (invokerDelegate != null)
-////						doInvoke(envelope, invokerDelegate);
-////				} finally {
-////					ism.close();
-////				}
-////			}
-////			else {
-//
-//
-//				LoginContext loginContext;
+//			if (pseudoExternalInvoke) {
 //				JFireServerManager ism = ismf.getJFireServerManager();
 //				try {
-//					loginContext = new LoginContext(
-//							"jfire", createAuthCallbackHandler(ism, envelope));
+//					SecurityReflector.UserDescriptor caller = envelope.getCaller();
+//					Hashtable props = new Properties();
+//					ServerCf localServer = ismf.getLocalServer();
+//					String initialContextFactory = ismf.getInitialContextFactory(localServer.getJ2eeServerType(), true);
+//					props.put(InitialContext.INITIAL_CONTEXT_FACTORY, initialContextFactory);
+//					props.put(InitialContext.PROVIDER_URL, localServer.getInitialContextURL());
+//					props.put(InitialContext.SECURITY_PRINCIPAL, caller.getUserID() + '@' + caller.getOrganisationID());
+//					props.put(InitialContext.SECURITY_CREDENTIALS, ism.jfireSecurity_createTempUserPassword(caller.getOrganisationID(), caller.getUserID()));
+//					props.put(InitialContext.SECURITY_PROTOCOL, "jfire");
 //
-//					loginContext.login();
+//					AsyncInvokerDelegate invokerDelegate = null;
+//
 //					try {
-//						AsyncInvokerDelegateLocal invokerDelegate = null;
-//
-//						try {
-//							invokerDelegate = AsyncInvokerDelegateUtil.getLocalHome().create();
-//						} catch (Exception x) {
-//							logger().fatal("Obtaining stateless session bean AsyncInvokerDelegateLocal failed!", x);
-//							messageContext.setRollbackOnly();
-//						}
-//
-//						if (invokerDelegate != null)
-//							doInvoke(envelope, invokerDelegate);
-//
-//					} finally {
-//						loginContext.logout();
+//						invokerDelegate = AsyncInvokerDelegateUtil.getHome(props).create();
+//					} catch (Exception x) {
+//						logger().fatal("Obtaining stateless session bean AsyncInvokerDelegate failed!", x);
+//						messageContext.setRollbackOnly();
 //					}
 //
+//					if (invokerDelegate != null)
+//						doInvoke(envelope, invokerDelegate);
 //				} finally {
 //					ism.close();
 //				}
-//
-////			}
+//			}
+//			else {
+
+
+			LoginContext loginContext;
+			JFireServerManager ism = ismf.getJFireServerManager();
+			try {
+				loginContext = new LoginContext(
+						LoginData.DEFAULT_SECURITY_PROTOCOL, createAuthCallbackHandler(ism, envelope));
+
+				loginContext.login();
+				try {
+					AsyncInvokerDelegateLocal invokerDelegate = null;
+
+					try {
+						invokerDelegate = AsyncInvokerDelegateUtil.getLocalHome().create();
+					} catch (Exception x) {
+						logger().fatal("Obtaining stateless session bean AsyncInvokerDelegateLocal failed!", x);
+						messageContext.setRollbackOnly();
+					}
+
+					if (invokerDelegate != null)
+						doInvoke(envelope, invokerDelegate);
+
+				} finally {
+					loginContext.logout();
+				}
+
+			} finally {
+				ism.close();
+			}
+
+//			}
 
 			// the above code does not work in this scenario:
 			// 1) the asyncInvocation obtains a local bean to its local organisation
@@ -222,26 +223,29 @@ implements javax.ejb.MessageDrivenBean, javax.jms.MessageListener
 			// 4) if it calls now a method on the local bean, it is instead executed remotely :-(
 			// Hence, I try the below code - hope, this works.
 			// Marco. 2007-07-30
+			//
+			// I modified the cascaded-authentication-stuff lately and fixed a similar bug. So maybe, it works now - I'll try the above code again.
+			// Marco. 2008-01-19
 
-			JFireServerManager ism = ismf.getJFireServerManager();
-			try {
-				String organisationID = envelope.getCaller().getOrganisationID();
-				String userID = envelope.getCaller().getUserID();
-				String pw = ism.jfireSecurity_createTempUserPassword(organisationID, userID);
-
-				if (logger().isDebugEnabled()) {
-					logger().debug("AsyncInvokerBaseBean.onMessage: organisationID=\"" + organisationID + "\" userID=\"" + userID +"\" password=\"" + pw + "\"");
-				}
-
-				AsyncInvokerDelegate invokerDelegate = null;
-				invokerDelegate = AsyncInvokerDelegateUtil.getHome(
-						InvokeUtil.getInitialContextProperties(
-								ismf, ismf.getLocalServer(),
-								organisationID, userID, pw)).create();
-				doInvoke(envelope, invokerDelegate);
-			} finally {
-				ism.close();
-			}
+//			JFireServerManager ism = ismf.getJFireServerManager();
+//			try {
+//				String organisationID = envelope.getCaller().getOrganisationID();
+//				String userID = envelope.getCaller().getUserID();
+//				String pw = ism.jfireSecurity_createTempUserPassword(organisationID, userID);
+//
+//				if (logger().isDebugEnabled()) {
+//					logger().debug("AsyncInvokerBaseBean.onMessage: organisationID=\"" + organisationID + "\" userID=\"" + userID +"\" password=\"" + pw + "\"");
+//				}
+//
+//				AsyncInvokerDelegate invokerDelegate = null;
+//				invokerDelegate = AsyncInvokerDelegateUtil.getHome(
+//						InvokeUtil.getInitialContextProperties(
+//								ismf, ismf.getLocalServer(),
+//								organisationID, userID, pw)).create();
+//				doInvoke(envelope, invokerDelegate);
+//			} finally {
+//				ism.close();
+//			}
 
 		} catch (Throwable x) {
 			logger().fatal("Processing message failed!", x);

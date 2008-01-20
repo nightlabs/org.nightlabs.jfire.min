@@ -4,27 +4,33 @@ import java.rmi.RemoteException;
 
 import javax.ejb.EJBObject;
 
-import org.nightlabs.annotation.Implement;
-
 public interface DelegateR extends EJBObject, Delegate
 {
-	@Implement
-	public void enqueueErrorCallback( org.nightlabs.jfire.asyncinvoke.AsyncInvokeEnvelope envelope )
+	@Override
+	public void enqueueErrorCallback( org.nightlabs.jfire.asyncinvoke.AsyncInvokeEnvelope envelope, InvocationError error)
   throws java.lang.Exception, RemoteException;
 
-	@Implement
+	@Override
 	public java.io.Serializable doInvocation( org.nightlabs.jfire.asyncinvoke.AsyncInvokeEnvelope envelope )
   throws java.lang.Exception, RemoteException;
 
-	@Implement
-	public void doErrorCallback( org.nightlabs.jfire.asyncinvoke.AsyncInvokeEnvelope envelope,java.lang.Throwable error )
+	@Override
+	public void doErrorCallback( org.nightlabs.jfire.asyncinvoke.AsyncInvokeEnvelope envelope)
   throws java.lang.Exception, RemoteException;
 
-	@Implement
+	@Override
 	public void doSuccessCallback( org.nightlabs.jfire.asyncinvoke.AsyncInvokeEnvelope envelope,java.lang.Object result )
   throws java.lang.Exception, RemoteException;
 
-	@Implement
+	@Override
 	public void doUndeliverableCallback( org.nightlabs.jfire.asyncinvoke.AsyncInvokeEnvelope envelope )
+  throws java.lang.Exception, RemoteException;
+
+	@Override
+	public void markAsyncInvokeProblemUndeliverable(org.nightlabs.jfire.asyncinvoke.AsyncInvokeEnvelope envelope, boolean undeliverable)
+	throws java.lang.Exception, RemoteException;
+
+	@Override
+  public void deleteAsyncInvokeProblem(AsyncInvokeEnvelope envelope)
   throws java.lang.Exception, RemoteException;
 }

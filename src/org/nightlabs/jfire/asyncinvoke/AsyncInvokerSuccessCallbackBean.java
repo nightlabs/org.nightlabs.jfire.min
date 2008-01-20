@@ -51,8 +51,14 @@ extends AsyncInvokerBaseBean
 		try {
 			invokerDelegate.doSuccessCallback(envelope, envelope.getResult());
 		} catch (Throwable x) {
-			logger().fatal("SuccessCallback failed!", x);
+			logger().fatal("SuccessCallback failed! asyncInvokeEnvelopeID=" + envelope.getAsyncInvokeEnvelopeID(), x);
 			messageContext.setRollbackOnly();
+		}
+
+		try {
+			invokerDelegate.deleteAsyncInvokeProblem(envelope);
+		} catch (Throwable x) {
+			logger().fatal("Deleting AsyncInvokeProblem failed! asyncInvokeEnvelopeID=" + envelope.getAsyncInvokeEnvelopeID(), x);
 		}
 	}
 

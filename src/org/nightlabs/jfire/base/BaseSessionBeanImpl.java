@@ -65,10 +65,9 @@ public class BaseSessionBeanImpl
 	}
 
 	/**
-	 * This method returns the JFirePrincipal representing the current user. Note, that
-	 * this method probably only works with stateful session beans!
+	 * This method returns the JFirePrincipal representing the current user.
 	 * 
-	 * @return Returns the principal representing the current user.
+	 * @return the principal representing the current user.
 	 */
 	public JFirePrincipal getPrincipal()
 	{

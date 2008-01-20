@@ -26,6 +26,7 @@
 
 package org.nightlabs.jfire.config;
 
+import java.io.Serializable;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -50,6 +51,8 @@ import org.nightlabs.inheritance.FieldMetaData;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jdo.ObjectID;
 import org.nightlabs.jdo.moduleregistry.ModuleMetaData;
+import org.nightlabs.jfire.asyncinvoke.AsyncInvoke;
+import org.nightlabs.jfire.asyncinvoke.Invocation;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.base.JFireBaseEAR;
 import org.nightlabs.jfire.config.id.ConfigID;
@@ -872,6 +875,32 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	public void initialise() 
 	throws ModuleException 
 	{
+// TODO remove debug stuff below
+		try {
+			for (int i = 0; i < 20; ++i) {
+				AsyncInvoke.exec(new Invocation() {
+					private static final long serialVersionUID = 1L;
+					@Override
+					public Serializable invoke() throws Exception
+					{
+						PersistenceManager pm = getPersistenceManager();
+						try {
+							Thread.sleep(10000);
+							if (Math.random() >= 0.5)
+								throw new RuntimeException("Test");
+
+							return null;
+						} finally {
+							pm.close();
+						}
+					}
+				}, true);
+			}
+		} catch (Exception e) {
+			logger.warn("", e);
+		}
+// TODO remove debug stuff above
+
 		PersistenceManager pm;
 		pm = getPersistenceManager();
 		try {

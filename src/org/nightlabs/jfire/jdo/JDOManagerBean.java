@@ -28,7 +28,6 @@ package org.nightlabs.jfire.jdo;
 
 import java.rmi.RemoteException;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
@@ -36,20 +35,15 @@ import java.util.SortedSet;
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.SessionBean;
-import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.ModuleException;
-import org.nightlabs.jdo.ObjectIDUtil;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.jdo.cache.CacheManager;
 import org.nightlabs.jfire.jdo.cache.NotificationBundle;
 import org.nightlabs.jfire.jdo.notification.DirtyObjectID;
 import org.nightlabs.jfire.jdo.notification.IJDOLifecycleListenerFilter;
-import org.nightlabs.jfire.jdo.organisationsync.DirtyObjectIDCarrier;
-import org.nightlabs.jfire.jdo.organisationsync.IncomingChangeListenerDescriptor;
-import org.nightlabs.jfire.jdo.organisationsync.id.IncomingChangeListenerDescriptorID;
 
 
 /**
@@ -349,62 +343,62 @@ implements SessionBean
 		}
 	}
 
-	/**
-	 * This method is called by the implementation of
-	 * {@link org.nightlabs.jfire.jdo.organisationsync.OrganisationSyncDelegate}
-	 * in order to mark the appropriate
-	 * {@link org.nightlabs.jfire.jdo.organisationsync.IncomingChangeListenerDescriptor}s
-	 * dirty.
-	 *
-	 * @param dirtyObjectIDCarriers Instances of {@link org.nightlabs.jfire.jdo.organisationsync.DirtyObjectIDCarrier}
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type = "Supports"
-	 */
-	public void notifyDirtyObjectIDs(Collection dirtyObjectIDCarriers)
-	throws ModuleException
-	{
-		if (dirtyObjectIDCarriers == null)
-			throw new NullPointerException("dirtyObjectIDCarriers");
-
-		String organisationID = getOrganisationID();
-
-		PersistenceManager pm = getPersistenceManager();
-		try {
-			pm.getExtent(IncomingChangeListenerDescriptor.class); // initialize meta-data
-
-			for (Iterator itC = dirtyObjectIDCarriers.iterator(); itC.hasNext(); ) {
-				DirtyObjectIDCarrier carrier = (DirtyObjectIDCarrier) itC.next();
-				String context = carrier.getContext();
-
-				for (Iterator it = carrier.getObjectIDs().iterator(); it.hasNext(); ) {
-					Object objectID = it.next();
-					String[] parts = ObjectIDUtil.splitObjectIDString(objectID.toString());
-					String objectIDClassName = parts[0];
-					String objectIDFieldPart = parts[1];
-					IncomingChangeListenerDescriptorID listenerDescriptorID = IncomingChangeListenerDescriptorID.create(
-							organisationID, objectIDClassName, objectIDFieldPart);
-
-					IncomingChangeListenerDescriptor listenerDescriptor;
-					try {
-						listenerDescriptor = (IncomingChangeListenerDescriptor) pm.getObjectById(listenerDescriptorID);
-						if (!context.equals(listenerDescriptor))
-							throw new IllegalArgumentException("Listener descriptor \"" + listenerDescriptorID + "\" does have context=\"" + listenerDescriptor.getContext() + "\", but remote organisation passed context=\""+context+"\"!");
-					} catch (JDOObjectNotFoundException e) {
-						listenerDescriptor = new IncomingChangeListenerDescriptor(
-								organisationID, objectIDClassName, objectIDFieldPart, context, true);
-						pm.makePersistent(listenerDescriptor);
-					}
-
-					if (!listenerDescriptor.isDirty())
-						listenerDescriptor.setDirty(true);
-				}
-			}
-		} finally {
-			pm.close();
-		} 
-	}
+//	/**
+//	 * This method is called by the implementation of
+//	 * {@link org.nightlabs.jfire.jdo.organisationsync.OrganisationSyncDelegate}
+//	 * in order to mark the appropriate
+//	 * {@link org.nightlabs.jfire.jdo.organisationsync.IncomingChangeListenerDescriptor}s
+//	 * dirty.
+//	 *
+//	 * @param dirtyObjectIDCarriers Instances of {@link org.nightlabs.jfire.jdo.organisationsync.DirtyObjectIDCarrier}
+//	 *
+//	 * @ejb.interface-method
+//	 * @ejb.permission role-name="_Guest_"
+//	 * @ejb.transaction type = "Supports"
+//	 */
+//	public void notifyDirtyObjectIDs(Collection dirtyObjectIDCarriers)
+//	throws ModuleException
+//	{
+//		if (dirtyObjectIDCarriers == null)
+//			throw new NullPointerException("dirtyObjectIDCarriers");
+//
+//		String organisationID = getOrganisationID();
+//
+//		PersistenceManager pm = getPersistenceManager();
+//		try {
+//			pm.getExtent(IncomingChangeListenerDescriptor.class); // initialize meta-data
+//
+//			for (Iterator itC = dirtyObjectIDCarriers.iterator(); itC.hasNext(); ) {
+//				DirtyObjectIDCarrier carrier = (DirtyObjectIDCarrier) itC.next();
+//				String context = carrier.getContext();
+//
+//				for (Iterator it = carrier.getObjectIDs().iterator(); it.hasNext(); ) {
+//					Object objectID = it.next();
+//					String[] parts = ObjectIDUtil.splitObjectIDString(objectID.toString());
+//					String objectIDClassName = parts[0];
+//					String objectIDFieldPart = parts[1];
+//					IncomingChangeListenerDescriptorID listenerDescriptorID = IncomingChangeListenerDescriptorID.create(
+//							organisationID, objectIDClassName, objectIDFieldPart);
+//
+//					IncomingChangeListenerDescriptor listenerDescriptor;
+//					try {
+//						listenerDescriptor = (IncomingChangeListenerDescriptor) pm.getObjectById(listenerDescriptorID);
+//						if (!context.equals(listenerDescriptor))
+//							throw new IllegalArgumentException("Listener descriptor \"" + listenerDescriptorID + "\" does have context=\"" + listenerDescriptor.getContext() + "\", but remote organisation passed context=\""+context+"\"!");
+//					} catch (JDOObjectNotFoundException e) {
+//						listenerDescriptor = new IncomingChangeListenerDescriptor(
+//								organisationID, objectIDClassName, objectIDFieldPart, context, true);
+//						pm.makePersistent(listenerDescriptor);
+//					}
+//
+//					if (!listenerDescriptor.isDirty())
+//						listenerDescriptor.setDirty(true);
+//				}
+//			}
+//		} finally {
+//			pm.close();
+//		} 
+//	}
 	
 //	/**
 //	 *

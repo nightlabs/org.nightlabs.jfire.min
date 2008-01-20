@@ -49,19 +49,21 @@ extends AsyncInvokerBaseBean
 	@Override
 	protected void doInvoke(AsyncInvokeEnvelope envelope, Delegate invokerDelegate)
 	{
+		boolean rollbackOnly = false;
 		boolean success = false;
 		try {
 			Serializable result = invokerDelegate.doInvocation(envelope);
 			envelope.setResult(result);
 			success = true;
 		} catch (Throwable x) {
-			logger().error("Invocation failed!", x);
-			messageContext.setRollbackOnly();
+			logger().error("Invocation failed! asyncInvokeEnvelopeID=" + envelope.getAsyncInvokeEnvelopeID(), x);
+			rollbackOnly = true; // put back into queue
 			try {
-				envelope.setError(x);
-				invokerDelegate.enqueueErrorCallback(envelope);
+//				envelope.setError(x);
+				InvocationError invocationError = new InvocationError(envelope, x);
+				invokerDelegate.enqueueErrorCallback(envelope, invocationError);
 			} catch (Throwable x2) {
-				logger().fatal("invokerDelegate.enqueueErrorCallback(...) failed!", x2);
+				logger().fatal("invokerDelegate.enqueueErrorCallback(...) failed! asyncInvokeEnvelopeID=" + envelope.getAsyncInvokeEnvelopeID(), x2);
 			}
 		}
 
@@ -71,10 +73,20 @@ extends AsyncInvokerBaseBean
 				try {
 					AsyncInvoke.enqueue(AsyncInvoke.QUEUE_SUCCESSCALLBACK, envelope, true);
 				} catch (Throwable x) {
-					logger().fatal("Failed to enqueue in AsyncInvoke.QUEUE_SUCCESSCALLBACK!", x);
-					messageContext.setRollbackOnly();
+					logger().fatal("Failed to enqueue in AsyncInvoke.QUEUE_SUCCESSCALLBACK! asyncInvokeEnvelopeID=" + envelope.getAsyncInvokeEnvelopeID(), x);
+					rollbackOnly = true; // put back into queue // TODO really? we already executed the invocation - shall we really do this?
 				}
 			} // if (successCallback != null) {
+			else {
+				try {
+					invokerDelegate.deleteAsyncInvokeProblem(envelope);
+				} catch (Throwable x) {
+					logger().fatal("invokerDelegate.deleteAsyncInvokeProblem(...) failed! asyncInvokeEnvelopeID=" + envelope.getAsyncInvokeEnvelopeID(), x);
+				}
+			}
 		} // if (success) {
+
+		if (rollbackOnly)
+			messageContext.setRollbackOnly();
 	}
 }

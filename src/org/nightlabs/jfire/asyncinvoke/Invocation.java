@@ -59,6 +59,10 @@ extends BaseInvocation
 	/**
 	 * This method is called by the framework and you can do here whatever you want
 	 * to do asynchronously.
+	 * <p>
+	 * You must never access {@link AsyncInvokeProblem} here! If you want to do sth. with it (in case an instance exists),
+	 * do it in the {@link SuccessCallback}!
+	 * </p>
 	 *
 	 * @return You can return either <code>null</code> or any {@link Serializable} that you want to pass
 	 *		to the {@link SuccessCallback}.

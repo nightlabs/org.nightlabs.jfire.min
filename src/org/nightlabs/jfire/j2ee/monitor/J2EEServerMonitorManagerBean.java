@@ -38,7 +38,6 @@ import javax.jms.Message;
 import javax.jms.Queue;
 import javax.naming.NamingException;
 
-import org.apache.log4j.Logger;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.base.j2ee.JMSMessageDescriptor;
 import org.nightlabs.jfire.base.j2ee.JMSMessageDescriptorImpl;
@@ -58,7 +57,7 @@ public abstract class J2EEServerMonitorManagerBean
 extends BaseSessionBeanImpl
 implements SessionBean
 {
-	private static final Logger logger = Logger.getLogger(J2EEServerMonitorManagerBean.class);
+//	private static final Logger logger = Logger.getLogger(J2EEServerMonitorManagerBean.class);
 
 	/**
 	 * @ejb.create-method  
@@ -95,7 +94,7 @@ implements SessionBean
 	 * 
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type = "Supports"
+	 * @ejb.transaction type="Supports"
 	 */
 	public Collection<String> listQueues() throws NamingException, JMSException {
 		J2EEAdapter adapter = getJ2EEAdapter();
@@ -110,12 +109,12 @@ implements SessionBean
 	/**
 	 * Lists all Messages in the queue with the given queueName.
 	 * 
-	 * @param queueName The name of the queue to list Messages for.
-	 * @return All Messages in the queue with the given queueName.
+	 * @param queueName The name of the queue to list messages for.
+	 * @return all messages in the queue with the given <code>queueName</code> or <code>null</code> if no queue with this name can be found.
 	 * 
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type = "Supports"
+	 * @ejb.transaction type="Supports"
 	 */
 	public Collection<JMSMessageDescriptor> listQueueMessages(String queueName) throws NamingException, JMSException {
 		J2EEAdapter adapter = getJ2EEAdapter();
@@ -128,26 +127,26 @@ implements SessionBean
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Returns the count of messages in the queue with the given queueName.
-	 * 
+	 *
 	 * @param queueName The name of the queue to list Messages for.
-	 * @return The count of messages in the queue with the given queueName.
+	 * @return the count of messages in the queue with the given <code>queueName</code> or -1 if no queue exists with this name.
 	 * 
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type = "Supports"
+	 * @ejb.transaction type="Supports"
 	 */
 	public int getQueueDepth(String queueName) throws NamingException, JMSException {
 		J2EEAdapter adapter = getJ2EEAdapter();
 		Collection<Queue> queues = adapter.getServerMonitor().listQueues();
 		for (Queue queue : queues) {
 			if (queue.getQueueName().equals(queueName)) {
-				Collection<Message> msgs = adapter.getServerMonitor().listQueueMessages(queue);
+//				Collection<Message> msgs = adapter.getServerMonitor().listQueueMessages(queue);
 				return adapter.getServerMonitor().getQueueDepth(queue);
 			}
 		}
-		return 0;
+		return -1;
 	}
 }

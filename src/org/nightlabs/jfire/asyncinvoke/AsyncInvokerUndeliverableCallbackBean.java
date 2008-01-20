@@ -49,12 +49,30 @@ extends AsyncInvokerBaseBean
 	@Override
 	protected void doInvoke(AsyncInvokeEnvelope envelope, Delegate invokerDelegate)
 	{
+		boolean rollbackOnly = false;
+
+		try {
+			invokerDelegate.markAsyncInvokeProblemUndeliverable(envelope, true);
+		} catch (Throwable x) {
+			rollbackOnly = true; // put it back into the queue
+			logger().fatal("Marking the invocation undeliverable failed! asyncInvokeEnvelopeID=" + envelope.getAsyncInvokeEnvelopeID(), x);
+		}
+
 		try {
 			invokerDelegate.doUndeliverableCallback(envelope);
 		} catch (Throwable x) {
-			logger().fatal("UndeliverableCallback failed!", x);
-			messageContext.setRollbackOnly();
+			rollbackOnly = true; // put it back into the queue
+			logger().fatal("UndeliverableCallback failed! asyncInvokeEnvelopeID=" + envelope.getAsyncInvokeEnvelopeID(), x);
+
+			try {
+				invokerDelegate.markAsyncInvokeProblemUndeliverable(envelope, false);
+			} catch (Throwable t) {
+				logger().fatal("Clearing the invocation's undeliverable-flag failed! asyncInvokeEnvelopeID=" + envelope.getAsyncInvokeEnvelopeID(), x);
+			}
 		}
+
+		if (rollbackOnly)
+			messageContext.setRollbackOnly();
 	}
 
 }
