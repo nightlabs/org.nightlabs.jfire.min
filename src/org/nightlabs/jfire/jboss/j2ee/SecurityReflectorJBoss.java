@@ -33,6 +33,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.security.SecurityAssociation;
+import org.nightlabs.jfire.security.NoUserException;
 import org.nightlabs.jfire.security.SecurityReflector;
 
 
@@ -45,11 +46,11 @@ public class SecurityReflectorJBoss extends SecurityReflector
 	private static final long serialVersionUID = 1L;
 
 	@Override
-	public UserDescriptor _getUserDescriptor()
+	public UserDescriptor _getUserDescriptor() throws NoUserException
 	{
 		Principal principal = SecurityAssociation.getPrincipal();
 		if (principal == null)
-			throw new IllegalStateException("SecurityAssociation.getPrincipal() returned null! It seems, there is no user authenticated!");
+			throw new NoUserException("SecurityAssociation.getPrincipal() returned null! It seems, there is no user authenticated!");
 
 		String principalName = principal.getName();
 		return UserDescriptor.parseLogin(principalName);
@@ -63,7 +64,7 @@ public class SecurityReflectorJBoss extends SecurityReflector
 	}
 
 	@Override
-	public InitialContext _createInitialContext() {
+	public InitialContext _createInitialContext() throws NoUserException {
 		try {
 			return new InitialContext();
 		} catch (NamingException e) {
@@ -72,7 +73,7 @@ public class SecurityReflectorJBoss extends SecurityReflector
 	}
 
 	@Override
-	public Properties _getInitialContextProperties() {
+	public Properties _getInitialContextProperties() throws NoUserException {
 		return null; // TODO null should be a valid argument (i.e. new InitialContext(null) is legal), but maybe its error prone for other users - maybe an empty map would be better?! Is that possible???
 	}
 
