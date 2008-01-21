@@ -468,5 +468,7 @@ public class JdoCacheBridgeDefault extends JdoCacheBridge
 			pmf.removeInstanceLifecycleListener(attachLifecycleListener);
 			pmf.removeInstanceLifecycleListener(deleteLifecycleListener);
 		}
+
+		flush_threadPoolExecutor.shutdown();
 	}
 }

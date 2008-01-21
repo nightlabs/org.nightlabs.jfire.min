@@ -41,10 +41,15 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -555,95 +560,132 @@ public class JFireServerManagerFactoryImpl
 
 		try {
 
-			InitialContext ctx = new InitialContext();
+			final InitialContext ctx = new InitialContext();
 			try {				
 				if (configureServerAndShutdownIfNecessary(0))
 					return;
 
-				ServerInitManager serverInitManager = new ServerInitManager(this, mcf, getJ2EEVendorAdapter());
-				DatastoreInitManager datastoreInitManager = new DatastoreInitManager(this, mcf, getJ2EEVendorAdapter());
+				final ServerInitManager serverInitManager = new ServerInitManager(this, mcf, getJ2EEVendorAdapter());
+				final DatastoreInitManager datastoreInitManager = new DatastoreInitManager(this, mcf, getJ2EEVendorAdapter());
 
 				// do the server inits that are to be performed before the datastore inits
 				logger.info("Performing early server inits...");
 				serverInitManager.performEarlyInits(ctx);
 
-				// OLD INIT STUFF
-				// DatastoreInitialization
-				//DatastoreInitializer datastoreInitializer = new DatastoreInitializer(this, mcf, getJ2EEVendorAdapter());
+				String asyncStartupString = System.getProperty(org.nightlabs.jfire.servermanager.JFireServerManagerFactory.class.getName() + ".asyncStartup");
+				boolean asyncStartup = !Boolean.FALSE.toString().equals(asyncStartupString);
+				if (logger.isDebugEnabled())
+					logger.debug(org.nightlabs.jfire.servermanager.JFireServerManagerFactory.class.getName() + ".asyncStartup=" + asyncStartupString);
 
-				for (Iterator it = organisationConfigModule.getOrganisations().iterator(); it.hasNext(); ) {
-					OrganisationCf org = (OrganisationCf)it.next();
-					String organisationID = org.getOrganisationID();
-					
-					logger.info("Importing roles and rolegroups into organisation \""+organisationID+"\"...");
-					try {
+				if (!asyncStartup)
+					logger.info(org.nightlabs.jfire.servermanager.JFireServerManagerFactory.class.getName() + ".asyncStartup is false! Initialising one organisation after the other (not parallel).");
 
-						TransactionManager transactionManager = getJ2EEVendorAdapter().getTransactionManager(ctx);
-						boolean doCommit = false;
-						transactionManager.begin();
-				    try {
+				int initOrganisationThreadCount = mcf.getConfigModule().getJ2ee().getInitOrganisationOnStartupThreadCount();
+				final Set<Runnable> unfinishedInitialisations = new HashSet<Runnable>();
+				ThreadPoolExecutor threadPoolExecutor = asyncStartup ? new ThreadPoolExecutor(
+						initOrganisationThreadCount, initOrganisationThreadCount, 10,
+						TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>())
+						: null;
 
-				    	RoleImportSet roleImportSet = roleImport_prepare(organisationID);
-							roleImport_commit(roleImportSet, null);
+				for (OrganisationCf org : new ArrayList<OrganisationCf>(organisationConfigModule.getOrganisations())) {
+					final String organisationID = org.getOrganisationID();
 
-							doCommit = true;
-				    } finally {
-				    	if (doCommit)
-				    		transactionManager.commit();
-				    	else
-				    		transactionManager.rollback();
-				    }
-						logger.info("Import of roles and rolegroups into organisation \""+organisationID+"\" done.");
-					} catch (Exception x) {
-						logger.error("Role import into organisation \""+organisationID+"\" failed!", x);
+					Runnable runnable = new Runnable() {
+						public void run() {
+							try {
+
+								logger.info("Importing roles and rolegroups into organisation \""+organisationID+"\"...");
+								try {
+
+									TransactionManager transactionManager = getJ2EEVendorAdapter().getTransactionManager(ctx);
+									boolean doCommit = false;
+									transactionManager.begin();
+									try {
+
+										RoleImportSet roleImportSet = roleImport_prepare(organisationID);
+										roleImport_commit(roleImportSet, null);
+
+										doCommit = true;
+									} finally {
+										if (doCommit)
+											transactionManager.commit();
+										else
+											transactionManager.rollback();
+									}
+									logger.info("Import of roles and rolegroups into organisation \""+organisationID+"\" done.");
+								} catch (Exception x) {
+									logger.error("Role import into organisation \""+organisationID+"\" failed!", x);
+								}
+
+
+								// register the cache's JDO-listeners in the PersistenceManagerFactory
+								PersistenceManagerFactory pmf = null;
+								try {
+									CacheManagerFactory cmf = CacheManagerFactory.getCacheManagerFactory(ctx, organisationID);
+									pmf = getPersistenceManagerFactory(organisationID);
+									cmf.setupJdoCacheBridge(pmf);
+								} catch (NameAlreadyBoundException e) {
+									// ignore - might happen, if an organisation is created in an early-server-init
+								} catch (Exception e) {
+									logger.error("Setting up CacheManagerFactory for organisation \""+organisationID+"\" failed!", e);
+								}
+
+								if (pmf != null) {
+									try {
+										new PersistentNotificationManagerFactory(ctx, organisationID, JFireServerManagerFactoryImpl.this,
+												getJ2EEVendorAdapter().getTransactionManager(ctx), pmf); // registers itself in JNDI
+									} catch (NameAlreadyBoundException e) {
+										// ignore - might happen, if an organisation is created in an early-server-init
+									} catch (Exception e) {
+										logger.error("Creating PersistentNotificationManagerFactory for organisation \""+organisationID+"\" failed!", e);
+									}
+
+									logger.info("Initialising datastore of organisation \""+organisationID+"\"...");
+									try {
+										datastoreInitManager.initialiseDatastore(JFireServerManagerFactoryImpl.this, mcf.getConfigModule().getLocalServer(), organisationID,
+												jfireSecurity_createTempUserPassword(organisationID, User.USERID_SYSTEM));
+
+										logger.info("Datastore initialisation of organisation \""+organisationID+"\" done.");
+									} catch (Exception x) {
+										logger.error("Datastore initialisation of organisation \""+organisationID+"\" failed!", x);
+									}
+								} // if (pmf != null) {
+
+							} finally {
+								synchronized (unfinishedInitialisations) {
+									unfinishedInitialisations.remove(this);
+									unfinishedInitialisations.notifyAll();
+								}
+							}
+						}
+					};
+
+					synchronized (unfinishedInitialisations) {
+						unfinishedInitialisations.add(runnable);
 					}
+					if (asyncStartup)
+						threadPoolExecutor.execute(runnable);
+					else
+						runnable.run();
+				} // for (OrganisationCf org : organisationConfigModule.getOrganisations()) {
 
+				if (asyncStartup) {
+					synchronized (unfinishedInitialisations) {
+						while (!unfinishedInitialisations.isEmpty()) {
+							try {
+								unfinishedInitialisations.wait(60000);
+							} catch (InterruptedException x) { }
+						}
+					} // synchronized (unfinishedInitialisations) {
 
-					// register the cache's JDO-listeners in the PersistenceManagerFactory
-					CacheManagerFactory cmf = CacheManagerFactory.getCacheManagerFactory(ctx, organisationID);
-					PersistenceManagerFactory pmf = getPersistenceManagerFactory(organisationID);
-					cmf.setupJdoCacheBridge(pmf);
-
-					try {
-						new PersistentNotificationManagerFactory(ctx, organisationID, this,
-								getJ2EEVendorAdapter().getTransactionManager(ctx), pmf); // registers itself in JNDI
-
-//						new OrganisationSyncManagerFactory(
-//								ctx, organisationID,
-//								getJ2EEVendorAdapter().getTransactionManager(ctx), pmf); // registers itself in JNDI
-					} catch (NameAlreadyBoundException e) {
-						// ignore - might happen, if an organisation is created in an early-server-init
-					} catch (Exception e) {
-						logger.error("Creating PersistentNotificationManagerFactory for organisation \""+organisationID+"\" failed!", e);
-						throw new ResourceException(e.getMessage());
-					}
-
-					logger.info("Initialising datastore of organisation \""+organisationID+"\"...");
-					try {
-						datastoreInitManager.initialiseDatastore(this, mcf.getConfigModule().getLocalServer(), organisationID,
-							jfireSecurity_createTempUserPassword(organisationID, User.USERID_SYSTEM));
-
-						// OLD INIT STUFF
-//						datastoreInitializer.initializeDatastore(
-//								this, mcf.getConfigModule().getLocalServer(), organisationID,
-//								jfireSecurity_createTempUserPassword(organisationID, User.USERID_SYSTEM));
-						
-
-						logger.info("Datastore initialisation of organisation \""+organisationID+"\" done.");
-					} catch (Exception x) {
-						logger.error("Datastore initialisation of organisation \""+organisationID+"\" failed!", x);
-					}
-				}
+					threadPoolExecutor.shutdown();
+				} // if (asyncStartup) {
 
 				createOrganisationAllowed = true;
 
 				// do the server inits that are to be performed after the datastore inits
 				logger.info("Performing late server inits...");
 				serverInitManager.performLateInits(ctx);
-
-				// OLD INIT STUFF
-				// Server Initialization
-				// new ServerInitialiser(this, mcf, getJ2EEVendorAdapter()).initializeServer(ctx);
 			} finally {
 				ctx.close();
 			}

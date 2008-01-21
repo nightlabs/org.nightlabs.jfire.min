@@ -16,7 +16,8 @@ public class J2eeCf extends JFireServerConfigPart implements Serializable
 	 * The serial version of this class.
 	 */
 	private static final long serialVersionUID = 1L;
-	
+
+	private int initOrganisationOnStartupThreadCount = 0;
 	private String j2eeDeployBaseDirectory;
 	private String serverConfigurator;
 	private Properties serverConfiguratorSettings;
@@ -42,9 +43,12 @@ public class J2eeCf extends JFireServerConfigPart implements Serializable
 			availableServerConfigurators.add("org.nightlabs.jfire.jboss.serverconfigurator.ServerConfiguratorJBoss");
 			availableServerConfigurators.add("org.nightlabs.jfire.jboss.serverconfigurator.ServerConfiguratorJBossMySQL");
 		}
-		
+
 		if(serverConfiguratorSettings == null)
 			serverConfiguratorSettings = new Properties();
+
+		if (initOrganisationOnStartupThreadCount < 1)
+			setInitOrganisationOnStartupThreadCount(4);
 	}
 	
 	/**
@@ -121,6 +125,30 @@ public class J2eeCf extends JFireServerConfigPart implements Serializable
 	public void setServerConfiguratorSettings(Properties serverConfiguratorSettings)
 	{
 		this.serverConfiguratorSettings = serverConfiguratorSettings;
+		setChanged();
+	}
+
+	/**
+	 * During server startup, all datastore-inits of all organisations are executed. If there are many organisations, this can take a while.
+	 * In a multi-CPU-environment it makes sense to process multiple initialisations at the same time. Therefore it can be configured
+	 * by this property how many threads shall perform the initialisation simultaneously. The default value is 4.
+	 *
+	 * @return the number of threads that are spawned during server-startup for doing the initialisation of multiple organisations simultaneously.
+	 */
+	public int getInitOrganisationOnStartupThreadCount()
+	{
+		return initOrganisationOnStartupThreadCount;
+	}
+	/**
+	 * 
+	 * @param initOrganisationOnStartupThreadCount a value >= 1 specifying how many threads are 
+	 */
+	public void setInitOrganisationOnStartupThreadCount(int initOrganisationThreadCount)
+	{
+		if (initOrganisationThreadCount < 1)
+			throw new IllegalArgumentException("initOrganisationOnStartupThreadCount < 1 !!!");
+
+		this.initOrganisationOnStartupThreadCount = initOrganisationThreadCount;
 		setChanged();
 	}
 }
