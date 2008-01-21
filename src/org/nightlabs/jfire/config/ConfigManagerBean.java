@@ -875,31 +875,31 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	public void initialise() 
 	throws ModuleException 
 	{
-// TODO remove debug stuff below
-		try {
-			for (int i = 0; i < 20; ++i) {
-				AsyncInvoke.exec(new Invocation() {
-					private static final long serialVersionUID = 1L;
-					@Override
-					public Serializable invoke() throws Exception
-					{
-						PersistenceManager pm = getPersistenceManager();
-						try {
-							Thread.sleep(10000);
-							if (Math.random() >= 0.5)
-								throw new RuntimeException("Test");
-
-							return null;
-						} finally {
-							pm.close();
-						}
-					}
-				}, true);
-			}
-		} catch (Exception e) {
-			logger.warn("", e);
-		}
-// TODO remove debug stuff above
+//// TODO remove debug stuff below
+//		try {
+//			for (int i = 0; i < 20; ++i) {
+//				AsyncInvoke.exec(new Invocation() {
+//					private static final long serialVersionUID = 1L;
+//					@Override
+//					public Serializable invoke() throws Exception
+//					{
+//						PersistenceManager pm = getPersistenceManager();
+//						try {
+//							Thread.sleep(10000);
+//							if (Math.random() >= 0.5)
+//								throw new RuntimeException("Test");
+//
+//							return null;
+//						} finally {
+//							pm.close();
+//						}
+//					}
+//				}, true);
+//			}
+//		} catch (Exception e) {
+//			logger.warn("", e);
+//		}
+//// TODO remove debug stuff above
 
 		PersistenceManager pm;
 		pm = getPersistenceManager();
