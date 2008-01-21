@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE nightlybuild PUBLIC "-//NightLabs//DTD NightlyBuild V 0.5//EN" "http://www.nightlabs.de/dtd/nightlybuild_0_5.dtd">
+<nightlybuild>
+
+  <project name="JFireLog4j">
+    <ant path="JFireLog4j" file="build-nightlabs.xml" target="deploy"/>
+    <requires/>
+    <provides/>
+    <publishes location="JFireLog4j/dist/JFireLog4j.jar"/>
+    <javadoc path="JFireLog4j/src"/>
+  </project>
+
+</nightlybuild>
