@@ -35,23 +35,24 @@ public class JFirePatternConverter extends PatternConverter
 	@Override
 	protected String convert(LoggingEvent event)
 	{
+		// check whether we are on the same thread - otherwise we don't show the user-info, since it very likely is wrong or non-existent
+		String currentThreadName = Thread.currentThread().getName();
+		if (currentThreadName == null)
+			return "{current thread name unknown}";
+
+		if (!currentThreadName.equals(event.getThreadName()))
+			return "{thread mismatch}";
+
+		JFirePatternConverterDelegate delegate = delegateMap.get(delegateID);
+		if (delegate == null)
+			return "{no delegate \"" + delegateID + "\"}";
+
+		String res;
 		try {
-			// check whether we are on the same thread - otherwise we don't show the user-info, since it very likely is wrong or non-existent
-			String currentThreadName = Thread.currentThread().getName();
-			if (currentThreadName == null)
-				return "{current thread name unknown}";
-
-			if (!currentThreadName.equals(event.getThreadName()))
-				return "{thread mismatch}";
-
-			JFirePatternConverterDelegate delegate = delegateMap.get(delegateID);
-			if (delegate == null)
-				return "{no delegate \"" + delegateID + "\"}";
-
-			return delegate.convert(event);
-		} catch (NoClassDefFoundError x) {
-			x.printStackTrace();
-			return "{class not found}";
+			res = delegate.convert(event);
+		} catch (Throwable t) {
+			res = '{' + t.getClass().getName() + '}';
 		}
+		return res;
 	}
 }
