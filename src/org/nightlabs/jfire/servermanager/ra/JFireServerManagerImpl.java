@@ -52,6 +52,7 @@ import org.nightlabs.jfire.base.Lookup;
 import org.nightlabs.jfire.base.SimplePrincipal;
 import org.nightlabs.jfire.classloader.CLRegistrar;
 import org.nightlabs.jfire.module.ModuleType;
+import org.nightlabs.jfire.organisation.Organisation;
 import org.nightlabs.jfire.security.RoleSet;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.security.UserLocal;
@@ -419,6 +420,17 @@ public class JFireServerManagerImpl
 
 		try {
 			Lookup lookup = new Lookup(organisationID);
+			if (Organisation.DEV_ORGANISATION_ID.equals(organisationID) && User.USERID_ANONYMOUS.equals(userID)) {
+				// no password check required. this user has no rights at all. It basically means the same as not being logged in.
+				this.principal = new JFirePrincipal(
+						loginData,
+						userIsOrganisation, 
+						lookup,
+						new RoleSet() // no roles!
+						);
+				return this.principal;
+			}
+
 			if (this.isOrganisationCfsEmpty()) {
 				RoleSet roleSet = new RoleSet();
 				// add roles needed for setup

@@ -70,6 +70,12 @@ import javax.resource.cci.ConnectionSpec;
 import javax.resource.cci.RecordFactory;
 import javax.resource.cci.ResourceAdapterMetaData;
 import javax.resource.spi.ConnectionManager;
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.NameCallback;
+import javax.security.auth.callback.PasswordCallback;
+import javax.security.auth.callback.UnsupportedCallbackException;
+import javax.security.auth.login.LoginContext;
 import javax.transaction.TransactionManager;
 
 import org.apache.commons.beanutils.BeanUtils;
@@ -78,6 +84,7 @@ import org.apache.log4j.Logger;
 import org.nightlabs.ModuleException;
 import org.nightlabs.config.Config;
 import org.nightlabs.config.ConfigException;
+import org.nightlabs.j2ee.LoginData;
 import org.nightlabs.jdo.ObjectIDUtil;
 import org.nightlabs.jfire.base.InvokeUtil;
 import org.nightlabs.jfire.base.JFireBasePrincipal;
@@ -560,6 +567,26 @@ public class JFireServerManagerFactoryImpl
 		logger.info("Caught SERVER STARTED event!");
 
 		try {
+			LoginContext loginContext = new LoginContext(
+						LoginData.DEFAULT_SECURITY_PROTOCOL,
+						new CallbackHandler() {
+							@Override
+							public void handle(Callback[] callbacks)
+							throws IOException, UnsupportedCallbackException
+							{
+								for (int i = 0; i < callbacks.length; ++i) {
+									Callback cb = callbacks[i];
+									if (cb instanceof NameCallback) {
+										((NameCallback)cb).setName(User.USERID_ANONYMOUS + User.SEPARATOR_BETWEEN_USER_ID_AND_ORGANISATION_ID + Organisation.DEV_ORGANISATION_ID);
+									}
+									else if (cb instanceof PasswordCallback) {
+										((PasswordCallback)cb).setPassword(new char[0]);
+									}
+									else throw new UnsupportedCallbackException(cb);
+								}
+							}
+						});
+			loginContext.login();
 
 			final InitialContext ctx = new InitialContext();
 			try {				
@@ -2341,11 +2368,14 @@ public class JFireServerManagerFactoryImpl
 //					try {
 			PersistenceManager pm = getPersistenceManager(organisationID);
 			try {
-				if (User.USERID_SYSTEM.equals(userID)) {
+				if (Organisation.DEV_ORGANISATION_ID.equals(organisationID) && User.USERID_ANONYMOUS.equals(userID)) {
+					// do nothing
+				}
+				else if (User.USERID_SYSTEM.equals(userID)) {
 					// user is system user and needs ALL roles
 					roleSet.addMember(new SimplePrincipal("_ServerAdmin_"));
 					roleSet.addMember(new SimplePrincipal(User.USERID_SYSTEM)); // ONLY the system user has this role - no real user can get it as its virtual (it is ignored during import)
-					for (Iterator it = pm.getExtent(Role.class, true).iterator(); it.hasNext(); ) {
+					for (Iterator<?> it = pm.getExtent(Role.class, true).iterator(); it.hasNext(); ) {
 						Role role = (Role) it.next();
 						roleSet.addMember(new SimplePrincipal(role.getRoleID()));
 					}
@@ -2382,10 +2412,10 @@ public class JFireServerManagerFactoryImpl
 							userRef = null;
 						}
 					}
-	
+
 					// get roleRefs
 					if (userRef != null) {
-						for (Iterator it = userRef.getRoleRefs().iterator(); it.hasNext(); ) {
+						for (Iterator<RoleRef> it = userRef.getRoleRefs().iterator(); it.hasNext(); ) {
 							RoleRef roleRef = (RoleRef)it.next();
 							roleSet.addMember(roleRef.getRolePrincipal());
 						}
