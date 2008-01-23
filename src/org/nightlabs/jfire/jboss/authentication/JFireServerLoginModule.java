@@ -35,7 +35,6 @@ import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.login.LoginException;
 
 import org.apache.log4j.Logger;
-import org.jboss.security.SecurityAssociation;
 import org.jboss.security.SimpleGroup;
 import org.jboss.security.auth.spi.AbstractServerLoginModule;
 import org.nightlabs.j2ee.LoginData;
@@ -156,9 +155,10 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 		}
 
 //	 Set the login principal and credential and subject
-    SecurityAssociation.setPrincipal(ip);
-    SecurityAssociation.setCredential(loginCredential);
-    SecurityAssociation.setSubject(subject);
+//    SecurityAssociation.setPrincipal(ip);
+//    SecurityAssociation.setCredential(loginCredential);
+//    SecurityAssociation.setSubject(subject);
+		//shouldn't the above stuff be done by JBoss? Why do we do it here? I think we don't need this anymore since we now use the ClientLoginModule additionally (see login-config.xml)
 
     if (logger.isTraceEnabled())
 			logger.trace("(" + getIdentityHashStr() + ") commit: " + ip, new Exception("StackTrace"));
