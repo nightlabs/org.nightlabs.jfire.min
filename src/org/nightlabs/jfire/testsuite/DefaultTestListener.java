@@ -25,6 +25,7 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
+import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
@@ -41,7 +42,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-import com.sun.org.apache.xerces.internal.dom.DocumentImpl;
+//import com.sun.org.apache.xerces.internal.dom.DocumentImpl;
 
 /**
  * The default {@link JFireTestListener} gathers all {@link Test} data
@@ -439,8 +440,9 @@ public class DefaultTestListener implements JFireTestListener {
 	 * 
 	 * @param out The {@link OutputStream} the XML should be written to. 
 	 */
-	public void writeReportAsXML(OutputStream out) {
-		Document doc = new DocumentImpl();
+	public void writeReportAsXML(OutputStream out) throws Exception {
+//		Document doc = new DocumentImpl();
+		Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
 		Element rootNode = doc.createElement("JFireServerTestResult");
 		rootNode.setAttribute("startTime", ISO_DATE_FORMAT.format(startTime));
 		rootNode.setAttribute("endTime", ISO_DATE_FORMAT.format(endTime));
@@ -626,7 +628,11 @@ public class DefaultTestListener implements JFireTestListener {
 					break xmlGeneration;
 				}
 				try {
-					writeReportAsXML(out);
+					try {
+						writeReportAsXML(out);
+					} catch (Exception e) {
+						logger.error("Error writing XML report! xmlReport.fileName " + fileName, e);
+					}
 				} finally {
 					try {
 						out.close();
