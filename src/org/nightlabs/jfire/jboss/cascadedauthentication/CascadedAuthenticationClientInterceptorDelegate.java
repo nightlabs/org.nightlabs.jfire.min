@@ -501,28 +501,42 @@ public class CascadedAuthenticationClientInterceptorDelegate extends GenericEJBI
 			return result;
 		}
 
+		// I think, we either have to synchronize the tagging of the result or always clone it. Otherwise it's not thread-safe.
+
+//		synchronized (result) {
+//			ClientContainer clientContainer = (ClientContainer) Proxy.getInvocationHandler(result);
+//
+//			// Check whether it's necessary to clone the result. Since the EJBHome.create() method returns the same instance of
+//			// the EJB proxy if we're communicating with the same server, we have to clone it, if it already has a different
+//			// UserDescriptor assigned (not the current).
+//			// Obviously, the server pools stateless session bean proxies and ignores the information of the
+//			// initial-context-properties (there are different user names + different credentials).
+//			UserDescriptor oldUserDescriptor = (UserDescriptor) clientContainer.context.getValue(UserDescriptor.CONTEXT_KEY);
+//			if (oldUserDescriptor != null && !oldUserDescriptor.equals(userDescriptor)) {
+//				if(logger.isDebugEnabled())
+//					logger.debug("invoke: method="+invocation.getMethod().getDeclaringClass().getName()+"#"+invocation.getMethod().getName()+
+//							": after invocation: The clientContainer already contains a UserDescriptor in its context, but it is referencing another user (\"" +
+//							oldUserDescriptor.userName +
+//							"\" instead of \"" +
+//							(userDescriptor == null ? null : userDescriptor.userName) +
+//							"\")! Will clone the result. clientContainer="+clientContainer+" context=" +
+//							clientContainer.context.toString());
+//
+//				result = Util.cloneSerializable(result);
+//				clientContainer = (ClientContainer) Proxy.getInvocationHandler(result);
+//			}
+//
+//			if(logger.isDebugEnabled())
+//				logger.debug("invoke: method="+invocation.getMethod().getDeclaringClass().getName()+"#"+invocation.getMethod().getName()+
+//						": after invocation: copying UserDescriptor (username="+userDescriptor.userName+") to context: clientContainer="+clientContainer+" context=" +
+//						// (clientContainer.context == null ? null : clientContainer.context.getClass().getName())+'@'+System.identityHashCode(clientContainer.context) + "#"+
+//						clientContainer.context.toString());
+//
+//			clientContainer.context.setValue(UserDescriptor.CONTEXT_KEY, userDescriptor);
+//		}
+
+		result = Util.cloneSerializable(result);
 		ClientContainer clientContainer = (ClientContainer) Proxy.getInvocationHandler(result);
-
-		// Check whether it's necessary to clone the result. Since the EJBHome.create() method returns the same instance of
-		// the EJB proxy if we're communicating with the same server, we have to clone it, if it already has a different
-		// UserDescriptor assigned (not the current).
-		// Obviously, the server pools stateless session bean proxies and ignores the information of the
-		// initial-context-properties (there are different user names + different credentials).
-		UserDescriptor oldUserDescriptor = (UserDescriptor) clientContainer.context.getValue(UserDescriptor.CONTEXT_KEY);
-		if (oldUserDescriptor != null && !oldUserDescriptor.equals(userDescriptor)) {
-			if(logger.isDebugEnabled())
-				logger.debug("invoke: method="+invocation.getMethod().getDeclaringClass().getName()+"#"+invocation.getMethod().getName()+
-						": after invocation: The clientContainer already contains a UserDescriptor in its context, but it is referencing another user (\"" +
-						oldUserDescriptor.userName +
-						"\" instead of \"" +
-						(userDescriptor == null ? null : userDescriptor.userName) +
-						"\")! Will clone the result. clientContainer="+clientContainer+" context=" +
-						clientContainer.context.toString());
-
-			result = Util.cloneSerializable(result);
-			clientContainer = (ClientContainer) Proxy.getInvocationHandler(result);
-		}
-
 		if(logger.isDebugEnabled())
 			logger.debug("invoke: method="+invocation.getMethod().getDeclaringClass().getName()+"#"+invocation.getMethod().getName()+
 					": after invocation: copying UserDescriptor (username="+userDescriptor.userName+") to context: clientContainer="+clientContainer+" context=" +

@@ -59,6 +59,21 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 	protected JFirePrincipal ip = null;
 	protected Object loginCredential = null;
 
+	private String identityHashStr = null;
+	protected String getIdentityHashStr()
+	{
+		if (identityHashStr == null)
+			identityHashStr = Integer.toString(System.identityHashCode(this), Character.MAX_RADIX);
+
+		return identityHashStr;
+	}
+
+	public JFireServerLoginModule()
+	{
+		if (logger.isTraceEnabled())
+			logger.trace("(" + getIdentityHashStr() + ") default constructor");
+	}
+
 	@Override
 	public boolean login() throws LoginException
 	{
@@ -89,7 +104,10 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 			throw new LoginException(x.getMessage());
 		}
 
-		logger.info(Thread.currentThread().toString() + ": Login requested by " + login);
+		if (logger.isTraceEnabled())
+			logger.trace("(" + getIdentityHashStr() + ") login: " + login, new Exception("StackTrace"));
+		else if (logger.isDebugEnabled())
+			logger.debug("(" + getIdentityHashStr() + ") login: " + login);
 
 //		// set username and organisationID + userIsOrganisation
 //		String[] txt = User.PATTERN_SPLIT_LOGIN.split(login);
@@ -129,14 +147,11 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 		}
 	}
 	
-	/**
-	 * @see org.jboss.security.auth.spi.AbstractServerLoginModule#commit()
-	 */
 	@Override
 	public boolean commit() throws LoginException
 	{
 		if (!super.commit()) {
-			logger.error("org.jboss.security.auth.spi.AbstractServerLoginModule.commit() returned false!");
+			logger.error("(" + getIdentityHashStr() + ") org.jboss.security.auth.spi.AbstractServerLoginModule.commit() returned false!");
 			return false;
 		}
 
@@ -145,6 +160,9 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
     SecurityAssociation.setCredential(loginCredential);
     SecurityAssociation.setSubject(subject);
 
+    if (logger.isTraceEnabled())
+			logger.trace("(" + getIdentityHashStr() + ") commit: " + ip, new Exception("StackTrace"));
+
 //    // Add the login principal to the subject if is not there
 //    Set principals = subject.getPrincipals();
 //    if (principals.contains(principal) == false)
@@ -152,9 +170,6 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
     return true;
 	}
 
-	/**
-	 * @see org.jboss.security.auth.spi.AbstractServerLoginModule#logout()
-	 */
 	@Override
 	public boolean logout() throws LoginException
 	{
@@ -170,8 +185,10 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 	@Override
 	protected Principal getIdentity()
 	{
-		logger.debug("*********************************************************");
-		logger.debug("getIdentity() returning JFirePrincipal: "+ip);
+		if (logger.isTraceEnabled()) {
+			logger.trace("(" + getIdentityHashStr() + ") *********************************************************");
+			logger.trace("(" + getIdentityHashStr() + ") getIdentity() returning JFirePrincipal: "+ip);
+		}
 		return ip;
 	}
 
@@ -179,9 +196,11 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 	protected Group[] getRoleSets()
 		throws LoginException
 	{
-		logger.debug("*********************************************************");
-		logger.debug("getRoleSets()");
-		
+		if (logger.isTraceEnabled()) { 
+			logger.trace("(" + getIdentityHashStr() + ") *********************************************************");
+			logger.trace("(" + getIdentityHashStr() + ") getRoleSets()");
+		}
+
 		if (ip == null)
 			throw new NullPointerException("Why the hell is getRoleSets() called before login?!");
 
