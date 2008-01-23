@@ -48,6 +48,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.jar.Attributes;
@@ -583,8 +584,22 @@ public class JFireServerManagerFactoryImpl
 				int initOrganisationThreadCount = mcf.getConfigModule().getJ2ee().getInitOrganisationOnStartupThreadCount();
 				final Set<Runnable> unfinishedInitialisations = new HashSet<Runnable>();
 				ThreadPoolExecutor threadPoolExecutor = asyncStartup ? new ThreadPoolExecutor(
-						initOrganisationThreadCount, initOrganisationThreadCount, 10,
-						TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>())
+						initOrganisationThreadCount, initOrganisationThreadCount,
+						10L, TimeUnit.SECONDS,
+						new LinkedBlockingQueue<Runnable>(),
+						new ThreadFactory() {
+							private int nextThreadGroupID = 0;
+							private int nextThreadID = 0;
+
+							@Override
+							public synchronized Thread newThread(Runnable r)
+							{
+								ThreadGroup group = new ThreadGroup("InitOrgThreadGroup-" + (nextThreadGroupID++));
+								Thread thread = new Thread(group, r);
+								thread.setName("InitOrgThread-" + (nextThreadID++));
+								return thread;
+							}
+						})
 						: null;
 
 				for (OrganisationCf org : new ArrayList<OrganisationCf>(organisationConfigModule.getOrganisations())) {
