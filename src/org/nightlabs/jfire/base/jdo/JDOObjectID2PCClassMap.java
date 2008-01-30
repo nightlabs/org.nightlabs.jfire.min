@@ -60,7 +60,7 @@ public class JDOObjectID2PCClassMap
 	 * key: JDOObjectID objectID<br/>
 	 * value: Class objectClass
 	 */
-	private Map<Object, Class> objectID2PCClassMap = new HashMap<Object, Class>();
+	private Map<Object, Class<?>> objectID2PCClassMap = new HashMap<Object, Class<?>>();
 
 	/**
 	 * You should not use this method if you don't really need it. The
@@ -78,7 +78,7 @@ public class JDOObjectID2PCClassMap
 	 * @param clazz The <tt>Class</tt> of the instance which is represented
 	 *		by <tt>objectID</tt>.
 	 */
-	public synchronized void initPersistenceCapableClass(Object objectID, Class clazz)
+	public synchronized void initPersistenceCapableClass(Object objectID, Class<?> clazz)
 	{
 		// we must register all, I think... Marco.
 //		if (!(objectID instanceof ObjectID)) {
@@ -108,9 +108,9 @@ public class JDOObjectID2PCClassMap
 	 * @param objectID A JDO object ID pointing to a persistent object.
 	 * @return The class of the persistent object.
 	 */
-	public synchronized Class getPersistenceCapableClass(Object objectID)
+	public synchronized Class<?> getPersistenceCapableClass(Object objectID)
 	{
-		Class jdoObjectClass = objectID2PCClassMap.get(objectID);
+		Class<?> jdoObjectClass = objectID2PCClassMap.get(objectID);
 		if (jdoObjectClass == null) {
 			int retry = 0;
 			String clazzName = null;
