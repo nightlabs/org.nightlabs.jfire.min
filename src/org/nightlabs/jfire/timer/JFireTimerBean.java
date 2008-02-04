@@ -32,7 +32,8 @@ import org.nightlabs.jfire.servermanager.JFireServerManagerFactory;
  *		jndi-name="jfire/ejb/JFireBaseBean/JFireTimer"
  *		type="Stateless"
  *
- * @ejb.util generate = "physical"
+ * @ejb.util generate="physical"
+ * @ejb.transaction type="Required"
  */
 public abstract class JFireTimerBean
 extends BaseSessionBeanImpl

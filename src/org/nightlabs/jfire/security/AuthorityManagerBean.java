@@ -50,7 +50,8 @@ import org.nightlabs.jfire.servermanager.JFireServerManager;
  *	jndi-name="jfire/ejb/JFireBaseBean/AuthorityManager"
  *	type="Stateless"
  *
- * @ejb.util generate = "physical"
+ * @ejb.util generate="physical"
+ * @ejb.transaction type="Required"
  **/
 public abstract class AuthorityManagerBean extends BaseSessionBeanImpl implements SessionBean
 {
@@ -279,7 +280,7 @@ public abstract class AuthorityManagerBean extends BaseSessionBeanImpl implement
 	/**
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="AuthorityManager-write"
-	 * @ejb.transaction type = "Required"
+	 * @ejb.transaction type="Required"
 	 */
 	public void createUserRef(String authorityID, String userID)
 		throws SecurityException
@@ -317,7 +318,7 @@ public abstract class AuthorityManagerBean extends BaseSessionBeanImpl implement
 	/**
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="AuthorityManager-write"
-	 * @ejb.transaction type = "Required"
+	 * @ejb.transaction type="Required"
 	 */
 	public void destroyUserRef(String authorityID, String userID)
 		throws SecurityException
@@ -361,7 +362,7 @@ public abstract class AuthorityManagerBean extends BaseSessionBeanImpl implement
 	/**
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="AuthorityManager-write"
-	 * @ejb.transaction type = "Required"
+	 * @ejb.transaction type="Required"
 	 */
 	public void destroyRoleGroupRef(String authorityID, String roleGroupID)
 		throws SecurityException
@@ -405,7 +406,7 @@ public abstract class AuthorityManagerBean extends BaseSessionBeanImpl implement
 	/**
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="AuthorityManager-read"
-	 * @ejb.transaction type = "Required"
+	 * @ejb.transaction type="Required"
 	 */
 	public UserRef getUserRef(String authorityID, String userID, int includeMask)
 		throws SecurityException
@@ -442,7 +443,7 @@ public abstract class AuthorityManagerBean extends BaseSessionBeanImpl implement
 	/**
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="AuthorityManager-write"
-	 * @ejb.transaction type = "Required"
+	 * @ejb.transaction type="Required"
 	 */
 	public void createRoleGroupRef(String authorityID, String roleGroupID)
 		throws SecurityException
@@ -480,7 +481,7 @@ public abstract class AuthorityManagerBean extends BaseSessionBeanImpl implement
 	/**
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="AuthorityManager-read"
-	 * @ejb.transaction type = "Required"
+	 * @ejb.transaction type="Required"
 	 */
 	public RoleGroupRef getRoleGroupRef(String authorityID, String roleGroupID, int includeMask)
 		throws SecurityException
@@ -522,7 +523,7 @@ public abstract class AuthorityManagerBean extends BaseSessionBeanImpl implement
 	 *
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="AuthorityManager-write"
-	 * @ejb.transaction type = "Required"
+	 * @ejb.transaction type="Required"
 	 */
 	public void addRoleGroupRefToUserRef(String authorityID, String userID, String roleGroupID)
 		throws SecurityException
@@ -574,7 +575,7 @@ public abstract class AuthorityManagerBean extends BaseSessionBeanImpl implement
 	 *
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="AuthorityManager-write"
-	 * @ejb.transaction type = "Required"
+	 * @ejb.transaction type="Required"
 	 */
 	public void removeRoleGroupRefFromUserRef(String authorityID, String userID, String roleGroupID)
 		throws SecurityException

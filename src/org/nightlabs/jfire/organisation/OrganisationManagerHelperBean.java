@@ -37,6 +37,7 @@ import org.nightlabs.jfire.servermanager.config.ServerCf;
  *		view-type="local"
  *
  * @ejb.util generate="physical"
+ * @ejb.transaction type="Required"
  **/
 public abstract class OrganisationManagerHelperBean
 	extends BaseSessionBeanImpl

@@ -44,7 +44,8 @@ import org.nightlabs.jfire.base.InvokeUtil;
  *           type="Stateless" 
  *           transaction-type="Container"
  *
- * @ejb.util generate="physical" 
+ * @ejb.util generate="physical"
+ * @ejb.transaction type="Required" 
  */
 public abstract class DatastoreInitDelegateBean
 extends BaseSessionBeanImpl

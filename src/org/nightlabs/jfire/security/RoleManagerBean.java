@@ -47,7 +47,8 @@ import org.nightlabs.jfire.servermanager.RoleImportSet;
  *	jndi-name="jfire/ejb/JFireBaseBean/RoleManager"
  *	type="Stateless"
  *
- * @ejb.util generate = "physical"
+ * @ejb.util generate="physical"
+ * @ejb.transaction type="Required"
  **/
 public abstract class RoleManagerBean extends BaseSessionBeanImpl implements SessionBean  
 {
@@ -91,7 +92,7 @@ public abstract class RoleManagerBean extends BaseSessionBeanImpl implements Ses
 	/**
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="RoleManager-write"
-	 * @ejb.transaction type = "Required"
+	 * @ejb.transaction type="Required"
 	 **/
 	public void createRole(String roleID)
 	throws SecurityException
@@ -139,7 +140,7 @@ public abstract class RoleManagerBean extends BaseSessionBeanImpl implements Ses
 	/**
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="RoleManager-write"
-	 * @ejb.transaction type = "Required"
+	 * @ejb.transaction type="Required"
 	 **/
 	public RoleImportSet roleImport_prepare()
 	throws ModuleException
@@ -155,7 +156,7 @@ public abstract class RoleManagerBean extends BaseSessionBeanImpl implements Ses
 	/**
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="RoleManager-write"
-	 * @ejb.transaction type = "Required"
+	 * @ejb.transaction type="Required"
 	 **/
 	public void roleImport_commit(RoleImportSet roleImportSet)
 	throws ModuleException

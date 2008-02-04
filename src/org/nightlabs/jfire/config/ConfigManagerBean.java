@@ -69,7 +69,8 @@ import org.nightlabs.util.CollectionUtil;
  *
  * @ejb.permission role-name = "_Guest_"
  *
- * @ejb.util generate = "physical"
+ * @ejb.util generate="physical"
+ * @ejb.transaction type="Required"
  **/
 public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements SessionBean 
 {
@@ -100,7 +101,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 *  
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type = "Required"
+	 * @ejb.transaction type="Required"
 	 */
 	public ConfigModule storeConfigModule(ConfigModule configModule, boolean get, String[] fetchGroups, int maxFetchDepth)
 	throws ModuleException
@@ -187,7 +188,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 *  
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type = "Required" 
+	 * @ejb.transaction type="Required" 
 	 * 
 	 */
 	public Collection getConfigGroups(String configType, String[] fetchGroups, int maxFetchDepth)
@@ -221,7 +222,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 * 
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type = "Required"
+	 * @ejb.transaction type="Required"
 	 */
 	public Collection getConfigGroups(String[] fetchGroups, int maxFetchDepth) 
 	throws ModuleException
@@ -239,7 +240,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 * 
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type = "Required"
+	 * @ejb.transaction type="Required"
 	 */
 	public Collection<Config> getConfigs(Set<ConfigID> configIDs, String[] fetchGroups, int maxFetchDepth) throws ModuleException
 	{
@@ -274,7 +275,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 * 
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type = "Required"
+	 * @ejb.transaction type="Required"
 	 */
 	public Set<Config> getConfigs(String configType, String[] fetchGroups, int maxFetchDepth)
 	throws ModuleException
@@ -297,7 +298,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 * 
 	 * @ejb.interface-method
 	 * @ejb.permission role-name = "_Guest_"
-	 * @ejb.transaction type = "Required"
+	 * @ejb.transaction type="Required"
 	 */
 	public Set<ConfigID> getConfigIDsByConfigType(String configType, 
 			String[] fetchGroups,	int maxFetchDepth) {
@@ -316,7 +317,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 * 
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type = "Required"
+	 * @ejb.transaction type="Required"
 	 */
 	public Collection getConfigs(String[] fetchGroups, int maxFetchDepth)
 	throws ModuleException
@@ -329,7 +330,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 * 
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type = "Required"
+	 * @ejb.transaction type="Required"
 	 */
 	public Config getConfig(ConfigID configID, String[] fetchGroups, int maxFetchDepth)
 	{
@@ -368,7 +369,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 * 
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type = "Required"
+	 * @ejb.transaction type="Required"
 	 */
 	public ConfigModule getConfigModule(ConfigID configID, Class cfModClass, String cfModID, String[] fetchGroups, int maxFetchDepth)
 	throws ModuleException
@@ -419,7 +420,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 * 
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type = "Required"
+	 * @ejb.transaction type="Required"
 	 */
 	public ConfigModule createConfigModule(
 			ObjectID keyObjectID, Class cfModClass, String cfModID,
@@ -456,7 +457,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 *
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type = "Required"
+	 * @ejb.transaction type="Required"
 	 */
 	public ConfigModule getConfigModule(
 			ConfigID keyObjectID, Class cfModClass, String cfModID, boolean throwExceptionIfNotFound,
@@ -497,7 +498,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 * 
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type = "Required"
+	 * @ejb.transaction type="Required"
 	 */
 	public Collection<ConfigModule> getConfigModules(Set<ConfigModuleID> moduleIDs, String[] fetchGroups, int maxFetchDepth) 
 	throws ModuleException
@@ -553,7 +554,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 * 
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type = "Required"
+	 * @ejb.transaction type="Required"
 	 */
 	public ConfigModule getGroupConfigModule(ConfigID childID, Class configModuleClass, String moduleID, 
 			String[] fetchGroups, int maxFetchDepth) throws ModuleException
@@ -593,7 +594,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 * 
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type = "Required"
+	 * @ejb.transaction type="Required"
 	 */
 	public ConfigGroup addConfigGroup(String configKey, String groupType, String groupName, boolean get, String[] fetchGroups, int maxFetchDepth)
 	throws ModuleException
@@ -631,7 +632,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 //	 * 
 //	 * @ejb.interface-method
 //	 * @ejb.permission role-name="_Guest_"
-//	 * @ejb.transaction type = "Required"
+//	 * @ejb.transaction type="Required"
 //	 */
 //	public Collection getConfigSetups(String[] fetchGroups, int maxFetchDepth)
 //	throws ModuleException
@@ -656,7 +657,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 //	 * 
 //	 * @ejb.interface-method
 //	 * @ejb.permission role-name="_Guest_"
-//	 * @ejb.transaction type = "Required"
+//	 * @ejb.transaction type="Required"
 //	 */
 //	public ConfigSetup getCompleteConfigSetup(
 //			String configSetupType, 
@@ -692,7 +693,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 * 
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type = "Required"
+	 * @ejb.transaction type="Required"
 	 */
 	public ConfigSetup getConfigSetup(
 			ConfigSetupID configSetupID, 
@@ -727,7 +728,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 * 
 	 * @ejb.interface-method 
 	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type = "Required"
+	 * @ejb.transaction type="Required"
 	 */
 	public List<ConfigSetup> getConfigSetups(Set<ConfigSetupID> setupIDs, String[] fetchGroups, int maxFetchDepth) {
 		PersistenceManager pm = getPersistenceManager();
@@ -747,7 +748,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 * 
 	 * @ejb.interface-method 
 	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type = "Required"
+	 * @ejb.transaction type="Required"
 	 */
 	public Collection<ConfigSetupID> getAllConfigSetupIDs() {
 		PersistenceManager pm = getPersistenceManager();
@@ -764,7 +765,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 * 
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type = "Required"
+	 * @ejb.transaction type="Required"
 	 */
 	public void storeConfigSetup(Collection setup)
 	throws ModuleException
@@ -791,7 +792,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 * 
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type = "Required"
+	 * @ejb.transaction type="Required"
 	 */
 	public Config storeConfig(Config config, boolean get, String[] fetchGroups, int maxFetchDepth) {
 		PersistenceManager pm;
@@ -823,7 +824,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 * 
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type = "Required"
+	 * @ejb.transaction type="Required"
 	 */
 	public ConfigModule applyGroupInheritence(ConfigModuleID IDOfModuleToInherit, boolean get, String[] fetchGroups, int maxFetchDepth) {
 		PersistenceManager pm;

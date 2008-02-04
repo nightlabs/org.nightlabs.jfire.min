@@ -52,7 +52,8 @@ import org.nightlabs.jfire.workstation.search.WorkstationQuery;
  *  jndi-name="jfire/ejb/JFireBaseBean/WorkstationManager"
  *  type="Stateless" 
  * 
- * @ejb.util generate = "physical"
+ * @ejb.util generate="physical"
+ * @ejb.transaction type="Required"
  */
 public class WorkstationManagerBean extends BaseSessionBeanImpl implements SessionBean
 {
@@ -190,7 +191,7 @@ public class WorkstationManagerBean extends BaseSessionBeanImpl implements Sessi
 	 *
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type="Supports"
+	 * @ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 */	
 	public Set<WorkstationID> getWorkstaionIDs(Collection<WorkstationQuery> workstationQueries) {
 		PersistenceManager pm = getPersistenceManager();

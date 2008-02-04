@@ -90,6 +90,7 @@ import org.nightlabs.util.Util;
  *		view-type="remote"
  *
  * @ejb.util generate="physical"
+ * @ejb.transaction type="Required"
  **/
 public abstract class OrganisationManagerBean
 	extends BaseSessionBeanImpl
@@ -151,7 +152,7 @@ public abstract class OrganisationManagerBean
 //	 *
 //	 * @ejb.interface-method
 //	 * @!ejb.transaction type = "Required"
-//	 * @ejb.transaction type = "Never"
+//	 * @ejb.transaction type="Never"
 //	 * @ejb.permission role-name="_ServerAdmin_"
 //	 */
 //	public void createOrganisation(String organisationID, String organisationDisplayName, String masterOrganisationID)
@@ -242,7 +243,7 @@ public abstract class OrganisationManagerBean
 
 	/**
 	 * @ejb.interface-method
-	 * @ejb.transaction type="Supports"
+	 * @ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 * @ejb.permission role-name="_ServerAdmin_"
 	 */
 	public CreateOrganisationProgress getCreateOrganisationProgress(CreateOrganisationProgressID createOrganisationProgressID)
@@ -339,7 +340,7 @@ public abstract class OrganisationManagerBean
 	 * of the JFirePrincipal and must match the other organisationID.
 	 *
 	 * @ejb.interface-method
-	 * @ejb.transaction type = "Required"
+	 * @ejb.transaction type="Required"
 	 * @ejb.permission role-name="_Guest_"
 	 **/
 	public void notifyAcceptRegistration(String registrationID, Organisation grantOrganisation, String userPassword)
@@ -376,7 +377,7 @@ public abstract class OrganisationManagerBean
 	
 	/**
 	 * @ejb.interface-method
-	 * @ejb.transaction type = "Required"
+	 * @ejb.transaction type="Required"
 	 * @ejb.permission role-name="_Guest_"
 	 **/
 	public void notifyRejectRegistration(String registrationID)
@@ -500,7 +501,7 @@ public abstract class OrganisationManagerBean
 
 	/**
 	 * @ejb.interface-method
-	 * @ejb.transaction type = "Required"
+	 * @ejb.transaction type="Required"
 	 * @ejb.permission role-name="OrganisationManager-write"
 	 **/
 	public void rejectRegistration(String applicantOrganisationID)
@@ -539,7 +540,7 @@ public abstract class OrganisationManagerBean
 
 	/**
 	 * @ejb.interface-method
-	 * @ejb.transaction type = "Required"
+	 * @ejb.transaction type="Required"
 	 * @ejb.permission role-name="OrganisationManager-write"
 	 **/
 	public void cancelRegistration(String grantOrganisationID)
@@ -592,7 +593,7 @@ public abstract class OrganisationManagerBean
 	 * @throws OrganisationAlreadyRegisteredException 
 	 *
 	 * @ejb.interface-method
-	 * @ejb.transaction type = "Required"
+	 * @ejb.transaction type="Required"
 	 * @ejb.permission role-name="OrganisationManager-write"
 	 **/
 	public void beginRegistration(
@@ -679,7 +680,7 @@ public abstract class OrganisationManagerBean
 	 * and what this reaction was (accept or reject).
 	 *
 	 * @ejb.interface-method
-	 * @ejb.transaction type = "Required"
+	 * @ejb.transaction type="Required"
 	 * @ejb.permission role-name="OrganisationManager-write"
 	 **/
 	public void ackRegistration(String grantOrganisationID)
@@ -859,7 +860,7 @@ public abstract class OrganisationManagerBean
 	 * @throws OrganisationAlreadyRegisteredException 
 	 *
 	 * @ejb.interface-method
-	 * @ejb.transaction type = "Required"
+	 * @ejb.transaction type="Required"
 	 * @ejb.permission role-name="_System_,OrganisationManager-write"
 	 **/
 	public void registerInRootOrganisation()
@@ -886,7 +887,7 @@ public abstract class OrganisationManagerBean
 	 * @return Returns instances of {@link Organisation}.
 	 *
 	 * @ejb.interface-method
-	 * @ejb.transaction type = "Required"
+	 * @ejb.transaction type="Required"
 	 * @ejb.permission role-name="_Guest_"
 	 **/
 	public Collection getOrganisationsFromRootOrganisation(boolean filterPartnerOrganisations, String[] fetchGroups, int maxFetchDepth)
@@ -988,7 +989,7 @@ public abstract class OrganisationManagerBean
 	 * @throws OrganisationAlreadyRegisteredException 
 	 *
 	 * @ejb.interface-method
-	 * @ejb.transaction type = "Required"
+	 * @ejb.transaction type="Required"
 	 * @ejb.permission role-name="_System_,OrganisationManager-write"
 	 **/
 	public void registerInRootOrganisation(boolean force)
@@ -1070,7 +1071,7 @@ public abstract class OrganisationManagerBean
 	 * many more.
 	 *
 	 * @ejb.interface-method
-	 * @ejb.transaction type="Supports"
+	 * @ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 * @ejb.permission role-name="_System_"
 	 **/
 	public void internalInitializeEmptyOrganisation(
@@ -1141,7 +1142,7 @@ public abstract class OrganisationManagerBean
 
 	/**
 	 * @ejb.interface-method
-	 * @ejb.transaction type="Supports"
+	 * @ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 * @ejb.permission role-name="_Guest_"
 	 */
 	public Set<OrganisationID> getOrganisationIDs()
@@ -1158,7 +1159,7 @@ public abstract class OrganisationManagerBean
 
 	/**
 	 * @ejb.interface-method
-	 * @ejb.transaction type="Supports"
+	 * @ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 * @ejb.permission role-name="_Guest_"
 	 */
 	@SuppressWarnings("unchecked")

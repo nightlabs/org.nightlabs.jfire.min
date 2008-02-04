@@ -46,7 +46,8 @@ import org.nightlabs.jfire.base.BaseSessionBeanImpl;
  * @ejb.interface extends="org.nightlabs.jfire.asyncinvoke.DelegateR" local-extends="org.nightlabs.jfire.asyncinvoke.DelegateL"
  * @!ejb.interface generate="local" // causes the Util class to have compile errors :-((( ... we now need to execute it pseudo-remotely anyway - otherwise there's a problem with cascaded authentication
  *
- * @ejb.util generate="physical" 
+ * @ejb.util generate="physical"
+ * @ejb.transaction type="Required" 
  */
 public abstract class AsyncInvokerDelegateBean
 extends BaseSessionBeanImpl

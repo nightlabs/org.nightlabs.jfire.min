@@ -52,7 +52,8 @@ import org.nightlabs.jfire.jdo.notification.IJDOLifecycleListenerFilter;
  *           type="Stateless" 
  *           transaction-type="Container"
  *
- * @ejb.util generate = "physical"
+ * @ejb.util generate="physical"
+ * @ejb.transaction type="Required"
  */
 public abstract class JDOManagerBean
 extends BaseSessionBeanImpl
@@ -92,7 +93,7 @@ implements SessionBean
 	 *
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type = "Supports"
+	 * @ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 */
 	public String getPersistenceCapableClassName(Object objectID)
 	{
@@ -138,7 +139,7 @@ implements SessionBean
 	 *
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type="Supports"
+	 * @ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 */
 	public void removeOrAddListeners(
 			Collection<Object> removeObjectIDs,
@@ -206,7 +207,7 @@ implements SessionBean
 	 *
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type = "Supports"
+	 * @ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 */
 	public void resubscribeAllListeners(
 			Set<Object> subscribedObjectIDs,
@@ -238,7 +239,7 @@ implements SessionBean
 //	/**
 //	 * @ejb.interface-method
 //	 * @ejb.permission role-name="_Guest_"
-//	 * @ejb.transaction type = "Supports"
+//	 * @ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 //	 */
 //	public void addLifecycleListenerFilters(Collection<IJDOLifecycleListenerFilter> filters)
 //	throws ModuleException
@@ -254,7 +255,7 @@ implements SessionBean
 //	/**
 //	 * @ejb.interface-method
 //	 * @ejb.permission role-name="_Guest_"
-//	 * @ejb.transaction type = "Supports"
+//	 * @ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 //	 */
 //	public void removeLifecycleListenerFilters(Set<Long> filterIDs)
 //	throws ModuleException
@@ -274,7 +275,7 @@ implements SessionBean
 	 *
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type = "Supports"
+	 * @ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 */
 	public void closeCacheSession()
 	throws ModuleException
@@ -307,7 +308,7 @@ implements SessionBean
 	 *
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type = "Supports"
+	 * @ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 */
 	public NotificationBundle waitForChanges(long waitTimeout)
 	throws ModuleException
@@ -354,7 +355,7 @@ implements SessionBean
 //	 *
 //	 * @ejb.interface-method
 //	 * @ejb.permission role-name="_Guest_"
-//	 * @ejb.transaction type = "Supports"
+//	 * @ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 //	 */
 //	public void notifyDirtyObjectIDs(Collection dirtyObjectIDCarriers)
 //	throws ModuleException
@@ -404,7 +405,7 @@ implements SessionBean
 //	 *
 //	 * @ejb.interface-method
 //	 * @ejb.permission role-name="_Guest_"
-//	 * @ejb.transaction type = "Required"
+//	 * @ejb.transaction type="Required"
 //	 */
 //	public JDOObjectController getJDOObjectController(ObjectID linkObject, String[] fetchGroups, int maxFetchDepth)
 //	throws ModuleException
@@ -416,7 +417,7 @@ implements SessionBean
 //	 *
 //	 * @ejb.interface-method
 //	 * @ejb.permission role-name="_Guest_"
-//	 * @ejb.transaction type = "Required"
+//	 * @ejb.transaction type="Required"
 //	 */
 //	public JDOObjectController getJDOObjectController(String linkObject, String[] fetchGroups, int maxFetchDepth)
 //	throws ModuleException
@@ -444,7 +445,7 @@ implements SessionBean
 //	 *
 //	 * @ejb.interface-method
 //	 * @ejb.permission role-name="_Guest_"
-//	 * @ejb.transaction type = "Required"
+//	 * @ejb.transaction type="Required"
 //	 */
 //	public JDOObjectSyncResult syncJDOObjectChanges(String linkObject, long version, String[] fetchGroups, int maxFetchDepth)
 //	throws ModuleException
@@ -474,7 +475,7 @@ implements SessionBean
 //	 *
 //	 * @ejb.interface-method
 //	 * @ejb.permission role-name="_Guest_"
-//	 * @ejb.transaction type = "Required"
+//	 * @ejb.transaction type="Required"
 //	 */
 //	public JDOObjectSyncResult syncJDOObjectChanges(ObjectID linkObject, long version, String[] fetchGroups, int maxFetchDepth)
 //	throws ModuleException

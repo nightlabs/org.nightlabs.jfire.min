@@ -45,6 +45,7 @@ import org.nightlabs.jfire.idgenerator.id.IDNamespaceID;
  *	type="Stateless"
  *
  * @ejb.util generate="physical"
+ * @ejb.transaction type="Required"
  */
 public abstract class IDGeneratorHelperBean
 extends BaseSessionBeanImpl implements SessionBean
@@ -158,7 +159,7 @@ extends BaseSessionBeanImpl implements SessionBean
 	 *
 	 * @ejb.interface-method view-type="remote"
 	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type="Supports"
+	 * @ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 **/
 	public long[] clientNextIDs(String namespace, int currentCacheSize, int minCacheSize) 
 	throws ModuleException

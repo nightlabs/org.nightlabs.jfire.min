@@ -48,6 +48,7 @@ import org.nightlabs.language.LanguageCf;
  *	type="Stateless"
  *   
  * @ejb.util generate="physical"
+ * @ejb.transaction type="Required"
  */
 public abstract class LanguageManagerBean extends BaseSessionBeanImpl implements SessionBean 
 {

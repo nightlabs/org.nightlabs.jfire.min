@@ -48,7 +48,8 @@ import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
  *	jndi-name="jfire/ejb/JFireBaseBean/ServerManager"
  *	type="Stateless"
  *
- * @ejb.util generate = "physical" 
+ * @ejb.util generate="physical"
+ * @ejb.transaction type="Required" 
  **/
 public abstract class ServerManagerBean
 	extends BaseSessionBeanImpl

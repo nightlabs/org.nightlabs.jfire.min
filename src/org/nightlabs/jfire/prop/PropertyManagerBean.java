@@ -66,6 +66,7 @@ import org.nightlabs.util.Util;
  *           transaction-type="Container"
  * 
  * @ejb.util generate="physical"
+ * @ejb.transaction type="Required"
  */
 public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements SessionBean {
 	private static final Logger logger = Logger.getLogger(PropertyManagerBean.class);
@@ -113,7 +114,7 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	 * 
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type = "Required"
+	 * @ejb.transaction type="Required"
 	 */
 	public Struct getFullStruct(String organisationID, String linkClass, String[] fetchGroups, int maxFetchDepth) throws ModuleException {
 		PersistenceManager pm = getPersistenceManager();
@@ -134,7 +135,7 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	 * 
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type = "Required"
+	 * @ejb.transaction type="Required"
 	 */
 	public Struct getFullStruct(StructID structID, String[] fetchGroups, int maxFetchDepth) throws ModuleException {
 		return getFullStruct(structID.organisationID, structID.linkClass, fetchGroups, maxFetchDepth);
@@ -152,7 +153,7 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	 * 
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type = "Required"
+	 * @ejb.transaction type="Required"
 	 */
 	public StructLocal getFullStructLocal(String organisationID, String linkClass, String scope, String[] fetchGroups, int maxFetchDepth) throws ModuleException {
 		PersistenceManager pm = getPersistenceManager();
@@ -173,7 +174,7 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	 * 
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type = "Required"
+	 * @ejb.transaction type="Required"
 	 */
 	public StructLocal getFullStructLocal(StructLocalID structLocalID, String[] fetchGroups, int maxFetchDepth) throws ModuleException
 	{
@@ -185,7 +186,7 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	 * 
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type = "Required"
+	 * @ejb.transaction type="Required"
 	 */
 	public PropertySet getPropertySet(PropertySetID propID, String[] fetchGroups, int maxFetchDepth)
 	{
@@ -216,7 +217,7 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	 * </p>
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="PropManager-read"
-	 * @ejb.transaction type = "Required"
+	 * @ejb.transaction type="Required"
 	 */
 	public Set<?> searchPropertySets(PropSearchFilter propSearchFilter, String[] fetchGroups, int maxFetchDepth)
 	{
@@ -244,7 +245,7 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	 * </p>
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="PropManager-read"
-	 * @ejb.transaction type = "Required"
+	 * @ejb.transaction type="Required"
 	 */
 	public Set<PropertySetID> searchPropertySetIDs(PropSearchFilter propSearchFilter)
 	{
@@ -266,7 +267,7 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	 * 
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type = "Required"
+	 * @ejb.transaction type="Required"
 	 */
 	public PropertySet storePropertySet(PropertySet propertySet, boolean get, String[] fetchGroups, int maxFetchDepth)
 	{
@@ -400,7 +401,7 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	 * 
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type = "Required"
+	 * @ejb.transaction type="Required"
 	 */
 	public Set<PropertySet> getPropertySets(Set<PropertySetID> propIDs, String[] fetchGroups, int maxFetchDepth) 
 	{
@@ -427,7 +428,7 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	 * 
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type="Supports"
+	 * @ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 */
 	public long getDataFieldInstanceCount(StructFieldID fieldID) {
 		PersistenceManager pm = getPersistenceManager();

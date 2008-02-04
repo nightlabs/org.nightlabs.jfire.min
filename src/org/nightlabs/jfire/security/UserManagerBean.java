@@ -66,7 +66,8 @@ import org.nightlabs.jfire.servermanager.JFireServerManager;
  *	jndi-name="jfire/ejb/JFireBaseBean/UserManager"
  *	type="Stateless" 
  * 
- * @ejb.util generate = "physical"
+ * @ejb.util generate="physical"
+ * @ejb.transaction type="Required"
  **/
 public abstract class UserManagerBean
 extends BaseSessionBeanImpl
@@ -115,7 +116,7 @@ implements SessionBean
 	 * 
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="UserManager-write"
-	 * @ejb.transaction type = "Required"
+	 * @ejb.transaction type="Required"
 	 **/
 	public void saveUser(User user, String passwd)
 	throws SecurityException
@@ -177,7 +178,7 @@ implements SessionBean
 	 * 
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="UserManager-write"
-	 * @ejb.transaction type = "Required"
+	 * @ejb.transaction type="Required"
 	 **/
 	public User storeUser(User user, String passwd, boolean get, String[] fetchGroups, int maxFetchDepth)
 	throws SecurityException
@@ -637,7 +638,7 @@ implements SessionBean
 	/**
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="UserManager-read"
-	 * @ejb.transaction type="Supports"
+	 * @ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 **/
 	public Collection getUserGroups(Set<UserID> userGroupIDs, String[] fetchGroups, int maxFetchDepth) 
 	{
@@ -660,7 +661,7 @@ implements SessionBean
 	 * 
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type="Supports"
+	 * @ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 */
 	public Collection<User> getUsers(Set<UserID> userIDs, String[] fetchGroups, int maxFetchDepth)
 	{
@@ -675,7 +676,7 @@ implements SessionBean
 	/**
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="UserManager-read"
-	 * @ejb.transaction type="Supports"
+	 * @ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 **/
 	public UserGroupIDListCarrier getUserGroupIDs(String userID, String authorityID) 
 	{
@@ -755,7 +756,7 @@ implements SessionBean
 	/**
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="UserManager-read"
-	 * @ejb.transaction type="Supports"
+	 * @ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 **/
 	public RoleGroupIDListCarrier getRoleGroupIDs(String userID, String authorityID) 
 	{
@@ -874,7 +875,7 @@ implements SessionBean
 	/**
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="UserManager-read"
-	 * @ejb.transaction type="Supports"
+	 * @ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 */
 	public Collection getRoleGroups(Set<RoleGroupID> roleGroupIDs, String [] fetchGroups, int maxFetchDepth)
 	{
@@ -1575,7 +1576,7 @@ implements SessionBean
 	//	 *
 	//	 * @ejb.interface-method
 	//	 * @ejb.permission role-name="_ServerAdmin_"
-	//	 * @ejb.transaction type = "Required"
+	//	 * @ejb.transaction type="Required"
 	//	 */
 	//	public void flushAuthenticationCache()
 	//		throws SecurityException
@@ -1596,7 +1597,7 @@ implements SessionBean
 	 *
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type="Supports"
+	 * @ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 */	
 	public Set<UserID> getUserIDs(Collection<UserQuery> userQueries) {
 		PersistenceManager pm = getPersistenceManager();
