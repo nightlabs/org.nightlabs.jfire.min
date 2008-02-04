@@ -43,7 +43,8 @@ import org.nightlabs.jfire.base.Lookup;
  *	jndi-name="jfire/ejb/JFireBasePublicBean/OrganisationLinkerBean"
  *	type="Stateless"
  *
- * @ejb.util generate = "physical"
+ * @ejb.util generate="physical"
+ * @ejb.transaction type="Required"
  * @ejb.permission unchecked="true"
  */
 public abstract class OrganisationLinkerBean implements javax.ejb.SessionBean
