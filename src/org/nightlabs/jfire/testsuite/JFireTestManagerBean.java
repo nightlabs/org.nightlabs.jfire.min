@@ -65,7 +65,8 @@ import org.nightlabs.util.reflect.ReflectUtil;
  *					 type="Stateless" 
  *					 transaction-type="Container"
  *
- * @ejb.util generate = "physical"
+ * @ejb.util generate="physical"
+ * @ejb.transaction type="Required"
  */
 public abstract class JFireTestManagerBean
 extends BaseSessionBeanImpl
