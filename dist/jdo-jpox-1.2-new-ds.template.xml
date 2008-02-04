@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<connection-factories>
+	<tx-connection-factory>
+		<jndi-name>${jdoPersistenceManagerFactoryJNDIName_relative}</jndi-name>
+
+		<rar-name>jpox-jca.rar</rar-name>
+		<connection-definition>javax.resource.cci.ConnectionFactory</connection-definition>
+<!-- Doesn't work with old JPOX - but is needed for the new JPOX! -->
+		<xa-transaction/>
+
+<!-- indirect connection via datasource - new (JPOX 1.2) with 2 datasources - noTx for DDL, xa for normal communication -->
+<!-- XA -->
+		<config-property name="ConnectionFactoryName" type="java.lang.String">${datasourceJNDIName_absolute_xa}</config-property>
+		<config-property name="ConnectionFactory2Name" type="java.lang.String">${datasourceJNDIName_absolute_noTx}</config-property>
+		<config-property name="StoreManagerType" type="java.lang.String">rdbms</config-property>
+
+<!-- local-Tx
+		<config-property name="ConnectionFactoryName" type="java.lang.String">${datasourceJNDIName_absolute_localTx}</config-property>
+-->
+<!-- direct connection
+		<config-property name="ConnectionDriverName" type="java.lang.String">${databaseDriverName_localTx}</config-property>
+		<config-property name="ConnectionURL" type="java.lang.String">${databaseURL}</config-property>
+		<config-property name="ConnectionUserName" type="java.lang.String">${databaseUserName}</config-property>
+		<config-property name="ConnectionPassword" type="java.lang.String">${databasePassword}</config-property>
+-->
+
+<!--		<config-property name="AutoStartMechanism" type="java.lang.String">none</config-property> -->
+		<config-property name="AutoStartMechanism" type="java.lang.String">XML</config-property>
+		<config-property name="AutoStartMechanismXmlFile" type="java.lang.String">${deploymentDescriptorDirectory}/jpoxAutoStart.xml</config-property>
+
+		<config-property name="AutoCreateSchema" type="boolean">true</config-property>
+		<config-property name="AutoCreateTables" type="boolean">true</config-property>
+		<config-property name="AutoCreateColumns" type="boolean">true</config-property>
+		<config-property name="ValidateColumns" type="boolean">true</config-property>
+		<config-property name="AutoCreateConstraints" type="boolean">true</config-property>
+		<config-property name="ValidateConstraints" type="boolean">true</config-property>
+
+<!--		<config-property name="StatementBatchLimit" type="int">0</config-property> -->
+
+		<config-property name="JdoCacheCollections" type="boolean">true</config-property>
+		<config-property name="NontransactionalRead" type="boolean">true</config-property>
+<!--
+		<config-property name="UseUpdateLock" type="boolean">true</config-property>
+-->
+
+<!--
+		<config-property name="Optimistic" type="boolean">true</config-property>
+-->
+
+<!--
+  If you use MySQL on GNU+Linux, you can savely activate PRESERVECASE (it's much more beautiful). Unfortunately,
+  this setting doesn't work with MySQL on Windows. Thus, it's deactivated by default.
+		<config-property name="IdentifierCase" type="java.lang.String">PRESERVECASE</config-property>
+-->
+		<config-property name="DetachOnClose" type="boolean">false</config-property>
+		<config-property name="StringDefaultLength" type="int">255</config-property>
+
+<!-- We don't need any connection pooling at all, if we use container-managed connections. -->
+<!--
+		<config-property name="ConnectionPoolingType" type="java.lang.String">Proxool</config-property>
+		<config-property name="ConnectionPoolingConfigurationFile" type="java.lang.String">jpox-proxool.properties</config-property>
+-->
+<!--
+		<config-property name="ConnectionPoolingType" type="java.lang.String">DBCP</config-property>
+		<config-property name="ConnectionPoolingConfigurationFile" type="java.lang.String">jpox-dbcp.properties</config-property>
+-->
+<!--
+		<config-property name="ConnectionPoolingType" type="java.lang.String">C3P0</config-property>
+		<config-property name="ConnectionPoolingConfigurationFile" type="java.lang.String">jpox-c3p0.properties</config-property>
+-->
+		<config-property name="JdoCacheLevel2" type="boolean">true</config-property>
+<!--
+		<config-property name="JdoCacheLevel2" type="boolean">true</config-property>
+		<config-property name="JdoCacheLevel2Type" type="java.lang.String">org.jpox.cache.SoftLevel2Cache</config-property>
+-->
+
+<!-- WORKAROUND: Remove when JPOX bug is fixed: -->
+		<config-property name="PersistenceByReachabilityAtCommit" type="boolean">false</config-property>
+		<max-pool-size>100</max-pool-size>
+	</tx-connection-factory>
+</connection-factories>

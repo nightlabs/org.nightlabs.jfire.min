@@ -62,6 +62,7 @@ import org.nightlabs.jfire.security.id.UserID;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.servermanager.JFireServerManagerFactory;
 import org.nightlabs.jfire.servermanager.ra.JFireServerManagerFactoryImpl;
+import org.nightlabs.jfire.servermanager.ra.JFireServerManagerImpl;
 
 public class PersistentNotificationManagerFactory implements Serializable
 {
@@ -327,88 +328,103 @@ public class PersistentNotificationManagerFactory implements Serializable
 			// search for NotificationFilters according to class, lifecycle-state
 			Map<UserID, Map<NotificationFilterID, List<DirtyObjectID>>> userID2notificationFilterID2DirtyObjectID_beforeFilter = new HashMap<UserID, Map<NotificationFilterID,List<DirtyObjectID>>>();
 			{
-
-				PersistenceManager pm = persistenceManagerFactory.getPersistenceManager();
-				try {
-					// find roughly matching subscriptions (by prefiltering according to jdo-lifecycle-state & class)
-					Map<String, Map<JDOLifecycleState, List<DirtyObjectID>>> className2lifecycleState2dirtyObjectIDs = new HashMap<String, Map<JDOLifecycleState,List<DirtyObjectID>>>(); 
-
-					{
-						long start = System.currentTimeMillis();
-
-						for (Map.Entry<JDOLifecycleState, Map<Object, DirtyObjectID>> me1 : dirtyObjectIDsMap.entrySet()) {
-							for (Map.Entry<Object, DirtyObjectID> me2 : me1.getValue().entrySet()) {
-								DirtyObjectID dirtyObjectID = me2.getValue();
-
-								Map<JDOLifecycleState, List<DirtyObjectID>> lifecycleState2dirtyObjectIDs = className2lifecycleState2dirtyObjectIDs.get(dirtyObjectID.getObjectClassName());
-								if (lifecycleState2dirtyObjectIDs == null) {
-									lifecycleState2dirtyObjectIDs = new HashMap<JDOLifecycleState, List<DirtyObjectID>>();
-									className2lifecycleState2dirtyObjectIDs.put(dirtyObjectID.getObjectClassName(), lifecycleState2dirtyObjectIDs);
-								}
-
-								List<DirtyObjectID> dirtyObjectIDs = lifecycleState2dirtyObjectIDs.get(dirtyObjectID.getLifecycleState());
-								if (dirtyObjectIDs == null) {
-									dirtyObjectIDs = new ArrayList<DirtyObjectID>();
-									lifecycleState2dirtyObjectIDs.put(dirtyObjectID.getLifecycleState(), dirtyObjectIDs);
-								}
-
-								dirtyObjectIDs.add(dirtyObjectID);
-								++totalDirtyObjectIDCount;
-							}
-						}
-
-						long duration = System.currentTimeMillis() - start;
-						if (duration > 20000)
-							logger.warn(logPrefix + "Grouping " + totalDirtyObjectIDCount + " DirtyObjectIDs for prefiltering took " + duration + " msec.");
-						else
-							logger.info(logPrefix + "Grouping " + totalDirtyObjectIDCount + " DirtyObjectIDs for prefiltering took " + duration + " msec.");
-					}
-
-					{
-						long start = System.currentTimeMillis();
-
-						for (Map.Entry<String, Map<JDOLifecycleState, List<DirtyObjectID>>> me_1 : className2lifecycleState2dirtyObjectIDs.entrySet()) {
-							Class<?> dirtyObjectClass = Class.forName(me_1.getKey());
-							for (Map.Entry<JDOLifecycleState, List<DirtyObjectID>> me_2 : me_1.getValue().entrySet()) {
-								JDOLifecycleState lifecycleState = me_2.getKey();
-								List<DirtyObjectID> srcDirtyObjectIDs = me_2.getValue();
-
-								// get the candidates (by pre-filtering to some criteria)
-								Set<NotificationFilter> notificationFilters = NotificationFilter.getCandidates(pm, dirtyObjectClass, lifecycleState);
-
-								// add the mapping
-								for (NotificationFilter notificationFilter : notificationFilters) {
-									UserID userID = (UserID) JDOHelper.getObjectId(notificationFilter.getUser());
-									NotificationFilterID notificationFilterID = (NotificationFilterID) JDOHelper.getObjectId(notificationFilter);
-									Map<NotificationFilterID, List<DirtyObjectID>> notificationFilterID2DirtyObjectID__beforeFilter = userID2notificationFilterID2DirtyObjectID_beforeFilter.get(userID);
-									if (notificationFilterID2DirtyObjectID__beforeFilter == null) {
-										notificationFilterID2DirtyObjectID__beforeFilter = new HashMap<NotificationFilterID, List<DirtyObjectID>>();
-										userID2notificationFilterID2DirtyObjectID_beforeFilter.put(userID, notificationFilterID2DirtyObjectID__beforeFilter);
-									}
-
-									List<DirtyObjectID> destDirtyObjectIDs = notificationFilterID2DirtyObjectID__beforeFilter.get(notificationFilterID);
-									if (destDirtyObjectIDs == null) {
-										destDirtyObjectIDs = new ArrayList<DirtyObjectID>(srcDirtyObjectIDs.size());
-										notificationFilterID2DirtyObjectID__beforeFilter.put(notificationFilterID, destDirtyObjectIDs);
-									}
-									destDirtyObjectIDs.addAll(srcDirtyObjectIDs);
-								}
-
-								++prefilteredGroupCount;
-							}
-						}
-
-						long duration = System.currentTimeMillis() - start;
-						if (duration > 20000)
-							logger.warn(logPrefix + "Prefiltering " + prefilteredGroupCount + " groups of DirtyObjectIDs took " + duration + " msec.");
-						else
-							logger.info(logPrefix + "Prefiltering " + prefilteredGroupCount + " groups of DirtyObjectIDs took " + duration + " msec.");
-					}
-				} finally {
-					pm.close();
+				boolean doCommit = false;
+				boolean handleTx = false;
+				if (!JFireServerManagerImpl.isNonTransactionalRead()) {
+					handleTx = true;
+					transactionManager.begin();
 				}
+				try {
 
-				
+					PersistenceManager pm = persistenceManagerFactory.getPersistenceManager();
+					try {
+						// find roughly matching subscriptions (by prefiltering according to jdo-lifecycle-state & class)
+						Map<String, Map<JDOLifecycleState, List<DirtyObjectID>>> className2lifecycleState2dirtyObjectIDs = new HashMap<String, Map<JDOLifecycleState,List<DirtyObjectID>>>(); 
+
+						{
+							long start = System.currentTimeMillis();
+
+							for (Map.Entry<JDOLifecycleState, Map<Object, DirtyObjectID>> me1 : dirtyObjectIDsMap.entrySet()) {
+								for (Map.Entry<Object, DirtyObjectID> me2 : me1.getValue().entrySet()) {
+									DirtyObjectID dirtyObjectID = me2.getValue();
+
+									Map<JDOLifecycleState, List<DirtyObjectID>> lifecycleState2dirtyObjectIDs = className2lifecycleState2dirtyObjectIDs.get(dirtyObjectID.getObjectClassName());
+									if (lifecycleState2dirtyObjectIDs == null) {
+										lifecycleState2dirtyObjectIDs = new HashMap<JDOLifecycleState, List<DirtyObjectID>>();
+										className2lifecycleState2dirtyObjectIDs.put(dirtyObjectID.getObjectClassName(), lifecycleState2dirtyObjectIDs);
+									}
+
+									List<DirtyObjectID> dirtyObjectIDs = lifecycleState2dirtyObjectIDs.get(dirtyObjectID.getLifecycleState());
+									if (dirtyObjectIDs == null) {
+										dirtyObjectIDs = new ArrayList<DirtyObjectID>();
+										lifecycleState2dirtyObjectIDs.put(dirtyObjectID.getLifecycleState(), dirtyObjectIDs);
+									}
+
+									dirtyObjectIDs.add(dirtyObjectID);
+									++totalDirtyObjectIDCount;
+								}
+							}
+
+							long duration = System.currentTimeMillis() - start;
+							if (duration > 20000)
+								logger.warn(logPrefix + "Grouping " + totalDirtyObjectIDCount + " DirtyObjectIDs for prefiltering took " + duration + " msec.");
+							else
+								logger.info(logPrefix + "Grouping " + totalDirtyObjectIDCount + " DirtyObjectIDs for prefiltering took " + duration + " msec.");
+						}
+
+						{
+							long start = System.currentTimeMillis();
+
+							for (Map.Entry<String, Map<JDOLifecycleState, List<DirtyObjectID>>> me_1 : className2lifecycleState2dirtyObjectIDs.entrySet()) {
+								Class<?> dirtyObjectClass = Class.forName(me_1.getKey());
+								for (Map.Entry<JDOLifecycleState, List<DirtyObjectID>> me_2 : me_1.getValue().entrySet()) {
+									JDOLifecycleState lifecycleState = me_2.getKey();
+									List<DirtyObjectID> srcDirtyObjectIDs = me_2.getValue();
+
+									// get the candidates (by pre-filtering to some criteria)
+									Set<NotificationFilter> notificationFilters = NotificationFilter.getCandidates(pm, dirtyObjectClass, lifecycleState);
+
+									// add the mapping
+									for (NotificationFilter notificationFilter : notificationFilters) {
+										UserID userID = (UserID) JDOHelper.getObjectId(notificationFilter.getUser());
+										NotificationFilterID notificationFilterID = (NotificationFilterID) JDOHelper.getObjectId(notificationFilter);
+										Map<NotificationFilterID, List<DirtyObjectID>> notificationFilterID2DirtyObjectID__beforeFilter = userID2notificationFilterID2DirtyObjectID_beforeFilter.get(userID);
+										if (notificationFilterID2DirtyObjectID__beforeFilter == null) {
+											notificationFilterID2DirtyObjectID__beforeFilter = new HashMap<NotificationFilterID, List<DirtyObjectID>>();
+											userID2notificationFilterID2DirtyObjectID_beforeFilter.put(userID, notificationFilterID2DirtyObjectID__beforeFilter);
+										}
+
+										List<DirtyObjectID> destDirtyObjectIDs = notificationFilterID2DirtyObjectID__beforeFilter.get(notificationFilterID);
+										if (destDirtyObjectIDs == null) {
+											destDirtyObjectIDs = new ArrayList<DirtyObjectID>(srcDirtyObjectIDs.size());
+											notificationFilterID2DirtyObjectID__beforeFilter.put(notificationFilterID, destDirtyObjectIDs);
+										}
+										destDirtyObjectIDs.addAll(srcDirtyObjectIDs);
+									}
+
+									++prefilteredGroupCount;
+								}
+							}
+
+							long duration = System.currentTimeMillis() - start;
+							if (duration > 20000)
+								logger.warn(logPrefix + "Prefiltering " + prefilteredGroupCount + " groups of DirtyObjectIDs took " + duration + " msec.");
+							else
+								logger.info(logPrefix + "Prefiltering " + prefilteredGroupCount + " groups of DirtyObjectIDs took " + duration + " msec.");
+						}
+					} finally {
+						pm.close();
+					}
+
+					doCommit = true;
+				} finally {
+					if (handleTx) {
+						if (doCommit)
+							transactionManager.commit();
+						else
+							transactionManager.rollback();
+					}
+				}
 			}
 
 			// execute the filter method as the NotificationFilter's owner and push if possible

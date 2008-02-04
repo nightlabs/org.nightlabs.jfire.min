@@ -42,8 +42,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.TreeSet;
 
 import javax.jdo.PersistenceManager;
@@ -53,6 +51,8 @@ import javax.naming.NameAlreadyBoundException;
 import javax.naming.NamingException;
 import javax.security.auth.login.LoginContext;
 import javax.security.auth.login.LoginException;
+import javax.transaction.NotSupportedException;
+import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
 
 import org.apache.log4j.Logger;
@@ -69,6 +69,7 @@ import org.nightlabs.jfire.jdo.notification.JDOLifecycleState;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.servermanager.config.OrganisationCf;
 import org.nightlabs.jfire.servermanager.ra.JFireServerManagerFactoryImpl;
+import org.nightlabs.jfire.servermanager.ra.JFireServerManagerImpl;
 import org.nightlabs.util.IOUtil;
 
 /**
@@ -1523,25 +1524,53 @@ public class CacheManagerFactory
 
 					loginContext.login();
 					try {
-						Lookup lookup = new Lookup(organisationID);
-						PersistenceManager pm = lookup.getPersistenceManager();
-						try {
-							for (FilterWithDirtyObjectIDs filterWithDirtyObjectIDs : filterID2FilterWithDirtyObjectIDs.values()) {
-								JDOLifecycleRemoteEvent event = new JDOLifecycleRemoteEvent(
-										CacheManagerFactory.this,
-										pm,
-										filterWithDirtyObjectIDs.dirtyObjectIDsRaw);
-
-								try {
-									filterWithDirtyObjectIDs.dirtyObjectIDsFiltered = filterWithDirtyObjectIDs.filter.filter(event);
-								} catch (Throwable t) {
-									// TODO should we add all DirtyObjectIDs if we have an exception during filtering?
-									logger.error("distributeDirtyObjectIDs_filter: organisationID=" + organisationID + ": Filtering DirtyObjectIDs failed!", t);
-								}
+						boolean doCommit = false;
+						boolean handleTx = false;
+						TransactionManager transactionManager = getTransactionManager();
+						if (!JFireServerManagerImpl.isNonTransactionalRead()) {
+							handleTx = true;
+							try {
+								transactionManager.begin();
+							} catch (Exception e) {
+								throw new RuntimeException(e);
 							}
-						} finally {
-							pm.close();
 						}
+						try {
+
+							Lookup lookup = new Lookup(organisationID);
+							PersistenceManager pm = lookup.getPersistenceManager();
+							try {
+								for (FilterWithDirtyObjectIDs filterWithDirtyObjectIDs : filterID2FilterWithDirtyObjectIDs.values()) {
+									JDOLifecycleRemoteEvent event = new JDOLifecycleRemoteEvent(
+											CacheManagerFactory.this,
+											pm,
+											filterWithDirtyObjectIDs.dirtyObjectIDsRaw);
+
+									try {
+										filterWithDirtyObjectIDs.dirtyObjectIDsFiltered = filterWithDirtyObjectIDs.filter.filter(event);
+									} catch (Throwable t) {
+										// TODO should we add all DirtyObjectIDs if we have an exception during filtering?
+										logger.error("distributeDirtyObjectIDs_filter: organisationID=" + organisationID + ": Filtering DirtyObjectIDs failed!", t);
+									}
+								}
+							} finally {
+								pm.close();
+							}
+
+							doCommit = true;
+						} finally {
+							if (handleTx) {
+								try {
+									if (doCommit)
+										transactionManager.commit();
+									else
+										transactionManager.rollback();
+								} catch (Exception e) {
+									throw new RuntimeException(e);
+								}
+							} // if (handleTx) {
+						}
+						
 					} finally {
 						loginContext.logout();
 					}
@@ -2187,7 +2216,7 @@ public class CacheManagerFactory
 
 	private transient JdoCacheBridge bridge = null;
 
-	private transient Timer timerCheckPersistenceManagerFactory = null;
+//	private transient Timer timerCheckPersistenceManagerFactory = null;
 
 	public TransactionManager getTransactionManager(InitialContext initialContext)
 	{
@@ -2241,35 +2270,35 @@ public class CacheManagerFactory
 		bridge.setPersistenceManagerFactory(pmf);
 		bridge.init();
 
-		if (timerCheckPersistenceManagerFactory != null) {
-			timerCheckPersistenceManagerFactory.cancel();
-			timerCheckPersistenceManagerFactory = null;
-		}
-
-		timerCheckPersistenceManagerFactory = new Timer();
-		timerCheckPersistenceManagerFactory.schedule(new TimerTask()
-		{
-			public void run()
-			{
-				try {
-					if (bridge == null
-							|| bridge.getPersistenceManagerFactory().isClosed()) {
-						PersistenceManagerFactory pmf = JFireServerManagerFactoryImpl
-								.getPersistenceManagerFactory(organisationID);
-						if (pmf == null)
-							logger.warn("Old PersistenceManagerFactory for organisationID=\""
-									+ organisationID
-									+ "\" has been closed, but there is no new one!!");
-						else
-							setupJdoCacheBridge(pmf);
-					}
-				} catch (Exception e) {
-					logger.error(
-							"Checking PersistenceManagerFactory failed for organisationID=\""
-									+ organisationID + "\"!", e);
-				}
-			}
-		}, 0, 30000); // TODO should be configurable
+//		if (timerCheckPersistenceManagerFactory != null) {
+//			timerCheckPersistenceManagerFactory.cancel();
+//			timerCheckPersistenceManagerFactory = null;
+//		}
+//
+//		timerCheckPersistenceManagerFactory = new Timer();
+//		timerCheckPersistenceManagerFactory.schedule(new TimerTask()
+//		{
+//			public void run()
+//			{
+//				try {
+//					if (bridge == null
+//							|| bridge.getPersistenceManagerFactory().isClosed()) {
+//						PersistenceManagerFactory pmf = JFireServerManagerFactoryImpl
+//								.getPersistenceManagerFactory(organisationID);
+//						if (pmf == null)
+//							logger.warn("Old PersistenceManagerFactory for organisationID=\""
+//									+ organisationID
+//									+ "\" has been closed, but there is no new one!!");
+//						else
+//							setupJdoCacheBridge(pmf);
+//					}
+//				} catch (Exception e) {
+//					logger.error(
+//							"Checking PersistenceManagerFactory failed for organisationID=\""
+//									+ organisationID + "\"!", e);
+//				}
+//			}
+//		}, 0, 30000); // TODO should be configurable
 	}
 
 	public void close()

@@ -674,8 +674,17 @@ public class JFireServerManagerFactoryImpl
 
 								if (pmf != null) {
 									try {
-										new PersistentNotificationManagerFactory(ctx, organisationID, JFireServerManagerFactoryImpl.this,
-												getJ2EEVendorAdapter().getTransactionManager(ctx), pmf); // registers itself in JNDI
+										String createString = System.getProperty(PersistentNotificationManagerFactory.class.getName() + ".create");
+										boolean create = !Boolean.FALSE.toString().equals(createString);
+										if (logger.isDebugEnabled())
+											logger.debug(PersistentNotificationManagerFactory.class.getName() + ".create=" + createString);
+
+										if (!create)
+											logger.info(PersistentNotificationManagerFactory.class.getName() + ".create is false! Will not create PersistentNotificationManagerFactory for organisation \"" + organisationID + "\"!");
+										else {
+											new PersistentNotificationManagerFactory(ctx, organisationID, JFireServerManagerFactoryImpl.this,
+													getJ2EEVendorAdapter().getTransactionManager(ctx), pmf); // registers itself in JNDI
+										}
 									} catch (NameAlreadyBoundException e) {
 										// ignore - might happen, if an organisation is created in an early-server-init
 									} catch (Exception e) {
@@ -1505,8 +1514,17 @@ public class JFireServerManagerFactoryImpl
 //								new OrganisationSyncManagerFactory(ctx, organisationID,
 //								getJ2EEVendorAdapter().getTransactionManager(ctx), pmf); // registers itself in JNDI
 
-								new PersistentNotificationManagerFactory(initialContext, organisationID, this,
-										getJ2EEVendorAdapter().getTransactionManager(initialContext), pmf); // registers itself in JNDI
+								String createString = System.getProperty(PersistentNotificationManagerFactory.class.getName() + ".create");
+								boolean create = !Boolean.FALSE.toString().equals(createString);
+								if (logger.isDebugEnabled())
+									logger.debug(PersistentNotificationManagerFactory.class.getName() + ".create=" + createString);
+
+								if (!create)
+									logger.info(PersistentNotificationManagerFactory.class.getName() + ".create is false! Will not create PersistentNotificationManagerFactory for organisation \"" + organisationID + "\"!");
+								else {
+									new PersistentNotificationManagerFactory(initialContext, organisationID, this,
+											getJ2EEVendorAdapter().getTransactionManager(initialContext), pmf); // registers itself in JNDI
+								}
 							} catch (Exception e) {
 								logger.error("Creating CacheManagerFactory or PersistentNotificationManagerFactory for organisation \""+organisationID+"\" failed!", e);
 								throw new ResourceException(e.getMessage());
@@ -2337,122 +2355,105 @@ public class JFireServerManagerFactoryImpl
 		}
 	}
 
-	protected RoleSet jfireSecurity_getRoleSet(String organisationID, String userID)
-		throws ModuleException
+	/**
+	 * Get the roles that are assigned to a certain user.
+	 *
+	 * @param pm The PersistenceManager to be used to access the datastore. Can be <code>null</code> (in this case, the method will obtain and close a PM itself).
+	 * @param organisationID The organisationID of the user.
+	 * @param userID The userID of the user.
+	 * @return the role-set of the specified user.
+	 * @throws ModuleException if sth. goes wrong
+	 */
+	protected RoleSet jfireSecurity_getRoleSet(PersistenceManager pm, String organisationID, String userID)
+	throws ModuleException
 	{
-		// TO DO This should be delegated to the SecurityRegistry!
-		// ??? or maybe not ???
-//		try {
-			String userPK = userID + '@' + organisationID;
+		String userPK = userID + '@' + organisationID;
 
-			RoleSet roleSet = null;
-			// lookup in cache.
-			synchronized (jfireSecurity_roleCache) {
-				SoftReference<RoleSet> ref = jfireSecurity_roleCache.get(userPK);
-				if (ref != null)
-					roleSet = ref.get();
+		RoleSet roleSet = null;
+		// lookup in cache.
+		synchronized (jfireSecurity_roleCache) {
+			SoftReference<RoleSet> ref = jfireSecurity_roleCache.get(userPK);
+			if (ref != null)
+				roleSet = ref.get();
+		}
+
+		if (roleSet != null)
+			return roleSet;
+
+		roleSet = new RoleSet();
+
+		roleSet.addMember(new SimplePrincipal("_Guest_")); // EVERYONE has this role (if he's logged in)!
+
+		boolean closePM = false;
+		if (pm == null) {
+			closePM = true;
+			pm = getPersistenceManager(organisationID);
+		}
+		try {
+			if (Organisation.DEV_ORGANISATION_ID.equals(organisationID) && User.USERID_ANONYMOUS.equals(userID)) {
+				// do nothing
 			}
-
-			if (roleSet != null)
-				return roleSet;
-
-			roleSet = new RoleSet();
-
-			roleSet.addMember(new SimplePrincipal("_Guest_")); // EVERYONE has this role (if he's logged in)!
-
-//					boolean doCommit = false;
-//					TransactionManager tx = lookup.getTransactionManager();
-//					boolean handleTx = tx.getStatus() == Status.STATUS_NO_TRANSACTION;
-//					if (handleTx)
-//						tx.begin();
-//					try {
-			PersistenceManager pm = getPersistenceManager(organisationID);
-			try {
-				if (Organisation.DEV_ORGANISATION_ID.equals(organisationID) && User.USERID_ANONYMOUS.equals(userID)) {
-					// do nothing
+			else if (User.USERID_SYSTEM.equals(userID)) {
+				// user is system user and needs ALL roles
+				roleSet.addMember(new SimplePrincipal("_ServerAdmin_"));
+				roleSet.addMember(new SimplePrincipal(User.USERID_SYSTEM)); // ONLY the system user has this role - no real user can get it as its virtual (it is ignored during import)
+				for (Iterator<?> it = pm.getExtent(Role.class, true).iterator(); it.hasNext(); ) {
+					Role role = (Role) it.next();
+					roleSet.addMember(new SimplePrincipal(role.getRoleID()));
 				}
-				else if (User.USERID_SYSTEM.equals(userID)) {
-					// user is system user and needs ALL roles
+			}
+			else {
+				// user is normal user and has only those roles that are assigned
+
+				pm.getExtent(UserRef.class, true);
+				pm.getExtent(RoleRef.class, true);
+
+				// If the user is marked as server admin, we give it the appropriate
+				// role. For security reasons, this role is managed outside of the persistence
+				// manager, because data within the organisations' database is belonging to this
+				// organisation and can be changed by them. This role must not be set by the
+				// organisation, but only by the administrator of the server.
+				if (getOrganisationConfig(organisationID).isServerAdmin(userID))
 					roleSet.addMember(new SimplePrincipal("_ServerAdmin_"));
-					roleSet.addMember(new SimplePrincipal(User.USERID_SYSTEM)); // ONLY the system user has this role - no real user can get it as its virtual (it is ignored during import)
-					for (Iterator<?> it = pm.getExtent(Role.class, true).iterator(); it.hasNext(); ) {
-						Role role = (Role) it.next();
-						roleSet.addMember(new SimplePrincipal(role.getRoleID()));
-					}
-				}
-				else {
-					// user is normal user and has only those roles that are assigned
 
-					pm.getExtent(UserRef.class, true);
-					pm.getExtent(RoleRef.class, true);
-					
-					// If the user is marked as server admin, we give it the appropriate
-					// role. For security reasons, this role is managed outside of the persistence
-					// manager, because data within the organisations' database is belonging to this
-					// organisation and can be changed by them. This role must not be set by the
-					// organisation, but only by the administrator of the server.
-					if (getOrganisationConfig(organisationID).isServerAdmin(userID))
-						roleSet.addMember(new SimplePrincipal("_ServerAdmin_"));
-	
-					UserRef userRef;
+				UserRef userRef;
+				try {
+					userRef = (UserRef) pm.getObjectById(
+							UserRefID.create(
+									Authority.AUTHORITY_ID_ORGANISATION, 
+									organisationID, userID
+							), true);
+				} catch (JDOObjectNotFoundException x) {
 					try {
 						userRef = (UserRef) pm.getObjectById(
 								UserRefID.create(
 										Authority.AUTHORITY_ID_ORGANISATION, 
-										organisationID, userID
+										organisationID, User.USERID_OTHER
 								), true);
-					} catch (JDOObjectNotFoundException x) {
-						try {
-							userRef = (UserRef) pm.getObjectById(
-									UserRefID.create(
-											Authority.AUTHORITY_ID_ORGANISATION, 
-											organisationID, User.USERID_OTHER
-									), true);
-						} catch (JDOObjectNotFoundException e) {
-							userRef = null;
-						}
+					} catch (JDOObjectNotFoundException e) {
+						userRef = null;
 					}
+				}
 
-					// get roleRefs
-					if (userRef != null) {
-						for (Iterator<RoleRef> it = userRef.getRoleRefs().iterator(); it.hasNext(); ) {
-							RoleRef roleRef = (RoleRef)it.next();
-							roleSet.addMember(roleRef.getRolePrincipal());
-						}
-					} // if (userRef != null) {
+				// get roleRefs
+				if (userRef != null) {
+					for (Iterator<RoleRef> it = userRef.getRoleRefs().iterator(); it.hasNext(); ) {
+						RoleRef roleRef = (RoleRef)it.next();
+						roleSet.addMember(roleRef.getRolePrincipal());
+					}
+				} // if (userRef != null) {
 
-				} // if (User.USERID_SYSTEM.equals(userID)) {
+			} // if (User.USERID_SYSTEM.equals(userID)) {
 
-			} finally {
+		} finally {
+			if (closePM)
 				pm.close();
-			}
-//						doCommit = true;
-//					} finally {
-//						if (handleTx) {
-//							if (doCommit)
-//								tx.commit();
-//							else
-//								tx.rollback();
-//						}
-//					}
+		}
 
-			synchronized (jfireSecurity_roleCache) {
-				jfireSecurity_roleCache.put(userPK, new SoftReference<RoleSet>(roleSet));
-			}
-			return roleSet;
-
-//			LOGGER.debug("getRoleSets()");
-//			Group callerPrincipal = new SimpleGroup("CallerPrincipal");
-//			callerPrincipal.addMember(principal);
-//			return new Group[]{roleSet, callerPrincipal};
-//		} catch (RuntimeException x) {
-//			throw x;
-//		} catch (Exception x) {
-//			if (x instanceof LoginException)
-//				throw (LoginException)x;
-//			LOGGER.fatal("getRoleSets() failed!", x);
-//			throw new LoginException(x.getMessage());
-//		}
+		synchronized (jfireSecurity_roleCache) {
+			jfireSecurity_roleCache.put(userPK, new SoftReference<RoleSet>(roleSet));
+		}
+		return roleSet;
 	}
 
 	public List<J2eeServerTypeRegistryConfigModule.J2eeRemoteServer> getJ2eeRemoteServers()

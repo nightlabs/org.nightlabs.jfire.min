@@ -34,6 +34,7 @@ import java.util.Map;
 
 import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
+import javax.naming.InitialContext;
 import javax.resource.ResourceException;
 import javax.resource.cci.Connection;
 import javax.resource.cci.ConnectionMetaData;
@@ -41,6 +42,8 @@ import javax.resource.cci.Interaction;
 import javax.resource.cci.LocalTransaction;
 import javax.resource.cci.ResultSetInfo;
 import javax.security.auth.login.LoginException;
+import javax.transaction.Status;
+import javax.transaction.TransactionManager;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.ModuleException;
@@ -84,8 +87,25 @@ public class JFireServerManagerImpl
 	
 	private ManagedConnectionImpl managedConnectionImpl;
 	private JFireServerManagerFactoryImpl jfireServerManagerFactoryImpl;
-	
+
 	private boolean closed = false;
+
+	private static Boolean nonTransactionalReadBoolean = null;
+	public static boolean isNonTransactionalRead()
+	{
+		if (nonTransactionalReadBoolean == null) {
+			String nonTransactionalReadString = System.getProperty(SYSTEM_PROPERTY_NON_TRANSACTIONAL_READ);
+			boolean nonTransactionalRead = !Boolean.FALSE.toString().equals(nonTransactionalReadString);
+			if (logger.isDebugEnabled())
+				logger.debug(SYSTEM_PROPERTY_NON_TRANSACTIONAL_READ + "=" + nonTransactionalReadString);
+	
+			if (!nonTransactionalRead)
+				logger.info(SYSTEM_PROPERTY_NON_TRANSACTIONAL_READ + " is false! Will use transactions even for solely reading data!");
+
+			nonTransactionalReadBoolean = nonTransactionalRead ? Boolean.TRUE : Boolean.FALSE;
+		}
+		return nonTransactionalReadBoolean.booleanValue();
+	}
 
 	public JFireServerManagerImpl(ManagedConnectionImpl managedConnectionImpl)
 	{
@@ -450,13 +470,17 @@ public class JFireServerManagerImpl
 			}
 			else // authorize 
 			{
-//				boolean doCommit = false;
-//				TransactionManager tx = jfireServerManagerFactoryImpl.getJ2EEVendorAdapter().getTransactionManager(new InitialContext());
-//				boolean handleTx = tx.getStatus() == Status.STATUS_NO_TRANSACTION;
-//				if (handleTx)
-//					tx.begin();
-//				try {
-
+				boolean handleTx = false;
+				boolean doCommit = false;
+				TransactionManager tx = null;
+				if (!isNonTransactionalRead()) {
+					InitialContext initCtx = new InitialContext();
+					tx = jfireServerManagerFactoryImpl.getJ2EEVendorAdapter().getTransactionManager(initCtx);
+					handleTx = tx.getStatus() == Status.STATUS_NO_TRANSACTION;
+					if (handleTx)
+						tx.begin();
+				}
+				try {
 					boolean authenticated = jfireServerManagerFactoryImpl.jfireSecurity_checkTempUserPassword(organisationID, userID, password);
 
 					// get persistence manager
@@ -493,7 +517,7 @@ public class JFireServerManagerImpl
 							} // if (!authenticated) { // temporary password NOT matched
 						} // if (!User.USERID_SYSTEM.equals(userID)) {
 
-						RoleSet roleSet = jfireServerManagerFactoryImpl.jfireSecurity_getRoleSet(organisationID, userID);
+						RoleSet roleSet = jfireServerManagerFactoryImpl.jfireSecurity_getRoleSet(pm, organisationID, userID);
 
 						// login succeeded, create principal
 						this.principal = new JFirePrincipal(loginData, userIsOrganisation, lookup, roleSet);
@@ -506,15 +530,15 @@ public class JFireServerManagerImpl
 						pm.close();
 					}
 
-//					doCommit = true;
-//				} finally {
-//					if (handleTx) {
-//						if (doCommit)
-//							tx.commit();
-//						else
-//							tx.rollback();
-//					}
-//				}
+					doCommit = true;
+				} finally {
+					if (handleTx) {
+						if (doCommit)
+							tx.commit();
+						else
+							tx.rollback();
+					}
+				}
 
 			} // if (this.isOrganisationCfsEmpty()) {
 

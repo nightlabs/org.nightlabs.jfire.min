@@ -55,6 +55,7 @@ import org.nightlabs.jfire.servermanager.deploy.DeploymentJarItem;
  */
 public interface JFireServerManager
 {
+	public static final String SYSTEM_PROPERTY_NON_TRANSACTIONAL_READ = JFireServerManager.class.getName() + ".nonTransactionalRead";
 
 	/**
 	 * This method checks whether we have a brand new server that needs setup.

@@ -14,7 +14,7 @@
         <metadata>
             <type-mapping>${datasourceMetadataTypeMapping}</type-mapping>
         </metadata>
-        <max-pool-size>100</max-pool-size>
+        <max-pool-size>200</max-pool-size>
     </no-tx-datasource>
 
     <local-tx-datasource>
@@ -31,7 +31,7 @@
         <metadata>
             <type-mapping>${datasourceMetadataTypeMapping}</type-mapping>
         </metadata>
-        <max-pool-size>100</max-pool-size>
+        <max-pool-size>200</max-pool-size>
     </local-tx-datasource>
 
     <xa-datasource>
@@ -47,5 +47,6 @@
     	<metadata>
     		<type-mapping>${datasourceMetadataTypeMapping}</type-mapping>
     	</metadata>
+        <max-pool-size>200</max-pool-size>
     </xa-datasource>
 </datasources>
