@@ -14,6 +14,9 @@
         <metadata>
             <type-mapping>${datasourceMetadataTypeMapping}</type-mapping>
         </metadata>
+<!--
+        <prepared-statement-cache-size>0</prepared-statement-cache-size>
+-->
         <max-pool-size>200</max-pool-size>
     </no-tx-datasource>
 
@@ -31,6 +34,9 @@
         <metadata>
             <type-mapping>${datasourceMetadataTypeMapping}</type-mapping>
         </metadata>
+<!--
+        <prepared-statement-cache-size>0</prepared-statement-cache-size>
+-->
         <max-pool-size>200</max-pool-size>
     </local-tx-datasource>
 
@@ -47,6 +53,9 @@
     	<metadata>
     		<type-mapping>${datasourceMetadataTypeMapping}</type-mapping>
     	</metadata>
+<!--
+    	<prepared-statement-cache-size>0</prepared-statement-cache-size>
+-->
         <max-pool-size>200</max-pool-size>
     </xa-datasource>
 </datasources>
