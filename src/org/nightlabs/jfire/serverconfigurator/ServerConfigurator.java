@@ -108,6 +108,23 @@ public abstract class ServerConfigurator
 			throw new ServerConfigurationException("Instantiating ServerConfigurator from class " + serverConfiguratorClassName + " (configured in JFireServerConfigModule) failed!", x);
 		}
 
+		logger.info("Loading database driver classes.");
+		try {
+			Class.forName(jfireServerConfigModule.getDatabase().getDatabaseDriverName_noTx());
+		} catch (Exception x) {
+			logger.warn("Could not load database driver configured for noTx!", x);
+		}
+		try {
+			Class.forName(jfireServerConfigModule.getDatabase().getDatabaseDriverName_localTx());
+		} catch (Exception x) {
+			logger.warn("Could not load database driver configured for localTx!", x);
+		}
+		try {
+			Class.forName(jfireServerConfigModule.getDatabase().getDatabaseDriverName_xa());
+		} catch (Exception x) {
+			logger.warn("Could not load database driver configured for xa!", x);
+		}
+
 		logger.info("Configuring server with ServerConfigurator " + serverConfiguratorClassName);
 		serverConfigurator.doConfigureServer();
 		
