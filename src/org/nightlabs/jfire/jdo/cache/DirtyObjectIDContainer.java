@@ -27,6 +27,7 @@
 package org.nightlabs.jfire.jdo.cache;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -35,6 +36,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.nightlabs.jfire.jdo.notification.DirtyObjectID;
 import org.nightlabs.jfire.jdo.notification.JDOLifecycleState;
+import org.nightlabs.util.Util;
 
 public class DirtyObjectIDContainer
 implements Serializable
@@ -45,7 +47,7 @@ implements Serializable
 
 	private long createDT = System.currentTimeMillis();
 	private boolean closed = false;
-	private DirtyObjectIDContainer master;
+//	private DirtyObjectIDContainer master;
 
 	protected void assertOpen()
 	{
@@ -61,9 +63,9 @@ implements Serializable
 	private Map<JDOLifecycleState, Map<Object, DirtyObjectID>> _lifecycleState2dirtyObjectIDMap = null;
 	private static final Map<JDOLifecycleState, Map<Object, DirtyObjectID>> EMPTY_MAP = Collections.unmodifiableMap(new HashMap<JDOLifecycleState, Map<Object, DirtyObjectID>>());
 
-	public DirtyObjectIDContainer(DirtyObjectIDContainer master)
+	public DirtyObjectIDContainer() // DirtyObjectIDContainer master)
 	{
-		this.master = master;
+//		this.master = master;
 	}
 
 	public long getCreateDT()
@@ -73,6 +75,8 @@ implements Serializable
 
 	public void addDirtyObjectIDs(Collection<DirtyObjectID> newDirtyObjectIDs)
 	{
+		newDirtyObjectIDs = Util.cloneSerializable(new ArrayList<DirtyObjectID>(newDirtyObjectIDs)); // we create clones, because we manipulate them (add old sourceSessionIDs).
+
 		synchronized (this) {
 			assertOpen();
 
@@ -113,15 +117,15 @@ implements Serializable
 			_lifecycleState2dirtyObjectIDMap = null;
 		} // synchronized (this) {
 
-		// do this outside the synchronized block to prevent dead-locks
-		if (master != null)
-			master.addDirtyObjectIDs(newDirtyObjectIDs);
+//		// do this outside the synchronized block to prevent dead-locks
+//		if (master != null)
+//			master.addDirtyObjectIDs(newDirtyObjectIDs);
 	}
 
 	/**
 	 * @return Returns a read-only copy of the internal map.
 	 */
-	public synchronized Map<JDOLifecycleState, Map<Object, DirtyObjectID>> getLifecycleStage2DirtyObjectIDMap()
+	public synchronized Map<JDOLifecycleState, Map<Object, DirtyObjectID>> getLifecycleState2DirtyObjectIDMap()
 	{
 		if (closed) {
 			logger.warn("getDirtyObjectIDs: DirtyObjectIDContainer has been closed already! Returning EMPTY_MAP.", new Exception("Debug stacktrace"));
@@ -169,51 +173,54 @@ implements Serializable
 			closed = true;
 		}
 
-		// no need for synchronization, because we're already closed and no other method can change anything anymore
-		// and we must not use synchronization because it cause deadlocks with the master's synchronized blocks
-		if (master != null)
-			master.removePart(this);
+//		// no need for synchronization, because we're already closed and no other method can change anything anymore
+//		// and we must not use synchronization because it cause deadlocks with the master's synchronized blocks
+//		if (master != null)
+//			master.removePart(this);
 
 		// unnecessary, but why not help the gc a bit and forget these references
 		_lifecycleState2dirtyObjectIDMap = null;
 		lifecycleState2dirtyObjectIDMap = null;
 	}
 
-	private void removePart(DirtyObjectIDContainer part)
-	{
-		if (part.lifecycleState2dirtyObjectIDMap == null) {
-			if (logger.isDebugEnabled())
-				logger.debug("removePart: part.lifecycleState2dirtyObjectIDMap == null => won't remove anything");
-
-			return;
-		}
-
-		synchronized (this) {
-			for (Map.Entry<JDOLifecycleState, Map<Object, DirtyObjectID>> me1 : part.lifecycleState2dirtyObjectIDMap.entrySet()) {
-				JDOLifecycleState lifecycleState = me1.getKey();
-				Map<Object, DirtyObjectID> part_dirtyObjectIDMap = me1.getValue();
-				Map<Object, DirtyObjectID> master_dirtyObjectIDMap = lifecycleState2dirtyObjectIDMap.get(lifecycleState);
-				if (master_dirtyObjectIDMap == null)
-					throw new IllegalStateException("master_dirtyObjectIDMap == null for lifecycleState == " + lifecycleState);
-	
-				for (Map.Entry<Object, DirtyObjectID> me2 : part_dirtyObjectIDMap.entrySet()) {
-					Object objectID = me2.getKey();
-					DirtyObjectID part_dirtyObjectID = me2.getValue();
-					DirtyObjectID master_dirtyObjectID = master_dirtyObjectIDMap.get(objectID);
-					if (master_dirtyObjectID == null)
-						throw new IllegalStateException("master_dirtyObjectID == null for part_dirtyObjectID == " + part_dirtyObjectID);
-	
-					if (master_dirtyObjectID.getSerial() == part_dirtyObjectID.getSerial()) {
-						master_dirtyObjectIDMap.remove(objectID);
-						if (logger.isDebugEnabled())
-							logger.debug("removePart: removed DirtyObjectID from master: " + master_dirtyObjectID);
-					}
-					else {
-						if (logger.isDebugEnabled())
-							logger.debug("removePart: did NOT remove DirtyObjectID from master, because serial is different: part=" + part_dirtyObjectID + " master=" + master_dirtyObjectID);
-					}
-				}
-			}
-		} // synchronized (this) {
-	}
+//	private void removePart(DirtyObjectIDContainer part)
+//	{
+//		if (part.lifecycleState2dirtyObjectIDMap == null) {
+//			if (logger.isDebugEnabled())
+//				logger.debug("removePart: part.lifecycleState2dirtyObjectIDMap == null => won't remove anything");
+//
+//			return;
+//		}
+//
+//		synchronized (this) {
+//			for (Map.Entry<JDOLifecycleState, Map<Object, DirtyObjectID>> me1 : part.lifecycleState2dirtyObjectIDMap.entrySet()) {
+//				JDOLifecycleState lifecycleState = me1.getKey();
+//				Map<Object, DirtyObjectID> part_dirtyObjectIDMap = me1.getValue();
+//				Map<Object, DirtyObjectID> master_dirtyObjectIDMap = lifecycleState2dirtyObjectIDMap.get(lifecycleState);
+//				if (master_dirtyObjectIDMap == null)
+//					throw new IllegalStateException("master_dirtyObjectIDMap == null for lifecycleState == " + lifecycleState);
+//	
+//				for (Map.Entry<Object, DirtyObjectID> me2 : part_dirtyObjectIDMap.entrySet()) {
+//					Object objectID = me2.getKey();
+//					DirtyObjectID part_dirtyObjectID = me2.getValue();
+//					DirtyObjectID master_dirtyObjectID = master_dirtyObjectIDMap.get(objectID);
+//					if (master_dirtyObjectID == null)
+//						throw new IllegalStateException("master_dirtyObjectID == null for part_dirtyObjectID == " + part_dirtyObjectID);
+//	
+//					if (master_dirtyObjectID.getSerial() == part_dirtyObjectID.getSerial()) {
+//						master_dirtyObjectIDMap.remove(objectID);
+//						if (logger.isDebugEnabled())
+//							logger.debug("removePart: removed DirtyObjectID from master: " + master_dirtyObjectID);
+//					}
+//					else {
+//						// we need to remove the source-sessionIDs
+//
+//						
+//						if (logger.isDebugEnabled())
+//							logger.debug("removePart: did NOT remove DirtyObjectID from master, because serial is different (removed the part's source-sessionIDs, though): part=" + part_dirtyObjectID + " master=" + master_dirtyObjectID);
+//					}
+//				}
+//			}
+//		} // synchronized (this) {
+//	}
 }
