@@ -242,7 +242,7 @@ public class Lookup
 	 * is the local organisation (managed by pm), this method returns <tt>null</tt>! 
 	 * @throws NamingException 
 	 */
-	public static Hashtable getInitialContextProperties(PersistenceManager pm, String _organisationID)
+	public static Hashtable<?, ?> getInitialContextProperties(PersistenceManager pm, String _organisationID)
 	throws NamingException
 	{
 		LocalOrganisation localOrganisation = LocalOrganisation.getLocalOrganisation(pm);
