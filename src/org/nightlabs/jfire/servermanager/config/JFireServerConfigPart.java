@@ -11,9 +11,6 @@ import org.nightlabs.config.InitException;
  */
 public abstract class JFireServerConfigPart implements Serializable
 {
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 	/**
 	 * The parent config module.
