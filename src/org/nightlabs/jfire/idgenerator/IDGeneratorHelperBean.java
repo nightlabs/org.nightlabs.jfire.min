@@ -52,6 +52,11 @@ extends BaseSessionBeanImpl implements SessionBean
 {
 //	public static final Logger LOGGER = Logger.getLogger(IDGeneratorHelperBean.class);
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	@Override
 	public void setSessionContext(SessionContext sessionContext)
 			throws EJBException, RemoteException

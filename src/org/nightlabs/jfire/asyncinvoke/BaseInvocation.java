@@ -47,6 +47,10 @@ import org.nightlabs.jfire.servermanager.JFireServerManagerFactory;
 public abstract class BaseInvocation
 implements Serializable
 {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private transient JFirePrincipal callerPrincipal;
 
 	public BaseInvocation()

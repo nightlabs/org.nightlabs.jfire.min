@@ -57,6 +57,10 @@ public abstract class AuthorityManagerBean extends BaseSessionBeanImpl implement
 {
   // TODO hier weitermachen mit umschreiben von makeTransient nach detachCopy
   
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	// TODO this should be removed. The PersistenceManagers MUST always be closed! It was for testing reasons,
 	// only (because of a JPOX bug).
 	public static final boolean CLOSE_PM = true;

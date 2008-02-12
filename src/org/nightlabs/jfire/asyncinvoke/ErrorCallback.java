@@ -36,6 +36,11 @@ package org.nightlabs.jfire.asyncinvoke;
 public abstract class ErrorCallback
 extends BaseInvocation
 {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	public ErrorCallback()
 	{
 	}

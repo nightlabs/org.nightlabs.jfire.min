@@ -36,7 +36,11 @@ import java.util.HashSet;
  */
 public class RoleGroupListCarrier implements Serializable
 {
-  public Collection excluded;
+  /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	public Collection excluded;
 	public Collection assigned;
 	public Collection assignedByUserGroup;
 

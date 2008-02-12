@@ -36,7 +36,11 @@ import java.util.Set;
  */
 public class UserGroupListCarrier implements Serializable
 {
-  public Set assigned;
+  /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	public Set assigned;
   public Set excluded;
   
   public UserGroupListCarrier()

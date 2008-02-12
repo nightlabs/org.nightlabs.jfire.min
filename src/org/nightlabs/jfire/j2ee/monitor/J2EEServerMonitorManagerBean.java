@@ -61,6 +61,11 @@ implements SessionBean
 //	private static final Logger logger = Logger.getLogger(J2EEServerMonitorManagerBean.class);
 
 	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	/**
 	 * @ejb.create-method  
 	 * @ejb.permission role-name="_Guest_"
 	 */

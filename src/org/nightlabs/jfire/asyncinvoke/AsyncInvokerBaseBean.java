@@ -47,6 +47,11 @@ public abstract class AsyncInvokerBaseBean
 implements javax.ejb.MessageDrivenBean, javax.jms.MessageListener
 {
 	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	/**
 	 * LOG4J logger used by this class
 	 */
 	protected Logger logger() {

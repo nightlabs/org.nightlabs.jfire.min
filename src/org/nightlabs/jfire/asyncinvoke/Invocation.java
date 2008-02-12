@@ -52,6 +52,11 @@ public abstract class Invocation
 extends BaseInvocation
 {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	public Invocation()
 	{
 	}

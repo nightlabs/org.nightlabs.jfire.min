@@ -26,7 +26,6 @@
 
 package org.nightlabs.jfire.config;
 
-import java.io.Serializable;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -51,8 +50,6 @@ import org.nightlabs.inheritance.FieldMetaData;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jdo.ObjectID;
 import org.nightlabs.jdo.moduleregistry.ModuleMetaData;
-import org.nightlabs.jfire.asyncinvoke.AsyncInvoke;
-import org.nightlabs.jfire.asyncinvoke.Invocation;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.base.JFireBaseEAR;
 import org.nightlabs.jfire.config.id.ConfigID;
@@ -74,6 +71,10 @@ import org.nightlabs.util.CollectionUtil;
  **/
 public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements SessionBean 
 {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	/**
 	 * LOG4J logger used by this class
 	 */
@@ -144,7 +145,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 //				}
 //			}
 		
-			ConfigModule pConfigModule = (ConfigModule)pm.makePersistent(configModule);
+			ConfigModule pConfigModule = pm.makePersistent(configModule);
 			
 			if (pConfigModule.getConfig() instanceof ConfigGroup) {
 				// is a ConfigModule of a ConfigGroup -> inherit all ConfigModules for 
@@ -171,7 +172,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 				pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
 				if (fetchGroups != null)
 					pm.getFetchPlan().setGroups(fetchGroups);
-				return (ConfigModule)pm.detachCopy(pConfigModule);
+				return pm.detachCopy(pConfigModule);
 			}
 		} finally {
 			pm.close();
@@ -344,7 +345,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 			
 			Config config = (Config)pm.getObjectById(configID);
 			
-			return (Config)pm.detachCopy(config);
+			return pm.detachCopy(config);
 			
 		} finally {
 			pm.close();
@@ -439,7 +440,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 				pm.getFetchPlan().setGroups(fetchGroups);
 
 			ConfigModule configModule = config.createConfigModule(cfModClass, cfModID);
-			return (ConfigModule)pm.detachCopy(configModule);
+			return pm.detachCopy(configModule);
 		} finally {
 			pm.close();
 		}
@@ -479,7 +480,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 			if (configModule == null)
 				return null;
 
-			return (ConfigModule)pm.detachCopy(configModule);
+			return pm.detachCopy(configModule);
 
 		} finally {
 			pm.close();
@@ -512,7 +513,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 			ArrayList<ConfigModule> searchedModules = new ArrayList<ConfigModule>(moduleIDs.size());
 
 			for (ConfigModuleID moduleID : moduleIDs)
-				searchedModules.add((ConfigModule)pm.detachCopy(Config.getConfigModule(pm, moduleID))); 
+				searchedModules.add(pm.detachCopy(Config.getConfigModule(pm, moduleID))); 
 
 			return searchedModules;
 		} finally {
@@ -537,7 +538,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 		logger.debug("configModule.cfModID: "+configModule.getCfModID());
 		logger.debug("configModule.cfModKey: "+configModule.getCfModKey());
 		
-		return (ConfigModule)pm.detachCopy(configModule);
+		return pm.detachCopy(configModule);
 	}
 	
 	/**
@@ -574,7 +575,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 			
 			ConfigGroup group = config.getConfigGroup();
 			ConfigModule groupsModule = group.getConfigModule(configModuleClass, moduleID);
-			return (ConfigModule) pm.detachCopy(groupsModule);
+			return pm.detachCopy(groupsModule);
 		} finally {
 			pm.close();
 		}
@@ -612,7 +613,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 					pm.getFetchPlan().setGroups(fetchGroups);
 				pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
 
-				ConfigGroup result = (ConfigGroup)pm.detachCopy(group);
+				ConfigGroup result = pm.detachCopy(group);
 				
 				ConfigSetup.ensureAllPrerequisites(pm);
 				
@@ -856,7 +857,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 			pm.getFetchPlan().setGroups(fetchPlan);
 			
 			if (get)
-				return (ConfigModule) pm.detachCopy(moduleToUpdate);
+				return pm.detachCopy(moduleToUpdate);
 			else
 				return null;
 		} finally {

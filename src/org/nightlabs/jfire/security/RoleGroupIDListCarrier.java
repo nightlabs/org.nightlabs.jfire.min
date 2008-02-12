@@ -36,7 +36,11 @@ import java.util.Set;
  */
 public class RoleGroupIDListCarrier implements Serializable
 {
-  public RoleGroupIDListCarrier()
+  /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	public RoleGroupIDListCarrier()
   {
     excluded = new HashSet();
     assignedToUser = new HashSet();
