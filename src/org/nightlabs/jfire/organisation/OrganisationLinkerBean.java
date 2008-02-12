@@ -50,6 +50,10 @@ import org.nightlabs.jfire.base.Lookup;
 public abstract class OrganisationLinkerBean implements javax.ejb.SessionBean
 {
 	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	/**
 	 * LOG4J logger used by this class
 	 */
 	private static final Logger logger = Logger.getLogger(OrganisationLinkerBean.class);
