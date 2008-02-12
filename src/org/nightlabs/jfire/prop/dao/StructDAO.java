@@ -32,7 +32,7 @@ public class StructDAO extends BaseJDOObjectDAO<StructID, Struct> {
 	{
 		if (sharedInstance == null)
 			sharedInstance = new StructDAO();
-		return sharedInstance;		
+		return sharedInstance;
 	}
 
 	@Override
@@ -53,7 +53,7 @@ public class StructDAO extends BaseJDOObjectDAO<StructID, Struct> {
 	protected Struct retrieveJDOObject(StructID objectID, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor) throws Exception {
 		PropertyManager pm2 = pm;
 		if (pm2 == null)
-			pm2 = PropertyManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();			
+			pm2 = PropertyManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
 		Struct struct = pm2.getFullStruct(objectID, fetchGroups, maxFetchDepth);
 		if (monitor != null)
 			monitor.worked(1);
@@ -70,7 +70,7 @@ public class StructDAO extends BaseJDOObjectDAO<StructID, Struct> {
 		}
 	}
 
-	public Struct getStruct(Class linkClass, ProgressMonitor monitor) {
+	public Struct getStruct(Class<?> linkClass, ProgressMonitor monitor) {
 		return getStruct(linkClass.getName(), monitor);
 	}
 	

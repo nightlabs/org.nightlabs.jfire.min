@@ -27,7 +27,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO;
 import org.nightlabs.jfire.security.RoleGroup;
 import org.nightlabs.jfire.security.RoleGroupIDListCarrier;
@@ -85,7 +84,7 @@ public class RoleGroupDAO extends BaseJDOObjectDAO<RoleGroupID, RoleGroup>
 	 * @param userID The user
 	 * @param authorityID The authority
 	 * @param fetchgroups The fetch groups to use
-	 * @param maxFetchDepth Fetch depth or {@link NLJDOHelper#MAX_FETCH_DEPTH_NO_LIMIT} 
+	 * @param maxFetchDepth Fetch depth or {@link NLJDOHelper#MAX_FETCH_DEPTH_NO_LIMIT}
 	 * @param monitor The progress monitor for this action. For every downloaded
 	 * 					object, <code>monitor.worked(1)</code> will be called.
 	 * @return A carrier object containing assigned, unassigned and assigned-by-usergroup
@@ -123,7 +122,7 @@ public class RoleGroupDAO extends BaseJDOObjectDAO<RoleGroupID, RoleGroup>
    * @param userGroupIDs A collection of the user group IDs whose {@link RoleGroup}s are to be returned.
    * @param authorityID The authority
 	 * @param fetchgroups The fetch groups to use
-	 * @param maxFetchDepth Fetch depth or {@link NLJDOHelper#MAX_FETCH_DEPTH_NO_LIMIT} 
+	 * @param maxFetchDepth Fetch depth or {@link NLJDOHelper#MAX_FETCH_DEPTH_NO_LIMIT}
    * @return a collection of all role groups for the given user groups.
    */
   public synchronized Collection<RoleGroup> getRoleGroupsForUserGroups(Collection<UserID> userGroupIDs, String authorityID, String[] fetchGroups, int maxFetchDepth) {

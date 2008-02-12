@@ -19,7 +19,7 @@ import org.nightlabs.progress.ProgressMonitor;
  * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] de -->
  *
  */
-public class PropertySetDAO 
+public class PropertySetDAO
 extends BaseJDOObjectDAO<PropertySetID, PropertySet>
 implements IJDOObjectDAO<PropertySet>
 {
@@ -30,7 +30,7 @@ implements IJDOObjectDAO<PropertySet>
 	public PropertySetDAO() {
 	}
 
-	/** 
+	/**
 	 * {@inheritDoc}
 	 */
 	@Override
@@ -38,7 +38,7 @@ implements IJDOObjectDAO<PropertySet>
 			Set<PropertySetID> objectIDs, String[] fetchGroups, int maxFetchDepth,
 			ProgressMonitor monitor) throws Exception {
 		PropertyManager pm = PropertyManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
-		return pm.getPropertySets(objectIDs, fetchGroups, maxFetchDepth);		
+		return pm.getPropertySets(objectIDs, fetchGroups, maxFetchDepth);
 	}
 	
 	public Collection<PropertySet> getPropertySets(Collection<PropertySetID> propertySetIDs, String[] fetchGroups,
@@ -72,7 +72,7 @@ implements IJDOObjectDAO<PropertySet>
 	/**
 	 * {@inheritDoc}
 	 */
-	public PropertySet storeJDOObject(PropertySet propertySet, boolean get, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor) 
+	public PropertySet storeJDOObject(PropertySet propertySet, boolean get, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
 	{
 		try {
 			PropertyManager pm = PropertyManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();

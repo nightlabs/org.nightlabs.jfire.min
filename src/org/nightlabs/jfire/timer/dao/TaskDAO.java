@@ -27,7 +27,7 @@ public class TaskDAO extends BaseJDOObjectDAO<TaskID, Task> {
 	
 	public static final String[] DEFAULT_FETCH_GROUP = { FetchPlan.DEFAULT,
 		Task.FETCH_GROUP_NAME, Task.FETCH_GROUP_DESCRIPTION,
-		Task.FETCH_GROUP_USER 
+		Task.FETCH_GROUP_USER
 	};
 	
 	/**
@@ -40,8 +40,8 @@ public class TaskDAO extends BaseJDOObjectDAO<TaskID, Task> {
 	 * @see org.nightlabs.jfire.base.jdo.JDOObjectDAO#retrieveJDOObjects(java.util.Set, java.lang.String[], int, org.eclipse.core.runtime.IProgressMonitor)
 	 */
 	@Override
-	protected Collection<Task> retrieveJDOObjects(Set<TaskID> objectIDs, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor) 
-	throws Exception 
+	protected Collection<Task> retrieveJDOObjects(Set<TaskID> objectIDs, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
+	throws Exception
 	{
 		TimerManager timerManager = TimerManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
 		return timerManager.getTasks(objectIDs, fetchGroups, maxFetchDepth);
@@ -49,15 +49,15 @@ public class TaskDAO extends BaseJDOObjectDAO<TaskID, Task> {
 	
 	public Task getTask(
 			TaskID taskID, String[] fetchGroups, ProgressMonitor monitor
-		) 
+		)
 	{
 		return getJDOObject(null, taskID, fetchGroups, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT, monitor);
 	}
 	
 	public List<Task> getTasks(
-			Collection<TaskID> taskIDs, 
+			Collection<TaskID> taskIDs,
 			String[] fetchGroups, ProgressMonitor monitor
-		) 
+		)
 	{
 		return getJDOObjects(null, taskIDs, fetchGroups, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT, monitor);
 	}

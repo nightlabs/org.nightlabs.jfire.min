@@ -33,7 +33,7 @@ public class StructLocalDAO extends BaseJDOObjectDAO<StructLocalID, StructLocal>
 	{
 		if (sharedInstance == null)
 			sharedInstance = new StructLocalDAO();
-		return sharedInstance;		
+		return sharedInstance;
 	}
 
 	@Override
@@ -68,13 +68,13 @@ public class StructLocalDAO extends BaseJDOObjectDAO<StructLocalID, StructLocal>
 		return structLocal;
 	}
 
-	public StructLocal getStructLocal(Class linkClass, String scope, ProgressMonitor monitor) {
+	public StructLocal getStructLocal(Class<?> linkClass, String scope, ProgressMonitor monitor) {
 		return getStructLocal(linkClass.getName(), scope, monitor);
 	}
 	
 	public StructLocal getStructLocal(String linkClass, String scope, ProgressMonitor monitor) {
 		StructLocalID structLocalID = StructLocalID.create(SecurityReflector.getUserDescriptor().getOrganisationID(), linkClass, scope);
-		return getStructLocal(structLocalID, new String[] {FetchPlan.DEFAULT, IStruct.FETCH_GROUP_ISTRUCT_FULL_DATA}, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT, monitor);		
+		return getStructLocal(structLocalID, new String[] {FetchPlan.DEFAULT, IStruct.FETCH_GROUP_ISTRUCT_FULL_DATA}, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT, monitor);
 	}
 	
 	public StructLocal getStructLocal(StructLocalID structLocalID, ProgressMonitor monitor) {

@@ -27,7 +27,6 @@ import java.util.Collection;
 import java.util.Set;
 
 import org.nightlabs.annotation.Implement;
-import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO;
 import org.nightlabs.jfire.config.Config;
 import org.nightlabs.jfire.config.ConfigManager;
@@ -90,7 +89,7 @@ public class ConfigDAO extends BaseJDOObjectDAO<ConfigID, Config>
 	 * Get a config object.
 	 * @param configID The config id to get
 	 * @param fetchgroups The fetch groups to use
-	 * @param maxFetchDepth Fetch depth or {@link NLJDOHelper#MAX_FETCH_DEPTH_NO_LIMIT} 
+	 * @param maxFetchDepth Fetch depth or {@link NLJDOHelper#MAX_FETCH_DEPTH_NO_LIMIT}
 	 * @param monitor The progress monitor for this action. For every downloaded
 	 * 					object, <code>monitor.worked(1)</code> will be called.
 	 * @return the requested config object
@@ -104,7 +103,7 @@ public class ConfigDAO extends BaseJDOObjectDAO<ConfigID, Config>
 	 * Get a Collection of config objects.
 	 * @param configIDs The set of ConfigIDs corresponding to the desired configs.
 	 * @param fetchgroups The fetch groups to use
-	 * @param maxFetchDepth Fetch depth or {@link NLJDOHelper#MAX_FETCH_DEPTH_NO_LIMIT} 
+	 * @param maxFetchDepth Fetch depth or {@link NLJDOHelper#MAX_FETCH_DEPTH_NO_LIMIT}
 	 * @param monitor The progress monitor for this action. For every downloaded
 	 * 					object, <code>monitor.worked(1)</code> will be called.
 	 * @return a list with requested config objects
@@ -118,12 +117,12 @@ public class ConfigDAO extends BaseJDOObjectDAO<ConfigID, Config>
 	 * Get a Collection of all configs of a certain type.
 	 * @param configType The type of configs to fetch
 	 * @param fetchgroups The fetch groups to use
-	 * @param maxFetchDepth Fetch depth or {@link NLJDOHelper#MAX_FETCH_DEPTH_NO_LIMIT} 
+	 * @param maxFetchDepth Fetch depth or {@link NLJDOHelper#MAX_FETCH_DEPTH_NO_LIMIT}
 	 * @param monitor The progress monitor for this action. For every downloaded
 	 * 					object, <code>monitor.worked(1)</code> will be called.
 	 * @return a collection of all config of type <code>configType</code>
 	 */
-  public synchronized Collection<Config> getConfigs(String configType, 
+  public synchronized Collection<Config> getConfigs(String configType,
   			String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor) {
   	// get all ConfigIDs of the corresponding Configs
   	Collection<ConfigID> configIDs;

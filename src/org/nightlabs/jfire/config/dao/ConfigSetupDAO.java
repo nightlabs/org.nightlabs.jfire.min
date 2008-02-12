@@ -16,7 +16,6 @@ import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO;
 import org.nightlabs.jfire.base.jdo.cache.Cache;
 import org.nightlabs.jfire.config.Config;
-import org.nightlabs.jfire.config.ConfigGroup;
 import org.nightlabs.jfire.config.ConfigManager;
 import org.nightlabs.jfire.config.ConfigManagerUtil;
 import org.nightlabs.jfire.config.ConfigSetup;
@@ -28,8 +27,8 @@ import org.nightlabs.progress.ProgressMonitor;
 /**
  * DAO for ConfigSetups. It is capable of serving {@link ConfigSetup} as a normal DAO
  * would (detached with their jdo-data). Additionally it is also capable of serving
- * {@link ConfigSetup}s that are prepared on the server side with their 
- * {@link ConfigSetup#getCompleteConfigSetup(javax.jdo.PersistenceManager, String[], int, String[], int)} method. 
+ * {@link ConfigSetup}s that are prepared on the server side with their
+ * {@link ConfigSetup#getCompleteConfigSetup(javax.jdo.PersistenceManager, String[], int, String[], int)} method.
  * 
  * @author Marius Heinzmann [marius<at>NightLabs<dot>de]
  * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] de -->
@@ -58,15 +57,15 @@ public class ConfigSetupDAO extends BaseJDOObjectDAO<ConfigSetupID, ConfigSetup>
 	public static final String SCOPE_COMPLETE_SETUPS = ConfigSetup.class.getName() + "#complete";
 	/**
 	 * Key for putting the result of the server-query for all {@link ConfigSetupID}s into the Cache.
-	 */	
+	 */
 	public static final String KEY_ALL_SETUP_IDS = ConfigSetup.class.getName() + "#allSetupIDs";
 	
 	public static final String[] FETCH_GROUPS_COMPLETE_GROUPS = new String[] {
-		FetchPlan.DEFAULT 
+		FetchPlan.DEFAULT
 	};
 	
 	public static final String[] FETCH_GROUPS_COMPLETE_CONFIGS = new String[] {
-		FetchPlan.DEFAULT, Config.FETCH_GROUP_CONFIG_GROUP 
+		FetchPlan.DEFAULT, Config.FETCH_GROUP_CONFIG_GROUP
 	};
 	
 	/**
@@ -96,7 +95,7 @@ public class ConfigSetupDAO extends BaseJDOObjectDAO<ConfigSetupID, ConfigSetup>
 		Collection<ConfigSetupID> allSetupIDs;
 		// DummySetup is used in order for the result to get removed
 		// from the Cache when the ConfigSetup changes.
-		ConfigSetup dummySetup; 
+		ConfigSetup dummySetup;
 		AllSetupIDsResult(Collection<ConfigSetupID> allSetupIDs, ConfigSetup dummySetup) {
 			this.allSetupIDs = allSetupIDs;
 			this.dummySetup = dummySetup;
@@ -105,7 +104,7 @@ public class ConfigSetupDAO extends BaseJDOObjectDAO<ConfigSetupID, ConfigSetup>
 	
 	/**
 	 * This is a switch for {@link #retrieveJDOObjects(Set, String[], int, ProgressMonitor)} that
-	 * will fetch complete {@link ConfigSetup}s if this is not <code>null</code>. 
+	 * will fetch complete {@link ConfigSetup}s if this is not <code>null</code>.
 	 * Complete means with {@link Config}s and {@link ConfigGroup}s included.
 	 * <p>
 	 * If this is <code>null</code>, the {@link ConfigSetup} objects will simply be fetched, detached
@@ -126,8 +125,8 @@ public class ConfigSetupDAO extends BaseJDOObjectDAO<ConfigSetupID, ConfigSetup>
 			configSetups = new ArrayList<ConfigSetup>(objectIDs.size());
 			for (ConfigSetupID configSetupID : objectIDs) {
 				ConfigSetup cs = cm.getConfigSetup(
-						configSetupID, 
-						completeSetupParameters.groupsFetchGroups, completeSetupParameters.groupsMaxFetchDepth, 
+						configSetupID,
+						completeSetupParameters.groupsFetchGroups, completeSetupParameters.groupsMaxFetchDepth,
 						completeSetupParameters.configsFetchGroups, completeSetupParameters.configsMaxFetchDepth);
 				configSetups.add(cs);
 				monitor.worked(1);
@@ -176,8 +175,8 @@ public class ConfigSetupDAO extends BaseJDOObjectDAO<ConfigSetupID, ConfigSetup>
 	 * @param monitor the monitor to show the progress with.
 	 * @return the ConfigSetup corresponding to the given ConfigSetupID.
 	 */
-	public ConfigSetup getConfigSetup(ConfigSetupID setupID, String[] fetchGroups, int maxFetchDepth, 
-			ProgressMonitor monitor) 
+	public ConfigSetup getConfigSetup(ConfigSetupID setupID, String[] fetchGroups, int maxFetchDepth,
+			ProgressMonitor monitor)
 	{
 		return getJDOObject(null, setupID, fetchGroups, maxFetchDepth, monitor);
 	}
@@ -192,8 +191,8 @@ public class ConfigSetupDAO extends BaseJDOObjectDAO<ConfigSetupID, ConfigSetup>
 	 * @param monitor the monitor to show the progress with.
 	 * @return the ConfigSetup corresponding to the given ConfigSetupID.
 	 */
-	public Collection<ConfigSetup> getConfigSetups(Set<ConfigSetupID> setupIDs, String[] fetchGroups, 
-			int maxFetchDepth, ProgressMonitor monitor) 
+	public Collection<ConfigSetup> getConfigSetups(Set<ConfigSetupID> setupIDs, String[] fetchGroups,
+			int maxFetchDepth, ProgressMonitor monitor)
 	{
 		return getJDOObjects(null, setupIDs, fetchGroups, maxFetchDepth, monitor);
 	}
@@ -251,7 +250,7 @@ public class ConfigSetupDAO extends BaseJDOObjectDAO<ConfigSetupID, ConfigSetup>
 	 */
 	public Collection<ConfigSetup> getCompleteConfigSetups(
 			String[] groupsFetchGroups, int groupsMaxFetchDepth, String[] configsFetchGroups, int configsMaxFetchDepth,
-			ProgressMonitor monitor) 
+			ProgressMonitor monitor)
 	{
 		Collection<ConfigSetupID> allIDs;
 		try {
@@ -267,7 +266,7 @@ public class ConfigSetupDAO extends BaseJDOObjectDAO<ConfigSetupID, ConfigSetup>
 	}
 
 	/**
-	 * Returns all {@link ConfigSetup}s 
+	 * Returns all {@link ConfigSetup}s
 	 * prepared with their {@link ConfigSetup#getCompleteConfigSetup(javax.jdo.PersistenceManager, String[], int, String[], int)} method.
 	 * This method uses default values for the fetch-groups and fetch-depth. (See {@link #FETCH_GROUPS_COMPLETE_GROUPS}
 	 * {@link #FETCH_GROUPS_COMPLETE_CONFIGS}).
@@ -294,8 +293,8 @@ public class ConfigSetupDAO extends BaseJDOObjectDAO<ConfigSetupID, ConfigSetup>
 		ConfigSetupID configSetupID = ConfigSetupID.create(SecurityReflector.getUserDescriptor().getOrganisationID(), configSetupType);
 		Collection<ConfigSetup> configSetups = getCompleteConfigSetups(
 				Collections.singleton(configSetupID),
-				FETCH_GROUPS_COMPLETE_GROUPS, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT, 
-				FETCH_GROUPS_COMPLETE_CONFIGS, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT, 
+				FETCH_GROUPS_COMPLETE_GROUPS, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT,
+				FETCH_GROUPS_COMPLETE_CONFIGS, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT,
 				monitor);
 		if (configSetups.size() != 1)
 			throw new IllegalStateException("GetCompleteConfigSetups did not return expected number of ConfigSetups (1), it returned " + configSetups.size());
@@ -310,7 +309,7 @@ public class ConfigSetupDAO extends BaseJDOObjectDAO<ConfigSetupID, ConfigSetup>
 	 * The setup will be prepared with its {@link ConfigSetup#getCompleteConfigSetup(javax.jdo.PersistenceManager, String[], int, String[], int)} method.
 	 * 
 	 * @param configGroupID The ConfigID of a ConfigGroup.
-	 * @param 
+	 * @param
 	 * @return ConfigType with configGroupType like the given ID's configType.
 	 */
 	public ConfigSetup getConfigSetupForGroup(ConfigID configGroupID, ProgressMonitor monitor) {
@@ -333,7 +332,7 @@ public class ConfigSetupDAO extends BaseJDOObjectDAO<ConfigSetupID, ConfigSetup>
 	 * 
 	 * @param linkClassName The classname of the linked objects.
 	 * @param monitor The monitor to report progress.
-	 * @return Whether there is a ConfigSetup registered that links objects of the 
+	 * @return Whether there is a ConfigSetup registered that links objects of the
 	 * given class.
 	 */
 	public boolean containsRegistrationForLinkClass(String linkClassName, ProgressMonitor monitor) {
@@ -341,13 +340,13 @@ public class ConfigSetupDAO extends BaseJDOObjectDAO<ConfigSetupID, ConfigSetup>
 	}
 	
 	/**
-	 * Returns the {@link ConfigSetup} that either has {@link Config}s or {@link ConfigGroup}s with 
+	 * Returns the {@link ConfigSetup} that either has {@link Config}s or {@link ConfigGroup}s with
 	 * the configType of the given ConfigID.
 	 * The setup will be prepared with its {@link ConfigSetup#getCompleteConfigSetup(javax.jdo.PersistenceManager, String[], int, String[], int)} method.
 	 * 
 	 * @param configID The ConfigID which type should be part of the returned ConfigSetup
 	 * @param monitor The monitor to report progress.
-	 * @return The ConfigSetup that either has {@link Config}s or {@link ConfigGroup}s with 
+	 * @return The ConfigSetup that either has {@link Config}s or {@link ConfigGroup}s with
 	 * 		the configType of the given ConfigID.
 	 */
 	public ConfigSetup getConfigSetupForConfigType(ConfigID configID, ProgressMonitor monitor) {
@@ -385,12 +384,12 @@ public class ConfigSetupDAO extends BaseJDOObjectDAO<ConfigSetupID, ConfigSetup>
 	 * @param configID The {@link ConfigID} to check.
 	 * @param monitor The monitor to report progress.
 	 */
-	public boolean isConfigGroup(ConfigID configID, ProgressMonitor monitor) {		
+	public boolean isConfigGroup(ConfigID configID, ProgressMonitor monitor) {
 		return getConfigSetupForGroup(configID, monitor) != null;
 	}
 	
 	/**
-	 * Checks whether a ConfigSetup is registered that has a Config linked to 
+	 * Checks whether a ConfigSetup is registered that has a Config linked to
 	 * the given linkObject.
 	 * 
 	 * @param linkObject The object to check linkage for.
@@ -408,10 +407,10 @@ public class ConfigSetupDAO extends BaseJDOObjectDAO<ConfigSetupID, ConfigSetup>
 	 * 
 	 * @param linkClass The Class of the linked objects.
 	 * @param monitor The monitor to report progress.
-	 * @return Whether there is a ConfigSetup registered that links objects of the 
+	 * @return Whether there is a ConfigSetup registered that links objects of the
 	 * given linkClass.
 	 */
-	public boolean containsRegistrationForLinkClass(Class linkClass, ProgressMonitor monitor) {
+	public boolean containsRegistrationForLinkClass(Class<?> linkClass, ProgressMonitor monitor) {
 		return containsRegistrationForLinkClass(linkClass.getName(), monitor);
 	}
 }

@@ -8,7 +8,6 @@ import java.util.Set;
 
 import javax.jdo.JDOHelper;
 
-import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO;
 import org.nightlabs.jfire.config.Config;
 import org.nightlabs.jfire.config.ConfigManager;
@@ -21,7 +20,7 @@ import org.nightlabs.progress.ProgressMonitor;
 
 /**
  * The Access Object for {@link ConfigModule}s.
- * @version $Revision$ - $Date$ 
+ * @version $Revision$ - $Date$
  * @author Marius Heinzmann - marius[at]nightlabs[dot]de
  */
 public class ConfigModuleDAO extends BaseJDOObjectDAO<ConfigModuleID, ConfigModule> {
@@ -46,8 +45,8 @@ public class ConfigModuleDAO extends BaseJDOObjectDAO<ConfigModuleID, ConfigModu
 	 * @see org.nightlabs.jfire.base.jdo.JDOObjectDAO#retrieveJDOObjects(java.util.Set, java.lang.String[], int, org.eclipse.core.runtime.IProgressMonitor)
 	 */
 	@Override
-	protected Collection<ConfigModule> retrieveJDOObjects(Set<ConfigModuleID> configModuleIDs, 
-			String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor) 
+	protected Collection<ConfigModule> retrieveJDOObjects(Set<ConfigModuleID> configModuleIDs,
+			String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
 			throws Exception {
 		if (configModuleIDs == null)
 			return null;
@@ -67,14 +66,14 @@ public class ConfigModuleDAO extends BaseJDOObjectDAO<ConfigModuleID, ConfigModu
 	}
 
 	/**
-	 * Returns a Set of all ConfigModules corresponding to the given Set of ConfigModuleIDs. 
+	 * Returns a Set of all ConfigModules corresponding to the given Set of ConfigModuleIDs.
 	 * @param ids the set of ConfigModuleIDs for which the corresponding modules shall be returned
 	 * @param fetchGroups The fetch groups to use
-	 * @param maxFetchDepth Fetch depth or {@link NLJDOHelper#MAX_FETCH_DEPTH_NO_LIMIT} 
+	 * @param maxFetchDepth Fetch depth or {@link NLJDOHelper#MAX_FETCH_DEPTH_NO_LIMIT}
 	 * @param monitor The monitor which reflects the progress of the retrieval.
 	 * @return a Set of all ConfigModules corresponding to the given Set of ConfigModuleIDs.
 	 */
-	public Collection<ConfigModule> getConfigModules(Set<ConfigModuleID> ids, String[] fetchGroups, 
+	public Collection<ConfigModule> getConfigModules(Set<ConfigModuleID> ids, String[] fetchGroups,
 			int maxFetchDepth, ProgressMonitor monitor) {
 		return getJDOObjects(null, ids, fetchGroups, maxFetchDepth, monitor);
 	}
@@ -83,7 +82,7 @@ public class ConfigModuleDAO extends BaseJDOObjectDAO<ConfigModuleID, ConfigModu
 	 * Return the ConfigModule corresponding to the ConfigModuleID.
 	 * @param moduleID the ConfigModuleID of the ConfigModule to return.
 	 * @param fetchGroups The fetch groups to use
-	 * @param maxFetchDepth Fetch depth or {@link NLJDOHelper#MAX_FETCH_DEPTH_NO_LIMIT} 
+	 * @param maxFetchDepth Fetch depth or {@link NLJDOHelper#MAX_FETCH_DEPTH_NO_LIMIT}
 	 * @param monitor The monitor which reflects the progress of the retrieval.
 	 * @return the ConfigModule corresponding to the ConfigModuleID.
 	 */
@@ -96,11 +95,11 @@ public class ConfigModuleDAO extends BaseJDOObjectDAO<ConfigModuleID, ConfigModu
 	 * by the given configID.
 	 */
 	public ConfigModule getConfigModule(
-			ConfigID config, Class cfModClass, String cfModID, String[] fetchGroups, int maxFetchDepth, 
-			ProgressMonitor monitor) 
+			ConfigID config, Class<? extends ConfigModule> cfModClass, String cfModID, String[] fetchGroups, int maxFetchDepth,
+			ProgressMonitor monitor)
 	{
 		return getJDOObject(
-				null, 
+				null,
 				ConfigModuleID.create(
 						config.organisationID,
 						config.configKey,
@@ -116,10 +115,10 @@ public class ConfigModuleDAO extends BaseJDOObjectDAO<ConfigModuleID, ConfigModu
 	/**
 	 * Get the ConfigModule of the given class and cfModID for the given Config.
 	 */
-	public ConfigModule getConfigModule(Config config, Class cfModClass, String cfModID, 
-			String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor) 
+	public ConfigModule getConfigModule(Config config, Class<? extends ConfigModule> cfModClass, String cfModID,
+			String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
 	{
-		return getConfigModule((ConfigID)JDOHelper.getObjectId(config), cfModClass, cfModID, 
+		return getConfigModule((ConfigID)JDOHelper.getObjectId(config), cfModClass, cfModID,
 														fetchGroups, maxFetchDepth, monitor);
 	}
 
@@ -129,38 +128,38 @@ public class ConfigModuleDAO extends BaseJDOObjectDAO<ConfigModuleID, ConfigModu
 	 * 
 	 * @param childID the {@link ConfigID} of the child's {@link Config}.
 	 * @param configModuleClass the Class of the ConfigModule to return.
-	 * @param moduleID the module ID in the case there is more than one instance of that ConfigModule. 
+	 * @param moduleID the module ID in the case there is more than one instance of that ConfigModule.
 	 * @param fetchGroups the fetchGroups with which to detach the ConfigModule.
 	 * @param maxFetchDepth the maximum fetch depth while detaching.
 	 * @param monitor the ProgressMonitor to use for showing the progress of the operation.
 	 * @return the ConfigModule of the ConfigGroup of the Config corresponding to the given ConfigID
 	 * and with the given Class and moduleID or <code>null</code>.
 	 */
-	public ConfigModule getGroupsCorrespondingModule(ConfigID childID, Class configModuleClass, 
-			String moduleID, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor) 
+	public ConfigModule getGroupsCorrespondingModule(ConfigID childID, Class<? extends ConfigModule> configModuleClass,
+			String moduleID, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
 	{
 		monitor.beginTask("Getting Groups ConfigModule...", 1);
 		try {
 			ConfigManager cm = ConfigManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
 			ConfigModule searchedModule = cm.getGroupConfigModule(childID, configModuleClass, moduleID,
 					fetchGroups, maxFetchDepth);
-			monitor.worked(1); 
+			monitor.worked(1);
 			monitor.done();
 			
 			return searchedModule;
 		} catch (Exception e) {
 			monitor.setCanceled(true);
 			throw new RuntimeException("ConfigModule download failed: ", e);
-		} 
+		}
 	}
 	
 	public ConfigModule storeConfigModule(ConfigModule configModule, boolean get, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor) {
 		monitor.beginTask("Storing ConfigModule...", 1);
 		try {
 			ConfigManager cm = ConfigManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
-			ConfigModule storedModule = cm.storeConfigModule(configModule, get, 
+			ConfigModule storedModule = cm.storeConfigModule(configModule, get,
 					fetchGroups, maxFetchDepth);
-			monitor.worked(1); 
+			monitor.worked(1);
 			monitor.done();
 			
 			return storedModule;

@@ -34,7 +34,6 @@ public class EditLockDAO extends BaseJDOObjectDAO<EditLockID, EditLock>
 	}
 
 	@Override
-	@SuppressWarnings("unchecked")
 	@Implement
 	protected Collection<EditLock> retrieveJDOObjects(Set<EditLockID> editLockIDs,
 			String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
@@ -47,7 +46,6 @@ public class EditLockDAO extends BaseJDOObjectDAO<EditLockID, EditLock>
 
 	private EditLockManager editLockManager;
 
-	@SuppressWarnings("unchecked")
 	public synchronized List<EditLock> getEditLocks(ObjectID objectID, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
 	{
 		try {

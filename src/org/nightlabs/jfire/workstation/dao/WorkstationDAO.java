@@ -27,7 +27,6 @@ extends BaseJDOObjectDAO<WorkstationID, Workstation>
 	}
 
 	@Override
-	@SuppressWarnings("unchecked")
 	protected Collection<Workstation> retrieveJDOObjects(
 			Set<WorkstationID> workstationIDs, String[] fetchGroups, int maxFetchDepth,
 			ProgressMonitor monitor)
@@ -37,7 +36,6 @@ extends BaseJDOObjectDAO<WorkstationID, Workstation>
 		return wm.getWorkstations(workstationIDs, fetchGroups, maxFetchDepth);
 	}
 
-	@SuppressWarnings("unchecked")
 	public List<Workstation> getWorkstations(Set<WorkstationID> workstationIDs, String[] fetchGroups, int maxFetchDepth,
 			ProgressMonitor monitor)
 	{
@@ -58,7 +56,7 @@ extends BaseJDOObjectDAO<WorkstationID, Workstation>
 		return getWorkstations(null, fetchGroups, maxFetchDepth, monitor);
 	}
 	
-	public Workstation getWorkstation(WorkstationID workstationID, String[] fetchGroups, 
+	public Workstation getWorkstation(WorkstationID workstationID, String[] fetchGroups,
 			int maxFetchDepth, ProgressMonitor monitor)
 	{
 		return getJDOObject(null, workstationID, fetchGroups, maxFetchDepth, monitor);
