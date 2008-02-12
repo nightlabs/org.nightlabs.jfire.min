@@ -37,8 +37,6 @@ import java.util.Set;
 
 import javax.jdo.JDOHelper;
 
-import org.nightlabs.jdo.NLJDOHelper;
-import org.nightlabs.jdo.ObjectID;
 import org.nightlabs.jfire.base.jdo.cache.Cache;
 import org.nightlabs.progress.ProgressMonitor;
 import org.nightlabs.progress.SubProgressMonitor;
@@ -132,7 +130,6 @@ public abstract class BaseJDOObjectDAO<JDOObjectID, JDOObject>
 	 * @return All requested and existing JDO objects.
 	 * @throws Exception in case of an error
 	 */
-	@SuppressWarnings("unchecked")
 	protected synchronized JDOObject getJDOObject(String scope, JDOObjectID objectID, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
 	{
 		try {
@@ -166,7 +163,6 @@ public abstract class BaseJDOObjectDAO<JDOObjectID, JDOObject>
 	 * @return All requested and existing JDO objects.
 	 * @throws Exception in case of an error
 	 */
-	@SuppressWarnings("unchecked")
 	protected synchronized List<JDOObject> getJDOObjects(String scope, Collection<JDOObjectID> objectIDs, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
 	{
 		if (objectIDs == null || objectIDs.isEmpty()) {
