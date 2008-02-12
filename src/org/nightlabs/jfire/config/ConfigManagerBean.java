@@ -369,7 +369,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type="Required"
 	 */
-	public ConfigModule getConfigModule(ConfigID configID, Class cfModClass, String cfModID, String[] fetchGroups, int maxFetchDepth)
+	public ConfigModule getConfigModule(ConfigID configID, Class<? extends ConfigModule> cfModClass, String cfModID, String[] fetchGroups, int maxFetchDepth)
 	throws ModuleException
 	{
 		return getConfigModule(getPersistenceManager(), configID, cfModClass, cfModID, fetchGroups, maxFetchDepth);
@@ -387,7 +387,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 * @return The ConfigModule of the given userConfig, cfModClass and cfModID
 	 * @throws ModuleException
 	 */
-	protected ConfigModule getConfigModule(PersistenceManager pm, ConfigID configID, Class cfModClass, String cfModID, 
+	protected ConfigModule getConfigModule(PersistenceManager pm, ConfigID configID, Class<? extends ConfigModule> cfModClass, String cfModID, 
 			String[] fetchGroups, int maxFetchDepth)
 	throws ModuleException
 	{
@@ -421,7 +421,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 * @ejb.transaction type="Required"
 	 */
 	public ConfigModule createConfigModule(
-			ObjectID keyObjectID, Class cfModClass, String cfModID,
+			ObjectID keyObjectID, Class<? extends ConfigModule> cfModClass, String cfModID,
 			String[] fetchGroups, int maxFetchDepth)
 	throws ModuleException
 	{
@@ -458,7 +458,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 * @ejb.transaction type="Required"
 	 */
 	public ConfigModule getConfigModule(
-			ConfigID keyObjectID, Class cfModClass, String cfModID, boolean throwExceptionIfNotFound,
+			ConfigID keyObjectID, Class<? extends ConfigModule> cfModClass, String cfModID, boolean throwExceptionIfNotFound,
 			String[] fetchGroups, int maxFetchDepth)
 	throws ModuleException
 	{
@@ -522,7 +522,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 * Helper method for the other getConfigModule methods, which searches for ConfigModule 
 	 * corresponding to the given cfModID and if it doesn't exist creates one. 
 	 */
-	protected ConfigModule getCreateConfigModule(PersistenceManager pm, Config config, Class cfModClass, String cfModID, String[] fetchGroups, int maxFetchDepth)
+	protected ConfigModule getCreateConfigModule(PersistenceManager pm, Config config, Class<? extends ConfigModule> cfModClass, String cfModID, String[] fetchGroups, int maxFetchDepth)
 	throws ModuleException
 	{
 		logger.debug("config.organisatinID "+config.getOrganisationID());
@@ -554,7 +554,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type="Required"
 	 */
-	public ConfigModule getGroupConfigModule(ConfigID childID, Class configModuleClass, String moduleID, 
+	public ConfigModule getGroupConfigModule(ConfigID childID, Class<? extends ConfigModule> configModuleClass, String moduleID, 
 			String[] fetchGroups, int maxFetchDepth) throws ModuleException
 	{
 		PersistenceManager pm = getPersistenceManager();
@@ -765,7 +765,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type="Required"
 	 */
-	public void storeConfigSetup(Collection setup)
+	public void storeConfigSetup(Collection<Config> setup)
 	throws ModuleException
 	{		
 		PersistenceManager pm;

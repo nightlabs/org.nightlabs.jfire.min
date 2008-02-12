@@ -192,15 +192,15 @@ public abstract class AuthorityManagerBean extends BaseSessionBeanImpl implement
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="AuthorityManager-read"
 	 **/
-	public List getAllAuthorities() 
+	public List<Authority> getAllAuthorities() 
 	throws ModuleException
 	{
 	  PersistenceManager pm = getPersistenceManager();
 	  try 
 	  {
 	    Query query = pm.newQuery(pm.getExtent(Authority.class, true));
-	    Collection c = (Collection)query.execute();
-	    List result = new ArrayList(pm.detachCopyAll(c));
+	    Collection<Authority> c = (Collection<Authority>) query.execute();
+	    List<Authority> result = new ArrayList<Authority>(pm.detachCopyAll(c));
 	    return result;
 	  } 
 	  finally 
