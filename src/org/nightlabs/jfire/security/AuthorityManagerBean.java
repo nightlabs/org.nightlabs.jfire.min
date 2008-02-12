@@ -56,10 +56,6 @@ import org.nightlabs.jfire.servermanager.JFireServerManager;
 public abstract class AuthorityManagerBean extends BaseSessionBeanImpl implements SessionBean
 {
   // TODO hier weitermachen mit umschreiben von makeTransient nach detachCopy
-  
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 	// TODO this should be removed. The PersistenceManagers MUST always be closed! It was for testing reasons,
 	// only (because of a JPOX bug).

@@ -46,9 +46,6 @@ import org.nightlabs.jfire.servermanager.JFireServerManagerFactory;
 public abstract class AsyncInvokerBaseBean
 implements javax.ejb.MessageDrivenBean, javax.jms.MessageListener
 {
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 
 	/**

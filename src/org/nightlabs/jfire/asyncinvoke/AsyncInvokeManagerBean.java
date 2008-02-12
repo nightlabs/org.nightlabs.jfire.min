@@ -33,10 +33,6 @@ extends BaseSessionBeanImpl
 implements SessionBean 
 {
 //	private static final Logger logger = Logger.getLogger(AsyncInvokeManagerBean.class);
-
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 
 	@Override

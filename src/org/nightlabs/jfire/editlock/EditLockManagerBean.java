@@ -39,10 +39,6 @@ extends BaseSessionBeanImpl
 implements SessionBean 
 {
 //	private static final Logger logger = Logger.getLogger(EditLockManagerBean.class);
-
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 
 	@Override

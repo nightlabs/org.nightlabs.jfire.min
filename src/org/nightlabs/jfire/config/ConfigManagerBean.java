@@ -71,9 +71,6 @@ import org.nightlabs.util.CollectionUtil;
  **/
 public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements SessionBean 
 {
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 	/**
 	 * LOG4J logger used by this class

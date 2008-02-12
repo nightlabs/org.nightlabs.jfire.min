@@ -36,10 +36,6 @@ package org.nightlabs.jfire.asyncinvoke;
 public abstract class UndeliverableCallback
 extends BaseInvocation
 {
-
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 
 	public UndeliverableCallback()

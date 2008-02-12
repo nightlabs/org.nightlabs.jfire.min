@@ -51,9 +51,6 @@ public abstract class DatastoreInitDelegateBean
 extends BaseSessionBeanImpl
 implements SessionBean
 {
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 
 	/**

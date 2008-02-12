@@ -36,9 +36,6 @@ import java.util.Set;
  */
 public class RoleGroupIDListCarrier implements Serializable
 {
-  /**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 	public RoleGroupIDListCarrier()
   {
