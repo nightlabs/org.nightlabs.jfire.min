@@ -256,7 +256,7 @@ public class EJBRoleGroupMan implements Serializable
 		return roleGroups.get(roleGroupID);
 	}
 
-	public Collection getRoleGroups()
+	public Collection<RoleGroupDef> getRoleGroups()
 	{
 		return roleGroups.values();
 	}
@@ -270,8 +270,8 @@ public class EJBRoleGroupMan implements Serializable
 
 	public void mergeRoleGroupMan(EJBRoleGroupMan other)
 	{
-		for (Iterator itRoleGroups = other.roleGroups.values().iterator(); itRoleGroups.hasNext(); ) {
-			RoleGroupDef otherRoleGroupDef = (RoleGroupDef)itRoleGroups.next();
+		for (Iterator<RoleGroupDef> itRoleGroups = other.roleGroups.values().iterator(); itRoleGroups.hasNext(); ) {
+			RoleGroupDef otherRoleGroupDef = itRoleGroups.next();
 			String roleGroupID = otherRoleGroupDef.getRoleGroupID();
 			RoleGroupDef thisRoleGroupDef = roleGroups.get(roleGroupID);
 			if (thisRoleGroupDef == null) {
@@ -290,8 +290,8 @@ public class EJBRoleGroupMan implements Serializable
 				String description = (String)me.getValue();
 				thisRoleGroupDef.setDescription(languageID, description);
 			}
-			for (Iterator itRoles = otherRoleGroupDef.getAllRoles().iterator(); itRoles.hasNext(); ) {
-				RoleDef otherRoleDef = (RoleDef)itRoles.next();
+			for (Iterator<RoleDef> itRoles = otherRoleGroupDef.getAllRoles().iterator(); itRoles.hasNext(); ) {
+				RoleDef otherRoleDef = itRoles.next();
 				String roleID = otherRoleDef.getRoleID();
 				RoleDef thisRoleDef = thisRoleGroupDef.getRole(roleID);
 				if (thisRoleDef == null) {
@@ -335,8 +335,8 @@ public class EJBRoleGroupMan implements Serializable
 		Set<RoleDef> _roles = new HashSet<RoleDef>();
 
 		if (ejbJarMan != null) {
-			for (Iterator it = ejbJarMan.getRoles().iterator(); it.hasNext(); ) {
-				RoleDef roleDef = (RoleDef)it.next();
+			for (Iterator<RoleDef> it = ejbJarMan.getRoles().iterator(); it.hasNext(); ) {
+				RoleDef roleDef = it.next();
 				if (!roles.containsKey(roleDef.getRoleID()))
 					_roles.add(roleDef);
 			}
