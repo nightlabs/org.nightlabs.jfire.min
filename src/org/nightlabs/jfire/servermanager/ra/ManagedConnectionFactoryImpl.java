@@ -129,7 +129,7 @@ public class ManagedConnectionFactoryImpl
 	
 	public JFireServerConfigModule getConfigModule()
 	{
-		return (JFireServerConfigModule)getConfig()
+		return getConfig()
 				.getConfigModule(JFireServerConfigModule.class, true);
 	}
 
@@ -315,8 +315,7 @@ public class ManagedConnectionFactoryImpl
 //			}
 //		);
 		
-		JFireServerConfigModule cfMod = (JFireServerConfigModule)
-			config.createConfigModule(JFireServerConfigModule.class);
+		JFireServerConfigModule cfMod = config.createConfigModule(JFireServerConfigModule.class);
 
 		config.save();
 
