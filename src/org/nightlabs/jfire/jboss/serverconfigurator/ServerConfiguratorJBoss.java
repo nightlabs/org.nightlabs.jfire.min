@@ -94,7 +94,7 @@ public class ServerConfiguratorJBoss
 		return backupFile;
 	}
 
-	// due to changes, server version is not needed anymore. 
+	// due to changes, server version is not needed anymore.
 	// Please keep the commented enum in the file - it might be useful for later use.
 //	public static enum ServerVersion {
 //		JBOSS_4_0_x,
@@ -105,6 +105,7 @@ public class ServerConfiguratorJBoss
 	/* (non-Javadoc)
 	 * @see org.nightlabs.jfire.serverconfigurator.ServerConfigurator#doConfigureServer()
 	 */
+	@Override
 	@Implement
 	protected void doConfigureServer()
 			throws ServerConfigurationException
@@ -116,7 +117,7 @@ public class ServerConfiguratorJBoss
 			File jbossBaseDir = jbossDeployDir.getParentFile().getParentFile().getParentFile();
 			File jbossBinDir = new File(jbossBaseDir, "bin");
 
-			// due to changes, server version is not needed anymore. 
+			// due to changes, server version is not needed anymore.
 			// Please keep the commented code in the file - it might be useful for later use.
 //			discoverServerVersion(jbossBaseDir);
 //			if (serverVersion == null) {
@@ -138,7 +139,7 @@ public class ServerConfiguratorJBoss
 		}
 	}
 
-	// due to changes, server version is not needed anymore. 
+	// due to changes, server version is not needed anymore.
 	// Please keep the commented method in the file - it might be useful for later use.
 //	private void discoverServerVersion(File jbossBaseDir) throws SAXException, FileNotFoundException, IOException
 //	{
@@ -184,7 +185,7 @@ public class ServerConfiguratorJBoss
 			FileOutputStream out = new FileOutputStream(destFile);
 			try {
 				props.store(out, "Automatically created by " + this.getClass().getName());
-			} finally {		
+			} finally {
 				out.close();
 			}
 			CascadedAuthenticationClientInterceptor.reloadProperties(); // reboot should not be necessary anymore after this extension
@@ -277,9 +278,9 @@ public class ServerConfiguratorJBoss
 		
 		
 		// add the custom compression socket mbean service
-		// find if we already wrote the node 
+		// find if we already wrote the node
 		
-		Node jrmp_node = NLDOMUtil.findNodeByAttribute(document, "server/mbean", "name", 
+		Node jrmp_node = NLDOMUtil.findNodeByAttribute(document, "server/mbean", "name",
 		"jboss:service=invoker,type=jrmp,socketType=CompressionSocketFactory");
 		
 		if(jrmp_node == null) {
@@ -290,12 +291,12 @@ public class ServerConfiguratorJBoss
 
 
 			// find the Node JRMP invoker to add our custom invoker before that node
-			jrmp_node = NLDOMUtil.findNodeByAttribute(document, "server/mbean", "code", 
+			jrmp_node = NLDOMUtil.findNodeByAttribute(document, "server/mbean", "code",
 			"org.jboss.invocation.jrmp.server.JRMPInvoker");
 
 			if(jrmp_node == null) {
 				logger.error("MBean attribute node org.jboss.invocation.jrmp.server.JRMPInvoker->code not found");
-			}    
+			}
 			else
 			{
 				Element newnode = document.createElement("mbean");// Create Root Element
@@ -308,21 +309,21 @@ public class ServerConfiguratorJBoss
 
 				Element item = document.createElement("attribute");       // Create element
 				item.setAttribute("name", "RMIObjectPort");
-				item.appendChild( document.createTextNode("24445") ); 
-				newnode.appendChild( item );  
+				item.appendChild( document.createTextNode("24445") );
+				newnode.appendChild( item );
 
 				item = document.createElement("attribute");       // Create element
 				item.setAttribute("name", "RMIClientSocketFactory");
-				item.appendChild( document.createTextNode("org.nightlabs.rmissl.socket.SSLCompressionRMIClientSocketFactory") );         
-				newnode.appendChild( item );  
+				item.appendChild( document.createTextNode("org.nightlabs.rmissl.socket.SSLCompressionRMIClientSocketFactory") );
+				newnode.appendChild( item );
 
 				item = document.createElement("attribute");       // Create element
 				item.setAttribute("name", "RMIServerSocketFactory");
-				item.appendChild( document.createTextNode("org.nightlabs.rmissl.socket.SSLCompressionRMIServerSocketFactory") );         
-				newnode.appendChild( item );  
+				item.appendChild( document.createTextNode("org.nightlabs.rmissl.socket.SSLCompressionRMIServerSocketFactory") );
+				newnode.appendChild( item );
 
 
-				root.insertBefore(newnode,jrmp_node); 
+				root.insertBefore(newnode,jrmp_node);
 
 				logger.info("Added Custom MBean Invoker for the JRMP Compression invoker");
 			}
@@ -334,14 +335,14 @@ public class ServerConfiguratorJBoss
 		
 		// JAAS TIMEOUT
 		changed = replaceMBeanAttribute(
-				document, 
-				"org.jboss.security.plugins.JaasSecurityManagerService", 
-				"DefaultCacheTimeout", 
-				" " + 
+				document,
+				"org.jboss.security.plugins.JaasSecurityManagerService",
+				"DefaultCacheTimeout",
+				" " +
 						modificationMarker + "\n " +
 						ServerConfiguratorJBoss.class.getName() + " has reduced the JAAS cache timeout to 5 min.\n" +
 						" JFire has its own cache, which is updated immediately. We cannot completely deactivate the JAAS cache, however,\n" +
-						" because that causes JPOX bugs (why?!).\n Marco :-) ", 
+						" because that causes JPOX bugs (why?!).\n Marco :-) ",
 				"300") || needRestart;
 		if(changed)
 			logger.info("Have changes after DefaultCacheTimeout update");
@@ -357,12 +358,12 @@ public class ServerConfiguratorJBoss
 		else
 			transactionManagerService = oldTransactionManagerService;
 		changed = replaceMBeanAttribute(
-				document, 
-				transactionManagerService, 
-				"TransactionTimeout", 
-				" " + 
+				document,
+				transactionManagerService,
+				"TransactionTimeout",
+				" " +
 						modificationMarker + "\n " +
-						ServerConfiguratorJBoss.class.getName() + " has increased the transaction timeout to 15 min. ", 
+						ServerConfiguratorJBoss.class.getName() + " has increased the transaction timeout to 15 min. ",
 				"900") || needRestart;
 		if(changed)
 			logger.info("Have changes after TransactionTimeout update");
@@ -388,8 +389,8 @@ public class ServerConfiguratorJBoss
 				haveChanges = true;
 				String newText = oldText+",-clrepository.xml";
 				NLDOMUtil.setTextContentWithComment(
-						p, 
-						" " + 
+						p,
+						" " +
 								modificationMarker + "\n         " +
 								ServerConfiguratorJBoss.class.getName() + " has added -clrepository.xml ",
 						newText);
@@ -432,12 +433,12 @@ public class ServerConfiguratorJBoss
 		Document document = parser.getDocument();
 		
 		//check if we already had the stateless container for the SSL Compression Invoker
-		if (text.indexOf("<name>stateless-compression-invoker</name>") < 0) 
+		if (text.indexOf("<name>stateless-compression-invoker</name>") < 0)
 		{
 				
 			logger.info("File " + destFile.getAbsolutePath() + "will add Compression SSL invoker");
 			
-			//configure the ssl compression invoker	
+			//configure the ssl compression invoker
 			
 			Node root = document.getDocumentElement();
 
@@ -449,16 +450,16 @@ public class ServerConfiguratorJBoss
 			newnode.appendChild(comment);
 
 			Element item = document.createElement("name");       // Create element
-			item.appendChild( document.createTextNode("stateless-compression-invoker") ); 
-			newnode.appendChild( item );  
+			item.appendChild( document.createTextNode("stateless-compression-invoker") );
+			newnode.appendChild( item );
 
 			item = document.createElement("invoker-mbean");       // Create element
-			item.appendChild( document.createTextNode("jboss:service=invoker,type=jrmp,socketType=CompressionSocketFactory") );         
-			newnode.appendChild( item );  
+			item.appendChild( document.createTextNode("jboss:service=invoker,type=jrmp,socketType=CompressionSocketFactory") );
+			newnode.appendChild( item );
 
 			item = document.createElement("proxy-factory");       // Create element
-			item.appendChild( document.createTextNode("org.jboss.proxy.ejb.ProxyFactory") );         
-			newnode.appendChild( item );  
+			item.appendChild( document.createTextNode("org.jboss.proxy.ejb.ProxyFactory") );
+			newnode.appendChild( item );
 
 
 			item = document.createElement("proxy-factory-config");
@@ -470,43 +471,43 @@ public class ServerConfiguratorJBoss
 			Element item_sub1 = document.createElement("home");
 
 			Element item_value = document.createElement("interceptor");
-			item_value.appendChild( document.createTextNode("org.jboss.proxy.ejb.HomeInterceptor") );    
+			item_value.appendChild( document.createTextNode("org.jboss.proxy.ejb.HomeInterceptor") );
 			item_sub1.appendChild(item_value);
 
 			item_value = document.createElement("interceptor");
-			item_value.appendChild( document.createTextNode("org.jboss.proxy.SecurityInterceptor") );             
+			item_value.appendChild( document.createTextNode("org.jboss.proxy.SecurityInterceptor") );
 			item_sub1.appendChild(item_value);
 
 			item_value = document.createElement("interceptor");
-			item_value.appendChild( document.createTextNode("org.jboss.proxy.TransactionInterceptor") );             
+			item_value.appendChild( document.createTextNode("org.jboss.proxy.TransactionInterceptor") );
 			item_sub1.appendChild(item_value);
 
 			item_value = document.createElement("interceptor");
-			item_value.appendChild( document.createTextNode("org.jboss.invocation.InvokerInterceptor") );             
+			item_value.appendChild( document.createTextNode("org.jboss.invocation.InvokerInterceptor") );
 			item_sub1.appendChild(item_value);
 
 
 			item_sub.appendChild(item_sub1);
 
 
-			// add the bean tag   
+			// add the bean tag
 
 			item_sub1 = document.createElement("bean");
 
 			item_value = document.createElement("interceptor");
-			item_value.appendChild( document.createTextNode("org.jboss.proxy.ejb.StatelessSessionInterceptor") );             
+			item_value.appendChild( document.createTextNode("org.jboss.proxy.ejb.StatelessSessionInterceptor") );
 			item_sub1.appendChild(item_value);
 
 			item_value = document.createElement("interceptor");
-			item_value.appendChild( document.createTextNode("org.jboss.proxy.SecurityInterceptor") );    
+			item_value.appendChild( document.createTextNode("org.jboss.proxy.SecurityInterceptor") );
 			item_sub1.appendChild(item_value);
 
 			item_value = document.createElement("interceptor");
-			item_value.appendChild( document.createTextNode("org.jboss.proxy.TransactionInterceptor") );    
+			item_value.appendChild( document.createTextNode("org.jboss.proxy.TransactionInterceptor") );
 			item_sub1.appendChild(item_value);
 
 			item_value = document.createElement("interceptor");
-			item_value.appendChild( document.createTextNode("org.jboss.invocation.InvokerInterceptor") );    
+			item_value.appendChild( document.createTextNode("org.jboss.invocation.InvokerInterceptor") );
 			item_sub1.appendChild(item_value);
 
 			item_sub.appendChild(item_sub1);
@@ -516,14 +517,14 @@ public class ServerConfiguratorJBoss
 
 			newnode.appendChild( item );
 
-			proxynode.appendChild(newnode); 
+			proxynode.appendChild(newnode);
 			
 			
-		}	
+		}
 		
 		
 		FileOutputStream out = new FileOutputStream(destFile);
-		try {				
+		try {
 			NLDOMUtil.writeDocument(document, out, "UTF-8","-//JBoss//DTD JBOSS 4.0//EN",
 			"http://www.jboss.org/j2ee/dtd/jboss_4_0.dtd");
 		} finally {
@@ -546,7 +547,7 @@ public class ServerConfiguratorJBoss
 			String replacementText = "$1\n            <interceptor>"+CascadedAuthenticationClientInterceptor.class.getName()+"</interceptor>";
 
 			Pattern pattern = Pattern.compile("(<client-interceptors>[^<]*?<home>)");
-			text = pattern.matcher(text).replaceAll(replacementText);			
+			text = pattern.matcher(text).replaceAll(replacementText);
 
 			pattern = Pattern.compile("(<client-interceptors>[^<]*?<home>(.|\\n)*?</home>[^<]*?<bean>)");
 			text = pattern.matcher(text).replaceAll(replacementText);
@@ -596,7 +597,7 @@ public class ServerConfiguratorJBoss
 		if (haveChanges) {
 			backup(destFile);
 			FileOutputStream out = new FileOutputStream(destFile);
-			try {				
+			try {
 				logger.info("File " + destFile.getAbsolutePath() + " was not yet updated. Will change SMTP settings.");
 				NLDOMUtil.writeDocument(document, out, "UTF-8");
 			} finally {
@@ -605,7 +606,7 @@ public class ServerConfiguratorJBoss
 		}
 	}
 	
-	private boolean setMailConfigurationAttribute(Document document, String name, String value) 
+	private boolean setMailConfigurationAttribute(Document document, String name, String value)
 	{
 		Node propertyElement;
 		Node valueItem;
@@ -750,7 +751,7 @@ public class ServerConfiguratorJBoss
 		String optsBegin = "# JAVA_OPTS by JFire server configurator\nJAVA_OPTS=\"$JAVA_OPTS ";
 		String optsEnd = "\"";
 		Pattern oldOpts = Pattern.compile(
-				"^"+Pattern.quote(optsBegin)+"([^\"]*)"+Pattern.compile(optsEnd)+"$", 
+				"^"+Pattern.quote(optsBegin)+"([^\"]*)"+Pattern.compile(optsEnd)+"$",
 				Pattern.MULTILINE);
 		
 		File destFile = new File(jbossBinDir, "run.conf");
@@ -783,7 +784,7 @@ public class ServerConfiguratorJBoss
 			String optsBegin = "rem JAVA_OPTS by JFire server configurator\r\nset JAVA_OPTS=%JAVA_OPTS% ";
 			String optsEnd = "";
 			Pattern oldOpts = Pattern.compile(
-					"^"+Pattern.quote(optsBegin)+"(.*?)"+Pattern.compile(optsEnd)+"$", 
+					"^"+Pattern.quote(optsBegin)+"(.*?)"+Pattern.compile(optsEnd)+"$",
 					Pattern.MULTILINE);
 			
 			File destFile = new File(jbossBinDir, "run.bat");
@@ -810,7 +811,7 @@ public class ServerConfiguratorJBoss
 			}
 		} catch (IOException e) {
 			logger.error("Changing the run.bat file failed. Please set the rmi host by changing the file manually or overwrite it with run.bat.jfire if it exists.");
-		}		
+		}
 	}
 	
 	private void removeUnneededFiles(File jbossDeployDir) throws IOException

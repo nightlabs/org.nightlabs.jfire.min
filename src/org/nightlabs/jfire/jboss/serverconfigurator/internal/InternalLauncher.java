@@ -4,7 +4,6 @@ import java.io.File;
 
 import org.apache.log4j.xml.DOMConfigurator;
 import org.nightlabs.config.Config;
-import org.nightlabs.jfire.jboss.serverconfigurator.Launcher;
 import org.nightlabs.jfire.serverconfigurator.ServerConfigurator;
 import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
 

@@ -14,9 +14,6 @@ import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-import org.nightlabs.jfire.jboss.serverconfigurator.internal.InternalLauncher;
-import org.nightlabs.jfire.serverconfigurator.ServerConfigurator;
-
 /**
  * Launcher for execution of the {@link ServerConfigurator} from the command line.
  * <p>

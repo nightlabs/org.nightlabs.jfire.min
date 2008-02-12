@@ -114,7 +114,7 @@ public class J2EEServerMonitorJBoss implements J2EEServerMonitor {
 		}
 		while(ne.hasMoreElements()){
 			NameClassPair ncp = ne.nextElement();
-			String lookupPath = base == null || "".equals(base) ? ncp.getName() : base + "/" + ncp.getName(); 
+			String lookupPath = base == null || "".equals(base) ? ncp.getName() : base + "/" + ncp.getName();
 			logger.debug("Have NameClassPair: " + ncp.getName() + " " + ncp.getClassName());
 			Object jndiObj = null;
 			try {

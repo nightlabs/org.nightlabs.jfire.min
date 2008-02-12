@@ -76,7 +76,7 @@ public class JFireServerLocalLoginModule extends AbstractServerLoginModule
 		}
 
 		// get the login information via the callbacks
-		try 
+		try
 		{
 			callbackHandler.handle(callbacks);
 			username = ((NameCallback)callbacks[0]).getName();

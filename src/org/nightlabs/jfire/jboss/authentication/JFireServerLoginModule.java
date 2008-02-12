@@ -87,7 +87,7 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 		String password;
 
 		// get the login information via the callbacks
-		try 
+		try
 		{
 			callbackHandler.handle(callbacks);
 			login = ((NameCallback)callbacks[0]).getName();
@@ -114,7 +114,7 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 //			throw new IllegalArgumentException("Invalid login - not two or three parts (use user@organisation?sessionID=xxx&moreParams=yyy&..., session is optional): " + login);
 //		if(txt[0].length() == 0 || txt[1].length() == 0)
 //			throw new LoginException("Invalid login - empty userID or empty organisationID (use user@organisation?sessionID=xxx&moreParams=yyy&..., session is optional): " + login);
-//		
+//
 //		loginData = new LoginData(txt[1], txt[0], password);
 //		if (txt.length < 3 || "".equals(txt[2]))
 //			loginData.setSessionID(loginData.getUserID() + '!' + loginData.getOrganisationID());
@@ -196,7 +196,7 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 	protected Group[] getRoleSets()
 		throws LoginException
 	{
-		if (logger.isTraceEnabled()) { 
+		if (logger.isTraceEnabled()) {
 			logger.trace("(" + getIdentityHashStr() + ") *********************************************************");
 			logger.trace("(" + getIdentityHashStr() + ") getRoleSets()");
 		}

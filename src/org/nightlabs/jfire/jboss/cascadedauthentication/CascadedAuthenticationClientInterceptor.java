@@ -47,7 +47,7 @@ public class CascadedAuthenticationClientInterceptor extends GenericEJBIntercept
 	
 	public static final long serialVersionUID = 1L;
 
-	protected static Class delegateClass = null;
+	protected static Class<?> delegateClass = null;
 	public static final String DELEGATECLASSNAME = CascadedAuthenticationClientInterceptorDelegate.class.getName();
 
 	public static void reloadProperties()
@@ -64,7 +64,7 @@ public class CascadedAuthenticationClientInterceptor extends GenericEJBIntercept
 				FileInputStream in = new FileInputStream(f);
 				try {
 					props.load(in);
-				} finally {		
+				} finally {
 					in.close();
 				}
 				String enable = (String)props.get("enable");
@@ -98,7 +98,7 @@ public class CascadedAuthenticationClientInterceptor extends GenericEJBIntercept
 	@Override
 	public Object invoke(Invocation invocation) throws Throwable
 	{
-		Class _delegateClass = delegateClass;
+		Class<?> _delegateClass = delegateClass;
 
 		if (delegateInstance != null) {
 			if (_delegateClass == null)

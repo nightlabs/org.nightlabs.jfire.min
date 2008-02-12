@@ -93,7 +93,7 @@ public class CascadedAuthenticationClientInterceptorDelegate extends GenericEJBI
 		return res;
 	}
 
-//	public static class CapsuledCaller extends Thread 
+//	public static class CapsuledCaller extends Thread
 //	{
 //		public Throwable exception = null;
 //		public Object result = null;
@@ -243,10 +243,10 @@ public class CascadedAuthenticationClientInterceptorDelegate extends GenericEJBI
 //					try { waitForNotification.wait(10000); } catch (InterruptedException x) { }
 //				} // synchronized(waitForNotification) {
 //			} // while (!waitForNotification.isFinished()) {
-//	
+//
 //			if (cc.exception != null)
 //				throw new RuntimeException("Cascaded invocation via CapsuledCaller thread failed!", cc.exception);
-//	
+//
 //			result = cc.result;
 //		}
 //

@@ -82,8 +82,8 @@ public class J2EEAdapterJBoss implements J2EEAdapter
 		//((org.jboss.jmx.adaptor.rmi.RMIAdaptor) server).
 		//invoke(name, method, args, sig);
 
-		Class [] argTypes = new Class [] 
-			{ObjectName.class, String.class, Object[].class, String[].class};	
+		Class<?>[] argTypes = new Class []
+			{ObjectName.class, String.class, Object[].class, String[].class};
 		Method m = server.getClass().getMethod("invoke", argTypes);
 		return m.invoke(server,new Object[]{name, method, args, sig});
 	}
