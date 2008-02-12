@@ -33,6 +33,10 @@ import java.util.HashMap;
  * @author Alexander Bieber
  */
 public class JFireSecurityConfigurationEntry implements Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	public static final String MODULE_CONTROL_FLAG_REQUIRED = "required"; //$NON-NLS-1$
 	public static final String MODULE_CONTROL_FLAG_REQUISITE  = "requisite"; //$NON-NLS-1$
 	public static final String MODULE_CONTROL_FLAG_SUFFICIENT = "sufficient"; //$NON-NLS-1$
