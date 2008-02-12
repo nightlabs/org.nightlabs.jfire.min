@@ -25,7 +25,6 @@ package org.nightlabs.jfire.security.dao;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.Set;
 
 import org.nightlabs.jdo.NLJDOHelper;
@@ -34,7 +33,6 @@ import org.nightlabs.jfire.security.RoleGroup;
 import org.nightlabs.jfire.security.RoleGroupIDListCarrier;
 import org.nightlabs.jfire.security.RoleGroupListCarrier;
 import org.nightlabs.jfire.security.SecurityReflector;
-import org.nightlabs.jfire.security.UserGroup;
 import org.nightlabs.jfire.security.UserManager;
 import org.nightlabs.jfire.security.UserManagerUtil;
 import org.nightlabs.jfire.security.id.RoleGroupID;
