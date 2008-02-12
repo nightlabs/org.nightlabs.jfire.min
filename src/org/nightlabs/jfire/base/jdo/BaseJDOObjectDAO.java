@@ -106,8 +106,8 @@ public abstract class BaseJDOObjectDAO<JDOObjectID, JDOObject>
 	 * {@link #getJDOObjects(String, Collection, Set, int, IProgressMonitor)}
 	 * for all objects that are not already in the cache.
 	 * 
-	 * @param objectIDs Wich objects to get
-	 * @param fetchGroups Wich fetch groups to use
+	 * @param objectIDs Which objects to get
+	 * @param fetchGroups Which fetch groups to use
 	 * @param maxFetchDepth Fetch depth or {@link NLJDOHelper#MAX_FETCH_DEPTH_NO_LIMIT} 
 	 * @param monitor The progress monitor for this action. For every downloaded
 	 * 					object, <code>monitor.worked(1)</code> should be called.
