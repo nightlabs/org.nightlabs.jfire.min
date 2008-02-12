@@ -54,6 +54,10 @@ public abstract class JFireRCLBackendBean
 	implements SessionBean
 {
 	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	/**
 	 * LOG4J logger used by this class
 	 */
 	private static final Logger logger = Logger.getLogger(JFireRCLBackendBean.class);
