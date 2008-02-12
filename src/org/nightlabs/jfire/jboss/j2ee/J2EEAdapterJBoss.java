@@ -113,7 +113,7 @@ public class J2EEAdapterJBoss implements J2EEAdapter
 	public void registerNotificationListenerServerStarted(ServerStartNotificationListener listener)
 		throws Exception
 	{
-		MBeanServer server = (MBeanServer) MBeanServerFactory.findMBeanServer(null).get(0);
+		MBeanServer server = MBeanServerFactory.findMBeanServer(null).get(0);
 
 		server.addNotificationListener(
 				new ObjectName("jboss.system:type=Server"),

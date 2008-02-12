@@ -10,6 +10,7 @@ public class LoginInitialContextFactory
 extends org.jboss.security.jndi.LoginInitialContextFactory
 {
 
+	@Override
 	@SuppressWarnings("unchecked")
 	public Context getInitialContext(Hashtable arg0)
 	throws NamingException
@@ -17,6 +18,7 @@ extends org.jboss.security.jndi.LoginInitialContextFactory
 		return new NamingContext(super.getInitialContext(arg0));
 	}
 
+	@Override
 	@SuppressWarnings("unchecked")
 	public Object getObjectInstance(Object obj, Name name, Context nameCtx, Hashtable environment)
 	throws Exception
