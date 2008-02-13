@@ -126,8 +126,8 @@ public class CarrierContainer
 			logger.debug("Closing CarrierContainer (created " + createDT + ")");
 
 		synchronized (carriersByKey) {
-			for (Iterator it = carriersByKey.keySet().iterator(); it.hasNext(); ) {
-				Key key = (Key) it.next();
+			for (Iterator<Key> it = carriersByKey.keySet().iterator(); it.hasNext(); ) {
+				Key key = it.next();
 
 				cache.removeByKey(key);
 			}

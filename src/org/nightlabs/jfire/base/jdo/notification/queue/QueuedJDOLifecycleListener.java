@@ -26,12 +26,12 @@ public abstract class QueuedJDOLifecycleListener
 	/**
 	 * This is used for a class-based implicit listener which is registered for dirty/deleted-notifications. Can be <code>null</code>.
 	 */
-	private Set<Class> notificationSubjectClasses;
+	private Set<Class<?>> notificationSubjectClasses;
 
 	public QueuedJDOLifecycleListener()
 	{
 	}
-	public QueuedJDOLifecycleListener(IJDOLifecycleListenerFilter jdoLifecycleListenerFilter, Set<Class> notificationSubjectClasses)
+	public QueuedJDOLifecycleListener(IJDOLifecycleListenerFilter jdoLifecycleListenerFilter, Set<Class<?>> notificationSubjectClasses)
 	{
 		this.setJdoLifecycleListenerFilter(jdoLifecycleListenerFilter);
 		this.setNotificationSubjectClasses(notificationSubjectClasses);
@@ -54,7 +54,7 @@ public abstract class QueuedJDOLifecycleListener
 		if (this.jdoLifecycleListener != null)
 			m.addLifecycleListener(this.jdoLifecycleListener);
 	}
-	public synchronized Set<Class> getNotificationSubjectClasses()
+	public synchronized Set<Class<?>> getNotificationSubjectClasses()
 	{
 		assertOpen();
 		if (notificationSubjectClasses == null)
@@ -62,19 +62,19 @@ public abstract class QueuedJDOLifecycleListener
 
 		return Collections.unmodifiableSet(notificationSubjectClasses);
 	}
-	public synchronized void setNotificationSubjectClasses(Set<Class> notificationSubjectClasses)
+	public synchronized void setNotificationSubjectClasses(Set<Class<?>> notificationSubjectClasses)
 	{
 		assertOpen();
 		JDOLifecycleManager m = getJDOLifecycleManager();
 		if (this.notificationListener != null) {
-			for (Class subjectClass : this.notificationSubjectClasses)
+			for (Class<?> subjectClass : this.notificationSubjectClasses)
 				m.removeNotificationListener(null, subjectClass, this.notificationListener);
 		}
 
 		this.notificationSubjectClasses = notificationSubjectClasses;
 		this.notificationListener = createNotificationListener();
 		if (this.notificationListener != null) {
-			for (Class subjectClass : this.notificationSubjectClasses)
+			for (Class<?> subjectClass : this.notificationSubjectClasses)
 				m.addNotificationListener(null, subjectClass, this.notificationListener);
 		}
 	}
@@ -95,7 +95,6 @@ public abstract class QueuedJDOLifecycleListener
 	 * @return <code>null</code> if the queue is empty or a {@link List} of {@link DirtyObjectID}s extracted from
 	 *		the events in the order in which the events came in.
 	 */
-	@SuppressWarnings("unchecked")
 	protected List<DirtyObjectID> pollDirtyObjectIDs()
 	{
 		List<DirtyObjectID> dirtyObjectIDs = null;

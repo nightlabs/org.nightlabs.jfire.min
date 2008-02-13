@@ -45,12 +45,12 @@ implements Interceptor
 
 	public NotificationEvent intercept(NotificationEvent event)
 	{
-		for (Iterator itSubjectCarriers = event.getSubjectCarriers().iterator(); itSubjectCarriers.hasNext(); ) {
-			SubjectCarrier subjectCarrier = (SubjectCarrier) itSubjectCarriers.next();
+		for (Iterator<SubjectCarrier> itSubjectCarriers = event.getSubjectCarriers().iterator(); itSubjectCarriers.hasNext(); ) {
+			SubjectCarrier subjectCarrier = itSubjectCarriers.next();
 			Object subject = subjectCarrier.getSubject();
 
  			if (subject instanceof ObjectID) {
- 				Class jdoObjectClass = JDOObjectID2PCClassMap.sharedInstance().getPersistenceCapableClass(subject);
+ 				Class<?> jdoObjectClass = JDOObjectID2PCClassMap.sharedInstance().getPersistenceCapableClass(subject);
  				subjectCarrier.getSubjectClasses().add(jdoObjectClass);
  			} // if (subject instanceof ObjectID) {
  			else if (subject instanceof DirtyObjectID) {
@@ -76,7 +76,7 @@ implements Interceptor
  						logger.info("jdoObjectID does not implement " + ObjectID.class.getName() + "! It is an instance of " + (jdoObjectID == null ? null : jdoObjectID.getClass().getName()) + ": " + jdoObjectID, new Exception());
  				}
  				else {
-	 				Class jdoObjectClass = JDOObjectID2PCClassMap.sharedInstance().getPersistenceCapableClass(jdoObjectID);
+	 				Class<?> jdoObjectClass = JDOObjectID2PCClassMap.sharedInstance().getPersistenceCapableClass(jdoObjectID);
 	 				subjectCarrier.getSubjectClasses().add(jdoObjectClass);
  				}
  			}

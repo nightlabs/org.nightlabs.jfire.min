@@ -44,7 +44,7 @@ public class JFireSecurityConfigurationEntry implements Serializable {
 	private String applicationName = ""; //$NON-NLS-1$
 	private String loginModuleName = ""; //$NON-NLS-1$
 	private String controlFlag = null;
-	private HashMap options = null;
+	private HashMap<String, ?> options = null;
 	
 	public JFireSecurityConfigurationEntry() { }
 	
@@ -56,12 +56,12 @@ public class JFireSecurityConfigurationEntry implements Serializable {
 		this(applicationName,loginModule,controlFlag,null);
 	}
 	
-	public JFireSecurityConfigurationEntry(String applicationName, String loginModule, String controlFlag, HashMap options){
+	public JFireSecurityConfigurationEntry(String applicationName, String loginModule, String controlFlag, HashMap<String, ?> options){
 		this.applicationName = applicationName;
 		this.loginModuleName = loginModule;
 		this.controlFlag = controlFlag;
 		if (options == null)
-			this.options = new HashMap();
+			this.options = new HashMap<String, Object>();
 		else
 			this.options = options;
 	}
@@ -86,10 +86,10 @@ public class JFireSecurityConfigurationEntry implements Serializable {
 	public void setLoginModuleName(String loginModuleName) {
 		this.loginModuleName = loginModuleName;
 	}
-	public HashMap getOptions() {
+	public HashMap<String, ?> getOptions() {
 		return options;
 	}
-	public void setOptions(HashMap options) {
+	public void setOptions(HashMap<String, ?> options) {
 		this.options = options;
 	}
 }

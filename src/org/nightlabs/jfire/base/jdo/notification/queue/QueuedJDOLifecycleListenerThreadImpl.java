@@ -19,7 +19,7 @@ extends QueuedJDOLifecycleListener
 	}
 	public QueuedJDOLifecycleListenerThreadImpl(
 			IJDOLifecycleListenerFilter jdoLifecycleListenerFilter,
-			Set<Class> notificationSubjectClasses)
+			Set<Class<?>> notificationSubjectClasses)
 	{
 		super(jdoLifecycleListenerFilter, notificationSubjectClasses);
 		init();

@@ -345,7 +345,7 @@ extends org.nightlabs.notification.NotificationManager
 
 	private Cache cache;
 
-	private static Class jdoLifecycleManagerClass = null;
+	private static Class<?> jdoLifecycleManagerClass = null;
 
 	private static JDOLifecycleManager createJDOLifecycleManager()
 	{

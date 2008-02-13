@@ -51,13 +51,13 @@ public class ChangeEvent extends NotificationEvent
 		super(source, zone, subject);
 	}
 
-	public ChangeEvent(Object source, Object subject, Class subjectClassToClear)
+	public ChangeEvent(Object source, Object subject, Class<?> subjectClassToClear)
 	{
 		super(source, subject, subjectClassToClear);
 	}
 
 	public ChangeEvent(Object source, String zone, Object subject,
-			Class subjectClassToClear)
+			Class<?> subjectClassToClear)
 	{
 		super(source, zone, subject, subjectClassToClear);
 	}
@@ -73,41 +73,41 @@ public class ChangeEvent extends NotificationEvent
 	}
 
 	public ChangeEvent(Object source, Object[] subjects,
-			Class[] subjectClassesToClear)
+			Class<?>[] subjectClassesToClear)
 	{
 		super(source, subjects, subjectClassesToClear);
 	}
 
 	public ChangeEvent(Object source, String zone, Object[] subjects,
-			Class[] subjectClassesToClear)
+			Class<?>[] subjectClassesToClear)
 	{
 		super(source, zone, subjects, subjectClassesToClear);
 	}
 
-	public ChangeEvent(Object source, Collection subjects)
+	public ChangeEvent(Object source, Collection<?> subjects)
 	{
 		super(source, subjects);
 	}
 
-	public ChangeEvent(Object source, String zone, Collection subjects)
+	public ChangeEvent(Object source, String zone, Collection<?> subjects)
 	{
 		super(source, zone, subjects);
 	}
 
-	public ChangeEvent(Object source, Collection subjects,
-			Collection subjectClassesToClear)
+	public ChangeEvent(Object source, Collection<?> subjects,
+			Collection<?> subjectClassesToClear)
 	{
 		super(source, subjects, subjectClassesToClear);
 	}
 
-	public ChangeEvent(Object source, String zone, Collection subjects,
-			Collection subjectClassesToClear)
+	public ChangeEvent(Object source, String zone, Collection<?> subjects,
+			Collection<?> subjectClassesToClear)
 	{
 		super(source, zone, subjects, subjectClassesToClear);
 	}
 
-	public ChangeEvent(Object source, String zone, Collection subjects,
-			Collection subjectClassesToClear, Collection _subjectCarriers)
+	public ChangeEvent(Object source, String zone, Collection<?> subjects,
+			Collection<?> subjectClassesToClear, Collection<?> _subjectCarriers)
 	{
 		super(source, zone, subjects, subjectClassesToClear, _subjectCarriers);
 	}
@@ -123,7 +123,7 @@ public class ChangeEvent extends NotificationEvent
 		super(source, zone, subjectCarriers);
 	}
 
-	private Map carriersBySubject = null;
+	private Map<?, ?> carriersBySubject = null;
 
 	/**
 	 * Whenever an object is changed in the datastore, the server will notify all clients
@@ -172,8 +172,8 @@ public class ChangeEvent extends NotificationEvent
 
 		if (carriersBySubject == null) {
 			Map<Object, SubjectCarrier> cbs = new HashMap<Object, SubjectCarrier>(getSubjectCarriers().size());
-			for (Iterator it = getSubjectCarriers().iterator(); it.hasNext(); ) {
-				SubjectCarrier subjectCarrier = (SubjectCarrier) it.next();
+			for (Iterator<SubjectCarrier> it = getSubjectCarriers().iterator(); it.hasNext(); ) {
+				SubjectCarrier subjectCarrier = it.next();
 				Object subj = subjectCarrier.getSubject();
 				if (subj != null) // there should not be nulls, but just to be sure (in principle, it's allowed)...
 					cbs.put(subj, subjectCarrier);
@@ -189,7 +189,7 @@ public class ChangeEvent extends NotificationEvent
 			// The finally block resets myChangeTimestamp to 0, because this event knows the given subject.
 			if (subjectCarrier instanceof ChangeSubjectCarrier) {
 				ChangeSubjectCarrier csc = (ChangeSubjectCarrier) subjectCarrier;
-				Set sourceSessionIDs = csc.getSourceSessionIDs();
+				Set<?> sourceSessionIDs = csc.getSourceSessionIDs();
 	
 				if (sourceSessionIDs.isEmpty())
 					return true;

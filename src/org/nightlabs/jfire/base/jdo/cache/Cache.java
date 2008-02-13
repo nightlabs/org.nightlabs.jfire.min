@@ -37,6 +37,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.Map.Entry;
 
 import javax.jdo.JDOHelper;
 
@@ -221,8 +222,8 @@ public class Cache
 //							for (Iterator it = dirtyObjectIDs.iterator(); it.hasNext(); ) {
 
 							ArrayList<ChangeSubjectCarrier> subjectCarriers = new ArrayList<ChangeSubjectCarrier>(dirtyObjectIDsForNotification.size());
-							for (Iterator it = dirtyObjectIDsForNotification.iterator(); it.hasNext(); ) {
-								DirtyObjectID dirtyObjectID = (DirtyObjectID) it.next();
+							for (Iterator<DirtyObjectID> it = dirtyObjectIDsForNotification.iterator(); it.hasNext(); ) {
+								DirtyObjectID dirtyObjectID = it.next();
 								// ignore removal, because that's not supported by the old ChangeManager - new shouldn't be in that list
 								if (dirtyObjectID.getLifecycleState() != JDOLifecycleState.DIRTY)
 									continue;
@@ -407,10 +408,10 @@ public class Cache
 					boolean restoreCurrentlySubscribedObjectIDs = true;
 					try {
 						long now = System.currentTimeMillis();
-						for (Iterator it = subscriptionChanges.entrySet().iterator(); it.hasNext(); ) {
-							Map.Entry me = (Map.Entry) it.next();
+						for (Iterator<Entry<Object, SubscriptionChangeRequest>> it = subscriptionChanges.entrySet().iterator(); it.hasNext(); ) {
+							Map.Entry<Object, SubscriptionChangeRequest> me = it.next();
 							Object objectID = me.getKey();
-							SubscriptionChangeRequest scr = (SubscriptionChangeRequest) me.getValue();
+							SubscriptionChangeRequest scr = me.getValue();
 
 							if (scr.getScheduledActionDT() > now) {
 								if (logger.isDebugEnabled())
@@ -510,7 +511,7 @@ public class Cache
 									if (objectIDsToUnsubscribe == null)
 										logger.debug("      NONE!");
 									else {
-										for (Iterator it = objectIDsToUnsubscribe.iterator(); it.hasNext(); )
+										for (Iterator<?> it = objectIDsToUnsubscribe.iterator(); it.hasNext(); )
 											logger.debug("      " +  it.next());
 									}
 
@@ -518,7 +519,7 @@ public class Cache
 									if (objectIDsToSubscribe == null)
 										logger.debug("      NONE!");
 									else {
-										for (Iterator it = objectIDsToSubscribe.iterator(); it.hasNext(); )
+										for (Iterator<?> it = objectIDsToSubscribe.iterator(); it.hasNext(); )
 											logger.debug("      " +  it.next());
 									}
 
@@ -667,8 +668,8 @@ public class Cache
 
 		if (logger.isDebugEnabled()) {
 			logger.debug("Restoring older subscription change requests:");
-			for (Iterator it = oldChangeRequests.values().iterator(); it.hasNext(); ) {
-				SubscriptionChangeRequest scr = (SubscriptionChangeRequest) it.next();
+			for (Iterator<SubscriptionChangeRequest> it = oldChangeRequests.values().iterator(); it.hasNext(); ) {
+				SubscriptionChangeRequest scr = it.next();
 				logger.debug("      " + scr);
 			}
 		}
@@ -679,8 +680,8 @@ public class Cache
 					logger.debug("There are no new subscription change requests to merge into the old ones. Simply replacing them.");
 				else {
 					logger.debug("There are new subscription change requests which will be merged into the old ones:");
-					for (Iterator it = subscriptionChangeRequests.values().iterator(); it.hasNext(); ) {
-						SubscriptionChangeRequest scr = (SubscriptionChangeRequest) it.next();
+					for (Iterator<SubscriptionChangeRequest> it = subscriptionChangeRequests.values().iterator(); it.hasNext(); ) {
+						SubscriptionChangeRequest scr = it.next();
 						logger.debug("      " + scr);
 					}
 				}
@@ -691,8 +692,8 @@ public class Cache
 
 			if (logger.isDebugEnabled()) {
 				logger.debug("These are the subscription change requests after restore:");
-				for (Iterator it = subscriptionChangeRequests.values().iterator(); it.hasNext(); ) {
-					SubscriptionChangeRequest scr = (SubscriptionChangeRequest) it.next();
+				for (Iterator<SubscriptionChangeRequest> it = subscriptionChangeRequests.values().iterator(); it.hasNext(); ) {
+					SubscriptionChangeRequest scr = it.next();
 					logger.debug("      " + scr);
 				}
 			}
@@ -783,16 +784,16 @@ public class Cache
 	 * via the {@link CacheManagerThread} (which calls
 	 * {@link JDOManager#addChangeListeners(java.lang.String, java.util.Collection)}).
 	 */
-	protected void subscribeObjectIDs(Collection objectIDs, long delayMSec)
+	protected void subscribeObjectIDs(Collection<?> objectIDs, long delayMSec)
 	{
 		synchronized (subscriptionChangeRequestsMutex) {
-			for (Iterator it = objectIDs.iterator(); it.hasNext(); ) {
+			for (Iterator<?> it = objectIDs.iterator(); it.hasNext(); ) {
 				Object objectID = it.next();
 
 				if (!(objectID instanceof ObjectID)) // we do not subscribe listeners to non-jdo keys
 					continue;
 
-				SubscriptionChangeRequest scr = (SubscriptionChangeRequest) subscriptionChangeRequests.get(objectID);
+				SubscriptionChangeRequest scr = subscriptionChangeRequests.get(objectID);
 				if (scr != null) {
 					if (scr.getAction() == SubscriptionChangeRequest.ACTION_ADD
 							&&
@@ -820,13 +821,13 @@ public class Cache
 	 * via the {@link CacheManagerThread} (which calls
 	 * {@link JDOManager#removeChangeListeners(java.lang.String, java.util.Collection)}).
 	 */
-	protected void unsubscribeObjectIDs(Collection objectIDs, long delayMSec)
+	protected void unsubscribeObjectIDs(Collection<?> objectIDs, long delayMSec)
 	{
 		synchronized (subscriptionChangeRequestsMutex) {
-			for (Iterator it = objectIDs.iterator(); it.hasNext(); ) {
+			for (Iterator<?> it = objectIDs.iterator(); it.hasNext(); ) {
 				Object objectID = it.next();
 
-				SubscriptionChangeRequest scr = (SubscriptionChangeRequest) subscriptionChangeRequests.get(objectID);
+				SubscriptionChangeRequest scr = subscriptionChangeRequests.get(objectID);
 				if (scr != null) {
 					if (scr.getAction() == SubscriptionChangeRequest.ACTION_REMOVE
 							&&
@@ -1044,7 +1045,7 @@ public class Cache
 			throw new IllegalStateException("carrierContainerCount = "+carrierContainerCount+" but must be at least 2!!!");
 
 		while (carrierContainers.size() > carrierContainerCount) {
-			CarrierContainer cc = (CarrierContainer) carrierContainers.removeLast();
+			CarrierContainer cc = carrierContainers.removeLast();
 			logger.info("Dropping carrierContainer (created " + cc.getCreateDT() + ")");
 			cc.close();
 		}
@@ -1086,7 +1087,7 @@ public class Cache
 	protected Cache() throws ConfigException
 	{
 		logger.info("Creating new Cache instance.");
-		cacheCfMod = (CacheCfMod) Config.sharedInstance().createConfigModule(CacheCfMod.class);
+		cacheCfMod = Config.sharedInstance().createConfigModule(CacheCfMod.class);
 		Config.sharedInstance().save(); // TODO remove this as soon as we have a thread that periodically saves it.
 
 		// set initial active containers
@@ -1161,7 +1162,7 @@ public class Cache
 		Object object = null;
 
 		Key key = new Key(scope, objectID, fetchGroups, maxFetchDepth);
-		Carrier carrier = (Carrier) key2Carrier.get(key);
+		Carrier carrier = key2Carrier.get(key);
 		if (carrier == null) {
 			if (logger.isDebugEnabled())
 				logger.debug("No Carrier found for key: " + key.toString());
@@ -1201,7 +1202,7 @@ public class Cache
 									continue iterateCandidateKey;
 							}
 
-							carrier = (Carrier) key2Carrier.get(candidateKey);
+							carrier = key2Carrier.get(candidateKey);
 							if (carrier != null) {
 								object = carrier.getObject();
 								if (object == null) {
@@ -1245,23 +1246,23 @@ public class Cache
 		return object;
 	}
 
-	public void putAll(String scope, Collection objects, String[] fetchGroups, int maxFetchDepth)
+	public void putAll(String scope, Collection<?> objects, String[] fetchGroups, int maxFetchDepth)
 	{
 		_putAll(scope, objects, CollectionUtil.array2HashSet(fetchGroups), maxFetchDepth);
 	}
-	public void putAll(String scope, Collection objects, Set<String> fetchGroups, int maxFetchDepth)
+	public void putAll(String scope, Collection<?> objects, Set<String> fetchGroups, int maxFetchDepth)
 	{
 		_putAll(
 				scope, objects,
 				(fetchGroups == null ? null : new HashSet<String>(fetchGroups)),
 				maxFetchDepth);
 	}
-	protected void _putAll(String scope, Collection objects, Set<String> fetchGroups, int maxFetchDepth)
+	protected void _putAll(String scope, Collection<?> objects, Set<String> fetchGroups, int maxFetchDepth)
 	{
 		if (objects == null)
 			throw new NullPointerException("objects must not be null!");
 
-		for (Iterator it = objects.iterator(); it.hasNext(); ) {
+		for (Iterator<?> it = objects.iterator(); it.hasNext(); ) {
 			Object object = it.next();
 			_put(scope, JDOHelper.getObjectId(object), object, fetchGroups, maxFetchDepth);
 		}
@@ -1337,7 +1338,7 @@ public class Cache
 
 		synchronized (this) {
 			// remove the old carrier - if existing
-			Carrier oldCarrier = (Carrier) key2Carrier.get(key);
+			Carrier oldCarrier = key2Carrier.get(key);
 			if (oldCarrier != null) {
 				if (logger.isDebugEnabled())
 					logger.info("There was an old carrier for the same key in the cache; removing it. key: " + key.toString());
@@ -1377,7 +1378,7 @@ public class Cache
 			// fill in the object graph
 			{
 				long start_fillObjectGraph = System.currentTimeMillis();
-				Set objectIDs;
+				Set<?> objectIDs;
 				try {
 					objectIDs = carrier.getObjectIDs();
 				} catch (Exception e) {
@@ -1413,9 +1414,9 @@ public class Cache
 	 * @param objectIDs The object-ids that should point to the given key.
 	 * @param key The key that should be mapped by all the given objectIDs.
 	 */
-	protected synchronized void mapObjectIDs2Key(Collection objectIDs, Key key)
+	protected synchronized void mapObjectIDs2Key(Collection<?> objectIDs, Key key)
 	{
-		for (Iterator it = objectIDs.iterator(); it.hasNext(); ) {
+		for (Iterator<?> it = objectIDs.iterator(); it.hasNext(); ) {
 			Object objectID = it.next();
 
 			Set<Key> keySet = objectID2KeySet_dependency.get(objectID);
@@ -1472,7 +1473,7 @@ public class Cache
 		if (logger.isDebugEnabled())
 			logger.debug("Removing Carrier for key: " + key.toString());
 
-		Carrier oldCarrier = (Carrier) key2Carrier.remove(key);
+		Carrier oldCarrier = key2Carrier.remove(key);
 		Set<Object> objectIDs;
 		if (oldCarrier == null) {
 			objectIDs = new HashSet<Object>();
@@ -1488,7 +1489,7 @@ public class Cache
 			}
 		}
 
-		for (Iterator it = objectIDs.iterator(); it.hasNext(); ) {
+		for (Iterator<?> it = objectIDs.iterator(); it.hasNext(); ) {
 			Object objectID = it.next(); // key.getObjectID();
 			removeDependency(objectID, key);
 //			Set<Key> keySet = objectID2KeySet_dependency.get(objectID);
@@ -1518,11 +1519,11 @@ public class Cache
 	 * This method calls {@link #removeByObjectIDClass(Class, boolean)} with <code>returnRemovedDependencies == false</code>,
 	 * thus only returning really deleted <code>Key</code>s - no history entries.
 	 */
-	public synchronized Set<Key> removeByObjectIDClass(Class clazz)
+	public synchronized Set<Key> removeByObjectIDClass(Class<?> clazz)
 	{
 		return removeByObjectIDClass(clazz, false);
 	}
-	public synchronized Set<Key> removeByObjectIDClass(Class clazz, boolean returnRemovedDependencies)
+	public synchronized Set<Key> removeByObjectIDClass(Class<?> clazz, boolean returnRemovedDependencies)
 	{
 		// TODO we need an index for this feature!!! Iterating all objectIDs is too inefficient!
 		Set<Object> objectIDsToRemove = new HashSet<Object>();
@@ -1612,9 +1613,9 @@ public class Cache
 		}
 
 		if (keySet != null) {
-			for (Iterator it = keySet.iterator(); it.hasNext(); ) {
+			for (Iterator<?> it = keySet.iterator(); it.hasNext(); ) {
 				Key key = (Key) it.next();
-				Carrier carrier = (Carrier) key2Carrier.remove(key);
+				Carrier carrier = key2Carrier.remove(key);
 				if (carrier != null) {
 					if (logger.isDebugEnabled())
 						logger.debug("removeByObjectID: Removing Carrier: key=\"" + key + "\"");

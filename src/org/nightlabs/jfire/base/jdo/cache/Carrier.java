@@ -48,7 +48,7 @@ public class Carrier
 	private static String referenceType = null;
 
 	private Key key;
-	private Reference ref;
+	private Reference<?> ref;
 	private Object object;
 
 	/**
@@ -195,6 +195,7 @@ public class Carrier
 		return objectIDs;
 	}
 
+	@SuppressWarnings("unchecked")
 	private void collectObjectIDs(Set<Object> processedObjects, Set<Object> objectIDs, Object object)
 	throws IllegalArgumentException, IllegalAccessException
 	{
