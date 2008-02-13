@@ -89,9 +89,9 @@ public class DatastoreInitManager extends AbstractInitManager<DatastoreInit, Dat
 						JarEntry je = jf.getJarEntry("META-INF/datastoreinit.xml");
 						if (je != null) {
 							InputStream in = jf.getInputStream(je);
-							try {								
+							try {
 								List<DatastoreInit> serverInits = parseDatastoreInitXML(ear.getName(), jar.getName(), in);
-								for (DatastoreInit init : serverInits) {									
+								for (DatastoreInit init : serverInits) {
 									inits.add(init);
 									initTrie.insert(new String[] {init.getModule(), init.getArchive(), init.getBean(), init.getMethod()}, init);
 								}
@@ -130,7 +130,7 @@ public class DatastoreInitManager extends AbstractInitManager<DatastoreInit, Dat
 			inits = resolveDependencies(inits, comp);
 		} catch (DependencyCycleException e) {
 			throw new DatastoreInitException(e + "Information regarding the cycle: "+ e.getCycleInfo());
-		}		
+		}
 		canPerformInit = true;
 
 		if (logger.isDebugEnabled()) {
@@ -318,9 +318,9 @@ public class DatastoreInitManager extends AbstractInitManager<DatastoreInit, Dat
 		
 		List<String> toReturn = new ArrayList<String>(fields.length);
 		
-		for (int i = 0; i < fields.length; i++) {			
+		for (int i = 0; i < fields.length; i++) {
 			if (fields[i] == null || fields[i].equals(""))
-				break;			
+				break;
 			toReturn.add(fields[i]);
 		}
 		

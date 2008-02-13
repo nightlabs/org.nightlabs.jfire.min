@@ -3,7 +3,6 @@ package org.nightlabs.jfire.servermanager.createorganisation;
 import java.util.Set;
 
 import org.nightlabs.ModuleException;
-import org.nightlabs.jfire.servermanager.JFireServerManager;
 
 public class BusyCreatingOrganisationException
 extends ModuleException

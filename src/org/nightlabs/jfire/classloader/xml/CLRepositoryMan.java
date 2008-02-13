@@ -182,7 +182,7 @@ public class CLRepositoryMan
 	}
 	
 	protected void readCLRepositoryXML(
-//			String clRepositoryDirectory, 
+//			String clRepositoryDirectory,
 			final String clRepositoryAbsFileName,
 			InputStream in, boolean forbidMultipleTargets)
 		throws SAXException, IOException, TransformerException, XMLReadException
@@ -261,7 +261,7 @@ public class CLRepositoryMan
 			while (nClassPattern != null) {
 				Node txt = nClassPattern.getChildNodes().item(0);
 				if (txt == null)
-					throw new NullPointerException("tag resources must not be empty!"); // TODO Is it really null, if the tag resources is empty? 
+					throw new NullPointerException("tag resources must not be empty!"); // TODO Is it really null, if the tag resources is empty?
 				String classPattern = txt.getNodeValue();
 				publication.addResourcePattern(classPattern);
 				nClassPattern = itClassPatterns.nextNode();
@@ -285,7 +285,7 @@ public class CLRepositoryMan
 
 			InputStream in = new FileInputStream(clrepository);
 			try {
-				readCLRepositoryXML(// clrepository.getParent(), 
+				readCLRepositoryXML(// clrepository.getParent(),
 						clrepository.getAbsolutePath(), in, false);
 
 			} finally {

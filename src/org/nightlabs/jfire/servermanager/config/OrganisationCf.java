@@ -89,7 +89,7 @@ public class OrganisationCf
 	/**
 	 * @return Returns the organisationID.
 	 */
-	public String getOrganisationID() 
+	public String getOrganisationID()
 	{
 		return organisationID;
 	}
@@ -97,12 +97,12 @@ public class OrganisationCf
 	/**
 	 * @param organisationID The organisationID to set.
 	 */
-	public void setOrganisationID(String _organisationID) 
+	public void setOrganisationID(String _organisationID)
 	{
 		assertWritable();
 		if (_organisationID == null)
 			throw new NullPointerException("organisationID must not be null!");
-		if (!"".equals(_organisationID) && !ObjectIDUtil.isValidIDString(_organisationID)) // we allow "" in order to make the stand-alone-mode (root-organisation-id == "") possible 
+		if (!"".equals(_organisationID) && !ObjectIDUtil.isValidIDString(_organisationID)) // we allow "" in order to make the stand-alone-mode (root-organisation-id == "") possible
 			throw new IllegalArgumentException("organisationID \""+_organisationID+"\" is not a valid id!");
 		this.organisationID = _organisationID;
 		setChanged();
@@ -111,7 +111,7 @@ public class OrganisationCf
 	/**
 	 * @return Returns the organisationName.
 	 */
-	public String getOrganisationName() 
+	public String getOrganisationName()
 	{
 		return organisationName;
 	}
@@ -145,7 +145,7 @@ public class OrganisationCf
 	 * @see addServerAdmin(String userID)
 	 * @see removeServerAdmin(String userID)
 	 */
-	public Set<String> getServerAdmins() 
+	public Set<String> getServerAdmins()
 	{
 		if (readOnly && serverAdmins != null)
 			return new HashSet<String>(serverAdmins);
@@ -162,7 +162,7 @@ public class OrganisationCf
 	 * @see addServerAdmin(String userID)
 	 * @see removeServerAdmin(String userID)
 	 */
-	public void setServerAdmins(Set<String> _serverAdmins) 
+	public void setServerAdmins(Set<String> _serverAdmins)
 	{
 		assertWritable();
 		this.serverAdmins = _serverAdmins;
@@ -315,7 +315,7 @@ public class OrganisationCf
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
-	public String toString() 
+	public String toString()
 	{
 		if (thisString == null) {
 			StringBuffer sb = new StringBuffer();

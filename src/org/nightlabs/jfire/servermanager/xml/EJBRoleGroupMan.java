@@ -73,7 +73,7 @@ public class EJBRoleGroupMan implements Serializable
 	/**
 	 * key: String roleID<br/>
 	 * value: RoleDef role
-	 * <br/><br/> 
+	 * <br/><br/>
 	 * This Map stores all roles that have
 	 * been declared in ejb-rolegroup.xml. This is necessary to diff the roles that
 	 * are in the default group or if there is no ejbJarMan (in global usage).

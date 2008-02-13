@@ -127,7 +127,7 @@ public class CacheCfMod extends ConfigModule
 		if (cacheSessionContainerActivityMSec < 60 * 1000 || 30 * 60 * 1000 < cacheSessionContainerActivityMSec)
 			setCacheSessionContainerActivityMSec(5 * 60 * 1000);
 
-		if (cacheSessionContainerCount < 2 || 300 < cacheSessionContainerCount)				
+		if (cacheSessionContainerCount < 2 || 300 < cacheSessionContainerCount)
 			setCacheSessionContainerCount(12);
 
 		if (freshDirtyObjectIDContainerActivityMSec < 1000 || 10 * 60 * 1000 < freshDirtyObjectIDContainerActivityMSec)

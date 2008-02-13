@@ -26,7 +26,6 @@
 
 package org.nightlabs.jfire.classloader;
 
-import java.io.IOException;
 import java.util.List;
 
 import org.nightlabs.ModuleException;

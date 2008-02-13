@@ -123,7 +123,7 @@ public class DatabaseCf extends JFireServerConfigPart implements Serializable
 ////		db.setDatabaseUserName("jfire");
 ////		db.setDatabasePassword("jfire_password");
 //		db.setDatabaseAdapter("org.nightlabs.jfire.databaseadaptermckoi.DatabaseAdapterMckoi");
-//		db.setDatasourceMetadataTypeMapping("mySQL"); // TODO - i have no idea???!! 
+//		db.setDatasourceMetadataTypeMapping("mySQL"); // TODO - i have no idea???!!
 //		return db;
 //	}
 	
@@ -143,10 +143,10 @@ public class DatabaseCf extends JFireServerConfigPart implements Serializable
 		if (datasourceMetadataTypeMapping == null)
 			setDatasourceMetadataTypeMapping("mySQL");
 			
-		if (databasePrefix == null)	
+		if (databasePrefix == null)
 			setDatabasePrefix("JFire_");
 
-		if (databaseSuffix == null)	
+		if (databaseSuffix == null)
 			setDatabaseSuffix("");
 
 		if (databaseUserName == null)
@@ -239,7 +239,7 @@ public class DatabaseCf extends JFireServerConfigPart implements Serializable
 		setDatasourceMetadataTypeMapping(db.getDatasourceMetadataTypeMapping());
 		setDatasourceTemplateDSXMLFile(db.getDatasourceTemplateDSXMLFile());
 		setDatasourceConfigFile(db.getDatasourceConfigFile());
-	}		
+	}
 
 	public DatabaseAdapter instantiateDatabaseAdapter() throws ClassNotFoundException, InstantiationException, IllegalAccessException
 	{
@@ -282,16 +282,16 @@ public class DatabaseCf extends JFireServerConfigPart implements Serializable
 //	 * @return Returns the databaseDriverName.
 //	 * @deprecated Use {@link #getDatabaseDriverName_noTx()}, {@link #getDatabaseDriverName_localTx()} or {@link #getDatabaseDriverName_xa()}
 //	 */
-//	public String getDatabaseDriverName() 
+//	public String getDatabaseDriverName()
 //	{
 //		return databaseDriverName;
 //	}
-//	
+//
 //	/**
 //	 * @param databaseDriverName The databaseDriverName to set.
 //	 * @deprecated Use {@link #setDatabaseDriverName_noTx(String)}. {@link #setDatabaseDriverName_localTx(String)} or {@link #setDatabaseDriverName_xa(String)}
 //	 */
-//	public void setDatabaseDriverName(String _databaseDriverName) 
+//	public void setDatabaseDriverName(String _databaseDriverName)
 //	{
 //		this.databaseDriverName = _databaseDriverName;
 //		setChanged();

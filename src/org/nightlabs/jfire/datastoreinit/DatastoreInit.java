@@ -23,7 +23,7 @@ public class DatastoreInit extends AbstractInit<DatastoreInit, DatastoreInitDepe
 	protected String getName() {
 	
 		return this.getClass().getSimpleName() + ": " + module + '/' + archive + '/' + bean + '#' + method
-			+ " (priority: " + priority + ")";		
+			+ " (priority: " + priority + ")";
 	}
 
 	public String getBean() {

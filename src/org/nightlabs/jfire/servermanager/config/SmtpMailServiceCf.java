@@ -6,7 +6,7 @@ import org.nightlabs.config.InitException;
  * @author Marc Klinger - marc[at]nightlabs[dot]de
  * @author Khaled Soliman
  */
-public class SmtpMailServiceCf extends JFireServerConfigPart 
+public class SmtpMailServiceCf extends JFireServerConfigPart
 {
 	/**
 	 * The serial version of this class.

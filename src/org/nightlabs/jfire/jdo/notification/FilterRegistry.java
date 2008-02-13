@@ -137,7 +137,7 @@ implements Serializable
 
 	/**
 	 * @param lifecycleStage What happened?
-	 * @param jdoObjectClass What's the type of the jdo object. It will be matched against the groupedFilters' candidate classes. 
+	 * @param jdoObjectClass What's the type of the jdo object. It will be matched against the groupedFilters' candidate classes.
 	 * @return Returns all matching groupedFilters - never <code>null</code>.
 	 */
 	public Collection<IJDOLifecycleListenerFilter> getMatchingFilters(
@@ -258,7 +258,7 @@ implements Serializable
 						logger.debug("debugLogFilters():     candidateClass="+me3.getKey().getName());
 						for (Map.Entry<AbsoluteFilterID, IJDOLifecycleListenerFilter> me4 : me3.getValue().entrySet()) {
 							logger.debug("debugLogFilters():       filterID="+me4.getKey().getSessionID() + "::" + me4.getKey().getFilterID());
-						}						
+						}
 					}
 				}
 			}

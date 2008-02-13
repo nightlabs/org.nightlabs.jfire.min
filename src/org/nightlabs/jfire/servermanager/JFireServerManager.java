@@ -78,7 +78,7 @@ public interface JFireServerManager
 //	 * accepted it.
 //	 *
 //	 * @param organisationID The organisationID of the representative. Must be new and unique in the whole network (means world!).
-//	 * @param organisationName A nice name that will be used to display the new representative organisation. 
+//	 * @param organisationName A nice name that will be used to display the new representative organisation.
 //	 * @throws ModuleException
 //	 */
 //	public void createOrganisation(String organisationID, String organisationName)
@@ -114,7 +114,7 @@ public interface JFireServerManager
 	 *
 	 * @param organisationID The ID of the new organisation. It must be unique in the whole world.
 	 * @param organisationName A nice name that will be used to display the new representative organisation.
-	 * @param userID The userID of the first user to create within the new organisation. It will have all necessary permissions to manage users and roles within the new organisation. 
+	 * @param userID The userID of the first user to create within the new organisation. It will have all necessary permissions to manage users and roles within the new organisation.
 	 * @param password The password of the new user.
 	 * @param isServerAdmin Whether this user should have global server administration permissions.
 	 *

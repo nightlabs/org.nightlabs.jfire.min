@@ -141,7 +141,7 @@ public class J2eeCf extends JFireServerConfigPart implements Serializable
 	}
 	/**
 	 * 
-	 * @param initOrganisationOnStartupThreadCount a value >= 1 specifying how many threads are 
+	 * @param initOrganisationOnStartupThreadCount a value >= 1 specifying how many threads are
 	 */
 	public void setInitOrganisationOnStartupThreadCount(int initOrganisationThreadCount)
 	{

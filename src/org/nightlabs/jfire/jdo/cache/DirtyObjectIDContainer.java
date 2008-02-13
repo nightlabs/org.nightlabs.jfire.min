@@ -147,7 +147,7 @@ implements Serializable
 	}
 
 	/**
-	 * @param objectID The JDO object-id pointing to an instance of {@link DirtyObjectID}. 
+	 * @param objectID The JDO object-id pointing to an instance of {@link DirtyObjectID}.
 	 * @return Returns either <code>null</code> or a <code>DirtyObjectID</code>.
 	 */
 	public synchronized DirtyObjectID getDirtyObjectID(JDOLifecycleState lifecycleState, Object objectID)
@@ -199,14 +199,14 @@ implements Serializable
 //				Map<Object, DirtyObjectID> master_dirtyObjectIDMap = lifecycleState2dirtyObjectIDMap.get(lifecycleState);
 //				if (master_dirtyObjectIDMap == null)
 //					throw new IllegalStateException("master_dirtyObjectIDMap == null for lifecycleState == " + lifecycleState);
-//	
+//
 //				for (Map.Entry<Object, DirtyObjectID> me2 : part_dirtyObjectIDMap.entrySet()) {
 //					Object objectID = me2.getKey();
 //					DirtyObjectID part_dirtyObjectID = me2.getValue();
 //					DirtyObjectID master_dirtyObjectID = master_dirtyObjectIDMap.get(objectID);
 //					if (master_dirtyObjectID == null)
 //						throw new IllegalStateException("master_dirtyObjectID == null for part_dirtyObjectID == " + part_dirtyObjectID);
-//	
+//
 //					if (master_dirtyObjectID.getSerial() == part_dirtyObjectID.getSerial()) {
 //						master_dirtyObjectIDMap.remove(objectID);
 //						if (logger.isDebugEnabled())
@@ -215,7 +215,7 @@ implements Serializable
 //					else {
 //						// we need to remove the source-sessionIDs
 //
-//						
+//
 //						if (logger.isDebugEnabled())
 //							logger.debug("removePart: did NOT remove DirtyObjectID from master, because serial is different (removed the part's source-sessionIDs, though): part=" + part_dirtyObjectID + " master=" + master_dirtyObjectID);
 //					}

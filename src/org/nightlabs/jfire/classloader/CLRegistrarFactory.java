@@ -269,7 +269,7 @@ public class CLRegistrarFactory
 			}
 			else {
 				String relativePath = Util.getRelativePath(absoluteRepositoryFile, dir.getPath());
-				ResourceMetaData fmd = new ResourceMetaData(repository.getName(), null, relativePath, dir.length(), dir.lastModified());				
+				ResourceMetaData fmd = new ResourceMetaData(repository.getName(), null, relativePath, dir.length(), dir.lastModified());
 
 				boolean publishResource = false;
 				if (applicablePublications != null) {
@@ -350,7 +350,7 @@ public class CLRegistrarFactory
 
 		List applicableTargets = clRepositoryMan.getApplicablePublications(null); // with param null, it returns all targets
 
-		// register resources in jar (if published) and extract nested jars 
+		// register resources in jar (if published) and extract nested jars
 		for (Enumeration enumeration = jar.entries(); enumeration.hasMoreElements(); ) {
 			JarEntry je = (JarEntry)enumeration.nextElement();
 			if (!je.isDirectory()) {
@@ -424,7 +424,7 @@ public class CLRegistrarFactory
 					} // if (isJar) {
 				} catch (IOException e) {
 					logger.error("Extracting jar failed! repository=\"" + repository.getName() + "\" outerJar=\"" + jarFileMetaData.getPath() + "\" innerJar=\"" + je.getName() + "\"", e);
-				}				
+				}
 			} // if (!je.isDirectory()) {
 		}
 	}

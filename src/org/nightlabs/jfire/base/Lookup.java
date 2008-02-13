@@ -53,7 +53,7 @@ import org.nightlabs.jfire.servermanager.config.OrganisationCf;
  * @author marco
  * @author Marc Klinger - marc[at]nightlabs[dot]de
  */
-public class Lookup 
+public class Lookup
 {
 	private String organisationID;
 	/**
@@ -106,11 +106,11 @@ public class Lookup
 	 * Do NOT call this constructor! Your principal has an instance of Lookup already!
 	 *
 	 * @param _organisationId The target organisationID onto which all actions are executed
-	 *   locally.   
+	 *   locally.
 	 * @throws NamingException if a naming exception occurs while creating an initial context.
 	 */
 	public Lookup(String _organisationId)
-	{	
+	{
 		this.organisationID = _organisationId;
 	}
 	
@@ -201,14 +201,14 @@ public class Lookup
 
 //	/**
 //	 * key: String organisationID<br/>
-//	 * value: PersistenceManagerFactory persistenceManagerFactory 
+//	 * value: PersistenceManagerFactory persistenceManagerFactory
 //	 */
-//	protected Map pmfMap = new HashMap(); 
+//	protected Map pmfMap = new HashMap();
 	
 	/**
 	 * Returns the PersistenceManagerFactory for the given organisationID. If it cannot be
-	 * found in JNDI, an exception is thrown. 
-	 *  
+	 * found in JNDI, an exception is thrown.
+	 * 
 	 * @param organisationID The unique identifier for the organisationID
 	 * @return the PersistenceManagerFactory belonging to the given organisationID.
 	 * @throws RuntimeException Because a properly configured server should not have any JNDI (or other) problems,
@@ -239,8 +239,8 @@ public class Lookup
 	/**
 	 * This method reads the properties out of the datastore managed by pm, that are necessary
 	 * to connect and login to the organisation defined by _organisationID. If _organisationID
-	 * is the local organisation (managed by pm), this method returns <tt>null</tt>! 
-	 * @throws NamingException 
+	 * is the local organisation (managed by pm), this method returns <tt>null</tt>!
+	 * @throws NamingException
 	 */
 	public static Hashtable<?, ?> getInitialContextProperties(PersistenceManager pm, String _organisationID)
 	throws NamingException

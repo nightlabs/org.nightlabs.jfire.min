@@ -56,7 +56,7 @@ public class RoleGroupCf implements Serializable, Initializable
 	/**
 	 * LOG4J logger used by this class
 	 */
-	private static final Logger logger = Logger.getLogger(RoleGroupCf.class); 
+	private static final Logger logger = Logger.getLogger(RoleGroupCf.class);
 	
 	private String roleGroupID;
 //	private String roleGroupName;
@@ -134,7 +134,7 @@ public class RoleGroupCf implements Serializable, Initializable
 	/**
 	 * This method creates a JDO RoleGroup object with the given persistenceManager
 	 * in case it does not yet exist. If it already exists, it only adds roles that
-	 * do not yet exist, but nothing else is changed. 
+	 * do not yet exist, but nothing else is changed.
 	 *
 	 * @param pm The PersistenceManager in which's datastore the RoleGroup should be
 	 * 	created.

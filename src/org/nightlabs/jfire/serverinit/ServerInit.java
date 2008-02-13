@@ -9,10 +9,10 @@ public class ServerInit extends AbstractInit<ServerInit, ServerInitDependency> {
 
 	private String module;
 	private String archive;
-	private String initialiserClass;	
+	private String initialiserClass;
 	private int priority;
 	
-	public ServerInit(String module, String archive, String theClass, int priority) {		
+	public ServerInit(String module, String archive, String theClass, int priority) {
 		this.module = module;
 		this.archive = archive;
 		this.initialiserClass = theClass;
@@ -75,7 +75,7 @@ class ServerInitDependency implements IDependency<ServerInit> {
 	}
 	public void setArchive(String archive) {
 		this.archive = archive;
-	}	
+	}
 	public String getModule() {
 		return module;
 	}

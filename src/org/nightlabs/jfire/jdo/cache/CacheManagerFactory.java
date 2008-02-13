@@ -768,7 +768,7 @@ public class CacheManagerFactory
 					for (Map.Entry<AbsoluteFilterID, FilterWithDirtyObjectIDs> me2 : me1.getValue().entrySet()) {
 						logger.debug("after_addLifecycleListenerFilters:     filterID=" + me2.getKey());
 						for (DirtyObjectID dirtyObjectID : me2.getValue().dirtyObjectIDsRaw)
-							logger.debug("after_addLifecycleListenerFilters:       dirtyObjectID=" + dirtyObjectID);							
+							logger.debug("after_addLifecycleListenerFilters:       dirtyObjectID=" + dirtyObjectID);
 					}
 				}
 			}
@@ -848,11 +848,11 @@ public class CacheManagerFactory
 //			for (DirtyObjectIDContainer dirtyObjectIDContainer : freshDirtyObjectIDContainers) {
 //				DirtyObjectID dirtyObjectID = dirtyObjectIDContainer.getDirtyObjectID(objectID);
 //				if (dirtyObjectID.getLifecycleStage() == JDOLifecycleState.NEW) {
-//					
+//
 //				}
 //				else if (dirtyObjectID != null) {
 //					Set sourceSessionIDs = dirtyObjectID.getSourceSessionIDs();
-//					
+//
 //					if (!excludeLocalSessionFromNotification || sourceSessionIDs.size() > 1 || !sourceSessionIDs.contains(sessionID)) {
 //						triggerNotificationDirtyObjectID = dirtyObjectID;
 //						break;
@@ -1669,7 +1669,7 @@ public class CacheManagerFactory
 			if (f2.exists())
 				throw new IllegalStateException("File \""+f2.getAbsolutePath()+"\" exists! Seems, there was a problem with deleting the old version or renaming the new one!");
 
-			try {				
+			try {
 				if (nextDirtyObjectIDSerial_ram == -Long.MAX_VALUE) {
 					if (f.exists()) {
 						String s = IOUtil.readTextFile(f);

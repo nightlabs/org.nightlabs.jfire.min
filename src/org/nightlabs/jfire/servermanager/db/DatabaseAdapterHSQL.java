@@ -53,7 +53,7 @@ extends AbstractDatabaseAdapter
 					dbCf.getDatabaseURL("test"),
 					dbCf.getDatabaseUserName(),
 					dbCf.getDatabasePassword()
-			);			
+			);
 			
 			sqlConn.close();
 		} catch (SQLException e) {
@@ -61,7 +61,7 @@ extends AbstractDatabaseAdapter
 		}
 	}
 
-	private java.sql.Connection connCreateDB = null; 
+	private java.sql.Connection connCreateDB = null;
 
 	public void createDatabase(
 			JFireServerConfigModule jfireServerConfigModule,

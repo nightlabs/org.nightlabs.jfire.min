@@ -33,7 +33,6 @@ import javax.transaction.TransactionManager;
 
 import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.servermanager.j2ee.monitor.J2EEServerMonitor;
-import org.nightlabs.jfire.servermanager.ra.JFireServerManagerFactoryImpl;
 
 
 /**
@@ -71,7 +70,7 @@ public interface J2EEAdapter extends Serializable {
 	
 	/**
 	 * @return The {@link J2EEServerMonitor} implementation
-	 * 		of this adapter. 
+	 * 		of this adapter.
 	 */
 	public J2EEServerMonitor getServerMonitor();
 

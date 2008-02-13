@@ -156,7 +156,7 @@ public class JFireServerManagerImpl
 	{
 		if(logger.isDebugEnabled())
 			logger.debug(this.getClass().getName()+": close()");
-		if (managedConnectionImpl != null) 
+		if (managedConnectionImpl != null)
 		{
 //			managedConnectionImpl.flushDirty();
 			managedConnectionImpl.notifyClosed(this);
@@ -253,7 +253,7 @@ public class JFireServerManagerImpl
 	 * @see org.nightlabs.jfire.servermanager.JFireServerManager#getOrganisationConfig(java.lang.String)
 	 */
 	public OrganisationCf getOrganisationConfig(String organisationID)
-	throws OrganisationNotFoundException 
+	throws OrganisationNotFoundException
 	{
 		assertOpen();
 		return jfireServerManagerFactoryImpl.getOrganisationConfig(organisationID);
@@ -319,7 +319,7 @@ public class JFireServerManagerImpl
 	 * @see org.nightlabs.jfire.servermanager.JFireServerManager#setJFireServerConfigModule(org.nightlabs.jfire.servermanager.config.JFireServerConfigModule)
 	 */
 	public void setJFireServerConfigModule(JFireServerConfigModule cfMod)
-	throws ConfigException 
+	throws ConfigException
 	{
 		assertOpen();
 		jfireServerManagerFactoryImpl.setJFireServerConfigModule(cfMod);
@@ -444,7 +444,7 @@ public class JFireServerManagerImpl
 				// no password check required. this user has no rights at all. It basically means the same as not being logged in.
 				this.principal = new JFirePrincipal(
 						loginData,
-						userIsOrganisation, 
+						userIsOrganisation,
 						lookup,
 						new RoleSet() // no roles!
 						);
@@ -463,12 +463,12 @@ public class JFireServerManagerImpl
 				// setup mode login, create principal
 				this.principal = new JFirePrincipal(
 						loginData,
-						userIsOrganisation, 
+						userIsOrganisation,
 						lookup,
 						roleSet
 						);
 			}
-			else // authorize 
+			else // authorize
 			{
 				boolean handleTx = false;
 				boolean doCommit = false;
@@ -554,7 +554,7 @@ public class JFireServerManagerImpl
 
 	public String jfireSecurity_createTempUserPassword(String organisationID, String userID)
 	{
-		return jfireServerManagerFactoryImpl.jfireSecurity_createTempUserPassword(organisationID, userID); 
+		return jfireServerManagerFactoryImpl.jfireSecurity_createTempUserPassword(organisationID, userID);
 	}
 
 	public boolean configureServerAndShutdownIfNecessary(long delayMSec) throws ModuleException

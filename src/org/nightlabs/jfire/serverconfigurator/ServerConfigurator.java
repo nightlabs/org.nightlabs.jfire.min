@@ -49,8 +49,8 @@ public abstract class ServerConfigurator
 	
 	/**
 	 * This method indicates whether the j2ee server needs to be rebooted.
-	 * @return Returns true after {@link #doConfigureServer()} has been called, 
-	 * 		if it modified the server configuration in a way that requires it to 
+	 * @return Returns true after {@link #doConfigureServer()} has been called,
+	 * 		if it modified the server configuration in a way that requires it to
 	 * 		be rebooted.
 	 */
 	public boolean isRebootRequired()
@@ -61,7 +61,7 @@ public abstract class ServerConfigurator
 	/**
 	 * Set the reboot required value. If set to <code>true</code>, the
 	 * server will be stopped after all server configurations have happened.
-	 * @param rebootRequired <code>true</code> if a reboot is required - 
+	 * @param rebootRequired <code>true</code> if a reboot is required -
 	 * 		<code>false</code> otherwise
 	 */
 	protected void setRebootRequired(boolean rebootRequired)
@@ -78,7 +78,7 @@ public abstract class ServerConfigurator
 	 * This method will return <code>true</code> if the server needs to be restarted.
 	 * 
 	 * @param jfireServerConfigModule The server config module
-	 * @return <code>true</code> if the server needs to be restarted -  
+	 * @return <code>true</code> if the server needs to be restarted -
 	 * 		<code>false</code> otherwise.
 	 * @throws ServerConfigurationException In case of an error during configuration.
 	 */

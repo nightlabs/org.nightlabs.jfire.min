@@ -137,7 +137,7 @@ public class EJBJarMan implements Serializable
 						description = removeLeadingAndTrailingBlanks(description);
 						RoleDef role = new RoleDef(roleID);
 						role.setName(null, roleID);
-						role.setDescription(null, description); 
+						role.setDescription(null, description);
 						addRole(role);
 					}
 				}

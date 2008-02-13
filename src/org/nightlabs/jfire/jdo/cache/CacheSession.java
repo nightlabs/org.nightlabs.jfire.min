@@ -516,11 +516,11 @@ implements Serializable
 //						}
 //						else {
 //							long tmp = System.currentTimeMillis() - dirtyObjectID.getChangeDT(); // how old is it
-//							tmp = delayMSec - tmp; // the rest time that is needed to reach the minimum age 
+//							tmp = delayMSec - tmp; // the rest time that is needed to reach the minimum age
 //							if (tmp < actualWaitMSec) {
 //								if (logger.isDebugEnabled())
 //									logger.debug("CacheSession \"" + sessionID + "\" has a changed objectID, but it is still too young for immediate notification. Will wait, but shorten the waitTimeout from " + actualWaitMSec + " to " + tmp + " msec.");
-//	
+//
 //								actualWaitMSec = tmp;
 //							}
 //						}

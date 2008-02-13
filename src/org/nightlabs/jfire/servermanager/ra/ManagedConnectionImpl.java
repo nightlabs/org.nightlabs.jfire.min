@@ -84,7 +84,7 @@ public class ManagedConnectionImpl
 	 */
 	public void begin() throws ResourceException {
 		if(logger.isDebugEnabled())
-			logger.debug(this.getClass().getName()+": begin()");		
+			logger.debug(this.getClass().getName()+": begin()");
 	}
 
 	/**
@@ -135,7 +135,7 @@ public class ManagedConnectionImpl
 	public void associateConnection(Object c) throws ResourceException {
 		if(logger.isDebugEnabled())
 			logger.debug(this.getClass().getName()+": associateConnection(...)");
-		if (!(c instanceof JFireServerManagerImpl)) 
+		if (!(c instanceof JFireServerManagerImpl))
 			throw new ResourceException("Wrong Connection type! Expected \""+JFireServerManagerImpl.class.getName()+"\" Found \""+(c==null?"null":c.getClass().getName())+"\"");
 		((JFireServerManagerImpl)c).setManagedConnection(this);
 		handles.add(0, (JFireServerManagerImpl)c);
@@ -162,7 +162,7 @@ public class ManagedConnectionImpl
 	 */
 	public void destroy() throws ResourceException {
 		if(logger.isDebugEnabled())
-			logger.debug(this.getClass().getName()+": destroy()");		
+			logger.debug(this.getClass().getName()+": destroy()");
 	}
 
 	/**
@@ -234,7 +234,7 @@ public class ManagedConnectionImpl
 	 */
 	public void setLogWriter(PrintWriter lw) throws ResourceException {
 		if(logger.isDebugEnabled())
-			logger.debug(this.getClass().getName()+": setLogWriter(...)");		
+			logger.debug(this.getClass().getName()+": setLogWriter(...)");
 	}
 
 	
@@ -254,7 +254,7 @@ public class ManagedConnectionImpl
 
 		}
 		handles.remove(handle);
-	}	
+	}
 
 
 	protected void notifyTxBegin(JFireServerManagerImpl handle)

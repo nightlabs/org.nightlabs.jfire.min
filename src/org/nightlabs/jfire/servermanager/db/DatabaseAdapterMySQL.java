@@ -53,7 +53,7 @@ extends AbstractDatabaseAdapter
 					dbCf.getDatabaseURL(null),
 					dbCf.getDatabaseUserName(),
 					dbCf.getDatabasePassword()
-			);			
+			);
 
 			sqlConn.close();
 		} catch (SQLException e) {

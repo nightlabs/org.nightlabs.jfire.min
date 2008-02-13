@@ -199,7 +199,7 @@ public class JFireServerManagerFactoryImpl
 	private CLRegistrarFactory clRegistrarFactory;
 
 	public JFireServerManagerFactoryImpl(final ManagedConnectionFactoryImpl mcf, final ConnectionManager cm)
-	throws ResourceException 
+	throws ResourceException
 	{
 		if(logger.isDebugEnabled())
 			logger.debug(this.getClass().getName()+": CONSTRUCTOR");
@@ -365,7 +365,7 @@ public class JFireServerManagerFactoryImpl
 			logger.error("Creating J2EEAdapter failed!", e);
 			throw new ResourceException(e.getMessage());
 		}
-		try 
+		try
 		{
 			try
 			{
@@ -402,8 +402,8 @@ public class JFireServerManagerFactoryImpl
 		{
 			JFireServerLocalLoginManager m = new JFireServerLocalLoginManager();
 			try
-			{			
-				initialContext.bind(JFireServerLocalLoginManager.JNDI_NAME, m);		
+			{
+				initialContext.bind(JFireServerLocalLoginManager.JNDI_NAME, m);
 			}
 			catch (NameAlreadyBoundException e)
 			{
@@ -589,7 +589,7 @@ public class JFireServerManagerFactoryImpl
 			loginContext.login();
 
 			final InitialContext ctx = new InitialContext();
-			try {				
+			try {
 				if (configureServerAndShutdownIfNecessary(0))
 					return;
 
@@ -835,7 +835,7 @@ public class JFireServerManagerFactoryImpl
 	
 	// ************************************************
 	// *** Methods executed by JFireServerManager ***
-	// ************************************************ 
+	// ************************************************
 	
 	protected boolean isNewServerNeedingSetup()
 	{
@@ -1155,7 +1155,7 @@ public class JFireServerManagerFactoryImpl
 		databaseName.append(organisationID.replaceAll("[^A-Za-z0-9_]", "_"));
 
 // the following alternative code prevents name clashes. it translates all non-allowed characters are into their
-// hex-value with the prefix "_" and the suffix "_". 
+// hex-value with the prefix "_" and the suffix "_".
 //
 //		for (char c : organisationID.toCharArray()) {
 //			if (('A' <= c && c <= 'Z') || ('a' <= c && c <= 'z') || ('0' <= c && c <= '9'))
@@ -1242,7 +1242,7 @@ public class JFireServerManagerFactoryImpl
 			CreateOrganisationProgress createOrganisationProgress, String organisationID,
 			String organisationName, String userID, String password, boolean isServerAdmin)
 //			String masterOrganisationID
-//			) 
+//			)
 		throws ModuleException
 	{
 		if (!createOrganisationAllowed)
@@ -2420,14 +2420,14 @@ public class JFireServerManagerFactoryImpl
 				try {
 					userRef = (UserRef) pm.getObjectById(
 							UserRefID.create(
-									Authority.AUTHORITY_ID_ORGANISATION, 
+									Authority.AUTHORITY_ID_ORGANISATION,
 									organisationID, userID
 							), true);
 				} catch (JDOObjectNotFoundException x) {
 					try {
 						userRef = (UserRef) pm.getObjectById(
 								UserRefID.create(
-										Authority.AUTHORITY_ID_ORGANISATION, 
+										Authority.AUTHORITY_ID_ORGANISATION,
 										organisationID, User.USERID_OTHER
 								), true);
 					} catch (JDOObjectNotFoundException e) {

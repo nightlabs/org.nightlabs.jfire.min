@@ -207,7 +207,7 @@ public class ManagedConnectionFactoryImpl
 			{
 				continue;
 			}
-			if (pc.equals(mc.getPasswordCredential())) 
+			if (pc.equals(mc.getPasswordCredential()))
 			{
 				return mc;
 			}
@@ -224,13 +224,13 @@ public class ManagedConnectionFactoryImpl
 	}
 	
 	// *** helpers
-	protected PasswordCredential getPasswordCredential(Subject subject) 
+	protected PasswordCredential getPasswordCredential(Subject subject)
 	throws ResourceException
 	{
 		if(logger.isDebugEnabled())
 			logger.debug(this.getClass().getName()+": getPasswordCredential(subject=\""+subject+"\")");
 		
-		if (subject == null) 
+		if (subject == null)
 		{
 			PasswordCredential pc=new PasswordCredential(getDatabaseUserName(), getDatabasePassword().toCharArray());
 			pc.setManagedConnectionFactory(this);
@@ -240,10 +240,10 @@ public class ManagedConnectionFactoryImpl
 		for (Iterator i=subject.getPrivateCredentials().iterator();i.hasNext();)
 		{
 			Object o = i.next();
-			if (o instanceof PasswordCredential) 
+			if (o instanceof PasswordCredential)
 			{
 				PasswordCredential pc = (PasswordCredential)o;
-				if (this.equals(pc.getManagedConnectionFactory())) 
+				if (this.equals(pc.getManagedConnectionFactory()))
 				{
 					return pc;
 				}
@@ -399,7 +399,7 @@ public class ManagedConnectionFactoryImpl
 //		File jdoConfigDir = new File(cfMod.getJdo().getJdoConfigDirectory());
 //		if (!jdoConfigDir.exists())
 //			throw new ConfigException("JDO config directory \""+cfMod.getJdo().getJdoConfigDirectory()+"\" does not exist!");
-//		
+//
 //		if (!jdoConfigDir.isDirectory())
 //			throw new ConfigException("JDO config directory \""+cfMod.getJdo().getJdoConfigDirectory()+"\" is not a directory!");
 //

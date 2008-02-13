@@ -112,9 +112,9 @@ implements Serializable
 
 	/**
 	 * key: String userName<br/>
-	 * value: 
+	 * value:
 	 */
-	protected Map<String, LocalPrincipal> principales = new HashMap<String, LocalPrincipal>(); 
+	protected Map<String, LocalPrincipal> principales = new HashMap<String, LocalPrincipal>();
 
 	public LocalPrincipal getPrincipal(String userName)
 	{

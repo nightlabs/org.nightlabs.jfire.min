@@ -47,7 +47,7 @@ public class JDOCf extends JFireServerConfigPart implements Serializable
 	/**
 	 * @return Returns the jdoConfigDirectory.
 	 */
-	public String getJdoConfigDirectory() 
+	public String getJdoConfigDirectory()
 	{
 		return jdoConfigDirectory;
 	}
@@ -63,7 +63,7 @@ public class JDOCf extends JFireServerConfigPart implements Serializable
 	/**
 	 * @param jdoConfigDirectory The jdoConfigDirectory to set.
 	 */
-	public void setJdoConfigDirectory(String jdoConfigDirectory) 
+	public void setJdoConfigDirectory(String jdoConfigDirectory)
 	{
 		if (jdoConfigDirectory == null)
 			throw new IllegalArgumentException("jdoConfigDirectory must not be null!");
@@ -103,7 +103,7 @@ public class JDOCf extends JFireServerConfigPart implements Serializable
 	/**
 	 * @return Returns the jdoTemplateDSXMLFile.
 	 */
-	public String getJdoTemplateDSXMLFile() 
+	public String getJdoTemplateDSXMLFile()
 	{
 		return jdoTemplateDSXMLFile;
 	}
@@ -111,7 +111,7 @@ public class JDOCf extends JFireServerConfigPart implements Serializable
 	/**
 	 * @param jdoTemplateDSXMLFile The jdoTemplateDSXMLFile to set.
 	 */
-	public void setJdoTemplateDSXMLFile(String jdoTemplateDSXMLFile) 
+	public void setJdoTemplateDSXMLFile(String jdoTemplateDSXMLFile)
 	{
 		this.jdoTemplateDSXMLFile = jdoTemplateDSXMLFile;
 		setChanged();

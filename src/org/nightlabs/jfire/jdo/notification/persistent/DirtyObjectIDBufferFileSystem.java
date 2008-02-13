@@ -96,7 +96,7 @@ implements DirtyObjectIDBuffer
 	/**
 	 * While a file is written in {@link #addDirtyObjectIDs(Map)}, it is locked here and
 	 * ignored in {@link #fetchDirtyObjectIDs()}. The file is unlocked at the end of
-	 * <code>addDirtyObjectIDs(Collection)</code> when it is closed and ready to be processed. 
+	 * <code>addDirtyObjectIDs(Collection)</code> when it is closed and ready to be processed.
 	 */
 	private Set<File> lockedFiles = Collections.synchronizedSet(new HashSet<File>());
 

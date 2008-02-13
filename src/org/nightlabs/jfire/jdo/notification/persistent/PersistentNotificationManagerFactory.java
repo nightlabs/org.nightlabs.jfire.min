@@ -188,7 +188,7 @@ public class PersistentNotificationManagerFactory implements Serializable
 //	}
 
 //	/**
-//	 * This method is called by {@link #timerIncoming} and therefore does not run concurrently. 
+//	 * This method is called by {@link #timerIncoming} and therefore does not run concurrently.
 //	 */
 //	private void processDirtyObjectIDsIncoming()
 //	{
@@ -302,7 +302,7 @@ public class PersistentNotificationManagerFactory implements Serializable
 	private long processDirtyObjectIDsOutgoingRunNumber = -1;
 
 	/**
-	 * This method is called by {@link #timerOutgoing} and therefore does not run concurrently. 
+	 * This method is called by {@link #timerOutgoing} and therefore does not run concurrently.
 	 */
 	private void processDirtyObjectIDsOutgoing()
 	{
@@ -339,7 +339,7 @@ public class PersistentNotificationManagerFactory implements Serializable
 					PersistenceManager pm = persistenceManagerFactory.getPersistenceManager();
 					try {
 						// find roughly matching subscriptions (by prefiltering according to jdo-lifecycle-state & class)
-						Map<String, Map<JDOLifecycleState, List<DirtyObjectID>>> className2lifecycleState2dirtyObjectIDs = new HashMap<String, Map<JDOLifecycleState,List<DirtyObjectID>>>(); 
+						Map<String, Map<JDOLifecycleState, List<DirtyObjectID>>> className2lifecycleState2dirtyObjectIDs = new HashMap<String, Map<JDOLifecycleState,List<DirtyObjectID>>>();
 
 						{
 							long start = System.currentTimeMillis();
@@ -512,7 +512,7 @@ public class PersistentNotificationManagerFactory implements Serializable
 //					loginContext.login();
 //					try {
 //
-//						
+//
 //					} finally {
 //						loginContext.logout();
 //					}
@@ -535,7 +535,7 @@ public class PersistentNotificationManagerFactory implements Serializable
 //				try {
 //
 //					// find roughly matching subscriptions (by prefiltering according to jdo-lifecycle-state & class)
-//					Map<User, Map<NotificationFilter, List<DirtyObjectID>>> user2subscription2DirtyObjectID_beforeFilter = new HashMap<User, Map<NotificationFilter,List<DirtyObjectID>>>(); 
+//					Map<User, Map<NotificationFilter, List<DirtyObjectID>>> user2subscription2DirtyObjectID_beforeFilter = new HashMap<User, Map<NotificationFilter,List<DirtyObjectID>>>();
 //
 //					for (Map.Entry<JDOLifecycleState, Map<Object, DirtyObjectID>> me1 : dirtyObjectIDsMap.entrySet()) {
 //						for (Map.Entry<Object, DirtyObjectID> me2 : me1.getValue().entrySet()) {

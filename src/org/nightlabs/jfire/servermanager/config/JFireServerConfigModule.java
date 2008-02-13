@@ -60,7 +60,7 @@ public class JFireServerConfigModule extends ConfigModule
 	 * @see org.nightlabs.config.ConfigModule#init()
 	 */
 	@Override
-	public void init() throws InitException 
+	public void init() throws InitException
 	{
 		if (rootOrganisation == null) {
 			ServerCf server = new ServerCf("jfire.nightlabs.org");
@@ -96,7 +96,7 @@ public class JFireServerConfigModule extends ConfigModule
 	/**
 	 * @return Returns the localServer.
 	 */
-	public ServerCf getLocalServer() 
+	public ServerCf getLocalServer()
 	{
 		return localServer;
 	}
@@ -104,7 +104,7 @@ public class JFireServerConfigModule extends ConfigModule
 	/**
 	 * @param localServer The localServer to set.
 	 */
-	public void setLocalServer(ServerCf _localServer) 
+	public void setLocalServer(ServerCf _localServer)
 	{
 		if (_localServer == null)
 			throw new NullPointerException("localServer must not be null!");

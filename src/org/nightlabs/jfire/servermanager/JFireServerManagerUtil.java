@@ -23,8 +23,8 @@ public class JFireServerManagerUtil {
 	 * 
 	 * @return A JFireServerManager for the session on the current thread.
 	 */
-	public static JFireServerManager getJFireServerManager() 
-	throws InitException, ModuleException, NamingException 
+	public static JFireServerManager getJFireServerManager()
+	throws InitException, ModuleException, NamingException
 	{
 		return new Lookup(SecurityReflector.getUserDescriptor().getOrganisationID()).getJFireServerManager();
 	}

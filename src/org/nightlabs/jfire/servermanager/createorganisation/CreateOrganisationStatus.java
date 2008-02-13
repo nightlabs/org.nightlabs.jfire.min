@@ -77,7 +77,7 @@ implements Serializable
 //	 * would read a message from a properties file using this key and then
 //	 * pass it together with the result of {@link #getMessageArgs()} to
 //	 * {@link String#format(java.util.Locale, String, Object[])}.
-//	 * </p> 
+//	 * </p>
 //	 *
 //	 * @return a key identifying the message.
 //	 */

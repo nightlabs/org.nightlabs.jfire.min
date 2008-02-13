@@ -131,7 +131,7 @@ public class CLRegistryCfMod extends ConfigModule
 	 * The tempRepository is used for wrapped jars (jars within jars). They are extracted
 	 * into this directory and indexed as well.
 	 * Important: This directory may be cleaned from time to time. Never store important
-	 * data there! 
+	 * data there!
 	 * 
 	 * @return Returns the tempRepository.
 	 */

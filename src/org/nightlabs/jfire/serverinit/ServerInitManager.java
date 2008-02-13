@@ -323,7 +323,7 @@ public class ServerInitManager extends AbstractInitManager<ServerInit, ServerIni
 				if (initialiserObj instanceof ServerInitialiserDelegate) {
 					ServerInitialiserDelegate serverInitialiser = (ServerInitialiserDelegate) initialiserObj;
 					serverInitialiser.setInitialContext(ctx);
-					serverInitialiser.setJFireServerManagerFactory(jfireServerManagerFactory);					
+					serverInitialiser.setJFireServerManagerFactory(jfireServerManagerFactory);
 					serverInitialiser.initialise();
 				} else {
 					throw new Exception("Class \'" + init.getInitialiserClass() + "\' does not implement IServerInitialiser");

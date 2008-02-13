@@ -52,7 +52,6 @@ import javax.transaction.Synchronization;
 import org.apache.log4j.Logger;
 import org.nightlabs.annotation.Implement;
 import org.nightlabs.jfire.idgenerator.IDNamespace;
-import org.nightlabs.jfire.jdo.cache.CacheManagerFactory;
 import org.nightlabs.jfire.jdo.notification.DirtyObjectID;
 import org.nightlabs.jfire.jdo.notification.JDOLifecycleState;
 import org.nightlabs.jfire.security.SecurityReflector;
@@ -386,7 +385,7 @@ public class JdoCacheBridgeDefault extends JdoCacheBridge
 				throw new IllegalArgumentException("Could not obtain a PersistenceManager from this object!");
 
 			CacheTransactionListener cacheTransactionListener = getCacheTransactionListener(pm);
-			if (cacheTransactionListener.isPreStoreCallRegisteredForObjectID(objectID)) {				
+			if (cacheTransactionListener.isPreStoreCallRegisteredForObjectID(objectID)) {
 				cacheTransactionListener.addObject(JDOLifecycleState.NEW, event.getPersistentInstance());
 
 				if (logger.isDebugEnabled())

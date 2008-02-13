@@ -195,7 +195,7 @@ public class RoleDef implements Serializable, Comparable<RoleDef>
 	public int compareTo(RoleDef other) {
 //		if (!(o instanceof RoleGroupDef))
 //			return -1;
-//		
+//
 //		RoleGroupDef other = (RoleGroupDef)o;
 		String thisName = this.getName();
 		if (thisName == null)

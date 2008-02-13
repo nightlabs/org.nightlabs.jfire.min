@@ -163,7 +163,7 @@ public class J2eeServerTypeRegistryConfigModule extends ConfigModule
 		private String initialContextFactory;
 		/**
 		 * This initialContextFactory is used for anonymous (not-authenticated) communication
-		 * during organisation-handshake. 
+		 * during organisation-handshake.
 		 */
 		private String anonymousInitialContextFactory;
 

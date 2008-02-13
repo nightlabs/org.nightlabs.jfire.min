@@ -215,7 +215,7 @@ public class RoleGroupDef implements Serializable, Comparable
 	}
 
 	/**
-	 * This method does the same as getAllRoles() except that it does not add the 
+	 * This method does the same as getAllRoles() except that it does not add the
 	 * roles that are indirectly put into this group by inclusion.
 	 * @return All the roles of this RoleGroup - no includes.
 	 */
@@ -245,7 +245,7 @@ public class RoleGroupDef implements Serializable, Comparable
 	/**
 	 * This method is expensive.
 	 * 
-	 * @return Returns all roles as instances of RoleDef including the ones that 
+	 * @return Returns all roles as instances of RoleDef including the ones that
 	 *   are indirectly included by includedRoleGroups or default roles.
 	 */
 	public Collection<RoleDef> getAllRoles()

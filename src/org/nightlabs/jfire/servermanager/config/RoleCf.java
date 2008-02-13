@@ -122,7 +122,7 @@ public class RoleCf implements Serializable, Initializable
 	 */
 	public void init() throws InitException
 	{
-		if (roleID == null) 
+		if (roleID == null)
 			throw new NullPointerException("roleID must never be null!");
 		
 		if ("".equals(roleID))
