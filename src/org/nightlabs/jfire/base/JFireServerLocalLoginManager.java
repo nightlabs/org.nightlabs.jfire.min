@@ -89,7 +89,7 @@ implements Serializable
 		{
 			super(name);
 			if (password == null)
-				password = UserLocal.createPassword(15, 20);
+				password = UserLocal.createMachinePassword(15, 20);
 			this.password = password;
 		}
 

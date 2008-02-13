@@ -90,7 +90,7 @@ public abstract class ServerConfigurator
 		if (logger.isDebugEnabled())
 			logger.debug("Instantiating ServerConfigurator: " + serverConfiguratorClassName);
 
-		Class serverConfiguratorClass;
+		Class<?> serverConfiguratorClass;
 		try {
 			serverConfiguratorClass = Class.forName(serverConfiguratorClassName);
 		} catch (Throwable x) {

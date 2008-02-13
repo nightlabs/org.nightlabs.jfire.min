@@ -44,9 +44,9 @@ public class RoleImportSet implements Serializable
 	
 	private String organisationID;
 	private EJBRoleGroupMan ejbRoleGroupMan;
-	private Map jarExceptions;
+	private Map<String, Throwable> jarExceptions;
 	
-	public RoleImportSet(String _organisationID, EJBRoleGroupMan _ejbRoleGroupMan, Map _jarExceptions)
+	public RoleImportSet(String _organisationID, EJBRoleGroupMan _ejbRoleGroupMan, Map<String, Throwable> _jarExceptions)
 	{
 		this.organisationID = _organisationID;
 		this.ejbRoleGroupMan = _ejbRoleGroupMan;
@@ -70,7 +70,7 @@ public class RoleImportSet implements Serializable
 	 *
 	 * @return Returns a Map with key <code>String jarFileName</code> and value <code>Throwable exception</code>.
 	 */
-	public Map getJarExceptions() {
+	public Map<String, Throwable> getJarExceptions() {
 		return jarExceptions;
 	}
 

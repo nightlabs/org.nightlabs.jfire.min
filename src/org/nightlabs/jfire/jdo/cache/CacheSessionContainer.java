@@ -134,8 +134,8 @@ implements Serializable
 		synchronized (cacheSessions) {
 			logger.info("CacheSessionContainer (createDT="+createDT+") closes " + cacheSessions.size() + " CacheSessions now.");
 
-			for (Iterator it = cacheSessions.keySet().iterator(); it.hasNext(); ) {
-				String cacheSessionID = (String) it.next();
+			for (Iterator<String> it = cacheSessions.keySet().iterator(); it.hasNext(); ) {
+				String cacheSessionID = it.next();
 				cacheManagerFactory.closeCacheSession(cacheSessionID);
 			}
 		}

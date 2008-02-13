@@ -116,7 +116,7 @@ public class RoleGroupCf implements Serializable, Initializable
 	/**
 	 * @return Returns the roles.
 	 */
-	public List getRoles() {
+	public List<RoleCf> getRoles() {
 		return roles;
 	}
 	/**
@@ -164,8 +164,8 @@ public class RoleGroupCf implements Serializable, Initializable
 		
 		// Add missing roles.
 		logger.debug("createRoleGroup(...): about to create and add roles...");
-		for (Iterator it = getRoles().iterator(); it.hasNext(); ) {
-			RoleCf roleCf = (RoleCf)it.next();
+		for (Iterator<RoleCf> it = getRoles().iterator(); it.hasNext(); ) {
+			RoleCf roleCf = it.next();
 			Role role = roleCf.createRole(pm);
 			// Because we use a Map, the following "if" is not really necessary.
 			// ...just in case, the jdo implementation of Map runs into trouble with a duplicate add...
@@ -193,8 +193,8 @@ public class RoleGroupCf implements Serializable, Initializable
 		if (roles == null)
 			roles = new ArrayList<RoleCf>();
 
-		for (Iterator it = roles.iterator(); it.hasNext(); ) {
-			RoleCf roleCf = (RoleCf)it.next();
+		for (Iterator<RoleCf> it = roles.iterator(); it.hasNext(); ) {
+			RoleCf roleCf = it.next();
 			roleCf.init();
 		}
 	}

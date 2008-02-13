@@ -86,7 +86,7 @@ public class CLRepositoryMan
 		/**
 		 * @return Returns the resourcePatterns.
 		 */
-		public List getResourcePatterns()
+		public List<String> getResourcePatterns()
 		{
 			return resourcePatterns;
 		}
@@ -96,7 +96,7 @@ public class CLRepositoryMan
 		{
 			if (compositeResourcePatternStr == null) {
 				StringBuffer sb = new StringBuffer('^');
-				for (Iterator it = resourcePatterns.iterator(); it.hasNext(); ) {
+				for (Iterator<String> it = resourcePatterns.iterator(); it.hasNext(); ) {
 					sb.append('(');
 					sb.append(it.next());
 					sb.append(')');
@@ -355,10 +355,10 @@ public class CLRepositoryMan
 				w.write("	<publish target=\""+target+"\" inherit=\""+Boolean.toString(inherit)+"\">\n");
 				if(inheritedPublications != null)
 				{
-				  for (Iterator it = inheritedPublications.iterator(); it.hasNext(); ) {
-				    Publication p = (Publication) it.next();
-				    for (Iterator itRes = p.getResourcePatterns().iterator(); itRes.hasNext(); ) {
-				      String pat = (String)itRes.next();
+				  for (Iterator<Publication> it = inheritedPublications.iterator(); it.hasNext(); ) {
+				    Publication p = it.next();
+				    for (Iterator<String> itRes = p.getResourcePatterns().iterator(); itRes.hasNext(); ) {
+				      String pat = itRes.next();
 				      w.write("		<resources>"+pat+"</resources>\n");
 				    }
 				  }

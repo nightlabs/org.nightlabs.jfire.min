@@ -101,7 +101,7 @@ public class RoleDef implements Serializable, Comparable<RoleDef>
 		return res;
 	}
 	
-	public Map getNames()
+	public Map<String, String> getNames()
 	{
 		return names;
 	}
@@ -124,7 +124,7 @@ public class RoleDef implements Serializable, Comparable<RoleDef>
 	 * Returns all the descriptions in all the languages.
 	 * @return A Map with <code>key: String languageID</code> and <code>value: String description</code>
 	 */
-	public Map getDescriptions()
+	public Map<String, String> getDescriptions()
 	{
 		return descriptions;
 	}

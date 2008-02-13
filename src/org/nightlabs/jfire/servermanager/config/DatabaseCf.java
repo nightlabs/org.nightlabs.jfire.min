@@ -244,7 +244,7 @@ public class DatabaseCf extends JFireServerConfigPart implements Serializable
 	public DatabaseAdapter instantiateDatabaseAdapter() throws ClassNotFoundException, InstantiationException, IllegalAccessException
 	{
 		String databaseAdapterClassName = getDatabaseAdapter();
-		Class dbAdapterClass = Class.forName(databaseAdapterClassName);
+		Class<?> dbAdapterClass = Class.forName(databaseAdapterClassName);
 		if (!DatabaseAdapter.class.isAssignableFrom(dbAdapterClass))
 			throw new ClassCastException("DatabaseCreatorClass \"" + databaseAdapterClassName + "\" does not implement interface \""+DatabaseAdapter.class.getName()+"\"!");
 

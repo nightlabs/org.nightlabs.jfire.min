@@ -27,6 +27,7 @@
 package org.nightlabs.jfire.base;
 
 import java.util.Hashtable;
+import java.util.Properties;
 
 import javax.jdo.FetchPlan;
 import javax.jdo.PersistenceManager;
@@ -275,7 +276,7 @@ public class Lookup
 		}
 	}
 
-	protected Hashtable _getInitialContextProps(PersistenceManager pm, String _organisationID) throws ModuleException
+	protected Properties _getInitialContextProps(PersistenceManager pm, String _organisationID) throws ModuleException
 	{
 		LocalOrganisation localOrganisation = LocalOrganisation.getLocalOrganisation(pm);
 		if (_organisationID.equals(localOrganisation.getOrganisationID()))

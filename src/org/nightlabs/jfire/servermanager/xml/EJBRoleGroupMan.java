@@ -278,16 +278,16 @@ public class EJBRoleGroupMan implements Serializable
 				thisRoleGroupDef = new RoleGroupDef(this, roleGroupID, false);
 				addRoleGroup(thisRoleGroupDef);
 			}
-			for (Iterator itNames = otherRoleGroupDef.getNames().entrySet().iterator(); itNames.hasNext(); ) {
-				Map.Entry me = (Map.Entry)itNames.next();
-				String languageID = (String)me.getKey();
-				String name = (String)me.getValue();
+			for (Iterator<Map.Entry<String, String>> itNames = otherRoleGroupDef.getNames().entrySet().iterator(); itNames.hasNext(); ) {
+				Map.Entry<String, String> me = itNames.next();
+				String languageID = me.getKey();
+				String name = me.getValue();
 				thisRoleGroupDef.setName(languageID, name);
 			}
-			for (Iterator itDescriptions = otherRoleGroupDef.getDescriptions().entrySet().iterator(); itDescriptions.hasNext(); ) {
-				Map.Entry me = (Map.Entry)itDescriptions.next();
-				String languageID = (String)me.getKey();
-				String description = (String)me.getValue();
+			for (Iterator<Map.Entry<String, String>> itDescriptions = otherRoleGroupDef.getDescriptions().entrySet().iterator(); itDescriptions.hasNext(); ) {
+				Map.Entry<String, String> me = itDescriptions.next();
+				String languageID = me.getKey();
+				String description = me.getValue();
 				thisRoleGroupDef.setDescription(languageID, description);
 			}
 			for (Iterator<RoleDef> itRoles = otherRoleGroupDef.getAllRoles().iterator(); itRoles.hasNext(); ) {
@@ -303,16 +303,16 @@ public class EJBRoleGroupMan implements Serializable
 					}
 					thisRoleGroupDef.addRole(thisRoleDef);
 				}
-				for (Iterator itNames = otherRoleDef.getNames().entrySet().iterator(); itNames.hasNext(); ) {
-					Map.Entry me = (Map.Entry)itNames.next();
-					String languageID = (String)me.getKey();
-					String name = (String)me.getValue();
+				for (Iterator<Map.Entry<String, String>> itNames = otherRoleDef.getNames().entrySet().iterator(); itNames.hasNext(); ) {
+					Map.Entry<String, String> me = itNames.next();
+					String languageID = me.getKey();
+					String name = me.getValue();
 					thisRoleDef.setName(languageID, name);
 				}
-				for (Iterator itDescriptions = otherRoleDef.getDescriptions().entrySet().iterator(); itDescriptions.hasNext(); ) {
-					Map.Entry me = (Map.Entry)itDescriptions.next();
-					String languageID = (String)me.getKey();
-					String description = (String)me.getValue();
+				for (Iterator<Map.Entry<String, String>> itDescriptions = otherRoleDef.getDescriptions().entrySet().iterator(); itDescriptions.hasNext(); ) {
+					Map.Entry<String, String> me = itDescriptions.next();
+					String languageID = me.getKey();
+					String description = me.getValue();
 					thisRoleDef.setDescription(languageID, description);
 				}
 			}

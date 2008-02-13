@@ -135,6 +135,7 @@ import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
 import org.nightlabs.jfire.servermanager.config.OrganisationCf;
 import org.nightlabs.jfire.servermanager.config.OrganisationConfigModule;
 import org.nightlabs.jfire.servermanager.config.ServerCf;
+import org.nightlabs.jfire.servermanager.config.J2eeServerTypeRegistryConfigModule.J2eeLocalServer;
 import org.nightlabs.jfire.servermanager.createorganisation.BusyCreatingOrganisationException;
 import org.nightlabs.jfire.servermanager.createorganisation.CreateOrganisationProgress;
 import org.nightlabs.jfire.servermanager.createorganisation.CreateOrganisationProgressID;
@@ -213,29 +214,26 @@ public class JFireServerManagerFactoryImpl
 				config.getConfigModule(CacheCfMod.class, false) == null;
 
 		try {
-			organisationConfigModule = (OrganisationConfigModule)
-					config.createConfigModule(OrganisationConfigModule.class);
+			organisationConfigModule = config.createConfigModule(OrganisationConfigModule.class);
 		} catch (ConfigException e) {
 			logger.log(Level.FATAL, "Getting/creating OrganisationConfigModule failed!", e);
 			throw new ResourceException(e.getMessage());
 		}
 		try {
-			createOrganisationConfigModule = (CreateOrganisationConfigModule)
-					config.createConfigModule(CreateOrganisationConfigModule.class);
+			createOrganisationConfigModule = config.createConfigModule(CreateOrganisationConfigModule.class);
 		} catch (ConfigException e) {
 			logger.log(Level.FATAL, "Getting/creating CreateOrganisationConfigModule failed!", e);
 			throw new ResourceException(e.getMessage());
 		}
 		try {
-			j2eeServerTypeRegistryConfigModule = (J2eeServerTypeRegistryConfigModule)
-					config.createConfigModule(J2eeServerTypeRegistryConfigModule.class);
+			j2eeServerTypeRegistryConfigModule = config.createConfigModule(J2eeServerTypeRegistryConfigModule.class);
 		} catch (ConfigException e) {
 			logger.log(Level.FATAL, "Getting/creating J2eeServerTypeRegistryConfigModule failed!", e);
 			throw new ResourceException(e.getMessage());
 		}
 
 		try {
-			cacheCfMod = (CacheCfMod) config.createConfigModule(CacheCfMod.class);
+			cacheCfMod = config.createConfigModule(CacheCfMod.class);
 		} catch (Exception e) {
 			logger.error("Creating CacheCfMod failed!", e);
 			throw new ResourceException(e.getMessage());
@@ -270,8 +268,8 @@ public class JFireServerManagerFactoryImpl
 		}
 
 		j2eeLocalServerCf = null;
-		for (Iterator it = j2eeServerTypeRegistryConfigModule.getJ2eeLocalServers().iterator(); it.hasNext(); ) {
-			J2eeServerTypeRegistryConfigModule.J2eeLocalServer jls = (J2eeServerTypeRegistryConfigModule.J2eeLocalServer)it.next();
+		for (Iterator<J2eeLocalServer> it = j2eeServerTypeRegistryConfigModule.getJ2eeLocalServers().iterator(); it.hasNext(); ) {
+			J2eeServerTypeRegistryConfigModule.J2eeLocalServer jls = it.next();
 			if (j2eeServerType.equals(jls.getJ2eeServerType())) {
 				j2eeLocalServerCf = jls;
 				break;
@@ -285,7 +283,7 @@ public class JFireServerManagerFactoryImpl
 
 		try {
 			this.clRegistrarFactory = new CLRegistrarFactory(
-					(CLRegistryCfMod) this.getConfig().createConfigModule(CLRegistryCfMod.class));
+					this.getConfig().createConfigModule(CLRegistryCfMod.class));
 //			clRegistrarFactory.scan(); // TODO this should be done lazy. Only for a test here in constructor!
 		} catch (Exception e) {
 			logger.error("Creating CLRegistrarFactory failed!", e);
@@ -934,7 +932,7 @@ public class JFireServerManagerFactoryImpl
 		if (j2eeVendorAdapter == null) {
 			try {
 				String j2eeVendorAdapterClassName = j2eeLocalServerCf.getJ2eeVendorAdapterClassName(); // mcf.getConfigModule().getJ2ee().getJ2eeVendorAdapterClassName();
-				Class j2eeVendorAdapterClass = Class.forName(j2eeVendorAdapterClassName);
+				Class<?> j2eeVendorAdapterClass = Class.forName(j2eeVendorAdapterClassName);
 				j2eeVendorAdapter = (J2EEAdapter)j2eeVendorAdapterClass.newInstance();
 			} catch (Exception e) {
 				throw new ModuleException(e);
@@ -1049,8 +1047,8 @@ public class JFireServerManagerFactoryImpl
 			InputStream in = jf.getInputStream(ejbJarXML);
 			try {
 				ejbJarMan = new EJBJarMan(jar.getName(), in);
-				for (Iterator it = ejbJarMan.getRoles().iterator(); it.hasNext(); ) {
-					RoleDef roleDef = (RoleDef)it.next();
+				for (Iterator<RoleDef> it = ejbJarMan.getRoles().iterator(); it.hasNext(); ) {
+					RoleDef roleDef = it.next();
 					logger.info("roleDef.roleID = "+roleDef.getRoleID());
 				}
 			} finally {
@@ -1071,11 +1069,11 @@ public class JFireServerManagerFactoryImpl
 			InputStream in = jf.getInputStream(roleGroupXML);
 			try {
 				ejbRoleGroupMan = new EJBRoleGroupMan(ejbJarMan, in);
-				for (Iterator it = ejbRoleGroupMan.getRoleGroups().iterator(); it.hasNext(); ) {
-					RoleGroupDef roleGroupDef = (RoleGroupDef)it.next();
+				for (Iterator<RoleGroupDef> it = ejbRoleGroupMan.getRoleGroups().iterator(); it.hasNext(); ) {
+					RoleGroupDef roleGroupDef = it.next();
 					logger.info("roleGroupDef.roleGroupID = "+roleGroupDef.getRoleGroupID());
-					for (Iterator itRoles = roleGroupDef.getAllRoles().iterator(); itRoles.hasNext(); ) {
-						RoleDef roleDef = (RoleDef)itRoles.next();
+					for (Iterator<RoleDef> itRoles = roleGroupDef.getAllRoles().iterator(); itRoles.hasNext(); ) {
+						RoleDef roleDef = itRoles.next();
 						logger.info("  roleDef.roleID = "+roleDef.getRoleID());
 					}
 				}
@@ -1122,8 +1120,8 @@ public class JFireServerManagerFactoryImpl
 
 				pm.getExtent(RoleGroup.class, true);
 
-				for (Iterator itRoleGroups = roleGroupMan.getRoleGroups().iterator(); itRoleGroups.hasNext(); ) {
-					RoleGroupDef roleGroupDef = (RoleGroupDef)itRoleGroups.next();
+				for (Iterator<RoleGroupDef> itRoleGroups = roleGroupMan.getRoleGroups().iterator(); itRoleGroups.hasNext(); ) {
+					RoleGroupDef roleGroupDef = itRoleGroups.next();
 					RoleGroup roleGroupJDO = roleGroupDef.createRoleGroup(pm);
 					authorityType.addRoleGroup(roleGroupJDO);
 				} // for (Iterator itRoleGroups = roleGroupMan.getRoleGroups().iterator(); itRoleGroups.hasNext(); ) {
@@ -1630,7 +1628,7 @@ public class JFireServerManagerFactoryImpl
 	protected OrganisationCf getOrganisationConfig(String organisationID)
 	throws OrganisationNotFoundException
 	{
-		OrganisationCf org = (OrganisationCf)getOrganisationCfsCloned().get(organisationID);
+		OrganisationCf org = getOrganisationCfsCloned().get(organisationID);
 		if (org == null)
 			throw new OrganisationNotFoundException("No organisation with [master]organisationID=\""+organisationID+"\" existent!");
 		return org;
@@ -1640,8 +1638,8 @@ public class JFireServerManagerFactoryImpl
 		throws ModuleException
 	{
 		OrganisationCf org = null;
-		for (Iterator it = organisationConfigModule.getOrganisations().iterator(); it.hasNext(); ){
-			OrganisationCf o = (OrganisationCf)it.next();
+		for (Iterator<OrganisationCf> it = organisationConfigModule.getOrganisations().iterator(); it.hasNext(); ){
+			OrganisationCf o = it.next();
 			if (organisationID.equals(o.getOrganisationID())) { // ||
 //					organisationID.equals(o.getMasterOrganisationID())) {
 				org = o;
@@ -1661,8 +1659,8 @@ public class JFireServerManagerFactoryImpl
 		throws ModuleException
 	{
 		OrganisationCf org = null;
-		for (Iterator it = organisationConfigModule.getOrganisations().iterator(); it.hasNext(); ){
-			OrganisationCf o = (OrganisationCf)it.next();
+		for (Iterator<OrganisationCf> it = organisationConfigModule.getOrganisations().iterator(); it.hasNext(); ){
+			OrganisationCf o = it.next();
 			if (organisationID.equals(o.getOrganisationID())) { // ||
 //					organisationID.equals(o.getMasterOrganisationID())) {
 				org = o;
@@ -1689,7 +1687,7 @@ public class JFireServerManagerFactoryImpl
 		return organisationConfigModule.getOrganisations().isEmpty();
 	}
 	
-	protected synchronized List getOrganisationCfs(boolean sorted)
+	protected synchronized List<OrganisationCf> getOrganisationCfs(boolean sorted)
 	{
 		// We create a new ArrayList to avoid any problems that might occur if
 		// resetOrganisationCfs() is executed (e.g. if a new organisation is added).
@@ -1710,7 +1708,7 @@ public class JFireServerManagerFactoryImpl
 	 */
 	protected Map<ModuleType, List<ModuleDef>> cachedModules = null;
 
-	public synchronized List getModules(ModuleType moduleType)
+	public synchronized List<ModuleDef> getModules(ModuleType moduleType)
 		throws ModuleException
 	{
 		try {
@@ -1792,8 +1790,8 @@ public class JFireServerManagerFactoryImpl
 			return;
 		}
 		EARApplicationMan earAppMan = new EARApplicationMan(ear, moduleType);
-		for (Iterator it = earAppMan.getModules().iterator(); it.hasNext(); ) {
-			ModuleDef md = (ModuleDef)it.next();
+		for (Iterator<ModuleDef> it = earAppMan.getModules().iterator(); it.hasNext(); ) {
+			ModuleDef md = it.next();
 			modules.add(md);
 		}
 	}
@@ -1829,8 +1827,8 @@ public class JFireServerManagerFactoryImpl
 			organisationConfigModule.acquireReadLock();
 			try {
 				organisationCfsCloned = new HashMap<String, OrganisationCf>();
-				for (Iterator it = organisationConfigModule.getOrganisations().iterator(); it.hasNext(); ) {
-					OrganisationCf org = (OrganisationCf)((OrganisationCf)it.next()).clone();
+				for (Iterator<OrganisationCf> it = organisationConfigModule.getOrganisations().iterator(); it.hasNext(); ) {
+					OrganisationCf org = (OrganisationCf)it.next().clone();
 					org.makeReadOnly();
 					organisationCfsCloned.put(org.getOrganisationID(), org);
 //					if (!org.getMasterOrganisationID().equals(org.getOrganisationID()))
@@ -2316,9 +2314,9 @@ public class JFireServerManagerFactoryImpl
 	protected String jfireSecurity_createTempUserPassword(String organisationID, String userID)
 	{
 		synchronized(jfireSecurity_tempUserPasswords) {
-			String pw = (String) jfireSecurity_tempUserPasswords.get(userID + '@' + organisationID);
+			String pw = jfireSecurity_tempUserPasswords.get(userID + '@' + organisationID);
 			if (pw == null) {
-				pw = UserLocal.createPassword(15, 20);
+				pw = UserLocal.createMachinePassword(15, 20);
 				jfireSecurity_tempUserPasswords.put(userID + '@' + organisationID, pw);
 			}
 			return pw;
@@ -2438,7 +2436,7 @@ public class JFireServerManagerFactoryImpl
 				// get roleRefs
 				if (userRef != null) {
 					for (Iterator<RoleRef> it = userRef.getRoleRefs().iterator(); it.hasNext(); ) {
-						RoleRef roleRef = (RoleRef)it.next();
+						RoleRef roleRef = it.next();
 						roleSet.addMember(roleRef.getRolePrincipal());
 					}
 				} // if (userRef != null) {

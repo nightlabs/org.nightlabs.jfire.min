@@ -55,7 +55,7 @@ import org.nightlabs.jfire.classloader.xml.CLRepositoryFileFilter;
 import org.nightlabs.jfire.classloader.xml.CLRepositoryMan;
 import org.nightlabs.jfire.classloader.xml.CLRepositoryMan.Publication;
 import org.nightlabs.util.CacheDirTag;
-import org.nightlabs.util.Util;
+import org.nightlabs.util.IOUtil;
 import org.nightlabs.xml.XMLReadException;
 import org.xml.sax.SAXException;
 
@@ -162,7 +162,7 @@ public class CLRegistrarFactory
 
 		// we recursively delete our temp repository if it exists
 		File tempRepositoryFile = new File(clRegistryCfMod.getTempRepository().getPath());
-		if (!Util.deleteDirectoryRecursively(tempRepositoryFile))
+		if (!IOUtil.deleteDirectoryRecursively(tempRepositoryFile))
 			logger.error("Deleting temporary repository \""+clRegistryCfMod.getTempRepository().getPath()+"\" failed!");
 	}
 
@@ -191,8 +191,8 @@ public class CLRegistrarFactory
 
 			resourceRepositories.put(clRegistryCfMod.getTempRepository().getName(), clRegistryCfMod.getTempRepository());
 			tempJarFiles = new ArrayList<File>();
-			for (Iterator it = clRegistryCfMod.getResourceRepositories().iterator(); it.hasNext(); ) {
-				ResourceRepository repository = (ResourceRepository) it.next();
+			for (Iterator<ResourceRepository> it = clRegistryCfMod.getResourceRepositories().iterator(); it.hasNext(); ) {
+				ResourceRepository repository = it.next();
 				resourceRepositories.put(repository.getName(), repository);
 				scanDirectory(repository, new File(repository.getPath()).getAbsoluteFile(), null);
 			}
@@ -268,13 +268,13 @@ public class CLRegistrarFactory
 				}
 			}
 			else {
-				String relativePath = Util.getRelativePath(absoluteRepositoryFile, dir.getPath());
+				String relativePath = IOUtil.getRelativePath(absoluteRepositoryFile, dir.getPath());
 				ResourceMetaData fmd = new ResourceMetaData(repository.getName(), null, relativePath, dir.length(), dir.lastModified());
 
 				boolean publishResource = false;
 				if (applicablePublications != null) {
-					for (Iterator it = applicablePublications.iterator(); it.hasNext(); ) {
-						CLRepositoryMan.Publication publication = (Publication) it.next();
+					for (Iterator<Publication> it = applicablePublications.iterator(); it.hasNext(); ) {
+						CLRepositoryMan.Publication publication = it.next();
 						if (publication.getCompositeResourcePattern().matcher(relativePath).matches()) {
 							publishResource = true;
 							break;
@@ -334,8 +334,8 @@ public class CLRegistrarFactory
 		throws XMLReadException, SAXException, IOException, TransformerException
 	{
 		// search and register clrepository xml files
-		for (Enumeration enumeration = jar.entries(); enumeration.hasMoreElements(); ) {
-			JarEntry je = (JarEntry)enumeration.nextElement();
+		for (Enumeration<JarEntry> enumeration = jar.entries(); enumeration.hasMoreElements(); ) {
+			JarEntry je = enumeration.nextElement();
 
 			if (!je.isDirectory()
 					&& je.getName().indexOf('/') < 0 // TODO Is it always a slash? Even under standard-abusive windows?
@@ -348,19 +348,19 @@ public class CLRegistrarFactory
 			}
 		}
 
-		List applicableTargets = clRepositoryMan.getApplicablePublications(null); // with param null, it returns all targets
+		List<Publication> applicableTargets = clRepositoryMan.getApplicablePublications(null); // with param null, it returns all targets
 
 		// register resources in jar (if published) and extract nested jars
-		for (Enumeration enumeration = jar.entries(); enumeration.hasMoreElements(); ) {
-			JarEntry je = (JarEntry)enumeration.nextElement();
+		for (Enumeration<JarEntry> enumeration = jar.entries(); enumeration.hasMoreElements(); ) {
+			JarEntry je = enumeration.nextElement();
 			if (!je.isDirectory()) {
 				ResourceMetaData fmd = new ResourceMetaData(repository.getName(), jarFileMetaData.getPath(), je.getName(), je.getSize(), je.getTime());
 				String relativePath = fmd.getPath();
 
 				boolean publishResource = false;
 				if (applicableTargets != null) {
-					for (Iterator it = applicableTargets.iterator(); it.hasNext(); ) {
-						CLRepositoryMan.Publication target = (Publication) it.next();
+					for (Iterator<Publication> it = applicableTargets.iterator(); it.hasNext(); ) {
+						Publication target = it.next();
 						if (target.getCompositeResourcePattern().matcher(relativePath).matches()) {
 							publishResource = true;
 							break;
@@ -406,7 +406,7 @@ public class CLRegistrarFactory
 							try {
 								InputStream in = jar.getInputStream(je);
 								try {
-									Util.transferStreamData(in, out);
+									IOUtil.transferStreamData(in, out);
 								} finally {
 									in.close();
 								}

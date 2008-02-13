@@ -69,8 +69,8 @@ public class J2eeServerTypeRegistryConfigModule extends ConfigModule
 			}
 			else {
 
-				for (Iterator it = j2eeRemoteServers.iterator(); it.hasNext(); ) {
-					J2eeRemoteServer server = (J2eeRemoteServer)it.next();
+				for (Iterator<J2eeRemoteServer> it = j2eeRemoteServers.iterator(); it.hasNext(); ) {
+					J2eeRemoteServer server = it.next();
 					server.cfMod = cfMod;
 					server.init();
 				}
@@ -137,8 +137,8 @@ public class J2eeServerTypeRegistryConfigModule extends ConfigModule
 			if (j2eeRemoteServersByServerType == null) {
 				Map<String, J2eeRemoteServer> m = new HashMap<String, J2eeRemoteServer>();
 
-				for (Iterator it = j2eeRemoteServers.iterator(); it.hasNext(); ) {
-					J2eeRemoteServer s = (J2eeRemoteServer) it.next();
+				for (Iterator<J2eeRemoteServer> it = j2eeRemoteServers.iterator(); it.hasNext(); ) {
+					J2eeRemoteServer s = it.next();
 					m.put(s.getJ2eeServerType(), s);
 				}
 
@@ -288,8 +288,8 @@ public class J2eeServerTypeRegistryConfigModule extends ConfigModule
 		}
 		else {
 
-			for (Iterator it = j2eeLocalServers.iterator(); it.hasNext(); ) {
-				J2eeLocalServer server = (J2eeLocalServer) it.next();
+			for (Iterator<J2eeLocalServer> it = j2eeLocalServers.iterator(); it.hasNext(); ) {
+				J2eeLocalServer server = it.next();
 				server.cfMod = this;
 				server.init();
 			}

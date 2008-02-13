@@ -279,7 +279,7 @@ public class PersistentNotificationManagerFactory implements Serializable
 		return res;
 	}
 
-	private Class pushManagerClass = null;
+	private Class<?> pushManagerClass = null;
 
 	private void pushNotificationBundle(NotificationBundle notificationBundle)
 	throws ClassNotFoundException, InstantiationException, IllegalAccessException, SecurityException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException

@@ -185,6 +185,7 @@ public class ManagedConnectionFactoryImpl
 	/**
 	 * @see javax.resource.spi.ManagedConnectionFactory#matchManagedConnections(java.util.Set, javax.security.auth.Subject, javax.resource.spi.ConnectionRequestInfo)
 	 */
+	@SuppressWarnings("unchecked")
 	public ManagedConnection matchManagedConnections(Set mcs, Subject subject, ConnectionRequestInfo cri) throws ResourceException {
 		if(logger.isDebugEnabled()) {
 			logger.debug("***********************************************************");
@@ -194,7 +195,7 @@ public class ManagedConnectionFactoryImpl
 		}
 		
 		PasswordCredential pc = getPasswordCredential(subject);
-		for (Iterator i = mcs.iterator(); i.hasNext();)
+		for (Iterator<?> i = mcs.iterator(); i.hasNext();)
 		{
 			Object o = i.next();
 			if (!(o instanceof ManagedConnectionImpl))
@@ -237,7 +238,7 @@ public class ManagedConnectionFactoryImpl
 			return pc;
 		}
 
-		for (Iterator i=subject.getPrivateCredentials().iterator();i.hasNext();)
+		for (Iterator<?> i=subject.getPrivateCredentials().iterator();i.hasNext();)
 		{
 			Object o = i.next();
 			if (o instanceof PasswordCredential)
@@ -268,6 +269,10 @@ public class ManagedConnectionFactoryImpl
 			throw new IllegalStateException("This instance of ManagedConnectionFactoryImpl cannot be configured anymore! Configuration already frozen.");
 	}
 
+	/**
+	 * FIXME Remove the use of deprecated members.
+	 */
+	@SuppressWarnings("deprecation")
 	protected void freezeConfiguration()
 		throws ConfigException
 	{

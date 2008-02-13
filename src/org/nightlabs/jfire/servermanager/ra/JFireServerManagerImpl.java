@@ -72,6 +72,7 @@ import org.nightlabs.jfire.servermanager.createorganisation.CreateOrganisationPr
 import org.nightlabs.jfire.servermanager.createorganisation.CreateOrganisationStatus;
 import org.nightlabs.jfire.servermanager.deploy.DeployOverwriteBehaviour;
 import org.nightlabs.jfire.servermanager.deploy.DeploymentJarItem;
+import org.nightlabs.jfire.servermanager.xml.ModuleDef;
 
 /**
  * @author marco
@@ -375,7 +376,7 @@ public class JFireServerManagerImpl
 	/**
 	 * @see org.nightlabs.jfire.servermanager.JFireServerManager#getModules(org.nightlabs.jfire.module.ModuleType, boolean)
 	 */
-	public List getModules(ModuleType moduleType)
+	public List<ModuleDef> getModules(ModuleType moduleType)
 		throws ModuleException
 	{
 		assertOpen();

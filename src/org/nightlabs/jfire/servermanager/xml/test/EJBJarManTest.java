@@ -50,8 +50,8 @@ public class EJBJarManTest {
 			file = new File("/home/marco/workspace/JFireBaseBean/JFireBaseBean/META-INF/ejb-rolegroup.xml");
 			in = new FileInputStream(file);
 			EJBRoleGroupMan ejb = new EJBRoleGroupMan(ejbJarMan, in);
-			for (Iterator it = ejb.getRoleGroups().iterator(); it.hasNext(); ) {
-				RoleGroupDef rg = (RoleGroupDef) it.next();
+			for (Iterator<RoleGroupDef> it = ejb.getRoleGroups().iterator(); it.hasNext(); ) {
+				RoleGroupDef rg = it.next();
 				System.out.println(rg.getRoleGroupID());
 			}
 			in.close();

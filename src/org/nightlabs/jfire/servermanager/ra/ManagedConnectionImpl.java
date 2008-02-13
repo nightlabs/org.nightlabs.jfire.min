@@ -150,9 +150,9 @@ public class ManagedConnectionImpl
 	{
 		if(logger.isDebugEnabled())
 			logger.debug(this.getClass().getName()+": cleanup()");
-		for (Iterator i = handles.iterator(); i.hasNext();)
+		for (Iterator<JFireServerManagerImpl> i = handles.iterator(); i.hasNext();)
 		{
-			((JFireServerManagerImpl)i.next()).setManagedConnection(null);
+			i.next().setManagedConnection(null);
 		}
 		handles.clear();
 	}
@@ -248,9 +248,9 @@ public class ManagedConnectionImpl
 			localCels = new ArrayList<ConnectionEventListener>(cels);
 		}
 
-		for (Iterator i = localCels.iterator(); i.hasNext(); )
+		for (Iterator<ConnectionEventListener> i = localCels.iterator(); i.hasNext(); )
 		{
-			((ConnectionEventListener)i.next()).connectionClosed(ce);
+			i.next().connectionClosed(ce);
 
 		}
 		handles.remove(handle);
@@ -267,9 +267,9 @@ public class ManagedConnectionImpl
 			localCels = new ArrayList<ConnectionEventListener>(cels);
 		}
 
-		for (Iterator i = localCels.iterator(); i.hasNext(); )
+		for (Iterator<ConnectionEventListener> i = localCels.iterator(); i.hasNext(); )
 		{
-			((ConnectionEventListener)i.next()).localTransactionStarted(ce);
+			(i.next()).localTransactionStarted(ce);
 
 		}
 	}
@@ -283,9 +283,9 @@ public class ManagedConnectionImpl
 		{
 			localCels = new ArrayList<ConnectionEventListener>(cels);
 		}
-		for (Iterator i = localCels.iterator(); i.hasNext(); )
+		for (Iterator<ConnectionEventListener> i = localCels.iterator(); i.hasNext(); )
 		{
-			((ConnectionEventListener)i.next()).localTransactionCommitted(ce);
+			(i.next()).localTransactionCommitted(ce);
 
 		}
 	}
@@ -300,9 +300,9 @@ public class ManagedConnectionImpl
 			localCels = new ArrayList<ConnectionEventListener>(cels);
 		}
 
-		for (Iterator i = localCels.iterator(); i.hasNext(); )
+		for (Iterator<ConnectionEventListener> i = localCels.iterator(); i.hasNext(); )
 		{
-			((ConnectionEventListener)i.next()).localTransactionRolledback(ce);
+			i.next().localTransactionRolledback(ce);
 		}
 	}
 

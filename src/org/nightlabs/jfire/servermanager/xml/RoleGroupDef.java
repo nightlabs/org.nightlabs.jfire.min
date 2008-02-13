@@ -48,7 +48,7 @@ import org.nightlabs.jfire.security.id.RoleGroupID;
 /**
  * @author marco
  */
-public class RoleGroupDef implements Serializable, Comparable
+public class RoleGroupDef implements Serializable, Comparable<RoleGroupDef>
 {
 	private static final long serialVersionUID = 1L;
 
@@ -131,12 +131,12 @@ public class RoleGroupDef implements Serializable, Comparable
 	 * Returns a Map with the name for this group in all languages.
 	 * @return Returns a Map with key String languageID and value String name.
 	 */
-	public Map getNames()
+	public Map<String, String> getNames()
 	{
 		return names;
 	}
 	
-	public Map getDescriptions()
+	public Map<String, String> getDescriptions()
 	{
 		return descriptions;
 	}
@@ -219,7 +219,7 @@ public class RoleGroupDef implements Serializable, Comparable
 	 * roles that are indirectly put into this group by inclusion.
 	 * @return All the roles of this RoleGroup - no includes.
 	 */
-	public Collection getRoles()
+	public Collection<RoleDef> getRoles()
 	{
 		return roles.values();
 	}
@@ -233,7 +233,6 @@ public class RoleGroupDef implements Serializable, Comparable
 	 *
 	 * @return A Collection with instances of type RoleDef.
 	 */
-	@SuppressWarnings("unchecked")
 	public Collection<RoleDef> getDefaultRoles()
 	{
 		if (!defaultGroup)
@@ -256,10 +255,10 @@ public class RoleGroupDef implements Serializable, Comparable
 		Collection<RoleDef> res = new HashSet<RoleDef>(roles.values());
 
 		// TODO: Circular reference detection in includes!!!
-		for (Iterator it = includedRoleGroups.entrySet().iterator(); it.hasNext(); ) {
-			Map.Entry me = (Map.Entry)it.next();
-			String roleGroupName = (String) me.getKey();
-			RoleGroupDef includedRoleGroup = (RoleGroupDef) me.getValue();
+		for (Iterator<Map.Entry<String, RoleGroupDef>> it = includedRoleGroups.entrySet().iterator(); it.hasNext(); ) {
+			Map.Entry<String, RoleGroupDef> me = it.next();
+			String roleGroupName = me.getKey();
+			RoleGroupDef includedRoleGroup = me.getValue();
 			if (includedRoleGroup == null)
 				includedRoleGroup = getIncludedRoleGroup(roleGroupName);
 			res.addAll(includedRoleGroup.getAllRoles());
@@ -270,7 +269,7 @@ public class RoleGroupDef implements Serializable, Comparable
 		return res;
 	}
 
-	public List getAllRolesSorted()
+	public List<RoleDef> getAllRolesSorted()
 	{
 		List<RoleDef> sortedList = new ArrayList<RoleDef>(getAllRoles());
 		Collections.sort(sortedList);
@@ -299,20 +298,20 @@ public class RoleGroupDef implements Serializable, Comparable
 			pm.makePersistent(roleGroup);
 		}
 
-		for (Iterator it = getNames().entrySet().iterator(); it.hasNext(); ) {
-			Map.Entry me = (Map.Entry)it.next();
-			String languageID = (String)me.getKey();
-			String name = (String)me.getValue();
+		for (Iterator<Map.Entry<String, String>> it = getNames().entrySet().iterator(); it.hasNext(); ) {
+			Map.Entry<String, String> me = it.next();
+			String languageID = me.getKey();
+			String name = me.getValue();
       if(languageID != null)
         roleGroup.setName(languageID, name);
       else
         roleGroup.setName(Locale.ENGLISH.getLanguage(), name);
 		}
 		
-		for (Iterator it = getDescriptions().entrySet().iterator(); it.hasNext(); ) {
-			Map.Entry me = (Map.Entry)it.next();
-			String languageID = (String)me.getKey();
-			String description = (String)me.getValue();
+		for (Iterator<Map.Entry<String, String>> it = getDescriptions().entrySet().iterator(); it.hasNext(); ) {
+			Map.Entry<String, String> me = it.next();
+			String languageID = me.getKey();
+			String description = me.getValue();
       if(languageID != null)
         roleGroup.setDescription(languageID, description);
       else
@@ -320,8 +319,8 @@ public class RoleGroupDef implements Serializable, Comparable
 		}
 		
 		// Add missing roles.
-		for (Iterator it = getAllRoles().iterator(); it.hasNext(); ) {
-			RoleDef roleDef = (RoleDef)it.next();
+		for (Iterator<RoleDef> it = getAllRoles().iterator(); it.hasNext(); ) {
+			RoleDef roleDef = it.next();
 			Role role = roleDef.createRole(pm);
 			if (!roleGroup.containsRole(role)) // probably not necessary - only for avoiding problems, in case the jdo implementation is not clean.
 				roleGroup.addRole(role);
@@ -333,11 +332,11 @@ public class RoleGroupDef implements Serializable, Comparable
 	/**
 	 * @see java.lang.Comparable#compareTo(java.lang.Object)
 	 */
-	public int compareTo(Object o) {
-		if (!(o instanceof RoleGroupDef))
-			return -1;
+	public int compareTo(RoleGroupDef o) {
+//		if (!(o instanceof RoleGroupDef))
+//			return -1;
 		
-		RoleGroupDef other = (RoleGroupDef)o;
+		RoleGroupDef other = o;
 		String thisName = this.getName();
 		if (thisName == null)
 			thisName = this.getRoleGroupID();

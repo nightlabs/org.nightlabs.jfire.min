@@ -43,8 +43,8 @@ public class EARApplicationManTest {
 			File file = new File("/opt/java/jboss/server/default/deploy/JFire.last/JFireBase.ear");
 			EARApplicationMan earAppMan = new EARApplicationMan(file, ModuleType.MODULE_TYPE_WEB);
 
-			for (Iterator it = earAppMan.getModules().iterator(); it.hasNext(); ) {
-				ModuleDef md = (ModuleDef)it.next();
+			for (Iterator<ModuleDef> it = earAppMan.getModules().iterator(); it.hasNext(); ) {
+				ModuleDef md = it.next();
 				System.out.println(md.getResourceURI()+" : "+md.getContextPath()+" : "+md.getName());
 			}
 		} catch (Exception x) {

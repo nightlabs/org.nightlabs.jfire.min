@@ -49,6 +49,7 @@ import org.nightlabs.jfire.servermanager.createorganisation.CreateOrganisationPr
 import org.nightlabs.jfire.servermanager.createorganisation.CreateOrganisationStatus;
 import org.nightlabs.jfire.servermanager.deploy.DeployOverwriteBehaviour;
 import org.nightlabs.jfire.servermanager.deploy.DeploymentJarItem;
+import org.nightlabs.jfire.servermanager.xml.ModuleDef;
 
 /**
  * @author marco
@@ -145,7 +146,7 @@ public interface JFireServerManager
 
 	public List<OrganisationCf> getOrganisationCfs(boolean sorted);
 
-	public List getModules(ModuleType moduleType)
+	public List<ModuleDef> getModules(ModuleType moduleType)
 		throws ModuleException;
 
 	public void flushModuleCache();

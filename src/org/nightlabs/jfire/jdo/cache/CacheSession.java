@@ -406,7 +406,7 @@ implements Serializable
 		assertOpen();
 
 		synchronized (dirtyObjectIDsMutex) {
-			Set subscribedObjectIDs = getSubscribedObjectIDs();
+			Set<?> subscribedObjectIDs = getSubscribedObjectIDs();
 
 			for (DirtyObjectID dirtyObjectID : dirtyObjectIDs) {
 				Object objectID = dirtyObjectID.getObjectID();
@@ -597,13 +597,13 @@ implements Serializable
 
 			Set<Object> oldSubscribedObjectIDs = this.subscribedObjectIDs;
 
-			for (Iterator it = oldSubscribedObjectIDs.iterator(); it.hasNext();) {
+			for (Iterator<Object> it = oldSubscribedObjectIDs.iterator(); it.hasNext();) {
 				Object objectID = it.next();
 				if (!subscribedObjectIDs.contains(objectID))
 					objectIDsToRemove.add(objectID);
 			}
 
-			for (Iterator it = subscribedObjectIDs.iterator(); it.hasNext();) {
+			for (Iterator<Object> it = subscribedObjectIDs.iterator(); it.hasNext();) {
 				Object objectID = it.next();
 				if (!oldSubscribedObjectIDs.contains(objectID))
 					objectIDsToAdd.add(objectID);

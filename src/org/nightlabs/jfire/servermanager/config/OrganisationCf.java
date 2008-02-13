@@ -330,8 +330,8 @@ public class OrganisationCf
 //			sb.append(persistenceManagerFactoryJNDIName);
 			sb.append(",serverAdmins{");
 			if (serverAdmins != null) {
-				for (Iterator it = serverAdmins.iterator(); it.hasNext(); ) {
-					String userID = (String)it.next();
+				for (Iterator<String> it = serverAdmins.iterator(); it.hasNext(); ) {
+					String userID = it.next();
 					sb.append(userID);
 					if (it.hasNext())
 						sb.append(',');

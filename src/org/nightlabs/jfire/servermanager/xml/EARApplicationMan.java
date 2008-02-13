@@ -164,7 +164,7 @@ public class EARApplicationMan
 	/**
 	 * @return Returns the modules.
 	 */
-	public Collection getModules() {
+	public Collection<ModuleDef> getModules() {
 		return modules;
 	}
 }

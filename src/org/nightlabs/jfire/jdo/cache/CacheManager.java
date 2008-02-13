@@ -103,10 +103,10 @@ public class CacheManager
 	 *
 	 * @see #addChangeListener(Object)
 	 */
-	public void addChangeListeners(Collection objectIDs)
+	public void addChangeListeners(Collection<?> objectIDs)
 	{
 		assertPrincipalExisting();
-		for (Iterator it = objectIDs.iterator(); it.hasNext(); )
+		for (Iterator<?> it = objectIDs.iterator(); it.hasNext(); )
 			cacheManagerFactory.addChangeListener(
 					principal.getUserID(),
 					new ChangeListenerDescriptor(principal.getSessionID(), it.next()));
@@ -157,10 +157,10 @@ public class CacheManager
 	 *
 	 * @see #removeChangeListener(Object)
 	 */
-	public void removeChangeListeners(Collection objectIDs)
+	public void removeChangeListeners(Collection<?> objectIDs)
 	{
 		assertPrincipalExisting();
-		for (Iterator it = objectIDs.iterator(); it.hasNext(); )
+		for (Iterator<?> it = objectIDs.iterator(); it.hasNext(); )
 			cacheManagerFactory.removeChangeListener(principal.getSessionID(), it.next());
 	}
 
@@ -213,12 +213,12 @@ public class CacheManager
 		return cacheManagerFactory.waitForChanges(principal.getSessionID(), principal.getUserID(), waitTimeout);
 	}
 
-	public Class getClassByObjectID(Object objectID)
+	public Class<?> getClassByObjectID(Object objectID)
 	{
 		return cacheManagerFactory.getClassByObjectID(objectID);
 	}
 
-	public Class getClassByObjectID(Object objectID, boolean throwExceptionIfNotFound)
+	public Class<?> getClassByObjectID(Object objectID, boolean throwExceptionIfNotFound)
 	{
 		return cacheManagerFactory.getClassByObjectID(objectID, throwExceptionIfNotFound);
 	}

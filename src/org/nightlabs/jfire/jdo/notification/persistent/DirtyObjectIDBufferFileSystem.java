@@ -47,6 +47,7 @@ import org.apache.log4j.Logger;
 import org.nightlabs.annotation.Implement;
 import org.nightlabs.jfire.jdo.notification.DirtyObjectID;
 import org.nightlabs.jfire.jdo.notification.JDOLifecycleState;
+import org.nightlabs.util.IOUtil;
 import org.nightlabs.util.Util;
 
 public class DirtyObjectIDBufferFileSystem
@@ -84,7 +85,7 @@ implements DirtyObjectIDBuffer
 		this.persistentNotificationManagerFactory = persistentNotificationManagerFactory;
 		try {
 			workDirectory = new File(
-					new File(Util.getTempDir(), "jfire" + File.separatorChar + "dirtyObjectIDsRaw"),
+					new File(IOUtil.getTempDir(), "jfire" + File.separatorChar + "dirtyObjectIDsRaw"),
 					this.persistentNotificationManagerFactory.getOrganisationID());
 		} catch (Exception x) {
 			throw new DirtyObjectIDBufferException(x);
@@ -153,7 +154,6 @@ implements DirtyObjectIDBuffer
 	 */
 	private Set<File> filesInProcess = null;
 
-	@SuppressWarnings("unchecked")
 	@Implement
 	public synchronized Collection<Map<JDOLifecycleState, Map<Object, DirtyObjectID>>> fetchDirtyObjectIDs() throws DirtyObjectIDBufferException
 	{
@@ -196,8 +196,8 @@ implements DirtyObjectIDBuffer
 	public synchronized void clearFetchedDirtyObjectIDs() throws DirtyObjectIDBufferException
 	{
 		if (filesInProcess != null) {
-			for (Iterator it = filesInProcess.iterator(); it.hasNext(); ) {
-				File file = (File) it.next();
+			for (Iterator<File> it = filesInProcess.iterator(); it.hasNext(); ) {
+				File file = it.next();
 				if (!file.delete())
 					logger.error("Could not delete file: " + file.getAbsolutePath());
 			}

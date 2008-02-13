@@ -116,6 +116,7 @@ public class CacheManagerFactory
 		/**
 		 * @see java.lang.Thread#run()
 		 */
+		@Override
 		public void run()
 		{
 			while (!isInterrupted()) {
@@ -161,6 +162,7 @@ public class CacheManagerFactory
 		 * @see java.lang.Thread#isInterrupted()
 		 * @see #interrupt()
 		 */
+		@Override
 		public boolean isInterrupted()
 		{
 			return terminated || super.isInterrupted();
@@ -173,6 +175,7 @@ public class CacheManagerFactory
 		 * @see java.lang.Thread#interrupt()
 		 * @see #isInterrupted()
 		 */
+		@Override
 		public void interrupt()
 		{
 			terminated = true;
@@ -299,6 +302,7 @@ public class CacheManagerFactory
 			setName("CacheManagerFactory.FreshDirtyObjectIDContainerManagerThread-" + (nextID++) + " (" + cacheManagerFactory.organisationID + ')');
 		}
 
+		@Override
 		public void run()
 		{
 			while (!isInterrupted()) {
@@ -351,6 +355,7 @@ public class CacheManagerFactory
 		 * @see java.lang.Thread#isInterrupted()
 		 * @see #interrupt()
 		 */
+		@Override
 		public boolean isInterrupted()
 		{
 			return terminated || super.isInterrupted();
@@ -363,6 +368,7 @@ public class CacheManagerFactory
 		 * @see java.lang.Thread#interrupt()
 		 * @see #isInterrupted()
 		 */
+		@Override
 		public void interrupt()
 		{
 			terminated = true;
@@ -390,6 +396,7 @@ public class CacheManagerFactory
 		/**
 		 * @see java.lang.Thread#run()
 		 */
+		@Override
 		public void run()
 		{
 			while (!isInterrupted()) {
@@ -441,6 +448,7 @@ public class CacheManagerFactory
 		 * @see java.lang.Thread#isInterrupted()
 		 * @see #interrupt()
 		 */
+		@Override
 		public boolean isInterrupted()
 		{
 			return terminated || super.isInterrupted();
@@ -453,6 +461,7 @@ public class CacheManagerFactory
 		 * @see java.lang.Thread#interrupt()
 		 * @see #isInterrupted()
 		 */
+		@Override
 		public void interrupt()
 		{
 			terminated = true;
@@ -499,8 +508,7 @@ public class CacheManagerFactory
 						+ cacheSessionContainerCount + " but must be at least 2!!!");
 
 			while (cacheSessionContainers.size() > cacheSessionContainerCount) {
-				CacheSessionContainer csc = (CacheSessionContainer) cacheSessionContainers
-						.removeLast();
+				CacheSessionContainer csc = cacheSessionContainers.removeLast();
 				logger.debug("Dropping cacheSessionContainer (createDT="
 						+ csc.getCreateDT() + ")");
 				csc.close();
@@ -516,7 +524,7 @@ public class CacheManagerFactory
 	protected CacheSession createCacheSession(String sessionID, String userID)
 	{
 		synchronized (cacheSessions) {
-			CacheSession session = (CacheSession) cacheSessions.get(sessionID);
+			CacheSession session = cacheSessions.get(sessionID);
 			if (session == null) {
 				session = new CacheSession(this, sessionID, userID);
 				cacheSessions.put(sessionID, session);
@@ -540,7 +548,7 @@ public class CacheManagerFactory
 	protected CacheSession getCacheSession(String sessionID)
 	{
 		synchronized (cacheSessions) {
-			return (CacheSession) cacheSessions.get(sessionID);
+			return cacheSessions.get(sessionID);
 		}
 	}
 
@@ -580,7 +588,7 @@ public class CacheManagerFactory
 				throw new IllegalStateException("freshDirtyObjectIDContainerCount = " + freshDirtyObjectIDContainerCount + " but must be at least 2!!!");
 
 			while (freshDirtyObjectIDContainers.size() > freshDirtyObjectIDContainerCount) {
-				DirtyObjectIDContainer doc = (DirtyObjectIDContainer) freshDirtyObjectIDContainers.removeLast();
+				DirtyObjectIDContainer doc = freshDirtyObjectIDContainers.removeLast();
 				logger.debug("Dropping freshDirtyObjectIDContainer (createDT=" + doc.getCreateDT() + ").");
 				doc.close();
 			}
@@ -832,7 +840,7 @@ public class CacheManagerFactory
 		Object objectID = l.getObjectID();
 
 		synchronized (listenersByObjectID) {
-			Map<String, ChangeListenerDescriptor> m = (Map<String, ChangeListenerDescriptor>) listenersByObjectID.get(objectID);
+			Map<String, ChangeListenerDescriptor> m = listenersByObjectID.get(objectID);
 			if (m == null) {
 				m = new HashMap<String, ChangeListenerDescriptor>();
 				listenersByObjectID.put(objectID, m);
@@ -948,7 +956,7 @@ public class CacheManagerFactory
 	private void after_removeChangeListener(String sessionID, Object objectID)
 	{
 		synchronized (listenersByObjectID) {
-			Map<String, ChangeListenerDescriptor> m = (Map<String, ChangeListenerDescriptor>) listenersByObjectID.get(objectID);
+			Map<String, ChangeListenerDescriptor> m = listenersByObjectID.get(objectID);
 			if (m != null) {
 				m.remove(sessionID);
 
@@ -1109,7 +1117,7 @@ public class CacheManagerFactory
 					}
 					else {
 						for (DirtyObjectID newDirtyObjectID : m2.values()) {
-							DirtyObjectID oldDirtyObjectID = (DirtyObjectID) objectIDsWaitingForNotification.get(newDirtyObjectID.getObjectID());
+							DirtyObjectID oldDirtyObjectID = objectIDsWaitingForNotification.get(newDirtyObjectID.getObjectID());
 							if (oldDirtyObjectID == null)
 								objectIDsWaitingForNotification.put(newDirtyObjectID.getObjectID(), newDirtyObjectID);
 							else {
@@ -1253,7 +1261,7 @@ public class CacheManagerFactory
 		// add the DirtyObjectIDs to the found sessions
 		synchronized (cacheSessions) {
 			for (String cacheSessionID : interestedCacheSessionIDs) {
-				CacheSession session = (CacheSession) cacheSessions.get(cacheSessionID);
+				CacheSession session = cacheSessions.get(cacheSessionID);
 				if (session == null)
 					logger.error("Could not find CacheSession for cacheSessionID=\""+cacheSessionID+"\"!");
 				else {

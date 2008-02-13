@@ -9,7 +9,10 @@ import org.nightlabs.datastructure.IDirectedGraphNode;
 
 /**
  * @author Tobias Langner <!-- tobias[dot]langner[at]nightlabs[dot]de -->
+ * 
+ * FIXME Find a way to remove the unchecked warning.
  */
+@SuppressWarnings("unchecked")
 public abstract class AbstractInit<I extends AbstractInit, D extends IDependency<I>>
 implements IDirectedGraphNode<I>
 {
@@ -29,7 +32,7 @@ implements IDirectedGraphNode<I>
 	private Collection<D> dependencies = new ArrayList<D>();
 
 	/**
-	 * Adds a required init, i.e. an init that has to be executed before the execution of this instance.	 *
+	 * Adds a required init, i.e. an init that has to be executed before the execution of this instance.
 	 * @param requiredInit The init that this instance requires.
 	 */
 	public void addRequiredInit(I requiredInit) {
@@ -38,7 +41,7 @@ implements IDirectedGraphNode<I>
 	}
 	
 	/**
-	 * Adds a dependent init, i.e. an init that needs this instance to be executed before its own execution.	 *
+	 * Adds a dependent init, i.e. an init that needs this instance to be executed before its own execution.
 	 * @param dependentInit The init that is dependent on this instance.
 	 */
 	protected void addDependentInit(I dependentInit) {
@@ -46,7 +49,7 @@ implements IDirectedGraphNode<I>
 	}
 	
 	/**
-	 * Adds a temporary dependency that is later resolved to the actual {@link AbstractInit}.	 *
+	 * Adds a temporary dependency that is later resolved to the actual {@link AbstractInit}.
 	 * @param dependency the dependency to be added.
 	 */
 	public void addDependency(D dependency) {

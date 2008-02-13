@@ -151,7 +151,7 @@ public class EJBJarMan implements Serializable
 		return s.replaceAll("(^ )*( $)*", "");
 	}
 
-	public Collection getRoles()
+	public Collection<RoleDef> getRoles()
 	{
 		return roles.values();
 	}
