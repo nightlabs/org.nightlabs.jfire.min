@@ -7,8 +7,6 @@ import java.util.Properties;
 
 import junit.framework.TestListener;
 
-import org.nightlabs.jfire.testsuite.TestSuite.Status;
-
 /**
  * A special JUnit test listener used within the JFireTestSuite.
  * <p>

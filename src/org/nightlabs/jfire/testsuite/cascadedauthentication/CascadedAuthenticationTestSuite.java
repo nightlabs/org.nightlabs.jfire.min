@@ -54,7 +54,7 @@ extends TestSuite
 //		String className = "org.nightlabs.demo.multiorg.MultiOrganisationServerInitialiser";
 //		try {
 //			Class.forName(className);
-//		} catch (ClassNotFoundException x) {			
+//		} catch (ClassNotFoundException x) {
 //			return "The module JFireDemoSetupMultiOrganisation seems not to be installed (Class \"" + className + "\" could not be found)!";
 //		}
 

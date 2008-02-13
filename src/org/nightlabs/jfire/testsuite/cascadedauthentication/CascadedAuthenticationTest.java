@@ -87,7 +87,7 @@ extends TestCase
 
 		TestRequestResultTreeNode child_0_0_0 = child_0_0.createChildTestRequestResultTree(organisationID_root);
 		TestRequestResultTreeNode child_0_0_1 = child_0_0.createChildTestRequestResultTree(organisationID_chezfrancois);
-		TestRequestResultTreeNode child_0_0_2 = child_0_0.createChildTestRequestResultTree(organisationID_reseller); 
+		TestRequestResultTreeNode child_0_0_2 = child_0_0.createChildTestRequestResultTree(organisationID_reseller);
 
 		TestRequestResultTreeNode child_0_1_0 = child_0_1.createChildTestRequestResultTree(organisationID_chezfrancois);
 		TestRequestResultTreeNode child_0_1_1 = child_0_1.createChildTestRequestResultTree(organisationID_root);

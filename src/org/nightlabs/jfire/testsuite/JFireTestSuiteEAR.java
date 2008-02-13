@@ -26,10 +26,10 @@ public class JFireTestSuiteEAR {
 
 	protected JFireTestSuiteEAR() {}
 	
-	public static final String MODULE_NAME = "JFireTestSuite"; 
+	public static final String MODULE_NAME = "JFireTestSuite";
 	
-	public static File getEARDir() 
-	throws ModuleException 
+	public static File getEARDir()
+	throws ModuleException
 	{
 		JFireServerManager jFireServerManager;
 		try {

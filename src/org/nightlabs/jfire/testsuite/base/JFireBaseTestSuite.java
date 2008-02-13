@@ -35,7 +35,7 @@ public class JFireBaseTestSuite extends TestSuite
 		String className = "org.nightlabs.jfire.security.User";
 		try {
 			Class.forName(className);
-		} catch (ClassNotFoundException x) {			
+		} catch (ClassNotFoundException x) {
 			return "The module JFireBase seems not to be installed (Class \"" + className + "\" could not be found)!";
 		}
 		return null;

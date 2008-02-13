@@ -11,7 +11,7 @@ import org.nightlabs.jfire.testsuite.JFireTestSuite;
 
 /**
  * A simple TestCase for demonstration.
- * With the annotation it is linked to 
+ * With the annotation it is linked to
  * the JFireBaseTestSuite, that will check
  * if JFireBase is deployed.
  */
@@ -34,7 +34,7 @@ public class UserTest extends TestCase
 	}
 
 	/**
-	 * This method is invoked by the JUnit run, 
+	 * This method is invoked by the JUnit run,
 	 * as its name starts with test!
 	 */
 	public void testCreateUser() {

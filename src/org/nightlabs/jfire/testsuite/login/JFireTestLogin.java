@@ -71,12 +71,12 @@ public class JFireTestLogin {
 	}
 
 	/**
-	 * Checks if all Users referenced in the main properties file are extstent 
+	 * Checks if all Users referenced in the main properties file are extstent
 	 * and creates them if not.
 	 * 
 	 * @param pm The PersitenceManager to use.
 	 * @return Whether it succeeded.
-	 * @throws NamingException 
+	 * @throws NamingException
 	 */
 	public static boolean checkCreateLoginsAndRegisterInAuthorities(PersistenceManager pm) throws ModuleException, IOException, NamingException {
 		Properties properties = JFireTestSuiteEAR.getProperties(JFireTestSuiteEAR.getJFireTestSuiteProperties(), PROP_TEST_USER_PREFIX + ".");
@@ -92,12 +92,12 @@ public class JFireTestLogin {
 		}
 		boolean result = true;
 		result &= checkCreateLoginUsers(pm, properties, userPropNames);
-		result &= checkSetRoleGroupRegistrationToAuthorities(pm, properties, userPropNames); 
+		result &= checkSetRoleGroupRegistrationToAuthorities(pm, properties, userPropNames);
 		return result;
 	}
 	
-	private static boolean checkCreateLoginUsers(PersistenceManager pm, Properties userProperties, 
-			Set<String> userPropNames) throws InitException, ModuleException, NamingException 
+	private static boolean checkCreateLoginUsers(PersistenceManager pm, Properties userProperties,
+			Set<String> userPropNames) throws InitException, ModuleException, NamingException
 	{
 		for (String userPropName : userPropNames) {
 			Properties userProps = JFireTestSuiteEAR.getProperties(userProperties, userPropName + ".");
@@ -163,8 +163,8 @@ public class JFireTestLogin {
 		return true;
 	}
 
-	private static boolean checkSetRoleGroupRegistrationToAuthorities(PersistenceManager pm, 
-			Properties userProperties, Set<String> userPropNames) 
+	private static boolean checkSetRoleGroupRegistrationToAuthorities(PersistenceManager pm,
+			Properties userProperties, Set<String> userPropNames)
 	{
 		return true; // TODO implement this method!
 	}

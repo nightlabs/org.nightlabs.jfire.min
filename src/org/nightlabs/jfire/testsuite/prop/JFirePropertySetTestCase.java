@@ -107,8 +107,8 @@ public class JFirePropertySetTestCase extends TestCase {
 		}
 		try {
 			StructLocal structLocal = StructLocalDAO.sharedInstance().getStructLocal(
-					propertySet.getStructLocalLinkClass(), 
-					propertySet.getStructLocalScope(), 
+					propertySet.getStructLocalLinkClass(),
+					propertySet.getStructLocalScope(),
 					new NullProgressMonitor()
 			);
 			propertySet.inflate(structLocal);
@@ -119,7 +119,7 @@ public class JFirePropertySetTestCase extends TestCase {
 	}
 	
 	/**
-	 * Test the fetching and exploding of a {@link PropertySet} 
+	 * Test the fetching and exploding of a {@link PropertySet}
 	 */
 	public void testFetchPropertySet() throws Exception {
 		fetchPropertySet();

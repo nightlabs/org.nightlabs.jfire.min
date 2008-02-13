@@ -27,7 +27,6 @@
 package org.nightlabs.jfire.testsuite;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
@@ -60,9 +59,9 @@ import org.nightlabs.util.reflect.ReflectUtil;
 
 
 /**
- * @ejb.bean name="jfire/ejb/JFireTestSuite/JFireTestManager"	
+ * @ejb.bean name="jfire/ejb/JFireTestSuite/JFireTestManager"
  *					 jndi-name="jfire/ejb/JFireTestSuite/JFireTestManager"
- *					 type="Stateless" 
+ *					 type="Stateless"
  *					 transaction-type="Container"
  *
  * @ejb.util generate="physical"
@@ -91,7 +90,7 @@ implements SessionBean
 
 	/**
 	 * @ejb.create-method
-	 * @ejb.permission role-name="_Guest_"	
+	 * @ejb.permission role-name="_Guest_"
 	 */
 	public void ejbCreate() throws CreateException
 	{
@@ -107,14 +106,14 @@ implements SessionBean
 	 * This method is called by the datastore initialisation mechanism.
 	 * It initializes the users needed for Test logins and other prerequisites for the Test system.
 	 * 
-	 * @throws Exception When something went wrong. 
+	 * @throws Exception When something went wrong.
 	 * 
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_System_"
 	 * @ejb.transaction type="Required"
 	 */
 	public void initialiseTestSystem()
-	throws Exception 
+	throws Exception
 	{
 		PersistenceManager pm = getPersistenceManager();
 		try {
@@ -129,14 +128,14 @@ implements SessionBean
 	 * This method is called by the datastore initialisation mechanism.
 	 * It runs all {@link TestSuite}s.
 	 * 
-	 * @throws Exception When something went wrong. 
+	 * @throws Exception When something went wrong.
 	 * 
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_System_"
 	 * @ejb.transaction type="Required"
 	 */
 	public void initialise()
-	throws Exception 
+	throws Exception
 	{
 		runAllTestSuites();
 	}
@@ -217,7 +216,7 @@ implements SessionBean
 	 * @ejb.transaction type="RequiresNew"
 	 */
 	public String evaluateCanRunTestsInNestedTransaction(TestSuite testSuite)
-	throws Exception 
+	throws Exception
 	{
 		logger.info("evaluateCanRunTestsInNestedTransaction: " + testSuite.toString());
 		PersistenceManager pm = getPersistenceManager();
@@ -241,7 +240,7 @@ implements SessionBean
 	 * @ejb.transaction type="RequiresNew"
 	 */
 	public void runTestInNestedTransaction(Test test, TestResult result)
-	throws Exception 
+	throws Exception
 	{
 		logger.info("runTestInNestedTransaction: " + test.toString());
 		test.run(result);
@@ -253,7 +252,7 @@ implements SessionBean
 	 * @ejb.transaction type="RequiresNew"
 	 */
 	public void runTestInNestedTransaction_setUp(org.nightlabs.jfire.testsuite.TestCase test)
-	throws Exception 
+	throws Exception
 	{
 		test.setUp();
 	}
@@ -264,7 +263,7 @@ implements SessionBean
 	 * @ejb.transaction type="RequiresNew"
 	 */
 	public void runTestInNestedTransaction_tearDown(org.nightlabs.jfire.testsuite.TestCase test)
-	throws Exception 
+	throws Exception
 	{
 		test.tearDown();
 	}
@@ -317,7 +316,7 @@ implements SessionBean
 	 * Searches the classpath for TestSuites and TestCases and creates all TestSuites and TestCases that belong to one of the
 	 * TestSuite classes in <code>testSuiteClassFilter</code>. If <code>testSuiteClassFilter == null</code>, all encountered TestSuites
 	 * and TestCases are created.
-	 *   
+	 * 
 	 * @param testSuiteClassesFilter Restricts the created Test{Cases,Suites} to the given classes. Can be null to indicate no restriction, i.e. all
 	 * 		encountered Test{Cases,Suites} will be created.
 	 * @return A list of the created TestSuites.
@@ -342,7 +341,7 @@ implements SessionBean
 				Class<? extends TestCase> testCaseClass = (Class<? extends TestCase>) clazz;
 				JFireTestSuite testSuiteAnnotation = clazz.getAnnotation(JFireTestSuite.class);
 				Class<? extends TestSuite> suiteClass = DefaultTestSuite.class; // Default value, if not annotated.
-				if (testSuiteAnnotation != null) {					
+				if (testSuiteAnnotation != null) {
 					suiteClass = testSuiteAnnotation.value();
 				}
 				List<Class<? extends TestCase>> testCaseClasses = suites2TestCases.get(suiteClass);

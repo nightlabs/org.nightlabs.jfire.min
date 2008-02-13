@@ -47,7 +47,7 @@ import org.w3c.dom.Node;
 /**
  * The default {@link JFireTestListener} gathers all {@link Test} data
  * and is capable of generating a XML file from the results and
- * also send the test results as email. 
+ * also send the test results as email.
  * <p>
  * The listener accepts the following configuration properties (file references are relative to the ear directory)
  * <ul>
@@ -59,8 +59,8 @@ import org.w3c.dom.Node;
  *   <li>mail.smtp.host: The smtp host to send mail with.</li>
  *   <li>mail.from: The sender of the mail, default info@jfire.org</li>
  *   <li>mail.to: The recipients of the mail (,-separated list).</li>
- *   <li>mail.subject: The recipients of the mail (,-separated list), default "JFireTestSuite Testreport"</li>   
- *   <li>mail.htmlReportXSL: The stylesheet to use to render the xml to the html mail body, default "htmlReport.xls"</li>   
+ *   <li>mail.subject: The recipients of the mail (,-separated list), default "JFireTestSuite Testreport"</li>
+ *   <li>mail.htmlReportXSL: The stylesheet to use to render the xml to the html mail body, default "htmlReport.xls"</li>
  * </ul>
  * <p>
  * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] de -->
@@ -79,7 +79,7 @@ public class DefaultTestListener implements JFireTestListener {
 	private static final DateFormat ISO_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z");
 	
 	/**
-	 * Created and populated by this listener for all {@link TestSuite}s that are run. 
+	 * Created and populated by this listener for all {@link TestSuite}s that are run.
 	 */
 	public static class TestSuiteResult {
 		private TestSuite suite;
@@ -190,7 +190,7 @@ public class DefaultTestListener implements JFireTestListener {
 	}
 	
 	/**
-	 * Created and populated by this listener for all {@link TestSuite}s that are run. 
+	 * Created and populated by this listener for all {@link TestSuite}s that are run.
 	 */
 	public static class TestCaseResult {
 		private TestSuiteResult testSuiteResult;
@@ -291,7 +291,7 @@ public class DefaultTestListener implements JFireTestListener {
 	}
 	
 	/**
-	 * Created and populated by this listener for all {@link TestSuite}s that are run. 
+	 * Created and populated by this listener for all {@link TestSuite}s that are run.
 	 */
 	private static class TestResult {
 		private TestCaseResult testCaseResult;
@@ -438,7 +438,7 @@ public class DefaultTestListener implements JFireTestListener {
 	/**
 	 * Write the gathered test data to XML.
 	 * 
-	 * @param out The {@link OutputStream} the XML should be written to. 
+	 * @param out The {@link OutputStream} the XML should be written to.
 	 */
 	public void writeReportAsXML(OutputStream out) throws Exception {
 //		Document doc = new DocumentImpl();
@@ -525,7 +525,7 @@ public class DefaultTestListener implements JFireTestListener {
 			}
 			testSuiteResults.add(suiteResult);
 			suiteResult.setSuite(suite);
-			currSuiteResult = suiteResult;			
+			currSuiteResult = suiteResult;
 		} else if (status == Status.END) {
 			if (currSuiteResult == null)
 				return;
@@ -600,7 +600,7 @@ public class DefaultTestListener implements JFireTestListener {
 		currTestCaseResult.getTestResults().add(currTestResult);
 		currTestResult.setStartTime(new Date());
 		String name = test.toString();
-		String testName = name.substring(0, name.indexOf('('));		
+		String testName = name.substring(0, name.indexOf('('));
 		currTestResult.setTestName(testName);
 	}
 
@@ -640,7 +640,7 @@ public class DefaultTestListener implements JFireTestListener {
 						logger.error("Error closing FileStream for xmlReport.fileName " + fileName, e);
 					}
 				}
-			}			
+			}
 		}
 		boolean sendMailOnFailure = getProperty("mail.onFailure.enabled", false);
 		boolean sendMailOnSuccess = getProperty("mail.alwaysSend.enabled", false);
@@ -704,14 +704,14 @@ public class DefaultTestListener implements JFireTestListener {
 	/**
 	 * Sends the gathered results as email.
 	 * Sender, recipient etc. is configured in the listener properties.
-	 *  
+	 * 
 	 * @throws Exception When it failed.
 	 */
 	public void sendReportAsMail() throws Exception {
 		// create the html report
 		try {
 			TransformerFactory factory = TransformerFactory.newInstance();
-			String xslFileName = getProperty("mail.htmlReportXSL", "htmlReport.xsl"); 
+			String xslFileName = getProperty("mail.htmlReportXSL", "htmlReport.xsl");
 			Transformer transformer = factory.newTransformer(new StreamSource(new File(JFireTestSuiteEAR.getEARDir(), xslFileName)));
 			File tmpFile = new File(JFireTestSuiteEAR.getEARDir(), "tmpReport.xml");
 			FileOutputStream out = new FileOutputStream(tmpFile);
@@ -754,7 +754,7 @@ public class DefaultTestListener implements JFireTestListener {
 	    FileDataSource filedatasource = new FileDataSource(tmpFile);
 	    mimebodypart.setDataHandler(new DataHandler(filedatasource));
 	    
-	    mimebodypart.setFileName("jfire-test-report.xml"); 
+	    mimebodypart.setFileName("jfire-test-report.xml");
 	    mimemultipart.addBodyPart(mimebodypart);
 	    message.setContent(mimemultipart);
 	

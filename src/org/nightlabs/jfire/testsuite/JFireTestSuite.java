@@ -14,5 +14,5 @@ import java.lang.annotation.RetentionPolicy;
  */
 @Retention(RetentionPolicy.RUNTIME)
 public @interface JFireTestSuite {
-	Class<? extends TestSuite> value(); 
+	Class<? extends TestSuite> value();
 }

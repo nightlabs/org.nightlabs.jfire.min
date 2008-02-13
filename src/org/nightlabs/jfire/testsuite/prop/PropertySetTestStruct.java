@@ -38,7 +38,6 @@ import org.nightlabs.jfire.prop.AbstractStruct;
 import org.nightlabs.jfire.prop.DisplayNamePart;
 import org.nightlabs.jfire.prop.IStruct;
 import org.nightlabs.jfire.prop.PropHelper;
-import org.nightlabs.jfire.prop.PropertySet;
 import org.nightlabs.jfire.prop.Struct;
 import org.nightlabs.jfire.prop.StructBlock;
 import org.nightlabs.jfire.prop.StructLocal;
@@ -119,7 +118,7 @@ public class PropertySetTestStruct
 
 	public static final String DEV_ORGANISATION_ID = Organisation.DEV_ORGANISATION_ID;
 	
-	public static final StructBlockID INTERNALBLOCK = StructBlockID.create(DEV_ORGANISATION_ID,"InternalBlock"); 
+	public static final StructBlockID INTERNALBLOCK = StructBlockID.create(DEV_ORGANISATION_ID,"InternalBlock");
 	public static final StructFieldID INTERNALBLOCK_DISPLAYNAME = StructFieldID.create(INTERNALBLOCK,"DisplayName");
 
 	public static final StructBlockID TESTBLOCK = StructBlockID.create(DEV_ORGANISATION_ID, "TestBlock");
@@ -135,6 +134,6 @@ public class PropertySetTestStruct
 	public static final String TESTBLOCK_SELECTION_2 = "Selection2";
 
 	public static StructLocalID getStructLocalID(String organisationID) {
-		return StructLocalID.create(organisationID, PropertySetTestStruct.class.getName(), StructLocal.DEFAULT_SCOPE);		
+		return StructLocalID.create(organisationID, PropertySetTestStruct.class.getName(), StructLocal.DEFAULT_SCOPE);
 	}
 }
