@@ -38,7 +38,6 @@ import org.nightlabs.ModuleException;
 import org.nightlabs.config.ConfigException;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.module.ModuleType;
-import org.nightlabs.jfire.serverconfigurator.ServerConfigurator;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.servermanager.config.J2eeServerTypeRegistryConfigModule;
 import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
@@ -49,11 +48,11 @@ import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
  *	type="Stateless"
  *
  * @ejb.util generate="physical"
- * @ejb.transaction type="Required" 
+ * @ejb.transaction type="Required"
  **/
 public abstract class ServerManagerBean
 	extends BaseSessionBeanImpl
-	implements SessionBean 
+	implements SessionBean
 {
 	private static final long serialVersionUID = 1L;
 
@@ -67,7 +66,7 @@ public abstract class ServerManagerBean
 		super.setSessionContext(sessionContext);
 	}
 	/**
-	 * @ejb.create-method  
+	 * @ejb.create-method
 	 * @ejb.permission role-name="_Guest_"
 	 */
 	public void ejbCreate()
@@ -126,7 +125,7 @@ public abstract class ServerManagerBean
 	}
 
 	/**
-	 * @throws ConfigException If the configuration is obviously wrong - not all errors are detected, however! 
+	 * @throws ConfigException If the configuration is obviously wrong - not all errors are detected, however!
 	 *
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_ServerAdmin_"
@@ -204,48 +203,48 @@ public abstract class ServerManagerBean
 
 //	/**
 //	 * @return The instance of the local host.
-//	 * 
+//	 *
 //	 * @ejb.interface-method
 //	 */
 //	public LocalServer getLocalServer()
 //	{
 //		throw new UnsupportedOperationException("NYI");
 //		if (localServer != null) return localServer;
-//		
+//
 //		PersistenceManager pm = sysPMF.getPersistenceManager();
 //		Iterator it = pm.getExtent(LocalServer.class, false).iterator();
-//		if (!it.hasNext()) 
+//		if (!it.hasNext())
 //			throw new IllegalStateException("There is no server registered as localServer! Thus, I don't know who I am!");
-//		
+//
 //		localServer = (LocalServer) it.next();
-//		
-//		if (it.hasNext()) 
+//
+//		if (it.hasNext())
 //			throw new IllegalStateException("There is more than one server registered as localServer! Thus, I don't know who I am!");
-//		
+//
 //		pm.retrieve(localServer.getServer());
 //		pm.makeTransient(localServer);
-//		pm.makeTransient(localServer.getServer());		
-//		
-//		pm.close();		
+//		pm.makeTransient(localServer.getServer());
+//
+//		pm.close();
 //		return localServer;
 //	}
 	
-//	/** 
+//	/**
 //	 * @param server
 //	 * @return true, if the given server is the local machine
-//	 * 
-//	 * @ejb.interface-method 
+//	 *
+//	 * @ejb.interface-method
 //	 */
 //	public boolean isLocalhost(Server server)
 //	{
 //		return isLocalhost(server.getServerID());
 //	}
-//	
-//	/** 
+//
+//	/**
 //	 * @param serverId
 //	 * @return true, if the given server is the local machine
-//	 * 
-//	 * @ejb.interface-method 
+//	 *
+//	 * @ejb.interface-method
 //	 */
 //	public boolean isLocalhost(String serverId)
 //	{

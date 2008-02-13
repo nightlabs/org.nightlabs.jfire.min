@@ -50,7 +50,7 @@ import org.nightlabs.jfire.workstation.search.WorkstationQuery;
  *
  * @ejb.bean name="jfire/ejb/JFireBaseBean/WorkstationManager"
  *  jndi-name="jfire/ejb/JFireBaseBean/WorkstationManager"
- *  type="Stateless" 
+ *  type="Stateless"
  * 
  * @ejb.util generate="physical"
  * @ejb.transaction type="Required"
@@ -61,7 +61,7 @@ public class WorkstationManagerBean extends BaseSessionBeanImpl implements Sessi
 
 	/**
 	 * @ejb.create-method
-	 * @ejb.permission role-name="_Guest_"  
+	 * @ejb.permission role-name="_Guest_"
 	 */
 	public void ejbCreate() throws CreateException
 	{
@@ -88,12 +88,12 @@ public class WorkstationManagerBean extends BaseSessionBeanImpl implements Sessi
 	 * @ejb.transaction type="Required"
 	 **/
 	public Workstation storeWorkstation(Workstation ws, boolean get, String[] fetchGroups, int maxFetchDepth)
-	throws ModuleException 
+	throws ModuleException
 	{
 		PersistenceManager pm = getPersistenceManager();
-		try 
+		try
 		{
-			if (fetchGroups != null) 
+			if (fetchGroups != null)
 				pm.getFetchPlan().setGroups(fetchGroups);
 			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
 
@@ -102,32 +102,32 @@ public class WorkstationManagerBean extends BaseSessionBeanImpl implements Sessi
 				return pm.detachCopy(ret);
 			else
 				return null;
-		} 
-		finally 
+		}
+		finally
 		{
 			pm.close();
 		}
 	}
 
 	/**
-	 * @throws ModuleException 
+	 * @throws ModuleException
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="WorkstationManagerBean-read"
 	 * @ejb.transaction type="Required"
 	 **/
-	public Workstation getWorkstation(WorkstationID workstationID, String [] fetchGroups, int maxFetchDepth) 
+	public Workstation getWorkstation(WorkstationID workstationID, String [] fetchGroups, int maxFetchDepth)
 	{
 		PersistenceManager pm = getPersistenceManager();
-		try 
+		try
 		{
-			if (fetchGroups != null) 
+			if (fetchGroups != null)
 				pm.getFetchPlan().setGroups(fetchGroups);
 			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
 			
 			Workstation ret = (Workstation) pm.getObjectById(workstationID);
 			return pm.detachCopy(ret);
-		} 
-		finally 
+		}
+		finally
 		{
 			pm.close();
 		}
@@ -139,18 +139,18 @@ public class WorkstationManagerBean extends BaseSessionBeanImpl implements Sessi
 	 * @ejb.transaction type="Required"
 	 **/
 	public Collection getWorkstations(String[] fetchGroups, int maxFetchDepth)
-	{		
+	{
 		PersistenceManager pm = getPersistenceManager();
-		try 
+		try
 		{
 			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
-			if (fetchGroups != null) 
+			if (fetchGroups != null)
 				pm.getFetchPlan().setGroups(fetchGroups);
 
 			Collection ret = Workstation.getWorkstations(pm);
 			return pm.detachCopyAll(ret);
-		} 
-		finally 
+		}
+		finally
 		{
 			pm.close();
 		}
@@ -194,7 +194,7 @@ public class WorkstationManagerBean extends BaseSessionBeanImpl implements Sessi
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
-	 */	
+	 */
 	public Set<WorkstationID> getWorkstaionIDs(Collection<WorkstationQuery> workstationQueries) {
 		PersistenceManager pm = getPersistenceManager();
 		try {
@@ -211,6 +211,6 @@ public class WorkstationManagerBean extends BaseSessionBeanImpl implements Sessi
 			return NLJDOHelper.getObjectIDSet(workstations);
 		} finally {
 			pm.close();
-		}		
-	}	
+		}
+	}
 }

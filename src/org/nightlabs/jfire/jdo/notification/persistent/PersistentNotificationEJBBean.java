@@ -50,12 +50,12 @@ import org.nightlabs.jfire.jdo.notification.persistent.id.PushNotifierID;
  *		name="jfire/ejb/JFireBaseBean/PersistentNotificationEJB"
  *		jndi-name="jfire/ejb/JFireBaseBean/PersistentNotificationEJB"
  *		type="Stateless"
- *   
+ * 
  * @ejb.util generate="physical"
  * @ejb.transaction type="Required"
  */
 public abstract class PersistentNotificationEJBBean
-extends BaseSessionBeanImpl implements SessionBean 
+extends BaseSessionBeanImpl implements SessionBean
 {
 	private static final long serialVersionUID = 1L;
 	private static final Logger logger = Logger.getLogger(PersistentNotificationEJBBean.class);
@@ -67,7 +67,7 @@ extends BaseSessionBeanImpl implements SessionBean
 		super.setSessionContext(sessionContext);
 	}
 	/**
-	 * @ejb.create-method  
+	 * @ejb.create-method
 	 * @ejb.permission role-name="_Guest_"
 	 */
 	public void ejbCreate() throws CreateException { }
@@ -84,7 +84,7 @@ extends BaseSessionBeanImpl implements SessionBean
 	 * @ejb.permission role-name="_System_"
 	 * @ejb.transaction type="Required"
 	 **/
-	public void initialise() 
+	public void initialise()
 	{
 		PersistenceManager pm = this.getPersistenceManager();
 		try {
@@ -136,7 +136,7 @@ extends BaseSessionBeanImpl implements SessionBean
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
 	 **/
-	public NotificationFilter storeNotificationFilter(NotificationFilter notificationFilter, boolean get, String[] fetchGroups, int maxFetchDepth) 
+	public NotificationFilter storeNotificationFilter(NotificationFilter notificationFilter, boolean get, String[] fetchGroups, int maxFetchDepth)
 	{
 		PersistenceManager pm = getPersistenceManager();
 		try {

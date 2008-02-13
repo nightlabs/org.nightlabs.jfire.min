@@ -34,7 +34,6 @@ import javax.jdo.PersistenceManagerFactory;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import org.nightlabs.ModuleException;
 import org.nightlabs.jfire.base.JFirePrincipal;
 import org.nightlabs.jfire.base.Lookup;
 import org.nightlabs.jfire.organisation.Organisation;

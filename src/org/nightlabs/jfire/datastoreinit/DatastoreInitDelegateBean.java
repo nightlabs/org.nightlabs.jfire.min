@@ -39,13 +39,13 @@ import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.base.InvokeUtil;
 
 /**
- * @ejb.bean name="jfire/ejb/JFireBaseBean/DatastoreInitDelegate"	
+ * @ejb.bean name="jfire/ejb/JFireBaseBean/DatastoreInitDelegate"
  *           jndi-name="jfire/ejb/JFireBaseBean/DatastoreInitDelegate"
- *           type="Stateless" 
+ *           type="Stateless"
  *           transaction-type="Container"
  *
  * @ejb.util generate="physical"
- * @ejb.transaction type="Required" 
+ * @ejb.transaction type="Required"
  */
 public abstract class DatastoreInitDelegateBean
 extends BaseSessionBeanImpl
@@ -54,7 +54,7 @@ implements SessionBean
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 * @ejb.create-method  
+	 * @ejb.create-method
 	 * @ejb.permission role-name="_Guest_"
 	 */
 	public void ejbCreate()

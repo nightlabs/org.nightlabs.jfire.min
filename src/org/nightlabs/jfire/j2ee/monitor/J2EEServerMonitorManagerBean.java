@@ -66,7 +66,7 @@ implements SessionBean
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 * @ejb.create-method  
+	 * @ejb.create-method
 	 * @ejb.permission role-name="_Guest_"
 	 */
 	public void ejbCreate()
@@ -90,12 +90,12 @@ implements SessionBean
 	 * @throws NamingException If lookup fails.
 	 */
 	protected J2EEAdapter getJ2EEAdapter() throws NamingException {
-		return (J2EEAdapter) getInitialContext(getOrganisationID()).lookup(J2EEAdapter.JNDI_NAME);		
+		return (J2EEAdapter) getInitialContext(getOrganisationID()).lookup(J2EEAdapter.JNDI_NAME);
 	}
 	
 	/**
 	 * Lists the name of all queues in this server.
-	 *  
+	 * 
 	 * @return The name of all queues in this server.
 	 * 
 	 * @ejb.interface-method
@@ -109,7 +109,7 @@ implements SessionBean
 		for (Queue queue : queues) {
 			result.add(queue.getQueueName());
 		}
-		return result; 
+		return result;
 	}
 
 	/**

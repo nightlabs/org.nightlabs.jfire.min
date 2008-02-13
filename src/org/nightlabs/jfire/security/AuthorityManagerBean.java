@@ -72,7 +72,7 @@ public abstract class AuthorityManagerBean extends BaseSessionBeanImpl implement
 	}
 
 	/**
-	 * @ejb.create-method  
+	 * @ejb.create-method
 	 * @ejb.permission role-name="AuthorityManager-read"
 	 */
 	public void ejbCreate() throws CreateException
@@ -122,32 +122,32 @@ public abstract class AuthorityManagerBean extends BaseSessionBeanImpl implement
 	public Authority getAuthority(String authorityID, String [] fetchGroups)
 		throws SecurityException
 	{
-		try 
+		try
 		{
 			PersistenceManager pm = getPersistenceManager();
 
-			if (fetchGroups != null) 
+			if (fetchGroups != null)
       	pm.getFetchPlan().setGroups(fetchGroups);
 
-			try 
+			try
 			{
 				pm.getExtent(Authority.class, true);
-				try 
+				try
 				{
 					Object o = pm.getObjectById(AuthorityID.create(getOrganisationID(), authorityID), true);
 					return (Authority)pm.detachCopy(o);
-				} 
-				catch (JDOObjectNotFoundException x) 
+				}
+				catch (JDOObjectNotFoundException x)
 				{
 					throw new AuthorityNotFoundException("Authority \""+authorityID+"\" not found in organisation \""+getOrganisationID()+"\"!");
 				}
-			} 
-			finally 
+			}
+			finally
 			{
 				if (CLOSE_PM) pm.close();
 			}
-		} 
-		catch (Exception x) 
+		}
+		catch (Exception x)
 		{
 			throw new SecurityException(x);
 		}
@@ -161,27 +161,27 @@ public abstract class AuthorityManagerBean extends BaseSessionBeanImpl implement
 			String searchStr, boolean exact, int itemsPerPage, int pageIndex, String[] fetchGroups, int maxFetchDepth)
 		throws SecurityException
 	{
-		try 
+		try
 		{
 			PersistenceManager pm = getPersistenceManager();
 			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
-      if (fetchGroups != null) 
+      if (fetchGroups != null)
       	pm.getFetchPlan().setGroups(fetchGroups);
 			
-      try 
+      try
 			{
 				AuthoritySearchResult result = Authority.searchAuthorities(pm, searchStr, exact, itemsPerPage, pageIndex);
 //				result.makeTransient(includeMask);
 
 				result.detachItems(pm);
 				return result;
-			} 
-			finally 
+			}
+			finally
 			{
 				if (CLOSE_PM) pm.close();
 			}
-		} 
-		catch (Exception x) 
+		}
+		catch (Exception x)
 		{
 			throw new SecurityException(x);
 		}
@@ -192,18 +192,18 @@ public abstract class AuthorityManagerBean extends BaseSessionBeanImpl implement
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="AuthorityManager-read"
 	 **/
-	public List<Authority> getAllAuthorities() 
+	public List<Authority> getAllAuthorities()
 	throws ModuleException
 	{
 	  PersistenceManager pm = getPersistenceManager();
-	  try 
+	  try
 	  {
 	    Query query = pm.newQuery(pm.getExtent(Authority.class, true));
 	    Collection<Authority> c = (Collection<Authority>) query.execute();
 	    List<Authority> result = new ArrayList<Authority>(pm.detachCopyAll(c));
 	    return result;
-	  } 
-	  finally 
+	  }
+	  finally
 	  {
 	    pm.close();
 	  }
@@ -274,7 +274,7 @@ public abstract class AuthorityManagerBean extends BaseSessionBeanImpl implement
 	}
 
 	// ******************************************************************
-	// *** Methods for management of links between UserRefs and RoleRefs 
+	// *** Methods for management of links between UserRefs and RoleRefs
 	// ******************************************************************
 
 	/**
@@ -516,7 +516,7 @@ public abstract class AuthorityManagerBean extends BaseSessionBeanImpl implement
 	}
 
 	/**
-	 * @param authorityID 
+	 * @param authorityID
 	 * @param userID
 	 * @param roleGroupID
 	 * @throws SecurityException

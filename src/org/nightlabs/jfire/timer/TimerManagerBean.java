@@ -10,7 +10,6 @@ import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
-import javax.ejb.Timer;
 import javax.jdo.FetchPlan;
 import javax.jdo.JDODetachedFieldAccessException;
 import javax.jdo.PersistenceManager;
@@ -56,7 +55,7 @@ implements SessionBean
 		super.unsetSessionContext();
 	}
 	/**
-	 * @ejb.create-method  
+	 * @ejb.create-method
 	 * @ejb.permission unchecked="true"
 	 */
 	public void ejbCreate() throws CreateException
@@ -273,7 +272,7 @@ implements SessionBean
 		} catch (Exception x) {
 			throw new ModuleException(x);
 		}
-	}	
+	}
 
 	/**
 	 * @ejb.interface-method

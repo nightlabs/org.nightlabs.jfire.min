@@ -50,7 +50,7 @@ import org.nightlabs.jfire.servermanager.JFireServerManagerFactory;
  * @author nick@nightlabs.de
  * @author marco@nightlabs.de
  */
-public class BaseSessionBeanImpl 
+public class BaseSessionBeanImpl
 {
 	protected SessionContext sessionContext;
 
@@ -148,7 +148,7 @@ public class BaseSessionBeanImpl
 	 *
 	 * @param organisationID The organisationID with wich to communicate.
 	 * @return Returns an InitialContext that is configured properly to authenticate at and communicate with another organisation (wherever it may be - e.g. on another server).
-	 * @throws NamingException 
+	 * @throws NamingException
 	 */
 	protected InitialContext getInitialContext(String organisationID)
 	throws NamingException
@@ -167,7 +167,7 @@ public class BaseSessionBeanImpl
 	 *
 	 * @param organisationID
 	 * @return Returns an instance of Properties to be used in <code>new InitialContext(Properties)</code>.
-	 * @throws NamingException 
+	 * @throws NamingException
 	 *
 	 * @see getInitialContext(String organisationID)
 	 */

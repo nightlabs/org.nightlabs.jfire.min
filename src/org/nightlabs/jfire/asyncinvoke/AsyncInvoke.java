@@ -28,7 +28,6 @@ package org.nightlabs.jfire.asyncinvoke;
 
 import java.io.IOException;
 
-import javax.ejb.CreateException;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
@@ -76,7 +75,7 @@ public class AsyncInvoke
 	/**
 	 * This is a convenience method which calls {@link #asyncInvoke(Invocation, SuccessCallback, ErrorCallback, UndeliverableCallback)}.
 	 * @param enableXA TODO
-	 * @throws CreateException 
+	 * @throws CreateException
 	 */
 	public static void exec(Invocation invocation, boolean enableXA)
 	throws JMSException, NamingException, LoginException
@@ -87,7 +86,7 @@ public class AsyncInvoke
 	/**
 	 * This is a convenience method which calls {@link #asyncInvoke(Invocation, SuccessCallback, ErrorCallback, UndeliverableCallback)}.
 	 * @param enableXA TODO
-	 * @throws CreateException 
+	 * @throws CreateException
 	 */
 	public static void exec(
 			Invocation invocation, SuccessCallback successCallback, boolean enableXA)
@@ -99,7 +98,7 @@ public class AsyncInvoke
 	/**
 	 * This is a convenience method which calls {@link #asyncInvoke(Invocation, SuccessCallback, ErrorCallback, UndeliverableCallback)}.
 	 * @param enableXA TODO
-	 * @throws CreateException 
+	 * @throws CreateException
 	 */
 	public static void exec(
 			Invocation invocation, ErrorCallback errorCallback, boolean enableXA)
@@ -111,7 +110,7 @@ public class AsyncInvoke
 	/**
 	 * This is a convenience method which calls {@link #asyncInvoke(Invocation, SuccessCallback, ErrorCallback, UndeliverableCallback)}.
 	 * @param enableXA TODO
-	 * @throws CreateException 
+	 * @throws CreateException
 	 */
 	public static void exec(
 			Invocation invocation, UndeliverableCallback undeliverableCallback, boolean enableXA)
@@ -144,7 +143,7 @@ public class AsyncInvoke
 	 *
 	 * @throws JMSException
 	 * @throws NamingException
-	 * @throws CreateException 
+	 * @throws CreateException
 	 */
 	public static void exec(
 			Invocation invocation, SuccessCallback successCallback,

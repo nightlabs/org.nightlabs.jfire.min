@@ -36,7 +36,7 @@ import org.nightlabs.timepattern.TimePatternFormatException;
  */
 public abstract class EditLockManagerBean
 extends BaseSessionBeanImpl
-implements SessionBean 
+implements SessionBean
 {
 //	private static final Logger logger = Logger.getLogger(EditLockManagerBean.class);
 	private static final long serialVersionUID = 1L;
@@ -55,7 +55,7 @@ implements SessionBean
 
 	/**
 	 * @ejb.create-method
-	 * @ejb.permission role-name="_Guest_"  
+	 * @ejb.permission role-name="_Guest_"
 	 */
 	public void ejbCreate() throws CreateException
 	{
@@ -147,7 +147,7 @@ implements SessionBean
 	 * @param description The editLock's description which will be shown to the user and should make clear what is locked (e.g. the name of the object referenced by <code>objectID</code>).
 	 * @param fetchGroups The fetch-groups used for detaching the created/queried {@link EditLock}.
 	 * @param maxFetchDepth The maximum fetch-depth for detaching the created/queried {@link EditLock}.
-	 * @throws ModuleException 
+	 * @throws ModuleException
 	 *
 	 * @ejb.interface-method
 	 * @ejb.transaction type="Required"

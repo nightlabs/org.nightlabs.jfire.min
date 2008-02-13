@@ -13,8 +13,6 @@ import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.security.SecurityReflector.UserDescriptor;
 import org.nightlabs.jfire.security.id.UserID;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
-import org.nightlabs.l10n.DateFormatter;
-import org.nightlabs.l10n.NumberFormatter;
 
 /**
  * This implementation of {@link ConfigFactory} allows to call <code>Config.sharedInstance()</code>

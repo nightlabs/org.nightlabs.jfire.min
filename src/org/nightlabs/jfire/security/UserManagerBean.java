@@ -45,7 +45,6 @@ import javax.jdo.Query;
 import org.apache.log4j.Logger;
 import org.nightlabs.ModuleException;
 import org.nightlabs.jdo.NLJDOHelper;
-import org.nightlabs.jdo.ObjectIDException;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.config.ConfigSetup;
 import org.nightlabs.jfire.security.id.AuthorityID;
@@ -64,14 +63,14 @@ import org.nightlabs.jfire.servermanager.JFireServerManager;
 /**
  * @ejb.bean name="jfire/ejb/JFireBaseBean/UserManager"
  *	jndi-name="jfire/ejb/JFireBaseBean/UserManager"
- *	type="Stateless" 
+ *	type="Stateless"
  * 
  * @ejb.util generate="physical"
  * @ejb.transaction type="Required"
  **/
 public abstract class UserManagerBean
 extends BaseSessionBeanImpl
-implements SessionBean 
+implements SessionBean
 {
 	private static final long serialVersionUID = 1L;
 	/**
@@ -96,7 +95,7 @@ implements SessionBean
 
 	/**
 	 * @ejb.create-method
-	 * @ejb.permission role-name="_Guest_"  
+	 * @ejb.permission role-name="_Guest_"
 	 * @!!!ejb.permission role-name="UserManager-read"
 	 */
 	public void ejbCreate() throws CreateException
@@ -257,11 +256,11 @@ implements SessionBean
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="UserManager-read"
 	 */
-	public Collection getUserIDsByType(String userType) 
+	public Collection getUserIDsByType(String userType)
 	throws ModuleException
 	{
 		PersistenceManager pm = getPersistenceManager();
-		try 
+		try
 		{
 			Query query = pm.newQuery(pm.getExtent(User.class, true));
 			query.declareImports("import java.lang.String");
@@ -275,7 +274,7 @@ implements SessionBean
 				ret.add(JDOHelper.getObjectId(i.next()));
 
 			return ret;
-		} 
+		}
 		finally {
 			pm.close();
 		}
@@ -292,7 +291,7 @@ implements SessionBean
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="UserManager-read"
 	 */
-	public Collection getUsersByType(String userType) 
+	public Collection getUsersByType(String userType)
 	throws ModuleException
 	{
 		return getUsersByType(userType,null);
@@ -307,13 +306,13 @@ implements SessionBean
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="UserManager-read"
 	 **/
-	public Collection getUsersByType(String userType, String [] fetchGroups) 
+	public Collection getUsersByType(String userType, String [] fetchGroups)
 	throws ModuleException
 	{
 		PersistenceManager pm = getPersistenceManager();
-		try 
+		try
 		{
-			if (fetchGroups != null) 
+			if (fetchGroups != null)
 				pm.getFetchPlan().setGroups(fetchGroups);
 
 			Query query = pm.newQuery(pm.getExtent(User.class, true));
@@ -323,7 +322,7 @@ implements SessionBean
 			query.setOrdering("this.userID ascending");
 			Collection c = (Collection)query.execute(userType, User.USERID_SYSTEM, User.USERID_OTHER);
 			return pm.detachCopyAll(c);
-		} 
+		}
 		finally {
 			pm.close();
 		}
@@ -335,7 +334,7 @@ implements SessionBean
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="UserManager-read"
 	 **/
-	public Collection getAllUsers() 
+	public Collection getAllUsers()
 	throws ModuleException
 	{
 		return getAllUsers(null);
@@ -347,13 +346,13 @@ implements SessionBean
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="UserManager-read"
 	 **/
-	public Collection getAllUsers(String [] fetchGroups) 
+	public Collection getAllUsers(String [] fetchGroups)
 	throws ModuleException
 	{
 		PersistenceManager pm = getPersistenceManager();
-		try 
+		try
 		{
-			if (fetchGroups != null) 
+			if (fetchGroups != null)
 				pm.getFetchPlan().setGroups(fetchGroups);
 
 			Query query = pm.newQuery(pm.getExtent(User.class, true));
@@ -363,7 +362,7 @@ implements SessionBean
 //			query.setOrdering("this.userID ascending");
 			Collection c = (Collection)query.execute(); // User.USERID_SYSTEM);
 			return pm.detachCopyAll(c);
-		} 
+		}
 		finally {
 			pm.close();
 		}
@@ -375,11 +374,11 @@ implements SessionBean
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="UserManager-read"
 	 **/
-	public Collection getUserIDsInUserGroup(UserID userGroupID) 
+	public Collection getUserIDsInUserGroup(UserID userGroupID)
 	throws ModuleException
 	{
 		PersistenceManager pm = getPersistenceManager();
-		try 
+		try
 		{
 			UserGroup ug = (UserGroup)pm.getObjectById(userGroupID);
 			Collection ret = new HashSet();
@@ -388,7 +387,7 @@ implements SessionBean
 				ret.add(JDOHelper.getObjectId(i.next()));
 
 			return ret;
-		} 
+		}
 		finally {
 			pm.close();
 		}
@@ -401,7 +400,7 @@ implements SessionBean
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="UserManager-read"
 	 **/
-	public Collection getUsersInUserGroup(String userGroupID) 
+	public Collection getUsersInUserGroup(String userGroupID)
 	throws ModuleException
 	{
 		return getUsersInUserGroup(userGroupID, null);
@@ -414,18 +413,18 @@ implements SessionBean
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="UserManager-read"
 	 **/
-	public Collection getUsersInUserGroup(String userGroupID, String [] fetchGroups) 
+	public Collection getUsersInUserGroup(String userGroupID, String [] fetchGroups)
 	throws ModuleException
 	{
 		PersistenceManager pm = getPersistenceManager();
-		try 
+		try
 		{
-			if (fetchGroups != null) 
+			if (fetchGroups != null)
 				pm.getFetchPlan().setGroups(fetchGroups);
 
 			UserGroup ug = (UserGroup)pm.getObjectById(UserID.create(getOrganisationID(), userGroupID));
 			return (Collection)pm.detachCopyAll(ug.getUsers());
-		} 
+		}
 		finally {
 			pm.close();
 		}
@@ -437,16 +436,16 @@ implements SessionBean
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="UserManager-read"
 	 **/
-	public Collection getUserIDsNotInUserGroup(UserID userGroupID) 
+	public Collection getUserIDsNotInUserGroup(UserID userGroupID)
 	throws ModuleException
 	{
 		PersistenceManager pm = getPersistenceManager();
-		try 
+		try
 		{
 			Extent ext = pm.getExtent(User.class, true);
 
 			// FIXME: JPOX generates "WHERE (1=0)" in SQL statement with this query
-//			Query query = pm.newQuery( 
+//			Query query = pm.newQuery(
 //			"SELECT FROM org.nightlabs.jfire.security.User " +
 //			"WHERE " +
 //			"  (userType == \"" + User.USERTYPE_USER + "\" || userType == \"" + User.USERTYPE_ORGANISATION + "\") &&" +
@@ -482,11 +481,11 @@ implements SessionBean
 			}
 			return c2;
 			// workaround end
-		} 
+		}
 		finally {
 			pm.close();
 		}
-	}  
+	}
 
 	/**
 	 * @deprecated Use getUserIDsNotInUserGroup(...) and getUsers(...) instead
@@ -495,11 +494,11 @@ implements SessionBean
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="UserManager-read"
 	 **/
-	public Collection getUsersNotInUserGroup(String userGroupID) 
+	public Collection getUsersNotInUserGroup(String userGroupID)
 	throws ModuleException
 	{
 		return getUsersNotInUserGroup(userGroupID, null);
-	}  
+	}
 
 	/**
 	 * @deprecated Use getUserIDsNotInUserGroup(...) and getUsers(...) instead
@@ -508,19 +507,19 @@ implements SessionBean
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="UserManager-read"
 	 **/
-	public Collection getUsersNotInUserGroup(String userGroupID, String [] fetchGroups) 
+	public Collection getUsersNotInUserGroup(String userGroupID, String [] fetchGroups)
 	throws ModuleException
 	{
 		PersistenceManager pm = getPersistenceManager();
-		try 
+		try
 		{
-			if (fetchGroups != null) 
+			if (fetchGroups != null)
 				pm.getFetchPlan().setGroups(fetchGroups);
 
 			Extent ext = pm.getExtent(User.class, true);
 
 			// FIXME: JPOX generates "WHERE (1=0)" in SQL statement with this query
-//			Query query = pm.newQuery( 
+//			Query query = pm.newQuery(
 //			"SELECT FROM org.nightlabs.jfire.security.User " +
 //			"WHERE " +
 //			"  (userType == \"" + User.USERTYPE_USER + "\" || userType == \"" + User.USERTYPE_ORGANISATION + "\") &&" +
@@ -557,7 +556,7 @@ implements SessionBean
 			return pm.detachCopyAll(c2);
 			// workaround end
 
-		} 
+		}
 		finally {
 			pm.close();
 		}
@@ -570,7 +569,7 @@ implements SessionBean
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="UserManager-read"
 	 **/
-	public RoleGroupListCarrier getRoleGroups(String userID, String authorityID) 
+	public RoleGroupListCarrier getRoleGroups(String userID, String authorityID)
 	throws ModuleException
 	{
 		return getRoleGroups(userID, authorityID, null);
@@ -583,19 +582,19 @@ implements SessionBean
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="UserManager-read"
 	 **/
-	public RoleGroupListCarrier getRoleGroups(String userID, String authorityID, String [] fetchGroups) 
+	public RoleGroupListCarrier getRoleGroups(String userID, String authorityID, String [] fetchGroups)
 	throws ModuleException
 	{
 		PersistenceManager pm = getPersistenceManager();
-		try 
+		try
 		{
-			if (fetchGroups != null) 
+			if (fetchGroups != null)
 				pm.getFetchPlan().setGroups(fetchGroups);
 
 			Extent ext = pm.getExtent(RoleGroup.class, false);
 
 			// rolegroups via userrefs
-			Query query = pm.newQuery( 
+			Query query = pm.newQuery(
 					"SELECT FROM org.nightlabs.jfire.security.RoleGroup " +
 					"WHERE " +
 					"  this == roleGroupRef.roleGroup &&" +
@@ -610,7 +609,7 @@ implements SessionBean
 			Collection roleGroupsUser = (Collection)query.execute(getOrganisationID(), userID, authorityID);
 
 			// rolegroups via usergroups
-			query = pm.newQuery( 
+			query = pm.newQuery(
 					"SELECT FROM org.nightlabs.jfire.security.RoleGroup " +
 					"WHERE " +
 					"  this == roleGroupRef.roleGroup &&" +
@@ -630,7 +629,7 @@ implements SessionBean
 			rglc.assignedByUserGroup = pm.detachCopyAll(roleGroupsUserGroups);
 
 			return rglc;
-		} 
+		}
 		finally {
 			pm.close();
 		}
@@ -641,12 +640,12 @@ implements SessionBean
 	 * @ejb.permission role-name="UserManager-read"
 	 * @ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 **/
-	public Collection getUserGroups(Set<UserID> userGroupIDs, String[] fetchGroups, int maxFetchDepth) 
+	public Collection getUserGroups(Set<UserID> userGroupIDs, String[] fetchGroups, int maxFetchDepth)
 	{
 		PersistenceManager pm = getPersistenceManager();
 		try {
 			return NLJDOHelper.getDetachedObjectList(pm, userGroupIDs, null, fetchGroups, maxFetchDepth);
-		} 
+		}
 		finally {
 			pm.close();
 		}
@@ -655,7 +654,7 @@ implements SessionBean
 	/**
 	 * Returns a Collection of {@link User}s corresponding to the given set of {@link UserID}s.
 	 * @param userIDs the {@link UserID}s for which to retrieve the {@link User}s
-	 * @param fetchGroups the FetchGroups for the detached Users 
+	 * @param fetchGroups the FetchGroups for the detached Users
 	 * @param maxFetchDepth the maximum fetch depth of the detached Users.
 	 * @returna Collection of {@link User}s corresponding to the given set of {@link UserID}s.
 	 * @throws ModuleException a wrapper for many kinds of Exceptions.
@@ -679,10 +678,10 @@ implements SessionBean
 	 * @ejb.permission role-name="UserManager-read"
 	 * @ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 **/
-	public UserGroupIDListCarrier getUserGroupIDs(String userID, String authorityID) 
+	public UserGroupIDListCarrier getUserGroupIDs(String userID, String authorityID)
 	{
 		PersistenceManager pm = getPersistenceManager();
-		try 
+		try
 		{
 			Extent ext = pm.getExtent(UserGroup.class, false);
 
@@ -729,7 +728,7 @@ implements SessionBean
 				uglc.excluded.add(JDOHelper.getObjectId(i.next()));
 
 			return uglc;
-		} 
+		}
 		finally {
 			pm.close();
 		}
@@ -738,7 +737,7 @@ implements SessionBean
 	// FIXME JPOX bug workaround method. Remove this, once the jpox bug is fixed
 	private static Collection getRoleGroupsForUserRef(PersistenceManager pm, String organisationID, String userID, String authorityID)
 	{
-		Query query = pm.newQuery( 
+		Query query = pm.newQuery(
 				"SELECT FROM org.nightlabs.jfire.security.RoleGroup " +
 				"WHERE " +
 				"  this == roleGroupRef.roleGroup &&" +
@@ -759,15 +758,15 @@ implements SessionBean
 	 * @ejb.permission role-name="UserManager-read"
 	 * @ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 **/
-	public RoleGroupIDListCarrier getRoleGroupIDs(String userID, String authorityID) 
+	public RoleGroupIDListCarrier getRoleGroupIDs(String userID, String authorityID)
 	{
 		PersistenceManager pm = getPersistenceManager();
-		try 
+		try
 		{
 			Query query;
 
 			// rolegroups via userrefs
-//			query = pm.newQuery( 
+//			query = pm.newQuery(
 //			"SELECT FROM org.nightlabs.jfire.security.RoleGroup " +
 //			"WHERE " +
 //			"  this == roleGroupRef.roleGroup &&" +
@@ -785,7 +784,7 @@ implements SessionBean
 			// FIXME JPOX bug workarounds. Clean this up, once the jpox bug is fixed
 
 			// rolegroups via usergroups
-//			query = pm.newQuery( 
+//			query = pm.newQuery(
 //			"SELECT FROM org.nightlabs.jfire.security.RoleGroup " +
 //			"WHERE " +
 //			"  this == roleGroupRef.roleGroup &&" +
@@ -806,13 +805,13 @@ implements SessionBean
 			Collection roleGroupsUserGroups = new HashSet();
 			pm.getExtent(User.class);
 			User user = (User) pm.getObjectById(UserID.create(getOrganisationID(), userID));
-			for (Iterator iter = user.getUserGroups().iterator(); iter.hasNext();) 
+			for (Iterator iter = user.getUserGroups().iterator(); iter.hasNext();)
 			{
 				Object o = iter.next();
 				if (o instanceof UserGroup) {
 					UserGroup userGroup = (UserGroup)o;
 					roleGroupsUserGroups.addAll(
-							getRoleGroupsForUserRef(pm, userGroup.getOrganisationID(), userGroup.getUserID(), authorityID));    			
+							getRoleGroupsForUserRef(pm, userGroup.getOrganisationID(), userGroup.getUserID(), authorityID));
 				}
 				else {
 					logger.error("entry in user.getUserGroups() is not instanceof UserGroup but is a "+o.getClass());
@@ -821,7 +820,7 @@ implements SessionBean
 
 			//FIXME: JPOX bug (INNER JOIN instead of LEFT JOIN)
 			// excluded rolegroups
-//			query = pm.newQuery( 
+//			query = pm.newQuery(
 //			"SELECT FROM org.nightlabs.jfire.security.RoleGroup " +
 //			"WHERE " +
 //			"  this == roleGroupRef.roleGroup &&" +
@@ -866,7 +865,7 @@ implements SessionBean
 //			rglc.excluded.add(JDOHelper.getObjectId(i.next()));
 
 			return rglc;
-		} 
+		}
 		finally {
 			pm.close();
 		}
@@ -896,7 +895,7 @@ implements SessionBean
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="UserManager-read"
 	 **/
-	public Collection getExcludedRoleGroups(String userID, String authorityID) 
+	public Collection getExcludedRoleGroups(String userID, String authorityID)
 	{
 		return getExcludedRoleGroups(userID, authorityID, null);
 	}
@@ -907,18 +906,18 @@ implements SessionBean
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="UserManager-read"
 	 **/
-	public Collection getExcludedRoleGroups(String userID, String authorityID, String [] fetchGroups) 
+	public Collection getExcludedRoleGroups(String userID, String authorityID, String [] fetchGroups)
 	{
 		PersistenceManager pm = getPersistenceManager();
-		try 
+		try
 		{
-			if (fetchGroups != null) 
+			if (fetchGroups != null)
 				pm.getFetchPlan().setGroups(fetchGroups);
 
 			Extent ext = pm.getExtent(RoleGroup.class, false);
 
 			//FIXME: JPOX bug (INNER JOIN instead of LEFT JOIN)
-//			Query query = pm.newQuery( 
+//			Query query = pm.newQuery(
 //			"SELECT FROM org.nightlabs.jfire.security.RoleGroup " +
 //			"WHERE " +
 //			"  this == roleGroupRef.roleGroup &&" +
@@ -932,7 +931,7 @@ implements SessionBean
 
 //			Collection res = (Collection)query.execute(getOrganisationID(), userID, authorityID);
 
-//			Query query = pm.newQuery( 
+//			Query query = pm.newQuery(
 //			"SELECT FROM org.nightlabs.jfire.security.RoleGroup " +
 //			"WHERE " +
 //			"  this == roleGroupRef.roleGroup &&" +
@@ -951,7 +950,7 @@ implements SessionBean
 			// workaround start
 			Query query = pm.newQuery("SELECT FROM org.nightlabs.jfire.security.RoleGroup");
 			Collection c = (Collection)query.execute();
-			query = pm.newQuery( 
+			query = pm.newQuery(
 					"SELECT FROM org.nightlabs.jfire.security.RoleGroup " +
 					"WHERE " +
 					"  this == roleGroupRef.roleGroup &&" +
@@ -964,7 +963,7 @@ implements SessionBean
 					"PARAMETERS String paramOrganisationID, String paramUserID, String paramAuthorityID " +
 			"import org.nightlabs.jfire.security.RoleGroupRef; import org.nightlabs.jfire.security.UserRef; import org.nightlabs.jfire.security.User; import java.lang.String");
 			Collection roleGroupsUser = (Collection)query.execute(getOrganisationID(), userID, authorityID);
-			query = pm.newQuery( 
+			query = pm.newQuery(
 					"SELECT FROM org.nightlabs.jfire.security.RoleGroup " +
 					"WHERE " +
 					"  this == roleGroupRef.roleGroup &&" +
@@ -990,7 +989,7 @@ implements SessionBean
 			return pm.detachCopyAll(c2);
 			// workaround end
 
-		} 
+		}
 		finally {
 			pm.close();
 		}
@@ -1003,10 +1002,10 @@ implements SessionBean
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="UserManager-read"
 	 **/
-	public Collection getUserGroups(String userID) 
+	public Collection getUserGroups(String userID)
 	{
 		return getUserGroups(userID, null);
-	}  
+	}
 
 	/**
 	 * @deprecated Use getUserGroupIDs(...) and getUserGroups(...) instead
@@ -1015,12 +1014,12 @@ implements SessionBean
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="UserManager-read"
 	 **/
-	public Collection getUserGroups(String userID, String [] fetchGroups) 
+	public Collection getUserGroups(String userID, String [] fetchGroups)
 	{
 		PersistenceManager pm = getPersistenceManager();
-		try 
+		try
 		{
-			if (fetchGroups != null) 
+			if (fetchGroups != null)
 				pm.getFetchPlan().setGroups(fetchGroups);
 
 //			Extent ext = pm.getExtent(UserGroup.class, false);
@@ -1033,7 +1032,7 @@ implements SessionBean
 
 			Collection c = (Collection)query.execute(userID);
 			return pm.detachCopyAll(c);
-		} 
+		}
 		finally {
 			pm.close();
 		}
@@ -1047,7 +1046,7 @@ implements SessionBean
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="UserManager-read"
 	 **/
-	public Collection getExcludedUserGroups(String userID) 
+	public Collection getExcludedUserGroups(String userID)
 	{
 		return getExcludedUserGroups(userID, null);
 	}
@@ -1059,12 +1058,12 @@ implements SessionBean
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="UserManager-read"
 	 **/
-	public Collection getExcludedUserGroups(String userID, String [] fetchGroups) 
+	public Collection getExcludedUserGroups(String userID, String [] fetchGroups)
 	{
 		PersistenceManager pm = getPersistenceManager();
-		try 
+		try
 		{
-			if (fetchGroups != null) 
+			if (fetchGroups != null)
 				pm.getFetchPlan().setGroups(fetchGroups);
 
 			//FIXME: JPOX bug reoccured (negation generates INNER JOIN instead of LEFT OUTER JOIN)
@@ -1102,7 +1101,7 @@ implements SessionBean
 
 			//      return pm.detachCopyAll(c);
 
-		} 
+		}
 		finally {
 			pm.close();
 		}
@@ -1117,7 +1116,7 @@ implements SessionBean
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="UserManager-write"
 	 **/
-	public boolean userIDAlreadyRegistered(UserID userID) 
+	public boolean userIDAlreadyRegistered(UserID userID)
 	{
 		PersistenceManager pm = getPersistenceManager();
 		try
@@ -1146,11 +1145,11 @@ implements SessionBean
 	 */
 	public User getUser(UserID userID, String[] fetchGroups, int maxFetchDepth)
 	{
-		PersistenceManager pm = this.getPersistenceManager();	    
+		PersistenceManager pm = this.getPersistenceManager();
 		try
 		{
 			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
-			if (fetchGroups != null) 
+			if (fetchGroups != null)
 				pm.getFetchPlan().setGroups(fetchGroups);
 
 			//FIXME: JPOX issue with detached Collections (always attached, problem with dirty bit)
@@ -1163,7 +1162,7 @@ implements SessionBean
 			User usr = (User)pm.detachCopy(o);
 
 			// FIXME: JPOX => load-fetch-group does not work
-			// this workaround makes User.person always dirty before it can be modified by the client (person is 
+			// this workaround makes User.person always dirty before it can be modified by the client (person is
 			// always attached when saving user!)
 //			try
 //			{
@@ -1235,7 +1234,7 @@ implements SessionBean
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="UserManager-write"
 	 **/
-	public void addUserToRoleGroups(String userID, String authorityID, Collection roleGroupIDs) 
+	public void addUserToRoleGroups(String userID, String authorityID, Collection roleGroupIDs)
 	{
 		Iterator i = roleGroupIDs.iterator();
 		while(i.hasNext())
@@ -1256,7 +1255,7 @@ implements SessionBean
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="UserManager-write"
 	 **/
-	public void addUserToRoleGroup(String userID, String authorityID, String roleGroupID) 
+	public void addUserToRoleGroup(String userID, String authorityID, String roleGroupID)
 	{
 		if (User.USERID_SYSTEM.equals(userID))
 			throw new IllegalArgumentException("Cannot manipulate system user \"" + User.USERID_SYSTEM + "\"!");
@@ -1296,7 +1295,7 @@ implements SessionBean
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="UserManager-write"
 	 **/
-	public void addUsersToUserGroup(String userGroupID, Collection userIDs) 
+	public void addUsersToUserGroup(String userGroupID, Collection userIDs)
 	throws SecurityException
 	{
 		Iterator i = userIDs.iterator();
@@ -1318,7 +1317,7 @@ implements SessionBean
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="UserManager-write"
 	 **/
-	public void addUserToUserGroups(String userID, Collection userGroupIDs) 
+	public void addUserToUserGroups(String userID, Collection userGroupIDs)
 	throws SecurityException
 	{
 		Iterator i = userGroupIDs.iterator();
@@ -1401,7 +1400,7 @@ implements SessionBean
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="UserManager-write"
 	 **/
-	public void removeUserFromRoleGroups(String userID, String authorityID, Collection roleGroupIDs) 
+	public void removeUserFromRoleGroups(String userID, String authorityID, Collection roleGroupIDs)
 	{
 		Iterator i = roleGroupIDs.iterator();
 		while(i.hasNext())
@@ -1425,7 +1424,7 @@ implements SessionBean
 	public void removeUserFromRoleGroup(String userID, String authorityID, String roleGroupID)
 	{
 		PersistenceManager pm = getPersistenceManager();
-		try 
+		try
 		{
 			pm.getFetchPlan().setGroup(FetchPlan.DEFAULT);
 			
@@ -1459,7 +1458,7 @@ implements SessionBean
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="UserManager-write"
 	 **/
-	public void removeUsersFromUserGroup(String userGroupID, Collection userIDs) 
+	public void removeUsersFromUserGroup(String userGroupID, Collection userIDs)
 	{
 		Iterator i = userIDs.iterator();
 		while(i.hasNext())
@@ -1479,7 +1478,7 @@ implements SessionBean
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="UserManager-write"
 	 **/
-	public void removeUserFromUserGroups(String userID, Collection userGroupIDs) 
+	public void removeUserFromUserGroups(String userID, Collection userGroupIDs)
 	{
 		Iterator i = userGroupIDs.iterator();
 		while(i.hasNext())
@@ -1504,13 +1503,13 @@ implements SessionBean
 	public void removeUserFromUserGroup(String userID, String userGroupID)
 	{
 		PersistenceManager pm = getPersistenceManager();
-		try 
+		try
 		{
 			pm.getFetchPlan().setGroup(FetchPlan.DEFAULT);
 //			pm.getExtent(User.class, true);
 //			User user = (User) pm.getObjectById(UserID.create(getOrganisationID(), userID), true);
 			pm.getExtent(UserGroup.class, true);
-			UserGroup userGroup = (UserGroup) pm.getObjectById(UserID.create(getOrganisationID(), userGroupID), true);  		  		
+			UserGroup userGroup = (UserGroup) pm.getObjectById(UserID.create(getOrganisationID(), userGroupID), true);
 			userGroup.removeUser(userID);
 
 			JFireServerManager jfsm = getJFireServerManager();
@@ -1538,7 +1537,7 @@ implements SessionBean
 //	public void assignPersonToUser(String userID, long personID)
 //	{
 //		PersistenceManager pm = getPersistenceManager();
-//		try 
+//		try
 //		{
 //			pm.getExtent(User.class, true);
 //			User usr = (User) pm.getObjectById(UserID.create(getOrganisationID(), userID), true);
@@ -1599,7 +1598,7 @@ implements SessionBean
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
-	 */	
+	 */
 	public Set<UserID> getUserIDs(Collection<UserQuery> userQueries) {
 		PersistenceManager pm = getPersistenceManager();
 		try {
@@ -1616,7 +1615,7 @@ implements SessionBean
 			return NLJDOHelper.getObjectIDSet(users);
 		} finally {
 			pm.close();
-		}		
+		}
 	}
 	
 	/**

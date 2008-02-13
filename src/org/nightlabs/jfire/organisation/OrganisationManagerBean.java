@@ -63,7 +63,6 @@ import org.nightlabs.jfire.organisation.id.OrganisationID;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.security.UserLocal;
 import org.nightlabs.jfire.security.id.UserID;
-import org.nightlabs.jfire.server.Server;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.servermanager.OrganisationNotFoundException;
 import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
@@ -147,7 +146,7 @@ public abstract class OrganisationManagerBean
 //	 * accepted it.
 //	 *
 //	 * @param organisationID The organisationID of the representative. Must be new and unique in the whole network (means world!).
-//	 * @param organisationDisplayName A nice name that will be used to display the new representative organisation. 
+//	 * @param organisationDisplayName A nice name that will be used to display the new representative organisation.
 //	 * @param masterOrganisationID The organisationID of the master organisation, this new slave is representing.
 //	 * @throws ModuleException
 //	 *
@@ -196,7 +195,7 @@ public abstract class OrganisationManagerBean
 	 *
 	 * @param organisationID The ID of the new organisation. It must be unique in the whole world.
 	 * @param organisationDisplayName A nice name that will be used to display the new representative organisation.
-	 * @param userID The userID of the first user to create within the new organisation. It will have all necessary permissions to manage users and roles within the new organisation. 
+	 * @param userID The userID of the first user to create within the new organisation. It will have all necessary permissions to manage users and roles within the new organisation.
 	 * @param password The password of the new user.
 	 * @param isServerAdmin Whether this user should have global server administration permissions.
 	 * @throws ModuleException
@@ -222,10 +221,10 @@ public abstract class OrganisationManagerBean
 	 *
 	 * @param organisationID The ID of the new organisation. It must be unique in the whole world.
 	 * @param organisationDisplayName A nice name that will be used to display the new representative organisation.
-	 * @param userID The userID of the first user to create within the new organisation. It will have all necessary permissions to manage users and roles within the new organisation. 
+	 * @param userID The userID of the first user to create within the new organisation. It will have all necessary permissions to manage users and roles within the new organisation.
 	 * @param password The password of the new user.
 	 * @param isServerAdmin Whether this user should have global server administration permissions.
-	 * @throws BusyCreatingOrganisationException 
+	 * @throws BusyCreatingOrganisationException
 	 *
 	 * @ejb.interface-method
 	 * @ejb.transaction type="Never"
@@ -290,7 +289,7 @@ public abstract class OrganisationManagerBean
 	}
 
 	/**
-	 * This method finds out whether the current 
+	 * This method finds out whether the current
 	 * 
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
@@ -412,7 +411,7 @@ public abstract class OrganisationManagerBean
 //			localOrganisation.removePendingRegistration(grantOrganisationID);
 		} finally {
 			pm.close();
-		}		
+		}
 	}
 
 	/**
@@ -445,7 +444,7 @@ public abstract class OrganisationManagerBean
 				String usrPassword = UserLocal.createPassword(15, 20);
 
 				// Create the user if it doesn't yet exist
-				String userID = User.USERID_PREFIX_TYPE_ORGANISATION + applicantOrganisationID;				
+				String userID = User.USERID_PREFIX_TYPE_ORGANISATION + applicantOrganisationID;
 				try {
 					User user = User.getUser(pm, getOrganisationID(), userID);
 					user.getUserLocal().setPasswordPlain(usrPassword); // set the new password, if the user already exists
@@ -591,7 +590,7 @@ public abstract class OrganisationManagerBean
 	 * This method is called by a client. It is the first step to make two
 	 * organisations know each other. It creates a user for the new organisation
 	 * and requests to be registered at the other organisation.
-	 * @throws OrganisationAlreadyRegisteredException 
+	 * @throws OrganisationAlreadyRegisteredException
 	 *
 	 * @ejb.interface-method
 	 * @ejb.transaction type="Required"
@@ -742,7 +741,7 @@ public abstract class OrganisationManagerBean
 //			} catch (ModuleException e) {
 //				throw e;
 //			} catch (Exception e) {
-//				throw new ModuleException(e);			
+//				throw new ModuleException(e);
 //			}
 //		}
 //		logger.info("testBackhand ("+organisationIDs.length+"): end: principal="+getPrincipalString());
@@ -757,7 +756,7 @@ public abstract class OrganisationManagerBean
 	public TestRequestResultTreeNode testCascadedAuthentication(TestRequestResultTreeNode node)
 	throws Exception
 	{
-		return internal_testCascadedAuthentication(node, -1); 
+		return internal_testCascadedAuthentication(node, -1);
 	}
 
 	/**
@@ -839,7 +838,7 @@ public abstract class OrganisationManagerBean
 
 			node = children.get(0);
 			if (node.getParent() != null)
-				throw new IllegalStateException("node is not root: node.getParent() != null");			
+				throw new IllegalStateException("node is not root: node.getParent() != null");
 		}
 
 		return node;
@@ -855,10 +854,10 @@ public abstract class OrganisationManagerBean
 	 * <p>
 	 * Note, that this method does nothing, if the local organisation IS the root-organisation.
 	 * </p>
-	 * @throws NamingException 
-	 * @throws CreateException 
-	 * @throws RemoteException 
-	 * @throws OrganisationAlreadyRegisteredException 
+	 * @throws NamingException
+	 * @throws CreateException
+	 * @throws RemoteException
+	 * @throws OrganisationAlreadyRegisteredException
 	 *
 	 * @ejb.interface-method
 	 * @ejb.transaction type="Required"
@@ -986,8 +985,8 @@ public abstract class OrganisationManagerBean
 	 * has been rejected, it does not try again if you do not pass <code>force = true</code>.
 	 * <p>
 	 * Note, that this method does nothing, if the local organisation IS the root-organisation.
-	 * </p> 
-	 * @throws OrganisationAlreadyRegisteredException 
+	 * </p>
+	 * @throws OrganisationAlreadyRegisteredException
 	 *
 	 * @ejb.interface-method
 	 * @ejb.transaction type="Required"
@@ -1118,15 +1117,15 @@ public abstract class OrganisationManagerBean
 
 //	/**
 //	 * This method returns all organisations that the current organisation knows.
-//	 * 
+//	 *
 //	 * @return a Collection of instances of type Organisation
-//	 * 
-//	 * @ejb.interface-method 
+//	 *
+//	 * @ejb.interface-method
 //	 */
-//	public Collection getOrganisations() 
+//	public Collection getOrganisations()
 //	{
 //		PersistenceManager pm = persistenceManagerFactory.getPersistenceManager();
-//		
+//
 //	  Collection organisations = new HashSet();
 //	  for (Iterator it = pm.getExtent(Organisation.class, true).iterator(); it.hasNext(); ) {
 //	    Organisation o = (Organisation) it.next();
@@ -1135,9 +1134,9 @@ public abstract class OrganisationManagerBean
 //	    pm.makeTransient(o.getServer());
 //	    organisations.add(o);
 //	  }
-//	  
+//
 //	  pm.close();
-//	  
+//
 //	  return organisations;
 //	}
 

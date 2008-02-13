@@ -47,9 +47,9 @@ import org.nightlabs.jfire.jdo.notification.IJDOLifecycleListenerFilter;
 
 
 /**
- * @ejb.bean name="jfire/ejb/JFireBaseBean/JDOManager"	
+ * @ejb.bean name="jfire/ejb/JFireBaseBean/JDOManager"
  *           jndi-name="jfire/ejb/JFireBaseBean/JDOManager"
- *           type="Stateless" 
+ *           type="Stateless"
  *           transaction-type="Container"
  *
  * @ejb.util generate="physical"
@@ -63,7 +63,7 @@ implements SessionBean
 	private static final Logger logger = Logger.getLogger(JDOManagerBean.class);
 
 	/**
-	 * @ejb.create-method  
+	 * @ejb.create-method
 	 * @ejb.permission role-name="_Guest_"
 	 */
 	public void ejbCreate()
@@ -85,7 +85,7 @@ implements SessionBean
 	 *
 	 * @param objectID A JDO object ID specifying a persistent object.
 	 *		This should implement {@link org.nightlabs.jdo.ObjectID}, because the client's logic
-	 *		is triggered by that tagging interface. 
+	 *		is triggered by that tagging interface.
 	 * @return Returns the fully qualified class name of the JDO persistence capable object
 	 *		defined by the given <tt>objectID</tt>.
 	 *
@@ -133,7 +133,7 @@ implements SessionBean
 	 * persistence capable objects specified by <tt>addObjectIDs</tt> have been changed.
 	 * <p>
 	 * The remove action will be performed before the add action. Hence, if an objectID
-	 * is in both of them, it will be added in total. 
+	 * is in both of them, it will be added in total.
 	 *
 	 * @param removeObjectIDs Either <tt>null</tt> or the object-ids of those JDO objects for which to remove listeners
 	 * @param addObjectIDs Either <tt>null</tt> or the object-ids of those JDO objects for which to add listeners
@@ -399,7 +399,7 @@ implements SessionBean
 //			}
 //		} finally {
 //			pm.close();
-//		} 
+//		}
 //	}
 	
 //	/**
@@ -413,7 +413,7 @@ implements SessionBean
 //	{
 //		return getJDOObjectController(linkObject.toString(), fetchGroups, maxFetchDepth);
 //	}
-//	
+//
 //	/**
 //	 *
 //	 * @ejb.interface-method
@@ -431,17 +431,17 @@ implements SessionBean
 //				pm.getFetchPlan().setGroups(fetchGroups);
 //			else
 //				pm.getFetchPlan().setGroups(JDOObjectController.DEFAULT_FETCH_GROUPS);
-//			
+//
 //			JDOObjectController controller = JDOObjectController.getObjectController(pm, linkObject);
-//			
+//
 //			return (JDOObjectController) pm.detachCopy(controller);
-//			
+//
 //		} finally {
 //			pm.close();
 //		}
-//		
+//
 //	}
-//	
+//
 //	/**
 //	 *
 //	 * @ejb.interface-method
@@ -459,19 +459,19 @@ implements SessionBean
 //				pm.getFetchPlan().setGroups(JDOObjectSyncResult.DEFAULT_FETCH_GROUPS);
 //			else
 //				pm.getFetchPlan().setGroups(fetchGroups);
-//			
+//
 //			JDOObjectController controller = JDOObjectController.getObjectController(pm, linkObject);
 //			JDOObjectController dController = (JDOObjectController)pm.detachCopy(controller);
-//			
+//
 //			Collection<JDOObjectChangeEvent> events = JDOObjectChangeEvent.getChangeEventsAfterVersion(pm, linkObject, version);
-//			Collection dEvents = pm.detachCopyAll(events);			
+//			Collection dEvents = pm.detachCopyAll(events);
 //			return new JDOObjectSyncResult(dController, dEvents);
 //		} finally {
 //			pm.close();
 //		}
-//		
-//	}	
-//	
+//
+//	}
+//
 //	/**
 //	 *
 //	 * @ejb.interface-method

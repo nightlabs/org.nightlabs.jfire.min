@@ -46,11 +46,11 @@ import org.nightlabs.language.LanguageCf;
  * @ejb.bean name="jfire/ejb/JFireBaseBean/LanguageManager"
  *	jndi-name="jfire/ejb/JFireBaseBean/LanguageManager"
  *	type="Stateless"
- *   
+ * 
  * @ejb.util generate="physical"
  * @ejb.transaction type="Required"
  */
-public abstract class LanguageManagerBean extends BaseSessionBeanImpl implements SessionBean 
+public abstract class LanguageManagerBean extends BaseSessionBeanImpl implements SessionBean
 {
 	private static final long serialVersionUID = 1L;
 	/**
@@ -68,7 +68,7 @@ public abstract class LanguageManagerBean extends BaseSessionBeanImpl implements
 		super.setSessionContext(sessionContext);
 	}
 	/**
-	 * @ejb.create-method  
+	 * @ejb.create-method
 	 * @ejb.permission role-name="LanguageManager-read"
 	 */
 	public void ejbCreate() throws CreateException
@@ -99,7 +99,7 @@ public abstract class LanguageManagerBean extends BaseSessionBeanImpl implements
 	 *
 	 * @ejb.permission role-name="LanguageManager-write"
 	 **/
-	public void createLanguage(LanguageCf langCf) 
+	public void createLanguage(LanguageCf langCf)
 	throws LanguageException
 	{
 		logger.debug("LanguageManagerBean.createLanguage");
@@ -156,12 +156,12 @@ public abstract class LanguageManagerBean extends BaseSessionBeanImpl implements
 	
 	/**
 	 * @param languageID ISO639-2 language code
-	 * @param throwExceptionIfNotExistent whether to return null or to throw a 
+	 * @param throwExceptionIfNotExistent whether to return null or to throw a
 	 *   LanguageNotFoundException if desired language does not exist.
 	 * @return An instance of the desired Language.
 	 * @throws LanguageNotFoundException If the desired Language does not exist and
 	 *   throwExceptionIfNotExistent is true.
-	 *   This exception is an inheritor of LanguageException 
+	 *   This exception is an inheritor of LanguageException
 	 * @throws LanguageException If it's not a LanguageNotFoundException, sth. unexpected
 	 *   happened - maybe the PersistenceManager is not accessible.
 	 * 
@@ -174,7 +174,7 @@ public abstract class LanguageManagerBean extends BaseSessionBeanImpl implements
 			PersistenceManager pm = getPersistenceManager();
 			try {
 				Language lang = (Language)pm.getObjectById(LanguageID.create(languageID), true);
-				if (lang==null && throwExceptionIfNotExistent) 
+				if (lang==null && throwExceptionIfNotExistent)
 					throw new LanguageNotFoundException("No language registered with languageID=\""+languageID+"\"!");
 				return lang;
 			} finally {
@@ -189,7 +189,7 @@ public abstract class LanguageManagerBean extends BaseSessionBeanImpl implements
 	 * @param languageID ISO639-2 language code
 	 * @return An instance of the desired Language. Never null!
 	 * @throws LanguageNotFoundException If the desired Language does not exist.
-	 *   This exception is an inheritor of LanguageException 
+	 *   This exception is an inheritor of LanguageException
 	 * @throws LanguageException If it's not a LanguageNotFoundException, sth. unexpected
 	 *   happened - maybe the PersistenceManager is not accessible.
 	 * 

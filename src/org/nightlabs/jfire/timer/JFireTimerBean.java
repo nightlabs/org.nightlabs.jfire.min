@@ -56,7 +56,7 @@ implements SessionBean, TimedObject
 		super.unsetSessionContext();
 	}
 	/**
-	 * @ejb.create-method  
+	 * @ejb.create-method
 	 * @ejb.permission role-name="_Guest_"
 	 */
 	public void ejbCreate() throws CreateException
@@ -122,7 +122,7 @@ implements SessionBean, TimedObject
 	}
 
 	/**
-	 * @throws ModuleException 
+	 * @throws ModuleException
 	 * @ejb.interface-method
 	 * @ejb.transaction type="Required"
 	 * @ejb.permission role-name="_System_"

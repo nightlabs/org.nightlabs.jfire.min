@@ -57,9 +57,9 @@ implements javax.ejb.MessageDrivenBean, javax.jms.MessageListener
 
 	protected javax.ejb.MessageDrivenContext messageContext = null;
 
-	/** 
+	/**
 	 * Required method for container to set context.
-	 * @generated 
+	 * @generated
 	 */
 	public void setMessageDrivenContext(
 			javax.ejb.MessageDrivenContext messageContext)
@@ -68,19 +68,19 @@ implements javax.ejb.MessageDrivenBean, javax.jms.MessageListener
 		this.messageContext = messageContext;
 	}
 
-	/** 
-	 * Required creation method for message-driven beans. 
+	/**
+	 * Required creation method for message-driven beans.
 	 *
-	 * @ejb.create-method 
+	 * @ejb.create-method
 	 * @generated
 	 */
 	public void ejbCreate()
 	{
-		//no specific action required for message-driven beans 
+		//no specific action required for message-driven beans
 	}
 
-	/** 
-	 * Required removal method for message-driven beans. 
+	/**
+	 * Required removal method for message-driven beans.
 	 * @generated
 	 */
 	public void ejbRemove()

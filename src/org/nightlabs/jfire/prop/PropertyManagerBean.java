@@ -39,8 +39,6 @@ import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
 import javax.jdo.JDOHelper;
 import javax.jdo.PersistenceManager;
-import javax.jdo.spi.PersistenceCapable;
-
 import org.apache.log4j.Logger;
 import org.nightlabs.ModuleException;
 import org.nightlabs.jdo.NLJDOHelper;
@@ -61,7 +59,7 @@ import org.nightlabs.util.Util;
  * TODO: Manage access rights for Properties on object-link-type basis
  * 
  * @ejb.bean name="jfire/ejb/JFireBaseBean/PropertyManager"
- *           jndi-name="jfire/ejb/JFireBaseBean/PropertyManager" 
+ *           jndi-name="jfire/ejb/JFireBaseBean/PropertyManager"
  *           type="Stateless"
  *           transaction-type="Container"
  * 
@@ -214,7 +212,7 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	 * set in the search filter.
 	 * <p>
 	 * All found objects are detached with the given fetch-groups
-	 * if they are {@link PersistenceCapable}. 
+	 * if they are {@link PersistenceCapable}.
 	 * </p>
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="PropManager-read"
@@ -240,9 +238,9 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	 * of {@link PropertySet}. It will return the {@link PropertySetID}s of the
 	 * found {@link PropertySet}s then.
 	 * <p>
-	 * Note, that if the given search filter does not return instances 
+	 * Note, that if the given search filter does not return instances
 	 * of {@link PropertySet} (its result columns might be set to something different)
-	 * this method will fail with a {@link ClassCastException}. 
+	 * this method will fail with a {@link ClassCastException}.
 	 * </p>
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="PropManager-read"
@@ -404,7 +402,7 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type="Required"
 	 */
-	public Set<PropertySet> getPropertySets(Set<PropertySetID> propIDs, String[] fetchGroups, int maxFetchDepth) 
+	public Set<PropertySet> getPropertySets(Set<PropertySetID> propIDs, String[] fetchGroups, int maxFetchDepth)
 	{
 		// MultiPageSearchResult multiPageSearchResult = new
 		// MultiPageSearchResult();
@@ -457,9 +455,9 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 
 //	/**
 //	 * Creates some test structures and persists them.
-//	 * 
+//	 *
 //	 * @throws ModuleException
-//	 * 
+//	 *
 //	 * @ejb.interface-method
 //	 * @ejb.permission role-name="_Guest_"
 //	 * @ejb.transaction type="Required"
@@ -469,7 +467,7 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 //		try {
 //			Struct struct = null;
 //			StructLocal structLocal = null;
-//			
+//
 //			struct = createPersonStruct();
 //			pm.makePersistent(struct);
 //			pm.makePersistent(new StructLocal(struct));
@@ -478,12 +476,12 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 ////				deleteStruct(structID, pm);
 ////				logger.debug("Successfully deleted struct with ID: " + structID);
 ////			}
-////			
+////
 ////			for (StructLocalID structLocalID : getAvailableStructLocalIDs(pm)) {
 ////				deleteStructLocal(structLocalID, pm);
 ////				logger.debug("Successfully deleted struct with ID: " + structLocalID);
 ////			}
-//			
+//
 ////			struct = createPersonStruct();
 ////			pm.makePersistent(struct);
 //
@@ -516,7 +514,7 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 //			pm.close();
 //		}
 //	}
-//	
+//
 //	private Struct createPersonStruct() {
 //		Struct struct;
 //		StructID structID = StructID.create("chezfrancois.jfire.org", Person.class.getName());
@@ -637,7 +635,7 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 //			throw new RuntimeException(jdodse);
 //		}
 //	}
-//	
+//
 //	private void deleteStructLocal(StructLocalID structLocalID, PersistenceManager pm) {
 //		try {
 //			StructLocal structLocal = (StructLocal) pm.getObjectById(structLocalID, true);

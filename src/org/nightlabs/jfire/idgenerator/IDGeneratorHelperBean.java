@@ -60,7 +60,7 @@ extends BaseSessionBeanImpl implements SessionBean
 		super.setSessionContext(sessionContext);
 	}
 	/**
-	 * @ejb.create-method  
+	 * @ejb.create-method
 	 * @ejb.permission role-name="_Guest_"
 	 */
 	public void ejbCreate() throws CreateException
@@ -96,7 +96,7 @@ extends BaseSessionBeanImpl implements SessionBean
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type="RequiresNew"
 	 **/
-	public long[] serverNextIDs(String namespace, int currentCacheSize, int minCacheSize) 
+	public long[] serverNextIDs(String namespace, int currentCacheSize, int minCacheSize)
 	throws ModuleException
 	{
 		try {
@@ -162,7 +162,7 @@ extends BaseSessionBeanImpl implements SessionBean
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 **/
-	public long[] clientNextIDs(String namespace, int currentCacheSize, int minCacheSize) 
+	public long[] clientNextIDs(String namespace, int currentCacheSize, int minCacheSize)
 	throws ModuleException
 	{
 		try {

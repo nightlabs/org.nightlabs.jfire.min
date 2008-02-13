@@ -38,16 +38,16 @@ import org.apache.log4j.Logger;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 
 /**
- * @ejb.bean name="jfire/ejb/JFireBaseBean/AsyncInvokerDelegate"	
+ * @ejb.bean name="jfire/ejb/JFireBaseBean/AsyncInvokerDelegate"
  *           jndi-name="jfire/ejb/JFireBaseBean/AsyncInvokerDelegate"
- *           type="Stateless" 
+ *           type="Stateless"
  *           transaction-type="Container"
  *
  * @ejb.interface extends="org.nightlabs.jfire.asyncinvoke.DelegateR" local-extends="org.nightlabs.jfire.asyncinvoke.DelegateL"
  * @!ejb.interface generate="local" // causes the Util class to have compile errors :-((( ... we now need to execute it pseudo-remotely anyway - otherwise there's a problem with cascaded authentication
  *
  * @ejb.util generate="physical"
- * @ejb.transaction type="Required" 
+ * @ejb.transaction type="Required"
  */
 public abstract class AsyncInvokerDelegateBean
 extends BaseSessionBeanImpl
@@ -57,7 +57,7 @@ implements SessionBean
 	private static final Logger logger = Logger.getLogger(AsyncInvokerDelegateBean.class);
 
 	/**
-	 * @ejb.create-method  
+	 * @ejb.create-method
 	 * @ejb.permission role-name="_Guest_"
 	 */
 	public void ejbCreate()

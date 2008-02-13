@@ -50,7 +50,7 @@ import org.nightlabs.jfire.servermanager.RoleImportSet;
  * @ejb.util generate="physical"
  * @ejb.transaction type="Required"
  **/
-public abstract class RoleManagerBean extends BaseSessionBeanImpl implements SessionBean  
+public abstract class RoleManagerBean extends BaseSessionBeanImpl implements SessionBean
 {
 	private static final long serialVersionUID = 1L;
 	/**
@@ -69,7 +69,7 @@ public abstract class RoleManagerBean extends BaseSessionBeanImpl implements Ses
 		super.setSessionContext(sessionContext);
 	}
 	/**
-	 * @ejb.create-method  
+	 * @ejb.create-method
 	 * @ejb.permission role-name="RoleManager-read"
 	 */
 	public void ejbCreate() throws CreateException

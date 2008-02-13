@@ -28,9 +28,9 @@ import org.nightlabs.jfire.base.BaseSessionBeanImpl;
  * @ejb.util generate="physical"
  * @ejb.transaction type="Required"
  */
-public abstract class AsyncInvokeManagerBean 
-extends BaseSessionBeanImpl 
-implements SessionBean 
+public abstract class AsyncInvokeManagerBean
+extends BaseSessionBeanImpl
+implements SessionBean
 {
 //	private static final Logger logger = Logger.getLogger(AsyncInvokeManagerBean.class);
 	private static final long serialVersionUID = 1L;
@@ -110,7 +110,7 @@ implements SessionBean
 		try {
 			Set<AsyncInvokeProblem> problems = NLJDOHelper.getObjectSet(pm, asyncInvokeProblemIDs, AsyncInvokeProblem.class);
 			for (Iterator<AsyncInvokeProblem> it = problems.iterator(); it.hasNext();) {
-				AsyncInvokeProblem problem = it.next(); 
+				AsyncInvokeProblem problem = it.next();
 				if (!problem.isUndeliverable())
 					it.remove();
 			}
