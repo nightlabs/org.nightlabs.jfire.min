@@ -56,7 +56,7 @@ public abstract class OrganisationLinkerBean implements javax.ejb.SessionBean
 	private static final Logger logger = Logger.getLogger(OrganisationLinkerBean.class);
 
 	/**
-	 * @ejb.create-method  
+	 * @ejb.create-method
 	 */
 	public void ejbCreate()
 	throws CreateException
@@ -70,7 +70,7 @@ public abstract class OrganisationLinkerBean implements javax.ejb.SessionBean
 	 * <br/><br/>
 	 * Do NOT call this method by your client! Use OrganisationManager EJB instead!
 	 *
-	 * @throws OrganisationAlreadyRegisteredException 
+	 * @throws OrganisationAlreadyRegisteredException
 	 *
 	 * @ejb.interface-method
 	 **/
