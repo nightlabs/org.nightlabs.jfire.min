@@ -26,18 +26,14 @@
 
 package org.nightlabs.jfire.classloader;
 
-import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.List;
-import java.util.Map;
-
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
 
 import org.apache.log4j.Logger;
-import org.nightlabs.ModuleException;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 
@@ -71,7 +67,7 @@ public abstract class JFireRCLBackendBean
 	}
 
 	/**
-	 * @ejb.create-method  
+	 * @ejb.create-method
 	 * @ejb.permission role-name="_Guest_"
 	 */
 	public void ejbCreate()
