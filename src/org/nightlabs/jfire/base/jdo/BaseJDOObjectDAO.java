@@ -82,7 +82,7 @@ public abstract class BaseJDOObjectDAO<JDOObjectID, JDOObject>
 	 * 
 	 * @param objectID Wich object to get
 	 * @param fetchGroups Wich fetch groups to use
-	 * @param maxFetchDepth Fetch depth or {@link NLJDOHelper#MAX_FETCH_DEPTH_NO_LIMIT} 
+	 * @param maxFetchDepth Fetch depth or {@link NLJDOHelper#MAX_FETCH_DEPTH_NO_LIMIT}
 	 * @param monitor The progress monitor for this action. After downloading the
 	 * 					object, <code>monitor.worked(1)</code> should be called.
 	 * @return All requested and existing JDO objects.
@@ -106,7 +106,7 @@ public abstract class BaseJDOObjectDAO<JDOObjectID, JDOObject>
 	 * 
 	 * @param objectIDs Which objects to get
 	 * @param fetchGroups Which fetch groups to use
-	 * @param maxFetchDepth Fetch depth or {@link NLJDOHelper#MAX_FETCH_DEPTH_NO_LIMIT} 
+	 * @param maxFetchDepth Fetch depth or {@link NLJDOHelper#MAX_FETCH_DEPTH_NO_LIMIT}
 	 * @param monitor The progress monitor for this action. For every downloaded
 	 * 					object, <code>monitor.worked(1)</code> should be called.
 	 * @return All requested and existing JDO objects.
@@ -117,14 +117,14 @@ public abstract class BaseJDOObjectDAO<JDOObjectID, JDOObject>
 
 	/**
 	 * Get a JDO object from the cache or the server.
-	 * Object download for an uncached object is delegated by calling 
+	 * Object download for an uncached object is delegated by calling
 	 * {@link #retrieveJDOObject(Object, Set, int, IProgressMonitor)
 	 * for the uncached object.
 	 * 
 	 * @param scope The cache scope to use
 	 * @param objectID Wich object to get
 	 * @param fetchGroups Wich fetch groups to use
-	 * @param maxFetchDepth Fetch depth or {@link NLJDOHelper#MAX_FETCH_DEPTH_NO_LIMIT} 
+	 * @param maxFetchDepth Fetch depth or {@link NLJDOHelper#MAX_FETCH_DEPTH_NO_LIMIT}
 	 * @param monitor The progress monitor for this action. For every cached
 	 * 					object, <code>monitor.worked(1)</code> will be called.
 	 * @return All requested and existing JDO objects.
@@ -147,17 +147,17 @@ public abstract class BaseJDOObjectDAO<JDOObjectID, JDOObject>
 	
 	/**
 	 * Get JDO objects from the cache or the server.
-	 * Object download for uncached objects is delegated by calling 
+	 * Object download for uncached objects is delegated by calling
 	 * {@link #retrieveJDOObjects(Set, Set, int, IProgressMonitor)}
 	 * for all uncached objects.
 	 * <p>
 	 * Note that this will maintain the order of the objects given if you
-	 * pass a {@link List} as objectIDs. 
+	 * pass a {@link List} as objectIDs.
 	 * 
 	 * @param scope The cache scope to use
 	 * @param objectIDs Wich objects to get
 	 * @param fetchGroups Wich fetch groups to use
-	 * @param maxFetchDepth Fetch depth or {@link NLJDOHelper#MAX_FETCH_DEPTH_NO_LIMIT} 
+	 * @param maxFetchDepth Fetch depth or {@link NLJDOHelper#MAX_FETCH_DEPTH_NO_LIMIT}
 	 * @param monitor The progress monitor for this action. For every cached
 	 * 					object, <code>monitor.worked(1)</code> will be called.
 	 * @return All requested and existing JDO objects.
@@ -169,7 +169,7 @@ public abstract class BaseJDOObjectDAO<JDOObjectID, JDOObject>
 			monitor.done();
 			return new ArrayList<JDOObject>(0);
 		}
-//		objectIDs.size * 2, so that the retrieval be at least as important, as the processing 
+//		objectIDs.size * 2, so that the retrieval be at least as important, as the processing
 		monitor.beginTask("Getting "+objectIDs.size()+" Objects through Cache", objectIDs.size() * 2);
 		ArrayList<JDOObject> objects = new ArrayList<JDOObject>(objectIDs.size());
 			
@@ -185,7 +185,7 @@ public abstract class BaseJDOObjectDAO<JDOObjectID, JDOObject>
 			}
 			else {
 				notInCache.put(listetIDs.get(i), i); // if not in cache save (objectID, position)
-				objects.add(null); // fill the result array, so that we're later able to replace the 
+				objects.add(null); // fill the result array, so that we're later able to replace the
 													 // JDOObject at the correct position
 			}
 		}
@@ -196,7 +196,7 @@ public abstract class BaseJDOObjectDAO<JDOObjectID, JDOObject>
 		// fetch all missing objects from datastore
 		Collection<JDOObject> fetchedObjects;
 		try { //                               workaround for hashset.keyset != serializable
-			fetchedObjects = retrieveJDOObjects(new HashSet<JDOObjectID>(notInCache.keySet()), 
+			fetchedObjects = retrieveJDOObjects(new HashSet<JDOObjectID>(notInCache.keySet()),
 					fetchGroups, maxFetchDepth, new SubProgressMonitor(monitor, objectIDs.size()));
 		} catch (Exception e) {
 			throw new RuntimeException("Error occured while fetching Objects from the data store!\n", e);
@@ -231,23 +231,23 @@ public abstract class BaseJDOObjectDAO<JDOObjectID, JDOObject>
 		Cache.sharedInstance().putAll(scope, fetchedObjects, fetchGroups, maxFetchDepth);
 
 		monitor.done();
-		objects.trimToSize();	
-		return objects;		
+		objects.trimToSize();
+		return objects;
 	}
 
 	/**
 	 * Get JDO objects from the cache or the server.
-	 * Object download for uncached objects is delegated by calling 
+	 * Object download for uncached objects is delegated by calling
 	 * {@link #retrieveJDOObjects(Set, Set, int, IProgressMonitor)}
 	 * for all uncached objects.
 	 * <p>
-	 * This is a convenience method that calls 
+	 * This is a convenience method that calls
 	 * {@link #getJDOObjects(String, Collection, Set, int, IProgressMonitor)}.
 	 * 
 	 * @param scope The cache scope to use
 	 * @param objectIDs Wich objects to get
 	 * @param fetchGroups Wich fetch groups to use
-	 * @param maxFetchDepth Fetch depth or {@link NLJDOHelper#MAX_FETCH_DEPTH_NO_LIMIT} 
+	 * @param maxFetchDepth Fetch depth or {@link NLJDOHelper#MAX_FETCH_DEPTH_NO_LIMIT}
 	 * @param monitor The progress monitor for this action. For every cached
 	 * 					object, <code>monitor.worked(1)</code> will be called.
 	 * @return All requested and existing JDO objects.
@@ -256,26 +256,26 @@ public abstract class BaseJDOObjectDAO<JDOObjectID, JDOObject>
 	protected synchronized List<JDOObject> getJDOObjects(String scope, Collection<JDOObjectID> objectIDs, Set<String> fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
 	{
 		return getJDOObjects(
-				scope, 
-				objectIDs, 
-				fetchGroups.toArray(new String[0]), 
-				maxFetchDepth, 
+				scope,
+				objectIDs,
+				fetchGroups.toArray(new String[0]),
+				maxFetchDepth,
 				monitor);
-	}	
+	}
 
 	/**
 	 * Get JDO objects from the cache or the server.
-	 * Object download for uncached objects is delegated by calling 
+	 * Object download for uncached objects is delegated by calling
 	 * {@link #retrieveJDOObjects(Set, Set, int, IProgressMonitor)}
 	 * for all uncached objects.
 	 * <p>
-	 * This is a convenience method that calls 
+	 * This is a convenience method that calls
 	 * {@link #getJDOObjects(String, Collection, Set, int, IProgressMonitor)}.
 	 * 
 	 * @param scope The cache scope to use
 	 * @param objectIDs Wich objects to get
 	 * @param fetchGroups Wich fetch groups to use
-	 * @param maxFetchDepth Fetch depth or {@link NLJDOHelper#MAX_FETCH_DEPTH_NO_LIMIT} 
+	 * @param maxFetchDepth Fetch depth or {@link NLJDOHelper#MAX_FETCH_DEPTH_NO_LIMIT}
 	 * @param monitor The progress monitor for this action. For every cached
 	 * 					object, <code>monitor.worked(1)</code> will be called.
 	 * @return All requested and existing JDO objects.
@@ -284,26 +284,26 @@ public abstract class BaseJDOObjectDAO<JDOObjectID, JDOObject>
 	protected synchronized List<JDOObject> getJDOObjects(String scope, JDOObjectID[] objectIDs, Set<String> fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
 	{
 		return getJDOObjects(
-				scope, 
-				CollectionUtil.array2ArrayList(objectIDs), 
-				fetchGroups, 
-				maxFetchDepth, 
+				scope,
+				CollectionUtil.array2ArrayList(objectIDs),
+				fetchGroups,
+				maxFetchDepth,
 				monitor);
-	}	
+	}
 
 	/**
 	 * Get JDO objects from the cache or the server.
-	 * Object download for uncached objects is delegated by calling 
+	 * Object download for uncached objects is delegated by calling
 	 * {@link #retrieveJDOObjects(Set, Set, int, IProgressMonitor)}
 	 * for all uncached objects.
 	 * <p>
-	 * This is a convenience method that calls 
+	 * This is a convenience method that calls
 	 * {@link #getJDOObjects(String, Collection, Set, int, IProgressMonitor)}.
 	 * 
 	 * @param scope The cache scope to use
 	 * @param objectIDs Wich objects to get
 	 * @param fetchGroups Wich fetch groups to use
-	 * @param maxFetchDepth Fetch depth or {@link NLJDOHelper#MAX_FETCH_DEPTH_NO_LIMIT} 
+	 * @param maxFetchDepth Fetch depth or {@link NLJDOHelper#MAX_FETCH_DEPTH_NO_LIMIT}
 	 * @param monitor The progress monitor for this action. For every cached
 	 * 					object, <code>monitor.worked(1)</code> will be called.
 	 * @return All requested and existing JDO objects.
@@ -312,18 +312,18 @@ public abstract class BaseJDOObjectDAO<JDOObjectID, JDOObject>
 	protected synchronized List<JDOObject> getJDOObjects(String scope, JDOObjectID[] objectIDs, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
 	{
 		return getJDOObjects(
-				scope, 
-				CollectionUtil.array2ArrayList(objectIDs), 
-				CollectionUtil.array2HashSet(fetchGroups), 
-				maxFetchDepth, 
+				scope,
+				CollectionUtil.array2ArrayList(objectIDs),
+				CollectionUtil.array2HashSet(fetchGroups),
+				maxFetchDepth,
 				monitor);
-	}	
+	}
 	
 	/**
 	 * Get the cache shared instance.
 	 * @return The cache shared instance.
 	 */
-	protected Cache getCache() 
+	protected Cache getCache()
 	{
 		return cache;
 	}

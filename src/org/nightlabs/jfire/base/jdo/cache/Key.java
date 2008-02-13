@@ -43,7 +43,7 @@ public class Key
 	 * @param scope Can be <tt>null</tt> (the default) or a <tt>String</tt> specifying a different
 	 *		namespace (e.g. if the method with which the data has been fetched does some special
 	 *		manipulation with the object and it therefore differs even though the fetchGroups
-	 *		are the same as with the normal fetch-method). 
+	 *		are the same as with the normal fetch-method).
 	 * @param objectID A JDO object ID - must not be <tt>null</tt>. Note, that you MUST NOT change
 	 *		the objectID after you called this constructor!
 	 * @param fetchGroups Can be <tt>null</tt> or must be a <tt>Set</tt> of <tt>String</tt>.

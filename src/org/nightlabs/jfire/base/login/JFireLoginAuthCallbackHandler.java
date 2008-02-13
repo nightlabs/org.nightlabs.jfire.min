@@ -12,7 +12,7 @@ import org.nightlabs.j2ee.LoginData;
 
 /**
  * CallBackHandler for {@link JFireLogin}.
- *  
+ * 
  * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] de -->
  * @author Marius Heinzmann -- Marius[at]NightLabs[dot]de
  */

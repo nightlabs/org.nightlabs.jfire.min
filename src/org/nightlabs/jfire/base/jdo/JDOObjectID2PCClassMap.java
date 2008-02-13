@@ -72,7 +72,7 @@ public class JDOObjectID2PCClassMap
 	 * is put into it.
 	 * <p>
 	 * This method silently returns without any action, if the <tt>objectID</tt>
-	 * is already known. 
+	 * is already known.
 	 *
 	 * @param objectID The ID of a persistance-capable JDO object.
 	 * @param clazz The <tt>Class</tt> of the instance which is represented

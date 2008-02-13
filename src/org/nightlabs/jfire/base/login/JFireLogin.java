@@ -32,7 +32,6 @@ import java.util.Properties;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.login.LoginContext;
 import javax.security.auth.login.LoginException;
 
@@ -43,7 +42,7 @@ import org.nightlabs.math.Base62Coder;
 /**
  * Helper class to login to a JFire server.
  * <p>
- * It can be instantiated and serves IntialContextProperties 
+ * It can be instantiated and serves IntialContextProperties
  * that developers will need for example to create EJB proxies to
  * the services, the jfire server provides. (See {@link #getInitialContextProperties()})
  * </p>
@@ -55,13 +54,13 @@ import org.nightlabs.math.Base62Coder;
  *   <li><b>jfire.login.organisationID</b> (The value of {@link #PROP_ORGANISATION_ID}), defines the organisationID to login to.</li>
  *   <li><b>jfire.login.userID</b> (The value of {@link #PROP_USER_ID}), defines the userID to log in with. Note that organisationID and userID will be concatted to form the username: userID@organisationID</li>
  *   <li><b>jfire.login.password</b> (The value of {@link #PROP_PASSWORD}), defines the password to login with.</li>
- *   <li><b>jfire.login.providerURL</b> (The value of {@link #PROP_PROVIDER_URL}), defines the URL of the server to login to. 
+ *   <li><b>jfire.login.providerURL</b> (The value of {@link #PROP_PROVIDER_URL}), defines the URL of the server to login to.
  *   	This defaults to the value defined in {@link InitialContext#getEnvironment()} or to "jnp://127.0.0.1:1099"</li>
- *   <li><b>jfire.login.initialContextFactory</b> (The value of {@link #PROP_INITIAL_CONTEXT_FACTORY}), defines the login context factory to use, 
+ *   <li><b>jfire.login.initialContextFactory</b> (The value of {@link #PROP_INITIAL_CONTEXT_FACTORY}), defines the login context factory to use,
  *   	defaults to "org.nightlabs.jfire.jboss.cascadedauthentication.LoginInitialContextFactory"</li>
  *   <li><b>jfire.login.securityProtocol</b> (The value of {@link #PROP_SECURITY_PROTOCOL}), defines the security protocol to use, defaults to "jfire".</li>
  * </ul>
- * </p> * 
+ * </p> *
  * 
  * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] de -->
  * @author Marius Heinzmann -- Marius[at]NightLabs[dot]de
@@ -98,8 +97,8 @@ public class JFireLogin
 	
 	/**
 	 * Creates a new {@link JFireLogin}.
-	 * The values like username and password will 
-	 * be taken from the given Properties, 
+	 * The values like username and password will
+	 * be taken from the given Properties,
 	 * see the class documentation for more details.
 	 * 
 	 * @param loginProperties The login configuration, this can also be a pr
@@ -125,7 +124,7 @@ public class JFireLogin
 				loginData.setSecurityProtocol(loginProps.getProperty(SECURITY_PROTOCOL, "jfire"));
 			else {
 				loginData.getAdditionalParams().put(
-						(String) propKey, 
+						(String) propKey,
 						loginProps.getProperty((String)propKey)
 						);
 			}
@@ -219,9 +218,9 @@ public class JFireLogin
 	 * Returns Properties for an {@link InitialContext} that are configured with the values according to this
 	 * {@link JFireLogin}. The result can be used for example to create EJB proxies to
 	 * access JFire server methods.
-	 *  
-	 * @return Properties for an {@link InitialContext} configured with the values of this JFireLogin. 
-	 * @throws NamingException Might occur when trying to auto-resolve the providerURL.   
+	 * 
+	 * @return Properties for an {@link InitialContext} configured with the values of this JFireLogin.
+	 * @throws NamingException Might occur when trying to auto-resolve the providerURL.
 	 */
 	public Properties getInitialContextProperties()
 	throws NamingException
@@ -248,8 +247,8 @@ public class JFireLogin
 	 * 
 	 * @throws LoginException When login fails
 	 */
-	public void login() 
-	throws LoginException 
+	public void login()
+	throws LoginException
 	{
 		Base62Coder coder = Base62Coder.sharedInstance();
 		loginData.setSessionID(
@@ -265,7 +264,7 @@ public class JFireLogin
 	 * 
 	 * @throws LoginException When logout fails.
 	 */
-	public void logout() 
+	public void logout()
 	throws LoginException
 	{
 		if (loginContext != null) {

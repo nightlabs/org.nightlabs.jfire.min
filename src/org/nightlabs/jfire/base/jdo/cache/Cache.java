@@ -48,7 +48,6 @@ import org.nightlabs.jdo.ObjectID;
 import org.nightlabs.jfire.base.jdo.JDOObjectID2PCClassMap;
 import org.nightlabs.jfire.base.jdo.notification.ChangeSubjectCarrier;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleEvent;
-import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleListener;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleManager;
 import org.nightlabs.jfire.jdo.JDOManager;
 import org.nightlabs.jfire.jdo.JDOManagerUtil;
@@ -63,17 +62,17 @@ import org.nightlabs.util.CollectionUtil;
 /**
  * This cache was designed to hold JFire JDO objects on the client side
  * <p>
- * It stores the JDO objects by their object-id and the fetch-groups 
+ * It stores the JDO objects by their object-id and the fetch-groups
  * used to detach the objects. Additionally a scope can be used in case
- * the fetch-groups do not sufficently define how the object was detached 
- * (for example they might be detached with detach-load-fields) 
+ * the fetch-groups do not sufficently define how the object was detached
+ * (for example they might be detached with detach-load-fields)
  * </p>
  * <p>
  * When the cache is asked for an object with a certain set of fecht-groups
  * an object from the cache is returned if its found to have been detached
  * with the same or more fetch-groups.
  * </p>
- * A singleton of this class caches (possibly) all JDO objects 
+ * A singleton of this class caches (possibly) all JDO objects
  * in the client. To use it, you should implement your own
  * {@link org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO}.
  *
@@ -366,7 +365,7 @@ public class Cache
 						// ignore
 					}
 
-					// *** container management below *** 
+					// *** container management below ***
 					// (this might affect the listeners to be removed - NO: We don't drop listeners when we remove objects from Cache! Marco.)
 					CarrierContainer activeCarrierContainer = cache.getActiveCarrierContainer();
 					if (System.currentTimeMillis() - activeCarrierContainer.getCreateDT() > cache.getCacheCfMod().getCarrierContainerActivityMSec()) {
@@ -374,14 +373,14 @@ public class Cache
 					}
 					// *** container management above ***
 
-					// *** dependency container management below *** 
+					// *** dependency container management below ***
 					if (System.currentTimeMillis() - cache.objectID2KeySet_dependency_removed_active_createTimestamp > cache.getCacheCfMod().getOldGraphDependencyContainerActivityMSec()) {
 						cache.roll_objectID2KeySet_dependency_removed_history();
 					}
-					// *** dependency container management above *** 
+					// *** dependency container management above ***
 
 					// *** listener management below ***
-//					// fill in the object graph for all new objects - we do this synchronous now. 
+//					// fill in the object graph for all new objects - we do this synchronous now.
 //					Map<Key, Carrier> newCarriersByKey = cache.fetchNewCarriersByKey();
 //					if (newCarriersByKey != null) {
 //						for (Map.Entry<Key, Carrier> me : newCarriersByKey.entrySet()) {
@@ -900,7 +899,7 @@ public class Cache
 	/**
 	 * @return Returns the singleton of this class - or the pseudo-shared instance for the currently logged in user.
 	 *
-	 * @throws In case the cache needs to be created and a {@link ConfigException} occurs while obtaining {@link CacheCfMod}. 
+	 * @throws In case the cache needs to be created and a {@link ConfigException} occurs while obtaining {@link CacheCfMod}.
 	 */
 	public static Cache sharedInstance()
 	{
@@ -964,7 +963,7 @@ public class Cache
 	 * (i.e. removed or dirty on the server). That means, it contains relations for the
 	 * whole object graph.
 	 * <p>
-	 * Note, that the transversal is asynchronously by the {@link CacheManagerThread}. 
+	 * Note, that the transversal is asynchronously by the {@link CacheManagerThread}.
 	 * </p>
 	 *
 	 * key: Object objectID<br/>
@@ -978,7 +977,7 @@ public class Cache
 	 * in this <code>LinkedList</code>. The length of this list is limited and every minute (configurable via
 	 * {@link CacheCfMod#getOldGraphDependencyContainerActivityMSec()} and {@link CacheCfMod#getOldGraphDependencyContainerCount()}),
 	 * a new <code>Map</code> is created and added to the beginning of the list, while all old <code>Map</code>s
-	 * are deleted from the end of the list. 
+	 * are deleted from the end of the list.
 	 *
 	 * see https://www.jfire.org/modules/bugs/view.php?id=84
 	 */

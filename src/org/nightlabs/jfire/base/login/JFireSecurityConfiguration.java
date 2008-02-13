@@ -100,7 +100,7 @@ public class JFireSecurityConfiguration extends Configuration {
 		Class<?> configClass = null; //Configuration.getConfiguration().getClass();
 		if (configClass == null)
 			logger.debug("Current security configuration is null"); //$NON-NLS-1$
-		else 
+		else
 			logger.debug("Current security configuration is of type: "+configClass.getName()); //$NON-NLS-1$
 		
 		if (configClass != JFireSecurityConfiguration.class){

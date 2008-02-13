@@ -15,12 +15,8 @@ import javax.swing.SwingUtilities;
 import org.apache.log4j.Logger;
 import org.nightlabs.jfire.base.jdo.cache.Cache;
 import org.nightlabs.jfire.jdo.notification.AbsoluteFilterID;
-import org.nightlabs.jfire.jdo.notification.DirtyObjectID;
 import org.nightlabs.jfire.jdo.notification.IJDOLifecycleListenerFilter;
 import org.nightlabs.jfire.security.SecurityReflector;
-import org.nightlabs.notification.NotificationEvent;
-import org.nightlabs.notification.NotificationListener;
-import org.nightlabs.notification.NotificationManager;
 
 /**
  * Use the shared instance of this manager to get notified
@@ -321,7 +317,7 @@ extends org.nightlabs.notification.NotificationManager
 
 	public static JDOLifecycleManager sharedInstance()
 	{
-		synchronized (Cache.class) { // we synchronise both sharedInstance-methods (of JDOLifecycleManager and Cache) via the same mutex in order to prevent dead-locks 
+		synchronized (Cache.class) { // we synchronise both sharedInstance-methods (of JDOLifecycleManager and Cache) via the same mutex in order to prevent dead-locks
 			if (serverMode) {
 				if (serverModeSharedInstances == null)
 					serverModeSharedInstances = new HashMap<String, JDOLifecycleManager>();
@@ -353,7 +349,7 @@ extends org.nightlabs.notification.NotificationManager
 
 	private static JDOLifecycleManager createJDOLifecycleManager()
 	{
-		if (jdoLifecycleManagerClass == null) {		
+		if (jdoLifecycleManagerClass == null) {
 			String className = System.getProperty(PROPERTY_KEY_JDO_LIFECYCLE_MANAGER);
 			if (className == null)
 				throw new IllegalStateException("System property PROPERTY_KEY_JDO_LIFECYCLE_MANAGER (" + PROPERTY_KEY_JDO_LIFECYCLE_MANAGER + ") not set!");
