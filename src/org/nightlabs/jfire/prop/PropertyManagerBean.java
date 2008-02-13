@@ -226,7 +226,7 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 			if (fetchGroups != null)
 				pm.getFetchPlan().setGroups(fetchGroups);
 			
-			Collection<PropertySet> props = propSearchFilter.executeQuery(pm);
+			Collection<PropertySet> props = (Collection<PropertySet>) propSearchFilter.executeQuery(pm);
 			return NLJDOHelper.getDetachedQueryResultAsSet(pm, props);
 		} finally {
 			pm.close();
@@ -250,7 +250,7 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	{
 		PersistenceManager pm = this.getPersistenceManager();
 		try {
-			Collection<PropertySet> props = propSearchFilter.executeQuery(pm);
+			Collection<PropertySet> props = (Collection<PropertySet>) propSearchFilter.executeQuery(pm);
 			Set<PropertySetID> result = new HashSet<PropertySetID>();
 			for (PropertySet propertySet : props) {
 				result.add((PropertySetID) JDOHelper.getObjectId(propertySet));
