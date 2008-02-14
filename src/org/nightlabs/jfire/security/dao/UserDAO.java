@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import javax.jdo.JDODetachedFieldAccessException;
 import javax.jdo.JDOHelper;
 
 import org.nightlabs.annotation.Implement;
@@ -173,13 +172,16 @@ public class UserDAO extends BaseJDOObjectDAO<UserID, User>
 			// FIXME: how to do this?
 			// set person to call User.setNameAuto()
 //			user.setPerson(person);
-			String userPassword = null;
-			try {
-				userPassword = user.getUserLocal().getPassword();
-			} catch (JDODetachedFieldAccessException e) {
-				userPassword = null;
-			}
-			User result = um.storeUser(user, userPassword, get, fetchGroups, maxFetchDepth);
+//			String userPassword = null;
+//			try {
+//				userPassword = user.getUserLocal().getPassword();
+//			} catch (JDODetachedFieldAccessException e) {
+//				// TODO IS THIS REALLY WHAT WE WANT?
+////				userPassword = null;
+//				userPassword = UserLocal.UNCHANGED_PASSWORD;
+//			}
+			// TODO CHECK THIS "asdf" thing!
+			User result = um.storeUser(user, "asdf", get, fetchGroups, maxFetchDepth);
 			monitor.worked(1);
 			person = result.getPerson();
 			if (person != null)
