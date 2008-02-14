@@ -81,6 +81,7 @@ implements SessionBean
 	/**
 	 * @see org.nightlabs.jfire.base.BaseSessionBeanImpl#setSessionContext(javax.ejb.SessionContext)
 	 */
+	@Override
 	public void setSessionContext(SessionContext sessionContext)
 	throws EJBException, RemoteException
 	{
@@ -89,6 +90,7 @@ implements SessionBean
 	/**
 	 * @see org.nightlabs.jfire.base.BaseSessionBeanImpl#unsetSessionContext()
 	 */
+	@Override
 	public void unsetSessionContext() {
 		super.unsetSessionContext();
 	}
@@ -146,7 +148,7 @@ implements SessionBean
 				//          if(user.passwdChanged)
 				//            user.setPassword(User.encryptPassword(user.getPassword()));
 				//        }
-				user = (User) pm.makePersistent(user);
+				user = pm.makePersistent(user);
 				if (passwd != null)
 					user.getUserLocal().setPasswordPlain(passwd);
 			}
@@ -194,15 +196,20 @@ implements SessionBean
 		if (user.getOrganisationID() == null)
 			user.setOrganisationID(getOrganisationID());
 
+		String newPassword = user.getUserLocal().getNewPassword();
+		
 		PersistenceManager pm = this.getPersistenceManager();
 		try {
-			user = (User) pm.makePersistent(user);
+			user = pm.makePersistent(user);
 
 			if (user.getUserLocal() == null)
 				new UserLocal(user); // self-registering
 
-			if (passwd != null)
-				user.getUserLocal().setPasswordPlain(passwd);
+//			if (passwd != null && !passwd.equals(UserLocal.UNCHANGED_PASSWORD))
+//				user.getUserLocal().setPasswordPlain(passwd);
+			
+			if (newPassword != null)
+				user.getUserLocal().setPasswordPlain(newPassword);
 
 			ConfigSetup.ensureAllPrerequisites(pm);
 
@@ -213,7 +220,7 @@ implements SessionBean
 			if (fetchGroups != null)
 				pm.getFetchPlan().setGroups(fetchGroups);
 
-			return (User) pm.detachCopy(user);
+			return pm.detachCopy(user);
 		} finally {
 			pm.close();
 		}
@@ -227,6 +234,7 @@ implements SessionBean
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="UserManager-read"
 	 **/
+	@Deprecated
 	public UserSearchResult searchUsers (
 			String userType,
 			String searchStr, boolean exact, int itemsPerPage, int pageIndex, int userIncludeMask)
@@ -291,6 +299,7 @@ implements SessionBean
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="UserManager-read"
 	 */
+	@Deprecated
 	public Collection getUsersByType(String userType)
 	throws ModuleException
 	{
@@ -306,6 +315,7 @@ implements SessionBean
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="UserManager-read"
 	 **/
+	@Deprecated
 	public Collection getUsersByType(String userType, String [] fetchGroups)
 	throws ModuleException
 	{
@@ -400,6 +410,7 @@ implements SessionBean
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="UserManager-read"
 	 **/
+	@Deprecated
 	public Collection getUsersInUserGroup(String userGroupID)
 	throws ModuleException
 	{
@@ -413,6 +424,7 @@ implements SessionBean
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="UserManager-read"
 	 **/
+	@Deprecated
 	public Collection getUsersInUserGroup(String userGroupID, String [] fetchGroups)
 	throws ModuleException
 	{
@@ -423,7 +435,7 @@ implements SessionBean
 				pm.getFetchPlan().setGroups(fetchGroups);
 
 			UserGroup ug = (UserGroup)pm.getObjectById(UserID.create(getOrganisationID(), userGroupID));
-			return (Collection)pm.detachCopyAll(ug.getUsers());
+			return pm.detachCopyAll(ug.getUsers());
 		}
 		finally {
 			pm.close();
@@ -494,6 +506,7 @@ implements SessionBean
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="UserManager-read"
 	 **/
+	@Deprecated
 	public Collection getUsersNotInUserGroup(String userGroupID)
 	throws ModuleException
 	{
@@ -507,6 +520,7 @@ implements SessionBean
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="UserManager-read"
 	 **/
+	@Deprecated
 	public Collection getUsersNotInUserGroup(String userGroupID, String [] fetchGroups)
 	throws ModuleException
 	{
@@ -569,6 +583,7 @@ implements SessionBean
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="UserManager-read"
 	 **/
+	@Deprecated
 	public RoleGroupListCarrier getRoleGroups(String userID, String authorityID)
 	throws ModuleException
 	{
@@ -582,6 +597,7 @@ implements SessionBean
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="UserManager-read"
 	 **/
+	@Deprecated
 	public RoleGroupListCarrier getRoleGroups(String userID, String authorityID, String [] fetchGroups)
 	throws ModuleException
 	{
@@ -895,6 +911,7 @@ implements SessionBean
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="UserManager-read"
 	 **/
+	@Deprecated
 	public Collection getExcludedRoleGroups(String userID, String authorityID)
 	{
 		return getExcludedRoleGroups(userID, authorityID, null);
@@ -906,6 +923,7 @@ implements SessionBean
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="UserManager-read"
 	 **/
+	@Deprecated
 	public Collection getExcludedRoleGroups(String userID, String authorityID, String [] fetchGroups)
 	{
 		PersistenceManager pm = getPersistenceManager();
@@ -1002,6 +1020,7 @@ implements SessionBean
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="UserManager-read"
 	 **/
+	@Deprecated
 	public Collection getUserGroups(String userID)
 	{
 		return getUserGroups(userID, null);
@@ -1014,6 +1033,7 @@ implements SessionBean
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="UserManager-read"
 	 **/
+	@Deprecated
 	public Collection getUserGroups(String userID, String [] fetchGroups)
 	{
 		PersistenceManager pm = getPersistenceManager();
@@ -1046,6 +1066,7 @@ implements SessionBean
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="UserManager-read"
 	 **/
+	@Deprecated
 	public Collection getExcludedUserGroups(String userID)
 	{
 		return getExcludedUserGroups(userID, null);
@@ -1058,6 +1079,7 @@ implements SessionBean
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="UserManager-read"
 	 **/
+	@Deprecated
 	public Collection getExcludedUserGroups(String userID, String [] fetchGroups)
 	{
 		PersistenceManager pm = getPersistenceManager();
