@@ -45,6 +45,9 @@ import javax.jdo.Query;
 import org.apache.log4j.Logger;
 import org.nightlabs.ModuleException;
 import org.nightlabs.jdo.NLJDOHelper;
+import org.nightlabs.jdo.ObjectIDException;
+import org.nightlabs.jdo.query.JDOQueryCollectionDecorator;
+import org.nightlabs.jdo.query.QueryCollection;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.config.ConfigSetup;
 import org.nightlabs.jfire.security.id.AuthorityID;
@@ -1621,18 +1624,24 @@ implements SessionBean
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 */
-	public Set<UserID> getUserIDs(Collection<UserQuery> userQueries) {
+	public Set<UserID> getUserIDs(QueryCollection<User, ? extends UserQuery> userQueries) {
 		PersistenceManager pm = getPersistenceManager();
 		try {
 			pm.getFetchPlan().setMaxFetchDepth(1);
 			pm.getFetchPlan().setGroup(FetchPlan.DEFAULT);
 
-			Set<User> users = null;
-			for (UserQuery query : userQueries) {
-				query.setPersistenceManager(pm);
-				query.setCandidates(users);
-				users = new HashSet<User>(query.getResult());
+			JDOQueryCollectionDecorator<User, UserQuery> decoratedCollection;
+			if (userQueries instanceof JDOQueryCollectionDecorator)
+			{
+				decoratedCollection = (JDOQueryCollectionDecorator<User, UserQuery>) userQueries;
 			}
+			else
+			{
+				decoratedCollection = new JDOQueryCollectionDecorator<User, UserQuery>(userQueries);
+			}
+			
+			decoratedCollection.setPersistenceManager(pm);
+			Collection<User> users = decoratedCollection.executeQueries();
 
 			return NLJDOHelper.getObjectIDSet(users);
 		} finally {

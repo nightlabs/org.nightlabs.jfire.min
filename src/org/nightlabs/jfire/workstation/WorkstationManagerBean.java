@@ -41,6 +41,8 @@ import javax.jdo.Query;
 
 import org.nightlabs.ModuleException;
 import org.nightlabs.jdo.NLJDOHelper;
+import org.nightlabs.jdo.query.JDOQueryCollectionDecorator;
+import org.nightlabs.jdo.query.QueryCollection;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.workstation.id.WorkstationID;
 import org.nightlabs.jfire.workstation.search.WorkstationQuery;
@@ -195,18 +197,25 @@ public class WorkstationManagerBean extends BaseSessionBeanImpl implements Sessi
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 */
-	public Set<WorkstationID> getWorkstaionIDs(Collection<WorkstationQuery> workstationQueries) {
+	@SuppressWarnings("unchecked")
+	public Set<WorkstationID> getWorkstaionIDs(QueryCollection<Workstation, ? extends WorkstationQuery> workstationQueries) {
 		PersistenceManager pm = getPersistenceManager();
 		try {
 			pm.getFetchPlan().setMaxFetchDepth(1);
 			pm.getFetchPlan().setGroup(FetchPlan.DEFAULT);
 
-			Set<Workstation> workstations = null;
-			for (WorkstationQuery query : workstationQueries) {
-				query.setPersistenceManager(pm);
-				query.setCandidates(workstations);
-				workstations = new HashSet<Workstation>(query.getResult());
+			JDOQueryCollectionDecorator<Workstation, WorkstationQuery> decoratedCollection;
+			if (workstationQueries instanceof JDOQueryCollectionDecorator)
+			{
+				decoratedCollection = (JDOQueryCollectionDecorator<Workstation, WorkstationQuery>) workstationQueries;
 			}
+			else
+			{
+				decoratedCollection = new JDOQueryCollectionDecorator<Workstation, WorkstationQuery>(workstationQueries);
+			}
+			
+			decoratedCollection.setPersistenceManager(pm);
+			Collection<Workstation> workstations = decoratedCollection.executeQueries();
 
 			return NLJDOHelper.getObjectIDSet(workstations);
 		} finally {
