@@ -39,6 +39,7 @@ import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
 import javax.jdo.JDOHelper;
 import javax.jdo.PersistenceManager;
+
 import org.apache.log4j.Logger;
 import org.nightlabs.ModuleException;
 import org.nightlabs.jdo.NLJDOHelper;
@@ -57,12 +58,12 @@ import org.nightlabs.util.Util;
  */
 /**
  * TODO: Manage access rights for Properties on object-link-type basis
- * 
+ *
  * @ejb.bean name="jfire/ejb/JFireBaseBean/PropertyManager"
  *           jndi-name="jfire/ejb/JFireBaseBean/PropertyManager"
  *           type="Stateless"
  *           transaction-type="Container"
- * 
+ *
  * @ejb.util generate="physical"
  * @ejb.transaction type="Required"
  */
@@ -95,7 +96,7 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 
 	/**
 	 * @see javax.ejb.SessionBean#ejbRemove()
-	 * 
+	 *
 	 * @ejb.permission unchecked="true"
 	 */
 	public void ejbRemove() throws EJBException, RemoteException {
@@ -104,13 +105,13 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 
 	/**
 	 * Detaches and returns the complete Struct.
-	 * 
+	 *
 	 * @param organisationID
 	 *          The organisation id of the {@link Struct} to be retrieved.
 	 * @param linkClass
 	 *          The linkClass of the {@link Struct} to be retrieved.
 	 * @return The complete {@link Struct}.
-	 * 
+	 *
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type="Required"
@@ -131,7 +132,7 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 
 	/**
 	 * Convenience method
-	 * 
+	 *
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type="Required"
@@ -142,14 +143,14 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 
 	/**
 	 * Detaches and returns the complete {@link StructLocal}.
-	 * 
+	 *
 	 * @param organisationID
 	 *          The organisation id of the {@link StructLocal} to be retrieved.
 	 * @param linkClass
 	 *          The linkClass of the {@link StructLocal} to be retrieved.
 	 * @return The complete {@link StructLocal}.
 	 * @throws ModuleException
-	 * 
+	 *
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type="Required"
@@ -170,7 +171,7 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 
 	/**
 	 * Convenience method
-	 * 
+	 *
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type="Required"
@@ -182,7 +183,7 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 
 	/**
 	 * Retrieve the person with the given ID
-	 * 
+	 *
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type="Required"
@@ -225,7 +226,7 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
 			if (fetchGroups != null)
 				pm.getFetchPlan().setGroups(fetchGroups);
-			
+
 			propSearchFilter.setPersistenceManager(pm);
 			Collection<?> props = propSearchFilter.getResult();
 			return NLJDOHelper.getDetachedQueryResultAsSet(pm, props);
@@ -233,7 +234,7 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 			pm.close();
 		}
 	}
-	
+
 	/**
 	 * Executes the given search filter and assumes it will return instances
 	 * of {@link PropertySet}. It will return the {@link PropertySetID}s of the
@@ -269,7 +270,7 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 
 	/**
 	 * Store a {@link PropertySet} either detached or not made persistent yet.
-	 * 
+	 *
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type="Required"
@@ -286,7 +287,7 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 
 	/**
 	 * Store a propStruct either detached or not made persistent yes.
-	 * 
+	 *
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type="Required"
@@ -296,15 +297,18 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 		PersistenceManager pm = getPersistenceManager();
 		try {
 			if (istruct instanceof Struct) {
+				if (hasRootOrganisation() && !getOrganisationID().equals(getRootOrganisationID()))
+					throw new IllegalStateException("Structs can only be stored by the root organisation.");
+
 				Struct modifiedStruct = (Struct) istruct;
 				Struct currentStruct = (Struct) pm.getObjectById(modifiedStruct.getID());
 				modifiedStruct = applyStructuralChanges(modifiedStruct, currentStruct);
-				NLJDOHelper.storeJDO(pm, modifiedStruct, false, null, -1);
+				pm.makePersistent(modifiedStruct);
 			} else if (istruct instanceof StructLocal) {
 				StructLocal structLocal = (StructLocal) istruct;
-				structLocal.restoreAdoptedBlocks();
+				StructLocal persistentStructLocal = (StructLocal) pm.getObjectById(structLocal.getID());
+				structLocal.restoreAdoptedBlocks(persistentStructLocal.getStruct());
 				pm.makePersistent(structLocal);
-//				NLJDOHelper.storeJDO(pm, structLocal, false, null, -1);
 			}
 		} finally {
 			pm.close();
@@ -317,7 +321,7 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	 * organisation and thus aren't modifyable. Changes to such blocks are
 	 * discarded. The "corrected" structure containing only legal changes is
 	 * returned.
-	 * 
+	 *
 	 * @param modifiedStruct
 	 *          The structure how it should look like after the modification.
 	 * @param currentStruct
@@ -325,7 +329,7 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	 * @return The modified structure with all all illegal modifications been
 	 *         revoked.
 	 */
-	public Struct applyStructuralChanges(Struct modifiedStruct, Struct currentStruct) {
+	protected Struct applyStructuralChanges(Struct modifiedStruct, Struct currentStruct) {
 		if (!modifiedStruct.getID().equals(currentStruct.getID()))
 			throw new IllegalArgumentException("Cannot apply changes because structure IDs are not the same.");
 
@@ -349,7 +353,7 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	/**
 	 * Retrieves the {@link StructID}s of all {@link java.sql.Struct}s in the
 	 * current datastore.
-	 * 
+	 *
 	 * @return Collection of the {@link StructID}s of all available
 	 *         {@link Struct}s.
 	 */
@@ -376,7 +380,7 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	/**
 	 * Retrieves the {@link StructLocalID}s of all {@link StructLocal}s in the
 	 * current datastore.
-	 * 
+	 *
 	 * @return Collection of the {@link StructLocalID}s of all available
 	 *         {@link StructLocal}s.
 	 */
@@ -403,7 +407,7 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	/**
 	 * Returns all {@link PropertySet}s for the given propIDs, detached with the given
 	 * fetchGroups
-	 * 
+	 *
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type="Required"
@@ -426,11 +430,11 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	/**
 	 * Returns the number of data field instances that have been created for the
 	 * given {@link StructField}.
-	 * 
+	 *
 	 * @param field
 	 *          The struct field
 	 * @return
-	 * 
+	 *
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
