@@ -6,7 +6,6 @@ import java.util.Set;
 
 import javax.jdo.FetchPlan;
 
-import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO;
 import org.nightlabs.jfire.prop.IStruct;
 import org.nightlabs.jfire.prop.PropertyManager;
@@ -74,10 +73,10 @@ public class StructLocalDAO extends BaseJDOObjectDAO<StructLocalID, StructLocal>
 
 	public StructLocal getStructLocal(String linkClass, String scope, ProgressMonitor monitor) {
 		StructLocalID structLocalID = StructLocalID.create(SecurityReflector.getUserDescriptor().getOrganisationID(), linkClass, scope);
-		return getStructLocal(structLocalID, new String[] {FetchPlan.DEFAULT, IStruct.FETCH_GROUP_ISTRUCT_FULL_DATA}, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT, monitor);
+		return getStructLocal(structLocalID, new String[] {FetchPlan.DEFAULT, IStruct.FETCH_GROUP_ISTRUCT_FULL_DATA}, 10, monitor);
 	}
 
 	public StructLocal getStructLocal(StructLocalID structLocalID, ProgressMonitor monitor) {
-		return getStructLocal(structLocalID, new String[] {FetchPlan.DEFAULT, IStruct.FETCH_GROUP_ISTRUCT_FULL_DATA}, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT, monitor);
+		return getStructLocal(structLocalID, new String[] {FetchPlan.DEFAULT, IStruct.FETCH_GROUP_ISTRUCT_FULL_DATA}, 10, monitor);
 	}
 }
