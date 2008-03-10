@@ -44,6 +44,7 @@ import org.apache.log4j.Logger;
 import org.nightlabs.ModuleException;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
+import org.nightlabs.jfire.base.condition.IExpression;
 import org.nightlabs.jfire.organisation.Organisation;
 import org.nightlabs.jfire.person.PersonStruct;
 import org.nightlabs.jfire.prop.id.PropertySetID;
@@ -51,6 +52,7 @@ import org.nightlabs.jfire.prop.id.StructFieldID;
 import org.nightlabs.jfire.prop.id.StructID;
 import org.nightlabs.jfire.prop.id.StructLocalID;
 import org.nightlabs.jfire.prop.search.PropSearchFilter;
+import org.nightlabs.util.CollectionUtil;
 import org.nightlabs.util.Util;
 
 /**
@@ -119,8 +121,13 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	public Struct getFullStruct(String organisationID, String linkClass, String[] fetchGroups, int maxFetchDepth) throws ModuleException {
 		PersistenceManager pm = getPersistenceManager();
 		try {
-			if (fetchGroups != null)
+			if (fetchGroups != null) {
 				pm.getFetchPlan().setGroups(fetchGroups);
+				HashSet<String> fetchGroupSet = CollectionUtil.array2HashSet(fetchGroups);
+				if (fetchGroupSet.contains(IStruct.FETCH_GROUP_ISTRUCT_FULL_DATA))
+					fetchGroupSet.add(IExpression.FETCH_GROUP_IEXPRESSION_FULL_DATA);
+				pm.getFetchPlan().setGroups(fetchGroupSet.toArray(new String[fetchGroupSet.size()]));
+			}
 			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
 			Struct ps = Struct.getStruct(organisationID, linkClass, pm);
 			Struct result = pm.detachCopy(ps);
@@ -158,8 +165,13 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	public StructLocal getFullStructLocal(String organisationID, String linkClass, String scope, String[] fetchGroups, int maxFetchDepth) throws ModuleException {
 		PersistenceManager pm = getPersistenceManager();
 		try {
-			if (fetchGroups != null)
-				pm.getFetchPlan().setGroups(fetchGroups);
+			if (fetchGroups != null) {
+				HashSet<String> fetchGroupSet = CollectionUtil.array2HashSet(fetchGroups);
+				if (fetchGroupSet.contains(IStruct.FETCH_GROUP_ISTRUCT_FULL_DATA)) {
+					fetchGroupSet.add(IExpression.FETCH_GROUP_IEXPRESSION_FULL_DATA);
+				}
+				pm.getFetchPlan().setGroups(fetchGroupSet);
+			}
 			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
 			StructLocal ps = StructLocal.getStructLocal(organisationID, linkClass, scope, pm);
 			StructLocal result = pm.detachCopy(ps);
