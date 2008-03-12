@@ -44,7 +44,7 @@ import org.apache.log4j.Logger;
 import org.nightlabs.ModuleException;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
-import org.nightlabs.jfire.base.condition.IExpression;
+import org.nightlabs.jfire.base.expression.IExpression;
 import org.nightlabs.jfire.organisation.Organisation;
 import org.nightlabs.jfire.person.PersonStruct;
 import org.nightlabs.jfire.prop.id.PropertySetID;
