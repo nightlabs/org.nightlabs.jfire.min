@@ -30,6 +30,8 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.nightlabs.jfire.security.id.UserID;
+
 /**
  * @author Niklas Schiffler <nick@nightlabs.de>
  *
@@ -39,10 +41,10 @@ public class UserGroupIDListCarrier implements Serializable
 	private static final long serialVersionUID = 1L;
 	public UserGroupIDListCarrier()
   {
-    excluded = new HashSet();
-    assigned = new HashSet();
+    excluded = new HashSet<UserID>();
+    assigned = new HashSet<UserID>();
   }
-  
-  public Set excluded;
-  public Set assigned;
+
+  public Set<UserID> excluded;
+  public Set<UserID> assigned;
 }

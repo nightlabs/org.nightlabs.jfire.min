@@ -45,7 +45,7 @@ public abstract class OrganisationManagerHelperBean
 {
 	private static final long serialVersionUID = 1L;
 	private static final Logger logger = Logger.getLogger(OrganisationManagerBean.class);
-	
+
 	@Override
 	public void setSessionContext(SessionContext sessionContext)
 			throws EJBException, RemoteException
@@ -196,8 +196,8 @@ public abstract class OrganisationManagerHelperBean
 			// Give the user all RoleGroups.
 			if(logger.isDebugEnabled())
 				logger.debug("Assign all RoleGroups to the user \""+userID+"\"...");
-			for (Iterator it = pm.getExtent(RoleGroup.class).iterator(); it.hasNext(); ) {
-				RoleGroup roleGroup = (RoleGroup)it.next();
+			for (Iterator<RoleGroup> it = pm.getExtent(RoleGroup.class).iterator(); it.hasNext(); ) {
+				RoleGroup roleGroup = it.next();
 				RoleGroupRef roleGroupRef = authority.createRoleGroupRef(roleGroup);
 				userRef.addRoleGroupRef(roleGroupRef);
 			}

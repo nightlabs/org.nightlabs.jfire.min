@@ -37,12 +37,12 @@ import java.util.Set;
 public class UserGroupListCarrier implements Serializable
 {
 	private static final long serialVersionUID = 1L;
-	public Set assigned;
-  public Set excluded;
-  
+	public Set<UserGroup> assigned;
+  public Set<UserGroup> excluded;
+
   public UserGroupListCarrier()
   {
-    assigned = new HashSet();
-    excluded = new HashSet();
+    assigned = new HashSet<UserGroup>();
+    excluded = new HashSet<UserGroup>();
   }
 }

@@ -37,14 +37,14 @@ import java.util.HashSet;
 public class RoleGroupListCarrier implements Serializable
 {
 	private static final long serialVersionUID = 1L;
-	public Collection excluded;
-	public Collection assigned;
-	public Collection assignedByUserGroup;
+	public Collection<RoleGroup> excluded;
+	public Collection<RoleGroup> assigned;
+	public Collection<RoleGroup> assignedByUserGroup;
 
   public RoleGroupListCarrier()
   {
-    excluded = new HashSet();
-    assigned = new HashSet();
-    assignedByUserGroup = new HashSet();
+    excluded = new HashSet<RoleGroup>();
+    assigned = new HashSet<RoleGroup>();
+    assignedByUserGroup = new HashSet<RoleGroup>();
   }
 }

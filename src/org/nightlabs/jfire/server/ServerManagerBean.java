@@ -41,6 +41,7 @@ import org.nightlabs.jfire.module.ModuleType;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.servermanager.config.J2eeServerTypeRegistryConfigModule;
 import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
+import org.nightlabs.jfire.servermanager.xml.ModuleDef;
 
 /**
  * @ejb.bean name="jfire/ejb/JFireBaseBean/ServerManager"
@@ -81,11 +82,11 @@ public abstract class ServerManagerBean
 //			throw new CreateException(e.getMessage());
 //		}
 	}
-	
+
 	/**
 	 * @return Whether or not this server is new and needs setup.
 	 * @throws ModuleException
-	 * 
+	 *
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
 	 */
@@ -102,7 +103,7 @@ public abstract class ServerManagerBean
 
 	/**
 	 * @see javax.ejb.SessionBean#ejbRemove()
-	 * 
+	 *
 	 * @ejb.permission unchecked="true"
 	 */
 	public void ejbRemove() throws EJBException, RemoteException { }
@@ -167,7 +168,7 @@ public abstract class ServerManagerBean
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
 	 */
-	public List getModules(ModuleType moduleType)
+	public List<ModuleDef> getModules(ModuleType moduleType)
 		throws ModuleException
 	{
 		JFireServerManager ism = getJFireServerManager();
@@ -177,7 +178,7 @@ public abstract class ServerManagerBean
 			ism.close();
 		}
 	}
-	
+
 	/**
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
@@ -228,7 +229,7 @@ public abstract class ServerManagerBean
 //		pm.close();
 //		return localServer;
 //	}
-	
+
 //	/**
 //	 * @param server
 //	 * @return true, if the given server is the local machine

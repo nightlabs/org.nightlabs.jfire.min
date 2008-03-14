@@ -30,6 +30,8 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.nightlabs.jfire.security.id.RoleGroupID;
+
 /**
  * @author Niklas Schiffler <nick@nightlabs.de>
  *
@@ -39,12 +41,12 @@ public class RoleGroupIDListCarrier implements Serializable
 	private static final long serialVersionUID = 1L;
 	public RoleGroupIDListCarrier()
   {
-    excluded = new HashSet();
-    assignedToUser = new HashSet();
-    assignedToUserGroups = new HashSet();
+    excluded = new HashSet<RoleGroupID>();
+    assignedToUser = new HashSet<RoleGroupID>();
+    assignedToUserGroups = new HashSet<RoleGroupID>();
   }
 
-  public RoleGroupIDListCarrier(Set excluded, Set assignedToUser, Set assignedToUserGroups)
+  public RoleGroupIDListCarrier(Set<RoleGroupID> excluded, Set<RoleGroupID> assignedToUser, Set<RoleGroupID> assignedToUserGroups)
   {
   	if (excluded == null)
   		throw new IllegalArgumentException("excluded must not be null!");
@@ -60,7 +62,7 @@ public class RoleGroupIDListCarrier implements Serializable
     this.assignedToUserGroups = assignedToUserGroups;
   }
 
-  public Set excluded;
-  public Set assignedToUser;
-  public Set assignedToUserGroups;
+  public Set<RoleGroupID> excluded;
+  public Set<RoleGroupID> assignedToUser;
+  public Set<RoleGroupID> assignedToUserGroups;
 }

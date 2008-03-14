@@ -53,7 +53,7 @@ import org.nightlabs.jfire.workstation.search.WorkstationQuery;
  * @ejb.bean name="jfire/ejb/JFireBaseBean/WorkstationManager"
  *  jndi-name="jfire/ejb/JFireBaseBean/WorkstationManager"
  *  type="Stateless"
- * 
+ *
  * @ejb.util generate="physical"
  * @ejb.transaction type="Required"
  */
@@ -125,7 +125,7 @@ public class WorkstationManagerBean extends BaseSessionBeanImpl implements Sessi
 			if (fetchGroups != null)
 				pm.getFetchPlan().setGroups(fetchGroups);
 			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
-			
+
 			Workstation ret = (Workstation) pm.getObjectById(workstationID);
 			return pm.detachCopy(ret);
 		}
@@ -140,7 +140,7 @@ public class WorkstationManagerBean extends BaseSessionBeanImpl implements Sessi
 	 * @ejb.permission role-name="WorkstationManagerBean-read"
 	 * @ejb.transaction type="Required"
 	 **/
-	public Collection getWorkstations(String[] fetchGroups, int maxFetchDepth)
+	public Collection<Workstation> getWorkstations(String[] fetchGroups, int maxFetchDepth)
 	{
 		PersistenceManager pm = getPersistenceManager();
 		try
@@ -149,7 +149,7 @@ public class WorkstationManagerBean extends BaseSessionBeanImpl implements Sessi
 			if (fetchGroups != null)
 				pm.getFetchPlan().setGroups(fetchGroups);
 
-			Collection ret = Workstation.getWorkstations(pm);
+			Collection<Workstation> ret = Workstation.getWorkstations(pm);
 			return pm.detachCopyAll(ret);
 		}
 		finally
@@ -180,7 +180,6 @@ public class WorkstationManagerBean extends BaseSessionBeanImpl implements Sessi
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type="Required"
 	 **/
-	@SuppressWarnings("unchecked")
 	public List<Workstation> getWorkstations(Set<WorkstationID> workstationIDs, String[] fetchGroups, int maxFetchDepth)
 	{
 		PersistenceManager pm = getPersistenceManager();
@@ -190,14 +189,13 @@ public class WorkstationManagerBean extends BaseSessionBeanImpl implements Sessi
 			pm.close();
 		}
 	}
-	
+
 	/**
 	 *
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 */
-	@SuppressWarnings("unchecked")
 	public Set<WorkstationID> getWorkstaionIDs(QueryCollection<Workstation, ? extends WorkstationQuery> workstationQueries) {
 		PersistenceManager pm = getPersistenceManager();
 		try {
@@ -213,7 +211,7 @@ public class WorkstationManagerBean extends BaseSessionBeanImpl implements Sessi
 			{
 				decoratedCollection = new JDOQueryCollectionDecorator<Workstation, WorkstationQuery>(workstationQueries);
 			}
-			
+
 			decoratedCollection.setPersistenceManager(pm);
 			Collection<Workstation> workstations = decoratedCollection.executeQueries();
 

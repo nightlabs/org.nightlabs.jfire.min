@@ -72,7 +72,7 @@ implements SessionBean
 	}
 	/**
 	 * @see javax.ejb.SessionBean#ejbRemove()
-	 * 
+	 *
 	 * @ejb.permission unchecked="true"
 	 */
 	public void ejbRemove() throws EJBException, RemoteException
@@ -99,7 +99,7 @@ implements SessionBean
 	public String getPersistenceCapableClassName(Object objectID)
 	{
 		try {
-			Class clazz;
+			Class<?> clazz;
 
 			CacheManager cm = getLookup().getCacheManager();
 			try {
@@ -203,7 +203,7 @@ implements SessionBean
 	 * @param cacheSessionID The ID of your session.
 	 * @param removeObjectIDs Either <tt>null</tt> or the object-ids of those JDO objects for which to remove listeners
 	 * @param addObjectIDs Either <tt>null</tt> or the object-ids of those JDO objects for which to add listeners
-	 * 
+	 *
 	 * @see JDOManager#removeAddChangeListeners(java.lang.String, java.util.Collection, java.util.Collection)
 	 *
 	 * @ejb.interface-method
@@ -401,7 +401,7 @@ implements SessionBean
 //			pm.close();
 //		}
 //	}
-	
+
 //	/**
 //	 *
 //	 * @ejb.interface-method

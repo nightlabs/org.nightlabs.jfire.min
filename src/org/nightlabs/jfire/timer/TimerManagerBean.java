@@ -122,22 +122,22 @@ implements SessionBean
 
 		String activeExecID = ObjectIDUtil.makeValidIDString(null);
 
-		List tasks;
+		List<Task> tasks;
 		PersistenceManager pm = getPersistenceManager();
 		try {
 			pm.getFetchPlan().setMaxFetchDepth(NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
 			pm.getFetchPlan().setGroups(FETCH_GROUPS_TASK);
 			Date now = new Date();
 			tasks = Task.getTasksToDo(pm, now);
-			for (Iterator it = tasks.iterator(); it.hasNext(); ) {
-				Task task = (Task) it.next();
+			for (Iterator<Task> it = tasks.iterator(); it.hasNext(); ) {
+				Task task = it.next();
 				task.setActiveExecID(activeExecID);
 				TimerAsyncInvoke.exec(task, true); // this method does not use the task instance later outside the current transaction (it only fetches the TaskID)
 			}
 //			tasks = (List) pm.detachCopyAll(tasks); // not necessary anymore
 
-			for (Iterator it = Task.getTasksToRecalculateNextExecDT(pm, now).iterator(); it.hasNext(); ) {
-				Task task = (Task) it.next();
+			for (Iterator<Task> it = Task.getTasksToRecalculateNextExecDT(pm, now).iterator(); it.hasNext(); ) {
+				Task task = it.next();
 				task.calculateNextExecDT();
 			}
 		} finally {
@@ -237,7 +237,7 @@ implements SessionBean
 			throw new ModuleException(x);
 		}
 	}
-	
+
 	/**
 	 * @ejb.interface-method
 	 * @ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
@@ -253,7 +253,7 @@ implements SessionBean
 				pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
 				if (fetchGroups != null)
 					pm.getFetchPlan().setGroups(fetchGroups);
-				
+
 				List<Task> tasks = Task.getTasksByTaskTypeID(pm, taskTypeID);
 				List<Task> dTasks = (List<Task>) pm.detachCopyAll(tasks);
 				for (Task task : dTasks) {

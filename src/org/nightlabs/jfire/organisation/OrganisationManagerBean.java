@@ -100,10 +100,11 @@ public abstract class OrganisationManagerBean
 	 * LOG4J logger used by this class
 	 */
 	private static final Logger logger = Logger.getLogger(OrganisationManagerBean.class);
-	
+
 	/**
 	 * @see org.nightlabs.jfire.base.BaseSessionBeanImpl#setSessionContext(javax.ejb.SessionContext)
 	 */
+	@Override
 	public void setSessionContext(SessionContext sessionContext)
 			throws EJBException, RemoteException
 	{
@@ -134,7 +135,7 @@ public abstract class OrganisationManagerBean
 	}
 	/**
 	 * @see javax.ejb.SessionBean#ejbRemove()
-	 * 
+	 *
 	 * @ejb.permission unchecked="true"
 	 */
 	public void ejbRemove() throws EJBException, RemoteException { }
@@ -260,7 +261,7 @@ public abstract class OrganisationManagerBean
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_ServerAdmin_"
 	 **/
-	public List getOrganisationCfs(boolean sorted)
+	public List<OrganisationCf> getOrganisationCfs(boolean sorted)
 		throws ModuleException
 	{
 		JFireServerManager ism = getJFireServerManager();
@@ -273,7 +274,7 @@ public abstract class OrganisationManagerBean
 
 	/**
 	 * @throws OrganisationNotFoundException If the specified organisation does not exist.
-	 * 
+	 *
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_ServerAdmin_"
 	 **/
@@ -290,7 +291,7 @@ public abstract class OrganisationManagerBean
 
 	/**
 	 * This method finds out whether the current
-	 * 
+	 *
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
 	 *
@@ -311,7 +312,7 @@ public abstract class OrganisationManagerBean
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="OrganisationManager-read"
 	 **/
-	public Collection getPendingRegistrations(String[] fetchGroups, int maxFetchDepth)
+	public Collection<RegistrationStatus> getPendingRegistrations(String[] fetchGroups, int maxFetchDepth)
 	{
 		PersistenceManager pm = getPersistenceManager();
 		try {
@@ -374,7 +375,7 @@ public abstract class OrganisationManagerBean
 			pm.close();
 		}
 	}
-	
+
 	/**
 	 * @ejb.interface-method
 	 * @ejb.transaction type="Required"
@@ -441,7 +442,7 @@ public abstract class OrganisationManagerBean
 
 				// We have to create a user for the new organisation. Therefore,
 				// generate a password with a random length between 15 and 20 characters.
-				String usrPassword = UserLocal.createPassword(15, 20);
+				String usrPassword = UserLocal.createMachinePassword(15, 20);
 
 				// Create the user if it doesn't yet exist
 				String userID = User.USERID_PREFIX_TYPE_ORGANISATION + applicantOrganisationID;
@@ -458,7 +459,7 @@ public abstract class OrganisationManagerBean
 
 				pm.getFetchPlan().addGroup(FetchPlan.ALL); // TODO fetch-groups?!
 				pm.getFetchPlan().setMaxFetchDepth(NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
-				Organisation grantOrganisation = (Organisation) pm.detachCopy(
+				Organisation grantOrganisation = pm.detachCopy(
 						localOrganisation.getOrganisation());
 //				Organisation grantOrganisation = localOrganisation.getOrganisation();
 //				grantOrganisation.getPerson();
@@ -510,7 +511,7 @@ public abstract class OrganisationManagerBean
 		PersistenceManager pm = getPersistenceManager();
 		try {
 			LocalOrganisation localOrganisation = LocalOrganisation.getLocalOrganisation(pm);
-			
+
 			RegistrationStatus registrationStatus = localOrganisation
 					.getPendingRegistration(applicantOrganisationID);
 
@@ -555,8 +556,8 @@ public abstract class OrganisationManagerBean
 
 			// Create the initial context properties to connect to the remote server.
 			Properties props = new Properties();
-			props.put(InitialContext.INITIAL_CONTEXT_FACTORY, registrationStatus.getInitialContextFactory());
-			props.put(InitialContext.PROVIDER_URL, registrationStatus.getInitialContextURL());
+			props.put(Context.INITIAL_CONTEXT_FACTORY, registrationStatus.getInitialContextFactory());
+			props.put(Context.PROVIDER_URL, registrationStatus.getInitialContextURL());
 
 			// Obtain the OrganisationLinker EJB and request registration
 			try {
@@ -641,7 +642,7 @@ public abstract class OrganisationManagerBean
 
 		// We have to create a user for the new organisation. Therefore,
 		// generate a password with a random length between 8 and 16 characters.
-		String usrPassword = UserLocal.createPassword(8, 16);
+		String usrPassword = UserLocal.createMachinePassword(8, 16);
 
 		// Create the user if it doesn't yet exist
 		String userID = User.USERID_PREFIX_TYPE_ORGANISATION + organisationID;
@@ -700,7 +701,7 @@ public abstract class OrganisationManagerBean
 			pm.close();
 		}
 	}
-	
+
 //	/**
 //	 * @ejb.interface-method
 //	 * @ejb.transaction type="Required"
@@ -890,7 +891,7 @@ public abstract class OrganisationManagerBean
 	 * @ejb.transaction type="Required"
 	 * @ejb.permission role-name="_Guest_"
 	 **/
-	public Collection getOrganisationsFromRootOrganisation(boolean filterPartnerOrganisations, String[] fetchGroups, int maxFetchDepth)
+	public Collection<Organisation> getOrganisationsFromRootOrganisation(boolean filterPartnerOrganisations, String[] fetchGroups, int maxFetchDepth)
 	throws JFireException
 	{
 		try {
@@ -900,15 +901,15 @@ public abstract class OrganisationManagerBean
 				String localOrganisationID = getOrganisationID();
 				if (!rootOrganisationID.equals(localOrganisationID)) {
 					OrganisationManager organisationManager = OrganisationManagerUtil.getHome(getInitialContextProperties(rootOrganisationID)).create();
-					Collection res = organisationManager.getOrganisationsFromRootOrganisation(filterPartnerOrganisations, fetchGroups, maxFetchDepth);
+					Collection<Organisation> res = organisationManager.getOrganisationsFromRootOrganisation(filterPartnerOrganisations, fetchGroups, maxFetchDepth);
 
 					// TODO DEBUG begin
 					logger.info("Root Organisation returned the following organisations:");
 					if (res.isEmpty())
 						logger.info("  {NONE}");
 					else {
-						for (Iterator iter = res.iterator(); iter.hasNext();) {
-							Organisation organisation = (Organisation) iter.next();
+						for (Iterator<Organisation> iter = res.iterator(); iter.hasNext();) {
+							Organisation organisation = iter.next();
 							logger.info("  " + organisation.getOrganisationID());
 						}
 					}
@@ -917,14 +918,14 @@ public abstract class OrganisationManagerBean
 					if (!filterPartnerOrganisations)
 						return res;
 
-					Collection newRes = new LinkedList();
+					Collection<Organisation> newRes = new LinkedList<Organisation>();
 
 					PersistenceManager pm = getPersistenceManager();
 					try {
 						pm.getExtent(User.class);
 
-						for (Iterator it = res.iterator(); it.hasNext(); ) {
-							Organisation orga = (Organisation) it.next();
+						for (Iterator<Organisation> it = res.iterator(); it.hasNext(); ) {
+							Organisation orga = it.next();
 							if (getOrganisationID().equals(orga.getOrganisationID())) {
 								logger.info("Organisation is myself and will be filtered: " + orga.getOrganisationID());
 								continue;
@@ -955,12 +956,12 @@ public abstract class OrganisationManagerBean
 				if (fetchGroups != null)
 					pm.getFetchPlan().setGroups(fetchGroups);
 
-				Collection res = (Collection)pm.newQuery(Organisation.class).execute();
+				Collection<Organisation> res = (Collection<Organisation>)pm.newQuery(Organisation.class).execute();
 
 				// TODO DEBUG begin
 				logger.info("I am the Root Organisation and I will return the following organisations: ");
-				for (Iterator iter = res.iterator(); iter.hasNext();) {
-					Organisation organisation = (Organisation) iter.next();
+				for (Iterator<Organisation> iter = res.iterator(); iter.hasNext();) {
+					Organisation organisation = iter.next();
 					logger.info("  " + organisation.getOrganisationID());
 				}
 				// TODO DEBUG end
@@ -1008,7 +1009,7 @@ public abstract class OrganisationManagerBean
 		} catch (NamingException e) {
 			throw new RuntimeException("Fucking shit! Our own JNDI isn't available!");
 		}
-		
+
 		JFireServerManager ism = getJFireServerManager();
 		try {
 			JFireServerConfigModule jfireServerConfigModule = ism.getJFireServerConfigModule();

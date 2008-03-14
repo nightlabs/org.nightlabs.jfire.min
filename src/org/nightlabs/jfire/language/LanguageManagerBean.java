@@ -46,7 +46,7 @@ import org.nightlabs.language.LanguageCf;
  * @ejb.bean name="jfire/ejb/JFireBaseBean/LanguageManager"
  *	jndi-name="jfire/ejb/JFireBaseBean/LanguageManager"
  *	type="Stateless"
- * 
+ *
  * @ejb.util generate="physical"
  * @ejb.transaction type="Required"
  */
@@ -57,7 +57,7 @@ public abstract class LanguageManagerBean extends BaseSessionBeanImpl implements
 	 * LOG4J logger used by this class
 	 */
 	private static final Logger logger = Logger.getLogger(LanguageManagerBean.class);
-	
+
 	/**
 	 * @see org.nightlabs.jfire.base.BaseSessionBeanImpl#setSessionContext(javax.ejb.SessionContext)
 	 */
@@ -84,14 +84,14 @@ public abstract class LanguageManagerBean extends BaseSessionBeanImpl implements
 	}
 	/**
 	 * @see javax.ejb.SessionBean#ejbRemove()
-	 * 
+	 *
 	 * @ejb.permission unchecked="true"
 	 */
 	public void ejbRemove() throws EJBException, RemoteException { }
 
 	/**
 	 * Creates a language if it does not exist. If it exists already, nothing is done.
-	 * 
+	 *
 	 * @param languageID ISO639-2 language code
 	 * @param nativeName should be the language name in itself (e.g. French = Francais)
 	 *
@@ -132,12 +132,12 @@ public abstract class LanguageManagerBean extends BaseSessionBeanImpl implements
 	 * @return A Collection containing all languages that the current organisationID knows.
 	 * @throws LanguageException if sth. unexpected happens - e.g. if the PersistenceManager
 	 *   is not accessible.
-	 * 
+	 *
 	 * @ejb.interface-method
 	 *
 	 * @ejb.permission role-name="LanguageManager-read"
 	 */
-	public Collection getLanguages()
+	public Collection<Language> getLanguages()
 	throws LanguageException
 	{
 		try {
@@ -145,7 +145,7 @@ public abstract class LanguageManagerBean extends BaseSessionBeanImpl implements
 		  try {
 		  	pm.getFetchPlan().setMaxFetchDepth(NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
 			  pm.getFetchPlan().addGroup(FetchPlan.ALL);
-			  return pm.detachCopyAll((Collection)pm.newQuery(Language.class).execute());
+			  return pm.detachCopyAll((Collection<Language>)pm.newQuery(Language.class).execute());
 		  } finally {
 		  	pm.close();
 		  }
@@ -153,7 +153,7 @@ public abstract class LanguageManagerBean extends BaseSessionBeanImpl implements
 			throw new LanguageException(x);
 		}
 	}
-	
+
 	/**
 	 * @param languageID ISO639-2 language code
 	 * @param throwExceptionIfNotExistent whether to return null or to throw a
@@ -164,7 +164,7 @@ public abstract class LanguageManagerBean extends BaseSessionBeanImpl implements
 	 *   This exception is an inheritor of LanguageException
 	 * @throws LanguageException If it's not a LanguageNotFoundException, sth. unexpected
 	 *   happened - maybe the PersistenceManager is not accessible.
-	 * 
+	 *
 	 * @see getLanguage(String languageID)
 	 */
 	public Language getLanguage(String languageID, boolean throwExceptionIfNotExistent)
@@ -192,7 +192,7 @@ public abstract class LanguageManagerBean extends BaseSessionBeanImpl implements
 	 *   This exception is an inheritor of LanguageException
 	 * @throws LanguageException If it's not a LanguageNotFoundException, sth. unexpected
 	 *   happened - maybe the PersistenceManager is not accessible.
-	 * 
+	 *
 	 * @see getLanguage(String languageID, boolean throwExceptionIfNotExistent)
 	 */
 	public Language getLanguage(String languageID)
