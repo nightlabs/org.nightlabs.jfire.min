@@ -374,4 +374,30 @@ public class UserDAO extends BaseJDOObjectDAO<UserID, User>
 			throw new RuntimeException("Adding user \""+userID.userID+"\" to role group \""+roleGroupID.roleGroupID+"\" within authority \""+authorityID.authorityID+"\" failed", e);
 		}
 	}
+	
+	public synchronized Collection<User> getUsersInUserGroup(UserID userGroupID, 
+			String[] fetchgroups, int maxFetchDepth, ProgressMonitor monitor)
+	{
+		try {
+			UserManager um = UserManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
+			Collection<UserID> ids = um.getUserIDsInUserGroup(userGroupID);
+			return getJDOObjects(null, ids, fetchgroups, maxFetchDepth, monitor);			
+		} catch (Exception e) {
+			monitor.done();
+			throw new RuntimeException(e);
+		}
+	}
+
+	public synchronized Collection<User> getUsersNotInUserGroup(UserID userGroupID, 
+			String[] fetchgroups, int maxFetchDepth, ProgressMonitor monitor)
+	{
+		try {
+			UserManager um = UserManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
+			Collection<UserID> ids = um.getUserIDsNotInUserGroup(userGroupID);
+			return getJDOObjects(null, ids, fetchgroups, maxFetchDepth, monitor);
+		} catch (Exception e) {
+			monitor.done();
+			throw new RuntimeException(e);
+		}		
+	}	
 }
