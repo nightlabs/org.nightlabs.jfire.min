@@ -37,8 +37,6 @@ import java.util.Set;
 
 import javax.jdo.JDOHelper;
 
-import org.nightlabs.jdo.NLJDOHelper;
-import org.nightlabs.jdo.ObjectID;
 import org.nightlabs.jfire.base.jdo.cache.Cache;
 import org.nightlabs.progress.ProgressMonitor;
 import org.nightlabs.progress.SubProgressMonitor;
@@ -50,7 +48,7 @@ import org.nightlabs.util.CollectionUtil;
  * Inherit this class with a JDO object id class and
  * JDO object class as generic parameters to provide
  * an accessor object for this kind of JDO object.
- * 
+ *
  * @author Marco Schulze - marco at nightlabs dot de
  * @author Marc Klinger - marc[at]nightlabs[dot]de
  * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] de -->
@@ -81,7 +79,7 @@ public abstract class BaseJDOObjectDAO<JDOObjectID, JDOObject>
 	 * retrieve a single JDO object from the server. The given implementation
 	 * works by calling {@link #retrieveJDOObjects(Set, Set, int, IProgressMonitor)}
 	 * for the single object.
-	 * 
+	 *
 	 * @param objectID Wich object to get
 	 * @param fetchGroups Wich fetch groups to use
 	 * @param maxFetchDepth Fetch depth or {@link NLJDOHelper#MAX_FETCH_DEPTH_NO_LIMIT}
@@ -100,12 +98,12 @@ public abstract class BaseJDOObjectDAO<JDOObjectID, JDOObject>
 			return null;
 		return objects.iterator().next();
 	}
-	
+
 	/**
 	 * Retrieve JDO objects from the server. This method will be called by
 	 * {@link #getJDOObjects(String, Collection, Set, int, IProgressMonitor)}
 	 * for all objects that are not already in the cache.
-	 * 
+	 *
 	 * @param objectIDs Which objects to get
 	 * @param fetchGroups Which fetch groups to use
 	 * @param maxFetchDepth Fetch depth or {@link NLJDOHelper#MAX_FETCH_DEPTH_NO_LIMIT}
@@ -122,7 +120,7 @@ public abstract class BaseJDOObjectDAO<JDOObjectID, JDOObject>
 	 * Object download for an uncached object is delegated by calling
 	 * {@link #retrieveJDOObject(Object, Set, int, IProgressMonitor)
 	 * for the uncached object.
-	 * 
+	 *
 	 * @param scope The cache scope to use
 	 * @param objectID Wich object to get
 	 * @param fetchGroups Wich fetch groups to use
@@ -146,7 +144,7 @@ public abstract class BaseJDOObjectDAO<JDOObjectID, JDOObject>
 			throw new RuntimeException(x);
 		}
 	}
-	
+
 	/**
 	 * Get JDO objects from the cache or the server.
 	 * Object download for uncached objects is delegated by calling
@@ -155,7 +153,7 @@ public abstract class BaseJDOObjectDAO<JDOObjectID, JDOObject>
 	 * <p>
 	 * Note that this will maintain the order of the objects given if you
 	 * pass a {@link List} as objectIDs.
-	 * 
+	 *
 	 * @param scope The cache scope to use
 	 * @param objectIDs Wich objects to get
 	 * @param fetchGroups Wich fetch groups to use
@@ -174,10 +172,10 @@ public abstract class BaseJDOObjectDAO<JDOObjectID, JDOObject>
 //		objectIDs.size * 2, so that the retrieval be at least as important, as the processing
 		monitor.beginTask("Getting "+objectIDs.size()+" Objects through Cache", objectIDs.size() * 2);
 		ArrayList<JDOObject> objects = new ArrayList<JDOObject>(objectIDs.size());
-			
+
 		List<JDOObjectID> listetIDs = new ArrayList<JDOObjectID>(objectIDs);
 		Map<JDOObjectID, Integer> notInCache = new HashMap<JDOObjectID, Integer>();
-		
+
 		// search the cache for the wanted Objects
 		for (int i=0; i < listetIDs.size(); i++) {
 			JDOObject cachedObject = (JDOObject) cache.get(scope, listetIDs.get(i), fetchGroups, maxFetchDepth);
@@ -203,7 +201,7 @@ public abstract class BaseJDOObjectDAO<JDOObjectID, JDOObject>
 		} catch (Exception e) {
 			throw new RuntimeException("Error occured while fetching Objects from the data store!\n", e);
 		}
-		
+
 		// put remaining objects in correct position of the result list
 		int index;
 		for(Iterator<JDOObject> it = fetchedObjects.iterator(); it.hasNext(); ) {
@@ -215,7 +213,7 @@ public abstract class BaseJDOObjectDAO<JDOObjectID, JDOObject>
 			JDOObjectID freshObjectID = (JDOObjectID) JDOHelper.getObjectId(freshObject);
 			if (freshObjectID == null)
 				throw new IllegalStateException("It seems like the Objects returned from the Bean are not detached, since one of their IDs is null!");
-			
+
 			index = notInCache.get(freshObjectID);
 			objects.set(index, freshObject);
 			monitor.worked(1);
@@ -245,7 +243,7 @@ public abstract class BaseJDOObjectDAO<JDOObjectID, JDOObject>
 	 * <p>
 	 * This is a convenience method that calls
 	 * {@link #getJDOObjects(String, Collection, Set, int, IProgressMonitor)}.
-	 * 
+	 *
 	 * @param scope The cache scope to use
 	 * @param objectIDs Wich objects to get
 	 * @param fetchGroups Wich fetch groups to use
@@ -273,7 +271,7 @@ public abstract class BaseJDOObjectDAO<JDOObjectID, JDOObject>
 	 * <p>
 	 * This is a convenience method that calls
 	 * {@link #getJDOObjects(String, Collection, Set, int, IProgressMonitor)}.
-	 * 
+	 *
 	 * @param scope The cache scope to use
 	 * @param objectIDs Wich objects to get
 	 * @param fetchGroups Wich fetch groups to use
@@ -301,7 +299,7 @@ public abstract class BaseJDOObjectDAO<JDOObjectID, JDOObject>
 	 * <p>
 	 * This is a convenience method that calls
 	 * {@link #getJDOObjects(String, Collection, Set, int, IProgressMonitor)}.
-	 * 
+	 *
 	 * @param scope The cache scope to use
 	 * @param objectIDs Wich objects to get
 	 * @param fetchGroups Wich fetch groups to use
@@ -320,7 +318,7 @@ public abstract class BaseJDOObjectDAO<JDOObjectID, JDOObject>
 				maxFetchDepth,
 				monitor);
 	}
-	
+
 	/**
 	 * Get the cache shared instance.
 	 * @return The cache shared instance.
