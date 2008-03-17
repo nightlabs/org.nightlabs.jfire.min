@@ -91,9 +91,7 @@ extends ConfigFactory
 					}
 				}
 
-				File configDir = new File(
-						userConfigBaseDir,
-						userID.organisationID + File.separatorChar + userID.userID);
+				File configDir = new File(new File(userConfigBaseDir,	userID.organisationID), userID.userID);
 
 				if (!configDir.exists())
 					configDir.mkdirs();
