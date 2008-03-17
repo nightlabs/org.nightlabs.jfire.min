@@ -369,7 +369,7 @@ public class PersistentNotificationManagerFactory implements Serializable
 							if (duration > 20000)
 								logger.warn(logPrefix + "Grouping " + totalDirtyObjectIDCount + " DirtyObjectIDs for prefiltering took " + duration + " msec.");
 							else
-								logger.info(logPrefix + "Grouping " + totalDirtyObjectIDCount + " DirtyObjectIDs for prefiltering took " + duration + " msec.");
+								logger.debug(logPrefix + "Grouping " + totalDirtyObjectIDCount + " DirtyObjectIDs for prefiltering took " + duration + " msec.");
 						}
 
 						{
