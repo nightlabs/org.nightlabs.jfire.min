@@ -44,6 +44,7 @@ import org.apache.log4j.Logger;
 import org.nightlabs.ModuleException;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
+import org.nightlabs.jfire.base.DuplicateKeyException;
 import org.nightlabs.jfire.base.expression.IExpression;
 import org.nightlabs.jfire.organisation.Organisation;
 import org.nightlabs.jfire.person.PersonStruct;
@@ -298,30 +299,53 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	}
 
 	/**
-	 * Store a propStruct either detached or not made persistent yes.
+	 * Store a struct either detached or not made persistent yet.
 	 *
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type="Required"
 	 */
-	public void storeStruct(IStruct istruct)
+	public IStruct storeStruct(IStruct struct)
 	{
 		PersistenceManager pm = getPersistenceManager();
 		try {
-			if (istruct instanceof Struct) {
+			if (struct instanceof Struct) {
 				if (hasRootOrganisation() && !getOrganisationID().equals(getRootOrganisationID()))
 					throw new IllegalStateException("Structs can only be stored by the root organisation.");
 
-				Struct modifiedStruct = (Struct) istruct;
+				Struct modifiedStruct = (Struct) struct;
 				Struct currentStruct = (Struct) pm.getObjectById(modifiedStruct.getID());
 				modifiedStruct = applyStructuralChanges(modifiedStruct, currentStruct);
-				pm.makePersistent(modifiedStruct);
-			} else if (istruct instanceof StructLocal) {
-				StructLocal structLocal = (StructLocal) istruct;
-				StructLocal persistentStructLocal = (StructLocal) pm.getObjectById(structLocal.getID());
-				structLocal.restoreAdoptedBlocks(persistentStructLocal.getStruct());
-				pm.makePersistent(structLocal);
+				modifiedStruct = pm.makePersistent(modifiedStruct);
+
+				pm.getFetchPlan().setGroup(IStruct.FETCH_GROUP_ISTRUCT_FULL_DATA);
+				pm.getFetchPlan().setMaxFetchDepth(NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
+				Struct detachedStruct = pm.detachCopy(modifiedStruct);
+				return detachedStruct;
+			} else if (struct instanceof StructLocal) {
+				StructLocal modifiedStructLocal = (StructLocal) struct;
+				StructLocal attachedStructLocal = (StructLocal) pm.getObjectById(modifiedStructLocal.getID());
+
+				// Add only the struct blocks to the attached version that do not originate from the Struct of the StructLocal
+				for (StructBlock structBlock : modifiedStructLocal.getStructBlocks()) {
+					if (!attachedStructLocal.getStruct().getStructBlocks().contains(structBlock)) {
+						try {
+							attachedStructLocal.addStructBlock(structBlock);
+						} catch (DuplicateKeyException e) {
+							// this should never happen
+							throw new RuntimeException(e);
+						}
+					}
+				}
+
+				pm.getFetchPlan().setGroup(IStruct.FETCH_GROUP_ISTRUCT_FULL_DATA);
+				pm.getFetchPlan().setMaxFetchDepth(NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
+				StructLocal detachedStructLocal = pm.detachCopy(attachedStructLocal);
+				return detachedStructLocal;
+			} else {
+				throw new IllegalArgumentException("Given struct must be of type Struct or StructLocal.");
 			}
+
 		} finally {
 			pm.close();
 		}
