@@ -26,10 +26,10 @@
 
 package org.nightlabs.jfire.prop;
 
-
 import java.rmi.RemoteException;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -48,6 +48,7 @@ import org.nightlabs.jfire.base.DuplicateKeyException;
 import org.nightlabs.jfire.base.expression.IExpression;
 import org.nightlabs.jfire.organisation.Organisation;
 import org.nightlabs.jfire.person.PersonStruct;
+import org.nightlabs.jfire.prop.exception.IllegalStructureModificationException;
 import org.nightlabs.jfire.prop.id.PropertySetID;
 import org.nightlabs.jfire.prop.id.StructFieldID;
 import org.nightlabs.jfire.prop.id.StructID;
@@ -70,7 +71,8 @@ import org.nightlabs.util.Util;
  * @ejb.util generate="physical"
  * @ejb.transaction type="Required"
  */
-public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements SessionBean {
+public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements SessionBean
+{
 	private static final long serialVersionUID = 1L;
 	private static final Logger logger = Logger.getLogger(PropertyManagerBean.class);
 
@@ -104,7 +106,6 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	 */
 	public void ejbRemove() throws EJBException, RemoteException {
 	}
-
 
 	/**
 	 * Detaches and returns the complete Struct.
@@ -163,7 +164,8 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type="Required"
 	 */
-	public StructLocal getFullStructLocal(String organisationID, String linkClass, String scope, String[] fetchGroups, int maxFetchDepth) throws ModuleException {
+	public StructLocal getFullStructLocal(String organisationID, String linkClass, String scope, String[] fetchGroups, int maxFetchDepth)
+			throws ModuleException {
 		PersistenceManager pm = getPersistenceManager();
 		try {
 			if (fetchGroups != null) {
@@ -189,8 +191,7 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type="Required"
 	 */
-	public StructLocal getFullStructLocal(StructLocalID structLocalID, String[] fetchGroups, int maxFetchDepth) throws ModuleException
-	{
+	public StructLocal getFullStructLocal(StructLocalID structLocalID, String[] fetchGroups, int maxFetchDepth) throws ModuleException {
 		return getFullStructLocal(structLocalID.organisationID, structLocalID.linkClass, structLocalID.scope, fetchGroups, maxFetchDepth);
 	}
 
@@ -201,8 +202,7 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type="Required"
 	 */
-	public PropertySet getPropertySet(PropertySetID propID, String[] fetchGroups, int maxFetchDepth)
-	{
+	public PropertySet getPropertySet(PropertySetID propID, String[] fetchGroups, int maxFetchDepth) {
 		PersistenceManager pm = this.getPersistenceManager();
 		try {
 			pm.getExtent(PropertySet.class, true);
@@ -232,8 +232,7 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	 * @ejb.permission role-name="PropManager-read"
 	 * @ejb.transaction type="Required"
 	 */
-	public Set<?> searchPropertySets(PropSearchFilter propSearchFilter, String[] fetchGroups, int maxFetchDepth)
-	{
+	public Set<?> searchPropertySets(PropSearchFilter propSearchFilter, String[] fetchGroups, int maxFetchDepth) {
 		PersistenceManager pm = this.getPersistenceManager();
 		try {
 			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
@@ -261,16 +260,14 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	 * @ejb.permission role-name="PropManager-read"
 	 * @ejb.transaction type="Required"
 	 */
-	public Set<PropertySetID> searchPropertySetIDs(PropSearchFilter propSearchFilter)
-	{
+	public Set<PropertySetID> searchPropertySetIDs(PropSearchFilter propSearchFilter) {
 		PersistenceManager pm = this.getPersistenceManager();
 		try {
 			propSearchFilter.setPersistenceManager(pm);
 			Collection<?> props = propSearchFilter.getResult();
 			Set<PropertySetID> result = new HashSet<PropertySetID>();
 			for (Object element : props) {
-				if (element instanceof PropertySet)
-				{
+				if (element instanceof PropertySet) {
 					PropertySet propertySet = (PropertySet) element;
 					result.add((PropertySetID) JDOHelper.getObjectId(propertySet));
 				}
@@ -288,8 +285,7 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type="Required"
 	 */
-	public PropertySet storePropertySet(PropertySet propertySet, boolean get, String[] fetchGroups, int maxFetchDepth)
-	{
+	public PropertySet storePropertySet(PropertySet propertySet, boolean get, String[] fetchGroups, int maxFetchDepth) {
 		PersistenceManager pm = getPersistenceManager();
 		try {
 			return NLJDOHelper.storeJDO(pm, propertySet, get, fetchGroups, maxFetchDepth);
@@ -305,8 +301,7 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type="Required"
 	 */
-	public IStruct storeStruct(IStruct struct)
-	{
+	public void storeStruct(IStruct struct) {
 		PersistenceManager pm = getPersistenceManager();
 		try {
 			if (struct instanceof Struct) {
@@ -317,20 +312,65 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 				Struct currentStruct = (Struct) pm.getObjectById(modifiedStruct.getID());
 				modifiedStruct = applyStructuralChanges(modifiedStruct, currentStruct);
 				modifiedStruct = pm.makePersistent(modifiedStruct);
-
+			} else if (struct instanceof StructLocal) {
+				StructLocal modifiedStructLocal = (StructLocal) struct;
 				pm.getFetchPlan().setGroup(IStruct.FETCH_GROUP_ISTRUCT_FULL_DATA);
 				pm.getFetchPlan().setMaxFetchDepth(NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
-				Struct detachedStruct = pm.detachCopy(modifiedStruct);
-				return detachedStruct;
+				StructLocal unmodifiedStructLocal = pm.detachCopy((StructLocal) pm.getObjectById(modifiedStructLocal.getID()));
+
+				// Replace the struct with all its struct blocks with the unmodified version from the datastore to prevent
+				// accidental or malicious modifications through the StructLocal
+				modifiedStructLocal.setStruct(unmodifiedStructLocal.getStruct());
+
+				// Somehow, after this call, the modified structure comes back, this may be a JPOX bug or a general
+				// misconception by myself.
+				// I stated this problem in http://www.jpox.org/servlet/forum/viewthread?thread=4967&lastpage=yes
+				modifiedStructLocal = pm.makePersistent(modifiedStructLocal);
+
+				if (true)
+					return;
+			} else {
+				throw new IllegalArgumentException("Given struct must be of type Struct or StructLocal.");
+			}
+		} finally {
+			pm.close();
+		}
+	}
+
+	/**
+	 * Store a struct either detached or not made persistent yet.
+	 *
+	 * @ejb.interface-method
+	 * @ejb.permission role-name="_Guest_"
+	 * @ejb.transaction type="Required"
+	 */
+	public void storeStruct1(IStruct struct) {
+		PersistenceManager pm = getPersistenceManager();
+		try {
+			if (struct instanceof Struct) {
+				if (hasRootOrganisation() && !getOrganisationID().equals(getRootOrganisationID()))
+					throw new IllegalStateException("Structs can only be stored by the root organisation.");
+
+				Struct modifiedStruct = (Struct) struct;
+				Struct currentStruct = (Struct) pm.getObjectById(modifiedStruct.getID());
+				modifiedStruct = applyStructuralChanges(modifiedStruct, currentStruct);
+				modifiedStruct = pm.makePersistent(modifiedStruct);
 			} else if (struct instanceof StructLocal) {
 				StructLocal modifiedStructLocal = (StructLocal) struct;
 				StructLocal attachedStructLocal = (StructLocal) pm.getObjectById(modifiedStructLocal.getID());
 
 				// Add only the struct blocks to the attached version that do not originate from the Struct of the StructLocal
-				for (StructBlock structBlock : modifiedStructLocal.getStructBlocks()) {
+
+				for (StructBlock structBlock : new LinkedList<StructBlock>(modifiedStructLocal.getStructBlocks())) {
 					if (!attachedStructLocal.getStruct().getStructBlocks().contains(structBlock)) {
 						try {
+							try {
+								modifiedStructLocal.removeStructBlock(structBlock);
+							} catch (IllegalStructureModificationException e) {
+								throw new RuntimeException(e);
+							}
 							attachedStructLocal.addStructBlock(structBlock);
+							structBlock = pm.makePersistent(structBlock);
 						} catch (DuplicateKeyException e) {
 							// this should never happen
 							throw new RuntimeException(e);
@@ -338,14 +378,11 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 					}
 				}
 
-				pm.getFetchPlan().setGroup(IStruct.FETCH_GROUP_ISTRUCT_FULL_DATA);
-				pm.getFetchPlan().setMaxFetchDepth(NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
-				StructLocal detachedStructLocal = pm.detachCopy(attachedStructLocal);
-				return detachedStructLocal;
+				pm.makePersistent(attachedStructLocal);
+
 			} else {
 				throw new IllegalArgumentException("Given struct must be of type Struct or StructLocal.");
 			}
-
 		} finally {
 			pm.close();
 		}
@@ -354,7 +391,7 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	/**
 	 * Checks if the changes reflected by <code>modifiedStruct</code> are
 	 * adequate, i.e. that they did not touch blocks that are owned by the dev
-	 * organisation and thus aren't modifyable. Changes to such blocks are
+	 * organisation and thus aren't modifiable. Changes to such blocks are
 	 * discarded. The "corrected" structure containing only legal changes is
 	 * returned.
 	 *
@@ -448,8 +485,7 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type="Required"
 	 */
-	public Set<PropertySet> getPropertySets(Set<PropertySetID> propIDs, String[] fetchGroups, int maxFetchDepth)
-	{
+	public Set<PropertySet> getPropertySets(Set<PropertySetID> propIDs, String[] fetchGroups, int maxFetchDepth) {
 		// MultiPageSearchResult multiPageSearchResult = new
 		// MultiPageSearchResult();
 		PersistenceManager pm = getPersistenceManager();
@@ -489,8 +525,7 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	 * @ejb.permission role-name="_System_"
 	 * @ejb.transaction type="Required"
 	 */
-	public void initialise()
-	{
+	public void initialise() {
 		PersistenceManager pm = getPersistenceManager();
 		try {
 			PersonStruct.getPersonStruct(getOrganisationID(), pm);
@@ -499,198 +534,198 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 		}
 	}
 
-//	/**
-//	 * Creates some test structures and persists them.
-//	 *
-//	 * @throws ModuleException
-//	 *
-//	 * @ejb.interface-method
-//	 * @ejb.permission role-name="_Guest_"
-//	 * @ejb.transaction type="Required"
-//	 */
-//	public void createTestStructs() throws ModuleException {
-//		PersistenceManager pm = getPersistenceManager();
-//		try {
-//			Struct struct = null;
-//			StructLocal structLocal = null;
-//
-//			struct = createPersonStruct();
-//			pm.makePersistent(struct);
-//			pm.makePersistent(new StructLocal(struct));
-//
-////			for (StructID structID : getAvailableStructIDs(pm)) {
-////				deleteStruct(structID, pm);
-////				logger.debug("Successfully deleted struct with ID: " + structID);
-////			}
-////
-////			for (StructLocalID structLocalID : getAvailableStructLocalIDs(pm)) {
-////				deleteStructLocal(structLocalID, pm);
-////				logger.debug("Successfully deleted struct with ID: " + structLocalID);
-////			}
-//
-////			struct = createPersonStruct();
-////			pm.makePersistent(struct);
-//
-////			struct = createRandomStructure(StructID.create("chezfrancois.jfire.org", Object.class.getName()));
-////			structLocal = new StructLocal(struct);
-////			pm.makePersistent(struct);
-////			pm.makePersistent(structLocal);
-////
-////			struct = createRandomStructure(StructID.create("chezfrancois.jfire.org", String.class.getName()));
-////			structLocal = new StructLocal(struct);
-////			pm.makePersistent(struct);
-////			pm.makePersistent(structLocal);
-////
-////			struct = createRandomStructure(StructID.create("chezfrancois.jfire.org", Integer.class.getName()));
-////			structLocal = new StructLocal(struct);
-////			pm.makePersistent(struct);
-////			pm.makePersistent(structLocal);
-////
-////			struct = createRandomStructure(StructID.create("chezfrancois.jfire.org", Double.class.getName()));
-////			structLocal = new StructLocal(struct);
-////			pm.makePersistent(struct);
-////			pm.makePersistent(structLocal);
-////
-////			struct = createRandomStructure(StructID.create("chezfrancois.jfire.org", Enum.class.getName()));
-////			structLocal = new StructLocal(struct);
-////			pm.makePersistent(struct);
-////			pm.makePersistent(structLocal);
-//
-//		} finally {
-//			pm.close();
-//		}
-//	}
-//
-//	private Struct createPersonStruct() {
-//		Struct struct;
-//		StructID structID = StructID.create("chezfrancois.jfire.org", Person.class.getName());
-//		struct = new Struct(structID.organisationID, structID.linkClass);
-//		return struct;
-//	}
+	//	/**
+	//	 * Creates some test structures and persists them.
+	//	 *
+	//	 * @throws ModuleException
+	//	 *
+	//	 * @ejb.interface-method
+	//	 * @ejb.permission role-name="_Guest_"
+	//	 * @ejb.transaction type="Required"
+	//	 */
+	//	public void createTestStructs() throws ModuleException {
+	//		PersistenceManager pm = getPersistenceManager();
+	//		try {
+	//			Struct struct = null;
+	//			StructLocal structLocal = null;
+	//
+	//			struct = createPersonStruct();
+	//			pm.makePersistent(struct);
+	//			pm.makePersistent(new StructLocal(struct));
+	//
+	////			for (StructID structID : getAvailableStructIDs(pm)) {
+	////				deleteStruct(structID, pm);
+	////				logger.debug("Successfully deleted struct with ID: " + structID);
+	////			}
+	////
+	////			for (StructLocalID structLocalID : getAvailableStructLocalIDs(pm)) {
+	////				deleteStructLocal(structLocalID, pm);
+	////				logger.debug("Successfully deleted struct with ID: " + structLocalID);
+	////			}
+	//
+	////			struct = createPersonStruct();
+	////			pm.makePersistent(struct);
+	//
+	////			struct = createRandomStructure(StructID.create("chezfrancois.jfire.org", Object.class.getName()));
+	////			structLocal = new StructLocal(struct);
+	////			pm.makePersistent(struct);
+	////			pm.makePersistent(structLocal);
+	////
+	////			struct = createRandomStructure(StructID.create("chezfrancois.jfire.org", String.class.getName()));
+	////			structLocal = new StructLocal(struct);
+	////			pm.makePersistent(struct);
+	////			pm.makePersistent(structLocal);
+	////
+	////			struct = createRandomStructure(StructID.create("chezfrancois.jfire.org", Integer.class.getName()));
+	////			structLocal = new StructLocal(struct);
+	////			pm.makePersistent(struct);
+	////			pm.makePersistent(structLocal);
+	////
+	////			struct = createRandomStructure(StructID.create("chezfrancois.jfire.org", Double.class.getName()));
+	////			structLocal = new StructLocal(struct);
+	////			pm.makePersistent(struct);
+	////			pm.makePersistent(structLocal);
+	////
+	////			struct = createRandomStructure(StructID.create("chezfrancois.jfire.org", Enum.class.getName()));
+	////			structLocal = new StructLocal(struct);
+	////			pm.makePersistent(struct);
+	////			pm.makePersistent(structLocal);
+	//
+	//		} finally {
+	//			pm.close();
+	//		}
+	//	}
+	//
+	//	private Struct createPersonStruct() {
+	//		Struct struct;
+	//		StructID structID = StructID.create("chezfrancois.jfire.org", Person.class.getName());
+	//		struct = new Struct(structID.organisationID, structID.linkClass);
+	//		return struct;
+	//	}
 
-//	private Struct createStructManual(StructID structID) {
-//		Struct struct;
-//		try {
-//			struct = new Struct(structID.organisationID, structID.linkClass);
-//			StructField field;
-//			StructBlock block;
-//			block = new StructBlock(struct, structID.organisationID, "block1");
-//			struct.addStructBlock(block);
-//			field = new TextStructField(block, structID.organisationID, "field1");
-//			field.getName().setText(Locale.getDefault().getLanguage(), "Feld 1");
-//			block.addStructField(field);
-//			field = new TextStructField(block, structID.organisationID, "field2");
-//			field.getName().setText(Locale.getDefault().getLanguage(), "Feld 2");
-//			block.addStructField(field);
-//			field = new TextStructField(block, structID.organisationID, "field3");
-//			field.getName().setText(Locale.getDefault().getLanguage(), "Feld 3");
-//			block.addStructField(field);
-//			field = new TextStructField(block, structID.organisationID, "field4");
-//			block.addStructField(field);
-//			block.getName().setText(Locale.getDefault().getLanguage(), "Block 1");
-//			block = new StructBlock(struct, structID.organisationID, "block2");
-//			struct.addStructBlock(block);
-//			field = new TextStructField(block, structID.organisationID, "field1");
-//			field.getName().setText(Locale.getDefault().getLanguage(), "Feld 1");
-//			block.addStructField(field);
-//			field = new TextStructField(block, structID.organisationID, "field2");
-//			field.getName().setText(Locale.getDefault().getLanguage(), "Feld 2");
-//			block.addStructField(field);
-//			field = new TextStructField(block, structID.organisationID, "field3");
-//			block.addStructField(field);
-//			block.getName().setText(Locale.getDefault().getLanguage(), "Block 2");
-//			block = new StructBlock(struct, structID.organisationID, "block3");
-//			struct.addStructBlock(block);
-//			field = new TextStructField(block, structID.organisationID, "field1");
-//			field.getName().setText(Locale.getDefault().getLanguage(), "Feld 1");
-//			block.addStructField(field);
-//			// ---------------
-//			SelectionStructField selField = new SelectionStructField(block, structID.organisationID, "field2");
-//			selField.getName().setText(Locale.getDefault().getLanguage(), "Feld 2 (sel)");
-//			StructFieldValue value = selField.newStructFieldValue("1");
-//			value.getValueName().setText(Locale.getDefault().getLanguage(), "Auswahl 1");
-//			value = selField.newStructFieldValue("2");
-//			value.getValueName().setText(Locale.getDefault().getLanguage(), "Auswahl 2");
-//			value = selField.newStructFieldValue("3");
-//			value.getValueName().setText(Locale.getDefault().getLanguage(), "Auswahl 3");
-//			block.addStructField(selField);
-//			block.getName().setText(Locale.getDefault().getLanguage(), "Block 3");
-//			// ---------------
-//
-//			return struct;
-//		} catch (Exception e) {
-//			throw new RuntimeException(e);
-//		}
-//
-//	}
-//
-//	private Struct createRandomStructure(StructID structID) {
-//		String langID = Locale.getDefault().getLanguage();
-//		Struct struct = new Struct(structID.organisationID, structID.linkClass);
-//		int structBlockCount = (int) (2 + Math.random() * 9);
-//		for (int b = 0; b < structBlockCount; b++) {
-//			StructBlock block = new StructBlock(struct, struct.getOrganisationID(), structID.linkClass + "_" + b);
-//			block.getName().setText(langID, "Block " + b);
-//			try {
-//				struct.addStructBlock(block);
-//			} catch (DuplicateKeyException e) {
-//				logger.error("Duplicate StructBlock detected.");
-//				throw new RuntimeException(e);
-//			}
-//			int structFieldCount = (int) (2 + Math.random() * 9);
-//			for (int f = 0; f < structFieldCount; f++) {
-//				boolean isTextField = Math.random() < 0.75;
-//				if (isTextField) {
-//					TextStructField field = new TextStructField(block, struct.getOrganisationID(), structID.linkClass + "_" + f);
-//					field.getName().setText(langID, "Feld " + f);
-//					try {
-//						block.addStructField(field);
-//					} catch (DuplicateKeyException e) {
-//						logger.error("Duplicate StructField detected.");
-//						throw new RuntimeException(e);
-//					}
-//				} else {
-//					SelectionStructField field = new SelectionStructField(block, struct.getOrganisationID(), structID.linkClass + "_"
-//							+ f);
-//					field.getName().setText(langID, "Feld " + f);
-//					try {
-//						block.addStructField(field);
-//					} catch (DuplicateKeyException e) {
-//						logger.error("Duplicate StructField detected.");
-//						throw new RuntimeException(e);
-//					}
-//					int structFieldValueCount = (int) (2 + Math.random() * 9);
-//					;
-//					for (int v = 0; v < structFieldValueCount; v++) {
-//						field.newStructFieldValue(Integer.toString(v)).getValueName().setText(langID, "Auswahl " + v);
-//					}
-//				}
-//			}
-//		}
-//		return struct;
-//	}
-//
-//	private void deleteStruct(StructID structID, PersistenceManager pm) {
-//		try {
-//			Struct struct = (Struct) pm.getObjectById(structID, true);
-//			pm.deletePersistent(struct);
-//		} catch (JDOObjectNotFoundException jdoonfe) {
-//			logger.debug("Object could not be deleted since it didn't exist.");
-//		} catch (JDODataStoreException jdodse) {
-//			logger.error("Deleting of "+ structID +" failed.", jdodse);
-//			throw new RuntimeException(jdodse);
-//		}
-//	}
-//
-//	private void deleteStructLocal(StructLocalID structLocalID, PersistenceManager pm) {
-//		try {
-//			StructLocal structLocal = (StructLocal) pm.getObjectById(structLocalID, true);
-//			pm.deletePersistent(structLocal);
-//		} catch (JDOObjectNotFoundException jdoonfe) {
-//			logger.debug("Object could not be deleted since it didn't exist.");
-//		} catch (JDODataStoreException jdodse) {
-//			logger.error("Deleting of Struct "+ structLocalID +" failed.", jdodse);
-//			throw new RuntimeException(jdodse);
-//		}
-//	}
+	//	private Struct createStructManual(StructID structID) {
+	//		Struct struct;
+	//		try {
+	//			struct = new Struct(structID.organisationID, structID.linkClass);
+	//			StructField field;
+	//			StructBlock block;
+	//			block = new StructBlock(struct, structID.organisationID, "block1");
+	//			struct.addStructBlock(block);
+	//			field = new TextStructField(block, structID.organisationID, "field1");
+	//			field.getName().setText(Locale.getDefault().getLanguage(), "Feld 1");
+	//			block.addStructField(field);
+	//			field = new TextStructField(block, structID.organisationID, "field2");
+	//			field.getName().setText(Locale.getDefault().getLanguage(), "Feld 2");
+	//			block.addStructField(field);
+	//			field = new TextStructField(block, structID.organisationID, "field3");
+	//			field.getName().setText(Locale.getDefault().getLanguage(), "Feld 3");
+	//			block.addStructField(field);
+	//			field = new TextStructField(block, structID.organisationID, "field4");
+	//			block.addStructField(field);
+	//			block.getName().setText(Locale.getDefault().getLanguage(), "Block 1");
+	//			block = new StructBlock(struct, structID.organisationID, "block2");
+	//			struct.addStructBlock(block);
+	//			field = new TextStructField(block, structID.organisationID, "field1");
+	//			field.getName().setText(Locale.getDefault().getLanguage(), "Feld 1");
+	//			block.addStructField(field);
+	//			field = new TextStructField(block, structID.organisationID, "field2");
+	//			field.getName().setText(Locale.getDefault().getLanguage(), "Feld 2");
+	//			block.addStructField(field);
+	//			field = new TextStructField(block, structID.organisationID, "field3");
+	//			block.addStructField(field);
+	//			block.getName().setText(Locale.getDefault().getLanguage(), "Block 2");
+	//			block = new StructBlock(struct, structID.organisationID, "block3");
+	//			struct.addStructBlock(block);
+	//			field = new TextStructField(block, structID.organisationID, "field1");
+	//			field.getName().setText(Locale.getDefault().getLanguage(), "Feld 1");
+	//			block.addStructField(field);
+	//			// ---------------
+	//			SelectionStructField selField = new SelectionStructField(block, structID.organisationID, "field2");
+	//			selField.getName().setText(Locale.getDefault().getLanguage(), "Feld 2 (sel)");
+	//			StructFieldValue value = selField.newStructFieldValue("1");
+	//			value.getValueName().setText(Locale.getDefault().getLanguage(), "Auswahl 1");
+	//			value = selField.newStructFieldValue("2");
+	//			value.getValueName().setText(Locale.getDefault().getLanguage(), "Auswahl 2");
+	//			value = selField.newStructFieldValue("3");
+	//			value.getValueName().setText(Locale.getDefault().getLanguage(), "Auswahl 3");
+	//			block.addStructField(selField);
+	//			block.getName().setText(Locale.getDefault().getLanguage(), "Block 3");
+	//			// ---------------
+	//
+	//			return struct;
+	//		} catch (Exception e) {
+	//			throw new RuntimeException(e);
+	//		}
+	//
+	//	}
+	//
+	//	private Struct createRandomStructure(StructID structID) {
+	//		String langID = Locale.getDefault().getLanguage();
+	//		Struct struct = new Struct(structID.organisationID, structID.linkClass);
+	//		int structBlockCount = (int) (2 + Math.random() * 9);
+	//		for (int b = 0; b < structBlockCount; b++) {
+	//			StructBlock block = new StructBlock(struct, struct.getOrganisationID(), structID.linkClass + "_" + b);
+	//			block.getName().setText(langID, "Block " + b);
+	//			try {
+	//				struct.addStructBlock(block);
+	//			} catch (DuplicateKeyException e) {
+	//				logger.error("Duplicate StructBlock detected.");
+	//				throw new RuntimeException(e);
+	//			}
+	//			int structFieldCount = (int) (2 + Math.random() * 9);
+	//			for (int f = 0; f < structFieldCount; f++) {
+	//				boolean isTextField = Math.random() < 0.75;
+	//				if (isTextField) {
+	//					TextStructField field = new TextStructField(block, struct.getOrganisationID(), structID.linkClass + "_" + f);
+	//					field.getName().setText(langID, "Feld " + f);
+	//					try {
+	//						block.addStructField(field);
+	//					} catch (DuplicateKeyException e) {
+	//						logger.error("Duplicate StructField detected.");
+	//						throw new RuntimeException(e);
+	//					}
+	//				} else {
+	//					SelectionStructField field = new SelectionStructField(block, struct.getOrganisationID(), structID.linkClass + "_"
+	//							+ f);
+	//					field.getName().setText(langID, "Feld " + f);
+	//					try {
+	//						block.addStructField(field);
+	//					} catch (DuplicateKeyException e) {
+	//						logger.error("Duplicate StructField detected.");
+	//						throw new RuntimeException(e);
+	//					}
+	//					int structFieldValueCount = (int) (2 + Math.random() * 9);
+	//					;
+	//					for (int v = 0; v < structFieldValueCount; v++) {
+	//						field.newStructFieldValue(Integer.toString(v)).getValueName().setText(langID, "Auswahl " + v);
+	//					}
+	//				}
+	//			}
+	//		}
+	//		return struct;
+	//	}
+	//
+	//	private void deleteStruct(StructID structID, PersistenceManager pm) {
+	//		try {
+	//			Struct struct = (Struct) pm.getObjectById(structID, true);
+	//			pm.deletePersistent(struct);
+	//		} catch (JDOObjectNotFoundException jdoonfe) {
+	//			logger.debug("Object could not be deleted since it didn't exist.");
+	//		} catch (JDODataStoreException jdodse) {
+	//			logger.error("Deleting of "+ structID +" failed.", jdodse);
+	//			throw new RuntimeException(jdodse);
+	//		}
+	//	}
+	//
+	//	private void deleteStructLocal(StructLocalID structLocalID, PersistenceManager pm) {
+	//		try {
+	//			StructLocal structLocal = (StructLocal) pm.getObjectById(structLocalID, true);
+	//			pm.deletePersistent(structLocal);
+	//		} catch (JDOObjectNotFoundException jdoonfe) {
+	//			logger.debug("Object could not be deleted since it didn't exist.");
+	//		} catch (JDODataStoreException jdodse) {
+	//			logger.error("Deleting of Struct "+ structLocalID +" failed.", jdodse);
+	//			throw new RuntimeException(jdodse);
+	//		}
+	//	}
 }
