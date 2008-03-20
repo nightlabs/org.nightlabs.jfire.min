@@ -195,11 +195,19 @@ public abstract class BaseJDOObjectDAO<JDOObjectID, JDOObject>
 
 		// fetch all missing objects from datastore
 		Collection<JDOObject> fetchedObjects;
+		ProgressMonitor subMonitor = null;
 		try { //                               workaround for hashset.keyset != serializable
+			subMonitor = new SubProgressMonitor(monitor, objectIDs.size());
 			fetchedObjects = retrieveJDOObjects(new HashSet<JDOObjectID>(notInCache.keySet()),
-					fetchGroups, maxFetchDepth, new SubProgressMonitor(monitor, objectIDs.size()));
+					fetchGroups, maxFetchDepth, subMonitor);
 		} catch (Exception e) {
+			if (subMonitor != null)
+				subMonitor.setCanceled(true);
 			throw new RuntimeException("Error occured while fetching Objects from the data store!\n", e);
+		} finally {
+			if (subMonitor != null)
+				// done can be called multiple times
+				subMonitor.done();
 		}
 
 		// put remaining objects in correct position of the result list
