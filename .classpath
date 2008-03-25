@@ -10,5 +10,7 @@
 	<classpathentry kind="var" path="JBOSS/server/default/lib/jbosssx.jar" sourcepath="JBOSS_SRC/security/src/main"/>
 	<classpathentry kind="var" path="JBOSS/client/jbossall-client.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/JFireBaseClientLib"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/NightLabsQuery"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/NightLabsQueryJDO"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
