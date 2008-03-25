@@ -5,5 +5,12 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/JFireBase"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/NightLabsJDO"/>
 	<classpathentry kind="var" path="JDO2_SRC"/>
+	<classpathentry kind="var" path="JDO2" sourcepath="/JDO2_SRC">
+		<attributes>
+			<attribute name="javadoc_location" value="file:/home/tobias/java/jdo_javadoc/apidocs/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="var" path="LOG4J" sourcepath="/LOG4J_SRC"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/NightLabsBase"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
