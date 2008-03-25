@@ -14,5 +14,7 @@
 	</classpathentry>
 	<classpathentry combineaccessrules="false" kind="src" path="/JFireServerManager"/>
 	<classpathentry kind="var" path="JBOSS/client/jbossall-client.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/NightLabsQuery"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/NightLabsQueryJDO"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
