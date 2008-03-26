@@ -45,7 +45,7 @@ public abstract class AbstractQueryStore<R, Q extends AbstractSearchQuery<? exte
 	/**
 	 * @jdo.field primary-key="true"
 	 */
-	private UserID ownerID;
+	private String ownerID;
 	
 	/**
 	 * @jdo.field
@@ -152,11 +152,11 @@ public abstract class AbstractQueryStore<R, Q extends AbstractSearchQuery<? exte
 	}
 
 	/**
-	 * @return the ownerID
+	 * @return the UserID of my creator.
 	 */
 	public UserID getOwnerID()
 	{
-		return ownerID;
+		return UserID.create(organisationID, ownerID);
 	}
 
 	/**

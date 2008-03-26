@@ -8,7 +8,17 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/NightLabsJDO"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/NightLabsQuery"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/NightLabsQueryJDO"/>
-	<classpathentry kind="var" path="JDO2" sourcepath="/JDO2_SRC"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/JFireBaseClientLib"/>
+	<classpathentry kind="var" path="ASM"/>
+	<classpathentry kind="var" path="BCEL"/>
+	<classpathentry kind="var" path="JDO2" sourcepath="/JDO2_SRC">
+		<attributes>
+			<attribute name="javadoc_location" value="file:/home/tobias/java/jdo_javadoc/apidocs/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="var" path="JPOX" sourcepath="/JPOX_SRC"/>
+	<classpathentry kind="var" path="JPOXENHANCER" sourcepath="/JPOXENHANCER_SRC"/>
+	<classpathentry kind="var" path="LOG4J" sourcepath="/LOG4J_SRC"/>
+	<classpathentry kind="var" path="JBOSS/client/jbossall-client.jar" sourcepath="/JBOSS_SRC"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
