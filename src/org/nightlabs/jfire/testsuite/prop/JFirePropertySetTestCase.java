@@ -32,6 +32,9 @@ import org.nightlabs.jfire.prop.datafield.PhoneNumberDataField;
 import org.nightlabs.jfire.prop.datafield.RegexDataField;
 import org.nightlabs.jfire.prop.datafield.SelectionDataField;
 import org.nightlabs.jfire.prop.datafield.TextDataField;
+import org.nightlabs.jfire.prop.exception.DataBlockGroupNotFoundException;
+import org.nightlabs.jfire.prop.exception.DataBlockNotFoundException;
+import org.nightlabs.jfire.prop.exception.DataFieldNotFoundException;
 import org.nightlabs.jfire.prop.id.PropertySetID;
 import org.nightlabs.jfire.prop.structfield.SelectionStructField;
 import org.nightlabs.jfire.security.SecurityReflector;
@@ -128,71 +131,106 @@ public class JFirePropertySetTestCase extends TestCase {
 	
 	public void testSetTextDataField() {
 		PropertySet propertySet = fetchPropertySet();
+		TextDataField dataField = null;
+		PropertySet detachedPropertySet = null;
+		TextDataField detachedDataField = null;
 		try {
-			((TextDataField) propertySet.getDataField(PropertySetTestStruct.TESTBLOCK_TEXT)).setText("Test Text");
+			dataField = ((TextDataField) propertySet.getDataField(PropertySetTestStruct.TESTBLOCK_TEXT));
+			dataField.setText("Test Text");
 		} catch (Exception e) {
 			throw new RuntimeException("Setting text of TextDataField failed", e);
 		}
 		try {
 			propertySet.deflate();
-			getPropertyManager().storePropertySet(propertySet, true, FETCH_GROUPS, FETCH_DEPTH);
+			detachedPropertySet = getPropertyManager().storePropertySet(propertySet, true, FETCH_GROUPS, FETCH_DEPTH);
+			detachedDataField = ((TextDataField) detachedPropertySet.getDataField(PropertySetTestStruct.TESTBLOCK_TEXT));
 		} catch (Exception e) {
 			throw new RuntimeException("Storing PropertySet with TextDataField failed", e);
 		}
+		assertEquals("Text field text differs", dataField.getText(), detachedDataField.getText());
 	}
 	
 	public void testSetRegexDataField() {
 		PropertySet propertySet = fetchPropertySet();
+		RegexDataField dataField = null;
+		PropertySet detachedPropertySet = null;
+		RegexDataField detachedDataField = null;
 		try {
-			((RegexDataField) propertySet.getDataField(PropertySetTestStruct.TESTBLOCK_REGEX)).setText("nobody@nosuchdomain.org");
+			dataField = ((RegexDataField) propertySet.getDataField(PropertySetTestStruct.TESTBLOCK_REGEX));
+			dataField.setText("nobody@nosuchdomain.org");
 		} catch (Exception e) {
 			throw new RuntimeException("Setting text of RegexDataField failed", e);
 		}
 		try {
 			propertySet.deflate();
-			getPropertyManager().storePropertySet(propertySet, true, FETCH_GROUPS, FETCH_DEPTH);
+			detachedPropertySet = getPropertyManager().storePropertySet(propertySet, true, FETCH_GROUPS, FETCH_DEPTH);
+			detachedDataField = ((RegexDataField) detachedPropertySet.getDataField(PropertySetTestStruct.TESTBLOCK_REGEX));
 		} catch (Exception e) {
 			throw new RuntimeException("Storing PropertySet with RegexDataField failed", e);
 		}
+		assertEquals("Regex field text differs", dataField.getText(), detachedDataField.getText());
 	}
 	
 	public void testSetNumberDataField() {
 		PropertySet propertySet = fetchPropertySet();
+		NumberDataField dataField = null;
+		PropertySet detachedPropertySet = null;
+		NumberDataField detachedDataField = null;
 		try {
-			((NumberDataField) propertySet.getDataField(PropertySetTestStruct.TESTBLOCK_NUMBER)).setValue(123456);
+			dataField = ((NumberDataField) propertySet.getDataField(PropertySetTestStruct.TESTBLOCK_NUMBER));
+			dataField.setValue(123456);
 		} catch (Exception e) {
 			throw new RuntimeException("Setting number of NumberDataField failed", e);
 		}
 		try {
 			propertySet.deflate();
-			getPropertyManager().storePropertySet(propertySet, true, FETCH_GROUPS, FETCH_DEPTH);
+			detachedPropertySet = getPropertyManager().storePropertySet(propertySet, true, FETCH_GROUPS, FETCH_DEPTH);
+			detachedDataField = ((NumberDataField) detachedPropertySet.getDataField(PropertySetTestStruct.TESTBLOCK_NUMBER));
 		} catch (Exception e) {
 			throw new RuntimeException("Storing PropertySet with NumberDataField failed", e);
 		}
+		assertEquals("Number field numbers differ", dataField.getIntValue(), detachedDataField.getIntValue());
 	}
 	
 	public void testSetPhoneNumberDataField() {
+		String cCode = "+49";
+		String aCode = "(0)761";
+		String lNumber = "123456789";
 		PropertySet propertySet = fetchPropertySet();
 		try {
 			PhoneNumberDataField dataField = ((PhoneNumberDataField) propertySet.getDataField(PropertySetTestStruct.TESTBLOCK_PHONENUMBER));
-			dataField.setCountryCode("+49");
-			dataField.setAreaCode("(0)761");
-			dataField.setLocalNumber("123456789");
+			dataField.setCountryCode(cCode);
+			dataField.setAreaCode(aCode);
+			dataField.setLocalNumber(lNumber);
 		} catch (Exception e) {
 			throw new RuntimeException("Setting numbers of PhoneNumberDataField failed", e);
 		}
+		PropertySet detachedPropertySet = null;
 		try {
 			propertySet.deflate();
-			getPropertyManager().storePropertySet(propertySet, true, FETCH_GROUPS, FETCH_DEPTH);
+			detachedPropertySet = getPropertyManager().storePropertySet(propertySet, true, FETCH_GROUPS, FETCH_DEPTH);
 		} catch (Exception e) {
 			throw new RuntimeException("Storing PropertySet with PhoneNumberDataField failed", e);
 		}
+		PhoneNumberDataField detachedField = null;
+		try {
+			detachedField = (PhoneNumberDataField) detachedPropertySet.getDataField(PropertySetTestStruct.TESTBLOCK_PHONENUMBER);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+		assertEquals("Phone number field country code differs", cCode, detachedField.getCountryCode());
+		assertEquals("Phone number field area code differs", aCode, detachedField.getAreaCode());
+		assertEquals("Phone number field local number differs", lNumber, detachedField.getLocalNumber());
 	}
 	
 	public void testSelectionDataField() {
+		
 		PropertySet propertySet = fetchPropertySet();
+		SelectionDataField dataField = null;
+		PropertySet detachedPropertySet = null;
+		SelectionDataField detachedDataField = null;
 		try {
-			SelectionDataField dataField = ((SelectionDataField) propertySet.getDataField(PropertySetTestStruct.TESTBLOCK_SELECTION));
+			dataField = ((SelectionDataField) propertySet.getDataField(PropertySetTestStruct.TESTBLOCK_SELECTION));
 			SelectionStructField structField = (SelectionStructField) propertySet.getStructure().getStructField(PropertySetTestStruct.TESTBLOCK_SELECTION);
 			dataField.setSelection(structField.getStructFieldValue(PropertySetTestStruct.TESTBLOCK_SELECTION_1));
 		} catch (Exception e) {
@@ -200,26 +238,38 @@ public class JFirePropertySetTestCase extends TestCase {
 		}
 		try {
 			propertySet.deflate();
-			getPropertyManager().storePropertySet(propertySet, true, FETCH_GROUPS, FETCH_DEPTH);
+			detachedPropertySet = getPropertyManager().storePropertySet(propertySet, true, FETCH_GROUPS, FETCH_DEPTH);
+			detachedDataField = (SelectionDataField) detachedPropertySet.getDataField(PropertySetTestStruct.TESTBLOCK_SELECTION);
 		} catch (Exception e) {
 			throw new RuntimeException("Storing PropertySet with SelectionDataField failed", e);
 		}
+		assertEquals("Selection field selection differs", dataField.getStructFieldValueID(), detachedDataField.getStructFieldValueID());
 	}
 	
 	public void testDateDataField() {
+		Date date = new Date();
 		PropertySet propertySet = fetchPropertySet();
+		DateDataField dataField = null; 
+		PropertySet detachedPropertySet = null;
+		DateDataField detachedDataField = null;
 		try {
-			DateDataField dataField = ((DateDataField) propertySet.getDataField(PropertySetTestStruct.TESTBLOCK_DATE));
-			dataField.setDate(new Date());
+			dataField = ((DateDataField) propertySet.getDataField(PropertySetTestStruct.TESTBLOCK_DATE));
+			dataField.setDate(date);
 		} catch (Exception e) {
 			throw new RuntimeException("Setting date of DateDataField failed", e);
 		}
 		try {
 			propertySet.deflate();
-			getPropertyManager().storePropertySet(propertySet, true, FETCH_GROUPS, FETCH_DEPTH);
+			detachedPropertySet = getPropertyManager().storePropertySet(propertySet, true, FETCH_GROUPS, FETCH_DEPTH);
 		} catch (Exception e) {
 			throw new RuntimeException("Storing PropertySet with DateDataField failed", e);
 		}
+		try {
+			detachedDataField = (DateDataField) detachedPropertySet.getDataField(PropertySetTestStruct.TESTBLOCK_DATE);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+		assertEquals("Date field date differs", dataField.getDate(), detachedDataField.getDate());
 	}
 	
 	public void testImageDataField() {
