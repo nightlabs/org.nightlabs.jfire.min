@@ -20,5 +20,6 @@
 	<classpathentry kind="var" path="JPOXENHANCER" sourcepath="/JPOXENHANCER_SRC"/>
 	<classpathentry kind="var" path="LOG4J" sourcepath="/LOG4J_SRC"/>
 	<classpathentry kind="var" path="JBOSS/client/jbossall-client.jar" sourcepath="/JBOSS_SRC"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/JFireBaseBean"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

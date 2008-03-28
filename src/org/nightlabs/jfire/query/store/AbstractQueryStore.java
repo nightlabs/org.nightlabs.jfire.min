@@ -5,10 +5,13 @@ import java.beans.XMLEncoder;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Serializable;
+import java.util.zip.DeflaterInputStream;
+import java.util.zip.DeflaterOutputStream;
 
 import org.nightlabs.i18n.I18nText;
 import org.nightlabs.jdo.query.AbstractSearchQuery;
 import org.nightlabs.jdo.query.QueryCollection;
+import org.nightlabs.jfire.security.Authority;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.security.id.UserID;
 
@@ -26,11 +29,25 @@ import org.nightlabs.jfire.security.id.UserID;
  * 	name="AbstractQueryStore.owner"
  * 	fields="owner"
  * 
+ * FIXME: narf argh asldkfjsdalkfjlwakjr!!!
+ * @jdo.query name="getQueryStoreIDsByResultType"
+ * 	query="SELECT JDOHelper.getObjectId(this)
+ * 				 WHERE this.resultClassName == :givenClassName
+ * 				 "
+ *
+ *  TODO: Braucht man glaube ich nicht.
+ * 				 PARAMETERS String givenClassName
+ * 
  * @author Marius Heinzmann - marius[at]nightlabs[dot]com
  */
 public abstract class AbstractQueryStore<R, Q extends AbstractSearchQuery<? extends R>>
 	implements Serializable
 {
+	/**
+	 * The name of the query that returns all QueryStores with the given return type. 
+	 */
+	public static final String QUERY_STORES_BY_RESULT_TYPE = "getQueryStoreIDsByResultType";
+	
 	/**
 	 * @jdo.field primary-key="true"
 	 * @jdo.column length="100"
@@ -50,6 +67,7 @@ public abstract class AbstractQueryStore<R, Q extends AbstractSearchQuery<? exte
 	/**
 	 * @jdo.field
 	 * 	persistence-modifier="persistent"
+	 * 	null-value="exception"
 	 */
 	private User owner;
 	
@@ -59,6 +77,12 @@ public abstract class AbstractQueryStore<R, Q extends AbstractSearchQuery<? exte
 	 * 	default-fetch-group="true"
 	 */
 	private QueryStoreName name;
+	
+	/**
+	 * @jdo.field
+	 * 	persistence-modifier="persistent"
+	 */
+	private Authority authority;
 	
 	/**
 	 * @jdo.field persistence-modifier="none"
@@ -71,6 +95,21 @@ public abstract class AbstractQueryStore<R, Q extends AbstractSearchQuery<? exte
 	 * 	default-fetch-group="true"
 	 */
 	private byte[] serialisedQueries;
+	
+//	/**
+//	 * @jdo.field
+//	 * 	persistence-modifier="persistent"
+//	 * 	dependent-element="true"
+//	 */
+//	private Set<String> scopes = new HashSet<String>();
+	
+	/**
+	 * The fully qualified classname of the result type of the stored QueryCollection.
+	 * 
+	 * @jdo.field
+	 *	persistence-modifier="persistent"
+	 */
+	private String resultClassName;
 	
 	/**
 	 * FetchGroup name for the Owner-FetchGroup.
@@ -96,7 +135,8 @@ public abstract class AbstractQueryStore<R, Q extends AbstractSearchQuery<? exte
 		if (deSerialisedQueries == null)
 		{
 			final ByteArrayInputStream inputStream = new ByteArrayInputStream(serialisedQueries);
-			final XMLDecoder decoder = new XMLDecoder(inputStream);
+			final DeflaterInputStream zippedStream = new DeflaterInputStream(inputStream);
+			final XMLDecoder decoder = new XMLDecoder(zippedStream);
 			deSerialisedQueries = (QueryCollection<R, Q>) decoder.readObject();
 		}
 		
@@ -119,7 +159,8 @@ public abstract class AbstractQueryStore<R, Q extends AbstractSearchQuery<? exte
 		else
 		{
 			final ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-			final XMLEncoder encoder = new XMLEncoder(outStream);
+			DeflaterOutputStream zippedStream = new DeflaterOutputStream(outStream);
+			final XMLEncoder encoder = new XMLEncoder(zippedStream);
 			encoder.writeObject(deSerialisedQueries);
 			final byte[] serialisedForm = outStream.toByteArray();
 			
@@ -165,6 +206,30 @@ public abstract class AbstractQueryStore<R, Q extends AbstractSearchQuery<? exte
 	public User getOwner()
 	{
 		return owner;
+	}
+
+	/**
+	 * @return the authority
+	 */
+	public Authority getAuthority()
+	{
+		return authority;
+	}
+
+	/**
+	 * @param authority the authority to set
+	 */
+	public void setAuthority(Authority authority)
+	{
+		this.authority = authority;
+	}
+
+	/**
+	 * @return the resultClassName
+	 */
+	public String getResultClassName()
+	{
+		return resultClassName;
 	}
 	
 }
