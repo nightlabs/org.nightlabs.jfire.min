@@ -40,7 +40,7 @@ public class QueryStoreName
 	/**
 	 * @jdo.field persistence-modifier="persistent"
 	 */
-	private AbstractQueryStore<?, ?> queryStore;
+	private BaseQueryStore<?, ?> queryStore;
 	
 	/**
 	 * @jdo.field
@@ -60,7 +60,7 @@ public class QueryStoreName
 	public QueryStoreName()
 	{}
 	
-	public QueryStoreName(AbstractQueryStore<?, ?> queryStore)
+	public QueryStoreName(BaseQueryStore<?, ?> queryStore)
 	{
 		this.queryStoreID = queryStore.getQueryStoreID();
 		this.queryStore = queryStore;
@@ -103,7 +103,7 @@ public class QueryStoreName
 	/**
 	 * @return the queryStore
 	 */
-	public AbstractQueryStore<?, ?> getQueryStore()
+	public BaseQueryStore<?, ?> getQueryStore()
 	{
 		return queryStore;
 	}

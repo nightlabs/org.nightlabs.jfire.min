@@ -4,7 +4,7 @@ import java.util.Collection;
 import java.util.Set;
 
 import org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO;
-import org.nightlabs.jfire.query.store.AbstractQueryStore;
+import org.nightlabs.jfire.query.store.BaseQueryStore;
 import org.nightlabs.jfire.query.store.QueryStoreManager;
 import org.nightlabs.jfire.query.store.QueryStoreManagerUtil;
 import org.nightlabs.jfire.query.store.id.QueryStoreID;
@@ -17,11 +17,11 @@ import org.nightlabs.progress.ProgressMonitor;
  * @author Marius Heinzmann - marius[at]nightlabs[dot]com
  */
 public class QueryStoreDAO
-	extends BaseJDOObjectDAO<QueryStoreID, AbstractQueryStore<?, ?>>
+	extends BaseJDOObjectDAO<QueryStoreID, BaseQueryStore<?, ?>>
 {
 
 	@Override
-	protected Collection<AbstractQueryStore<?, ?>> retrieveJDOObjects(Set<QueryStoreID> objectIDs,
+	protected Collection<BaseQueryStore<?, ?>> retrieveJDOObjects(Set<QueryStoreID> objectIDs,
 		String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
 		throws Exception
 	{
@@ -31,7 +31,7 @@ public class QueryStoreDAO
 		
 		try
 		{
-			Collection<AbstractQueryStore<?, ?>> result =
+			Collection<BaseQueryStore<?, ?>> result =
 				qsm.getQueryStores(objectIDs, fetchGroups, maxFetchDepth);
 			
 			monitor.worked(objectIDs.size());
@@ -49,13 +49,13 @@ public class QueryStoreDAO
 		}
 	}
 
-	public Collection<AbstractQueryStore<?, ?>> getQueryStores(Set<QueryStoreID> storeIDs,
+	public Collection<BaseQueryStore<?, ?>> getQueryStores(Set<QueryStoreID> storeIDs,
 		String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
 	{
 		return getJDOObjects(null, storeIDs, fetchGroups, maxFetchDepth, monitor);
 	}
 	
-	public AbstractQueryStore<?, ?> storeQueryStore(AbstractQueryStore<?, ?> queryStore,
+	public BaseQueryStore<?, ?> storeQueryStore(BaseQueryStore<?, ?> queryStore,
 		String[] fetchGroups, int maxFetchDepth, boolean get, ProgressMonitor monitor)
 	{
 		QueryStoreManager qsm;
@@ -65,7 +65,7 @@ public class QueryStoreDAO
 			qsm = QueryStoreManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
 			monitor.worked(1);
 			
-			AbstractQueryStore<?, ?> store = 
+			BaseQueryStore<?, ?> store = 
 				qsm.storeQueryCollection(queryStore, fetchGroups, maxFetchDepth, get);
 			monitor.worked(8);
 			

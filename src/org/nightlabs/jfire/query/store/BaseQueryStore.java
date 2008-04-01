@@ -26,27 +26,36 @@ import org.nightlabs.jfire.security.id.UserID;
  *		field-order="organisationID, queryStoreID, ownerID"
  *
  * @jdo.fetch-group
- * 	name="AbstractQueryStore.owner"
+ * 	name="BaseQueryStore.owner"
  * 	fields="owner"
  * 
  * FIXME: narf argh asldkfjsdalkfjlwakjr!!!
  * @jdo.query name="getQueryStoreIDsByResultType"
  * 	query="SELECT JDOHelper.getObjectId(this)
- * 				 WHERE this.resultClassName == :givenClassName
- * 				 "
+ * 				 WHERE this.resultClassName == :givenClassName"
  *
  *  TODO: Braucht man glaube ich nicht.
  * 				 PARAMETERS String givenClassName
  * 
  * @author Marius Heinzmann - marius[at]nightlabs[dot]com
  */
-public abstract class AbstractQueryStore<R, Q extends AbstractSearchQuery<? extends R>>
+public class BaseQueryStore<R, Q extends AbstractSearchQuery<? extends R>>
 	implements Serializable
 {
+	/**
+	 * FetchGroup name for the Owner-FetchGroup.
+	 */
+	public static final String FETCH_GROUP_OWNER = "BaseQueryStore.owner";
+	
 	/**
 	 * The name of the query that returns all QueryStores with the given return type. 
 	 */
 	public static final String QUERY_STORES_BY_RESULT_TYPE = "getQueryStoreIDsByResultType";
+	
+	/**
+	 * The serial version id.
+	 */
+	private static final long serialVersionUID = 1L;
 	
 	/**
 	 * @jdo.field primary-key="true"
@@ -112,17 +121,33 @@ public abstract class AbstractQueryStore<R, Q extends AbstractSearchQuery<? exte
 	private String resultClassName;
 	
 	/**
-	 * FetchGroup name for the Owner-FetchGroup.
-	 */
-	public static final String FETCH_GROUP_OWNER = "AbstractQueryStore.owner";
-	
-	/**
 	 * Sets the QueryCollection to persist in the datastore.
 	 * @param queries the QueryCollection to persist in the datastore.
 	 */
-	public void setQuerieCollection(QueryCollection<R, Q> queries)
+	public void setQueryCollection(QueryCollection<R, Q> queries)
 	{
 		this.deSerialisedQueries = queries;
+	}
+	
+	/**
+	 * @deprecated only for JDO
+	 */
+	@Deprecated
+	public BaseQueryStore()
+	{
+	}
+	
+	public BaseQueryStore(User owner, long queryStoreID, QueryStoreName name, 
+		QueryCollection<R, Q> queryCollection)
+	{
+		assert owner != null;
+		assert name != null;
+		
+		this.owner = owner;
+		this.ownerID = owner.getUserID();
+		this.organisationID = owner.getOrganisationID();
+		this.queryStoreID = queryStoreID;
+		setQueryCollection(queryCollection);
 	}
 	
 	/**
@@ -145,7 +170,7 @@ public abstract class AbstractQueryStore<R, Q extends AbstractSearchQuery<? exte
 	
 	/**
 	 * This is only called by the DAO in order to prohibit the serialisation of the QueryCollection
-	 * when calling {@link #setQuerieCollection(QueryCollection)}. <br />
+	 * when calling {@link #setQueryCollection(QueryCollection)}. <br />
 	 * <p><b>Note:</b> This has to be called from the outside BEFORE subclasses are send away!! This
 	 * 	is usually done in the DAOs.
 	 * </p>

@@ -80,7 +80,7 @@ public abstract class QueryStoreManagerBean
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 */
-	public AbstractQueryStore<?, ?> getQueryStore(QueryStoreID storeID, String[] fetchGroups,
+	public BaseQueryStore<?, ?> getQueryStore(QueryStoreID storeID, String[] fetchGroups,
 		int maxFetchDepth)
 	{
 		return getQueryStores(Collections.singleton(storeID), fetchGroups, maxFetchDepth).iterator().next();
@@ -92,19 +92,19 @@ public abstract class QueryStoreManagerBean
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 */
-	public Collection<AbstractQueryStore<?, ?>> getQueryStores(
+	public Collection<BaseQueryStore<?, ?>> getQueryStores(
 		Set<QueryStoreID> storeIDs, String[] fetchGroups, int maxFetchDepth)
 	{
 		PersistenceManager pm = getPersistenceManager();
 		try
 		{
-			Collection<AbstractQueryStore<?, ?>> stores = NLJDOHelper.getDetachedObjectList(pm, storeIDs, AbstractQueryStore.class,
+			Collection<BaseQueryStore<?, ?>> stores = NLJDOHelper.getDetachedObjectList(pm, storeIDs, BaseQueryStore.class,
 				fetchGroups, maxFetchDepth);
 			
 			if (stores == null)
 				return null;
 			
-			for (AbstractQueryStore<?, ?> store : stores)
+			for (BaseQueryStore<?, ?> store : stores)
 			{
 				// TODO: Authority check!
 //				store.getAuthority().getUserRef(SecurityReflector.getUserDescriptor().getCompleteUserID()).
@@ -137,7 +137,7 @@ public abstract class QueryStoreManagerBean
 			}
 			
 			Query query = 
-				pm.newNamedQuery(AbstractQueryStore.class, AbstractQueryStore.QUERY_STORES_BY_RESULT_TYPE);
+				pm.newNamedQuery(BaseQueryStore.class, BaseQueryStore.QUERY_STORES_BY_RESULT_TYPE);
 			
 			return (Collection<QueryStoreID>) query.execute(resultType.getName());
 		}
@@ -153,8 +153,8 @@ public abstract class QueryStoreManagerBean
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type="Required"
 	 */
-	public <R, Q extends AbstractJDOQuery<R>> AbstractQueryStore<R, Q> storeQueryCollection(
-		AbstractQueryStore<R, Q> queryStore, String[] fetchGroups, int maxFetchDepth, boolean get)
+	public <R, Q extends AbstractJDOQuery<R>> BaseQueryStore<R, Q> storeQueryCollection(
+		BaseQueryStore<R, Q> queryStore, String[] fetchGroups, int maxFetchDepth, boolean get)
 	{
 		PersistenceManager pm = getPersistenceManager();
 		try
