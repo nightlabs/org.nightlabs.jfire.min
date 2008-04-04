@@ -6,6 +6,8 @@ import java.beans.XMLEncoder;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Serializable;
+import java.util.zip.DeflaterOutputStream;
+import java.util.zip.InflaterInputStream;
 
 import org.nightlabs.i18n.I18nText;
 import org.nightlabs.jdo.query.AbstractSearchQuery;
@@ -28,14 +30,10 @@ import org.nightlabs.jfire.security.id.UserID;
  * 	name="BaseQueryStore.owner"
  * 	fields="owner"
  * 
- * FIXME: narf argh asldkfjsdalkfjlwakjr!!!
  * @jdo.query name="getQueryStoreIDsByResultType"
  * 	query="SELECT JDOHelper.getObjectId(this)
  * 				 WHERE this.resultClassName == :givenClassName"
  *
- *  TODO: Braucht man glaube ich nicht.
- * 				 PARAMETERS String givenClassName
- * 
  * @author Marius Heinzmann - marius[at]nightlabs[dot]com
  */
 public class BaseQueryStore<R, Q extends AbstractSearchQuery<? extends R>>
@@ -165,8 +163,8 @@ public class BaseQueryStore<R, Q extends AbstractSearchQuery<? extends R>>
 		if (deSerialisedQueries == null)
 		{
 			final ByteArrayInputStream inputStream = new ByteArrayInputStream(serialisedQueries);
-//			final DeflaterInputStream zippedStream = new DeflaterInputStream(inputStream);
-			final XMLDecoder decoder = new XMLDecoder(inputStream);
+			final InflaterInputStream zippedStream = new InflaterInputStream(inputStream);
+			final XMLDecoder decoder = new XMLDecoder(zippedStream);
 			deSerialisedQueries = (QueryCollection<R, Q>) decoder.readObject();
 			decoder.close();	
 		}
@@ -190,8 +188,8 @@ public class BaseQueryStore<R, Q extends AbstractSearchQuery<? extends R>>
 		else
 		{
 			final ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-//			DeflaterOutputStream zippedStream = new DeflaterOutputStream(outStream);
-			final XMLEncoder encoder = new XMLEncoder(outStream);
+			DeflaterOutputStream zippedStream = new DeflaterOutputStream(outStream);
+			final XMLEncoder encoder = new XMLEncoder(zippedStream);
 			encoder.setPersistenceDelegate(
 				QueryCollection.class, new DefaultPersistenceDelegate(new String[] { "resultClassName" })
 				);
