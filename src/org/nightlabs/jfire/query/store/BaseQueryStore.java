@@ -1,12 +1,11 @@
 package org.nightlabs.jfire.query.store;
 
+import java.beans.DefaultPersistenceDelegate;
 import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Serializable;
-import java.util.zip.DeflaterInputStream;
-import java.util.zip.DeflaterOutputStream;
 
 import org.nightlabs.i18n.I18nText;
 import org.nightlabs.jdo.query.AbstractSearchQuery;
@@ -127,6 +126,7 @@ public class BaseQueryStore<R, Q extends AbstractSearchQuery<? extends R>>
 	public void setQueryCollection(QueryCollection<R, Q> queries)
 	{
 		this.deSerialisedQueries = queries;
+		this.resultClassName = queries == null ? "" : queries.getResultClassName();
 	}
 	
 	/**
@@ -137,16 +137,15 @@ public class BaseQueryStore<R, Q extends AbstractSearchQuery<? extends R>>
 	{
 	}
 	
-	public BaseQueryStore(User owner, long queryStoreID, QueryStoreName name, 
-		QueryCollection<R, Q> queryCollection)
+	public BaseQueryStore(User owner, long queryStoreID, QueryCollection<R, Q> queryCollection)
 	{
 		assert owner != null;
-		assert name != null;
 		
 		this.owner = owner;
 		this.ownerID = owner.getUserID();
 		this.organisationID = owner.getOrganisationID();
 		this.queryStoreID = queryStoreID;
+		this.name = new QueryStoreName(this);
 		setQueryCollection(queryCollection);
 	}
 	
@@ -157,12 +156,19 @@ public class BaseQueryStore<R, Q extends AbstractSearchQuery<? extends R>>
 	@SuppressWarnings("unchecked")
 	public QueryCollection<R, Q> getQueryCollection()
 	{
+		if (deSerialisedQueries != null)
+			return deSerialisedQueries;
+		
+		if (serialisedQueries == null || serialisedQueries.length == 0)
+			return null;
+		
 		if (deSerialisedQueries == null)
 		{
 			final ByteArrayInputStream inputStream = new ByteArrayInputStream(serialisedQueries);
-			final DeflaterInputStream zippedStream = new DeflaterInputStream(inputStream);
-			final XMLDecoder decoder = new XMLDecoder(zippedStream);
+//			final DeflaterInputStream zippedStream = new DeflaterInputStream(inputStream);
+			final XMLDecoder decoder = new XMLDecoder(inputStream);
 			deSerialisedQueries = (QueryCollection<R, Q>) decoder.readObject();
+			decoder.close();	
 		}
 		
 		return deSerialisedQueries;
@@ -184,12 +190,14 @@ public class BaseQueryStore<R, Q extends AbstractSearchQuery<? extends R>>
 		else
 		{
 			final ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-			DeflaterOutputStream zippedStream = new DeflaterOutputStream(outStream);
-			final XMLEncoder encoder = new XMLEncoder(zippedStream);
+//			DeflaterOutputStream zippedStream = new DeflaterOutputStream(outStream);
+			final XMLEncoder encoder = new XMLEncoder(outStream);
+			encoder.setPersistenceDelegate(
+				QueryCollection.class, new DefaultPersistenceDelegate(new String[] { "resultClassName" })
+				);
 			encoder.writeObject(deSerialisedQueries);
-			final byte[] serialisedForm = outStream.toByteArray();
-			
-			serialisedQueries = serialisedForm;
+			encoder.close();
+			serialisedQueries = outStream.toByteArray();
 		}
 	}
 
@@ -255,6 +263,51 @@ public class BaseQueryStore<R, Q extends AbstractSearchQuery<? extends R>>
 	public String getResultClassName()
 	{
 		return resultClassName;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode()
+	{
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((organisationID == null) ? 0 : organisationID.hashCode());
+		result = prime * result + ((ownerID == null) ? 0 : ownerID.hashCode());
+		result = prime * result + (int) (queryStoreID ^ (queryStoreID >>> 32));
+		return result;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj)
+	{
+		if (this == obj) return true;
+		if (obj == null) return false;
+		if (getClass() != obj.getClass())
+			return false;
+		
+		final BaseQueryStore<?,?> other = (BaseQueryStore<?,?>) obj;
+		
+		if (organisationID == null)
+		{
+			if (other.organisationID != null)
+				return false;
+		} else if (!organisationID.equals(other.organisationID))
+			return false;
+		if (ownerID == null)
+		{
+			if (other.ownerID != null)
+				return false;
+		} else if (!ownerID.equals(other.ownerID))
+			return false;
+		if (queryStoreID != other.queryStoreID)
+			return false;
+		
+		return true;
 	}
 	
 }

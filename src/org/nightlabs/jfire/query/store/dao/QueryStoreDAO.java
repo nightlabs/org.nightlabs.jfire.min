@@ -1,6 +1,7 @@
 package org.nightlabs.jfire.query.store.dao;
 
 import java.util.Collection;
+import java.util.Properties;
 import java.util.Set;
 
 import org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO;
@@ -19,7 +20,28 @@ import org.nightlabs.progress.ProgressMonitor;
 public class QueryStoreDAO
 	extends BaseJDOObjectDAO<QueryStoreID, BaseQueryStore<?, ?>>
 {
+	protected QueryStoreDAO()
+	{
+	}
 
+	private static volatile QueryStoreDAO sharedInstance = null;
+
+	/**
+	 * @return The shared Instance of this class.
+	 */
+	public static QueryStoreDAO sharedInstance()
+	{
+		if (sharedInstance == null)
+		{
+			synchronized (QueryStoreDAO.class)
+			{
+				if (sharedInstance == null)
+					sharedInstance = new QueryStoreDAO();
+			}
+		}
+		return sharedInstance;
+	}
+	
 	@Override
 	protected Collection<BaseQueryStore<?, ?>> retrieveJDOObjects(Set<QueryStoreID> objectIDs,
 		String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
@@ -55,6 +77,32 @@ public class QueryStoreDAO
 		return getJDOObjects(null, storeIDs, fetchGroups, maxFetchDepth, monitor);
 	}
 	
+	public Collection<BaseQueryStore<?, ?>> getQueryStoresByReturnType(Class<?> returnType,
+		String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
+	{
+		try
+		{
+			Properties initialContext = SecurityReflector.getInitialContextProperties();
+			QueryStoreManager qsm = QueryStoreManagerUtil.getHome(initialContext).create();
+//			QueryStoreManager qsm = QueryStoreManagerUtil.getHome(
+//				SecurityReflector.getInitialContextProperties()).create();
+			
+			Collection<QueryStoreID> storedQueryCollections = qsm.getQueryStoreIDs(
+				returnType, fetchGroups, maxFetchDepth
+				);
+			
+			return getJDOObjects(null, storedQueryCollections, fetchGroups, maxFetchDepth, monitor);
+		} catch (Exception e)
+		{
+			monitor.setCanceled(true);
+			if (e instanceof RuntimeException) {
+				throw (RuntimeException) e;
+			}
+			
+			throw new RuntimeException(e);
+		}
+	}
+	
 	public BaseQueryStore<?, ?> storeQueryStore(BaseQueryStore<?, ?> queryStore,
 		String[] fetchGroups, int maxFetchDepth, boolean get, ProgressMonitor monitor)
 	{
@@ -63,6 +111,7 @@ public class QueryStoreDAO
 		{
 			monitor.beginTask("Saving QueryStore", 10);
 			qsm = QueryStoreManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
+			queryStore.serialiseCollection();
 			monitor.worked(1);
 			
 			BaseQueryStore<?, ?> store = 

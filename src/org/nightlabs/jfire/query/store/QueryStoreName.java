@@ -62,8 +62,10 @@ public class QueryStoreName
 	
 	public QueryStoreName(BaseQueryStore<?, ?> queryStore)
 	{
+		assert queryStore != null;
 		this.queryStoreID = queryStore.getQueryStoreID();
 		this.queryStore = queryStore;
+		this.organisationID = queryStore.getOrganisationID();
 	}
 	
 	/* (non-Javadoc)

@@ -25,7 +25,7 @@ import org.nightlabs.jfire.query.store.id.QueryStoreID;
  * 	name="jfire/ejb/JFireQueryStore/QueryStoreManager"
  *	jndi-name="jfire/ejb/JFireQueryStore/QueryStoreManager"
  *	type="Stateless"
- *	
+ *  transaction-type="Container"
  *
  * @ejb.util generate="physical"
  * 
@@ -139,7 +139,7 @@ public abstract class QueryStoreManagerBean
 			Query query = 
 				pm.newNamedQuery(BaseQueryStore.class, BaseQueryStore.QUERY_STORES_BY_RESULT_TYPE);
 			
-			return (Collection<QueryStoreID>) query.execute(resultType.getName());
+			return NLJDOHelper.getDetachedQueryResultAsSet(pm, (Collection<QueryStoreID>) query.execute(resultType.getName()));
 		}
 		finally
 		{
