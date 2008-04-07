@@ -6,12 +6,19 @@ import java.beans.XMLEncoder;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.Set;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
+import javax.jdo.PersistenceManager;
+import javax.jdo.Query;
+
 import org.nightlabs.i18n.I18nText;
+import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jdo.query.AbstractSearchQuery;
 import org.nightlabs.jdo.query.QueryCollection;
+import org.nightlabs.jfire.query.store.id.QueryStoreID;
 import org.nightlabs.jfire.security.Authority;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.security.id.UserID;
@@ -21,7 +28,7 @@ import org.nightlabs.jfire.security.id.UserID;
  *	identity-type="application"
  *	objectid-class="org.nightlabs.jfire.query.store.id.QueryStoreID"
  *	detachable="true"
- *	table="JFireQueryStore_AbstractQueryStore"
+ *	table="JFireQueryStore_BaseQueryStore"
  *
  * @jdo.create-objectid-class
  *		field-order="organisationID, queryStoreID, ownerID"
@@ -30,10 +37,15 @@ import org.nightlabs.jfire.security.id.UserID;
  * 	name="BaseQueryStore.owner"
  * 	fields="owner"
  * 
- * @jdo.query name="getQueryStoreIDsByResultType"
+ * @jdo.query name="getAllPublicQueryStoreIDsByResultType"
  * 	query="SELECT JDOHelper.getObjectId(this)
- * 				 WHERE this.resultClassName == :givenClassName"
+ * 				 WHERE this.resultClassName == :givenClassName && this.publiclyAvailable == true"
  *
+ * @jdo.query name="getQueryStoreIDsOfOwnerByResultType"
+ * 	query="SELECT JDOHelper.getObjectId(this)
+ * 				 WHERE this.resultClassName == :givenClassName 
+ * 							 && this.organisationID == :givenOrganisationID && this.ownerID == :givenUserID"
+ * 
  * @author Marius Heinzmann - marius[at]nightlabs[dot]com
  */
 public class BaseQueryStore<R, Q extends AbstractSearchQuery<? extends R>>
@@ -45,14 +57,81 @@ public class BaseQueryStore<R, Q extends AbstractSearchQuery<? extends R>>
 	public static final String FETCH_GROUP_OWNER = "BaseQueryStore.owner";
 	
 	/**
-	 * The name of the query that returns all QueryStores with the given return type. 
-	 */
-	public static final String QUERY_STORES_BY_RESULT_TYPE = "getQueryStoreIDsByResultType";
-	
-	/**
 	 * The serial version id.
 	 */
 	private static final long serialVersionUID = 1L;
+	
+	/**
+	 * This is the name of the member returned by {@link QueryCollection#getResultClassName()}.
+	 */
+	private static final String QUERYCOLLECTION_RESULTCLASS_NAME = "resultClassName";
+	
+	/**
+	 * Name of the query that returns all public QueryStores with the given result type.
+	 */
+	private static final String QUERY_ALL_PUBLIC_STORES_BY_RESULT = "getAllPublicQueryStoreIDsByResultType";
+	
+	/**
+	 * Name of the query that returns all QueryStores with the given result type, which are owned 
+	 * by the given UserID. 
+	 */
+	private static final String QUERY_STORES_OF_OWNER_BY_RESULT = "getQueryStoreIDsOfOwnerByResultType";
+	
+	/**
+	 * Returns all {@link QueryStoreID}s of the stores that conform to the given parameters.
+	 * 
+	 * @param pm the {@link PersistenceManager} to use.
+	 * @param resultClass the resultClass of the stored QueryCollection
+	 * @param ownerID the owner of the QueryStore.
+	 * @param allPublicAsWell whether all publicly available QueryStores shall be considered as well.
+	 * @return all {@link QueryStoreID}s of the stores that conform to the given parameters.
+	 */
+	public static Set<QueryStoreID> getQueryStoreIDs(PersistenceManager pm,
+		Class<?> resultClass, UserID ownerID, boolean allPublicAsWell)
+	{
+		assert pm != null;
+		assert resultClass != null;
+		assert ownerID != null;
+		Query query = pm.newNamedQuery(BaseQueryStore.class, QUERY_STORES_OF_OWNER_BY_RESULT);
+		
+		Collection<QueryStoreID> queryResult =(Collection<QueryStoreID>) 
+			query.execute(resultClass.getName(), ownerID.organisationID, ownerID.userID);
+		
+		Set<QueryStoreID> result = NLJDOHelper.getDetachedQueryResultAsSet(pm, queryResult);
+		if (allPublicAsWell)
+		{
+			query = pm.newNamedQuery(BaseQueryStore.class, QUERY_ALL_PUBLIC_STORES_BY_RESULT);
+			queryResult = (Collection<QueryStoreID>) query.execute(resultClass.getName());
+			result.addAll(NLJDOHelper.getDetachedQueryResultAsSet(pm, queryResult));
+		}
+//		Query query = pm.newQuery(BaseQueryStore.class);
+//		query.setResult("JDOHelper.getObjectId(this)");
+//		StringBuilder sb = new StringBuilder();
+//		Map<String, Object> params = new HashMap<String, Object>();
+//		sb.append("this.resultClassName == :givenClassName");
+//		params.put("givenClassName", resultClass.getName());
+//		
+//		if (allPublicAsWell)
+//		{
+//			sb.append("(this.publiclyAvailable == true && this.organisationID == :userOrganisationID) || ");
+//			if (ownerID == null)
+//			{
+//				String organisationID = SecurityReflector.getUserDescriptor().getOrganisationID();
+//				params.put("userOrganisationID", organisationID);
+//			}
+//		}
+//		
+//		if (ownerID != null)
+//		{
+//			sb.append(" && this.organisationID == :userOrganisationID && this.ownerID == :userUserID");
+//			params.put("userOrganisationID", ownerID.organisationID);
+//			params.put("userUserID", ownerID.userID);
+//		}
+//		query.setFilter(sb.toString());
+//		query.compile();
+		
+		return result;
+	}
 	
 	/**
 	 * @jdo.field primary-key="true"
@@ -102,12 +181,11 @@ public class BaseQueryStore<R, Q extends AbstractSearchQuery<? extends R>>
 	 */
 	private byte[] serialisedQueries;
 	
-//	/**
-//	 * @jdo.field
-//	 * 	persistence-modifier="persistent"
-//	 * 	dependent-element="true"
-//	 */
-//	private Set<String> scopes = new HashSet<String>();
+	/**
+	 * @jdo.field
+	 * 	persistence-modifier="persistent"
+	 */
+	private boolean publiclyAvailable;
 	
 	/**
 	 * The fully qualified classname of the result type of the stored QueryCollection.
@@ -137,6 +215,12 @@ public class BaseQueryStore<R, Q extends AbstractSearchQuery<? extends R>>
 	
 	public BaseQueryStore(User owner, long queryStoreID, QueryCollection<R, Q> queryCollection)
 	{
+		this(owner, queryStoreID, queryCollection, false);
+	}
+	
+	public BaseQueryStore(User owner, long queryStoreID, QueryCollection<R, Q> queryCollection,
+		boolean publiclyAvailable)
+	{
 		assert owner != null;
 		
 		this.owner = owner;
@@ -144,6 +228,7 @@ public class BaseQueryStore<R, Q extends AbstractSearchQuery<? extends R>>
 		this.organisationID = owner.getOrganisationID();
 		this.queryStoreID = queryStoreID;
 		this.name = new QueryStoreName(this);
+		this.publiclyAvailable = publiclyAvailable;
 		setQueryCollection(queryCollection);
 	}
 	
@@ -191,7 +276,8 @@ public class BaseQueryStore<R, Q extends AbstractSearchQuery<? extends R>>
 			DeflaterOutputStream zippedStream = new DeflaterOutputStream(outStream);
 			final XMLEncoder encoder = new XMLEncoder(zippedStream);
 			encoder.setPersistenceDelegate(
-				QueryCollection.class, new DefaultPersistenceDelegate(new String[] { "resultClassName" })
+				QueryCollection.class, 
+				new DefaultPersistenceDelegate(new String[] { QUERYCOLLECTION_RESULTCLASS_NAME })
 				);
 			encoder.writeObject(deSerialisedQueries);
 			encoder.close();
@@ -263,6 +349,22 @@ public class BaseQueryStore<R, Q extends AbstractSearchQuery<? extends R>>
 		return resultClassName;
 	}
 
+	/**
+	 * @return the publiclyAvailable
+	 */
+	public boolean isPubliclyAvailable()
+	{
+		return publiclyAvailable;
+	}
+	
+	/**
+	 * @param publiclyAvailable the publiclyAvailable to set
+	 */
+	public void setPubliclyAvailable(boolean publiclyAvailable)
+	{
+		this.publiclyAvailable = publiclyAvailable;
+	}
+	
 	/* (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
 	 */
@@ -307,5 +409,5 @@ public class BaseQueryStore<R, Q extends AbstractSearchQuery<? extends R>>
 		
 		return true;
 	}
-	
+
 }

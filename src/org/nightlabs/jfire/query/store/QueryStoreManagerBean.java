@@ -10,12 +10,12 @@ import javax.ejb.EJBException;
 import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
 import javax.jdo.PersistenceManager;
-import javax.jdo.Query;
 
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jdo.query.AbstractJDOQuery;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.query.store.id.QueryStoreID;
+import org.nightlabs.jfire.security.id.UserID;
 
 /**
  * 
@@ -104,11 +104,11 @@ public abstract class QueryStoreManagerBean
 			if (stores == null)
 				return null;
 			
-			for (BaseQueryStore<?, ?> store : stores)
-			{
+//			for (BaseQueryStore<?, ?> store : stores)
+//			{
 				// TODO: Authority check!
 //				store.getAuthority().getUserRef(SecurityReflector.getUserDescriptor().getCompleteUserID()).
-			}
+//			}
 			
 			return stores;
 		}
@@ -124,8 +124,8 @@ public abstract class QueryStoreManagerBean
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 */
-	public Collection<QueryStoreID> getQueryStoreIDs(Class<?> resultType,
-		String[] fetchGroups, int maxFetchDepth)
+	public Collection<QueryStoreID> getQueryStoreIDs(Class<?> resultType, UserID ownerID, 
+		boolean allPublicAsWell, String[] fetchGroups, int maxFetchDepth)
 	{
 		PersistenceManager pm = getPersistenceManager();
 		try
@@ -136,10 +136,7 @@ public abstract class QueryStoreManagerBean
 				pm.getFetchPlan().setGroups(fetchGroups);
 			}
 			
-			Query query = 
-				pm.newNamedQuery(BaseQueryStore.class, BaseQueryStore.QUERY_STORES_BY_RESULT_TYPE);
-			
-			return NLJDOHelper.getDetachedQueryResultAsSet(pm, (Collection<QueryStoreID>) query.execute(resultType.getName()));
+			return BaseQueryStore.getQueryStoreIDs(pm, resultType, ownerID, allPublicAsWell);
 		}
 		finally
 		{
