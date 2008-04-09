@@ -7,6 +7,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
@@ -29,7 +30,7 @@ import org.nightlabs.jfire.security.id.UserID;
  *	objectid-class="org.nightlabs.jfire.query.store.id.QueryStoreID"
  *	detachable="true"
  *	table="JFireQueryStore_BaseQueryStore"
- *
+ *	
  * @jdo.create-objectid-class
  *		field-order="organisationID, queryStoreID, ownerID"
  *
@@ -98,38 +99,21 @@ public class BaseQueryStore<R, Q extends AbstractSearchQuery<? extends R>>
 			query.execute(resultClass.getName(), ownerID.organisationID, ownerID.userID);
 		
 		Set<QueryStoreID> result = NLJDOHelper.getDetachedQueryResultAsSet(pm, queryResult);
+		if (result == null)
+		{
+			result = new HashSet<QueryStoreID>();			
+		}
+		
 		if (allPublicAsWell)
 		{
 			query = pm.newNamedQuery(BaseQueryStore.class, QUERY_ALL_PUBLIC_STORES_BY_RESULT);
 			queryResult = (Collection<QueryStoreID>) query.execute(resultClass.getName());
-			result.addAll(NLJDOHelper.getDetachedQueryResultAsSet(pm, queryResult));
+			Set<QueryStoreID> tmpIds = NLJDOHelper.getDetachedQueryResultAsSet(pm, queryResult);
+			if (tmpIds != null)
+			{
+				result.addAll(tmpIds);				
+			}
 		}
-//		Query query = pm.newQuery(BaseQueryStore.class);
-//		query.setResult("JDOHelper.getObjectId(this)");
-//		StringBuilder sb = new StringBuilder();
-//		Map<String, Object> params = new HashMap<String, Object>();
-//		sb.append("this.resultClassName == :givenClassName");
-//		params.put("givenClassName", resultClass.getName());
-//		
-//		if (allPublicAsWell)
-//		{
-//			sb.append("(this.publiclyAvailable == true && this.organisationID == :userOrganisationID) || ");
-//			if (ownerID == null)
-//			{
-//				String organisationID = SecurityReflector.getUserDescriptor().getOrganisationID();
-//				params.put("userOrganisationID", organisationID);
-//			}
-//		}
-//		
-//		if (ownerID != null)
-//		{
-//			sb.append(" && this.organisationID == :userOrganisationID && this.ownerID == :userUserID");
-//			params.put("userOrganisationID", ownerID.organisationID);
-//			params.put("userUserID", ownerID.userID);
-//		}
-//		query.setFilter(sb.toString());
-//		query.compile();
-		
 		return result;
 	}
 	
@@ -159,6 +143,7 @@ public class BaseQueryStore<R, Q extends AbstractSearchQuery<? extends R>>
 	/**
 	 * @jdo.field
 	 * 	persistence-modifier="persistent"
+	 * 	dependent-element="true"
 	 * 	default-fetch-group="true"
 	 */
 	private QueryStoreName name;

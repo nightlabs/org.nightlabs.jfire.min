@@ -64,8 +64,8 @@ public class QueryStoreName
 	{
 		assert queryStore != null;
 		this.queryStoreID = queryStore.getQueryStoreID();
-		this.queryStore = queryStore;
 		this.organisationID = queryStore.getOrganisationID();
+		this.queryStore = queryStore;
 	}
 	
 	/* (non-Javadoc)
@@ -74,7 +74,7 @@ public class QueryStoreName
 	@Override
 	protected String getFallBackValue(String languageID)
 	{
-		return String.valueOf(queryStoreID);
+		return getText(languageID);
 	}
 
 	/* (non-Javadoc)

@@ -9,8 +9,10 @@ import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
+import javax.jdo.JDOUserException;
 import javax.jdo.PersistenceManager;
 
+import org.apache.log4j.Logger;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jdo.query.AbstractJDOQuery;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
@@ -40,6 +42,11 @@ public abstract class QueryStoreManagerBean
 	 * The serial version id.
 	 */
 	private static final long serialVersionUID = 1L;
+	
+	/**
+	 * The logger used in this class.
+	 */
+	private static final Logger logger = Logger.getLogger(QueryStoreManagerBean.class);
 	
 	/**
 	 * @see org.nightlabs.jfire.base.BaseSessionBeanImpl#setSessionContext(javax.ejb.SessionContext)
@@ -157,6 +164,34 @@ public abstract class QueryStoreManagerBean
 		try
 		{
 			return NLJDOHelper.storeJDO(pm, queryStore, get, fetchGroups, maxFetchDepth);
+		}
+		finally
+		{
+			pm.close();
+		}
+	}
+	
+	/**
+	 *
+	 * @ejb.interface-method
+	 * @ejb.permission role-name="_Guest_"
+	 * @ejb.transaction type="Required"
+	 */
+	public boolean removeQueryStore(BaseQueryStore<?, ?> queryStore)
+	{
+		PersistenceManager pm = getPersistenceManager();
+		// TODO: Authority check!
+//		queryStore.getAuthority()
+		try
+		{
+			pm.deletePersistent(queryStore.getName());
+			pm.deletePersistent(queryStore);
+			return true;
+		}
+		catch (JDOUserException userEx)
+		{
+			logger.warn("This istance is managed by another PersitenceManager!", userEx);
+			return false;
 		}
 		finally
 		{

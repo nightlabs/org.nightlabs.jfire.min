@@ -69,6 +69,12 @@ public class QueryStoreDAO
 		}
 	}
 
+	public BaseQueryStore<?, ?> getQueryStore(QueryStoreID storeID,
+		String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
+	{
+		return getJDOObject(null, storeID, fetchGroups, maxFetchDepth, monitor);
+	}
+
 	public Collection<BaseQueryStore<?, ?>> getQueryStores(Set<QueryStoreID> storeIDs,
 		String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
 	{
@@ -190,11 +196,10 @@ public class QueryStoreDAO
 	public BaseQueryStore<?, ?> storeQueryStore(BaseQueryStore<?, ?> queryStore,
 		String[] fetchGroups, int maxFetchDepth, boolean get, ProgressMonitor monitor)
 	{
-		QueryStoreManager qsm;
 		try
 		{
 			monitor.beginTask("Saving QueryStore", 10);
-			qsm = QueryStoreManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
+			QueryStoreManager qsm = QueryStoreManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
 			queryStore.serialiseCollection();
 			monitor.worked(1);
 
@@ -211,6 +216,29 @@ public class QueryStoreDAO
 
 			return store;
 		} catch (Exception e)
+		{
+			monitor.setCanceled(true);
+			if (e instanceof RuntimeException) throw (RuntimeException) e;
+
+			throw new RuntimeException(e);
+		}
+	}
+	
+	public boolean removeQueryStore(BaseQueryStore<?, ?> queryStore, ProgressMonitor monitor)
+	{
+		try
+		{
+			monitor.beginTask("Saving QueryStore", 3);
+			QueryStoreManager qsm = QueryStoreManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
+			monitor.worked(1);
+
+			boolean removed = qsm.removeQueryStore(queryStore);
+			monitor.worked(2);
+			monitor.done();
+
+			return removed;
+		}
+		catch (Exception e)
 		{
 			monitor.setCanceled(true);
 			if (e instanceof RuntimeException) throw (RuntimeException) e;
