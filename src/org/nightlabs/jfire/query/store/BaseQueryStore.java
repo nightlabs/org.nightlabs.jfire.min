@@ -60,7 +60,7 @@ public class BaseQueryStore<R, Q extends AbstractSearchQuery<? extends R>>
 	/**
 	 * The serial version id.
 	 */
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 2L;
 	
 	/**
 	 * This is the name of the member returned by {@link QueryCollection#getResultClassName()}.
@@ -151,6 +151,14 @@ public class BaseQueryStore<R, Q extends AbstractSearchQuery<? extends R>>
 	/**
 	 * @jdo.field
 	 * 	persistence-modifier="persistent"
+	 * 	dependent-element="true"
+	 * 	default-fetch-group="true"
+	 */
+	private QueryStoreDescription description;
+	
+	/**
+	 * @jdo.field
+	 * 	persistence-modifier="persistent"
 	 */
 	private Authority authority;
 	
@@ -212,8 +220,9 @@ public class BaseQueryStore<R, Q extends AbstractSearchQuery<? extends R>>
 		this.ownerID = owner.getUserID();
 		this.organisationID = owner.getOrganisationID();
 		this.queryStoreID = queryStoreID;
-		this.name = new QueryStoreName(this);
 		this.publiclyAvailable = publiclyAvailable;
+		this.name = new QueryStoreName(this);
+		this.description = new QueryStoreDescription(this);
 		setQueryCollection(queryCollection);
 	}
 	
@@ -294,6 +303,14 @@ public class BaseQueryStore<R, Q extends AbstractSearchQuery<? extends R>>
 		return name;
 	}
 
+	/**
+	 * @return the internationalised description of the stored QueryCollection.
+	 */
+	public I18nText getDescription()
+	{
+		return description;
+	}
+	
 	/**
 	 * @return the UserID of my creator.
 	 */
