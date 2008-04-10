@@ -245,6 +245,10 @@ extends org.nightlabs.notification.NotificationManager
 		}
 
 		cache.removeLifecycleListenerFilter(jdoLifecycleListenerFilter, 0);
+		
+		// clear the filterID in case the JDOLifecycleListener wants to re-register this filter
+		// instance with changed filter properties. (Marius)
+		jdoLifecycleListenerFilter.setFilterID(null);
 	}
 
 	private Set<JDOLifecycleListener> lifecycleListeners = new HashSet<JDOLifecycleListener>();
