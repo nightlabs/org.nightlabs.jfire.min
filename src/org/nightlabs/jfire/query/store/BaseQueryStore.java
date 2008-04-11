@@ -143,7 +143,8 @@ public class BaseQueryStore<R, Q extends AbstractSearchQuery<? extends R>>
 	/**
 	 * @jdo.field
 	 * 	persistence-modifier="persistent"
-	 * 	dependent-element="true"
+	 *  mapped-by="queryStore"
+	 *  dependent="true"
 	 * 	default-fetch-group="true"
 	 */
 	private QueryStoreName name;
@@ -151,7 +152,8 @@ public class BaseQueryStore<R, Q extends AbstractSearchQuery<? extends R>>
 	/**
 	 * @jdo.field
 	 * 	persistence-modifier="persistent"
-	 * 	dependent-element="true"
+	 *  mapped-by="queryStore"
+	 *  dependent="true"
 	 * 	default-fetch-group="true"
 	 */
 	private QueryStoreDescription description;

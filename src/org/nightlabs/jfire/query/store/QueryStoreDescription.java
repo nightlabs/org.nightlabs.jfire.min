@@ -46,10 +46,7 @@ public class QueryStoreDescription
 	 * @jdo.field
 	 *		persistence-modifier="persistent"
 	 *		default-fetch-group="true"
-	 *		table="JFireQueryStore_QueryStoreDescription_text"
 	 *		null-value="exception"
-	 *
-	 * @jdo.join
 	 */
 	protected Map<String, String> descriptions = new HashMap<String, String>();
 

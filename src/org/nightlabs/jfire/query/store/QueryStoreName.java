@@ -46,10 +46,7 @@ public class QueryStoreName
 	 * @jdo.field
 	 *		persistence-modifier="persistent"
 	 *		default-fetch-group="true"
-	 *		table="JFireQueryStore_QueryStoreName_names"
 	 *		null-value="exception"
-	 *
-	 * @jdo.join
 	 */
 	protected Map<String, String> names = new HashMap<String, String>();
 
