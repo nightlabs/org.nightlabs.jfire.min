@@ -71,7 +71,7 @@ public class QueryStoreName
 	@Override
 	protected String getFallBackValue(String languageID)
 	{
-		return getText(languageID);
+		return String.valueOf(queryStoreID);
 	}
 
 	/* (non-Javadoc)
