@@ -127,7 +127,9 @@ implements SessionBean
 				task.setEnabled(true);
 				pm.makePersistent(task);
 			}
-
+			
+			// WORKAROUND JPOX Bug: to avoid ConcurrentModificationsException in JPOX
+			pm.getExtent(EditLock.class);
 		} finally {
 			pm.close();
 		}
