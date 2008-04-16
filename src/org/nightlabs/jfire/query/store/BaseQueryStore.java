@@ -17,13 +17,26 @@ import javax.jdo.Query;
 
 import org.nightlabs.i18n.I18nText;
 import org.nightlabs.jdo.NLJDOHelper;
+import org.nightlabs.jdo.query.AbstractSearchQuery;
 import org.nightlabs.jdo.query.QueryCollection;
+import org.nightlabs.jfire.query.store.dao.QueryStoreDAO;
 import org.nightlabs.jfire.query.store.id.QueryStoreID;
 import org.nightlabs.jfire.security.Authority;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.security.id.UserID;
 
 /**
+ * I am a container for any number of {@link AbstractSearchQuery}s wrapped in a
+ * {@link QueryCollection}.
+ * 
+ * <p><b>Important:</b> When sending a QueryStore from a client to the server you have to make sure
+ * 	{@link #serialiseCollection()} has been called before doing so, otherwise no query data will be
+ * 	persisted! <br />
+ * 	We don't serialise the collection every time it is set, since it may be changed afterwards which
+ * 	would result in an additional serialisation or lost information. <br />
+ * 	By using the {@link QueryStoreDAO} it is done implicitly when saving a QueryStore.
+ * </p>
+ * 
  * @jdo.persistence-capable
  *	identity-type="application"
  *	objectid-class="org.nightlabs.jfire.query.store.id.QueryStoreID"
