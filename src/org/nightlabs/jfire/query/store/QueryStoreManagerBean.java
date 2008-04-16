@@ -14,10 +14,11 @@ import javax.jdo.PersistenceManager;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.jdo.NLJDOHelper;
-import org.nightlabs.jdo.query.AbstractJDOQuery;
+import org.nightlabs.jdo.moduleregistry.ModuleMetaData;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.query.store.id.QueryStoreID;
 import org.nightlabs.jfire.security.id.UserID;
+import org.nightlabs.version.MalformedVersionException;
 
 /**
  * 
@@ -87,7 +88,7 @@ public abstract class QueryStoreManagerBean
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 */
-	public BaseQueryStore<?, ?> getQueryStore(QueryStoreID storeID, String[] fetchGroups,
+	public BaseQueryStore getQueryStore(QueryStoreID storeID, String[] fetchGroups,
 		int maxFetchDepth)
 	{
 		return getQueryStores(Collections.singleton(storeID), fetchGroups, maxFetchDepth).iterator().next();
@@ -99,13 +100,13 @@ public abstract class QueryStoreManagerBean
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 */
-	public Collection<BaseQueryStore<?, ?>> getQueryStores(
+	public Collection<BaseQueryStore> getQueryStores(
 		Set<QueryStoreID> storeIDs, String[] fetchGroups, int maxFetchDepth)
 	{
 		PersistenceManager pm = getPersistenceManager();
 		try
 		{
-			Collection<BaseQueryStore<?, ?>> stores = NLJDOHelper.getDetachedObjectList(pm, storeIDs, BaseQueryStore.class,
+			Collection<BaseQueryStore> stores = NLJDOHelper.getDetachedObjectList(pm, storeIDs, BaseQueryStore.class,
 				fetchGroups, maxFetchDepth);
 			
 			if (stores == null)
@@ -157,8 +158,8 @@ public abstract class QueryStoreManagerBean
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type="Required"
 	 */
-	public <R, Q extends AbstractJDOQuery<R>> BaseQueryStore<R, Q> storeQueryCollection(
-		BaseQueryStore<R, Q> queryStore, String[] fetchGroups, int maxFetchDepth, boolean get)
+	public BaseQueryStore storeQueryCollection(BaseQueryStore queryStore, String[] fetchGroups, 
+		int maxFetchDepth, boolean get)
 	{
 		PersistenceManager pm = getPersistenceManager();
 		try
@@ -177,14 +178,13 @@ public abstract class QueryStoreManagerBean
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type="Required"
 	 */
-	public boolean removeQueryStore(BaseQueryStore<?, ?> queryStore)
+	public boolean removeQueryStore(BaseQueryStore queryStore)
 	{
 		PersistenceManager pm = getPersistenceManager();
 		// TODO: Authority check!
 //		queryStore.getAuthority()
 		try
 		{
-			pm.deletePersistent(queryStore.getName());
 			pm.deletePersistent(queryStore);
 			return true;
 		}
@@ -199,4 +199,33 @@ public abstract class QueryStoreManagerBean
 		}
 	}
 	
+	/**
+	 * @ejb.interface-method
+	 * @ejb.permission role-name="_System_"
+	 * @ejb.transaction type="Required"
+	 */
+	public void initialise()
+	{
+		PersistenceManager pm = getPersistenceManager();;
+		try
+		{
+			ModuleMetaData moduleMetaData = ModuleMetaData.getModuleMetaData(pm, "JFireQueryStore");
+			if (moduleMetaData != null)
+				return;
+
+			// create QueryStore tables. 
+			pm.getExtent(BaseQueryStore.class);
+			
+			// version is {major}.{minor}.{release}-{patchlevel}-{suffix}
+			moduleMetaData = new ModuleMetaData("JFireQueryStore", "0.9.3-0-beta", "0.9.3-0-beta");
+			pm.makePersistent(moduleMetaData);
+		} catch (MalformedVersionException e)
+		{
+			throw new RuntimeException(e);
+		}
+		finally
+		{
+			pm.close();
+		}
+	}
 }

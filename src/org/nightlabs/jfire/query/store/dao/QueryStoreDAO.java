@@ -18,7 +18,7 @@ import org.nightlabs.progress.ProgressMonitor;
  * @author Marius Heinzmann - marius[at]nightlabs[dot]com
  */
 public class QueryStoreDAO
-	extends BaseJDOObjectDAO<QueryStoreID, BaseQueryStore<?, ?>>
+	extends BaseJDOObjectDAO<QueryStoreID, BaseQueryStore>
 {
 	protected QueryStoreDAO()
 	{
@@ -42,7 +42,7 @@ public class QueryStoreDAO
 	}
 
 	@Override
-	protected Collection<BaseQueryStore<?, ?>> retrieveJDOObjects(Set<QueryStoreID> objectIDs,
+	protected Collection<BaseQueryStore> retrieveJDOObjects(Set<QueryStoreID> objectIDs,
 		String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor) throws Exception
 	{
 		monitor.beginTask("Fetching QueryStores...", objectIDs.size());
@@ -51,7 +51,7 @@ public class QueryStoreDAO
 
 		try
 		{
-			Collection<BaseQueryStore<?, ?>> result = qsm.getQueryStores(objectIDs, fetchGroups,
+			Collection<BaseQueryStore> result = qsm.getQueryStores(objectIDs, fetchGroups,
 				maxFetchDepth);
 
 			monitor.worked(objectIDs.size());
@@ -69,13 +69,13 @@ public class QueryStoreDAO
 		}
 	}
 
-	public BaseQueryStore<?, ?> getQueryStore(QueryStoreID storeID,
+	public BaseQueryStore getQueryStore(QueryStoreID storeID,
 		String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
 	{
 		return getJDOObject(null, storeID, fetchGroups, maxFetchDepth, monitor);
 	}
 
-	public Collection<BaseQueryStore<?, ?>> getQueryStores(Set<QueryStoreID> storeIDs,
+	public Collection<BaseQueryStore> getQueryStores(Set<QueryStoreID> storeIDs,
 		String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
 	{
 		return getJDOObjects(null, storeIDs, fetchGroups, maxFetchDepth, monitor);
@@ -98,7 +98,7 @@ public class QueryStoreDAO
 	 * @return all QueryStores created by the currently active user and all marked as publicly
 	 *         available if <code>allPublicAsWell == true</code>.
 	 */
-	public Collection<BaseQueryStore<?, ?>> getQueryStoresByReturnType(Class<?> resultType,
+	public Collection<BaseQueryStore> getQueryStoresByReturnType(Class<?> resultType,
 		boolean allPublicAsWell, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
 	{
 		return getQueryStoresByReturnType(resultType, SecurityReflector.getUserDescriptor()
@@ -122,7 +122,7 @@ public class QueryStoreDAO
 	 * @return all QueryStores created by the given user and all marked as publicly available if
 	 *         <code>allPublicAsWell == true</code>.
 	 */
-	public Collection<BaseQueryStore<?, ?>> getQueryStoresByReturnType(Class<?> resultType,
+	public Collection<BaseQueryStore> getQueryStoresByReturnType(Class<?> resultType,
 		UserID selectedOwner, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
 	{
 		return getQueryStoresByReturnType(resultType, selectedOwner, false, fetchGroups, maxFetchDepth,
@@ -148,7 +148,7 @@ public class QueryStoreDAO
 	 * @return all QueryStores created by the given user and all marked as publicly available if
 	 *         <code>allPublicAsWell == true</code> of the given result type.
 	 */
-	public Collection<BaseQueryStore<?, ?>> getQueryStoresByReturnType(Class<?> resultType,
+	public Collection<BaseQueryStore> getQueryStoresByReturnType(Class<?> resultType,
 		UserID selectedOwner, boolean allPublicAsWell, String[] fetchGroups, int maxFetchDepth,
 		ProgressMonitor monitor)
 	{
@@ -193,7 +193,7 @@ public class QueryStoreDAO
 	 * @return the upToDate version of the given QueryStore after it has been made persistent if
 	 *         <code>get == true</code>, <code>null</code> otherwise.
 	 */
-	public BaseQueryStore<?, ?> storeQueryStore(BaseQueryStore<?, ?> queryStore,
+	public BaseQueryStore storeQueryStore(BaseQueryStore queryStore,
 		String[] fetchGroups, int maxFetchDepth, boolean get, ProgressMonitor monitor)
 	{
 		try
@@ -203,7 +203,7 @@ public class QueryStoreDAO
 			queryStore.serialiseCollection();
 			monitor.worked(1);
 
-			BaseQueryStore<?, ?> store = qsm.storeQueryCollection(queryStore, fetchGroups, maxFetchDepth,
+			BaseQueryStore store = qsm.storeQueryCollection(queryStore, fetchGroups, maxFetchDepth,
 				get);
 			monitor.worked(8);
 
@@ -224,7 +224,7 @@ public class QueryStoreDAO
 		}
 	}
 	
-	public boolean removeQueryStore(BaseQueryStore<?, ?> queryStore, ProgressMonitor monitor)
+	public boolean removeQueryStore(BaseQueryStore queryStore, ProgressMonitor monitor)
 	{
 		try
 		{

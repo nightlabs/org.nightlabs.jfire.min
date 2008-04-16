@@ -17,7 +17,6 @@ import javax.jdo.Query;
 
 import org.nightlabs.i18n.I18nText;
 import org.nightlabs.jdo.NLJDOHelper;
-import org.nightlabs.jdo.query.AbstractSearchQuery;
 import org.nightlabs.jdo.query.QueryCollection;
 import org.nightlabs.jfire.query.store.id.QueryStoreID;
 import org.nightlabs.jfire.security.Authority;
@@ -49,7 +48,7 @@ import org.nightlabs.jfire.security.id.UserID;
  * 
  * @author Marius Heinzmann - marius[at]nightlabs[dot]com
  */
-public class BaseQueryStore<R, Q extends AbstractSearchQuery<? extends R>>
+public class BaseQueryStore
 	implements Serializable
 {
 	/**
@@ -167,7 +166,7 @@ public class BaseQueryStore<R, Q extends AbstractSearchQuery<? extends R>>
 	/**
 	 * @jdo.field persistence-modifier="none"
 	 */
-	private transient QueryCollection<R, Q> deSerialisedQueries;
+	private transient QueryCollection<?> deSerialisedQueries;
 	
 	/**
 	 * @jdo.field
@@ -194,7 +193,7 @@ public class BaseQueryStore<R, Q extends AbstractSearchQuery<? extends R>>
 	 * Sets the QueryCollection to persist in the datastore.
 	 * @param queries the QueryCollection to persist in the datastore.
 	 */
-	public void setQueryCollection(QueryCollection<R, Q> queries)
+	public void setQueryCollection(QueryCollection<?> queries)
 	{
 		this.deSerialisedQueries = queries;
 		this.resultClassName = queries == null ? "" : queries.getResultClassName();
@@ -208,12 +207,12 @@ public class BaseQueryStore<R, Q extends AbstractSearchQuery<? extends R>>
 	{
 	}
 	
-	public BaseQueryStore(User owner, long queryStoreID, QueryCollection<R, Q> queryCollection)
+	public BaseQueryStore(User owner, long queryStoreID, QueryCollection<?> queryCollection)
 	{
 		this(owner, queryStoreID, queryCollection, false);
 	}
 	
-	public BaseQueryStore(User owner, long queryStoreID, QueryCollection<R, Q> queryCollection,
+	public BaseQueryStore(User owner, long queryStoreID, QueryCollection<?> queryCollection,
 		boolean publiclyAvailable)
 	{
 		assert owner != null;
@@ -233,7 +232,7 @@ public class BaseQueryStore<R, Q extends AbstractSearchQuery<? extends R>>
 	 * @return the managed QueryCollection.
 	 */
 	@SuppressWarnings("unchecked")
-	public QueryCollection<R, Q> getQueryCollection()
+	public QueryCollection<?> getQueryCollection()
 	{
 		if (deSerialisedQueries != null)
 			return deSerialisedQueries;
@@ -246,8 +245,8 @@ public class BaseQueryStore<R, Q extends AbstractSearchQuery<? extends R>>
 			final ByteArrayInputStream inputStream = new ByteArrayInputStream(serialisedQueries);
 			final InflaterInputStream zippedStream = new InflaterInputStream(inputStream);
 			final XMLDecoder decoder = new XMLDecoder(zippedStream);
-			deSerialisedQueries = (QueryCollection<R, Q>) decoder.readObject();
-			decoder.close();	
+			deSerialisedQueries = (QueryCollection<?>) decoder.readObject();
+			decoder.close();
 		}
 		
 		return deSerialisedQueries;
@@ -394,7 +393,7 @@ public class BaseQueryStore<R, Q extends AbstractSearchQuery<? extends R>>
 		if (getClass() != obj.getClass())
 			return false;
 		
-		final BaseQueryStore<?,?> other = (BaseQueryStore<?,?>) obj;
+		final BaseQueryStore other = (BaseQueryStore) obj;
 		
 		if (organisationID == null)
 		{

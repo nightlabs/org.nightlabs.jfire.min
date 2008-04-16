@@ -68,8 +68,7 @@ public class BaseQueryStoreLifecycleFilter
 		
 		for (DirtyObjectID dirtyObjectID : dirtyObjectIDs)
 		{
-			BaseQueryStore<?, ?> store = (BaseQueryStore<?, ?>)
-				pm.getObjectById(dirtyObjectID.getObjectID());
+			BaseQueryStore store = (BaseQueryStore)	pm.getObjectById(dirtyObjectID.getObjectID());
 			
 			if (resultTypeClassName.equals(store.getResultClassName()))
 			{

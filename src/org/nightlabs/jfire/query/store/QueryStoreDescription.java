@@ -40,7 +40,7 @@ public class QueryStoreDescription
 	/**
 	 * @jdo.field persistence-modifier="persistent"
 	 */
-	private BaseQueryStore<?, ?> queryStore;
+	private BaseQueryStore queryStore;
 	
 	/**
 	 * @jdo.field
@@ -57,7 +57,7 @@ public class QueryStoreDescription
 	public QueryStoreDescription()
 	{}
 	
-	public QueryStoreDescription(BaseQueryStore<?, ?> queryStore)
+	public QueryStoreDescription(BaseQueryStore queryStore)
 	{
 		assert queryStore != null;
 		this.queryStoreID = queryStore.getQueryStoreID();
