@@ -44,6 +44,7 @@ import javax.jdo.Query;
 import org.apache.log4j.Logger;
 import org.nightlabs.ModuleException;
 import org.nightlabs.jdo.NLJDOHelper;
+import org.nightlabs.jdo.ObjectIDException;
 import org.nightlabs.jdo.query.JDOQueryCollectionDecorator;
 import org.nightlabs.jdo.query.QueryCollection;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
@@ -1625,24 +1626,34 @@ implements SessionBean
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 */
-	public Set<UserID> getUserIDs(QueryCollection<User, ? extends UserQuery> userQueries) {
+	public Set<UserID> getUserIDs(QueryCollection<? extends UserQuery> userQueries)
+	{
+		if (userQueries == null)
+			return null;
+		
+		if (! User.class.isAssignableFrom(userQueries.getResultClass()))
+		{
+			throw new RuntimeException("Given QueryCollection has invalid return type! " +
+					"Invalid return type= "+ userQueries.getResultClassName());
+		}
+		
 		PersistenceManager pm = getPersistenceManager();
 		try {
 			pm.getFetchPlan().setMaxFetchDepth(1);
 			pm.getFetchPlan().setGroup(FetchPlan.DEFAULT);
 
-			JDOQueryCollectionDecorator<User, UserQuery> decoratedCollection;
+			JDOQueryCollectionDecorator<UserQuery> decoratedCollection;
 			if (userQueries instanceof JDOQueryCollectionDecorator)
 			{
-				decoratedCollection = (JDOQueryCollectionDecorator<User, UserQuery>) userQueries;
+				decoratedCollection = (JDOQueryCollectionDecorator<UserQuery>) userQueries;
 			}
 			else
 			{
-				decoratedCollection = new JDOQueryCollectionDecorator<User, UserQuery>(userQueries);
+				decoratedCollection = new JDOQueryCollectionDecorator<UserQuery>(userQueries);
 			}
 
 			decoratedCollection.setPersistenceManager(pm);
-			Collection<User> users = decoratedCollection.executeQueries();
+			Collection<User> users = (Collection<User>) decoratedCollection.executeQueries();
 
 			return NLJDOHelper.getObjectIDSet(users);
 		} finally {

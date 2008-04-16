@@ -196,24 +196,34 @@ public class WorkstationManagerBean extends BaseSessionBeanImpl implements Sessi
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 */
-	public Set<WorkstationID> getWorkstaionIDs(QueryCollection<Workstation, ? extends WorkstationQuery> workstationQueries) {
+	public Set<WorkstationID> getWorkstaionIDs(QueryCollection<? extends WorkstationQuery> workstationQueries)
+	{
+		if (workstationQueries == null)
+			return null;
+		
+		if (! Workstation.class.isAssignableFrom(workstationQueries.getResultClass()))
+		{
+			throw new RuntimeException("Given QueryCollection has invalid return type! " +
+					"Invalid return type= "+ workstationQueries.getResultClassName());
+		}
+		
 		PersistenceManager pm = getPersistenceManager();
 		try {
 			pm.getFetchPlan().setMaxFetchDepth(1);
 			pm.getFetchPlan().setGroup(FetchPlan.DEFAULT);
 
-			JDOQueryCollectionDecorator<Workstation, WorkstationQuery> decoratedCollection;
+			JDOQueryCollectionDecorator<WorkstationQuery> decoratedCollection;
 			if (workstationQueries instanceof JDOQueryCollectionDecorator)
 			{
-				decoratedCollection = (JDOQueryCollectionDecorator<Workstation, WorkstationQuery>) workstationQueries;
+				decoratedCollection = (JDOQueryCollectionDecorator<WorkstationQuery>) workstationQueries;
 			}
 			else
 			{
-				decoratedCollection = new JDOQueryCollectionDecorator<Workstation, WorkstationQuery>(workstationQueries);
+				decoratedCollection = new JDOQueryCollectionDecorator<WorkstationQuery>(workstationQueries);
 			}
 
 			decoratedCollection.setPersistenceManager(pm);
-			Collection<Workstation> workstations = decoratedCollection.executeQueries();
+			Collection<Workstation> workstations = (Collection<Workstation>) decoratedCollection.executeQueries();
 
 			return NLJDOHelper.getObjectIDSet(workstations);
 		} finally {
