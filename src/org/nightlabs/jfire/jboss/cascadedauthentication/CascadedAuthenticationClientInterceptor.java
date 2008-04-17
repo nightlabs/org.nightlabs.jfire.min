@@ -56,10 +56,10 @@ public class CascadedAuthenticationClientInterceptor extends GenericEJBIntercept
 			File f = new File("CascadedAuthenticationClientInterceptor.properties");
 			if (!f.exists()) {
 				delegateClass = null;
-				logger.warn("file does not exist (ignoring): "+f.getAbsolutePath());
+				logger.warn("reloadProperties: file does not exist (ignoring): "+f.getAbsolutePath());
 			}
 			else {
-				logger.info("reading file "+f.getAbsolutePath());
+				logger.info("reloadProperties: reading file "+f.getAbsolutePath());
 				Properties props = new Properties();
 				FileInputStream in = new FileInputStream(f);
 				try {
@@ -69,14 +69,17 @@ public class CascadedAuthenticationClientInterceptor extends GenericEJBIntercept
 				}
 				String enable = (String)props.get("enable");
 				if(logger.isDebugEnabled())
-					logger.debug("enable="+enable);
-				if ("yes".equals(enable)) {
+					logger.debug("reloadProperties: enable="+enable);
+				if ("yes".equals(enable) || "true".equals(enable)) {
+					logger.info("reloadProperties: enabling cascaded authentication.");
 					delegateClass = Class.forName(DELEGATECLASSNAME);
 					if (!Interceptor.class.isAssignableFrom(delegateClass))
 						throw new ClassCastException("Class \""+DELEGATECLASSNAME+"\" does not implement interface \""+Interceptor.class.getName()+"\"!");
 				}
-				else
+				else {
+					logger.info("reloadProperties: disabling cascaded authentication.");
 					delegateClass = null;
+				}
 			} // if (f.exists()) {
 		} catch (RuntimeException e) {
 			throw e;
@@ -116,7 +119,7 @@ public class CascadedAuthenticationClientInterceptor extends GenericEJBIntercept
 		}
 
 		if(logger.isDebugEnabled())
-			logger.debug(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+			logger.debug(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> (delegate enabled: " + (delegateInstance != null ? "yes" : "no") + ")");
 		try {
 
 			if (delegateInstance != null)
