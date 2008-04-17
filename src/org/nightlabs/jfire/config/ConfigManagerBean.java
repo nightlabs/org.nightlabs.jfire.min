@@ -929,6 +929,9 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 
 			pm.makePersistent(new EditLockType(JFireBaseEAR.EDIT_LOCK_TYPE_ID_CONFIG_MODULE));
 			pm.makePersistent(new EditLockType(JFireBaseEAR.EDIT_LOCK_TYPE_ID_CONFIG));
+			
+			// WORKAROUND JPOX Bug to avoid concurrent modification at runtime
+			pm.getExtent(ConfigModule.class, true);
 		} finally {
 			pm.close();
 		}
