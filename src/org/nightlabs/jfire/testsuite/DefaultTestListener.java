@@ -62,12 +62,28 @@ import org.w3c.dom.Node;
  *   <li>mail.subject: The recipients of the mail (,-separated list), default "JFireTestSuite Testreport"</li>
  *   <li>mail.htmlReportXSL: The stylesheet to use to render the xml to the html mail body, default "htmlReport.xls"</li>
  * </ul>
+ * 
+ * To override some settings without modifing the properties file you can alternatively
+ * set the following environment variables on your system.
+ * 'jfiretestsuite.mail.smtp.host' to override 'mail.smtp.host'   
+ * 'jfiretestsuite.mail.to' to override 'mail.to'
+ * 'jfiretestsuite.mail.from' to override 'mail.from'
+ * 
  * <p>
  * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] de -->
  *
  */
 public class DefaultTestListener implements JFireTestListener {
 
+	public static final String ENVIRONMENT_VARIABLE_SMTP_HOST = "jfiretestsuite.mail.smtp.host"; 
+	public static final String ENVIRONMENT_VARIABLE_MAIL_TO = "jfiretestsuite.mail.to";
+	public static final String ENVIRONMENT_VARIABLE_MAIL_FROM = "jfiretestsuite.mail.from";
+	
+	public static final String PROPERTY_KEY_SMTP_HOST = "mail.smtp.host"; 
+	public static final String PROPERTY_KEY_MAIL_TO = "mail.to";
+	public static final String PROPERTY_KEY_MAIL_FROM = "mail.from";	
+	public static final String PROPERTY_KEY_MAIL_SUBJECT = "mail.subject";
+	
 	/**
 	 * Log4J Logger for this class
 	 */
@@ -723,13 +739,31 @@ public class DefaultTestListener implements JFireTestListener {
 			StringWriter writer = new StringWriter();
 			transformer.transform(new StreamSource(tmpFile), new StreamResult(writer));
 			
+			// check for environment variable for the smtp host
+			String envSmtpHost = System.getenv(ENVIRONMENT_VARIABLE_SMTP_HOST);
+			if (envSmtpHost != null) {
+				config.setProperty(PROPERTY_KEY_SMTP_HOST, envSmtpHost);
+			}
+
+			// check for environment variable for the mail to
+			String envMailTo = System.getenv(ENVIRONMENT_VARIABLE_MAIL_TO);
+			if (envMailTo != null) {
+				config.setProperty(PROPERTY_KEY_MAIL_TO, envMailTo);
+			}
+
+			// check for environment variable for the mail from
+			String envMailFrom = System.getenv(ENVIRONMENT_VARIABLE_MAIL_FROM);
+			if (envMailFrom != null) {
+				config.setProperty(PROPERTY_KEY_MAIL_FROM, envMailFrom);
+			}
+			
 			// create/send the message
 			Session session = Session.getInstance(config, null);
 			MimeMessage message = new MimeMessage(session);
 			
-			message.setFrom(new InternetAddress(getProperty("mail.from", "info@jfire.org")));
+			message.setFrom(new InternetAddress(getProperty(PROPERTY_KEY_MAIL_FROM, "info@jfire.org")));
 	
-			String to = config.getProperty("mail.to", "info@jfire.org");
+			String to = config.getProperty(PROPERTY_KEY_MAIL_TO, "info@jfire.org");
 			if(to.contains(",")) {
 				StringTokenizer t = new StringTokenizer(to, ",");
 				while(t.hasMoreTokens())
@@ -738,9 +772,9 @@ public class DefaultTestListener implements JFireTestListener {
 				message.addRecipient(javax.mail.Message.RecipientType.TO, new InternetAddress(to));
 			}
 			
-			String subject = getProperty("mail.subject", "JFireTestSuite Testreport");
+			String subject = getProperty(PROPERTY_KEY_MAIL_SUBJECT, "JFireTestSuite Testreport");
 			message.setSubject(subject);
-					
+
 	//		message.setContent(writer.toString(), "text/html");
 			
 			// set html report
