@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<connection-factories>
+	<tx-connection-factory>
+		<jndi-name>${jdoPersistenceManagerFactoryJNDIName_relative}</jndi-name>
+
+		<rar-name>datanucleus-jca.rar</rar-name>
+		<connection-definition>javax.resource.cci.ConnectionFactory</connection-definition>
+		<xa-transaction/>
+		<config-property name="PersistenceUnitName" type="java.lang.String">JFire</config-property>
+		<config-property name="PersistenceXmlFilename" type="java.lang.String">file://${deploymentDescriptorDirectory}/persistence.xml</config-property>
+		<max-pool-size>100</max-pool-size>
+	</tx-connection-factory>
+</connection-factories>
