@@ -757,45 +757,61 @@ public class DefaultTestListener implements JFireTestListener {
 				config.setProperty(PROPERTY_KEY_MAIL_FROM, envMailFrom);
 			}
 			
-			// create/send the message
-			Session session = Session.getInstance(config, null);
-			MimeMessage message = new MimeMessage(session);
-			
-			message.setFrom(new InternetAddress(getProperty(PROPERTY_KEY_MAIL_FROM, "info@jfire.org")));
-	
-			String to = config.getProperty(PROPERTY_KEY_MAIL_TO, "info@jfire.org");
-			if(to.contains(",")) {
-				StringTokenizer t = new StringTokenizer(to, ",");
-				while(t.hasMoreTokens())
-					message.addRecipient(javax.mail.Message.RecipientType.TO, new InternetAddress(t.nextToken().trim()));
-			} else {
-				message.addRecipient(javax.mail.Message.RecipientType.TO, new InternetAddress(to));
-			}
-			
-			String subject = getProperty(PROPERTY_KEY_MAIL_SUBJECT, "JFireTestSuite Testreport");
-			message.setSubject(subject);
+			if (config.getProperty(PROPERTY_KEY_SMTP_HOST) != null &&
+					config.getProperty(PROPERTY_KEY_MAIL_FROM) != null &&
+					config.getProperty(PROPERTY_KEY_MAIL_TO) != null)
+			{
+				// create/send the message
+				Session session = Session.getInstance(config, null);
+				MimeMessage message = new MimeMessage(session);
+				
+				message.setFrom(new InternetAddress(getProperty(PROPERTY_KEY_MAIL_FROM, "info@jfire.org")));
+		
+				String to = config.getProperty(PROPERTY_KEY_MAIL_TO, "info@jfire.org");
+				if(to.contains(",")) {
+					StringTokenizer t = new StringTokenizer(to, ",");
+					while(t.hasMoreTokens())
+						message.addRecipient(javax.mail.Message.RecipientType.TO, new InternetAddress(t.nextToken().trim()));
+				} else {
+					message.addRecipient(javax.mail.Message.RecipientType.TO, new InternetAddress(to));
+				}
+				
+				String subject = getProperty(PROPERTY_KEY_MAIL_SUBJECT, "JFireTestSuite Testreport");
+				message.setSubject(subject);
 
-	//		message.setContent(writer.toString(), "text/html");
-			
-			// set html report
-	    MimeBodyPart mimebodypart = new MimeBodyPart();
-	    mimebodypart.setContent(writer.toString(), "text/html");
-	    
-	    // attach xml report
-	    MimeMultipart mimemultipart = new MimeMultipart();
-	    mimemultipart.addBodyPart(mimebodypart);
-	    mimebodypart = new MimeBodyPart();
-	    FileDataSource filedatasource = new FileDataSource(tmpFile);
-	    mimebodypart.setDataHandler(new DataHandler(filedatasource));
-	    
-	    mimebodypart.setFileName("jfire-test-report.xml");
-	    mimemultipart.addBodyPart(mimebodypart);
-	    message.setContent(mimemultipart);
-	
-	    logger.info("Sending TestSuite report email to: "+to);
-			Transport.send(message);
-			
-			tmpFile.delete();
+		//		message.setContent(writer.toString(), "text/html");
+				
+				// set html report
+		    MimeBodyPart mimebodypart = new MimeBodyPart();
+		    mimebodypart.setContent(writer.toString(), "text/html");
+		    
+		    // attach xml report
+		    MimeMultipart mimemultipart = new MimeMultipart();
+		    mimemultipart.addBodyPart(mimebodypart);
+		    mimebodypart = new MimeBodyPart();
+		    FileDataSource filedatasource = new FileDataSource(tmpFile);
+		    mimebodypart.setDataHandler(new DataHandler(filedatasource));
+		    
+		    mimebodypart.setFileName("jfire-test-report.xml");
+		    mimemultipart.addBodyPart(mimebodypart);
+		    message.setContent(mimemultipart);
+		
+		    logger.info("Sending TestSuite report email to: "+to);
+				Transport.send(message);
+				
+				tmpFile.delete();				
+			}
+			else {
+				if (config.getProperty(PROPERTY_KEY_SMTP_HOST) == null) {
+					logger.error("There is no SMTP Host defined, neither in the jfireTestSuite.properties ("+PROPERTY_KEY_SMTP_HOST+") nor as Environment Variable ("+ENVIRONMENT_VARIABLE_SMTP_HOST+")");
+				}
+				if (config.getProperty(PROPERTY_KEY_MAIL_FROM) == null) {
+					logger.error("There is no mail from defined, neither in the jfireTestSuite.properties ("+PROPERTY_KEY_MAIL_FROM+") nor as Environment Variable ("+ENVIRONMENT_VARIABLE_MAIL_FROM+")");
+				}
+				if (config.getProperty(PROPERTY_KEY_MAIL_TO) == null) {
+					logger.error("There is no mail to defined, neither in the jfireTestSuite.properties ("+PROPERTY_KEY_MAIL_TO+") nor as Environment Variable ("+ENVIRONMENT_VARIABLE_MAIL_TO+")");
+				}
+			}
 		} catch(Exception e) {
 			logger.error("Sending TestSuite report email failed! Escalating exception...", e);
 		}
