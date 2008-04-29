@@ -811,6 +811,8 @@ public class DefaultTestListener implements JFireTestListener {
 				if (config.getProperty(PROPERTY_KEY_MAIL_TO) == null) {
 					logger.error("There is no mail to defined, neither in the jfireTestSuite.properties ("+PROPERTY_KEY_MAIL_TO+") nor as Environment Variable ("+ENVIRONMENT_VARIABLE_MAIL_TO+")");
 				}
+				
+				logger.error("TestSuite result mail could not be send!");
 			}
 		} catch(Exception e) {
 			logger.error("Sending TestSuite report email failed! Escalating exception...", e);
