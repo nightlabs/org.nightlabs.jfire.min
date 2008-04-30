@@ -748,12 +748,12 @@ public class ServerConfiguratorJBoss
 	
 	private void configureRunConf(File jbossBinDir, String javaOpts) throws FileNotFoundException, IOException
 	{
-		String optsBegin = "# JAVA_OPTS by JFire server configurator\nJAVA_OPTS=\"$JAVA_OPTS ";
+		String optsBegin = "# JAVA_OPTS by JFire server configurator\nJAVA_OPTS=\"$JAVA_OPTS";
 		String optsEnd = "\"";
 		Pattern oldOpts = Pattern.compile(
 				"^"+Pattern.quote(optsBegin)+"([^\"]*)"+Pattern.compile(optsEnd)+"$",
 				Pattern.MULTILINE);
-		
+
 		File destFile = new File(jbossBinDir, "run.conf");
 		String text = IOUtil.readTextFile(destFile);
 
@@ -761,10 +761,11 @@ public class ServerConfiguratorJBoss
 		Matcher m = oldOpts.matcher(text);
 		boolean changed = false;
 		boolean found = m.find();
-		if(found && !m.group(1).equals(javaOpts)) {
-			text = m.replaceFirst(Matcher.quoteReplacement(newSetting));
-			changed = true;
-		} else if(!found) {
+//		if(found && !m.group(1).equals(javaOpts)) { I commented this out, because I think it should be possible to modify these options manually. Marco.
+//			text = m.replaceFirst(Matcher.quoteReplacement(newSetting));
+//			changed = true;
+//		} else if(!found) {
+		if(!found) {
 			text += "\n"+newSetting;
 			changed = true;
 		}
