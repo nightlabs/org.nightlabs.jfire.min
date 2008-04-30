@@ -19,6 +19,8 @@
             <property name="javax.jdo.option.ConnectionPassword" value="${databasePassword}"/>
 -->
 
+            <property name="datanucleus.connection.resourceType" value="JTA"/>
+
             <property name="datanucleus.storeManagerType" value="rdbms"/>
 
             <property name="datanucleus.NontransactionalRead" value="true"/>

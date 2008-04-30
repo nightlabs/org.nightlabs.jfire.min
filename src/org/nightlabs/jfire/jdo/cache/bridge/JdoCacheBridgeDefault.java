@@ -52,6 +52,7 @@ import javax.transaction.Synchronization;
 import org.apache.log4j.Logger;
 import org.nightlabs.annotation.Implement;
 import org.nightlabs.jfire.idgenerator.IDNamespace;
+import org.nightlabs.jfire.jdo.cache.CacheManagerFactory;
 import org.nightlabs.jfire.jdo.notification.DirtyObjectID;
 import org.nightlabs.jfire.jdo.notification.JDOLifecycleState;
 import org.nightlabs.jfire.security.SecurityReflector;
@@ -111,9 +112,13 @@ public class JdoCacheBridgeDefault extends JdoCacheBridge
 			if (logger.isDebugEnabled())
 				debug("beforeCompletion: called");
 
+			_sessionID = bridge.securityReflector._getUserDescriptor().getSessionID();
+
 			if (synchronization != null)
 				synchronization.beforeCompletion();
 		}
+
+		private String _sessionID;
 
 		/**
 		 * An instance of <code>CacheTransactionListener</code> should only be used for one transaction. Because
@@ -160,7 +165,11 @@ public class JdoCacheBridgeDefault extends JdoCacheBridge
 					if (logger.isDebugEnabled())
 						debug("afterCompletion(STATUS_COMMITTED) called.");
 
-					final String _sessionID = bridge.securityReflector._getUserDescriptor().getSessionID();
+// we are not authenticated anymore - for whatever reason :-( trying to get this info in beforeCompletion, now.
+//					final String _sessionID = bridge.securityReflector._getUserDescriptor().getSessionID();
+					if (_sessionID == null)
+						throw new IllegalStateException("afterCompletion: beforeCompletion() did not set the sessionID!");
+
 					final Map<JDOLifecycleState, Map<Object, DirtyObjectID>> _dirtyObjectIDs = this.dirtyObjectIDs;
 					this.dirtyObjectIDs = null;
 					final Map<Object, Class<?>> _objectID2Class = this.objectID2Class;
