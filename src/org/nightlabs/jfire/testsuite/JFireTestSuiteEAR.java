@@ -8,11 +8,19 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.log4j.Logger;
 import org.nightlabs.ModuleException;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.servermanager.JFireServerManagerUtil;
@@ -21,13 +29,16 @@ import org.nightlabs.jfire.servermanager.JFireServerManagerUtil;
  * EAR descriptor for JFireTestSuite.
  * 
  * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] de -->
+ * @author marco schulze - marco at nightlabs dot de
  */
-public class JFireTestSuiteEAR {
+public class JFireTestSuiteEAR
+{
+	private static final Logger logger = Logger.getLogger(JFireTestSuiteEAR.class);
+	public static final String MODULE_NAME = "JFireTestSuite";
 
 	protected JFireTestSuiteEAR() {}
-	
-	public static final String MODULE_NAME = "JFireTestSuite";
-	
+
+
 	public static File getEARDir()
 	throws ModuleException
 	{
@@ -51,32 +62,116 @@ public class JFireTestSuiteEAR {
 	}
 
 	private static Properties jfireTestSuiteProperties;
-	
+
+	private static Properties readJFireTestSuitePropertiesFile(File file) throws IOException
+	{
+		if (logger.isDebugEnabled())
+			logger.debug("readJFireTestSuitePropertiesFile: file=" + file.getAbsolutePath());
+
+		Properties properties = new Properties();
+		FileInputStream in = new FileInputStream(file);
+		try {
+			properties.load(in);
+		} finally {
+			in.close();
+		}
+
+		if (logger.isTraceEnabled()) {
+			for (Map.Entry<?, ?> me : properties.entrySet())
+				logger.trace("readJFireTestSuitePropertiesFile: " + me.getKey() + '=' + me.getValue());
+		}
+
+		return properties;
+	}
+
+	private static List<File> getIncludeFilesFromProperties(Properties properties)
+	{
+		List<File> includeFiles = new LinkedList<File>();
+		Properties includeProps = getProperties(properties, "include.");
+		SortedSet<String> includePropKeys = new TreeSet<String>();
+		for (Object key : includeProps.keySet())
+			includePropKeys.add((String) key);
+
+		for (String includePropKey : includePropKeys) {
+			String includeValue = includeProps.getProperty(includePropKey);
+
+			String includeFileName = includeValue;
+			for (Map.Entry<?, ?> me : System.getProperties().entrySet()) {
+				String systemPropertyKey = (String) me.getKey();
+				String systemPropertyValue = (String) me.getValue();
+				includeFileName = includeFileName.replaceAll(Pattern.quote("${" + systemPropertyKey + "}"), systemPropertyValue);
+			}
+
+			if (logger.isDebugEnabled())
+				logger.debug("getIncludeFilesFromProperties: includeKey=include." + includePropKey + " includeValue=" + includeValue + " includeFileName=" + includeFileName);
+
+			includeFiles.add(new File(includeFileName));
+		}
+		return includeFiles;
+	}
+
+	private static void readJFireTestSuitePropertiesRecursively(Properties jfireTestSuiteProperties, File propertiesFile, Set<File> includeFilesProcessed)
+	throws IOException
+	{
+		// read the properties file
+		Properties props = readJFireTestSuitePropertiesFile(propertiesFile);
+		
+		// put all new (included) values and overwrite the previously defined ones
+		jfireTestSuiteProperties.putAll(props);
+
+		// recursively process further include files which are defined in the include file we just read		
+		for (File includeFile : getIncludeFilesFromProperties(props)) {
+			if (!includeFile.exists()) {
+				logger.info("readJFireTestSuitePropertiesRecursively: includeFile \"" + includeFile.getAbsolutePath() + "\" defined in propertiesFile \"" + propertiesFile.getAbsolutePath() + "\" does not exist!");
+				continue;
+			}
+
+			if (!includeFilesProcessed.add(includeFile)) {
+				logger.warn("readJFireTestSuitePropertiesRecursively: includeFile \"" + includeFile.getAbsolutePath() + "\" defined in propertiesFile \"" + propertiesFile.getAbsolutePath() + "\" has already been processed! Skipping in order to prevent circular include loops!");
+				continue;
+			}
+
+			readJFireTestSuitePropertiesRecursively(jfireTestSuiteProperties, includeFile, includeFilesProcessed);
+		}
+	}
+
 	/**
 	 * Get the main properties of {@link JFireTestSuite}.
 	 * They are located in the file jfireTestSuite.properties in the ear directory.
 	 */
-	public static Properties getJFireTestSuiteProperties() throws ModuleException, IOException {
+	public static Properties getJFireTestSuiteProperties()
+	throws ModuleException, IOException
+	{
 		if (jfireTestSuiteProperties == null) {
 			synchronized (JFireTestSuiteEAR.class) {
-				if (jfireTestSuiteProperties == null)
-					// find the listener and configure them
-					jfireTestSuiteProperties = new Properties();
-				FileInputStream in = new FileInputStream(new File(JFireTestSuiteEAR.getEARDir(), "jfireTestSuite.properties"));
-				try {
-					jfireTestSuiteProperties.load(in);
-				} finally {
-					in.close();
-				}
+				if (jfireTestSuiteProperties == null) {
+					// read the main properties file
+					Properties newJFireTestSuiteProps = new Properties(); 
+
+					// keep track of which files have already been processed in order to prevent processing them twice
+					Set<File> includeFilesProcessed = new HashSet<File>();
+
+					readJFireTestSuitePropertiesRecursively(
+							newJFireTestSuiteProps,
+							new File(JFireTestSuiteEAR.getEARDir(), "jfireTestSuite.properties"),
+							includeFilesProcessed);
+
+					jfireTestSuiteProperties = newJFireTestSuiteProps;
+				} // if (jfireTestSuiteProperties == null) {
+			} // synchronized (JFireTestSuiteEAR.class) {
+
+			if (logger.isTraceEnabled()) {
+				for (Map.Entry<?, ?> me : jfireTestSuiteProperties.entrySet())
+					logger.trace("getJFireTestSuiteProperties: " + me.getKey() + '=' + me.getValue());
 			}
-		}
+		} // if (jfireTestSuiteProperties == null) {
 		return jfireTestSuiteProperties;
 	}
-	
+
 	public static Collection<Matcher> getPropertyKeyMatches(Properties properties, Pattern pattern)
 	{
 		Collection<Matcher> matches = new ArrayList<Matcher>();
-		for (Iterator iter = properties.keySet().iterator(); iter.hasNext();) {
+		for (Iterator<?> iter = properties.keySet().iterator(); iter.hasNext();) {
 			String key = (String) iter.next();
 			Matcher m = pattern.matcher(key);
 			if(m.matches())
