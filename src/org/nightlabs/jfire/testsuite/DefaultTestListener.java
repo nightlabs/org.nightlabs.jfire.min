@@ -14,6 +14,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
@@ -80,7 +81,16 @@ implements JFireTestListener
 	public static final String PROPERTY_KEY_MAIL_TO = "mail.to";
 	public static final String PROPERTY_KEY_MAIL_FROM = "mail.from";	
 	public static final String PROPERTY_KEY_MAIL_SUBJECT = "mail.subject";
-	
+
+	public static final String PROPERTY_KEY_SMTP_AUTH = "mail.smtp.auth";
+	public static final String PROPERTY_KEY_SMTP_USER = "mail.smtp.user";
+
+	/**
+	 * The password to be used for authentication. Note that this is not understood by
+	 * the java mail api as property, but needs to be handled manually (see code below).
+	 */
+	public static final String PROPERTY_KEY_SMTP_PASSWORD = "mail.smtp.password";
+
 	/**
 	 * Log4J Logger for this class
 	 */
@@ -798,9 +808,41 @@ implements JFireTestListener
 			mimebodypart.setFileName("jfire-test-report.xml");
 			mimemultipart.addBodyPart(mimebodypart);
 			message.setContent(mimemultipart);
+			message.saveChanges(); // according to the docs, this should not be forgotten - but it worked without, too - nevertheless it doesn't hurt to use it.
 
-			logger.info("Sending TestSuite report email to: "+to);
-			Transport.send(message);
+			boolean authenticate = "true".equals(config.getProperty(PROPERTY_KEY_SMTP_AUTH, "false"));
+
+			String smtpHost = config.getProperty(PROPERTY_KEY_SMTP_HOST);
+			if (!authenticate) {
+				logger.info("sendReportAsMail: Sending TestSuite report email without authentication via SMTP host " + smtpHost + " to: "+to);
+				Transport.send(message); // use simple API since this is tested well and seems to work fine.
+			}
+			else {
+				logger.info("sendReportAsMail: Sending TestSuite report email with authentication via SMTP host " + smtpHost + " to: "+to);
+
+				String smtpUsername = config.getProperty(PROPERTY_KEY_SMTP_USER);
+				String smtpPassword = config.getProperty(PROPERTY_KEY_SMTP_PASSWORD);
+
+				if (smtpUsername == null || "".equals(smtpUsername))
+					logger.warn("sendReportAsMail: property " + PROPERTY_KEY_SMTP_AUTH + " has been set to 'true', but there is no user name defined! You should add a user name using the property "+ PROPERTY_KEY_SMTP_USER +"!");
+
+				if (smtpPassword == null || "".equals(smtpPassword))
+					logger.warn("sendReportAsMail: property " + PROPERTY_KEY_SMTP_AUTH + " has been set to 'true', but there is no password defined! You should add a password using the property "+ PROPERTY_KEY_SMTP_PASSWORD +"!");
+
+				if (logger.isTraceEnabled()) {
+					logger.trace("sendReportAsMail: properties:");
+					for (Map.Entry<?, ?> me : config.entrySet())
+						logger.trace("sendReportAsMail:   * " + me.getKey() + '=' + me.getValue());
+				}
+
+				Transport tr = session.getTransport("smtp");
+				try {
+					tr.connect(smtpHost, smtpUsername, smtpPassword);
+					tr.sendMessage(message, message.getAllRecipients());
+				} finally {
+					tr.close();
+				}
+			}
 
 			tmpFile.delete();				
 		} catch(Exception e) {
