@@ -8,6 +8,7 @@ import java.util.Set;
 
 import javax.jdo.JDOHelper;
 
+import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO;
 import org.nightlabs.jfire.config.Config;
 import org.nightlabs.jfire.config.ConfigManager;

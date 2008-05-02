@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.Set;
 
 import org.nightlabs.annotation.Implement;
+import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO;
 import org.nightlabs.jfire.config.Config;
 import org.nightlabs.jfire.config.ConfigManager;
