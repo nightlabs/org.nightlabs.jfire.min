@@ -612,44 +612,44 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	//			block = new StructBlock(struct, structID.organisationID, "block1");
 	//			struct.addStructBlock(block);
 	//			field = new TextStructField(block, structID.organisationID, "field1");
-	//			field.getName().setText(Locale.getDefault().getLanguage(), "Feld 1");
+	//			field.getName().setText(NLLocale.getDefault().getLanguage(), "Feld 1");
 	//			block.addStructField(field);
 	//			field = new TextStructField(block, structID.organisationID, "field2");
-	//			field.getName().setText(Locale.getDefault().getLanguage(), "Feld 2");
+	//			field.getName().setText(NLLocale.getDefault().getLanguage(), "Feld 2");
 	//			block.addStructField(field);
 	//			field = new TextStructField(block, structID.organisationID, "field3");
-	//			field.getName().setText(Locale.getDefault().getLanguage(), "Feld 3");
+	//			field.getName().setText(NLLocale.getDefault().getLanguage(), "Feld 3");
 	//			block.addStructField(field);
 	//			field = new TextStructField(block, structID.organisationID, "field4");
 	//			block.addStructField(field);
-	//			block.getName().setText(Locale.getDefault().getLanguage(), "Block 1");
+	//			block.getName().setText(NLLocale.getDefault().getLanguage(), "Block 1");
 	//			block = new StructBlock(struct, structID.organisationID, "block2");
 	//			struct.addStructBlock(block);
 	//			field = new TextStructField(block, structID.organisationID, "field1");
-	//			field.getName().setText(Locale.getDefault().getLanguage(), "Feld 1");
+	//			field.getName().setText(NLLocale.getDefault().getLanguage(), "Feld 1");
 	//			block.addStructField(field);
 	//			field = new TextStructField(block, structID.organisationID, "field2");
-	//			field.getName().setText(Locale.getDefault().getLanguage(), "Feld 2");
+	//			field.getName().setText(NLLocale.getDefault().getLanguage(), "Feld 2");
 	//			block.addStructField(field);
 	//			field = new TextStructField(block, structID.organisationID, "field3");
 	//			block.addStructField(field);
-	//			block.getName().setText(Locale.getDefault().getLanguage(), "Block 2");
+	//			block.getName().setText(NLLocale.getDefault().getLanguage(), "Block 2");
 	//			block = new StructBlock(struct, structID.organisationID, "block3");
 	//			struct.addStructBlock(block);
 	//			field = new TextStructField(block, structID.organisationID, "field1");
-	//			field.getName().setText(Locale.getDefault().getLanguage(), "Feld 1");
+	//			field.getName().setText(NLLocale.getDefault().getLanguage(), "Feld 1");
 	//			block.addStructField(field);
 	//			// ---------------
 	//			SelectionStructField selField = new SelectionStructField(block, structID.organisationID, "field2");
-	//			selField.getName().setText(Locale.getDefault().getLanguage(), "Feld 2 (sel)");
+	//			selField.getName().setText(NLLocale.getDefault().getLanguage(), "Feld 2 (sel)");
 	//			StructFieldValue value = selField.newStructFieldValue("1");
-	//			value.getValueName().setText(Locale.getDefault().getLanguage(), "Auswahl 1");
+	//			value.getValueName().setText(NLLocale.getDefault().getLanguage(), "Auswahl 1");
 	//			value = selField.newStructFieldValue("2");
-	//			value.getValueName().setText(Locale.getDefault().getLanguage(), "Auswahl 2");
+	//			value.getValueName().setText(NLLocale.getDefault().getLanguage(), "Auswahl 2");
 	//			value = selField.newStructFieldValue("3");
-	//			value.getValueName().setText(Locale.getDefault().getLanguage(), "Auswahl 3");
+	//			value.getValueName().setText(NLLocale.getDefault().getLanguage(), "Auswahl 3");
 	//			block.addStructField(selField);
-	//			block.getName().setText(Locale.getDefault().getLanguage(), "Block 3");
+	//			block.getName().setText(NLLocale.getDefault().getLanguage(), "Block 3");
 	//			// ---------------
 	//
 	//			return struct;
@@ -660,7 +660,7 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	//	}
 	//
 	//	private Struct createRandomStructure(StructID structID) {
-	//		String langID = Locale.getDefault().getLanguage();
+	//		String langID = NLLocale.getDefault().getLanguage();
 	//		Struct struct = new Struct(structID.organisationID, structID.linkClass);
 	//		int structBlockCount = (int) (2 + Math.random() * 9);
 	//		for (int b = 0; b < structBlockCount; b++) {

@@ -28,6 +28,7 @@ package org.nightlabs.jfire.asyncinvoke;
 
 import java.io.IOException;
 
+import javax.ejb.CreateException;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
