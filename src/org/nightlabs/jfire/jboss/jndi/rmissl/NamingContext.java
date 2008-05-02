@@ -2,6 +2,7 @@ package org.nightlabs.jfire.jboss.jndi.rmissl;
 
 
 import java.util.Hashtable;
+
 import javax.naming.Binding;
 import javax.naming.Context;
 import javax.naming.Name;

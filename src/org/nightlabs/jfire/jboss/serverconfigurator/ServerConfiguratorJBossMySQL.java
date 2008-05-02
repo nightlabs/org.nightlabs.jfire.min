@@ -9,6 +9,8 @@ import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.jfire.serverconfigurator.ServerConfigurationException;
+import org.nightlabs.jfire.serverconfigurator.ServerConfigurator;
+import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
 import org.nightlabs.jfire.servermanager.db.DatabaseAdapter;
 import org.nightlabs.jfire.servermanager.db.DatabaseAlreadyExistsException;
 import org.nightlabs.util.IOUtil;
