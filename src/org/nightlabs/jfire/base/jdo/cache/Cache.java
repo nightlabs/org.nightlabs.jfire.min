@@ -49,6 +49,7 @@ import org.nightlabs.jdo.ObjectID;
 import org.nightlabs.jfire.base.jdo.JDOObjectID2PCClassMap;
 import org.nightlabs.jfire.base.jdo.notification.ChangeSubjectCarrier;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleEvent;
+import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleListener;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleManager;
 import org.nightlabs.jfire.jdo.JDOManager;
 import org.nightlabs.jfire.jdo.JDOManagerUtil;

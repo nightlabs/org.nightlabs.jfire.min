@@ -31,6 +31,7 @@ import java.util.Map;
 
 import org.nightlabs.jfire.idgenerator.IDGenerator;
 import org.nightlabs.jfire.idgenerator.IDGeneratorHelper;
+import org.nightlabs.jfire.idgenerator.IDGeneratorHelperBean;
 import org.nightlabs.jfire.idgenerator.IDGeneratorHelperUtil;
 import org.nightlabs.jfire.security.SecurityReflector;
 

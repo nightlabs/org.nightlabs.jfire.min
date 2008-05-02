@@ -37,6 +37,8 @@ import java.util.Set;
 
 import javax.jdo.JDOHelper;
 
+import org.nightlabs.jdo.NLJDOHelper;
+import org.nightlabs.jdo.ObjectID;
 import org.nightlabs.jfire.base.jdo.cache.Cache;
 import org.nightlabs.progress.ProgressMonitor;
 import org.nightlabs.progress.SubProgressMonitor;
