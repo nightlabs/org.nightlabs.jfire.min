@@ -38,6 +38,7 @@ import org.nightlabs.jfire.prop.AbstractStruct;
 import org.nightlabs.jfire.prop.DisplayNamePart;
 import org.nightlabs.jfire.prop.IStruct;
 import org.nightlabs.jfire.prop.PropHelper;
+import org.nightlabs.jfire.prop.PropertySet;
 import org.nightlabs.jfire.prop.Struct;
 import org.nightlabs.jfire.prop.StructBlock;
 import org.nightlabs.jfire.prop.StructLocal;
