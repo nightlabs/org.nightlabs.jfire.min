@@ -33,6 +33,7 @@ import javax.transaction.TransactionManager;
 
 import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.servermanager.j2ee.monitor.J2EEServerMonitor;
+import org.nightlabs.jfire.servermanager.ra.JFireServerManagerFactoryImpl;
 
 
 /**

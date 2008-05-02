@@ -3,8 +3,10 @@ package org.nightlabs.jfire.serverinit;
 import javax.naming.InitialContext;
 
 import org.nightlabs.jfire.init.InitException;
+import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.servermanager.JFireServerManagerFactory;
 import org.nightlabs.jfire.servermanager.j2ee.J2EEAdapter;
+import org.nightlabs.jfire.servermanager.ra.JFireServerManagerFactoryImpl;
 
 /**
  * <p>
