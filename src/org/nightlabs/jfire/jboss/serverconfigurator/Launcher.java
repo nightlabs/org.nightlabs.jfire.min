@@ -14,11 +14,8 @@ import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-import org.nightlabs.jfire.jboss.serverconfigurator.internal.InternalLauncher;
-import org.nightlabs.jfire.serverconfigurator.ServerConfigurator;
-
 /**
- * Launcher for execution of the {@link ServerConfigurator} from the command line.
+ * Launcher for execution of the {@link org.nightlabs.jfire.serverconfigurator.ServerConfigurator} from the command line.
  * <p>
  * Since the JBoss does not start JFire due to configuration errors before the {@link ServerConfiguratorJBoss} has been
  * executed, it is necessary to launch the configurator already before the server is started the first time.
@@ -34,8 +31,9 @@ import org.nightlabs.jfire.serverconfigurator.ServerConfigurator;
  * <p>
  * This <code>Launcher</code> scans the server's <i>lib</i> and <i>deploy</i> directories recursively and creates
  * a classpath from all JARs found. It then creates a {@link URLClassLoader} for this classpath, loads the class
- * {@link InternalLauncher} via this new class-loader and then instantiates it and calls {@link InternalLauncher#run()}.
- * This way, the {@link InternalLauncher} can use all classes deployed in the JBoss.
+ * {@link org.nightlabs.jfire.jboss.serverconfigurator.internal.InternalLauncher} via this new class-loader and then instantiates it and calls
+ * {@link org.nightlabs.jfire.jboss.serverconfigurator.internal.InternalLauncher#run()}.
+ * This way, the {@link org.nightlabs.jfire.jboss.serverconfigurator.internal.InternalLauncher} can use all classes deployed in the JBoss.
  * </p>
  * <p>
  * Nested JARs within the JARs found are extracted into temporary files (which are deleted on JVM exit) and added
