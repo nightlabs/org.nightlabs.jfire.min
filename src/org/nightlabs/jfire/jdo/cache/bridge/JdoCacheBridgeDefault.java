@@ -82,14 +82,10 @@ public class JdoCacheBridgeDefault extends JdoCacheBridge
 		private JdoCacheBridgeDefault bridge;
 		private boolean dead = false;
 
-		/**
-		 * @param previousSynchronization In case there can only be one synchronization be registered,
-		 *		the previously registered one can be replaced by an instance of this one and
-		 *		passed here in order to be triggered indirectly.
-		 */
 		public CacheTransactionListener(JdoCacheBridgeDefault bridge)
 		{
 			this.bridge = bridge;
+			_sessionID = bridge.securityReflector._getUserDescriptor().getSessionID();
 		}
 
 		public String getIdentityString()
@@ -106,13 +102,13 @@ public class JdoCacheBridgeDefault extends JdoCacheBridge
 			logger.error("CacheTransactionListener[" + getIdentityString() + "]" + msg, t);
 		}
 
-		@Implement
+		@Override
 		public void beforeCompletion()
 		{
 			if (logger.isDebugEnabled())
 				debug("beforeCompletion: called");
 
-			_sessionID = bridge.securityReflector._getUserDescriptor().getSessionID();
+//			_sessionID = bridge.securityReflector._getUserDescriptor().getSessionID();
 
 			if (synchronization != null)
 				synchronization.beforeCompletion();
@@ -143,7 +139,7 @@ public class JdoCacheBridgeDefault extends JdoCacheBridge
 
 		private Synchronization synchronization;
 
-		@Implement
+		@Override
 		public void afterCompletion(int status)
 		{
 			this.dead = true;
@@ -165,10 +161,9 @@ public class JdoCacheBridgeDefault extends JdoCacheBridge
 					if (logger.isDebugEnabled())
 						debug("afterCompletion(STATUS_COMMITTED) called.");
 
-// we are not authenticated anymore - for whatever reason :-( trying to get this info in beforeCompletion, now.
-//					final String _sessionID = bridge.securityReflector._getUserDescriptor().getSessionID();
+// we are not authenticated anymore - for whatever reason :-( trying to get this info in constructor, now - seems to work.
 					if (_sessionID == null)
-						throw new IllegalStateException("afterCompletion: beforeCompletion() did not set the sessionID!");
+						throw new IllegalStateException("afterCompletion: sessionID is not assigned!");
 
 					final Map<JDOLifecycleState, Map<Object, DirtyObjectID>> _dirtyObjectIDs = this.dirtyObjectIDs;
 					this.dirtyObjectIDs = null;
