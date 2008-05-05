@@ -1470,24 +1470,36 @@ public class JFireServerManagerFactoryImpl
 											CreateOrganisationStep.JFireServerManagerFactory_createOrganisation_deployJDO_end,
 											databaseName, dbURL));
 
-							// populating essential data (Server, Organisation, User etc.) via OrganisationManagerBean.
-							// we cannot reference the classes directly, because the project JFireBaseBean is dependent on JFireServerManager.
-							// therefore, we reference it via the names.
-							ServerCf localServerCf = mcf.getConfigModule().getLocalServer();
-							Properties props = InvokeUtil.getInitialContextProperties(
-									this, localServerCf, organisationID, User.USERID_SYSTEM,
-									jfireSecurity_createTempUserPassword(organisationID, User.USERID_SYSTEM));
-							InitialContext authInitCtx = new InitialContext(props);
-							try {
-								Object bean = InvokeUtil.createBean(authInitCtx, "jfire/ejb/JFireBaseBean/OrganisationManager");
-								Method beanMethod = bean.getClass().getMethod(
-										"internalInitializeEmptyOrganisation",
-										new Class[] { CreateOrganisationProgressID.class, ServerCf.class, OrganisationCf.class, String.class, String.class }
-								);
-								beanMethod.invoke(bean, new Object[] { createOrganisationProgress.getCreateOrganisationProgressID(), localServerCf, organisationCf, userID, password});
-								InvokeUtil.removeBean(bean);
-							} finally {
-								authInitCtx.close();
+							int tryCount = 0;
+							boolean successful = false;
+							while (!successful) {
+								try {
+									// populating essential data (Server, Organisation, User etc.) via OrganisationManagerBean.
+									// we cannot reference the classes directly, because the project JFireBaseBean is dependent on JFireServerManager.
+									// therefore, we reference it via the names.
+									ServerCf localServerCf = mcf.getConfigModule().getLocalServer();
+									Properties props = InvokeUtil.getInitialContextProperties(
+											this, localServerCf, organisationID, User.USERID_SYSTEM,
+											jfireSecurity_createTempUserPassword(organisationID, User.USERID_SYSTEM));
+									InitialContext initCtx = new InitialContext(props);
+									try {
+										Object bean = InvokeUtil.createBean(initCtx, "jfire/ejb/JFireBaseBean/OrganisationManager");
+										Method beanMethod = bean.getClass().getMethod(
+												"internalInitializeEmptyOrganisation",
+												new Class[] { CreateOrganisationProgressID.class, ServerCf.class, OrganisationCf.class, String.class, String.class }
+										);
+										beanMethod.invoke(bean, new Object[] { createOrganisationProgress.getCreateOrganisationProgressID(), localServerCf, organisationCf, userID, password});
+										InvokeUtil.removeBean(bean);
+									} finally {
+										initCtx.close();
+									}
+									successful = true;
+								} catch (Exception x) {
+									if (++tryCount > 2)
+										throw x;
+									else
+										logger.warn("Calling OrganisationManager.internalInitializeEmptyOrganisation(...) failed! Will retry again.", x);
+								}
 							}
 
 							// there has been a role import, hence we need to flush the cache
@@ -2368,7 +2380,7 @@ public class JFireServerManagerFactoryImpl
 	protected RoleSet jfireSecurity_getRoleSet(PersistenceManager pm, String organisationID, String userID)
 	throws ModuleException
 	{
-		String userPK = userID + '@' + organisationID;
+		String userPK = userID + User.SEPARATOR_BETWEEN_USER_ID_AND_ORGANISATION_ID + organisationID;
 
 		RoleSet roleSet = null;
 		// lookup in cache.
