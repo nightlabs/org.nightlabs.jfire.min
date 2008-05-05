@@ -1441,17 +1441,17 @@ public class JFireServerManagerFactoryImpl
 							}
 							logger.info("Empty organisation \""+organisationID+"\" (\""+organisationName+"\") has been created. Waiting for deployment...");
 
-							PersistenceManager pm = null;
-							try {
+							{
+								PersistenceManagerFactory pmf = null;
 								// Now, we need to wait until the deployment of the x-ds.xml is complete and our
 								// jdo persistencemanager is existing in JNDI.
 								int tryCount = createOrganisationConfigModule.getWaitForPersistenceManager_tryCount();
 
 								int tryNr = 0;
-								while (pm == null) {
+								while (pmf == null) {
 									++tryNr;
 									try {
-										pm = waitForPersistenceManager(OrganisationCf.PERSISTENCE_MANAGER_FACTORY_PREFIX_ABSOLUTE + organisationID); // org.getPersistenceManagerFactoryJNDIName());
+										pmf = waitForPersistenceManagerFactory(OrganisationCf.PERSISTENCE_MANAGER_FACTORY_PREFIX_ABSOLUTE + organisationID); // org.getPersistenceManagerFactoryJNDIName());
 									} catch (ModuleException x) {
 										if (tryNr >= tryCount) throw x;
 
@@ -1463,12 +1463,6 @@ public class JFireServerManagerFactoryImpl
 									}
 								}
 								logger.info("PersistenceManagerFactory of organisation \""+organisationID+"\" (\""+organisationName+"\") has been deployed.");
-
-							} finally {
-								if (pm != null) {
-									pm.close();
-									pm = null;
-								}
 							}
 
 							createOrganisationProgress.addCreateOrganisationStatus(
@@ -2230,7 +2224,7 @@ public class JFireServerManagerFactoryImpl
 		return pm;
 	}
 
-	protected PersistenceManager waitForPersistenceManager(String persistenceManagerJNDIName)
+	protected PersistenceManagerFactory waitForPersistenceManagerFactory(String persistenceManagerJNDIName)
 		throws ModuleException
 	{
 		try {
@@ -2265,23 +2259,24 @@ public class JFireServerManagerFactoryImpl
 					}
 				} // while (pmf == null)
 
-				PersistenceManager pm = null;
-				int pmTryCount = 0;
-				while (pm == null) {
-					try {
-						pm = pmf.getPersistenceManager();
-						if (pm == null)
-							throw new NullPointerException("PersistenceManager coming out of factory should never be null!");
-					} catch (Exception x) {
-						logger.warn("getPersistenceManager() failed!", x);
-
-						if (++pmTryCount > 3)
-							throw x;
-						Thread.sleep(3000);
-					}
-				}
-
-				return pm;
+//				PersistenceManager pm = null;
+//				int pmTryCount = 0;
+//				while (pm == null) {
+//					try {
+//						pm = pmf.getPersistenceManager();
+//						if (pm == null)
+//							throw new NullPointerException("PersistenceManager coming out of factory should never be null!");
+//					} catch (Exception x) {
+//						logger.warn("getPersistenceManager() failed!", x);
+//
+//						if (++pmTryCount > 3)
+//							throw x;
+//						Thread.sleep(3000);
+//					}
+//				}
+//
+//				return pm;
+				return pmf;
 			} finally {
 				initCtx.close();
 			}
