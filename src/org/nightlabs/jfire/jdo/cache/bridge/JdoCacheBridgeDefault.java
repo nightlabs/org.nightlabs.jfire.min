@@ -304,8 +304,15 @@ public class JdoCacheBridgeDefault extends JdoCacheBridge
 //				TransactionManager tm = getCacheManagerFactory().getTransactionManager();
 //				javax.transaction.Transaction tx = tm.getTransaction();
 //				tx.registerSynchronization(listener);
+
+				// save the currently assigned Synchronization (if there is any) for delegation
 				listener.synchronization = pm.currentTransaction().getSynchronization();
+
+				// assign our listener as current Synchronization
 				pm.currentTransaction().setSynchronization(listener);
+
+				// assign the listener to the current PersistenceManager so we find it again
+				// (i.e. share it and don't create a new one within this transaction).
 				pm.setUserObject(listener);
 
 				if (logger.isDebugEnabled())
