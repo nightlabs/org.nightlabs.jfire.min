@@ -48,7 +48,10 @@
         <user-name>${databaseUserName}</user-name>
         <password>${databasePassword}</password>
 
-    	<track-connection-by-tx>true</track-connection-by-tx>
+		<track-connection-by-tx>true</track-connection-by-tx>
+		<new-connection-sql>set autocommit=1</new-connection-sql>
+		<no-tx-separate-pools>true</no-tx-separate-pools>
+
     	<exception-sorter-class-name>org.jboss.resource.adapter.jdbc.vendor.MySQLExceptionSorter</exception-sorter-class-name>
     	<metadata>
     		<type-mapping>${datasourceMetadataTypeMapping}</type-mapping>
