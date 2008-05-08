@@ -1416,6 +1416,11 @@ public class JFireServerManagerFactoryImpl
 							// TODO this file needs to be configurable!
 							File persistenceXML = new File(jdoConfigDir, "persistence.xml");
 
+							// TODO this file needs to be configurable!!!
+							createDeploymentDescriptor(organisationID, persistenceXML,
+									new File(new File(jdoCf.getJdoTemplateDSXMLFile()).getParentFile(), "persistence.template.xml"),
+									null, DeployOverwriteBehaviour.EXCEPTION);
+							
 							// creating deployment descriptor for datasource
 							createDeploymentDescriptor(organisationID, datasourceDSXML,
 									new File(dbCf.getDatasourceTemplateDSXMLFile()), null, DeployOverwriteBehaviour.EXCEPTION);
@@ -1423,11 +1428,6 @@ public class JFireServerManagerFactoryImpl
 							// creating deployment descriptor for JDO PersistenceManagerFactory
 							createDeploymentDescriptor(organisationID, jdoDSXML,
 									new File(jdoCf.getJdoTemplateDSXMLFile()), null, DeployOverwriteBehaviour.EXCEPTION);
-
-							// TODO this file needs to be configurable!!!
-							createDeploymentDescriptor(organisationID, persistenceXML,
-									new File(new File(jdoCf.getJdoTemplateDSXMLFile()).getParentFile(), "persistence.template.xml"),
-									null, DeployOverwriteBehaviour.EXCEPTION);
 
 							organisationCf = organisationConfigModule.addOrganisation(
 									organisationID, organisationName);
