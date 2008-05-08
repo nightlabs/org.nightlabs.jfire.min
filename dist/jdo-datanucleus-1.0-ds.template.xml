@@ -8,6 +8,8 @@
 		<xa-transaction/>
 		<config-property name="PersistenceUnitName" type="java.lang.String">${organisationID}</config-property>
 		<config-property name="PersistenceXmlFilename" type="java.lang.String">file://${deploymentDescriptorDirectory}/persistence.xml</config-property>
+
+		<track-connection-by-tx>true</track-connection-by-tx>
 		<max-pool-size>100</max-pool-size>
 	</tx-connection-factory>
 </connection-factories>
