@@ -86,7 +86,7 @@ public abstract class QueryStoreManagerBean
 	 *
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
+	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 */
 	public BaseQueryStore getQueryStore(QueryStoreID storeID, String[] fetchGroups,
 		int maxFetchDepth)
@@ -98,7 +98,7 @@ public abstract class QueryStoreManagerBean
 	 *
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
+	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 */
 	public Collection<BaseQueryStore> getQueryStores(
 		Set<QueryStoreID> storeIDs, String[] fetchGroups, int maxFetchDepth)
@@ -130,7 +130,7 @@ public abstract class QueryStoreManagerBean
 	 *
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
+	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 */
 	public Collection<QueryStoreID> getQueryStoreIDs(Class<?> resultType, UserID ownerID, 
 		boolean allPublicAsWell, String[] fetchGroups, int maxFetchDepth)
