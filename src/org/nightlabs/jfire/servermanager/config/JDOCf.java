@@ -20,100 +20,137 @@ public class JDOCf extends JFireServerConfigPart implements Serializable
 	private static final org.apache.log4j.Logger logger = org.apache.log4j.Logger
 			.getLogger(JDOCf.class);
 	
-	private String jdoConfigDirectory;
-	private String jdoConfigFile;
-	private String jdoTemplateDSXMLFile;
+	private String jdoDeploymentDirectory;
 
-	/* (non-Javadoc)
-	 * @see org.nightlabs.jfire.servermanager.config.JFireServerConfigPart#init()
-	 */
+	private String jdoDeploymentDescriptorFile;
+	private String jdoDeploymentDescriptorTemplateFile;
+
+	private String jdoPersistenceConfigurationFile;
+	private String jdoPersistenceConfigurationTemplateFile;
+
 	@Override
 	public void init()
 	{
-		if (jdoConfigDirectory == null)
-			setJdoConfigDirectory("../server/default/deploy/JFire_JDO_" + JFireServerConfigModule.ORGANISATION_ID_VAR + ".last/");
+		if (jdoDeploymentDirectory == null)
+			setJdoDeploymentDirectory("../server/default/deploy/JFire_JDO_" + JFireServerConfigModule.ORGANISATION_ID_VAR + ".last/");
 
-		if (jdoConfigFile == null)
-			jdoConfigFile = "jdo-" + JFireServerConfigModule.ORGANISATION_ID_VAR + "-ds.xml";
+		if (jdoDeploymentDescriptorFile == null)
+			jdoDeploymentDescriptorFile = "jdo-" + JFireServerConfigModule.ORGANISATION_ID_VAR + "-ds.xml";
 
-		if (jdoTemplateDSXMLFile == null)
-			jdoTemplateDSXMLFile = "../server/default/deploy/JFire.last/JFireBase.ear/jdo-datanucleus-1.0-ds.template.xml";
+		if (jdoDeploymentDescriptorTemplateFile == null)
+			jdoDeploymentDescriptorTemplateFile = "../server/default/deploy/JFire.last/JFireBase.ear/jdo-datanucleus-1.0-ds.template.xml";
 
-		logger.info("jdoConfigDirectory = "+jdoConfigDirectory);
-		logger.info("jdoConfigFile = "+jdoConfigFile);
-		logger.info("jdoTemplateDSXMLFile = "+jdoTemplateDSXMLFile);
+		if (jdoPersistenceConfigurationFile == null)
+			jdoPersistenceConfigurationFile = "persistence-" + JFireServerConfigModule.ORGANISATION_ID_VAR + ".xml";
+
+		if (jdoPersistenceConfigurationTemplateFile == null)
+			jdoPersistenceConfigurationTemplateFile = "../server/default/deploy/JFire.last/JFireBase.ear/jdo-datanucleus-1.0-persistence.template.xml";
+
+		logger.info("jdoDeploymentDirectory = "+jdoDeploymentDirectory);
+		logger.info("jdoDeploymentDescriptorFile = "+jdoDeploymentDescriptorFile);
+		logger.info("jdoDeploymentDescriptorTemplateFile = "+jdoDeploymentDescriptorTemplateFile);
+		logger.info("jdoPersistenceConfigurationFile = "+jdoPersistenceConfigurationFile);
+		logger.info("jdoPersistenceConfigurationTemplateFile = "+jdoPersistenceConfigurationTemplateFile);
 	}
-	
+
 	/**
-	 * @return Returns the jdoConfigDirectory.
+	 * @return Returns the jdoDeploymentDirectory.
 	 */
-	public String getJdoConfigDirectory()
+	public String getJdoDeploymentDirectory()
 	{
-		return jdoConfigDirectory;
+		return jdoDeploymentDirectory;
 	}
-	
+
 	public String getJdoConfigDirectory(String organisationID)
 	{
 		if (organisationID == null || "".equals(organisationID))
 			throw new IllegalArgumentException("organisationID must not be null or empty string!");
 
-		return jdoConfigDirectory.replace(JFireServerConfigModule.ORGANISATION_ID_VAR, organisationID);
+		return jdoDeploymentDirectory.replace(JFireServerConfigModule.ORGANISATION_ID_VAR, organisationID);
 	}
 	
 	/**
-	 * @param jdoConfigDirectory The jdoConfigDirectory to set.
+	 * @param jdoDeploymentDirectory The jdoDeploymentDirectory to set.
 	 */
-	public void setJdoConfigDirectory(String jdoConfigDirectory)
+	public void setJdoDeploymentDirectory(String jdoConfigDirectory)
 	{
 		if (jdoConfigDirectory == null)
-			throw new IllegalArgumentException("jdoConfigDirectory must not be null!");
+			throw new IllegalArgumentException("jdoDeploymentDirectory must not be null!");
 
 		if (jdoConfigDirectory.indexOf(JFireServerConfigModule.ORGANISATION_ID_VAR) < 0)
-			throw new IllegalArgumentException("jdoConfigDirectory must contain \"" + JFireServerConfigModule.ORGANISATION_ID_VAR + "\"!");
+			throw new IllegalArgumentException("jdoDeploymentDirectory must contain \"" + JFireServerConfigModule.ORGANISATION_ID_VAR + "\"!");
 
-		this.jdoConfigDirectory = jdoConfigDirectory;
+		this.jdoDeploymentDirectory = jdoConfigDirectory;
 		setChanged();
 	}
 
-	public String getJdoConfigFile()
+	public String getJdoDeploymentDescriptorFile()
 	{
-		return jdoConfigFile;
+		return jdoDeploymentDescriptorFile;
 	}
 	
-	public String getJdoConfigFile(String organisationID)
+	public String getJdoDeploymentDescriptorFile(String organisationID)
 	{
 		if (organisationID == null || "".equals(organisationID))
 			throw new IllegalArgumentException("organisationID must not be null or empty string!");
 
-		return jdoConfigFile.replace(JFireServerConfigModule.ORGANISATION_ID_VAR, organisationID);
+		return jdoDeploymentDescriptorFile.replace(JFireServerConfigModule.ORGANISATION_ID_VAR, organisationID);
 	}
 
-	public void setJdoConfigFile(String jdoConfigFile)
+	public void setJdoDeploymentDescriptorFile(String jdoConfigFile)
 	{
 		if (jdoConfigFile == null)
-			throw new IllegalArgumentException("jdoConfigFile must not be null!");
+			throw new IllegalArgumentException("jdoDeploymentDescriptorFile must not be null!");
 
 		if (jdoConfigFile.indexOf(JFireServerConfigModule.ORGANISATION_ID_VAR) < 0)
-			throw new IllegalArgumentException("jdoConfigFile must contain \"" + JFireServerConfigModule.ORGANISATION_ID_VAR + "\"!");
+			throw new IllegalArgumentException("jdoDeploymentDescriptorFile must contain \"" + JFireServerConfigModule.ORGANISATION_ID_VAR + "\"!");
 
-		this.jdoConfigFile = jdoConfigFile;
+		this.jdoDeploymentDescriptorFile = jdoConfigFile;
 		setChanged();
 	}
 
 	/**
-	 * @return Returns the jdoTemplateDSXMLFile.
+	 * @return Returns the jdoDeploymentDescriptorTemplateFile.
 	 */
-	public String getJdoTemplateDSXMLFile()
+	public String getJdoDeploymentDescriptorTemplateFile()
 	{
-		return jdoTemplateDSXMLFile;
+		return jdoDeploymentDescriptorTemplateFile;
 	}
 	
 	/**
-	 * @param jdoTemplateDSXMLFile The jdoTemplateDSXMLFile to set.
+	 * @param jdoDeploymentDescriptorTemplateFile The jdoDeploymentDescriptorTemplateFile to set.
 	 */
-	public void setJdoTemplateDSXMLFile(String jdoTemplateDSXMLFile)
+	public void setJdoDeploymentDescriptorTemplateFile(String jdoTemplateDSXMLFile)
 	{
-		this.jdoTemplateDSXMLFile = jdoTemplateDSXMLFile;
+		this.jdoDeploymentDescriptorTemplateFile = jdoTemplateDSXMLFile;
+		setChanged();
+	}
+
+	public String getJdoPersistenceConfigurationFile(String organisationID)
+	{
+		if (organisationID == null || "".equals(organisationID))
+			throw new IllegalArgumentException("organisationID must not be null or empty string!");
+
+		return jdoPersistenceConfigurationFile.replace(JFireServerConfigModule.ORGANISATION_ID_VAR, organisationID);
+	}
+	public String getJdoPersistenceConfigurationFile() {
+		return jdoPersistenceConfigurationFile;
+	}
+	public void setJdoPersistenceConfigurationFile(String jdoPersistenceConfigurationFile) {
+		if (jdoPersistenceConfigurationFile == null)
+			jdoPersistenceConfigurationFile = "";
+
+		this.jdoPersistenceConfigurationFile = jdoPersistenceConfigurationFile;
+		setChanged();
+	}
+	public String getJdoPersistenceConfigurationTemplateFile() {
+		return jdoPersistenceConfigurationTemplateFile;
+	}
+	public void setJdoPersistenceConfigurationTemplateFile(String template) {
+		if (template == null)
+			template = "";
+
+		this.jdoPersistenceConfigurationTemplateFile = template;
 		setChanged();
 	}
 }

@@ -414,15 +414,15 @@ public class ManagedConnectionFactoryImpl
 //		if (!jdoConfigDir.canWrite())
 //			throw new ConfigException("JDO config directory \""+cfMod.getJdo().getJdoConfigDirectory()+"\" is not writeable!");
 
-		File jdoDSXMLTemplate = new File(cfMod.getJdo().getJdoTemplateDSXMLFile());
+		File jdoDSXMLTemplate = new File(cfMod.getJdo().getJdoDeploymentDescriptorTemplateFile());
 		if (!jdoDSXMLTemplate.exists())
-			throw new ConfigException("JDO datasource xml template file \""+cfMod.getJdo().getJdoTemplateDSXMLFile()+"\" does not exist!");
+			throw new ConfigException("JDO datasource xml template file \""+cfMod.getJdo().getJdoDeploymentDescriptorTemplateFile()+"\" does not exist!");
 
 		if (!jdoDSXMLTemplate.isFile())
-			throw new ConfigException("JDO datasource xml template file \""+cfMod.getJdo().getJdoTemplateDSXMLFile()+"\" is not a file!");
+			throw new ConfigException("JDO datasource xml template file \""+cfMod.getJdo().getJdoDeploymentDescriptorTemplateFile()+"\" is not a file!");
 		
 		if (!jdoDSXMLTemplate.canRead())
-			throw new ConfigException("JDO datasource xml template file \""+cfMod.getJdo().getJdoTemplateDSXMLFile()+"\" is not readable!");
+			throw new ConfigException("JDO datasource xml template file \""+cfMod.getJdo().getJdoDeploymentDescriptorTemplateFile()+"\" is not readable!");
 	}
 
 }

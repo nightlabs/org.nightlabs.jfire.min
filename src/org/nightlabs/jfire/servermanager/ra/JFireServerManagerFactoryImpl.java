@@ -1411,23 +1411,31 @@ public class JFireServerManagerFactoryImpl
 
 							jdoConfigDir = new File(jdoCf.getJdoConfigDirectory(organisationID)).getAbsoluteFile();
 							File datasourceDSXML = new File(jdoConfigDir, dbCf.getDatasourceConfigFile(organisationID));
-							File jdoDSXML = new File(jdoConfigDir, jdoCf.getJdoConfigFile(organisationID));
+							File jdoDSXML = new File(jdoConfigDir, jdoCf.getJdoDeploymentDescriptorFile(organisationID));
 
-							// TODO this file needs to be configurable!
-							File persistenceXML = new File(jdoConfigDir, "persistence.xml");
+							String persistenceConfig = jdoCf.getJdoPersistenceConfigurationFile(organisationID);
+							File jdoPersistenceConfigurationFile = "".equals(persistenceConfig) ? null : new File(jdoConfigDir, persistenceConfig);
+							String persistenceConfigTemplate = jdoCf.getJdoPersistenceConfigurationTemplateFile();
+							File jdoPersistenceConfigurationTemplateFile = "".equals(persistenceConfigTemplate) ? null : new File(persistenceConfigTemplate);
 
-							// TODO this file needs to be configurable!!!
-							createDeploymentDescriptor(organisationID, persistenceXML,
-									new File(new File(jdoCf.getJdoTemplateDSXMLFile()).getParentFile(), "persistence.template.xml"),
-									null, DeployOverwriteBehaviour.EXCEPTION);
-							
+							// If the peristenceConfigFile is configured, deploy it BEFORE the actual deployment descriptor
+							// in order to ensure it exists, when the PMF is set up by the JavaEE server.
+							if (jdoPersistenceConfigurationFile != null && jdoPersistenceConfigurationTemplateFile != null) {
+								createDeploymentDescriptor(
+										organisationID,
+										jdoPersistenceConfigurationFile,
+										jdoPersistenceConfigurationTemplateFile,
+										null,
+										DeployOverwriteBehaviour.EXCEPTION);
+							}
+
 							// creating deployment descriptor for datasource
 							createDeploymentDescriptor(organisationID, datasourceDSXML,
 									new File(dbCf.getDatasourceTemplateDSXMLFile()), null, DeployOverwriteBehaviour.EXCEPTION);
 
 							// creating deployment descriptor for JDO PersistenceManagerFactory
 							createDeploymentDescriptor(organisationID, jdoDSXML,
-									new File(jdoCf.getJdoTemplateDSXMLFile()), null, DeployOverwriteBehaviour.EXCEPTION);
+									new File(jdoCf.getJdoDeploymentDescriptorTemplateFile()), null, DeployOverwriteBehaviour.EXCEPTION);
 
 							organisationCf = organisationConfigModule.addOrganisation(
 									organisationID, organisationName);
