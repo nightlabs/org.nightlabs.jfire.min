@@ -37,7 +37,7 @@ public class JDOCf extends JFireServerConfigPart implements Serializable
 			jdoConfigFile = "jdo-" + JFireServerConfigModule.ORGANISATION_ID_VAR + "-ds.xml";
 
 		if (jdoTemplateDSXMLFile == null)
-			jdoTemplateDSXMLFile = "../server/default/deploy/JFire.last/JFireBase.ear/jdo-jpox-1.2-ds.template.xml";
+			jdoTemplateDSXMLFile = "../server/default/deploy/JFire.last/JFireBase.ear/jdo-datanucleus-1.0-ds.template.xml";
 
 		logger.info("jdoConfigDirectory = "+jdoConfigDirectory);
 		logger.info("jdoConfigFile = "+jdoConfigFile);
