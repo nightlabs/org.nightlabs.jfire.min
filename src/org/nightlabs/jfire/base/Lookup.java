@@ -26,7 +26,9 @@
 
 package org.nightlabs.jfire.base;
 
+import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.jdo.FetchPlan;
@@ -35,6 +37,7 @@ import javax.jdo.PersistenceManagerFactory;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+import org.apache.log4j.Logger;
 import org.nightlabs.ModuleException;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.jdo.cache.CacheManager;
@@ -56,6 +59,8 @@ import org.nightlabs.jfire.servermanager.config.OrganisationCf;
  */
 public class Lookup
 {
+	private static final Logger logger = Logger.getLogger(Lookup.class);
+
 	private String organisationID;
 	/**
 	 * @return The organisationID with which the current session is working locally.
@@ -114,7 +119,7 @@ public class Lookup
 	{
 		this.organisationID = _organisationId;
 	}
-	
+
 	/**
 	 * @return the pmfactory for the organisationID of the working user.
 	 */
@@ -122,6 +127,13 @@ public class Lookup
 	{
 		return getPersistenceManagerFactory(organisationID);
 	}
+
+	private static ThreadLocal<Map<String, PersistenceManager>> organisationID2PersistenceManagerTL = new ThreadLocal<Map<String,PersistenceManager>>() {
+		@Override
+		protected Map<String, PersistenceManager> initialValue() {
+			return new HashMap<String, PersistenceManager>();
+		}
+	};
 
 	/**
 	 * This method returns a PersistenceManager that is providing access to
@@ -135,7 +147,7 @@ public class Lookup
 	public PersistenceManager getPersistenceManager()
 	{
 		PersistenceManager pm = getPersistenceManagerFactory().getPersistenceManager();
-		
+
 		// TODO check whether we can set these options as configuration settings of the JDO implementation
 		pm.getFetchPlan().setDetachmentOptions(FetchPlan.DETACH_LOAD_FIELDS | FetchPlan.DETACH_UNLOAD_FIELDS);
 
@@ -196,6 +208,9 @@ public class Lookup
 //			        at org.jboss.remoting.transport.socket.ServerThread.dorun(ServerThread.java:383)
 //			        at org.jboss.remoting.transport.socket.ServerThread.run(ServerThread.java:165)
 
+		if (logger.isDebugEnabled())
+			logger.debug("getPersistenceManager: " + pm);
+
 		return pm;
 	}
 
@@ -205,7 +220,7 @@ public class Lookup
 //	 * value: PersistenceManagerFactory persistenceManagerFactory
 //	 */
 //	protected Map pmfMap = new HashMap();
-	
+
 	/**
 	 * Returns the PersistenceManagerFactory for the given organisationID. If it cannot be
 	 * found in JNDI, an exception is thrown.
@@ -217,25 +232,50 @@ public class Lookup
 	 */
 	protected PersistenceManagerFactory getPersistenceManagerFactory(String organisationID)
 	{
-		PersistenceManagerFactory pmf;
-		try {
-			InitialContext ctx = new InitialContext();
+		Map<String, PersistenceManagerFactory> organisationID2PersistenceManagerFactory = organisationID2PersistenceManagerFactoryTL.get();
+		PersistenceManagerFactory pmf = organisationID2PersistenceManagerFactory.get(organisationID);
+		if (pmf != null && pmf.isClosed()) {
+			if (logger.isDebugEnabled())
+				logger.debug("getPersistenceManagerFactory(organisationID=" + organisationID + "): Found PMF in ThreadLocal, but it is closed: " + pmf);
+
+			pmf = null;
+		}
+
+		if (pmf == null) {
 			try {
-				pmf = (PersistenceManagerFactory)ctx.lookup(
-						OrganisationCf.PERSISTENCE_MANAGER_FACTORY_PREFIX_ABSOLUTE + organisationID);
-			} finally {
-				ctx.close();
+				InitialContext ctx = new InitialContext();
+				try {
+					pmf = (PersistenceManagerFactory)ctx.lookup(OrganisationCf.PERSISTENCE_MANAGER_FACTORY_PREFIX_ABSOLUTE + organisationID);
+				} finally {
+					ctx.close();
+				}
+			} catch (NamingException e) {
+				throw new RuntimeException(e);
 			}
-		} catch (NamingException e) {
-			throw new RuntimeException(e);
+
+			if (logger.isDebugEnabled())
+				logger.debug("getPersistenceManagerFactory(organisationID=" + organisationID + "): Obtained PMF from JNDI: " + pmf);
+
+			organisationID2PersistenceManagerFactory.put(organisationID, pmf);
+		} // if (pmf == null) {
+		else {
+			if (logger.isDebugEnabled())
+				logger.debug("getPersistenceManagerFactory(organisationID=" + organisationID + "): Found usable PMF in ThreadLocal: " + pmf);
 		}
 		return pmf;
 	}
-	
-	protected PersistenceManager getPersistenceManager(String organisationId)
-	{
-		return getPersistenceManagerFactory(organisationId).getPersistenceManager();
-	}
+
+	private static ThreadLocal<Map<String, PersistenceManagerFactory>> organisationID2PersistenceManagerFactoryTL = new ThreadLocal<Map<String,PersistenceManagerFactory>>() {
+		@Override
+		protected Map<String, PersistenceManagerFactory> initialValue() {
+			return new HashMap<String, PersistenceManagerFactory>();
+		}
+	};
+
+//	protected PersistenceManager getPersistenceManager(String organisationId)
+//	{
+//		return getPersistenceManagerFactory(organisationId).getPersistenceManager();
+//	}
 
 	/**
 	 * This method reads the properties out of the datastore managed by pm, that are necessary
