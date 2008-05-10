@@ -96,7 +96,7 @@ public class JFireServerManagerImpl
 	{
 		if (nonTransactionalReadBoolean == null) {
 			String nonTransactionalReadString = System.getProperty(SYSTEM_PROPERTY_NON_TRANSACTIONAL_READ);
-			boolean nonTransactionalRead = !Boolean.FALSE.toString().equals(nonTransactionalReadString);
+			boolean nonTransactionalRead = Boolean.TRUE.toString().equals(nonTransactionalReadString);
 			if (logger.isDebugEnabled())
 				logger.debug(SYSTEM_PROPERTY_NON_TRANSACTIONAL_READ + "=" + nonTransactionalReadString);
 	
