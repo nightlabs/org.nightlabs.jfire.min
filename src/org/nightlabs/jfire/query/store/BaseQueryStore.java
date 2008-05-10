@@ -182,9 +182,8 @@ public class BaseQueryStore
 	private transient QueryCollection<?> deSerialisedQueries;
 	
 	/**
-	 * @jdo.field
-	 * 	persistence-modifier="persistent"
-	 * 	default-fetch-group="true"
+	 * @jdo.field persistence-modifier="persistent" default-fetch-group="true"
+	 * @jdo.column sql-type="BLOB"
 	 */
 	private byte[] serialisedQueries;
 	
