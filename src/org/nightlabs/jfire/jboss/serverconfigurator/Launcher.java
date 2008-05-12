@@ -13,6 +13,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.regex.Pattern;
 
 /**
  * Launcher for execution of the {@link org.nightlabs.jfire.serverconfigurator.ServerConfigurator} from the command line.
@@ -127,6 +128,31 @@ public class Launcher
 		launcher.run();
 	}
 
+	/**
+	 * Some regular expressions which cause directories & jars to be excluded, if at least one of them matches the path.
+	 */
+	private static final String[] excludes = {
+		".*\\/JFireReporting\\.ear\\/birt\\/plugins\\/org\\.apache\\.derby\\.core_10\\.1\\.2\\.1.*"
+	};
+
+	private static final Pattern[] excludePatterns = createExcludePatterns();
+	private static Pattern[] createExcludePatterns() {
+		Pattern[] p = new Pattern[excludes.length];
+		int idx = 0;
+		for (String exclude : excludes)
+			p[idx++] = Pattern.compile(exclude);
+
+		return p;
+	}
+
+	private static boolean isExcluded(File directoryOrJarFile) {
+		for (Pattern exclude : excludePatterns) {
+			if (exclude.matcher(directoryOrJarFile.getAbsolutePath()).matches())
+				return true;
+		}
+		return false;
+	}
+
 	private void scan(Set<URL> classLoaderURLs, JarFile jarFile) throws IOException
 	{
 		for (Enumeration<JarEntry> jarEntryEnum = jarFile.entries(); jarEntryEnum.hasMoreElements(); ) {
@@ -173,11 +199,14 @@ public class Launcher
 
 	private void scan(Set<URL> classLoaderURLs, File directory) throws IOException
 	{
+		if (isExcluded(directory))
+			return;
+
 		for (File f : directory.listFiles()) {
 			if (f.isDirectory())
 				scan(classLoaderURLs, f);
 			else {
-				if (isJarBasedOnExtension(f.getName())) {
+				if (isJarBasedOnExtension(f.getName()) && !isExcluded(f)) {
 					JarFile jf = null;
 					try {
 						try {
@@ -203,6 +232,9 @@ public class Launcher
 
 	public void run() throws Exception
 	{
+//		System.out.println("Launcher.run: Sleeping 30 sec. ");
+//		Thread.sleep(30000); // for debugging - so we have time to hook the debugger
+
 		System.out.println("Launcher.run: getClass().getClassLoader(): " + getClass().getClassLoader());
 
 		Set<URL> classLoaderURLs = new HashSet<URL>();

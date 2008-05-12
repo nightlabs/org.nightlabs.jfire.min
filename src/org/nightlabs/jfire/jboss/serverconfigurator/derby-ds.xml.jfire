@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- $Id: derby-ds.xml,v 1.3.2.3 2006/02/07 14:23:00 acoliver Exp $ -->
+
+<datasources>
+<!-- The creation of the tables (especially JMS_MESSAGES) fails when using xa - hence we're using local-tx - at least temporarily -->
+    <local-tx-datasource>
+		<jndi-name>JFireJBossMQDS</jndi-name>
+        <connection-url>${databaseURL};create=true</connection-url>
+        <driver-class>${databaseDriverName_localTx}</driver-class>
+
+        <user-name>${databaseUserName}</user-name>
+        <password>${databasePassword}</password>
+
+        <connection-property name="autoReconnect">false</connection-property>
+        <connection-property name="auto-commit">false</connection-property>
+
+        <metadata>
+            <type-mapping>${datasourceMetadataTypeMapping}</type-mapping>
+        </metadata>
+        <max-pool-size>100</max-pool-size>
+    </local-tx-datasource>
+
+<!--
+	<xa-datasource>
+		<jndi-name>JFireJBossMQDS</jndi-name>
+		<xa-datasource-class>${databaseDriverName_xa}</xa-datasource-class>
+		<xa-datasource-property name="DatabaseName">${databaseName}</xa-datasource-property>
+		<user-name>${databaseUserName}</user-name>
+		<password>${databasePassword}</password>
+		<track-connection-by-tx>true</track-connection-by-tx>
+		<metadata>
+			<type-mapping>${datasourceMetadataTypeMapping}</type-mapping>
+		</metadata>
+	</xa-datasource>
+-->
+</datasources>
+
+
+

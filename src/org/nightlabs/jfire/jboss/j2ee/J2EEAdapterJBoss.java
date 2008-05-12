@@ -149,7 +149,12 @@ public class J2EEAdapterJBoss implements J2EEAdapter
 
 	public void shutdown()
 	{
-		System.exit(-1);
+		System.exit(0);
+	}
+
+	public void reboot()
+	{
+		System.exit(10);
 	}
 
 	private J2EEServerMonitorJBoss serverMonitor;

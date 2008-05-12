@@ -10,26 +10,21 @@ import java.util.regex.Pattern;
 import org.apache.log4j.Logger;
 import org.nightlabs.jfire.serverconfigurator.ServerConfigurationException;
 import org.nightlabs.jfire.serverconfigurator.ServerConfigurator;
-import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
 import org.nightlabs.jfire.servermanager.db.DatabaseAdapter;
 import org.nightlabs.jfire.servermanager.db.DatabaseAlreadyExistsException;
 import org.nightlabs.util.IOUtil;
 
 /**
- * This implementation of {@link ServerConfigurator} will modify your JBossMQ
- * and Timer configuration as described in
- * https://www.jfire.org/modules/phpwiki/index.php/Switch%20JBossMQ%20from%20HSQL%20to%20MySQL
- * and it creates the database <code>${databasePrefix}JBossMQ${databaseSuffix}</code> (prefix + suffix
- * are taken from the {@link JFireServerConfigModule})
- * in your MySQL server (if it does not yet exist).
+ * This implementation of {@link ServerConfigurator} does the same as {@link ServerConfiguratorJBossMySQL} but
+ * instead of using MySQL, it uses Derby (as the name implies).
  *
  * @author Marco Schulze - marco at nightlabs dot de
  * @author Marc Klinger - marc[at]nightlabs[dot]de
  */
-public class ServerConfiguratorJBossMySQL
+public class ServerConfiguratorJBossDerby
 extends ServerConfiguratorJBoss
 {
-	private static final Logger logger = Logger.getLogger(ServerConfiguratorJBossMySQL.class);
+	private static final Logger logger = Logger.getLogger(ServerConfiguratorJBossDerby.class);
 
 	/* (non-Javadoc)
 	 * @see org.nightlabs.jfire.jboss.serverconfigurator.ServerConfiguratorJBoss#doConfigureServer()
@@ -37,9 +32,9 @@ extends ServerConfiguratorJBoss
 	@Override
 	protected void doConfigureServer() throws ServerConfigurationException
 	{
-		String needle = "mysql";
+		String needle = "derby";
 		if (getJFireServerConfigModule().getDatabase().getDatabaseDriverName_noTx().indexOf(needle) < 0)
-			throw new ServerConfigurationException("Database driver seems not to be MySQL! Mismatch of ServerConfigurator and database configuration!");
+			throw new ServerConfigurationException("Database driver seems not to be Derby! Mismatch of ServerConfigurator and database configuration!");
 		if (getJFireServerConfigModule().getDatabase().getDatabaseDriverName_localTx().indexOf(needle) < 0)
 			throw new ServerConfigurationException("Database configuration is invalid! The driver for localTx does not match, even though noTx driver seems ok!");
 		if (getJFireServerConfigModule().getDatabase().getDatabaseDriverName_xa().indexOf(needle) < 0)
@@ -67,7 +62,7 @@ extends ServerConfiguratorJBoss
 				// the database already exists - ignore
 			}
 	
-			configureMySqlDsXml(jbossDeployDir, databaseName, databaseURL);
+			configureDerbyDsXml(jbossDeployDir, databaseName, databaseURL);
 			
 			boolean deletedDeploymentDescriptor = false;
 			deletedDeploymentDescriptor |= configureHsqldbJdbc2ServiceXml(jbossDeployJmsDir);
@@ -77,10 +72,10 @@ extends ServerConfiguratorJBoss
 			if (deletedDeploymentDescriptor)
 				waitForServer();
 	
-			configureJfireJBossmqMysqlJdbcStateServiceXml(jbossDeployJmsDir);
-			configureJmsMysqlJdbc2Service(jbossDeployJmsDir);
+			configureJfireJBossmqDerbyJdbcStateServiceXml(jbossDeployJmsDir);
+			configureJmsDerbyJdbc2Service(jbossDeployJmsDir);
 			configureEjbDeployerXml(jbossDeployDir);
-			configureLoginConfigXmlMySQL(jbossConfDir);
+			configureLoginConfigXmlDerby(jbossConfDir);
 			
 			if (redeployJMS)
 				redeployJms(jbossDeployDir, jbossDeployJmsDir);
@@ -97,25 +92,25 @@ extends ServerConfiguratorJBoss
 		if (!jbossDeployJmsDir.renameTo(tmpJmsDir))
 			logger.error("Moving JMS deploy directory temporarily from " + jbossDeployJmsDir.getAbsolutePath() + " to " + tmpJmsDir.getAbsolutePath() + " failed!!!");
 
-		File mysqlDSFile = new File(jbossDeployDir, "mysql-ds.xml");
-		File tmpMysqlDSFile = new File(jbossDeployDir, "mysql-ds.xml.bak");
+		File derbyDSFile = new File(jbossDeployDir, "derby-ds.xml");
+		File tmpDerbyDSFile = new File(jbossDeployDir, "derby-ds.xml.bak");
 
-		if (!mysqlDSFile.renameTo(tmpMysqlDSFile))
-			logger.error("Renaming mysql-ds deployment descriptor temporarily from " + mysqlDSFile.getAbsolutePath() + " to " + tmpMysqlDSFile.getAbsolutePath() + " failed!!!");
+		if (!derbyDSFile.renameTo(tmpDerbyDSFile))
+			logger.error("Renaming derby-ds deployment descriptor temporarily from " + derbyDSFile.getAbsolutePath() + " to " + tmpDerbyDSFile.getAbsolutePath() + " failed!!!");
 
 		// give jboss some time to undeploy
 		waitForServer();
 
 		// and redeploy
 
-		if (!tmpMysqlDSFile.renameTo(mysqlDSFile))
-			logger.error("Renaming mysql-ds deployment descriptor back from temporary name " + tmpMysqlDSFile.getAbsolutePath() + " to " + mysqlDSFile.getAbsolutePath() + " failed!!!");
+		if (!tmpDerbyDSFile.renameTo(derbyDSFile))
+			logger.error("Renaming derby-ds deployment descriptor back from temporary name " + tmpDerbyDSFile.getAbsolutePath() + " to " + derbyDSFile.getAbsolutePath() + " failed!!!");
 
 		if (!tmpJmsDir.renameTo(jbossDeployJmsDir))
 			logger.error("Moving JMS deploy directory back from temporary location " + tmpJmsDir.getAbsolutePath() + " to " + jbossDeployJmsDir.getAbsolutePath() + " failed!!!");
 	}
 
-	private void configureLoginConfigXmlMySQL(File jbossConfDir) throws FileNotFoundException, IOException, UnsupportedEncodingException
+	private void configureLoginConfigXmlDerby(File jbossConfDir) throws FileNotFoundException, IOException, UnsupportedEncodingException
 	{
 		// check/modify ${jboss.conf}/login-config.xml and REBOOT if changes occured
 		File destFile = new File(jbossConfDir, "login-config.xml");
@@ -144,7 +139,7 @@ extends ServerConfiguratorJBoss
 			String replacementText = "<!-- "
 					+ modifiedMarker
 					+ " Do not change this line!!! The modification has been done by "
-					+ ServerConfiguratorJBossMySQL.class.getName()
+					+ ServerConfiguratorJBossDerby.class.getName()
 					+ ". -->\n"
 					+ "  <!-- A persistence policy that persistes timers to a database\n"
 					+ "  <mbean code=\"org.jboss.ejb.txtimer.DatabasePersistencePolicy\" name=\"jboss.ejb:service=EJBTimerService,persistencePolicy=database\">\n"
@@ -165,29 +160,29 @@ extends ServerConfiguratorJBoss
 		}
 	}
 
-	private void configureJmsMysqlJdbc2Service(File jbossDeployJmsDir) throws IOException
+	private void configureJmsDerbyJdbc2Service(File jbossDeployJmsDir) throws IOException
 	{
-		// ${jboss.deploy}/jms/mysql-jdbc2-service.xml
-		File destFile = new File(jbossDeployJmsDir, "mysql-jdbc2-service.xml");
+		// ${jboss.deploy}/jms/derby-jdbc2-service.xml
+		File destFile = new File(jbossDeployJmsDir, "derby-jdbc2-service.xml");
 		if (!destFile.exists()) {
 			if (rebootOnDeployDirChanges)
 				setRebootRequired(true);
 
-			IOUtil.copyResource(ServerConfiguratorJBossMySQL.class,
-					"mysql-jdbc2-service.xml.jfire", destFile);
+			IOUtil.copyResource(ServerConfiguratorJBossDerby.class,
+					"derby-jdbc2-service.xml.jfire", destFile);
 		}
 	}
 
-	private void configureJfireJBossmqMysqlJdbcStateServiceXml(File jbossDeployJmsDir) throws IOException
+	private void configureJfireJBossmqDerbyJdbcStateServiceXml(File jbossDeployJmsDir) throws IOException
 	{
 		// deploy more files
-		// ${jboss.deploy}/jms/jfire-jbossmq-mysql-jdbc-state-service.xml
-		File destFile = new File(jbossDeployJmsDir, "jfire-jbossmq-mysql-jdbc-state-service.xml");
+		// ${jboss.deploy}/jms/jfire-jbossmq-derby-jdbc-state-service.xml
+		File destFile = new File(jbossDeployJmsDir, "jfire-jbossmq-derby-jdbc-state-service.xml");
 		if (!destFile.exists()) {
 			if (rebootOnDeployDirChanges)
 				setRebootRequired(true);
 
-			IOUtil.copyResource(ServerConfiguratorJBossMySQL.class,
+			IOUtil.copyResource(ServerConfiguratorJBossDerby.class,
 					"jfire-jbossmq-derby_mysql-jdbc-state-service.xml.jfire", destFile);
 		}
 	}
@@ -250,18 +245,18 @@ extends ServerConfiguratorJBoss
 		return deletedDeploymentDescriptor;
 	}
 
-	private void configureMySqlDsXml(File jbossDeployDir, String databaseName, String databaseURL) throws FileNotFoundException, IOException, UnsupportedEncodingException
+	private void configureDerbyDsXml(File jbossDeployDir, String databaseName, String databaseURL) throws FileNotFoundException, IOException, UnsupportedEncodingException
 	{
-		// *** work necessary for switching JBossMQ from HSQL to MySQL ***
+		// *** work necessary for switching JBossMQ from HSQL to Derby ***
 		// check the following files and deploy/replace them if necessary
-		// ${jboss.deploy}/mysql-ds.xml
-		File destFile = new File(jbossDeployDir, "mysql-ds.xml");
+		// ${jboss.deploy}/derby-ds.xml
+		File destFile = new File(jbossDeployDir, "derby-ds.xml");
 		if (!destFile.exists()) {
 			logger.info("File " + destFile.getAbsolutePath() + " does not exist. Will create it from template.");
 			if (rebootOnDeployDirChanges)
 				setRebootRequired(true);
 
-			InputStream in = ServerConfiguratorJBossMySQL.class.getResourceAsStream("mysql-ds.xml.jfire");
+			InputStream in = ServerConfiguratorJBossDerby.class.getResourceAsStream("derby-ds.xml.jfire");
 			String text = IOUtil.readTextFile(in);
 			in.close();
 
@@ -297,9 +292,9 @@ extends ServerConfiguratorJBoss
 			for (File f : filesToRestore)
 				restore(f);
 
-			new File(jbossDeployDir, "mysql-ds.xml").delete();
-			new File(jbossDeployJmsDir, "mysql-jdbc2-service.xml").delete();
-			new File(jbossDeployJmsDir, "jfire-jbossmq-mysql-jdbc-state-service.xml").delete();
+			new File(jbossDeployDir, "derby-ds.xml").delete();
+			new File(jbossDeployJmsDir, "derby-jdbc2-service.xml").delete();
+			new File(jbossDeployJmsDir, "jfire-jbossmq-derby-jdbc-state-service.xml").delete();
 		} catch (IOException e) {
 			throw new ServerConfigurationException(e);
 		}

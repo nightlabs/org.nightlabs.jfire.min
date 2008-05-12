@@ -55,44 +55,44 @@ public class ServerConfiguratorJBoss
 		}
 	}
 
-	private static File getNonExistingFile(String pattern)
-	{
-		if(pattern == null)
-			throw new NullPointerException("pattern is null");
-		synchronized(pattern) {
-			int idx = 1;
-			File f;
-			do {
-				f = new File(String.format(pattern, idx));
-				idx++;
-			} while(f.exists());
-			return f;
-		}
-	}
+//	private static File getNonExistingFile(String pattern)
+//	{
+//		if(pattern == null)
+//			throw new NullPointerException("pattern is null");
+//		synchronized(pattern) {
+//			int idx = 1;
+//			File f;
+//			do {
+//				f = new File(String.format(pattern, idx));
+//				idx++;
+//			} while(f.exists());
+//			return f;
+//		}
+//	}
 	
-	protected static File backup(File f) throws IOException
-	{
-		if(!f.exists() || !f.canRead())
-			throw new FileNotFoundException("Invalid file to backup: "+f);
-		File backupFile = new File(f.getAbsolutePath()+".bak");
-		if(backupFile.exists())
-			backupFile = getNonExistingFile(f.getAbsolutePath()+".%d.bak");
-		IOUtil.copyFile(f, backupFile);
-		logger.info("Created backup of file "+f.getAbsolutePath()+": "+backupFile.getName());
-		return backupFile;
-	}
-
-	protected static File moveToBackup(File f) throws IOException
-	{
-		if(!f.exists())
-			throw new FileNotFoundException("Invalid file to backup: "+f);
-		File backupFile = new File(f.getAbsolutePath()+".bak");
-		if(backupFile.exists())
-			backupFile = getNonExistingFile(f.getAbsolutePath()+".%d.bak");
-		if(!f.renameTo(backupFile))
-			throw new IOException("Renaming file "+f.getAbsolutePath()+" to "+f.getName()+" failed");
-		return backupFile;
-	}
+//	protected static File backup(File f) throws IOException
+//	{
+//		if(!f.exists() || !f.canRead())
+//			throw new FileNotFoundException("Invalid file to backup: "+f);
+//		File backupFile = new File(f.getAbsolutePath()+".bak");
+//		if(backupFile.exists())
+//			backupFile = getNonExistingFile(f.getAbsolutePath()+".%d.bak");
+//		IOUtil.copyFile(f, backupFile);
+//		logger.info("Created backup of file "+f.getAbsolutePath()+": "+backupFile.getName());
+//		return backupFile;
+//	}
+//
+//	protected static File moveToBackup(File f) throws IOException
+//	{
+//		if(!f.exists())
+//			throw new FileNotFoundException("Invalid file to backup: "+f);
+//		File backupFile = new File(f.getAbsolutePath()+".bak");
+//		if(backupFile.exists())
+//			backupFile = getNonExistingFile(f.getAbsolutePath()+".%d.bak");
+//		if(!f.renameTo(backupFile))
+//			throw new IOException("Renaming file "+f.getAbsolutePath()+" to "+f.getName()+" failed");
+//		return backupFile;
+//	}
 
 	// due to changes, server version is not needed anymore.
 	// Please keep the commented enum in the file - it might be useful for later use.
@@ -418,16 +418,12 @@ public class ServerConfiguratorJBoss
 	 * @throws FileNotFoundException If the file eas not found
 	 * @throws IOException In case of an io error
 	 */
-	
-	
-	
-	private void configureStandardJBossXml(File jbossConfDir) throws FileNotFoundException, IOException ,SAXException
+	private void configureStandardJBossXml(File jbossConfDir) throws FileNotFoundException, IOException, SAXException
 	{
-		
-		
+		boolean backupDone = false; // track whether the backup is already done - we don't need 2 backups for this one method.
 		File destFile = new File(jbossConfDir, "standardjboss.xml");
 		String text = IOUtil.readTextFile(destFile);
-			
+
 		DOMParser parser = new DOMParser();
 		parser.parse(new InputSource(new FileInputStream(destFile)));
 		Document document = parser.getDocument();
@@ -435,8 +431,12 @@ public class ServerConfiguratorJBoss
 		//check if we already had the stateless container for the SSL Compression Invoker
 		if (text.indexOf("<name>stateless-compression-invoker</name>") < 0)
 		{
-				
-			logger.info("File " + destFile.getAbsolutePath() + "will add Compression SSL invoker");
+			logger.info("configureStandardJBossXml: Will add Compression SSL invoker to file: " + destFile.getAbsolutePath());
+
+			if (!backupDone) {
+				backup(destFile);
+				backupDone = true;
+			}
 			
 			//configure the ssl compression invoker
 			
@@ -518,31 +518,31 @@ public class ServerConfiguratorJBoss
 			newnode.appendChild( item );
 
 			proxynode.appendChild(newnode);
-			
-			
+
+
+			FileOutputStream out = new FileOutputStream(destFile);
+			try {
+				NLDOMUtil.writeDocument(document, out, "UTF-8","-//JBoss//DTD JBOSS 4.0//EN",
+				"http://www.jboss.org/j2ee/dtd/jboss_4_0.dtd");
+			} finally {
+				out.close();
+			}
 		}
-		
-		
-		FileOutputStream out = new FileOutputStream(destFile);
-		try {
-			NLDOMUtil.writeDocument(document, out, "UTF-8","-//JBoss//DTD JBOSS 4.0//EN",
-			"http://www.jboss.org/j2ee/dtd/jboss_4_0.dtd");
-		} finally {
-			out.close();
-	      }
-		
+
+
 		// reload the file
 		text = IOUtil.readTextFile(destFile);
-		
-		
+
 		if (text.indexOf(CascadedAuthenticationClientInterceptor.class.getName()) < 0) {
-			
-			// TODO: use XML document instead of regular expressions
-			
-			backup(destFile);
-			
 			logger.info("File " + destFile.getAbsolutePath() + " does not contain an interceptor registration for "+CascadedAuthenticationClientInterceptor.class.getName()+". Will add it.");
-			
+
+			if (!backupDone) {
+				backup(destFile);
+				backupDone = true;
+			}
+
+			// TODO: use XML document instead of regular expressions
+
 			setRebootRequired(true); // this is a must, because the conf directory doesn't support redeployment
 			String replacementText = "$1\n            <interceptor>"+CascadedAuthenticationClientInterceptor.class.getName()+"</interceptor>";
 
@@ -828,6 +828,36 @@ public class ServerConfiguratorJBoss
 				logger.info("Moved "+f.getAbsolutePath()+" to "+backup.getAbsolutePath()+" in order to deactivate it");
 				setRebootRequired(true);
 			}
+		}
+	}
+
+	@Override
+	protected void undoConfigureServer() throws ServerConfigurationException {
+		setRebootRequired(true);
+		File jbossDeployDir = new File(getJFireServerConfigModule().getJ2ee().getJ2eeDeployBaseDirectory()).getParentFile().getAbsoluteFile();
+		File jbossConfDir = new File(jbossDeployDir.getParentFile(), "conf");
+		File jbossBaseDir = jbossDeployDir.getParentFile().getParentFile().getParentFile();
+		File jbossBinDir = new File(jbossBaseDir, "bin");
+
+		File[] filesToRestore = {
+				new File(jbossDeployDir, "uuid-key-generator.sar"),
+				new File(new File(jbossDeployDir, "jms"), "jbossmq-destinations-service.xml"),
+				new File(jbossBinDir, "run.conf"),
+				new File(jbossBinDir, "run.bat"),
+				new File(jbossConfDir, "login-config.xml"),
+				new File(jbossConfDir, "jbossjta-properties.xml"),
+				new File(jbossDeployDir, "mail-service.xml"),
+				new File(jbossConfDir, "jboss-service.xml"),
+				new File(jbossConfDir, "standardjboss.xml"),
+		};
+
+		try {
+			for (File f : filesToRestore)
+				restore(f);
+
+			new File(jbossBinDir, "CascadedAuthenticationClientInterceptor.properties").delete();
+		} catch (IOException e) {
+			throw new ServerConfigurationException(e);
 		}
 	}
 }

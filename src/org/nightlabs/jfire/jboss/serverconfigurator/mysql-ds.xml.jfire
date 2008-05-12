@@ -9,7 +9,7 @@ http://www.mysql.com/downloads/api-jdbc-stable.html
   <local-tx-datasource>
     <jndi-name>JFireJBossMQDS</jndi-name>
     <connection-url>${databaseURL}</connection-url>
-    <driver-class>${databaseDriverName}</driver-class>
+    <driver-class>${databaseDriverName_localTx}</driver-class>
     <user-name>${databaseUserName}</user-name>
     <password>${databasePassword}</password>
     <exception-sorter-class-name>org.jboss.resource.adapter.jdbc.vendor.MySQLExceptionSorter</exception-sorter-class-name>
@@ -25,8 +25,7 @@ http://www.mysql.com/downloads/api-jdbc-stable.html
 
     <!-- corresponding type-mapping in the standardjbosscmp-jdbc.xml (optional) -->
     <metadata>
-       <type-mapping>mySQL</type-mapping>
+       <type-mapping>${datasourceMetadataTypeMapping}</type-mapping>
     </metadata>
   </local-tx-datasource>
 </datasources>
-
