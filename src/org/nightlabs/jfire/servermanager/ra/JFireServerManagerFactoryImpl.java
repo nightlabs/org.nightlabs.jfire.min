@@ -537,8 +537,8 @@ public class JFireServerManagerFactoryImpl
 							try { Thread.sleep(delayMSec); } catch (InterruptedException ignore) { }
 
 						try {
-							getJ2EEVendorAdapter().shutdown();
-							logger.warn("*** SHUTDOWN initiated ***");
+							getJ2EEVendorAdapter().reboot();
+							logger.warn("*** REBOOT initiated ***");
 						} catch (Throwable e) {
 							logger.error("Shutting down server failed!", e);
 						}
@@ -1146,7 +1146,7 @@ public class JFireServerManagerFactoryImpl
 	 * @param organisationID The organisationID to be translated.
 	 * @return the database name resulting from the given <code>organisationID</code>.
 	 */
-	protected String createDatabaseName(String organisationID, boolean appendDatabasePrefixAndSuffix)
+	protected String createDatabaseName(String organisationID)
 	{
 		StringBuffer databaseName = new StringBuffer((int) (1.5 * organisationID.length()));
 
@@ -1165,11 +1165,11 @@ public class JFireServerManagerFactoryImpl
 //			}
 //		}
 
-		if (appendDatabasePrefixAndSuffix) {
+//		if (appendDatabasePrefixAndSuffix) {
 			DatabaseCf dbCf = mcf.getConfigModule().getDatabase();
 			databaseName.insert(0, dbCf.getDatabasePrefix());
 			databaseName.append(dbCf.getDatabaseSuffix());
-		}
+//		}
 
 		return databaseName.toString();
 	}
@@ -1383,7 +1383,7 @@ public class JFireServerManagerFactoryImpl
 							}
 
 							// create database
-							String databaseName = createDatabaseName(organisationID, true);
+							String databaseName = createDatabaseName(organisationID);
 							String dbURL = dbCf.getDatabaseURL(databaseName);
 
 							createOrganisationProgress.addCreateOrganisationStatus(
@@ -2036,7 +2036,7 @@ public class JFireServerManagerFactoryImpl
 //		databaseNameSB.append(organisationID_simpleChars);
 //		databaseNameSB.append(dbCf.getDatabaseSuffix());
 //		String databaseName = databaseNameSB.toString();
-		String databaseName = createDatabaseName(organisationID, true);
+		String databaseName = createDatabaseName(organisationID);
 
 		// get jdbc url
 		String dbURL = dbCf.getDatabaseURL(databaseName);

@@ -28,7 +28,7 @@ public class DatabaseCf extends JFireServerConfigPart implements Serializable
 	
 	public static final String DATABASE_NAME_VAR = "${databaseName}";
 
-	public static String DEFAULTS_DEFAULT_KEY = "MySQL";
+	public static String DEFAULTS_DEFAULT_KEY = "Derby";
 	public static Map<String, DatabaseCf> defaults = createDefaults();
 	
 	private String databaseDriverName_noTx;
@@ -47,7 +47,7 @@ public class DatabaseCf extends JFireServerConfigPart implements Serializable
 	private String datasourceConfigFile;
 	private String datasourceTemplateDSXMLFile;
 	
-	private static Map<String, DatabaseCf> createDefaults()
+	protected static Map<String, DatabaseCf> createDefaults()
 	{
 		Map<String, DatabaseCf> defaults = new HashMap<String, DatabaseCf>();
 		try {
@@ -129,14 +129,6 @@ public class DatabaseCf extends JFireServerConfigPart implements Serializable
 	
 	protected void _init()
 	{
-//		if (databaseDriverName == null) {
-//			if (databaseDriverName_noTx == null && databaseDriverName_localTx == null && databaseDriverName_xa == null)
-//				setDatabaseDriverName("com.mysql.jdbc.Driver");
-//
-//			if (databaseDriverName_xa == null)
-//				setDatabaseDriverName_xa("com.mysql.jdbc.jdbc2.optional.MysqlXADataSource");
-//		}
-
 		if (databaseURL == null)
 			setDatabaseURL("jdbc:mysql://localhost/" + DATABASE_NAME_VAR);
 
@@ -157,19 +149,6 @@ public class DatabaseCf extends JFireServerConfigPart implements Serializable
 
 		if (databaseAdapter == null)
 			setDatabaseAdapter(DatabaseAdapterMySQL.class.getName());
-
-//		// downward compatibility: copy databaseDriveName to all others
-//		if (databaseDriverName != null) {
-//			if (databaseDriverName_noTx == null)
-//				setDatabaseDriverName_noTx(databaseDriverName);
-//
-//			if (databaseDriverName_localTx == null)
-//				setDatabaseDriverName_localTx(databaseDriverName);
-//
-//			if (databaseDriverName_xa == null)
-//				setDatabaseDriverName_xa(databaseDriverName);
-//		}
-//		// end downward compatibility
 
 		if (databaseDriverName_noTx == null && databaseDriverName_localTx == null && databaseDriverName_xa == null) {
 			setDatabaseDriverName_noTx("com.mysql.jdbc.Driver");

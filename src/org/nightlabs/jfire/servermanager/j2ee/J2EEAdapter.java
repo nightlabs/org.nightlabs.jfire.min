@@ -79,4 +79,9 @@ public interface J2EEAdapter extends Serializable {
 	 * This method shuts the server down. It should do so nicely.
 	 */
 	public void shutdown();
+
+	/**
+	 * Just like {@link #shutdown()} this method initiates a shutdown, but signals that the server should be restarted by the service wrapper.
+	 */
+	public void reboot();
 }

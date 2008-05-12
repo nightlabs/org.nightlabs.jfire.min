@@ -79,8 +79,10 @@ public class JdoCacheBridgeDefault extends JdoCacheBridge
 	public static class CacheTransactionListener
 	implements Synchronization
 	{
+		private static final Logger logger = Logger.getLogger(CacheTransactionListener.class);
+
 		private JdoCacheBridgeDefault bridge;
-		private boolean dead = false;
+		private volatile boolean dead = false;
 
 		public CacheTransactionListener(JdoCacheBridgeDefault bridge)
 		{
@@ -223,8 +225,8 @@ public class JdoCacheBridgeDefault extends JdoCacheBridge
 				error("afterCompletion(...) called with unknown status: " + status, new Exception("Unknown status (" + status + ") in afterCompletion!"));
 		}
 
-		// IMHO no sync necessary, because one transaction should only be used by one thread.
-		private Map<JDOLifecycleState, Map<Object, DirtyObjectID>> dirtyObjectIDs = null;
+		// IMHO no sync necessary, because one transaction should only be used by one thread. We use volatile, though, to ensure that it's immediately visible if it has been nulled - just in case.
+		private volatile Map<JDOLifecycleState, Map<Object, DirtyObjectID>> dirtyObjectIDs = null;
 		private Map<Object, Class<?>> objectID2Class = null;
 
 		protected void registerClass(Object objectID, Class<?> clazz) {
@@ -240,10 +242,16 @@ public class JdoCacheBridgeDefault extends JdoCacheBridge
 		public void addObject(JDOLifecycleState lifecycleStage, Object object)
 		{
 			Class<?> clazz = object.getClass();
-			if (clazz == IDNamespace.class) // we MUST ignore the IDNamespace changes, because we use the IDGenerator below in: bridge.getCacheManagerFactory().nextDirtyObjectIDSerial()
+			if (clazz == IDNamespace.class) // we MUST ignore the IDNamespace changes, because we use the IDGenerator below in: bridge.getCacheManagerFactory().nextDirtyObjectIDSerial() - WRONG! We don't use the IDGenerator here anymore, but still we can optimize it and ignore this! It's not necessary.
 				return;
 
 			Object objectID = getObjectID(object);
+
+			if (isDead()) {
+				logger.warn("addObject: already dead! Invocation too late! lifecycleStage=" + lifecycleStage + " object=" + object + " objectID=" + objectID, new Exception("StackTrace"));
+				return;
+			}
+
 			Object version = JDOHelper.getVersion(object); // version can be null, if the jdo object is not versioned
 
 			registerClass(objectID, clazz);

@@ -74,7 +74,7 @@ public class JFireServerConfigModule extends ConfigModule
 		if (smtp == null)
 			setSmtp(new SmtpMailServiceCf());
 		if (database == null)
-			setDatabase(new DatabaseCf());
+			setDatabase(DatabaseCf.createDefaults().get(DatabaseCf.DEFAULTS_DEFAULT_KEY));
 		if (jdo == null)
 			setJdo(new JDOCf());
 

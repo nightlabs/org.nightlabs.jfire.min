@@ -32,15 +32,13 @@ public class J2eeCf extends JFireServerConfigPart implements Serializable
 		if (j2eeDeployBaseDirectory == null)
 			setJ2eeDeployBaseDirectory("../server/default/deploy/JFire.last/");
 
-		// TODO We should change handling of the default server configurator
-		// We use the ServerConfiguratorJBoss as default, because it is possible to switch from this to the ServerConfiguratorJBossMySQL, while
-		// it is impossible to switch back from ServerConfiguratorJBossMySQL to another ServerConfigurator.
 		if (serverConfigurator == null)
-			setServerConfigurator("org.nightlabs.jfire.jboss.serverconfigurator.ServerConfiguratorJBoss");
+			setServerConfigurator("org.nightlabs.jfire.jboss.serverconfigurator.ServerConfiguratorJBossDerby");
 
 		if (availableServerConfigurators == null) {
 			availableServerConfigurators = new ArrayList<String>();
 			availableServerConfigurators.add("org.nightlabs.jfire.jboss.serverconfigurator.ServerConfiguratorJBoss");
+			availableServerConfigurators.add("org.nightlabs.jfire.jboss.serverconfigurator.ServerConfiguratorJBossDerby");
 			availableServerConfigurators.add("org.nightlabs.jfire.jboss.serverconfigurator.ServerConfiguratorJBossMySQL");
 		}
 
@@ -50,7 +48,7 @@ public class J2eeCf extends JFireServerConfigPart implements Serializable
 		if (initOrganisationOnStartupThreadCount < 1)
 			setInitOrganisationOnStartupThreadCount(4);
 	}
-	
+
 	/**
 	 * Get the availableServerConfigurators.
 	 * @return the availableServerConfigurators
@@ -59,7 +57,7 @@ public class J2eeCf extends JFireServerConfigPart implements Serializable
 	{
 		return availableServerConfigurators;
 	}
-	
+
 	/**
 	 * Set the availableServerConfigurators.
 	 * @param availableServerConfigurators the availableServerConfigurators to set

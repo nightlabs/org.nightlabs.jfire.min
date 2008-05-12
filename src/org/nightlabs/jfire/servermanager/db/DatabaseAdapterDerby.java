@@ -49,17 +49,25 @@ extends AbstractDatabaseAdapter
 	public void test(JFireServerConfigModule jfireServerConfigModule)
 	throws DatabaseException
 	{
+		String url;
+
 		try {
 			DatabaseCf dbCf = jfireServerConfigModule.getDatabase();
-			Connection sqlConn = DriverManager.getConnection(
-					dbCf.getDatabaseURL("test")+ ";create=true",
-					dbCf.getDatabaseUserName(),
-					dbCf.getDatabasePassword()
-			);
+
+			url = dbCf.getDatabaseURL(dbCf.getDatabasePrefix() + "derbytest" + dbCf.getDatabaseSuffix());
+			String user = dbCf.getDatabaseUserName();
+			String pw = dbCf.getDatabasePassword();
+
+			Connection sqlConn = DriverManager.getConnection(url + ";create=true", user, pw);
 
 			sqlConn.close();
 		} catch (SQLException e) {
 			throw new DatabaseException(e);
+		}
+
+		if (url.startsWith("jdbc:derby:")) {
+			String dir = url.substring("jdbc:derby:".length());
+			IOUtil.deleteDirectoryRecursively(dir);
 		}
 	}
 
