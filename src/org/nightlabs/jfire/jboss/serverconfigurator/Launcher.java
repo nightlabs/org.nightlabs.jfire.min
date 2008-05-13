@@ -13,7 +13,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import java.util.regex.Pattern;
 
 /**
  * Launcher for execution of the {@link org.nightlabs.jfire.serverconfigurator.ServerConfigurator} from the command line.
@@ -132,22 +131,28 @@ public class Launcher
 	 * Some regular expressions which cause directories & jars to be excluded, if at least one of them matches the path.
 	 */
 	private static final String[] excludes = {
-		".*\\/JFireReporting\\.ear\\/birt\\/plugins\\/org\\.apache\\.derby\\.core_10\\.1\\.2\\.1.*"
+//		".*" + Pattern.quote("/JFireReporting.ear/birt/plugins/org.apache.derby.core_") + ".*"
+		"/JFireReporting.ear/birt/plugins/org.apache.derby.core_"
 	};
 
-	private static final Pattern[] excludePatterns = createExcludePatterns();
-	private static Pattern[] createExcludePatterns() {
-		Pattern[] p = new Pattern[excludes.length];
-		int idx = 0;
-		for (String exclude : excludes)
-			p[idx++] = Pattern.compile(exclude);
-
-		return p;
-	}
+//	private static final Pattern[] excludePatterns = createExcludePatterns();
+//	private static Pattern[] createExcludePatterns() {
+//		Pattern[] p = new Pattern[excludes.length];
+//		int idx = 0;
+//		for (String exclude : excludes)
+//			p[idx++] = Pattern.compile(exclude);
+//
+//		return p;
+//	}
 
 	private static boolean isExcluded(File directoryOrJarFile) {
-		for (Pattern exclude : excludePatterns) {
-			if (exclude.matcher(directoryOrJarFile.getAbsolutePath()).matches())
+		String directoryOrJarFileString = directoryOrJarFile.getAbsolutePath().replace('\\', '/');
+//		for (Pattern exclude : excludePatterns) {
+//			if (exclude.matcher(directoryOrJarFileString).matches())
+//				return true;
+//		}
+		for (String exclude : excludes) {
+			if (directoryOrJarFileString.contains(exclude))
 				return true;
 		}
 		return false;
