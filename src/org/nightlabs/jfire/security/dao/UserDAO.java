@@ -295,7 +295,7 @@ public class UserDAO extends BaseJDOObjectDAO<UserID, User>
 	/**
 	 * Remove a user from a user group
 	 * @param user The user
-	 * @param userGroup The user group from wich to remove the user
+	 * @param userGroup The user group from which to remove the user
 	 */
 	public synchronized void removeUserFromUserGroup(User user, UserGroup userGroup, ProgressMonitor monitor)
 	{
@@ -313,35 +313,29 @@ public class UserDAO extends BaseJDOObjectDAO<UserID, User>
 		}
 	}
 
-	public synchronized void addUserToRoleGroup(User user, Authority authority, RoleGroup roleGroup, ProgressMonitor monitor)
+	public synchronized void addRoleGroupToUser(User user, Authority authority, RoleGroup roleGroup, ProgressMonitor monitor)
 	{
-		addUserToRoleGroup(
+		addRoleGroupToUser(
 				(UserID)JDOHelper.getObjectId(user),
 				(AuthorityID)JDOHelper.getObjectId(authority),
 				(RoleGroupID)JDOHelper.getObjectId(roleGroup), monitor);
 	}
 
-	public synchronized void removeUserFromRoleGroup(User user, Authority authority, RoleGroup roleGroup, ProgressMonitor monitor)
+	public synchronized void removeRoleGroupFromUser(User user, Authority authority, RoleGroup roleGroup, ProgressMonitor monitor)
 	{
-		removeUserFromRoleGroup(
+		removeRoleGroupFromUser(
 				(UserID)JDOHelper.getObjectId(user),
 				(AuthorityID)JDOHelper.getObjectId(authority),
 				(RoleGroupID)JDOHelper.getObjectId(roleGroup), monitor);
 	}
 
-	public synchronized void addUserToRoleGroup(UserID userID, AuthorityID authorityID, RoleGroupID roleGroupID, ProgressMonitor monitor)
+	public synchronized void addRoleGroupToUser(UserID userID, AuthorityID authorityID, RoleGroupID roleGroupID, ProgressMonitor monitor)
 	{
 		monitor.beginTask("Adding a user to a rolegroup", 1);
 		try {
-			String organisationID = SecurityReflector.getUserDescriptor().getOrganisationID();
-			if (!organisationID.equals(userID.organisationID))
-				throw new IllegalArgumentException("Cannot manage foreign user! user.organisationID=\""+userID.organisationID+"\" does not match our organisationID=\""+organisationID+"\"!");
-			if (!organisationID.equals(authorityID.organisationID))
-				throw new IllegalArgumentException("Cannot manage foreign authority! authority.organisationID=\""+authorityID.organisationID+"\" does not match our organisationID=\""+organisationID+"\"!");
-
 			Properties initialContextProperties = SecurityReflector.getInitialContextProperties();
 			UserManager um = UserManagerUtil.getHome(initialContextProperties).create();
-			um.addUserToRoleGroup(userID.userID, authorityID.authorityID, roleGroupID.roleGroupID);
+			um.addRoleGroupToUser(userID, authorityID, roleGroupID);
 			monitor.done();
 		} catch(RuntimeException e) {
 			monitor.done();
@@ -352,7 +346,7 @@ public class UserDAO extends BaseJDOObjectDAO<UserID, User>
 		}
 	}
 
-	public synchronized void removeUserFromRoleGroup(UserID userID, AuthorityID authorityID, RoleGroupID roleGroupID, ProgressMonitor monitor)
+	public synchronized void removeRoleGroupFromUser(UserID userID, AuthorityID authorityID, RoleGroupID roleGroupID, ProgressMonitor monitor)
 	{
 		monitor.beginTask("Removing a user from a rolegroup", 1);
 		try {
@@ -364,7 +358,7 @@ public class UserDAO extends BaseJDOObjectDAO<UserID, User>
 
 			Properties initialContextProperties = SecurityReflector.getInitialContextProperties();
 			UserManager um = UserManagerUtil.getHome(initialContextProperties).create();
-			um.removeUserFromRoleGroup(userID.userID, authorityID.authorityID, roleGroupID.roleGroupID);
+			um.removeRoleGroupFromUser(userID, authorityID, roleGroupID);
 			monitor.done();
 		} catch(RuntimeException e) {
 			monitor.done();

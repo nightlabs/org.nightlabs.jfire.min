@@ -30,11 +30,12 @@ import java.util.Set;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO;
 import org.nightlabs.jfire.security.RoleGroup;
-import org.nightlabs.jfire.security.RoleGroupIDListCarrier;
-import org.nightlabs.jfire.security.RoleGroupListCarrier;
+import org.nightlabs.jfire.security.RoleGroupIDSetCarrier;
+import org.nightlabs.jfire.security.RoleGroupSetCarrier;
 import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.security.UserManager;
 import org.nightlabs.jfire.security.UserManagerUtil;
+import org.nightlabs.jfire.security.id.AuthorityID;
 import org.nightlabs.jfire.security.id.RoleGroupID;
 import org.nightlabs.jfire.security.id.UserID;
 import org.nightlabs.progress.NullProgressMonitor;
@@ -63,19 +64,21 @@ public class RoleGroupDAO extends BaseJDOObjectDAO<RoleGroupID, RoleGroup>
 			sharedInstance = new RoleGroupDAO();
 		return sharedInstance;
 	}
-	
+
 	/**
 	 * The temporary used UserManager.
 	 */
-  private UserManager um;
-	
+	private UserManager um;
+
 	/* (non-Javadoc)
 	 * @see org.nightlabs.jfire.base.jdo.JDOObjectDAO#retrieveJDOObjects(java.util.Collection, java.lang.String[], int, org.eclipse.core.runtime.IProgressMonitor)
 	 */
 	@Override
-	protected Collection<RoleGroup> retrieveJDOObjects(Set<RoleGroupID> objectIDs,
-			String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
-			throws Exception
+	protected Collection<RoleGroup> retrieveJDOObjects(
+			Set<RoleGroupID> objectIDs,
+			String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor
+	)
+	throws Exception
 	{
 		return um.getRoleGroups(objectIDs, fetchGroups, maxFetchDepth);
 	}
@@ -91,55 +94,55 @@ public class RoleGroupDAO extends BaseJDOObjectDAO<RoleGroupID, RoleGroup>
 	 * @return A carrier object containing assigned, unassigned and assigned-by-usergroup
 	 * 					role groups.
 	 */
-  public synchronized RoleGroupListCarrier getUserRoleGroups(UserID userID, String authorityID, String[] fetchgroups, int maxFetchDepth, ProgressMonitor monitor)
-  {
-  	try {
-		  um = UserManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
-		  RoleGroupIDListCarrier ids = um.getRoleGroupIDs(userID.userID, authorityID);
-		  
-		  monitor.worked(1);
-		  RoleGroupListCarrier x = new RoleGroupListCarrier();
-		  x.assigned = getJDOObjects(null, ids.assignedToUser, fetchgroups, maxFetchDepth, monitor);
-		  System.err.println("HAVE "+x.assigned.size()+" ASSIGNED ROLE GROUPS");
-		  monitor.worked(1);
-		  
-		  x.assignedByUserGroup = getJDOObjects(null, ids.assignedToUserGroups, fetchgroups, maxFetchDepth, monitor);
-		  System.err.println("HAVE "+x.assignedByUserGroup.size()+" ASSIGNED ROLE GROUPS BY USER GROUP");
-		  monitor.worked(1);
-		  x.excluded = getJDOObjects(null, ids.excluded, fetchgroups, maxFetchDepth, monitor);
-		  System.err.println("HAVE "+x.excluded.size()+" EXCLUDED ROLE GROUPS");
-		  monitor.worked(1);
-		  return x;
-  	} catch(Exception e) {
-  		throw new RuntimeException("Role group download failed", e);
-  	} finally {
-  		um = null;
-  	}
-  }
-  
-  /**
-   * Returns a collection of all role groups for the given user groups.
-   * 
-   * @param userGroupIDs A collection of the user group IDs whose {@link RoleGroup}s are to be returned.
-   * @param authorityID The authority
+	public synchronized RoleGroupSetCarrier getUserRoleGroupSetCarrier(UserID userID, AuthorityID authorityID, String[] fetchgroups, int maxFetchDepth, ProgressMonitor monitor)
+	{
+		try {
+			um = UserManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
+			RoleGroupIDSetCarrier ids = um.getRoleGroupIDSetCarrier(userID, authorityID);
+
+			monitor.worked(1);
+			RoleGroupSetCarrier x = new RoleGroupSetCarrier();
+			x.assigned = getJDOObjects(null, ids.assignedToUser, fetchgroups, maxFetchDepth, monitor);
+			System.err.println("HAVE "+x.assigned.size()+" ASSIGNED ROLE GROUPS");
+			monitor.worked(1);
+
+			x.assignedByUserGroup = getJDOObjects(null, ids.assignedToUserGroups, fetchgroups, maxFetchDepth, monitor);
+			System.err.println("HAVE "+x.assignedByUserGroup.size()+" ASSIGNED ROLE GROUPS BY USER GROUP");
+			monitor.worked(1);
+			x.excluded = getJDOObjects(null, ids.excluded, fetchgroups, maxFetchDepth, monitor);
+			System.err.println("HAVE "+x.excluded.size()+" EXCLUDED ROLE GROUPS");
+			monitor.worked(1);
+			return x;
+		} catch(Exception e) {
+			throw new RuntimeException("Role group download failed", e);
+		} finally {
+			um = null;
+		}
+	}
+
+	/**
+	 * Returns a collection of all role groups for the given user groups.
+	 * 
+	 * @param userGroupIDs A collection of the user group IDs whose {@link RoleGroup}s are to be returned.
+	 * @param authorityID The authority
 	 * @param fetchgroups The fetch groups to use
 	 * @param maxFetchDepth Fetch depth or {@link NLJDOHelper#MAX_FETCH_DEPTH_NO_LIMIT}
-   * @return a collection of all role groups for the given user groups.
-   */
-  public synchronized Collection<RoleGroup> getRoleGroupsForUserGroups(Collection<UserID> userGroupIDs, String authorityID, String[] fetchGroups, int maxFetchDepth) {
-  	try {
-		  um = UserManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
-		  Collection<RoleGroup> roleGroups = new HashSet<RoleGroup>();
-		  
-		  for (UserID userGroupID : userGroupIDs) {
-		  	RoleGroupIDListCarrier groupIDs = um.getRoleGroupIDs(userGroupID.userID, authorityID);
-		  	roleGroups.addAll(getJDOObjects(null, groupIDs.assignedToUser, fetchGroups, maxFetchDepth, new NullProgressMonitor()));
-		  }
-		  return roleGroups;
-  	} catch(Exception e) {
-  		throw new RuntimeException("Role group download failed", e);
-  	} finally {
-  		um = null;
-  	}
-  }
+	 * @return a collection of all role groups for the given user groups.
+	 */
+	public synchronized Collection<RoleGroup> getRoleGroupsForUserGroups(Collection<UserID> userGroupIDs, AuthorityID authorityID, String[] fetchGroups, int maxFetchDepth) {
+		try {
+			um = UserManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
+			Collection<RoleGroup> roleGroups = new HashSet<RoleGroup>();
+
+			for (UserID userGroupID : userGroupIDs) {
+				RoleGroupIDSetCarrier groupIDs = um.getRoleGroupIDSetCarrier(userGroupID, authorityID);
+				roleGroups.addAll(getJDOObjects(null, groupIDs.assignedToUser, fetchGroups, maxFetchDepth, new NullProgressMonitor()));
+			}
+			return roleGroups;
+		} catch(Exception e) {
+			throw new RuntimeException("Role group download failed", e);
+		} finally {
+			um = null;
+		}
+	}
 }
