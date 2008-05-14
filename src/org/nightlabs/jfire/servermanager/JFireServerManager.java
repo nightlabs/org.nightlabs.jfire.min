@@ -40,7 +40,6 @@ import org.nightlabs.j2ee.LoginData;
 import org.nightlabs.jfire.base.JFirePrincipal;
 import org.nightlabs.jfire.classloader.CLRegistrar;
 import org.nightlabs.jfire.module.ModuleType;
-import org.nightlabs.jfire.security.registry.SecurityRegistrar;
 import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
 import org.nightlabs.jfire.servermanager.config.OrganisationCf;
 import org.nightlabs.jfire.servermanager.createorganisation.BusyCreatingOrganisationException;
@@ -179,9 +178,6 @@ public interface JFireServerManager
 	 * @see jfireSecurity_flushCache(String organisationID, String userID);
 	 */
 	public void j2ee_flushAuthenticationCache()
-		throws ModuleException;
-
-	public SecurityRegistrar getSecurityRegistrar()
 		throws ModuleException;
 
 	public CLRegistrar getCLRegistrar()

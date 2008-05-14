@@ -60,7 +60,6 @@ import org.nightlabs.jfire.security.RoleSet;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.security.UserLocal;
 import org.nightlabs.jfire.security.id.UserLocalID;
-import org.nightlabs.jfire.security.registry.SecurityRegistrar;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.servermanager.OrganisationNotFoundException;
 import org.nightlabs.jfire.servermanager.RoleImportSet;
@@ -350,17 +349,6 @@ public class JFireServerManagerImpl
 	{
 		assertOpen();
 		jfireServerManagerFactoryImpl.roleImport_commit(roleImportSet, null);
-	}
-
-	/**
-	 * @see org.nightlabs.jfire.servermanager.JFireServerManager#getJFireSecurityManager(java.lang.String organisationID)
-	 */
-	public SecurityRegistrar getSecurityRegistrar()
-		throws ModuleException
-	{
-		assertOpen();
-		assertAuthenticated();
-		return jfireServerManagerFactoryImpl.getSecurityRegistrar(principal);
 	}
 	
 	/**

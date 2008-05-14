@@ -116,8 +116,6 @@ import org.nightlabs.jfire.security.UserLocal;
 import org.nightlabs.jfire.security.UserRef;
 import org.nightlabs.jfire.security.id.AuthorityTypeID;
 import org.nightlabs.jfire.security.id.UserRefID;
-import org.nightlabs.jfire.security.registry.SecurityRegistrar;
-import org.nightlabs.jfire.security.registry.SecurityRegistrarFactoryImpl;
 import org.nightlabs.jfire.server.Server;
 import org.nightlabs.jfire.serverconfigurator.ServerConfigurator;
 import org.nightlabs.jfire.serverinit.ServerInitManager;
@@ -196,7 +194,6 @@ public class JFireServerManagerFactoryImpl
 	protected CreateOrganisationConfigModule createOrganisationConfigModule;
 	protected CacheCfMod cacheCfMod;
 
-	private SecurityRegistrarFactoryImpl smf;
 	private CLRegistrarFactory clRegistrarFactory;
 
 	public JFireServerManagerFactoryImpl(final ManagedConnectionFactoryImpl mcf, final ConnectionManager cm)
@@ -277,9 +274,6 @@ public class JFireServerManagerFactoryImpl
 		}
 		if (j2eeLocalServerCf == null)
 			throw new ResourceException("JFireServerConfigModule: localServer.j2eeServerType: This serverType is not registered in the J2eeServerTypeRegistryConfigModule!");
-
-
-		this.smf = new SecurityRegistrarFactoryImpl(this);
 
 		try {
 			this.clRegistrarFactory = new CLRegistrarFactory(
@@ -2303,12 +2297,6 @@ public class JFireServerManagerFactoryImpl
 		} catch (Exception x) {
 			throw new ModuleException(x);
 		}
-	}
-
-	protected SecurityRegistrar getSecurityRegistrar(JFireBasePrincipal principal)
-		throws ModuleException
-	{
-		return smf.getSecurityRegistrar(principal);
 	}
 
 	protected CLRegistrar getCLRegistrar(JFireBasePrincipal principal)
