@@ -27,8 +27,11 @@
 package org.nightlabs.jfire.security;
 import java.rmi.RemoteException;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.ejb.CreateException;
@@ -49,6 +52,7 @@ import org.nightlabs.jdo.query.QueryCollection;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.config.ConfigSetup;
 import org.nightlabs.jfire.security.id.AuthorityID;
+import org.nightlabs.jfire.security.id.AuthorityTypeID;
 import org.nightlabs.jfire.security.id.RoleGroupID;
 import org.nightlabs.jfire.security.id.UserID;
 import org.nightlabs.jfire.security.id.UserRefID;
@@ -770,6 +774,40 @@ implements SessionBean
 		return (Collection<RoleGroup>)query.execute(organisationID, userID, authorityID);
 	}
 
+	private static RoleGroupIDSetCarrier getRoleGroupIDSetCarrier(PersistenceManager pm, User user, Authority authority)
+	{
+		String organisationID = user.getOrganisationID();
+		if (!organisationID.equals(authority.getOrganisationID()))
+			throw new IllegalArgumentException("Cannot manage foreign access rights! authority.organisationID=\""+authority.getOrganisationID()+"\" does not match user.organisationID=\""+organisationID+"\"!");
+		
+		Collection<RoleGroup> roleGroupsUser = new HashSet<RoleGroup>(getRoleGroupsForUserRef(pm, organisationID, user.getUserID(), authority.getAuthorityID()));
+		Collection<RoleGroup> roleGroupsUserGroups = new HashSet<RoleGroup>();
+		for (UserGroup userGroup : user.getUserGroups()) {
+			roleGroupsUserGroups.addAll(
+					getRoleGroupsForUserRef(pm, userGroup.getOrganisationID(), userGroup.getUserID(), authority.getAuthorityID()));
+		}
+
+//		query = pm.newQuery("SELECT FROM org.nightlabs.jfire.security.RoleGroup");
+//		Collection<RoleGroup> allRoleGroups = (Collection<RoleGroup>)query.execute();
+		Collection<RoleGroup> allRoleGroups = authority.getAuthorityType().getRoleGroups();
+		Iterator<RoleGroup> i = allRoleGroups.iterator();
+		Collection<RoleGroup> excludedRoleGroups = new HashSet<RoleGroup>();
+		while(i.hasNext())
+		{
+			RoleGroup o = i.next();
+			if((!roleGroupsUser.contains(o)) && (!roleGroupsUserGroups.contains(o)))
+				excludedRoleGroups.add(o);
+		}
+
+		Set<RoleGroupID> excludedRoleGroupsIDs = NLJDOHelper.getObjectIDSet(excludedRoleGroups);
+		Set<RoleGroupID> roleGroupsUserIDs = NLJDOHelper.getObjectIDSet(roleGroupsUser);
+		Set<RoleGroupID> roleGrouopsUserGroupsIDs = NLJDOHelper.getObjectIDSet(roleGroupsUserGroups);
+		return new RoleGroupIDSetCarrier(
+				excludedRoleGroupsIDs,
+				roleGroupsUserIDs,
+				roleGrouopsUserGroupsIDs);
+	}
+
 	/**
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
@@ -810,40 +848,51 @@ implements SessionBean
 			if (!allowed)
 				throw new SecurityException("The current user \""+ getPrincipalString() +"\" misses the access right " + RoleConstants.userManager_getRoleGroupIDSetCarrier + " and does not ask data about himself.");
 
-			Collection<RoleGroup> roleGroupsUser = new HashSet<RoleGroup>(getRoleGroupsForUserRef(pm, organisationID, userID.userID, authorityID.authorityID));
-			Collection<RoleGroup> roleGroupsUserGroups = new HashSet<RoleGroup>();
-			for (UserGroup userGroup : user.getUserGroups()) {
-				roleGroupsUserGroups.addAll(
-						getRoleGroupsForUserRef(pm, userGroup.getOrganisationID(), userGroup.getUserID(), authorityID.authorityID));
-			}
-
-//			query = pm.newQuery("SELECT FROM org.nightlabs.jfire.security.RoleGroup");
-//			Collection<RoleGroup> allRoleGroups = (Collection<RoleGroup>)query.execute();
-			Collection<RoleGroup> allRoleGroups = authority.getAuthorityType().getRoleGroups();
-			Iterator<RoleGroup> i = allRoleGroups.iterator();
-			Collection<RoleGroup> excludedRoleGroups = new HashSet<RoleGroup>();
-			while(i.hasNext())
-			{
-				RoleGroup o = i.next();
-				if((!roleGroupsUser.contains(o)) && (!roleGroupsUserGroups.contains(o)))
-					excludedRoleGroups.add(o);
-			}
-
-			Set<RoleGroupID> excludedRoleGroupsIDs = NLJDOHelper.getObjectIDSet(excludedRoleGroups);
-			Set<RoleGroupID> roleGroupsUserIDs = NLJDOHelper.getObjectIDSet(roleGroupsUser);
-			Set<RoleGroupID> roleGrouopsUserGroupsIDs = NLJDOHelper.getObjectIDSet(roleGroupsUserGroups);
-			RoleGroupIDSetCarrier roleGroupIDSetCarrier = new RoleGroupIDSetCarrier(
-					excludedRoleGroupsIDs,
-					roleGroupsUserIDs,
-					roleGrouopsUserGroupsIDs);
-
-			return roleGroupIDSetCarrier;
+			return getRoleGroupIDSetCarrier(pm, user, authority);
 		}
 		finally {
 			pm.close();
 		}
 	}
 
+	/**
+	 * @ejb.interface-method
+	 * @ejb.permission role-name="_Guest_"
+	 * @!role-assigned(Marco, 2008-05-05): _Guest_ is ok. We check inside by code, whether the user can read this data or not.
+	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
+	 **/
+	public Map<UserID, RoleGroupIDSetCarrier> getRoleGroupIDSetCarriers(AuthorityID authorityID)
+	{
+		String organisationID = getOrganisationID();
+		if (!organisationID.equals(authorityID.organisationID))
+			throw new IllegalArgumentException("Cannot manage foreign access rights! authorityID.organisationID=\""+authorityID.organisationID+"\" does not match our organisationID=\""+organisationID+"\"!");
+
+		PersistenceManager pm = getPersistenceManager();
+		try
+		{
+			Authority authority = (Authority) pm.getObjectById(authorityID);
+
+			boolean allowed = authority.resolveControllingAuthority().containsRoleRef(getPrincipal(), RoleConstants.userManager_getRoleGroupIDSetCarrier);
+			if (!allowed)
+				throw new SecurityException("The current user \""+ getPrincipalString() +"\" misses the access right " + RoleConstants.userManager_getRoleGroupIDSetCarrier + " and does not ask data about himself.");
+
+			Map<UserID, RoleGroupIDSetCarrier> map = new HashMap<UserID, RoleGroupIDSetCarrier>(authority.getUserRefs().size());
+			for (UserRef userRef : authority.getUserRefs()) {
+				User user = userRef.getUser();
+				RoleGroupIDSetCarrier roleGroupIDSetCarrier = getRoleGroupIDSetCarrier(pm, user, authority);
+				UserID userID = (UserID) JDOHelper.getObjectId(user);
+				if (userID == null)
+					throw new IllegalStateException("JDOHelper.getObjectId(user) returned null!");
+
+				map.put(userID, roleGroupIDSetCarrier);
+			}
+
+			return map;
+		}
+		finally {
+			pm.close();
+		}
+	}
 
 	/**
 	 * @ejb.interface-method
@@ -851,11 +900,41 @@ implements SessionBean
 	 * @!role-assigned(Marco, 2008-05-05): _Guest_ is ok. Which RoleGroups exist and what their properties are is no secret.
 	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 */
-	public Collection<RoleGroup> getRoleGroups(Set<RoleGroupID> roleGroupIDs, String [] fetchGroups, int maxFetchDepth)
+	public Collection<RoleGroup> getRoleGroups(Collection<RoleGroupID> roleGroupIDs, String [] fetchGroups, int maxFetchDepth)
 	{
 		PersistenceManager pm = getPersistenceManager();
 		try {
-			return NLJDOHelper.getDetachedObjectList(pm, roleGroupIDs, null, fetchGroups, maxFetchDepth);
+			return NLJDOHelper.getDetachedObjectList(pm, roleGroupIDs, RoleGroup.class, fetchGroups, maxFetchDepth);
+		} finally {
+			pm.close();
+		}
+	}
+
+	/**
+	 * @ejb.interface-method
+	 * @ejb.permission role-name="_Guest_"
+	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
+	 */
+	public List<Authority> getAuthorities(Collection<AuthorityID> authorityIDs, String[] fetchGroups, int maxFetchDepth)
+	{
+		PersistenceManager pm = getPersistenceManager();
+		try {
+			return NLJDOHelper.getDetachedObjectList(pm, authorityIDs, Authority.class, fetchGroups, maxFetchDepth);
+		} finally {
+			pm.close();
+		}
+	}
+
+	/**
+	 * @ejb.interface-method
+	 * @ejb.permission role-name="_Guest_"
+	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
+	 */
+	public List<AuthorityType> getAuthorityTypes(Collection<AuthorityTypeID> authorityTypeIDs, String[] fetchGroups, int maxFetchDepth)
+	{
+		PersistenceManager pm = getPersistenceManager();
+		try {
+			return NLJDOHelper.getDetachedObjectList(pm, authorityTypeIDs, AuthorityType.class, fetchGroups, maxFetchDepth);
 		} finally {
 			pm.close();
 		}

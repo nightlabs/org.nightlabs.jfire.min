@@ -196,24 +196,21 @@ implements SessionBean
 		}
 	}
 
-	/**
-	 * @ejb.interface-method view-type="local"
-	 * @ejb.transaction type="RequiresNew"
-	 * @ejb.permission role-name="_Guest_"
-	 */
-	public void deleteAsyncInvokeProblem(AsyncInvokeEnvelope envelope)
+  /**
+   * @ejb.interface-method view-type="local"
+   * @ejb.transaction type="RequiresNew"
+   * @ejb.permission role-name="_Guest_"
+   */
+  public void deleteAsyncInvokeProblem(AsyncInvokeEnvelope envelope)
   throws java.lang.Exception
-	{
-		PersistenceManager pm = getPersistenceManager();
-		try {
-			// WORKAROUND: TODO: FIXEM: DataNucleaus workaround to initialize table at datastoreinit to avoid bug 0000787
-			pm.getExtent(AsyncInvokeProblem.class);
-
-			AsyncInvokeProblem asyncInvokeProblem = envelope.getAsyncInvokeProblem(pm);
-			if (asyncInvokeProblem != null)
-				pm.deletePersistent(asyncInvokeProblem);
-		} finally {
-			pm.close();
-		}
-	}
+  {
+	  PersistenceManager pm = getPersistenceManager();
+	  try {
+		  AsyncInvokeProblem asyncInvokeProblem = envelope.getAsyncInvokeProblem(pm);
+		  if (asyncInvokeProblem != null)
+			  pm.deletePersistent(asyncInvokeProblem);
+	  } finally {
+		  pm.close();
+	  }
+  }
 }
