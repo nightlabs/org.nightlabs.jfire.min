@@ -206,6 +206,9 @@ implements SessionBean
 	{
 		PersistenceManager pm = getPersistenceManager();
 		try {
+			// WORKAROUND: TODO: FIXEM: DataNucleaus workaround to initialize table at datastoreinit to avoid bug 0000787
+			pm.getExtent(AsyncInvokeProblem.class);
+
 			AsyncInvokeProblem asyncInvokeProblem = envelope.getAsyncInvokeProblem(pm);
 			if (asyncInvokeProblem != null)
 				pm.deletePersistent(asyncInvokeProblem);
