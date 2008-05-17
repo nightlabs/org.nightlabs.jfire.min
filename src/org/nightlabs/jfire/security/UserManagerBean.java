@@ -828,7 +828,7 @@ implements SessionBean
 			User user = (User) pm.getObjectById(userID);
 			Authority authority = (Authority) pm.getObjectById(authorityID);
 
-			boolean allowed = authority.resolveControllingAuthority().containsRoleRef(getPrincipal(), RoleConstants.userManager_getRoleGroupIDSetCarrier);
+			boolean allowed = authority.resolveSecuringAuthority().containsRoleRef(getPrincipal(), RoleConstants.userManager_getRoleGroupIDSetCarrier);
 			// Not allowed means that the authority which controls the access rights for the given authority
 			// (which might be the global authority) does not grant the user the necessary right. In this
 			// case, we check if the user is asking about himself, which is allowed.
@@ -872,7 +872,7 @@ implements SessionBean
 		{
 			Authority authority = (Authority) pm.getObjectById(authorityID);
 
-			boolean allowed = authority.resolveControllingAuthority().containsRoleRef(getPrincipal(), RoleConstants.userManager_getRoleGroupIDSetCarrier);
+			boolean allowed = authority.resolveSecuringAuthority().containsRoleRef(getPrincipal(), RoleConstants.userManager_getRoleGroupIDSetCarrier);
 			if (!allowed)
 				throw new SecurityException("The current user \""+ getPrincipalString() +"\" misses the access right " + RoleConstants.userManager_getRoleGroupIDSetCarrier + " and does not ask data about himself.");
 
@@ -1334,7 +1334,7 @@ implements SessionBean
 		try {
 			Authority authority = (Authority)pm.getObjectById(authorityID);
 
-			authority.getControllingAuthority().assertContainsRoleRef(getPrincipal(), RoleConstants.userManager_addRoleGroupToUser);
+			authority.getSecuringAuthority().assertContainsRoleRef(getPrincipal(), RoleConstants.userManager_addRoleGroupToUser);
 
 			User user = (User)pm.getObjectById(userID);
 			RoleGroup roleGroup = (RoleGroup)pm.getObjectById(roleGroupID);
@@ -1512,7 +1512,7 @@ implements SessionBean
 			pm.getFetchPlan().setGroup(FetchPlan.DEFAULT);
 			Authority authority = (Authority) pm.getObjectById(authorityID);
 
-			authority.getControllingAuthority().assertContainsRoleRef(getPrincipal(), RoleConstants.userManager_removeRoleGroupFromUser);
+			authority.getSecuringAuthority().assertContainsRoleRef(getPrincipal(), RoleConstants.userManager_removeRoleGroupFromUser);
 
 			User user = (User) pm.getObjectById(userID);
 
