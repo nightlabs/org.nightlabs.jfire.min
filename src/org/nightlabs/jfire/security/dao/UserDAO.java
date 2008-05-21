@@ -38,12 +38,12 @@ import org.nightlabs.jfire.person.Person;
 import org.nightlabs.jfire.prop.IStruct;
 import org.nightlabs.jfire.prop.PropertySet;
 import org.nightlabs.jfire.security.Authority;
+import org.nightlabs.jfire.security.JFireSecurityManager;
+import org.nightlabs.jfire.security.JFireSecurityManagerUtil;
 import org.nightlabs.jfire.security.RoleGroup;
 import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.security.UserGroup;
-import org.nightlabs.jfire.security.UserManager;
-import org.nightlabs.jfire.security.UserManagerUtil;
 import org.nightlabs.jfire.security.id.AuthorityID;
 import org.nightlabs.jfire.security.id.RoleGroupID;
 import org.nightlabs.jfire.security.id.UserID;
@@ -94,7 +94,7 @@ public class UserDAO extends BaseJDOObjectDAO<UserID, User>
 		monitor.beginTask("Fetching "+objectIDs.size()+" user information", 1);
 		Collection<User> users;
 		try {
-			UserManager um = UserManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
+			JFireSecurityManager um = JFireSecurityManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
 			users = um.getUsers(objectIDs, fetchGroups, maxFetchDepth);
 			monitor.worked(1);
 		} catch (Exception e) {
@@ -137,7 +137,7 @@ public class UserDAO extends BaseJDOObjectDAO<UserID, User>
 		monitor.beginTask("Storing user: "+user.getName(), 3); // 4);
 		try {
 			Properties initialContextProperties = SecurityReflector.getInitialContextProperties();
-			UserManager um = UserManagerUtil.getHome(initialContextProperties).create();
+			JFireSecurityManager um = JFireSecurityManagerUtil.getHome(initialContextProperties).create();
 //			PropertyManager pm = PropertyManagerUtil.getHome(initialContextProperties).create();
 			monitor.worked(1);
 			
@@ -195,6 +195,11 @@ public class UserDAO extends BaseJDOObjectDAO<UserID, User>
 		}
 	}
 
+	public synchronized List<User> getUsers(String organisationID, String[] userTypes, String[] fetchgroups, int maxFetchDepth, ProgressMonitor monitor)
+	{
+		return getUsers(organisationID, CollectionUtil.array2HashSet(userTypes), fetchgroups, maxFetchDepth, monitor);
+	}
+
 	/**
 	 * Get users by type.
 	 * @param type One of User.USERTYPE*
@@ -204,11 +209,11 @@ public class UserDAO extends BaseJDOObjectDAO<UserID, User>
 	 * 					object, <code>monitor.worked(1)</code> will be called.
 	 * @return The users of the given type.
 	 */
-	public synchronized List<User> getUsersByType(String type, String[] fetchgroups, int maxFetchDepth, ProgressMonitor monitor)
+	public synchronized List<User> getUsers(String organisationID, Set<String> userTypes, String[] fetchgroups, int maxFetchDepth, ProgressMonitor monitor)
 	{
 		try {
-			UserManager um = UserManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
-			Collection<UserID> ids = um.getUserIDsByType(type);
+			JFireSecurityManager um = JFireSecurityManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
+			Collection<UserID> ids = um.getUserIDs(organisationID, userTypes);
 			return getJDOObjects(null, ids, fetchgroups, maxFetchDepth, monitor);
 		} catch(Exception e) {
 			throw new RuntimeException("User download failed", e);
@@ -220,18 +225,18 @@ public class UserDAO extends BaseJDOObjectDAO<UserID, User>
 		return getJDOObjects(null, userIDs, fetchgroups, maxFetchDepth, monitor);
 	}
 
-	/**
-	 * Get all users.
-	 * @param fetchGroups Wich fetch groups to use
-	 * @param maxFetchDepth Fetch depth or {@link NLJDOHelper#MAX_FETCH_DEPTH_NO_LIMIT}
-	 * @param monitor The progress monitor for this action. For every downloaded
-	 * 					object, <code>monitor.worked(1)</code> will be called.
-	 * @return The users.
-	 */
-	public synchronized Collection<User> getUsers(String[] fetchgroups, int maxFetchDepth, ProgressMonitor monitor)
-	{
-		return getUsersByType(User.USERTYPE_USER, fetchgroups, maxFetchDepth, monitor);
-	}
+//	/**
+//	 * Get all users.
+//	 * @param fetchGroups Wich fetch groups to use
+//	 * @param maxFetchDepth Fetch depth or {@link NLJDOHelper#MAX_FETCH_DEPTH_NO_LIMIT}
+//	 * @param monitor The progress monitor for this action. For every downloaded
+//	 * 					object, <code>monitor.worked(1)</code> will be called.
+//	 * @return The users.
+//	 */
+//	public synchronized Collection<User> getUsers(String[] fetchgroups, int maxFetchDepth, ProgressMonitor monitor)
+//	{
+//		return getUsers(null, null, fetchgroups, maxFetchDepth, monitor);
+//	}
 
 	/**
 	 * Get a single user group.
@@ -258,18 +263,18 @@ public class UserDAO extends BaseJDOObjectDAO<UserID, User>
 		storeUser(userGroup, false, null, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT, monitor);
 	}
 
-	/**
-	 * Get all user groups.
-	 * @param fetchGroups Wich fetch groups to use
-	 * @param maxFetchDepth Fetch depth or {@link NLJDOHelper#MAX_FETCH_DEPTH_NO_LIMIT}
-	 * @param monitor The progress monitor for this action. For every downloaded
-	 * 					object, <code>monitor.worked(1)</code> will be called.
-	 * @return The user groups.
-	 */
-	public synchronized Collection<UserGroup> getUserGroups(String[] fetchgroups, int maxFetchDepth, ProgressMonitor monitor)
-	{
-		return CollectionUtil.castCollection(getUsersByType(User.USERTYPE_USERGROUP, fetchgroups, maxFetchDepth, monitor));
-	}
+//	/**
+//	 * Get all user groups.
+//	 * @param fetchGroups Wich fetch groups to use
+//	 * @param maxFetchDepth Fetch depth or {@link NLJDOHelper#MAX_FETCH_DEPTH_NO_LIMIT}
+//	 * @param monitor The progress monitor for this action. For every downloaded
+//	 * 					object, <code>monitor.worked(1)</code> will be called.
+//	 * @return The user groups.
+//	 */
+//	public synchronized Collection<UserGroup> getUserGroups(String organisationID, String[] fetchgroups, int maxFetchDepth, ProgressMonitor monitor)
+//	{
+//		return CollectionUtil.castCollection(getUsers(User.USERTYPE_USERGROUP, fetchgroups, maxFetchDepth, monitor));
+//	}
 
 	/**
 	 * Add a user to a user group
@@ -283,7 +288,7 @@ public class UserDAO extends BaseJDOObjectDAO<UserID, User>
 		monitor.beginTask("Adding user: "+user.getName()+" to group: "+userGroup.getName(), 1);
 		try {
 			Properties initialContextProperties = SecurityReflector.getInitialContextProperties();
-			UserManager um = UserManagerUtil.getHome(initialContextProperties).create();
+			JFireSecurityManager um = JFireSecurityManagerUtil.getHome(initialContextProperties).create();
 			um.addUserToUserGroup(user.getUserID(), userGroup.getUserID());
 			monitor.done();
 		} catch(Exception e) {
@@ -304,7 +309,7 @@ public class UserDAO extends BaseJDOObjectDAO<UserID, User>
 		monitor.beginTask("Removing user: "+user.getName()+" from group: "+userGroup.getName(), 1);
 		try {
 			Properties initialContextProperties = SecurityReflector.getInitialContextProperties();
-			UserManager um = UserManagerUtil.getHome(initialContextProperties).create();
+			JFireSecurityManager um = JFireSecurityManagerUtil.getHome(initialContextProperties).create();
 			um.removeUserFromUserGroup(user.getUserID(), userGroup.getUserID());
 			monitor.done();
 		} catch(Exception e) {
@@ -334,7 +339,7 @@ public class UserDAO extends BaseJDOObjectDAO<UserID, User>
 		monitor.beginTask("Adding a user to a rolegroup", 1);
 		try {
 			Properties initialContextProperties = SecurityReflector.getInitialContextProperties();
-			UserManager um = UserManagerUtil.getHome(initialContextProperties).create();
+			JFireSecurityManager um = JFireSecurityManagerUtil.getHome(initialContextProperties).create();
 			um.addRoleGroupToUser(userID, authorityID, roleGroupID);
 			monitor.done();
 		} catch(RuntimeException e) {
@@ -357,7 +362,7 @@ public class UserDAO extends BaseJDOObjectDAO<UserID, User>
 				throw new IllegalArgumentException("Cannot manage foreign authority! authority.organisationID=\""+authorityID.organisationID+"\" does not match our organisationID=\""+organisationID+"\"!");
 
 			Properties initialContextProperties = SecurityReflector.getInitialContextProperties();
-			UserManager um = UserManagerUtil.getHome(initialContextProperties).create();
+			JFireSecurityManager um = JFireSecurityManagerUtil.getHome(initialContextProperties).create();
 			um.removeRoleGroupFromUser(userID, authorityID, roleGroupID);
 			monitor.done();
 		} catch(RuntimeException e) {
@@ -373,7 +378,7 @@ public class UserDAO extends BaseJDOObjectDAO<UserID, User>
 			String[] fetchgroups, int maxFetchDepth, ProgressMonitor monitor)
 	{
 		try {
-			UserManager um = UserManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
+			JFireSecurityManager um = JFireSecurityManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
 			Collection<UserID> ids = um.getUserIDsInUserGroup(userGroupID);
 			return getJDOObjects(null, ids, fetchgroups, maxFetchDepth, monitor);			
 		} catch (Exception e) {
@@ -386,7 +391,7 @@ public class UserDAO extends BaseJDOObjectDAO<UserID, User>
 			String[] fetchgroups, int maxFetchDepth, ProgressMonitor monitor)
 	{
 		try {
-			UserManager um = UserManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
+			JFireSecurityManager um = JFireSecurityManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
 			Collection<UserID> ids = um.getUserIDsNotInUserGroup(userGroupID);
 			return getJDOObjects(null, ids, fetchgroups, maxFetchDepth, monitor);
 		} catch (Exception e) {
