@@ -723,11 +723,11 @@ public abstract class OrganisationManagerBean
 //				logger.info("testBackhand ("+organisationIDs.length+"): OrganisationManagerUtil.getHome(...)");
 //				OrganisationManager organisationManager = OrganisationManagerUtil.getHome(getInitialContextProperties(organisationID)).create();
 //
-//				logger.info("testBackhand ("+organisationIDs.length+"): UserManagerUtil.getHome()");
-//				UserManagerHome userManagerHome = UserManagerUtil.getHome();
+//				logger.info("testBackhand ("+organisationIDs.length+"): JFireSecurityManagerUtil.getHome()");
+//				JFireSecurityManagerHome userManagerHome = JFireSecurityManagerUtil.getHome();
 //
 //				logger.info("testBackhand ("+organisationIDs.length+"): userManagerHome.create()");
-//				UserManager userManager = userManagerHome.create();
+//				JFireSecurityManager userManager = userManagerHome.create();
 //
 //				logger.info("testBackhand ("+organisationIDs.length+"): organisationManager.testBackhand(...)");
 //				organisationManager.testBackhand(bhOrgaIDs);

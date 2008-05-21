@@ -3,6 +3,7 @@
  */
 package org.nightlabs.jfire.language;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -17,38 +18,41 @@ import org.nightlabs.util.NLLocale;
 
 /**
  * @author Daniel Mazurek - daniel [at] nightlabs [dot] de
- *
+ * @author marco schulze - marco at nightlabs dot de
  */
 public class JFireLocale 
 extends NLLocale 
 {
-	private Map<String, UserLocaleWrapper> completeUserID2UserLocaleWrapper = 
-		new HashMap<String, UserLocaleWrapper>();
-	
-	private long maxDuration = 10000;
-	
+	private Map<String, UserLocaleWrapper> completeUserID2UserLocaleWrapper = Collections.synchronizedMap(
+			new HashMap<String, UserLocaleWrapper>()
+	);
+
+	private static final long userLocaleCacheLifetimeMSec = 10 * 60 * 1000; // 10 minutes
+
 	@Override
-	protected Locale _getDefault() 
+	protected Locale _getDefault()
 	{
+		// We do not synchronize this method but instead only synchronize the Map completeUserID2UserLocaleWrapper,
+		// because this minimizes the risk of a dead lock. Even though, it instead gives us the risk that
+		// getUserLocale(...) is called multiple times in parallel for the same user, we choose this strategy, because
+		// it is very unlikely. Even if this method is called in parallel for the same user,
+		// it doesn't really matter (a little bit of unnecessary work, but no real problem). In this rare case, the
+		// JDO 2nd-level cache will reduce the unnecessary work to a minimum, anyway.
+
 		UserDescriptor userDescriptor = SecurityReflector.getUserDescriptor();
 		String completeUserID = userDescriptor.getCompleteUserID();
 		UserLocaleWrapper userLocaleWrapper = completeUserID2UserLocaleWrapper.get(completeUserID);
 		long currentTime = System.currentTimeMillis();
-		if (userLocaleWrapper == null) 
-		{
+
+		if (userLocaleWrapper != null && (currentTime - userLocaleWrapper.getTimeStamp() > userLocaleCacheLifetimeMSec))
+			userLocaleWrapper = null; // expired => create a new one
+
+		if (userLocaleWrapper == null) {
 			Locale userLocale = getUserLocale(userDescriptor);
 			userLocaleWrapper = new UserLocaleWrapper(completeUserID, userLocale, currentTime);
 			completeUserID2UserLocaleWrapper.put(completeUserID, userLocaleWrapper);
 		}
-		else {
-			long timeStamp = userLocaleWrapper.getTimeStamp();
-			long diff = currentTime - timeStamp;
-			if (diff > maxDuration) {
-				Locale userLocale = getUserLocale(userDescriptor);
-				userLocaleWrapper.setLocale(userLocale);
-				userLocaleWrapper.setTimeStamp(currentTime);
-			}
-		}
+
 		return userLocaleWrapper.getLocale();
 	}
 

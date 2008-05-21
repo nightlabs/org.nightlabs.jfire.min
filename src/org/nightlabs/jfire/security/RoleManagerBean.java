@@ -39,10 +39,10 @@ import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.servermanager.RoleImportSet;
 
 /**
+ * @deprecated This seems not to be used in anything except very old (and itself deprecated) code. New code should use the {@link JFireSecurityManagerBean} / {@link JFireSecurityManager}
+ *
  * @author nick
- */
-
-/**
+ *
  * @ejb.bean name="jfire/ejb/JFireBaseBean/RoleManager"
  *	jndi-name="jfire/ejb/JFireBaseBean/RoleManager"
  *	type="Stateless"
@@ -107,7 +107,7 @@ public abstract class RoleManagerBean extends BaseSessionBeanImpl implements Ses
 				pm.makePersistent(newRole);
 				logger.info("new role created..");
 			} finally {
-				if (AuthorityManagerBean.CLOSE_PM) pm.close();
+				pm.close();
 			}
 		} catch(Exception e) {
 			throw new SecurityException(e);
@@ -131,7 +131,7 @@ public abstract class RoleManagerBean extends BaseSessionBeanImpl implements Ses
 				result.makeTransient(roleGroupIncludeMask);
 				return result;
 			} finally {
-				if (AuthorityManagerBean.CLOSE_PM) pm.close();
+				pm.close();
 			}
 		} catch (Exception x) {
 			throw new SecurityException(x);
@@ -193,7 +193,7 @@ public abstract class RoleManagerBean extends BaseSessionBeanImpl implements Ses
 //				Role role = (Role)pm.getObjectById(RoleID.create(roleID), true);
 //				role.addUser(usr);
 //			} finally {
-//				if (AuthorityManagerBean.CLOSE_PM) pm.close();
+//				if (JFireSecurityManagerBean.CLOSE_PM) pm.close();
 //			}
 //		} catch (Exception x) {
 //			throw new SecurityException(x);

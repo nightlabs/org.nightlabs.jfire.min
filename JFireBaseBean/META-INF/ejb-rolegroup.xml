@@ -12,17 +12,17 @@ PUBLIC "-//NightLabs GmbH//DTD JFire role groups 1.0//EN"
 			<description language="de">Diese Rollengruppe kombiniert alle Rollen, die notwendig sind, um Meta-Daten der eigenen Organisation zu lesen (z.B. Organisations-Person, Benutzer etc.).</description>
 			
 			<roles>
-				<role id="AuthorityManager-read">
-					<name>AuthorityManager-read</name>
-					<name language="de">AuthorityManager-lesen</name>
-					<description>This role allows read access for the AuthorityManager.</description>
-					<description language="de">Diese Rolle erlaubt Lesezugriff auf den AuthorityManager.</description>
+				<role id="org.nightlabs.jfire.security.JFireSecurityManager#getRoleGroupIDSetCarrier">
+					<name>get RoleGroupIDSetCarrier</name>
+					<name language="de">RoleGroupIDSetCarrier holen</name>
+					<description>This role allows getting a rolegroup configuration</description>
+					<description language="de">Diese Rolle erlaubt das Lesen einer Rollengruppen-Konfiguration</description>
 				</role>
 				<role id="LanguageManager-read"/>
 				<role id="OrganisationManager-read"/>
 				<role id="PersonManager-read"/>
 				<role id="RoleManager-read"/>
-				<role id="UserManager-read"/>
+				<role id="SecurityManager-read"/>
 			</roles>			
 		</rolegroup>
 
@@ -31,7 +31,9 @@ PUBLIC "-//NightLabs GmbH//DTD JFire role groups 1.0//EN"
 			<!-- This rolegroup is defined as "defaultgroup". This means, all roles that are not mentioned
 					in this file, but declared in ejb-jar.xml, will be registered within this rolegroup.
 			-->
-		
+			<role id="org.nightlabs.jfire.security.JFireSecurityManager#removeRoleGroupFromUser"/>
+			<role id="org.nightlabs.jfire.security.JFireSecurityManager#addRoleGroupToUser"/>
+
 			<name>Organisation Admin</name>
 			<name language="de">Organisation Verwalter</name>
 			<description>This role group combines all roles that are necessary to manage the own organisation (e.g. organisation person, users etc.).</description>
@@ -40,11 +42,11 @@ PUBLIC "-//NightLabs GmbH//DTD JFire role groups 1.0//EN"
 
 			<!--
 				These roles should be added automatically, because this is the default role group:
-					* AuthorityManager-write
+					* SecurityManager-write
 					* LanguageManager-write
 					* PersonManager-write
 					* RoleManager-write
-					* UserManager-write
+					* SecurityManager-write
 			-->
 
 		</rolegroup>
