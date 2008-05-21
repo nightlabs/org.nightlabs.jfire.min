@@ -8,7 +8,7 @@ import javax.security.auth.login.LoginException;
 import junit.framework.TestCase;
 
 import org.nightlabs.jfire.base.login.JFireLogin;
-import org.nightlabs.jfire.security.UserManagerUtil;
+import org.nightlabs.jfire.security.JFireSecurityManagerUtil;
 import org.nightlabs.jfire.testsuite.JFireTestSuite;
 
 /**
@@ -24,7 +24,7 @@ public class LoginTest extends TestCase
 	public void testCorrectLogin() throws Exception {
 		JFireLogin login = JFireTestLogin.getUserLogin(JFireTestLogin.USER_QUALIFIER_SERVER_ADMIN);
 		login.login(); // Warning! even though it's fine for testing here, switching the identity during a running transaction might cause trouble.
-		UserManagerUtil.getHome(login.getInitialContextProperties()).create();
+		JFireSecurityManagerUtil.getHome(login.getInitialContextProperties()).create();
 	}
 
 	public void testIncorrectLogin() {
@@ -36,7 +36,7 @@ public class LoginTest extends TestCase
 			return;
 		}
 		fail("Could login with wrong credentials");
-//		UserManagerUtil.getHome(login.getInitialContextProperties()).create();
+//		JFireSecurityManagerUtil.getHome(login.getInitialContextProperties()).create();
 	}
 
 }
