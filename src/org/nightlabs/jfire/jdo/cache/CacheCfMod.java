@@ -144,9 +144,7 @@ public class CacheCfMod extends ConfigModule
 				"\n" +
 				"* notificationDelayAfterTransactionCompletionThreadPoolMaxSize: The maximum pool size of\n" +
 				"    the ThreadPool (i.e. the maximum number of pooled threads) used by the JdoCacheBridgeDefault\n" +
-				"    if notificationDelayAfterTransactionCompletionMSec > 0. If more threads would be required, the\n" +
-				"    enqueuing thread (i.e. the transaction's thread triggering the JdoCacheBridgeDefault) has to\n" +
-				"    wait for a thread to become available.\n" +
+				"    if notificationDelayAfterTransactionCompletionMSec > 0.\n" +
 				"    Minimum is notificationDelayAfterTransactionCompletionThreadPoolCoreSize.\n" +
 				"    Maximum is 10000.\n" +
 				"    Default is 2 * notificationDelayAfterTransactionCompletionThreadPoolCoreSize.\n" +
