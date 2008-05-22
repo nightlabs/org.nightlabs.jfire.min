@@ -35,10 +35,35 @@
 -->
             <property name="datanucleus.rdbms.stringDefaultLength" value="255"/>
 
-            <property name="datanucleus.cache.level2" value="false"/>
+            <property name="datanucleus.cache.level2" value="true"/>
             <property name="datanucleus.persistenceByReachabilityAtCommit" value="false"/>
 
+<!--
+I just got this exception:
+
+javax.jdo.JDOFatalInternalException: Unsupported Feature: Candidate Collection is only allowed using ForwardQueryResults
+        at org.datanucleus.jdo.NucleusJDOHelper.getJDOExceptionForNucleusException(NucleusJDOHelper.java:393)
+        at org.datanucleus.jdo.JDOQuery.executeWithMap(JDOQuery.java:339)
+        at org.nightlabs.jdo.query.AbstractJDOQuery.executeQuery(AbstractJDOQuery.java:177)
+        at org.nightlabs.jdo.query.AbstractJDOQuery.getResult(AbstractJDOQuery.java:100)
+        at org.nightlabs.jdo.query.QueryCollection.executeQueries(QueryCollection.java:117)
+        at org.nightlabs.jdo.query.JDOQueryCollectionDecorator.executeQueries(JDOQueryCollectionDecorator.java:40)
+        at org.nightlabs.jfire.trade.TradeManagerBean.getOfferIDs(TradeManagerBean.java:1844)
+...
+...
+...
+Unsupported Feature: Candidate Collection is only allowed using ForwardQueryResults
+org.datanucleus.exceptions.NucleusException: Unsupported Feature: Candidate Collection is only allowed using ForwardQueryResults
+        at org.datanucleus.store.rdbms.query.ScrollableQueryResult.<init>(ScrollableQueryResult.java:98)
+        at org.datanucleus.store.rdbms.query.SQLEvaluator.evaluate(SQLEvaluator.java:167)
+        at org.datanucleus.store.rdbms.query.JDOQLQuery.performExecute(JDOQLQuery.java:336)
+        at org.datanucleus.store.query.Query.executeWithMap(Query.java:1334)
+        at org.datanucleus.jdo.JDOQuery.executeWithMap(JDOQuery.java:330)
+
+Therefore, we deactivate this and use forward-query-results instead.
+
 			<property name="datanucleus.rdbms.query.resultSetType" value="scroll-insensitive"/>
+-->
         </properties>
     </persistence-unit>
 
