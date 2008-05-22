@@ -52,6 +52,7 @@ import javax.transaction.Synchronization;
 import org.apache.log4j.Logger;
 import org.nightlabs.annotation.Implement;
 import org.nightlabs.jfire.idgenerator.IDNamespace;
+import org.nightlabs.jfire.jdo.cache.CacheCfMod;
 import org.nightlabs.jfire.jdo.cache.CacheManagerFactory;
 import org.nightlabs.jfire.jdo.notification.DirtyObjectID;
 import org.nightlabs.jfire.jdo.notification.JDOLifecycleState;
@@ -65,16 +66,16 @@ public class JdoCacheBridgeDefault extends JdoCacheBridge
 {
 	private static final Logger logger = Logger.getLogger(JdoCacheBridgeDefault.class);
 
+	private BlockingQueue<Runnable> flush_queue = new LinkedBlockingDeque<Runnable>();
+	private ThreadPoolExecutor flush_threadPoolExecutor;
+
 	/**
 	 * If this is &lt;= 0, the {@link CacheTransactionListener#afterCompletion(int)} will
 	 * directly forward all collected events to the {@link CacheManagerFactory}. If this
-	 * is &gt; 0, the said method will spawn a {@link Thread} and execute it asynchronously
+	 * is &gt; 0, the said method will use a separate {@link Thread} (from a thread-pool) and execute it asynchronously
 	 * after the given delay in milliseconds.
 	 */
-	private static final int notificationDelayAfterCompletionMSec = 2000;
-
-	private BlockingQueue<Runnable> flush_queue = new LinkedBlockingDeque<Runnable>();
-	private ThreadPoolExecutor flush_threadPoolExecutor = new ThreadPoolExecutor(10, 20, 60000, TimeUnit.MILLISECONDS, flush_queue);
+	private long notificationDelayAfterTransactionCompletionMSec;
 
 	public static class CacheTransactionListener
 	implements Synchronization
@@ -83,6 +84,7 @@ public class JdoCacheBridgeDefault extends JdoCacheBridge
 
 		private JdoCacheBridgeDefault bridge;
 		private volatile boolean dead = false;
+
 
 		public CacheTransactionListener(JdoCacheBridgeDefault bridge)
 		{
@@ -163,12 +165,13 @@ public class JdoCacheBridgeDefault extends JdoCacheBridge
 					if (logger.isDebugEnabled())
 						debug("afterCompletion(STATUS_COMMITTED) called.");
 
-// we are not authenticated anymore - for whatever reason :-( trying to get this info in constructor, now - seems to work.
+// we are not authenticated anymore - for whatever reason :-( Hence we get the sessionID already in the constructor, now - which seems to work fine. Marco.
 					if (_sessionID == null)
 						throw new IllegalStateException("afterCompletion: sessionID is not assigned!");
 
 					final Map<JDOLifecycleState, Map<Object, DirtyObjectID>> _dirtyObjectIDs = this.dirtyObjectIDs;
-					this.dirtyObjectIDs = null;
+					this.dirtyObjectIDs = null; // we ensure that this object is not modified anymore by nulling the field.
+
 					final Map<Object, Class<?>> _objectID2Class = this.objectID2Class;
 					this.objectID2Class = null;
 
@@ -181,14 +184,12 @@ public class JdoCacheBridgeDefault extends JdoCacheBridge
 									bridge.getCacheManagerFactory().addObjectID2ClassMap(_objectID2Class);
 
 								// there seems to be a timing issue concerning the commit of a transaction - delaying a sec seems to help - TODO fix this problem in a CLEAN way!
-								if (notificationDelayAfterCompletionMSec > 0) {
-									try { Thread.sleep(notificationDelayAfterCompletionMSec); } catch (InterruptedException e) { } // ignore
+								if (bridge.notificationDelayAfterTransactionCompletionMSec > 0) {
+									try { Thread.sleep(bridge.notificationDelayAfterTransactionCompletionMSec); } catch (InterruptedException e) { } // ignore
 								}
 
-								bridge.getCacheManagerFactory().addDirtyObjectIDs(_sessionID, _dirtyObjectIDs);
-
 								if (logger.isDebugEnabled()) {
-									debug("afterCompletion(STATUS_COMMITTED).Runnable: pumped DirtyObjectIDs into CacheManagerFactory: _dirtyObjectIDs.size()=" + _dirtyObjectIDs.size());
+									debug("afterCompletion(STATUS_COMMITTED).Runnable: pumping DirtyObjectIDs into CacheManagerFactory: _dirtyObjectIDs.size()=" + _dirtyObjectIDs.size());
 									for (Map.Entry<JDOLifecycleState, Map<Object, DirtyObjectID>> me : _dirtyObjectIDs.entrySet()) {
 										debug("afterCompletion(STATUS_COMMITTED).Runnable:   * " + me.getKey());
 										for (Object oid : me.getValue().keySet()) {
@@ -197,17 +198,19 @@ public class JdoCacheBridgeDefault extends JdoCacheBridge
 									}
 								}
 
+								// The CacheManagerFactory might modify the passed instance of _dirtyObjectIDs. Therefore, it is
+								// imperative that we do not touch _dirtyObjectIDs anymore, after the following method has been called.
+								// That's why, we debug-log above, for example, instead of below.
+								bridge.getCacheManagerFactory().addDirtyObjectIDs(_sessionID, _dirtyObjectIDs);
+
 							} catch (Throwable e) {
 								error("afterCompletion(STATUS_COMMITTED).Runnable: " + e.getMessage(), e);
 							}
 						}
 					};
 
-					if (notificationDelayAfterCompletionMSec > 0) {
-//						Thread t = new Thread(runnable);
-//						t.start();
+					if (bridge.notificationDelayAfterTransactionCompletionMSec > 0)
 						bridge.flush_threadPoolExecutor.execute(runnable);
-					}
 					else
 						runnable.run();
 
@@ -225,7 +228,8 @@ public class JdoCacheBridgeDefault extends JdoCacheBridge
 				error("afterCompletion(...) called with unknown status: " + status, new Exception("Unknown status (" + status + ") in afterCompletion!"));
 		}
 
-		// IMHO no sync necessary, because one transaction should only be used by one thread. We use volatile, though, to ensure that it's immediately visible if it has been nulled - just in case.
+		// IMHO no synchronization necessary, because one transaction should only be used by one thread.
+		// We use volatile, though, to ensure that it's immediately visible if it has been nulled - just in case. Marco.
 		private volatile Map<JDOLifecycleState, Map<Object, DirtyObjectID>> dirtyObjectIDs = null;
 		private Map<Object, Class<?>> objectID2Class = null;
 
@@ -447,6 +451,15 @@ public class JdoCacheBridgeDefault extends JdoCacheBridge
 		} catch (NamingException e) {
 			throw new RuntimeException(e);
 		}
+
+		CacheCfMod cacheCfMod = getCacheManagerFactory().getCacheCfMod();
+		notificationDelayAfterTransactionCompletionMSec = cacheCfMod.getNotificationDelayAfterTransactionCompletionMSec();
+
+		flush_threadPoolExecutor = new ThreadPoolExecutor(
+				cacheCfMod.getNotificationDelayAfterTransactionCompletionThreadPoolCoreSize(),
+				cacheCfMod.getNotificationDelayAfterTransactionCompletionThreadPoolMaxSize(),
+				cacheCfMod.getNotificationDelayAfterTransactionCompletionThreadPoolKeepAliveMSec(),
+				TimeUnit.MILLISECONDS, flush_queue);
 
 		PersistenceManagerFactory pmf = getPersistenceManagerFactory();
 

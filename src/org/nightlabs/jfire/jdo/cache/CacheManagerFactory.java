@@ -209,7 +209,7 @@ public class CacheManagerFactory
 
 	private CacheCfMod cacheCfMod;
 
-	protected CacheCfMod getCacheCfMod()
+	public CacheCfMod getCacheCfMod()
 	{
 		return cacheCfMod;
 	}

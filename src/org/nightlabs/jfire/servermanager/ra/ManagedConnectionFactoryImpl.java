@@ -272,7 +272,6 @@ public class ManagedConnectionFactoryImpl
 	/**
 	 * FIXME Remove the use of deprecated members.
 	 */
-	@SuppressWarnings("deprecation")
 	protected void freezeConfiguration()
 		throws ConfigException
 	{
@@ -303,23 +302,23 @@ public class ManagedConnectionFactoryImpl
 		if (!fileSysConfDir.canWrite())
 			throw new ConfigException("SysConfigDirectory \""+sysConfigDirectoryAbsolute+"\" defined in JFireServerManager-ds.xml is not writeable!");
 
-		config = new Config(new File(sysConfigDirectory, "Config.xml"), true);
+		config = new Config(new File(sysConfigDirectory, "Config.xml"));
 
 		configurable = false;
 
-//		Runtime.getRuntime().addShutdownHook(
-//			new Thread() {
-//				public void run()
-//				{
-//					try {
-//						config.saveConfFile();
-//					} catch (Throwable e) {
-//						LOGGER.log(Level.FATAL, "Saving config failed!", e);
-//					}
-//				}
-//			}
-//		);
-		
+		Runtime.getRuntime().addShutdownHook(
+			new Thread() {
+				public void run()
+				{
+					try {
+						config.save();
+					} catch (Throwable e) {
+						logger.error("freezeConfiguration: ShutdownHook: Saving config failed!", e);
+					}
+				}
+			}
+		);
+
 		JFireServerConfigModule cfMod = config.createConfigModule(JFireServerConfigModule.class);
 
 		config.save();

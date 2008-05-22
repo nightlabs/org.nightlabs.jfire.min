@@ -57,6 +57,12 @@ public class CacheCfMod extends ConfigModule
 
 	private String jdoCacheBridgeClassName = null;
 
+	private long notificationDelayAfterTransactionCompletionMSec = -1;
+
+	private int notificationDelayAfterTransactionCompletionThreadPoolCoreSize = 0;
+	private int notificationDelayAfterTransactionCompletionThreadPoolMaxSize = 0;
+	private long notificationDelayAfterTransactionCompletionThreadPoolKeepAliveMSec = -1;
+
 	public CacheCfMod()
 	{
 	}
@@ -116,10 +122,41 @@ public class CacheCfMod extends ConfigModule
 				"    waitForChangesTimeoutMin and maximum is 3h.\n" +
 				"\n" +
 				"* jdoCacheBridgeClassName: Depending on the JDO implemention, you're using, you\n" +
-				"    need to use a specialized JDO-cache-bridge. This bridge makes sure, the\n" +
-				"    CacheManagerFactory (the core of the cache) is notified whenever an object\n" +
-				"    is changed in datastore.\n" +
-				"    Default: org.nightlabs.jfire.jdo.cache.bridge.JdoCacheBridgeDefault\n";
+				"    might need to use a specialized JDO-cache-bridge (in nearly all cases, the default\n" +
+				"    one is perfect). This bridge makes sure, the CacheManagerFactory (the core of\n" +
+				"    the cache on the server-side) is notified whenever an object is created, changed\n" +
+				"    or deleted in the datastore.\n" +
+				"    Default: org.nightlabs.jfire.jdo.cache.bridge.JdoCacheBridgeDefault\n" +
+				"\n" +
+				"* notificationDelayAfterTransactionCompletionMSec: In order to ensure that a read\n" +
+				"    access onto a changed object is really getting the new object (and not happening\n" +
+				"    too early and thus still reading the old instance), it is possible to delay the\n" +
+				"    transmission of notifications. This is done by the JdoCacheBridgeDefault (and\n" +
+				"    therefore might not be respected by another cache bridge implementation!).\n" +
+				"    Minimum is 0 (i.e. immediate transmission from the bridge to the CacheManagerFactory).\n" +
+				"    Maximum is 120000 (2 minutes).\n" +
+				"    Default is 2000 (2 sec).\n" +
+				"\n" +
+				"* notificationDelayAfterTransactionCompletionThreadPoolCoreSize: The core pool size of\n" +
+				"    the ThreadPool (i.e. the minimum number of pooled threads) used by the JdoCacheBridgeDefault\n" +
+				"    if notificationDelayAfterTransactionCompletionMSec > 0.\n" +
+				"    Minimum is 1. Maximum is 1000. Default is 10.\n" +
+				"\n" +
+				"* notificationDelayAfterTransactionCompletionThreadPoolMaxSize: The maximum pool size of\n" +
+				"    the ThreadPool (i.e. the maximum number of pooled threads) used by the JdoCacheBridgeDefault\n" +
+				"    if notificationDelayAfterTransactionCompletionMSec > 0. If more threads would be required, the\n" +
+				"    enqueuing thread (i.e. the transaction's thread triggering the JdoCacheBridgeDefault) has to\n" +
+				"    wait for a thread to become available.\n" +
+				"    Minimum is notificationDelayAfterTransactionCompletionThreadPoolCoreSize.\n" +
+				"    Maximum is 10000.\n" +
+				"    Default is 2 * notificationDelayAfterTransactionCompletionThreadPoolCoreSize.\n" +
+				"\n" +
+				"* notificationDelayAfterTransactionCompletionThreadPoolKeepAliveMSec: The time for which a thread\n" +
+				"    in the pool waits for a new notification to be done before terminating, if there are more\n" +
+				"    threads existing than defined by the core pool size.\n" +
+				"    Minimum is 0.\n" +
+				"    Maximum is 3600000 (1 hour).\n" +
+				"    Default is 60000 (1 minute).\n";
 
 		if (notificationIntervalMSec < 100)
 			setNotificationIntervalMSec(2 * 1000);
@@ -158,6 +195,20 @@ public class CacheCfMod extends ConfigModule
 			setWaitForChangesTimeoutMin(waitForChangesTimeoutMax);
 		}
 
+		if (notificationDelayAfterTransactionCompletionMSec < 0 || notificationDelayAfterTransactionCompletionMSec > 120000)
+			setNotificationDelayAfterTransactionCompletionMSec(2000);
+
+		if (notificationDelayAfterTransactionCompletionThreadPoolCoreSize < 1 || notificationDelayAfterTransactionCompletionThreadPoolCoreSize > 1000)
+			setNotificationDelayAfterTransactionCompletionThreadPoolCoreSize(10);
+
+		if (notificationDelayAfterTransactionCompletionThreadPoolMaxSize < notificationDelayAfterTransactionCompletionThreadPoolCoreSize ||
+				notificationDelayAfterTransactionCompletionThreadPoolMaxSize > 10000)
+			setNotificationDelayAfterTransactionCompletionThreadPoolMaxSize(Math.min(10000, notificationDelayAfterTransactionCompletionThreadPoolCoreSize * 2));
+
+		if (notificationDelayAfterTransactionCompletionThreadPoolKeepAliveMSec < 0 ||
+				notificationDelayAfterTransactionCompletionThreadPoolKeepAliveMSec > 60 * 60 * 1000)
+			setNotificationDelayAfterTransactionCompletionThreadPoolKeepAliveMSec(60 * 1000);
+
 		if (logger.isDebugEnabled()) {
 			logger.debug("The Cache settings are:");
 			logger.debug("      notificationIntervalMSec=" + notificationIntervalMSec);
@@ -168,6 +219,10 @@ public class CacheCfMod extends ConfigModule
 			logger.debug("      waitForChangesTimeoutMin=" + waitForChangesTimeoutMin);
 			logger.debug("      waitForChangesTimeoutMax=" + waitForChangesTimeoutMax);
 			logger.debug("      jdoCacheBridgeClassName=" + jdoCacheBridgeClassName);
+			logger.debug("      notificationDelayAfterTransactionCompletionMSec=" + notificationDelayAfterTransactionCompletionMSec);
+			logger.debug("      notificationDelayAfterTransactionCompletionThreadPoolCoreSize=" + notificationDelayAfterTransactionCompletionThreadPoolCoreSize);
+			logger.debug("      notificationDelayAfterTransactionCompletionThreadPoolMaxSize=" + notificationDelayAfterTransactionCompletionThreadPoolMaxSize);
+			logger.debug("      notificationDelayAfterTransactionCompletionThreadPoolKeepAliveMSec=" + notificationDelayAfterTransactionCompletionThreadPoolKeepAliveMSec);
 		}
 	}
 
@@ -181,8 +236,7 @@ public class CacheCfMod extends ConfigModule
 	/**
 	 * @param cacheSessionContainerActivityMSec The cacheSessionContainerActivityMSec to set.
 	 */
-	public void setCacheSessionContainerActivityMSec(
-			long cacheSessionContainerActivityMSec)
+	public void setCacheSessionContainerActivityMSec(long cacheSessionContainerActivityMSec)
 	{
 		this.cacheSessionContainerActivityMSec = cacheSessionContainerActivityMSec;
 		setChanged();
@@ -281,8 +335,7 @@ public class CacheCfMod extends ConfigModule
 	{
 		return freshDirtyObjectIDContainerCount;
 	}
-	public void setFreshDirtyObjectIDContainerCount(
-			int freshDirtyObjectIDContainerCount)
+	public void setFreshDirtyObjectIDContainerCount(int freshDirtyObjectIDContainerCount)
 	{
 		this.freshDirtyObjectIDContainerCount = freshDirtyObjectIDContainerCount;
 		setChanged();
@@ -292,10 +345,41 @@ public class CacheCfMod extends ConfigModule
 	{
 		return freshDirtyObjectIDContainerActivityMSec;
 	}
-	public void setFreshDirtyObjectIDContainerActivityMSec(
-			long freshDirtyObjectIDContainerActivityMSec)
+	public void setFreshDirtyObjectIDContainerActivityMSec(long freshDirtyObjectIDContainerActivityMSec)
 	{
 		this.freshDirtyObjectIDContainerActivityMSec = freshDirtyObjectIDContainerActivityMSec;
+		setChanged();
+	}
+
+	public long getNotificationDelayAfterTransactionCompletionMSec() {
+		return notificationDelayAfterTransactionCompletionMSec;
+	}
+	public void setNotificationDelayAfterTransactionCompletionMSec(long notificationDelayAfterTransactionCompletionMSec) {
+		this.notificationDelayAfterTransactionCompletionMSec = notificationDelayAfterTransactionCompletionMSec;
+		setChanged();
+	}
+
+	public int getNotificationDelayAfterTransactionCompletionThreadPoolCoreSize() {
+		return notificationDelayAfterTransactionCompletionThreadPoolCoreSize;
+	}
+	public void setNotificationDelayAfterTransactionCompletionThreadPoolCoreSize(int notificationDelayAfterTransactionCompletionThreadPoolCoreSize) {
+		this.notificationDelayAfterTransactionCompletionThreadPoolCoreSize = notificationDelayAfterTransactionCompletionThreadPoolCoreSize;
+		setChanged();
+	}
+
+	public long getNotificationDelayAfterTransactionCompletionThreadPoolKeepAliveMSec() {
+		return notificationDelayAfterTransactionCompletionThreadPoolKeepAliveMSec;
+	}
+	public void setNotificationDelayAfterTransactionCompletionThreadPoolKeepAliveMSec(long notificationDelayAfterTransactionCompletionThreadPoolKeepAliveMSec) {
+		this.notificationDelayAfterTransactionCompletionThreadPoolKeepAliveMSec = notificationDelayAfterTransactionCompletionThreadPoolKeepAliveMSec;
+		setChanged();
+	}
+
+	public int getNotificationDelayAfterTransactionCompletionThreadPoolMaxSize() {
+		return notificationDelayAfterTransactionCompletionThreadPoolMaxSize;
+	}
+	public void setNotificationDelayAfterTransactionCompletionThreadPoolMaxSize(int notificationDelayAfterTransactionCompletionThreadPoolMaxSize) {
+		this.notificationDelayAfterTransactionCompletionThreadPoolMaxSize = notificationDelayAfterTransactionCompletionThreadPoolMaxSize;
 		setChanged();
 	}
 }
