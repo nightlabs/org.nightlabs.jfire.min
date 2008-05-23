@@ -8,4 +8,5 @@ public class RoleConstants {
 	public static final RoleID securityManager_getRoleGroupIDSetCarrier = RoleID.create(JFireSecurityManager.class.getName() + "#getRoleGroupIDSetCarrier");
 	public static final RoleID securityManager_removeRoleGroupFromUser = RoleID.create(JFireSecurityManager.class.getName() + "#removeRoleGroupFromUser");
 	public static final RoleID securityManager_addRoleGroupToUser = RoleID.create(JFireSecurityManager.class.getName() + "#addRoleGroupToUser");
+	public static final RoleID securityManager_setRoleGroupsOfUser = RoleID.create(JFireSecurityManager.class.getName() + "#setRoleGroupsOfUser");
 }

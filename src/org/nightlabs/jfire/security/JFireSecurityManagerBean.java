@@ -696,6 +696,41 @@ implements SessionBean
 //	}
 
 	/**
+	 * @ejb.interface-method
+	 * @ejb.permission role-name="_Guest_"
+	 * @ejb.transaction type="Required"
+	 */
+	public void addUsersToAuthority(Set<UserID> userIDs, AuthorityID authorityID)
+	{
+		PersistenceManager pm = getPersistenceManager();
+		try {
+			Authority authority = (Authority) pm.getObjectById(authorityID);
+			Collection<User> users = NLJDOHelper.getObjectList(pm, userIDs, User.class);
+			for (User user : users)
+				authority.createUserRef(user);
+		} finally {
+			pm.close();
+		}
+	}
+
+	/**
+	 * @ejb.interface-method
+	 * @ejb.permission role-name="_Guest_"
+	 * @ejb.transaction type="Required"
+	 */
+	public void removeUsersFromAuthority(Set<UserID> userIDs, AuthorityID authorityID)
+	{
+		PersistenceManager pm = getPersistenceManager();
+		try {
+			Authority authority = (Authority) pm.getObjectById(authorityID);
+			for (UserID userID : userIDs)
+				authority.destroyUserRef(userID);
+		} finally {
+			pm.close();
+		}
+	}
+
+	/**
 	 * Returns a Collection of {@link User}s corresponding to the given set of {@link UserID}s.
 	 * @param userIDs the {@link UserID}s for which to retrieve the {@link User}s
 	 * @param fetchGroups the FetchGroups for the detached Users
@@ -721,7 +756,7 @@ implements SessionBean
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="JFireSecurityManager-read"
 	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
-	 **/
+	 */
 	public UserGroupIDListCarrier getUserGroupIDs(String userID, String authorityID)
 	{
 		PersistenceManager pm = getPersistenceManager();
@@ -945,7 +980,7 @@ implements SessionBean
 				throw new SecurityException("The current user \""+ getPrincipalString() +"\" misses the access right " + RoleConstants.securityManager_getRoleGroupIDSetCarrier + " and does not ask data about himself.");
 
 			Query q = pm.newQuery(User.class);
-			q.setFilter("this.organisationID = :organisationID");
+			q.setFilter("this.organisationID == :organisationID");
 			Collection<User> users = (Collection<User>) q.execute(organisationID);
 			List<RoleGroupIDSetCarrier> result = new ArrayList<RoleGroupIDSetCarrier>(users.size());
 			for (User user : users) {
@@ -987,16 +1022,19 @@ implements SessionBean
 		try {
 			Query q = pm.newQuery(Authority.class);
 			q.setResult("JDOHelper.getObjectId(this)");
-			AuthorityType authorityType = null; // TODO remove this workaround line!
-			if (authorityTypeID != null) {
-//				q.setFilter("JDOHelper.getObjectId(this.authorityType) == :authorityTypeID");
-				// TODO DataNucleus WORKAROUND
-				authorityType = (AuthorityType) pm.getObjectById(authorityTypeID);
-				q.setFilter("this.authorityType == :authorityType");
-			}
+			if (authorityTypeID != null)
+				q.setFilter("JDOHelper.getObjectId(this.authorityType) == :authorityTypeID");
 
-//			return new HashSet<AuthorityID>((Collection<? extends AuthorityID>) q.execute(authorityTypeID));
-			return new HashSet<AuthorityID>((Collection<? extends AuthorityID>) q.execute(authorityType));
+			return new HashSet<AuthorityID>((Collection<? extends AuthorityID>) q.execute(authorityTypeID));
+
+//			// DataNucleus WORKAROUND - no objects found by the above query - http://www.jpox.org/servlet/jira/browse/NUCRDBMS-22
+//			AuthorityType authorityType = null;
+//			if (authorityTypeID != null) {
+//				q.setFilter("this.authorityType == :authorityType");
+//				authorityType = (AuthorityType) pm.getObjectById(authorityTypeID);
+//			}
+//
+//			return new HashSet<AuthorityID>((Collection<? extends AuthorityID>) q.execute(authorityType));
 		} finally {
 			pm.close();
 		}
@@ -1410,7 +1448,7 @@ implements SessionBean
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="org.nightlabs.jfire.security.JFireSecurityManager#addRoleGroupToUser"
 	 * @!role-assigned(Marco, 2008-05-05)
-	 **/
+	 */
 	public void addRoleGroupToUser(UserID userID, AuthorityID authorityID, RoleGroupID roleGroupID)
 	{
 		String organisationID = getOrganisationID();
@@ -1439,12 +1477,60 @@ implements SessionBean
 			try {
 				if (user instanceof UserGroup) {
 					for (User member : ((UserGroup)user).getUsers())
-						jfsm.jfireSecurity_flushCache(member.getUserID());
+						jfsm.jfireSecurity_flushCache((UserID) JDOHelper.getObjectId(member));
 				}
 				else
-					jfsm.jfireSecurity_flushCache(userID.userID);
+					jfsm.jfireSecurity_flushCache(userID);
 			} finally {
 				jfsm.close();
+			}
+		} finally {
+			pm.close();
+		}
+	}
+
+	/**
+	 * @param userID the user-id. Must not be <code>null</code>.
+	 * @param authorityID the authority-id. Must not be <code>null</code>.
+	 * @param roleGroupIDs the role-group-ids that should be assigned to the specified user within the scope of the specified
+	 *		authority. If this is <code>null</code>, the {@link UserRef} of the specified user will be removed from the {@link Authority}.
+	 *		If this is not <code>null</code>, a <code>UserRef</code> is created if not yet existing.
+	 *
+	 * @ejb.interface-method
+	 * @ejb.permission role-name="org.nightlabs.jfire.security.JFireSecurityManager#setRoleGroupsOfUser"
+	 */
+	public void setRoleGroupsOfUser(UserID userID, AuthorityID authorityID, Set<RoleGroupID> roleGroupIDs)
+	{
+		PersistenceManager pm = getPersistenceManager();
+		try {
+			User user = (User) pm.getObjectById(userID);
+			Authority authority = (Authority) pm.getObjectById(authorityID);
+
+			if (roleGroupIDs == null)
+				authority.destroyUserRef(userID);
+			else {
+				UserRef userRef = authority.createUserRef(user);
+				Set<RoleGroupID> roleGroupIDsToAdd = new HashSet<RoleGroupID>(roleGroupIDs);
+
+				// first remove all RoleGroupRefs from the UserRef that are not in the given roleGroupIDs set
+				for (RoleGroupRef roleGroupRef : new ArrayList<RoleGroupRef>(userRef.getRoleGroupRefs())) {
+					RoleGroupID roleGroupID = (RoleGroupID) JDOHelper.getObjectId(roleGroupRef.getRoleGroup());
+					if (roleGroupID == null)
+						throw new IllegalStateException("JDOHelper.getObjectId(roleGroupRef.getRoleGroup()) returned null!");
+
+					if (!roleGroupIDsToAdd.remove(roleGroupID))
+						userRef.removeRoleGroupRef(roleGroupID);
+				}
+
+				// now add what's missing
+				for (RoleGroupID roleGroupID : roleGroupIDsToAdd) {
+					RoleGroup roleGroup = (RoleGroup) pm.getObjectById(roleGroupID);
+					if (!authority.getAuthorityType().getRoleGroups().contains(roleGroup))
+						throw new IllegalArgumentException("The roleGroupIDs argument contained the roleGroupID \"" + roleGroupID.roleGroupID + "\" which is not part of the AuthorityType of the specified authority " + authorityID + "!");
+					
+					RoleGroupRef roleGroupRef = authority.createRoleGroupRef(roleGroup);
+					userRef.addRoleGroupRef(roleGroupRef);
+				}
 			}
 		} finally {
 			pm.close();
@@ -1460,18 +1546,12 @@ implements SessionBean
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="JFireSecurityManager-write"
 	 **/
-	public void addUsersToUserGroup(String userGroupID, Collection<String> userIDs)
+	public void addUsersToUserGroup(Collection<UserID> userIDs, UserID userGroupID)
 	throws SecurityException
 	{
-		Iterator<String> i = userIDs.iterator();
-		while(i.hasNext())
-		{
-			String o = i.next();
-//			if(o instanceof String)
-			addUserToUserGroup(o, userGroupID);
-		}
+		for (UserID userID : userIDs)
+			addUserToUserGroup(userID, userGroupID);
 	}
-
 
 	/**
 	 * Add a user to usergroups
@@ -1482,16 +1562,11 @@ implements SessionBean
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="JFireSecurityManager-write"
 	 **/
-	public void addUserToUserGroups(String userID, Collection<String> userGroupIDs)
+	public void addUserToUserGroups(UserID userID, Collection<UserID> userGroupIDs)
 	throws SecurityException
 	{
-		Iterator<String> i = userGroupIDs.iterator();
-		while(i.hasNext())
-		{
-			String o = i.next();
-//			if(o instanceof String)
-			addUserToUserGroup(userID, o);
-		}
+		for (UserID userGroupID : userGroupIDs)
+			addUserToUserGroup(userID, userGroupID);
 	}
 
 
@@ -1504,10 +1579,16 @@ implements SessionBean
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="JFireSecurityManager-write"
 	 **/
-	public void addUserToUserGroup(String userID, String userGroupID)
+	public void addUserToUserGroup(UserID _userID, UserID _userGroupID)
 	throws SecurityException
 	{
-		if (User.USERID_SYSTEM.equals(userID))
+		if (!getOrganisationID().equals(_userID.organisationID))
+			throw new IllegalArgumentException("Cannot manage foreign users!");
+
+		if (!getOrganisationID().equals(_userGroupID.organisationID))
+			throw new IllegalArgumentException("Cannot manage foreign user groups!");
+
+		if (User.USERID_SYSTEM.equals(_userID.userID))
 			throw new IllegalArgumentException("Cannot manipulate system user \"" + User.USERID_SYSTEM + "\"!");
 
 		try {
@@ -1519,29 +1600,28 @@ implements SessionBean
 
 				User user;
 				try {
-					user = (User) pm.getObjectById(UserID.create(getOrganisationID(), userID), true);
+					user = (User) pm.getObjectById(_userID);
 				} catch (JDOObjectNotFoundException x) {
-					throw new UserNotFoundException("User \""+userID+"\" not found at organisation \""+getOrganisationID()+"\"!");
+					throw new UserNotFoundException("User \""+_userID.userID+"\" not found at organisation \""+getOrganisationID()+"\"!");
 				}
 
 				UserGroup userGroup;
 				try {
-					User tmpUser = (User) pm.getObjectById(UserID.create(getOrganisationID(), userGroupID), true);
+					User tmpUser = (User) pm.getObjectById(_userGroupID);
 
 					if (!(tmpUser instanceof UserGroup))
-						throw new ClassCastException("userGroupID \""+userGroupID+"\" does not represent an object of type UserGroup, but of "+tmpUser.getClass().getName());
+						throw new ClassCastException("userGroupID \""+_userGroupID.userID+"\" does not represent an object of type UserGroup, but of "+tmpUser.getClass().getName());
 
 					userGroup = (UserGroup) tmpUser;
 				} catch (JDOObjectNotFoundException x) {
-					throw new UserNotFoundException("UserGroup \""+userGroupID+"\" not found at organisation \""+getOrganisationID()+"\"!");
+					throw new UserNotFoundException("UserGroup \""+_userGroupID.userID+"\" not found at organisation \""+getOrganisationID()+"\"!");
 				}
 
 				userGroup.addUser(user);
 
-
 				JFireServerManager jfsm = getJFireServerManager();
 				try {
-					jfsm.jfireSecurity_flushCache(userID);
+					jfsm.jfireSecurity_flushCache(_userID);
 				} finally {
 					jfsm.close();
 				}
@@ -1621,10 +1701,10 @@ implements SessionBean
 			try {
 				if (user instanceof UserGroup) {
 					for (User member : ((UserGroup)user).getUsers())
-						jfsm.jfireSecurity_flushCache(member.getUserID());
+						jfsm.jfireSecurity_flushCache((UserID)JDOHelper.getObjectId(member));
 				}
 				else
-					jfsm.jfireSecurity_flushCache(userID.userID);
+					jfsm.jfireSecurity_flushCache(userID);
 			} finally {
 				jfsm.close();
 			}
@@ -1632,7 +1712,6 @@ implements SessionBean
 			pm.close();
 		}
 	}
-
 
 	/**
 	 * Remove users from usergroup
@@ -1643,15 +1722,10 @@ implements SessionBean
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="JFireSecurityManager-write"
 	 **/
-	public void removeUsersFromUserGroup(String userGroupID, Collection<String> userIDs)
+	public void removeUsersFromUserGroup(Collection<UserID> userIDs, UserID userGroupID)
 	{
-		Iterator<String> i = userIDs.iterator();
-		while(i.hasNext())
-		{
-			String o = i.next();
-//			if(o instanceof String)
-			removeUserFromUserGroup(o, userGroupID);
-		}
+		for (UserID userID : userIDs)
+			removeUserFromUserGroup(userID, userGroupID);
 	}
 
 	/**
@@ -1663,17 +1737,11 @@ implements SessionBean
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="JFireSecurityManager-write"
 	 **/
-	public void removeUserFromUserGroups(String userID, Collection<String> userGroupIDs)
+	public void removeUserFromUserGroups(UserID userID, Collection<UserID> userGroupIDs)
 	{
-		Iterator<String> i = userGroupIDs.iterator();
-		while(i.hasNext())
-		{
-			String o = i.next();
-//			if(o instanceof String)
-			removeUserFromUserGroup(userID, o);
-		}
+		for (UserID userGroupID : userGroupIDs)
+			removeUserFromUserGroup(userID, userGroupID);
 	}
-
 
 	/**
 	 * Remove user from a usergroup
@@ -1685,30 +1753,24 @@ implements SessionBean
 	 * @ejb.permission role-name="JFireSecurityManager-write"
 	 **/
 
-	public void removeUserFromUserGroup(String userID, String userGroupID)
+	public void removeUserFromUserGroup(UserID _userID, UserID _userGroupID)
 	{
 		PersistenceManager pm = getPersistenceManager();
-		try
-		{
-			pm.getFetchPlan().setGroup(FetchPlan.DEFAULT);
-//			pm.getExtent(User.class, true);
-//			User user = (User) pm.getObjectById(UserID.create(getOrganisationID(), userID), true);
-			pm.getExtent(UserGroup.class, true);
-			UserGroup userGroup = (UserGroup) pm.getObjectById(UserID.create(getOrganisationID(), userGroupID), true);
-			userGroup.removeUser(userID);
+		try {
+			pm.getExtent(UserGroup.class);
+			UserGroup userGroup = (UserGroup) pm.getObjectById(_userGroupID);
+			userGroup.removeUser(_userID);
 
 			JFireServerManager jfsm = getJFireServerManager();
 			try {
-				jfsm.jfireSecurity_flushCache(userID);
+				jfsm.jfireSecurity_flushCache(_userID);
 			} finally {
 				jfsm.close();
 			}
-		}
-		finally {
+		} finally {
 			pm.close();
 		}
 	}
-
 
 //	/**
 //	 * Assign a person to a user
@@ -1839,12 +1901,27 @@ implements SessionBean
 		}
 	}
 
-
 	/**
 	 * @ejb.interface-method
-	 * @ejb.permission role-name="JFireSecurityManager-read"
-	 **/
-	public Authority getAuthority(String authorityID, String [] fetchGroups)
+	 * @ejb.permission role-name="_Guest_"
+	 * @ejb.transaction type="Required"
+	 */
+	public Authority storeAuthority(Authority authority, boolean get, String[] fetchGroups, int maxFetchDepth) {
+		PersistenceManager pm = getPersistenceManager();
+		try {
+			return NLJDOHelper.storeJDO(pm, authority, get, fetchGroups, maxFetchDepth);
+		} finally {
+			pm.close();
+		}
+	}
+
+	/**
+	 * @deprecated Old method - use the <code>AuthorityDAO</code> instead!
+	 *
+	 * @ejb.interface-method
+	 * @ejb.permission role-name="_Guest_"
+	 */
+	public Authority getAuthority(AuthorityID authorityID, String[] fetchGroups)
 	{
 			PersistenceManager pm = getPersistenceManager();
 			try {
@@ -1854,12 +1931,12 @@ implements SessionBean
 				pm.getExtent(Authority.class, true);
 				try
 				{
-					Object o = pm.getObjectById(AuthorityID.create(getOrganisationID(), authorityID), true);
+					Object o = pm.getObjectById(authorityID);
 					return (Authority)pm.detachCopy(o);
 				}
 				catch (JDOObjectNotFoundException x)
 				{
-					throw new AuthorityNotFoundException("Authority \""+authorityID+"\" not found in organisation \""+getOrganisationID()+"\"!");
+					throw new AuthorityNotFoundException("Authority \""+authorityID.authorityID+"\" not found in organisation \""+getOrganisationID()+"\"!");
 				}
 			} finally {
 				pm.close();
@@ -1986,13 +2063,9 @@ implements SessionBean
 		}
 	}
 
-	// ******************************************************************
-	// *** Methods for management of links between UserRefs and RoleRefs
-	// ******************************************************************
-
 	/**
 	 * @ejb.interface-method
-	 * @ejb.permission role-name="JFireSecurityManager-write"
+	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type="Required"
 	 */
 	public void createUserRef(String authorityID, String userID)
@@ -2030,7 +2103,7 @@ implements SessionBean
 	
 	/**
 	 * @ejb.interface-method
-	 * @ejb.permission role-name="JFireSecurityManager-write"
+	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type="Required"
 	 */
 	public void destroyUserRef(String authorityID, String userID)
@@ -2228,108 +2301,112 @@ implements SessionBean
 		}
 	}
 
-	/**
-	 * @param authorityID
-	 * @param userID
-	 * @param roleGroupID
-	 * @throws SecurityException
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="JFireSecurityManager-write"
-	 * @ejb.transaction type="Required"
-	 */
-	public void addRoleGroupRefToUserRef(String authorityID, String userID, String roleGroupID)
-		throws SecurityException
-	{
-		try {
-			JFireServerManager ism = getJFireServerManager();
-			try {
-				PersistenceManager pm = getPersistenceManager();
-				try {
-	//				pm.getExtent(Authority.class, true);
-					pm.getExtent(User.class, true);
-					pm.getExtent(RoleGroup.class, true);
-	
-					Authority authority;
-					try {
-						authority = (Authority)pm.getObjectById(AuthorityID.create(getOrganisationID(), authorityID), true);
-					} catch (JDOObjectNotFoundException x) {
-						throw new AuthorityNotFoundException("Authority \""+authorityID+"\" not found in organisation \""+getOrganisationID()+"\"!");
-					}
-					
-					UserRef userRef = authority.getUserRef(userID);
-					if (userRef == null)
-						throw new UserRefNotFoundException("UserRef for user \""+userID+"\" not found in authority \""+authorityID+"\" in organisation \""+getOrganisationID()+"\"!");
-	
-					RoleGroupRef roleGroupRef = authority.getRoleGroupRef(roleGroupID);
-					if (roleGroupRef == null)
-						throw new RoleGroupRefNotFoundException("RoleGroupRef for roleGroup \""+roleGroupID+"\" not found in authority \""+authorityID+"\" in organisation \""+getOrganisationID()+"\"!");
-	
-					userRef.addRoleGroupRef(roleGroupRef);
-					ism.jfireSecurity_flushCache(userID);
-				} finally {
-					pm.close();
-				}
-			} finally {
-				ism.close();
-			}
-		} catch (SecurityException x) {
-			throw x;
-		} catch (Exception x) {
-			throw new SecurityException(x);
-		}
-	}
+//	/**
+//	 * @param authorityID
+//	 * @param userID
+//	 * @param roleGroupID
+//	 * @throws SecurityException
+//	 *
+//	 * @ejb.interface-method
+//	 * @ejb.permission role-name="JFireSecurityManager-write"
+//	 * @ejb.transaction type="Required"
+//	 */
+//	public void addRoleGroupRefToUserRef(AuthorityID authorityID, UserID userID, RoleGroupID roleGroupID)
+//		throws SecurityException
+//	{
+//		try {
+//			JFireServerManager ism = getJFireServerManager();
+//			try {
+//				PersistenceManager pm = getPersistenceManager();
+//				try {
+//					pm.getExtent(Authority.class);
+//					pm.getExtent(User.class);
+//					pm.getExtent(RoleGroup.class);
+//
+//					Authority authority;
+//					try {
+//						authority = (Authority)pm.getObjectById(authorityID);
+//					} catch (JDOObjectNotFoundException x) {
+//						throw new AuthorityNotFoundException("Authority \""+authorityID+"\" not found in organisation \""+getOrganisationID()+"\"!");
+//					}
+//					
+//					UserRef userRef = authority.getUserRef(userID);
+//					if (userRef == null)
+//						throw new UserRefNotFoundException("UserRef for user \""+userID+"\" not found in authority \""+authorityID+"\" in organisation \""+getOrganisationID()+"\"!");
+//	
+//					RoleGroupRef roleGroupRef = authority.getRoleGroupRef(roleGroupID);
+//					if (roleGroupRef == null)
+//						throw new RoleGroupRefNotFoundException("RoleGroupRef for roleGroup \""+roleGroupID+"\" not found in authority \""+authorityID+"\" in organisation \""+getOrganisationID()+"\"!");
+//	
+//					userRef.addRoleGroupRef(roleGroupRef);
+//					ism.jfireSecurity_flushCache(userID);
+//				} finally {
+//					pm.close();
+//				}
+//			} finally {
+//				ism.close();
+//			}
+//		} catch (SecurityException x) {
+//			throw x;
+//		} catch (Exception x) {
+//			throw new SecurityException(x);
+//		}
+//	}
 
-	/**
-	 * @param String authorityID
-	 * @param userID
-	 * @param roleGroupID
-	 * @throws SecurityException
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="JFireSecurityManager-write"
-	 * @ejb.transaction type="Required"
-	 */
-	public void removeRoleGroupRefFromUserRef(String authorityID, String userID, String roleGroupID)
-		throws SecurityException
-	{
-		try {
-			JFireServerManager ism = getJFireServerManager();
-			try {
-				PersistenceManager pm = getPersistenceManager();
-				try {
-	//				pm.getExtent(Authority.class, true);
-					pm.getExtent(User.class, true);
-					pm.getExtent(RoleGroup.class, true);
-	
-					Authority authority;
-					try {
-						authority = (Authority)pm.getObjectById(AuthorityID.create(getOrganisationID(), authorityID), true);
-					} catch (JDOObjectNotFoundException x) {
-						throw new AuthorityNotFoundException("Authority \""+authorityID+"\" not found in organisation \""+getOrganisationID()+"\"!");
-					}
-					
-					UserRef userRef = authority.getUserRef(userID);
-					if (userRef == null)
-						throw new UserRefNotFoundException("UserRef for user \""+userID+"\" not found in authority \""+authorityID+"\" in organisation \""+getOrganisationID()+"\"!");
-					
-					RoleGroupRef roleGroupRef = authority.getRoleGroupRef(roleGroupID);
-					if (roleGroupRef == null)
-						throw new UserRefNotFoundException("RoleGroupRef for roleGroup \""+roleGroupID+"\" not found in authority \""+authorityID+"\" in organisation \""+getOrganisationID()+"\"!");
-	
-					userRef.removeRoleGroupRef(roleGroupRef);
-					ism.jfireSecurity_flushCache(userID);
-				} finally {
-					pm.close();
-				}
-			} finally {
-				ism.close();
-			}
-		} catch (SecurityException x) {
-			throw x;
-		} catch (Exception x) {
-			throw new SecurityException(x);
-		}
-	}
+//	/**
+//	 * @param String authorityID
+//	 * @param userID
+//	 * @param roleGroupID
+//	 * @throws SecurityException
+//	 *
+//	 * @ejb.interface-method
+//	 * @ejb.permission role-name="JFireSecurityManager-write"
+//	 * @ejb.transaction type="Required"
+//	 */
+//	public void removeRoleGroupRefFromUserRef(AuthorityID _authorityID, UserID _userID, RoleGroupID _roleGroupID)
+//		throws SecurityException
+//	{
+//		if (!this.getOrganisationID().equals(_authorityID.organisationID))
+//			throw new IllegalArgumentException("this.organisationID != authorityID.organisationID");
+//
+//		try {
+//			JFireServerManager ism = getJFireServerManager();
+//			try {
+//				PersistenceManager pm = getPersistenceManager();
+//				try {
+//					pm.getExtent(Authority.class, true);
+//					pm.getExtent(User.class, true);
+//					pm.getExtent(RoleGroup.class, true);
+//	
+//					Authority authority;
+//					try {
+//						authority = (Authority)pm.getObjectById(_authorityID);
+//					} catch (JDOObjectNotFoundException x) {
+//						throw new AuthorityNotFoundException("Authority \""+_authorityID.authorityID+"\" not found in organisation \""+getOrganisationID()+"\"!");
+//					}
+//
+//					UserRef userRef = authority.getUserRef(_userID);
+//					if (userRef == null)
+//						throw new UserRefNotFoundException("UserRef for user \""+_userID.userID+"\" not found in authority \""+_authorityID.authorityID+"\" in organisation \""+getOrganisationID()+"\"!");
+//
+//					RoleGroupRef roleGroupRef = authority.getRoleGroupRef(_roleGroupID);
+//					if (roleGroupRef == null)
+//						throw new UserRefNotFoundException("RoleGroupRef for roleGroup \""+_roleGroupID.roleGroupID+"\" not found in authority \""+_authorityID.authorityID+"\" in organisation \""+getOrganisationID()+"\"!");
+//
+//					userRef.removeRoleGroupRef(roleGroupRef);
+//
+//					ism.jfireSecurity_flushCache(_userID);
+//				} finally {
+//					pm.close();
+//				}
+//			} finally {
+//				ism.close();
+//			}
+//		} catch (SecurityException x) {
+//			throw x;
+//		} catch (Exception x) {
+//			throw new SecurityException(x);
+//		}
+//	}
 
 }
