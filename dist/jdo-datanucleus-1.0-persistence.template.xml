@@ -38,6 +38,7 @@
             <property name="datanucleus.cache.level2" value="true"/>
             <property name="datanucleus.persistenceByReachabilityAtCommit" value="false"/>
 
+			<property name="datanucleus.identifier.case" value="LowerCase"/>
 <!--
 I just got this exception:
 
