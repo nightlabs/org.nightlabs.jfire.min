@@ -281,15 +281,21 @@ public class UserDAO extends BaseJDOObjectDAO<UserID, User>
 	 * @param user The user
 	 * @param userGroup The user group in wich to add the user
 	 */
-	public synchronized void addUserToUserGroup(User user, UserGroup userGroup, ProgressMonitor monitor)
+	public void addUserToUserGroup(User user, UserGroup userGroup, ProgressMonitor monitor)
 	{
 		assert user != null : "User to add to user group must not be null";
 		assert userGroup != null : "User group to add user for must not be null";
-		monitor.beginTask("Adding user: "+user.getName()+" to group: "+userGroup.getName(), 1);
+		addUserToUserGroup((UserID)JDOHelper.getObjectId(user), (UserID)JDOHelper.getObjectId(userGroup), monitor);
+	}
+
+	public synchronized void addUserToUserGroup(UserID userID, UserID userGroupID, ProgressMonitor monitor)
+	{
+		monitor.beginTask("Adding user: "+userID.userID+" to group: "+userGroupID.userID, 1);
 		try {
 			Properties initialContextProperties = SecurityReflector.getInitialContextProperties();
 			JFireSecurityManager um = JFireSecurityManagerUtil.getHome(initialContextProperties).create();
-			um.addUserToUserGroup(user.getUserID(), userGroup.getUserID());
+			um.addUserToUserGroup(userID, userGroupID);
+			monitor.worked(1);
 			monitor.done();
 		} catch(Exception e) {
 			monitor.done();
@@ -302,15 +308,20 @@ public class UserDAO extends BaseJDOObjectDAO<UserID, User>
 	 * @param user The user
 	 * @param userGroup The user group from which to remove the user
 	 */
-	public synchronized void removeUserFromUserGroup(User user, UserGroup userGroup, ProgressMonitor monitor)
+	public void removeUserFromUserGroup(User user, UserGroup userGroup, ProgressMonitor monitor)
 	{
 		assert user != null : "User to remove from user group must not be null";
 		assert userGroup != null : "User group to remove user from must not be null";
-		monitor.beginTask("Removing user: "+user.getName()+" from group: "+userGroup.getName(), 1);
+		removeUserFromUserGroup((UserID)JDOHelper.getObjectId(user), (UserID)JDOHelper.getObjectId(userGroup), monitor);
+	}
+	public synchronized void removeUserFromUserGroup(UserID userID, UserID userGroupID, ProgressMonitor monitor)
+	{
+		monitor.beginTask("Removing user: "+userID.userID+" from group: "+userGroupID.userID, 1);
 		try {
 			Properties initialContextProperties = SecurityReflector.getInitialContextProperties();
 			JFireSecurityManager um = JFireSecurityManagerUtil.getHome(initialContextProperties).create();
-			um.removeUserFromUserGroup(user.getUserID(), userGroup.getUserID());
+			um.removeUserFromUserGroup(userID, userGroupID);
+			monitor.worked(1);
 			monitor.done();
 		} catch(Exception e) {
 			monitor.done();
@@ -318,7 +329,7 @@ public class UserDAO extends BaseJDOObjectDAO<UserID, User>
 		}
 	}
 
-	public synchronized void addRoleGroupToUser(User user, Authority authority, RoleGroup roleGroup, ProgressMonitor monitor)
+	public void addRoleGroupToUser(User user, Authority authority, RoleGroup roleGroup, ProgressMonitor monitor)
 	{
 		addRoleGroupToUser(
 				(UserID)JDOHelper.getObjectId(user),
@@ -326,12 +337,29 @@ public class UserDAO extends BaseJDOObjectDAO<UserID, User>
 				(RoleGroupID)JDOHelper.getObjectId(roleGroup), monitor);
 	}
 
-	public synchronized void removeRoleGroupFromUser(User user, Authority authority, RoleGroup roleGroup, ProgressMonitor monitor)
+	public void removeRoleGroupFromUser(User user, Authority authority, RoleGroup roleGroup, ProgressMonitor monitor)
 	{
 		removeRoleGroupFromUser(
 				(UserID)JDOHelper.getObjectId(user),
 				(AuthorityID)JDOHelper.getObjectId(authority),
 				(RoleGroupID)JDOHelper.getObjectId(roleGroup), monitor);
+	}
+
+	public synchronized void setRoleGroupsOfUser(UserID userID, AuthorityID authorityID, Set<RoleGroupID> roleGroupIDs, ProgressMonitor monitor)
+	{
+		monitor.beginTask("Setting rolegroups of user " + userID.userID + " within one authority.", 1);
+		try {
+			Properties initialContextProperties = SecurityReflector.getInitialContextProperties();
+			JFireSecurityManager um = JFireSecurityManagerUtil.getHome(initialContextProperties).create();
+			um.setRoleGroupsOfUser(userID, authorityID, roleGroupIDs);
+		} catch(RuntimeException e) {
+			throw e;
+		} catch(Exception e) {
+			throw new RuntimeException(e);
+		} finally {
+			monitor.worked(1);
+			monitor.done();
+		}
 	}
 
 	public synchronized void addRoleGroupToUser(UserID userID, AuthorityID authorityID, RoleGroupID roleGroupID, ProgressMonitor monitor)
@@ -341,13 +369,13 @@ public class UserDAO extends BaseJDOObjectDAO<UserID, User>
 			Properties initialContextProperties = SecurityReflector.getInitialContextProperties();
 			JFireSecurityManager um = JFireSecurityManagerUtil.getHome(initialContextProperties).create();
 			um.addRoleGroupToUser(userID, authorityID, roleGroupID);
-			monitor.done();
 		} catch(RuntimeException e) {
-			monitor.done();
 			throw e;
 		} catch(Exception e) {
+			throw new RuntimeException(e);
+		} finally {
+			monitor.worked(1);
 			monitor.done();
-			throw new RuntimeException("Adding user \""+userID.userID+"\" to role group \""+roleGroupID.roleGroupID+"\" within authority \""+authorityID.authorityID+"\" failed", e);
 		}
 	}
 
@@ -364,39 +392,73 @@ public class UserDAO extends BaseJDOObjectDAO<UserID, User>
 			Properties initialContextProperties = SecurityReflector.getInitialContextProperties();
 			JFireSecurityManager um = JFireSecurityManagerUtil.getHome(initialContextProperties).create();
 			um.removeRoleGroupFromUser(userID, authorityID, roleGroupID);
-			monitor.done();
 		} catch(RuntimeException e) {
-			monitor.done();
 			throw e;
 		} catch(Exception e) {
+			throw new RuntimeException(e);
+		} finally {
+			monitor.worked(1);
 			monitor.done();
-			throw new RuntimeException("Adding user \""+userID.userID+"\" to role group \""+roleGroupID.roleGroupID+"\" within authority \""+authorityID.authorityID+"\" failed", e);
 		}
 	}
-	
+
 	public synchronized Collection<User> getUsersInUserGroup(UserID userGroupID, 
 			String[] fetchgroups, int maxFetchDepth, ProgressMonitor monitor)
 	{
+		monitor.beginTask("Get users in user group", 1);
 		try {
 			JFireSecurityManager um = JFireSecurityManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
 			Collection<UserID> ids = um.getUserIDsInUserGroup(userGroupID);
 			return getJDOObjects(null, ids, fetchgroups, maxFetchDepth, monitor);			
 		} catch (Exception e) {
-			monitor.done();
 			throw new RuntimeException(e);
+		} finally {
+			monitor.worked(1);
+			monitor.done();
 		}
 	}
 
 	public synchronized Collection<User> getUsersNotInUserGroup(UserID userGroupID, 
 			String[] fetchgroups, int maxFetchDepth, ProgressMonitor monitor)
 	{
+		monitor.beginTask("Get users not in user group", 1);
 		try {
 			JFireSecurityManager um = JFireSecurityManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
 			Collection<UserID> ids = um.getUserIDsNotInUserGroup(userGroupID);
 			return getJDOObjects(null, ids, fetchgroups, maxFetchDepth, monitor);
 		} catch (Exception e) {
-			monitor.done();
 			throw new RuntimeException(e);
-		}		
-	}	
+		} finally {
+			monitor.worked(1);
+			monitor.done();
+		}
+	}
+
+	public void addUsersToAuthority(Set<UserID> userIDs, AuthorityID authorityID, ProgressMonitor monitor)
+	{
+		monitor.beginTask("Add users to authority", 1);
+		try {
+			JFireSecurityManager sm = JFireSecurityManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
+			sm.addUsersToAuthority(userIDs, authorityID);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		} finally {
+			monitor.worked(1);
+			monitor.done();
+		}
+	}
+
+	public void removeUsersFromAuthority(Set<UserID> userIDs, AuthorityID authorityID, ProgressMonitor monitor)
+	{
+		monitor.beginTask("Remove users from authority", 1);
+		try {
+			JFireSecurityManager sm = JFireSecurityManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
+			sm.removeUsersFromAuthority(userIDs, authorityID);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		} finally {
+			monitor.worked(1);
+			monitor.done();
+		}
+	}
 }

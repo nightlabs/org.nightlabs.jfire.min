@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO;
+import org.nightlabs.jfire.base.jdo.cache.Cache;
 import org.nightlabs.jfire.security.Authority;
 import org.nightlabs.jfire.security.JFireSecurityManager;
 import org.nightlabs.jfire.security.JFireSecurityManagerUtil;
@@ -66,5 +67,24 @@ public class AuthorityDAO extends BaseJDOObjectDAO<AuthorityID, Authority>
 			int maxFetchDepth, ProgressMonitor monitor)
 	{
 		return getJDOObject(null, authorityID, fetchGroups, maxFetchDepth, monitor);
+	}
+
+	public Authority storeAuthority(Authority authority, boolean get, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
+	{
+		monitor.beginTask("Storing authority", 1);
+		try {
+			JFireSecurityManager sm = JFireSecurityManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
+			authority = sm.storeAuthority(authority, get, fetchGroups, maxFetchDepth);
+
+			if (authority != null)
+				Cache.sharedInstance().put(null, authority, fetchGroups, maxFetchDepth);
+
+			return authority;
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		} finally {
+			monitor.worked(1);
+			monitor.done();
+		}
 	}
 }
