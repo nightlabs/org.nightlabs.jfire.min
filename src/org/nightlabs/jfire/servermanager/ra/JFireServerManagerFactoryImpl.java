@@ -115,6 +115,7 @@ import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.security.UserLocal;
 import org.nightlabs.jfire.security.UserRef;
 import org.nightlabs.jfire.security.id.AuthorityTypeID;
+import org.nightlabs.jfire.security.id.UserID;
 import org.nightlabs.jfire.security.id.UserRefID;
 import org.nightlabs.jfire.server.Server;
 import org.nightlabs.jfire.serverconfigurator.ServerConfigurator;
@@ -2344,14 +2345,14 @@ public class JFireServerManagerFactoryImpl
 	 */
 	protected Map<String, SoftReference<RoleSet>> jfireSecurity_roleCache = new HashMap<String, SoftReference<RoleSet>>();
 
-	protected void jfireSecurity_flushCache(String organisationID, String userID)
+	protected void jfireSecurity_flushCache(UserID _userID)
 	{
-		if (User.USERID_OTHER.equals(userID)) {
+		if (User.USERID_OTHER.equals(_userID.userID)) {
 			jfireSecurity_flushCache();
 			return;
 		}
 
-		String userPK = userID + '@' + organisationID;
+		String userPK = _userID.userID + '@' + _userID.organisationID;
 		synchronized (jfireSecurity_roleCache) {
 			jfireSecurity_roleCache.remove(userPK);
 		}

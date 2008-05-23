@@ -59,6 +59,7 @@ import org.nightlabs.jfire.organisation.Organisation;
 import org.nightlabs.jfire.security.RoleSet;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.security.UserLocal;
+import org.nightlabs.jfire.security.id.UserID;
 import org.nightlabs.jfire.security.id.UserLocalID;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.servermanager.OrganisationNotFoundException;
@@ -387,10 +388,10 @@ public class JFireServerManagerImpl
 		return principal != null;
 	}
 
-	public void jfireSecurity_flushCache(String organisationID, String userID)
+	public void jfireSecurity_flushCache(UserID userID)
 	{
 		assertOpen();
-		jfireServerManagerFactoryImpl.jfireSecurity_flushCache(organisationID, userID);
+		jfireServerManagerFactoryImpl.jfireSecurity_flushCache(userID);
 	}
 
 	public void jfireSecurity_flushCache()
@@ -399,12 +400,12 @@ public class JFireServerManagerImpl
 		jfireServerManagerFactoryImpl.jfireSecurity_flushCache();
 	}
 
-	public void jfireSecurity_flushCache(String userID)
-	{
-		assertOpen();
-		assertAuthenticated();
-		jfireServerManagerFactoryImpl.jfireSecurity_flushCache(this.principal.getOrganisationID(), userID);
-	}
+//	public void jfireSecurity_flushCache(String userID)
+//	{
+//		assertOpen();
+//		assertAuthenticated();
+//		jfireServerManagerFactoryImpl.jfireSecurity_flushCache(this.principal.getOrganisationID(), userID);
+//	}
 
 	protected void setJFirePrincipal(JFirePrincipal jfirePrincipal)
 	{
