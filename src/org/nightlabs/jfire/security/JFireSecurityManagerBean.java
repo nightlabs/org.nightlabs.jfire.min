@@ -59,6 +59,7 @@ import org.nightlabs.jfire.security.id.UserID;
 import org.nightlabs.jfire.security.id.UserRefID;
 import org.nightlabs.jfire.security.search.UserQuery;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
+import org.nightlabs.util.Util;
 
 /**
  * @author Alexander Bieber <alex@nightlabs.de>
@@ -678,21 +679,21 @@ implements SessionBean
 //		}
 //	}
 
-	/**
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="JFireSecurityManager-read"
-	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
-	 **/
-	public Collection<UserGroup> getUserGroups(Set<UserID> userGroupIDs, String[] fetchGroups, int maxFetchDepth)
-	{
-		PersistenceManager pm = getPersistenceManager();
-		try {
-			return NLJDOHelper.getDetachedObjectList(pm, userGroupIDs, null, fetchGroups, maxFetchDepth);
-		}
-		finally {
-			pm.close();
-		}
-	}
+//	/**
+//	 * @ejb.interface-method
+//	 * @ejb.permission role-name="JFireSecurityManager-read"
+//	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
+//	 **/
+//	public Collection<UserGroup> getUserGroups(Collection<UserID> userGroupIDs, String[] fetchGroups, int maxFetchDepth)
+//	{
+//		PersistenceManager pm = getPersistenceManager();
+//		try {
+//			return NLJDOHelper.getDetachedObjectList(pm, userGroupIDs, null, fetchGroups, maxFetchDepth);
+//		}
+//		finally {
+//			pm.close();
+//		}
+//	}
 
 	/**
 	 * Returns a Collection of {@link User}s corresponding to the given set of {@link UserID}s.
@@ -706,11 +707,11 @@ implements SessionBean
 	 * @ejb.permission role-name="_Guest_"
 	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 */
-	public Collection<User> getUsers(Set<UserID> userIDs, String[] fetchGroups, int maxFetchDepth)
+	public Collection<User> getUsers(Collection<UserID> userIDs, String[] fetchGroups, int maxFetchDepth)
 	{
 		PersistenceManager pm = getPersistenceManager();
 		try {
-			return NLJDOHelper.getDetachedObjectSet(pm, userIDs, null, fetchGroups, maxFetchDepth);
+			return NLJDOHelper.getDetachedObjectSet(pm, userIDs, User.class, fetchGroups, maxFetchDepth);
 		} finally {
 			pm.close();
 		}
@@ -778,8 +779,15 @@ implements SessionBean
 	}
 
 	@SuppressWarnings("unchecked")
-	private static Collection<RoleGroup> getRoleGroupsForUserRef(PersistenceManager pm, String organisationID, String userID, String authorityID)
+	private static Collection<RoleGroup> getRoleGroupsForUserRef(PersistenceManager pm, User user, Authority authority)
 	{
+		if (!Util.equals(authority.getOrganisationID(), user.getOrganisationID()))
+			throw new IllegalArgumentException("user.organisationID != authority.organisationID");
+
+		String _organisationID = user.getOrganisationID();
+		String _userID = user.getUserID();
+		String _authorityID = authority.getAuthorityID();
+
 		Query query = pm.newQuery(
 				"SELECT FROM org.nightlabs.jfire.security.RoleGroup \n" +
 				"WHERE \n" +
@@ -793,41 +801,77 @@ implements SessionBean
 				"import org.nightlabs.jfire.security.RoleGroupRef; \n" +
 				"import org.nightlabs.jfire.security.UserRef; \n" +
 				"import java.lang.String");
-		return (Collection<RoleGroup>)query.execute(organisationID, userID, authorityID);
+		return (Collection<RoleGroup>)query.execute(_organisationID, _userID, _authorityID);
+	}
+
+	/**
+	 * Get all those {@link UserGroupRef}s within the given <code>authority</code> that
+	 * belong to a {@link UserGroup} where the given <code>user</code> is a member.
+	 *
+	 * @param pm the gate to our datastore.
+	 * @param user the {@link User} for which to query the membership of its {@link UserGroup}s.
+	 * @param authority the {@link Authority} in which we query.
+	 */
+	@SuppressWarnings("unchecked")
+	private static Collection<UserGroupRef> getUserGroupRefsForUserWithinAuthority(PersistenceManager pm, User user, Authority authority)
+	{
+		if (!Util.equals(authority.getOrganisationID(), user.getOrganisationID()))
+			throw new IllegalArgumentException("user.organisationID != authority.organisationID");
+
+		Query q = pm.newQuery(UserGroupRef.class);
+		q.setFilter(":authority.userRefs.containsValue(this) && :user.userGroups.containsValue(this.user)");
+		Map<String, Object> params = new HashMap<String, Object>(2);
+		params.put("user", user);
+		params.put("authority", authority);
+		return (Collection<UserGroupRef>) q.executeWithMap(params);
 	}
 
 	private static RoleGroupIDSetCarrier getRoleGroupIDSetCarrier(PersistenceManager pm, User user, Authority authority)
 	{
 		String organisationID = user.getOrganisationID();
 		if (!organisationID.equals(authority.getOrganisationID()))
-			throw new IllegalArgumentException("Cannot manage foreign access rights! authority.organisationID=\""+authority.getOrganisationID()+"\" does not match user.organisationID=\""+organisationID+"\"!");
-		
-		Collection<RoleGroup> roleGroupsUser = new HashSet<RoleGroup>(getRoleGroupsForUserRef(pm, organisationID, user.getUserID(), authority.getAuthorityID()));
+			throw new IllegalArgumentException("Cannot manage foreign access rights! authority.organisationID=\""+authority.getOrganisationID()+"\" does not match user.organisationID=\""+user.getOrganisationID()+"\"!");
+
+		UserID userID = (UserID)JDOHelper.getObjectId(user);
+		if (userID == null)
+			throw new IllegalStateException("JDOHelper.getObjectId(user) returned null!");
+
+		boolean userIsInAuthority = authority.getUserRef(userID) != null;
+		boolean controlledByOtherUser = !userIsInAuthority;
+		if (controlledByOtherUser) {
+			// find out if there is a UserGroup in which the user is member and which is within this authority
+			controlledByOtherUser = getUserGroupRefsForUserWithinAuthority(pm, user, authority).isEmpty();
+		}
+
+		Collection<RoleGroup> roleGroupsUser = getRoleGroupsForUserRef(pm, user, authority);
 		Collection<RoleGroup> roleGroupsUserGroups = new HashSet<RoleGroup>();
 		for (UserGroup userGroup : user.getUserGroups()) {
-			roleGroupsUserGroups.addAll(
-					getRoleGroupsForUserRef(pm, userGroup.getOrganisationID(), userGroup.getUserID(), authority.getAuthorityID()));
+			roleGroupsUserGroups.addAll(getRoleGroupsForUserRef(pm, userGroup, authority));
 		}
 
-//		query = pm.newQuery("SELECT FROM org.nightlabs.jfire.security.RoleGroup");
-//		Collection<RoleGroup> allRoleGroups = (Collection<RoleGroup>)query.execute();
 		Collection<RoleGroup> allRoleGroups = authority.getAuthorityType().getRoleGroups();
-		Iterator<RoleGroup> i = allRoleGroups.iterator();
-		Collection<RoleGroup> excludedRoleGroups = new HashSet<RoleGroup>();
-		while(i.hasNext())
-		{
-			RoleGroup o = i.next();
-			if((!roleGroupsUser.contains(o)) && (!roleGroupsUserGroups.contains(o)))
-				excludedRoleGroups.add(o);
-		}
+		Set<RoleGroupID> allRoleGroupIDs = NLJDOHelper.getObjectIDSet(allRoleGroups);
+		Set<RoleGroupID> roleGroupIDsUser = NLJDOHelper.getObjectIDSet(roleGroupsUser);
+		Set<RoleGroupID> roleGroupIDsUserGroups = NLJDOHelper.getObjectIDSet(roleGroupsUserGroups);
+		Set<RoleGroupID> roleGroupIDsOtherUser;
 
-		Set<RoleGroupID> excludedRoleGroupsIDs = NLJDOHelper.getObjectIDSet(excludedRoleGroups);
-		Set<RoleGroupID> roleGroupsUserIDs = NLJDOHelper.getObjectIDSet(roleGroupsUser);
-		Set<RoleGroupID> roleGrouopsUserGroupsIDs = NLJDOHelper.getObjectIDSet(roleGroupsUserGroups);
+		if (controlledByOtherUser) {
+			User otherUser = (User) pm.getObjectById(UserID.create(organisationID, User.USERID_OTHER));
+			Collection<RoleGroup> roleGroupsOtherUser = getRoleGroupsForUserRef(pm, otherUser, authority);
+			roleGroupIDsOtherUser = NLJDOHelper.getObjectIDSet(roleGroupsOtherUser);
+		}
+		else
+			roleGroupIDsOtherUser = new HashSet<RoleGroupID>(0);
+
 		return new RoleGroupIDSetCarrier(
-				excludedRoleGroupsIDs,
-				roleGroupsUserIDs,
-				roleGrouopsUserGroupsIDs);
+				userID,
+				(AuthorityID)JDOHelper.getObjectId(authority),
+				allRoleGroupIDs,
+				roleGroupIDsUser,
+				roleGroupIDsUserGroups,
+				roleGroupIDsOtherUser,
+				userIsInAuthority,
+				controlledByOtherUser);
 	}
 
 	/**
@@ -879,72 +923,38 @@ implements SessionBean
 
 	/**
 	 * @param authorityID identifier of the {@link Authority} for which to query the access rights configuration
-	 * @param includeAllUsers If <code>false</code>, only those <code>User</code>s are included which are in the given {@link Authority}.
-	 *		If <code>true</code>, the result will contain all {@link User}s and {@link UserGroup}s of the local organisation, where those
-	 *		that are not in the <code>Authority</code> have a <code>null</code> value assigned in the result {@link Map}.
 	 *
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
 	 * @!role-assigned(Marco, 2008-05-05): _Guest_ is ok. We check inside by code, whether the user can read this data or not.
 	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 **/
-	public Map<UserID, RoleGroupIDSetCarrier> getRoleGroupIDSetCarriers(AuthorityID authorityID, boolean includeAllUsers)
+	@SuppressWarnings("unchecked")
+	public List<RoleGroupIDSetCarrier> getRoleGroupIDSetCarriers(AuthorityID authorityID)
 	{
 		String organisationID = getOrganisationID();
 		if (!organisationID.equals(authorityID.organisationID))
 			throw new IllegalArgumentException("Cannot manage foreign access rights! authorityID.organisationID=\""+authorityID.organisationID+"\" does not match our organisationID=\""+organisationID+"\"!");
 
 		PersistenceManager pm = getPersistenceManager();
-		try
-		{
+		try {
 			Authority authority = (Authority) pm.getObjectById(authorityID);
 
 			boolean allowed = authority.resolveSecuringAuthority().containsRoleRef(getPrincipal(), RoleConstants.securityManager_getRoleGroupIDSetCarrier);
 			if (!allowed)
 				throw new SecurityException("The current user \""+ getPrincipalString() +"\" misses the access right " + RoleConstants.securityManager_getRoleGroupIDSetCarrier + " and does not ask data about himself.");
 
-			int mapSize;
-			if (includeAllUsers) {
-				Query q = pm.newQuery(User.class);
-				q.setResult("count(this)");
-				q.setFilter("this.organisationID = :organisationID");
-				Long res = (Long) q.execute(organisationID);
-				if (res.longValue() > Integer.MAX_VALUE)
-					throw new IllegalStateException("Too many users!");
-
-				mapSize = res.intValue();
-			}
-			else
-				mapSize = authority.getUserRefs().size();
-
-			Map<UserID, RoleGroupIDSetCarrier> map = new HashMap<UserID, RoleGroupIDSetCarrier>(mapSize);
-			for (UserRef userRef : authority.getUserRefs()) {
-				User user = userRef.getUser();
+			Query q = pm.newQuery(User.class);
+			q.setFilter("this.organisationID = :organisationID");
+			Collection<User> users = (Collection<User>) q.execute(organisationID);
+			List<RoleGroupIDSetCarrier> result = new ArrayList<RoleGroupIDSetCarrier>(users.size());
+			for (User user : users) {
 				RoleGroupIDSetCarrier roleGroupIDSetCarrier = getRoleGroupIDSetCarrier(pm, user, authority);
-				UserID userID = (UserID) JDOHelper.getObjectId(user);
-				if (userID == null)
-					throw new IllegalStateException("JDOHelper.getObjectId(user) returned null!");
-
-				map.put(userID, roleGroupIDSetCarrier);
+				result.add(roleGroupIDSetCarrier);
 			}
 
-			if (includeAllUsers) {
-				Query q = pm.newQuery(User.class);
-				q.setFilter("this.organisationID = :organisationID");
-				Collection<?> users =  (Collection<?>) q.execute(organisationID);
-				for (Object user : users) {
-					UserID userID = (UserID) JDOHelper.getObjectId(user);
-					if (userID == null)
-						throw new IllegalStateException("JDOHelper.getObjectId(user) returned null!");
-
-					if (!map.containsKey(userID))
-						map.put(userID, null);
-				}
-			}
-
-			return map;
-		}
-		finally {
+			return result;
+		} finally {
 			pm.close();
 		}
 	}

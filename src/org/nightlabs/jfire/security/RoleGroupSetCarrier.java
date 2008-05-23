@@ -27,24 +27,92 @@
 package org.nightlabs.jfire.security;
 
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author Niklas Schiffler <nick@nightlabs.de>
- * @author marco
+ * @author marco schulze - marco at nightlabs dot de
  */
 public class RoleGroupSetCarrier implements Serializable
 {
 	private static final long serialVersionUID = 1L;
-	public Collection<RoleGroup> excluded;
-	public Collection<RoleGroup> assigned;
-	public Collection<RoleGroup> assignedByUserGroup;
 
-	public RoleGroupSetCarrier()
-	{
-		excluded = new HashSet<RoleGroup>();
-		assigned = new HashSet<RoleGroup>();
-		assignedByUserGroup = new HashSet<RoleGroup>();
+	private User user;
+	private Authority authority;
+	private Set<RoleGroup> allInAuthority;
+	private Set<RoleGroup> assignedToUser;
+	private Set<RoleGroup> assignedToUserGroups;
+	private Set<RoleGroup> assignedToOtherUser;
+	private boolean inAuthority;
+	private boolean controlledByOtherUser;
+
+//	public RoleGroupSetCarrier(
+//			User user,
+//			Authority authority,
+//			Set<RoleGroup> allInAuthority,
+//			Set<RoleGroup> assignedToUser,
+//			Set<RoleGroup> assignedToUserGroups,
+//			Set<RoleGroup> assignedToOtherUser,
+//			boolean inAuthority,
+//			boolean controlledByOtherUser
+//	)
+//	{
+//		this.user = user;
+//		this.authority = authority;
+//		this.allInAuthority = allInAuthority;
+//		this.assignedToUser = assignedToUser;
+//		this.assignedToUserGroups = assignedToUserGroups;
+//		this.assignedToOtherUser = assignedToOtherUser;
+//		this.inAuthority = inAuthority;
+//		this.controlledByOtherUser = controlledByOtherUser;
+//	}
+
+	public User getUser() {
+		return user;
+	}
+	public void setUser(User user) {
+		this.user = user;
+	}
+	public Authority getAuthority() {
+		return authority;
+	}
+	public void setAuthority(Authority authority) {
+		this.authority = authority;
+	}
+	public Set<RoleGroup> getAllInAuthority() {
+		return allInAuthority;
+	}
+	public void setAllInAuthority(Set<RoleGroup> allInAuthority) {
+		this.allInAuthority = allInAuthority;
+	}
+	public Set<RoleGroup> getAssignedToUser() {
+		return assignedToUser;
+	}
+	public void setAssignedToUser(Set<RoleGroup> assignedToUser) {
+		this.assignedToUser = assignedToUser;
+	}
+	public Set<RoleGroup> getAssignedToUserGroups() {
+		return assignedToUserGroups;
+	}
+	public void setAssignedToUserGroups(Set<RoleGroup> assignedToUserGroups) {
+		this.assignedToUserGroups = assignedToUserGroups;
+	}
+	public Set<RoleGroup> getAssignedToOtherUser() {
+		return assignedToOtherUser;
+	}
+	public void setAssignedToOtherUser(Set<RoleGroup> assignedToOtherUser) {
+		this.assignedToOtherUser = assignedToOtherUser;
+	}
+	public boolean isInAuthority() {
+		return inAuthority;
+	}
+	public void setInAuthority(boolean inAuthority) {
+		this.inAuthority = inAuthority;
+	}
+	public boolean isControlledByOtherUser() {
+		return controlledByOtherUser;
+	}
+	public void setControlledByOtherUser(boolean controlledByOtherUser) {
+		this.controlledByOtherUser = controlledByOtherUser;
 	}
 }
