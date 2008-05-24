@@ -9,7 +9,8 @@ import org.nightlabs.jfire.servermanager.db.DatabaseAdapterDerby;
 import org.nightlabs.jfire.servermanager.db.DatabaseAdapterMySQL;
 
 /**
- * The server core database configuration
+ * The server core database configuration. It is part of the {@link JFireServerConfigModule}.
+ *
  * @author Marco Schulze
  * @author Marc Klinger - marc[at]nightlabs[dot]de
  */
@@ -19,18 +20,25 @@ public class DatabaseCf extends JFireServerConfigPart implements Serializable
 	 * The serial version of this class.
 	 */
 	private static final long serialVersionUID = 1L;
-	
+
 	/**
 	 * LOG4J logger used by this class.
 	 */
-	private static final org.apache.log4j.Logger logger = org.apache.log4j.Logger
-			.getLogger(DatabaseCf.class);
-	
+	private static final org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(DatabaseCf.class);
+
 	public static final String DATABASE_NAME_VAR = "${databaseName}";
 
 	public static String DEFAULTS_DEFAULT_KEY = "Derby";
-	public static Map<String, DatabaseCf> defaults = createDefaults();
-	
+
+	private static Map<String, DatabaseCf> _defaults = null;
+
+	public static Map<String, DatabaseCf> defaults() {
+		if (_defaults == null)
+			_defaults = createDefaults();
+
+		return _defaults;
+	}
+
 	private String databaseDriverName_noTx;
 	private String databaseDriverName_localTx;
 	private String databaseDriverName_xa;
@@ -47,15 +55,17 @@ public class DatabaseCf extends JFireServerConfigPart implements Serializable
 	private String datasourceConfigFile;
 	private String datasourceTemplateDSXMLFile;
 	
-	protected static Map<String, DatabaseCf> createDefaults()
+	private static Map<String, DatabaseCf> createDefaults()
 	{
 		Map<String, DatabaseCf> defaults = new HashMap<String, DatabaseCf>();
 		try {
 
 			// Default values for Derby
 			defaults.put("Derby", createDerbyDefaults());
+
 			// Default values for Mckoi
 			//defaults.put("Mckoi", createMckoiDefaults());
+
 			// Default values for MySQL
 			defaults.put("MySQL", createMySQLDefaults());
 
@@ -65,7 +75,7 @@ public class DatabaseCf extends JFireServerConfigPart implements Serializable
 		
 		return defaults;
 	}
-	// TODO remove the metadatatypemapping and instead make the template file configurable! Hmmm.. this is already configurable but not in Database but in Jdo - shall we change this?
+	// TODO remove the metadatatypemapping... the template file is configurable, hence we don't need the type mapping here.
 
 	/**
 	 * Create default values for the MySQL DB type.
@@ -201,7 +211,7 @@ public class DatabaseCf extends JFireServerConfigPart implements Serializable
 
 	public void loadDefaults(String defaultKey)
 	{
-		DatabaseCf db = defaults.get(defaultKey);
+		DatabaseCf db = defaults().get(defaultKey);
 		if (db == null)
 			throw new IllegalArgumentException("No defaults known with defaultKey=" + defaultKey);
 
