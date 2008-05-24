@@ -1026,15 +1026,6 @@ implements SessionBean
 				q.setFilter("JDOHelper.getObjectId(this.authorityType) == :authorityTypeID");
 
 			return new HashSet<AuthorityID>((Collection<? extends AuthorityID>) q.execute(authorityTypeID));
-
-//			// DataNucleus WORKAROUND - no objects found by the above query - http://www.jpox.org/servlet/jira/browse/NUCRDBMS-22
-//			AuthorityType authorityType = null;
-//			if (authorityTypeID != null) {
-//				q.setFilter("this.authorityType == :authorityType");
-//				authorityType = (AuthorityType) pm.getObjectById(authorityTypeID);
-//			}
-//
-//			return new HashSet<AuthorityID>((Collection<? extends AuthorityID>) q.execute(authorityType));
 		} finally {
 			pm.close();
 		}
