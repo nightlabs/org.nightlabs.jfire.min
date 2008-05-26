@@ -482,6 +482,9 @@ public class Cache
 							cache.setResubscribeAllListeners(false);
 							boolean resubscribeFailed = true;
 							try {
+								if (isInterrupted())
+									return;
+
 								jdoManager.resubscribeAllListeners(
 										currentlySubscribedObjectIDs,
 										cache.getJDOLifecycleManager().getLifecycleListenerFilters());
@@ -541,6 +544,9 @@ public class Cache
 										}
 									}
 								}
+
+								if (isInterrupted())
+									return;
 
 								jdoManager.removeOrAddListeners(
 										objectIDsToUnsubscribe,
@@ -1675,15 +1681,6 @@ public class Cache
 
 	public synchronized void close()
 	{
-		try {
-			JDOManager jm = JDOManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
-
-			// remove all listeners for this session - done by remote closeCacheSession(...)
-			jm.closeCacheSession();
-		} catch (Exception x) {
-			logger.warn("Closing CacheSession on server failed!", x); // the server closes cacheSessions after a certain expiry time anyway
-		}
-
 		// stop the threads
 		if (cacheManagerThread != null) {
 			cacheManagerThread.interrupt();
@@ -1692,6 +1689,15 @@ public class Cache
 		if (notificationThread != null) {
 			notificationThread.interrupt();
 			notificationThread = null;
+		}
+
+		try {
+			JDOManager jm = JDOManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
+
+			// remove all listeners for this session - done by remote closeCacheSession(...)
+			jm.closeCacheSession();
+		} catch (Exception x) {
+			logger.warn("Closing CacheSession on server failed!", x); // the server closes cacheSessions after a certain expiry time anyway
 		}
 
 		// clear the cache
