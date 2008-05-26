@@ -402,37 +402,37 @@ public class UserDAO extends BaseJDOObjectDAO<UserID, User>
 		}
 	}
 
-	public synchronized Collection<User> getUsersInUserGroup(UserID userGroupID, 
-			String[] fetchgroups, int maxFetchDepth, ProgressMonitor monitor)
-	{
-		monitor.beginTask("Get users in user group", 1);
-		try {
-			JFireSecurityManager um = JFireSecurityManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
-			Collection<UserID> ids = um.getUserIDsInUserGroup(userGroupID);
-			return getJDOObjects(null, ids, fetchgroups, maxFetchDepth, monitor);			
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		} finally {
-			monitor.worked(1);
-			monitor.done();
-		}
-	}
+//	public synchronized Collection<User> getUsersInUserGroup(UserID userGroupID, 
+//			String[] fetchgroups, int maxFetchDepth, ProgressMonitor monitor)
+//	{
+//		monitor.beginTask("Get users in user group", 1);
+//		try {
+//			JFireSecurityManager um = JFireSecurityManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
+//			Collection<UserID> ids = um.getUserIDsInUserGroup(userGroupID);
+//			return getJDOObjects(null, ids, fetchgroups, maxFetchDepth, monitor);			
+//		} catch (Exception e) {
+//			throw new RuntimeException(e);
+//		} finally {
+//			monitor.worked(1);
+//			monitor.done();
+//		}
+//	}
 
-	public synchronized Collection<User> getUsersNotInUserGroup(UserID userGroupID, 
-			String[] fetchgroups, int maxFetchDepth, ProgressMonitor monitor)
-	{
-		monitor.beginTask("Get users not in user group", 1);
-		try {
-			JFireSecurityManager um = JFireSecurityManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
-			Collection<UserID> ids = um.getUserIDsNotInUserGroup(userGroupID);
-			return getJDOObjects(null, ids, fetchgroups, maxFetchDepth, monitor);
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		} finally {
-			monitor.worked(1);
-			monitor.done();
-		}
-	}
+//	public synchronized Collection<User> getUsersNotInUserGroup(UserID userGroupID, 
+//			String[] fetchgroups, int maxFetchDepth, ProgressMonitor monitor)
+//	{
+//		monitor.beginTask("Get users not in user group", 1);
+//		try {
+//			JFireSecurityManager um = JFireSecurityManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
+//			Collection<UserID> ids = um.getUserIDsNotInUserGroup(userGroupID);
+//			return getJDOObjects(null, ids, fetchgroups, maxFetchDepth, monitor);
+//		} catch (Exception e) {
+//			throw new RuntimeException(e);
+//		} finally {
+//			monitor.worked(1);
+//			monitor.done();
+//		}
+//	}
 
 	public void addUsersToAuthority(Set<UserID> userIDs, AuthorityID authorityID, ProgressMonitor monitor)
 	{
