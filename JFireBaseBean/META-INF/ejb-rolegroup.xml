@@ -6,6 +6,50 @@ PUBLIC "-//NightLabs GmbH//DTD JFire role groups 1.0//EN"
 <ejb-rolegroup>
 	<rolegroups defaultgroup="OrganisationAdmin">
 
+		<rolegroup id="org.nightlabs.jfire.security.JFireSecurityManager#accessRightManagement">
+			<name>Access right management</name>
+			<name language="de">Zugriffsrechteverwaltung</name>
+			<description>This right entitles the user to generally have access to the right management at all.
+			Without this right, a user cannot edit any right anywhere - not even locally within an authority
+			where he is granted the required rights. Note, that this right does not yet allow the user to actually
+			edit anything. In order to edit access rights somewhere, it still needs the appropriate rights. This
+			right can be seen as a global first door, through which a user has to go in order to get to other doors
+			(of the local authorities).</description>
+			<description language="de">Dieses Recht berechtigt den Benutzer zur Rechteverwaltung im allgemeinen. Ohne dieses Recht darf ein Benutzer keinerlei Rechte editieren - nicht einmal in einer Vollmacht, innerhalb der ihm die Rechteverwaltung erlaubt ist. Dieses Recht gibt dem Benutzer direkt jedoch noch keine Befugnis. Er benötigt zusätzlich noch die entsprechenden Rechte. Dieses Recht markiert daher sozusagen eine globale erste Tür, durch die der Benutzer gehen muß, um überhaupt erst in den Bereich anderer Türen (der lokalen Vollmachten) zu gelangen.</description>
+
+			<roles>
+				<role id="org.nightlabs.jfire.security.JFireSecurityManager#accessRightManagement" />
+			</roles>
+		</rolegroup>
+
+		<rolegroup id="org.nightlabs.jfire.security.JFireSecurityManager#editAuthority">
+			<name>Edit authority</name>
+			<name language="de">Vollmacht bearbeiten</name>
+			<description>With this right, the user is allowed to edit an authority. This includes changing the name as well as granting and revoking rights.</description>
+			<description language="de">Mit diesem Recht wird dem Benutzer erlaubt, eine Vollmacht zu bearbeiten. Dies beinhaltet Änderungen am Namen ebenso wie die Zuteilung und Entziehung von Rechten.</description>
+
+			<roles>
+				<role id="org.nightlabs.jfire.security.JFireSecurityManager#assignAuthority">
+<!--
+We don't store names and descriptions for roles - should we?
+					<name>Assign Authority to SecuredObject.</name>
+					<description>
+						In order to assign an Authority to a SecuredObject, the SecuredObject.authorityType.authority or the global
+						per-organisation-authority must contain this role for the current user.
+					</description>
+-->
+				</role>
+				<role id="org.nightlabs.jfire.security.JFireSecurityManager#storeAuthority"/>
+				<role id="org.nightlabs.jfire.security.JFireSecurityManager#setUsersOfAuthority"/>
+				<role id="org.nightlabs.jfire.security.JFireSecurityManager#setRoleGroupsOfUser"/>
+			</roles>
+		</rolegroup>
+
+		<rolegroup id="org.nightlabs.jfire.security.JFireSecurityManager#viewAuthority">
+			<roles>
+			</roles>
+		</rolegroup>
+
 
 		<rolegroup id="OrganisationReader">
 			<description>This role group combines all roles that are necessary to read metadata of the own organisation (e.g. organisation person, users etc.).</description>
@@ -33,6 +77,13 @@ PUBLIC "-//NightLabs GmbH//DTD JFire role groups 1.0//EN"
 			-->
 			<role id="org.nightlabs.jfire.security.JFireSecurityManager#removeRoleGroupFromUser"/>
 			<role id="org.nightlabs.jfire.security.JFireSecurityManager#addRoleGroupToUser"/>
+
+			<role id="org.nightlabs.jfire.security.JFireSecurityManager#assignAuthority">
+				<name>Assign Authority to SecuredObject.</name>
+				<description>
+					In order to assign an Authority to a SecuredObject, the SecuredObject.authorityType.
+				</description>
+			</role>
 
 			<name>Organisation Admin</name>
 			<name language="de">Organisation Verwalter</name>

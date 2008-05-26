@@ -86,7 +86,7 @@ public abstract class OrganisationManagerHelperBean
 				logger.debug("Creating JDO object LocalServer...");
 			Server server = localServerCf.createServer(pm);
 			LocalServer localServer = new LocalServer(server);
-			pm.makePersistent(localServer);
+			localServer = pm.makePersistent(localServer);
 			if(logger.isDebugEnabled())
 				logger.debug("pm.makePersistent(localServer) done.");
 
@@ -94,7 +94,7 @@ public abstract class OrganisationManagerHelperBean
 				logger.debug("Creating JDO object LocalOrganisation...");
 			Organisation organisation = organisationCf.createOrganisation(pm, server);
 			LocalOrganisation localOrganisation = new LocalOrganisation(organisation);
-			pm.makePersistent(localOrganisation);
+			localOrganisation = pm.makePersistent(localOrganisation);
 			if(logger.isDebugEnabled())
 				logger.debug("pm.makePersistent(localOrganisation) done.");
 
@@ -102,7 +102,7 @@ public abstract class OrganisationManagerHelperBean
 				logger.debug("Creating JDO object User with ID \""+User.USERID_OTHER+"\"...");
 			User otherUser = new User(organisationID, User.USERID_OTHER);
 			new UserLocal(otherUser);
-			pm.makePersistent(otherUser);
+			otherUser = pm.makePersistent(otherUser);
 			if(logger.isDebugEnabled())
 				logger.debug("pm.makePersistent(otherUser) done.");
 
@@ -111,14 +111,21 @@ public abstract class OrganisationManagerHelperBean
 			User user = new User(organisationID, userID);
 			UserLocal userLocal = new UserLocal(user);
 			userLocal.setPasswordPlain(password);
-			pm.makePersistent(user);
+			user = pm.makePersistent(user);
 			if(logger.isDebugEnabled())
 				logger.debug("pm.makePersistent(user) done.");
 
 			if(logger.isDebugEnabled())
+				logger.debug("Creating JDO object AuthorityType with ID \""+AuthorityType.AUTHORITY_TYPE_ID_SELF+"\"...");
+			AuthorityType authorityType = new AuthorityType(AuthorityType.AUTHORITY_TYPE_ID_SELF);
+			authorityType = pm.makePersistent(authorityType);
+			if(logger.isDebugEnabled())
+				logger.debug("pm.makePersistent(authorityType) done.");
+
+			if(logger.isDebugEnabled())
 				logger.debug("Creating JDO object AuthorityType with ID \""+AuthorityType.AUTHORITY_TYPE_ID_SYSTEM+"\"...");
-			AuthorityType authorityType = new AuthorityType(organisationID, AuthorityType.AUTHORITY_TYPE_ID_SYSTEM);
-			pm.makePersistent(authorityType);
+			authorityType = new AuthorityType(AuthorityType.AUTHORITY_TYPE_ID_SYSTEM);
+			authorityType = pm.makePersistent(authorityType);
 			if(logger.isDebugEnabled())
 				logger.debug("pm.makePersistent(authorityType) done.");
 
@@ -128,6 +135,7 @@ public abstract class OrganisationManagerHelperBean
 			authority = pm.makePersistent(authority);
 			if(logger.isDebugEnabled())
 				logger.debug("pm.makePersistent(authority) done.");
+
 		} finally {
 			pm.close();
 		}
