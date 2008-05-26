@@ -213,7 +213,9 @@ public class EJBRoleGroupMan implements Serializable
 							
 							RoleDef role = ejbJarMan.getRole(roleID);
 							if (role == null) {
-								logger.warn("Role \""+roleID+"\" declared in ejb-rolegroup.xml not defined in ejb-jar.xml!");
+								if (logger.isDebugEnabled())
+									logger.debug("Role \""+roleID+"\" declared in ejb-rolegroup.xml is not defined in ejb-jar.xml - adding it now.");
+
 								role = new RoleDef(roleID);
 								ejbJarMan.addRole(role);
 							}
