@@ -40,7 +40,6 @@ We don't store names and descriptions for roles - should we?
 -->
 				</role>
 				<role id="org.nightlabs.jfire.security.JFireSecurityManager#storeAuthority"/>
-				<role id="org.nightlabs.jfire.security.JFireSecurityManager#setUsersOfAuthority"/>
 				<role id="org.nightlabs.jfire.security.JFireSecurityManager#setRoleGroupsOfUser"/>
 			</roles>
 		</rolegroup>
