@@ -62,6 +62,7 @@ import org.nightlabs.jfire.security.id.UserID;
 import org.nightlabs.jfire.security.id.UserRefID;
 import org.nightlabs.jfire.security.search.UserQuery;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
+import org.nightlabs.util.CollectionUtil;
 import org.nightlabs.util.Util;
 
 /**
@@ -285,47 +286,6 @@ implements SessionBean
 			pm.close();
 		}
 	}
-
-//	/**
-//	 * @ejb.interface-method
-//	 * @ejb.permission role-name="org.nightlabs.jfire.security.JFireSecurityManager#accessRightManagement"
-//	 * @ejb.transaction type="Required"
-//	 */
-//	public void addUsersToAuthority(Set<UserID> userIDs, AuthorityID authorityID)
-//	{
-//		PersistenceManager pm = getPersistenceManager();
-//		try {
-//			Authority authority = (Authority) pm.getObjectById(authorityID);
-//
-//			Authority.resolveSecuringAuthority(pm, authority).assertContainsRoleRef(getPrincipal(), RoleConstants.securityManager_setUsersOfAuthority);
-//
-//			Collection<User> users = NLJDOHelper.getObjectList(pm, userIDs, User.class);
-//			for (User user : users)
-//				authority.createUserRef(user);
-//		} finally {
-//			pm.close();
-//		}
-//	}
-//
-//	/**
-//	 * @ejb.interface-method
-//	 * @ejb.permission role-name="org.nightlabs.jfire.security.JFireSecurityManager#accessRightManagement"
-//	 * @ejb.transaction type="Required"
-//	 */
-//	public void removeUsersFromAuthority(Set<UserID> userIDs, AuthorityID authorityID)
-//	{
-//		PersistenceManager pm = getPersistenceManager();
-//		try {
-//			Authority authority = (Authority) pm.getObjectById(authorityID);
-//
-//			Authority.resolveSecuringAuthority(pm, authority).assertContainsRoleRef(getPrincipal(), RoleConstants.securityManager_setUsersOfAuthority);
-//
-//			for (UserID userID : userIDs)
-//				authority.destroyUserRef(userID);
-//		} finally {
-//			pm.close();
-//		}
-//	}
 
 	/**
 	 * Returns a Collection of {@link User}s corresponding to the given set of {@link UserID}s.
@@ -650,6 +610,27 @@ implements SessionBean
 		PersistenceManager pm = getPersistenceManager();
 		try {
 			return NLJDOHelper.getDetachedObjectList(pm, authorityIDs, Authority.class, fetchGroups, maxFetchDepth);
+		} finally {
+			pm.close();
+		}
+	}
+
+	/**
+	 * Get the {@link AuthorityTypeID}s existing in the organisation. Since the {@link AuthorityType}s are objects defined by the
+	 * programmers, they are not secret and thus everyone is allowed to execute this method.
+	 *
+	 * @ejb.interface-method
+	 * @ejb.permission role-name="_Guest_"
+	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
+	 */
+	public Set<AuthorityTypeID> getAuthorityTypeIDs()
+	{
+		PersistenceManager pm = getPersistenceManager();
+		try {
+			Query q = pm.newQuery(AuthorityType.class);
+			q.setResult("JDOHelper.getObjectId(this)");
+			Collection<? extends AuthorityTypeID> authorityTypeIDs = CollectionUtil.castCollection((Collection<?>) q.execute());
+			return new HashSet<AuthorityTypeID>(authorityTypeIDs);
 		} finally {
 			pm.close();
 		}

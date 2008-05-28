@@ -2,6 +2,7 @@ package org.nightlabs.jfire.organisation;
 
 import java.rmi.RemoteException;
 import java.util.Iterator;
+import java.util.Locale;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
@@ -115,23 +116,50 @@ public abstract class OrganisationManagerHelperBean
 			if(logger.isDebugEnabled())
 				logger.debug("pm.makePersistent(user) done.");
 
+
+			// AuthorityType.AUTHORITY_TYPE_ID_SELF
 			if(logger.isDebugEnabled())
 				logger.debug("Creating JDO object AuthorityType with ID \""+AuthorityType.AUTHORITY_TYPE_ID_SELF+"\"...");
 			AuthorityType authorityType = new AuthorityType(AuthorityType.AUTHORITY_TYPE_ID_SELF);
+
+			authorityType.getName().setText(Locale.ENGLISH.getLanguage(), "Authority");
+			authorityType.getDescription().setText(Locale.ENGLISH.getLanguage(), "Authorities of this type are used to control the access rights for other authorities (or themselves). This authority type cannot be modified.");
+
+			authorityType.getName().setText(Locale.GERMAN.getLanguage(), "Vollmacht");
+			authorityType.getDescription().setText(Locale.GERMAN.getLanguage(), "Vollmachten dieses Typs werden verwendet um den Zugriff auf andere Vollmachten (oder sie selbst) zu kontrollieren. Dieser Vollmachttyp kann nicht verändert werden.");
+
 			authorityType = pm.makePersistent(authorityType);
 			if(logger.isDebugEnabled())
 				logger.debug("pm.makePersistent(authorityType) done.");
 
+
+			// AuthorityType.AUTHORITY_TYPE_ID_ORGANISATION
 			if(logger.isDebugEnabled())
-				logger.debug("Creating JDO object AuthorityType with ID \""+AuthorityType.AUTHORITY_TYPE_ID_SYSTEM+"\"...");
-			authorityType = new AuthorityType(AuthorityType.AUTHORITY_TYPE_ID_SYSTEM);
+				logger.debug("Creating JDO object AuthorityType with ID \""+AuthorityType.AUTHORITY_TYPE_ID_ORGANISATION+"\"...");
+			authorityType = new AuthorityType(AuthorityType.AUTHORITY_TYPE_ID_ORGANISATION);
+
+			authorityType.getName().setText(Locale.ENGLISH.getLanguage(), "Organisation");
+			authorityType.getDescription().setText(Locale.ENGLISH.getLanguage(), "Authorities of this type are used to control the access rights to the organisation as a whole. This authority type cannot be modified.");
+
+			authorityType.getName().setText(Locale.GERMAN.getLanguage(), "Organisation");
+			authorityType.getDescription().setText(Locale.GERMAN.getLanguage(), "Vollmachten dieses Typs werden verwendet, um den Zugriff auf die Organisation im ganzen zu kontrollieren. Dieser Vollmachttyp kann nicht verändert werden.");
+
 			authorityType = pm.makePersistent(authorityType);
 			if(logger.isDebugEnabled())
 				logger.debug("pm.makePersistent(authorityType) done.");
 
+
+			// Authority.AUTHORITY_ID_ORGANISATION
 			if(logger.isDebugEnabled())
 				logger.debug("Creating JDO object Authority with ID \""+Authority.AUTHORITY_ID_ORGANISATION+"\"...");
 			Authority authority = new Authority(organisationID, Authority.AUTHORITY_ID_ORGANISATION, authorityType);
+
+			authority.getName().setText(Locale.ENGLISH.getLanguage(), "Organisation");
+			authority.getDescription().setText(Locale.ENGLISH.getLanguage(), "This authority controls the the access rights to the organisation as a whole.");
+
+			authority.getName().setText(Locale.GERMAN.getLanguage(), "Organisation");
+			authority.getDescription().setText(Locale.GERMAN.getLanguage(), "Diese Vollmacht kontrolliert den Zugriff auf die Organisation im ganzen.");
+
 			authority = pm.makePersistent(authority);
 			if(logger.isDebugEnabled())
 				logger.debug("pm.makePersistent(authority) done.");
