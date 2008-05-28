@@ -303,9 +303,9 @@ public class RoleGroupDef implements Serializable, Comparable<RoleGroupDef>
 			String languageID = me.getKey();
 			String name = me.getValue();
       if(languageID != null)
-        roleGroup.setName(languageID, name);
+        roleGroup.getName().setText(languageID, name);
       else
-        roleGroup.setName(Locale.ENGLISH.getLanguage(), name);
+        roleGroup.getName().setText(Locale.ENGLISH.getLanguage(), name);
 		}
 		
 		for (Iterator<Map.Entry<String, String>> it = getDescriptions().entrySet().iterator(); it.hasNext(); ) {
@@ -313,9 +313,9 @@ public class RoleGroupDef implements Serializable, Comparable<RoleGroupDef>
 			String languageID = me.getKey();
 			String description = me.getValue();
       if(languageID != null)
-        roleGroup.setDescription(languageID, description);
+        roleGroup.getDescription().setText(languageID, description);
       else
-        roleGroup.setDescription(Locale.ENGLISH.getLanguage(), description);
+        roleGroup.getDescription().setText(Locale.ENGLISH.getLanguage(), description);
 		}
 		
 		// Add missing roles.

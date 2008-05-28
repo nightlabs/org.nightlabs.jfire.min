@@ -1111,7 +1111,7 @@ public class JFireServerManagerFactoryImpl
 				}
 
 				pm.getExtent(AuthorityType.class);
-				AuthorityType authorityType = (AuthorityType) pm.getObjectById(AuthorityType.AUTHORITY_TYPE_ID_SYSTEM);
+				AuthorityType authorityType = (AuthorityType) pm.getObjectById(AuthorityType.AUTHORITY_TYPE_ID_ORGANISATION);
 
 				pm.getExtent(RoleGroup.class, true);
 
