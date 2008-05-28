@@ -41,9 +41,12 @@ import org.nightlabs.jfire.security.Authority;
 import org.nightlabs.jfire.security.JFireSecurityManager;
 import org.nightlabs.jfire.security.JFireSecurityManagerUtil;
 import org.nightlabs.jfire.security.RoleGroup;
+import org.nightlabs.jfire.security.RoleGroupRef;
 import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.security.UserGroup;
+import org.nightlabs.jfire.security.UserLocal;
+import org.nightlabs.jfire.security.UserRef;
 import org.nightlabs.jfire.security.id.AuthorityID;
 import org.nightlabs.jfire.security.id.RoleGroupID;
 import org.nightlabs.jfire.security.id.UserID;
@@ -125,11 +128,20 @@ public class UserDAO extends BaseJDOObjectDAO<UserID, User>
 
 	/**
 	 * Store a user and its person on the server.
-	 * @param user The user to save
+	 * 
+	 * @param user the user to save.
+	 * @param newPassword the password for the user. This might be <code>null</code>. If a new user is created without password,
+	 *		it cannot login, since the presence of a password is forced by the login-module.
+	 *		Note, that this parameter is ignored, if the given <code>user</code> has a {@link UserLocal} assigned.
+	 *		In this case, the property {@link UserLocal#getNewPassword()} is used instead. In other words, this field
+	 *		is meant to be used to create a new <code>User</code> with an initial password.
+	 * @param get Whether to return the newly saved user.
+	 * @param fetchGroups The fetch-groups to detach the returned User with.
+	 * @param maxFetchDepth The maximum fetch-depth to use when detaching.
 	 * @param monitor The progress monitor to use. This method will
 	 * 		make a progress of 5 work units per user.
 	 */
-	public synchronized User storeUser(User user, boolean get, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
+	public synchronized User storeUser(User user, String newPassword, boolean get, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
 	{
 		if(user == null)
 			throw new NullPointerException("User to save must not be null");
@@ -172,16 +184,7 @@ public class UserDAO extends BaseJDOObjectDAO<UserID, User>
 			// FIXME: how to do this?
 			// set person to call User.setNameAuto()
 //			user.setPerson(person);
-//			String userPassword = null;
-//			try {
-//				userPassword = user.getUserLocal().getPassword();
-//			} catch (JDODetachedFieldAccessException e) {
-//				// TODO IS THIS REALLY WHAT WE WANT?
-////				userPassword = null;
-//				userPassword = UserLocal.UNCHANGED_PASSWORD;
-//			}
-			// TODO CHECK THIS "asdf" thing!
-			User result = um.storeUser(user, "asdf", get, fetchGroups, maxFetchDepth);
+			User result = um.storeUser(user, newPassword, get, fetchGroups, maxFetchDepth);
 			monitor.worked(1);
 			person = result.getPerson();
 			if (person != null)
@@ -253,30 +256,6 @@ public class UserDAO extends BaseJDOObjectDAO<UserID, User>
 	}
 
 	/**
-	 * Store a user group and its person on the server.
-	 * @param userGroup The user group to save
-	 * @param monitor The progress monitor to use. This method will
-	 * 		make a progress of 5 work units per user group.
-	 */
-	public synchronized void storeUserGroup(UserGroup userGroup, ProgressMonitor monitor)
-	{
-		storeUser(userGroup, false, null, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT, monitor);
-	}
-
-//	/**
-//	 * Get all user groups.
-//	 * @param fetchGroups Wich fetch groups to use
-//	 * @param maxFetchDepth Fetch depth or {@link NLJDOHelper#MAX_FETCH_DEPTH_NO_LIMIT}
-//	 * @param monitor The progress monitor for this action. For every downloaded
-//	 * 					object, <code>monitor.worked(1)</code> will be called.
-//	 * @return The user groups.
-//	 */
-//	public synchronized Collection<UserGroup> getUserGroups(String organisationID, String[] fetchgroups, int maxFetchDepth, ProgressMonitor monitor)
-//	{
-//		return CollectionUtil.castCollection(getUsers(User.USERTYPE_USERGROUP, fetchgroups, maxFetchDepth, monitor));
-//	}
-
-	/**
 	 * Add a user to a user group
 	 * @param user The user
 	 * @param userGroup The user group in wich to add the user
@@ -345,6 +324,22 @@ public class UserDAO extends BaseJDOObjectDAO<UserID, User>
 				(RoleGroupID)JDOHelper.getObjectId(roleGroup), monitor);
 	}
 
+	/**
+	 * Set which {@link RoleGroup}s are assigned to a certain {@link User} within the scope of a certain {@link Authority}.
+	 * <p>
+	 * The assignment of {@link RoleGroup}s to {@link User}s is managed by {@link RoleGroupRef} and {@link UserRef} instances
+	 * which live within an {@link Authority}. This method removes the {@link UserRef} (and with it all assignments), if
+	 * the given <code>roleGroupIDs</code> argument is <code>null</code>. If the <code>roleGroupIDs</code> argument is not <code>null</code>,
+	 * a {@link UserRef} instance is created - even if the <code>roleGroupIDs</code> is an empty set.
+	 * </p>
+	 *
+	 * @param userID the user-id. Must not be <code>null</code>.
+	 * @param authorityID the authority-id. Must not be <code>null</code>.
+	 * @param roleGroupIDs the role-group-ids that should be assigned to the specified user within the scope of the specified
+	 *		authority. If this is <code>null</code>, the {@link UserRef} of the specified user will be removed from the {@link Authority}.
+	 *		If this is not <code>null</code>, a <code>UserRef</code> is created (if not yet existing).
+	 * @param monitor the progress monitor for feedback.
+	 */
 	public synchronized void setRoleGroupsOfUser(UserID userID, AuthorityID authorityID, Set<RoleGroupID> roleGroupIDs, ProgressMonitor monitor)
 	{
 		monitor.beginTask("Setting rolegroups of user " + userID.userID + " within one authority.", 1);
@@ -434,31 +429,31 @@ public class UserDAO extends BaseJDOObjectDAO<UserID, User>
 //		}
 //	}
 
-	public void addUsersToAuthority(Set<UserID> userIDs, AuthorityID authorityID, ProgressMonitor monitor)
-	{
-		monitor.beginTask("Add users to authority", 1);
-		try {
-			JFireSecurityManager sm = JFireSecurityManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
-			sm.addUsersToAuthority(userIDs, authorityID);
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		} finally {
-			monitor.worked(1);
-			monitor.done();
-		}
-	}
-
-	public void removeUsersFromAuthority(Set<UserID> userIDs, AuthorityID authorityID, ProgressMonitor monitor)
-	{
-		monitor.beginTask("Remove users from authority", 1);
-		try {
-			JFireSecurityManager sm = JFireSecurityManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
-			sm.removeUsersFromAuthority(userIDs, authorityID);
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		} finally {
-			monitor.worked(1);
-			monitor.done();
-		}
-	}
+//	public void addUsersToAuthority(Set<UserID> userIDs, AuthorityID authorityID, ProgressMonitor monitor)
+//	{
+//		monitor.beginTask("Add users to authority", 1);
+//		try {
+//			JFireSecurityManager sm = JFireSecurityManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
+//			sm.addUsersToAuthority(userIDs, authorityID);
+//		} catch (Exception e) {
+//			throw new RuntimeException(e);
+//		} finally {
+//			monitor.worked(1);
+//			monitor.done();
+//		}
+//	}
+//
+//	public void removeUsersFromAuthority(Set<UserID> userIDs, AuthorityID authorityID, ProgressMonitor monitor)
+//	{
+//		monitor.beginTask("Remove users from authority", 1);
+//		try {
+//			JFireSecurityManager sm = JFireSecurityManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
+//			sm.removeUsersFromAuthority(userIDs, authorityID);
+//		} catch (Exception e) {
+//			throw new RuntimeException(e);
+//		} finally {
+//			monitor.worked(1);
+//			monitor.done();
+//		}
+//	}
 }
