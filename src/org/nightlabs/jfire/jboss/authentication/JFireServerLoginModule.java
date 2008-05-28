@@ -56,7 +56,7 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 
 	protected Lookup lookup;
 	protected JFirePrincipal ip = null;
-	protected Object loginCredential = null;
+//	protected Object loginCredential = null; // why did we store this? I'll comment it out and see if it still works.
 
 	private String identityHashStr = null;
 	protected String getIdentityHashStr()
@@ -92,12 +92,16 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 			callbackHandler.handle(callbacks);
 			login = ((NameCallback)callbacks[0]).getName();
 			char[] tmpPassword = ((PasswordCallback)callbacks[1]).getPassword();
-			if (tmpPassword == null)
-				throw new IllegalStateException("No password set! username = " + login);
+//			if (tmpPassword == null)
+//				throw new IllegalStateException("No password set! username = " + login);
 
-			password = new String(tmpPassword);
+			if (tmpPassword == null)
+				password = ""; // an empty password does never pass UserLocal.checkPassword(...) [it's too short], so we can continue with it
+			else
+				password = new String(tmpPassword);
+
 			((PasswordCallback)callbacks[1]).clearPassword();
-			loginCredential = password;
+//			loginCredential = password;
 		} catch (Exception x) {
 			logger.fatal("Callback handling failed!", x);
 			throw new LoginException(x.getMessage());
@@ -108,19 +112,6 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 		else if (logger.isDebugEnabled())
 			logger.debug("(" + getIdentityHashStr() + ") login: " + login);
 
-//		// set username and organisationID + userIsOrganisation
-//		String[] txt = User.PATTERN_SPLIT_LOGIN.split(login);
-//		if(txt.length != 2 && txt.length != 3)
-//			throw new IllegalArgumentException("Invalid login - not two or three parts (use user@organisation?sessionID=xxx&moreParams=yyy&..., session is optional): " + login);
-//		if(txt[0].length() == 0 || txt[1].length() == 0)
-//			throw new LoginException("Invalid login - empty userID or empty organisationID (use user@organisation?sessionID=xxx&moreParams=yyy&..., session is optional): " + login);
-//
-//		loginData = new LoginData(txt[1], txt[0], password);
-//		if (txt.length < 3 || "".equals(txt[2]))
-//			loginData.setSessionID(loginData.getUserID() + '!' + loginData.getOrganisationID());
-//		else {
-//			loginData.setAdditionalParams(new ParameterMap(txt[2]));
-//		}
 		loginData = new LoginData(login, password);
 
 		try
