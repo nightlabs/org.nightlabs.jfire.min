@@ -6,9 +6,9 @@ import java.util.Set;
 
 import org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO;
 import org.nightlabs.jfire.security.AuthorityType;
-import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.security.JFireSecurityManager;
 import org.nightlabs.jfire.security.JFireSecurityManagerUtil;
+import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.security.id.AuthorityTypeID;
 import org.nightlabs.progress.ProgressMonitor;
 
@@ -28,14 +28,32 @@ public class AuthorityTypeDAO extends BaseJDOObjectDAO<AuthorityTypeID, Authorit
 			Set<AuthorityTypeID> authorityTypeIDs, String[] fetchGroups,
 			int maxFetchDepth, ProgressMonitor monitor) throws Exception
 	{
-		JFireSecurityManager um = userManager;
-		if (um == null)
-			um = JFireSecurityManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
+		JFireSecurityManager sm = securityManager;
+		if (sm == null)
+			sm = JFireSecurityManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
 
-		return um.getAuthorityTypes(authorityTypeIDs, fetchGroups, maxFetchDepth);
+		return sm.getAuthorityTypes(authorityTypeIDs, fetchGroups, maxFetchDepth);
 	}
 
-	private JFireSecurityManager userManager;
+	private JFireSecurityManager securityManager;
+
+	@SuppressWarnings("unchecked")
+	public synchronized List<AuthorityType> getAuthorityTypes(
+			String[] fetchGroups,
+			int maxFetchDepth, ProgressMonitor monitor)
+	{
+		try {
+			securityManager = JFireSecurityManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
+			Set<AuthorityTypeID> authorityTypeIDs = securityManager.getAuthorityTypeIDs();
+			return getJDOObjects(null, authorityTypeIDs, fetchGroups, maxFetchDepth, monitor);
+		} catch (RuntimeException x) {
+			throw x;
+		} catch (Exception x) {
+			throw new RuntimeException(x);
+		} finally {
+			securityManager = null;
+		}
+	}
 
 	public List<AuthorityType> getAuthorityTypes(
 			Set<AuthorityTypeID> authorityTypeIDs, String[] fetchGroups,
