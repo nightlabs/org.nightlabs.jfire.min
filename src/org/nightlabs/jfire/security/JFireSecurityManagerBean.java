@@ -223,8 +223,8 @@ implements SessionBean
 			pm.getFetchPlan().setDetachmentOptions(FetchPlan.DETACH_LOAD_FIELDS | FetchPlan.DETACH_UNLOAD_FIELDS);
 			pm.getFetchPlan().setGroups(MissingRoleException.FETCH_GROUPS_ROLE);
 
-			Set<Role> roles = NLJDOHelper.getObjectSet(pm, roleIDs, Role.class);
-			roles = (Set<Role>) pm.detachCopyAll(roles);
+			Collection<Role> roles = NLJDOHelper.getObjectSet(pm, roleIDs, Role.class);
+			roles = (Collection<Role>) pm.detachCopyAll(roles);
 			return new HashSet<Role>(roles);
 		} finally {
 			pm.close();
