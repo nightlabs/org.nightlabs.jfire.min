@@ -87,4 +87,18 @@ public class AuthorityDAO extends BaseJDOObjectDAO<AuthorityID, Authority>
 			monitor.done();
 		}
 	}
+
+	public synchronized void assignSecuringAuthority(Object securedObjectID, AuthorityID authorityID, boolean inherited, ProgressMonitor monitor)
+	{
+		monitor.beginTask("Assigning authority to secured object", 1);
+		try {
+			JFireSecurityManager sm = JFireSecurityManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
+			sm.assignSecuringAuthority(securedObjectID, authorityID, inherited);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		} finally {
+			monitor.worked(1);
+			monitor.done();
+		}
+	}
 }

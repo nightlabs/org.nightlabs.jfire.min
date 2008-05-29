@@ -35,7 +35,6 @@ import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO;
 import org.nightlabs.jfire.idgenerator.IDGenerator;
 import org.nightlabs.jfire.person.Person;
-import org.nightlabs.jfire.prop.IStruct;
 import org.nightlabs.jfire.prop.PropertySet;
 import org.nightlabs.jfire.security.Authority;
 import org.nightlabs.jfire.security.JFireSecurityManager;
@@ -53,6 +52,7 @@ import org.nightlabs.jfire.security.id.UserID;
 import org.nightlabs.progress.ProgressMonitor;
 import org.nightlabs.progress.SubProgressMonitor;
 import org.nightlabs.util.CollectionUtil;
+import org.nightlabs.util.Util;
 
 /**
  * Get user JDO objects using the JFire client cache.
@@ -145,7 +145,9 @@ public class UserDAO extends BaseJDOObjectDAO<UserID, User>
 	{
 		if(user == null)
 			throw new NullPointerException("User to save must not be null");
-		
+
+		user = Util.cloneSerializable(user); // we clone the user since its properties are changed below (e.g. the person is deflated)
+
 		monitor.beginTask("Storing user: "+user.getName(), 3); // 4);
 		try {
 			Properties initialContextProperties = SecurityReflector.getInitialContextProperties();
@@ -154,9 +156,9 @@ public class UserDAO extends BaseJDOObjectDAO<UserID, User>
 			monitor.worked(1);
 			
 			Person person = user.getPerson();
-			IStruct struct = null;
+//			IStruct struct = null;
 			if (person != null) {
-				struct = person.getStructure(); // StructLocalDAO.sharedInstance().getStructLocal(Person.class.getName(), StructLocal.DEFAULT_SCOPE);
+//				struct = person.getStructure(); // StructLocalDAO.sharedInstance().getStructLocal(Person.class.getName(), StructLocal.DEFAULT_SCOPE);
 				user.getPerson().deflate();
 				long activePersonID = person.getPropertySetID();
 				if (activePersonID == PropertySet.TEMPORARY_PROP_ID) {
@@ -186,10 +188,10 @@ public class UserDAO extends BaseJDOObjectDAO<UserID, User>
 //			user.setPerson(person);
 			User result = um.storeUser(user, newPassword, get, fetchGroups, maxFetchDepth);
 			monitor.worked(1);
-			person = result.getPerson();
-			if (person != null)
-				person.inflate(struct);
-			monitor.worked(1);
+//			person = result.getPerson();
+//			if (person != null)
+//				person.inflate(struct);
+//			monitor.worked(1);
 			monitor.done();
 			return result;
 		} catch(Exception e) {
