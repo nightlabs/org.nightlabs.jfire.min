@@ -1224,7 +1224,7 @@ public class JFireServerManagerFactoryImpl
 	/**
 	 * This method creates a new organisation. What exactly happens, is documented in our wiki:
 	 * https://www.jfire.org/modules/phpwiki/index.php/NewOrganisationCreation
-	 * @param createOrganisationProgress <code>null</code> or an instance of {@link CreateOrganisationProgress} in order to track the status.
+	 * @param createOrganisationProgress an instance of {@link CreateOrganisationProgress} in order to track the status.
 	 * @param organisationID The ID of the new organsitation, which must not be <code>null</code>. Example: "RioDeJaneiro.NightLabs.org"
 	 * @param organisationName The "human" name of the organisation. Example: "NightLabs GmbH, Rio de Janeiro"
 	 * @param userID The userID of the first user to be created. This will be the new organisation's administrator.
