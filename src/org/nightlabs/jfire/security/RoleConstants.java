@@ -8,6 +8,9 @@ public final class RoleConstants {
 	/**
 	 * This right entitles the user to generally have access to the right management at all.
 	 * <p>
+	 * For most viewing functionality, it is the only role that is necessary.
+	 * </p>
+	 * <p>
 	 * Without this right, a user cannot edit any right anywhere - not even locally within an authority where he
 	 * is granted the required rights. Note, that this right does not yet allow the user to actually edit anything.
 	 * In order to edit access rights somewhere, it still needs the appropriate rights. This right can be seen as a
@@ -23,7 +26,6 @@ public final class RoleConstants {
 	public static final RoleID securityManager_setRoleGroupsOfUser = RoleID.create(JFireSecurityManager.class.getName() + "#setRoleGroupsOfUser");
 
 	public static final RoleID securityManager_assignAuthority = RoleID.create(JFireSecurityManager.class.getName() + "#assignAuthority");
-//	public static final RoleID securityManager_setUsersOfAuthority = RoleID.create(JFireSecurityManager.class.getName() + "#setUsersOfAuthority");
 
 	public static final RoleID securityManager_setUsersOfUserGroup = RoleID.create(JFireSecurityManager.class.getName() + "#setUsersOfUserGroup");
 

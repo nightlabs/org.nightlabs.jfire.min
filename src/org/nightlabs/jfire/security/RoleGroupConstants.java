@@ -18,4 +18,5 @@ public final class RoleGroupConstants {
 	 */
 	public static final RoleGroupID securityManager_accessRightManagement = RoleGroupID.create(JFireSecurityManager.class.getName() + "#accessRightManagement");
 
+	public static final RoleGroupID securityManager_editAuthority = RoleGroupID.create(JFireSecurityManager.class.getName() + "#editAuthority");
 }

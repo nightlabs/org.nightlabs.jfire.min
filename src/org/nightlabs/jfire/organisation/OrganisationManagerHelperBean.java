@@ -14,7 +14,9 @@ import org.apache.log4j.Logger;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.security.Authority;
 import org.nightlabs.jfire.security.AuthorityType;
+import org.nightlabs.jfire.security.RoleConstants;
 import org.nightlabs.jfire.security.RoleGroup;
+import org.nightlabs.jfire.security.RoleGroupConstants;
 import org.nightlabs.jfire.security.RoleGroupRef;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.security.UserLocal;
@@ -209,14 +211,25 @@ public abstract class OrganisationManagerHelperBean
 		PersistenceManager pm = getPersistenceManager();
 		try {
 			if(logger.isDebugEnabled())
+				logger.debug("Loading previously created AuthorityType (" + AuthorityType.AUTHORITY_TYPE_ID_SELF + ") from datastore and assigning role-groups...");
+
+			AuthorityType authorityType = (AuthorityType) pm.getObjectById(AuthorityType.AUTHORITY_TYPE_ID_SELF);
+			authorityType.addRoleGroup((RoleGroup) pm.getObjectById(RoleGroupConstants.securityManager_editAuthority));
+
+			if(logger.isDebugEnabled())
+				logger.debug("Loading previously created AuthorityType (" + AuthorityType.AUTHORITY_TYPE_ID_SELF + ") from datastore and assigning role-groups done.");
+
+			
+
+
+			if(logger.isDebugEnabled())
 				logger.debug("Loading previously created Authority from datastore...");
 
 			Authority authority = (Authority) pm.getObjectById(AuthorityID.create(
 					organisationID, Authority.AUTHORITY_ID_ORGANISATION));
 
 			if(logger.isDebugEnabled())
-				logger.debug("Loading previously created Authority from datastore...");
-
+				logger.debug("Loading previously created Authority from datastore done.");
 
 
 			if(logger.isDebugEnabled())

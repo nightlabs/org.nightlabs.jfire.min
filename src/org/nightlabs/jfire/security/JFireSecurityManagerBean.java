@@ -180,6 +180,9 @@ implements SessionBean
 					new UserLocal(user); // self-registering
 			}
 
+			// ensure that the user has a UserRef in the organisation-authority (everyone should have one).
+			Authority.getOrganisationAuthority(pm).createUserRef(user);
+
 			if (newPassword != null) {
 				if(user instanceof UserGroup)
 					throw new IllegalArgumentException("You cannot set a password for a UserGroup! userGroup.password must be null!");
@@ -430,6 +433,9 @@ implements SessionBean
 
 		UserRef userRef = authority.getUserRef(userID);
 		boolean userIsInAuthority = userRef != null && userRef.isVisible();
+		if (Authority.AUTHORITY_ID_ORGANISATION.equals(authority.getAuthorityID()))
+			userIsInAuthority = true;
+
 		boolean controlledByOtherUser = !userIsInAuthority;
 		if (controlledByOtherUser) {
 			// find out if there is a UserGroup in which the user is member and which is within this authority
@@ -818,8 +824,15 @@ implements SessionBean
 					getPrincipal(), RoleConstants.securityManager_setRoleGroupsOfUser
 			);
 
-			if (roleGroupIDs == null)
-				authority.destroyUserRef(userID);
+			if (roleGroupIDs == null) {
+				// A user should never be removed from the organisation-authority (and necessarily be added).
+				if (Authority.AUTHORITY_ID_ORGANISATION.equals(authority.getAuthorityID())) {
+					if (authority.getUserRef(userID) == null)
+						authority.createUserRef(user);
+				}
+				else
+					authority.destroyUserRef(userID);
+			}
 			else {
 				UserRef userRef = authority.createUserRef(user);
 				Set<RoleGroupID> roleGroupIDsToAdd = new HashSet<RoleGroupID>(roleGroupIDs);
@@ -1148,7 +1161,7 @@ implements SessionBean
 	 * @ejb.permission role-name="org.nightlabs.jfire.security.JFireSecurityManager#accessRightManagement"
 	 * @ejb.transaction type="Required"
 	 */
-	public void assignAuthority(Object securedObjectID, AuthorityID authorityID, boolean inherited)
+	public void assignSecuringAuthority(Object securedObjectID, AuthorityID authorityID, boolean inherited)
 	{
 		PersistenceManager pm = getPersistenceManager();
 		try {
@@ -1159,12 +1172,12 @@ implements SessionBean
 
 			SecuredObject securedObject = (SecuredObject) _securedObject;
 
-			Authority authority = (Authority) pm.getObjectById(authorityID);
+			Authority authority = authorityID == null ? null : (Authority) pm.getObjectById(authorityID);
 
 			if (securedObject.getSecuringAuthorityTypeID() == null)
 				throw new IllegalStateException("securedObject.securingAuthorityType == null :: securedObjectID=" + securedObjectID);
 
-			if (Util.equals(securedObject.getSecuringAuthorityTypeID(), JDOHelper.getObjectId(authority.getAuthorityType())))
+			if (authority != null && !Util.equals(securedObject.getSecuringAuthorityTypeID(), JDOHelper.getObjectId(authority.getAuthorityType())))
 				throw new IllegalArgumentException("AuthorityType mismatch: securedObject.securingAuthorityType != authority.authorityType :: securedObjectID=" + securedObjectID + " authorityID=" + authorityID);
 
 			// Ensure the current user is allowed to assign an authority.
