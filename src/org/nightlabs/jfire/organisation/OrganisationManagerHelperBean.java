@@ -125,10 +125,10 @@ public abstract class OrganisationManagerHelperBean
 			AuthorityType authorityType = new AuthorityType(AuthorityType.AUTHORITY_TYPE_ID_SELF);
 
 			authorityType.getName().setText(Locale.ENGLISH.getLanguage(), "Authority");
-			authorityType.getDescription().setText(Locale.ENGLISH.getLanguage(), "Authorities of this type are used to control the access rights for other authorities (or themselves). This authority type cannot be modified.");
+			authorityType.getDescription().setText(Locale.ENGLISH.getLanguage(), "Authorities of this type are used to control the access rights for other authorities (or themselves).");
 
 			authorityType.getName().setText(Locale.GERMAN.getLanguage(), "Vollmacht");
-			authorityType.getDescription().setText(Locale.GERMAN.getLanguage(), "Vollmachten dieses Typs werden verwendet um den Zugriff auf andere Vollmachten (oder sie selbst) zu kontrollieren. Dieser Vollmachttyp kann nicht verändert werden.");
+			authorityType.getDescription().setText(Locale.GERMAN.getLanguage(), "Vollmachten dieses Typs werden verwendet um den Zugriff auf andere Vollmachten (oder sie selbst) zu kontrollieren.");
 
 			authorityType = pm.makePersistent(authorityType);
 			if(logger.isDebugEnabled())
@@ -141,10 +141,10 @@ public abstract class OrganisationManagerHelperBean
 			authorityType = new AuthorityType(AuthorityType.AUTHORITY_TYPE_ID_ORGANISATION);
 
 			authorityType.getName().setText(Locale.ENGLISH.getLanguage(), "Organisation");
-			authorityType.getDescription().setText(Locale.ENGLISH.getLanguage(), "Authorities of this type are used to control the access rights to the organisation as a whole. This authority type cannot be modified.");
+			authorityType.getDescription().setText(Locale.ENGLISH.getLanguage(), "Authorities of this type are used to control the access rights to the organisation as a whole.");
 
 			authorityType.getName().setText(Locale.GERMAN.getLanguage(), "Organisation");
-			authorityType.getDescription().setText(Locale.GERMAN.getLanguage(), "Vollmachten dieses Typs werden verwendet, um den Zugriff auf die Organisation im ganzen zu kontrollieren. Dieser Vollmachttyp kann nicht verändert werden.");
+			authorityType.getDescription().setText(Locale.GERMAN.getLanguage(), "Vollmachten dieses Typs werden verwendet, um den Zugriff auf die Organisation im ganzen zu kontrollieren.");
 
 			authorityType = pm.makePersistent(authorityType);
 			if(logger.isDebugEnabled())
