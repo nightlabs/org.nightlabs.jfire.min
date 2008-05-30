@@ -94,6 +94,7 @@ public class AuthorityDAO extends BaseJDOObjectDAO<AuthorityID, Authority>
 		try {
 			JFireSecurityManager sm = JFireSecurityManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
 			sm.assignSecuringAuthority(securedObjectID, authorityID, inherited);
+			Cache.sharedInstance().removeByObjectID(securedObjectID, false);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		} finally {
