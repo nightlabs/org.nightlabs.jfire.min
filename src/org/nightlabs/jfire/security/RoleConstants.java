@@ -23,7 +23,7 @@ public final class RoleConstants {
 
 	public static final RoleID securityManager_getRoleGroupIDSetCarrier = RoleID.create(JFireSecurityManager.class.getName() + "#getRoleGroupIDSetCarrier");
 
-	public static final RoleID securityManager_setRoleGroupsOfUser = RoleID.create(JFireSecurityManager.class.getName() + "#setRoleGroupsOfUser");
+	public static final RoleID securityManager_setGrantedRoleGroups = RoleID.create(JFireSecurityManager.class.getName() + "#setGrantedRoleGroups");
 
 	public static final RoleID securityManager_assignAuthority = RoleID.create(JFireSecurityManager.class.getName() + "#assignAuthority");
 

@@ -29,9 +29,12 @@ package org.nightlabs.jfire.security;
 import java.io.Serializable;
 import java.util.Set;
 
+import org.nightlabs.jdo.ObjectID;
 import org.nightlabs.jfire.security.id.AuthorityID;
+import org.nightlabs.jfire.security.id.AuthorizedObjectID;
 import org.nightlabs.jfire.security.id.RoleGroupID;
-import org.nightlabs.jfire.security.id.UserID;
+import org.nightlabs.jfire.security.id.UserLocalID;
+import org.nightlabs.jfire.security.id.UserSecurityGroupID;
 
 /**
  * @author Niklas Schiffler <nick@nightlabs.de>
@@ -41,15 +44,8 @@ public class RoleGroupIDSetCarrier implements Serializable
 {
 	private static final long serialVersionUID = 1L;
 
-//	public RoleGroupIDSetCarrier()
-//	{
-//		excluded = new HashSet<RoleGroupID>();
-//		assignedToUser = new HashSet<RoleGroupID>();
-//		assignedToUserGroups = new HashSet<RoleGroupID>();
-//	}
-
 	public RoleGroupIDSetCarrier(
-			UserID userID,
+			AuthorizedObjectID authorizedObjectID,
 			AuthorityID authorityID,
 			Set<RoleGroupID> allInAuthority,
 			Set<RoleGroupID> assignedToUser,
@@ -59,8 +55,8 @@ public class RoleGroupIDSetCarrier implements Serializable
 			boolean controlledByOtherUser
 	)
 	{
-		if (userID == null)
-			throw new IllegalArgumentException("userID must not be null!");
+		if (authorizedObjectID == null)
+			throw new IllegalArgumentException("authorizedObjectID must not be null!");
 
 		if (authorityID == null)
 			throw new IllegalArgumentException("authorityID must not be null!");
@@ -77,7 +73,7 @@ public class RoleGroupIDSetCarrier implements Serializable
 		if (assignedToOtherUser == null)
 			throw new IllegalArgumentException("assignedToOtherUser must not be null!");
 
-		this.userID = userID;
+		this.authorizedObjectID = authorizedObjectID;
 		this.authorityID = authorityID;
 		this.allInAuthority = allInAuthority;
 		this.assignedToUser = assignedToUser;
@@ -87,7 +83,7 @@ public class RoleGroupIDSetCarrier implements Serializable
 		this.controlledByOtherUser = controlledByOtherUser;
 	}
 
-	private UserID userID;
+	private AuthorizedObjectID authorizedObjectID;
 	private AuthorityID authorityID;
 	private Set<RoleGroupID> allInAuthority;
 	private Set<RoleGroupID> assignedToUser;
@@ -97,11 +93,13 @@ public class RoleGroupIDSetCarrier implements Serializable
 	private boolean controlledByOtherUser;
 
 	/**
-	 * Get the {@link UserID} of the {@link User} for which this <code>RoleGroupIDSetCarrier</code> has been created.
-	 * @return the user-id.
+	 * Get the id of the {@link AuthorizedObject} for which this <code>RoleGroupIDSetCarrier</code> has been created.
+	 * This is either an {@link UserLocalID} or an {@link UserSecurityGroupID}.
+	 *
+	 * @return the id.
 	 */
-	public UserID getUserID() {
-		return userID;
+	public AuthorizedObjectID getAuthorizedObjectID() {
+		return authorizedObjectID;
 	}
 	/**
 	 * Get the {@link AuthorityID} of the {@link AuthorityID} for which this <code>RoleGroupIDSetCarrier</code> has been created.
@@ -119,7 +117,7 @@ public class RoleGroupIDSetCarrier implements Serializable
 	}
 	/**
 	 * Get all <code>RoleGroupID</code>s which are <b>directly</b> assigned to the <code>User</code> within the current <code>Authority</code>.
-	 * If {@link #getUserID()} references an {@link UserGroup}, this still reflects all <b>directly</b> assigned rights.
+	 * If {@link #getAuthorizedObjectID()} references an {@link UserGroup}, this still reflects all <b>directly</b> assigned rights.
 	 *
 	 * @return the directly assigned rights.
 	 */

@@ -14,15 +14,14 @@ import org.apache.log4j.Logger;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.security.Authority;
 import org.nightlabs.jfire.security.AuthorityType;
-import org.nightlabs.jfire.security.RoleConstants;
 import org.nightlabs.jfire.security.RoleGroup;
 import org.nightlabs.jfire.security.RoleGroupConstants;
 import org.nightlabs.jfire.security.RoleGroupRef;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.security.UserLocal;
-import org.nightlabs.jfire.security.UserRef;
+import org.nightlabs.jfire.security.AuthorizedObjectRef;
 import org.nightlabs.jfire.security.id.AuthorityID;
-import org.nightlabs.jfire.security.id.UserID;
+import org.nightlabs.jfire.security.id.UserLocalID;
 import org.nightlabs.jfire.server.LocalServer;
 import org.nightlabs.jfire.server.Server;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
@@ -233,14 +232,14 @@ public abstract class OrganisationManagerHelperBean
 
 
 			if(logger.isDebugEnabled())
-				logger.debug("Creating instances of UserRef for both Users within the default authority...");
+				logger.debug("Creating instances of AuthorizedObjectRef for both Users within the default authority...");
 
-			User otherUser = (User) pm.getObjectById(UserID.create(organisationID, User.USERID_OTHER));
-			User user = (User) pm.getObjectById(UserID.create(organisationID, userID));
-			authority.createUserRef(otherUser);
-			UserRef userRef = authority.createUserRef(user);
+			UserLocal otherUserLocal = (UserLocal) pm.getObjectById(UserLocalID.create(organisationID, User.USERID_OTHER));
+			UserLocal userLocal = (UserLocal) pm.getObjectById(UserLocalID.create(organisationID, userID));
+			authority.createAuthorizedObjectRef(otherUserLocal);
+			AuthorizedObjectRef userRef = authority.createAuthorizedObjectRef(userLocal);
 			if(logger.isDebugEnabled())
-				logger.debug("Creating instances of UserRef for both Users within the default authority done.");
+				logger.debug("Creating instances of AuthorizedObjectRef for both Users within the default authority done.");
 
 			// Give the user all RoleGroups.
 			if(logger.isDebugEnabled())

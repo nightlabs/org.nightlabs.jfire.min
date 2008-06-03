@@ -37,7 +37,7 @@ public class RoleGroupSetCarrier implements Serializable
 {
 	private static final long serialVersionUID = 1L;
 
-	private User user;
+	private AuthorizedObject authorizedObject;
 	private Authority authority;
 	private Set<RoleGroup> allInAuthority;
 	private Set<RoleGroup> assignedToUser;
@@ -46,32 +46,11 @@ public class RoleGroupSetCarrier implements Serializable
 	private boolean inAuthority;
 	private boolean controlledByOtherUser;
 
-//	public RoleGroupSetCarrier(
-//			User user,
-//			Authority authority,
-//			Set<RoleGroup> allInAuthority,
-//			Set<RoleGroup> assignedToUser,
-//			Set<RoleGroup> assignedToUserGroups,
-//			Set<RoleGroup> assignedToOtherUser,
-//			boolean inAuthority,
-//			boolean controlledByOtherUser
-//	)
-//	{
-//		this.user = user;
-//		this.authority = authority;
-//		this.allInAuthority = allInAuthority;
-//		this.assignedToUser = assignedToUser;
-//		this.assignedToUserGroups = assignedToUserGroups;
-//		this.assignedToOtherUser = assignedToOtherUser;
-//		this.inAuthority = inAuthority;
-//		this.controlledByOtherUser = controlledByOtherUser;
-//	}
-
-	public User getUser() {
-		return user;
+	public AuthorizedObject getAuthorizedObject() {
+		return authorizedObject;
 	}
-	public void setUser(User user) {
-		this.user = user;
+	public void setAuthorizedObject(AuthorizedObject user) {
+		this.authorizedObject = user;
 	}
 	public Authority getAuthority() {
 		return authority;
