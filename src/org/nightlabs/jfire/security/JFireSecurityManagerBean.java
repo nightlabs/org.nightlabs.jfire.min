@@ -868,75 +868,6 @@ implements SessionBean
 		}
 	}
 
-//	/**
-//	 * Assign a {@link RoleGroup} to a {@link User} within the scope of an {@link Authority} (hence in fact a {@link RoleGroupRef} is assigned to a {@link AuthorizedObjectRef}).
-//	 *
-//	 * @param userID id of the user
-//	 * @param authorityID id of the authority the user gets the rolegroup for
-//	 * @param roleGroupID ID of the rolegroup
-//	 *
-//	 * @ejb.interface-method
-//	 * @ejb.permission role-name="org.nightlabs.jfire.security.JFireSecurityManager#accessRightManagement"
-//	 * @!role-assigned(Marco, 2008-05-05)
-//	 */
-//	public void grantRoleGroup(ObjectID authorizedObjectID, AuthorityID authorityID, RoleGroupID roleGroupID)
-//	{
-//		String organisationID = getOrganisationID();
-//		if (!organisationID.equals(authorityID.organisationID))
-//			throw new IllegalArgumentException("Cannot manage foreign access rights! authorityID.organisationID=\""+authorityID.organisationID+"\" does not match our organisationID=\""+organisationID+"\"!");
-//
-//		PersistenceManager pm = getPersistenceManager();
-//		try {
-//			Authority authority = (Authority)pm.getObjectById(authorityID);
-//			Object o = pm.getObjectById(authorizedObjectID);
-//			if (!(o instanceof AuthorizedObject))
-//				throw new IllegalArgumentException("The object referenced by authorizedObjectID does not extend AuthorizedObject! " + authorizedObjectID);
-//
-//			AuthorizedObject authorizedObject = (AuthorizedObject) o;
-//
-//			if (!organisationID.equals(authorizedObject.getOrganisationID()))
-//				throw new IllegalArgumentException("Cannot manage foreign access rights! authorizedObject.organisationID=\"" + authorizedObject.getOrganisationID() + "\" does not match our organisationID=\""+organisationID+"\"!");
-//
-//			if (authorizedObject instanceof UserLocal) {
-//				if (User.USERID_SYSTEM.equals(((UserLocal)authorizedObject).getUserID()))
-//					throw new IllegalArgumentException("Cannot manipulate system user \"" + User.USERID_SYSTEM + "\"!");
-//			}
-//
-//			// authorize
-//			Authority.resolveSecuringAuthority(pm, authority).assertContainsRoleRef(
-//					getPrincipal(), RoleConstants.securityManager_setGrantedRoleGroups
-//			);
-//
-//			RoleGroup roleGroup = (RoleGroup)pm.getObjectById(roleGroupID);
-//
-//			RoleGroupRef rgf = authority.createRoleGroupRef(roleGroup);
-//			AuthorizedObjectRef ur = authority.createUserRef(authorizedObject);
-//			ur.addRoleGroupRef(rgf);
-//
-//			JFireServerManager jfsm = getJFireServerManager();
-//			try {
-//				if (authorizedObject instanceof UserSecurityGroup) {
-//					for (AuthorizedObject member : ((UserSecurityGroup)authorizedObject).getMembers()) {
-//						Object memberID = JDOHelper.getObjectId(member);
-//						if (memberID == null)
-//							throw new IllegalStateException("JDOHelper.getObjectId(member) returned null! " + member);
-//
-//						if (memberID instanceof UserID)
-//							jfsm.jfireSecurity_flushCache((UserID) memberID);
-//					}
-//				}
-//				else {
-//					if (authorizedObjectID instanceof UserID)
-//					jfsm.jfireSecurity_flushCache((UserID) authorizedObjectID);
-//				}
-//			} finally {
-//				jfsm.close();
-//			}
-//		} finally {
-//			pm.close();
-//		}
-//	}
-
 	/**
 	 * Set which {@link RoleGroup}s are assigned to a certain {@link User} within the scope of a certain {@link Authority}.
 	 * <p>
@@ -960,7 +891,8 @@ implements SessionBean
 		String organisationID = getOrganisationID();
 		if (!organisationID.equals(authorityID.organisationID))
 			throw new IllegalArgumentException("Cannot manage foreign access rights! authorityID.organisationID=\""+authorityID.organisationID+"\" does not match our organisationID=\""+organisationID+"\"!");
-		
+
+		boolean forceRollback = true;
 		PersistenceManager pm = getPersistenceManager();
 		try {
 			if (ASSERT_CONSISTENCY_BEFORE)
@@ -1023,6 +955,7 @@ implements SessionBean
 			if (ASSERT_CONSISTENCY_AFTER)
 				assertConsistency(pm);
 
+			forceRollback = false; // whether an error occurs during flushing the cache doesn't matter much
 
 			if (Authority.AUTHORITY_ID_ORGANISATION.equals(authority.getAuthorityID())) {
 				JFireServerManager jfsm = getJFireServerManager();
@@ -1051,6 +984,9 @@ implements SessionBean
 			} // if (Authority.AUTHORITY_ID_ORGANISATION.equals(authority.getAuthorityID()))
 
 		} finally {
+			if (forceRollback)
+				sessionContext.setRollbackOnly();
+
 			pm.close();
 		}
 	}
@@ -1063,6 +999,7 @@ implements SessionBean
 	 */
 	public void setUserSecurityGroupsOfMember(Set<UserSecurityGroupID> userSecurityGroupIDs, AuthorizedObjectID memberAuthorizedObjectID)
 	{
+		boolean forceRollback = true;
 		PersistenceManager pm = getPersistenceManager();
 		try {
 			if (ASSERT_CONSISTENCY_BEFORE)
@@ -1088,6 +1025,8 @@ implements SessionBean
 			if (ASSERT_CONSISTENCY_AFTER)
 				assertConsistency(pm);
 
+			forceRollback = false;
+
 			// TODO optimize flushing JavaEE authentication cache! Only flush the affected users!
 			JFireServerManager jfsm = getJFireServerManager();
 			try {
@@ -1096,6 +1035,9 @@ implements SessionBean
 				jfsm.close();
 			}
 		} finally {
+			if (forceRollback)
+				sessionContext.setRollbackOnly();
+
 			pm.close();
 		}
 	}
@@ -1108,6 +1050,7 @@ implements SessionBean
 	 */
 	public void setMembersOfUserSecurityGroup(UserSecurityGroupID userSecurityGroupID, Set<? extends AuthorizedObjectID> memberAuthorizedObjectIDs)
 	{
+		boolean forceRollback = true;
 		PersistenceManager pm = getPersistenceManager();
 		try {
 			if (ASSERT_CONSISTENCY_BEFORE)
@@ -1134,6 +1077,8 @@ implements SessionBean
 			if (ASSERT_CONSISTENCY_AFTER)
 				assertConsistency(pm);
 
+			forceRollback = false;
+
 			// TODO optimize flushing JavaEE authentication cache! Only flush the affected users!
 			JFireServerManager jfsm = getJFireServerManager();
 			try {
@@ -1142,12 +1087,33 @@ implements SessionBean
 				jfsm.close();
 			}
 		} finally {
+			if (forceRollback)
+				sessionContext.setRollbackOnly();
+
 			pm.close();
 		}
 	}
 
 	private static void assertConsistency(PersistenceManager pm)
 	{
+		// check if all user.groups matches group.members
+		for (Iterator<UserLocal> it = pm.getExtent(UserLocal.class).iterator(); it.hasNext(); ) {
+			UserLocal userLocal = it.next();
+			for (UserSecurityGroup userSecurityGroup : userLocal.getUserSecurityGroups()) {
+				if (!userSecurityGroup.getMembers().contains(userLocal))
+					throw new IllegalStateException(userLocal.toString() + " contains " + userSecurityGroup + ", but this group doesn't list the UserLocal as a member!");
+			}
+		}
+		// other way
+		for (Iterator<UserSecurityGroup> it = pm.getExtent(UserSecurityGroup.class).iterator(); it.hasNext(); ) {
+			UserSecurityGroup userSecurityGroup = it.next();
+			for (AuthorizedObject member : userSecurityGroup.getMembers()) {
+				if (!member.getUserSecurityGroups().contains(userSecurityGroup))
+					throw new IllegalStateException(userSecurityGroup.toString() + " contains " + member + ", but this member doesn't have the group in his list of groups!");
+			}
+		}
+
+		// check authorities
 		for (Iterator<Authority> it = pm.getExtent(Authority.class).iterator(); it.hasNext(); )
 			_assertConsistency(pm, it.next());
 	}
