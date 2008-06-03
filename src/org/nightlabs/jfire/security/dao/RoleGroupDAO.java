@@ -36,16 +36,17 @@ import javax.jdo.JDOHelper;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO;
 import org.nightlabs.jfire.security.Authority;
+import org.nightlabs.jfire.security.AuthorizedObject;
 import org.nightlabs.jfire.security.JFireSecurityManager;
 import org.nightlabs.jfire.security.JFireSecurityManagerUtil;
 import org.nightlabs.jfire.security.RoleGroup;
 import org.nightlabs.jfire.security.RoleGroupIDSetCarrier;
 import org.nightlabs.jfire.security.RoleGroupSetCarrier;
 import org.nightlabs.jfire.security.SecurityReflector;
-import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.security.id.AuthorityID;
+import org.nightlabs.jfire.security.id.AuthorizedObjectID;
 import org.nightlabs.jfire.security.id.RoleGroupID;
-import org.nightlabs.jfire.security.id.UserID;
+import org.nightlabs.jfire.security.id.UserSecurityGroupID;
 import org.nightlabs.progress.ProgressMonitor;
 import org.nightlabs.progress.SubProgressMonitor;
 
@@ -78,6 +79,7 @@ public class RoleGroupDAO extends BaseJDOObjectDAO<RoleGroupID, RoleGroup>
 	 */
 	private JFireSecurityManager securityManager;
 
+	@SuppressWarnings("unchecked")
 	@Override
 	protected Collection<RoleGroup> retrieveJDOObjects(
 			Set<RoleGroupID> objectIDs,
@@ -93,7 +95,7 @@ public class RoleGroupDAO extends BaseJDOObjectDAO<RoleGroupID, RoleGroup>
 
 	/**
 	 * Get all role groups for the given user.
-	 * @param userID The user
+	 * @param authorizedObjectID The user
 	 * @param authorityID The authority
 	 * @param fetchgroups The fetch groups to use
 	 * @param maxFetchDepth Fetch depth or {@link NLJDOHelper#MAX_FETCH_DEPTH_NO_LIMIT}
@@ -102,10 +104,10 @@ public class RoleGroupDAO extends BaseJDOObjectDAO<RoleGroupID, RoleGroup>
 	 * @return A carrier object containing assigned, unassigned and assigned-by-usergroup
 	 * 					role groups.
 	 */
-	public RoleGroupSetCarrier getUserRoleGroupSetCarrier(
-			UserID userID,
+	public RoleGroupSetCarrier getRoleGroupSetCarrier(
+			AuthorizedObjectID authorizedObjectID,
 			AuthorityID authorityID,
-			String[] fetchGroupsUser, int maxFetchDepthUser,
+			String[] fetchGroupsAuthorizedObject, int maxFetchDepthAuthorizedObject,
 			String[] fetchGroupsAuthority, int maxFetchDepthAuthority,
 			String[] fetchGroupsRoleGroup, int maxFetchDepthRoleGroup,
 			ProgressMonitor monitor
@@ -119,7 +121,7 @@ public class RoleGroupDAO extends BaseJDOObjectDAO<RoleGroupID, RoleGroup>
 			synchronized (this) { // synchronize because of usage of the field securityManager
 				try {
 					securityManager = JFireSecurityManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
-					roleGroupIDSetCarrier = securityManager.getRoleGroupIDSetCarrier(userID, authorityID);
+					roleGroupIDSetCarrier = securityManager.getRoleGroupIDSetCarrier(authorizedObjectID, authorityID);
 					monitor.worked(20);
 
 					roleGroupSetCarrier.setAllInAuthority(
@@ -189,11 +191,11 @@ public class RoleGroupDAO extends BaseJDOObjectDAO<RoleGroupID, RoleGroup>
 					)
 			);
 
-			roleGroupSetCarrier.setUser(
-					UserDAO.sharedInstance().getUser(
-							roleGroupIDSetCarrier.getUserID(),
-							fetchGroupsUser,
-							maxFetchDepthUser,
+			roleGroupSetCarrier.setAuthorizedObject(
+					AuthorizedObjectDAO.sharedInstance().getAuthorizedObject(
+							roleGroupIDSetCarrier.getAuthorizedObjectID(),
+							fetchGroupsAuthorizedObject,
+							maxFetchDepthAuthorizedObject,
 							new SubProgressMonitor(monitor, 10)
 					)
 			);
@@ -205,32 +207,40 @@ public class RoleGroupDAO extends BaseJDOObjectDAO<RoleGroupID, RoleGroup>
 	}
 
 	/**
-	 * Returns a collection of all role groups for the given user groups.
+	 * Returns a collection of all role groups for the given user security groups.
 	 * 
-	 * @param userGroupIDs A collection of the user group IDs whose {@link RoleGroup}s are to be returned.
+	 * @param userSecurityGroupIDs A collection of the user group IDs whose {@link RoleGroup}s are to be returned.
 	 * @param authorityID The authority
 	 * @param fetchgroups The fetch groups to use
 	 * @param maxFetchDepth Fetch depth or {@link NLJDOHelper#MAX_FETCH_DEPTH_NO_LIMIT}
 	 * @param monitor the monitor to give progress feedback
 	 * @return a collection of all role groups for the given user groups.
 	 */
-	public synchronized Set<RoleGroup> getRoleGroupsForUserGroups(
-			Collection<UserID> userGroupIDs, AuthorityID authorityID, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor
+	@SuppressWarnings("unchecked")
+	public synchronized Set<RoleGroup> getRoleGroupsForUserSecurityGroups(
+			Collection<UserSecurityGroupID> userSecurityGroupIDs,
+			AuthorityID authorityID,
+			String[] fetchGroups,
+			int maxFetchDepth,
+			ProgressMonitor monitor
 	)
 	{
 		try {
 			int totalTicks = 1000;
-			monitor.beginTask("", totalTicks);
+			int ticksLeft = totalTicks;
+			monitor.beginTask("Get role groups", totalTicks);
 			securityManager = JFireSecurityManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
 			Set<RoleGroup> roleGroups = new HashSet<RoleGroup>();
 
-			int ticksPerUserGroup = userGroupIDs.isEmpty() ? totalTicks : totalTicks / userGroupIDs.size();
-			int ticksLeft = totalTicks;
-			for (UserID userGroupID : userGroupIDs) {
-				RoleGroupIDSetCarrier groupIDs = securityManager.getRoleGroupIDSetCarrier(userGroupID, authorityID);
+			Collection<RoleGroupIDSetCarrier> roleGroupIDSetCarriers = securityManager.getRoleGroupIDSetCarriers(userSecurityGroupIDs, authorityID);
+			monitor.worked(500);
+			ticksLeft -= 500;
+
+			int ticksPerUserGroup = userSecurityGroupIDs.isEmpty() ? ticksLeft : ticksLeft / userSecurityGroupIDs.size();
+			for (RoleGroupIDSetCarrier roleGroupIDSetCarrier : roleGroupIDSetCarriers) {
 				roleGroups.addAll(getJDOObjects(
 						null,
-						groupIDs.getAssignedToUser(),
+						roleGroupIDSetCarrier.getAssignedToUser(),
 						fetchGroups,
 						maxFetchDepth,
 						new SubProgressMonitor(monitor, ticksPerUserGroup)));
@@ -254,10 +264,31 @@ public class RoleGroupDAO extends BaseJDOObjectDAO<RoleGroupID, RoleGroup>
 		return getJDOObjects(null, roleGroupIDs, fetchGroups, maxFetchDepth, monitor);
 	}
 
-	@SuppressWarnings("unchecked")
 	public List<RoleGroupSetCarrier> getRoleGroupSetCarriers(
 			AuthorityID authorityID,
-			String[] fetchGroupsUser, int maxFetchDepthUser,
+			String[] fetchGroupsAuthorizedObject, int maxFetchDepthAuthorizedObject,
+			String[] fetchGroupsAuthority, int maxFetchDepthAuthority,
+			String[] fetchGroupsRoleGroup, int maxFetchDepthRoleGroup,
+			ProgressMonitor monitor)
+	{
+		return getRoleGroupSetCarriers(
+				null,
+				authorityID,
+				fetchGroupsAuthorizedObject,
+				maxFetchDepthAuthorizedObject,
+				fetchGroupsAuthority,
+				maxFetchDepthAuthority,
+				fetchGroupsRoleGroup,
+				maxFetchDepthRoleGroup,
+				monitor
+		);
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<RoleGroupSetCarrier> getRoleGroupSetCarriers(
+			Set<AuthorizedObjectID> _authorizedObjectIDs,
+			AuthorityID authorityID,
+			String[] fetchGroupsAuthorizedObject, int maxFetchDepthAuthorizedObject,
 			String[] fetchGroupsAuthority, int maxFetchDepthAuthority,
 			String[] fetchGroupsRoleGroup, int maxFetchDepthRoleGroup,
 			ProgressMonitor monitor)
@@ -267,13 +298,15 @@ public class RoleGroupDAO extends BaseJDOObjectDAO<RoleGroupID, RoleGroup>
 
 			Map<RoleGroupID, RoleGroup> roleGroupID2roleGroup;
 			List<RoleGroupIDSetCarrier> roleGroupIDSetCarriers;
-//			Map<UserID, RoleGroupIDSetCarrier> userID2roleGroupIDSetCarrier;
 			List<RoleGroupSetCarrier> roleGroupSetCarriers;
-//			Map<User, RoleGroupSetCarrier> user2roleGroupSetCarrier;
 			synchronized (this) {
 				try {
 					securityManager = JFireSecurityManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
-					roleGroupIDSetCarriers = securityManager.getRoleGroupIDSetCarriers(authorityID);
+					if (_authorizedObjectIDs != null)
+						roleGroupIDSetCarriers = securityManager.getRoleGroupIDSetCarriers(_authorizedObjectIDs, authorityID);
+					else
+						roleGroupIDSetCarriers = securityManager.getRoleGroupIDSetCarriers(authorityID);
+
 					if (roleGroupIDSetCarriers.isEmpty()) {
 						monitor.worked(100);
 						return new ArrayList<RoleGroupSetCarrier>(0);
@@ -304,21 +337,21 @@ public class RoleGroupDAO extends BaseJDOObjectDAO<RoleGroupID, RoleGroup>
 				}
 			}
 
-			Set<UserID> userIDs = new HashSet<UserID>(roleGroupIDSetCarriers.size());
+			Set<AuthorizedObjectID> authorizedObjectIDs = new HashSet<AuthorizedObjectID>(roleGroupIDSetCarriers.size());
 			for (RoleGroupIDSetCarrier roleGroupIDSetCarrier : roleGroupIDSetCarriers)
-				userIDs.add(roleGroupIDSetCarrier.getUserID());
+				authorizedObjectIDs.add(roleGroupIDSetCarrier.getAuthorizedObjectID());
 
-			Collection<User> users = UserDAO.sharedInstance().getUsers(
-					userIDs,
-					fetchGroupsUser,
-					maxFetchDepthUser,
+			Collection<AuthorizedObject> authorizedObjects = AuthorizedObjectDAO.sharedInstance().getAuthorizedObjects(
+					authorizedObjectIDs,
+					fetchGroupsAuthorizedObject,
+					maxFetchDepthAuthorizedObject,
 					new SubProgressMonitor(monitor, 30));
 
-			Map<UserID, User> userID2user = new HashMap<UserID, User>(userIDs.size());
-			for (User user : users) {
-				UserID userID = (UserID) JDOHelper.getObjectId(user);
-				assert userID != null : "JDOHelper.getObjectId(user) != null";
-				userID2user.put(userID, user);
+			Map<AuthorizedObjectID, AuthorizedObject> authorizedObjectID2authorizedObject = new HashMap<AuthorizedObjectID, AuthorizedObject>(authorizedObjectIDs.size());
+			for (AuthorizedObject authorizedObject : authorizedObjects) {
+				AuthorizedObjectID authorizedObjectID = (AuthorizedObjectID) JDOHelper.getObjectId(authorizedObject);
+				assert authorizedObjectID != null : "JDOHelper.getObjectId(authorizedObject) != null";
+				authorizedObjectID2authorizedObject.put(authorizedObjectID, authorizedObject);
 			}
 
 			Authority authority = AuthorityDAO.sharedInstance().getAuthority(
@@ -333,11 +366,11 @@ public class RoleGroupDAO extends BaseJDOObjectDAO<RoleGroupID, RoleGroup>
 				if (!roleGroupIDSetCarrier.getAuthorityID().equals(authorityID))
 					throw new IllegalStateException("roleGroupIDSetCarrier.authorityID != authorityID");
 
-				User user = userID2user.get(roleGroupIDSetCarrier.getUserID());
-				assert user != null : "userID2user.get(userID) != null :: userID=" + roleGroupIDSetCarrier.getUserID();
+				AuthorizedObject authorizedObject = authorizedObjectID2authorizedObject.get(roleGroupIDSetCarrier.getAuthorizedObjectID());
+				assert authorizedObject != null : "authorizedObjectID2authorizedObject.get(authorizedObjectID) != null :: authorizedObjectID=" + roleGroupIDSetCarrier.getAuthorizedObjectID();
 
 				RoleGroupSetCarrier roleGroupSetCarrier = new RoleGroupSetCarrier();
-				roleGroupSetCarrier.setUser(user);
+				roleGroupSetCarrier.setAuthorizedObject(authorizedObject);
 				roleGroupSetCarrier.setAuthority(authority);
 
 				roleGroupSetCarrier.setAllInAuthority(new HashSet<RoleGroup>(roleGroupID2roleGroup.values()));

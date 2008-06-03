@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import org.nightlabs.jdo.ObjectID;
 import org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO;
 import org.nightlabs.jfire.base.jdo.cache.Cache;
 import org.nightlabs.jfire.security.Authority;
@@ -12,6 +13,8 @@ import org.nightlabs.jfire.security.JFireSecurityManagerUtil;
 import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.security.id.AuthorityID;
 import org.nightlabs.jfire.security.id.AuthorityTypeID;
+import org.nightlabs.jfire.security.id.AuthorizedObjectID;
+import org.nightlabs.jfire.security.id.RoleGroupID;
 import org.nightlabs.progress.ProgressMonitor;
 
 public class AuthorityDAO extends BaseJDOObjectDAO<AuthorityID, Authority>
@@ -101,5 +104,19 @@ public class AuthorityDAO extends BaseJDOObjectDAO<AuthorityID, Authority>
 			monitor.worked(1);
 			monitor.done();
 		}
+	}
+
+	public void setGrantedRoleGroups(AuthorizedObjectID authorizedObjectID, AuthorityID authorityID, Set<RoleGroupID> roleGroupIDs, ProgressMonitor monitor)
+	{
+		monitor.beginTask("Setting granted role groups", 1);
+		try {
+			JFireSecurityManager sm = JFireSecurityManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
+			sm.setGrantedRoleGroups(authorizedObjectID, authorityID, roleGroupIDs);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		} finally {
+			monitor.worked(1);
+			monitor.done();
+		}		
 	}
 }

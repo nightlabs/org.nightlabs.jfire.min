@@ -28,26 +28,17 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import javax.jdo.JDOHelper;
-
 import org.nightlabs.annotation.Implement;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO;
 import org.nightlabs.jfire.idgenerator.IDGenerator;
 import org.nightlabs.jfire.person.Person;
 import org.nightlabs.jfire.prop.PropertySet;
-import org.nightlabs.jfire.security.Authority;
 import org.nightlabs.jfire.security.JFireSecurityManager;
 import org.nightlabs.jfire.security.JFireSecurityManagerUtil;
-import org.nightlabs.jfire.security.RoleGroup;
-import org.nightlabs.jfire.security.RoleGroupRef;
 import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.security.User;
-import org.nightlabs.jfire.security.UserGroup;
 import org.nightlabs.jfire.security.UserLocal;
-import org.nightlabs.jfire.security.UserRef;
-import org.nightlabs.jfire.security.id.AuthorityID;
-import org.nightlabs.jfire.security.id.RoleGroupID;
 import org.nightlabs.jfire.security.id.UserID;
 import org.nightlabs.progress.ProgressMonitor;
 import org.nightlabs.progress.SubProgressMonitor;
@@ -242,162 +233,129 @@ public class UserDAO extends BaseJDOObjectDAO<UserID, User>
 //	{
 //		return getUsers(null, null, fetchgroups, maxFetchDepth, monitor);
 //	}
+//
+//	/**
+//	 * Get a single user group.
+//	 * @param userGroupID The ID of the user group to get
+//	 * @param fetchGroups Wich fetch groups to use
+//	 * @param maxFetchDepth Fetch depth or {@link NLJDOHelper#MAX_FETCH_DEPTH_NO_LIMIT}
+//	 * @param monitor The progress monitor for this action. For every downloaded
+//	 * 					object, <code>monitor.worked(1)</code> will be called.
+//	 * @return The requested user group object
+//	 */
+//	public synchronized UserGroup getUserGroup(UserID userGroupID, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
+//	{
+//		return (UserGroup)getUser(userGroupID, fetchGroups, maxFetchDepth, monitor);
+//	}
 
-	/**
-	 * Get a single user group.
-	 * @param userGroupID The ID of the user group to get
-	 * @param fetchGroups Wich fetch groups to use
-	 * @param maxFetchDepth Fetch depth or {@link NLJDOHelper#MAX_FETCH_DEPTH_NO_LIMIT}
-	 * @param monitor The progress monitor for this action. For every downloaded
-	 * 					object, <code>monitor.worked(1)</code> will be called.
-	 * @return The requested user group object
-	 */
-	public synchronized UserGroup getUserGroup(UserID userGroupID, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
-	{
-		return (UserGroup)getUser(userGroupID, fetchGroups, maxFetchDepth, monitor);
-	}
+//	/**
+//	 * Add a user to a user group
+//	 * @param user The user
+//	 * @param userGroup The user group in wich to add the user
+//	 */
+//	public void addUserToUserGroup(User user, UserGroup userGroup, ProgressMonitor monitor)
+//	{
+//		assert user != null : "User to add to user group must not be null";
+//		assert userGroup != null : "User group to add user for must not be null";
+//		addUserToUserGroup((UserID)JDOHelper.getObjectId(user), (UserID)JDOHelper.getObjectId(userGroup), monitor);
+//	}
+//
+//	public synchronized void addUserToUserGroup(UserID userID, UserID userGroupID, ProgressMonitor monitor)
+//	{
+//		monitor.beginTask("Adding user: "+userID.userID+" to group: "+userGroupID.userID, 1);
+//		try {
+//			Properties initialContextProperties = SecurityReflector.getInitialContextProperties();
+//			JFireSecurityManager um = JFireSecurityManagerUtil.getHome(initialContextProperties).create();
+//			um.addUserToUserGroup(userID, userGroupID);
+//			monitor.worked(1);
+//			monitor.done();
+//		} catch(Exception e) {
+//			monitor.done();
+//			throw new RuntimeException("Adding user to user group failed", e);
+//		}
+//	}
+//
+//	/**
+//	 * Remove a user from a user group
+//	 * @param user The user
+//	 * @param userGroup The user group from which to remove the user
+//	 */
+//	public void removeUserFromUserGroup(User user, UserGroup userGroup, ProgressMonitor monitor)
+//	{
+//		assert user != null : "User to remove from user group must not be null";
+//		assert userGroup != null : "User group to remove user from must not be null";
+//		removeUserFromUserGroup((UserID)JDOHelper.getObjectId(user), (UserID)JDOHelper.getObjectId(userGroup), monitor);
+//	}
+//	public synchronized void removeUserFromUserGroup(UserID userID, UserID userGroupID, ProgressMonitor monitor)
+//	{
+//		monitor.beginTask("Removing user: "+userID.userID+" from group: "+userGroupID.userID, 1);
+//		try {
+//			Properties initialContextProperties = SecurityReflector.getInitialContextProperties();
+//			JFireSecurityManager um = JFireSecurityManagerUtil.getHome(initialContextProperties).create();
+//			um.removeUserFromUserGroup(userID, userGroupID);
+//			monitor.worked(1);
+//			monitor.done();
+//		} catch(Exception e) {
+//			monitor.done();
+//			throw new RuntimeException("Adding user to user group failed", e);
+//		}
+//	}
 
-	/**
-	 * Add a user to a user group
-	 * @param user The user
-	 * @param userGroup The user group in wich to add the user
-	 */
-	public void addUserToUserGroup(User user, UserGroup userGroup, ProgressMonitor monitor)
-	{
-		assert user != null : "User to add to user group must not be null";
-		assert userGroup != null : "User group to add user for must not be null";
-		addUserToUserGroup((UserID)JDOHelper.getObjectId(user), (UserID)JDOHelper.getObjectId(userGroup), monitor);
-	}
+//	public void addRoleGroupToUser(User user, Authority authority, RoleGroup roleGroup, ProgressMonitor monitor)
+//	{
+//		addRoleGroupToUser(
+//				(UserID)JDOHelper.getObjectId(user),
+//				(AuthorityID)JDOHelper.getObjectId(authority),
+//				(RoleGroupID)JDOHelper.getObjectId(roleGroup), monitor);
+//	}
+//
+//	public void removeRoleGroupFromUser(User user, Authority authority, RoleGroup roleGroup, ProgressMonitor monitor)
+//	{
+//		removeRoleGroupFromUser(
+//				(UserID)JDOHelper.getObjectId(user),
+//				(AuthorityID)JDOHelper.getObjectId(authority),
+//				(RoleGroupID)JDOHelper.getObjectId(roleGroup), monitor);
+//	}
 
-	public synchronized void addUserToUserGroup(UserID userID, UserID userGroupID, ProgressMonitor monitor)
-	{
-		monitor.beginTask("Adding user: "+userID.userID+" to group: "+userGroupID.userID, 1);
-		try {
-			Properties initialContextProperties = SecurityReflector.getInitialContextProperties();
-			JFireSecurityManager um = JFireSecurityManagerUtil.getHome(initialContextProperties).create();
-			um.addUserToUserGroup(userID, userGroupID);
-			monitor.worked(1);
-			monitor.done();
-		} catch(Exception e) {
-			monitor.done();
-			throw new RuntimeException("Adding user to user group failed", e);
-		}
-	}
-
-	/**
-	 * Remove a user from a user group
-	 * @param user The user
-	 * @param userGroup The user group from which to remove the user
-	 */
-	public void removeUserFromUserGroup(User user, UserGroup userGroup, ProgressMonitor monitor)
-	{
-		assert user != null : "User to remove from user group must not be null";
-		assert userGroup != null : "User group to remove user from must not be null";
-		removeUserFromUserGroup((UserID)JDOHelper.getObjectId(user), (UserID)JDOHelper.getObjectId(userGroup), monitor);
-	}
-	public synchronized void removeUserFromUserGroup(UserID userID, UserID userGroupID, ProgressMonitor monitor)
-	{
-		monitor.beginTask("Removing user: "+userID.userID+" from group: "+userGroupID.userID, 1);
-		try {
-			Properties initialContextProperties = SecurityReflector.getInitialContextProperties();
-			JFireSecurityManager um = JFireSecurityManagerUtil.getHome(initialContextProperties).create();
-			um.removeUserFromUserGroup(userID, userGroupID);
-			monitor.worked(1);
-			monitor.done();
-		} catch(Exception e) {
-			monitor.done();
-			throw new RuntimeException("Adding user to user group failed", e);
-		}
-	}
-
-	public void addRoleGroupToUser(User user, Authority authority, RoleGroup roleGroup, ProgressMonitor monitor)
-	{
-		addRoleGroupToUser(
-				(UserID)JDOHelper.getObjectId(user),
-				(AuthorityID)JDOHelper.getObjectId(authority),
-				(RoleGroupID)JDOHelper.getObjectId(roleGroup), monitor);
-	}
-
-	public void removeRoleGroupFromUser(User user, Authority authority, RoleGroup roleGroup, ProgressMonitor monitor)
-	{
-		removeRoleGroupFromUser(
-				(UserID)JDOHelper.getObjectId(user),
-				(AuthorityID)JDOHelper.getObjectId(authority),
-				(RoleGroupID)JDOHelper.getObjectId(roleGroup), monitor);
-	}
-
-	/**
-	 * Set which {@link RoleGroup}s are assigned to a certain {@link User} within the scope of a certain {@link Authority}.
-	 * <p>
-	 * The assignment of {@link RoleGroup}s to {@link User}s is managed by {@link RoleGroupRef} and {@link UserRef} instances
-	 * which live within an {@link Authority}. This method removes the {@link UserRef} (and with it all assignments), if
-	 * the given <code>roleGroupIDs</code> argument is <code>null</code>. If the <code>roleGroupIDs</code> argument is not <code>null</code>,
-	 * a {@link UserRef} instance is created - even if the <code>roleGroupIDs</code> is an empty set.
-	 * </p>
-	 *
-	 * @param userID the user-id. Must not be <code>null</code>.
-	 * @param authorityID the authority-id. Must not be <code>null</code>.
-	 * @param roleGroupIDs the role-group-ids that should be assigned to the specified user within the scope of the specified
-	 *		authority. If this is <code>null</code>, the {@link UserRef} of the specified user will be removed from the {@link Authority}.
-	 *		If this is not <code>null</code>, a <code>UserRef</code> is created (if not yet existing).
-	 * @param monitor the progress monitor for feedback.
-	 */
-	public synchronized void setRoleGroupsOfUser(UserID userID, AuthorityID authorityID, Set<RoleGroupID> roleGroupIDs, ProgressMonitor monitor)
-	{
-		monitor.beginTask("Setting rolegroups of user " + userID.userID + " within one authority.", 1);
-		try {
-			Properties initialContextProperties = SecurityReflector.getInitialContextProperties();
-			JFireSecurityManager um = JFireSecurityManagerUtil.getHome(initialContextProperties).create();
-			um.setRoleGroupsOfUser(userID, authorityID, roleGroupIDs);
-		} catch(RuntimeException e) {
-			throw e;
-		} catch(Exception e) {
-			throw new RuntimeException(e);
-		} finally {
-			monitor.worked(1);
-			monitor.done();
-		}
-	}
-
-	public synchronized void addRoleGroupToUser(UserID userID, AuthorityID authorityID, RoleGroupID roleGroupID, ProgressMonitor monitor)
-	{
-		monitor.beginTask("Adding a user to a rolegroup", 1);
-		try {
-			Properties initialContextProperties = SecurityReflector.getInitialContextProperties();
-			JFireSecurityManager um = JFireSecurityManagerUtil.getHome(initialContextProperties).create();
-			um.addRoleGroupToUser(userID, authorityID, roleGroupID);
-		} catch(RuntimeException e) {
-			throw e;
-		} catch(Exception e) {
-			throw new RuntimeException(e);
-		} finally {
-			monitor.worked(1);
-			monitor.done();
-		}
-	}
-
-	public synchronized void removeRoleGroupFromUser(UserID userID, AuthorityID authorityID, RoleGroupID roleGroupID, ProgressMonitor monitor)
-	{
-		monitor.beginTask("Removing a user from a rolegroup", 1);
-		try {
-			String organisationID = SecurityReflector.getUserDescriptor().getOrganisationID();
-			if (!organisationID.equals(userID.organisationID))
-				throw new IllegalArgumentException("Cannot manage foreign user! user.organisationID=\""+userID.organisationID+"\" does not match our organisationID=\""+organisationID+"\"!");
-			if (!organisationID.equals(authorityID.organisationID))
-				throw new IllegalArgumentException("Cannot manage foreign authority! authority.organisationID=\""+authorityID.organisationID+"\" does not match our organisationID=\""+organisationID+"\"!");
-
-			Properties initialContextProperties = SecurityReflector.getInitialContextProperties();
-			JFireSecurityManager um = JFireSecurityManagerUtil.getHome(initialContextProperties).create();
-			um.removeRoleGroupFromUser(userID, authorityID, roleGroupID);
-		} catch(RuntimeException e) {
-			throw e;
-		} catch(Exception e) {
-			throw new RuntimeException(e);
-		} finally {
-			monitor.worked(1);
-			monitor.done();
-		}
-	}
+//	public synchronized void addRoleGroupToUser(UserID userID, AuthorityID authorityID, RoleGroupID roleGroupID, ProgressMonitor monitor)
+//	{
+//		monitor.beginTask("Adding a user to a rolegroup", 1);
+//		try {
+//			Properties initialContextProperties = SecurityReflector.getInitialContextProperties();
+//			JFireSecurityManager um = JFireSecurityManagerUtil.getHome(initialContextProperties).create();
+//			um.addRoleGroupToUser(userID, authorityID, roleGroupID);
+//		} catch(RuntimeException e) {
+//			throw e;
+//		} catch(Exception e) {
+//			throw new RuntimeException(e);
+//		} finally {
+//			monitor.worked(1);
+//			monitor.done();
+//		}
+//	}
+//
+//	public synchronized void removeRoleGroupFromUser(UserID userID, AuthorityID authorityID, RoleGroupID roleGroupID, ProgressMonitor monitor)
+//	{
+//		monitor.beginTask("Removing a user from a rolegroup", 1);
+//		try {
+//			String organisationID = SecurityReflector.getUserDescriptor().getOrganisationID();
+//			if (!organisationID.equals(userID.organisationID))
+//				throw new IllegalArgumentException("Cannot manage foreign user! user.organisationID=\""+userID.organisationID+"\" does not match our organisationID=\""+organisationID+"\"!");
+//			if (!organisationID.equals(authorityID.organisationID))
+//				throw new IllegalArgumentException("Cannot manage foreign authority! authority.organisationID=\""+authorityID.organisationID+"\" does not match our organisationID=\""+organisationID+"\"!");
+//
+//			Properties initialContextProperties = SecurityReflector.getInitialContextProperties();
+//			JFireSecurityManager um = JFireSecurityManagerUtil.getHome(initialContextProperties).create();
+//			um.removeRoleGroupFromUser(userID, authorityID, roleGroupID);
+//		} catch(RuntimeException e) {
+//			throw e;
+//		} catch(Exception e) {
+//			throw new RuntimeException(e);
+//		} finally {
+//			monitor.worked(1);
+//			monitor.done();
+//		}
+//	}
 
 //	public synchronized Collection<User> getUsersInUserGroup(UserID userGroupID, 
 //			String[] fetchgroups, int maxFetchDepth, ProgressMonitor monitor)
