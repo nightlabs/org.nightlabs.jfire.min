@@ -12,6 +12,7 @@ import org.nightlabs.jfire.query.store.id.QueryStoreID;
 import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.security.id.UserID;
 import org.nightlabs.progress.ProgressMonitor;
+import org.nightlabs.progress.SubProgressMonitor;
 
 /**
  * 
@@ -20,9 +21,7 @@ import org.nightlabs.progress.ProgressMonitor;
 public class QueryStoreDAO
 	extends BaseJDOObjectDAO<QueryStoreID, BaseQueryStore>
 {
-	protected QueryStoreDAO()
-	{
-	}
+	protected QueryStoreDAO() {}
 
 	private static volatile QueryStoreDAO sharedInstance = null;
 
@@ -224,6 +223,13 @@ public class QueryStoreDAO
 		}
 	}
 	
+	/**
+	 * Removes/Deletes the QueryStore.
+	 * 
+	 * @param queryStore the QueryStore to remove
+	 * @param monitor the {@link ProgressMonitor} to show the progress
+	 * @return true if the queryStore has been removed and false otherwise
+	 */
 	public boolean removeQueryStore(BaseQueryStore queryStore, ProgressMonitor monitor)
 	{
 		try
@@ -242,6 +248,47 @@ public class QueryStoreDAO
 		{
 			monitor.setCanceled(true);
 			if (e instanceof RuntimeException) throw (RuntimeException) e;
+
+			throw new RuntimeException(e);
+		}
+	}
+	
+	/**
+	 * 
+	 * @param resultType
+	 *          the return type of the query collection.
+	 * @param ownerID
+	 *          the owner of the queries to search for.
+   * @param fetchGroups
+	 *          the fetch groups to use.
+	 * @param maxFetchDepth
+	 *          the maximum fetch depth.
+	 * @param monitor
+	 *          the progress monitor to use.
+	 * @return the {@link BaseQueryStore} which is the default QueryStore of the
+	 * 	given user with the given resultClass
+	 */
+	public BaseQueryStore getDefaultQueryStore(Class<?> resultType, UserID ownerID, 
+			String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor) 
+	{
+		try {
+			monitor.beginTask("Fetching default QueryStore", 3);
+			QueryStoreManager qsm = QueryStoreManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
+			monitor.worked(1);
+			QueryStoreID defaultQueryStoreID = qsm.getDefaultQueryStoreID(resultType, ownerID, fetchGroups, maxFetchDepth);
+			monitor.worked(2);
+			BaseQueryStore queryStore = null;
+			if (defaultQueryStoreID != null) {
+				queryStore = getQueryStore(defaultQueryStoreID, fetchGroups, maxFetchDepth, new SubProgressMonitor(monitor, 1));
+			}
+			monitor.done();
+			return queryStore;
+		}
+		catch (Exception e)
+		{
+			monitor.setCanceled(true);
+			if (e instanceof RuntimeException) 
+				throw (RuntimeException) e;
 
 			throw new RuntimeException(e);
 		}

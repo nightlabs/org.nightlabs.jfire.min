@@ -8,6 +8,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Set;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
@@ -50,15 +51,40 @@ import org.nightlabs.jfire.security.id.UserID;
  * 	name="BaseQueryStore.owner"
  * 	fields="owner"
  * 
+ * @jdo.fetch-group
+ * 	name="BaseQueryStore.name"
+ * 	fields="name"
+ *
+ * @jdo.fetch-group
+ * 	name="BaseQueryStore.description"
+ * 	fields="description"
+ *
+ * @jdo.fetch-group
+ * 	name="BaseQueryStore.authority"
+ * 	fields="authority"
+ * 
+ * @jdo.fetch-group
+ * 	name="BaseQueryStore.serialisedQueries"
+ * 	fields="serialisedQueries"
+ * 
  * @jdo.query name="getAllPublicQueryStoreIDsByResultType"
  * 	query="SELECT JDOHelper.getObjectId(this)
- * 				 WHERE this.resultClassName == :givenClassName && this.publiclyAvailable == true"
+ * 				 WHERE this.resultClassName == :givenClassName 
+ * 							 && this.publiclyAvailable == true"
  *
  * @jdo.query name="getQueryStoreIDsOfOwnerByResultType"
  * 	query="SELECT JDOHelper.getObjectId(this)
  * 				 WHERE this.resultClassName == :givenClassName 
- * 							 && this.organisationID == :givenOrganisationID && this.ownerID == :givenUserID"
- * 
+ * 							 && this.organisationID == :givenOrganisationID 
+ * 							 && this.ownerID == :givenUserID"
+ *
+ * @jdo.query name="getDefaultQueryStoreIDOfOwnerWithResultType"
+ * 	query="SELECT JDOHelper.getObjectId(this)
+ * 				 WHERE this.resultClassName == :givenClassName 
+ * 							 && this.organisationID == :givenOrganisationID 
+ * 							 && this.ownerID == :givenUserID
+ * 							 && this.defaultQuery == true"
+ *  
  * @author Marius Heinzmann - marius[at]nightlabs[dot]com
  */
 public class BaseQueryStore
@@ -68,6 +94,26 @@ public class BaseQueryStore
 	 * FetchGroup name for the Owner-FetchGroup.
 	 */
 	public static final String FETCH_GROUP_OWNER = "BaseQueryStore.owner";
+
+	/**
+	 * FetchGroup name for the Name-FetchGroup.
+	 */
+	public static final String FETCH_GROUP_NAME = "BaseQueryStore.name";
+
+	/**
+	 * FetchGroup name for the Description-FetchGroup.
+	 */
+	public static final String FETCH_GROUP_DESCRIPTION = "BaseQueryStore.description";
+
+	/**
+	 * FetchGroup name for the Authority-FetchGroup.
+	 */
+	public static final String FETCH_GROUP_AUTHORITY = "BaseQueryStore.authority";
+
+	/**
+	 * FetchGroup name for the SerialisedQueries-FetchGroup.
+	 */
+	public static final String FETCH_GROUP_SERIALISED_QUERIES = "BaseQueryStore.serialisedQueries";
 	
 	/**
 	 * The serial version id.
@@ -78,18 +124,7 @@ public class BaseQueryStore
 	 * This is the name of the member returned by {@link QueryCollection#getResultClassName()}.
 	 */
 	private static final String QUERYCOLLECTION_RESULTCLASS_NAME = "resultClassName";
-	
-	/**
-	 * Name of the query that returns all public QueryStores with the given result type.
-	 */
-	private static final String QUERY_ALL_PUBLIC_STORES_BY_RESULT = "getAllPublicQueryStoreIDsByResultType";
-	
-	/**
-	 * Name of the query that returns all QueryStores with the given result type, which are owned 
-	 * by the given UserID. 
-	 */
-	private static final String QUERY_STORES_OF_OWNER_BY_RESULT = "getQueryStoreIDsOfOwnerByResultType";
-	
+		
 	/**
 	 * Returns all {@link QueryStoreID}s of the stores that conform to the given parameters.
 	 * 
@@ -105,7 +140,7 @@ public class BaseQueryStore
 		assert pm != null;
 		assert resultClass != null;
 		assert ownerID != null;
-		Query query = pm.newNamedQuery(BaseQueryStore.class, QUERY_STORES_OF_OWNER_BY_RESULT);
+		Query query = pm.newNamedQuery(BaseQueryStore.class, "getQueryStoreIDsOfOwnerByResultType");
 		
 		Collection<QueryStoreID> queryResult =(Collection<QueryStoreID>) 
 			query.execute(resultClass.getName(), ownerID.organisationID, ownerID.userID);
@@ -118,7 +153,7 @@ public class BaseQueryStore
 		
 		if (allPublicAsWell)
 		{
-			query = pm.newNamedQuery(BaseQueryStore.class, QUERY_ALL_PUBLIC_STORES_BY_RESULT);
+			query = pm.newNamedQuery(BaseQueryStore.class, "getAllPublicQueryStoreIDsByResultType");
 			queryResult = (Collection<QueryStoreID>) query.execute(resultClass.getName());
 			Set<QueryStoreID> tmpIds = NLJDOHelper.getDetachedQueryResultAsSet(pm, queryResult);
 			if (tmpIds != null)
@@ -127,6 +162,35 @@ public class BaseQueryStore
 			}
 		}
 		return result;
+	}
+	
+	/**
+	 * Returns the {@link QueryStoreID} of the QueryStore which is the defaultQueryStore for
+	 * the given resultClass and the given ownerID.
+	 * 
+	 * @param pm the {@link PersistenceManager} to use.
+	 * @param resultClass the resultClass of the stored QueryCollection
+	 * @param ownerID the owner of the QueryStore.
+	 * @return the {@link QueryStoreID} of the QueryStore which is the defaultQueryStore for
+	 * the given resultClass and the given ownerID
+	 */
+	public static QueryStoreID getDefaultQueryStoreID(PersistenceManager pm,
+			Class<?> resultClass, UserID ownerID) 
+	{
+		assert pm != null;
+		assert resultClass != null;
+		assert ownerID != null;
+		Query query = pm.newNamedQuery(BaseQueryStore.class, "getDefaultQueryStoreIDOfOwnerWithResultType");
+		Collection<QueryStoreID> queryResult =(Collection<QueryStoreID>) 
+			query.execute(resultClass.getName(), ownerID.organisationID, ownerID.userID);
+		Set<QueryStoreID> result = NLJDOHelper.getDetachedQueryResultAsSet(pm, queryResult);
+		if (result == null || result.isEmpty()) {
+			return null;			
+		}
+		if (result.size() > 1) {
+			throw new IllegalStateException("There exists more than one default query store for the resultClass "+resultClass.getName()+" and the user "+ownerID);
+		}
+		return result.iterator().next();
 	}
 	
 	/**
@@ -200,6 +264,15 @@ public class BaseQueryStore
 	 *	persistence-modifier="persistent"
 	 */
 	private String resultClassName;
+	
+	/**
+	 * Determines if this BaseQueryStore is the default QueryStore for 
+	 * the given user and the given resultClass.
+	 * 
+	 * @jdo.field
+	 *	persistence-modifier="persistent" 
+	 */
+	private boolean defaultQuery = false;
 	
 	/**
 	 * Sets the QueryCollection to persist in the datastore.
@@ -380,6 +453,33 @@ public class BaseQueryStore
 		this.publiclyAvailable = publiclyAvailable;
 	}
 	
+	/**
+	 * Return whether this queryStore is the defaultQuery for 
+	 * the user and the resultClass.
+	 * 
+	 * @return the defaultQuery
+	 */
+	public boolean isDefaultQuery() {
+		return defaultQuery;
+	}
+
+	/**
+	 * Sets the defaultQuery.
+	 * @param defaultQuery the defaultQuery to set
+	 */
+	public void setDefaultQuery(boolean defaultQuery) {
+		// TODO check before if another defaultQuery exists for the user and
+		// the resultClassanme and if yes throw an exception
+		this.defaultQuery = defaultQuery;
+		this.publiclyAvailable = false;
+		
+		getName().setText(Locale.ENGLISH.getLanguage(), "last changes");
+		getName().setText(Locale.GERMAN.getLanguage(), "Letzte Änderungen");
+		
+		getDescription().setText(Locale.ENGLISH.getLanguage(), "Stores last changes which have been made by the user");
+		getDescription().setText(Locale.GERMAN.getLanguage(), "Speichert die letzten Änderungen die vom Benutzer gemacht wurden");		
+	}
+
 	/* (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
 	 */
