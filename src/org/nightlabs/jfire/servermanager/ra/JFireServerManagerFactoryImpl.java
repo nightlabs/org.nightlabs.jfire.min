@@ -106,6 +106,7 @@ import org.nightlabs.jfire.organisation.LocalOrganisation;
 import org.nightlabs.jfire.organisation.Organisation;
 import org.nightlabs.jfire.security.Authority;
 import org.nightlabs.jfire.security.AuthorityType;
+import org.nightlabs.jfire.security.AuthorizedObjectRef;
 import org.nightlabs.jfire.security.Role;
 import org.nightlabs.jfire.security.RoleGroup;
 import org.nightlabs.jfire.security.RoleRef;
@@ -113,10 +114,9 @@ import org.nightlabs.jfire.security.RoleSet;
 import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.security.UserLocal;
-import org.nightlabs.jfire.security.UserRef;
-import org.nightlabs.jfire.security.id.AuthorityTypeID;
+import org.nightlabs.jfire.security.id.AuthorizedObjectRefID;
 import org.nightlabs.jfire.security.id.UserID;
-import org.nightlabs.jfire.security.id.UserRefID;
+import org.nightlabs.jfire.security.id.UserLocalID;
 import org.nightlabs.jfire.server.Server;
 import org.nightlabs.jfire.serverconfigurator.ServerConfigurator;
 import org.nightlabs.jfire.serverinit.ServerInitManager;
@@ -2415,8 +2415,7 @@ public class JFireServerManagerFactoryImpl
 			else {
 				// user is normal user and has only those roles that are assigned
 
-				pm.getExtent(UserRef.class, true);
-				pm.getExtent(RoleRef.class, true);
+				pm.getExtent(AuthorizedObjectRef.class, true);
 
 				// If the user is marked as server admin, we give it the appropriate
 				// role. For security reasons, this role is managed outside of the persistence
@@ -2426,32 +2425,36 @@ public class JFireServerManagerFactoryImpl
 				if (getOrganisationConfig(organisationID).isServerAdmin(userID))
 					roleSet.addMember(new SimplePrincipal("_ServerAdmin_"));
 
-				UserRef userRef;
+				AuthorizedObjectRef authorizedObjectRef;
 				try {
-					userRef = (UserRef) pm.getObjectById(
-							UserRefID.create(
+					authorizedObjectRef = (AuthorizedObjectRef) pm.getObjectById(
+							AuthorizedObjectRefID.create(
+									organisationID,
 									Authority.AUTHORITY_ID_ORGANISATION,
-									organisationID, userID
-							), true);
+									UserLocalID.create(organisationID, userID).toString()
+							)
+					);
 				} catch (JDOObjectNotFoundException x) {
 					try {
-						userRef = (UserRef) pm.getObjectById(
-								UserRefID.create(
+						authorizedObjectRef = (AuthorizedObjectRef) pm.getObjectById(
+								AuthorizedObjectRefID.create(
+										organisationID,
 										Authority.AUTHORITY_ID_ORGANISATION,
-										organisationID, User.USERID_OTHER
-								), true);
+										UserLocalID.create(organisationID, User.USERID_OTHER).toString()
+								)
+						);
 					} catch (JDOObjectNotFoundException e) {
-						userRef = null;
+						authorizedObjectRef = null;
 					}
 				}
 
 				// get roleRefs
-				if (userRef != null) {
-					for (Iterator<RoleRef> it = userRef.getRoleRefs().iterator(); it.hasNext(); ) {
+				if (authorizedObjectRef != null) {
+					for (Iterator<RoleRef> it = authorizedObjectRef.getRoleRefs().iterator(); it.hasNext(); ) {
 						RoleRef roleRef = it.next();
 						roleSet.addMember(roleRef.getRolePrincipal());
 					}
-				} // if (userRef != null) {
+				} // if (authorizedObjectRef != null) {
 
 			} // if (User.USERID_SYSTEM.equals(userID)) {
 
