@@ -24,7 +24,7 @@ import org.nightlabs.jfire.security.RoleGroupRef;
 import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.security.UserLocal;
-import org.nightlabs.jfire.security.UserRef;
+import org.nightlabs.jfire.security.AuthorizedObjectRef;
 import org.nightlabs.jfire.security.id.AuthorityID;
 import org.nightlabs.jfire.security.id.UserID;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
@@ -123,9 +123,9 @@ public class JFireTestLogin {
 				jFireServerManager.addServerAdmin(userID.organisationID, userID.userID);
 				Authority authority = (Authority) pm.getObjectById(AuthorityID.create(
 						organisationID, Authority.AUTHORITY_ID_ORGANISATION));
-				UserRef userRef = authority.createUserRef(user);
+				AuthorizedObjectRef userRef = authority.createAuthorizedObjectRef(user.getUserLocal());
 				if(logger.isDebugEnabled())
-					logger.debug("Creating instances of UserRef for both Users within the default authority done.");
+					logger.debug("Creating instances of AuthorizedObjectRef for both Users within the default authority done.");
 
 				// Give the user all RoleGroups.
 				if(logger.isDebugEnabled())
