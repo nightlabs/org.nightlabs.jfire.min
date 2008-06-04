@@ -23,35 +23,8 @@ public class PropertySetDAO
 extends BaseJDOObjectDAO<PropertySetID, PropertySet>
 implements IJDOObjectDAO<PropertySet>
 {
+	protected PropertySetDAO() {}
 
-	/**
-	 * 
-	 */
-	public PropertySetDAO() {
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	protected Collection<PropertySet> retrieveJDOObjects(
-			Set<PropertySetID> objectIDs, String[] fetchGroups, int maxFetchDepth,
-			ProgressMonitor monitor) throws Exception {
-		PropertyManager pm = PropertyManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
-		return pm.getPropertySets(objectIDs, fetchGroups, maxFetchDepth);
-	}
-	
-	public Collection<PropertySet> getPropertySets(Collection<PropertySetID> propertySetIDs, String[] fetchGroups,
-			int maxFetchDepth, ProgressMonitor monitor) {
-		return getJDOObjects(null, propertySetIDs, fetchGroups, maxFetchDepth, monitor);
-	}
-	
-	public PropertySet getPropertySet(PropertySetID propertySetID, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor) {
-		return super.getJDOObject(null, propertySetID, fetchGroups, maxFetchDepth, monitor);
-	}
-
-	
-	
 	/** The shared instance */
 	private static PropertySetDAO sharedInstance = null;
 
@@ -67,6 +40,27 @@ implements IJDOObjectDAO<PropertySet>
 			}
 		}
 		return sharedInstance;
+	}	
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	protected Collection<PropertySet> retrieveJDOObjects(
+			Set<PropertySetID> objectIDs, String[] fetchGroups, int maxFetchDepth,
+			ProgressMonitor monitor) throws Exception 
+	{
+		PropertyManager pm = PropertyManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
+		return pm.getPropertySets(objectIDs, fetchGroups, maxFetchDepth);
+	}
+	
+	public Collection<PropertySet> getPropertySets(Collection<PropertySetID> propertySetIDs, String[] fetchGroups,
+			int maxFetchDepth, ProgressMonitor monitor) {
+		return getJDOObjects(null, propertySetIDs, fetchGroups, maxFetchDepth, monitor);
+	}
+	
+	public PropertySet getPropertySet(PropertySetID propertySetID, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor) {
+		return super.getJDOObject(null, propertySetID, fetchGroups, maxFetchDepth, monitor);
 	}
 
 	/**
