@@ -45,8 +45,8 @@ import org.nightlabs.jfire.servermanager.JFireServerManagerFactory;
  * This class should be used as ancestor of your session beans. It provides some convenience methods making
  * it easier to implement your bean.
  *
- * @author nick@nightlabs.de
- * @author marco@nightlabs.de
+ * @author nick at nightlabs dot de
+ * @author marco at nightlabs dot de
  */
 public class BaseSessionBeanImpl
 {
