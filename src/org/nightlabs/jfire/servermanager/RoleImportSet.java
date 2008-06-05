@@ -29,7 +29,7 @@ package org.nightlabs.jfire.servermanager;
 import java.io.Serializable;
 import java.util.Map;
 
-import org.nightlabs.jfire.servermanager.xml.EJBRoleGroupMan;
+import org.nightlabs.jfire.servermanager.xml.JFireSecurityMan;
 
 
 /**
@@ -43,13 +43,13 @@ public class RoleImportSet implements Serializable
 	private static final long serialVersionUID = 1L;
 	
 	private String organisationID;
-	private EJBRoleGroupMan ejbRoleGroupMan;
+	private JFireSecurityMan securityMan;
 	private Map<String, Throwable> jarExceptions;
 	
-	public RoleImportSet(String _organisationID, EJBRoleGroupMan _ejbRoleGroupMan, Map<String, Throwable> _jarExceptions)
+	public RoleImportSet(String _organisationID, JFireSecurityMan _ejbRoleGroupMan, Map<String, Throwable> _jarExceptions)
 	{
 		this.organisationID = _organisationID;
-		this.ejbRoleGroupMan = _ejbRoleGroupMan;
+		this.securityMan = _ejbRoleGroupMan;
 		this.jarExceptions = _jarExceptions;
 	}
 	/**
@@ -59,14 +59,14 @@ public class RoleImportSet implements Serializable
 		return organisationID;
 	}
 	/**
-	 * @return Returns the ejbRoleGroupMan.
+	 * @return Returns the securityMan.
 	 */
-	public EJBRoleGroupMan getEjbRoleGroupMan() {
-		return ejbRoleGroupMan;
+	public JFireSecurityMan getSecurityMan() {
+		return securityMan;
 	}
 	/**
 	 * This method returns the exceptions that happened during reading the ejb-jar.xml and
-	 * ejb-rolegroup.xml of every deployed jar file.
+	 * jfire-security.xml of every deployed jar file.
 	 *
 	 * @return Returns a Map with key <code>String jarFileName</code> and value <code>Throwable exception</code>.
 	 */

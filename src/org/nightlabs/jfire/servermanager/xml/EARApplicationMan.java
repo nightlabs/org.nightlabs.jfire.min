@@ -86,17 +86,17 @@ public class EARApplicationMan
 //				parser.setFeature("http://xml.org/sax/features/validation", false);
 				parser.setErrorHandler(new ErrorHandler(){
 					public void error(SAXParseException exception) throws SAXException {
-						logger.error("Parse (ejb-rolegroup.xml): ", exception);
+						logger.error("Parse (application.xml): ", exception);
 						parseException = exception;
 					}
 		
 					public void fatalError(SAXParseException exception) throws SAXException {
-						logger.fatal("Parse (ejb-rolegroup.xml): ", exception);
+						logger.fatal("Parse (application.xml): ", exception);
 						parseException = exception;
 					}
 		
 					public void warning(SAXParseException exception) throws SAXException {
-						logger.warn("Parse (ejb-rolegroup.xml): ", exception);
+						logger.warn("Parse (application.xml): ", exception);
 					}
 				});
 				parser.parse(inputSource);

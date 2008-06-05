@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+Copyright (c) 2004-2008 NightLabs GmbH
+Rehlingstr. 6d
+79100 Freiburg, Germany
+All rights reserved.
+
+This is the DTD defining security related things like role-groups and roles.
+See https://www.jfire.org/modules/phpwiki/index.php/JFireBase%20ACL and related documents.
+
+   Use is subject to license terms.
+-->
+
+<!NOTATION JFireSecurity.1_0 PUBLIC
+          "-//NightLabs GmbH//DTD JFire Security 1.0//EN">
+<!--
+This is the XML DTD for the declaration of role-groups and roles in
+JFire. All jfire-security-descriptors must include a DOCTYPE of the
+following form:
+
+	<!DOCTYPE jfire-security
+		PUBLIC "-//NightLabs GmbH//DTD JFire Security 1.0//EN"
+		"http://www.nightlabs.de/dtd/jfire-security_1_0.dtd">
+
+Every file must be named "jfire-security.xml" and it must be located
+in the META-INF directory of the JAR.
+-->
+
+
+<!--
+	The jfire-security element is the root element.
+
+	It contains the following elements:
+		- role (zero or more)
+		- role-group (zero or more)
+		- authority-type (zero or more)
+-->
+<!ELEMENT jfire-security (role|role-group|authority-type)*>
+
+
+<!--
+	The role element is used to declare or reference a role. It might be used to give a role
+	declared in an ejb-jar.xml (in assembly-descriptor/security-role) additional infos like
+	name and description.
+
+	It contains the following elements:
+		- name (zero or more)
+		- description (zero or more)
+
+	And it contains the following attributes:
+		- id (required): The string identifier of the role. This should be in the form
+				"org.mypackage.mymodule.MyEJB#whateverAction" and must match the
+				value provided in the ejb-jar.xml (in assembly-descriptor/security-role).
+-->
+<!ELEMENT role (name|description)*>
+<!ATTLIST role
+	id CDATA #REQUIRED
+>
+
+
+<!--
+	The role-group element is used to declare or reference a role-group.
+
+	It contains the following elements:
+		- name (zero or more)
+		- description (zero or more)
+		- role (zero or more)
+
+	And it contains the following attributes:
+		- id (required): The string identifier of the role-group. This should be in the
+				form "org.mypackage.mymodule.MyEJB#whateverAction".
+-->
+<!ELEMENT role-group (name|description|role)*>
+<!ATTLIST role-group
+	id CDATA #REQUIRED
+>
+
+
+<!--
+	The authority-type element is used to declare an authority-type.
+
+	It contains the following elements:
+		- name (zero or more)
+		- description (zero or more)
+		- role-group (zero or more)
+
+	And it contains the following attributes:
+		- id (required): The string identifier of the role-group. This should be in the
+				form "org.mypackage.mymodule.MyAuthorityType".
+-->
+<!ELEMENT authority-type (name|description|role-group)*>
+<!ATTLIST authority-type
+	id CDATA #REQUIRED
+>
+
+<!ELEMENT name (#PCDATA)>
+<!ATTLIST name
+	language CDATA #IMPLIED
+>
+
+<!ELEMENT description (#PCDATA)>
+<!ATTLIST description
+	language CDATA #IMPLIED
+>

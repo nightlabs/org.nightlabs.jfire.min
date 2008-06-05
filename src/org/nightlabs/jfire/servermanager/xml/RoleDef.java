@@ -161,7 +161,7 @@ public class RoleDef implements Serializable, Comparable<RoleDef>
 	public Role createRole(PersistenceManager pm)
 	{
 		// Initialize meta data.
-		pm.getExtent(Role.class, true);
+		pm.getExtent(Role.class);
 
 		// Fetch/create Role instance.
 		Role role;
@@ -169,7 +169,7 @@ public class RoleDef implements Serializable, Comparable<RoleDef>
 			role = (Role)pm.getObjectById(RoleID.create(getRoleID()), true);
 		} catch (JDOObjectNotFoundException x) {
 			role = new Role(getRoleID());
-			pm.makePersistent(role);
+			role = pm.makePersistent(role);
 		}
 
 //		for (Iterator it = getNames().entrySet().iterator(); it.hasNext(); ) {
@@ -189,9 +189,7 @@ public class RoleDef implements Serializable, Comparable<RoleDef>
 		return role;
 	}
 	
-	/**
-	 * @see java.lang.Comparable#compareTo(java.lang.Object)
-	 */
+	@Override
 	public int compareTo(RoleDef other) {
 //		if (!(o instanceof RoleGroupDef))
 //			return -1;
@@ -205,5 +203,17 @@ public class RoleDef implements Serializable, Comparable<RoleDef>
 			otherName = this.getRoleID();
 
 		return thisName.compareTo(otherName);
+	}
+
+	public void mergeFrom(JFireSecurityMan jfireSecurityMan, RoleDef other)
+	{
+		if (!this.roleID.equals(other.roleID))
+			throw new IllegalArgumentException("this.roleID != other.roleID");
+
+		for (Map.Entry<String, String> me : other.getNames().entrySet())
+			this.setName(me.getKey(), me.getValue());
+
+		for (Map.Entry<String, String> me : other.getDescriptions().entrySet())
+			this.setDescription(me.getKey(), me.getValue());
 	}
 }

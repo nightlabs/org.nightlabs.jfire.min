@@ -59,6 +59,7 @@ import java.util.jar.Manifest;
 import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 import javax.jdo.PersistenceManagerFactory;
+import javax.jdo.Query;
 import javax.naming.InitialContext;
 import javax.naming.NameAlreadyBoundException;
 import javax.naming.NamingException;
@@ -147,9 +148,10 @@ import org.nightlabs.jfire.servermanager.deploy.DeploymentJarItem;
 import org.nightlabs.jfire.servermanager.j2ee.J2EEAdapter;
 import org.nightlabs.jfire.servermanager.j2ee.JMSConnectionFactoryLookup;
 import org.nightlabs.jfire.servermanager.j2ee.ServerStartNotificationListener;
+import org.nightlabs.jfire.servermanager.xml.AuthorityTypeDef;
 import org.nightlabs.jfire.servermanager.xml.EARApplicationMan;
 import org.nightlabs.jfire.servermanager.xml.EJBJarMan;
-import org.nightlabs.jfire.servermanager.xml.EJBRoleGroupMan;
+import org.nightlabs.jfire.servermanager.xml.JFireSecurityMan;
 import org.nightlabs.jfire.servermanager.xml.ModuleDef;
 import org.nightlabs.jfire.servermanager.xml.RoleDef;
 import org.nightlabs.jfire.servermanager.xml.RoleGroupDef;
@@ -952,13 +954,14 @@ public class JFireServerManagerFactoryImpl
 	{
 		File startDir = new File(mcf.getConfigModule().getJ2ee().getJ2eeDeployBaseDirectory());
 
-		EJBRoleGroupMan globalEJBRoleGroupMan = new EJBRoleGroupMan();
+		JFireSecurityMan globalSecurityMan = new JFireSecurityMan();
 		Map<String, Throwable> exceptions = new HashMap<String, Throwable>(); // key: File jar; value: Throwable exception
-		roleImport_prepare_collect(startDir, globalEJBRoleGroupMan, exceptions);
+		roleImport_prepare_collect(startDir, globalSecurityMan, exceptions);
 
-		globalEJBRoleGroupMan.removeRole(User.USERID_SYSTEM); // the _System_ role should never be imported so that no real user can ever get this role!
+// ignoring this role from the beginning (we ignore everything starting with "_" in both EJBJarMan and JFireSecurityMan)
+//		globalSecurityMan.removeRole(User.USERID_SYSTEM); // the _System_ role should never be imported so that no real user can ever get this role!
 
-		return new RoleImportSet(organisationID, globalEJBRoleGroupMan, exceptions);
+		return new RoleImportSet(organisationID, globalSecurityMan, exceptions);
 	}
 	
 	private static class FileFilterDirectories implements FilenameFilter
@@ -987,7 +990,7 @@ public class JFireServerManagerFactoryImpl
 	private static String JAR_SUFFIX = ".jar";
 	private static FileFilterJARs fileFilterJARs = null;
 	
-	private void roleImport_prepare_collect(File directory, EJBRoleGroupMan globalEJBRoleGroupMan, Map<String, Throwable> exceptions)
+	private void roleImport_prepare_collect(File directory, JFireSecurityMan globalEJBRoleGroupMan, Map<String, Throwable> exceptions)
 	{
 		if (fileFilterDirectories == null)
 			fileFilterDirectories = new FileFilterDirectories();
@@ -1027,7 +1030,7 @@ public class JFireServerManagerFactoryImpl
 		} // if (jars != null) {
 	}
 	
-	private void roleImport_prepare_readJar(EJBRoleGroupMan globalEJBRoleGroupMan, File jar, JarFile jf)
+	private void roleImport_prepare_readJar(JFireSecurityMan globalSecurityMan, File jar, JarFile jf)
 		throws SAXException, IOException, XMLReadException
 	{
 		JarEntry ejbJarXML = jf.getJarEntry("META-INF/ejb-jar.xml");
@@ -1052,24 +1055,25 @@ public class JFireServerManagerFactoryImpl
 			logger.info("*****************************************************************");
 		}
 
-		JarEntry roleGroupXML = jf.getJarEntry("META-INF/ejb-rolegroup.xml");
-		EJBRoleGroupMan ejbRoleGroupMan;
+		JarEntry roleGroupXML = jf.getJarEntry("META-INF/jfire-security.xml");
+		JFireSecurityMan securityMan;
 		if (roleGroupXML == null) {
-			logger.warn("Jar \""+jar.getCanonicalPath()+"\" does not contain \"META-INF/ejb-rolegroup.xml\"!");
-			ejbRoleGroupMan = new EJBRoleGroupMan(ejbJarMan);
+			logger.warn("Jar \""+jar.getCanonicalPath()+"\" does not contain \"META-INF/jfire-security.xml\"!");
+			securityMan = new JFireSecurityMan(ejbJarMan);
 		}
 		else {
 			logger.info("*****************************************************************");
-			logger.info("Jar \""+jar.getCanonicalPath()+"\": ejb-rolegroup.xml:");
+			logger.info("Jar \""+jar.getCanonicalPath()+"\": jfire-security.xml:");
 			InputStream in = jf.getInputStream(roleGroupXML);
 			try {
-				ejbRoleGroupMan = new EJBRoleGroupMan(ejbJarMan, in);
-				for (Iterator<RoleGroupDef> it = ejbRoleGroupMan.getRoleGroups().iterator(); it.hasNext(); ) {
-					RoleGroupDef roleGroupDef = it.next();
+				securityMan = new JFireSecurityMan(ejbJarMan, in);
+				for (RoleGroupDef roleGroupDef : securityMan.getRoleGroups().values()) {
 					logger.info("roleGroupDef.roleGroupID = "+roleGroupDef.getRoleGroupID());
-					for (Iterator<RoleDef> itRoles = roleGroupDef.getAllRoles().iterator(); itRoles.hasNext(); ) {
-						RoleDef roleDef = itRoles.next();
-						logger.info("  roleDef.roleID = "+roleDef.getRoleID());
+					for (String includedRoleGroupID : roleGroupDef.getIncludedRoleGroupIDs()) {
+						logger.info("  includedRoleGroupID = "+includedRoleGroupID);
+					}
+					for (String roleID : roleGroupDef.getRoleIDs()) {
+						logger.info("  roleID = "+roleID);
 					}
 				}
 			} finally {
@@ -1077,11 +1081,9 @@ public class JFireServerManagerFactoryImpl
 			}
 			logger.info("*****************************************************************");
 		}
-		ejbRoleGroupMan.createBackupDefaultRoleGroup();
-		globalEJBRoleGroupMan.mergeRoleGroupMan(ejbRoleGroupMan);
+		securityMan.createFallbackRoleGroups();
+		globalSecurityMan.mergeSecurityMan(securityMan);
 	}
-
-	private transient Object roleImport_commit_mutex = new Object();
 
 	/**
 	 * @param roleImportSet
@@ -1090,41 +1092,80 @@ public class JFireServerManagerFactoryImpl
 	 */
 	protected void roleImport_commit(RoleImportSet roleImportSet, PersistenceManager pm)
 	{
-		synchronized (roleImport_commit_mutex) {
-			if (roleImportSet.getOrganisationID() == null)
-				throw new IllegalArgumentException("roleImportSet.organisationID is null! Use roleImport_prepare(...) to generate a roleImportSet!");
-			EJBRoleGroupMan roleGroupMan = roleImportSet.getEjbRoleGroupMan();
+		if (roleImportSet.getOrganisationID() == null)
+			throw new IllegalArgumentException("roleImportSet.organisationID is null! Use roleImport_prepare(...) to generate a roleImportSet!");
+		JFireSecurityMan securityMan = roleImportSet.getSecurityMan();
+		securityMan.resolve(); // this is very likely not yet done, since we don't have a UI anymore
 
-			if (!roleImportSet.getJarExceptions().isEmpty())
-				logger.warn("roleImportSet.jarExceptions is not empty! You should execute roleImportSet.clearJarExceptions()!", new ModuleException("roleImportSet.jarExceptions is not empty."));
+		if (!roleImportSet.getJarExceptions().isEmpty())
+			logger.warn("roleImportSet.jarExceptions is not empty! You should execute roleImportSet.clearJarExceptions()!", new ModuleException("roleImportSet.jarExceptions is not empty."));
 
-			boolean localPM = pm == null;
+		boolean localPM = pm == null;
 
-			if (localPM)
-				pm = getPersistenceManager(roleImportSet.getOrganisationID());
-			try {
-				if (!localPM) {
-					// check whether PM datastore matches organisationID
-					String datastoreOrgaID = LocalOrganisation.getLocalOrganisation(pm).getOrganisationID();
-					if (!datastoreOrgaID.equals(roleImportSet.getOrganisationID()))
-						throw new IllegalArgumentException("Parameter pm does not match organisationID of given roleImportSet!");
-				}
+		if (localPM)
+			pm = getPersistenceManager(roleImportSet.getOrganisationID());
+		try {
+//			if (!localPM) { // I think it's a good idea to check this on every start-up => commented the "if" out
+			// check whether PM datastore matches organisationID
+			String datastoreOrgaID = LocalOrganisation.getLocalOrganisation(pm).getOrganisationID();
+			if (!datastoreOrgaID.equals(roleImportSet.getOrganisationID()))
+				throw new IllegalArgumentException("Parameter pm does not match organisationID of given roleImportSet!");
+//			}
 
-				pm.getExtent(AuthorityType.class);
-				AuthorityType authorityType = (AuthorityType) pm.getObjectById(AuthorityType.AUTHORITY_TYPE_ID_ORGANISATION);
+			AuthorityType authorityType_organisation = (AuthorityType) pm.getObjectById(AuthorityType.AUTHORITY_TYPE_ID_ORGANISATION);
 
-				pm.getExtent(RoleGroup.class, true);
-
-				for (Iterator<RoleGroupDef> itRoleGroups = roleGroupMan.getRoleGroups().iterator(); itRoleGroups.hasNext(); ) {
-					RoleGroupDef roleGroupDef = itRoleGroups.next();
-					RoleGroup roleGroupJDO = roleGroupDef.createRoleGroup(pm);
-					authorityType.addRoleGroup(roleGroupJDO);
-				} // for (Iterator itRoleGroups = roleGroupMan.getRoleGroups().iterator(); itRoleGroups.hasNext(); ) {
-
-			} finally {
-				if (localPM)
-					pm.close();
+			for (AuthorityTypeDef authorityTypeDef : securityMan.getAuthorityTypes().values()) {
+				authorityTypeDef.updateAuthorityType(
+						pm,
+						!authorityType_organisation.getAuthorityTypeID().equals(authorityTypeDef.getAuthorityTypeID())
+				);
 			}
+
+			for (RoleGroupDef roleGroupDef : securityMan.getRoleGroups().values()) {
+				RoleGroup roleGroupJDO = roleGroupDef.updateRoleGroup(pm);
+				authorityType_organisation.addRoleGroup(roleGroupJDO);
+			}
+
+			// delete all roles that are not existing anymore
+			{
+				Set<String> currentRoleIDs = securityMan.getRoles().keySet();
+				Query q = pm.newQuery(Role.class);
+				for (Object o : new HashSet<Object>((Collection<?>)q.execute())) {
+					Role role = (Role) o;
+					if (currentRoleIDs.contains(role.getRoleID()))
+						continue;
+
+					for (RoleGroup roleGroup : new HashSet<RoleGroup>(role.getRoleGroups()))
+						roleGroup.removeRole(role);
+
+					pm.deletePersistent(role);
+				}
+			}
+
+			// delete all role-groups that don't exist anymore
+			{
+				Set<String> currentRoleGroupIDs = securityMan.getRoleGroups().keySet();
+				Query q = pm.newQuery(RoleGroup.class);
+				for (Object o : new HashSet<Object>((Collection<?>)q.execute())) {
+					RoleGroup roleGroup = (RoleGroup) o;
+					if (currentRoleGroupIDs.contains(roleGroup.getRoleGroupID()))
+						continue;
+
+					Query q2 = pm.newQuery(AuthorityType.class);
+					q2.setFilter("this.roleGroups.contains(:roleGroup)");
+					Collection<?> c2 = (Collection<?>) q2.execute(roleGroup);
+					for (Object o2 : c2) {
+						AuthorityType authorityType = (AuthorityType) o2;
+						authorityType.removeRoleGroup(roleGroup);
+					}
+
+					pm.deletePersistent(roleGroup);
+				}
+			}
+
+		} finally {
+			if (localPM)
+				pm.close();
 		}
 	}
 

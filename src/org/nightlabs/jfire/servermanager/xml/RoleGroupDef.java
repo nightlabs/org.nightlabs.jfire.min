@@ -27,15 +27,13 @@
 package org.nightlabs.jfire.servermanager.xml;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
@@ -52,10 +50,10 @@ public class RoleGroupDef implements Serializable, Comparable<RoleGroupDef>
 {
 	private static final long serialVersionUID = 1L;
 
-	private EJBRoleGroupMan owner;
-	
+//	private JFireSecurityMan owner;
+
 	private String roleGroupID;
-	
+
 	/**
 	 * key: String languageID<br/>
 	 * value: String name
@@ -68,48 +66,36 @@ public class RoleGroupDef implements Serializable, Comparable<RoleGroupDef>
 	 */
 	private Map<String, String> descriptions = new HashMap<String, String>();
 
-	private boolean defaultGroup;
+//	/**
+//	* key: String roleGroupID<br/>
+//	* value: RoleGroupDef roleGroup
+//	*/
+//	protected Map<String, RoleGroupDef> includedRoleGroups = new HashMap<String, RoleGroupDef>();
+	private Set<String> includedRoleGroupIDs = new HashSet<String>();
 
-	/**
-	 * key: String roleGroupID<br/>
-	 * value: RoleGroupDef roleGroup
-	 */
-	protected Map<String, RoleGroupDef> includedRoleGroups = new HashMap<String, RoleGroupDef>();
+	private Map<String, RoleGroupDef> includedRoleGroupID2roleGroupDef = null; // created during resolve
+
+	private Set<String> roleIDs = new HashSet<String>();
 
 	/**
 	 * key: String roleID<br/>
 	 * value: RoleDef roleDef
 	 */
-	protected Map<String, RoleDef> roles = new HashMap<String, RoleDef>();
+	protected Map<String, RoleDef> roleID2role = null; // created during resolve
 
-	public RoleGroupDef(EJBRoleGroupMan owner) { }
-
-	public RoleGroupDef(EJBRoleGroupMan _owner, String _roleGroupID, boolean _defaultGroup)
+	public RoleGroupDef(String _roleGroupID)
 	{
-		this.owner = _owner;
+		if (_roleGroupID == null)
+			throw new IllegalArgumentException("roleGroupID must not be null!");
+
 		this.roleGroupID = _roleGroupID;
-		this.defaultGroup = _defaultGroup;
 	}
 
-	/**
-	 * @return Returns the owner.
-	 */
-	public EJBRoleGroupMan getOwner() {
-		return owner;
-	}
-	
-	/**
-	 * @return Returns the defaultGroup.
-	 */
-	public boolean isDefaultGroup() {
-		return defaultGroup;
-	}
-	
 	public String getName()
 	{
 		return names.get(null);
 	}
-	
+
 	public String getName(String languageID)
 	{
 		if ("".equals(languageID))
@@ -119,14 +105,14 @@ public class RoleGroupDef implements Serializable, Comparable<RoleGroupDef>
 			res = names.get(null);
 		return res;
 	}
-	
+
 	public void setName(String languageID, String name)
 	{
 		if ("".equals(languageID))
 			languageID = null;
 		names.put(languageID, name);
 	}
-	
+
 	/**
 	 * Returns a Map with the name for this group in all languages.
 	 * @return Returns a Map with key String languageID and value String name.
@@ -135,7 +121,7 @@ public class RoleGroupDef implements Serializable, Comparable<RoleGroupDef>
 	{
 		return names;
 	}
-	
+
 	public Map<String, String> getDescriptions()
 	{
 		return descriptions;
@@ -172,110 +158,136 @@ public class RoleGroupDef implements Serializable, Comparable<RoleGroupDef>
 	public String getRoleGroupID() {
 		return roleGroupID;
 	}
-	/**
-	 * @param roleGroupID The roleGroupID to set.
-	 */
-	public void setRoleGroupID(String _roleGroupID) {
-		this.roleGroupID = _roleGroupID;
-		if (defaultGroup)
-			owner.defaultGroupID = _roleGroupID;
-	}
 
 	protected void addIncludedRoleGroup(String roleGroupID)
 	{
-		includedRoleGroups.put(roleGroupID, null);
+		if (includedRoleGroupID2roleGroupDef != null)
+			throw new IllegalStateException("resolve(...) was already called!");
+
+//		includedRoleGroups.put(roleGroupID, null);
+		includedRoleGroupIDs.add(roleGroupID);
 	}
-	
-	public RoleGroupDef getIncludedRoleGroup(String roleGroupName)
+
+//	public RoleGroupDef getIncludedRoleGroup(JFireSecurityMan jfireSecurityMan, String roleGroupID)
+//	{
+//	RoleGroupDef roleGroupDef = includedRoleGroups.get(roleGroupID);
+//	if (roleGroupDef == null && includedRoleGroups.containsKey(roleGroupID)) {
+//	roleGroupDef = jfireSecurityMan.getRoleGroup(roleGroupID);
+//	if (roleGroupDef == null)
+//	throw new IllegalStateException("RoleGroupDef not found in owner, but roleGroup \""+roleGroupID+"\" is included in \""+roleGroupID+"\"!");
+
+//	includedRoleGroups.put(roleGroupID, roleGroupDef);
+//	}
+//	return roleGroupDef;
+//	}
+
+	protected void addRole(String roleID)
 	{
-		RoleGroupDef roleGroupDef = includedRoleGroups.get(roleGroupName);
-		if (roleGroupDef == null && includedRoleGroups.containsKey(roleGroupName)) {
-			roleGroupDef = owner.getRoleGroup(roleGroupName);
-			if (roleGroupDef == null)
-				throw new IllegalStateException("RoleGroupDef not found in owner, but roleGroup \""+roleGroupName+"\" is included in \""+roleGroupName+"\"!");
-			
-			includedRoleGroups.put(roleGroupName, roleGroupDef);
+		if (roleID2role != null)
+			throw new IllegalStateException("resolve(...) was already called!");
+
+		roleIDs.add(roleID);
+	}
+
+//	/**
+//	* This method does the same as getAllRoles() except that it does not add the
+//	* roles that are indirectly put into this group by inclusion.
+//	* @return All the roles of this RoleGroup - no includes.
+//	*/
+//	public Collection<RoleDef> getRoles()
+//	{
+//	return roles.values();
+//	}
+
+//	/**
+//	* If this RoleGroup is the default group, this method will return all
+//	* roles that have not been declared in jfire-security.xml, but in ejb-jar.xml.
+//	* Otherwise, it returns an empty Collection.
+//	* <br/><br/>
+//	* This method is expensive!
+//	*
+//	* @return A Collection with instances of type RoleDef.
+//	*/
+//	public Collection<RoleDef> getDefaultRoles()
+//	{
+//	if (!defaultGroup)
+//	return Collections.EMPTY_LIST;
+
+//	return owner.getRolesInDefaultGroup();
+//	}
+
+	public void resolve(JFireSecurityMan jfireSecurityMan)
+	{
+		if (includedRoleGroupID2roleGroupDef == null) {
+			Map<String, RoleGroupDef> m = new HashMap<String, RoleGroupDef>();
+			for (String includedRoleGroupID : includedRoleGroupIDs) {
+				RoleGroupDef roleGroupDef = jfireSecurityMan.getRoleGroup(roleGroupID);
+				if (roleGroupDef == null)
+					throw new IllegalStateException("role-group with id=" + roleGroupID + " declares non-existent included-role-group with id=" + includedRoleGroupID);
+
+				m.put(includedRoleGroupID, roleGroupDef);
+			}
+			includedRoleGroupID2roleGroupDef = m;
 		}
-		return roleGroupDef;
+
+		if (roleID2role == null) {
+			Map<String, RoleDef> m = new HashMap<String, RoleDef>();
+			for (String roleID : roleIDs) {
+				RoleDef roleDef = jfireSecurityMan.getRole(roleID);
+				if (roleDef == null)
+					throw new IllegalStateException("role-group with id=" + roleGroupID + " declares non-existent role with id=" + roleID);
+
+				m.put(roleID, roleDef);
+			}
+			roleID2role = m;
+		}
 	}
 
-	protected RoleDef removeRole(String roleID)
-	{
-		return roles.remove(roleID);
+	public Set<String> getIncludedRoleGroupIDs() {
+		return Collections.unmodifiableSet(includedRoleGroupIDs);
 	}
-
-	protected void addRole(RoleDef roleDef)
-	{
-		roles.put(roleDef.getRoleID(), roleDef);
-	}
-	
-	public RoleDef getRole(String roleID)
-	{
-		return roles.get(roleID);
-	}
-
-	/**
-	 * This method does the same as getAllRoles() except that it does not add the
-	 * roles that are indirectly put into this group by inclusion.
-	 * @return All the roles of this RoleGroup - no includes.
-	 */
-	public Collection<RoleDef> getRoles()
-	{
-		return roles.values();
-	}
-
-	/**
-	 * If this RoleGroup is the default group, this method will return all
-	 * roles that have not been declared in ejb-rolegroup.xml, but in ejb-jar.xml.
-	 * Otherwise, it returns an empty Collection.
-	 * <br/><br/>
-	 * This method is expensive!
-	 *
-	 * @return A Collection with instances of type RoleDef.
-	 */
-	public Collection<RoleDef> getDefaultRoles()
-	{
-		if (!defaultGroup)
-			return Collections.EMPTY_LIST;
-		
-		return owner.getRolesInDefaultGroup();
+	public Set<String> getRoleIDs() {
+		return Collections.unmodifiableSet(roleIDs);
 	}
 
 	/**
 	 * This method is expensive.
 	 * 
-	 * @return Returns all roles as instances of RoleDef including the ones that
-	 *   are indirectly included by includedRoleGroups or default roles.
+	 * @return all roles as instances of RoleDef including the ones that
+	 *   are indirectly included by includedRoleGroups.
 	 */
 	public Collection<RoleDef> getAllRoles()
 	{
-		if (includedRoleGroups.isEmpty() && !defaultGroup)
-			return roles.values();
-
-		Collection<RoleDef> res = new HashSet<RoleDef>(roles.values());
-
-		// TODO: Circular reference detection in includes!!!
-		for (Iterator<Map.Entry<String, RoleGroupDef>> it = includedRoleGroups.entrySet().iterator(); it.hasNext(); ) {
-			Map.Entry<String, RoleGroupDef> me = it.next();
-			String roleGroupName = me.getKey();
-			RoleGroupDef includedRoleGroup = me.getValue();
-			if (includedRoleGroup == null)
-				includedRoleGroup = getIncludedRoleGroup(roleGroupName);
-			res.addAll(includedRoleGroup.getAllRoles());
-		}
-
-		res.addAll(getDefaultRoles());
-
-		return res;
+		Set<RoleDef> roles = new HashSet<RoleDef>();
+		populateRolesRecursively(roles, new HashSet<String>());
+		return roles;
 	}
 
-	public List<RoleDef> getAllRolesSorted()
+	private void populateRolesRecursively(Set<RoleDef> roles, Set<String> processedRoleGroupIDs)
 	{
-		List<RoleDef> sortedList = new ArrayList<RoleDef>(getAllRoles());
-		Collections.sort(sortedList);
-		return sortedList;
+		if (this.roleGroupID == null)
+			throw new IllegalStateException("this.roleGroupID == null");
+
+		processedRoleGroupIDs.add(this.roleGroupID);
+
+		if (includedRoleGroupID2roleGroupDef == null)
+			throw new IllegalStateException("resolve(...) was not yet called!");
+
+		roles.addAll(roleID2role.values());
+
+		for (RoleGroupDef includedRoleGroup : includedRoleGroupID2roleGroupDef.values()) {
+			if (!processedRoleGroupIDs.contains(includedRoleGroup.getRoleGroupID()))
+				includedRoleGroup.populateRolesRecursively(roles, processedRoleGroupIDs);
+		}
 	}
-	
+
+//	public List<RoleDef> getAllRolesSorted()
+//	{
+//	List<RoleDef> sortedList = new ArrayList<RoleDef>(getAllRoles());
+//	Collections.sort(sortedList);
+//	return sortedList;
+//	}
+
 	/**
 	 * This method creates a JDO RoleGroup object with the given persistenceManager
 	 * in case it does not yet exist. If it already exists, it adds roles, names
@@ -284,10 +296,10 @@ public class RoleGroupDef implements Serializable, Comparable<RoleGroupDef>
 	 * @param pm The PersistenceManager in which's datastore the RoleGroup should be
 	 * 	created.
 	 */
-	public RoleGroup createRoleGroup(PersistenceManager pm)
+	public RoleGroup updateRoleGroup(PersistenceManager pm)
 	{
 		// Initialize meta data.
-		pm.getExtent(RoleGroup.class, true);
+		pm.getExtent(RoleGroup.class);
 
 		// Fetch/create RoleGroup instance.
 		RoleGroup roleGroup;
@@ -295,35 +307,40 @@ public class RoleGroupDef implements Serializable, Comparable<RoleGroupDef>
 			roleGroup = (RoleGroup)pm.getObjectById(RoleGroupID.create(getRoleGroupID()), true);
 		} catch (JDOObjectNotFoundException x) {
 			roleGroup = new RoleGroup(getRoleGroupID());
-			pm.makePersistent(roleGroup);
+			roleGroup = pm.makePersistent(roleGroup);
 		}
 
-		for (Iterator<Map.Entry<String, String>> it = getNames().entrySet().iterator(); it.hasNext(); ) {
-			Map.Entry<String, String> me = it.next();
+		for (Map.Entry<String, String> me : getNames().entrySet()) {
 			String languageID = me.getKey();
-			String name = me.getValue();
-      if(languageID != null)
-        roleGroup.getName().setText(languageID, name);
-      else
-        roleGroup.getName().setText(Locale.ENGLISH.getLanguage(), name);
+			if(languageID == null)
+				languageID = Locale.ENGLISH.getLanguage();
+
+			roleGroup.getName().setText(languageID, me.getValue());
 		}
-		
-		for (Iterator<Map.Entry<String, String>> it = getDescriptions().entrySet().iterator(); it.hasNext(); ) {
-			Map.Entry<String, String> me = it.next();
+
+		for (Map.Entry<String, String> me : getDescriptions().entrySet()) {
 			String languageID = me.getKey();
-			String description = me.getValue();
-      if(languageID != null)
-        roleGroup.getDescription().setText(languageID, description);
-      else
-        roleGroup.getDescription().setText(Locale.ENGLISH.getLanguage(), description);
+			if(languageID == null)
+				languageID = Locale.ENGLISH.getLanguage();
+
+			roleGroup.getDescription().setText(languageID, me.getValue());
 		}
-		
-		// Add missing roles.
-		for (Iterator<RoleDef> it = getAllRoles().iterator(); it.hasNext(); ) {
-			RoleDef roleDef = it.next();
+
+		Set<Role> currentRoles = new HashSet<Role>();
+
+		// add roles
+		for (RoleDef roleDef : getAllRoles()) {
 			Role role = roleDef.createRole(pm);
-			if (!roleGroup.containsRole(role)) // probably not necessary - only for avoiding problems, in case the jdo implementation is not clean.
-				roleGroup.addRole(role);
+			currentRoles.add(role);
+			roleGroup.addRole(role);
+		}
+
+		// remove roles that are no more in the role-group
+		for (Role role : new HashSet<Role>(roleGroup.getRoles())) {
+			if (currentRoles.contains(role))
+				continue;
+
+			roleGroup.removeRole(role);
 		}
 
 		return roleGroup;
@@ -334,8 +351,8 @@ public class RoleGroupDef implements Serializable, Comparable<RoleGroupDef>
 	 */
 	public int compareTo(RoleGroupDef o) {
 //		if (!(o instanceof RoleGroupDef))
-//			return -1;
-		
+//		return -1;
+
 		RoleGroupDef other = o;
 		String thisName = this.getName();
 		if (thisName == null)
@@ -346,5 +363,18 @@ public class RoleGroupDef implements Serializable, Comparable<RoleGroupDef>
 
 		return thisName.compareTo(otherName);
 	}
-	
+
+	public void mergeFrom(JFireSecurityMan jfireSecurityMan, RoleGroupDef other) {
+		for (Map.Entry<String, String> me : other.getNames().entrySet())
+			this.setName(me.getKey(), me.getValue());
+
+		for (Map.Entry<String, String> me : other.getDescriptions().entrySet())
+			this.setDescription(me.getKey(), me.getValue());
+
+		for (String includedRoleGroupID : other.includedRoleGroupIDs)
+			this.includedRoleGroupIDs.add(includedRoleGroupID);
+
+		for (String roleID : other.roleIDs)
+			this.roleIDs.add(roleID);
+	}
 }

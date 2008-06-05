@@ -61,17 +61,17 @@ public class WEBMan
 //			parser.setFeature("http://xml.org/sax/features/validation", true);
 			parser.setErrorHandler(new ErrorHandler(){
 				public void error(SAXParseException exception) throws SAXException {
-					logger.error("Parse (ejb-rolegroup.xml): ", exception);
+					logger.error("Parse (web.xml): ", exception);
 					parseException = exception;
 				}
 	
 				public void fatalError(SAXParseException exception) throws SAXException {
-					logger.fatal("Parse (ejb-rolegroup.xml): ", exception);
+					logger.fatal("Parse (web.xml): ", exception);
 					parseException = exception;
 				}
 	
 				public void warning(SAXParseException exception) throws SAXException {
-					logger.warn("Parse (ejb-rolegroup.xml): ", exception);
+					logger.warn("Parse (web.xml): ", exception);
 				}
 			});
 			parser.parse(inputSource);

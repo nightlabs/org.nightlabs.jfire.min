@@ -91,17 +91,17 @@ public class EJBJarMan implements Serializable
 //		parser.setFeature("http://xml.org/sax/features/validation", false);
 		parser.setErrorHandler(new ErrorHandler(){
 			public void error(SAXParseException exception) throws SAXException {
-				logger.error("Parse (ejb-rolegroup.xml): ", exception);
+				logger.error("Parse (ejb-jar.xml): ", exception);
 				parseException = exception;
 			}
 
 			public void fatalError(SAXParseException exception) throws SAXException {
-				logger.fatal("Parse (ejb-rolegroup.xml): ", exception);
+				logger.fatal("Parse (ejb-jar.xml): ", exception);
 				parseException = exception;
 			}
 
 			public void warning(SAXParseException exception) throws SAXException {
-				logger.warn("Parse (ejb-rolegroup.xml): ", exception);
+				logger.warn("Parse (ejb-jar.xml): ", exception);
 			}
 		});
 		parser.parse(inputSource);
@@ -132,9 +132,9 @@ public class EJBJarMan implements Serializable
 							description = ((Text)n).getData();
 					}
 
-					roleID = removeLeadingAndTrailingBlanks(roleID);
+					roleID = roleID.trim();
 					if (!roleID.startsWith("_")) { // internal roles like _ServerAdmin_
-						description = removeLeadingAndTrailingBlanks(description);
+						description = description.trim();
 						RoleDef role = new RoleDef(roleID);
 						role.setName(null, roleID);
 						role.setDescription(null, description);
@@ -146,10 +146,10 @@ public class EJBJarMan implements Serializable
 		
 	}
 
-	private static String removeLeadingAndTrailingBlanks(String s)
-	{
-		return s.replaceAll("(^ )*( $)*", "");
-	}
+//	private static String removeLeadingAndTrailingBlanks(String s)
+//	{
+//		return s.replaceAll("(^ )*( $)*", "");
+//	}
 
 	public Collection<RoleDef> getRoles()
 	{
