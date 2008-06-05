@@ -1151,6 +1151,18 @@ implements SessionBean
 					}
 				}
 			}
+
+			for (RoleGroupRef roleGroupRef : authorizedObjectRef.getRoleGroupRefs()) {
+				if (roleGroupRef.getAuthorizedObjectRef(authorizedObjectRef.getAuthorizedObject()) == null)
+					throw new IllegalStateException("roleGroupRef does not contain authorizedObjectRef!!! authority=" + authority + " roleGroupRef=" + roleGroupRef + " authorizedObjectRef=" + authorizedObjectRef);
+			}
+		}
+
+		for (RoleGroupRef roleGroupRef : authority.getRoleGroupRefs()) {
+			for (AuthorizedObjectRef authorizedObjectRef : roleGroupRef.getAuthorizedObjectRefs()) {
+				if (authorizedObjectRef.getRoleGroupRef(roleGroupRef.getRoleGroup()) == null)
+					throw new IllegalStateException("authorizedObjectRef does not contain roleGroupRef!!! authority=" + authority + " roleGroupRef=" + roleGroupRef + " authorizedObjectRef=" + authorizedObjectRef);
+			}
 		}
 	}
 
