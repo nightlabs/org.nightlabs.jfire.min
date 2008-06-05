@@ -42,10 +42,8 @@ import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.servermanager.JFireServerManagerFactory;
 
 /**
- * This class should be used as anchestor of your session beans. Note, that
- * some methods will probably not work with stateless session beans. This is,
- * because it seems a stateless session bean has no principal stored in its
- * session context.
+ * This class should be used as ancestor of your session beans. It provides some convenience methods making
+ * it easier to implement your bean.
  *
  * @author nick@nightlabs.de
  * @author marco@nightlabs.de
