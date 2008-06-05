@@ -110,9 +110,11 @@ import org.nightlabs.jfire.security.AuthorityType;
 import org.nightlabs.jfire.security.AuthorizedObjectRef;
 import org.nightlabs.jfire.security.Role;
 import org.nightlabs.jfire.security.RoleGroup;
+import org.nightlabs.jfire.security.RoleGroupRef;
 import org.nightlabs.jfire.security.RoleRef;
 import org.nightlabs.jfire.security.RoleSet;
 import org.nightlabs.jfire.security.SecurityReflector;
+import org.nightlabs.jfire.security.UndeployedRoleGroupAuthorityUserRecord;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.security.UserLocal;
 import org.nightlabs.jfire.security.id.AuthorizedObjectRefID;
@@ -1112,8 +1114,29 @@ public class JFireServerManagerFactoryImpl
 				throw new IllegalArgumentException("Parameter pm does not match organisationID of given roleImportSet!");
 //			}
 
+			// Find out whether any RoleGroup disappeared. This means a module has been undeployed and we need to backup the data
+			// in order to restore it if the RoleGroup re-appears (if the module is re-deployed).
+			Set<String> newRoleGroupIDs = securityMan.getRoleGroups().keySet();
+			Set<String> oldRoleGroupIDs = new HashSet<String>();
+			for (Iterator<RoleGroup> it = pm.getExtent(RoleGroup.class).iterator(); it.hasNext(); ) {
+				RoleGroup roleGroup = it.next();
+				oldRoleGroupIDs.add(roleGroup.getRoleGroupID());
+				if (!newRoleGroupIDs.contains(roleGroup.getRoleGroupID())) {
+					// the role-group is about to disappear => backup
+
+					// in order to prevent primary key violations we make sure there is no record for this role-group
+					for (UndeployedRoleGroupAuthorityUserRecord r : UndeployedRoleGroupAuthorityUserRecord.getUndeployedRoleGroupAuthorityUserRecordForRoleGroup(pm, roleGroup)) {
+						pm.deletePersistent(r);
+					}
+					pm.flush(); // ensure, the deletions are pushed to the datastore
+
+					UndeployedRoleGroupAuthorityUserRecord.createRecordsForRoleGroup(pm, roleGroup);
+				}
+			}
+
 			AuthorityType authorityType_organisation = (AuthorityType) pm.getObjectById(AuthorityType.AUTHORITY_TYPE_ID_ORGANISATION);
 
+			// create/update AuthorityType JDO objects (with the data in the securityMan). Note, that this already creates/updates role-groups and roles!
 			for (AuthorityTypeDef authorityTypeDef : securityMan.getAuthorityTypes().values()) {
 				authorityTypeDef.updateAuthorityType(
 						pm,
@@ -1121,6 +1144,7 @@ public class JFireServerManagerFactoryImpl
 				);
 			}
 
+			// create/update RoleGroup JDO objects (with the data in the securityMan)
 			for (RoleGroupDef roleGroupDef : securityMan.getRoleGroups().values()) {
 				RoleGroup roleGroupJDO = roleGroupDef.updateRoleGroup(pm);
 				authorityType_organisation.addRoleGroup(roleGroupJDO);
@@ -1142,24 +1166,33 @@ public class JFireServerManagerFactoryImpl
 				}
 			}
 
-			// delete all role-groups that don't exist anymore
+			// delete all role-groups that don't exist anymore and restore assignments to users in case a role-group re-appeared (due to re-deployment)
 			{
-				Set<String> currentRoleGroupIDs = securityMan.getRoleGroups().keySet();
-				Query q = pm.newQuery(RoleGroup.class);
-				for (Object o : new HashSet<Object>((Collection<?>)q.execute())) {
-					RoleGroup roleGroup = (RoleGroup) o;
-					if (currentRoleGroupIDs.contains(roleGroup.getRoleGroupID()))
-						continue;
+				for (Iterator<RoleGroup> it = pm.getExtent(RoleGroup.class).iterator(); it.hasNext(); ) {
+					RoleGroup roleGroup = it.next();
+					if (!newRoleGroupIDs.contains(roleGroup.getRoleGroupID())) {
+						Query q2 = pm.newQuery(AuthorityType.class);
+						q2.setFilter("this.roleGroups.contains(:roleGroup)");
+						Collection<?> c2 = (Collection<?>) q2.execute(roleGroup);
+						for (Object o2 : c2) {
+							AuthorityType authorityType = (AuthorityType) o2;
+							authorityType.removeRoleGroup(roleGroup);
+						}
 
-					Query q2 = pm.newQuery(AuthorityType.class);
-					q2.setFilter("this.roleGroups.contains(:roleGroup)");
-					Collection<?> c2 = (Collection<?>) q2.execute(roleGroup);
-					for (Object o2 : c2) {
-						AuthorityType authorityType = (AuthorityType) o2;
-						authorityType.removeRoleGroup(roleGroup);
+						pm.deletePersistent(roleGroup);
+					} // if (!newRoleGroupIDs.contains(roleGroup.getRoleGroupID()))
+
+					if (!oldRoleGroupIDs.contains(roleGroup.getRoleGroupID())) {
+						// redeployed => restore assignments
+						for (UndeployedRoleGroupAuthorityUserRecord r : UndeployedRoleGroupAuthorityUserRecord.getUndeployedRoleGroupAuthorityUserRecordForRoleGroup(pm, roleGroup)) {
+							if (r.getAuthority() != null && r.getAuthorizedObject() != null) { // in case an authority or a group has been deleted (if this is ever possible)
+								RoleGroupRef roleGroupRef = r.getAuthority().createRoleGroupRef(roleGroup);
+								AuthorizedObjectRef authorizedObjectRef = r.getAuthority().createAuthorizedObjectRef(r.getAuthorizedObject());
+								authorizedObjectRef.addRoleGroupRef(roleGroupRef);
+							}
+							pm.deletePersistent(r);
+						}
 					}
-
-					pm.deletePersistent(roleGroup);
 				}
 			}
 
