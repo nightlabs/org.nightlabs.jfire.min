@@ -1171,13 +1171,13 @@ public class JFireServerManagerFactoryImpl
 				for (Iterator<RoleGroup> it = pm.getExtent(RoleGroup.class).iterator(); it.hasNext(); ) {
 					RoleGroup roleGroup = it.next();
 					if (!newRoleGroupIDs.contains(roleGroup.getRoleGroupID())) {
-						Query q2 = pm.newQuery(AuthorityType.class);
-						q2.setFilter("this.roleGroups.contains(:roleGroup)");
-						Collection<?> c2 = (Collection<?>) q2.execute(roleGroup);
-						for (Object o2 : c2) {
-							AuthorityType authorityType = (AuthorityType) o2;
-							authorityType.removeRoleGroup(roleGroup);
-						}
+//						Query q2 = pm.newQuery(AuthorityType.class);
+//						q2.setFilter("this.roleGroups.contains(:roleGroup)");
+//						Collection<?> c2 = (Collection<?>) q2.execute(roleGroup);
+//						for (Object o2 : c2) {
+//							AuthorityType authorityType = (AuthorityType) o2;
+//							authorityType.removeRoleGroup(roleGroup);
+//						}
 
 						pm.deletePersistent(roleGroup);
 					} // if (!newRoleGroupIDs.contains(roleGroup.getRoleGroupID()))
