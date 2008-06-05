@@ -135,34 +135,35 @@ public class WorkstationManagerBean extends BaseSessionBeanImpl implements Sessi
 		}
 	}
 
-	/**
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="WorkstationManagerBean-read"
-	 * @ejb.transaction type="Required"
-	 **/
-	public Collection<Workstation> getWorkstations(String[] fetchGroups, int maxFetchDepth)
-	{
-		PersistenceManager pm = getPersistenceManager();
-		try
-		{
-			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
-			if (fetchGroups != null)
-				pm.getFetchPlan().setGroups(fetchGroups);
-
-			Collection<Workstation> ret = Workstation.getWorkstations(pm);
-			return pm.detachCopyAll(ret);
-		}
-		finally
-		{
-			pm.close();
-		}
-	}
+//	/**
+//	 * @ejb.interface-method
+//	 * @ejb.permission role-name="WorkstationManagerBean-read"
+//	 * @ejb.transaction type="Required"
+//	 **/
+//	public Collection<Workstation> getWorkstations(String[] fetchGroups, int maxFetchDepth)
+//	{
+//		PersistenceManager pm = getPersistenceManager();
+//		try
+//		{
+//			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
+//			if (fetchGroups != null)
+//				pm.getFetchPlan().setGroups(fetchGroups);
+//
+//			Collection<Workstation> ret = Workstation.getWorkstations(pm);
+//			return pm.detachCopyAll(ret);
+//		}
+//		finally
+//		{
+//			pm.close();
+//		}
+//	}
 
 	/**
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type="Required"
-	 **/
+	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
+	 */
+	@SuppressWarnings("unchecked")
 	public Set<WorkstationID> getWorkstationIDs()
 	{
 		PersistenceManager pm = getPersistenceManager();
