@@ -88,6 +88,13 @@ public abstract class OrganisationManagerHelperBean
 				logger.debug("Creating JDO object LocalServer...");
 			Server server = localServerCf.createServer(pm);
 			LocalServer localServer = new LocalServer(server);
+			if (logger.isDebugEnabled()) {
+				logger.debug("Persisting LocalServer: ");
+				logger.debug("  serverID                 = " + localServer.getServerID());
+				logger.debug("  server.serverName        = " + localServer.getServer().getServerName());
+				logger.debug("  server.j2eeServerType    = " + localServer.getServer().getJ2eeServerType());
+				logger.debug("  server.initialContextURL = " + localServer.getServer().getInitialContextURL());
+			}
 			localServer = pm.makePersistent(localServer);
 			if(logger.isDebugEnabled())
 				logger.debug("pm.makePersistent(localServer) done.");
