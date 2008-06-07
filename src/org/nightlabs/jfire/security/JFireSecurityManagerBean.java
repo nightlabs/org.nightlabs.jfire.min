@@ -137,7 +137,7 @@ implements SessionBean
 	 * @param maxFetchDepth The maximum fetch-depth to use when detaching.
 	 *
 	 * @ejb.interface-method
-	 * @ejb.permission role-name="org.nightlabs.jfire.security.JFireSecurityManager#accessRightManagement"
+	 * @ejb.permission role-name="org.nightlabs.jfire.security.accessRightManagement"
 	 * @ejb.transaction type="Required"
 	 */
 	public UserSecurityGroup storeUserSecurityGroup(UserSecurityGroup userSecurityGroup, boolean get, String[] fetchGroups, int maxFetchDepth)
@@ -187,7 +187,7 @@ implements SessionBean
 	 * @param maxFetchDepth The maximum fetch-depth to use when detaching.
 	 *
 	 * @ejb.interface-method
-	 * @ejb.permission role-name="org.nightlabs.jfire.security.JFireSecurityManager#accessRightManagement"
+	 * @ejb.permission role-name="org.nightlabs.jfire.security.accessRightManagement"
 	 * @ejb.transaction type="Required"
 	 */
 	public User storeUser(User user, String newPassword, boolean get, String[] fetchGroups, int maxFetchDepth)
@@ -284,7 +284,7 @@ implements SessionBean
 	 * @return the unique IDs of those users that match the given criteria.
 	 *
 	 * @ejb.interface-method
-	 * @ejb.permission role-name="org.nightlabs.jfire.security.JFireSecurityManager#accessRightManagement, TestTestTest"
+	 * @ejb.permission role-name="org.nightlabs.jfire.security.accessRightManagement, org.nightlabs.jfire.security.queryUsers"
 	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 */
 	@SuppressWarnings("unchecked")
@@ -335,13 +335,23 @@ implements SessionBean
 
 	/**
 	 * Returns a Collection of {@link User}s corresponding to the given set of {@link UserID}s.
+	 * <p>
+	 * This method can be called by every logged-in user, because (1) it is not possible to retrieve
+	 * access right information (i.e the {@link UserLocal} instance) this way if the
+	 * {@link RoleConstants#accessRightManagement} role is not present, (2) it is necessary to
+	 * know the user-id before hand (and querying is only allowed with
+	 * the {@link RoleConstants#queryUsers} role) and (3) it is necessary and possible to
+	 * obtain {@link User} instances indirectly anyway (e.g. because it's the contact person
+	 * attached to an invoice).
+	 * </p>
+	 *
 	 * @param userIDs the {@link UserID}s for which to retrieve the {@link User}s
 	 * @param fetchGroups the FetchGroups for the detached Users
 	 * @param maxFetchDepth the maximum fetch depth of the detached Users.
 	 * @return a Collection of {@link User}s corresponding to the given set of {@link UserID}s.
 	 *
 	 * @ejb.interface-method
-	 * @ejb.permission role-name="org.nightlabs.jfire.security.JFireSecurityManager#accessRightManagement"
+	 * @ejb.permission role-name="_Guest_"
 	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 */
 	public List<User> getUsers(Collection<UserID> userIDs, String[] fetchGroups, int maxFetchDepth)
@@ -356,7 +366,7 @@ implements SessionBean
 
 	/**
 	 * @ejb.interface-method
-	 * @ejb.permission role-name="org.nightlabs.jfire.security.JFireSecurityManager#accessRightManagement"
+	 * @ejb.permission role-name="org.nightlabs.jfire.security.accessRightManagement"
 	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 */
 	@SuppressWarnings("unchecked")
@@ -376,7 +386,7 @@ implements SessionBean
 	 * Returns a Collection of {@link User}s corresponding to the given set of {@link UserID}s.
 	 *
 	 * @ejb.interface-method
-	 * @ejb.permission role-name="org.nightlabs.jfire.security.JFireSecurityManager#accessRightManagement"
+	 * @ejb.permission role-name="org.nightlabs.jfire.security.accessRightManagement"
 	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 */
 	public List<UserSecurityGroup> getUserSecurityGroups(Collection<UserSecurityGroupID> userSecurityGroupIDs, String[] fetchGroups, int maxFetchDepth)
@@ -549,7 +559,7 @@ implements SessionBean
 		PersistenceManager pm = getPersistenceManager();
 		try {
 			Authority authority = (Authority) pm.getObjectById(authorityID);
-			Authority.resolveSecuringAuthority(pm, authority).assertContainsRoleRef(getPrincipal(), RoleConstants.securityManager_getRoleGroupIDSetCarrier);
+			Authority.resolveSecuringAuthority(pm, authority).assertContainsRoleRef(getPrincipal(), RoleConstants.getRoleGroupIDSetCarrier);
 
 			List<RoleGroupIDSetCarrier> result = new ArrayList<RoleGroupIDSetCarrier>(authorizedObjectIDs.size());
 			for (AuthorizedObjectID authorizedObjectID : authorizedObjectIDs) {
@@ -593,7 +603,7 @@ implements SessionBean
 
 			Authority authority = (Authority) pm.getObjectById(authorityID);
 
-			boolean allowed = Authority.resolveSecuringAuthority(pm, authority).containsRoleRef(getPrincipal(), RoleConstants.securityManager_getRoleGroupIDSetCarrier);
+			boolean allowed = Authority.resolveSecuringAuthority(pm, authority).containsRoleRef(getPrincipal(), RoleConstants.getRoleGroupIDSetCarrier);
 
 			// Not allowed means that the authority which controls the access rights for the given authority
 			// (which might be the global authority) does not grant the user the necessary right. In this
@@ -615,7 +625,7 @@ implements SessionBean
 			}
 
 			if (!allowed)
-				throw new MissingRoleException(pm, UserID.create(getPrincipal()), authorityID, RoleConstants.securityManager_getRoleGroupIDSetCarrier, " Additionally, he does not ask about himself (which is allowed even without these rights).");
+				throw new MissingRoleException(pm, UserID.create(getPrincipal()), authorityID, RoleConstants.getRoleGroupIDSetCarrier, " Additionally, he does not ask about himself (which is allowed even without these rights).");
 
 			return getRoleGroupIDSetCarrier(pm, authorizedObject, authority);
 		} finally {
@@ -627,7 +637,7 @@ implements SessionBean
 	 * @param authorityID identifier of the {@link Authority} for which to query the access rights configuration
 	 *
 	 * @ejb.interface-method
-	 * @ejb.permission role-name="org.nightlabs.jfire.security.JFireSecurityManager#accessRightManagement"
+	 * @ejb.permission role-name="org.nightlabs.jfire.security.accessRightManagement"
 	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 **/
 	@SuppressWarnings("unchecked")
@@ -641,7 +651,7 @@ implements SessionBean
 		try {
 			Authority authority = (Authority) pm.getObjectById(authorityID);
 
-			Authority.resolveSecuringAuthority(pm, authority).assertContainsRoleRef(getPrincipal(), RoleConstants.securityManager_getRoleGroupIDSetCarrier);
+			Authority.resolveSecuringAuthority(pm, authority).assertContainsRoleRef(getPrincipal(), RoleConstants.getRoleGroupIDSetCarrier);
 
 			Query q = pm.newQuery(UserLocal.class);
 			q.setFilter("this.organisationID == :organisationID");
@@ -669,13 +679,11 @@ implements SessionBean
 
 	/**
 	 * @ejb.interface-method
-	 * @ejb.permission role-name="org.nightlabs.jfire.security.JFireSecurityManager#accessRightManagement"
+	 * @ejb.permission role-name="org.nightlabs.jfire.security.accessRightManagement"
 	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 */
 	public Collection<RoleGroup> getRoleGroups(Collection<RoleGroupID> roleGroupIDs, String[] fetchGroups, int maxFetchDepth)
 	{
-		// TODO we need to ensure the fetchGroups do not provide too much data, if the user is not allowed to see it!
-
 		PersistenceManager pm = getPersistenceManager();
 		try {
 			return NLJDOHelper.getDetachedObjectList(pm, roleGroupIDs, RoleGroup.class, fetchGroups, maxFetchDepth);
@@ -711,7 +719,7 @@ implements SessionBean
 
 	/**
 	 * @ejb.interface-method
-	 * @ejb.permission role-name="org.nightlabs.jfire.security.JFireSecurityManager#accessRightManagement"
+	 * @ejb.permission role-name="org.nightlabs.jfire.security.accessRightManagement"
 	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 */
 	public List<Authority> getAuthorities(Collection<AuthorityID> authorityIDs, String[] fetchGroups, int maxFetchDepth)
@@ -768,7 +776,7 @@ implements SessionBean
 	 * Check if a user ID exists. This method is used to check the ID while creating a new user.
 	 *
 	 * @ejb.interface-method
-	 * @ejb.permission role-name="org.nightlabs.jfire.security.JFireSecurityManager#accessRightManagement"
+	 * @ejb.permission role-name="org.nightlabs.jfire.security.accessRightManagement"
 	 */
 	public boolean userIDAlreadyRegistered(UserID userID)
 	{
@@ -792,7 +800,7 @@ implements SessionBean
 
 	/**
 	 * @ejb.interface-method
-	 * @ejb.permission role-name="org.nightlabs.jfire.security.JFireSecurityManager#accessRightManagement"
+	 * @ejb.permission role-name="org.nightlabs.jfire.security.accessRightManagement"
 	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 */
 	public Set<AuthorizedObjectID> getAuthorizedObjectIDs()
@@ -828,7 +836,7 @@ implements SessionBean
 
 	/**
 	 * @ejb.interface-method
-	 * @ejb.permission role-name="org.nightlabs.jfire.security.JFireSecurityManager#accessRightManagement"
+	 * @ejb.permission role-name="org.nightlabs.jfire.security.accessRightManagement"
 	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 */
 	public List<AuthorizedObject> getAuthorizedObjects(Collection<AuthorizedObjectID> authorizedObjectIDs, String[] fetchGroups, int maxFetchDepth)
@@ -841,32 +849,32 @@ implements SessionBean
 		}
 	}
 
-	/**
-	 * Returns a detached user.
-	 *
-	 * @param userID id of the user
-	 * @return the detached user
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="org.nightlabs.jfire.security.JFireSecurityManager#accessRightManagement"
-	 */
-	public User getUser(UserID userID, String[] fetchGroups, int maxFetchDepth)
-	{
-		PersistenceManager pm = this.getPersistenceManager();
-		try {
-			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
-			if (fetchGroups != null)
-				pm.getFetchPlan().setGroups(fetchGroups);
-
-			pm.getExtent(User.class, true);
-			Object o = pm.getObjectById(userID,true);
-			User usr = (User)pm.detachCopy(o);
-
-			return usr;
-		} finally {
-			pm.close();
-		}
-	}
+//	/**
+//	 * Returns a detached user.
+//	 *
+//	 * @param userID id of the user
+//	 * @return the detached user
+//	 *
+//	 * @ejb.interface-method
+//	 * @ejb.permission role-name="org.nightlabs.jfire.security.accessRightManagement"
+//	 */
+//	public User getUser(UserID userID, String[] fetchGroups, int maxFetchDepth)
+//	{
+//		PersistenceManager pm = this.getPersistenceManager();
+//		try {
+//			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
+//			if (fetchGroups != null)
+//				pm.getFetchPlan().setGroups(fetchGroups);
+//
+//			pm.getExtent(User.class, true);
+//			Object o = pm.getObjectById(userID,true);
+//			User usr = (User)pm.detachCopy(o);
+//
+//			return usr;
+//		} finally {
+//			pm.close();
+//		}
+//	}
 
 	/**
 	 * Set which {@link RoleGroup}s are assigned to a certain {@link User} within the scope of a certain {@link Authority}.
@@ -884,7 +892,7 @@ implements SessionBean
 	 *		If this is not <code>null</code>, a <code>AuthorizedObjectRef</code> is created (if not yet existing).
 	 *
 	 * @ejb.interface-method
-	 * @ejb.permission role-name="org.nightlabs.jfire.security.JFireSecurityManager#accessRightManagement"
+	 * @ejb.permission role-name="org.nightlabs.jfire.security.accessRightManagement"
 	 */
 	public void setGrantedRoleGroups(AuthorizedObjectID authorizedObjectID, AuthorityID authorityID, Set<RoleGroupID> roleGroupIDs)
 	{
@@ -916,7 +924,7 @@ implements SessionBean
 
 			// authorize
 			Authority.resolveSecuringAuthority(pm, authority).assertContainsRoleRef(
-					getPrincipal(), RoleConstants.securityManager_setGrantedRoleGroups
+					getPrincipal(), RoleConstants.setGrantedRoleGroups
 			);
 
 			if (roleGroupIDs == null) {
@@ -995,7 +1003,7 @@ implements SessionBean
 	 * @see #setMembersOfUserSecurityGroup(UserSecurityGroupID, Set)
 	 *
 	 * @ejb.interface-method
-	 * @ejb.permission role-name="org.nightlabs.jfire.security.JFireSecurityManager#setUsersOfUserGroup"
+	 * @ejb.permission role-name="org.nightlabs.jfire.security.setMembersOfUserSecurityGroup"
 	 */
 	public void setUserSecurityGroupsOfMember(Set<UserSecurityGroupID> userSecurityGroupIDs, AuthorizedObjectID memberAuthorizedObjectID)
 	{
@@ -1046,7 +1054,7 @@ implements SessionBean
 	 * @see #setUserSecurityGroupsOfMember(Set, AuthorizedObjectID)
 	 *
 	 * @ejb.interface-method
-	 * @ejb.permission role-name="org.nightlabs.jfire.security.JFireSecurityManager#setUsersOfUserGroup"
+	 * @ejb.permission role-name="org.nightlabs.jfire.security.setMembersOfUserSecurityGroup"
 	 */
 	public void setMembersOfUserSecurityGroup(UserSecurityGroupID userSecurityGroupID, Set<? extends AuthorizedObjectID> memberAuthorizedObjectIDs)
 	{
@@ -1226,9 +1234,8 @@ implements SessionBean
 
 
 	/**
-	 *
 	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
+	 * @ejb.permission role-name="org.nightlabs.jfire.security.accessRightManagement, org.nightlabs.jfire.security.queryUsers"
 	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 */
 	@SuppressWarnings("unchecked")
@@ -1289,7 +1296,7 @@ implements SessionBean
 
 	/**
 	 * @ejb.interface-method
-	 * @ejb.permission role-name="org.nightlabs.jfire.security.JFireSecurityManager#accessRightManagement"
+	 * @ejb.permission role-name="org.nightlabs.jfire.security.accessRightManagement"
 	 * @ejb.transaction type="Required"
 	 */
 	public Authority storeAuthority(Authority authority, boolean get, String[] fetchGroups, int maxFetchDepth) {
@@ -1300,7 +1307,7 @@ implements SessionBean
 			
 			// authorize
 			Authority.resolveSecuringAuthority(pm, authority).assertContainsRoleRef(
-					getPrincipal(), RoleConstants.securityManager_storeAuthority
+					getPrincipal(), RoleConstants.storeAuthority
 			);
 
 			Authority result = NLJDOHelper.storeJDO(pm, authority, get, fetchGroups, maxFetchDepth);
@@ -1320,7 +1327,7 @@ implements SessionBean
 	 * @param inherited set whether the field is inherited or not.
 	 *
 	 * @ejb.interface-method
-	 * @ejb.permission role-name="org.nightlabs.jfire.security.JFireSecurityManager#accessRightManagement"
+	 * @ejb.permission role-name="org.nightlabs.jfire.security.accessRightManagement"
 	 * @ejb.transaction type="Required"
 	 */
 	public void assignSecuringAuthority(Object securedObjectID, AuthorityID authorityID, boolean inherited)
@@ -1349,12 +1356,12 @@ implements SessionBean
 			if (securingAuthorityType.getSecuringAuthorityID() != null) {
 				Authority securingAuthority = (Authority) pm.getObjectById(securingAuthorityType.getSecuringAuthorityID());
 				securingAuthority.assertContainsRoleRef(
-						getPrincipal(), RoleConstants.securityManager_assignAuthority
+						getPrincipal(), RoleConstants.assignAuthority
 				);
 			}
 			else {
 				Authority.getOrganisationAuthority(pm).assertContainsRoleRef(
-						getPrincipal(), RoleConstants.securityManager_assignAuthority
+						getPrincipal(), RoleConstants.assignAuthority
 				);
 			}
 

@@ -4,26 +4,37 @@
 		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 		xsi:schemaLocation="urn:jfire.org:jfire-security_1_0 https://www.jfire.org/schema/jfire-security_1_0.xsd "
 >
-	<role-group id="org.nightlabs.jfire.security.JFireSecurityManager#accessRightManagement">
+	<role-group id="org.nightlabs.jfire.security.accessRightManagement">
 		<name>Access right management</name>
 		<name language="de">Zugriffsrechteverwaltung</name>
-		<description>This right entitles the user to generally have access to the right management at all.
-			Without this right, a user cannot edit any right anywhere - not even locally within an authority
-			where he is granted the required rights. Note, that this right does not yet allow the user to actually
-			edit anything. In order to edit access rights somewhere, it still needs the appropriate rights. This
-			right can be seen as a global first door, through which a user has to go in order to get to other doors
-			(of the local authorities).</description>
-		<description language="de">Dieses Recht berechtigt den Benutzer zur Rechteverwaltung im allgemeinen. Ohne
-			dieses Recht darf ein Benutzer keinerlei Rechte editieren - nicht einmal in einer Vollmacht, innerhalb
-			der ihm die Rechteverwaltung erlaubt ist. Dieses Recht gibt dem Benutzer direkt jedoch noch keine Befugnis.
-			Er benötigt zusätzlich noch die entsprechenden Rechte. Dieses Recht markiert daher sozusagen eine globale
-			erste Tür, durch die der Benutzer gehen muß, um überhaupt erst in den Bereich anderer Türen (der lokalen
-			Vollmachten) zu gelangen.</description>
+		<description>
+			This right entitles the user to generally have access to the
+			right management at all. Without this right, a user cannot
+			edit any right anywhere - not even locally within an
+			authority where he is granted the required rights. Note,
+			that this right does not yet allow the user to actually edit
+			anything. In order to edit access rights somewhere, it still
+			needs the appropriate rights. This right can be seen as a
+			global first door, through which a user has to go in order
+			to get to other doors (of the local authorities).
+		</description>
+		<description language="de">
+			Dieses Recht berechtigt den Benutzer zur Rechteverwaltung im
+			allgemeinen. Ohne dieses Recht darf ein Benutzer keinerlei
+			Rechte editieren - nicht einmal in einer Vollmacht,
+			innerhalb der ihm die Rechteverwaltung erlaubt ist. Dieses
+			Recht gibt dem Benutzer direkt jedoch noch keine Befugnis.
+			Er benötigt zusätzlich noch die entsprechenden Rechte.
+			Dieses Recht markiert daher sozusagen eine globale erste
+			Tür, durch die der Benutzer gehen muß, um überhaupt erst in
+			den Bereich anderer Türen (der lokalen Vollmachten) zu
+			gelangen.
+		</description>
 
-		<role id="org.nightlabs.jfire.security.JFireSecurityManager#accessRightManagement" />
+		<role id="org.nightlabs.jfire.security.accessRightManagement" />
 	</role-group>
 
-	<role-group id="org.nightlabs.jfire.security.JFireSecurityManager#editAuthority">
+	<role-group id="org.nightlabs.jfire.security.editAuthority">
 		<name>Edit authority</name>
 		<name language="de">Vollmacht bearbeiten</name>
 		<description>
@@ -37,7 +48,7 @@
 			wie die Zuteilung und Entziehung von Rechten.
 		</description>
 
-		<role id="org.nightlabs.jfire.security.JFireSecurityManager#assignAuthority">
+		<role id="org.nightlabs.jfire.security.assignAuthority">
 			<name>Assign Authority to SecuredObject.</name>
 			<description>
 				In order to assign an Authority to a SecuredObject, the
@@ -46,33 +57,93 @@
 				the current user.
 			</description>
 		</role>
-		<role id="org.nightlabs.jfire.security.JFireSecurityManager#storeAuthority" />
-		<role id="org.nightlabs.jfire.security.JFireSecurityManager#setGrantedRoleGroups" />
-		<role id="org.nightlabs.jfire.security.JFireSecurityManager#getRoleGroupIDSetCarrier">
+		<role id="org.nightlabs.jfire.security.storeAuthority" />
+		<role id="org.nightlabs.jfire.security.setGrantedRoleGroups" />
+		<role id="org.nightlabs.jfire.security.getRoleGroupIDSetCarrier">
 			<name>get RoleGroupIDSetCarrier</name>
 			<name language="de">RoleGroupIDSetCarrier holen</name>
 			<description>
-				This role allows getting a rolegroup configuration
+				This role allows getting a rolegroup configuration.
 			</description>
 			<description language="de">
 				Diese Rolle erlaubt das Lesen einer
-				Rollengruppen-Konfiguration
+				Rollengruppen-Konfiguration.
 			</description>
 		</role>
 	</role-group>
 
+	<role-group id="org.nightlabs.jfire.security.setMembersOfUserSecurityGroup">
+		<name>Add/remove members to/from user security groups.</name>
+		<name language="de">
+			Hinzufügen/entfernen von Mitgliedern einer
+			Benutzersicherheitsgruppe
+		</name>
+		<description>
+			This right entitles to add users to a user security group or
+			to remove them from such a group.
+		</description>
+		<description language="de">
+			Dieses Recht erlaubt es, Benutzer zu einer
+			Benutzersicherheitsgruppe hinzuzufügen bzw. aus einer
+			solchen Gruppe zu entfernen.
+		</description>
+		<role id="org.nightlabs.jfire.security.setMembersOfUserSecurityGroup" />
+	</role-group>
+
+	<role-group id="org.nightlabs.jfire.security.queryUsers">
+		<name>Query users</name>
+		<name language="de">Benutzer abfragen</name>
+		<description>
+			Allows to obtain a user list. Note, that it is possible to
+			get user information indirectly (e.g. via an invoice with a
+			user attached), too, even without having this right. The
+			difference is that with this right a user can obtain the
+			information for all users of an organisation, while without
+			it, only the information for some users with which the
+			person has to deal in a certain context is accessible.
+		</description>
+		<description language="de">
+			Erlaubt die Abfrage einer Benutzerliste. Beachten Sie, daß
+			es möglich ist, auch auf anderem Wege indirekt an die Daten
+			eines Benutzers zu gelangen (z.B. durch eine Rechnung, an
+			die ein Ansprechpartner gebunden ist) - selbst wenn man
+			dieses Recht nicht besitzt. Der Unterschied ist, daß ein
+			Benutzer, der dieses Recht besitzt, sämtliche Benutzer einer
+			Organisation abfragen kann, während er ohne dieses Recht nur
+			Daten einzelner Benutzer erhält, mit denen er in einem
+			bestimmten Kontext zu tun hat.
+		</description>
+		<role id="org.nightlabs.jfire.security.queryUsers" />
+	</role-group>
+
 	<authority-type id="org.nightlabs.jfire.security.AuthorityType#organisation">
-		<name></name>
-		<description></description>
+		<name>Organisation</name>
+		<description>
+			Authorities of this type are used to control the access
+			rights to the organisation as a whole.
+		</description>
+		<description language="de">
+			Vollmachten dieses Typs werden verwendet, um den Zugriff auf
+			die Organisation im ganzen zu kontrollieren.
+		</description>
 		<!--
 			This special AuthorityType automatically has all role groups in the system. No need to configure role-groups here.
+			It would be overridden anyway.
 		-->
 	</authority-type>
 
 	<authority-type id="org.nightlabs.jfire.security.AuthorityType#self">
-		<name></name>
-		<description></description>
-		<role-group id="org.nightlabs.jfire.security.JFireSecurityManager#editAuthority" />
+		<name>Authority</name>
+		<description>
+			Authorities of this type are used to control the access
+			rights for other authorities (or themselves).
+		</description>
+		<name language="de">Vollmacht</name>
+		<description language="de">
+			Vollmachten dieses Typs werden verwendet um den Zugriff auf
+			andere Vollmachten (oder sie selbst) zu kontrollieren.
+		</description>
+		<role-group id="org.nightlabs.jfire.security.editAuthority" />
 	</authority-type>
 
 </jfire-security>

@@ -14,12 +14,11 @@ import org.apache.log4j.Logger;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.security.Authority;
 import org.nightlabs.jfire.security.AuthorityType;
+import org.nightlabs.jfire.security.AuthorizedObjectRef;
 import org.nightlabs.jfire.security.RoleGroup;
-import org.nightlabs.jfire.security.RoleGroupConstants;
 import org.nightlabs.jfire.security.RoleGroupRef;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.security.UserLocal;
-import org.nightlabs.jfire.security.AuthorizedObjectRef;
 import org.nightlabs.jfire.security.id.AuthorityID;
 import org.nightlabs.jfire.security.id.UserLocalID;
 import org.nightlabs.jfire.server.LocalServer;
@@ -129,13 +128,8 @@ public abstract class OrganisationManagerHelperBean
 			if(logger.isDebugEnabled())
 				logger.debug("Creating JDO object AuthorityType with ID \""+AuthorityType.AUTHORITY_TYPE_ID_SELF+"\"...");
 			AuthorityType authorityType = new AuthorityType(AuthorityType.AUTHORITY_TYPE_ID_SELF);
-
-			authorityType.getName().setText(Locale.ENGLISH.getLanguage(), "Authority");
-			authorityType.getDescription().setText(Locale.ENGLISH.getLanguage(), "Authorities of this type are used to control the access rights for other authorities (or themselves).");
-
-			authorityType.getName().setText(Locale.GERMAN.getLanguage(), "Vollmacht");
-			authorityType.getDescription().setText(Locale.GERMAN.getLanguage(), "Vollmachten dieses Typs werden verwendet um den Zugriff auf andere Vollmachten (oder sie selbst) zu kontrollieren.");
-
+			// All properties of this authority-type are now configured in the jfire-security.xml - we create it here, though, because
+			// this way it's guaranteed to exist and consistent with how we handle the AuthorityType.AUTHORITY_TYPE_ID_ORGANISATION.
 			authorityType = pm.makePersistent(authorityType);
 			if(logger.isDebugEnabled())
 				logger.debug("pm.makePersistent(authorityType) done.");
@@ -145,13 +139,8 @@ public abstract class OrganisationManagerHelperBean
 			if(logger.isDebugEnabled())
 				logger.debug("Creating JDO object AuthorityType with ID \""+AuthorityType.AUTHORITY_TYPE_ID_ORGANISATION+"\"...");
 			authorityType = new AuthorityType(AuthorityType.AUTHORITY_TYPE_ID_ORGANISATION);
-
-			authorityType.getName().setText(Locale.ENGLISH.getLanguage(), "Organisation");
-			authorityType.getDescription().setText(Locale.ENGLISH.getLanguage(), "Authorities of this type are used to control the access rights to the organisation as a whole.");
-
-			authorityType.getName().setText(Locale.GERMAN.getLanguage(), "Organisation");
-			authorityType.getDescription().setText(Locale.GERMAN.getLanguage(), "Vollmachten dieses Typs werden verwendet, um den Zugriff auf die Organisation im ganzen zu kontrollieren.");
-
+			// All properties of this authority-type are now configured in the jfire-security.xml - we create it here, though, because
+			// this way it's guaranteed to exist and we need it to create the special Authority _Organisation_ below.
 			authorityType = pm.makePersistent(authorityType);
 			if(logger.isDebugEnabled())
 				logger.debug("pm.makePersistent(authorityType) done.");
@@ -163,7 +152,7 @@ public abstract class OrganisationManagerHelperBean
 			Authority authority = new Authority(organisationID, Authority.AUTHORITY_ID_ORGANISATION, authorityType);
 
 			authority.getName().setText(Locale.ENGLISH.getLanguage(), "Organisation");
-			authority.getDescription().setText(Locale.ENGLISH.getLanguage(), "This authority controls the the access rights to the organisation as a whole.");
+			authority.getDescription().setText(Locale.ENGLISH.getLanguage(), "This authority controls the access rights to the organisation as a whole.");
 
 			authority.getName().setText(Locale.GERMAN.getLanguage(), "Organisation");
 			authority.getDescription().setText(Locale.GERMAN.getLanguage(), "Diese Vollmacht kontrolliert den Zugriff auf die Organisation im ganzen.");
@@ -190,13 +179,10 @@ public abstract class OrganisationManagerHelperBean
 			// import all roles
 			if(logger.isDebugEnabled())
 				logger.debug("Importing all roles and role groups...");
-//			RoleImportSet roleImportSet = roleImport_prepare(organisationID);
 			RoleImportSet roleImportSet = jfsm.roleImport_prepare(organisationID);
-//			roleImport_commit(roleImportSet, pm);
 			jfsm.roleImport_commit(roleImportSet);
 			if(logger.isDebugEnabled())
 				logger.debug("Import of roles and role groups done.");
-
 		} finally {
 			jfsm.close();
 		}
@@ -216,16 +202,14 @@ public abstract class OrganisationManagerHelperBean
 		String organisationID = getOrganisationID();
 		PersistenceManager pm = getPersistenceManager();
 		try {
-			if(logger.isDebugEnabled())
-				logger.debug("Loading previously created AuthorityType (" + AuthorityType.AUTHORITY_TYPE_ID_SELF + ") from datastore and assigning role-groups...");
-
-			AuthorityType authorityType = (AuthorityType) pm.getObjectById(AuthorityType.AUTHORITY_TYPE_ID_SELF);
-			authorityType.addRoleGroup((RoleGroup) pm.getObjectById(RoleGroupConstants.securityManager_editAuthority));
-
-			if(logger.isDebugEnabled())
-				logger.debug("Loading previously created AuthorityType (" + AuthorityType.AUTHORITY_TYPE_ID_SELF + ") from datastore and assigning role-groups done.");
-
-			
+//			if(logger.isDebugEnabled())
+//				logger.debug("Loading previously created AuthorityType (" + AuthorityType.AUTHORITY_TYPE_ID_SELF + ") from datastore and assigning role-groups...");
+//
+//			AuthorityType authorityType = (AuthorityType) pm.getObjectById(AuthorityType.AUTHORITY_TYPE_ID_SELF);
+//			authorityType.addRoleGroup((RoleGroup) pm.getObjectById(RoleGroupConstants.securityManager_editAuthority));
+//
+//			if(logger.isDebugEnabled())
+//				logger.debug("Loading previously created AuthorityType (" + AuthorityType.AUTHORITY_TYPE_ID_SELF + ") from datastore and assigning role-groups done.");
 
 
 			if(logger.isDebugEnabled())
