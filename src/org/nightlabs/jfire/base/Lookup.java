@@ -123,7 +123,7 @@ public class Lookup
 	/**
 	 * @return the pmfactory for the organisationID of the working user.
 	 */
-	public PersistenceManagerFactory getPersistenceManagerFactory()
+	protected PersistenceManagerFactory getPersistenceManagerFactory()
 	{
 		return getPersistenceManagerFactory(organisationID);
 	}
