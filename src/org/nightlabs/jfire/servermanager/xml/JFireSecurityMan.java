@@ -151,14 +151,14 @@ public class JFireSecurityMan implements Serializable
 			if ("name".equals(n.getLocalName())) {
 				role.setName(
 						NLDOMUtil.getAttributeValue(n, "language"),
-						NLDOMUtil.getTextContent(node)
+						NLDOMUtil.getTextContent(n, true)
 				);
 			}
 
 			if ("description".equals(n.getLocalName())) {
 				role.setDescription(
 						NLDOMUtil.getAttributeValue(n, "language"),
-						NLDOMUtil.getTextContent(node)
+						NLDOMUtil.getTextContent(n, true)
 				);
 			}
 		}
@@ -186,14 +186,14 @@ public class JFireSecurityMan implements Serializable
 			if ("name".equals(n.getLocalName())) {
 				roleGroup.setName(
 						NLDOMUtil.getAttributeValue(n, "language"),
-						NLDOMUtil.getTextContent(node)
+						NLDOMUtil.getTextContent(n, true)
 				);
 			}
 
 			if ("description".equals(n.getLocalName())) {
 				roleGroup.setDescription(
 						NLDOMUtil.getAttributeValue(n, "language"),
-						NLDOMUtil.getTextContent(node)
+						NLDOMUtil.getTextContent(n, true)
 				);
 			}
 
@@ -233,14 +233,14 @@ public class JFireSecurityMan implements Serializable
 			if ("name".equals(n.getLocalName())) {
 				authorityTypeDef.setName(
 						NLDOMUtil.getAttributeValue(n, "language"),
-						NLDOMUtil.getTextContent(node)
+						NLDOMUtil.getTextContent(n, true)
 				);
 			}
 
 			if ("description".equals(n.getLocalName())) {
 				authorityTypeDef.setDescription(
 						NLDOMUtil.getAttributeValue(n, "language"),
-						NLDOMUtil.getTextContent(node)
+						NLDOMUtil.getTextContent(n, true)
 				);
 			}
 
