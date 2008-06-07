@@ -211,6 +211,8 @@ public class Lookup
 		if (logger.isDebugEnabled())
 			logger.debug("getPersistenceManager: " + pm);
 
+		NLJDOHelper.setThreadPersistenceManager(pm);
+
 		return pm;
 	}
 
