@@ -33,7 +33,6 @@ import java.util.Hashtable;
 import javax.ejb.EJBException;
 import javax.ejb.SessionContext;
 import javax.jdo.PersistenceManager;
-import javax.jdo.PersistenceManagerFactory;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
@@ -89,11 +88,11 @@ public class BaseSessionBeanImpl
 	{
 		return getPrincipal().getLookup();
 	}
-	
-	protected PersistenceManagerFactory getPersistenceManagerFactory()
-	{
-		return getPrincipal().getLookup().getPersistenceManagerFactory();
-	}
+
+//	protected PersistenceManagerFactory getPersistenceManagerFactory()
+//	{
+//		return getPrincipal().getLookup().getPersistenceManagerFactory();
+//	}
 
 //	protected void cache_addDirtyObjectIDs(PersistenceManager persistenceManager, Collection objectIDs)
 //	throws ModuleException

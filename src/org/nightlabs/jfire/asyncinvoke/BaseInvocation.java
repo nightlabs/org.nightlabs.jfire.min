@@ -30,7 +30,6 @@ import java.io.Serializable;
 import java.util.Hashtable;
 
 import javax.jdo.PersistenceManager;
-import javax.jdo.PersistenceManagerFactory;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
@@ -77,10 +76,10 @@ implements Serializable
 		this.callerPrincipal = callerPrincipal;
 	}
 	
-	protected PersistenceManagerFactory getPersistenceManagerFactory()
-	{
-		return getPrincipal().getLookup().getPersistenceManagerFactory();
-	}
+//	protected PersistenceManagerFactory getPersistenceManagerFactory()
+//	{
+//		return getPrincipal().getLookup().getPersistenceManagerFactory();
+//	}
 
 	private transient PersistenceManager persistenceManager = null;
 
