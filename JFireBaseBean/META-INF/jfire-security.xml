@@ -115,6 +115,18 @@
 		</description>
 		<role id="org.nightlabs.jfire.security.queryUsers" />
 	</role-group>
+	
+	<role-group id="org.nightlabs.jfire.security.storeUser">
+		<name>Store a user</name>
+		<name language="de">Benutzer speichern</name>
+		<description>
+			Allows to write a user to the datastore - i.e. create or modify users.
+		</description>
+		<description language="de">
+			Erlaubt es, Benutzer in die Datenbank zu schreiben - also neue Benutzer anzulegen oder bestehende zu aendern.
+		</description>
+		<role id="org.nightlabs.jfire.security.storeUser" />
+	</role-group>
 
 	<authority-type id="org.nightlabs.jfire.security.AuthorityType#organisation">
 		<name>Organisation</name>

@@ -137,7 +137,7 @@ implements SessionBean
 	 * @param maxFetchDepth The maximum fetch-depth to use when detaching.
 	 *
 	 * @ejb.interface-method
-	 * @ejb.permission role-name="org.nightlabs.jfire.security.accessRightManagement"
+	 * @ejb.permission role-name="org.nightlabs.jfire.security.storeUser"
 	 * @ejb.transaction type="Required"
 	 */
 	public UserSecurityGroup storeUserSecurityGroup(UserSecurityGroup userSecurityGroup, boolean get, String[] fetchGroups, int maxFetchDepth)
@@ -187,7 +187,7 @@ implements SessionBean
 	 * @param maxFetchDepth The maximum fetch-depth to use when detaching.
 	 *
 	 * @ejb.interface-method
-	 * @ejb.permission role-name="org.nightlabs.jfire.security.accessRightManagement"
+	 * @ejb.permission role-name="org.nightlabs.jfire.security.storeUser"
 	 * @ejb.transaction type="Required"
 	 */
 	public User storeUser(User user, String newPassword, boolean get, String[] fetchGroups, int maxFetchDepth)
