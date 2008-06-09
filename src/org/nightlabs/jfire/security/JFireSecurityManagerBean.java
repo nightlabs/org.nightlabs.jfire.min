@@ -559,7 +559,11 @@ implements SessionBean
 		PersistenceManager pm = getPersistenceManager();
 		try {
 			Authority authority = (Authority) pm.getObjectById(authorityID);
-			Authority.resolveSecuringAuthority(pm, authority).assertContainsRoleRef(getPrincipal(), RoleConstants.getRoleGroupIDSetCarrier);
+			Authority.resolveSecuringAuthority(
+					pm,
+					authority,
+					ResolveSecuringAuthorityStrategy.organisation
+			).assertContainsRoleRef(getPrincipal(), RoleConstants.getRoleGroupIDSetCarrier);
 
 			List<RoleGroupIDSetCarrier> result = new ArrayList<RoleGroupIDSetCarrier>(authorizedObjectIDs.size());
 			for (AuthorizedObjectID authorizedObjectID : authorizedObjectIDs) {
@@ -603,7 +607,11 @@ implements SessionBean
 
 			Authority authority = (Authority) pm.getObjectById(authorityID);
 
-			boolean allowed = Authority.resolveSecuringAuthority(pm, authority).containsRoleRef(getPrincipal(), RoleConstants.getRoleGroupIDSetCarrier);
+			boolean allowed = Authority.resolveSecuringAuthority(
+					pm,
+					authority,
+					ResolveSecuringAuthorityStrategy.organisation
+			).containsRoleRef(getPrincipal(), RoleConstants.getRoleGroupIDSetCarrier);
 
 			// Not allowed means that the authority which controls the access rights for the given authority
 			// (which might be the global authority) does not grant the user the necessary right. In this
@@ -651,7 +659,11 @@ implements SessionBean
 		try {
 			Authority authority = (Authority) pm.getObjectById(authorityID);
 
-			Authority.resolveSecuringAuthority(pm, authority).assertContainsRoleRef(getPrincipal(), RoleConstants.getRoleGroupIDSetCarrier);
+			Authority.resolveSecuringAuthority(
+					pm,
+					authority,
+					ResolveSecuringAuthorityStrategy.organisation
+			).assertContainsRoleRef(getPrincipal(), RoleConstants.getRoleGroupIDSetCarrier);
 
 			Query q = pm.newQuery(UserLocal.class);
 			q.setFilter("this.organisationID == :organisationID");
@@ -923,7 +935,11 @@ implements SessionBean
 			}
 
 			// authorize
-			Authority.resolveSecuringAuthority(pm, authority).assertContainsRoleRef(
+			Authority.resolveSecuringAuthority(
+					pm,
+					authority,
+					ResolveSecuringAuthorityStrategy.organisation
+			).assertContainsRoleRef(
 					getPrincipal(), RoleConstants.setGrantedRoleGroups
 			);
 
@@ -1306,7 +1322,11 @@ implements SessionBean
 				assertConsistency(pm);
 			
 			// authorize
-			Authority.resolveSecuringAuthority(pm, authority).assertContainsRoleRef(
+			Authority.resolveSecuringAuthority(
+					pm,
+					authority,
+					ResolveSecuringAuthorityStrategy.organisation
+			).assertContainsRoleRef(
 					getPrincipal(), RoleConstants.storeAuthority
 			);
 
