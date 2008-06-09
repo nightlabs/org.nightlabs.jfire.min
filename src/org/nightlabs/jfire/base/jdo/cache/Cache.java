@@ -60,6 +60,7 @@ import org.nightlabs.jfire.jdo.notification.JDOLifecycleState;
 import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.notification.NotificationEvent;
 import org.nightlabs.util.CollectionUtil;
+import org.nightlabs.util.Util;
 
 /**
  * This cache was designed to hold JFire JDO objects on the client side
@@ -1123,6 +1124,10 @@ public class Cache
 
 	/**
 	 * This method calls {@link #get(String, Object, Set)} - look there for more details.
+	 * <p>
+	 * <b><u>Important:</u> Never modify an object that is managed by the cache!</b> Always copy it (using {@link Util#cloneSerializable(Object)})
+	 * and modify the clone!!!
+	 * </p>
 	 *
 	 * @param scope Either <code>null</code> (default) or a <code>String</code> to separate
 	 *		a special namespace in the cache. This is necessary, if the method with which
@@ -1149,6 +1154,10 @@ public class Cache
 	 * If <code>scope == null</code>, this method searches for an object that has
 	 * been retrieved with <b>at least</b> the required <code>fetchGroups</code> and <b>at least</b>
 	 * the required <code>maxFetchDepth</code>, in case no exact match can be found.
+	 * </p>
+	 * <p>
+	 * <b><u>Important:</u> Never modify an object that is managed by the cache!</b> Always copy it (using {@link Util#cloneSerializable(Object)})
+	 * and modify the clone!!!
 	 * </p>
 	 *
 	 * @param scope Either <code>null</code> (default) or a <code>String</code> to separate
@@ -1253,10 +1262,52 @@ public class Cache
 		return object;
 	}
 
+	/**
+	 * This method puts JDO objects into the cache. Therefore, it
+	 * obtains the JDO objectIDs and uses them as keys.
+	 * <p>
+	 * <b><u>Important:</u> Never modify an object that is managed by the cache!</b> That means,
+	 * after you put an object into the cache, copy it (using {@link Util#cloneSerializable(Object)})
+	 * and modify the clone!!! Alternatively, you can put a clone into the cache, of course.
+	 * </p>
+	 * 
+	 * @param scope Either <code>null</code> to indicate that the object has been fetched normally using
+	 *		the fetchGroups or a String specifying a customized fetch-method. This can e.g. be the case
+	 *		if the object has been detached using the detach-on-close feature. If you cache a non-jdo-object,
+	 *		you should specify <code>scope</code> and pass <code>fetchGroups = null</code>.
+	 * @param objects the objects to be cached. The cache will recursively scan it and register server-sided
+	 *		change-listeners for all found objectIDs. If one of the objects in the graph gets changed, the
+	 *		cache will forget this main-object.
+	 * @param fetchGroups Either <code>null</code> or the fetchGroups with which the object has been retrieved.
+	 *		If you cache a non-jdo-object, you should pass <code>null</code> here and use <code>scope</code>.
+	 * @param maxFetchDepth the maximum fetch-depth that was passed to JDO when detaching the object or -1, if
+	 *		the object was obtained in a "special" way indicated by <code>scope</code>.
+	 */
 	public void putAll(String scope, Collection<?> objects, String[] fetchGroups, int maxFetchDepth)
 	{
 		_putAll(scope, objects, CollectionUtil.array2HashSet(fetchGroups), maxFetchDepth);
 	}
+	/**
+	 * This method puts JDO objects into the cache. Therefore, it
+	 * obtains the JDO objectIDs and uses them as keys.
+	 * <p>
+	 * <b><u>Important:</u> Never modify an object that is managed by the cache!</b> That means,
+	 * after you put an object into the cache, copy it (using {@link Util#cloneSerializable(Object)})
+	 * and modify the clone!!! Alternatively, you can put a clone into the cache, of course.
+	 * </p>
+	 * 
+	 * @param scope Either <code>null</code> to indicate that the object has been fetched normally using
+	 *		the fetchGroups or a String specifying a customized fetch-method. This can e.g. be the case
+	 *		if the object has been detached using the detach-on-close feature. If you cache a non-jdo-object,
+	 *		you should specify <code>scope</code> and pass <code>fetchGroups = null</code>.
+	 * @param objects the objects to be cached. The cache will recursively scan it and register server-sided
+	 *		change-listeners for all found objectIDs. If one of the objects in the graph gets changed, the
+	 *		cache will forget this main-object.
+	 * @param fetchGroups Either <code>null</code> or the fetchGroups with which the object has been retrieved.
+	 *		If you cache a non-jdo-object, you should pass <code>null</code> here and use <code>scope</code>.
+	 * @param maxFetchDepth the maximum fetch-depth that was passed to JDO when detaching the object or -1, if
+	 *		the object was obtained in a "special" way indicated by <code>scope</code>.
+	 */
 	public void putAll(String scope, Collection<?> objects, Set<String> fetchGroups, int maxFetchDepth)
 	{
 		_putAll(
@@ -1277,6 +1328,11 @@ public class Cache
 
 	/**
 	 * This method calls {@link #put(String, Object, Set)}.
+	 * <p>
+	 * <b><u>Important:</u> Never modify an object that is managed by the cache!</b> That means,
+	 * after you put the object into the cache, copy it (using {@link Util#cloneSerializable(Object)})
+	 * and modify the clone!!! Alternatively, you can put a clone into the cache, of course.
+	 * </p>
 	 */
 	public void put(String scope, Object object, String[] fetchGroups, int maxFetchDepth)
 	{
@@ -1284,8 +1340,14 @@ public class Cache
 	}
 
 	/**
-	 * This method puts a jdo object into the cache. Therefore, it
-	 * obtains the objectID and calls {@link #put(String, Object, Object, Set)}.
+	 * This method puts a JDO object into the cache. Therefore, it
+	 * obtains the JDO objectID and uses it as key.
+	 * See {@link #put(String, Object, Object, Set, int)} for detailed documentation.
+	 * <p>
+	 * <b><u>Important:</u> Never modify an object that is managed by the cache!</b> That means,
+	 * after you put the object into the cache, copy it (using {@link Util#cloneSerializable(Object)})
+	 * and modify the clone!!! Alternatively, you can put a clone into the cache, of course.
+	 * </p>
 	 */
 	public void put(String scope, Object object, Set<String> fetchGroups, int maxFetchDepth)
 	{
@@ -1296,7 +1358,14 @@ public class Cache
 	}
 
 	/**
-	 * This method calls {@link #put(String, Object, Object, Set)}.
+	 * This method puts a JDO object into the cache. Therefore, it
+	 * obtains the JDO objectID and uses it as key.
+	 * See {@link #put(String, Object, Object, Set, int)} for detailed documentation.
+	 * <p>
+	 * <b><u>Important:</u> Never modify an object that is managed by the cache!</b> That means,
+	 * after you put the object into the cache, copy it (using {@link Util#cloneSerializable(Object)})
+	 * and modify the clone!!! Alternatively, you can put a clone into the cache, of course.
+	 * </p>
 	 */
 	public void put(String scope, Object objectID, Object object, String[] fetchGroups, int maxFetchDepth)
 	{
@@ -1306,6 +1375,11 @@ public class Cache
 	/**
 	 * You can put non-jdo objects into the cache using this method. If they contain jdo-objects
 	 * in their object graph, the cache will however register listeners for these contained objects.
+	 * <p>
+	 * <b><u>Important:</u> Never modify an object that is managed by the cache!</b> That means,
+	 * after you put the object into the cache, copy it (using {@link Util#cloneSerializable(Object)})
+	 * and modify the clone!!! Alternatively, you can put a clone into the cache, of course.
+	 * </p>
 	 *
 	 * @param scope Either <code>null</code> to indicate that the object has been fetched normally using
 	 *		the fetchGroups or a String specifying a customized fetch-method. This can e.g. be the case
@@ -1318,6 +1392,8 @@ public class Cache
 	 *		If one of the objects in the graph gets changed, the cache will forget this main-object.
 	 * @param fetchGroups Either <code>null</code> or the fetchGroups with which the object has been retrieved.
 	 *		If you cache a non-jdo-object, you should pass <code>null</code> here and use <code>scope</code>.
+	 * @param maxFetchDepth the maximum fetch-depth that was passed to JDO when detaching the object or -1, if
+	 *		the object was obtained in a "special" way indicated by <code>scope</code>.
 	 */
 	public void put(String scope, Object objectID, Object object, Set<String> fetchGroups, int maxFetchDepth)
 	{
