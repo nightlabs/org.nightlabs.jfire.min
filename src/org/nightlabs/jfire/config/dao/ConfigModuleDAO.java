@@ -95,11 +95,12 @@ public class ConfigModuleDAO extends BaseJDOObjectDAO<ConfigModuleID, ConfigModu
 	 * Get the ConfigModule of the given class and cfModID for the Config defined
 	 * by the given configID.
 	 */
-	public ConfigModule getConfigModule(
-			ConfigID config, Class<? extends ConfigModule> cfModClass, String cfModID, String[] fetchGroups, int maxFetchDepth,
+	@SuppressWarnings("unchecked")
+	public <T extends ConfigModule> T getConfigModule(
+			ConfigID config, Class<T> cfModClass, String cfModID, String[] fetchGroups, int maxFetchDepth,
 			ProgressMonitor monitor)
 	{
-		return getJDOObject(
+		return (T) getJDOObject(
 				null,
 				ConfigModuleID.create(
 						config.organisationID,
