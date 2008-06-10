@@ -690,7 +690,7 @@ public class JFireServerManagerFactoryImpl
 
 									logger.info("Initialising datastore of organisation \""+organisationID+"\"...");
 									try {
-										datastoreInitManager.initialiseDatastore(JFireServerManagerFactoryImpl.this, mcf.getConfigModule().getLocalServer(), organisationID,
+										datastoreInitManager.initialiseOrganisation(JFireServerManagerFactoryImpl.this, mcf.getConfigModule().getLocalServer(), organisationID,
 												jfireSecurity_createTempUserPassword(organisationID, User.USERID_SYSTEM));
 
 										logger.info("Datastore initialisation of organisation \""+organisationID+"\" done.");
@@ -1686,7 +1686,7 @@ public class JFireServerManagerFactoryImpl
 //			String deployBaseDir = mcf.getConfigModule().getJ2ee().getJ2eeDeployBaseDirectory();
 
 			try {
-				datastoreInitManager.initialiseDatastore(this, mcf.getConfigModule().getLocalServer(), organisationID,
+				datastoreInitManager.initialiseOrganisation(this, mcf.getConfigModule().getLocalServer(), organisationID,
 						jfireSecurity_createTempUserPassword(organisationID, User.USERID_SYSTEM), createOrganisationProgress);
 			} catch (ModuleException e) {
 				logger.error("Datastore initialization for new organisation \""+organisationID+"\" failed!", e);

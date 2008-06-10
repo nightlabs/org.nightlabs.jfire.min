@@ -2,6 +2,7 @@ package org.nightlabs.jfire.organisationinit;
 
 import org.nightlabs.jfire.init.AbstractInit;
 import org.nightlabs.jfire.init.IDependency;
+import org.nightlabs.jfire.init.Resolution;
 
 public class OrganisationInit extends AbstractInit<OrganisationInit, OrganisationInitDependency> {
 

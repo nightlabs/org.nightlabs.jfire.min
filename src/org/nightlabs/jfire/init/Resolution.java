@@ -1,4 +1,4 @@
-package org.nightlabs.jfire.organisationinit;
+package org.nightlabs.jfire.init;
 
 public enum Resolution {
 	Optional,

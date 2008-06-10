@@ -17,7 +17,7 @@ import org.nightlabs.datastructure.PrefixTree;
 import org.nightlabs.jfire.init.AbstractInitManager;
 import org.nightlabs.jfire.init.DependencyCycleException;
 import org.nightlabs.jfire.init.InitException;
-import org.nightlabs.jfire.organisationinit.Resolution;
+import org.nightlabs.jfire.init.Resolution;
 import org.nightlabs.jfire.servermanager.JFireServerManagerFactory;
 import org.nightlabs.jfire.servermanager.j2ee.J2EEAdapter;
 import org.nightlabs.jfire.servermanager.ra.JFireServerManagerFactoryImpl;

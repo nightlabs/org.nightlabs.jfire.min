@@ -22,6 +22,7 @@ import org.nightlabs.jfire.base.InvokeUtil;
 import org.nightlabs.jfire.init.AbstractInitManager;
 import org.nightlabs.jfire.init.DependencyCycleException;
 import org.nightlabs.jfire.init.InitException;
+import org.nightlabs.jfire.init.Resolution;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.servermanager.JFireServerManagerFactory;
 import org.nightlabs.jfire.servermanager.config.ServerCf;
@@ -40,11 +41,9 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
-public class OrganisationInitManager extends AbstractInitManager<OrganisationInit, OrganisationInitDependency>{
-
-	/**
-	 * LOG4J logger used by this class
-	 */
+public class OrganisationInitManager
+extends AbstractInitManager<OrganisationInit, OrganisationInitDependency>
+{
 	private static final Logger logger = Logger.getLogger(OrganisationInitManager.class);
 
 	private FileFilter earFileFilter = new FileFilter() {
@@ -144,7 +143,7 @@ public class OrganisationInitManager extends AbstractInitManager<OrganisationIni
 
 		if (logger.isDebugEnabled()) {
 			logger.debug("************************************************");
-			logger.debug("Datastore Inits in execution order:");
+			logger.debug("Organisation Inits in execution order:");
 			printInits(inits);
 			logger.debug("************************************************");
 		}
@@ -342,14 +341,14 @@ public class OrganisationInitManager extends AbstractInitManager<OrganisationIni
 		return toReturn.toArray(new String[0]);
 	}
 
-	public void initialiseDatastore(
+	public void initialiseOrganisation(
 			JFireServerManagerFactory ismf, ServerCf localServer, String organisationID, String systemUserPassword)
 	throws ModuleException
 	{
-		initialiseDatastore(ismf, localServer, organisationID, systemUserPassword, null);
+		initialiseOrganisation(ismf, localServer, organisationID, systemUserPassword, null);
 	}
 
-	public void initialiseDatastore(
+	public void initialiseOrganisation(
 			JFireServerManagerFactory ismf, ServerCf localServer, String organisationID, String systemUserPassword, CreateOrganisationProgress createOrganisationProgress)
 	throws ModuleException
 	{
