@@ -96,8 +96,6 @@ import org.nightlabs.jfire.base.SimplePrincipal;
 import org.nightlabs.jfire.classloader.CLRegistrar;
 import org.nightlabs.jfire.classloader.CLRegistrarFactory;
 import org.nightlabs.jfire.classloader.CLRegistryCfMod;
-import org.nightlabs.jfire.datastoreinit.DatastoreInitException;
-import org.nightlabs.jfire.datastoreinit.OrganisationInitManager;
 import org.nightlabs.jfire.idgenerator.IDGenerator;
 import org.nightlabs.jfire.jdo.cache.CacheCfMod;
 import org.nightlabs.jfire.jdo.cache.CacheManagerFactory;
@@ -105,6 +103,8 @@ import org.nightlabs.jfire.jdo.notification.persistent.PersistentNotificationMan
 import org.nightlabs.jfire.module.ModuleType;
 import org.nightlabs.jfire.organisation.LocalOrganisation;
 import org.nightlabs.jfire.organisation.Organisation;
+import org.nightlabs.jfire.organisationinit.DatastoreInitException;
+import org.nightlabs.jfire.organisationinit.OrganisationInitManager;
 import org.nightlabs.jfire.security.Authority;
 import org.nightlabs.jfire.security.AuthorityType;
 import org.nightlabs.jfire.security.AuthorizedObjectRef;

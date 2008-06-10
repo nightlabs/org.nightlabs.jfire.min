@@ -1,4 +1,4 @@
-package org.nightlabs.jfire.datastoreinit;
+package org.nightlabs.jfire.organisationinit;
 
 import org.nightlabs.jfire.init.AbstractInit;
 import org.nightlabs.jfire.init.IDependency;

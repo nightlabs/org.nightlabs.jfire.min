@@ -1,8 +1,8 @@
 package org.nightlabs.jfire.serverinit;
 
-import org.nightlabs.jfire.datastoreinit.Resolution;
 import org.nightlabs.jfire.init.AbstractInit;
 import org.nightlabs.jfire.init.IDependency;
+import org.nightlabs.jfire.organisationinit.Resolution;
 
 
 public class ServerInit extends AbstractInit<ServerInit, ServerInitDependency> {

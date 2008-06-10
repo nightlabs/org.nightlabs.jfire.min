@@ -25,7 +25,7 @@ DOCTYPE of the following form:
 		PUBLIC "-//NightLabs GmbH//DTD Server Initialisation 1.0//EN"
 		"http://www.nightlabs.de/dtd/serverinit_1_0.dtd">
 
-Every file must be named "serverinit.xml" and it must be located
+Every file must be named "server-init.xml" and it must be located
 in the META-INF directory of the JAR.
 
 Here is an example:

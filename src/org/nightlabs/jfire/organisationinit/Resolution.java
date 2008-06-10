@@ -1,4 +1,4 @@
-package org.nightlabs.jfire.datastoreinit;
+package org.nightlabs.jfire.organisationinit;
 
 public enum Resolution {
 	Optional,

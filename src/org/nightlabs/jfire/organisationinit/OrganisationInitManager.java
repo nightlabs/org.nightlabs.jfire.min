@@ -1,4 +1,4 @@
-package org.nightlabs.jfire.datastoreinit;
+package org.nightlabs.jfire.organisationinit;
 
 import java.io.File;
 import java.io.FileFilter;
