@@ -46,20 +46,24 @@ import javax.jdo.FetchPlan;
 import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
+import javax.jms.JMSException;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import javax.security.auth.login.LoginException;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
 import org.nightlabs.ModuleException;
 import org.nightlabs.jdo.NLJDOHelper;
+import org.nightlabs.jfire.asyncinvoke.AsyncInvoke;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.base.JFireException;
 import org.nightlabs.jfire.base.JFirePrincipal;
 import org.nightlabs.jfire.base.JFireRemoteException;
 import org.nightlabs.jfire.base.Lookup;
 import org.nightlabs.jfire.organisation.id.OrganisationID;
+import org.nightlabs.jfire.organisationinit.CrossOrganisationRegistrationInitInvocation;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.security.UserLocal;
 import org.nightlabs.jfire.security.id.UserID;
@@ -371,6 +375,17 @@ public abstract class OrganisationManagerBean
 			localOrganisation.setPassword(grantOrganisationID, userPassword);
 			registrationStatus.accept(User.getUser(pm, getPrincipal()));
 			pm.makePersistent(grantOrganisation);
+
+			try {
+				AsyncInvoke.exec(
+						new CrossOrganisationRegistrationInitInvocation(
+								new org.nightlabs.jfire.crossorganisationregistrationinit.Context(registrationStatus)
+						),
+						true
+				);
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
 		} finally {
 			pm.close();
 		}
@@ -434,8 +449,7 @@ public abstract class OrganisationManagerBean
 			try {
 				LocalOrganisation localOrganisation = LocalOrganisation.getLocalOrganisation(pm);
 
-				RegistrationStatus registrationStatus = localOrganisation
-				.getPendingRegistration(applicantOrganisationID);
+				RegistrationStatus registrationStatus = localOrganisation.getPendingRegistration(applicantOrganisationID);
 
 				if (registrationStatus == null)
 					throw new IllegalArgumentException("There is no pending registration for applicantOrganisation \""+applicantOrganisationID+"\" at grantOrganisation \""+getOrganisationID()+"\"!");
@@ -454,13 +468,12 @@ public abstract class OrganisationManagerBean
 					User user = new User(getOrganisationID(), userID);
 					UserLocal userLocal = new UserLocal(user);
 					userLocal.setPasswordPlain(usrPassword);
-					pm.makePersistent(user);
+					user = pm.makePersistent(user);
 				}
 
 				pm.getFetchPlan().addGroup(FetchPlan.ALL); // TODO fetch-groups?!
 				pm.getFetchPlan().setMaxFetchDepth(NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
-				Organisation grantOrganisation = pm.detachCopy(
-						localOrganisation.getOrganisation());
+				Organisation grantOrganisation = pm.detachCopy(localOrganisation.getOrganisation());
 //				Organisation grantOrganisation = localOrganisation.getOrganisation();
 //				grantOrganisation.getPerson();
 //				grantOrganisation.getServer();
@@ -487,6 +500,13 @@ public abstract class OrganisationManagerBean
 				// and remove it from the pending ones.
 				registrationStatus.accept(User.getUser(pm, getPrincipal()));
 				localOrganisation.removePendingRegistration(applicantOrganisationID);
+
+				AsyncInvoke.exec(
+						new CrossOrganisationRegistrationInitInvocation(
+								new org.nightlabs.jfire.crossorganisationregistrationinit.Context(registrationStatus)
+						),
+						true
+				);
 
 			} finally {
 				pm.close();
@@ -1068,7 +1088,7 @@ public abstract class OrganisationManagerBean
 
 	/**
 	 * This method is used internally to fill a newly created organisation with initial
-	 * objects like {@link Server}, {@link Organisation}, {@link User}, {@link UserLocal} and
+	 * objects like {@link org.nightlabs.jfire.server.Server}, {@link Organisation}, {@link User}, {@link UserLocal} and
 	 * many more.
 	 *
 	 * @ejb.interface-method

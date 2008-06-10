@@ -37,7 +37,8 @@ import javax.naming.InitialContext;
 import org.apache.log4j.Logger;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.base.InvokeUtil;
-import org.nightlabs.jfire.organisationinit.OrganisationInit;
+import org.nightlabs.jfire.crossorganisationregistrationinit.Context;
+import org.nightlabs.jfire.crossorganisationregistrationinit.CrossOrganisationRegistrationInit;
 
 /**
  * @ejb.bean name="jfire/ejb/JFireBaseBean/OrganisationInitDelegate"
@@ -84,6 +85,27 @@ implements SessionBean
 			Object bean = InvokeUtil.createBean(initCtx, init.getBean());
 			Method beanMethod = bean.getClass().getMethod(init.getMethod(), (Class[]) null);
 			beanMethod.invoke(bean, (Object[]) null);
+			InvokeUtil.removeBean(bean);
+		} finally {
+			initCtx.close();
+		}
+	}
+
+	/**
+	 * @ejb.interface-method
+	 * @ejb.transaction type="RequiresNew"
+	 * @ejb.permission role-name="_System_"
+	 */
+	public void invokeCrossOrganisationRegistrationInitInNestedTransaction(CrossOrganisationRegistrationInit init, Context context)
+	throws Exception
+	{
+		Logger logger = Logger.getLogger(OrganisationInitDelegateBean.class);
+		InitialContext initCtx = new InitialContext();
+		try {
+			logger.info("Executing CrossOrganisationRegistrationInit as user " + getPrincipalString() +": " + init);
+			Object bean = InvokeUtil.createBean(initCtx, init.getBean());
+			Method beanMethod = bean.getClass().getMethod(init.getMethod(), new Class[] { Context.class });
+			beanMethod.invoke(bean, new Object[] { context });
 			InvokeUtil.removeBean(bean);
 		} finally {
 			initCtx.close();
