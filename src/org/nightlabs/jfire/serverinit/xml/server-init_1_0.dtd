@@ -23,7 +23,7 @@ DOCTYPE of the following form:
 
 	<!DOCTYPE server-initialisation
 		PUBLIC "-//NightLabs GmbH//DTD Server Initialisation 1.0//EN"
-		"http://www.nightlabs.de/dtd/serverinit_1_0.dtd">
+		"http://www.nightlabs.de/dtd/server-init_1_0.dtd">
 
 Every file must be named "server-init.xml" and it must be located
 in the META-INF directory of the JAR.
@@ -32,7 +32,7 @@ Here is an example:
 	- - - example - - -
 	<!DOCTYPE server-initialisation
 		PUBLIC "-//NightLabs GmbH//DTD Server Initialisation 1.0//EN"
-		"http://www.nightlabs.de/dtd/serverinit_1_0.dtd">
+		"http://www.nightlabs.de/dtd/server-init_1_0.dtd">
 	<server-initialisation>
 		<early-init class="org.nightlabs.jfire.chezfrancois.ChezFrancoisServerInitialiser" priority="200">
 			<depends
@@ -64,8 +64,8 @@ Here is an example:
 	The given Initialiser is instantiated and its method initialise() called, after the execution
 	order has been determined by resolving dependencies between Initialiers.
 	
-	All "early-init"s are executed *before* all declared datastore inits whereas all "late-init"s
-	are executed *after* all declared datastore inits.
+	All "early-init"s are executed *before* all declared organisation inits whereas all "late-init"s
+	are executed *after* all declared organisation inits.
 
 	Both element have the following attributes:
 		- class (necessary)

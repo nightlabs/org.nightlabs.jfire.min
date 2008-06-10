@@ -171,17 +171,17 @@ public class ServerInitManager extends AbstractInitManager<ServerInit, ServerIni
 			DOMParser parser = new DOMParser();
 			parser.setErrorHandler(new ErrorHandler() {
 				public void error(SAXParseException exception) throws SAXException {
-					logger.error("Parse (serverinit.xml): ", exception);
+					logger.error("Parse (server-init.xml): ", exception);
 					parseException = exception;
 				}
 
 				public void fatalError(SAXParseException exception) throws SAXException {
-					logger.fatal("Parse (serverinit.xml): ", exception);
+					logger.fatal("Parse (server-init.xml): ", exception);
 					parseException = exception;
 				}
 
 				public void warning(SAXParseException exception) throws SAXException {
-					logger.warn("Parse (serverinit.xml): ", exception);
+					logger.warn("Parse (server-init.xml): ", exception);
 				}
 			});
 			parser.parse(inputSource);
