@@ -37,18 +37,18 @@ import javax.naming.InitialContext;
 import org.apache.log4j.Logger;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.base.InvokeUtil;
-import org.nightlabs.jfire.organisationinit.DatastoreInit;
+import org.nightlabs.jfire.organisationinit.OrganisationInit;
 
 /**
- * @ejb.bean name="jfire/ejb/JFireBaseBean/DatastoreInitDelegate"
- *           jndi-name="jfire/ejb/JFireBaseBean/DatastoreInitDelegate"
+ * @ejb.bean name="jfire/ejb/JFireBaseBean/OrganisationInitDelegate"
+ *           jndi-name="jfire/ejb/JFireBaseBean/OrganisationInitDelegate"
  *           type="Stateless"
  *           transaction-type="Container"
  *
  * @ejb.util generate="physical"
  * @ejb.transaction type="Required"
  */
-public abstract class DatastoreInitDelegateBean
+public abstract class OrganisationInitDelegateBean
 extends BaseSessionBeanImpl
 implements SessionBean
 {
@@ -74,13 +74,13 @@ implements SessionBean
 	 * @ejb.transaction type="RequiresNew"
 	 * @ejb.permission role-name="_System_"
 	 */
-	public void invokeDatastoreInitInNestedTransaction(DatastoreInit init)
+	public void invokeOrganisationInitInNestedTransaction(OrganisationInit init)
 	throws Exception
 	{
-		Logger logger = Logger.getLogger(DatastoreInitDelegateBean.class);
+		Logger logger = Logger.getLogger(OrganisationInitDelegateBean.class);
 		InitialContext initCtx = new InitialContext();
 		try {
-			logger.info("Executing DatastoreInit as user " + getPrincipalString() +": " + init);
+			logger.info("Executing OrganisationInit as user " + getPrincipalString() +": " + init);
 			Object bean = InvokeUtil.createBean(initCtx, init.getBean());
 			Method beanMethod = bean.getClass().getMethod(init.getMethod(), (Class[]) null);
 			beanMethod.invoke(bean, (Object[]) null);
