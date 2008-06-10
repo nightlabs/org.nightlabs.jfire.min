@@ -33,19 +33,21 @@ public class EditLockDAO extends BaseJDOObjectDAO<EditLockID, EditLock>
 		return sharedInstance;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	@Implement
 	protected Collection<EditLock> retrieveJDOObjects(Set<EditLockID> editLockIDs,
 			String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
 			throws Exception
 	{
-		EditLockManager wm = editLockManager;
-		if (wm == null) wm = EditLockManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
-		return wm.getEditLocks(editLockIDs, fetchGroups, maxFetchDepth);
+		EditLockManager m = editLockManager;
+		if (m == null) m = EditLockManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
+		return m.getEditLocks(editLockIDs, fetchGroups, maxFetchDepth);
 	}
 
 	private EditLockManager editLockManager;
 
+	@SuppressWarnings("unchecked")
 	public synchronized List<EditLock> getEditLocks(ObjectID objectID, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
 	{
 		try {
