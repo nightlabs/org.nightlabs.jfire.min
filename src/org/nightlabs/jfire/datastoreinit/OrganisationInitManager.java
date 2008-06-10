@@ -40,12 +40,12 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
-public class DatastoreInitManager extends AbstractInitManager<DatastoreInit, DatastoreInitDependency>{
+public class OrganisationInitManager extends AbstractInitManager<DatastoreInit, DatastoreInitDependency>{
 
 	/**
 	 * LOG4J logger used by this class
 	 */
-	private static final Logger logger = Logger.getLogger(DatastoreInitManager.class);
+	private static final Logger logger = Logger.getLogger(OrganisationInitManager.class);
 
 	private FileFilter earFileFilter = new FileFilter() {
 		public boolean accept(File pathname) {
@@ -68,7 +68,7 @@ public class DatastoreInitManager extends AbstractInitManager<DatastoreInit, Dat
 	 */
 	private List<DatastoreInit> inits = new ArrayList<DatastoreInit>();
 	
-	public DatastoreInitManager(JFireServerManagerFactoryImpl jfsmf, ManagedConnectionFactoryImpl mcf, J2EEAdapter j2eeAdapter)
+	public OrganisationInitManager(JFireServerManagerFactoryImpl jfsmf, ManagedConnectionFactoryImpl mcf, J2EEAdapter j2eeAdapter)
 	throws DatastoreInitException
 	{
 		String deployBaseDir = mcf.getConfigModule().getJ2ee().getJ2eeDeployBaseDirectory();
@@ -86,7 +86,16 @@ public class DatastoreInitManager extends AbstractInitManager<DatastoreInit, Dat
 				try {
 					JarFile jf = new JarFile(jar);
 					try {
-						JarEntry je = jf.getJarEntry("META-INF/datastoreinit.xml");
+						JarEntry je = jf.getJarEntry("META-INF/organisation-init.xml");
+
+						// BEGIN downward compatibility
+						if (je == null) {
+							je = jf.getJarEntry("META-INF/datastoreinit.xml");
+							if (je != null)
+								logger.warn("https://www.jfire.org/modules/bugs/view.php?id=579 : datastoreinit.xml should be named organisation-init.xml: " + jar.getAbsolutePath());
+						}
+						// END downward compatibility
+
 						if (je != null) {
 							InputStream in = jf.getInputStream(je);
 							try {
@@ -156,17 +165,17 @@ public class DatastoreInitManager extends AbstractInitManager<DatastoreInit, Dat
 			DOMParser parser = new DOMParser();
 			parser.setErrorHandler(new ErrorHandler(){
 				public void error(SAXParseException exception) throws SAXException {
-					logger.error("Parse (datastoreinit.xml): ", exception);
+					logger.error("Parse (organisation-init.xml): ", exception);
 					parseException = exception;
 				}
 		
 				public void fatalError(SAXParseException exception) throws SAXException {
-					logger.fatal("Parse (datastoreinit.xml): ", exception);
+					logger.fatal("Parse (organisation-init.xml): ", exception);
 					parseException = exception;
 				}
 		
 				public void warning(SAXParseException exception) throws SAXException {
-					logger.warn("Parse (datastoreinit.xml): ", exception);
+					logger.warn("Parse (organisation-init.xml): ", exception);
 				}
 			});
 			parser.parse(inputSource);
@@ -174,8 +183,14 @@ public class DatastoreInitManager extends AbstractInitManager<DatastoreInit, Dat
 				throw parseException;
 	
 			CachedXPathAPI xpa = new CachedXPathAPI();
-			
-			NodeIterator ni = xpa.selectNodeIterator(parser.getDocument(), "//datastore-initialisation/init");
+
+			String rootNodeName = "organisation-initialisation";
+			if (xpa.selectSingleNode(parser.getDocument(), "//" + rootNodeName) == null) {
+				rootNodeName = "datastore-initialisation";
+				if (xpa.selectSingleNode(parser.getDocument(), "//" + rootNodeName) != null)
+					logger.warn("https://www.jfire.org/modules/bugs/view.php?id=579 : organisation-init.xml or datastoreinit.xml contains old elements: EAR=" + jfireEAR + " JAR=" + jfireJAR);
+			}
+			NodeIterator ni = xpa.selectNodeIterator(parser.getDocument(), "//" + rootNodeName + "/init");
 			Node nInit = ni.nextNode();
 			while (nInit != null) {
 				Node nBean = nInit.getAttributes().getNamedItem("bean");
@@ -203,17 +218,17 @@ public class DatastoreInitManager extends AbstractInitManager<DatastoreInit, Dat
 				}
 				
 				if (beanStr == null)
-					throw new XMLReadException("jfireEAR '"+jfireEAR+"' jfireJAR '"+jfireJAR+"': Reading datastoreinit.xml failed: Attribute 'bean' of element 'init' must be defined!");
+					throw new XMLReadException("jfireEAR '"+jfireEAR+"' jfireJAR '"+jfireJAR+"': Reading organisation-init.xml failed: Attribute 'bean' of element 'init' must be defined!");
 
 				if (methodStr == null)
-					throw new XMLReadException("jfireEAR '"+jfireEAR+"' jfireJAR '"+jfireJAR+"': Reading datastoreinit.xml failed: Attribute 'method' of element 'init' must be defined!");
+					throw new XMLReadException("jfireEAR '"+jfireEAR+"' jfireJAR '"+jfireJAR+"': Reading organisation-init.xml failed: Attribute 'method' of element 'init' must be defined!");
 
 				int priority = 500;
 				if (priorityStr != null) {
 					try {
 						priority = Integer.parseInt(priorityStr);
 					} catch (NumberFormatException x) {
-						throw new XMLReadException("jfireEAR '"+jfireEAR+"' jfireJAR '"+jfireJAR+"': Reading datastoreinit.xml failed: Attribute 'priority' of element 'init' must be a valid integer (or be omitted)!");
+						throw new XMLReadException("jfireEAR '"+jfireEAR+"' jfireJAR '"+jfireJAR+"': Reading organisation-init.xml failed: Attribute 'priority' of element 'init' must be a valid integer (or be omitted)!");
 					}
 				}
 
@@ -274,15 +289,15 @@ public class DatastoreInitManager extends AbstractInitManager<DatastoreInit, Dat
 					}
 
 					if (moduleStr == null)
-						throw new XMLReadException("jfireEAR '"+jfireEAR+"' jfireJAR '"+jfireJAR+"': Reading datastoreinit.xml failed: Attribute 'module' of element 'depends' must be defined!");
+						throw new XMLReadException("jfireEAR '"+jfireEAR+"' jfireJAR '"+jfireJAR+"': Reading organisation-init.xml failed: Attribute 'module' of element 'depends' must be defined!");
 					
 					if (archiveStr == null && (beanStr != null || methodStr != null))
 						throw new XMLReadException("jfireEAR '" + jfireEAR + "' jfireJAR '" + jfireJAR
-										+ "': Reading serverinit.xml failed: Attribute 'bean/method' of element 'depends' is defined whereas 'archive' is undefined!");
+										+ "': Reading organisation-init.xml failed: Attribute 'bean/method' of element 'depends' is defined whereas 'archive' is undefined!");
 					
 					if (beanStr == null && methodStr != null)
 						throw new XMLReadException("jfireEAR '" + jfireEAR + "' jfireJAR '" + jfireJAR
-										+ "': Reading serverinit.xml failed: Attribute 'method' of element 'depends' is defined whereas 'bean' is undefined!");
+										+ "': Reading organisation-init.xml failed: Attribute 'method' of element 'depends' is defined whereas 'bean' is undefined!");
 					
 					DatastoreInitDependency dep = new DatastoreInitDependency(moduleStr, archiveStr, beanStr, methodStr, resolution);
 					init.addDependency(dep);

@@ -97,7 +97,7 @@ import org.nightlabs.jfire.classloader.CLRegistrar;
 import org.nightlabs.jfire.classloader.CLRegistrarFactory;
 import org.nightlabs.jfire.classloader.CLRegistryCfMod;
 import org.nightlabs.jfire.datastoreinit.DatastoreInitException;
-import org.nightlabs.jfire.datastoreinit.DatastoreInitManager;
+import org.nightlabs.jfire.datastoreinit.OrganisationInitManager;
 import org.nightlabs.jfire.idgenerator.IDGenerator;
 import org.nightlabs.jfire.jdo.cache.CacheCfMod;
 import org.nightlabs.jfire.jdo.cache.CacheManagerFactory;
@@ -591,7 +591,7 @@ public class JFireServerManagerFactoryImpl
 					return;
 
 				final ServerInitManager serverInitManager = new ServerInitManager(this, mcf, getJ2EEVendorAdapter());
-				final DatastoreInitManager datastoreInitManager = new DatastoreInitManager(this, mcf, getJ2EEVendorAdapter());
+				final OrganisationInitManager datastoreInitManager = new OrganisationInitManager(this, mcf, getJ2EEVendorAdapter());
 
 				// do the server inits that are to be performed before the datastore inits
 				logger.info("Performing early server inits...");
@@ -1346,11 +1346,11 @@ public class JFireServerManagerFactoryImpl
 		if (!organisationID.equals(createOrganisationProgress.getOrganisationID()))
 			throw new IllegalArgumentException("organisationID does not match createOrganisationProgress.getOrganisationID()!");
 
-		DatastoreInitManager datastoreInitManager;
+		OrganisationInitManager datastoreInitManager;
 		try {
-			datastoreInitManager = new DatastoreInitManager(this, mcf, getJ2EEVendorAdapter());
+			datastoreInitManager = new OrganisationInitManager(this, mcf, getJ2EEVendorAdapter());
 		} catch (DatastoreInitException e) {
-			logger.error("Creation of DatastoreInitManager failed!", e);
+			logger.error("Creation of OrganisationInitManager failed!", e);
 			throw new ModuleException(e);
 		}
 

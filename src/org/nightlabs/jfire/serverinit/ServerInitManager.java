@@ -82,7 +82,16 @@ public class ServerInitManager extends AbstractInitManager<ServerInit, ServerIni
 				try {
 					JarFile jf = new JarFile(jar);
 					try {
-						JarEntry je = jf.getJarEntry("META-INF/serverinit.xml");
+						JarEntry je = jf.getJarEntry("META-INF/server-init.xml");
+
+						// BEGIN downward compatibility
+						if (je == null) {
+							je = jf.getJarEntry("META-INF/serverinit.xml");
+							if (je != null)
+								logger.warn("https://www.jfire.org/modules/bugs/view.php?id=579 : serverinit.xml should be named server-init.xml: " + jar.getAbsolutePath());
+						}
+						// END downward compatibility
+
 						if (je != null) {
 							InputStream in = jf.getInputStream(je);
 							try {
