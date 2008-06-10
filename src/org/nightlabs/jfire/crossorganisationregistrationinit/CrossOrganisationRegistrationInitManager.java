@@ -1,4 +1,4 @@
-package org.nightlabs.jfire.organisationinit;
+package org.nightlabs.jfire.crossorganisationregistrationinit;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -24,14 +24,9 @@ import org.nightlabs.jfire.init.DependencyCycleException;
 import org.nightlabs.jfire.init.InitException;
 import org.nightlabs.jfire.init.Resolution;
 import org.nightlabs.jfire.security.User;
+import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.servermanager.JFireServerManagerFactory;
 import org.nightlabs.jfire.servermanager.config.ServerCf;
-import org.nightlabs.jfire.servermanager.createorganisation.CreateOrganisationProgress;
-import org.nightlabs.jfire.servermanager.createorganisation.CreateOrganisationStatus;
-import org.nightlabs.jfire.servermanager.createorganisation.CreateOrganisationStep;
-import org.nightlabs.jfire.servermanager.j2ee.J2EEAdapter;
-import org.nightlabs.jfire.servermanager.ra.JFireServerManagerFactoryImpl;
-import org.nightlabs.jfire.servermanager.ra.ManagedConnectionFactoryImpl;
 import org.nightlabs.xml.DOMParser;
 import org.nightlabs.xml.XMLReadException;
 import org.w3c.dom.Node;
@@ -41,10 +36,10 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
-public class OrganisationInitManager
-extends AbstractInitManager<OrganisationInit, OrganisationInitDependency>
+public class CrossOrganisationRegistrationInitManager
+extends AbstractInitManager<CrossOrganisationRegistrationInit, OrganisationInitDependency>
 {
-	private static final Logger logger = Logger.getLogger(OrganisationInitManager.class);
+	private static final Logger logger = Logger.getLogger(CrossOrganisationRegistrationInitManager.class);
 
 	private FileFilter earFileFilter = new FileFilter() {
 		public boolean accept(File pathname) {
@@ -65,14 +60,14 @@ extends AbstractInitManager<OrganisationInit, OrganisationInitDependency>
 	/**
 	 * Holds instances of type <tt>Init</tt>.
 	 */
-	private List<OrganisationInit> inits = new ArrayList<OrganisationInit>();
-	
-	public OrganisationInitManager(JFireServerManagerFactoryImpl jfsmf, ManagedConnectionFactoryImpl mcf, J2EEAdapter j2eeAdapter)
-	throws OrganisationInitException
+	private List<CrossOrganisationRegistrationInit> inits = new ArrayList<CrossOrganisationRegistrationInit>();
+
+	public CrossOrganisationRegistrationInitManager(JFireServerManager jfsm)
+	throws CrossOrganisationRegistrationInitException
 	{
-		String deployBaseDir = mcf.getConfigModule().getJ2ee().getJ2eeDeployBaseDirectory();
+		String deployBaseDir = jfsm.getJFireServerConfigModule().getJ2ee().getJ2eeDeployBaseDirectory();
 		File jfireModuleBaseDir = new File(deployBaseDir);
-		PrefixTree<OrganisationInit> initTrie = new PrefixTree<OrganisationInit>();
+		PrefixTree<CrossOrganisationRegistrationInit> initTrie = new PrefixTree<CrossOrganisationRegistrationInit>();
 
 		// Scan all JARs within all EARs for organisation-init.xml files.
 		File[] ears = jfireModuleBaseDir.listFiles(earFileFilter);
@@ -85,21 +80,12 @@ extends AbstractInitManager<OrganisationInit, OrganisationInitDependency>
 				try {
 					JarFile jf = new JarFile(jar);
 					try {
-						JarEntry je = jf.getJarEntry("META-INF/organisation-init.xml");
-
-						// BEGIN downward compatibility
-						if (je == null) {
-							je = jf.getJarEntry("META-INF/datastoreinit.xml");
-							if (je != null)
-								logger.warn("https://www.jfire.org/modules/bugs/view.php?id=579 : datastoreinit.xml should be named organisation-init.xml: " + jar.getAbsolutePath());
-						}
-						// END downward compatibility
-
+						JarEntry je = jf.getJarEntry("META-INF/cross-organisation-registration-init.xml");
 						if (je != null) {
 							InputStream in = jf.getInputStream(je);
 							try {
-								List<OrganisationInit> serverInits = parseOrganisationInitXML(ear.getName(), jar.getName(), in);
-								for (OrganisationInit init : serverInits) {
+								List<CrossOrganisationRegistrationInit> serverInits = parseInitXML(ear.getName(), jar.getName(), in);
+								for (CrossOrganisationRegistrationInit init : serverInits) {
 									inits.add(init);
 									initTrie.insert(new String[] {init.getModule(), init.getArchive(), init.getBean(), init.getMethod()}, init);
 								}
@@ -121,12 +107,12 @@ extends AbstractInitManager<OrganisationInit, OrganisationInitDependency>
 		try {
 			establishDependencies(inits, initTrie);
 		} catch (InitException e1) {
-			throw new OrganisationInitException("Datastore initialisation failed: " + e1.getMessage());
+			throw new CrossOrganisationRegistrationInitException("Datastore initialisation failed: " + e1.getMessage());
 		}
 		
 		// Now all inits have references of their required and dependent inits.
-		Comparator<OrganisationInit> comp = new Comparator<OrganisationInit>() {
-			public int compare(OrganisationInit o1, OrganisationInit o2) {
+		Comparator<CrossOrganisationRegistrationInit> comp = new Comparator<CrossOrganisationRegistrationInit>() {
+			public int compare(CrossOrganisationRegistrationInit o1, CrossOrganisationRegistrationInit o2) {
 				int prioDiff = o1.getPriority() - o2.getPriority();
 				if (prioDiff != 0)
 					return prioDiff;
@@ -137,7 +123,7 @@ extends AbstractInitManager<OrganisationInit, OrganisationInitDependency>
 		try {
 			inits = resolveDependencies(inits, comp);
 		} catch (DependencyCycleException e) {
-			throw new OrganisationInitException(e + "Information regarding the cycle: "+ e.getCycleInfo());
+			throw new CrossOrganisationRegistrationInitException(e + "Information regarding the cycle: "+ e.getCycleInfo());
 		}
 		canPerformInit = true;
 
@@ -149,32 +135,32 @@ extends AbstractInitManager<OrganisationInit, OrganisationInitDependency>
 		}
 	}
 
-	public List<OrganisationInit> getInits()
+	public List<CrossOrganisationRegistrationInit> getInits()
 	{
 		return Collections.unmodifiableList(inits);
 	}
 
-	protected List<OrganisationInit> parseOrganisationInitXML(String jfireEAR, String jfireJAR, InputStream ejbJarIn)
+	protected List<CrossOrganisationRegistrationInit> parseInitXML(String jfireEAR, String jfireJAR, InputStream ejbJarIn)
 	throws XMLReadException
 	{
-		List<OrganisationInit> _inits = new ArrayList<OrganisationInit>();
+		List<CrossOrganisationRegistrationInit> _inits = new ArrayList<CrossOrganisationRegistrationInit>();
 		
 		try {
 			InputSource inputSource = new InputSource(ejbJarIn);
 			DOMParser parser = new DOMParser();
 			parser.setErrorHandler(new ErrorHandler(){
 				public void error(SAXParseException exception) throws SAXException {
-					logger.error("Parse (organisation-init.xml): ", exception);
+					logger.error("Parse (cross-organisation-registration-init.xml): ", exception);
 					parseException = exception;
 				}
 		
 				public void fatalError(SAXParseException exception) throws SAXException {
-					logger.fatal("Parse (organisation-init.xml): ", exception);
+					logger.fatal("Parse (cross-organisation-registration-init.xml): ", exception);
 					parseException = exception;
 				}
 		
 				public void warning(SAXParseException exception) throws SAXException {
-					logger.warn("Parse (organisation-init.xml): ", exception);
+					logger.warn("Parse (cross-organisation-registration-init.xml): ", exception);
 				}
 			});
 			parser.parse(inputSource);
@@ -183,13 +169,7 @@ extends AbstractInitManager<OrganisationInit, OrganisationInitDependency>
 	
 			CachedXPathAPI xpa = new CachedXPathAPI();
 
-			String rootNodeName = "organisation-initialisation";
-			if (xpa.selectSingleNode(parser.getDocument(), "//" + rootNodeName) == null) {
-				rootNodeName = "datastore-initialisation";
-				if (xpa.selectSingleNode(parser.getDocument(), "//" + rootNodeName) != null)
-					logger.warn("https://www.jfire.org/modules/bugs/view.php?id=579 : organisation-init.xml or datastoreinit.xml contains old elements: EAR=" + jfireEAR + " JAR=" + jfireJAR);
-			}
-			NodeIterator ni = xpa.selectNodeIterator(parser.getDocument(), "//" + rootNodeName + "/init");
+			NodeIterator ni = xpa.selectNodeIterator(parser.getDocument(), "//cross-organisation-registration-initialisation/init");
 			Node nInit = ni.nextNode();
 			while (nInit != null) {
 				Node nBean = nInit.getAttributes().getNamedItem("bean");
@@ -217,21 +197,21 @@ extends AbstractInitManager<OrganisationInit, OrganisationInitDependency>
 				}
 				
 				if (beanStr == null)
-					throw new XMLReadException("jfireEAR '"+jfireEAR+"' jfireJAR '"+jfireJAR+"': Reading organisation-init.xml failed: Attribute 'bean' of element 'init' must be defined!");
+					throw new XMLReadException("jfireEAR '"+jfireEAR+"' jfireJAR '"+jfireJAR+"': Reading cross-organisation-registration-init.xml failed: Attribute 'bean' of element 'init' must be defined!");
 
 				if (methodStr == null)
-					throw new XMLReadException("jfireEAR '"+jfireEAR+"' jfireJAR '"+jfireJAR+"': Reading organisation-init.xml failed: Attribute 'method' of element 'init' must be defined!");
+					throw new XMLReadException("jfireEAR '"+jfireEAR+"' jfireJAR '"+jfireJAR+"': Reading cross-organisation-registration-init.xml failed: Attribute 'method' of element 'init' must be defined!");
 
 				int priority = 500;
 				if (priorityStr != null) {
 					try {
 						priority = Integer.parseInt(priorityStr);
 					} catch (NumberFormatException x) {
-						throw new XMLReadException("jfireEAR '"+jfireEAR+"' jfireJAR '"+jfireJAR+"': Reading organisation-init.xml failed: Attribute 'priority' of element 'init' must be a valid integer (or be omitted)!");
+						throw new XMLReadException("jfireEAR '"+jfireEAR+"' jfireJAR '"+jfireJAR+"': Reading cross-organisation-registration-init.xml failed: Attribute 'priority' of element 'init' must be a valid integer (or be omitted)!");
 					}
 				}
 
-				OrganisationInit init = new OrganisationInit(jfireEAR, jfireJAR, beanStr, methodStr, priority);
+				CrossOrganisationRegistrationInit init = new CrossOrganisationRegistrationInit(jfireEAR, jfireJAR, beanStr, methodStr, priority);
 
 				NodeIterator niDepends = xpa.selectNodeIterator(nInit, "depends");
 				Node nDepends = niDepends.nextNode();
@@ -284,20 +264,20 @@ extends AbstractInitManager<OrganisationInit, OrganisationInitDependency>
 						resolution = Resolution.Required;
 					} catch (IllegalArgumentException e) {
 						logger.warn("jfireEAR '" + jfireEAR + "' jfireJAR '" + jfireJAR
-								+ "': Reading organisation-init.xml failed: Value '"+resolutionStr+"' of attribute resolution is not valid. Using default 'required'.");
+								+ "': Reading cross-organisation-registration-init.xml failed: Value '"+resolutionStr+"' of attribute resolution is not valid. Using default 'required'.");
 						resolution = Resolution.Required;
 					}
 
 					if (moduleStr == null)
-						throw new XMLReadException("jfireEAR '"+jfireEAR+"' jfireJAR '"+jfireJAR+"': Reading organisation-init.xml failed: Attribute 'module' of element 'depends' must be defined!");
+						throw new XMLReadException("jfireEAR '"+jfireEAR+"' jfireJAR '"+jfireJAR+"': Reading cross-organisation-registration-init.xml failed: Attribute 'module' of element 'depends' must be defined!");
 					
 					if (archiveStr == null && (beanStr != null || methodStr != null))
 						throw new XMLReadException("jfireEAR '" + jfireEAR + "' jfireJAR '" + jfireJAR
-										+ "': Reading organisation-init.xml failed: Attribute 'bean/method' of element 'depends' is defined whereas 'archive' is undefined!");
+										+ "': Reading cross-organisation-registration-init.xml failed: Attribute 'bean/method' of element 'depends' is defined whereas 'archive' is undefined!");
 					
 					if (beanStr == null && methodStr != null)
 						throw new XMLReadException("jfireEAR '" + jfireEAR + "' jfireJAR '" + jfireJAR
-										+ "': Reading organisation-init.xml failed: Attribute 'method' of element 'depends' is defined whereas 'bean' is undefined!");
+										+ "': Reading cross-organisation-registration-init.xml failed: Attribute 'method' of element 'depends' is defined whereas 'bean' is undefined!");
 					
 					OrganisationInitDependency dep = new OrganisationInitDependency(moduleStr, archiveStr, beanStr, methodStr, resolution);
 					init.addDependency(dep);
@@ -312,7 +292,7 @@ extends AbstractInitManager<OrganisationInit, OrganisationInitDependency>
 		} catch(XMLReadException x) {
 			throw x;
 		} catch(Exception x) {
-			throw new XMLReadException("jfireEAR '"+jfireEAR+"' jfireJAR '"+jfireJAR+"': Reading organisation-init.xml failed!", x);
+			throw new XMLReadException("jfireEAR '"+jfireEAR+"' jfireJAR '"+jfireJAR+"': Reading cross-organisation-registration-init.xml failed!", x);
 		}
 		
 		return _inits;
@@ -343,18 +323,11 @@ extends AbstractInitManager<OrganisationInit, OrganisationInitDependency>
 	}
 
 	public void initialiseOrganisation(
-			JFireServerManagerFactory ismf, ServerCf localServer, String organisationID, String systemUserPassword)
-	throws ModuleException
-	{
-		initialiseOrganisation(ismf, localServer, organisationID, systemUserPassword, null);
-	}
-
-	public void initialiseOrganisation(
-			JFireServerManagerFactory ismf, ServerCf localServer, String organisationID, String systemUserPassword, CreateOrganisationProgress createOrganisationProgress)
+			JFireServerManagerFactory ismf, ServerCf localServer, String organisationID, String systemUserPassword, Context context)
 	throws ModuleException
 	{
 		if (!canPerformInit) {
-			logger.error("Organisation initialisation can not be performed due to errors above.");
+			logger.error("Cross organisation registration initialisation can not be performed due to errors above.");
 			return;
 		}
 
@@ -362,29 +335,17 @@ extends AbstractInitManager<OrganisationInit, OrganisationInitDependency>
 			Properties props = InvokeUtil.getInitialContextProperties(ismf, localServer, organisationID, User.USERID_SYSTEM, systemUserPassword);
 			InitialContext initCtx = new InitialContext(props);
 			try {
-				for (OrganisationInit init : inits) {
-					logger.info("Invoking OrganisationInit: " + init);
-
-					if (createOrganisationProgress != null)
-						createOrganisationProgress.addCreateOrganisationStatus(
-								new CreateOrganisationStatus(CreateOrganisationStep.DatastoreInitManager_initialiseDatastore_begin, new String[] { init.getName() }));
+				for (CrossOrganisationRegistrationInit init : inits) {
+					logger.info("Invoking CrossOrganisationRegistrationInit: " + init);
 
 					try {
 						// we force a new (nested) transaction by using a delegate-ejb with the appropriate tags
 						Object delegateBean = InvokeUtil.createBean(initCtx, "jfire/ejb/JFireBaseBean/OrganisationInitDelegate");
-						Method beanMethod = delegateBean.getClass().getMethod("invokeOrganisationInitInNestedTransaction", OrganisationInit.class);
-						beanMethod.invoke(delegateBean, init);
+						Method beanMethod = delegateBean.getClass().getMethod("invokeCrossOrganisationRegistrationInitInNestedTransaction", CrossOrganisationRegistrationInit.class, Context.class);
+						beanMethod.invoke(delegateBean, init, context);
 						InvokeUtil.removeBean(delegateBean);
-
-						if (createOrganisationProgress != null)
-							createOrganisationProgress.addCreateOrganisationStatus(
-									new CreateOrganisationStatus(CreateOrganisationStep.DatastoreInitManager_initialiseDatastore_endWithSuccess, new String[] { init.getName() }));
 					} catch (Exception x) {
 						logger.error("Init failed! " + init, x);
-
-						if (createOrganisationProgress != null)
-							createOrganisationProgress.addCreateOrganisationStatus(
-									new CreateOrganisationStatus(CreateOrganisationStep.DatastoreInitManager_initialiseDatastore_endWithError, x));
 					}
 				}
 

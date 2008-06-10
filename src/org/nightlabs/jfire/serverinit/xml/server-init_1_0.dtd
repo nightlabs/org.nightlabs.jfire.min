@@ -131,4 +131,4 @@ Here is an example:
 <!ATTLIST depends module CDATA #REQUIRED>
 <!ATTLIST depends archive CDATA #IMPLIED>
 <!ATTLIST depends class CDATA #IMPLIED>
-<!ATTLIST depends resolution (optional|required) required #IMPLIED>
+<!ATTLIST depends resolution (optional|required) #IMPLIED>

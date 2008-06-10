@@ -13,26 +13,27 @@ when the JFire (http://jfire.org) server is started.
    Use is subject to license terms.
 -->
 
-<!NOTATION OrganisationInitialisation.1_0 PUBLIC
-          "-//NightLabs GmbH//DTD Organisation Initialisation 1.0//EN">
+<!NOTATION CrossOrganisationRegistrationInitialisation.1_0 PUBLIC
+          "-//NightLabs GmbH//DTD Cross Organisation Registration Initialisation 1.0//EN">
 <!--
 This is the XML DTD for the initialisation of organisations done by
-JFire. All organisation initialisation metadata descriptors must
-include a DOCTYPE of the following form:
+JFire whenever two organisations decide to start a cooperation. All
+organisation initialisation metadata descriptors must include a
+DOCTYPE of the following form:
 
-	<!DOCTYPE organisation-initialisation
+	<!DOCTYPE cross-organisation-registration-initialisation
 		PUBLIC "-//NightLabs GmbH//DTD Organisation Initialisation 1.0//EN"
-		"http://www.nightlabs.de/dtd/organisation-init_1_0.dtd">
+		"http://www.nightlabs.de/dtd/cross-organisation-registration-init_1_0.dtd">
 
-Every file must be named "organisation-init.xml" and it must be located
+Every file must be named "cross-organisation-registration-init.xml" and it must be located
 in the META-INF directory of the JAR.
 
 Here is an example:
 	- - - example - - -
-	<!DOCTYPE organisation-initialisation
+	<!DOCTYPE cross-organisation-registration-initialisation
 		PUBLIC "-//NightLabs GmbH//DTD Organisation Initialisation 1.0//EN"
-		"http://www.nightlabs.de/dtd/organisation-init_1_0.dtd">
-	<organisation-initialisation>
+		"http://www.nightlabs.de/dtd/cross-organisation-registration-init_1_0.dtd">
+	<cross-organisation-registration-initialisation>
 		<init bean="jfire/ejb/JFireSimpleTrade/SimpleTradeManager" method="dosomething" priority="200">
 			<depends
 					module="JFireTrade.ear"
@@ -46,18 +47,18 @@ Here is an example:
 		</init>
 
 		<init bean="jfire/ejb/JFireSimpleTrade/SimpleTradeUser" method="dosomething"/>
-	</organisation-initialisation>
+	</cross-organisation-registration-initialisation>
 	- - - /example - - -
 -->
 
 
 
 <!--
-	The organisation-initialisation element is the root element.
+	The cross-organisation-registration-initialisation element is the root element.
 	It contains the following elements:
 		- init (one or more)
 -->
-<!ELEMENT organisation-initialisation (init+)>
+<!ELEMENT cross-organisation-registration-initialisation (init+)>
 
 <!--
 	The "init" element defines one call of one method of a given bean. The bean
