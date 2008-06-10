@@ -24,7 +24,7 @@
  *                                                                             *
  ******************************************************************************/
 
-package org.nightlabs.jfire.datastoreinit;
+package org.nightlabs.jfire.organisationinit;
 
 import java.lang.reflect.Method;
 import java.rmi.RemoteException;
@@ -37,6 +37,7 @@ import javax.naming.InitialContext;
 import org.apache.log4j.Logger;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.base.InvokeUtil;
+import org.nightlabs.jfire.organisationinit.DatastoreInit;
 
 /**
  * @ejb.bean name="jfire/ejb/JFireBaseBean/DatastoreInitDelegate"
