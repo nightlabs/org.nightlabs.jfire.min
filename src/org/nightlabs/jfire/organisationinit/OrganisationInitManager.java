@@ -40,7 +40,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
-public class OrganisationInitManager extends AbstractInitManager<DatastoreInit, DatastoreInitDependency>{
+public class OrganisationInitManager extends AbstractInitManager<OrganisationInit, OrganisationInitDependency>{
 
 	/**
 	 * LOG4J logger used by this class
@@ -66,16 +66,16 @@ public class OrganisationInitManager extends AbstractInitManager<DatastoreInit, 
 	/**
 	 * Holds instances of type <tt>Init</tt>.
 	 */
-	private List<DatastoreInit> inits = new ArrayList<DatastoreInit>();
+	private List<OrganisationInit> inits = new ArrayList<OrganisationInit>();
 	
 	public OrganisationInitManager(JFireServerManagerFactoryImpl jfsmf, ManagedConnectionFactoryImpl mcf, J2EEAdapter j2eeAdapter)
-	throws DatastoreInitException
+	throws OrganisationInitException
 	{
 		String deployBaseDir = mcf.getConfigModule().getJ2ee().getJ2eeDeployBaseDirectory();
 		File jfireModuleBaseDir = new File(deployBaseDir);
-		PrefixTree<DatastoreInit> initTrie = new PrefixTree<DatastoreInit>();
+		PrefixTree<OrganisationInit> initTrie = new PrefixTree<OrganisationInit>();
 
-		// Scan all JARs within all EARs for datastoreinit.xml files.
+		// Scan all JARs within all EARs for organisation-init.xml files.
 		File[] ears = jfireModuleBaseDir.listFiles(earFileFilter);
 		for (int i = 0; i < ears.length; ++i) {
 			File ear = ears[i];
@@ -99,8 +99,8 @@ public class OrganisationInitManager extends AbstractInitManager<DatastoreInit, 
 						if (je != null) {
 							InputStream in = jf.getInputStream(je);
 							try {
-								List<DatastoreInit> serverInits = parseDatastoreInitXML(ear.getName(), jar.getName(), in);
-								for (DatastoreInit init : serverInits) {
+								List<OrganisationInit> serverInits = parseDatastoreInitXML(ear.getName(), jar.getName(), in);
+								for (OrganisationInit init : serverInits) {
 									inits.add(init);
 									initTrie.insert(new String[] {init.getModule(), init.getArchive(), init.getBean(), init.getMethod()}, init);
 								}
@@ -122,12 +122,12 @@ public class OrganisationInitManager extends AbstractInitManager<DatastoreInit, 
 		try {
 			establishDependencies(inits, initTrie);
 		} catch (InitException e1) {
-			throw new DatastoreInitException("Datastore initialisation failed: " + e1.getMessage());
+			throw new OrganisationInitException("Datastore initialisation failed: " + e1.getMessage());
 		}
 		
 		// Now all inits have references of their required and dependent inits.
-		Comparator<DatastoreInit> comp = new Comparator<DatastoreInit>() {
-			public int compare(DatastoreInit o1, DatastoreInit o2) {
+		Comparator<OrganisationInit> comp = new Comparator<OrganisationInit>() {
+			public int compare(OrganisationInit o1, OrganisationInit o2) {
 				int prioDiff = o1.getPriority() - o2.getPriority();
 				if (prioDiff != 0)
 					return prioDiff;
@@ -138,7 +138,7 @@ public class OrganisationInitManager extends AbstractInitManager<DatastoreInit, 
 		try {
 			inits = resolveDependencies(inits, comp);
 		} catch (DependencyCycleException e) {
-			throw new DatastoreInitException(e + "Information regarding the cycle: "+ e.getCycleInfo());
+			throw new OrganisationInitException(e + "Information regarding the cycle: "+ e.getCycleInfo());
 		}
 		canPerformInit = true;
 
@@ -150,15 +150,15 @@ public class OrganisationInitManager extends AbstractInitManager<DatastoreInit, 
 		}
 	}
 
-	public List<DatastoreInit> getInits()
+	public List<OrganisationInit> getInits()
 	{
 		return Collections.unmodifiableList(inits);
 	}
 
-	protected List<DatastoreInit> parseDatastoreInitXML(String jfireEAR, String jfireJAR, InputStream ejbJarIn)
+	protected List<OrganisationInit> parseDatastoreInitXML(String jfireEAR, String jfireJAR, InputStream ejbJarIn)
 	throws XMLReadException
 	{
-		List<DatastoreInit> _inits = new ArrayList<DatastoreInit>();
+		List<OrganisationInit> _inits = new ArrayList<OrganisationInit>();
 		
 		try {
 			InputSource inputSource = new InputSource(ejbJarIn);
@@ -232,7 +232,7 @@ public class OrganisationInitManager extends AbstractInitManager<DatastoreInit, 
 					}
 				}
 
-				DatastoreInit init = new DatastoreInit(jfireEAR, jfireJAR, beanStr, methodStr, priority);
+				OrganisationInit init = new OrganisationInit(jfireEAR, jfireJAR, beanStr, methodStr, priority);
 
 				NodeIterator niDepends = xpa.selectNodeIterator(nInit, "depends");
 				Node nDepends = niDepends.nextNode();
@@ -299,7 +299,7 @@ public class OrganisationInitManager extends AbstractInitManager<DatastoreInit, 
 						throw new XMLReadException("jfireEAR '" + jfireEAR + "' jfireJAR '" + jfireJAR
 										+ "': Reading organisation-init.xml failed: Attribute 'method' of element 'depends' is defined whereas 'bean' is undefined!");
 					
-					DatastoreInitDependency dep = new DatastoreInitDependency(moduleStr, archiveStr, beanStr, methodStr, resolution);
+					OrganisationInitDependency dep = new OrganisationInitDependency(moduleStr, archiveStr, beanStr, methodStr, resolution);
 					init.addDependency(dep);
 
 					nDepends = niDepends.nextNode();
@@ -324,7 +324,7 @@ public class OrganisationInitManager extends AbstractInitManager<DatastoreInit, 
 	}
 
 	@Override
-	protected String[] getTriePath(DatastoreInitDependency dependency) {
+	protected String[] getTriePath(OrganisationInitDependency dependency) {
 		String[] fields = new String[4];
 		fields[0] = dependency.getModule();
 		fields[1] = dependency.getArchive();
@@ -362,22 +362,17 @@ public class OrganisationInitManager extends AbstractInitManager<DatastoreInit, 
 			Properties props = InvokeUtil.getInitialContextProperties(ismf, localServer, organisationID, User.USERID_SYSTEM, systemUserPassword);
 			InitialContext initCtx = new InitialContext(props);
 			try {
-				for (DatastoreInit init : inits) {
-					logger.info("Invoking DatastoreInit: " + init);
+				for (OrganisationInit init : inits) {
+					logger.info("Invoking OrganisationInit: " + init);
 
 					if (createOrganisationProgress != null)
 						createOrganisationProgress.addCreateOrganisationStatus(
 								new CreateOrganisationStatus(CreateOrganisationStep.DatastoreInitManager_initialiseDatastore_begin, new String[] { init.getName() }));
 
 					try {
-//						Object bean = InvokeUtil.createBean(initCtx, init.getBean());
-//						Method beanMethod = bean.getClass().getMethod(init.getMethod(), (Class[]) null);
-//						beanMethod.invoke(bean, (Object[]) null);
-//						InvokeUtil.removeBean(bean);
-
 						// we force a new (nested) transaction by using a delegate-ejb with the appropriate tags
-						Object delegateBean = InvokeUtil.createBean(initCtx, "jfire/ejb/JFireBaseBean/DatastoreInitDelegate");
-						Method beanMethod = delegateBean.getClass().getMethod("invokeDatastoreInitInNestedTransaction", DatastoreInit.class);
+						Object delegateBean = InvokeUtil.createBean(initCtx, "jfire/ejb/JFireBaseBean/OrganisationInitDelegate");
+						Method beanMethod = delegateBean.getClass().getMethod("invokeOrganisationInitInNestedTransaction", OrganisationInit.class);
 						beanMethod.invoke(delegateBean, init);
 						InvokeUtil.removeBean(delegateBean);
 

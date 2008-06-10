@@ -103,7 +103,7 @@ import org.nightlabs.jfire.jdo.notification.persistent.PersistentNotificationMan
 import org.nightlabs.jfire.module.ModuleType;
 import org.nightlabs.jfire.organisation.LocalOrganisation;
 import org.nightlabs.jfire.organisation.Organisation;
-import org.nightlabs.jfire.organisationinit.DatastoreInitException;
+import org.nightlabs.jfire.organisationinit.OrganisationInitException;
 import org.nightlabs.jfire.organisationinit.OrganisationInitManager;
 import org.nightlabs.jfire.security.Authority;
 import org.nightlabs.jfire.security.AuthorityType;
@@ -1349,12 +1349,12 @@ public class JFireServerManagerFactoryImpl
 		OrganisationInitManager datastoreInitManager;
 		try {
 			datastoreInitManager = new OrganisationInitManager(this, mcf, getJ2EEVendorAdapter());
-		} catch (DatastoreInitException e) {
+		} catch (OrganisationInitException e) {
 			logger.error("Creation of OrganisationInitManager failed!", e);
 			throw new ModuleException(e);
 		}
 
-		// the steps before DatastoreInit are defined in org.nightlabs.jfire.servermanager.createorganisation.CreateOrganisationStep
+		// the steps before OrganisationInit are defined in org.nightlabs.jfire.servermanager.createorganisation.CreateOrganisationStep
 		int stepsBeforeDatastoreInit = 10;
 		int stepsDuringDatastoreInit = 2 * datastoreInitManager.getInits().size(); // 2 * because we track begin and end
 

@@ -3,7 +3,7 @@ package org.nightlabs.jfire.organisationinit;
 import org.nightlabs.jfire.init.AbstractInit;
 import org.nightlabs.jfire.init.IDependency;
 
-public class DatastoreInit extends AbstractInit<DatastoreInit, DatastoreInitDependency> {
+public class OrganisationInit extends AbstractInit<OrganisationInit, OrganisationInitDependency> {
 
 	private String module;
 	private String archive;
@@ -11,7 +11,7 @@ public class DatastoreInit extends AbstractInit<DatastoreInit, DatastoreInitDepe
 	private String method;
 	private int priority;
 
-	public DatastoreInit(String module, String archive, String bean, String method, int priority) {
+	public OrganisationInit(String module, String archive, String bean, String method, int priority) {
 		this.module = module;
 		this.archive = archive;
 		this.bean = bean;
@@ -66,14 +66,14 @@ public class DatastoreInit extends AbstractInit<DatastoreInit, DatastoreInitDepe
 	}
 }
 
-class DatastoreInitDependency implements IDependency<DatastoreInit> {
+class OrganisationInitDependency implements IDependency<OrganisationInit> {
 	private String module;
 	private String archive;
 	private String bean;
 	private String method;
 	private Resolution resolution;
 	
-	public DatastoreInitDependency(String module, String archive, String bean, String method, Resolution res) {
+	public OrganisationInitDependency(String module, String archive, String bean, String method, Resolution res) {
 		this.module = module;
 		this.archive = archive;
 		this.bean = bean;
