@@ -30,6 +30,7 @@ import javax.ejb.CreateException;
 import javax.jdo.PersistenceManager;
 
 import org.apache.log4j.Logger;
+import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.Lookup;
 
 /**
@@ -105,11 +106,10 @@ public abstract class OrganisationLinkerBean implements javax.ejb.SessionBean
 			localOrganisation.setPassword(
 					applicantOrganisation.getOrganisationID(), grantOrganisationUserPassword);
 
-//			NLJDOHelper.makeDirtyRecursively(applicantOrganisation); // makeDirty seems to have NO effect on a detached object!
+			NLJDOHelper.makeDirtyAllFieldsRecursively(applicantOrganisation);
 			applicantOrganisation = pm.makePersistent(applicantOrganisation);
 
-			RegistrationStatus registrationStatus = new RegistrationStatus(
-					registrationID, applicantOrganisation);
+			RegistrationStatus registrationStatus = new RegistrationStatus(registrationID, applicantOrganisation);
 
 //			// It seems, there is a bug in JPOX (foreign key constraint error) and therefore,
 //			// we need to save the organisation first.
