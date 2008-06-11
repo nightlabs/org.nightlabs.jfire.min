@@ -70,12 +70,12 @@ public class StructDAO extends BaseJDOObjectDAO<StructID, Struct> {
 		}
 	}
 
-	public Struct getStruct(Class<?> linkClass, ProgressMonitor monitor) {
-		return getStruct(linkClass.getName(), monitor);
+	public Struct getStruct(Class<?> linkClass, String structScope, ProgressMonitor monitor) {
+		return getStruct(linkClass.getName(), structScope, monitor);
 	}
 	
-	public Struct getStruct(String linkClass, ProgressMonitor monitor)	{
-		StructID structID = StructID.create(SecurityReflector.getUserDescriptor().getOrganisationID(), linkClass);
+	public Struct getStruct(String linkClass, String structScope, ProgressMonitor monitor)	{
+		StructID structID = StructID.create(SecurityReflector.getUserDescriptor().getOrganisationID(), linkClass, structScope);
 		return getStruct(structID, new String[] {FetchPlan.ALL}, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT, monitor);
 	}
 	

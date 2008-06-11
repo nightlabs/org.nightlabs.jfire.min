@@ -68,12 +68,13 @@ public class StructLocalDAO extends BaseJDOObjectDAO<StructLocalID, StructLocal>
 		return structLocal;
 	}
 
-	public StructLocal getStructLocal(Class<?> linkClass, String scope, ProgressMonitor monitor) {
-		return getStructLocal(linkClass.getName(), scope, monitor);
+	public StructLocal getStructLocal(Class<?> linkClass, String structScope, String structLocalScope, ProgressMonitor monitor) {
+		return getStructLocal(linkClass.getName(), structScope, structLocalScope, monitor);
 	}
 
-	public StructLocal getStructLocal(String linkClass, String scope, ProgressMonitor monitor) {
-		StructLocalID structLocalID = StructLocalID.create(SecurityReflector.getUserDescriptor().getOrganisationID(), linkClass, scope);
+	public StructLocal getStructLocal(String linkClass, String structScope, String structLocalScope, ProgressMonitor monitor) {
+		StructLocalID structLocalID = StructLocalID.create(
+				SecurityReflector.getUserDescriptor().getOrganisationID(), linkClass, structScope, structLocalScope);
 		return getStructLocal(structLocalID, new String[] {FetchPlan.DEFAULT, IStruct.FETCH_GROUP_ISTRUCT_FULL_DATA}, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT, monitor);
 	}
 
