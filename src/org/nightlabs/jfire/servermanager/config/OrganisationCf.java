@@ -234,7 +234,7 @@ public class OrganisationCf
 		if (organisation.getPerson() == null) {
 			Person person = new Person(organisationID, IDGenerator.nextID(PropertySet.class));
 			PersonStruct.getPersonStruct(getOrganisationID(), pm);
-			IStruct structLocal = StructLocal.getStructLocal(Person.class, StructLocal.DEFAULT_SCOPE, pm);
+			IStruct structLocal = StructLocal.getStructLocal(Person.class, Person.STRUCT_SCOPE, Person.STRUCT_LOCAL_SCOPE, pm);
 			person.inflate(structLocal);
 			try {
 				TextDataField f = (TextDataField) person.getDataField(PersonStruct.PERSONALDATA_COMPANY);
