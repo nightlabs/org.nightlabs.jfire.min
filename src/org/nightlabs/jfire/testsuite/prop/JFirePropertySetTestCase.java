@@ -23,6 +23,7 @@ import org.nightlabs.jfire.idgenerator.IDGenerator;
 import org.nightlabs.jfire.prop.PropertyManager;
 import org.nightlabs.jfire.prop.PropertyManagerUtil;
 import org.nightlabs.jfire.prop.PropertySet;
+import org.nightlabs.jfire.prop.Struct;
 import org.nightlabs.jfire.prop.StructLocal;
 import org.nightlabs.jfire.prop.dao.StructLocalDAO;
 import org.nightlabs.jfire.prop.datafield.DateDataField;
@@ -80,7 +81,10 @@ public class JFirePropertySetTestCase extends TestCase {
 			return;
 		login = JFireTestLogin.getUserLogin(JFireTestLogin.USER_QUALIFIER_SERVER_ADMIN);
 		login.login();
-		PropertySet propertySet = new PropertySet(login.getOrganisationID(), IDGenerator.nextID(PropertySet.class), PropertySetTestStruct.class.getName(), StructLocal.DEFAULT_SCOPE);
+		PropertySet propertySet = new PropertySet(
+				login.getOrganisationID(), IDGenerator.nextID(PropertySet.class), 
+				PropertySetTestStruct.class.getName(), 
+				Struct.DEFAULT_SCOPE, StructLocal.DEFAULT_SCOPE);
 		propertySet = getPropertyManager().storePropertySet(propertySet, true, FETCH_GROUPS, FETCH_DEPTH);
 		propertySetID = (PropertySetID) JDOHelper.getObjectId(propertySet);
 		Cache.setServerMode(true);
@@ -108,6 +112,7 @@ public class JFirePropertySetTestCase extends TestCase {
 		try {
 			StructLocal structLocal = StructLocalDAO.sharedInstance().getStructLocal(
 					propertySet.getStructLocalLinkClass(),
+					propertySet.getStructScope(),
 					propertySet.getStructLocalScope(),
 					new NullProgressMonitor()
 			);

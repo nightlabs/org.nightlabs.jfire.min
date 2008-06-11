@@ -63,10 +63,10 @@ public class PropertySetTestStruct
 		Struct struct = null;
 		StructLocal structLocal = null;
 		try {
-			struct = Struct.getStruct(organisationID, PropertySetTestStruct.class, pm);
+			struct = Struct.getStruct(organisationID, PropertySetTestStruct.class, Struct.DEFAULT_SCOPE, pm);
 		} catch (JDOObjectNotFoundException e) {
 			// person struct not persisted yet.
-			struct = new Struct(organisationID, PropertySetTestStruct.class.getName());
+			struct = new Struct(organisationID, PropertySetTestStruct.class.getName(), Struct.DEFAULT_SCOPE);
 			PropertySetTestStruct.createStandardStructure(struct);
 			struct = pm.makePersistent(struct);
 			
@@ -135,6 +135,6 @@ public class PropertySetTestStruct
 	public static final String TESTBLOCK_SELECTION_2 = "Selection2";
 
 	public static StructLocalID getStructLocalID(String organisationID) {
-		return StructLocalID.create(organisationID, PropertySetTestStruct.class.getName(), StructLocal.DEFAULT_SCOPE);
+		return StructLocalID.create(organisationID, PropertySetTestStruct.class.getName(), Struct.DEFAULT_SCOPE, StructLocal.DEFAULT_SCOPE);
 	}
 }
