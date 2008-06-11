@@ -128,13 +128,6 @@ public class Lookup
 		return getPersistenceManagerFactory(organisationID);
 	}
 
-	private static ThreadLocal<Map<String, PersistenceManager>> organisationID2PersistenceManagerTL = new ThreadLocal<Map<String,PersistenceManager>>() {
-		@Override
-		protected Map<String, PersistenceManager> initialValue() {
-			return new HashMap<String, PersistenceManager>();
-		}
-	};
-
 	/**
 	 * This method returns a PersistenceManager that is providing access to
 	 * the database that is linked to the organisationID of the current user.
@@ -298,6 +291,8 @@ public class Lookup
 			initCtx.lookup(JFireServerManagerFactory.JNDI_NAME);
 
 			String password = localOrganisation.getPassword(_organisationID);
+			if (password == null)
+				throw new IllegalStateException("localOrganisation.getPassword(organisationID) returned null! localOrganisationID=" + localOrganisation.getOrganisationID() + " organisationID=" + _organisationID);
 
 			Organisation organisation = (Organisation)pm.getObjectById(OrganisationID.create(_organisationID), true);
 			Server server = organisation.getServer();

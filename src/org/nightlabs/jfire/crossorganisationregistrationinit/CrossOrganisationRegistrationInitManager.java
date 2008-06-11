@@ -335,6 +335,8 @@ extends AbstractInitManager<CrossOrganisationRegistrationInit, OrganisationInitD
 			Properties props = InvokeUtil.getInitialContextProperties(ismf, localServer, organisationID, User.USERID_SYSTEM, systemUserPassword);
 			InitialContext initCtx = new InitialContext(props);
 			try {
+				Throwable firstInitException = null;
+
 				for (CrossOrganisationRegistrationInit init : inits) {
 					logger.info("Invoking CrossOrganisationRegistrationInit: " + init);
 
@@ -344,15 +346,28 @@ extends AbstractInitManager<CrossOrganisationRegistrationInit, OrganisationInitD
 						Method beanMethod = delegateBean.getClass().getMethod("invokeCrossOrganisationRegistrationInitInNestedTransaction", CrossOrganisationRegistrationInit.class, Context.class);
 						beanMethod.invoke(delegateBean, init, context);
 						InvokeUtil.removeBean(delegateBean);
-					} catch (Exception x) {
-						logger.error("Init failed! " + init, x);
+					} catch (Throwable x) { // we catch this in order to execute all inits before escalating
+						if (firstInitException == null)
+							firstInitException = x;
+						
+						logger.error("CrossOrganisationRegistrationInit failed! " + init, x);
 					}
 				}
+
+				// We escalate the first exception that occured in order to ensure the inits to be retried.
+				// Since this method is called by an Async-Invocation, it's retried a few times and afterwards, an administrator
+				// has the possibility to initiate further retries.
+				if (firstInitException != null)
+					throw firstInitException;
 
 			} finally {
 		   	initCtx.close();
 			}
-		} catch (Exception x) {
+		} catch (Error e) {
+			throw e;
+		} catch (RuntimeException x) {
+			throw x;
+		} catch (Throwable x) {
 			throw new ModuleException(x);
 		}
 	}
