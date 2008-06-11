@@ -27,6 +27,7 @@ extends BaseJDOObjectDAO<AsyncInvokeProblemID, AsyncInvokeProblem>
 
 	private AsyncInvokeManager asyncInvokeManager;
 
+	@SuppressWarnings("unchecked")
 	@Override
 	protected Collection<AsyncInvokeProblem> retrieveJDOObjects(
 			Set<AsyncInvokeProblemID> asyncInvokeProblemIDs, String[] fetchGroups,
@@ -49,6 +50,7 @@ extends BaseJDOObjectDAO<AsyncInvokeProblemID, AsyncInvokeProblem>
 		return getJDOObjects(null, asyncInvokeProblemIDs, fetchGroups, maxFetchDepth, monitor);
 	}
 
+	@SuppressWarnings("unchecked")
 	public synchronized List<AsyncInvokeProblem> getAsyncInvokeProblems(
 			String[] fetchGroups,
 			int maxFetchDepth,
