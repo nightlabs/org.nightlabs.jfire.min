@@ -29,7 +29,6 @@ package org.nightlabs.jfire.prop;
 import java.rmi.RemoteException;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -45,11 +44,9 @@ import org.apache.log4j.Logger;
 import org.nightlabs.ModuleException;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
-import org.nightlabs.jfire.base.DuplicateKeyException;
 import org.nightlabs.jfire.base.expression.IExpression;
 import org.nightlabs.jfire.organisation.Organisation;
 import org.nightlabs.jfire.person.PersonStruct;
-import org.nightlabs.jfire.prop.exception.IllegalStructureModificationException;
 import org.nightlabs.jfire.prop.id.PropertySetID;
 import org.nightlabs.jfire.prop.id.StructFieldID;
 import org.nightlabs.jfire.prop.id.StructID;
@@ -309,9 +306,10 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type="Required"
 	 */
-	public void storeStruct(IStruct struct) {
+	public IStruct storeStruct(IStruct struct, boolean get, String[] fetchGroups, int maxFetchDepth) {
 		PersistenceManager pm = getPersistenceManager();
 		try {
+			IStruct persistenStruct = null;
 			if (struct instanceof Struct) {
 				if (hasRootOrganisation() && !getOrganisationID().equals(getRootOrganisationID()))
 					throw new IllegalStateException("Structs can only be stored by the root organisation.");
@@ -320,6 +318,7 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 				Struct currentStruct = (Struct) pm.getObjectById(modifiedStruct.getID());
 				modifiedStruct = applyStructuralChanges(modifiedStruct, currentStruct);
 				modifiedStruct = pm.makePersistent(modifiedStruct);
+				persistenStruct = modifiedStruct;
 			} else if (struct instanceof StructLocal) {
 				StructLocal modifiedStructLocal = (StructLocal) struct;
 				pm.getFetchPlan().setGroup(IStruct.FETCH_GROUP_ISTRUCT_FULL_DATA);
@@ -334,68 +333,23 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 				// misconception by myself.
 				// I stated this problem in http://www.jpox.org/servlet/forum/viewthread?thread=4967&lastpage=yes
 				modifiedStructLocal = pm.makePersistent(modifiedStructLocal);
-
-				if (true)
-					return;
+				
+				persistenStruct = modifiedStructLocal;
 			} else {
 				throw new IllegalArgumentException("Given struct must be of type Struct or StructLocal.");
+			}
+			if (get) {
+				pm.getFetchPlan().setGroups(fetchGroups);
+				pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
+				return pm.detachCopy(persistenStruct);
+			} else {
+				return null;
 			}
 		} finally {
 			pm.close();
 		}
 	}
-
-	/**
-	 * Store a struct either detached or not made persistent yet.
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type="Required"
-	 */
-	public void storeStruct1(IStruct struct) {
-		PersistenceManager pm = getPersistenceManager();
-		try {
-			if (struct instanceof Struct) {
-				if (hasRootOrganisation() && !getOrganisationID().equals(getRootOrganisationID()))
-					throw new IllegalStateException("Structs can only be stored by the root organisation.");
-
-				Struct modifiedStruct = (Struct) struct;
-				Struct currentStruct = (Struct) pm.getObjectById(modifiedStruct.getID());
-				modifiedStruct = applyStructuralChanges(modifiedStruct, currentStruct);
-				modifiedStruct = pm.makePersistent(modifiedStruct);
-			} else if (struct instanceof StructLocal) {
-				StructLocal modifiedStructLocal = (StructLocal) struct;
-				StructLocal attachedStructLocal = (StructLocal) pm.getObjectById(modifiedStructLocal.getID());
-
-				// Add only the struct blocks to the attached version that do not originate from the Struct of the StructLocal
-
-				for (StructBlock structBlock : new LinkedList<StructBlock>(modifiedStructLocal.getStructBlocks())) {
-					if (!attachedStructLocal.getStruct().getStructBlocks().contains(structBlock)) {
-						try {
-							try {
-								modifiedStructLocal.removeStructBlock(structBlock);
-							} catch (IllegalStructureModificationException e) {
-								throw new RuntimeException(e);
-							}
-							attachedStructLocal.addStructBlock(structBlock);
-							structBlock = pm.makePersistent(structBlock);
-						} catch (DuplicateKeyException e) {
-							// this should never happen
-							throw new RuntimeException(e);
-						}
-					}
-				}
-
-				pm.makePersistent(attachedStructLocal);
-
-			} else {
-				throw new IllegalArgumentException("Given struct must be of type Struct or StructLocal.");
-			}
-		} finally {
-			pm.close();
-		}
-	}
-
+	
 	/**
 	 * Checks if the changes reflected by <code>modifiedStruct</code> are
 	 * adequate, i.e. that they did not touch blocks that are owned by the dev
