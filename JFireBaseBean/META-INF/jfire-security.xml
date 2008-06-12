@@ -4,6 +4,9 @@
 		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 		xsi:schemaLocation="urn:jfire.org:jfire-security_1_0 https://www.jfire.org/schema/jfire-security_1_0.xsd "
 >
+<!-- ******************************************************************* -->
+<!-- ***             BEGIN org.nightlabs.jfire.security              *** -->
+<!-- ******************************************************************* -->
 	<role-group id="org.nightlabs.jfire.security.accessRightManagement">
 		<name>Access right management</name>
 		<name language="de">Zugriffsrechteverwaltung</name>
@@ -157,5 +160,64 @@
 		</description>
 		<role-group id="org.nightlabs.jfire.security.editAuthority" />
 	</authority-type>
+
+<!-- ******************************************************************* -->
+<!-- ***              END org.nightlabs.jfire.security               *** -->
+<!-- ******************************************************************* -->
+
+<!-- ******************************************************************* -->
+<!-- ***               BEGIN org.nightlabs.jfire.timer               *** -->
+<!-- ******************************************************************* -->
+	<role-group id="org.nightlabs.jfire.timer.editTask#own">
+		<name>Edit own timer task</name>
+		<name language="de">Eigene zeitgesteuerte Aufgabe bearbeiten</name>
+		<description>
+			Allow to create new and modify existing timer tasks. This
+			right only allows to modify the own tasks - it does not
+			allow to modify tasks that are owned by other users.
+		</description>
+		<description language="de">
+			Erlaubt es einem Benutzer, neue zeitgesteuerte Aufgaben
+			anzulegen und bestehende zu ändern. Wohlgemerkt ist es damit
+			nur erlaubt, eigene Aufgaben zu editieren - die Aufgaben
+			anderer Benutzer können nicht verändert werden.
+		</description>
+		<role id="org.nightlabs.jfire.timer.storeTask#own"/>
+	</role-group>
+
+	<role-group id="org.nightlabs.jfire.timer.editTask#all">
+		<name>Edit timer task (including others' tasks)</name>
+		<name language="de">Zeitgesteuerte Aufgaben bearbeiten (auch fremde)</name>
+		<description>
+			Allow to create new and modify existing timer tasks. This
+			right allows to modify tasks of other users - not only the
+			own.
+		</description>
+		<description language="de">
+			Erlaubt es einem Benutzer, neue zeitgesteuerte Aufgaben
+			anzulegen und bestehende zu ändern. Dies beinhaltet die
+			Aufgaben anderer Benutzer - nicht nur die eigenen.
+		</description>
+		<role id="org.nightlabs.jfire.timer.storeTask#own"/>
+		<role id="org.nightlabs.jfire.timer.storeTask#all"/>
+	</role-group>
+<!-- ******************************************************************* -->
+<!-- ***                END org.nightlabs.jfire.timer                *** -->
+<!-- ******************************************************************* -->
+
+
+<!-- ******************************************************************* -->
+<!-- ***             BEGIN org.nightlabs.jfire.language              *** -->
+<!-- ******************************************************************* -->
+	<role-group id="org.nightlabs.jfire.language.editLanguage">
+		<name>Edit language</name>
+		<name>Sprache bearbeiten</name>
+		<description>Allows to create or modify a language.</description>
+		<description language="de">Erlaubt es, eine Sprache anzulegen oder zu ändern.</description>
+		<role id="org.nightlabs.jfire.language.createLanguage"/>
+	</role-group>
+<!-- ******************************************************************* -->
+<!-- ***              END org.nightlabs.jfire.language               *** -->
+<!-- ******************************************************************* -->
 
 </jfire-security>

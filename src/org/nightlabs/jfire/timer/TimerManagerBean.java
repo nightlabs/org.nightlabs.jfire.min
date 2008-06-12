@@ -12,6 +12,7 @@ import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
 import javax.jdo.FetchPlan;
 import javax.jdo.JDODetachedFieldAccessException;
+import javax.jdo.JDOHelper;
 import javax.jdo.PersistenceManager;
 
 import org.apache.log4j.Logger;
@@ -20,6 +21,7 @@ import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jdo.ObjectIDUtil;
 import org.nightlabs.jdo.timepattern.TimePatternSetJDOImpl;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
+import org.nightlabs.jfire.security.Authority;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.timer.id.TaskID;
 
@@ -39,9 +41,6 @@ extends BaseSessionBeanImpl
 implements SessionBean
 {
 	private static final long serialVersionUID = 1L;
-	/**
-	 * LOG4J logger used by this class
-	 */
 	private static final Logger logger = Logger.getLogger(TimerManagerBean.class);
 
 	@Override
@@ -74,13 +73,14 @@ implements SessionBean
 		Task.FETCH_GROUP_TIME_PATTERN_SET,
 		TimePatternSetJDOImpl.FETCH_GROUP_TIME_PATTERNS };
 
+
 	/**
 	 * This method is called by {@link TimerAsyncInvoke.TimerInvocation#invoke()}.
 	 *
 	 * @ejb.interface-method view-type="local"
 	 * @ejb.transaction type="RequiresNew"
 	 * @ejb.permission unchecked="true"
-	 **/
+	 */
 	public boolean setExecutingIfActiveExecIDMatches(TaskID taskID, String activeExecID)
 	throws Exception
 	{
@@ -99,15 +99,16 @@ implements SessionBean
 		}
 	}
 
+
 	/**
-	 * Because the method {@link JFireTimerBean#ejbTimeout(Timer)} is called without authentication
+	 * Because the method {@link JFireTimerBean#ejbTimeout(javax.ejb.Timer)} is called without authentication
 	 * and thus accessing the datastore doesn't work properly, we use this method as
 	 * a delegate.
 	 *
 	 * @ejb.interface-method view-type="local"
 	 * @ejb.transaction type="RequiresNew"
 	 * @ejb.permission unchecked="true"
-	 **/
+	 */
 	public void ejbTimeoutDelegate(TimerParam timerParam)
 	throws Exception
 	{
@@ -134,7 +135,6 @@ implements SessionBean
 				task.setActiveExecID(activeExecID);
 				TimerAsyncInvoke.exec(task, true); // this method does not use the task instance later outside the current transaction (it only fetches the TaskID)
 			}
-//			tasks = (List) pm.detachCopyAll(tasks); // not necessary anymore
 
 			for (Iterator<Task> it = Task.getTasksToRecalculateNextExecDT(pm, now).iterator(); it.hasNext(); ) {
 				Task task = it.next();
@@ -147,48 +147,12 @@ implements SessionBean
 		logger.info("ejbTimeoutDelegate: organisationID=\""+timerParam.organisationID+"\": end");
 	}
 
-	/**
-	 * @ejb.interface-method
-	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
-	 * @ejb.permission role-name="_Guest_"
-	 **/
-	@SuppressWarnings("unchecked")
-	public Task getTask(TaskID taskID, String[] fetchGroups, int maxFetchDepth)
-	throws ModuleException
-	{
-		try {
-			PersistenceManager pm = getPersistenceManager();
-			try {
-				pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
-				if (fetchGroups != null)
-					pm.getFetchPlan().setGroups(fetchGroups);
-
-				Task task = (Task) pm.getObjectById(taskID);
-				task = pm.detachCopy(task);
-				try {
-					task.getUser().getUserLocal().setPassword("********");
-				} catch (NullPointerException x) {
-					// ignore
-				} catch (JDODetachedFieldAccessException x) {
-					// ignore
-				}
-
-				return task;
-			} finally {
-				pm.close();
-			}
-		} catch (RuntimeException x) {
-			throw x;
-		} catch (Exception x) {
-			throw new ModuleException(x);
-		}
-	}
 
 	/**
 	 * @ejb.interface-method
 	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 * @ejb.permission role-name="_Guest_"
-	 **/
+	 */
 	@SuppressWarnings("unchecked")
 	public List<TaskID> getTaskIDs()
 	throws ModuleException
@@ -196,8 +160,7 @@ implements SessionBean
 		try {
 			PersistenceManager pm = getPersistenceManager();
 			try {
-				return NLJDOHelper.getObjectIDList(
-						(Collection)pm.newQuery(Task.class).execute());
+				return NLJDOHelper.getObjectIDList((Collection)pm.newQuery(Task.class).execute());
 			} finally {
 				pm.close();
 			}
@@ -206,29 +169,20 @@ implements SessionBean
 		}
 	}
 
+
 	/**
 	 * @ejb.interface-method
 	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 * @ejb.permission role-name="_Guest_"
-	 **/
+	 */
 	@SuppressWarnings("unchecked")
-	public List<Task> getTasks(
-			Collection<TaskID> taskIDs, String[] fetchGroups, int maxFetchDepth)
+	public List<Task> getTasks(Collection<TaskID> taskIDs, String[] fetchGroups, int maxFetchDepth)
 	throws ModuleException
 	{
 		try {
 			PersistenceManager pm = getPersistenceManager();
 			try {
 				List<Task> tasks = NLJDOHelper.getDetachedObjectList(pm, taskIDs, Task.class, fetchGroups, maxFetchDepth);
-				for (Task task : tasks) {
-					try {
-						task.getUser().getUserLocal().setPassword("********");
-					} catch (NullPointerException x) {
-						// ignore
-					} catch (JDODetachedFieldAccessException x) {
-						// ignore
-					}
-				}
 				return tasks;
 			} finally {
 				pm.close();
@@ -238,63 +192,44 @@ implements SessionBean
 		}
 	}
 
-	/**
-	 * @ejb.interface-method
-	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
-	 * @ejb.permission role-name="_Guest_"
-	 **/
-	@SuppressWarnings("unchecked")
-	public List<Task> getTasks(String taskTypeID, String[] fetchGroups, int maxFetchDepth)
-	throws ModuleException
-	{
-		try {
-			PersistenceManager pm = getPersistenceManager();
-			try {
-				pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
-				if (fetchGroups != null)
-					pm.getFetchPlan().setGroups(fetchGroups);
-
-				List<Task> tasks = Task.getTasksByTaskTypeID(pm, taskTypeID);
-				List<Task> dTasks = (List<Task>) pm.detachCopyAll(tasks);
-				for (Task task : dTasks) {
-					try {
-						task.getUser().getUserLocal().setPassword("********");
-					} catch (NullPointerException x) {
-						// ignore
-					} catch (JDODetachedFieldAccessException x) {
-						// ignore
-					}
-				}
-				return dTasks;
-			} finally {
-				pm.close();
-			}
-		} catch (Exception x) {
-			throw new ModuleException(x);
-		}
-	}
 
 	/**
 	 * @ejb.interface-method
 	 * @ejb.transaction type="Required"
-	 * @ejb.permission role-name="TimerManager.setTask"
-	 **/
+	 * @ejb.permission role-name="org.nightlabs.jfire.timer.storeTask#own"
+	 */
 	public Task storeTask(Task task, boolean get, String[] fetchGroups, int maxFetchDepth)
 	throws ModuleException
 	{
 		try {
 			PersistenceManager pm = getPersistenceManager();
 			try {
-				task = NLJDOHelper.storeJDO(pm, task, get, fetchGroups, maxFetchDepth);
+				User principalUser = User.getUser(pm, getPrincipal());
 
+				TaskID taskID = (TaskID) JDOHelper.getObjectId(task);
+				Task persistentTask = null;
+				if (taskID != null)
+					persistentTask = (Task) pm.getObjectById(taskID);
+
+				User taskOwnerToBeWritten = null;
 				try {
-					task.getUser().getUserLocal().setPassword("********");
-				} catch (NullPointerException x) {
-					// ignore
+					taskOwnerToBeWritten = task.getUser();
 				} catch (JDODetachedFieldAccessException x) {
-					// ignore
+					// ignore - in this case the owner is not changed and the persistentTask.user will be checked
+					if (persistentTask == null)
+						throw new IllegalStateException("task.user is not a detached field, but the task is not existing in the datastore either! " + task);
 				}
 
+				if (
+						(taskOwnerToBeWritten != null && !principalUser.equals(taskOwnerToBeWritten)) ||
+						(persistentTask != null && !principalUser.equals(persistentTask.getUser()))
+				)
+				{
+					// trying to manipulate a task where the current user is not the owner => check for RoleConstants.storeTask_all
+					Authority.getOrganisationAuthority(pm).assertContainsRoleRef(getPrincipal(), RoleConstants.storeTask_all);
+				}
+
+				task = NLJDOHelper.storeJDO(pm, task, get, fetchGroups, maxFetchDepth);
 				return task;
 			} finally {
 				pm.close();

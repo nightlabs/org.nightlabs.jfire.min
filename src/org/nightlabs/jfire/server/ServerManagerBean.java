@@ -58,9 +58,6 @@ public abstract class ServerManagerBean
 {
 	private static final long serialVersionUID = 1L;
 
-	/**
-	 * @see org.nightlabs.jfire.base.BaseSessionBeanImpl#setSessionContext(javax.ejb.SessionContext)
-	 */
 	@Override
 	public void setSessionContext(SessionContext sessionContext)
 			throws EJBException, RemoteException
@@ -74,14 +71,6 @@ public abstract class ServerManagerBean
 	public void ejbCreate()
 	throws CreateException
 	{
-//		try
-//		{
-//			System.out.println("ServerManagerBean by " + this.getPrincipalString());
-//		}
-//		catch (Exception e)
-//		{
-//			throw new CreateException(e.getMessage());
-//		}
 	}
 
 	/**
@@ -103,10 +92,9 @@ public abstract class ServerManagerBean
 	}
 
 	/**
-	 * @see javax.ejb.SessionBean#ejbRemove()
-	 *
 	 * @ejb.permission unchecked="true"
 	 */
+	@Override
 	public void ejbRemove() throws EJBException, RemoteException { }
 
 	/**
@@ -202,62 +190,5 @@ public abstract class ServerManagerBean
 	{
 		return getJFireServerManagerFactory().getJ2eeRemoteServers();
 	}
-
-//	/**
-//	 * @return The instance of the local host.
-//	 *
-//	 * @ejb.interface-method
-//	 */
-//	public LocalServer getLocalServer()
-//	{
-//		throw new UnsupportedOperationException("NYI");
-//		if (localServer != null) return localServer;
-//
-//		PersistenceManager pm = sysPMF.getPersistenceManager();
-//		Iterator it = pm.getExtent(LocalServer.class, false).iterator();
-//		if (!it.hasNext())
-//			throw new IllegalStateException("There is no server registered as localServer! Thus, I don't know who I am!");
-//
-//		localServer = (LocalServer) it.next();
-//
-//		if (it.hasNext())
-//			throw new IllegalStateException("There is more than one server registered as localServer! Thus, I don't know who I am!");
-//
-//		pm.retrieve(localServer.getServer());
-//		pm.makeTransient(localServer);
-//		pm.makeTransient(localServer.getServer());
-//
-//		pm.close();
-//		return localServer;
-//	}
-
-//	/**
-//	 * @param server
-//	 * @return true, if the given server is the local machine
-//	 *
-//	 * @ejb.interface-method
-//	 */
-//	public boolean isLocalhost(Server server)
-//	{
-//		return isLocalhost(server.getServerID());
-//	}
-//
-//	/**
-//	 * @param serverId
-//	 * @return true, if the given server is the local machine
-//	 *
-//	 * @ejb.interface-method
-//	 */
-//	public boolean isLocalhost(String serverId)
-//	{
-//		if (serverId == null)
-//			throw new NullPointerException("Param serverId must not be null!");
-//
-//		Server server = getLocalServer().getServer();
-//		if (server == null)
-//			throw new NullPointerException("localServer.server must not be null!");
-//
-//		return serverId.equals(server.getServerID());
-//	}
 
 }

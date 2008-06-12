@@ -38,7 +38,6 @@ import javax.ejb.SessionBean;
 import javax.jdo.PersistenceManager;
 
 import org.apache.log4j.Logger;
-import org.nightlabs.ModuleException;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.jdo.cache.CacheManager;
 import org.nightlabs.jfire.jdo.cache.NotificationBundle;
@@ -71,8 +70,6 @@ implements SessionBean
 	{
 	}
 	/**
-	 * @see javax.ejb.SessionBean#ejbRemove()
-	 *
 	 * @ejb.permission unchecked="true"
 	 */
 	public void ejbRemove() throws EJBException, RemoteException
@@ -146,8 +143,8 @@ implements SessionBean
 			Collection<Object> removeObjectIDs,
 			Collection<Object> addObjectIDs,
 			Collection<Long> removeFilterIDs,
-			Collection<IJDOLifecycleListenerFilter> addFilters)
-	throws ModuleException
+			Collection<IJDOLifecycleListenerFilter> addFilters
+	)
 	{
 		CacheManager cm = getLookup().getCacheManager(getPrincipal());
 		try {
@@ -212,8 +209,8 @@ implements SessionBean
 	 */
 	public void resubscribeAllListeners(
 			Set<Object> subscribedObjectIDs,
-			Collection<IJDOLifecycleListenerFilter> filters)
-	throws ModuleException
+			Collection<IJDOLifecycleListenerFilter> filters
+	)
 	{
 		CacheManager cm = getLookup().getCacheManager(getPrincipal());
 		try {
@@ -237,38 +234,6 @@ implements SessionBean
 		}
 	}
 
-//	/**
-//	 * @ejb.interface-method
-//	 * @ejb.permission role-name="_Guest_"
-//	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
-//	 */
-//	public void addLifecycleListenerFilters(Collection<IJDOLifecycleListenerFilter> filters)
-//	throws ModuleException
-//	{
-//		CacheManager cm = getLookup().getCacheManager(getPrincipal());
-//		try {
-//			cm.addLifecycleListenerFilters(filters);
-//		} finally {
-//			cm.close();
-//		}
-//	}
-//
-//	/**
-//	 * @ejb.interface-method
-//	 * @ejb.permission role-name="_Guest_"
-//	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
-//	 */
-//	public void removeLifecycleListenerFilters(Set<Long> filterIDs)
-//	throws ModuleException
-//	{
-//		CacheManager cm = getLookup().getCacheManager(getPrincipal());
-//		try {
-//			cm.removeLifecycleListenerFilters(filterIDs);
-//		} finally {
-//			cm.close();
-//		}
-//	}
-
 	/**
 	 * This method removes all listeners that have been registered for
 	 * the current cache session. The method <tt>waitForChanges(...)</tt>
@@ -279,7 +244,6 @@ implements SessionBean
 	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 */
 	public void closeCacheSession()
-	throws ModuleException
 	{
 		CacheManager cm = getLookup().getCacheManager(getPrincipal());
 		try {
@@ -312,7 +276,6 @@ implements SessionBean
 	 * @ejb.transaction type="Supports" @!This method should never become transactional since it waits very very long and likely exceeds transaction timeouts. Furthermore it's not necessary to use a transaction here.
 	 */
 	public NotificationBundle waitForChanges(long waitTimeout)
-	throws ModuleException
 	{
 		CacheManager cm = getLookup().getCacheManager(getPrincipal());
 		try {
@@ -345,142 +308,4 @@ implements SessionBean
 		}
 	}
 
-//	/**
-//	 * This method is called by the implementation of
-//	 * {@link org.nightlabs.jfire.jdo.organisationsync.OrganisationSyncDelegate}
-//	 * in order to mark the appropriate
-//	 * {@link org.nightlabs.jfire.jdo.organisationsync.IncomingChangeListenerDescriptor}s
-//	 * dirty.
-//	 *
-//	 * @param dirtyObjectIDCarriers Instances of {@link org.nightlabs.jfire.jdo.organisationsync.DirtyObjectIDCarrier}
-//	 *
-//	 * @ejb.interface-method
-//	 * @ejb.permission role-name="_Guest_"
-//	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
-//	 */
-//	public void notifyDirtyObjectIDs(Collection dirtyObjectIDCarriers)
-//	throws ModuleException
-//	{
-//		if (dirtyObjectIDCarriers == null)
-//			throw new NullPointerException("dirtyObjectIDCarriers");
-//
-//		String organisationID = getOrganisationID();
-//
-//		PersistenceManager pm = getPersistenceManager();
-//		try {
-//			pm.getExtent(IncomingChangeListenerDescriptor.class); // initialize meta-data
-//
-//			for (Iterator itC = dirtyObjectIDCarriers.iterator(); itC.hasNext(); ) {
-//				DirtyObjectIDCarrier carrier = (DirtyObjectIDCarrier) itC.next();
-//				String context = carrier.getContext();
-//
-//				for (Iterator it = carrier.getObjectIDs().iterator(); it.hasNext(); ) {
-//					Object objectID = it.next();
-//					String[] parts = ObjectIDUtil.splitObjectIDString(objectID.toString());
-//					String objectIDClassName = parts[0];
-//					String objectIDFieldPart = parts[1];
-//					IncomingChangeListenerDescriptorID listenerDescriptorID = IncomingChangeListenerDescriptorID.create(
-//							organisationID, objectIDClassName, objectIDFieldPart);
-//
-//					IncomingChangeListenerDescriptor listenerDescriptor;
-//					try {
-//						listenerDescriptor = (IncomingChangeListenerDescriptor) pm.getObjectById(listenerDescriptorID);
-//						if (!context.equals(listenerDescriptor))
-//							throw new IllegalArgumentException("Listener descriptor \"" + listenerDescriptorID + "\" does have context=\"" + listenerDescriptor.getContext() + "\", but remote organisation passed context=\""+context+"\"!");
-//					} catch (JDOObjectNotFoundException e) {
-//						listenerDescriptor = new IncomingChangeListenerDescriptor(
-//								organisationID, objectIDClassName, objectIDFieldPart, context, true);
-//						pm.makePersistent(listenerDescriptor);
-//					}
-//
-//					if (!listenerDescriptor.isDirty())
-//						listenerDescriptor.setDirty(true);
-//				}
-//			}
-//		} finally {
-//			pm.close();
-//		}
-//	}
-
-//	/**
-//	 *
-//	 * @ejb.interface-method
-//	 * @ejb.permission role-name="_Guest_"
-//	 * @ejb.transaction type="Required"
-//	 */
-//	public JDOObjectController getJDOObjectController(ObjectID linkObject, String[] fetchGroups, int maxFetchDepth)
-//	throws ModuleException
-//	{
-//		return getJDOObjectController(linkObject.toString(), fetchGroups, maxFetchDepth);
-//	}
-//
-//	/**
-//	 *
-//	 * @ejb.interface-method
-//	 * @ejb.permission role-name="_Guest_"
-//	 * @ejb.transaction type="Required"
-//	 */
-//	public JDOObjectController getJDOObjectController(String linkObject, String[] fetchGroups, int maxFetchDepth)
-//	throws ModuleException
-//	{
-//		PersistenceManager pm = getPersistenceManager();
-//		try {
-//			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
-//
-//			if (fetchGroups != null)
-//				pm.getFetchPlan().setGroups(fetchGroups);
-//			else
-//				pm.getFetchPlan().setGroups(JDOObjectController.DEFAULT_FETCH_GROUPS);
-//
-//			JDOObjectController controller = JDOObjectController.getObjectController(pm, linkObject);
-//
-//			return (JDOObjectController) pm.detachCopy(controller);
-//
-//		} finally {
-//			pm.close();
-//		}
-//
-//	}
-//
-//	/**
-//	 *
-//	 * @ejb.interface-method
-//	 * @ejb.permission role-name="_Guest_"
-//	 * @ejb.transaction type="Required"
-//	 */
-//	public JDOObjectSyncResult syncJDOObjectChanges(String linkObject, long version, String[] fetchGroups, int maxFetchDepth)
-//	throws ModuleException
-//	{
-//		PersistenceManager pm = getPersistenceManager();
-//		try {
-//			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
-//
-//			if (fetchGroups == null)
-//				pm.getFetchPlan().setGroups(JDOObjectSyncResult.DEFAULT_FETCH_GROUPS);
-//			else
-//				pm.getFetchPlan().setGroups(fetchGroups);
-//
-//			JDOObjectController controller = JDOObjectController.getObjectController(pm, linkObject);
-//			JDOObjectController dController = (JDOObjectController)pm.detachCopy(controller);
-//
-//			Collection<JDOObjectChangeEvent> events = JDOObjectChangeEvent.getChangeEventsAfterVersion(pm, linkObject, version);
-//			Collection dEvents = pm.detachCopyAll(events);
-//			return new JDOObjectSyncResult(dController, dEvents);
-//		} finally {
-//			pm.close();
-//		}
-//
-//	}
-//
-//	/**
-//	 *
-//	 * @ejb.interface-method
-//	 * @ejb.permission role-name="_Guest_"
-//	 * @ejb.transaction type="Required"
-//	 */
-//	public JDOObjectSyncResult syncJDOObjectChanges(ObjectID linkObject, long version, String[] fetchGroups, int maxFetchDepth)
-//	throws ModuleException
-//	{
-//		return syncJDOObjectChanges(linkObject.toString(), version, fetchGroups, maxFetchDepth);
-//	}
 }

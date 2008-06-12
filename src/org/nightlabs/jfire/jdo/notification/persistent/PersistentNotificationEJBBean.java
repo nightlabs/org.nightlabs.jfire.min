@@ -73,8 +73,6 @@ extends BaseSessionBeanImpl implements SessionBean
 	public void ejbCreate() throws CreateException { }
 
 	/**
-	 * @see javax.ejb.SessionBean#ejbRemove()
-	 * 
 	 * @ejb.permission unchecked="true"
 	 */
 	public void ejbRemove() throws EJBException, RemoteException { }
@@ -83,7 +81,7 @@ extends BaseSessionBeanImpl implements SessionBean
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_System_"
 	 * @ejb.transaction type="Required"
-	 **/
+	 */
 	public void initialise()
 	{
 		PersistenceManager pm = this.getPersistenceManager();
@@ -102,27 +100,13 @@ extends BaseSessionBeanImpl implements SessionBean
 		}
 	}
 
-//	/**
-//	 * @ejb.interface-method
-//	 * @ejb.permission role-name="_Guest_"
-//	 **/
-//	public Set<NotificationFilterID> getSubscriptionIDs()
-//	{
-//		PersistenceManager pm = getPersistenceManager();
-//		try  {
-//
-//		} finally {
-//			pm.close();
-//		}
-//	}
-//
 	/**
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
 	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
-	 **/
+	 */
 	@SuppressWarnings("unchecked")
-	public List<NotificationFilter> getSubscriptions(Set<NotificationFilterID> notificationFilterIDs, String[] fetchGroups, int maxFetchDepth)
+	public List<NotificationFilter> getNotificationFilters(Set<NotificationFilterID> notificationFilterIDs, String[] fetchGroups, int maxFetchDepth)
 	{
 		PersistenceManager pm = getPersistenceManager();
 		try  {
@@ -135,13 +119,13 @@ extends BaseSessionBeanImpl implements SessionBean
 	/**
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
-	 **/
+	 */
 	public NotificationFilter storeNotificationFilter(NotificationFilter notificationFilter, boolean get, String[] fetchGroups, int maxFetchDepth)
 	{
 		PersistenceManager pm = getPersistenceManager();
 		try {
 			if (logger.isDebugEnabled())
-				logger.debug("storeNotificationFilter: user="+getPrincipalString() + " notificationFilter: " + notificationFilter.getPrimaryKey());
+				logger.debug("storeNotificationFilter: user="+getPrincipalString() + " notificationFilter: " + notificationFilter);
 
 			return NLJDOHelper.storeJDO(pm, notificationFilter, get, fetchGroups, maxFetchDepth);
 		} finally {
@@ -152,7 +136,7 @@ extends BaseSessionBeanImpl implements SessionBean
 	/**
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
-	 **/
+	 */
 	@SuppressWarnings("unchecked")
 	public void deleteNotificationBundles(Set<NotificationBundleID> notificationBundleIDs)
 	{
@@ -171,7 +155,7 @@ extends BaseSessionBeanImpl implements SessionBean
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
 	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
-	 **/
+	 */
 	@SuppressWarnings("unchecked")
 	public List<NotificationBundle> getNotificationBundles(NotificationFilterID notificationFilterID, String[] fetchGroups, int maxFetchDepth)
 	{
@@ -196,7 +180,7 @@ extends BaseSessionBeanImpl implements SessionBean
 	 *
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
-	 **/
+	 */
 	public void pushNotificationBundle(NotificationBundle notificationBundle)
 	throws Exception
 	{

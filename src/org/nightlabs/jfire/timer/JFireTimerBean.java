@@ -17,7 +17,6 @@ import javax.naming.InitialContext;
 import javax.security.auth.login.LoginContext;
 
 import org.apache.log4j.Logger;
-import org.nightlabs.ModuleException;
 import org.nightlabs.jfire.base.AuthCallbackHandler;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.security.User;
@@ -67,8 +66,10 @@ implements SessionBean, TimedObject
 	 *
 	 * @ejb.permission unchecked="true"
 	 */
+	@Override
 	public void ejbRemove() throws EJBException, RemoteException { }
 
+	@Override
 	public void ejbTimeout(Timer timer)
 	{
 		try {
@@ -86,12 +87,12 @@ implements SessionBean, TimedObject
 				JFireServerManagerFactory ismf = (JFireServerManagerFactory) initCtxNotAuthenticated.lookup(JFireServerManagerFactory.JNDI_NAME);
 
 				if (ismf == null) {
-					logger.error("JFireServerManagerFactory is not (yet?) in JNDI! Cannot do anything.");
+					logger.error("ejbTimeout: JFireServerManagerFactory is not (yet?) in JNDI! Cannot do anything.");
 					return;
 				}
 
 				if (!ismf.isUpAndRunning()) {
-					logger.info("Server is not yet up and running - will not do anything.");
+					logger.info("ejbTimeout: Server is not yet up and running - will not do anything.");
 					return;
 				}
 
@@ -122,13 +123,11 @@ implements SessionBean, TimedObject
 	}
 
 	/**
-	 * @throws ModuleException
 	 * @ejb.interface-method
 	 * @ejb.transaction type="Required"
 	 * @ejb.permission role-name="_System_"
 	 **/
 	public void startTimer()
-	throws ModuleException
 	{
 		String property_JFireTimerStart_key = JFireTimer.class.getName() + ".start";
 		String property_JFireTimerStart_value = System.getProperty(property_JFireTimerStart_key);
@@ -144,11 +143,11 @@ implements SessionBean, TimedObject
 			// before we start the timer, we clear all Task.executing flags (it's not possible that there's sth. executing before we start the timer)
 			List<Task> tasks = Task.getTasksByExecuting(pm, true);
 			if (!tasks.isEmpty()) {
-				logger.warn("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-				logger.warn("There are " + tasks.size() + " Tasks currently marked with executing=true! This is impossible! Will clear that flag now:");
+				logger.warn("startTimer: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+				logger.warn("startTimer: There are " + tasks.size() + " Tasks currently marked with executing=true! This is impossible! Will clear that flag now:");
 				for (Task task : tasks) {
 					task.setExecuting(false);
-					logger.warn("  cleared Task.executing: " + JDOHelper.getObjectId(task));
+					logger.warn("startTimer:  cleared Task.executing: " + JDOHelper.getObjectId(task));
 				}
 			}
 
@@ -157,13 +156,6 @@ implements SessionBean, TimedObject
 			// We want the timer to start as exactly as possible at the starting of the minute (at 00 sec).
 			long start = System.currentTimeMillis();
 			start = start + timeout - (start % timeout);
-	
-	//		try {
-	//			if (wait > 0)
-	//				Thread.sleep(wait);
-	//		} catch (InterruptedException e) {
-	//			// ignore
-	//		}
 	
 			Date firstExecDate = new Date(start);
 			timerService.createTimer(

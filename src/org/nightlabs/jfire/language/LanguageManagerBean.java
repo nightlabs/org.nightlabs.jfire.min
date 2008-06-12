@@ -53,14 +53,8 @@ import org.nightlabs.language.LanguageCf;
 public abstract class LanguageManagerBean extends BaseSessionBeanImpl implements SessionBean
 {
 	private static final long serialVersionUID = 1L;
-	/**
-	 * LOG4J logger used by this class
-	 */
 	private static final Logger logger = Logger.getLogger(LanguageManagerBean.class);
 
-	/**
-	 * @see org.nightlabs.jfire.base.BaseSessionBeanImpl#setSessionContext(javax.ejb.SessionContext)
-	 */
 	@Override
 	public void setSessionContext(SessionContext sessionContext)
 			throws EJBException, RemoteException
@@ -69,22 +63,12 @@ public abstract class LanguageManagerBean extends BaseSessionBeanImpl implements
 	}
 	/**
 	 * @ejb.create-method
-	 * @ejb.permission role-name="LanguageManager-read"
+	 * @ejb.permission role-name="_Guest_"
 	 */
 	public void ejbCreate() throws CreateException
 	{
-//		try
-//		{
-//			LOGGER.debug("LanguageManagerBean created by " + this.getPrincipalString());
-//		}
-//		catch (ModuleException e)
-//		{
-//			throw new CreateException(e.getMessage());
-//		}
 	}
 	/**
-	 * @see javax.ejb.SessionBean#ejbRemove()
-	 *
 	 * @ejb.permission unchecked="true"
 	 */
 	public void ejbRemove() throws EJBException, RemoteException { }
@@ -97,8 +81,8 @@ public abstract class LanguageManagerBean extends BaseSessionBeanImpl implements
 	 *
 	 * @ejb.interface-method
 	 *
-	 * @ejb.permission role-name="LanguageManager-write"
-	 **/
+	 * @ejb.permission role-name="org.nightlabs.jfire.language.createLanguage"
+	 */
 	public void createLanguage(LanguageCf langCf)
 	throws LanguageException
 	{
@@ -135,8 +119,9 @@ public abstract class LanguageManagerBean extends BaseSessionBeanImpl implements
 	 *
 	 * @ejb.interface-method
 	 *
-	 * @ejb.permission role-name="LanguageManager-read"
+	 * @ejb.permission role-name="_Guest_"
 	 */
+	@SuppressWarnings("unchecked")
 	public Collection<Language> getLanguages()
 	throws LanguageException
 	{
@@ -154,51 +139,51 @@ public abstract class LanguageManagerBean extends BaseSessionBeanImpl implements
 		}
 	}
 
-	/**
-	 * @param languageID ISO639-2 language code
-	 * @param throwExceptionIfNotExistent whether to return null or to throw a
-	 *   LanguageNotFoundException if desired language does not exist.
-	 * @return An instance of the desired Language.
-	 * @throws LanguageNotFoundException If the desired Language does not exist and
-	 *   throwExceptionIfNotExistent is true.
-	 *   This exception is an inheritor of LanguageException
-	 * @throws LanguageException If it's not a LanguageNotFoundException, sth. unexpected
-	 *   happened - maybe the PersistenceManager is not accessible.
-	 *
-	 * @see getLanguage(String languageID)
-	 */
-	public Language getLanguage(String languageID, boolean throwExceptionIfNotExistent)
-	throws LanguageException
-	{
-		try {
-			PersistenceManager pm = getPersistenceManager();
-			try {
-				Language lang = (Language)pm.getObjectById(LanguageID.create(languageID), true);
-				if (lang==null && throwExceptionIfNotExistent)
-					throw new LanguageNotFoundException("No language registered with languageID=\""+languageID+"\"!");
-				return lang;
-			} finally {
-				pm.close();
-			}
-		} catch (Exception x) {
-			throw new LanguageException(x);
-		}
-	}
-
-	/**
-	 * @param languageID ISO639-2 language code
-	 * @return An instance of the desired Language. Never null!
-	 * @throws LanguageNotFoundException If the desired Language does not exist.
-	 *   This exception is an inheritor of LanguageException
-	 * @throws LanguageException If it's not a LanguageNotFoundException, sth. unexpected
-	 *   happened - maybe the PersistenceManager is not accessible.
-	 *
-	 * @see getLanguage(String languageID, boolean throwExceptionIfNotExistent)
-	 */
-	public Language getLanguage(String languageID)
-	throws LanguageException
-	{
-		return getLanguage(languageID, true);
-	}
+//	/**
+//	 * @param languageID ISO639-2 language code
+//	 * @param throwExceptionIfNotExistent whether to return null or to throw a
+//	 *   LanguageNotFoundException if desired language does not exist.
+//	 * @return An instance of the desired Language.
+//	 * @throws LanguageNotFoundException If the desired Language does not exist and
+//	 *   throwExceptionIfNotExistent is true.
+//	 *   This exception is an inheritor of LanguageException
+//	 * @throws LanguageException If it's not a LanguageNotFoundException, sth. unexpected
+//	 *   happened - maybe the PersistenceManager is not accessible.
+//	 *
+//	 * @see getLanguage(String languageID)
+//	 */
+//	public Language getLanguage(String languageID, boolean throwExceptionIfNotExistent)
+//	throws LanguageException
+//	{
+//		try {
+//			PersistenceManager pm = getPersistenceManager();
+//			try {
+//				Language lang = (Language)pm.getObjectById(LanguageID.create(languageID), true);
+//				if (lang==null && throwExceptionIfNotExistent)
+//					throw new LanguageNotFoundException("No language registered with languageID=\""+languageID+"\"!");
+//				return lang;
+//			} finally {
+//				pm.close();
+//			}
+//		} catch (Exception x) {
+//			throw new LanguageException(x);
+//		}
+//	}
+//
+//	/**
+//	 * @param languageID ISO639-2 language code
+//	 * @return An instance of the desired Language. Never null!
+//	 * @throws LanguageNotFoundException If the desired Language does not exist.
+//	 *   This exception is an inheritor of LanguageException
+//	 * @throws LanguageException If it's not a LanguageNotFoundException, sth. unexpected
+//	 *   happened - maybe the PersistenceManager is not accessible.
+//	 *
+//	 * @see getLanguage(String languageID, boolean throwExceptionIfNotExistent)
+//	 */
+//	public Language getLanguage(String languageID)
+//	throws LanguageException
+//	{
+//		return getLanguage(languageID, true);
+//	}
 
 }
