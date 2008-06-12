@@ -1298,6 +1298,8 @@ implements SessionBean
 	 * @ejb.transaction type="Required"
 	 */
 	public void setUserPassword(String password) {
+		if (password == null || "".equals(password))
+			throw new IllegalArgumentException("Your password must not be empty.");
 		String userID = SecurityReflector.getUserDescriptor().getUserID();
 		String organisationID = SecurityReflector.getUserDescriptor().getOrganisationID();
 
