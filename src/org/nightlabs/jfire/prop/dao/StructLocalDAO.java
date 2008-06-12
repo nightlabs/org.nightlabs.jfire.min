@@ -18,6 +18,8 @@ import org.nightlabs.progress.ProgressMonitor;
 
 public class StructLocalDAO extends BaseJDOObjectDAO<StructLocalID, StructLocal> {
 
+	public static final String[] DEFAULT_FETCH_GROUPS = new String[] {FetchPlan.DEFAULT, IStruct.FETCH_GROUP_ISTRUCT_FULL_DATA};
+	
 	PropertyManager pm;
 
 	/**
@@ -75,10 +77,19 @@ public class StructLocalDAO extends BaseJDOObjectDAO<StructLocalID, StructLocal>
 	public StructLocal getStructLocal(String linkClass, String structScope, String structLocalScope, ProgressMonitor monitor) {
 		StructLocalID structLocalID = StructLocalID.create(
 				SecurityReflector.getUserDescriptor().getOrganisationID(), linkClass, structScope, structLocalScope);
-		return getStructLocal(structLocalID, new String[] {FetchPlan.DEFAULT, IStruct.FETCH_GROUP_ISTRUCT_FULL_DATA}, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT, monitor);
+		return getStructLocal(structLocalID, DEFAULT_FETCH_GROUPS, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT, monitor);
 	}
 
 	public StructLocal getStructLocal(StructLocalID structLocalID, ProgressMonitor monitor) {
-		return getStructLocal(structLocalID, new String[] {FetchPlan.DEFAULT, IStruct.FETCH_GROUP_ISTRUCT_FULL_DATA}, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT, monitor);
+		return getStructLocal(structLocalID, DEFAULT_FETCH_GROUPS, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT, monitor);
+	}
+	
+	public StructLocal storeStructLocal(StructLocal structLocal, boolean get, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor) {
+		try {
+			PropertyManager propManager = PropertyManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
+			return (StructLocal) propManager.storeStruct(structLocal, get, fetchGroups, maxFetchDepth);
+		} catch (Exception e) {
+			throw new RuntimeException("Storing StructLocal failed", e);
+		}
 	}
 }
