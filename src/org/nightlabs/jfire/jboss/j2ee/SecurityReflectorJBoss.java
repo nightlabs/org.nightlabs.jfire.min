@@ -27,16 +27,29 @@
 package org.nightlabs.jfire.jboss.j2ee;
 
 import java.security.Principal;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
+import javax.jdo.PersistenceManager;
+import javax.jdo.Query;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.security.SecurityAssociation;
+import org.nightlabs.jdo.NLJDOHelper;
+import org.nightlabs.jfire.base.Lookup;
+import org.nightlabs.jfire.security.Authority;
 import org.nightlabs.jfire.security.NoUserException;
+import org.nightlabs.jfire.security.RoleRef;
 import org.nightlabs.jfire.security.SecurityReflector;
-
-
+import org.nightlabs.jfire.security.UserLocal;
+import org.nightlabs.jfire.security.id.AuthorityID;
+import org.nightlabs.jfire.security.id.RoleID;
+import org.nightlabs.jfire.security.id.UserLocalID;
 
 /**
  * @author Marco Schulze - marco at nightlabs dot de
@@ -64,7 +77,7 @@ public class SecurityReflectorJBoss extends SecurityReflector
 	}
 
 	@Override
-	public InitialContext _createInitialContext() throws NoUserException {
+	protected InitialContext _createInitialContext() throws NoUserException {
 		try {
 			return new InitialContext();
 		} catch (NamingException e) {
@@ -73,8 +86,44 @@ public class SecurityReflectorJBoss extends SecurityReflector
 	}
 
 	@Override
-	public Properties _getInitialContextProperties() throws NoUserException {
-		return null; // TODO null should be a valid argument (i.e. new InitialContext(null) is legal), but maybe its error prone for other users - maybe an empty map would be better?! Is that possible???
+	protected Properties _getInitialContextProperties() throws NoUserException {
+		return null; // null is a valid argument e.g. for new InitialContext(null) and it's documented in SecurityReflector.getInitialContextProperties() that null is a valid result
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	protected Set<RoleID> _getRoleIDs(AuthorityID authorityID) throws NoUserException
+	{
+		UserDescriptor userDescriptor = _getUserDescriptor();
+
+		PersistenceManager pm = NLJDOHelper.getThreadPersistenceManager(false);
+		boolean closePM = false;
+		try {
+			if (pm == null) {
+				pm = new Lookup(userDescriptor.getOrganisationID()).getPersistenceManager();
+				closePM = true;
+			}
+
+			Query q = pm.newQuery(RoleRef.class);
+			q.setResult("JDOHelper.getObjectId(this.role)");
+			q.setFilter("this.authorizedObjectRef.authority == :authority &&");
+			q.setFilter("this.authorizedObjectRef.authorizedObject == :userLocal");
+
+			Authority authority = (Authority) pm.getObjectById(authorityID);
+			UserLocal userLocal = (UserLocal) pm.getObjectById(UserLocalID.create(userDescriptor.getOrganisationID(), userDescriptor.getUserID()));
+
+			Map<String, Object> params = new HashMap<String, Object>(2);
+			params.put("authority", authority);
+			params.put("userLocal", userLocal);
+
+			return new HashSet<RoleID>((Collection<? extends RoleID>) q.executeWithMap(params));
+
+//			AuthorizedObjectRef authorizedObjectRef = authority.getAuthorizedObjectRef(UserLocalID.create(userDescriptor.getOrganisationID(), userDescriptor.getUserID()));
+//			authorizedObjectRef.getRoleRefs()
+		} finally {
+			if (closePM)
+				pm.close();
+		}
 	}
 
 }
