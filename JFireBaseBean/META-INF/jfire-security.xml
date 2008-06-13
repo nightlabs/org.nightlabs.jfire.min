@@ -220,4 +220,61 @@
 <!-- ***              END org.nightlabs.jfire.language               *** -->
 <!-- ******************************************************************* -->
 
+
+<!-- ******************************************************************* -->
+<!-- ***               BEGIN org.nightlabs.jfire.base                *** -->
+<!-- ******************************************************************* -->
+	<role-group id="org.nightlabs.jfire.base.attachScreenShotToErrorReport#default">
+		<name>Attach screen shot when sending error report: Default value</name>
+		<name language="de">Screen-Shot zu Fehlerbericht hinzufügen: Standard-Wert</name>
+		<description>
+			When an error occurs, JFire can send an error report. It is
+			possible to automatically take a screen shot and attach it
+			to this report. If this access right is present, the screen
+			shot will be added to the report by default. The user can
+			change this default value, if he is allowed to by the
+			separate right "Attach screen shot when sending error
+			report: Decide".
+		</description>
+		<description language="de">
+			Wenn ein Fehler auftritt, kann JFire einen Fehlerbericht
+			versenden. Dabei ist es möglich, automatisch einen
+			Screen-Shot zu machen und dem Bericht beizulegen. Wenn
+			dieses Recht gesetzt ist, wird standardmäßig ein solcher
+			Screen-Shot erzeugt und versandt. Der Benutzer kann diese
+			Einstellung überschreiben, wenn er das separate Recht
+			"Screen-Shot zu Fehlerbericht hinzufügen: Entscheiden"
+			besitzt.
+		</description>
+		<role id="org.nightlabs.jfire.base.attachScreenShotToErrorReport#default"/>
+	</role-group>
+
+	<role-group id="org.nightlabs.jfire.base.attachScreenShotToErrorReport#decide">
+		<name>Attach screen shot when sending error report: Decide</name>
+		<name language="de">Screen-Shot zu Fehlerbericht hinzufügen: Entscheiden</name>
+		<description>
+			When an error occurs, JFire can send an error report. It is
+			possible to automatically take a screen shot and attach it
+			to this report. If this access right is present, the user is
+			allowed to decide himself whether to send a screen shot.
+			Without this right, the default value specified by the right
+			"Attach screen shot when sending error report: Default
+			value" cannot be modified by the user.
+		</description>
+		<description language="de">
+			Wenn ein Fehler auftritt, kann JFire einen Fehlerbericht
+			versenden. Dabei ist es möglich, automatisch einen
+			Screen-Shot zu machen und dem Bericht beizulegen. Wenn
+			dieses Recht gesetzt ist, darf der Benutzer selbst
+			entscheiden, ob ein Screen-Shot versandt wird. Ansonsten
+			darf der Standard-Wert - definiert durch das Recht
+			"Screen-Shot zu Fehlerbericht hinzufügen: Standard-Wert" -
+			vom Benutzer nicht verändert werden.
+		</description>
+		<role id="org.nightlabs.jfire.base.attachScreenShotToErrorReport#decide"/>
+	</role-group>
+<!-- ******************************************************************* -->
+<!-- ***                END org.nightlabs.jfire.base                 *** -->
+<!-- ******************************************************************* -->
+
 </jfire-security>

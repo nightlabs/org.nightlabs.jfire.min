@@ -44,9 +44,8 @@ import org.nightlabs.jfire.security.SecurityReflector;
  * @author Marco Schulze - marco at nightlabs dot de
  */
 public class IDGeneratorServer
-		extends IDGenerator
+extends IDGenerator
 {
-
 	/**
 	 * key: String organisationID<br/>
 	 * value: Map {<br/>
@@ -56,7 +55,7 @@ public class IDGeneratorServer
 	 */
 	private Map<String, Map<String, LinkedList<Long>>> organisationID2IDCache = new HashMap<String, Map<String, LinkedList<Long>>>();
 
-	private SecurityReflector securityReflector = null;
+//	private SecurityReflector securityReflector = null;
 
 	@Override
 	protected String _getOrganisationID()
@@ -64,13 +63,14 @@ public class IDGeneratorServer
 		try {
 			InitialContext initialContext = null;
 			try {
-				if (securityReflector == null) {
-					if (initialContext == null)
-						initialContext = new InitialContext();
-
-					securityReflector = SecurityReflector.lookupSecurityReflector(initialContext);
-				}
-				return securityReflector._getUserDescriptor().getOrganisationID();
+//				if (securityReflector == null) {
+//					if (initialContext == null)
+//						initialContext = new InitialContext();
+//
+//					securityReflector = SecurityReflector.lookupSecurityReflector(initialContext);
+//				}
+//				return securityReflector._getUserDescriptor().getOrganisationID();
+				return SecurityReflector.getUserDescriptor().getOrganisationID();
 			} finally {
 				if (initialContext != null)
 					initialContext.close();
@@ -97,13 +97,14 @@ public class IDGeneratorServer
 
 			InitialContext initialContext = null;
 			try {
-				if (securityReflector == null) {
-					if (initialContext == null)
-						initialContext = new InitialContext();
-
-					securityReflector = SecurityReflector.lookupSecurityReflector(initialContext);
-				}
-				organisationID = securityReflector._getUserDescriptor().getOrganisationID();
+//				if (securityReflector == null) {
+//					if (initialContext == null)
+//						initialContext = new InitialContext();
+//
+//					securityReflector = SecurityReflector.lookupSecurityReflector(initialContext);
+//				}
+//				organisationID = securityReflector._getUserDescriptor().getOrganisationID();
+				organisationID = SecurityReflector.getUserDescriptor().getOrganisationID();
 
 				Map<String, LinkedList<Long>> namespace2cachedIDs;
 				synchronized (organisationID2IDCache) {
