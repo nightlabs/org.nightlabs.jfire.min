@@ -30,7 +30,6 @@ import javax.ejb.CreateException;
 import javax.jdo.PersistenceManager;
 
 import org.apache.log4j.Logger;
-import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.Lookup;
 
 /**
@@ -74,7 +73,7 @@ public abstract class OrganisationLinkerBean implements javax.ejb.SessionBean
 	 * @throws OrganisationAlreadyRegisteredException
 	 *
 	 * @ejb.interface-method
-	 **/
+	 */
 	public void requestRegistration(String registrationID, Organisation applicantOrganisation, String grantOrganisationID, String grantOrganisationUserPassword)
 	throws OrganisationAlreadyRegisteredException
 	{
@@ -100,32 +99,17 @@ public abstract class OrganisationLinkerBean implements javax.ejb.SessionBean
 			// We need to find out, whether the applicant organisation has already
 			// been successfully registered (status accepted).
 			// If there is currently a pending registration, it will be cancelled.
-			RegistrationStatus.ensureRegisterability(
-					pm, localOrganisation, applicantOrganisationID);
+			RegistrationStatus.ensureRegisterability(pm, localOrganisation, applicantOrganisationID);
 
-			localOrganisation.setPassword(
-					applicantOrganisation.getOrganisationID(), grantOrganisationUserPassword);
+			localOrganisation.setPassword(applicantOrganisation.getOrganisationID(), grantOrganisationUserPassword);
 
-			NLJDOHelper.makeDirtyAllFieldsRecursively(applicantOrganisation);
-			applicantOrganisation = pm.makePersistent(applicantOrganisation);
+			// Since this method is executed anonymously, it is essential that nothing is written to "real" tables.
+			// If we persisted the organisation here, it would be possible to overwrite anonymously Server objects and thus
+			// compromise the grant-organisation's data. Therefore we capsule it in a TemporaryOrganisation object.
+			TemporaryOrganisation temporaryApplicantOrganisation = new TemporaryOrganisation(applicantOrganisation);
+			temporaryApplicantOrganisation = pm.makePersistent(temporaryApplicantOrganisation);
 
-			RegistrationStatus registrationStatus = new RegistrationStatus(registrationID, applicantOrganisation);
-
-//			// It seems, there is a bug in JPOX (foreign key constraint error) and therefore,
-//			// we need to save the organisation first.
-//
-//			//...and again for the same reason, we need to persist the server as well...
-//			try {
-//				pm.getObjectById(ServerID.create(applicantOrganisation.getServer().getServerID()));
-//			} catch (JDOObjectNotFoundException x) {
-//				pm.makePersistent(applicantOrganisation.getServer());
-//			}
-//			pm.makePersistent(applicantOrganisation);
-//
-//
-////			JDOHelper.makeDirty(applicantOrganisation, "changeDT");
-////			pm.attachCopy(applicantOrganisation, false);
-
+			RegistrationStatus registrationStatus = new RegistrationStatus(registrationID, temporaryApplicantOrganisation);
 			localOrganisation.addPendingRegistration(registrationStatus);
 		} finally {
 			pm.close();
@@ -134,13 +118,13 @@ public abstract class OrganisationLinkerBean implements javax.ejb.SessionBean
 
 	/**
 	 * This method is called by the organisation that initiated the
-	 * registration (means usually by another server).
+	 * registration (means usually by another server) - the so-called applicant-organisation.
 	 * <br/><br/>
 	 * Do NOT call this method from a client! Use OrganisationManager EJB
 	 * instead!
 	 *
 	 * @ejb.interface-method
-	 **/
+	 */
 	public void cancelRegistration(String registrationID, String applicantOrganisationID, String grantOrganisationID)
 	{
 		if (registrationID == null)
