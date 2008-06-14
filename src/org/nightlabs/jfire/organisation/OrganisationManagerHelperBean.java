@@ -11,6 +11,7 @@ import javax.ejb.SessionContext;
 import javax.jdo.PersistenceManager;
 
 import org.apache.log4j.Logger;
+import org.nightlabs.jfire.asyncinvoke.AsyncInvokeProblem;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.security.Authority;
 import org.nightlabs.jfire.security.AuthorityType;
@@ -82,6 +83,17 @@ public abstract class OrganisationManagerHelperBean
 		String organisationID = getOrganisationID();
 		PersistenceManager pm = getPersistenceManager();
 		try {
+			if(logger.isDebugEnabled())
+				logger.debug("Initializing JDO meta-data...");
+
+			pm.getExtent(TemporaryOrganisation.class);
+			pm.getExtent(Organisation.class);
+			pm.getExtent(Server.class);
+			pm.getExtent(User.class);
+			pm.getExtent(AsyncInvokeProblem.class);
+
+			if(logger.isDebugEnabled())
+				logger.debug("Initializing JDO meta-data done.");
 
 			if(logger.isDebugEnabled())
 				logger.debug("Creating JDO object LocalServer...");

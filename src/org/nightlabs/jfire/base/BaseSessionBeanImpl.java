@@ -218,10 +218,10 @@ public class BaseSessionBeanImpl
 		return getPrincipal().userIsOrganisation();
 	}
 	
-	protected String getPrincipalString()
-	{
-		return getPrincipal().toString();
-	}
+//	protected String getPrincipalString()
+//	{
+//		return getPrincipal().toString();
+//	}
 
 	private static Boolean hasRootOrganisation = null;
 

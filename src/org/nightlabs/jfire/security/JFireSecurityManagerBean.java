@@ -1245,7 +1245,7 @@ implements SessionBean
 	 */
 	public void whoami()
 	{
-		logger.info("******** WHOAMI: "+getPrincipalString());
+		logger.info("******** WHOAMI: "+getPrincipal());
 	}
 
 

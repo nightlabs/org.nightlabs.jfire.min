@@ -46,11 +46,9 @@ import javax.jdo.FetchPlan;
 import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
-import javax.jms.JMSException;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.security.auth.login.LoginException;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
@@ -474,30 +472,20 @@ public abstract class OrganisationManagerBean
 				pm.getFetchPlan().addGroup(FetchPlan.ALL); // TODO fetch-groups?!
 				pm.getFetchPlan().setMaxFetchDepth(NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
 				Organisation grantOrganisation = pm.detachCopy(localOrganisation.getOrganisation());
-//				Organisation grantOrganisation = localOrganisation.getOrganisation();
-//				grantOrganisation.getPerson();
-//				grantOrganisation.getServer();
-//				pm.makeTransient(grantOrganisation, true);
 
-//				// WORKAROUND Because of a JPOX bug, we need to do this here (it's not nice, though it should be ok, because the transaction should be rolled back if an error occurs)
-//				// We close the RegistrationStatus by accepting
-//				// and remove it from the pending ones.
-//				registrationStatus.accept(User.getUser(pm, getPrincipal()));
-//				localOrganisation.removePendingRegistration(applicantOrganisationID);
-
-				// Now, we notify the other organisation that its request has been
-				// accepted.
+				// Now, we notify the other organisation that its request has been accepted.
 				try {
 					OrganisationManager organisationManager = OrganisationManagerUtil.getHome(getInitialContextProperties(applicantOrganisationID)).create();
 					organisationManager.notifyAcceptRegistration(
-							registrationStatus.getRegistrationID(), grantOrganisation, usrPassword);
+							registrationStatus.getRegistrationID(),
+							grantOrganisation,
+							usrPassword
+					);
 				} catch (Exception e) {
 					throw new JFireRemoteException(e);
 				}
 
-				// WORKAROUND Because of a JPOX bug, we need to do this above.
-				// We close the RegistrationStatus by accepting
-				// and remove it from the pending ones.
+				// We close the RegistrationStatus by accepting and remove it from the pending ones.
 				registrationStatus.accept(User.getUser(pm, getPrincipal()));
 				localOrganisation.removePendingRegistration(applicantOrganisationID);
 
@@ -646,8 +634,7 @@ public abstract class OrganisationManagerBean
 		// We need to find out, whether the applicant organisation has already
 		// been successfully registered (status accepted).
 		// If there is currently a pending registration, it will be cancelled.
-		RegistrationStatus.ensureRegisterability(
-				pm, localOrganisation, organisationID);
+		RegistrationStatus.ensureRegisterability(pm, localOrganisation, organisationID);
 
 		pm.getFetchPlan().addGroup(FetchPlan.ALL); // TODO fetch-groups?!
 		pm.getFetchPlan().setMaxFetchDepth(NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
@@ -661,8 +648,8 @@ public abstract class OrganisationManagerBean
 		localOrganisation.addPendingRegistration(registrationStatus);
 
 		// We have to create a user for the new organisation. Therefore,
-		// generate a password with a random length between 8 and 16 characters.
-		String usrPassword = UserLocal.createMachinePassword(8, 16);
+		// generate a password with a random length between 15 and 20 characters.
+		String usrPassword = UserLocal.createMachinePassword(15, 20);
 
 		// Create the user if it doesn't yet exist
 		String userID = User.USERID_PREFIX_TYPE_ORGANISATION + organisationID;
@@ -674,7 +661,7 @@ public abstract class OrganisationManagerBean
 			User user = new User(principal.getOrganisationID(), userID);
 			UserLocal userLocal = new UserLocal(user);
 			userLocal.setPasswordPlain(usrPassword);
-			pm.makePersistent(user);
+			user = pm.makePersistent(user);
 		}
 
 		// Create the initial context properties to connect to the remote server.
@@ -789,7 +776,7 @@ public abstract class OrganisationManagerBean
 	public TestRequestResultTreeNode internal_testCascadedAuthentication(TestRequestResultTreeNode node, int level)
 	throws Exception
 	{
-		logger.info("testCascadedAuthentication (level="+level+") (principal="+getPrincipalString() +"): begin");
+		logger.info("testCascadedAuthentication (level="+level+") (principal="+getPrincipal() +"): begin");
 		if (node == null)
 			throw new IllegalArgumentException("node must not be null!");
 
@@ -814,15 +801,15 @@ public abstract class OrganisationManagerBean
 
 				for (TestRequestResultTreeNode childNode : children) {
 					String organisationID = childNode.getRequest_organisationID();
-					logger.info("testCascadedAuthentication (level="+level+") (principal="+getPrincipalString()+"): creating organisationManager for organisationID=" + organisationID);
+					logger.info("testCascadedAuthentication (level="+level+") (principal="+getPrincipal()+"): creating organisationManager for organisationID=" + organisationID);
 					OrganisationManagerHome home = OrganisationManagerUtil.getHome(Lookup.getInitialContextProperties(pm, organisationID));
 					OrganisationManager organisationManager = home.create();
 					organisationManagers.put(organisationID, organisationManager);
-					logger.info("testCascadedAuthentication (level="+level+") (principal="+getPrincipalString()+"): created organisationManager for organisationID=" + organisationID);
+					logger.info("testCascadedAuthentication (level="+level+") (principal="+getPrincipal()+"): created organisationManager for organisationID=" + organisationID);
 				}
 
 				for (TestRequestResultTreeNode childNode : children) {
-					logger.info("testCascadedAuthentication (level="+level+") (principal="+getPrincipalString()+"): calling organisationManager.testCascadedAuthentication() for organisationID=" + childNode.getRequest_organisationID());
+					logger.info("testCascadedAuthentication (level="+level+") (principal="+getPrincipal()+"): calling organisationManager.testCascadedAuthentication() for organisationID=" + childNode.getRequest_organisationID());
 					OrganisationManager organisationManager = organisationManagers.get(childNode.getRequest_organisationID());
 					TestRequestResultTreeNode resultChildNode = organisationManager.internal_testCascadedAuthentication(childNode, level + 1);
 
@@ -840,14 +827,14 @@ public abstract class OrganisationManagerBean
 						node.replaceChild(childNode, resultChildNode);
 					}
 
-					logger.info("testCascadedAuthentication (level="+level+") (principal="+getPrincipalString()+"): called organisationManager.testCascadedAuthentication() for organisationID=" + childNode.getRequest_organisationID());
+					logger.info("testCascadedAuthentication (level="+level+") (principal="+getPrincipal()+"): called organisationManager.testCascadedAuthentication() for organisationID=" + childNode.getRequest_organisationID());
 				}
 			} finally {
 				pm.close();
 			}
 		}
 
-		logger.info("testCascadedAuthentication (level="+level+") (principal="+getPrincipalString() +"): end");
+		logger.info("testCascadedAuthentication (level="+level+") (principal="+getPrincipal() +"): end");
 
 		if (node != null) {
 			node.setResult_organisationID_beforeRecursion(organisationIDBeforeRecursion);
