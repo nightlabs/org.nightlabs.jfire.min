@@ -208,6 +208,15 @@ public class JFireServerManagerFactoryImpl
 			logger.debug(this.getClass().getName()+": CONSTRUCTOR");
 		this.mcf = mcf;
 		this.cm = cm;
+
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+			@Override
+			public void run()
+			{
+				shuttingDown = true;
+			}
+		});
+
 		Config config = getConfig();
 		boolean saveConfig =
 				config.getConfigModule(OrganisationConfigModule.class, false) == null ||
@@ -444,14 +453,6 @@ public class JFireServerManagerFactoryImpl
 			logger.error("Registering NotificationListener (for notification on server start) failed!", e);
 //			throw new ResourceException(e.getMessage());
 		}
-
-		Runtime.getRuntime().addShutdownHook(new Thread() {
-			@Override
-			public void run()
-			{
-				shuttingDown = true;
-			}
-		});
 
 //// Unfortunately this does not work, because the initial context is not yet existent, when
 //// this is executed.

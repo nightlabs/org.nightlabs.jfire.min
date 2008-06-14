@@ -308,12 +308,17 @@ public class PersistentNotificationManagerFactory implements Serializable
 	{
 		String logPrefix = "processDirtyObjectIDsOutgoing["+ ObjectIDUtil.longObjectIDFieldToString(++this.processDirtyObjectIDsOutgoingRunNumber) +"]: ";
 		try {
+			if (jFireServerManagerFactory.isShuttingDown()) {
+				logger.info(logPrefix + "System is shutting down - returning immediately.");
+				return;
+			}
+
 			long totalStart = System.currentTimeMillis();
 			long totalDirtyObjectIDCount = 0; // the total number of dirtyObjectIDs incoming and processed
 			long prefilteredGroupCount = 0; // the number of groups (for each group there is one prefiltering action)
 			long filterCount = 0; // how many times was NotificationFilter.filter(...) called
 			long filteredDirtyObjectIDCount = 0; // what's left after real filtering - and thus finally delivered via NotificationBundle instances
-
+			
 			PersistenceManagerFactory persistenceManagerFactory = JFireServerManagerFactoryImpl.getPersistenceManagerFactory(organisationID);
 //			ensureOpenPersistenceManagerFactory();
 
@@ -368,8 +373,10 @@ public class PersistentNotificationManagerFactory implements Serializable
 							long duration = System.currentTimeMillis() - start;
 							if (duration > 20000)
 								logger.warn(logPrefix + "Grouping " + totalDirtyObjectIDCount + " DirtyObjectIDs for prefiltering took " + duration + " msec.");
-							else
-								logger.debug(logPrefix + "Grouping " + totalDirtyObjectIDCount + " DirtyObjectIDs for prefiltering took " + duration + " msec.");
+							else {
+								if (logger.isDebugEnabled())
+									logger.debug(logPrefix + "Grouping " + totalDirtyObjectIDCount + " DirtyObjectIDs for prefiltering took " + duration + " msec.");
+							}
 						}
 
 						{

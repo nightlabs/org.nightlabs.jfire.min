@@ -29,22 +29,23 @@ package org.nightlabs.jfire.base;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
-import java.util.Properties;
 
 import javax.jdo.FetchPlan;
+import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 import javax.jdo.PersistenceManagerFactory;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
-import org.nightlabs.ModuleException;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.jdo.cache.CacheManager;
 import org.nightlabs.jfire.jdo.cache.CacheManagerFactory;
 import org.nightlabs.jfire.organisation.LocalOrganisation;
 import org.nightlabs.jfire.organisation.Organisation;
+import org.nightlabs.jfire.organisation.TemporaryOrganisation;
 import org.nightlabs.jfire.organisation.id.OrganisationID;
+import org.nightlabs.jfire.organisation.id.TemporaryOrganisationID;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.server.Server;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
@@ -294,47 +295,55 @@ public class Lookup
 			if (password == null)
 				throw new IllegalStateException("localOrganisation.getPassword(organisationID) returned null! localOrganisationID=" + localOrganisation.getOrganisationID() + " organisationID=" + _organisationID);
 
-			Organisation organisation = (Organisation)pm.getObjectById(OrganisationID.create(_organisationID), true);
-			Server server = organisation.getServer();
-//			String initialContextFactory = jfireServerManagerFactory.getInitialContextFactory(server.getJ2eeServerType(), true);
+			Server server = null;
+			try {
+				Organisation organisation = (Organisation) pm.getObjectById(OrganisationID.create(_organisationID));
+				server = organisation.getServer();
+			} catch (JDOObjectNotFoundException x) {
+				// the organisation doesn't exist - try it with a TemporaryOrganisation instance
+			}
+
+			if (server == null) {
+				try {
+					TemporaryOrganisation temporaryOrganisation = (TemporaryOrganisation) pm.getObjectById(TemporaryOrganisationID.create(_organisationID));
+					server = temporaryOrganisation.getOrganisation().getServer();
+				} catch (JDOObjectNotFoundException x) {
+					throw new IllegalStateException("There is neither an Organisation nor a TemporaryOrganisation existing with the organisationID=" + _organisationID);
+				}
+			}
 
 			return InvokeUtil.getInitialContextProperties(
 					jfireServerManagerFactory.getInitialContextFactory(server.getJ2eeServerType(), true),
 					server.getInitialContextURL(),
 					_organisationID,
 					User.USERID_PREFIX_TYPE_ORGANISATION + localOrganisation.getOrganisationID(), password);
-
-//			return _getInitialContextProps(
-//					initialContextFactory, server.getInitialContextURL(),
-//					localOrganisation.getOrganisationID(),
-//					_organisationID, password);
 		} finally {
 			initCtx.close();
 		}
 	}
 
-	protected Properties _getInitialContextProps(PersistenceManager pm, String _organisationID) throws ModuleException
-	{
-		LocalOrganisation localOrganisation = LocalOrganisation.getLocalOrganisation(pm);
-		if (_organisationID.equals(localOrganisation.getOrganisationID()))
-			return null;
-
-		String password = localOrganisation.getPassword(_organisationID);
-
-		Organisation organisation = (Organisation)pm.getObjectById(OrganisationID.create(_organisationID), true);
-		Server server = organisation.getServer();
-		JFireServerManagerFactory jFireServerManagerFactory = getJFireServerManagerFactory();
-		return InvokeUtil.getInitialContextProperties(
-				jFireServerManagerFactory.getInitialContextFactory(server.getJ2eeServerType(), true),
-				server.getInitialContextURL(),
-				_organisationID,
-				User.USERID_PREFIX_TYPE_ORGANISATION + localOrganisation.getOrganisationID(), password);
-//		String initialContextFactory = getJFireServerManagerFactory().getInitialContextFactory(server.getJ2eeServerType(), true);
-//		return _getInitialContextProps(
-//				initialContextFactory, server.getInitialContextURL(),
-//				localOrganisation.getOrganisationID(),
-//				_organisationID, password);
-	}
+//	protected Properties _getInitialContextProps(PersistenceManager pm, String _organisationID) throws ModuleException
+//	{
+//		LocalOrganisation localOrganisation = LocalOrganisation.getLocalOrganisation(pm);
+//		if (_organisationID.equals(localOrganisation.getOrganisationID()))
+//			return null;
+//
+//		String password = localOrganisation.getPassword(_organisationID);
+//
+//		Organisation organisation = (Organisation)pm.getObjectById(OrganisationID.create(_organisationID), true);
+//		Server server = organisation.getServer();
+//		JFireServerManagerFactory jFireServerManagerFactory = getJFireServerManagerFactory();
+//		return InvokeUtil.getInitialContextProperties(
+//				jFireServerManagerFactory.getInitialContextFactory(server.getJ2eeServerType(), true),
+//				server.getInitialContextURL(),
+//				_organisationID,
+//				User.USERID_PREFIX_TYPE_ORGANISATION + localOrganisation.getOrganisationID(), password);
+////		String initialContextFactory = getJFireServerManagerFactory().getInitialContextFactory(server.getJ2eeServerType(), true);
+////		return _getInitialContextProps(
+////				initialContextFactory, server.getInitialContextURL(),
+////				localOrganisation.getOrganisationID(),
+////				_organisationID, password);
+//	}
 
 //	protected static Hashtable _getInitialContextProps(
 //			String initialContextFactory, String initialContextURL,
