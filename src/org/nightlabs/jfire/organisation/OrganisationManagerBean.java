@@ -32,7 +32,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -62,6 +61,7 @@ import org.nightlabs.jfire.base.JFireRemoteException;
 import org.nightlabs.jfire.base.Lookup;
 import org.nightlabs.jfire.organisation.id.OrganisationID;
 import org.nightlabs.jfire.organisationinit.CrossOrganisationRegistrationInitInvocation;
+import org.nightlabs.jfire.security.Authority;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.security.UserLocal;
 import org.nightlabs.jfire.security.id.UserID;
@@ -78,6 +78,7 @@ import org.nightlabs.jfire.servermanager.createorganisation.CreateOrganisationSt
 import org.nightlabs.jfire.servermanager.createorganisation.CreateOrganisationStep;
 import org.nightlabs.jfire.test.cascadedauthentication.TestRequestResultTreeNode;
 import org.nightlabs.math.Base62Coder;
+import org.nightlabs.util.CollectionUtil;
 import org.nightlabs.util.Util;
 
 /**
@@ -794,66 +795,67 @@ public abstract class OrganisationManagerBean
 	 *
 	 * @ejb.interface-method
 	 * @ejb.transaction type="Required"
-	 * @ejb.permission role-name="_Guest_"
+	 * @ejb.permission role-name="_Guest_" @!Roles are checked inside the code, because the behaviour is dependent on the situation. Marco.
 	 */
 	public Collection<Organisation> getOrganisationsFromRootOrganisation(boolean filterPartnerOrganisations, String[] fetchGroups, int maxFetchDepth)
 	throws JFireException
 	{
 		try {
-			InitialContext ctx = new InitialContext();
-			try {
-				String rootOrganisationID = Organisation.getRootOrganisationID(ctx);
-				String localOrganisationID = getOrganisationID();
-				if (!rootOrganisationID.equals(localOrganisationID)) {
+			String rootOrganisationID = getRootOrganisationID();
+			String localOrganisationID = getOrganisationID();
+			if (!rootOrganisationID.equals(localOrganisationID)) {
+				ArrayList<Organisation> newRes;
+				PersistenceManager pm = getPersistenceManager();
+				try {
+					// authorize
+					Authority.getOrganisationAuthority(pm).assertContainsRoleRef(getPrincipal(), RoleConstants.queryOrganisations);
+
+					// delegate to root-organisation
 					OrganisationManager organisationManager = OrganisationManagerUtil.getHome(getInitialContextProperties(rootOrganisationID)).create();
 					Collection<Organisation> res = organisationManager.getOrganisationsFromRootOrganisation(filterPartnerOrganisations, fetchGroups, maxFetchDepth);
 
-					// TODO DEBUG begin
-					logger.info("Root Organisation returned the following organisations:");
-					if (res.isEmpty())
-						logger.info("  {NONE}");
-					else {
-						for (Iterator<Organisation> iter = res.iterator(); iter.hasNext();) {
-							Organisation organisation = iter.next();
-							logger.info("  " + organisation.getOrganisationID());
+					if (logger.isDebugEnabled()) {
+						logger.debug("getOrganisationsFromRootOrganisation: Root Organisation returned the following organisations:");
+						if (res.isEmpty())
+							logger.debug("getOrganisationsFromRootOrganisation:  {NONE}");
+						else {
+							for (Iterator<Organisation> iter = res.iterator(); iter.hasNext();) {
+								Organisation organisation = iter.next();
+								logger.debug("getOrganisationsFromRootOrganisation:  " + organisation.getOrganisationID());
+							}
 						}
 					}
-					// TODO DEBUG end
 
 					if (!filterPartnerOrganisations)
 						return res;
 
-					Collection<Organisation> newRes = new LinkedList<Organisation>();
+					newRes = new ArrayList<Organisation>(res.size());
 
-					PersistenceManager pm = getPersistenceManager();
-					try {
-						pm.getExtent(User.class);
+					pm.getExtent(User.class);
 
-						for (Iterator<Organisation> it = res.iterator(); it.hasNext(); ) {
-							Organisation orga = it.next();
-							if (getOrganisationID().equals(orga.getOrganisationID())) {
-								logger.info("Organisation is myself and will be filtered: " + orga.getOrganisationID());
-								continue;
-							}
+					for (Iterator<Organisation> it = res.iterator(); it.hasNext(); ) {
+						Organisation orga = it.next();
+						if (getOrganisationID().equals(orga.getOrganisationID())) {
+							logger.info("Organisation is myself and will be filtered: " + orga.getOrganisationID());
+							continue;
+						}
 
-							String userID = User.USERID_PREFIX_TYPE_ORGANISATION + orga.getOrganisationID();
-							try {
-								pm.getObjectById(UserID.create(localOrganisationID, userID));
-								logger.info("Organisation is already a partner and will be filtered: " + orga.getOrganisationID());
-							} catch (JDOObjectNotFoundException x) {
-								logger.info("Organisation will not be filtered and added to result: " + orga.getOrganisationID());
-								newRes.add(orga); // add only if no user existent yet
-							}
-						} // for (Iterator it = res.iterator(); it.hasNext(); ) {
-					} finally {
-						pm.close();
-					}
-
-					return newRes;
+						String userID = User.USERID_PREFIX_TYPE_ORGANISATION + orga.getOrganisationID();
+						try {
+							pm.getObjectById(UserID.create(localOrganisationID, userID));
+							logger.info("Organisation is already a partner and will be filtered: " + orga.getOrganisationID());
+						} catch (JDOObjectNotFoundException x) {
+							logger.info("Organisation will not be filtered and added to result: " + orga.getOrganisationID());
+							newRes.add(orga); // add only if no user existent yet
+						}
+					} // for (Iterator it = res.iterator(); it.hasNext(); ) {
+				} finally {
+					pm.close();
 				}
-			} finally {
-				ctx.close();
-			}
+
+				newRes.trimToSize();
+				return newRes;
+			} // if (!rootOrganisationID.equals(localOrganisationID)) {
 
 			PersistenceManager pm = getPersistenceManager();
 			try {
@@ -861,15 +863,18 @@ public abstract class OrganisationManagerBean
 				if (fetchGroups != null)
 					pm.getFetchPlan().setGroups(fetchGroups);
 
-				Collection<Organisation> res = (Collection<Organisation>)pm.newQuery(Organisation.class).execute();
+				Collection<Organisation> res = CollectionUtil.castCollection((Collection<?>)pm.newQuery(Organisation.class).execute());
+				res = new ArrayList<Organisation>(res);
 
-				// TODO DEBUG begin
-				logger.info("I am the Root Organisation and I will return the following organisations: ");
-				for (Iterator<Organisation> iter = res.iterator(); iter.hasNext();) {
-					Organisation organisation = iter.next();
-					logger.info("  " + organisation.getOrganisationID());
+				if (logger.isDebugEnabled()) {
+					logger.debug("getOrganisationsFromRootOrganisation: I am the Root Organisation and I will return the following organisations: ");
+					if (res.isEmpty())
+						logger.debug("getOrganisationsFromRootOrganisation:  {NONE}");
+					else {
+						for (Iterator<Organisation> iter = res.iterator(); iter.hasNext();)
+							logger.debug("getOrganisationsFromRootOrganisation:  " + iter.next().getOrganisationID());
+					}
 				}
-				// TODO DEBUG end
 
 				return pm.detachCopyAll(res);
 			} finally {
