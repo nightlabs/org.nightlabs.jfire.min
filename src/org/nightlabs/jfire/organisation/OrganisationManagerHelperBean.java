@@ -13,6 +13,9 @@ import javax.jdo.PersistenceManager;
 import org.apache.log4j.Logger;
 import org.nightlabs.jfire.asyncinvoke.AsyncInvokeProblem;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
+import org.nightlabs.jfire.prop.Struct;
+import org.nightlabs.jfire.prop.StructBlockOrderItem;
+import org.nightlabs.jfire.prop.StructLocal;
 import org.nightlabs.jfire.security.Authority;
 import org.nightlabs.jfire.security.AuthorityType;
 import org.nightlabs.jfire.security.AuthorizedObjectRef;
@@ -91,6 +94,10 @@ public abstract class OrganisationManagerHelperBean
 			pm.getExtent(Server.class);
 			pm.getExtent(User.class);
 			pm.getExtent(AsyncInvokeProblem.class);
+
+			pm.getExtent(Struct.class);
+			pm.getExtent(StructLocal.class);
+			pm.getExtent(StructBlockOrderItem.class);
 
 			if(logger.isDebugEnabled())
 				logger.debug("Initializing JDO meta-data done.");
