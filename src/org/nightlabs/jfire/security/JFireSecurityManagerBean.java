@@ -270,9 +270,12 @@ implements SessionBean
 			pm.getFetchPlan().setDetachmentOptions(FetchPlan.DETACH_LOAD_FIELDS | FetchPlan.DETACH_UNLOAD_FIELDS);
 			pm.getFetchPlan().setGroups(MissingRoleException.FETCH_GROUPS_ROLE);
 
-			Collection<Role> roles = NLJDOHelper.getObjectSet(pm, roleIDs, Role.class);
-			roles = (Collection<Role>) pm.detachCopyAll(roles);
-			return new HashSet<Role>(roles);
+			Set<Role> roles = NLJDOHelper.getObjectSet(pm, roleIDs, Role.class);
+			roles = new HashSet<Role>(pm.detachCopyAll(roles));
+
+			MissingRoleException.populateRoleSetWithSpecialRoles(roleIDs, roles);
+
+			return roles;
 		} finally {
 			pm.close();
 		}

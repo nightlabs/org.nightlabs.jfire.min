@@ -291,13 +291,14 @@ public abstract class OrganisationManagerBean
 	 * one that the registration has been accepted.
 	 * <br/><br/>
 	 * Though, there
-	 * is no j2ee security, it is quite hard to guess the correct
-	 * registrationID. Additionally, the organisation is read out
+	 * is no j2ee security, it is extremely hard to guess the correct
+	 * registrationID (a registrationID is actually far more secure than an average password).
+	 * Additionally, the organisation is read out
 	 * of the JFirePrincipal and must match the other organisationID.
 	 *
 	 * @ejb.interface-method
 	 * @ejb.transaction type="Required"
-	 * @ejb.permission role-name="_Guest_"
+	 * @ejb.permission role-name="_Guest_" @!No need to protect this method, because the registrationID cannot be guessed (it's far more secure than a password).
 	 */
 	public void notifyAcceptRegistration(String registrationID, Organisation grantOrganisation, String userPassword)
 	{
@@ -345,7 +346,7 @@ public abstract class OrganisationManagerBean
 	/**
 	 * @ejb.interface-method
 	 * @ejb.transaction type="Required"
-	 * @ejb.permission role-name="_Guest_"
+	 * @ejb.permission role-name="_Guest_" @!No need to protect this method, because the registrationID cannot be guessed (it's far more secure than a password).
 	 */
 	public void notifyRejectRegistration(String registrationID)
 	{

@@ -187,7 +187,7 @@
 
 	<role-group id="org.nightlabs.jfire.timer.editTask#all">
 		<name>Edit timer task (including others' tasks)</name>
-		<name language="de">Zeitgesteuerte Aufgaben bearbeiten (auch fremde)</name>
+		<name language="de">Zeitgesteuerte Aufgabe bearbeiten (auch fremde)</name>
 		<description>
 			Allow to create new and modify existing timer tasks. This
 			right allows to modify tasks of other users - not only the
@@ -317,4 +317,24 @@
 <!-- ***            END org.nightlabs.jfire.organisation             *** -->
 <!-- ******************************************************************* -->
 
+<!-- ******************************************************************* -->
+<!-- ***            BEGIN org.nightlabs.jfire.workstation            *** -->
+<!-- ******************************************************************* -->
+	<role-group id="org.nightlabs.jfire.workstation.editWorkstation">
+		<name>Edit workstation</name>
+		<name language="de">Workstation bearbeiten</name>
+		<description>Allows to edit workstations.</description>
+		<description language="de">Erlaubt die Bearbeitung von Workstations.</description>
+		<role id="org.nightlabs.jfire.workstation.storeWorkstation"/>
+	</role-group>
+	<role-group id="org.nightlabs.jfire.workstation.queryWorkstations">
+		<name>Query workstations</name>
+		<name language="de">Workstations abfragen</name>
+		<description>Allows to query workstations.</description>
+		<description>Erlaubt die Abfrage von Workstations.</description>
+		<role id="org.nightlabs.jfire.workstation.queryWorkstations"/>
+	</role-group>
+<!-- ******************************************************************* -->
+<!-- ***             END org.nightlabs.jfire.workstation             *** -->
+<!-- ******************************************************************* -->
 </jfire-security>
