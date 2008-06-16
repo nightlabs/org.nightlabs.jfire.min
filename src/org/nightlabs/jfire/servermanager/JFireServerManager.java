@@ -140,7 +140,7 @@ public interface JFireServerManager
 	 * it cannot have a server admin organisation. Therefore, the LoginModule checks with
 	 * this method, wether it should switch to setup mode.
 	 *
-	 * @return
+	 * @return <code>true</code> if no organisation exists on this server; <code>false</code> if there is at least one organisation.
 	 */
 	public boolean isOrganisationCfsEmpty();
 
