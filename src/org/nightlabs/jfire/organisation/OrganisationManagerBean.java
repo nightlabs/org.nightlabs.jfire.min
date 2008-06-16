@@ -98,14 +98,8 @@ public abstract class OrganisationManagerBean
 	implements SessionBean
 {
 	private static final long serialVersionUID = 1L;
-	/**
-	 * LOG4J logger used by this class
-	 */
 	private static final Logger logger = Logger.getLogger(OrganisationManagerBean.class);
 
-	/**
-	 * @see org.nightlabs.jfire.base.BaseSessionBeanImpl#setSessionContext(javax.ejb.SessionContext)
-	 */
 	@Override
 	public void setSessionContext(SessionContext sessionContext)
 			throws EJBException, RemoteException
@@ -115,59 +109,19 @@ public abstract class OrganisationManagerBean
 		super.setSessionContext(sessionContext);
 	}
 	/**
-	 * _Guest_ needs to be able to instantiate this EJB, because of the orga registration.
-	 *
 	 * @ejb.create-method
 	 * @ejb.permission role-name="_Guest_"
-	 * @!!!ejb.permission role-name="_ServerAdmin_, OrganisationManager-read"
 	 */
 	public void ejbCreate()
 	throws CreateException
 	{
 		if(logger.isDebugEnabled())
 			logger.debug("ejbCreate()");
-//		try
-//		{
-//			System.out.println("OrganisationManager created by " + this.getPrincipalString());
-//		}
-//		catch (ModuleException e)
-//		{
-//			throw new CreateException(e.getMessage());
-//		}
 	}
 	/**
-	 * @see javax.ejb.SessionBean#ejbRemove()
-	 *
 	 * @ejb.permission unchecked="true"
 	 */
 	public void ejbRemove() throws EJBException, RemoteException { }
-
-//	/**
-//	 * This method creates a representative organisation on this server. Note,
-//	 * that it cannot be converted into a real organisation afterwards. This
-//	 * representative cannot start operation before its masterOrganisation has
-//	 * accepted it.
-//	 *
-//	 * @param organisationID The organisationID of the representative. Must be new and unique in the whole network (means world!).
-//	 * @param organisationDisplayName A nice name that will be used to display the new representative organisation.
-//	 * @param masterOrganisationID The organisationID of the master organisation, this new slave is representing.
-//	 * @throws ModuleException
-//	 *
-//	 * @ejb.interface-method
-//	 * @!ejb.transaction type = "Required"
-//	 * @ejb.transaction type="Never"
-//	 * @ejb.permission role-name="_ServerAdmin_"
-//	 */
-//	public void createOrganisation(String organisationID, String organisationDisplayName, String masterOrganisationID)
-//		throws ModuleException
-//	{
-//		JFireServerManager ism = getJFireServerManager();
-//		try {
-//			ism.createOrganisation(organisationID, organisationDisplayName);
-//		} finally {
-//			ism.close();
-//		}
-//	}
 
 	/**
 	 * @ejb.interface-method
@@ -201,14 +155,13 @@ public abstract class OrganisationManagerBean
 	 * @param userID The userID of the first user to create within the new organisation. It will have all necessary permissions to manage users and roles within the new organisation.
 	 * @param password The password of the new user.
 	 * @param isServerAdmin Whether this user should have global server administration permissions.
-	 * @throws ModuleException
 	 *
 	 * @ejb.interface-method
 	 * @ejb.transaction type="Never"
 	 * @ejb.permission role-name="_ServerAdmin_"
 	 */
 	public void createOrganisation(String organisationID, String organisationDisplayName, String userID, String password, boolean isServerAdmin)
-		throws ModuleException
+	throws ModuleException
 	{
 		JFireServerManager ism = getJFireServerManager();
 		try {
@@ -246,7 +199,7 @@ public abstract class OrganisationManagerBean
 
 	/**
 	 * @ejb.interface-method
-	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
+	 * @ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 * @ejb.permission role-name="_ServerAdmin_"
 	 */
 	public CreateOrganisationProgress getCreateOrganisationProgress(CreateOrganisationProgressID createOrganisationProgressID)
@@ -262,9 +215,8 @@ public abstract class OrganisationManagerBean
 	/**
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_ServerAdmin_"
-	 **/
+	 */
 	public List<OrganisationCf> getOrganisationCfs(boolean sorted)
-		throws ModuleException
 	{
 		JFireServerManager ism = getJFireServerManager();
 		try {
@@ -279,7 +231,7 @@ public abstract class OrganisationManagerBean
 	 *
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_ServerAdmin_"
-	 **/
+	 */
 	public OrganisationCf getOrganisationConfig(String organisationID)
 	throws OrganisationNotFoundException
 	{
@@ -292,15 +244,15 @@ public abstract class OrganisationManagerBean
 	}
 
 	/**
-	 * This method finds out whether the current
+	 * This method finds out whether there exists at least one arganisation.
+	 * @return <code>true</code> if no organisation exists on this server; <code>false</code> if there is at least one organisation.
 	 *
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
 	 *
-	 * @see org.nightlabs.jfire.servermanager.JFireServerManagerFactory#isOrganisationCfsEmpty()
+	 * @see org.nightlabs.jfire.servermanager.JFireServerManager#isOrganisationCfsEmpty()
 	 */
 	public boolean isOrganisationCfsEmpty()
-		throws ModuleException
 	{
 		JFireServerManager ism = getJFireServerManager();
 		try {
@@ -312,8 +264,8 @@ public abstract class OrganisationManagerBean
 
 	/**
 	 * @ejb.interface-method
-	 * @ejb.permission role-name="OrganisationManager-read"
-	 **/
+	 * @ejb.permission role-name="org.nightlabs.jfire.organisation.manageCrossOrganisationRegistrations"
+	 */
 	public Collection<RegistrationStatus> getPendingRegistrations(String[] fetchGroups, int maxFetchDepth)
 	{
 		PersistenceManager pm = getPersistenceManager();
@@ -345,7 +297,7 @@ public abstract class OrganisationManagerBean
 	 * @ejb.interface-method
 	 * @ejb.transaction type="Required"
 	 * @ejb.permission role-name="_Guest_"
-	 **/
+	 */
 	public void notifyAcceptRegistration(String registrationID, Organisation grantOrganisation, String userPassword)
 	{
 		if (registrationID == null)
@@ -393,7 +345,7 @@ public abstract class OrganisationManagerBean
 	 * @ejb.interface-method
 	 * @ejb.transaction type="Required"
 	 * @ejb.permission role-name="_Guest_"
-	 **/
+	 */
 	public void notifyRejectRegistration(String registrationID)
 	{
 		if (registrationID == null)
@@ -416,13 +368,9 @@ public abstract class OrganisationManagerBean
 				throw new IllegalArgumentException("The given registrationID \""+registrationID+"\" does not match the pending registration for applicantOrganisationID=\""+getOrganisationID()+"\" and grantOrganisationID=\""+grantOrganisationID+"\"!");
 
 			User user = User.getUser(pm, getOrganisationID(), userID);
-			// user.setPassword(null); // login is impossible with a null password
 			pm.deletePersistent(user);
 
-			registrationStatus.reject(null);
-			// TODO we must remove the pending registration after the user has seen, that
-			// it was rejected.
-//			localOrganisation.removePendingRegistration(grantOrganisationID);
+			registrationStatus.reject(null); // since we deleted the user, we cannot pass it here
 		} finally {
 			pm.close();
 		}
@@ -435,9 +383,8 @@ public abstract class OrganisationManagerBean
 	 *
 	 * @ejb.interface-method
 	 * @ejb.transaction type="Required"
-	 * @ejb.permission role-name="OrganisationManager-write"
-	 * @!ejb.permission role-name="_Guest_"
-	 **/
+	 * @ejb.permission role-name="org.nightlabs.jfire.organisation.manageCrossOrganisationRegistrations"
+	 */
 	public void acceptRegistration(String applicantOrganisationID)
 	throws JFireRemoteException
 	{
@@ -511,8 +458,8 @@ public abstract class OrganisationManagerBean
 	/**
 	 * @ejb.interface-method
 	 * @ejb.transaction type="Required"
-	 * @ejb.permission role-name="OrganisationManager-write"
-	 **/
+	 * @ejb.permission role-name="org.nightlabs.jfire.organisation.manageCrossOrganisationRegistrations"
+	 */
 	public void rejectRegistration(String applicantOrganisationID)
 	throws JFireRemoteException
 	{
@@ -550,8 +497,8 @@ public abstract class OrganisationManagerBean
 	/**
 	 * @ejb.interface-method
 	 * @ejb.transaction type="Required"
-	 * @ejb.permission role-name="OrganisationManager-write"
-	 **/
+	 * @ejb.permission role-name="org.nightlabs.jfire.organisation.manageCrossOrganisationRegistrations"
+	 */
 	public void cancelRegistration(String grantOrganisationID)
 	throws JFireRemoteException
 	{
@@ -603,8 +550,8 @@ public abstract class OrganisationManagerBean
 	 *
 	 * @ejb.interface-method
 	 * @ejb.transaction type="Required"
-	 * @ejb.permission role-name="OrganisationManager-write"
-	 **/
+	 * @ejb.permission role-name="org.nightlabs.jfire.organisation.manageCrossOrganisationRegistrations"
+	 */
 	public void beginRegistration(
 			String initialContextFactory, String initialContextURL, String organisationID)
 	throws OrganisationAlreadyRegisteredException, JFireRemoteException
@@ -689,7 +636,7 @@ public abstract class OrganisationManagerBean
 	 *
 	 * @ejb.interface-method
 	 * @ejb.transaction type="Required"
-	 * @ejb.permission role-name="OrganisationManager-write"
+	 * @ejb.permission role-name="org.nightlabs.jfire.organisation.manageCrossOrganisationRegistrations"
 	 **/
 	public void ackRegistration(String grantOrganisationID)
 	{
@@ -708,52 +655,6 @@ public abstract class OrganisationManagerBean
 			pm.close();
 		}
 	}
-
-//	/**
-//	 * @ejb.interface-method
-//	 * @ejb.transaction type="Required"
-//	 * @ejb.permission role-name="_Guest_"
-//	 **/
-//	public void testBackhand(String[] organisationIDs)
-//	throws ModuleException
-//	{
-//		logger.info("testBackhand ("+organisationIDs.length+"): begin: principal="+getPrincipalString());
-//		if (organisationIDs != null && organisationIDs.length > 0) {
-//			String organisationID = organisationIDs[0];
-//			String[] bhOrgaIDs = new String[organisationIDs.length - 1];
-//			for (int i = 1; i < organisationIDs.length; ++i) {
-//				bhOrgaIDs[i-1] = organisationIDs[i];
-//			}
-//
-//			logger.info("testBackhand ("+organisationIDs.length+"): backhanding to organisation \""+organisationID+"\"");
-//			try {
-//				logger.info("testBackhand ("+organisationIDs.length+"): OrganisationManagerUtil.getHome(...)");
-//				OrganisationManager organisationManager = OrganisationManagerUtil.getHome(getInitialContextProperties(organisationID)).create();
-//
-//				logger.info("testBackhand ("+organisationIDs.length+"): JFireSecurityManagerUtil.getHome()");
-//				JFireSecurityManagerHome userManagerHome = JFireSecurityManagerUtil.getHome();
-//
-//				logger.info("testBackhand ("+organisationIDs.length+"): userManagerHome.create()");
-//				JFireSecurityManager userManager = userManagerHome.create();
-//
-//				logger.info("testBackhand ("+organisationIDs.length+"): organisationManager.testBackhand(...)");
-//				organisationManager.testBackhand(bhOrgaIDs);
-//
-//				logger.info("testBackhand ("+organisationIDs.length+"): userManager.whoami()");
-//				userManager.whoami();
-//
-//				organisationManager.remove();
-//				userManager.remove();
-//			} catch (RuntimeException e) {
-//				throw e;
-//			} catch (ModuleException e) {
-//				throw e;
-//			} catch (Exception e) {
-//				throw new ModuleException(e);
-//			}
-//		}
-//		logger.info("testBackhand ("+organisationIDs.length+"): end: principal="+getPrincipalString());
-//	}
 
 	/**
 	 * @ejb.interface-method
@@ -862,15 +763,12 @@ public abstract class OrganisationManagerBean
 	 * <p>
 	 * Note, that this method does nothing, if the local organisation IS the root-organisation.
 	 * </p>
-	 * @throws NamingException
-	 * @throws CreateException
-	 * @throws RemoteException
 	 * @throws OrganisationAlreadyRegisteredException
 	 *
 	 * @ejb.interface-method
 	 * @ejb.transaction type="Required"
-	 * @ejb.permission role-name="_System_,OrganisationManager-write"
-	 **/
+	 * @ejb.permission role-name="_System_,org.nightlabs.jfire.organisation.manageCrossOrganisationRegistrations"
+	 */
 	public void registerInRootOrganisation()
 	throws OrganisationAlreadyRegisteredException, JFireRemoteException
 	{
@@ -897,7 +795,7 @@ public abstract class OrganisationManagerBean
 	 * @ejb.interface-method
 	 * @ejb.transaction type="Required"
 	 * @ejb.permission role-name="_Guest_"
-	 **/
+	 */
 	public Collection<Organisation> getOrganisationsFromRootOrganisation(boolean filterPartnerOrganisations, String[] fetchGroups, int maxFetchDepth)
 	throws JFireException
 	{
@@ -998,8 +896,8 @@ public abstract class OrganisationManagerBean
 	 *
 	 * @ejb.interface-method
 	 * @ejb.transaction type="Required"
-	 * @ejb.permission role-name="_System_,OrganisationManager-write"
-	 **/
+	 * @ejb.permission role-name="_System_,org.nightlabs.jfire.organisation.manageCrossOrganisationRegistrations"
+	 */
 	public void registerInRootOrganisation(boolean force)
 	throws OrganisationAlreadyRegisteredException, JFireRemoteException
 	{
@@ -1123,36 +1021,12 @@ public abstract class OrganisationManagerBean
 		}
 	}
 
-//	/**
-//	 * This method returns all organisations that the current organisation knows.
-//	 *
-//	 * @return a Collection of instances of type Organisation
-//	 *
-//	 * @ejb.interface-method
-//	 */
-//	public Collection getOrganisations()
-//	{
-//		PersistenceManager pm = persistenceManagerFactory.getPersistenceManager();
-//
-//	  Collection organisations = new HashSet();
-//	  for (Iterator it = pm.getExtent(Organisation.class, true).iterator(); it.hasNext(); ) {
-//	    Organisation o = (Organisation) it.next();
-//	    pm.retrieve(o.getServer());
-//	    pm.makeTransient(o);
-//	    pm.makeTransient(o.getServer());
-//	    organisations.add(o);
-//	  }
-//
-//	  pm.close();
-//
-//	  return organisations;
-//	}
-
 	/**
 	 * @ejb.interface-method
 	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
-	 * @ejb.permission role-name="_Guest_"
+	 * @ejb.permission role-name="org.nightlabs.jfire.organisation.queryOrganisations"
 	 */
+	@SuppressWarnings("unchecked")
 	public Set<OrganisationID> getOrganisationIDs()
 	{
 		PersistenceManager pm = getPersistenceManager();
@@ -1168,7 +1042,7 @@ public abstract class OrganisationManagerBean
 	/**
 	 * @ejb.interface-method
 	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
-	 * @ejb.permission role-name="_Guest_"
+	 * @ejb.permission role-name="org.nightlabs.jfire.organisation.queryOrganisations"
 	 */
 	@SuppressWarnings("unchecked")
 	public List<Organisation> getOrganisations(Collection<OrganisationID> organisationIDs, String[] fetchGroups, int maxFetchDepth)

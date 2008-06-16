@@ -277,4 +277,44 @@
 <!-- ***                END org.nightlabs.jfire.base                 *** -->
 <!-- ******************************************************************* -->
 
+
+<!-- ******************************************************************* -->
+<!-- ***           BEGIN org.nightlabs.jfire.organisation            *** -->
+<!-- ******************************************************************* -->
+	<role-group id="org.nightlabs.jfire.organisation.manageCrossOrganisationRegistrations">
+		<name>Cross-organisation-registrations</name>
+		<name language="de">Cross-Organisations-Registrierungen</name>
+		<description>
+			Allows to manage cross-organisation-registrations. This
+			includes initiating them as well as accepting or rejecting
+			another organisation's registration request.
+		</description>
+		<description language="de">
+			Erlaubt die Verwaltung von
+			Cross-Organisations-Registrierungen. Dies beinhaltet das
+			Einleiten einer solchen Registrierung sowie das Akzeptieren
+			oder Ablehnen einer Anfrage einer anderen Organisation.
+		</description>
+		<role id="org.nightlabs.jfire.organisation.manageCrossOrganisationRegistrations"/>
+	</role-group>
+	<role-group id="org.nightlabs.jfire.organisation.queryOrganisations">
+		<name>Query organisations</name>
+		<name language="de">Organisationen abfragen</name>
+		<description>
+			Allows to query all organisations with which the current
+			organisation has cooperations (i.e. all organisations known
+			to the current organisation).
+		</description>
+		<description language="de">
+			Erlaubt die Abfrage aller Organisationen, mit denen die
+			aktuelle Organisation Kooperationen hat (also alle
+			Organisationen, die der aktuellen Organisation bekannt
+			sind).
+		</description>
+		<role id="org.nightlabs.jfire.organisation.queryOrganisations"/>
+	</role-group>
+<!-- ******************************************************************* -->
+<!-- ***            END org.nightlabs.jfire.organisation             *** -->
+<!-- ******************************************************************* -->
+
 </jfire-security>

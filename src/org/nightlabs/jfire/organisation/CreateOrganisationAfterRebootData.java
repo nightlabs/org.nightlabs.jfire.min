@@ -12,6 +12,9 @@ import java.util.LinkedList;
 import org.nightlabs.jfire.base.JFireBaseEAR;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 
+/**
+ * @author marco schulze - marco at nightlabs dot de
+ */
 public class CreateOrganisationAfterRebootData
 {
 	public static class Descriptor
@@ -26,14 +29,12 @@ public class CreateOrganisationAfterRebootData
 		public boolean isServerAdmin;
 	}
 
-//	private Map<String, Descriptor> organisationID2Descriptor = null;
 	private LinkedList<Descriptor> descriptors = null;
 
 	private File serFile;
 
 	public boolean isEmpty()
 	{
-//		return organisationID2Descriptor == null || organisationID2Descriptor.isEmpty();
 		return descriptors == null || descriptors.isEmpty();
 	}
 
@@ -52,7 +53,6 @@ public class CreateOrganisationAfterRebootData
 				ObjectInputStream oin = new ObjectInputStream(in);
 				try {
 					try {
-//						organisationID2Descriptor = (Map<String, Descriptor>) oin.readObject();
 						descriptors = (LinkedList<Descriptor>) oin.readObject();
 					} catch (ClassNotFoundException e) {
 						throw new RuntimeException(e); // this should really never happen
@@ -86,11 +86,6 @@ public class CreateOrganisationAfterRebootData
 
 	public void addOrganisation(Descriptor descriptor) throws IOException
 	{
-//		if (organisationID2Descriptor == null)
-//			organisationID2Descriptor = new HashMap<String, Descriptor>();
-//
-//		organisationID2Descriptor.put(descriptor.organisationID, descriptor);
-
 		if (descriptors == null)
 			descriptors = new LinkedList<Descriptor>();
 
@@ -102,20 +97,16 @@ public class CreateOrganisationAfterRebootData
 	private void writeSerFile()
 	throws IOException
 	{
-//		if (organisationID2Descriptor != null && organisationID2Descriptor.isEmpty())
-//			organisationID2Descriptor = null;
 		if (descriptors != null && descriptors.isEmpty())
 			descriptors = null;
 
 		File tmpFile = null;
-//		if (organisationID2Descriptor != null) {
 		if (descriptors != null) {
 			tmpFile = new File(serFile.getParentFile(), "createOrganisationsAfterReboot.tmp");
 			FileOutputStream out = new FileOutputStream(tmpFile);
 			try {
 				ObjectOutputStream oout = new ObjectOutputStream(out);
 				try {
-//					oout.writeObject(organisationID2Descriptor);
 					oout.writeObject(descriptors);
 				} finally {
 					oout.close();
@@ -138,18 +129,11 @@ public class CreateOrganisationAfterRebootData
 	public Descriptor fetchOrganisationCreationDescriptor()
 	throws IOException
 	{
-//		if (organisationID2Descriptor == null)
-//			return null;
 		if (descriptors == null)
 			return null;
 
 		Descriptor res = null;
 
-//		Iterator<Descriptor> it = organisationID2Descriptor.values().iterator();
-//		if (it.hasNext()) {
-//			res = it.next();
-//			it.remove();
-//		}
 		if (!descriptors.isEmpty())
 			res = descriptors.removeFirst();
 
