@@ -109,6 +109,7 @@ import org.nightlabs.jfire.security.Authority;
 import org.nightlabs.jfire.security.AuthorityType;
 import org.nightlabs.jfire.security.AuthorizedObjectRef;
 import org.nightlabs.jfire.security.Role;
+import org.nightlabs.jfire.security.RoleConstants;
 import org.nightlabs.jfire.security.RoleGroup;
 import org.nightlabs.jfire.security.RoleGroupRef;
 import org.nightlabs.jfire.security.RoleRef;
@@ -2467,7 +2468,7 @@ public class JFireServerManagerFactoryImpl
 
 		roleSet = new RoleSet();
 
-		roleSet.addMember(new SimplePrincipal("_Guest_")); // EVERYONE has this role (if he's logged in)!
+		roleSet.addMember(new SimplePrincipal(RoleConstants.guest.roleID)); // EVERYONE has this role (if he's logged in)!
 
 		boolean closePM = false;
 		if (pm == null) {
@@ -2480,7 +2481,7 @@ public class JFireServerManagerFactoryImpl
 			}
 			else if (User.USERID_SYSTEM.equals(userID)) {
 				// user is system user and needs ALL roles
-				roleSet.addMember(new SimplePrincipal("_ServerAdmin_"));
+				roleSet.addMember(new SimplePrincipal(RoleConstants.serverAdmin.roleID));
 				roleSet.addMember(new SimplePrincipal(User.USERID_SYSTEM)); // ONLY the system user has this role - no real user can get it as its virtual (it is ignored during import)
 				for (Iterator<?> it = pm.getExtent(Role.class, true).iterator(); it.hasNext(); ) {
 					Role role = (Role) it.next();
@@ -2498,7 +2499,7 @@ public class JFireServerManagerFactoryImpl
 				// organisation and can be changed by them. This role must not be set by the
 				// organisation, but only by the administrator of the server.
 				if (getOrganisationConfig(organisationID).isServerAdmin(userID))
-					roleSet.addMember(new SimplePrincipal("_ServerAdmin_"));
+					roleSet.addMember(new SimplePrincipal(RoleConstants.serverAdmin.roleID));
 
 				AuthorizedObjectRef authorizedObjectRef;
 				try {

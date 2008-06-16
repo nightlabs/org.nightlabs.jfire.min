@@ -56,6 +56,7 @@ import org.nightlabs.jfire.base.SimplePrincipal;
 import org.nightlabs.jfire.classloader.CLRegistrar;
 import org.nightlabs.jfire.module.ModuleType;
 import org.nightlabs.jfire.organisation.Organisation;
+import org.nightlabs.jfire.security.RoleConstants;
 import org.nightlabs.jfire.security.RoleSet;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.security.UserLocal;
@@ -444,8 +445,8 @@ public class JFireServerManagerImpl
 			if (this.isOrganisationCfsEmpty()) {
 				RoleSet roleSet = new RoleSet();
 				// add roles needed for setup
-				roleSet.addMember(new SimplePrincipal("_Guest_")); // EVERYONE has this role!
-				roleSet.addMember(new SimplePrincipal("_ServerAdmin_"));
+				roleSet.addMember(new SimplePrincipal(RoleConstants.guest.roleID)); // EVERYONE has this role!
+				roleSet.addMember(new SimplePrincipal(RoleConstants.serverAdmin.roleID));
 
 				if (User.USERID_SYSTEM.equals(userID))
 					roleSet.addMember(new SimplePrincipal(User.USERID_SYSTEM));
