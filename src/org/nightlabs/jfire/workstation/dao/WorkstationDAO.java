@@ -4,12 +4,14 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import org.nightlabs.jdo.query.QueryCollection;
 import org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO;
 import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.workstation.Workstation;
 import org.nightlabs.jfire.workstation.WorkstationManager;
 import org.nightlabs.jfire.workstation.WorkstationManagerUtil;
 import org.nightlabs.jfire.workstation.id.WorkstationID;
+import org.nightlabs.jfire.workstation.search.WorkstationQuery;
 import org.nightlabs.progress.ProgressMonitor;
 
 public class WorkstationDAO
@@ -26,49 +28,73 @@ extends BaseJDOObjectDAO<WorkstationID, Workstation>
 		return sharedInstance;
 	}
 
+	private WorkstationManager workstationManager;
+
+	@SuppressWarnings("unchecked")
 	@Override
 	protected Collection<Workstation> retrieveJDOObjects(
 			Set<WorkstationID> workstationIDs, String[] fetchGroups, int maxFetchDepth,
 			ProgressMonitor monitor)
 	throws Exception
 	{
-		WorkstationManager wm = WorkstationManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
+		WorkstationManager wm = workstationManager;
+
+		if (wm == null)
+			wm = WorkstationManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
+
 		return wm.getWorkstations(workstationIDs, fetchGroups, maxFetchDepth);
 	}
 
-	public List<Workstation> getWorkstations(Set<WorkstationID> workstationIDs, String[] fetchGroups, int maxFetchDepth,
-			ProgressMonitor monitor)
+	@SuppressWarnings("unchecked")
+	public List<Workstation> getWorkstations(Set<WorkstationID> workstationIDs, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
 	{
-		if (workstationIDs == null) {
-			try {
-				WorkstationManager wm = WorkstationManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
-				workstationIDs = wm.getWorkstationIDs();
-			} catch (Exception e) {
-				throw new RuntimeException(e);
-			}
-		}
 		return getJDOObjects(null, workstationIDs, fetchGroups, maxFetchDepth, monitor);
 	}
 
-	public List<Workstation> getWorkstations(String[] fetchGroups, int maxFetchDepth,
+	@SuppressWarnings("unchecked")
+	public synchronized List<Workstation> getWorkstations(QueryCollection<? extends WorkstationQuery> workstationQueries, String[] fetchGroups, int maxFetchDepth,
 			ProgressMonitor monitor)
 	{
-		return getWorkstations(null, fetchGroups, maxFetchDepth, monitor);
+		try {
+			workstationManager = WorkstationManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
+			Set<WorkstationID> workstationIDs = workstationManager.getWorkstationIDs(workstationQueries);
+			return getJDOObjects(null, workstationIDs, fetchGroups, maxFetchDepth, monitor);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		} finally {
+			workstationManager = null;
+		}
 	}
-	
-	public Workstation getWorkstation(WorkstationID workstationID, String[] fetchGroups,
-			int maxFetchDepth, ProgressMonitor monitor)
+
+	@SuppressWarnings("unchecked")
+	public synchronized List<Workstation> getWorkstations(String[] fetchGroups, int maxFetchDepth,
+			ProgressMonitor monitor)
+	{
+		try {
+			workstationManager = WorkstationManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
+			Set<WorkstationID> workstationIDs = workstationManager.getWorkstationIDs();
+			return getJDOObjects(null, workstationIDs, fetchGroups, maxFetchDepth, monitor);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		} finally {
+			workstationManager = null;
+		}
+	}
+
+	public Workstation getWorkstation(WorkstationID workstationID, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
 	{
 		return getJDOObject(null, workstationID, fetchGroups, maxFetchDepth, monitor);
 	}
-	
+
 	public Workstation storeWorkstation(Workstation workstation, boolean get, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor) {
 		try {
 			WorkstationManager wm = WorkstationManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
-			return wm.storeWorkstation(workstation, get, fetchGroups, maxFetchDepth);
+			Workstation res = wm.storeWorkstation(workstation, get, fetchGroups, maxFetchDepth);
+			if (res != null)
+				getCache().put(null, res, fetchGroups, maxFetchDepth);
+			return res;
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
-	
 }
