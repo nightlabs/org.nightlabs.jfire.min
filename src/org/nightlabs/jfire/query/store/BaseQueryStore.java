@@ -1,10 +1,8 @@
 package org.nightlabs.jfire.query.store;
 
-import java.beans.DefaultPersistenceDelegate;
-import java.beans.XMLDecoder;
-import java.beans.XMLEncoder;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashSet;
@@ -25,6 +23,8 @@ import org.nightlabs.jfire.query.store.id.QueryStoreID;
 import org.nightlabs.jfire.security.Authority;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.security.id.UserID;
+
+import com.thoughtworks.xstream.XStream;
 
 /**
  * I am a container for any number of {@link AbstractSearchQuery}s wrapped in a
@@ -312,6 +312,59 @@ public class BaseQueryStore
 		setQueryCollection(queryCollection);
 	}
 	
+//	/**
+//	 * Returns the QueryCollection, which might need to deserialise the serialised QueryCollection. 
+//	 * @return the managed QueryCollection.
+//	 */
+//	@SuppressWarnings("unchecked")
+//	public QueryCollection<?> getQueryCollection()
+//	{
+//		if (deSerialisedQueries != null)
+//			return deSerialisedQueries;
+//		
+//		if (serialisedQueries == null || serialisedQueries.length == 0)
+//			return null;
+//		
+//		if (deSerialisedQueries == null)
+//		{
+//			final ByteArrayInputStream inputStream = new ByteArrayInputStream(serialisedQueries);
+//			final InflaterInputStream zippedStream = new InflaterInputStream(inputStream);
+//			final XMLDecoder decoder = new XMLDecoder(zippedStream);
+//			deSerialisedQueries = (QueryCollection<?>) decoder.readObject();
+//			decoder.close();
+//		}
+//		
+//		return deSerialisedQueries;
+//	}
+//	
+//	/**
+//	 * This is only called by the DAO in order to prohibit the serialisation of the QueryCollection
+//	 * when calling {@link #setQueryCollection(QueryCollection)}. <br />
+//	 * <p><b>Note:</b> This has to be called from the outside BEFORE subclasses are send away!! This
+//	 * 	is usually done in the DAOs.
+//	 * </p>
+//	 */
+//	public void serialiseCollection()
+//	{
+//		if (deSerialisedQueries == null || deSerialisedQueries == null)
+//		{
+//			serialisedQueries = null;
+//		}
+//		else
+//		{
+//			final ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+//			DeflaterOutputStream zippedStream = new DeflaterOutputStream(outStream);
+//			final XMLEncoder encoder = new XMLEncoder(zippedStream);
+//			encoder.setPersistenceDelegate(
+//				QueryCollection.class, 
+//				new DefaultPersistenceDelegate(new String[] { QUERYCOLLECTION_RESULTCLASS_NAME })
+//				);
+//			encoder.writeObject(deSerialisedQueries);
+//			encoder.close();
+//			serialisedQueries = outStream.toByteArray();
+//		}
+//	}
+
 	/**
 	 * Returns the QueryCollection, which might need to deserialise the serialised QueryCollection. 
 	 * @return the managed QueryCollection.
@@ -328,10 +381,14 @@ public class BaseQueryStore
 		if (deSerialisedQueries == null)
 		{
 			final ByteArrayInputStream inputStream = new ByteArrayInputStream(serialisedQueries);
-			final InflaterInputStream zippedStream = new InflaterInputStream(inputStream);
-			final XMLDecoder decoder = new XMLDecoder(zippedStream);
-			deSerialisedQueries = (QueryCollection<?>) decoder.readObject();
-			decoder.close();
+			final InflaterInputStream zipStream = new InflaterInputStream(inputStream);
+			try {
+				XStream xStream = new XStream();
+				deSerialisedQueries = (QueryCollection<?>) xStream.fromXML(zipStream);
+				zipStream.close();
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
 		}
 		
 		return deSerialisedQueries;
@@ -353,18 +410,18 @@ public class BaseQueryStore
 		else
 		{
 			final ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-			DeflaterOutputStream zippedStream = new DeflaterOutputStream(outStream);
-			final XMLEncoder encoder = new XMLEncoder(zippedStream);
-			encoder.setPersistenceDelegate(
-				QueryCollection.class, 
-				new DefaultPersistenceDelegate(new String[] { QUERYCOLLECTION_RESULTCLASS_NAME })
-				);
-			encoder.writeObject(deSerialisedQueries);
-			encoder.close();
-			serialisedQueries = outStream.toByteArray();
+			DeflaterOutputStream zipStream = new DeflaterOutputStream(outStream);
+			try {
+				XStream xStream = new XStream();
+				xStream.toXML(deSerialisedQueries, zipStream);
+				zipStream.close();
+				serialisedQueries = outStream.toByteArray();
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
 		}
 	}
-
+	
 	/**
 	 * @return the organisationID
 	 */
