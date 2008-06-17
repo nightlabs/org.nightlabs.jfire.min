@@ -91,6 +91,11 @@ implements SessionBean, TimedObject
 					return;
 				}
 
+				if (ismf.isShuttingDown()) {
+					logger.info("ejbTimeout: Server is shutting down - will not do anything.");
+					return;
+				}
+
 				if (!ismf.isUpAndRunning()) {
 					logger.info("ejbTimeout: Server is not yet up and running - will not do anything.");
 					return;
