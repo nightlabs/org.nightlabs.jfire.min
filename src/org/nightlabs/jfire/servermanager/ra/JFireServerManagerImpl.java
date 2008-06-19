@@ -47,7 +47,6 @@ import javax.transaction.UserTransaction;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.ModuleException;
-import org.nightlabs.config.Config;
 import org.nightlabs.config.ConfigException;
 import org.nightlabs.j2ee.LoginData;
 import org.nightlabs.jfire.base.JFirePrincipal;
@@ -76,15 +75,12 @@ import org.nightlabs.jfire.servermanager.deploy.DeploymentJarItem;
 import org.nightlabs.jfire.servermanager.xml.ModuleDef;
 
 /**
- * @author marco
+ * @author marco schulze - marco at nightlabs dot de
  * @author Marc Klinger - marc[at]nightlabs[dot]de
  */
 public class JFireServerManagerImpl
 	implements Connection, JFireServerManager
 {
-	/**
-	 * LOG4J logger used by this class
-	 */
 	private static final Logger logger = Logger.getLogger(JFireServerManagerImpl.class);
 	
 	private ManagedConnectionImpl managedConnectionImpl;
@@ -117,32 +113,10 @@ public class JFireServerManagerImpl
 	/**
 	 * @param managedConnection The managedConnectionImpl to set.
 	 */
-	protected void setManagedConnection(
-			ManagedConnectionImpl _managedConnectionImpl) {
+	protected void setManagedConnection(ManagedConnectionImpl _managedConnectionImpl) {
 		this.managedConnectionImpl = _managedConnectionImpl;
-		
-		// NO_TODO: get userID and organisationID
-		// Because the JFireServerManager is used by the login module, we moved all authentication stuff here
-		// and do it manually.
-		/*
-		String username = this.managedConnectionImpl.getPasswordCredential().getUserName();
-		boolean userIsOrganisation = false;
-		String tmpStr = username;
-		if(tmpStr.startsWith(User.USERID_PREFIX_TYPE_ORGANISATION))
-		{
-			userIsOrganisation = true;
-			tmpStr = tmpStr.substring(User.USERID_PREFIX_TYPE_ORGANISATION.length());
-		}
-		Pattern p = Pattern.compile("[*@*]");
-		String[] txt = p.split(tmpStr);
-		if(txt.length != 2)
-			throw new LoginException("Invalid user string (use user@organisation)");
-		if(txt[0].length() == 0 || txt[1].length() == 0)
-			throw new LoginException("Invalid user string (use user@organization)");
-		this.userID = userIsOrganisation?User.USERID_PREFIX_TYPE_ORGANISATION+txt[0]:txt[0];
-		this.organisationID = txt[1];
-		*/
 	}
+
 	protected void setJFireServerManagerFactory(final JFireServerManagerFactoryImpl _jfireServerManagerFactoryImpl)
 	{
 		if(logger.isDebugEnabled())
@@ -150,10 +124,7 @@ public class JFireServerManagerImpl
 		this.jfireServerManagerFactoryImpl = _jfireServerManagerFactoryImpl;
 	}
 
-	/**
-	 * @see javax.resource.cci.Connection#close()
-	 * @see org.nightlabs.jfire.servermanager.JFireServerManager#close()
-	 */
+	@Override
 	public void close()
 	{
 		if(logger.isDebugEnabled())
@@ -180,44 +151,27 @@ public class JFireServerManagerImpl
 			throw new IllegalStateException("You are not authenticated at this JFireServerManager!");
 	}
 
-	/**
-	 * @see javax.resource.cci.Connection#createInteraction()
-	 */
+	@Override
 	public Interaction createInteraction() throws ResourceException {
 		throw new ResourceException("NYI");
 	}
 
-	/**
-	 * @see javax.resource.cci.Connection#getLocalTransaction()
-	 */
+	@Override
 	public LocalTransaction getLocalTransaction() throws ResourceException {
 		throw new ResourceException("NYI");
 	}
 
-	/**
-	 * @see javax.resource.cci.Connection#getMetaData()
-	 */
+	@Override
 	public ConnectionMetaData getMetaData() throws ResourceException {
 		throw new ResourceException("NYI");
 	}
 
-	/**
-	 * @see javax.resource.cci.Connection#getResultSetInfo()
-	 */
+	@Override
 	public ResultSetInfo getResultSetInfo() throws ResourceException {
 		throw new ResourceException("NYI");
 	}
 
-//	/**
-//	 * @see org.nightlabs.jfire.servermanager.JFireServerManager#createOrganisation(java.lang.String, java.lang.String)
-//	 */
-//	public void createOrganisation(String organisationID, String organisationCaption) throws ModuleException {
-//		assertOpen();
-//		jfireServerManagerFactoryImpl.createOrganisation(
-//				organisationID, organisationCaption,
-//				null, null, false); // isServerAdmin is ignored
-//	}
-
+	@Override
 	public CreateOrganisationProgressID createOrganisationAsync(String organisationID, String organisationCaption, String userID, String password, boolean isServerAdmin)
 	throws BusyCreatingOrganisationException
 	{
@@ -227,12 +181,14 @@ public class JFireServerManagerImpl
 				organisationCaption, userID, password, isServerAdmin);
 	}
 
+	@Override
 	public CreateOrganisationProgress getCreateOrganisationProgress(CreateOrganisationProgressID createOrganisationProgressID)
 	{
 		assertOpen();
 		return jfireServerManagerFactoryImpl.getCreateOrganisationProgress(createOrganisationProgressID);
 	}
 
+	@Override
 	public void createOrganisationProgress_addCreateOrganisationStatus(
 			CreateOrganisationProgressID createOrganisationProgressID, CreateOrganisationStatus createOrganisationStatus)
 	{
@@ -241,9 +197,7 @@ public class JFireServerManagerImpl
 				createOrganisationProgressID, createOrganisationStatus);
 	}
 
-	/**
-	 * @see org.nightlabs.jfire.servermanager.JFireServerManager#createOrganisation(String, String, String, String, boolean)
-	 */
+	@Override
 	public void createOrganisation(String organisationID, String organisationCaption, String userID, String password, boolean isServerAdmin) throws ModuleException {
 		assertOpen();
 		jfireServerManagerFactoryImpl.createOrganisation(
@@ -251,9 +205,7 @@ public class JFireServerManagerImpl
 				organisationCaption, userID, password, isServerAdmin);
 	}
 
-	/**
-	 * @see org.nightlabs.jfire.servermanager.JFireServerManager#getOrganisationConfig(java.lang.String)
-	 */
+	@Override
 	public OrganisationCf getOrganisationConfig(String organisationID)
 	throws OrganisationNotFoundException
 	{
@@ -261,65 +213,52 @@ public class JFireServerManagerImpl
 		return jfireServerManagerFactoryImpl.getOrganisationConfig(organisationID);
 	}
 
-	/**
-	 * @see org.nightlabs.jfire.servermanager.JFireServerManager#getConfig()
-	 */
-	public Config getConfig() {
-		assertOpen();
-		return jfireServerManagerFactoryImpl.getConfig();
-	}
+//	public Config getConfig() {
+//		assertOpen();
+//		return jfireServerManagerFactoryImpl.getConfig();
+//	}
 
-	/**
-	 * @see org.nightlabs.jfire.servermanager.JFireServerManager#addServerAdmin(java.lang.String, java.lang.String)
-	 */
+	@Override
 	public void addServerAdmin(String organisationID, String userID)
 			throws ModuleException
 	{
 		jfireServerManagerFactoryImpl.addServerAdmin(organisationID, userID);
 	}
-	/**
-	 * @see org.nightlabs.jfire.servermanager.JFireServerManager#removeServerAdmin(java.lang.String, java.lang.String)
-	 */
+
+	@Override
 	public boolean removeServerAdmin(String organisationID, String userID)
 			throws ModuleException
 	{
 		return jfireServerManagerFactoryImpl.removeServerAdmin(organisationID, userID);
 	}
 
-	/**
-	 * @see org.nightlabs.jfire.servermanager.JFireServerManager#isOrganisationCfsEmpty()
-	 */
+	@Override
 	public boolean isOrganisationCfsEmpty() {
 		assertOpen();
 		return jfireServerManagerFactoryImpl.isOrganisationCfsEmpty();
 	}
 
+	@Override
 	public List<OrganisationCf> getOrganisationCfs(boolean sorted)
 	{
 		assertOpen();
 		return jfireServerManagerFactoryImpl.getOrganisationCfs(sorted);
 	}
 
-	/**
-	 * @see org.nightlabs.jfire.servermanager.JFireServerManager#isNewServerNeedingSetup()
-	 */
+	@Override
 	public boolean isNewServerNeedingSetup() {
 		assertOpen();
 		return jfireServerManagerFactoryImpl.isNewServerNeedingSetup();
 	}
 
-	/**
-	 * @see org.nightlabs.jfire.servermanager.JFireServerManager#getJFireServerConfigModule()
-	 */
+	@Override
 	public JFireServerConfigModule getJFireServerConfigModule()
 	{
 		assertOpen();
 		return jfireServerManagerFactoryImpl.getJFireServerConfigModule();
 	}
 
-	/**
-	 * @see org.nightlabs.jfire.servermanager.JFireServerManager#setJFireServerConfigModule(org.nightlabs.jfire.servermanager.config.JFireServerConfigModule)
-	 */
+	@Override
 	public void setJFireServerConfigModule(JFireServerConfigModule cfMod)
 	throws ConfigException
 	{
@@ -327,35 +266,27 @@ public class JFireServerManagerImpl
 		jfireServerManagerFactoryImpl.setJFireServerConfigModule(cfMod);
 	}
 
-	/**
-	 * @see org.nightlabs.jfire.servermanager.JFireServerManager#j2ee_flushAuthenticationCache()
-	 */
+	@Override
 	public void j2ee_flushAuthenticationCache() throws ModuleException
 	{
 		assertOpen();
 		jfireServerManagerFactoryImpl.j2ee_flushAuthenticationCache();
 	}
 
-	/**
-	 * @see org.nightlabs.jfire.servermanager.JFireServerManager#roleImport_prepare(java.lang.String)
-	 */
+	@Override
 	public RoleImportSet roleImport_prepare(String organisationID) {
 		assertOpen();
 		return jfireServerManagerFactoryImpl.roleImport_prepare(organisationID);
 	}
 
-	/**
-	 * @see org.nightlabs.jfire.servermanager.JFireServerManager#roleImport_commit(org.nightlabs.jfire.servermanager.RoleImportSet)
-	 */
+	@Override
 	public void roleImport_commit(RoleImportSet roleImportSet)
 	{
 		assertOpen();
 		jfireServerManagerFactoryImpl.roleImport_commit(roleImportSet, null);
 	}
 	
-	/**
-	 * @see org.nightlabs.jfire.servermanager.JFireServerManager#getCLRegistrar()
-	 */
+	@Override
 	public CLRegistrar getCLRegistrar() throws ModuleException
 	{
 		assertOpen();
@@ -363,19 +294,15 @@ public class JFireServerManagerImpl
 		return jfireServerManagerFactoryImpl.getCLRegistrar(principal);
 	}
 
-	/**
-	 * @see org.nightlabs.jfire.servermanager.JFireServerManager#getModules(org.nightlabs.jfire.module.ModuleType, boolean)
-	 */
+	@Override
 	public List<ModuleDef> getModules(ModuleType moduleType)
 		throws ModuleException
 	{
 		assertOpen();
 		return jfireServerManagerFactoryImpl.getModules(moduleType);
 	}
-	
-	/**
-	 * @see org.nightlabs.jfire.servermanager.JFireServerManager#flushModuleCache()
-	 */
+
+	@Override
 	public void flushModuleCache() {
 		assertOpen();
 		jfireServerManagerFactoryImpl.flushModuleCache();
@@ -389,24 +316,19 @@ public class JFireServerManagerImpl
 		return principal != null;
 	}
 
+	@Override
 	public void jfireSecurity_flushCache(UserID userID)
 	{
 		assertOpen();
 		jfireServerManagerFactoryImpl.jfireSecurity_flushCache(userID);
 	}
 
+	@Override
 	public void jfireSecurity_flushCache()
 	{
 		assertOpen();
 		jfireServerManagerFactoryImpl.jfireSecurity_flushCache();
 	}
-
-//	public void jfireSecurity_flushCache(String userID)
-//	{
-//		assertOpen();
-//		assertAuthenticated();
-//		jfireServerManagerFactoryImpl.jfireSecurity_flushCache(this.principal.getOrganisationID(), userID);
-//	}
 
 	protected void setJFirePrincipal(JFirePrincipal jfirePrincipal)
 	{
@@ -415,6 +337,7 @@ public class JFireServerManagerImpl
 		this.principal = jfirePrincipal;
 	}
 
+	@Override
 	public JFirePrincipal login(LoginData loginData)
 		throws LoginException
 	{
@@ -459,7 +382,7 @@ public class JFireServerManagerImpl
 						roleSet
 						);
 			}
-			else // authorize
+			else // authenticate (check password) + authorize (get roles)
 			{
 				boolean handleTx = false;
 				boolean doCommit = false;
@@ -543,16 +466,19 @@ public class JFireServerManagerImpl
 		return this.principal;
 	}
 
+	@Override
 	public String jfireSecurity_createTempUserPassword(String organisationID, String userID)
 	{
 		return jfireServerManagerFactoryImpl.jfireSecurity_createTempUserPassword(organisationID, userID);
 	}
 
+	@Override
 	public boolean configureServerAndShutdownIfNecessary(long delayMSec) throws ModuleException
 	{
 		return jfireServerManagerFactoryImpl.configureServerAndShutdownIfNecessary(delayMSec);
 	}
 
+	@Override
 	public void createDeploymentDescriptor(File deploymentDescriptorFile, File templateFile, Map<String, String> additionalVariables, DeployOverwriteBehaviour deployOverwriteBehaviour)
 			throws IOException
 	{
@@ -563,6 +489,7 @@ public class JFireServerManagerImpl
 				principal.getOrganisationID(), deploymentDescriptorFile, templateFile, additionalVariables, deployOverwriteBehaviour);
 	}
 
+	@Override
 	public void createDeploymentJar(File deploymentJar, Collection<DeploymentJarItem> deploymentJarItems, DeployOverwriteBehaviour deployOverwriteBehaviour)
 			throws IOException
 	{
@@ -572,6 +499,7 @@ public class JFireServerManagerImpl
 		jfireServerManagerFactoryImpl.createDeploymentJar(principal.getOrganisationID(), deploymentJar, deploymentJarItems, deployOverwriteBehaviour);
 	}
 
+	@Override
 	public void undeploy(File deployment)
 			throws IOException
 	{
