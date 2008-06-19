@@ -47,7 +47,7 @@ import javax.naming.InitialContext;
 import javax.naming.NameAlreadyBoundException;
 import javax.naming.NamingException;
 import javax.security.auth.login.LoginContext;
-import javax.transaction.TransactionManager;
+import javax.transaction.UserTransaction;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.jdo.ObjectIDUtil;
@@ -66,16 +66,8 @@ import org.nightlabs.jfire.servermanager.ra.JFireServerManagerImpl;
 
 public class PersistentNotificationManagerFactory implements Serializable
 {
-	/**
-	 * The serial version of this class.
-	 */
 	private static final long serialVersionUID = 1L;
-
-	/**
-	 * LOG4J logger used by this class
-	 */
-	private static final Logger logger = Logger
-			.getLogger(PersistentNotificationManagerFactory.class);
+	private static final Logger logger = Logger.getLogger(PersistentNotificationManagerFactory.class);
 
 	public static final String JNDI_PREFIX = "java:/jfire/persistentNotificationManagerFactory/";
 
@@ -84,16 +76,14 @@ public class PersistentNotificationManagerFactory implements Serializable
 		return JNDI_PREFIX + organisationID;
 	}
 
-	public static final PersistentNotificationManagerFactory getOrganisationSyncManagerFactory(
-			InitialContext ctx, String organisationID) throws NamingException
+	public static final PersistentNotificationManagerFactory getOrganisationSyncManagerFactory(InitialContext ctx, String organisationID) throws NamingException
 	{
-		return (PersistentNotificationManagerFactory) ctx
-				.lookup(getJNDIName(organisationID));
+		return (PersistentNotificationManagerFactory) ctx.lookup(getJNDIName(organisationID));
 	}
 
 	private String organisationID;
 	private transient JFireServerManagerFactory jFireServerManagerFactory;
-	private transient TransactionManager transactionManager;
+	private transient UserTransaction userTransaction;
 //	private PersistenceManagerFactory persistenceManagerFactory;
 
 	private transient DirtyObjectIDBuffer dirtyObjectIDBuffer;
@@ -102,12 +92,12 @@ public class PersistentNotificationManagerFactory implements Serializable
 
 	public PersistentNotificationManagerFactory(InitialContext ctx,
 			String organisationID, JFireServerManagerFactory jFireServerManagerFactory,
-			TransactionManager transactionManager, PersistenceManagerFactory pmf)
+			UserTransaction userTransaction, PersistenceManagerFactory pmf)
 			throws NamingException, DirtyObjectIDBufferException
 	{
 		this.organisationID = organisationID;
 		this.jFireServerManagerFactory = jFireServerManagerFactory;
-		this.transactionManager = transactionManager;
+		this.userTransaction = userTransaction;
 //		this.persistenceManagerFactory = pmf;
 
 		String dirtyObjectIDBufferClassName = DirtyObjectIDBufferFileSystem.class.getName(); // TODO read the class name from a configuration module
@@ -196,7 +186,7 @@ public class PersistentNotificationManagerFactory implements Serializable
 //			ensureOpenPersistenceManagerFactory();
 //
 //			boolean doCommit = false;
-//			transactionManager.begin();
+//			userTransaction.begin();
 //			try {
 //				PersistenceManager pm = persistenceManagerFactory.getPersistenceManager();
 //				try {
@@ -224,9 +214,9 @@ public class PersistentNotificationManagerFactory implements Serializable
 //				doCommit = true;
 //			} finally {
 //				if (doCommit)
-//					transactionManager.commit();
+//					userTransaction.commit();
 //				else
-//					transactionManager.rollback();
+//					userTransaction.rollback();
 //			}
 //		} catch (Throwable t) {
 //			logger.error("Processing incoming dirty objects failed!", t);
@@ -337,7 +327,7 @@ public class PersistentNotificationManagerFactory implements Serializable
 				boolean handleTx = false;
 				if (!JFireServerManagerImpl.isNonTransactionalRead()) {
 					handleTx = true;
-					transactionManager.begin();
+					userTransaction.begin();
 				}
 				try {
 
@@ -427,9 +417,9 @@ public class PersistentNotificationManagerFactory implements Serializable
 				} finally {
 					if (handleTx) {
 						if (doCommit)
-							transactionManager.commit();
+							userTransaction.commit();
 						else
-							transactionManager.rollback();
+							userTransaction.rollback();
 					}
 				}
 			}
@@ -439,7 +429,7 @@ public class PersistentNotificationManagerFactory implements Serializable
 //			Map<UserID, Map<NotificationFilterID, List<DirtyObjectID>>> userID2notificationFilterID2DirtyObjectID_afterFilter = new HashMap<UserID, Map<NotificationFilterID,List<DirtyObjectID>>>();
 			if (!userID2notificationFilterID2DirtyObjectID_beforeFilter.isEmpty()) {
 				boolean doCommit = false;
-				transactionManager.begin();
+				userTransaction.begin();
 				try {
 					for (Map.Entry<UserID, Map<NotificationFilterID, List<DirtyObjectID>>> me1 : userID2notificationFilterID2DirtyObjectID_beforeFilter.entrySet()) {
 						UserID userID = me1.getKey();
@@ -495,16 +485,16 @@ public class PersistentNotificationManagerFactory implements Serializable
 					doCommit = true;
 				} finally {
 					if (doCommit)
-						transactionManager.commit();
+						userTransaction.commit();
 					else
-						transactionManager.rollback();
+						userTransaction.rollback();
 				}
 			}
 
 //			// push the notifications as the system user
 //			if (!userID2notificationFilterID2DirtyObjectID_afterFilter.isEmpty()) {
 //				boolean doCommit = false;
-//				transactionManager.begin();
+//				userTransaction.begin();
 //				try {
 //
 //					LoginContext loginContext;
@@ -527,15 +517,15 @@ public class PersistentNotificationManagerFactory implements Serializable
 //					doCommit = true;
 //				} finally {
 //					if (doCommit)
-//						transactionManager.commit();
+//						userTransaction.commit();
 //					else
-//						transactionManager.rollback();
+//						userTransaction.rollback();
 //				}
 //			} // if (!userID2notificationFilterID2DirtyObjectID_beforeFilter.isEmpty()) {
 
 
 //			boolean doCommit = false;
-//			transactionManager.begin();
+//			userTransaction.begin();
 //			try {
 //				PersistenceManagerFactory persistenceManagerFactory = JFireServerManagerFactoryImpl.getPersistenceManagerFactory(organisationID);
 //				PersistenceManager pm = persistenceManagerFactory.getPersistenceManager();
@@ -651,9 +641,9 @@ public class PersistentNotificationManagerFactory implements Serializable
 //				doCommit = true;
 //			} finally {
 //				if (doCommit)
-//					transactionManager.commit();
+//					userTransaction.commit();
 //				else
-//					transactionManager.rollback();
+//					userTransaction.rollback();
 //			}
 
 			// remove the objectids that have been marked for removal by fetchDirtyObjectIDs() before.
@@ -668,7 +658,7 @@ public class PersistentNotificationManagerFactory implements Serializable
 
 //			// 2nd step: notify the subscribers that have dirty listeners
 //			doCommit = false;
-//			transactionManager.begin();
+//			userTransaction.begin();
 //			try {
 //				PersistenceManager pm = persistenceManagerFactory.getPersistenceManager();
 //				try {
@@ -733,9 +723,9 @@ public class PersistentNotificationManagerFactory implements Serializable
 //				doCommit = true;
 //			} finally {
 //				if (doCommit)
-//					transactionManager.commit();
+//					userTransaction.commit();
 //				else
-//					transactionManager.rollback();
+//					userTransaction.rollback();
 //			}
 
 			long totalDuration = System.currentTimeMillis() - totalStart;

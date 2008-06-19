@@ -77,7 +77,7 @@ import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.auth.login.LoginContext;
-import javax.transaction.TransactionManager;
+import javax.transaction.UserTransaction;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.log4j.Level;
@@ -638,9 +638,9 @@ public class JFireServerManagerFactoryImpl
 								logger.info("Importing roles and rolegroups into organisation \""+organisationID+"\"...");
 								try {
 
-									TransactionManager transactionManager = getJ2EEVendorAdapter().getTransactionManager(ctx);
+									UserTransaction userTransaction = getJ2EEVendorAdapter().getUserTransaction(ctx);
 									boolean doCommit = false;
-									transactionManager.begin();
+									userTransaction.begin();
 									try {
 
 										RoleImportSet roleImportSet = roleImport_prepare(organisationID);
@@ -649,9 +649,9 @@ public class JFireServerManagerFactoryImpl
 										doCommit = true;
 									} finally {
 										if (doCommit)
-											transactionManager.commit();
+											userTransaction.commit();
 										else
-											transactionManager.rollback();
+											userTransaction.rollback();
 									}
 									logger.info("Import of roles and rolegroups into organisation \""+organisationID+"\" done.");
 								} catch (Exception x) {
@@ -682,7 +682,7 @@ public class JFireServerManagerFactoryImpl
 											logger.info(PersistentNotificationManagerFactory.class.getName() + ".create is false! Will not create PersistentNotificationManagerFactory for organisation \"" + organisationID + "\"!");
 										else {
 											new PersistentNotificationManagerFactory(ctx, organisationID, JFireServerManagerFactoryImpl.this,
-													getJ2EEVendorAdapter().getTransactionManager(ctx), pmf); // registers itself in JNDI
+													getJ2EEVendorAdapter().getUserTransaction(ctx), pmf); // registers itself in JNDI
 										}
 									} catch (NameAlreadyBoundException e) {
 										// ignore - might happen, if an organisation is created in an early-server-init
@@ -1614,7 +1614,7 @@ public class JFireServerManagerFactoryImpl
 									logger.info(PersistentNotificationManagerFactory.class.getName() + ".create is false! Will not create PersistentNotificationManagerFactory for organisation \"" + organisationID + "\"!");
 								else {
 									new PersistentNotificationManagerFactory(initialContext, organisationID, this,
-											getJ2EEVendorAdapter().getTransactionManager(initialContext), pmf); // registers itself in JNDI
+											getJ2EEVendorAdapter().getUserTransaction(initialContext), pmf); // registers itself in JNDI
 								}
 							} catch (Exception e) {
 								logger.error("Creating CacheManagerFactory or PersistentNotificationManagerFactory for organisation \""+organisationID+"\" failed!", e);

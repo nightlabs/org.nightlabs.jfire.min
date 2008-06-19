@@ -43,7 +43,7 @@ import javax.resource.cci.LocalTransaction;
 import javax.resource.cci.ResultSetInfo;
 import javax.security.auth.login.LoginException;
 import javax.transaction.Status;
-import javax.transaction.TransactionManager;
+import javax.transaction.UserTransaction;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.ModuleException;
@@ -463,10 +463,10 @@ public class JFireServerManagerImpl
 			{
 				boolean handleTx = false;
 				boolean doCommit = false;
-				TransactionManager tx = null;
+				UserTransaction tx = null;
 				if (!isNonTransactionalRead()) {
 					InitialContext initCtx = new InitialContext();
-					tx = jfireServerManagerFactoryImpl.getJ2EEVendorAdapter().getTransactionManager(initCtx);
+					tx = jfireServerManagerFactoryImpl.getJ2EEVendorAdapter().getUserTransaction(initCtx);
 					handleTx = tx.getStatus() == Status.STATUS_NO_TRANSACTION;
 					if (handleTx)
 						tx.begin();

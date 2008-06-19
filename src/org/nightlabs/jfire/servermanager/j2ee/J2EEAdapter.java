@@ -29,7 +29,7 @@ package org.nightlabs.jfire.servermanager.j2ee;
 import java.io.Serializable;
 
 import javax.naming.InitialContext;
-import javax.transaction.TransactionManager;
+import javax.transaction.UserTransaction;
 
 import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.servermanager.j2ee.monitor.J2EEServerMonitor;
@@ -64,7 +64,7 @@ public interface J2EEAdapter extends Serializable {
 	public void registerNotificationListenerServerStarted(ServerStartNotificationListener listener)
 		throws Exception;
 
-	public TransactionManager getTransactionManager(InitialContext initialContext)
+	public UserTransaction getUserTransaction(InitialContext initialContext)
 		throws Exception;
 
 	public SecurityReflector getSecurityReflector();

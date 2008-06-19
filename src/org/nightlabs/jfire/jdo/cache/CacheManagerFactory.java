@@ -50,7 +50,7 @@ import javax.naming.NameAlreadyBoundException;
 import javax.naming.NamingException;
 import javax.security.auth.login.LoginContext;
 import javax.security.auth.login.LoginException;
-import javax.transaction.TransactionManager;
+import javax.transaction.UserTransaction;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.jfire.base.AuthCallbackHandler;
@@ -1393,11 +1393,11 @@ public class CacheManagerFactory
 					try {
 						boolean doCommit = false;
 						boolean handleTx = false;
-						TransactionManager transactionManager = getTransactionManager();
+						UserTransaction userTransaction = getUserTransaction();
 						if (!JFireServerManagerImpl.isNonTransactionalRead()) {
 							handleTx = true;
 							try {
-								transactionManager.begin();
+								userTransaction.begin();
 							} catch (Exception e) {
 								throw new RuntimeException(e);
 							}
@@ -1429,9 +1429,9 @@ public class CacheManagerFactory
 							if (handleTx) {
 								try {
 									if (doCommit)
-										transactionManager.commit();
+										userTransaction.commit();
 									else
-										transactionManager.rollback();
+										userTransaction.rollback();
 								} catch (Exception e) {
 									throw new RuntimeException(e);
 								}
@@ -2085,21 +2085,21 @@ public class CacheManagerFactory
 
 //	private transient Timer timerCheckPersistenceManagerFactory = null;
 
-	public TransactionManager getTransactionManager(InitialContext initialContext)
+	public UserTransaction getUserTransaction(InitialContext initialContext)
 	{
 		try {
-			return jFireServerManagerFactory.getJ2EEVendorAdapter().getTransactionManager(initialContext);
+			return jFireServerManagerFactory.getJ2EEVendorAdapter().getUserTransaction(initialContext);
 		} catch (Exception x) {
 			throw new RuntimeException(x); // if we don't get a TransactionManager things are really odd - definitely not to be expected.
 		}
 	}
 
-	public TransactionManager getTransactionManager()
+	public UserTransaction getUserTransaction()
 	{
 		try {
 			InitialContext initialContext = new InitialContext();
 			try {
-				return getTransactionManager(initialContext);
+				return getUserTransaction(initialContext);
 			} finally {
 				initialContext.close();
 			}
