@@ -35,7 +35,7 @@ import javax.management.Notification;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 import javax.naming.InitialContext;
-import javax.transaction.TransactionManager;
+import javax.transaction.UserTransaction;
 
 import org.nightlabs.jfire.jboss.j2ee.monitor.J2EEServerMonitorJBoss;
 import org.nightlabs.jfire.security.SecurityReflector;
@@ -107,9 +107,7 @@ public class J2EEAdapterJBoss implements J2EEAdapter
 	protected Remote server;
 	protected InitialContext initialContext = null;
 
-	/**
-	 * @see org.nightlabs.jfire.servermanager.j2ee.J2EEAdapter#registerNotificationListenerServerStarted(org.nightlabs.jfire.servermanager.j2ee.ServerStartNotificationListener)
-	 */
+	@Override
 	public void registerNotificationListenerServerStarted(ServerStartNotificationListener listener)
 		throws Exception
 	{
@@ -129,16 +127,16 @@ public class J2EEAdapterJBoss implements J2EEAdapter
 		);
 	}
 
-	public TransactionManager getTransactionManager(InitialContext initialContext)
+	@Override
+	public UserTransaction getUserTransaction(InitialContext initialContext)
 		throws Exception
 	{
-		return (TransactionManager)initialContext.lookup("java:/TransactionManager");
+		return (UserTransaction)initialContext.lookup("UserTransaction");
 	}
 
 	private SecurityReflector userResolver = null;
-	/**
-	 * @see org.nightlabs.jfire.servermanager.j2ee.J2EEAdapter#getSecurityReflector()
-	 */
+
+	@Override
 	public SecurityReflector getSecurityReflector()
 	{
 		if (userResolver == null)
@@ -147,11 +145,13 @@ public class J2EEAdapterJBoss implements J2EEAdapter
 		return userResolver;
 	}
 
+	@Override
 	public void shutdown()
 	{
 		System.exit(0);
 	}
 
+	@Override
 	public void reboot()
 	{
 		System.exit(10);
@@ -159,10 +159,7 @@ public class J2EEAdapterJBoss implements J2EEAdapter
 
 	private J2EEServerMonitorJBoss serverMonitor;
 
-	/**
-	 * {@inheritDoc}
-	 * @see org.nightlabs.jfire.servermanager.j2ee.J2EEAdapter#getServerMonitor()
-	 */
+	@Override
 	public J2EEServerMonitor getServerMonitor() {
 		if (serverMonitor == null) {
 			synchronized (J2EEAdapterJBoss.class) {
