@@ -49,7 +49,7 @@ extends AbstractDatabaseAdapter
 	public void test(JFireServerConfigModule jfireServerConfigModule)
 	throws DatabaseException
 	{
-		String url;
+		String url = null;
 
 		try {
 			DatabaseCf dbCf = jfireServerConfigModule.getDatabase();
@@ -58,16 +58,28 @@ extends AbstractDatabaseAdapter
 			String user = dbCf.getDatabaseUserName();
 			String pw = dbCf.getDatabasePassword();
 
+			// in case the db-test-directory already exists, we delete it
+			// otherwise the create might throw an exception (just had it). marco.
+			deleteDatabaseDirectory(url);
+
+			// and open the connection.
 			Connection sqlConn = DriverManager.getConnection(url + ";create=true", user, pw);
 
 			sqlConn.close();
 		} catch (SQLException e) {
 			throw new DatabaseException(e);
-		}
-
-		if (url.startsWith("jdbc:derby:")) {
-			String dir = url.substring("jdbc:derby:".length());
-			IOUtil.deleteDirectoryRecursively(dir);
+		} finally {
+			if (url != null) {
+				String databaseURL_shutdown = url + ";shutdown=true";
+				try {
+					DriverManager.getConnection(databaseURL_shutdown);
+				} catch (SQLException x) {
+					// according to http://db.apache.org/derby/docs/dev/devguide/tdevdvlp40464.html this always causes an SQL exception if it was successful - strange ;-)
+					logger.debug("Shutting down the database was successful. Strange, but true, this causes an SQLException.", x);
+				}
+				
+				deleteDatabaseDirectory(url);
+			}
 		}
 	}
 
@@ -110,6 +122,35 @@ extends AbstractDatabaseAdapter
 		}
 	}
 
+	private void deleteDatabaseDirectory(String databaseURL)
+	{
+		long maxRetryTimeMSec = 30000;
+		long waitBetweenRetryMSec = 1000;
+
+		if (databaseURL.startsWith("jdbc:derby:")) {
+			String dir = databaseURL.substring("jdbc:derby:".length());
+			long start = System.currentTimeMillis();
+			while (true) {
+				boolean deleteSuccessful = IOUtil.deleteDirectoryRecursively(dir);
+				if (deleteSuccessful)
+					break;
+
+				if (System.currentTimeMillis() - start > maxRetryTimeMSec) {
+					logger.error("deleteDatabaseDirectory: Could not delete db dir \"" + dir + "\" within timeout=" + maxRetryTimeMSec + " msec.");
+					break;
+				}
+
+				logger.warn("deleteDatabaseDirectory: Could not delete db dir \"" + dir + "\" - will wait and try again.");
+				try {
+					Thread.sleep(waitBetweenRetryMSec);
+				} catch (InterruptedException e) {
+					logger.error("deleteDatabaseDirectory: Could not delete db dir \"" + dir + "\", because waiting was interrupted.");
+					break;
+				}
+			}
+		}
+	}
+
 	@Implement
 	public void dropDatabase()
 			throws DatabaseException
@@ -124,10 +165,7 @@ extends AbstractDatabaseAdapter
 				logger.debug("Shutting down the database was successful. Strange, but true, this causes an SQLException.", x);
 			}
 
-			if (databaseURL.startsWith("jdbc:derby:")) {
-				String dir = databaseURL.substring("jdbc:derby:".length());
-				IOUtil.deleteDirectoryRecursively(dir);
-			}
+			deleteDatabaseDirectory(databaseURL);
 		}
 	}
 
