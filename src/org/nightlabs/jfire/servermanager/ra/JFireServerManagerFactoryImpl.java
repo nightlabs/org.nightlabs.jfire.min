@@ -746,6 +746,15 @@ public class JFireServerManagerFactoryImpl
 
 		logger.info("*** JFireServer is up and running! ***");
 		upAndRunning = true;
+
+		String shutdownAfterStart = System.getProperty(JFireServerManagerFactory.class.getName() + ".shutdownAfterStart");
+		if (Boolean.TRUE.toString().equals(shutdownAfterStart)) {
+			try {
+				getJ2EEVendorAdapter().shutdown();
+			} catch (Throwable x) {
+				logger.error("shutdown via JavaEE-vendor-adapter failed!", x);
+			}
+		}
 	}
 
 	// **************************************
