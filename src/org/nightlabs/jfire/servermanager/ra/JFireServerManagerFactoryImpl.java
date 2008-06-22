@@ -747,8 +747,8 @@ public class JFireServerManagerFactoryImpl
 		logger.info("*** JFireServer is up and running! ***");
 		upAndRunning = true;
 
-		String shutdownAfterStart = System.getProperty(JFireServerManagerFactory.class.getName() + ".shutdownAfterStart");
-		if (Boolean.TRUE.toString().equals(shutdownAfterStart)) {
+		String shutdownAfterStartup = System.getProperty(JFireServerManagerFactory.class.getName() + ".shutdownAfterStartup");
+		if (Boolean.TRUE.toString().equals(shutdownAfterStartup)) {
 			try {
 				getJ2EEVendorAdapter().shutdown();
 			} catch (Throwable x) {
