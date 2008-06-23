@@ -26,8 +26,10 @@
 
 package org.nightlabs.jfire.jdo.cache.bridge;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
@@ -243,6 +245,31 @@ public class JdoCacheBridgeDefault extends JdoCacheBridge
 			objectID2Class.put(objectID, clazz);
 		}
 
+		private Collection<DirtyObjectID> getDirtyObjectIDsForObjectID(Object objectID)
+		{
+			LinkedList<DirtyObjectID> result = new LinkedList<DirtyObjectID>();
+			Map<JDOLifecycleState, Map<Object, DirtyObjectID>> dirtyObjectIDs = this.dirtyObjectIDs;
+			if (dirtyObjectIDs == null)
+				return result;
+
+			for (Map.Entry<JDOLifecycleState, Map<Object, DirtyObjectID>> me : dirtyObjectIDs.entrySet()) {
+				DirtyObjectID dirtyObjectID = me.getValue().get(objectID);
+				if (dirtyObjectID != null)
+					result.add(dirtyObjectID);
+			}
+
+			return result;
+		}
+
+		public void updateVersion(Object object)
+		{
+			Object objectID = JDOHelper.getObjectId(object);
+			Object version = JDOHelper.getVersion(object);
+			for (DirtyObjectID dirtyObjectID : getDirtyObjectIDsForObjectID(objectID)) {
+				dirtyObjectID.setObjectVersion(version);
+			}
+		}
+
 		public void addObject(JDOLifecycleState lifecycleStage, Object object)
 		{
 			Class<?> clazz = object.getClass();
@@ -363,6 +390,7 @@ public class JdoCacheBridgeDefault extends JdoCacheBridge
 			if (logger.isDebugEnabled())
 				logger.debug("CreateLifecycleListener.postCreate: " + JDOHelper.getObjectId(event.getPersistentInstance()));
 
+			// JDO version is still null here - need to set it in postStore (below)
 			registerJDOObject(JDOLifecycleState.NEW, event.getPersistentInstance());
 		}
 	};
@@ -382,7 +410,17 @@ public class JdoCacheBridgeDefault extends JdoCacheBridge
 					logger.debug("StoreLifecycleListener.preStore: " + objectID);
 			}
 		}
-		public void postStore(InstanceLifecycleEvent event) { }
+		public void postStore(InstanceLifecycleEvent event) {
+			Object object = event.getPersistentInstance();
+//			Object objectID = JDOHelper.getObjectId(object);
+//			if (objectID != null) {
+				PersistenceManager pm = JDOHelper.getPersistenceManager(object);
+				if (pm == null)
+					throw new IllegalArgumentException("Could not obtain a PersistenceManager from this object!");
+
+				getCacheTransactionListener(pm).updateVersion(object);
+//			}
+		}
 	};
 
 	private DirtyLifecycleListener dirtyLifecycleListener = new DirtyLifecycleListener() {
