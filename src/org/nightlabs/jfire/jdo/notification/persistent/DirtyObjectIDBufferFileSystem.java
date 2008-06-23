@@ -31,6 +31,7 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -53,20 +54,17 @@ import org.nightlabs.util.Util;
 public class DirtyObjectIDBufferFileSystem
 implements DirtyObjectIDBuffer
 {
-	/**
-	 * LOG4J logger used by this class
-	 */
 	private static final Logger logger = Logger.getLogger(DirtyObjectIDBufferFileSystem.class);
 
 	private PersistentNotificationManagerFactory persistentNotificationManagerFactory;
 	private File workDirectory;
 
-	private String fileNamePrefix = Long.toHexString(System.currentTimeMillis()) + '-';
+	private String fileNamePrefix = Long.toString(System.currentTimeMillis(), 36) + '-';
 	private long nextFileID = 0;
 	private Object nextFileIDMutex = new Object();
 
 	/**
-	 * @return Returns a new File instance that references a file which does NOT yet exist.
+	 * @return Returns a new <code>File</code> instance that references a file which does NOT yet exist.
 	 */
 	protected File createDirtyObjectIDFile()
 	{
@@ -77,7 +75,7 @@ implements DirtyObjectIDBuffer
 
 		return new File(
 				workDirectory,
-				fileNamePrefix + Util.addLeadingZeros(Long.toHexString(fileID), 8) + ".ser");
+				fileNamePrefix + Util.addLeadingZeros(Long.toString(fileID, 36), 8) + ".ser");
 	}
 
 	public void init(PersistentNotificationManagerFactory persistentNotificationManagerFactory) throws DirtyObjectIDBufferException
@@ -102,6 +100,7 @@ implements DirtyObjectIDBuffer
 	private Set<File> lockedFiles = Collections.synchronizedSet(new HashSet<File>());
 
 	@Implement
+	@Override
 	public void addDirtyObjectIDs(Map<JDOLifecycleState, Map<Object, DirtyObjectID>> dirtyObjectIDs) throws DirtyObjectIDBufferException
 	{
 		try {
@@ -120,15 +119,6 @@ implements DirtyObjectIDBuffer
 				} finally {
 					out.close();
 				}
-//				FileWriter fw = new FileWriter(objectIDFile);
-//				try {
-//					for (Iterator it = objectIDs.iterator(); it.hasNext(); ) {
-//						fw.append(it.next().toString());
-//						fw.append('\n');
-//					}
-//				} finally {
-//					fw.close();
-//				}
 
 				successful = true;
 			} finally {
@@ -154,7 +144,15 @@ implements DirtyObjectIDBuffer
 	 */
 	private Set<File> filesInProcess = null;
 
+	@SuppressWarnings("unchecked")
+	private static Map<JDOLifecycleState, Map<Object, DirtyObjectID>> readObjectFromStream(ObjectInputStream ois)
+	throws IOException, ClassNotFoundException
+	{
+		return (Map<JDOLifecycleState, Map<Object, DirtyObjectID>>)ois.readObject();
+	}
+
 	@Implement
+	@Override
 	public synchronized Collection<Map<JDOLifecycleState, Map<Object, DirtyObjectID>>> fetchDirtyObjectIDs() throws DirtyObjectIDBufferException
 	{
 		if (filesInProcess != null)
@@ -177,7 +175,9 @@ implements DirtyObjectIDBuffer
 				try {
 					ObjectInputStream ois = new ObjectInputStream(in);
 					try {
-						res.add((Map<JDOLifecycleState, Map<Object, DirtyObjectID>>)ois.readObject());
+						res.add(readObjectFromStream(ois));
+					} catch (Throwable t) {
+						throw new DirtyObjectIDBufferException("Reading file \"" + file.getAbsolutePath() + "\" failed: " + t.getMessage(), t);
 					} finally {
 						ois.close();
 					}
@@ -187,12 +187,15 @@ implements DirtyObjectIDBuffer
 			}
 
 			return res;
-		} catch (Exception x) {
+		} catch (DirtyObjectIDBufferException x) {
+			throw x;
+		} catch (Throwable x) {
 			throw new DirtyObjectIDBufferException(x);
 		}
 	}
 
 	@Implement
+	@Override
 	public synchronized void clearFetchedDirtyObjectIDs() throws DirtyObjectIDBufferException
 	{
 		if (filesInProcess != null) {
