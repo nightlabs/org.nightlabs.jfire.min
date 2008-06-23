@@ -153,14 +153,34 @@ implements SessionBean
 	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 * @ejb.permission role-name="_Guest_"
 	 */
-	@SuppressWarnings("unchecked")
 	public List<TaskID> getTaskIDs()
 	throws ModuleException
 	{
 		try {
 			PersistenceManager pm = getPersistenceManager();
 			try {
-				return NLJDOHelper.getObjectIDList((Collection)pm.newQuery(Task.class).execute());
+				return NLJDOHelper.getObjectIDList((Collection<?>)pm.newQuery(Task.class).execute());
+			} finally {
+				pm.close();
+			}
+		} catch (Exception x) {
+			throw new ModuleException(x);
+		}
+	}
+
+
+	/**
+	 * @ejb.interface-method
+	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
+	 * @ejb.permission role-name="_Guest_"
+	 */
+	public List<TaskID> getTaskIDs(String taskTypeID)
+	throws ModuleException
+	{
+		try {
+			PersistenceManager pm = getPersistenceManager();
+			try {
+				return NLJDOHelper.getObjectIDList(Task.getTasksByTaskTypeID(pm, taskTypeID));
 			} finally {
 				pm.close();
 			}
