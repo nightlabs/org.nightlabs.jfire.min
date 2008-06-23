@@ -10,7 +10,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/NightLabsQueryJDO"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/JFireBaseClientLib"/>
 	<classpathentry kind="var" path="ASM"/>
-	<classpathentry kind="var" path="BCEL"/>
 	<classpathentry kind="var" path="JDO2" sourcepath="/JDO2_SRC">
 		<attributes>
 			<attribute name="javadoc_location" value="file:/home/tobias/java/jdo_javadoc/apidocs/"/>
