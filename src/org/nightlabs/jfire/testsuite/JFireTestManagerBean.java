@@ -125,36 +125,17 @@ implements SessionBean
 	}
 
 	/**
-	 * This method is called by the datastore initialisation mechanism.
-	 * It runs all {@link TestSuite}s.
-	 * 
-	 * @throws Exception When something went wrong.
-	 * 
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_System_"
-	 * @ejb.transaction type="Required"
-	 */
-	public void initialise()
-	throws Exception
-	{
-		runAllTestSuites();
-	}
-
-	/**
 	 * Runs all TestSuits and TestCases found in the classpath under org.nightlabs.jfire.testsuite.
+	 * This method can be called by clients and is called by an organisation-init on every startup. 
 	 * 
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
 	 */
 	public void runAllTestSuites()
-	throws SecurityException, IllegalArgumentException, ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException, ModuleException, IOException {
-//		PersistenceManager pm = getPersistenceManager();
-//		try {
-			List<TestSuite> runSuites = createTestSuites(null);
-			runTestSuiteInstances(runSuites);
-//		} finally {
-//			pm.close();
-//		}
+	throws SecurityException, IllegalArgumentException, ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException, ModuleException, IOException
+	{
+		List<TestSuite> runSuites = createTestSuites(null);
+		runTestSuiteInstances(runSuites);
 	}
 
 	/**
@@ -164,14 +145,10 @@ implements SessionBean
 	 * @ejb.permission role-name="_Guest_"
 	 */
 	public void runTestSuites(List<Class<? extends TestSuite>> testSuitesClasses)
-	throws SecurityException, IllegalArgumentException, ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException, ModuleException, IOException {
-//		PersistenceManager pm = getPersistenceManager();
-//		try {
-			List<TestSuite> runSuites = createTestSuites(testSuitesClasses);
-			runTestSuiteInstances(runSuites);
-//		} finally {
-//			pm.close();
-//		}
+	throws SecurityException, IllegalArgumentException, ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException, ModuleException, IOException
+	{
+		List<TestSuite> runSuites = createTestSuites(testSuitesClasses);
+		runTestSuiteInstances(runSuites);
 	}
 
 	private static void runTestSuiteInstances(List<TestSuite> testSuites) throws ModuleException, IOException {
@@ -208,7 +185,7 @@ implements SessionBean
 	 * {@link JFireTestRunner#run(TestSuite, PersistenceManager)}
 	 * <p>
 	 * This only works if the JavaEE container passes the references, because {@link junit.framework.TestSuite}
-	 * is not {@link Serializable}.
+	 * is not {@link java.io.Serializable}.
 	 * </p>
 	 *
 	 * @ejb.interface-method view-type="local"
@@ -229,7 +206,7 @@ implements SessionBean
 
 	/**
 	 * This only works if the JavaEE container passes the references, because neither {@link org.junit.Test} nor {@link TestResult}
-	 * are {@link Serializable}, the {@link TestResult} is not a return value, but the data is directly written into it and
+	 * are {@link java.io.Serializable}, the {@link TestResult} is not a return value, but the data is directly written into it and
 	 * there are listeners passed inside the parameter-objects.
 	 *
 	 * @param test The test to be run.
