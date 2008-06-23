@@ -33,7 +33,7 @@ public class TaskDAO extends BaseJDOObjectDAO<TaskID, Task> {
 	/**
 	 *
 	 */
-	public TaskDAO() {
+	protected TaskDAO() {
 	}
 
 	/* (non-Javadoc)
@@ -41,29 +41,24 @@ public class TaskDAO extends BaseJDOObjectDAO<TaskID, Task> {
 	 */
 	@Override
 	protected Collection<Task> retrieveJDOObjects(Set<TaskID> objectIDs, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
-	throws Exception
-	{
+	throws Exception {
 		TimerManager timerManager = TimerManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
 		return timerManager.getTasks(objectIDs, fetchGroups, maxFetchDepth);
 	}
 
-	public Task getTask(
-			TaskID taskID, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor
-		)
+	public Task getTask(TaskID taskID, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor) 
 	{
 		return getJDOObject(null, taskID, fetchGroups, maxFetchDepth, monitor);
 	}
 
 	public List<Task> getTasks(
 			Collection<TaskID> taskIDs,
-			String[] fetchGroups, ProgressMonitor monitor
-		)
+			String[] fetchGroups, ProgressMonitor monitor) 
 	{
 		return getJDOObjects(null, taskIDs, fetchGroups, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT, monitor);
 	}
 
-	public synchronized List<Task> getTasks(String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
-	// this method is synchronized because of the object variable ipanema1BaseManager
+	public List<Task> getTasks(String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
 	{
 		try {
 			TimerManager timerManager = TimerManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
@@ -79,6 +74,22 @@ public class TaskDAO extends BaseJDOObjectDAO<TaskID, Task> {
 		}
 	}
 
+	public synchronized List<Task> getTasks(String taskTypeID, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
+	{
+		try {
+			TimerManager timerManager = TimerManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
+			try {
+				List<TaskID> promoterIDs = timerManager.getTaskIDs(taskTypeID);
+
+				return getTasks(promoterIDs, fetchGroups, monitor);
+			} finally {
+				timerManager = null;
+			}
+		} catch (Exception x) {
+			throw new RuntimeException(x);
+		}
+	}
+	
 	private static TaskDAO sharedInstance;
 
 	public static TaskDAO sharedInstance() {
