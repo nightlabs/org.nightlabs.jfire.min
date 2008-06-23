@@ -73,6 +73,7 @@ import org.nightlabs.jfire.servermanager.createorganisation.CreateOrganisationSt
 import org.nightlabs.jfire.servermanager.deploy.DeployOverwriteBehaviour;
 import org.nightlabs.jfire.servermanager.deploy.DeploymentJarItem;
 import org.nightlabs.jfire.servermanager.xml.ModuleDef;
+import org.nightlabs.util.IOUtil;
 
 /**
  * @author marco schulze - marco at nightlabs dot de
@@ -108,6 +109,11 @@ public class JFireServerManagerImpl
 	public JFireServerManagerImpl(ManagedConnectionImpl managedConnectionImpl)
 	{
 		this.managedConnectionImpl = managedConnectionImpl;
+	}
+
+	public static File getServerTempDir()
+	{
+		return IOUtil.getUserTempDir("jfire_server.", null);
 	}
 
 	/**

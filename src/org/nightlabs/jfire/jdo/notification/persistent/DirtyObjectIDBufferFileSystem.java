@@ -47,7 +47,7 @@ import org.apache.log4j.Logger;
 import org.nightlabs.annotation.Implement;
 import org.nightlabs.jfire.jdo.notification.DirtyObjectID;
 import org.nightlabs.jfire.jdo.notification.JDOLifecycleState;
-import org.nightlabs.util.IOUtil;
+import org.nightlabs.jfire.servermanager.ra.JFireServerManagerImpl;
 import org.nightlabs.util.Util;
 
 public class DirtyObjectIDBufferFileSystem
@@ -85,7 +85,7 @@ implements DirtyObjectIDBuffer
 		this.persistentNotificationManagerFactory = persistentNotificationManagerFactory;
 		try {
 			workDirectory = new File(
-					new File(IOUtil.getTempDir(), "jfire" + File.separatorChar + "dirtyObjectIDsRaw"),
+					new File(JFireServerManagerImpl.getServerTempDir(), "dirtyObjectIDsRaw"),
 					this.persistentNotificationManagerFactory.getOrganisationID());
 		} catch (Exception x) {
 			throw new DirtyObjectIDBufferException(x);
