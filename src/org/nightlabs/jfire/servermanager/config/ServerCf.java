@@ -147,10 +147,10 @@ public class ServerCf implements Serializable, Cloneable {
 
 	public void init() {
 		if (serverID == null)
-			serverID = "rename.me." + Long.toHexString(System.currentTimeMillis()) + ".jfire.org";
+			serverID = Long.toString(System.currentTimeMillis(), 36) + ".server.jfire.org";
 
 		if (serverName == null)
-			serverName = "NightLabs Demo Server (please rename)";
+			serverName = "JFire demo server (" + serverID + ")";
 
 		if (j2eeServerType == null)
 			j2eeServerType = Server.J2EESERVERTYPE_JBOSS40X;
