@@ -347,6 +347,22 @@ public class CacheCfMod extends ConfigModule
 		setChanged();
 	}
 
+	/**
+	 * Normally (with the default value <code>false</code>), the cache will search for
+	 * alternative entries having more than the desired fetch-groups set. However,
+	 * this behaviour can cause Heisenbugs (the accessed fields are there solely
+	 * because other code has already fetched the object before with more fetch-groups).
+	 * During development, you should set this option to <code>true</code> in order to
+	 * prevent the Heisenbugs and reliably cause exceptions when fetch-groups are missing
+	 * in the code.
+	 * <p>
+	 * Note, that the "at-least" matching behaviour only exists for the <code>scope</code>
+	 * <code>null</code> (see {@link Cache#get(String, Object, String[], int)}).
+	 * </p>
+	 *
+	 * @return whether to force matching of exact fetch-groups rather than looking for an
+	 *		object with AT LEAST the desired fetch-groups.
+	 */
 	public Boolean getExactFetchGroupsOnly()
 	{
 		return exactFetchGroupsOnly;

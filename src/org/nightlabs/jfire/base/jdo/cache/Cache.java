@@ -63,17 +63,20 @@ import org.nightlabs.util.CollectionUtil;
 import org.nightlabs.util.Util;
 
 /**
- * This cache was designed to hold JFire JDO objects on the client side
+ * This cache was designed to hold JFire JDO objects on the client side.
  * <p>
  * It stores the JDO objects by their object-id and the fetch-groups
- * used to detach the objects. Additionally a scope can be used in case
- * the fetch-groups do not sufficently define how the object was detached
- * (for example they might be detached with detach-load-fields)
+ * used to detach the objects. Additionally, a scope can be used in case
+ * the fetch-groups do not sufficiently define how the object was detached
+ * (for example they might be detached without detach-unload-fields and with
+ * manually accessing fields before detachment).
  * </p>
  * <p>
- * When the cache is asked for an object with a certain set of fecht-groups
- * an object from the cache is returned if its found to have been detached
- * with the same or more fetch-groups.
+ * When the cache is asked for an object with a certain set of fetch-groups
+ * an object from the cache is returned, if it's found to have been detached
+ * with the same or more fetch-groups. This behaviour is configured via
+ * {@link CacheCfMod#getExactFetchGroupsOnly()} and should be deactivated
+ * during development in order to prevent Heisenbugs.
  * </p>
  * A singleton of this class caches (possibly) all JDO objects
  * in the client. To use it, you should implement your own
