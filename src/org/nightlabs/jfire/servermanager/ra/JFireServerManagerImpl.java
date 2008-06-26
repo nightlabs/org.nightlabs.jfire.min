@@ -64,6 +64,8 @@ import org.nightlabs.jfire.security.id.UserLocalID;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.servermanager.OrganisationNotFoundException;
 import org.nightlabs.jfire.servermanager.RoleImportSet;
+import org.nightlabs.jfire.servermanager.ServerNotYetUpAndRunningLoginException;
+import org.nightlabs.jfire.servermanager.ServerShuttingDownLoginException;
 import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
 import org.nightlabs.jfire.servermanager.config.OrganisationCf;
 import org.nightlabs.jfire.servermanager.createorganisation.BusyCreatingOrganisationException;
@@ -354,6 +356,14 @@ public class JFireServerManagerImpl
 
 		if (logger.isDebugEnabled()) {
 			logger.debug("login: organisationID=\"" + organisationID + "\" userID=\"" + userID +"\" password=\"" + password + "\"");
+		}
+
+		if (!User.USERID_SYSTEM.equals(userID) && !User.USERID_ANONYMOUS.equals(userID)) {
+			if (jfireServerManagerFactoryImpl.isShuttingDown())
+				throw new ServerShuttingDownLoginException("The server is currently shutting down. Cannot serve client requests anymore.");
+
+			if (!jfireServerManagerFactoryImpl.isUpAndRunning())
+				throw new ServerNotYetUpAndRunningLoginException("The server is not yet up and running. Please try again.");
 		}
 
 		boolean userIsOrganisation = userID.startsWith(User.USERID_PREFIX_TYPE_ORGANISATION);

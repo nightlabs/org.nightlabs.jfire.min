@@ -442,8 +442,10 @@ public class CLRegistrarFactory
 		throws ModuleException
 	{
 		try {
-			if (!loaded)
-				scan();
+			synchronized (this) {
+				if (!loaded)
+					scan();
+			}
 
 			ResourceRepository repository = resourceRepositories.get(rmd.getRepositoryName());
 			if (repository == null)
