@@ -353,15 +353,24 @@ public class JFireServerManagerImpl
 		this.principal = null;
 
 		if (logger.isDebugEnabled()) {
-			logger.debug("login: organisationID=\"" + organisationID + "\" userID=\"" + userID +"\" password=\"" + password + "\"");
+			// I think we should NOT log the user's password! If this proves really necessary, then we should only do it in TRACE mode (not DEBUG). Marco.
+			logger.debug("login: organisationID=\"" + organisationID + "\" userID=\"" + userID +"\""); // password=\"" + password + "\"");
 		}
 
 		if (!User.USERID_SYSTEM.equals(userID) && !User.USERID_ANONYMOUS.equals(userID)) {
 			if (jfireServerManagerFactoryImpl.isShuttingDown())
 				throw new LoginException("org.jfire.serverShuttingDown");
 
-			if (!jfireServerManagerFactoryImpl.isUpAndRunning())
-				throw new LoginException("org.jfire.serverNotYetUpAndRunning");
+		// TODO when the server is not yet up and running, normal users should get an exception telling them that the server is not available.
+		// The following code worked already fine, but causes problems for the server-initialisation: 
+		// We cannot enable this without providing a solution to the ServerInits and OrganisationInits that require to log-in
+		// using different users than _System_. For example, JFireDemoSetupMultiOrganisation currently fails to register the
+		// organisations in each other because of the following Exception ("org.jfire.serverNotYetUpAndRunning") being thrown.
+		// Marco.
+		// see: https://www.jfire.org/modules/bugs/view.php?id=693
+
+//			if (!jfireServerManagerFactoryImpl.isUpAndRunning())
+//				throw new LoginException("org.jfire.serverNotYetUpAndRunning");
 		}
 
 		boolean userIsOrganisation = userID.startsWith(User.USERID_PREFIX_TYPE_ORGANISATION);
