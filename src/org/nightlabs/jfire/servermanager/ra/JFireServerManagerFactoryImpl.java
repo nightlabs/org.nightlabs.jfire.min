@@ -632,7 +632,7 @@ public class JFireServerManagerFactoryImpl
 					final String organisationID = org.getOrganisationID();
 
 					// TODO DataNucleus WORKAROUND: force serialized startup of PMFs - there seems to be synchronization bug in loading the meta-data.
-					getPersistenceManagerFactory(organisationID).getPersistenceManager();
+					getPersistenceManagerFactory(organisationID).getPersistenceManager().close();
 
 					Runnable runnable = new Runnable() {
 						public void run() {
