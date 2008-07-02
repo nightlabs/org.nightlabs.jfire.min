@@ -13,6 +13,7 @@ import javax.ejb.SessionContext;
 import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 
+import org.apache.log4j.Logger;
 import org.nightlabs.ModuleException;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jdo.ObjectID;
@@ -38,7 +39,7 @@ public abstract class EditLockManagerBean
 extends BaseSessionBeanImpl
 implements SessionBean
 {
-//	private static final Logger logger = Logger.getLogger(EditLockManagerBean.class);
+	private static final Logger logger = Logger.getLogger(EditLockManagerBean.class);
 	private static final long serialVersionUID = 1L;
 
 	@Override
@@ -165,7 +166,10 @@ implements SessionBean
 			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
 			if (fetchGroups != null)
 				pm.getFetchPlan().setGroups(fetchGroups);
-
+			
+			if (logger.isDebugEnabled()) {
+				logger.debug("acquireEditLock: " + editLockTypeID + " " + objectID);
+			}
 			return EditLock.acquireEditLock(pm, UserID.create(getPrincipal()), getSessionID(), editLockTypeID, objectID, description).detachCopy(pm);
 		} finally {
 			pm.close();
