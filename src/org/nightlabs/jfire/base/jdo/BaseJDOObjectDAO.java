@@ -81,6 +81,12 @@ public abstract class BaseJDOObjectDAO<JDOObjectID, JDOObject>
 	 * retrieve a single JDO object from the server. The given implementation
 	 * works by calling {@link #retrieveJDOObjects(Set, Set, int, IProgressMonitor)}
 	 * for the single object.
+	 * </p>
+	 * <p>
+	 * <b>Important: Never call this method directly!</b> Always call
+	 * {@link #getJDOObject(String, Collection, String[], int, ProgressMonitor)} or one of the
+	 * <code>getJDOObjects(...)</code> methods!
+	 * </p>
 	 *
 	 * @param objectID Wich object to get
 	 * @param fetchGroups Wich fetch groups to use
@@ -105,6 +111,11 @@ public abstract class BaseJDOObjectDAO<JDOObjectID, JDOObject>
 	 * Retrieve JDO objects from the server. This method will be called by
 	 * {@link #getJDOObjects(String, Collection, Set, int, IProgressMonitor)}
 	 * for all objects that are not already in the cache.
+	 * <p>
+	 * <b>Important: Never call this method directly!</b> Always call
+	 * {@link #getJDOObjects(String, Collection, String[], int, ProgressMonitor)} or one of the other
+	 * <code>getJDOObjects(...)</code> methods!
+	 * </p>
 	 *
 	 * @param objectIDs Which objects to get
 	 * @param fetchGroups Which fetch groups to use
