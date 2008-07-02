@@ -11,8 +11,10 @@ import java.util.Set;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
+import javax.jdo.JDOHelper;
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
+import javax.jdo.listener.StoreCallback;
 
 import org.nightlabs.i18n.I18nText;
 import org.nightlabs.jdo.NLJDOHelper;
@@ -88,7 +90,7 @@ import com.thoughtworks.xstream.XStream;
  * @author Marius Heinzmann - marius[at]nightlabs[dot]com
  */
 public class BaseQueryStore
-	implements Serializable
+	implements Serializable, StoreCallback
 {
 	/**
 	 * FetchGroup name for the Owner-FetchGroup.
@@ -177,18 +179,35 @@ public class BaseQueryStore
 	public static QueryStoreID getDefaultQueryStoreID(PersistenceManager pm,
 			Class<?> resultClass, UserID ownerID) 
 	{
+		return getDefaultQueryStoreID(pm, resultClass.getName(), ownerID.organisationID, ownerID.userID);
+	}
+	
+	/**
+	 * Returns the {@link QueryStoreID} of the QueryStore which is the defaultQueryStore for
+	 * the given resultClassname and the given ownerID.
+	 * 
+	 * @param pm the {@link PersistenceManager} to use.
+	 * @param resultClassName the full qualified name of the resultClass of the stored QueryCollection
+	 * @param ownerID the owner of the QueryStore.
+	 * @return the {@link QueryStoreID} of the QueryStore which is the defaultQueryStore for
+	 * the given resultClass and the given ownerID
+	 */	
+	public static QueryStoreID getDefaultQueryStoreID(PersistenceManager pm,
+			String resultClassName, String organisationID, String userID) 
+	{
 		assert pm != null;
-		assert resultClass != null;
-		assert ownerID != null;
+		assert resultClassName != null;
+		assert organisationID != null;
+		assert userID != null;
 		Query query = pm.newNamedQuery(BaseQueryStore.class, "getDefaultQueryStoreIDOfOwnerWithResultType");
-		Collection<QueryStoreID> queryResult =(Collection<QueryStoreID>) 
-			query.execute(resultClass.getName(), ownerID.organisationID, ownerID.userID);
+		Collection<QueryStoreID> queryResult = (Collection<QueryStoreID>) 
+			query.execute(resultClassName, organisationID, userID);
 		Set<QueryStoreID> result = NLJDOHelper.getDetachedQueryResultAsSet(pm, queryResult);
 		if (result == null || result.isEmpty()) {
 			return null;			
 		}
 		if (result.size() > 1) {
-			throw new IllegalStateException("There exists more than one default query store for the resultClass "+resultClass.getName()+" and the user "+ownerID);
+			throw new IllegalStateException("There exists more than one default query store for the resultClass "+resultClassName+" and the user "+UserID.create(organisationID, userID));
 		}
 		return result.iterator().next();
 	}
@@ -524,7 +543,8 @@ public class BaseQueryStore
 	 * Sets the defaultQuery.
 	 * @param defaultQuery the defaultQuery to set
 	 */
-	public void setDefaultQuery(boolean defaultQuery) {
+	public void setDefaultQuery(boolean defaultQuery) 
+	{
 		// TODO check before if another defaultQuery exists for the user and
 		// the resultClassanme and if yes throw an exception
 		this.defaultQuery = defaultQuery;
@@ -582,4 +602,18 @@ public class BaseQueryStore
 		return true;
 	}
 
+	@Override
+	public void jdoPreStore() 
+	{
+		if (defaultQuery) {
+			PersistenceManager pm = JDOHelper.getPersistenceManager(this);
+			if (!NLJDOHelper.exists(pm, this)) {
+				QueryStoreID defaultStoreId = getDefaultQueryStoreID(pm, resultClassName, organisationID, ownerID);
+				if (defaultStoreId != null) {
+					throw new IllegalArgumentException("There already exists a default queryStore for the resultClass "+resultClassName+" and the user "+getOwnerID());
+				}
+			}			
+		}
+	}
+	
 }
