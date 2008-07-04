@@ -794,10 +794,10 @@ public class ServerConfiguratorJBoss
 			String patchedString = "\"%JAVA%\" -version 2>&1 | findstr /I -server > nul";
 			if(text.indexOf(originalString) != -1) {
 				changed = true;
-				text.replace(originalString, patchedString);
+				text = text.replace(originalString, patchedString);
 			}
 			if(changed) {
-				setRebootRequired(true);
+//				setRebootRequired(true);
 				backup(destFile);
 				IOUtil.writeTextFile(destFile, text);
 			}
@@ -815,10 +815,10 @@ public class ServerConfiguratorJBoss
 			String patchedString = "HAS_HOTSPOT=`\"$JAVA\" -help 2>&1 | $GREP -i -server`";
 			if(text.indexOf(originalString) != -1) {
 				changed = true;
-				text.replace(originalString, patchedString);
+				text = text.replace(originalString, patchedString);
 			}
 			if(changed) {
-				setRebootRequired(true);
+//				setRebootRequired(true);
 				backup(destFile);
 				IOUtil.writeTextFile(destFile, text);
 			}
