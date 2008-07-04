@@ -2150,7 +2150,12 @@ public class JFireServerManagerFactoryImpl
 		variables.put("databaseUserName", dbCf.getDatabaseUserName());
 		variables.put("databasePassword", dbCf.getDatabasePassword());
 
+//		variables.put("deploymentDescriptorDirectory", deploymentDescriptorFile.getParent());
+		// We write a relative path instead - this is much cleaner and allows moving the server to a different directory.
 		variables.put("deploymentDescriptorDirectory", deploymentDescriptorFile.getParent());
+		variables.put("deploymentDescriptorDirectory_absolute", deploymentDescriptorFile.getParent());
+		variables.put("deploymentDescriptorDirectory_relative", IOUtil.getRelativePath(new File("."), deploymentDescriptorFile.getParent()));
+
 		variables.put("deploymentDescriptorFileName", deploymentDescriptorFile.getName());
 
 		if (additionalVariables != null)

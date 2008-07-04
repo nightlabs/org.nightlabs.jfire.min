@@ -7,7 +7,7 @@
 		<connection-definition>javax.resource.cci.ConnectionFactory</connection-definition>
 		<xa-transaction/>
 		<config-property name="PersistenceUnitName" type="java.lang.String">${organisationID}</config-property>
-		<config-property name="PersistenceXmlFilename" type="java.lang.String">file://${deploymentDescriptorDirectory}/persistence-${organisationID}.xml</config-property>
+		<config-property name="PersistenceXmlFilename" type="java.lang.String">file:${deploymentDescriptorDirectory_relative}/persistence-${organisationID}.xml</config-property>
 
 		<track-connection-by-tx>true</track-connection-by-tx>
 		<max-pool-size>100</max-pool-size>
