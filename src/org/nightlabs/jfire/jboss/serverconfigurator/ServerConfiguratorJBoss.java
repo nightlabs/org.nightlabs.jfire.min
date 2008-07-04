@@ -791,7 +791,7 @@ public class ServerConfiguratorJBoss
 			String text = IOUtil.readTextFile(destFile);
 			boolean changed = false;
 			String originalString = "\"%JAVA%\" -version 2>&1 | findstr /I hotspot > nul";
-			String patchedString = "\"%JAVA%\" -help 2>&1 | findstr /I -server > nul";
+			String patchedString = "\"%JAVA%\" -version 2>&1 | findstr /I YOUWILLNEVERSEETHISSTRING > nul";
 			if(text.indexOf(originalString) != -1) {
 				changed = true;
 				text = text.replace(originalString, patchedString);
@@ -812,7 +812,7 @@ public class ServerConfiguratorJBoss
 			String text = IOUtil.readTextFile(destFile);
 			boolean changed = false;
 			String originalString = "HAS_HOTSPOT=`\"$JAVA\" -version 2>&1 | $GREP -i HotSpot`";
-			String patchedString = "HAS_HOTSPOT=`\"$JAVA\" -help 2>&1 | $GREP -i -server`";
+			String patchedString = "HAS_HOTSPOT=`\"$JAVA\" -version 2>&1 | $GREP -i YOUWILLNEVERSEETHISSTRING`";
 			if(text.indexOf(originalString) != -1) {
 				changed = true;
 				text = text.replace(originalString, patchedString);
