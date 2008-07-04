@@ -69,7 +69,7 @@ public class ServerConfiguratorJBoss
 //			return f;
 //		}
 //	}
-	
+
 //	protected static File backup(File f) throws IOException
 //	{
 //		if(!f.exists() || !f.canRead())
@@ -131,6 +131,7 @@ public class ServerConfiguratorJBoss
 			configureJBossjtaPropertiesXml(jbossConfDir);
 			configureJBossServiceXml(jbossConfDir);
 			configureCascadedAuthenticationClientInterceptorProperties(jbossBinDir);
+			patchRunScripts(jbossBinDir);
 			configureJavaOpts(jbossBinDir);
 			removeUnneededFiles(jbossDeployDir);
 
@@ -170,7 +171,7 @@ public class ServerConfiguratorJBoss
 	/**
 	 * create ${jboss.bin}/CascadedAuthenticationClientInterceptor.properties if not yet existent
 	 * jboss' bin is *NOT ALWAYS* our current working directory
-	 * 
+	 *
 	 * @param jbossBinDir The JBoss bin dir
 	 * @throws FileNotFoundException If the file eas not found
 	 * @throws IOException In case of an io error
@@ -196,7 +197,7 @@ public class ServerConfiguratorJBoss
 	{
 		return setMBeanChild(document, mbeanCode, "attribute", attributeName, comment, content);
 	}
-	
+
 	private static boolean setMBeanChild(Document document, String mbeanCode, String childTag, String childName, String comment, String content)
 	{
 		Node mbeanNode = NLDOMUtil.findNodeByAttribute(document, "server/mbean", "code", mbeanCode);
@@ -220,7 +221,7 @@ public class ServerConfiguratorJBoss
 	{
 		return getMBeanChildNode(document, mbeanCode, "attribute", attributeName);
 	}
-	
+
 	private static Node getMBeanChildNode(Document document, String mbeanCode, String childTag, String childName)
 	{
 		Node mbeanNode = NLDOMUtil.findNodeByAttribute(document, "server/mbean", "code", mbeanCode);
@@ -235,7 +236,7 @@ public class ServerConfiguratorJBoss
 		}
 		return attributeNode;
 	}
-	
+
 	/**
 	 * Replace an MBean attribute value.
 	 * @return <code>true</code> if there are changes in the document - <code>false</code> otherwise.
@@ -252,12 +253,12 @@ public class ServerConfiguratorJBoss
 		}
 		return false;
 	}
-	
+
 	/**
 	 * We deactivate the JAAS cache, because we have our own cache that is
 	 * proactively managed and reflects changes immediately.
 	 * Additionally, we extend the transaction timeout to 15 min (default is 5 min).
-	 * 
+	 *
 	 * @param jbossConfDir The JBoss config dir
 	 * @throws FileNotFoundException If the file was not found
 	 * @throws IOException In case of an io error
@@ -267,22 +268,22 @@ public class ServerConfiguratorJBoss
 	{
 		File destFile = new File(jbossConfDir, "jboss-service.xml");
 		String modificationMarker = "!!!ModifiedByJFire!!!";
-		
+
 		DOMParser parser = new DOMParser();
 		parser.parse(new InputSource(new FileInputStream(destFile)));
 		Document document = parser.getDocument();
-		
+
 		boolean needRestart = false;
 		boolean haveChanges = false;
 		boolean changed;
-		
-		
+
+
 		// add the custom compression socket mbean service
 		// find if we already wrote the node
-		
+
 		Node jrmp_node = NLDOMUtil.findNodeByAttribute(document, "server/mbean", "name",
 		"jboss:service=invoker,type=jrmp,socketType=CompressionSocketFactory");
-		
+
 		if(jrmp_node == null) {
 
 			changed = true;
@@ -329,10 +330,10 @@ public class ServerConfiguratorJBoss
 			}
 
 		}
-       
-       
-		
-		
+
+
+
+
 		// JAAS TIMEOUT
 		changed = replaceMBeanAttribute(
 				document,
@@ -348,7 +349,7 @@ public class ServerConfiguratorJBoss
 			logger.info("Have changes after DefaultCacheTimeout update");
 		needRestart |= changed;
 		haveChanges |= changed;
-		
+
 		// TRANSACTION TIMEOUT
 		final String newTransactionManagerService = "com.arjuna.ats.jbossatx.jta.TransactionManagerService";
 		final String oldTransactionManagerService = "org.jboss.tm.TransactionManagerService";
@@ -369,7 +370,7 @@ public class ServerConfiguratorJBoss
 			logger.info("Have changes after TransactionTimeout update");
 		needRestart |= changed;
 		haveChanges |= changed;
-		
+
 		// IGNORE SUFFIX
 		Node n = getMBeanAttributeNode(document, "org.jboss.deployment.scanner.URLDeploymentScanner", "FilterInstance");
 		if(n == null) {
@@ -396,7 +397,7 @@ public class ServerConfiguratorJBoss
 						newText);
 			}
 		}
-		
+
 		// write changes
 		if(haveChanges) {
 			backup(destFile);
@@ -405,7 +406,7 @@ public class ServerConfiguratorJBoss
 				xmlEncoding = "UTF-8";
 			NLDOMUtil.writeDocument(document, new FileOutputStream(destFile), xmlEncoding);
 		}
-		
+
 		if(needRestart)
 			setRebootRequired(true);
 	}
@@ -413,7 +414,7 @@ public class ServerConfiguratorJBoss
 	/**
 	 * *** work necessary for NightLabsCascadedAuthenticationJBoss ***
 	 * check/modify ${jboss.conf}/standardjboss.xml and REBOOT if changes occured
-	 * 
+	 *
 	 * @param jbossConfDir The JBoss config dir
 	 * @throws FileNotFoundException If the file eas not found
 	 * @throws IOException In case of an io error
@@ -427,7 +428,7 @@ public class ServerConfiguratorJBoss
 		DOMParser parser = new DOMParser();
 		parser.parse(new InputSource(new FileInputStream(destFile)));
 		Document document = parser.getDocument();
-		
+
 		//check if we already had the stateless container for the SSL Compression Invoker
 		if (text.indexOf("<name>stateless-compression-invoker</name>") < 0)
 		{
@@ -437,9 +438,9 @@ public class ServerConfiguratorJBoss
 				backup(destFile);
 				backupDone = true;
 			}
-			
+
 			//configure the ssl compression invoker
-			
+
 			Node root = document.getDocumentElement();
 
 			Node proxynode = NLDOMUtil.findSingleNode(root, "invoker-proxy-bindings");;
@@ -467,7 +468,7 @@ public class ServerConfiguratorJBoss
 			Element item_sub = document.createElement("client-interceptors");
 
 			// add the home tag
-			
+
 			Element item_sub1 = document.createElement("home");
 
 			Element item_value = document.createElement("interceptor");
@@ -559,7 +560,7 @@ public class ServerConfiguratorJBoss
 	private void configureMailServiceXml(File jbossDeployDir) throws FileNotFoundException, IOException, SAXException
 	{
 		File destFile = new File(jbossDeployDir, "mail-service.xml");
-		
+
 		/**
 		 * Set this variable to true if at least one setting in the config module does not equal
 		 * the respective setting in the configuration file. Doing so will cause the current
@@ -567,13 +568,13 @@ public class ServerConfiguratorJBoss
 		 */
 		boolean haveChanges = false;
 		//  No reboot necessary as JBoss will automatically notice any changes on the mail-services.xml
-		
+
 		DOMParser parser = new DOMParser();
 		parser.parse(new InputSource(new FileInputStream(destFile)));
 		Document document = parser.getDocument();
-		
+
 		SmtpMailServiceCf smtp = getJFireServerConfigModule().getSmtp();
-	
+
 		if (logger.isInfoEnabled()) {
 			logger.info("Password: "+ smtp.getPassword());
 			logger.info("Username: "+ smtp.getUsername());
@@ -583,7 +584,7 @@ public class ServerConfiguratorJBoss
 			logger.info("From: "+smtp.getMailFrom());
 			logger.info("Debug: "+String.valueOf(smtp.getDebug()));
 		}
-		
+
 		boolean changed;
 		changed = setMailConfigurationAttribute(document, "mail.smtp.host", smtp.getHost());
 		haveChanges |= changed;
@@ -593,7 +594,7 @@ public class ServerConfiguratorJBoss
 		haveChanges |= changed;
 		changed = setMailConfigurationAttribute(document, "mail.debug", String.valueOf(smtp.getDebug()));
 		haveChanges |= changed;
-		
+
 		if (haveChanges) {
 			backup(destFile);
 			FileOutputStream out = new FileOutputStream(destFile);
@@ -605,7 +606,7 @@ public class ServerConfiguratorJBoss
 			}
 		}
 	}
-	
+
 	private boolean setMailConfigurationAttribute(Document document, String name, String value)
 	{
 		Node propertyElement;
@@ -619,10 +620,10 @@ public class ServerConfiguratorJBoss
 		} else {
 			logger.warn("server/mbean/attribute/configuration/property not found with name=\""+name+"\"!", new RuntimeException("server/mbean/attribute/configuration/property not found with name=\""+name+"\"!"));
 		}
-		
+
 		return changed;
 	}
-	
+
 	private void configureJBossjtaPropertiesXml(File jbossConfDir)
 	throws FileNotFoundException, IOException
 	{
@@ -636,7 +637,7 @@ public class ServerConfiguratorJBoss
 		if (text.indexOf("com.arjuna.ats.jta.allowMultipleLastResources") < 0) {
 
 			// TODO: use XML document instead of regular expressions
-			
+
 			backup(destFile);
 			logger.info("File " + destFile.getAbsolutePath() + " does not contain property \"com.arjuna.ats.jta.allowMultipleLastResources\". Will add it.");
 			setRebootRequired(true); // I'm not sure whether the arjuna JTA controller would be reinitialised... this is at least safe.
@@ -652,7 +653,7 @@ public class ServerConfiguratorJBoss
 	/**
 	 * *** work necessary for using JFire Authentication & Authorization ***
 	 * add our JFire security domains to ${jboss.conf]/login-config.xml if necessary
-	 * 
+	 *
 	 * @param jbossConfDir The JBoss config dir
 	 * @throws FileNotFoundException If the file was not found
 	 * @throws IOException In case of an io error
@@ -665,7 +666,7 @@ public class ServerConfiguratorJBoss
 		if (text.indexOf("jfireLocal") < 0)
 		{
 			backup(destFile);
-			
+
 			setRebootRequired(true);
 			logger.info("File " + destFile.getAbsolutePath() + " does not contain the security domain \"jfireLocal\". Will add both, \"jfireLocal\" and \"jfire\".");
 			String replacementText =
@@ -709,7 +710,7 @@ public class ServerConfiguratorJBoss
 			IOUtil.writeTextFile(destFile, text);
 		}
 	}
-	
+
 	/**
 	 * Add custom values to the JAVA_OPTS (by property java.opts)
 	 * and set PermSize.
@@ -725,7 +726,7 @@ public class ServerConfiguratorJBoss
 			javaOpts = serverConfiguratorSettings.getProperty("java.opts");
 		if(javaOpts == null)
 			javaOpts = "";
-		
+
 		String rmiHost = serverConfiguratorSettings == null ? null : serverConfiguratorSettings.getProperty("java.rmi.server.hostname");
 		if (rmiHost != null) {
 			javaOpts += " -Djava.rmi.server.hostname="+rmiHost+" "+javaOpts;
@@ -738,14 +739,14 @@ public class ServerConfiguratorJBoss
 //		if(bindAddress != null) {
 //			javaOpts += " -Djboss.bind.address="+bindAddress;
 //		}
-		
+
 		// issue #58:
 		javaOpts += " -XX:PermSize=64m -XX:MaxPermSize=128m";
-		
+
 		configureRunConf(jbossBinDir, javaOpts);
 		configureRunBat(jbossBinDir, javaOpts);
 	}
-	
+
 	private void configureRunConf(File jbossBinDir, String javaOpts) throws FileNotFoundException, IOException
 	{
 		String optsBegin = "# JAVA_OPTS by JFire server configurator\nJAVA_OPTS=\"$JAVA_OPTS";
@@ -775,7 +776,57 @@ public class ServerConfiguratorJBoss
 			IOUtil.writeTextFile(destFile, text);
 		}
 	}
-	
+
+	/**
+	 * The test for using the -server option is wrong in the
+	 * original file. It checks for the existence of "hotspot"
+	 * in the -version output. Client-only VMs also have the
+	 * "hotspot" output.
+	 * We check for the existence of "-server" in the -help output.
+	 */
+	private void patchRunScripts(File jbossBinDir)
+	{
+		try {
+			File destFile = new File(jbossBinDir, "run.bat");
+			String text = IOUtil.readTextFile(destFile);
+			boolean changed = false;
+			String originalString = "\"%JAVA%\" -version 2>&1 | findstr /I hotspot > nul";
+			String patchedString = "\"%JAVA%\" -version 2>&1 | findstr /I -server > nul";
+			if(text.indexOf(originalString) != -1) {
+				changed = true;
+				text.replace(originalString, patchedString);
+			}
+			if(changed) {
+				setRebootRequired(true);
+				backup(destFile);
+				IOUtil.writeTextFile(destFile, text);
+			}
+		} catch (IOException e) {
+			logger.warn("Patching the run.bat file failed. Please check the -server opt settings");
+		}
+
+		// ----
+
+		try {
+			File destFile = new File(jbossBinDir, "run.sh");
+			String text = IOUtil.readTextFile(destFile);
+			boolean changed = false;
+			String originalString = "HAS_HOTSPOT=`\"$JAVA\" -version 2>&1 | $GREP -i HotSpot`";
+			String patchedString = "HAS_HOTSPOT=`\"$JAVA\" -help 2>&1 | $GREP -i -server`";
+			if(text.indexOf(originalString) != -1) {
+				changed = true;
+				text.replace(originalString, patchedString);
+			}
+			if(changed) {
+				setRebootRequired(true);
+				backup(destFile);
+				IOUtil.writeTextFile(destFile, text);
+			}
+		} catch (IOException e) {
+			logger.warn("Patching the run.sh file failed. Please check the -server opt settings");
+		}
+	}
+
 	private void configureRunBat(File jbossBinDir, String javaOpts)
 	{
 		String text;
@@ -787,7 +838,7 @@ public class ServerConfiguratorJBoss
 			Pattern oldOpts = Pattern.compile(
 					"^"+Pattern.quote(optsBegin)+"(.*?)"+Pattern.compile(optsEnd)+"$",
 					Pattern.MULTILINE);
-			
+
 			File destFile = new File(jbossBinDir, "run.bat");
 			text = IOUtil.readTextFile(destFile);
 
@@ -814,14 +865,14 @@ public class ServerConfiguratorJBoss
 			logger.error("Changing the run.bat file failed. Please set the rmi host by changing the file manually or overwrite it with run.bat.jfire if it exists.");
 		}
 	}
-	
+
 	private void removeUnneededFiles(File jbossDeployDir) throws IOException
 	{
 		File[] filesToRemove = {
 				new File(jbossDeployDir, "uuid-key-generator.sar"),
 				new File(new File(jbossDeployDir, "jms"), "jbossmq-destinations-service.xml"),
 		};
-		
+
 		for (File f : filesToRemove) {
 			if(f.exists()) {
 				File backup = moveToBackup(f);
