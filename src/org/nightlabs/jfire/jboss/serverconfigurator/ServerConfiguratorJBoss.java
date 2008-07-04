@@ -791,7 +791,7 @@ public class ServerConfiguratorJBoss
 			String text = IOUtil.readTextFile(destFile);
 			boolean changed = false;
 			String originalString = "\"%JAVA%\" -version 2>&1 | findstr /I hotspot > nul";
-			String patchedString = "\"%JAVA%\" -version 2>&1 | findstr /I -server > nul";
+			String patchedString = "\"%JAVA%\" -help 2>&1 | findstr /I -server > nul";
 			if(text.indexOf(originalString) != -1) {
 				changed = true;
 				text = text.replace(originalString, patchedString);
