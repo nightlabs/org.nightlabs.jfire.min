@@ -1327,9 +1327,20 @@ implements SessionBean
 				assertConsistency(pm);
 			
 			// authorize
+			Authority authorityForAuthorization = null;
+			try {
+				AuthorityID authorityID = (AuthorityID) JDOHelper.getObjectId(authority);
+				if (authorityID != null)
+					authorityForAuthorization = (Authority) pm.getObjectById(authorityID);
+			} catch (JDOObjectNotFoundException x) {
+				// ignore silently
+			}
+			if (authorityForAuthorization == null)
+				authorityForAuthorization = authority;
+
 			Authority.resolveSecuringAuthority(
 					pm,
-					authority,
+					authorityForAuthorization,
 					ResolveSecuringAuthorityStrategy.organisation
 			).assertContainsRoleRef(
 					getPrincipal(), RoleConstants.storeAuthority
