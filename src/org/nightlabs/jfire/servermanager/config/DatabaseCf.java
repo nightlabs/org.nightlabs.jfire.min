@@ -204,7 +204,7 @@ public class DatabaseCf extends JFireServerConfigPart implements Serializable
 		logger.info("databasePrefix = "+databasePrefix);
 		logger.info("databaseSuffix = "+databaseSuffix);
 		logger.info("databaseUserName = "+databaseUserName);
-		logger.info("databasePassword = "+databasePassword);
+//		logger.info("databasePassword = "+databasePassword); // better not to log it (or shall we log as TRACE?): https://www.jfire.org/modules/bugs/view.php?id=824
 		logger.info("databaseAdapter = "+databaseAdapter);
 		logger.info("datasourceMetadataTypeMapping = "+datasourceMetadataTypeMapping);
 	}
