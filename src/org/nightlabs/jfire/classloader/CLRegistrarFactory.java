@@ -256,7 +256,9 @@ public class CLRegistrarFactory
 			if (applicablePublications != null) {
 				for (CLRepositoryMan.Publication publication : applicablePublications) {
 					if (publication.isIgnore()) {
-						logger.warn("Ignoring file/directory completely: " + dir.getAbsolutePath());
+						if (logger.isDebugEnabled())
+							logger.debug("scanDirectory: Ignoring file/directory completely: " + dir.getAbsolutePath());
+
 						continue iterateSubdirs;
 					}
 				}
@@ -289,7 +291,8 @@ public class CLRegistrarFactory
 				try {
 					jf = new JarFile(dir, false);
 				} catch (IOException x) {
-					logger.info(dir.getAbsolutePath() + " is not a jar.");
+					if (logger.isDebugEnabled())
+						logger.debug("scanDirectory: " + dir.getAbsolutePath() + " is not a jar.");
 				}
 				if (jf != null) {
 					try {
