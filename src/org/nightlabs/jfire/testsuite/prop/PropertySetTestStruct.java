@@ -73,12 +73,15 @@ public class PropertySetTestStruct
 			// WORKAROUND: Workaround for JPOX error 'cannot delete/update child row', foreign key problem, maybe this is also wron tagging problem
 			if (struct instanceof AbstractStruct) {
 				try {
-					struct.addDisplayNamePart(new DisplayNamePart(organisationID, IDGenerator.nextID(DisplayNamePart.class), struct, struct.getStructField(TESTBLOCK_TEXT), ": "));
+					struct.addDisplayNamePart(
+							new DisplayNamePart(
+									organisationID, IDGenerator.nextID(DisplayNamePart.class), 
+									struct.getStructField(TESTBLOCK_TEXT), ": "));
 				} catch (Exception e1) {
 					logger.error("Error createing PropertySetTestStruct DisplayNameParts: ", e);
 				}
 			}
-			structLocal = new StructLocal(struct, StructLocal.DEFAULT_SCOPE);
+			structLocal = new StructLocal(struct, organisationID, StructLocal.DEFAULT_SCOPE);
 			pm.makePersistent(structLocal);
 		}
 		return struct;
