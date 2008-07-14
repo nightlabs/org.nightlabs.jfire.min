@@ -1409,6 +1409,9 @@ public class JFireServerManagerFactoryImpl
 					if (password.length() < 4)
 						throw new IllegalArgumentException("password is too short! At least 4 characters are required! At least 8 characters are recommended!");
 
+					if (!UserLocal.isValidPassword(password))
+						throw new IllegalArgumentException("password is not valid!");
+
 					if (isNewServerNeedingSetup())
 						throw new IllegalStateException("This server is not yet set up! Please complete the basic setup before creating organisations!");
 
