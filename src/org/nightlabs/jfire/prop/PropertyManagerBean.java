@@ -178,7 +178,7 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 				pm.getFetchPlan().setGroups(fetchGroupSet);
 			}
 			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
-			StructLocal ps = StructLocal.getStructLocal(organisationID, linkClass, structScope, structLocalScope, pm);
+			StructLocal ps = StructLocal.getStructLocal(pm, organisationID, linkClass, structScope, structLocalScope);
 			StructLocal result = pm.detachCopy(ps);
 			return result;
 		} finally {
