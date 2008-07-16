@@ -1,11 +1,14 @@
 package org.nightlabs.jfire.jboss.serverconfigurator;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.util.regex.Pattern;
+
+import javax.xml.transform.TransformerException;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.jfire.serverconfigurator.ServerConfigurationException;
@@ -13,6 +16,18 @@ import org.nightlabs.jfire.serverconfigurator.ServerConfigurator;
 import org.nightlabs.jfire.servermanager.db.DatabaseAdapter;
 import org.nightlabs.jfire.servermanager.db.DatabaseAlreadyExistsException;
 import org.nightlabs.util.IOUtil;
+import org.nightlabs.xml.DOMParser;
+import org.nightlabs.xml.NLDOMUtil;
+import org.w3c.dom.Comment;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.traversal.NodeIterator;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+
+import com.sun.org.apache.xpath.internal.CachedXPathAPI;
 
 /**
  * This implementation of {@link ServerConfigurator} does the same as {@link ServerConfiguratorJBossMySQL} but
@@ -123,7 +138,8 @@ extends ServerConfiguratorJBoss
 		}
 	}
 
-	private void configureEjbDeployerXml(File jbossDeployDir) throws FileNotFoundException, IOException, UnsupportedEncodingException
+	private void configureEjbDeployerXml(File jbossDeployDir)
+	throws IOException, UnsupportedEncodingException, SAXException, DOMException, TransformerException
 	{
 		// modify the timer service - it shouldn't use persistence
 		// ${jboss.deploy}/ejb-deployer.xml
@@ -132,31 +148,72 @@ extends ServerConfiguratorJBoss
 		String modifiedMarker = "!!!ModifiedByJFire!!!";
 		if (text.indexOf(modifiedMarker) < 0) {
 			backup(destFile);
-			
+
 			if (rebootOnDeployDirChanges)
 				setRebootRequired(true);
 
-			String replacementText = "<!-- "
-					+ modifiedMarker
-					+ " Do not change this line!!! The modification has been done by "
-					+ ServerConfiguratorJBossDerby.class.getName()
-					+ ". -->\n"
-					+ "  <!-- A persistence policy that persistes timers to a database\n"
-					+ "  <mbean code=\"org.jboss.ejb.txtimer.DatabasePersistencePolicy\" name=\"jboss.ejb:service=EJBTimerService,persistencePolicy=database\">\n"
-					+ "    <!- DataSource JNDI name ->\n"
-					+ "    <depends optional-attribute-name=\"DataSource\"JFire_JBossMQ>jboss.jca:service=DataSourceBinding,name=JFireJBossMQDS</depends>\n"
-					+ "    <!- The plugin that handles database persistence ->\n"
-					+ "    <attribute name=\"DatabasePersistencePlugin\">org.jboss.ejb.txtimer.GeneralPurposeDatabasePersistencePlugin</attribute>\n"
-					+ "  </mbean>\n"
-					+ "  -->\n"
-					+ "  <!-- For JFire, there is no need to persist the timer -->\n"
-					+ "  <mbean code=\"org.jboss.ejb.txtimer.NoopPersistencePolicy\" name=\"jboss.ejb:service=EJBTimerService,persistencePolicy=noop\"/>\n"
-					+ "\n";
-			Pattern pattern = Pattern
-					.compile("<mbean[^<]*?EJBTimerService,persistencePolicy=database(.|\\n)*?</mbean>");
-			text = pattern.matcher(text).replaceAll(replacementText);
+//			String replacementText = "<!-- "
+//					+ modifiedMarker
+//					+ " Do not change this line!!! The modification has been done by "
+//					+ ServerConfiguratorJBossDerby.class.getName()
+//					+ ". -->\n"
+//					+ "  <!-- A persistence policy that persistes timers to a database\n"
+//					+ "  <mbean code=\"org.jboss.ejb.txtimer.DatabasePersistencePolicy\" name=\"jboss.ejb:service=EJBTimerService,persistencePolicy=database\">\n"
+//					+ "    <!- DataSource JNDI name ->\n"
+//					+ "    <depends optional-attribute-name=\"DataSource\">jboss.jca:service=DataSourceBinding,name=JFireJBossMQDS</depends>\n"
+//					+ "    <!- The plugin that handles database persistence ->\n"
+//					+ "    <attribute name=\"DatabasePersistencePlugin\">org.jboss.ejb.txtimer.GeneralPurposeDatabasePersistencePlugin</attribute>\n"
+//					+ "  </mbean>\n"
+//					+ "  -->\n"
+//					+ "  <!-- For JFire, there is no need to persist the timer -->\n"
+//					+ "  <mbean code=\"org.jboss.ejb.txtimer.NoopPersistencePolicy\" name=\"jboss.ejb:service=EJBTimerService,persistencePolicy=noop\"/>\n"
+//					+ "\n";
+//			Pattern pattern = Pattern
+//					.compile("<mbean[^<]*?EJBTimerService,persistencePolicy=database(.|\\n)*?</mbean>");
+//			text = pattern.matcher(text).replaceAll(replacementText);
+//
+//			IOUtil.writeTextFile(destFile, text);
 
-			IOUtil.writeTextFile(destFile, text);
+			DOMParser parser = new DOMParser();
+			InputStream in = new FileInputStream(destFile);
+			try {
+				parser.parse(new InputSource(in));
+			} finally {
+				in.close();
+			}
+			Document document = parser.getDocument();
+			CachedXPathAPI xpa = new CachedXPathAPI();
+
+			Node n;
+			for (NodeIterator ni1 = xpa.selectNodeIterator(document, "//server/mbean[@code=\"org.jboss.ejb.txtimer.DatabasePersistencePolicy\"]"); (n = ni1.nextNode()) != null; ) {
+				if (!NLDOMUtil.getAttributeValue(n, "name").contains("service=EJBTimerService"))
+					continue;
+
+				Comment comment = document.createComment(
+						"\n" +
+						modifiedMarker + " Do not change this line!!! The modification has been done by " +
+						this.getClass().getName() + "\n\n  " +
+						NLDOMUtil.getElementAsString((Element) n, IOUtil.CHARSET_NAME_UTF_8).replaceAll("--", "- -") +
+						"\n"
+				);
+				Element mbeanElement = document.createElement("mbean");
+				mbeanElement.setAttribute("code", "org.jboss.ejb.txtimer.NoopPersistencePolicy");
+				mbeanElement.setAttribute("name", "jboss.ejb:service=EJBTimerService,persistencePolicy=noop");
+				n.getParentNode().insertBefore(comment, n);
+				n.getParentNode().insertBefore(mbeanElement, n);
+				n.getParentNode().removeChild(n);
+			}
+
+			FileOutputStream out = new FileOutputStream(destFile);
+			try {
+				NLDOMUtil.writeDocument(
+						document,
+						out,
+						"UTF-8"
+				);
+			} finally {
+				out.close();
+			}
 		}
 	}
 

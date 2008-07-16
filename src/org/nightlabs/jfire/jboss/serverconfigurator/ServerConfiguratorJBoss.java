@@ -5,9 +5,12 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.xml.transform.TransformerException;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.annotation.Implement;
@@ -21,11 +24,15 @@ import org.nightlabs.util.IOUtil;
 import org.nightlabs.xml.DOMParser;
 import org.nightlabs.xml.NLDOMUtil;
 import org.w3c.dom.Comment;
+import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.traversal.NodeIterator;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+
+import com.sun.org.apache.xpath.internal.CachedXPathAPI;
 
 /**
  * This implementation of {@link ServerConfigurator} performs the following tasks in order
@@ -418,16 +425,13 @@ public class ServerConfiguratorJBoss
 	 * @param jbossConfDir The JBoss config dir
 	 * @throws FileNotFoundException If the file eas not found
 	 * @throws IOException In case of an io error
+	 * @throws TransformerException 
 	 */
-	private void configureStandardJBossXml(File jbossConfDir) throws FileNotFoundException, IOException, SAXException
+	private void configureStandardJBossXml(File jbossConfDir) throws FileNotFoundException, IOException, SAXException, TransformerException
 	{
 		boolean backupDone = false; // track whether the backup is already done - we don't need 2 backups for this one method.
 		File destFile = new File(jbossConfDir, "standardjboss.xml");
 		String text = IOUtil.readTextFile(destFile);
-
-		DOMParser parser = new DOMParser();
-		parser.parse(new InputSource(new FileInputStream(destFile)));
-		Document document = parser.getDocument();
 
 		//check if we already had the stateless container for the SSL Compression Invoker
 		if (text.indexOf("<name>stateless-compression-invoker</name>") < 0)
@@ -439,6 +443,17 @@ public class ServerConfiguratorJBoss
 				backupDone = true;
 			}
 
+			setRebootRequired(true); // this is a must, because the conf directory doesn't support redeployment
+
+			DOMParser parser = new DOMParser();
+			InputStream in = new FileInputStream(destFile);
+			try {
+				parser.parse(new InputSource(in));
+			} finally {
+				in.close();
+			}
+			Document document = parser.getDocument();
+			
 			//configure the ssl compression invoker
 
 			Node root = document.getDocumentElement();
@@ -523,16 +538,20 @@ public class ServerConfiguratorJBoss
 
 			FileOutputStream out = new FileOutputStream(destFile);
 			try {
-				NLDOMUtil.writeDocument(document, out, "UTF-8","-//JBoss//DTD JBOSS 4.0//EN",
-				"http://www.jboss.org/j2ee/dtd/jboss_4_0.dtd");
+				NLDOMUtil.writeDocument(
+						document,
+						out,
+						"UTF-8","-//JBoss//DTD JBOSS 4.0//EN",
+						"http://www.jboss.org/j2ee/dtd/jboss_4_0.dtd"
+				);
 			} finally {
 				out.close();
 			}
 		}
 
 
-		// reload the file
-		text = IOUtil.readTextFile(destFile);
+		// reload the file - not necessary anymore since we now use a DOM parser which reloads (and the cascaded auth stuff isn't modified by the above code)
+//		text = IOUtil.readTextFile(destFile);
 
 		if (text.indexOf(CascadedAuthenticationClientInterceptor.class.getName()) < 0) {
 			logger.info("File " + destFile.getAbsolutePath() + " does not contain an interceptor registration for "+CascadedAuthenticationClientInterceptor.class.getName()+". Will add it.");
@@ -542,18 +561,55 @@ public class ServerConfiguratorJBoss
 				backupDone = true;
 			}
 
-			// TODO: use XML document instead of regular expressions
-
 			setRebootRequired(true); // this is a must, because the conf directory doesn't support redeployment
-			String replacementText = "$1\n            <interceptor>"+CascadedAuthenticationClientInterceptor.class.getName()+"</interceptor>";
 
-			Pattern pattern = Pattern.compile("(<client-interceptors>[^<]*?<home>)");
-			text = pattern.matcher(text).replaceAll(replacementText);
+//			String replacementText = "$1\n            <interceptor>"+CascadedAuthenticationClientInterceptor.class.getName()+"</interceptor>";
+//
+//			Pattern pattern = Pattern.compile("(<client-interceptors>[^<]*?<home>)");
+//			text = pattern.matcher(text).replaceAll(replacementText);
+//
+//			pattern = Pattern.compile("(<client-interceptors>[^<]*?<home>(.|\\n)*?</home>[^<]*?<bean>)");
+//			text = pattern.matcher(text).replaceAll(replacementText);
+//
+//			IOUtil.writeTextFile(destFile, text);
 
-			pattern = Pattern.compile("(<client-interceptors>[^<]*?<home>(.|\\n)*?</home>[^<]*?<bean>)");
-			text = pattern.matcher(text).replaceAll(replacementText);
+			DOMParser parser = new DOMParser();
+			InputStream in = new FileInputStream(destFile);
+			try {
+				parser.parse(new InputSource(in));
+			} finally {
+				in.close();
+			}
+			Document document = parser.getDocument();
+			CachedXPathAPI xpa = new CachedXPathAPI();
 
-			IOUtil.writeTextFile(destFile, text);
+			Node clientInterceptorsNode;
+			for (NodeIterator ni1 = xpa.selectNodeIterator(document, "/descendant::client-interceptors"); (clientInterceptorsNode = ni1.nextNode()) != null; ) {
+				Node node;
+				for (NodeIterator ni2 = xpa.selectNodeIterator(clientInterceptorsNode, "home"); (node = ni2.nextNode()) != null; ) {
+					Element interceptorElement = document.createElement("interceptor");
+					interceptorElement.appendChild( document.createTextNode(CascadedAuthenticationClientInterceptor.class.getName()));
+					node.insertBefore(interceptorElement, node.getFirstChild());
+				}
+
+				for (NodeIterator ni2 = xpa.selectNodeIterator(clientInterceptorsNode, "bean"); (node = ni2.nextNode()) != null; ) {
+					Element interceptorElement = document.createElement("interceptor");
+					interceptorElement.appendChild( document.createTextNode(CascadedAuthenticationClientInterceptor.class.getName()));
+					node.insertBefore(interceptorElement, node.getFirstChild());
+				}
+			}
+
+			FileOutputStream out = new FileOutputStream(destFile);
+			try {
+				NLDOMUtil.writeDocument(
+						document,
+						out,
+						"UTF-8","-//JBoss//DTD JBOSS 4.0//EN",
+						"http://www.jboss.org/j2ee/dtd/jboss_4_0.dtd"
+				);
+			} finally {
+				out.close();
+			}
 		}
 	}
 
@@ -625,7 +681,7 @@ public class ServerConfiguratorJBoss
 	}
 
 	private void configureJBossjtaPropertiesXml(File jbossConfDir)
-	throws FileNotFoundException, IOException
+	throws FileNotFoundException, IOException, SAXException, DOMException, TransformerException
 	{
 		File destFile = new File(jbossConfDir, "jbossjta-properties.xml");
 		if (!destFile.exists()) {
@@ -635,18 +691,45 @@ public class ServerConfiguratorJBoss
 
 		String text = IOUtil.readTextFile(destFile);
 		if (text.indexOf("com.arjuna.ats.jta.allowMultipleLastResources") < 0) {
-
-			// TODO: use XML document instead of regular expressions
+			logger.info("File " + destFile.getAbsolutePath() + " does not contain property \"com.arjuna.ats.jta.allowMultipleLastResources\". Will add it.");
 
 			backup(destFile);
-			logger.info("File " + destFile.getAbsolutePath() + " does not contain property \"com.arjuna.ats.jta.allowMultipleLastResources\". Will add it.");
 			setRebootRequired(true); // I'm not sure whether the arjuna JTA controller would be reinitialised... this is at least safe.
 
-			Pattern pattern = Pattern.compile("(<properties depends=\"arjuna\" name=\"jta\">)");
-			String replacementText = "$1\n        <property name=\"com.arjuna.ats.jta.allowMultipleLastResources\" value=\"true\"/>";
-			text = pattern.matcher(text).replaceAll(replacementText);
+//			Pattern pattern = Pattern.compile("(<properties depends=\"arjuna\" name=\"jta\">)");
+//			String replacementText = "$1\n        <property name=\"com.arjuna.ats.jta.allowMultipleLastResources\" value=\"true\"/>";
+//			text = pattern.matcher(text).replaceAll(replacementText);
+//
+//			IOUtil.writeTextFile(destFile, text);
+			DOMParser parser = new DOMParser();
+			InputStream in = new FileInputStream(destFile);
+			try {
+				parser.parse(new InputSource(in));
+			} finally {
+				in.close();
+			}
+			Document document = parser.getDocument();
+			CachedXPathAPI xpa = new CachedXPathAPI();
 
-			IOUtil.writeTextFile(destFile, text);
+			Node n;
+			for (NodeIterator ni1 = xpa.selectNodeIterator(document, "//transaction-service/properties[@name=\"jta\"]"); (n = ni1.nextNode()) != null; ) {
+				Element propertyElement = document.createElement("property");
+				propertyElement.setAttribute("name", "com.arjuna.ats.jta.allowMultipleLastResources");
+				propertyElement.setAttribute("value", "true");
+				n.appendChild(propertyElement);
+			}
+
+			FileOutputStream out = new FileOutputStream(destFile);
+			try {
+				NLDOMUtil.writeDocument(
+						document,
+						out,
+						"UTF-8"
+				);
+			} finally {
+				out.close();
+			}
+
 		}
 	}
 
