@@ -8,8 +8,12 @@ import java.io.OutputStream;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -241,8 +245,9 @@ public class Launcher
 //		Thread.sleep(30000); // for debugging - so we have time to hook the debugger
 
 		System.out.println("Launcher.run: getClass().getClassLoader(): " + getClass().getClassLoader());
+		long scanStart = System.currentTimeMillis();
 
-		Set<URL> classLoaderURLs = new HashSet<URL>();
+		Set<URL> classLoaderURLSet = new HashSet<URL>();
 
 		File serverDefaultFolder = new File(new File(new File("..").getAbsoluteFile(), "server"), "default");
 		File serverLibFolder = new File(serverDefaultFolder, "lib");
@@ -254,14 +259,28 @@ public class Launcher
 			throw new IllegalStateException("Directory does not exist: " + jfireLastFolder.getAbsolutePath());
 		}
 
-		scan(classLoaderURLs, serverLibFolder);
-		scan(classLoaderURLs, serverDeployFolder);
+		scan(classLoaderURLSet, serverLibFolder);
+		scan(classLoaderURLSet, serverDeployFolder);
 
-		System.out.println("Launcher.run: collected " + classLoaderURLs.size() + " JARs for classpath. Starting internal launcher.");
+		System.out.println("Launcher.run: collected " + classLoaderURLSet.size() + " JARs for classpath in " + (System.currentTimeMillis() - scanStart) + " msec. Sorting the classpath.");
+
+		long sortStart = System.currentTimeMillis();
+
+		List<URL> classLoaderURLList = new ArrayList<URL>(classLoaderURLSet);
+		// We sort the URLs alphabetically in order to guarantee a specific order and prevent Heisenbugs that
+		// might result from files/directories being found in different order depending on the file system.
+		Collections.sort(classLoaderURLList, new Comparator<URL>() {
+			@Override
+			public int compare(URL url1, URL url2) {
+				return url1.toString().compareTo(url2.toString());
+			}
+		});
+
+		System.out.println("Launcher.run: sorting classpath took " + (System.currentTimeMillis() - sortStart) + " msec. Starting internal launcher.");
 
 		// Create a new classLoader which has no parent classloader, but knows all JARs in the JBoss.
 		// Obviously & fortunately, it still uses the bootstrap-loader serving java.lang.
-		URLClassLoader classLoader = new URLClassLoader(classLoaderURLs.toArray(new URL[classLoaderURLs.size()]), null);
+		URLClassLoader classLoader = new URLClassLoader(classLoaderURLList.toArray(new URL[classLoaderURLList.size()]), null);
 		Thread.currentThread().setContextClassLoader(classLoader);
 		Class<?> internalLauncherClass;
 		internalLauncherClass = classLoader.loadClass("org.nightlabs.jfire.jboss.serverconfigurator.internal.InternalLauncher");
