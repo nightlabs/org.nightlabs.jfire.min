@@ -8,6 +8,7 @@ import java.io.OutputStream;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.channels.FileLock;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -43,13 +44,51 @@ import java.util.jar.JarFile;
  * Nested JARs within the JARs found are extracted into temporary files (which are deleted on JVM exit) and added
  * to the classpath as well. This process is done recursively, so that JARs can be nested in multiple levels.
  * </p>
+ * <p>
+ * System properties supported by the <code>Launcher</code>:
+ * <ul>
+ *		<li>debug: <code>true</code> or <code>false</code> (default is <code>false</code>)</li>
+ * </ul>
+ * </p>
  *
  * @author marco schulze - marco at nightlabs dot de
  */
 public class Launcher
 {
-	private static String[] jarFileExtensions = { "jar", "rar", "war", "ear", "zip" };
+//	private static String[] jarFileExtensions = { "jar", "rar", "sar", "war", "ear", "zip" };
+	private static String[] jarFileExtensions = { "jar", "rar" }; // should be sufficient
 	private static Set<String> jarFileExtensionSet = null;
+
+	public static boolean isDebugEnabled()
+	{
+		return "true".equals(System.getProperty("debug"));
+	}
+
+//	private static final int hashLength = 4; // how many digits
+//	private static final int hashDivisor = intpow(36, hashLength);
+//	private static int intpow(int a, int b)
+//	{
+//		int res = 1;
+//		for (int i = 0; i < b; ++i)
+//			res *= a;
+//		return res;
+//	}
+//
+//	private static String getTempFileHashFromContainerJar(String containerPath)
+//	{
+//		int hash = containerPath.hashCode();
+//		hash = Math.abs(hash) % hashDivisor; // reduce the hash to a value between (and including) 0 and zzzz (with radix 36).
+//		String hashString = Integer.toString(hash, 36);
+//		if (hashString.length() < hashLength) { // if shorter than 'hashLength' digits, we fill with '0' before
+//			StringBuilder sb = new StringBuilder(hashLength);
+//			while (sb.length() + hashString.length() < hashLength)
+//				sb.append('0');
+//
+//			sb.append(hashString);
+//			hashString = sb.toString();
+//		}
+//		return hashString;
+//	}
 
 	private static boolean isJarBasedOnExtension(String fileName)
 	{
@@ -141,22 +180,90 @@ public class Launcher
 	private static boolean isExcluded(File directoryOrJarFile) {
 		String directoryOrJarFileString = directoryOrJarFile.getAbsolutePath().replace('\\', '/');
 		for (String exclude : excludes) {
-			if (directoryOrJarFileString.contains(exclude))
+			if (directoryOrJarFileString.contains(exclude)) {
+				if (isDebugEnabled())
+					System.out.println("Launcher.isExcluded: \"" + directoryOrJarFileString + "\" is excluded because of \"" + exclude + "\"");
+
 				return true;
+			}
 		}
 		return false;
 	}
 
-	private void scan(Set<URL> classLoaderURLs, JarFile jarFile) throws IOException
+	private File tempDir;
+	private FileOutputStream tempDirLockFileOutputStream;
+	private FileLock tempDirFileLock;
+
+	private synchronized File getTempDir() throws IOException
+	{
+		int tryCounter = 0;
+		while (tempDir == null) {
+			if (++tryCounter > 1000) {
+				System.err.println("Could not create unique temp directory!");
+				throw new IllegalStateException("Creating unique temp directory failed!");
+			}
+
+			String tempDirString = System.getProperty("java.io.tmpdir");
+			File dir = new File(tempDirString, "jfire-serverconfigurator-" + Long.toString(System.currentTimeMillis(), 36));
+			if (!dir.exists()) {
+				if (dir.mkdir()) {
+					File tempDirLockFile = new File(dir, "lock.lck");
+					tempDirLockFileOutputStream = new FileOutputStream(tempDirLockFile);
+					tempDirFileLock = tempDirLockFileOutputStream.getChannel().tryLock();
+					if(tempDirFileLock == null)
+						tempDirLockFileOutputStream.close();
+					else
+						tempDir = dir;
+				}
+			}
+		}
+		return tempDir;
+	}
+
+	private synchronized void deleteTempDir() throws IOException
+	{
+		if (tempDirFileLock != null) {
+			tempDirFileLock.release();
+			tempDirFileLock = null;
+		}
+
+		if (tempDirLockFileOutputStream != null) {
+			tempDirLockFileOutputStream.close();
+			tempDirLockFileOutputStream = null;
+		}
+
+		if (tempDir != null) {
+			deleteRecursively(tempDir);
+			tempDir = null;
+		}
+	}
+
+	private void deleteRecursively(File file)
+	{
+		if (file.isDirectory()) {
+			for (File child : file.listFiles())
+				deleteRecursively(child);
+
+			file.delete();
+		}
+		else
+			file.delete();
+	}
+
+	private void scanJar(Set<URL> classLoaderURLs, JarFile jarFile) throws IOException
 	{
 		for (Enumeration<JarEntry> jarEntryEnum = jarFile.entries(); jarEntryEnum.hasMoreElements(); ) {
 			JarEntry jarEntry = jarEntryEnum.nextElement();
 
 			if (isJarBasedOnExtension(jarEntry.getName())) {
-				int lastSlash = jarEntry.getName().lastIndexOf('/'); // this is always a slash - no matter if it's windows or linux. marco.
-				String simpleName = lastSlash < 0 ? jarEntry.getName() : jarEntry.getName().substring(lastSlash + 1);
-				File tempFile = File.createTempFile("__" + simpleName + '.', ".tmp"); // with the "__" and ".", the prefix is always long enough (minimum are 3 characters)
-				tempFile.deleteOnExit();
+//				int lastSlash = jarEntry.getName().lastIndexOf('/'); // this is always a slash - no matter if it's windows or linux. marco.
+//				String simpleName = lastSlash < 0 ? jarEntry.getName() : jarEntry.getName().substring(lastSlash + 1);
+//				File tempFile = File.createTempFile(simpleName + '.' + getTempFileHashFromContainerJar(jarFile.getName() + '/' + jarEntry.getName()) + '.', ".tmp"); // with the hash, the prefix is always long enough (minimum are 3 characters)
+//				tempFile.deleteOnExit();
+
+				File tempFile = new File(new File(getTempDir(), jarFile.getName()).getCanonicalFile(), jarEntry.getName());
+				tempFile.getParentFile().mkdirs();
+
 				OutputStream out = new FileOutputStream(tempFile);
 				try {
 					InputStream in = jarFile.getInputStream(jarEntry);
@@ -175,14 +282,16 @@ public class Launcher
 						jf = new JarFile(tempFile);
 					} catch (IOException x) {
 						// ignore - it's probably not a JAR
-						System.out.println("Launcher.scan: Nested JAR (extracted to temp file) could not be opened: " + tempFile.getAbsolutePath());
+						System.out.println("Launcher.scanJar: Nested JAR (extracted to temp file) could not be opened: " + tempFile.getAbsolutePath());
+						if (isDebugEnabled())
+							x.printStackTrace();
 					}
 
 					if (jf != null) {
 						classLoaderURLs.add(tempFile.toURI().toURL());
 
 						// A jar might contain nested JARs. Since we cannot directly put them into the class-loader, we extract them.
-						scan(classLoaderURLs, jf);
+						scanJar(classLoaderURLs, jf);
 					} // if (isJAR) {
 				} finally {
 					if (jf != null)
@@ -192,14 +301,14 @@ public class Launcher
 		}
 	}
 
-	private void scan(Set<URL> classLoaderURLs, File directory) throws IOException
+	private void scanDir(Set<URL> classLoaderURLs, File directory) throws IOException
 	{
 		if (isExcluded(directory))
 			return;
 
 		for (File f : directory.listFiles()) {
 			if (f.isDirectory())
-				scan(classLoaderURLs, f);
+				scanDir(classLoaderURLs, f);
 			else {
 				if (isJarBasedOnExtension(f.getName()) && !isExcluded(f)) {
 					JarFile jf = null;
@@ -209,14 +318,16 @@ public class Launcher
 						} catch (IOException x) {
 							// ignore - it's probably not a JAR
 							// ...better log:
-							System.out.println("Launcher.scan: JAR could not be opened: " + f.getAbsolutePath());
+							System.out.println("Launcher.scanDir: JAR could not be opened: " + f.getAbsolutePath());
+							if (isDebugEnabled())
+								x.printStackTrace();
 						}
 
 						if (jf != null) {
 							classLoaderURLs.add(f.toURI().toURL());
 
 							// A jar might contain nested JARs. Since we cannot directly put them into the class-loader, we extract them.
-							scan(classLoaderURLs, jf);
+							scanJar(classLoaderURLs, jf);
 						} // if (isJAR) {
 					} finally {
 						if (jf != null)
@@ -229,52 +340,78 @@ public class Launcher
 
 	public void run() throws Exception
 	{
-//		System.out.println("Launcher.run: Sleeping 30 sec. ");
-//		Thread.sleep(30000); // for debugging - so we have time to hook the debugger
-
-		System.out.println("Launcher.run: getClass().getClassLoader(): " + getClass().getClassLoader());
-		long scanStart = System.currentTimeMillis();
-
-		Set<URL> classLoaderURLSet = new HashSet<URL>();
-
-		File serverDefaultFolder = new File(new File(new File("..").getAbsoluteFile(), "server"), "default");
-		File serverLibFolder = new File(serverDefaultFolder, "lib");
-		File serverDeployFolder = new File(serverDefaultFolder, "deploy");
-		File jfireLastFolder = new File(serverDeployFolder, "JFire.last");
-
-		if (!jfireLastFolder.exists()) {
-			System.err.println("The folder JFire.last cannot be found! Either it does not exist or you started the Launcher in the wrong directory! The Launcher must be started from the JBoss server's bin directory. This path does not exist: " + jfireLastFolder.getAbsolutePath());
-			throw new IllegalStateException("Directory does not exist: " + jfireLastFolder.getAbsolutePath());
-		}
-
-		scan(classLoaderURLSet, serverLibFolder);
-		scan(classLoaderURLSet, serverDeployFolder);
-
-		System.out.println("Launcher.run: collected " + classLoaderURLSet.size() + " JARs for classpath in " + (System.currentTimeMillis() - scanStart) + " msec. Sorting the classpath.");
-
-		long sortStart = System.currentTimeMillis();
-
-		List<URL> classLoaderURLList = new ArrayList<URL>(classLoaderURLSet);
-		// We sort the URLs alphabetically in order to guarantee a specific order and prevent Heisenbugs that
-		// might result from files/directories being found in different order depending on the file system.
-		Collections.sort(classLoaderURLList, new Comparator<URL>() {
+		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override
-			public int compare(URL url1, URL url2) {
-				return url1.toString().compareTo(url2.toString());
+			public void run() {
+				try {
+					deleteTempDir();
+				} catch (Throwable e) {
+					e.printStackTrace();
+				}
 			}
 		});
+		try {
+			System.out.println("Launcher.run: getClass().getClassLoader(): " + getClass().getClassLoader());
+			long scanStart = System.currentTimeMillis();
 
-		System.out.println("Launcher.run: sorting classpath took " + (System.currentTimeMillis() - sortStart) + " msec. Starting internal launcher.");
+			Set<URL> classLoaderURLSet = new HashSet<URL>();
 
-		// Create a new classLoader which has no parent classloader, but knows all JARs in the JBoss.
-		// Obviously & fortunately, it still uses the bootstrap-loader serving java.lang.
-		URLClassLoader classLoader = new URLClassLoader(classLoaderURLList.toArray(new URL[classLoaderURLList.size()]), null);
-		Thread.currentThread().setContextClassLoader(classLoader);
-		Class<?> internalLauncherClass;
-		internalLauncherClass = classLoader.loadClass("org.nightlabs.jfire.jboss.serverconfigurator.internal.InternalLauncher");
-		Object internalLauncher = internalLauncherClass.newInstance();
-		Method runMethod = internalLauncherClass.getDeclaredMethod("run");
-		runMethod.invoke(internalLauncher);
+			File serverDefaultFolder = new File(new File(new File("..").getAbsoluteFile(), "server"), "default");
+			File serverLibFolder = new File(serverDefaultFolder, "lib");
+			File serverDeployFolder = new File(serverDefaultFolder, "deploy");
+			File jfireLastFolder = new File(serverDeployFolder, "JFire.last");
+
+			if (!jfireLastFolder.exists()) {
+				System.err.println("The folder JFire.last cannot be found! Either it does not exist or you started the Launcher in the wrong directory! The Launcher must be started from the JBoss server's bin directory. This path does not exist: " + jfireLastFolder.getAbsolutePath());
+				throw new IllegalStateException("Directory does not exist: " + jfireLastFolder.getAbsolutePath());
+			}
+
+			scanDir(classLoaderURLSet, serverLibFolder);
+			scanDir(classLoaderURLSet, serverDeployFolder);
+
+			System.out.println("Launcher.run: collected " + classLoaderURLSet.size() + " JARs for classpath in " + (System.currentTimeMillis() - scanStart) + " msec. Sorting the classpath.");
+
+			List<URL> classLoaderURLList = new ArrayList<URL>(classLoaderURLSet);
+
+			if (isDebugEnabled()) {
+				System.out.println("Launcher.run: found JARs before sorting:");
+				for (URL url : classLoaderURLList) {
+					System.out.println("  * " + url.toString());
+				}
+			}
+
+			long sortStart = System.currentTimeMillis();
+
+			// We sort the URLs alphabetically in order to guarantee a specific order and prevent Heisenbugs that
+			// might result from files/directories being found in different order depending on the file system.
+			Collections.sort(classLoaderURLList, new Comparator<URL>() {
+				@Override
+				public int compare(URL url1, URL url2) {
+					return url1.toString().compareTo(url2.toString());
+				}
+			});
+
+			System.out.println("Launcher.run: sorting classpath took " + (System.currentTimeMillis() - sortStart) + " msec. Starting internal launcher.");
+
+			if (isDebugEnabled()) {
+				System.out.println("Launcher.run: found JARs after sorting:");
+				for (URL url : classLoaderURLList) {
+					System.out.println("  * " + url.toString());
+				}
+			}
+
+			// Create a new classLoader which has no parent classloader, but knows all JARs in the JBoss.
+			// Obviously & fortunately, it still uses the bootstrap-loader serving java.lang.
+			URLClassLoader classLoader = new URLClassLoader(classLoaderURLList.toArray(new URL[classLoaderURLList.size()]), null);
+			Thread.currentThread().setContextClassLoader(classLoader);
+			Class<?> internalLauncherClass;
+			internalLauncherClass = classLoader.loadClass("org.nightlabs.jfire.jboss.serverconfigurator.internal.InternalLauncher");
+			Object internalLauncher = internalLauncherClass.newInstance();
+			Method runMethod = internalLauncherClass.getDeclaredMethod("run");
+			runMethod.invoke(internalLauncher);
+		} finally {
+			deleteTempDir();
+		}
 	}
 
 }
