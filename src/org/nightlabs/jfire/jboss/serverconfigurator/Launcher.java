@@ -132,29 +132,14 @@ public class Launcher
 	}
 
 	/**
-	 * Some regular expressions which cause directories & jars to be excluded, if at least one of them matches the path.
+	 * Some Strings which cause directories & jars to be excluded, if at least one of them is contained in the path.
 	 */
 	private static final String[] excludes = {
-//		".*" + Pattern.quote("/JFireReporting.ear/birt/plugins/org.apache.derby.core_") + ".*"
 		"/JFireReporting.ear/birt/plugins/org.apache.derby.core_"
 	};
 
-//	private static final Pattern[] excludePatterns = createExcludePatterns();
-//	private static Pattern[] createExcludePatterns() {
-//		Pattern[] p = new Pattern[excludes.length];
-//		int idx = 0;
-//		for (String exclude : excludes)
-//			p[idx++] = Pattern.compile(exclude);
-//
-//		return p;
-//	}
-
 	private static boolean isExcluded(File directoryOrJarFile) {
 		String directoryOrJarFileString = directoryOrJarFile.getAbsolutePath().replace('\\', '/');
-//		for (Pattern exclude : excludePatterns) {
-//			if (exclude.matcher(directoryOrJarFileString).matches())
-//				return true;
-//		}
 		for (String exclude : excludes) {
 			if (directoryOrJarFileString.contains(exclude))
 				return true;
@@ -190,6 +175,7 @@ public class Launcher
 						jf = new JarFile(tempFile);
 					} catch (IOException x) {
 						// ignore - it's probably not a JAR
+						System.out.println("Launcher.scan: Nested JAR (extracted to temp file) could not be opened: " + tempFile.getAbsolutePath());
 					}
 
 					if (jf != null) {
@@ -222,6 +208,8 @@ public class Launcher
 							jf = new JarFile(f);
 						} catch (IOException x) {
 							// ignore - it's probably not a JAR
+							// ...better log:
+							System.out.println("Launcher.scan: JAR could not be opened: " + f.getAbsolutePath());
 						}
 
 						if (jf != null) {
