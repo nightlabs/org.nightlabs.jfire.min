@@ -336,12 +336,18 @@ public abstract class ServerConfigurator
 	protected void restore(File originalFile) throws IOException
 	{
 		File backupDir = getBackupDirectory(originalFile);
-		if (!backupDir.exists())
-			throw new IOException("Backup directory \"" + backupDir.getAbsolutePath() + "\" does not exist! Cannot restore file: " + originalFile.getAbsolutePath());
+		if (!backupDir.exists()) {
+			Exception x = new IOException("Backup directory \"" + backupDir.getAbsolutePath() + "\" does not exist! Cannot restore file: " + originalFile.getAbsolutePath());
+			logger.error(x.getMessage(), x);
+			return;
+		}
 
 		File backupFile = new File(backupDir, originalFile.getName() + ".bak");
-		if(!backupFile.exists())
-			throw new IOException("Backup file \"" + backupFile.getAbsolutePath() + "\" does not exist! Cannot restore file: " + originalFile.getAbsolutePath());
+		if(!backupFile.exists()) {
+			Exception x = new IOException("Backup file \"" + backupFile.getAbsolutePath() + "\" does not exist! Cannot restore file: " + originalFile.getAbsolutePath());
+			logger.error(x.getMessage(), x);
+			return;
+		}
 
 		if(backupFile.isDirectory())
 			IOUtil.copyDirectory(backupFile, originalFile);
