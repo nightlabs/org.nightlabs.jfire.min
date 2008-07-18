@@ -360,6 +360,7 @@ public class Launcher
 			File serverLibFolder = new File(serverDefaultFolder, "lib");
 			File serverDeployFolder = new File(serverDefaultFolder, "deploy");
 			File jfireLastFolder = new File(serverDeployFolder, "JFire.last");
+			File globalLibFolder = new File(serverDefaultFolder, "../../lib");
 
 			if (!jfireLastFolder.exists()) {
 				System.err.println("The folder JFire.last cannot be found! Either it does not exist or you started the Launcher in the wrong directory! The Launcher must be started from the JBoss server's bin directory. This path does not exist: " + jfireLastFolder.getAbsolutePath());
@@ -368,6 +369,7 @@ public class Launcher
 
 			scanDir(classLoaderURLSet, serverLibFolder);
 			scanDir(classLoaderURLSet, serverDeployFolder);
+			scanDir(classLoaderURLSet, globalLibFolder);
 
 			System.out.println("Launcher.run: collected " + classLoaderURLSet.size() + " JARs for classpath in " + (System.currentTimeMillis() - scanStart) + " msec. Sorting the classpath.");
 
