@@ -239,12 +239,19 @@ public class CacheManagerFactory
 		activeFreshDirtyObjectIDContainer = new DirtyObjectIDContainer(); // freshDirtyObjectIDContainerMaster);
 		freshDirtyObjectIDContainers.addFirst(activeFreshDirtyObjectIDContainer);
 
-		notificationThread = new NotificationThread(this);
-		notificationThread.start();
-		cacheSessionContainerManagerThread = new CacheSessionContainerManagerThread(this);
-		cacheSessionContainerManagerThread.start();
-		freshDirtyObjectIDContainerManagerThread = new FreshDirtyObjectIDContainerManagerThread(this);
-		freshDirtyObjectIDContainerManagerThread.start();
+		String property_CacheManagerFactoryEnable_key = CacheManagerFactory.class.getName() + ".enable";
+		String property_CacheManagerFactoryEnable_value = System.getProperty(property_CacheManagerFactoryEnable_key);
+		if ("false".equals(property_CacheManagerFactoryEnable_value)) {
+			logger.warn("The system property \"" + property_CacheManagerFactoryEnable_key + "\" has been set to \"" + property_CacheManagerFactoryEnable_value + "\"; the CacheManagerFactory will *not* be enabled!");
+		}
+		else {
+			notificationThread = new NotificationThread(this);
+			notificationThread.start();
+			cacheSessionContainerManagerThread = new CacheSessionContainerManagerThread(this);
+			cacheSessionContainerManagerThread.start();
+			freshDirtyObjectIDContainerManagerThread = new FreshDirtyObjectIDContainerManagerThread(this);
+			freshDirtyObjectIDContainerManagerThread.start();
+		}
 
 		try {
 			ctx.createSubcontext("java:/jfire");
