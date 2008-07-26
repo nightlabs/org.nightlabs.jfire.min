@@ -45,6 +45,7 @@ public class ConfigModuleDAO extends BaseJDOObjectDAO<ConfigModuleID, ConfigModu
 	/* (non-Javadoc)
 	 * @see org.nightlabs.jfire.base.jdo.JDOObjectDAO#retrieveJDOObjects(java.util.Set, java.lang.String[], int, org.eclipse.core.runtime.IProgressMonitor)
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	protected Collection<ConfigModule> retrieveJDOObjects(Set<ConfigModuleID> configModuleIDs,
 			String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)

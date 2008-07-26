@@ -64,6 +64,7 @@ public class ConfigDAO extends BaseJDOObjectDAO<ConfigID, Config>
 	/* (non-Javadoc)
 	 * @see org.nightlabs.jfire.base.jdo.JDOObjectDAO#retrieveJDOObjects(java.util.Collection, java.lang.String[], int, org.eclipse.core.runtime.IProgressMonitor)
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	@Implement
 	protected Collection<Config> retrieveJDOObjects(
@@ -123,7 +124,8 @@ public class ConfigDAO extends BaseJDOObjectDAO<ConfigID, Config>
 	 * 					object, <code>monitor.worked(1)</code> will be called.
 	 * @return a collection of all config of type <code>configType</code>
 	 */
-  public synchronized Collection<Config> getConfigs(String configType,
+  @SuppressWarnings("unchecked")
+public synchronized Collection<Config> getConfigs(String configType,
   			String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor) {
   	// get all ConfigIDs of the corresponding Configs
   	Collection<ConfigID> configIDs;

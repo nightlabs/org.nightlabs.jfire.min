@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import org.nightlabs.jdo.ObjectID;
 import org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO;
 import org.nightlabs.jfire.base.jdo.cache.Cache;
 import org.nightlabs.jfire.security.Authority;
@@ -42,6 +41,7 @@ public class AuthorityDAO extends BaseJDOObjectDAO<AuthorityID, Authority>
 
 	private JFireSecurityManager userManager;
 
+	@SuppressWarnings("unchecked")
 	public synchronized List<Authority> getAuthorities(
 			AuthorityTypeID authorityTypeID, String[] fetchGroups,
 			int maxFetchDepth, ProgressMonitor monitor)
