@@ -66,32 +66,6 @@ public class Launcher
 		return "true".equals(System.getProperty("debug"));
 	}
 
-//	private static final int hashLength = 4; // how many digits
-//	private static final int hashDivisor = intpow(36, hashLength);
-//	private static int intpow(int a, int b)
-//	{
-//		int res = 1;
-//		for (int i = 0; i < b; ++i)
-//			res *= a;
-//		return res;
-//	}
-//
-//	private static String getTempFileHashFromContainerJar(String containerPath)
-//	{
-//		int hash = containerPath.hashCode();
-//		hash = Math.abs(hash) % hashDivisor; // reduce the hash to a value between (and including) 0 and zzzz (with radix 36).
-//		String hashString = Integer.toString(hash, 36);
-//		if (hashString.length() < hashLength) { // if shorter than 'hashLength' digits, we fill with '0' before
-//			StringBuilder sb = new StringBuilder(hashLength);
-//			while (sb.length() + hashString.length() < hashLength)
-//				sb.append('0');
-//
-//			sb.append(hashString);
-//			hashString = sb.toString();
-//		}
-//		return hashString;
-//	}
-
 	private static boolean isJarBasedOnExtension(String fileName)
 	{
 		if (jarFileExtensionSet == null) {
