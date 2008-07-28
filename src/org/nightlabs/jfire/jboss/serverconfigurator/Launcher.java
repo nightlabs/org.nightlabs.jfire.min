@@ -14,8 +14,10 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -250,18 +252,51 @@ public class Launcher
 			file.delete();
 	}
 
+	// This method has been copied from IOUtil since we can't load this class yet in this launcher. Marco.
+	private static String simplifyPath(File path)
+	{
+		LinkedList<String> dirs = new LinkedList<String>();
+
+		String pathStr = path.getAbsolutePath();
+		boolean startWithSeparator = pathStr.startsWith(File.separator);
+
+		StringTokenizer tk = new StringTokenizer(pathStr, File.separator, false);
+		while (tk.hasMoreTokens()) {
+			String dir = tk.nextToken();
+			if (".".equals(dir))
+				;// nothing
+			else if ("..".equals(dir)) {
+				if (!dirs.isEmpty())
+					dirs.removeLast();
+			}
+			else
+				dirs.addLast(dir);
+		}
+
+		StringBuffer sb = new StringBuffer();
+		for (String dir : dirs) {
+			if (startWithSeparator || sb.length() > 0)
+				sb.append(File.separator);
+			sb.append(dir);
+		}
+
+		return sb.toString();
+	}
+
 	private void scanJar(Set<URL> classLoaderURLs, JarFile jarFile) throws IOException
 	{
 		for (Enumeration<JarEntry> jarEntryEnum = jarFile.entries(); jarEntryEnum.hasMoreElements(); ) {
 			JarEntry jarEntry = jarEntryEnum.nextElement();
 
 			if (isJarBasedOnExtension(jarEntry.getName())) {
-//				int lastSlash = jarEntry.getName().lastIndexOf('/'); // this is always a slash - no matter if it's windows or linux. marco.
-//				String simpleName = lastSlash < 0 ? jarEntry.getName() : jarEntry.getName().substring(lastSlash + 1);
-//				File tempFile = File.createTempFile(simpleName + '.' + getTempFileHashFromContainerJar(jarFile.getName() + '/' + jarEntry.getName()) + '.', ".tmp"); // with the hash, the prefix is always long enough (minimum are 3 characters)
-//				tempFile.deleteOnExit();
-
-				File tempFile = new File(new File(getTempDir(), jarFile.getName()).getCanonicalFile(), jarEntry.getName());
+				File f = new File(getTempDir(), jarFile.getName());
+				File tempFileParent;
+				try {
+					tempFileParent = new File(simplifyPath(f));
+				} catch (Throwable x) {
+					throw new RuntimeException("Getting simplified path failed for: " + f.getPath(), x);
+				}
+				File tempFile = new File(tempFileParent, jarEntry.getName());
 				tempFile.getParentFile().mkdirs();
 
 				OutputStream out = new FileOutputStream(tempFile);
