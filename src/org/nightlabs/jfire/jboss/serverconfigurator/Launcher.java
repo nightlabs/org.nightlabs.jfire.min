@@ -263,7 +263,8 @@ public class Launcher
 			JarEntry jarEntry = jarEntryEnum.nextElement();
 
 			if (isJarBasedOnExtension(jarEntry.getName())) {
-				File f = new File(getTempDir(), jarFile.getName());
+				String jarFileName = jarFile.getName().replace(':', '_'); // for windows drive letters - urgs. Marco.
+				File f = new File(getTempDir(), jarFileName);
 				File tempFileParent;
 				try {
 					tempFileParent = new File(simplifyPath(f));
