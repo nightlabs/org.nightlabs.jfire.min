@@ -27,6 +27,7 @@
 package org.nightlabs.jfire.server;
 
 import java.rmi.RemoteException;
+import java.util.Date;
 import java.util.List;
 
 import javax.ejb.CreateException;
@@ -191,4 +192,16 @@ public abstract class ServerManagerBean
 		return getJFireServerManagerFactory().getJ2eeRemoteServers();
 	}
 
+	/**
+	 * Get the server's current time. This can - of course - not be used for synchronizing a client,
+	 * because it is unknown how long the response travels to the client (latency), but sufficient
+	 * for a rough guess whether the server's and client's time are too far off.
+	 *
+	 * @ejb.interface-method
+	 * @ejb.permission role-name="_Guest_"
+	 */
+	public Date getServerTime()
+	{
+		return new Date();
+	}
 }
