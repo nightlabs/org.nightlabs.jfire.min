@@ -18,5 +18,6 @@
 			<attribute name="javadoc_location" value="file:/home/tobias/java/jdo_javadoc/apidocs/"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="var" path="JBOSS/server/default/lib/jboss.jar" sourcepath="/JBOSS_SRC"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

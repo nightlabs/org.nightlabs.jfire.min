@@ -17,6 +17,7 @@ import org.nightlabs.annotation.Implement;
 import org.nightlabs.jfire.jboss.authentication.JFireServerLocalLoginModule;
 import org.nightlabs.jfire.jboss.authentication.JFireServerLoginModule;
 import org.nightlabs.jfire.jboss.cascadedauthentication.CascadedAuthenticationClientInterceptor;
+import org.nightlabs.jfire.jboss.transaction.ForceRollbackOnExceptionInterceptor;
 import org.nightlabs.jfire.serverconfigurator.ServerConfigurationException;
 import org.nightlabs.jfire.serverconfigurator.ServerConfigurator;
 import org.nightlabs.jfire.servermanager.config.SmtpMailServiceCf;
@@ -425,7 +426,7 @@ public class ServerConfiguratorJBoss
 	 * @param jbossConfDir The JBoss config dir
 	 * @throws FileNotFoundException If the file eas not found
 	 * @throws IOException In case of an io error
-	 * @throws TransformerException 
+	 * @throws TransformerException
 	 */
 	private void configureStandardJBossXml(File jbossConfDir) throws FileNotFoundException, IOException, SAXException, TransformerException
 	{
@@ -453,7 +454,7 @@ public class ServerConfiguratorJBoss
 				in.close();
 			}
 			Document document = parser.getDocument();
-			
+
 			//configure the ssl compression invoker
 
 			Node root = document.getDocumentElement();
@@ -561,17 +562,7 @@ public class ServerConfiguratorJBoss
 				backupDone = true;
 			}
 
-			setRebootRequired(true); // this is a must, because the conf directory doesn't support redeployment
-
-//			String replacementText = "$1\n            <interceptor>"+CascadedAuthenticationClientInterceptor.class.getName()+"</interceptor>";
-//
-//			Pattern pattern = Pattern.compile("(<client-interceptors>[^<]*?<home>)");
-//			text = pattern.matcher(text).replaceAll(replacementText);
-//
-//			pattern = Pattern.compile("(<client-interceptors>[^<]*?<home>(.|\\n)*?</home>[^<]*?<bean>)");
-//			text = pattern.matcher(text).replaceAll(replacementText);
-//
-//			IOUtil.writeTextFile(destFile, text);
+			setRebootRequired(true); // this is a must, because the conf directory doesn't support redeployment (even though some files like log4j.xml does, the standardjboss.xml does not)
 
 			DOMParser parser = new DOMParser();
 			InputStream in = new FileInputStream(destFile);
@@ -583,21 +574,30 @@ public class ServerConfiguratorJBoss
 			Document document = parser.getDocument();
 			CachedXPathAPI xpa = new CachedXPathAPI();
 
+			Node containerInterceptorsNode;
+			for (NodeIterator ni1 = xpa.selectNodeIterator(document, "/descendant::container-interceptors"); (containerInterceptorsNode = ni1.nextNode()) != null; ) {
+				Element interceptorElement = document.createElement("interceptor");
+				interceptorElement.appendChild(document.createTextNode(ForceRollbackOnExceptionInterceptor.class.getName()));
+//				containerInterceptorsNode.insertBefore(interceptorElement, containerInterceptorsNode.getFirstChild());
+				containerInterceptorsNode.appendChild(interceptorElement);
+			}
+
 			Node clientInterceptorsNode;
 			for (NodeIterator ni1 = xpa.selectNodeIterator(document, "/descendant::client-interceptors"); (clientInterceptorsNode = ni1.nextNode()) != null; ) {
 				Node node;
 				for (NodeIterator ni2 = xpa.selectNodeIterator(clientInterceptorsNode, "home"); (node = ni2.nextNode()) != null; ) {
 					Element interceptorElement = document.createElement("interceptor");
-					interceptorElement.appendChild( document.createTextNode(CascadedAuthenticationClientInterceptor.class.getName()));
+					interceptorElement.appendChild(document.createTextNode(CascadedAuthenticationClientInterceptor.class.getName()));
 					node.insertBefore(interceptorElement, node.getFirstChild());
 				}
 
 				for (NodeIterator ni2 = xpa.selectNodeIterator(clientInterceptorsNode, "bean"); (node = ni2.nextNode()) != null; ) {
 					Element interceptorElement = document.createElement("interceptor");
-					interceptorElement.appendChild( document.createTextNode(CascadedAuthenticationClientInterceptor.class.getName()));
+					interceptorElement.appendChild(document.createTextNode(CascadedAuthenticationClientInterceptor.class.getName()));
 					node.insertBefore(interceptorElement, node.getFirstChild());
 				}
 			}
+
 
 			FileOutputStream out = new FileOutputStream(destFile);
 			try {
