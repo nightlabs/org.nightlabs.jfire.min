@@ -13,11 +13,13 @@ import java.util.regex.Pattern;
 import javax.xml.transform.TransformerException;
 
 import org.apache.log4j.Logger;
+import org.jboss.ejb.plugins.TxInterceptorCMT;
 import org.nightlabs.annotation.Implement;
 import org.nightlabs.jfire.jboss.authentication.JFireServerLocalLoginModule;
 import org.nightlabs.jfire.jboss.authentication.JFireServerLoginModule;
 import org.nightlabs.jfire.jboss.cascadedauthentication.CascadedAuthenticationClientInterceptor;
 import org.nightlabs.jfire.jboss.transaction.ForceRollbackOnExceptionInterceptor;
+import org.nightlabs.jfire.jboss.transaction.RetryHandler;
 import org.nightlabs.jfire.serverconfigurator.ServerConfigurationException;
 import org.nightlabs.jfire.serverconfigurator.ServerConfigurator;
 import org.nightlabs.jfire.servermanager.config.SmtpMailServiceCf;
@@ -576,9 +578,23 @@ public class ServerConfiguratorJBoss
 
 			Node containerInterceptorsNode;
 			for (NodeIterator ni1 = xpa.selectNodeIterator(document, "/descendant::container-interceptors"); (containerInterceptorsNode = ni1.nextNode()) != null; ) {
+				Node interceptorNode;
+				for (NodeIterator ni2 = xpa.selectNodeIterator(containerInterceptorsNode, "interceptor"); (interceptorNode = ni2.nextNode()) != null; ) {
+					String textContent = NLDOMUtil.getTextContent(interceptorNode, false).replaceAll("[\n\r]", "").trim();
+					if (textContent.startsWith(TxInterceptorCMT.class.getName())) {
+						Node retryHandlersNode = xpa.selectNodeIterator(containerInterceptorsNode, "retry-handlers").nextNode();
+						if (retryHandlersNode == null) {
+							retryHandlersNode = document.createElement("retry-handlers");
+							interceptorNode.appendChild(retryHandlersNode);
+						}
+						Element retryHandlerElement = document.createElement("handler");
+						retryHandlerElement.appendChild(document.createTextNode(RetryHandler.class.getName()));
+						retryHandlersNode.appendChild(retryHandlerElement);
+					}
+				}
+
 				Element interceptorElement = document.createElement("interceptor");
 				interceptorElement.appendChild(document.createTextNode(ForceRollbackOnExceptionInterceptor.class.getName()));
-//				containerInterceptorsNode.insertBefore(interceptorElement, containerInterceptorsNode.getFirstChild());
 				containerInterceptorsNode.appendChild(interceptorElement);
 			}
 
