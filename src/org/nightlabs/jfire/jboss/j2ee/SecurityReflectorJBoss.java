@@ -110,7 +110,7 @@ public class SecurityReflectorJBoss extends SecurityReflector
 			q.setFilter("this.authorizedObjectRef.authorizedObject == :userLocal");
 
 			Authority authority = (Authority) pm.getObjectById(authorityID);
-			UserLocal userLocal = (UserLocal) pm.getObjectById(UserLocalID.create(userDescriptor.getOrganisationID(), userDescriptor.getUserID()));
+			UserLocal userLocal = (UserLocal) pm.getObjectById(UserLocalID.create(userDescriptor.getOrganisationID(), userDescriptor.getUserID(), userDescriptor.getOrganisationID()));
 
 			Map<String, Object> params = new HashMap<String, Object>(2);
 			params.put("authority", authority);
