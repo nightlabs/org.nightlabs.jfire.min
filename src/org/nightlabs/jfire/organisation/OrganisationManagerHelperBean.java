@@ -244,8 +244,8 @@ public abstract class OrganisationManagerHelperBean
 			if(logger.isDebugEnabled())
 				logger.debug("Creating instances of AuthorizedObjectRef for both Users within the default authority...");
 
-			UserLocal otherUserLocal = (UserLocal) pm.getObjectById(UserLocalID.create(organisationID, User.USERID_OTHER));
-			UserLocal userLocal = (UserLocal) pm.getObjectById(UserLocalID.create(organisationID, userID));
+			UserLocal otherUserLocal = (UserLocal) pm.getObjectById(UserLocalID.create(organisationID, User.USERID_OTHER, organisationID));
+			UserLocal userLocal = (UserLocal) pm.getObjectById(UserLocalID.create(organisationID, userID, organisationID));
 			authority.createAuthorizedObjectRef(otherUserLocal);
 			AuthorizedObjectRef userRef = authority.createAuthorizedObjectRef(userLocal);
 			if(logger.isDebugEnabled())

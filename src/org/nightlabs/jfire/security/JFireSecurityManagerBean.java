@@ -59,6 +59,7 @@ import org.nightlabs.jfire.config.ConfigSetup;
 import org.nightlabs.jfire.security.id.AuthorityID;
 import org.nightlabs.jfire.security.id.AuthorityTypeID;
 import org.nightlabs.jfire.security.id.AuthorizedObjectID;
+import org.nightlabs.jfire.security.id.AuthorizedObjectRefID;
 import org.nightlabs.jfire.security.id.RoleGroupID;
 import org.nightlabs.jfire.security.id.RoleID;
 import org.nightlabs.jfire.security.id.UserID;
@@ -149,7 +150,7 @@ implements SessionBean
 		try {
 			if (ASSERT_CONSISTENCY_BEFORE)
 				assertConsistency(pm);
-			
+
 			userSecurityGroup = pm.makePersistent(userSecurityGroup);
 
 			// ensure that the group has an AuthorizedObjectRef in the organisation-authority (everyone should have one).
@@ -283,7 +284,7 @@ implements SessionBean
 
 	/**
 	 * @param userType one of User.USERTYPE* or <code>null</code> to get all
-	 * @param organisationID an organisationID in order to filter for it or <code>null</code> to get all. 
+	 * @param organisationID an organisationID in order to filter for it or <code>null</code> to get all.
 	 * @return the unique IDs of those users that match the given criteria.
 	 *
 	 * @ejb.interface-method
@@ -580,7 +581,7 @@ implements SessionBean
 			return result;
 		} finally {
 			pm.close();
-		}		
+		}
 	}
 
 	/**
@@ -972,7 +973,7 @@ implements SessionBean
 					RoleGroup roleGroup = (RoleGroup) pm.getObjectById(roleGroupID);
 					if (!authority.getAuthorityType().getRoleGroups().contains(roleGroup))
 						throw new IllegalArgumentException("The roleGroupIDs argument contained the roleGroupID \"" + roleGroupID.roleGroupID + "\" which is not part of the AuthorityType of the specified authority " + authorityID + "!");
-					
+
 					RoleGroupRef roleGroupRef = authority.createRoleGroupRef(roleGroup);
 					userRef.addRoleGroupRef(roleGroupRef);
 				}
@@ -1156,7 +1157,7 @@ implements SessionBean
 				// check whether there are really this many groups and direct references
 				int calculatedReferenceCount = _calculateRoleRef_referenceCount(pm, authority, authorizedObjectRef.getAuthorizedObject(), roleRef.getRole());
 				if (calculatedReferenceCount != roleRef.getReferenceCount())
-					throw new IllegalStateException("calculatedReferenceCount != memberRoleRef.getReferenceCount()!!! authority=" + authority + " authorizedObjectRef=" + authorizedObjectRef + " calculatedReferenceCount=" + calculatedReferenceCount + " memberRoleRef.referenceCount=" + roleRef.getReferenceCount() + " memberRoleRef" + roleRef); 
+					throw new IllegalStateException("calculatedReferenceCount != memberRoleRef.getReferenceCount()!!! authority=" + authority + " authorizedObjectRef=" + authorizedObjectRef + " calculatedReferenceCount=" + calculatedReferenceCount + " memberRoleRef.referenceCount=" + roleRef.getReferenceCount() + " memberRoleRef" + roleRef);
 			}
 
 			if (authorizedObjectRef instanceof UserSecurityGroupRef) {
@@ -1262,13 +1263,13 @@ implements SessionBean
 	{
 		if (userQueries == null)
 			return null;
-		
+
 		if (! User.class.isAssignableFrom(userQueries.getResultClass()))
 		{
 			throw new RuntimeException("Given QueryCollection has invalid return type! " +
 					"Invalid return type= "+ userQueries.getResultClassName());
 		}
-		
+
 		PersistenceManager pm = getPersistenceManager();
 		try {
 			pm.getFetchPlan().setMaxFetchDepth(1);
@@ -1325,7 +1326,7 @@ implements SessionBean
 		try {
 			if (ASSERT_CONSISTENCY_BEFORE)
 				assertConsistency(pm);
-			
+
 			// authorize
 			Authority authorityForAuthorization = null;
 			try {
@@ -1421,5 +1422,75 @@ implements SessionBean
 	public Set<RoleID> getRoleIDs(AuthorityID authorityID)
 	{
 		return SecurityReflector.getRoleIDs(authorityID);
+	}
+
+	/**
+	 * @ejb.interface-method
+	 * @ejb.permission role-name="_Guest_"
+	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
+	 */
+	@SuppressWarnings("unchecked")
+	public Set<Authority> getAuthoritiesSelfInformation(Set<AuthorityID> authorityIDs, Set<AuthorizedObjectRefID> authorizedObjectRefIDs)
+	{
+		if (!getPrincipal().userIsOrganisation())
+			throw new IllegalStateException("This method can only be called by organisations!");
+
+		PersistenceManager pm = getPersistenceManager();
+		try {
+			User user = User.getUser(pm, getPrincipal());
+			UserLocal userLocal = user.getUserLocal();
+
+			// We do NOT detach:
+			//		* Authority.roleGroupRefs
+			//		* UserLocal.userSecurityGroups
+			// And we delete a lot of information from the detached objects further down.
+			pm.getFetchPlan().setGroups(
+					new String[] {
+							FetchPlan.DEFAULT,
+							Authority.FETCH_GROUP_AUTHORITY_TYPE, // AuthorityTypes are managed programmatically, hence the client-organisation should have the same (no need to detach details)
+							Authority.FETCH_GROUP_AUTHORIZED_OBJECT_REFS,
+							Authority.FETCH_GROUP_DESCRIPTION,
+							Authority.FETCH_GROUP_NAME,
+							UserLocal.FETCH_GROUP_USER,
+							UserLocal.FETCH_GROUP_AUTHORIZED_OBJECT_REFS,
+							User.FETCH_GROUP_NAME,
+							User.FETCH_GROUP_PERSON, // should be the client organisation's person that was sent during cross-organisation-registration
+							User.FETCH_GROUP_USER_LOCAL
+					}
+			);
+			pm.getFetchPlan().setMaxFetchDepth(NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
+
+			Set<Authority> authorities;
+			if (authorityIDs != null)
+				authorities = NLJDOHelper.getObjectSet(pm, authorityIDs, Authority.class);
+			else
+				authorities = new HashSet<Authority>();
+
+			if (authorizedObjectRefIDs != null) {
+				List<AuthorizedObjectRef> authorizedObjectRefs = NLJDOHelper.getObjectList(pm, authorizedObjectRefIDs, AuthorizedObjectRef.class);
+				for (AuthorizedObjectRef authorizedObjectRef : authorizedObjectRefs) {
+					if (!userLocal.equals(authorizedObjectRef.getAuthorizedObject()))
+						throw new IllegalArgumentException("The AuthorizedObjectRefID references another user: authorizedObjectRef=" + authorizedObjectRef + " currentUser=" + user);
+
+					authorities.add(authorizedObjectRef.getAuthority());
+				}
+			}
+
+			authorities = (Set<Authority>) pm.detachCopyAll(authorities);
+
+			// Delete all information from the authorities that is not allowed to be seen by the other organisation.
+			for (Authority authority : authorities) {
+				for (AuthorizedObjectRef authorizedObjectRef : new ArrayList<AuthorizedObjectRef>(authority.getAuthorizedObjectRefs())) {
+					if (userLocal.equals(authorizedObjectRef.getAuthorizedObject()))
+						((UserLocal)authorizedObjectRef.getAuthorizedObject()).setPassword(null);
+					else
+						authority.destroyAuthorizedObjectRef(authorizedObjectRef.getAuthorizedObject());
+				}
+			}
+
+			return authorities;
+		} finally {
+			pm.close();
+		}
 	}
 }
