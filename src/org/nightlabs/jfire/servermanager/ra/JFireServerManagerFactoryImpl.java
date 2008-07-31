@@ -180,12 +180,12 @@ public class JFireServerManagerFactoryImpl
 	 * The serial version of this class.
 	 */
 	private static final long serialVersionUID = 1L;
-	
+
 	/**
 	 * LOG4J logger used by this class
 	 */
 	private static final Logger logger = Logger.getLogger(JFireServerManagerFactoryImpl.class);
-	
+
 	private final ManagedConnectionFactoryImpl mcf;
 	private final ConnectionManager cm;
 	private Reference ref;
@@ -195,7 +195,7 @@ public class JFireServerManagerFactoryImpl
 
 	protected J2eeServerTypeRegistryConfigModule j2eeServerTypeRegistryConfigModule;
 	protected J2eeServerTypeRegistryConfigModule.J2eeLocalServer j2eeLocalServerCf;
-	
+
 	protected OrganisationConfigModule organisationConfigModule;
 	protected CreateOrganisationConfigModule createOrganisationConfigModule;
 	protected CacheCfMod cacheCfMod;
@@ -341,7 +341,7 @@ public class JFireServerManagerFactoryImpl
 			{
 				initialContext.rebind(Organisation.ROOT_ORGANISATION_ID_JNDI_NAME, rootOrganisationID);
 			}
-			
+
 			try
 			{
 				initialContext.bind(JMSConnectionFactoryLookup.QUEUECF_JNDI_LINKNAME, "UIL2ConnectionFactory");
@@ -350,7 +350,7 @@ public class JFireServerManagerFactoryImpl
 			{
 				initialContext.rebind(JMSConnectionFactoryLookup.QUEUECF_JNDI_LINKNAME, "UIL2ConnectionFactory");
 			}
-			
+
 			try
 			{
 				initialContext.bind(JMSConnectionFactoryLookup.TOPICCF_JNDI_LINKNAME, "UIL2ConnectionFactory");
@@ -359,12 +359,12 @@ public class JFireServerManagerFactoryImpl
 			{
 				initialContext.rebind(JMSConnectionFactoryLookup.TOPICCF_JNDI_LINKNAME, "UIL2ConnectionFactory");
 			}
-			
+
 		} catch (Exception e) {
 			logger.error("Binding some config settings into JNDI failed!", e);
 			throw new ResourceException(e.getMessage());
 		}
-		
+
 		J2EEAdapter j2EEAdapter;
 		try {
 			j2EEAdapter = getJ2EEVendorAdapter();
@@ -499,37 +499,37 @@ public class JFireServerManagerFactoryImpl
 		try {
 
 			boolean rebootRequired = ServerConfigurator.configureServer(mcf.getConfigModule());
-			
+
 			if (rebootRequired) {
 				shuttingDown = true;
 
 				logger.warn("*** REBOOT REQUIRED ***");
 				logger.warn("*** REBOOT REQUIRED ***");
 				logger.warn("*** REBOOT REQUIRED ***");
-	
+
 				logger.warn("*** REBOOT REQUIRED ***");
 				logger.warn("*** REBOOT REQUIRED ***");
 				logger.warn("*** REBOOT REQUIRED ***");
-	
+
 				logger.warn("*** REBOOT REQUIRED ***");
 				logger.warn("*** REBOOT REQUIRED ***");
 				logger.warn("*** REBOOT REQUIRED ***");
-	
+
 				logger.warn("The invoked Server Configurator indicates that the server needs to be rebooted! Hence, I will shutdown the server NOW!");
 				logger.warn("If this is an error and prevents your JFire Server from starting up correctly, you must exchange the ServerConfigurator in the config module " + JFireServerConfigModule.class.getName());
-				
+
 				logger.warn("*** REBOOT REQUIRED ***");
 				logger.warn("*** REBOOT REQUIRED ***");
 				logger.warn("*** REBOOT REQUIRED ***");
-	
+
 				logger.warn("*** REBOOT REQUIRED ***");
 				logger.warn("*** REBOOT REQUIRED ***");
 				logger.warn("*** REBOOT REQUIRED ***");
-	
+
 				logger.warn("*** REBOOT REQUIRED ***");
 				logger.warn("*** REBOOT REQUIRED ***");
 				logger.warn("*** REBOOT REQUIRED ***");
-	
+
 				Thread thread = new Thread() {
 					@Override
 					public void run()
@@ -831,7 +831,7 @@ public class JFireServerManagerFactoryImpl
 			throw new RuntimeException(e);
 		}
 	}
-	
+
 	public JFireServerManager getJFireServerManager(JFirePrincipal jfirePrincipal)
 	{
 		try {
@@ -843,11 +843,11 @@ public class JFireServerManagerFactoryImpl
 			throw new RuntimeException(e);
 		}
 	}
-	
+
 	// ************************************************
 	// *** Methods executed by JFireServerManager ***
 	// ************************************************
-	
+
 	protected boolean isNewServerNeedingSetup()
 	{
 		return mcf.getConfigModule().getLocalServer() == null;
@@ -894,7 +894,7 @@ public class JFireServerManagerFactoryImpl
 			else
 				if (cfMod.getLocalServer().getServerID() == null)
 					throw new NullPointerException("localServer.serverID must not be null at first call to this method!");
-			
+
 			// ensure a reasonable SMTP-Config is set. // TODO shouldn't this code better be in the init method of the JFireServerConfigModule?! or in ManagedConnectionFactory.testConfiguration(...)? IMHO that's wrong here. Marco.
 //			if (cfMod.getSmtp() == null) {
 //				if (orgCfMod.getSmtp() == null) {
@@ -907,7 +907,7 @@ public class JFireServerManagerFactoryImpl
 //				}
 //			}
 			// I think the above code (checking the SMTP-config) is not necessary, because it actually is already done in the init() method.
-				
+
 			try {
 				BeanUtils.copyProperties(orgCfMod, cfMod);
 			} catch (IllegalAccessException e) {
@@ -979,7 +979,7 @@ public class JFireServerManagerFactoryImpl
 
 		return new RoleImportSet(organisationID, globalSecurityMan, exceptions);
 	}
-	
+
 	private static class FileFilterDirectories implements FilenameFilter
 	{
 		/**
@@ -1005,7 +1005,7 @@ public class JFireServerManagerFactoryImpl
 	}
 	private static String JAR_SUFFIX = ".jar";
 	private static FileFilterJARs fileFilterJARs = null;
-	
+
 	private void roleImport_prepare_collect(File directory, JFireSecurityMan globalEJBRoleGroupMan, Map<String, Throwable> exceptions)
 	{
 		if (fileFilterDirectories == null)
@@ -1019,7 +1019,7 @@ public class JFireServerManagerFactoryImpl
 		if (fileFilterJARs == null)
 			fileFilterJARs = new FileFilterJARs();
 		String[] jars = directory.list(fileFilterJARs);
-		
+
 		if (jars != null) {
 			for (int i = 0; i < jars.length; ++i) {
 				File jar = new File(directory, jars[i]);
@@ -1045,7 +1045,7 @@ public class JFireServerManagerFactoryImpl
 			}
 		} // if (jars != null) {
 	}
-	
+
 	private void roleImport_prepare_readJar(JFireSecurityMan globalSecurityMan, File jar, JarFile jf)
 		throws SAXException, IOException, XMLReadException
 	{
@@ -1332,7 +1332,7 @@ public class JFireServerManagerFactoryImpl
 		// check the parameters (only some here - some will be checked below)
 		if (createOrganisationProgress == null)
 			throw new IllegalArgumentException("createOrganisationProgress must not be null!");
-		
+
 		if (organisationID == null)
 			throw new IllegalArgumentException("organisationID must not be null!");
 
@@ -1757,7 +1757,7 @@ public class JFireServerManagerFactoryImpl
 
 		if (org == null)
 			throw new OrganisationNotFoundException("No organisation with [master]organisationID=\""+organisationID+"\" existent!");
-		
+
 		org.addServerAdmin(userID);
 
 		resetOrganisationCfs();
@@ -1778,7 +1778,7 @@ public class JFireServerManagerFactoryImpl
 
 		if (org == null)
 			throw new OrganisationNotFoundException("No organisation with [master]organisationID=\""+organisationID+"\" existent!");
-		
+
 		boolean res = org.removeServerAdmin(userID);
 
 		resetOrganisationCfs();
@@ -1789,12 +1789,12 @@ public class JFireServerManagerFactoryImpl
 	{
 		return mcf.getConfig();
 	}
-	
+
 	protected boolean isOrganisationCfsEmpty()
 	{
 		return organisationConfigModule.getOrganisations().isEmpty();
 	}
-	
+
 	protected synchronized List<OrganisationCf> getOrganisationCfs(boolean sorted)
 	{
 		// We create a new ArrayList to avoid any problems that might occur if
@@ -1809,7 +1809,7 @@ public class JFireServerManagerFactoryImpl
 	{
 		cachedModules = null;
 	}
-	
+
 	/**
 	 * key: ModuleType moduleType<br/>
 	 * value: List modules
@@ -1822,7 +1822,7 @@ public class JFireServerManagerFactoryImpl
 		try {
 			if (cachedModules == null)
 				cachedModules = new HashMap<ModuleType, List<ModuleDef>>();
-			
+
 			List<ModuleDef> modules = cachedModules.get(moduleType);
 			if (modules == null) {
 				File startDir = new File(mcf.getConfigModule().getJ2ee().getJ2eeDeployBaseDirectory());
@@ -1865,7 +1865,7 @@ public class JFireServerManagerFactoryImpl
 		}
 	}
 	private static FileFilterEARs fileFilterEARs = null;
-	
+
 	private void findModules(File directory, ModuleType moduleType, List<ModuleDef> modules)
 		throws XMLReadException
 	{
@@ -1917,7 +1917,7 @@ public class JFireServerManagerFactoryImpl
 	 * value: OrganisationCf org
 	 */
 	private Map<String, OrganisationCf> organisationCfsCloned = null;
-	
+
 	protected synchronized void resetOrganisationCfs()
 	{
 		organisationCfsCloned = null;
@@ -2042,7 +2042,7 @@ public class JFireServerManagerFactoryImpl
 				File manifestFile = new File(tmpDir, manifestFileRelative.getPath());
 				if (!manifestFile.getParentFile().mkdirs())
 					throw new IOException("Could not create META-INF directory: " + manifestFile.getParentFile());
-	
+
 				Manifest manifest = new Manifest();
 				manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
 				manifest.getMainAttributes().putValue("Created-By", "JFire - http://www.jfire.org");
@@ -2355,7 +2355,7 @@ public class JFireServerManagerFactoryImpl
 							waitStartDT = System.currentTimeMillis();
 							logger.warn("While waiting for deployment of PersistenceManagerFactory \""+persistenceManagerJNDIName+"\", the system time has been changed. Resetting wait time.");
 						}
-		
+
 						if (System.currentTimeMillis() - waitStartDT > timeout) {
 							logger.fatal("PersistenceManagerFactory \""+persistenceManagerJNDIName+"\" has not become accessible in JNDI within timeout (\""+timeout+"\" msec).");
 							throw x;
@@ -2527,7 +2527,7 @@ public class JFireServerManagerFactoryImpl
 							AuthorizedObjectRefID.create(
 									organisationID,
 									Authority.AUTHORITY_ID_ORGANISATION,
-									UserLocalID.create(organisationID, userID).toString()
+									UserLocalID.create(organisationID, userID, organisationID).toString()
 							)
 					);
 				} catch (JDOObjectNotFoundException x) {
@@ -2536,7 +2536,7 @@ public class JFireServerManagerFactoryImpl
 								AuthorizedObjectRefID.create(
 										organisationID,
 										Authority.AUTHORITY_ID_ORGANISATION,
-										UserLocalID.create(organisationID, User.USERID_OTHER).toString()
+										UserLocalID.create(organisationID, User.USERID_OTHER, organisationID).toString()
 								)
 						);
 					} catch (JDOObjectNotFoundException e) {

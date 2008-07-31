@@ -83,7 +83,7 @@ public class JFireServerManagerImpl
 	implements Connection, JFireServerManager
 {
 	private static final Logger logger = Logger.getLogger(JFireServerManagerImpl.class);
-	
+
 	private ManagedConnectionImpl managedConnectionImpl;
 	private JFireServerManagerFactoryImpl jfireServerManagerFactoryImpl;
 
@@ -97,7 +97,7 @@ public class JFireServerManagerImpl
 			boolean nonTransactionalRead = Boolean.TRUE.toString().equals(nonTransactionalReadString);
 			if (logger.isDebugEnabled())
 				logger.debug(SYSTEM_PROPERTY_NON_TRANSACTIONAL_READ + "=" + nonTransactionalReadString);
-	
+
 			if (!nonTransactionalRead)
 				logger.info(SYSTEM_PROPERTY_NON_TRANSACTIONAL_READ + " is false! Will use transactions even for solely reading data!");
 
@@ -141,7 +141,7 @@ public class JFireServerManagerImpl
 			managedConnectionImpl.notifyClosed(this);
 		} // if (mc != null)
 		closed = true;
-		
+
 		setManagedConnection(null);
 	}
 
@@ -291,7 +291,7 @@ public class JFireServerManagerImpl
 		assertOpen();
 		jfireServerManagerFactoryImpl.roleImport_commit(roleImportSet, null);
 	}
-	
+
 	@Override
 	public CLRegistrar getCLRegistrar() throws ModuleException
 	{
@@ -316,7 +316,7 @@ public class JFireServerManagerImpl
 
 	// *** authentication stuff ***
 	private JFirePrincipal principal = null;
-	
+
 	public boolean isAuthenticated()
 	{
 		return principal != null;
@@ -362,7 +362,7 @@ public class JFireServerManagerImpl
 				throw new LoginException("org.jfire.serverShuttingDown");
 
 		// TODO when the server is not yet up and running, normal users should get an exception telling them that the server is not available.
-		// The following code worked already fine, but causes problems for the server-initialisation: 
+		// The following code worked already fine, but causes problems for the server-initialisation:
 		// We cannot enable this without providing a solution to the ServerInits and OrganisationInits that require to log-in
 		// using different users than _System_. For example, JFireDemoSetupMultiOrganisation currently fails to register the
 		// organisations in each other because of the following Exception ("org.jfire.serverNotYetUpAndRunning") being thrown.
@@ -435,10 +435,10 @@ public class JFireServerManagerImpl
 
 								// Initialize meta data.
 								pm.getExtent(UserLocal.class);
-								
+
 								UserLocal userLocal;
 								try {
-									userLocal = (UserLocal)pm.getObjectById(UserLocalID.create(organisationID, userID), true);
+									userLocal = (UserLocal)pm.getObjectById(UserLocalID.create(organisationID, userID, organisationID), true);
 								} catch (JDOObjectNotFoundException x) {
 									logger.info("Login failed because user \""+userID+"\" not known in organisation \""+organisationID+"\".", x);
 									throw new LoginException("Invalid username or password!");
