@@ -154,6 +154,9 @@ public class UserDAO extends BaseJDOObjectDAO<UserID, User>
 				}
 			}
 			User result = um.storeUser(user, newPassword, get, fetchGroups, maxFetchDepth);
+			if (result != null)
+				getCache().put(null, result, fetchGroups, maxFetchDepth);
+
 			monitor.worked(1);
 			monitor.done();
 			return result;
