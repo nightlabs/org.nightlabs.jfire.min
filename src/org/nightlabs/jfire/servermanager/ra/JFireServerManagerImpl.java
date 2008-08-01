@@ -373,6 +373,8 @@ public class JFireServerManagerImpl
 //				throw new LoginException("org.jfire.serverNotYetUpAndRunning");
 		}
 
+//		String userPK = userID + LoginData.USER_ORGANISATION_SEPARATOR + organisationID;
+
 		boolean userIsOrganisation = userID.startsWith(User.USERID_PREFIX_TYPE_ORGANISATION);
 
 		try {
@@ -383,13 +385,13 @@ public class JFireServerManagerImpl
 						loginData,
 						userIsOrganisation,
 						lookup,
-						new RoleSet() // no roles!
+						new RoleSet() // RoleSet.class.getName() + '[' + userPK + ']') // no roles!
 						);
 				return this.principal;
 			}
 
 			if (this.isOrganisationCfsEmpty()) {
-				RoleSet roleSet = new RoleSet();
+				RoleSet roleSet = new RoleSet(); // RoleSet.class.getName() + '[' + userPK + ']');
 				// add roles needed for setup
 				roleSet.addMember(new SimplePrincipal(RoleConstants.guest.roleID)); // EVERYONE has this role!
 				roleSet.addMember(new SimplePrincipal(RoleConstants.serverAdmin.roleID));

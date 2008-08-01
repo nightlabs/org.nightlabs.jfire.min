@@ -48,7 +48,7 @@ implements Serializable
 	 * The serial version of this class.
 	 */
 	private static final long serialVersionUID = 1L;
-	
+
 	public static final String PRINCIPAL_LOCALQUEUEWRITER = "_LocalQueueWriter_";
 	public static final String PRINCIPAL_LOCALQUEUEREADER = "_LocalQueueReader_";
 
@@ -59,7 +59,7 @@ implements Serializable
 	{
 		return (JFireServerLocalLoginManager) initialContext.lookup(JNDI_NAME);
 	}
-	
+
 	public JFireServerLocalLoginManager() {
 		LocalPrincipal p = new LocalPrincipal(PRINCIPAL_LOCALQUEUEWRITER);
 		p.addRole(PRINCIPAL_LOCALQUEUEWRITER);
@@ -75,7 +75,7 @@ implements Serializable
 		 * The serial version of this class.
 		 */
 		private static final long serialVersionUID = 1L;
-		
+
 		private RoleSet roleSet = new RoleSet();
 
 		private String password;
@@ -83,6 +83,7 @@ implements Serializable
 		public LocalPrincipal(String name)
 		{
 			this(name, null);
+//			roleSet = new RoleSet(RoleSet.class.getName() + '[' + name + ']');
 		}
 
 		public LocalPrincipal(String name, String password)
@@ -91,6 +92,7 @@ implements Serializable
 			if (password == null)
 				password = UserLocal.createMachinePassword(15, 20);
 			this.password = password;
+//			roleSet = new RoleSet(RoleSet.class.getName() + '[' + name + ']');
 		}
 
 		public void addRole(String role) {

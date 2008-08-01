@@ -2486,7 +2486,7 @@ public class JFireServerManagerFactoryImpl
 		if (roleSet != null)
 			return roleSet;
 
-		roleSet = new RoleSet();
+		roleSet = new RoleSet(); // RoleSet.class.getName() + '[' + userPK + ']');
 
 		roleSet.addMember(new SimplePrincipal(RoleConstants.guest.roleID)); // EVERYONE has this role (if he's logged in)!
 
