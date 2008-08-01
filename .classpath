@@ -17,5 +17,8 @@
 	<classpathentry kind="var" path="WORKSPACE/NightLabsJDO/dist/NightLabsJDO.jar" sourcepath="WORKSPACE/NightLabsJDO/src"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/NightLabsQuery"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/NightLabsQueryJDO"/>
+	<classpathentry kind="var" path="DATANUCLEUS_CORE" sourcepath="/DATANUCLEUS_SOURCE/platform/core/trunk/src/java"/>
+	<classpathentry kind="var" path="DATANUCLEUS_ENHANCER"/>
+	<classpathentry kind="var" path="ASM"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

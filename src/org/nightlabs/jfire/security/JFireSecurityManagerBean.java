@@ -31,6 +31,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -56,6 +57,10 @@ import org.nightlabs.jdo.query.JDOQueryCollectionDecorator;
 import org.nightlabs.jdo.query.QueryCollection;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.config.ConfigSetup;
+import org.nightlabs.jfire.crossorganisationregistrationinit.Context;
+import org.nightlabs.jfire.jdo.notification.persistent.PersistentNotificationEJB;
+import org.nightlabs.jfire.jdo.notification.persistent.PersistentNotificationEJBUtil;
+import org.nightlabs.jfire.jdo.notification.persistent.SubscriptionUtil;
 import org.nightlabs.jfire.security.id.AuthorityID;
 import org.nightlabs.jfire.security.id.AuthorityTypeID;
 import org.nightlabs.jfire.security.id.AuthorizedObjectID;
@@ -65,6 +70,8 @@ import org.nightlabs.jfire.security.id.RoleID;
 import org.nightlabs.jfire.security.id.UserID;
 import org.nightlabs.jfire.security.id.UserLocalID;
 import org.nightlabs.jfire.security.id.UserSecurityGroupID;
+import org.nightlabs.jfire.security.notification.AuthorityNotificationFilter;
+import org.nightlabs.jfire.security.notification.AuthorityNotificationReceiver;
 import org.nightlabs.jfire.security.search.UserQuery;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.util.CollectionUtil;
@@ -88,23 +95,14 @@ extends BaseSessionBeanImpl
 implements SessionBean
 {
 	private static final long serialVersionUID = 1L;
-	/**
-	 * LOG4J logger used by this class
-	 */
 	private static final Logger logger = Logger.getLogger(JFireSecurityManagerBean.class);
 
-	/**
-	 * @see org.nightlabs.jfire.base.BaseSessionBeanImpl#setSessionContext(javax.ejb.SessionContext)
-	 */
 	@Override
 	public void setSessionContext(SessionContext sessionContext)
 	throws EJBException, RemoteException
 	{
 		super.setSessionContext(sessionContext);
 	}
-	/**
-	 * @see org.nightlabs.jfire.base.BaseSessionBeanImpl#unsetSessionContext()
-	 */
 	@Override
 	public void unsetSessionContext() {
 		super.unsetSessionContext();
@@ -113,17 +111,16 @@ implements SessionBean
 	/**
 	 * @ejb.create-method
 	 * @ejb.permission role-name="_Guest_"
-	 * @!!!ejb.permission role-name="JFireSecurityManager-read"
 	 */
 	public void ejbCreate() throws CreateException
 	{
 	}
 
 	/**
-	 * @see javax.ejb.SessionBean#ejbRemove()
-	 *
+	 * {@inheritDoc}
 	 * @ejb.permission unchecked="true"
 	 */
+	@Override
 	public void ejbRemove() throws EJBException, RemoteException { }
 
 	private static final boolean ASSERT_CONSISTENCY_BEFORE = true;
@@ -718,16 +715,31 @@ implements SessionBean
 	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 */
 	@SuppressWarnings("unchecked")
-	public Set<AuthorityID> getAuthorityIDs(AuthorityTypeID authorityTypeID)
+	public Set<AuthorityID> getAuthorityIDs(String organisationID, AuthorityTypeID authorityTypeID)
 	{
 		PersistenceManager pm = getPersistenceManager();
 		try {
 			Query q = pm.newQuery(Authority.class);
 			q.setResult("JDOHelper.getObjectId(this)");
-			if (authorityTypeID != null)
-				q.setFilter("JDOHelper.getObjectId(this.authorityType) == :authorityTypeID");
+			StringBuilder filter = new StringBuilder();
 
-			return new HashSet<AuthorityID>((Collection<? extends AuthorityID>) q.execute(authorityTypeID));
+			if (organisationID != null)
+				filter.append("this.organisationID == :organisationID");
+
+			if (authorityTypeID != null) {
+				if (filter.length() != 0)
+					filter.append(" && ");
+
+				filter.append("JDOHelper.getObjectId(this.authorityType) == :authorityTypeID");
+			}
+
+			if (filter.length() != 0)
+				q.setFilter(filter.toString());
+
+			Map<String, Object> params = new HashMap<String, Object>(2);
+			params.put("organisationID", organisationID);
+			params.put("authorityTypeID", authorityTypeID);
+			return new HashSet<AuthorityID>((Collection<? extends AuthorityID>) q.executeWithMap(params));
 		} finally {
 			pm.close();
 		}
@@ -1430,7 +1442,7 @@ implements SessionBean
 	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 */
 	@SuppressWarnings("unchecked")
-	public Set<Authority> getAuthoritiesSelfInformation(Set<AuthorityID> authorityIDs, Set<AuthorizedObjectRefID> authorizedObjectRefIDs)
+	public Collection<Authority> getAuthoritiesSelfInformation(Set<AuthorityID> authorityIDs, Set<AuthorizedObjectRefID> authorizedObjectRefIDs)
 	{
 		if (!getPrincipal().userIsOrganisation())
 			throw new IllegalStateException("This method can only be called by organisations!");
@@ -1442,6 +1454,7 @@ implements SessionBean
 
 			// We do NOT detach:
 			//		* Authority.roleGroupRefs
+			//		* ...other roleGroup[Ref]s
 			//		* UserLocal.userSecurityGroups
 			// And we delete a lot of information from the detached objects further down.
 			pm.getFetchPlan().setGroups(
@@ -1455,12 +1468,18 @@ implements SessionBean
 							UserLocal.FETCH_GROUP_AUTHORIZED_OBJECT_REFS,
 							User.FETCH_GROUP_NAME,
 							User.FETCH_GROUP_PERSON, // should be the client organisation's person that was sent during cross-organisation-registration
-							User.FETCH_GROUP_USER_LOCAL
+							User.FETCH_GROUP_USER_LOCAL,
+							AuthorizedObjectRef.FETCH_GROUP_AUTHORITY,
+							AuthorizedObjectRef.FETCH_GROUP_AUTHORIZED_OBJECT,
+							AuthorizedObjectRef.FETCH_GROUP_ROLE_REFS,
+							RoleRef.FETCH_GROUP_AUTHORITY,
+							RoleRef.FETCH_GROUP_AUTHORIZED_OBJECT_REF,
+							RoleRef.FETCH_GROUP_ROLE,
 					}
 			);
 			pm.getFetchPlan().setMaxFetchDepth(NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
 
-			Set<Authority> authorities;
+			Collection<Authority> authorities;
 			if (authorityIDs != null)
 				authorities = NLJDOHelper.getObjectSet(pm, authorityIDs, Authority.class);
 			else
@@ -1476,19 +1495,49 @@ implements SessionBean
 				}
 			}
 
-			authorities = (Set<Authority>) pm.detachCopyAll(authorities);
+			authorities = pm.detachCopyAll(authorities);
 
 			// Delete all information from the authorities that is not allowed to be seen by the other organisation.
 			for (Authority authority : authorities) {
-				for (AuthorizedObjectRef authorizedObjectRef : new ArrayList<AuthorizedObjectRef>(authority.getAuthorizedObjectRefs())) {
-					if (userLocal.equals(authorizedObjectRef.getAuthorizedObject()))
-						((UserLocal)authorizedObjectRef.getAuthorizedObject()).setPassword(null);
-					else
-						authority.destroyAuthorizedObjectRef(authorizedObjectRef.getAuthorizedObject());
-				}
+				if (!getOrganisationID().equals(authority.getOrganisationID()))
+					throw new IllegalStateException("Cannot query foreign organisations' Authority! thisOrganisationID=" + getOrganisationID() + " queriedAuthority=" + authority);
+
+				authority.removeSecretDataAfterDetachmentForSingleUser(userLocal);
 			}
 
 			return authorities;
+		} finally {
+			pm.close();
+		}
+	}
+
+	/**
+	 * @ejb.interface-method
+	 * @ejb.permission role-name="_System_"
+	 * @ejb.transaction type="Required"
+	 */
+	@SuppressWarnings("unchecked")
+	public void importAuthoritiesOnCrossOrganisationRegistration(Context context)
+	throws Exception
+	{
+		PersistenceManager pm = getPersistenceManager();
+		try {
+			String emitterOrganisationID = context.getOtherOrganisationID();
+			Hashtable<?, ?> initialContextProperties = getInitialContextProperties(emitterOrganisationID);
+
+			AuthorityNotificationFilter authorityNotificationFilter = new AuthorityNotificationFilter(
+					emitterOrganisationID, SubscriptionUtil.SUBSCRIBER_TYPE_ORGANISATION, getOrganisationID(),
+					AuthorityNotificationFilter.class.getName());
+			AuthorityNotificationReceiver authorityNotificationReceiver = new AuthorityNotificationReceiver(authorityNotificationFilter);
+			authorityNotificationReceiver = pm.makePersistent(authorityNotificationReceiver);
+
+			PersistentNotificationEJB persistentNotificationEJB = PersistentNotificationEJBUtil.getHome(initialContextProperties).create();
+			persistentNotificationEJB.storeNotificationFilter(authorityNotificationFilter, false, null, 1);
+
+			JFireSecurityManager jfireSecurityManager = JFireSecurityManagerUtil.getHome(initialContextProperties).create();
+			Set<AuthorityID> authorityIDs = jfireSecurityManager.getAuthorityIDs(emitterOrganisationID, null);
+
+			authorityNotificationReceiver.replicateAuthorities(emitterOrganisationID, authorityIDs, null);
 		} finally {
 			pm.close();
 		}
