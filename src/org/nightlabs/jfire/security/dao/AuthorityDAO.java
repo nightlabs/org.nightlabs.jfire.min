@@ -43,12 +43,12 @@ public class AuthorityDAO extends BaseJDOObjectDAO<AuthorityID, Authority>
 
 	@SuppressWarnings("unchecked")
 	public synchronized List<Authority> getAuthorities(
-			AuthorityTypeID authorityTypeID, String[] fetchGroups,
-			int maxFetchDepth, ProgressMonitor monitor)
+			String organisationID, AuthorityTypeID authorityTypeID,
+			String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
 	{
 		try {
 			userManager = JFireSecurityManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
-			Set<AuthorityID> authorityIDs = userManager.getAuthorityIDs(authorityTypeID);
+			Set<AuthorityID> authorityIDs = userManager.getAuthorityIDs(organisationID, authorityTypeID);
 
 			return getJDOObjects(null, authorityIDs, fetchGroups, maxFetchDepth, monitor);
 		} catch (Exception e) {
@@ -117,6 +117,6 @@ public class AuthorityDAO extends BaseJDOObjectDAO<AuthorityID, Authority>
 		} finally {
 			monitor.worked(1);
 			monitor.done();
-		}		
+		}
 	}
 }
