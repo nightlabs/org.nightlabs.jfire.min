@@ -45,6 +45,7 @@ import org.jboss.security.SecurityAssociation;
 import org.jboss.security.SimplePrincipal;
 import org.nightlabs.j2ee.LoginData;
 import org.nightlabs.jfire.base.login.JFireLogin;
+import org.nightlabs.jfire.jboss.authentication.JFireServerLoginModule;
 import org.nightlabs.jfire.servermanager.JFireServerManagerFactory;
 import org.nightlabs.util.Util;
 
@@ -59,7 +60,7 @@ public class CascadedAuthenticationClientInterceptorDelegate extends GenericEJBI
 	 * LOG4J logger used by this class
 	 */
 	private static final Logger logger = Logger.getLogger(CascadedAuthenticationClientInterceptorDelegate.class);
-	
+
 	public CascadedAuthenticationClientInterceptorDelegate()
 	{
 		// LOGGER.info("instance created!");
@@ -68,7 +69,7 @@ public class CascadedAuthenticationClientInterceptorDelegate extends GenericEJBI
 	public static class Mutex
 	{
 		private boolean finished = false;
-		
+
 		/**
 		 * @return Returns the finished.
 		 */
@@ -468,17 +469,26 @@ public class CascadedAuthenticationClientInterceptorDelegate extends GenericEJBI
 		} finally {
 			if (changeIdentity) {
 				if (loginContext != null) {
-					loginContext.logout(); // we have to logout, because we must use restore-login-identity, since it otherwise doesn't work with a mix of local beans (e.g. StoreManagerHelperLocal) and foreign-organisation non-local beans (e.g. TradeManager on another organisation)
+					// We have to logout, because we must use restore-login-identity, since it otherwise doesn't
+					// work with a mix of local beans (e.g. StoreManagerHelperLocal) and foreign-organisation
+					// non-local beans (e.g. TradeManager on another organisation).
+					loginContext.logout();
+
 					if (oldPrincipal != null) {
 						loginData = new LoginData(oldPrincipal.getName(), oldPassword);
 						loginContext = new LoginContext(LoginData.DEFAULT_SECURITY_PROTOCOL, new JFireLogin(loginData).getAuthCallbackHandler());
+						JFireServerLoginModule.cascadedAuthenticationRestoreIdentityBegin(oldPrincipal);
 						try {
 							loginContext.login();
-						} catch (Exception x) {
-							// During server-setup it might happen that we cannot re-login at the organisation "__foobar_organisation_for_initial_login__",
-							// hence, we ignore this problem (leaving us simply unauthenticated).
-							if (!"__foobar_organisation_for_initial_login__".equals(loginData.getOrganisationID())) // not so clean, but at least a good way to prevent the message at every server-setup
-								logger.error("Cannot re-login as \"" + (loginData == null ? null : loginData.getPrincipalName()) + "\" after having executed a bean method as a different user (\"" + (userDescriptor == null ? null : userDescriptor.userName) + "\")!", x);
+							// I think the following catch clause is not necessary anymore, because prepareCascadedAuthenticationRestoreIdentity
+							// should guarantee that login is successful.
+//						} catch (Exception x) {
+//							// During server-setup it might happen that we cannot re-login at the organisation "__foobar_organisation_for_initial_login__",
+//							// hence, we ignore this problem (leaving us simply unauthenticated).
+//							if (!"__foobar_organisation_for_initial_login__".equals(loginData.getOrganisationID())) // not so clean, but at least a good way to prevent the message at every server-setup
+//								logger.error("Cannot re-login as \"" + (loginData == null ? null : loginData.getPrincipalName()) + "\" after having executed a bean method as a different user (\"" + (userDescriptor == null ? null : userDescriptor.userName) + "\")!", x);
+						} finally {
+							JFireServerLoginModule.cascadedAuthenticationRestoreIdentityEnd(oldPrincipal);
 						}
 					}
 				}
