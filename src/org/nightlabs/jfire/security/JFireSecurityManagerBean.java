@@ -1495,7 +1495,12 @@ implements SessionBean
 				}
 			}
 
-			authorities = pm.detachCopyAll(authorities);
+			User.disableDetachUserLocalAccessRightCheck(true);
+			try {
+				authorities = pm.detachCopyAll(authorities);
+			} finally {
+				User.disableDetachUserLocalAccessRightCheck(false);
+			}
 
 			// Delete all information from the authorities that is not allowed to be seen by the other organisation.
 			for (Authority authority : authorities) {

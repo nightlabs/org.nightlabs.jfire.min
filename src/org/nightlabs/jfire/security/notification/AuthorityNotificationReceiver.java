@@ -84,6 +84,17 @@ public class AuthorityNotificationReceiver extends NotificationReceiver
 	{
 		JFireSecurityManager m = JFireSecurityManagerUtil.getHome(Lookup.getInitialContextProperties(getPersistenceManager(), emitterOrganisationID)).create();
 		Collection<Authority> authorities = m.getAuthoritiesSelfInformation(authorityIDs, authorizedObjectRefIDs);
+
+		if (logger.isDebugEnabled()) {
+			logger.debug("replicateAuthorities: replicating " + authorities.size() + " authorities from orga " + emitterOrganisationID + " to local orga " + getSubscriberID() + ":");
+
+			for (Authority authority : authorities) {
+				logger.debug("  * Authority " + authority.getOrganisationID() + '/' + authority.getAuthorityID());
+				for (AuthorizedObjectRef authorizedObjectRef : authority.getAuthorizedObjectRefs())
+					logger.debug("    o AuthorizedObjectRef.authorizedObject " + authorizedObjectRef.getAuthorizedObject());
+			}
+		}
+
 		getPersistenceManager().makePersistentAll(authorities);
 	}
 

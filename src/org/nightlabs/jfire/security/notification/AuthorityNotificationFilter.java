@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.nightlabs.jdo.ObjectIDUtil;
 import org.nightlabs.jfire.jdo.notification.DirtyObjectID;
 import org.nightlabs.jfire.jdo.notification.JDOLifecycleState;
@@ -25,6 +26,8 @@ import org.nightlabs.jfire.security.id.UserLocalID;
  */
 public class AuthorityNotificationFilter extends NotificationFilter
 {
+	private static final Logger logger = Logger.getLogger(AuthorityNotificationFilter.class);
+
 	/**
 	 * @deprecated Only for JDO!
 	 */
@@ -77,6 +80,13 @@ public class AuthorityNotificationFilter extends NotificationFilter
 			else
 				throw new IllegalStateException("What the fuck! dirtyObjectID.getObjectClassName()=" + dirtyObjectID.getObjectClassName());
 		}
+
+		if (logger.isDebugEnabled()) {
+			logger.debug("filter: dirtyObjectIDs.size=" + dirtyObjectIDs.size());
+			for (DirtyObjectID dirtyObjectID : dirtyObjectIDs)
+				logger.debug("  * " + dirtyObjectID);
+		}
+
 		return dirtyObjectIDs;
 	}
 
