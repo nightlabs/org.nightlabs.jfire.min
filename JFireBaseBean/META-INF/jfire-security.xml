@@ -313,6 +313,17 @@
 		</description>
 		<role id="org.nightlabs.jfire.organisation.queryOrganisations"/>
 	</role-group>
+	<role-group id="org.nightlabs.jfire.organisation.storeLocalOrganisation">
+		<name>Store local organisation</name>
+		<name language="de">Lokale Organisation bearbeiten</name>
+		<description>
+			Allows to edit the properties of the local organisation.
+		</description>
+		<description language="de">
+			Erlaubt die Bearbeitung der Eigenschaften der eigenen Organisation.
+		</description>
+		<role id="org.nightlabs.jfire.organisation.storeLocalOrganisation"/>
+	</role-group>
 <!-- ******************************************************************* -->
 <!-- ***            END org.nightlabs.jfire.organisation             *** -->
 <!-- ******************************************************************* -->

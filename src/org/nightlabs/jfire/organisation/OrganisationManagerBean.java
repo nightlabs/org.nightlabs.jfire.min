@@ -62,6 +62,7 @@ import org.nightlabs.jfire.base.Lookup;
 import org.nightlabs.jfire.organisation.id.OrganisationID;
 import org.nightlabs.jfire.organisationinit.CrossOrganisationRegistrationInitInvocation;
 import org.nightlabs.jfire.security.Authority;
+import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.security.UserLocal;
 import org.nightlabs.jfire.security.id.UserID;
@@ -1060,4 +1061,34 @@ public abstract class OrganisationManagerBean
 			pm.close();
 		}
 	}
+
+	/**
+	 * Stores the given {@link Organisation} object if it is the organisation of the calling
+	 * user (throws an {@link IllegalArgumentException} otherwise). 
+	 * Optionally returns a detached copy of the new version.
+	 * 
+	 * @param organisation The {@link Organisation} to store. Has to be the organisation of the calling user.
+	 * @param get Whether to return a detached copy of the new verison of the given {@link Organisation}. 
+	 * @param fetchGroups The fetch-groups to detach the {@link Organisation} with.
+	 * @param maxFetchDepth The maximum fetch-depth to use when detaching.
+	 * @return A detached copy of the new version of the given {@link Organisation}, or <code>null</code> if get is <code>false</code>.
+	 * 
+	 * @ejb.interface-method
+	 * @ejb.transaction type="Required"
+	 * @ejb.permission role-name="org.nightlabs.jfire.organisation.storeLocalOrganisation"
+	 * 
+	 */
+	public Organisation storeLocalOrganisation(Organisation organisation, boolean get, String[] fetchGroups, int maxFetchDepth)
+	{
+		PersistenceManager pm = getPersistenceManager();
+		try {
+			if (!SecurityReflector.getUserDescriptor().getOrganisationID().equals(organisation.getOrganisationID()))
+				throw new IllegalArgumentException("Attempt to store a foreign organisation (" + organisation.getOrganisationID() + ")");
+			return NLJDOHelper.storeJDO(pm, organisation, get, fetchGroups, maxFetchDepth);
+		} finally {
+			pm.close();
+		}
+	}
+	
+	
 }
