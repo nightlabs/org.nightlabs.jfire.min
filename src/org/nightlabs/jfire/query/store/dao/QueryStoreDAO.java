@@ -16,6 +16,7 @@ import org.nightlabs.progress.ProgressMonitor;
 import org.nightlabs.progress.SubProgressMonitor;
 
 /**
+ * Simple DAO providing access to QueryStores as to fetch, store and remove them.
  *
  * @author Marius Heinzmann - marius[at]nightlabs[dot]com
  */

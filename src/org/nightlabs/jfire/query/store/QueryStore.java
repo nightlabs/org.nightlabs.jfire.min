@@ -27,8 +27,14 @@ public interface QueryStore
 	QueryCollection<?> getQueryCollection();
 
 	/**
-	 * This is only called by the DAO in order to prohibit the serialisation of the QueryCollection
-	 * when calling {@link #setQueryCollection(QueryCollection)}. <br />
+	 * This is only called by the DAO before sending this store in order to prohibit the serialisation
+	 * of the QueryCollection when calling {@link #setQueryCollection(QueryCollection)} and to store
+	 * space when sending this store. <br />
+	 * <p><b>Important:</b> A call to this method will result in the deserialised Collection to be
+	 * 	nulled!! <br>
+	 * 	And this method has to be called from the outside BEFORE subclasses are send away!! This
+	 * 	is usually done in the DAOs.
+	 * </p>
 	 * <p><b>Note:</b> This has to be called from the outside BEFORE subclasses are send away!! This
 	 * 	is usually done in the DAOs.
 	 * </p>

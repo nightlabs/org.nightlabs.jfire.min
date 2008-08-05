@@ -423,6 +423,7 @@ public class BaseQueryStore
 				xStream.toXML(deSerialisedQueries, zipStream);
 				zipStream.close();
 				serialisedQueries = outStream.toByteArray();
+				deSerialisedQueries = null;
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
