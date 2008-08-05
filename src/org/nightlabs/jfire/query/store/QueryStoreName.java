@@ -6,9 +6,10 @@ import java.util.Map;
 import org.nightlabs.i18n.I18nText;
 
 /**
- * 
+ * The internationalised Name of a QueryStore.
+ *
  * @author Marius Heinzmann - marius[at]nightlabs[dot]com
- * 
+ *
  * @jdo.persistence-capable
  *	identity-type="application"
  *	objectid-class="org.nightlabs.jfire.query.store.id.QueryStoreNameID"
@@ -25,23 +26,23 @@ public class QueryStoreName
 	 * The serial version id.
 	 */
 	private static final long serialVersionUID = 1L;
-	
+
 	/**
 	 * @jdo.field primary-key="true"
 	 * @jdo.column length="100"
 	 */
 	private String organisationID;
-	
+
 	/**
 	 * @jdo.field primary-key="true"
 	 */
 	private long queryStoreID;
-	
+
 	/**
 	 * @jdo.field persistence-modifier="persistent"
 	 */
-	private BaseQueryStore queryStore;
-	
+	private QueryStore queryStore;
+
 	/**
 	 * @jdo.field
 	 *		persistence-modifier="persistent"
@@ -56,15 +57,15 @@ public class QueryStoreName
 	@Deprecated
 	public QueryStoreName()
 	{}
-	
-	public QueryStoreName(BaseQueryStore queryStore)
+
+	public QueryStoreName(QueryStore queryStore)
 	{
 		assert queryStore != null;
 		this.queryStoreID = queryStore.getQueryStoreID();
 		this.organisationID = queryStore.getOrganisationID();
 		this.queryStore = queryStore;
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see org.nightlabs.i18n.I18nText#getFallBackValue(java.lang.String)
 	 */

@@ -90,7 +90,7 @@ import com.thoughtworks.xstream.XStream;
  * @author Marius Heinzmann - marius[at]nightlabs[dot]com
  */
 public class BaseQueryStore
-	implements Serializable, StoreCallback
+	implements Serializable, StoreCallback, QueryStore
 {
 	/**
 	 * FetchGroup name for the Owner-FetchGroup.
@@ -122,10 +122,10 @@ public class BaseQueryStore
 	 */
 	private static final long serialVersionUID = 2L;
 
-	/**
-	 * This is the name of the member returned by {@link QueryCollection#getResultClassName()}.
-	 */
-	private static final String QUERYCOLLECTION_RESULTCLASS_NAME = "resultClassName";
+//	/**
+//	 * This is the name of the member returned by {@link QueryCollection#getResultClassName()}.
+//	 */
+//	private static final String QUERYCOLLECTION_RESULTCLASS_NAME = "resultClassName";
 
 	/**
 	 * Returns all {@link QueryStoreID}s of the stores that conform to the given parameters.
@@ -287,9 +287,8 @@ public class BaseQueryStore
 	 */
 	private boolean defaultQuery = false;
 
-	/**
-	 * Sets the QueryCollection to persist in the datastore.
-	 * @param queries the QueryCollection to persist in the datastore.
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.query.store.QueryStore#setQueryCollection(org.nightlabs.jdo.query.QueryCollection)
 	 */
 	public void setQueryCollection(QueryCollection<?> queries)
 	{
@@ -378,9 +377,8 @@ public class BaseQueryStore
 //		}
 //	}
 
-	/**
-	 * Returns the QueryCollection, which might need to deserialise the serialised QueryCollection.
-	 * @return the managed QueryCollection.
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.query.store.QueryStore#getQueryCollection()
 	 */
 	@SuppressWarnings("unchecked")
 	public QueryCollection<?> getQueryCollection()
@@ -407,12 +405,8 @@ public class BaseQueryStore
 		return deSerialisedQueries;
 	}
 
-	/**
-	 * This is only called by the DAO in order to prohibit the serialisation of the QueryCollection
-	 * when calling {@link #setQueryCollection(QueryCollection)}. <br />
-	 * <p><b>Note:</b> This has to be called from the outside BEFORE subclasses are send away!! This
-	 * 	is usually done in the DAOs.
-	 * </p>
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.query.store.QueryStore#serialiseCollection()
 	 */
 	public void serialiseCollection()
 	{
@@ -435,48 +429,48 @@ public class BaseQueryStore
 		}
 	}
 
-	/**
-	 * @return the organisationID
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.query.store.QueryStore#getOrganisationID()
 	 */
 	public String getOrganisationID()
 	{
 		return organisationID;
 	}
 
-	/**
-	 * @return the queryStoreID
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.query.store.QueryStore#getQueryStoreID()
 	 */
 	public long getQueryStoreID()
 	{
 		return queryStoreID;
 	}
 
-	/**
-	 * @return the name
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.query.store.QueryStore#getName()
 	 */
 	public I18nText getName()
 	{
 		return name;
 	}
 
-	/**
-	 * @return the internationalised description of the stored QueryCollection.
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.query.store.QueryStore#getDescription()
 	 */
 	public I18nText getDescription()
 	{
 		return description;
 	}
 
-	/**
-	 * @return the UserID of my creator.
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.query.store.QueryStore#getOwnerID()
 	 */
 	public UserID getOwnerID()
 	{
 		return UserID.create(organisationID, ownerID);
 	}
 
-	/**
-	 * @return the owner
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.query.store.QueryStore#getOwner()
 	 */
 	public User getOwner()
 	{
@@ -491,51 +485,47 @@ public class BaseQueryStore
 		return authority;
 	}
 
-	/**
-	 * @param authority the authority to set
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.query.store.QueryStore#setAuthority(org.nightlabs.jfire.security.Authority)
 	 */
 	public void setAuthority(Authority authority)
 	{
 		this.authority = authority;
 	}
 
-	/**
-	 * @return the resultClassName
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.query.store.QueryStore#getResultClassName()
 	 */
 	public String getResultClassName()
 	{
 		return resultClassName;
 	}
 
-	/**
-	 * @return the publiclyAvailable
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.query.store.QueryStore#isPubliclyAvailable()
 	 */
 	public boolean isPubliclyAvailable()
 	{
 		return publiclyAvailable;
 	}
 
-	/**
-	 * @param publiclyAvailable the publiclyAvailable to set
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.query.store.QueryStore#setPubliclyAvailable(boolean)
 	 */
 	public void setPubliclyAvailable(boolean publiclyAvailable)
 	{
 		this.publiclyAvailable = publiclyAvailable;
 	}
 
-	/**
-	 * Return whether this queryStore is the defaultQuery for
-	 * the user and the resultClass.
-	 *
-	 * @return the defaultQuery
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.query.store.QueryStore#isDefaultQuery()
 	 */
 	public boolean isDefaultQuery() {
 		return defaultQuery;
 	}
 
-	/**
-	 * Sets the defaultQuery.
-	 * @param defaultQuery the defaultQuery to set
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.query.store.QueryStore#setDefaultQuery(boolean)
 	 */
 	public void setDefaultQuery(boolean defaultQuery)
 	{
@@ -601,10 +591,14 @@ public class BaseQueryStore
 	{
 		if (defaultQuery) {
 			PersistenceManager pm = JDOHelper.getPersistenceManager(this);
-			if (!NLJDOHelper.exists(pm, this)) {
-				QueryStoreID defaultStoreId = getDefaultQueryStoreID(pm, resultClassName, organisationID, ownerID);
+			if (!NLJDOHelper.exists(pm, this))
+			{
+				QueryStoreID defaultStoreId =
+					getDefaultQueryStoreID(pm, resultClassName, organisationID, ownerID);
+
 				if (defaultStoreId != null) {
-					throw new IllegalArgumentException("There already exists a default queryStore for the resultClass "+resultClassName+" and the user "+getOwnerID());
+					throw new IllegalArgumentException("There already exists a default queryStore for the " +
+							"resultClass "+resultClassName+" and the user "+getOwnerID());
 				}
 			}
 		}

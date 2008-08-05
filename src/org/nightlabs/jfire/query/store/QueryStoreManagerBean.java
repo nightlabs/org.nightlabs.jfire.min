@@ -88,7 +88,7 @@ public abstract class QueryStoreManagerBean
 	 * @ejb.permission role-name="_Guest_"
 	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 */
-	public BaseQueryStore getQueryStore(QueryStoreID storeID, String[] fetchGroups,
+	public QueryStore getQueryStore(QueryStoreID storeID, String[] fetchGroups,
 		int maxFetchDepth)
 	{
 		return getQueryStores(Collections.singleton(storeID), fetchGroups, maxFetchDepth).iterator().next();
@@ -158,7 +158,7 @@ public abstract class QueryStoreManagerBean
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type="Required"
 	 */
-	public BaseQueryStore storeQueryCollection(BaseQueryStore queryStore, String[] fetchGroups, 
+	public QueryStore storeQueryCollection(QueryStore queryStore, String[] fetchGroups, 
 		int maxFetchDepth, boolean get)
 	{
 		PersistenceManager pm = getPersistenceManager();
@@ -178,7 +178,7 @@ public abstract class QueryStoreManagerBean
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type="Required"
 	 */
-	public boolean removeQueryStore(BaseQueryStore queryStore)
+	public boolean removeQueryStore(QueryStore queryStore)
 	{
 		PersistenceManager pm = getPersistenceManager();
 		// TODO: Authority check!

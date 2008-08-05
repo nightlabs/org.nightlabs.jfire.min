@@ -6,9 +6,10 @@ import java.util.Map;
 import org.nightlabs.i18n.I18nText;
 
 /**
- * 
+ * The internationalised description of a {@link QueryStore}.
+ *
  * @author Marius Heinzmann - marius[at]nightlabs[dot]com
- * 
+ *
  * @jdo.persistence-capable
  *	identity-type="application"
  *	objectid-class="org.nightlabs.jfire.query.store.id.QueryStoreDescriptionID"
@@ -25,23 +26,23 @@ public class QueryStoreDescription
 	 * The serial version id.
 	 */
 	private static final long serialVersionUID = 1L;
-	
+
 	/**
 	 * @jdo.field primary-key="true"
 	 * @jdo.column length="100"
 	 */
 	private String organisationID;
-	
+
 	/**
 	 * @jdo.field primary-key="true"
 	 */
 	private long queryStoreID;
-	
+
 	/**
 	 * @jdo.field persistence-modifier="persistent"
 	 */
-	private BaseQueryStore queryStore;
-	
+	private QueryStore queryStore;
+
 	/**
 	 * @jdo.field
 	 *		persistence-modifier="persistent"
@@ -56,8 +57,8 @@ public class QueryStoreDescription
 	@Deprecated
 	public QueryStoreDescription()
 	{}
-	
-	public QueryStoreDescription(BaseQueryStore queryStore)
+
+	public QueryStoreDescription(QueryStore queryStore)
 	{
 		assert queryStore != null;
 		this.queryStoreID = queryStore.getQueryStoreID();

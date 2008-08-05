@@ -13,6 +13,7 @@ import org.nightlabs.jfire.jdo.notification.JDOLifecycleRemoteEvent;
 import org.nightlabs.jfire.jdo.notification.JDOLifecycleState;
 import org.nightlabs.jfire.jdo.notification.SimpleLifecycleListenerFilter;
 import org.nightlabs.jfire.query.store.BaseQueryStore;
+import org.nightlabs.jfire.query.store.QueryStore;
 import org.nightlabs.jfire.security.id.UserID;
 
 /**
@@ -68,7 +69,7 @@ public class BaseQueryStoreLifecycleFilter
 		
 		for (DirtyObjectID dirtyObjectID : dirtyObjectIDs)
 		{
-			BaseQueryStore store = (BaseQueryStore)	pm.getObjectById(dirtyObjectID.getObjectID());
+			QueryStore store = (QueryStore)	pm.getObjectById(dirtyObjectID.getObjectID());
 			
 			if (resultTypeClassName.equals(store.getResultClassName()))
 			{

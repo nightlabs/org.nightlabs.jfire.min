@@ -6,6 +6,7 @@ import java.util.Set;
 
 import org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO;
 import org.nightlabs.jfire.query.store.BaseQueryStore;
+import org.nightlabs.jfire.query.store.QueryStore;
 import org.nightlabs.jfire.query.store.QueryStoreManager;
 import org.nightlabs.jfire.query.store.QueryStoreManagerUtil;
 import org.nightlabs.jfire.query.store.id.QueryStoreID;
@@ -15,7 +16,7 @@ import org.nightlabs.progress.ProgressMonitor;
 import org.nightlabs.progress.SubProgressMonitor;
 
 /**
- * 
+ *
  * @author Marius Heinzmann - marius[at]nightlabs[dot]com
  */
 public class QueryStoreDAO
@@ -68,7 +69,7 @@ public class QueryStoreDAO
 		}
 	}
 
-	public BaseQueryStore getQueryStore(QueryStoreID storeID,
+	public QueryStore getQueryStore(QueryStoreID storeID,
 		String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
 	{
 		return getJDOObject(null, storeID, fetchGroups, maxFetchDepth, monitor);
@@ -83,7 +84,7 @@ public class QueryStoreDAO
 	/**
 	 * Returns all QueryStores created by the currently active user and all marked as publicly
 	 * available if <code>allPublicAsWell == true</code>.
-	 * 
+	 *
 	 * @param resultType
 	 *          the return type of the query collection.
 	 * @param allPublicAsWell
@@ -107,7 +108,7 @@ public class QueryStoreDAO
 	/**
 	 * Returns all QueryStores created by the given user and all marked as publicly available if
 	 * <code>allPublicAsWell == true</code>.
-	 * 
+	 *
 	 * @param resultType
 	 *          the return type of the query collection.
 	 * @param selectedOwner
@@ -131,7 +132,7 @@ public class QueryStoreDAO
 	/**
 	 * Returns all QueryStores created by the given user and all marked as publicly available if
 	 * <code>allPublicAsWell == true</code> of the given result type.
-	 * 
+	 *
 	 * @param resultType
 	 *          the return type of the query collection.
 	 * @param selectedOwner
@@ -177,7 +178,7 @@ public class QueryStoreDAO
 	/**
 	 * Stores the given QueryStore and detaches the newly persitet store with the given fetch groups
 	 * and maximum fetch depth if <code>get == true</code>.
-	 * 
+	 *
 	 * @param queryStore
 	 *          the QueryStore to persist.
 	 * @param fetchGroups
@@ -192,7 +193,7 @@ public class QueryStoreDAO
 	 * @return the upToDate version of the given QueryStore after it has been made persistent if
 	 *         <code>get == true</code>, <code>null</code> otherwise.
 	 */
-	public BaseQueryStore storeQueryStore(BaseQueryStore queryStore,
+	public QueryStore storeQueryStore(QueryStore queryStore,
 		String[] fetchGroups, int maxFetchDepth, boolean get, ProgressMonitor monitor)
 	{
 		try
@@ -202,8 +203,7 @@ public class QueryStoreDAO
 			queryStore.serialiseCollection();
 			monitor.worked(1);
 
-			BaseQueryStore store = qsm.storeQueryCollection(queryStore, fetchGroups, maxFetchDepth,
-				get);
+			QueryStore store = qsm.storeQueryCollection(queryStore, fetchGroups, maxFetchDepth, get);
 			monitor.worked(8);
 
 			if (store != null)
@@ -222,15 +222,15 @@ public class QueryStoreDAO
 			throw new RuntimeException(e);
 		}
 	}
-	
+
 	/**
 	 * Removes/Deletes the QueryStore.
-	 * 
+	 *
 	 * @param queryStore the QueryStore to remove
 	 * @param monitor the {@link ProgressMonitor} to show the progress
 	 * @return true if the queryStore has been removed and false otherwise
 	 */
-	public boolean removeQueryStore(BaseQueryStore queryStore, ProgressMonitor monitor)
+	public boolean removeQueryStore(QueryStore queryStore, ProgressMonitor monitor)
 	{
 		try
 		{
@@ -252,9 +252,9 @@ public class QueryStoreDAO
 			throw new RuntimeException(e);
 		}
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @param resultType
 	 *          the return type of the query collection.
 	 * @param ownerID
@@ -268,8 +268,8 @@ public class QueryStoreDAO
 	 * @return the {@link BaseQueryStore} which is the default QueryStore of the
 	 * 	given user with the given resultClass
 	 */
-	public BaseQueryStore getDefaultQueryStore(Class<?> resultType, UserID ownerID, 
-			String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor) 
+	public QueryStore getDefaultQueryStore(Class<?> resultType, UserID ownerID,
+			String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
 	{
 		try {
 			monitor.beginTask("Fetching default QueryStore", 3);
@@ -277,7 +277,7 @@ public class QueryStoreDAO
 			monitor.worked(1);
 			QueryStoreID defaultQueryStoreID = qsm.getDefaultQueryStoreID(resultType, ownerID, fetchGroups, maxFetchDepth);
 			monitor.worked(2);
-			BaseQueryStore queryStore = null;
+			QueryStore queryStore = null;
 			if (defaultQueryStoreID != null) {
 				queryStore = getQueryStore(defaultQueryStoreID, fetchGroups, maxFetchDepth, new SubProgressMonitor(monitor, 1));
 			}
@@ -287,7 +287,7 @@ public class QueryStoreDAO
 		catch (Exception e)
 		{
 			monitor.setCanceled(true);
-			if (e instanceof RuntimeException) 
+			if (e instanceof RuntimeException)
 				throw (RuntimeException) e;
 
 			throw new RuntimeException(e);
