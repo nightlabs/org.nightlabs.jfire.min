@@ -61,7 +61,7 @@ import org.nightlabs.math.Base62Coder;
  *   <li><b>jfire.login.securityProtocol</b> (The value of {@link #PROP_SECURITY_PROTOCOL}), defines the security protocol to use, defaults to "jfire".</li>
  * </ul>
  * </p> *
- * 
+ *
  * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] de -->
  * @author Marius Heinzmann -- Marius[at]NightLabs[dot]de
  */
@@ -71,9 +71,9 @@ public class JFireLogin
 	 * Log4J Logger for this class
 	 */
 	private static final Logger logger = Logger.getLogger(JFireLogin.class);
-	
+
 	public static final String LOGIN_PREFIX = "jfire.login.";
-	
+
 	public static final String ORGANISATION_ID = "organisationID";
 	public static final String USER_ID = "userID";
 	public static final String PASSWORD = "password";
@@ -81,7 +81,7 @@ public class JFireLogin
 	public static final String INITIAL_CONTEXT_FACTORY = "initialContextFactory";
 	public static final String SECURITY_PROTOCOL = "securityProtocol";
 	public static final String WORKSTATION_ID = LoginData.WORKSTATION_ID;
-	
+
 	public static final String PROP_ORGANISATION_ID = LOGIN_PREFIX + ORGANISATION_ID;
 	public static final String PROP_USER_ID = LOGIN_PREFIX + USER_ID;
 	public static final String PROP_PASSWORD = LOGIN_PREFIX + PASSWORD;
@@ -89,18 +89,18 @@ public class JFireLogin
 	public static final String PROP_INITIAL_CONTEXT_FACTORY = LOGIN_PREFIX + INITIAL_CONTEXT_FACTORY;
 	public static final String PROP_SECURITY_PROTOCOL = LOGIN_PREFIX + SECURITY_PROTOCOL;
 	public static final String PROP_WORKSTATION_ID = LOGIN_PREFIX + WORKSTATION_ID;
-	
+
 	/**
 	 * Encapsulates all necessary login information.
 	 */
 	private LoginData loginData;
-	
+
 	/**
 	 * Creates a new {@link JFireLogin}.
 	 * The values like username and password will
 	 * be taken from the given Properties,
 	 * see the class documentation for more details.
-	 * 
+	 *
 	 * @param loginProperties The login configuration, this can also be a pr
 	 */
 	public JFireLogin(Properties properties)
@@ -111,11 +111,11 @@ public class JFireLogin
 		userID = loginProps.getProperty(USER_ID, "");
 		password = loginProps.getProperty(PASSWORD, "");
 		loginData = new LoginData(organisationID, userID, password);
-		
+
 		for (Object propKey : loginProps.keySet()) {
 			if (USER_ID.equals(propKey) || PASSWORD.equals(propKey) || ORGANISATION_ID.equals(propKey))
 				continue;
-			
+
 			if (PROVIDER_URL.equals(propKey))
 				loginData.setProviderURL(loginProps.getProperty(PROVIDER_URL, null));
 			else if (INITIAL_CONTEXT_FACTORY.equals(propKey))
@@ -129,7 +129,7 @@ public class JFireLogin
 						);
 			}
 		}
-		
+
 		// set default values if login information is incomplete
 		if (loginData.getProviderURL() == null || loginData.getProviderURL().length() == 0) {
 			try {
@@ -156,7 +156,7 @@ public class JFireLogin
 	/**
 	 * A convenience method that creates {@link Properties} from the given
 	 * parameters and calls {@link #JFireLogin(Properties)}.
-	 * 
+	 *
 	 * @param _organisationID The organisationID to use.
 	 * @param _userID The userID to use.
 	 * @param _password The password to use.
@@ -164,7 +164,7 @@ public class JFireLogin
 	public JFireLogin(String _organisationID, String _userID, String _password) {
 		this(createLoginProperties(_organisationID, _userID, _password));
 	}
-	
+
 	/**
 	 * Use internally for convenience constructor
 	 */
@@ -175,7 +175,7 @@ public class JFireLogin
 		props.setProperty(PROP_PASSWORD, _password);
 		return props;
 	}
-	
+
 	/**
 	 * @return The organisationID.
 	 */
@@ -194,16 +194,20 @@ public class JFireLogin
 	public String getPassword() {
 		return loginData.getPassword();
 	}
-	
+
+	public String getWorkstationID() {
+		return loginData.getWorkstationID();
+	}
+
 	/**
 	 * @return The sessionID.
 	 */
 	public String getSessionID() {
 		return loginData.getSessionID();
 	}
-	
+
 	// *** end of properties *************************
-	
+
 	protected transient Properties initialContextProperties = null;
 
 	/**
@@ -213,12 +217,12 @@ public class JFireLogin
 	{
 		return new JFireLoginAuthCallbackHandler(loginData);
 	}
-	
+
 	/**
 	 * Returns Properties for an {@link InitialContext} that are configured with the values according to this
 	 * {@link JFireLogin}. The result can be used for example to create EJB proxies to
 	 * access JFire server methods.
-	 * 
+	 *
 	 * @return Properties for an {@link InitialContext} configured with the values of this JFireLogin.
 	 * @throws NamingException Might occur when trying to auto-resolve the providerURL.
 	 */
@@ -234,9 +238,9 @@ public class JFireLogin
 		}
 		return initialContextProperties;
 	}
-	
+
 	private transient LoginContext loginContext = null;
-	
+
 	/**
 	 * Performs a login via {@link LoginContext}.
 	 *
@@ -244,7 +248,7 @@ public class JFireLogin
 	 * bad idea to switch the user within a running
 	 * transaction, already having a PersistenceManager. Especially logout will probably fail, since I doubt
 	 * that the previous identity will really be restored.
-	 * 
+	 *
 	 * @throws LoginException When login fails
 	 */
 	public void login()
@@ -261,7 +265,7 @@ public class JFireLogin
 
 	/**
 	 * Performs a logout via {@link LoginContext}.
-	 * 
+	 *
 	 * @throws LoginException When logout fails.
 	 */
 	public void logout()
@@ -274,5 +278,5 @@ public class JFireLogin
 			loginData.setSessionID(null);
 		}
 	}
-	
+
 }
