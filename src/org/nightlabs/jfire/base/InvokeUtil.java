@@ -21,7 +21,7 @@ public class InvokeUtil
 			String initialContextFactory, String initialContextURL,
 			String organisationID, String userID, String password)
 	{
-		if ((User.USERID_PREFIX_TYPE_ORGANISATION + organisationID).equals(userID)) // we login to ourselves - no properties
+		if ((User.USER_ID_PREFIX_TYPE_ORGANISATION + organisationID).equals(userID)) // we login to ourselves - no properties
 			return null;
 		
 		String username = userID + '@' + organisationID;
@@ -46,7 +46,7 @@ public class InvokeUtil
 				jFireServerManagerFactory.getInitialContextFactory(serverCf.getJ2eeServerType(), true),
 				serverCf.getInitialContextURL(),
 				organisationID, userID, password);
-////		String username = User.USERID_SYSTEM + '@' + organisationID;
+////		String username = User.USER_ID_SYSTEM + '@' + organisationID;
 //		String username = userID + '@' + organisationID;
 //		Properties props = new Properties();
 //		String initialContextFactory = jFireServerManagerFactory.getInitialContextFactory(serverCf.getJ2eeServerType(), true);

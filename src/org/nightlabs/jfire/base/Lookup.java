@@ -316,7 +316,7 @@ public class Lookup
 					jfireServerManagerFactory.getInitialContextFactory(server.getJ2eeServerType(), true),
 					server.getInitialContextURL(),
 					_organisationID,
-					User.USERID_PREFIX_TYPE_ORGANISATION + localOrganisation.getOrganisationID(), password);
+					User.USER_ID_PREFIX_TYPE_ORGANISATION + localOrganisation.getOrganisationID(), password);
 		} finally {
 			initCtx.close();
 		}
@@ -337,7 +337,7 @@ public class Lookup
 //				jFireServerManagerFactory.getInitialContextFactory(server.getJ2eeServerType(), true),
 //				server.getInitialContextURL(),
 //				_organisationID,
-//				User.USERID_PREFIX_TYPE_ORGANISATION + localOrganisation.getOrganisationID(), password);
+//				User.USER_ID_PREFIX_TYPE_ORGANISATION + localOrganisation.getOrganisationID(), password);
 ////		String initialContextFactory = getJFireServerManagerFactory().getInitialContextFactory(server.getJ2eeServerType(), true);
 ////		return _getInitialContextProps(
 ////				initialContextFactory, server.getInitialContextURL(),
@@ -349,7 +349,7 @@ public class Lookup
 //			String initialContextFactory, String initialContextURL,
 //			String localOrganisationID, String remoteOrganisationID, String password)
 //	{
-//		String username = User.USERID_PREFIX_TYPE_ORGANISATION
+//		String username = User.USER_ID_PREFIX_TYPE_ORGANISATION
 //			+ localOrganisationID
 //			+ '@'
 //			+ remoteOrganisationID;

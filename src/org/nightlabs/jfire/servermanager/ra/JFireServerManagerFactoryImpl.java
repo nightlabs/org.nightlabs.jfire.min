@@ -37,6 +37,7 @@ import java.io.StreamTokenizer;
 import java.lang.ref.SoftReference;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -576,7 +577,7 @@ public class JFireServerManagerFactoryImpl
 								for (int i = 0; i < callbacks.length; ++i) {
 									Callback cb = callbacks[i];
 									if (cb instanceof NameCallback) {
-										((NameCallback)cb).setName(User.USERID_ANONYMOUS + User.SEPARATOR_BETWEEN_USER_ID_AND_ORGANISATION_ID + Organisation.DEV_ORGANISATION_ID);
+										((NameCallback)cb).setName(User.USER_ID_ANONYMOUS + User.SEPARATOR_BETWEEN_USER_ID_AND_ORGANISATION_ID + Organisation.DEV_ORGANISATION_ID);
 									}
 									else if (cb instanceof PasswordCallback) {
 										((PasswordCallback)cb).setPassword(new char[0]);
@@ -696,7 +697,7 @@ public class JFireServerManagerFactoryImpl
 									logger.info("Initialising datastore of organisation \""+organisationID+"\"...");
 									try {
 										datastoreInitManager.initialiseOrganisation(JFireServerManagerFactoryImpl.this, mcf.getConfigModule().getLocalServer(), organisationID,
-												jfireSecurity_createTempUserPassword(organisationID, User.USERID_SYSTEM));
+												jfireSecurity_createTempUserPassword(organisationID, User.USER_ID_SYSTEM));
 
 										logger.info("Datastore initialisation of organisation \""+organisationID+"\" done.");
 									} catch (Exception x) {
@@ -975,7 +976,7 @@ public class JFireServerManagerFactoryImpl
 		roleImport_prepare_collect(startDir, globalSecurityMan, exceptions);
 
 // ignoring this role from the beginning (we ignore everything starting with "_" in both EJBJarMan and JFireSecurityMan)
-//		globalSecurityMan.removeRole(User.USERID_SYSTEM); // the _System_ role should never be imported so that no real user can ever get this role!
+//		globalSecurityMan.removeRole(User.USER_ID_SYSTEM); // the _System_ role should never be imported so that no real user can ever get this role!
 
 		return new RoleImportSet(organisationID, globalSecurityMan, exceptions);
 	}
@@ -1573,8 +1574,8 @@ public class JFireServerManagerFactoryImpl
 									// therefore, we reference it via the names.
 									ServerCf localServerCf = mcf.getConfigModule().getLocalServer();
 									Properties props = InvokeUtil.getInitialContextProperties(
-											this, localServerCf, organisationID, User.USERID_SYSTEM,
-											jfireSecurity_createTempUserPassword(organisationID, User.USERID_SYSTEM));
+											this, localServerCf, organisationID, User.USER_ID_SYSTEM,
+											jfireSecurity_createTempUserPassword(organisationID, User.USER_ID_SYSTEM));
 									InitialContext initCtx = new InitialContext(props);
 									try {
 										Object bean = InvokeUtil.createBean(initCtx, "jfire/ejb/JFireBaseBean/OrganisationManager");
@@ -1704,7 +1705,7 @@ public class JFireServerManagerFactoryImpl
 
 			try {
 				datastoreInitManager.initialiseOrganisation(this, mcf.getConfigModule().getLocalServer(), organisationID,
-						jfireSecurity_createTempUserPassword(organisationID, User.USERID_SYSTEM), createOrganisationProgress);
+						jfireSecurity_createTempUserPassword(organisationID, User.USER_ID_SYSTEM), createOrganisationProgress);
 			} catch (ModuleException e) {
 				logger.error("Datastore initialization for new organisation \""+organisationID+"\" failed!", e);
 			}
@@ -1715,7 +1716,7 @@ public class JFireServerManagerFactoryImpl
 //		try {
 //			datastoreInitializer.initializeDatastore(
 //					this, mcf.getConfigModule().getLocalServer(), organisationID,
-//					jfireSecurity_createTempUserPassword(organisationID, User.USERID_SYSTEM));
+//					jfireSecurity_createTempUserPassword(organisationID, User.USER_ID_SYSTEM));
 //		} catch (Exception x) {
 //			logger.error("Datastore initialization for new organisation \""+organisationID+"\" failed!", x);
 //		}
@@ -2443,7 +2444,7 @@ public class JFireServerManagerFactoryImpl
 
 	protected void jfireSecurity_flushCache(UserID _userID)
 	{
-		if (User.USERID_OTHER.equals(_userID.userID)) {
+		if (User.USER_ID_OTHER.equals(_userID.userID)) {
 			jfireSecurity_flushCache();
 			return;
 		}
@@ -2460,6 +2461,11 @@ public class JFireServerManagerFactoryImpl
 			jfireSecurity_roleCache.clear();
 		}
 	}
+
+	protected static final Principal loginWithoutWorkstationRolePrincipal = new SimplePrincipal(org.nightlabs.jfire.workstation.RoleConstants.loginWithoutWorkstation.roleID);
+	protected static final Principal serverAdminRolePrincipal = new SimplePrincipal(RoleConstants.serverAdmin.roleID);
+	protected static final Principal systemRolePrincipal = new SimplePrincipal(User.USER_ID_SYSTEM);
+	protected static final Principal guestRolePrincipal = new SimplePrincipal(RoleConstants.guest.roleID);
 
 	/**
 	 * Get the roles that are assigned to a certain user.
@@ -2496,13 +2502,14 @@ public class JFireServerManagerFactoryImpl
 			pm = getPersistenceManager(organisationID);
 		}
 		try {
-			if (Organisation.DEV_ORGANISATION_ID.equals(organisationID) && User.USERID_ANONYMOUS.equals(userID)) {
+			if (Organisation.DEV_ORGANISATION_ID.equals(organisationID) && User.USER_ID_ANONYMOUS.equals(userID)) {
 				// do nothing
 			}
-			else if (User.USERID_SYSTEM.equals(userID)) {
+			else if (User.USER_ID_SYSTEM.equals(userID)) {
 				// user is system user and needs ALL roles
-				roleSet.addMember(new SimplePrincipal(RoleConstants.serverAdmin.roleID));
-				roleSet.addMember(new SimplePrincipal(User.USERID_SYSTEM)); // ONLY the system user has this role - no real user can get it as its virtual (it is ignored during import)
+				roleSet.addMember(loginWithoutWorkstationRolePrincipal);
+				roleSet.addMember(serverAdminRolePrincipal);
+				roleSet.addMember(systemRolePrincipal); // ONLY the system user has this role - no real user can get it as its virtual (it is ignored during import)
 				for (Iterator<?> it = pm.getExtent(Role.class, true).iterator(); it.hasNext(); ) {
 					Role role = (Role) it.next();
 					roleSet.addMember(new SimplePrincipal(role.getRoleID()));
@@ -2536,7 +2543,7 @@ public class JFireServerManagerFactoryImpl
 								AuthorizedObjectRefID.create(
 										organisationID,
 										Authority.AUTHORITY_ID_ORGANISATION,
-										UserLocalID.create(organisationID, User.USERID_OTHER, organisationID).toString()
+										UserLocalID.create(organisationID, User.USER_ID_OTHER, organisationID).toString()
 								)
 						);
 					} catch (JDOObjectNotFoundException e) {
@@ -2552,7 +2559,7 @@ public class JFireServerManagerFactoryImpl
 					}
 				} // if (authorizedObjectRef != null) {
 
-			} // if (User.USERID_SYSTEM.equals(userID)) {
+			} // if (User.USER_ID_SYSTEM.equals(userID)) {
 
 		} finally {
 			if (closePM)

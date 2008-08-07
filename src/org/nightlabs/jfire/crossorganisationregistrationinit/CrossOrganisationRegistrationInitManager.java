@@ -332,7 +332,7 @@ extends AbstractInitManager<CrossOrganisationRegistrationInit, OrganisationInitD
 		}
 
 		try {
-			Properties props = InvokeUtil.getInitialContextProperties(ismf, localServer, organisationID, User.USERID_SYSTEM, systemUserPassword);
+			Properties props = InvokeUtil.getInitialContextProperties(ismf, localServer, organisationID, User.USER_ID_SYSTEM, systemUserPassword);
 			InitialContext initCtx = new InitialContext(props);
 			try {
 				Throwable firstInitException = null;

@@ -51,11 +51,9 @@ import org.nightlabs.config.ConfigException;
 import org.nightlabs.j2ee.LoginData;
 import org.nightlabs.jfire.base.JFirePrincipal;
 import org.nightlabs.jfire.base.Lookup;
-import org.nightlabs.jfire.base.SimplePrincipal;
 import org.nightlabs.jfire.classloader.CLRegistrar;
 import org.nightlabs.jfire.module.ModuleType;
 import org.nightlabs.jfire.organisation.Organisation;
-import org.nightlabs.jfire.security.RoleConstants;
 import org.nightlabs.jfire.security.RoleSet;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.security.UserLocal;
@@ -73,6 +71,8 @@ import org.nightlabs.jfire.servermanager.createorganisation.CreateOrganisationSt
 import org.nightlabs.jfire.servermanager.deploy.DeployOverwriteBehaviour;
 import org.nightlabs.jfire.servermanager.deploy.DeploymentJarItem;
 import org.nightlabs.jfire.servermanager.xml.ModuleDef;
+import org.nightlabs.jfire.workstation.Workstation;
+import org.nightlabs.jfire.workstation.id.WorkstationID;
 import org.nightlabs.util.IOUtil;
 
 /**
@@ -343,12 +343,15 @@ public class JFireServerManagerImpl
 		this.principal = jfirePrincipal;
 	}
 
+	private static final long waitAfterLoginFailureMSec = 2000;
+
 	@Override
 	public JFirePrincipal login(LoginData loginData)
 		throws LoginException
 	{
 		String organisationID = loginData.getOrganisationID();
 		String userID = loginData.getUserID();
+		String workstationID = loginData.getWorkstationID();
 		String password = loginData.getPassword();
 		this.principal = null;
 
@@ -357,7 +360,7 @@ public class JFireServerManagerImpl
 			logger.debug("login: organisationID=\"" + organisationID + "\" userID=\"" + userID +"\""); // password=\"" + password + "\"");
 		}
 
-		if (!User.USERID_SYSTEM.equals(userID) && !User.USERID_ANONYMOUS.equals(userID)) {
+		if (!User.USER_ID_SYSTEM.equals(userID) && !User.USER_ID_ANONYMOUS.equals(userID)) {
 			if (jfireServerManagerFactoryImpl.isShuttingDown())
 				throw new LoginException("org.jfire.serverShuttingDown");
 
@@ -375,11 +378,11 @@ public class JFireServerManagerImpl
 
 //		String userPK = userID + LoginData.USER_ORGANISATION_SEPARATOR + organisationID;
 
-		boolean userIsOrganisation = userID.startsWith(User.USERID_PREFIX_TYPE_ORGANISATION);
+		boolean userIsOrganisation = userID.startsWith(User.USER_ID_PREFIX_TYPE_ORGANISATION);
 
 		try {
 			Lookup lookup = new Lookup(organisationID);
-			if (Organisation.DEV_ORGANISATION_ID.equals(organisationID) && User.USERID_ANONYMOUS.equals(userID)) {
+			if (Organisation.DEV_ORGANISATION_ID.equals(organisationID) && User.USER_ID_ANONYMOUS.equals(userID)) {
 				// no password check required. this user has no rights at all. It basically means the same as not being logged in.
 				this.principal = new JFirePrincipal(
 						loginData,
@@ -393,11 +396,13 @@ public class JFireServerManagerImpl
 			if (this.isOrganisationCfsEmpty()) {
 				RoleSet roleSet = new RoleSet(); // RoleSet.class.getName() + '[' + userPK + ']');
 				// add roles needed for setup
-				roleSet.addMember(new SimplePrincipal(RoleConstants.guest.roleID)); // EVERYONE has this role!
-				roleSet.addMember(new SimplePrincipal(RoleConstants.serverAdmin.roleID));
+				roleSet.addMember(JFireServerManagerFactoryImpl.guestRolePrincipal); // EVERYONE has this role!
+				roleSet.addMember(JFireServerManagerFactoryImpl.serverAdminRolePrincipal);
 
-				if (User.USERID_SYSTEM.equals(userID))
-					roleSet.addMember(new SimplePrincipal(User.USERID_SYSTEM));
+				if (User.USER_ID_SYSTEM.equals(userID)) {
+					roleSet.addMember(JFireServerManagerFactoryImpl.systemRolePrincipal);
+					roleSet.addMember(JFireServerManagerFactoryImpl.loginWithoutWorkstationRolePrincipal);
+				}
 
 				// setup mode login, create principal
 				this.principal = new JFirePrincipal(
@@ -426,9 +431,13 @@ public class JFireServerManagerImpl
 					PersistenceManager pm = lookup.getPersistenceManager();
 					try
 					{
-						if (User.USERID_SYSTEM.equals(userID)) {
+						if (User.USER_ID_SYSTEM.equals(userID)) {
 							if (!authenticated) {
 								logger.info("Login failed because system user of organisation \""+organisationID+"\" either has no temporary password assigned or the given password does not match. This user cannot have a real password and before login, a temporary password must be created.");
+
+								// Pause for a while to prevent users from trying out passwords
+								try { Thread.sleep(waitAfterLoginFailureMSec); } catch (InterruptedException e) { }
+
 								throw new LoginException("Invalid username or password!");
 							}
 						}
@@ -443,20 +452,54 @@ public class JFireServerManagerImpl
 									userLocal = (UserLocal)pm.getObjectById(UserLocalID.create(organisationID, userID, organisationID), true);
 								} catch (JDOObjectNotFoundException x) {
 									logger.info("Login failed because user \""+userID+"\" not known in organisation \""+organisationID+"\".", x);
+
+									// Pause for a while to prevent users from trying out passwords
+									try { Thread.sleep(waitAfterLoginFailureMSec); } catch (InterruptedException e) { }
+
 									throw new LoginException("Invalid username or password!");
 								}
 
 								if(!userLocal.checkPassword(password))
 								{
 									logger.info("Login failed because password for user \""+userID + '@' + organisationID +"\" is incorrect.");
+
+									// Pause for a while to prevent users from trying out passwords
+									try { Thread.sleep(waitAfterLoginFailureMSec); } catch (InterruptedException e) { }
+
 									throw new LoginException("Invalid username or password!");
 								}
 
 								authenticated = true;
 							} // if (!authenticated) { // temporary password NOT matched
-						} // if (!User.USERID_SYSTEM.equals(userID)) {
+						} // if (!User.USER_ID_SYSTEM.equals(userID)) {
 
 						RoleSet roleSet = jfireServerManagerFactoryImpl.jfireSecurity_getRoleSet(pm, organisationID, userID);
+
+						if (workstationID != null) {
+							if (workstationID.equals(Workstation.WORKSTATION_ID_FALLBACK)) {
+								logger.warn("User \""+userID + '@' + organisationID +"\" specified workstationID \"" + workstationID + "\" which is illegal for login! This workstation is used only internally.");
+								throw new LoginException("org.jfire.workstationIllegal");
+							}
+
+							pm.getExtent(Workstation.class);
+							try {
+								pm.getObjectById(WorkstationID.create(organisationID, workstationID));
+							} catch (JDOObjectNotFoundException x) {
+								logger.info("Login failed because workstation \"" + workstationID + "\" specified by user \""+userID + '@' + organisationID +"\" does not exist.");
+								throw new LoginException("org.jfire.workstationUnknown");
+							}
+						}
+						else {
+							// TODO maybe we should better ensure that it's in the datastore? that would be more transparent.
+							// Or even better implement that cross-organisation-communication has automatically not only a user, but also a worksation (same ID as user).
+							if (userIsOrganisation)
+								roleSet.addMember(JFireServerManagerFactoryImpl.loginWithoutWorkstationRolePrincipal);
+
+							if (!roleSet.isMember(JFireServerManagerFactoryImpl.loginWithoutWorkstationRolePrincipal)) {
+								logger.info("Login failed because workstation has not been specified by user \""+userID + '@' + organisationID +"\" but is required (role \"" + JFireServerManagerFactoryImpl.loginWithoutWorkstationRolePrincipal.getName() + "\" is not granted).");
+								throw new LoginException("org.jfire.workstationRequired");
+							}
+						}
 
 						// login succeeded, create principal
 						this.principal = new JFirePrincipal(loginData, userIsOrganisation, lookup, roleSet);
