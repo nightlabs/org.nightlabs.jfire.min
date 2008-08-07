@@ -37,7 +37,7 @@ extends Invocation
 					getJFireServerManagerFactory(),
 					jfsm.getJFireServerConfigModule().getLocalServer(),
 					localOrganisationID,
-					jfsm.jfireSecurity_createTempUserPassword(localOrganisationID, User.USERID_SYSTEM),
+					jfsm.jfireSecurity_createTempUserPassword(localOrganisationID, User.USER_ID_SYSTEM),
 					context
 			);
 

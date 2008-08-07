@@ -130,11 +130,11 @@ public class TimerAsyncInvoke
 					Object bean = homeCreate.invoke(homeRef, (Object[]) null);
 					Method beanMethod = bean.getClass().getMethod(invocationParam.getMethod(), new Class[] { TaskID.class });
 					beanMethod.invoke(bean, new Object[] { invocationParam.getTaskID() });
-	
+
 					try {
 						if (bean instanceof EJBObject)
 							((EJBObject)bean).remove();
-	
+
 						if (bean instanceof EJBLocalObject)
 							((EJBLocalObject)bean).remove();
 					} catch (Exception x) {
@@ -291,6 +291,7 @@ public class TimerAsyncInvoke
 		UserDescriptor caller = new UserDescriptor(
 				task.getUser().getOrganisationID(),
 				task.getUser().getUserID(),
+				task.getWorkstation() == null ? null : task.getWorkstation().getWorkstationID(),
 				ObjectIDUtil.makeValidIDString("TimerAsyncInvoke", true));
 
 		if(logger.isDebugEnabled())

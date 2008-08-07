@@ -342,8 +342,15 @@
 		<name>Query workstations</name>
 		<name language="de">Workstations abfragen</name>
 		<description>Allows to query workstations.</description>
-		<description>Erlaubt die Abfrage von Workstations.</description>
+		<description language="de">Erlaubt die Abfrage von Workstations.</description>
 		<role id="org.nightlabs.jfire.workstation.queryWorkstations"/>
+	</role-group>
+	<role-group id="org.nightlabs.jfire.workstation.loginWithoutWorkstation">
+		<name>Login without workstation</name>
+		<name language="de">Login ohne Workstation</name>
+		<description language="de">Erlaubt es, sich ohne Angabe einer Workstation anzumelden.</description>
+		<description>Allows to login without specifying a workstation.</description>
+		<role id="org.nightlabs.jfire.workstation.loginWithoutWorkstation"/>
 	</role-group>
 <!-- ******************************************************************* -->
 <!-- ***             END org.nightlabs.jfire.workstation             *** -->

@@ -104,7 +104,7 @@ implements SessionBean, TimedObject
 				JFireServerManager ism = ismf.getJFireServerManager();
 				try {
 					LoginContext loginContext = new LoginContext(
-							"jfire", new AuthCallbackHandler(ism, timerParam.organisationID, User.USERID_SYSTEM));
+							"jfire", new AuthCallbackHandler(ism, timerParam.organisationID, User.USER_ID_SYSTEM));
 
 					loginContext.login();
 					try {

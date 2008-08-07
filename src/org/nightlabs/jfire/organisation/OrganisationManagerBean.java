@@ -310,10 +310,10 @@ public abstract class OrganisationManagerBean
 			throw new NullPointerException("userPassword");
 
 		String userID = getPrincipal().getUserID();
-		if (!userID.startsWith(User.USERID_PREFIX_TYPE_ORGANISATION))
+		if (!userID.startsWith(User.USER_ID_PREFIX_TYPE_ORGANISATION))
 			throw new IllegalStateException("This method can only be executed by an organisation!");
 
-		String grantOrganisationID = userID.substring(User.USERID_PREFIX_TYPE_ORGANISATION.length());
+		String grantOrganisationID = userID.substring(User.USER_ID_PREFIX_TYPE_ORGANISATION.length());
 
 		PersistenceManager pm = getPersistenceManager();
 		try {
@@ -355,10 +355,10 @@ public abstract class OrganisationManagerBean
 			throw new NullPointerException("registrationID");
 
 		String userID = getPrincipal().getUserID();
-		if (!userID.startsWith(User.USERID_PREFIX_TYPE_ORGANISATION))
+		if (!userID.startsWith(User.USER_ID_PREFIX_TYPE_ORGANISATION))
 			throw new IllegalStateException("This method can only be executed by an organisation!");
 
-		String grantOrganisationID = userID.substring(User.USERID_PREFIX_TYPE_ORGANISATION.length());
+		String grantOrganisationID = userID.substring(User.USER_ID_PREFIX_TYPE_ORGANISATION.length());
 
 		PersistenceManager pm = getPersistenceManager();
 		try {
@@ -407,7 +407,7 @@ public abstract class OrganisationManagerBean
 				String usrPassword = UserLocal.createMachinePassword(15, 20);
 
 				// Create the user if it doesn't yet exist
-				String userID = User.USERID_PREFIX_TYPE_ORGANISATION + applicantOrganisationID;
+				String userID = User.USER_ID_PREFIX_TYPE_ORGANISATION + applicantOrganisationID;
 				try {
 					User user = User.getUser(pm, getOrganisationID(), userID);
 					user.getUserLocal().setPasswordPlain(usrPassword); // set the new password, if the user already exists
@@ -533,7 +533,7 @@ public abstract class OrganisationManagerBean
 			// Delete the user we previously created.
 			User user = User.getUser(
 					pm, getOrganisationID(),
-					User.USERID_PREFIX_TYPE_ORGANISATION + grantOrganisationID);
+					User.USER_ID_PREFIX_TYPE_ORGANISATION + grantOrganisationID);
 			pm.deletePersistent(user);
 
 			// We close the RegistrationStatus by cancelling
@@ -602,7 +602,7 @@ public abstract class OrganisationManagerBean
 		String usrPassword = UserLocal.createMachinePassword(15, 20);
 
 		// Create the user if it doesn't yet exist
-		String userID = User.USERID_PREFIX_TYPE_ORGANISATION + organisationID;
+		String userID = User.USER_ID_PREFIX_TYPE_ORGANISATION + organisationID;
 		try {
 			User user = User.getUser(pm, principal.getOrganisationID(), userID);
 			user.getUserLocal().setPasswordPlain(usrPassword); // set the new password, if the user already exists
@@ -842,7 +842,7 @@ public abstract class OrganisationManagerBean
 							continue;
 						}
 
-						String userID = User.USERID_PREFIX_TYPE_ORGANISATION + orga.getOrganisationID();
+						String userID = User.USER_ID_PREFIX_TYPE_ORGANISATION + orga.getOrganisationID();
 						try {
 							pm.getObjectById(UserID.create(localOrganisationID, userID));
 							logger.info("Organisation is already a partner and will be filtered: " + orga.getOrganisationID());

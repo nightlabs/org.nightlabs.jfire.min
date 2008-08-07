@@ -69,7 +69,7 @@ public class AuthorityNotificationFilter extends NotificationFilter
 
 				// we only notify about changes that affect the subscriber (i.e. its user)
 				if (subscriberUserID == null)
-					subscriberUserID = User.USERID_PREFIX_TYPE_ORGANISATION + getSubscriberID();
+					subscriberUserID = User.USER_ID_PREFIX_TYPE_ORGANISATION + getSubscriberID();
 
 				UserLocalID userLocalID = (UserLocalID) authorizedObjectID;
 				if (!(getOrganisationID().equals(userLocalID.organisationID) && subscriberUserID.equals(userLocalID.userID))) {

@@ -110,7 +110,7 @@ implements SessionBean
 			} catch (JDOObjectNotFoundException x) {
 				task = new Task(
 						taskID.organisationID, taskID.taskTypeID, taskID.taskID,
-						User.getUser(pm, getOrganisationID(), User.USERID_SYSTEM),
+						User.getUser(pm, getOrganisationID(), User.USER_ID_SYSTEM),
 						EditLockManagerHome.JNDI_NAME,
 						"cleanupEditLocks");
 

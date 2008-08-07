@@ -112,8 +112,8 @@ implements SessionBean
 	public void ejbTimeoutDelegate(TimerParam timerParam)
 	throws Exception
 	{
-		if (!User.USERID_SYSTEM.equals(getUserID()))
-			throw new SecurityException("This method can only be called by user " + User.USERID_SYSTEM);
+		if (!User.USER_ID_SYSTEM.equals(getUserID()))
+			throw new SecurityException("This method can only be called by user " + User.USER_ID_SYSTEM);
 
 		if (logger.isDebugEnabled())
 			logger.debug("ejbTimeoutDelegate: principal.organisationID=\""+getOrganisationID()+"\" timerParam.organisationID=\""+timerParam.organisationID+"\": begin");

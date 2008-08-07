@@ -190,16 +190,13 @@ implements SessionBean
 	 */
 	public User storeUser(User user, String newPassword, boolean get, String[] fetchGroups, int maxFetchDepth)
 	{
-		if (User.USERID_SYSTEM.equals(user.getUserID()))
-			throw new IllegalArgumentException("Cannot manipulate system user \"" + User.USERID_SYSTEM + "\"!");
-		if (User.USERID_OTHER.equals(user.getUserID()))
-			throw new IllegalArgumentException("Cannot change properties of special user \"" + User.USERID_OTHER + "\"!");
+		if (User.USER_ID_SYSTEM.equals(user.getUserID()))
+			throw new IllegalArgumentException("Cannot manipulate system user \"" + User.USER_ID_SYSTEM + "\"!");
+		if (User.USER_ID_OTHER.equals(user.getUserID()))
+			throw new IllegalArgumentException("Cannot change properties of special user \"" + User.USER_ID_OTHER + "\"!");
 
 		if (user.getOrganisationID() != null && !user.getOrganisationID().equals(getOrganisationID()))
 			throw new IllegalArgumentException("user.organisationID must be null or equal to your organisationID!!!");
-
-		if (user.getOrganisationID() == null)
-			user.setOrganisationID(getOrganisationID());
 
 		try {
 			UserLocal userLocal = user.getUserLocal();
@@ -523,7 +520,7 @@ implements SessionBean
 		Set<RoleGroupID> roleGroupIDsOtherUser;
 
 		if (controlledByOtherUser) {
-			User otherUser = (User) pm.getObjectById(UserID.create(organisationID, User.USERID_OTHER));
+			User otherUser = (User) pm.getObjectById(UserID.create(organisationID, User.USER_ID_OTHER));
 			Collection<RoleGroup> roleGroupsOtherUser = getGrantedRoleGroups(pm, otherUser.getUserLocal(), authority);
 			roleGroupIDsOtherUser = NLJDOHelper.getObjectIDSet(roleGroupsOtherUser);
 		}
@@ -946,8 +943,8 @@ implements SessionBean
 				throw new IllegalArgumentException("Cannot manage foreign access rights! authorizedObject.organisationID=\"" + authorizedObject.getOrganisationID() + "\" does not match our organisationID=\""+organisationID+"\"!");
 
 			if (authorizedObject instanceof UserLocal) {
-				if (User.USERID_SYSTEM.equals(((UserLocal)authorizedObject).getUserID()))
-					throw new IllegalArgumentException("Cannot manipulate system user \"" + User.USERID_SYSTEM + "\"!");
+				if (User.USER_ID_SYSTEM.equals(((UserLocal)authorizedObject).getUserID()))
+					throw new IllegalArgumentException("Cannot manipulate system user \"" + User.USER_ID_SYSTEM + "\"!");
 			}
 
 			// authorize

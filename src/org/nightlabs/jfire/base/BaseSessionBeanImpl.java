@@ -63,7 +63,7 @@ public class BaseSessionBeanImpl
 
 	/**
 	 * This method returns the JFirePrincipal representing the current user.
-	 * 
+	 *
 	 * @return the principal representing the current user.
 	 */
 	public JFirePrincipal getPrincipal()
@@ -79,9 +79,9 @@ public class BaseSessionBeanImpl
 	/**
 	 * This method is a shortcut to <code>getPrincipal().getLookup()</code>. It might
 	 * not work with stateless session beans!
-	 * 
+	 *
 	 * @return The Lookup instance assigned to the current user.
-	 * 
+	 *
 	 * @see getPrincipal()
 	 */
 	protected Lookup getLookup()
@@ -192,7 +192,7 @@ public class BaseSessionBeanImpl
 	{
 		return getPrincipal().getLookup().getJFireServerManagerFactory();
 	}
-	
+
 	protected JFireServerManager getJFireServerManager()
 	{
 		return getPrincipal().getLookup().getJFireServerManager();
@@ -208,6 +208,16 @@ public class BaseSessionBeanImpl
 		return getPrincipal().getUserID();
 	}
 
+	/**
+	 * Get the workstation-identifier of the currently logged-in user or <code>null</code> if he didn't specify one during login.
+	 *
+	 * @return the workstationID or <code>null</code>.
+	 */
+	protected String getWorkstationID()
+	{
+		return getPrincipal().getWorkstationID();
+	}
+
 	protected String getSessionID()
 	{
 		return getPrincipal().getSessionID();
@@ -217,7 +227,7 @@ public class BaseSessionBeanImpl
 	{
 		return getPrincipal().userIsOrganisation();
 	}
-	
+
 //	protected String getPrincipalString()
 //	{
 //		return getPrincipal().toString();

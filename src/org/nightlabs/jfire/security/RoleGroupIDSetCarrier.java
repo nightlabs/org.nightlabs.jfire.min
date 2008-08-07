@@ -133,19 +133,19 @@ public class RoleGroupIDSetCarrier implements Serializable
 		return assignedToUserGroups;
 	}
 	/**
-	 * Get all <code>RoleGroupID</code>s which are <b><u>in</u>directly</b> assigned to the user via the other user (see {@link User#USERID_OTHER}),
+	 * Get all <code>RoleGroupID</code>s which are <b><u>in</u>directly</b> assigned to the user via the other user (see {@link User#USER_ID_OTHER}),
 	 * but only if the current <code>User</code> is neither directly in the authority, nor one of its <code>UserGroup</code>s.
 	 * As soon as one of its <code>UserGroup</code>s or the <code>User</code> itself is member of this <code>Authority</code>, this
 	 * <code>Set</code> is empty.
 	 *
-	 * @return the rights assigned to the other user ({@link User#USERID_OTHER}).
+	 * @return the rights assigned to the other user ({@link User#USER_ID_OTHER}).
 	 */
 	public Set<RoleGroupID> getAssignedToOtherUser() {
 		return assignedToOtherUser;
 	}
 	/**
 	 * Find out whether the user is himself in the <code>Authority</code>. A user who is not in an authority directly, can still be managed 
-	 * in the authority indirectly via its user-groups. If no {@link UserGroup} containing the user is in the Authority, the "other" user {@link User#USERID_OTHER}
+	 * in the authority indirectly via its user-groups. If no {@link UserGroup} containing the user is in the Authority, the "other" user {@link User#USER_ID_OTHER}
 	 * defines the rights.
 	 *
 	 * @return <code>true</code> if the user is directly in the <code>Authority</code> (and thus can have individual rights assigned).

@@ -31,6 +31,7 @@ import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.servermanager.RoleImportSet;
 import org.nightlabs.jfire.servermanager.config.OrganisationCf;
 import org.nightlabs.jfire.servermanager.config.ServerCf;
+import org.nightlabs.jfire.workstation.Workstation;
 
 /**
  * @author Marco Schulze - marco at nightlabs dot de
@@ -126,8 +127,8 @@ public abstract class OrganisationManagerHelperBean
 				logger.debug("pm.makePersistent(localOrganisation) done.");
 
 			if(logger.isDebugEnabled())
-				logger.debug("Creating JDO object User with ID \""+User.USERID_OTHER+"\"...");
-			User otherUser = new User(organisationID, User.USERID_OTHER);
+				logger.debug("Creating JDO object User with ID \""+User.USER_ID_OTHER+"\"...");
+			User otherUser = new User(organisationID, User.USER_ID_OTHER);
 			new UserLocal(otherUser);
 			otherUser = pm.makePersistent(otherUser);
 			if(logger.isDebugEnabled())
@@ -142,6 +143,12 @@ public abstract class OrganisationManagerHelperBean
 			if(logger.isDebugEnabled())
 				logger.debug("pm.makePersistent(user) done.");
 
+			if(logger.isDebugEnabled())
+				logger.debug("Creating JDO object Workstation with ID \"" + Workstation.WORKSTATION_ID_FALLBACK + "\"...");
+			Workstation workstation = new Workstation(organisationID, Workstation.WORKSTATION_ID_FALLBACK);
+			workstation = pm.makePersistent(workstation);
+			if(logger.isDebugEnabled())
+				logger.debug("pm.makePersistent(workstation) done.");
 
 			// AuthorityType.AUTHORITY_TYPE_ID_SELF
 			if(logger.isDebugEnabled())
@@ -244,7 +251,7 @@ public abstract class OrganisationManagerHelperBean
 			if(logger.isDebugEnabled())
 				logger.debug("Creating instances of AuthorizedObjectRef for both Users within the default authority...");
 
-			UserLocal otherUserLocal = (UserLocal) pm.getObjectById(UserLocalID.create(organisationID, User.USERID_OTHER, organisationID));
+			UserLocal otherUserLocal = (UserLocal) pm.getObjectById(UserLocalID.create(organisationID, User.USER_ID_OTHER, organisationID));
 			UserLocal userLocal = (UserLocal) pm.getObjectById(UserLocalID.create(organisationID, userID, organisationID));
 			authority.createAuthorizedObjectRef(otherUserLocal);
 			AuthorizedObjectRef userRef = authority.createAuthorizedObjectRef(userLocal);
@@ -265,7 +272,7 @@ public abstract class OrganisationManagerHelperBean
 			// create system user
 			if(logger.isDebugEnabled())
 				logger.debug("Creating system user...");
-			User systemUser = new User(organisationID, User.USERID_SYSTEM);
+			User systemUser = new User(organisationID, User.USER_ID_SYSTEM);
 			new UserLocal(systemUser);
 			pm.makePersistent(systemUser);
 			if(logger.isDebugEnabled())
