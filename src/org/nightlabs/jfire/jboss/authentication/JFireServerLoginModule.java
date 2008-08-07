@@ -197,7 +197,7 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 			if (roleSet == null)
 				throw new IllegalStateException("No RoleSet found for userKey=" + userKey);
 
-			this.ip = new JFirePrincipal(loginData, loginData.getUserID().startsWith(User.USERID_PREFIX_TYPE_ORGANISATION), new Lookup(loginData.getOrganisationID()), roleSet);
+			this.ip = new JFirePrincipal(loginData, loginData.getUserID().startsWith(User.USER_ID_PREFIX_TYPE_ORGANISATION), new Lookup(loginData.getOrganisationID()), roleSet);
 		}
 		else {
 			try {
