@@ -55,7 +55,6 @@ import org.nightlabs.jfire.base.JFireBaseEAR;
 import org.nightlabs.jfire.config.id.ConfigID;
 import org.nightlabs.jfire.config.id.ConfigModuleID;
 import org.nightlabs.jfire.config.id.ConfigSetupID;
-import org.nightlabs.jfire.config.xml.XMLConfigFactory;
 import org.nightlabs.jfire.editlock.EditLockType;
 import org.nightlabs.util.CollectionUtil;
 
@@ -356,7 +355,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 
 	/**
 	 * Searches the ConfigModule of the given Config, cfModClass and cfModID.
-	 * If not found it will be autocreated.
+	 * If not found it will be auto-created.
 	 *
 	 * @param userConfigID The UserConfigID the returned ConfigModule should belong to
 	 * @param cfModClass The ConfigModule's class
@@ -541,10 +540,16 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	/**
 	 * Returns the ConfigModule of the ConfigGroup of the Config corresponding to the given ConfigID
 	 * and with the given Class and moduleID.
+	 * <p>
+	 * The caller can choose if either an exception is thrown when the queried ConfigModule does not exist
+	 * or if it rather should be auto-created (autoCreate parameter).
+	 * </p>
 	 *
 	 * @param childID the {@link ConfigID} of the child's {@link Config}.
 	 * @param configModuleClass the Class of the ConfigModule to return.
 	 * @param moduleID the module ID in the case there is more than one instance of that ConfigModule.
+	 * @param autoCreate Whether the {@link ConfigModule} should be auto-created if not yet existing, 
+	 *                   otherwise a {@link ConfigModuleNotFoundException} will be thrown.
 	 * @param fetchGroups the fetchGroups with which to detach the ConfigModule.
 	 * @param maxFetchDepth the maximum fetch depth while detaching.
 	 * @return the ConfigModule of the ConfigGroup of the Config corresponding to the given ConfigID
@@ -554,12 +559,14 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type="Required"
 	 */
-	public ConfigModule getGroupConfigModule(ConfigID childID, Class<? extends ConfigModule> configModuleClass, String moduleID,
+	public ConfigModule getGroupConfigModule(
+			ConfigID childID, Class<? extends ConfigModule> configModuleClass, String moduleID, boolean autoCreate,
 			String[] fetchGroups, int maxFetchDepth) throws ModuleException
 	{
 		PersistenceManager pm = getPersistenceManager();
-		if (fetchGroups != null)
+		if (fetchGroups != null) {
 			pm.getFetchPlan().setGroups(fetchGroups);
+		}
 		pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
 
 		try {
@@ -571,7 +578,12 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 				return null; // just return null to enable the client to check whether there is a group or not.
 
 			ConfigGroup group = config.getConfigGroup();
-			ConfigModule groupsModule = group.getConfigModule(configModuleClass, moduleID);
+			ConfigModule groupsModule = null;
+			if (autoCreate) {				
+				groupsModule = group.createConfigModule(configModuleClass, moduleID);
+			} else {
+				groupsModule = group.getConfigModule(configModuleClass, moduleID);
+			}
 			return pm.detachCopy(groupsModule);
 		} finally {
 			pm.close();
