@@ -11,6 +11,7 @@ import javax.jdo.JDOHelper;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO;
 import org.nightlabs.jfire.config.Config;
+import org.nightlabs.jfire.config.ConfigGroup;
 import org.nightlabs.jfire.config.ConfigManager;
 import org.nightlabs.jfire.config.ConfigManagerUtil;
 import org.nightlabs.jfire.config.ConfigModule;
@@ -126,8 +127,13 @@ public class ConfigModuleDAO extends BaseJDOObjectDAO<ConfigModuleID, ConfigModu
 	}
 
 	/**
-	 * Returns the ConfigModule of the ConfigGroup of the Config corresponding to the given ConfigID
-	 * and with the given Class and moduleID or <code>null</code>.
+	 * Returns the {@link ConfigModule} of the {@link ConfigGroup} of the {@link Config} corresponding to the given {@link ConfigID}
+	 * and with the given Class and moduleID if the given {@link Config} is member of a {@link ConfigGroup}.
+	 * Note, that the {@link ConfigModule} for the ConfigGroup will be auto-created if it doey not extist
+	 * yet. 
+	 * <p>
+	 * If the given {@link Config} is not member of a {@link ConfigGroup} <code>null</code> is returned.
+	 * </p>
 	 * 
 	 * @param childID the {@link ConfigID} of the child's {@link Config}.
 	 * @param configModuleClass the Class of the ConfigModule to return.
@@ -135,8 +141,9 @@ public class ConfigModuleDAO extends BaseJDOObjectDAO<ConfigModuleID, ConfigModu
 	 * @param fetchGroups the fetchGroups with which to detach the ConfigModule.
 	 * @param maxFetchDepth the maximum fetch depth while detaching.
 	 * @param monitor the ProgressMonitor to use for showing the progress of the operation.
-	 * @return the ConfigModule of the ConfigGroup of the Config corresponding to the given ConfigID
-	 * and with the given Class and moduleID or <code>null</code>.
+	 * @return the ConfigModule of the ConfigGroup of the {@link Config} corresponding to the given {@link ConfigID}
+	 *         and with the given Class and moduleID, or <code>null</code> if the given {@link Config} is not member
+	 *         of a {@link ConfigGroup}.
 	 */
 	public ConfigModule getGroupsCorrespondingModule(ConfigID childID, Class<? extends ConfigModule> configModuleClass,
 			String moduleID, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
@@ -144,7 +151,7 @@ public class ConfigModuleDAO extends BaseJDOObjectDAO<ConfigModuleID, ConfigModu
 		monitor.beginTask("Getting Groups ConfigModule...", 1);
 		try {
 			ConfigManager cm = ConfigManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
-			ConfigModule searchedModule = cm.getGroupConfigModule(childID, configModuleClass, moduleID,
+			ConfigModule searchedModule = cm.getGroupConfigModule(childID, configModuleClass, moduleID, true,
 					fetchGroups, maxFetchDepth);
 			monitor.worked(1);
 			monitor.done();
