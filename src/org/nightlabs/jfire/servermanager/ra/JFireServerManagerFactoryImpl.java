@@ -1067,8 +1067,7 @@ public class JFireServerManagerFactoryImpl
 				if(logger.isDebugEnabled()) {
 					for (Iterator<RoleDef> it = ejbJarMan.getRoles().iterator(); it.hasNext(); ) {
 						RoleDef roleDef = it.next();
-						if(logger.isDebugEnabled())
-							logger.debug("roleDef.roleID = "+roleDef.getRoleID());
+						logger.debug("roleDef.roleID = "+roleDef.getRoleID());
 					}
 				}
 			} finally {
