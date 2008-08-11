@@ -1053,50 +1053,61 @@ public class JFireServerManagerFactoryImpl
 		JarEntry ejbJarXML = jf.getJarEntry("META-INF/ejb-jar.xml");
 		EJBJarMan ejbJarMan;
 		if (ejbJarXML == null) {
-			logger.warn("Jar \""+jar.getCanonicalPath()+"\" does not contain \"META-INF/ejb-jar.xml\"!");
+			logger.info("Jar \""+jar.getCanonicalPath()+"\" does not contain \"META-INF/ejb-jar.xml\"!");
 			ejbJarMan = new EJBJarMan(jar.getName());
 		}
 		else {
-			logger.info("*****************************************************************");
-			logger.info("Jar \""+jar.getCanonicalPath()+"\": ejb-jar.xml:");
+			if(logger.isDebugEnabled()) {
+				logger.debug("*****************************************************************");
+				logger.debug("Jar \""+jar.getCanonicalPath()+"\": ejb-jar.xml:");
+			}
 			InputStream in = jf.getInputStream(ejbJarXML);
 			try {
 				ejbJarMan = new EJBJarMan(jar.getName(), in);
-				for (Iterator<RoleDef> it = ejbJarMan.getRoles().iterator(); it.hasNext(); ) {
-					RoleDef roleDef = it.next();
-					logger.info("roleDef.roleID = "+roleDef.getRoleID());
+				if(logger.isDebugEnabled()) {
+					for (Iterator<RoleDef> it = ejbJarMan.getRoles().iterator(); it.hasNext(); ) {
+						RoleDef roleDef = it.next();
+						if(logger.isDebugEnabled())
+							logger.debug("roleDef.roleID = "+roleDef.getRoleID());
+					}
 				}
 			} finally {
 				in.close();
 			}
-			logger.info("*****************************************************************");
+			if(logger.isDebugEnabled())
+				logger.debug("*****************************************************************");
 		}
 
 		JarEntry roleGroupXML = jf.getJarEntry("META-INF/jfire-security.xml");
 		JFireSecurityMan securityMan;
 		if (roleGroupXML == null) {
-			logger.warn("Jar \""+jar.getCanonicalPath()+"\" does not contain \"META-INF/jfire-security.xml\"!");
+			logger.info("Jar \""+jar.getCanonicalPath()+"\" does not contain \"META-INF/jfire-security.xml\"!");
 			securityMan = new JFireSecurityMan(ejbJarMan);
 		}
 		else {
-			logger.info("*****************************************************************");
-			logger.info("Jar \""+jar.getCanonicalPath()+"\": jfire-security.xml:");
+			if(logger.isDebugEnabled()) {
+				logger.debug("*****************************************************************");
+				logger.debug("Jar \""+jar.getCanonicalPath()+"\": jfire-security.xml:");
+			}
 			InputStream in = jf.getInputStream(roleGroupXML);
 			try {
 				securityMan = new JFireSecurityMan(ejbJarMan, in);
-				for (RoleGroupDef roleGroupDef : securityMan.getRoleGroups().values()) {
-					logger.info("roleGroupDef.roleGroupID = "+roleGroupDef.getRoleGroupID());
-					for (String includedRoleGroupID : roleGroupDef.getIncludedRoleGroupIDs()) {
-						logger.info("  includedRoleGroupID = "+includedRoleGroupID);
-					}
-					for (String roleID : roleGroupDef.getRoleIDs()) {
-						logger.info("  roleID = "+roleID);
+				if(logger.isDebugEnabled()) {
+					for (RoleGroupDef roleGroupDef : securityMan.getRoleGroups().values()) {
+						logger.debug("roleGroupDef.roleGroupID = "+roleGroupDef.getRoleGroupID());
+						for (String includedRoleGroupID : roleGroupDef.getIncludedRoleGroupIDs()) {
+							logger.debug("  includedRoleGroupID = "+includedRoleGroupID);
+						}
+						for (String roleID : roleGroupDef.getRoleIDs()) {
+							logger.debug("  roleID = "+roleID);
+						}
 					}
 				}
 			} finally {
 				in.close();
 			}
-			logger.info("*****************************************************************");
+			if(logger.isDebugEnabled())
+				logger.debug("*****************************************************************");
 		}
 		securityMan.createFallbackRoleGroups();
 		globalSecurityMan.mergeSecurityMan(securityMan);
