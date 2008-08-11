@@ -34,6 +34,7 @@
             <property name="datanucleus.autoStartMechanismXmlFile" value="${deploymentDescriptorDirectory}/datanucleus-auto-start.xml"/>
 -->
             <property name="datanucleus.rdbms.stringDefaultLength" value="255"/>
+            <property name="datanucleus.rdbms.dynamicSchemaUpdates" value="true"/>
 
             <property name="datanucleus.cache.level2" value="true"/>
             <property name="datanucleus.persistenceByReachabilityAtCommit" value="false"/>
