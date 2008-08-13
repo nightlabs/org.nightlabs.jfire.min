@@ -96,7 +96,7 @@ public class ServerConfiguratorHistory
 
 					Item item = new Item();
 					try {
-						item.setTimestamp(TypeConverter.DATEFORMAT.parse(fields[0]));
+						item.setTimestamp(TypeConverter.getDefaultDateFormatUTC().parse(fields[0]));
 					} catch (ParseException e) {
 						throw new IOException("Line " + lineNumber + " contains invalid data in timestamp field! File: " + historyFile.getAbsolutePath(), e);
 					}
@@ -128,7 +128,7 @@ public class ServerConfiguratorHistory
 		try {
 			for (Item item : items) {
 				w.write(
-						TypeConverter.DATEFORMAT.format(item.getTimestamp()) + '\t' +
+						TypeConverter.getDefaultDateFormatUTC().format(item.getTimestamp()) + '\t' +
 						item.getServerConfiguratorClassName() + '\t' +
 						item.getServerConfiguratorAction().name() + '\n'
 				);
