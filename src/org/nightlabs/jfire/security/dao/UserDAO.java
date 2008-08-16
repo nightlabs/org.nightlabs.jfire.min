@@ -103,7 +103,7 @@ public class UserDAO extends BaseJDOObjectDAO<UserID, User>
 	/**
 	 * Get a single user.
 	 * @param userID The ID of the user to get
-	 * @param fetchGroups Wich fetch groups to use
+	 * @param fetchGroups Which fetch groups to use
 	 * @param maxFetchDepth Fetch depth or {@link NLJDOHelper#MAX_FETCH_DEPTH_NO_LIMIT}
 	 * @param monitor The progress monitor for this action. For every downloaded
 	 * 					object, <code>monitor.worked(1)</code> will be called.
