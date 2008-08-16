@@ -69,10 +69,6 @@ public class BaseSessionBeanImpl
 	public JFirePrincipal getPrincipal()
 	{
 		Principal pr = sessionContext.getCallerPrincipal();
-//		System.out.println("*********************************************************");
-//		System.out.println("Principal Class: "+pr.getClass().getName());
-//		System.out.println("Principal: "+pr);
-//		System.out.println("*********************************************************");
 		return (JFirePrincipal)pr;
 	}
 
