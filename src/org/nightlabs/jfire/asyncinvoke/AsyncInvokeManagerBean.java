@@ -14,7 +14,6 @@ import javax.ejb.SessionContext;
 import javax.jdo.PersistenceManager;
 
 import org.nightlabs.ModuleException;
-import org.nightlabs.annotation.Implement;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.asyncinvoke.id.AsyncInvokeProblemID;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
@@ -53,18 +52,17 @@ implements SessionBean
 	public void ejbCreate() throws CreateException { }
 
 	/**
-	 * @see javax.ejb.SessionBean#ejbRemove()
-	 * 
+	 * {@inheritDoc}
+	 *
 	 * @ejb.permission unchecked="true"
 	 */
-	@Implement
 	@Override
 	public void ejbRemove() throws EJBException, RemoteException { }
 
 	/**
 	 * @ejb.interface-method
 	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
-	 * @ejb.permission role-name="_Guest_"
+	 * @ejb.permission role-name="org.nightlabs.jfire.asyncinvoke.administrateAsyncInvokes"
 	 */
 	@SuppressWarnings("unchecked")
 	public Set<AsyncInvokeProblemID> getAsyncInvokeProblemIDs() {
@@ -81,7 +79,7 @@ implements SessionBean
 	/**
 	 * @ejb.interface-method
 	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
-	 * @ejb.permission role-name="_Guest_"
+	 * @ejb.permission role-name="org.nightlabs.jfire.asyncinvoke.administrateAsyncInvokes"
 	 */
 	@SuppressWarnings("unchecked")
 	public List<AsyncInvokeProblem> getAsyncInvokeProblems(Collection<AsyncInvokeProblemID> asyncInvokeProblemIDs, String[] fetchGroups, int maxFetchDepth) {
@@ -102,7 +100,7 @@ implements SessionBean
 	 *
 	 * @ejb.interface-method
 	 * @ejb.transaction type="Required"
-	 * @ejb.permission role-name="_Guest_"
+	 * @ejb.permission role-name="org.nightlabs.jfire.asyncinvoke.administrateAsyncInvokes"
 	 */
 	@SuppressWarnings("unchecked")
 	public void deleteAsyncInvokeProblems(Collection<AsyncInvokeProblemID> asyncInvokeProblemIDs) {
@@ -130,7 +128,7 @@ implements SessionBean
 	 *
 	 * @ejb.interface-method
 	 * @ejb.transaction type="Required"
-	 * @ejb.permission role-name="_Guest_"
+	 * @ejb.permission role-name="org.nightlabs.jfire.asyncinvoke.administrateAsyncInvokes"
 	 */
 	@SuppressWarnings("unchecked")
 	public void retryAsyncInvokeProblems(Collection<AsyncInvokeProblemID> asyncInvokeProblemIDs)

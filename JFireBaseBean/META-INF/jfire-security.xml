@@ -6,6 +6,22 @@
 >
 <!--
 *******************************************************************
+***             BEGIN org.nightlabs.jfire.asyncinvoke           ***
+*******************************************************************
+-->
+	<role-group id="org.nightlabs.jfire.asyncinvoke.administrateAsyncInvokes">
+		<name>Administrate asynchronous invocations</name>
+		<name language="de">Administration asynchroner Serveraufgaben</name>
+		<description>Administrate asynchronous invocations. This includes querying, retrying and deleting them.</description>
+		<description language="de">Administration asynchroner Serveraufgaben. Dies beinhaltet ihre Abfrage, Wiederholung und Löschung.</description>
+		<role id="org.nightlabs.jfire.asyncinvoke.administrateAsyncInvokes"/>
+	</role-group>
+<!--
+*******************************************************************
+***             END org.nightlabs.jfire.asyncinvoke           ***
+*******************************************************************
+
+*******************************************************************
 ***             BEGIN org.nightlabs.jfire.security              ***
 *******************************************************************
 -->
