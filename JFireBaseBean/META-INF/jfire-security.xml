@@ -4,9 +4,11 @@
 		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 		xsi:schemaLocation="urn:jfire.org:jfire-security_1_0 https://www.jfire.org/schema/jfire-security_1_0.xsd "
 >
-<!-- ******************************************************************* -->
-<!-- ***             BEGIN org.nightlabs.jfire.security              *** -->
-<!-- ******************************************************************* -->
+<!--
+*******************************************************************
+***             BEGIN org.nightlabs.jfire.security              ***
+*******************************************************************
+-->
 	<role-group id="org.nightlabs.jfire.security.accessRightManagement">
 		<name>Access right management</name>
 		<name language="de">Zugriffsrechteverwaltung</name>
@@ -161,13 +163,15 @@
 		<role-group id="org.nightlabs.jfire.security.editAuthority" />
 	</authority-type>
 
-<!-- ******************************************************************* -->
-<!-- ***              END org.nightlabs.jfire.security               *** -->
-<!-- ******************************************************************* -->
+<!--
+*******************************************************************
+***              END org.nightlabs.jfire.security               ***
+*******************************************************************
 
-<!-- ******************************************************************* -->
-<!-- ***               BEGIN org.nightlabs.jfire.timer               *** -->
-<!-- ******************************************************************* -->
+*******************************************************************
+***               BEGIN org.nightlabs.jfire.timer               ***
+*******************************************************************
+-->
 	<role-group id="org.nightlabs.jfire.timer.editTask#own">
 		<name>Edit own timer task</name>
 		<name language="de">Eigene zeitgesteuerte Aufgabe bearbeiten</name>
@@ -201,14 +205,16 @@
 		<role id="org.nightlabs.jfire.timer.storeTask#own"/>
 		<role id="org.nightlabs.jfire.timer.storeTask#all"/>
 	</role-group>
-<!-- ******************************************************************* -->
-<!-- ***                END org.nightlabs.jfire.timer                *** -->
-<!-- ******************************************************************* -->
+<!--
+*******************************************************************
+***                END org.nightlabs.jfire.timer                ***
+*******************************************************************
 
 
-<!-- ******************************************************************* -->
-<!-- ***             BEGIN org.nightlabs.jfire.language              *** -->
-<!-- ******************************************************************* -->
+*******************************************************************
+***             BEGIN org.nightlabs.jfire.language              *** 
+*******************************************************************
+-->
 	<role-group id="org.nightlabs.jfire.language.editLanguage">
 		<name>Edit language</name>
 		<name>Sprache bearbeiten</name>
@@ -216,14 +222,16 @@
 		<description language="de">Erlaubt es, eine Sprache anzulegen oder zu ändern.</description>
 		<role id="org.nightlabs.jfire.language.createLanguage"/>
 	</role-group>
-<!-- ******************************************************************* -->
-<!-- ***              END org.nightlabs.jfire.language               *** -->
-<!-- ******************************************************************* -->
+<!--
+*******************************************************************
+***              END org.nightlabs.jfire.language               ***
+*******************************************************************
 
 
-<!-- ******************************************************************* -->
-<!-- ***               BEGIN org.nightlabs.jfire.base                *** -->
-<!-- ******************************************************************* -->
+*******************************************************************
+***               BEGIN org.nightlabs.jfire.base                ***
+*******************************************************************
+-->
 	<role-group id="org.nightlabs.jfire.base.attachScreenShotToErrorReport#default">
 		<name>Attach screen shot when sending error report: Default value</name>
 		<name language="de">Screen-Shot zu Fehlerbericht hinzufügen: Standard-Wert</name>
@@ -273,14 +281,16 @@
 		</description>
 		<role id="org.nightlabs.jfire.base.attachScreenShotToErrorReport#decide"/>
 	</role-group>
-<!-- ******************************************************************* -->
-<!-- ***                END org.nightlabs.jfire.base                 *** -->
-<!-- ******************************************************************* -->
+<!--
+*******************************************************************
+***                END org.nightlabs.jfire.base                 ***
+*******************************************************************
 
 
-<!-- ******************************************************************* -->
-<!-- ***           BEGIN org.nightlabs.jfire.organisation            *** -->
-<!-- ******************************************************************* -->
+*******************************************************************
+***           BEGIN org.nightlabs.jfire.organisation            ***
+*******************************************************************
+-->
 	<role-group id="org.nightlabs.jfire.organisation.manageCrossOrganisationRegistrations">
 		<name>Cross-organisation-registrations</name>
 		<name language="de">Cross-Organisations-Registrierungen</name>
@@ -324,13 +334,15 @@
 		</description>
 		<role id="org.nightlabs.jfire.organisation.storeLocalOrganisation"/>
 	</role-group>
-<!-- ******************************************************************* -->
-<!-- ***            END org.nightlabs.jfire.organisation             *** -->
-<!-- ******************************************************************* -->
+<!--
+*******************************************************************
+***            END org.nightlabs.jfire.organisation             ***
+*******************************************************************
 
-<!-- ******************************************************************* -->
-<!-- ***            BEGIN org.nightlabs.jfire.workstation            *** -->
-<!-- ******************************************************************* -->
+*******************************************************************
+***            BEGIN org.nightlabs.jfire.workstation            ***
+*******************************************************************
+-->
 	<role-group id="org.nightlabs.jfire.workstation.editWorkstation">
 		<name>Edit workstation</name>
 		<name language="de">Workstation bearbeiten</name>
@@ -352,7 +364,9 @@
 		<description>Allows to login without specifying a workstation.</description>
 		<role id="org.nightlabs.jfire.workstation.loginWithoutWorkstation"/>
 	</role-group>
-<!-- ******************************************************************* -->
-<!-- ***             END org.nightlabs.jfire.workstation             *** -->
-<!-- ******************************************************************* -->
+<!--
+*******************************************************************
+***             END org.nightlabs.jfire.workstation             ***
+*******************************************************************
+-->
 </jfire-security>
