@@ -57,9 +57,9 @@ import org.nightlabs.util.Util;
 
 /**
  * @author Tobias Langner <!-- tobias[dot]langner[at]nightlabs[dot]de -->
- */
-/**
- * TODO: Manage access rights for Properties on object-link-type basis
+ *
+ * TODO: Manage access rights for Properties on object-link-type basis or maybe on StructLocal basis? Not all PropertySets are linked to an object!
+ * See https://www.jfire.org/modules/bugs/view.php?id=896
  *
  * @ejb.bean name="jfire/ejb/JFireBaseBean/PropertyManager"
  *           jndi-name="jfire/ejb/JFireBaseBean/PropertyManager"
@@ -195,8 +195,8 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	 */
 	public StructLocal getFullStructLocal(StructLocalID structLocalID, String[] fetchGroups, int maxFetchDepth) throws ModuleException {
 		return getFullStructLocal(
-				structLocalID.organisationID, structLocalID.linkClass, 
-				structLocalID.structScope, structLocalID.structLocalScope, 
+				structLocalID.organisationID, structLocalID.linkClass,
+				structLocalID.structScope, structLocalID.structLocalScope,
 				fetchGroups, maxFetchDepth);
 	}
 
@@ -333,7 +333,7 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 				// misconception by myself.
 				// I stated this problem in http://www.jpox.org/servlet/forum/viewthread?thread=4967&lastpage=yes
 				modifiedStructLocal = pm.makePersistent(modifiedStructLocal);
-				
+
 				persistenStruct = modifiedStructLocal;
 			} else {
 				throw new IllegalArgumentException("Given struct must be of type Struct or StructLocal.");
@@ -349,7 +349,7 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 			pm.close();
 		}
 	}
-	
+
 	/**
 	 * Checks if the changes reflected by <code>modifiedStruct</code> are
 	 * adequate, i.e. that they did not touch blocks that are owned by the dev
