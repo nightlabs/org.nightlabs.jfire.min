@@ -50,14 +50,17 @@ import org.nightlabs.jfire.idgenerator.id.IDNamespaceID;
 public abstract class IDGeneratorHelperBean
 extends BaseSessionBeanImpl implements SessionBean
 {
-//	public static final Logger LOGGER = Logger.getLogger(IDGeneratorHelperBean.class);
+	private static final Logger logger = Logger.getLogger(IDGeneratorHelperBean.class);
 	private static final long serialVersionUID = 1L;
 
 	@Override
-	public void setSessionContext(SessionContext sessionContext)
-			throws EJBException, RemoteException
+	public void setSessionContext(SessionContext sessionContext) throws EJBException, RemoteException
 	{
 		super.setSessionContext(sessionContext);
+	}
+	@Override
+	public void unsetSessionContext() {
+		super.unsetSessionContext();
 	}
 	/**
 	 * @ejb.create-method
@@ -67,21 +70,17 @@ extends BaseSessionBeanImpl implements SessionBean
 	{
 	}
 	/**
-	 * @see javax.ejb.SessionBean#ejbRemove()
-	 * 
+	 * {@inheritDoc}
+	 *
 	 * @ejb.permission unchecked="true"
 	 */
+	@Override
 	public void ejbRemove() throws EJBException, RemoteException { }
 
 	public static final long LIMIT_LOG_WARN = Long.MAX_VALUE / 10 * 8; // log a warning above 80 %
 	public static final long LIMIT_LOG_ERROR = Long.MAX_VALUE / 10 * 9; // log an error above 90 %
 	public static final long LIMIT_LOG_FATAL = Long.MAX_VALUE / 100 * 95; // log an error above 95 %
 	public static final long LIMIT_FAIL = Long.MAX_VALUE - 1000; // throw an exception
-
-	protected Logger getLogger()
-	{
-		return Logger.getLogger(IDGeneratorHelperBean.class);
-	}
 
 	/**
 	 * This method is called by the {@link IDGeneratorServer} and not visible to a remote client.
@@ -103,6 +102,13 @@ extends BaseSessionBeanImpl implements SessionBean
 			PersistenceManager pm = this.getPersistenceManager();
 			try {
 				pm.getExtent(IDNamespace.class);
+
+				// TODO this should be DataNucleus-independent!
+				// If it is not making it into the JDO standard, we need to write our own
+				// JDO-implementation-independent API!
+				((org.datanucleus.jdo.JDOTransaction)pm.currentTransaction()).setOption(
+						"transaction.serializeReadObjects", Boolean.TRUE
+				);
 
 				String organisationID = getOrganisationID();
 
@@ -134,11 +140,11 @@ extends BaseSessionBeanImpl implements SessionBean
 				idNamespace.setNextID(nextID);
 
 				if (nextID > LIMIT_LOG_FATAL)
-					getLogger().fatal("nextID above LIMIT_LOG_FATAL (> 95%): [organisationID=\""+organisationID+"\", namespace=\""+namespace+"\", nextID=\"" + nextID + "\", LIMIT_LOG_FATAL=\""+LIMIT_LOG_FATAL+"\"]");
+					logger.fatal("nextID above LIMIT_LOG_FATAL (> 95%): [organisationID=\""+organisationID+"\", namespace=\""+namespace+"\", nextID=\"" + nextID + "\", LIMIT_LOG_FATAL=\""+LIMIT_LOG_FATAL+"\"]");
 				else if (nextID > LIMIT_LOG_ERROR)
-					getLogger().error("nextID above LIMIT_LOG_ERROR (> 90%): [organisationID=\""+organisationID+"\", namespace=\""+namespace+"\", nextID=\"" + nextID + "\", LIMIT_LOG_ERROR=\""+LIMIT_LOG_ERROR+"\"]");
+					logger.error("nextID above LIMIT_LOG_ERROR (> 90%): [organisationID=\""+organisationID+"\", namespace=\""+namespace+"\", nextID=\"" + nextID + "\", LIMIT_LOG_ERROR=\""+LIMIT_LOG_ERROR+"\"]");
 				else if (nextID > LIMIT_LOG_WARN)
-					getLogger().warn("nextID above LIMIT_LOG_WARN (> 80%): [organisationID=\""+organisationID+"\", namespace=\""+namespace+"\", nextID=\"" + nextID + "\", LIMIT_LOG_WARN=\""+LIMIT_LOG_WARN+"\"]");
+					logger.warn("nextID above LIMIT_LOG_WARN (> 80%): [organisationID=\""+organisationID+"\", namespace=\""+namespace+"\", nextID=\"" + nextID + "\", LIMIT_LOG_WARN=\""+LIMIT_LOG_WARN+"\"]");
 
 				return res;
 			} finally {
