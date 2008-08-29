@@ -89,7 +89,7 @@ implements javax.ejb.MessageDrivenBean, javax.jms.MessageListener
 	{
 //		if (logger().isDebugEnabled())
 //			logger().debug("onMessage(...) entered.");
-		logger().info("onMessage(...) entered.");
+		logger().debug("onMessage(...) entered.");
 
 		try {
 			if (!(message instanceof ObjectMessage)) {
