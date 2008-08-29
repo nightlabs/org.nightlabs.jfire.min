@@ -241,7 +241,7 @@ public class PersistentNotificationManagerFactory implements Serializable
 			long prefilteredGroupCount = 0; // the number of groups (for each group there is one prefiltering action)
 			long filterCount = 0; // how many times was NotificationFilter.filter(...) called
 			long filteredDirtyObjectIDCount = 0; // what's left after real filtering - and thus finally delivered via NotificationBundle instances
-			
+
 			PersistenceManagerFactory persistenceManagerFactory = JFireServerManagerFactoryImpl.getPersistenceManagerFactory(organisationID);
 
 			// 1st step: fetch temporary dirty objectIDs and distribute the change-markers to all interested listeners
@@ -338,8 +338,8 @@ public class PersistentNotificationManagerFactory implements Serializable
 							long duration = System.currentTimeMillis() - start;
 							if (duration > 20000)
 								logger.warn(logPrefix + "Prefiltering " + prefilteredGroupCount + " groups of DirtyObjectIDs took " + duration + " msec.");
-							else
-								logger.info(logPrefix + "Prefiltering " + prefilteredGroupCount + " groups of DirtyObjectIDs took " + duration + " msec.");
+							else if (logger.isDebugEnabled())
+								logger.debug(logPrefix + "Prefiltering " + prefilteredGroupCount + " groups of DirtyObjectIDs took " + duration + " msec.");
 						}
 					} finally {
 						pm.close();
@@ -428,8 +428,8 @@ public class PersistentNotificationManagerFactory implements Serializable
 			long totalDuration = System.currentTimeMillis() - totalStart;
 			if (totalDuration > 40000)
 				logger.warn(logPrefix + "totalDirtyObjectIDCount=" + totalDirtyObjectIDCount + " prefilteredGroupCount=" + prefilteredGroupCount + " filterCount=" + filterCount  + " filteredDirtyObjectIDCount=" + filteredDirtyObjectIDCount + " totalDuration=" + totalDuration + " msec.");
-			else
-				logger.info(logPrefix + "totalDirtyObjectIDCount=" + totalDirtyObjectIDCount + " prefilteredGroupCount=" + prefilteredGroupCount + " filterCount=" + filterCount  + " filteredDirtyObjectIDCount=" + filteredDirtyObjectIDCount + " totalDuration=" + totalDuration + " msec.");
+			else if (logger.isDebugEnabled())
+				logger.debug(logPrefix + "totalDirtyObjectIDCount=" + totalDirtyObjectIDCount + " prefilteredGroupCount=" + prefilteredGroupCount + " filterCount=" + filterCount  + " filteredDirtyObjectIDCount=" + filteredDirtyObjectIDCount + " totalDuration=" + totalDuration + " msec.");
 		} catch (Throwable t) {
 			logger.error("Processing outgoing dirty objects failed!", t);
 		}
