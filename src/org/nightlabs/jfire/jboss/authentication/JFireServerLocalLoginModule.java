@@ -106,7 +106,8 @@ public class JFireServerLocalLoginModule extends AbstractServerLoginModule
 			throw new LoginException("Unknown user or invalid password!");
 		}
 
-		logger.info("Login by " + username + " successful!");
+		if (logger.isDebugEnabled())
+			logger.debug("Login by " + username + " successful!");
 
 		super.subject.getPrincipals().add(principal);
 
