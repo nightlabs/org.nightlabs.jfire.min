@@ -151,10 +151,10 @@ public class Cache
 						SortedSet<DirtyObjectID> dirtyObjectIDs = notificationBundle == null ? null : notificationBundle.getDirtyObjectIDs();
 
 						if (dirtyObjectIDs != null) {
-							logger.info("NotificationThread.run: Received notification for implicit listeners with " + dirtyObjectIDs.size() + " DirtyObjectIDs.");
-							if (logger.isDebugEnabled()) {
+							logger.debug("NotificationThread.run: Received notification for implicit listeners with " + dirtyObjectIDs.size() + " DirtyObjectIDs.");
+							if (logger.isTraceEnabled()) {
 								for (DirtyObjectID dirtyObjectID : dirtyObjectIDs)
-									logger.debug("NotificationThread.run:   " + dirtyObjectID);
+									logger.trace("NotificationThread.run:   " + dirtyObjectID);
 							}
 
 							Map<Object, DirtyObjectID> indirectlyAffectedDirtyObjectIDs = new HashMap<Object, DirtyObjectID>();
@@ -193,7 +193,8 @@ public class Cache
 										logger.debug("NotificationThread.run:   created synthetic \"" + doid + "\" for real \"" + objectID + "\"");
 								}
 							}
-							logger.info("NotificationThread.run: Removed " + removedCarrierCount + " carriers from the cache.");
+							if (logger.isDebugEnabled())
+								logger.info("NotificationThread.run: Removed " + removedCarrierCount + " carriers from the cache.");
 
 							cache.unsubscribeObjectIDs(
 									objectIDs,
@@ -210,8 +211,11 @@ public class Cache
 
 							if (logger.isDebugEnabled()) {
 								logger.debug("NotificationThread.run: about to notify implicit listeners for " + dirtyObjectIDsForNotification.size() + " DirtyObjectIDs:");
-								for (DirtyObjectID dirtyObjectID : dirtyObjectIDsForNotification)
-									logger.debug("NotificationThread.run:   * " + dirtyObjectID);
+								if (logger.isTraceEnabled())
+								{
+									for (DirtyObjectID dirtyObjectID : dirtyObjectIDsForNotification)
+										logger.trace("NotificationThread.run:   * " + dirtyObjectID);
+								}
 							}
 
 							// notify via local class based notification mechanism
@@ -255,7 +259,8 @@ public class Cache
 					{ // explicit listeners
 						Map<Long, SortedSet<DirtyObjectID>> filterID2DirtyObjectIDs = notificationBundle == null ? null : notificationBundle.getFilterID2dirtyObjectIDs();
 						if (filterID2DirtyObjectIDs != null) {
-							logger.info("NotificationThread.run: Received notification for " + filterID2DirtyObjectIDs.size() + " explicit listeners.");
+							if (logger.isDebugEnabled())
+								logger.info("NotificationThread.run: Received notification for " + filterID2DirtyObjectIDs.size() + " explicit listeners.");
 							for (Map.Entry<Long, SortedSet<DirtyObjectID>> me : filterID2DirtyObjectIDs.entrySet()) {
 								Long filterID = me.getKey();
 								SortedSet<DirtyObjectID> dirtyObjectIDs = me.getValue();
@@ -481,7 +486,8 @@ public class Cache
 							jdoManager = JDOManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
 
 						if (cache.isResubscribeAllListeners()) {
-							logger.info("Synchronizing all listeners.");
+							if (logger.isDebugEnabled())
+								logger.debug("Synchronizing all listeners.");
 
 							cache.setResubscribeAllListeners(false);
 							boolean resubscribeFailed = true;
@@ -503,7 +509,9 @@ public class Cache
 						else {
 							if (objectIDsToUnsubscribe != null || objectIDsToSubscribe != null ||
 									filterIDsToUnsubscribe != null || filtersToSubscribe != null) {
-								logger.info(
+
+								if (logger.isDebugEnabled())
+									logger.debug(
 										"Adding " +
 										(objectIDsToSubscribe == null ? 0 : objectIDsToSubscribe.size()) +
 										" and removing " +
@@ -513,38 +521,38 @@ public class Cache
 										" and removing " +
 										(filterIDsToUnsubscribe == null ? 0 : filterIDsToUnsubscribe.size()) +
 										" filters for explicit listeners.");
-								
-								if (logger.isDebugEnabled()) {
-									logger.debug("Change listeners for the following ObjectIDs will be removed:");
+
+								if (logger.isTraceEnabled()) {
+									logger.trace("Change listeners for the following ObjectIDs will be removed:");
 									if (objectIDsToUnsubscribe == null)
-										logger.debug("      NONE!");
+										logger.trace("      NONE!");
 									else {
 										for (Iterator<?> it = objectIDsToUnsubscribe.iterator(); it.hasNext(); )
-											logger.debug("      " +  it.next());
+											logger.trace("      " +  it.next());
 									}
 
-									logger.debug("Change listeners for the following ObjectIDs will be added:");
+									logger.trace("Change listeners for the following ObjectIDs will be added:");
 									if (objectIDsToSubscribe == null)
-										logger.debug("      NONE!");
+										logger.trace("      NONE!");
 									else {
 										for (Iterator<?> it = objectIDsToSubscribe.iterator(); it.hasNext(); )
-											logger.debug("      " +  it.next());
+											logger.trace("      " +  it.next());
 									}
 
-									logger.debug("LifecycleListenerFilters with the following IDs will be removed:");
+									logger.trace("LifecycleListenerFilters with the following IDs will be removed:");
 									if (filterIDsToUnsubscribe == null)
-										logger.debug("      NONE!");
+										logger.trace("      NONE!");
 									else {
 										for (Long filterID : filterIDsToUnsubscribe)
-											logger.debug("      " +  filterID);
+											logger.trace("      " +  filterID);
 									}
 
-									logger.debug("LifecycleListenerFilters will be added:");
+									logger.trace("LifecycleListenerFilters will be added:");
 									if (filtersToSubscribe == null)
-										logger.debug("      NONE!");
+										logger.trace("      NONE!");
 									else {
 										for (IJDOLifecycleListenerFilter filter : filtersToSubscribe) {
-											logger.debug("      id=" +  filter.getFilterID().getFilterID() + " filter=" + filter);
+											logger.trace("      id=" +  filter.getFilterID().getFilterID() + " filter=" + filter);
 										}
 									}
 								}
@@ -725,7 +733,7 @@ public class Cache
 	{
 		synchronized (subscriptionChangeRequestsMutex) {
 			Long filterID = filter.getFilterID().getFilterID();
-			
+
 			SubscriptionChangeRequest scr = subscriptionChangeRequests.get(filterID);
 			if (scr != null) {
 				if (scr.getAction() == SubscriptionChangeRequest.ACTION_ADD
@@ -763,7 +771,7 @@ public class Cache
 	{
 		synchronized (subscriptionChangeRequestsMutex) {
 			Long filterID = filter.getFilterID().getFilterID();
-			
+
 			SubscriptionChangeRequest scr = subscriptionChangeRequests.get(filterID);
 			if (scr != null) {
 				if (scr.getAction() == SubscriptionChangeRequest.ACTION_REMOVE
@@ -1045,7 +1053,8 @@ public class Cache
 
 	protected synchronized void rollCarrierContainers()
 	{
-		logger.info("Creating new activeCarrierContainer.");
+		if (logger.isDebugEnabled())
+			logger.debug("Creating new activeCarrierContainer.");
 		CarrierContainer newActiveCC = new CarrierContainer(this);
 		carrierContainers.addFirst(newActiveCC);
 		activeCarrierContainer = newActiveCC;
@@ -1057,7 +1066,8 @@ public class Cache
 
 		while (carrierContainers.size() > carrierContainerCount) {
 			CarrierContainer cc = carrierContainers.removeLast();
-			logger.info("Dropping carrierContainer (created " + cc.getCreateDT() + ")");
+			if (logger.isDebugEnabled())
+				logger.debug("Dropping carrierContainer (created " + cc.getCreateDT() + ")");
 			cc.close();
 		}
 	}
@@ -1273,7 +1283,7 @@ public class Cache
 	 * after you put an object into the cache, copy it (using {@link Util#cloneSerializable(Object)})
 	 * and modify the clone!!! Alternatively, you can put a clone into the cache, of course.
 	 * </p>
-	 * 
+	 *
 	 * @param scope Either <code>null</code> to indicate that the object has been fetched normally using
 	 *		the fetchGroups or a String specifying a customized fetch-method. This can e.g. be the case
 	 *		if the object has been detached using the detach-on-close feature. If you cache a non-jdo-object,
@@ -1298,7 +1308,7 @@ public class Cache
 	 * after you put an object into the cache, copy it (using {@link Util#cloneSerializable(Object)})
 	 * and modify the clone!!! Alternatively, you can put a clone into the cache, of course.
 	 * </p>
-	 * 
+	 *
 	 * @param scope Either <code>null</code> to indicate that the object has been fetched normally using
 	 *		the fetchGroups or a String specifying a customized fetch-method. This can e.g. be the case
 	 *		if the object has been detached using the detach-on-close feature. If you cache a non-jdo-object,
