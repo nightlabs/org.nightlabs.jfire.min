@@ -81,7 +81,8 @@ implements SessionBean
 		Logger logger = Logger.getLogger(OrganisationInitDelegateBean.class);
 		InitialContext initCtx = new InitialContext();
 		try {
-			logger.info("Executing OrganisationInit as user " + getPrincipal() +": " + init);
+			if (logger.isDebugEnabled())
+				logger.debug("Executing OrganisationInit as user " + getPrincipal() +": " + init);
 			Object bean = InvokeUtil.createBean(initCtx, init.getBean());
 			Method beanMethod = bean.getClass().getMethod(init.getMethod(), (Class[]) null);
 			beanMethod.invoke(bean, (Object[]) null);
@@ -102,7 +103,8 @@ implements SessionBean
 		Logger logger = Logger.getLogger(OrganisationInitDelegateBean.class);
 		InitialContext initCtx = new InitialContext();
 		try {
-			logger.info("Executing CrossOrganisationRegistrationInit as user " + getPrincipal() +": " + init);
+			if (logger.isDebugEnabled())
+				logger.debug("Executing CrossOrganisationRegistrationInit as user " + getPrincipal() +": " + init);
 			Object bean = InvokeUtil.createBean(initCtx, init.getBean());
 			Method beanMethod = bean.getClass().getMethod(init.getMethod(), new Class[] { Context.class });
 			beanMethod.invoke(bean, new Object[] { context });
