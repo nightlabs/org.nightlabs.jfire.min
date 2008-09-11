@@ -8,7 +8,7 @@
 	<classpathentry kind="var" path="JBOSS/client/jboss-j2ee.jar"/>
 	<classpathentry kind="var" path="JBOSS/server/default/lib/bcel.jar"/>
 	<classpathentry kind="var" path="JDO2"/>
-	<classpathentry kind="var" path="DATANUCLEUS_CORE"/> <classpathentry kind="var" path="DATANUCLEUS_JAVA5"/>
+	<classpathentry kind="var" path="DATANUCLEUS_CORE"/>
 	<classpathentry kind="var" path="DATANUCLEUS_ENHANCER"/>
 	<classpathentry kind="var" path="LOG4J" sourcepath="/LOG4J_SRC"/>
 	<classpathentry kind="output" path="bin"/>
