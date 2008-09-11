@@ -12,7 +12,7 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/NightLabsJDO"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/JFireRCLBackend"/>
 	<classpathentry kind="var" path="APACHE_COMMONS/commons-beanutils.jar"/>
-	<classpathentry kind="var" path="DATANUCLEUS_CORE"/> <classpathentry kind="var" path="DATANUCLEUS_JAVA5"/>
+	<classpathentry kind="var" path="DATANUCLEUS_CORE"/>
 	<classpathentry kind="var" path="JBOSS/client/jboss-j2ee.jar"/>
 	<classpathentry kind="var" path="APACHE_COMMONS/commons-lang.jar"/>
 	<classpathentry kind="var" path="ASM"/>
