@@ -1179,6 +1179,7 @@ public class JFireServerManagerFactoryImpl
 			{
 				Set<String> currentRoleIDs = securityMan.getRoles().keySet();
 				Query q = pm.newQuery(Role.class);
+				pm.flush();
 				for (Object o : new HashSet<Object>((Collection<?>)q.execute())) {
 					Role role = (Role) o;
 					if (currentRoleIDs.contains(role.getRoleID()))
@@ -1188,12 +1189,15 @@ public class JFireServerManagerFactoryImpl
 						roleGroup.removeRole(role);
 
 					pm.deletePersistent(role);
+					pm.flush();
 				}
 			}
 
 			// delete all role-groups that don't exist anymore and restore assignments to users in case a role-group re-appeared (due to re-deployment)
 			{
-				for (Iterator<RoleGroup> it = pm.getExtent(RoleGroup.class).iterator(); it.hasNext(); ) {
+				Collection<RoleGroup> roleGroups = CollectionUtil.castCollection((Collection<?>)pm.newQuery(RoleGroup.class).execute());
+				roleGroups = new HashSet<RoleGroup>(roleGroups);
+				for (Iterator<RoleGroup> it = roleGroups.iterator(); it.hasNext(); ) {
 					RoleGroup roleGroup = it.next();
 					if (!newRoleGroupIDs.contains(roleGroup.getRoleGroupID())) {
 //						Query q2 = pm.newQuery(AuthorityType.class);
@@ -1205,6 +1209,7 @@ public class JFireServerManagerFactoryImpl
 //						}
 
 						pm.deletePersistent(roleGroup);
+						pm.flush();
 					} // if (!newRoleGroupIDs.contains(roleGroup.getRoleGroupID()))
 
 					if (!oldRoleGroupIDs.contains(roleGroup.getRoleGroupID())) {
@@ -1216,6 +1221,7 @@ public class JFireServerManagerFactoryImpl
 								authorizedObjectRef.addRoleGroupRef(roleGroupRef);
 							}
 							pm.deletePersistent(r);
+							pm.flush();
 						}
 					}
 				}
