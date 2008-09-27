@@ -70,6 +70,7 @@ import org.nightlabs.jfire.security.id.RoleID;
 import org.nightlabs.jfire.security.id.UserID;
 import org.nightlabs.jfire.security.id.UserLocalID;
 import org.nightlabs.jfire.security.id.UserSecurityGroupID;
+import org.nightlabs.jfire.security.listener.SecurityChangeController;
 import org.nightlabs.jfire.security.notification.AuthorityNotificationFilter;
 import org.nightlabs.jfire.security.notification.AuthorityNotificationReceiver;
 import org.nightlabs.jfire.security.search.UserQuery;
@@ -875,30 +876,30 @@ implements SessionBean
 	}
 
 //	/**
-//	 * Returns a detached user.
-//	 *
-//	 * @param userID id of the user
-//	 * @return the detached user
-//	 *
-//	 * @ejb.interface-method
-//	 * @ejb.permission role-name="org.nightlabs.jfire.security.accessRightManagement"
-//	 */
+//	* Returns a detached user.
+//	*
+//	* @param userID id of the user
+//	* @return the detached user
+//	*
+//	* @ejb.interface-method
+//	* @ejb.permission role-name="org.nightlabs.jfire.security.accessRightManagement"
+//	*/
 //	public User getUser(UserID userID, String[] fetchGroups, int maxFetchDepth)
 //	{
-//		PersistenceManager pm = this.getPersistenceManager();
-//		try {
-//			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
-//			if (fetchGroups != null)
-//				pm.getFetchPlan().setGroups(fetchGroups);
-//
-//			pm.getExtent(User.class, true);
-//			Object o = pm.getObjectById(userID,true);
-//			User usr = (User)pm.detachCopy(o);
-//
-//			return usr;
-//		} finally {
-//			pm.close();
-//		}
+//	PersistenceManager pm = this.getPersistenceManager();
+//	try {
+//	pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
+//	if (fetchGroups != null)
+//	pm.getFetchPlan().setGroups(fetchGroups);
+
+//	pm.getExtent(User.class, true);
+//	Object o = pm.getObjectById(userID,true);
+//	User usr = (User)pm.detachCopy(o);
+
+//	return usr;
+//	} finally {
+//	pm.close();
+//	}
 //	}
 
 	/**
@@ -925,7 +926,6 @@ implements SessionBean
 		if (!organisationID.equals(authorityID.organisationID))
 			throw new IllegalArgumentException("Cannot manage foreign access rights! authorityID.organisationID=\""+authorityID.organisationID+"\" does not match our organisationID=\""+organisationID+"\"!");
 
-		boolean forceRollback = true;
 		PersistenceManager pm = getPersistenceManager();
 		try {
 			if (ASSERT_CONSISTENCY_BEFORE)
@@ -956,43 +956,50 @@ implements SessionBean
 					getPrincipal(), RoleConstants.setGrantedRoleGroups
 			);
 
-			if (roleGroupIDs == null) {
-				// A user should never be removed from the organisation-authority (and necessarily be added).
-				if (Authority.AUTHORITY_ID_ORGANISATION.equals(authority.getAuthorityID()))
-					authority.createAuthorizedObjectRef(authorizedObject);
-				else
-					authority.destroyAuthorizedObjectRef(authorizedObject);
-			}
-			else {
-				AuthorizedObjectRef userRef = authority.createAuthorizedObjectRef(authorizedObject);
-				Set<RoleGroupID> roleGroupIDsToAdd = new HashSet<RoleGroupID>(roleGroupIDs);
+			boolean successful = false;
+			SecurityChangeController.beginChanging();
+			try {
 
-				// first remove all RoleGroupRefs from the AuthorizedObjectRef that are not in the given roleGroupIDs set
-				for (RoleGroupRef roleGroupRef : new ArrayList<RoleGroupRef>(userRef.getRoleGroupRefs())) {
-					RoleGroupID roleGroupID = (RoleGroupID) JDOHelper.getObjectId(roleGroupRef.getRoleGroup());
-					if (roleGroupID == null)
-						throw new IllegalStateException("JDOHelper.getObjectId(roleGroupRef.getRoleGroup()) returned null!");
+				if (roleGroupIDs == null) {
+					// A user should never be removed from the organisation-authority (and necessarily be added).
+					if (Authority.AUTHORITY_ID_ORGANISATION.equals(authority.getAuthorityID()))
+						authority.createAuthorizedObjectRef(authorizedObject);
+					else
+						authority.destroyAuthorizedObjectRef(authorizedObject);
+				}
+				else {
+					AuthorizedObjectRef userRef = authority.createAuthorizedObjectRef(authorizedObject);
+					Set<RoleGroupID> roleGroupIDsToAdd = new HashSet<RoleGroupID>(roleGroupIDs);
 
-					if (!roleGroupIDsToAdd.remove(roleGroupID))
-						userRef.removeRoleGroupRef(roleGroupID);
+					// first remove all RoleGroupRefs from the AuthorizedObjectRef that are not in the given roleGroupIDs set
+					for (RoleGroupRef roleGroupRef : new ArrayList<RoleGroupRef>(userRef.getRoleGroupRefs())) {
+						RoleGroupID roleGroupID = (RoleGroupID) JDOHelper.getObjectId(roleGroupRef.getRoleGroup());
+						if (roleGroupID == null)
+							throw new IllegalStateException("JDOHelper.getObjectId(roleGroupRef.getRoleGroup()) returned null!");
+
+						if (!roleGroupIDsToAdd.remove(roleGroupID))
+							userRef.removeRoleGroupRef(roleGroupID);
+					}
+
+					// now add what's missing
+					for (RoleGroupID roleGroupID : roleGroupIDsToAdd) {
+						RoleGroup roleGroup = (RoleGroup) pm.getObjectById(roleGroupID);
+						if (!authority.getAuthorityType().getRoleGroups().contains(roleGroup))
+							throw new IllegalArgumentException("The roleGroupIDs argument contained the roleGroupID \"" + roleGroupID.roleGroupID + "\" which is not part of the AuthorityType of the specified authority " + authorityID + "!");
+
+						RoleGroupRef roleGroupRef = authority.createRoleGroupRef(roleGroup);
+						userRef.addRoleGroupRef(roleGroupRef);
+					}
 				}
 
-				// now add what's missing
-				for (RoleGroupID roleGroupID : roleGroupIDsToAdd) {
-					RoleGroup roleGroup = (RoleGroup) pm.getObjectById(roleGroupID);
-					if (!authority.getAuthorityType().getRoleGroups().contains(roleGroup))
-						throw new IllegalArgumentException("The roleGroupIDs argument contained the roleGroupID \"" + roleGroupID.roleGroupID + "\" which is not part of the AuthorityType of the specified authority " + authorityID + "!");
 
-					RoleGroupRef roleGroupRef = authority.createRoleGroupRef(roleGroup);
-					userRef.addRoleGroupRef(roleGroupRef);
-				}
+				if (ASSERT_CONSISTENCY_AFTER)
+					assertConsistency(pm);
+
+				successful = true; // whether an error occurs during flushing the cache doesn't matter much
+			} finally {
+				SecurityChangeController.endChanging(successful);
 			}
-
-
-			if (ASSERT_CONSISTENCY_AFTER)
-				assertConsistency(pm);
-
-			forceRollback = false; // whether an error occurs during flushing the cache doesn't matter much
 
 			if (Authority.AUTHORITY_ID_ORGANISATION.equals(authority.getAuthorityID())) {
 				JFireServerManager jfsm = getJFireServerManager();
@@ -1021,9 +1028,6 @@ implements SessionBean
 			} // if (Authority.AUTHORITY_ID_ORGANISATION.equals(authority.getAuthorityID()))
 
 		} finally {
-			if (forceRollback)
-				sessionContext.setRollbackOnly();
-
 			pm.close();
 		}
 	}
@@ -1036,33 +1040,39 @@ implements SessionBean
 	 */
 	public void setUserSecurityGroupsOfMember(Set<UserSecurityGroupID> userSecurityGroupIDs, AuthorizedObjectID memberAuthorizedObjectID)
 	{
-		boolean forceRollback = true;
 		PersistenceManager pm = getPersistenceManager();
 		try {
 			if (ASSERT_CONSISTENCY_BEFORE)
 				assertConsistency(pm);
 
-			AuthorizedObject member = (AuthorizedObject) pm.getObjectById(memberAuthorizedObjectID);
+			boolean successful = false;
+			SecurityChangeController.beginChanging();
+			try {
 
-			Set<UserSecurityGroupID> groupIDsToAdd = new HashSet<UserSecurityGroupID>(userSecurityGroupIDs);
-			for (UserSecurityGroup group : new HashSet<UserSecurityGroup>(member.getUserSecurityGroups())) {
-				Object groupID = JDOHelper.getObjectId(group);
-				if (groupID == null)
-					throw new IllegalStateException("JDOHelper.getObjectId(group) returned null!");
+				AuthorizedObject member = (AuthorizedObject) pm.getObjectById(memberAuthorizedObjectID);
 
-				if (!groupIDsToAdd.remove(groupID))
-					group.removeMember(member);
+				Set<UserSecurityGroupID> groupIDsToAdd = new HashSet<UserSecurityGroupID>(userSecurityGroupIDs);
+				for (UserSecurityGroup group : new HashSet<UserSecurityGroup>(member.getUserSecurityGroups())) {
+					Object groupID = JDOHelper.getObjectId(group);
+					if (groupID == null)
+						throw new IllegalStateException("JDOHelper.getObjectId(group) returned null!");
+
+					if (!groupIDsToAdd.remove(groupID))
+						group.removeMember(member);
+				}
+
+				for (UserSecurityGroupID groupID : groupIDsToAdd) {
+					UserSecurityGroup userSecurityGroup = (UserSecurityGroup) pm.getObjectById(groupID);
+					userSecurityGroup.addMember(member);
+				}
+
+				if (ASSERT_CONSISTENCY_AFTER)
+					assertConsistency(pm);
+
+				successful = true;
+			} finally {
+				SecurityChangeController.endChanging(successful);
 			}
-
-			for (UserSecurityGroupID groupID : groupIDsToAdd) {
-				UserSecurityGroup userSecurityGroup = (UserSecurityGroup) pm.getObjectById(groupID);
-				userSecurityGroup.addMember(member);
-			}
-
-			if (ASSERT_CONSISTENCY_AFTER)
-				assertConsistency(pm);
-
-			forceRollback = false;
 
 			// TODO optimize flushing JavaEE authentication cache! Only flush the affected users!
 			JFireServerManager jfsm = getJFireServerManager();
@@ -1072,9 +1082,6 @@ implements SessionBean
 				jfsm.close();
 			}
 		} finally {
-			if (forceRollback)
-				sessionContext.setRollbackOnly();
-
 			pm.close();
 		}
 	}
@@ -1087,34 +1094,39 @@ implements SessionBean
 	 */
 	public void setMembersOfUserSecurityGroup(UserSecurityGroupID userSecurityGroupID, Set<? extends AuthorizedObjectID> memberAuthorizedObjectIDs)
 	{
-		boolean forceRollback = true;
 		PersistenceManager pm = getPersistenceManager();
 		try {
 			if (ASSERT_CONSISTENCY_BEFORE)
 				assertConsistency(pm);
 
-			pm.getExtent(UserSecurityGroup.class);
-			UserSecurityGroup userSecurityGroup = (UserSecurityGroup) pm.getObjectById(userSecurityGroupID);
+			boolean successful = false;
+			SecurityChangeController.beginChanging();
+			try {
+				pm.getExtent(UserSecurityGroup.class);
+				UserSecurityGroup userSecurityGroup = (UserSecurityGroup) pm.getObjectById(userSecurityGroupID);
 
-			Set<ObjectID> memberAuthorizedObjectIDsToAdd = new HashSet<ObjectID>(memberAuthorizedObjectIDs);
-			for (AuthorizedObject member : new HashSet<AuthorizedObject>(userSecurityGroup.getMembers())) {
-				Object memberID = JDOHelper.getObjectId(member);
-				if (memberID == null)
-					throw new IllegalStateException("JDOHelper.getObjectId(member) returned null!");
+				Set<ObjectID> memberAuthorizedObjectIDsToAdd = new HashSet<ObjectID>(memberAuthorizedObjectIDs);
+				for (AuthorizedObject member : new HashSet<AuthorizedObject>(userSecurityGroup.getMembers())) {
+					Object memberID = JDOHelper.getObjectId(member);
+					if (memberID == null)
+						throw new IllegalStateException("JDOHelper.getObjectId(member) returned null!");
 
-				if (!memberAuthorizedObjectIDsToAdd.remove(memberID))
-					userSecurityGroup.removeMember(member);
+					if (!memberAuthorizedObjectIDsToAdd.remove(memberID))
+						userSecurityGroup.removeMember(member);
+				}
+
+				for (ObjectID memberID : memberAuthorizedObjectIDsToAdd) {
+					AuthorizedObject authorizedObject = (AuthorizedObject) pm.getObjectById(memberID);
+					userSecurityGroup.addMember(authorizedObject);
+				}
+
+				if (ASSERT_CONSISTENCY_AFTER)
+					assertConsistency(pm);
+
+				successful = true;
+			} finally {
+				SecurityChangeController.endChanging(successful);
 			}
-
-			for (ObjectID memberID : memberAuthorizedObjectIDsToAdd) {
-				AuthorizedObject authorizedObject = (AuthorizedObject) pm.getObjectById(memberID);
-				userSecurityGroup.addMember(authorizedObject);
-			}
-
-			if (ASSERT_CONSISTENCY_AFTER)
-				assertConsistency(pm);
-
-			forceRollback = false;
 
 			// TODO optimize flushing JavaEE authentication cache! Only flush the affected users!
 			JFireServerManager jfsm = getJFireServerManager();
@@ -1124,9 +1136,6 @@ implements SessionBean
 				jfsm.close();
 			}
 		} finally {
-			if (forceRollback)
-				sessionContext.setRollbackOnly();
-
 			pm.close();
 		}
 	}

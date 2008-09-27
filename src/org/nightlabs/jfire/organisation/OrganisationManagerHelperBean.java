@@ -25,6 +25,7 @@ import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.security.UserLocal;
 import org.nightlabs.jfire.security.id.AuthorityID;
 import org.nightlabs.jfire.security.id.UserLocalID;
+import org.nightlabs.jfire.security.listener.SecurityChangeController;
 import org.nightlabs.jfire.server.LocalServer;
 import org.nightlabs.jfire.server.Server;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
@@ -228,55 +229,63 @@ public abstract class OrganisationManagerHelperBean
 		String organisationID = getOrganisationID();
 		PersistenceManager pm = getPersistenceManager();
 		try {
-//			if(logger.isDebugEnabled())
+			boolean successful = false;
+			SecurityChangeController.beginChanging();
+			try {
+//				if(logger.isDebugEnabled())
 //				logger.debug("Loading previously created AuthorityType (" + AuthorityType.AUTHORITY_TYPE_ID_SELF + ") from datastore and assigning role-groups...");
-//
-//			AuthorityType authorityType = (AuthorityType) pm.getObjectById(AuthorityType.AUTHORITY_TYPE_ID_SELF);
-//			authorityType.addRoleGroup((RoleGroup) pm.getObjectById(RoleGroupConstants.securityManager_editAuthority));
-//
-//			if(logger.isDebugEnabled())
+
+//				AuthorityType authorityType = (AuthorityType) pm.getObjectById(AuthorityType.AUTHORITY_TYPE_ID_SELF);
+//				authorityType.addRoleGroup((RoleGroup) pm.getObjectById(RoleGroupConstants.securityManager_editAuthority));
+
+//				if(logger.isDebugEnabled())
 //				logger.debug("Loading previously created AuthorityType (" + AuthorityType.AUTHORITY_TYPE_ID_SELF + ") from datastore and assigning role-groups done.");
 
 
-			if(logger.isDebugEnabled())
-				logger.debug("Loading previously created Authority from datastore...");
+				if(logger.isDebugEnabled())
+					logger.debug("Loading previously created Authority from datastore...");
 
-			Authority authority = (Authority) pm.getObjectById(AuthorityID.create(
-					organisationID, Authority.AUTHORITY_ID_ORGANISATION));
+				Authority authority = (Authority) pm.getObjectById(AuthorityID.create(
+						organisationID, Authority.AUTHORITY_ID_ORGANISATION));
 
-			if(logger.isDebugEnabled())
-				logger.debug("Loading previously created Authority from datastore done.");
+				if(logger.isDebugEnabled())
+					logger.debug("Loading previously created Authority from datastore done.");
 
 
-			if(logger.isDebugEnabled())
-				logger.debug("Creating instances of AuthorizedObjectRef for both Users within the default authority...");
+				if(logger.isDebugEnabled())
+					logger.debug("Creating instances of AuthorizedObjectRef for both Users within the default authority...");
 
-			UserLocal otherUserLocal = (UserLocal) pm.getObjectById(UserLocalID.create(organisationID, User.USER_ID_OTHER, organisationID));
-			UserLocal userLocal = (UserLocal) pm.getObjectById(UserLocalID.create(organisationID, userID, organisationID));
-			authority.createAuthorizedObjectRef(otherUserLocal);
-			AuthorizedObjectRef userRef = authority.createAuthorizedObjectRef(userLocal);
-			if(logger.isDebugEnabled())
-				logger.debug("Creating instances of AuthorizedObjectRef for both Users within the default authority done.");
+				UserLocal otherUserLocal = (UserLocal) pm.getObjectById(UserLocalID.create(organisationID, User.USER_ID_OTHER, organisationID));
+				UserLocal userLocal = (UserLocal) pm.getObjectById(UserLocalID.create(organisationID, userID, organisationID));
+				authority.createAuthorizedObjectRef(otherUserLocal);
+				AuthorizedObjectRef userRef = authority.createAuthorizedObjectRef(userLocal);
+				if(logger.isDebugEnabled())
+					logger.debug("Creating instances of AuthorizedObjectRef for both Users within the default authority done.");
 
-			// Give the user all RoleGroups.
-			if(logger.isDebugEnabled())
-				logger.debug("Assign all RoleGroups to the user \""+userID+"\"...");
-			for (Iterator<RoleGroup> it = pm.getExtent(RoleGroup.class).iterator(); it.hasNext(); ) {
-				RoleGroup roleGroup = it.next();
-				RoleGroupRef roleGroupRef = authority.createRoleGroupRef(roleGroup);
-				userRef.addRoleGroupRef(roleGroupRef);
+				// Give the user all RoleGroups.
+				if(logger.isDebugEnabled())
+					logger.debug("Assign all RoleGroups to the user \""+userID+"\"...");
+				for (Iterator<RoleGroup> it = pm.getExtent(RoleGroup.class).iterator(); it.hasNext(); ) {
+					RoleGroup roleGroup = it.next();
+					RoleGroupRef roleGroupRef = authority.createRoleGroupRef(roleGroup);
+					userRef.addRoleGroupRef(roleGroupRef);
+				}
+				if(logger.isDebugEnabled())
+					logger.debug("Assigning all RoleGroups to user \""+userID+"\" done.");
+
+				// create system user
+				if(logger.isDebugEnabled())
+					logger.debug("Creating system user...");
+				User systemUser = new User(organisationID, User.USER_ID_SYSTEM);
+				new UserLocal(systemUser);
+				pm.makePersistent(systemUser);
+				if(logger.isDebugEnabled())
+					logger.debug("System user created.");
+
+				successful = true;
+			} finally {
+				SecurityChangeController.endChanging(successful);
 			}
-			if(logger.isDebugEnabled())
-				logger.debug("Assigning all RoleGroups to user \""+userID+"\" done.");
-
-			// create system user
-			if(logger.isDebugEnabled())
-				logger.debug("Creating system user...");
-			User systemUser = new User(organisationID, User.USER_ID_SYSTEM);
-			new UserLocal(systemUser);
-			pm.makePersistent(systemUser);
-			if(logger.isDebugEnabled())
-				logger.debug("System user created.");
 
 		} finally {
 			pm.close();
