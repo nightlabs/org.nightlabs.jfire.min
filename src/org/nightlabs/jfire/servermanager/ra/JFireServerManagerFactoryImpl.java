@@ -87,6 +87,7 @@ import org.nightlabs.ModuleException;
 import org.nightlabs.config.Config;
 import org.nightlabs.config.ConfigException;
 import org.nightlabs.j2ee.LoginData;
+import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jdo.ObjectIDUtil;
 import org.nightlabs.jfire.base.InvokeUtil;
 import org.nightlabs.jfire.base.JFireBasePrincipal;
@@ -122,6 +123,7 @@ import org.nightlabs.jfire.security.UserLocal;
 import org.nightlabs.jfire.security.id.AuthorizedObjectRefID;
 import org.nightlabs.jfire.security.id.UserID;
 import org.nightlabs.jfire.security.id.UserLocalID;
+import org.nightlabs.jfire.security.listener.SecurityChangeController;
 import org.nightlabs.jfire.server.Server;
 import org.nightlabs.jfire.serverconfigurator.ServerConfigurator;
 import org.nightlabs.jfire.serverinit.ServerInitManager;
@@ -646,9 +648,37 @@ public class JFireServerManagerFactoryImpl
 									boolean doCommit = false;
 									userTransaction.begin();
 									try {
+										LoginContext loginContext = new LoginContext(
+												LoginData.DEFAULT_SECURITY_PROTOCOL,
+												new CallbackHandler() {
+													@Override
+													public void handle(Callback[] callbacks)
+													throws IOException, UnsupportedCallbackException
+													{
+														for (int i = 0; i < callbacks.length; ++i) {
+															Callback cb = callbacks[i];
+															if (cb instanceof NameCallback) {
+																((NameCallback)cb).setName(User.USER_ID_SYSTEM + User.SEPARATOR_BETWEEN_USER_ID_AND_ORGANISATION_ID + organisationID);
+															}
+															else if (cb instanceof PasswordCallback) {
+																((PasswordCallback)cb).setPassword(
+																		jfireSecurity_createTempUserPassword(organisationID, User.USER_ID_SYSTEM).toCharArray()
+																);
+															}
+															else throw new UnsupportedCallbackException(cb);
+														}
+													}
+												}
+										);
+										loginContext.login();
+										try {
 
-										RoleImportSet roleImportSet = roleImport_prepare(organisationID);
-										roleImport_commit(roleImportSet, null);
+											RoleImportSet roleImportSet = roleImport_prepare(organisationID);
+											roleImport_commit(roleImportSet, null);
+
+										} finally {
+											loginContext.logout();
+										}
 
 										doCommit = true;
 									} finally {
@@ -1132,101 +1162,109 @@ public class JFireServerManagerFactoryImpl
 		if (localPM)
 			pm = getPersistenceManager(roleImportSet.getOrganisationID());
 		try {
-//			if (!localPM) { // I think it's a good idea to check this on every start-up => commented the "if" out
-			// check whether PM datastore matches organisationID
-			String datastoreOrgaID = LocalOrganisation.getLocalOrganisation(pm).getOrganisationID();
-			if (!datastoreOrgaID.equals(roleImportSet.getOrganisationID()))
-				throw new IllegalArgumentException("Parameter pm does not match organisationID of given roleImportSet!");
-//			}
+			boolean successful = false;
+			SecurityChangeController.beginChanging();
+			try {
 
-			// Find out whether any RoleGroup disappeared. This means a module has been undeployed and we need to backup the data
-			// in order to restore it if the RoleGroup re-appears (if the module is re-deployed).
-			Set<String> newRoleGroupIDs = securityMan.getRoleGroups().keySet();
-			Set<String> oldRoleGroupIDs = new HashSet<String>();
-			for (Iterator<RoleGroup> it = pm.getExtent(RoleGroup.class).iterator(); it.hasNext(); ) {
-				RoleGroup roleGroup = it.next();
-				oldRoleGroupIDs.add(roleGroup.getRoleGroupID());
-				if (!newRoleGroupIDs.contains(roleGroup.getRoleGroupID())) {
-					// the role-group is about to disappear => backup
+//				if (!localPM) { // I think it's a good idea to check this on every start-up => commented the "if" out
+				// check whether PM datastore matches organisationID
+				String datastoreOrgaID = LocalOrganisation.getLocalOrganisation(pm).getOrganisationID();
+				if (!datastoreOrgaID.equals(roleImportSet.getOrganisationID()))
+					throw new IllegalArgumentException("Parameter pm does not match organisationID of given roleImportSet!");
+//				}
 
-					// in order to prevent primary key violations we make sure there is no record for this role-group
-					for (UndeployedRoleGroupAuthorityUserRecord r : UndeployedRoleGroupAuthorityUserRecord.getUndeployedRoleGroupAuthorityUserRecordForRoleGroup(pm, roleGroup)) {
-						pm.deletePersistent(r);
-					}
-					pm.flush(); // ensure, the deletions are pushed to the datastore
-
-					UndeployedRoleGroupAuthorityUserRecord.createRecordsForRoleGroup(pm, roleGroup);
-				}
-			}
-
-			AuthorityType authorityType_organisation = (AuthorityType) pm.getObjectById(AuthorityType.AUTHORITY_TYPE_ID_ORGANISATION);
-
-			// create/update AuthorityType JDO objects (with the data in the securityMan). Note, that this already creates/updates role-groups and roles!
-			for (AuthorityTypeDef authorityTypeDef : securityMan.getAuthorityTypes().values()) {
-				authorityTypeDef.updateAuthorityType(
-						pm,
-						!authorityType_organisation.getAuthorityTypeID().equals(authorityTypeDef.getAuthorityTypeID())
-				);
-			}
-
-			// create/update RoleGroup JDO objects (with the data in the securityMan)
-			for (RoleGroupDef roleGroupDef : securityMan.getRoleGroups().values()) {
-				RoleGroup roleGroupJDO = roleGroupDef.updateRoleGroup(pm);
-				authorityType_organisation.addRoleGroup(roleGroupJDO);
-			}
-
-			// delete all roles that are not existing anymore
-			{
-				Set<String> currentRoleIDs = securityMan.getRoles().keySet();
-				Query q = pm.newQuery(Role.class);
-				pm.flush();
-				for (Object o : new HashSet<Object>((Collection<?>)q.execute())) {
-					Role role = (Role) o;
-					if (currentRoleIDs.contains(role.getRoleID()))
-						continue;
-
-					for (RoleGroup roleGroup : new HashSet<RoleGroup>(role.getRoleGroups()))
-						roleGroup.removeRole(role);
-
-					pm.deletePersistent(role);
-					pm.flush();
-				}
-			}
-
-			// delete all role-groups that don't exist anymore and restore assignments to users in case a role-group re-appeared (due to re-deployment)
-			{
-				Collection<RoleGroup> roleGroups = CollectionUtil.castCollection((Collection<?>)pm.newQuery(RoleGroup.class).execute());
-				roleGroups = new HashSet<RoleGroup>(roleGroups);
-				for (Iterator<RoleGroup> it = roleGroups.iterator(); it.hasNext(); ) {
+				// Find out whether any RoleGroup disappeared. This means a module has been undeployed and we need to backup the data
+				// in order to restore it if the RoleGroup re-appears (if the module is re-deployed).
+				Set<String> newRoleGroupIDs = securityMan.getRoleGroups().keySet();
+				Set<String> oldRoleGroupIDs = new HashSet<String>();
+				for (Iterator<RoleGroup> it = pm.getExtent(RoleGroup.class).iterator(); it.hasNext(); ) {
 					RoleGroup roleGroup = it.next();
+					oldRoleGroupIDs.add(roleGroup.getRoleGroupID());
 					if (!newRoleGroupIDs.contains(roleGroup.getRoleGroupID())) {
-//						Query q2 = pm.newQuery(AuthorityType.class);
-//						q2.setFilter("this.roleGroups.contains(:roleGroup)");
-//						Collection<?> c2 = (Collection<?>) q2.execute(roleGroup);
-//						for (Object o2 : c2) {
+						// the role-group is about to disappear => backup
+
+						// in order to prevent primary key violations we make sure there is no record for this role-group
+						for (UndeployedRoleGroupAuthorityUserRecord r : UndeployedRoleGroupAuthorityUserRecord.getUndeployedRoleGroupAuthorityUserRecordForRoleGroup(pm, roleGroup)) {
+							pm.deletePersistent(r);
+						}
+						pm.flush(); // ensure, the deletions are pushed to the datastore
+
+						UndeployedRoleGroupAuthorityUserRecord.createRecordsForRoleGroup(pm, roleGroup);
+					}
+				}
+
+				AuthorityType authorityType_organisation = (AuthorityType) pm.getObjectById(AuthorityType.AUTHORITY_TYPE_ID_ORGANISATION);
+
+				// create/update AuthorityType JDO objects (with the data in the securityMan). Note, that this already creates/updates role-groups and roles!
+				for (AuthorityTypeDef authorityTypeDef : securityMan.getAuthorityTypes().values()) {
+					authorityTypeDef.updateAuthorityType(
+							pm,
+							!authorityType_organisation.getAuthorityTypeID().equals(authorityTypeDef.getAuthorityTypeID())
+					);
+				}
+
+				// create/update RoleGroup JDO objects (with the data in the securityMan)
+				for (RoleGroupDef roleGroupDef : securityMan.getRoleGroups().values()) {
+					RoleGroup roleGroupJDO = roleGroupDef.updateRoleGroup(pm);
+					authorityType_organisation.addRoleGroup(roleGroupJDO);
+				}
+
+				// delete all roles that are not existing anymore
+				{
+					Set<String> currentRoleIDs = securityMan.getRoles().keySet();
+					Query q = pm.newQuery(Role.class);
+					pm.flush();
+					for (Object o : new HashSet<Object>((Collection<?>)q.execute())) {
+						Role role = (Role) o;
+						if (currentRoleIDs.contains(role.getRoleID()))
+							continue;
+
+						for (RoleGroup roleGroup : new HashSet<RoleGroup>(role.getRoleGroups()))
+							roleGroup.removeRole(role);
+
+						pm.deletePersistent(role);
+						pm.flush();
+					}
+				}
+
+				// delete all role-groups that don't exist anymore and restore assignments to users in case a role-group re-appeared (due to re-deployment)
+				{
+					Collection<RoleGroup> roleGroups = CollectionUtil.castCollection((Collection<?>)pm.newQuery(RoleGroup.class).execute());
+					roleGroups = new HashSet<RoleGroup>(roleGroups);
+					for (Iterator<RoleGroup> it = roleGroups.iterator(); it.hasNext(); ) {
+						RoleGroup roleGroup = it.next();
+						if (!newRoleGroupIDs.contains(roleGroup.getRoleGroupID())) {
+//							Query q2 = pm.newQuery(AuthorityType.class);
+//							q2.setFilter("this.roleGroups.contains(:roleGroup)");
+//							Collection<?> c2 = (Collection<?>) q2.execute(roleGroup);
+//							for (Object o2 : c2) {
 //							AuthorityType authorityType = (AuthorityType) o2;
 //							authorityType.removeRoleGroup(roleGroup);
-//						}
+//							}
 
-						pm.deletePersistent(roleGroup);
-						pm.flush();
-					} // if (!newRoleGroupIDs.contains(roleGroup.getRoleGroupID()))
-
-					if (!oldRoleGroupIDs.contains(roleGroup.getRoleGroupID())) {
-						// redeployed => restore assignments
-						for (UndeployedRoleGroupAuthorityUserRecord r : UndeployedRoleGroupAuthorityUserRecord.getUndeployedRoleGroupAuthorityUserRecordForRoleGroup(pm, roleGroup)) {
-							if (r.getAuthority() != null && r.getAuthorizedObject() != null) { // in case an authority or a group has been deleted (if this is ever possible)
-								RoleGroupRef roleGroupRef = r.getAuthority().createRoleGroupRef(roleGroup);
-								AuthorizedObjectRef authorizedObjectRef = r.getAuthority().createAuthorizedObjectRef(r.getAuthorizedObject());
-								authorizedObjectRef.addRoleGroupRef(roleGroupRef);
-							}
-							pm.deletePersistent(r);
+							pm.deletePersistent(roleGroup);
 							pm.flush();
+						} // if (!newRoleGroupIDs.contains(roleGroup.getRoleGroupID()))
+
+						if (!oldRoleGroupIDs.contains(roleGroup.getRoleGroupID())) {
+							// redeployed => restore assignments
+							for (UndeployedRoleGroupAuthorityUserRecord r : UndeployedRoleGroupAuthorityUserRecord.getUndeployedRoleGroupAuthorityUserRecordForRoleGroup(pm, roleGroup)) {
+								if (r.getAuthority() != null && r.getAuthorizedObject() != null) { // in case an authority or a group has been deleted (if this is ever possible)
+									RoleGroupRef roleGroupRef = r.getAuthority().createRoleGroupRef(roleGroup);
+									AuthorizedObjectRef authorizedObjectRef = r.getAuthority().createAuthorizedObjectRef(r.getAuthorizedObject());
+									authorizedObjectRef.addRoleGroupRef(roleGroupRef);
+								}
+								pm.deletePersistent(r);
+								pm.flush();
+							}
 						}
 					}
 				}
-			}
 
+				successful = true;
+			} finally {
+				SecurityChangeController.endChanging(successful);
+			}
 		} finally {
 			if (localPM)
 				pm.close();
@@ -2349,6 +2387,7 @@ public class JFireServerManagerFactoryImpl
 	{
 		PersistenceManagerFactory pmf = getPersistenceManagerFactory(organisationID);
 		PersistenceManager pm = pmf.getPersistenceManager();
+		NLJDOHelper.setThreadPersistenceManager(pm);
 		return pm;
 	}
 

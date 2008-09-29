@@ -60,7 +60,7 @@ public interface JFireServerManager
 
 	/**
 	 * This method checks whether we have a brand new server that needs setup.
-	 * 
+	 *
 	 * @return Whether or not the server needs initial setup.
 	 */
 	public boolean isNewServerNeedingSetup();
@@ -156,11 +156,11 @@ public interface JFireServerManager
 
 	public boolean removeServerAdmin(String organisationID, String userID)
 	throws ModuleException;
-	
+
 //	public Config getConfig();
 
 	public void close();
-	
+
 	public RoleImportSet roleImport_prepare(String organisationID);
 
 	public void roleImport_commit(RoleImportSet roleImportSet);
@@ -190,7 +190,7 @@ public interface JFireServerManager
 	public void jfireSecurity_flushCache();
 
 	public String jfireSecurity_createTempUserPassword(String organisationID, String userID);
-	
+
 	public JFirePrincipal login(LoginData loginData)
 		throws LoginException;
 
