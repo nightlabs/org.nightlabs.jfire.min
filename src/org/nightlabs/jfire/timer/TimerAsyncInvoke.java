@@ -13,6 +13,7 @@ import javax.naming.NamingException;
 import javax.security.auth.login.LoginException;
 
 import org.apache.log4j.Logger;
+import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jdo.ObjectIDUtil;
 import org.nightlabs.jfire.asyncinvoke.AsyncInvoke;
 import org.nightlabs.jfire.asyncinvoke.AsyncInvokeEnvelope;
@@ -187,6 +188,8 @@ public class TimerAsyncInvoke
 
 			PersistenceManager pm = getPersistenceManager();
 			try {
+				NLJDOHelper.setTransactionSerializeReadObjects(pm, true);
+
 				Task task = (Task) pm.getObjectById(invocationParam.getTaskID());
 				if (!invocationParam.getActiveExecID().equals(task.getActiveExecID())) {
 					return; // no changes, if we're not active anymore!!!
@@ -194,7 +197,7 @@ public class TimerAsyncInvoke
 
 				if (durationMSec < 0) {
 					// We were too fast (the invocation was called already before the TimerManagerBean wrote the
-					// new data to the database. Hence, we re-enqueue it.
+					// new data to the database. Hence, we re-enqueue it. Shouldn't happen with NLJDOHelper.setTransactionSerializeReadObjects(pm, true); anymore, but we better leave this safety check.
 					logger.error("Task " + invocationParam.getTaskID() + " was re-enqueued, because the previous invocation was too fast. Should not happen!");
 					enqueue(QUEUE_INVOCATION, envelope, false);
 					return;
@@ -232,6 +235,8 @@ public class TimerAsyncInvoke
 		{
 			PersistenceManager pm = getPersistenceManager();
 			try {
+				NLJDOHelper.setTransactionSerializeReadObjects(pm, true);
+
 				Task task = (Task) pm.getObjectById(invocationParam.getTaskID());
 				if (!invocationParam.getActiveExecID().equals(task.getActiveExecID())) {
 					return; // no changes, if we're not active anymore!!!
@@ -273,6 +278,8 @@ public class TimerAsyncInvoke
 		{
 			PersistenceManager pm = getPersistenceManager();
 			try {
+				NLJDOHelper.setTransactionSerializeReadObjects(pm, true);
+
 				Task task = (Task) pm.getObjectById(invocationParam.getTaskID());
 				if (!invocationParam.getActiveExecID().equals(task.getActiveExecID())) {
 					return; // no changes, if we're not active anymore!!!

@@ -36,6 +36,7 @@ import javax.jdo.PersistenceManager;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.ModuleException;
+import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.idgenerator.id.IDNamespaceID;
 
@@ -103,12 +104,7 @@ extends BaseSessionBeanImpl implements SessionBean
 			try {
 				pm.getExtent(IDNamespace.class);
 
-				// TODO this should be DataNucleus-independent!
-				// If it is not making it into the JDO standard, we need to write our own
-				// JDO-implementation-independent API!
-				((org.datanucleus.jdo.JDOTransaction)pm.currentTransaction()).setOption(
-						"transaction.serializeReadObjects", Boolean.TRUE
-				);
+				NLJDOHelper.setTransactionSerializeReadObjects(pm, true);
 
 				String organisationID = getOrganisationID();
 

@@ -61,6 +61,7 @@ import org.nightlabs.jfire.crossorganisationregistrationinit.Context;
 import org.nightlabs.jfire.jdo.notification.persistent.PersistentNotificationEJB;
 import org.nightlabs.jfire.jdo.notification.persistent.PersistentNotificationEJBUtil;
 import org.nightlabs.jfire.jdo.notification.persistent.SubscriptionUtil;
+import org.nightlabs.jfire.organisation.LocalOrganisation;
 import org.nightlabs.jfire.security.id.AuthorityID;
 import org.nightlabs.jfire.security.id.AuthorityTypeID;
 import org.nightlabs.jfire.security.id.AuthorizedObjectID;
@@ -947,6 +948,9 @@ implements SessionBean
 					throw new IllegalArgumentException("Cannot manipulate system user \"" + User.USER_ID_SYSTEM + "\"!");
 			}
 
+			if (!getOrganisationID().equals(authorizedObject.getOrganisationID()))
+				throw new IllegalArgumentException("AuthorizedObject is not managed by this organisation (" + getOrganisationID() + ")! " + authorizedObjectID);
+
 			// authorize
 			Authority.resolveSecuringAuthority(
 					pm,
@@ -1142,6 +1146,8 @@ implements SessionBean
 
 	private static void assertConsistency(PersistenceManager pm)
 	{
+		String localOrganisationID = LocalOrganisation.getLocalOrganisation(pm).getOrganisationID();
+
 		// check if all user.groups matches group.members
 		for (Iterator<UserLocal> it = pm.getExtent(UserLocal.class).iterator(); it.hasNext(); ) {
 			UserLocal userLocal = it.next();
@@ -1159,8 +1165,13 @@ implements SessionBean
 			}
 		}
 
-		// check authorities
-		for (Iterator<Authority> it = pm.getExtent(Authority.class).iterator(); it.hasNext(); )
+		// check LOCAL authorities
+		Query qAuthorities = pm.newQuery(Authority.class);
+		qAuthorities.setFilter("this.organisationID == :organisationID");
+		Collection<Authority> authorities = CollectionUtil.castCollection(
+				(Collection<?>)qAuthorities.execute(localOrganisationID)
+		);
+		for (Iterator<Authority> it = authorities.iterator(); it.hasNext(); )
 			_assertConsistency(pm, it.next());
 	}
 

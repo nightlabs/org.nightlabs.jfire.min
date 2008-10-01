@@ -86,6 +86,8 @@ implements SessionBean
 	{
 		PersistenceManager pm = getPersistenceManager();
 		try {
+			NLJDOHelper.setTransactionSerializeReadObjects(pm, true);
+
 			Task task = (Task) pm.getObjectById(taskID);
 			if (!activeExecID.equals(task.getActiveExecID())) {
 				logger.info("setExecutingIfActiveExecIDMatches(...): will not touch task with taskID=\""+taskID+"\", because activeExecID does not match: activeExecID()=\""+activeExecID+"\" task.getActiveExecID()=\""+task.getActiveExecID()+"\"");
@@ -126,6 +128,8 @@ implements SessionBean
 		List<Task> tasks;
 		PersistenceManager pm = getPersistenceManager();
 		try {
+			NLJDOHelper.setTransactionSerializeReadObjects(pm, true);
+
 			pm.getFetchPlan().setMaxFetchDepth(NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
 			pm.getFetchPlan().setGroups(FETCH_GROUPS_TASK);
 			Date now = new Date();
@@ -224,7 +228,9 @@ implements SessionBean
 		try {
 			PersistenceManager pm = getPersistenceManager();
 			try {
-				User principalUser = User.getUser(pm, getPrincipal());
+				User principalUser = User.getUser(pm, getPrincipal()); // do this before locking, because the user isn't changed in this transaction anyway - no need to lock it in the db
+
+				NLJDOHelper.setTransactionSerializeReadObjects(pm, true);
 
 				TaskID taskID = (TaskID) JDOHelper.getObjectId(task);
 				Task persistentTask = null;
@@ -245,6 +251,8 @@ implements SessionBean
 						(persistentTask != null && !principalUser.equals(persistentTask.getUser()))
 				)
 				{
+					NLJDOHelper.setTransactionSerializeReadObjects(pm, false); // no need to lock the Authority - better don't! Marco.
+
 					// trying to manipulate a task where the current user is not the owner => check for RoleConstants.storeTask_all
 					Authority.getOrganisationAuthority(pm).assertContainsRoleRef(getPrincipal(), RoleConstants.storeTask_all);
 				}
