@@ -35,6 +35,7 @@ import javax.ejb.SessionBean;
 import javax.jdo.PersistenceManager;
 
 import org.apache.log4j.Logger;
+import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 
 /**
@@ -66,7 +67,7 @@ implements SessionBean
 	}
 	/**
 	 * @see javax.ejb.SessionBean#ejbRemove()
-	 * 
+	 *
 	 * @ejb.permission unchecked="true"
 	 */
 	public void ejbRemove() throws EJBException, RemoteException
@@ -83,6 +84,7 @@ implements SessionBean
 	{
 		PersistenceManager pm = getPersistenceManager();
 		try {
+			NLJDOHelper.setTransactionSerializeReadObjects(pm, true);
 			AsyncInvokeProblem asyncInvokeProblem = AsyncInvokeProblem.createAsyncInvokeProblem(pm, envelope);
 			asyncInvokeProblem.addError(error);
 
@@ -190,6 +192,7 @@ implements SessionBean
 	{
 		PersistenceManager pm = getPersistenceManager();
 		try {
+			NLJDOHelper.setTransactionSerializeReadObjects(pm, true);
 			AsyncInvokeProblem.createAsyncInvokeProblem(pm, envelope).setUndeliverable(undeliverable);
 		} finally {
 			pm.close();
@@ -206,6 +209,7 @@ implements SessionBean
   {
 	  PersistenceManager pm = getPersistenceManager();
 	  try {
+		  NLJDOHelper.setTransactionSerializeReadObjects(pm, true);
 		  AsyncInvokeProblem asyncInvokeProblem = envelope.getAsyncInvokeProblem(pm);
 		  if (asyncInvokeProblem != null)
 			  pm.deletePersistent(asyncInvokeProblem);
