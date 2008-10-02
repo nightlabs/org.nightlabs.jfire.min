@@ -19,14 +19,15 @@ import org.nightlabs.jfire.base.InitException;
 import org.nightlabs.jfire.base.login.JFireLogin;
 import org.nightlabs.jfire.config.ConfigSetup;
 import org.nightlabs.jfire.security.Authority;
+import org.nightlabs.jfire.security.AuthorizedObjectRef;
 import org.nightlabs.jfire.security.RoleGroup;
 import org.nightlabs.jfire.security.RoleGroupRef;
 import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.security.UserLocal;
-import org.nightlabs.jfire.security.AuthorizedObjectRef;
 import org.nightlabs.jfire.security.id.AuthorityID;
 import org.nightlabs.jfire.security.id.UserID;
+import org.nightlabs.jfire.security.listener.SecurityChangeController;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.servermanager.JFireServerManagerUtil;
 import org.nightlabs.jfire.testsuite.JFireTestSuiteEAR;
@@ -99,66 +100,74 @@ public class JFireTestLogin {
 	private static boolean checkCreateLoginUsers(PersistenceManager pm, Properties userProperties,
 			Set<String> userPropNames) throws InitException, ModuleException, NamingException
 	{
-		for (String userPropName : userPropNames) {
-			Properties userProps = JFireTestSuiteEAR.getProperties(userProperties, userPropName + ".");
-			String _userID = userProps.getProperty(JFireLogin.PROP_USER_ID);
-			String password = userProps.getProperty(JFireLogin.PROP_PASSWORD);
-			String organisationID = SecurityReflector.getUserDescriptor().getOrganisationID();
-			UserID userID = UserID.create(organisationID, _userID);
-			User user = null;
-			try {
-				user = (User) pm.getObjectById(userID);
-				continue;
-			} catch (JDOObjectNotFoundException e) {
-			}
-			if(logger.isDebugEnabled())
-				logger.debug("Creating User " + userID + " for testing.");
-			// user not created by now; continue was not invoked.
-			user = new User(userID.organisationID, userID.userID);
-			UserLocal userLocal = new UserLocal(user);
-			userLocal.setPasswordPlain(password);
-			user = pm.makePersistent(user);
-			if (USER_QUALIFIER_SERVER_ADMIN.equals(userPropName)) {
-				JFireServerManager jFireServerManager = JFireServerManagerUtil.getJFireServerManager();
-				jFireServerManager.addServerAdmin(userID.organisationID, userID.userID);
-				Authority authority = (Authority) pm.getObjectById(AuthorityID.create(
-						organisationID, Authority.AUTHORITY_ID_ORGANISATION));
-				AuthorizedObjectRef userRef = authority.createAuthorizedObjectRef(user.getUserLocal());
-				if(logger.isDebugEnabled())
-					logger.debug("Creating instances of AuthorizedObjectRef for both Users within the default authority done.");
-
-				// Give the user all RoleGroups.
-				if(logger.isDebugEnabled())
-					logger.debug("Assign all RoleGroups to the user \""+userID+"\"...");
-				for (Iterator it = pm.getExtent(RoleGroup.class).iterator(); it.hasNext(); ) {
-					RoleGroup roleGroup = (RoleGroup)it.next();
-					RoleGroupRef roleGroupRef = authority.createRoleGroupRef(roleGroup);
-					userRef.addRoleGroupRef(roleGroupRef);
+		SecurityChangeController.beginChanging();
+		boolean successful = true;
+		try {
+			for (String userPropName : userPropNames) {
+				Properties userProps = JFireTestSuiteEAR.getProperties(userProperties, userPropName + ".");
+				String _userID = userProps.getProperty(JFireLogin.PROP_USER_ID);
+				String password = userProps.getProperty(JFireLogin.PROP_PASSWORD);
+				String organisationID = SecurityReflector.getUserDescriptor().getOrganisationID();
+				UserID userID = UserID.create(organisationID, _userID);
+				User user = null;
+				try {
+					user = (User) pm.getObjectById(userID);
+					continue;
+				} catch (JDOObjectNotFoundException e) {
 				}
 				if(logger.isDebugEnabled())
-					logger.debug("Assigning all RoleGroups to user \""+userID+"\" done.");
-			}
-		}
-		ConfigSetup.ensureAllPrerequisites(pm);
-		
-		// check if they are correctly stored
-		if (userPropNames.isEmpty()) {
-			if (logger.isEnabledFor(Priority.WARN))
-				logger.warn("No declared users found!");
+					logger.debug("Creating User " + userID + " for testing.");
+				// user not created by now; continue was not invoked.
+				user = new User(userID.organisationID, userID.userID);
+				UserLocal userLocal = new UserLocal(user);
+				userLocal.setPasswordPlain(password);
+				user = pm.makePersistent(user);
+				if (USER_QUALIFIER_SERVER_ADMIN.equals(userPropName)) {
+					JFireServerManager jFireServerManager = JFireServerManagerUtil.getJFireServerManager();
+					jFireServerManager.addServerAdmin(userID.organisationID, userID.userID);
+					Authority authority = (Authority) pm.getObjectById(AuthorityID.create(
+							organisationID, Authority.AUTHORITY_ID_ORGANISATION));
+					AuthorizedObjectRef userRef = authority.createAuthorizedObjectRef(user.getUserLocal());
+					if(logger.isDebugEnabled())
+						logger.debug("Creating instances of AuthorizedObjectRef for both Users within the default authority done.");
 
-			return true;
-		}
-
-		for (String userPropName : userPropNames) {
-			Properties userProps = JFireTestSuiteEAR.getProperties(userProperties, userPropName + ".");
-			String _userID = userProps.getProperty(JFireLogin.PROP_USER_ID);
-			String organisationID = SecurityReflector.getUserDescriptor().getOrganisationID();
-			UserID userID = UserID.create(organisationID, _userID);
-			try {
-				pm.getObjectById(userID);
-			}	catch (JDOObjectNotFoundException e) {
-				return false;
+					// Give the user all RoleGroups.
+					if(logger.isDebugEnabled())
+						logger.debug("Assign all RoleGroups to the user \""+userID+"\"...");
+					for (Iterator it = pm.getExtent(RoleGroup.class).iterator(); it.hasNext(); ) {
+						RoleGroup roleGroup = (RoleGroup)it.next();
+						RoleGroupRef roleGroupRef = authority.createRoleGroupRef(roleGroup);
+						userRef.addRoleGroupRef(roleGroupRef);
+					}
+					if(logger.isDebugEnabled())
+						logger.debug("Assigning all RoleGroups to user \""+userID+"\" done.");
+				}
 			}
+			ConfigSetup.ensureAllPrerequisites(pm);
+
+			// check if they are correctly stored
+			if (userPropNames.isEmpty()) {
+				if (logger.isEnabledFor(Priority.WARN))
+					logger.warn("No declared users found!");
+
+				return true;
+			}
+
+			for (String userPropName : userPropNames) {
+				Properties userProps = JFireTestSuiteEAR.getProperties(userProperties, userPropName + ".");
+				String _userID = userProps.getProperty(JFireLogin.PROP_USER_ID);
+				String organisationID = SecurityReflector.getUserDescriptor().getOrganisationID();
+				UserID userID = UserID.create(organisationID, _userID);
+				try {
+					pm.getObjectById(userID);
+				}	catch (JDOObjectNotFoundException e) {
+					return false;
+				}
+			}
+		} catch (Exception e) {
+			successful = false;
+		} finally {
+			SecurityChangeController.endChanging(successful);			
 		}
 		return true;
 	}
