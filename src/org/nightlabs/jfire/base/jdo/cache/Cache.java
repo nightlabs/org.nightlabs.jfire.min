@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
@@ -47,7 +48,6 @@ import org.nightlabs.config.ConfigException;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jdo.ObjectID;
 import org.nightlabs.jfire.base.jdo.JDOObjectID2PCClassMap;
-import org.nightlabs.jfire.base.jdo.notification.ChangeSubjectCarrier;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleEvent;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleListener;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleManager;
@@ -182,11 +182,8 @@ public class Cache
 									// (see the comment in the intercept(...) method): simply check whether the result of
 									// DirtyObjectID.getObjectID() implements org.nightlabs.jdo.ObjectID
 //									Class objectClass = cache.getObjectClassForObjectID(removedKey.getObjectID());
-									DirtyObjectID doid = new DirtyObjectID(
-											JDOLifecycleState.DIRTY, removedKey.getObjectID(),
-//											objectClass.getName(),
-											JDOObjectID2PCClassMap.sharedInstance().getPersistenceCapableClass(removedKey.getObjectID()).getName(), // TODO can't this line cause problems if it's not a JDOObjectID?
-											null, -Long.MAX_VALUE);
+									Object removedKeyObjectID = removedKey.getObjectID();
+									DirtyObjectID doid = createSyntheticDirtyObjectID(removedKeyObjectID);
 									indirectlyAffectedDirtyObjectIDs.put(doid.getObjectID(), doid);
 
 									if (logger.isDebugEnabled())
@@ -230,17 +227,17 @@ public class Cache
 //							ArrayList<ChangeSubjectCarrier> subjectCarriers = new ArrayList<ChangeSubjectCarrier>(dirtyObjectIDs.size());
 //							for (Iterator it = dirtyObjectIDs.iterator(); it.hasNext(); ) {
 
-							ArrayList<ChangeSubjectCarrier> subjectCarriers = new ArrayList<ChangeSubjectCarrier>(dirtyObjectIDsForNotification.size());
-							for (Iterator<DirtyObjectID> it = dirtyObjectIDsForNotification.iterator(); it.hasNext(); ) {
-								DirtyObjectID dirtyObjectID = it.next();
-								// ignore removal, because that's not supported by the old ChangeManager - new shouldn't be in that list
-								if (dirtyObjectID.getLifecycleState() != JDOLifecycleState.DIRTY)
-									continue;
-
-								subjectCarriers.add(new ChangeSubjectCarrier(
-										dirtyObjectID.getSourceSessionIDs(),
-										dirtyObjectID.getObjectID()));
-							}
+//							ArrayList<ChangeSubjectCarrier> subjectCarriers = new ArrayList<ChangeSubjectCarrier>(dirtyObjectIDsForNotification.size());
+//							for (Iterator<DirtyObjectID> it = dirtyObjectIDsForNotification.iterator(); it.hasNext(); ) {
+//								DirtyObjectID dirtyObjectID = it.next();
+//								// ignore removal, because that's not supported by the old ChangeManager - new shouldn't be in that list
+//								if (dirtyObjectID.getLifecycleState() != JDOLifecycleState.DIRTY)
+//									continue;
+//
+//								subjectCarriers.add(new ChangeSubjectCarrier(
+//										dirtyObjectID.getSourceSessionIDs(),
+//										dirtyObjectID.getObjectID()));
+//							}
 
 //							if (!subjectCarriers.isEmpty()) {
 //								org.nightlabs.jfire.base.jdo.notification.ChangeManager.sharedInstance().notify(
@@ -1794,5 +1791,65 @@ public class Cache
 
 		// forget the sessionID - a new one will automatically be generated
 		sessionID = null;
+	}
+
+	public void refreshAll() {
+		Set<Object> objectIDs = new HashSet<Object>();
+		final List<DirtyObjectID> dirtyObjectIDs = new ArrayList<DirtyObjectID>();
+		synchronized(this) {
+			for (Object objectID : objectID2KeySet_dependency.keySet()) {
+				if (objectIDs.add(objectID))
+					dirtyObjectIDs.add(createSyntheticDirtyObjectID(objectID));
+			}
+
+			for (Map<Object, Set<Key>> m : objectID2KeySet_dependency_removed_history) {
+				for (Object objectID : m.keySet()) {
+					if (objectIDs.add(objectID))
+						dirtyObjectIDs.add(createSyntheticDirtyObjectID(objectID));
+				}
+			}
+
+			for (Key key : key2Carrier.keySet()) {
+				Object objectID = key.getObjectID();
+				if (objectIDs.add(objectID))
+					dirtyObjectIDs.add(createSyntheticDirtyObjectID(objectID));
+			}
+
+			removeAll();
+		} // synchronized(this) {
+
+		if (!dirtyObjectIDs.isEmpty()) {
+			Thread notificationThread = new Thread() {
+				@Override
+				public void run() {
+					try {
+						// notify via local class based notification mechanism
+						// the interceptor org.nightlabs.jfire.base.jdo.JDOObjectID2PCClassNotificationInterceptor takes care about correct class mapping
+						getJDOLifecycleManager().notify(new NotificationEvent(
+								this,             // source
+								(String)null,     // zone
+								dirtyObjectIDs    // subjects
+						));
+					} catch (Throwable t) {
+						logger.error("refreshAll: notificationThread.run: " + t.getClass() + ": " + t.getMessage(), t);
+					}
+				}
+			};
+			notificationThread.start();
+		}
+	}
+
+	private static DirtyObjectID createSyntheticDirtyObjectID(Object objectID)
+	{
+		String jdoObjectClassName = null;
+		if (objectID instanceof ObjectID)
+			jdoObjectClassName = JDOObjectID2PCClassMap.sharedInstance().getPersistenceCapableClass(objectID).getName(); // TODO can't this line cause problems if it's not a JDOObjectID?
+
+		DirtyObjectID doid = new DirtyObjectID(
+				JDOLifecycleState.DIRTY, objectID,
+//										objectClass.getName(),
+				jdoObjectClassName,
+				null, -Long.MAX_VALUE);
+		return doid;
 	}
 }
