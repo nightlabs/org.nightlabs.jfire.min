@@ -47,6 +47,13 @@ extends AbstractInterceptor
 			else
 				logger.info("invoke: Caught exception, but won't force rollback, because there is no transaction.");
 
+			// we sleep a little bit before escalating, because the problem might need a bit time to solve (e.g. a subsystem to restart)
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException y) {
+				// ignore
+			}
+
 			throw x;
 		}
 	}
