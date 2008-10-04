@@ -84,11 +84,14 @@ implements SessionBean
 	{
 		PersistenceManager pm = getPersistenceManager();
 		try {
-			NLJDOHelper.setTransactionSerializeReadObjects(pm, true);
-			AsyncInvokeProblem asyncInvokeProblem = AsyncInvokeProblem.createAsyncInvokeProblem(pm, envelope);
-			asyncInvokeProblem.addError(error);
-
-			AsyncInvoke.enqueue(AsyncInvoke.QUEUE_ERRORCALLBACK, envelope, true);
+			NLJDOHelper.enableTransactionSerializeReadObjects(pm);
+			try {
+				AsyncInvokeProblem asyncInvokeProblem = AsyncInvokeProblem.createAsyncInvokeProblem(pm, envelope);
+				asyncInvokeProblem.addError(error);
+				AsyncInvoke.enqueue(AsyncInvoke.QUEUE_ERRORCALLBACK, envelope, true);
+			} finally {
+				NLJDOHelper.disableTransactionSerializeReadObjects(pm);
+			}
 		} finally {
 			pm.close();
 		}
@@ -192,8 +195,12 @@ implements SessionBean
 	{
 		PersistenceManager pm = getPersistenceManager();
 		try {
-			NLJDOHelper.setTransactionSerializeReadObjects(pm, true);
-			AsyncInvokeProblem.createAsyncInvokeProblem(pm, envelope).setUndeliverable(undeliverable);
+			NLJDOHelper.enableTransactionSerializeReadObjects(pm);
+			try {
+				AsyncInvokeProblem.createAsyncInvokeProblem(pm, envelope).setUndeliverable(undeliverable);
+			} finally {
+				NLJDOHelper.disableTransactionSerializeReadObjects(pm);
+			}
 		} finally {
 			pm.close();
 		}
@@ -209,10 +216,15 @@ implements SessionBean
   {
 	  PersistenceManager pm = getPersistenceManager();
 	  try {
-		  NLJDOHelper.setTransactionSerializeReadObjects(pm, true);
-		  AsyncInvokeProblem asyncInvokeProblem = envelope.getAsyncInvokeProblem(pm);
-		  if (asyncInvokeProblem != null)
-			  pm.deletePersistent(asyncInvokeProblem);
+	  	NLJDOHelper.enableTransactionSerializeReadObjects(pm);
+	  	try {
+	  		AsyncInvokeProblem asyncInvokeProblem = envelope.getAsyncInvokeProblem(pm);
+	  		if (asyncInvokeProblem != null)
+	  			pm.deletePersistent(asyncInvokeProblem);
+
+	  	} finally {
+	  		NLJDOHelper.disableTransactionSerializeReadObjects(pm);
+	  	}
 	  } finally {
 		  pm.close();
 	  }

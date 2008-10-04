@@ -103,46 +103,49 @@ extends BaseSessionBeanImpl implements SessionBean
 			PersistenceManager pm = this.getPersistenceManager();
 			try {
 				pm.getExtent(IDNamespace.class);
-
-				NLJDOHelper.setTransactionSerializeReadObjects(pm, true);
-
 				String organisationID = getOrganisationID();
 
-				IDNamespace idNamespace = IDNamespace.getIDNamespace(pm, organisationID, namespace);
-//				try {
+				NLJDOHelper.enableTransactionSerializeReadObjects(pm);
+				try {
+
+					IDNamespace idNamespace = IDNamespace.getIDNamespace(pm, organisationID, namespace);
+//					try {
 //					idNamespace = (IDNamespace) pm.getObjectById(IDNamespaceID.create(organisationID, namespace));
 //					idNamespace.getCacheSizeServer(); // workaround for JPOX bug - the JDOObjectNotFoundException doesn't occur always in the above line
-//				} catch (JDOObjectNotFoundException e) {
+//					} catch (JDOObjectNotFoundException e) {
 //					idNamespace = new IDNamespace(
-//							getOrganisationID(),
-//							namespace,
-//							IDNamespaceDefault.getIDNamespaceDefault(pm, organisationID, namespace));
+//					getOrganisationID(),
+//					namespace,
+//					IDNamespaceDefault.getIDNamespaceDefault(pm, organisationID, namespace));
 //					idNamespace = (IDNamespace) pm.makePersistent(idNamespace);
-//				}
+//					}
 
-				int quantity = minCacheSize - currentCacheSize + idNamespace.getCacheSizeServer();
-				if (quantity <= 0)
-					return new long[0];
+					int quantity = minCacheSize - currentCacheSize + idNamespace.getCacheSizeServer();
+					if (quantity <= 0)
+						return new long[0];
 
-				long[] res = new long[quantity];
-				long nextID = idNamespace.getNextID();
+					long[] res = new long[quantity];
+					long nextID = idNamespace.getNextID();
 
-				if (nextID > LIMIT_FAIL - quantity)
-					throw new IllegalStateException("nextID too high!!! [organisationID=\""+organisationID+"\", namespace=\""+namespace+"\", nextID=\"" + nextID + "\"]");
+					if (nextID > LIMIT_FAIL - quantity)
+						throw new IllegalStateException("nextID too high!!! [organisationID=\""+organisationID+"\", namespace=\""+namespace+"\", nextID=\"" + nextID + "\"]");
 
-				for (int i = 0; i < quantity; ++i) {
-					res[i] = nextID++;
+					for (int i = 0; i < quantity; ++i) {
+						res[i] = nextID++;
+					}
+					idNamespace.setNextID(nextID);
+
+					if (nextID > LIMIT_LOG_FATAL)
+						logger.fatal("nextID above LIMIT_LOG_FATAL (> 95%): [organisationID=\""+organisationID+"\", namespace=\""+namespace+"\", nextID=\"" + nextID + "\", LIMIT_LOG_FATAL=\""+LIMIT_LOG_FATAL+"\"]");
+					else if (nextID > LIMIT_LOG_ERROR)
+						logger.error("nextID above LIMIT_LOG_ERROR (> 90%): [organisationID=\""+organisationID+"\", namespace=\""+namespace+"\", nextID=\"" + nextID + "\", LIMIT_LOG_ERROR=\""+LIMIT_LOG_ERROR+"\"]");
+					else if (nextID > LIMIT_LOG_WARN)
+						logger.warn("nextID above LIMIT_LOG_WARN (> 80%): [organisationID=\""+organisationID+"\", namespace=\""+namespace+"\", nextID=\"" + nextID + "\", LIMIT_LOG_WARN=\""+LIMIT_LOG_WARN+"\"]");
+
+					return res;
+				} finally {
+					NLJDOHelper.disableTransactionSerializeReadObjects(pm);
 				}
-				idNamespace.setNextID(nextID);
-
-				if (nextID > LIMIT_LOG_FATAL)
-					logger.fatal("nextID above LIMIT_LOG_FATAL (> 95%): [organisationID=\""+organisationID+"\", namespace=\""+namespace+"\", nextID=\"" + nextID + "\", LIMIT_LOG_FATAL=\""+LIMIT_LOG_FATAL+"\"]");
-				else if (nextID > LIMIT_LOG_ERROR)
-					logger.error("nextID above LIMIT_LOG_ERROR (> 90%): [organisationID=\""+organisationID+"\", namespace=\""+namespace+"\", nextID=\"" + nextID + "\", LIMIT_LOG_ERROR=\""+LIMIT_LOG_ERROR+"\"]");
-				else if (nextID > LIMIT_LOG_WARN)
-					logger.warn("nextID above LIMIT_LOG_WARN (> 80%): [organisationID=\""+organisationID+"\", namespace=\""+namespace+"\", nextID=\"" + nextID + "\", LIMIT_LOG_WARN=\""+LIMIT_LOG_WARN+"\"]");
-
-				return res;
 			} finally {
 				pm.close();
 			}

@@ -86,16 +86,21 @@ implements SessionBean
 	{
 		PersistenceManager pm = getPersistenceManager();
 		try {
-			NLJDOHelper.setTransactionSerializeReadObjects(pm, true);
+			NLJDOHelper.enableTransactionSerializeReadObjects(pm);
+			try {
 
-			Task task = (Task) pm.getObjectById(taskID);
-			if (!activeExecID.equals(task.getActiveExecID())) {
-				logger.info("setExecutingIfActiveExecIDMatches(...): will not touch task with taskID=\""+taskID+"\", because activeExecID does not match: activeExecID()=\""+activeExecID+"\" task.getActiveExecID()=\""+task.getActiveExecID()+"\"");
-				return false;
+				Task task = (Task) pm.getObjectById(taskID);
+				if (!activeExecID.equals(task.getActiveExecID())) {
+					logger.info("setExecutingIfActiveExecIDMatches(...): will not touch task with taskID=\""+taskID+"\", because activeExecID does not match: activeExecID()=\""+activeExecID+"\" task.getActiveExecID()=\""+task.getActiveExecID()+"\"");
+					return false;
+				}
+
+				task.setExecuting(true);
+				return true;
+
+			} finally {
+				NLJDOHelper.disableTransactionSerializeReadObjects(pm);
 			}
-
-			task.setExecuting(true);
-			return true;
 		} finally {
 			pm.close();
 		}
@@ -128,21 +133,25 @@ implements SessionBean
 		List<Task> tasks;
 		PersistenceManager pm = getPersistenceManager();
 		try {
-			NLJDOHelper.setTransactionSerializeReadObjects(pm, true);
+			NLJDOHelper.enableTransactionSerializeReadObjects(pm);
+			try {
 
-			pm.getFetchPlan().setMaxFetchDepth(NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
-			pm.getFetchPlan().setGroups(FETCH_GROUPS_TASK);
-			Date now = new Date();
-			tasks = Task.getTasksToDo(pm, now);
-			for (Iterator<Task> it = tasks.iterator(); it.hasNext(); ) {
-				Task task = it.next();
-				task.setActiveExecID(activeExecID);
-				TimerAsyncInvoke.exec(task, true); // this method does not use the task instance later outside the current transaction (it only fetches the TaskID)
-			}
+				pm.getFetchPlan().setMaxFetchDepth(NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
+				pm.getFetchPlan().setGroups(FETCH_GROUPS_TASK);
+				Date now = new Date();
+				tasks = Task.getTasksToDo(pm, now);
+				for (Iterator<Task> it = tasks.iterator(); it.hasNext(); ) {
+					Task task = it.next();
+					task.setActiveExecID(activeExecID);
+					TimerAsyncInvoke.exec(task, true); // this method does not use the task instance later outside the current transaction (it only fetches the TaskID)
+				}
 
-			for (Iterator<Task> it = Task.getTasksToRecalculateNextExecDT(pm, now).iterator(); it.hasNext(); ) {
-				Task task = it.next();
-				task.calculateNextExecDT();
+				for (Iterator<Task> it = Task.getTasksToRecalculateNextExecDT(pm, now).iterator(); it.hasNext(); ) {
+					Task task = it.next();
+					task.calculateNextExecDT();
+				}
+			} finally {
+				NLJDOHelper.disableTransactionSerializeReadObjects(pm);
 			}
 		} finally {
 			pm.close();
@@ -229,13 +238,26 @@ implements SessionBean
 			PersistenceManager pm = getPersistenceManager();
 			try {
 				User principalUser = User.getUser(pm, getPrincipal()); // do this before locking, because the user isn't changed in this transaction anyway - no need to lock it in the db
-
-				NLJDOHelper.setTransactionSerializeReadObjects(pm, true);
-
-				TaskID taskID = (TaskID) JDOHelper.getObjectId(task);
 				Task persistentTask = null;
-				if (taskID != null)
-					persistentTask = (Task) pm.getObjectById(taskID);
+
+				NLJDOHelper.enableTransactionSerializeReadObjects(pm);
+				try {
+
+					TaskID taskID = (TaskID) JDOHelper.getObjectId(task);
+					if (taskID != null)
+						persistentTask = (Task) pm.getObjectById(taskID);
+
+					// access a few fields to ensure the Task object is locked in the database
+					// this should not be necessary anmore when http://www.jpox.org/servlet/jira/browse/NUCRDBMS-67 is fixed, but
+					// it still is no harm.
+					if (persistentTask != null) {
+						persistentTask.getActiveExecID();
+						persistentTask.getDescription();
+					}
+
+				} finally {
+					NLJDOHelper.disableTransactionSerializeReadObjects(pm);
+				}
 
 				User taskOwnerToBeWritten = null;
 				try {
@@ -251,8 +273,6 @@ implements SessionBean
 						(persistentTask != null && !principalUser.equals(persistentTask.getUser()))
 				)
 				{
-					NLJDOHelper.setTransactionSerializeReadObjects(pm, false); // no need to lock the Authority - better don't! Marco.
-
 					// trying to manipulate a task where the current user is not the owner => check for RoleConstants.storeTask_all
 					Authority.getOrganisationAuthority(pm).assertContainsRoleRef(getPrincipal(), RoleConstants.storeTask_all);
 				}

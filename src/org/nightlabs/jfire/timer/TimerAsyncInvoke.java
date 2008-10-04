@@ -26,7 +26,7 @@ import org.nightlabs.jfire.security.SecurityReflector.UserDescriptor;
 import org.nightlabs.jfire.timer.id.TaskID;
 
 public class TimerAsyncInvoke
-		extends AsyncInvoke
+extends AsyncInvoke
 {
 	/**
 	 * LOG4J logger used by this class
@@ -104,14 +104,14 @@ public class TimerAsyncInvoke
 
 		@Override
 		public Serializable invoke()
-				throws Exception
+		throws Exception
 		{
 //			try {
-//				Thread.sleep(5000); // give the other transaction some time to finish (and write all data)
-//				// TO DO isn't there a better solution? Isn't this a JPOX bug anyway?!
-//				// NOT necessary anymore - using XA transactions for AsyncInvoke now. Marco.
+//			Thread.sleep(5000); // give the other transaction some time to finish (and write all data)
+//			// TO DO isn't there a better solution? Isn't this a JPOX bug anyway?!
+//			// NOT necessary anymore - using XA transactions for AsyncInvoke now. Marco.
 //			} catch (InterruptedException x) {
-//				// ignore
+//			// ignore
 //			}
 
 			try {
@@ -182,28 +182,32 @@ public class TimerAsyncInvoke
 
 		@Override
 		public void handle(AsyncInvokeEnvelope envelope, Object result)
-				throws Exception
+		throws Exception
 		{
 			long durationMSec = result == null ? -1 : ((Long)result).longValue();
 
 			PersistenceManager pm = getPersistenceManager();
 			try {
-				NLJDOHelper.setTransactionSerializeReadObjects(pm, true);
+				NLJDOHelper.enableTransactionSerializeReadObjects(pm);
+				try {
 
-				Task task = (Task) pm.getObjectById(invocationParam.getTaskID());
-				if (!invocationParam.getActiveExecID().equals(task.getActiveExecID())) {
-					return; // no changes, if we're not active anymore!!!
+					Task task = (Task) pm.getObjectById(invocationParam.getTaskID());
+					if (!invocationParam.getActiveExecID().equals(task.getActiveExecID())) {
+						return; // no changes, if we're not active anymore!!!
+					}
+
+					if (durationMSec < 0) {
+						// We were too fast (the invocation was called already before the TimerManagerBean wrote the
+						// new data to the database. Hence, we re-enqueue it. Shouldn't happen with NLJDOHelper.setTransactionSerializeReadObjects(pm, true); anymore, but we better leave this safety check.
+						logger.error("Task " + invocationParam.getTaskID() + " was re-enqueued, because the previous invocation was too fast. Should not happen!");
+						enqueue(QUEUE_INVOCATION, envelope, false);
+						return;
+					}
+
+					task.lastExecSuccessful(durationMSec);
+				} finally {
+					NLJDOHelper.disableTransactionSerializeReadObjects(pm);
 				}
-
-				if (durationMSec < 0) {
-					// We were too fast (the invocation was called already before the TimerManagerBean wrote the
-					// new data to the database. Hence, we re-enqueue it. Shouldn't happen with NLJDOHelper.setTransactionSerializeReadObjects(pm, true); anymore, but we better leave this safety check.
-					logger.error("Task " + invocationParam.getTaskID() + " was re-enqueued, because the previous invocation was too fast. Should not happen!");
-					enqueue(QUEUE_INVOCATION, envelope, false);
-					return;
-				}
-
-				task.lastExecSuccessful(durationMSec);
 			} finally {
 				pm.close();
 			}
@@ -231,22 +235,27 @@ public class TimerAsyncInvoke
 
 		@Override
 		public void handle(AsyncInvokeEnvelope envelope)
-				throws Exception
+		throws Exception
 		{
 			PersistenceManager pm = getPersistenceManager();
 			try {
-				NLJDOHelper.setTransactionSerializeReadObjects(pm, true);
+				NLJDOHelper.enableTransactionSerializeReadObjects(pm);
+				try {
 
-				Task task = (Task) pm.getObjectById(invocationParam.getTaskID());
-				if (!invocationParam.getActiveExecID().equals(task.getActiveExecID())) {
-					return; // no changes, if we're not active anymore!!!
+					Task task = (Task) pm.getObjectById(invocationParam.getTaskID());
+					if (!invocationParam.getActiveExecID().equals(task.getActiveExecID())) {
+						return; // no changes, if we're not active anymore!!!
+					}
+
+					InvocationError invocationError = envelope.getAsyncInvokeProblem(pm).getLastError();
+					if (invocationError.getError() != null) // maybe it was not serializable
+						task.lastExecFailed(invocationError.getError());
+					else
+						task.lastExecFailed(invocationError.getErrorMessage(), invocationError.getErrorStackTrace());
+
+				} finally {
+					NLJDOHelper.disableTransactionSerializeReadObjects(pm);
 				}
-
-				InvocationError invocationError = envelope.getAsyncInvokeProblem(pm).getLastError();
-				if (invocationError.getError() != null) // maybe it was not serializable
-					task.lastExecFailed(invocationError.getError());
-				else
-					task.lastExecFailed(invocationError.getErrorMessage(), invocationError.getErrorStackTrace());
 			} finally {
 				pm.close();
 			}
@@ -274,18 +283,22 @@ public class TimerAsyncInvoke
 
 		@Override
 		public void handle(AsyncInvokeEnvelope envelope)
-				throws Exception
+		throws Exception
 		{
 			PersistenceManager pm = getPersistenceManager();
 			try {
-				NLJDOHelper.setTransactionSerializeReadObjects(pm, true);
+				NLJDOHelper.enableTransactionSerializeReadObjects(pm);
+				try {
 
-				Task task = (Task) pm.getObjectById(invocationParam.getTaskID());
-				if (!invocationParam.getActiveExecID().equals(task.getActiveExecID())) {
-					return; // no changes, if we're not active anymore!!!
+					Task task = (Task) pm.getObjectById(invocationParam.getTaskID());
+					if (!invocationParam.getActiveExecID().equals(task.getActiveExecID())) {
+						return; // no changes, if we're not active anymore!!!
+					}
+
+					task.setActiveExecID(null);
+				} finally {
+					NLJDOHelper.disableTransactionSerializeReadObjects(pm);
 				}
-
-				task.setActiveExecID(null);
 			} finally {
 				pm.close();
 			}
@@ -299,7 +312,7 @@ public class TimerAsyncInvoke
 				task.getUser().getOrganisationID(),
 				task.getUser().getUserID(),
 				task.getWorkstation() == null ? null : task.getWorkstation().getWorkstationID(),
-				ObjectIDUtil.makeValidIDString("TimerAsyncInvoke", true));
+						ObjectIDUtil.makeValidIDString("TimerAsyncInvoke", true));
 
 		if(logger.isDebugEnabled())
 			logger.debug("exec: organisationID=" + caller.getOrganisationID() + " userID=" + caller.getUserID());
