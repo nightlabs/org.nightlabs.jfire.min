@@ -15,10 +15,10 @@ import org.nightlabs.jfire.base.security.SecurityReflectorClient;
 import org.nightlabs.jfire.security.SecurityReflector;
 
 /**
- * {@link JFireSimpleClient} can be used to build a simple Java JFire client. 
+ * {@link JFireClient} can be used to build a simple Java JFire client. 
  * <p>
- * <b>Important: </b> As (if possible) {@link JFireSimpleClient} interacts with a singleton instance of {@link SecurityReflectorClient}
- * it is a bad idea to use more than one {@link JFireSimpleClient} in a Java VM. 
+ * <b>Important: </b> As (if possible) {@link JFireClient} interacts with a singleton instance of {@link SecurityReflectorClient}
+ * it is a bad idea to use more than one {@link JFireClient} in a Java VM. 
  * </p>
  * <p>
  * To have a fully functional JFire client API you'll also need to call the method 
@@ -32,17 +32,17 @@ import org.nightlabs.jfire.security.SecurityReflector;
  * 
  * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] de --->
  */
-public class JFireSimpleClient {
+public class JFireClient {
 
-	private static final Logger logger = Logger.getLogger(JFireSimpleClient.class);
+	private static final Logger logger = Logger.getLogger(JFireClient.class);
 	
 	private JFireLogin login;
 	
 	/**
-	 * Create a new {@link JFireSimpleClient}.
+	 * Create a new {@link JFireClient}.
 	 * @param loginData The login-data to use or <code>null</code> if it should be set later.
 	 */
-	public JFireSimpleClient(LoginData loginData) {
+	public JFireClient(LoginData loginData) {
 		if (loginData != null)
 			login = new JFireLogin(loginData);
 	}
