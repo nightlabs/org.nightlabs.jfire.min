@@ -60,8 +60,8 @@ import org.nightlabs.math.Base62Coder;
  *   	defaults to "org.nightlabs.jfire.jboss.cascadedauthentication.LoginInitialContextFactory"</li>
  *   <li><b>jfire.login.securityProtocol</b> (The value of {@link #PROP_SECURITY_PROTOCOL}), defines the security protocol to use, defaults to "jfire".</li>
  * </ul>
- * </p> *
- *
+ * </p>
+ * 
  * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] de -->
  * @author Marius Heinzmann -- Marius[at]NightLabs[dot]de
  */
@@ -278,5 +278,8 @@ public class JFireLogin
 			loginData.setSessionID(null);
 		}
 	}
-
+	
+	protected LoginData getLoginData() {
+		return loginData;
+	}
 }
