@@ -11,6 +11,7 @@ import java.io.UnsupportedEncodingException;
 import javax.xml.transform.TransformerException;
 
 import org.apache.log4j.Logger;
+import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.serverconfigurator.ServerConfigurationException;
 import org.nightlabs.jfire.serverconfigurator.ServerConfigurator;
 import org.nightlabs.jfire.servermanager.db.DatabaseAdapter;
@@ -41,6 +42,10 @@ extends ServerConfiguratorJBoss
 {
 	private static final Logger logger = Logger.getLogger(ServerConfiguratorJBossDerby.class);
 
+	static {
+		NLJDOHelper.setForceDisableTransactionSerializeReadObjects(true);
+	}
+
 	/* (non-Javadoc)
 	 * @see org.nightlabs.jfire.jboss.serverconfigurator.ServerConfiguratorJBoss#doConfigureServer()
 	 */
@@ -62,9 +67,9 @@ extends ServerConfiguratorJBoss
 			File jbossDeployDir = new File(getJFireServerConfigModule().getJ2ee().getJ2eeDeployBaseDirectory()).getParentFile().getAbsoluteFile();
 			File jbossConfDir = new File(jbossDeployDir.getParentFile(), "conf");
 			File jbossDeployJmsDir = new File(jbossDeployDir, "jms");
-	
+
 			boolean redeployJMS = false;
-	
+
 			// create the database
 			String databaseName = getJFireServerConfigModule().getDatabase().getDatabasePrefix() + "JBossMQ" + getJFireServerConfigModule().getDatabase().getDatabaseSuffix();
 			String databaseURL = getJFireServerConfigModule().getDatabase().getDatabaseURL(databaseName);
@@ -76,25 +81,25 @@ extends ServerConfiguratorJBoss
 			} catch (DatabaseAlreadyExistsException x) {
 				// the database already exists - ignore
 			}
-	
+
 			configureDerbyDsXml(jbossDeployDir, databaseName, databaseURL);
-			
+
 			boolean deletedDeploymentDescriptor = false;
 			deletedDeploymentDescriptor |= configureHsqldbJdbc2ServiceXml(jbossDeployJmsDir);
 			deletedDeploymentDescriptor |= configureHsqldbJdbcStateServiceXml(jbossDeployJmsDir);
 			deletedDeploymentDescriptor |= configureHsqldbDsXml(jbossDeployDir);
-			
+
 			if (deletedDeploymentDescriptor)
 				waitForServer();
-	
+
 			configureJfireJBossmqDerbyJdbcStateServiceXml(jbossDeployJmsDir);
 			configureJmsDerbyJdbc2Service(jbossDeployJmsDir);
 			configureEjbDeployerXml(jbossDeployDir);
 			configureLoginConfigXmlDerby(jbossConfDir);
-			
+
 			if (redeployJMS)
 				redeployJms(jbossDeployDir, jbossDeployJmsDir);
-			
+
 		} catch(Exception e) {
 			throw new ServerConfigurationException("Server configuration failed in server configurator "+getClass().getName(), e);
 		}
