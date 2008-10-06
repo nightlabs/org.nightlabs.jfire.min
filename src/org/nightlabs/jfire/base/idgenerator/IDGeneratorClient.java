@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.nightlabs.jfire.idgenerator.IDGenerator;
 import org.nightlabs.jfire.idgenerator.IDGeneratorHelper;
 import org.nightlabs.jfire.idgenerator.IDGeneratorHelperBean;
@@ -99,6 +100,10 @@ public class IDGeneratorClient
 
 			synchronized (cachedIDs) {
 				if (quantity > cachedIDs.size()) {
+					Logger logger = Logger.getLogger(IDGeneratorClient.class);
+					if (logger.isDebugEnabled()) {
+						logger.debug("Quering server for new IDs. Have " + cachedIDs.size() + " entries, need " + quantity + ". Namespace: " + namespace);
+					}
 					IDGeneratorHelper idGeneratorHelper = IDGeneratorHelperUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
 					long[] nextIDs = idGeneratorHelper.clientNextIDs(namespace, cachedIDs.size(), quantity);
 					for (int i = 0; i < nextIDs.length; i++) {
