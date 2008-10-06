@@ -131,12 +131,12 @@ extends IDGenerator
 
 						Object objRef = initialContext.lookup(IDGeneratorHelperLocalHome.JNDI_NAME);
 						IDGeneratorHelperLocalHome home;
-		        // only narrow if necessary
-//		        if (java.rmi.Remote.class.isAssignableFrom(IDGeneratorHelperLocalHome.class)) // this was wrong - wasn't it?
+						// only narrow if necessary
+//						if (java.rmi.Remote.class.isAssignableFrom(IDGeneratorHelperLocalHome.class)) // this was wrong - wasn't it?
 						if (!(objRef instanceof IDGeneratorHelperLocalHome))
-		           home = (IDGeneratorHelperLocalHome) javax.rmi.PortableRemoteObject.narrow(objRef, IDGeneratorHelperLocalHome.class);
-		        else
-		           home = (IDGeneratorHelperLocalHome) objRef;
+							home = (IDGeneratorHelperLocalHome) javax.rmi.PortableRemoteObject.narrow(objRef, IDGeneratorHelperLocalHome.class);
+						else
+							home = (IDGeneratorHelperLocalHome) objRef;
 
 						IDGeneratorHelperLocal idGeneratorHelper = home.create();
 						long[] nextIDs = idGeneratorHelper.serverNextIDs(namespace, cachedIDs.size(), quantity);
