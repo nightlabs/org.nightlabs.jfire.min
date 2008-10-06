@@ -21,9 +21,16 @@ import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
  */
 public class InternalLauncher
 {
+	public static boolean isDebugEnabled()
+	{
+		return "true".equals(System.getProperty("debug"));
+	}
+
 	public void run() throws Exception
 	{
-		System.out.println("InternalLauncher.run: getClass().getClassLoader(): " + getClass().getClassLoader());
+		if(isDebugEnabled()) {
+			System.out.println("InternalLauncher.run: getClass().getClassLoader(): " + getClass().getClassLoader());
+		}
 
 		File serverDefaultFolder = new File(new File(new File("..").getAbsoluteFile(), "server"), "default");
 		File serverDeployFolder = new File(serverDefaultFolder, "deploy");

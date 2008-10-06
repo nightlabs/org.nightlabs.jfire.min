@@ -99,32 +99,32 @@ public class Launcher
 		int bytesRead;
 		int transferred = 0;
 		byte[] buf = new byte[4096];
-	
+
 		//skip offset
 		if(inputOffset > 0)
 			if(in.skip(inputOffset) != inputOffset)
 				throw new IOException("Input skip failed (offset "+inputOffset+")");
-	
+
 		while (true) {
 			if(inputLen >= 0)
 				bytesRead = in.read(buf, 0, (int)Math.min(buf.length, inputLen-transferred));
 			else
 				bytesRead = in.read(buf);
-	
+
 			if (bytesRead <= 0)
 				break;
-	
+
 			out.write(buf, 0, bytesRead);
-	
+
 			transferred += bytesRead;
-	
+
 			if(inputLen >= 0 && transferred >= inputLen)
 				break;
 		}
 		out.flush();
 		return transferred;
 	}
-	
+
 	/**
 	 * Transfer all available data from an {@link InputStream} to an {@link OutputStream}.
 	 * <p>
@@ -140,10 +140,20 @@ public class Launcher
 		return transferStreamData(in, out, 0, -1);
 	}
 
-	public static void main(String[] args) throws Exception
+	public static void main(String[] args)
 	{
-		Launcher launcher = new Launcher();
-		launcher.run();
+		try {
+			System.out.println("Starting JFire server configurator launcher...");
+			Launcher launcher = new Launcher();
+			launcher.run();
+			System.out.println("Server configurator successfully invoked.\n");
+			System.exit(0);
+		} catch(Throwable e) {
+			System.err.println("\n\nError invoking server configurator:");
+			e.printStackTrace();
+			System.err.println("\n\n");
+			System.exit(1);
+		}
 	}
 
 	/**
@@ -361,7 +371,9 @@ public class Launcher
 			}
 		});
 		try {
-			System.out.println("Launcher.run: getClass().getClassLoader(): " + getClass().getClassLoader());
+			if (isDebugEnabled()) {
+				System.out.println("Launcher.run: getClass().getClassLoader(): " + getClass().getClassLoader());
+			}
 			long scanStart = System.currentTimeMillis();
 
 			Set<URL> classLoaderURLSet = new HashSet<URL>();
@@ -381,7 +393,9 @@ public class Launcher
 			scanDir(classLoaderURLSet, serverDeployFolder);
 			scanDir(classLoaderURLSet, globalLibFolder);
 
-			System.out.println("Launcher.run: collected " + classLoaderURLSet.size() + " JARs for classpath in " + (System.currentTimeMillis() - scanStart) + " msec. Sorting the classpath.");
+			if (isDebugEnabled()) {
+				System.out.println("Launcher.run: collected " + classLoaderURLSet.size() + " JARs for classpath in " + (System.currentTimeMillis() - scanStart) + " msec. Sorting the classpath.");
+			}
 
 			List<URL> classLoaderURLList = new ArrayList<URL>(classLoaderURLSet);
 
@@ -403,9 +417,9 @@ public class Launcher
 				}
 			});
 
-			System.out.println("Launcher.run: sorting classpath took " + (System.currentTimeMillis() - sortStart) + " msec. Starting internal launcher.");
 
 			if (isDebugEnabled()) {
+				System.out.println("Launcher.run: sorting classpath took " + (System.currentTimeMillis() - sortStart) + " msec. Starting internal launcher.");
 				System.out.println("Launcher.run: found JARs after sorting:");
 				for (URL url : classLoaderURLList) {
 					System.out.println("  * " + url.toString());
