@@ -1,10 +1,15 @@
 package org.nightlabs.jfire.serverconfigurator;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Properties;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -27,12 +32,12 @@ public abstract class ServerConfigurator
 	 * LOG4J logger used by this class
 	 */
 	private static final Logger logger = Logger.getLogger(ServerConfigurator.class);
-	
+
 	/**
 	 * The config to use for configuration
 	 */
 	private JFireServerConfigModule jfireServerConfigModule;
-	
+
 	/**
 	 * Wether a reboot is required after doing the changes.
 	 */
@@ -55,7 +60,7 @@ public abstract class ServerConfigurator
 	{
 		this.jfireServerConfigModule = jfireServerConfigModule;
 	}
-	
+
 	/**
 	 * This method indicates whether the j2ee server needs to be rebooted.
 	 * @return Returns true after {@link #doConfigureServer()} has been called,
@@ -66,7 +71,7 @@ public abstract class ServerConfigurator
 	{
 		return rebootRequired;
 	}
-	
+
 	/**
 	 * Set the reboot required value. If set to <code>true</code>, the
 	 * server will be stopped after all server configurations have happened.
@@ -85,7 +90,7 @@ public abstract class ServerConfigurator
 	 * given server config module.
 	 * <p>
 	 * This method will return <code>true</code> if the server needs to be restarted.
-	 * 
+	 *
 	 * @param jfireServerConfigModule The server config module
 	 * @return <code>true</code> if the server needs to be restarted -
 	 * 		<code>false</code> otherwise.
@@ -164,7 +169,7 @@ public abstract class ServerConfigurator
 
 			if (logger.isDebugEnabled())
 				logger.debug("Instantiating ServerConfigurator for undo: " + lastHistoryItem.getServerConfiguratorClassName());
-		
+
 			Class<?> serverConfiguratorClassForUndo;
 			try {
 				serverConfiguratorClassForUndo = Class.forName(lastHistoryItem.getServerConfiguratorClassName());
@@ -234,7 +239,7 @@ public abstract class ServerConfigurator
 	}
 
 	private static File getNonExistingFile(File directory, String pattern)
-	{ // This method was moved from ServerConfiguratorJBoss to here. Marco.	
+	{ // This method was moved from ServerConfiguratorJBoss to here. Marco.
 		if(pattern == null)
 			throw new NullPointerException("pattern is null");
 
@@ -369,8 +374,98 @@ public abstract class ServerConfigurator
 	 */
 	protected abstract void doConfigureServer() throws ServerConfigurationException;
 
-	protected void afterDoConfigureServer(Throwable x) throws ServerConfigurationException {
-		
+	private File jfireServerKeystoreFile = new File("jfire-server.keystore");
+
+	protected void afterDoConfigureServer(Throwable x) throws ServerConfigurationException
+	{
+		final JFireServerConfigModule jfireServerConfigModule = getJFireServerConfigModule();
+
+		if (!jfireServerConfigModule.isKeystoreURLImported())
+		{
+			final String keystoreURLToImport = jfireServerConfigModule.getKeystoreURLToImport();
+			FileOutputStream keystorePropFileStream = null;
+
+			try
+			{
+				InputStream keystoreToImportStream;
+				// distinguish between default and non-default keystore via this constant
+				if ("".equals(keystoreURLToImport))
+				{
+					throw new IllegalStateException("No keystore can be found in " +
+							"%jboss%/bin/jfire-server.keystore and no keystoreToImport is set!");
+				}
+				else if (JFireServerConfigModule.DEFAULT_KEYSTORE.equals(keystoreURLToImport))
+				{
+					keystoreToImportStream = ServerConfigurator.class.getResourceAsStream("/jfire-server.keystore");
+				}
+				else
+					keystoreToImportStream = new URL(keystoreURLToImport).openStream();
+
+				boolean transferData = false;
+				if (! jfireServerKeystoreFile.exists() || ! jfireServerKeystoreFile.canRead())
+				{
+					transferData = true;
+				}
+				else
+				{
+					FileInputStream fileInputStream = new FileInputStream(jfireServerKeystoreFile);
+					if (fileInputStream.available() != keystoreToImportStream.available() ||
+							! IOUtil.compareInputStreams(
+									keystoreToImportStream, fileInputStream, fileInputStream.available() ))
+					{
+						transferData = true;
+					}
+				}
+
+				// if files are equal -> don't need to copy.
+				if (! transferData)
+				{
+					// set the keystore file to the imported state (== set the keystoreURLToImport = "")
+					jfireServerConfigModule.setKeystoreURLImported();
+					return;
+				}
+
+				// files differ or the destination file doesn't exist yet
+				IOUtil.transferStreamData(
+						keystoreToImportStream,
+						new FileOutputStream(jfireServerKeystoreFile));
+
+				// Write all ssl socket related infos into a properties file next to jfire-server.keystore,
+				// because the org.nightlabs.rmissl.socket.SSLCompressionServerSocketFactory and
+				// org.nightlabs.rmissl.socket.SSLCompressionRMIServerSocketFactory need to know these
+				// infos and the projects don't know anything from each other (and are not allowed to).
+				Properties props = new Properties();
+				props.put("org.nightlabs.ssl.keystorePassword", jfireServerConfigModule.getKeystorePassword());
+				props.put("org.nightlabs.ssl.serverCertificateAlias", jfireServerConfigModule.getSslServerCertificateAlias());
+				props.put("org.nightlabs.ssl.serverCertificatePassword", jfireServerConfigModule.getSslServerCertificatePassword());
+				File keystorePropFile = new File("jfire-server.keystore.properties").getAbsoluteFile();
+				keystorePropFileStream = new FileOutputStream(keystorePropFile);
+				props.store(keystorePropFileStream, "The properties needed to read the correct private " +
+						"certificate from the jfire-server.keystore.\n" +
+						"These credentials are needed by the SSLCompressionServerSocketFactory.");
+
+				// set the keystore file to the imported state (== set the keystoreURLToImport = "")
+				jfireServerConfigModule.setKeystoreURLImported();
+				setRebootRequired(true);
+			}
+			catch (IOException e) {
+				throw new ServerConfigurationException(e);
+			}
+			finally {
+				if (keystorePropFileStream != null)
+				{
+					try
+					{
+						keystorePropFileStream.close();
+					}
+					catch (IOException e)
+					{
+						throw new ServerConfigurationException("Couldn't close the output stream from writing "+
+								"the keystore properties!", e);
+					}
+				}
+			}
+		}
 	}
 
 	/**
@@ -383,12 +478,41 @@ public abstract class ServerConfigurator
 	 */
 	protected abstract void undoConfigureServer() throws ServerConfigurationException;
 
-	protected void afterUndoConfigureServer(Throwable x) throws ServerConfigurationException {
+	protected void afterUndoConfigureServer(Throwable x) throws ServerConfigurationException
+	{
 		if (x == null) {
 			for (File dir : backupDirsUsedForRestore)
 				IOUtil.deleteDirectoryRecursively(dir);
 
 			backupDirsUsedForRestore.clear();
+
+			try {
+				clearKeystoreFile();
+			} catch (IOException e) {
+				throw new ServerConfigurationException(e);
+			}
+		}
+	}
+
+	private void clearKeystoreFile() throws IOException
+	{
+		if (!jfireServerKeystoreFile.exists())
+			return;
+
+		int backupFileIndex = 0;
+		File backupFile;
+		do {
+			backupFile = new File(jfireServerKeystoreFile.getAbsolutePath() + '.' + (backupFileIndex++) + ".bak");
+
+			if (backupFile.exists() && IOUtil.compareFiles(jfireServerKeystoreFile, backupFile)) {
+				jfireServerKeystoreFile.delete();
+				return;
+			}
+		} while (backupFile.exists());
+
+		if (!jfireServerKeystoreFile.renameTo(backupFile)) {
+			IOUtil.copyFile(jfireServerKeystoreFile, backupFile);
+			jfireServerKeystoreFile.delete();
 		}
 	}
 }
