@@ -151,7 +151,7 @@ public class ServerConfiguratorJBoss
 			configureJBossjtaPropertiesXml(jbossConfDir);
 			configureJBossServiceXml(jbossConfDir);
 			configureCascadedAuthenticationClientInterceptorProperties(jbossBinDir);
-			configureTomcatServerXml(jbossDeployDir);
+//			configureTomcatServerXml(jbossDeployDir);
 			patchRunScripts(jbossBinDir);
 			configureJavaOpts(jbossBinDir);
 			removeUnneededFiles(jbossDeployDir);
