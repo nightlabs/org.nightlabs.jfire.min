@@ -6,6 +6,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
+import java.util.Collection;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -14,7 +16,6 @@ import javax.xml.transform.TransformerException;
 
 import org.apache.log4j.Logger;
 import org.jboss.ejb.plugins.TxInterceptorCMT;
-import org.nightlabs.annotation.Implement;
 import org.nightlabs.jfire.jboss.authentication.JFireServerLocalLoginModule;
 import org.nightlabs.jfire.jboss.authentication.JFireServerLoginModule;
 import org.nightlabs.jfire.jboss.cascadedauthentication.CascadedAuthenticationClientInterceptor;
@@ -22,15 +23,19 @@ import org.nightlabs.jfire.jboss.transaction.ForceRollbackOnExceptionInterceptor
 import org.nightlabs.jfire.jboss.transaction.RetryHandler;
 import org.nightlabs.jfire.serverconfigurator.ServerConfigurationException;
 import org.nightlabs.jfire.serverconfigurator.ServerConfigurator;
+import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
 import org.nightlabs.jfire.servermanager.config.SmtpMailServiceCf;
 import org.nightlabs.util.IOUtil;
 import org.nightlabs.xml.DOMParser;
 import org.nightlabs.xml.NLDOMUtil;
+import org.w3c.dom.Attr;
 import org.w3c.dom.Comment;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.w3c.dom.traversal.NodeIterator;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -53,6 +58,12 @@ import com.sun.org.apache.xpath.internal.CachedXPathAPI;
 public class ServerConfiguratorJBoss
 		extends ServerConfigurator
 {
+	private static final String HTTPS_CONNECTOR_MODIFIED_COMMENT = "Connector was enabled via ServerConfigurator!";
+	private static final String HTTPS_CONNECTOR_KEY_ALIAS = "keyAlias";
+	private static final String HTTPS_CONNECTOR_KEYSTORE_PASS = "keystorePass";
+	private static final String HTTPS_CONNECTOR_KEYSTORE_FILE = "keystoreFile";
+	private static final String HTTPS_CONNECTOR_KEYSTORE_FILE_LOCATION = "../../bin/jfire-server.keystore";
+
 	private static final Logger logger = Logger.getLogger(ServerConfiguratorJBoss.class);
 	protected static final boolean rebootOnDeployDirChanges = false;
 
@@ -116,7 +127,6 @@ public class ServerConfiguratorJBoss
 	 * @see org.nightlabs.jfire.serverconfigurator.ServerConfigurator#doConfigureServer()
 	 */
 	@Override
-	@Implement
 	protected void doConfigureServer()
 			throws ServerConfigurationException
 	{
@@ -141,6 +151,7 @@ public class ServerConfiguratorJBoss
 			configureJBossjtaPropertiesXml(jbossConfDir);
 			configureJBossServiceXml(jbossConfDir);
 			configureCascadedAuthenticationClientInterceptorProperties(jbossBinDir);
+			configureTomcatServerXml(jbossDeployDir);
 			patchRunScripts(jbossBinDir);
 			configureJavaOpts(jbossBinDir);
 			removeUnneededFiles(jbossDeployDir);
@@ -148,6 +159,207 @@ public class ServerConfiguratorJBoss
 		} catch(Exception e) {
 			throw new ServerConfigurationException("Server configuration failed in server configurator "+getClass().getName(), e);
 		}
+	}
+
+	/**
+	 * It is assumed that the jboss web deployer is in the
+	 * <pre>${jboss}/server/default/deploy/jboss-web.deployer/</pre> folder.
+	 *
+	 * It modifies the <pre>server.xml</pre> so that the commented https connector is uncommented and
+	 * adapted.
+	 * <p><b>Important:</b>
+	 * 		If there are multiple https connectors, the first one is adapted to our needs.
+	 * </p>
+	 *
+	 * @param jbossDeployDir the deploy directory of the JBoss J2EE server.
+	 * @throws SAXException
+	 * @throws IOException
+	 */
+	private void configureTomcatServerXml(File jbossDeployDir) throws SAXException, IOException
+	{
+		final File jbossWebDeployerDir = new File(jbossDeployDir, "jboss-web.deployer").getAbsoluteFile();
+		if (! jbossWebDeployerDir.exists())
+		{
+			logger.error("Couldn't find the jboss web deployer folder! Assumed to be in" +
+					jbossWebDeployerDir.toString());
+			return;
+		}
+
+		final File jbossWebDeployerServerXml = new File(jbossWebDeployerDir, "server.xml").getAbsoluteFile();
+		if (! jbossWebDeployerServerXml.exists())
+		{
+			logger.error("Couldn't find the jboss web deployer server.xml! Assumed to be " +
+					jbossWebDeployerServerXml.toString());
+
+			return;
+		}
+
+		final DOMParser parser = new DOMParser();
+		parser.parse(new InputSource(new FileInputStream(jbossWebDeployerServerXml)));
+		final Document document = parser.getDocument();
+
+		Collection<Node> connectors = NLDOMUtil.findNodeList(document, "Server/Service/Connector"); // NodesByAttribute(document, "Server/Connector", "name", "Connector");
+		Node httpsNode = null;
+		for (Node node : connectors)
+		{
+			// If there is an https connector defined, then we assume that the connector is used for the
+			// update servlets and is made public by the UpdateManagerBean.
+			if ("https".equalsIgnoreCase(NLDOMUtil.getAttributeValue(node, "scheme")) &&
+					"true".equalsIgnoreCase(NLDOMUtil.getAttributeValue(node, "SSLEnabled")))
+			{
+				httpsNode = node;
+				break;
+			}
+		}
+
+		boolean modified = false;
+		if (httpsNode != null)
+		{
+			// there is a https connector -> modify it if necessary
+			modified = adaptHttpsConnector(document, httpsNode, getJFireServerConfigModule());
+		}
+		else
+		{
+			// So far no https connector was found -> uncomment the example included in default server.xml
+			// and augment with keystore + password
+			final Node serviceNode = NLDOMUtil.findSingleNode(document, "Server/Service");
+			assert serviceNode != null;
+			NodeList childNodes = serviceNode.getChildNodes();
+			Node httpsConnectorComment = null;
+
+			for (int i=0; i < childNodes.getLength(); i++)
+			{
+				Node childNode = childNodes.item(i);
+				String nodeText = childNode.getTextContent();
+
+				// \s*\<Connector[^>]*>\s* -- there has to be a Connector definition in the comments text.
+				if (childNode.getNodeType() != Node.COMMENT_NODE || nodeText == null ||
+						! nodeText.matches("\\s*\\<Connector[^>]*>\\s*"))
+					continue;
+
+				httpsConnectorComment = childNode;
+				break;
+			}
+
+			if (httpsConnectorComment == null)
+			{
+				logger.error("Cannot find default https connector comment in " + jbossWebDeployerServerXml.toString());
+				throw new IllegalStateException("Cannot find default https connector comment in " + jbossWebDeployerServerXml.toString());
+			}
+
+			DOMParser domParser = new DOMParser();
+			domParser.parse(new InputSource(new StringReader(httpsConnectorComment.getTextContent())));
+			Node httpsConnectorNode = domParser.getDocument().getFirstChild();
+			Document conDoc = domParser.getDocument();
+
+			modified = adaptHttpsConnector(conDoc, httpsConnectorNode, getJFireServerConfigModule());
+
+			Node importedNode;
+			try
+			{
+				importedNode = document.adoptNode(httpsConnectorNode);
+			}
+			catch (DOMException e)
+			{
+				importedNode = document.importNode(httpsConnectorNode, true);
+			}
+			serviceNode.replaceChild(importedNode, httpsConnectorComment);
+		}
+
+		if (modified)
+		{
+			// write modified file
+			backup(jbossWebDeployerServerXml);
+			String xmlEncoding = document.getXmlEncoding();
+			if(xmlEncoding == null)
+				xmlEncoding = "UTF-8";
+
+			NLDOMUtil.writeDocument(document, new FileOutputStream(jbossWebDeployerServerXml), xmlEncoding);
+		}
+	}
+
+	/**
+	 * Sets the reference to the keystore file, the keystore password as well as the chosen private
+	 * certificate to the given httpsConnector node if not already set to the values from the given
+	 * serverConfigModule.
+	 *
+	 * @param document The document with which new Nodes may be created
+	 * @param httpsConnector The node corresponding to a https connector definition.
+	 * @param serverConfigModule The config module containing the information about the keystore &
+	 * 	the certificate.
+	 *
+	 * @return whether the attributes of the given httpsConnector node have been modified.
+	 */
+	private boolean adaptHttpsConnector(Document document, Node httpsConnector,
+			JFireServerConfigModule serverConfigModule)
+	{
+		assert document != null;
+		assert httpsConnector != null;
+		assert serverConfigModule != null;
+
+		// Add keystore and password (currently it is assumed that there is only one certificate in
+		// the keystore which will then be used for this connector.
+		// keystoreFile="../../bin/jfire-server.keystore" (This is a convention -
+		// see JFireServerManager/src/jfire-server.keystore.readme)
+		NamedNodeMap attributes = httpsConnector.getAttributes();
+		boolean attributesChanged = false;
+
+		if (attributes.getNamedItem(HTTPS_CONNECTOR_KEYSTORE_FILE) == null ||
+				!((Attr) attributes.getNamedItem(HTTPS_CONNECTOR_KEYSTORE_FILE)).getValue().equals(HTTPS_CONNECTOR_KEYSTORE_FILE_LOCATION))
+		{
+			Attr keystoreFileAttr = (Attr) attributes.getNamedItem(HTTPS_CONNECTOR_KEYSTORE_FILE);
+			if (keystoreFileAttr == null)
+				keystoreFileAttr = document.createAttribute(HTTPS_CONNECTOR_KEYSTORE_FILE);
+
+			keystoreFileAttr.setValue(HTTPS_CONNECTOR_KEYSTORE_FILE_LOCATION);
+			attributesChanged = true;
+		}
+
+		// keystorePass="nightlabs"
+		if (attributes.getNamedItem(HTTPS_CONNECTOR_KEYSTORE_PASS) == null ||
+				!((Attr) attributes.getNamedItem(HTTPS_CONNECTOR_KEYSTORE_PASS)).getValue().equals(serverConfigModule.getKeystorePassword()))
+		{
+			Attr keyPassAttr = (Attr) attributes.getNamedItem(HTTPS_CONNECTOR_KEYSTORE_PASS);
+			if (keyPassAttr == null)
+				keyPassAttr = document.createAttribute(HTTPS_CONNECTOR_KEYSTORE_PASS);
+
+			keyPassAttr.setValue(serverConfigModule.getKeystorePassword());
+			attributesChanged = true;
+		}
+
+		// keyAlias= the chosen certificate
+		if (attributes.getNamedItem(HTTPS_CONNECTOR_KEY_ALIAS) == null ||
+				((Attr) attributes.getNamedItem(HTTPS_CONNECTOR_KEY_ALIAS)).getValue().equals(serverConfigModule.getSslServerCertificateAlias()))
+		{
+			Attr keyAliasAttr = (Attr) attributes.getNamedItem(HTTPS_CONNECTOR_KEY_ALIAS);
+			if (keyAliasAttr.getValue() == null)
+				keyAliasAttr = document.createAttribute(HTTPS_CONNECTOR_KEY_ALIAS);
+
+			keyAliasAttr.setValue(serverConfigModule.getSslServerCertificateAlias());
+			attributesChanged = true;
+		}
+
+		// TODO: As soon as tomcat supports a different password for the chosen certificate, set it here! (marius)
+
+		Node nodeAboveConnector = httpsConnector.getPreviousSibling().getPreviousSibling();
+		if (! (nodeAboveConnector instanceof Comment) )
+		{
+			Comment comment = document.createComment(HTTPS_CONNECTOR_MODIFIED_COMMENT);
+			nodeAboveConnector.appendChild(comment);
+			attributesChanged = true;
+		}
+		else
+		{
+			final Comment comment = (Comment) nodeAboveConnector;
+			final String commentText = comment.getTextContent();
+			if (! commentText.contains(HTTPS_CONNECTOR_MODIFIED_COMMENT))
+			{
+				comment.setTextContent(commentText + "\n\t\t" + HTTPS_CONNECTOR_MODIFIED_COMMENT);
+				attributesChanged = true;
+			}
+		}
+
+		return attributesChanged;
 	}
 
 	// due to changes, server version is not needed anymore.
