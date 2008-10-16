@@ -27,7 +27,6 @@
 package org.nightlabs.jfire.servermanager.config;
 
 import java.lang.reflect.InvocationTargetException;
-import java.net.URL;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.nightlabs.ModuleException;
@@ -79,8 +78,8 @@ public class JFireServerConfigModule extends ConfigModule
 	private String keystorePassword;
 	private String sslServerCertificateAlias;
 	private String sslServerCertificatePassword;
-	private URL servletBaseURL;
-	private URL servletBaseURLHttps;
+	private String servletBaseURL;
+	private String servletBaseURLHttps;
 
 	/* (non-Javadoc)
 	 * @see org.nightlabs.config.ConfigModule#init()
@@ -105,27 +104,9 @@ public class JFireServerConfigModule extends ConfigModule
 			setJdo(new JDOCf());
 
 		if (servletBaseURL == null)
-		{
-			try
-			{
-				servletBaseURL = new URL("http://localhost:8080/");
-			}
-			catch (Exception e)
-			{
-				throw new RuntimeException(e);
-			}
-		}
+			setServletBaseURL("http://localhost:8080/");
 		if (servletBaseURLHttps == null)
-		{
-			try
-			{
-				servletBaseURLHttps = new URL("https://localhost:8443");
-			}
-			catch (Exception e)
-			{
-				throw new RuntimeException(e);
-			}
-		}
+			setServletBaseURLHttps("https://localhost:8443");
 
 		if (sslServerCertificateAlias == null)
 			sslServerCertificateAlias = "localhost";
@@ -302,7 +283,7 @@ public class JFireServerConfigModule extends ConfigModule
 	 *
 	 * @param servletBaseURL the URL that points to the servlet container.
 	 */
-	public void setServletBaseURL(URL servletBaseURL)
+	public void setServletBaseURL(String servletBaseURL)
 	{
 		this.servletBaseURL = servletBaseURL;
 	}
@@ -310,7 +291,7 @@ public class JFireServerConfigModule extends ConfigModule
 	/**
 	 * @return the base URL to the servlet container engine where all servlets are located.
 	 */
-	public URL getServletBaseURL()
+	public String getServletBaseURL()
 	{
 		return servletBaseURL;
 	}
@@ -353,12 +334,12 @@ public class JFireServerConfigModule extends ConfigModule
 		setChanged();
 	}
 
-	public URL getServletBaseURLHttps()
+	public String getServletBaseURLHttps()
 	{
 		return servletBaseURLHttps;
 	}
 
-	public void setServletBaseURLHttps(URL servletBaseURLHttps)
+	public void setServletBaseURLHttps(String servletBaseURLHttps)
 	{
 		this.servletBaseURLHttps = servletBaseURLHttps;
 		setChanged();
