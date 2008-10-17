@@ -1443,6 +1443,9 @@ implements SessionBean
 	}
 
 	/**
+	 * Get a {@link Set} containing the object-ids of all {@link Role}s that are granted to the current
+	 * user in specified authority. Since this is a self-information, every user is allowed to execute this method.
+	 *
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
 	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
@@ -1451,6 +1454,28 @@ implements SessionBean
 	public Set<RoleID> getRoleIDs(AuthorityID authorityID)
 	{
 		return SecurityReflector.getRoleIDs(authorityID);
+	}
+
+	/**
+	 * Get all {@link RoleGroupID}s known in the current organisation. Since the {@link RoleGroup}s are objects defined by the
+	 * programmers, they are not secret and thus everyone is allowed to execute this method.
+	 *
+	 * @ejb.interface-method
+	 * @ejb.permission role-name="_Guest_"
+	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
+	 */
+	@SuppressWarnings("unchecked")
+	public Set<RoleGroupID> getRoleGroupIDs()
+	{
+		PersistenceManager pm = getPersistenceManager();
+		try {
+			Query q = pm.newQuery(RoleGroup.class);
+			q.setResult("JDOHelper.getObjectId(this)");
+			Collection<RoleGroupID> c = CollectionUtil.castCollection((Collection<?>) q.execute());
+			return new HashSet<RoleGroupID>(c);
+		} finally {
+			pm.close();
+		}
 	}
 
 	/**
