@@ -196,7 +196,15 @@ public class ServerConfiguratorJBoss
 		}
 
 		final DOMParser parser = new DOMParser();
-		parser.parse(new InputSource(new FileInputStream(jbossWebDeployerServerXml)));
+		FileInputStream serverXmlStream = new FileInputStream(jbossWebDeployerServerXml);;
+		try
+		{
+			parser.parse(new InputSource(serverXmlStream));
+		}
+		finally
+		{
+			serverXmlStream.close();
+		}
 		final Document document = parser.getDocument();
 
 		Collection<Node> connectors = NLDOMUtil.findNodeList(document, "Server/Service/Connector"); // NodesByAttribute(document, "Server/Connector", "name", "Connector");
