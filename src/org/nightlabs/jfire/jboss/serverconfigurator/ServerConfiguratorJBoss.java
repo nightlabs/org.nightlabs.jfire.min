@@ -337,8 +337,10 @@ public class ServerConfiguratorJBoss
 				!((Attr) attributes.getNamedItem(HTTPS_CONNECTOR_KEYSTORE_FILE)).getValue().equals(HTTPS_CONNECTOR_KEYSTORE_FILE_LOCATION))
 		{
 			Attr keystoreFileAttr = (Attr) attributes.getNamedItem(HTTPS_CONNECTOR_KEYSTORE_FILE);
-			if (keystoreFileAttr == null)
+			if (keystoreFileAttr == null) {
 				keystoreFileAttr = document.createAttribute(HTTPS_CONNECTOR_KEYSTORE_FILE);
+				attributes.setNamedItem(keystoreFileAttr);
+			}
 
 			keystoreFileAttr.setValue(HTTPS_CONNECTOR_KEYSTORE_FILE_LOCATION);
 			attributesChanged = true;
@@ -349,8 +351,10 @@ public class ServerConfiguratorJBoss
 				!((Attr) attributes.getNamedItem(HTTPS_CONNECTOR_KEYSTORE_PASS)).getValue().equals(serverConfigModule.getKeystorePassword()))
 		{
 			Attr keyPassAttr = (Attr) attributes.getNamedItem(HTTPS_CONNECTOR_KEYSTORE_PASS);
-			if (keyPassAttr == null)
+			if (keyPassAttr == null) {
 				keyPassAttr = document.createAttribute(HTTPS_CONNECTOR_KEYSTORE_PASS);
+				attributes.setNamedItem(keyPassAttr);
+			}
 
 			keyPassAttr.setValue(serverConfigModule.getKeystorePassword());
 			attributesChanged = true;
@@ -361,8 +365,10 @@ public class ServerConfiguratorJBoss
 				!((Attr) attributes.getNamedItem(HTTPS_CONNECTOR_KEY_ALIAS)).getValue().equals(serverConfigModule.getSslServerCertificateAlias()))
 		{
 			Attr keyAliasAttr = (Attr) attributes.getNamedItem(HTTPS_CONNECTOR_KEY_ALIAS);
-			if (keyAliasAttr == null)
+			if (keyAliasAttr == null) {
 				keyAliasAttr = document.createAttribute(HTTPS_CONNECTOR_KEY_ALIAS);
+				attributes.setNamedItem(keyAliasAttr);
+			}
 
 			keyAliasAttr.setValue(serverConfigModule.getSslServerCertificateAlias());
 			attributesChanged = true;
