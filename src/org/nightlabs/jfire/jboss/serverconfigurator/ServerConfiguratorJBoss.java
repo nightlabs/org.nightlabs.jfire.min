@@ -151,7 +151,7 @@ public class ServerConfiguratorJBoss
 			configureJBossjtaPropertiesXml(jbossConfDir);
 			configureJBossServiceXml(jbossConfDir);
 			configureCascadedAuthenticationClientInterceptorProperties(jbossBinDir);
-//			configureTomcatServerXml(jbossDeployDir);
+			configureTomcatServerXml(jbossDeployDir);
 			patchRunScripts(jbossBinDir);
 			configureJavaOpts(jbossBinDir);
 			removeUnneededFiles(jbossDeployDir);
@@ -254,20 +254,39 @@ public class ServerConfiguratorJBoss
 
 			modified = adaptHttpsConnector(conDoc, httpsConnectorNode, getJFireServerConfigModule());
 
-			Node importedNode;
 			try
 			{
-				importedNode = document.adoptNode(httpsConnectorNode);
+				httpsNode = document.adoptNode(httpsConnectorNode);
 			}
 			catch (DOMException e)
 			{
-				importedNode = document.importNode(httpsConnectorNode, true);
+				httpsNode = document.importNode(httpsConnectorNode, true);
 			}
-			serviceNode.replaceChild(importedNode, httpsConnectorComment);
+			serviceNode.replaceChild(httpsNode, httpsConnectorComment);
 		}
 
 		if (modified)
 		{
+			// insert modified by server configurator as comment above https connector.
+			Node nodeAboveConnector = httpsNode.getPreviousSibling().getPreviousSibling();
+			if (nodeAboveConnector != null)
+			{
+				if (! (nodeAboveConnector instanceof Comment) )
+				{
+					Comment comment = document.createComment(HTTPS_CONNECTOR_MODIFIED_COMMENT);
+					nodeAboveConnector.appendChild(comment);
+				}
+				else
+				{
+					final Comment comment = (Comment) nodeAboveConnector;
+					final String commentText = comment.getTextContent();
+					if (! commentText.contains(HTTPS_CONNECTOR_MODIFIED_COMMENT))
+					{
+						comment.setTextContent(commentText + "\n\t\t" + HTTPS_CONNECTOR_MODIFIED_COMMENT);
+					}
+				}
+			}
+
 			// write modified file
 			backup(jbossWebDeployerServerXml);
 			String xmlEncoding = document.getXmlEncoding();
@@ -329,10 +348,10 @@ public class ServerConfiguratorJBoss
 
 		// keyAlias= the chosen certificate
 		if (attributes.getNamedItem(HTTPS_CONNECTOR_KEY_ALIAS) == null ||
-				((Attr) attributes.getNamedItem(HTTPS_CONNECTOR_KEY_ALIAS)).getValue().equals(serverConfigModule.getSslServerCertificateAlias()))
+				!((Attr) attributes.getNamedItem(HTTPS_CONNECTOR_KEY_ALIAS)).getValue().equals(serverConfigModule.getSslServerCertificateAlias()))
 		{
 			Attr keyAliasAttr = (Attr) attributes.getNamedItem(HTTPS_CONNECTOR_KEY_ALIAS);
-			if (keyAliasAttr.getValue() == null)
+			if (keyAliasAttr == null)
 				keyAliasAttr = document.createAttribute(HTTPS_CONNECTOR_KEY_ALIAS);
 
 			keyAliasAttr.setValue(serverConfigModule.getSslServerCertificateAlias());
@@ -340,25 +359,6 @@ public class ServerConfiguratorJBoss
 		}
 
 		// TODO: As soon as tomcat supports a different password for the chosen certificate, set it here! (marius)
-
-		Node nodeAboveConnector = httpsConnector.getPreviousSibling().getPreviousSibling();
-		if (! (nodeAboveConnector instanceof Comment) )
-		{
-			Comment comment = document.createComment(HTTPS_CONNECTOR_MODIFIED_COMMENT);
-			nodeAboveConnector.appendChild(comment);
-			attributesChanged = true;
-		}
-		else
-		{
-			final Comment comment = (Comment) nodeAboveConnector;
-			final String commentText = comment.getTextContent();
-			if (! commentText.contains(HTTPS_CONNECTOR_MODIFIED_COMMENT))
-			{
-				comment.setTextContent(commentText + "\n\t\t" + HTTPS_CONNECTOR_MODIFIED_COMMENT);
-				attributesChanged = true;
-			}
-		}
-
 		return attributesChanged;
 	}
 
