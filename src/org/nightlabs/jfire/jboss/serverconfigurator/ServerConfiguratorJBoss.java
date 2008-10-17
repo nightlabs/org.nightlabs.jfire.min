@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.StringReader;
 import java.util.Collection;
 import java.util.Properties;
@@ -254,14 +255,18 @@ public class ServerConfiguratorJBoss
 
 			modified = adaptHttpsConnector(conDoc, httpsConnectorNode, getJFireServerConfigModule());
 
-			try
-			{
-				httpsNode = document.adoptNode(httpsConnectorNode);
-			}
-			catch (DOMException e)
-			{
-				httpsNode = document.importNode(httpsConnectorNode, true);
-			}
+//			try
+//			{
+//				httpsNode = document.adoptNode(httpsConnectorNode);
+//			}
+//			catch (DOMException e)
+//			{
+//				httpsNode = document.importNode(httpsConnectorNode, true);
+//			}
+// This seems to not work reliably. We have sometimes garbled attributes. Try to do it always with importNode(...) - maybe that works better.
+// Alternatively, we should try it with a newer Xerces.
+			httpsNode = document.importNode(httpsConnectorNode, true);
+
 			serviceNode.replaceChild(httpsNode, httpsConnectorComment);
 		}
 
@@ -293,7 +298,12 @@ public class ServerConfiguratorJBoss
 			if(xmlEncoding == null)
 				xmlEncoding = "UTF-8";
 
-			NLDOMUtil.writeDocument(document, new FileOutputStream(jbossWebDeployerServerXml), xmlEncoding);
+			FileOutputStream out = new FileOutputStream(jbossWebDeployerServerXml);
+			try {
+				NLDOMUtil.writeDocument(document, out, xmlEncoding);
+			} finally {
+				out.close();
+			}
 		}
 	}
 
@@ -626,7 +636,13 @@ public class ServerConfiguratorJBoss
 			String xmlEncoding = document.getXmlEncoding();
 			if(xmlEncoding == null)
 				xmlEncoding = "UTF-8";
-			NLDOMUtil.writeDocument(document, new FileOutputStream(destFile), xmlEncoding);
+
+			OutputStream out = new FileOutputStream(destFile);
+			try {
+				NLDOMUtil.writeDocument(document, out, xmlEncoding);
+			} finally {
+				out.close();
+			}
 		}
 
 		if(needRestart)
@@ -1211,6 +1227,7 @@ public class ServerConfiguratorJBoss
 				new File(jbossDeployDir, "mail-service.xml"),
 				new File(jbossConfDir, "jboss-service.xml"),
 				new File(jbossConfDir, "standardjboss.xml"),
+				new File(new File(jbossDeployDir, "jboss-web.deployer"), "server.xml"),
 		};
 
 		try {
