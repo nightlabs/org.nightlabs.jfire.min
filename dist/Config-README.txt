@@ -2,8 +2,9 @@ This directory serves for storing the XML config of JFire. Because not all setti
 be stored in a database (e.g. which databases to use), we use this XML configuration
 for global settings and a kind of entry point.
 
-You MUST NOT delete this directory! You can, however, delete all files within it (keeping
-this readme-file is recommended, though) for a server-reset, as is documented here:
+You MUST NOT delete this directory! You can, however, delete all files starting with "Config"
+within it (keeping this readme-file is recommended, though) for a server-reset, as is
+documented here:
 
 	https://www.jfire.org/modules/phpwiki/index.php/ServerReset
 

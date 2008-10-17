@@ -36,7 +36,11 @@
             <property name="datanucleus.rdbms.stringDefaultLength" value="255"/>
             <property name="datanucleus.rdbms.dynamicSchemaUpdates" value="true"/>
 
+<!-- TODO DATANUCLEUS WORKAROUND - with level2-cache enabled, we sometimes get old objects from DataNucleus after changing them. Hence we temporarily deactivate it. Marco.
             <property name="datanucleus.cache.level2" value="true"/>
+-->
+            <property name="datanucleus.cache.level2" value="false"/>
+
             <property name="datanucleus.persistenceByReachabilityAtCommit" value="false"/>
 
 			<property name="datanucleus.identifier.case" value="LowerCase"/>
