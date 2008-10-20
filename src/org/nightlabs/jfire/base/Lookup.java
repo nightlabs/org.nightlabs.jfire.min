@@ -54,7 +54,7 @@ import org.nightlabs.jfire.servermanager.config.OrganisationCf;
 
 /**
  * This class is a util to make it easier to look up important JFire objects from JNDI.
- * 
+ *
  * @author marco
  * @author Marc Klinger - marc[at]nightlabs[dot]de
  */
@@ -100,7 +100,7 @@ public class Lookup
 	{
 		if (jfireServerManagerFactory == null)
 			jfireServerManagerFactory = _getJFireServerManagerFactory();
-		
+
 		return jfireServerManagerFactory;
 	}
 
@@ -220,7 +220,7 @@ public class Lookup
 	/**
 	 * Returns the PersistenceManagerFactory for the given organisationID. If it cannot be
 	 * found in JNDI, an exception is thrown.
-	 * 
+	 *
 	 * @param organisationID The unique identifier for the organisationID
 	 * @return the PersistenceManagerFactory belonging to the given organisationID.
 	 * @throws RuntimeException Because a properly configured server should not have any JNDI (or other) problems,
@@ -274,30 +274,40 @@ public class Lookup
 //	}
 
 	/**
-	 * This method reads the properties out of the datastore managed by pm, that are necessary
-	 * to connect and login to the organisation defined by _organisationID. If _organisationID
-	 * is the local organisation (managed by pm), this method returns <tt>null</tt>!
-	 * @throws NamingException
+	 * Get the initial-context-properties for connecting via an EJB to any organisation
+	 * known to the current (=local) organisation (including itself).
+	 * <p>
+	 * This method reads the properties from the datastore managed by the given
+	 * {@link PersistenceManager} (i.e. the local organisation's datastore). These
+	 * properties can be passed to an EJB-Util class in order to obtain an EJB instance that
+	 * allows communication with the specified organisation. If <code>organisationID</code>
+	 * is the local organisation (managed by <code>pm</code>), this method returns <code>null</code>
+	 * (which is a valid value for said EJB-Util classes and causes creation of an EJB that communicates
+	 * with the local organisation).
+	 * </p>
+	 *
+	 * @param pm the door to the datastore.
+	 * @param organisationID the identifier of the organisation to connect+login to.
+	 * @throws NamingException if accessing JNDI fails.
 	 */
-	public static Hashtable<?, ?> getInitialContextProperties(PersistenceManager pm, String _organisationID)
+	public static Hashtable<?, ?> getInitialContextProperties(PersistenceManager pm, String organisationID)
 	throws NamingException
 	{
 		LocalOrganisation localOrganisation = LocalOrganisation.getLocalOrganisation(pm);
-		if (_organisationID.equals(localOrganisation.getOrganisationID()))
+		if (organisationID.equals(localOrganisation.getOrganisationID()))
 			return null;
 
 		InitialContext initCtx = new InitialContext();
 		try {
-			JFireServerManagerFactory jfireServerManagerFactory = (JFireServerManagerFactory)
-			initCtx.lookup(JFireServerManagerFactory.JNDI_NAME);
+			JFireServerManagerFactory jfireServerManagerFactory = (JFireServerManagerFactory)initCtx.lookup(JFireServerManagerFactory.JNDI_NAME);
 
-			String password = localOrganisation.getPassword(_organisationID);
+			String password = localOrganisation.getPassword(organisationID);
 			if (password == null)
-				throw new IllegalStateException("localOrganisation.getPassword(organisationID) returned null! localOrganisationID=" + localOrganisation.getOrganisationID() + " organisationID=" + _organisationID);
+				throw new IllegalStateException("localOrganisation.getPassword(organisationID) returned null! localOrganisationID=" + localOrganisation.getOrganisationID() + " organisationID=" + organisationID);
 
 			Server server = null;
 			try {
-				Organisation organisation = (Organisation) pm.getObjectById(OrganisationID.create(_organisationID));
+				Organisation organisation = (Organisation) pm.getObjectById(OrganisationID.create(organisationID));
 				server = organisation.getServer();
 			} catch (JDOObjectNotFoundException x) {
 				// the organisation doesn't exist - try it with a TemporaryOrganisation instance
@@ -305,18 +315,19 @@ public class Lookup
 
 			if (server == null) {
 				try {
-					TemporaryOrganisation temporaryOrganisation = (TemporaryOrganisation) pm.getObjectById(TemporaryOrganisationID.create(_organisationID));
+					TemporaryOrganisation temporaryOrganisation = (TemporaryOrganisation) pm.getObjectById(TemporaryOrganisationID.create(organisationID));
 					server = temporaryOrganisation.getOrganisation().getServer();
 				} catch (JDOObjectNotFoundException x) {
-					throw new IllegalStateException("There is neither an Organisation nor a TemporaryOrganisation existing with the organisationID=" + _organisationID);
+					throw new IllegalStateException("There is neither an Organisation nor a TemporaryOrganisation existing with the organisationID=" + organisationID);
 				}
 			}
 
 			return InvokeUtil.getInitialContextProperties(
 					jfireServerManagerFactory.getInitialContextFactory(server.getJ2eeServerType(), true),
 					server.getInitialContextURL(),
-					_organisationID,
-					User.USER_ID_PREFIX_TYPE_ORGANISATION + localOrganisation.getOrganisationID(), password);
+					organisationID,
+					User.USER_ID_PREFIX_TYPE_ORGANISATION + localOrganisation.getOrganisationID(), password
+			);
 		} finally {
 			initCtx.close();
 		}
