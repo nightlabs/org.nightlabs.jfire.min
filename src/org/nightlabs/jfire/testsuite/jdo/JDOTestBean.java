@@ -35,12 +35,17 @@ import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
+import javax.jdo.FetchPlan;
+import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
 
 import org.apache.log4j.Logger;
+import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.security.User;
+import org.nightlabs.jfire.workstation.Workstation;
+import org.nightlabs.jfire.workstation.id.WorkstationID;
 
 
 /**
@@ -57,9 +62,6 @@ extends BaseSessionBeanImpl
 implements SessionBean
 {
 	private static final long serialVersionUID = 1L;
-	/**
-	 * LOG4J logger used by this class
-	 */
 	private static final Logger logger = Logger.getLogger(JDOTestBean.class);
 
 	@Override
@@ -100,7 +102,6 @@ implements SessionBean
 	 * @ejb.transaction type="Required"
 	 */
 	public void createArrayListFromQueryResult()
-	throws Exception
 	{
 		PersistenceManager pm = getPersistenceManager();
 		try {
@@ -221,7 +222,6 @@ implements SessionBean
 	 * @ejb.transaction type="Required"
 	 */
 	public void createHashSetFromQueryResult()
-	throws Exception
 	{
 		PersistenceManager pm = getPersistenceManager();
 		try {
@@ -232,4 +232,50 @@ implements SessionBean
 			pm.close();
 		}
 	}
+
+//	/**
+//	 * @ejb.interface-method
+//	 * @ejb.permission role-name="_Guest_"
+//	 * @ejb.transaction type="Required"
+//	 */
+//	public Workstation getWorkstation(WorkstationID workstationID)
+//	{
+//		PersistenceManager pm = getPersistenceManager();
+//		try {
+//			pm.getFetchPlan().setMaxFetchDepth(NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
+//			pm.getFetchPlan().setGroups(FetchPlan.DEFAULT);
+//
+//			Workstation workstation;
+//			try {
+//				workstation = (Workstation) pm.getObjectById(workstationID);
+//			} catch (JDOObjectNotFoundException x) {
+//				workstation = new Workstation(workstationID.organisationID, workstationID.workstationID);
+//				workstation.setDescription("Test");
+//				workstation = pm.makePersistent(workstation);
+//			}
+//
+//			return pm.detachCopy(workstation);
+//		} finally {
+//			pm.close();
+//		}
+//	}
+//
+//	/**
+//	 * @ejb.interface-method
+//	 * @ejb.permission role-name="_Guest_"
+//	 * @ejb.transaction type="Required"
+//	 */
+//	public void storeWorkstation(Workstation workstation)
+//	{
+//		PersistenceManager pm = getPersistenceManager();
+//		try {
+//			pm.makePersistent(workstation);
+//			workstation = null;
+//
+//			System.gc();
+//
+//		} finally {
+//			pm.close();
+//		}
+//	}
 }

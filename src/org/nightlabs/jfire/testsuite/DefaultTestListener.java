@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.nightlabs.jfire.testsuite;
 
@@ -37,6 +37,7 @@ import junit.framework.Test;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.jfire.testsuite.TestSuite.Status;
+import org.nightlabs.util.IOUtil;
 import org.nightlabs.util.Util;
 import org.nightlabs.xml.NLDOMUtil;
 import org.w3c.dom.Document;
@@ -63,13 +64,13 @@ import org.w3c.dom.Node;
  *   <li>mail.subject: The recipients of the mail (,-separated list), default "JFireTestSuite Testreport"</li>
  *   <li>mail.htmlReportXSL: The stylesheet to use to render the xml to the html mail body, default "htmlReport.xls"</li>
  * </ul>
- * 
+ *
  * To override some settings without modifing the properties file you can alternatively
  * set the following environment variables on your system.
- * 'jfiretestsuite.mail.smtp.host' to override 'mail.smtp.host'   
+ * 'jfiretestsuite.mail.smtp.host' to override 'mail.smtp.host'
  * 'jfiretestsuite.mail.to' to override 'mail.to'
  * 'jfiretestsuite.mail.from' to override 'mail.from'
- * 
+ *
  * <p>
  * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] de -->
  * @author marco schulze - marco at nightlabs dot de
@@ -77,9 +78,9 @@ import org.w3c.dom.Node;
 public class DefaultTestListener
 implements JFireTestListener
 {
-	public static final String PROPERTY_KEY_SMTP_HOST = "mail.smtp.host"; 
+	public static final String PROPERTY_KEY_SMTP_HOST = "mail.smtp.host";
 	public static final String PROPERTY_KEY_MAIL_TO = "mail.to";
-	public static final String PROPERTY_KEY_MAIL_FROM = "mail.from";	
+	public static final String PROPERTY_KEY_MAIL_FROM = "mail.from";
 	public static final String PROPERTY_KEY_MAIL_SUBJECT = "mail.subject";
 
 	public static final String PROPERTY_KEY_SMTP_AUTH = "mail.smtp.auth";
@@ -95,12 +96,12 @@ implements JFireTestListener
 	 * Log4J Logger for this class
 	 */
 	private static final Logger logger = Logger.getLogger(DefaultTestListener.class);
-	
+
 	/**
 	 * Date format used for output.
 	 */
 	private static final DateFormat ISO_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z");
-	
+
 	/**
 	 * Created and populated by this listener for all {@link TestSuite}s that are run.
 	 */
@@ -211,7 +212,7 @@ implements JFireTestListener
 			this.suiteStartError = suiteStartError;
 		}
 	}
-	
+
 	/**
 	 * Created and populated by this listener for all {@link TestSuite}s that are run.
 	 */
@@ -310,9 +311,9 @@ implements JFireTestListener
 		public void setTestSuiteResult(TestSuiteResult testSuiteResult) {
 			this.testSuiteResult = testSuiteResult;
 		}
-		
+
 	}
-	
+
 	/**
 	 * Created and populated by this listener for all {@link TestSuite}s that are run.
 	 */
@@ -323,7 +324,7 @@ implements JFireTestListener
 		private Date endTime;
 		private boolean success = true;
 		private Throwable error;
-		
+
 		/**
 		 * Returns the endTime of this DefaultTestListener.TestResult.
 		 * @return the endTime.
@@ -412,15 +413,15 @@ implements JFireTestListener
 		public void setTestCaseResult(TestCaseResult testCaseResult) {
 			this.testCaseResult = testCaseResult;
 		}
-		
+
 	}
-	
-	
+
+
 	/**
 	 * The gatherd results.
 	 */
 	private List<TestSuiteResult> testSuiteResults;
-	
+
 	/**
 	 * Used while running.
 	 */
@@ -446,7 +447,7 @@ implements JFireTestListener
 	 * The configuration of this listener.
 	 */
 	private Properties config = null;
-	
+
 	public DefaultTestListener() {
 	}
 
@@ -457,10 +458,10 @@ implements JFireTestListener
 	public void configure(Properties config) {
 		this.config = config;
 	}
-	
+
 	/**
 	 * Write the gathered test data to XML.
-	 * 
+	 *
 	 * @param out The {@link OutputStream} the XML should be written to.
 	 */
 	public void writeReportAsXML(OutputStream out) throws Exception {
@@ -515,7 +516,7 @@ implements JFireTestListener
 		doc.appendChild(rootNode);
 		NLDOMUtil.writeDocument(doc, out, "UTF-8");
 	}
-	
+
 	/**
 	 * {@inheritDoc}
 	 * @see org.nightlabs.jfire.testsuite.JFireTestListener#endTestRun()
@@ -554,7 +555,7 @@ implements JFireTestListener
 				return;
 			currSuiteResult.setEndTime(new Date());
 		}
-		
+
 	}
 
 	/**
@@ -566,7 +567,7 @@ implements JFireTestListener
 			currSuiteResult.setSuiteStartError(t);
 		}
 	}
-	
+
 	/**
 	 * {@inheritDoc}
 	 * @see junit.framework.TestListener#addError(junit.framework.Test, java.lang.Throwable)
@@ -686,11 +687,11 @@ implements JFireTestListener
 			}
 		}
 	}
-	
+
 	/**
 	 * Get the listeners boolean property with the given key.
 	 * Return the default value if not set.
-	 * 
+	 *
 	 * @param key The key of the property.
 	 * @param def The properties default value.
 	 */
@@ -707,11 +708,11 @@ implements JFireTestListener
 		}
 		return result;
 	}
-	
+
 	/**
 	 * Get the listeners String property with the given key.
 	 * Return the default value if not set.
-	 * 
+	 *
 	 * @param key The key of the property.
 	 * @param def The properties default value.
 	 */
@@ -723,11 +724,11 @@ implements JFireTestListener
 		}
 		return result;
 	}
-	
+
 	/**
 	 * Sends the gathered results as email.
 	 * Sender, recipient etc. is configured in the listener properties.
-	 * 
+	 *
 	 * @throws Exception When it failed.
 	 */
 	public void sendReportAsMail() throws Exception {
@@ -736,15 +737,38 @@ implements JFireTestListener
 			TransformerFactory factory = TransformerFactory.newInstance();
 			String xslFileName = getProperty("mail.htmlReportXSL", "htmlReport.xsl");
 			Transformer transformer = factory.newTransformer(new StreamSource(new File(JFireTestSuiteEAR.getEARDir(), xslFileName)));
-			File tmpFile = new File(JFireTestSuiteEAR.getEARDir(), "tmpReport.xml");
-			FileOutputStream out = new FileOutputStream(tmpFile);
+
+			File tmpDir = IOUtil.getUserTempDir("JFireTestSuite.", null);
+			if (!tmpDir.exists())
+				tmpDir.mkdirs();
+
+			String tmpFilePrefix = Long.toString(System.currentTimeMillis(), 36) + "-";
+
+			File tmpFileXml = new File(tmpDir, tmpFilePrefix + "report.xml");
+			// delete on exit => cleaning up while at the same time keeping it for the developer to check (if he wants)
+			tmpFileXml.deleteOnExit();
+
+			FileOutputStream out = new FileOutputStream(tmpFileXml);
 			try {
 				writeReportAsXML(out);
 			} finally {
 				out.close();
 			}
-			StringWriter writer = new StringWriter();
-			transformer.transform(new StreamSource(tmpFile), new StreamResult(writer));
+
+			String html;
+			{
+				StringWriter writer = new StringWriter();
+				transformer.transform(new StreamSource(tmpFileXml), new StreamResult(writer));
+				writer.close();
+				html = writer.toString();
+			}
+
+			File tmpFileHtml = new File(tmpDir, tmpFilePrefix + "report.html");
+			// delete on exit => cleaning up while at the same time keeping it for the developer to check (if he wants)
+			tmpFileHtml.deleteOnExit();
+
+			IOUtil.writeTextFile(tmpFileHtml, html);
+
 
 // we now support include files - no need for these environment variables anymore!
 //			// check for environment variable for the smtp host
@@ -796,13 +820,13 @@ implements JFireTestListener
 
 			// set html report
 			MimeBodyPart mimebodypart = new MimeBodyPart();
-			mimebodypart.setContent(writer.toString(), "text/html");
+			mimebodypart.setContent(html, "text/html");
 
 			// attach xml report
 			MimeMultipart mimemultipart = new MimeMultipart();
 			mimemultipart.addBodyPart(mimebodypart);
 			mimebodypart = new MimeBodyPart();
-			FileDataSource filedatasource = new FileDataSource(tmpFile);
+			FileDataSource filedatasource = new FileDataSource(tmpFileXml);
 			mimebodypart.setDataHandler(new DataHandler(filedatasource));
 
 			mimebodypart.setFileName("jfire-test-report.xml");
@@ -844,7 +868,7 @@ implements JFireTestListener
 				}
 			}
 
-			tmpFile.delete();				
+//			tmpFile.delete(); // We do NOT delete these files immediately anymore, but when exiting the VM.
 		} catch(Exception e) {
 			logger.error("Sending TestSuite report email failed! Escalating exception...", e);
 			throw e;
