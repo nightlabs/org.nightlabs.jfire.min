@@ -34,34 +34,30 @@ import org.nightlabs.jfire.testsuite.JFireTestSuiteEAR;
 
 /**
  * This class is used to initialse users for the JFireTestSuite.
- * 
+ *
  * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] de -->
  */
-public class JFireTestLogin {
-
-
-	/**
-	 * Log4J Logger for this class
-	 */
+public class JFireTestLogin
+{
 	private static final Logger logger = Logger.getLogger(JFireTestLogin.class);
-	
+
 	public static final String USER_QUALIFIER_SERVER_ADMIN = "serverAdmin";
 	public static final String USER_QUALIFIER_ORGANISATION_ADMIN = "organisationAdmin";
 	public static final String USER_QUALIFIER_ACCOUNTANT = "accountant";
 	public static final String USER_QUALIFIER_SALESMAN = "salesman";
-	
+
 	public static final String PROP_TEST_USER_PREFIX = "test.user";
 	public static final String PROP_TEST_ADMIN_SERVER = PROP_TEST_USER_PREFIX + "." + USER_QUALIFIER_SERVER_ADMIN;
 	public static final String PROP_TEST_ORGANISATION_ADMIN = PROP_TEST_USER_PREFIX+"."+ USER_QUALIFIER_ORGANISATION_ADMIN;
 	public static final String PROP_TEST_ACCOUNTANT = PROP_TEST_USER_PREFIX+"."+ USER_QUALIFIER_ACCOUNTANT;
 	public static final String PROP_TEST_SALESMAN = PROP_TEST_USER_PREFIX+"."+ USER_QUALIFIER_SALESMAN;
-	
+
 	/**
 	 * Returns a {@link JFireLogin} configured to the properties given in the
 	 * JFireTestSuite properties file for the given userQualifier.
 	 * This means the login properties will be those defined with the prefix of "test.user.userQualifier".
 	 * The organisationID in the properties though, will be set to the current organisationID.
-	 * 
+	 *
 	 * @param userQualifier The userQualifier.
 	 * @return A configured {@link JFireLogin}.
 	 */
@@ -74,7 +70,7 @@ public class JFireTestLogin {
 	/**
 	 * Checks if all Users referenced in the main properties file are extstent
 	 * and creates them if not.
-	 * 
+	 *
 	 * @param pm The PersitenceManager to use.
 	 * @return Whether it succeeded.
 	 * @throws NamingException
@@ -96,7 +92,7 @@ public class JFireTestLogin {
 		result &= checkSetRoleGroupRegistrationToAuthorities(pm, properties, userPropNames);
 		return result;
 	}
-	
+
 	private static boolean checkCreateLoginUsers(PersistenceManager pm, Properties userProperties,
 			Set<String> userPropNames) throws InitException, ModuleException, NamingException
 	{
@@ -123,8 +119,14 @@ public class JFireTestLogin {
 				userLocal.setPasswordPlain(password);
 				user = pm.makePersistent(user);
 				if (USER_QUALIFIER_SERVER_ADMIN.equals(userPropName)) {
-					JFireServerManager jFireServerManager = JFireServerManagerUtil.getJFireServerManager();
-					jFireServerManager.addServerAdmin(userID.organisationID, userID.userID);
+					{
+						JFireServerManager jFireServerManager = JFireServerManagerUtil.getJFireServerManager();
+						try {
+							jFireServerManager.addServerAdmin(userID.organisationID, userID.userID);
+						} finally {
+							jFireServerManager.close();
+						}
+					}
 					Authority authority = (Authority) pm.getObjectById(AuthorityID.create(
 							organisationID, Authority.AUTHORITY_ID_ORGANISATION));
 					AuthorizedObjectRef userRef = authority.createAuthorizedObjectRef(user.getUserLocal());
@@ -134,8 +136,8 @@ public class JFireTestLogin {
 					// Give the user all RoleGroups.
 					if(logger.isDebugEnabled())
 						logger.debug("Assign all RoleGroups to the user \""+userID+"\"...");
-					for (Iterator it = pm.getExtent(RoleGroup.class).iterator(); it.hasNext(); ) {
-						RoleGroup roleGroup = (RoleGroup)it.next();
+					for (Iterator<RoleGroup> it = pm.getExtent(RoleGroup.class).iterator(); it.hasNext(); ) {
+						RoleGroup roleGroup = it.next();
 						RoleGroupRef roleGroupRef = authority.createRoleGroupRef(roleGroup);
 						userRef.addRoleGroupRef(roleGroupRef);
 					}
@@ -167,7 +169,7 @@ public class JFireTestLogin {
 		} catch (Exception e) {
 			successful = false;
 		} finally {
-			SecurityChangeController.endChanging(successful);			
+			SecurityChangeController.endChanging(successful);
 		}
 		return true;
 	}
