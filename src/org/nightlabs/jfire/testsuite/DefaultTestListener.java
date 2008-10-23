@@ -4,7 +4,6 @@
 package org.nightlabs.jfire.testsuite;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -27,7 +26,9 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
@@ -36,6 +37,7 @@ import junit.framework.AssertionFailedError;
 import junit.framework.Test;
 
 import org.apache.log4j.Logger;
+import org.nightlabs.ModuleException;
 import org.nightlabs.jfire.testsuite.TestSuite.Status;
 import org.nightlabs.util.IOUtil;
 import org.nightlabs.util.Util;
@@ -463,8 +465,10 @@ implements JFireTestListener
 	 * Write the gathered test data to XML.
 	 *
 	 * @param out The {@link OutputStream} the XML should be written to.
+	 * @throws ParserConfigurationException
 	 */
-	public void writeReportAsXML(OutputStream out) throws Exception {
+	public void writeReportAsXML(OutputStream out) throws ParserConfigurationException
+	{
 //		Document doc = new DocumentImpl();
 		Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
 		Element rootNode = doc.createElement("JFireServerTestResult");
@@ -628,44 +632,159 @@ implements JFireTestListener
 		currTestResult.setTestName(testName);
 	}
 
+	private File tempDir = null;
+
+	protected File getTempDir()
+	{
+		if (tempDir == null) {
+			File tmpDir = IOUtil.getUserTempDir("JFireTestSuite.", null);
+			if (!tmpDir.exists())
+				tmpDir.mkdirs();
+
+			tempDir = tmpDir;
+		}
+
+		return tempDir;
+	}
+
+	protected String getTempFilePrefix()
+	{
+		if (tempFilePrefix == null)
+			tempFilePrefix = Long.toString(System.currentTimeMillis(), 36) + "-";
+
+		return tempFilePrefix;
+	}
+
+	private String tempFilePrefix = null;
+
+	private File xmlFile = null;
+	private File htmlFile = null;
+
+	protected File getXmlFile() throws IOException, ParserConfigurationException
+	{
+		if (xmlFile == null) {
+			File tmpFileXml = new File(getTempDir(), getTempFilePrefix() + "report.xml");
+			// delete on exit => cleaning up while at the same time keeping it for the developer to check (if he wants)
+			tmpFileXml.deleteOnExit();
+
+			FileOutputStream out = new FileOutputStream(tmpFileXml);
+			try {
+				writeReportAsXML(out);
+			} finally {
+				out.close();
+			}
+			xmlFile = tmpFileXml;
+		}
+
+		return xmlFile;
+	}
+
+	protected File getHtmlFile()
+	throws IOException, ModuleException, ParserConfigurationException, TransformerException
+	{
+		if (htmlFile == null) {
+			String xslFileName = getProperty("mail.htmlReportXSL", "htmlReport.xsl");
+			TransformerFactory factory = TransformerFactory.newInstance();
+			Transformer transformer = factory.newTransformer(new StreamSource(new File(JFireTestSuiteEAR.getEARDir(), xslFileName)));
+
+			File tmpFileXml = getXmlFile();
+
+			String html;
+			{
+				StringWriter writer = new StringWriter();
+				transformer.transform(new StreamSource(tmpFileXml), new StreamResult(writer));
+				writer.close();
+				html = writer.toString();
+			}
+
+			File tmpFileHtml = new File(getTempDir(), getTempFilePrefix() + "report.html");
+			// delete on exit => cleaning up while at the same time keeping it for the developer to check (if he wants)
+			tmpFileHtml.deleteOnExit();
+
+			IOUtil.writeTextFile(tmpFileHtml, html);
+			htmlFile = tmpFileHtml;
+		}
+		return htmlFile;
+	}
+
+	/**
+	 * According to the contract of {@link JFireTestListener}, an instance is created for each test run.
+	 * Therefore, we assert it really is this way and we have no cached data yet.
+	 */
+	protected void assertClearCache()
+	{
+		if (xmlFile != null)
+			throw new IllegalStateException("xmlFile != null");
+
+		if (htmlFile != null)
+			throw new IllegalStateException("htmlFile != null");
+
+		if (tempFilePrefix != null)
+			throw new IllegalStateException("tempFilePrefix != null");
+
+		if (tempDir != null)
+			throw new IllegalStateException("tempDir != null");
+	}
+
 	/**
 	 * Checks whether the results should be written to XML and does so if desired.
 	 * Also checks whether the results should be send by email and does so.
 	 */
-	protected void processTestRun() {
+	protected void processTestRun()
+	{
+		assertClearCache();
+
 		boolean xmlReportEnabled = getProperty("xmlReport.enabled", false);
-		xmlGeneration: {
-			if (xmlReportEnabled) {
-				String fileName = getProperty("xmlReport.fileName", "jfire-test-report.xml");
-				File xmlFile = null;
-				try {
-					xmlFile = new File(JFireTestSuiteEAR.getEARDir(), fileName);
-				} catch (Exception e) {
-					logger.error("Error creating file from xmlReport.fileName " + fileName, e);
-					break xmlGeneration;
-				}
-				FileOutputStream out;
-				try {
-					out = new FileOutputStream(xmlFile);
-				} catch (FileNotFoundException e) {
-					logger.error("Error creating FileStream for xmlReport.fileName " + fileName, e);
-					break xmlGeneration;
-				}
-				try {
-					try {
-						writeReportAsXML(out);
-					} catch (Exception e) {
-						logger.error("Error writing XML report! xmlReport.fileName " + fileName, e);
-					}
-				} finally {
-					try {
-						out.close();
-					} catch (IOException e) {
-						logger.error("Error closing FileStream for xmlReport.fileName " + fileName, e);
-					}
-				}
+		boolean htmlReportEnabled = getProperty("htmlReport.enabled", false);
+//		xmlGeneration: {
+//			if (xmlReportEnabled) {
+//				String fileName = getProperty("xmlReport.fileName", "jfire-test-report.xml");
+//				File xmlFile = null;
+//				try {
+//					xmlFile = new File(JFireTestSuiteEAR.getEARDir(), fileName);
+//				} catch (Exception e) {
+//					logger.error("Error creating file from xmlReport.fileName " + fileName, e);
+//					break xmlGeneration;
+//				}
+//				FileOutputStream out;
+//				try {
+//					out = new FileOutputStream(xmlFile);
+//				} catch (FileNotFoundException e) {
+//					logger.error("Error creating FileStream for xmlReport.fileName " + fileName, e);
+//					break xmlGeneration;
+//				}
+//				try {
+//					try {
+//						writeReportAsXML(out);
+//					} catch (Exception e) {
+//						logger.error("Error writing XML report! xmlReport.fileName " + fileName, e);
+//					}
+//				} finally {
+//					try {
+//						out.close();
+//					} catch (IOException e) {
+//						logger.error("Error closing FileStream for xmlReport.fileName " + fileName, e);
+//					}
+//				}
+//			}
+//		}
+
+		if (xmlReportEnabled) {
+			try {
+				getXmlFile();
+			} catch (Exception e) {
+				logger.error("Creating XML report failed!", e);
 			}
 		}
+
+		if (htmlReportEnabled) {
+			try {
+				getHtmlFile();
+			} catch (Exception e) {
+				logger.error("Creating HTML report failed!", e);
+			}
+		}
+
 		boolean sendMailOnFailure = getProperty("mail.onFailure.enabled", false);
 		boolean sendMailOnSuccess = getProperty("mail.alwaysSend.enabled", false);
 		boolean sendMailOnSkip = getProperty("mail.onSkip.enabled", false);
@@ -734,41 +853,44 @@ implements JFireTestListener
 	public void sendReportAsMail() throws Exception {
 		// create the html report
 		try {
-			TransformerFactory factory = TransformerFactory.newInstance();
-			String xslFileName = getProperty("mail.htmlReportXSL", "htmlReport.xsl");
-			Transformer transformer = factory.newTransformer(new StreamSource(new File(JFireTestSuiteEAR.getEARDir(), xslFileName)));
+//			TransformerFactory factory = TransformerFactory.newInstance();
+//			String xslFileName = getProperty("mail.htmlReportXSL", "htmlReport.xsl");
+//			Transformer transformer = factory.newTransformer(new StreamSource(new File(JFireTestSuiteEAR.getEARDir(), xslFileName)));
 
-			File tmpDir = IOUtil.getUserTempDir("JFireTestSuite.", null);
-			if (!tmpDir.exists())
-				tmpDir.mkdirs();
+			File tmpFileXml = getXmlFile();
 
-			String tmpFilePrefix = Long.toString(System.currentTimeMillis(), 36) + "-";
+//			File tmpDir = IOUtil.getUserTempDir("JFireTestSuite.", null);
+//			if (!tmpDir.exists())
+//				tmpDir.mkdirs();
+//
+//			String tmpFilePrefix = Long.toString(System.currentTimeMillis(), 36) + "-";
+//
+//			File tmpFileXml = new File(tmpDir, tmpFilePrefix + "report.xml");
+//			// delete on exit => cleaning up while at the same time keeping it for the developer to check (if he wants)
+//			tmpFileXml.deleteOnExit();
+//
+//			FileOutputStream out = new FileOutputStream(tmpFileXml);
+//			try {
+//				writeReportAsXML(out);
+//			} finally {
+//				out.close();
+//			}
 
-			File tmpFileXml = new File(tmpDir, tmpFilePrefix + "report.xml");
-			// delete on exit => cleaning up while at the same time keeping it for the developer to check (if he wants)
-			tmpFileXml.deleteOnExit();
+//			String html;
+//			{
+//				StringWriter writer = new StringWriter();
+//				transformer.transform(new StreamSource(tmpFileXml), new StreamResult(writer));
+//				writer.close();
+//				html = writer.toString();
+//			}
+//
+//			File tmpFileHtml = new File(getTempDir(), tmpFilePrefix + "report.html");
+//			// delete on exit => cleaning up while at the same time keeping it for the developer to check (if he wants)
+//			tmpFileHtml.deleteOnExit();
+//
+//			IOUtil.writeTextFile(tmpFileHtml, html);
 
-			FileOutputStream out = new FileOutputStream(tmpFileXml);
-			try {
-				writeReportAsXML(out);
-			} finally {
-				out.close();
-			}
-
-			String html;
-			{
-				StringWriter writer = new StringWriter();
-				transformer.transform(new StreamSource(tmpFileXml), new StreamResult(writer));
-				writer.close();
-				html = writer.toString();
-			}
-
-			File tmpFileHtml = new File(tmpDir, tmpFilePrefix + "report.html");
-			// delete on exit => cleaning up while at the same time keeping it for the developer to check (if he wants)
-			tmpFileHtml.deleteOnExit();
-
-			IOUtil.writeTextFile(tmpFileHtml, html);
-
+			String html = IOUtil.readTextFile(getHtmlFile());
 
 // we now support include files - no need for these environment variables anymore!
 //			// check for environment variable for the smtp host

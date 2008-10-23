@@ -82,17 +82,25 @@ public class IDGeneratorTest extends TestCase
 	public void testGetIDsInternally()
 	throws Exception
 	{
+		_testGetIDs();
+	}
+
+	private static final int ITERATION_QUANTITY = 10000;
+
+	public void _testGetIDs()
+	throws Exception
+	{
 		LoginData ld = new LoginData("chezfrancois.jfire.org", "francois", "test");
 		ld.setDefaultValues();
 
 		long maxID = -1;
 		String namespace = ObjectIDUtil.makeValidIDString("namespace", true);
-		for (int i = 0; i < 10000; i++) {
+		for (int i = 0; i < ITERATION_QUANTITY; i++) {
 			IDGeneratorHelper idGeneratorHelper = IDGeneratorHelperUtil.getHome(ld.getInitialContextProperties()).create();
 			long[] ids = idGeneratorHelper.clientNextIDs(namespace, 0, 5);
 			for (long id : ids) {
 				if (id <= maxID)
-					fail("IDGenerator returned duplicate id: " + id);
+					fail("IDGenerator returned duplicate id for namespace \"" + namespace + "\": " + ObjectIDUtil.longObjectIDFieldToString(id));
 				maxID = id;
 			}
 		}
@@ -100,7 +108,7 @@ public class IDGeneratorTest extends TestCase
 
 	public static void main(String[] args) throws Exception {
 		JFireSecurityConfiguration.declareConfiguration();
-		new IDGeneratorTest().testGetIDsInternally();
+		new IDGeneratorTest()._testGetIDs();
 	}
 
 }
