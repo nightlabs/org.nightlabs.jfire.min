@@ -35,8 +35,8 @@ import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 
 import org.apache.log4j.Logger;
-import org.nightlabs.ModuleException;
 import org.nightlabs.jdo.NLJDOHelper;
+import org.nightlabs.jdo.ObjectIDUtil;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.idgenerator.id.IDNamespaceID;
 
@@ -95,62 +95,58 @@ extends BaseSessionBeanImpl implements SessionBean
 	 * @ejb.interface-method view-type="local"
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type="RequiresNew"
-	 **/
+	 */
 	public long[] serverNextIDs(String namespace, int currentCacheSize, int minCacheSize)
-	throws ModuleException
 	{
+		if (logger.isTraceEnabled()) {
+			logger.trace("serverNextIDs: entered (namespace=\"" + namespace + "\")");
+		}
+
+		PersistenceManager pm = this.getPersistenceManager();
 		try {
-			PersistenceManager pm = this.getPersistenceManager();
+			pm.getExtent(IDNamespace.class);
+			String organisationID = getOrganisationID();
+
+			NLJDOHelper.enableTransactionSerializeReadObjects(pm);
 			try {
-				pm.getExtent(IDNamespace.class);
-				String organisationID = getOrganisationID();
+				IDNamespace idNamespace = IDNamespace.getIDNamespace(pm, organisationID, namespace);
+				long nextID = idNamespace.getNextID();
 
-				NLJDOHelper.enableTransactionSerializeReadObjects(pm);
-				try {
-
-					IDNamespace idNamespace = IDNamespace.getIDNamespace(pm, organisationID, namespace);
-//					try {
-//					idNamespace = (IDNamespace) pm.getObjectById(IDNamespaceID.create(organisationID, namespace));
-//					idNamespace.getCacheSizeServer(); // workaround for JPOX bug - the JDOObjectNotFoundException doesn't occur always in the above line
-//					} catch (JDOObjectNotFoundException e) {
-//					idNamespace = new IDNamespace(
-//					getOrganisationID(),
-//					namespace,
-//					IDNamespaceDefault.getIDNamespaceDefault(pm, organisationID, namespace));
-//					idNamespace = (IDNamespace) pm.makePersistent(idNamespace);
-//					}
-
-					int quantity = minCacheSize - currentCacheSize + idNamespace.getCacheSizeServer();
-					if (quantity <= 0)
-						return new long[0];
-
-					long[] res = new long[quantity];
-					long nextID = idNamespace.getNextID();
-
-					if (nextID > LIMIT_FAIL - quantity)
-						throw new IllegalStateException("nextID too high!!! [organisationID=\""+organisationID+"\", namespace=\""+namespace+"\", nextID=\"" + nextID + "\"]");
-
-					for (int i = 0; i < quantity; ++i) {
-						res[i] = nextID++;
-					}
-					idNamespace.setNextID(nextID);
-
-					if (nextID > LIMIT_LOG_FATAL)
-						logger.fatal("nextID above LIMIT_LOG_FATAL (> 95%): [organisationID=\""+organisationID+"\", namespace=\""+namespace+"\", nextID=\"" + nextID + "\", LIMIT_LOG_FATAL=\""+LIMIT_LOG_FATAL+"\"]");
-					else if (nextID > LIMIT_LOG_ERROR)
-						logger.error("nextID above LIMIT_LOG_ERROR (> 90%): [organisationID=\""+organisationID+"\", namespace=\""+namespace+"\", nextID=\"" + nextID + "\", LIMIT_LOG_ERROR=\""+LIMIT_LOG_ERROR+"\"]");
-					else if (nextID > LIMIT_LOG_WARN)
-						logger.warn("nextID above LIMIT_LOG_WARN (> 80%): [organisationID=\""+organisationID+"\", namespace=\""+namespace+"\", nextID=\"" + nextID + "\", LIMIT_LOG_WARN=\""+LIMIT_LOG_WARN+"\"]");
-
-					return res;
-				} finally {
-					NLJDOHelper.disableTransactionSerializeReadObjects(pm);
+				if (logger.isTraceEnabled()) {
+					logger.trace("serverNextIDs: Obtained IDNamespace from JDO: " + idNamespace);
 				}
+
+				int quantity = minCacheSize - currentCacheSize + idNamespace.getCacheSizeServer();
+				if (quantity <= 0)
+					return new long[0];
+
+				long[] res = new long[quantity];
+
+				if (nextID > LIMIT_FAIL - quantity)
+					throw new IllegalStateException("nextID too high!!! [organisationID=\""+organisationID+"\", namespace=\""+namespace+"\", nextID=\"" + nextID + "\"]");
+
+				for (int i = 0; i < quantity; ++i) {
+					res[i] = nextID++;
+				}
+				idNamespace.setNextID(nextID);
+
+				if (nextID > LIMIT_LOG_FATAL)
+					logger.fatal("nextID above LIMIT_LOG_FATAL (> 95%): [organisationID=\""+organisationID+"\", namespace=\""+namespace+"\", nextID=\"" + nextID + "\", LIMIT_LOG_FATAL=\""+LIMIT_LOG_FATAL+"\"]");
+				else if (nextID > LIMIT_LOG_ERROR)
+					logger.error("nextID above LIMIT_LOG_ERROR (> 90%): [organisationID=\""+organisationID+"\", namespace=\""+namespace+"\", nextID=\"" + nextID + "\", LIMIT_LOG_ERROR=\""+LIMIT_LOG_ERROR+"\"]");
+				else if (nextID > LIMIT_LOG_WARN)
+					logger.warn("nextID above LIMIT_LOG_WARN (> 80%): [organisationID=\""+organisationID+"\", namespace=\""+namespace+"\", nextID=\"" + nextID + "\", LIMIT_LOG_WARN=\""+LIMIT_LOG_WARN+"\"]");
+
+				return res;
 			} finally {
-				pm.close();
+				NLJDOHelper.disableTransactionSerializeReadObjects(pm);
 			}
-		} catch(Exception e) {
-			throw new ModuleException(e);
+		} finally {
+			pm.close();
+
+			if (logger.isTraceEnabled()) {
+				logger.trace("serverNextIDs: exiting (namespace=\"" + namespace + "\")");
+			}
 		}
 	}
 
@@ -166,36 +162,55 @@ extends BaseSessionBeanImpl implements SessionBean
 	 * @ejb.interface-method view-type="remote"
 	 * @ejb.permission role-name="_Guest_"
 	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
-	 **/
+	 */
 	public long[] clientNextIDs(String namespace, int currentCacheSize, int minCacheSize)
-	throws ModuleException
 	{
+		if (logger.isTraceEnabled()) {
+			logger.trace("clientNextIDs: entered (namespace=\"" + namespace + "\")");
+		}
+
+		PersistenceManager pm = this.getPersistenceManager();
+		int quantity;
 		try {
-			PersistenceManager pm = this.getPersistenceManager();
-			int quantity;
+			pm.getExtent(IDNamespace.class);
+
+			IDNamespace idNamespace = null;
+			int cacheSizeClient = 0;
 			try {
-				pm.getExtent(IDNamespace.class);
+				idNamespace = (IDNamespace) pm.getObjectById(IDNamespaceID.create(getOrganisationID(), namespace));
+				cacheSizeClient = idNamespace.getCacheSizeClient();
 
-				IDNamespace idNamespace = null;
-				int cacheSizeClient = 0;
-				try {
-					idNamespace = (IDNamespace) pm.getObjectById(IDNamespaceID.create(getOrganisationID(), namespace));
-					cacheSizeClient = idNamespace.getCacheSizeClient();
-				} catch (JDOObjectNotFoundException e) {
-					// no IDNamespace => we request exactly the number of ids that were defined by minCacheSize
+				if (logger.isTraceEnabled()) {
+					logger.trace("clientNextIDs: obtained IDNamespace for finding out cacheSizeClient=" + cacheSizeClient + ": " + idNamespace);
 				}
-
-				quantity = minCacheSize - currentCacheSize + cacheSizeClient;
-				if (quantity <= 0)
-					return new long[0];
-
-			} finally {
-				pm.close();
+			} catch (JDOObjectNotFoundException e) {
+				// no IDNamespace => we request exactly the number of ids that were defined by minCacheSize
+				if (logger.isTraceEnabled()) {
+					logger.trace("clientNextIDs: no IDNamespace existing for namespace=\"" + namespace + "\", generating only exactly the requested quantity of IDs.");
+				}
 			}
 
-			return IDGenerator.nextIDs(namespace, quantity);
-		} catch(Exception e) {
-			throw new ModuleException(e);
+			quantity = minCacheSize - currentCacheSize + cacheSizeClient;
+			if (quantity <= 0) {
+				if (logger.isTraceEnabled()) {
+					logger.trace("clientNextIDs: exiting with empty result (namespace=\"" + namespace + "\")");
+				}
+
+				return new long[0];
+			}
+
+		} finally {
+			pm.close();
 		}
+
+		long[] res = IDGenerator.nextIDs(namespace, quantity);
+
+		if (logger.isTraceEnabled()) {
+			String firstID = res.length > 0 ? ObjectIDUtil.longObjectIDFieldToString(res[0]) : "";
+			String lastID = res.length > 0 ? ObjectIDUtil.longObjectIDFieldToString(res[res.length - 1]) : "";
+			logger.trace("clientNextIDs: exiting with " + res.length + " IDs (namespace=\"" + namespace + "\" firstID=" + firstID + " lastID=" + lastID + ")");
+		}
+
+		return res;
 	}
 }
