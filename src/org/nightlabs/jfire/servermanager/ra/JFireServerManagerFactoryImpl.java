@@ -169,7 +169,7 @@ import org.nightlabs.util.Util;
 import org.xml.sax.SAXException;
 
 /**
- * @author marco
+ * @author marco schulze - marco at nightlabs dot de
  * @author Marc Klinger - marc[at]nightlabs[dot]de
  */
 public class JFireServerManagerFactoryImpl
@@ -564,6 +564,7 @@ public class JFireServerManagerFactoryImpl
 	 */
 	private boolean createOrganisationAllowed = false;
 
+	@Override
 	public void serverStarted()
 	{
 		logger.info("Caught SERVER STARTED event!");
@@ -638,6 +639,7 @@ public class JFireServerManagerFactoryImpl
 					getPersistenceManagerFactory(organisationID).getPersistenceManager().close();
 
 					Runnable runnable = new Runnable() {
+						@Override
 						public void run() {
 							try {
 
@@ -794,9 +796,7 @@ public class JFireServerManagerFactoryImpl
 	// **************************************
 	// *** Methods from ConnectionFactory ***
 	// **************************************
-	/**
-	 * @see javax.resource.cci.ConnectionFactory#getConnection()
-	 */
+	@Override
 	public Connection getConnection() throws ResourceException {
 		if(logger.isDebugEnabled())
 			logger.debug(this.getClass().getName()+": getConnection()");
@@ -805,43 +805,33 @@ public class JFireServerManagerFactoryImpl
 		return ismi;
 	}
 
-	/**
-	 * @see javax.resource.cci.ConnectionFactory#getConnection(javax.resource.cci.ConnectionSpec)
-	 */
+	@Override
 	public Connection getConnection(ConnectionSpec cs) throws ResourceException {
 		if(logger.isDebugEnabled())
 			logger.debug(this.getClass().getName()+": getConnection(ConnectionSpec cs): cs = "+cs);
 		return getConnection();
 	}
 
-	/**
-	 * @see javax.resource.cci.ConnectionFactory#getRecordFactory()
-	 */
+	@Override
 	public RecordFactory getRecordFactory() throws ResourceException {
 		if(logger.isDebugEnabled())
 			logger.debug(this.getClass().getName()+": getRecordFactory()");
 		return null;
 	}
 
-	/**
-	 * @see javax.resource.cci.ConnectionFactory#getMetaData()
-	 */
+	@Override
 	public ResourceAdapterMetaData getMetaData() throws ResourceException {
 		throw new ResourceException("NYI");
 	}
 
-	/**
-	 * @see javax.resource.Referenceable#setReference(javax.naming.Reference)
-	 */
+	@Override
 	public void setReference(Reference _ref) {
 		if(logger.isDebugEnabled())
 			logger.debug(this.getClass().getName()+": setReference(Reference ref): ref = "+_ref);
 		this.ref = _ref;
 	}
 
-	/**
-	 * @see javax.naming.Referenceable#getReference()
-	 */
+	@Override
 	public Reference getReference() throws NamingException {
 		return ref;
 	}
@@ -851,9 +841,7 @@ public class JFireServerManagerFactoryImpl
 	// *** Methods from JFireServerManagerFactory ***
 	// ************************************************
 
-	/**
-	 * @see org.nightlabs.jfire.servermanager.JFireServerManagerFactory#getJFireServerManager()
-	 */
+	@Override
 	public JFireServerManager getJFireServerManager()
 	{
 		try {
@@ -863,6 +851,7 @@ public class JFireServerManagerFactoryImpl
 		}
 	}
 
+	@Override
 	public JFireServerManager getJFireServerManager(JFirePrincipal jfirePrincipal)
 	{
 		try {
@@ -1013,9 +1002,7 @@ public class JFireServerManagerFactoryImpl
 
 	private static class FileFilterDirectories implements FilenameFilter
 	{
-		/**
-		 * @see java.io.FilenameFilter#accept(java.io.File, java.lang.String)
-		 */
+		@Override
 		public boolean accept(File dir, String name)
 		{
 			File f = new File(dir, name);
@@ -1026,9 +1013,7 @@ public class JFireServerManagerFactoryImpl
 
 	private static class FileFilterJARs implements FilenameFilter
 	{
-		/**
-		 * @see java.io.FilenameFilter#accept(java.io.File, java.lang.String)
-		 */
+		@Override
 		public boolean accept(File dir, String name)
 		{
 			return name.endsWith(JAR_SUFFIX);
@@ -1896,9 +1881,7 @@ public class JFireServerManagerFactoryImpl
 
 	private static class FileFilterDirectoriesExcludingEARs implements FilenameFilter
 	{
-		/**
-		 * @see java.io.FilenameFilter#accept(java.io.File, java.lang.String)
-		 */
+		@Override
 		public boolean accept(File dir, String name)
 		{
 			if (name.endsWith(".ear"))
@@ -1911,9 +1894,7 @@ public class JFireServerManagerFactoryImpl
 
 	public static class FileFilterEARs implements FilenameFilter
 	{
-		/**
-		 * @see java.io.FilenameFilter#accept(java.io.File, java.lang.String)
-		 */
+		@Override
 		public boolean accept(File dir, String name)
 		{
 			return name.endsWith(".ear");
@@ -1978,6 +1959,7 @@ public class JFireServerManagerFactoryImpl
 		organisationCfsCloned = null;
 	}
 
+	@Override
 	public boolean containsOrganisation(String organisationID)
 	{
 		return getOrganisationCfsCloned().containsKey(organisationID);
@@ -2627,18 +2609,18 @@ public class JFireServerManagerFactoryImpl
 		return roleSet;
 	}
 
+	@Override
 	public List<J2eeServerTypeRegistryConfigModule.J2eeRemoteServer> getJ2eeRemoteServers()
 	{
 		return Collections.unmodifiableList(j2eeLocalServerCf.getJ2eeRemoteServers());
 	}
+	@Override
 	public J2eeServerTypeRegistryConfigModule.J2eeRemoteServer getJ2eeRemoteServer(String j2eeServerType)
 	{
 		return j2eeLocalServerCf.getJ2eeRemoteServer(j2eeServerType);
 	}
 
-	/**
-	 * @see org.nightlabs.jfire.servermanager.JFireServerManagerFactory#getInitialContextFactory(java.lang.String, boolean)
-	 */
+	@Override
 	public String getInitialContextFactory(String j2eeServerTypeRemote, boolean throwExceptionIfUnknownServerType)
 	{
 		J2eeServerTypeRegistryConfigModule.J2eeRemoteServer j2eeRemoteServerCf =
@@ -2652,22 +2634,19 @@ public class JFireServerManagerFactoryImpl
 		return j2eeRemoteServerCf.getInitialContextFactory();
 	}
 
-	/**
-	 * @see org.nightlabs.jfire.servermanager.JFireServerManagerFactory#getLocalServer()
-	 */
+	@Override
 	public ServerCf getLocalServer()
 	{
 		return (ServerCf) mcf.getConfigModule().getLocalServer().clone();
 	}
 
-	/**
-	 * @see org.nightlabs.jfire.servermanager.JFireServerManagerFactory#isUpAndRunning()
-	 */
+	@Override
 	public boolean isUpAndRunning()
 	{
 		return upAndRunning;
 	}
 
+	@Override
 	public boolean isShuttingDown()
 	{
 		return shuttingDown;
