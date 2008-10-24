@@ -61,7 +61,7 @@ import org.nightlabs.math.Base62Coder;
  *   <li><b>jfire.login.securityProtocol</b> (The value of {@link #PROP_SECURITY_PROTOCOL}), defines the security protocol to use, defaults to "jfire".</li>
  * </ul>
  * </p>
- * 
+ *
  * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] de -->
  * @author Marius Heinzmann -- Marius[at]NightLabs[dot]de
  */
@@ -229,10 +229,15 @@ public class JFireLogin
 	public Properties getInitialContextProperties()
 	throws NamingException
 	{
-		logger.debug(this.getClass().getName()+"#getInitialContextProperties(): begin");
+		if (logger.isDebugEnabled())
+			logger.debug("getInitialContextProperties: begin");
 
 		if (initialContextProperties == null) {
-			logger.debug(this.getClass().getName()+"#getInitialContextProperties(): generating props");
+			if (logger.isDebugEnabled())
+				logger.debug("getInitialContextProperties: generating props");
+
+			if (loginContext == null)
+				throw new IllegalStateException("Not authenticated! Call login() first! And don't forget to logout() afterwards.");
 
 			initialContextProperties = loginData.getInitialContextProperties();
 		}
@@ -254,13 +259,16 @@ public class JFireLogin
 	public void login()
 	throws LoginException
 	{
+		logout();
+
 		Base62Coder coder = Base62Coder.sharedInstance();
 		loginData.setSessionID(
 				coder.encode(System.currentTimeMillis(), 1) + '-' +
 				coder.encode((long)(Math.random() * 14776335), 1)); // 14776335 is the highest value encoded in 4 digits ("zzzz")
 
-		loginContext = new LoginContext("jfire", getAuthCallbackHandler());
-		loginContext.login();
+		LoginContext lc = new LoginContext("jfire", getAuthCallbackHandler());
+		lc.login();
+		loginContext = lc; // only assign the field if the login was successful - otherwise leave it null.
 	}
 
 	/**
@@ -278,7 +286,7 @@ public class JFireLogin
 			loginData.setSessionID(null);
 		}
 	}
-	
+
 	protected LoginData getLoginData() {
 		return loginData;
 	}
