@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.nightlabs.jfire.testsuite.login;
 
@@ -18,25 +18,51 @@ import org.nightlabs.jfire.testsuite.JFireTestSuite;
 @JFireTestSuite(JFireLoginTestSuite.class)
 public class LoginTest extends TestCase
 {
-
 	public LoginTest() { }
 
-	public void testCorrectLogin() throws Exception {
+	public void testCorrectLogin()
+	throws Exception
+	{
 		JFireLogin login = JFireTestLogin.getUserLogin(JFireTestLogin.USER_QUALIFIER_SERVER_ADMIN);
-		login.login(); // Warning! even though it's fine for testing here, switching the identity during a running transaction might cause trouble.
-		JFireSecurityManagerUtil.getHome(login.getInitialContextProperties()).create();
+		login.login();
+		try {
+			JFireSecurityManagerUtil.getHome(login.getInitialContextProperties()).create();
+		} finally {
+			login.logout();
+		}
 	}
 
-	public void testIncorrectLogin() {
-		JFireLogin login = new JFireLogin("chezfrancois.jfire.org", "francoiz", "text");
+	public void testIncorrectLogin_wrongUserName()
+	throws Exception
+	{
+		JFireLogin login = new JFireLogin("chezfrancois.jfire.org", "francoiz", "test");
 		try {
-			login.login(); // Warning! even though it's fine for testing here, switching the identity during a running transaction might cause trouble.
-		} catch (LoginException e) {
-			// OK, caught some login exception
-			return;
+			try {
+				login.login();
+			} catch (LoginException e) {
+				// OK, caught some login exception
+				return;
+			}
+		} finally {
+			login.logout();
 		}
 		fail("Could login with wrong credentials");
-//		JFireSecurityManagerUtil.getHome(login.getInitialContextProperties()).create();
 	}
 
+	public void testIncorrectLogin_wrongPassword()
+	throws Exception
+	{
+		JFireLogin login = new JFireLogin("chezfrancois.jfire.org", "francois", "text");
+		try {
+			try {
+				login.login();
+			} catch (LoginException e) {
+				// OK, caught some login exception
+				return;
+			}
+		} finally {
+			login.logout();
+		}
+		fail("Could login with wrong credentials");
+	}
 }

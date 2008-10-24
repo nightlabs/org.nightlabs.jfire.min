@@ -1,12 +1,11 @@
 /**
- * 
+ *
  */
 package org.nightlabs.jfire.testsuite.prop;
 
 import java.io.InputStream;
 import java.net.URL;
 import java.rmi.RemoteException;
-import java.util.Collections;
 import java.util.Date;
 
 import javax.ejb.CreateException;
@@ -18,7 +17,6 @@ import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.jdo.cache.Cache;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleManager;
 import org.nightlabs.jfire.base.login.JFireLogin;
-import org.nightlabs.jfire.base.login.JFireSecurityConfiguration;
 import org.nightlabs.jfire.idgenerator.IDGenerator;
 import org.nightlabs.jfire.prop.PropertyManager;
 import org.nightlabs.jfire.prop.PropertyManagerUtil;
@@ -36,8 +34,6 @@ import org.nightlabs.jfire.prop.datafield.TextDataField;
 import org.nightlabs.jfire.prop.id.PropertySetID;
 import org.nightlabs.jfire.prop.structfield.SelectionStructField;
 import org.nightlabs.jfire.security.SecurityReflector;
-import org.nightlabs.jfire.testsuite.JFireTestManager;
-import org.nightlabs.jfire.testsuite.JFireTestManagerUtil;
 import org.nightlabs.jfire.testsuite.JFireTestSuite;
 import org.nightlabs.jfire.testsuite.TestCase;
 import org.nightlabs.jfire.testsuite.login.JFireTestLogin;
@@ -51,7 +47,7 @@ import org.nightlabs.progress.NullProgressMonitor;
 public class JFirePropertySetTestCase extends TestCase {
 
 	/**
-	 * 
+	 *
 	 */
 	public JFirePropertySetTestCase() {
 	}
@@ -65,25 +61,25 @@ public class JFirePropertySetTestCase extends TestCase {
 
 	private static final String[] FETCH_GROUPS = new String[] {FetchPlan.DEFAULT, PropertySet.FETCH_GROUP_FULL_DATA};
 	private static final int FETCH_DEPTH = NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT;
-	
+
 	private PropertySetID propertySetID;
 	private JFireLogin login;
 	private boolean isSetup = false;
-	
+
 
 	protected PropertyManager getPropertyManager() throws RemoteException, CreateException, NamingException {
 		return PropertyManagerUtil.getHome(login.getInitialContextProperties()).create();
 	}
-	
+
 	@Override
 	protected void setUp() throws Exception {
 		if (isSetup)
 			return;
 		login = JFireTestLogin.getUserLogin(JFireTestLogin.USER_QUALIFIER_SERVER_ADMIN);
-		login.login();
+		login.login(); // TODO shouldn't we logout??!!! Marco.
 		PropertySet propertySet = new PropertySet(
-				login.getOrganisationID(), IDGenerator.nextID(PropertySet.class), 
-				PropertySetTestStruct.class.getName(), 
+				login.getOrganisationID(), IDGenerator.nextID(PropertySet.class),
+				PropertySetTestStruct.class.getName(),
 				Struct.DEFAULT_SCOPE, StructLocal.DEFAULT_SCOPE);
 		propertySet = getPropertyManager().storePropertySet(propertySet, true, FETCH_GROUPS, FETCH_DEPTH);
 		propertySetID = (PropertySetID) JDOHelper.getObjectId(propertySet);
@@ -122,15 +118,15 @@ public class JFirePropertySetTestCase extends TestCase {
 		}
 		return propertySet;
 	}
-	
+
 	/**
 	 * Test the fetching and exploding of a {@link PropertySet}
 	 */
 	public void testFetchPropertySet() throws Exception {
 		fetchPropertySet();
 	}
-	
-	
+
+
 	public void testSetTextDataField() {
 		PropertySet propertySet = fetchPropertySet();
 		TextDataField dataField = null;
@@ -151,7 +147,7 @@ public class JFirePropertySetTestCase extends TestCase {
 		}
 		assertEquals("Text field text differs", dataField.getText(), detachedDataField.getText());
 	}
-	
+
 	public void testSetRegexDataField() {
 		PropertySet propertySet = fetchPropertySet();
 		RegexDataField dataField = null;
@@ -172,7 +168,7 @@ public class JFirePropertySetTestCase extends TestCase {
 		}
 		assertEquals("Regex field text differs", dataField.getText(), detachedDataField.getText());
 	}
-	
+
 	public void testSetNumberDataField() {
 		PropertySet propertySet = fetchPropertySet();
 		NumberDataField dataField = null;
@@ -193,7 +189,7 @@ public class JFirePropertySetTestCase extends TestCase {
 		}
 		assertEquals("Number field numbers differ", dataField.getIntValue(), detachedDataField.getIntValue());
 	}
-	
+
 	public void testSetPhoneNumberDataField() {
 		String cCode = "+49";
 		String aCode = "(0)761";
@@ -224,9 +220,9 @@ public class JFirePropertySetTestCase extends TestCase {
 		assertEquals("Phone number field area code differs", aCode, detachedField.getAreaCode());
 		assertEquals("Phone number field local number differs", lNumber, detachedField.getLocalNumber());
 	}
-	
+
 	public void testSelectionDataField() {
-		
+
 		PropertySet propertySet = fetchPropertySet();
 		SelectionDataField dataField = null;
 		PropertySet detachedPropertySet = null;
@@ -247,11 +243,11 @@ public class JFirePropertySetTestCase extends TestCase {
 		}
 		assertEquals("Selection field selection differs", dataField.getStructFieldValueID(), detachedDataField.getStructFieldValueID());
 	}
-	
+
 	public void testDateDataField() {
 		Date date = new Date();
 		PropertySet propertySet = fetchPropertySet();
-		DateDataField dataField = null; 
+		DateDataField dataField = null;
 		PropertySet detachedPropertySet = null;
 		DateDataField detachedDataField = null;
 		try {
@@ -273,7 +269,7 @@ public class JFirePropertySetTestCase extends TestCase {
 		}
 		assertEquals("Date field date differs", dataField.getDate(), detachedDataField.getDate());
 	}
-	
+
 	public void testImageDataField() {
 		PropertySet propertySet = fetchPropertySet();
 		try {
@@ -297,12 +293,12 @@ public class JFirePropertySetTestCase extends TestCase {
 			throw new RuntimeException("Storing PropertySet with ImageDataField failed", e);
 		}
 	}
-	
-	public static void main(String[] args) throws Exception {
-		JFireSecurityConfiguration.declareConfiguration();
-		JFireLogin login = new JFireLogin("chezfrancois.jfire.org", "francois", "test");
-		login.login();
-		JFireTestManager testManager = JFireTestManagerUtil.getHome(login.getInitialContextProperties()).create();
-		testManager.runTestSuites(Collections.singletonList(JFirePropertySetTestSuite.class));
-	}
+
+//	public static void main(String[] args) throws Exception {
+//		JFireSecurityConfiguration.declareConfiguration();
+//		JFireLogin login = new JFireLogin("chezfrancois.jfire.org", "francois", "test");
+//		login.login();
+//		JFireTestManager testManager = JFireTestManagerUtil.getHome(login.getInitialContextProperties()).create();
+//		testManager.runTestSuites(Collections.singletonList(JFirePropertySetTestSuite.class));
+//	}
 }
