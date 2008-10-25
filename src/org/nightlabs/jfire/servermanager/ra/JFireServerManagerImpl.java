@@ -451,7 +451,7 @@ public class JFireServerManagerImpl
 								try {
 									userLocal = (UserLocal)pm.getObjectById(UserLocalID.create(organisationID, userID, organisationID), true);
 								} catch (JDOObjectNotFoundException x) {
-									logger.info("Login failed because user \""+userID+"\" not known in organisation \""+organisationID+"\".", x);
+									logger.info("Login failed because user \""+userID+"\" is not known in organisation \""+organisationID+"\".");
 
 									// Pause for a while to prevent users from trying out passwords
 									try { Thread.sleep(waitAfterLoginFailureMSec); } catch (InterruptedException e) { }
