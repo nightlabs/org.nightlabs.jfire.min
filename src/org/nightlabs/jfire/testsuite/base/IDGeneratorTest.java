@@ -24,7 +24,9 @@ import org.nightlabs.util.ObservedProcess;
 @JFireTestSuite(JFireBaseTestSuite.class)
 public class IDGeneratorTest extends TestCase
 {
-	Logger logger = Logger.getLogger(IDGeneratorTest.class);
+	private static Logger logger = Logger.getLogger(IDGeneratorTest.class);
+
+	private static boolean SKIPPED = false;
 
 	@Override
 	protected void setUp() throws Exception
@@ -56,6 +58,11 @@ public class IDGeneratorTest extends TestCase
 	public void testGetIDsExternally()
 	throws Exception
 	{
+		if (SKIPPED) {
+			logger.debug("testGetIDsExternally: skipped!");
+			return;
+		}
+
 		String javaHome = System.getProperty("java.home");
 		String java = IOUtil.addFinalSlash(IOUtil.addFinalSlash(javaHome) + "bin") + "java";
 		StringBuilder cp = new StringBuilder();
@@ -82,6 +89,11 @@ public class IDGeneratorTest extends TestCase
 	public void testGetIDsInternally()
 	throws Exception
 	{
+		if (SKIPPED) {
+			logger.debug("testGetIDsInternally: skipped!");
+			return;
+		}
+
 		_testGetIDs();
 	}
 
