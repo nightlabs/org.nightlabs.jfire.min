@@ -11,6 +11,7 @@ import javax.jdo.FetchPlan;
 
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO;
+import org.nightlabs.jfire.base.jdo.cache.Cache;
 import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.timer.Task;
 import org.nightlabs.jfire.timer.TimerManager;
@@ -87,6 +88,18 @@ public class TaskDAO extends BaseJDOObjectDAO<TaskID, Task> {
 			}
 		} catch (Exception x) {
 			throw new RuntimeException(x);
+		}
+	}
+	
+	public synchronized Task storeTask(Task task, boolean get, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor) {
+		try {
+			TimerManager m = TimerManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
+			Task newTask = m.storeTask(task, get, fetchGroups, maxFetchDepth);
+			if (get && newTask != null)
+				Cache.sharedInstance().put(null, newTask, fetchGroups, maxFetchDepth);
+			return newTask;
+		} catch (Exception e) {
+			throw new RuntimeException(e);
 		}
 	}
 	
