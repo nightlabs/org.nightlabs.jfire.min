@@ -5,6 +5,7 @@ import javax.transaction.Transaction;
 import org.apache.log4j.Logger;
 import org.jboss.ejb.plugins.AbstractInterceptor;
 import org.jboss.invocation.Invocation;
+import org.nightlabs.util.Util;
 
 /**
  * This interceptor forces rollback whenever an EJB method throws an exception. This is
@@ -37,7 +38,24 @@ extends AbstractInterceptor
 	public Object invoke(Invocation mi) throws Exception
 	{
 		try {
-			return getNext().invoke(mi);
+			// TODO WORKAROUND: DataNucleus manipulates the arguments instead of copying them and thus, a second call to the same method
+			// (in case of an error+retry) has no chance to succeed. Therefore we clone them here and restore in case of an error.
+
+			boolean restore = false;
+			Object[] backupArguments = null;
+			try {
+				backupArguments = Util.cloneSerializable(mi.getArguments());
+				restore = true;
+			} catch (Throwable x) {
+				if (logger.isDebugEnabled())
+					logger.debug("Cloning arguments failed!", x);
+			}
+			try {
+				return getNext().invoke(mi);
+			} finally {
+				if (restore)
+					mi.setArguments(backupArguments);
+			}
 		} catch (Exception x) {
 			Transaction tx = mi.getTransaction();
 			if (tx != null) {
@@ -57,4 +75,5 @@ extends AbstractInterceptor
 			throw x;
 		}
 	}
+	
 }
