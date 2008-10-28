@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -880,8 +881,7 @@ public class ServerConfiguratorJBoss
 		 * the respective setting in the configuration file. Doing so will cause the current
 		 * version of the file to be backed up and the new one to be written at the end of this method.
 		 */
-		boolean haveChanges = false;
-		//  No reboot necessary as JBoss will automatically notice any changes on the mail-services.xml
+		boolean changed = false;
 
 		DOMParser parser = new DOMParser();
 		parser.parse(new InputSource(new FileInputStream(destFile)));
@@ -899,17 +899,22 @@ public class ServerConfiguratorJBoss
 			logger.info("Debug: "+String.valueOf(smtp.getDebug()));
 		}
 
-		boolean changed;
-		changed = setMailConfigurationAttribute(document, "mail.smtp.host", smtp.getHost());
-		haveChanges |= changed;
-		changed = setMailConfigurationAttribute(document, "mail.smtp.port", String.valueOf(smtp.getPort()));
-		haveChanges |= changed;
-		changed = setMailConfigurationAttribute(document, "mail.from", smtp.getMailFrom());
-		haveChanges |= changed;
-		changed = setMailConfigurationAttribute(document, "mail.debug", String.valueOf(smtp.getDebug()));
-		haveChanges |= changed;
+		if (smtp.getUseAuthentication()) {
+			changed |= setMBeanAttribute(
+					document, "org.jboss.mail.MailService", 
+					"User", null, smtp.getUsername());
 
-		if (haveChanges) {
+			changed |= setMBeanAttribute(
+					document, "org.jboss.mail.MailService", 
+					"Password", null, smtp.getPassword());
+		}
+				
+		Map<String, String> props = smtp.createProperties();
+		for (Map.Entry<String, String> propEntry : props.entrySet()) {
+			changed |= setMailConfigurationAttribute(document, propEntry.getKey(), propEntry.getValue());
+		}
+		
+		if (changed) {
 			backup(destFile);
 			FileOutputStream out = new FileOutputStream(destFile);
 			try {
@@ -923,21 +928,34 @@ public class ServerConfiguratorJBoss
 
 	private boolean setMailConfigurationAttribute(Document document, String name, String value)
 	{
-		Node propertyElement;
-		Node valueItem;
-		propertyElement = NLDOMUtil.findNodeByAttribute(document, "server/mbean/attribute/configuration/property", "name", name);
+		Collection<Node> nodes = NLDOMUtil.findNodeList(document, "server/mbean/attribute/configuration");
+		if (nodes.size() <= 0) {
+			logger.warn("Could not fine path server/mbean in mail-service.xml file", new Exception());
+			return false;
+		}
+		Node configurationNode = nodes.iterator().next();
 		boolean changed = false;
+		Element propertyElement = (Element) NLDOMUtil.findNodeByAttribute(configurationNode, "property", "name", name);
+		if (propertyElement == null) {
+			if (logger.isInfoEnabled()) {
+				logger.info("Configuration-property for mail-service.xml name=\"" + name + "\" could not be found, creating it");
+			}
+			propertyElement = document.createElement("property");
+			propertyElement.setAttribute("name", name);
+			propertyElement.setAttribute("value", value);
+			changed = true;
+			configurationNode.appendChild(propertyElement);
+		}
+		Node valueItem;
 		if (propertyElement != null) {
 			valueItem = propertyElement.getAttributes().getNamedItem("value");
-			changed = !value.equals(valueItem.getNodeValue());
+			changed |= !value.equals(valueItem.getNodeValue());
 			valueItem.setNodeValue(value);
-		} else {
-			logger.warn("server/mbean/attribute/configuration/property not found with name=\""+name+"\"!", new RuntimeException("server/mbean/attribute/configuration/property not found with name=\""+name+"\"!"));
 		}
 
 		return changed;
 	}
-
+	
 	private void configureJBossjtaPropertiesXml(File jbossConfDir)
 	throws FileNotFoundException, IOException, SAXException, DOMException, TransformerException
 	{
