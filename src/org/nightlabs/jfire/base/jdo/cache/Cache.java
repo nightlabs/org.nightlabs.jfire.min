@@ -45,6 +45,7 @@ import javax.jdo.JDOHelper;
 import org.apache.log4j.Logger;
 import org.nightlabs.config.Config;
 import org.nightlabs.config.ConfigException;
+import org.nightlabs.environment.Environment;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jdo.ObjectID;
 import org.nightlabs.jfire.base.jdo.JDOObjectID2PCClassMap;
@@ -1196,7 +1197,14 @@ public class Cache
 			// If and only if the scope is null, we search for a record that contains
 			// AT LEAST our required fetch groups and AT LEAST our maxFetchDepth.
 			if (scope == null) {
-				if (cacheCfMod.getExactFetchGroupsOnly().booleanValue()) {
+				boolean exactFetchGroupsOnly;
+				if (Environment.getEnvironment() == Environment.productive)
+					exactFetchGroupsOnly = cacheCfMod.getExactFetchGroupsOnly();
+				else
+					exactFetchGroupsOnly = true;
+
+//				if (cacheCfMod.getExactFetchGroupsOnly().booleanValue()) {
+				if (exactFetchGroupsOnly) {
 					if (logger.isDebugEnabled())
 						logger.debug("exactFetchGroupsOnly is enabled => not searching for alternative entries having more than the desired fetch-groups.");
 				}
