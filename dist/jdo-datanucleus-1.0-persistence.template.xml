@@ -36,13 +36,9 @@
             <property name="datanucleus.rdbms.stringDefaultLength" value="255"/>
             <property name="datanucleus.rdbms.dynamicSchemaUpdates" value="true"/>
 
-<!--
             <property name="datanucleus.cache.level1.type" value="soft"/>
--->
-            <property name="datanucleus.cache.level2" value="false"/>
-<!--
+            <property name="datanucleus.cache.level2" value="true"/>
             <property name="datanucleus.cache.level2.type" value="soft"/>
--->
 
             <property name="datanucleus.persistenceByReachabilityAtCommit" value="false"/>
 
