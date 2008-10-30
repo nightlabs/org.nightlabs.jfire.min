@@ -10,12 +10,14 @@
     <provides path="/JFireServerManager/dist/JFireServerManager.rar" location="JFireServerManager/dist/JFireServerManager.rar"/>
     <provides path="/JFireServerManager/dist/JFireServerManager.jar" location="JFireServerManager/dist/JFireServerManager.jar"/>
     <provides path="WORKSPACE/JFireServerManager/dist/JFireServerManager.jar" location="JFireServerManager/dist/JFireServerManager.jar"/>
+<!-- publishes are not necessary. commented them all out. marco. 2008-10-30
     <publishes location="JFireServerManager/dist/JFireServerManager.jar"/>
     <publishes location="JFireServerManager/dist/db-default-ds.template.xml"/>
     <publishes location="JFireServerManager/dist/db-derby-ds.template.xml"/>
     <publishes location="JFireServerManager/dist/db-mysql-ds.template.xml"/>
     <publishes location="JFireServerManager/dist/jdo-jpox-1.1-ds.template.xml"/>
     <publishes location="JFireServerManager/dist/jdo-jpox-1.2-ds.template.xml"/>
+-->
     <javadoc path="JFireServerManager/src"/>
   </project>
 
