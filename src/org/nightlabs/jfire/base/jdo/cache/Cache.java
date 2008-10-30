@@ -1198,6 +1198,7 @@ public class Cache
 			// AT LEAST our required fetch groups and AT LEAST our maxFetchDepth.
 			if (scope == null) {
 				boolean exactFetchGroupsOnly;
+				//check the environment variable if it's for productive or devolopment purpose.
 				if (Environment.getEnvironment() == Environment.productive)
 					exactFetchGroupsOnly = cacheCfMod.getExactFetchGroupsOnly();
 				else
