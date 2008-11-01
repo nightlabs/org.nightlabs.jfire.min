@@ -17,6 +17,8 @@ import org.nightlabs.jfire.base.jdo.cache.Cache;
 import org.nightlabs.jfire.jdo.notification.AbsoluteFilterID;
 import org.nightlabs.jfire.jdo.notification.IJDOLifecycleListenerFilter;
 import org.nightlabs.jfire.security.SecurityReflector;
+import org.nightlabs.util.IOUtil;
+import org.nightlabs.util.Util;
 
 /**
  * Use the shared instance of this manager to get notified
@@ -84,9 +86,9 @@ public class JDOLifecycleManager
 extends org.nightlabs.notification.NotificationManager
 {
 	public static final String PROPERTY_KEY_JDO_LIFECYCLE_MANAGER = JDOLifecycleManager.class.getName();
-	
+
 	private static final Logger logger = Logger.getLogger(JDOLifecycleManager.class);
-	
+
 	protected JDOLifecycleManager()
 	{
 	}
@@ -180,7 +182,7 @@ extends org.nightlabs.notification.NotificationManager
 		}
 		return null;
 	}
-	
+
 	/**
 	 * This method adds a {@link JDOLifecycleListener}. If it has already been added
 	 * before, this method silently returns without any action.
@@ -242,13 +244,27 @@ extends org.nightlabs.notification.NotificationManager
 				throw new IllegalStateException("Two JDOLifecycleListeners used the same filter and we didn't recognize it before.");
 
 			lifecycleListenerFilters = null;
+//		}
+
+			// IMHO it's necessary to call the cache.removeLife...Filter method inside this synchronized
+			// block, because otherwise we might have listener-filters with filterID = null.
+			// I hope that it does not cause dead locks (the cache locks on another mutex). I hope that
+			// now this exception doesn't occur anymore:
+//			20:43:24,173 ERROR [CacheManagerFactory] filter.getFilterID returned null!!! filter class: org.nightlabs.jfire.trade.notification.ArticleContainerLifecycleListenerFilter
+//			java.lang.Exception: STACKTRACE
+//      at org.nightlabs.jfire.jdo.cache.CacheManagerFactory.after_addLifecycleListenerFilters(CacheManagerFactory.java:700)
+//      at org.nightlabs.jfire.jdo.cache.CacheManagerFactory.resubscribeAllListeners(CacheManagerFactory.java:574)
+//      at org.nightlabs.jfire.jdo.cache.CacheManager.resubscribeAllListeners(CacheManager.java:119)
+//      at org.nightlabs.jfire.jdo.JDOManagerBean.resubscribeAllListeners(JDOManagerBean.java:217)
+			cache.removeLifecycleListenerFilter(jdoLifecycleListenerFilter, 0);
 		}
 
-		cache.removeLifecycleListenerFilter(jdoLifecycleListenerFilter, 0);
-		
 		// clear the filterID in case the JDOLifecycleListener wants to re-register this filter
 		// instance with changed filter properties. (Marius)
-		jdoLifecycleListenerFilter.setFilterID(null);
+		// This is already done in cache.removeLifecycleListenerFilter(jdoLifecycleListenerFilter, 0); above. Commented it out. Marco.
+//		jdoLifecycleListenerFilter.setFilterID(null);
+		if (jdoLifecycleListenerFilter.getFilterID() != null)
+			throw new IllegalStateException("jdoLifecycleListenerFilter.getFilterID() is not null!");
 	}
 
 	private Set<JDOLifecycleListener> lifecycleListeners = new HashSet<JDOLifecycleListener>();
@@ -262,6 +278,9 @@ extends org.nightlabs.notification.NotificationManager
 	 * by {@link #addLifecycleListener(JDOLifecycleListener)} and {@link #removeLifecycleListener(JDOLifecycleListener)}.
 	 * Once it has been created, it is not modified anymore - thus it can be safely returned to the outside world
 	 * (as a read-only list).
+	 * <p>
+	 * From 2008-10-30 on, the elements in this List are clones (created via {@link Util#cloneSerializable(Object, ClassLoader)}).
+	 * </p>
 	 */
 	private List<IJDOLifecycleListenerFilter> lifecycleListenerFilters = null;
 
@@ -282,8 +301,20 @@ extends org.nightlabs.notification.NotificationManager
 		synchronized (lifecycleListeners) {
 			if (lifecycleListenerFilters == null) {
 				ArrayList<IJDOLifecycleListenerFilter> res = new ArrayList<IJDOLifecycleListenerFilter>(lifecycleListeners.size());
-				for (JDOLifecycleListener listener : lifecycleListeners)
-					res.add(listener.getJDOLifecycleListenerFilter());
+				for (JDOLifecycleListener listener : lifecycleListeners) {
+					IJDOLifecycleListenerFilter lifecycleListenerFilter = listener.getJDOLifecycleListenerFilter();
+					// We clone in order to avoid this exception:
+//				20:43:24,173 ERROR [CacheManagerFactory] filter.getFilterID returned null!!! filter class: org.nightlabs.jfire.trade.notification.ArticleContainerLifecycleListenerFilter
+//				java.lang.Exception: STACKTRACE
+//	      at org.nightlabs.jfire.jdo.cache.CacheManagerFactory.after_addLifecycleListenerFilters(CacheManagerFactory.java:700)
+//	      at org.nightlabs.jfire.jdo.cache.CacheManagerFactory.resubscribeAllListeners(CacheManagerFactory.java:574)
+//	      at org.nightlabs.jfire.jdo.cache.CacheManager.resubscribeAllListeners(CacheManager.java:119)
+//	      at org.nightlabs.jfire.jdo.JDOManagerBean.resubscribeAllListeners(JDOManagerBean.java:217)
+					// I assume, that, without cloning, the Cache.CacheManagerThread.run method works with filters that were manipulated after they
+					// were fetched via this method.
+					lifecycleListenerFilter = Util.cloneSerializable(lifecycleListenerFilter, lifecycleListenerFilter.getClass().getClassLoader());
+					res.add(lifecycleListenerFilter);
+				}
 
 				lifecycleListenerFilters = Collections.unmodifiableList(res);
 			}
@@ -312,7 +343,7 @@ extends org.nightlabs.notification.NotificationManager
 	}
 
 	private static Map<String, JDOLifecycleManager> serverModeSharedInstances = null;
-	
+
 	/**
 	 * This is used, if we're not using JNDI, but a System property (i.e. in the client)
 	 */
@@ -325,7 +356,7 @@ extends org.nightlabs.notification.NotificationManager
 			if (serverMode) {
 				if (serverModeSharedInstances == null)
 					serverModeSharedInstances = new HashMap<String, JDOLifecycleManager>();
-	
+
 				String userName = getCurrentUserName();
 				JDOLifecycleManager jdoLifecycleManager = serverModeSharedInstances.get(userName);
 				if (jdoLifecycleManager == null) {
@@ -378,5 +409,5 @@ extends org.nightlabs.notification.NotificationManager
 	{
 		return SecurityReflector.getUserDescriptor().getCompleteUserID();
 	}
-	
+
 }
