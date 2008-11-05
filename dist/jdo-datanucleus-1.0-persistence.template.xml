@@ -37,7 +37,8 @@
             <property name="datanucleus.rdbms.dynamicSchemaUpdates" value="true"/>
 
             <property name="datanucleus.cache.level1.type" value="soft"/>
-            <property name="datanucleus.cache.level2" value="true"/>
+<!--  level2 cache de-activated again as it still causes wrong/old data to be send to the client -->            
+            <property name="datanucleus.cache.level2" value="false"/>
             <property name="datanucleus.cache.level2.type" value="soft"/>
 
             <property name="datanucleus.persistenceByReachabilityAtCommit" value="false"/>
