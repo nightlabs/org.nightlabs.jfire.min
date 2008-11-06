@@ -58,7 +58,7 @@ public class OrganisationCf
 	 * The serial version of this class.
 	 */
 	private static final long serialVersionUID = 1L;
-	
+
 	public static final String DATASOURCE_PREFIX_RELATIVE = "jfire/datasource/";
 	public static final String DATASOURCE_PREFIX_ABSOLUTE = "java:/jfire/datasource/";
 
@@ -76,7 +76,7 @@ public class OrganisationCf
 	 * owns this instance.
 	 */
 	private ConfigModule parentConfigModule = null;
-	
+
 	public OrganisationCf() { }
 
 	public OrganisationCf(
@@ -107,7 +107,7 @@ public class OrganisationCf
 		this.organisationID = _organisationID;
 		setChanged();
 	}
-	
+
 	/**
 	 * @return Returns the organisationName.
 	 */
@@ -152,12 +152,12 @@ public class OrganisationCf
 
 		return serverAdmins;
 	}
-	
+
 	/**
 	 * After having set a new list of serverAdmins, don't manipulate
 	 * the Set directly anymore! Use the methods addServerAdmin(...) and
 	 * removeServerAdmin(...) instead!
-	 * 
+	 *
 	 * @param serverAdmins The serverAdmins to set.
 	 * @see addServerAdmin(String userID)
 	 * @see removeServerAdmin(String userID)
@@ -168,7 +168,7 @@ public class OrganisationCf
 		this.serverAdmins = _serverAdmins;
 		setChanged();
 	}
-	
+
 	public void addServerAdmin(String userID)
 	{
 		assertWritable();
@@ -189,12 +189,12 @@ public class OrganisationCf
 		setChanged();
 		return res;
 	}
-	
+
 	public boolean isServerAdmin(String userID)
 	{
 		if (serverAdmins == null)
 			return false;
-		
+
 		return serverAdmins.contains(userID);
 	}
 
@@ -250,7 +250,7 @@ public class OrganisationCf
 
 		return organisation;
 	}
-	
+
 	/**
 	 * @see java.lang.Object#clone()
 	 */
@@ -310,7 +310,7 @@ public class OrganisationCf
 	}
 
 	protected String thisString = null;
-	
+
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
@@ -343,7 +343,7 @@ public class OrganisationCf
 
 		return thisString;
 	}
-	
+
 
 	/**
 	 * Get the parentConfigModule.
@@ -353,7 +353,7 @@ public class OrganisationCf
 	{
 		return parentConfigModule;
 	}
-	
+
 
 	/**
 	 * Set the parentConfigModule.
