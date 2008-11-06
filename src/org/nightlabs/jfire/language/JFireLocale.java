@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.nightlabs.jfire.language;
 
@@ -8,9 +8,12 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 
+import org.apache.log4j.Logger;
 import org.nightlabs.jfire.base.Lookup;
+import org.nightlabs.jfire.person.Person;
 import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.security.SecurityReflector.UserDescriptor;
@@ -20,9 +23,11 @@ import org.nightlabs.util.NLLocale;
  * @author Daniel Mazurek - daniel [at] nightlabs [dot] de
  * @author marco schulze - marco at nightlabs dot de
  */
-public class JFireLocale 
-extends NLLocale 
+public class JFireLocale
+extends NLLocale
 {
+	private static final Logger logger = Logger.getLogger(JFireLocale.class);
+
 	private Map<String, UserLocaleWrapper> completeUserID2UserLocaleWrapper = Collections.synchronizedMap(
 			new HashMap<String, UserLocaleWrapper>()
 	);
@@ -56,15 +61,32 @@ extends NLLocale
 		return userLocaleWrapper.getLocale();
 	}
 
-	protected Locale getUserLocale(UserDescriptor userDescriptor) 
+	protected Locale getUserLocale(UserDescriptor userDescriptor)
 	{
 		Lookup lookup = new Lookup(userDescriptor.getOrganisationID());
 		PersistenceManager pm = lookup.getPersistenceManager();
 		try {
-			User user = User.getUser(pm, userDescriptor.getOrganisationID(), userDescriptor.getUserID());
-			return user.getLocale();
+			Person person;
+			try {
+				User user;
+				user = User.getUser(pm, userDescriptor.getOrganisationID(), userDescriptor.getUserID());
+				person = user.getPerson();
+			} catch (JDOObjectNotFoundException x) {
+				// During organisation-setup, the user might not exist. Hence, we ignore it (with a debug message).
+				person = null;
+				if (logger.isDebugEnabled())
+					logger.debug("getUserLocale: The user does not exist! organisationID=" + userDescriptor.getOrganisationID() + " userID=" + userDescriptor.getUserID());
+			}
+			if (person != null)
+				return person.getLocale();
+			else {
+				if (logger.isDebugEnabled())
+					logger.debug("getUserLocale: The user does not have a person assigned! organisationID=" + userDescriptor.getOrganisationID() + " userID=" + userDescriptor.getUserID());
+
+				return Locale.getDefault();
+			}
 		} finally {
 			pm.close();
-		}		
+		}
 	}
 }
