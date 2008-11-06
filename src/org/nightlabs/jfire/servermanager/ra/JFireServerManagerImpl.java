@@ -345,6 +345,8 @@ public class JFireServerManagerImpl
 
 	private static final long waitAfterLoginFailureMSec = 2000;
 
+	public static final String LOGIN_PARAM_ALLOW_EARLY_LOGIN = "allowEarlyLogin";
+
 	@Override
 	public JFirePrincipal login(LoginData loginData)
 		throws LoginException
@@ -364,16 +366,23 @@ public class JFireServerManagerImpl
 			if (jfireServerManagerFactoryImpl.isShuttingDown())
 				throw new LoginException("org.jfire.serverShuttingDown");
 
-		// TODO when the server is not yet up and running, normal users should get an exception telling them that the server is not available.
+		// When the server is not yet up and running, normal users should get an exception telling them that the server is not available.
 		// The following code worked already fine, but causes problems for the server-initialisation:
 		// We cannot enable this without providing a solution to the ServerInits and OrganisationInits that require to log-in
 		// using different users than _System_. For example, JFireDemoSetupMultiOrganisation currently fails to register the
 		// organisations in each other because of the following Exception ("org.jfire.serverNotYetUpAndRunning") being thrown.
 		// Marco.
 		// see: https://www.jfire.org/modules/bugs/view.php?id=693
+		//
+		// Update (2008-11-06): Whenever organisations login to each other or other authentication is done within the server,
+		// InvokeUtil is usually used and passes the parameter LOGIN_PARAM_ALLOW_EARLY_LOGIN set to true.
+		// Marco.
 
-//			if (!jfireServerManagerFactoryImpl.isUpAndRunning())
-//				throw new LoginException("org.jfire.serverNotYetUpAndRunning");
+			if (!jfireServerManagerFactoryImpl.isUpAndRunning()) {
+				String allowEarlyLogin = loginData.getAdditionalParams().get(LOGIN_PARAM_ALLOW_EARLY_LOGIN);
+				if (!Boolean.parseBoolean(allowEarlyLogin))
+					throw new LoginException("org.jfire.serverNotYetUpAndRunning");
+			}
 		}
 
 //		String userPK = userID + LoginData.USER_ORGANISATION_SEPARATOR + organisationID;

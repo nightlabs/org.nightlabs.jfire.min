@@ -14,6 +14,8 @@ import org.apache.log4j.Logger;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.servermanager.JFireServerManagerFactory;
 import org.nightlabs.jfire.servermanager.config.ServerCf;
+import org.nightlabs.jfire.servermanager.ra.JFireServerManagerImpl;
+import org.nightlabs.util.ParameterMap;
 
 public class InvokeUtil
 {
@@ -23,8 +25,18 @@ public class InvokeUtil
 	{
 		if ((User.USER_ID_PREFIX_TYPE_ORGANISATION + organisationID).equals(userID)) // we login to ourselves - no properties
 			return null;
-		
-		String username = userID + '@' + organisationID;
+
+//		String username = userID + User.SEPARATOR_BETWEEN_USER_ID_AND_ORGANISATION_ID + organisationID;
+		String username = (
+				userID
+				+ User.SEPARATOR_BETWEEN_USER_ID_AND_ORGANISATION_ID
+				+ organisationID
+				+ User.SEPARATOR_BETWEEN_ORGANISATION_ID_AND_REST
+				+ JFireServerManagerImpl.LOGIN_PARAM_ALLOW_EARLY_LOGIN
+				+ ParameterMap.DEFAULT_KEY_VALUE_SEPARATOR
+				+ "true"
+//				+ ParameterMap.DEFAULT_ENTRY_SEPARATOR
+		);
 		Properties props = new Properties();
 		props.put(Context.INITIAL_CONTEXT_FACTORY, initialContextFactory);
 		props.put(Context.PROVIDER_URL, initialContextURL);

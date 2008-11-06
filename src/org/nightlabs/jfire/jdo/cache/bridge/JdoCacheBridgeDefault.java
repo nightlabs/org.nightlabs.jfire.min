@@ -92,6 +92,8 @@ public class JdoCacheBridgeDefault extends JdoCacheBridge
 		{
 			this.bridge = bridge;
 			_sessionID = bridge.securityReflector._getUserDescriptor().getSessionID();
+			if (_sessionID == null)
+				throw new IllegalStateException("constructor: sessionID is not assigned!");
 		}
 
 		public String getIdentityString()
@@ -327,7 +329,7 @@ public class JdoCacheBridgeDefault extends JdoCacheBridge
 
 	private CacheTransactionListener getCacheTransactionListener(PersistenceManager pm)
 	{
-		
+
 		CacheTransactionListener listener = (CacheTransactionListener)pm.getUserObject();
 		// we cannot unregister the CacheTransactionListener after the transaction is finished (pm.setUserObject fails) - hence we use the "dead" flag
 		if (listener == null || listener.isDead()) {
