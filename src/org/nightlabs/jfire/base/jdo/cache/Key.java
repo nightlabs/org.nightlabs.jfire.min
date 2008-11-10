@@ -68,9 +68,6 @@ public class Key
 
 	private int _hashCode = 0;
 
-	/**
-	 * @see java.lang.Object#hashCode()
-	 */
 	@Override
 	public int hashCode()
 	{
@@ -85,9 +82,6 @@ public class Key
 		return _hashCode;
 	}
 
-	/**
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(Object obj)
 	{
@@ -114,16 +108,13 @@ public class Key
 
 	private transient String thisString = null;
 
-	/**
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public String toString()
 	{
 		if (thisString == null) {
 			StringBuffer sb = new StringBuffer();
 			sb.append(this.getClass().getName());
-			sb.append('{');
+			sb.append('[');
 			sb.append("scope=");
 			sb.append(scope);
 			sb.append(';');
@@ -135,7 +126,7 @@ public class Key
 			sb.append(';');
 			sb.append("maxFetchDepth=");
 			sb.append(maxFetchDepth);
-			sb.append('}');
+			sb.append(']');
 			thisString = sb.toString();
 		}
 		return thisString;

@@ -1492,8 +1492,8 @@ public class Cache
 					this.subscribeObjectIDs(objectIDs, 0);
 				}
 				long duration_fillObjectGraph = System.currentTimeMillis() - start_fillObjectGraph;
-				if (duration_fillObjectGraph > 50)
-					logger.warn("put: fillObjectGraph took more than 50 msec! it took " + duration_fillObjectGraph + " msec!");
+				if (duration_fillObjectGraph > 100)
+					logger.warn("put: fillObjectGraph took more than 100 msec! it took " + duration_fillObjectGraph + " msec! key=" + key);
 			}
 		} // synchronized (this) {
 
