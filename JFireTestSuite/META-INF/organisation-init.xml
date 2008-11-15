@@ -5,7 +5,7 @@
 
 	<init bean="jfire/ejb/JFireTestSuite/JFireTestManager" method="initialiseTestSystem" priority="900">
 	</init>
-	
+<!--
 	<init bean="jfire/ejb/JFireTestSuite/JFireTestManager" method="runAllTestSuites" priority="950">
 		<depends module="JFireSimpleTrade.ear" resolution="optional" />
 		<depends module="JFireVoucher.ear" resolution="optional" />
@@ -13,4 +13,5 @@
 		<depends module="JFireChezFrancois.ear" resolution="optional" />
 		<depends module="CrossTicketWonderland.ear" resolution="optional" />
 	</init>
+-->
 </organisation-initialisation>	

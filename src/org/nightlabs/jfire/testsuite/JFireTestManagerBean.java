@@ -52,7 +52,10 @@ import junit.framework.TestResult;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.ModuleException;
+import org.nightlabs.jfire.asyncinvoke.AsyncInvoke;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
+import org.nightlabs.jfire.servermanager.JFireServerManager;
+import org.nightlabs.jfire.shutdownafterstartup.ShutdownControlHandle;
 import org.nightlabs.jfire.testsuite.login.JFireTestLogin;
 import org.nightlabs.jfire.testsuite.prop.PropertySetTestStruct;
 import org.nightlabs.util.reflect.ReflectUtil;
@@ -105,9 +108,9 @@ implements SessionBean
 	/**
 	 * This method is called by the datastore initialisation mechanism.
 	 * It initializes the users needed for Test logins and other prerequisites for the Test system.
-	 * 
+	 *
 	 * @throws Exception When something went wrong.
-	 * 
+	 *
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_System_"
 	 * @ejb.transaction type="Required"
@@ -115,19 +118,32 @@ implements SessionBean
 	public void initialiseTestSystem()
 	throws Exception
 	{
-		PersistenceManager pm = getPersistenceManager();
+		JFireServerManager jfsm = getJFireServerManager();
 		try {
-			JFireTestLogin.checkCreateLoginsAndRegisterInAuthorities(pm);
-			PropertySetTestStruct.getTestStruct(getOrganisationID(), pm);
+			PersistenceManager pm = getPersistenceManager();
+			try {
+				JFireTestLogin.checkCreateLoginsAndRegisterInAuthorities(pm);
+				PropertySetTestStruct.getTestStruct(getOrganisationID(), pm);
+
+				ShutdownControlHandle shutdownControlHandle = jfsm.shutdownAfterStartup_createShutdownControlHandle();
+
+				// This invocation will only be started after all organisation-inits have completed,
+				// because no async-invocation is executed by the framework before completion of startup.
+				JFireTestRunnerInvocation invocation = new JFireTestRunnerInvocation(shutdownControlHandle);
+				AsyncInvoke.exec(invocation, true);
+
+			} finally {
+				pm.close();
+			}
 		} finally {
-			pm.close();
+			jfsm.close();
 		}
 	}
 
 	/**
 	 * Runs all TestSuits and TestCases found in the classpath under org.nightlabs.jfire.testsuite.
-	 * This method can be called by clients and is called by an organisation-init on every startup. 
-	 * 
+	 * This method can be called by clients and is called by the {@link JFireTestRunnerInvocation} on every startup.
+	 *
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
 	 */
@@ -140,7 +156,7 @@ implements SessionBean
 
 	/**
 	 * Runs TestCases found in the classpath under org.nightlabs.jfire.testsuite that belong to the given TestSuites..
-	 * 
+	 *
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
 	 */
@@ -211,7 +227,7 @@ implements SessionBean
 	 *
 	 * @param test The test to be run.
 	 * @param result The result into which the test's execution result will be written.
-	 * 
+	 *
 	 * @ejb.interface-method view-type="local"
 	 * @ejb.permission unchecked="true"
 	 * @ejb.transaction type="RequiresNew"
@@ -285,15 +301,15 @@ implements SessionBean
 			listener.configure(listenerProps);
 			listeners.add(listener);
 		}
-		
+
 		return listeners;
 	}
-	
+
 	/**
 	 * Searches the classpath for TestSuites and TestCases and creates all TestSuites and TestCases that belong to one of the
 	 * TestSuite classes in <code>testSuiteClassFilter</code>. If <code>testSuiteClassFilter == null</code>, all encountered TestSuites
 	 * and TestCases are created.
-	 * 
+	 *
 	 * @param testSuiteClassesFilter Restricts the created Test{Cases,Suites} to the given classes. Can be null to indicate no restriction, i.e. all
 	 * 		encountered Test{Cases,Suites} will be created.
 	 * @return A list of the created TestSuites.
@@ -303,9 +319,9 @@ implements SessionBean
 		logger.debug("Scanning classpath for TestSuites and TestCases");
 		Collection<Class<?>> classes = ReflectUtil.listClassesInPackage("org.nightlabs.jfire.testsuite", true);
 		logger.debug("Found " + classes.size() + " classes");
-		
+
 		List<Class<? extends TestSuite>> testSuiteClasses = new LinkedList<Class<? extends TestSuite>>();
-		
+
 		Map<Class<? extends TestSuite>, List<Class<? extends TestCase>>> suites2TestCases = new HashMap<Class<? extends TestSuite>, List<Class<? extends TestCase>>>();
 		for (Class<?> clazz : classes) {
 			if (TestSuite.class.isAssignableFrom(clazz)) {
@@ -329,19 +345,19 @@ implements SessionBean
 				testCaseClasses.add(testCaseClass);
 			}
 		}
-		
+
 		// now iterate all registrations and find TestCases that have a Suite set that's not in the classpath
 		for (Class<? extends TestSuite> suiteClass : suites2TestCases.keySet()) {
 			if (!testSuiteClasses.contains(suiteClass)) {
 				testSuiteClasses.add(suiteClass);
 			}
 		}
-		
+
 		// if a filter has been set, remove all test suites that are filtered out
 		if (testSuiteClassesFilter != null) {
 			testSuiteClasses.retainAll(testSuiteClassesFilter);
 		}
-		
+
 		List<TestSuite> runSuites = new LinkedList<TestSuite>();
 		for (Class<? extends TestSuite> clazz : testSuiteClasses) {
 			if (suites2TestCases.containsKey(clazz)) {
@@ -363,7 +379,7 @@ implements SessionBean
 				runSuites.add(testSuite);
 			}
 		}
-		
+
 		return runSuites;
 	}
 }
