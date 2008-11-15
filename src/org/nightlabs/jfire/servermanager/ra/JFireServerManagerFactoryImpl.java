@@ -162,6 +162,8 @@ import org.nightlabs.jfire.servermanager.xml.ModuleDef;
 import org.nightlabs.jfire.servermanager.xml.RoleDef;
 import org.nightlabs.jfire.servermanager.xml.RoleGroupDef;
 import org.nightlabs.jfire.servermanager.xml.XMLReadException;
+import org.nightlabs.jfire.shutdownafterstartup.ShutdownAfterStartupManager;
+import org.nightlabs.jfire.shutdownafterstartup.ShutdownControlHandle;
 import org.nightlabs.math.Base62Coder;
 import org.nightlabs.util.CollectionUtil;
 import org.nightlabs.util.IOUtil;
@@ -776,22 +778,39 @@ public class JFireServerManagerFactoryImpl
 				ctx.close();
 			}
 
+			logger.info("*** JFireServer is up and running! ***");
+			upAndRunning = true;
+
+//			String shutdownAfterStartup = System.getProperty(JFireServerManagerFactory.class.getName() + ".shutdownAfterStartup");
+//			if (Boolean.TRUE.toString().equals(shutdownAfterStartup)) {
+//				try {
+//					getJ2EEVendorAdapter().shutdown();
+//				} catch (Throwable x) {
+//					logger.error("shutdown via JavaEE-vendor-adapter failed!", x);
+//				}
+//			}
+
+			ShutdownControlHandle shutdownControlHandle = shutdownAfterStartupManager.createShutdownControlHandle();
+			shutdownAfterStartupManager.shutdown(shutdownControlHandle);
 		} catch (Throwable x) {
 			logger.fatal("Problem in serverStarted()!", x);
 		}
-
-		logger.info("*** JFireServer is up and running! ***");
-		upAndRunning = true;
-
-		String shutdownAfterStartup = System.getProperty(JFireServerManagerFactory.class.getName() + ".shutdownAfterStartup");
-		if (Boolean.TRUE.toString().equals(shutdownAfterStartup)) {
-			try {
-				getJ2EEVendorAdapter().shutdown();
-			} catch (Throwable x) {
-				logger.error("shutdown via JavaEE-vendor-adapter failed!", x);
-			}
-		}
 	}
+
+	private ShutdownAfterStartupManager shutdownAfterStartupManager = new ShutdownAfterStartupManager(this);
+
+	protected ShutdownControlHandle shutdownAfterStartup_createShutdownControlHandle()
+	{
+		return shutdownAfterStartupManager.createShutdownControlHandle();
+	}
+
+	protected void shutdownAfterStartup_shutdown(ShutdownControlHandle shutdownControlHandle) {
+		shutdownAfterStartupManager.shutdown(shutdownControlHandle);
+	}
+
+//	protected boolean shutdownAfterStartup_isActive(ShutdownControlHandle shutdownControlHandle) {
+//		return shutdownAfterStartupManager.isActive(shutdownControlHandle);
+//	}
 
 	// **************************************
 	// *** Methods from ConnectionFactory ***
@@ -2651,4 +2670,5 @@ public class JFireServerManagerFactoryImpl
 	{
 		return shuttingDown;
 	}
+
 }

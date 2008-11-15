@@ -50,6 +50,7 @@ import org.nightlabs.jfire.servermanager.createorganisation.CreateOrganisationSt
 import org.nightlabs.jfire.servermanager.deploy.DeployOverwriteBehaviour;
 import org.nightlabs.jfire.servermanager.deploy.DeploymentJarItem;
 import org.nightlabs.jfire.servermanager.xml.ModuleDef;
+import org.nightlabs.jfire.shutdownafterstartup.ShutdownControlHandle;
 
 /**
  * @author marco
@@ -203,4 +204,35 @@ public interface JFireServerManager
 
 	public void createDeploymentJar(File deploymentJar, Collection<DeploymentJarItem> deploymentJarItems, DeployOverwriteBehaviour deployOverwriteBehaviour)
 	throws IOException;
+
+	/**
+	 * Defer the shutdown-after-start by creating a handle for shutting down the server later.
+	 * <p>
+	 * If the system property
+	 * <code>org.nightlabs.jfire.servermanager.JFireServerManagerFactory.shutdownAfterStartup</code>
+	 * (see <a href="https://www.jfire.org/modules/phpwiki/index.php/System%20properties%20supported%20by%20the%20JFire%20Server">System properties supported by the JFire Server</a>)
+	 * is set to <code>true</code>, the server normally shuts down immediately after the startup process completed
+	 * (i.e. after all organisation- and server-inits have been executed).
+	 * If your module wants to defer the shutdown (e.g. because certain async-invocations
+	 * need to be performed before shutdown), it should declare an organisation-init (or server-init)
+	 * and call this method there.
+	 * This will prevent the immediate shutdown and your module must then - when it finished whatever it wanted
+	 * to - call the {@link #shutdownAfterStartup_shutdown(ShutdownControlHandle)} method.
+	 * </p>
+	 *
+	 * @return a handle for later calling {@link #shutdownAfterStartup_shutdown(ShutdownControlHandle)}.
+	 */
+	ShutdownControlHandle shutdownAfterStartup_createShutdownControlHandle();
+
+	/**
+	 * Shuts down the server after the last handle has signaled ready-to-shutdown. Every handle can be used exactly
+	 * once in this method. Calling {@link #shutdownAfterStartup_createShutdownControlHandle()} again after
+	 * this method has seen the last handle, there is no deferring effect anymore, because the shutdown is scheduled
+	 * immediately when the last handle was passed to this method.
+	 *
+	 * @param shutdownControlHandle the handle to use for shutdown.
+	 */
+	void shutdownAfterStartup_shutdown(ShutdownControlHandle shutdownControlHandle);
+
+//	boolean shutdownAfterStartup_isActive(ShutdownControlHandle shutdownControlHandle);
 }

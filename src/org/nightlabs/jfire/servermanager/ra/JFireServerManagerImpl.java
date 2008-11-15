@@ -71,6 +71,7 @@ import org.nightlabs.jfire.servermanager.createorganisation.CreateOrganisationSt
 import org.nightlabs.jfire.servermanager.deploy.DeployOverwriteBehaviour;
 import org.nightlabs.jfire.servermanager.deploy.DeploymentJarItem;
 import org.nightlabs.jfire.servermanager.xml.ModuleDef;
+import org.nightlabs.jfire.shutdownafterstartup.ShutdownControlHandle;
 import org.nightlabs.jfire.workstation.Workstation;
 import org.nightlabs.jfire.workstation.id.WorkstationID;
 import org.nightlabs.util.IOUtil;
@@ -585,4 +586,20 @@ public class JFireServerManagerImpl
 
 		jfireServerManagerFactoryImpl.undeploy(deployment);
 	}
+
+	@Override
+	public ShutdownControlHandle shutdownAfterStartup_createShutdownControlHandle()
+	{
+		return jfireServerManagerFactoryImpl.shutdownAfterStartup_createShutdownControlHandle();
+	}
+
+	@Override
+	public void shutdownAfterStartup_shutdown(ShutdownControlHandle shutdownControlHandle) {
+		jfireServerManagerFactoryImpl.shutdownAfterStartup_shutdown(shutdownControlHandle);
+	}
+
+//	@Override
+//	public boolean shutdownAfterStartup_isActive(ShutdownControlHandle shutdownControlHandle) {
+//		return jfireServerManagerFactoryImpl.shutdownAfterStartup_isActive(shutdownControlHandle);
+//	}
 }
