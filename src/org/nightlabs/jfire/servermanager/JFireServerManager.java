@@ -114,11 +114,11 @@ public interface JFireServerManager
 	 * UI.
 	 * </p>
 	 *
-	 * @param organisationID The ID of the new organisation. It must be unique in the whole world.
-	 * @param organisationName A nice name that will be used to display the new representative organisation.
-	 * @param userID The userID of the first user to create within the new organisation. It will have all necessary permissions to manage users and roles within the new organisation.
-	 * @param password The password of the new user.
-	 * @param isServerAdmin Whether this user should have global server administration permissions.
+	 * @param organisationID the ID of the new organisation. It must be unique in the whole world.
+	 * @param organisationName a nice name that will be used to display the new organisation.
+	 * @param userID the userID of the first user to create within the new organisation. It will have all necessary permissions to manage users and roles within the new organisation.
+	 * @param password the password of the new user.
+	 * @param isServerAdmin whether this user should have global server administration permissions.
 	 *
 	 * @throws NoServerAdminException thrown if <tt>isServerAdmin == false</tt> and this is the first organisation on this server.
 	 * @throws ModuleException if sth. goes wrong.
