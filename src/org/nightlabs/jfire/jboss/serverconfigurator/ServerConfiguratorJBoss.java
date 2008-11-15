@@ -901,19 +901,19 @@ public class ServerConfiguratorJBoss
 
 		if (smtp.getUseAuthentication()) {
 			changed |= setMBeanAttribute(
-					document, "org.jboss.mail.MailService", 
+					document, "org.jboss.mail.MailService",
 					"User", null, smtp.getUsername());
 
 			changed |= setMBeanAttribute(
-					document, "org.jboss.mail.MailService", 
+					document, "org.jboss.mail.MailService",
 					"Password", null, smtp.getPassword());
 		}
-				
+
 		Map<String, String> props = smtp.createProperties();
 		for (Map.Entry<String, String> propEntry : props.entrySet()) {
 			changed |= setMailConfigurationAttribute(document, propEntry.getKey(), propEntry.getValue());
 		}
-		
+
 		if (changed) {
 			backup(destFile);
 			FileOutputStream out = new FileOutputStream(destFile);
@@ -955,7 +955,7 @@ public class ServerConfiguratorJBoss
 
 		return changed;
 	}
-	
+
 	private void configureJBossjtaPropertiesXml(File jbossConfDir)
 	throws FileNotFoundException, IOException, SAXException, DOMException, TransformerException
 	{
@@ -1111,7 +1111,7 @@ public class ServerConfiguratorJBoss
 		String optsBegin = "# JAVA_OPTS by JFire server configurator\nJAVA_OPTS=\"$JAVA_OPTS";
 		String optsEnd = "\"";
 		Pattern oldOpts = Pattern.compile(
-				"^"+Pattern.quote(optsBegin)+"([^\"]*)"+Pattern.compile(optsEnd)+"$",
+				"^"+Pattern.quote(optsBegin)+"([^\"]*)"+Pattern.quote(optsEnd)+"$",
 				Pattern.MULTILINE);
 
 		File destFile = new File(jbossBinDir, "run.conf");
