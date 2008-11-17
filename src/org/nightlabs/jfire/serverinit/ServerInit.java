@@ -1,11 +1,15 @@
 package org.nightlabs.jfire.serverinit;
 
+import java.io.Serializable;
+
 import org.nightlabs.jfire.init.AbstractInit;
 import org.nightlabs.jfire.init.IDependency;
 import org.nightlabs.jfire.init.Resolution;
 
 
-public class ServerInit extends AbstractInit<ServerInit, ServerInitDependency> {
+public class ServerInit extends AbstractInit<ServerInit, ServerInitDependency>
+{
+	private static final long serialVersionUID = 1L;
 
 	private String module;
 	private String archive;
@@ -57,7 +61,10 @@ public class ServerInit extends AbstractInit<ServerInit, ServerInitDependency> {
 	}
 }
 
-class ServerInitDependency implements IDependency<ServerInit> {
+class ServerInitDependency implements IDependency<ServerInit>, Serializable
+{
+	private static final long serialVersionUID = 1L;
+
 	private String module;
 	private String archive;
 	private String intialiserClass;

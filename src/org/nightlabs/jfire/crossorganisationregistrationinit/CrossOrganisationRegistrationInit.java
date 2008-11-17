@@ -1,10 +1,14 @@
 package org.nightlabs.jfire.crossorganisationregistrationinit;
 
+import java.io.Serializable;
+
 import org.nightlabs.jfire.init.AbstractInit;
 import org.nightlabs.jfire.init.IDependency;
 import org.nightlabs.jfire.init.Resolution;
 
-public class CrossOrganisationRegistrationInit extends AbstractInit<CrossOrganisationRegistrationInit, OrganisationInitDependency> {
+public class CrossOrganisationRegistrationInit extends AbstractInit<CrossOrganisationRegistrationInit, OrganisationInitDependency>
+{
+	private static final long serialVersionUID = 1L;
 
 	private String module;
 	private String archive;
@@ -67,7 +71,10 @@ public class CrossOrganisationRegistrationInit extends AbstractInit<CrossOrganis
 	}
 }
 
-class OrganisationInitDependency implements IDependency<CrossOrganisationRegistrationInit> {
+class OrganisationInitDependency implements IDependency<CrossOrganisationRegistrationInit>, Serializable
+{
+	private static final long serialVersionUID = 1L;
+
 	private String module;
 	private String archive;
 	private String bean;

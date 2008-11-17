@@ -1,10 +1,14 @@
 package org.nightlabs.jfire.organisationinit;
 
+import java.io.Serializable;
+
 import org.nightlabs.jfire.init.AbstractInit;
 import org.nightlabs.jfire.init.IDependency;
 import org.nightlabs.jfire.init.Resolution;
 
-public class OrganisationInit extends AbstractInit<OrganisationInit, OrganisationInitDependency> {
+public class OrganisationInit extends AbstractInit<OrganisationInit, OrganisationInitDependency>
+{
+	private static final long serialVersionUID = 1L;
 
 	private String module;
 	private String archive;
@@ -67,7 +71,10 @@ public class OrganisationInit extends AbstractInit<OrganisationInit, Organisatio
 	}
 }
 
-class OrganisationInitDependency implements IDependency<OrganisationInit> {
+class OrganisationInitDependency implements IDependency<OrganisationInit>, Serializable
+{
+	private static final long serialVersionUID = 1L;
+
 	private String module;
 	private String archive;
 	private String bean;

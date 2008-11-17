@@ -1,9 +1,9 @@
 package org.nightlabs.jfire.init;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import org.nightlabs.annotation.Implement;
 import org.nightlabs.datastructure.IDirectedGraphNode;
 
 
@@ -14,8 +14,10 @@ import org.nightlabs.datastructure.IDirectedGraphNode;
  */
 @SuppressWarnings("unchecked")
 public abstract class AbstractInit<I extends AbstractInit, D extends IDependency<I>>
-implements IDirectedGraphNode<I>
+implements IDirectedGraphNode<I>, Serializable
 {
+	private static final long serialVersionUID = 1L;
+
 	/**
 	 * Contains all inits that are required by this {@link AbstractInit}, i.e. this init is dependent on them.
 	 */
@@ -79,12 +81,12 @@ implements IDirectedGraphNode<I>
 		return dependencies;
 	}
 
-	@Implement
+	@Override
 	public Collection<I> getChildren() {
 		return getDependentInits();
 	}
 	
-	@Implement
+	@Override
 	public I getValue() {
 		return (I) this;
 	}
