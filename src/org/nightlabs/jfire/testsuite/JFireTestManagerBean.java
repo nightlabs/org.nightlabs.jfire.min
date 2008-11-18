@@ -125,12 +125,21 @@ implements SessionBean
 				JFireTestLogin.checkCreateLoginsAndRegisterInAuthorities(pm);
 				PropertySetTestStruct.getTestStruct(getOrganisationID(), pm);
 
-				ShutdownControlHandle shutdownControlHandle = jfsm.shutdownAfterStartup_createShutdownControlHandle();
+				boolean runOnStartup;
+				String runOnStartupStr = System.getProperty(JFireTestManager.class.getName() + ".runOnStartup");
+				if (runOnStartupStr == null || runOnStartupStr.isEmpty())
+					runOnStartup = true;
+				else
+					runOnStartup = Boolean.parseBoolean(runOnStartupStr);
 
-				// This invocation will only be started after all organisation-inits have completed,
-				// because no async-invocation is executed by the framework before completion of startup.
-				JFireTestRunnerInvocation invocation = new JFireTestRunnerInvocation(shutdownControlHandle);
-				AsyncInvoke.exec(invocation, true);
+				if (runOnStartup) {
+					ShutdownControlHandle shutdownControlHandle = jfsm.shutdownAfterStartup_createShutdownControlHandle();
+
+					// This invocation will only be started after all organisation-inits have completed,
+					// because no async-invocation is executed by the framework before completion of startup.
+					JFireTestRunnerInvocation invocation = new JFireTestRunnerInvocation(shutdownControlHandle);
+					AsyncInvoke.exec(invocation, true);
+				} // if (runOnStartup) {
 
 			} finally {
 				pm.close();
