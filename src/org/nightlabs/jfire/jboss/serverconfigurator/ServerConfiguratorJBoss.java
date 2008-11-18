@@ -889,14 +889,17 @@ public class ServerConfiguratorJBoss
 
 		SmtpMailServiceCf smtp = getJFireServerConfigModule().getSmtp();
 
-		if (logger.isInfoEnabled()) {
-			logger.info("Password: "+ smtp.getPassword());
-			logger.info("Username: "+ smtp.getUsername());
-			logger.info("UseAuthentication: "+ smtp.getUseAuthentication());
-			logger.info("Host: "+smtp.getHost());
-			logger.info("Port: "+String.valueOf(smtp.getPort()));
-			logger.info("From: "+smtp.getMailFrom());
-			logger.info("Debug: "+String.valueOf(smtp.getDebug()));
+		if (logger.isDebugEnabled()) {
+			logger.debug("configureMailServiceXml: Host: "+smtp.getHost());
+			logger.debug("configureMailServiceXml: Port: "+String.valueOf(smtp.getPort()));
+			logger.debug("configureMailServiceXml: From: "+smtp.getMailFrom());
+			logger.debug("configureMailServiceXml: Username: "+ smtp.getUsername());
+//			if (logger.isTraceEnabled()) {
+//				logger.trace("configureMailServiceXml: Password: "+ smtp.getPassword());
+//			}
+			logger.debug("configureMailServiceXml: UseAuthentication: "+ smtp.getUseAuthentication());
+			logger.debug("configureMailServiceXml: EncryptionMethod: "+ smtp.getEncryptionMethod());
+			logger.debug("configureMailServiceXml: Debug: "+String.valueOf(smtp.getDebug()));
 		}
 
 		if (smtp.getUseAuthentication()) {
