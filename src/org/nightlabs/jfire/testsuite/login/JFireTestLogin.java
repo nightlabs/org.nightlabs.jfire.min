@@ -31,6 +31,8 @@ import org.nightlabs.jfire.security.listener.SecurityChangeController;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.servermanager.JFireServerManagerUtil;
 import org.nightlabs.jfire.testsuite.JFireTestSuiteEAR;
+import org.nightlabs.jfire.workstation.Workstation;
+import org.nightlabs.jfire.workstation.id.WorkstationID;
 
 /**
  * This class is used to initialse users for the JFireTestSuite.
@@ -97,27 +99,52 @@ public class JFireTestLogin
 			Set<String> userPropNames) throws InitException, ModuleException, NamingException
 	{
 		SecurityChangeController.beginChanging();
-		boolean successful = true;
+		boolean successful = false;
 		try {
 			for (String userPropName : userPropNames) {
 				Properties userProps = JFireTestSuiteEAR.getProperties(userProperties, userPropName + ".");
-				String _userID = userProps.getProperty(JFireLogin.PROP_USER_ID);
-				String password = userProps.getProperty(JFireLogin.PROP_PASSWORD);
+
 				String organisationID = SecurityReflector.getUserDescriptor().getOrganisationID();
+
+				String _userID = userProps.getProperty(JFireLogin.PROP_USER_ID);
 				UserID userID = UserID.create(organisationID, _userID);
-				User user = null;
+
+				String password = userProps.getProperty(JFireLogin.PROP_PASSWORD);
+
+				String _workstationID = userProps.getProperty(JFireLogin.PROP_WORKSTATION_ID);
+				if (_workstationID != null && _workstationID.isEmpty())
+					_workstationID = null;
+				WorkstationID workstationID = _workstationID == null ? null : WorkstationID.create(organisationID, _workstationID);
+
+
+				User user;
 				try {
 					user = (User) pm.getObjectById(userID);
-					continue;
 				} catch (JDOObjectNotFoundException e) {
+					if(logger.isDebugEnabled())
+						logger.debug("Creating User " + userID + " for testing.");
+					// user not created by now; continue was not invoked.
+					user = new User(userID.organisationID, userID.userID);
+					UserLocal userLocal = new UserLocal(user);
+					userLocal.setPasswordPlain(password);
+					user = pm.makePersistent(user);
 				}
-				if(logger.isDebugEnabled())
-					logger.debug("Creating User " + userID + " for testing.");
-				// user not created by now; continue was not invoked.
-				user = new User(userID.organisationID, userID.userID);
-				UserLocal userLocal = new UserLocal(user);
-				userLocal.setPasswordPlain(password);
-				user = pm.makePersistent(user);
+
+
+				Workstation workstation;
+				if (workstationID == null)
+					workstation = null;
+				else {
+					try {
+						workstation = (Workstation) pm.getObjectById(workstationID);
+					} catch (JDOObjectNotFoundException e) {
+						workstation = new Workstation(workstationID.organisationID, workstationID.workstationID);
+						workstation.setDescription("Test workstation created by JFire's testsuite (workstationID='" + workstationID.workstationID + "')");
+						workstation = pm.makePersistent(workstation);
+					}
+				}
+
+
 				if (USER_QUALIFIER_SERVER_ADMIN.equals(userPropName)) {
 					{
 						JFireServerManager jFireServerManager = JFireServerManagerUtil.getJFireServerManager();
@@ -127,8 +154,10 @@ public class JFireTestLogin
 							jFireServerManager.close();
 						}
 					}
-					Authority authority = (Authority) pm.getObjectById(AuthorityID.create(
-							organisationID, Authority.AUTHORITY_ID_ORGANISATION));
+
+					Authority authority = (Authority) pm.getObjectById(
+							AuthorityID.create(organisationID, Authority.AUTHORITY_ID_ORGANISATION)
+					);
 					AuthorizedObjectRef userRef = authority.createAuthorizedObjectRef(user.getUserLocal());
 					if(logger.isDebugEnabled())
 						logger.debug("Creating instances of AuthorizedObjectRef for both Users within the default authority done.");
@@ -166,8 +195,8 @@ public class JFireTestLogin
 					return false;
 				}
 			}
-		} catch (Exception e) {
-			successful = false;
+
+			successful = true;
 		} finally {
 			SecurityChangeController.endChanging(successful);
 		}
