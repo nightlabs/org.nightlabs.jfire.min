@@ -329,6 +329,9 @@ public abstract class OrganisationManagerBean
 			registrationStatus.accept(User.getUser(pm, getPrincipal()));
 			pm.makePersistent(grantOrganisation);
 
+			User user = User.getUser(pm, getPrincipal());
+			grantDefaultCrossOrganisationRoleGroups(pm, user);
+
 			try {
 				AsyncInvoke.exec(
 						new CrossOrganisationRegistrationInitInvocation(
@@ -380,6 +383,38 @@ public abstract class OrganisationManagerBean
 	}
 
 	/**
+	 * Grant some access rights that are usually necessary for cross-organisation stuff.
+	 * @param pm the door to the datastore.
+	 * @param partnerOrganisationUser the <code>User</code> of the partner organisation at the local organisation (e.g. "$partner.organisation.tld@local.organisation.tld").
+	 */
+	private static void grantDefaultCrossOrganisationRoleGroups(PersistenceManager pm, User partnerOrganisationUser)
+	{
+// This is currently hardcoded in the JFireServerManagerImpl.login(...) method. We should introduce an organisation-workstation
+// analogue to the organisation-user. Marco.
+//		boolean successful = false;
+//		SecurityChangeController.beginChanging();
+//		try {
+//
+//			Authority authority = Authority.getOrganisationAuthority(pm);
+//			AuthorizedObjectRef authorizedObjectRef = authority.createAuthorizedObjectRef(partnerOrganisationUser.getUserLocal());
+//
+//			RoleGroupRef roleGroupRef = authority.getRoleGroupRef(
+//					// There is a role-group with the same ID as the role.
+//					org.nightlabs.jfire.workstation.RoleConstants.loginWithoutWorkstation.roleID
+//			);
+//			if (roleGroupRef == null)
+//				throw new IllegalStateException("There is no RoleGroupRef with this ID: " + org.nightlabs.jfire.workstation.RoleConstants.loginWithoutWorkstation.roleID);
+//
+//			authorizedObjectRef.addRoleGroupRef(roleGroupRef);
+//
+//			// if we came here, it was successful and we should tell the SecurityChangeController.
+//			successful = true;
+//		} finally {
+//			SecurityChangeController.endChanging(successful);
+//		}
+	}
+
+	/**
 	 * This method is called by the client (a user who has organisation administrative
 	 * rights) to accept a registration. The registration must have been previously
 	 * applied for by the other organisation.
@@ -408,16 +443,21 @@ public abstract class OrganisationManagerBean
 
 				// Create the user if it doesn't yet exist
 				String userID = User.USER_ID_PREFIX_TYPE_ORGANISATION + applicantOrganisationID;
+				User user;
 				try {
-					User user = User.getUser(pm, getOrganisationID(), userID);
+					user = User.getUser(pm, getOrganisationID(), userID);
 					user.getUserLocal().setPasswordPlain(usrPassword); // set the new password, if the user already exists
 				} catch (JDOObjectNotFoundException x) {
 					// Create the user
-					User user = new User(getOrganisationID(), userID);
+					user = new User(getOrganisationID(), userID);
 					UserLocal userLocal = new UserLocal(user);
 					userLocal.setPasswordPlain(usrPassword);
 					user = pm.makePersistent(user);
 				}
+
+
+				grantDefaultCrossOrganisationRoleGroups(pm, user);
+
 
 				pm.getFetchPlan().addGroup(FetchPlan.ALL); // TODO fetch-groups?!
 				pm.getFetchPlan().setMaxFetchDepth(NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
@@ -1064,19 +1104,19 @@ public abstract class OrganisationManagerBean
 
 	/**
 	 * Stores the given {@link Organisation} object if it is the organisation of the calling
-	 * user (throws an {@link IllegalArgumentException} otherwise). 
+	 * user (throws an {@link IllegalArgumentException} otherwise).
 	 * Optionally returns a detached copy of the new version.
-	 * 
+	 *
 	 * @param organisation The {@link Organisation} to store. Has to be the organisation of the calling user.
-	 * @param get Whether to return a detached copy of the new verison of the given {@link Organisation}. 
+	 * @param get Whether to return a detached copy of the new verison of the given {@link Organisation}.
 	 * @param fetchGroups The fetch-groups to detach the {@link Organisation} with.
 	 * @param maxFetchDepth The maximum fetch-depth to use when detaching.
 	 * @return A detached copy of the new version of the given {@link Organisation}, or <code>null</code> if get is <code>false</code>.
-	 * 
+	 *
 	 * @ejb.interface-method
 	 * @ejb.transaction type="Required"
 	 * @ejb.permission role-name="org.nightlabs.jfire.organisation.storeLocalOrganisation"
-	 * 
+	 *
 	 */
 	public Organisation storeLocalOrganisation(Organisation organisation, boolean get, String[] fetchGroups, int maxFetchDepth)
 	{
@@ -1089,6 +1129,6 @@ public abstract class OrganisationManagerBean
 			pm.close();
 		}
 	}
-	
-	
+
+
 }
