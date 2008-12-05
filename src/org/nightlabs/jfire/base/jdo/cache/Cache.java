@@ -116,6 +116,7 @@ public class Cache
 			this.cache = cache;
 			setName("Cache.NotificationThread-" + (nextID++));
 			setDaemon(true);
+			setPriority(Thread.NORM_PRIORITY);
 			start();
 		}
 
@@ -354,6 +355,7 @@ public class Cache
 			this.cache = cache;
 			setName("Cache.CacheManagerThread-" + (nextID++));
 			setDaemon(true);
+			setPriority(Thread.NORM_PRIORITY);
 			start();
 		}
 

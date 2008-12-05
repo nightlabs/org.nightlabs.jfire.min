@@ -51,14 +51,15 @@ import org.nightlabs.math.Base62Coder;
  * <p>
  * The Login can be configured via a {@link Properties} instance where it expects the following keys:
  * <ul>
- *   <li><b>jfire.login.organisationID</b> (The value of {@link #PROP_ORGANISATION_ID}), defines the organisationID to login to.</li>
- *   <li><b>jfire.login.userID</b> (The value of {@link #PROP_USER_ID}), defines the userID to log in with. Note that organisationID and userID will be concatted to form the username: userID@organisationID</li>
- *   <li><b>jfire.login.password</b> (The value of {@link #PROP_PASSWORD}), defines the password to login with.</li>
- *   <li><b>jfire.login.providerURL</b> (The value of {@link #PROP_PROVIDER_URL}), defines the URL of the server to login to.
+ *   <li><b>jfire.login.organisationID</b> (the value of {@link #PROP_ORGANISATION_ID}), defines the organisationID to login to.</li>
+ *   <li><b>jfire.login.userID</b> (the value of {@link #PROP_USER_ID}), defines the userID to log in with. Note that organisationID and userID will be concatted to form the username: userID@organisationID</li>
+ *   <li><b>jfire.login.password</b> (the value of {@link #PROP_PASSWORD}), defines the password to login with.</li>
+ *   <li><b>jfire.login.providerURL</b> (the value of {@link #PROP_PROVIDER_URL}), defines the URL of the server to login to.
  *   	This defaults to the value defined in {@link InitialContext#getEnvironment()} or to "jnp://127.0.0.1:1099"</li>
- *   <li><b>jfire.login.initialContextFactory</b> (The value of {@link #PROP_INITIAL_CONTEXT_FACTORY}), defines the login context factory to use,
+ *   <li><b>jfire.login.initialContextFactory</b> (the value of {@link #PROP_INITIAL_CONTEXT_FACTORY}), defines the login context factory to use,
  *   	defaults to "org.nightlabs.jfire.jboss.cascadedauthentication.LoginInitialContextFactory"</li>
- *   <li><b>jfire.login.securityProtocol</b> (The value of {@link #PROP_SECURITY_PROTOCOL}), defines the security protocol to use, defaults to "jfire".</li>
+ *   <li><b>jfire.login.securityProtocol</b> (the value of {@link #PROP_SECURITY_PROTOCOL}), defines the security protocol to use, defaults to "jfire".</li>
+ *   <li><b>jfire.login.workstationID</b> (the value of {@link #PROP_WORKSTATION_ID}), defines the optional workstation-identifier.</li>
  * </ul>
  * </p>
  *
