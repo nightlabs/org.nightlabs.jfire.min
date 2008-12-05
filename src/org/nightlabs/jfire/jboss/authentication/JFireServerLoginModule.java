@@ -56,24 +56,7 @@ import org.nightlabs.jfire.servermanager.JFireServerManager;
 public class JFireServerLoginModule extends AbstractServerLoginModule
 {
 	private static final Logger logger = Logger.getLogger(JFireServerLoginModule.class);
-
-//	private static InheritableThreadLocal<LinkedList<JFirePrincipal>> principalStack = new InheritableThreadLocal<LinkedList<JFirePrincipal>>() {
-//		@Override
-//		protected java.util.LinkedList<JFirePrincipal> initialValue() {
-//			return new LinkedList<JFirePrincipal>();
-//		}
-//
-//		@Override
-//		protected LinkedList<JFirePrincipal> childValue(LinkedList<JFirePrincipal> parentValue) {
-//			return new LinkedList<JFirePrincipal>(super.childValue(parentValue)); // TODO is it really correct to copy or should we rather really use the same? I think copying is correct since the child-threads can indiviadually login and logout.
-//		}
-//	};
-
 	private static Map<String, RoleSet> userPK2roleSet = Collections.synchronizedMap(new HashMap<String, RoleSet>());
-
-//	private static Map<String, JFirePrincipal> principalName2principal = Collections.synchronizedMap(new HashMap<String, JFirePrincipal>());
-
-//	private static ThreadLocal<JFirePrincipal> cascadedAuthenticationRestoreIdentityPrincipal = new ThreadLocal<JFirePrincipal>();
 	private static ThreadLocal<Principal> cascadedAuthenticationRestoreIdentityPrincipal = new ThreadLocal<Principal>();
 
 	/**
@@ -94,16 +77,6 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 		if (principalToRestore == null)
 			throw new IllegalArgumentException("principal must not be null!");
 
-//		JFirePrincipal principalAlreadyPreparedForRestoring = cascadedAuthenticationRestoreIdentityPrincipal.get();
-//		if (principalAlreadyPreparedForRestoring != null)
-//			throw new IllegalStateException("There is already another principal prepared for restoring: " + principalAlreadyPreparedForRestoring);
-//
-//		JFirePrincipal jfirePrincipalFromStack = principalStack.get().pop();
-//		if (jfirePrincipalFromStack == null || !jfirePrincipalFromStack.getName().equals(principalToRestore.getName()))
-//			throw new IllegalStateException("jfirePrincipalFromStack.name != principalToRestore.name :: jfirePrincipalFromStack=" + jfirePrincipalFromStack + " principalToRestore=" + principalToRestore);
-//
-//		cascadedAuthenticationRestoreIdentityPrincipal.set(jfirePrincipalFromStack);
-
 		Principal principalAlreadyPreparedForRestoring = cascadedAuthenticationRestoreIdentityPrincipal.get();
 		if (principalAlreadyPreparedForRestoring != null)
 			throw new IllegalStateException("There is already another principal prepared for restoring: " + principalAlreadyPreparedForRestoring);
@@ -120,18 +93,14 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 		if (principalPreparedForRestoring == null)
 			throw new IllegalStateException("cascadedAuthenticationRestoreIdentityBegin was not called!");
 
-//		if (!principalPreparedForRestoring.getName().equals(principalToRestore.getName()))
-//			throw new IllegalStateException("cascadedAuthenticationRestoreIdentityBegin was called with a different principal! principalPreparedForRestoring=" + principalPreparedForRestoring + " principalToRestore=" + principalToRestore);
-
 		if (principalPreparedForRestoring != principalToRestore)
 			throw new IllegalStateException("cascadedAuthenticationRestoreIdentityBegin was called with a different principal! principalPreparedForRestoring=" + principalPreparedForRestoring + " principalToRestore=" + principalToRestore);
 
 		cascadedAuthenticationRestoreIdentityPrincipal.remove();
 	}
 
-	protected Lookup lookup;
+//	protected Lookup lookup;
 	protected JFirePrincipal ip = null;
-//	protected Object loginCredential = null; // why did we store this? I'll comment it out and see if it still works.
 
 	private String identityHashStr = null;
 	protected String getIdentityHashStr()
@@ -202,7 +171,7 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 		else {
 			try {
 				// create lookup object for user's organisationID
-				this.lookup = new Lookup(loginData.getOrganisationID());
+				Lookup lookup = new Lookup(loginData.getOrganisationID());
 
 				// and delegate the login to the jfireServerManager
 				JFireServerManager jfireServerManager = lookup.getJFireServerManager();
@@ -240,7 +209,7 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 //    SecurityAssociation.setSubject(subject);
 		//shouldn't the above stuff be done by JBoss? Why do we do it here? I think we don't need this anymore since we now use the ClientLoginModule additionally (see login-config.xml)
 
-    if (logger.isTraceEnabled())
+		if (logger.isTraceEnabled())
 			logger.trace("(" + getIdentityHashStr() + ") commit: " + ip, new Exception("StackTrace"));
 
 //    // Add the login principal to the subject if is not there
@@ -248,7 +217,7 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 //    if (principals.contains(principal) == false)
 //       principals.add(principal);
 
-    if (ip == null)
+		if (ip == null)
 			throw new NullPointerException("Why the hell is commit() called before login?!");
 
 //    principalName2principal.put(ip.getName(), ip);
@@ -258,7 +227,7 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 //    for (JFirePrincipal jfirePrincipal : principalStackThisThread)
 //			logger.info("  * " + jfirePrincipal);
 
-    return true;
+		return true;
 	}
 
 	@Override
