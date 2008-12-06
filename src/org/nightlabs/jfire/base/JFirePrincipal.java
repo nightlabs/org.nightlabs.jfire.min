@@ -48,8 +48,6 @@ public class JFirePrincipal
 	{
 		super(loginData, _userIsOrganisation, _roleSet);
 
-		if (_lookup == null)
-			throw new NullPointerException("lookup must not be null!");
 		this.lookup = _lookup;
 		this.lookup.setJFirePrincipal(this);
 	}
