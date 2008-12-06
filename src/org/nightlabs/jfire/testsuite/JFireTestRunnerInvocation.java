@@ -4,6 +4,8 @@ import java.io.Serializable;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.jfire.asyncinvoke.Invocation;
+import org.nightlabs.jfire.security.SecurityReflector;
+import org.nightlabs.jfire.security.SecurityReflector.UserDescriptor;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.shutdownafterstartup.ShutdownControlHandle;
 
@@ -37,6 +39,10 @@ extends Invocation
 			if (!runningSessionID.equals(sessionID))
 				return null;
 
+			UserDescriptor userDescriptorOnStart = SecurityReflector.getUserDescriptor();
+			if (userDescriptorOnStart == null)
+				throw new IllegalStateException("SecurityReflector.getUserDescriptor() returned null!");
+
 			try {
 				JFireTestManagerLocal m = JFireTestManagerUtil.getLocalHome().create();
 				m.runAllTestSuites();
@@ -50,10 +56,47 @@ extends Invocation
 					}
 				}
 			}
+
+			UserDescriptor userDescriptorNow = SecurityReflector.getUserDescriptor();
+			if (!userDescriptorOnStart.equals(userDescriptorNow))
+				throw new IllegalStateException("SecurityReflector.getUserDescriptor() returned a different user now (after having called JFireTestManagerLocal.runAllTestSuites()) than at the beginning of this method! start=" + userDescriptorOnStart + " now=" + userDescriptorNow);
+
 		} catch (Throwable t) {
 			// if this fails, the async-invoke-framework tries it again and again => simply log and successfully return
 			logger.error(t.getClass().getName() + ": " + t.getMessage(), t);
 		}
+
+		asyncGC(0);
+
 		return null;
+	}
+
+	private static void asyncGC(final int counter)
+	{
+		new Thread() {
+			{
+				setName(JFireTestRunnerInvocation.class.getSimpleName() + ".asyncGC[" + counter + "]");
+				setPriority(Thread.NORM_PRIORITY);
+			}
+			@Override
+			public void run() {
+				try {
+					Thread.sleep(3000);
+				} catch (InterruptedException e) {
+					// ignore
+				}
+
+				if (logger.isDebugEnabled())
+					logger.debug("asyncGC(" + counter + "): calling System.gc()");
+
+				System.gc();
+
+				if (logger.isDebugEnabled())
+					logger.debug("asyncGC(" + counter + "): called System.gc()");
+
+				if (counter < 2)
+					asyncGC(counter + 1);
+			}
+		}.start();
 	}
 }

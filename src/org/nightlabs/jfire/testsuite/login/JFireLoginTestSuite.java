@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.nightlabs.jfire.testsuite.login;
 
@@ -14,7 +14,6 @@ import org.nightlabs.jfire.testsuite.TestSuite;
  *
  */
 public class JFireLoginTestSuite extends TestSuite {
-
 	/**
 	 * @param classes
 	 */

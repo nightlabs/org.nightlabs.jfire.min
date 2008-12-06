@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.nightlabs.jfire.testsuite;
 
@@ -13,13 +13,15 @@ import junit.framework.TestResult;
 import junit.runner.BaseTestRunner;
 
 import org.apache.log4j.Logger;
+import org.nightlabs.jfire.security.SecurityReflector;
+import org.nightlabs.jfire.security.SecurityReflector.UserDescriptor;
 import org.nightlabs.jfire.testsuite.TestSuite.Status;
 
 /**
  * Runner for JFire {@link TestSuite}s.
  * Accepts {@link JFireTestListener}s and notifies them of the
  * test suites {@link Status}.
- * 
+ *
  * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] de -->
  */
 public class JFireTestRunner extends BaseTestRunner {
@@ -33,13 +35,13 @@ public class JFireTestRunner extends BaseTestRunner {
 	 * The listener
 	 */
 	private List<JFireTestListener> testListeners = new LinkedList<JFireTestListener>();
-	
+
 	/**
-	 * 
+	 *
 	 */
 	public JFireTestRunner() {
 	}
-	
+
 	private void notifyTestSuiteStatus(TestSuite suite, TestSuite.Status status) {
 		for (JFireTestListener listener : new ArrayList<JFireTestListener>(testListeners)) {
 			try {
@@ -49,7 +51,7 @@ public class JFireTestRunner extends BaseTestRunner {
 			}
 		}
 	}
-	
+
 	private void notifySuiteStartError(TestSuite suite, Throwable t) {
 		for (JFireTestListener listener : new ArrayList<JFireTestListener>(testListeners)) {
 			try {
@@ -59,7 +61,7 @@ public class JFireTestRunner extends BaseTestRunner {
 			}
 		}
 	}
-	
+
 	/**
 	 * Add a {@link JFireTestListener} to this runner.
 	 * @param listener The listener to add.
@@ -95,6 +97,8 @@ public class JFireTestRunner extends BaseTestRunner {
 			// TestResult is not serialisable. We pray that the container will pass the reference
 			// *directly* to the *local* EJB without serialising/deserialising.
 
+			UserDescriptor userDescriptorOnStart = SecurityReflector.getUserDescriptor();
+
 			if (test instanceof TestCase) {
 				// If it's a JFire-TestCase, the TestCase-implementation takes care about the transactions, so we directly
 				// call the test's run method (done by super.runTest(...)).
@@ -109,13 +113,17 @@ public class JFireTestRunner extends BaseTestRunner {
 					throw new RuntimeException(e);
 				}
 			}
+
+			UserDescriptor userDescriptorNow = SecurityReflector.getUserDescriptor();
+			if (!userDescriptorOnStart.equals(userDescriptorNow))
+				throw new IllegalStateException("SecurityReflector.getUserDescriptor() returned a different user now (after running the test) than at the beginning of this method! test=" + test + " start=" + userDescriptorOnStart + " now=" + userDescriptorNow);
 		}
 	}
-	
+
 	/**
 	 * Runs the given JFire {@link TestSuite} and notifies the
 	 * registered {@link JFireTestListener}s of the status.
-	 * 
+	 *
 	 * @param suite The suite to run.
 	 * @param pm The PersistenceManager that can be passed to the test suites.
 	 */
@@ -176,7 +184,7 @@ public class JFireTestRunner extends BaseTestRunner {
 			notifyTestSuiteStatus(suite, Status.END);
 		}
 	}
-	
+
 	/**
 	 * {@inheritDoc}
 	 * @see junit.runner.BaseTestRunner#runFailed(java.lang.String)

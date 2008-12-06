@@ -97,7 +97,7 @@ public class IDGeneratorTest extends TestCase
 		_testGetIDs();
 	}
 
-	private static final int ITERATION_QUANTITY = 10000;
+	private static final int ITERATION_QUANTITY = 20000;
 
 	public void _testGetIDs()
 	throws Exception

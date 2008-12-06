@@ -5,7 +5,7 @@ import javax.naming.InitialContext;
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
-import org.nightlabs.jfire.base.login.JFireLogin;
+import org.nightlabs.j2ee.LoginData;
 import org.nightlabs.jfire.organisation.Organisation;
 import org.nightlabs.jfire.organisation.OrganisationManager;
 import org.nightlabs.jfire.organisation.OrganisationManagerUtil;
@@ -38,77 +38,62 @@ extends TestCase
 	public void testCascadedAuthenticationOneOrganisationPerLevel()
 	throws Exception
 	{
-		JFireLogin login = JFireTestLogin.getUserLogin(JFireTestLogin.USER_QUALIFIER_SALESMAN); // which user does not matter for this test.
-		login.login();
-		try {
-			TestRequestResultTreeNode tree = new TestRequestResultTreeNode(null, organisationID_chezfrancois);
-			tree.createChildTestRequestResultTree(organisationID_reseller).createChildTestRequestResultTree(organisationID_root);
-			OrganisationManager organisationManager = OrganisationManagerUtil.getHome(login.getInitialContextProperties()).create();
-			tree = organisationManager.testCascadedAuthentication(tree);
-			checkResult(tree);
-		} finally {
-			login.logout();
-		}
+		LoginData loginData = JFireTestLogin.getUserLoginData(JFireTestLogin.USER_QUALIFIER_SALESMAN); // which user does not matter for this test.
+		TestRequestResultTreeNode tree = new TestRequestResultTreeNode(null, organisationID_chezfrancois);
+		tree.createChildTestRequestResultTree(organisationID_reseller).createChildTestRequestResultTree(organisationID_root);
+		OrganisationManager organisationManager = OrganisationManagerUtil.getHome(loginData.getInitialContextProperties()).create();
+		tree = organisationManager.testCascadedAuthentication(tree);
+		checkResult(tree);
 	}
 
 	@SuppressWarnings("unused")
 	public void testCascadedAuthenticationMultipleOrganisationsPerLevelNoLoopbacks()
 	throws Exception
 	{
-		JFireLogin login = JFireTestLogin.getUserLogin(JFireTestLogin.USER_QUALIFIER_SALESMAN); // which user does not matter for this test.
-		login.login();
-		try {
-			TestRequestResultTreeNode tree = new TestRequestResultTreeNode(null, organisationID_chezfrancois);
-			TestRequestResultTreeNode child_0 = tree.createChildTestRequestResultTree(organisationID_root);
-			TestRequestResultTreeNode child_1 = tree.createChildTestRequestResultTree(organisationID_reseller);
+		LoginData loginData = JFireTestLogin.getUserLoginData(JFireTestLogin.USER_QUALIFIER_SALESMAN); // which user does not matter for this test.
+		TestRequestResultTreeNode tree = new TestRequestResultTreeNode(null, organisationID_chezfrancois);
+		TestRequestResultTreeNode child_0 = tree.createChildTestRequestResultTree(organisationID_root);
+		TestRequestResultTreeNode child_1 = tree.createChildTestRequestResultTree(organisationID_reseller);
 
-			TestRequestResultTreeNode child_0_0 = child_0.createChildTestRequestResultTree(organisationID_chezfrancois);
-			TestRequestResultTreeNode child_0_1 = child_0.createChildTestRequestResultTree(organisationID_reseller);
-			TestRequestResultTreeNode child_0_2 = child_0.createChildTestRequestResultTree(organisationID_chezfrancois);
+		TestRequestResultTreeNode child_0_0 = child_0.createChildTestRequestResultTree(organisationID_chezfrancois);
+		TestRequestResultTreeNode child_0_1 = child_0.createChildTestRequestResultTree(organisationID_reseller);
+		TestRequestResultTreeNode child_0_2 = child_0.createChildTestRequestResultTree(organisationID_chezfrancois);
 
-			OrganisationManager organisationManager = OrganisationManagerUtil.getHome(login.getInitialContextProperties()).create();
-			tree = organisationManager.testCascadedAuthentication(tree);
-			checkResult(tree);
-		} finally {
-			login.logout();
-		}
+		OrganisationManager organisationManager = OrganisationManagerUtil.getHome(loginData.getInitialContextProperties()).create();
+		tree = organisationManager.testCascadedAuthentication(tree);
+		checkResult(tree);
 	}
 
 	@SuppressWarnings("unused")
 	public void testCascadedAuthenticationMultipleOrganisationsPerLevelWithLoopbacks()
 	throws Exception
 	{
-		JFireLogin login = JFireTestLogin.getUserLogin(JFireTestLogin.USER_QUALIFIER_SALESMAN); // which user does not matter for this test.
-		login.login();
-		try {
-			TestRequestResultTreeNode tree = new TestRequestResultTreeNode(null, organisationID_chezfrancois);
-			TestRequestResultTreeNode child_0 = tree.createChildTestRequestResultTree(organisationID_chezfrancois);
-			TestRequestResultTreeNode child_1 = tree.createChildTestRequestResultTree(organisationID_reseller);
+		LoginData loginData = JFireTestLogin.getUserLoginData(JFireTestLogin.USER_QUALIFIER_SALESMAN); // which user does not matter for this test.
+		TestRequestResultTreeNode tree = new TestRequestResultTreeNode(null, organisationID_chezfrancois);
+		TestRequestResultTreeNode child_0 = tree.createChildTestRequestResultTree(organisationID_chezfrancois);
+		TestRequestResultTreeNode child_1 = tree.createChildTestRequestResultTree(organisationID_reseller);
 
-			TestRequestResultTreeNode child_0_0 = child_0.createChildTestRequestResultTree(organisationID_reseller);
-			TestRequestResultTreeNode child_0_1 = child_0.createChildTestRequestResultTree(organisationID_chezfrancois);
+		TestRequestResultTreeNode child_0_0 = child_0.createChildTestRequestResultTree(organisationID_reseller);
+		TestRequestResultTreeNode child_0_1 = child_0.createChildTestRequestResultTree(organisationID_chezfrancois);
 
-			TestRequestResultTreeNode child_1_0 = child_1.createChildTestRequestResultTree(organisationID_reseller);
-			TestRequestResultTreeNode child_1_1 = child_1.createChildTestRequestResultTree(organisationID_chezfrancois);
+		TestRequestResultTreeNode child_1_0 = child_1.createChildTestRequestResultTree(organisationID_reseller);
+		TestRequestResultTreeNode child_1_1 = child_1.createChildTestRequestResultTree(organisationID_chezfrancois);
 
-			TestRequestResultTreeNode child_0_0_0 = child_0_0.createChildTestRequestResultTree(organisationID_root);
-			TestRequestResultTreeNode child_0_0_1 = child_0_0.createChildTestRequestResultTree(organisationID_chezfrancois);
-			TestRequestResultTreeNode child_0_0_2 = child_0_0.createChildTestRequestResultTree(organisationID_reseller);
+		TestRequestResultTreeNode child_0_0_0 = child_0_0.createChildTestRequestResultTree(organisationID_root);
+		TestRequestResultTreeNode child_0_0_1 = child_0_0.createChildTestRequestResultTree(organisationID_chezfrancois);
+		TestRequestResultTreeNode child_0_0_2 = child_0_0.createChildTestRequestResultTree(organisationID_reseller);
 
-			TestRequestResultTreeNode child_0_1_0 = child_0_1.createChildTestRequestResultTree(organisationID_chezfrancois);
-			TestRequestResultTreeNode child_0_1_1 = child_0_1.createChildTestRequestResultTree(organisationID_root);
-			TestRequestResultTreeNode child_0_1_2 = child_0_1.createChildTestRequestResultTree(organisationID_reseller);
+		TestRequestResultTreeNode child_0_1_0 = child_0_1.createChildTestRequestResultTree(organisationID_chezfrancois);
+		TestRequestResultTreeNode child_0_1_1 = child_0_1.createChildTestRequestResultTree(organisationID_root);
+		TestRequestResultTreeNode child_0_1_2 = child_0_1.createChildTestRequestResultTree(organisationID_reseller);
 
-			TestRequestResultTreeNode child_1_0_0 = child_1_0.createChildTestRequestResultTree(organisationID_reseller);
-			TestRequestResultTreeNode child_1_0_1 = child_1_0.createChildTestRequestResultTree(organisationID_root);
-			TestRequestResultTreeNode child_1_0_2 = child_1_0.createChildTestRequestResultTree(organisationID_chezfrancois);
+		TestRequestResultTreeNode child_1_0_0 = child_1_0.createChildTestRequestResultTree(organisationID_reseller);
+		TestRequestResultTreeNode child_1_0_1 = child_1_0.createChildTestRequestResultTree(organisationID_root);
+		TestRequestResultTreeNode child_1_0_2 = child_1_0.createChildTestRequestResultTree(organisationID_chezfrancois);
 
-			OrganisationManager organisationManager = OrganisationManagerUtil.getHome(login.getInitialContextProperties()).create();
-			tree = organisationManager.testCascadedAuthentication(tree);
-			checkResult(tree);
-		} finally {
-			login.logout();
-		}
+		OrganisationManager organisationManager = OrganisationManagerUtil.getHome(loginData.getInitialContextProperties()).create();
+		tree = organisationManager.testCascadedAuthentication(tree);
+		checkResult(tree);
 	}
 
 //	@SuppressWarnings("unused")

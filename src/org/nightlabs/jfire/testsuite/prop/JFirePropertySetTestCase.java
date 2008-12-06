@@ -16,7 +16,6 @@ import javax.naming.NamingException;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.jdo.cache.Cache;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleManager;
-import org.nightlabs.jfire.base.login.JFireLogin;
 import org.nightlabs.jfire.idgenerator.IDGenerator;
 import org.nightlabs.jfire.prop.PropertyManager;
 import org.nightlabs.jfire.prop.PropertyManagerUtil;
@@ -36,7 +35,6 @@ import org.nightlabs.jfire.prop.structfield.SelectionStructField;
 import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.testsuite.JFireTestSuite;
 import org.nightlabs.jfire.testsuite.TestCase;
-import org.nightlabs.jfire.testsuite.login.JFireTestLogin;
 import org.nightlabs.progress.NullProgressMonitor;
 
 /**
@@ -63,22 +61,24 @@ public class JFirePropertySetTestCase extends TestCase {
 	private static final int FETCH_DEPTH = NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT;
 
 	private PropertySetID propertySetID;
-	private JFireLogin login;
+//	private JFireLogin login;
 	private boolean isSetup = false;
 
 
 	protected PropertyManager getPropertyManager() throws RemoteException, CreateException, NamingException {
-		return PropertyManagerUtil.getHome(login.getInitialContextProperties()).create();
+//		return PropertyManagerUtil.getHome(login.getInitialContextProperties()).create();
+		return PropertyManagerUtil.getHome().create();
 	}
 
 	@Override
 	protected void setUp() throws Exception {
 		if (isSetup)
 			return;
-		login = JFireTestLogin.getUserLogin(JFireTestLogin.USER_QUALIFIER_SERVER_ADMIN);
-		login.login(); // TODO shouldn't we logout??!!! Marco.
+//		login = JFireTestLogin.getUserLogin(JFireTestLogin.USER_QUALIFIER_SERVER_ADMIN);
+//		login.login(); // TO DO shouldn't we logout??!!! Marco. I think we don't need to do anything! And we better should not!
+
 		PropertySet propertySet = new PropertySet(
-				login.getOrganisationID(), IDGenerator.nextID(PropertySet.class),
+				IDGenerator.getOrganisationID(), IDGenerator.nextID(PropertySet.class),
 				PropertySetTestStruct.class.getName(),
 				Struct.DEFAULT_SCOPE, StructLocal.DEFAULT_SCOPE);
 		propertySet = getPropertyManager().storePropertySet(propertySet, true, FETCH_GROUPS, FETCH_DEPTH);

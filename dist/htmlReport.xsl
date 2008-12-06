@@ -9,7 +9,34 @@
 			<title>TestReport</title>
 		</head>
 		<body style="font-family:arial,sans-serif;">
-		<xsl:value-of select="@startTime"/>
+
+		<table cellpadding="4" cellspacing="5" style="border:1px solid #AAAAAA;font-family:arial,sans-serif;width:80%;margin-top:10px;">
+			<tr>
+				<td>
+					startTime:
+				</td>
+				<td>
+					<xsl:value-of select="@startTime" />
+				</td>
+			</tr>
+			<tr>
+				<td>
+					endTime:
+				</td>
+				<td>
+					<xsl:value-of select="@endTime" />
+				</td>
+			</tr>
+			<tr>
+				<td>
+					organisationID:
+				</td>
+				<td>
+					<xsl:value-of select="@organisationID" />
+				</td>
+			</tr>
+		</table>
+		
 		<xsl:apply-templates select="TestSuiteResult"/>
 		</body>
 	</html>

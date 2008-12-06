@@ -38,6 +38,7 @@ import junit.framework.Test;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.ModuleException;
+import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.testsuite.TestSuite.Status;
 import org.nightlabs.util.IOUtil;
 import org.nightlabs.util.Util;
@@ -450,7 +451,13 @@ implements JFireTestListener
 	 */
 	private Properties config = null;
 
+	private String organisationID;
+
+	/**
+	 * Default constructor used by the framework to instantiate {@link JFireTestListener}s.
+	 */
 	public DefaultTestListener() {
+		organisationID = SecurityReflector.getUserDescriptor().getOrganisationID();
 	}
 
 	/**
@@ -467,13 +474,14 @@ implements JFireTestListener
 	 * @param out The {@link OutputStream} the XML should be written to.
 	 * @throws ParserConfigurationException
 	 */
-	public void writeReportAsXML(OutputStream out) throws ParserConfigurationException
+	protected void writeReportAsXML(OutputStream out) throws ParserConfigurationException
 	{
 //		Document doc = new DocumentImpl();
 		Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
 		Element rootNode = doc.createElement("JFireServerTestResult");
 		rootNode.setAttribute("startTime", ISO_DATE_FORMAT.format(startTime));
 		rootNode.setAttribute("endTime", ISO_DATE_FORMAT.format(endTime));
+		rootNode.setAttribute("organisationID", organisationID);
 		for (TestSuiteResult suiteResult : testSuiteResults) {
 			Element suiteElement = doc.createElement("TestSuiteResult");
 			suiteElement.setAttribute("suiteClass", suiteResult.getSuite().getClass().getName());
@@ -650,7 +658,7 @@ implements JFireTestListener
 	protected String getTempFilePrefix()
 	{
 		if (tempFilePrefix == null)
-			tempFilePrefix = Long.toString(System.currentTimeMillis(), 36) + "-";
+			tempFilePrefix = Long.toString(System.currentTimeMillis(), 36) + '-' + Long.toString(System.identityHashCode(this)) + '-';
 
 		return tempFilePrefix;
 	}

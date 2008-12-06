@@ -15,6 +15,7 @@ import javax.naming.NamingException;
 import org.apache.log4j.Logger;
 import org.apache.log4j.Priority;
 import org.nightlabs.ModuleException;
+import org.nightlabs.j2ee.LoginData;
 import org.nightlabs.jfire.base.InitException;
 import org.nightlabs.jfire.base.login.JFireLogin;
 import org.nightlabs.jfire.config.ConfigSetup;
@@ -54,8 +55,23 @@ public class JFireTestLogin
 	public static final String PROP_TEST_ACCOUNTANT = PROP_TEST_USER_PREFIX+"."+ USER_QUALIFIER_ACCOUNTANT;
 	public static final String PROP_TEST_SALESMAN = PROP_TEST_USER_PREFIX+"."+ USER_QUALIFIER_SALESMAN;
 
+//	/**
+//	 * Returns a {@link JFireLogin} configured to the properties given in the
+//	 * JFireTestSuite properties file for the given userQualifier.
+//	 * This means the login properties will be those defined with the prefix of "test.user.userQualifier".
+//	 * The organisationID in the properties though, will be set to the current organisationID.
+//	 *
+//	 * @param userQualifier The userQualifier.
+//	 * @return A configured {@link JFireLogin}.
+//	 */
+//	public static JFireLogin getUserLogin(String userQualifier) throws ModuleException, IOException {
+//		Properties properties = JFireTestSuiteEAR.getProperties(JFireTestSuiteEAR.getJFireTestSuiteProperties(), PROP_TEST_USER_PREFIX + "." + userQualifier + ".");
+//		properties.setProperty(JFireLogin.PROP_ORGANISATION_ID, SecurityReflector.getUserDescriptor().getOrganisationID());
+//		return new JFireLogin(properties);
+//	}
+
 	/**
-	 * Returns a {@link JFireLogin} configured to the properties given in the
+	 * Returns a {@link LoginData} instance configured to the properties given in the
 	 * JFireTestSuite properties file for the given userQualifier.
 	 * This means the login properties will be those defined with the prefix of "test.user.userQualifier".
 	 * The organisationID in the properties though, will be set to the current organisationID.
@@ -63,10 +79,10 @@ public class JFireTestLogin
 	 * @param userQualifier The userQualifier.
 	 * @return A configured {@link JFireLogin}.
 	 */
-	public static JFireLogin getUserLogin(String userQualifier) throws ModuleException, IOException {
+	public static LoginData getUserLoginData(String userQualifier) throws ModuleException, IOException {
 		Properties properties = JFireTestSuiteEAR.getProperties(JFireTestSuiteEAR.getJFireTestSuiteProperties(), PROP_TEST_USER_PREFIX + "." + userQualifier + ".");
 		properties.setProperty(JFireLogin.PROP_ORGANISATION_ID, SecurityReflector.getUserDescriptor().getOrganisationID());
-		return new JFireLogin(properties);
+		return new JFireLogin(properties).getLoginData();
 	}
 
 	/**

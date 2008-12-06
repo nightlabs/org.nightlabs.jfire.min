@@ -35,6 +35,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Matcher;
@@ -44,6 +45,7 @@ import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
+import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 
 import junit.framework.Test;
@@ -54,10 +56,15 @@ import org.apache.log4j.Logger;
 import org.nightlabs.ModuleException;
 import org.nightlabs.jfire.asyncinvoke.AsyncInvoke;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
+import org.nightlabs.jfire.security.SecurityReflector;
+import org.nightlabs.jfire.security.User;
+import org.nightlabs.jfire.security.SecurityReflector.UserDescriptor;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.shutdownafterstartup.ShutdownControlHandle;
 import org.nightlabs.jfire.testsuite.login.JFireTestLogin;
 import org.nightlabs.jfire.testsuite.prop.PropertySetTestStruct;
+import org.nightlabs.jfire.timer.Task;
+import org.nightlabs.jfire.timer.id.TaskID;
 import org.nightlabs.util.reflect.ReflectUtil;
 
 
@@ -106,6 +113,36 @@ implements SessionBean
 	public void ejbRemove() throws EJBException, RemoteException { }
 
 	/**
+	 * @ejb.interface-method
+	 * @ejb.permission role-name="_System_"
+	 * @ejb.transaction type="Required"
+	 */
+	public void testSuiteTimerTask(TaskID taskID)
+	throws Exception
+	{
+		logger.info("testSuiteTimerTask: Memory usage before gc:");
+		logMemoryState();
+
+		System.gc();
+
+		logger.info("testSuiteTimerTask: Memory usage after gc:");
+		logMemoryState();
+	}
+
+	private void logMemoryState()
+	{
+		Runtime runtime = Runtime.getRuntime();
+		long maxMemory = runtime.maxMemory();
+		long totalMemory = runtime.totalMemory();
+		long freeMemory = runtime.freeMemory();
+		long usedMemory = totalMemory - freeMemory;
+		logger.info("logMemoryState: maxMemory = " + maxMemory / 1024 + " KB");
+		logger.info("logMemoryState: totalMemory = " + totalMemory / 1024 + " KB");
+		logger.info("logMemoryState: usedMemory = " + usedMemory / 1024 + " KB");
+		logger.info("logMemoryState: freeMemory = " + freeMemory / 1024 + " KB");
+	}
+
+	/**
 	 * This method is called by the datastore initialisation mechanism.
 	 * It initializes the users needed for Test logins and other prerequisites for the Test system.
 	 *
@@ -113,15 +150,52 @@ implements SessionBean
 	 *
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_System_"
+	 * @!ejb.permission unchecked="true"
 	 * @ejb.transaction type="Required"
 	 */
 	public void initialiseTestSystem()
 	throws Exception
 	{
+		// TODO remove this debug code
+		if (!"chezfrancois.jfire.org".equals(getOrganisationID()))
+			return;
+		// end debug code
+
 		JFireServerManager jfsm = getJFireServerManager();
 		try {
 			PersistenceManager pm = getPersistenceManager();
 			try {
+
+
+				TaskID taskID = TaskID.create(getOrganisationID(), Task.TASK_TYPE_ID_SYSTEM, "testSuiteTimerTask");
+				try {
+					pm.getObjectById(taskID);
+				} catch (JDOObjectNotFoundException x) {
+					Task task = new Task(
+							taskID,
+							User.getUser(pm, getPrincipal()),
+							JFireTestManagerHome.JNDI_NAME,
+							"testSuiteTimerTask"
+					);
+
+					task.getName().setText(Locale.ENGLISH.getLanguage(), "JFire test suite");
+					task.getDescription().setText(Locale.ENGLISH.getLanguage(), "Do some tests.");
+
+					task.getTimePatternSet().createTimePattern(
+							"*", // year
+							"*", // month
+							"*", // day
+							"*", // dayOfWeek
+							"*", //  hour
+							"*" // minute
+					);
+
+					task.setEnabled(true);
+					pm.makePersistent(task);
+				}
+
+
+
 				JFireTestLogin.checkCreateLoginsAndRegisterInAuthorities(pm);
 				PropertySetTestStruct.getTestStruct(getOrganisationID(), pm);
 
@@ -155,6 +229,7 @@ implements SessionBean
 	 *
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
+	 * @!ejb.permission unchecked="true"
 	 */
 	public void runAllTestSuites()
 	throws SecurityException, IllegalArgumentException, ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException, ModuleException, IOException
@@ -178,30 +253,44 @@ implements SessionBean
 
 	private static void runTestSuiteInstances(List<TestSuite> testSuites) throws ModuleException, IOException {
 		List<JFireTestListener> listeners = getTestListeners();
+		UserDescriptor userDescriptorOnStart = SecurityReflector.getUserDescriptor();
+		if (userDescriptorOnStart == null)
+			throw new IllegalStateException("SecurityReflector.getUserDescriptor() returned null!");
 
 		// Run the suites
 		for (JFireTestListener listener : listeners) {
 			try {
 				listener.startTestRun();
 			} catch (Exception e) {
-				logger.error("Error notifing JFireTestListener!", e);
+				logger.error("Error notifying JFireTestListener!", e);
 				continue;
 			}
+			UserDescriptor userDescriptorNow = SecurityReflector.getUserDescriptor();
+			if (!userDescriptorOnStart.equals(userDescriptorNow))
+				throw new IllegalStateException("SecurityReflector.getUserDescriptor() returned a different user now (after having called listener.startTestRun()) than at the beginning of this method! listener=" + listener + " start=" + userDescriptorOnStart + " now=" + userDescriptorNow);
 		}
 		for (TestSuite suite : testSuites) {
 			JFireTestRunner runner = new JFireTestRunner();
 			for (JFireTestListener listener : listeners) {
 				runner.addListener(listener);
 			}
+
 			runner.run(suite);
+
+			UserDescriptor userDescriptorNow = SecurityReflector.getUserDescriptor();
+			if (!userDescriptorOnStart.equals(userDescriptorNow))
+				throw new IllegalStateException("SecurityReflector.getUserDescriptor() returned a different user now (after having called runner.run(suite)) than at the beginning of this method! suite=" + suite + " start=" + userDescriptorOnStart + " now=" + userDescriptorNow);
 		}
 		for (JFireTestListener listener : listeners) {
 			try {
 				listener.endTestRun();
 			} catch (Exception e) {
-				logger.error("Error notifing JFireTestListener!", e);
+				logger.error("Error notifying JFireTestListener!", e);
 				continue;
 			}
+			UserDescriptor userDescriptorNow = SecurityReflector.getUserDescriptor();
+			if (!userDescriptorOnStart.equals(userDescriptorNow))
+				throw new IllegalStateException("SecurityReflector.getUserDescriptor() returned a different user now (after having called listener.endTestRun()) than at the beginning of this method! listener=" + listener + " start=" + userDescriptorOnStart + " now=" + userDescriptorNow);
 		}
 	}
 
