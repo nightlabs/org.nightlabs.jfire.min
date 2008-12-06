@@ -11,6 +11,7 @@ import junit.framework.TestCase;
 import org.apache.log4j.Logger;
 import org.nightlabs.j2ee.LoginData;
 import org.nightlabs.jdo.ObjectIDUtil;
+import org.nightlabs.jfire.base.login.JFireLogin;
 import org.nightlabs.jfire.base.login.JFireSecurityConfiguration;
 import org.nightlabs.jfire.idgenerator.IDGeneratorHelper;
 import org.nightlabs.jfire.idgenerator.IDGeneratorHelperUtil;
@@ -97,7 +98,9 @@ public class IDGeneratorTest extends TestCase
 		_testGetIDs();
 	}
 
-	private static final int ITERATION_QUANTITY = 20000;
+	private static final int ITERATION_QUANTITY = 10000;
+
+	private static boolean manualCascadedAuthentication = false;
 
 	public void _testGetIDs()
 	throws Exception
@@ -105,15 +108,28 @@ public class IDGeneratorTest extends TestCase
 		LoginData ld = new LoginData("chezfrancois.jfire.org", "francois", "test");
 		ld.setDefaultValues();
 
+		if (manualCascadedAuthentication)
+			ld.setInitialContextFactory("org.jnp.interfaces.NamingContextFactory");
+
 		long maxID = -1;
 		String namespace = ObjectIDUtil.makeValidIDString("namespace", true);
 		for (int i = 0; i < ITERATION_QUANTITY; i++) {
-			IDGeneratorHelper idGeneratorHelper = IDGeneratorHelperUtil.getHome(ld.getInitialContextProperties()).create();
-			long[] ids = idGeneratorHelper.clientNextIDs(namespace, 0, 5);
-			for (long id : ids) {
-				if (id <= maxID)
-					fail("IDGenerator returned duplicate id for namespace \"" + namespace + "\": " + ObjectIDUtil.longObjectIDFieldToString(id));
-				maxID = id;
+			JFireLogin jfireLogin = null;
+			if (manualCascadedAuthentication) {
+				jfireLogin = new JFireLogin(ld);
+				jfireLogin.login();
+			}
+			try {
+				IDGeneratorHelper idGeneratorHelper = IDGeneratorHelperUtil.getHome(ld.getInitialContextProperties()).create();
+				long[] ids = idGeneratorHelper.clientNextIDs(namespace, 0, 5);
+				for (long id : ids) {
+					if (id <= maxID)
+						fail("IDGenerator returned duplicate id for namespace \"" + namespace + "\": " + ObjectIDUtil.longObjectIDFieldToString(id));
+					maxID = id;
+				}
+			} finally {
+				if (jfireLogin != null)
+					jfireLogin.logout();
 			}
 		}
 	}
