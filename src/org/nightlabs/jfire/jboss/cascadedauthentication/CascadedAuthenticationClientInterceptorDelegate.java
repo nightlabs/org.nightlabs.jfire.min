@@ -28,12 +28,7 @@ package org.nightlabs.jfire.jboss.cascadedauthentication;
 
 import java.lang.reflect.Proxy;
 import java.security.Principal;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import javax.security.auth.login.LoginContext;
 
 import org.apache.log4j.Logger;
@@ -42,11 +37,8 @@ import org.jboss.invocation.InvocationContext;
 import org.jboss.proxy.ClientContainer;
 import org.jboss.proxy.ejb.GenericEJBInterceptor;
 import org.jboss.security.SecurityAssociation;
-import org.jboss.security.SimplePrincipal;
 import org.nightlabs.j2ee.LoginData;
 import org.nightlabs.jfire.base.login.JFireLogin;
-import org.nightlabs.jfire.jboss.authentication.JFireServerLoginModule;
-import org.nightlabs.jfire.servermanager.JFireServerManagerFactory;
 import org.nightlabs.util.Util;
 
 /**
@@ -63,51 +55,51 @@ public class CascadedAuthenticationClientInterceptorDelegate extends GenericEJBI
 
 	public CascadedAuthenticationClientInterceptorDelegate() { }
 
-	private static Set<String> organisationIDs_thisServer = Collections.synchronizedSet(new HashSet<String>());
-//	private static Set<String> organisationIDs_otherServer = Collections.synchronizedSet(new HashSet<String>());
-
-	private static Set<String> userNames_thisServer = Collections.synchronizedSet(new HashSet<String>());
-//	private static Set<String> userNames_otherServer = Collections.synchronizedSet(new HashSet<String>());
-
-	private static boolean isUserOnThisServer(String userName)
-	{
-		if (userNames_thisServer.contains(userName))
-			return true;
-
-//		if (userNames_otherServer.contains(userName))
-//			return false;
-
-		String organisationID = LoginData.PATTERN_SPLIT_LOGIN.split(userName)[1];
-		if (organisationIDs_thisServer.contains(organisationID)) {
-			userNames_thisServer.add(userName);
-			return true;
-		}
-
-//		if (organisationIDs_otherServer.contains(organisationID)) {
-//			userNames_otherServer.add(userName);
-//			return false;
+//	private static Set<String> organisationIDs_thisServer = Collections.synchronizedSet(new HashSet<String>());
+////	private static Set<String> organisationIDs_otherServer = Collections.synchronizedSet(new HashSet<String>());
+//
+//	private static Set<String> userNames_thisServer = Collections.synchronizedSet(new HashSet<String>());
+////	private static Set<String> userNames_otherServer = Collections.synchronizedSet(new HashSet<String>());
+//
+//	private static boolean isUserOnThisServer(String userName)
+//	{
+//		if (userNames_thisServer.contains(userName))
+//			return true;
+//
+////		if (userNames_otherServer.contains(userName))
+////			return false;
+//
+//		String organisationID = LoginData.PATTERN_SPLIT_LOGIN.split(userName)[1];
+//		if (organisationIDs_thisServer.contains(organisationID)) {
+//			userNames_thisServer.add(userName);
+//			return true;
 //		}
-
-		// TODO how can we find out, whether it's another server? Not being local doesn't mean other, because it might not yet exist and be created later here.
-		try {
-			InitialContext ctx = new InitialContext();
-			try {
-				JFireServerManagerFactory jfsmf = (JFireServerManagerFactory)ctx.lookup(JFireServerManagerFactory.JNDI_NAME);
-
-				if (jfsmf.containsOrganisation(organisationID)) {
-					userNames_thisServer.add(userName);
-					organisationIDs_thisServer.add(organisationID);
-					return true;
-				}
-				return false;
-
-			} finally {
-				ctx.close();
-			}
-		} catch (NamingException x) {
-			throw new RuntimeException(x);
-		}
-	}
+//
+////		if (organisationIDs_otherServer.contains(organisationID)) {
+////			userNames_otherServer.add(userName);
+////			return false;
+////		}
+//
+//		// TODO how can we find out, whether it's another server? Not being local doesn't mean other, because it might not yet exist and be created later here.
+//		try {
+//			InitialContext ctx = new InitialContext();
+//			try {
+//				JFireServerManagerFactory jfsmf = (JFireServerManagerFactory)ctx.lookup(JFireServerManagerFactory.JNDI_NAME);
+//
+//				if (jfsmf.containsOrganisation(organisationID)) {
+//					userNames_thisServer.add(userName);
+//					organisationIDs_thisServer.add(organisationID);
+//					return true;
+//				}
+//				return false;
+//
+//			} finally {
+//				ctx.close();
+//			}
+//		} catch (NamingException x) {
+//			throw new RuntimeException(x);
+//		}
+//	}
 
 	@Override
 	public Object invoke(Invocation invocation) throws Throwable
@@ -115,15 +107,15 @@ public class CascadedAuthenticationClientInterceptorDelegate extends GenericEJBI
 		// first of all, we save our current identity in order to restore it later
 		Principal oldPrincipal = SecurityAssociation.getPrincipal();
 		Object oldCredential = SecurityAssociation.getCredential();
-		String oldPassword = null;
-		if (oldCredential != null) {
-			if (oldCredential instanceof String)
-				oldPassword = (String) oldCredential;
-			else if (oldCredential instanceof char[])
-				oldPassword = new String((char[])oldCredential);
-			else
-				throw new IllegalStateException("SecurityAssociation.getCredential() returned an object of invalid type (" + (oldCredential == null ? null : oldCredential.getClass().getName()) + ")! Expected: java.lang.String or char[]");
-		}
+//		String oldPassword = null;
+//		if (oldCredential != null) {
+//			if (oldCredential instanceof String)
+//				oldPassword = (String) oldCredential;
+//			else if (oldCredential instanceof char[])
+//				oldPassword = new String((char[])oldCredential);
+//			else
+//				throw new IllegalStateException("SecurityAssociation.getCredential() returned an object of invalid type (" + (oldCredential == null ? null : oldCredential.getClass().getName()) + ")! Expected: java.lang.String or char[]");
+//		}
 
 		// check, whether we have a UserDescriptor associated to the current thread.
 		UserDescriptor userDescriptor = UserDescriptor.getUserDescriptor();
@@ -208,6 +200,7 @@ public class CascadedAuthenticationClientInterceptorDelegate extends GenericEJBI
 
 		String newUserName = userDescriptor == null ? null : userDescriptor.userName;
 		boolean changeIdentity = newUserName != null;
+// TODO for TESTING, I always change the identity - even if it is already the same.
 		if (changeIdentity) {
 			int idx = newUserName.indexOf('?');
 			if (idx >= 0)
@@ -221,16 +214,19 @@ public class CascadedAuthenticationClientInterceptorDelegate extends GenericEJBI
 		LoginContext loginContext = null;
 		if (changeIdentity) {
 			if (userDescriptor != null) {
-				boolean localLogin = isUserOnThisServer(newUserName);
-				if (localLogin) {
+//				boolean localLogin = isUserOnThisServer(newUserName);
+//				if (localLogin) {
+					if (logger.isDebugEnabled())
+						logger.debug("invoke: calling loginContext.login()");
+
 					loginData = new LoginData(userDescriptor.userName, userDescriptor.password);
 					loginContext = new LoginContext(LoginData.DEFAULT_SECURITY_PROTOCOL, new JFireLogin(loginData).getAuthCallbackHandler());
 					loginContext.login();
-				}
-				else { // if we logged in to a remote-server, it would try it locally and fail => hence we only set the identity without a real login
-					SecurityAssociation.setPrincipal(new SimplePrincipal(userDescriptor.userName));
-					SecurityAssociation.setCredential(userDescriptor.password.toCharArray());
-				}
+//				}
+//				else { // if we logged in to a remote-server, it would try it locally and fail => hence we only set the identity without a real login
+//					SecurityAssociation.setPrincipal(new SimplePrincipal(userDescriptor.userName));
+//					SecurityAssociation.setCredential(userDescriptor.password.toCharArray());
+//				}
 			}
 		}
 
@@ -240,42 +236,91 @@ public class CascadedAuthenticationClientInterceptorDelegate extends GenericEJBI
 			result = this.getNext().invoke(invocation);
 
 		} finally {
-			if (changeIdentity) {
-				if (loginContext != null) {
-					// We have to logout, because we must use restore-login-identity, since it otherwise doesn't
-					// work with a mix of local beans (e.g. StoreManagerHelperLocal) and foreign-organisation
-					// non-local beans (e.g. TradeManager on another organisation).
-					loginContext.logout();
+			if (loginContext != null) {
+				// We have to logout, because we must use restore-login-identity, since it otherwise doesn't
+				// work with a mix of local beans (e.g. StoreManagerHelperLocal) and foreign-organisation
+				// non-local beans (e.g. TradeManager on another organisation).
+				if (logger.isDebugEnabled())
+					logger.debug("invoke: calling loginContext.logout()");
 
-					if (oldPrincipal != null) {
-						loginData = new LoginData(oldPrincipal.getName(), oldPassword);
-						loginContext = new LoginContext(LoginData.DEFAULT_SECURITY_PROTOCOL, new JFireLogin(loginData).getAuthCallbackHandler());
-						JFireServerLoginModule.cascadedAuthenticationRestoreIdentityBegin(oldPrincipal);
-						try {
-							loginContext.login();
-							// I think the following catch clause is not necessary anymore, because prepareCascadedAuthenticationRestoreIdentity
-							// should guarantee that login is successful.
-//						} catch (Exception x) {
-//							// During server-setup it might happen that we cannot re-login at the organisation "__foobar_organisation_for_initial_login__",
-//							// hence, we ignore this problem (leaving us simply unauthenticated).
-//							if (!"__foobar_organisation_for_initial_login__".equals(loginData.getOrganisationID())) // not so clean, but at least a good way to prevent the message at every server-setup
-//								logger.error("Cannot re-login as \"" + (loginData == null ? null : loginData.getPrincipalName()) + "\" after having executed a bean method as a different user (\"" + (userDescriptor == null ? null : userDescriptor.userName) + "\")!", x);
-						} finally {
-							JFireServerLoginModule.cascadedAuthenticationRestoreIdentityEnd(oldPrincipal);
+				loginContext.logout();
+
+//				if (oldPrincipal != null) {
+//				loginData = new LoginData(oldPrincipal.getName(), oldPassword);
+//				loginContext = new LoginContext(LoginData.DEFAULT_SECURITY_PROTOCOL, new JFireLogin(loginData).getAuthCallbackHandler());
+//				JFireServerLoginModule.cascadedAuthenticationRestoreIdentityBegin(oldPrincipal);
+//				try {
+//				loginContext.login();
+//				// I think the following catch clause is not necessary anymore, because prepareCascadedAuthenticationRestoreIdentity
+//				// should guarantee that login is successful.
+////				} catch (Exception x) {
+////				// During server-setup it might happen that we cannot re-login at the organisation "__foobar_organisation_for_initial_login__",
+////				// hence, we ignore this problem (leaving us simply unauthenticated).
+////				if (!"__foobar_organisation_for_initial_login__".equals(loginData.getOrganisationID())) // not so clean, but at least a good way to prevent the message at every server-setup
+////				logger.error("Cannot re-login as \"" + (loginData == null ? null : loginData.getPrincipalName()) + "\" after having executed a bean method as a different user (\"" + (userDescriptor == null ? null : userDescriptor.userName) + "\")!", x);
+//				} finally {
+//				JFireServerLoginModule.cascadedAuthenticationRestoreIdentityEnd(oldPrincipal);
+//				}
+//				}
+//				}
+//				else {
+//				SecurityAssociation.setPrincipal(oldPrincipal);
+//				SecurityAssociation.setCredential(oldCredential);
+
+				Principal currentPrincipal = SecurityAssociation.getPrincipal();
+				Principal principalAfterRestore = currentPrincipal;
+				Principal callerPrincipalAfterRestore = SecurityAssociation.getCallerPrincipal();
+
+				if (currentPrincipal != oldPrincipal) { // must really be the same instance - not only equal
+					int logoutCounter = 0;
+					do {
+						++logoutCounter;
+//						SecurityAssociation.popSubjectContext();
+						Principal principalBeforeLogout = SecurityAssociation.getPrincipal();
+						loginContext.logout();
+						currentPrincipal = SecurityAssociation.getPrincipal();
+						if (principalBeforeLogout == currentPrincipal)
+							throw new IllegalStateException("loginContext.logout() had no effect! The current principal didn't change!");
+					} while (currentPrincipal != null && currentPrincipal != oldPrincipal);
+
+					if (currentPrincipal == oldPrincipal) {
+						if (logger.isDebugEnabled()) {
+							if (logger.isTraceEnabled()) {
+								logger.trace(
+										"invoke: Restoring identity was successful but detected that the invoked method did " + logoutCounter + " login(s) without a corresponding logout! < method="+invocation.getMethod().getDeclaringClass().getName()+"#"+invocation.getMethod().getName()+
+										" SecurityAssociation.principal=" + principalAfterRestore +
+										" SecurityAssociation.callerPrincipal=" + callerPrincipalAfterRestore +
+										" oldPrincipal="+oldPrincipal, new Exception("StackTrace")
+								);
+							}
+							else {
+								logger.debug(
+										"invoke: Restoring identity was successful but detected that the invoked method did " + logoutCounter + " login(s) without a corresponding logout! < method="+invocation.getMethod().getDeclaringClass().getName()+"#"+invocation.getMethod().getName()+
+										" SecurityAssociation.principal=" + principalAfterRestore +
+										" SecurityAssociation.callerPrincipal=" + callerPrincipalAfterRestore +
+										" oldPrincipal="+oldPrincipal
+								);
+							}
 						}
 					}
+					else
+						throw new IllegalStateException(
+								"Restoring identity failed! Maybe there was a manual logout done (i.e. SecurityAssociation.pop...) without a corresponding login?! method="+invocation.getMethod().getDeclaringClass().getName()+"#"+invocation.getMethod().getName()+
+								" SecurityAssociation.principal=" + principalAfterRestore +
+								" SecurityAssociation.callerPrincipal=" + callerPrincipalAfterRestore +
+								" oldPrincipal="+oldPrincipal
+						);
 				}
-				else {
-					SecurityAssociation.setPrincipal(oldPrincipal);
-					SecurityAssociation.setCredential(oldCredential);
-				}
-			} // if (restoreOldLogin) {
+			} // if (loginContext != null) {
+
 
 			if(logger.isDebugEnabled())
-				logger.debug("invoke: < method="+invocation.getMethod().getDeclaringClass().getName()+"#"+invocation.getMethod().getName()+
-						" SecurityAssociation.principal="+SecurityAssociation.getPrincipal()+
-						" SecurityAssociation.callerPrincipal="+SecurityAssociation.getCallerPrincipal()+
-						" oldPrincipal="+oldPrincipal);
+				logger.debug(
+						"invoke: < method="+invocation.getMethod().getDeclaringClass().getName()+"#"+invocation.getMethod().getName()+
+						" SecurityAssociation.principal=" + SecurityAssociation.getPrincipal() +
+						" SecurityAssociation.callerPrincipal=" + SecurityAssociation.getCallerPrincipal() +
+						" oldPrincipal="+oldPrincipal
+				);
 		}
 
 		if (!(result instanceof Proxy)) {

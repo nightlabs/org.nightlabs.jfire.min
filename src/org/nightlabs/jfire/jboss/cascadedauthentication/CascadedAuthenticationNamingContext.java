@@ -50,7 +50,7 @@ public class CascadedAuthenticationNamingContext implements Context
 	 * LOG4J logger used by this class
 	 */
 	private static final Logger logger = Logger.getLogger(CascadedAuthenticationNamingContext.class);
-	
+
 	protected Context delegate;
 	protected UserDescriptor userDescriptor = null;
 
@@ -77,9 +77,7 @@ public class CascadedAuthenticationNamingContext implements Context
 		return obj;
 	}
 
-	/**
-	 * @see javax.naming.Context#lookup(javax.naming.Name)
-	 */
+	@Override
 	public Object lookup(Name name) throws NamingException
 	{
 		UserDescriptor.setUserDescriptor(userDescriptor); // TODO do we really need this???
@@ -90,9 +88,7 @@ public class CascadedAuthenticationNamingContext implements Context
 		}
 	}
 
-	/**
-	 * @see javax.naming.Context#lookup(java.lang.String)
-	 */
+	@Override
 	public Object lookup(String name) throws NamingException
 	{
 		UserDescriptor.setUserDescriptor(userDescriptor); // TODO do we really need this???
@@ -103,137 +99,103 @@ public class CascadedAuthenticationNamingContext implements Context
 		}
 	}
 
-	/**
-	 * @see javax.naming.Context#bind(javax.naming.Name, java.lang.Object)
-	 */
+	@Override
 	public void bind(Name name, Object obj) throws NamingException
 	{
 		delegate.bind(name, obj);
 	}
 
-	/**
-	 * @see javax.naming.Context#bind(java.lang.String, java.lang.Object)
-	 */
+	@Override
 	public void bind(String name, Object obj) throws NamingException
 	{
 		delegate.bind(name, obj);
 	}
 
-	/**
-	 * @see javax.naming.Context#rebind(javax.naming.Name, java.lang.Object)
-	 */
+	@Override
 	public void rebind(Name name, Object obj) throws NamingException
 	{
 		delegate.rebind(name, obj);
 	}
 
-	/**
-	 * @see javax.naming.Context#rebind(java.lang.String, java.lang.Object)
-	 */
+	@Override
 	public void rebind(String name, Object obj) throws NamingException
 	{
 		delegate.rebind(name, obj);
 	}
 
-	/**
-	 * @see javax.naming.Context#unbind(javax.naming.Name)
-	 */
+	@Override
 	public void unbind(Name name) throws NamingException
 	{
 		delegate.unbind(name);
 	}
 
-	/**
-	 * @see javax.naming.Context#unbind(java.lang.String)
-	 */
+	@Override
 	public void unbind(String name) throws NamingException
 	{
 		delegate.unbind(name);
 	}
 
-	/**
-	 * @see javax.naming.Context#rename(javax.naming.Name, javax.naming.Name)
-	 */
+	@Override
 	public void rename(Name oldName, Name newName) throws NamingException
 	{
 		delegate.rename(oldName, newName);
 	}
 
-	/**
-	 * @see javax.naming.Context#rename(java.lang.String, java.lang.String)
-	 */
+	@Override
 	public void rename(String oldName, String newName) throws NamingException
 	{
 		delegate.rename(oldName, newName);
 	}
 
-	/**
-	 * @see javax.naming.Context#list(javax.naming.Name)
-	 */
+	@Override
 	public NamingEnumeration<NameClassPair> list(Name name) throws NamingException
 	{
 		return delegate.list(name);
 	}
 
-	/**
-	 * @see javax.naming.Context#list(java.lang.String)
-	 */
+	@Override
 	public NamingEnumeration<NameClassPair> list(String name) throws NamingException
 	{
 		return delegate.list(name);
 	}
 
-	/**
-	 * @see javax.naming.Context#listBindings(javax.naming.Name)
-	 */
+	@Override
 	public NamingEnumeration<Binding> listBindings(Name name) throws NamingException
 	{
 		return delegate.listBindings(name);
 	}
 
-	/**
-	 * @see javax.naming.Context#listBindings(java.lang.String)
-	 */
+	@Override
 	public NamingEnumeration<Binding> listBindings(String name) throws NamingException
 	{
 		return delegate.listBindings(name);
 	}
 
-	/**
-	 * @see javax.naming.Context#destroySubcontext(javax.naming.Name)
-	 */
+	@Override
 	public void destroySubcontext(Name name) throws NamingException
 	{
 		delegate.destroySubcontext(name);
 	}
 
-	/**
-	 * @see javax.naming.Context#destroySubcontext(java.lang.String)
-	 */
+	@Override
 	public void destroySubcontext(String name) throws NamingException
 	{
 		delegate.destroySubcontext(name);
 	}
 
-	/**
-	 * @see javax.naming.Context#createSubcontext(javax.naming.Name)
-	 */
+	@Override
 	public Context createSubcontext(Name name) throws NamingException
 	{
 		return delegate.createSubcontext(name);
 	}
 
-	/**
-	 * @see javax.naming.Context#createSubcontext(java.lang.String)
-	 */
+	@Override
 	public Context createSubcontext(String name) throws NamingException
 	{
 		return delegate.createSubcontext(name);
 	}
 
-	/**
-	 * @see javax.naming.Context#lookupLink(javax.naming.Name)
-	 */
+	@Override
 	public Object lookupLink(Name name) throws NamingException
 	{
 		// TODO is it correct to do that cascading authentication stuff here?!
@@ -245,9 +207,7 @@ public class CascadedAuthenticationNamingContext implements Context
 		}
 	}
 
-	/**
-	 * @see javax.naming.Context#lookupLink(java.lang.String)
-	 */
+	@Override
 	public Object lookupLink(String name) throws NamingException
 	{
 		// TODO is it correct to do that cascading authentication stuff here?!
@@ -259,73 +219,55 @@ public class CascadedAuthenticationNamingContext implements Context
 		}
 	}
 
-	/**
-	 * @see javax.naming.Context#getNameParser(javax.naming.Name)
-	 */
+	@Override
 	public NameParser getNameParser(Name name) throws NamingException
 	{
 		return delegate.getNameParser(name);
 	}
 
-	/**
-	 * @see javax.naming.Context#getNameParser(java.lang.String)
-	 */
+	@Override
 	public NameParser getNameParser(String name) throws NamingException
 	{
 		return delegate.getNameParser(name);
 	}
 
-	/**
-	 * @see javax.naming.Context#composeName(javax.naming.Name, javax.naming.Name)
-	 */
+	@Override
 	public Name composeName(Name name, Name prefix) throws NamingException
 	{
 		return delegate.composeName(name, prefix);
 	}
 
-	/**
-	 * @see javax.naming.Context#composeName(java.lang.String, java.lang.String)
-	 */
+	@Override
 	public String composeName(String name, String prefix) throws NamingException
 	{
 		return delegate.composeName(name, prefix);
 	}
 
-	/**
-	 * @see javax.naming.Context#addToEnvironment(java.lang.String, java.lang.Object)
-	 */
+	@Override
 	public Object addToEnvironment(String propName, Object propVal) throws NamingException
 	{
 		return delegate.addToEnvironment(propName, propVal);
 	}
 
-	/**
-	 * @see javax.naming.Context#removeFromEnvironment(java.lang.String)
-	 */
+	@Override
 	public Object removeFromEnvironment(String propName) throws NamingException
 	{
 		return delegate.removeFromEnvironment(propName);
 	}
 
-	/**
-	 * @see javax.naming.Context#getEnvironment()
-	 */
+	@Override
 	public Hashtable<?,?> getEnvironment() throws NamingException
 	{
 		return delegate.getEnvironment();
 	}
 
-	/**
-	 * @see javax.naming.Context#close()
-	 */
+	@Override
 	public void close() throws NamingException
 	{
 		delegate.close();
 	}
 
-	/**
-	 * @see javax.naming.Context#getNameInNamespace()
-	 */
+	@Override
 	public String getNameInNamespace() throws NamingException
 	{
 		return delegate.getNameInNamespace();

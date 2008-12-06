@@ -7,7 +7,7 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/JFireBase"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/NightLabsBase"/>
 	<classpathentry kind="var" path="XERCES" sourcepath="/XERCES_SRC"/>
-	<classpathentry kind="var" path="JBOSS/server/default/lib/jbosssx.jar" sourcepath="JBOSS_SRC/security/src/main"/>
+	<classpathentry kind="var" path="JBOSS/server/default/lib/jbosssx.jar" sourcepath="/JBOSS_SRC/security/src/main"/>
 	<classpathentry kind="var" path="JBOSS/client/jbossall-client.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/JFireBaseClientLib"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/NightLabsQuery"/>

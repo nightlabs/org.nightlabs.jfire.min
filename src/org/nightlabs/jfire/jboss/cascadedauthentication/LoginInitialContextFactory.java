@@ -52,9 +52,6 @@ public class LoginInitialContextFactory extends NamingContextFactory
 	{
 	}
 
-	/**
-	 * @see org.jnp.interfaces.NamingContextFactory#getInitialContext(java.util.Hashtable)
-	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	public Context getInitialContext(Hashtable env) throws NamingException
@@ -72,9 +69,6 @@ public class LoginInitialContextFactory extends NamingContextFactory
 		return new CascadedAuthenticationNamingContext(super.getInitialContext(env), new UserDescriptor(username, password));
 	}
 
-	/**
-	 * @see org.jnp.interfaces.NamingContextFactory#getObjectInstance(java.lang.Object, javax.naming.Name, javax.naming.Context, java.util.Hashtable)
-	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	public Object getObjectInstance(

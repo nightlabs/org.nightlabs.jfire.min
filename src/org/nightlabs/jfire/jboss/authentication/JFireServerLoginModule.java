@@ -31,13 +31,17 @@ import java.security.acl.Group;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
+import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.login.LoginException;
 
 import org.apache.log4j.Logger;
+import org.jboss.security.SecurityAssociation;
 import org.jboss.security.SimpleGroup;
 import org.jboss.security.auth.spi.AbstractServerLoginModule;
 import org.nightlabs.j2ee.LoginData;
@@ -58,6 +62,13 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 	private static final Logger logger = Logger.getLogger(JFireServerLoginModule.class);
 	private static Map<String, RoleSet> userPK2roleSet = Collections.synchronizedMap(new HashMap<String, RoleSet>());
 	private static ThreadLocal<Principal> cascadedAuthenticationRestoreIdentityPrincipal = new ThreadLocal<Principal>();
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public void initialize(Subject subject, CallbackHandler callbackHandler, Map sharedState, Map options)
+	{
+		super.initialize(subject, callbackHandler, sharedState, options);
+	}
 
 	/**
 	 * Prepare restoring a previous principal. This is necessary, because {@link CascadedAuthenticationClientInterceptorDelegate}
@@ -100,7 +111,8 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 	}
 
 //	protected Lookup lookup;
-	protected JFirePrincipal ip = null;
+	private JFirePrincipal ip = null;
+	private LoginData loginData = null;
 
 	private String identityHashStr = null;
 	protected String getIdentityHashStr()
@@ -121,12 +133,13 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 	public boolean login() throws LoginException
 	{
 		super.loginOk = false;
+
 		NameCallback nc = new NameCallback("username: ");
 		PasswordCallback pc = new PasswordCallback("password: ", false);
 
 		Callback[] callbacks = {nc, pc};
 
-		LoginData loginData;
+//		LoginData loginData;
 		String login;
 		String password;
 
@@ -190,7 +203,7 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 			}
 		}
 
-		super.subject.getPrincipals().add(ip);
+//		super.subject.getPrincipals().add(ip); // doing this in commit
 		super.loginOk = true;
 		return true;
 	}
@@ -227,12 +240,45 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 //    for (JFirePrincipal jfirePrincipal : principalStackThisThread)
 //			logger.info("  * " + jfirePrincipal);
 
+
+// copied more or less from JBoss' ClientLoginModule
+		// Set the login principal and credential and subject
+		SecurityAssociation.pushSubjectContext(subject, ip, loginData.getPassword());
+
+		// Add the login principal to the subject if is not there
+		Set<Principal> principals = subject.getPrincipals();
+		if (principals.contains(ip) == false)
+			principals.add(ip);
+// end copy
+
+		loginData = null; // forget the password - this login-module doesn't neet its reference anymore
+
 		return true;
+	}
+
+	@Override
+	public boolean abort() throws LoginException {
+		loginData = null; // forget the password - this login-module doesn't neet its reference anymore
+
+		ip = null; // reset to state before login() was called.
+
+		return super.abort();
 	}
 
 	@Override
 	public boolean logout() throws LoginException
 	{
+		if (logger.isTraceEnabled())
+			logger.trace("(" + getIdentityHashStr() + ") logout: " + ip, new Exception("StackTrace"));
+		else if (logger.isDebugEnabled())
+			logger.debug("(" + getIdentityHashStr() + ") logout: " + ip);
+
+// copied more or less from JBoss' ClientLoginModule
+		SecurityAssociation.popSubjectContext();
+// end copy
+
+		ip = null;
+
 //		LinkedList<JFirePrincipal> principalStackThisThread = principalStack.get();
 //		principalStackThisThread.pop();
 //		logger.info("logout: principalStackThisThread.size()=" + principalStackThisThread.size());
@@ -242,9 +288,6 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 // Well, the real client login module does SecurityAssociation.clear(), but
 // unfortunately, async method call doesn't work this way. So please don't
 // clear it.
-// I guess, that the JBoss does internally manage its SecurityAsscociation itself
-// and we should not use this client action in the server.
-//		SecurityAssociation.clear();
 		return super.logout();
 	}
 

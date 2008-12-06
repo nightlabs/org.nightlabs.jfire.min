@@ -1037,6 +1037,7 @@ public class ServerConfiguratorJBoss
 					"            <login-module code = \""+JFireServerLocalLoginModule.class.getName()+"\" flag = \"required\"/>\n" +
 					"            <login-module code = \"org.jboss.security.ClientLoginModule\" flag = \"required\">\n" +
 					"                <module-option name=\"restore-login-identity\">true</module-option>\n" +
+					"                <module-option name=\"multi-threaded\">true</module-option>\n" +
 					"            </login-module>\n" +
 					"\n" +
 					"<!--                    <login-module code = \"org.jboss.security.ClientLoginModule\" flag = \"required\"/>\n" +
@@ -1047,9 +1048,14 @@ public class ServerConfiguratorJBoss
 					"    <application-policy name = \"jfire\">\n" +
 					"        <authentication>\n" +
 					"            <login-module code = \""+JFireServerLoginModule.class.getName()+"\" flag = \"required\"/>\n" +
+					"<!-- I deactivated JBoss' ClientLoginModule, because it has a bug and I therefore put its functionality\n" +
+					"     (the part that is relevant to us) into our login-module. The bug is that it pops the current subject\n" +
+					"     in the abort() method, even though it was never pushed (the push would have happened in commit(),\n" +
+					"     if the login was successful).\n" +
 					"            <login-module code = \"org.jboss.security.ClientLoginModule\" flag = \"required\">\n" +
-          "                  <module-option name=\"restore-login-identity\">true</module-option>\n" +
-          "            </login-module>\n" +
+					"                  <module-option name=\"restore-login-identity\">true</module-option>\n" +
+					"            </login-module>\n" +
+					"-->\n" +
 					"\n" +
 					"<!--                    <login-module code = \"org.jboss.security.ClientLoginModule\" flag = \"required\">\n" +
 					"                <module-option name=\"multi-threaded\">true</module-option>\n" +
