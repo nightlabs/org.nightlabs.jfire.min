@@ -117,7 +117,7 @@ implements SessionBean
 	 * @ejb.permission role-name="_System_"
 	 * @ejb.transaction type="Required"
 	 */
-	public void testSuiteTimerTask(TaskID taskID)
+	public void logMemoryState(TaskID taskID)
 	throws Exception
 	{
 		logger.info("testSuiteTimerTask: Memory usage before gc:");
@@ -143,6 +143,17 @@ implements SessionBean
 	}
 
 	/**
+	 * @ejb.interface-method
+	 * @ejb.permission role-name="_System_"
+	 * @ejb.transaction type="Required"
+	 */
+	public void runAllTestSuites(TaskID taskID)
+	throws Exception
+	{
+		runAllTestSuites();
+	}
+
+	/**
 	 * This method is called by the datastore initialisation mechanism.
 	 * It initializes the users needed for Test logins and other prerequisites for the Test system.
 	 *
@@ -156,44 +167,76 @@ implements SessionBean
 	public void initialiseTestSystem()
 	throws Exception
 	{
-		// TODO remove this debug code
-		if (!"chezfrancois.jfire.org".equals(getOrganisationID()))
+//		// TODO remove this debug code
+//		if (!"chezfrancois.jfire.org".equals(getOrganisationID()))
+//			return;
+//		// end debug code
+
+		if (getRootOrganisationID().equals(getOrganisationID())) // do not run tests on the root organisation
 			return;
-		// end debug code
 
 		JFireServerManager jfsm = getJFireServerManager();
 		try {
 			PersistenceManager pm = getPersistenceManager();
 			try {
 
+				{
+					TaskID taskID = TaskID.create(getOrganisationID(), Task.TASK_TYPE_ID_SYSTEM, "runAllTestSuites");
+					try {
+						pm.getObjectById(taskID);
+					} catch (JDOObjectNotFoundException x) {
+						Task task = new Task(
+								taskID,
+								User.getUser(pm, getPrincipal()),
+								JFireTestManagerHome.JNDI_NAME,
+								"runAllTestSuites"
+						);
 
-				TaskID taskID = TaskID.create(getOrganisationID(), Task.TASK_TYPE_ID_SYSTEM, "testSuiteTimerTask");
-				try {
-					pm.getObjectById(taskID);
-				} catch (JDOObjectNotFoundException x) {
-					Task task = new Task(
-							taskID,
-							User.getUser(pm, getPrincipal()),
-							JFireTestManagerHome.JNDI_NAME,
-							"testSuiteTimerTask"
-					);
+						task.getName().setText(Locale.ENGLISH.getLanguage(), "JFire test suite");
+						task.getDescription().setText(Locale.ENGLISH.getLanguage(), "Run all tests.");
 
-					task.getName().setText(Locale.ENGLISH.getLanguage(), "JFire test suite");
-					task.getDescription().setText(Locale.ENGLISH.getLanguage(), "Do some tests.");
+						task.getTimePatternSet().createTimePattern(
+								"*", // year
+								"*", // month
+								"*", // day
+								"*", // dayOfWeek
+								"*", //  hour
+								"/30" // minute
+						);
 
-					task.getTimePatternSet().createTimePattern(
-							"*", // year
-							"*", // month
-							"*", // day
-							"*", // dayOfWeek
-							"*", //  hour
-							"*" // minute
-					);
-
-					task.setEnabled(true);
-					pm.makePersistent(task);
+						task.setEnabled(true);
+						pm.makePersistent(task);
+					}
 				}
 
+				{
+					TaskID taskID = TaskID.create(getOrganisationID(), Task.TASK_TYPE_ID_SYSTEM, "logMemoryState");
+					try {
+						pm.getObjectById(taskID);
+					} catch (JDOObjectNotFoundException x) {
+						Task task = new Task(
+								taskID,
+								User.getUser(pm, getPrincipal()),
+								JFireTestManagerHome.JNDI_NAME,
+								"logMemoryState"
+						);
+
+						task.getName().setText(Locale.ENGLISH.getLanguage(), "Log memory state");
+						task.getDescription().setText(Locale.ENGLISH.getLanguage(), "Logs the memory state, performs garbage collection, and logs again.");
+
+						task.getTimePatternSet().createTimePattern(
+								"*", // year
+								"*", // month
+								"*", // day
+								"*", // dayOfWeek
+								"*", //  hour
+								"*" // minute
+						);
+
+						task.setEnabled(true);
+						pm.makePersistent(task);
+					}
+				}
 
 
 				JFireTestLogin.checkCreateLoginsAndRegisterInAuthorities(pm);
