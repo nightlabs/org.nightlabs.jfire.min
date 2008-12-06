@@ -69,7 +69,12 @@ public class BaseSessionBeanImpl
 	public JFirePrincipal getPrincipal()
 	{
 		Principal pr = sessionContext.getCallerPrincipal();
-		return (JFirePrincipal)pr;
+		if (pr instanceof JFirePrincipal)
+			return (JFirePrincipal)pr;
+		else if (pr instanceof JFirePrincipalContainer)
+			return (JFirePrincipal) ((JFirePrincipalContainer)pr).getJFirePrincipal();
+		else
+			throw new IllegalStateException("sessionContext.getCallerPrincipal() neither returned a JFirePrincipal, nor a JFirePrincipalContainer: class=" + (pr == null ? null : pr.getClass()) + " instance=" + pr);
 	}
 
 	/**

@@ -17,11 +17,13 @@ import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jdo.ObjectIDUtil;
 import org.nightlabs.jfire.asyncinvoke.AsyncInvoke;
 import org.nightlabs.jfire.asyncinvoke.AsyncInvokeEnvelope;
+import org.nightlabs.jfire.asyncinvoke.AsyncInvokeProblem;
 import org.nightlabs.jfire.asyncinvoke.ErrorCallback;
 import org.nightlabs.jfire.asyncinvoke.Invocation;
 import org.nightlabs.jfire.asyncinvoke.InvocationError;
 import org.nightlabs.jfire.asyncinvoke.SuccessCallback;
 import org.nightlabs.jfire.asyncinvoke.UndeliverableCallback;
+import org.nightlabs.jfire.asyncinvoke.id.AsyncInvokeProblemID;
 import org.nightlabs.jfire.security.SecurityReflector.UserDescriptor;
 import org.nightlabs.jfire.timer.id.TaskID;
 
@@ -247,7 +249,16 @@ extends AsyncInvoke
 						return; // no changes, if we're not active anymore!!!
 					}
 
-					InvocationError invocationError = envelope.getAsyncInvokeProblem(pm).getLastError();
+					AsyncInvokeProblem asyncInvokeProblem = envelope.getAsyncInvokeProblem(pm);
+					if (asyncInvokeProblem == null) {
+						logger.warn(
+								"AsyncInvokeProblem does not exist: " + AsyncInvokeProblemID.create(envelope.getAsyncInvokeEnvelopeID()),
+								new Exception("StackTrace")
+						);
+						return;
+					}
+
+					InvocationError invocationError = asyncInvokeProblem.getLastError();
 					if (invocationError.getError() != null) // maybe it was not serializable
 						task.lastExecFailed(invocationError.getError());
 					else
