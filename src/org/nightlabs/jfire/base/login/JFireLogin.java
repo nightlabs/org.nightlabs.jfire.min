@@ -288,7 +288,7 @@ public class JFireLogin
 		}
 	}
 
-	protected LoginData getLoginData() {
+	public LoginData getLoginData() {
 		return loginData;
 	}
 }
