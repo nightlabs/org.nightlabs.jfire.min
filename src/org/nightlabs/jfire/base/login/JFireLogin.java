@@ -212,7 +212,7 @@ public class JFireLogin
 	protected transient Properties initialContextProperties = null;
 
 	/**
-	 * @return The {@link CallbackHandler} that can serve JFire login credentials according to this {@link JFireLogin}.
+	 * @return The {@link javax.security.auth.CallbackHandler} that can serve JFire login credentials according to this {@link JFireLogin}.
 	 */
 	public JFireLoginAuthCallbackHandler getAuthCallbackHandler()
 	{
@@ -246,6 +246,7 @@ public class JFireLogin
 	}
 
 	private transient LoginContext loginContext = null;
+//	private transient UserDescriptor userDescriptorOnLogin = null;
 
 	/**
 	 * Performs a login via {@link LoginContext}.
@@ -260,7 +261,8 @@ public class JFireLogin
 	public void login()
 	throws LoginException
 	{
-		logout();
+//		userDescriptorOnLogin = SecurityReflector.getUserDescriptor();
+//		logout();
 
 		Base62Coder coder = Base62Coder.sharedInstance();
 		loginData.setSessionID(
@@ -281,7 +283,18 @@ public class JFireLogin
 	throws LoginException
 	{
 		if (loginContext != null) {
-			loginContext.logout();
+//			UserDescriptor userDescriptorAfterLogout;
+//			do {
+				loginContext.logout();
+
+//				try {
+//					userDescriptorAfterLogout = SecurityReflector.getUserDescriptor();
+//				} catch (NoUserException x) {
+//					userDescriptorAfterLogout = null;
+//				}
+//
+//			} while (!Util.equals(userDescriptorOnLogin, userDescriptorAfterLogout));
+
 			loginContext = null;
 			initialContextProperties = null;
 			loginData.setSessionID(null);
