@@ -28,7 +28,12 @@ package org.nightlabs.jfire.jboss.cascadedauthentication;
 
 import java.lang.reflect.Proxy;
 import java.security.Principal;
+import java.security.acl.Group;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Set;
 
+import javax.security.auth.Subject;
 import javax.security.auth.login.LoginContext;
 
 import org.apache.log4j.Logger;
@@ -36,8 +41,11 @@ import org.jboss.invocation.Invocation;
 import org.jboss.invocation.InvocationContext;
 import org.jboss.proxy.ClientContainer;
 import org.jboss.proxy.ejb.GenericEJBInterceptor;
+import org.jboss.security.RunAsIdentity;
 import org.jboss.security.SecurityAssociation;
+import org.jboss.security.SecurityAssociation.SubjectContext;
 import org.nightlabs.j2ee.LoginData;
+import org.nightlabs.jfire.base.JFireBasePrincipal;
 import org.nightlabs.jfire.base.login.JFireLogin;
 import org.nightlabs.util.Util;
 
@@ -200,7 +208,6 @@ public class CascadedAuthenticationClientInterceptorDelegate extends GenericEJBI
 
 		String newUserName = userDescriptor == null ? null : userDescriptor.userName;
 		boolean changeIdentity = newUserName != null;
-// TODO for TESTING, I always change the identity - even if it is already the same.
 		if (changeIdentity) {
 			int idx = newUserName.indexOf('?');
 			if (idx >= 0)
@@ -212,6 +219,7 @@ public class CascadedAuthenticationClientInterceptorDelegate extends GenericEJBI
 
 		LoginData loginData = null;
 		LoginContext loginContext = null;
+		CascadedAuthenticationRunAsIdentity cascadedAuthenticationRunAsIdentity = null;
 		if (changeIdentity) {
 			if (userDescriptor != null) {
 //				boolean localLogin = isUserOnThisServer(newUserName);
@@ -222,6 +230,46 @@ public class CascadedAuthenticationClientInterceptorDelegate extends GenericEJBI
 					loginData = new LoginData(userDescriptor.userName, userDescriptor.password);
 					loginContext = new LoginContext(LoginData.DEFAULT_SECURITY_PROTOCOL, new JFireLogin(loginData).getAuthCallbackHandler());
 					loginContext.login();
+
+
+					{
+						SubjectContext subjectContext = SecurityAssociation.peekSubjectContext();
+						Subject subject = subjectContext.getSubject();
+						Group roleSet = null;
+						for (Principal principal : subject.getPrincipals()) {
+							if ("Roles".equals(principal.getName()))
+								roleSet = (Group) principal;
+						}
+
+						String firstRoleName = null;
+						Set<String> extraRoleNames = null;
+						if (roleSet == null)
+							throw new IllegalStateException("Subject does not contain 'Roles'!");
+
+						for (Enumeration<? extends Principal> ePrincipal = roleSet.members(); ePrincipal.hasMoreElements(); ) {
+							Principal role = ePrincipal.nextElement();
+							if (firstRoleName == null)
+								firstRoleName = role.getName();
+							else {
+								if (extraRoleNames == null)
+									extraRoleNames = new HashSet<String>();
+
+								extraRoleNames.add(role.getName());
+							}
+						}
+
+						RunAsIdentity jbossRunAsIdentity = new RunAsIdentity(
+								firstRoleName == null ? "_unknown_" : firstRoleName,
+										subjectContext.getPrincipal().getName(),
+										extraRoleNames
+						);
+						cascadedAuthenticationRunAsIdentity = new CascadedAuthenticationRunAsIdentity(
+								jbossRunAsIdentity,
+								(JFireBasePrincipal) subjectContext.getPrincipal()
+						);
+						SecurityAssociation.pushRunAsIdentity(cascadedAuthenticationRunAsIdentity);
+					}
+
 //				}
 //				else { // if we logged in to a remote-server, it would try it locally and fail => hence we only set the identity without a real login
 //					SecurityAssociation.setPrincipal(new SimplePrincipal(userDescriptor.userName));
@@ -242,6 +290,11 @@ public class CascadedAuthenticationClientInterceptorDelegate extends GenericEJBI
 				// non-local beans (e.g. TradeManager on another organisation).
 				if (logger.isDebugEnabled())
 					logger.debug("invoke: calling loginContext.logout()");
+
+				RunAsIdentity poppedRunAs = SecurityAssociation.popRunAsIdentity();
+				if (poppedRunAs != cascadedAuthenticationRunAsIdentity) {
+					logger.warn("Popped run-as-identity is not the same as previously pushed one! expected=" + cascadedAuthenticationRunAsIdentity + " found=" + poppedRunAs, new Exception("StackTrace"));
+				}
 
 				loginContext.logout();
 

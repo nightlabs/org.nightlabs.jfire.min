@@ -26,6 +26,8 @@
 
 package org.nightlabs.jfire.jboss.authentication;
 
+import java.io.File;
+import java.io.IOException;
 import java.security.Principal;
 import java.security.acl.Group;
 import java.util.Collections;
@@ -43,14 +45,16 @@ import javax.security.auth.login.LoginException;
 import org.apache.log4j.Logger;
 import org.jboss.security.SecurityAssociation;
 import org.jboss.security.SimpleGroup;
+import org.jboss.security.SecurityAssociation.SubjectContext;
 import org.jboss.security.auth.spi.AbstractServerLoginModule;
 import org.nightlabs.j2ee.LoginData;
 import org.nightlabs.jfire.base.JFirePrincipal;
 import org.nightlabs.jfire.base.Lookup;
-import org.nightlabs.jfire.jboss.cascadedauthentication.CascadedAuthenticationClientInterceptorDelegate;
 import org.nightlabs.jfire.security.RoleSet;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
+import org.nightlabs.util.IOUtil;
+import org.nightlabs.util.Util;
 
 
 /**
@@ -61,7 +65,7 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 {
 	private static final Logger logger = Logger.getLogger(JFireServerLoginModule.class);
 	private static Map<String, RoleSet> userPK2roleSet = Collections.synchronizedMap(new HashMap<String, RoleSet>());
-	private static ThreadLocal<Principal> cascadedAuthenticationRestoreIdentityPrincipal = new ThreadLocal<Principal>();
+//	private static ThreadLocal<Principal> cascadedAuthenticationRestoreIdentityPrincipal = new ThreadLocal<Principal>();
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -70,57 +74,86 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 		super.initialize(subject, callbackHandler, sharedState, options);
 	}
 
-	/**
-	 * Prepare restoring a previous principal. This is necessary, because {@link CascadedAuthenticationClientInterceptorDelegate}
-	 * might restore a previous identity when a transaction is being rolled back. In this situation, the {@link JFireServerManager#login(LoginData)}
-	 * will otherwise fail, because the transaction is not active anymore. In order to guarantee that restoring the old identity succeeds,
-	 * we keep RoleSets in {@link #userPK2roleSet} and create a {@link JFirePrincipal} from there instead of calling
-	 * {@link JFireServerManager#login(LoginData)} which would require an active transaction.
-	 * <p>
-	 * If this method was called, the {@link #login()} method below (or more precisely the {@link #commit()} method) will
-	 * restore from the stack instead of really logging in.
-	 * </p>
-	 *
-	 * @param principalToRestore the principal that is about to be restored.
-	 */
-	public static void cascadedAuthenticationRestoreIdentityBegin(Principal principalToRestore)
-	{
-		if (principalToRestore == null)
-			throw new IllegalArgumentException("principal must not be null!");
+	private static final boolean debugAuthenticatedLoginModules = false;
 
-		Principal principalAlreadyPreparedForRestoring = cascadedAuthenticationRestoreIdentityPrincipal.get();
-		if (principalAlreadyPreparedForRestoring != null)
-			throw new IllegalStateException("There is already another principal prepared for restoring: " + principalAlreadyPreparedForRestoring);
-
-		cascadedAuthenticationRestoreIdentityPrincipal.set(principalToRestore);
+	private static class LoginDebugData {
+		public long commitTimestamp;
+		public Throwable commitStackTrace;
 	}
 
-	public static void cascadedAuthenticationRestoreIdentityEnd(Principal principalToRestore)
-	{
-		if (principalToRestore == null)
-			throw new IllegalArgumentException("principal must not be null!");
-
-		Principal principalPreparedForRestoring = cascadedAuthenticationRestoreIdentityPrincipal.get();
-		if (principalPreparedForRestoring == null)
-			throw new IllegalStateException("cascadedAuthenticationRestoreIdentityBegin was not called!");
-
-		if (principalPreparedForRestoring != principalToRestore)
-			throw new IllegalStateException("cascadedAuthenticationRestoreIdentityBegin was called with a different principal! principalPreparedForRestoring=" + principalPreparedForRestoring + " principalToRestore=" + principalToRestore);
-
-		cascadedAuthenticationRestoreIdentityPrincipal.remove();
+	private static final Map<JFireServerLoginModule, LoginDebugData> authenticatedLoginModule2loginDebugData;
+	static {
+		if (debugAuthenticatedLoginModules)
+			authenticatedLoginModule2loginDebugData = Collections.synchronizedMap(new HashMap<JFireServerLoginModule, LoginDebugData>());
+		else
+			authenticatedLoginModule2loginDebugData = null;
 	}
 
-//	protected Lookup lookup;
-	private JFirePrincipal ip = null;
+	public static void debugDumpAuthenticatedLoginModules()
+	throws IOException
+	{
+		if (authenticatedLoginModule2loginDebugData == null)
+			throw new IllegalStateException("debugAuthenticatedLoginModules is not enabled!");
+
+		Map<JFireServerLoginModule, LoginDebugData> copy;
+		synchronized (authenticatedLoginModule2loginDebugData) {
+			copy = new HashMap<JFireServerLoginModule, LoginDebugData>(authenticatedLoginModule2loginDebugData);
+		}
+
+		File tempDir = IOUtil.createUserTempDir("JFireServerLoginModule.", ".temp");
+
+		for (Map.Entry<JFireServerLoginModule, LoginDebugData> me : copy.entrySet()) {
+			File f = new File(tempDir, "commit-" + Long.toString(me.getValue().commitTimestamp, 36) + ".txt");
+			IOUtil.writeTextFile(f, Util.getStackTraceAsString(me.getValue().commitStackTrace));
+		}
+	}
+
+//	/**
+//	 * Prepare restoring a previous principal. This is necessary, because {@link CascadedAuthenticationClientInterceptorDelegate}
+//	 * might restore a previous identity when a transaction is being rolled back. In this situation, the {@link JFireServerManager#login(LoginData)}
+//	 * will otherwise fail, because the transaction is not active anymore. In order to guarantee that restoring the old identity succeeds,
+//	 * we keep RoleSets in {@link #userPK2roleSet} and create a {@link JFirePrincipal} from there instead of calling
+//	 * {@link JFireServerManager#login(LoginData)} which would require an active transaction.
+//	 * <p>
+//	 * If this method was called, the {@link #login()} method below (or more precisely the {@link #commit()} method) will
+//	 * restore from the stack instead of really logging in.
+//	 * </p>
+//	 *
+//	 * @param principalToRestore the principal that is about to be restored.
+//	 */
+//	public static void cascadedAuthenticationRestoreIdentityBegin(Principal principalToRestore)
+//	{
+//		if (principalToRestore == null)
+//			throw new IllegalArgumentException("principal must not be null!");
+//
+//		Principal principalAlreadyPreparedForRestoring = cascadedAuthenticationRestoreIdentityPrincipal.get();
+//		if (principalAlreadyPreparedForRestoring != null)
+//			throw new IllegalStateException("There is already another principal prepared for restoring: " + principalAlreadyPreparedForRestoring);
+//
+//		cascadedAuthenticationRestoreIdentityPrincipal.set(principalToRestore);
+//	}
+//
+//	public static void cascadedAuthenticationRestoreIdentityEnd(Principal principalToRestore)
+//	{
+//		if (principalToRestore == null)
+//			throw new IllegalArgumentException("principal must not be null!");
+//
+//		Principal principalPreparedForRestoring = cascadedAuthenticationRestoreIdentityPrincipal.get();
+//		if (principalPreparedForRestoring == null)
+//			throw new IllegalStateException("cascadedAuthenticationRestoreIdentityBegin was not called!");
+//
+//		if (principalPreparedForRestoring != principalToRestore)
+//			throw new IllegalStateException("cascadedAuthenticationRestoreIdentityBegin was called with a different principal! principalPreparedForRestoring=" + principalPreparedForRestoring + " principalToRestore=" + principalToRestore);
+//
+//		cascadedAuthenticationRestoreIdentityPrincipal.remove();
+//	}
+
+	private JFirePrincipal jfirePrincipal = null;
 	private LoginData loginData = null;
 
-	private String identityHashStr = null;
 	protected String getIdentityHashStr()
 	{
-		if (identityHashStr == null)
-			identityHashStr = Integer.toHexString(System.identityHashCode(this));
-
-		return identityHashStr;
+		return Integer.toHexString(System.identityHashCode(this));
 	}
 
 	public JFireServerLoginModule()
@@ -129,6 +162,7 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 			logger.trace("(" + getIdentityHashStr() + ") default constructor");
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public boolean login() throws LoginException
 	{
@@ -139,7 +173,6 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 
 		Callback[] callbacks = {nc, pc};
 
-//		LoginData loginData;
 		String login;
 		String password;
 
@@ -148,8 +181,6 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 			callbackHandler.handle(callbacks);
 			login = ((NameCallback)callbacks[0]).getName();
 			char[] tmpPassword = ((PasswordCallback)callbacks[1]).getPassword();
-//			if (tmpPassword == null)
-//				throw new IllegalStateException("No password set! username = " + login);
 
 			if (tmpPassword == null)
 				password = ""; // an empty password does never pass UserLocal.checkPassword(...) [it's too short], so we can continue with it
@@ -157,31 +188,32 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 				password = new String(tmpPassword);
 
 			((PasswordCallback)callbacks[1]).clearPassword();
-//			loginCredential = password;
 		} catch (Exception x) {
 			logger.fatal("Callback handling failed!", x);
 			throw new LoginException(x.getMessage());
 		}
 
-		if (logger.isTraceEnabled())
-			logger.trace("(" + getIdentityHashStr() + ") login: " + login, new Exception("StackTrace"));
-		else if (logger.isDebugEnabled())
-			logger.debug("(" + getIdentityHashStr() + ") login: " + login);
+		if (logger.isDebugEnabled()) {
+			if (logger.isTraceEnabled())
+				logger.trace("(" + getIdentityHashStr() + ") login: " + login, new Exception("StackTrace"));
+			else
+				logger.debug("(" + getIdentityHashStr() + ") login: " + login);
+		}
 
 		loginData = new LoginData(login, password);
 
 		String userKey = loginData.getUserID() + User.SEPARATOR_BETWEEN_USER_ID_AND_ORGANISATION_ID + loginData.getOrganisationID();
-		Principal principalPreparedForRestoring = cascadedAuthenticationRestoreIdentityPrincipal.get();
-		if (principalPreparedForRestoring != null) {
-//			this.ip = principalPreparedForRestoring;
-
-			RoleSet roleSet = userPK2roleSet.get(userKey);
-			if (roleSet == null)
-				throw new IllegalStateException("No RoleSet found for userKey=" + userKey);
-
-			this.ip = new JFirePrincipal(loginData, loginData.getUserID().startsWith(User.USER_ID_PREFIX_TYPE_ORGANISATION), new Lookup(loginData.getOrganisationID()), roleSet);
-		}
-		else {
+//		Principal principalPreparedForRestoring = cascadedAuthenticationRestoreIdentityPrincipal.get();
+//		if (principalPreparedForRestoring != null) {
+////			this.ip = principalPreparedForRestoring;
+//
+//			RoleSet roleSet = userPK2roleSet.get(userKey);
+//			if (roleSet == null)
+//				throw new IllegalStateException("No RoleSet found for userKey=" + userKey);
+//
+//			this.ip = new JFirePrincipal(loginData, loginData.getUserID().startsWith(User.USER_ID_PREFIX_TYPE_ORGANISATION), new Lookup(loginData.getOrganisationID()), roleSet);
+//		}
+//		else {
 			try {
 				// create lookup object for user's organisationID
 				Lookup lookup = new Lookup(loginData.getOrganisationID());
@@ -189,21 +221,27 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 				// and delegate the login to the jfireServerManager
 				JFireServerManager jfireServerManager = lookup.getJFireServerManager();
 				try {
-					this.ip = jfireServerManager.login(loginData);
+					this.jfirePrincipal = jfireServerManager.login(loginData);
 				} finally {
 					jfireServerManager.close();
 				}
 
-				userPK2roleSet.put(userKey, ip.getRoleSet());
+				userPK2roleSet.put(userKey, jfirePrincipal.getRoleSet());
 			} catch (LoginException e) {
 				throw e;
 			} catch(Throwable e) {
 				logger.fatal("Login failed!", e);
 				throw new LoginException(e.getMessage());
 			}
-		}
+//		}
 
 //		super.subject.getPrincipals().add(ip); // doing this in commit
+
+		// I don't know whether this sharedState is necessary, but I saw it in all the other login modules.
+		// I think it's only required for combining multiple login-modules. Marco.
+		sharedState.put("javax.security.auth.login.name", login);
+		sharedState.put("javax.security.auth.login.password", password);
+
 		super.loginOk = true;
 		return true;
 	}
@@ -212,82 +250,96 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 	public boolean commit() throws LoginException
 	{
 		if (!super.commit()) {
-			logger.error("(" + getIdentityHashStr() + ") org.jboss.security.auth.spi.AbstractServerLoginModule.commit() returned false!");
+			logger.error("(" + getIdentityHashStr() + ") commit: org.jboss.security.auth.spi.AbstractServerLoginModule.commit() returned false!");
 			return false;
 		}
 
-//	 Set the login principal and credential and subject
-//    SecurityAssociation.setPrincipal(ip);
-//    SecurityAssociation.setCredential(loginCredential);
-//    SecurityAssociation.setSubject(subject);
-		//shouldn't the above stuff be done by JBoss? Why do we do it here? I think we don't need this anymore since we now use the ClientLoginModule additionally (see login-config.xml)
+		if (logger.isDebugEnabled()) {
+			if (logger.isTraceEnabled())
+				logger.trace("(" + getIdentityHashStr() + ") commit: " + jfirePrincipal, new Exception("StackTrace"));
+			else
+				logger.debug("(" + getIdentityHashStr() + ") commit: " + jfirePrincipal);
+		}
 
-		if (logger.isTraceEnabled())
-			logger.trace("(" + getIdentityHashStr() + ") commit: " + ip, new Exception("StackTrace"));
-
-//    // Add the login principal to the subject if is not there
-//    Set principals = subject.getPrincipals();
-//    if (principals.contains(principal) == false)
-//       principals.add(principal);
-
-		if (ip == null)
+		if (jfirePrincipal == null)
 			throw new NullPointerException("Why the hell is commit() called before login?!");
-
-//    principalName2principal.put(ip.getName(), ip);
-//    LinkedList<JFirePrincipal> principalStackThisThread = principalStack.get();
-//    principalStackThisThread.push(ip);
-//    logger.info("commit: principalStackThisThread.size()=" + principalStackThisThread.size());
-//    for (JFirePrincipal jfirePrincipal : principalStackThisThread)
-//			logger.info("  * " + jfirePrincipal);
-
 
 // copied more or less from JBoss' ClientLoginModule
 		// Set the login principal and credential and subject
-		SecurityAssociation.pushSubjectContext(subject, ip, loginData.getPassword());
+		SecurityAssociation.pushSubjectContext(subject, jfirePrincipal, loginData.getPassword());
 
 		// Add the login principal to the subject if is not there
 		Set<Principal> principals = subject.getPrincipals();
-		if (principals.contains(ip) == false)
-			principals.add(ip);
+		if (principals.contains(jfirePrincipal) == false)
+			principals.add(jfirePrincipal);
 // end copy
 
-		loginData = null; // forget the password - this login-module doesn't neet its reference anymore
+		if (authenticatedLoginModule2loginDebugData != null) {
+			LoginDebugData ldd = new LoginDebugData();
+			ldd.commitTimestamp = System.currentTimeMillis();
+			ldd.commitStackTrace = new Exception("StackTrace");
+			authenticatedLoginModule2loginDebugData.put(this, ldd);
+		}
 
+		loginData = null; // forget the password - this login-module doesn't need its reference anymore
 		return true;
 	}
 
 	@Override
-	public boolean abort() throws LoginException {
-		loginData = null; // forget the password - this login-module doesn't neet its reference anymore
+	public boolean abort() throws LoginException
+	{
+		if (logger.isDebugEnabled()) {
+			if (logger.isTraceEnabled())
+				logger.trace("(" + getIdentityHashStr() + ") abort: " + jfirePrincipal, new Exception("StackTrace"));
+			else
+				logger.debug("(" + getIdentityHashStr() + ") abort: " + jfirePrincipal);
+		}
 
-		ip = null; // reset to state before login() was called.
-
+		// Reset to the state before login() was called.
+		loginData = null;
+		jfirePrincipal = null;
 		return super.abort();
 	}
 
 	@Override
 	public boolean logout() throws LoginException
 	{
-		if (logger.isTraceEnabled())
-			logger.trace("(" + getIdentityHashStr() + ") logout: " + ip, new Exception("StackTrace"));
-		else if (logger.isDebugEnabled())
-			logger.debug("(" + getIdentityHashStr() + ") logout: " + ip);
+		if (logger.isDebugEnabled()) {
+			if (logger.isTraceEnabled())
+				logger.trace("(" + getIdentityHashStr() + ") logout: logging out " + jfirePrincipal, new Exception("StackTrace"));
+			else
+				logger.debug("(" + getIdentityHashStr() + ") logout: logging out " + jfirePrincipal);
+		}
 
 // copied more or less from JBoss' ClientLoginModule
-		SecurityAssociation.popSubjectContext();
+		SubjectContext subjectContext = SecurityAssociation.popSubjectContext();
 // end copy
 
-		ip = null;
+		if (jfirePrincipal != null && jfirePrincipal != subjectContext.getPrincipal()) {
+			if (logger.isDebugEnabled()) {
+				if (logger.isTraceEnabled())
+					logger.trace("(" + getIdentityHashStr() + ") logout: SecurityAssociation.popSubjectContext() did not reveal principal " + jfirePrincipal +  " but instead " + subjectContext.getPrincipal(), new Exception("StackTrace"));
+				else
+					logger.debug("(" + getIdentityHashStr() + ") logout: SecurityAssociation.popSubjectContext() did not reveal principal " + jfirePrincipal +  " but instead " + subjectContext.getPrincipal());
+			}
 
-//		LinkedList<JFirePrincipal> principalStackThisThread = principalStack.get();
-//		principalStackThisThread.pop();
-//		logger.info("logout: principalStackThisThread.size()=" + principalStackThisThread.size());
-//		for (JFirePrincipal jfirePrincipal : principalStackThisThread)
-//			logger.info("  * " + jfirePrincipal);
+			int counter = 0;
+			do {
+				++counter;
+				subjectContext = SecurityAssociation.popSubjectContext();
 
-// Well, the real client login module does SecurityAssociation.clear(), but
-// unfortunately, async method call doesn't work this way. So please don't
-// clear it.
+				if (counter > 100)
+					throw new IllegalStateException("Popping " + counter + " times still did not reveal the principal we have pushed before!");
+			} while (jfirePrincipal != subjectContext.getPrincipal());
+		}
+
+		subject.getPrincipals().remove(jfirePrincipal);
+		jfirePrincipal = null;
+
+		if (authenticatedLoginModule2loginDebugData != null) {
+			authenticatedLoginModule2loginDebugData.remove(this);
+		}
+
 		return super.logout();
 	}
 
@@ -296,9 +348,9 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 	{
 		if (logger.isTraceEnabled()) {
 			logger.trace("(" + getIdentityHashStr() + ") *********************************************************");
-			logger.trace("(" + getIdentityHashStr() + ") getIdentity() returning JFirePrincipal: "+ip);
+			logger.trace("(" + getIdentityHashStr() + ") getIdentity() returning JFirePrincipal: "+jfirePrincipal);
 		}
-		return ip;
+		return jfirePrincipal;
 	}
 
 	@Override
@@ -310,12 +362,12 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 			logger.trace("(" + getIdentityHashStr() + ") getRoleSets()");
 		}
 
-		if (ip == null)
+		if (jfirePrincipal == null)
 			throw new NullPointerException("Why the hell is getRoleSets() called before login?!");
 
 		Group callerPrincipal = new SimpleGroup("CallerPrincipal");
-		callerPrincipal.addMember(ip);
-		return new Group[]{ip.getRoleSet(), callerPrincipal};
+		callerPrincipal.addMember(jfirePrincipal);
+		return new Group[]{jfirePrincipal.getRoleSet(), callerPrincipal};
 	}
 
 }
