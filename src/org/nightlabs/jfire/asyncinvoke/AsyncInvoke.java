@@ -155,7 +155,7 @@ public class AsyncInvoke
 				invocation, successCallback, errorCallback, undeliverableCallback);
 		enqueue(QUEUE_INVOCATION, envelope, enableXA);
 	}
-	
+
 	protected static class AuthCallbackHandler implements CallbackHandler
 	{
 		private String userName;
@@ -166,9 +166,7 @@ public class AsyncInvoke
 			this.password = password;
 		}
 
-		/**
-		 * @see javax.security.auth.callback.CallbackHandler#handle(javax.security.auth.callback.Callback[])
-		 */
+		@Override
 		public void handle(Callback[] callbacks)
 		throws IOException,
 				UnsupportedCallbackException
@@ -235,18 +233,18 @@ public class AsyncInvoke
 				}
 				else {
 					QueueConnectionFactory connectionFactory = JMSConnectionFactoryLookup.lookupQueueConnectionFactory(initialContext);
-	
+
 					QueueConnection connection = null;
 					QueueSession session = null;
 					QueueSender sender = null;
-	
+
 					try {
 						connection = connectionFactory.createQueueConnection();
 						session = connection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
 	//					session = connection.createQueueSession(true, Session.AUTO_ACKNOWLEDGE); // transacted = true
 						Queue queue = (Queue) initialContext.lookup(queueJNDIName);
 						sender = session.createSender(queue);
-	
+
 						Message message = session.createObjectMessage(envelope);
 						sender.send(message);
 					} finally {
