@@ -64,9 +64,7 @@ public class AuthCallbackHandler implements CallbackHandler
 		loginData.setSessionID(_sessionID);
 	}
 
-	/**
-	 * @see javax.security.auth.callback.CallbackHandler#handle(javax.security.auth.callback.Callback[])
-	 */
+	@Override
 	public void handle(Callback[] callbacks)
 	throws IOException,
 			UnsupportedCallbackException
@@ -84,7 +82,7 @@ public class AuthCallbackHandler implements CallbackHandler
 			}
 			else throw new UnsupportedCallbackException(cb);
 		}
-			
+
 	}
 
 }

@@ -572,26 +572,26 @@ public class JFireServerManagerFactoryImpl
 		logger.info("Caught SERVER STARTED event!");
 
 		try {
-			LoginContext loginContext = new LoginContext(
-						LoginData.DEFAULT_SECURITY_PROTOCOL,
-						new CallbackHandler() {
-							@Override
-							public void handle(Callback[] callbacks)
-							throws IOException, UnsupportedCallbackException
-							{
-								for (int i = 0; i < callbacks.length; ++i) {
-									Callback cb = callbacks[i];
-									if (cb instanceof NameCallback) {
-										((NameCallback)cb).setName(User.USER_ID_ANONYMOUS + User.SEPARATOR_BETWEEN_USER_ID_AND_ORGANISATION_ID + Organisation.DEV_ORGANISATION_ID);
-									}
-									else if (cb instanceof PasswordCallback) {
-										((PasswordCallback)cb).setPassword(new char[0]);
-									}
-									else throw new UnsupportedCallbackException(cb);
-								}
-							}
-						});
-			loginContext.login();
+//			LoginContext loginContext = new LoginContext(
+//						LoginData.DEFAULT_SECURITY_PROTOCOL,
+//						new CallbackHandler() {
+//							@Override
+//							public void handle(Callback[] callbacks)
+//							throws IOException, UnsupportedCallbackException
+//							{
+//								for (int i = 0; i < callbacks.length; ++i) {
+//									Callback cb = callbacks[i];
+//									if (cb instanceof NameCallback) {
+//										((NameCallback)cb).setName(User.USER_ID_ANONYMOUS + User.SEPARATOR_BETWEEN_USER_ID_AND_ORGANISATION_ID + Organisation.DEV_ORGANISATION_ID);
+//									}
+//									else if (cb instanceof PasswordCallback) {
+//										((PasswordCallback)cb).setPassword(new char[0]);
+//									}
+//									else throw new UnsupportedCallbackException(cb);
+//								}
+//							}
+//						});
+//			loginContext.login();
 
 			final InitialContext ctx = new InitialContext();
 			try {
@@ -1988,9 +1988,9 @@ public class JFireServerManagerFactoryImpl
 	{
 		if (organisationCfsCloned == null)
 		{
+			Map<String, OrganisationCf> organisationCfsCloned = new HashMap<String, OrganisationCf>();
 			organisationConfigModule.acquireReadLock();
 			try {
-				organisationCfsCloned = new HashMap<String, OrganisationCf>();
 				for (Iterator<OrganisationCf> it = organisationConfigModule.getOrganisations().iterator(); it.hasNext(); ) {
 					OrganisationCf org = (OrganisationCf)it.next().clone();
 					org.makeReadOnly();
@@ -2001,6 +2001,7 @@ public class JFireServerManagerFactoryImpl
 			} finally {
 				organisationConfigModule.releaseLock();
 			}
+			this.organisationCfsCloned = Collections.unmodifiableMap(organisationCfsCloned);
 		}
 		return organisationCfsCloned;
 	}
