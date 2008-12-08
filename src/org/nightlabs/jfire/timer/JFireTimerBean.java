@@ -17,11 +17,13 @@ import javax.naming.InitialContext;
 import javax.security.auth.login.LoginContext;
 
 import org.apache.log4j.Logger;
+import org.nightlabs.j2ee.LoginData;
 import org.nightlabs.jfire.base.AuthCallbackHandler;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.servermanager.JFireServerManagerFactory;
+import org.nightlabs.jfire.servermanager.j2ee.J2EEAdapter;
 
 /**
  * @author Marco Schulze - marco at nightlabs dot de
@@ -101,10 +103,18 @@ implements SessionBean, TimedObject
 					return;
 				}
 
+				J2EEAdapter j2eeAdapter = (J2EEAdapter) initCtxNotAuthenticated.lookup(J2EEAdapter.JNDI_NAME);
+
 				JFireServerManager ism = ismf.getJFireServerManager();
 				try {
-					LoginContext loginContext = new LoginContext(
-							"jfire", new AuthCallbackHandler(ism, timerParam.organisationID, User.USER_ID_SYSTEM));
+//					LoginContext loginContext = new LoginContext(
+//							LoginData.DEFAULT_SECURITY_PROTOCOL,
+//							new AuthCallbackHandler(ism, timerParam.organisationID, User.USER_ID_SYSTEM)
+//					);
+					LoginContext loginContext = j2eeAdapter.createLoginContext(
+							LoginData.DEFAULT_SECURITY_PROTOCOL,
+							new AuthCallbackHandler(ism, timerParam.organisationID, User.USER_ID_SYSTEM)
+					);
 
 					loginContext.login();
 					try {
@@ -157,11 +167,11 @@ implements SessionBean, TimedObject
 			}
 
 			long timeout = 60 * 1000; // call once every minute
-	
+
 			// We want the timer to start as exactly as possible at the starting of the minute (at 00 sec).
 			long start = System.currentTimeMillis();
 			start = start + timeout - (start % timeout);
-	
+
 			Date firstExecDate = new Date(start);
 			timerService.createTimer(
 					firstExecDate,

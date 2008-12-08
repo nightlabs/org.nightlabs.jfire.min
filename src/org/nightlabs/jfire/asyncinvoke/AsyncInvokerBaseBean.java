@@ -38,6 +38,7 @@ import org.nightlabs.jfire.base.AuthCallbackHandler;
 import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.servermanager.JFireServerManagerFactory;
+import org.nightlabs.jfire.servermanager.j2ee.J2EEAdapter;
 
 
 /**
@@ -103,55 +104,62 @@ implements javax.ejb.MessageDrivenBean, javax.jms.MessageListener
 				return;
 			}
 
-			InitialContext initCtxNotAuthenticated = new InitialContext();
-
-			// we need to wait for the system to be up, ready and running
-			// wait max 5 min for the JFireServerManagerFactory to pop up in JNDI
-			long startDT = System.currentTimeMillis();
-			JFireServerManagerFactory ismf = null;
-			if (logger().isDebugEnabled())
-				logger().debug("looking up JFireServerManagerFactory...");
-
-			do {
-				if (System.currentTimeMillis() - startDT > 5 * 60 * 1000)
-					throw new IllegalStateException("JFireServerManagerFactory did not pop up in JNDI within timeout (hardcoded 5 min)!");
-
-				try {
-					ismf = (JFireServerManagerFactory) initCtxNotAuthenticated.lookup(JFireServerManagerFactory.JNDI_NAME);
-				} catch (NameNotFoundException x) {
-					// ignore
-					ismf = null;
-					logger().info("JFireServerManagerFactory is not (yet) bound into JNDI! Will wait and try again...");
-				}
-
-				if (ismf == null)
-					try { Thread.sleep(3000); } catch (InterruptedException x) { }
-
-			} while (ismf == null);
-
-			if (logger().isDebugEnabled())
-				logger().debug("checking whether JFireServerManagerFactory is up and running...");
-
-			startDT = System.currentTimeMillis();
-			do {
-				if (System.currentTimeMillis() - startDT > 10 * 60 * 1000)
-					throw new IllegalStateException("JFireServer did not start within timeout (hardcoded 10 min)!");
-
-				if (ismf.isShuttingDown()) {
-					throw new IllegalStateException("Server is shutting down! Cannot process message anymore!");
-				}
-
-				if (!ismf.isUpAndRunning()) {
-					try { Thread.sleep(3000); } catch (InterruptedException x) { }
-					logger().info("JFireServerManagerFactory is not (yet) up and running! Will wait and try again...");
-				}
-
-			} while (!ismf.isUpAndRunning());
-
-			if (logger().isDebugEnabled())
-				logger().debug("JFireServerManagerFactory is up and running. Will process asynchronous invocation.");
-
 			AsyncInvokeEnvelope envelope = (AsyncInvokeEnvelope) obj;
+
+			JFireServerManagerFactory jfireServerManagerFactory = null;
+			J2EEAdapter j2eeAdapter;
+			InitialContext initCtxNotAuthenticated = new InitialContext();
+			try {
+
+				// we need to wait for the system to be up, ready and running
+				// wait max 5 min for the JFireServerManagerFactory to pop up in JNDI
+				long startDT = System.currentTimeMillis();
+				if (logger().isDebugEnabled())
+					logger().debug("looking up JFireServerManagerFactory...");
+
+				do {
+					if (System.currentTimeMillis() - startDT > 5 * 60 * 1000)
+						throw new IllegalStateException("JFireServerManagerFactory did not pop up in JNDI within timeout (hardcoded 5 min)!");
+
+					try {
+						jfireServerManagerFactory = (JFireServerManagerFactory) initCtxNotAuthenticated.lookup(JFireServerManagerFactory.JNDI_NAME);
+					} catch (NameNotFoundException x) {
+						// ignore
+						jfireServerManagerFactory = null;
+						logger().info("JFireServerManagerFactory is not (yet) bound into JNDI! Will wait and try again...");
+					}
+
+					if (jfireServerManagerFactory == null)
+						try { Thread.sleep(3000); } catch (InterruptedException x) { }
+
+				} while (jfireServerManagerFactory == null);
+
+				if (logger().isDebugEnabled())
+					logger().debug("checking whether JFireServerManagerFactory is up and running...");
+
+				startDT = System.currentTimeMillis();
+				do {
+					if (System.currentTimeMillis() - startDT > 10 * 60 * 1000)
+						throw new IllegalStateException("JFireServer did not start within timeout (hardcoded 10 min)!");
+
+					if (jfireServerManagerFactory.isShuttingDown()) {
+						throw new IllegalStateException("Server is shutting down! Cannot process message anymore!");
+					}
+
+					if (!jfireServerManagerFactory.isUpAndRunning()) {
+						try { Thread.sleep(3000); } catch (InterruptedException x) { }
+						logger().info("JFireServerManagerFactory is not (yet) up and running! Will wait and try again...");
+					}
+
+				} while (!jfireServerManagerFactory.isUpAndRunning());
+
+				if (logger().isDebugEnabled())
+					logger().debug("JFireServerManagerFactory is up and running. Will process asynchronous invocation.");
+
+				j2eeAdapter = (J2EEAdapter) initCtxNotAuthenticated.lookup(J2EEAdapter.JNDI_NAME);
+			} finally {
+				initCtxNotAuthenticated.close();
+			}
 
 //			if (pseudoExternalInvoke) {
 //			JFireServerManager ism = ismf.getJFireServerManager();
@@ -190,10 +198,12 @@ implements javax.ejb.MessageDrivenBean, javax.jms.MessageListener
 
 
 			LoginContext loginContext;
-			JFireServerManager ism = ismf.getJFireServerManager();
+			JFireServerManager ism = jfireServerManagerFactory.getJFireServerManager();
 			try {
-				loginContext = new LoginContext(
-						LoginData.DEFAULT_SECURITY_PROTOCOL, createAuthCallbackHandler(ism, envelope));
+//				loginContext = new LoginContext(
+//						LoginData.DEFAULT_SECURITY_PROTOCOL, createAuthCallbackHandler(ism, envelope));
+
+				loginContext = j2eeAdapter.createLoginContext(LoginData.DEFAULT_SECURITY_PROTOCOL, createAuthCallbackHandler(ism, envelope));
 
 				loginContext.login();
 				try {
@@ -249,7 +259,6 @@ implements javax.ejb.MessageDrivenBean, javax.jms.MessageListener
 //			} finally {
 //				ism.close();
 //			}
-
 		} catch (Throwable x) {
 			logger().fatal("Processing message failed!", x);
 			messageContext.setRollbackOnly();
