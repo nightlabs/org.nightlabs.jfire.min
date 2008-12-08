@@ -1,4 +1,4 @@
-package org.nightlabs.jfire.jboss.cascadedauthentication;
+package org.nightlabs.jfire.jboss.authentication;
 
 import java.security.Principal;
 import java.util.Set;
@@ -7,7 +7,7 @@ import org.jboss.security.RunAsIdentity;
 import org.nightlabs.jfire.base.JFireBasePrincipal;
 import org.nightlabs.jfire.base.JFirePrincipalContainer;
 
-class CascadedAuthenticationRunAsIdentity
+class JFireJBossRunAsIdentity
 extends RunAsIdentity
 implements JFirePrincipalContainer
 {
@@ -16,7 +16,7 @@ implements JFirePrincipalContainer
 	private JFireBasePrincipal jfirePrincipal;
 	private RunAsIdentity delegate;
 
-	public CascadedAuthenticationRunAsIdentity(RunAsIdentity delegate, JFireBasePrincipal jfirePrincipal) {
+	public JFireJBossRunAsIdentity(RunAsIdentity delegate, JFireBasePrincipal jfirePrincipal) {
 		super("", delegate.getName());
 
 		if (delegate == null)
@@ -34,7 +34,7 @@ implements JFirePrincipalContainer
 
 	@Override
 	public Object clone() throws CloneNotSupportedException {
-		CascadedAuthenticationRunAsIdentity clone = (CascadedAuthenticationRunAsIdentity) super.clone();
+		JFireJBossRunAsIdentity clone = (JFireJBossRunAsIdentity) super.clone();
 		clone.delegate = (RunAsIdentity) delegate.clone();
 		return clone;
 	}
@@ -54,7 +54,7 @@ implements JFirePrincipalContainer
 	public boolean equals(Object another) {
 		if (this == another) return true;
 		if (this.getClass() == another.getClass()) {
-			CascadedAuthenticationRunAsIdentity o = (CascadedAuthenticationRunAsIdentity) another;
+			JFireJBossRunAsIdentity o = (JFireJBossRunAsIdentity) another;
 			return this.delegate.equals(o.delegate);
 		}
 		if (!(another instanceof RunAsIdentity))

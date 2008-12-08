@@ -28,12 +28,9 @@ package org.nightlabs.jfire.jboss.cascadedauthentication;
 
 import java.lang.reflect.Proxy;
 import java.security.Principal;
-import java.security.acl.Group;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Set;
 
-import javax.security.auth.Subject;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import javax.security.auth.login.LoginContext;
 
 import org.apache.log4j.Logger;
@@ -41,12 +38,10 @@ import org.jboss.invocation.Invocation;
 import org.jboss.invocation.InvocationContext;
 import org.jboss.proxy.ClientContainer;
 import org.jboss.proxy.ejb.GenericEJBInterceptor;
-import org.jboss.security.RunAsIdentity;
 import org.jboss.security.SecurityAssociation;
-import org.jboss.security.SecurityAssociation.SubjectContext;
 import org.nightlabs.j2ee.LoginData;
-import org.nightlabs.jfire.base.JFireBasePrincipal;
 import org.nightlabs.jfire.base.login.JFireLogin;
+import org.nightlabs.jfire.servermanager.j2ee.J2EEAdapter;
 import org.nightlabs.util.Util;
 
 /**
@@ -108,6 +103,22 @@ public class CascadedAuthenticationClientInterceptorDelegate extends GenericEJBI
 //			throw new RuntimeException(x);
 //		}
 //	}
+
+	private static J2EEAdapter j2eeAdapter; // I think it's OK to keep it statically. Marco.
+
+	private J2EEAdapter getJ2EEAdapter()
+	throws NamingException
+	{
+		if (j2eeAdapter == null) { // no need to do this synchronized - in the worst case we obtain it multiple times - doesn't have any negative consequences.
+			InitialContext ctx = new InitialContext();
+			try {
+				j2eeAdapter = (J2EEAdapter) ctx.lookup(J2EEAdapter.JNDI_NAME);
+			} finally {
+				ctx.close();
+			}
+		}
+		return j2eeAdapter;
+	}
 
 	@Override
 	public Object invoke(Invocation invocation) throws Throwable
@@ -219,7 +230,7 @@ public class CascadedAuthenticationClientInterceptorDelegate extends GenericEJBI
 
 		LoginData loginData = null;
 		LoginContext loginContext = null;
-		CascadedAuthenticationRunAsIdentity cascadedAuthenticationRunAsIdentity = null;
+//		CascadedAuthenticationRunAsIdentity cascadedAuthenticationRunAsIdentity = null;
 		if (changeIdentity) {
 			if (userDescriptor != null) {
 //				boolean localLogin = isUserOnThisServer(newUserName);
@@ -228,47 +239,51 @@ public class CascadedAuthenticationClientInterceptorDelegate extends GenericEJBI
 						logger.debug("invoke: calling loginContext.login()");
 
 					loginData = new LoginData(userDescriptor.userName, userDescriptor.password);
-					loginContext = new LoginContext(LoginData.DEFAULT_SECURITY_PROTOCOL, new JFireLogin(loginData).getAuthCallbackHandler());
+					loginData.setDefaultValues();
+//					loginContext = new LoginContext(LoginData.DEFAULT_SECURITY_PROTOCOL, new JFireLogin(loginData).getAuthCallbackHandler());
+//					loginContext.login();
+//
+//
+//					{
+//						SubjectContext subjectContext = SecurityAssociation.peekSubjectContext();
+//						Subject subject = subjectContext.getSubject();
+//						Group roleSet = null;
+//						for (Principal principal : subject.getPrincipals()) {
+//							if ("Roles".equals(principal.getName()))
+//								roleSet = (Group) principal;
+//						}
+//
+//						String firstRoleName = null;
+//						Set<String> extraRoleNames = null;
+//						if (roleSet == null)
+//							throw new IllegalStateException("Subject does not contain 'Roles'!");
+//
+//						for (Enumeration<? extends Principal> ePrincipal = roleSet.members(); ePrincipal.hasMoreElements(); ) {
+//							Principal role = ePrincipal.nextElement();
+//							if (firstRoleName == null)
+//								firstRoleName = role.getName();
+//							else {
+//								if (extraRoleNames == null)
+//									extraRoleNames = new HashSet<String>();
+//
+//								extraRoleNames.add(role.getName());
+//							}
+//						}
+//
+//						RunAsIdentity jbossRunAsIdentity = new RunAsIdentity(
+//								firstRoleName == null ? "_unknown_" : firstRoleName,
+//										subjectContext.getPrincipal().getName(),
+//										extraRoleNames
+//						);
+//						cascadedAuthenticationRunAsIdentity = new CascadedAuthenticationRunAsIdentity(
+//								jbossRunAsIdentity,
+//								(JFireBasePrincipal) subjectContext.getPrincipal()
+//						);
+//						SecurityAssociation.pushRunAsIdentity(cascadedAuthenticationRunAsIdentity);
+//					}
+
+					loginContext = getJ2EEAdapter().createLoginContext(loginData.getSecurityProtocol(), new JFireLogin(loginData).getAuthCallbackHandler());
 					loginContext.login();
-
-
-					{
-						SubjectContext subjectContext = SecurityAssociation.peekSubjectContext();
-						Subject subject = subjectContext.getSubject();
-						Group roleSet = null;
-						for (Principal principal : subject.getPrincipals()) {
-							if ("Roles".equals(principal.getName()))
-								roleSet = (Group) principal;
-						}
-
-						String firstRoleName = null;
-						Set<String> extraRoleNames = null;
-						if (roleSet == null)
-							throw new IllegalStateException("Subject does not contain 'Roles'!");
-
-						for (Enumeration<? extends Principal> ePrincipal = roleSet.members(); ePrincipal.hasMoreElements(); ) {
-							Principal role = ePrincipal.nextElement();
-							if (firstRoleName == null)
-								firstRoleName = role.getName();
-							else {
-								if (extraRoleNames == null)
-									extraRoleNames = new HashSet<String>();
-
-								extraRoleNames.add(role.getName());
-							}
-						}
-
-						RunAsIdentity jbossRunAsIdentity = new RunAsIdentity(
-								firstRoleName == null ? "_unknown_" : firstRoleName,
-										subjectContext.getPrincipal().getName(),
-										extraRoleNames
-						);
-						cascadedAuthenticationRunAsIdentity = new CascadedAuthenticationRunAsIdentity(
-								jbossRunAsIdentity,
-								(JFireBasePrincipal) subjectContext.getPrincipal()
-						);
-						SecurityAssociation.pushRunAsIdentity(cascadedAuthenticationRunAsIdentity);
-					}
 
 //				}
 //				else { // if we logged in to a remote-server, it would try it locally and fail => hence we only set the identity without a real login
@@ -291,10 +306,10 @@ public class CascadedAuthenticationClientInterceptorDelegate extends GenericEJBI
 				if (logger.isDebugEnabled())
 					logger.debug("invoke: calling loginContext.logout()");
 
-				RunAsIdentity poppedRunAs = SecurityAssociation.popRunAsIdentity();
-				if (poppedRunAs != cascadedAuthenticationRunAsIdentity) {
-					logger.warn("Popped run-as-identity is not the same as previously pushed one! expected=" + cascadedAuthenticationRunAsIdentity + " found=" + poppedRunAs, new Exception("StackTrace"));
-				}
+//				RunAsIdentity poppedRunAs = SecurityAssociation.popRunAsIdentity();
+//				if (poppedRunAs != cascadedAuthenticationRunAsIdentity) {
+//					logger.warn("Popped run-as-identity is not the same as previously pushed one! expected=" + cascadedAuthenticationRunAsIdentity + " found=" + poppedRunAs, new Exception("StackTrace"));
+//				}
 
 				loginContext.logout();
 
@@ -320,50 +335,50 @@ public class CascadedAuthenticationClientInterceptorDelegate extends GenericEJBI
 //				SecurityAssociation.setPrincipal(oldPrincipal);
 //				SecurityAssociation.setCredential(oldCredential);
 
-				Principal currentPrincipal = SecurityAssociation.getPrincipal();
-				Principal principalAfterRestore = currentPrincipal;
-				Principal callerPrincipalAfterRestore = SecurityAssociation.getCallerPrincipal();
-
-				if (currentPrincipal != oldPrincipal) { // must really be the same instance - not only equal
-					int logoutCounter = 0;
-					do {
-						++logoutCounter;
-//						SecurityAssociation.popSubjectContext();
-						Principal principalBeforeLogout = SecurityAssociation.getPrincipal();
-						loginContext.logout();
-						currentPrincipal = SecurityAssociation.getPrincipal();
-						if (principalBeforeLogout == currentPrincipal)
-							throw new IllegalStateException("loginContext.logout() had no effect! The current principal didn't change!");
-					} while (currentPrincipal != null && currentPrincipal != oldPrincipal);
-
-					if (currentPrincipal == oldPrincipal) {
-						if (logger.isDebugEnabled()) {
-							if (logger.isTraceEnabled()) {
-								logger.trace(
-										"invoke: Restoring identity was successful but detected that the invoked method did " + logoutCounter + " login(s) without a corresponding logout! < method="+invocation.getMethod().getDeclaringClass().getName()+"#"+invocation.getMethod().getName()+
-										" SecurityAssociation.principal=" + principalAfterRestore +
-										" SecurityAssociation.callerPrincipal=" + callerPrincipalAfterRestore +
-										" oldPrincipal="+oldPrincipal, new Exception("StackTrace")
-								);
-							}
-							else {
-								logger.debug(
-										"invoke: Restoring identity was successful but detected that the invoked method did " + logoutCounter + " login(s) without a corresponding logout! < method="+invocation.getMethod().getDeclaringClass().getName()+"#"+invocation.getMethod().getName()+
-										" SecurityAssociation.principal=" + principalAfterRestore +
-										" SecurityAssociation.callerPrincipal=" + callerPrincipalAfterRestore +
-										" oldPrincipal="+oldPrincipal
-								);
-							}
-						}
-					}
-					else
-						throw new IllegalStateException(
-								"Restoring identity failed! Maybe there was a manual logout done (i.e. SecurityAssociation.pop...) without a corresponding login?! method="+invocation.getMethod().getDeclaringClass().getName()+"#"+invocation.getMethod().getName()+
-								" SecurityAssociation.principal=" + principalAfterRestore +
-								" SecurityAssociation.callerPrincipal=" + callerPrincipalAfterRestore +
-								" oldPrincipal="+oldPrincipal
-						);
-				}
+//				Principal currentPrincipal = SecurityAssociation.getPrincipal();
+//				Principal principalAfterRestore = currentPrincipal;
+//				Principal callerPrincipalAfterRestore = SecurityAssociation.getCallerPrincipal();
+//
+//				if (currentPrincipal != oldPrincipal) { // must really be the same instance - not only equal
+//					int logoutCounter = 0;
+//					do {
+//						++logoutCounter;
+////						SecurityAssociation.popSubjectContext();
+//						Principal principalBeforeLogout = SecurityAssociation.getPrincipal();
+//						loginContext.logout();
+//						currentPrincipal = SecurityAssociation.getPrincipal();
+//						if (principalBeforeLogout == currentPrincipal)
+//							throw new IllegalStateException("loginContext.logout() had no effect! The current principal didn't change!");
+//					} while (currentPrincipal != null && currentPrincipal != oldPrincipal);
+//
+//					if (currentPrincipal == oldPrincipal) {
+//						if (logger.isDebugEnabled()) {
+//							if (logger.isTraceEnabled()) {
+//								logger.trace(
+//										"invoke: Restoring identity was successful but detected that the invoked method did " + logoutCounter + " login(s) without a corresponding logout! < method="+invocation.getMethod().getDeclaringClass().getName()+"#"+invocation.getMethod().getName()+
+//										" SecurityAssociation.principal=" + principalAfterRestore +
+//										" SecurityAssociation.callerPrincipal=" + callerPrincipalAfterRestore +
+//										" oldPrincipal="+oldPrincipal, new Exception("StackTrace")
+//								);
+//							}
+//							else {
+//								logger.debug(
+//										"invoke: Restoring identity was successful but detected that the invoked method did " + logoutCounter + " login(s) without a corresponding logout! < method="+invocation.getMethod().getDeclaringClass().getName()+"#"+invocation.getMethod().getName()+
+//										" SecurityAssociation.principal=" + principalAfterRestore +
+//										" SecurityAssociation.callerPrincipal=" + callerPrincipalAfterRestore +
+//										" oldPrincipal="+oldPrincipal
+//								);
+//							}
+//						}
+//					}
+//					else
+//						throw new IllegalStateException(
+//								"Restoring identity failed! Maybe there was a manual logout done (i.e. SecurityAssociation.pop...) without a corresponding login?! method="+invocation.getMethod().getDeclaringClass().getName()+"#"+invocation.getMethod().getName()+
+//								" SecurityAssociation.principal=" + principalAfterRestore +
+//								" SecurityAssociation.callerPrincipal=" + callerPrincipalAfterRestore +
+//								" oldPrincipal="+oldPrincipal
+//						);
+//				}
 			} // if (loginContext != null) {
 
 

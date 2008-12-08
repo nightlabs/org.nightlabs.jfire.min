@@ -35,8 +35,12 @@ import javax.management.Notification;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 import javax.naming.InitialContext;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.login.LoginContext;
+import javax.security.auth.login.LoginException;
 import javax.transaction.UserTransaction;
 
+import org.nightlabs.jfire.jboss.authentication.JFireJBossLoginContext;
 import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.servermanager.j2ee.J2EEAdapter;
 import org.nightlabs.jfire.servermanager.j2ee.ServerStartNotificationListener;
@@ -57,7 +61,7 @@ public class J2EEAdapterJBoss implements J2EEAdapter
 		String[] signature = { "java.lang.String" };
 		invoke(jaasMgr, "flushAuthenticationCache", params, signature);
 	}
-	
+
 	protected Object invoke(
 		ObjectName name,
 		String method,
@@ -67,7 +71,7 @@ public class J2EEAdapterJBoss implements J2EEAdapter
 	{
 		return invoke(getServer(), name, method, args, sig);
 	}
-	
+
 	protected Object invoke(
 		Remote server,
 		ObjectName name,
@@ -85,12 +89,12 @@ public class J2EEAdapterJBoss implements J2EEAdapter
 		Method m = server.getClass().getMethod("invoke", argTypes);
 		return m.invoke(server,new Object[]{name, method, args, sig});
 	}
-	
+
 	protected Remote getServer() throws Exception
 	{
 		if (initialContext == null)
 			initialContext = new InitialContext();
-	
+
 		if (server == null) {
 	//		String serverName = System.getProperty("testAdvantage.jboss.server.name");
 	//
@@ -101,7 +105,7 @@ public class J2EEAdapterJBoss implements J2EEAdapter
 		}
 		return server;
 	}
-	
+
 	protected Remote server;
 	protected InitialContext initialContext = null;
 
@@ -153,5 +157,10 @@ public class J2EEAdapterJBoss implements J2EEAdapter
 	public void reboot()
 	{
 		System.exit(10);
+	}
+
+	@Override
+	public LoginContext createLoginContext(String securityProtocol, CallbackHandler callbackHandler) throws LoginException {
+		return new JFireJBossLoginContext(securityProtocol, callbackHandler);
 	}
 }
