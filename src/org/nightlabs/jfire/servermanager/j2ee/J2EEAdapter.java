@@ -29,6 +29,9 @@ package org.nightlabs.jfire.servermanager.j2ee;
 import java.io.Serializable;
 
 import javax.naming.InitialContext;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.login.LoginContext;
+import javax.security.auth.login.LoginException;
 import javax.transaction.UserTransaction;
 
 import org.nightlabs.jfire.security.SecurityReflector;
@@ -37,7 +40,7 @@ import org.nightlabs.jfire.servermanager.ra.JFireServerManagerFactoryImpl;
 
 /**
  * This interface defines an adapter for vendor specific functionality.
- * 
+ *
  * @author Marco Schulze - marco at nightlabs dot de
  * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] de -->
  */
@@ -47,7 +50,7 @@ public interface J2EEAdapter extends Serializable {
 	 * This is done by {@link JFireServerManagerFactoryImpl}.
 	 */
 	public static final String JNDI_NAME = "java:/jfire/system/J2EEAdapter";
-	
+
 	public void flushAuthenticationCache()
 		throws Exception;
 
@@ -77,4 +80,6 @@ public interface J2EEAdapter extends Serializable {
 	 * Just like {@link #shutdown()} this method initiates a shutdown, but signals that the server should be restarted by the service wrapper.
 	 */
 	public void reboot();
+
+	LoginContext createLoginContext(String securityProtocol, CallbackHandler callbackHandler) throws LoginException;
 }

@@ -50,6 +50,7 @@ import javax.security.auth.login.LoginContext;
 import javax.transaction.UserTransaction;
 
 import org.apache.log4j.Logger;
+import org.nightlabs.j2ee.LoginData;
 import org.nightlabs.jdo.ObjectIDUtil;
 import org.nightlabs.jfire.base.AuthCallbackHandler;
 import org.nightlabs.jfire.jdo.cache.CacheManagerFactory;
@@ -61,6 +62,7 @@ import org.nightlabs.jfire.jdo.notification.persistent.id.PushNotifierID;
 import org.nightlabs.jfire.security.id.UserID;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.servermanager.JFireServerManagerFactory;
+import org.nightlabs.jfire.servermanager.j2ee.J2EEAdapter;
 import org.nightlabs.jfire.servermanager.ra.JFireServerManagerFactoryImpl;
 import org.nightlabs.jfire.servermanager.ra.JFireServerManagerImpl;
 
@@ -359,6 +361,16 @@ public class PersistentNotificationManagerFactory implements Serializable
 			// execute the filter method as the NotificationFilter's owner and push if possible
 			Map<String, Boolean> subscriberType2NeedsPush = new HashMap<String, Boolean>();
 			if (!userID2notificationFilterID2DirtyObjectID_beforeFilter.isEmpty()) {
+				J2EEAdapter j2eeAdapter;
+				{
+					InitialContext ctx = new InitialContext();
+					try {
+						j2eeAdapter = (J2EEAdapter) ctx.lookup(J2EEAdapter.JNDI_NAME);
+					} finally {
+						ctx.close();
+					}
+				}
+
 				boolean doCommit = false;
 				userTransaction.begin();
 				try {
@@ -367,8 +379,12 @@ public class PersistentNotificationManagerFactory implements Serializable
 						LoginContext loginContext;
 						JFireServerManager jfsm = jFireServerManagerFactory.getJFireServerManager();
 						try {
-							loginContext = new LoginContext(
-									"jfire", new AuthCallbackHandler(jfsm, organisationID, userID.userID, this.getClass().getSimpleName()));
+//							loginContext = new LoginContext(
+//									"jfire", new AuthCallbackHandler(jfsm, organisationID, userID.userID, this.getClass().getSimpleName()));
+							loginContext = j2eeAdapter.createLoginContext(
+									LoginData.DEFAULT_SECURITY_PROTOCOL,
+									new AuthCallbackHandler(jfsm, organisationID, userID.userID, this.getClass().getSimpleName())
+							);
 						} finally {
 							jfsm.close();
 						}
