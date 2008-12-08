@@ -47,16 +47,6 @@ public class JFireServerConfigModule extends ConfigModule
 	 */
 	private static final long serialVersionUID = 1L;
 
-	/**
-	 * Damn Sun's URLJARFile doesn't work correctly when used via an URL that is pointing to a
-	 * resource inside a jar. If tried, URL.openStream() fails with a
-	 * "java.util.zip.ZipException: error in opening zip file".
-	 * <br>
-	 * Hence, we need constant to distuinguish between default keystore (inside jar) and non-default
-	 * keystore (hopefully a file that is not contained in a jar).
-	 */
-	public static final String DEFAULT_KEYSTORE = "JFIRE_DEFAULT_KEYSTORE";
-
 	public static final String ORGANISATION_ID_VAR = "${organisationID}";
 
 	private J2eeCf j2ee = null;
@@ -65,21 +55,7 @@ public class JFireServerConfigModule extends ConfigModule
 	private DatabaseCf database = null;
 	private RootOrganisationCf rootOrganisation = null;
 	private ServerCf localServer = null;
-
-	/**
-	 * This field may be in one of the three states:
-	 * <ul>
-	 * 	<li>null <=> not yet initialised</li>
-	 * 	<li>the value of an URL.toString() <=> set to a keystore that shall be copied to %jboss%/bin/jfire-server.keystore</li>
-	 * 	<li>"" <=> The former URL has been imported (copied) and is not needed anymore.</li>
-	 * </ul>
-	 */
-	private String keystoreURLToImport;
-	private String keystorePassword;
-	private String sslServerCertificateAlias;
-	private String sslServerCertificatePassword;
-	private String servletBaseURL;
-	private String servletBaseURLHttps;
+	private ServletSSLCf servletSSLCf = null;
 
 	/* (non-Javadoc)
 	 * @see org.nightlabs.config.ConfigModule#init()
@@ -102,35 +78,8 @@ public class JFireServerConfigModule extends ConfigModule
 			setDatabase(DatabaseCf.defaults().get(DatabaseCf.DEFAULTS_DEFAULT_KEY));
 		if (jdo == null)
 			setJdo(new JDOCf());
-
-		if (servletBaseURL == null)
-			setServletBaseURL("http://localhost:8080/");
-		if (servletBaseURLHttps == null)
-			setServletBaseURLHttps("https://localhost:8443");
-
-		if (sslServerCertificateAlias == null)
-			sslServerCertificateAlias = "localhost";
-
-		if (sslServerCertificatePassword == null)
-			sslServerCertificatePassword = "nightlabs";
-
-		if (keystoreURLToImport == null)
-		{
-			keystoreURLToImport = DEFAULT_KEYSTORE;
-//			try
-//			{
-//				// Damn Sun's URLJARFile doesn't work correctly when an URL is pointing to a resource inside a jar. URL.openStream() fails with a "java.util.zip.ZipException: error in opening zip file".
-//				keystoreURLToImport = JFireServerConfigModule.class.getResource("/jfire-server.keystore").toURI().toString();
-//			}
-//			catch (URISyntaxException e)
-//			{
-//				System.err.println(e.getMessage());
-//				throw new RuntimeException(e);
-//			}
-		}
-
-		if (keystorePassword == null)
-			keystorePassword = "nightlabs";
+		if (servletSSLCf == null)
+			setServletSSLCf(new ServletSSLCf());
 
 		if (localServer != null)
 			localServer.init();
@@ -277,102 +226,24 @@ public class JFireServerConfigModule extends ConfigModule
 	}
 
 	/**
-	 * Sets the base URL to the servlet container which is then extended to point to servlet based
-	 * services, e.g. to the update site servlet that shall be used for setting up the runtimes of
-	 * the users when they authenticate.
-	 *
-	 * @param servletBaseURL the URL that points to the servlet container.
+	 * @return the servletSSLCf
 	 */
-	public void setServletBaseURL(String servletBaseURL)
+	public ServletSSLCf getServletSSLCf()
 	{
-		this.servletBaseURL = servletBaseURL;
+		return servletSSLCf;
 	}
 
 	/**
-	 * @return the base URL to the servlet container engine where all servlets are located.
+	 * @param servletSSLCf the servletSSLCf to set
 	 */
-	public String getServletBaseURL()
+	public void setServletSSLCf(ServletSSLCf servletSSLCf)
 	{
-		return servletBaseURL;
-	}
-
-	/**
-	 * @return the sslServerCertificateAlias
-	 */
-	public String getSslServerCertificateAlias()
-	{
-		return sslServerCertificateAlias;
-	}
-
-	/**
-	 * @param sslServerCertificateAlias the sslServerCertificateAlias to set
-	 */
-	public void setSslServerCertificateAlias(String sslServerCertificateAlias)
-	{
-		this.sslServerCertificateAlias = sslServerCertificateAlias;
-	}
-
-	public String getKeystorePassword()
-	{
-		return keystorePassword;
-	}
-
-	public void setKeystorePassword(String keystorePassword)
-	{
-		this.keystorePassword = keystorePassword;
-		setChanged();
-	}
-
-	public String getSslServerCertificatePassword()
-	{
-		return sslServerCertificatePassword;
-	}
-
-	public void setSslServerCertificatePassword(String sslServerCertificatePassword)
-	{
-		this.sslServerCertificatePassword = sslServerCertificatePassword;
-		setChanged();
-	}
-
-	public String getServletBaseURLHttps()
-	{
-		return servletBaseURLHttps;
-	}
-
-	public void setServletBaseURLHttps(String servletBaseURLHttps)
-	{
-		this.servletBaseURLHttps = servletBaseURLHttps;
-		setChanged();
-	}
-
-	/**
-	 * If this method returns an empty String "" then the keystoreURL has already been imported and
-	 * is located under <code>%jboss%/bin/jfire-server.keystore</code>.
-	 *
-	 * @return The URL.toString() pointing to a keystore that contains the servers ssl certificate.
-	 */
-	public String getKeystoreURLToImport()
-	{
-		return keystoreURLToImport;
-	}
-
-	public void setKeystoreURLToImport(String keystoreURLToImport)
-	{
-		this.keystoreURLToImport = keystoreURLToImport;
-		setChanged();
-	}
-
-	public boolean isKeystoreURLImported()
-	{
-		return "".equals(keystoreURLToImport);
-	}
-
-	public void setKeystoreURLImported()
-	{
-		if ("".equals(keystoreURLToImport))
-			return;
-
-		keystoreURLToImport = "";
+		this.servletSSLCf = servletSSLCf;
+		if (servletSSLCf != null)
+		{
+			servletSSLCf.setParentConfigModule(this);
+			servletSSLCf.init();
+		}
 		setChanged();
 	}
 }

@@ -15,6 +15,7 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.nightlabs.jfire.serverconfigurator.ServerConfiguratorHistory.ServerConfiguratorAction;
 import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
+import org.nightlabs.jfire.servermanager.config.ServletSSLCf;
 import org.nightlabs.util.IOUtil;
 
 /**
@@ -380,9 +381,9 @@ public abstract class ServerConfigurator
 	{
 		final JFireServerConfigModule jfireServerConfigModule = getJFireServerConfigModule();
 
-		if (!jfireServerConfigModule.isKeystoreURLImported())
+		if (!jfireServerConfigModule.getServletSSLCf().isKeystoreURLImported())
 		{
-			final String keystoreURLToImport = jfireServerConfigModule.getKeystoreURLToImport();
+			final String keystoreURLToImport = jfireServerConfigModule.getServletSSLCf().getKeystoreURLToImport();
 			FileOutputStream keystorePropFileStream = null;
 
 			try
@@ -394,7 +395,7 @@ public abstract class ServerConfigurator
 					throw new IllegalStateException("No keystore can be found in " +
 							"%jboss%/bin/jfire-server.keystore and no keystoreToImport is set!");
 				}
-				else if (JFireServerConfigModule.DEFAULT_KEYSTORE.equals(keystoreURLToImport))
+				else if (ServletSSLCf.DEFAULT_KEYSTORE.equals(keystoreURLToImport))
 				{
 					keystoreToImportStream = ServerConfigurator.class.getResourceAsStream("/jfire-server.keystore");
 				}
@@ -417,27 +418,32 @@ public abstract class ServerConfigurator
 					}
 				}
 
+				final ServletSSLCf servletSSLCf = jfireServerConfigModule.getServletSSLCf();
+
 				// if files are equal -> don't need to copy.
 				if (! transferData)
 				{
 					// set the keystore file to the imported state (== set the keystoreURLToImport = "")
-					jfireServerConfigModule.setKeystoreURLImported();
+					servletSSLCf.setKeystoreURLImported();
 					return;
 				}
 
 				// files differ or the destination file doesn't exist yet
-				IOUtil.transferStreamData(
-						keystoreToImportStream,
-						new FileOutputStream(jfireServerKeystoreFile));
+				FileOutputStream keyStoreStream = new FileOutputStream(jfireServerKeystoreFile);
+				try {
+					IOUtil.transferStreamData(keystoreToImportStream, keyStoreStream);
+				}	finally {
+					keyStoreStream.close();
+				}
 
 				// Write all ssl socket related infos into a properties file next to jfire-server.keystore,
 				// because the org.nightlabs.rmissl.socket.SSLCompressionServerSocketFactory and
 				// org.nightlabs.rmissl.socket.SSLCompressionRMIServerSocketFactory need to know these
 				// infos and the projects don't know anything from each other (and are not allowed to).
 				Properties props = new Properties();
-				props.put("org.nightlabs.ssl.keystorePassword", jfireServerConfigModule.getKeystorePassword());
-				props.put("org.nightlabs.ssl.serverCertificateAlias", jfireServerConfigModule.getSslServerCertificateAlias());
-				props.put("org.nightlabs.ssl.serverCertificatePassword", jfireServerConfigModule.getSslServerCertificatePassword());
+				props.put("org.nightlabs.ssl.keystorePassword", servletSSLCf.getKeystorePassword());
+				props.put("org.nightlabs.ssl.serverCertificateAlias", servletSSLCf.getSslServerCertificateAlias());
+				props.put("org.nightlabs.ssl.serverCertificatePassword", servletSSLCf.getSslServerCertificatePassword());
 				File keystorePropFile = new File("jfire-server.keystore.properties").getAbsoluteFile();
 				keystorePropFileStream = new FileOutputStream(keystorePropFile);
 				props.store(keystorePropFileStream, "The properties needed to read the correct private " +
@@ -445,7 +451,7 @@ public abstract class ServerConfigurator
 						"These credentials are needed by the SSLCompressionServerSocketFactory.");
 
 				// set the keystore file to the imported state (== set the keystoreURLToImport = "")
-				jfireServerConfigModule.setKeystoreURLImported();
+				servletSSLCf.setKeystoreURLImported();
 				setRebootRequired(true);
 			}
 			catch (IOException e) {
