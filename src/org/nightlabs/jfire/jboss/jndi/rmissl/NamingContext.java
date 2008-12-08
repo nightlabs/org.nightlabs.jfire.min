@@ -11,20 +11,28 @@ import javax.naming.NameParser;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 
+/**
+ * This NamingContext prepends the given JNDI-name with the {@value #EJB_SSLRMI_PREFIX} in order to
+ * get the automatically generated Proxys that use our own ssl-encrypted and compression-enabled
+ * sockets.
+ * 
+ * @author main author unknown - I guess Fitas
+ * @author Marius Heinzmann - marius[at]nightlabs[dot]com
+ */
 public class NamingContext implements Context {
 	private Context delegate;
-	
+
 	private static final String EJB_PREFIX = "jfire/ejb";
-	
+
 	private static final String EJB_SSLRMI_PREFIX = "ejbssl/";
-	
-	
+
+
 	public NamingContext(Context delegate) {
 		this.delegate = delegate;
 	}
 
 	public Object addToEnvironment(String propName, Object propVal)
-			throws NamingException {
+	throws NamingException {
 		return delegate.addToEnvironment(propName, propVal);
 	}
 
@@ -45,7 +53,7 @@ public class NamingContext implements Context {
 	}
 
 	public String composeName(String name, String prefix)
-			throws NamingException {
+	throws NamingException {
 		return delegate.composeName(name, prefix);
 	}
 
@@ -82,39 +90,39 @@ public class NamingContext implements Context {
 	}
 
 	public NamingEnumeration<NameClassPair> list(Name name)
-			throws NamingException {
+	throws NamingException {
 		return delegate.list(name);
 	}
 
 	public NamingEnumeration<NameClassPair> list(String name)
-			throws NamingException {
+	throws NamingException {
 		return delegate.list(name);
 	}
 
 	public NamingEnumeration<Binding> listBindings(Name name)
-			throws NamingException {
+	throws NamingException {
 		return delegate.listBindings(name);
 	}
 
 	public NamingEnumeration<Binding> listBindings(String name)
-			throws NamingException {
+	throws NamingException {
 		return delegate.listBindings(name);
 	}
 
 	public Object lookup(Name name) throws NamingException {
-	
-		
+
+
 		throw new UnsupportedOperationException("NYI");
-//		return delegate.lookup(name);
+		//		return delegate.lookup(name);
 	}
 
-	
+
 	public Object lookup(String name) throws NamingException {
-		
-		
-		if (name.startsWith(EJB_PREFIX))
-			name = EJB_SSLRMI_PREFIX + name;
-		
+
+
+		if (name.startsWith(NamingContext.EJB_PREFIX))
+			name = NamingContext.EJB_SSLRMI_PREFIX + name;
+
 		return delegate.lookup(name);
 	}
 
@@ -153,5 +161,5 @@ public class NamingContext implements Context {
 	public void unbind(String name) throws NamingException {
 		delegate.unbind(name);
 	}
-	
+
 }
