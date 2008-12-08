@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.nightlabs.jfire.base.login;
 
 import java.util.Properties;
@@ -15,29 +12,29 @@ import org.nightlabs.jfire.base.security.SecurityReflectorClient;
 import org.nightlabs.jfire.security.SecurityReflector;
 
 /**
- * {@link JFireClient} can be used to build a simple Java JFire client. 
+ * {@link JFireClient} can be used to build a simple Java JFire client.
  * <p>
  * <b>Important: </b> As (if possible) {@link JFireClient} interacts with a singleton instance of {@link SecurityReflectorClient}
- * it is a bad idea to use more than one {@link JFireClient} in a Java VM. 
+ * it is a bad idea to use more than one {@link JFireClient} in a Java VM.
  * </p>
  * <p>
- * To have a fully functional JFire client API you'll also need to call the method 
- * {@link #registerDefaultStaticJFireClientClasses()} which will register the default client implementations 
- * of some JFire server/client wide static API parts like the IDGenerator or the SecurityReflector. 
+ * To have a fully functional JFire client API you'll also need to call the method
+ * {@link #registerDefaultStaticJFireClientClasses()} which will register the default client implementations
+ * of some JFire server/client wide static API parts like the IDGenerator or the SecurityReflector.
  * </p>
  * <p>
- * {@link JFireLogin} is not intended to be used inside the JFire Server VM it should rather be used 
+ * {@link JFireLogin} is not intended to be used inside the JFire Server VM it should rather be used
  * when a client login is needed in Java.
  * </p>
- * 
+ *
  * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] de --->
  */
 public class JFireClient {
 
 	private static final Logger logger = Logger.getLogger(JFireClient.class);
-	
+
 	private JFireLogin login;
-	
+
 	/**
 	 * Create a new {@link JFireClient}.
 	 * @param loginData The login-data to use or <code>null</code> if it should be set later.
@@ -48,15 +45,15 @@ public class JFireClient {
 	}
 
 	/**
-	 * Set the {@link LoginData} for this client. 
-	 * This method will not login automatically, but it will 
+	 * Set the {@link LoginData} for this client.
+	 * This method will not login automatically, but it will
 	 * perform a {@link #logout()} if old login-data is found.
-	 * 
+	 *
 	 * @param loginData The {@link LoginData} to set.
 	 * @throws LoginException If logout fails.
 	 */
-	public synchronized void setLoginData(LoginData loginData) 
-	throws LoginException 
+	public synchronized void setLoginData(LoginData loginData)
+	throws LoginException
 	{
 		if (login != null) {
 			login.logout();
@@ -64,9 +61,9 @@ public class JFireClient {
 		}
 		login = new JFireLogin(loginData);
 	}
-	
+
 	/**
-	 * Used internally 
+	 * Used internally
 	 */
 	private JFireLogin getLogin() {
 		if (login == null)
@@ -75,8 +72,8 @@ public class JFireClient {
 	}
 
 	/**
-	 * Returns Properties for an {@link InitialContext} that are configured 
-	 * with the login-data of this client. The result can be used for example 
+	 * Returns Properties for an {@link InitialContext} that are configured
+	 * with the login-data of this client. The result can be used for example
 	 * to create EJB proxies to access JFire server methods.
 	 *
 	 * @return Properties for an {@link InitialContext} configured with the login-data of this client.
@@ -124,9 +121,9 @@ public class JFireClient {
 			((SecurityReflectorClient) sr).unregisterAuthorizedObjectRefLifecycleListener();
 		} catch (Exception e) {
 			logger.warn("The SecurityReflector currently set is not compatible with this JFireLogin.", e);
-		}		
-	}	
-	
+		}
+	}
+
 	/**
 	 * This will register the default client implementations of the static JFire API parts.
 	 * Currently:

@@ -46,7 +46,7 @@ public class JFireSecurityConfiguration extends Configuration {
 	private static final Logger logger = Logger.getLogger(JFireSecurityConfiguration.class);
 
 	private HashMap<String, AppConfigurationEntry> entries = new HashMap<String, AppConfigurationEntry>();
-	
+
 	public JFireSecurityConfiguration(){
 		try {
 			refresh();
@@ -54,7 +54,7 @@ public class JFireSecurityConfiguration extends Configuration {
 			throw new RuntimeException(e);
 		}
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see javax.security.auth.login.Configuration#refresh()
 	 */
@@ -64,10 +64,10 @@ public class JFireSecurityConfiguration extends Configuration {
 		this.entries.clear();
 
 		// TODO Reimplement LoginModule to make it indepenent of JBoss.
-		
+
 		List<JFireSecurityConfigurationEntry> configEntries = new ArrayList<JFireSecurityConfigurationEntry>();
 		configEntries.add(new JFireSecurityConfigurationEntry("jfire", "org.jboss.security.ClientLoginModule")); //$NON-NLS-1$ //$NON-NLS-2$
-		
+
 		for (JFireSecurityConfigurationEntry confEntry : configEntries) {
 			logger.debug("Adding entry for "+confEntry.getApplicationName()+"("+confEntry.getLoginModuleName()+", "+confEntry.getControlFlag()+", "+confEntry.getOptions()+")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
 			logger.debug("Control Flag is: "+strToLoginModuleControlFlag(confEntry.getControlFlag())); //$NON-NLS-1$
@@ -94,23 +94,24 @@ public class JFireSecurityConfiguration extends Configuration {
 		}
 		return null;
 	}
-	
+
 	private static JFireSecurityConfiguration configInstance = null;
+
 	public static void declareConfiguration(){
 		Class<?> configClass = null; //Configuration.getConfiguration().getClass();
 		if (configClass == null)
 			logger.debug("Current security configuration is null"); //$NON-NLS-1$
 		else
 			logger.debug("Current security configuration is of type: "+configClass.getName()); //$NON-NLS-1$
-		
+
 		if (configClass != JFireSecurityConfiguration.class){
 			configInstance = new JFireSecurityConfiguration();
 			Configuration.setConfiguration(configInstance);
 			logger.debug("Set configuration to type: "+Configuration.getConfiguration().getClass().getName()); //$NON-NLS-1$
 		}
 	}
-	
-	
+
+
 	private static AppConfigurationEntry.LoginModuleControlFlag strToLoginModuleControlFlag(String flag){
 		if (flag.toLowerCase().equals(JFireSecurityConfigurationEntry.MODULE_CONTROL_FLAG_REQUIRED))
 			return AppConfigurationEntry.LoginModuleControlFlag.REQUIRED;
@@ -120,7 +121,7 @@ public class JFireSecurityConfiguration extends Configuration {
 			return AppConfigurationEntry.LoginModuleControlFlag.SUFFICIENT;
 		else if (flag.toLowerCase().equals(JFireSecurityConfigurationEntry.MODULE_CONTROL_FLAG_OPTIONAL))
 			return AppConfigurationEntry.LoginModuleControlFlag.OPTIONAL;
-		
+
 		return AppConfigurationEntry.LoginModuleControlFlag.REQUIRED;
 	}
 
