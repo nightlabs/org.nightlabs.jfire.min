@@ -45,7 +45,10 @@ extends Invocation
 
 			try {
 				JFireTestManagerLocal m = JFireTestManagerUtil.getLocalHome().create();
-				m.runAllTestSuites();
+				if (JFireTestManagerBean.getTestSuiteRunningCounter(getOrganisationID()) > 0)
+					logger.info("invoke: Tests are already running (probably due to a timer task). Won't start another run!");
+				else
+					m.runAllTestSuites();
 			} finally {
 				if (shutdownControlHandle != null) {
 					JFireServerManager jfsm = getJFireServerManager();
@@ -66,37 +69,37 @@ extends Invocation
 			logger.error(t.getClass().getName() + ": " + t.getMessage(), t);
 		}
 
-		asyncGC(0);
+//		asyncGC(0);
 
 		return null;
 	}
 
-	private static void asyncGC(final int counter)
-	{
-		new Thread() {
-			{
-				setName(JFireTestRunnerInvocation.class.getSimpleName() + ".asyncGC[" + counter + "]");
-				setPriority(Thread.NORM_PRIORITY);
-			}
-			@Override
-			public void run() {
-				try {
-					Thread.sleep(3000);
-				} catch (InterruptedException e) {
-					// ignore
-				}
-
-				if (logger.isDebugEnabled())
-					logger.debug("asyncGC(" + counter + "): calling System.gc()");
-
-				System.gc();
-
-				if (logger.isDebugEnabled())
-					logger.debug("asyncGC(" + counter + "): called System.gc()");
-
-				if (counter < 2)
-					asyncGC(counter + 1);
-			}
-		}.start();
-	}
+//	private static void asyncGC(final int counter)
+//	{
+//		new Thread() {
+//			{
+//				setName(JFireTestRunnerInvocation.class.getSimpleName() + ".asyncGC[" + counter + "]");
+//				setPriority(Thread.NORM_PRIORITY);
+//			}
+//			@Override
+//			public void run() {
+//				try {
+//					Thread.sleep(3000);
+//				} catch (InterruptedException e) {
+//					// ignore
+//				}
+//
+//				if (logger.isDebugEnabled())
+//					logger.debug("asyncGC(" + counter + "): calling System.gc()");
+//
+//				System.gc();
+//
+//				if (logger.isDebugEnabled())
+//					logger.debug("asyncGC(" + counter + "): called System.gc()");
+//
+//				if (counter < 2)
+//					asyncGC(counter + 1);
+//			}
+//		}.start();
+//	}
 }

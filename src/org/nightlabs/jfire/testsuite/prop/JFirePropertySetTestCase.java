@@ -31,11 +31,11 @@ import org.nightlabs.jfire.prop.datafield.RegexDataField;
 import org.nightlabs.jfire.prop.datafield.SelectionDataField;
 import org.nightlabs.jfire.prop.datafield.TextDataField;
 import org.nightlabs.jfire.prop.id.PropertySetID;
+import org.nightlabs.jfire.prop.id.StructLocalID;
 import org.nightlabs.jfire.prop.structfield.SelectionStructField;
 import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.testsuite.JFireTestSuite;
 import org.nightlabs.jfire.testsuite.TestCase;
-import org.nightlabs.progress.NullProgressMonitor;
 
 /**
  * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] de -->
@@ -89,9 +89,22 @@ public class JFirePropertySetTestCase extends TestCase {
 			className = JDOLifecycleManager.class.getName();
 			System.setProperty(JDOLifecycleManager.PROPERTY_KEY_JDO_LIFECYCLE_MANAGER, className);
 		}
-		Cache.sharedInstance().open(SecurityReflector.getUserDescriptor().getSessionID());
+//		Cache.sharedInstance().open(SecurityReflector.getUserDescriptor().getSessionID());
+//		Cache.sharedInstance().open(
+//				this.getClass().getName()
+//				+ '-' +
+//				Long.toString(System.currentTimeMillis(), 36)
+//				+ '-' +
+//				Integer.toString((int) (Math.random() * Integer.parseInt("zzzz", 36)), 36)
+//		);
 		super.setUp();
 		isSetup = true;
+	}
+
+	@Override
+	protected void tearDown() throws Exception {
+//		Cache.sharedInstance().close();
+		super.tearDown();
 	}
 
 	/**
@@ -106,12 +119,26 @@ public class JFirePropertySetTestCase extends TestCase {
 			throw new RuntimeException("Fetching propertySet failed.", e);
 		}
 		try {
-			StructLocal structLocal = StructLocalDAO.sharedInstance().getStructLocal(
+			// Fetching the stuff directly from the beans in order to avoid using the Cache. Marco.
+			StructLocalID structLocalID = StructLocalID.create(
+					SecurityReflector.getUserDescriptor().getOrganisationID(),
 					propertySet.getStructLocalLinkClass(),
 					propertySet.getStructScope(),
-					propertySet.getStructLocalScope(),
-					new NullProgressMonitor()
+					propertySet.getStructLocalScope()
 			);
+
+			StructLocal structLocal = getPropertyManager().getFullStructLocal(
+					structLocalID,
+					StructLocalDAO.DEFAULT_FETCH_GROUPS,
+					NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT
+			);
+
+//			StructLocal structLocal = StructLocalDAO.sharedInstance().getStructLocal(
+//					propertySet.getStructLocalLinkClass(),
+//					propertySet.getStructScope(),
+//					propertySet.getStructLocalScope(),
+//					new NullProgressMonitor()
+//			);
 			propertySet.inflate(structLocal);
 		} catch (Exception e) {
 			throw new RuntimeException("Exploding propertySet failed", e);

@@ -98,7 +98,7 @@ public class IDGeneratorTest extends TestCase
 		_testGetIDs();
 	}
 
-	private static final int ITERATION_QUANTITY = 10000;
+	private static final int ITERATION_QUANTITY = 1;
 
 	private static boolean manualCascadedAuthentication = false;
 

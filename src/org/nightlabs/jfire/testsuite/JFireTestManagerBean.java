@@ -150,6 +150,11 @@ implements SessionBean
 	public void runAllTestSuites(TaskID taskID)
 	throws Exception
 	{
+		if (getTestSuiteRunningCounter(getOrganisationID()) > 0) {
+			logger.info("runAllTestSuites: Tests are already running. Won't start another run for the timer task!");
+			return;
+		}
+
 		runAllTestSuites();
 	}
 
@@ -167,12 +172,8 @@ implements SessionBean
 	public void initialiseTestSystem()
 	throws Exception
 	{
-//		// TODO remove this debug code
-//		if (!"chezfrancois.jfire.org".equals(getOrganisationID()))
-//			return;
-//		// end debug code
-
-		if (getRootOrganisationID().equals(getOrganisationID())) // do not run tests on the root organisation
+		// do not run tests on the root organisation
+		if (hasRootOrganisation() && getRootOrganisationID().equals(getOrganisationID()))
 			return;
 
 		JFireServerManager jfsm = getJFireServerManager();
@@ -266,6 +267,54 @@ implements SessionBean
 		}
 	}
 
+	private static Map<String, Integer> organisationID2testSuiteRunningCounter = new HashMap<String, Integer>();
+
+	protected static int getTestSuiteRunningCounter(String organisationID)
+	{
+		synchronized (organisationID2testSuiteRunningCounter) {
+			Integer counter = organisationID2testSuiteRunningCounter.get(organisationID);
+			if (counter == null)
+				return 0;
+
+			return counter.intValue();
+		}
+	}
+
+	private static int incrementTestSuiteRunningCounter(String organisationID)
+	{
+		synchronized (organisationID2testSuiteRunningCounter) {
+			Integer counter = organisationID2testSuiteRunningCounter.get(organisationID);
+			if (counter == null)
+				counter = 1;
+			else
+				counter = counter.intValue() + 1;
+
+			organisationID2testSuiteRunningCounter.put(organisationID, counter);
+			return counter.intValue();
+		}
+	}
+
+	private static int decrementTestSuiteRunningCounter(String organisationID)
+	{
+		synchronized (organisationID2testSuiteRunningCounter) {
+			Integer counter = organisationID2testSuiteRunningCounter.get(organisationID);
+			if (counter == null)
+				throw new IllegalStateException("No counter found! Cannot decrement! You're trying to decrement without having incremented first!");
+
+			counter = counter.intValue() - 1;
+
+			if (counter.intValue() < 0)
+				throw new IllegalStateException("Counter became negative!");
+
+			if (counter.intValue() == 0)
+				organisationID2testSuiteRunningCounter.remove(organisationID);
+			else
+				organisationID2testSuiteRunningCounter.put(organisationID, counter);
+
+			return counter.intValue();
+		}
+	}
+
 	/**
 	 * Runs all TestSuits and TestCases found in the classpath under org.nightlabs.jfire.testsuite.
 	 * This method can be called by clients and is called by the {@link JFireTestRunnerInvocation} on every startup.
@@ -300,40 +349,47 @@ implements SessionBean
 		if (userDescriptorOnStart == null)
 			throw new IllegalStateException("SecurityReflector.getUserDescriptor() returned null!");
 
-		// Run the suites
-		for (JFireTestListener listener : listeners) {
-			try {
-				listener.startTestRun();
-			} catch (Exception e) {
-				logger.error("Error notifying JFireTestListener!", e);
-				continue;
-			}
-			UserDescriptor userDescriptorNow = SecurityReflector.getUserDescriptor();
-			if (!userDescriptorOnStart.equals(userDescriptorNow))
-				throw new IllegalStateException("SecurityReflector.getUserDescriptor() returned a different user now (after having called listener.startTestRun()) than at the beginning of this method! listener=" + listener + " start=" + userDescriptorOnStart + " now=" + userDescriptorNow);
-		}
-		for (TestSuite suite : testSuites) {
-			JFireTestRunner runner = new JFireTestRunner();
+		incrementTestSuiteRunningCounter(userDescriptorOnStart.getOrganisationID());
+		try {
+
+			// Run the suites
 			for (JFireTestListener listener : listeners) {
-				runner.addListener(listener);
+				try {
+					listener.startTestRun();
+				} catch (Exception e) {
+					logger.error("Error notifying JFireTestListener!", e);
+					continue;
+				}
+				UserDescriptor userDescriptorNow = SecurityReflector.getUserDescriptor();
+				if (!userDescriptorOnStart.equals(userDescriptorNow))
+					throw new IllegalStateException("SecurityReflector.getUserDescriptor() returned a different user now (after having called listener.startTestRun()) than at the beginning of this method! listener=" + listener + " start=" + userDescriptorOnStart + " now=" + userDescriptorNow);
+			}
+			for (TestSuite suite : testSuites) {
+				JFireTestRunner runner = new JFireTestRunner();
+				for (JFireTestListener listener : listeners) {
+					runner.addListener(listener);
+				}
+
+				runner.run(suite);
+
+				UserDescriptor userDescriptorNow = SecurityReflector.getUserDescriptor();
+				if (!userDescriptorOnStart.equals(userDescriptorNow))
+					throw new IllegalStateException("SecurityReflector.getUserDescriptor() returned a different user now (after having called runner.run(suite)) than at the beginning of this method! suite=" + suite + " start=" + userDescriptorOnStart + " now=" + userDescriptorNow);
+			}
+			for (JFireTestListener listener : listeners) {
+				try {
+					listener.endTestRun();
+				} catch (Exception e) {
+					logger.error("Error notifying JFireTestListener!", e);
+					continue;
+				}
+				UserDescriptor userDescriptorNow = SecurityReflector.getUserDescriptor();
+				if (!userDescriptorOnStart.equals(userDescriptorNow))
+					throw new IllegalStateException("SecurityReflector.getUserDescriptor() returned a different user now (after having called listener.endTestRun()) than at the beginning of this method! listener=" + listener + " start=" + userDescriptorOnStart + " now=" + userDescriptorNow);
 			}
 
-			runner.run(suite);
-
-			UserDescriptor userDescriptorNow = SecurityReflector.getUserDescriptor();
-			if (!userDescriptorOnStart.equals(userDescriptorNow))
-				throw new IllegalStateException("SecurityReflector.getUserDescriptor() returned a different user now (after having called runner.run(suite)) than at the beginning of this method! suite=" + suite + " start=" + userDescriptorOnStart + " now=" + userDescriptorNow);
-		}
-		for (JFireTestListener listener : listeners) {
-			try {
-				listener.endTestRun();
-			} catch (Exception e) {
-				logger.error("Error notifying JFireTestListener!", e);
-				continue;
-			}
-			UserDescriptor userDescriptorNow = SecurityReflector.getUserDescriptor();
-			if (!userDescriptorOnStart.equals(userDescriptorNow))
-				throw new IllegalStateException("SecurityReflector.getUserDescriptor() returned a different user now (after having called listener.endTestRun()) than at the beginning of this method! listener=" + listener + " start=" + userDescriptorOnStart + " now=" + userDescriptorNow);
+		} finally {
+			decrementTestSuiteRunningCounter(userDescriptorOnStart.getOrganisationID());
 		}
 	}
 
