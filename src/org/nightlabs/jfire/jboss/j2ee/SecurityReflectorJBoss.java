@@ -28,14 +28,12 @@ package org.nightlabs.jfire.jboss.j2ee;
 
 import java.security.Principal;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.jdo.JDOHelper;
 import javax.jdo.PersistenceManager;
-import javax.jdo.Query;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
@@ -43,10 +41,10 @@ import org.jboss.security.SecurityAssociation;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.Lookup;
 import org.nightlabs.jfire.security.Authority;
+import org.nightlabs.jfire.security.AuthorizedObjectRef;
 import org.nightlabs.jfire.security.NoUserException;
 import org.nightlabs.jfire.security.RoleRef;
 import org.nightlabs.jfire.security.SecurityReflector;
-import org.nightlabs.jfire.security.UserLocal;
 import org.nightlabs.jfire.security.id.AuthorityID;
 import org.nightlabs.jfire.security.id.RoleID;
 import org.nightlabs.jfire.security.id.UserLocalID;
@@ -103,23 +101,32 @@ public class SecurityReflectorJBoss extends SecurityReflector
 				pm = new Lookup(userDescriptor.getOrganisationID()).getPersistenceManager();
 				closePM = true;
 			}
-
-			Query q = pm.newQuery(RoleRef.class);
-			q.setResult("JDOHelper.getObjectId(this.role)");
-			q.setFilter("this.authorizedObjectRef.authority == :authority &&");
-			q.setFilter("this.authorizedObjectRef.authorizedObject == :userLocal");
+			// FIXME: DATANULEUS WORKAROUND: The commented code somehow returns all RoleIDs instead of 
+			// those only for the given authority and user  
+			
+//			Query q = pm.newQuery(RoleRef.class);
+//			q.setResult("JDOHelper.getObjectId(this.role)");
+//			q.setFilter("this.authorizedObjectRef.authority == :authority &&");
+//			q.setFilter("this.authorizedObjectRef.authorizedObject == :userLocal");
+//
+//			Authority authority = (Authority) pm.getObjectById(authorityID);
+//			UserLocal userLocal = (UserLocal) pm.getObjectById(UserLocalID.create(userDescriptor.getOrganisationID(), userDescriptor.getUserID(), userDescriptor.getOrganisationID()));
+//
+//			Map<String, Object> params = new HashMap<String, Object>(2);
+//			params.put("authority", authority);
+//			params.put("userLocal", userLocal);
+//
+//			return new HashSet<RoleID>((Collection<? extends RoleID>) q.executeWithMap(params));
 
 			Authority authority = (Authority) pm.getObjectById(authorityID);
-			UserLocal userLocal = (UserLocal) pm.getObjectById(UserLocalID.create(userDescriptor.getOrganisationID(), userDescriptor.getUserID(), userDescriptor.getOrganisationID()));
-
-			Map<String, Object> params = new HashMap<String, Object>(2);
-			params.put("authority", authority);
-			params.put("userLocal", userLocal);
-
-			return new HashSet<RoleID>((Collection<? extends RoleID>) q.executeWithMap(params));
-
-//			AuthorizedObjectRef authorizedObjectRef = authority.getAuthorizedObjectRef(UserLocalID.create(userDescriptor.getOrganisationID(), userDescriptor.getUserID()));
-//			authorizedObjectRef.getRoleRefs()
+			AuthorizedObjectRef authorizedObjectRef = authority.getAuthorizedObjectRef(
+					UserLocalID.create(userDescriptor.getOrganisationID(), userDescriptor.getUserID(), userDescriptor.getOrganisationID()));
+			Collection<RoleRef> refs = authorizedObjectRef.getRoleRefs();
+			Set<RoleID> roleIDs = new HashSet<RoleID>();
+			for (RoleRef roleRef : refs) {
+				roleIDs.add((RoleID) JDOHelper.getObjectId(roleRef.getRole()));
+			}
+			return roleIDs;
 		} finally {
 			if (closePM)
 				pm.close();
