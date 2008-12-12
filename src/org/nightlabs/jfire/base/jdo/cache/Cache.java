@@ -1438,14 +1438,25 @@ public class Cache
 		Key key = new Key(scope, objectID, fetchGroups, maxFetchDepth);
 
 		if (logger.isDebugEnabled())
-			logger.debug("Putting object into cache. key: " + key.toString());
+			logger.debug("_put: Putting object into cache. key: " + key.toString());
 
 		synchronized (this) {
 			// remove the old carrier - if existing
 			Carrier oldCarrier = key2Carrier.get(key);
 			if (oldCarrier != null) {
+				Object oldObject = oldCarrier.getObject();
+				if (NLJDOHelper.compareObjectVersions(oldObject, object) <= 0) {
+					if (logger.isDebugEnabled()) {
+						if (logger.isTraceEnabled())
+							logger.trace("_put: The old object in the cache is newer than the new object; ignoring put request. key: " + key.toString(), new Exception("StackTrace"));
+						else
+							logger.debug("_put: The old object in the cache is newer than the new object; ignoring put request. key: " + key.toString());
+					}
+					return;
+				}
+
 				if (logger.isDebugEnabled())
-					logger.info("There was an old carrier for the same key in the cache; removing it. key: " + key.toString());
+					logger.debug("_put: There was an old carrier for the same key in the cache; removing it. key: " + key.toString());
 
 				oldCarrier.setCarrierContainer(null);
 			}
