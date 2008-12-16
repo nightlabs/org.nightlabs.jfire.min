@@ -59,16 +59,12 @@ extends AbstractInterceptor
 		} catch (Exception x) {
 			Transaction tx = mi.getTransaction();
 			if (tx != null) {
-				logger.info("invoke: Caught exception and forcing rollback.");
+				logger.warn("invoke: Caught exception and forcing rollback.", x);
 				tx.setRollbackOnly();
 			}
 			else
-				logger.info("invoke: Caught exception, but won't force rollback, because there is no transaction.");
+				logger.warn("invoke: Caught exception, but won't force rollback, because there is no transaction.", x);
 
-			if (logger.isDebugEnabled()) {
-				logger.debug("The exception caught was: ", x);
-			}
-			
 			// we sleep a little bit before escalating, because the problem might need a bit time to solve (e.g. a subsystem to restart)
 			try {
 				Thread.sleep(1000);
@@ -79,5 +75,5 @@ extends AbstractInterceptor
 			throw x;
 		}
 	}
-	
+
 }
