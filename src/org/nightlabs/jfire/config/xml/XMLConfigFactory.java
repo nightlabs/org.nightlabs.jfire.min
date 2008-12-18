@@ -4,7 +4,6 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.nightlabs.annotation.Implement;
 import org.nightlabs.config.Config;
 import org.nightlabs.config.ConfigException;
 import org.nightlabs.config.ConfigFactory;
@@ -16,7 +15,7 @@ import org.nightlabs.jfire.servermanager.JFireServerManager;
 
 /**
  * This implementation of {@link ConfigFactory} allows to call <code>Config.sharedInstance()</code>
- * in the server and thus use {@link DateFormatter} and {@link NumberFormatter}. It creates/reads
+ * in the server and thus use {@link org.nightlabs.l10n.DateFormatter} and {@link org.nightlabs.l10n.NumberFormatter}. It creates/reads
  * one separate {@link Config} for every user.
  * <p>
  * Note, that you should still NOT use the XML config in the server!!! The two classes mentioned above
@@ -46,7 +45,6 @@ extends ConfigFactory
 	}
 
 	@Override
-	@Implement
 	public Config createSharedInstance(File configFile)
 			throws ConfigException
 	{
@@ -54,7 +52,6 @@ extends ConfigFactory
 	}
 
 	@Override
-	@Implement
 	public Config createSharedInstance(File configFile, boolean loadConfFile)
 			throws ConfigException
 	{
@@ -62,7 +59,6 @@ extends ConfigFactory
 	}
 
 	@Override
-	@Implement
 	public boolean isSharedInstanceExisting()
 	{
 		return true;
@@ -71,7 +67,6 @@ extends ConfigFactory
 	private File userConfigBaseDir = null;
 
 	@Override
-	@Implement
 	public Config sharedInstance(boolean throwExceptionIfNotExisting)
 	{
 		UserDescriptor userDescriptor = SecurityReflector.getUserDescriptor();
