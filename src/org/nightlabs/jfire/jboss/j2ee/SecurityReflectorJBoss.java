@@ -45,6 +45,7 @@ import org.nightlabs.jfire.security.AuthorizedObjectRef;
 import org.nightlabs.jfire.security.NoUserException;
 import org.nightlabs.jfire.security.RoleRef;
 import org.nightlabs.jfire.security.SecurityReflector;
+import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.security.id.AuthorityID;
 import org.nightlabs.jfire.security.id.RoleID;
 import org.nightlabs.jfire.security.id.UserLocalID;
@@ -88,7 +89,6 @@ public class SecurityReflectorJBoss extends SecurityReflector
 		return null; // null is a valid argument e.g. for new InitialContext(null) and it's documented in SecurityReflector.getInitialContextProperties() that null is a valid result
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	protected Set<RoleID> _getRoleIDs(AuthorityID authorityID) throws NoUserException
 	{
@@ -119,12 +119,21 @@ public class SecurityReflectorJBoss extends SecurityReflector
 //			return new HashSet<RoleID>((Collection<? extends RoleID>) q.executeWithMap(params));
 
 			Authority authority = (Authority) pm.getObjectById(authorityID);
+			Set<RoleID> roleIDs = new HashSet<RoleID>();
 			AuthorizedObjectRef authorizedObjectRef = authority.getAuthorizedObjectRef(
 					UserLocalID.create(userDescriptor.getOrganisationID(), userDescriptor.getUserID(), userDescriptor.getOrganisationID()));
-			Collection<RoleRef> refs = authorizedObjectRef.getRoleRefs();
-			Set<RoleID> roleIDs = new HashSet<RoleID>();
-			for (RoleRef roleRef : refs) {
-				roleIDs.add((RoleID) JDOHelper.getObjectId(roleRef.getRole()));
+			
+			if (authorizedObjectRef == null) {
+				// if the current user doesn't have any roles assigned (also not via group-membership), 
+				// we look for the assignments for _Other_
+				authorizedObjectRef = authority.getAuthorizedObjectRef(
+						UserLocalID.create(userDescriptor.getOrganisationID(), User.USER_ID_OTHER, userDescriptor.getOrganisationID()));
+			}
+			if (authorizedObjectRef != null) {
+				Collection<RoleRef> refs = authorizedObjectRef.getRoleRefs();
+				for (RoleRef roleRef : refs) {
+					roleIDs.add((RoleID) JDOHelper.getObjectId(roleRef.getRole()));
+				}
 			}
 			return roleIDs;
 		} finally {
