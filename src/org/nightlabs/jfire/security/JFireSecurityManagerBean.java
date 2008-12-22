@@ -1356,6 +1356,8 @@ implements SessionBean
 			if (ASSERT_CONSISTENCY_BEFORE)
 				assertConsistency(pm);
 
+			Authority.assertAuthorityNotManaged(pm, (AuthorityID) JDOHelper.getObjectId(authority));
+			
 			// authorize
 			Authority authorityForAuthorization = null;
 			try {
