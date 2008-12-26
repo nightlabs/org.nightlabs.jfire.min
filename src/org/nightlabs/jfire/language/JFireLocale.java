@@ -32,7 +32,7 @@ extends NLLocale
 			new HashMap<String, UserLocaleWrapper>()
 	);
 
-	private static final long userLocaleCacheLifetimeMSec = 10 * 60 * 1000; // 10 minutes
+	private static final long userLocaleCacheLifetimeMSec = 5 * 60 * 1000; // 5 minutes
 
 	@Override
 	protected Locale _getDefault()
