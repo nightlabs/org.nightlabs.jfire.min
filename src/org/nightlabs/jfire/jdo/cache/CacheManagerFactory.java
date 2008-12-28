@@ -77,12 +77,7 @@ public class CacheManagerFactory
 		implements Serializable
 {
 	private static final long serialVersionUID = 1L;
-
-	/**
-	 * LOG4J logger used by this class
-	 */
-	private static final Logger logger = Logger
-			.getLogger(CacheManagerFactory.class);
+	private static final Logger logger = Logger.getLogger(CacheManagerFactory.class);
 
 	public static final String JNDI_PREFIX = "java:/jfire/cacheManagerFactory/";
 
@@ -158,7 +153,7 @@ public class CacheManagerFactory
 		/**
 		 * This method checks not only for <tt>super.isInterrupted()</tt>, but
 		 * additionally for {@link #terminated}.
-		 * 
+		 *
 		 * @see java.lang.Thread#isInterrupted()
 		 * @see #interrupt()
 		 */
@@ -171,7 +166,7 @@ public class CacheManagerFactory
 		/**
 		 * This method calls <tt>super.interrupt()</tt>, after setting
 		 * {@link #terminated} to <tt>true</tt>.
-		 * 
+		 *
 		 * @see java.lang.Thread#interrupt()
 		 * @see #isInterrupted()
 		 */
@@ -358,7 +353,7 @@ public class CacheManagerFactory
 		/**
 		 * This method checks not only for <tt>super.isInterrupted()</tt>, but
 		 * additionally for {@link #terminated}.
-		 * 
+		 *
 		 * @see java.lang.Thread#isInterrupted()
 		 * @see #interrupt()
 		 */
@@ -371,7 +366,7 @@ public class CacheManagerFactory
 		/**
 		 * This method calls <tt>super.interrupt()</tt>, after setting
 		 * {@link #terminated} to <tt>true</tt>.
-		 * 
+		 *
 		 * @see java.lang.Thread#interrupt()
 		 * @see #isInterrupted()
 		 */
@@ -451,7 +446,7 @@ public class CacheManagerFactory
 		/**
 		 * This method checks not only for <tt>super.isInterrupted()</tt>, but
 		 * additionally for {@link #terminated}.
-		 * 
+		 *
 		 * @see java.lang.Thread#isInterrupted()
 		 * @see #interrupt()
 		 */
@@ -464,7 +459,7 @@ public class CacheManagerFactory
 		/**
 		 * This method calls <tt>super.interrupt()</tt>, after setting
 		 * {@link #terminated} to <tt>true</tt>.
-		 * 
+		 *
 		 * @see java.lang.Thread#interrupt()
 		 * @see #isInterrupted()
 		 */
@@ -722,7 +717,7 @@ public class CacheManagerFactory
 					if (!lifecycleStageMatches) {
 						if (logger.isDebugEnabled())
 							logger.debug("after_addLifecycleListenerFilters:     lifecycleStage does not match. filterID="+filter.getFilterID() + " dirtyObjectID=" + dirtyObjectID);
-						
+
 						continue;
 					}
 
@@ -1069,7 +1064,7 @@ public class CacheManagerFactory
 	 * {@link LocalNewListener}s and {@link LocalDeletedListener}s are, however,
 	 * triggered already here.
 	 * </p>
-	 * 
+	 *
 	 * @param sessionID
 	 *          The session which made the objects dirty / created them / deleted
 	 *          them.
@@ -1198,7 +1193,7 @@ public class CacheManagerFactory
 	 * This method is called by the {@link CacheManagerFactory.NotificationThread}.
 	 * This way {@link #addDirtyObjectIDs(Collection)} gets faster.
 	 * </p>
-	 * 
+	 *
 	 * @param objectIDs
 	 *          A <tt>Collection</tt> of JDO object IDs.
 	 */
@@ -1364,7 +1359,7 @@ public class CacheManagerFactory
 				}
 			}
 		}
-		
+
 		distributeDirtyObjectIDs_filter(sessionID2FilterID2FilterWithDirtyObjectIDs);
 	}
 
@@ -1444,7 +1439,7 @@ public class CacheManagerFactory
 								}
 							} // if (handleTx) {
 						}
-						
+
 					} finally {
 						loginContext.logout();
 					}
@@ -1610,17 +1605,41 @@ public class CacheManagerFactory
 	// }
 	// }
 
+	private static final long objectID2ClassMapLifetimeMSec = 1000L * 60L * 30L; // keep each Map active for 30 minutes
+	private static final int objectID2ClassMapCount = 10; // have this number of maps in the history (i.e. 10 history + 1 active).
+
+	private LinkedList<Map<Object, Class<?>>> objectID2ClassHistory = new LinkedList<Map<Object,Class<?>>>();
+
 	/**
 	 * This map caches the classes of the jdo objects referenced by already known
 	 * object IDs. key: object-id, value: Class classOfJDOObject
 	 */
 	private Map<Object, Class<?>> objectID2Class = new HashMap<Object, Class<?>>();
+	private long objectID2ClassCreateTimestamp = System.currentTimeMillis();
+
+	// The Map objectID2Class becomes quite huge (just had about 240 000 entries in it). Thus, I added a mechanism to remove
+	// elements again after a while. Marco.
+
+	private void rollObjectID2ClassMapIfExpired()
+	{
+		synchronized (objectID2ClassHistory) {
+			if (System.currentTimeMillis() - objectID2ClassCreateTimestamp < objectID2ClassMapLifetimeMSec)
+				return;
+
+			objectID2ClassHistory.addFirst(objectID2Class);
+			objectID2Class = new HashMap<Object, Class<?>>();
+			objectID2ClassCreateTimestamp = System.currentTimeMillis();
+
+			while (objectID2ClassHistory.size() > objectID2ClassMapCount)
+				objectID2ClassHistory.removeLast();
+		}
+	}
 
 	/**
 	 * This method must be called by the {@link JdoCacheBridge} for all objectIDs
 	 * it intends to notify about, BEFORE calling
 	 * {@link #addDirtyObjectIDs(String, Collection, org.nightlabs.jfire.jdo.notification.JDOLifecycleState)}.
-	 * 
+	 *
 	 * @param objectID2ClassMap
 	 *          A map from JDO object-id to class of the referenced JDO object.
 	 */
@@ -1629,14 +1648,16 @@ public class CacheManagerFactory
 		if (objectID2ClassMap == null)
 			throw new IllegalArgumentException("objectID2ClassMap must not be null");
 
-		synchronized (objectID2Class) {
+		synchronized (objectID2ClassHistory) {
+			rollObjectID2ClassMapIfExpired();
+
 			objectID2Class.putAll(objectID2ClassMap);
 		}
 	}
 
 	/**
-	 * This method is only usable for objectIDs that have been passed to
-	 * {@link #ensureAllClassesAreKnown(Set)} before.
+	 * This method is only usable for objectIDs that have been registered (via {@link #addObjectID2ClassMap(Map)}) before.
+	 * It delegates to {@link #getClassByObjectID(Object, boolean)} with {@code throwExceptionIfNotFound == true}.
 	 */
 	public Class<?> getClassByObjectID(Object objectID)
 	{
@@ -1645,15 +1666,27 @@ public class CacheManagerFactory
 
 	public Class<?> getClassByObjectID(Object objectID, boolean throwExceptionIfNotFound)
 	{
-		Class<?> res;
-		synchronized (objectID2Class) {
+		Class<?> res = null;
+		synchronized (objectID2ClassHistory) {
+			rollObjectID2ClassMapIfExpired();
+
 			res = objectID2Class.get(objectID);
+
+			if (res == null) {
+				for (Map<Object, Class<?>> o2c : objectID2ClassHistory) {
+					res = o2c.get(objectID);
+					if (res != null) {
+						objectID2Class.put(objectID, res); // refresh (put into active map)
+						break;
+					}
+				}
+			}
 		}
 
 		if (throwExceptionIfNotFound && res == null)
 			throw new IllegalStateException(
-					"ObjectID is not known! It seems, addObjectID2ClassMap(...) has not been called or didn't contain all oids! objectID: "
-							+ objectID);
+					"ObjectID is not known! It seems, addObjectID2ClassMap(...) has not been called or didn't contain all oids! objectID: " + objectID
+			);
 
 		return res;
 	}
@@ -1896,7 +1929,7 @@ public class CacheManagerFactory
 //	        at org.jboss.proxy.ejb.StatelessSessionInterceptor.invoke(StatelessSessionInterceptor.java:112)
 //	        at org.nightlabs.authentication.jboss.CascadedAuthenticationClientInterceptorDelegate$CapsuledCaller.run(CascadedAuthenticationClientInterceptorDelegate.java:105)
 	}
-	
+
 
 //	private long nextDirtyObjectIDSerial = -Long.MAX_VALUE + 1000; // the client generates synthetic DirtyObjectIDs for dependent objects (i.e. carriers) with -Long.MAX_VALUE
 ////	private long nextDirtyObjectIDSerial = 0;
@@ -1919,10 +1952,10 @@ public class CacheManagerFactory
 	 * Because this method tries to collect multiple (by returning only at
 	 * predefined time spots and by reacting only at the end of a transaction), it
 	 * might return many object ids.
-	 * 
+	 *
 	 * @param userID
 	 *          TODO
-	 * 
+	 *
 	 * @return Returns either <tt>null</tt> if nothing changed or a
 	 *         {@link NotificationBundle} of object ids. Hence
 	 *         {@link NotificationBundle#isEmpty()} will never return
