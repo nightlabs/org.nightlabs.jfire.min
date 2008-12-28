@@ -13,6 +13,7 @@ import javax.jdo.PersistenceManager;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.jfire.base.Lookup;
+import org.nightlabs.jfire.organisation.LocalOrganisation;
 import org.nightlabs.jfire.person.Person;
 import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.security.User;
@@ -79,12 +80,23 @@ extends NLLocale
 			}
 			if (person != null)
 				return person.getLocale();
-			else {
-				if (logger.isDebugEnabled())
-					logger.debug("getUserLocale: The user does not have a person assigned! organisationID=" + userDescriptor.getOrganisationID() + " userID=" + userDescriptor.getUserID());
 
-				return Locale.getDefault();
-			}
+			if (logger.isDebugEnabled())
+				logger.debug("getUserLocale: The user does not have a person assigned! organisationID=" + userDescriptor.getOrganisationID() + " userID=" + userDescriptor.getUserID());
+
+			// The user has no person assigned => fall back to organisation's locale.
+			LocalOrganisation localOrganisation = LocalOrganisation.getLocalOrganisation(pm);
+			if (!userDescriptor.getOrganisationID().equals(localOrganisation.getOrganisationID()))
+				throw new IllegalStateException("currentUser.organisationID != localOrganisation.organisationID :: " + userDescriptor.getOrganisationID() + " != " + localOrganisation.getOrganisationID());
+
+			person = localOrganisation.getOrganisation().getPerson();
+			if (person != null)
+				return person.getLocale();
+
+			if (logger.isDebugEnabled())
+				logger.debug("getUserLocale: The LocalOrganisation does not have a person assigned! organisationID=" + userDescriptor.getOrganisationID());
+
+			return Locale.getDefault();
 		} finally {
 			pm.close();
 		}
