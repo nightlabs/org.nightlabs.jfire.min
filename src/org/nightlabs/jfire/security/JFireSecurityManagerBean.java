@@ -147,16 +147,25 @@ implements SessionBean
 
 		PersistenceManager pm = this.getPersistenceManager();
 		try {
-			if (ASSERT_CONSISTENCY_BEFORE)
-				assertConsistency(pm);
+			boolean successful = false;
+			SecurityChangeController.beginChanging();
+			try {
+				if (ASSERT_CONSISTENCY_BEFORE)
+					assertConsistency(pm);
 
-			userSecurityGroup = pm.makePersistent(userSecurityGroup);
+				userSecurityGroup = pm.makePersistent(userSecurityGroup);
 
-			// ensure that the group has an AuthorizedObjectRef in the organisation-authority (everyone should have one).
-			Authority.getOrganisationAuthority(pm).createAuthorizedObjectRef(userSecurityGroup);
+				// ensure that the group has an AuthorizedObjectRef in the organisation-authority (everyone should have one).
+				Authority.getOrganisationAuthority(pm).createAuthorizedObjectRef(userSecurityGroup);
 
-			if (ASSERT_CONSISTENCY_AFTER)
-				assertConsistency(pm);
+				if (ASSERT_CONSISTENCY_AFTER)
+					assertConsistency(pm);
+
+				successful = true;
+			} finally {
+				SecurityChangeController.endChanging(successful);
+			}
+
 
 			if (!get)
 				return null;
@@ -213,24 +222,32 @@ implements SessionBean
 
 		PersistenceManager pm = this.getPersistenceManager();
 		try {
-			if (ASSERT_CONSISTENCY_BEFORE)
-				assertConsistency(pm);
+			boolean successful = false;
+			SecurityChangeController.beginChanging();
+			try {
+				if (ASSERT_CONSISTENCY_BEFORE)
+					assertConsistency(pm);
 
-			user = pm.makePersistent(user);
+				user = pm.makePersistent(user);
 
-			if (user.getUserLocal() == null)
-				new UserLocal(user); // self-registering
+				if (user.getUserLocal() == null)
+					new UserLocal(user); // self-registering
 
-			// ensure that the user has a AuthorizedObjectRef in the organisation-authority (everyone should have one).
-			Authority.getOrganisationAuthority(pm).createAuthorizedObjectRef(user.getUserLocal());
+				// ensure that the user has a AuthorizedObjectRef in the organisation-authority (everyone should have one).
+				Authority.getOrganisationAuthority(pm).createAuthorizedObjectRef(user.getUserLocal());
 
-			if (newPassword != null)
-				user.getUserLocal().setPasswordPlain(newPassword);
+				if (newPassword != null)
+					user.getUserLocal().setPasswordPlain(newPassword);
 
-			ConfigSetup.ensureAllPrerequisites(pm);
+				ConfigSetup.ensureAllPrerequisites(pm);
 
-			if (ASSERT_CONSISTENCY_AFTER)
-				assertConsistency(pm);
+				if (ASSERT_CONSISTENCY_AFTER)
+					assertConsistency(pm);
+
+				successful = true;
+			} finally {
+				SecurityChangeController.endChanging(successful);
+			}
 
 			if (!get)
 				return null;
@@ -1357,7 +1374,7 @@ implements SessionBean
 				assertConsistency(pm);
 
 			Authority.assertAuthorityNotManaged(pm, (AuthorityID) JDOHelper.getObjectId(authority));
-			
+
 			// authorize
 			Authority authorityForAuthorization = null;
 			try {
