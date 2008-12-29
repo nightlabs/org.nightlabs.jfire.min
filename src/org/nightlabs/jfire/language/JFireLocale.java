@@ -85,7 +85,16 @@ extends NLLocale
 				logger.debug("getUserLocale: The user does not have a person assigned! organisationID=" + userDescriptor.getOrganisationID() + " userID=" + userDescriptor.getUserID());
 
 			// The user has no person assigned => fall back to organisation's locale.
-			LocalOrganisation localOrganisation = LocalOrganisation.getLocalOrganisation(pm);
+			LocalOrganisation localOrganisation = null;
+			try {
+				localOrganisation = LocalOrganisation.getLocalOrganisation(pm);
+			} catch (JDOObjectNotFoundException e) {
+				// The local organisation could not be found, this is only legal when we are currently creating 
+				// the organisation for this datastore
+				// TODO: Is there a way to find out whether we currently create the local organisation?
+				logger.warn("Could not get the local organisation from the datastore, will return System Locale", e);
+				return Locale.getDefault();
+			}
 			if (!userDescriptor.getOrganisationID().equals(localOrganisation.getOrganisationID()))
 				throw new IllegalStateException("currentUser.organisationID != localOrganisation.organisationID :: " + userDescriptor.getOrganisationID() + " != " + localOrganisation.getOrganisationID());
 
