@@ -30,10 +30,10 @@ import java.util.LinkedList;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.nightlabs.jfire.base.JFireEjbUtil;
 import org.nightlabs.jfire.idgenerator.IDGenerator;
 import org.nightlabs.jfire.idgenerator.IDGeneratorHelper;
 import org.nightlabs.jfire.idgenerator.IDGeneratorHelperBean;
-import org.nightlabs.jfire.idgenerator.IDGeneratorHelperUtil;
 import org.nightlabs.jfire.security.SecurityReflector;
 
 /**
@@ -104,7 +104,7 @@ public class IDGeneratorClient
 					if (logger.isDebugEnabled()) {
 						logger.debug("Quering server for new IDs. Have " + cachedIDs.size() + " entries, need " + quantity + ". Namespace: " + namespace);
 					}
-					IDGeneratorHelper idGeneratorHelper = IDGeneratorHelperUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
+					IDGeneratorHelper idGeneratorHelper = JFireEjbUtil.getBean(IDGeneratorHelper.class, SecurityReflector.getInitialContextProperties());
 					long[] nextIDs = idGeneratorHelper.clientNextIDs(namespace, cachedIDs.size(), quantity);
 					for (int i = 0; i < nextIDs.length; i++) {
 						cachedIDs.add(new Long(nextIDs[i]));
