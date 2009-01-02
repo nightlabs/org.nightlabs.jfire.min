@@ -61,12 +61,19 @@ public class JFireEjbUtil
 
 		public boolean isPingRequired()
 		{
+			if (lastPingTimestamp == Long.MIN_VALUE)
+				return false;
+
 			return (System.currentTimeMillis() - lastPingTimestamp) > PING_PERIOD;
 		}
 
 		public void updatePingTimestamp()
 		{
 			lastPingTimestamp = System.currentTimeMillis();
+		}
+
+		public void deactivatePing() {
+			lastPingTimestamp = Long.MIN_VALUE;
 		}
 	}
 
@@ -107,13 +114,12 @@ public class JFireEjbUtil
 						if (pingMethod != null) {
 							try {
 								pingMethod.invoke(ejb, new Object[] { null });
+								instanceWrapper.updatePingTimestamp();
 							} catch (Throwable t) {
+								instanceWrapper.deactivatePing();
 								instanceWrapper = null;
 							}
 						}
-
-						if (instanceWrapper != null)
-							instanceWrapper.updatePingTimestamp();
 					} // if (instanceWrapper.isPingRequired()) {
 				} // if (instanceWrapper != null) {
 
