@@ -548,7 +548,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 * @param childID the {@link ConfigID} of the child's {@link Config}.
 	 * @param configModuleClass the Class of the ConfigModule to return.
 	 * @param moduleID the module ID in the case there is more than one instance of that ConfigModule.
-	 * @param autoCreate Whether the {@link ConfigModule} should be auto-created if not yet existing, 
+	 * @param autoCreate Whether the {@link ConfigModule} should be auto-created if not yet existing,
 	 *                   otherwise a {@link ConfigModuleNotFoundException} will be thrown.
 	 * @param fetchGroups the fetchGroups with which to detach the ConfigModule.
 	 * @param maxFetchDepth the maximum fetch depth while detaching.
@@ -579,7 +579,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 
 			ConfigGroup group = config.getConfigGroup();
 			ConfigModule groupsModule = null;
-			if (autoCreate) {				
+			if (autoCreate) {
 				groupsModule = group.createConfigModule(configModuleClass, moduleID);
 			} else {
 				groupsModule = group.getConfigModule(configModuleClass, moduleID);
@@ -939,7 +939,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 
 			pm.makePersistent(new EditLockType(JFireBaseEAR.EDIT_LOCK_TYPE_ID_CONFIG_MODULE));
 			pm.makePersistent(new EditLockType(JFireBaseEAR.EDIT_LOCK_TYPE_ID_CONFIG));
-			
+
 			// WORKAROUND JPOX Bug to avoid concurrent modification at runtime
 			pm.getExtent(ConfigModule.class, true);
 		} finally {
@@ -948,4 +948,13 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	}
 
 
+	/**
+	 * @ejb.interface-method
+	 * @ejb.transaction type="Supports"
+	 * @ejb.permission role-name="_Guest_"
+	 */
+	@Override
+	public String ping(String message) {
+		return super.ping(message);
+	}
 }

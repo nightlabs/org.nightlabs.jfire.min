@@ -50,7 +50,7 @@ import org.nightlabs.jfire.jdo.notification.persistent.id.PushNotifierID;
  *		name="jfire/ejb/JFireBaseBean/PersistentNotificationEJB"
  *		jndi-name="jfire/ejb/JFireBaseBean/PersistentNotificationEJB"
  *		type="Stateless"
- * 
+ *
  * @ejb.util generate="physical"
  * @ejb.transaction type="Required"
  */
@@ -76,6 +76,16 @@ extends BaseSessionBeanImpl implements SessionBean
 	 * @ejb.permission unchecked="true"
 	 */
 	public void ejbRemove() throws EJBException, RemoteException { }
+
+	/**
+	 * @ejb.interface-method
+	 * @ejb.transaction type="Supports"
+	 * @ejb.permission role-name="_Guest_"
+	 */
+	@Override
+	public String ping(String message) {
+		return super.ping(message);
+	}
 
 	/**
 	 * @ejb.interface-method

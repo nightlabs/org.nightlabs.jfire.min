@@ -56,6 +56,7 @@ import org.nightlabs.jdo.ObjectID;
 import org.nightlabs.jdo.query.JDOQueryCollectionDecorator;
 import org.nightlabs.jdo.query.QueryCollection;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
+import org.nightlabs.jfire.base.JFireEjbUtil;
 import org.nightlabs.jfire.config.ConfigSetup;
 import org.nightlabs.jfire.crossorganisationregistrationinit.Context;
 import org.nightlabs.jfire.jdo.notification.persistent.PersistentNotificationEJB;
@@ -124,6 +125,16 @@ implements SessionBean
 	 */
 	@Override
 	public void ejbRemove() throws EJBException, RemoteException { }
+
+	/**
+	 * @ejb.interface-method
+	 * @ejb.transaction type="Supports"
+	 * @ejb.permission role-name="_Guest_"
+	 */
+	@Override
+	public String ping(String message) {
+		return super.ping(message);
+	}
 
 	private static final boolean ASSERT_CONSISTENCY_BEFORE = true;
 	private static final boolean ASSERT_CONSISTENCY_AFTER = true;
@@ -1600,7 +1611,7 @@ implements SessionBean
 			PersistentNotificationEJB persistentNotificationEJB = PersistentNotificationEJBUtil.getHome(initialContextProperties).create();
 			persistentNotificationEJB.storeNotificationFilter(authorityNotificationFilter, false, null, 1);
 
-			JFireSecurityManager jfireSecurityManager = JFireSecurityManagerUtil.getHome(initialContextProperties).create();
+			JFireSecurityManager jfireSecurityManager = JFireEjbUtil.getBean(JFireSecurityManager.class, initialContextProperties);
 			Set<AuthorityID> authorityIDs = jfireSecurityManager.getAuthorityIDs(emitterOrganisationID, null);
 
 			authorityNotificationReceiver.replicateAuthorities(emitterOrganisationID, authorityIDs, null);

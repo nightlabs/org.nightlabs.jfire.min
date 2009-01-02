@@ -75,6 +75,16 @@ public abstract class ServerManagerBean
 	}
 
 	/**
+	 * @ejb.interface-method
+	 * @ejb.transaction type="Supports"
+	 * @ejb.permission role-name="_Guest_"
+	 */
+	@Override
+	public String ping(String message) {
+		return super.ping(message);
+	}
+
+	/**
 	 * @return Whether or not this server is new and needs setup.
 	 * @throws ModuleException
 	 *

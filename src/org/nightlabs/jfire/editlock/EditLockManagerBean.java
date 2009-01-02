@@ -128,7 +128,7 @@ implements SessionBean
 				task.setEnabled(true);
 				pm.makePersistent(task);
 			}
-			
+
 			// WORKAROUND JPOX Bug: to avoid ConcurrentModificationsException in JPOX
 			pm.getExtent(EditLock.class);
 		} finally {
@@ -166,7 +166,7 @@ implements SessionBean
 			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
 			if (fetchGroups != null)
 				pm.getFetchPlan().setGroups(fetchGroups);
-			
+
 			if (logger.isDebugEnabled()) {
 				logger.debug("acquireEditLock: " + editLockTypeID + " " + objectID);
 			}
@@ -223,4 +223,13 @@ implements SessionBean
 		}
 	}
 
+	/**
+	 * @ejb.interface-method
+	 * @ejb.transaction type="Supports"
+	 * @ejb.permission role-name="_Guest_"
+	 */
+	@Override
+	public String ping(String message) {
+		return super.ping(message);
+	}
 }

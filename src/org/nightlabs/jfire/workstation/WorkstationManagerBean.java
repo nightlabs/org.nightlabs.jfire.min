@@ -90,6 +90,16 @@ public class WorkstationManagerBean extends BaseSessionBeanImpl implements Sessi
 
 	/**
 	 * @ejb.interface-method
+	 * @ejb.transaction type="Supports"
+	 * @ejb.permission role-name="_Guest_"
+	 */
+	@Override
+	public String ping(String message) {
+		return super.ping(message);
+	}
+
+	/**
+	 * @ejb.interface-method
 	 * @ejb.permission role-name="org.nightlabs.jfire.workstation.storeWorkstation"
 	 * @ejb.transaction type="Required"
 	 */

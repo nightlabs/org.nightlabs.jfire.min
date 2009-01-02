@@ -74,6 +74,16 @@ public abstract class LanguageManagerBean extends BaseSessionBeanImpl implements
 	public void ejbRemove() throws EJBException, RemoteException { }
 
 	/**
+	 * @ejb.interface-method
+	 * @ejb.transaction type="Supports"
+	 * @ejb.permission role-name="_Guest_"
+	 */
+	@Override
+	public String ping(String message) {
+		return super.ping(message);
+	}
+
+	/**
 	 * Creates a language if it does not exist. If it exists already, nothing is done.
 	 *
 	 * @param languageID ISO639-2 language code

@@ -77,6 +77,16 @@ implements SessionBean
 	}
 
 	/**
+	 * @ejb.interface-method
+	 * @ejb.transaction type="Supports"
+	 * @ejb.permission role-name="_Guest_"
+	 */
+	@Override
+	public String ping(String message) {
+		return super.ping(message);
+	}
+
+	/**
 	 * This method finds out the type of a <tt>PersistenceCapable</tt> object defined
 	 * by its JDO object ID.
 	 *

@@ -29,7 +29,6 @@ package org.nightlabs.jfire.security;
 import java.io.Serializable;
 import java.util.Set;
 
-import org.nightlabs.jdo.ObjectID;
 import org.nightlabs.jfire.security.id.AuthorityID;
 import org.nightlabs.jfire.security.id.AuthorizedObjectID;
 import org.nightlabs.jfire.security.id.RoleGroupID;
