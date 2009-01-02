@@ -21,9 +21,9 @@ import org.nightlabs.jfire.security.id.UserID;
 import org.nightlabs.version.MalformedVersionException;
 
 /**
- * 
+ *
  * @author Marius Heinzmann - marius[at]nightlabs[dot]com
- * 
+ *
  * @ejb.bean
  * 	name="jfire/ejb/JFireQueryStore/QueryStoreManager"
  *	jndi-name="jfire/ejb/JFireQueryStore/QueryStoreManager"
@@ -31,9 +31,9 @@ import org.nightlabs.version.MalformedVersionException;
  *  transaction-type="Container"
  *
  * @ejb.util generate="physical"
- * 
+ *
  * @ejb.transaction	type="Required"
- * 
+ *
  */
 public abstract class QueryStoreManagerBean
 	extends BaseSessionBeanImpl
@@ -43,12 +43,12 @@ public abstract class QueryStoreManagerBean
 	 * The serial version id.
 	 */
 	private static final long serialVersionUID = 1L;
-	
+
 	/**
 	 * The logger used in this class.
 	 */
 	private static final Logger logger = Logger.getLogger(QueryStoreManagerBean.class);
-	
+
 	/**
 	 * @see org.nightlabs.jfire.base.BaseSessionBeanImpl#setSessionContext(javax.ejb.SessionContext)
 	 */
@@ -81,7 +81,17 @@ public abstract class QueryStoreManagerBean
 	 */
 	public void ejbRemove() throws EJBException, RemoteException
 	{}
-	
+
+	/**
+	 * @ejb.interface-method
+	 * @ejb.transaction type="Supports"
+	 * @ejb.permission role-name="_Guest_"
+	 */
+	@Override
+	public String ping(String message) {
+		return super.ping(message);
+	}
+
 	/**
 	 *
 	 * @ejb.interface-method
@@ -93,7 +103,7 @@ public abstract class QueryStoreManagerBean
 	{
 		return getQueryStores(Collections.singleton(storeID), fetchGroups, maxFetchDepth).iterator().next();
 	}
-	
+
 	/**
 	 *
 	 * @ejb.interface-method
@@ -108,16 +118,16 @@ public abstract class QueryStoreManagerBean
 		{
 			Collection<BaseQueryStore> stores = NLJDOHelper.getDetachedObjectList(pm, storeIDs, BaseQueryStore.class,
 				fetchGroups, maxFetchDepth);
-			
+
 			if (stores == null)
 				return null;
-			
+
 //			for (BaseQueryStore<?, ?> store : stores)
 //			{
 				// TODO: Authority check!
 //				store.getAuthority().getUserRef(SecurityReflector.getUserDescriptor().getCompleteUserID()).
 //			}
-			
+
 			return stores;
 		}
 		finally
@@ -125,14 +135,14 @@ public abstract class QueryStoreManagerBean
 			pm.close();
 		}
 	}
-	
+
 	/**
 	 *
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
 	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 */
-	public Collection<QueryStoreID> getQueryStoreIDs(Class<?> resultType, UserID ownerID, 
+	public Collection<QueryStoreID> getQueryStoreIDs(Class<?> resultType, UserID ownerID,
 		boolean allPublicAsWell, String[] fetchGroups, int maxFetchDepth)
 	{
 		PersistenceManager pm = getPersistenceManager();
@@ -143,7 +153,7 @@ public abstract class QueryStoreManagerBean
 			{
 				pm.getFetchPlan().setGroups(fetchGroups);
 			}
-			
+
 			return BaseQueryStore.getQueryStoreIDs(pm, resultType, ownerID, allPublicAsWell);
 		}
 		finally
@@ -151,14 +161,14 @@ public abstract class QueryStoreManagerBean
 			pm.close();
 		}
 	}
-	
+
 	/**
 	 *
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type="Required"
 	 */
-	public QueryStore storeQueryCollection(QueryStore queryStore, String[] fetchGroups, 
+	public QueryStore storeQueryCollection(QueryStore queryStore, String[] fetchGroups,
 		int maxFetchDepth, boolean get)
 	{
 		PersistenceManager pm = getPersistenceManager();
@@ -171,7 +181,7 @@ public abstract class QueryStoreManagerBean
 			pm.close();
 		}
 	}
-	
+
 	/**
 	 *
 	 * @ejb.interface-method
@@ -198,7 +208,7 @@ public abstract class QueryStoreManagerBean
 			pm.close();
 		}
 	}
-	
+
 	/**
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_System_"
@@ -213,9 +223,9 @@ public abstract class QueryStoreManagerBean
 			if (moduleMetaData != null)
 				return;
 
-			// create QueryStore tables. 
+			// create QueryStore tables.
 			pm.getExtent(BaseQueryStore.class);
-			
+
 			// version is {major}.{minor}.{release}-{patchlevel}-{suffix}
 			moduleMetaData = new ModuleMetaData("JFireQueryStore", "0.9.5-0-beta", "0.9.5-0-beta");
 			pm.makePersistent(moduleMetaData);
@@ -228,14 +238,14 @@ public abstract class QueryStoreManagerBean
 			pm.close();
 		}
 	}
-	
+
 	/**
 	 *
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
 	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 */
-	public QueryStoreID getDefaultQueryStoreID(Class<?> resultType, UserID ownerID, 
+	public QueryStoreID getDefaultQueryStoreID(Class<?> resultType, UserID ownerID,
 			String[] fetchGroups, int maxFetchDepth)
 	{
 		PersistenceManager pm = getPersistenceManager();
