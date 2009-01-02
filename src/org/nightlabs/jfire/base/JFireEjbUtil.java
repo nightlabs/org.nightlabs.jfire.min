@@ -109,6 +109,7 @@ public class JFireEjbUtil
 						try {
 							pingMethod = ejb.getClass().getMethod("ping", new Class[] { String.class });
 						} catch (NoSuchMethodException x) {
+							instanceWrapper.deactivatePing();
 							pingMethod = null; // not supported
 						}
 						if (pingMethod != null) {
