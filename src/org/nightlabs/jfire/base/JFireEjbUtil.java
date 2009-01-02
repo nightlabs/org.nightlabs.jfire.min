@@ -117,7 +117,6 @@ public class JFireEjbUtil
 								pingMethod.invoke(ejb, new Object[] { null });
 								instanceWrapper.updatePingTimestamp();
 							} catch (Throwable t) {
-								instanceWrapper.deactivatePing();
 								instanceWrapper = null;
 							}
 						}
