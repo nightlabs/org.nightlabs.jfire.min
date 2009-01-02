@@ -4,12 +4,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import org.nightlabs.jfire.base.JFireEjbUtil;
 import org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO;
 import org.nightlabs.jfire.security.Authority;
 import org.nightlabs.jfire.security.AuthorizedObject;
 import org.nightlabs.jfire.security.AuthorizedObjectRef;
 import org.nightlabs.jfire.security.JFireSecurityManager;
-import org.nightlabs.jfire.security.JFireSecurityManagerUtil;
 import org.nightlabs.jfire.security.RoleGroup;
 import org.nightlabs.jfire.security.RoleGroupRef;
 import org.nightlabs.jfire.security.SecurityReflector;
@@ -41,7 +41,7 @@ public class AuthorizedObjectDAO extends BaseJDOObjectDAO<AuthorizedObjectID, Au
 		try {
 			JFireSecurityManager m = jfireSecurityManager;
 			if (m == null)
-				m = JFireSecurityManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
+				m = JFireEjbUtil.getBean(JFireSecurityManager.class, SecurityReflector.getInitialContextProperties());
 
 			return m.getAuthorizedObjects(authorizedObjectIDs, fetchGroups, maxFetchDepth);
 		} finally {
@@ -58,7 +58,7 @@ public class AuthorizedObjectDAO extends BaseJDOObjectDAO<AuthorizedObjectID, Au
 	{
 		monitor.beginTask("Loading authorized objects", 100);
 		try {
-			jfireSecurityManager = JFireSecurityManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
+			jfireSecurityManager = JFireEjbUtil.getBean(JFireSecurityManager.class, SecurityReflector.getInitialContextProperties());
 			monitor.worked(10);
 			Set<AuthorizedObjectID> authorizedObjectIDs = jfireSecurityManager.getAuthorizedObjectIDs();
 			monitor.worked(30);
@@ -111,7 +111,7 @@ public class AuthorizedObjectDAO extends BaseJDOObjectDAO<AuthorizedObjectID, Au
 	{
 		monitor.beginTask("Setting granted role groups within an authority.", 1);
 		try {
-			JFireSecurityManager um = JFireSecurityManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
+			JFireSecurityManager um = JFireEjbUtil.getBean(JFireSecurityManager.class, SecurityReflector.getInitialContextProperties());
 			um.setGrantedRoleGroups(authorizedObjectID, authorityID, roleGroupIDs);
 		} catch(RuntimeException e) {
 			throw e;

@@ -34,11 +34,11 @@ import java.util.Set;
 import javax.jdo.JDOHelper;
 
 import org.nightlabs.jdo.NLJDOHelper;
+import org.nightlabs.jfire.base.JFireEjbUtil;
 import org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO;
 import org.nightlabs.jfire.security.Authority;
 import org.nightlabs.jfire.security.AuthorizedObject;
 import org.nightlabs.jfire.security.JFireSecurityManager;
-import org.nightlabs.jfire.security.JFireSecurityManagerUtil;
 import org.nightlabs.jfire.security.RoleGroup;
 import org.nightlabs.jfire.security.RoleGroupIDSetCarrier;
 import org.nightlabs.jfire.security.RoleGroupSetCarrier;
@@ -88,7 +88,7 @@ public class RoleGroupDAO extends BaseJDOObjectDAO<RoleGroupID, RoleGroup>
 	{
 		JFireSecurityManager um = securityManager;
 		if (um == null)
-			um = JFireSecurityManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
+			um = JFireEjbUtil.getBean(JFireSecurityManager.class, SecurityReflector.getInitialContextProperties());
 
 		return um.getRoleGroups(objectIDs, fetchGroups, maxFetchDepth);
 	}
@@ -120,7 +120,7 @@ public class RoleGroupDAO extends BaseJDOObjectDAO<RoleGroupID, RoleGroup>
 
 			synchronized (this) { // synchronize because of usage of the field securityManager
 				try {
-					securityManager = JFireSecurityManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
+					securityManager = JFireEjbUtil.getBean(JFireSecurityManager.class, SecurityReflector.getInitialContextProperties());
 					roleGroupIDSetCarrier = securityManager.getRoleGroupIDSetCarrier(authorizedObjectID, authorityID);
 					monitor.worked(20);
 
@@ -229,7 +229,7 @@ public class RoleGroupDAO extends BaseJDOObjectDAO<RoleGroupID, RoleGroup>
 			int totalTicks = 1000;
 			int ticksLeft = totalTicks;
 			monitor.beginTask("Get role groups", totalTicks);
-			securityManager = JFireSecurityManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
+			securityManager = JFireEjbUtil.getBean(JFireSecurityManager.class, SecurityReflector.getInitialContextProperties());
 			Set<RoleGroup> roleGroups = new HashSet<RoleGroup>();
 
 			Collection<RoleGroupIDSetCarrier> roleGroupIDSetCarriers = securityManager.getRoleGroupIDSetCarriers(userSecurityGroupIDs, authorityID);
@@ -301,7 +301,7 @@ public class RoleGroupDAO extends BaseJDOObjectDAO<RoleGroupID, RoleGroup>
 			List<RoleGroupSetCarrier> roleGroupSetCarriers;
 			synchronized (this) {
 				try {
-					securityManager = JFireSecurityManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
+					securityManager = JFireEjbUtil.getBean(JFireSecurityManager.class, SecurityReflector.getInitialContextProperties());
 					if (_authorizedObjectIDs != null)
 						roleGroupIDSetCarriers = securityManager.getRoleGroupIDSetCarriers(_authorizedObjectIDs, authorityID);
 					else
