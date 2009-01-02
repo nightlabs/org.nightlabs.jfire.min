@@ -7,9 +7,9 @@ import java.util.Set;
 import javax.jdo.FetchPlan;
 
 import org.nightlabs.jdo.NLJDOHelper;
+import org.nightlabs.jfire.base.JFireEjbUtil;
 import org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO;
 import org.nightlabs.jfire.prop.PropertyManager;
-import org.nightlabs.jfire.prop.PropertyManagerUtil;
 import org.nightlabs.jfire.prop.Struct;
 import org.nightlabs.jfire.prop.id.StructID;
 import org.nightlabs.jfire.security.SecurityReflector;
@@ -40,7 +40,7 @@ public class StructDAO extends BaseJDOObjectDAO<StructID, Struct> {
 	@Override
 	protected Collection<Struct> retrieveJDOObjects(Set<StructID> objectIDs, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor) throws Exception {
 		if (pm == null)
-			pm = PropertyManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
+			pm = JFireEjbUtil.getBean(PropertyManager.class, SecurityReflector.getInitialContextProperties());
 		try {
 			ArrayList<Struct> structs = new ArrayList<Struct>(objectIDs.size());
 			for (StructID structID : objectIDs)
@@ -55,7 +55,7 @@ public class StructDAO extends BaseJDOObjectDAO<StructID, Struct> {
 	protected Struct retrieveJDOObject(StructID objectID, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor) throws Exception {
 		PropertyManager pm2 = pm;
 		if (pm2 == null)
-			pm2 = PropertyManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
+			pm2 = JFireEjbUtil.getBean(PropertyManager.class, SecurityReflector.getInitialContextProperties());
 		Struct struct = pm2.getFullStruct(objectID, fetchGroups, maxFetchDepth);
 		if (monitor != null)
 			monitor.worked(1);
@@ -87,7 +87,7 @@ public class StructDAO extends BaseJDOObjectDAO<StructID, Struct> {
 	
 	public Struct storeStruct(Struct struct, boolean get, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor) {
 		try {
-			PropertyManager propManager = PropertyManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
+			PropertyManager propManager = JFireEjbUtil.getBean(PropertyManager.class, SecurityReflector.getInitialContextProperties());
 			return (Struct) propManager.storeStruct(struct, get, fetchGroups, maxFetchDepth);
 		} catch (Exception e) {
 			throw new RuntimeException("Storing StructLocal failed", e);
