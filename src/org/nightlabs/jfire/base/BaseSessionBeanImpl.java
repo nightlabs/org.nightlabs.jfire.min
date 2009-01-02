@@ -275,4 +275,8 @@ public class BaseSessionBeanImpl
 
 		return rootOrganisationID;
 	}
+
+	public String ping(String message) {
+		return message;
+	}
 }
