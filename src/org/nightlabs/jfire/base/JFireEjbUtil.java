@@ -6,6 +6,16 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
 
+import org.nightlabs.jfire.security.JFireSecurityManager;
+import org.nightlabs.jfire.security.JFireSecurityManagerHome;
+
+/**
+ * Util class for obtaining instances of stateless JavaEE session beans (EJBs).
+ * Use the method {@link #getBean(Class, Hashtable)} to obtain EJB proxies for
+ * your stateless EJBs.
+ *
+ * @author marco schulze - marco at nightlabs dot de
+ */
 public class JFireEjbUtil
 {
 	private static final long CACHE_LIFETIME_HOME = 2L * 60L * 60L * 1000L; // keep EJB homes for 2 hours
@@ -85,6 +95,38 @@ public class JFireEjbUtil
 		new HashMap<Class<?>, Map<Hashtable<?,?>,EjbInstanceWrapper>>()
 	);
 
+	/**
+	 * Get an instance of an Enterprise Java Bean. This method returns the same EJB-proxy
+	 * when called multiple times with the same EJB-interface, because it caches the instances
+	 * (with the arguments of this method used as key).
+	 * <p>
+	 * <b>Important:</b> Though this method works with stateful session beans,
+	 * you <b>must not</b> use it for them, because the result (multiple threads will use the same proxy)
+	 * might lead to arbitrary errors. Since JFire uses only stateless session beans by convention, it is safe
+	 * to use this util method with all JFire EJBs.
+	 * </p>
+	 * <p>
+	 * This method first generates the name of the EJB's home interface by appending the suffix <code>"Home"</code> to the name
+	 * of the specified <code>ejbInterface</code>. The EJB's home interface is then loaded with this generated name
+	 * via {@link Class#forName(String)}. In order to find out the JNDI name of the bean, a static field named <code>"JNDI_NAME"</code>
+	 * must exist with the type {@link String} (see {@link JFireSecurityManagerHome#JNDI_NAME} as example).
+	 * </p>
+	 * <p>
+	 * The EJB instances are cached and expire after a certain time (usually 30 minutes). Additionally, every EJB instance that
+	 * contains a public ping method is tested periodically (usually 30 seconds) to check whether the EJB is still usable. This
+	 * ping method must have the following signature:
+	 * {@code
+	 *		public String ping(String message);
+	 * }
+	 * Furthermore, every authenticated user should be allowed to call this method. The exceptions declared by the method do not matter.
+	 * If such a ping method does not exist, the ping-check is silently skipped.
+	 * </p>
+	 *
+	 * @param <T> the type of the EJB-interface.
+	 * @param ejbInterface the EJB-interface (e.g. {@link JFireSecurityManager}) for which to get an instance.
+	 * @param environment the environment (aka. JNDI initial context properties) specifying the coordinates where to get the bean from (e.g. which server to connect to, which user to authenticate as etc.).
+	 * @return an instance of an EJB-proxy implementing the interface specified by the argument <code>ejbInterface</code>.
+	 */
 	@SuppressWarnings("unchecked")
 	public static <T> T getBean(Class<T> ejbInterface, Hashtable<?, ?> environment)
 	{
