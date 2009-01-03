@@ -66,7 +66,7 @@ public class JFirePropertySetTestCase extends TestCase {
 
 
 	protected PropertyManager getPropertyManager() throws RemoteException, CreateException, NamingException {
-//		return JFireEjbUtil.getBean(PropertyManager.class, login.getInitialContextProperties());
+//		return JFireEjbFactory.getBean(PropertyManager.class, login.getInitialContextProperties());
 		return PropertyManagerUtil.getHome().create();
 	}
 

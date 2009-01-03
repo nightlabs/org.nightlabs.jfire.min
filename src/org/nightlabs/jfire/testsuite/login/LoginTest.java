@@ -9,7 +9,7 @@ import junit.framework.TestCase;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.nightlabs.j2ee.LoginData;
-import org.nightlabs.jfire.base.JFireEjbUtil;
+import org.nightlabs.jfire.base.JFireEjbFactory;
 import org.nightlabs.jfire.base.login.JFireLogin;
 import org.nightlabs.jfire.security.JFireSecurityManager;
 import org.nightlabs.jfire.testsuite.JFireTestSuite;
@@ -27,7 +27,7 @@ public class LoginTest extends TestCase
 	throws Exception
 	{
 		LoginData loginData = JFireTestLogin.getUserLoginData(JFireTestLogin.USER_QUALIFIER_SERVER_ADMIN);
-		JFireEjbUtil.getBean(JFireSecurityManager.class, loginData.getInitialContextProperties());
+		JFireEjbFactory.getBean(JFireSecurityManager.class, loginData.getInitialContextProperties());
 	}
 
 	public void testCorrectLoginManyTimes_onlyLogin()
@@ -111,7 +111,7 @@ public class LoginTest extends TestCase
 		LoginData loginData = new LoginData("chezfrancois.jfire.org", "francoiz", "test");
 		loginData.setDefaultValues();
 		try {
-			JFireEjbUtil.getBean(JFireSecurityManager.class, loginData.getInitialContextProperties());
+			JFireEjbFactory.getBean(JFireSecurityManager.class, loginData.getInitialContextProperties());
 		} catch (Exception e) {
 			if (ExceptionUtils.indexOfThrowable(e, LoginException.class) < 0)
 				throw e; // different error - not a LoginException
@@ -128,7 +128,7 @@ public class LoginTest extends TestCase
 		LoginData loginData = new LoginData("chezfrancois.jfire.org", "francois", "text");
 		loginData.setDefaultValues();
 		try {
-			JFireEjbUtil.getBean(JFireSecurityManager.class, loginData.getInitialContextProperties());
+			JFireEjbFactory.getBean(JFireSecurityManager.class, loginData.getInitialContextProperties());
 		} catch (Exception e) {
 			if (ExceptionUtils.indexOfThrowable(e, LoginException.class) < 0)
 				throw e; // different error - not a LoginException
