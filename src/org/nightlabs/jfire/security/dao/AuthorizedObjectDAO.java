@@ -4,7 +4,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import org.nightlabs.jfire.base.JFireEjbUtil;
+import org.nightlabs.jfire.base.JFireEjbFactory;
 import org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO;
 import org.nightlabs.jfire.security.Authority;
 import org.nightlabs.jfire.security.AuthorizedObject;
@@ -41,7 +41,7 @@ public class AuthorizedObjectDAO extends BaseJDOObjectDAO<AuthorizedObjectID, Au
 		try {
 			JFireSecurityManager m = jfireSecurityManager;
 			if (m == null)
-				m = JFireEjbUtil.getBean(JFireSecurityManager.class, SecurityReflector.getInitialContextProperties());
+				m = JFireEjbFactory.getBean(JFireSecurityManager.class, SecurityReflector.getInitialContextProperties());
 
 			return m.getAuthorizedObjects(authorizedObjectIDs, fetchGroups, maxFetchDepth);
 		} finally {
@@ -58,7 +58,7 @@ public class AuthorizedObjectDAO extends BaseJDOObjectDAO<AuthorizedObjectID, Au
 	{
 		monitor.beginTask("Loading authorized objects", 100);
 		try {
-			jfireSecurityManager = JFireEjbUtil.getBean(JFireSecurityManager.class, SecurityReflector.getInitialContextProperties());
+			jfireSecurityManager = JFireEjbFactory.getBean(JFireSecurityManager.class, SecurityReflector.getInitialContextProperties());
 			monitor.worked(10);
 			Set<AuthorizedObjectID> authorizedObjectIDs = jfireSecurityManager.getAuthorizedObjectIDs();
 			monitor.worked(30);
@@ -111,7 +111,7 @@ public class AuthorizedObjectDAO extends BaseJDOObjectDAO<AuthorizedObjectID, Au
 	{
 		monitor.beginTask("Setting granted role groups within an authority.", 1);
 		try {
-			JFireSecurityManager um = JFireEjbUtil.getBean(JFireSecurityManager.class, SecurityReflector.getInitialContextProperties());
+			JFireSecurityManager um = JFireEjbFactory.getBean(JFireSecurityManager.class, SecurityReflector.getInitialContextProperties());
 			um.setGrantedRoleGroups(authorizedObjectID, authorityID, roleGroupIDs);
 		} catch(RuntimeException e) {
 			throw e;

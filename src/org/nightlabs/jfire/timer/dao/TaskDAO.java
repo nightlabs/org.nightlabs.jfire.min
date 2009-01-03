@@ -10,7 +10,7 @@ import java.util.Set;
 import javax.jdo.FetchPlan;
 
 import org.nightlabs.jdo.NLJDOHelper;
-import org.nightlabs.jfire.base.JFireEjbUtil;
+import org.nightlabs.jfire.base.JFireEjbFactory;
 import org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO;
 import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.timer.Task;
@@ -42,7 +42,7 @@ public class TaskDAO extends BaseJDOObjectDAO<TaskID, Task> {
 	@Override
 	protected Collection<Task> retrieveJDOObjects(Set<TaskID> objectIDs, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
 	throws Exception {
-		TimerManager timerManager = JFireEjbUtil.getBean(TimerManager.class, SecurityReflector.getInitialContextProperties());
+		TimerManager timerManager = JFireEjbFactory.getBean(TimerManager.class, SecurityReflector.getInitialContextProperties());
 		return timerManager.getTasks(objectIDs, fetchGroups, maxFetchDepth);
 	}
 
@@ -61,7 +61,7 @@ public class TaskDAO extends BaseJDOObjectDAO<TaskID, Task> {
 	public List<Task> getTasks(String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
 	{
 		try {
-			TimerManager timerManager = JFireEjbUtil.getBean(TimerManager.class, SecurityReflector.getInitialContextProperties());
+			TimerManager timerManager = JFireEjbFactory.getBean(TimerManager.class, SecurityReflector.getInitialContextProperties());
 			try {
 				List<TaskID> promoterIDs = timerManager.getTaskIDs();
 
@@ -77,7 +77,7 @@ public class TaskDAO extends BaseJDOObjectDAO<TaskID, Task> {
 	public synchronized List<Task> getTasks(String taskTypeID, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
 	{
 		try {
-			TimerManager timerManager = JFireEjbUtil.getBean(TimerManager.class, SecurityReflector.getInitialContextProperties());
+			TimerManager timerManager = JFireEjbFactory.getBean(TimerManager.class, SecurityReflector.getInitialContextProperties());
 			try {
 				List<TaskID> promoterIDs = timerManager.getTaskIDs(taskTypeID);
 
@@ -92,7 +92,7 @@ public class TaskDAO extends BaseJDOObjectDAO<TaskID, Task> {
 	
 	public synchronized Task storeTask(Task task, boolean get, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor) {
 		try {
-			TimerManager m = JFireEjbUtil.getBean(TimerManager.class, SecurityReflector.getInitialContextProperties());
+			TimerManager m = JFireEjbFactory.getBean(TimerManager.class, SecurityReflector.getInitialContextProperties());
 			Task newTask = m.storeTask(task, get, fetchGroups, maxFetchDepth);
 			if (newTask != null)
 				getCache().put(null, newTask, fetchGroups, maxFetchDepth);

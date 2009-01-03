@@ -4,7 +4,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import org.nightlabs.jfire.base.JFireEjbUtil;
+import org.nightlabs.jfire.base.JFireEjbFactory;
 import org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO;
 import org.nightlabs.jfire.base.jdo.cache.Cache;
 import org.nightlabs.jfire.security.JFireSecurityManager;
@@ -39,7 +39,7 @@ public class UserSecurityGroupDAO extends BaseJDOObjectDAO<UserSecurityGroupID, 
 		try {
 			JFireSecurityManager m = jfireSecurityManager;
 			if (m == null)
-				m = JFireEjbUtil.getBean(JFireSecurityManager.class, SecurityReflector.getInitialContextProperties());
+				m = JFireEjbFactory.getBean(JFireSecurityManager.class, SecurityReflector.getInitialContextProperties());
 	
 			return m.getUserSecurityGroups(userSecurityGroupIDs, fetchGroups, maxFetchDepth);
 		} finally {
@@ -72,7 +72,7 @@ public class UserSecurityGroupDAO extends BaseJDOObjectDAO<UserSecurityGroupID, 
 	{
 		monitor.beginTask("Get user security groups", 100);
 		try {
-			jfireSecurityManager = JFireEjbUtil.getBean(JFireSecurityManager.class, SecurityReflector.getInitialContextProperties());
+			jfireSecurityManager = JFireEjbFactory.getBean(JFireSecurityManager.class, SecurityReflector.getInitialContextProperties());
 			monitor.worked(10);
 			Set<UserSecurityGroupID> userSecurityGroupIDs = jfireSecurityManager.getUserSecurityGroupIDs();
 			monitor.worked(30);
@@ -91,7 +91,7 @@ public class UserSecurityGroupDAO extends BaseJDOObjectDAO<UserSecurityGroupID, 
 	{
 		monitor.beginTask("Setting membership", 100);
 		try {
-			JFireSecurityManager m = JFireEjbUtil.getBean(JFireSecurityManager.class, SecurityReflector.getInitialContextProperties());
+			JFireSecurityManager m = JFireEjbFactory.getBean(JFireSecurityManager.class, SecurityReflector.getInitialContextProperties());
 			m.setMembersOfUserSecurityGroup(userSecurityGroupID, memberAuthorizedObjectIDs);
 		} catch (RuntimeException x) {
 			throw x;
@@ -108,7 +108,7 @@ public class UserSecurityGroupDAO extends BaseJDOObjectDAO<UserSecurityGroupID, 
 	{
 		monitor.beginTask("Setting membership", 100);
 		try {
-			JFireSecurityManager m = JFireEjbUtil.getBean(JFireSecurityManager.class, SecurityReflector.getInitialContextProperties());
+			JFireSecurityManager m = JFireEjbFactory.getBean(JFireSecurityManager.class, SecurityReflector.getInitialContextProperties());
 			m.setUserSecurityGroupsOfMember(userSecurityGroupIDs, memberAuthorizedObjectID);
 		} catch (RuntimeException x) {
 			throw x;
@@ -130,7 +130,7 @@ public class UserSecurityGroupDAO extends BaseJDOObjectDAO<UserSecurityGroupID, 
 	{
 		monitor.beginTask("Storing user security group", 100);
 		try {
-			JFireSecurityManager m = JFireEjbUtil.getBean(JFireSecurityManager.class, SecurityReflector.getInitialContextProperties());
+			JFireSecurityManager m = JFireEjbFactory.getBean(JFireSecurityManager.class, SecurityReflector.getInitialContextProperties());
 			UserSecurityGroup result = m.storeUserSecurityGroup(userSecurityGroup, get, fetchGroups, maxFetchDepth);
 
 			if (result != null)

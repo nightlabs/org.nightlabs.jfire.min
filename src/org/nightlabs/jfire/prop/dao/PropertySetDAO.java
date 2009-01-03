@@ -6,7 +6,7 @@ package org.nightlabs.jfire.prop.dao;
 import java.util.Collection;
 import java.util.Set;
 
-import org.nightlabs.jfire.base.JFireEjbUtil;
+import org.nightlabs.jfire.base.JFireEjbFactory;
 import org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO;
 import org.nightlabs.jfire.base.jdo.IJDOObjectDAO;
 import org.nightlabs.jfire.prop.PropertyManager;
@@ -50,7 +50,7 @@ implements IJDOObjectDAO<PropertySet>
 			Set<PropertySetID> objectIDs, String[] fetchGroups, int maxFetchDepth,
 			ProgressMonitor monitor) throws Exception 
 	{
-		PropertyManager pm = JFireEjbUtil.getBean(PropertyManager.class, SecurityReflector.getInitialContextProperties());
+		PropertyManager pm = JFireEjbFactory.getBean(PropertyManager.class, SecurityReflector.getInitialContextProperties());
 		return pm.getPropertySets(objectIDs, fetchGroups, maxFetchDepth);
 	}
 	
@@ -69,7 +69,7 @@ implements IJDOObjectDAO<PropertySet>
 	public PropertySet storeJDOObject(PropertySet propertySet, boolean get, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
 	{
 		try {
-			PropertyManager pm = JFireEjbUtil.getBean(PropertyManager.class, SecurityReflector.getInitialContextProperties());
+			PropertyManager pm = JFireEjbFactory.getBean(PropertyManager.class, SecurityReflector.getInitialContextProperties());
 			return pm.storePropertySet(propertySet, get, fetchGroups, maxFetchDepth);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
