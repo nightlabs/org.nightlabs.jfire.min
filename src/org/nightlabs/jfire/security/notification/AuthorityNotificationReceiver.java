@@ -9,7 +9,7 @@ import javax.ejb.CreateException;
 import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
-import org.nightlabs.jfire.base.JFireEjbUtil;
+import org.nightlabs.jfire.base.JFireEjbFactory;
 import org.nightlabs.jfire.base.Lookup;
 import org.nightlabs.jfire.jdo.notification.DirtyObjectID;
 import org.nightlabs.jfire.jdo.notification.JDOLifecycleState;
@@ -82,7 +82,7 @@ public class AuthorityNotificationReceiver extends NotificationReceiver
 	public void replicateAuthorities(String emitterOrganisationID, Set<AuthorityID> authorityIDs, Set<AuthorizedObjectRefID> authorizedObjectRefIDs)
 	throws RemoteException, CreateException, NamingException
 	{
-		JFireSecurityManager m = JFireEjbUtil.getBean(JFireSecurityManager.class, Lookup.getInitialContextProperties(getPersistenceManager(), emitterOrganisationID));
+		JFireSecurityManager m = JFireEjbFactory.getBean(JFireSecurityManager.class, Lookup.getInitialContextProperties(getPersistenceManager(), emitterOrganisationID));
 		Collection<Authority> authorities = m.getAuthoritiesSelfInformation(authorityIDs, authorizedObjectRefIDs);
 
 		if (logger.isDebugEnabled()) {

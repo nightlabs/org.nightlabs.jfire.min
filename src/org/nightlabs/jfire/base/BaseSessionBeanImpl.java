@@ -276,6 +276,30 @@ public class BaseSessionBeanImpl
 		return rootOrganisationID;
 	}
 
+	/**
+	 * Return the parameter as result and thus serve as a ping (test whether a bean proxy is still alive)
+	 * for remote clients. In order to make this method available to remote-clients, you must put the following code
+	 * into your EJB-subclass:
+	 * <code>
+	 *&#x9;&#x9;&#x2F;**<br/>
+	 *&#x9;&#x9;&nbsp;&#x40;ejb.interface-method<br/>
+	 *&#x9;&#x9;&nbsp;&#x40;ejb.transaction type="Supports"<br/>
+	 *&#x9;&#x9;&nbsp;&#x40;ejb.permission role-name="_Guest_"<br/>
+	 *&#x9;&#x9;*&#x2F;<br/>
+	 *&#x9;&#x9;&#x40;Override<br/>
+	 *&#x9;&#x9;public String ping(String message) {<br/>
+	 *&#x9;&#x9;&#x9;return super.ping(message);<br/>
+	 *&#x9;&#x9;}<br/>
+	 * </code>
+	 * <p>
+	 * This ping method is used by {@link JFireEjbFactory#getBean(Class, Hashtable)} to test a
+	 * cached EJB proxy. If the method cannot be successfully executed on the EJB proxy, it is discarded
+	 * and a new one created.
+	 * </p>
+	 *
+	 * @param message the message (can be <code>null</code>).
+	 * @return the result - same as message.
+	 */
 	public String ping(String message) {
 		return message;
 	}

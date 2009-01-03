@@ -56,7 +56,7 @@ import org.nightlabs.jdo.ObjectID;
 import org.nightlabs.jdo.query.JDOQueryCollectionDecorator;
 import org.nightlabs.jdo.query.QueryCollection;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
-import org.nightlabs.jfire.base.JFireEjbUtil;
+import org.nightlabs.jfire.base.JFireEjbFactory;
 import org.nightlabs.jfire.config.ConfigSetup;
 import org.nightlabs.jfire.crossorganisationregistrationinit.Context;
 import org.nightlabs.jfire.jdo.notification.persistent.PersistentNotificationEJB;
@@ -1611,7 +1611,7 @@ implements SessionBean
 			PersistentNotificationEJB persistentNotificationEJB = PersistentNotificationEJBUtil.getHome(initialContextProperties).create();
 			persistentNotificationEJB.storeNotificationFilter(authorityNotificationFilter, false, null, 1);
 
-			JFireSecurityManager jfireSecurityManager = JFireEjbUtil.getBean(JFireSecurityManager.class, initialContextProperties);
+			JFireSecurityManager jfireSecurityManager = JFireEjbFactory.getBean(JFireSecurityManager.class, initialContextProperties);
 			Set<AuthorityID> authorityIDs = jfireSecurityManager.getAuthorityIDs(emitterOrganisationID, null);
 
 			authorityNotificationReceiver.replicateAuthorities(emitterOrganisationID, authorityIDs, null);

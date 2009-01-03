@@ -16,7 +16,7 @@ import org.nightlabs.jfire.security.JFireSecurityManagerHome;
  *
  * @author marco schulze - marco at nightlabs dot de
  */
-public class JFireEjbUtil
+public class JFireEjbFactory
 {
 	private static final long CACHE_LIFETIME_HOME = 2L * 60L * 60L * 1000L; // keep EJB homes for 2 hours
 	private static final long CACHE_LIFETIME_INSTANCE = 30L * 60L * 1000L; // keep EJB proxies for 30 minutes
@@ -119,7 +119,8 @@ public class JFireEjbUtil
 	 *		public String ping(String message);
 	 * }
 	 * Furthermore, every authenticated user should be allowed to call this method. The exceptions declared by the method do not matter.
-	 * If such a ping method does not exist, the ping-check is silently skipped.
+	 * If such a ping method does not exist, the ping-check is silently skipped. See {@link BaseSessionBeanImpl#ping(String)} for more details
+	 * about this ping method.
 	 * </p>
 	 *
 	 * @param <T> the type of the EJB-interface.
