@@ -13,7 +13,7 @@ import javax.naming.NamingException;
 
 import org.hibernate.exception.ExceptionUtils;
 import org.nightlabs.j2ee.LoginData;
-import org.nightlabs.jfire.base.JFireEjbUtil;
+import org.nightlabs.jfire.base.JFireEjbFactory;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleAdapterWorkerThreadAsync;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleEvent;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleListener;
@@ -94,7 +94,7 @@ public class SecurityReflectorClient extends SecurityReflector {
 			return result;
 
 		try {
-			JFireSecurityManager jfireSecurityManager = JFireEjbUtil.getBean(JFireSecurityManager.class, _getInitialContextProperties());
+			JFireSecurityManager jfireSecurityManager = JFireEjbFactory.getBean(JFireSecurityManager.class, _getInitialContextProperties());
 			result = jfireSecurityManager.getRoleIDs(authorityID);
 		} catch (NoUserException e) {
 			throw e;
