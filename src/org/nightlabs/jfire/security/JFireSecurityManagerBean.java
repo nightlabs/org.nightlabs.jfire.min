@@ -1384,12 +1384,15 @@ implements SessionBean
 			if (ASSERT_CONSISTENCY_BEFORE)
 				assertConsistency(pm);
 
-			Authority.assertAuthorityNotManaged(pm, (AuthorityID) JDOHelper.getObjectId(authority));
+			AuthorityID authorityID = (AuthorityID) JDOHelper.getObjectId(authority);
+			if (authorityID == null)
+				authority.assertAuthorityNotManaged();
+			else
+				Authority.assertAuthorityNotManaged(pm, authorityID);
 
 			// authorize
 			Authority authorityForAuthorization = null;
 			try {
-				AuthorityID authorityID = (AuthorityID) JDOHelper.getObjectId(authority);
 				if (authorityID != null)
 					authorityForAuthorization = (Authority) pm.getObjectById(authorityID);
 			} catch (JDOObjectNotFoundException x) {
