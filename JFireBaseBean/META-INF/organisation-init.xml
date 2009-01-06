@@ -8,4 +8,5 @@
 	<init bean="jfire/ejb/JFireBaseBean/PersistentNotificationEJB" method="initialise"/>
 	<init bean="jfire/ejb/JFireBaseBean/PropertyManager" method="initialise"/>
 	<init bean="jfire/ejb/JFireBaseBean/EditLockManager" method="initialise"/>
+	<init bean="jfire/ejb/JFireBaseBean/JFireSecurityManager" method="initialise"/>
 </organisation-initialisation>

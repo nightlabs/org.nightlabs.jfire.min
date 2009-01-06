@@ -35,6 +35,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -77,6 +78,8 @@ import org.nightlabs.jfire.security.notification.AuthorityNotificationFilter;
 import org.nightlabs.jfire.security.notification.AuthorityNotificationReceiver;
 import org.nightlabs.jfire.security.search.UserQuery;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
+import org.nightlabs.jfire.timer.Task;
+import org.nightlabs.jfire.timer.id.TaskID;
 import org.nightlabs.util.CollectionUtil;
 import org.nightlabs.util.Util;
 
@@ -136,8 +139,71 @@ implements SessionBean
 		return super.ping(message);
 	}
 
-	private static final boolean ASSERT_CONSISTENCY_BEFORE = true;
-	private static final boolean ASSERT_CONSISTENCY_AFTER = true;
+	private static final boolean ASSERT_CONSISTENCY_BEFORE = false;
+	private static final boolean ASSERT_CONSISTENCY_AFTER = false;
+
+	/**
+	 * @ejb.interface-method
+	 * @ejb.permission role-name="_System_"
+	 * @ejb.transaction type="Required"
+	 */
+	public void initialise()
+	throws Exception
+	{
+		PersistenceManager pm = getPersistenceManager();
+		try {
+			{
+				TaskID taskID = TaskID.create(
+						// Organisation.DEV_ORGANISATION_ID, // the task can be modified by the organisation and thus it's maybe more logical to use the real organisationID - not dev
+						getOrganisationID(),
+						Task.TASK_TYPE_ID_SYSTEM, "security.checkConsistency");
+				Task task;
+				try {
+					task = (Task) pm.getObjectById(taskID);
+					task.getActiveExecID();
+				} catch (JDOObjectNotFoundException x) {
+					task = new Task(
+							taskID.organisationID, taskID.taskTypeID, taskID.taskID,
+							User.getUser(pm, getOrganisationID(), User.USER_ID_SYSTEM),
+							JFireSecurityManagerHome.JNDI_NAME,
+							"checkConsistency");
+
+					task.getName().setText(Locale.ENGLISH.getLanguage(), "Security: Consistency check");
+					task.getDescription().setText(Locale.ENGLISH.getLanguage(), "Check whether all authorities are consistent.");
+
+					task.getTimePatternSet().createTimePattern(
+							"*", // year
+							"*", // month
+							"*", // day
+							"*", // dayOfWeek
+							"03", //  hour
+							"00" // minute
+					);
+
+					task.setEnabled(true);
+					task = pm.makePersistent(task);
+				}
+			}
+		} finally {
+			pm.close();
+		}
+	}
+
+	/**
+	 * @ejb.interface-method
+	 * @ejb.transaction type="Required"
+	 * @ejb.permission role-name="_System_"
+	 */
+	public void checkConsistency(TaskID taskID)
+	throws Exception
+	{
+		PersistenceManager pm = getPersistenceManager();
+		try {
+			assertConsistency(pm);
+		} finally {
+			pm.close();
+		}
+	}
 
 	/**
 	 * Create a new user-security-group or change an existing one.
@@ -286,7 +352,6 @@ implements SessionBean
 	 * @ejb.permission role-name="_Guest_"
 	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 */
-	@SuppressWarnings("unchecked")
 	public Set<Role> getRolesForRequiredRoleIDs(Set<RoleID> roleIDs)
 	{
 		PersistenceManager pm = getPersistenceManager();
