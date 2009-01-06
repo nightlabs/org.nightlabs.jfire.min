@@ -72,8 +72,8 @@ implements Interceptor
  					// it might well be possible that an object has a key assigned, which is no jdo object id and for which
  					// no jdo object exists (e.g. a Collection or Map cached by an artificial key). That's why, we must not
  					// try to get the PersistenceCapableClass for object ids which are not explicitely tagged by org.nightlabs.jdo.ObjectID.
- 					if (logger.isInfoEnabled())
- 						logger.info("jdoObjectID does not implement " + ObjectID.class.getName() + "! It is an instance of " + (jdoObjectID == null ? null : jdoObjectID.getClass().getName()) + ": " + jdoObjectID, new Exception());
+ 					if (logger.isDebugEnabled())
+ 						logger.debug("jdoObjectID does not implement " + ObjectID.class.getName() + "! It is an instance of " + (jdoObjectID == null ? null : jdoObjectID.getClass().getName()) + ": " + jdoObjectID);
  				}
  				else {
 	 				Class<?> jdoObjectClass = JDOObjectID2PCClassMap.sharedInstance().getPersistenceCapableClass(jdoObjectID);
