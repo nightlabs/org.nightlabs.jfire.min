@@ -25,6 +25,7 @@ import org.nightlabs.jfire.security.id.UserID;
 import org.nightlabs.jfire.timer.Task;
 import org.nightlabs.jfire.timer.id.TaskID;
 import org.nightlabs.timepattern.TimePatternFormatException;
+import org.nightlabs.util.CollectionUtil;
 
 /**
  * @ejb.bean
@@ -79,10 +80,54 @@ implements SessionBean
 	{
 		PersistenceManager pm = getPersistenceManager();
 		try {
-			for (EditLock editLock : EditLock.getExpiredEditLocks(pm)) {
-				editLock.getEditLockType().onReleaseEditLock(editLock, ReleaseReason.clientLost);
-				pm.deletePersistent(editLock);
+			EditLockManagerLocal helperBean = EditLockManagerUtil.getLocalHome().create();
+
+//			for (EditLock editLock : EditLock.getExpiredEditLocks(pm)) {
+//				editLock.getEditLockType().onReleaseEditLock(editLock, ReleaseReason.clientLost);
+//				pm.deletePersistent(editLock);
+			Collection<? extends EditLockID> expiredEditLockIDs = CollectionUtil.castCollection(helperBean.cleanupEditLocks_getExpiredEditLocks());
+			for (EditLockID editLockID : expiredEditLockIDs) {
+				try {
+					helperBean.cleanupEditLocks_releaseEditLock(editLockID);
+				} catch (Throwable t) {
+					logger.error(t);
+					// TODO we should report about this in the new (still to be written right now) user notification system.
+				}
 			}
+		} finally {
+			pm.close();
+		}
+	}
+
+	/**
+	 * @ejb.interface-method view-type="local"
+	 * @ejb.transaction type="RequiresNew"
+	 * @ejb.permission role-name="_System_"
+	 */
+	public Collection<? extends EditLockID> cleanupEditLocks_getExpiredEditLocks()
+	{
+		PersistenceManager pm = getPersistenceManager();
+		try {
+			List<EditLockID> expiredEditLockIDs = NLJDOHelper.getObjectIDList(EditLock.getExpiredEditLocks(pm));
+			return expiredEditLockIDs;
+		} finally {
+			pm.close();
+		}
+	}
+
+	/**
+	 * @ejb.interface-method view-type="local"
+	 * @ejb.transaction type="RequiresNew"
+	 * @ejb.permission role-name="_System_"
+	 */
+	public void cleanupEditLocks_releaseEditLock(EditLockID editLockID)
+	throws Exception
+	{
+		PersistenceManager pm = getPersistenceManager();
+		try {
+			EditLock editLock = (EditLock) pm.getObjectById(editLockID);
+			editLock.getEditLockType().onReleaseEditLock(editLock, ReleaseReason.clientLost);
+			pm.deletePersistent(editLock);
 		} finally {
 			pm.close();
 		}
