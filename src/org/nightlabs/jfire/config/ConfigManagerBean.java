@@ -376,10 +376,10 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 
 	/**
 	 * Helper Method returning the ConfigModule corresponding to the given ConfigModuleID and if non-existant
-	 * creates a new ConfigModule and if necessary Config, too.
+	 * creates a new ConfigModule and if necessary {@link Config}, too.
 	 *
 	 * @param pm the {@link PersistenceManager} to use
-	 * @param configID the ConfigID of the Config, which shall contain the searched ConfigModule.
+	 * @param configID the ConfigID of the {@link Config}, which shall contain the searched ConfigModule.
 	 * @param cfModClass The ConfigModule's class
 	 * @param cfModID The ConfigModules cfModID (suffix)
 	 * @param fetchGroups The fetch-groups to be used to detach the ConfigModule
