@@ -2461,29 +2461,47 @@ public class JFireServerManagerFactoryImpl
 	}
 
 	/**
-	 * key: String userName(userID@organisationID)<br/>
+	 * key: UserID userID<br/>
 	 * value: String password
 	 */
-	private Map<String, String> jfireSecurity_tempUserPasswords = new HashMap<String, String>();
+	private Map<UserID, String> jfireSecurity_tempUserPasswords = new HashMap<UserID, String>();
 
+	/**
+	 * @deprecated Use {@link #jfireSecurity_checkTempUserPassword(UserID, String)} instead.
+	 */
+	@Deprecated
 	protected boolean jfireSecurity_checkTempUserPassword(String organisationID, String userID, String password)
+	{
+		return jfireSecurity_checkTempUserPassword(UserID.create(organisationID, userID), password);
+	}
+
+	protected boolean jfireSecurity_checkTempUserPassword(UserID userID, String password)
 	{
 		String pw;
 		synchronized(jfireSecurity_tempUserPasswords) {
-			pw = jfireSecurity_tempUserPasswords.get(userID + '@' + organisationID);
+			pw = jfireSecurity_tempUserPasswords.get(userID);
 			if (pw == null)
 				return false;
 		}
 		return pw.equals(password);
 	}
 
+	/**
+	 * @deprecated Use {@link #jfireSecurity_createTempUserPassword(UserID)} instead!
+	 */
+	@Deprecated
 	protected String jfireSecurity_createTempUserPassword(String organisationID, String userID)
 	{
+		return jfireSecurity_createTempUserPassword(UserID.create(organisationID, userID));
+	}
+
+	protected String jfireSecurity_createTempUserPassword(UserID userID)
+	{
 		synchronized(jfireSecurity_tempUserPasswords) {
-			String pw = jfireSecurity_tempUserPasswords.get(userID + '@' + organisationID);
+			String pw = jfireSecurity_tempUserPasswords.get(userID);
 			if (pw == null) {
 				pw = UserLocal.createMachinePassword(15, 20);
-				jfireSecurity_tempUserPasswords.put(userID + '@' + organisationID, pw);
+				jfireSecurity_tempUserPasswords.put(userID, pw);
 			}
 			return pw;
 		}

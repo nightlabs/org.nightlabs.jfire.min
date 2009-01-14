@@ -190,7 +190,13 @@ public interface JFireServerManager
 //	public void jfireSecurity_flushCache(String userID);
 	public void jfireSecurity_flushCache();
 
+	/**
+	 * @deprecated Use {@link #jfireSecurity_createTempUserPassword(UserID)} instead!
+	 */
+	@Deprecated
 	public String jfireSecurity_createTempUserPassword(String organisationID, String userID);
+
+	public String jfireSecurity_createTempUserPassword(UserID userID);
 
 	public JFirePrincipal login(LoginData loginData)
 		throws LoginException;

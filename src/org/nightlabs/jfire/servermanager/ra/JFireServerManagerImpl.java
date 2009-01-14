@@ -554,10 +554,17 @@ public class JFireServerManagerImpl
 		return this.principal;
 	}
 
+	@Deprecated
 	@Override
 	public String jfireSecurity_createTempUserPassword(String organisationID, String userID)
 	{
 		return jfireServerManagerFactoryImpl.jfireSecurity_createTempUserPassword(organisationID, userID);
+	}
+
+	@Override
+	public String jfireSecurity_createTempUserPassword(UserID userID)
+	{
+		return jfireServerManagerFactoryImpl.jfireSecurity_createTempUserPassword(userID);
 	}
 
 	@Override
