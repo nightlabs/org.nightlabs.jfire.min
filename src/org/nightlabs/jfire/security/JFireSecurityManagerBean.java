@@ -497,21 +497,32 @@ implements SessionBean
 		if (!Util.equals(authority.getOrganisationID(), authorizedObject.getOrganisationID()))
 			throw new IllegalArgumentException("authority.organisationID != authorizedObject.organisationID");
 
-		Query q = pm.newQuery(RoleGroup.class);
-		q.declareVariables(RoleGroupRef.class.getName() + " roleGroupRef; " + AuthorizedObjectRef.class.getName() + " authorizedObjectRef");
-		q.setFilter(
-				"this == roleGroupRef.roleGroup && \n" +
-				"roleGroupRef.authority == :authority && \n" +
-				"roleGroupRef.authorizedObjectRefs.containsValue(authorizedObjectRef) && \n" +
-				"authorizedObjectRef.authorizedObject == :authorizedObject && \n" +
-				"authorizedObjectRef.authority == :authority"
-		);
-		Map<String, Object> params = new HashMap<String, Object>(2);
-		params.put("authorizedObject", authorizedObject);
-		params.put("authority", authority);
-		Collection<?> c = (Collection<?>) q.executeWithMap(params);
-		Collection<? extends RoleGroup> crg = CollectionUtil.castCollection(c);
-		return new HashSet<RoleGroup>(crg);
+//		Query q = pm.newQuery(RoleGroup.class);
+//		q.declareVariables(RoleGroupRef.class.getName() + " roleGroupRef; " + AuthorizedObjectRef.class.getName() + " authorizedObjectRef");
+//		q.setFilter(
+//				"this == roleGroupRef.roleGroup && \n" +
+//				"roleGroupRef.authority == :authority && \n" +
+//				"roleGroupRef.authorizedObjectRefs.containsValue(authorizedObjectRef) && \n" +
+//				"authorizedObjectRef.authorizedObject == :authorizedObject && \n" +
+//				"authorizedObjectRef.authority == :authority"
+//		);
+//		Map<String, Object> params = new HashMap<String, Object>(2);
+//		params.put("authorizedObject", authorizedObject);
+//		params.put("authority", authority);
+//		Collection<?> c = (Collection<?>) q.executeWithMap(params);
+//		Collection<? extends RoleGroup> crg = CollectionUtil.castCollection(c);
+//		return new HashSet<RoleGroup>(crg);
+
+		// TODO WORKAROUND DATANUCLEUS: The above query works but is very slow (due to the well-known short-comings of the old query-engine) - we should re-enable the above query
+		// as soon as DataNucleus' new query engine is ready.
+		Set<RoleGroup> result = new HashSet<RoleGroup>();
+		AuthorizedObjectRef authorizedObjectRef = authority.getAuthorizedObjectRef(authorizedObject);
+		if (authorizedObjectRef != null) {
+			for (RoleGroupRef roleGroupRef : authorizedObjectRef.getRoleGroupRefs()) {
+				result.add(roleGroupRef.getRoleGroup());
+			}
+		}
+		return result;
 	}
 
 	/**
@@ -522,7 +533,6 @@ implements SessionBean
 	 * @param member the {@link AuthorizedObject} for which to query the membership of its {@link UserSecurityGroup}s.
 	 * @param authority the {@link Authority} in which we query.
 	 */
-	@SuppressWarnings("unchecked")
 	private static Collection<UserSecurityGroupRef> getUserSecurityGroupRefsForMemberWithinAuthority(PersistenceManager pm, AuthorizedObject member, Authority authority)
 	{
 		if (!Util.equals(authority.getOrganisationID(), member.getOrganisationID()))
