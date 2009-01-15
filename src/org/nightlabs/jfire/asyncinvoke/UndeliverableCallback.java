@@ -42,6 +42,6 @@ extends BaseInvocation
 	{
 	}
 
-	public abstract void handle(AsyncInvokeEnvelope envelope)
+	public abstract UndeliverableCallbackResult handle(AsyncInvokeEnvelope envelope)
 	throws Exception;
 }

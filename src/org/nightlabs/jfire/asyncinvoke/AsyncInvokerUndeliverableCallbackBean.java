@@ -58,8 +58,9 @@ extends AsyncInvokerBaseBean
 			logger().fatal("Marking the invocation undeliverable failed! asyncInvokeEnvelopeID=" + envelope.getAsyncInvokeEnvelopeID(), x);
 		}
 
+		UndeliverableCallbackResult undeliverableCallbackResult = null;
 		try {
-			invokerDelegate.doUndeliverableCallback(envelope);
+			undeliverableCallbackResult = invokerDelegate.doUndeliverableCallback(envelope);
 		} catch (Throwable x) {
 			rollbackOnly = true; // put it back into the queue
 			logger().fatal("UndeliverableCallback failed! asyncInvokeEnvelopeID=" + envelope.getAsyncInvokeEnvelopeID(), x);
@@ -68,6 +69,14 @@ extends AsyncInvokerBaseBean
 				invokerDelegate.markAsyncInvokeProblemUndeliverable(envelope, false);
 			} catch (Throwable t) {
 				logger().fatal("Clearing the invocation's undeliverable-flag failed! asyncInvokeEnvelopeID=" + envelope.getAsyncInvokeEnvelopeID(), x);
+			}
+		}
+
+		if (undeliverableCallbackResult != null && undeliverableCallbackResult.isDeleteAsyncInvokeProblem()) {
+			try {
+				invokerDelegate.deleteAsyncInvokeProblem(envelope);
+			} catch (Throwable t) {
+				logger().fatal("Deleting the AsyncInvokeProblem failed! asyncInvokeEnvelopeID=" + envelope.getAsyncInvokeEnvelopeID(), t);
 			}
 		}
 

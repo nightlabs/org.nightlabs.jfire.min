@@ -23,6 +23,7 @@ import org.nightlabs.jfire.asyncinvoke.Invocation;
 import org.nightlabs.jfire.asyncinvoke.InvocationError;
 import org.nightlabs.jfire.asyncinvoke.SuccessCallback;
 import org.nightlabs.jfire.asyncinvoke.UndeliverableCallback;
+import org.nightlabs.jfire.asyncinvoke.UndeliverableCallbackResult;
 import org.nightlabs.jfire.asyncinvoke.id.AsyncInvokeProblemID;
 import org.nightlabs.jfire.security.SecurityReflector.UserDescriptor;
 import org.nightlabs.jfire.timer.id.TaskID;
@@ -293,7 +294,7 @@ extends AsyncInvoke
 		}
 
 		@Override
-		public void handle(AsyncInvokeEnvelope envelope)
+		public UndeliverableCallbackResult handle(AsyncInvokeEnvelope envelope)
 		throws Exception
 		{
 			PersistenceManager pm = getPersistenceManager();
@@ -303,13 +304,14 @@ extends AsyncInvoke
 
 					Task task = (Task) pm.getObjectById(invocationParam.getTaskID());
 					if (!invocationParam.getActiveExecID().equals(task.getActiveExecID())) {
-						return; // no changes, if we're not active anymore!!!
+						return new UndeliverableCallbackResult(true); // return, because no changes to be done, if we're not active anymore!!!
 					}
 
 					task.setActiveExecID(null);
 				} finally {
 					NLJDOHelper.disableTransactionSerializeReadObjects(pm);
 				}
+				return new UndeliverableCallbackResult(true); // not necessary to keep AsyncInvokeProblems for timer tasks - they're periodically (re)executed anyway.
 			} finally {
 				pm.close();
 			}

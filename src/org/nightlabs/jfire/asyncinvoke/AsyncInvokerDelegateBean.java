@@ -45,7 +45,7 @@ import org.nightlabs.jfire.base.BaseSessionBeanImpl;
  *           transaction-type="Container"
  *
  * @ejb.interface extends="org.nightlabs.jfire.asyncinvoke.DelegateR" local-extends="org.nightlabs.jfire.asyncinvoke.DelegateL"
- * @!ejb.interface generate="local" // causes the Util class to have compile errors :-((( ... we now need to execute it pseudo-remotely anyway - otherwise there's a problem with cascaded authentication
+ * @!ejb.interface generate="local" // causes the Util class to have compile errors :-(((
  *
  * @ejb.util generate="physical"
  * @ejb.transaction type="Required"
@@ -169,18 +169,19 @@ implements SessionBean
 	 * @ejb.transaction type="RequiresNew"
 	 * @ejb.permission role-name="_Guest_"
 	 */
-	public void doUndeliverableCallback(AsyncInvokeEnvelope envelope)
+	public UndeliverableCallbackResult doUndeliverableCallback(AsyncInvokeEnvelope envelope)
 	throws Exception
 	{
 		UndeliverableCallback callback = envelope.getUndeliverableCallback();
 		if (callback == null)
-			return;
+			return null;
 
 		if (logger.isDebugEnabled())
 			logger.debug("doUndeliverableCallback: principal.organisationID="+getOrganisationID()+" principal.userID="+getUserID()+" envelope.caller.organisationID=" + envelope.getCaller().getOrganisationID() + " envelope.caller.userID=" + envelope.getCaller().getUserID());
 
 		callback.setPrincipal(getPrincipal());
-		callback.handle(envelope);
+		UndeliverableCallbackResult result = callback.handle(envelope);
+		return result;
 	}
 
 	/**

@@ -14,7 +14,7 @@ public interface Delegate
    public void doSuccessCallback( org.nightlabs.jfire.asyncinvoke.AsyncInvokeEnvelope envelope,java.lang.Object result )
       throws java.lang.Exception;
 
-   public void doUndeliverableCallback( org.nightlabs.jfire.asyncinvoke.AsyncInvokeEnvelope envelope )
+   public UndeliverableCallbackResult doUndeliverableCallback( org.nightlabs.jfire.asyncinvoke.AsyncInvokeEnvelope envelope )
       throws java.lang.Exception;
 
    public void markAsyncInvokeProblemUndeliverable(org.nightlabs.jfire.asyncinvoke.AsyncInvokeEnvelope envelope, boolean undeliverable)
