@@ -160,15 +160,14 @@ public class JFirePropertySetTestCase extends TestCase {
 		PropertySet detachedPropertySet = null;
 		TextDataField detachedDataField = null;
 		try {
-			dataField = ((TextDataField) propertySet.getDataField(PropertySetTestStruct.TESTBLOCK_TEXT));
-			dataField.setText("Test Text");
+			propertySet.getDataField(PropertySetTestStruct.TESTBLOCK_TEXT).setData("Test Text");
 		} catch (Exception e) {
 			throw new RuntimeException("Setting text of TextDataField failed", e);
 		}
 		try {
 			propertySet.deflate();
 			detachedPropertySet = getPropertyManager().storePropertySet(propertySet, true, FETCH_GROUPS, FETCH_DEPTH);
-			detachedDataField = ((TextDataField) detachedPropertySet.getDataField(PropertySetTestStruct.TESTBLOCK_TEXT));
+			detachedDataField = detachedPropertySet.getDataField(PropertySetTestStruct.TESTBLOCK_TEXT, TextDataField.class);
 		} catch (Exception e) {
 			throw new RuntimeException("Storing PropertySet with TextDataField failed", e);
 		}
@@ -181,7 +180,7 @@ public class JFirePropertySetTestCase extends TestCase {
 		PropertySet detachedPropertySet = null;
 		RegexDataField detachedDataField = null;
 		try {
-			dataField = ((RegexDataField) propertySet.getDataField(PropertySetTestStruct.TESTBLOCK_REGEX));
+			dataField = propertySet.getDataField(PropertySetTestStruct.TESTBLOCK_REGEX, RegexDataField.class);
 			dataField.setText("nobody@nosuchdomain.org");
 		} catch (Exception e) {
 			throw new RuntimeException("Setting text of RegexDataField failed", e);
@@ -189,7 +188,7 @@ public class JFirePropertySetTestCase extends TestCase {
 		try {
 			propertySet.deflate();
 			detachedPropertySet = getPropertyManager().storePropertySet(propertySet, true, FETCH_GROUPS, FETCH_DEPTH);
-			detachedDataField = ((RegexDataField) detachedPropertySet.getDataField(PropertySetTestStruct.TESTBLOCK_REGEX));
+			detachedDataField = detachedPropertySet.getDataField(PropertySetTestStruct.TESTBLOCK_REGEX, RegexDataField.class);
 		} catch (Exception e) {
 			throw new RuntimeException("Storing PropertySet with RegexDataField failed", e);
 		}
@@ -202,7 +201,7 @@ public class JFirePropertySetTestCase extends TestCase {
 		PropertySet detachedPropertySet = null;
 		NumberDataField detachedDataField = null;
 		try {
-			dataField = ((NumberDataField) propertySet.getDataField(PropertySetTestStruct.TESTBLOCK_NUMBER));
+			dataField = propertySet.getDataField(PropertySetTestStruct.TESTBLOCK_NUMBER, NumberDataField.class);
 			dataField.setValue(123456);
 		} catch (Exception e) {
 			throw new RuntimeException("Setting number of NumberDataField failed", e);
@@ -223,7 +222,7 @@ public class JFirePropertySetTestCase extends TestCase {
 		String lNumber = "123456789";
 		PropertySet propertySet = fetchPropertySet();
 		try {
-			PhoneNumberDataField dataField = ((PhoneNumberDataField) propertySet.getDataField(PropertySetTestStruct.TESTBLOCK_PHONENUMBER));
+			PhoneNumberDataField dataField = propertySet.getDataField(PropertySetTestStruct.TESTBLOCK_PHONENUMBER, PhoneNumberDataField.class);
 			dataField.setCountryCode(cCode);
 			dataField.setAreaCode(aCode);
 			dataField.setLocalNumber(lNumber);
@@ -239,7 +238,7 @@ public class JFirePropertySetTestCase extends TestCase {
 		}
 		PhoneNumberDataField detachedField = null;
 		try {
-			detachedField = (PhoneNumberDataField) detachedPropertySet.getDataField(PropertySetTestStruct.TESTBLOCK_PHONENUMBER);
+			detachedField = detachedPropertySet.getDataField(PropertySetTestStruct.TESTBLOCK_PHONENUMBER, PhoneNumberDataField.class);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -255,7 +254,7 @@ public class JFirePropertySetTestCase extends TestCase {
 		PropertySet detachedPropertySet = null;
 		SelectionDataField detachedDataField = null;
 		try {
-			dataField = ((SelectionDataField) propertySet.getDataField(PropertySetTestStruct.TESTBLOCK_SELECTION));
+			dataField = propertySet.getDataField(PropertySetTestStruct.TESTBLOCK_SELECTION, SelectionDataField.class);
 			SelectionStructField structField = (SelectionStructField) propertySet.getStructure().getStructField(PropertySetTestStruct.TESTBLOCK_SELECTION);
 			dataField.setSelection(structField.getStructFieldValue(PropertySetTestStruct.TESTBLOCK_SELECTION_1));
 		} catch (Exception e) {
@@ -264,7 +263,7 @@ public class JFirePropertySetTestCase extends TestCase {
 		try {
 			propertySet.deflate();
 			detachedPropertySet = getPropertyManager().storePropertySet(propertySet, true, FETCH_GROUPS, FETCH_DEPTH);
-			detachedDataField = (SelectionDataField) detachedPropertySet.getDataField(PropertySetTestStruct.TESTBLOCK_SELECTION);
+			detachedDataField = detachedPropertySet.getDataField(PropertySetTestStruct.TESTBLOCK_SELECTION, SelectionDataField.class);
 		} catch (Exception e) {
 			throw new RuntimeException("Storing PropertySet with SelectionDataField failed", e);
 		}
@@ -278,7 +277,7 @@ public class JFirePropertySetTestCase extends TestCase {
 		PropertySet detachedPropertySet = null;
 		DateDataField detachedDataField = null;
 		try {
-			dataField = ((DateDataField) propertySet.getDataField(PropertySetTestStruct.TESTBLOCK_DATE));
+			dataField = propertySet.getDataField(PropertySetTestStruct.TESTBLOCK_DATE, DateDataField.class);
 			dataField.setDate(date);
 		} catch (Exception e) {
 			throw new RuntimeException("Setting date of DateDataField failed", e);
@@ -290,7 +289,7 @@ public class JFirePropertySetTestCase extends TestCase {
 			throw new RuntimeException("Storing PropertySet with DateDataField failed", e);
 		}
 		try {
-			detachedDataField = (DateDataField) detachedPropertySet.getDataField(PropertySetTestStruct.TESTBLOCK_DATE);
+			detachedDataField = detachedPropertySet.getDataField(PropertySetTestStruct.TESTBLOCK_DATE, DateDataField.class);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -300,7 +299,7 @@ public class JFirePropertySetTestCase extends TestCase {
 	public void testImageDataField() {
 		PropertySet propertySet = fetchPropertySet();
 		try {
-			ImageDataField dataField = ((ImageDataField) propertySet.getDataField(PropertySetTestStruct.TESTBLOCK_IMAGE));
+			ImageDataField dataField = propertySet.getDataField(PropertySetTestStruct.TESTBLOCK_IMAGE, ImageDataField.class);
 			URL url = getClass().getResource("JFire_Test.gif");
 			if (url == null)
 				return;
