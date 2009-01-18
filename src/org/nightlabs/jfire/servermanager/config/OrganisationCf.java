@@ -44,7 +44,6 @@ import org.nightlabs.jfire.person.PersonStruct;
 import org.nightlabs.jfire.prop.IStruct;
 import org.nightlabs.jfire.prop.PropertySet;
 import org.nightlabs.jfire.prop.StructLocal;
-import org.nightlabs.jfire.prop.datafield.TextDataField;
 import org.nightlabs.jfire.server.Server;
 
 /**
@@ -237,8 +236,7 @@ public class OrganisationCf
 			IStruct structLocal = StructLocal.getStructLocal(Person.class, Person.STRUCT_SCOPE, Person.STRUCT_LOCAL_SCOPE, pm);
 			person.inflate(structLocal);
 			try {
-				TextDataField f = (TextDataField) person.getDataField(PersonStruct.PERSONALDATA_COMPANY);
-				f.setText(organisationName);
+				person.getDataField(PersonStruct.PERSONALDATA_COMPANY).setData(organisationName);
 			} catch (Exception e) {
 				throw new RuntimeException(e); // We only access predefined blocks/fields - an exception can definitely only happen if there's a fundamental programmer-caused problem.
 			}
