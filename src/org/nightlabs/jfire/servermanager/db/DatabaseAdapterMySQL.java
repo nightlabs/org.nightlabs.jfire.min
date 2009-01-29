@@ -32,7 +32,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import org.apache.log4j.Logger;
-import org.nightlabs.annotation.Implement;
 import org.nightlabs.jfire.servermanager.config.DatabaseCf;
 import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
 
@@ -43,7 +42,7 @@ import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
 public class DatabaseAdapterMySQL
 extends AbstractDatabaseAdapter
 {
-	@Implement
+	@Override
 	public void test(JFireServerConfigModule jfireServerConfigModule)
 	throws DatabaseException
 	{
@@ -65,7 +64,7 @@ extends AbstractDatabaseAdapter
 	private Connection connCreateDB = null;
 	private String databaseName = null;
 
-	@Implement
+	@Override
 	public void createDatabase(
 			JFireServerConfigModule jfireServerConfigModule,
 			String databaseURL)
@@ -118,7 +117,7 @@ extends AbstractDatabaseAdapter
 		// new: we close it now in the close() method. it's cleaner. Marco.
 	}
 
-	@Implement
+	@Override
 	public void dropDatabase()
 	throws DatabaseException
 	{

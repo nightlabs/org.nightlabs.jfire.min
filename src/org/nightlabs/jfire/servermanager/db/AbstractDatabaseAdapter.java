@@ -1,20 +1,18 @@
 package org.nightlabs.jfire.servermanager.db;
 
-import org.nightlabs.annotation.Implement;
-
 
 public abstract class AbstractDatabaseAdapter
 implements DatabaseAdapter
 {
 	private boolean closed = false;
 
-	@Implement
+	@Override
 	public boolean isClosed()
 	{
 		return closed;
 	}
 
-	@Implement
+	@Override
 	public void close()
 	throws DatabaseException
 	{

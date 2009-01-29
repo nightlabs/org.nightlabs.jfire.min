@@ -32,7 +32,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import org.apache.log4j.Logger;
-import org.nightlabs.annotation.Implement;
 import org.nightlabs.jfire.servermanager.config.DatabaseCf;
 import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
 import org.nightlabs.util.IOUtil;
@@ -151,7 +150,7 @@ extends AbstractDatabaseAdapter
 		}
 	}
 
-	@Implement
+	@Override
 	public void dropDatabase()
 			throws DatabaseException
 	{

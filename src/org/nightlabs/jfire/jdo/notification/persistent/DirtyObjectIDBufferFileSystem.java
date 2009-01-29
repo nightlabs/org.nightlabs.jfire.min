@@ -45,7 +45,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.nightlabs.annotation.Implement;
 import org.nightlabs.jfire.jdo.notification.DirtyObjectID;
 import org.nightlabs.jfire.jdo.notification.JDOLifecycleState;
 import org.nightlabs.jfire.servermanager.ra.JFireServerManagerImpl;
@@ -99,7 +98,6 @@ implements DirtyObjectIDBuffer
 	 */
 	private Set<File> lockedFiles = Collections.synchronizedSet(new HashSet<File>());
 
-	@Implement
 	@Override
 	public void addDirtyObjectIDs(Map<JDOLifecycleState, Map<Object, DirtyObjectID>> dirtyObjectIDs) throws DirtyObjectIDBufferException
 	{
@@ -151,7 +149,6 @@ implements DirtyObjectIDBuffer
 		return (Map<JDOLifecycleState, Map<Object, DirtyObjectID>>)ois.readObject();
 	}
 
-	@Implement
 	@Override
 	public synchronized Collection<Map<JDOLifecycleState, Map<Object, DirtyObjectID>>> fetchDirtyObjectIDs() throws DirtyObjectIDBufferException
 	{
@@ -194,7 +191,6 @@ implements DirtyObjectIDBuffer
 		}
 	}
 
-	@Implement
 	@Override
 	public synchronized void clearFetchedDirtyObjectIDs() throws DirtyObjectIDBufferException
 	{

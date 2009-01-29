@@ -31,7 +31,6 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import org.nightlabs.annotation.Implement;
 import org.nightlabs.jfire.servermanager.config.DatabaseCf;
 import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
 
@@ -88,7 +87,7 @@ extends AbstractDatabaseAdapter
 		}
 	}
 
-	@Implement
+	@Override
 	public void dropDatabase()
 			throws DatabaseException
 	{

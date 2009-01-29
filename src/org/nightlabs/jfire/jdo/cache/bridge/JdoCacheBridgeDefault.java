@@ -52,7 +52,6 @@ import javax.transaction.Status;
 import javax.transaction.Synchronization;
 
 import org.apache.log4j.Logger;
-import org.nightlabs.annotation.Implement;
 import org.nightlabs.jfire.idgenerator.IDNamespace;
 import org.nightlabs.jfire.jdo.cache.CacheCfMod;
 import org.nightlabs.jfire.jdo.cache.CacheManagerFactory;
@@ -180,7 +179,7 @@ public class JdoCacheBridgeDefault extends JdoCacheBridge
 					this.objectID2Class = null;
 
 					Runnable runnable = new Runnable() {
-						@Implement
+						@Override
 						public void run()
 						{
 							try {
