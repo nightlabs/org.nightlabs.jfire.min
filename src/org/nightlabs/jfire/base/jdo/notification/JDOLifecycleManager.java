@@ -17,7 +17,6 @@ import org.nightlabs.jfire.base.jdo.cache.Cache;
 import org.nightlabs.jfire.jdo.notification.AbsoluteFilterID;
 import org.nightlabs.jfire.jdo.notification.IJDOLifecycleListenerFilter;
 import org.nightlabs.jfire.security.SecurityReflector;
-import org.nightlabs.util.IOUtil;
 import org.nightlabs.util.Util;
 
 /**

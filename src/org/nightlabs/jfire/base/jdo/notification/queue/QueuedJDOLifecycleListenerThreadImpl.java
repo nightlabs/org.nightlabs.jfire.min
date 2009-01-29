@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.nightlabs.annotation.Implement;
 import org.nightlabs.jfire.jdo.notification.DirtyObjectID;
 import org.nightlabs.jfire.jdo.notification.IJDOLifecycleListenerFilter;
 
@@ -63,7 +62,6 @@ extends QueuedJDOLifecycleListener
 	};
 
 	@Override
-	@Implement
 	protected void wakeupProcessEvents()
 	{
 		synchronized (queueThread) {
