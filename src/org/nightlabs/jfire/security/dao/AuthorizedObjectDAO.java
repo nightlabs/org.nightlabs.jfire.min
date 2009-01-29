@@ -50,6 +50,7 @@ public class AuthorizedObjectDAO extends BaseJDOObjectDAO<AuthorizedObjectID, Au
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	public synchronized List<AuthorizedObject> getAuthorizedObjects(
 			String[] fetchGroups,
 			int maxFetchDepth,

@@ -80,6 +80,7 @@ public class UserDAO extends BaseJDOObjectDAO<UserID, User>
 	/* (non-Javadoc)
 	 * @see org.nightlabs.jfire.base.jdo.JDOObjectDAO#retrieveJDOObjects(java.util.Collection, java.util.Set, int, org.eclipse.core.runtime.IProgressMonitor)
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	protected Collection<User> retrieveJDOObjects(Set<UserID> objectIDs, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor) throws Exception
 	{
@@ -178,6 +179,7 @@ public class UserDAO extends BaseJDOObjectDAO<UserID, User>
 	 * 					object, <code>monitor.worked(1)</code> will be called.
 	 * @return The users of the given type.
 	 */
+	@SuppressWarnings("unchecked")
 	public synchronized List<User> getUsers(String organisationID, Set<String> userTypes, String[] fetchgroups, int maxFetchDepth, ProgressMonitor monitor)
 	{
 		try {

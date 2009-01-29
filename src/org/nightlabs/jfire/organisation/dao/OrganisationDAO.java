@@ -42,6 +42,7 @@ public class OrganisationDAO extends BaseJDOObjectDAO<OrganisationID, Organisati
 	 * (non-Javadoc)
 	 * @see org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO#retrieveJDOObjects(java.util.Set, java.lang.String[], int, org.nightlabs.progress.ProgressMonitor)
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	protected Collection<Organisation> retrieveJDOObjects(
 			Set<OrganisationID> organisationIDs, String[] fetchGroups, int maxFetchDepth,
@@ -68,6 +69,7 @@ public class OrganisationDAO extends BaseJDOObjectDAO<OrganisationID, Organisati
 	 * @param monitor The monitor to report progress to.
 	 * @return The list of all {@link Organisation}s known to (in cooperation with) the current {@link Organisation}.
 	 */
+	@SuppressWarnings("unchecked")
 	public synchronized List<Organisation> getOrganisations(String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
 	{
 		int restWorked = 2;

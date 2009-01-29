@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.nightlabs.jfire.prop.dao;
 
 import java.util.Collection;
@@ -17,7 +14,6 @@ import org.nightlabs.progress.ProgressMonitor;
 
 /**
  * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] de -->
- *
  */
 public class PropertySetDAO
 extends BaseJDOObjectDAO<PropertySetID, PropertySet>
@@ -42,9 +38,7 @@ implements IJDOObjectDAO<PropertySet>
 		return sharedInstance;
 	}	
 	
-	/**
-	 * {@inheritDoc}
-	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	protected Collection<PropertySet> retrieveJDOObjects(
 			Set<PropertySetID> objectIDs, String[] fetchGroups, int maxFetchDepth,
@@ -63,9 +57,6 @@ implements IJDOObjectDAO<PropertySet>
 		return super.getJDOObject(null, propertySetID, fetchGroups, maxFetchDepth, monitor);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public PropertySet storeJDOObject(PropertySet propertySet, boolean get, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
 	{
 		try {
