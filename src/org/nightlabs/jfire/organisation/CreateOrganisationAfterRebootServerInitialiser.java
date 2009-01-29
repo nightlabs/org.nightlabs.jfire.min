@@ -4,7 +4,6 @@ import java.io.IOException;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.ModuleException;
-import org.nightlabs.annotation.Implement;
 import org.nightlabs.jfire.init.InitException;
 import org.nightlabs.jfire.serverinit.ServerInitialiserDelegate;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
@@ -14,7 +13,6 @@ public class CreateOrganisationAfterRebootServerInitialiser
 		extends ServerInitialiserDelegate
 {
 	@Override
-	@Implement
 	public void initialise() throws InitException
 	{
 		try {

@@ -4,7 +4,6 @@ import java.io.Serializable;
 
 import javax.jdo.PersistenceManager;
 
-import org.nightlabs.annotation.Implement;
 import org.nightlabs.jfire.asyncinvoke.Invocation;
 import org.nightlabs.jfire.jdo.notification.persistent.id.NotificationBundleID;
 import org.nightlabs.jfire.jdo.notification.persistent.id.PushNotifierID;
@@ -22,7 +21,6 @@ extends Invocation
 	}
 
 	@Override
-	@Implement
 	public Serializable invoke()
 	throws Exception
 	{
