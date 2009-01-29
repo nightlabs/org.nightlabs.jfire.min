@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import org.nightlabs.annotation.Implement;
 import org.nightlabs.jdo.ObjectID;
 import org.nightlabs.jfire.base.JFireEjbFactory;
 import org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO;
@@ -35,7 +34,6 @@ public class EditLockDAO extends BaseJDOObjectDAO<EditLockID, EditLock>
 
 	@SuppressWarnings("unchecked")
 	@Override
-	@Implement
 	protected Collection<EditLock> retrieveJDOObjects(Set<EditLockID> editLockIDs,
 			String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
 			throws Exception

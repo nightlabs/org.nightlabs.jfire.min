@@ -26,7 +26,6 @@ package org.nightlabs.jfire.config.dao;
 import java.util.Collection;
 import java.util.Set;
 
-import org.nightlabs.annotation.Implement;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO;
 import org.nightlabs.jfire.config.Config;
@@ -66,7 +65,6 @@ public class ConfigDAO extends BaseJDOObjectDAO<ConfigID, Config>
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	@Implement
 	protected Collection<Config> retrieveJDOObjects(
 			Set<ConfigID> configIDs, String[] fetchGroups, int maxFetchDepth,
 			ProgressMonitor monitor) throws Exception

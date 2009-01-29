@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.nightlabs.jfire.config.dao;
 
 import java.rmi.RemoteException;
@@ -117,6 +114,7 @@ public class ConfigSetupDAO extends BaseJDOObjectDAO<ConfigSetupID, ConfigSetup>
 	/* (non-Javadoc)
 	 * @see org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO#retrieveJDOObjects(java.util.Set, java.lang.String[], int, org.nightlabs.progress.ProgressMonitor)
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	protected Collection<ConfigSetup> retrieveJDOObjects(Set<ConfigSetupID> objectIDs, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor) throws Exception {
 		Collection<ConfigSetup> configSetups;
@@ -226,6 +224,7 @@ public class ConfigSetupDAO extends BaseJDOObjectDAO<ConfigSetupID, ConfigSetup>
 	 * @param cm The {@link ConfigManager} to use.
 	 * @return All {@link ConfigSetupID}s of all known {@link ConfigSetup}s.
 	 */
+	@SuppressWarnings("unchecked")
 	private Collection<ConfigSetupID> getAllConfigSetupIDs(ConfigManager cm)  {
 		AllSetupIDsResult result = (AllSetupIDsResult) Cache.sharedInstance().get(SCOPE_COMPLETE_SETUPS, KEY_ALL_SETUP_IDS, new String[] {}, -1);
 		if (result == null) {
