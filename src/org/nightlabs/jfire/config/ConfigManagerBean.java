@@ -57,6 +57,8 @@ import org.nightlabs.jfire.config.id.ConfigModuleID;
 import org.nightlabs.jfire.config.id.ConfigSetupID;
 import org.nightlabs.jfire.editlock.EditLockType;
 import org.nightlabs.util.CollectionUtil;
+import org.nightlabs.version.MalformedVersionException;
+import org.nightlabs.version.Version;
 
 /**
  * @ejb.bean name="jfire/ejb/JFireBaseBean/ConfigManager"
@@ -884,7 +886,6 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 * @ejb.transaction type="Required"
 	 */
 	public void initialise()
-	throws ModuleException
 	{
 //// TODO remove debug stuff below
 //		try {
@@ -927,8 +928,8 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 			logger.info("Initialization of Configuration in JFireBase started...");
 
 			// version is {major}.{minor}.{release}-{patchlevel}-{suffix}
-			moduleMetaData = new ModuleMetaData(
-					JFireBaseEAR.MODULE_NAME, "0.9.5-0-beta", "0.9.5-0-beta");
+			Version version = new Version(0, 9, 5, 0, "beta");
+			moduleMetaData = new ModuleMetaData(JFireBaseEAR.MODULE_NAME, version, version);
 			pm.makePersistent(moduleMetaData);
 
 			UserConfigSetup userConfigSetup = new UserConfigSetup(organisationID);
