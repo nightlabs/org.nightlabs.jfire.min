@@ -5,9 +5,12 @@ import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.beans.PropertyEditor;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -17,7 +20,7 @@ import org.nightlabs.jfire.config.ConfigModule;
 /**
  * @author Marc Klinger - marc[at]nightlabs[dot]de
  */
-public abstract class ConfigModuleEditServlet extends BaseServlet
+public abstract class ConfigModuleEditServlet extends HttpServlet
 {
 	/**
 	 * The serial version of this class.
@@ -56,14 +59,22 @@ public abstract class ConfigModuleEditServlet extends BaseServlet
 //		}
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.nightlabs.jfire.web.admin.servlet.BaseServlet#handleRequest(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
-	 */
 	@Override
-	protected void handleRequest(HttpServletRequest req, HttpServletResponse resp) throws Exception
+	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
+			throws ServletException, IOException {
+		handleRequest(req, resp);
+	}
+	
+	@Override
+	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
+			throws ServletException, IOException {
+		handleRequest(req, resp);
+	}
+	
+	protected void handleRequest(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException
 	{
 		Object configModule = getConfigModule();
 		req.setAttribute("propertydescriptors", getPropertyDescriptors(configModule));
-		setContent(req, "/jsp/configmoduleedit.jsp");
+		req.getRequestDispatcher("/jsp/configmoduleedit.jsp").include(req, resp);
 	}
 }

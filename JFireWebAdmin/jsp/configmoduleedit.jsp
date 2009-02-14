@@ -1,7 +1,5 @@
 <%@page import="java.beans.PropertyDescriptor"%>
 <%@page import="java.util.List"%>
-Hallo!
-
 
 <table class="formtable">
 <%

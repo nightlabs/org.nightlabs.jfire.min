@@ -1,7 +1,4 @@
 <%@ page language="java"%>
-<jsp:include page="../pageHeader.jsp">
-	<jsp:param name="title" value="Server Initialisation - Welcome" />
-</jsp:include>
 
 	<div id="welcomeblock">
 	    <h1>Welcome!</h1>
@@ -10,7 +7,8 @@
 	    This seems to be the first time you are connecting to your new JFire server installation.
 	    You should now set up the server by clicking the button below and follow the setup process.
 	    <br/><br/>
-		<form action="serverinitialize">
+		<form method="post">
+			<input type="hidden" name="step" value="welcome"/>
 			<button name="navigation" value="next" class="wide" >Start configuration</button>
 		</form>
 	    </p>
@@ -36,16 +34,3 @@
 	    </p>
     </div>
     
-	<div id="waitblock" style="display: none">
-		<br/><br/>
-		<table align="center">
-			<tr>
-				<td style="padding-right: 10px;"><img src="img/loading.gif"/></td>
-				<td style="padding-left: 10px;"><strong>Please wait while performing server initialisation...</strong></td>
-			</tr>
-		</table>
-		<br/><br/>
-	</div>
-    
-    
-<jsp:include page="../pageFooter.jsp" />

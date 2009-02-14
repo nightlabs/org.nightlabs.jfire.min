@@ -1,97 +1,214 @@
 package org.nightlabs.jfire.web.admin.servlet;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.rmi.RemoteException;
 
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.nightlabs.jfire.server.ServerManager;
+import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
+import org.nightlabs.jfire.web.admin.ServerSetupUtil;
 import org.nightlabs.jfire.web.admin.UserInputException;
 
 /**
  * @author Marc Klinger - marc[at]nightlabs[dot]de
  */
-public class ServerInitializeServlet extends HttpServlet
+public class ServerInitializeServlet extends BaseServlet
 {
+	//	private static final String NAVIGATION_VALUE_FINISH = "finish";
+
+	private static final String NAVIGATION_VALUE_PREVIOUS = "previous";
+
+	private static final String NAVIGATION_PARAMETER_KEY = "navigation";
+
+	private static final String NAVIGATION_VALUE_NEXT = "next";
+
 	/**
 	 * The serial version of this class. 
 	 */
 	private static final long serialVersionUID = 1L;
-	
+
 	private static final String STEP_SESSION_KEY = "serverinitialize.step";
 
-	/* (non-Javadoc)
-	 * @see javax.servlet.http.HttpServlet#doPost(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
-	 */
-	@Override
-	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException
+	private static final String STEPS_SESSION_KEY = "serverinitialize.steps";
+
+	private static class Step 
 	{
-		handleRequest(req, resp);
-	}
-	
-	/* (non-Javadoc)
-	 * @see javax.servlet.http.HttpServlet#doGet(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
-	 */
-	@Override
-	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException
-	{
-		handleRequest(req, resp);
-	}
-	
-	private static final Map<Integer, String> steps = new HashMap<Integer, String>();
-	static {
-		steps.put(0, "/jsp/serverinitialize/000_welcome.jsp");
-		steps.put(1, "/jsp/serverinitialize/010_localServerEdit.jsp");
-		steps.put(2, "/jsp/serverinitialize/020_servletSSLEdit.jsp");
-		steps.put(3, "/jsp/serverinitialize/030_databaseEdit.jsp");
-		steps.put(4, "/jsp/serverinitialize/040_jdoEdit.jsp");
-		steps.put(5, "/jsp/serverinitialize/050_smtpEdit.jsp");
-		steps.put(6, "/jsp/serverinitialize/060_rootOrganisationEdit.jsp");
-		steps.put(7, "/jsp/serverinitialize/070_organisationEdit.jsp");
-		steps.put(8, "/jsp/serverinitialize/080_userEdit.jsp");
-		steps.put(9, "/jsp/serverinitialize/500_dataOverview.jsp");
-	}
-	
-	private void handleRequest(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException
-	{
-		Integer step = (Integer)req.getSession().getAttribute(STEP_SESSION_KEY);
-		if(step == null) {
-			// check if init is ok now (or server is already set up)
-			
-			step = 0;
+		private String name;
+		private String forward;
+		private Object bean;
+
+		public Step(String name, String forward, Object bean) 
+		{
+			this.name = name;
+			this.forward = forward;
+			this.bean = bean;
 		}
-			
-		String navigation = req.getParameter("navigation");
+
+		public String getName() {
+			return name;
+		}
+
+		public String getForward() {
+			return forward;
+		}
+
+		public Object getBean() {
+			return bean;
+		}
+	}
+
+	private Step[] setupSteps()
+	{
+		ServerManager serverManager = ServerSetupUtil.getBogoServerManager();
+		JFireServerConfigModule cfMod;
+		try {
+			cfMod = serverManager.getJFireServerConfigModule();
+		} catch (RemoteException e) {
+			throw new RuntimeException("Error accessing server configuration", e);
+		}
+
+		Step[] steps = new Step[] {
+				new Step("welcome", "/jsp/serverinitialize/welcome.jsp", null),
+				new Step("localserver", null, cfMod.getLocalServer()),
+				new Step("servletssl", null, cfMod.getServletSSLCf()),
+				new Step("database", null, cfMod.getDatabase()),
+				new Step("jdo", null, cfMod.getJdo()),
+				new Step("smtp", null, cfMod.getSmtp()),
+				new Step("rootorganisation", null, cfMod.getRootOrganisation()),
+				//				new Step("organisationedit", null, cfMod.getO),
+				//				new Step("useredit", null, cfMod.get),
+				new Step("overview", "/jsp/serverinitialize/overview.jsp", null)
+		};
+
+		return steps;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.web.admin.servlet.BaseServlet#handleRequest(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
+	 */
+	@Override
+	protected void handleRequest(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException
+	{
+		Step stepToShow = null;
+
+		// case 1:
+		// about to show a form - get target from path
+		String pathInfo = req.getPathInfo();
+		if(pathInfo != null && !"/".equals(pathInfo) && pathInfo.length() > 1) {
+			// remove leading '/'
+			String stepName = pathInfo.substring(1);
+			// find step
+			stepToShow = findStepByName(req, stepName);
+			System.out.println("step to show by path info: "+stepToShow.getName());
+		}
+
+		// case 2:
+		// coming from a form - we have a navigation parameter
+		String navigation = req.getParameter(NAVIGATION_PARAMETER_KEY);
 		if(navigation != null) {
-			if("next".equals(navigation)) {
-				try {
-					storeData(req);
-					step++;
-				} catch (UserInputException e) {
-					req.setAttribute("error", e);
+			System.out.println("have navigation: "+navigation);
+			String saveStepName = req.getParameter("step");
+			Step stepToSave = null;
+			if(saveStepName != null)
+				stepToSave = findStepByName(req, saveStepName);
+			if(stepToSave != null) {
+				System.out.println("step to save by step parameter: "+stepToSave.getName());
+				if(NAVIGATION_VALUE_NEXT.equals(navigation)) {
+					if(stepToSave.getBean() != null) {
+						// save data to the bean
+						storeData(req, stepToSave);
+					}
+					stepToShow = findNextStep(req, stepToSave);
+					if(stepToShow == null) {
+						// we are done. do initialization
+						boolean needReboot = performInitialization();
+						if(needReboot)
+							setContent(req, "/jsp/serverinitialize/reboot.jsp");
+						else
+							setContent(req, "/jsp/serverinitialize/success.jsp");
+						resetSteps(req);
+						return;
+					}
+				} else if(NAVIGATION_VALUE_PREVIOUS.equals(navigation)) {
+					stepToShow = findPreviousStep(req, stepToSave);
 				}
-			} else if("previous".equals(navigation)) {
-				step--;
-			} else if("finish".equals(navigation)) {
-				boolean needReboot = performInitialization();
-				if(needReboot)
-					req.getRequestDispatcher("/jsp/serverinitialize/600_reboot.jsp").forward(req, resp);
-				else
-					req.getRequestDispatcher("/jsp/serverinitialize/600_success.jsp").forward(req, resp);
 			}
 		}
-		if(step < 0)
-			step = 0;
-		else if(step >= steps.size())
-			step = steps.size() - 1;
-		
-		req.getRequestDispatcher(steps.get(step)).forward(req, resp);
+
+		// case 3:
+		// jump in for fresh initialize or unknown step
+		if(stepToShow == null) {
+			resetSteps(req);
+			System.out.println("resetting steps - starting fresh");
+			redirect(req, resp, "/serverinitialize/"+getSteps(req)[0].getName());
+			return;
+		}
+
+		// show step
+		if(stepToShow.getForward() != null) {
+			System.out.println("FORWARD: "+stepToShow.getForward());
+			setContent(req, stepToShow.getForward());
+		} else {
+			// show bean editor
+			System.out.println("BEAN: "+stepToShow.getName());
+			req.getSession().setAttribute("beanedit.bean", stepToShow.getBean());
+			setContent(req, "/beanedit");
+		}
 	}
-	
-	private void storeData(HttpServletRequest req) throws UserInputException
+
+	private Step findPreviousStep(HttpServletRequest req, Step saveStep) 
+	{
+		int previousIdx = findStepIdxByName(req, saveStep.getName()) - 1;
+		if(previousIdx < 0)
+			return null;
+		return getSteps(req)[previousIdx];
+	}
+
+	private Step findNextStep(HttpServletRequest req, Step saveStep) 
+	{
+		int previousIdx = findStepIdxByName(req, saveStep.getName()) + 1;
+		Step[] steps = getSteps(req);
+		if(previousIdx == 0 || previousIdx >= steps.length)
+			return null;
+		return steps[previousIdx];
+	}
+
+	private void resetSteps(HttpServletRequest req) 
+	{
+		req.getSession().setAttribute(STEP_SESSION_KEY, null);
+	}
+
+	private Step findStepByName(HttpServletRequest req, String stepName)
+	{
+		int idx = findStepIdxByName(req, stepName);
+		return idx == -1 ? null : getSteps(req)[idx];
+	}
+
+	private int findStepIdxByName(HttpServletRequest req, String stepName)
+	{
+		Step[] steps = getSteps(req);
+		for (int idx=0; idx < steps.length; idx++) {
+			if(steps[idx].getName().equals(stepName)) {
+				return idx;
+			}
+		}
+		return -1;
+	}
+
+	private Step[] getSteps(HttpServletRequest req) 
+	{
+		Step[] steps = (Step[])req.getSession().getAttribute(STEPS_SESSION_KEY);
+		if(steps == null) {
+			steps = setupSteps();
+			req.getSession().setAttribute(STEP_SESSION_KEY, steps);
+		}
+		return steps;
+	}
+
+	private void storeData(HttpServletRequest req, Step stepToStave) throws UserInputException 
 	{
 	}
 

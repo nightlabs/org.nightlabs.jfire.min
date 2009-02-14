@@ -60,16 +60,20 @@
 		<servlet-name>ServerInitializeServlet</servlet-name>
 		<url-pattern>/serverinitialize</url-pattern>
 	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>ServerInitializeServlet</servlet-name>
+		<url-pattern>/serverinitialize/*</url-pattern>
+	</servlet-mapping>
 
 
 
 	<servlet>
-		<servlet-name>CfTestServlet</servlet-name>
-		<servlet-class>org.nightlabs.jfire.web.admin.servlet.CfTestServlet</servlet-class>
+		<servlet-name>BeanEditServlet</servlet-name>
+		<servlet-class>org.nightlabs.jfire.web.admin.servlet.BeanEditServlet</servlet-class>
 	</servlet>
 	<servlet-mapping>
-		<servlet-name>CfTestServlet</servlet-name>
-		<url-pattern>/cftest</url-pattern>
+		<servlet-name>BeanEditServlet</servlet-name>
+		<url-pattern>/beanedit</url-pattern>
 	</servlet-mapping>
 
 
