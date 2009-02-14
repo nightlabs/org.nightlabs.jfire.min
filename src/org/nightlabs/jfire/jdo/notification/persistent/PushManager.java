@@ -1,11 +1,9 @@
 package org.nightlabs.jfire.jdo.notification.persistent;
 
 import javax.jdo.JDOHelper;
-import javax.jms.JMSException;
-import javax.naming.NamingException;
-import javax.security.auth.login.LoginException;
 
 import org.nightlabs.jfire.asyncinvoke.AsyncInvoke;
+import org.nightlabs.jfire.asyncinvoke.AsyncInvokeEnqueueException;
 import org.nightlabs.jfire.jdo.notification.persistent.id.NotificationBundleID;
 
 public class PushManager
@@ -17,8 +15,7 @@ public class PushManager
 	 * @param notificationBundle The data that needs to be forwarded to the subscriber. It is currently attached
 	 *		to a datastore (when this method is called).
 	 */
-	public void pushNotificationBundle(NotificationBundle notificationBundle)
-	throws LoginException, JMSException, NamingException
+	public void pushNotificationBundle(NotificationBundle notificationBundle) throws AsyncInvokeEnqueueException
 	{
 		NotificationBundleID notificationBundleID = (NotificationBundleID) JDOHelper.getObjectId(notificationBundle);
 		AsyncInvoke.exec(

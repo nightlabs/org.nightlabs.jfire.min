@@ -3,11 +3,11 @@ package org.nightlabs.jfire.organisation;
 import java.io.IOException;
 
 import org.apache.log4j.Logger;
-import org.nightlabs.ModuleException;
 import org.nightlabs.jfire.init.InitException;
 import org.nightlabs.jfire.serverinit.ServerInitialiserDelegate;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.servermanager.OrganisationNotFoundException;
+import org.nightlabs.jfire.servermanager.createorganisation.CreateOrganisationException;
 
 public class CreateOrganisationAfterRebootServerInitialiser
 		extends ServerInitialiserDelegate
@@ -36,7 +36,7 @@ public class CreateOrganisationAfterRebootServerInitialiser
 						// do initialization!
 						try {
 							jfsm.createOrganisation(descriptor.organisationID, descriptor.organisationDisplayName, descriptor.userID, descriptor.password, descriptor.isServerAdmin);
-						} catch (ModuleException e) {
+						} catch (CreateOrganisationException e) {
 //							try { // TODO should we restore???
 //								coard.addOrganisation(descriptor);
 //							} catch (Throwable t) {

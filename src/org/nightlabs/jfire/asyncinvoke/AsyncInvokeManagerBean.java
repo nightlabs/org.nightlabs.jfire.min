@@ -13,7 +13,6 @@ import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
 import javax.jdo.PersistenceManager;
 
-import org.nightlabs.ModuleException;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.asyncinvoke.id.AsyncInvokeProblemID;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
@@ -31,12 +30,12 @@ public abstract class AsyncInvokeManagerBean
 extends BaseSessionBeanImpl
 implements SessionBean
 {
-//	private static final Logger logger = Logger.getLogger(AsyncInvokeManagerBean.class);
+	//	private static final Logger logger = Logger.getLogger(AsyncInvokeManagerBean.class);
 	private static final long serialVersionUID = 1L;
 
 	@Override
 	public void setSessionContext(SessionContext sessionContext)
-			throws EJBException, RemoteException {
+	throws EJBException, RemoteException {
 		super.setSessionContext(sessionContext);
 	}
 
@@ -81,7 +80,6 @@ implements SessionBean
 	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 * @ejb.permission role-name="org.nightlabs.jfire.asyncinvoke.administrateAsyncInvokes"
 	 */
-	@SuppressWarnings("unchecked")
 	public List<AsyncInvokeProblem> getAsyncInvokeProblems(Collection<AsyncInvokeProblemID> asyncInvokeProblemIDs, String[] fetchGroups, int maxFetchDepth) {
 		PersistenceManager pm = getPersistenceManager();
 		try {
@@ -102,7 +100,6 @@ implements SessionBean
 	 * @ejb.transaction type="Required"
 	 * @ejb.permission role-name="org.nightlabs.jfire.asyncinvoke.administrateAsyncInvokes"
 	 */
-	@SuppressWarnings("unchecked")
 	public void deleteAsyncInvokeProblems(Collection<AsyncInvokeProblemID> asyncInvokeProblemIDs) {
 		PersistenceManager pm = getPersistenceManager();
 		try {
@@ -125,30 +122,27 @@ implements SessionBean
 	 * returns <code>false</code> is silently ignored.
 	 *
 	 * @param asyncInvokeProblemIDs the identifiers of the invocations that shall be retried.
+	 * @throws AsyncInvokeEnqueueException If creating the async invoke envelope or enqueueing the invokation failed
 	 *
 	 * @ejb.interface-method
 	 * @ejb.transaction type="Required"
 	 * @ejb.permission role-name="org.nightlabs.jfire.asyncinvoke.administrateAsyncInvokes"
 	 */
-	@SuppressWarnings("unchecked")
-	public void retryAsyncInvokeProblems(Collection<AsyncInvokeProblemID> asyncInvokeProblemIDs)
-	throws ModuleException
+	public void retryAsyncInvokeProblems(Collection<AsyncInvokeProblemID> asyncInvokeProblemIDs) throws AsyncInvokeEnqueueException
 	{
+		PersistenceManager pm = getPersistenceManager();
 		try {
-			PersistenceManager pm = getPersistenceManager();
-			try {
-				Set<AsyncInvokeProblem> problems = NLJDOHelper.getObjectSet(pm, asyncInvokeProblemIDs, AsyncInvokeProblem.class);
-				for (Iterator<AsyncInvokeProblem> it = problems.iterator(); it.hasNext();) {
-					AsyncInvokeProblem problem = it.next();
-					if (problem.isUndeliverable()) {
-						problem.setUndeliverable(false);
-						AsyncInvoke.enqueue(AsyncInvoke.QUEUE_INVOCATION, (AsyncInvokeEnvelope) problem.getAsyncInvokeEnvelope(), true);
-					}
+			Set<AsyncInvokeProblem> problems = NLJDOHelper.getObjectSet(pm, asyncInvokeProblemIDs, AsyncInvokeProblem.class);
+			for (Iterator<AsyncInvokeProblem> it = problems.iterator(); it.hasNext();) {
+				AsyncInvokeProblem problem = it.next();
+				if (problem.isUndeliverable()) {
+					problem.setUndeliverable(false);
+					AsyncInvoke.enqueue(AsyncInvoke.QUEUE_INVOCATION, (AsyncInvokeEnvelope) problem.getAsyncInvokeEnvelope(), true);
 				}
-			} finally {
-				pm.close();
 			}
-		} catch (Exception x) { throw new ModuleException(x); }
+		} finally {
+			pm.close();
+		}
 	}
 
 	/**

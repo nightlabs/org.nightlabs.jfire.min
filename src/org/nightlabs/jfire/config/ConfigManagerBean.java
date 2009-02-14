@@ -44,7 +44,7 @@ import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
 
 import org.apache.log4j.Logger;
-import org.nightlabs.ModuleException;
+import org.nightlabs.config.ConfigException;
 import org.nightlabs.config.ConfigModuleNotFoundException;
 import org.nightlabs.inheritance.FieldMetaData;
 import org.nightlabs.jdo.NLJDOHelper;
@@ -57,7 +57,6 @@ import org.nightlabs.jfire.config.id.ConfigModuleID;
 import org.nightlabs.jfire.config.id.ConfigSetupID;
 import org.nightlabs.jfire.editlock.EditLockType;
 import org.nightlabs.util.CollectionUtil;
-import org.nightlabs.version.MalformedVersionException;
 import org.nightlabs.version.Version;
 
 /**
@@ -103,7 +102,6 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 * @ejb.transaction type="Required"
 	 */
 	public ConfigModule storeConfigModule(ConfigModule configModule, boolean get, String[] fetchGroups, int maxFetchDepth)
-	throws ModuleException
 	{
 		PersistenceManager pm = getPersistenceManager();
 		try
@@ -190,8 +188,8 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 * @ejb.transaction type="Required"
 	 *
 	 */
+	@SuppressWarnings("unchecked")
 	public Collection<ConfigGroup> getConfigGroups(String configType, String[] fetchGroups, int maxFetchDepth)
-	throws ModuleException
 	{
 		PersistenceManager pm;
 		pm = getPersistenceManager();
@@ -224,7 +222,6 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 * @ejb.transaction type="Required"
 	 */
 	public Collection<ConfigGroup> getConfigGroups(String[] fetchGroups, int maxFetchDepth)
-	throws ModuleException
 	{
 		return getConfigGroups(null, fetchGroups, maxFetchDepth);
 	}
@@ -235,13 +232,12 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 *
 	 * @param configIDs The Set of ConfigIDs corresponding to the desired Configs.
 	 * @param fetchGroups The fetch-groups to be used to detach the found Configs
-	 * @throws ModuleException
 	 *
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type="Required"
 	 */
-	public Collection<Config> getConfigs(Set<ConfigID> configIDs, String[] fetchGroups, int maxFetchDepth) throws ModuleException
+	public Collection<Config> getConfigs(Set<ConfigID> configIDs, String[] fetchGroups, int maxFetchDepth)
 	{
 		if (configIDs == null)
 			throw new IllegalArgumentException("The Set of ConfigIDs must not be null!");
@@ -277,7 +273,6 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 * @ejb.transaction type="Required"
 	 */
 	public Set<Config> getConfigs(String configType, String[] fetchGroups, int maxFetchDepth)
-	throws ModuleException
 	{
 		PersistenceManager pm = getPersistenceManager();
 		ConfigSetup.ensureAllPrerequisites(pm);
@@ -319,7 +314,6 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 * @ejb.transaction type="Required"
 	 */
 	public Collection<Config> getConfigs(String[] fetchGroups, int maxFetchDepth)
-	throws ModuleException
 	{
 		return getConfigs((String)null, fetchGroups, maxFetchDepth);
 	}
@@ -364,14 +358,12 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 * @param cfModID The ConfigModules cfModID (suffix)
 	 * @param fetchGroups The fetch-groups to be used to detach the ConfigModule
 	 * @return The ConfigModule of the given userConfig, cfModClass and cfModID
-	 * @throws ModuleException
 	 *
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type="Required"
 	 */
 	public ConfigModule getConfigModule(ConfigID configID, Class<? extends ConfigModule> cfModClass, String cfModID, String[] fetchGroups, int maxFetchDepth)
-	throws ModuleException
 	{
 		return getConfigModule(getPersistenceManager(), configID, cfModClass, cfModID, fetchGroups, maxFetchDepth);
 	}
@@ -386,11 +378,9 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 * @param cfModID The ConfigModules cfModID (suffix)
 	 * @param fetchGroups The fetch-groups to be used to detach the ConfigModule
 	 * @return The ConfigModule of the given userConfig, cfModClass and cfModID
-	 * @throws ModuleException
 	 */
 	protected ConfigModule getConfigModule(PersistenceManager pm, ConfigID configID, Class<? extends ConfigModule> cfModClass, String cfModID,
 			String[] fetchGroups, int maxFetchDepth)
-	throws ModuleException
 	{
 		try
 		{
@@ -424,7 +414,6 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	public ConfigModule createConfigModule(
 			ObjectID keyObjectID, Class<? extends ConfigModule> cfModClass, String cfModID,
 			String[] fetchGroups, int maxFetchDepth)
-	throws ModuleException
 	{
 		PersistenceManager pm = getPersistenceManager();
 		try
@@ -461,7 +450,6 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	public ConfigModule getConfigModule(
 			ConfigID keyObjectID, Class<? extends ConfigModule> cfModClass, String cfModID, boolean throwExceptionIfNotFound,
 			String[] fetchGroups, int maxFetchDepth)
-	throws ModuleException
 	{
 		PersistenceManager pm = getPersistenceManager();
 		try
@@ -493,14 +481,12 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 * @param fetchGroups the FetchGroups for the detached {@link ConfigModule}s
 	 * @param maxFetchDepth the maximum fetch depth for the detached ConfigModules.
 	 * @return a Collection of {@link ConfigModule}s, corresponding to the set of {@link ConfigModuleID}s.
-	 * @throws ModuleException a wrapper for many kinds of Exceptions.
 	 *
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type="Required"
 	 */
 	public Collection<ConfigModule> getConfigModules(Set<ConfigModuleID> moduleIDs, String[] fetchGroups, int maxFetchDepth)
-	throws ModuleException
 	{
 		PersistenceManager pm = getPersistenceManager();
 		try {
@@ -524,7 +510,6 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 * corresponding to the given cfModID and if it doesn't exist creates one.
 	 */
 	protected ConfigModule getCreateConfigModule(PersistenceManager pm, Config config, Class<? extends ConfigModule> cfModClass, String cfModID, String[] fetchGroups, int maxFetchDepth)
-	throws ModuleException
 	{
 		logger.debug("config.organisatinID "+config.getOrganisationID());
 		ConfigModule configModule = config.createConfigModule(cfModClass, cfModID);
@@ -563,7 +548,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 */
 	public ConfigModule getGroupConfigModule(
 			ConfigID childID, Class<? extends ConfigModule> configModuleClass, String moduleID, boolean autoCreate,
-			String[] fetchGroups, int maxFetchDepth) throws ModuleException
+			String[] fetchGroups, int maxFetchDepth)
 	{
 		PersistenceManager pm = getPersistenceManager();
 		if (fetchGroups != null) {
@@ -574,7 +559,7 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 		try {
 			Config config = (Config) pm.getObjectById(childID);
 			if (config == null)
-				throw new ModuleException("There is no corresponding Config to the given ConfigID!");
+				throw new ConfigException("There is no corresponding Config to the given ConfigID!");
 
 			if (config.getConfigGroup() == null)
 				return null; // just return null to enable the client to check whether there is a group or not.
@@ -609,7 +594,6 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 * @ejb.transaction type="Required"
 	 */
 	public ConfigGroup addConfigGroup(String configKey, String groupType, String groupName, boolean get, String[] fetchGroups, int maxFetchDepth)
-	throws ModuleException
 	{
 		PersistenceManager pm;
 		pm = getPersistenceManager();
@@ -638,58 +622,6 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 		}
 	}
 
-// This method did not detach its result, it would not have worked!
-//	/**
-//	 * Returns a Collection of all ConfigSetups known.
-//	 *
-//	 * @ejb.interface-method
-//	 * @ejb.permission role-name="_Guest_"
-//	 * @ejb.transaction type="Required"
-//	 */
-//	public Collection getConfigSetups(String[] fetchGroups, int maxFetchDepth)
-//	throws ModuleException
-//	{
-//		PersistenceManager pm = getPersistenceManager();
-//		try	{
-//			if (fetchGroups != null)
-//				pm.getFetchPlan().setGroups(fetchGroups);
-//			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
-//
-//			return ConfigSetup.getConfigSetups(pm);
-//
-//		} finally {
-//			pm.close();
-//		}
-//	}
-
-// Duplicate method. = getConfigSetup
-//	/**
-//	 * Returns a complete ConfigSetup of the given type. A complete
-//	 * ConfigSetup contains all Configs and ConfigGroups of that setup.
-//	 *
-//	 * @ejb.interface-method
-//	 * @ejb.permission role-name="_Guest_"
-//	 * @ejb.transaction type="Required"
-//	 */
-//	public ConfigSetup getCompleteConfigSetup(
-//			String configSetupType,
-//			String[] groupsFetchGropus,
-//			String[] configsFetchGroups
-//		)
-//	throws ModuleException
-//	{
-//		PersistenceManager pm;
-//		pm = getPersistenceManager();
-//		try
-//		{
-//			return
-//				ConfigSetup.getConfigSetup(pm, getOrganisationID(), configSetupType)
-//					.getCompleteConfigSetup(pm, getOrganisationID(), groupsFetchGropus, configsFetchGroups);
-//		} finally {
-//			pm.close();
-//		}
-//	}
-
 	/**
 	 * Returns the ConfigSetup with the given configSetupID.
 	 * <p>
@@ -712,7 +644,6 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 			String[] groupsFetchGropus, int groupsMaxFetchDepth,
 			String[] configsFetchGroups, int configsMaxFetchDepth
 		)
-	throws ModuleException
 	{
 		PersistenceManager pm;
 		pm = getPersistenceManager();
@@ -780,7 +711,6 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 * @ejb.transaction type="Required"
 	 */
 	public void storeConfigSetup(Collection<Config> setup)
-	throws ModuleException
 	{
 		PersistenceManager pm;
 		pm = getPersistenceManager();
@@ -878,8 +808,6 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 
 	/**
 	 * Initializes the JFireBase Config-System.
-	 *
-	 * @throws ModuleException
 	 *
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_System_"

@@ -35,15 +35,16 @@ import javax.ejb.EJBException;
 import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
 
-import org.nightlabs.ModuleException;
 import org.nightlabs.config.ConfigException;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.module.ModuleType;
+import org.nightlabs.jfire.serverconfigurator.ServerConfigurationException;
 import org.nightlabs.jfire.serverconfigurator.ServerConfigurator;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.servermanager.config.J2eeServerTypeRegistryConfigModule;
 import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
 import org.nightlabs.jfire.servermanager.xml.ModuleDef;
+import org.nightlabs.jfire.servermanager.xml.XMLReadException;
 
 /**
  * @ejb.bean name="jfire/ejb/JFireBaseBean/ServerManager"
@@ -86,13 +87,11 @@ public abstract class ServerManagerBean
 
 	/**
 	 * @return Whether or not this server is new and needs setup.
-	 * @throws ModuleException
 	 *
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
 	 */
 	public boolean isNewServerNeedingSetup()
-		throws ModuleException
 	{
 		JFireServerManager ism = getJFireServerManager();
 		try {
@@ -115,7 +114,6 @@ public abstract class ServerManagerBean
 	 * @ejb.permission role-name="_ServerAdmin_"
 	 */
 	public JFireServerConfigModule getJFireServerConfigModule()
-		throws ModuleException
 	{
 		JFireServerManager ism = getJFireServerManager();
 		try {
@@ -149,12 +147,12 @@ public abstract class ServerManagerBean
 	 * @param delayMSec In case shutdown is necessary, how long to delay it (this method will return immediately).
 	 *		This is necessary for having a few secs left to return the client a new web page.
 	 * @return <code>true</code>, if the server configuration was changed in a way that requires reboot.
+	 * @throws ServerConfigurationException If configuring the server failed
 	 *
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_ServerAdmin_"
 	 */
-	public boolean configureServerAndShutdownIfNecessary(long delayMSec)
-		throws ModuleException
+	public boolean configureServerAndShutdownIfNecessary(long delayMSec) throws ServerConfigurationException
 	{
 		JFireServerManager ism = getJFireServerManager();
 		try {
@@ -167,9 +165,9 @@ public abstract class ServerManagerBean
 	/**
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
+	 * @throws XMLReadException If loading the module information failed
 	 */
-	public List<ModuleDef> getModules(ModuleType moduleType)
-		throws ModuleException
+	public List<ModuleDef> getModules(ModuleType moduleType) throws XMLReadException
 	{
 		JFireServerManager ism = getJFireServerManager();
 		try {

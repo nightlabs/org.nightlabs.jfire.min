@@ -41,7 +41,6 @@ import javax.jdo.PersistenceManager;
 import javax.jdo.spi.PersistenceCapable;
 
 import org.apache.log4j.Logger;
-import org.nightlabs.ModuleException;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.base.expression.IExpression;
@@ -131,7 +130,8 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	 * @ejb.transaction type="Required"
 	 */
 	public Struct getFullStruct(
-			String organisationID, String linkClass, String structScope, String[] fetchGroups, int maxFetchDepth) throws ModuleException {
+			String organisationID, String linkClass, String structScope, String[] fetchGroups, int maxFetchDepth)
+	{
 		PersistenceManager pm = getPersistenceManager();
 		try {
 			if (fetchGroups != null) {
@@ -157,7 +157,8 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type="Required"
 	 */
-	public Struct getFullStruct(StructID structID, String[] fetchGroups, int maxFetchDepth) throws ModuleException {
+	public Struct getFullStruct(StructID structID, String[] fetchGroups, int maxFetchDepth)
+	{
 		return getFullStruct(structID.organisationID, structID.linkClass, structID.structScope, fetchGroups, maxFetchDepth);
 	}
 
@@ -169,7 +170,6 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	 * @param linkClass
 	 *          The linkClass of the {@link StructLocal} to be retrieved.
 	 * @return The complete {@link StructLocal}.
-	 * @throws ModuleException
 	 *
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
@@ -177,7 +177,7 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	 */
 	public StructLocal getFullStructLocal(
 			String organisationID, String linkClass, String structScope, String structLocalScope, String[] fetchGroups, int maxFetchDepth)
-			throws ModuleException {
+	{
 		PersistenceManager pm = getPersistenceManager();
 		try {
 			if (fetchGroups != null) {
@@ -203,7 +203,8 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type="Required"
 	 */
-	public StructLocal getFullStructLocal(StructLocalID structLocalID, String[] fetchGroups, int maxFetchDepth) throws ModuleException {
+	public StructLocal getFullStructLocal(StructLocalID structLocalID, String[] fetchGroups, int maxFetchDepth)
+	{
 		return getFullStructLocal(
 				structLocalID.organisationID, structLocalID.linkClass,
 				structLocalID.structScope, structLocalID.structLocalScope,

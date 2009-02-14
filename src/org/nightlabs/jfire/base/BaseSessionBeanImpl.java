@@ -90,25 +90,6 @@ public class BaseSessionBeanImpl
 		return getPrincipal().getLookup();
 	}
 
-//	protected PersistenceManagerFactory getPersistenceManagerFactory()
-//	{
-//		return getPrincipal().getLookup().getPersistenceManagerFactory();
-//	}
-
-//	protected void cache_addDirtyObjectIDs(PersistenceManager persistenceManager, Collection objectIDs)
-//	throws ModuleException
-//	{
-//		getPrincipal().getLookup().getCacheManager().addDirtyObjectIDs(persistenceManager, objectIDs);
-//	}
-//
-//	protected void cache_addDirtyObjectID(PersistenceManager persistenceManager, Object objectID)
-//	throws ModuleException
-//	{
-//		ArrayList l = new ArrayList(1);
-//		l.add(objectID);
-//		getPrincipal().getLookup().getCacheManager().addDirtyObjectIDs(persistenceManager, l);
-//	}
-
 	private transient PersistenceManager persistenceManager = null;
 
 	/**
@@ -126,12 +107,6 @@ public class BaseSessionBeanImpl
 		persistenceManager = getPrincipal().getLookup().getPersistenceManager();
 		return persistenceManager;
 	}
-
-//	protected InitialContext getInitialContext()
-//		throws ModuleException
-//	{
-//		return getPrincipal().getLookup().getInitialContext();
-//	}
 
 	/**
 	 * Use this method whenever you want to communicate with another

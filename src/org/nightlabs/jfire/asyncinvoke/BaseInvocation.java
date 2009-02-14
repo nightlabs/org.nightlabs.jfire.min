@@ -33,7 +33,6 @@ import javax.jdo.PersistenceManager;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import org.nightlabs.ModuleException;
 import org.nightlabs.jfire.base.JFirePrincipal;
 import org.nightlabs.jfire.base.Lookup;
 import org.nightlabs.jfire.organisation.Organisation;
@@ -99,12 +98,6 @@ implements Serializable
 		return persistenceManager;
 	}
 
-//	protected InitialContext getInitialContext()
-//		throws ModuleException
-//	{
-//		return getPrincipal().getLookup().getInitialContext();
-//	}
-
 	/**
 	 * Use this method whenever you want to communicate with another
 	 * organisation. This method configures an InitialContext to connect
@@ -116,7 +109,6 @@ implements Serializable
 	 * 
 	 * @param organisationID The organisationID with wich to communicate.
 	 * @return Returns an InitialContext that is configured properly to authenticate at and communicate with another organisation (wherever it may be - e.g. on another server).
-	 * @throws ModuleException
 	 */
 	protected InitialContext getInitialContext(String organisationID)
 	throws NamingException
@@ -135,7 +127,6 @@ implements Serializable
 	 *
 	 * @param organisationID
 	 * @return Returns an instance of Properties to be used in <code>new InitialContext(Properties)</code>.
-	 * @throws ModuleException
 	 * 
 	 * @see getInitialContext(String organisationID)
 	 */

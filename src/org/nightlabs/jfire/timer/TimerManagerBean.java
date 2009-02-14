@@ -16,7 +16,6 @@ import javax.jdo.JDOHelper;
 import javax.jdo.PersistenceManager;
 
 import org.apache.log4j.Logger;
-import org.nightlabs.ModuleException;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jdo.ObjectIDUtil;
 import org.nightlabs.jdo.timepattern.TimePatternSetJDOImpl;
@@ -177,17 +176,12 @@ implements SessionBean
 	 * @ejb.permission role-name="_Guest_"
 	 */
 	public List<TaskID> getTaskIDs()
-	throws ModuleException
 	{
+		PersistenceManager pm = getPersistenceManager();
 		try {
-			PersistenceManager pm = getPersistenceManager();
-			try {
-				return NLJDOHelper.getObjectIDList((Collection<?>)pm.newQuery(Task.class).execute());
-			} finally {
-				pm.close();
-			}
-		} catch (Exception x) {
-			throw new ModuleException(x);
+			return NLJDOHelper.getObjectIDList((Collection<?>)pm.newQuery(Task.class).execute());
+		} finally {
+			pm.close();
 		}
 	}
 
@@ -198,17 +192,12 @@ implements SessionBean
 	 * @ejb.permission role-name="_Guest_"
 	 */
 	public List<TaskID> getTaskIDs(String taskTypeID)
-	throws ModuleException
 	{
+		PersistenceManager pm = getPersistenceManager();
 		try {
-			PersistenceManager pm = getPersistenceManager();
-			try {
-				return NLJDOHelper.getObjectIDList(Task.getTasksByTaskTypeID(pm, taskTypeID));
-			} finally {
-				pm.close();
-			}
-		} catch (Exception x) {
-			throw new ModuleException(x);
+			return NLJDOHelper.getObjectIDList(Task.getTasksByTaskTypeID(pm, taskTypeID));
+		} finally {
+			pm.close();
 		}
 	}
 
@@ -218,20 +207,14 @@ implements SessionBean
 	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 * @ejb.permission role-name="_Guest_"
 	 */
-	@SuppressWarnings("unchecked")
 	public List<Task> getTasks(Collection<TaskID> taskIDs, String[] fetchGroups, int maxFetchDepth)
-	throws ModuleException
 	{
+		PersistenceManager pm = getPersistenceManager();
 		try {
-			PersistenceManager pm = getPersistenceManager();
-			try {
-				List<Task> tasks = NLJDOHelper.getDetachedObjectList(pm, taskIDs, Task.class, fetchGroups, maxFetchDepth);
-				return tasks;
-			} finally {
-				pm.close();
-			}
-		} catch (Exception x) {
-			throw new ModuleException(x);
+			List<Task> tasks = NLJDOHelper.getDetachedObjectList(pm, taskIDs, Task.class, fetchGroups, maxFetchDepth);
+			return tasks;
+		} finally {
+			pm.close();
 		}
 	}
 
@@ -242,58 +225,53 @@ implements SessionBean
 	 * @ejb.permission role-name="org.nightlabs.jfire.timer.storeTask#own"
 	 */
 	public Task storeTask(Task task, boolean get, String[] fetchGroups, int maxFetchDepth)
-	throws ModuleException
 	{
+		PersistenceManager pm = getPersistenceManager();
 		try {
-			PersistenceManager pm = getPersistenceManager();
+			User principalUser = User.getUser(pm, getPrincipal()); // do this before locking, because the user isn't changed in this transaction anyway - no need to lock it in the db
+			Task persistentTask = null;
+
+			NLJDOHelper.enableTransactionSerializeReadObjects(pm);
 			try {
-				User principalUser = User.getUser(pm, getPrincipal()); // do this before locking, because the user isn't changed in this transaction anyway - no need to lock it in the db
-				Task persistentTask = null;
 
-				NLJDOHelper.enableTransactionSerializeReadObjects(pm);
-				try {
+				TaskID taskID = (TaskID) JDOHelper.getObjectId(task);
+				if (taskID != null)
+					persistentTask = (Task) pm.getObjectById(taskID);
 
-					TaskID taskID = (TaskID) JDOHelper.getObjectId(task);
-					if (taskID != null)
-						persistentTask = (Task) pm.getObjectById(taskID);
-
-					// access a few fields to ensure the Task object is locked in the database
-					// this should not be necessary anmore when http://www.jpox.org/servlet/jira/browse/NUCRDBMS-67 is fixed, but
-					// it still is no harm.
-					if (persistentTask != null) {
-						persistentTask.getActiveExecID();
-						persistentTask.getDescription();
-					}
-
-				} finally {
-					NLJDOHelper.disableTransactionSerializeReadObjects(pm);
+				// access a few fields to ensure the Task object is locked in the database
+				// this should not be necessary anmore when http://www.jpox.org/servlet/jira/browse/NUCRDBMS-67 is fixed, but
+				// it still is no harm.
+				if (persistentTask != null) {
+					persistentTask.getActiveExecID();
+					persistentTask.getDescription();
 				}
 
-				User taskOwnerToBeWritten = null;
-				try {
-					taskOwnerToBeWritten = task.getUser();
-				} catch (JDODetachedFieldAccessException x) {
-					// ignore - in this case the owner is not changed and the persistentTask.user will be checked
-					if (persistentTask == null)
-						throw new IllegalStateException("task.user is not a detached field, but the task is not existing in the datastore either! " + task);
-				}
-
-				if (
-						(taskOwnerToBeWritten != null && !principalUser.equals(taskOwnerToBeWritten)) ||
-						(persistentTask != null && !principalUser.equals(persistentTask.getUser()))
-				)
-				{
-					// trying to manipulate a task where the current user is not the owner => check for RoleConstants.storeTask_all
-					Authority.getOrganisationAuthority(pm).assertContainsRoleRef(getPrincipal(), RoleConstants.storeTask_all);
-				}
-
-				task = NLJDOHelper.storeJDO(pm, task, get, fetchGroups, maxFetchDepth);
-				return task;
 			} finally {
-				pm.close();
+				NLJDOHelper.disableTransactionSerializeReadObjects(pm);
 			}
-		} catch (Exception x) {
-			throw new ModuleException(x);
+
+			User taskOwnerToBeWritten = null;
+			try {
+				taskOwnerToBeWritten = task.getUser();
+			} catch (JDODetachedFieldAccessException x) {
+				// ignore - in this case the owner is not changed and the persistentTask.user will be checked
+				if (persistentTask == null)
+					throw new IllegalStateException("task.user is not a detached field, but the task is not existing in the datastore either! " + task);
+			}
+
+			if (
+					(taskOwnerToBeWritten != null && !principalUser.equals(taskOwnerToBeWritten)) ||
+					(persistentTask != null && !principalUser.equals(persistentTask.getUser()))
+			)
+			{
+				// trying to manipulate a task where the current user is not the owner => check for RoleConstants.storeTask_all
+				Authority.getOrganisationAuthority(pm).assertContainsRoleRef(getPrincipal(), RoleConstants.storeTask_all);
+			}
+
+			task = NLJDOHelper.storeJDO(pm, task, get, fetchGroups, maxFetchDepth);
+			return task;
+		} finally {
+			pm.close();
 		}
 	}
 }

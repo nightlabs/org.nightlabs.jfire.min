@@ -14,7 +14,6 @@ import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 
 import org.apache.log4j.Logger;
-import org.nightlabs.ModuleException;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jdo.ObjectID;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
@@ -195,7 +194,6 @@ implements SessionBean
 	 * @param description The editLock's description which will be shown to the user and should make clear what is locked (e.g. the name of the object referenced by <code>objectID</code>).
 	 * @param fetchGroups The fetch-groups used for detaching the created/queried {@link EditLock}.
 	 * @param maxFetchDepth The maximum fetch-depth for detaching the created/queried {@link EditLock}.
-	 * @throws ModuleException
 	 *
 	 * @ejb.interface-method
 	 * @ejb.transaction type="Required"
@@ -204,7 +202,6 @@ implements SessionBean
 	public AcquireEditLockResult acquireEditLock(
 			EditLockTypeID editLockTypeID, ObjectID objectID, String description,
 			String[] fetchGroups, int maxFetchDepth)
-	throws ModuleException
 	{
 		PersistenceManager pm = getPersistenceManager();
 		try {
@@ -227,7 +224,6 @@ implements SessionBean
 	 * @ejb.permission role-name="_Guest_"
 	 */
 	public void releaseEditLock(ObjectID objectID, ReleaseReason releaseReason)
-	throws ModuleException
 	{
 		PersistenceManager pm = getPersistenceManager();
 		try {

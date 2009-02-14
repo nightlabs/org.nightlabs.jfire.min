@@ -28,10 +28,8 @@ package org.nightlabs.jfire.asyncinvoke;
 
 import java.io.IOException;
 
-import javax.ejb.CreateException;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
-import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
@@ -48,7 +46,6 @@ import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.auth.login.LoginContext;
-import javax.security.auth.login.LoginException;
 
 import org.nightlabs.jfire.base.JFireServerLocalLoginManager;
 import org.nightlabs.jfire.servermanager.j2ee.JMSConnectionFactoryLookup;
@@ -59,6 +56,7 @@ import org.nightlabs.jfire.servermanager.j2ee.JMSConnectionFactoryLookup;
  * the <tt>exec(...)</tt> methods.
  *
  * @author Marco Schulze - marco at nightlabs dot de
+ * @author Marc Klinger - marc[at]nightlabs[dot]de
  */
 public class AsyncInvoke
 {
@@ -67,7 +65,7 @@ public class AsyncInvoke
 	protected static final String QUEUE_ERRORCALLBACK = "queue/jfire/JFireBaseBean/AsyncInvokerErrorCallbackQueue";
 	protected static final String QUEUE_UNDELIVERABLECALLBACK = "queue/jfire/JFireBaseBean/AsyncInvokerUndeliverableCallbackQueue";
 
-//	private InitialContext initialContext = null;
+	//	private InitialContext initialContext = null;
 
 	protected AsyncInvoke()
 	{
@@ -76,10 +74,10 @@ public class AsyncInvoke
 	/**
 	 * This is a convenience method which calls {@link #asyncInvoke(Invocation, SuccessCallback, ErrorCallback, UndeliverableCallback)}.
 	 * @param enableXA TODO
-	 * @throws CreateException
+	 * @throws AsyncInvokeEnqueueException If creating the async invoke envelope or enqueueing the invokation failed
 	 */
 	public static void exec(Invocation invocation, boolean enableXA)
-	throws JMSException, NamingException, LoginException
+	throws AsyncInvokeEnqueueException
 	{
 		exec(invocation, null, null, null, enableXA);
 	}
@@ -87,11 +85,11 @@ public class AsyncInvoke
 	/**
 	 * This is a convenience method which calls {@link #asyncInvoke(Invocation, SuccessCallback, ErrorCallback, UndeliverableCallback)}.
 	 * @param enableXA TODO
-	 * @throws CreateException
+	 * @throws AsyncInvokeEnqueueException If creating the async invoke envelope or enqueueing the invokation failed
 	 */
 	public static void exec(
 			Invocation invocation, SuccessCallback successCallback, boolean enableXA)
-	throws JMSException, NamingException, LoginException
+	throws AsyncInvokeEnqueueException
 	{
 		exec(invocation, successCallback, null, null, enableXA);
 	}
@@ -99,11 +97,11 @@ public class AsyncInvoke
 	/**
 	 * This is a convenience method which calls {@link #asyncInvoke(Invocation, SuccessCallback, ErrorCallback, UndeliverableCallback)}.
 	 * @param enableXA TODO
-	 * @throws CreateException
+	 * @throws AsyncInvokeEnqueueException If creating the async invoke envelope or enqueueing the invokation failed
 	 */
 	public static void exec(
 			Invocation invocation, ErrorCallback errorCallback, boolean enableXA)
-	throws JMSException, NamingException, LoginException
+	throws AsyncInvokeEnqueueException
 	{
 		exec(invocation, null, errorCallback, null, enableXA);
 	}
@@ -111,11 +109,11 @@ public class AsyncInvoke
 	/**
 	 * This is a convenience method which calls {@link #asyncInvoke(Invocation, SuccessCallback, ErrorCallback, UndeliverableCallback)}.
 	 * @param enableXA TODO
-	 * @throws CreateException
+	 * @throws AsyncInvokeEnqueueException If creating the async invoke envelope or enqueueing the invokation failed
 	 */
 	public static void exec(
 			Invocation invocation, UndeliverableCallback undeliverableCallback, boolean enableXA)
-	throws JMSException, NamingException, LoginException
+	throws AsyncInvokeEnqueueException
 	{
 		exec(invocation, null, null, undeliverableCallback, enableXA);
 	}
@@ -141,18 +139,20 @@ public class AsyncInvoke
 	 *		If <code>enableXA</code> is <code>false</code>, the <code>envelope</code> will be enqueued without a transaction
 	 *		and thus, processing starts immediately - probably before the <i>GT</i> is complete. This will cause
 	 *		problems, if the asynchronously called code requires JDO objects written/manipulated within <i>GT</i>.
-	 *
-	 * @throws JMSException
-	 * @throws NamingException
-	 * @throws CreateException
+	 * @throws AsyncInvokeEnqueueException If creating the async invoke envelope or enqueueing the invokation failed
 	 */
 	public static void exec(
 			Invocation invocation, SuccessCallback successCallback,
 			ErrorCallback errorCallback, UndeliverableCallback undeliverableCallback, boolean enableXA)
-	throws JMSException, NamingException, LoginException
+	throws AsyncInvokeEnqueueException
 	{
-		AsyncInvokeEnvelope envelope = new AsyncInvokeEnvelope(
-				invocation, successCallback, errorCallback, undeliverableCallback);
+		AsyncInvokeEnvelope envelope;
+		try {
+			envelope = new AsyncInvokeEnvelope(
+					invocation, successCallback, errorCallback, undeliverableCallback);
+		} catch (NamingException e) {
+			throw new AsyncInvokeEnqueueException(e);
+		}
 		enqueue(QUEUE_INVOCATION, envelope, enableXA);
 	}
 
@@ -169,7 +169,7 @@ public class AsyncInvoke
 		@Override
 		public void handle(Callback[] callbacks)
 		throws IOException,
-				UnsupportedCallbackException
+		UnsupportedCallbackException
 		{
 			for (int i = 0; i < callbacks.length; ++i) {
 				Callback cb = callbacks[i];
@@ -194,71 +194,75 @@ public class AsyncInvoke
 	 *		If <code>enableXA</code> is <code>false</code>, the <code>envelope</code> will be enqueued without a transaction
 	 *		and thus, processing starts immediately - probably before the <i>GT</i> is complete. This will cause
 	 *		problems, if the asynchronously called code requires JDO objects written/manipulated within <i>GT</i>.
+	 * @throws AsyncInvokeEnqueueException If enqueueing the invokation failed
 	 */
 	protected static void enqueue(String queueJNDIName, AsyncInvokeEnvelope envelope, boolean enableXA)
-	throws JMSException, NamingException, LoginException
+	throws AsyncInvokeEnqueueException
 	{
-		InitialContext initialContext = new InitialContext();
 		try {
-			JFireServerLocalLoginManager m = JFireServerLocalLoginManager.getJFireServerLocalLoginManager(initialContext);
-
-			AuthCallbackHandler mqCallbackHandler = new AuthCallbackHandler(
-					JFireServerLocalLoginManager.PRINCIPAL_LOCALQUEUEWRITER,
-					m.getPrincipal(JFireServerLocalLoginManager.PRINCIPAL_LOCALQUEUEWRITER).getPassword().toCharArray());
-
-			LoginContext loginContext = new LoginContext("jfireLocal", mqCallbackHandler);
-			loginContext.login();
+			InitialContext initialContext = new InitialContext();
 			try {
-				if (enableXA) {
-					// TODO "java:/JmsXA" should be configurable?!
-					ConnectionFactory connectionFactory = (ConnectionFactory) initialContext.lookup("java:/JmsXA");
+				JFireServerLocalLoginManager m = JFireServerLocalLoginManager.getJFireServerLocalLoginManager(initialContext);
 
-					Connection connection = null;
-					Session session = null;
-					MessageProducer sender = null;
+				AuthCallbackHandler mqCallbackHandler = new AuthCallbackHandler(
+						JFireServerLocalLoginManager.PRINCIPAL_LOCALQUEUEWRITER,
+						m.getPrincipal(JFireServerLocalLoginManager.PRINCIPAL_LOCALQUEUEWRITER).getPassword().toCharArray());
 
-					try {
-						Queue queue = (Queue) initialContext.lookup(queueJNDIName);
-						connection = connectionFactory.createConnection();
-						session = connection.createSession(true, Session.AUTO_ACKNOWLEDGE);
-						sender = session.createProducer(queue);
+				LoginContext loginContext = new LoginContext("jfireLocal", mqCallbackHandler);
+				loginContext.login();
+				try {
+					if (enableXA) {
+						// TODO "java:/JmsXA" should be configurable?!
+						ConnectionFactory connectionFactory = (ConnectionFactory) initialContext.lookup("java:/JmsXA");
 
-						Message message = session.createObjectMessage(envelope);
-						sender.send(message);
-					} finally {
-						if (sender != null) try { sender.close(); } catch (Exception ignore) { }
-						if (session != null) try { session.close(); } catch (Exception ignore) { }
-						if (connection != null) try { connection.close(); } catch (Exception ignore) { }
+						Connection connection = null;
+						Session session = null;
+						MessageProducer sender = null;
+
+						try {
+							Queue queue = (Queue) initialContext.lookup(queueJNDIName);
+							connection = connectionFactory.createConnection();
+							session = connection.createSession(true, Session.AUTO_ACKNOWLEDGE);
+							sender = session.createProducer(queue);
+
+							Message message = session.createObjectMessage(envelope);
+							sender.send(message);
+						} finally {
+							if (sender != null) try { sender.close(); } catch (Exception ignore) { }
+							if (session != null) try { session.close(); } catch (Exception ignore) { }
+							if (connection != null) try { connection.close(); } catch (Exception ignore) { }
+						}
 					}
-				}
-				else {
-					QueueConnectionFactory connectionFactory = JMSConnectionFactoryLookup.lookupQueueConnectionFactory(initialContext);
+					else {
+						QueueConnectionFactory connectionFactory = JMSConnectionFactoryLookup.lookupQueueConnectionFactory(initialContext);
 
-					QueueConnection connection = null;
-					QueueSession session = null;
-					QueueSender sender = null;
+						QueueConnection connection = null;
+						QueueSession session = null;
+						QueueSender sender = null;
 
-					try {
-						connection = connectionFactory.createQueueConnection();
-						session = connection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
-	//					session = connection.createQueueSession(true, Session.AUTO_ACKNOWLEDGE); // transacted = true
-						Queue queue = (Queue) initialContext.lookup(queueJNDIName);
-						sender = session.createSender(queue);
+						try {
+							connection = connectionFactory.createQueueConnection();
+							session = connection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
+							//					session = connection.createQueueSession(true, Session.AUTO_ACKNOWLEDGE); // transacted = true
+							Queue queue = (Queue) initialContext.lookup(queueJNDIName);
+							sender = session.createSender(queue);
 
-						Message message = session.createObjectMessage(envelope);
-						sender.send(message);
-					} finally {
-						if (sender != null) try { sender.close(); } catch (Exception ignore) { }
-						if (session != null) try { session.close(); } catch (Exception ignore) { }
-						if (connection != null) try { connection.close(); } catch (Exception ignore) { }
+							Message message = session.createObjectMessage(envelope);
+							sender.send(message);
+						} finally {
+							if (sender != null) try { sender.close(); } catch (Exception ignore) { }
+							if (session != null) try { session.close(); } catch (Exception ignore) { }
+							if (connection != null) try { connection.close(); } catch (Exception ignore) { }
+						}
 					}
+				} finally {
+					loginContext.logout();
 				}
 			} finally {
-				loginContext.logout();
+				initialContext.close();
 			}
-		} finally {
-			initialContext.close();
+		} catch(Exception e) {
+			throw new AsyncInvokeEnqueueException(e);
 		}
 	}
-
 }

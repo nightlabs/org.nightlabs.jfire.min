@@ -16,6 +16,7 @@ import org.apache.log4j.Logger;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jdo.ObjectIDUtil;
 import org.nightlabs.jfire.asyncinvoke.AsyncInvoke;
+import org.nightlabs.jfire.asyncinvoke.AsyncInvokeEnqueueException;
 import org.nightlabs.jfire.asyncinvoke.AsyncInvokeEnvelope;
 import org.nightlabs.jfire.asyncinvoke.AsyncInvokeProblem;
 import org.nightlabs.jfire.asyncinvoke.ErrorCallback;
@@ -319,7 +320,7 @@ extends AsyncInvoke
 	}
 
 	protected static void exec(Task task, boolean enableXA)
-	throws LoginException, JMSException, NamingException
+	throws AsyncInvokeEnqueueException
 	{
 		UserDescriptor caller = new UserDescriptor(
 				task.getUser().getOrganisationID(),

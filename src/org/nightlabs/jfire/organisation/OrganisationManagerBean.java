@@ -26,6 +26,7 @@
 
 package org.nightlabs.jfire.organisation;
 
+import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -51,7 +52,6 @@ import javax.naming.NamingException;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
-import org.nightlabs.ModuleException;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.asyncinvoke.AsyncInvoke;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
@@ -61,6 +61,7 @@ import org.nightlabs.jfire.base.JFireRemoteException;
 import org.nightlabs.jfire.base.Lookup;
 import org.nightlabs.jfire.organisation.id.OrganisationID;
 import org.nightlabs.jfire.organisationinit.CrossOrganisationRegistrationInitInvocation;
+import org.nightlabs.jfire.organisationinit.OrganisationInitException;
 import org.nightlabs.jfire.security.Authority;
 import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.security.User;
@@ -73,6 +74,7 @@ import org.nightlabs.jfire.servermanager.config.OrganisationCf;
 import org.nightlabs.jfire.servermanager.config.RootOrganisationCf;
 import org.nightlabs.jfire.servermanager.config.ServerCf;
 import org.nightlabs.jfire.servermanager.createorganisation.BusyCreatingOrganisationException;
+import org.nightlabs.jfire.servermanager.createorganisation.CreateOrganisationException;
 import org.nightlabs.jfire.servermanager.createorganisation.CreateOrganisationProgress;
 import org.nightlabs.jfire.servermanager.createorganisation.CreateOrganisationProgressID;
 import org.nightlabs.jfire.servermanager.createorganisation.CreateOrganisationStatus;
@@ -130,22 +132,14 @@ public abstract class OrganisationManagerBean
 	 * @ejb.transaction type="Required"
 	 * @ejb.permission role-name="_ServerAdmin_"
 	 */
-	public void createOrganisationAfterReboot(String organisationID, String organisationDisplayName, String userID, String password, boolean isServerAdmin)
-	throws ModuleException
+	public void createOrganisationAfterReboot(String organisationID, String organisationDisplayName, String userID, String password, boolean isServerAdmin) throws IOException
 	{
+		JFireServerManager ism = getJFireServerManager();
 		try {
-			JFireServerManager ism = getJFireServerManager();
-			try {
-				CreateOrganisationAfterRebootData coar = new CreateOrganisationAfterRebootData(ism);
-				coar.addOrganisation(organisationID, organisationDisplayName, userID, password, isServerAdmin);
-			} finally {
-				ism.close();
-			}
-		} catch (Exception x) {
-			if (x instanceof ModuleException)
-				throw (ModuleException)x;
-			else
-				throw new ModuleException(x);
+			CreateOrganisationAfterRebootData coar = new CreateOrganisationAfterRebootData(ism);
+			coar.addOrganisation(organisationID, organisationDisplayName, userID, password, isServerAdmin);
+		} finally {
+			ism.close();
 		}
 	}
 
@@ -157,13 +151,14 @@ public abstract class OrganisationManagerBean
 	 * @param userID The userID of the first user to create within the new organisation. It will have all necessary permissions to manage users and roles within the new organisation.
 	 * @param password The password of the new user.
 	 * @param isServerAdmin Whether this user should have global server administration permissions.
+	 * @throws CreateOrganisationException If creating the organisation failed
+	 * @throws OrganisationInitException If initializing the organisation failed
 	 *
 	 * @ejb.interface-method
 	 * @ejb.transaction type="Never"
 	 * @ejb.permission role-name="_ServerAdmin_"
 	 */
-	public void createOrganisation(String organisationID, String organisationDisplayName, String userID, String password, boolean isServerAdmin)
-	throws ModuleException
+	public void createOrganisation(String organisationID, String organisationDisplayName, String userID, String password, boolean isServerAdmin) throws OrganisationInitException, CreateOrganisationException
 	{
 		JFireServerManager ism = getJFireServerManager();
 		try {
@@ -704,7 +699,6 @@ public abstract class OrganisationManagerBean
 	 * @ejb.transaction type="Required"
 	 * @ejb.permission role-name="_Guest_"
 	 **/
-	@SuppressWarnings("unchecked")
 	public TestRequestResultTreeNode testCascadedAuthentication(TestRequestResultTreeNode node)
 	throws Exception
 	{
@@ -716,7 +710,6 @@ public abstract class OrganisationManagerBean
 	 * @ejb.transaction type="Required"
 	 * @ejb.permission role-name="_Guest_"
 	 **/
-	@SuppressWarnings("unchecked")
 	public TestRequestResultTreeNode internal_testCascadedAuthentication(TestRequestResultTreeNode node, int level)
 	throws Exception
 	{
@@ -839,6 +832,7 @@ public abstract class OrganisationManagerBean
 	 * @ejb.transaction type="Required"
 	 * @ejb.permission role-name="_Guest_" @!Roles are checked inside the code, because the behaviour is dependent on the situation. Marco.
 	 */
+	@SuppressWarnings("unchecked")
 	public Collection<Organisation> getOrganisationsFromRootOrganisation(boolean filterPartnerOrganisations, String[] fetchGroups, int maxFetchDepth)
 	throws JFireException
 	{
@@ -1091,7 +1085,6 @@ public abstract class OrganisationManagerBean
 	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 * @ejb.permission role-name="org.nightlabs.jfire.organisation.queryOrganisations"
 	 */
-	@SuppressWarnings("unchecked")
 	public List<Organisation> getOrganisations(Collection<OrganisationID> organisationIDs, String[] fetchGroups, int maxFetchDepth)
 	{
 		PersistenceManager pm = getPersistenceManager();
