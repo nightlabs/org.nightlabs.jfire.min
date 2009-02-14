@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app id="JFireWebAdmin" version="2.4" xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
+	<display-name>JFireWebAdmin</display-name>
+	<welcome-file-list>
+		<welcome-file>index</welcome-file>
+	</welcome-file-list>
+
+	<servlet>
+		<servlet-name>IndexServlet</servlet-name>
+		<servlet-class>org.nightlabs.jfire.web.admin.servlet.IndexServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>IndexServlet</servlet-name>
+		<url-pattern>/index</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>LoginServlet</servlet-name>
+		<servlet-class>org.nightlabs.jfire.web.admin.servlet.LoginServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>LoginServlet</servlet-name>
+		<url-pattern>/login</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>OverviewServlet</servlet-name>
+		<servlet-class>org.nightlabs.jfire.web.admin.servlet.OverviewServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>OverviewServlet</servlet-name>
+		<url-pattern>/overview</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>OrganisationListServlet</servlet-name>
+		<servlet-class>org.nightlabs.jfire.web.admin.servlet.OrganisationListServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>OrganisationListServlet</servlet-name>
+		<url-pattern>/organisationlist</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>CreateOrganisationServlet</servlet-name>
+		<servlet-class>org.nightlabs.jfire.web.admin.servlet.CreateOrganisationServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>CreateOrganisationServlet</servlet-name>
+		<url-pattern>/createorganisation</url-pattern>
+	</servlet-mapping>
+
+
+
+	<servlet>
+		<servlet-name>ServerInitializeServlet</servlet-name>
+		<servlet-class>org.nightlabs.jfire.web.admin.servlet.ServerInitializeServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>ServerInitializeServlet</servlet-name>
+		<url-pattern>/serverinitialize</url-pattern>
+	</servlet-mapping>
+
+
+
+	<servlet>
+		<servlet-name>CfTestServlet</servlet-name>
+		<servlet-class>org.nightlabs.jfire.web.admin.servlet.CfTestServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>CfTestServlet</servlet-name>
+		<url-pattern>/cftest</url-pattern>
+	</servlet-mapping>
+
+
+<!-- 
+	<servlet>
+		<servlet-name>ProductListingServlet</servlet-name>
+		<servlet-class>org.nightlabs.jfire.web.demoshop.producttype.ProductTypeListingServlet</servlet-class>
+	</servlet>
+	
+	<servlet-mapping>
+		<servlet-name>ProductListingServlet</servlet-name>
+		<url-pattern>/product/list/*</url-pattern>
+	</servlet-mapping>
+ -->
+
+</web-app>	
