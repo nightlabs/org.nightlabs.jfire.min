@@ -2366,6 +2366,10 @@ public class JFireServerManagerFactoryImpl
 		return pmf;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.base.PersistenceManagerProvider#getPersistenceManager(java.lang.String)
+	 */
+	@Override
 	public PersistenceManager getPersistenceManager(String organisationID)
 	{
 		PersistenceManagerFactory pmf = getPersistenceManagerFactory(organisationID);
