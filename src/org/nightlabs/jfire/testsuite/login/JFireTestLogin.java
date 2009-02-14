@@ -94,7 +94,7 @@ public class JFireTestLogin
 	 * @throws NamingException
 	 * @throws OrganisationNotFoundException 
 	 */
-	public static boolean checkCreateLoginsAndRegisterInAuthorities(PersistenceManager pm) throws ModuleException, IOException, NamingException, OrganisationNotFoundException {
+	public static boolean checkCreateLoginsAndRegisterInAuthorities(PersistenceManager pm) throws InitException, IOException, NamingException, OrganisationNotFoundException {
 		Properties properties = JFireTestSuiteEAR.getProperties(JFireTestSuiteEAR.getJFireTestSuiteProperties(), PROP_TEST_USER_PREFIX + ".");
 		Pattern findUserPropName = Pattern.compile("([^.]*).*");
 		Set<String> userPropNames = new HashSet<String>();

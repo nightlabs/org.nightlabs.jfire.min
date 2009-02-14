@@ -21,7 +21,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
-import org.nightlabs.ModuleException;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.servermanager.JFireServerManagerUtil;
 
@@ -40,14 +39,8 @@ public class JFireTestSuiteEAR
 
 
 	public static File getEARDir()
-	throws ModuleException
 	{
-		JFireServerManager jFireServerManager;
-		try {
-			jFireServerManager = JFireServerManagerUtil.getJFireServerManager();
-		} catch (Exception e) {
-			throw new ModuleException("Could not get JFireServerManager!", e);
-		}
+		JFireServerManager jFireServerManager = JFireServerManagerUtil.getJFireServerManager();
 		try {
 			File earDir = new File(
 						new File(jFireServerManager.getJFireServerConfigModule()
@@ -140,7 +133,7 @@ public class JFireTestSuiteEAR
 	 * They are located in the file jfireTestSuite.properties in the ear directory.
 	 */
 	public static Properties getJFireTestSuiteProperties()
-	throws ModuleException, IOException
+	throws IOException
 	{
 		if (jfireTestSuiteProperties == null) {
 			synchronized (JFireTestSuiteEAR.class) {
