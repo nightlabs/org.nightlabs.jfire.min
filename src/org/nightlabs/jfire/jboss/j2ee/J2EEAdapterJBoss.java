@@ -35,6 +35,7 @@ import javax.management.Notification;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.login.LoginContext;
 import javax.security.auth.login.LoginException;
@@ -43,6 +44,7 @@ import javax.transaction.UserTransaction;
 import org.nightlabs.jfire.jboss.authentication.JFireJBossLoginContext;
 import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.servermanager.j2ee.J2EEAdapter;
+import org.nightlabs.jfire.servermanager.j2ee.J2EEAdapterException;
 import org.nightlabs.jfire.servermanager.j2ee.ServerStartNotificationListener;
 
 /**
@@ -52,14 +54,21 @@ public class J2EEAdapterJBoss implements J2EEAdapter
 {
 	private static final long serialVersionUID = 1L;
 
-	public void flushAuthenticationCache()
-	throws Exception
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.servermanager.j2ee.J2EEAdapter#flushAuthenticationCache()
+	 */
+	@Override
+	public void flushAuthenticationCache() throws J2EEAdapterException
 	{
-		ObjectName jaasMgr =
-			new ObjectName("jboss.security:service=JaasSecurityManager");
-		Object[] params = { "jfire" }; // String securityDomain
-		String[] signature = { "java.lang.String" };
-		invoke(jaasMgr, "flushAuthenticationCache", params, signature);
+		try {
+			ObjectName jaasMgr =
+				new ObjectName("jboss.security:service=JaasSecurityManager");
+			Object[] params = { "jfire" }; // String securityDomain
+			String[] signature = { "java.lang.String" };
+			invoke(jaasMgr, "flushAuthenticationCache", params, signature);
+		} catch(Exception e) {
+			throw new J2EEAdapterException("Flushing authentication cache failed", e);
+		}
 	}
 
 	protected Object invoke(
@@ -109,31 +118,43 @@ public class J2EEAdapterJBoss implements J2EEAdapter
 	protected Remote server;
 	protected InitialContext initialContext = null;
 
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.servermanager.j2ee.J2EEAdapter#registerNotificationListenerServerStarted(org.nightlabs.jfire.servermanager.j2ee.ServerStartNotificationListener)
+	 */
 	@Override
-	public void registerNotificationListenerServerStarted(ServerStartNotificationListener listener)
-		throws Exception
+	public void registerNotificationListenerServerStarted(ServerStartNotificationListener listener) throws J2EEAdapterException
 	{
 		MBeanServer server = MBeanServerFactory.findMBeanServer(null).get(0);
 
-		server.addNotificationListener(
-				new ObjectName("jboss.system:type=Server"),
-				new NotificationListener(){
-					public void handleNotification(Notification notification, Object handback)
-					{
-						if (org.jboss.system.server.Server.START_NOTIFICATION_TYPE.equals(notification.getType())) {
-							((ServerStartNotificationListener)handback).serverStarted();
+		try {
+			server.addNotificationListener(
+					new ObjectName("jboss.system:type=Server"),
+					new NotificationListener(){
+						public void handleNotification(Notification notification, Object handback)
+						{
+							if (org.jboss.system.server.Server.START_NOTIFICATION_TYPE.equals(notification.getType())) {
+								((ServerStartNotificationListener)handback).serverStarted();
+							}
 						}
-					}
-				}, null,
-				listener
-		);
+					}, null,
+					listener
+			);
+		} catch (Exception e) {
+			throw new J2EEAdapterException("Registering notification listener failed", e);
+		}
 	}
 
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.servermanager.j2ee.J2EEAdapter#getUserTransaction(javax.naming.InitialContext)
+	 */
 	@Override
-	public UserTransaction getUserTransaction(InitialContext initialContext)
-		throws Exception
+	public UserTransaction getUserTransaction(InitialContext initialContext) throws J2EEAdapterException
 	{
-		return (UserTransaction)initialContext.lookup("UserTransaction");
+		try {
+			return (UserTransaction)initialContext.lookup("UserTransaction");
+		} catch (NamingException e) {
+			throw new J2EEAdapterException("Getting user transaction failed", e);
+		}
 	}
 
 	private SecurityReflector userResolver = null;
