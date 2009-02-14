@@ -13,7 +13,6 @@ import javax.jdo.PersistenceManager;
 import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
-import org.apache.log4j.Priority;
 import org.nightlabs.ModuleException;
 import org.nightlabs.j2ee.LoginData;
 import org.nightlabs.jfire.base.InitException;
@@ -31,6 +30,7 @@ import org.nightlabs.jfire.security.id.UserID;
 import org.nightlabs.jfire.security.listener.SecurityChangeController;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.servermanager.JFireServerManagerUtil;
+import org.nightlabs.jfire.servermanager.OrganisationNotFoundException;
 import org.nightlabs.jfire.testsuite.JFireTestSuiteEAR;
 import org.nightlabs.jfire.workstation.Workstation;
 import org.nightlabs.jfire.workstation.id.WorkstationID;
@@ -92,8 +92,9 @@ public class JFireTestLogin
 	 * @param pm The PersitenceManager to use.
 	 * @return Whether it succeeded.
 	 * @throws NamingException
+	 * @throws OrganisationNotFoundException 
 	 */
-	public static boolean checkCreateLoginsAndRegisterInAuthorities(PersistenceManager pm) throws ModuleException, IOException, NamingException {
+	public static boolean checkCreateLoginsAndRegisterInAuthorities(PersistenceManager pm) throws ModuleException, IOException, NamingException, OrganisationNotFoundException {
 		Properties properties = JFireTestSuiteEAR.getProperties(JFireTestSuiteEAR.getJFireTestSuiteProperties(), PROP_TEST_USER_PREFIX + ".");
 		Pattern findUserPropName = Pattern.compile("([^.]*).*");
 		Set<String> userPropNames = new HashSet<String>();
@@ -112,7 +113,7 @@ public class JFireTestLogin
 	}
 
 	private static boolean checkCreateLoginUsers(PersistenceManager pm, Properties userProperties,
-			Set<String> userPropNames) throws InitException, ModuleException, NamingException
+			Set<String> userPropNames) throws InitException, NamingException, OrganisationNotFoundException
 	{
 		SecurityChangeController.beginChanging();
 		boolean successful = false;
@@ -194,8 +195,7 @@ public class JFireTestLogin
 
 			// check if they are correctly stored
 			if (userPropNames.isEmpty()) {
-				if (logger.isEnabledFor(Priority.WARN))
-					logger.warn("No declared users found!");
+				logger.warn("No declared users found!");
 
 				return true;
 			}
