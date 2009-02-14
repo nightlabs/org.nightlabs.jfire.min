@@ -7,10 +7,7 @@ import javax.ejb.EJBLocalObject;
 import javax.ejb.EJBObject;
 import javax.jdo.JDOHelper;
 import javax.jdo.PersistenceManager;
-import javax.jms.JMSException;
 import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.security.auth.login.LoginException;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.jdo.NLJDOHelper;
