@@ -15,8 +15,11 @@ import javax.swing.SwingUtilities;
 import org.apache.log4j.Logger;
 import org.nightlabs.jfire.base.jdo.cache.Cache;
 import org.nightlabs.jfire.jdo.notification.AbsoluteFilterID;
+import org.nightlabs.jfire.jdo.notification.DirtyObjectID;
 import org.nightlabs.jfire.jdo.notification.IJDOLifecycleListenerFilter;
 import org.nightlabs.jfire.security.SecurityReflector;
+import org.nightlabs.notification.NotificationEvent;
+import org.nightlabs.notification.NotificationManager;
 import org.nightlabs.util.Util;
 
 /**
