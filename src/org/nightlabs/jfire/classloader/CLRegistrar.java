@@ -29,8 +29,8 @@ package org.nightlabs.jfire.classloader;
 import java.io.IOException;
 import java.util.List;
 
-import org.nightlabs.ModuleException;
 import org.nightlabs.jfire.base.JFireBasePrincipal;
+import org.nightlabs.xml.XMLReadException;
 
 /**
  * @author marco schulze - marco at nightlabs dot de
@@ -54,28 +54,26 @@ public class CLRegistrar
 	 *
 	 * @param name
 	 * @return
+	 * @throws IOException 
+	 * @throws XMLReadException 
 	 * @throws IOException
 	 */
-	public List<ResourceMetaData> getResourcesMetaData(String name)
-		throws ModuleException
+	public List<ResourceMetaData> getResourcesMetaData(String name) throws XMLReadException, IOException
 	{
 		return clRegistrarFactory.getResourcesMetaData(name);
 	}
 
-	public byte[] getResourceBytes(ResourceMetaData rmd)
-		throws ModuleException
+	public byte[] getResourceBytes(ResourceMetaData rmd) throws IOException, XMLReadException
 	{
 		return clRegistrarFactory.getResourceBytes(rmd);
 	}
 
-	protected synchronized byte[] getResourcesMetaDataMapBytes()
-		throws ModuleException
+	protected synchronized byte[] getResourcesMetaDataMapBytes() throws XMLReadException, IOException
 	{
 		return clRegistrarFactory.getResourcesMetaDataMapBytes();
 	}
 
-	protected synchronized long getResourcesMetaDataMapBytesTimestamp()
-		throws ModuleException
+	protected synchronized long getResourcesMetaDataMapBytesTimestamp() throws XMLReadException, IOException
 	{
 		return clRegistrarFactory.getResourcesMetaDataMapBytesTimestamp();
 	}

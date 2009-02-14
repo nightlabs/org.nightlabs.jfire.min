@@ -16,13 +16,13 @@ import javax.naming.InitialContext;
 
 import org.apache.log4j.Logger;
 import org.apache.xpath.CachedXPathAPI;
-import org.nightlabs.ModuleException;
 import org.nightlabs.datastructure.PrefixTree;
 import org.nightlabs.jfire.base.InvokeUtil;
 import org.nightlabs.jfire.init.AbstractInitManager;
 import org.nightlabs.jfire.init.DependencyCycleException;
 import org.nightlabs.jfire.init.InitException;
 import org.nightlabs.jfire.init.Resolution;
+import org.nightlabs.jfire.organisationinit.OrganisationInitException;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.servermanager.JFireServerManagerFactory;
@@ -323,8 +323,7 @@ extends AbstractInitManager<CrossOrganisationRegistrationInit, OrganisationInitD
 	}
 
 	public void initialiseOrganisation(
-			JFireServerManagerFactory ismf, ServerCf localServer, String organisationID, String systemUserPassword, Context context)
-	throws ModuleException
+			JFireServerManagerFactory ismf, ServerCf localServer, String organisationID, String systemUserPassword, Context context) throws OrganisationInitException
 	{
 		if (!canPerformInit) {
 			logger.error("Cross organisation registration initialisation can not be performed due to errors above.");
@@ -363,12 +362,8 @@ extends AbstractInitManager<CrossOrganisationRegistrationInit, OrganisationInitD
 			} finally {
 		   	initCtx.close();
 			}
-		} catch (Error e) {
-			throw e;
-		} catch (RuntimeException x) {
-			throw x;
 		} catch (Throwable x) {
-			throw new ModuleException(x);
+			throw new OrganisationInitException(x);
 		}
 	}
 

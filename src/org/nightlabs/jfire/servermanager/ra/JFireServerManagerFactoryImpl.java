@@ -83,7 +83,6 @@ import javax.transaction.UserTransaction;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.nightlabs.ModuleException;
 import org.nightlabs.config.Config;
 import org.nightlabs.config.ConfigException;
 import org.nightlabs.j2ee.LoginData;
@@ -125,6 +124,7 @@ import org.nightlabs.jfire.security.id.UserID;
 import org.nightlabs.jfire.security.id.UserLocalID;
 import org.nightlabs.jfire.security.listener.SecurityChangeController;
 import org.nightlabs.jfire.server.Server;
+import org.nightlabs.jfire.serverconfigurator.ServerConfigurationException;
 import org.nightlabs.jfire.serverconfigurator.ServerConfigurator;
 import org.nightlabs.jfire.serverinit.ServerInitManager;
 import org.nightlabs.jfire.servermanager.DuplicateOrganisationException;
@@ -143,6 +143,7 @@ import org.nightlabs.jfire.servermanager.config.OrganisationConfigModule;
 import org.nightlabs.jfire.servermanager.config.ServerCf;
 import org.nightlabs.jfire.servermanager.config.J2eeServerTypeRegistryConfigModule.J2eeLocalServer;
 import org.nightlabs.jfire.servermanager.createorganisation.BusyCreatingOrganisationException;
+import org.nightlabs.jfire.servermanager.createorganisation.CreateOrganisationException;
 import org.nightlabs.jfire.servermanager.createorganisation.CreateOrganisationProgress;
 import org.nightlabs.jfire.servermanager.createorganisation.CreateOrganisationProgressID;
 import org.nightlabs.jfire.servermanager.createorganisation.CreateOrganisationStatus;
@@ -152,6 +153,7 @@ import org.nightlabs.jfire.servermanager.deploy.DeployOverwriteBehaviour;
 import org.nightlabs.jfire.servermanager.deploy.DeployedFileAlreadyExistsException;
 import org.nightlabs.jfire.servermanager.deploy.DeploymentJarItem;
 import org.nightlabs.jfire.servermanager.j2ee.J2EEAdapter;
+import org.nightlabs.jfire.servermanager.j2ee.J2EEAdapterException;
 import org.nightlabs.jfire.servermanager.j2ee.JMSConnectionFactoryLookup;
 import org.nightlabs.jfire.servermanager.j2ee.ServerStartNotificationListener;
 import org.nightlabs.jfire.servermanager.xml.AuthorityTypeDef;
@@ -373,9 +375,8 @@ public class JFireServerManagerFactoryImpl
 		J2EEAdapter j2EEAdapter;
 		try {
 			j2EEAdapter = getJ2EEVendorAdapter();
-		} catch (ModuleException e) {
-			logger.error("Creating J2EEAdapter failed!", e);
-			throw new ResourceException(e.getMessage());
+		} catch (J2EEAdapterException e) {
+			throw new ResourceException(e);
 		}
 		try
 		{
@@ -497,67 +498,62 @@ public class JFireServerManagerFactoryImpl
 	 * This method configures the server using the currently configured server configurator.
 	 * @param delayMSec In case a reboot is necessary, the shutdown will be delayed by this time in milliseconds.
 	 * @return Returns whether a reboot was necessary (and thus a shutdown was/will be initiated).
+	 * @throws ServerConfigurationException If server configuration failed
 	 */
-	public boolean configureServerAndShutdownIfNecessary(final long delayMSec)
-	throws ModuleException
+	public boolean configureServerAndShutdownIfNecessary(final long delayMSec) throws ServerConfigurationException
 	{
-		try {
+		boolean rebootRequired = ServerConfigurator.configureServer(mcf.getConfigModule());
 
-			boolean rebootRequired = ServerConfigurator.configureServer(mcf.getConfigModule());
+		if (rebootRequired) {
+			shuttingDown = true;
 
-			if (rebootRequired) {
-				shuttingDown = true;
+			logger.warn("*** REBOOT REQUIRED ***");
+			logger.warn("*** REBOOT REQUIRED ***");
+			logger.warn("*** REBOOT REQUIRED ***");
 
-				logger.warn("*** REBOOT REQUIRED ***");
-				logger.warn("*** REBOOT REQUIRED ***");
-				logger.warn("*** REBOOT REQUIRED ***");
+			logger.warn("*** REBOOT REQUIRED ***");
+			logger.warn("*** REBOOT REQUIRED ***");
+			logger.warn("*** REBOOT REQUIRED ***");
 
-				logger.warn("*** REBOOT REQUIRED ***");
-				logger.warn("*** REBOOT REQUIRED ***");
-				logger.warn("*** REBOOT REQUIRED ***");
+			logger.warn("*** REBOOT REQUIRED ***");
+			logger.warn("*** REBOOT REQUIRED ***");
+			logger.warn("*** REBOOT REQUIRED ***");
 
-				logger.warn("*** REBOOT REQUIRED ***");
-				logger.warn("*** REBOOT REQUIRED ***");
-				logger.warn("*** REBOOT REQUIRED ***");
+			logger.warn("The invoked Server Configurator indicates that the server needs to be rebooted! Hence, I will shutdown the server NOW!");
+			logger.warn("If this is an error and prevents your JFire Server from starting up correctly, you must exchange the ServerConfigurator in the config module " + JFireServerConfigModule.class.getName());
 
-				logger.warn("The invoked Server Configurator indicates that the server needs to be rebooted! Hence, I will shutdown the server NOW!");
-				logger.warn("If this is an error and prevents your JFire Server from starting up correctly, you must exchange the ServerConfigurator in the config module " + JFireServerConfigModule.class.getName());
+			logger.warn("*** REBOOT REQUIRED ***");
+			logger.warn("*** REBOOT REQUIRED ***");
+			logger.warn("*** REBOOT REQUIRED ***");
 
-				logger.warn("*** REBOOT REQUIRED ***");
-				logger.warn("*** REBOOT REQUIRED ***");
-				logger.warn("*** REBOOT REQUIRED ***");
+			logger.warn("*** REBOOT REQUIRED ***");
+			logger.warn("*** REBOOT REQUIRED ***");
+			logger.warn("*** REBOOT REQUIRED ***");
 
-				logger.warn("*** REBOOT REQUIRED ***");
-				logger.warn("*** REBOOT REQUIRED ***");
-				logger.warn("*** REBOOT REQUIRED ***");
+			logger.warn("*** REBOOT REQUIRED ***");
+			logger.warn("*** REBOOT REQUIRED ***");
+			logger.warn("*** REBOOT REQUIRED ***");
 
-				logger.warn("*** REBOOT REQUIRED ***");
-				logger.warn("*** REBOOT REQUIRED ***");
-				logger.warn("*** REBOOT REQUIRED ***");
+			Thread thread = new Thread() {
+				@Override
+				public void run()
+				{
+					if (delayMSec > 0)
+						try { Thread.sleep(delayMSec); } catch (InterruptedException ignore) { }
 
-				Thread thread = new Thread() {
-					@Override
-					public void run()
-					{
-						if (delayMSec > 0)
-							try { Thread.sleep(delayMSec); } catch (InterruptedException ignore) { }
-
-						try {
-							getJ2EEVendorAdapter().reboot();
-							logger.warn("*** REBOOT initiated ***");
-						} catch (Throwable e) {
-							logger.error("Shutting down server failed!", e);
-						}
+					try {
+						getJ2EEVendorAdapter().reboot();
+						logger.warn("*** REBOOT initiated ***");
+					} catch (Throwable e) {
+						logger.error("Shutting down server failed!", e);
 					}
-				};
-				thread.setDaemon(false);
-				thread.start();
-				return true;
-			}
-			return false;
-		} catch (Throwable x) {
-			throw new ModuleException(x);
+				}
+			};
+			thread.setDaemon(false);
+			thread.start();
+			return true;
 		}
+		return false;
 	}
 
 	/**
@@ -894,7 +890,6 @@ public class JFireServerManagerFactoryImpl
 
 	/**
 	 * @return Returns a clone of the internal config module.
-	 * @throws ModuleException
 	 */
 	protected JFireServerConfigModule getJFireServerConfigModule()
 	{
@@ -978,8 +973,7 @@ public class JFireServerManagerFactoryImpl
 	}
 
 	protected J2EEAdapter j2eeVendorAdapter = null;
-	public synchronized J2EEAdapter getJ2EEVendorAdapter()
-		throws ModuleException
+	public synchronized J2EEAdapter getJ2EEVendorAdapter() throws J2EEAdapterException
 	{
 		if (j2eeVendorAdapter == null) {
 			try {
@@ -987,22 +981,15 @@ public class JFireServerManagerFactoryImpl
 				Class<?> j2eeVendorAdapterClass = Class.forName(j2eeVendorAdapterClassName);
 				j2eeVendorAdapter = (J2EEAdapter)j2eeVendorAdapterClass.newInstance();
 			} catch (Exception e) {
-				throw new ModuleException(e);
+				throw new J2EEAdapterException("Error creating new J2EE vendor adapter", e);
 			}
 		}
 		return j2eeVendorAdapter;
 	}
 
-	protected synchronized void j2ee_flushAuthenticationCache()
-		throws ModuleException
+	protected synchronized void j2ee_flushAuthenticationCache() throws J2EEAdapterException
 	{
-		try {
-			getJ2EEVendorAdapter().flushAuthenticationCache();
-		} catch (ModuleException e) {
-			throw e;
-		} catch (Exception e) {
-			throw new ModuleException(e);
-		}
+		getJ2EEVendorAdapter().flushAuthenticationCache();
 	}
 
 	protected RoleImportSet roleImport_prepare(String organisationID)
@@ -1149,7 +1136,6 @@ public class JFireServerManagerFactoryImpl
 	/**
 	 * @param roleImportSet
 	 * @param pm can be <tt>null</tt>. If <tt>null</tt>, it will be obtained according to <tt>roleImportSet.getOrganisationID()</tt>.
-	 * @throws ModuleException
 	 */
 	protected void roleImport_commit(RoleImportSet roleImportSet, PersistenceManager pm)
 	{
@@ -1159,7 +1145,7 @@ public class JFireServerManagerFactoryImpl
 		securityMan.resolve(); // this is very likely not yet done, since we don't have a UI anymore
 
 		if (!roleImportSet.getJarExceptions().isEmpty())
-			logger.warn("roleImportSet.jarExceptions is not empty! You should execute roleImportSet.clearJarExceptions()!", new ModuleException("roleImportSet.jarExceptions is not empty."));
+			logger.warn("roleImportSet.jarExceptions is not empty! You should execute roleImportSet.clearJarExceptions()!", new Exception("roleImportSet.jarExceptions is not empty."));
 
 		boolean localPM = pm == null;
 
@@ -1377,13 +1363,14 @@ public class JFireServerManagerFactoryImpl
 	 * @param userID The userID of the first user to be created. This will be the new organisation's administrator.
 	 * @param password The password of the organisation's first user.
 	 * @param isServerAdmin Whether the organisation's admin will have server-administrator privileges. This must be <tt>true</tt> if you create the first organisation on a server.
+	 * @throws CreateOrganisationException If organisation creation failed
+	 * @throws OrganisationInitException If organisation initialization failed
 	 */
 	protected void createOrganisation(
 			CreateOrganisationProgress createOrganisationProgress, String organisationID,
-			String organisationName, String userID, String password, boolean isServerAdmin)
+			String organisationName, String userID, String password, boolean isServerAdmin) throws OrganisationInitException, CreateOrganisationException
 //			String masterOrganisationID
 //			)
-		throws ModuleException
 	{
 		if (!createOrganisationAllowed)
 			throw new IllegalStateException("This method cannot be called yet. The creation of organisations is not allowed, before the datastore inits are run. If you get this exception in an early-server-init, you should switch to a late-server-init.");
@@ -1422,9 +1409,8 @@ public class JFireServerManagerFactoryImpl
 		OrganisationInitManager datastoreInitManager;
 		try {
 			datastoreInitManager = new OrganisationInitManager(this, mcf, getJ2EEVendorAdapter());
-		} catch (OrganisationInitException e) {
-			logger.error("Creation of OrganisationInitManager failed!", e);
-			throw new ModuleException(e);
+		} catch (J2EEAdapterException e) {
+			throw new OrganisationInitException(e);
 		}
 
 		// the steps before OrganisationInit are defined in org.nightlabs.jfire.servermanager.createorganisation.CreateOrganisationStep
@@ -1440,7 +1426,7 @@ public class JFireServerManagerFactoryImpl
 						String busyOrganisationID = createOrganisationProgressMap.get(createOrganisationProgressID).getOrganisationID();
 						BusyCreatingOrganisationException x = new BusyCreatingOrganisationException(organisationID, CollectionUtil.array2HashSet(new String[] { busyOrganisationID }));
 						logger.error("THIS SHOULD NEVER HAPPEN!", x);
-						throw x;
+						throw new CreateOrganisationException(x);
 					}
 
 					createOrganisationProgressMap.put(createOrganisationProgress.getCreateOrganisationProgressID(), createOrganisationProgress);
@@ -1541,8 +1527,8 @@ public class JFireServerManagerFactoryImpl
 							try {
 								databaseAdapter.createDatabase(mcf.getConfigModule(), dbURL);
 								dropDatabase = true;
-							} catch (Exception x) {
-								throw new ModuleException("Creating database with DatabaseAdapter \"" + databaseAdapter.getClass().getName() + "\" failed!", x);
+							} catch (Throwable x) {
+								throw new CreateOrganisationException("Creating database with DatabaseAdapter \"" + databaseAdapter.getClass().getName() + "\" failed!", x);
 							}
 							createOrganisationProgress.addCreateOrganisationStatus(
 									new CreateOrganisationStatus(
@@ -1605,7 +1591,7 @@ public class JFireServerManagerFactoryImpl
 									++tryNr;
 									try {
 										pmf = waitForPersistenceManagerFactory(OrganisationCf.PERSISTENCE_MANAGER_FACTORY_PREFIX_ABSOLUTE + organisationID); // org.getPersistenceManagerFactoryJNDIName());
-									} catch (ModuleException x) {
+									} catch (PersistenceManagerFactoryWaitException x) {
 										if (tryNr >= tryCount) throw x;
 
 										logger.info("Obtaining PersistenceManagerFactory failed! Touching jdo-ds-file and its directory and trying it again...");
@@ -1743,18 +1729,14 @@ public class JFireServerManagerFactoryImpl
 						initialContext.close(); initialContext = null;
 					}
 
-				} catch (RuntimeException x) {
+				} catch (CreateOrganisationException x) {
 					createOrganisationProgress.addCreateOrganisationStatus(
 							new CreateOrganisationStatus(CreateOrganisationStep.JFireServerManagerFactory_createOrganisation_error, x));
 					throw x;
-				} catch (ModuleException x) {
+				} catch (Throwable x) {
 					createOrganisationProgress.addCreateOrganisationStatus(
 							new CreateOrganisationStatus(CreateOrganisationStep.JFireServerManagerFactory_createOrganisation_error, x));
-					throw x;
-				} catch (Exception x) {
-					createOrganisationProgress.addCreateOrganisationStatus(
-							new CreateOrganisationStatus(CreateOrganisationStep.JFireServerManagerFactory_createOrganisation_error, x));
-					throw new ModuleException(x);
+					throw new CreateOrganisationException(x);
 				}
 
 			} // synchronized (this) {
@@ -1764,7 +1746,7 @@ public class JFireServerManagerFactoryImpl
 			try {
 				datastoreInitManager.initialiseOrganisation(this, mcf.getConfigModule().getLocalServer(), organisationID,
 						jfireSecurity_createTempUserPassword(organisationID, User.USER_ID_SYSTEM), createOrganisationProgress);
-			} catch (ModuleException e) {
+			} catch (OrganisationInitException e) {
 				logger.error("Datastore initialization for new organisation \""+organisationID+"\" failed!", e);
 			}
 
@@ -1801,8 +1783,11 @@ public class JFireServerManagerFactoryImpl
 		return org;
 	}
 
+	/**
+	 * @throws OrganisationNotFoundException If the organisation does not exist.
+	 */
 	protected void addServerAdmin(String organisationID, String userID)
-		throws ModuleException
+		throws OrganisationNotFoundException
 	{
 		OrganisationCf org = null;
 		for (Iterator<OrganisationCf> it = organisationConfigModule.getOrganisations().iterator(); it.hasNext(); ){
@@ -1822,8 +1807,11 @@ public class JFireServerManagerFactoryImpl
 		resetOrganisationCfs();
 	}
 
+	/**
+	 * @throws OrganisationNotFoundException If the organisation does not exist.
+	 */
 	protected boolean removeServerAdmin(String organisationID, String userID)
-		throws ModuleException
+		throws OrganisationNotFoundException
 	{
 		OrganisationCf org = null;
 		for (Iterator<OrganisationCf> it = organisationConfigModule.getOrganisations().iterator(); it.hasNext(); ){
@@ -1875,27 +1863,20 @@ public class JFireServerManagerFactoryImpl
 	 */
 	protected Map<ModuleType, List<ModuleDef>> cachedModules = null;
 
-	public synchronized List<ModuleDef> getModules(ModuleType moduleType)
-		throws ModuleException
+	public synchronized List<ModuleDef> getModules(ModuleType moduleType) throws XMLReadException
 	{
-		try {
-			if (cachedModules == null)
-				cachedModules = new HashMap<ModuleType, List<ModuleDef>>();
+		if (cachedModules == null)
+			cachedModules = new HashMap<ModuleType, List<ModuleDef>>();
 
-			List<ModuleDef> modules = cachedModules.get(moduleType);
-			if (modules == null) {
-				File startDir = new File(mcf.getConfigModule().getJ2ee().getJ2eeDeployBaseDirectory());
-				modules = new ArrayList<ModuleDef>();
-				findModules(startDir, moduleType, modules);
-				Collections.sort(modules);
-				cachedModules.put(moduleType, modules);
-			}
-			return modules;
-		} catch (Exception x) {
-			if (x instanceof ModuleException)
-				throw (ModuleException)x;
-			throw new ModuleException(x);
+		List<ModuleDef> modules = cachedModules.get(moduleType);
+		if (modules == null) {
+			File startDir = new File(mcf.getConfigModule().getJ2ee().getJ2eeDeployBaseDirectory());
+			modules = new ArrayList<ModuleDef>();
+			findModules(startDir, moduleType, modules);
+			Collections.sort(modules);
+			cachedModules.put(moduleType, modules);
 		}
+		return modules;
 	}
 
 	private static class FileFilterDirectoriesExcludingEARs implements FilenameFilter
@@ -2393,8 +2374,7 @@ public class JFireServerManagerFactoryImpl
 		return pm;
 	}
 
-	protected PersistenceManagerFactory waitForPersistenceManagerFactory(String persistenceManagerJNDIName)
-		throws ModuleException
+	protected PersistenceManagerFactory waitForPersistenceManagerFactory(String persistenceManagerJNDIName) throws PersistenceManagerFactoryWaitException
 	{
 		try {
 			InitialContext initCtx = new InitialContext();
@@ -2450,12 +2430,11 @@ public class JFireServerManagerFactoryImpl
 				initCtx.close();
 			}
 		} catch (Exception x) {
-			throw new ModuleException(x);
+			throw new PersistenceManagerFactoryWaitException(x);
 		}
 	}
 
 	protected CLRegistrar getCLRegistrar(JFireBasePrincipal principal)
-		throws ModuleException
 	{
 		return clRegistrarFactory.getCLRegistrar(principal);
 	}
@@ -2549,10 +2528,10 @@ public class JFireServerManagerFactoryImpl
 	 * @param organisationID The organisationID of the user.
 	 * @param userID The userID of the user.
 	 * @return the role-set of the specified user.
-	 * @throws ModuleException if sth. goes wrong
+	 * @throws OrganisationNotFoundException If the organisation does not exist.
 	 */
 	protected RoleSet jfireSecurity_getRoleSet(PersistenceManager pm, String organisationID, String userID)
-	throws ModuleException
+	throws OrganisationNotFoundException
 	{
 		String userPK = userID + User.SEPARATOR_BETWEEN_USER_ID_AND_ORGANISATION_ID + organisationID;
 

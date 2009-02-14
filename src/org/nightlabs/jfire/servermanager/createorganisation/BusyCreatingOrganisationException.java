@@ -2,11 +2,14 @@ package org.nightlabs.jfire.servermanager.createorganisation;
 
 import java.util.Set;
 
-import org.nightlabs.ModuleException;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 
+/**
+ * @author unascribed
+ * @author Marc Klinger - marc[at]nightlabs[dot]de
+ */
 public class BusyCreatingOrganisationException
-extends ModuleException
+extends Exception
 {
 	private static final long serialVersionUID = 1L;
 

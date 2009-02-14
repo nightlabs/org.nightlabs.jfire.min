@@ -46,7 +46,6 @@ import javax.transaction.Status;
 import javax.transaction.UserTransaction;
 
 import org.apache.log4j.Logger;
-import org.nightlabs.ModuleException;
 import org.nightlabs.config.ConfigException;
 import org.nightlabs.j2ee.LoginData;
 import org.nightlabs.jfire.base.JFirePrincipal;
@@ -54,23 +53,28 @@ import org.nightlabs.jfire.base.Lookup;
 import org.nightlabs.jfire.classloader.CLRegistrar;
 import org.nightlabs.jfire.module.ModuleType;
 import org.nightlabs.jfire.organisation.Organisation;
+import org.nightlabs.jfire.organisationinit.OrganisationInitException;
 import org.nightlabs.jfire.security.RoleSet;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.security.UserLocal;
 import org.nightlabs.jfire.security.id.UserID;
 import org.nightlabs.jfire.security.id.UserLocalID;
+import org.nightlabs.jfire.serverconfigurator.ServerConfigurationException;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.servermanager.OrganisationNotFoundException;
 import org.nightlabs.jfire.servermanager.RoleImportSet;
 import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
 import org.nightlabs.jfire.servermanager.config.OrganisationCf;
 import org.nightlabs.jfire.servermanager.createorganisation.BusyCreatingOrganisationException;
+import org.nightlabs.jfire.servermanager.createorganisation.CreateOrganisationException;
 import org.nightlabs.jfire.servermanager.createorganisation.CreateOrganisationProgress;
 import org.nightlabs.jfire.servermanager.createorganisation.CreateOrganisationProgressID;
 import org.nightlabs.jfire.servermanager.createorganisation.CreateOrganisationStatus;
 import org.nightlabs.jfire.servermanager.deploy.DeployOverwriteBehaviour;
 import org.nightlabs.jfire.servermanager.deploy.DeploymentJarItem;
+import org.nightlabs.jfire.servermanager.j2ee.J2EEAdapterException;
 import org.nightlabs.jfire.servermanager.xml.ModuleDef;
+import org.nightlabs.jfire.servermanager.xml.XMLReadException;
 import org.nightlabs.jfire.shutdownafterstartup.ShutdownControlHandle;
 import org.nightlabs.jfire.workstation.Workstation;
 import org.nightlabs.jfire.workstation.id.WorkstationID;
@@ -205,7 +209,8 @@ public class JFireServerManagerImpl
 	}
 
 	@Override
-	public void createOrganisation(String organisationID, String organisationCaption, String userID, String password, boolean isServerAdmin) throws ModuleException {
+	public void createOrganisation(String organisationID, String organisationCaption, String userID, String password, boolean isServerAdmin) throws OrganisationInitException, CreateOrganisationException 
+	{
 		assertOpen();
 		jfireServerManagerFactoryImpl.createOrganisation(
 				new CreateOrganisationProgress(organisationID), organisationID,
@@ -227,14 +232,13 @@ public class JFireServerManagerImpl
 
 	@Override
 	public void addServerAdmin(String organisationID, String userID)
-			throws ModuleException
+			throws OrganisationNotFoundException
 	{
 		jfireServerManagerFactoryImpl.addServerAdmin(organisationID, userID);
 	}
 
 	@Override
-	public boolean removeServerAdmin(String organisationID, String userID)
-			throws ModuleException
+	public boolean removeServerAdmin(String organisationID, String userID) throws OrganisationNotFoundException
 	{
 		return jfireServerManagerFactoryImpl.removeServerAdmin(organisationID, userID);
 	}
@@ -274,7 +278,7 @@ public class JFireServerManagerImpl
 	}
 
 	@Override
-	public void j2ee_flushAuthenticationCache() throws ModuleException
+	public void j2ee_flushAuthenticationCache() throws J2EEAdapterException
 	{
 		assertOpen();
 		jfireServerManagerFactoryImpl.j2ee_flushAuthenticationCache();
@@ -294,7 +298,7 @@ public class JFireServerManagerImpl
 	}
 
 	@Override
-	public CLRegistrar getCLRegistrar() throws ModuleException
+	public CLRegistrar getCLRegistrar()
 	{
 		assertOpen();
 		assertAuthenticated();
@@ -302,8 +306,7 @@ public class JFireServerManagerImpl
 	}
 
 	@Override
-	public List<ModuleDef> getModules(ModuleType moduleType)
-		throws ModuleException
+	public List<ModuleDef> getModules(ModuleType moduleType) throws XMLReadException
 	{
 		assertOpen();
 		return jfireServerManagerFactoryImpl.getModules(moduleType);
@@ -568,7 +571,7 @@ public class JFireServerManagerImpl
 	}
 
 	@Override
-	public boolean configureServerAndShutdownIfNecessary(long delayMSec) throws ModuleException
+	public boolean configureServerAndShutdownIfNecessary(long delayMSec) throws ServerConfigurationException
 	{
 		return jfireServerManagerFactoryImpl.configureServerAndShutdownIfNecessary(delayMSec);
 	}

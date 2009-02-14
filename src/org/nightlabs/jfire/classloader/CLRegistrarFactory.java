@@ -47,7 +47,6 @@ import java.util.zip.DeflaterOutputStream;
 import javax.xml.transform.TransformerException;
 
 import org.apache.log4j.Logger;
-import org.nightlabs.ModuleException;
 import org.nightlabs.io.DataBuffer;
 import org.nightlabs.jfire.base.JFireBasePrincipal;
 import org.nightlabs.jfire.classloader.CLRegistryCfMod.ResourceRepository;
@@ -102,49 +101,38 @@ public class CLRegistrarFactory
 	 *
 	 * @param name
 	 * @return
+	 * @throws XMLReadException 
 	 * @throws IOException
 	 */
-	protected synchronized List<ResourceMetaData> getResourcesMetaData(String name)
-		throws ModuleException
+	protected synchronized List<ResourceMetaData> getResourcesMetaData(String name) throws XMLReadException, IOException
 	{
-		try {
-			if (!loaded)
-				scan();
-
-			return resources.get(name);
-		} catch (Exception e) {
-			throw new ModuleException(e);
-		}
+		if (!loaded)
+			scan();
+		return resources.get(name);
 	}
 
-	protected synchronized byte[] getResourcesMetaDataMapBytes()
-		throws ModuleException
+	protected synchronized byte[] getResourcesMetaDataMapBytes() throws XMLReadException, IOException
 	{
 		if (resourcesMetaDataMapBytes != null)
 			return resourcesMetaDataMapBytes;
 
+		if (!loaded)
+			scan();
+
+		DataBuffer dbuf = new DataBuffer();
+		ObjectOutputStream out = new ObjectOutputStream(new DeflaterOutputStream(dbuf.createOutputStream()));
 		try {
-			if (!loaded)
-				scan();
-
-			DataBuffer dbuf = new DataBuffer();
-			ObjectOutputStream out = new ObjectOutputStream(new DeflaterOutputStream(dbuf.createOutputStream()));
-			try {
-				out.writeObject(resources);
-			} finally {
-				out.close();
-			}
-
-			resourcesMetaDataMapBytes = dbuf.createByteArray();
-			resourcesMetaDataMapBytes_timestamp = System.currentTimeMillis();
-			return resourcesMetaDataMapBytes;
-		} catch (Exception e) {
-			throw new ModuleException(e);
+			out.writeObject(resources);
+		} finally {
+			out.close();
 		}
+
+		resourcesMetaDataMapBytes = dbuf.createByteArray();
+		resourcesMetaDataMapBytes_timestamp = System.currentTimeMillis();
+		return resourcesMetaDataMapBytes;
 	}
 	
-	protected synchronized long getResourcesMetaDataMapBytesTimestamp()
-		throws ModuleException
+	protected synchronized long getResourcesMetaDataMapBytesTimestamp() throws XMLReadException, IOException
 	{
 		getResourcesMetaDataMapBytes(); // to initialize our byte array and its timestamp
 		return resourcesMetaDataMapBytes_timestamp;
@@ -178,7 +166,7 @@ public class CLRegistrarFactory
 	protected List<File> tempJarFiles = null;
 
 	protected synchronized void scan()
-		throws XMLReadException, SAXException, IOException, TransformerException
+		throws XMLReadException, IOException
 	{
 		logger.info("CLRegistrarFactory.scan(): start indexing all resources...");
 		clRegistryCfMod.acquireReadLock();
@@ -220,12 +208,10 @@ public class CLRegistrarFactory
 	 * @param repository
 	 * @param directory
 	 * @throws XMLReadException
-	 * @throws IOException
-	 * @throws TransformerException
-	 * @throws SAXException
+	 * @throws IOException 
 	 */
 	protected void scanDirectory(ResourceRepository repository, File directory, CLRepositoryMan clRepositoryMan)
-		throws XMLReadException, SAXException, IOException, TransformerException
+		throws XMLReadException, IOException
 	{
 		if (!directory.isDirectory())
 			throw new IllegalArgumentException("directory \""+directory.getAbsolutePath()+"\" is not a directory!");
@@ -441,10 +427,9 @@ public class CLRegistrarFactory
 		resList.add(fmd);
 	}
 
-	protected byte[] getResourceBytes(ResourceMetaData rmd)
-		throws ModuleException
+	protected byte[] getResourceBytes(ResourceMetaData rmd) throws IOException, XMLReadException
 	{
-		try {
+//		try {
 			synchronized (this) {
 				if (!loaded)
 					scan();
@@ -502,8 +487,8 @@ public class CLRegistrarFactory
 				if (jf != null)
 					jf.close();
 			}
-		} catch (Exception e) {
-			throw new ModuleException(e);
-		}
+//		} catch (Exception e) {
+//			throw new ModuleException(e);
+//		}
 	}
 }

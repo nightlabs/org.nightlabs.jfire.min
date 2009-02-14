@@ -34,22 +34,26 @@ import java.util.Map;
 
 import javax.security.auth.login.LoginException;
 
-import org.nightlabs.ModuleException;
 import org.nightlabs.config.ConfigException;
 import org.nightlabs.j2ee.LoginData;
 import org.nightlabs.jfire.base.JFirePrincipal;
 import org.nightlabs.jfire.classloader.CLRegistrar;
 import org.nightlabs.jfire.module.ModuleType;
+import org.nightlabs.jfire.organisationinit.OrganisationInitException;
 import org.nightlabs.jfire.security.id.UserID;
+import org.nightlabs.jfire.serverconfigurator.ServerConfigurationException;
 import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
 import org.nightlabs.jfire.servermanager.config.OrganisationCf;
 import org.nightlabs.jfire.servermanager.createorganisation.BusyCreatingOrganisationException;
+import org.nightlabs.jfire.servermanager.createorganisation.CreateOrganisationException;
 import org.nightlabs.jfire.servermanager.createorganisation.CreateOrganisationProgress;
 import org.nightlabs.jfire.servermanager.createorganisation.CreateOrganisationProgressID;
 import org.nightlabs.jfire.servermanager.createorganisation.CreateOrganisationStatus;
 import org.nightlabs.jfire.servermanager.deploy.DeployOverwriteBehaviour;
 import org.nightlabs.jfire.servermanager.deploy.DeploymentJarItem;
+import org.nightlabs.jfire.servermanager.j2ee.J2EEAdapterException;
 import org.nightlabs.jfire.servermanager.xml.ModuleDef;
+import org.nightlabs.jfire.servermanager.xml.XMLReadException;
 import org.nightlabs.jfire.shutdownafterstartup.ShutdownControlHandle;
 
 /**
@@ -121,18 +125,19 @@ public interface JFireServerManager
 	 * @param isServerAdmin whether this user should have global server administration permissions.
 	 *
 	 * @throws NoServerAdminException thrown if <tt>isServerAdmin == false</tt> and this is the first organisation on this server.
-	 * @throws ModuleException if sth. goes wrong.
+	 * @throws CreateOrganisationException If organisation creation failed
+	 * @throws OrganisationInitException If organisation initialization failed
 	 */
 	public void createOrganisation(String organisationID, String organisationName, String userID, String password, boolean isServerAdmin)
-		throws ModuleException;
+		throws OrganisationInitException, CreateOrganisationException;
 
 	/**
 	 * This method configures the server using the currently configured server configurator.
 	 * @param delayMSec In case a reboot is necessary, the shutdown will be delayed by this time in milliseconds.
 	 * @return Returns whether a reboot was necessary (and thus a shutdown was/will be initiated).
-	 * @throws ModuleException In case sth. goes wrong.
+	 * @throws ServerConfigurationException If server configuration failed
 	 */
-	public boolean configureServerAndShutdownIfNecessary(long delayMSec) throws ModuleException;
+	public boolean configureServerAndShutdownIfNecessary(long delayMSec) throws ServerConfigurationException;
 
 	public OrganisationCf getOrganisationConfig(String organisationID) throws OrganisationNotFoundException;
 
@@ -148,15 +153,21 @@ public interface JFireServerManager
 	public List<OrganisationCf> getOrganisationCfs(boolean sorted);
 
 	public List<ModuleDef> getModules(ModuleType moduleType)
-		throws ModuleException;
+		throws XMLReadException;
 
 	public void flushModuleCache();
 
+	/**
+	 * @throws OrganisationNotFoundException if the organisation does not exist
+	 */
 	public void addServerAdmin(String organisationID, String userID)
-	throws ModuleException;
+	throws OrganisationNotFoundException;
 
+	/**
+	 * @throws OrganisationNotFoundException if the organisation does not exist
+	 */
 	public boolean removeServerAdmin(String organisationID, String userID)
-	throws ModuleException;
+	throws OrganisationNotFoundException;
 
 //	public Config getConfig();
 
@@ -175,15 +186,14 @@ public interface JFireServerManager
 	 * <br/><br/>
 	 * Probably, this method will soon become deprecated and dropped.
 	 *
-	 * @throws ModuleException
+	 * @throws J2EEAdapterException If there was an error with the J2EE adapter
 	 *
 	 * @see jfireSecurity_flushCache(String organisationID, String userID);
 	 */
 	public void j2ee_flushAuthenticationCache()
-		throws ModuleException;
+		throws J2EEAdapterException;
 
-	public CLRegistrar getCLRegistrar()
-		throws ModuleException;
+	public CLRegistrar getCLRegistrar();
 
 //	public void jfireSecurity_flushCache(String organisationID, String userID);
 	public void jfireSecurity_flushCache(UserID userID);

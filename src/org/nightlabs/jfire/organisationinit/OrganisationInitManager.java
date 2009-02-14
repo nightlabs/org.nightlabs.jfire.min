@@ -16,7 +16,6 @@ import javax.naming.InitialContext;
 
 import org.apache.log4j.Logger;
 import org.apache.xpath.CachedXPathAPI;
-import org.nightlabs.ModuleException;
 import org.nightlabs.datastructure.PrefixTree;
 import org.nightlabs.jfire.base.InvokeUtil;
 import org.nightlabs.jfire.init.AbstractInitManager;
@@ -343,15 +342,13 @@ extends AbstractInitManager<OrganisationInit, OrganisationInitDependency>
 	}
 
 	public void initialiseOrganisation(
-			JFireServerManagerFactory ismf, ServerCf localServer, String organisationID, String systemUserPassword)
-	throws ModuleException
+			JFireServerManagerFactory ismf, ServerCf localServer, String organisationID, String systemUserPassword) throws OrganisationInitException
 	{
 		initialiseOrganisation(ismf, localServer, organisationID, systemUserPassword, null);
 	}
 
 	public void initialiseOrganisation(
-			JFireServerManagerFactory ismf, ServerCf localServer, String organisationID, String systemUserPassword, CreateOrganisationProgress createOrganisationProgress)
-	throws ModuleException
+			JFireServerManagerFactory ismf, ServerCf localServer, String organisationID, String systemUserPassword, CreateOrganisationProgress createOrganisationProgress) throws OrganisationInitException
 	{
 		if (!canPerformInit) {
 			logger.error("Organisation initialisation can not be performed due to errors above.");
@@ -392,7 +389,7 @@ extends AbstractInitManager<OrganisationInit, OrganisationInitDependency>
 		   	initCtx.close();
 			}
 		} catch (Exception x) {
-			throw new ModuleException(x);
+			throw new OrganisationInitException(x);
 		}
 	}
 

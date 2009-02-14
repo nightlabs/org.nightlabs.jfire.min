@@ -1,18 +1,13 @@
-/**
- * 
- */
 package org.nightlabs.jfire.servermanager;
 
 import javax.naming.NamingException;
 
-import org.nightlabs.ModuleException;
 import org.nightlabs.jfire.base.InitException;
 import org.nightlabs.jfire.base.Lookup;
 import org.nightlabs.jfire.security.SecurityReflector;
 
 /**
  * @author Alexander Bieber <alex [AT] nightlabs [DOT] de>
- *
  */
 public class JFireServerManagerUtil {
 
@@ -24,7 +19,7 @@ public class JFireServerManagerUtil {
 	 * @return A JFireServerManager for the session on the current thread.
 	 */
 	public static JFireServerManager getJFireServerManager()
-	throws InitException, ModuleException, NamingException
+	throws InitException, NamingException
 	{
 		return new Lookup(SecurityReflector.getUserDescriptor().getOrganisationID()).getJFireServerManager();
 	}

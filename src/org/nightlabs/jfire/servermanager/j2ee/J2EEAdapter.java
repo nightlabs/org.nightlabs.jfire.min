@@ -52,7 +52,7 @@ public interface J2EEAdapter extends Serializable {
 	public static final String JNDI_NAME = "java:/jfire/system/J2EEAdapter";
 
 	public void flushAuthenticationCache()
-		throws Exception;
+		throws J2EEAdapterException;
 
 	/**
 	 * This method is called by the <tt>JFireServerManagerFactoryImpl</tt> when
@@ -64,10 +64,10 @@ public interface J2EEAdapter extends Serializable {
 	 * @throws Exception
 	 */
 	public void registerNotificationListenerServerStarted(ServerStartNotificationListener listener)
-		throws Exception;
+		throws J2EEAdapterException;
 
 	public UserTransaction getUserTransaction(InitialContext initialContext)
-		throws Exception;
+		throws J2EEAdapterException;
 
 	public SecurityReflector getSecurityReflector();
 

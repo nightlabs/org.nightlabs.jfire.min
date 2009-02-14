@@ -29,7 +29,6 @@ package org.nightlabs.jfire.servermanager.config;
 import java.lang.reflect.InvocationTargetException;
 
 import org.apache.commons.beanutils.BeanUtils;
-import org.nightlabs.ModuleException;
 import org.nightlabs.config.ConfigModule;
 import org.nightlabs.config.InitException;
 import org.nightlabs.jfire.server.LocalServer;
@@ -116,7 +115,6 @@ public class JFireServerConfigModule extends ConfigModule
 	}
 
 	public LocalServer createJDOLocalServer()
-	throws ModuleException
 	{
 		if (localServer == null)
 			throw new NullPointerException("localServer is null! Check basic server configuration!");
@@ -125,9 +123,9 @@ public class JFireServerConfigModule extends ConfigModule
 		try {
 			BeanUtils.copyProperties(server, localServer);
 		} catch (IllegalAccessException e) {
-			throw new ModuleException(e);
+			throw new RuntimeException(e);
 		} catch (InvocationTargetException e) {
-			throw new ModuleException(e);
+			throw new RuntimeException(e);
 		}
 		LocalServer localServer = new LocalServer(server);
 
