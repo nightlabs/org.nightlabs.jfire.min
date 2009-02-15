@@ -1,15 +1,14 @@
 <%@ page language="java"%>
-<%@ taglib uri="/tags/struts-bean" prefix="bean"%> 
-<%@ taglib uri="/tags/struts-html" prefix="html"%>
-<%@ taglib uri="/tags/struts-logic" prefix="logic" %>
+
+OVERVIEW HERE TO COME...
  
+<%--
 <jsp:include page="../pageHeader.jsp">
 	<jsp:param name="title" value="Server Initialisation - Overview" />
 </jsp:include>
 
 		<div id="overviewblock">
 		<h1>Overview</h1>
-		<%-- print out the form data --%>
 			<table class="serverinitoverview" cellpadding="0" cellspacing="0" border="0">
 			<tr class="head">
 				<td><h2>Local server</h2></td>
@@ -317,3 +316,6 @@
 		</div>
 
 <jsp:include page="../pageFooter.jsp" />
+
+--%>
+

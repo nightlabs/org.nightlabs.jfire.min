@@ -9,6 +9,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.nightlabs.jfire.server.ServerManager;
 import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
+import org.nightlabs.jfire.servermanager.config.ServerCf;
 import org.nightlabs.jfire.web.admin.ServerSetupUtil;
 import org.nightlabs.jfire.web.admin.UserInputException;
 
@@ -34,42 +35,21 @@ public class ServerInitializeServlet extends BaseServlet
 
 	private static final String STEPS_SESSION_KEY = "serverinitialize.steps";
 
-	private static class Step 
-	{
-		private String name;
-		private String forward;
-		private Object bean;
-
-		public Step(String name, String forward, Object bean) 
-		{
-			this.name = name;
-			this.forward = forward;
-			this.bean = bean;
-		}
-
-		public String getName() {
-			return name;
-		}
-
-		public String getForward() {
-			return forward;
-		}
-
-		public Object getBean() {
-			return bean;
-		}
-	}
-
 	private Step[] setupSteps()
 	{
 		ServerManager serverManager = ServerSetupUtil.getBogoServerManager();
 		JFireServerConfigModule cfMod;
 		try {
 			cfMod = serverManager.getJFireServerConfigModule();
-		} catch (RemoteException e) {
+			if (cfMod.getLocalServer() == null) { // this shouldn't happen anymore.
+				ServerCf server = new ServerCf();
+				server.init();
+				cfMod.setLocalServer(server);
+			}
+		} catch (Throwable e) {
 			throw new RuntimeException("Error accessing server configuration", e);
 		}
-
+		
 		Step[] steps = new Step[] {
 				new Step("welcome", "/jsp/serverinitialize/welcome.jsp", null),
 				new Step("localserver", null, cfMod.getLocalServer()),
@@ -94,19 +74,8 @@ public class ServerInitializeServlet extends BaseServlet
 	{
 		Step stepToShow = null;
 
-		// case 1:
-		// about to show a form - get target from path
-		String pathInfo = req.getPathInfo();
-		if(pathInfo != null && !"/".equals(pathInfo) && pathInfo.length() > 1) {
-			// remove leading '/'
-			String stepName = pathInfo.substring(1);
-			// find step
-			stepToShow = findStepByName(req, stepName);
-			System.out.println("step to show by path info: "+stepToShow.getName());
-		}
-
-		// case 2:
 		// coming from a form - we have a navigation parameter
+		// save the data and redirect to the next page
 		String navigation = req.getParameter(NAVIGATION_PARAMETER_KEY);
 		if(navigation != null) {
 			System.out.println("have navigation: "+navigation);
@@ -117,9 +86,10 @@ public class ServerInitializeServlet extends BaseServlet
 			if(stepToSave != null) {
 				System.out.println("step to save by step parameter: "+stepToSave.getName());
 				if(NAVIGATION_VALUE_NEXT.equals(navigation)) {
+					System.out.println("Have step to save: "+stepToSave);
 					if(stepToSave.getBean() != null) {
 						// save data to the bean
-						storeData(req, stepToSave);
+						BeanEditServlet.finishEdit(req);
 					}
 					stepToShow = findNextStep(req, stepToSave);
 					if(stepToShow == null) {
@@ -134,11 +104,29 @@ public class ServerInitializeServlet extends BaseServlet
 					}
 				} else if(NAVIGATION_VALUE_PREVIOUS.equals(navigation)) {
 					stepToShow = findPreviousStep(req, stepToSave);
+					if(stepToShow == null)
+						stepToShow = getSteps(req)[0];
 				}
 			}
+			if(stepToShow == null)
+				stepToShow = getSteps(req)[0];
+			System.out.println("redirecting to show next step: "+stepToShow.getName());
+			redirect(req, resp, "/serverinitialize/"+stepToShow.getName());
+			return;
+		}
+		
+		
+		// about to show a form - get target from path
+		String pathInfo = req.getPathInfo();
+		if(pathInfo != null && !"/".equals(pathInfo) && pathInfo.length() > 1) {
+			// remove leading '/'
+			String stepName = pathInfo.substring(1);
+			// find step
+			stepToShow = findStepByName(req, stepName);
+			System.out.println("step to show by path info: "+stepToShow.getName());
 		}
 
-		// case 3:
+
 		// jump in for fresh initialize or unknown step
 		if(stepToShow == null) {
 			resetSteps(req);
@@ -147,15 +135,17 @@ public class ServerInitializeServlet extends BaseServlet
 			return;
 		}
 
-		// show step
+		// show step inside this page response
 		if(stepToShow.getForward() != null) {
 			System.out.println("FORWARD: "+stepToShow.getForward());
 			setContent(req, stepToShow.getForward());
 		} else {
 			// show bean editor
 			System.out.println("BEAN: "+stepToShow.getName());
-			req.getSession().setAttribute("beanedit.bean", stepToShow.getBean());
-			setContent(req, "/beanedit");
+			BeanEditServlet.startEdit(req, stepToShow.getBean());
+//			req.getSession().setAttribute("beanedit.bean", stepToShow.getBean());
+			req.setAttribute("stepToShow", stepToShow);
+			setContent(req, "/jsp/serverinitialize/beaneditheader.jsp", "/beanedit", "/jsp/serverinitialize/beaneditfooter.jsp");
 		}
 	}
 
@@ -207,16 +197,13 @@ public class ServerInitializeServlet extends BaseServlet
 		}
 		return steps;
 	}
-
-	private void storeData(HttpServletRequest req, Step stepToStave) throws UserInputException 
-	{
-	}
-
+	
 	/**
 	 * @return <code>true</code> if a reboot is required.
 	 */
 	private boolean performInitialization()
 	{
+		// TODO do something!
 		return false;
 	}
 }

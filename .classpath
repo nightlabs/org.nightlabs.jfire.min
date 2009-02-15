@@ -16,5 +16,6 @@
 	</classpathentry>
 	<classpathentry kind="var" path="LOG4J" sourcepath="/LOG4J_SRC"/>
 	<classpathentry kind="var" path="APACHE_COMMONS/commons-beanutils.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/NightLabsBase"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>
