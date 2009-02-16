@@ -1,7 +1,11 @@
 package org.nightlabs.jfire.web.admin.servlet;
 
+import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
+import java.beans.Introspector;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -12,14 +16,24 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.beanutils.BeanUtils;
+import org.nightlabs.jfire.servermanager.config.ServerCf;
 import org.nightlabs.jfire.web.admin.beaninfo.BeanInfoUtil;
+import org.nightlabs.jfire.web.admin.beaninfo.ExtendedBeanInfo;
 import org.nightlabs.jfire.web.admin.beaninfo.ExtendedPropertyDescriptor;
+import org.nightlabs.util.bean.BeanUtil;
+
+import com.sun.corba.se.spi.legacy.connection.GetEndPointInfoAgainException;
+import com.sun.org.apache.xml.internal.utils.UnImplNode;
+
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  * @author Marc Klinger - marc[at]nightlabs[dot]de
  */
 public class BeanEditServlet extends HttpServlet
 {
+	private static final String BEANEDIT_VALUE_PARAMETER_PREFIX = "beanedit.value.";
 	/**
 	 * The serial version of this class.
 	 */
@@ -49,14 +63,21 @@ public class BeanEditServlet extends HttpServlet
 		Object bean = beans.get(beanKey);
 		if(bean == null)
 			throw new IllegalStateException("Bean not found for key "+beanKey);
-		ExtendedPropertyDescriptor[] extendedPropertyDescriptors;
+		ExtendedBeanInfo beanInfo = getExtendedBeanInfo(bean);
+		req.setAttribute("beanedit.beaninfo", beanInfo);
+		req.getRequestDispatcher("/jsp/configmoduleedit.jsp").include(req, resp);
+	}
+
+	private static ExtendedBeanInfo getExtendedBeanInfo(Object bean) {
+		ExtendedBeanInfo beanInfo;
 		try {
-			extendedPropertyDescriptors = BeanInfoUtil.getExtendedPropertyDescriptors(bean.getClass(), Locale.getDefault());
+			BeanInfo baseBeanInfo = Introspector.getBeanInfo(bean.getClass());
+			// TODO use correct locale
+			beanInfo = new ExtendedBeanInfo(baseBeanInfo, Locale.getDefault());
 		} catch (IntrospectionException e) {
 			throw new RuntimeException(e);
 		}
-		req.setAttribute("beanedit.propertydescriptors", extendedPropertyDescriptors);
-		req.getRequestDispatcher("/jsp/configmoduleedit.jsp").include(req, resp);
+		return beanInfo;
 	}
 	
 	private static Random random = new Random();
@@ -85,6 +106,11 @@ public class BeanEditServlet extends HttpServlet
 		return (Map<Integer, Object>) req.getSession().getAttribute("beanedit.beans");
 	}
 	
+	/**
+	 * Save data to the bean. This is done by using the request parameters.
+	 * The bean key must also be available in the request parameters.
+	 * @param req The request
+	 */
 	public static void finishEdit(HttpServletRequest req)
 	{
 		System.out.println("finish edit");
@@ -102,12 +128,50 @@ public class BeanEditServlet extends HttpServlet
 		}
 		try {
 			Object bean = beans.get(n);
-			// TODO save bean
-			System.out.println("SAVE BEAN: "+bean.getClass().getName());
+			if(bean == null)
+				throw new IllegalStateException("Invalid finish edit request: Bean unknown for key "+beanKey);
+			saveBean(bean, req);
 		} catch(Throwable e) {
 			throw new RuntimeException("Saving bean failed", e);
 		} finally {
 			beans.remove(n);
 		}
+	}
+	
+	private static void saveBean(Object bean, HttpServletRequest req) throws IllegalAccessException, InvocationTargetException, IntrospectionException
+	{
+		System.out.println("SAVE BEAN: "+bean.getClass().getName());
+		ExtendedBeanInfo beanInfo = getExtendedBeanInfo(bean);
+		Map<String, ExtendedPropertyDescriptor> epds = beanInfo.getExtendedPropertyDescriptorsByName();
+		Map<String, Object> properties = new HashMap<String, Object>();
+		Enumeration<?> parameterNames = req.getParameterNames();
+		while(parameterNames.hasMoreElements()) {
+			String name = (String)parameterNames.nextElement();
+			if(name.startsWith(BEANEDIT_VALUE_PARAMETER_PREFIX)) {
+				String propertyName = name.substring(BEANEDIT_VALUE_PARAMETER_PREFIX.length());
+				Object realValue = getRealValue(bean, epds.get(propertyName), req.getParameter(name));
+				properties.put(propertyName, realValue);
+			}
+		}
+		if(bean instanceof ServerCf)
+			System.out.println("BEFORE: "+((ServerCf)bean).getServerName());
+		if(!properties.isEmpty()) {
+			System.out.println("VALUES: "+properties);
+			BeanUtils.populate(bean, properties);
+		}
+		if(bean instanceof ServerCf)
+			System.out.println("AFTER: "+((ServerCf)bean).getServerName());
+	}
+
+	private static Object getRealValue(Object bean, ExtendedPropertyDescriptor epd, String parameter) 
+	{
+		if(epd.getPropertyType() == String.class)
+			return parameter;
+		else if(epd.getPropertyType() == Boolean.class)
+			return Boolean.valueOf(parameter);
+		else if(epd.getPropertyType() == Integer.class)
+			return Integer.valueOf(parameter);
+		else
+			throw new IllegalArgumentException("NYI: type: "+epd.getPropertyType());
 	}
 }

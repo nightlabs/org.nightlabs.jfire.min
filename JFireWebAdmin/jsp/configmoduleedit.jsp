@@ -1,20 +1,53 @@
 <%@page import="java.beans.PropertyDescriptor"%>
 <%@page import="java.util.List"%>
 <%@page import="org.nightlabs.jfire.web.admin.beaninfo.ExtendedPropertyDescriptor"%>
+<%@page import="org.apache.commons.beanutils.BeanUtils"%>
+<%@page import="java.util.Map"%>
+<%@page import="org.nightlabs.jfire.web.admin.beaninfo.BeanInfoUtil"%>
+<%@page import="org.nightlabs.jfire.web.admin.beaninfo.ExtendedBeanInfo"%>
+
+<%
+int beanKey = (Integer)request.getAttribute("beanedit.beankey");
+Map<Integer, Object> beans = (Map<Integer, Object>)request.getSession().getAttribute("beanedit.beans");
+Object bean = beans.get(beanKey);
+ExtendedBeanInfo beanInfo = (ExtendedBeanInfo)request.getAttribute("beanedit.beaninfo");
+ExtendedPropertyDescriptor[] pds = beanInfo.getPropertyDescriptors();
+String displayName = beanInfo.getBeanDescriptor().getDisplayName();
+if(displayName == null || displayName.isEmpty()) {
+	displayName = bean.getClass().getSimpleName();
+}
+%>
+
+<h1><%=displayName%></h1>
 
 <table class="formtable">
 <%
-ExtendedPropertyDescriptor[] pds = (ExtendedPropertyDescriptor[])request.getAttribute("beanedit.propertydescriptors");
-for(PropertyDescriptor pd : pds) {
+for(ExtendedPropertyDescriptor pd : pds) {
 	if(pd.getWriteMethod() != null && !pd.isHidden()) {
+		String name = "beanedit.value."+pd.getName();
+		String value = BeanUtils.getSimpleProperty(bean, pd.getName());
 %>
 <tr>
-	<td><%=pd.getDisplayName()%>: </td>
-	<td><input type="text" name="<%=pd.getName()%>" class="extrawide"/></td>
+	<td valign="top"><%=pd.getDisplayName()%>: </td>
+	<td valign="top">
+		<% 
+		if(pd.getPropertyType() == Boolean.class) { 
+		%>
+		<input type="radio" name="<%=name%>" value="true" <%if("true".equals(value)) {%> checked="checked"<%}%>> Yes
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		<input type="radio" name="<%=name%>" value="false" <%if(!"true".equals(value)) {%> checked="checked"<%}%>> No
+		<%
+		} else {
+		%>
+		<input type="text" name="<%=name%>" value="<%=(value==null ? "" : value)%>" class="extrawide"/>
+		<%
+		}
+		%>
+	</td>
 </tr>
 <%
 	}
 }
 %>
 </table>
-<input type="hidden" name="beanedit.beankey" value="<%=request.getAttribute("beanedit.beankey")%>"/>
+<input type="hidden" name="beanedit.beankey" value="<%=beanKey%>"/>

@@ -31,7 +31,7 @@ public class ServerInitializeServlet extends BaseServlet
 	 */
 	private static final long serialVersionUID = 1L;
 
-	private static final String STEP_SESSION_KEY = "serverinitialize.step";
+//	private static final String STEP_SESSION_KEY = "serverinitialize.step";
 
 	private static final String STEPS_SESSION_KEY = "serverinitialize.steps";
 
@@ -168,7 +168,7 @@ public class ServerInitializeServlet extends BaseServlet
 
 	private void resetSteps(HttpServletRequest req) 
 	{
-		req.getSession().setAttribute(STEP_SESSION_KEY, null);
+		req.getSession().setAttribute(STEPS_SESSION_KEY, null);
 	}
 
 	private Step findStepByName(HttpServletRequest req, String stepName)
@@ -193,7 +193,7 @@ public class ServerInitializeServlet extends BaseServlet
 		Step[] steps = (Step[])req.getSession().getAttribute(STEPS_SESSION_KEY);
 		if(steps == null) {
 			steps = setupSteps();
-			req.getSession().setAttribute(STEP_SESSION_KEY, steps);
+			req.getSession().setAttribute(STEPS_SESSION_KEY, steps);
 		}
 		return steps;
 	}

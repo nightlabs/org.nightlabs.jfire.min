@@ -70,6 +70,7 @@ public abstract class BaseServlet extends HttpServlet
 			errors = new LinkedList<Throwable>();
 			request.setAttribute(KEY_ERRORS, errors);
 		}
+		log("Error in servlet execution", e);
 		errors.add(e);
 	}
 	
