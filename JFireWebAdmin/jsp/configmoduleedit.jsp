@@ -30,17 +30,32 @@ for(ExtendedPropertyDescriptor pd : pds) {
 <tr>
 	<td valign="top"><%=pd.getDisplayName()%>: </td>
 	<td valign="top">
-		<% 
-		if(pd.getPropertyType() == Boolean.class) { 
+		<%
+		if(pd.getPropertyType() == Boolean.class || pd.getPropertyType() == Boolean.TYPE) { 
 		%>
 		<input type="radio" name="<%=name%>" value="true" <%if("true".equals(value)) {%> checked="checked"<%}%>> Yes
 		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 		<input type="radio" name="<%=name%>" value="false" <%if(!"true".equals(value)) {%> checked="checked"<%}%>> No
 		<%
 		} else {
+			List<String> values = pd.getPossibleValues();
+			if(values != null && !values.isEmpty()) {
+		%>
+		<select name="<%=name%>">
+		<%
+				for(String v : values) {
+		%>
+			<option value="<%=v%>"<%if(v.equals(value)){%> selected="selected"<%}%>><%=pd.getPossibleValueDisplayName(v)%></option>
+		<%	
+				}
+		%>
+		</select>
+		<%
+			} else {
 		%>
 		<input type="text" name="<%=name%>" value="<%=(value==null ? "" : value)%>" class="extrawide"/>
 		<%
+			}
 		}
 		%>
 	</td>
@@ -50,4 +65,5 @@ for(ExtendedPropertyDescriptor pd : pds) {
 }
 %>
 </table>
+<br/>
 <input type="hidden" name="beanedit.beankey" value="<%=beanKey%>"/>

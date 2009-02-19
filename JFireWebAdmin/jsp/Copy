@@ -1,0 +1,29 @@
+<%@page import="java.beans.PropertyDescriptor"%>
+<%@page import="java.util.List"%>
+<%@page import="org.nightlabs.jfire.web.admin.beaninfo.ExtendedPropertyDescriptor"%>
+<%@page import="org.apache.commons.beanutils.BeanUtils"%>
+<%@page import="java.util.Map"%>
+<%@page import="org.nightlabs.jfire.web.admin.beaninfo.BeanInfoUtil"%>
+<%@page import="org.nightlabs.jfire.web.admin.beaninfo.ExtendedBeanInfo"%>
+<%@page import="org.nightlabs.jfire.web.admin.servlet.BeanEditUtil"%>
+<%@page import="java.util.Locale"%>
+
+<%
+int beanKey = (Integer)request.getAttribute("beanedit.beankey");
+Map<Integer, Object> beans = (Map<Integer, Object>)request.getSession().getAttribute("beanedit.beans");
+Object bean = beans.get(beanKey);
+ExtendedBeanInfo beanInfo = (ExtendedBeanInfo)request.getAttribute("beanedit.beaninfo");
+ExtendedPropertyDescriptor[] pds = beanInfo.getPropertyDescriptors();
+String displayName = beanInfo.getBeanDescriptor().getDisplayName();
+if(displayName == null || displayName.isEmpty()) {
+	displayName = bean.getClass().getSimpleName();
+}
+%>
+
+
+<h1><%=displayName%></h1>
+
+<table class="formtable">
+<%=BeanEditUtil.renderBeanEditor(bean, Locale.getDefault())%>
+</table>
+<input type="hidden" name="beanedit.beankey" value="<%=beanKey%>"/>

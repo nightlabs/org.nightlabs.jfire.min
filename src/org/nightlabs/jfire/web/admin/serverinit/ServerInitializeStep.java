@@ -1,12 +1,12 @@
-package org.nightlabs.jfire.web.admin.servlet;
+package org.nightlabs.jfire.web.admin.serverinit;
 
-public class Step 
+public class ServerInitializeStep 
 {
 	private String name;
 	private String forward;
 	private Object bean;
 
-	public Step(String name, String forward, Object bean) 
+	public ServerInitializeStep(String name, String forward, Object bean) 
 	{
 		if(name == null)
 			throw new NullPointerException("name");

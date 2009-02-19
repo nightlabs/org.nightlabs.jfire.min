@@ -25,12 +25,12 @@ public class ExtendedBeanInfo extends SimpleBeanInfo
 	private String beanClassSymbolicName;
 	private Locale locale;
 
-	String getBeanClassSymbolicName() 
+	public String getBeanClassSymbolicName() 
 	{
 		return beanClassSymbolicName;
 	}
 
-	Locale getLocale() 
+	public Locale getLocale() 
 	{
 		return locale;
 	}
@@ -85,18 +85,6 @@ public class ExtendedBeanInfo extends SimpleBeanInfo
 		return null;
 	}
 	
-	public String getLocalizedPropertyValue(String propertyName, String key)
-	{
-		return getLocalizedValue("property."+propertyName+"."+key);
-//		if(beanClassSymbolicName != null) {
-//			try {
-//				return getResourceBundle(locale).getString(beanClassSymbolicName+".property."+propertyName+"."+key);
-//			} catch(MissingResourceException e) {
-//				// ignore and return null
-//			}
-//		}
-//		return null;
-	}
 	
 	public String getValue(String key)
 	{
@@ -105,25 +93,6 @@ public class ExtendedBeanInfo extends SimpleBeanInfo
 		return null;
 	}
 	
-	public String getPropertyValue(String propertyName, String key)
-	{
-		return getValue("property."+propertyName+"."+key);
-//		if(beanClassSymbolicName != null)
-//			return getExtendedBeanInfo().getProperty(beanClassSymbolicName+".property."+propertyName+"."+key);
-//		return null;
-	}
-	
-	public Boolean getBooleanPropertyValue(String propertyName, String key)
-	{
-		String b = getPropertyValue(propertyName, key);
-		if(b != null) {
-			if("true".equalsIgnoreCase(b))
-				return true;
-			if("false".equalsIgnoreCase(b))
-				return false;
-		}
-		return null;
-	}
 
 	public BeanInfo[] getAdditionalBeanInfo() {
 		return baseBeanInfo.getAdditionalBeanInfo();

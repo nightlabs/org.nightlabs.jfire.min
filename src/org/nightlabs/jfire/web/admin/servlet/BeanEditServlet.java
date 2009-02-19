@@ -153,23 +153,19 @@ public class BeanEditServlet extends HttpServlet
 				properties.put(propertyName, realValue);
 			}
 		}
-		if(bean instanceof ServerCf)
-			System.out.println("BEFORE: "+((ServerCf)bean).getServerName());
 		if(!properties.isEmpty()) {
 			System.out.println("VALUES: "+properties);
 			BeanUtils.populate(bean, properties);
 		}
-		if(bean instanceof ServerCf)
-			System.out.println("AFTER: "+((ServerCf)bean).getServerName());
 	}
 
 	private static Object getRealValue(Object bean, ExtendedPropertyDescriptor epd, String parameter) 
 	{
 		if(epd.getPropertyType() == String.class)
 			return parameter;
-		else if(epd.getPropertyType() == Boolean.class)
+		else if(epd.getPropertyType() == Boolean.class || epd.getPropertyType() == Boolean.TYPE)
 			return Boolean.valueOf(parameter);
-		else if(epd.getPropertyType() == Integer.class)
+		else if(epd.getPropertyType() == Integer.class || epd.getPropertyType() == Integer.TYPE)
 			return Integer.valueOf(parameter);
 		else
 			throw new IllegalArgumentException("NYI: type: "+epd.getPropertyType());

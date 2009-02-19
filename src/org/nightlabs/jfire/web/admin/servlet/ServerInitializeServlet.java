@@ -12,6 +12,10 @@ import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
 import org.nightlabs.jfire.servermanager.config.ServerCf;
 import org.nightlabs.jfire.web.admin.ServerSetupUtil;
 import org.nightlabs.jfire.web.admin.UserInputException;
+import org.nightlabs.jfire.web.admin.serverinit.FirstOrganisationBean;
+import org.nightlabs.jfire.web.admin.serverinit.PresetsBean;
+import org.nightlabs.jfire.web.admin.serverinit.RootOrganisationBean;
+import org.nightlabs.jfire.web.admin.serverinit.ServerInitializeStep;
 
 /**
  * @author Marc Klinger - marc[at]nightlabs[dot]de
@@ -35,7 +39,7 @@ public class ServerInitializeServlet extends BaseServlet
 
 	private static final String STEPS_SESSION_KEY = "serverinitialize.steps";
 
-	private Step[] setupSteps()
+	private ServerInitializeStep[] setupSteps()
 	{
 		ServerManager serverManager = ServerSetupUtil.getBogoServerManager();
 		JFireServerConfigModule cfMod;
@@ -50,17 +54,17 @@ public class ServerInitializeServlet extends BaseServlet
 			throw new RuntimeException("Error accessing server configuration", e);
 		}
 		
-		Step[] steps = new Step[] {
-				new Step("welcome", "/jsp/serverinitialize/welcome.jsp", null),
-				new Step("localserver", null, cfMod.getLocalServer()),
-				new Step("servletssl", null, cfMod.getServletSSLCf()),
-				new Step("database", null, cfMod.getDatabase()),
-				new Step("jdo", null, cfMod.getJdo()),
-				new Step("smtp", null, cfMod.getSmtp()),
-				new Step("rootorganisation", null, cfMod.getRootOrganisation()),
-				//				new Step("organisationedit", null, cfMod.getO),
-				//				new Step("useredit", null, cfMod.get),
-				new Step("overview", "/jsp/serverinitialize/overview.jsp", null)
+		ServerInitializeStep[] steps = new ServerInitializeStep[] {
+				new ServerInitializeStep("welcome", "/jsp/serverinitialize/welcome.jsp", null),
+				new ServerInitializeStep("presets", null, new PresetsBean()),
+				new ServerInitializeStep("localserver", null, cfMod.getLocalServer()),
+				new ServerInitializeStep("database", null, cfMod.getDatabase()),
+				new ServerInitializeStep("jdo", null, cfMod.getJdo()),
+				new ServerInitializeStep("smtp", null, cfMod.getSmtp()),
+				new ServerInitializeStep("servletssl", null, cfMod.getServletSSLCf()),
+				new ServerInitializeStep("rootorganisation", null, new RootOrganisationBean()),
+				new ServerInitializeStep("firstorganisation", null, new FirstOrganisationBean()),
+				new ServerInitializeStep("overview", "/jsp/serverinitialize/overview.jsp", null)
 		};
 
 		return steps;
@@ -72,7 +76,7 @@ public class ServerInitializeServlet extends BaseServlet
 	@Override
 	protected void handleRequest(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException
 	{
-		Step stepToShow = null;
+		ServerInitializeStep stepToShow = null;
 
 		// coming from a form - we have a navigation parameter
 		// save the data and redirect to the next page
@@ -80,7 +84,7 @@ public class ServerInitializeServlet extends BaseServlet
 		if(navigation != null) {
 			System.out.println("have navigation: "+navigation);
 			String saveStepName = req.getParameter("step");
-			Step stepToSave = null;
+			ServerInitializeStep stepToSave = null;
 			if(saveStepName != null)
 				stepToSave = findStepByName(req, saveStepName);
 			if(stepToSave != null) {
@@ -149,7 +153,7 @@ public class ServerInitializeServlet extends BaseServlet
 		}
 	}
 
-	private Step findPreviousStep(HttpServletRequest req, Step saveStep) 
+	private ServerInitializeStep findPreviousStep(HttpServletRequest req, ServerInitializeStep saveStep) 
 	{
 		int previousIdx = findStepIdxByName(req, saveStep.getName()) - 1;
 		if(previousIdx < 0)
@@ -157,10 +161,10 @@ public class ServerInitializeServlet extends BaseServlet
 		return getSteps(req)[previousIdx];
 	}
 
-	private Step findNextStep(HttpServletRequest req, Step saveStep) 
+	private ServerInitializeStep findNextStep(HttpServletRequest req, ServerInitializeStep saveStep) 
 	{
 		int previousIdx = findStepIdxByName(req, saveStep.getName()) + 1;
-		Step[] steps = getSteps(req);
+		ServerInitializeStep[] steps = getSteps(req);
 		if(previousIdx == 0 || previousIdx >= steps.length)
 			return null;
 		return steps[previousIdx];
@@ -171,7 +175,7 @@ public class ServerInitializeServlet extends BaseServlet
 		req.getSession().setAttribute(STEPS_SESSION_KEY, null);
 	}
 
-	private Step findStepByName(HttpServletRequest req, String stepName)
+	private ServerInitializeStep findStepByName(HttpServletRequest req, String stepName)
 	{
 		int idx = findStepIdxByName(req, stepName);
 		return idx == -1 ? null : getSteps(req)[idx];
@@ -179,7 +183,7 @@ public class ServerInitializeServlet extends BaseServlet
 
 	private int findStepIdxByName(HttpServletRequest req, String stepName)
 	{
-		Step[] steps = getSteps(req);
+		ServerInitializeStep[] steps = getSteps(req);
 		for (int idx=0; idx < steps.length; idx++) {
 			if(steps[idx].getName().equals(stepName)) {
 				return idx;
@@ -188,9 +192,9 @@ public class ServerInitializeServlet extends BaseServlet
 		return -1;
 	}
 
-	private Step[] getSteps(HttpServletRequest req) 
+	private ServerInitializeStep[] getSteps(HttpServletRequest req) 
 	{
-		Step[] steps = (Step[])req.getSession().getAttribute(STEPS_SESSION_KEY);
+		ServerInitializeStep[] steps = (ServerInitializeStep[])req.getSession().getAttribute(STEPS_SESSION_KEY);
 		if(steps == null) {
 			steps = setupSteps();
 			req.getSession().setAttribute(STEPS_SESSION_KEY, steps);
