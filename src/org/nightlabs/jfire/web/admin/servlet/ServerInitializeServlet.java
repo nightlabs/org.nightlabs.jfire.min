@@ -2,12 +2,14 @@ package org.nightlabs.jfire.web.admin.servlet;
 
 import java.io.IOException;
 import java.rmi.RemoteException;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.nightlabs.jfire.server.ServerManager;
+import org.nightlabs.jfire.servermanager.config.DatabaseCf;
 import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
 import org.nightlabs.jfire.servermanager.config.ServerCf;
 import org.nightlabs.jfire.web.admin.ServerSetupUtil;
@@ -42,7 +44,7 @@ public class ServerInitializeServlet extends BaseServlet
 	private ServerInitializeStep[] setupSteps()
 	{
 		ServerManager serverManager = ServerSetupUtil.getBogoServerManager();
-		JFireServerConfigModule cfMod;
+		final JFireServerConfigModule cfMod;
 		try {
 			cfMod = serverManager.getJFireServerConfigModule();
 			if (cfMod.getLocalServer() == null) { // this shouldn't happen anymore.
@@ -56,8 +58,25 @@ public class ServerInitializeServlet extends BaseServlet
 		
 		ServerInitializeStep[] steps = new ServerInitializeStep[] {
 				new ServerInitializeStep("welcome", "/jsp/serverinitialize/welcome.jsp", null),
-				new ServerInitializeStep("presets", null, new PresetsBean()),
+				new ServerInitializeStep("presets", null, new PresetsBean(), new ServerInitializeStep.PopulateListener() {
+					@Override
+					public void afterPopulate(Object bean)
+					{
+						PresetsBean b = (PresetsBean)bean;
+						String presets = b.getPresets();
+						if(presets.equals("jboss_mysql")) {
+							cfMod.getDatabase().loadDefaults("MySQL");
+							cfMod.getJ2ee().setServerConfigurator("org.nightlabs.jfire.jboss.serverconfigurator.ServerConfiguratorJBossMySQL");
+						} else if(presets.equals("jboss_derby")) {
+							cfMod.getDatabase().loadDefaults("Derby");
+							cfMod.getJ2ee().setServerConfigurator("org.nightlabs.jfire.jboss.serverconfigurator.ServerConfiguratorJBossDerby");
+						} else {
+							throw new IllegalStateException("Unknown preset type: "+presets);
+						}
+					}
+				}),
 				new ServerInitializeStep("localserver", null, cfMod.getLocalServer()),
+				new ServerInitializeStep("jee", null, cfMod.getJ2ee()),
 				new ServerInitializeStep("database", null, cfMod.getDatabase()),
 				new ServerInitializeStep("jdo", null, cfMod.getJdo()),
 				new ServerInitializeStep("smtp", null, cfMod.getSmtp()),
@@ -76,6 +95,9 @@ public class ServerInitializeServlet extends BaseServlet
 	@Override
 	protected void handleRequest(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException
 	{
+		resp.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
+		resp.setHeader("Pragma", "no-cache");
+		
 		ServerInitializeStep stepToShow = null;
 
 		// coming from a form - we have a navigation parameter
@@ -94,6 +116,8 @@ public class ServerInitializeServlet extends BaseServlet
 					if(stepToSave.getBean() != null) {
 						// save data to the bean
 						BeanEditServlet.finishEdit(req);
+						if(stepToSave.getPopulateListener() != null)
+							stepToSave.getPopulateListener().afterPopulate(stepToSave.getBean());
 					}
 					stepToShow = findNextStep(req, stepToSave);
 					if(stepToShow == null) {
