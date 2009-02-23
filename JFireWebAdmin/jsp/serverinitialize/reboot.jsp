@@ -1,7 +1,4 @@
 <%@ page language="java"%>
-<jsp:include page="../pageHeader.jsp">
-	<jsp:param name="title" value="Server Initialisation - Reboot!" />
-</jsp:include>
 
 		<h1>Server initialisation partially done and reboot required!</h1>
 		<br/><br/>
@@ -14,4 +11,3 @@
 		<br/><br/>
 		<a href="/jfire/">Login here (after you started your server again)</a>
 
-<jsp:include page="../pageFooter.jsp" />

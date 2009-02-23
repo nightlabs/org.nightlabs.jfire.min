@@ -1,19 +1,29 @@
 package org.nightlabs.jfire.web.admin.servlet;
 
 import java.io.IOException;
-import java.rmi.RemoteException;
+import java.io.InputStream;
+import java.net.URL;
+import java.security.KeyStore;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.log4j.Logger;
+import org.nightlabs.jfire.organisation.OrganisationManager;
 import org.nightlabs.jfire.server.ServerManager;
+import org.nightlabs.jfire.serverconfigurator.ServerConfigurator;
 import org.nightlabs.jfire.servermanager.config.DatabaseCf;
+import org.nightlabs.jfire.servermanager.config.J2eeCf;
+import org.nightlabs.jfire.servermanager.config.JDOCf;
 import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
+import org.nightlabs.jfire.servermanager.config.RootOrganisationCf;
 import org.nightlabs.jfire.servermanager.config.ServerCf;
+import org.nightlabs.jfire.servermanager.config.ServletSSLCf;
+import org.nightlabs.jfire.servermanager.config.SmtpMailServiceCf;
 import org.nightlabs.jfire.web.admin.ServerSetupUtil;
-import org.nightlabs.jfire.web.admin.UserInputException;
 import org.nightlabs.jfire.web.admin.serverinit.FirstOrganisationBean;
 import org.nightlabs.jfire.web.admin.serverinit.PresetsBean;
 import org.nightlabs.jfire.web.admin.serverinit.RootOrganisationBean;
@@ -24,7 +34,9 @@ import org.nightlabs.jfire.web.admin.serverinit.ServerInitializeStep;
  */
 public class ServerInitializeServlet extends BaseServlet
 {
-	//	private static final String NAVIGATION_VALUE_FINISH = "finish";
+	private static final Logger log = Logger.getLogger(ServerInitializeServlet.class);
+	
+	private static final String NAVIGATION_VALUE_FINISH = "finish";
 
 	private static final String NAVIGATION_VALUE_PREVIOUS = "previous";
 
@@ -111,7 +123,7 @@ public class ServerInitializeServlet extends BaseServlet
 				stepToSave = findStepByName(req, saveStepName);
 			if(stepToSave != null) {
 				System.out.println("step to save by step parameter: "+stepToSave.getName());
-				if(NAVIGATION_VALUE_NEXT.equals(navigation)) {
+				if(NAVIGATION_VALUE_NEXT.equals(navigation) || NAVIGATION_VALUE_FINISH.equals(navigation)) {
 					System.out.println("Have step to save: "+stepToSave);
 					if(stepToSave.getBean() != null) {
 						// save data to the bean
@@ -120,14 +132,9 @@ public class ServerInitializeServlet extends BaseServlet
 							stepToSave.getPopulateListener().afterPopulate(stepToSave.getBean());
 					}
 					stepToShow = findNextStep(req, stepToSave);
-					if(stepToShow == null) {
+					if(stepToShow == null || NAVIGATION_VALUE_FINISH.equals(navigation)) {
 						// we are done. do initialization
-						boolean needReboot = performInitialization();
-						if(needReboot)
-							setContent(req, "/jsp/serverinitialize/reboot.jsp");
-						else
-							setContent(req, "/jsp/serverinitialize/success.jsp");
-						resetSteps(req);
+						finish(req);
 						return;
 					}
 				} else if(NAVIGATION_VALUE_PREVIOUS.equals(navigation)) {
@@ -135,6 +142,11 @@ public class ServerInitializeServlet extends BaseServlet
 					if(stepToShow == null)
 						stepToShow = getSteps(req)[0];
 				}
+			}
+			if(NAVIGATION_VALUE_FINISH.equals(navigation)) {
+				// we are done. do initialization
+				finish(req);
+				return;
 			}
 			if(stepToShow == null)
 				stepToShow = getSteps(req)[0];
@@ -175,6 +187,16 @@ public class ServerInitializeServlet extends BaseServlet
 			req.setAttribute("stepToShow", stepToShow);
 			setContent(req, "/jsp/serverinitialize/beaneditheader.jsp", "/beanedit", "/jsp/serverinitialize/beaneditfooter.jsp");
 		}
+	}
+
+	private void finish(HttpServletRequest req)
+	{
+		boolean needReboot = performInitialization(getStepsByName(req));
+		if(needReboot)
+			setContent(req, "/jsp/serverinitialize/reboot.jsp");
+		else
+			setContent(req, "/jsp/serverinitialize/success.jsp");
+		resetSteps(req);
 	}
 
 	private ServerInitializeStep findPreviousStep(HttpServletRequest req, ServerInitializeStep saveStep) 
@@ -226,12 +248,149 @@ public class ServerInitializeServlet extends BaseServlet
 		return steps;
 	}
 	
+	private Map<String, ServerInitializeStep> getStepsByName(HttpServletRequest req)
+	{
+		ServerInitializeStep[] steps = getSteps(req);
+		Map<String, ServerInitializeStep> result = new HashMap<String, ServerInitializeStep>(steps.length);
+		for(ServerInitializeStep step : steps)
+			result.put(step.getName(), step);
+		return result;
+	}
+	
 	/**
 	 * @return <code>true</code> if a reboot is required.
 	 */
-	private boolean performInitialization()
+	private boolean performInitialization(Map<String, ServerInitializeStep> stepsByName)
 	{
-		// TODO do something!
+		log.info("Server initialisation starting...");
+
+		try {
+			JFireServerConfigModule cfMod = createServerConfigModule(stepsByName);
+			ServerManager serverManager = ServerSetupUtil.getBogoServerManager();
+			serverManager.setJFireServerConfigModule(cfMod);
+
+			FirstOrganisationBean firstOrganisationBean = (FirstOrganisationBean) stepsByName.get("firstorganisation").getBean();
+			
+			// save the data and create the organisation at next boot, because doing it after changing the server configuration is likely to fail due to hot undeploy/redeploy.
+			boolean createOrganisation = firstOrganisationBean.getOrganisationID() != null && !firstOrganisationBean.getOrganisationID().isEmpty();
+			if(createOrganisation) {
+				OrganisationManager organisationManager = ServerSetupUtil.getBogoOrganisationManager();
+				organisationManager.createOrganisationAfterReboot(
+						firstOrganisationBean.getOrganisationID(),
+						firstOrganisationBean.getOrganisationName(),
+						firstOrganisationBean.getAdminUserName(),
+						firstOrganisationBean.getAdminPassword(),
+						true);
+			}
+
+			// we give the server 10 sec (before shutting down) to have enough time for the creation of the info page and for storing the current state
+			boolean serverIsShuttingDown = serverManager.configureServerAndShutdownIfNecessary(10000);
+			if (serverIsShuttingDown) {
+				log.info("Server is shutting down - will create organisation after reboot.");
+				return true;
+			}
+
+			if(createOrganisation) {
+				OrganisationManager organisationManager = ServerSetupUtil.getBogoOrganisationManager();
+				organisationManager.createOrganisation(
+						firstOrganisationBean.getOrganisationID(),
+						firstOrganisationBean.getOrganisationName(),
+						firstOrganisationBean.getAdminUserName(),
+						firstOrganisationBean.getAdminPassword(),
+						true);
+			}
+
+		} catch(Exception e) {
+			log.error("Server initialisation failed", e);
+			// TODO: struts error handling
+			throw new RuntimeException("Server initialisation failed", e);
+		}
+
+		log.info("Server initialisation done.");
+
 		return false;
+	}
+
+	private JFireServerConfigModule createServerConfigModule(Map<String, ServerInitializeStep> stepsByName)
+	{
+		JFireServerConfigModule cfMod = new JFireServerConfigModule();
+
+		// root organisation:
+		RootOrganisationBean rootOrganisationBean = (RootOrganisationBean) stepsByName.get("rootorganisation").getBean();
+		boolean standalone = rootOrganisationBean.getServerID() == null || rootOrganisationBean.getServerID().isEmpty();
+		if(!standalone) {
+			ServerCf rootOrgServer = new ServerCf(rootOrganisationBean.getServerID());
+			RootOrganisationCf rootOrg = new RootOrganisationCf(
+					rootOrganisationBean.getOrganisationID(),
+					rootOrganisationBean.getOrganisationName(),
+					rootOrgServer);
+			rootOrgServer.setServerName(rootOrganisationBean.getServerName());
+			rootOrgServer.setJ2eeServerType(rootOrganisationBean.getJ2eeServerType());
+			rootOrgServer.setInitialContextURL(rootOrganisationBean.getInitialContextURL());
+			cfMod.setRootOrganisation(rootOrg);
+		}
+
+		// local server:
+		ServerCf localServer = (ServerCf) stepsByName.get("localserver").getBean();
+		cfMod.setLocalServer(localServer);
+
+		// servlet / ssl
+		ServletSSLCf servletSSLCf = (ServletSSLCf) stepsByName.get("servletssl").getBean();
+		String keystoreURLToImport = servletSSLCf.getKeystoreURLToImport();
+		if(keystoreURLToImport != null && !keystoreURLToImport.isEmpty()) {
+			try
+			{
+				KeyStore ks = KeyStore.getInstance( "JKS" );
+				final String keystorePassword = servletSSLCf.getKeystorePassword();
+				InputStream keystoreToImportStream;
+				// distinguish between default and non-default keystore via this constant
+				if (ServletSSLCf.DEFAULT_KEYSTORE.equals(keystoreURLToImport))
+				{
+					keystoreToImportStream = ServerConfigurator.class.getResourceAsStream("/jfire-server.keystore");
+				}
+				else
+					keystoreToImportStream = new URL(keystoreURLToImport).openStream();
+	
+				ks.load(keystoreToImportStream, keystorePassword.toCharArray());
+	
+				final String wantedAlias = servletSSLCf.getSslServerCertificateAlias();
+				if (! ks.containsAlias(wantedAlias))
+					throw new IllegalStateException("No certificate with alias '"+ wantedAlias+"' found in "+ keystoreURLToImport);
+	
+				// TODO: test the certificate password somehow!
+			}
+			catch (Exception e)
+			{
+				throw new IllegalStateException("Keystore initialisation error:", e);
+			}
+		}
+		cfMod.setServletSSLCf(servletSSLCf);
+
+		// j2ee
+		J2eeCf j2ee = (J2eeCf) stepsByName.get("jee").getBean();
+		cfMod.setJ2ee(j2ee);
+
+		// database
+		DatabaseCf database = (DatabaseCf) stepsByName.get("database").getBean();
+		cfMod.setDatabase(database);
+
+		// jdo
+		JDOCf jdo = (JDOCf) stepsByName.get("jdo").getBean();
+		cfMod.setJdo(jdo);
+
+		// smtp
+		SmtpMailServiceCf smtp = (SmtpMailServiceCf) stepsByName.get("smtp").getBean();
+		if (smtp.getPort() == null) {
+			if (SmtpMailServiceCf.ENCRYPTION_METHOD_NONE.equals(smtp.getEncryptionMethod()))
+				smtp.setPort(SmtpMailServiceCf.DEFAULT_PORT_PLAIN);
+			else if (SmtpMailServiceCf.ENCRYPTION_METHOD_SSL.equals(smtp.getEncryptionMethod()))
+				smtp.setPort(SmtpMailServiceCf.DEFAULT_PORT_SSL);
+		}
+		cfMod.setSmtp(smtp);
+
+		// call init in order to ensure that the cfMod is in a consistent state
+		cfMod.init();
+
+		return cfMod;
 	}
 }

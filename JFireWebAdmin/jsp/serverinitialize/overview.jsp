@@ -1,7 +1,14 @@
 <%@ page language="java"%>
 
 OVERVIEW HERE TO COME...
- 
+
+<form method="post" onsubmit="showWaitBlock('Please wait while initializing server...')">
+
+<input type="hidden" name="navigation" value="finish"/>
+<input type="submit" value="Initialize Server Now!"/>
+
+</form>
+
 <%--
 <jsp:include page="../pageHeader.jsp">
 	<jsp:param name="title" value="Server Initialisation - Overview" />

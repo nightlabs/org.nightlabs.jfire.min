@@ -9,14 +9,26 @@ import java.util.StringTokenizer;
 /**
  * @author Marc Klinger - marc[at]nightlabs[dot]de
  */
-public class ExtendedPropertyDescriptor extends PropertyDescriptor 
+public class ExtendedPropertyDescriptor extends PropertyDescriptor implements Comparable<ExtendedPropertyDescriptor>
 {
 	private ExtendedBeanInfo beanInfo;
+	private int orderHint;
 
 	public ExtendedPropertyDescriptor(ExtendedBeanInfo beanInfo, PropertyDescriptor pd) throws IntrospectionException
 	{
 		super(pd.getName(), pd.getReadMethod(), pd.getWriteMethod());
 		this.beanInfo = beanInfo;
+		this.orderHint = 5000;
+		String s = getPropertyValue("orderHint");
+		System.out.println("order hint: "+s);
+		if(s != null) {
+			try {
+				this.orderHint = Integer.parseInt(s);
+			} catch(NumberFormatException e) {
+				// ignore
+				e.printStackTrace();
+			}
+		}
 	}
 	
 	public String getLocalizedPropertyValue(String key)
@@ -83,5 +95,21 @@ public class ExtendedPropertyDescriptor extends PropertyDescriptor
 	public ExtendedBeanInfo getBeanInfo()
 	{
 		return beanInfo;
+	}
+	
+	public void setOrderHint(int orderHint)
+	{
+		this.orderHint = orderHint;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Comparable#compareTo(java.lang.Object)
+	 */
+	@Override
+	public int compareTo(ExtendedPropertyDescriptor o)
+	{
+		if(orderHint == o.orderHint)
+			return getName().compareTo(o.getName());
+		return orderHint - o.orderHint;
 	}
 }

@@ -9,7 +9,8 @@
 	    <br/><br/>
 		<form method="post">
 			<input type="hidden" name="step" value="welcome"/>
-			<button name="navigation" value="next" class="wide" >Start configuration</button>
+			<input type="hidden" name="navigation" value="next"/>
+			<input type="submit" value="Start configuration"/>
 		</form>
 	    </p>
 	    
@@ -28,8 +29,9 @@
 	    </ul>
 	    <b>NOT FOR PRODUCTIVE SYSTEMS!</b>
 	    <br/><br/>
-		<form action="serverinitialize" onsubmit="getElementById('welcomeblock').style.display='none'; getElementById('waitblock').style.display='block';">
-			<button name="navigation" value="finish" class="wide" >Give me the demo system</button>
+		<form action="serverinitialize" onsubmit="showWaitBlock('Please wait while initializing server...')">
+			<input type="hidden" name="navigation" value="finish"/>
+			<input type="submit" value="Give me the demo system"/>
 		</form>
 	    </p>
     </div>

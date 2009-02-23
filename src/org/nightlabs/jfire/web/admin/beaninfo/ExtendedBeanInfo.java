@@ -8,6 +8,8 @@ import java.beans.MethodDescriptor;
 import java.beans.PropertyDescriptor;
 import java.beans.SimpleBeanInfo;
 import java.io.IOException;
+import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -132,15 +134,33 @@ public class ExtendedBeanInfo extends SimpleBeanInfo
 	public ExtendedPropertyDescriptor[] getPropertyDescriptors() 
 	{
 		if(extendedPropertyDescriptors == null) {
+//			// for ordering:
+//			Method[] methods = getBeanDescriptor().getBeanClass().getMethods();
+//			System.out.println("Method ordering:");
+//			for (Method method : methods) {
+//				System.out.println("\t"+method.getName());
+//			}
+//			// end
 			PropertyDescriptor[] propertyDescriptors = baseBeanInfo.getPropertyDescriptors();
 			extendedPropertyDescriptors = new ExtendedPropertyDescriptor[propertyDescriptors.length];
 			for (int i = 0; i < propertyDescriptors.length; i++) {
 				try {
 					extendedPropertyDescriptors[i] = new ExtendedPropertyDescriptor(this, propertyDescriptors[i]);
+//					// for ordering:
+//					for (int j = 0; j < methods.length; j++) {
+//						if(methods[j].equals(extendedPropertyDescriptors[i].getReadMethod())) {
+//							extendedPropertyDescriptors[i].setOrderHint(1000 + j);
+//							break;
+//						}
+//					}
+//					// end
 				} catch (IntrospectionException e) {
 					throw new RuntimeException(e);
 				}
 			}
+			// for ordering:
+			Arrays.sort(extendedPropertyDescriptors);
+			// end
 		}
 		return extendedPropertyDescriptors;
 	}	

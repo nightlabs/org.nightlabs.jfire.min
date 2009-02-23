@@ -3,7 +3,6 @@
 <%@page import="org.nightlabs.jfire.web.admin.beaninfo.ExtendedPropertyDescriptor"%>
 <%@page import="org.apache.commons.beanutils.BeanUtils"%>
 <%@page import="java.util.Map"%>
-<%@page import="org.nightlabs.jfire.web.admin.beaninfo.BeanInfoUtil"%>
 <%@page import="org.nightlabs.jfire.web.admin.beaninfo.ExtendedBeanInfo"%>
 
 <%
@@ -20,6 +19,15 @@ if(displayName == null || displayName.isEmpty()) {
 
 <h1><%=displayName%></h1>
 
+<%
+String shortDescription = beanInfo.getBeanDescriptor().getShortDescription();
+if(shortDescription != null && !shortDescription.isEmpty() && !shortDescription.equals(displayName)) {
+%>
+<p><%=shortDescription%></p>
+<%
+}
+%>
+
 <table class="formtable">
 <%
 for(ExtendedPropertyDescriptor pd : pds) {
@@ -29,7 +37,7 @@ for(ExtendedPropertyDescriptor pd : pds) {
 %>
 <tr>
 	<td valign="top"><%=pd.getDisplayName()%>: </td>
-	<td valign="top">
+	<td valign="top" style="padding-left: 8px;">
 		<%
 		if(pd.getPropertyType() == Boolean.class || pd.getPropertyType() == Boolean.TYPE) { 
 		%>
@@ -59,6 +67,15 @@ for(ExtendedPropertyDescriptor pd : pds) {
 		}
 		%>
 	</td>
+	<%
+	String propertyShortDescription = pd.getShortDescription();
+	if(propertyShortDescription != null && !propertyShortDescription.isEmpty() && !propertyShortDescription.equals(pd.getDisplayName())) {
+	%>
+	<td valign="middle" style="padding-left: 16px;"><small><i>(<%=propertyShortDescription%>)</i></small></td>
+	<%
+	}
+	%>
+	
 </tr>
 <%
 	}

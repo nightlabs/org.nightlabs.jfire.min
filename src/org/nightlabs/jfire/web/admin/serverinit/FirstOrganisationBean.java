@@ -6,7 +6,6 @@ public class FirstOrganisationBean
 	private String organisationName;
 	private String adminUserName;
 	private String adminPassword;
-	private boolean serverAdmin;
 	
 	/**
 	 * Get the organisationID.
@@ -72,22 +71,4 @@ public class FirstOrganisationBean
 	{
 		this.adminPassword = adminPassword;
 	}
-	/**
-	 * Get the serverAdmin.
-	 * @return the serverAdmin
-	 */
-	public boolean isServerAdmin()
-	{
-		return serverAdmin;
-	}
-	/**
-	 * Set the serverAdmin.
-	 * @param serverAdmin the serverAdmin to set
-	 */
-	public void setServerAdmin(boolean serverAdmin)
-	{
-		this.serverAdmin = serverAdmin;
-	}
-	
-	
 }

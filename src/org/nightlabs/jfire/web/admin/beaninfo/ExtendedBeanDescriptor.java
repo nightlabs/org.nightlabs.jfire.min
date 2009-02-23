@@ -41,7 +41,8 @@ public class ExtendedBeanDescriptor extends BeanDescriptor
 	}
 
 	public String getShortDescription() {
-		return baseBeanDescriptor.getShortDescription();
+		String s = beanInfo.getLocalizedValue("shortDescription");
+		return s == baseBeanDescriptor.getShortDescription() ? "" : s;
 	}
 
 	public Object getValue(String attributeName) {
