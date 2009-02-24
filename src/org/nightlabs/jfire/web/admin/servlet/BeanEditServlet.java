@@ -21,7 +21,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.beanutils.BeanUtils;
 import org.apache.log4j.Logger;
 import org.nightlabs.jfire.web.admin.beaninfo.ExtendedBeanInfo;
 import org.nightlabs.jfire.web.admin.beaninfo.ExtendedPropertyDescriptor;
@@ -228,20 +227,16 @@ public class BeanEditServlet extends HttpServlet
 		log.info("Saving bean: "+bean.getClass().getName());
 		ExtendedBeanInfo beanInfo = getExtendedBeanInfo(bean);
 		Map<String, ExtendedPropertyDescriptor> epds = beanInfo.getExtendedPropertyDescriptorsByName();
-		Map<String, Object> properties = new HashMap<String, Object>();
 		Enumeration<?> parameterNames = req.getParameterNames();
 		String valueParameterPrefix = "beanedit."+beanKey+".value.";
 		while(parameterNames.hasMoreElements()) {
 			String name = (String)parameterNames.nextElement();
 			if(name.startsWith(valueParameterPrefix)) {
 				String propertyName = name.substring(valueParameterPrefix.length());
-				Object realValue = getRealValue(bean, epds.get(propertyName), req.getParameter(name));
-				properties.put(propertyName, realValue);
+				ExtendedPropertyDescriptor epd = epds.get(propertyName);
+				Object realValue = getRealValue(bean, epd, req.getParameter(name));
+				epd.setValue(bean, realValue);
 			}
-		}
-		if(!properties.isEmpty()) {
-			log.info("Bean values: "+properties);
-			BeanUtils.populate(bean, properties);
 		}
 	}
 

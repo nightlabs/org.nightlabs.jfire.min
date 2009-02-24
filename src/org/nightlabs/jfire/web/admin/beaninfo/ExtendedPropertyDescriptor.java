@@ -2,6 +2,7 @@ package org.nightlabs.jfire.web.admin.beaninfo;
 
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -111,5 +112,29 @@ public class ExtendedPropertyDescriptor extends PropertyDescriptor implements Co
 		if(orderHint == o.orderHint)
 			return getName().compareTo(o.getName());
 		return orderHint - o.orderHint;
+	}
+	
+	public Object getValue(Object bean)
+	{
+		Method readMethod = getReadMethod();
+		if(readMethod == null)
+			return null;
+		try {
+			return readMethod.invoke(bean, (Object[])null);
+		} catch(Exception e) {
+			throw new RuntimeException("Error getting bean property value: "+getName(), e);
+		}
+	}
+
+	public void setValue(Object bean, Object value)
+	{
+		Method writeMethod = getWriteMethod();
+		if(writeMethod == null)
+			throw new RuntimeException("No write method for bean property: "+getName());
+		try {
+			writeMethod.invoke(bean, value);
+		} catch(Exception e) {
+			throw new RuntimeException("Error setting bean property value: "+getName(), e);
+		}
 	}
 }
