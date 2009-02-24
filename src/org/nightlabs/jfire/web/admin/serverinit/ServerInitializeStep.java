@@ -1,6 +1,5 @@
 package org.nightlabs.jfire.web.admin.serverinit;
 
-import java.util.Map;
 
 public class ServerInitializeStep 
 {
