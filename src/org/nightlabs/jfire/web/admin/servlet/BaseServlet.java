@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.log4j.Logger;
 import org.nightlabs.jfire.web.admin.NotAuthenticatedException;
 
 /**
@@ -22,9 +23,12 @@ public abstract class BaseServlet extends HttpServlet
 	 */
 	private static final long serialVersionUID = 1L;
 	
+	private static final Logger log = Logger.getLogger(BaseServlet.class);
+	
 	private static final String KEY_PREFIX = "internal_";
 	private static final String KEY_PAGETITLE = KEY_PREFIX+"pagetitle";
 	private static final String KEY_FORWARDS = KEY_PREFIX+"forwards";
+	private static final String KEY_FORWARD_REQUESTS = KEY_PREFIX+"forwardrequests";
 	private static final String KEY_ERRORS = KEY_PREFIX+"errors";
 	private static final String KEY_INTERNALREDIRECT = KEY_PREFIX+"internalredirect";
 
@@ -74,15 +78,37 @@ public abstract class BaseServlet extends HttpServlet
 		errors.add(e);
 	}
 	
-	@SuppressWarnings("unchecked")
 	protected void addContent(HttpServletRequest request, String... forwards)
 	{
-		List<String> forwardsList = (List<String>) request.getAttribute(KEY_FORWARDS);
+		List<String> forwardsList = getContent(request);
 		if(forwardsList == null) {
 			forwardsList = new LinkedList<String>();
 			request.setAttribute(KEY_FORWARDS, forwardsList);
 		}
 		Collections.addAll(forwardsList, forwards);
+	}
+
+	protected void addContent(HttpServletRequest request, String forward, HttpServletRequest forwardRequest)
+	{
+		List<String> forwardsList = getContent(request);
+		if(forwardsList == null) {
+			forwardsList = new LinkedList<String>();
+			request.setAttribute(KEY_FORWARDS, forwardsList);
+		}
+		int newIdx = forwardsList.size();
+		forwardsList.add(forward);
+		
+		if(forwardRequest != null) {
+			List<HttpServletRequest> forwardRequestsList = getForwardRequests(request);
+			if(forwardRequestsList == null) {
+				forwardRequestsList = new LinkedList<HttpServletRequest>();
+				request.setAttribute(KEY_FORWARD_REQUESTS, forwardRequestsList);
+			}
+			int newSize = newIdx;
+			while(forwardRequestsList.size() < newSize)
+				forwardRequestsList.add(null);
+			forwardRequestsList.add(forwardRequest);
+		}
 	}
 	
 	protected void setContent(HttpServletRequest request, String... forwards)
@@ -91,7 +117,7 @@ public abstract class BaseServlet extends HttpServlet
 		addContent(request, forwards);
 	}
 	
-	private void clearContent(HttpServletRequest request)
+	protected void clearContent(HttpServletRequest request)
 	{
 		request.setAttribute(KEY_FORWARDS, null);
 	}
@@ -101,14 +127,35 @@ public abstract class BaseServlet extends HttpServlet
 	{
 		return (List<String>) request.getAttribute(KEY_FORWARDS);		
 	}
+
+	@SuppressWarnings("unchecked")
+	protected List<HttpServletRequest> getForwardRequests(HttpServletRequest req)
+	{
+		return (List<HttpServletRequest>) req.getAttribute(KEY_FORWARD_REQUESTS);
+	}
+	
+	protected HttpServletRequest getForwardRequest(HttpServletRequest request, int idx)
+	{
+		List<HttpServletRequest> forwardRequests = getForwardRequests(request);
+		if(forwardRequests == null || forwardRequests.size() <= idx)
+			return request;
+		HttpServletRequest forwardRequest = forwardRequests.get(idx);
+		if(forwardRequest == null)
+			return request;
+		return forwardRequest;
+	}
 	
 	private void doForward(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException
 	{
 		req.getRequestDispatcher("/jsp/pageHeader.jsp").include(req, resp);
 		List<String> content = getContent(req);
 		if(content != null && !content.isEmpty()) {
-			for (String c : content)
-				req.getRequestDispatcher(c).include(req, resp);
+			log.info("Forwarding to: "+content);
+			int idx = 0;
+			for (String c : content) {
+				req.getRequestDispatcher(c).include(getForwardRequest(req, idx), resp);
+				idx++;
+			}
 		} else {
 			req.getRequestDispatcher("/jsp/error.jsp");
 		}

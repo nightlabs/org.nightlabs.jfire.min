@@ -36,10 +36,6 @@ import javax.servlet.http.HttpSession;
 import org.apache.log4j.Logger;
 
 /**
- * When logging in, an instance of this class is stored in the session under the key
- * "login" (defined by SESSION_KEY). Thus, if there is a current user authenticated,
- * this object should exist. Otherwise a NotAuthenticatedException should be thrown.
- *
  * @author marco
  * @author Marc Klinger - marc[at]nightlabs[dot]de
  */
@@ -152,11 +148,11 @@ public class SessionLogin
 
 	public Hashtable<?, ?> getInitialContextProperties()
 	{
-		System.out.println(this.getClass().getName()+"#getInitialContextProperties(): begin");
+//		System.out.println(this.getClass().getName()+"#getInitialContextProperties(): begin");
 
 		try {
 			if (initialContextProperties == null) {
-				System.out.println(this.getClass().getName()+"#getInitialContextProperties(): generating props");
+				//System.out.println(this.getClass().getName()+"#getInitialContextProperties(): generating props");
 
 
 // TODO This is not clean! The properties should come from a config file or we should ask the server core
@@ -185,12 +181,12 @@ public class SessionLogin
 
 	public InitialContext getInitialContext()
 	{
-		System.out.println(this.getClass().getName()+"#getInitialContext(): begin");
+//		System.out.println(this.getClass().getName()+"#getInitialContext(): begin");
 		try {
 			if (initialContext != null)
 				return initialContext;
 
-			System.out.println(this.getClass().getName()+"#getInitialContext(): creating new initctx.");
+//			System.out.println(this.getClass().getName()+"#getInitialContext(): creating new initctx.");
 
 			initialContext = new InitialContext(getInitialContextProperties());
 			return initialContext;

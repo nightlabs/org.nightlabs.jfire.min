@@ -1,5 +1,8 @@
 package org.nightlabs.jfire.web.admin.serverinit;
 
+import org.nightlabs.jfire.servermanager.config.RootOrganisationCf;
+import org.nightlabs.jfire.servermanager.config.ServerCf;
+
 /**
  * A custom bean is needed as the RootOrganisationCf has an inner member ServerCf
  * which cannot be handled in a generic way.
@@ -109,5 +112,34 @@ public class RootOrganisationBean
 	public void setInitialContextURL(String initialContextURL)
 	{
 		this.initialContextURL = initialContextURL;
+	}
+	
+	public void copyFromCf(RootOrganisationCf rootOrganisationCf)
+	{
+		if(rootOrganisationCf == null)
+			rootOrganisationCf = new RootOrganisationCf();
+		setOrganisationID(rootOrganisationCf.getOrganisationID());
+		setOrganisationName(rootOrganisationCf.getOrganisationName());
+		ServerCf server = rootOrganisationCf.getServer();
+		if(server == null)
+			server = new ServerCf();
+		setServerID(server.getServerID());
+		setServerName(server.getServerName());
+		setJ2eeServerType(server.getJ2eeServerType());
+		setInitialContextURL(server.getInitialContextURL());
+	}
+	
+	public void copyToCf(RootOrganisationCf rootOrganisationCf)
+	{
+		rootOrganisationCf.setOrganisationID(getOrganisationID());
+		rootOrganisationCf.setOrganisationName(getOrganisationName());
+		ServerCf server = rootOrganisationCf.getServer();
+		if(server == null)
+			server = new ServerCf();
+		server.setServerID(getServerID());
+		server.setServerName(getServerName());
+		server.setJ2eeServerType(getJ2eeServerType());
+		server.setInitialContextURL(getInitialContextURL());
+		rootOrganisationCf.setServer(server);
 	}
 }

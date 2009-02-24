@@ -116,15 +116,18 @@ public class ServerInitializeServlet extends BaseServlet
 		// save the data and redirect to the next page
 		String navigation = req.getParameter(NAVIGATION_PARAMETER_KEY);
 		if(navigation != null) {
-			System.out.println("have navigation: "+navigation);
+			if(log.isDebugEnabled())
+				log.debug("have navigation: "+navigation);
 			String saveStepName = req.getParameter("step");
 			ServerInitializeStep stepToSave = null;
 			if(saveStepName != null)
 				stepToSave = findStepByName(req, saveStepName);
 			if(stepToSave != null) {
-				System.out.println("step to save by step parameter: "+stepToSave.getName());
+				if(log.isDebugEnabled())
+					log.debug("step to save by step parameter: "+stepToSave.getName());
 				if(NAVIGATION_VALUE_NEXT.equals(navigation) || NAVIGATION_VALUE_FINISH.equals(navigation)) {
-					System.out.println("Have step to save: "+stepToSave);
+					if(log.isDebugEnabled())
+						log.debug("Have step to save: "+stepToSave);
 					if(stepToSave.getBean() != null) {
 						// save data to the bean
 						BeanEditServlet.finishEdit(req);
@@ -150,7 +153,8 @@ public class ServerInitializeServlet extends BaseServlet
 			}
 			if(stepToShow == null)
 				stepToShow = getSteps(req)[0];
-			System.out.println("redirecting to show next step: "+stepToShow.getName());
+			if(log.isDebugEnabled())
+				log.debug("redirecting to show next step: "+stepToShow.getName());
 			redirect(req, resp, "/serverinitialize/"+stepToShow.getName());
 			return;
 		}
@@ -163,25 +167,27 @@ public class ServerInitializeServlet extends BaseServlet
 			String stepName = pathInfo.substring(1);
 			// find step
 			stepToShow = findStepByName(req, stepName);
-			System.out.println("step to show by path info: "+stepToShow.getName());
+			if(log.isDebugEnabled())
+				log.debug("step to show by path info: "+stepToShow.getName());
 		}
 
 
 		// jump in for fresh initialize or unknown step
 		if(stepToShow == null) {
 			resetSteps(req);
-			System.out.println("resetting steps - starting fresh");
+			if(log.isDebugEnabled())
+				log.debug("resetting steps - starting fresh");
 			redirect(req, resp, "/serverinitialize/"+getSteps(req)[0].getName());
 			return;
 		}
 
 		// show step inside this page response
 		if(stepToShow.getForward() != null) {
-			System.out.println("FORWARD: "+stepToShow.getForward());
+			//System.out.println("FORWARD: "+stepToShow.getForward());
 			setContent(req, stepToShow.getForward());
 		} else {
 			// show bean editor
-			System.out.println("BEAN: "+stepToShow.getName());
+			//System.out.println("BEAN: "+stepToShow.getName());
 			BeanEditServlet.startEdit(req, stepToShow.getBean());
 //			req.getSession().setAttribute("beanedit.bean", stepToShow.getBean());
 			req.setAttribute("stepToShow", stepToShow);

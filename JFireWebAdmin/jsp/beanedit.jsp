@@ -1,15 +1,15 @@
 <%@page import="java.beans.PropertyDescriptor"%>
 <%@page import="java.util.List"%>
-<%@page import="org.nightlabs.jfire.web.admin.beaninfo.ExtendedPropertyDescriptor"%>
-<%@page import="org.apache.commons.beanutils.BeanUtils"%>
 <%@page import="java.util.Map"%>
+<%@page import="org.apache.commons.beanutils.BeanUtils"%>
+<%@page import="org.nightlabs.jfire.web.admin.beaninfo.ExtendedPropertyDescriptor"%>
 <%@page import="org.nightlabs.jfire.web.admin.beaninfo.ExtendedBeanInfo"%>
+<%@page import="org.nightlabs.jfire.web.admin.servlet.BeanEditServlet"%>
 
 <%
-int beanKey = (Integer)request.getAttribute("beanedit.beankey");
-Map<Integer, Object> beans = (Map<Integer, Object>)request.getSession().getAttribute("beanedit.beans");
-Object bean = beans.get(beanKey);
-ExtendedBeanInfo beanInfo = (ExtendedBeanInfo)request.getAttribute("beanedit.beaninfo");
+int beanKey = (Integer)request.getAttribute(BeanEditServlet.BEANKEY_ATTRIBUTE_KEY);
+Object bean = request.getAttribute(BeanEditServlet.BEAN_ATTRIBUTE_KEY);
+ExtendedBeanInfo beanInfo = (ExtendedBeanInfo)request.getAttribute(BeanEditServlet.BEANINFO_ATTRIBUTE_KEY);
 ExtendedPropertyDescriptor[] pds = beanInfo.getPropertyDescriptors();
 String displayName = beanInfo.getBeanDescriptor().getDisplayName();
 if(displayName == null || displayName.isEmpty()) {
@@ -32,7 +32,7 @@ if(shortDescription != null && !shortDescription.isEmpty() && !shortDescription.
 <%
 for(ExtendedPropertyDescriptor pd : pds) {
 	if(pd.getWriteMethod() != null && !pd.isHidden()) {
-		String name = "beanedit.value."+pd.getName();
+		String name = "beanedit."+beanKey+".value."+pd.getName();
 		String value = BeanUtils.getSimpleProperty(bean, pd.getName());
 %>
 <tr>
@@ -83,4 +83,3 @@ for(ExtendedPropertyDescriptor pd : pds) {
 %>
 </table>
 <br/>
-<input type="hidden" name="beanedit.beankey" value="<%=beanKey%>"/>

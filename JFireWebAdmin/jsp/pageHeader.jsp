@@ -42,7 +42,7 @@
 		Errors:
 		<ul>
 		<c:forEach items="${internal_errors}" var="error">
-		<li><c:if test="${error.localizedMessage} == ''">${error.class.simpleName}</c:if>${error.localizedMessage}</li>
+		<li><c:if test="${error.localizedMessage == '' || error.localizedMessage == null}">${error.class.simpleName} </c:if>${error.localizedMessage}</li>
 		</c:forEach>
 		</ul>
 		</div>

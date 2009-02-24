@@ -50,6 +50,15 @@
 		<url-pattern>/createorganisation</url-pattern>
 	</servlet-mapping>
 
+	<servlet>
+		<servlet-name>ServerConfigServlet</servlet-name>
+		<servlet-class>org.nightlabs.jfire.web.admin.servlet.ServerConfigServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>ServerConfigServlet</servlet-name>
+		<url-pattern>/serverconfig</url-pattern>
+	</servlet-mapping>
+
 
 
 	<servlet>
@@ -74,6 +83,10 @@
 	<servlet-mapping>
 		<servlet-name>BeanEditServlet</servlet-name>
 		<url-pattern>/beanedit</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>BeanEditServlet</servlet-name>
+		<url-pattern>/beanedit/*</url-pattern>
 	</servlet-mapping>
 
 

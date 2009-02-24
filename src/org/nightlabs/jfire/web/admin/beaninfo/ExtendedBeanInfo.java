@@ -8,7 +8,6 @@ import java.beans.MethodDescriptor;
 import java.beans.PropertyDescriptor;
 import java.beans.SimpleBeanInfo;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Locale;
@@ -19,7 +18,6 @@ import java.util.ResourceBundle;
 
 /**
  * @author Marc Klinger - marc[at]nightlabs[dot]de
- *
  */
 public class ExtendedBeanInfo extends SimpleBeanInfo 
 {
@@ -39,17 +37,17 @@ public class ExtendedBeanInfo extends SimpleBeanInfo
 
 	public ExtendedBeanInfo(BeanInfo baseBeanInfo, Locale locale) throws IntrospectionException
 	{
-		System.out.println("base bean info: "+baseBeanInfo);
+		//System.out.println("base bean info: "+baseBeanInfo);
 		this.baseBeanInfo = baseBeanInfo;
 		this.beanClassSymbolicName = getExtendedBeanInfo().getProperty(baseBeanInfo.getBeanDescriptor().getBeanClass().getName());
-		System.out.println("Bean class symbolic name: "+this.beanClassSymbolicName);
+		//System.out.println("Bean class symbolic name: "+this.beanClassSymbolicName);
 		this.locale = locale;
 	}
 
 	private static Properties extendedPropertyDescriptions;
 	private static Map<Locale, ResourceBundle> resourceBundles = new HashMap<Locale, ResourceBundle>(1);
 
-	protected static synchronized Properties getExtendedBeanInfo() 
+	protected synchronized Properties getExtendedBeanInfo() 
 	{
 		if(extendedPropertyDescriptions == null) {
 			extendedPropertyDescriptions = new Properties();
@@ -62,7 +60,7 @@ public class ExtendedBeanInfo extends SimpleBeanInfo
 		return extendedPropertyDescriptions;
 	}
 	
-	protected static ResourceBundle getResourceBundle(Locale locale) 
+	protected ResourceBundle getResourceBundle(Locale locale) 
 	{
 		synchronized (resourceBundles) {
 			ResourceBundle resourceBundle = resourceBundles.get(locale);
@@ -78,7 +76,7 @@ public class ExtendedBeanInfo extends SimpleBeanInfo
 	{
 		if(beanClassSymbolicName != null) {
 			try {
-				System.out.println("Looking for localized value: "+beanClassSymbolicName+"."+key);
+				//System.out.println("Looking for localized value: "+beanClassSymbolicName+"."+key);
 				return getResourceBundle(locale).getString(beanClassSymbolicName+"."+key);
 			} catch(MissingResourceException e) {
 				// ignore and return null

@@ -10,7 +10,7 @@
 		<form method="post">
 			<input type="hidden" name="step" value="welcome"/>
 			<input type="hidden" name="navigation" value="next"/>
-			<input type="submit" value="Start configuration"/>
+			<input type="submit" value="Start configuration" class="wide"/>
 		</form>
 	    </p>
 	    
@@ -31,7 +31,7 @@
 	    <br/><br/>
 		<form action="serverinitialize" onsubmit="showWaitBlock('Please wait while initializing server...')">
 			<input type="hidden" name="navigation" value="finish"/>
-			<input type="submit" value="Give me the demo system"/>
+			<input type="submit" value="Give me the demo system" class="wide"/>
 		</form>
 	    </p>
     </div>

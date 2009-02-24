@@ -20,7 +20,7 @@ public class ExtendedPropertyDescriptor extends PropertyDescriptor implements Co
 		this.beanInfo = beanInfo;
 		this.orderHint = 5000;
 		String s = getPropertyValue("orderHint");
-		System.out.println("order hint: "+s);
+		//System.out.println("order hint: "+s);
 		if(s != null) {
 			try {
 				this.orderHint = Integer.parseInt(s);
