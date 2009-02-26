@@ -180,30 +180,27 @@ public class JFireEjbFactory
 					}
 
 					if (homeWrapper == null) {
-						String homeClassName = ejbInterface.getName() + "Home";
-						Class<?> homeClass = Class.forName(homeClassName);
-						String jndiName = (String) homeClass.getField("JNDI_NAME").get(null);
-
-						Object home;
-						javax.naming.InitialContext initialContext = new javax.naming.InitialContext(environment);
-						try {
-							Object objRef = initialContext.lookup(jndiName);
-							// only narrow if necessary
-							if (java.rmi.Remote.class.isAssignableFrom(homeClass))
-								home = javax.rmi.PortableRemoteObject.narrow(objRef, homeClass);
-							else
-								home = objRef;
-						} finally {
-							initialContext.close();
-						}
-
+						Object home = lookupHome(ejbInterface, environment);
 						homeWrapper = new EjbHomeWrapper(home);
 						environment2Home.put(environment, homeWrapper);
 					}
 
-					Object homeRef = homeWrapper.getEjbHome();
-					Method homeCreate = homeRef.getClass().getMethod("create", (Class[]) null);
-					Object ejbInstance = homeCreate.invoke(homeRef, (Object[]) null);
+					Object ejbInstance;
+					try {
+						Object homeRef = homeWrapper.getEjbHome();
+						Method homeCreate = homeRef.getClass().getMethod("create", (Class[]) null);
+						ejbInstance = homeCreate.invoke(homeRef, (Object[]) null);
+					} catch (Exception x) {
+						ejbInstance = null; // maybe the old home somehow broke - ignore and try it again
+					}
+
+					if (ejbInstance == null) { // try it again
+						Object homeRef = lookupHome(ejbInterface, environment);
+						homeWrapper = new EjbHomeWrapper(homeRef);
+						environment2Home.put(environment, homeWrapper);
+						Method homeCreate = homeRef.getClass().getMethod("create", (Class[]) null);
+						ejbInstance = homeCreate.invoke(homeRef, (Object[]) null);
+					}
 
 					instanceWrapper = new EjbInstanceWrapper(ejbInstance);
 					environment2Instance.put(environment, instanceWrapper);
@@ -214,6 +211,28 @@ public class JFireEjbFactory
 		} catch (Exception x) {
 			throw new RuntimeException(x);
 		}
+	}
+
+	private static <T> Object lookupHome(Class<T> ejbInterface, Hashtable<?, ?> environment)
+	throws Exception
+	{
+		String homeClassName = ejbInterface.getName() + "Home";
+		Class<?> homeClass = Class.forName(homeClassName);
+		String jndiName = (String) homeClass.getField("JNDI_NAME").get(null);
+
+		Object home;
+		javax.naming.InitialContext initialContext = new javax.naming.InitialContext(environment);
+		try {
+			Object objRef = initialContext.lookup(jndiName);
+			// only narrow if necessary
+			if (java.rmi.Remote.class.isAssignableFrom(homeClass))
+				home = javax.rmi.PortableRemoteObject.narrow(objRef, homeClass);
+			else
+				home = objRef;
+		} finally {
+			initialContext.close();
+		}
+		return home;
 	}
 
 }
