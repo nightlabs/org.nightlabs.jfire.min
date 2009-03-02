@@ -32,6 +32,7 @@ import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 
 import org.apache.log4j.Logger;
+import org.nightlabs.jdo.ObjectIDUtil;
 import org.nightlabs.jfire.idgenerator.IDGenerator;
 import org.nightlabs.jfire.organisation.Organisation;
 import org.nightlabs.jfire.prop.AbstractStruct;
@@ -51,14 +52,14 @@ import org.nightlabs.jfire.prop.structfield.StructFieldValue;
 
 /**
  * PropertySetTestStruct is a test {@link PropertySet} structure
- * 
+ *
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  */
 public class PropertySetTestStruct
 {
 
 	private static final Logger logger = Logger.getLogger(PropertySetTestStruct.class);
-	
+
 	public static IStruct getTestStruct(String organisationID, PersistenceManager pm) {
 		Struct struct = null;
 		StructLocal structLocal = null;
@@ -69,24 +70,24 @@ public class PropertySetTestStruct
 			struct = new Struct(organisationID, PropertySetTestStruct.class.getName(), Struct.DEFAULT_SCOPE);
 			PropertySetTestStruct.createStandardStructure(struct);
 			struct = pm.makePersistent(struct);
-			
+
 			// WORKAROUND: Workaround for JPOX error 'cannot delete/update child row', foreign key problem, maybe this is also wron tagging problem
 			if (struct instanceof AbstractStruct) {
 				try {
 					struct.addDisplayNamePart(
 							new DisplayNamePart(
-									organisationID, IDGenerator.nextID(DisplayNamePart.class), 
+									organisationID, ObjectIDUtil.longObjectIDFieldToString(IDGenerator.nextID(DisplayNamePart.class)),
 									struct.getStructField(TESTBLOCK_TEXT), ": "));
 				} catch (Exception e1) {
 					logger.error("Error createing PropertySetTestStruct DisplayNameParts: ", e);
 				}
 			}
-			structLocal = new StructLocal(struct, organisationID, StructLocal.DEFAULT_SCOPE);
+			structLocal = new StructLocal(struct, StructLocal.DEFAULT_SCOPE);
 			pm.makePersistent(structLocal);
 		}
 		return struct;
 	}
-	
+
 
 	public static void createStandardStructure(IStruct struct) {
 		try {
@@ -106,7 +107,7 @@ public class PropertySetTestStruct
 			sfv = selField.newStructFieldValue(TESTBLOCK_SELECTION_2);
 			sfv.getValueName().setText(Locale.ENGLISH.getLanguage(), "Selection 2");
 			structBlock.addStructField(selField);
-			
+
 			ImageStructField imageStructField = PropHelper.createImageField(structBlock, TESTBLOCK_IMAGE, "Iamge", "Bild");
 			imageStructField.addImageFormat("gif");
 			imageStructField.addImageFormat("jpg");
@@ -121,7 +122,7 @@ public class PropertySetTestStruct
 
 
 	public static final String DEV_ORGANISATION_ID = Organisation.DEV_ORGANISATION_ID;
-	
+
 	public static final StructBlockID INTERNALBLOCK = StructBlockID.create(DEV_ORGANISATION_ID,"InternalBlock");
 	public static final StructFieldID INTERNALBLOCK_DISPLAYNAME = StructFieldID.create(INTERNALBLOCK,"DisplayName");
 
@@ -133,7 +134,7 @@ public class PropertySetTestStruct
 	public static final StructFieldID TESTBLOCK_DATE = StructFieldID.create(TESTBLOCK, "TestDateField");
 	public static final StructFieldID TESTBLOCK_SELECTION = StructFieldID.create(TESTBLOCK, "TestSelectionField");
 	public static final StructFieldID TESTBLOCK_IMAGE = StructFieldID.create(TESTBLOCK, "TestImageField");
-	
+
 	public static final String TESTBLOCK_SELECTION_1 = "Selection1";
 	public static final String TESTBLOCK_SELECTION_2 = "Selection2";
 

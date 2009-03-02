@@ -17,6 +17,7 @@ import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.jdo.cache.Cache;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleManager;
 import org.nightlabs.jfire.idgenerator.IDGenerator;
+import org.nightlabs.jfire.organisation.Organisation;
 import org.nightlabs.jfire.prop.PropertyManager;
 import org.nightlabs.jfire.prop.PropertyManagerUtil;
 import org.nightlabs.jfire.prop.PropertySet;
@@ -79,8 +80,8 @@ public class JFirePropertySetTestCase extends TestCase {
 
 		PropertySet propertySet = new PropertySet(
 				IDGenerator.getOrganisationID(), IDGenerator.nextID(PropertySet.class),
-				PropertySetTestStruct.class.getName(),
-				Struct.DEFAULT_SCOPE, StructLocal.DEFAULT_SCOPE);
+				Organisation.DEV_ORGANISATION_ID,
+				PropertySetTestStruct.class.getName(), Struct.DEFAULT_SCOPE, StructLocal.DEFAULT_SCOPE);
 		propertySet = getPropertyManager().storePropertySet(propertySet, true, FETCH_GROUPS, FETCH_DEPTH);
 		propertySetID = (PropertySetID) JDOHelper.getObjectId(propertySet);
 		Cache.setServerMode(true);
@@ -122,7 +123,7 @@ public class JFirePropertySetTestCase extends TestCase {
 			// Fetching the stuff directly from the beans in order to avoid using the Cache. Marco.
 			StructLocalID structLocalID = StructLocalID.create(
 					SecurityReflector.getUserDescriptor().getOrganisationID(),
-					propertySet.getStructLocalLinkClass(),
+					propertySet.getStructLinkClass(),
 					propertySet.getStructScope(),
 					propertySet.getStructLocalScope()
 			);
