@@ -43,7 +43,6 @@ import org.nightlabs.jfire.person.Person;
 import org.nightlabs.jfire.person.PersonStruct;
 import org.nightlabs.jfire.prop.IStruct;
 import org.nightlabs.jfire.prop.PropertySet;
-import org.nightlabs.jfire.prop.StructLocal;
 import org.nightlabs.jfire.server.Server;
 
 /**
@@ -232,8 +231,8 @@ public class OrganisationCf
 
 		if (organisation.getPerson() == null) {
 			Person person = new Person(organisationID, IDGenerator.nextID(PropertySet.class));
-			PersonStruct.getPersonStruct(getOrganisationID(), pm);
-			IStruct structLocal = StructLocal.getStructLocal(Person.class, Person.STRUCT_SCOPE, Person.STRUCT_LOCAL_SCOPE, pm);
+			IStruct structLocal = PersonStruct.getPersonStructLocal(pm);
+//			IStruct structLocal = StructLocal.getStructLocal(Person.class, Person.STRUCT_SCOPE, Person.STRUCT_LOCAL_SCOPE, pm);
 			person.inflate(structLocal);
 			try {
 				person.getDataField(PersonStruct.PERSONALDATA_COMPANY).setData(organisationName);
