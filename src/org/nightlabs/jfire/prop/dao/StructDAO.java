@@ -17,8 +17,8 @@ import org.nightlabs.progress.ProgressMonitor;
 
 public class StructDAO extends BaseJDOObjectDAO<StructID, Struct> {
 
-	public static final String[] DEFAULT_FETCH_GROUPS = new String[] {FetchPlan.ALL}; 
-	
+	public static final String[] DEFAULT_FETCH_GROUPS = new String[] {FetchPlan.ALL};
+
 	PropertyManager pm;
 
 	/**
@@ -72,19 +72,19 @@ public class StructDAO extends BaseJDOObjectDAO<StructID, Struct> {
 		}
 	}
 
-	public Struct getStruct(Class<?> linkClass, String structScope, ProgressMonitor monitor) {
-		return getStruct(linkClass.getName(), structScope, monitor);
-	}
-	
-	public Struct getStruct(String linkClass, String structScope, ProgressMonitor monitor)	{
-		StructID structID = StructID.create(SecurityReflector.getUserDescriptor().getOrganisationID(), linkClass, structScope);
-		return getStruct(structID, DEFAULT_FETCH_GROUPS, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT, monitor);
-	}
-	
+//	public Struct getStruct(Class<?> linkClass, String structScope, ProgressMonitor monitor) {
+//		return getStruct(linkClass.getName(), structScope, monitor);
+//	}
+//
+//	public Struct getStruct(String linkClass, String structScope, ProgressMonitor monitor)	{
+//		StructID structID = StructID.create(SecurityReflector.getUserDescriptor().getOrganisationID(), linkClass, structScope);
+//		return getStruct(structID, DEFAULT_FETCH_GROUPS, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT, monitor);
+//	}
+
 	public Struct getStruct(StructID structID, ProgressMonitor monitor) {
 		return getStruct(structID, DEFAULT_FETCH_GROUPS, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT, monitor);
 	}
-	
+
 	public Struct storeStruct(Struct struct, boolean get, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor) {
 		try {
 			PropertyManager propManager = JFireEjbFactory.getBean(PropertyManager.class, SecurityReflector.getInitialContextProperties());
@@ -93,5 +93,5 @@ public class StructDAO extends BaseJDOObjectDAO<StructID, Struct> {
 			throw new RuntimeException("Storing StructLocal failed", e);
 		}
 	}
-	
+
 }

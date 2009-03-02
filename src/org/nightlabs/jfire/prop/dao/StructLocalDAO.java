@@ -23,7 +23,7 @@ public class StructLocalDAO extends BaseJDOObjectDAO<StructLocalID, StructLocal>
 	// the fetch groups defined here seem to work. This could, however, also be due to the fact, that the respective struct local was detached
 	// earlier with proper fetch groups and could thus have been fetched from the cache.
 	public static final String[] DEFAULT_FETCH_GROUPS = new String[] {FetchPlan.DEFAULT, IStruct.FETCH_GROUP_ISTRUCT_FULL_DATA};
-	
+
 	PropertyManager pm;
 
 	/**
@@ -73,37 +73,37 @@ public class StructLocalDAO extends BaseJDOObjectDAO<StructLocalID, StructLocal>
 //		structLocal.restoreAdoptedBlocks();
 		return structLocal;
 	}
-	
-	
-	public StructLocal getStructLocal(String linkClass, String[] fetchGroups, String structScope, String structLocalScope, ProgressMonitor monitor) {
-		StructLocalID structLocalID = StructLocalID.create(SecurityReflector.getUserDescriptor().getOrganisationID(), linkClass, structScope, structLocalScope);
-		return getStructLocal(structLocalID, fetchGroups, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT, monitor);
-	}
-	
-	public StructLocal getStructLocal(Class<?> linkClass, String[] fetchGroups, String structScope, String structLocalScope, ProgressMonitor monitor) {
-		return getStructLocal(linkClass.getName(), fetchGroups, structScope, structLocalScope, monitor);
-	}
 
-	public StructLocal getStructLocal(Class<?> linkClass, String structScope, String structLocalScope, ProgressMonitor monitor) {
-		return getStructLocal(linkClass.getName(), DEFAULT_FETCH_GROUPS, structScope, structLocalScope, monitor);
-//		return getStructLocal(linkClass.getName(), structScope, structLocalScope, monitor);
-	}
 
-	public StructLocal getStructLocal(String linkClass, String structScope, String structLocalScope, ProgressMonitor monitor) {
-//		StructLocalID structLocalID = StructLocalID.create(
-//				SecurityReflector.getUserDescriptor().getOrganisationID(), linkClass, structScope, structLocalScope);
-//		return getStructLocal(structLocalID, DEFAULT_FETCH_GROUPS, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT, monitor);
-		return getStructLocal(linkClass, DEFAULT_FETCH_GROUPS, structScope, structLocalScope, monitor);
-	}
+//	public StructLocal getStructLocal(String organisationID, String linkClass, String[] fetchGroups, String structScope, String structLocalScope, ProgressMonitor monitor) {
+//		StructLocalID structLocalID = StructLocalID.create(organisationID, linkClass, structScope, structLocalScope);
+//		return getStructLocal(structLocalID, fetchGroups, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT, monitor);
+//	}
+//
+//	public StructLocal getStructLocal(String organisationID, Class<?> linkClass, String[] fetchGroups, String structScope, String structLocalScope, ProgressMonitor monitor) {
+//		return getStructLocal(organisationID, linkClass.getName(), fetchGroups, structScope, structLocalScope, monitor);
+//	}
+//
+//	public StructLocal getStructLocal(String organisationID, Class<?> linkClass, String structScope, String structLocalScope, ProgressMonitor monitor) {
+//		return getStructLocal(organisationID, linkClass.getName(), DEFAULT_FETCH_GROUPS, structScope, structLocalScope, monitor);
+////		return getStructLocal(linkClass.getName(), structScope, structLocalScope, monitor);
+//	}
+//
+//	public StructLocal getStructLocal(String organisationID, String linkClass, String structScope, String structLocalScope, ProgressMonitor monitor) {
+////		StructLocalID structLocalID = StructLocalID.create(
+////				SecurityReflector.getUserDescriptor().getOrganisationID(), linkClass, structScope, structLocalScope);
+////		return getStructLocal(structLocalID, DEFAULT_FETCH_GROUPS, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT, monitor);
+//		return getStructLocal(organisationID, linkClass, DEFAULT_FETCH_GROUPS, structScope, structLocalScope, monitor);
+//	}
 
 	public StructLocal getStructLocal(StructLocalID structLocalID, ProgressMonitor monitor) {
 		return getStructLocal(structLocalID, DEFAULT_FETCH_GROUPS, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT, monitor);
 	}
-	
+
 	public StructLocal getStructLocal(StructLocalID structLocalID, String[] fetchGroups, ProgressMonitor monitor) {
 		return getStructLocal(structLocalID, fetchGroups, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT, monitor);
 	}
-	
+
 	public StructLocal storeStructLocal(StructLocal structLocal, boolean get, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor) {
 		try {
 			PropertyManager propManager = JFireEjbFactory.getBean(PropertyManager.class, SecurityReflector.getInitialContextProperties());
