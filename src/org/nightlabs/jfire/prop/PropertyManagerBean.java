@@ -501,7 +501,7 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	public void initialise() {
 		PersistenceManager pm = getPersistenceManager();
 		try {
-			PersonStruct.getPersonStruct(getOrganisationID(), pm);
+			PersonStruct.getPersonStructLocal(pm);
 		} finally {
 			pm.close();
 		}

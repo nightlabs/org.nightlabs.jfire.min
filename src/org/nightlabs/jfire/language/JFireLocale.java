@@ -89,10 +89,16 @@ extends NLLocale
 			try {
 				localOrganisation = LocalOrganisation.getLocalOrganisation(pm);
 			} catch (JDOObjectNotFoundException e) {
-				// The local organisation could not be found, this is only legal when we are currently creating 
+				// The local organisation could not be found, this is only legal when we are currently creating
 				// the organisation for this datastore
-				// TODO: Is there a way to find out whether we currently create the local organisation?
-				logger.warn("Could not get the local organisation from the datastore, will return System Locale", e);
+				// TO DO: Is there a way to find out whether we currently create the local organisation? No, there is no way, and I think it's not important here. I make a debug message out of it. Marco.
+				if (logger.isDebugEnabled()) {
+					if (logger.isTraceEnabled())
+						logger.trace("getUserLocale: Could not get the local organisation from the datastore, will return System Locale.", e);
+					else
+						logger.debug("getUserLocale: Could not get the local organisation from the datastore, will return System Locale.");
+				}
+
 				return Locale.getDefault();
 			}
 			if (!userDescriptor.getOrganisationID().equals(localOrganisation.getOrganisationID()))
