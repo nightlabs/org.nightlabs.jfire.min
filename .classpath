@@ -22,7 +22,11 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/NightLabsBase"/>
 	<classpathentry kind="var" path="LOG4J"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/NightLabsJDO"/>
-	<classpathentry kind="var" path="JDO2" sourcepath="/JDO2_SRC"/>
+	<classpathentry kind="var" path="JDO2" sourcepath="/JDO2_SRC">
+		<attributes>
+			<attribute name="javadoc_location" value="http://db.apache.org/jdo/api22/apidocs/"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="lib" path="dist/lib/junit-4.3.1.jar" sourcepath="dist/lib/junit-4.3.1-src.jar"/>
 	<classpathentry kind="var" path="JBOSS/server/default/lib/mail.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/JFireBaseClientLib"/>
