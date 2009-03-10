@@ -10,7 +10,11 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/NightLabsBase"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/JFireBasePublicBean"/>
 	<classpathentry kind="var" path="JBOSS/client/jboss-j2ee.jar"/>
-	<classpathentry kind="var" path="JDO2" sourcepath="/JDO2_SRC"/>
+	<classpathentry kind="var" path="JDO2" sourcepath="/JDO2_SRC">
+		<attributes>
+			<attribute name="javadoc_location" value="http://db.apache.org/jdo/api22/apidocs/"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="var" path="JUNIT_HOME/junit.jar" sourcepath="/WORKSPACE/JFireTestSuite/dist/lib/junit-4.3.1-src.jar"/>
 	<classpathentry kind="var" path="APACHE_COMMONS/commons-lang.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/JFireLog4j"/>
