@@ -29,7 +29,7 @@ import org.nightlabs.util.CollectionUtil;
 /**
  * @ejb.bean
  *		name="jfire/ejb/JFireBaseBean/EditLockManager"
- *		jndi-name="jfire/ejb/JFireBaseBean/EditLockManager
+ *		jndi-name="jfire/ejb/JFireBaseBean/EditLockManager"
  *		type="Stateless"
  *
  * @ejb.util generate="physical"
@@ -253,7 +253,6 @@ implements SessionBean
 	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 * @ejb.permission role-name="_Guest_"
 	 */
-	@SuppressWarnings("unchecked")
 	public List<EditLock> getEditLocks(Collection<EditLockID> editLockIDs, String[] fetchGroups, int maxFetchDepth)
 	{
 		PersistenceManager pm = getPersistenceManager();
