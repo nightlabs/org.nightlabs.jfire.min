@@ -37,6 +37,7 @@ import javax.ejb.EJBException;
 import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
 import javax.jdo.JDOHelper;
+import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 import javax.jdo.spi.PersistenceCapable;
 
@@ -46,6 +47,9 @@ import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.base.expression.IExpression;
 import org.nightlabs.jfire.organisation.Organisation;
 import org.nightlabs.jfire.person.PersonStruct;
+import org.nightlabs.jfire.prop.config.PropertySetFieldBasedEditConstants;
+import org.nightlabs.jfire.prop.config.PropertySetFieldBasedEditLayoutUseCase;
+import org.nightlabs.jfire.prop.config.id.PropertySetFieldBasedEditLayoutUseCaseID;
 import org.nightlabs.jfire.prop.id.PropertySetID;
 import org.nightlabs.jfire.prop.id.StructFieldID;
 import org.nightlabs.jfire.prop.id.StructID;
@@ -502,6 +506,16 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 		PersistenceManager pm = getPersistenceManager();
 		try {
 			PersonStruct.getPersonStructLocal(pm);
+			
+			PropertySetFieldBasedEditLayoutUseCaseID useCaseID = PropertySetFieldBasedEditLayoutUseCaseID.create(getOrganisationID(), PropertySetFieldBasedEditConstants.USE_CASE_ID_EDIT_PERSON);
+			PropertySetFieldBasedEditLayoutUseCase useCaseEditPerson = null;
+			try {
+				useCaseEditPerson = (PropertySetFieldBasedEditLayoutUseCase) pm.getObjectById(useCaseID);
+			} catch (JDOObjectNotFoundException e) {
+				useCaseEditPerson = new PropertySetFieldBasedEditLayoutUseCase(useCaseID.organisationID, useCaseID.useCaseID);
+				useCaseEditPerson = pm.makePersistent(useCaseEditPerson);
+			}
+			
 		} finally {
 			pm.close();
 		}
