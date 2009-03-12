@@ -227,7 +227,7 @@ public abstract class QueryStoreManagerBean
 			pm.getExtent(BaseQueryStore.class);
 
 			// version is {major}.{minor}.{release}-{patchlevel}-{suffix}
-			moduleMetaData = new ModuleMetaData("JFireQueryStore", "0.9.5-0-beta", "0.9.5-0-beta");
+			moduleMetaData = new ModuleMetaData("JFireQueryStore", "0.9.7-0-beta", "0.9.7-0-beta");
 			pm.makePersistent(moduleMetaData);
 		} catch (MalformedVersionException e)
 		{
