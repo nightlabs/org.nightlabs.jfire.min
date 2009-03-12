@@ -58,7 +58,7 @@ import org.nightlabs.util.CollectionUtil;
  * @param <JDOObjectID> The type of {@link ObjectID} of the JDO object this DAO can provide
  * @param <JDOObject> The type of JDO object this DAO can provide
  */
-public abstract class BaseJDOObjectDAO<JDOObjectID, JDOObject>
+public abstract class BaseJDOObjectDAO<JDOObjectID extends ObjectID, JDOObject>
 {
 	/**
 	 * The cache shared instance.
