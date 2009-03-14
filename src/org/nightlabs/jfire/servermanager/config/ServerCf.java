@@ -123,7 +123,7 @@ public class ServerCf implements Serializable, Cloneable {
 	/**
 	 * This method creates a JDO Server object with the given persistenceManager
 	 * in case it does not yet exist.
-	 * 
+	 *
 	 * @param pm The PersistenceManager in which's datastore the Server should be
 	 *          created.
 	 */
@@ -140,7 +140,7 @@ public class ServerCf implements Serializable, Cloneable {
 			server.setServerName(getServerName());
 			server.setJ2eeServerType(getJ2eeServerType());
 			server.setInitialContextURL(getInitialContextURL());
-			pm.makePersistent(server);
+			server = pm.makePersistent(server);
 		}
 		return server;
 	}
