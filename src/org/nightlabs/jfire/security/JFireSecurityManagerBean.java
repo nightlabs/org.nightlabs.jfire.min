@@ -751,7 +751,6 @@ implements SessionBean
 	 * @ejb.permission role-name="org.nightlabs.jfire.security.accessRightManagement"
 	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 **/
-	@SuppressWarnings("unchecked")
 	public List<RoleGroupIDSetCarrier> getRoleGroupIDSetCarriers(AuthorityID authorityID)
 	{
 		String organisationID = getOrganisationID();
@@ -770,11 +769,11 @@ implements SessionBean
 
 			Query q = pm.newQuery(UserLocal.class);
 			q.setFilter("this.organisationID == :organisationID");
-			Collection<UserLocal> userLocals = (Collection<UserLocal>) q.execute(organisationID);
+			Collection<UserLocal> userLocals = CollectionUtil.castCollection((Collection<?>) q.execute(organisationID));
 
 			q = pm.newQuery(UserSecurityGroup.class);
 			q.setFilter("this.organisationID == :organisationID");
-			Collection<UserSecurityGroup> userSecurityGroups = (Collection<UserSecurityGroup>) q.execute(organisationID);
+			Collection<UserSecurityGroup> userSecurityGroups = CollectionUtil.castCollection((Collection<?>) q.execute(organisationID));
 
 			List<RoleGroupIDSetCarrier> result = new ArrayList<RoleGroupIDSetCarrier>(userLocals.size() + userSecurityGroups.size());
 			for (UserLocal userLocal : userLocals) {
@@ -816,7 +815,6 @@ implements SessionBean
 	 * @ejb.permission role-name="_Guest_"
 	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 */
-	@SuppressWarnings("unchecked")
 	public Set<AuthorityID> getAuthorityIDs(String organisationID, AuthorityTypeID authorityTypeID)
 	{
 		PersistenceManager pm = getPersistenceManager();
@@ -841,7 +839,9 @@ implements SessionBean
 			Map<String, Object> params = new HashMap<String, Object>(2);
 			params.put("organisationID", organisationID);
 			params.put("authorityTypeID", authorityTypeID);
-			return new HashSet<AuthorityID>((Collection<? extends AuthorityID>) q.executeWithMap(params));
+
+			Collection<AuthorityID> c =  CollectionUtil.castCollection((Collection<?>) q.executeWithMap(params));
+			return new HashSet<AuthorityID>(c);
 		} finally {
 			pm.close();
 		}
@@ -1558,7 +1558,6 @@ implements SessionBean
 	 * @ejb.permission role-name="_Guest_"
 	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 */
-	@SuppressWarnings("unchecked")
 	public Set<RoleID> getRoleIDs(AuthorityID authorityID)
 	{
 		return SecurityReflector.getRoleIDs(authorityID);
@@ -1572,7 +1571,6 @@ implements SessionBean
 	 * @ejb.permission role-name="_Guest_"
 	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 */
-	@SuppressWarnings("unchecked")
 	public Set<RoleGroupID> getRoleGroupIDs()
 	{
 		PersistenceManager pm = getPersistenceManager();
@@ -1591,7 +1589,6 @@ implements SessionBean
 	 * @ejb.permission role-name="_Guest_"
 	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 */
-	@SuppressWarnings("unchecked")
 	public Collection<Authority> getAuthoritiesSelfInformation(Set<AuthorityID> authorityIDs, Set<AuthorizedObjectRefID> authorizedObjectRefIDs)
 	{
 		if (!getPrincipal().userIsOrganisation())
@@ -1671,7 +1668,6 @@ implements SessionBean
 	 * @ejb.permission role-name="_System_"
 	 * @ejb.transaction type="Required"
 	 */
-	@SuppressWarnings("unchecked")
 	public void importAuthoritiesOnCrossOrganisationRegistration(Context context)
 	throws Exception
 	{
@@ -1690,7 +1686,9 @@ implements SessionBean
 			persistentNotificationEJB.storeNotificationFilter(authorityNotificationFilter, false, null, 1);
 
 			JFireSecurityManager jfireSecurityManager = JFireEjbFactory.getBean(JFireSecurityManager.class, initialContextProperties);
-			Set<AuthorityID> authorityIDs = jfireSecurityManager.getAuthorityIDs(emitterOrganisationID, null);
+			Set<AuthorityID> authorityIDs = CollectionUtil.castSet(
+					jfireSecurityManager.getAuthorityIDs(emitterOrganisationID, null)
+			);
 
 			authorityNotificationReceiver.replicateAuthorities(emitterOrganisationID, authorityIDs, null);
 		} finally {
