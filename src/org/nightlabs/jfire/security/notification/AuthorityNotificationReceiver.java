@@ -19,6 +19,7 @@ import org.nightlabs.jfire.jdo.notification.persistent.NotificationReceiver;
 import org.nightlabs.jfire.security.Authority;
 import org.nightlabs.jfire.security.AuthorizedObjectRef;
 import org.nightlabs.jfire.security.JFireSecurityManager;
+import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.security.id.AuthorityID;
 import org.nightlabs.jfire.security.id.AuthorizedObjectRefID;
 
@@ -95,7 +96,12 @@ public class AuthorityNotificationReceiver extends NotificationReceiver
 			}
 		}
 
-		getPersistenceManager().makePersistentAll(authorities);
+		User.disableAttachUserLocalCheck(true);
+		try {
+			getPersistenceManager().makePersistentAll(authorities);
+		} finally {
+			User.disableAttachUserLocalCheck(false);
+		}
 	}
 
 }
