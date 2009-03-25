@@ -1612,7 +1612,7 @@ implements SessionBean
 							Authority.FETCH_GROUP_DESCRIPTION,
 							Authority.FETCH_GROUP_NAME,
 							UserLocal.FETCH_GROUP_USER,
-							UserLocal.FETCH_GROUP_AUTHORIZED_OBJECT_REFS,
+//							UserLocal.FETCH_GROUP_AUTHORIZED_OBJECT_REFS, // We MUST NOT detach this, because it leaks information via OTHER authorities to all UserLocals of these other authorities.
 							User.FETCH_GROUP_NAME,
 							User.FETCH_GROUP_PERSON, // should be the client organisation's person that was sent during cross-organisation-registration
 							User.FETCH_GROUP_USER_LOCAL,
