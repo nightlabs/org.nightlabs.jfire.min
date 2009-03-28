@@ -74,7 +74,7 @@ implements Serializable
 	{
 		this.callerPrincipal = callerPrincipal;
 	}
-	
+
 //	protected PersistenceManagerFactory getPersistenceManagerFactory()
 //	{
 //		return getPrincipal().getLookup().getPersistenceManagerFactory();
@@ -87,7 +87,7 @@ implements Serializable
 	 * <p>
 	 * <b>Important:</b> You must call {@link PersistenceManager#close()} at the end of your EJB method!
 	 * </p>
-	 * 
+	 *
 	 * @return Returns the PersistenceManager assigned to the current user.
 	 *
 	 * @see getPrincipal()
@@ -106,7 +106,7 @@ implements Serializable
 	 * <br/><br/>
 	 * This method is a shortcut to
 	 * <code>getPrincipal().getLookup().getInitialContext(organisationID)</code>.
-	 * 
+	 *
 	 * @param organisationID The organisationID with wich to communicate.
 	 * @return Returns an InitialContext that is configured properly to authenticate at and communicate with another organisation (wherever it may be - e.g. on another server).
 	 */
@@ -127,7 +127,7 @@ implements Serializable
 	 *
 	 * @param organisationID
 	 * @return Returns an instance of Properties to be used in <code>new InitialContext(Properties)</code>.
-	 * 
+	 *
 	 * @see getInitialContext(String organisationID)
 	 */
 	protected Hashtable<?, ?> getInitialContextProperties(String organisationID)
@@ -156,7 +156,7 @@ implements Serializable
 	{
 		return getPrincipal().getLookup().getJFireServerManagerFactory();
 	}
-	
+
 	protected JFireServerManager getJFireServerManager()
 	{
 		return getPrincipal().getLookup().getJFireServerManager();
@@ -176,16 +176,16 @@ implements Serializable
 	{
 		return getPrincipal().getSessionID();
 	}
-	
+
 	protected boolean userIsOrganisation()
 	{
 		return getPrincipal().userIsOrganisation();
 	}
-	
-	protected String getPrincipalString()
-	{
-		return getPrincipal().toString();
-	}
+
+//	protected String getPrincipalString()
+//	{
+//		return getPrincipal().toString();
+//	}
 
 	private static String rootOrganisationID = null;
 
