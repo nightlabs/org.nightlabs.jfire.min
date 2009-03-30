@@ -972,7 +972,7 @@ public abstract class OrganisationManagerBean
 				if (!localServer.getServerID().equals(rootServer.getServerID()))
 					logger.error("localOrganisation.server.serverID == \"" + localServer.getServerID() + "\" != rootOrganisation.server.serverID == \"" + rootServer.getServerID() + "\"");
 
-				if (!localServer.getServerName().equals(rootServer.getServerID()))
+				if (!localServer.getServerName().equals(rootServer.getServerName()))
 					logger.error("localOrganisation.server.serverName == \"" + localServer.getServerName() + "\" != rootOrganisation.server.serverName == \"" + rootServer.getServerName() + "\"");
 
 				if (!localServer.getJ2eeServerType().equals(rootServer.getJ2eeServerType()))
