@@ -226,7 +226,7 @@ public class OrganisationCf
 		} catch (JDOObjectNotFoundException x) {
 			organisation = new Organisation(getOrganisationID()); // , getMasterOrganisationID());
 			organisation.setServer(server);
-			pm.makePersistent(organisation);
+			organisation = pm.makePersistent(organisation);
 		}
 
 		if (organisation.getPerson() == null) {
