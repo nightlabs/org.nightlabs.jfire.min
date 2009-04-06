@@ -8,6 +8,7 @@ import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
+import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 
 import org.apache.log4j.Logger;
@@ -28,6 +29,7 @@ import org.nightlabs.jfire.security.id.UserLocalID;
 import org.nightlabs.jfire.security.listener.SecurityChangeController;
 import org.nightlabs.jfire.server.LocalServer;
 import org.nightlabs.jfire.server.Server;
+import org.nightlabs.jfire.server.id.ServerID;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.servermanager.RoleImportSet;
 import org.nightlabs.jfire.servermanager.config.OrganisationCf;
@@ -91,9 +93,11 @@ public abstract class OrganisationManagerHelperBean
 			if(logger.isDebugEnabled())
 				logger.debug("Initializing JDO meta-data...");
 
+			pm.getExtent(Server.class);
+			pm.getExtent(LocalServer.class);
 			pm.getExtent(TemporaryOrganisation.class);
 			pm.getExtent(Organisation.class);
-			pm.getExtent(Server.class);
+			pm.getExtent(LocalOrganisation.class);
 			pm.getExtent(User.class);
 			pm.getExtent(AsyncInvokeProblem.class);
 
@@ -103,6 +107,20 @@ public abstract class OrganisationManagerHelperBean
 
 			if(logger.isDebugEnabled())
 				logger.debug("Initializing JDO meta-data done.");
+
+			ServerID serverID = ServerID.create(localServerCf.getServerID());
+			try {
+				Server server = (Server) pm.getObjectById(serverID);
+				server.getServerName();
+
+				// It seems this method was already executed successfully => return.
+				if(logger.isDebugEnabled())
+					logger.debug("internalInitializeEmptyOrganisation_step1: This step was already done successfully before; skipping it.");
+
+				return;
+			} catch (JDOObjectNotFoundException x) {
+				// fine, it doesn't exist.
+			}
 
 			if(logger.isDebugEnabled())
 				logger.debug("Creating JDO object LocalServer...");
