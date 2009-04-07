@@ -95,19 +95,19 @@ public class ChangeEvent extends NotificationEvent
 	}
 
 	public ChangeEvent(Object source, Collection<?> subjects,
-			Collection<?> subjectClassesToClear)
+			Collection<? extends Class<?>> subjectClassesToClear)
 	{
 		super(source, subjects, subjectClassesToClear);
 	}
 
 	public ChangeEvent(Object source, String zone, Collection<?> subjects,
-			Collection<?> subjectClassesToClear)
+			Collection<? extends Class<?>> subjectClassesToClear)
 	{
 		super(source, zone, subjects, subjectClassesToClear);
 	}
 
 	public ChangeEvent(Object source, String zone, Collection<?> subjects,
-			Collection<?> subjectClassesToClear, Collection<?> _subjectCarriers)
+			Collection<? extends Class<?>> subjectClassesToClear, Collection<SubjectCarrier> _subjectCarriers)
 	{
 		super(source, zone, subjects, subjectClassesToClear, _subjectCarriers);
 	}
@@ -190,10 +190,10 @@ public class ChangeEvent extends NotificationEvent
 			if (subjectCarrier instanceof ChangeSubjectCarrier) {
 				ChangeSubjectCarrier csc = (ChangeSubjectCarrier) subjectCarrier;
 				Set<?> sourceSessionIDs = csc.getSourceSessionIDs();
-	
+
 				if (sourceSessionIDs.isEmpty())
 					return true;
-	
+
 				if (sourceSessionIDs.size() > 1)
 					return true;
 
