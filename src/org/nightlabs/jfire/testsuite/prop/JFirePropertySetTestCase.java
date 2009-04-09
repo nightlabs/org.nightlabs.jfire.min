@@ -161,7 +161,8 @@ public class JFirePropertySetTestCase extends TestCase {
 		PropertySet detachedPropertySet = null;
 		TextDataField detachedDataField = null;
 		try {
-			propertySet.getDataField(PropertySetTestStruct.TESTBLOCK_TEXT).setData("Test Text");
+			dataField = (TextDataField) propertySet.getDataField(PropertySetTestStruct.TESTBLOCK_TEXT);
+			dataField.setData("Test Text");
 		} catch (Exception e) {
 			throw new RuntimeException("Setting text of TextDataField failed", e);
 		}
