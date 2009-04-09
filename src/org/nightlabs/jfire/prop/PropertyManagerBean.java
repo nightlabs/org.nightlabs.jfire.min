@@ -42,12 +42,16 @@ import javax.jdo.PersistenceManager;
 import javax.jdo.spi.PersistenceCapable;
 
 import org.apache.log4j.Logger;
+import org.nightlabs.i18n.MultiLanguagePropertiesBundle;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.base.expression.IExpression;
+import org.nightlabs.jfire.config.id.ConfigModuleInitialiserID;
 import org.nightlabs.jfire.organisation.Organisation;
+import org.nightlabs.jfire.person.Person;
 import org.nightlabs.jfire.person.PersonStruct;
 import org.nightlabs.jfire.prop.config.PropertySetFieldBasedEditConstants;
+import org.nightlabs.jfire.prop.config.PropertySetFieldBasedEditLayoutConfigModule;
 import org.nightlabs.jfire.prop.config.PropertySetFieldBasedEditLayoutUseCase;
 import org.nightlabs.jfire.prop.config.id.PropertySetFieldBasedEditLayoutUseCaseID;
 import org.nightlabs.jfire.prop.id.PropertySetID;
@@ -496,6 +500,37 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 			pm.close();
 		}
 	}
+	
+	/**
+	 * @ejb.interface-method
+	 * @ejb.permission role-name="_Guest_"
+	 * @ejb.transaction type="Required"
+	 */
+	public Set<PropertySetFieldBasedEditLayoutUseCaseID> getAllPropertySetFieldBasedEditLayoutUseCaseIDs() {
+		PersistenceManager pm = getPersistenceManager();
+		try {
+			return NLJDOHelper.getDetachedQueryResultAsSet(pm, PropertySetFieldBasedEditLayoutUseCase.getAllUseCaseIDs(pm));
+		} finally {
+			pm.close();
+		}
+	}
+	
+	/**
+	 *
+	 * @ejb.interface-method
+	 * @ejb.permission role-name="_Guest_"
+	 * @ejb.transaction type="Required"
+	 */
+	public Set<PropertySetFieldBasedEditLayoutUseCase> getPropertySetFieldBasedEditLayoutUseCases(Set<PropertySetFieldBasedEditLayoutUseCaseID> ids, String[] fetchGroups, int maxFetchDepth) {
+		PersistenceManager pm = getPersistenceManager();
+		try {
+			Set<PropertySetFieldBasedEditLayoutUseCase> result = NLJDOHelper.getDetachedObjectSet(pm, ids, null, fetchGroups, maxFetchDepth);
+			return result;
+		} finally {
+			pm.close();
+		}
+	}
+	
 
 	/**
 	 * @ejb.interface-method
@@ -507,13 +542,28 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 		try {
 			PersonStruct.getPersonStructLocal(pm);
 			
-			PropertySetFieldBasedEditLayoutUseCaseID useCaseID = PropertySetFieldBasedEditLayoutUseCaseID.create(getOrganisationID(), PropertySetFieldBasedEditConstants.USE_CASE_ID_EDIT_PERSON);
+			PropertySetFieldBasedEditLayoutUseCaseID useCaseID = PropertySetFieldBasedEditLayoutUseCaseID.create(
+					getOrganisationID(), PropertySetFieldBasedEditConstants.USE_CASE_ID_EDIT_PERSON);
 			PropertySetFieldBasedEditLayoutUseCase useCaseEditPerson = null;
 			try {
 				useCaseEditPerson = (PropertySetFieldBasedEditLayoutUseCase) pm.getObjectById(useCaseID);
 			} catch (JDOObjectNotFoundException e) {
-				useCaseEditPerson = new PropertySetFieldBasedEditLayoutUseCase(useCaseID.organisationID, useCaseID.useCaseID);
+				StructLocal structLocal = (StructLocal) PersonStruct.getPersonStructLocal(pm);
+				useCaseEditPerson = new PropertySetFieldBasedEditLayoutUseCase(useCaseID.organisationID, useCaseID.useCaseID, structLocal);
 				useCaseEditPerson = pm.makePersistent(useCaseEditPerson);
+				MultiLanguagePropertiesBundle propertiesBundle = new MultiLanguagePropertiesBundle(this.getClass().getPackage().getName() + ".resource.messages", this.getClass().getClassLoader());
+				useCaseEditPerson.getName().readFromMultiLanguagePropertiesBundle(propertiesBundle, "org.nightlabs.jfire.prop.config.PropertySetFieldBasedEditLayoutUseCase.EditPerson.name");
+				useCaseEditPerson.getDescription().readFromMultiLanguagePropertiesBundle(propertiesBundle, "org.nightlabs.jfire.prop.config.PropertySetFieldBasedEditLayoutUseCase.EditPerson.description");
+			}
+			
+			ConfigModuleInitialiserID initialiserID = ConfigModuleInitialiserID.create(
+					getOrganisationID(), PropertySetFieldBasedEditLayoutConfigModule.class.getName(), Person.class.getSimpleName());
+			PropertySetFieldBasedEditLayoutCfModIntialiser initialiser = null;
+			try {
+				initialiser = (PropertySetFieldBasedEditLayoutCfModIntialiser) pm.getObjectById(initialiserID);
+			} catch (JDOObjectNotFoundException e) {
+				initialiser = new PropertySetFieldBasedEditLayoutCfModIntialiser(initialiserID.organisationID, initialiserID.configModuleClassName, initialiserID.configModuleInitialiserID);
+				initialiser = pm.makePersistent(initialiser);
 			}
 			
 		} finally {
