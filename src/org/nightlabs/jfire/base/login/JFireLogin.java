@@ -187,7 +187,7 @@ public class JFireLogin
 	 * @return The userID.
 	 */
 	public String getUserID() {
-		return loginData.getOrganisationID();
+		return loginData.getUserID();
 	}
 	/**
 	 * @return The password.
