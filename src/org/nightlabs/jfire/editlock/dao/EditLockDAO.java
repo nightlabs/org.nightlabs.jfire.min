@@ -5,12 +5,12 @@ import java.util.List;
 import java.util.Set;
 
 import org.nightlabs.jdo.ObjectID;
-import org.nightlabs.jfire.base.JFireEjbFactory;
+import org.nightlabs.jfire.base.JFireEjb3Factory;
 import org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO;
 import org.nightlabs.jfire.base.jdo.cache.Cache;
 import org.nightlabs.jfire.editlock.AcquireEditLockResult;
 import org.nightlabs.jfire.editlock.EditLock;
-import org.nightlabs.jfire.editlock.EditLockManager;
+import org.nightlabs.jfire.editlock.EditLockManagerRemote;
 import org.nightlabs.jfire.editlock.ReleaseReason;
 import org.nightlabs.jfire.editlock.id.EditLockID;
 import org.nightlabs.jfire.editlock.id.EditLockTypeID;
@@ -32,24 +32,22 @@ public class EditLockDAO extends BaseJDOObjectDAO<EditLockID, EditLock>
 		return sharedInstance;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	protected Collection<EditLock> retrieveJDOObjects(Set<EditLockID> editLockIDs,
 			String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
 			throws Exception
 	{
-		EditLockManager m = editLockManager;
-		if (m == null) m = JFireEjbFactory.getBean(EditLockManager.class, SecurityReflector.getInitialContextProperties());
+		EditLockManagerRemote m = editLockManager;
+		if (m == null) m = JFireEjb3Factory.getRemoteBean(EditLockManagerRemote.class, SecurityReflector.getInitialContextProperties());
 		return m.getEditLocks(editLockIDs, fetchGroups, maxFetchDepth);
 	}
 
-	private EditLockManager editLockManager;
+	private EditLockManagerRemote editLockManager;
 
-	@SuppressWarnings("unchecked")
 	public synchronized List<EditLock> getEditLocks(ObjectID objectID, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
 	{
 		try {
-			editLockManager = JFireEjbFactory.getBean(EditLockManager.class, SecurityReflector.getInitialContextProperties());
+			editLockManager = JFireEjb3Factory.getRemoteBean(EditLockManagerRemote.class, SecurityReflector.getInitialContextProperties());
 			try {
 				Set<EditLockID> editLockIDs = editLockManager.getEditLockIDs(objectID);
 				return getJDOObjects(null, editLockIDs, fetchGroups, maxFetchDepth, monitor);
@@ -69,7 +67,7 @@ public class EditLockDAO extends BaseJDOObjectDAO<EditLockID, EditLock>
 	public AcquireEditLockResult acquireEditLock(EditLockTypeID editLockTypeID, ObjectID objectID, String description, String[] fetchGroups, int maxFetchDepth)
 	{
 		try {
-			EditLockManager wm = JFireEjbFactory.getBean(EditLockManager.class, SecurityReflector.getInitialContextProperties());
+			EditLockManagerRemote wm = JFireEjb3Factory.getRemoteBean(EditLockManagerRemote.class, SecurityReflector.getInitialContextProperties());
 			AcquireEditLockResult acquireEditLockResult = wm.acquireEditLock(editLockTypeID, objectID, description, fetchGroups, maxFetchDepth);
 			Cache.sharedInstance().put(null, acquireEditLockResult.getEditLock(), fetchGroups, maxFetchDepth);
 			return acquireEditLockResult;
@@ -81,7 +79,7 @@ public class EditLockDAO extends BaseJDOObjectDAO<EditLockID, EditLock>
 	public void releaseEditLock(ObjectID objectID, ReleaseReason releaseReason, ProgressMonitor monitor)
 	{
 		try {
-			EditLockManager wm = JFireEjbFactory.getBean(EditLockManager.class, SecurityReflector.getInitialContextProperties());
+			EditLockManagerRemote wm = JFireEjb3Factory.getRemoteBean(EditLockManagerRemote.class, SecurityReflector.getInitialContextProperties());
 			wm.releaseEditLock(objectID, releaseReason);
 		} catch (Exception x) {
 			throw new RuntimeException(x);

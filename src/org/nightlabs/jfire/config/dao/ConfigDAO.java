@@ -27,10 +27,10 @@ import java.util.Collection;
 import java.util.Set;
 
 import org.nightlabs.jdo.NLJDOHelper;
+import org.nightlabs.jfire.base.JFireEjb3Factory;
 import org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO;
 import org.nightlabs.jfire.config.Config;
-import org.nightlabs.jfire.config.ConfigManager;
-import org.nightlabs.jfire.config.ConfigManagerUtil;
+import org.nightlabs.jfire.config.ConfigManagerRemote;
 import org.nightlabs.jfire.config.id.ConfigID;
 import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.progress.ProgressMonitor;
@@ -59,32 +59,31 @@ public class ConfigDAO extends BaseJDOObjectDAO<ConfigID, Config>
 			sharedInstance = new ConfigDAO();
 		return sharedInstance;
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see org.nightlabs.jfire.base.jdo.JDOObjectDAO#retrieveJDOObjects(java.util.Collection, java.lang.String[], int, org.eclipse.core.runtime.IProgressMonitor)
 	 */
-	@SuppressWarnings("unchecked")
 	@Override
 	protected Collection<Config> retrieveJDOObjects(
 			Set<ConfigID> configIDs, String[] fetchGroups, int maxFetchDepth,
 			ProgressMonitor monitor) throws Exception
-	{
+			{
 		Collection<Config> configs;
 		monitor.beginTask("Fetching Configs", 1);
 		try {
-			ConfigManager cm = ConfigManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
-			// ConfigManager does not provide a way to get multiple Configs...
+			ConfigManagerRemote cm = JFireEjb3Factory.getRemoteBean(ConfigManagerRemote.class, SecurityReflector.getInitialContextProperties());
+			// ConfigManagerRemote does not provide a way to get multiple Configs...
 			configs = cm.getConfigs(configIDs, fetchGroups, maxFetchDepth);
 		} catch (Exception e) {
 			monitor.done();
 			throw new RuntimeException("User information download failed!\n", e);
 		}
-		
+
 		monitor.worked(1);
 		monitor.done();
 		return configs;
-	}
-	
+			}
+
 	/**
 	 * Get a config object.
 	 * @param configID The config id to get
@@ -94,11 +93,11 @@ public class ConfigDAO extends BaseJDOObjectDAO<ConfigID, Config>
 	 * 					object, <code>monitor.worked(1)</code> will be called.
 	 * @return the requested config object
 	 */
-  public synchronized Config getConfig(ConfigID configID, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
-  {
-  	return getJDOObject(null, configID, fetchGroups, maxFetchDepth, monitor);
+	public synchronized Config getConfig(ConfigID configID, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
+	{
+		return getJDOObject(null, configID, fetchGroups, maxFetchDepth, monitor);
 	}
-  
+
 	/**
 	 * Get a Collection of config objects.
 	 * @param configIDs The set of ConfigIDs corresponding to the desired configs.
@@ -108,11 +107,11 @@ public class ConfigDAO extends BaseJDOObjectDAO<ConfigID, Config>
 	 * 					object, <code>monitor.worked(1)</code> will be called.
 	 * @return a list with requested config objects
 	 */
-  public synchronized Collection<Config> getConfigs (Set<ConfigID> configIDs, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
-  {
+	public synchronized Collection<Config> getConfigs (Set<ConfigID> configIDs, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
+	{
 		return getJDOObjects(null, configIDs, fetchGroups, maxFetchDepth, monitor);
 	}
-  
+
 	/**
 	 * Get a Collection of all configs of a certain type.
 	 * @param configType The type of configs to fetch
@@ -122,39 +121,41 @@ public class ConfigDAO extends BaseJDOObjectDAO<ConfigID, Config>
 	 * 					object, <code>monitor.worked(1)</code> will be called.
 	 * @return a collection of all config of type <code>configType</code>
 	 */
-  @SuppressWarnings("unchecked")
-public synchronized Collection<Config> getConfigs(String configType,
-  			String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor) {
-  	// get all ConfigIDs of the corresponding Configs
-  	Collection<ConfigID> configIDs;
-  	try {
-  		ConfigManager cm = ConfigManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
-  		configIDs = cm.getConfigIDsByConfigType(configType, fetchGroups, maxFetchDepth);
-  	} catch (Exception e) {
-  		throw new RuntimeException("Error while downloading ConfigIDs!\n" ,e);
-  	}
-  	
-  	// ask the cache if there are already wanted Configs present
-  	return getJDOObjects(null, configIDs, fetchGroups, maxFetchDepth, monitor);
+	public synchronized Collection<Config> getConfigs(
+			String configType,
+			String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor
+	)
+	{
+		// get all ConfigIDs of the corresponding Configs
+		Collection<ConfigID> configIDs;
+		try {
+			ConfigManagerRemote cm = JFireEjb3Factory.getRemoteBean(ConfigManagerRemote.class, SecurityReflector.getInitialContextProperties());
+			configIDs = cm.getConfigIDsByConfigType(configType, fetchGroups, maxFetchDepth);
+		} catch (Exception e) {
+			throw new RuntimeException("Error while downloading ConfigIDs!\n" ,e);
+		}
+
+		// ask the cache if there are already wanted Configs present
+		return getJDOObjects(null, configIDs, fetchGroups, maxFetchDepth, monitor);
 	}
-  
-  /**
-   * Stores the given {@link Config}.
-   * @param config The {@link Config} to be stored.
+
+	/**
+	 * Stores the given {@link Config}.
+	 * @param config The {@link Config} to be stored.
 	 * @param get A boolean indicating whether a detached copy of the stored {@link Config} should be returned.
 	 * @param fetchGroups The fetch groups to be used
 	 * @param maxFetchDepth The maximal fetch depth to be used
 	 * @return A detached copy of the stored {@link Config} if <code>get == true</code> and <code>null</code> otherwise.
-   */
-  public synchronized Config storeConfig(Config config, boolean get, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor) {
-  	monitor.beginTask("Saving config...", 10);
-  	try {
-  		ConfigManager cm = ConfigManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
-  		return cm.storeConfig(config, get, fetchGroups, maxFetchDepth);
+	 */
+	public synchronized Config storeConfig(Config config, boolean get, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor) {
+		monitor.beginTask("Saving config...", 10);
+		try {
+			ConfigManagerRemote cm = JFireEjb3Factory.getRemoteBean(ConfigManagerRemote.class, SecurityReflector.getInitialContextProperties());
+			return cm.storeConfig(config, get, fetchGroups, maxFetchDepth);
 		} catch (Exception e) {
 			throw new RuntimeException("Error while saving the config.");
 		} finally {
-  		monitor.done();
-  	}
+			monitor.done();
+		}
 	}
 }

@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.nightlabs.jfire.config.dao;
 
@@ -9,11 +9,11 @@ import java.util.Set;
 import javax.jdo.JDOHelper;
 
 import org.nightlabs.jdo.NLJDOHelper;
+import org.nightlabs.jfire.base.JFireEjb3Factory;
 import org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO;
 import org.nightlabs.jfire.config.Config;
 import org.nightlabs.jfire.config.ConfigGroup;
-import org.nightlabs.jfire.config.ConfigManager;
-import org.nightlabs.jfire.config.ConfigManagerUtil;
+import org.nightlabs.jfire.config.ConfigManagerRemote;
 import org.nightlabs.jfire.config.ConfigModule;
 import org.nightlabs.jfire.config.id.ConfigID;
 import org.nightlabs.jfire.config.id.ConfigModuleID;
@@ -31,7 +31,7 @@ public class ConfigModuleDAO extends BaseJDOObjectDAO<ConfigModuleID, ConfigModu
 	 * The shared instance of this DAO.
 	 */
 	private static ConfigModuleDAO sharedInstance = null;
-	
+
 	/**
 	 * Accessor for the Singleton of this Class.
 	 * @return the only instance available;
@@ -39,31 +39,32 @@ public class ConfigModuleDAO extends BaseJDOObjectDAO<ConfigModuleID, ConfigModu
 	public static ConfigModuleDAO sharedInstance() {
 		if (sharedInstance == null)
 			sharedInstance = new ConfigModuleDAO();
-		
+
 		return sharedInstance;
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see org.nightlabs.jfire.base.jdo.JDOObjectDAO#retrieveJDOObjects(java.util.Set, java.lang.String[], int, org.eclipse.core.runtime.IProgressMonitor)
 	 */
-	@SuppressWarnings("unchecked")
 	@Override
-	protected Collection<ConfigModule> retrieveJDOObjects(Set<ConfigModuleID> configModuleIDs,
-			String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
-			throws Exception {
+	protected Collection<ConfigModule> retrieveJDOObjects(
+			Set<ConfigModuleID> configModuleIDs,
+			String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor
+	) throws Exception
+	{
 		if (configModuleIDs == null)
 			return null;
 		monitor.beginTask("Retrieving ConfigModules", 1);
 		Collection<ConfigModule> result;
 		try {
-			ConfigManager configManager = ConfigManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
+			ConfigManagerRemote configManager = JFireEjb3Factory.getRemoteBean(ConfigManagerRemote.class, SecurityReflector.getInitialContextProperties());
 			result = configManager.getConfigModules(configModuleIDs, fetchGroups, maxFetchDepth);
 			monitor.worked(1);
 		} catch (Exception e) {
 			monitor.done();
 			throw new RuntimeException("ConfigModule download failed!", e);
 		}
-		
+
 		monitor.done();
 		return result;
 	}
@@ -80,7 +81,7 @@ public class ConfigModuleDAO extends BaseJDOObjectDAO<ConfigModuleID, ConfigModu
 			int maxFetchDepth, ProgressMonitor monitor) {
 		return getJDOObjects(null, ids, fetchGroups, maxFetchDepth, monitor);
 	}
-	
+
 	/**
 	 * Return the ConfigModule corresponding to the ConfigModuleID.
 	 * @param moduleID the ConfigModuleID of the ConfigModule to return.
@@ -92,17 +93,17 @@ public class ConfigModuleDAO extends BaseJDOObjectDAO<ConfigModuleID, ConfigModu
 	public ConfigModule getConfigModule(ConfigModuleID moduleID, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor) {
 		return getJDOObject(null, moduleID, fetchGroups, maxFetchDepth, monitor);
 	}
-	
+
 	/**
 	 * Get the ConfigModule of the given class and cfModID for the Config defined
 	 * by the given configID.
 	 */
-	@SuppressWarnings("unchecked")
 	public <T extends ConfigModule> T getConfigModule(
 			ConfigID config, Class<T> cfModClass, String cfModID, String[] fetchGroups, int maxFetchDepth,
-			ProgressMonitor monitor)
+			ProgressMonitor monitor
+	)
 	{
-		return (T) getJDOObject(
+		return cfModClass.cast(getJDOObject(
 				null,
 				ConfigModuleID.create(
 						config.organisationID,
@@ -113,9 +114,10 @@ public class ConfigModuleDAO extends BaseJDOObjectDAO<ConfigModuleID, ConfigModu
 				fetchGroups,
 				maxFetchDepth,
 				monitor
-			);
+			)
+		);
 	}
-	
+
 	/**
 	 * Get the ConfigModule of the given class and cfModID for the given Config.
 	 */
@@ -130,11 +132,11 @@ public class ConfigModuleDAO extends BaseJDOObjectDAO<ConfigModuleID, ConfigModu
 	 * Returns the {@link ConfigModule} of the {@link ConfigGroup} of the {@link Config} corresponding to the given {@link ConfigID}
 	 * and with the given Class and moduleID if the given {@link Config} is member of a {@link ConfigGroup}.
 	 * Note, that the {@link ConfigModule} for the ConfigGroup will be auto-created if it doey not extist
-	 * yet. 
+	 * yet.
 	 * <p>
 	 * If the given {@link Config} is not member of a {@link ConfigGroup} <code>null</code> is returned.
 	 * </p>
-	 * 
+	 *
 	 * @param childID the {@link ConfigID} of the child's {@link Config}.
 	 * @param configModuleClass the Class of the ConfigModule to return.
 	 * @param moduleID the module ID in the case there is more than one instance of that ConfigModule.
@@ -150,28 +152,28 @@ public class ConfigModuleDAO extends BaseJDOObjectDAO<ConfigModuleID, ConfigModu
 	{
 		monitor.beginTask("Getting Groups ConfigModule...", 1);
 		try {
-			ConfigManager cm = ConfigManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
+			ConfigManagerRemote cm = JFireEjb3Factory.getRemoteBean(ConfigManagerRemote.class, SecurityReflector.getInitialContextProperties());
 			ConfigModule searchedModule = cm.getGroupConfigModule(childID, configModuleClass, moduleID, true,
 					fetchGroups, maxFetchDepth);
 			monitor.worked(1);
 			monitor.done();
-			
+
 			return searchedModule;
 		} catch (Exception e) {
 			monitor.setCanceled(true);
 			throw new RuntimeException("ConfigModule download failed: ", e);
 		}
 	}
-	
+
 	public ConfigModule storeConfigModule(ConfigModule configModule, boolean get, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor) {
 		monitor.beginTask("Storing ConfigModule...", 1);
 		try {
-			ConfigManager cm = ConfigManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
+			ConfigManagerRemote cm = JFireEjb3Factory.getRemoteBean(ConfigManagerRemote.class, SecurityReflector.getInitialContextProperties());
 			ConfigModule storedModule = cm.storeConfigModule(configModule, get,
 					fetchGroups, maxFetchDepth);
 			monitor.worked(1);
 			monitor.done();
-			
+
 			return storedModule;
 		} catch (Exception e) {
 			monitor.setCanceled(true);

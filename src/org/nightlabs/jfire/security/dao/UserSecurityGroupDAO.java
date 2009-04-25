@@ -4,10 +4,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import org.nightlabs.jfire.base.JFireEjbFactory;
+import org.nightlabs.jfire.base.JFireEjb3Factory;
 import org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO;
 import org.nightlabs.jfire.base.jdo.cache.Cache;
-import org.nightlabs.jfire.security.JFireSecurityManager;
+import org.nightlabs.jfire.security.JFireSecurityManagerRemote;
 import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.security.UserSecurityGroup;
 import org.nightlabs.jfire.security.id.AuthorizedObjectID;
@@ -25,9 +25,8 @@ public class UserSecurityGroupDAO extends BaseJDOObjectDAO<UserSecurityGroupID, 
 		return sharedInstance;
 	}
 
-	private JFireSecurityManager jfireSecurityManager;
+	private JFireSecurityManagerRemote jfireSecurityManager;
 
-	@SuppressWarnings("unchecked")
 	@Override
 	protected Collection<UserSecurityGroup> retrieveJDOObjects(
 			Set<UserSecurityGroupID> userSecurityGroupIDs, String[] fetchGroups,
@@ -37,10 +36,10 @@ public class UserSecurityGroupDAO extends BaseJDOObjectDAO<UserSecurityGroupID, 
 	{
 		monitor.beginTask("Retrieving user security groups", 1);
 		try {
-			JFireSecurityManager m = jfireSecurityManager;
+			JFireSecurityManagerRemote m = jfireSecurityManager;
 			if (m == null)
-				m = JFireEjbFactory.getBean(JFireSecurityManager.class, SecurityReflector.getInitialContextProperties());
-	
+				m = JFireEjb3Factory.getRemoteBean(JFireSecurityManagerRemote.class, SecurityReflector.getInitialContextProperties());
+
 			return m.getUserSecurityGroups(userSecurityGroupIDs, fetchGroups, maxFetchDepth);
 		} finally {
 			monitor.worked(1);
@@ -64,7 +63,6 @@ public class UserSecurityGroupDAO extends BaseJDOObjectDAO<UserSecurityGroupID, 
 		return getJDOObject(null, userSecurityGroupID, fetchGroups, maxFetchDepth, monitor);
 	}
 
-	@SuppressWarnings("unchecked")
 	public synchronized List<UserSecurityGroup> getUserSecurityGroups(
 			String[] fetchGroups,
 			int maxFetchDepth, ProgressMonitor monitor
@@ -72,7 +70,7 @@ public class UserSecurityGroupDAO extends BaseJDOObjectDAO<UserSecurityGroupID, 
 	{
 		monitor.beginTask("Get user security groups", 100);
 		try {
-			jfireSecurityManager = JFireEjbFactory.getBean(JFireSecurityManager.class, SecurityReflector.getInitialContextProperties());
+			jfireSecurityManager = JFireEjb3Factory.getRemoteBean(JFireSecurityManagerRemote.class, SecurityReflector.getInitialContextProperties());
 			monitor.worked(10);
 			Set<UserSecurityGroupID> userSecurityGroupIDs = jfireSecurityManager.getUserSecurityGroupIDs();
 			monitor.worked(30);
@@ -91,7 +89,7 @@ public class UserSecurityGroupDAO extends BaseJDOObjectDAO<UserSecurityGroupID, 
 	{
 		monitor.beginTask("Setting membership", 100);
 		try {
-			JFireSecurityManager m = JFireEjbFactory.getBean(JFireSecurityManager.class, SecurityReflector.getInitialContextProperties());
+			JFireSecurityManagerRemote m = JFireEjb3Factory.getRemoteBean(JFireSecurityManagerRemote.class, SecurityReflector.getInitialContextProperties());
 			m.setMembersOfUserSecurityGroup(userSecurityGroupID, memberAuthorizedObjectIDs);
 		} catch (RuntimeException x) {
 			throw x;
@@ -108,7 +106,7 @@ public class UserSecurityGroupDAO extends BaseJDOObjectDAO<UserSecurityGroupID, 
 	{
 		monitor.beginTask("Setting membership", 100);
 		try {
-			JFireSecurityManager m = JFireEjbFactory.getBean(JFireSecurityManager.class, SecurityReflector.getInitialContextProperties());
+			JFireSecurityManagerRemote m = JFireEjb3Factory.getRemoteBean(JFireSecurityManagerRemote.class, SecurityReflector.getInitialContextProperties());
 			m.setUserSecurityGroupsOfMember(userSecurityGroupIDs, memberAuthorizedObjectID);
 		} catch (RuntimeException x) {
 			throw x;
@@ -130,7 +128,7 @@ public class UserSecurityGroupDAO extends BaseJDOObjectDAO<UserSecurityGroupID, 
 	{
 		monitor.beginTask("Storing user security group", 100);
 		try {
-			JFireSecurityManager m = JFireEjbFactory.getBean(JFireSecurityManager.class, SecurityReflector.getInitialContextProperties());
+			JFireSecurityManagerRemote m = JFireEjb3Factory.getRemoteBean(JFireSecurityManagerRemote.class, SecurityReflector.getInitialContextProperties());
 			UserSecurityGroup result = m.storeUserSecurityGroup(userSecurityGroup, get, fetchGroups, maxFetchDepth);
 
 			if (result != null)

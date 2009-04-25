@@ -7,9 +7,9 @@ import java.util.Set;
 import javax.jdo.FetchPlan;
 
 import org.nightlabs.jdo.NLJDOHelper;
-import org.nightlabs.jfire.base.JFireEjbFactory;
+import org.nightlabs.jfire.base.JFireEjb3Factory;
 import org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO;
-import org.nightlabs.jfire.prop.PropertyManager;
+import org.nightlabs.jfire.prop.PropertyManagerRemote;
 import org.nightlabs.jfire.prop.Struct;
 import org.nightlabs.jfire.prop.id.StructID;
 import org.nightlabs.jfire.security.SecurityReflector;
@@ -19,7 +19,7 @@ public class StructDAO extends BaseJDOObjectDAO<StructID, Struct> {
 
 	public static final String[] DEFAULT_FETCH_GROUPS = new String[] {FetchPlan.ALL};
 
-	PropertyManager pm;
+	PropertyManagerRemote pm;
 
 	/**
 	 * The shared instance
@@ -40,7 +40,7 @@ public class StructDAO extends BaseJDOObjectDAO<StructID, Struct> {
 	@Override
 	protected Collection<Struct> retrieveJDOObjects(Set<StructID> objectIDs, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor) throws Exception {
 		if (pm == null)
-			pm = JFireEjbFactory.getBean(PropertyManager.class, SecurityReflector.getInitialContextProperties());
+			pm = JFireEjb3Factory.getRemoteBean(PropertyManagerRemote.class, SecurityReflector.getInitialContextProperties());
 		try {
 			ArrayList<Struct> structs = new ArrayList<Struct>(objectIDs.size());
 			for (StructID structID : objectIDs)
@@ -53,9 +53,9 @@ public class StructDAO extends BaseJDOObjectDAO<StructID, Struct> {
 
 	@Override
 	protected Struct retrieveJDOObject(StructID objectID, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor) throws Exception {
-		PropertyManager pm2 = pm;
+		PropertyManagerRemote pm2 = pm;
 		if (pm2 == null)
-			pm2 = JFireEjbFactory.getBean(PropertyManager.class, SecurityReflector.getInitialContextProperties());
+			pm2 = JFireEjb3Factory.getRemoteBean(PropertyManagerRemote.class, SecurityReflector.getInitialContextProperties());
 		Struct struct = pm2.getFullStruct(objectID, fetchGroups, maxFetchDepth);
 		if (monitor != null)
 			monitor.worked(1);
@@ -72,22 +72,13 @@ public class StructDAO extends BaseJDOObjectDAO<StructID, Struct> {
 		}
 	}
 
-//	public Struct getStruct(Class<?> linkClass, String structScope, ProgressMonitor monitor) {
-//		return getStruct(linkClass.getName(), structScope, monitor);
-//	}
-//
-//	public Struct getStruct(String linkClass, String structScope, ProgressMonitor monitor)	{
-//		StructID structID = StructID.create(SecurityReflector.getUserDescriptor().getOrganisationID(), linkClass, structScope);
-//		return getStruct(structID, DEFAULT_FETCH_GROUPS, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT, monitor);
-//	}
-
 	public Struct getStruct(StructID structID, ProgressMonitor monitor) {
 		return getStruct(structID, DEFAULT_FETCH_GROUPS, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT, monitor);
 	}
 
 	public Struct storeStruct(Struct struct, boolean get, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor) {
 		try {
-			PropertyManager propManager = JFireEjbFactory.getBean(PropertyManager.class, SecurityReflector.getInitialContextProperties());
+			PropertyManagerRemote propManager = JFireEjb3Factory.getRemoteBean(PropertyManagerRemote.class, SecurityReflector.getInitialContextProperties());
 			return (Struct) propManager.storeStruct(struct, get, fetchGroups, maxFetchDepth);
 		} catch (Exception e) {
 			throw new RuntimeException("Storing StructLocal failed", e);

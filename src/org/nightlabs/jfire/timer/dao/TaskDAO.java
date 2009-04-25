@@ -7,11 +7,11 @@ import java.util.Set;
 import javax.jdo.FetchPlan;
 
 import org.nightlabs.jdo.NLJDOHelper;
-import org.nightlabs.jfire.base.JFireEjbFactory;
+import org.nightlabs.jfire.base.JFireEjb3Factory;
 import org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO;
 import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.timer.Task;
-import org.nightlabs.jfire.timer.TimerManager;
+import org.nightlabs.jfire.timer.TimerManagerRemote;
 import org.nightlabs.jfire.timer.id.TaskID;
 import org.nightlabs.progress.ProgressMonitor;
 
@@ -30,31 +30,29 @@ public class TaskDAO extends BaseJDOObjectDAO<TaskID, Task> {
 	/* (non-Javadoc)
 	 * @see org.nightlabs.jfire.base.jdo.JDOObjectDAO#retrieveJDOObjects(java.util.Set, java.lang.String[], int, org.eclipse.core.runtime.IProgressMonitor)
 	 */
-	@SuppressWarnings("unchecked")
 	@Override
 	protected Collection<Task> retrieveJDOObjects(Set<TaskID> objectIDs, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
 	throws Exception {
-		TimerManager timerManager = JFireEjbFactory.getBean(TimerManager.class, SecurityReflector.getInitialContextProperties());
+		TimerManagerRemote timerManager = JFireEjb3Factory.getRemoteBean(TimerManagerRemote.class, SecurityReflector.getInitialContextProperties());
 		return timerManager.getTasks(objectIDs, fetchGroups, maxFetchDepth);
 	}
 
-	public Task getTask(TaskID taskID, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor) 
+	public Task getTask(TaskID taskID, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
 	{
 		return getJDOObject(null, taskID, fetchGroups, maxFetchDepth, monitor);
 	}
 
 	public List<Task> getTasks(
 			Collection<TaskID> taskIDs,
-			String[] fetchGroups, ProgressMonitor monitor) 
+			String[] fetchGroups, ProgressMonitor monitor)
 	{
 		return getJDOObjects(null, taskIDs, fetchGroups, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT, monitor);
 	}
 
-	@SuppressWarnings("unchecked")
 	public List<Task> getTasks(String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
 	{
 		try {
-			TimerManager timerManager = JFireEjbFactory.getBean(TimerManager.class, SecurityReflector.getInitialContextProperties());
+			TimerManagerRemote timerManager = JFireEjb3Factory.getRemoteBean(TimerManagerRemote.class, SecurityReflector.getInitialContextProperties());
 			try {
 				List<TaskID> promoterIDs = timerManager.getTaskIDs();
 
@@ -67,11 +65,10 @@ public class TaskDAO extends BaseJDOObjectDAO<TaskID, Task> {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	public synchronized List<Task> getTasks(String taskTypeID, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
 	{
 		try {
-			TimerManager timerManager = JFireEjbFactory.getBean(TimerManager.class, SecurityReflector.getInitialContextProperties());
+			TimerManagerRemote timerManager = JFireEjb3Factory.getRemoteBean(TimerManagerRemote.class, SecurityReflector.getInitialContextProperties());
 			try {
 				List<TaskID> promoterIDs = timerManager.getTaskIDs(taskTypeID);
 
@@ -83,10 +80,10 @@ public class TaskDAO extends BaseJDOObjectDAO<TaskID, Task> {
 			throw new RuntimeException(x);
 		}
 	}
-	
+
 	public synchronized Task storeTask(Task task, boolean get, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor) {
 		try {
-			TimerManager m = JFireEjbFactory.getBean(TimerManager.class, SecurityReflector.getInitialContextProperties());
+			TimerManagerRemote m = JFireEjb3Factory.getRemoteBean(TimerManagerRemote.class, SecurityReflector.getInitialContextProperties());
 			Task newTask = m.storeTask(task, get, fetchGroups, maxFetchDepth);
 			if (newTask != null)
 				getCache().put(null, newTask, fetchGroups, maxFetchDepth);
@@ -95,7 +92,7 @@ public class TaskDAO extends BaseJDOObjectDAO<TaskID, Task> {
 			throw new RuntimeException(e);
 		}
 	}
-	
+
 	private static TaskDAO sharedInstance;
 
 	public static TaskDAO sharedInstance() {

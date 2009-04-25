@@ -1,15 +1,14 @@
 /**
- * 
+ *
  */
 package org.nightlabs.jfire.prop.dao;
 
-import java.rmi.RemoteException;
 import java.util.Collection;
 import java.util.Set;
 
-import org.nightlabs.jfire.base.JFireEjbFactory;
+import org.nightlabs.jfire.base.JFireEjb3Factory;
 import org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO;
-import org.nightlabs.jfire.prop.PropertyManager;
+import org.nightlabs.jfire.prop.PropertyManagerRemote;
 import org.nightlabs.jfire.prop.config.PropertySetFieldBasedEditLayoutUseCase;
 import org.nightlabs.jfire.prop.config.id.PropertySetFieldBasedEditLayoutUseCaseID;
 import org.nightlabs.jfire.security.SecurityReflector;
@@ -19,18 +18,17 @@ import org.nightlabs.progress.ProgressMonitor;
  * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] -->
  */
 public class PropertySetFieldBasedEditLayoutUseCaseDAO
-		extends
-		BaseJDOObjectDAO<PropertySetFieldBasedEditLayoutUseCaseID, PropertySetFieldBasedEditLayoutUseCase> {
-
+extends BaseJDOObjectDAO<PropertySetFieldBasedEditLayoutUseCaseID, PropertySetFieldBasedEditLayoutUseCase>
+{
 	@Override
 	protected Collection<PropertySetFieldBasedEditLayoutUseCase> retrieveJDOObjects(
 			Set<PropertySetFieldBasedEditLayoutUseCaseID> objectIDs,
 			String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
 			throws Exception {
-		PropertyManager pm = JFireEjbFactory.getBean(PropertyManager.class, SecurityReflector.getInitialContextProperties());
+		PropertyManagerRemote pm = JFireEjb3Factory.getRemoteBean(PropertyManagerRemote.class, SecurityReflector.getInitialContextProperties());
 		return pm.getPropertySetFieldBasedEditLayoutUseCases(objectIDs, fetchGroups, maxFetchDepth);
 	}
-	
+
 	/** The shared instance */
 	private static PropertySetFieldBasedEditLayoutUseCaseDAO sharedInstance = null;
 
@@ -46,17 +44,11 @@ public class PropertySetFieldBasedEditLayoutUseCaseDAO
 			}
 		}
 		return sharedInstance;
-	}	
-
-	public Collection<PropertySetFieldBasedEditLayoutUseCase> getAllUseCases(String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor) {
-		PropertyManager pm = JFireEjbFactory.getBean(PropertyManager.class, SecurityReflector.getInitialContextProperties());
-		Set<PropertySetFieldBasedEditLayoutUseCaseID> useCaseIDs;
-		try {
-			useCaseIDs = pm.getAllPropertySetFieldBasedEditLayoutUseCaseIDs();
-		} catch (RemoteException e) {
-			throw new RuntimeException(e);
-		}
-		return getJDOObjects(null, useCaseIDs, fetchGroups, maxFetchDepth, monitor);
 	}
 
+	public Collection<PropertySetFieldBasedEditLayoutUseCase> getAllUseCases(String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor) {
+		PropertyManagerRemote pm = JFireEjb3Factory.getRemoteBean(PropertyManagerRemote.class, SecurityReflector.getInitialContextProperties());
+		Set<PropertySetFieldBasedEditLayoutUseCaseID> useCaseIDs = pm.getAllPropertySetFieldBasedEditLayoutUseCaseIDs();
+		return getJDOObjects(null, useCaseIDs, fetchGroups, maxFetchDepth, monitor);
+	}
 }

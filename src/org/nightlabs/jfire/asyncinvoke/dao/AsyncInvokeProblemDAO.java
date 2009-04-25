@@ -4,10 +4,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import org.nightlabs.jfire.asyncinvoke.AsyncInvokeManager;
-import org.nightlabs.jfire.asyncinvoke.AsyncInvokeManagerUtil;
+import org.nightlabs.jfire.asyncinvoke.AsyncInvokeManagerRemote;
 import org.nightlabs.jfire.asyncinvoke.AsyncInvokeProblem;
 import org.nightlabs.jfire.asyncinvoke.id.AsyncInvokeProblemID;
+import org.nightlabs.jfire.base.JFireEjb3Factory;
 import org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO;
 import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.progress.ProgressMonitor;
@@ -25,18 +25,17 @@ extends BaseJDOObjectDAO<AsyncInvokeProblemID, AsyncInvokeProblem>
 		return _sharedInstance;
 	}
 
-	private AsyncInvokeManager asyncInvokeManager;
+	private AsyncInvokeManagerRemote asyncInvokeManager;
 
-	@SuppressWarnings("unchecked")
 	@Override
 	protected Collection<AsyncInvokeProblem> retrieveJDOObjects(
 			Set<AsyncInvokeProblemID> asyncInvokeProblemIDs, String[] fetchGroups,
 			int maxFetchDepth, ProgressMonitor monitor)
 			throws Exception
 	{
-		AsyncInvokeManager aim = asyncInvokeManager;
+		AsyncInvokeManagerRemote aim = asyncInvokeManager;
 		if (aim == null)
-			aim = AsyncInvokeManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
+			aim = JFireEjb3Factory.getRemoteBean(AsyncInvokeManagerRemote.class, SecurityReflector.getInitialContextProperties());
 
 		return aim.getAsyncInvokeProblems(asyncInvokeProblemIDs, fetchGroups, maxFetchDepth);
 	}
@@ -50,7 +49,6 @@ extends BaseJDOObjectDAO<AsyncInvokeProblemID, AsyncInvokeProblem>
 		return getJDOObjects(null, asyncInvokeProblemIDs, fetchGroups, maxFetchDepth, monitor);
 	}
 
-	@SuppressWarnings("unchecked")
 	public synchronized List<AsyncInvokeProblem> getAsyncInvokeProblems(
 			String[] fetchGroups,
 			int maxFetchDepth,
@@ -59,7 +57,7 @@ extends BaseJDOObjectDAO<AsyncInvokeProblemID, AsyncInvokeProblem>
 		Set<AsyncInvokeProblemID> asyncInvokeProblemIDs;
 		try {
 			try {
-				asyncInvokeManager = AsyncInvokeManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
+				asyncInvokeManager = JFireEjb3Factory.getRemoteBean(AsyncInvokeManagerRemote.class, SecurityReflector.getInitialContextProperties());
 				asyncInvokeProblemIDs = asyncInvokeManager.getAsyncInvokeProblemIDs();
 			} catch (Exception x) {
 				throw new RuntimeException(x);
@@ -74,7 +72,7 @@ extends BaseJDOObjectDAO<AsyncInvokeProblemID, AsyncInvokeProblem>
 	public void deleteAsyncInvokeProblems(Collection<AsyncInvokeProblemID> asyncInvokeProblemIDs)
 	{
 		try {
-			AsyncInvokeManager aim = AsyncInvokeManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
+			AsyncInvokeManagerRemote aim = JFireEjb3Factory.getRemoteBean(AsyncInvokeManagerRemote.class, SecurityReflector.getInitialContextProperties());
 			aim.deleteAsyncInvokeProblems(asyncInvokeProblemIDs);
 		} catch (Exception x) {
 			throw new RuntimeException(x);
@@ -84,7 +82,7 @@ extends BaseJDOObjectDAO<AsyncInvokeProblemID, AsyncInvokeProblem>
 	public void retryAsyncInvokeProblems(Collection<AsyncInvokeProblemID> asyncInvokeProblemIDs)
 	{
 		try {
-			AsyncInvokeManager aim = AsyncInvokeManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
+			AsyncInvokeManagerRemote aim = JFireEjb3Factory.getRemoteBean(AsyncInvokeManagerRemote.class, SecurityReflector.getInitialContextProperties());
 			aim.retryAsyncInvokeProblems(asyncInvokeProblemIDs);
 		} catch (Exception x) {
 			throw new RuntimeException(x);

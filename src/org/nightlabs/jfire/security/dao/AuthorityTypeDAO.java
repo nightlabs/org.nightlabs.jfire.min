@@ -4,10 +4,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import org.nightlabs.jfire.base.JFireEjbFactory;
+import org.nightlabs.jfire.base.JFireEjb3Factory;
 import org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO;
 import org.nightlabs.jfire.security.AuthorityType;
-import org.nightlabs.jfire.security.JFireSecurityManager;
+import org.nightlabs.jfire.security.JFireSecurityManagerRemote;
 import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.security.id.AuthorityTypeID;
 import org.nightlabs.progress.ProgressMonitor;
@@ -22,28 +22,26 @@ public class AuthorityTypeDAO extends BaseJDOObjectDAO<AuthorityTypeID, Authorit
 		return sharedInstance;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	protected Collection<AuthorityType> retrieveJDOObjects(
 			Set<AuthorityTypeID> authorityTypeIDs, String[] fetchGroups,
 			int maxFetchDepth, ProgressMonitor monitor) throws Exception
 	{
-		JFireSecurityManager sm = securityManager;
+		JFireSecurityManagerRemote sm = securityManager;
 		if (sm == null)
-			sm = JFireEjbFactory.getBean(JFireSecurityManager.class, SecurityReflector.getInitialContextProperties());
+			sm = JFireEjb3Factory.getRemoteBean(JFireSecurityManagerRemote.class, SecurityReflector.getInitialContextProperties());
 
 		return sm.getAuthorityTypes(authorityTypeIDs, fetchGroups, maxFetchDepth);
 	}
 
-	private JFireSecurityManager securityManager;
+	private JFireSecurityManagerRemote securityManager;
 
-	@SuppressWarnings("unchecked")
 	public synchronized List<AuthorityType> getAuthorityTypes(
 			String[] fetchGroups,
 			int maxFetchDepth, ProgressMonitor monitor)
 	{
 		try {
-			securityManager = JFireEjbFactory.getBean(JFireSecurityManager.class, SecurityReflector.getInitialContextProperties());
+			securityManager = JFireEjb3Factory.getRemoteBean(JFireSecurityManagerRemote.class, SecurityReflector.getInitialContextProperties());
 			Set<AuthorityTypeID> authorityTypeIDs = securityManager.getAuthorityTypeIDs();
 			return getJDOObjects(null, authorityTypeIDs, fetchGroups, maxFetchDepth, monitor);
 		} catch (RuntimeException x) {

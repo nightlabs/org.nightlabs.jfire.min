@@ -29,12 +29,12 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.nightlabs.jdo.NLJDOHelper;
-import org.nightlabs.jfire.base.JFireEjbFactory;
+import org.nightlabs.jfire.base.JFireEjb3Factory;
 import org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO;
 import org.nightlabs.jfire.idgenerator.IDGenerator;
 import org.nightlabs.jfire.person.Person;
 import org.nightlabs.jfire.prop.PropertySet;
-import org.nightlabs.jfire.security.JFireSecurityManager;
+import org.nightlabs.jfire.security.JFireSecurityManagerRemote;
 import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.security.UserLocal;
@@ -46,7 +46,7 @@ import org.nightlabs.util.Util;
 
 /**
  * Get user JDO objects using the JFire client cache.
- * 
+ *
  * @version $Revision: 6500 $ - $Date: 2007-05-12 19:18:24 +0200 (Sa, 12 Mai 2007) $
  * @author Niklas Schiffler <nick@nightlabs.de>
  * @author Marc Klinger - marc[at]nightlabs[dot]de
@@ -80,21 +80,20 @@ public class UserDAO extends BaseJDOObjectDAO<UserID, User>
 	/* (non-Javadoc)
 	 * @see org.nightlabs.jfire.base.jdo.JDOObjectDAO#retrieveJDOObjects(java.util.Collection, java.util.Set, int, org.eclipse.core.runtime.IProgressMonitor)
 	 */
-	@SuppressWarnings("unchecked")
 	@Override
 	protected Collection<User> retrieveJDOObjects(Set<UserID> objectIDs, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor) throws Exception
 	{
 		monitor.beginTask("Fetching "+objectIDs.size()+" user information", 1);
 		Collection<User> users;
 		try {
-			JFireSecurityManager um = JFireEjbFactory.getBean(JFireSecurityManager.class, SecurityReflector.getInitialContextProperties());
+			JFireSecurityManagerRemote um = JFireEjb3Factory.getRemoteBean(JFireSecurityManagerRemote.class, SecurityReflector.getInitialContextProperties());
 			users = um.getUsers(objectIDs, fetchGroups, maxFetchDepth);
 			monitor.worked(1);
 		} catch (Exception e) {
 			monitor.done();
 			throw new RuntimeException("Failed downloading User information!", e);
 		}
-		
+
 		monitor.done();
 		return users;
 	}
@@ -118,7 +117,7 @@ public class UserDAO extends BaseJDOObjectDAO<UserID, User>
 
 	/**
 	 * Store a user and its person on the server.
-	 * 
+	 *
 	 * @param user the user to save.
 	 * @param newPassword the password for the user. This might be <code>null</code>. If a new user is created without password,
 	 *		it cannot login, since the presence of a password is forced by the login-module.
@@ -141,9 +140,9 @@ public class UserDAO extends BaseJDOObjectDAO<UserID, User>
 		monitor.beginTask("Storing user: "+user.getName(), 3); // 4);
 		try {
 			Properties initialContextProperties = SecurityReflector.getInitialContextProperties();
-			JFireSecurityManager um = JFireEjbFactory.getBean(JFireSecurityManager.class, initialContextProperties);
+			JFireSecurityManagerRemote um = JFireEjb3Factory.getRemoteBean(JFireSecurityManagerRemote.class, initialContextProperties);
 			monitor.worked(1);
-			
+
 			Person person = user.getPerson();
 			if (person != null) {
 				user.getPerson().deflate();
@@ -179,11 +178,10 @@ public class UserDAO extends BaseJDOObjectDAO<UserID, User>
 	 * 					object, <code>monitor.worked(1)</code> will be called.
 	 * @return The users of the given type.
 	 */
-	@SuppressWarnings("unchecked")
 	public synchronized List<User> getUsers(String organisationID, Set<String> userTypes, String[] fetchgroups, int maxFetchDepth, ProgressMonitor monitor)
 	{
 		try {
-			JFireSecurityManager um = JFireEjbFactory.getBean(JFireSecurityManager.class, SecurityReflector.getInitialContextProperties());
+			JFireSecurityManagerRemote um = JFireEjb3Factory.getRemoteBean(JFireSecurityManagerRemote.class, SecurityReflector.getInitialContextProperties());
 			Collection<UserID> ids = um.getUserIDs(organisationID, userTypes);
 			return getJDOObjects(null, ids, fetchgroups, maxFetchDepth, monitor);
 		} catch(Exception e) {
@@ -240,7 +238,7 @@ public class UserDAO extends BaseJDOObjectDAO<UserID, User>
 //		monitor.beginTask("Adding user: "+userID.userID+" to group: "+userGroupID.userID, 1);
 //		try {
 //			Properties initialContextProperties = SecurityReflector.getInitialContextProperties();
-//			JFireSecurityManager um = JFireEjbFactory.getBean(JFireSecurityManager.class, initialContextProperties);
+//			JFireSecurityManagerRemote um = JFireEjb3Factory.getRemoteBean(JFireSecurityManagerRemote.class, initialContextProperties);
 //			um.addUserToUserGroup(userID, userGroupID);
 //			monitor.worked(1);
 //			monitor.done();
@@ -266,7 +264,7 @@ public class UserDAO extends BaseJDOObjectDAO<UserID, User>
 //		monitor.beginTask("Removing user: "+userID.userID+" from group: "+userGroupID.userID, 1);
 //		try {
 //			Properties initialContextProperties = SecurityReflector.getInitialContextProperties();
-//			JFireSecurityManager um = JFireEjbFactory.getBean(JFireSecurityManager.class, initialContextProperties);
+//			JFireSecurityManagerRemote um = JFireEjb3Factory.getRemoteBean(JFireSecurityManagerRemote.class, initialContextProperties);
 //			um.removeUserFromUserGroup(userID, userGroupID);
 //			monitor.worked(1);
 //			monitor.done();
@@ -297,7 +295,7 @@ public class UserDAO extends BaseJDOObjectDAO<UserID, User>
 //		monitor.beginTask("Adding a user to a rolegroup", 1);
 //		try {
 //			Properties initialContextProperties = SecurityReflector.getInitialContextProperties();
-//			JFireSecurityManager um = JFireEjbFactory.getBean(JFireSecurityManager.class, initialContextProperties);
+//			JFireSecurityManagerRemote um = JFireEjb3Factory.getRemoteBean(JFireSecurityManagerRemote.class, initialContextProperties);
 //			um.addRoleGroupToUser(userID, authorityID, roleGroupID);
 //		} catch(RuntimeException e) {
 //			throw e;
@@ -320,7 +318,7 @@ public class UserDAO extends BaseJDOObjectDAO<UserID, User>
 //				throw new IllegalArgumentException("Cannot manage foreign authority! authority.organisationID=\""+authorityID.organisationID+"\" does not match our organisationID=\""+organisationID+"\"!");
 //
 //			Properties initialContextProperties = SecurityReflector.getInitialContextProperties();
-//			JFireSecurityManager um = JFireEjbFactory.getBean(JFireSecurityManager.class, initialContextProperties);
+//			JFireSecurityManagerRemote um = JFireEjb3Factory.getRemoteBean(JFireSecurityManagerRemote.class, initialContextProperties);
 //			um.removeRoleGroupFromUser(userID, authorityID, roleGroupID);
 //		} catch(RuntimeException e) {
 //			throw e;
@@ -332,14 +330,14 @@ public class UserDAO extends BaseJDOObjectDAO<UserID, User>
 //		}
 //	}
 
-//	public synchronized Collection<User> getUsersInUserGroup(UserID userGroupID, 
+//	public synchronized Collection<User> getUsersInUserGroup(UserID userGroupID,
 //			String[] fetchgroups, int maxFetchDepth, ProgressMonitor monitor)
 //	{
 //		monitor.beginTask("Get users in user group", 1);
 //		try {
-//			JFireSecurityManager um = JFireEjbFactory.getBean(JFireSecurityManager.class, SecurityReflector.getInitialContextProperties());
+//			JFireSecurityManagerRemote um = JFireEjb3Factory.getRemoteBean(JFireSecurityManagerRemote.class, SecurityReflector.getInitialContextProperties());
 //			Collection<UserID> ids = um.getUserIDsInUserGroup(userGroupID);
-//			return getJDOObjects(null, ids, fetchgroups, maxFetchDepth, monitor);			
+//			return getJDOObjects(null, ids, fetchgroups, maxFetchDepth, monitor);
 //		} catch (Exception e) {
 //			throw new RuntimeException(e);
 //		} finally {
@@ -348,12 +346,12 @@ public class UserDAO extends BaseJDOObjectDAO<UserID, User>
 //		}
 //	}
 
-//	public synchronized Collection<User> getUsersNotInUserGroup(UserID userGroupID, 
+//	public synchronized Collection<User> getUsersNotInUserGroup(UserID userGroupID,
 //			String[] fetchgroups, int maxFetchDepth, ProgressMonitor monitor)
 //	{
 //		monitor.beginTask("Get users not in user group", 1);
 //		try {
-//			JFireSecurityManager um = JFireEjbFactory.getBean(JFireSecurityManager.class, SecurityReflector.getInitialContextProperties());
+//			JFireSecurityManagerRemote um = JFireEjb3Factory.getRemoteBean(JFireSecurityManagerRemote.class, SecurityReflector.getInitialContextProperties());
 //			Collection<UserID> ids = um.getUserIDsNotInUserGroup(userGroupID);
 //			return getJDOObjects(null, ids, fetchgroups, maxFetchDepth, monitor);
 //		} catch (Exception e) {
@@ -368,7 +366,7 @@ public class UserDAO extends BaseJDOObjectDAO<UserID, User>
 //	{
 //		monitor.beginTask("Add users to authority", 1);
 //		try {
-//			JFireSecurityManager sm = JFireEjbFactory.getBean(JFireSecurityManager.class, SecurityReflector.getInitialContextProperties());
+//			JFireSecurityManagerRemote sm = JFireEjb3Factory.getRemoteBean(JFireSecurityManagerRemote.class, SecurityReflector.getInitialContextProperties());
 //			sm.addUsersToAuthority(userIDs, authorityID);
 //		} catch (Exception e) {
 //			throw new RuntimeException(e);
@@ -382,7 +380,7 @@ public class UserDAO extends BaseJDOObjectDAO<UserID, User>
 //	{
 //		monitor.beginTask("Remove users from authority", 1);
 //		try {
-//			JFireSecurityManager sm = JFireEjbFactory.getBean(JFireSecurityManager.class, SecurityReflector.getInitialContextProperties());
+//			JFireSecurityManagerRemote sm = JFireEjb3Factory.getRemoteBean(JFireSecurityManagerRemote.class, SecurityReflector.getInitialContextProperties());
 //			sm.removeUsersFromAuthority(userIDs, authorityID);
 //		} catch (Exception e) {
 //			throw new RuntimeException(e);

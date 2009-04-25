@@ -34,11 +34,11 @@ import java.util.Set;
 import javax.jdo.JDOHelper;
 
 import org.nightlabs.jdo.NLJDOHelper;
-import org.nightlabs.jfire.base.JFireEjbFactory;
+import org.nightlabs.jfire.base.JFireEjb3Factory;
 import org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO;
 import org.nightlabs.jfire.security.Authority;
 import org.nightlabs.jfire.security.AuthorizedObject;
-import org.nightlabs.jfire.security.JFireSecurityManager;
+import org.nightlabs.jfire.security.JFireSecurityManagerRemote;
 import org.nightlabs.jfire.security.RoleGroup;
 import org.nightlabs.jfire.security.RoleGroupIDSetCarrier;
 import org.nightlabs.jfire.security.RoleGroupSetCarrier;
@@ -52,7 +52,7 @@ import org.nightlabs.progress.SubProgressMonitor;
 
 /**
  * Data access object for {@link RoleGroup}s.
- * 
+ *
  * @version $Revision: 4710 $ - $Date: 2006-10-11 01:49:29 +0200 (Mi, 11 Okt 2006) $
  * @author Marc Klinger - marc[at]nightlabs[dot]de
  */
@@ -75,20 +75,19 @@ public class RoleGroupDAO extends BaseJDOObjectDAO<RoleGroupID, RoleGroup>
 	}
 
 	/**
-	 * The temporary used JFireSecurityManager.
+	 * The temporary used JFireSecurityManagerRemote.
 	 */
-	private JFireSecurityManager securityManager;
+	private JFireSecurityManagerRemote securityManager;
 
-	@SuppressWarnings("unchecked")
 	@Override
 	protected Collection<RoleGroup> retrieveJDOObjects(
 			Set<RoleGroupID> objectIDs,
 			String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor
 	) throws Exception
 	{
-		JFireSecurityManager um = securityManager;
+		JFireSecurityManagerRemote um = securityManager;
 		if (um == null)
-			um = JFireEjbFactory.getBean(JFireSecurityManager.class, SecurityReflector.getInitialContextProperties());
+			um = JFireEjb3Factory.getRemoteBean(JFireSecurityManagerRemote.class, SecurityReflector.getInitialContextProperties());
 
 		return um.getRoleGroups(objectIDs, fetchGroups, maxFetchDepth);
 	}
@@ -120,7 +119,7 @@ public class RoleGroupDAO extends BaseJDOObjectDAO<RoleGroupID, RoleGroup>
 
 			synchronized (this) { // synchronize because of usage of the field securityManager
 				try {
-					securityManager = JFireEjbFactory.getBean(JFireSecurityManager.class, SecurityReflector.getInitialContextProperties());
+					securityManager = JFireEjb3Factory.getRemoteBean(JFireSecurityManagerRemote.class, SecurityReflector.getInitialContextProperties());
 					roleGroupIDSetCarrier = securityManager.getRoleGroupIDSetCarrier(authorizedObjectID, authorityID);
 					monitor.worked(20);
 
@@ -208,7 +207,7 @@ public class RoleGroupDAO extends BaseJDOObjectDAO<RoleGroupID, RoleGroup>
 
 	/**
 	 * Returns a collection of all role groups for the given user security groups.
-	 * 
+	 *
 	 * @param userSecurityGroupIDs A collection of the user group IDs whose {@link RoleGroup}s are to be returned.
 	 * @param authorityID The authority
 	 * @param fetchgroups The fetch groups to use
@@ -216,7 +215,6 @@ public class RoleGroupDAO extends BaseJDOObjectDAO<RoleGroupID, RoleGroup>
 	 * @param monitor the monitor to give progress feedback
 	 * @return a collection of all role groups for the given user groups.
 	 */
-	@SuppressWarnings("unchecked")
 	public synchronized Set<RoleGroup> getRoleGroupsForUserSecurityGroups(
 			Collection<UserSecurityGroupID> userSecurityGroupIDs,
 			AuthorityID authorityID,
@@ -229,7 +227,7 @@ public class RoleGroupDAO extends BaseJDOObjectDAO<RoleGroupID, RoleGroup>
 			int totalTicks = 1000;
 			int ticksLeft = totalTicks;
 			monitor.beginTask("Get role groups", totalTicks);
-			securityManager = JFireEjbFactory.getBean(JFireSecurityManager.class, SecurityReflector.getInitialContextProperties());
+			securityManager = JFireEjb3Factory.getRemoteBean(JFireSecurityManagerRemote.class, SecurityReflector.getInitialContextProperties());
 			Set<RoleGroup> roleGroups = new HashSet<RoleGroup>();
 
 			Collection<RoleGroupIDSetCarrier> roleGroupIDSetCarriers = securityManager.getRoleGroupIDSetCarriers(userSecurityGroupIDs, authorityID);
@@ -284,7 +282,6 @@ public class RoleGroupDAO extends BaseJDOObjectDAO<RoleGroupID, RoleGroup>
 		);
 	}
 
-	@SuppressWarnings("unchecked")
 	public List<RoleGroupSetCarrier> getRoleGroupSetCarriers(
 			Set<AuthorizedObjectID> _authorizedObjectIDs,
 			AuthorityID authorityID,
@@ -301,7 +298,7 @@ public class RoleGroupDAO extends BaseJDOObjectDAO<RoleGroupID, RoleGroup>
 			List<RoleGroupSetCarrier> roleGroupSetCarriers;
 			synchronized (this) {
 				try {
-					securityManager = JFireEjbFactory.getBean(JFireSecurityManager.class, SecurityReflector.getInitialContextProperties());
+					securityManager = JFireEjb3Factory.getRemoteBean(JFireSecurityManagerRemote.class, SecurityReflector.getInitialContextProperties());
 					if (_authorizedObjectIDs != null)
 						roleGroupIDSetCarriers = securityManager.getRoleGroupIDSetCarriers(_authorizedObjectIDs, authorityID);
 					else
@@ -361,7 +358,7 @@ public class RoleGroupDAO extends BaseJDOObjectDAO<RoleGroupID, RoleGroup>
 					new SubProgressMonitor(monitor, 10)
 			);
 
-			roleGroupSetCarriers = new ArrayList<RoleGroupSetCarrier>(roleGroupIDSetCarriers.size()); 
+			roleGroupSetCarriers = new ArrayList<RoleGroupSetCarrier>(roleGroupIDSetCarriers.size());
 			for (RoleGroupIDSetCarrier roleGroupIDSetCarrier : roleGroupIDSetCarriers) {
 				if (!roleGroupIDSetCarrier.getAuthorityID().equals(authorityID))
 					throw new IllegalStateException("roleGroupIDSetCarrier.authorityID != authorityID");
