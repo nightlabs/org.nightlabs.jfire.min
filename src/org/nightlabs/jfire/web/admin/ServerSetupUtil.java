@@ -1,13 +1,10 @@
 package org.nightlabs.jfire.web.admin;
 
 import org.apache.log4j.Logger;
-import org.nightlabs.jfire.organisation.OrganisationManager;
-import org.nightlabs.jfire.organisation.OrganisationManagerHome;
-import org.nightlabs.jfire.organisation.OrganisationManagerUtil;
+import org.nightlabs.jfire.base.JFireEjb3Factory;
+import org.nightlabs.jfire.organisation.OrganisationManagerRemote;
 import org.nightlabs.jfire.security.SecurityReflector;
-import org.nightlabs.jfire.server.ServerManager;
-import org.nightlabs.jfire.server.ServerManagerHome;
-import org.nightlabs.jfire.server.ServerManagerUtil;
+import org.nightlabs.jfire.server.ServerManagerRemote;
 
 public class ServerSetupUtil
 {
@@ -29,12 +26,12 @@ public class ServerSetupUtil
 		}
 	}
 
-	public static ServerManager getBogoServerManager()
+	public static ServerManagerRemote getBogoServerManager()
 	{
 		// we might already be logged in, so we first try to get the ServerManager normally
 		try {
-			ServerManagerHome home = ServerManagerUtil.getHome(SecurityReflector.getInitialContextProperties());
-			ServerManager serverManager = home.create();
+			ServerManagerRemote serverManager = JFireEjb3Factory.getRemoteBean(ServerManagerRemote.class, SecurityReflector.getInitialContextProperties());
+			serverManager.ping("test_authentication");
 			return serverManager;
 		} catch (Exception x) {
 			// silently ignore and try it the bogo way below
@@ -42,8 +39,8 @@ public class ServerSetupUtil
 
 		try {
 			SessionLogin login = getBogoLogin();
-			ServerManagerHome home = ServerManagerUtil.getHome(login.getInitialContextProperties());
-			ServerManager serverManager = home.create();
+			ServerManagerRemote serverManager = JFireEjb3Factory.getRemoteBean(ServerManagerRemote.class, login.getInitialContextProperties());
+			serverManager.ping("test_authentication");
 			return serverManager;
 		} catch(Exception e) {
 //			log.info("Getting bogo server manager failed.", e);
@@ -51,12 +48,12 @@ public class ServerSetupUtil
 		}
 	}
 
-	public static OrganisationManager getBogoOrganisationManager()
+	public static OrganisationManagerRemote getBogoOrganisationManager()
 	{
 		try {
 			SessionLogin login = getBogoLogin();
-			OrganisationManagerHome home = OrganisationManagerUtil.getHome(login.getInitialContextProperties());
-			OrganisationManager manager = home.create();
+			OrganisationManagerRemote manager = JFireEjb3Factory.getRemoteBean(OrganisationManagerRemote.class, login.getInitialContextProperties());
+			manager.ping("test_authentication");
 			return manager;
 		} catch(Exception e) {
 //			log.error("Getting bogo organisation manager failed.", e);

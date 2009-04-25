@@ -8,9 +8,8 @@ import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
-import org.nightlabs.jfire.server.ServerManager;
-import org.nightlabs.jfire.server.ServerManagerHome;
-import org.nightlabs.jfire.server.ServerManagerUtil;
+import org.nightlabs.jfire.base.JFireEjb3Factory;
+import org.nightlabs.jfire.server.ServerManagerRemote;
 import org.nightlabs.jfire.servermanager.config.DatabaseCf;
 import org.nightlabs.jfire.servermanager.config.J2eeCf;
 import org.nightlabs.jfire.servermanager.config.JDOCf;
@@ -33,13 +32,13 @@ public class ServerConfigServlet extends BaseServlet
 	 * The serial version.
 	 */
 	private static final long serialVersionUID = 1L;
-	
+
 	private static final Logger log = Logger.getLogger(ServerConfigServlet.class);
 
 	private static class BeanEditRequest extends HttpServletRequestWrapper
 	{
 		private int beanKey;
-		
+
 		/**
 		 * Create a new BeanEditRequest instance.
 		 * @param request
@@ -49,7 +48,7 @@ public class ServerConfigServlet extends BaseServlet
 			super(request);
 			this.beanKey = beanKey;
 		}
-		
+
 		/* (non-Javadoc)
 		 * @see javax.servlet.ServletRequestWrapper#getAttribute(java.lang.String)
 		 */
@@ -61,7 +60,7 @@ public class ServerConfigServlet extends BaseServlet
 			return super.getAttribute(name);
 		}
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see org.nightlabs.jfire.web.admin.servlet.BaseServlet#handleRequest(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
 	 */
@@ -69,9 +68,8 @@ public class ServerConfigServlet extends BaseServlet
 	protected void handleRequest(HttpServletRequest req, HttpServletResponse resp) throws Exception
 	{
 		SessionLogin login = SessionLogin.getLogin(req.getSession());
-		ServerManagerHome serverManagerHome = ServerManagerUtil.getHome(login.getInitialContextProperties());
-		ServerManager manager = serverManagerHome.create();
-		
+		ServerManagerRemote manager = JFireEjb3Factory.getRemoteBean(ServerManagerRemote.class, login.getInitialContextProperties());
+
 		if(Util.haveParameterValue(req, "action", "save")) {
 			log.info("Have save request");
 			JFireServerConfigModule config = manager.getJFireServerConfigModule();
@@ -98,7 +96,7 @@ public class ServerConfigServlet extends BaseServlet
 			}
 			manager.setJFireServerConfigModule(config);
 		}
-		
+
 		JFireServerConfigModule config = manager.getJFireServerConfigModule();
 		RootOrganisationCf rootOrganisationCf = config.getRootOrganisation();
 		addContent(req, "/jsp/configeditheader.jsp");
@@ -113,8 +111,5 @@ public class ServerConfigServlet extends BaseServlet
 		rootOrganisationBean.copyFromCf(rootOrganisationCf);
 		addContent(req, "/beanedit", new BeanEditRequest(req, BeanEditServlet.startEdit(req, rootOrganisationBean)));
 		addContent(req, "/jsp/configeditfooter.jsp");
-		
-		
-		manager.remove();
 	}
 }

@@ -12,8 +12,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
-import org.nightlabs.jfire.organisation.OrganisationManager;
-import org.nightlabs.jfire.server.ServerManager;
+import org.nightlabs.jfire.organisation.OrganisationManagerRemote;
+import org.nightlabs.jfire.server.ServerManagerRemote;
 import org.nightlabs.jfire.serverconfigurator.ServerConfigurator;
 import org.nightlabs.jfire.servermanager.config.DatabaseCf;
 import org.nightlabs.jfire.servermanager.config.J2eeCf;
@@ -35,7 +35,7 @@ import org.nightlabs.jfire.web.admin.serverinit.ServerInitializeStep;
 public class ServerInitializeServlet extends BaseServlet
 {
 	private static final Logger log = Logger.getLogger(ServerInitializeServlet.class);
-	
+
 	private static final String NAVIGATION_VALUE_FINISH = "finish";
 
 	private static final String NAVIGATION_VALUE_PREVIOUS = "previous";
@@ -45,7 +45,7 @@ public class ServerInitializeServlet extends BaseServlet
 	private static final String NAVIGATION_VALUE_NEXT = "next";
 
 	/**
-	 * The serial version of this class. 
+	 * The serial version of this class.
 	 */
 	private static final long serialVersionUID = 1L;
 
@@ -55,7 +55,7 @@ public class ServerInitializeServlet extends BaseServlet
 
 	private ServerInitializeStep[] setupSteps()
 	{
-		ServerManager serverManager = ServerSetupUtil.getBogoServerManager();
+		ServerManagerRemote serverManager = ServerSetupUtil.getBogoServerManager();
 		final JFireServerConfigModule cfMod;
 		try {
 			cfMod = serverManager.getJFireServerConfigModule();
@@ -67,7 +67,7 @@ public class ServerInitializeServlet extends BaseServlet
 		} catch (Throwable e) {
 			throw new RuntimeException("Error accessing server configuration", e);
 		}
-		
+
 		ServerInitializeStep[] steps = new ServerInitializeStep[] {
 				new ServerInitializeStep("welcome", "/jsp/serverinitialize/welcome.jsp", null),
 				new ServerInitializeStep("presets", null, new PresetsBean(), new ServerInitializeStep.PopulateListener() {
@@ -109,7 +109,7 @@ public class ServerInitializeServlet extends BaseServlet
 	{
 		resp.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
 		resp.setHeader("Pragma", "no-cache");
-		
+
 		ServerInitializeStep stepToShow = null;
 
 		// coming from a form - we have a navigation parameter
@@ -158,8 +158,8 @@ public class ServerInitializeServlet extends BaseServlet
 			redirect(req, resp, "/serverinitialize/"+stepToShow.getName());
 			return;
 		}
-		
-		
+
+
 		// about to show a form - get target from path
 		String pathInfo = req.getPathInfo();
 		if(pathInfo != null && !"/".equals(pathInfo) && pathInfo.length() > 1) {
@@ -205,7 +205,7 @@ public class ServerInitializeServlet extends BaseServlet
 		resetSteps(req);
 	}
 
-	private ServerInitializeStep findPreviousStep(HttpServletRequest req, ServerInitializeStep saveStep) 
+	private ServerInitializeStep findPreviousStep(HttpServletRequest req, ServerInitializeStep saveStep)
 	{
 		int previousIdx = findStepIdxByName(req, saveStep.getName()) - 1;
 		if(previousIdx < 0)
@@ -213,7 +213,7 @@ public class ServerInitializeServlet extends BaseServlet
 		return getSteps(req)[previousIdx];
 	}
 
-	private ServerInitializeStep findNextStep(HttpServletRequest req, ServerInitializeStep saveStep) 
+	private ServerInitializeStep findNextStep(HttpServletRequest req, ServerInitializeStep saveStep)
 	{
 		int previousIdx = findStepIdxByName(req, saveStep.getName()) + 1;
 		ServerInitializeStep[] steps = getSteps(req);
@@ -222,7 +222,7 @@ public class ServerInitializeServlet extends BaseServlet
 		return steps[previousIdx];
 	}
 
-	private void resetSteps(HttpServletRequest req) 
+	private void resetSteps(HttpServletRequest req)
 	{
 		req.getSession().setAttribute(STEPS_SESSION_KEY, null);
 	}
@@ -244,7 +244,7 @@ public class ServerInitializeServlet extends BaseServlet
 		return -1;
 	}
 
-	private ServerInitializeStep[] getSteps(HttpServletRequest req) 
+	private ServerInitializeStep[] getSteps(HttpServletRequest req)
 	{
 		ServerInitializeStep[] steps = (ServerInitializeStep[])req.getSession().getAttribute(STEPS_SESSION_KEY);
 		if(steps == null) {
@@ -253,7 +253,7 @@ public class ServerInitializeServlet extends BaseServlet
 		}
 		return steps;
 	}
-	
+
 	private Map<String, ServerInitializeStep> getStepsByName(HttpServletRequest req)
 	{
 		ServerInitializeStep[] steps = getSteps(req);
@@ -262,7 +262,7 @@ public class ServerInitializeServlet extends BaseServlet
 			result.put(step.getName(), step);
 		return result;
 	}
-	
+
 	/**
 	 * @return <code>true</code> if a reboot is required.
 	 */
@@ -272,15 +272,15 @@ public class ServerInitializeServlet extends BaseServlet
 
 		try {
 			JFireServerConfigModule cfMod = createServerConfigModule(stepsByName);
-			ServerManager serverManager = ServerSetupUtil.getBogoServerManager();
+			ServerManagerRemote serverManager = ServerSetupUtil.getBogoServerManager();
 			serverManager.setJFireServerConfigModule(cfMod);
 
 			FirstOrganisationBean firstOrganisationBean = (FirstOrganisationBean) stepsByName.get("firstorganisation").getBean();
-			
+
 			// save the data and create the organisation at next boot, because doing it after changing the server configuration is likely to fail due to hot undeploy/redeploy.
 			boolean createOrganisation = firstOrganisationBean.getOrganisationID() != null && !firstOrganisationBean.getOrganisationID().isEmpty();
 			if(createOrganisation) {
-				OrganisationManager organisationManager = ServerSetupUtil.getBogoOrganisationManager();
+				OrganisationManagerRemote organisationManager = ServerSetupUtil.getBogoOrganisationManager();
 				organisationManager.createOrganisationAfterReboot(
 						firstOrganisationBean.getOrganisationID(),
 						firstOrganisationBean.getOrganisationName(),
@@ -297,7 +297,7 @@ public class ServerInitializeServlet extends BaseServlet
 			}
 
 			if(createOrganisation) {
-				OrganisationManager organisationManager = ServerSetupUtil.getBogoOrganisationManager();
+				OrganisationManagerRemote organisationManager = ServerSetupUtil.getBogoOrganisationManager();
 				organisationManager.createOrganisation(
 						firstOrganisationBean.getOrganisationID(),
 						firstOrganisationBean.getOrganisationName(),
@@ -356,13 +356,13 @@ public class ServerInitializeServlet extends BaseServlet
 				}
 				else
 					keystoreToImportStream = new URL(keystoreURLToImport).openStream();
-	
+
 				ks.load(keystoreToImportStream, keystorePassword.toCharArray());
-	
+
 				final String wantedAlias = servletSSLCf.getSslServerCertificateAlias();
 				if (! ks.containsAlias(wantedAlias))
 					throw new IllegalStateException("No certificate with alias '"+ wantedAlias+"' found in "+ keystoreURLToImport);
-	
+
 				// TODO: test the certificate password somehow!
 			}
 			catch (Exception e)
