@@ -26,20 +26,19 @@
 
 package org.nightlabs.jfire.jdo.notification.persistent;
 
-import java.rmi.RemoteException;
 import java.util.List;
 import java.util.Set;
 
-import javax.ejb.CreateException;
-import javax.ejb.EJBException;
-import javax.ejb.SessionBean;
-import javax.ejb.SessionContext;
+import javax.annotation.security.RolesAllowed;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.jdo.NLJDOHelper;
-import org.nightlabs.jfire.base.BaseSessionBeanImpl;
+import org.nightlabs.jfire.base.BaseSessionBeanImplEJB3;
 import org.nightlabs.jfire.jdo.notification.persistent.id.NotificationBundleID;
 import org.nightlabs.jfire.jdo.notification.persistent.id.NotificationFilterID;
 import org.nightlabs.jfire.jdo.notification.persistent.id.NotificationReceiverID;
@@ -54,44 +53,30 @@ import org.nightlabs.jfire.jdo.notification.persistent.id.PushNotifierID;
  * @ejb.util generate="physical"
  * @ejb.transaction type="Required"
  */
-public abstract class PersistentNotificationEJBBean
-extends BaseSessionBeanImpl implements SessionBean
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
+@Stateless
+public class PersistentNotificationEJBBean
+extends BaseSessionBeanImplEJB3 implements PersistentNotificationEJBRemote
 {
 	private static final long serialVersionUID = 1L;
 	private static final Logger logger = Logger.getLogger(PersistentNotificationEJBBean.class);
 
-	@Override
-	public void setSessionContext(SessionContext sessionContext)
-	throws EJBException, RemoteException
-	{
-		super.setSessionContext(sessionContext);
-	}
-	/**
-	 * @ejb.create-method
-	 * @ejb.permission role-name="_Guest_"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.jdo.notification.persistent.PersistentNotificationEJBRemote#ping(java.lang.String)
 	 */
-	public void ejbCreate() throws CreateException { }
-
-	/**
-	 * @ejb.permission unchecked="true"
-	 */
-	public void ejbRemove() throws EJBException, RemoteException { }
-
-	/**
-	 * @ejb.interface-method
-	 * @ejb.transaction type="Supports"
-	 * @ejb.permission role-name="_Guest_"
-	 */
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+	@RolesAllowed("_Guest_")
 	@Override
 	public String ping(String message) {
 		return super.ping(message);
 	}
 
-	/**
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_System_"
-	 * @ejb.transaction type="Required"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.jdo.notification.persistent.PersistentNotificationEJBRemote#initialise()
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_System_")
+	@Override
 	public void initialise()
 	{
 		PersistenceManager pm = this.getPersistenceManager();
@@ -110,12 +95,11 @@ extends BaseSessionBeanImpl implements SessionBean
 		}
 	}
 
-	/**
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
-	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.jdo.notification.persistent.PersistentNotificationEJBRemote#getNotificationFilters(java.util.Set, java.lang.String[], int)
 	 */
-	@SuppressWarnings("unchecked")
+	@RolesAllowed("_Guest_")
+	@Override
 	public List<NotificationFilter> getNotificationFilters(Set<NotificationFilterID> notificationFilterIDs, String[] fetchGroups, int maxFetchDepth)
 	{
 		PersistenceManager pm = getPersistenceManager();
@@ -126,10 +110,11 @@ extends BaseSessionBeanImpl implements SessionBean
 		}
 	}
 
-	/**
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.jdo.notification.persistent.PersistentNotificationEJBRemote#storeNotificationFilter(org.nightlabs.jfire.jdo.notification.persistent.NotificationFilter, boolean, java.lang.String[], int)
 	 */
+	@RolesAllowed("_Guest_")
+	@Override
 	public NotificationFilter storeNotificationFilter(NotificationFilter notificationFilter, boolean get, String[] fetchGroups, int maxFetchDepth)
 	{
 		PersistenceManager pm = getPersistenceManager();
@@ -143,11 +128,11 @@ extends BaseSessionBeanImpl implements SessionBean
 		}
 	}
 
-	/**
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.jdo.notification.persistent.PersistentNotificationEJBRemote#deleteNotificationBundles(java.util.Set)
 	 */
-	@SuppressWarnings("unchecked")
+	@RolesAllowed("_Guest_")
+	@Override
 	public void deleteNotificationBundles(Set<NotificationBundleID> notificationBundleIDs)
 	{
 		PersistenceManager pm = getPersistenceManager();
@@ -159,14 +144,11 @@ extends BaseSessionBeanImpl implements SessionBean
 		}
 	}
 
-	/**
-	 * @param notificationFilterID Identifies the subscription, for which to retrieve the {@link NotificationBundle}s. Must not be <code>null</code>.
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
-	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.jdo.notification.persistent.PersistentNotificationEJBRemote#getNotificationBundles(org.nightlabs.jfire.jdo.notification.persistent.id.NotificationFilterID, java.lang.String[], int)
 	 */
-	@SuppressWarnings("unchecked")
+	@RolesAllowed("_Guest_")
+	@Override
 	public List<NotificationBundle> getNotificationBundles(NotificationFilterID notificationFilterID, String[] fetchGroups, int maxFetchDepth)
 	{
 		if (notificationFilterID == null)
@@ -184,13 +166,11 @@ extends BaseSessionBeanImpl implements SessionBean
 		}
 	}
 
-	/**
-	 * This method is called by the {@link PushNotifierOrganisation} in order to notify the
-	 * subscriber about new/dirty/deleted JDO objects.
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.jdo.notification.persistent.PersistentNotificationEJBRemote#pushNotificationBundle(org.nightlabs.jfire.jdo.notification.persistent.NotificationBundle)
 	 */
+	@RolesAllowed("_Guest_")
+	@Override
 	public void pushNotificationBundle(NotificationBundle notificationBundle)
 	throws Exception
 	{

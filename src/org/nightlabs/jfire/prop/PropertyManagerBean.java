@@ -26,25 +26,25 @@
 
 package org.nightlabs.jfire.prop;
 
-import java.rmi.RemoteException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.ejb.CreateException;
-import javax.ejb.EJBException;
-import javax.ejb.SessionBean;
-import javax.ejb.SessionContext;
+import javax.annotation.security.RolesAllowed;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.ejb.TransactionManagement;
+import javax.ejb.TransactionManagementType;
 import javax.jdo.JDOHelper;
 import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
-import javax.jdo.spi.PersistenceCapable;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.i18n.MultiLanguagePropertiesBundle;
 import org.nightlabs.jdo.NLJDOHelper;
-import org.nightlabs.jfire.base.BaseSessionBeanImpl;
+import org.nightlabs.jfire.base.BaseSessionBeanImplEJB3;
 import org.nightlabs.jfire.base.expression.IExpression;
 import org.nightlabs.jfire.config.id.ConfigModuleInitialiserID;
 import org.nightlabs.jfire.organisation.Organisation;
@@ -76,67 +76,30 @@ import org.nightlabs.util.Util;
  * @ejb.util generate="physical"
  * @ejb.transaction type="Required"
  */
-public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements SessionBean
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
+@TransactionManagement(TransactionManagementType.CONTAINER)
+@Stateless
+public class PropertyManagerBean extends BaseSessionBeanImplEJB3 implements PropertyManagerRemote
 {
 	private static final long serialVersionUID = 1L;
 	private static final Logger logger = Logger.getLogger(PropertyManagerBean.class);
 
-	/**
-	 * @see org.nightlabs.jfire.base.BaseSessionBeanImpl#setSessionContext(javax.ejb.SessionContext)
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.prop.PropertyManagerRemote#ping(java.lang.String)
 	 */
-	@Override
-	public void setSessionContext(SessionContext sessionContext) throws EJBException, RemoteException {
-		super.setSessionContext(sessionContext);
-	}
-
-	/**
-	 * @see org.nightlabs.jfire.base.BaseSessionBeanImpl#unsetSessionContext()
-	 */
-	@Override
-	public void unsetSessionContext() {
-		super.unsetSessionContext();
-	}
-
-	/**
-	 * @ejb.create-method
-	 * @ejb.permission role-name="_Guest_"
-	 */
-	public void ejbCreate() throws CreateException {
-	}
-
-	/**
-	 * @see javax.ejb.SessionBean#ejbRemove()
-	 *
-	 * @ejb.permission unchecked="true"
-	 */
-	public void ejbRemove() throws EJBException, RemoteException {
-	}
-
-	/**
-	 * @ejb.interface-method
-	 * @ejb.transaction type="Supports"
-	 * @ejb.permission role-name="_Guest_"
-	 */
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+	@RolesAllowed("_Guest_")
 	@Override
 	public String ping(String message) {
 		return super.ping(message);
 	}
 
-	/**
-	 * Detaches and returns the complete Struct.
-	 *
-	 * @param organisationID
-	 *          The organisation id of the {@link Struct} to be retrieved.
-	 * @param linkClass
-	 *          The linkClass of the {@link Struct} to be retrieved.
-	 * @param structScope
-	 * 			The scope of the {@link Struct} to be retrieved.
-	 * @return The complete {@link Struct}.
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type="Required"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.prop.PropertyManagerRemote#getFullStruct(java.lang.String, java.lang.String, java.lang.String, java.lang.String[], int)
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_Guest_")
+	@Override
 	public Struct getFullStruct(
 			String organisationID, String linkClass, String structScope, String[] fetchGroups, int maxFetchDepth)
 	{
@@ -158,31 +121,23 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 		}
 	}
 
-	/**
-	 * Convenience method
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type="Required"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.prop.PropertyManagerRemote#getFullStruct(org.nightlabs.jfire.prop.id.StructID, java.lang.String[], int)
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_Guest_")
+	@Override
 	public Struct getFullStruct(StructID structID, String[] fetchGroups, int maxFetchDepth)
 	{
 		return getFullStruct(structID.organisationID, structID.linkClass, structID.structScope, fetchGroups, maxFetchDepth);
 	}
 
-	/**
-	 * Detaches and returns the complete {@link StructLocal}.
-	 *
-	 * @param organisationID
-	 *          The organisation id of the {@link StructLocal} to be retrieved.
-	 * @param linkClass
-	 *          The linkClass of the {@link StructLocal} to be retrieved.
-	 * @return The complete {@link StructLocal}.
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type="Required"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.prop.PropertyManagerRemote#getFullStructLocal(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String[], int)
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_Guest_")
+	@Override
 	public StructLocal getFullStructLocal(
 			String organisationID, String linkClass, String structScope, String structLocalScope, String[] fetchGroups, int maxFetchDepth)
 	{
@@ -204,13 +159,12 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 		}
 	}
 
-	/**
-	 * Convenience method
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type="Required"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.prop.PropertyManagerRemote#getFullStructLocal(org.nightlabs.jfire.prop.id.StructLocalID, java.lang.String[], int)
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_Guest_")
+	@Override
 	public StructLocal getFullStructLocal(StructLocalID structLocalID, String[] fetchGroups, int maxFetchDepth)
 	{
 		return getFullStructLocal(
@@ -219,13 +173,12 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 				fetchGroups, maxFetchDepth);
 	}
 
-	/**
-	 * Retrieve the person with the given ID
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type="Required"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.prop.PropertyManagerRemote#getPropertySet(org.nightlabs.jfire.prop.id.PropertySetID, java.lang.String[], int)
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_Guest_")
+	@Override
 	public PropertySet getPropertySet(PropertySetID propID, String[] fetchGroups, int maxFetchDepth) {
 		PersistenceManager pm = this.getPersistenceManager();
 		try {
@@ -243,19 +196,12 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 		}
 	}
 
-	/**
-	 * Returns those objects found by the given search filter.
-	 * The results therefore might not be an instance
-	 * of {@link PropertySet}, this depends on the result columns
-	 * set in the search filter.
-	 * <p>
-	 * All found objects are detached with the given fetch-groups
-	 * if they are {@link PersistenceCapable}.
-	 * </p>
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type="Required"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.prop.PropertyManagerRemote#searchPropertySets(org.nightlabs.jfire.prop.search.PropSearchFilter, java.lang.String[], int)
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_Guest_")
+	@Override
 	public Set<?> searchPropertySets(PropSearchFilter propSearchFilter, String[] fetchGroups, int maxFetchDepth) {
 		PersistenceManager pm = this.getPersistenceManager();
 		try {
@@ -271,19 +217,12 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 		}
 	}
 
-	/**
-	 * Executes the given search filter and assumes it will return instances
-	 * of {@link PropertySet}. It will return the {@link PropertySetID}s of the
-	 * found {@link PropertySet}s then.
-	 * <p>
-	 * Note, that if the given search filter does not return instances
-	 * of {@link PropertySet} (its result columns might be set to something different)
-	 * this method will fail with a {@link ClassCastException}.
-	 * </p>
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type="Required"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.prop.PropertyManagerRemote#searchPropertySetIDs(org.nightlabs.jfire.prop.search.PropSearchFilter)
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_Guest_")
+	@Override
 	public Set<PropertySetID> searchPropertySetIDs(PropSearchFilter propSearchFilter) {
 		PersistenceManager pm = this.getPersistenceManager();
 		try {
@@ -302,13 +241,12 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 		}
 	}
 
-	/**
-	 * Store a {@link PropertySet} either detached or not made persistent yet.
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type="Required"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.prop.PropertyManagerRemote#storePropertySet(org.nightlabs.jfire.prop.PropertySet, boolean, java.lang.String[], int)
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_Guest_")
+	@Override
 	public PropertySet storePropertySet(PropertySet propertySet, boolean get, String[] fetchGroups, int maxFetchDepth) {
 		PersistenceManager pm = getPersistenceManager();
 		try {
@@ -318,13 +256,12 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 		}
 	}
 
-	/**
-	 * Store a struct either detached or not made persistent yet.
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type="Required"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.prop.PropertyManagerRemote#storeStruct(org.nightlabs.jfire.prop.IStruct, boolean, java.lang.String[], int)
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_Guest_")
+	@Override
 	public IStruct storeStruct(IStruct struct, boolean get, String[] fetchGroups, int maxFetchDepth) {
 		PersistenceManager pm = getPersistenceManager();
 		try {
@@ -417,11 +354,12 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 		return structIDs;
 	}
 
-	/**
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type="Required"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.prop.PropertyManagerRemote#getAvailableStructIDs()
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_Guest_")
+	@Override
 	public Collection<StructID> getAvailableStructIDs() {
 		PersistenceManager pm = getPersistenceManager();
 		try {
@@ -444,11 +382,12 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 		return structLocalIDs;
 	}
 
-	/**
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type="Required"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.prop.PropertyManagerRemote#getAvailableStructLocalIDs()
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_Guest_")
+	@Override
 	public Collection<StructLocalID> getAvailableStructLocalIDs() {
 		PersistenceManager pm = getPersistenceManager();
 		try {
@@ -458,14 +397,12 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 		}
 	}
 
-	/**
-	 * Returns all {@link PropertySet}s for the given propIDs, detached with the given
-	 * fetchGroups
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type="Required"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.prop.PropertyManagerRemote#getPropertySets(java.util.Set, java.lang.String[], int)
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_Guest_")
+	@Override
 	public Set<PropertySet> getPropertySets(Set<PropertySetID> propIDs, String[] fetchGroups, int maxFetchDepth) {
 		// MultiPageSearchResult multiPageSearchResult = new
 		// MultiPageSearchResult();
@@ -480,18 +417,11 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 		}
 	}
 
-	/**
-	 * Returns the number of data field instances that have been created for the
-	 * given {@link StructField}.
-	 *
-	 * @param field
-	 *          The struct field
-	 * @return
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
-	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.prop.PropertyManagerRemote#getDataFieldInstanceCount(org.nightlabs.jfire.prop.id.StructFieldID)
 	 */
+	@RolesAllowed("_Guest_")
+	@Override
 	public long getDataFieldInstanceCount(StructFieldID fieldID) {
 		PersistenceManager pm = getPersistenceManager();
 		try {
@@ -532,16 +462,17 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 	}
 	
 
-	/**
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_System_"
-	 * @ejb.transaction type="Required"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.prop.PropertyManagerRemote#initialise()
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_System_")
+	@Override
 	public void initialise() {
 		PersistenceManager pm = getPersistenceManager();
 		try {
 			PersonStruct.getPersonStructLocal(pm);
-			
+
 			PropertySetFieldBasedEditLayoutUseCaseID useCaseID = PropertySetFieldBasedEditLayoutUseCaseID.create(
 					getOrganisationID(), PropertySetFieldBasedEditConstants.USE_CASE_ID_EDIT_PERSON);
 			PropertySetFieldBasedEditLayoutUseCase useCaseEditPerson = null;
@@ -565,10 +496,9 @@ public abstract class PropertyManagerBean extends BaseSessionBeanImpl implements
 				initialiser = new PropertySetFieldBasedEditLayoutCfModIntialiser(initialiserID.organisationID, initialiserID.configModuleClassName, initialiserID.configModuleInitialiserID);
 				initialiser = pm.makePersistent(initialiser);
 			}
-			
+
 		} finally {
 			pm.close();
 		}
 	}
-
 }

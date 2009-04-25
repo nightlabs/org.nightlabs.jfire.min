@@ -1,15 +1,14 @@
 package org.nightlabs.jfire.timer;
 
-import java.rmi.RemoteException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.ejb.CreateException;
-import javax.ejb.EJBException;
-import javax.ejb.SessionBean;
-import javax.ejb.SessionContext;
+import javax.annotation.security.RolesAllowed;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.jdo.FetchPlan;
 import javax.jdo.JDODetachedFieldAccessException;
 import javax.jdo.JDOHelper;
@@ -19,7 +18,7 @@ import org.apache.log4j.Logger;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jdo.ObjectIDUtil;
 import org.nightlabs.jdo.timepattern.TimePatternSetJDOImpl;
-import org.nightlabs.jfire.base.BaseSessionBeanImpl;
+import org.nightlabs.jfire.base.BaseSessionBeanImplEJB3;
 import org.nightlabs.jfire.security.Authority;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.timer.id.TaskID;
@@ -35,42 +34,20 @@ import org.nightlabs.jfire.timer.id.TaskID;
  * @ejb.util generate="physical"
  * @ejb.transaction type="Required"
  */
-public abstract class TimerManagerBean
-extends BaseSessionBeanImpl
-implements SessionBean
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
+@Stateless
+public class TimerManagerBean
+extends BaseSessionBeanImplEJB3
+implements TimerManagerRemote, TimerManagerLocal
 {
 	private static final long serialVersionUID = 1L;
 	private static final Logger logger = Logger.getLogger(TimerManagerBean.class);
 
-	@Override
-	public void setSessionContext(SessionContext sessionContext)
-	throws EJBException, RemoteException
-	{
-		super.setSessionContext(sessionContext);
-	}
-	@Override
-	public void unsetSessionContext() {
-		super.unsetSessionContext();
-	}
-	/**
-	 * @ejb.create-method
-	 * @ejb.permission unchecked="true"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.timer.TimerManagerRemote#ping(java.lang.String)
 	 */
-	public void ejbCreate() throws CreateException
-	{
-	}
-	/**
-	 * @see javax.ejb.SessionBean#ejbRemove()
-	 *
-	 * @ejb.permission unchecked="true"
-	 */
-	public void ejbRemove() throws EJBException, RemoteException { }
-
-	/**
-	 * @ejb.interface-method
-	 * @ejb.transaction type="Supports"
-	 * @ejb.permission role-name="_Guest_"
-	 */
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+	@RolesAllowed("_Guest_")
 	@Override
 	public String ping(String message) {
 		return super.ping(message);
@@ -83,13 +60,11 @@ implements SessionBean
 		TimePatternSetJDOImpl.FETCH_GROUP_TIME_PATTERNS };
 
 
-	/**
-	 * This method is called by {@link TimerAsyncInvoke.TimerInvocation#invoke()}.
-	 *
-	 * @ejb.interface-method view-type="local"
-	 * @ejb.transaction type="RequiresNew"
-	 * @ejb.permission unchecked="true"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.timer.TimerManagerLocal#setExecutingIfActiveExecIDMatches(org.nightlabs.jfire.timer.id.TaskID, java.lang.String)
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+	@Override
 	public boolean setExecutingIfActiveExecIDMatches(TaskID taskID, String activeExecID)
 	throws Exception
 	{
@@ -116,15 +91,11 @@ implements SessionBean
 	}
 
 
-	/**
-	 * Because the method {@link JFireTimerBean#ejbTimeout(javax.ejb.Timer)} is called without authentication
-	 * and thus accessing the datastore doesn't work properly, we use this method as
-	 * a delegate.
-	 *
-	 * @ejb.interface-method view-type="local"
-	 * @ejb.transaction type="RequiresNew"
-	 * @ejb.permission unchecked="true"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.timer.TimerManagerLocal#ejbTimeoutDelegate(org.nightlabs.jfire.timer.TimerParam)
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+	@Override
 	public void ejbTimeoutDelegate(TimerParam timerParam)
 	throws Exception
 	{
@@ -170,11 +141,11 @@ implements SessionBean
 	}
 
 
-	/**
-	 * @ejb.interface-method
-	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
-	 * @ejb.permission role-name="_Guest_"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.timer.TimerManagerRemote#getTaskIDs()
 	 */
+	@RolesAllowed("_Guest_")
+	@Override
 	public List<TaskID> getTaskIDs()
 	{
 		PersistenceManager pm = getPersistenceManager();
@@ -186,11 +157,11 @@ implements SessionBean
 	}
 
 
-	/**
-	 * @ejb.interface-method
-	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
-	 * @ejb.permission role-name="_Guest_"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.timer.TimerManagerRemote#getTaskIDs(java.lang.String)
 	 */
+	@RolesAllowed("_Guest_")
+	@Override
 	public List<TaskID> getTaskIDs(String taskTypeID)
 	{
 		PersistenceManager pm = getPersistenceManager();
@@ -202,11 +173,11 @@ implements SessionBean
 	}
 
 
-	/**
-	 * @ejb.interface-method
-	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
-	 * @ejb.permission role-name="_Guest_"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.timer.TimerManagerRemote#getTasks(java.util.Collection, java.lang.String[], int)
 	 */
+	@RolesAllowed("_Guest_")
+	@Override
 	public List<Task> getTasks(Collection<TaskID> taskIDs, String[] fetchGroups, int maxFetchDepth)
 	{
 		PersistenceManager pm = getPersistenceManager();
@@ -219,11 +190,12 @@ implements SessionBean
 	}
 
 
-	/**
-	 * @ejb.interface-method
-	 * @ejb.transaction type="Required"
-	 * @ejb.permission role-name="org.nightlabs.jfire.timer.storeTask#own"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.timer.TimerManagerRemote#storeTask(org.nightlabs.jfire.timer.Task, boolean, java.lang.String[], int)
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("org.nightlabs.jfire.timer.storeTask#own")
+	@Override
 	public Task storeTask(Task task, boolean get, String[] fetchGroups, int maxFetchDepth)
 	{
 		PersistenceManager pm = getPersistenceManager();

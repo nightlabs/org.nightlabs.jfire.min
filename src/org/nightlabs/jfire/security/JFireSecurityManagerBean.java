@@ -25,7 +25,7 @@
  ******************************************************************************/
 
 package org.nightlabs.jfire.security;
-import java.rmi.RemoteException;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -35,14 +35,13 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import javax.ejb.CreateException;
-import javax.ejb.EJBException;
-import javax.ejb.SessionBean;
-import javax.ejb.SessionContext;
+import javax.annotation.security.RolesAllowed;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.jdo.FetchPlan;
 import javax.jdo.JDODetachedFieldAccessException;
 import javax.jdo.JDOHelper;
@@ -56,12 +55,12 @@ import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jdo.ObjectID;
 import org.nightlabs.jdo.query.JDOQueryCollectionDecorator;
 import org.nightlabs.jdo.query.QueryCollection;
-import org.nightlabs.jfire.base.BaseSessionBeanImpl;
+import org.nightlabs.jfire.base.BaseSessionBeanImplEJB3;
+import org.nightlabs.jfire.base.JFireEjb3Factory;
 import org.nightlabs.jfire.base.JFireEjbFactory;
 import org.nightlabs.jfire.config.ConfigSetup;
 import org.nightlabs.jfire.crossorganisationregistrationinit.Context;
-import org.nightlabs.jfire.jdo.notification.persistent.PersistentNotificationEJB;
-import org.nightlabs.jfire.jdo.notification.persistent.PersistentNotificationEJBUtil;
+import org.nightlabs.jfire.jdo.notification.persistent.PersistentNotificationEJBRemote;
 import org.nightlabs.jfire.jdo.notification.persistent.SubscriptionUtil;
 import org.nightlabs.jfire.organisation.LocalOrganisation;
 import org.nightlabs.jfire.security.id.AuthorityID;
@@ -78,7 +77,6 @@ import org.nightlabs.jfire.security.notification.AuthorityNotificationFilter;
 import org.nightlabs.jfire.security.notification.AuthorityNotificationReceiver;
 import org.nightlabs.jfire.security.search.UserQuery;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
-import org.nightlabs.jfire.timer.Task;
 import org.nightlabs.jfire.timer.id.TaskID;
 import org.nightlabs.util.CollectionUtil;
 import org.nightlabs.util.Util;
@@ -96,44 +94,20 @@ import org.nightlabs.util.Util;
  * @ejb.util generate="physical"
  * @ejb.transaction type="Required"
  */
-public abstract class JFireSecurityManagerBean
-extends BaseSessionBeanImpl
-implements SessionBean
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
+@Stateless
+public class JFireSecurityManagerBean
+extends BaseSessionBeanImplEJB3
+implements JFireSecurityManagerRemote
 {
 	private static final long serialVersionUID = 1L;
 	private static final Logger logger = Logger.getLogger(JFireSecurityManagerBean.class);
 
-	@Override
-	public void setSessionContext(SessionContext sessionContext)
-	throws EJBException, RemoteException
-	{
-		super.setSessionContext(sessionContext);
-	}
-	@Override
-	public void unsetSessionContext() {
-		super.unsetSessionContext();
-	}
-
-	/**
-	 * @ejb.create-method
-	 * @ejb.permission role-name="_Guest_"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.security.JFireSecurityManagerRemote#ping(java.lang.String)
 	 */
-	public void ejbCreate() throws CreateException
-	{
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @ejb.permission unchecked="true"
-	 */
-	@Override
-	public void ejbRemove() throws EJBException, RemoteException { }
-
-	/**
-	 * @ejb.interface-method
-	 * @ejb.transaction type="Supports"
-	 * @ejb.permission role-name="_Guest_"
-	 */
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+	@RolesAllowed("_Guest_")
 	@Override
 	public String ping(String message) {
 		return super.ping(message);
@@ -142,58 +116,63 @@ implements SessionBean
 	private static final boolean ASSERT_CONSISTENCY_BEFORE = false;
 	private static final boolean ASSERT_CONSISTENCY_AFTER = false;
 
-	/**
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_System_"
-	 * @ejb.transaction type="Required"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.security.JFireSecurityManagerRemote#initialise()
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_System_")
+	@Override
 	public void initialise()
 	throws Exception
 	{
 		PersistenceManager pm = getPersistenceManager();
 		try {
-			{
-				TaskID taskID = TaskID.create(
-						// Organisation.DEV_ORGANISATION_ID, // the task can be modified by the organisation and thus it's maybe more logical to use the real organisationID - not dev
-						getOrganisationID(),
-						Task.TASK_TYPE_ID_SYSTEM, "security.checkConsistency");
-				Task task;
-				try {
-					task = (Task) pm.getObjectById(taskID);
-					task.getActiveExecID();
-				} catch (JDOObjectNotFoundException x) {
-					task = new Task(
-							taskID.organisationID, taskID.taskTypeID, taskID.taskID,
-							User.getUser(pm, getOrganisationID(), User.USER_ID_SYSTEM),
-							JFireSecurityManagerHome.JNDI_NAME,
-							"checkConsistency");
-
-					task.getName().setText(Locale.ENGLISH.getLanguage(), "Security: Consistency check");
-					task.getDescription().setText(Locale.ENGLISH.getLanguage(), "Check whether all authorities are consistent.");
-
-					task.getTimePatternSet().createTimePattern(
-							"*", // year
-							"*", // month
-							"*", // day
-							"*", // dayOfWeek
-							"03", //  hour
-							"00" // minute
-					);
-
-					task.setEnabled(true);
-					task = pm.makePersistent(task);
-				}
-			}
+// TODO re-enable this code! Temporarily commented out to make switching to EJB3 easier, because it's only a consistency check
+// and not essentially necessary for the server to be functional. Marco.
+//
+//			{
+//				TaskID taskID = TaskID.create(
+//						// Organisation.DEV_ORGANISATION_ID, // the task can be modified by the organisation and thus it's maybe more logical to use the real organisationID - not dev
+//						getOrganisationID(),
+//						Task.TASK_TYPE_ID_SYSTEM, "security.checkConsistency");
+//				Task task;
+//				try {
+//					task = (Task) pm.getObjectById(taskID);
+//					task.getActiveExecID();
+//				} catch (JDOObjectNotFoundException x) {
+//					task = new Task(
+//							taskID.organisationID, taskID.taskTypeID, taskID.taskID,
+//							User.getUser(pm, getOrganisationID(), User.USER_ID_SYSTEM),
+//							JFireSecurityManagerHome.JNDI_NAME,
+//							"checkConsistency");
+//
+//					task.getName().setText(Locale.ENGLISH.getLanguage(), "Security: Consistency check");
+//					task.getDescription().setText(Locale.ENGLISH.getLanguage(), "Check whether all authorities are consistent.");
+//
+//					task.getTimePatternSet().createTimePattern(
+//							"*", // year
+//							"*", // month
+//							"*", // day
+//							"*", // dayOfWeek
+//							"03", //  hour
+//							"00" // minute
+//					);
+//
+//					task.setEnabled(true);
+//					task = pm.makePersistent(task);
+//				}
+//			}
 		} finally {
 			pm.close();
 		}
 	}
 
-	/**
-	 * @ejb.interface-method
-	 * @ejb.transaction type="Required"
-	 * @ejb.permission role-name="_System_"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.security.JFireSecurityManagerRemote#checkConsistency(org.nightlabs.jfire.timer.id.TaskID)
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_System_")
+	@Override
 	public void checkConsistency(TaskID taskID)
 	throws Exception
 	{
@@ -205,18 +184,12 @@ implements SessionBean
 		}
 	}
 
-	/**
-	 * Create a new user-security-group or change an existing one.
-	 *
-	 * @param userSecurityGroup the group to save.
-	 * @param get Whether to return the newly saved user.
-	 * @param fetchGroups The fetch-groups to detach the returned User with.
-	 * @param maxFetchDepth The maximum fetch-depth to use when detaching.
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="org.nightlabs.jfire.security.storeUser"
-	 * @ejb.transaction type="Required"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.security.JFireSecurityManagerRemote#storeUserSecurityGroup(org.nightlabs.jfire.security.UserSecurityGroup, boolean, java.lang.String[], int)
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("org.nightlabs.jfire.security.storeUser")
+	@Override
 	public UserSecurityGroup storeUserSecurityGroup(UserSecurityGroup userSecurityGroup, boolean get, String[] fetchGroups, int maxFetchDepth)
 	{
 		if (!userSecurityGroup.getOrganisationID().equals(getOrganisationID()))
@@ -257,25 +230,12 @@ implements SessionBean
 		}
 	}
 
-	/**
-	 * Create a new user or change an existing one.
-	 *
-	 * @param user the user to save.
-	 * @param newPassword the password for the user. This might be <code>null</code>.
-	 *		If a new user is created without password,
-	 *		it cannot login, since the presence of a password is forced by the login-module.
-	 *		Note, that this parameter is ignored, if the given <code>user</code> has a {@link UserLocal} assigned or if
-	 *		it is an instance of {@link UserGroup}.
-	 *		In this case, the property {@link UserLocal#getNewPassword()} is used instead. In other words, this field
-	 *		is meant to be used to create a new <code>User</code> with an initial password.
-	 * @param get Whether to return the newly saved user.
-	 * @param fetchGroups The fetch-groups to detach the returned User with.
-	 * @param maxFetchDepth The maximum fetch-depth to use when detaching.
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="org.nightlabs.jfire.security.storeUser"
-	 * @ejb.transaction type="Required"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.security.JFireSecurityManagerRemote#storeUser(org.nightlabs.jfire.security.User, java.lang.String, boolean, java.lang.String[], int)
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("org.nightlabs.jfire.security.storeUser")
+	@Override
 	public User storeUser(User user, String newPassword, boolean get, String[] fetchGroups, int maxFetchDepth)
 	{
 		if (User.USER_ID_SYSTEM.equals(user.getUserID()))
@@ -339,19 +299,11 @@ implements SessionBean
 		}
 	}
 
-	/**
-	 * Get {@link Role} instances for the given {@link RoleID}s. This method is meant to be used when
-	 * access to an EJB has been denied and the {@link RoleGroup}s that would allow the action to be performed
-	 * are shown in an error dialog.
-	 * <p>
-	 * This method can be called by everyone (who is logged in), because it does not reveal any confidential data
-	 * and is meant to be used in exactly those cases where access is denied.
-	 * </p>
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
-	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.security.JFireSecurityManagerRemote#getRolesForRequiredRoleIDs(java.util.Set)
 	 */
+	@RolesAllowed("_Guest_")
+	@Override
 	public Set<Role> getRolesForRequiredRoleIDs(Set<RoleID> roleIDs)
 	{
 		PersistenceManager pm = getPersistenceManager();
@@ -371,16 +323,12 @@ implements SessionBean
 		}
 	}
 
-	/**
-	 * @param userType one of User.USERTYPE* or <code>null</code> to get all
-	 * @param organisationID an organisationID in order to filter for it or <code>null</code> to get all.
-	 * @return the unique IDs of those users that match the given criteria.
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="org.nightlabs.jfire.security.accessRightManagement, org.nightlabs.jfire.security.queryUsers"
-	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.security.JFireSecurityManagerRemote#getUserIDs(java.lang.String, java.util.Set)
 	 */
+	@RolesAllowed({"org.nightlabs.jfire.security.accessRightManagement", "org.nightlabs.jfire.security.queryUsers"})
 	@SuppressWarnings("unchecked")
+	@Override
 	public Set<UserID> getUserIDs(String organisationID, Set<String> userTypes)
 	{
 		PersistenceManager pm = getPersistenceManager();
@@ -426,27 +374,11 @@ implements SessionBean
 		}
 	}
 
-	/**
-	 * Returns a Collection of {@link User}s corresponding to the given set of {@link UserID}s.
-	 * <p>
-	 * This method can be called by every logged-in user, because (1) it is not possible to retrieve
-	 * access right information (i.e the {@link UserLocal} instance) this way if the
-	 * {@link RoleConstants#accessRightManagement} role is not present, (2) it is necessary to
-	 * know the user-id before hand (and querying is only allowed with
-	 * the {@link RoleConstants#queryUsers} role) and (3) it is necessary and possible to
-	 * obtain {@link User} instances indirectly anyway (e.g. because it's the contact person
-	 * attached to an invoice).
-	 * </p>
-	 *
-	 * @param userIDs the {@link UserID}s for which to retrieve the {@link User}s
-	 * @param fetchGroups the FetchGroups for the detached Users
-	 * @param maxFetchDepth the maximum fetch depth of the detached Users.
-	 * @return a Collection of {@link User}s corresponding to the given set of {@link UserID}s.
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
-	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.security.JFireSecurityManagerRemote#getUsers(java.util.Collection, java.lang.String[], int)
 	 */
+	@RolesAllowed("_Guest_")
+	@Override
 	public List<User> getUsers(Collection<UserID> userIDs, String[] fetchGroups, int maxFetchDepth)
 	{
 		PersistenceManager pm = getPersistenceManager();
@@ -457,12 +389,12 @@ implements SessionBean
 		}
 	}
 
-	/**
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="org.nightlabs.jfire.security.accessRightManagement"
-	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.security.JFireSecurityManagerRemote#getUserSecurityGroupIDs()
 	 */
+	@RolesAllowed("org.nightlabs.jfire.security.accessRightManagement")
 	@SuppressWarnings("unchecked")
+	@Override
 	public Set<UserSecurityGroupID> getUserSecurityGroupIDs()
 	{
 		PersistenceManager pm = getPersistenceManager();
@@ -475,13 +407,11 @@ implements SessionBean
 		}
 	}
 
-	/**
-	 * Returns a Collection of {@link User}s corresponding to the given set of {@link UserID}s.
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="org.nightlabs.jfire.security.accessRightManagement"
-	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.security.JFireSecurityManagerRemote#getUserSecurityGroups(java.util.Collection, java.lang.String[], int)
 	 */
+	@RolesAllowed("org.nightlabs.jfire.security.accessRightManagement")
+	@Override
 	public List<UserSecurityGroup> getUserSecurityGroups(Collection<UserSecurityGroupID> userSecurityGroupIDs, String[] fetchGroups, int maxFetchDepth)
 	{
 		PersistenceManager pm = getPersistenceManager();
@@ -643,11 +573,11 @@ implements SessionBean
 				controlledByOtherUser);
 	}
 
-	/**
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
-	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.security.JFireSecurityManagerRemote#getRoleGroupIDSetCarriers(java.util.Collection, org.nightlabs.jfire.security.id.AuthorityID)
 	 */
+	@RolesAllowed("_Guest_")
+	@Override
 	public List<RoleGroupIDSetCarrier> getRoleGroupIDSetCarriers(Collection<AuthorizedObjectID> authorizedObjectIDs, AuthorityID authorityID)
 	{
 		// If it's only one, we delegate to the other method since it allows retrieval of information about the user himself.
@@ -683,19 +613,11 @@ implements SessionBean
 		}
 	}
 
-	/**
-	 * Get the {@link RoleGroupIDSetCarrier} for a single {@link User} within the scope of a single {@link Authority}.
-	 * Since this method is used by every user to query its own security configuration, it is allowed to be executed by everyone,
-	 * but only if the given <code>userID</code> matches the currently logged-in user. Additionally, every user is allowed to query
-	 * this information for user-groups in which he is a member.
-	 *
-	 * @param userID the identifier of the user to query data for.
-	 * @param authorityID the identifier of the {@link Authority} defining the scope in which to query access rights.
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
-	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.security.JFireSecurityManagerRemote#getRoleGroupIDSetCarrier(org.nightlabs.jfire.security.id.AuthorizedObjectID, org.nightlabs.jfire.security.id.AuthorityID)
 	 */
+	@RolesAllowed("_Guest_")
+	@Override
 	public RoleGroupIDSetCarrier getRoleGroupIDSetCarrier(AuthorizedObjectID authorizedObjectID, AuthorityID authorityID)
 	{
 		String organisationID = getOrganisationID();
@@ -744,13 +666,11 @@ implements SessionBean
 		}
 	}
 
-	/**
-	 * @param authorityID identifier of the {@link Authority} for which to query the access rights configuration
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="org.nightlabs.jfire.security.accessRightManagement"
-	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
-	 **/
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.security.JFireSecurityManagerRemote#getRoleGroupIDSetCarriers(org.nightlabs.jfire.security.id.AuthorityID)
+	 */
+	@RolesAllowed("org.nightlabs.jfire.security.accessRightManagement")
+	@Override
 	public List<RoleGroupIDSetCarrier> getRoleGroupIDSetCarriers(AuthorityID authorityID)
 	{
 		String organisationID = getOrganisationID();
@@ -791,11 +711,11 @@ implements SessionBean
 		}
 	}
 
-	/**
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="org.nightlabs.jfire.security.accessRightManagement"
-	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.security.JFireSecurityManagerRemote#getRoleGroups(java.util.Collection, java.lang.String[], int)
 	 */
+	@RolesAllowed("org.nightlabs.jfire.security.accessRightManagement")
+	@Override
 	public Collection<RoleGroup> getRoleGroups(Collection<RoleGroupID> roleGroupIDs, String[] fetchGroups, int maxFetchDepth)
 	{
 		PersistenceManager pm = getPersistenceManager();
@@ -806,15 +726,11 @@ implements SessionBean
 		}
 	}
 
-	/**
-	 * Get the {@link AuthorityID}s for a given {@link AuthorityType} specified by its object-id.
-	 * Since the {@link AuthorityID}s do not contain any security-relevant data, this method can be
-	 * executed by everyone.
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
-	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.security.JFireSecurityManagerRemote#getAuthorityIDs(java.lang.String, org.nightlabs.jfire.security.id.AuthorityTypeID)
 	 */
+	@RolesAllowed("_Guest_")
+	@Override
 	public Set<AuthorityID> getAuthorityIDs(String organisationID, AuthorityTypeID authorityTypeID)
 	{
 		PersistenceManager pm = getPersistenceManager();
@@ -847,11 +763,11 @@ implements SessionBean
 		}
 	}
 
-	/**
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="org.nightlabs.jfire.security.accessRightManagement"
-	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.security.JFireSecurityManagerRemote#getAuthorities(java.util.Collection, java.lang.String[], int)
 	 */
+	@RolesAllowed("org.nightlabs.jfire.security.accessRightManagement")
+	@Override
 	public List<Authority> getAuthorities(Collection<AuthorityID> authorityIDs, String[] fetchGroups, int maxFetchDepth)
 	{
 		PersistenceManager pm = getPersistenceManager();
@@ -862,14 +778,11 @@ implements SessionBean
 		}
 	}
 
-	/**
-	 * Get the {@link AuthorityTypeID}s existing in the organisation. Since the {@link AuthorityType}s are objects defined by the
-	 * programmers, they are not secret and thus everyone is allowed to execute this method.
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
-	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.security.JFireSecurityManagerRemote#getAuthorityTypeIDs()
 	 */
+	@RolesAllowed("_Guest_")
+	@Override
 	public Set<AuthorityTypeID> getAuthorityTypeIDs()
 	{
 		PersistenceManager pm = getPersistenceManager();
@@ -883,14 +796,11 @@ implements SessionBean
 		}
 	}
 
-	/**
-	 * Get the {@link AuthorityType}s specified by the given IDs. Since the {@link AuthorityType}s are objects defined by the
-	 * programmers, they are not secret and thus everyone is allowed to execute this method.
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
-	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.security.JFireSecurityManagerRemote#getAuthorityTypes(java.util.Collection, java.lang.String[], int)
 	 */
+	@RolesAllowed("_Guest_")
+	@Override
 	public List<AuthorityType> getAuthorityTypes(Collection<AuthorityTypeID> authorityTypeIDs, String[] fetchGroups, int maxFetchDepth)
 	{
 		PersistenceManager pm = getPersistenceManager();
@@ -902,12 +812,11 @@ implements SessionBean
 	}
 
 
-	/**
-	 * Check if a user ID exists. This method is used to check the ID while creating a new user.
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="org.nightlabs.jfire.security.accessRightManagement"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.security.JFireSecurityManagerRemote#userIDAlreadyRegistered(org.nightlabs.jfire.security.id.UserID)
 	 */
+	@RolesAllowed("org.nightlabs.jfire.security.accessRightManagement")
+	@Override
 	public boolean userIDAlreadyRegistered(UserID userID)
 	{
 		PersistenceManager pm = getPersistenceManager();
@@ -928,11 +837,11 @@ implements SessionBean
 		}
 	}
 
-	/**
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="org.nightlabs.jfire.security.accessRightManagement"
-	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.security.JFireSecurityManagerRemote#getAuthorizedObjectIDs()
 	 */
+	@RolesAllowed("org.nightlabs.jfire.security.accessRightManagement")
+	@Override
 	public Set<AuthorizedObjectID> getAuthorizedObjectIDs()
 	{
 		PersistenceManager pm = getPersistenceManager();
@@ -964,11 +873,11 @@ implements SessionBean
 		}
 	}
 
-	/**
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="org.nightlabs.jfire.security.accessRightManagement"
-	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.security.JFireSecurityManagerRemote#getAuthorizedObjects(java.util.Collection, java.lang.String[], int)
 	 */
+	@RolesAllowed("org.nightlabs.jfire.security.accessRightManagement")
+	@Override
 	public List<AuthorizedObject> getAuthorizedObjects(Collection<AuthorizedObjectID> authorizedObjectIDs, String[] fetchGroups, int maxFetchDepth)
 	{
 		PersistenceManager pm = getPersistenceManager();
@@ -1006,24 +915,11 @@ implements SessionBean
 //	}
 //	}
 
-	/**
-	 * Set which {@link RoleGroup}s are assigned to a certain {@link User} within the scope of a certain {@link Authority}.
-	 * <p>
-	 * The assignment of {@link RoleGroup}s to {@link User}s is managed by {@link RoleGroupRef} and {@link AuthorizedObjectRef} instances
-	 * which live within an {@link Authority}. This method removes the {@link AuthorizedObjectRef} (and with it all assignments), if
-	 * the given <code>roleGroupIDs</code> argument is <code>null</code>. If the <code>roleGroupIDs</code> argument is not <code>null</code>,
-	 * a {@link AuthorizedObjectRef} instance is created - even if the <code>roleGroupIDs</code> is an empty set.
-	 * </p>
-	 *
-	 * @param userID the user-id. Must not be <code>null</code>.
-	 * @param authorityID the authority-id. Must not be <code>null</code>.
-	 * @param roleGroupIDs the role-group-ids that should be assigned to the specified user within the scope of the specified
-	 *		authority. If this is <code>null</code>, the {@link AuthorizedObjectRef} of the specified user will be removed from the {@link Authority}.
-	 *		If this is not <code>null</code>, a <code>AuthorizedObjectRef</code> is created (if not yet existing).
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="org.nightlabs.jfire.security.accessRightManagement"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.security.JFireSecurityManagerRemote#setGrantedRoleGroups(org.nightlabs.jfire.security.id.AuthorizedObjectID, org.nightlabs.jfire.security.id.AuthorityID, java.util.Set)
 	 */
+	@RolesAllowed("org.nightlabs.jfire.security.accessRightManagement")
+	@Override
 	public void setGrantedRoleGroups(AuthorizedObjectID authorizedObjectID, AuthorityID authorityID, Set<RoleGroupID> roleGroupIDs)
 	{
 		String organisationID = getOrganisationID();
@@ -1139,12 +1035,11 @@ implements SessionBean
 		}
 	}
 
-	/**
-	 * @see #setMembersOfUserSecurityGroup(UserSecurityGroupID, Set)
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="org.nightlabs.jfire.security.setMembersOfUserSecurityGroup"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.security.JFireSecurityManagerRemote#setUserSecurityGroupsOfMember(java.util.Set, org.nightlabs.jfire.security.id.AuthorizedObjectID)
 	 */
+	@RolesAllowed("org.nightlabs.jfire.security.setMembersOfUserSecurityGroup")
+	@Override
 	public void setUserSecurityGroupsOfMember(Set<UserSecurityGroupID> userSecurityGroupIDs, AuthorizedObjectID memberAuthorizedObjectID)
 	{
 		PersistenceManager pm = getPersistenceManager();
@@ -1193,12 +1088,11 @@ implements SessionBean
 		}
 	}
 
-	/**
-	 * @see #setUserSecurityGroupsOfMember(Set, AuthorizedObjectID)
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="org.nightlabs.jfire.security.setMembersOfUserSecurityGroup"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.security.JFireSecurityManagerRemote#setMembersOfUserSecurityGroup(org.nightlabs.jfire.security.id.UserSecurityGroupID, java.util.Set)
 	 */
+	@RolesAllowed("org.nightlabs.jfire.security.setMembersOfUserSecurityGroup")
+	@Override
 	public void setMembersOfUserSecurityGroup(UserSecurityGroupID userSecurityGroupID, Set<? extends AuthorizedObjectID> memberAuthorizedObjectIDs)
 	{
 		PersistenceManager pm = getPersistenceManager();
@@ -1375,22 +1269,23 @@ implements SessionBean
 	}
 
 
-	/**
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.security.JFireSecurityManagerRemote#whoami()
 	 */
+	@RolesAllowed("_Guest_")
+	@Override
 	public void whoami()
 	{
 		logger.info("******** WHOAMI: "+getPrincipal());
 	}
 
 
-	/**
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="org.nightlabs.jfire.security.accessRightManagement, org.nightlabs.jfire.security.queryUsers"
-	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.security.JFireSecurityManagerRemote#getUserIDs(org.nightlabs.jdo.query.QueryCollection)
 	 */
+	@RolesAllowed({"org.nightlabs.jfire.security.accessRightManagement", "org.nightlabs.jfire.security.queryUsers"})
 	@SuppressWarnings("unchecked")
+	@Override
 	public Set<UserID> getUserIDs(QueryCollection<? extends UserQuery> userQueries)
 	{
 		if (userQueries == null)
@@ -1426,13 +1321,12 @@ implements SessionBean
 		}
 	}
 
-	/**
-	 * Sets the password of the user that is calling this method to the given password.
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type="Required"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.security.JFireSecurityManagerRemote#setUserPassword(java.lang.String)
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_Guest_")
+	@Override
 	public void setUserPassword(String password) {
 		if (password == null || "".equals(password))
 			throw new IllegalArgumentException("Your password must not be empty.");
@@ -1448,11 +1342,12 @@ implements SessionBean
 		}
 	}
 
-	/**
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="org.nightlabs.jfire.security.accessRightManagement"
-	 * @ejb.transaction type="Required"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.security.JFireSecurityManagerRemote#storeAuthority(org.nightlabs.jfire.security.Authority, boolean, java.lang.String[], int)
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("org.nightlabs.jfire.security.accessRightManagement")
+	@Override
 	public Authority storeAuthority(Authority authority, boolean get, String[] fetchGroups, int maxFetchDepth) {
 		PersistenceManager pm = getPersistenceManager();
 		try {
@@ -1495,15 +1390,12 @@ implements SessionBean
 		}
 	}
 
-	/**
-	 * @param securedObjectID the object-id of an object implementing {@link SecuredObject}.
-	 * @param authorityID the object-id of the {@link Authority} that shall be assigned to the object specified by <code>securedObjectID</code>.
-	 * @param inherited set whether the field is inherited or not.
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="org.nightlabs.jfire.security.accessRightManagement"
-	 * @ejb.transaction type="Required"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.security.JFireSecurityManagerRemote#assignSecuringAuthority(java.lang.Object, org.nightlabs.jfire.security.id.AuthorityID, boolean)
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("org.nightlabs.jfire.security.accessRightManagement")
+	@Override
 	public void assignSecuringAuthority(Object securedObjectID, AuthorityID authorityID, boolean inherited)
 	{
 		PersistenceManager pm = getPersistenceManager();
@@ -1550,27 +1442,21 @@ implements SessionBean
 		}
 	}
 
-	/**
-	 * Get a {@link Set} containing the object-ids of all {@link Role}s that are granted to the current
-	 * user in specified authority. Since this is a self-information, every user is allowed to execute this method.
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
-	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.security.JFireSecurityManagerRemote#getRoleIDs(org.nightlabs.jfire.security.id.AuthorityID)
 	 */
+	@RolesAllowed("_Guest_")
+	@Override
 	public Set<RoleID> getRoleIDs(AuthorityID authorityID)
 	{
 		return SecurityReflector.getRoleIDs(authorityID);
 	}
 
-	/**
-	 * Get all {@link RoleGroupID}s known in the current organisation. Since the {@link RoleGroup}s are objects defined by the
-	 * programmers, they are not secret and thus everyone is allowed to execute this method.
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
-	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.security.JFireSecurityManagerRemote#getRoleGroupIDs()
 	 */
+	@RolesAllowed("_Guest_")
+	@Override
 	public Set<RoleGroupID> getRoleGroupIDs()
 	{
 		PersistenceManager pm = getPersistenceManager();
@@ -1584,11 +1470,11 @@ implements SessionBean
 		}
 	}
 
-	/**
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
-	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.security.JFireSecurityManagerRemote#getAuthoritiesSelfInformation(java.util.Set, java.util.Set)
 	 */
+	@RolesAllowed("_Guest_")
+	@Override
 	public Collection<Authority> getAuthoritiesSelfInformation(Set<AuthorityID> authorityIDs, Set<AuthorizedObjectRefID> authorizedObjectRefIDs)
 	{
 		if (!getPrincipal().userIsOrganisation())
@@ -1663,11 +1549,12 @@ implements SessionBean
 		}
 	}
 
-	/**
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_System_"
-	 * @ejb.transaction type="Required"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.security.JFireSecurityManagerRemote#importAuthoritiesOnCrossOrganisationRegistration(org.nightlabs.jfire.crossorganisationregistrationinit.Context)
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_System_")
+	@Override
 	public void importAuthoritiesOnCrossOrganisationRegistration(Context context)
 	throws Exception
 	{
@@ -1682,10 +1569,12 @@ implements SessionBean
 			AuthorityNotificationReceiver authorityNotificationReceiver = new AuthorityNotificationReceiver(authorityNotificationFilter);
 			authorityNotificationReceiver = pm.makePersistent(authorityNotificationReceiver);
 
-			PersistentNotificationEJB persistentNotificationEJB = PersistentNotificationEJBUtil.getHome(initialContextProperties).create();
+			PersistentNotificationEJBRemote persistentNotificationEJB = JFireEjb3Factory.getRemoteBean(PersistentNotificationEJBRemote.class, initialContextProperties);
+//			PersistentNotificationEJB persistentNotificationEJB = PersistentNotificationEJBUtil.getHome(initialContextProperties).create();
 			persistentNotificationEJB.storeNotificationFilter(authorityNotificationFilter, false, null, 1);
 
-			JFireSecurityManager jfireSecurityManager = JFireEjbFactory.getBean(JFireSecurityManager.class, initialContextProperties);
+			JFireSecurityManagerRemote jfireSecurityManager = JFireEjbFactory.getBean(JFireSecurityManagerRemote.class, initialContextProperties);
+//			JFireSecurityManager jfireSecurityManager = JFireEjbFactory.getBean(JFireSecurityManager.class, initialContextProperties);
 			Set<AuthorityID> authorityIDs = CollectionUtil.castSet(
 					jfireSecurityManager.getAuthorityIDs(emitterOrganisationID, null)
 			);

@@ -26,25 +26,20 @@
 
 package org.nightlabs.jfire.server;
 
-import java.rmi.RemoteException;
 import java.util.Date;
 import java.util.List;
 
-import javax.ejb.CreateException;
-import javax.ejb.EJBException;
-import javax.ejb.SessionBean;
-import javax.ejb.SessionContext;
+import javax.annotation.security.RolesAllowed;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 
 import org.nightlabs.config.ConfigException;
-import org.nightlabs.jfire.base.BaseSessionBeanImpl;
-import org.nightlabs.jfire.module.ModuleType;
+import org.nightlabs.jfire.base.BaseSessionBeanImplEJB3;
 import org.nightlabs.jfire.serverconfigurator.ServerConfigurationException;
-import org.nightlabs.jfire.serverconfigurator.ServerConfigurator;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.servermanager.config.J2eeServerTypeRegistryConfigModule;
 import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
-import org.nightlabs.jfire.servermanager.xml.ModuleDef;
-import org.nightlabs.jfire.servermanager.xml.XMLReadException;
 
 /**
  * @ejb.bean name="jfire/ejb/JFireBaseBean/ServerManager"
@@ -54,43 +49,29 @@ import org.nightlabs.jfire.servermanager.xml.XMLReadException;
  * @ejb.util generate="physical"
  * @ejb.transaction type="Required"
  **/
-public abstract class ServerManagerBean
-	extends BaseSessionBeanImpl
-	implements SessionBean
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
+@Stateless
+public class ServerManagerBean
+	extends BaseSessionBeanImplEJB3
+	implements ServerManagerRemote
 {
 	private static final long serialVersionUID = 1L;
 
-	@Override
-	public void setSessionContext(SessionContext sessionContext)
-			throws EJBException, RemoteException
-	{
-		super.setSessionContext(sessionContext);
-	}
-	/**
-	 * @ejb.create-method
-	 * @ejb.permission role-name="_Guest_"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.server.ServerManagerRemote#ping(java.lang.String)
 	 */
-	public void ejbCreate()
-	throws CreateException
-	{
-	}
-
-	/**
-	 * @ejb.interface-method
-	 * @ejb.transaction type="Supports"
-	 * @ejb.permission role-name="_Guest_"
-	 */
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+	@RolesAllowed("_Guest_")
 	@Override
 	public String ping(String message) {
 		return super.ping(message);
 	}
 
-	/**
-	 * @return Whether or not this server is new and needs setup.
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.server.ServerManagerRemote#isNewServerNeedingSetup()
 	 */
+	@RolesAllowed("_Guest_")
+	@Override
 	public boolean isNewServerNeedingSetup()
 	{
 		JFireServerManager ism = getJFireServerManager();
@@ -101,18 +82,11 @@ public abstract class ServerManagerBean
 		}
 	}
 
-	/**
-	 * @ejb.permission unchecked="true"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.server.ServerManagerRemote#getJFireServerConfigModule()
 	 */
+	@RolesAllowed("_ServerAdmin_")
 	@Override
-	public void ejbRemove() throws EJBException, RemoteException { }
-
-	/**
-	 * @return Returns a clone of the main config module.
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_ServerAdmin_"
-	 */
 	public JFireServerConfigModule getJFireServerConfigModule()
 	{
 		JFireServerManager ism = getJFireServerManager();
@@ -123,12 +97,11 @@ public abstract class ServerManagerBean
 		}
 	}
 
-	/**
-	 * @throws ConfigException If the configuration is obviously wrong - not all errors are detected, however!
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_ServerAdmin_"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.server.ServerManagerRemote#setJFireServerConfigModule(org.nightlabs.jfire.servermanager.config.JFireServerConfigModule)
 	 */
+	@RolesAllowed("_ServerAdmin_")
+	@Override
 	public void setJFireServerConfigModule(JFireServerConfigModule cfMod)
 	throws ConfigException
 	{
@@ -140,18 +113,11 @@ public abstract class ServerManagerBean
 		}
 	}
 
-	/**
-	 * Configures the server using the currently configured {@link ServerConfigurator} and
-	 * shuts it down if necessary.
-	 *
-	 * @param delayMSec In case shutdown is necessary, how long to delay it (this method will return immediately).
-	 *		This is necessary for having a few secs left to return the client a new web page.
-	 * @return <code>true</code>, if the server configuration was changed in a way that requires reboot.
-	 * @throws ServerConfigurationException If configuring the server failed
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_ServerAdmin_"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.server.ServerManagerRemote#configureServerAndShutdownIfNecessary(long)
 	 */
+	@RolesAllowed("_ServerAdmin_")
+	@Override
 	public boolean configureServerAndShutdownIfNecessary(long delayMSec) throws ServerConfigurationException
 	{
 		JFireServerManager ism = getJFireServerManager();
@@ -162,52 +128,51 @@ public abstract class ServerManagerBean
 		}
 	}
 
-	/**
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
-	 * @throws XMLReadException If loading the module information failed
-	 */
-	public List<ModuleDef> getModules(ModuleType moduleType) throws XMLReadException
-	{
-		JFireServerManager ism = getJFireServerManager();
-		try {
-			return ism.getModules(moduleType);
-		} finally {
-			ism.close();
-		}
-	}
+//	/* (non-Javadoc)
+//	 * @see org.nightlabs.jfire.server.ServerManagerRemote#getModules(org.nightlabs.jfire.module.ModuleType)
+//	 */
+//	@RolesAllowed("_Guest_")
+//	@Override
+//	public List<ModuleDef> getModules(ModuleType moduleType) throws XMLReadException
+//	{
+//		JFireServerManager ism = getJFireServerManager();
+//		try {
+//			return ism.getModules(moduleType);
+//		} finally {
+//			ism.close();
+//		}
+//	}
+//
+//	/* (non-Javadoc)
+//	 * @see org.nightlabs.jfire.server.ServerManagerRemote#flushModuleCache()
+//	 */
+//	@RolesAllowed("_Guest_")
+//	@Override
+//	public void flushModuleCache()
+//	{
+//		JFireServerManager ism = getJFireServerManager();
+//		try {
+//			ism.flushModuleCache();
+//		} finally {
+//			ism.close();
+//		}
+//	}
 
-	/**
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.server.ServerManagerRemote#getJ2eeRemoteServers()
 	 */
-	public void flushModuleCache()
-	{
-		JFireServerManager ism = getJFireServerManager();
-		try {
-			ism.flushModuleCache();
-		} finally {
-			ism.close();
-		}
-	}
-
-	/**
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
-	 */
+	@RolesAllowed("_Guest_")
+	@Override
 	public List<J2eeServerTypeRegistryConfigModule.J2eeRemoteServer> getJ2eeRemoteServers()
 	{
 		return getJFireServerManagerFactory().getJ2eeRemoteServers();
 	}
 
-	/**
-	 * Get the server's current time. This can - of course - not be used for synchronizing a client,
-	 * because it is unknown how long the response travels to the client (latency), but sufficient
-	 * for a rough guess whether the server's and client's time are too far off.
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.server.ServerManagerRemote#getServerTime()
 	 */
+	@RolesAllowed("_Guest_")
+	@Override
 	public Date getServerTime()
 	{
 		return new Date();

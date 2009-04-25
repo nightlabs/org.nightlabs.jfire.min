@@ -18,10 +18,15 @@ import org.nightlabs.jfire.jdo.notification.persistent.NotificationFilter;
 import org.nightlabs.jfire.jdo.notification.persistent.NotificationReceiver;
 import org.nightlabs.jfire.security.Authority;
 import org.nightlabs.jfire.security.AuthorizedObjectRef;
-import org.nightlabs.jfire.security.JFireSecurityManager;
+import org.nightlabs.jfire.security.JFireSecurityManagerRemote;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.security.id.AuthorityID;
 import org.nightlabs.jfire.security.id.AuthorizedObjectRefID;
+
+import javax.jdo.annotations.Inheritance;
+import javax.jdo.annotations.InheritanceStrategy;
+import javax.jdo.annotations.PersistenceCapable;
+import javax.jdo.annotations.IdentityType;
 
 /**
  * @author marco schulze - marco at nightlabs dot de
@@ -30,6 +35,10 @@ import org.nightlabs.jfire.security.id.AuthorizedObjectRefID;
  *
  * @jdo.inheritance strategy="superclass-table"
  */
+@PersistenceCapable(
+	identityType=IdentityType.APPLICATION,
+	detachable="true")
+@Inheritance(strategy=InheritanceStrategy.SUPERCLASS_TABLE)
 public class AuthorityNotificationReceiver extends NotificationReceiver
 {
 	private static final Logger logger = Logger.getLogger(AuthorityNotificationReceiver.class);
@@ -79,11 +88,10 @@ public class AuthorityNotificationReceiver extends NotificationReceiver
 		replicateAuthorities(notificationBundle.getOrganisationID(), authorityIDs, authorizedObjectRefIDs);
 	}
 
-	@SuppressWarnings("unchecked")
 	public void replicateAuthorities(String emitterOrganisationID, Set<AuthorityID> authorityIDs, Set<AuthorizedObjectRefID> authorizedObjectRefIDs)
 	throws RemoteException, CreateException, NamingException
 	{
-		JFireSecurityManager m = JFireEjbFactory.getBean(JFireSecurityManager.class, Lookup.getInitialContextProperties(getPersistenceManager(), emitterOrganisationID));
+		JFireSecurityManagerRemote m = JFireEjbFactory.getBean(JFireSecurityManagerRemote.class, Lookup.getInitialContextProperties(getPersistenceManager(), emitterOrganisationID));
 		Collection<Authority> authorities = m.getAuthoritiesSelfInformation(authorityIDs, authorizedObjectRefIDs);
 
 		if (logger.isDebugEnabled()) {

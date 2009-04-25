@@ -26,7 +26,6 @@
 
 package org.nightlabs.jfire.config;
 
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -35,22 +34,21 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import javax.ejb.CreateException;
-import javax.ejb.EJBException;
-import javax.ejb.SessionBean;
-import javax.jdo.FetchPlan;
+import javax.annotation.security.RolesAllowed;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.jdo.JDOHelper;
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.config.ConfigException;
-import org.nightlabs.config.ConfigModuleNotFoundException;
 import org.nightlabs.inheritance.FieldMetaData;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jdo.ObjectID;
 import org.nightlabs.jdo.moduleregistry.ModuleMetaData;
-import org.nightlabs.jfire.base.BaseSessionBeanImpl;
+import org.nightlabs.jfire.base.BaseSessionBeanImplEJB3;
 import org.nightlabs.jfire.base.JFireBaseEAR;
 import org.nightlabs.jfire.config.id.ConfigID;
 import org.nightlabs.jfire.config.id.ConfigModuleID;
@@ -69,7 +67,10 @@ import org.nightlabs.version.Version;
  * @ejb.util generate="physical"
  * @ejb.transaction type="Required"
  **/
-public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements SessionBean
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
+@Stateless
+@RolesAllowed("_Guest_")
+public class ConfigManagerBean extends BaseSessionBeanImplEJB3 implements ConfigManagerRemote
 {
 	private static final long serialVersionUID = 1L;
 	/**
@@ -77,30 +78,12 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	 */
 	private static final Logger logger = Logger.getLogger(ConfigManagerBean.class);
 
-	/**
-	 * @ejb.create-method
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.config.ConfigManagerRemote#storeConfigModule(org.nightlabs.jfire.config.ConfigModule, boolean, java.lang.String[], int)
 	 */
-	public void ejbCreate() throws CreateException
-	{
-	}
-	/**
-	 * @see javax.ejb.SessionBean#ejbRemove()
-	 *
-	 * @ejb.permission unchecked="true"
-	 */
-	public void ejbRemove() throws EJBException, RemoteException { }
-
-
-	/**
-	 * Stores the given ConfigModule. If it is a ConfigModule belonging to a
-	 * ConfigGroup, the corresponding ConfigModules of all members of this group
-	 * will inherit from the given ConfigModule according to its
-	 * inheritence settings.
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type="Required"
-	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_Guest_")
+	@Override
 	public ConfigModule storeConfigModule(ConfigModule configModule, boolean get, String[] fetchGroups, int maxFetchDepth)
 	{
 		PersistenceManager pm = getPersistenceManager();
@@ -175,20 +158,13 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 		}
 	}
 
-	/**
-	 * Returns all ConfigGroups with the given configType. If the parameter
-	 * is null all ConfigGroups will be returned.
-	 *
-	 * @param configType If set, all ConfigGroups with the given configType
-	 * will be returned. If null, all ConfigGroups will be returned
-	 * @param fetchGroups The fetch-groups to be used to detach the found groups
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type="Required"
-	 *
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.config.ConfigManagerRemote#getConfigGroups(java.lang.String, java.lang.String[], int)
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_Guest_")
 	@SuppressWarnings("unchecked")
+	@Override
 	public Collection<ConfigGroup> getConfigGroups(String configType, String[] fetchGroups, int maxFetchDepth)
 	{
 		PersistenceManager pm;
@@ -212,31 +188,24 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 		}
 	}
 
-	/**
-	 * Get all ConfigGroups.
-	 *
-	 * @see #getConfigGroups(String, String[])
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type="Required"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.config.ConfigManagerRemote#getConfigGroups(java.lang.String[], int)
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_Guest_")
+	@Override
 	public Collection<ConfigGroup> getConfigGroups(String[] fetchGroups, int maxFetchDepth)
 	{
 		return getConfigGroups(null, fetchGroups, maxFetchDepth);
 	}
 
 
-	/**
-	 * Returns all Configs corresponding to the given Set of ConfigIDs.
-	 *
-	 * @param configIDs The Set of ConfigIDs corresponding to the desired Configs.
-	 * @param fetchGroups The fetch-groups to be used to detach the found Configs
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type="Required"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.config.ConfigManagerRemote#getConfigs(java.util.Set, java.lang.String[], int)
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_Guest_")
+	@Override
 	public Collection<Config> getConfigs(Set<ConfigID> configIDs, String[] fetchGroups, int maxFetchDepth)
 	{
 		if (configIDs == null)
@@ -259,19 +228,12 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 		}
 	}
 
-	/**
-	 * Returns all Configs with the given configType. If the parameter
-	 * is null all Configs will be returned.
-	 * {@link Config#getConfigsByType(PersistenceManager, String, String)}
-	 *
-	 * @param configType If set, all Configs with the given configType
-	 * will be returned. If null, all Configs will be returned
-	 * @param fetchGroups The fetch-groups to be used to detach the found Configs
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type="Required"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.config.ConfigManagerRemote#getConfigs(java.lang.String, java.lang.String[], int)
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_Guest_")
+	@Override
 	public Set<Config> getConfigs(String configType, String[] fetchGroups, int maxFetchDepth)
 	{
 		PersistenceManager pm = getPersistenceManager();
@@ -286,14 +248,12 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 		return NLJDOHelper.getDetachedQueryResultAsSet(pm, queryResult);
 	}
 
-	/**
-	 * Returns all ConfigIDs corresponding to Configs of the given <code>configType</code>.
-	 * {@link Config#getConfigIDsByConfigType(PersistenceManager, String, String)}
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name = "_Guest_"
-	 * @ejb.transaction type="Required"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.config.ConfigManagerRemote#getConfigIDsByConfigType(java.lang.String, java.lang.String[], int)
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_Guest_")
+	@Override
 	public Set<ConfigID> getConfigIDsByConfigType(String configType,
 			String[] fetchGroups,	int maxFetchDepth) {
 		PersistenceManager pm = getPersistenceManager();
@@ -306,25 +266,23 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 		return NLJDOHelper.getDetachedQueryResultAsSet(pm, queryResult);
 	}
 
-	/**
-	 * Get all Configs.
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type="Required"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.config.ConfigManagerRemote#getConfigs(java.lang.String[], int)
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_Guest_")
+	@Override
 	public Collection<Config> getConfigs(String[] fetchGroups, int maxFetchDepth)
 	{
 		return getConfigs((String)null, fetchGroups, maxFetchDepth);
 	}
 
-	/**
-	 * Get a certain Config.
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type="Required"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.config.ConfigManagerRemote#getConfig(org.nightlabs.jfire.config.id.ConfigID, java.lang.String[], int)
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_Guest_")
+	@Override
 	public Config getConfig(ConfigID configID, String[] fetchGroups, int maxFetchDepth)
 	{
 		PersistenceManager pm;
@@ -349,20 +307,12 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	/* ************************** getConfigModule stuff ********************** */
 	/* *********************************************************************** */
 
-	/**
-	 * Searches the ConfigModule of the given Config, cfModClass and cfModID.
-	 * If not found it will be auto-created.
-	 *
-	 * @param userConfigID The UserConfigID the returned ConfigModule should belong to
-	 * @param cfModClass The ConfigModule's class
-	 * @param cfModID The ConfigModules cfModID (suffix)
-	 * @param fetchGroups The fetch-groups to be used to detach the ConfigModule
-	 * @return The ConfigModule of the given userConfig, cfModClass and cfModID
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type="Required"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.config.ConfigManagerRemote#getConfigModule(org.nightlabs.jfire.config.id.ConfigID, java.lang.Class, java.lang.String, java.lang.String[], int)
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_Guest_")
+	@Override
 	public ConfigModule getConfigModule(ConfigID configID, Class<? extends ConfigModule> cfModClass, String cfModID, String[] fetchGroups, int maxFetchDepth)
 	{
 		return getConfigModule(getPersistenceManager(), configID, cfModClass, cfModID, fetchGroups, maxFetchDepth);
@@ -398,19 +348,12 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 		}
 	}
 
-	/**
-	 * Searches the ConfigModule for the given keyObject and if there is none, one is created.
-	 *
-	 * @param keyObjectID The ObjectID of the Object the Config holding the ConfigModule is assigned to.
-	 * @param cfModClass The classname of the ConfigModule desired
-	 * @param cfModID The cfModID of the ConfigModule desired
-	 * @param fetchGroups The fetch-groups to detach the returned ConfigModule with
-	 * @return
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type="Required"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.config.ConfigManagerRemote#createConfigModule(org.nightlabs.jdo.ObjectID, java.lang.Class, java.lang.String, java.lang.String[], int)
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_Guest_")
+	@Override
 	public ConfigModule createConfigModule(
 			ObjectID keyObjectID, Class<? extends ConfigModule> cfModClass, String cfModID,
 			String[] fetchGroups, int maxFetchDepth)
@@ -433,20 +376,12 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 		}
 	}
 
-	/**
-	 * Searches the ConfigModule for the given keyObject.
-	 *
-	 * @param keyObjectID The ObjectID of the Object the Config holding the ConfigModule is assigned to.
-	 * @param cfModClass The classname of the ConfigModule desired
-	 * @param cfModID The cfModID of the ConfigModule desired
-	 * @param throwExceptionIfNotFound If <code>true</code> and the ConfigModule does not exist, a {@link ConfigModuleNotFoundException} will be thrown. If it's <code>false</code>, <code>null</code> will be returned instead of an exception.
-	 * @param fetchGroups The fetch-groups to detach the returned ConfigModule with
-	 * @return Returns <code>null</code> (if allowed) or an instance of a class extending ConfigModule.
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type="Required"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.config.ConfigManagerRemote#getConfigModule(org.nightlabs.jfire.config.id.ConfigID, java.lang.Class, java.lang.String, boolean, java.lang.String[], int)
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_Guest_")
+	@Override
 	public ConfigModule getConfigModule(
 			ConfigID keyObjectID, Class<? extends ConfigModule> cfModClass, String cfModID, boolean throwExceptionIfNotFound,
 			String[] fetchGroups, int maxFetchDepth)
@@ -473,19 +408,12 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 		}
 	}
 
-	/**
-	 * Returns a Collection of {@link ConfigModule}s, corresponding to the set of {@link ConfigModuleID}s.
-	 * If a corresponding ConfigModule doesn't exists it and its surrounding {@link Config} are created.
-	 *
-	 * @param moduleIDs the set of {@link ConfigModuleID}s for which to gather the corresponding {@link ConfigModule}s
-	 * @param fetchGroups the FetchGroups for the detached {@link ConfigModule}s
-	 * @param maxFetchDepth the maximum fetch depth for the detached ConfigModules.
-	 * @return a Collection of {@link ConfigModule}s, corresponding to the set of {@link ConfigModuleID}s.
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type="Required"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.config.ConfigManagerRemote#getConfigModules(java.util.Set, java.lang.String[], int)
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_Guest_")
+	@Override
 	public Collection<ConfigModule> getConfigModules(Set<ConfigModuleID> moduleIDs, String[] fetchGroups, int maxFetchDepth)
 	{
 		PersistenceManager pm = getPersistenceManager();
@@ -524,28 +452,12 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 		return pm.detachCopy(configModule);
 	}
 
-	/**
-	 * Returns the ConfigModule of the ConfigGroup of the Config corresponding to the given ConfigID
-	 * and with the given Class and moduleID.
-	 * <p>
-	 * The caller can choose if either an exception is thrown when the queried ConfigModule does not exist
-	 * or if it rather should be auto-created (autoCreate parameter).
-	 * </p>
-	 *
-	 * @param childID the {@link ConfigID} of the child's {@link Config}.
-	 * @param configModuleClass the Class of the ConfigModule to return.
-	 * @param moduleID the module ID in the case there is more than one instance of that ConfigModule.
-	 * @param autoCreate Whether the {@link ConfigModule} should be auto-created if not yet existing,
-	 *                   otherwise a {@link ConfigModuleNotFoundException} will be thrown.
-	 * @param fetchGroups the fetchGroups with which to detach the ConfigModule.
-	 * @param maxFetchDepth the maximum fetch depth while detaching.
-	 * @return the ConfigModule of the ConfigGroup of the Config corresponding to the given ConfigID
-	 * and with the given Class and moduleID.
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type="Required"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.config.ConfigManagerRemote#getGroupConfigModule(org.nightlabs.jfire.config.id.ConfigID, java.lang.Class, java.lang.String, boolean, java.lang.String[], int)
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_Guest_")
+	@Override
 	public ConfigModule getGroupConfigModule(
 			ConfigID childID, Class<? extends ConfigModule> configModuleClass, String moduleID, boolean autoCreate,
 			String[] fetchGroups, int maxFetchDepth)
@@ -581,18 +493,12 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	/* ************************** ConfigSetup stuff ************************** */
 	/* *********************************************************************** */
 
-	/**
-	 * Add a new ConfigGroup with ge given configKey, the given groupType as
-	 * configType and the given groupName.
-	 *
-	 * @param get If true the new ConfigGroup will be detached and returned. If
-	 * false null is returned.
-	 * @param fetchGroups The fetch-groups to be used to detach the returned group
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type="Required"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.config.ConfigManagerRemote#addConfigGroup(java.lang.String, java.lang.String, java.lang.String, boolean, java.lang.String[], int)
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_Guest_")
+	@Override
 	public ConfigGroup addConfigGroup(String configKey, String groupType, String groupName, boolean get, String[] fetchGroups, int maxFetchDepth)
 	{
 		PersistenceManager pm;
@@ -622,23 +528,12 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 		}
 	}
 
-	/**
-	 * Returns the ConfigSetup with the given configSetupID.
-	 * <p>
-	 * The {@link ConfigSetup} will hereby be prepared by
-	 * its {@link ConfigSetup#getCompleteConfigSetup(PersistenceManager, String, String[], String[])}.
-	 * </p>
-	 *
-	 * @param configSetupID The id of the {@link ConfigSetup} to return.
-	 * @param groupsFetchGropus Fetch-groups to detach the {@link ConfigGroup}s with, that are part of the setup.
-	 * 		If this is <code>null</code>, {@link FetchPlan#DEFAULT} will be used.
-	 * @param configsFetchGroups Fetch-groups to detach the {@link Config}s with, that are part of the setup.
-	 * 		If this is <code>null</code>, {@link FetchPlan#DEFAULT} will be used.
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type="Required"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.config.ConfigManagerRemote#getConfigSetup(org.nightlabs.jfire.config.id.ConfigSetupID, java.lang.String[], int, java.lang.String[], int)
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_Guest_")
+	@Override
 	public ConfigSetup getConfigSetup(
 			ConfigSetupID configSetupID,
 			String[] groupsFetchGropus, int groupsMaxFetchDepth,
@@ -661,18 +556,12 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 		}
 	}
 
-	/**
-	 * Returns a list of ConfigSetups for the given {@link ConfigSetupID}s.
-	 *
-	 * @param setupIDs The set of {@link ConfigSetupID}s for which to retrieve the corresponding ConfigSetups.
-	 * @param fetchGroups The fetch groups with which to detach the object.
-	 * @param maxFetchDepth The maximal fetch depth.
-	 * @return a list of ConfigSetups for the given {@link ConfigSetupID}s.
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type="Required"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.config.ConfigManagerRemote#getConfigSetups(java.util.Set, java.lang.String[], int)
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_Guest_")
+	@Override
 	public List<ConfigSetup> getConfigSetups(Set<ConfigSetupID> setupIDs, String[] fetchGroups, int maxFetchDepth) {
 		PersistenceManager pm = getPersistenceManager();
 		try {
@@ -682,17 +571,12 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 		}
 	}
 
-	/**
-	 * Returns the {@link ConfigSetupID}s of all ConfigSetups.
-	 *
-	 * @param fetchGroups the fetch groups, with which the ConfigSetups shall be detached.
-	 * @param maxFetchDepth the maximum fetch depth to use for detaching.
-	 * @return the {@link ConfigSetupID}s of all ConfigSetups.
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type="Required"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.config.ConfigManagerRemote#getAllConfigSetupIDs()
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_Guest_")
+	@Override
 	public Collection<ConfigSetupID> getAllConfigSetupIDs() {
 		PersistenceManager pm = getPersistenceManager();
 		try {
@@ -702,14 +586,12 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 		}
 	}
 
-	/**
-	 * Stores the given ConfigSetup if belonging to the current organisation and
-	 * throws and exception if not.
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type="Required"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.config.ConfigManagerRemote#storeConfigSetup(java.util.Collection)
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_Guest_")
+	@Override
 	public void storeConfigSetup(Collection<Config> setup)
 	{
 		PersistenceManager pm;
@@ -724,18 +606,12 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 		}
 	}
 
-	/**
-	 * Stores the given {@link Config} and returns a detached copy if the caller requests it.
-	 * @param config The {@link Config} to be stored.
-	 * @param get A boolean indicating whether a detached copy of the stored {@link Config} should be returned.
-	 * @param fetchGroups The fetch groups to be used
-	 * @param maxFetchDepth The maximal fetch depth to be used
-	 * @return A detached copy of the stored {@link Config} if <code>get == true</code> and <code>null</code> otherwise.
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type="Required"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.config.ConfigManagerRemote#storeConfig(org.nightlabs.jfire.config.Config, boolean, java.lang.String[], int)
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_Guest_")
+	@Override
 	public Config storeConfig(Config config, boolean get, String[] fetchGroups, int maxFetchDepth) {
 		PersistenceManager pm;
 		pm = getPersistenceManager();
@@ -754,20 +630,12 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 		}
 	}
 
-	/**
-	 * Applies the inheritence of a groupModule to the given ConfigModule if the Config corresponding to the
-	 * given ModuleID is in a ConfigGroup. Finally, returns a detached copy of the ConfigModule corresponding
-	 * to the given ConfigModuleID with the given <code>fetchGroups</code> and the given <code>maxFetchDepth</code>.
-	 * @param IDOfModuleToInherit ID of the ConfigModule, which shall inherit.
-	 * @param get Whether or not a detached Copy of the corresponding ConfigModule shall be returned.
-	 * @param fetchGroups FetchGroups of detached copy to return.
-	 * @param maxFetchDepth FetchDepth of detached copy to return.
-	 * @return a detached Copy of the ConfigModule of the given ConfigModuleID after applying group inheritence.
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type="Required"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.config.ConfigManagerRemote#applyGroupInheritence(org.nightlabs.jfire.config.id.ConfigModuleID, boolean, java.lang.String[], int)
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_Guest_")
+	@Override
 	public ConfigModule applyGroupInheritence(ConfigModuleID IDOfModuleToInherit, boolean get, String[] fetchGroups, int maxFetchDepth) {
 		PersistenceManager pm;
 		pm = getPersistenceManager();
@@ -806,41 +674,14 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 		}
 	}
 
-	/**
-	 * Initializes the JFireBase Config-System.
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_System_"
-	 * @ejb.transaction type="Required"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.config.ConfigManagerRemote#initialise()
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_System_")
+	@Override
 	public void initialise()
 	{
-//// TODO remove debug stuff below
-//		try {
-//			for (int i = 0; i < 20; ++i) {
-//				AsyncInvoke.exec(new Invocation() {
-//					private static final long serialVersionUID = 1L;
-//					@Override
-//					public Serializable invoke() throws Exception
-//					{
-//						PersistenceManager pm = getPersistenceManager();
-//						try {
-//							Thread.sleep(10000);
-//							if (Math.random() >= 0.5)
-//								throw new RuntimeException("Test");
-//
-//							return null;
-//						} finally {
-//							pm.close();
-//						}
-//					}
-//				}, true);
-//			}
-//		} catch (Exception e) {
-//			logger.warn("", e);
-//		}
-//// TODO remove debug stuff above
-
 		PersistenceManager pm;
 		pm = getPersistenceManager();
 		try {
@@ -877,11 +718,11 @@ public abstract class ConfigManagerBean extends BaseSessionBeanImpl implements S
 	}
 
 
-	/**
-	 * @ejb.interface-method
-	 * @ejb.transaction type="Supports"
-	 * @ejb.permission role-name="_Guest_"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.config.ConfigManagerRemote#ping(java.lang.String)
 	 */
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+	@RolesAllowed("_Guest_")
 	@Override
 	public String ping(String message) {
 		return super.ping(message);

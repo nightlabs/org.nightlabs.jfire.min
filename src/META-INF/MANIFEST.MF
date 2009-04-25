@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Class-Path: org.nightlabs.jfire.base.jar 
+ org.nightlabs.jdo.jar 
+ org.nightlabs.base.jar 
+ org.nightlabs.query.jar 
+ org.nightlabs.query.jdo.jar 
+ JFireServerManager.rar 
+ JFireBasePublicBean.jar
+

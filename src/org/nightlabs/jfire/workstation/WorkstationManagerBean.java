@@ -26,15 +26,15 @@
 
 package org.nightlabs.jfire.workstation;
 
-import java.rmi.RemoteException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.ejb.CreateException;
-import javax.ejb.EJBException;
-import javax.ejb.SessionBean;
+import javax.annotation.security.RolesAllowed;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.jdo.FetchPlan;
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
@@ -42,7 +42,7 @@ import javax.jdo.Query;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jdo.query.JDOQueryCollectionDecorator;
 import org.nightlabs.jdo.query.QueryCollection;
-import org.nightlabs.jfire.base.BaseSessionBeanImpl;
+import org.nightlabs.jfire.base.BaseSessionBeanImplEJB3;
 import org.nightlabs.jfire.workstation.id.WorkstationID;
 import org.nightlabs.jfire.workstation.search.WorkstationQuery;
 import org.nightlabs.util.CollectionUtil;
@@ -58,51 +58,28 @@ import org.nightlabs.util.CollectionUtil;
  * @ejb.util generate="physical"
  * @ejb.transaction type="Required"
  */
-public class WorkstationManagerBean extends BaseSessionBeanImpl implements SessionBean
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
+@Stateless
+public class WorkstationManagerBean extends BaseSessionBeanImplEJB3 implements WorkstationManagerRemote
 {
 	private static final long serialVersionUID = 1L;
 
-	/**
-	 * @ejb.create-method
-	 * @ejb.permission role-name="_Guest_"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.workstation.WorkstationManagerRemote#ping(java.lang.String)
 	 */
-	public void ejbCreate() throws CreateException
-	{
-	}
-
-	/**
-	 * @ejb.permission unchecked="true"
-	 */
-	@Override
-	public void ejbRemove() throws EJBException, RemoteException
-	{
-	}
-
-	@Override
-	public void ejbActivate() throws EJBException, RemoteException
-	{
-	}
-
-	@Override
-	public void ejbPassivate() throws EJBException, RemoteException
-	{
-	}
-
-	/**
-	 * @ejb.interface-method
-	 * @ejb.transaction type="Supports"
-	 * @ejb.permission role-name="_Guest_"
-	 */
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+	@RolesAllowed("_Guest_")
 	@Override
 	public String ping(String message) {
 		return super.ping(message);
 	}
 
-	/**
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="org.nightlabs.jfire.workstation.storeWorkstation"
-	 * @ejb.transaction type="Required"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.workstation.WorkstationManagerRemote#storeWorkstation(org.nightlabs.jfire.workstation.Workstation, boolean, java.lang.String[], int)
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("org.nightlabs.jfire.workstation.storeWorkstation")
+	@Override
 	public Workstation storeWorkstation(Workstation ws, boolean get, String[] fetchGroups, int maxFetchDepth)
 	{
 		PersistenceManager pm = getPersistenceManager();
@@ -124,12 +101,12 @@ public class WorkstationManagerBean extends BaseSessionBeanImpl implements Sessi
 		}
 	}
 
-	/**
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="org.nightlabs.jfire.workstation.queryWorkstations"
-	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.workstation.WorkstationManagerRemote#getWorkstationIDs()
 	 */
+	@RolesAllowed("org.nightlabs.jfire.workstation.queryWorkstations")
 	@SuppressWarnings("unchecked")
+	@Override
 	public Set<WorkstationID> getWorkstationIDs()
 	{
 		PersistenceManager pm = getPersistenceManager();
@@ -142,11 +119,12 @@ public class WorkstationManagerBean extends BaseSessionBeanImpl implements Sessi
 		}
 	}
 
-	/**
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="org.nightlabs.jfire.workstation.queryWorkstations"
-	 * @ejb.transaction type="Required"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.workstation.WorkstationManagerRemote#getWorkstations(java.util.Set, java.lang.String[], int)
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("org.nightlabs.jfire.workstation.queryWorkstations")
+	@Override
 	public List<Workstation> getWorkstations(Set<WorkstationID> workstationIDs, String[] fetchGroups, int maxFetchDepth)
 	{
 		PersistenceManager pm = getPersistenceManager();
@@ -157,11 +135,11 @@ public class WorkstationManagerBean extends BaseSessionBeanImpl implements Sessi
 		}
 	}
 
-	/**
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="org.nightlabs.jfire.workstation.queryWorkstations"
-	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.workstation.WorkstationManagerRemote#getWorkstationIDs(org.nightlabs.jdo.query.QueryCollection)
 	 */
+	@RolesAllowed("org.nightlabs.jfire.workstation.queryWorkstations")
+	@Override
 	public Set<WorkstationID> getWorkstationIDs(QueryCollection<? extends WorkstationQuery> workstationQueries)
 	{
 		if (workstationQueries == null)

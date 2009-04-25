@@ -27,16 +27,20 @@
 package org.nightlabs.jfire.asyncinvoke;
 
 import java.io.Serializable;
-import java.rmi.RemoteException;
 
-import javax.ejb.CreateException;
-import javax.ejb.EJBException;
-import javax.ejb.SessionBean;
+import javax.annotation.security.RolesAllowed;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.ejb.TransactionManagement;
+import javax.ejb.TransactionManagementType;
 import javax.jdo.PersistenceManager;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.jdo.NLJDOHelper;
-import org.nightlabs.jfire.base.BaseSessionBeanImpl;
+import org.nightlabs.jfire.base.BaseSessionBeanImplEJB3;
+
+// FIXME Maac: what is this interface extends construction about??
 
 /**
  * @ejb.bean name="jfire/ejb/JFireBaseBean/AsyncInvokerDelegate"
@@ -50,35 +54,22 @@ import org.nightlabs.jfire.base.BaseSessionBeanImpl;
  * @ejb.util generate="physical"
  * @ejb.transaction type="Required"
  */
-public abstract class AsyncInvokerDelegateBean
-extends BaseSessionBeanImpl
-implements SessionBean
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
+@TransactionManagement(TransactionManagementType.CONTAINER)
+@Stateless
+public class AsyncInvokerDelegateBean
+extends BaseSessionBeanImplEJB3
+implements AsyncInvokerDelegateLocal
 {
 	private static final long serialVersionUID = 1L;
 	private static final Logger logger = Logger.getLogger(AsyncInvokerDelegateBean.class);
 
-	/**
-	 * @ejb.create-method
-	 * @ejb.permission role-name="_Guest_"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.asyncinvoke.AsyncInvokerDelegateLocal#enqueueErrorCallback(org.nightlabs.jfire.asyncinvoke.AsyncInvokeEnvelope, org.nightlabs.jfire.asyncinvoke.InvocationError)
 	 */
-	public void ejbCreate()
-	throws CreateException
-	{
-	}
-	/**
-	 * @see javax.ejb.SessionBean#ejbRemove()
-	 *
-	 * @ejb.permission unchecked="true"
-	 */
-	public void ejbRemove() throws EJBException, RemoteException
-	{
-	}
-
-	/**
-	 * @ejb.interface-method view-type="local"
-	 * @ejb.transaction type="RequiresNew"
-	 * @ejb.permission role-name="_Guest_"
-	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+	@RolesAllowed("_Guest_")
+	@Override
 	public void enqueueErrorCallback(AsyncInvokeEnvelope envelope, InvocationError error)
 	throws Exception
 	{
@@ -97,16 +88,12 @@ implements SessionBean
 		}
 	}
 
-	/**
-	 * Since it is documented in {@link Invocation#invoke()} that {@link AsyncInvokeProblem} must never be accessed there, it
-	 * is not necessary to perform a sub-transaction here. Hence it is much cleaner not to do so, hence if this transaction fails,
-	 * the queue-item will not be deleted and re-executed in a new try. In other words, popping from the queue and invocating is
-	 * done in the same transaction.
-	 *
-	 * @ejb.interface-method view-type="local"
-	 * @ejb.transaction type="Required"
-	 * @ejb.permission role-name="_Guest_"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.asyncinvoke.AsyncInvokerDelegateLocal#doInvocation(org.nightlabs.jfire.asyncinvoke.AsyncInvokeEnvelope)
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_Guest_")
+	@Override
 	public Serializable doInvocation(AsyncInvokeEnvelope envelope)
 	throws Exception
 	{
@@ -118,11 +105,12 @@ implements SessionBean
 		return invocation.invoke();
 	}
 
-	/**
-	 * @ejb.interface-method view-type="local"
-	 * @ejb.transaction type="Required"
-	 * @ejb.permission role-name="_Guest_"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.asyncinvoke.AsyncInvokerDelegateLocal#doErrorCallback(org.nightlabs.jfire.asyncinvoke.AsyncInvokeEnvelope)
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_Guest_")
+	@Override
 	public void doErrorCallback(AsyncInvokeEnvelope envelope)
 	throws Exception
 	{
@@ -137,15 +125,12 @@ implements SessionBean
 		callback.handle(envelope);
 	}
 
-	/**
-	 * This method is executed in a sub-transaction, because {@link #deleteAsyncInvokeProblem(AsyncInvokeEnvelope)} is
-	 * called by the container-transaction afterwards in a separate sub-transaction as well. We therefore must have a separate transaction here in order
-	 * to safely access the {@link AsyncInvokeProblem} (=> prevent deadlocks).
-	 *
-	 * @ejb.interface-method view-type="local"
-	 * @ejb.transaction type="RequiresNew"
-	 * @ejb.permission role-name="_Guest_"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.asyncinvoke.AsyncInvokerDelegateLocal#doSuccessCallback(org.nightlabs.jfire.asyncinvoke.AsyncInvokeEnvelope, java.lang.Object)
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+	@RolesAllowed("_Guest_")
+	@Override
 	public void doSuccessCallback(AsyncInvokeEnvelope envelope, Object result)
 	throws Exception
 	{
@@ -160,15 +145,12 @@ implements SessionBean
 		callback.handle(envelope, result);
 	}
 
-	/**
-	 * This method is executed in a sub-transaction, because {@link #markAsyncInvokeProblemUndeliverable(AsyncInvokeEnvelope)} is
-	 * called by the container-transaction before in a separate sub-transaction as well. We therefore must have a separate transaction here in order
-	 * to safely access the {@link AsyncInvokeProblem} (=> prevent deadlocks).
-	 *
-	 * @ejb.interface-method view-type="local"
-	 * @ejb.transaction type="RequiresNew"
-	 * @ejb.permission role-name="_Guest_"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.asyncinvoke.AsyncInvokerDelegateLocal#doUndeliverableCallback(org.nightlabs.jfire.asyncinvoke.AsyncInvokeEnvelope)
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+	@RolesAllowed("_Guest_")
+	@Override
 	public UndeliverableCallbackResult doUndeliverableCallback(AsyncInvokeEnvelope envelope)
 	throws Exception
 	{
@@ -184,14 +166,13 @@ implements SessionBean
 		return result;
 	}
 
-	/**
-	 * Mark the {@link AsyncInvokeProblem} which is corresponding to the given <code>envelope</code> being undeliverable.
-	 *
-	 * @ejb.interface-method view-type="local"
-	 * @ejb.transaction type="RequiresNew"
-	 * @ejb.permission role-name="_Guest_"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.asyncinvoke.AsyncInvokerDelegateLocal#markAsyncInvokeProblemUndeliverable(org.nightlabs.jfire.asyncinvoke.AsyncInvokeEnvelope, boolean)
 	 */
-  public void markAsyncInvokeProblemUndeliverable(org.nightlabs.jfire.asyncinvoke.AsyncInvokeEnvelope envelope, boolean undeliverable)
+	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+	@RolesAllowed("_Guest_")
+	@Override
+	public void markAsyncInvokeProblemUndeliverable(org.nightlabs.jfire.asyncinvoke.AsyncInvokeEnvelope envelope, boolean undeliverable)
 	throws Exception
 	{
 		PersistenceManager pm = getPersistenceManager();
@@ -207,27 +188,28 @@ implements SessionBean
 		}
 	}
 
-  /**
-   * @ejb.interface-method view-type="local"
-   * @ejb.transaction type="RequiresNew"
-   * @ejb.permission role-name="_Guest_"
-   */
-  public void deleteAsyncInvokeProblem(AsyncInvokeEnvelope envelope)
-  throws java.lang.Exception
-  {
-	  PersistenceManager pm = getPersistenceManager();
-	  try {
-	  	NLJDOHelper.enableTransactionSerializeReadObjects(pm);
-	  	try {
-	  		AsyncInvokeProblem asyncInvokeProblem = envelope.getAsyncInvokeProblem(pm);
-	  		if (asyncInvokeProblem != null)
-	  			pm.deletePersistent(asyncInvokeProblem);
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.asyncinvoke.AsyncInvokerDelegateLocal#deleteAsyncInvokeProblem(org.nightlabs.jfire.asyncinvoke.AsyncInvokeEnvelope)
+	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+	@RolesAllowed("_Guest_")
+	@Override
+	public void deleteAsyncInvokeProblem(AsyncInvokeEnvelope envelope)
+	throws java.lang.Exception
+	{
+		PersistenceManager pm = getPersistenceManager();
+		try {
+			NLJDOHelper.enableTransactionSerializeReadObjects(pm);
+			try {
+				AsyncInvokeProblem asyncInvokeProblem = envelope.getAsyncInvokeProblem(pm);
+				if (asyncInvokeProblem != null)
+					pm.deletePersistent(asyncInvokeProblem);
 
-	  	} finally {
-	  		NLJDOHelper.disableTransactionSerializeReadObjects(pm);
-	  	}
-	  } finally {
-		  pm.close();
-	  }
-  }
+			} finally {
+				NLJDOHelper.disableTransactionSerializeReadObjects(pm);
+			}
+		} finally {
+			pm.close();
+		}
+	}
 }

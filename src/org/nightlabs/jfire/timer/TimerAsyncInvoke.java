@@ -2,12 +2,13 @@ package org.nightlabs.jfire.timer;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.util.LinkedList;
+import java.util.List;
 
-import javax.ejb.EJBLocalObject;
-import javax.ejb.EJBObject;
 import javax.jdo.JDOHelper;
 import javax.jdo.PersistenceManager;
 import javax.naming.InitialContext;
+import javax.naming.NameNotFoundException;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.jdo.NLJDOHelper;
@@ -23,6 +24,7 @@ import org.nightlabs.jfire.asyncinvoke.SuccessCallback;
 import org.nightlabs.jfire.asyncinvoke.UndeliverableCallback;
 import org.nightlabs.jfire.asyncinvoke.UndeliverableCallbackResult;
 import org.nightlabs.jfire.asyncinvoke.id.AsyncInvokeProblemID;
+import org.nightlabs.jfire.base.JFireEjb3Factory;
 import org.nightlabs.jfire.security.SecurityReflector.UserDescriptor;
 import org.nightlabs.jfire.timer.id.TaskID;
 
@@ -103,20 +105,17 @@ extends AsyncInvoke
 			this.invocationParam = invocationParam;
 		}
 
+// Dependency injection does not work here (it works only in EJBs - this is an Invocation).
+//		@EJB
+//		TimerManagerLocal timerManagerLocal;
+
 		@Override
 		public Serializable invoke()
 		throws Exception
 		{
-//			try {
-//			Thread.sleep(5000); // give the other transaction some time to finish (and write all data)
-//			// TO DO isn't there a better solution? Isn't this a JPOX bug anyway?!
-//			// NOT necessary anymore - using XA transactions for AsyncInvoke now. Marco.
-//			} catch (InterruptedException x) {
-//			// ignore
-//			}
-
 			try {
-				TimerManagerLocal timerManager = TimerManagerUtil.getLocalHome().create();
+				TimerManagerLocal timerManager = JFireEjb3Factory.getLocalBean(TimerManagerLocal.class);
+
 				if (!timerManager.setExecutingIfActiveExecIDMatches(invocationParam.getTaskID(), invocationParam.getActiveExecID())) {
 					logger.info("Cancelled execution of task " + invocationParam.getTaskID() + " because the activeExecID does not match. invocationParam.getActiveExecID()=\""+invocationParam.getActiveExecID()+"\".");
 					return null;
@@ -125,25 +124,49 @@ extends AsyncInvoke
 				logger.info("Timer invocation: organisationID=\""+getOrganisationID()+"\" userID=\""+getUserID()+"\" taskID=\"" + invocationParam.getTaskID() + "\" bean=\"" + invocationParam.getBean() + "\" method=\""+invocationParam.getMethod()+"\"");
 				long startDT = System.currentTimeMillis();
 				InitialContext initCtx = new InitialContext();
-//				InitialContext ini
 				try {
-					Object homeRef = initCtx.lookup(invocationParam.getBean());
-					Method homeCreate = homeRef.getClass().getMethod("create", (Class[]) null);
-					Object bean = homeCreate.invoke(homeRef, (Object[]) null);
+//					Object homeRef = initCtx.lookup(invocationParam.getBean());
+//					Method homeCreate = homeRef.getClass().getMethod("create", (Class[]) null);
+//					Object bean = homeCreate.invoke(homeRef, (Object[]) null);
+					List<String> ejbJndiNames = new LinkedList<String>();
+					ejbJndiNames.add(JFireEjb3Factory.JNDI_PREFIX_EJB_BY_REMOTE_INTERFACE + invocationParam.getBean());
+					ejbJndiNames.add(JFireEjb3Factory.JNDI_PREFIX_EJB_BY_LOCAL_INTERFACE + invocationParam.getBean());
+
+					Object bean = null;
+					for (String ejbJndiName : ejbJndiNames) {
+						try {
+							bean = initCtx.lookup(ejbJndiName);
+						} catch (NameNotFoundException x) {
+							bean = null;
+						}
+
+						if (bean != null)
+							break;
+					}
+
+					if (bean == null) {
+						logger.error("The EJB \"" + invocationParam.getBean() + "\" was not found in JNDI at any of the following locations:");
+						for (String ejbJndiName : ejbJndiNames) {
+							logger.error("  * " + ejbJndiName);
+						}
+						throw new NameNotFoundException("The EJB \"" + invocationParam.getBean() + "\" was not found in JNDI!");
+					}
+
 					Method beanMethod = bean.getClass().getMethod(invocationParam.getMethod(), new Class[] { TaskID.class });
 					beanMethod.invoke(bean, new Object[] { invocationParam.getTaskID() });
 
-					try {
-						if (bean instanceof EJBObject)
-							((EJBObject)bean).remove();
-
-						if (bean instanceof EJBLocalObject)
-							((EJBLocalObject)bean).remove();
-					} catch (Exception x) {
-						logger.warn(
-								"Could not remove bean! TaskID=\""+invocationParam.getTaskID()+"\"" +
-								" Bean=\""+invocationParam.getBean()+"\"", x);
-					}
+// We don't need to remove, because we only use stateLESS session beans.
+//					try {
+//						if (bean instanceof EJBObject)
+//							((EJBObject)bean).remove();
+//
+//						if (bean instanceof EJBLocalObject)
+//							((EJBLocalObject)bean).remove();
+//					} catch (Exception x) {
+//						logger.warn(
+//								"Could not remove bean! TaskID=\""+invocationParam.getTaskID()+"\"" +
+//								" Bean=\""+invocationParam.getBean()+"\"", x);
+//					}
 				} finally {
 					initCtx.close();
 				}

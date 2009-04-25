@@ -31,6 +31,7 @@ import java.util.Map;
 
 import javax.naming.InitialContext;
 
+import org.nightlabs.jfire.base.JFireEjb3Factory;
 import org.nightlabs.jfire.security.SecurityReflector;
 
 /**
@@ -129,16 +130,13 @@ extends IDGenerator
 						if (initialContext == null)
 							initialContext = new InitialContext();
 
-						Object objRef = initialContext.lookup(IDGeneratorHelperLocalHome.JNDI_NAME);
-						IDGeneratorHelperLocalHome home;
-						// only narrow if necessary
-//						if (java.rmi.Remote.class.isAssignableFrom(IDGeneratorHelperLocalHome.class)) // this was wrong - wasn't it?
-						if (!(objRef instanceof IDGeneratorHelperLocalHome))
-							home = (IDGeneratorHelperLocalHome) javax.rmi.PortableRemoteObject.narrow(objRef, IDGeneratorHelperLocalHome.class);
-						else
-							home = (IDGeneratorHelperLocalHome) objRef;
-
-						IDGeneratorHelperLocal idGeneratorHelper = home.create();
+						// Dependency injection does not work in this non-managed class.
+						// Reading this, I first thought it was feasable in both JBoss & GlassFish:
+						// http://wiki.glassfish.java.net/Wiki.jsp?page=M2GJBossJNDILocalEJBRef
+						// However, I wasn't able to get this running. We now rely on local EJBs somehow being available in JNDI.
+						// If a server does not directly support it, we must implement some magic (some kind of proxy that we put into JNDI).
+						// Marco.
+						IDGeneratorHelperLocal idGeneratorHelper = JFireEjb3Factory.getLocalBean(IDGeneratorHelperLocal.class);
 						long[] nextIDs = idGeneratorHelper.serverNextIDs(namespace, cachedIDs.size(), quantity);
 						for (int i = 0; i < nextIDs.length; i++) {
 							cachedIDs.add(new Long(nextIDs[i]));

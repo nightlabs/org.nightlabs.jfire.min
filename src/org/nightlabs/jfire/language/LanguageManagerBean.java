@@ -25,20 +25,19 @@
  ******************************************************************************/
 
 package org.nightlabs.jfire.language;
-import java.rmi.RemoteException;
 import java.util.Collection;
 
-import javax.ejb.CreateException;
-import javax.ejb.EJBException;
-import javax.ejb.SessionBean;
-import javax.ejb.SessionContext;
+import javax.annotation.security.RolesAllowed;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.jdo.FetchPlan;
 import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.jdo.NLJDOHelper;
-import org.nightlabs.jfire.base.BaseSessionBeanImpl;
+import org.nightlabs.jfire.base.BaseSessionBeanImplEJB3;
 import org.nightlabs.jfire.language.id.LanguageID;
 import org.nightlabs.language.LanguageCf;
 
@@ -50,49 +49,28 @@ import org.nightlabs.language.LanguageCf;
  * @ejb.util generate="physical"
  * @ejb.transaction type="Required"
  */
-public abstract class LanguageManagerBean extends BaseSessionBeanImpl implements SessionBean
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
+@Stateless
+public class LanguageManagerBean extends BaseSessionBeanImplEJB3 implements LanguageManagerRemote
 {
 	private static final long serialVersionUID = 1L;
 	private static final Logger logger = Logger.getLogger(LanguageManagerBean.class);
 
-	@Override
-	public void setSessionContext(SessionContext sessionContext)
-			throws EJBException, RemoteException
-	{
-		super.setSessionContext(sessionContext);
-	}
-	/**
-	 * @ejb.create-method
-	 * @ejb.permission role-name="_Guest_"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.language.LanguageManagerRemote#ping(java.lang.String)
 	 */
-	public void ejbCreate() throws CreateException
-	{
-	}
-	/**
-	 * @ejb.permission unchecked="true"
-	 */
-	public void ejbRemove() throws EJBException, RemoteException { }
-
-	/**
-	 * @ejb.interface-method
-	 * @ejb.transaction type="Supports"
-	 * @ejb.permission role-name="_Guest_"
-	 */
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+	@RolesAllowed("_Guest_")
 	@Override
 	public String ping(String message) {
 		return super.ping(message);
 	}
 
-	/**
-	 * Creates a language if it does not exist. If it exists already, nothing is done.
-	 *
-	 * @param languageID ISO639-2 language code
-	 * @param nativeName should be the language name in itself (e.g. French = Francais)
-	 *
-	 * @ejb.interface-method
-	 *
-	 * @ejb.permission role-name="org.nightlabs.jfire.language.createLanguage"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.language.LanguageManagerRemote#createLanguage(org.nightlabs.language.LanguageCf)
 	 */
+	@RolesAllowed("org.nightlabs.jfire.language.createLanguage")
+	@Override
 	public void createLanguage(LanguageCf langCf)
 	throws LanguageException
 	{
@@ -122,16 +100,12 @@ public abstract class LanguageManagerBean extends BaseSessionBeanImpl implements
 	}
 
 
-	/**
-	 * @return A Collection containing all languages that the current organisationID knows.
-	 * @throws LanguageException if sth. unexpected happens - e.g. if the PersistenceManager
-	 *   is not accessible.
-	 *
-	 * @ejb.interface-method
-	 *
-	 * @ejb.permission role-name="_Guest_"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.language.LanguageManagerRemote#getLanguages()
 	 */
+	@RolesAllowed("_Guest_")
 	@SuppressWarnings("unchecked")
+	@Override
 	public Collection<Language> getLanguages()
 	throws LanguageException
 	{
@@ -148,52 +122,4 @@ public abstract class LanguageManagerBean extends BaseSessionBeanImpl implements
 			throw new LanguageException(x);
 		}
 	}
-
-//	/**
-//	 * @param languageID ISO639-2 language code
-//	 * @param throwExceptionIfNotExistent whether to return null or to throw a
-//	 *   LanguageNotFoundException if desired language does not exist.
-//	 * @return An instance of the desired Language.
-//	 * @throws LanguageNotFoundException If the desired Language does not exist and
-//	 *   throwExceptionIfNotExistent is true.
-//	 *   This exception is an inheritor of LanguageException
-//	 * @throws LanguageException If it's not a LanguageNotFoundException, sth. unexpected
-//	 *   happened - maybe the PersistenceManager is not accessible.
-//	 *
-//	 * @see getLanguage(String languageID)
-//	 */
-//	public Language getLanguage(String languageID, boolean throwExceptionIfNotExistent)
-//	throws LanguageException
-//	{
-//		try {
-//			PersistenceManager pm = getPersistenceManager();
-//			try {
-//				Language lang = (Language)pm.getObjectById(LanguageID.create(languageID), true);
-//				if (lang==null && throwExceptionIfNotExistent)
-//					throw new LanguageNotFoundException("No language registered with languageID=\""+languageID+"\"!");
-//				return lang;
-//			} finally {
-//				pm.close();
-//			}
-//		} catch (Exception x) {
-//			throw new LanguageException(x);
-//		}
-//	}
-//
-//	/**
-//	 * @param languageID ISO639-2 language code
-//	 * @return An instance of the desired Language. Never null!
-//	 * @throws LanguageNotFoundException If the desired Language does not exist.
-//	 *   This exception is an inheritor of LanguageException
-//	 * @throws LanguageException If it's not a LanguageNotFoundException, sth. unexpected
-//	 *   happened - maybe the PersistenceManager is not accessible.
-//	 *
-//	 * @see getLanguage(String languageID, boolean throwExceptionIfNotExistent)
-//	 */
-//	public Language getLanguage(String languageID)
-//	throws LanguageException
-//	{
-//		return getLanguage(languageID, true);
-//	}
-
 }

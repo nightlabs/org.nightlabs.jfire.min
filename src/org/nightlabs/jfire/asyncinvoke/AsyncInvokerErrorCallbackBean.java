@@ -26,6 +26,13 @@
 
 package org.nightlabs.jfire.asyncinvoke;
 
+import javax.ejb.ActivationConfigProperty;
+import javax.ejb.TransactionManagement;
+import javax.ejb.TransactionManagementType;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.ejb.MessageDriven;
+
 
 /**
  * @ejb.bean name="jfire/mdb/JFireBaseBean/AsyncInvokerErrorCallback"
@@ -40,6 +47,17 @@ package org.nightlabs.jfire.asyncinvoke;
  *
  * @!jboss.subscriber name="_LocalQueueReader_" password="test"
  */
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
+@TransactionManagement(TransactionManagementType.CONTAINER)
+@MessageDriven(
+	name="jfire/mdb/JFireBaseBean/AsyncInvokerErrorCallback",
+	activationConfig={@ActivationConfigProperty(
+		propertyName="acknowledgeMode",
+		propertyValue="Auto-acknowledge"), @ActivationConfigProperty(
+		propertyName="destinationType",
+		propertyValue="javax.jms.Queue"), @ActivationConfigProperty(
+		propertyName="destination",
+		propertyValue="queue/jfire/JFireBaseBean/AsyncInvokerErrorCallbackQueue")})
 public class AsyncInvokerErrorCallbackBean
 extends AsyncInvokerBaseBean
 {

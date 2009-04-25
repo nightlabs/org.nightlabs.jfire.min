@@ -1,16 +1,16 @@
 package org.nightlabs.jfire.timer;
 
-import java.rmi.RemoteException;
 import java.util.Date;
 import java.util.List;
 
-import javax.ejb.CreateException;
-import javax.ejb.EJBException;
-import javax.ejb.SessionBean;
-import javax.ejb.SessionContext;
+import javax.annotation.security.RolesAllowed;
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
 import javax.ejb.TimedObject;
 import javax.ejb.Timer;
 import javax.ejb.TimerService;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.jdo.JDOHelper;
 import javax.jdo.PersistenceManager;
 import javax.naming.InitialContext;
@@ -19,7 +19,7 @@ import javax.security.auth.login.LoginContext;
 import org.apache.log4j.Logger;
 import org.nightlabs.j2ee.LoginData;
 import org.nightlabs.jfire.base.AuthCallbackHandler;
-import org.nightlabs.jfire.base.BaseSessionBeanImpl;
+import org.nightlabs.jfire.base.BaseSessionBeanImplEJB3;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.servermanager.JFireServerManagerFactory;
@@ -36,50 +36,31 @@ import org.nightlabs.jfire.servermanager.j2ee.J2EEAdapter;
  * @ejb.util generate="physical"
  * @ejb.transaction type="Required"
  */
-public abstract class JFireTimerBean
-extends BaseSessionBeanImpl
-implements SessionBean, TimedObject
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
+@Stateless
+public class JFireTimerBean
+extends BaseSessionBeanImplEJB3
+implements TimedObject, JFireTimerRemote
 {
 	private static final long serialVersionUID = 1L;
+
 	/**
 	 * LOG4J logger used by this class
 	 */
 	private static final Logger logger = Logger.getLogger(JFireTimerBean.class);
 
-	@Override
-	public void setSessionContext(SessionContext sessionContext)
-	throws EJBException, RemoteException
-	{
-		super.setSessionContext(sessionContext);
-	}
-	@Override
-	public void unsetSessionContext() {
-		super.unsetSessionContext();
-	}
-	/**
-	 * @ejb.create-method
-	 * @ejb.permission role-name="_Guest_"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.timer.JFireTimerRemote#ping(java.lang.String)
 	 */
-	public void ejbCreate() throws CreateException
-	{
-	}
-	/**
-	 * @see javax.ejb.SessionBean#ejbRemove()
-	 *
-	 * @ejb.permission unchecked="true"
-	 */
-	@Override
-	public void ejbRemove() throws EJBException, RemoteException { }
-
-	/**
-	 * @ejb.interface-method
-	 * @ejb.transaction type="Supports"
-	 * @ejb.permission role-name="_Guest_"
-	 */
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+	@RolesAllowed("_Guest_")
 	@Override
 	public String ping(String message) {
 		return super.ping(message);
 	}
+
+	@EJB
+	TimerManagerLocal timerManagerLocal;
 
 	@Override
 	public void ejbTimeout(Timer timer)
@@ -129,7 +110,11 @@ implements SessionBean, TimedObject
 					loginContext.login();
 					try {
 
-						TimerManagerLocal timerManagerLocal = TimerManagerUtil.getLocalHome().create();
+//						TimerManagerLocal timerManagerLocal = JFireEjb3Factory.getLocalBean(TimerManagerLocal.class, null);
+//						TimerManagerLocal timerManagerLocal = TimerManagerUtil.getLocalHome().create();
+						if (timerManagerLocal == null)
+							throw new IllegalStateException("Dependency injection for timerManagerLocal failed!");
+
 						timerManagerLocal.ejbTimeoutDelegate(timerParam);
 
 					} finally {
@@ -147,14 +132,17 @@ implements SessionBean, TimedObject
 		}
 	}
 
-	/**
-	 * @ejb.interface-method
-	 * @ejb.transaction type="Required"
-	 * @ejb.permission role-name="_System_"
-	 **/
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.timer.JFireTimerRemote#startTimer()
+	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_System_")
+	@Override
 	public void startTimer()
 	{
-		String property_JFireTimerStart_key = JFireTimer.class.getName() + ".start";
+		// TODO update the wiki page https://www.jfire.org/modules/phpwiki/index.php/System%20properties%20supported%20by%20the%20JFire%20Server
+		// with the new system property name ("Local"-suffix). Marco.
+		String property_JFireTimerStart_key = JFireTimerRemote.class.getName() + ".start";
 		String property_JFireTimerStart_value = System.getProperty(property_JFireTimerStart_key);
 		if ("false".equals(property_JFireTimerStart_value)) {
 			logger.warn("The system property \"" + property_JFireTimerStart_key + "\" has been set to \"" + property_JFireTimerStart_value + "\"; the timer will *not* be started!");

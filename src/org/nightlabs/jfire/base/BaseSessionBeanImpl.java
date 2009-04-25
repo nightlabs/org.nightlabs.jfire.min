@@ -26,11 +26,10 @@
 
 package org.nightlabs.jfire.base;
 
-import java.rmi.RemoteException;
 import java.security.Principal;
 import java.util.Hashtable;
 
-import javax.ejb.EJBException;
+import javax.annotation.Resource;
 import javax.ejb.SessionContext;
 import javax.jdo.PersistenceManager;
 import javax.naming.InitialContext;
@@ -49,17 +48,18 @@ import org.nightlabs.jfire.servermanager.JFireServerManagerFactory;
  */
 public class BaseSessionBeanImpl
 {
+	@Resource
 	protected SessionContext sessionContext;
 
-	public void setSessionContext(SessionContext sessionContext)
-		throws EJBException, RemoteException
-	{
-		this.sessionContext = sessionContext;
-	}
-	public void unsetSessionContext()
-	{
-		this.sessionContext = null;
-	}
+//	public void setSessionContext(SessionContext sessionContext)
+//		throws EJBException, RemoteException
+//	{
+//		this.sessionContext = sessionContext;
+//	}
+//	public void unsetSessionContext()
+//	{
+//		this.sessionContext = null;
+//	}
 
 	/**
 	 * This method returns the JFirePrincipal representing the current user.

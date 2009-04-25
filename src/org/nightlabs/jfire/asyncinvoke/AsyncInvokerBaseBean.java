@@ -26,6 +26,7 @@
 
 package org.nightlabs.jfire.asyncinvoke;
 
+import javax.ejb.EJB;
 import javax.jms.ObjectMessage;
 import javax.naming.InitialContext;
 import javax.naming.NameNotFoundException;
@@ -85,6 +86,9 @@ implements javax.ejb.MessageDrivenBean, javax.jms.MessageListener
 		messageContext = null;
 	}
 
+
+	@EJB
+	protected AsyncInvokerDelegateLocal asyncInvokerDelegateLocal;
 
 	public void onMessage(javax.jms.Message message)
 	{
@@ -210,7 +214,11 @@ implements javax.ejb.MessageDrivenBean, javax.jms.MessageListener
 					AsyncInvokerDelegateLocal invokerDelegate = null;
 
 					try {
-						invokerDelegate = AsyncInvokerDelegateUtil.getLocalHome().create();
+						//invokerDelegate = AsyncInvokerDelegateUtil.getLocalHome().create();
+//						invokerDelegate = JFireEjb3Factory.getLocalBean(AsyncInvokerDelegateLocal.class, null);
+						invokerDelegate = asyncInvokerDelegateLocal;
+						if (invokerDelegate == null)
+							throw new IllegalStateException("Dependency injection for local EJB did not work!");
 					} catch (Exception x) {
 						logger().fatal("Obtaining stateless session bean AsyncInvokerDelegateLocal failed!", x);
 						messageContext.setRollbackOnly();

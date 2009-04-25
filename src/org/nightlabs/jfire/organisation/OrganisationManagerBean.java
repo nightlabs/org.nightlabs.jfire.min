@@ -27,7 +27,6 @@
 package org.nightlabs.jfire.organisation;
 
 import java.io.IOException;
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -38,10 +37,12 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.annotation.security.RolesAllowed;
 import javax.ejb.CreateException;
-import javax.ejb.EJBException;
-import javax.ejb.SessionBean;
-import javax.ejb.SessionContext;
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.jdo.FetchPlan;
 import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
@@ -54,7 +55,8 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.asyncinvoke.AsyncInvoke;
-import org.nightlabs.jfire.base.BaseSessionBeanImpl;
+import org.nightlabs.jfire.base.BaseSessionBeanImplEJB3;
+import org.nightlabs.jfire.base.JFireEjb3Factory;
 import org.nightlabs.jfire.base.JFireException;
 import org.nightlabs.jfire.base.JFirePrincipal;
 import org.nightlabs.jfire.base.JFireRemoteException;
@@ -97,41 +99,21 @@ import org.nightlabs.util.Util;
  * @ejb.util generate="physical"
  * @ejb.transaction type="Required"
  **/
-public abstract class OrganisationManagerBean
-	extends BaseSessionBeanImpl
-	implements SessionBean
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
+@Stateless
+public class OrganisationManagerBean
+	extends BaseSessionBeanImplEJB3
+	implements OrganisationManagerRemote
 {
 	private static final long serialVersionUID = 1L;
 	private static final Logger logger = Logger.getLogger(OrganisationManagerBean.class);
 
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.organisation.OrganisationManagerRemote#createOrganisationAfterReboot(java.lang.String, java.lang.String, java.lang.String, java.lang.String, boolean)
+	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_ServerAdmin_")
 	@Override
-	public void setSessionContext(SessionContext sessionContext)
-			throws EJBException, RemoteException
-	{
-		if(logger.isDebugEnabled())
-			logger.debug("setSessionContext("+sessionContext+")");
-		super.setSessionContext(sessionContext);
-	}
-	/**
-	 * @ejb.create-method
-	 * @ejb.permission role-name="_Guest_"
-	 */
-	public void ejbCreate()
-	throws CreateException
-	{
-		if(logger.isDebugEnabled())
-			logger.debug("ejbCreate()");
-	}
-	/**
-	 * @ejb.permission unchecked="true"
-	 */
-	public void ejbRemove() throws EJBException, RemoteException { }
-
-	/**
-	 * @ejb.interface-method
-	 * @ejb.transaction type="Required"
-	 * @ejb.permission role-name="_ServerAdmin_"
-	 */
 	public void createOrganisationAfterReboot(String organisationID, String organisationDisplayName, String userID, String password, boolean isServerAdmin) throws IOException
 	{
 		JFireServerManager ism = getJFireServerManager();
@@ -143,21 +125,12 @@ public abstract class OrganisationManagerBean
 		}
 	}
 
-	/**
-	 * This method creates an organisation on this server.
-	 *
-	 * @param organisationID The ID of the new organisation. It must be unique in the whole world.
-	 * @param organisationDisplayName A nice name that will be used to display the new representative organisation.
-	 * @param userID The userID of the first user to create within the new organisation. It will have all necessary permissions to manage users and roles within the new organisation.
-	 * @param password The password of the new user.
-	 * @param isServerAdmin Whether this user should have global server administration permissions.
-	 * @throws CreateOrganisationException If creating the organisation failed
-	 * @throws OrganisationInitException If initializing the organisation failed
-	 *
-	 * @ejb.interface-method
-	 * @ejb.transaction type="Never"
-	 * @ejb.permission role-name="_ServerAdmin_"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.organisation.OrganisationManagerRemote#createOrganisation(java.lang.String, java.lang.String, java.lang.String, java.lang.String, boolean)
 	 */
+	@TransactionAttribute(TransactionAttributeType.NEVER)
+	@RolesAllowed("_ServerAdmin_")
+	@Override
 	public void createOrganisation(String organisationID, String organisationDisplayName, String userID, String password, boolean isServerAdmin) throws OrganisationInitException, CreateOrganisationException
 	{
 		JFireServerManager ism = getJFireServerManager();
@@ -168,21 +141,12 @@ public abstract class OrganisationManagerBean
 		}
 	}
 
-	/**
-	 * This method creates an organisation on this server. In contrast to {@link OrganisationManager#createOrganisation(String, String, String, String, boolean)},
-	 * this method works asynchronously and you can track the progress using {@link OrganisationManager#getCreateOrganisationProgress(CreateOrganisationProgressID)}.
-	 *
-	 * @param organisationID The ID of the new organisation. It must be unique in the whole world.
-	 * @param organisationDisplayName A nice name that will be used to display the new representative organisation.
-	 * @param userID The userID of the first user to create within the new organisation. It will have all necessary permissions to manage users and roles within the new organisation.
-	 * @param password The password of the new user.
-	 * @param isServerAdmin Whether this user should have global server administration permissions.
-	 * @throws BusyCreatingOrganisationException
-	 *
-	 * @ejb.interface-method
-	 * @ejb.transaction type="Never"
-	 * @ejb.permission role-name="_ServerAdmin_"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.organisation.OrganisationManagerRemote#createOrganisationAsync(java.lang.String, java.lang.String, java.lang.String, java.lang.String, boolean)
 	 */
+	@TransactionAttribute(TransactionAttributeType.NEVER)
+	@RolesAllowed("_ServerAdmin_")
+	@Override
 	public CreateOrganisationProgressID createOrganisationAsync(String organisationID, String organisationDisplayName, String userID, String password, boolean isServerAdmin)
 	throws BusyCreatingOrganisationException
 	{
@@ -194,11 +158,12 @@ public abstract class OrganisationManagerBean
 		}
 	}
 
-	/**
-	 * @ejb.interface-method
-	 * @ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
-	 * @ejb.permission role-name="_ServerAdmin_"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.organisation.OrganisationManagerRemote#getCreateOrganisationProgress(org.nightlabs.jfire.servermanager.createorganisation.CreateOrganisationProgressID)
 	 */
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+	@RolesAllowed("_ServerAdmin_")
+	@Override
 	public CreateOrganisationProgress getCreateOrganisationProgress(CreateOrganisationProgressID createOrganisationProgressID)
 	{
 		JFireServerManager ism = getJFireServerManager();
@@ -209,10 +174,11 @@ public abstract class OrganisationManagerBean
 		}
 	}
 
-	/**
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_ServerAdmin_"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.organisation.OrganisationManagerRemote#getOrganisationCfs(boolean)
 	 */
+	@RolesAllowed("_ServerAdmin_")
+	@Override
 	public List<OrganisationCf> getOrganisationCfs(boolean sorted)
 	{
 		JFireServerManager ism = getJFireServerManager();
@@ -223,12 +189,11 @@ public abstract class OrganisationManagerBean
 		}
 	}
 
-	/**
-	 * @throws OrganisationNotFoundException If the specified organisation does not exist.
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_ServerAdmin_"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.organisation.OrganisationManagerRemote#getOrganisationConfig(java.lang.String)
 	 */
+	@RolesAllowed("_ServerAdmin_")
+	@Override
 	public OrganisationCf getOrganisationConfig(String organisationID)
 	throws OrganisationNotFoundException
 	{
@@ -240,15 +205,11 @@ public abstract class OrganisationManagerBean
 		}
 	}
 
-	/**
-	 * This method finds out whether there exists at least one arganisation.
-	 * @return <code>true</code> if no organisation exists on this server; <code>false</code> if there is at least one organisation.
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
-	 *
-	 * @see org.nightlabs.jfire.servermanager.JFireServerManager#isOrganisationCfsEmpty()
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.organisation.OrganisationManagerRemote#isOrganisationCfsEmpty()
 	 */
+	@RolesAllowed("_Guest_")
+	@Override
 	public boolean isOrganisationCfsEmpty()
 	{
 		JFireServerManager ism = getJFireServerManager();
@@ -259,10 +220,11 @@ public abstract class OrganisationManagerBean
 		}
 	}
 
-	/**
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="org.nightlabs.jfire.organisation.manageCrossOrganisationRegistrations"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.organisation.OrganisationManagerRemote#getPendingRegistrations(java.lang.String[], int)
 	 */
+	@RolesAllowed("org.nightlabs.jfire.organisation.manageCrossOrganisationRegistrations")
+	@Override
 	public Collection<RegistrationStatus> getPendingRegistrations(String[] fetchGroups, int maxFetchDepth)
 	{
 		PersistenceManager pm = getPersistenceManager();
@@ -282,20 +244,12 @@ public abstract class OrganisationManagerBean
 		}
 	}
 
-	/**
-	 * This method is called by the other organisation to inform this
-	 * one that the registration has been accepted.
-	 * <br/><br/>
-	 * Though, there
-	 * is no j2ee security, it is extremely hard to guess the correct
-	 * registrationID (a registrationID is actually far more secure than an average password).
-	 * Additionally, the organisation is read out
-	 * of the JFirePrincipal and must match the other organisationID.
-	 *
-	 * @ejb.interface-method
-	 * @ejb.transaction type="Required"
-	 * @ejb.permission role-name="_Guest_" @!No need to protect this method, because the registrationID cannot be guessed (it's far more secure than a password).
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.organisation.OrganisationManagerRemote#notifyAcceptRegistration(java.lang.String, org.nightlabs.jfire.organisation.Organisation, java.lang.String)
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_Guest_")
+	@Override
 	public void notifyAcceptRegistration(String registrationID, Organisation grantOrganisation, String userPassword)
 	{
 		if (registrationID == null)
@@ -342,11 +296,12 @@ public abstract class OrganisationManagerBean
 		}
 	}
 
-	/**
-	 * @ejb.interface-method
-	 * @ejb.transaction type="Required"
-	 * @ejb.permission role-name="_Guest_" @!No need to protect this method, because the registrationID cannot be guessed (it's far more secure than a password).
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.organisation.OrganisationManagerRemote#notifyRejectRegistration(java.lang.String)
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_Guest_")
+	@Override
 	public void notifyRejectRegistration(String registrationID)
 	{
 		if (registrationID == null)
@@ -409,15 +364,12 @@ public abstract class OrganisationManagerBean
 //		}
 	}
 
-	/**
-	 * This method is called by the client (a user who has organisation administrative
-	 * rights) to accept a registration. The registration must have been previously
-	 * applied for by the other organisation.
-	 *
-	 * @ejb.interface-method
-	 * @ejb.transaction type="Required"
-	 * @ejb.permission role-name="org.nightlabs.jfire.organisation.manageCrossOrganisationRegistrations"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.organisation.OrganisationManagerRemote#acceptRegistration(java.lang.String)
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("org.nightlabs.jfire.organisation.manageCrossOrganisationRegistrations")
+	@Override
 	public void acceptRegistration(String applicantOrganisationID)
 	throws JFireRemoteException
 	{
@@ -460,7 +412,8 @@ public abstract class OrganisationManagerBean
 
 				// Now, we notify the other organisation that its request has been accepted.
 				try {
-					OrganisationManager organisationManager = OrganisationManagerUtil.getHome(getInitialContextProperties(applicantOrganisationID)).create();
+					OrganisationManagerRemote organisationManager = JFireEjb3Factory.getRemoteBean(OrganisationManagerRemote.class, getInitialContextProperties(applicantOrganisationID));
+//					OrganisationManager organisationManager = OrganisationManagerUtil.getHome(getInitialContextProperties(applicantOrganisationID)).create();
 					organisationManager.notifyAcceptRegistration(
 							registrationStatus.getRegistrationID(),
 							grantOrganisation,
@@ -493,11 +446,12 @@ public abstract class OrganisationManagerBean
 		}
 	}
 
-	/**
-	 * @ejb.interface-method
-	 * @ejb.transaction type="Required"
-	 * @ejb.permission role-name="org.nightlabs.jfire.organisation.manageCrossOrganisationRegistrations"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.organisation.OrganisationManagerRemote#rejectRegistration(java.lang.String)
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("org.nightlabs.jfire.organisation.manageCrossOrganisationRegistrations")
+	@Override
 	public void rejectRegistration(String applicantOrganisationID)
 	throws JFireRemoteException
 	{
@@ -514,7 +468,8 @@ public abstract class OrganisationManagerBean
 			// Now, we notify the other organisation that its request has been
 			// rejected.
 			try {
-				OrganisationManager organisationManager = OrganisationManagerUtil.getHome(getInitialContextProperties(applicantOrganisationID)).create();
+				OrganisationManagerRemote organisationManager = JFireEjb3Factory.getRemoteBean(OrganisationManagerRemote.class, getInitialContextProperties(applicantOrganisationID));
+//				OrganisationManager organisationManager = OrganisationManagerUtil.getHome(getInitialContextProperties(applicantOrganisationID)).create();
 				organisationManager.notifyRejectRegistration(registrationStatus.getRegistrationID());
 			} catch (Exception e) {
 				throw new JFireRemoteException(e);
@@ -532,11 +487,12 @@ public abstract class OrganisationManagerBean
 		}
 	}
 
-	/**
-	 * @ejb.interface-method
-	 * @ejb.transaction type="Required"
-	 * @ejb.permission role-name="org.nightlabs.jfire.organisation.manageCrossOrganisationRegistrations"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.organisation.OrganisationManagerRemote#cancelRegistration(java.lang.String)
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("org.nightlabs.jfire.organisation.manageCrossOrganisationRegistrations")
+	@Override
 	public void cancelRegistration(String grantOrganisationID)
 	throws JFireRemoteException
 	{
@@ -554,7 +510,8 @@ public abstract class OrganisationManagerBean
 
 			// Obtain the OrganisationLinker EJB and request registration
 			try {
-				OrganisationLinker organisationLinker = OrganisationLinkerUtil.getHome(props).create();
+				OrganisationLinkerRemote organisationLinker = JFireEjb3Factory.getRemoteBean(OrganisationLinkerRemote.class, props);
+//				OrganisationLinker organisationLinker = OrganisationLinkerUtil.getHome(props).create();
 				organisationLinker.cancelRegistration(
 						registrationStatus.getRegistrationID(),
 						getOrganisationID(), grantOrganisationID);
@@ -580,16 +537,12 @@ public abstract class OrganisationManagerBean
 		}
 	}
 
-	/**
-	 * This method is called by a client. It is the first step to make two
-	 * organisations know each other. It creates a user for the new organisation
-	 * and requests to be registered at the other organisation.
-	 * @throws OrganisationAlreadyRegisteredException
-	 *
-	 * @ejb.interface-method
-	 * @ejb.transaction type="Required"
-	 * @ejb.permission role-name="org.nightlabs.jfire.organisation.manageCrossOrganisationRegistrations"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.organisation.OrganisationManagerRemote#beginRegistration(java.lang.String, java.lang.String, java.lang.String)
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("org.nightlabs.jfire.organisation.manageCrossOrganisationRegistrations")
+	@Override
 	public void beginRegistration(
 			String initialContextFactory, String initialContextURL, String organisationID)
 	throws OrganisationAlreadyRegisteredException, JFireRemoteException
@@ -656,7 +609,8 @@ public abstract class OrganisationManagerBean
 
 		// Obtain the OrganisationLinker EJB and request registration
 		try {
-			OrganisationLinker organisationLinker = OrganisationLinkerUtil.getHome(props).create();
+			OrganisationLinkerRemote organisationLinker = JFireEjb3Factory.getRemoteBean(OrganisationLinkerRemote.class, props);
+			//OrganisationLinker organisationLinker = OrganisationLinkerUtil.getHome(props).create();
 			organisationLinker.requestRegistration(registrationID, myOrganisation, organisationID, usrPassword);
 		} catch (OrganisationAlreadyRegisteredException x) {
 			throw x;
@@ -665,17 +619,12 @@ public abstract class OrganisationManagerBean
 		}
 	}
 
-	/**
-	 * This method is called by a client. After we began a registration and
-	 * the partner has either rejected or accepted, we still have the
-	 * RegistrationStatus in the list of pending registrations. This
-	 * is for the user to recognize that the other organisation has reacted
-	 * and what this reaction was (accept or reject).
-	 *
-	 * @ejb.interface-method
-	 * @ejb.transaction type="Required"
-	 * @ejb.permission role-name="org.nightlabs.jfire.organisation.manageCrossOrganisationRegistrations"
-	 **/
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.organisation.OrganisationManagerRemote#ackRegistration(java.lang.String)
+	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("org.nightlabs.jfire.organisation.manageCrossOrganisationRegistrations")
+	@Override
 	public void ackRegistration(String grantOrganisationID)
 	{
 		PersistenceManager pm = getPersistenceManager();
@@ -694,22 +643,24 @@ public abstract class OrganisationManagerBean
 		}
 	}
 
-	/**
-	 * @ejb.interface-method
-	 * @ejb.transaction type="Required"
-	 * @ejb.permission role-name="_Guest_"
-	 **/
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.organisation.OrganisationManagerRemote#testCascadedAuthentication(org.nightlabs.jfire.test.cascadedauthentication.TestRequestResultTreeNode)
+	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_Guest_")
+	@Override
 	public TestRequestResultTreeNode testCascadedAuthentication(TestRequestResultTreeNode node)
 	throws Exception
 	{
 		return internal_testCascadedAuthentication(node, -1);
 	}
 
-	/**
-	 * @ejb.interface-method
-	 * @ejb.transaction type="Required"
-	 * @ejb.permission role-name="_Guest_"
-	 **/
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.organisation.OrganisationManagerRemote#internal_testCascadedAuthentication(org.nightlabs.jfire.test.cascadedauthentication.TestRequestResultTreeNode, int)
+	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_Guest_")
+	@Override
 	public TestRequestResultTreeNode internal_testCascadedAuthentication(TestRequestResultTreeNode node, int level)
 	throws Exception
 	{
@@ -734,20 +685,21 @@ public abstract class OrganisationManagerBean
 		if (!children.isEmpty()) {
 			PersistenceManager pm = getPersistenceManager();
 			try {
-				Map<String, OrganisationManager> organisationManagers = new HashMap<String, OrganisationManager>();
+				Map<String, OrganisationManagerRemote> organisationManagers = new HashMap<String, OrganisationManagerRemote>();
 
 				for (TestRequestResultTreeNode childNode : children) {
 					String organisationID = childNode.getRequest_organisationID();
 					logger.info("testCascadedAuthentication (level="+level+") (principal="+getPrincipal()+"): creating organisationManager for organisationID=" + organisationID);
-					OrganisationManagerHome home = OrganisationManagerUtil.getHome(Lookup.getInitialContextProperties(pm, organisationID));
-					OrganisationManager organisationManager = home.create();
+//					OrganisationManagerHome home = OrganisationManagerUtil.getHome(Lookup.getInitialContextProperties(pm, organisationID));
+//					OrganisationManager organisationManager = home.create();
+					OrganisationManagerRemote organisationManager = JFireEjb3Factory.getRemoteBean(OrganisationManagerRemote.class, Lookup.getInitialContextProperties(pm, organisationID));
 					organisationManagers.put(organisationID, organisationManager);
 					logger.info("testCascadedAuthentication (level="+level+") (principal="+getPrincipal()+"): created organisationManager for organisationID=" + organisationID);
 				}
 
 				for (TestRequestResultTreeNode childNode : children) {
 					logger.info("testCascadedAuthentication (level="+level+") (principal="+getPrincipal()+"): calling organisationManager.testCascadedAuthentication() for organisationID=" + childNode.getRequest_organisationID());
-					OrganisationManager organisationManager = organisationManagers.get(childNode.getRequest_organisationID());
+					OrganisationManagerRemote organisationManager = organisationManagers.get(childNode.getRequest_organisationID());
 					TestRequestResultTreeNode resultChildNode = organisationManager.internal_testCascadedAuthentication(childNode, level + 1);
 
 					if (childNode.getParent() == null) {
@@ -789,50 +741,24 @@ public abstract class OrganisationManagerBean
 		return node;
 	}
 
-	/**
-	 * This method is called via datastoreinit.xml and registers this organisation in the
-	 * network's root-organisation, if it is not yet registered (or rejected). If the registration
-	 * has been rejected, it does not try again.
-	 * <p>
-	 * This method calls {@link #registerInRootOrganisation(boolean)} with <code>force = false</code>.
-	 * </p>
-	 * <p>
-	 * Note, that this method does nothing, if the local organisation IS the root-organisation.
-	 * </p>
-	 * @throws OrganisationAlreadyRegisteredException
-	 *
-	 * @ejb.interface-method
-	 * @ejb.transaction type="Required"
-	 * @ejb.permission role-name="_System_,org.nightlabs.jfire.organisation.manageCrossOrganisationRegistrations"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.organisation.OrganisationManagerRemote#registerInRootOrganisation()
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed({"_System_", "org.nightlabs.jfire.organisation.manageCrossOrganisationRegistrations"})
+	@Override
 	public void registerInRootOrganisation()
 	throws OrganisationAlreadyRegisteredException, JFireRemoteException
 	{
 		registerInRootOrganisation(false);
 	}
 
-	/**
-	 * If this organisation is not the root-organisation, it delegates this query
-	 * to the root-organisation. If it is the root-organisation, it returns all
-	 * {@link Organisation}s that are known to the root-organisation and that
-	 * are allowed to be seen by the querying organisation. If it is not an
-	 * organisation which queries, but a local user, this method returns all.
-	 * <p>
-	 * TODO Currently, all known organisations are returned. They must be filtered! An organisation should only see a configurable subset. Maybe this should be configured by groups (and not individually).
-	 * </p>
-	 *
-	 * @param filterPartnerOrganisations If <tt>true</tt> and the local organisation is not the
-	 *		root-organisation, the local organisation filters out all organisations that it already
-	 *		has a cooperation with (means a user for the other organisation exists). If this is the
-	 *		root-organisation, this param is ignored.
-	 * @param fetchGroups Either <tt>null</tt> or the fetchGroups to use for detaching.
-	 * @return Returns instances of {@link Organisation}.
-	 *
-	 * @ejb.interface-method
-	 * @ejb.transaction type="Required"
-	 * @ejb.permission role-name="_Guest_" @!Roles are checked inside the code, because the behaviour is dependent on the situation. Marco.
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.organisation.OrganisationManagerRemote#getOrganisationsFromRootOrganisation(boolean, java.lang.String[], int)
 	 */
-	@SuppressWarnings("unchecked")
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_Guest_")
+	@Override
 	public Collection<Organisation> getOrganisationsFromRootOrganisation(boolean filterPartnerOrganisations, String[] fetchGroups, int maxFetchDepth)
 	throws JFireException
 	{
@@ -847,7 +773,8 @@ public abstract class OrganisationManagerBean
 					Authority.getOrganisationAuthority(pm).assertContainsRoleRef(getPrincipal(), RoleConstants.queryOrganisations);
 
 					// delegate to root-organisation
-					OrganisationManager organisationManager = OrganisationManagerUtil.getHome(getInitialContextProperties(rootOrganisationID)).create();
+//					OrganisationManager organisationManager = OrganisationManagerUtil.getHome(getInitialContextProperties(rootOrganisationID)).create();
+					OrganisationManagerRemote organisationManager = JFireEjb3Factory.getRemoteBean(OrganisationManagerRemote.class, getInitialContextProperties(rootOrganisationID));
 					Collection<Organisation> res = organisationManager.getOrganisationsFromRootOrganisation(filterPartnerOrganisations, fetchGroups, maxFetchDepth);
 
 					if (logger.isDebugEnabled()) {
@@ -926,19 +853,12 @@ public abstract class OrganisationManagerBean
 		}
 	}
 
-	/**
-	 * This method registers this organisation in the
-	 * network's root-organisation, if it is not yet registered (or rejected). If the registration
-	 * has been rejected, it does not try again if you do not pass <code>force = true</code>.
-	 * <p>
-	 * Note, that this method does nothing, if the local organisation IS the root-organisation.
-	 * </p>
-	 * @throws OrganisationAlreadyRegisteredException
-	 *
-	 * @ejb.interface-method
-	 * @ejb.transaction type="Required"
-	 * @ejb.permission role-name="_System_,org.nightlabs.jfire.organisation.manageCrossOrganisationRegistrations"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.organisation.OrganisationManagerRemote#registerInRootOrganisation(boolean)
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed({"_System_", "org.nightlabs.jfire.organisation.manageCrossOrganisationRegistrations"})
+	@Override
 	public void registerInRootOrganisation(boolean force)
 	throws OrganisationAlreadyRegisteredException, JFireRemoteException
 	{
@@ -1012,15 +932,15 @@ public abstract class OrganisationManagerBean
 		}
 	}
 
-	/**
-	 * This method is used internally to fill a newly created organisation with initial
-	 * objects like {@link org.nightlabs.jfire.server.Server}, {@link Organisation}, {@link User}, {@link UserLocal} and
-	 * many more.
-	 *
-	 * @ejb.interface-method
-	 * @ejb.transaction type="Supports"
-	 * @ejb.permission role-name="_System_"
+	@EJB
+	private OrganisationManagerHelperLocal organisationManagerHelperLocal;
+
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.organisation.OrganisationManagerRemote#internalInitializeEmptyOrganisation(org.nightlabs.jfire.servermanager.createorganisation.CreateOrganisationProgressID, org.nightlabs.jfire.servermanager.config.ServerCf, org.nightlabs.jfire.servermanager.config.OrganisationCf, java.lang.String, java.lang.String)
 	 */
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+	@RolesAllowed("_System_")
+	@Override
 	public void internalInitializeEmptyOrganisation(
 			CreateOrganisationProgressID createOrganisationProgressID,
 			ServerCf localServerCf,
@@ -1029,7 +949,12 @@ public abstract class OrganisationManagerBean
 			)
 	throws CreateException, NamingException
 	{
-		OrganisationManagerHelperLocal m = OrganisationManagerHelperUtil.getLocalHome().create();
+//		OrganisationManagerHelperLocal m = OrganisationManagerHelperUtil.getLocalHome().create();
+//		OrganisationManagerHelperLocal m = JFireEjb3Factory.getLocalBean(OrganisationManagerHelperLocal.class, null);
+		OrganisationManagerHelperLocal m = organisationManagerHelperLocal;
+		if (m == null)
+			throw new IllegalStateException("Dependency injection for organisationManagerHelperLocal failed!");
+
 		JFireServerManager jfsm = getJFireServerManager();
 		try {
 			jfsm.createOrganisationProgress_addCreateOrganisationStatus(createOrganisationProgressID,
@@ -1062,12 +987,12 @@ public abstract class OrganisationManagerBean
 		}
 	}
 
-	/**
-	 * @ejb.interface-method
-	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
-	 * @ejb.permission role-name="org.nightlabs.jfire.organisation.queryOrganisations"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.organisation.OrganisationManagerRemote#getOrganisationIDs()
 	 */
+	@RolesAllowed("org.nightlabs.jfire.organisation.queryOrganisations")
 	@SuppressWarnings("unchecked")
+	@Override
 	public Set<OrganisationID> getOrganisationIDs()
 	{
 		PersistenceManager pm = getPersistenceManager();
@@ -1080,11 +1005,11 @@ public abstract class OrganisationManagerBean
 		}
 	}
 
-	/**
-	 * @ejb.interface-method
-	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
-	 * @ejb.permission role-name="org.nightlabs.jfire.organisation.queryOrganisations"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.organisation.OrganisationManagerRemote#getOrganisations(java.util.Collection, java.lang.String[], int)
 	 */
+	@RolesAllowed("org.nightlabs.jfire.organisation.queryOrganisations")
+	@Override
 	public List<Organisation> getOrganisations(Collection<OrganisationID> organisationIDs, String[] fetchGroups, int maxFetchDepth)
 	{
 		PersistenceManager pm = getPersistenceManager();
@@ -1095,22 +1020,12 @@ public abstract class OrganisationManagerBean
 		}
 	}
 
-	/**
-	 * Stores the given {@link Organisation} object if it is the organisation of the calling
-	 * user (throws an {@link IllegalArgumentException} otherwise).
-	 * Optionally returns a detached copy of the new version.
-	 *
-	 * @param organisation The {@link Organisation} to store. Has to be the organisation of the calling user.
-	 * @param get Whether to return a detached copy of the new verison of the given {@link Organisation}.
-	 * @param fetchGroups The fetch-groups to detach the {@link Organisation} with.
-	 * @param maxFetchDepth The maximum fetch-depth to use when detaching.
-	 * @return A detached copy of the new version of the given {@link Organisation}, or <code>null</code> if get is <code>false</code>.
-	 *
-	 * @ejb.interface-method
-	 * @ejb.transaction type="Required"
-	 * @ejb.permission role-name="org.nightlabs.jfire.organisation.storeLocalOrganisation"
-	 *
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.organisation.OrganisationManagerRemote#storeLocalOrganisation(org.nightlabs.jfire.organisation.Organisation, boolean, java.lang.String[], int)
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("org.nightlabs.jfire.organisation.storeLocalOrganisation")
+	@Override
 	public Organisation storeLocalOrganisation(Organisation organisation, boolean get, String[] fetchGroups, int maxFetchDepth)
 	{
 		PersistenceManager pm = getPersistenceManager();
@@ -1122,6 +1037,4 @@ public abstract class OrganisationManagerBean
 			pm.close();
 		}
 	}
-
-
 }

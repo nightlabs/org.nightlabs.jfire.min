@@ -2,6 +2,7 @@
 		PUBLIC "-//NightLabs GmbH//DTD Organisation Initialisation 1.0//EN"
 		"http://www.nightlabs.de/dtd/organisation-init_1_0.dtd">
 <organisation-initialisation>
+<!--
 	<init bean="jfire/ejb/JFireBaseBean/ConfigManager" method="initialise"/>
 	<init bean="jfire/ejb/JFireBaseBean/OrganisationManager" method="registerInRootOrganisation" priority="999"/>
 	<init bean="jfire/ejb/JFireBaseBean/JFireTimer" method="startTimer" priority="998"/>
@@ -9,4 +10,14 @@
 	<init bean="jfire/ejb/JFireBaseBean/PropertyManager" method="initialise"/>
 	<init bean="jfire/ejb/JFireBaseBean/EditLockManager" method="initialise"/>
 	<init bean="jfire/ejb/JFireBaseBean/JFireSecurityManager" method="initialise"/>
+-->
+
+	<init bean="org.nightlabs.jfire.config.ConfigManagerRemote" method="initialise"/>
+	<init bean="org.nightlabs.jfire.organisation.OrganisationManagerRemote" method="registerInRootOrganisation" priority="999"/>
+	<init bean="org.nightlabs.jfire.timer.JFireTimerRemote" method="startTimer" priority="998"/>
+	<init bean="org.nightlabs.jfire.jdo.notification.persistent.PersistentNotificationEJBRemote" method="initialise"/>
+	<init bean="org.nightlabs.jfire.prop.PropertyManagerRemote" method="initialise"/>
+	<init bean="org.nightlabs.jfire.editlock.EditLockManagerRemote" method="initialise"/>
+	<init bean="org.nightlabs.jfire.security.JFireSecurityManagerRemote" method="initialise"/>
+
 </organisation-initialisation>

@@ -28,6 +28,13 @@ package org.nightlabs.jfire.asyncinvoke;
 
 import java.io.Serializable;
 
+import javax.ejb.ActivationConfigProperty;
+import javax.ejb.TransactionManagement;
+import javax.ejb.TransactionManagementType;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.ejb.MessageDriven;
+
 /**
  * @ejb.bean name="jfire/mdb/JFireBaseBean/AsyncInvokerInvocation"
  *		 acknowledge-mode="Auto-acknowledge"
@@ -41,6 +48,17 @@ import java.io.Serializable;
  *
  * @!jboss.subscriber name="_LocalQueueReader_" password="test"
  */
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
+@TransactionManagement(TransactionManagementType.CONTAINER)
+@MessageDriven(
+	name="jfire/mdb/JFireBaseBean/AsyncInvokerInvocation",
+	activationConfig={@ActivationConfigProperty(
+		propertyName="acknowledgeMode",
+		propertyValue="Auto-acknowledge"), @ActivationConfigProperty(
+		propertyName="destinationType",
+		propertyValue="javax.jms.Queue"), @ActivationConfigProperty(
+		propertyName="destination",
+		propertyValue="queue/jfire/JFireBaseBean/AsyncInvokerInvocationQueue")})
 public class AsyncInvokerInvocationBean
 extends AsyncInvokerBaseBean
 {

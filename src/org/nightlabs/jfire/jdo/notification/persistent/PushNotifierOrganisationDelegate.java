@@ -2,6 +2,7 @@ package org.nightlabs.jfire.jdo.notification.persistent;
 
 import javax.jdo.PersistenceManager;
 
+import org.nightlabs.jfire.base.JFireEjb3Factory;
 import org.nightlabs.jfire.base.Lookup;
 
 public class PushNotifierOrganisationDelegate
@@ -13,7 +14,8 @@ public class PushNotifierOrganisationDelegate
 			throw new IllegalArgumentException("notificationBundle.subscriberType illegal: " + notificationBundle.getSubscriberType());
 
 		String subscriberOrganisationID = notificationBundle.getSubscriberID();
-		PersistentNotificationEJB pn = PersistentNotificationEJBUtil.getHome(Lookup.getInitialContextProperties(pm, subscriberOrganisationID)).create();
+		PersistentNotificationEJBRemote pn = JFireEjb3Factory.getRemoteBean(PersistentNotificationEJBRemote.class, Lookup.getInitialContextProperties(pm, subscriberOrganisationID));
+//		PersistentNotificationEJB pn = PersistentNotificationEJBUtil.getHome(Lookup.getInitialContextProperties(pm, subscriberOrganisationID)).create();
 		pn.pushNotificationBundle(notificationBundle);
 	}
 }

@@ -27,15 +27,17 @@
 package org.nightlabs.jfire.organisationinit;
 
 import java.lang.reflect.Method;
-import java.rmi.RemoteException;
 
-import javax.ejb.CreateException;
-import javax.ejb.EJBException;
-import javax.ejb.SessionBean;
+import javax.annotation.security.RolesAllowed;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.ejb.TransactionManagement;
+import javax.ejb.TransactionManagementType;
 import javax.naming.InitialContext;
 
 import org.apache.log4j.Logger;
-import org.nightlabs.jfire.base.BaseSessionBeanImpl;
+import org.nightlabs.jfire.base.BaseSessionBeanImplEJB3;
 import org.nightlabs.jfire.base.InvokeUtil;
 import org.nightlabs.jfire.crossorganisationregistrationinit.Context;
 import org.nightlabs.jfire.crossorganisationregistrationinit.CrossOrganisationRegistrationInit;
@@ -49,32 +51,21 @@ import org.nightlabs.jfire.crossorganisationregistrationinit.CrossOrganisationRe
  * @ejb.util generate="physical"
  * @ejb.transaction type="Required"
  */
-public abstract class OrganisationInitDelegateBean
-extends BaseSessionBeanImpl
-implements SessionBean
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
+@TransactionManagement(TransactionManagementType.CONTAINER)
+@Stateless
+public class OrganisationInitDelegateBean
+extends BaseSessionBeanImplEJB3
+implements OrganisationInitDelegateRemote // , OrganisationInitDelegateLocal
 {
 	private static final long serialVersionUID = 1L;
 
-	/**
-	 * @ejb.create-method
-	 * @ejb.permission role-name="_Guest_"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.organisationinit.OrganisationInitDelegateRemote#invokeOrganisationInitInNestedTransaction(org.nightlabs.jfire.organisationinit.OrganisationInit)
 	 */
-	public void ejbCreate()
-	throws CreateException
-	{
-	}
-	/**
-	 * @ejb.permission unchecked="true"
-	 */
-	public void ejbRemove() throws EJBException, RemoteException
-	{
-	}
-
-	/**
-	 * @ejb.interface-method
-	 * @ejb.transaction type="RequiresNew"
-	 * @ejb.permission role-name="_System_"
-	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+	@RolesAllowed("_System_")
+	@Override
 	public void invokeOrganisationInitInNestedTransaction(OrganisationInit init)
 	throws Exception
 	{
@@ -83,20 +74,22 @@ implements SessionBean
 		try {
 			if (logger.isDebugEnabled())
 				logger.debug("Executing OrganisationInit as user " + getPrincipal() +": " + init);
-			Object bean = InvokeUtil.createBean(initCtx, init.getBean());
+//			Object bean = InvokeUtil.createBean(initCtx, init.getBean());
+			Object bean = initCtx.lookup(InvokeUtil.JNDI_PREFIX_EJB_BY_REMOTE_INTERFACE + init.getBean());
 			Method beanMethod = bean.getClass().getMethod(init.getMethod(), (Class[]) null);
 			beanMethod.invoke(bean, (Object[]) null);
-			InvokeUtil.removeBean(bean);
+//			InvokeUtil.removeBean(bean);
 		} finally {
 			initCtx.close();
 		}
 	}
 
-	/**
-	 * @ejb.interface-method
-	 * @ejb.transaction type="RequiresNew"
-	 * @ejb.permission role-name="_System_"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.organisationinit.OrganisationInitDelegateRemote#invokeCrossOrganisationRegistrationInitInNestedTransaction(org.nightlabs.jfire.crossorganisationregistrationinit.CrossOrganisationRegistrationInit, org.nightlabs.jfire.crossorganisationregistrationinit.Context)
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+	@RolesAllowed("_System_")
+	@Override
 	public void invokeCrossOrganisationRegistrationInitInNestedTransaction(CrossOrganisationRegistrationInit init, Context context)
 	throws Exception
 	{
@@ -105,10 +98,11 @@ implements SessionBean
 		try {
 			if (logger.isDebugEnabled())
 				logger.debug("Executing CrossOrganisationRegistrationInit as user " + getPrincipal() +": " + init);
-			Object bean = InvokeUtil.createBean(initCtx, init.getBean());
+//			Object bean = InvokeUtil.createBean(initCtx, init.getBean());
+			Object bean = initCtx.lookup(InvokeUtil.JNDI_PREFIX_EJB_BY_REMOTE_INTERFACE + init.getBean());
 			Method beanMethod = bean.getClass().getMethod(init.getMethod(), new Class[] { Context.class });
 			beanMethod.invoke(bean, new Object[] { context });
-			InvokeUtil.removeBean(bean);
+//			InvokeUtil.removeBean(bean);
 		} finally {
 			initCtx.close();
 		}

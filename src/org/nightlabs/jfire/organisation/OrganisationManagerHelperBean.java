@@ -1,22 +1,28 @@
 package org.nightlabs.jfire.organisation;
 
-import java.rmi.RemoteException;
 import java.util.Iterator;
 import java.util.Locale;
 
-import javax.ejb.CreateException;
-import javax.ejb.EJBException;
-import javax.ejb.SessionBean;
-import javax.ejb.SessionContext;
+import javax.annotation.security.RolesAllowed;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.jdo.FetchPlan;
 import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.jfire.asyncinvoke.AsyncInvokeProblem;
-import org.nightlabs.jfire.base.BaseSessionBeanImpl;
+import org.nightlabs.jfire.base.BaseSessionBeanImplEJB3;
+import org.nightlabs.jfire.base.expression.AndCondition;
+import org.nightlabs.jfire.base.expression.Negation;
+import org.nightlabs.jfire.base.expression.OrCondition;
 import org.nightlabs.jfire.prop.Struct;
 import org.nightlabs.jfire.prop.StructBlockOrderItem;
 import org.nightlabs.jfire.prop.StructLocal;
+import org.nightlabs.jfire.prop.validation.ExpressionPropertySetValidator;
+import org.nightlabs.jfire.prop.validation.GenericDataFieldNotEmptyExpression;
+import org.nightlabs.jfire.prop.validation.ScriptPropertySetValidator;
 import org.nightlabs.jfire.security.Authority;
 import org.nightlabs.jfire.security.AuthorityType;
 import org.nightlabs.jfire.security.AuthorizedObjectRef;
@@ -48,39 +54,21 @@ import org.nightlabs.jfire.workstation.Workstation;
  * @ejb.util generate="physical"
  * @ejb.transaction type="Required"
  **/
-public abstract class OrganisationManagerHelperBean
-	extends BaseSessionBeanImpl
-	implements SessionBean
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
+@Stateless
+public class OrganisationManagerHelperBean
+extends BaseSessionBeanImplEJB3
+implements OrganisationManagerHelperLocal
 {
 	private static final long serialVersionUID = 1L;
 	private static final Logger logger = Logger.getLogger(OrganisationManagerBean.class);
 
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.organisation.OrganisationManagerHelperLocal#internalInitializeEmptyOrganisation_step1(org.nightlabs.jfire.servermanager.config.ServerCf, org.nightlabs.jfire.servermanager.config.OrganisationCf, java.lang.String, java.lang.String)
+	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+	@RolesAllowed("_System_")
 	@Override
-	public void setSessionContext(SessionContext sessionContext)
-			throws EJBException, RemoteException
-	{
-		super.setSessionContext(sessionContext);
-	}
-
-	/**
-	 * @ejb.create-method
-	 * @ejb.permission role-name="_Guest_"
-	 */
-	public void ejbCreate()
-	throws CreateException
-	{
-	}
-
-	/**
-	 * @ejb.permission unchecked="true"
-	 */
-	public void ejbRemove() throws EJBException, RemoteException { }
-
-	/**
-	 * @ejb.interface-method view-type="local"
-	 * @ejb.transaction type="RequiresNew"
-	 * @ejb.permission role-name="_System_"
-	 **/
 	public void internalInitializeEmptyOrganisation_step1(
 			ServerCf localServerCf,
 			OrganisationCf organisationCf,
@@ -100,6 +88,17 @@ public abstract class OrganisationManagerHelperBean
 			pm.getExtent(LocalOrganisation.class);
 			pm.getExtent(User.class);
 			pm.getExtent(AsyncInvokeProblem.class);
+
+			// It's important to initialise the following classes in this order, because otherwise
+			// implementations of IPropertySetValidator / IExpression are said to be missing and an exception.
+			// is thrown by DataNucleus. Marco.
+			pm.getExtent(Negation.class);
+			pm.getExtent(GenericDataFieldNotEmptyExpression.class);
+			pm.getExtent(AndCondition.class);
+			pm.getExtent(OrCondition.class);
+
+			pm.getExtent(ExpressionPropertySetValidator.class);
+			pm.getExtent(ScriptPropertySetValidator.class);
 
 			pm.getExtent(Struct.class);
 			pm.getExtent(StructLocal.class);
@@ -139,6 +138,9 @@ public abstract class OrganisationManagerHelperBean
 
 			if(logger.isDebugEnabled())
 				logger.debug("Creating JDO object LocalOrganisation...");
+
+			pm.getFetchPlan().setGroup(FetchPlan.ALL);
+
 			Organisation organisation = organisationCf.createOrganisation(pm, server);
 			LocalOrganisation localOrganisation = new LocalOrganisation(organisation);
 			localOrganisation = pm.makePersistent(localOrganisation);
@@ -211,11 +213,12 @@ public abstract class OrganisationManagerHelperBean
 		}
 	}
 
-	/**
-	 * @ejb.interface-method view-type="local"
-	 * @ejb.transaction type="RequiresNew"
-	 * @ejb.permission role-name="_System_"
-	 **/
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.organisation.OrganisationManagerHelperLocal#internalInitializeEmptyOrganisation_step2()
+	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+	@RolesAllowed("_System_")
+	@Override
 	public void internalInitializeEmptyOrganisation_step2()
 	{
 		String organisationID = getOrganisationID();
@@ -233,11 +236,12 @@ public abstract class OrganisationManagerHelperBean
 		}
 	}
 
-	/**
-	 * @ejb.interface-method view-type="local"
-	 * @ejb.transaction type="RequiresNew"
-	 * @ejb.permission role-name="_System_"
-	 **/
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.organisation.OrganisationManagerHelperLocal#internalInitializeEmptyOrganisation_step3(org.nightlabs.jfire.servermanager.config.ServerCf, org.nightlabs.jfire.servermanager.config.OrganisationCf, java.lang.String)
+	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+	@RolesAllowed("_System_")
+	@Override
 	public void internalInitializeEmptyOrganisation_step3(
 			ServerCf localServerCf,
 			OrganisationCf organisationCf,

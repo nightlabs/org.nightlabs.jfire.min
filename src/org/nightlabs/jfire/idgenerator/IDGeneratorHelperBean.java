@@ -25,19 +25,17 @@
  ******************************************************************************/
 package org.nightlabs.jfire.idgenerator;
 
-import java.rmi.RemoteException;
-
-import javax.ejb.CreateException;
-import javax.ejb.EJBException;
-import javax.ejb.SessionBean;
-import javax.ejb.SessionContext;
+import javax.annotation.security.RolesAllowed;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jdo.ObjectIDUtil;
-import org.nightlabs.jfire.base.BaseSessionBeanImpl;
+import org.nightlabs.jfire.base.BaseSessionBeanImplEJB3;
 import org.nightlabs.jfire.idgenerator.id.IDNamespaceID;
 
 /**
@@ -48,65 +46,35 @@ import org.nightlabs.jfire.idgenerator.id.IDNamespaceID;
  * @ejb.util generate="physical"
  * @ejb.transaction type="Required"
  */
-public abstract class IDGeneratorHelperBean
-extends BaseSessionBeanImpl implements SessionBean
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
+@Stateless(name="org.nightlabs.jfire.idgenerator.IDGeneratorHelperBean")
+public class IDGeneratorHelperBean
+extends BaseSessionBeanImplEJB3 implements IDGeneratorHelperRemote, IDGeneratorHelperLocal
 {
 	private static final Logger logger = Logger.getLogger(IDGeneratorHelperBean.class);
 	private static final long serialVersionUID = 1L;
 
-	@Override
-	public void setSessionContext(SessionContext sessionContext) throws EJBException, RemoteException
-	{
-		super.setSessionContext(sessionContext);
-	}
-	@Override
-	public void unsetSessionContext() {
-		super.unsetSessionContext();
-	}
-	/**
-	 * @ejb.create-method
-	 * @ejb.permission role-name="_Guest_"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.idgenerator.IDGeneratorHelperRemote#ping(java.lang.String)
 	 */
-	public void ejbCreate() throws CreateException
-	{
-	}
-
-	/**
-	 * @ejb.interface-method
-	 * @ejb.transaction type="Supports"
-	 * @ejb.permission role-name="_Guest_"
-	 */
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+	@RolesAllowed("_Guest_")
 	@Override
 	public String ping(String message) {
 		return super.ping(message);
 	}
-
-	/**
-	 * {@inheritDoc}
-	 *
-	 * @ejb.permission unchecked="true"
-	 */
-	@Override
-	public void ejbRemove() throws EJBException, RemoteException { }
 
 	public static final long LIMIT_LOG_WARN = Long.MAX_VALUE / 10 * 8; // log a warning above 80 %
 	public static final long LIMIT_LOG_ERROR = Long.MAX_VALUE / 10 * 9; // log an error above 90 %
 	public static final long LIMIT_LOG_FATAL = Long.MAX_VALUE / 100 * 95; // log an error above 95 %
 	public static final long LIMIT_FAIL = Long.MAX_VALUE - 1000; // throw an exception
 
-	/**
-	 * This method is called by the {@link IDGeneratorServer} and not visible to a remote client.
-	 * Warning: You should not use this method, but instead call {@link IDGenerator#nextIDs(String, int)}!!! This
-	 * method is only used internally.
-	 *
-	 * @param namespace The namespace (within the scope of the current organisation) within which unique IDs need to be generated.
-	 * @param currentCacheSize The current number of cached IDs.
-	 * @param minCacheSize The minimum number of IDs that must be available in the cache after the generated ones are added.
-	 *
-	 * @ejb.interface-method view-type="local"
-	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type="RequiresNew"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.idgenerator.IDGeneratorHelperLocal#serverNextIDs(java.lang.String, int, int)
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+	@RolesAllowed("_Guest_")
+	@Override
 	public long[] serverNextIDs(String namespace, int currentCacheSize, int minCacheSize)
 	{
 		if (logger.isTraceEnabled()) {
@@ -161,19 +129,11 @@ extends BaseSessionBeanImpl implements SessionBean
 		}
 	}
 
-	/**
-	 * This method is called by the client side {@link IDGenerator} implementation.
-	 * Warning: You should not use this method, but instead call {@link IDGenerator#nextIDs(String, int)}!!! This
-	 * method is only used internally.
-	 *
-	 * @param namespace The namespace (within the scope of the current organisation) within which unique IDs need to be generated.
-	 * @param currentCacheSize The current number of cached IDs.
-	 * @param minCacheSize The minimum number of IDs that must be available in the cache after the generated ones are added.
-	 *
-	 * @ejb.interface-method view-type="remote"
-	 * @ejb.permission role-name="_Guest_"
-	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.idgenerator.IDGeneratorHelperRemote#clientNextIDs(java.lang.String, int, int)
 	 */
+	@RolesAllowed("_Guest_")
+	@Override
 	public long[] clientNextIDs(String namespace, int currentCacheSize, int minCacheSize)
 	{
 		if (logger.isTraceEnabled()) {

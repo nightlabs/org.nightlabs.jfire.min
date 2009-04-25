@@ -1,21 +1,22 @@
 package org.nightlabs.jfire.asyncinvoke;
 
-import java.rmi.RemoteException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import javax.ejb.CreateException;
-import javax.ejb.EJBException;
-import javax.ejb.SessionBean;
-import javax.ejb.SessionContext;
+import javax.annotation.security.RolesAllowed;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.ejb.TransactionManagement;
+import javax.ejb.TransactionManagementType;
 import javax.jdo.PersistenceManager;
 
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.asyncinvoke.id.AsyncInvokeProblemID;
-import org.nightlabs.jfire.base.BaseSessionBeanImpl;
+import org.nightlabs.jfire.base.BaseSessionBeanImplEJB3;
 
 /**
  * @ejb.bean name="jfire/ejb/JFireBaseBean/AsyncInvokeManager"
@@ -26,44 +27,22 @@ import org.nightlabs.jfire.base.BaseSessionBeanImpl;
  * @ejb.util generate="physical"
  * @ejb.transaction type="Required"
  */
-public abstract class AsyncInvokeManagerBean
-extends BaseSessionBeanImpl
-implements SessionBean
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
+@TransactionManagement(TransactionManagementType.CONTAINER)
+@Stateless
+public class AsyncInvokeManagerBean
+extends BaseSessionBeanImplEJB3
+implements AsyncInvokeManagerRemote
 {
 	//	private static final Logger logger = Logger.getLogger(AsyncInvokeManagerBean.class);
 	private static final long serialVersionUID = 1L;
 
-	@Override
-	public void setSessionContext(SessionContext sessionContext)
-	throws EJBException, RemoteException {
-		super.setSessionContext(sessionContext);
-	}
-
-	@Override
-	public void unsetSessionContext() {
-		super.unsetSessionContext();
-	}
-
-	/**
-	 * @ejb.create-method
-	 * @ejb.permission role-name="_Guest_"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.asyncinvoke.AsyncInvokeManagerRemote#getAsyncInvokeProblemIDs()
 	 */
-	public void ejbCreate() throws CreateException { }
-
-	/**
-	 * {@inheritDoc}
-	 *
-	 * @ejb.permission unchecked="true"
-	 */
-	@Override
-	public void ejbRemove() throws EJBException, RemoteException { }
-
-	/**
-	 * @ejb.interface-method
-	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
-	 * @ejb.permission role-name="org.nightlabs.jfire.asyncinvoke.administrateAsyncInvokes"
-	 */
+	@RolesAllowed("org.nightlabs.jfire.asyncinvoke.administrateAsyncInvokes")
 	@SuppressWarnings("unchecked")
+	@Override
 	public Set<AsyncInvokeProblemID> getAsyncInvokeProblemIDs() {
 		PersistenceManager pm = getPersistenceManager();
 		try {
@@ -75,11 +54,11 @@ implements SessionBean
 		}
 	}
 
-	/**
-	 * @ejb.interface-method
-	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
-	 * @ejb.permission role-name="org.nightlabs.jfire.asyncinvoke.administrateAsyncInvokes"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.asyncinvoke.AsyncInvokeManagerRemote#getAsyncInvokeProblems(java.util.Collection, java.lang.String[], int)
 	 */
+	@RolesAllowed("org.nightlabs.jfire.asyncinvoke.administrateAsyncInvokes")
+	@Override
 	public List<AsyncInvokeProblem> getAsyncInvokeProblems(Collection<AsyncInvokeProblemID> asyncInvokeProblemIDs, String[] fetchGroups, int maxFetchDepth) {
 		PersistenceManager pm = getPersistenceManager();
 		try {
@@ -89,17 +68,12 @@ implements SessionBean
 		}
 	}
 
-	/**
-	 * Delete the {@link AsyncInvokeProblem} instances specified by <code>asyncInvokeProblemIDs</code>.
-	 * Only undeliverable problems can be deleted. Every problem where {@link AsyncInvokeProblem#isUndeliverable()}
-	 * returns <code>false</code> is silently ignored (i.e. not deleted).
-	 *
-	 * @param asyncInvokeProblemIDs the identifiers of the objects to be deleted.
-	 *
-	 * @ejb.interface-method
-	 * @ejb.transaction type="Required"
-	 * @ejb.permission role-name="org.nightlabs.jfire.asyncinvoke.administrateAsyncInvokes"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.asyncinvoke.AsyncInvokeManagerRemote#deleteAsyncInvokeProblems(java.util.Collection)
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("org.nightlabs.jfire.asyncinvoke.administrateAsyncInvokes")
+	@Override
 	public void deleteAsyncInvokeProblems(Collection<AsyncInvokeProblemID> asyncInvokeProblemIDs) {
 		PersistenceManager pm = getPersistenceManager();
 		try {
@@ -116,18 +90,12 @@ implements SessionBean
 		}
 	}
 
-	/**
-	 * Retry invocation of the {@link AsyncInvokeProblem} instances specified by <code>asyncInvokeProblemIDs</code>.
-	 * Only undeliverable problems can be rescheduled. Every problem where {@link AsyncInvokeProblem#isUndeliverable()}
-	 * returns <code>false</code> is silently ignored.
-	 *
-	 * @param asyncInvokeProblemIDs the identifiers of the invocations that shall be retried.
-	 * @throws AsyncInvokeEnqueueException If creating the async invoke envelope or enqueueing the invokation failed
-	 *
-	 * @ejb.interface-method
-	 * @ejb.transaction type="Required"
-	 * @ejb.permission role-name="org.nightlabs.jfire.asyncinvoke.administrateAsyncInvokes"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.asyncinvoke.AsyncInvokeManagerRemote#retryAsyncInvokeProblems(java.util.Collection)
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("org.nightlabs.jfire.asyncinvoke.administrateAsyncInvokes")
+	@Override
 	public void retryAsyncInvokeProblems(Collection<AsyncInvokeProblemID> asyncInvokeProblemIDs) throws AsyncInvokeEnqueueException
 	{
 		PersistenceManager pm = getPersistenceManager();
@@ -145,11 +113,11 @@ implements SessionBean
 		}
 	}
 
-	/**
-	 * @ejb.interface-method
-	 * @ejb.transaction type="Supports"
-	 * @ejb.permission role-name="_Guest_"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.asyncinvoke.AsyncInvokeManagerRemote#ping(java.lang.String)
 	 */
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+	@RolesAllowed("_Guest_")
 	@Override
 	public String ping(String message) {
 		return super.ping(message);

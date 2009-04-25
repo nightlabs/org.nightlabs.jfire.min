@@ -1,22 +1,22 @@
 package org.nightlabs.jfire.editlock;
 
-import java.rmi.RemoteException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
-import javax.ejb.CreateException;
-import javax.ejb.EJBException;
-import javax.ejb.SessionBean;
-import javax.ejb.SessionContext;
+import javax.annotation.security.RolesAllowed;
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jdo.ObjectID;
-import org.nightlabs.jfire.base.BaseSessionBeanImpl;
+import org.nightlabs.jfire.base.BaseSessionBeanImplEJB3;
 import org.nightlabs.jfire.editlock.id.EditLockID;
 import org.nightlabs.jfire.editlock.id.EditLockTypeID;
 import org.nightlabs.jfire.security.User;
@@ -35,51 +35,33 @@ import org.nightlabs.util.CollectionUtil;
  * @ejb.util generate="physical"
  * @ejb.transaction type="Required"
  */
-public abstract class EditLockManagerBean
-extends BaseSessionBeanImpl
-implements SessionBean
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
+@Stateless
+public class EditLockManagerBean
+extends BaseSessionBeanImplEJB3
+implements EditLockManagerRemote, EditLockManagerLocal
 {
 	private static final Logger logger = Logger.getLogger(EditLockManagerBean.class);
 	private static final long serialVersionUID = 1L;
 
+	@EJB
+	private EditLockManagerLocal editLockManagerLocal;
+
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.editlock.EditLockManagerRemote#cleanupEditLocks(org.nightlabs.jfire.timer.id.TaskID)
+	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_System_")
 	@Override
-	public void setSessionContext(SessionContext sessionContext)
-	throws EJBException, RemoteException
-	{
-		super.setSessionContext(sessionContext);
-	}
-
-	@Override
-	public void unsetSessionContext() {
-		super.unsetSessionContext();
-	}
-
-	/**
-	 * @ejb.create-method
-	 * @ejb.permission role-name="_Guest_"
-	 */
-	public void ejbCreate() throws CreateException
-	{
-	}
-
-	/**
-	 * @see javax.ejb.SessionBean#ejbRemove()
-	 *
-	 * @ejb.permission unchecked="true"
-	 */
-	public void ejbRemove() throws EJBException, RemoteException { }
-
-	/**
-	 * @ejb.interface-method
-	 * @ejb.transaction type="Required"
-	 * @ejb.permission role-name="_System_"
-	 */
 	public void cleanupEditLocks(TaskID taskID)
 	throws Exception
 	{
 		PersistenceManager pm = getPersistenceManager();
 		try {
-			EditLockManagerLocal helperBean = EditLockManagerUtil.getLocalHome().create();
+//			EditLockManagerLocal helperBean = JFireEjb3Factory.getLocalBean(EditLockManagerLocal.class, null);
+			EditLockManagerLocal helperBean = editLockManagerLocal;
+			if (helperBean == null)
+				throw new IllegalStateException("Dependency injection of EditLockManagerLocal did not work!");
 
 //			for (EditLock editLock : EditLock.getExpiredEditLocks(pm)) {
 //				editLock.getEditLockType().onReleaseEditLock(editLock, ReleaseReason.clientLost);
@@ -89,7 +71,7 @@ implements SessionBean
 				try {
 					helperBean.cleanupEditLocks_releaseEditLock(editLockID);
 				} catch (Throwable t) {
-					logger.error(t);
+					logger.error("cleanupEditLocks: " + t, t);
 					// TODO we should report about this in the new (still to be written right now) user notification system.
 				}
 			}
@@ -98,11 +80,12 @@ implements SessionBean
 		}
 	}
 
-	/**
-	 * @ejb.interface-method view-type="local"
-	 * @ejb.transaction type="RequiresNew"
-	 * @ejb.permission role-name="_System_"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.editlock.EditLockManagerLocal#cleanupEditLocks_getExpiredEditLocks()
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+	@RolesAllowed("_System_")
+	@Override
 	public Collection<? extends EditLockID> cleanupEditLocks_getExpiredEditLocks()
 	{
 		PersistenceManager pm = getPersistenceManager();
@@ -114,11 +97,12 @@ implements SessionBean
 		}
 	}
 
-	/**
-	 * @ejb.interface-method view-type="local"
-	 * @ejb.transaction type="RequiresNew"
-	 * @ejb.permission role-name="_System_"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.editlock.EditLockManagerLocal#cleanupEditLocks_releaseEditLock(org.nightlabs.jfire.editlock.id.EditLockID)
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+	@RolesAllowed("_System_")
+	@Override
 	public void cleanupEditLocks_releaseEditLock(EditLockID editLockID)
 	throws Exception
 	{
@@ -132,11 +116,12 @@ implements SessionBean
 		}
 	}
 
-	/**
-	 * @ejb.interface-method
-	 * @ejb.transaction type="Required"
-	 * @ejb.permission role-name="_System_"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.editlock.EditLockManagerRemote#initialise()
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_System_")
+	@Override
 	public void initialise()
 	throws TimePatternFormatException
 	{
@@ -155,8 +140,9 @@ implements SessionBean
 				task = new Task(
 						taskID.organisationID, taskID.taskTypeID, taskID.taskID,
 						User.getUser(pm, getOrganisationID(), User.USER_ID_SYSTEM),
-						EditLockManagerHome.JNDI_NAME,
-						"cleanupEditLocks");
+						EditLockManagerLocal.class,
+						"cleanupEditLocks"
+				);
 
 				task.getName().setText(Locale.ENGLISH.getLanguage(), "EditLock Cleanup");
 				task.getDescription().setText(Locale.ENGLISH.getLanguage(), "This Task cleans up expired editLocks.");
@@ -180,25 +166,12 @@ implements SessionBean
 		}
 	}
 
-	/**
-	 * This method first searches for an existing {@link EditLock} on the JDO object
-	 * referenced by the given <code>objectID</code> and owned by the current user.
-	 * If none such <code>EditLock</code> exists, a new one will be created. If a previously
-	 * existing one could be found, its {@link EditLock#setLastAcquireDT()} method will be called
-	 * in order to renew it.
-	 * <p>
-	 * </p>
-	 * @param editLockTypeID If a new <code>EditLock</code> is created, it will be assigned the {@link EditLockType}
-	 *		referenced by this id. If the EditLock previously existed, this parameter is ignored.
-	 * @param objectID The id of the JDO object that shall be locked.
-	 * @param description The editLock's description which will be shown to the user and should make clear what is locked (e.g. the name of the object referenced by <code>objectID</code>).
-	 * @param fetchGroups The fetch-groups used for detaching the created/queried {@link EditLock}.
-	 * @param maxFetchDepth The maximum fetch-depth for detaching the created/queried {@link EditLock}.
-	 *
-	 * @ejb.interface-method
-	 * @ejb.transaction type="Required"
-	 * @ejb.permission role-name="_Guest_"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.editlock.EditLockManagerRemote#acquireEditLock(org.nightlabs.jfire.editlock.id.EditLockTypeID, org.nightlabs.jdo.ObjectID, java.lang.String, java.lang.String[], int)
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_Guest_")
+	@Override
 	public AcquireEditLockResult acquireEditLock(
 			EditLockTypeID editLockTypeID, ObjectID objectID, String description,
 			String[] fetchGroups, int maxFetchDepth)
@@ -218,11 +191,12 @@ implements SessionBean
 		}
 	}
 
-	/**
-	 * @ejb.interface-method
-	 * @ejb.transaction type="Required"
-	 * @ejb.permission role-name="_Guest_"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.editlock.EditLockManagerRemote#releaseEditLock(org.nightlabs.jdo.ObjectID, org.nightlabs.jfire.editlock.ReleaseReason)
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_Guest_")
+	@Override
 	public void releaseEditLock(ObjectID objectID, ReleaseReason releaseReason)
 	{
 		PersistenceManager pm = getPersistenceManager();
@@ -233,11 +207,11 @@ implements SessionBean
 		}
 	}
 
-	/**
-	 * @ejb.interface-method
-	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
-	 * @ejb.permission role-name="_Guest_"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.editlock.EditLockManagerRemote#getEditLockIDs(org.nightlabs.jdo.ObjectID)
 	 */
+	@RolesAllowed("_Guest_")
+	@Override
 	public Set<EditLockID> getEditLockIDs(ObjectID objectID)
 	{
 		PersistenceManager pm = getPersistenceManager();
@@ -248,11 +222,11 @@ implements SessionBean
 		}
 	}
 
-	/**
-	 * @ejb.interface-method
-	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
-	 * @ejb.permission role-name="_Guest_"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.editlock.EditLockManagerRemote#getEditLocks(java.util.Collection, java.lang.String[], int)
 	 */
+	@RolesAllowed("_Guest_")
+	@Override
 	public List<EditLock> getEditLocks(Collection<EditLockID> editLockIDs, String[] fetchGroups, int maxFetchDepth)
 	{
 		PersistenceManager pm = getPersistenceManager();
@@ -263,11 +237,11 @@ implements SessionBean
 		}
 	}
 
-	/**
-	 * @ejb.interface-method
-	 * @ejb.transaction type="Supports"
-	 * @ejb.permission role-name="_Guest_"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.editlock.EditLockManagerRemote#ping(java.lang.String)
 	 */
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+	@RolesAllowed("_Guest_")
 	@Override
 	public String ping(String message) {
 		return super.ping(message);
