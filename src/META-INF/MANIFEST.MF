@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+Class-Path: JFireBaseBean.jar 
+ JFireServerManager.rar 
+ JFireRCLBackend.jar
+

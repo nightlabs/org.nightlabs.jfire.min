@@ -30,10 +30,13 @@ import java.rmi.RemoteException;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.security.RolesAllowed;
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.SessionBean;
-import javax.ejb.SessionContext;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
@@ -47,28 +50,31 @@ import org.nightlabs.jfire.servermanager.JFireServerManager;
  * @ejb.util generate="physical"
  * @ejb.transaction type="Required"
  */
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
+@Stateless
 public abstract class JFireRCLBackendBean
-	extends BaseSessionBeanImpl
-	implements SessionBean
+extends BaseSessionBeanImpl
+implements SessionBean, JFireRCLBackendRemote
 {
 	private static final long serialVersionUID = 1L;
 	private static final Logger logger = Logger.getLogger(JFireRCLBackendBean.class);
 
-	@Override
-	public void setSessionContext(SessionContext sessionContext)
-			throws EJBException, RemoteException
-	{
-		super.setSessionContext(sessionContext);
-	}
-	@Override
-	public void unsetSessionContext() {
-		super.unsetSessionContext();
-	}
+//	@Override
+//	public void setSessionContext(SessionContext sessionContext)
+//	throws EJBException, RemoteException
+//	{
+//		super.setSessionContext(sessionContext);
+//	}
+//	@Override
+//	public void unsetSessionContext() {
+//		super.unsetSessionContext();
+//	}
 
 	/**
 	 * @ejb.create-method
 	 * @ejb.permission role-name="_Guest_"
 	 */
+	@RolesAllowed("_Guest_")
 	public void ejbCreate()
 	throws CreateException
 	{
@@ -95,40 +101,40 @@ public abstract class JFireRCLBackendBean
 			logger.debug(this.getClass().getName() + ".ejbPassivate()");
 	}
 
-//	/**
-//	 * Get a List of {@link ResourceMetaData} for all resources that match
-//	 * the given name. There may be many, because the j2ee server has multiple
-//	 * repositories (at least lib and deploy) and even within one repository, there may
-//	 * be multiple jars providing the same resource.
-//	 *
-//	 * @param name a resource name
-//	 * @return a list of all resources (described by {@link ResourceMetaData}) that matches the name.
-//	 * @throws ClassLoaderException if sth. goes wrong while scanning.
-//	 *
-//	 * @ejb.interface-method
-//	 * @ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
-//	 * @ejb.permission role-name="_Guest_"
-//	 */
-//	public List<ResourceMetaData> getResourcesMetaData(String name)
-//	throws ClassLoaderException
-//	{
-//		try {
-//			JFireServerManager jfireServerManager = getJFireServerManager();
-//			try {
-//				CLRegistrar clRegistrar = jfireServerManager.getCLRegistrar();
-//				return clRegistrar.getResourcesMetaData(name);
-//				// eigentlich sollte der CLRegistrar ein echter ResourceAdapter sein und
-//				// nicht ueber den JFireServerManager verwaltet werden.
-//			} finally {
-//				jfireServerManager.close();
-//			}
-//		} catch (Exception x) {
-//			logger.error("getResourcesMetaData(\""+name+"\") failed!", x);
-//			// Because of classloading problems, we must NOT rethrow/encause x - x won't be found in the client!
-//			// Thus, we throw a special classloader exception.
-//			throw new ClassLoaderException("JFireRCLBackendBean.getResourcesMetaData(\""+name+"\") failed!" + x.getMessage());
-//		}
-//	}
+	//	/**
+	//	 * Get a List of {@link ResourceMetaData} for all resources that match
+	//	 * the given name. There may be many, because the j2ee server has multiple
+	//	 * repositories (at least lib and deploy) and even within one repository, there may
+	//	 * be multiple jars providing the same resource.
+	//	 *
+	//	 * @param name a resource name
+	//	 * @return a list of all resources (described by {@link ResourceMetaData}) that matches the name.
+	//	 * @throws ClassLoaderException if sth. goes wrong while scanning.
+	//	 *
+	//	 * @ejb.interface-method
+	//	 * @ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
+	//	 * @ejb.permission role-name="_Guest_"
+	//	 */
+	//	public List<ResourceMetaData> getResourcesMetaData(String name)
+	//	throws ClassLoaderException
+	//	{
+	//		try {
+	//			JFireServerManager jfireServerManager = getJFireServerManager();
+	//			try {
+	//				CLRegistrar clRegistrar = jfireServerManager.getCLRegistrar();
+	//				return clRegistrar.getResourcesMetaData(name);
+	//				// eigentlich sollte der CLRegistrar ein echter ResourceAdapter sein und
+	//				// nicht ueber den JFireServerManager verwaltet werden.
+	//			} finally {
+	//				jfireServerManager.close();
+	//			}
+	//		} catch (Exception x) {
+	//			logger.error("getResourcesMetaData(\""+name+"\") failed!", x);
+	//			// Because of classloading problems, we must NOT rethrow/encause x - x won't be found in the client!
+	//			// Thus, we throw a special classloader exception.
+	//			throw new ClassLoaderException("JFireRCLBackendBean.getResourcesMetaData(\""+name+"\") failed!" + x.getMessage());
+	//		}
+	//	}
 
 	/**
 	 * @param rmd the meta-data describing the requested resource.
@@ -139,6 +145,8 @@ public abstract class JFireRCLBackendBean
 	 * @ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 * @ejb.permission role-name="_Guest_"
 	 */
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+	@RolesAllowed("_Guest_")
 	public byte[] getResourceBytes(ResourceMetaData rmd)
 	throws ClassLoaderException
 	{
@@ -169,6 +177,8 @@ public abstract class JFireRCLBackendBean
 	 * @ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 * @ejb.permission role-name="_Guest_"
 	 */
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+	@RolesAllowed("_Guest_")
 	public byte[] getResourcesMetaDataMapBytes()
 	throws ClassLoaderException
 	{
@@ -194,11 +204,13 @@ public abstract class JFireRCLBackendBean
 	 * already has a version that's up-to-date.
 	 *
 	 * @return The timestamp of the map returned by {@link #getResourcesMetaDataMapBytes()}.
-	 * 
+	 *
 	 * @ejb.interface-method
 	 * @ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 * @ejb.permission role-name="_Guest_"
 	 */
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+	@RolesAllowed("_Guest_")
 	public long getResourcesMetaDataMapBytesTimestamp()
 	throws ClassLoaderException
 	{
