@@ -1,20 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="src" path="ejbsrc"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="var" path="JBOSS/client/jboss-j2ee.jar"/>
-	<classpathentry kind="var" path="JBOSS/server/default/lib/bcel.jar"/>
-	<classpathentry kind="var" path="JBOSS/server/default/lib/jboss.jar"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/NightLabsBase"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/NightLabsJDO"/>
-	<classpathentry kind="src" path="/JFireBase"/>
-	<classpathentry kind="src" path="/JFireServerManager"/>
-	<classpathentry kind="var" path="LOG4J"/>
-	<classpathentry kind="var" path="JDO2" sourcepath="/JDO2_SRC">
-		<attributes>
-			<attribute name="javadoc_location" value="http://db.apache.org/jdo/api22/apidocs/"/>
-		</attributes>
-	</classpathentry>
+	<classpathentry kind="con" path="org.eclipse.jst.server.core.container/org.eclipse.jst.server.generic.runtimeTarget/JBoss v4.2"/>
+	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.module.container"/>
+	<classpathentry kind="con" path="org.nightlabs.eclipse.sdk.jdo.JDO_CONTAINER"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

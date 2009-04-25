@@ -26,7 +26,10 @@
 
 package org.nightlabs.jfire.organisation;
 
-import javax.ejb.CreateException;
+import javax.annotation.security.PermitAll;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.jdo.PersistenceManager;
 
 import org.apache.log4j.Logger;
@@ -47,33 +50,24 @@ import org.nightlabs.jfire.base.Lookup;
  * @ejb.transaction type="Required"
  * @ejb.permission unchecked="true"
  */
-public abstract class OrganisationLinkerBean implements javax.ejb.SessionBean
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
+@Stateless
+// It is essential that unknown business partners can access this bean (otherwise they could not *initiate* a
+// cross-organisation-contact). Therefore, we permit access to all. Marco.
+@PermitAll
+public abstract class OrganisationLinkerBean implements OrganisationLinkerRemote
 {
 	private static final long serialVersionUID = 1L;
+
 	/**
 	 * LOG4J logger used by this class
 	 */
 	private static final Logger logger = Logger.getLogger(OrganisationLinkerBean.class);
 
-	/**
-	 * @ejb.create-method
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.organisation.OrganisationLinkerRemote#requestRegistration(java.lang.String, org.nightlabs.jfire.organisation.Organisation, java.lang.String, java.lang.String)
 	 */
-	public void ejbCreate()
-	throws CreateException
-	{
-		logger.debug(this.getClass().getName() + ".ejbCreate()");
-	}
-
-	/**
-	 * This method is called by the organisation which wants to be registered here
-	 * (means usually by another server).
-	 * <br/><br/>
-	 * Do NOT call this method by your client! Use OrganisationManager EJB instead!
-	 *
-	 * @throws OrganisationAlreadyRegisteredException
-	 *
-	 * @ejb.interface-method
-	 */
+	@Override
 	public void requestRegistration(String registrationID, Organisation applicantOrganisation, String grantOrganisationID, String grantOrganisationUserPassword)
 	throws OrganisationAlreadyRegisteredException
 	{
@@ -116,20 +110,15 @@ public abstract class OrganisationLinkerBean implements javax.ejb.SessionBean
 		}
 	}
 
-	/**
-	 * This method is called by the organisation that initiated the
-	 * registration (means usually by another server) - the so-called applicant-organisation.
-	 * <br/><br/>
-	 * Do NOT call this method from a client! Use OrganisationManager EJB
-	 * instead!
-	 *
-	 * @ejb.interface-method
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.organisation.OrganisationLinkerRemote#cancelRegistration(java.lang.String, java.lang.String, java.lang.String)
 	 */
+	@Override
 	public void cancelRegistration(String registrationID, String applicantOrganisationID, String grantOrganisationID)
 	{
 		if (registrationID == null)
 			throw new NullPointerException("registrationID");
-		
+
 		// We are not authenticated, thus we have to get the PersistenceManager manually.
 		// Which is not much work either ;-)
 		Lookup lookup = new Lookup(grantOrganisationID);
