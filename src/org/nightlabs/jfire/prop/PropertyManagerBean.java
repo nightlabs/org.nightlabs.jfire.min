@@ -430,12 +430,15 @@ public class PropertyManagerBean extends BaseSessionBeanImplEJB3 implements Prop
 			pm.close();
 		}
 	}
-	
+
 	/**
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type="Required"
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_Guest_")
+	@Override
 	public Set<PropertySetFieldBasedEditLayoutUseCaseID> getAllPropertySetFieldBasedEditLayoutUseCaseIDs() {
 		PersistenceManager pm = getPersistenceManager();
 		try {
@@ -444,13 +447,16 @@ public class PropertyManagerBean extends BaseSessionBeanImplEJB3 implements Prop
 			pm.close();
 		}
 	}
-	
+
 	/**
 	 *
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_Guest_"
 	 * @ejb.transaction type="Required"
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_Guest_")
+	@Override
 	public Set<PropertySetFieldBasedEditLayoutUseCase> getPropertySetFieldBasedEditLayoutUseCases(Set<PropertySetFieldBasedEditLayoutUseCaseID> ids, String[] fetchGroups, int maxFetchDepth) {
 		PersistenceManager pm = getPersistenceManager();
 		try {
@@ -460,7 +466,7 @@ public class PropertyManagerBean extends BaseSessionBeanImplEJB3 implements Prop
 			pm.close();
 		}
 	}
-	
+
 
 	/* (non-Javadoc)
 	 * @see org.nightlabs.jfire.prop.PropertyManagerRemote#initialise()
@@ -486,7 +492,7 @@ public class PropertyManagerBean extends BaseSessionBeanImplEJB3 implements Prop
 				useCaseEditPerson.getName().readFromMultiLanguagePropertiesBundle(propertiesBundle, "org.nightlabs.jfire.prop.config.PropertySetFieldBasedEditLayoutUseCase.EditPerson.name");
 				useCaseEditPerson.getDescription().readFromMultiLanguagePropertiesBundle(propertiesBundle, "org.nightlabs.jfire.prop.config.PropertySetFieldBasedEditLayoutUseCase.EditPerson.description");
 			}
-			
+
 			ConfigModuleInitialiserID initialiserID = ConfigModuleInitialiserID.create(
 					getOrganisationID(), PropertySetFieldBasedEditLayoutConfigModule.class.getName(), Person.class.getSimpleName());
 			PropertySetFieldBasedEditLayoutCfModIntialiser initialiser = null;

@@ -6,6 +6,8 @@ import java.util.Set;
 import javax.ejb.Remote;
 import javax.jdo.spi.PersistenceCapable;
 
+import org.nightlabs.jfire.prop.config.PropertySetFieldBasedEditLayoutUseCase;
+import org.nightlabs.jfire.prop.config.id.PropertySetFieldBasedEditLayoutUseCaseID;
 import org.nightlabs.jfire.prop.id.PropertySetID;
 import org.nightlabs.jfire.prop.id.StructFieldID;
 import org.nightlabs.jfire.prop.id.StructID;
@@ -13,7 +15,7 @@ import org.nightlabs.jfire.prop.id.StructLocalID;
 import org.nightlabs.jfire.prop.search.PropSearchFilter;
 
 @Remote
-public interface PropertyManagerRemote 
+public interface PropertyManagerRemote
 {
 	String ping(String message);
 
@@ -119,6 +121,10 @@ public interface PropertyManagerRemote
 	 * @return
 	 */
 	long getDataFieldInstanceCount(StructFieldID fieldID);
+
+	Set<PropertySetFieldBasedEditLayoutUseCaseID> getAllPropertySetFieldBasedEditLayoutUseCaseIDs();
+
+	Set<PropertySetFieldBasedEditLayoutUseCase> getPropertySetFieldBasedEditLayoutUseCases(Set<PropertySetFieldBasedEditLayoutUseCaseID> ids, String[] fetchGroups, int maxFetchDepth);
 
 	void initialise();
 }

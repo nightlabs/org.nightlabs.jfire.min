@@ -107,7 +107,7 @@ public interface JFireSecurityManagerRemote
 			String[] fetchGroups, int maxFetchDepth);
 
 	List<RoleGroupIDSetCarrier> getRoleGroupIDSetCarriers(
-			Collection<AuthorizedObjectID> authorizedObjectIDs,
+			Collection<? extends AuthorizedObjectID> authorizedObjectIDs,
 			AuthorityID authorityID);
 
 	/**

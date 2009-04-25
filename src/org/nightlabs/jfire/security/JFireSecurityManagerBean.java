@@ -578,7 +578,7 @@ implements JFireSecurityManagerRemote
 	 */
 	@RolesAllowed("_Guest_")
 	@Override
-	public List<RoleGroupIDSetCarrier> getRoleGroupIDSetCarriers(Collection<AuthorizedObjectID> authorizedObjectIDs, AuthorityID authorityID)
+	public List<RoleGroupIDSetCarrier> getRoleGroupIDSetCarriers(Collection<? extends AuthorizedObjectID> authorizedObjectIDs, AuthorityID authorityID)
 	{
 		// If it's only one, we delegate to the other method since it allows retrieval of information about the user himself.
 		// We don't allow these self-requests below (we assert access rights being present).
