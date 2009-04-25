@@ -25,7 +25,7 @@ import org.nightlabs.jfire.servermanager.createorganisation.CreateOrganisationPr
 import org.nightlabs.jfire.test.cascadedauthentication.TestRequestResultTreeNode;
 
 @Remote
-public interface OrganisationManagerRemote 
+public interface OrganisationManagerRemote
 {
 	void createOrganisationAfterReboot(String organisationID,
 			String organisationDisplayName, String userID, String password,
@@ -216,4 +216,6 @@ public interface OrganisationManagerRemote
 	 */
 	Organisation storeLocalOrganisation(Organisation organisation, boolean get,
 			String[] fetchGroups, int maxFetchDepth);
+
+	String ping(String message);
 }
