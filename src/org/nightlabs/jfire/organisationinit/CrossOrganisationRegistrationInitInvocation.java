@@ -8,6 +8,7 @@ import org.nightlabs.jfire.asyncinvoke.Invocation;
 import org.nightlabs.jfire.crossorganisationregistrationinit.Context;
 import org.nightlabs.jfire.crossorganisationregistrationinit.CrossOrganisationRegistrationInitManager;
 import org.nightlabs.jfire.security.User;
+import org.nightlabs.jfire.security.id.UserID;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 
 public class CrossOrganisationRegistrationInitInvocation
@@ -37,7 +38,7 @@ extends Invocation
 					getJFireServerManagerFactory(),
 					jfsm.getJFireServerConfigModule().getLocalServer(),
 					localOrganisationID,
-					jfsm.jfireSecurity_createTempUserPassword(localOrganisationID, User.USER_ID_SYSTEM),
+					jfsm.jfireSecurity_createTempUserPassword(UserID.create(localOrganisationID, User.USER_ID_SYSTEM)),
 					context
 			);
 

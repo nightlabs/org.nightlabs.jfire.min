@@ -267,7 +267,7 @@ public class BaseSessionBeanImpl
 	 *&#x9;&#x9;}<br/>
 	 * </code>
 	 * <p>
-	 * This ping method is used by {@link JFireEjbFactory#getBean(Class, Hashtable)} to test a
+	 * This ping method is used by {@link JFireEjb3Factory#getRemoteBean(Class, Hashtable)} to test a
 	 * cached EJB proxy. If the method cannot be successfully executed on the EJB proxy, it is discarded
 	 * and a new one created.
 	 * </p>

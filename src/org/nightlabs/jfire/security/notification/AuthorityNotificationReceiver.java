@@ -6,10 +6,14 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.ejb.CreateException;
+import javax.jdo.annotations.IdentityType;
+import javax.jdo.annotations.Inheritance;
+import javax.jdo.annotations.InheritanceStrategy;
+import javax.jdo.annotations.PersistenceCapable;
 import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
-import org.nightlabs.jfire.base.JFireEjbFactory;
+import org.nightlabs.jfire.base.JFireEjb3Factory;
 import org.nightlabs.jfire.base.Lookup;
 import org.nightlabs.jfire.jdo.notification.DirtyObjectID;
 import org.nightlabs.jfire.jdo.notification.JDOLifecycleState;
@@ -22,11 +26,6 @@ import org.nightlabs.jfire.security.JFireSecurityManagerRemote;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.security.id.AuthorityID;
 import org.nightlabs.jfire.security.id.AuthorizedObjectRefID;
-
-import javax.jdo.annotations.Inheritance;
-import javax.jdo.annotations.InheritanceStrategy;
-import javax.jdo.annotations.PersistenceCapable;
-import javax.jdo.annotations.IdentityType;
 
 /**
  * @author marco schulze - marco at nightlabs dot de
@@ -91,7 +90,7 @@ public class AuthorityNotificationReceiver extends NotificationReceiver
 	public void replicateAuthorities(String emitterOrganisationID, Set<AuthorityID> authorityIDs, Set<AuthorizedObjectRefID> authorizedObjectRefIDs)
 	throws RemoteException, CreateException, NamingException
 	{
-		JFireSecurityManagerRemote m = JFireEjbFactory.getBean(JFireSecurityManagerRemote.class, Lookup.getInitialContextProperties(getPersistenceManager(), emitterOrganisationID));
+		JFireSecurityManagerRemote m = JFireEjb3Factory.getRemoteBean(JFireSecurityManagerRemote.class, Lookup.getInitialContextProperties(getPersistenceManager(), emitterOrganisationID));
 		Collection<Authority> authorities = m.getAuthoritiesSelfInformation(authorityIDs, authorizedObjectRefIDs);
 
 		if (logger.isDebugEnabled()) {
