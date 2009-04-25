@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="ASCII"?>
+<application xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns="http://java.sun.com/xml/ns/javaee" xmlns:application="http://java.sun.com/xml/ns/javaee/application_5.xsd"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/application_5.xsd"
+	version="5">
+	<display-name>JFireBaseEAR</display-name>
+	<module>
+		<connector>JFireServerManager.rar</connector>
+	</module>
+	<module>
+		<ejb>JFireBasePublicBean.jar</ejb>
+	</module>
+	<module>
+		<ejb>JFireBaseBean.jar</ejb>
+	</module>
+	<module>
+		<ejb>JFireRCLBackendBean.jar</ejb>
+	</module>
+	<module>
+		<java>JFireBaseClientLib.jar</java>
+	</module>
+	<module>
+		<java>org.nightlabs.jdo.jar</java>
+	</module>
+	<module>
+		<java>JFireBaseJ2EE.jar</java>
+	</module>
+	<module>
+		<java>org.nightlabs.query.jdo.jar</java>
+	</module>
+	<module>
+		<java>org.nightlabs.jfire.base.jar</java>
+	</module>
+	<module>
+		<java>org.nightlabs.query.jar</java>
+	</module>
+	<module>
+		<java>org.nightlabs.clientui.jar</java>
+	</module>
+	<module>
+		<java>org.nightlabs.base.jar</java>
+	</module>
+	<module>
+		<java>JFireBasePublicBean.jar</java>
+	</module>
+	<module>
+		<java>JFireRCLBackend.jar</java>
+	</module>
+	<module>
+		<java>JFireBaseDAO.jar</java>
+	</module>
+</application>
