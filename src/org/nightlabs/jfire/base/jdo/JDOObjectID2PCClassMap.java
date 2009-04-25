@@ -30,8 +30,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.nightlabs.jfire.jdo.JDOManager;
-import org.nightlabs.jfire.jdo.JDOManagerUtil;
+import org.nightlabs.jfire.base.JFireEjb3Factory;
+import org.nightlabs.jfire.jdo.JDOManagerRemote;
 import org.nightlabs.jfire.security.SecurityReflector;
 
 /**
@@ -54,7 +54,7 @@ public class JDOObjectID2PCClassMap
 		return _sharedInstance;
 	}
 	
-	private JDOManager jdoManager = null;
+//	private JDOManager jdoManager = null;
 
 	/**
 	 * key: JDOObjectID objectID<br/>
@@ -116,15 +116,21 @@ public class JDOObjectID2PCClassMap
 			String clazzName = null;
 			while (clazzName == null && retry < 2) {
 				try {
-					if (jdoManager == null)
-						jdoManager = JDOManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
+//					if (jdoManager == null)
+//						jdoManager = JDOManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
+					JDOManagerRemote jdoManager = JFireEjb3Factory.getRemoteBean(JDOManagerRemote.class, SecurityReflector.getInitialContextProperties());
 
 					clazzName = jdoManager.getPersistenceCapableClassName(objectID);
 				} catch (Throwable t) {
 					if (++retry >= 2)
 						throw new RuntimeException(t);
 					clazzName = null;
-					jdoManager = null;
+//					jdoManager = null;
+					try {
+						Thread.sleep(10000);
+					} catch (InterruptedException e) {
+						// ignore
+					}
 				}
 			}
 

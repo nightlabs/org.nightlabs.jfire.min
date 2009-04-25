@@ -48,12 +48,12 @@ import org.nightlabs.config.ConfigException;
 import org.nightlabs.environment.Environment;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jdo.ObjectID;
+import org.nightlabs.jfire.base.JFireEjb3Factory;
 import org.nightlabs.jfire.base.jdo.JDOObjectID2PCClassMap;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleEvent;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleListener;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleManager;
-import org.nightlabs.jfire.jdo.JDOManager;
-import org.nightlabs.jfire.jdo.JDOManagerUtil;
+import org.nightlabs.jfire.jdo.JDOManagerRemote;
 import org.nightlabs.jfire.jdo.cache.NotificationBundle;
 import org.nightlabs.jfire.jdo.notification.DirtyObjectID;
 import org.nightlabs.jfire.jdo.notification.IJDOLifecycleListenerFilter;
@@ -124,7 +124,7 @@ public class Cache
 		public void run()
 		{
 			long lastErrorDT = 0;
-			JDOManager jdoManager = null;
+//			JDOManager jdoManager = null;
 
 //			// WORKAROUND: For classloading deadlock (java/osgi bug - give the Login some time to do its own classloading necessary due to LoginStateListeners being triggered)
 //			logger.info("NotificationThread.run: WORKAROUND for java classloading bug: delaying start of NotificationThread...");
@@ -140,8 +140,9 @@ public class Cache
 
 			while (!isInterrupted()) {
 				try {
-					if (jdoManager == null)
-						jdoManager = JDOManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
+//					if (jdoManager == null)
+//						jdoManager = JDOManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
+					JDOManagerRemote jdoManager = JFireEjb3Factory.getRemoteBean(JDOManagerRemote.class, SecurityReflector.getInitialContextProperties());
 
 					NotificationBundle notificationBundle = jdoManager.waitForChanges(
 							cache.getCacheCfMod().getWaitForChangesTimeoutMSec());
@@ -286,7 +287,7 @@ public class Cache
 
 				} catch (Throwable t) {
 					logger.error("Error in NotificationThread!", t);
-					jdoManager = null;
+//					jdoManager = null;
 					long lastErrorTimeDiff = System.currentTimeMillis() - lastErrorDT;
 					long threadErrorWaitMSec = cache.getCacheCfMod().getThreadErrorWaitMSec();
 					if (lastErrorTimeDiff < threadErrorWaitMSec) {
@@ -365,7 +366,7 @@ public class Cache
 		public void run()
 		{
 			long lastErrorDT = 0;
-			JDOManager jdoManager = null;
+//			JDOManager jdoManager = null;
 //			boolean resync;
 
 			while (!isInterrupted()) {
@@ -482,8 +483,9 @@ public class Cache
 							}
 						}
 
-						if (jdoManager == null)
-							jdoManager = JDOManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
+//						if (jdoManager == null)
+//							jdoManager = JDOManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
+						JDOManagerRemote jdoManager = JFireEjb3Factory.getRemoteBean(JDOManagerRemote.class, SecurityReflector.getInitialContextProperties());
 
 						if (cache.isResubscribeAllListeners()) {
 							if (logger.isDebugEnabled())
@@ -588,7 +590,7 @@ public class Cache
 
 				} catch (Throwable t) {
 					logger.error("Error in NotificationThread!", t);
-					jdoManager = null;
+//					jdoManager = null;
 					long lastErrorTimeDiff = System.currentTimeMillis() - lastErrorDT;
 					long threadErrorWaitMSec = cache.getCacheCfMod().getThreadErrorWaitMSec();
 					if (lastErrorTimeDiff < threadErrorWaitMSec) {
@@ -1800,7 +1802,7 @@ public class Cache
 		}
 
 		try {
-			JDOManager jm = JDOManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
+			JDOManagerRemote jm = JFireEjb3Factory.getRemoteBean(JDOManagerRemote.class, SecurityReflector.getInitialContextProperties());
 
 			// remove all listeners for this session - done by remote closeCacheSession(...)
 			jm.closeCacheSession();
