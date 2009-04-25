@@ -17,12 +17,8 @@ import java.util.regex.Pattern;
 import javax.xml.transform.TransformerException;
 
 import org.apache.log4j.Logger;
-import org.jboss.ejb.plugins.TxInterceptorCMT;
 import org.nightlabs.jfire.jboss.authentication.JFireServerLocalLoginModule;
 import org.nightlabs.jfire.jboss.authentication.JFireServerLoginModule;
-import org.nightlabs.jfire.jboss.cascadedauthentication.CascadedAuthenticationClientInterceptor;
-import org.nightlabs.jfire.jboss.transaction.ForceRollbackOnExceptionInterceptor;
-import org.nightlabs.jfire.jboss.transaction.RetryHandler;
 import org.nightlabs.jfire.serverconfigurator.ServerConfigurationException;
 import org.nightlabs.jfire.serverconfigurator.ServerConfigurator;
 import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
@@ -764,19 +760,19 @@ public class ServerConfiguratorJBoss
 	 */
 	private void configureCascadedAuthenticationClientInterceptorProperties(File jbossBinDir) throws FileNotFoundException, IOException
 	{
-		File destFile = new File(jbossBinDir, "CascadedAuthenticationClientInterceptor.properties");
-		if (!destFile.exists()) {
-			logger.info("File " + destFile.getAbsolutePath() + " does not exist. Will create it with enable=yes.");
-			Properties props = new Properties();
-			props.put("enable", "yes");
-			FileOutputStream out = new FileOutputStream(destFile);
-			try {
-				props.store(out, "Automatically created by " + this.getClass().getName());
-			} finally {
-				out.close();
-			}
-			CascadedAuthenticationClientInterceptor.reloadProperties(); // reboot should not be necessary anymore after this extension
-		}
+//		File destFile = new File(jbossBinDir, "CascadedAuthenticationClientInterceptor.properties");
+//		if (!destFile.exists()) {
+//			logger.info("File " + destFile.getAbsolutePath() + " does not exist. Will create it with enable=yes.");
+//			Properties props = new Properties();
+//			props.put("enable", "yes");
+//			FileOutputStream out = new FileOutputStream(destFile);
+//			try {
+//				props.store(out, "Automatically created by " + this.getClass().getName());
+//			} finally {
+//				out.close();
+//			}
+//			CascadedAuthenticationClientInterceptor.reloadProperties(); // reboot should not be necessary anymore after this extension
+//		}
 	}
 
 	private static boolean setMBeanAttribute(Document document, String mbeanCode, String attributeName, String comment, String content)
@@ -1132,80 +1128,80 @@ public class ServerConfiguratorJBoss
 		}
 
 
-		// reload the file - not necessary anymore since we now use a DOM parser which reloads (and the cascaded auth stuff isn't modified by the above code)
-//		text = IOUtil.readTextFile(destFile);
-
-		if (text.indexOf(CascadedAuthenticationClientInterceptor.class.getName()) < 0) {
-			logger.info("File " + destFile.getAbsolutePath() + " does not contain an interceptor registration for "+CascadedAuthenticationClientInterceptor.class.getName()+". Will add it.");
-
-			if (!backupDone) {
-				backup(destFile);
-				backupDone = true;
-			}
-
-			setRebootRequired(true); // this is a must, because the conf directory doesn't support redeployment (even though some files like log4j.xml does, the standardjboss.xml does not)
-
-			DOMParser parser = new DOMParser();
-			InputStream in = new FileInputStream(destFile);
-			try {
-				parser.parse(new InputSource(in));
-			} finally {
-				in.close();
-			}
-			Document document = parser.getDocument();
-			CachedXPathAPI xpa = new CachedXPathAPI();
-
-			Node containerInterceptorsNode;
-			for (NodeIterator ni1 = xpa.selectNodeIterator(document, "/descendant::container-interceptors"); (containerInterceptorsNode = ni1.nextNode()) != null; ) {
-				Node interceptorNode;
-				for (NodeIterator ni2 = xpa.selectNodeIterator(containerInterceptorsNode, "interceptor"); (interceptorNode = ni2.nextNode()) != null; ) {
-					String textContent = NLDOMUtil.getTextContent(interceptorNode, false).replaceAll("[\n\r]", "").trim();
-					if (textContent.startsWith(TxInterceptorCMT.class.getName())) {
-						Node retryHandlersNode = xpa.selectNodeIterator(containerInterceptorsNode, "retry-handlers").nextNode();
-						if (retryHandlersNode == null) {
-							retryHandlersNode = document.createElement("retry-handlers");
-							interceptorNode.appendChild(retryHandlersNode);
-						}
-						Element retryHandlerElement = document.createElement("handler");
-						retryHandlerElement.appendChild(document.createTextNode(RetryHandler.class.getName()));
-						retryHandlersNode.appendChild(retryHandlerElement);
-					}
-				}
-
-				Element interceptorElement = document.createElement("interceptor");
-				interceptorElement.appendChild(document.createTextNode(ForceRollbackOnExceptionInterceptor.class.getName()));
-				containerInterceptorsNode.appendChild(interceptorElement);
-			}
-
-			Node clientInterceptorsNode;
-			for (NodeIterator ni1 = xpa.selectNodeIterator(document, "/descendant::client-interceptors"); (clientInterceptorsNode = ni1.nextNode()) != null; ) {
-				Node node;
-				for (NodeIterator ni2 = xpa.selectNodeIterator(clientInterceptorsNode, "home"); (node = ni2.nextNode()) != null; ) {
-					Element interceptorElement = document.createElement("interceptor");
-					interceptorElement.appendChild(document.createTextNode(CascadedAuthenticationClientInterceptor.class.getName()));
-					node.insertBefore(interceptorElement, node.getFirstChild());
-				}
-
-				for (NodeIterator ni2 = xpa.selectNodeIterator(clientInterceptorsNode, "bean"); (node = ni2.nextNode()) != null; ) {
-					Element interceptorElement = document.createElement("interceptor");
-					interceptorElement.appendChild(document.createTextNode(CascadedAuthenticationClientInterceptor.class.getName()));
-					node.insertBefore(interceptorElement, node.getFirstChild());
-				}
-			}
-
-
-			FileOutputStream out = new FileOutputStream(destFile);
-			try {
-				NLDOMUtil.writeDocument(
-						document,
-						out,
-						"UTF-8","-//JBoss//DTD JBOSS 4.0//EN",
-						"http://www.jboss.org/j2ee/dtd/jboss_4_0.dtd"
-				);
-			} finally {
-				out.close();
-			}
-		}
+//		// reload the file - not necessary anymore since we now use a DOM parser which reloads (and the cascaded auth stuff isn't modified by the above code)
+////		text = IOUtil.readTextFile(destFile);
+//
+//		if (text.indexOf(CascadedAuthenticationClientInterceptor.class.getName()) < 0) {
+//			logger.info("File " + destFile.getAbsolutePath() + " does not contain an interceptor registration for "+CascadedAuthenticationClientInterceptor.class.getName()+". Will add it.");
+//
+//			if (!backupDone) {
+//				backup(destFile);
+//				backupDone = true;
+//			}
+//
+//			setRebootRequired(true); // this is a must, because the conf directory doesn't support redeployment (even though some files like log4j.xml does, the standardjboss.xml does not)
+//
+//			DOMParser parser = new DOMParser();
+//			InputStream in = new FileInputStream(destFile);
+//			try {
+//				parser.parse(new InputSource(in));
+//			} finally {
+//				in.close();
+//			}
+//			Document document = parser.getDocument();
+//			CachedXPathAPI xpa = new CachedXPathAPI();
+//
+//			Node containerInterceptorsNode;
+//			for (NodeIterator ni1 = xpa.selectNodeIterator(document, "/descendant::container-interceptors"); (containerInterceptorsNode = ni1.nextNode()) != null; ) {
+//				Node interceptorNode;
+//				for (NodeIterator ni2 = xpa.selectNodeIterator(containerInterceptorsNode, "interceptor"); (interceptorNode = ni2.nextNode()) != null; ) {
+//					String textContent = NLDOMUtil.getTextContent(interceptorNode, false).replaceAll("[\n\r]", "").trim();
+//					if (textContent.startsWith(TxInterceptorCMT.class.getName())) {
+//						Node retryHandlersNode = xpa.selectNodeIterator(containerInterceptorsNode, "retry-handlers").nextNode();
+//						if (retryHandlersNode == null) {
+//							retryHandlersNode = document.createElement("retry-handlers");
+//							interceptorNode.appendChild(retryHandlersNode);
+//						}
+//						Element retryHandlerElement = document.createElement("handler");
+//						retryHandlerElement.appendChild(document.createTextNode(RetryHandler.class.getName()));
+//						retryHandlersNode.appendChild(retryHandlerElement);
+//					}
+//				}
+//
+//				Element interceptorElement = document.createElement("interceptor");
+//				interceptorElement.appendChild(document.createTextNode(ForceRollbackOnExceptionInterceptor.class.getName()));
+//				containerInterceptorsNode.appendChild(interceptorElement);
+//			}
+//
+//			Node clientInterceptorsNode;
+//			for (NodeIterator ni1 = xpa.selectNodeIterator(document, "/descendant::client-interceptors"); (clientInterceptorsNode = ni1.nextNode()) != null; ) {
+//				Node node;
+//				for (NodeIterator ni2 = xpa.selectNodeIterator(clientInterceptorsNode, "home"); (node = ni2.nextNode()) != null; ) {
+//					Element interceptorElement = document.createElement("interceptor");
+//					interceptorElement.appendChild(document.createTextNode(CascadedAuthenticationClientInterceptor.class.getName()));
+//					node.insertBefore(interceptorElement, node.getFirstChild());
+//				}
+//
+//				for (NodeIterator ni2 = xpa.selectNodeIterator(clientInterceptorsNode, "bean"); (node = ni2.nextNode()) != null; ) {
+//					Element interceptorElement = document.createElement("interceptor");
+//					interceptorElement.appendChild(document.createTextNode(CascadedAuthenticationClientInterceptor.class.getName()));
+//					node.insertBefore(interceptorElement, node.getFirstChild());
+//				}
+//			}
+//
+//
+//			FileOutputStream out = new FileOutputStream(destFile);
+//			try {
+//				NLDOMUtil.writeDocument(
+//						document,
+//						out,
+//						"UTF-8","-//JBoss//DTD JBOSS 4.0//EN",
+//						"http://www.jboss.org/j2ee/dtd/jboss_4_0.dtd"
+//				);
+//			} finally {
+//				out.close();
+//			}
+//		}
 	}
 
 	private void configureMailServiceXml(File jbossDeployDir) throws FileNotFoundException, IOException, SAXException

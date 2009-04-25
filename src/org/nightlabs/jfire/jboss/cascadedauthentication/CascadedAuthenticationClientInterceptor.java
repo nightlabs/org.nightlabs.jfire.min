@@ -36,7 +36,9 @@ import org.jboss.proxy.ejb.GenericEJBInterceptor;
 
 /**
  * @author Marco Schulze - marco at nightlabs dot de
+ * @deprecated Not used anymore, because {@link CascadedAuthenticationNamingContext} now uses its own {@link Proxy}.
  */
+@Deprecated
 public class CascadedAuthenticationClientInterceptor extends GenericEJBInterceptor
 {
 	/**
@@ -44,7 +46,7 @@ public class CascadedAuthenticationClientInterceptor extends GenericEJBIntercept
 	 */
 	private static final org.apache.log4j.Logger logger = org.apache.log4j.Logger
 			.getLogger(CascadedAuthenticationClientInterceptor.class);
-	
+
 	public static final long serialVersionUID = 1L;
 
 	protected static Class<?> delegateClass = null;

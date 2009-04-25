@@ -27,53 +27,60 @@
 package org.nightlabs.jfire.jboss.cascadedauthentication;
 
 import java.io.Serializable;
+import java.lang.reflect.Proxy;
 
 import org.nightlabs.util.Util;
 
 /**
  * @author Marco Schulze - marco at nightlabs dot de
  */
-public class UserDescriptor
-	implements Serializable
+class UserDescriptor
+implements Serializable
 {
 	public static final long serialVersionUID = 1L;
 
-	public static final String CONTEXT_KEY = "JFIRE_USER_DESCRIPTOR";
+	/**
+	 * @deprecated Not necessary anymore since {@link CascadedAuthenticationNamingContext} now uses its own {@link Proxy}.
+	 */
+	@Deprecated
+	protected static final String CONTEXT_KEY = "JFIRE_USER_DESCRIPTOR";
 
-//	protected static Map<Thread, UserDescriptor> userDescriptors = new HashMap<Thread, UserDescriptor>();
+	/**
+	 * @deprecated Not necessary anymore since {@link CascadedAuthenticationNamingContext} now uses its own {@link Proxy}.
+	 */
+	@Deprecated
 	private static ThreadLocal<UserDescriptor> userDescriptors = new ThreadLocal<UserDescriptor>();
 
 	/**
 	 * Clears the current user for current thread.
+	 * @deprecated Not necessary anymore since {@link CascadedAuthenticationNamingContext} now uses its own {@link Proxy}.
 	 */
+	@Deprecated
 	public static synchronized void unsetUserDescriptor()
 	{
-//		Thread t = Thread.currentThread();
-//		userDescriptors.remove(t);
 		userDescriptors.remove();
 	}
-	
+
 	/**
 	 * Sets the user for the current thread. You must not forget to call unsetUser()
 	 * on the same thread as soon as you're done (best in a finally).
 	 *
-	 * @see #unsetUser()
+	 * @deprecated Not necessary anymore since {@link CascadedAuthenticationNamingContext} now uses its own {@link Proxy}.
 	 */
+	@Deprecated
 	public static synchronized void setUserDescriptor(UserDescriptor userDescriptor)
 	{
-//		Thread t = Thread.currentThread();
-//		userDescriptors.put(t, userDescriptor);
 		userDescriptors.set(userDescriptor);
 	}
-	
+
 	/**
 	 * @return Returns the UserDescriptor that has been associated to
 	 * the current thread.
+	 * @deprecated Not necessary anymore since {@link CascadedAuthenticationNamingContext} now uses its own {@link Proxy}.
 	 */
+	@Deprecated
 	protected static synchronized UserDescriptor getUserDescriptor()
 	{
-//		Thread t = Thread.currentThread();
-//		return userDescriptors.get(t);
 		return userDescriptors.get();
 	}
 
@@ -83,8 +90,16 @@ public class UserDescriptor
 		this.password = password;
 	}
 
-	public String userName;
-	public String password;
+	private String userName;
+	private String password;
+
+	public String getUserName() {
+		return userName;
+	}
+
+	public String getPassword() {
+		return password;
+	}
 
 	@Override
 	public boolean equals(Object obj)

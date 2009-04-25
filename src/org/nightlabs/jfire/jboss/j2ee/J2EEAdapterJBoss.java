@@ -28,9 +28,16 @@ package org.nightlabs.jfire.jboss.j2ee;
 
 import java.lang.reflect.Method;
 import java.rmi.Remote;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.Set;
 
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
+import javax.management.MBeanServerInvocationHandler;
 import javax.management.Notification;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
@@ -41,16 +48,18 @@ import javax.security.auth.login.LoginContext;
 import javax.security.auth.login.LoginException;
 import javax.transaction.UserTransaction;
 
+import org.jboss.ejb3.Ejb3ModuleMBean;
+import org.jboss.ejb3.SessionContainer;
 import org.nightlabs.jfire.jboss.authentication.JFireJBossLoginContext;
 import org.nightlabs.jfire.security.SecurityReflector;
-import org.nightlabs.jfire.servermanager.j2ee.J2EEAdapter;
+import org.nightlabs.jfire.servermanager.j2ee.AbstractJ2EEAdapter;
 import org.nightlabs.jfire.servermanager.j2ee.J2EEAdapterException;
 import org.nightlabs.jfire.servermanager.j2ee.ServerStartNotificationListener;
 
 /**
  * @author Marco Schulze - marco at nightlabs dot de
  */
-public class J2EEAdapterJBoss implements J2EEAdapter
+public class J2EEAdapterJBoss extends AbstractJ2EEAdapter
 {
 	private static final long serialVersionUID = 1L;
 
@@ -61,8 +70,7 @@ public class J2EEAdapterJBoss implements J2EEAdapter
 	public void flushAuthenticationCache() throws J2EEAdapterException
 	{
 		try {
-			ObjectName jaasMgr =
-				new ObjectName("jboss.security:service=JaasSecurityManager");
+			ObjectName jaasMgr = new ObjectName("jboss.security:service=JaasSecurityManager");
 			Object[] params = { "jfire" }; // String securityDomain
 			String[] signature = { "java.lang.String" };
 			invoke(jaasMgr, "flushAuthenticationCache", params, signature);
@@ -93,30 +101,20 @@ public class J2EEAdapterJBoss implements J2EEAdapter
 		//((org.jboss.jmx.adaptor.rmi.RMIAdaptor) server).
 		//invoke(name, method, args, sig);
 
-		Class<?>[] argTypes = new Class []
-			{ObjectName.class, String.class, Object[].class, String[].class};
+		Class<?>[] argTypes = new Class[] {ObjectName.class, String.class, Object[].class, String[].class};
 		Method m = server.getClass().getMethod("invoke", argTypes);
 		return m.invoke(server,new Object[]{name, method, args, sig});
 	}
 
 	protected Remote getServer() throws Exception
 	{
-		if (initialContext == null)
-			initialContext = new InitialContext();
-
-		if (server == null) {
-	//		String serverName = System.getProperty("testAdvantage.jboss.server.name");
-	//
-	//		if (serverName == null) {
-	//			serverName = InetAddress.getLocalHost().getHostName();
-	//		}
-			server = (Remote) initialContext.lookup("jmx/invoker/RMIAdaptor");
+		InitialContext initialContext = new InitialContext();
+		try {
+			return (Remote) initialContext.lookup("jmx/invoker/RMIAdaptor");
+		} finally {
+			initialContext.close();
 		}
-		return server;
 	}
-
-	protected Remote server;
-	protected InitialContext initialContext = null;
 
 	/* (non-Javadoc)
 	 * @see org.nightlabs.jfire.servermanager.j2ee.J2EEAdapter#registerNotificationListenerServerStarted(org.nightlabs.jfire.servermanager.j2ee.ServerStartNotificationListener)
@@ -183,5 +181,65 @@ public class J2EEAdapterJBoss implements J2EEAdapter
 	@Override
 	public LoginContext createLoginContext(String securityProtocol, CallbackHandler callbackHandler) throws LoginException {
 		return new JFireJBossLoginContext(securityProtocol, callbackHandler);
+	}
+
+	/**
+	 * Get the {@link Ejb3ModuleMBean} for the specified name.
+	 *
+	 * @param ejb3ModuleName the name of the EJB3 module MBean.
+	 * @return the MBean for the specified name.
+	 */
+	protected static Ejb3ModuleMBean getEjb3ModuleMBean(MBeanServer server, ObjectName ejb3ModuleName)
+	{
+		return MBeanServerInvocationHandler.newProxyInstance(
+				server,
+				ejb3ModuleName,
+				Ejb3ModuleMBean.class,
+				false
+		);
+	}
+
+	/**
+	 * Get all {@link SessionContainer}s from the specified {@link Ejb3ModuleMBean}.
+	 *
+	 * @param ejb3ModuleMBean the {@link Ejb3ModuleMBean} from which to obtain the {@link SessionContainer}s.
+	 * @return a {@link Collection} of {@link SessionContainer}s; never <code>null</code>.
+	 */
+	protected static Collection<SessionContainer> getSessionContainers(Ejb3ModuleMBean ejb3ModuleMBean)
+	{
+		if (ejb3ModuleMBean == null)
+			throw new IllegalArgumentException("ejb3ModuleMBean must not be null!");
+
+		Collection<SessionContainer> result = new LinkedList<SessionContainer>();
+		for (Iterator<?> it = ejb3ModuleMBean.getContainers().entrySet().iterator(); it.hasNext(); ) {
+			Map.Entry<?, ?> me = (Map.Entry<?, ?>) it.next();
+			Object value = me.getValue();
+			if (value instanceof SessionContainer) {
+				result.add((SessionContainer) value);
+			}
+		}
+		return result;
+	}
+
+	@Override
+	protected Set<Class<?>> getAllEjb3Roles_getAllEjb3Classes()
+	throws Exception
+	{
+		Set<Class<?>> result = new HashSet<Class<?>>();
+
+		// Look for all deployed EJB modules and extract EJB implementation classes.
+		MBeanServer server = MBeanServerFactory.findMBeanServer(null).get(0);
+		for (ObjectName objectName : server.queryNames(new ObjectName("jboss.j2ee:*"), null)) {
+			if (objectName.getKeyProperty("module") == null)
+				continue;
+
+			Ejb3ModuleMBean ejb3ModuleMBean = getEjb3ModuleMBean(server, objectName);
+			for (SessionContainer container : getSessionContainers(ejb3ModuleMBean)) {
+				Class<?> ejbClass = container.getClazz();
+				result.add(ejbClass);
+			}
+		}
+
+		return result;
 	}
 }

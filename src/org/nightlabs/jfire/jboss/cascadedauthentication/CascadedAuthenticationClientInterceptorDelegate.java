@@ -46,7 +46,9 @@ import org.nightlabs.util.Util;
 
 /**
  * @author Marco Schulze - marco at nightlabs dot de
+ * @deprecated Not used anymore, because {@link CascadedAuthenticationNamingContext} now uses its own {@link Proxy}.
  */
+@Deprecated
 public class CascadedAuthenticationClientInterceptorDelegate extends GenericEJBInterceptor
 {
 	public static final long serialVersionUID = 1L;
@@ -151,7 +153,7 @@ public class CascadedAuthenticationClientInterceptorDelegate extends GenericEJBI
 				logger.debug("invoke: > method="+invocation.getMethod().getDeclaringClass().getName()+"#"+invocation.getMethod().getName()+
 						" SecurityAssociation.principal="+SecurityAssociation.getPrincipal()+
 						" SecurityAssociation.callerPrincipal="+SecurityAssociation.getCallerPrincipal()+": No UserDescriptor associated with current thread. Fetched "+
-						(userDescriptor == null ? null : userDescriptor.userName)+" from invocationContext: " + // (context == null ? null : context.getClass().getName())+'@'+System.identityHashCode(context) + "#" +
+						(userDescriptor == null ? null : userDescriptor.getUserName())+" from invocationContext: " + // (context == null ? null : context.getClass().getName())+'@'+System.identityHashCode(context) + "#" +
 						invocation.getInvocationContext());
 		}
 		else {
@@ -159,7 +161,7 @@ public class CascadedAuthenticationClientInterceptorDelegate extends GenericEJBI
 				logger.debug("invoke: > method="+invocation.getMethod().getDeclaringClass().getName()+"#"+invocation.getMethod().getName()+
 						" SecurityAssociation.principal="+SecurityAssociation.getPrincipal()+
 						" SecurityAssociation.callerPrincipal="+SecurityAssociation.getCallerPrincipal()+": UserDescriptor associated with current thread: "+
-						(userDescriptor == null ? null : userDescriptor.userName));
+						(userDescriptor == null ? null : userDescriptor.getUserName()));
 		}
 
 		// If there's still no UserDescriptor, it means that we do sth. locally within the server.
@@ -217,7 +219,7 @@ public class CascadedAuthenticationClientInterceptorDelegate extends GenericEJBI
 				oldUserName = oldUserName.substring(0, idx);
 		}
 
-		String newUserName = userDescriptor == null ? null : userDescriptor.userName;
+		String newUserName = userDescriptor == null ? null : userDescriptor.getUserName();
 		boolean changeIdentity = newUserName != null;
 		if (changeIdentity) {
 			int idx = newUserName.indexOf('?');
@@ -238,7 +240,7 @@ public class CascadedAuthenticationClientInterceptorDelegate extends GenericEJBI
 					if (logger.isDebugEnabled())
 						logger.debug("invoke: calling loginContext.login()");
 
-					loginData = new LoginData(userDescriptor.userName, userDescriptor.password);
+					loginData = new LoginData(userDescriptor.getUserName(), userDescriptor.getPassword());
 					loginData.setDefaultValues();
 //					loginContext = new LoginContext(LoginData.DEFAULT_SECURITY_PROTOCOL, new JFireLogin(loginData).getAuthCallbackHandler());
 //					loginContext.login();
@@ -435,7 +437,7 @@ public class CascadedAuthenticationClientInterceptorDelegate extends GenericEJBI
 		ClientContainer clientContainer = (ClientContainer) Proxy.getInvocationHandler(result);
 		if(logger.isDebugEnabled())
 			logger.debug("invoke: method="+invocation.getMethod().getDeclaringClass().getName()+"#"+invocation.getMethod().getName()+
-					": after invocation: copying UserDescriptor (username="+userDescriptor.userName+") to context: clientContainer="+clientContainer+" context=" +
+					": after invocation: copying UserDescriptor (username="+userDescriptor.getUserName()+") to context: clientContainer="+clientContainer+" context=" +
 					// (clientContainer.context == null ? null : clientContainer.context.getClass().getName())+'@'+System.identityHashCode(clientContainer.context) + "#"+
 					clientContainer.context.toString());
 

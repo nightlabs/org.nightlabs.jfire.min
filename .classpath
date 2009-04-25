@@ -1,23 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="var" path="LOG4J" sourcepath="/LOG4J_SRC"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/JFireServerManager"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/JFireBase"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/NightLabsBase"/>
-	<classpathentry kind="var" path="XERCES" sourcepath="/XERCES_SRC"/>
-	<classpathentry kind="var" path="JBOSS/server/default/lib/jbosssx.jar" sourcepath="/JBOSS_SRC/security/src/main"/>
-	<classpathentry kind="var" path="JBOSS/client/jbossall-client.jar" sourcepath="/JBOSS_SRC"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jdk1.6.0_11"/>
+	<classpathentry kind="con" path="org.eclipse.jst.server.core.container/org.eclipse.jst.server.generic.runtimeTarget/JBoss v4.2"/>
+	<classpathentry kind="con" path="org.nightlabs.eclipse.sdk.jdo.JDO_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.module.container"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/JFireBaseClientLib"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/NightLabsQuery"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/NightLabsQueryJDO"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/NightLabsJDO"/>
-	<classpathentry kind="var" path="JDO2" sourcepath="/JDO2_SRC">
-		<attributes>
-			<attribute name="javadoc_location" value="http://db.apache.org/jdo/api22/apidocs/"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="var" path="JBOSS/server/default/lib/jboss.jar" sourcepath="/JBOSS_SRC"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/JFireServerManager"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/org.nightlabs.base"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/org.nightlabs.jfire.base"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
