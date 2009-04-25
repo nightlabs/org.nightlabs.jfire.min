@@ -35,7 +35,7 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
 import org.nightlabs.config.ConfigException;
-import org.nightlabs.jfire.base.BaseSessionBeanImplEJB3;
+import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.serverconfigurator.ServerConfigurationException;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.servermanager.config.J2eeServerTypeRegistryConfigModule;
@@ -52,7 +52,7 @@ import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 @Stateless
 public class ServerManagerBean
-	extends BaseSessionBeanImplEJB3
+	extends BaseSessionBeanImpl
 	implements ServerManagerRemote
 {
 	private static final long serialVersionUID = 1L;

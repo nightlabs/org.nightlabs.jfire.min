@@ -35,7 +35,7 @@ import javax.jdo.PersistenceManager;
 import org.apache.log4j.Logger;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jdo.ObjectIDUtil;
-import org.nightlabs.jfire.base.BaseSessionBeanImplEJB3;
+import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.idgenerator.id.IDNamespaceID;
 
 /**
@@ -49,7 +49,7 @@ import org.nightlabs.jfire.idgenerator.id.IDNamespaceID;
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 @Stateless(name="org.nightlabs.jfire.idgenerator.IDGeneratorHelperBean")
 public class IDGeneratorHelperBean
-extends BaseSessionBeanImplEJB3 implements IDGeneratorHelperRemote, IDGeneratorHelperLocal
+extends BaseSessionBeanImpl implements IDGeneratorHelperRemote, IDGeneratorHelperLocal
 {
 	private static final Logger logger = Logger.getLogger(IDGeneratorHelperBean.class);
 	private static final long serialVersionUID = 1L;

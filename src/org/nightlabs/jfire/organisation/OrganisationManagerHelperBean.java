@@ -13,7 +13,7 @@ import javax.jdo.PersistenceManager;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.jfire.asyncinvoke.AsyncInvokeProblem;
-import org.nightlabs.jfire.base.BaseSessionBeanImplEJB3;
+import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.base.expression.AndCondition;
 import org.nightlabs.jfire.base.expression.Negation;
 import org.nightlabs.jfire.base.expression.OrCondition;
@@ -57,7 +57,7 @@ import org.nightlabs.jfire.workstation.Workstation;
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 @Stateless
 public class OrganisationManagerHelperBean
-extends BaseSessionBeanImplEJB3
+extends BaseSessionBeanImpl
 implements OrganisationManagerHelperLocal
 {
 	private static final long serialVersionUID = 1L;

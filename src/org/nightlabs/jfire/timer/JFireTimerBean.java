@@ -19,7 +19,7 @@ import javax.security.auth.login.LoginContext;
 import org.apache.log4j.Logger;
 import org.nightlabs.j2ee.LoginData;
 import org.nightlabs.jfire.base.AuthCallbackHandler;
-import org.nightlabs.jfire.base.BaseSessionBeanImplEJB3;
+import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.servermanager.JFireServerManagerFactory;
@@ -39,7 +39,7 @@ import org.nightlabs.jfire.servermanager.j2ee.J2EEAdapter;
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 @Stateless
 public class JFireTimerBean
-extends BaseSessionBeanImplEJB3
+extends BaseSessionBeanImpl
 implements TimedObject, JFireTimerRemote
 {
 	private static final long serialVersionUID = 1L;

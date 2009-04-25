@@ -55,7 +55,7 @@ import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jdo.ObjectID;
 import org.nightlabs.jdo.query.JDOQueryCollectionDecorator;
 import org.nightlabs.jdo.query.QueryCollection;
-import org.nightlabs.jfire.base.BaseSessionBeanImplEJB3;
+import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.base.JFireEjb3Factory;
 import org.nightlabs.jfire.base.JFireEjbFactory;
 import org.nightlabs.jfire.config.ConfigSetup;
@@ -97,7 +97,7 @@ import org.nightlabs.util.Util;
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 @Stateless
 public class JFireSecurityManagerBean
-extends BaseSessionBeanImplEJB3
+extends BaseSessionBeanImpl
 implements JFireSecurityManagerRemote
 {
 	private static final long serialVersionUID = 1L;

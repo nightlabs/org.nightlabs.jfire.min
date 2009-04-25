@@ -37,7 +37,7 @@ import javax.ejb.TransactionManagementType;
 import javax.naming.InitialContext;
 
 import org.apache.log4j.Logger;
-import org.nightlabs.jfire.base.BaseSessionBeanImplEJB3;
+import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.base.InvokeUtil;
 import org.nightlabs.jfire.crossorganisationregistrationinit.Context;
 import org.nightlabs.jfire.crossorganisationregistrationinit.CrossOrganisationRegistrationInit;
@@ -55,7 +55,7 @@ import org.nightlabs.jfire.crossorganisationregistrationinit.CrossOrganisationRe
 @TransactionManagement(TransactionManagementType.CONTAINER)
 @Stateless
 public class OrganisationInitDelegateBean
-extends BaseSessionBeanImplEJB3
+extends BaseSessionBeanImpl
 implements OrganisationInitDelegateRemote // , OrganisationInitDelegateLocal
 {
 	private static final long serialVersionUID = 1L;

@@ -40,7 +40,7 @@ import javax.ejb.TransactionManagementType;
 import javax.jdo.PersistenceManager;
 
 import org.apache.log4j.Logger;
-import org.nightlabs.jfire.base.BaseSessionBeanImplEJB3;
+import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.jdo.cache.CacheManager;
 import org.nightlabs.jfire.jdo.cache.NotificationBundle;
 import org.nightlabs.jfire.jdo.notification.DirtyObjectID;
@@ -60,7 +60,7 @@ import org.nightlabs.jfire.jdo.notification.IJDOLifecycleListenerFilter;
 @TransactionManagement(TransactionManagementType.CONTAINER)
 @Stateless
 public class JDOManagerBean
-extends BaseSessionBeanImplEJB3
+extends BaseSessionBeanImpl
 implements JDOManagerRemote
 {
 	private static final long serialVersionUID = 1L;

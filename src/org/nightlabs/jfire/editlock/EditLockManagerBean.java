@@ -16,7 +16,7 @@ import javax.jdo.PersistenceManager;
 import org.apache.log4j.Logger;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jdo.ObjectID;
-import org.nightlabs.jfire.base.BaseSessionBeanImplEJB3;
+import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.editlock.id.EditLockID;
 import org.nightlabs.jfire.editlock.id.EditLockTypeID;
 import org.nightlabs.jfire.security.User;
@@ -38,7 +38,7 @@ import org.nightlabs.util.CollectionUtil;
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 @Stateless
 public class EditLockManagerBean
-extends BaseSessionBeanImplEJB3
+extends BaseSessionBeanImpl
 implements EditLockManagerRemote, EditLockManagerLocal
 {
 	private static final Logger logger = Logger.getLogger(EditLockManagerBean.class);

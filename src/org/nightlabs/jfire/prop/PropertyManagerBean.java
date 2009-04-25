@@ -44,7 +44,7 @@ import javax.jdo.PersistenceManager;
 import org.apache.log4j.Logger;
 import org.nightlabs.i18n.MultiLanguagePropertiesBundle;
 import org.nightlabs.jdo.NLJDOHelper;
-import org.nightlabs.jfire.base.BaseSessionBeanImplEJB3;
+import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.base.expression.IExpression;
 import org.nightlabs.jfire.config.id.ConfigModuleInitialiserID;
 import org.nightlabs.jfire.organisation.Organisation;
@@ -79,7 +79,7 @@ import org.nightlabs.util.Util;
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 @TransactionManagement(TransactionManagementType.CONTAINER)
 @Stateless
-public class PropertyManagerBean extends BaseSessionBeanImplEJB3 implements PropertyManagerRemote
+public class PropertyManagerBean extends BaseSessionBeanImpl implements PropertyManagerRemote
 {
 	private static final long serialVersionUID = 1L;
 	private static final Logger logger = Logger.getLogger(PropertyManagerBean.class);

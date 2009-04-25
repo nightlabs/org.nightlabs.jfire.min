@@ -38,7 +38,7 @@ import javax.jdo.PersistenceManager;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.jdo.NLJDOHelper;
-import org.nightlabs.jfire.base.BaseSessionBeanImplEJB3;
+import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.jdo.notification.persistent.id.NotificationBundleID;
 import org.nightlabs.jfire.jdo.notification.persistent.id.NotificationFilterID;
 import org.nightlabs.jfire.jdo.notification.persistent.id.NotificationReceiverID;
@@ -56,7 +56,7 @@ import org.nightlabs.jfire.jdo.notification.persistent.id.PushNotifierID;
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 @Stateless
 public class PersistentNotificationEJBBean
-extends BaseSessionBeanImplEJB3 implements PersistentNotificationEJBRemote
+extends BaseSessionBeanImpl implements PersistentNotificationEJBRemote
 {
 	private static final long serialVersionUID = 1L;
 	private static final Logger logger = Logger.getLogger(PersistentNotificationEJBBean.class);

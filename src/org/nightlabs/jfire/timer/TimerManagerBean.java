@@ -18,7 +18,7 @@ import org.apache.log4j.Logger;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jdo.ObjectIDUtil;
 import org.nightlabs.jdo.timepattern.TimePatternSetJDOImpl;
-import org.nightlabs.jfire.base.BaseSessionBeanImplEJB3;
+import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.security.Authority;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.timer.id.TaskID;
@@ -37,7 +37,7 @@ import org.nightlabs.jfire.timer.id.TaskID;
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 @Stateless
 public class TimerManagerBean
-extends BaseSessionBeanImplEJB3
+extends BaseSessionBeanImpl
 implements TimerManagerRemote, TimerManagerLocal
 {
 	private static final long serialVersionUID = 1L;

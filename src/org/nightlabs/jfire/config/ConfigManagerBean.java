@@ -48,7 +48,7 @@ import org.nightlabs.inheritance.FieldMetaData;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jdo.ObjectID;
 import org.nightlabs.jdo.moduleregistry.ModuleMetaData;
-import org.nightlabs.jfire.base.BaseSessionBeanImplEJB3;
+import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.base.JFireBaseEAR;
 import org.nightlabs.jfire.config.id.ConfigID;
 import org.nightlabs.jfire.config.id.ConfigModuleID;
@@ -70,7 +70,7 @@ import org.nightlabs.version.Version;
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 @Stateless
 @RolesAllowed("_Guest_")
-public class ConfigManagerBean extends BaseSessionBeanImplEJB3 implements ConfigManagerRemote
+public class ConfigManagerBean extends BaseSessionBeanImpl implements ConfigManagerRemote
 {
 	private static final long serialVersionUID = 1L;
 	/**

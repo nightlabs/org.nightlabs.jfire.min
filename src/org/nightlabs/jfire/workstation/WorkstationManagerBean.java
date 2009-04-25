@@ -42,7 +42,7 @@ import javax.jdo.Query;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jdo.query.JDOQueryCollectionDecorator;
 import org.nightlabs.jdo.query.QueryCollection;
-import org.nightlabs.jfire.base.BaseSessionBeanImplEJB3;
+import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.workstation.id.WorkstationID;
 import org.nightlabs.jfire.workstation.search.WorkstationQuery;
 import org.nightlabs.util.CollectionUtil;
@@ -60,7 +60,7 @@ import org.nightlabs.util.CollectionUtil;
  */
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 @Stateless
-public class WorkstationManagerBean extends BaseSessionBeanImplEJB3 implements WorkstationManagerRemote
+public class WorkstationManagerBean extends BaseSessionBeanImpl implements WorkstationManagerRemote
 {
 	private static final long serialVersionUID = 1L;
 

@@ -55,7 +55,7 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.asyncinvoke.AsyncInvoke;
-import org.nightlabs.jfire.base.BaseSessionBeanImplEJB3;
+import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.base.JFireEjb3Factory;
 import org.nightlabs.jfire.base.JFireException;
 import org.nightlabs.jfire.base.JFirePrincipal;
@@ -102,7 +102,7 @@ import org.nightlabs.util.Util;
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 @Stateless
 public class OrganisationManagerBean
-	extends BaseSessionBeanImplEJB3
+	extends BaseSessionBeanImpl
 	implements OrganisationManagerRemote
 {
 	private static final long serialVersionUID = 1L;

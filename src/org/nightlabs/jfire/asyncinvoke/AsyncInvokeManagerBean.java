@@ -16,7 +16,7 @@ import javax.jdo.PersistenceManager;
 
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.asyncinvoke.id.AsyncInvokeProblemID;
-import org.nightlabs.jfire.base.BaseSessionBeanImplEJB3;
+import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 
 /**
  * @ejb.bean name="jfire/ejb/JFireBaseBean/AsyncInvokeManager"
@@ -31,7 +31,7 @@ import org.nightlabs.jfire.base.BaseSessionBeanImplEJB3;
 @TransactionManagement(TransactionManagementType.CONTAINER)
 @Stateless
 public class AsyncInvokeManagerBean
-extends BaseSessionBeanImplEJB3
+extends BaseSessionBeanImpl
 implements AsyncInvokeManagerRemote
 {
 	//	private static final Logger logger = Logger.getLogger(AsyncInvokeManagerBean.class);

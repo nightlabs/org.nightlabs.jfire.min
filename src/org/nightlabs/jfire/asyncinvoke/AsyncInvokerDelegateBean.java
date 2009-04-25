@@ -38,7 +38,7 @@ import javax.jdo.PersistenceManager;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.jdo.NLJDOHelper;
-import org.nightlabs.jfire.base.BaseSessionBeanImplEJB3;
+import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 
 // FIXME Maac: what is this interface extends construction about??
 
@@ -58,7 +58,7 @@ import org.nightlabs.jfire.base.BaseSessionBeanImplEJB3;
 @TransactionManagement(TransactionManagementType.CONTAINER)
 @Stateless
 public class AsyncInvokerDelegateBean
-extends BaseSessionBeanImplEJB3
+extends BaseSessionBeanImpl
 implements AsyncInvokerDelegateLocal
 {
 	private static final long serialVersionUID = 1L;

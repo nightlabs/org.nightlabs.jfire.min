@@ -37,7 +37,7 @@ import javax.jdo.PersistenceManager;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.jdo.NLJDOHelper;
-import org.nightlabs.jfire.base.BaseSessionBeanImplEJB3;
+import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.language.id.LanguageID;
 import org.nightlabs.language.LanguageCf;
 
@@ -51,7 +51,7 @@ import org.nightlabs.language.LanguageCf;
  */
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 @Stateless
-public class LanguageManagerBean extends BaseSessionBeanImplEJB3 implements LanguageManagerRemote
+public class LanguageManagerBean extends BaseSessionBeanImpl implements LanguageManagerRemote
 {
 	private static final long serialVersionUID = 1L;
 	private static final Logger logger = Logger.getLogger(LanguageManagerBean.class);
