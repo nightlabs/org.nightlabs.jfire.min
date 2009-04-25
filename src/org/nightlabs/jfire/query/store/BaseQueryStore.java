@@ -14,6 +14,16 @@ import java.util.zip.InflaterInputStream;
 import javax.jdo.JDOHelper;
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
+import javax.jdo.annotations.Column;
+import javax.jdo.annotations.FetchGroup;
+import javax.jdo.annotations.FetchGroups;
+import javax.jdo.annotations.IdentityType;
+import javax.jdo.annotations.NullValue;
+import javax.jdo.annotations.PersistenceCapable;
+import javax.jdo.annotations.PersistenceModifier;
+import javax.jdo.annotations.Persistent;
+import javax.jdo.annotations.PrimaryKey;
+import javax.jdo.annotations.Queries;
 import javax.jdo.listener.StoreCallback;
 
 import org.nightlabs.i18n.I18nText;
@@ -25,6 +35,7 @@ import org.nightlabs.jfire.query.store.id.QueryStoreID;
 import org.nightlabs.jfire.security.Authority;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.security.id.UserID;
+import org.nightlabs.util.CollectionUtil;
 
 import com.thoughtworks.xstream.XStream;
 
@@ -89,6 +100,39 @@ import com.thoughtworks.xstream.XStream;
  *
  * @author Marius Heinzmann - marius[at]nightlabs[dot]com
  */
+@PersistenceCapable(
+	objectIdClass=QueryStoreID.class,
+	identityType=IdentityType.APPLICATION,
+	detachable="true",
+	table="JFireQueryStore_BaseQueryStore")
+@FetchGroups({
+	@FetchGroup(
+		name=BaseQueryStore.FETCH_GROUP_OWNER,
+		members=@Persistent(name="owner")),
+	@FetchGroup(
+		name=BaseQueryStore.FETCH_GROUP_NAME,
+		members=@Persistent(name="name")),
+	@FetchGroup(
+		name=BaseQueryStore.FETCH_GROUP_DESCRIPTION,
+		members=@Persistent(name="description")),
+	@FetchGroup(
+		name=BaseQueryStore.FETCH_GROUP_AUTHORITY,
+		members=@Persistent(name="authority")),
+	@FetchGroup(
+		name=BaseQueryStore.FETCH_GROUP_SERIALISED_QUERIES,
+		members=@Persistent(name="serialisedQueries"))
+})
+@Queries({
+	@javax.jdo.annotations.Query(
+		name="getAllPublicQueryStoreIDsByResultType",
+		value="SELECT JDOHelper.getObjectId(this) WHERE this.resultClassName == :givenClassName && this.publiclyAvailable == true"),
+	@javax.jdo.annotations.Query(
+		name="getQueryStoreIDsOfOwnerByResultType",
+		value="SELECT JDOHelper.getObjectId(this) WHERE this.resultClassName == :givenClassName && this.organisationID == :givenOrganisationID && this.ownerID == :givenUserID"),
+	@javax.jdo.annotations.Query(
+		name="getDefaultQueryStoreIDOfOwnerWithResultType",
+		value="SELECT JDOHelper.getObjectId(this) WHERE this.resultClassName == :givenClassName && this.organisationID == :givenOrganisationID && this.ownerID == :givenUserID && this.defaultQuery == true")
+})
 public class BaseQueryStore
 	implements Serializable, StoreCallback, QueryStore
 {
@@ -144,8 +188,9 @@ public class BaseQueryStore
 		assert ownerID != null;
 		Query query = pm.newNamedQuery(BaseQueryStore.class, "getQueryStoreIDsOfOwnerByResultType");
 
-		Collection<QueryStoreID> queryResult =(Collection<QueryStoreID>)
-			query.execute(resultClass.getName(), ownerID.organisationID, ownerID.userID);
+		Collection<QueryStoreID> queryResult = CollectionUtil.castCollection(
+				(Collection<?>)query.execute(resultClass.getName(), ownerID.organisationID, ownerID.userID)
+		);
 
 		Set<QueryStoreID> result = NLJDOHelper.getDetachedQueryResultAsSet(pm, queryResult);
 		if (allPublicAsWell)
@@ -153,7 +198,9 @@ public class BaseQueryStore
 			// create new Set, since the result of JDOHelper.getDetachedQueryResultAsSet(..) may return Collections.emptySet()
 			result = new HashSet<QueryStoreID>(result);
 			query = pm.newNamedQuery(BaseQueryStore.class, "getAllPublicQueryStoreIDsByResultType");
-			queryResult = (Collection<QueryStoreID>) query.execute(resultClass.getName());
+			queryResult = CollectionUtil.castCollection(
+					(Collection<?>) query.execute(resultClass.getName())
+			);
 			Set<QueryStoreID> tmpIds = NLJDOHelper.getDetachedQueryResultAsSet(pm, queryResult);
 			result.addAll(tmpIds);
 		}
@@ -194,8 +241,9 @@ public class BaseQueryStore
 		assert organisationID != null;
 		assert userID != null;
 		Query query = pm.newNamedQuery(BaseQueryStore.class, "getDefaultQueryStoreIDOfOwnerWithResultType");
-		Collection<QueryStoreID> queryResult = (Collection<QueryStoreID>)
-			query.execute(resultClassName, organisationID, userID);
+		Collection<QueryStoreID> queryResult = CollectionUtil.castCollection(
+				(Collection<?>) query.execute(resultClassName, organisationID, userID)
+		);
 		Set<QueryStoreID> result = NLJDOHelper.getDetachedQueryResultAsSet(pm, queryResult);
 		if (result == null || result.isEmpty()) {
 			return null;
@@ -210,16 +258,20 @@ public class BaseQueryStore
 	 * @jdo.field primary-key="true"
 	 * @jdo.column length="100"
 	 */
+	@PrimaryKey
+	@Column(length=100)
 	private String organisationID;
 
 	/**
 	 * @jdo.field primary-key="true"
 	 */
+	@PrimaryKey
 	private long queryStoreID;
 
 	/**
 	 * @jdo.field primary-key="true"
 	 */
+	@PrimaryKey
 	private String ownerID;
 
 	/**
@@ -227,6 +279,9 @@ public class BaseQueryStore
 	 * 	persistence-modifier="persistent"
 	 * 	null-value="exception"
 	 */
+	@Persistent(
+		nullValue=NullValue.EXCEPTION,
+		persistenceModifier=PersistenceModifier.PERSISTENT)
 	private User owner;
 
 	/**
@@ -236,6 +291,11 @@ public class BaseQueryStore
 	 *  dependent="true"
 	 * 	default-fetch-group="true"
 	 */
+	@Persistent(
+		dependent="true",
+		mappedBy="queryStore",
+		defaultFetchGroup="true",
+		persistenceModifier=PersistenceModifier.PERSISTENT)
 	private QueryStoreName name;
 
 	/**
@@ -245,29 +305,43 @@ public class BaseQueryStore
 	 *  dependent="true"
 	 * 	default-fetch-group="true"
 	 */
+	@Persistent(
+		dependent="true",
+		mappedBy="queryStore",
+		defaultFetchGroup="true",
+		persistenceModifier=PersistenceModifier.PERSISTENT)
 	private QueryStoreDescription description;
 
 	/**
 	 * @jdo.field
 	 * 	persistence-modifier="persistent"
 	 */
+	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
 	private Authority authority;
 
 	/**
 	 * @jdo.field persistence-modifier="none"
 	 */
-	private transient QueryCollection<?> deSerialisedQueries;
+	// TODO it should be QueryCollection<?>, but the DataNucleus enhancer seems to get a problem with it ("Invalid element type: ?"). Hence, we temporarily omit the generic type.
+	@SuppressWarnings("unchecked")
+	@Persistent(persistenceModifier=PersistenceModifier.NONE)
+	private transient QueryCollection deSerialisedQueries;
 
 	/**
 	 * @jdo.field persistence-modifier="persistent" default-fetch-group="true"
 	 * @jdo.column sql-type="BLOB"
 	 */
+	@Persistent(
+		defaultFetchGroup="true",
+		persistenceModifier=PersistenceModifier.PERSISTENT)
+	@Column(sqlType="BLOB")
 	private byte[] serialisedQueries;
 
 	/**
 	 * @jdo.field
 	 * 	persistence-modifier="persistent"
 	 */
+	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
 	private boolean publiclyAvailable;
 
 	/**
@@ -276,6 +350,7 @@ public class BaseQueryStore
 	 * @jdo.field
 	 *	persistence-modifier="persistent"
 	 */
+	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
 	private String resultClassName;
 
 	/**
@@ -285,6 +360,7 @@ public class BaseQueryStore
 	 * @jdo.field
 	 *	persistence-modifier="persistent"
 	 */
+	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
 	private boolean defaultQuery = false;
 
 	/* (non-Javadoc)
@@ -380,7 +456,6 @@ public class BaseQueryStore
 	/* (non-Javadoc)
 	 * @see org.nightlabs.jfire.query.store.QueryStore#getQueryCollection()
 	 */
-	@SuppressWarnings("unchecked")
 	public QueryCollection<?> getQueryCollection()
 	{
 		if (deSerialisedQueries != null)

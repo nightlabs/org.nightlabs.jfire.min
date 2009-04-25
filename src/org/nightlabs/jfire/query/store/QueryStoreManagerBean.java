@@ -1,14 +1,15 @@
 package org.nightlabs.jfire.query.store;
 
-import java.rmi.RemoteException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 
-import javax.ejb.CreateException;
-import javax.ejb.EJBException;
-import javax.ejb.SessionBean;
-import javax.ejb.SessionContext;
+import javax.annotation.security.RolesAllowed;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.ejb.TransactionManagement;
+import javax.ejb.TransactionManagementType;
 import javax.jdo.JDOUserException;
 import javax.jdo.PersistenceManager;
 
@@ -35,9 +36,12 @@ import org.nightlabs.version.MalformedVersionException;
  * @ejb.transaction	type="Required"
  *
  */
-public abstract class QueryStoreManagerBean
-	extends BaseSessionBeanImpl
-	implements SessionBean
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
+@TransactionManagement(TransactionManagementType.CONTAINER)
+@Stateless
+public class QueryStoreManagerBean
+extends BaseSessionBeanImpl
+implements QueryStoreManagerRemote
 {
 	/**
 	 * The serial version id.
@@ -49,43 +53,8 @@ public abstract class QueryStoreManagerBean
 	 */
 	private static final Logger logger = Logger.getLogger(QueryStoreManagerBean.class);
 
-	/**
-	 * @see org.nightlabs.jfire.base.BaseSessionBeanImpl#setSessionContext(javax.ejb.SessionContext)
-	 */
-	@Override
-	public void setSessionContext(SessionContext sessionContext)
-			throws EJBException, RemoteException
-	{
-		super.setSessionContext(sessionContext);
-	}
-	/**
-	 * @see org.nightlabs.jfire.base.BaseSessionBeanImpl#unsetSessionContext()
-	 */
-	@Override
-	public void unsetSessionContext() {
-		super.unsetSessionContext();
-	}
-
-	/**
-	 * @ejb.create-method
-	 * @ejb.permission role-name="_Guest_"
-	 */
-	public void ejbCreate()
-	throws CreateException
-	{}
-
-	/**
-	 * @see javax.ejb.SessionBean#ejbRemove()
-	 *
-	 * @ejb.permission unchecked="true"
-	 */
-	public void ejbRemove() throws EJBException, RemoteException
-	{}
-
-	/**
-	 * @ejb.interface-method
-	 * @ejb.transaction type="Supports"
-	 * @ejb.permission role-name="_Guest_"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.query.store.QueryStoreManagerRemote#ping(java.lang.String)
 	 */
 	@Override
 	public String ping(String message) {
@@ -98,6 +67,7 @@ public abstract class QueryStoreManagerBean
 	 * @ejb.permission role-name="_Guest_"
 	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 */
+	@RolesAllowed("_Guest_")
 	public QueryStore getQueryStore(QueryStoreID storeID, String[] fetchGroups,
 		int maxFetchDepth)
 	{
@@ -110,6 +80,7 @@ public abstract class QueryStoreManagerBean
 	 * @ejb.permission role-name="_Guest_"
 	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 */
+	@RolesAllowed("_Guest_")
 	public Collection<BaseQueryStore> getQueryStores(
 		Set<QueryStoreID> storeIDs, String[] fetchGroups, int maxFetchDepth)
 	{
@@ -142,6 +113,7 @@ public abstract class QueryStoreManagerBean
 	 * @ejb.permission role-name="_Guest_"
 	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 */
+	@RolesAllowed("_Guest_")
 	public Collection<QueryStoreID> getQueryStoreIDs(Class<?> resultType, UserID ownerID,
 		boolean allPublicAsWell, String[] fetchGroups, int maxFetchDepth)
 	{
@@ -162,11 +134,8 @@ public abstract class QueryStoreManagerBean
 		}
 	}
 
-	/**
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type="Required"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.query.store.QueryStoreManagerRemote#storeQueryCollection(org.nightlabs.jfire.query.store.QueryStore, java.lang.String[], int, boolean)
 	 */
 	public QueryStore storeQueryCollection(QueryStore queryStore, String[] fetchGroups,
 		int maxFetchDepth, boolean get)
@@ -182,11 +151,8 @@ public abstract class QueryStoreManagerBean
 		}
 	}
 
-	/**
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type="Required"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.query.store.QueryStoreManagerRemote#removeQueryStore(org.nightlabs.jfire.query.store.QueryStore)
 	 */
 	public boolean removeQueryStore(QueryStore queryStore)
 	{
@@ -209,10 +175,8 @@ public abstract class QueryStoreManagerBean
 		}
 	}
 
-	/**
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_System_"
-	 * @ejb.transaction type="Required"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.query.store.QueryStoreManagerRemote#initialise()
 	 */
 	public void initialise()
 	{
@@ -245,8 +209,8 @@ public abstract class QueryStoreManagerBean
 	 * @ejb.permission role-name="_Guest_"
 	 * @!ejb.transaction type="Supports" @!This usually means that no transaction is opened which is significantly faster and recommended for all read-only EJB methods! Marco.
 	 */
-	public QueryStoreID getDefaultQueryStoreID(Class<?> resultType, UserID ownerID,
-			String[] fetchGroups, int maxFetchDepth)
+	@RolesAllowed("_Guest_")
+	public QueryStoreID getDefaultQueryStoreID(Class<?> resultType, UserID ownerID, String[] fetchGroups, int maxFetchDepth)
 	{
 		PersistenceManager pm = getPersistenceManager();
 		try {
