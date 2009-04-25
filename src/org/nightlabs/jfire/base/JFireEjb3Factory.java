@@ -9,9 +9,6 @@ import java.util.Map;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import org.nightlabs.jfire.security.JFireSecurityManagerRemote;
-import org.nightlabs.jfire.timer.TimerManagerLocal;
-
 /**
  * @author Marc Klinger - marc[at]nightlabs[dot]de
  * @author marco schulze - marco at nightlabs dot de
@@ -98,7 +95,7 @@ public class JFireEjb3Factory
 	 * </p>
 	 *
 	 * @param <T> the type of the EJB-remote-interface.
-	 * @param ejbRemoteInterface the remote EJB-business-interface (e.g. {@link JFireSecurityManagerRemote}) for which to get an instance.
+	 * @param ejbRemoteInterface the remote EJB-business-interface (e.g. {@link org.nightlabs.jfire.security.JFireSecurityManagerRemote}) for which to get an instance.
 	 * @param environment the environment (aka. JNDI initial context properties) specifying the coordinates where to get the bean from (e.g. which server to connect to, which user to authenticate as etc.).
 	 * @return an instance of an EJB-proxy implementing the interface specified by the argument <code>ejbRemoteInterface</code>.
 	 */
@@ -188,7 +185,7 @@ public class JFireEjb3Factory
 	 * </p>
 	 *
 	 * @param <T> the type of the EJB-local-interface.
-	 * @param ejbLocalInterface the local EJB-business-interface (e.g. {@link TimerManagerLocal}) for which to get an instance.
+	 * @param ejbLocalInterface the local EJB-business-interface (e.g. {@link org.nightlabs.jfire.timer.TimerManagerLocal}) for which to get an instance.
 	 * @return an instance of an EJB-proxy implementing the interface specified by the argument <code>ejbLocalInterface</code>.
 	 */
 	public static <T> T getLocalBean(Class<T> ejbLocalInterface)
