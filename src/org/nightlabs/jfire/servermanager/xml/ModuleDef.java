@@ -35,12 +35,20 @@ public class ModuleDef
 	implements Comparable<ModuleDef>
 {
 
-	public ModuleDef() { }
+	public ModuleDef(EARModuleType moduleType)
+	{
+		this.moduleType = moduleType;
+	}
 
+	private EARModuleType moduleType;
 	private String resourceURI;
 	private String contextPath;
 	private String name;
 	private String description;
+
+	public EARModuleType getModuleType() {
+		return moduleType;
+	}
 
 	/**
 	 * @return Returns the contextPath.

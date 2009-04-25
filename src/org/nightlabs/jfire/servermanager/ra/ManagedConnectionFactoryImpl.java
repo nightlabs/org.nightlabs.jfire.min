@@ -43,6 +43,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.nightlabs.config.Config;
 import org.nightlabs.config.ConfigException;
+import org.nightlabs.jfire.server.data.dir.JFireServerDataDirectory;
 import org.nightlabs.jfire.servermanager.config.DatabaseCf;
 import org.nightlabs.jfire.servermanager.config.J2eeCf;
 import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
@@ -60,7 +61,7 @@ public class ManagedConnectionFactoryImpl
 	 * The serial version of this class.
 	 */
 	private static final long serialVersionUID = 1L;
-	
+
 	/**
 	 * LOG4J logger used by this class
 	 */
@@ -71,11 +72,52 @@ public class ManagedConnectionFactoryImpl
 		if(logger.isDebugEnabled())
 			logger.debug(this.getClass().getName() + ": CONSTRUCTOR");
 	}
-	
+
 	// *********************************************
 	// *** Config variables                      ***
 	// *********************************************
-	private String sysConfigDirectory = null;
+
+//	/**
+//	 * Is calculated from the {@link #dataDirectory} by applying {@link IOUtil#replaceTemplateVariables(String, java.util.Map)}
+//	 * with the system properties (=&gt; {@link System#getProperties()}).
+//	 */
+//	private File resolvedDataDirectory = null;
+//
+//	public File getResolvedDataDirectory() {
+//		if (resolvedDataDirectory == null) {
+//			if (dataDirectory == null)
+//				return null;
+//
+//			Map<String, String> variables = CollectionUtil.castMap(System.getProperties());
+//			String dir = IOUtil.replaceTemplateVariables(dataDirectory, variables);
+//			int firstVarIdx = dir.indexOf("${");
+//			if (firstVarIdx >= 0) {
+//
+//
+//				throw new IllegalStateException("dataDirectory \"" + dataDirectory + "\" contains at least one unknown variable: " + );
+//			}
+//
+//			resolvedDataDirectory = new File(dir);
+//		}
+//
+//		return resolvedDataDirectory;
+//	}
+//
+//	/**
+//	 * Get the raw (including variables!) data directory of JFire.
+//	 *
+//	 * @return the raw data directory (as configured). This is exactly the value which was passed to
+//	 * {@link #setDataDirectory(String)} or <code>null</code>, if that method was not called yet.
+//	 */
+//	public String getDataDirectory() {
+//
+//		return dataDirectory;
+//	}
+
+	/**
+	 * Is calculated from the {@link #resolvedDataDirectory}.
+	 */
+	private File sysConfigDirectory = null;
 
   // *********************************************
 	// *** Config methods                        ***
@@ -83,17 +125,21 @@ public class ManagedConnectionFactoryImpl
 	/**
 	 * @return Returns the sysConfigDirectory.
 	 */
-	public String getSysConfigDirectory() {
+	public File getSysConfigDirectory() {
+		if (sysConfigDirectory == null) {
+			sysConfigDirectory = new File(JFireServerDataDirectory.getJFireServerDataDirFile(), "config");
+		}
+
 		return sysConfigDirectory;
 	}
-	/**
-	 * @param sysConfigDirectory The sysConfigDirectory to set.
-	 */
-	public void setSysConfigDirectory(String _sysConfigDirectory) {
-		assertConfigurable();
-		this.sysConfigDirectory = _sysConfigDirectory;
-	}
-	
+//	/**
+//	 * @param sysConfigDirectory The sysConfigDirectory to set.
+//	 */
+//	public void setSysConfigDirectory(String _sysConfigDirectory) {
+//		assertConfigurable();
+//		this.sysConfigDirectory = _sysConfigDirectory;
+//	}
+
 	// *********************************************
 	// *** Methods for j2ee requirements         ***
 	// *********************************************
@@ -115,7 +161,7 @@ public class ManagedConnectionFactoryImpl
 	// *** Runtime variables                     ***
 	// *********************************************
 	private Config config = null;
-	
+
 	// *********************************************
 	// *** Runtime methods                       ***
 	// *********************************************
@@ -123,17 +169,17 @@ public class ManagedConnectionFactoryImpl
 	{
 		if (config ==  null)
 			throw new IllegalStateException("freezeConfiguration() has not been called! Config not existent!");
-		
+
 		return config;
 	}
-	
+
 	public JFireServerConfigModule getConfigModule()
 	{
 		return getConfig()
 				.getConfigModule(JFireServerConfigModule.class, true);
 	}
 
-	
+
 	// *********************************************
 	// *** Methods from ManagedConnectionFactory ***
 	// *********************************************
@@ -193,7 +239,7 @@ public class ManagedConnectionFactoryImpl
 			logger.debug("subject: "+subject);
 			logger.debug("***********************************************************");
 		}
-		
+
 		PasswordCredential pc = getPasswordCredential(subject);
 		for (Iterator<?> i = mcs.iterator(); i.hasNext();)
 		{
@@ -223,14 +269,14 @@ public class ManagedConnectionFactoryImpl
 		if(logger.isDebugEnabled())
 			logger.debug(this.getClass().getName()+": setLogWriter(pw): pw="+pw);
 	}
-	
+
 	// *** helpers
 	protected PasswordCredential getPasswordCredential(Subject subject)
 	throws ResourceException
 	{
 		if(logger.isDebugEnabled())
 			logger.debug(this.getClass().getName()+": getPasswordCredential(subject=\""+subject+"\")");
-		
+
 		if (subject == null)
 		{
 			PasswordCredential pc=new PasswordCredential(getDatabaseUserName(), getDatabasePassword().toCharArray());
@@ -252,17 +298,17 @@ public class ManagedConnectionFactoryImpl
 		}
 		throw new ResourceException("No credentials found for ManagedConnectionFactory: " + this);
 	}
-	
+
 	// *********************************************
 	// *** protected internal methods            ***
 	// *********************************************
-	
+
 	private boolean configurable = true;
 	public boolean isConfigurable()
 	{
 		return configurable;
 	}
-	
+
 	protected void assertConfigurable()
 	{
 		if (!configurable)
@@ -276,31 +322,29 @@ public class ManagedConnectionFactoryImpl
 		throws ConfigException
 	{
 		if (!configurable) {
-			logger.log(Level.WARN, "freezeConfiguration is called twice!");
-			logger.log(Level.WARN, "STACKTRACE:", new Exception());
+			logger.warn("freezeConfiguration is called twice!");
+			logger.warn("STACKTRACE:", new Exception());
 			return;
 		}
 
-		if (sysConfigDirectory == null)
-			throw new ConfigException("SysConfigDirectory is not configured! Check your JFireServerManager-ds.xml!");
-		
-		File fileSysConfDir = new File(sysConfigDirectory);
-		
-		String sysConfigDirectoryAbsolute;
-		try {
-			sysConfigDirectoryAbsolute = fileSysConfDir.getCanonicalPath();
-		} catch (Exception x) {
-			throw new ConfigException("fileSysConfDir.getCanonicalPath() for \""+sysConfigDirectory+"\" failed!", x);
-		}
+		File fileSysConfDir = getSysConfigDirectory();
+		fileSysConfDir.mkdirs();
+
+//		String sysConfigDirectoryAbsolute;
+//		try {
+//			sysConfigDirectoryAbsolute = fileSysConfDir.getCanonicalPath();
+//		} catch (Exception x) {
+//			throw new ConfigException("fileSysConfDir.getCanonicalPath() for \""+sysConfigDirectory+"\" failed!", x);
+//		}
 
 		if (!fileSysConfDir.exists())
-			throw new ConfigException("SysConfigDirectory \""+sysConfigDirectoryAbsolute+"\" defined in JFireServerManager-ds.xml does not exist!");
-		
+			throw new ConfigException("SysConfigDirectory \""+sysConfigDirectory.getAbsolutePath()+"\" does not exist!");
+
 		if (!fileSysConfDir.canRead())
-			throw new ConfigException("SysConfigDirectory \""+sysConfigDirectoryAbsolute+"\" defined in JFireServerManager-ds.xml is not readable!");
-		
+			throw new ConfigException("SysConfigDirectory \""+sysConfigDirectory.getAbsolutePath()+"\" is not readable!");
+
 		if (!fileSysConfDir.canWrite())
-			throw new ConfigException("SysConfigDirectory \""+sysConfigDirectoryAbsolute+"\" defined in JFireServerManager-ds.xml is not writeable!");
+			throw new ConfigException("SysConfigDirectory \""+sysConfigDirectory.getAbsolutePath()+"\" is not writeable!");
 
 		config = new Config(new File(sysConfigDirectory, "Config.xml"));
 
@@ -308,6 +352,7 @@ public class ManagedConnectionFactoryImpl
 
 		Runtime.getRuntime().addShutdownHook(
 			new Thread() {
+				@Override
 				public void run()
 				{
 					try {
@@ -339,7 +384,7 @@ public class ManagedConnectionFactoryImpl
 		File j2eeDeployBaseDir = new File(j2eeCf.getJ2eeDeployBaseDirectory());
 		if (!j2eeDeployBaseDir.exists())
 			throw new ConfigException("j2ee deploy base directory \""+j2eeCf.getJ2eeDeployBaseDirectory()+"\" does not exist!");
-		
+
 		if (!j2eeDeployBaseDir.isDirectory())
 			throw new ConfigException("j2ee deploy base directory \""+j2eeCf.getJ2eeDeployBaseDirectory()+"\" is not a directory!");
 
@@ -419,7 +464,7 @@ public class ManagedConnectionFactoryImpl
 
 		if (!jdoDSXMLTemplate.isFile())
 			throw new ConfigException("JDO datasource xml template file \""+cfMod.getJdo().getJdoDeploymentDescriptorTemplateFile()+"\" is not a file!");
-		
+
 		if (!jdoDSXMLTemplate.canRead())
 			throw new ConfigException("JDO datasource xml template file \""+cfMod.getJdo().getJdoDeploymentDescriptorTemplateFile()+"\" is not readable!");
 	}

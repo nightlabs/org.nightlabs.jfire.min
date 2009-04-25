@@ -1,7 +1,5 @@
 package org.nightlabs.jfire.crossorganisationregistrationinit;
 
-import java.io.File;
-import java.io.FileFilter;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -9,8 +7,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Properties;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 
 import javax.naming.InitialContext;
 
@@ -27,6 +23,8 @@ import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.servermanager.JFireServerManagerFactory;
 import org.nightlabs.jfire.servermanager.config.ServerCf;
+import org.nightlabs.jfire.servermanager.xml.EARApplication;
+import org.nightlabs.jfire.servermanager.xml.JarEntryHandler;
 import org.nightlabs.xml.DOMParser;
 import org.nightlabs.xml.XMLReadException;
 import org.w3c.dom.Node;
@@ -41,22 +39,10 @@ extends AbstractInitManager<CrossOrganisationRegistrationInit, OrganisationInitD
 {
 	private static final Logger logger = Logger.getLogger(CrossOrganisationRegistrationInitManager.class);
 
-	private FileFilter earFileFilter = new FileFilter() {
-		public boolean accept(File pathname) {
-			return pathname.getName().endsWith(".ear");
-		}
-	};
-
-	private FileFilter jarFileFilter = new FileFilter() {
-		public boolean accept(File pathname) {
-			return pathname.getName().endsWith(".jar");
-		}
-	};
-	
 	private boolean canPerformInit = false;
 
 	private SAXParseException parseException = null;
-	
+
 	/**
 	 * Holds instances of type <tt>Init</tt>.
 	 */
@@ -65,51 +51,34 @@ extends AbstractInitManager<CrossOrganisationRegistrationInit, OrganisationInitD
 	public CrossOrganisationRegistrationInitManager(JFireServerManager jfsm)
 	throws CrossOrganisationRegistrationInitException
 	{
-		String deployBaseDir = jfsm.getJFireServerConfigModule().getJ2ee().getJ2eeDeployBaseDirectory();
-		File jfireModuleBaseDir = new File(deployBaseDir);
-		PrefixTree<CrossOrganisationRegistrationInit> initTrie = new PrefixTree<CrossOrganisationRegistrationInit>();
+		final PrefixTree<CrossOrganisationRegistrationInit> initTrie = new PrefixTree<CrossOrganisationRegistrationInit>();
 
 		// Scan all JARs within all EARs for organisation-init.xml files.
-		File[] ears = jfireModuleBaseDir.listFiles(earFileFilter);
-		for (int i = 0; i < ears.length; ++i) {
-			File ear = ears[i];
-
-			File[] jars = ear.listFiles(jarFileFilter);
-			for (int m = 0; m < jars.length; ++m) {
-				File jar = jars[m];
-				try {
-					JarFile jf = new JarFile(jar);
-					try {
-						JarEntry je = jf.getJarEntry("META-INF/cross-organisation-registration-init.xml");
-						if (je != null) {
-							InputStream in = jf.getInputStream(je);
-							try {
-								List<CrossOrganisationRegistrationInit> serverInits = parseInitXML(ear.getName(), jar.getName(), in);
+		scan(
+				jfsm, new String[] { "META-INF/cross-organisation-registration-init.xml" },
+				new JarEntryHandler[] {
+						new JarEntryHandler() {
+							@Override
+							public void handleJarEntry(EARApplication ear, String jarName, InputStream in) throws Exception
+							{
+								List<CrossOrganisationRegistrationInit> serverInits = parseInitXML(ear.getEar().getName(), jarName, in);
 								for (CrossOrganisationRegistrationInit init : serverInits) {
 									inits.add(init);
 									initTrie.insert(new String[] {init.getModule(), init.getArchive(), init.getBean(), init.getMethod()}, init);
 								}
-							} finally {
-								in.close();
 							}
-						} // if (je != null) {
-					} finally {
-						jf.close();
-					}
-				} catch (Exception e) {
-					logger.error("Reading from JAR '"+jar.getAbsolutePath()+"' failed!", e);
+						}
 				}
-			}
-		}
+		);
 		// Now all meta data files have been read.
-		
+
 		// substitute the temporary dependency definitions by links to the actual inits
 		try {
 			establishDependencies(inits, initTrie);
 		} catch (InitException e1) {
 			throw new CrossOrganisationRegistrationInitException("Datastore initialisation failed: " + e1.getMessage());
 		}
-		
+
 		// Now all inits have references of their required and dependent inits.
 		Comparator<CrossOrganisationRegistrationInit> comp = new Comparator<CrossOrganisationRegistrationInit>() {
 			public int compare(CrossOrganisationRegistrationInit o1, CrossOrganisationRegistrationInit o2) {
@@ -144,7 +113,7 @@ extends AbstractInitManager<CrossOrganisationRegistrationInit, OrganisationInitD
 	throws XMLReadException
 	{
 		List<CrossOrganisationRegistrationInit> _inits = new ArrayList<CrossOrganisationRegistrationInit>();
-		
+
 		try {
 			InputSource inputSource = new InputSource(ejbJarIn);
 			DOMParser parser = new DOMParser();
@@ -153,12 +122,12 @@ extends AbstractInitManager<CrossOrganisationRegistrationInit, OrganisationInitD
 					logger.error("Parse (cross-organisation-registration-init.xml): ", exception);
 					parseException = exception;
 				}
-		
+
 				public void fatalError(SAXParseException exception) throws SAXException {
 					logger.fatal("Parse (cross-organisation-registration-init.xml): ", exception);
 					parseException = exception;
 				}
-		
+
 				public void warning(SAXParseException exception) throws SAXException {
 					logger.warn("Parse (cross-organisation-registration-init.xml): ", exception);
 				}
@@ -166,7 +135,7 @@ extends AbstractInitManager<CrossOrganisationRegistrationInit, OrganisationInitD
 			parser.parse(inputSource);
 			if (parseException != null)
 				throw parseException;
-	
+
 			CachedXPathAPI xpa = new CachedXPathAPI();
 
 			NodeIterator ni = xpa.selectNodeIterator(parser.getDocument(), "//cross-organisation-registration-initialisation/init");
@@ -195,7 +164,7 @@ extends AbstractInitManager<CrossOrganisationRegistrationInit, OrganisationInitD
 					if (txt != null)
 						priorityStr = txt.getNodeValue();
 				}
-				
+
 				if (beanStr == null)
 					throw new XMLReadException("jfireEAR '"+jfireEAR+"' jfireJAR '"+jfireJAR+"': Reading cross-organisation-registration-init.xml failed: Attribute 'bean' of element 'init' must be defined!");
 
@@ -231,7 +200,7 @@ extends AbstractInitManager<CrossOrganisationRegistrationInit, OrganisationInitD
 						if (txt != null)
 							archiveStr = txt.getNodeValue();
 					}
-					
+
 					nBean = nDepends.getAttributes().getNamedItem("bean");
 					beanStr = null;
 					if (nBean != null) {
@@ -247,7 +216,7 @@ extends AbstractInitManager<CrossOrganisationRegistrationInit, OrganisationInitD
 						if (txt != null)
 							methodStr = txt.getNodeValue();
 					}
-					
+
 					Node nResolution = nDepends.getAttributes().getNamedItem("resolution");
 					String resolutionStr = null;
 					if (nResolution != null) {
@@ -270,15 +239,15 @@ extends AbstractInitManager<CrossOrganisationRegistrationInit, OrganisationInitD
 
 					if (moduleStr == null)
 						throw new XMLReadException("jfireEAR '"+jfireEAR+"' jfireJAR '"+jfireJAR+"': Reading cross-organisation-registration-init.xml failed: Attribute 'module' of element 'depends' must be defined!");
-					
+
 					if (archiveStr == null && (beanStr != null || methodStr != null))
 						throw new XMLReadException("jfireEAR '" + jfireEAR + "' jfireJAR '" + jfireJAR
 										+ "': Reading cross-organisation-registration-init.xml failed: Attribute 'bean/method' of element 'depends' is defined whereas 'archive' is undefined!");
-					
+
 					if (beanStr == null && methodStr != null)
 						throw new XMLReadException("jfireEAR '" + jfireEAR + "' jfireJAR '" + jfireJAR
 										+ "': Reading cross-organisation-registration-init.xml failed: Attribute 'method' of element 'depends' is defined whereas 'bean' is undefined!");
-					
+
 					OrganisationInitDependency dep = new OrganisationInitDependency(moduleStr, archiveStr, beanStr, methodStr, resolution);
 					init.addDependency(dep);
 
@@ -294,7 +263,7 @@ extends AbstractInitManager<CrossOrganisationRegistrationInit, OrganisationInitD
 		} catch(Exception x) {
 			throw new XMLReadException("jfireEAR '"+jfireEAR+"' jfireJAR '"+jfireJAR+"': Reading cross-organisation-registration-init.xml failed!", x);
 		}
-		
+
 		return _inits;
 	}
 
@@ -310,15 +279,15 @@ extends AbstractInitManager<CrossOrganisationRegistrationInit, OrganisationInitD
 		fields[1] = dependency.getArchive();
 		fields[2] = dependency.getBean();
 		fields[3] = dependency.getMethod();
-		
+
 		List<String> toReturn = new ArrayList<String>(fields.length);
-		
+
 		for (int i = 0; i < fields.length; i++) {
 			if (fields[i] == null || fields[i].equals(""))
 				break;
 			toReturn.add(fields[i]);
 		}
-		
+
 		return toReturn.toArray(new String[0]);
 	}
 
@@ -341,14 +310,15 @@ extends AbstractInitManager<CrossOrganisationRegistrationInit, OrganisationInitD
 
 					try {
 						// we force a new (nested) transaction by using a delegate-ejb with the appropriate tags
-						Object delegateBean = InvokeUtil.createBean(initCtx, "jfire/ejb/JFireBaseBean/OrganisationInitDelegate");
+//						Object delegateBean = InvokeUtil.createBean(initCtx, "jfire/ejb/JFireBaseBean/OrganisationInitDelegate");
+						Object delegateBean = initCtx.lookup(InvokeUtil.JNDI_PREFIX_EJB_BY_REMOTE_INTERFACE + "org.nightlabs.jfire.organisationinit.OrganisationInitDelegateRemote");
 						Method beanMethod = delegateBean.getClass().getMethod("invokeCrossOrganisationRegistrationInitInNestedTransaction", CrossOrganisationRegistrationInit.class, Context.class);
 						beanMethod.invoke(delegateBean, init, context);
-						InvokeUtil.removeBean(delegateBean);
+//						InvokeUtil.removeBean(delegateBean);
 					} catch (Throwable x) { // we catch this in order to execute all inits before escalating
 						if (firstInitException == null)
 							firstInitException = x;
-						
+
 						logger.error("CrossOrganisationRegistrationInit failed! " + init, x);
 					}
 				}

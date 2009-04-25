@@ -38,7 +38,7 @@ public class CreateOrganisationConfigModule extends ConfigModule
 	 * The serial version of this class.
 	 */
 	private static final long serialVersionUID = 1L;
-	
+
 	private int waitForPersistenceManager_tryCount = 0;
 	private int waitForPersistenceManager_timeout = 0; // default see init()
 	private int waitForPersistenceManager_checkPeriod = 0; // default see init()
@@ -68,9 +68,9 @@ public class CreateOrganisationConfigModule extends ConfigModule
 	 * This setting controls, in which period to retry whether a newly deployed
 	 * PersistenceManagerFactory can be fetched from JNDI.
 	 * <br/><br/>
-	 * The default is 3000 msec. Minimum is 1000 msec. Maximum is 60000 msec.
+	 * The default is 1000 msec. Minimum is 300 msec. Maximum is 60000 msec.
 	 * If an illegal value is found in the configuration, it is set to the default.
-	 * 
+	 *
 	 * @return Returns the waitForPersistenceManager_checkPeriod.
 	 */
 	public int getWaitForPersistenceManager_checkPeriod() {
@@ -109,9 +109,9 @@ public class CreateOrganisationConfigModule extends ConfigModule
 				waitForPersistenceManager_timeout > 300000)
 			setWaitForPersistenceManager_timeout(20 * 1000); // msec
 
-		if (waitForPersistenceManager_checkPeriod < 1000 ||
+		if (waitForPersistenceManager_checkPeriod < 300 ||
 				waitForPersistenceManager_checkPeriod > 60000)
-			setWaitForPersistenceManager_checkPeriod(3000); // msec
+			setWaitForPersistenceManager_checkPeriod(1000); // msec
 	}
 
 }

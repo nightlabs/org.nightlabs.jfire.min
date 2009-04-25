@@ -13,6 +13,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.nightlabs.jfire.server.data.dir.JFireServerDataDirectory;
 import org.nightlabs.jfire.serverconfigurator.ServerConfiguratorHistory.ServerConfiguratorAction;
 import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
 import org.nightlabs.jfire.servermanager.config.ServletSSLCf;
@@ -151,7 +152,7 @@ public abstract class ServerConfigurator
 
 		// before we configure the server, we check whether another server-configurator was used before
 		// and needs to undo its configuration changes
-		File serverConfiguratorHistoryFile = new File(jfireServerConfigModule._getConfig().getConfigDir(), ServerConfigurator.class.getName() + ".history");
+		File serverConfiguratorHistoryFile = new File(JFireServerDataDirectory.getJFireServerDataDirFile(), ServerConfigurator.class.getName() + ".history");
 		ServerConfiguratorHistory serverConfiguratorHistory;
 		try {
 			serverConfiguratorHistory = new ServerConfiguratorHistory(serverConfiguratorHistoryFile);

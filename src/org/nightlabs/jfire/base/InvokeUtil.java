@@ -1,16 +1,9 @@
 package org.nightlabs.jfire.base;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.Properties;
 
-import javax.ejb.EJBLocalObject;
-import javax.ejb.EJBObject;
 import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 
-import org.apache.log4j.Logger;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.servermanager.JFireServerManagerFactory;
 import org.nightlabs.jfire.servermanager.config.ServerCf;
@@ -19,6 +12,9 @@ import org.nightlabs.util.ParameterMap;
 
 public class InvokeUtil
 {
+	public static final String JNDI_PREFIX_EJB_BY_REMOTE_INTERFACE = "ejb/byRemoteInterface/";
+	public static final String JNDI_PREFIX_EJB_BY_LOCAL_INTERFACE = "ejb/byLocalInterface/";
+
 	public static Properties getInitialContextProperties(
 			String initialContextFactory, String initialContextURL,
 			String organisationID, String userID, String password)
@@ -70,25 +66,25 @@ public class InvokeUtil
 //		return props;
 	}
 
-	public static Object createBean(InitialContext initialContext, String bean)
-	throws NamingException, SecurityException, NoSuchMethodException,
-		IllegalArgumentException, IllegalAccessException, InvocationTargetException
-	{
-		Object homeRef = initialContext.lookup(bean);
-		Method homeCreate = homeRef.getClass().getMethod("create", (Class[]) null);
-		return homeCreate.invoke(homeRef, (Object[]) null);
-	}
-
-	public static void removeBean(Object bean)
-	{
-		try {
-			if (bean instanceof EJBObject)
-				((EJBObject)bean).remove();
-
-			if (bean instanceof EJBLocalObject)
-				((EJBLocalObject)bean).remove();
-		} catch (Exception x) {
-			Logger.getLogger(InvokeUtil.class).warn("removeBean: Could not remove bean!", x);
-		}
-	}
+//	public static Object createBean(InitialContext initialContext, String bean)
+//	throws NamingException, SecurityException, NoSuchMethodException,
+//		IllegalArgumentException, IllegalAccessException, InvocationTargetException
+//	{
+//		Object homeRef = initialContext.lookup(bean);
+//		Method homeCreate = homeRef.getClass().getMethod("create", (Class[]) null);
+//		return homeCreate.invoke(homeRef, (Object[]) null);
+//	}
+//
+//	public static void removeBean(Object bean)
+//	{
+//		try {
+//			if (bean instanceof EJBObject)
+//				((EJBObject)bean).remove();
+//
+//			if (bean instanceof EJBLocalObject)
+//				((EJBLocalObject)bean).remove();
+//		} catch (Exception x) {
+//			Logger.getLogger(InvokeUtil.class).warn("removeBean: Could not remove bean!", x);
+//		}
+//	}
 }

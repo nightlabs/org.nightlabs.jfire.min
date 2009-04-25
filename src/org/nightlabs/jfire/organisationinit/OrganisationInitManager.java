@@ -1,7 +1,5 @@
 package org.nightlabs.jfire.organisationinit;
 
-import java.io.File;
-import java.io.FileFilter;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -9,8 +7,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Properties;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 
 import javax.naming.InitialContext;
 
@@ -31,6 +27,8 @@ import org.nightlabs.jfire.servermanager.createorganisation.CreateOrganisationSt
 import org.nightlabs.jfire.servermanager.j2ee.J2EEAdapter;
 import org.nightlabs.jfire.servermanager.ra.JFireServerManagerFactoryImpl;
 import org.nightlabs.jfire.servermanager.ra.ManagedConnectionFactoryImpl;
+import org.nightlabs.jfire.servermanager.xml.EARApplication;
+import org.nightlabs.jfire.servermanager.xml.JarEntryHandler;
 import org.nightlabs.xml.DOMParser;
 import org.nightlabs.xml.XMLReadException;
 import org.w3c.dom.Node;
@@ -45,84 +43,51 @@ extends AbstractInitManager<OrganisationInit, OrganisationInitDependency>
 {
 	private static final Logger logger = Logger.getLogger(OrganisationInitManager.class);
 
-	private FileFilter earFileFilter = new FileFilter() {
-		public boolean accept(File pathname) {
-			return pathname.getName().endsWith(".ear");
-		}
-	};
-
-	private FileFilter jarFileFilter = new FileFilter() {
-		public boolean accept(File pathname) {
-			return pathname.getName().endsWith(".jar");
-		}
-	};
-	
 	private boolean canPerformInit = false;
 
 	private SAXParseException parseException = null;
-	
+
 	/**
 	 * Holds instances of type <tt>Init</tt>.
 	 */
 	private List<OrganisationInit> inits = new ArrayList<OrganisationInit>();
-	
+
 	public OrganisationInitManager(JFireServerManagerFactoryImpl jfsmf, ManagedConnectionFactoryImpl mcf, J2EEAdapter j2eeAdapter)
 	throws OrganisationInitException
 	{
-		String deployBaseDir = mcf.getConfigModule().getJ2ee().getJ2eeDeployBaseDirectory();
-		File jfireModuleBaseDir = new File(deployBaseDir);
-		PrefixTree<OrganisationInit> initTrie = new PrefixTree<OrganisationInit>();
+		final PrefixTree<OrganisationInit> initTrie = new PrefixTree<OrganisationInit>();
 
-		// Scan all JARs within all EARs for organisation-init.xml files.
-		File[] ears = jfireModuleBaseDir.listFiles(earFileFilter);
-		for (int i = 0; i < ears.length; ++i) {
-			File ear = ears[i];
-
-			File[] jars = ear.listFiles(jarFileFilter);
-			for (int m = 0; m < jars.length; ++m) {
-				File jar = jars[m];
-				try {
-					JarFile jf = new JarFile(jar);
-					try {
-						JarEntry je = jf.getJarEntry("META-INF/organisation-init.xml");
-
-						// BEGIN downward compatibility
-						if (je == null) {
-							je = jf.getJarEntry("META-INF/datastoreinit.xml");
-							if (je != null)
-								logger.warn("https://www.jfire.org/modules/bugs/view.php?id=579 : datastoreinit.xml should be named organisation-init.xml: " + jar.getAbsolutePath());
-						}
-						// END downward compatibility
-
-						if (je != null) {
-							InputStream in = jf.getInputStream(je);
-							try {
-								List<OrganisationInit> serverInits = parseOrganisationInitXML(ear.getName(), jar.getName(), in);
+		scan(
+				mcf,
+				new String[] {
+						"META-INF/organisation-init.xml",
+//						// BEGIN downward compatibility // The contents need to be modified anyway after our change to EJB3 => require renaming files, too.
+//						"META-INF/datastoreinit.xml"
+//						// END downward compatibility
+				},
+				new JarEntryHandler[] {
+						new JarEntryHandler() {
+							@Override
+							public void handleJarEntry(EARApplication ear, String jarName, InputStream in) throws Exception
+							{
+								List<OrganisationInit> serverInits = parseOrganisationInitXML(ear.getEar().getName(), jarName, in);
 								for (OrganisationInit init : serverInits) {
 									inits.add(init);
 									initTrie.insert(new String[] {init.getModule(), init.getArchive(), init.getBean(), init.getMethod()}, init);
 								}
-							} finally {
-								in.close();
 							}
-						} // if (je != null) {
-					} finally {
-						jf.close();
-					}
-				} catch (Exception e) {
-					logger.error("Reading from JAR '"+jar.getAbsolutePath()+"' failed!", e);
+						}
 				}
-			}
-		}
+		);
 		// Now all meta data files have been read.
-		
+
 		// substitute the temporary dependency definitions by links to the actual inits
 		try {
 			establishDependencies(inits, initTrie);
 		} catch (InitException e1) {
 			throw new OrganisationInitException("Datastore initialisation failed: " + e1.getMessage());
 		}
-		
+
 		// Now all inits have references of their required and dependent inits.
 		Comparator<OrganisationInit> comp = new Comparator<OrganisationInit>() {
 			public int compare(OrganisationInit o1, OrganisationInit o2) {
@@ -157,7 +122,7 @@ extends AbstractInitManager<OrganisationInit, OrganisationInitDependency>
 	throws XMLReadException
 	{
 		List<OrganisationInit> _inits = new ArrayList<OrganisationInit>();
-		
+
 		try {
 			InputSource inputSource = new InputSource(ejbJarIn);
 			DOMParser parser = new DOMParser();
@@ -166,12 +131,12 @@ extends AbstractInitManager<OrganisationInit, OrganisationInitDependency>
 					logger.error("Parse (organisation-init.xml): ", exception);
 					parseException = exception;
 				}
-		
+
 				public void fatalError(SAXParseException exception) throws SAXException {
 					logger.fatal("Parse (organisation-init.xml): ", exception);
 					parseException = exception;
 				}
-		
+
 				public void warning(SAXParseException exception) throws SAXException {
 					logger.warn("Parse (organisation-init.xml): ", exception);
 				}
@@ -179,7 +144,7 @@ extends AbstractInitManager<OrganisationInit, OrganisationInitDependency>
 			parser.parse(inputSource);
 			if (parseException != null)
 				throw parseException;
-	
+
 			CachedXPathAPI xpa = new CachedXPathAPI();
 
 			String rootNodeName = "organisation-initialisation";
@@ -214,7 +179,7 @@ extends AbstractInitManager<OrganisationInit, OrganisationInitDependency>
 					if (txt != null)
 						priorityStr = txt.getNodeValue();
 				}
-				
+
 				if (beanStr == null)
 					throw new XMLReadException("jfireEAR '"+jfireEAR+"' jfireJAR '"+jfireJAR+"': Reading organisation-init.xml failed: Attribute 'bean' of element 'init' must be defined!");
 
@@ -250,7 +215,7 @@ extends AbstractInitManager<OrganisationInit, OrganisationInitDependency>
 						if (txt != null)
 							archiveStr = txt.getNodeValue();
 					}
-					
+
 					nBean = nDepends.getAttributes().getNamedItem("bean");
 					beanStr = null;
 					if (nBean != null) {
@@ -266,7 +231,7 @@ extends AbstractInitManager<OrganisationInit, OrganisationInitDependency>
 						if (txt != null)
 							methodStr = txt.getNodeValue();
 					}
-					
+
 					Node nResolution = nDepends.getAttributes().getNamedItem("resolution");
 					String resolutionStr = null;
 					if (nResolution != null) {
@@ -289,15 +254,15 @@ extends AbstractInitManager<OrganisationInit, OrganisationInitDependency>
 
 					if (moduleStr == null)
 						throw new XMLReadException("jfireEAR '"+jfireEAR+"' jfireJAR '"+jfireJAR+"': Reading organisation-init.xml failed: Attribute 'module' of element 'depends' must be defined!");
-					
+
 					if (archiveStr == null && (beanStr != null || methodStr != null))
 						throw new XMLReadException("jfireEAR '" + jfireEAR + "' jfireJAR '" + jfireJAR
 										+ "': Reading organisation-init.xml failed: Attribute 'bean/method' of element 'depends' is defined whereas 'archive' is undefined!");
-					
+
 					if (beanStr == null && methodStr != null)
 						throw new XMLReadException("jfireEAR '" + jfireEAR + "' jfireJAR '" + jfireJAR
 										+ "': Reading organisation-init.xml failed: Attribute 'method' of element 'depends' is defined whereas 'bean' is undefined!");
-					
+
 					OrganisationInitDependency dep = new OrganisationInitDependency(moduleStr, archiveStr, beanStr, methodStr, resolution);
 					init.addDependency(dep);
 
@@ -313,7 +278,7 @@ extends AbstractInitManager<OrganisationInit, OrganisationInitDependency>
 		} catch(Exception x) {
 			throw new XMLReadException("jfireEAR '"+jfireEAR+"' jfireJAR '"+jfireJAR+"': Reading organisation-init.xml failed!", x);
 		}
-		
+
 		return _inits;
 	}
 
@@ -329,15 +294,15 @@ extends AbstractInitManager<OrganisationInit, OrganisationInitDependency>
 		fields[1] = dependency.getArchive();
 		fields[2] = dependency.getBean();
 		fields[3] = dependency.getMethod();
-		
+
 		List<String> toReturn = new ArrayList<String>(fields.length);
-		
+
 		for (int i = 0; i < fields.length; i++) {
 			if (fields[i] == null || fields[i].equals(""))
 				break;
 			toReturn.add(fields[i]);
 		}
-		
+
 		return toReturn.toArray(new String[0]);
 	}
 
@@ -368,10 +333,11 @@ extends AbstractInitManager<OrganisationInit, OrganisationInitDependency>
 
 					try {
 						// we force a new (nested) transaction by using a delegate-ejb with the appropriate tags
-						Object delegateBean = InvokeUtil.createBean(initCtx, "jfire/ejb/JFireBaseBean/OrganisationInitDelegate");
+//						Object delegateBean = InvokeUtil.createBean(initCtx, "jfire/ejb/JFireBaseBean/OrganisationInitDelegate");
+						Object delegateBean = initCtx.lookup(InvokeUtil.JNDI_PREFIX_EJB_BY_REMOTE_INTERFACE + "org.nightlabs.jfire.organisationinit.OrganisationInitDelegateRemote");
 						Method beanMethod = delegateBean.getClass().getMethod("invokeOrganisationInitInNestedTransaction", OrganisationInit.class);
 						beanMethod.invoke(delegateBean, init);
-						InvokeUtil.removeBean(delegateBean);
+//						InvokeUtil.removeBean(delegateBean);
 
 						if (createOrganisationProgress != null)
 							createOrganisationProgress.addCreateOrganisationStatus(

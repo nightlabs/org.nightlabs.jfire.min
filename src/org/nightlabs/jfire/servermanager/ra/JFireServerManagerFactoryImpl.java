@@ -30,7 +30,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StreamTokenizer;
@@ -53,8 +52,6 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.jar.Attributes;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
 import javax.jdo.JDOObjectNotFoundException;
@@ -101,7 +98,6 @@ import org.nightlabs.jfire.idgenerator.IDGenerator;
 import org.nightlabs.jfire.jdo.cache.CacheCfMod;
 import org.nightlabs.jfire.jdo.cache.CacheManagerFactory;
 import org.nightlabs.jfire.jdo.notification.persistent.PersistentNotificationManagerFactory;
-import org.nightlabs.jfire.module.ModuleType;
 import org.nightlabs.jfire.organisation.LocalOrganisation;
 import org.nightlabs.jfire.organisation.Organisation;
 import org.nightlabs.jfire.organisationinit.OrganisationInitException;
@@ -157,11 +153,12 @@ import org.nightlabs.jfire.servermanager.j2ee.J2EEAdapterException;
 import org.nightlabs.jfire.servermanager.j2ee.JMSConnectionFactoryLookup;
 import org.nightlabs.jfire.servermanager.j2ee.ServerStartNotificationListener;
 import org.nightlabs.jfire.servermanager.xml.AuthorityTypeDef;
-import org.nightlabs.jfire.servermanager.xml.EARApplicationMan;
+import org.nightlabs.jfire.servermanager.xml.EARApplication;
+import org.nightlabs.jfire.servermanager.xml.EARApplicationSet;
+import org.nightlabs.jfire.servermanager.xml.EARModuleType;
 import org.nightlabs.jfire.servermanager.xml.EJBJarMan;
 import org.nightlabs.jfire.servermanager.xml.JFireSecurityMan;
-import org.nightlabs.jfire.servermanager.xml.ModuleDef;
-import org.nightlabs.jfire.servermanager.xml.RoleDef;
+import org.nightlabs.jfire.servermanager.xml.JarEntryHandler;
 import org.nightlabs.jfire.servermanager.xml.RoleGroupDef;
 import org.nightlabs.jfire.servermanager.xml.XMLReadException;
 import org.nightlabs.jfire.shutdownafterstartup.ShutdownAfterStartupManager;
@@ -170,7 +167,6 @@ import org.nightlabs.math.Base62Coder;
 import org.nightlabs.util.CollectionUtil;
 import org.nightlabs.util.IOUtil;
 import org.nightlabs.util.Util;
-import org.xml.sax.SAXException;
 
 /**
  * @author marco schulze - marco at nightlabs dot de
@@ -281,8 +277,8 @@ public class JFireServerManagerFactoryImpl
 			j2eeServerType = localServerCf.getJ2eeServerType();
 		}
 		if (j2eeServerType == null) {
-			logger.warn("No configuration existing! Assuming that this is a 'jboss32x'. If you change the server type, you must restart!");
-			j2eeServerType = Server.J2EESERVERTYPE_JBOSS32X; // TODO we assume that we're running on a jboss32x, but we should somehow allow the user to change this on the fly.
+			logger.warn("No configuration existing! Assuming that this is a 'jboss40x'. If you change the server type, you must restart!");
+			j2eeServerType = Server.J2EESERVERTYPE_JBOSS40X; // TODO we assume that we're running on a jboss40x, but we should somehow allow the user to change this on the fly.
 //			throw new ResourceException("JFireServerConfigModule: localServer.j2eeServerType is null! Check config!");
 		}
 
@@ -397,7 +393,7 @@ public class JFireServerManagerFactoryImpl
 		try {
 			SecurityReflector userResolver = j2EEAdapter.getSecurityReflector();
 			if (userResolver == null)
-				throw new NullPointerException("J2EEVendorAdapter "+j2EEAdapter.getClass()+".getUserResolver() returned null!");
+				throw new NullPointerException("J2EEVendorAdapter "+j2EEAdapter.getClass()+".getSecurityReflector() returned null!");
 			try
 			{
 				initialContext.bind(SecurityReflector.JNDI_NAME, userResolver);
@@ -440,7 +436,7 @@ public class JFireServerManagerFactoryImpl
 
 				try {
 					new CacheManagerFactory(
-							this, initialContext, organisation, cacheCfMod, new File(mcf.getSysConfigDirectory())); // registers itself in JNDI
+							this, initialContext, organisation, cacheCfMod, mcf.getSysConfigDirectory()); // registers itself in JNDI
 				} catch (Exception e) {
 					logger.error("Creating CacheManagerFactory for organisation \""+organisationID+"\" failed!", e);
 					throw new ResourceException(e.getMessage());
@@ -455,7 +451,7 @@ public class JFireServerManagerFactoryImpl
 		}
 
 		try {
-			getJ2EEVendorAdapter().registerNotificationListenerServerStarted(this);
+			j2EEAdapter.registerNotificationListenerServerStarted(this);
 		} catch (Exception e) {
 			logger.error("Registering NotificationListener (for notification on server start) failed!", e);
 //			throw new ResourceException(e.getMessage());
@@ -648,7 +644,8 @@ public class JFireServerManagerFactoryImpl
 									boolean doCommit = false;
 									userTransaction.begin();
 									try {
-										LoginContext loginContext = new LoginContext(
+										LoginContext loginContext = j2eeVendorAdapter.createLoginContext(
+//										LoginContext loginContext = new LoginContext(
 												LoginData.DEFAULT_SECURITY_PROTOCOL,
 												new CallbackHandler() {
 													@Override
@@ -662,7 +659,7 @@ public class JFireServerManagerFactoryImpl
 															}
 															else if (cb instanceof PasswordCallback) {
 																((PasswordCallback)cb).setPassword(
-																		jfireSecurity_createTempUserPassword(organisationID, User.USER_ID_SYSTEM).toCharArray()
+																		jfireSecurity_createTempUserPassword(UserID.create(organisationID, User.USER_ID_SYSTEM)).toCharArray()
 																);
 															}
 															else throw new UnsupportedCallbackException(cb);
@@ -726,8 +723,10 @@ public class JFireServerManagerFactoryImpl
 
 									logger.info("Initialising datastore of organisation \""+organisationID+"\"...");
 									try {
-										datastoreInitManager.initialiseOrganisation(JFireServerManagerFactoryImpl.this, mcf.getConfigModule().getLocalServer(), organisationID,
-												jfireSecurity_createTempUserPassword(organisationID, User.USER_ID_SYSTEM));
+										datastoreInitManager.initialiseOrganisation(
+												JFireServerManagerFactoryImpl.this, mcf.getConfigModule().getLocalServer(), organisationID,
+												jfireSecurity_createTempUserPassword(UserID.create(organisationID, User.USER_ID_SYSTEM))
+										);
 
 										logger.info("Datastore initialisation of organisation \""+organisationID+"\" done.");
 									} catch (Exception x) {
@@ -785,6 +784,13 @@ public class JFireServerManagerFactoryImpl
 //					logger.error("shutdown via JavaEE-vendor-adapter failed!", x);
 //				}
 //			}
+
+			if (logger.isDebugEnabled()) {
+				logger.debug("System properties:");
+				for (Map.Entry<?, ?> me : System.getProperties().entrySet()) {
+					logger.debug("  * " + me.getKey() + " = " + me.getValue());
+				}
+			}
 
 			ShutdownControlHandle shutdownControlHandle = shutdownAfterStartupManager.createShutdownControlHandle();
 			shutdownAfterStartupManager.shutdown(shutdownControlHandle);
@@ -981,6 +987,7 @@ public class JFireServerManagerFactoryImpl
 				Class<?> j2eeVendorAdapterClass = Class.forName(j2eeVendorAdapterClassName);
 				j2eeVendorAdapter = (J2EEAdapter)j2eeVendorAdapterClass.newInstance();
 			} catch (Exception e) {
+				logger.error("Creating JavaEE vendor adapter failed: " + e, e);
 				throw new J2EEAdapterException("Error creating new J2EE vendor adapter", e);
 			}
 		}
@@ -996,142 +1003,265 @@ public class JFireServerManagerFactoryImpl
 	{
 		File startDir = new File(mcf.getConfigModule().getJ2ee().getJ2eeDeployBaseDirectory());
 
-		JFireSecurityMan globalSecurityMan = new JFireSecurityMan();
+		Set<String> roleIDs;
+		try {
+			roleIDs = getJ2EEVendorAdapter().getAllEjb3Roles();
+		} catch (J2EEAdapterException e) {
+			throw new RuntimeException(e);
+		}
+
+		JFireSecurityMan globalSecurityMan = new JFireSecurityMan(roleIDs);
 		Map<String, Throwable> exceptions = new HashMap<String, Throwable>(); // key: File jar; value: Throwable exception
 		roleImport_prepare_collect(startDir, globalSecurityMan, exceptions);
-
-// ignoring this role from the beginning (we ignore everything starting with "_" in both EJBJarMan and JFireSecurityMan)
-//		globalSecurityMan.removeRole(User.USER_ID_SYSTEM); // the _System_ role should never be imported so that no real user can ever get this role!
+		globalSecurityMan.createFallbackRoleGroups(); // new here - was in roleImport_prepare_readJar before, but it's better to do it globally at the end.
 
 		return new RoleImportSet(organisationID, globalSecurityMan, exceptions);
 	}
 
-	private static class FileFilterDirectories implements FilenameFilter
+//	private static class FileFilterDirectories implements FilenameFilter
+//	{
+//		@Override
+//		public boolean accept(File dir, String name)
+//		{
+//			File f = new File(dir, name);
+//			return f.isDirectory();
+//		}
+//	}
+//	private static FileFilterDirectories fileFilterDirectories = null;
+//
+//	private static class FileFilterJARs implements FilenameFilter
+//	{
+//		@Override
+//		public boolean accept(File dir, String name)
+//		{
+//			return name.endsWith(JAR_SUFFIX);
+//		}
+//	}
+//	private static String JAR_SUFFIX = ".jar";
+//	private static FileFilterJARs fileFilterJARs = null;
+
+	private void roleImport_prepare_collect(File directory, JFireSecurityMan globalSecurityMan, final Map<String, Throwable> exceptions)
 	{
-		@Override
-		public boolean accept(File dir, String name)
-		{
-			File f = new File(dir, name);
-			return f.isDirectory();
+		EARApplicationSet earApplicationSet;
+		try {
+			earApplicationSet = new EARApplicationSet(directory, EARModuleType.ejb);
+		} catch (XMLReadException e) {
+			throw new RuntimeException(e);
 		}
-	}
-	private static FileFilterDirectories fileFilterDirectories = null;
+		final Map<EARApplication, Map<String, EJBJarMan>> ear2jarName2ejbJarMan = new HashMap<EARApplication, Map<String,EJBJarMan>>();
+		final Map<EARApplication, Map<String, JFireSecurityMan>> ear2jarName2securityMan = new HashMap<EARApplication, Map<String,JFireSecurityMan>>();
 
-	private static class FileFilterJARs implements FilenameFilter
-	{
-		@Override
-		public boolean accept(File dir, String name)
-		{
-			return name.endsWith(JAR_SUFFIX);
-		}
-	}
-	private static String JAR_SUFFIX = ".jar";
-	private static FileFilterJARs fileFilterJARs = null;
+		// Look for all ejb-jar.xml files and create instances of EJBJarMan for each of them.
+		earApplicationSet.handleJarEntries(
+				new String[] { "META-INF/ejb-jar.xml" },
+				new JarEntryHandler[] {
+						new JarEntryHandler() {
+							@Override
+							public void handleJarEntry(EARApplication ear, String jarName, InputStream in) {
+								try {
+									Map<String, EJBJarMan> jarName2ejbJarMan = ear2jarName2ejbJarMan.get(ear);
+									if (jarName2ejbJarMan == null) {
+										jarName2ejbJarMan = new HashMap<String, EJBJarMan>();
+										ear2jarName2ejbJarMan.put(ear, jarName2ejbJarMan);
+									}
 
-	private void roleImport_prepare_collect(File directory, JFireSecurityMan globalEJBRoleGroupMan, Map<String, Throwable> exceptions)
-	{
-		if (fileFilterDirectories == null)
-			fileFilterDirectories = new FileFilterDirectories();
-		String[] directories = directory.list(fileFilterDirectories);
-		if (directories != null) {
-			for (int i = 0; i < directories.length; ++i)
-				roleImport_prepare_collect(new File(directory, directories[i]), globalEJBRoleGroupMan, exceptions);
-		} // if (directories != null) {
+									EJBJarMan ejbJarMan = jarName2ejbJarMan.get(jarName);
+									if (ejbJarMan != null)
+										throw new IllegalStateException("Why the hell is there already an instance of EJBJarMan for ear=" + ear.getEar().getName() + " and jar=" + jarName + "?!");
 
-		if (fileFilterJARs == null)
-			fileFilterJARs = new FileFilterJARs();
-		String[] jars = directory.list(fileFilterJARs);
-
-		if (jars != null) {
-			for (int i = 0; i < jars.length; ++i) {
-				File jar = new File(directory, jars[i]);
-				try {
-					JarFile jf = new JarFile(jar, true);
-					try {
-						roleImport_prepare_readJar(globalEJBRoleGroupMan, jar, jf);
-					} finally {
-						jf.close();
-					}
-				} catch (Exception x) {
-					String jarFileName;
-					try {
-						jarFileName = jar.getCanonicalPath();
-						logger.warn("Processing Jar \""+jarFileName+"\" failed!", x);
-					} catch (IOException e) {
-						jarFileName = jar.getPath();
-						logger.warn("Processing Jar \""+jarFileName+"\" failed!", x);
-						logger.warn("Getting canonical path for \""+jarFileName+"\" failed!", e);
-					}
-					exceptions.put(jarFileName, x);
-				}
-			}
-		} // if (jars != null) {
-	}
-
-	private void roleImport_prepare_readJar(JFireSecurityMan globalSecurityMan, File jar, JarFile jf)
-		throws SAXException, IOException, XMLReadException
-	{
-		JarEntry ejbJarXML = jf.getJarEntry("META-INF/ejb-jar.xml");
-		EJBJarMan ejbJarMan;
-		if (ejbJarXML == null) {
-			logger.info("Jar \""+jar.getCanonicalPath()+"\" does not contain \"META-INF/ejb-jar.xml\"!");
-			ejbJarMan = new EJBJarMan(jar.getName());
-		}
-		else {
-			if(logger.isDebugEnabled()) {
-				logger.debug("*****************************************************************");
-				logger.debug("Jar \""+jar.getCanonicalPath()+"\": ejb-jar.xml:");
-			}
-			InputStream in = jf.getInputStream(ejbJarXML);
-			try {
-				ejbJarMan = new EJBJarMan(jar.getName(), in);
-				if(logger.isDebugEnabled()) {
-					for (Iterator<RoleDef> it = ejbJarMan.getRoles().iterator(); it.hasNext(); ) {
-						RoleDef roleDef = it.next();
-						logger.debug("roleDef.roleID = "+roleDef.getRoleID());
-					}
-				}
-			} finally {
-				in.close();
-			}
-			if(logger.isDebugEnabled())
-				logger.debug("*****************************************************************");
-		}
-
-		JarEntry roleGroupXML = jf.getJarEntry("META-INF/jfire-security.xml");
-		JFireSecurityMan securityMan;
-		if (roleGroupXML == null) {
-			logger.info("Jar \""+jar.getCanonicalPath()+"\" does not contain \"META-INF/jfire-security.xml\"!");
-			securityMan = new JFireSecurityMan(ejbJarMan);
-		}
-		else {
-			if(logger.isDebugEnabled()) {
-				logger.debug("*****************************************************************");
-				logger.debug("Jar \""+jar.getCanonicalPath()+"\": jfire-security.xml:");
-			}
-			InputStream in = jf.getInputStream(roleGroupXML);
-			try {
-				securityMan = new JFireSecurityMan(ejbJarMan, in);
-				if(logger.isDebugEnabled()) {
-					for (RoleGroupDef roleGroupDef : securityMan.getRoleGroups().values()) {
-						logger.debug("roleGroupDef.roleGroupID = "+roleGroupDef.getRoleGroupID());
-						for (String includedRoleGroupID : roleGroupDef.getIncludedRoleGroupIDs()) {
-							logger.debug("  includedRoleGroupID = "+includedRoleGroupID);
+									ejbJarMan = new EJBJarMan(jarName, in);
+									jarName2ejbJarMan.put(jarName, ejbJarMan);
+								} catch (Throwable t) {
+									String jarIdentifier = ear.getEar().getAbsolutePath() + '#' + jarName;
+									if (!exceptions.containsKey(jarIdentifier))
+										exceptions.put(jarIdentifier, t);
+								}
+							}
 						}
-						for (String roleID : roleGroupDef.getRoleIDs()) {
-							logger.debug("  roleID = "+roleID);
-						}
-					}
 				}
-			} finally {
-				in.close();
+		);
+
+		// Search jfire-security.xml files and create JFireSecurityMan instances for each of them.
+		earApplicationSet.handleJarEntries(
+				new String[] { "META-INF/jfire-security.xml" },
+				new JarEntryHandler[] {
+						new JarEntryHandler() {
+							@Override
+							public void handleJarEntry(EARApplication ear, String jarName, InputStream in) {
+								try {
+									Map<String, EJBJarMan> jarName2ejbJarMan = ear2jarName2ejbJarMan.get(ear);
+									if (jarName2ejbJarMan == null) {
+										jarName2ejbJarMan = new HashMap<String, EJBJarMan>();
+										ear2jarName2ejbJarMan.put(ear, jarName2ejbJarMan);
+									}
+
+									EJBJarMan ejbJarMan = jarName2ejbJarMan.get(jarName);
+									if (ejbJarMan == null) {
+										ejbJarMan = new EJBJarMan(jarName);
+										jarName2ejbJarMan.put(jarName, ejbJarMan);
+									}
+
+
+									Map<String, JFireSecurityMan> jarName2securityMan = ear2jarName2securityMan.get(ear);
+									if (jarName2securityMan == null) {
+										jarName2securityMan = new HashMap<String, JFireSecurityMan>();
+										ear2jarName2securityMan.put(ear, jarName2securityMan);
+									}
+
+									JFireSecurityMan jfireSecurityMan = jarName2securityMan.get(jarName);
+									if (jfireSecurityMan != null)
+										throw new IllegalStateException("Why the hell is there already an instance of JFireSecurityMan for ear=" + ear.getEar().getName() + " and jar=" + jarName + "?!");
+
+									jfireSecurityMan = new JFireSecurityMan(ejbJarMan, in);
+									jarName2securityMan.put(jarName, jfireSecurityMan);
+								} catch (Throwable t) {
+									String jarIdentifier = ear.getEar().getAbsolutePath() + '#' + jarName;
+									if (!exceptions.containsKey(jarIdentifier))
+										exceptions.put(jarIdentifier, t);
+								}
+							}
+						}
+				}
+		);
+
+		// Create JFireSecurityMan instances for every EJB-JAR, where there was only an ejb-jar.xml and no jfire-security.xml.
+		for (Map.Entry<EARApplication, Map<String, EJBJarMan>> me1 : ear2jarName2ejbJarMan.entrySet()) {
+			EARApplication ear = me1.getKey();
+			for (Map.Entry<String, EJBJarMan> me2 : me1.getValue().entrySet()) {
+				String jarName = me2.getKey();
+				EJBJarMan ejbJarMan = me2.getValue();
+
+				Map<String, JFireSecurityMan> jarName2securityMan = ear2jarName2securityMan.get(ear);
+				if (jarName2securityMan == null) {
+					jarName2securityMan = new HashMap<String, JFireSecurityMan>();
+					ear2jarName2securityMan.put(ear, jarName2securityMan);
+				}
+
+				JFireSecurityMan jfireSecurityMan = jarName2securityMan.get(jarName);
+				if (jfireSecurityMan == null) {
+					try {
+						jfireSecurityMan = new JFireSecurityMan(ejbJarMan);
+					} catch (Throwable t) {
+						String jarIdentifier = ear.getEar().getAbsolutePath() + '#' + jarName;
+						if (!exceptions.containsKey(jarIdentifier))
+							exceptions.put(jarIdentifier, t);
+					}
+					if (jfireSecurityMan != null)
+						jarName2securityMan.put(jarName, jfireSecurityMan);
+				}
 			}
-			if(logger.isDebugEnabled())
-				logger.debug("*****************************************************************");
 		}
-		securityMan.createFallbackRoleGroups();
-		globalSecurityMan.mergeSecurityMan(securityMan);
+
+		// Merge all JFireSecurityMan instances into the global one.
+		for (Map.Entry<EARApplication, Map<String, JFireSecurityMan>> me1 : ear2jarName2securityMan.entrySet()) {
+			for (Map.Entry<String, JFireSecurityMan> me2 : me1.getValue().entrySet()) {
+				JFireSecurityMan securityMan = me2.getValue();
+				globalSecurityMan.mergeSecurityMan(securityMan);
+			}
+		}
+
+//		if (fileFilterDirectories == null)
+//			fileFilterDirectories = new FileFilterDirectories();
+//		String[] directories = directory.list(fileFilterDirectories);
+//		if (directories != null) {
+//			for (int i = 0; i < directories.length; ++i)
+//				roleImport_prepare_collect(new File(directory, directories[i]), globalSecurityMan, exceptions);
+//		} // if (directories != null) {
+//
+//		if (fileFilterJARs == null)
+//			fileFilterJARs = new FileFilterJARs();
+//		String[] jars = directory.list(fileFilterJARs);
+//
+//		if (jars != null) {
+//			for (int i = 0; i < jars.length; ++i) {
+//				File jar = new File(directory, jars[i]);
+//				try {
+//					JarFile jf = new JarFile(jar, true);
+//					try {
+//						roleImport_prepare_readJar(globalSecurityMan, jar, jf);
+//					} finally {
+//						jf.close();
+//					}
+//				} catch (Exception x) {
+//					String jarFileName;
+//					try {
+//						jarFileName = jar.getCanonicalPath();
+//						logger.warn("Processing Jar \""+jarFileName+"\" failed!", x);
+//					} catch (IOException e) {
+//						jarFileName = jar.getPath();
+//						logger.warn("Processing Jar \""+jarFileName+"\" failed!", x);
+//						logger.warn("Getting canonical path for \""+jarFileName+"\" failed!", e);
+//					}
+//					exceptions.put(jarFileName, x);
+//				}
+//			}
+//		} // if (jars != null) {
 	}
+
+//	private void roleImport_prepare_readJar(JFireSecurityMan globalSecurityMan, File jar, JarFile jf)
+//		throws SAXException, IOException, XMLReadException
+//	{
+//		JarEntry ejbJarXML = jf.getJarEntry("META-INF/ejb-jar.xml");
+//		EJBJarMan ejbJarMan;
+//		if (ejbJarXML == null) {
+//			logger.info("Jar \""+jar.getCanonicalPath()+"\" does not contain \"META-INF/ejb-jar.xml\"!");
+//			ejbJarMan = new EJBJarMan(jar.getName());
+//		}
+//		else {
+//			if(logger.isDebugEnabled()) {
+//				logger.debug("*****************************************************************");
+//				logger.debug("Jar \""+jar.getCanonicalPath()+"\": ejb-jar.xml:");
+//			}
+//			InputStream in = jf.getInputStream(ejbJarXML);
+//			try {
+//				ejbJarMan = new EJBJarMan(jar.getName(), in);
+//				if(logger.isDebugEnabled()) {
+//					for (Iterator<RoleDef> it = ejbJarMan.getRoles().iterator(); it.hasNext(); ) {
+//						RoleDef roleDef = it.next();
+//						logger.debug("roleDef.roleID = "+roleDef.getRoleID());
+//					}
+//				}
+//			} finally {
+//				in.close();
+//			}
+//			if(logger.isDebugEnabled())
+//				logger.debug("*****************************************************************");
+//		}
+//
+//		JarEntry roleGroupXML = jf.getJarEntry("META-INF/jfire-security.xml");
+//		JFireSecurityMan securityMan;
+//		if (roleGroupXML == null) {
+//			logger.info("Jar \""+jar.getCanonicalPath()+"\" does not contain \"META-INF/jfire-security.xml\"!");
+//			securityMan = new JFireSecurityMan(ejbJarMan);
+//		}
+//		else {
+//			if(logger.isDebugEnabled()) {
+//				logger.debug("*****************************************************************");
+//				logger.debug("Jar \""+jar.getCanonicalPath()+"\": jfire-security.xml:");
+//			}
+//			InputStream in = jf.getInputStream(roleGroupXML);
+//			try {
+//				securityMan = new JFireSecurityMan(ejbJarMan, in);
+//				if(logger.isDebugEnabled()) {
+//					for (RoleGroupDef roleGroupDef : securityMan.getRoleGroups().values()) {
+//						logger.debug("roleGroupDef.roleGroupID = "+roleGroupDef.getRoleGroupID());
+//						for (String includedRoleGroupID : roleGroupDef.getIncludedRoleGroupIDs()) {
+//							logger.debug("  includedRoleGroupID = "+includedRoleGroupID);
+//						}
+//						for (String roleID : roleGroupDef.getRoleIDs()) {
+//							logger.debug("  roleID = "+roleID);
+//						}
+//					}
+//				}
+//			} finally {
+//				in.close();
+//			}
+//			if(logger.isDebugEnabled())
+//				logger.debug("*****************************************************************");
+//		}
+////		securityMan.createFallbackRoleGroups(); // We create the fallback groups only at the end (globally), which prevents fallbacks to be created for roles that are declared in a jfire-security.xml of another EJB-jar.
+//		globalSecurityMan.mergeSecurityMan(securityMan);
+//	}
 
 	/**
 	 * @param roleImportSet
@@ -1622,13 +1752,14 @@ public class JFireServerManagerFactoryImpl
 											jfireSecurity_createTempUserPassword(organisationID, User.USER_ID_SYSTEM));
 									InitialContext initCtx = new InitialContext(props);
 									try {
-										Object bean = InvokeUtil.createBean(initCtx, "jfire/ejb/JFireBaseBean/OrganisationManager");
+//										Object bean = InvokeUtil.createBean(initCtx, "jfire/ejb/JFireBaseBean/OrganisationManager");
+										Object bean = initCtx.lookup(InvokeUtil.JNDI_PREFIX_EJB_BY_REMOTE_INTERFACE + "org.nightlabs.jfire.organisation.OrganisationManagerRemote");
 										Method beanMethod = bean.getClass().getMethod(
 												"internalInitializeEmptyOrganisation",
 												new Class[] { CreateOrganisationProgressID.class, ServerCf.class, OrganisationCf.class, String.class, String.class }
 										);
 										beanMethod.invoke(bean, new Object[] { createOrganisationProgress.getCreateOrganisationProgressID(), localServerCf, organisationCf, userID, password});
-										InvokeUtil.removeBean(bean);
+//										InvokeUtil.removeBean(bean);
 									} finally {
 										initCtx.close();
 									}
@@ -1656,7 +1787,7 @@ public class JFireServerManagerFactoryImpl
 							// create the CacheManagerFactory for the new organisation
 							try {
 								CacheManagerFactory cmf = new CacheManagerFactory(
-										this, initialContext, organisationCf, cacheCfMod, new File(mcf.getSysConfigDirectory())); // registers itself in JNDI
+										this, initialContext, organisationCf, cacheCfMod, mcf.getSysConfigDirectory()); // registers itself in JNDI
 
 								// register the cache's JDO-listeners in the PersistenceManagerFactory
 								PersistenceManagerFactory pmf = getPersistenceManagerFactory(organisationID);
@@ -1852,93 +1983,93 @@ public class JFireServerManagerFactoryImpl
 		return l;
 	}
 
-	public synchronized void flushModuleCache()
-	{
-		cachedModules = null;
-	}
-
-	/**
-	 * key: ModuleType moduleType<br/>
-	 * value: List modules
-	 */
-	protected Map<ModuleType, List<ModuleDef>> cachedModules = null;
-
-	public synchronized List<ModuleDef> getModules(ModuleType moduleType) throws XMLReadException
-	{
-		if (cachedModules == null)
-			cachedModules = new HashMap<ModuleType, List<ModuleDef>>();
-
-		List<ModuleDef> modules = cachedModules.get(moduleType);
-		if (modules == null) {
-			File startDir = new File(mcf.getConfigModule().getJ2ee().getJ2eeDeployBaseDirectory());
-			modules = new ArrayList<ModuleDef>();
-			findModules(startDir, moduleType, modules);
-			Collections.sort(modules);
-			cachedModules.put(moduleType, modules);
-		}
-		return modules;
-	}
-
-	private static class FileFilterDirectoriesExcludingEARs implements FilenameFilter
-	{
-		@Override
-		public boolean accept(File dir, String name)
-		{
-			if (name.endsWith(".ear"))
-				return false;
-			File f = new File(dir, name);
-			return f.isDirectory();
-		}
-	}
-	private static FileFilterDirectoriesExcludingEARs fileFilterDirectoriesExcludingEARs = null;
-
-	public static class FileFilterEARs implements FilenameFilter
-	{
-		@Override
-		public boolean accept(File dir, String name)
-		{
-			return name.endsWith(".ear");
-		}
-	}
-	private static FileFilterEARs fileFilterEARs = null;
-
-	private void findModules(File directory, ModuleType moduleType, List<ModuleDef> modules)
-		throws XMLReadException
-	{
-		if (fileFilterDirectoriesExcludingEARs == null)
-			fileFilterDirectoriesExcludingEARs = new FileFilterDirectoriesExcludingEARs();
-		String[] directories = directory.list(fileFilterDirectoriesExcludingEARs);
-		if (directories != null) {
-			for (int i = 0; i < directories.length; ++i)
-				findModules(new File(directory, directories[i]), moduleType, modules);
-		} // if (directories != null) {
-
-		if (fileFilterEARs == null)
-			fileFilterEARs = new FileFilterEARs();
-		String[] ears = directory.list(fileFilterEARs);
-		if (ears != null) {
-			for (int i = 0; i < ears.length; ++i) {
-				File ear = new File(directory, ears[i]);
-				findModulesInEAR(ear, moduleType, modules);
-			}
-		} // if (ears != null) {
-	}
-
-	private void findModulesInEAR(File ear, ModuleType moduleType, List<ModuleDef> modules)
-		throws XMLReadException
-	{
-// TODO So far, we only support ear directories, but no ear jars.
-// EARApplicationMan should be extended to support both!
-		if (!ear.isDirectory()) {
-			logger.warn("Deployed EAR \""+ear.getAbsolutePath()+"\" is ignored, because only EAR directories are supported!");
-			return;
-		}
-		EARApplicationMan earAppMan = new EARApplicationMan(ear, moduleType);
-		for (Iterator<ModuleDef> it = earAppMan.getModules().iterator(); it.hasNext(); ) {
-			ModuleDef md = it.next();
-			modules.add(md);
-		}
-	}
+//	public synchronized void flushModuleCache()
+//	{
+//		cachedModules = null;
+//	}
+//
+//	/**
+//	 * key: ModuleType moduleType<br/>
+//	 * value: List modules
+//	 */
+//	protected Map<ModuleType, List<ModuleDef>> cachedModules = null;
+//
+//	public synchronized List<ModuleDef> getModules(ModuleType moduleType) throws XMLReadException
+//	{
+//		if (cachedModules == null)
+//			cachedModules = new HashMap<ModuleType, List<ModuleDef>>();
+//
+//		List<ModuleDef> modules = cachedModules.get(moduleType);
+//		if (modules == null) {
+//			File startDir = new File(mcf.getConfigModule().getJ2ee().getJ2eeDeployBaseDirectory());
+//			modules = new ArrayList<ModuleDef>();
+//			findModules(startDir, moduleType, modules);
+//			Collections.sort(modules);
+//			cachedModules.put(moduleType, modules);
+//		}
+//		return modules;
+//	}
+//
+//	private static class FileFilterDirectoriesExcludingEARs implements FilenameFilter
+//	{
+//		@Override
+//		public boolean accept(File dir, String name)
+//		{
+//			if (name.endsWith(".ear"))
+//				return false;
+//			File f = new File(dir, name);
+//			return f.isDirectory();
+//		}
+//	}
+//	private static FileFilterDirectoriesExcludingEARs fileFilterDirectoriesExcludingEARs = null;
+//
+//	public static class FileFilterEARs implements FilenameFilter
+//	{
+//		@Override
+//		public boolean accept(File dir, String name)
+//		{
+//			return name.endsWith(".ear");
+//		}
+//	}
+//	private static FileFilterEARs fileFilterEARs = null;
+//
+//	private void findModules(File directory, ModuleType moduleType, List<ModuleDef> modules)
+//		throws XMLReadException
+//	{
+//		if (fileFilterDirectoriesExcludingEARs == null)
+//			fileFilterDirectoriesExcludingEARs = new FileFilterDirectoriesExcludingEARs();
+//		String[] directories = directory.list(fileFilterDirectoriesExcludingEARs);
+//		if (directories != null) {
+//			for (int i = 0; i < directories.length; ++i)
+//				findModules(new File(directory, directories[i]), moduleType, modules);
+//		} // if (directories != null) {
+//
+//		if (fileFilterEARs == null)
+//			fileFilterEARs = new FileFilterEARs();
+//		String[] ears = directory.list(fileFilterEARs);
+//		if (ears != null) {
+//			for (int i = 0; i < ears.length; ++i) {
+//				File ear = new File(directory, ears[i]);
+//				findModulesInEAR(ear, moduleType, modules);
+//			}
+//		} // if (ears != null) {
+//	}
+//
+//	private void findModulesInEAR(File ear, ModuleType moduleType, List<ModuleDef> modules)
+//		throws XMLReadException
+//	{
+//// TODO So far, we only support ear directories, but no ear jars.
+//// EARApplication should be extended to support both!
+//		if (!ear.isDirectory()) {
+//			logger.warn("Deployed EAR \""+ear.getAbsolutePath()+"\" is ignored, because only EAR directories are supported!");
+//			return;
+//		}
+//		EARApplication earAppMan = new EARApplication(ear, moduleType);
+//		for (Iterator<ModuleDef> it = earAppMan.getModules().iterator(); it.hasNext(); ) {
+//			ModuleDef md = it.next();
+//			modules.add(md);
+//		}
+//	}
 
 
 	// ******************************************

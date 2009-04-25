@@ -54,14 +54,14 @@ public class JFireSecurityMan implements Serializable
 	 * The serial version of this class.
 	 */
 	private static final long serialVersionUID = 1L;
-	
+
 	/**
 	 * LOG4J logger used by this class
 	 */
 	private static final Logger logger = Logger.getLogger(JFireSecurityMan.class);
 
 	protected EJBJarMan ejbJarMan = null;
-	
+
 	/**
 	 * key: String roleGroupID<br/>
 	 * value: RoleGroup roleGroup<br/>
@@ -86,10 +86,14 @@ public class JFireSecurityMan implements Serializable
 
 	private SAXParseException parseException = null;
 
-	public JFireSecurityMan()
+	public JFireSecurityMan(Set<String> roleIDs)
 	{
+		for (String roleID : roleIDs) {
+			if (!roleID.startsWith("_"))
+				roles.put(roleID, new RoleDef(roleID));
+		}
 	}
-	
+
 	public JFireSecurityMan(EJBJarMan _ejbJarMan)
 	throws SAXException, IOException, XMLReadException
 	{
@@ -174,7 +178,7 @@ public class JFireSecurityMan implements Serializable
 		if (roleGroup == null) {
 			if (logger.isDebugEnabled())
 				logger.debug("parseRoleGroup: Adding role-group: \""+roleGroupID+"\"");
-			
+
 			roleGroup = new RoleGroupDef(roleGroupID);
 			roleGroups.put(roleGroupID, roleGroup);
 		}
@@ -365,6 +369,6 @@ public class JFireSecurityMan implements Serializable
 			authorityTypeDef.resolve(this);
 
 		// and create roleGroups for every role that has no role-group
-		
+
 	}
 }

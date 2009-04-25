@@ -27,7 +27,9 @@
 package org.nightlabs.jfire.servermanager.j2ee;
 
 import java.io.Serializable;
+import java.util.Set;
 
+import javax.annotation.security.RolesAllowed;
 import javax.naming.InitialContext;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.login.LoginContext;
@@ -60,8 +62,8 @@ public interface J2EEAdapter extends Serializable {
 	 * <tt>ServerStartNotificationListener.serverStarted()</tt> is called when the
 	 * J2EE server has deployed all modules that existed while booting it.
 	 *
-	 * @param listener
-	 * @throws Exception
+	 * @param listener the listener to be notified as soon as the deployment has completed and a server-started-event is propagated.
+	 * @throws J2EEAdapterException in case registering the listener fails.
 	 */
 	public void registerNotificationListenerServerStarted(ServerStartNotificationListener listener)
 		throws J2EEAdapterException;
@@ -82,4 +84,12 @@ public interface J2EEAdapter extends Serializable {
 	public void reboot();
 
 	LoginContext createLoginContext(String securityProtocol, CallbackHandler callbackHandler) throws LoginException;
+
+	/**
+	 * Get all roles that have been declared via {@link RolesAllowed} in all EJBs.
+	 *
+	 * @return a {@link Set} of roles; never <code>null</code>.
+	 * @throws J2EEAdapterException in case obtaining the roles fails.
+	 */
+	Set<String> getAllEjb3Roles() throws J2EEAdapterException;
 }

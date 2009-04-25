@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE connector PUBLIC "-//Sun Microsystems, Inc.//DTD Connector 1.0//EN" "http://java.sun.com/dtd/connector_1_0.dtd">
+<connector>
+	<display-name>JFire Server Manager</display-name>
+	<description></description>
+ 	<vendor-name>NightLabs</vendor-name>
+  	<spec-version>1.0</spec-version>
+  	<eis-type>JFireServerManager Adaptor</eis-type>
+  	<version>1.0</version>                                  
+  	<resourceadapter>
+  		<managedconnectionfactory-class>org.nightlabs.jfire.servermanager.ra.ManagedConnectionFactoryImpl</managedconnectionfactory-class>
+  		<connectionfactory-interface>javax.resource.cci.ConnectionFactory</connectionfactory-interface>
+    	<connectionfactory-impl-class>org.nightlabs.jfire.servermanager.ra.JFireServerManagerFactoryImpl</connectionfactory-impl-class>
+    	<connection-interface>javax.resource.cci.Connection</connection-interface>
+    	<connection-impl-class>org.nightlabs.jfire.servermanager.ra.JFireServerManagerImpl</connection-impl-class>
+    	<transaction-support>LocalTransaction</transaction-support>
+	    <config-property>
+	      <config-property-name>SysConfigDirectory</config-property-name>
+	      <config-property-type>java.lang.String</config-property-type>
+	      <config-property-value></config-property-value>
+	    </config-property>
+	    <authentication-mechanism>
+	      <authentication-mechanism-type>BasicPassword</authentication-mechanism-type>
+	      <credential-interface>javax.resource.security.PasswordCredential</credential-interface>
+	    </authentication-mechanism>
+	    <reauthentication-support>false</reauthentication-support>
+  	</resourceadapter>
+</connector>

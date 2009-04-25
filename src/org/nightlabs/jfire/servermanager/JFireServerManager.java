@@ -38,7 +38,6 @@ import org.nightlabs.config.ConfigException;
 import org.nightlabs.j2ee.LoginData;
 import org.nightlabs.jfire.base.JFirePrincipal;
 import org.nightlabs.jfire.classloader.CLRegistrar;
-import org.nightlabs.jfire.module.ModuleType;
 import org.nightlabs.jfire.organisationinit.OrganisationInitException;
 import org.nightlabs.jfire.security.id.UserID;
 import org.nightlabs.jfire.serverconfigurator.ServerConfigurationException;
@@ -52,8 +51,6 @@ import org.nightlabs.jfire.servermanager.createorganisation.CreateOrganisationSt
 import org.nightlabs.jfire.servermanager.deploy.DeployOverwriteBehaviour;
 import org.nightlabs.jfire.servermanager.deploy.DeploymentJarItem;
 import org.nightlabs.jfire.servermanager.j2ee.J2EEAdapterException;
-import org.nightlabs.jfire.servermanager.xml.ModuleDef;
-import org.nightlabs.jfire.servermanager.xml.XMLReadException;
 import org.nightlabs.jfire.shutdownafterstartup.ShutdownControlHandle;
 
 /**
@@ -152,10 +149,10 @@ public interface JFireServerManager
 
 	public List<OrganisationCf> getOrganisationCfs(boolean sorted);
 
-	public List<ModuleDef> getModules(ModuleType moduleType)
-		throws XMLReadException;
-
-	public void flushModuleCache();
+//	public List<ModuleDef> getModules(ModuleType moduleType)
+//		throws XMLReadException;
+//
+//	public void flushModuleCache();
 
 	/**
 	 * @throws OrganisationNotFoundException if the organisation does not exist

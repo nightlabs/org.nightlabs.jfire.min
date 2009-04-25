@@ -1,13 +1,9 @@
 package org.nightlabs.jfire.serverinit;
 
-import java.io.File;
-import java.io.FileFilter;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 
 import javax.naming.InitialContext;
 
@@ -22,6 +18,8 @@ import org.nightlabs.jfire.servermanager.JFireServerManagerFactory;
 import org.nightlabs.jfire.servermanager.j2ee.J2EEAdapter;
 import org.nightlabs.jfire.servermanager.ra.JFireServerManagerFactoryImpl;
 import org.nightlabs.jfire.servermanager.ra.ManagedConnectionFactoryImpl;
+import org.nightlabs.jfire.servermanager.xml.EARApplication;
+import org.nightlabs.jfire.servermanager.xml.JarEntryHandler;
 import org.nightlabs.xml.DOMParser;
 import org.nightlabs.xml.XMLReadException;
 import org.w3c.dom.Node;
@@ -32,7 +30,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 /**
- * 
+ *
  * @author Tobias Langner <!-- tobias[dot]langner[at]nightlabs[dot]de -->
  */
 public class ServerInitManager extends AbstractInitManager<ServerInit, ServerInitDependency> {
@@ -44,84 +42,55 @@ public class ServerInitManager extends AbstractInitManager<ServerInit, ServerIni
 
 	private SAXParseException parseException = null;
 
-	private FileFilter earFileFilter = new FileFilter() {
-		public boolean accept(File pathname) {
-			return pathname.getName().endsWith(".ear");
-		}
-	};
-
-	private FileFilter jarFileFilter = new FileFilter() {
-		public boolean accept(File pathname) {
-			return pathname.getName().endsWith(".jar");
-		}
-	};
-
 	private List<ServerInit> earlyInits = new ArrayList<ServerInit>();
 	private List<ServerInit> lateInits = new ArrayList<ServerInit>();
-	
+
 	private JFireServerManagerFactory jfireServerManagerFactory;
 
 	public ServerInitManager(JFireServerManagerFactoryImpl jfsmf, ManagedConnectionFactoryImpl mcf,
 			J2EEAdapter j2eeAdapter)
 	throws ServerInitException {
 		jfireServerManagerFactory = jfsmf;
-		
-		String deployBaseDir = mcf.getConfigModule().getJ2ee().getJ2eeDeployBaseDirectory();
-		File jfireModuleBaseDir = new File(deployBaseDir);
-		PrefixTree<ServerInit> earlyInitTrie = new PrefixTree<ServerInit>();
-		PrefixTree<ServerInit> lateInitTrie = new PrefixTree<ServerInit>();
+
+		final PrefixTree<ServerInit> earlyInitTrie = new PrefixTree<ServerInit>();
+		final PrefixTree<ServerInit> lateInitTrie = new PrefixTree<ServerInit>();
 
 		// Scan all JARs within all EARs for serverinit.xml files.
-		File[] ears = jfireModuleBaseDir.listFiles(earFileFilter);
-		for (int i = 0; i < ears.length; ++i) {
-			File ear = ears[i];
-
-			File[] jars = ear.listFiles(jarFileFilter);
-			for (int m = 0; m < jars.length; ++m) {
-				File jar = jars[m];
-				try {
-					JarFile jf = new JarFile(jar);
-					try {
-						JarEntry je = jf.getJarEntry("META-INF/server-init.xml");
-
-						// BEGIN downward compatibility
-						if (je == null) {
-							je = jf.getJarEntry("META-INF/serverinit.xml");
-							if (je != null)
-								logger.warn("https://www.jfire.org/modules/bugs/view.php?id=579 : serverinit.xml should be named server-init.xml: " + jar.getAbsolutePath());
-						}
-						// END downward compatibility
-
-						if (je != null) {
-							InputStream in = jf.getInputStream(je);
-							try {
-								logger.debug("Parsing: serverinit.xml of " + ear.getName() + "#" + jar.getName());
-								List<ServerInit> serverInits = parseServerInitXML(ear.getName(), jar.getName(), in, "early-init");
+		scan(
+				mcf, new String[] {
+						"META-INF/server-init.xml",
+						"META-INF/serverinit.xml" // downward compatibility
+				},
+				new JarEntryHandler[] {
+						new JarEntryHandler() {
+							@Override
+							public void handleJarEntry(EARApplication ear, String jarName, InputStream in) throws Exception
+							{
+								logger.debug("Parsing: serverinit.xml (early-init)  of " + ear.getEar().getName() + "#" + jarName);
+								List<ServerInit> serverInits = parseServerInitXML(ear.getEar().getName(), jarName, in, "early-init");
 								for (ServerInit init : serverInits) {
 									earlyInits.add(init);
 									earlyInitTrie.insert(new String[] { init.getModule(), init.getArchive(), init.getInitialiserClass() }, init);
 								}
-								
-								in = jf.getInputStream(je);
-								serverInits = parseServerInitXML(ear.getName(), jar.getName(), in, "late-init");
+							}
+						},
+						new JarEntryHandler() {
+							@Override
+							public void handleJarEntry(EARApplication ear, String jarName, InputStream in) throws Exception
+							{
+								logger.debug("Parsing: serverinit.xml (late-init) of " + ear.getEar().getName() + "#" + jarName);
+								List<ServerInit> serverInits = parseServerInitXML(ear.getEar().getName(), jarName, in, "late-init");
 								for (ServerInit init : serverInits) {
 									lateInits.add(init);
 									lateInitTrie.insert(new String[] { init.getModule(), init.getArchive(), init.getInitialiserClass() }, init);
 								}
-							} finally {
-								in.close();
 							}
-						} // if (je != null) {
-					} finally {
-						jf.close();
-					}
-				} catch (Exception e) {
-					logger.error("Reading from JAR '" + jar.getAbsolutePath() + "' failed!", e);
+						}
+
 				}
-			}
-		}
+		);
 		// Now all meta data files have been read.
-		
+
 		// substitute the temporary dependency definitions by links to the actual inits
 		try {
 			establishDependencies(earlyInits, earlyInitTrie);
@@ -129,7 +98,7 @@ public class ServerInitManager extends AbstractInitManager<ServerInit, ServerIni
 		} catch (InitException e1) {
 			throw new ServerInitException("ServerInit failed: " + e1.getMessage());
 		}
-		
+
 		// Now all inits have references of their required and dependent inits.
 		Comparator<ServerInit> comp = new Comparator<ServerInit>() {
 			public int compare(ServerInit o1, ServerInit o2) {
@@ -146,8 +115,8 @@ public class ServerInitManager extends AbstractInitManager<ServerInit, ServerIni
 		} catch (DependencyCycleException e) {
 			throw new ServerInitException(e +"Information regarding the cycle: "+ e.getCycleInfo());
 		}
-		
-		
+
+
 		canPerformInit = true;
 
 		if (logger.isDebugEnabled()) {
@@ -160,7 +129,7 @@ public class ServerInitManager extends AbstractInitManager<ServerInit, ServerIni
 			logger.debug("************************************************");
 		}
 	}
-	
+
 
 
 	public List<ServerInit> parseServerInitXML(String jfireEAR, String jfireJAR, InputStream ejbJarIn, String initName)
@@ -252,7 +221,7 @@ public class ServerInitManager extends AbstractInitManager<ServerInit, ServerIni
 						if (txt != null)
 							classStr = txt.getNodeValue();
 					}
-					
+
 					Node nResolution = nDepends.getAttributes().getNamedItem("resolution");
 					String resolutionStr = null;
 					if (nResolution != null) {
@@ -261,7 +230,7 @@ public class ServerInitManager extends AbstractInitManager<ServerInit, ServerIni
 							resolutionStr = txt.getNodeValue();
 						}
 					}
-					
+
 					Resolution resolution = null;
 					try {
 						resolution = Resolution.getEnumConstant(resolutionStr);
@@ -271,7 +240,7 @@ public class ServerInitManager extends AbstractInitManager<ServerInit, ServerIni
 						logger.warn("Value '"+resolutionStr+"' of attribute resolution is not valid. Using default 'required'.");
 						resolution = Resolution.Required;
 					}
-					
+
 					if (moduleStr == null)
 						throw new XMLReadException("jfireEAR '" + jfireEAR + "' jfireJAR '" + jfireJAR
 								+ "': Reading serverinit.xml failed: Attribute 'module' of element 'depends' must be defined!");
@@ -302,7 +271,7 @@ public class ServerInitManager extends AbstractInitManager<ServerInit, ServerIni
 		String archive = dependency.getArchive();
 		String module = dependency.getModule();
 		String theClass = dependency.getIntialiserClass();
-		
+
 		if (archive == null || archive.equals(""))
 			return new String[] { module };
 		else if (theClass == null || theClass.equals(""))
@@ -310,11 +279,11 @@ public class ServerInitManager extends AbstractInitManager<ServerInit, ServerIni
 		else
 			return new String[] { module, archive, theClass };
 	}
-	
+
 	public void performEarlyInits(InitialContext ctx) {
 		initialiseServer(earlyInits, ctx);
 	}
-	
+
 	public void performLateInits(InitialContext ctx) {
 		initialiseServer(lateInits, ctx);
 	}
@@ -324,7 +293,7 @@ public class ServerInitManager extends AbstractInitManager<ServerInit, ServerIni
 			logger.error("Server initialisation can not be performed due to errors above.");
 			return;
 		}
-		
+
 		for (ServerInit init : inits) {
 			logger.info("Invoking ServerInit: " + init);
 			try {

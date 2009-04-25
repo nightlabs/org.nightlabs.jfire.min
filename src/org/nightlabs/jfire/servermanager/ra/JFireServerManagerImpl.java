@@ -51,7 +51,6 @@ import org.nightlabs.j2ee.LoginData;
 import org.nightlabs.jfire.base.JFirePrincipal;
 import org.nightlabs.jfire.base.Lookup;
 import org.nightlabs.jfire.classloader.CLRegistrar;
-import org.nightlabs.jfire.module.ModuleType;
 import org.nightlabs.jfire.organisation.Organisation;
 import org.nightlabs.jfire.organisationinit.OrganisationInitException;
 import org.nightlabs.jfire.security.RoleSet;
@@ -73,8 +72,6 @@ import org.nightlabs.jfire.servermanager.createorganisation.CreateOrganisationSt
 import org.nightlabs.jfire.servermanager.deploy.DeployOverwriteBehaviour;
 import org.nightlabs.jfire.servermanager.deploy.DeploymentJarItem;
 import org.nightlabs.jfire.servermanager.j2ee.J2EEAdapterException;
-import org.nightlabs.jfire.servermanager.xml.ModuleDef;
-import org.nightlabs.jfire.servermanager.xml.XMLReadException;
 import org.nightlabs.jfire.shutdownafterstartup.ShutdownControlHandle;
 import org.nightlabs.jfire.workstation.Workstation;
 import org.nightlabs.jfire.workstation.id.WorkstationID;
@@ -209,7 +206,7 @@ public class JFireServerManagerImpl
 	}
 
 	@Override
-	public void createOrganisation(String organisationID, String organisationCaption, String userID, String password, boolean isServerAdmin) throws OrganisationInitException, CreateOrganisationException 
+	public void createOrganisation(String organisationID, String organisationCaption, String userID, String password, boolean isServerAdmin) throws OrganisationInitException, CreateOrganisationException
 	{
 		assertOpen();
 		jfireServerManagerFactoryImpl.createOrganisation(
@@ -285,7 +282,8 @@ public class JFireServerManagerImpl
 	}
 
 	@Override
-	public RoleImportSet roleImport_prepare(String organisationID) {
+	public RoleImportSet roleImport_prepare(String organisationID)
+	{
 		assertOpen();
 		return jfireServerManagerFactoryImpl.roleImport_prepare(organisationID);
 	}
@@ -305,18 +303,18 @@ public class JFireServerManagerImpl
 		return jfireServerManagerFactoryImpl.getCLRegistrar(principal);
 	}
 
-	@Override
-	public List<ModuleDef> getModules(ModuleType moduleType) throws XMLReadException
-	{
-		assertOpen();
-		return jfireServerManagerFactoryImpl.getModules(moduleType);
-	}
-
-	@Override
-	public void flushModuleCache() {
-		assertOpen();
-		jfireServerManagerFactoryImpl.flushModuleCache();
-	}
+//	@Override
+//	public List<ModuleDef> getModules(ModuleType moduleType) throws XMLReadException
+//	{
+//		assertOpen();
+//		return jfireServerManagerFactoryImpl.getModules(moduleType);
+//	}
+//
+//	@Override
+//	public void flushModuleCache() {
+//		assertOpen();
+//		jfireServerManagerFactoryImpl.flushModuleCache();
+//	}
 
 	// *** authentication stuff ***
 	private JFirePrincipal principal = null;
@@ -450,7 +448,9 @@ public class JFireServerManagerImpl
 					tx.begin();
 			}
 			try {
-				boolean authenticated = jfireServerManagerFactoryImpl.jfireSecurity_checkTempUserPassword(organisationID, userID, password);
+				boolean authenticated = jfireServerManagerFactoryImpl.jfireSecurity_checkTempUserPassword(
+						UserID.create(organisationID, userID), password
+				);
 
 				// get persistence manager
 				PersistenceManager pm = lookup.getPersistenceManager();

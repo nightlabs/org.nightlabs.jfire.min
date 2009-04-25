@@ -35,6 +35,7 @@ import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 
 import org.nightlabs.j2ee.LoginData;
+import org.nightlabs.jfire.security.id.UserID;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 
 /**
@@ -55,7 +56,7 @@ public class AuthCallbackHandler implements CallbackHandler
 	{
 		this(
 				organisationID, userID, sessionID,
-				ism.jfireSecurity_createTempUserPassword(organisationID, userID).toCharArray());
+				ism.jfireSecurity_createTempUserPassword(UserID.create(organisationID, userID)).toCharArray());
 	}
 
 	public AuthCallbackHandler(String _organisationID, String _userID, String _sessionID, char[] password)
