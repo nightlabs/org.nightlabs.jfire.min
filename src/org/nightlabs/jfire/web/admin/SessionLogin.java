@@ -42,7 +42,7 @@ import org.apache.log4j.Logger;
 public class SessionLogin
 {
 	private static final Logger log = Logger.getLogger(SessionLogin.class);
-	
+
 	private static final String SESSION_KEY = "login";
 
 	public static SessionLogin getLogin(HttpSession session) throws NotAuthenticatedException
@@ -71,12 +71,12 @@ public class SessionLogin
 	{
 		session.setAttribute(SESSION_KEY, null);
 	}
-	
+
 	public static boolean haveLogin(HttpSession session)
 	{
 		return session.getAttribute(SESSION_KEY) != null;
 	}
-	
+
 	private String organisationID;
 	private String userID;
 	// username is the concatted product of userID and organisationID (userID@organisationID)
@@ -165,7 +165,10 @@ public class SessionLogin
 // end todo
 
 				Properties props = new Properties();
-				props.put(Context.INITIAL_CONTEXT_FACTORY,	"org.jboss.security.jndi.LoginInitialContextFactory");
+// TODO this is JBoss-specific! Hence, we really need a config file for it (see to-do above).
+//				props.put(Context.INITIAL_CONTEXT_FACTORY,	"org.jboss.security.jndi.LoginInitialContextFactory");
+				props.put(Context.INITIAL_CONTEXT_FACTORY,	"org.nightlabs.jfire.jboss.cascadedauthentication.LoginInitialContextFactory");
+// end todo
 				props.put(Context.PROVIDER_URL, providerURL); // "jnp://127.0.0.1:1099");
 				props.put(Context.SECURITY_PRINCIPAL, username);
 				props.put(Context.SECURITY_CREDENTIALS, password);
