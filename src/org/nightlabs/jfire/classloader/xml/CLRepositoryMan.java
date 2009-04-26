@@ -82,7 +82,7 @@ public class CLRepositoryMan
 			resourcePatterns.add(resourcePattern);
 			compositeResourcePatternStr = null;
 		}
-		
+
 		/**
 		 * @return Returns the resourcePatterns.
 		 */
@@ -90,7 +90,7 @@ public class CLRepositoryMan
 		{
 			return resourcePatterns;
 		}
-		
+
 		private String compositeResourcePatternStr = null;
 		public String getCompositeResourcePatternStr()
 		{
@@ -108,7 +108,7 @@ public class CLRepositoryMan
 			}
 			return compositeResourcePatternStr;
 		}
-		
+
 		private Pattern compositeResourcePattern = null;
 		public Pattern getCompositeResourcePattern()
 		{
@@ -141,7 +141,7 @@ public class CLRepositoryMan
 			this.ignore = ignore;
 		}
 	}
-	
+
 	/**
 	 * List of Publication
 	 */
@@ -159,28 +159,29 @@ public class CLRepositoryMan
 	{
 		this(null);
 	}
-	
+
 	public CLRepositoryMan(List<Publication> _inheritedPublications)
 	{
 		this.inheritedPublications = _inheritedPublications;
 //		if (this.inheritedPublications == null)
 //			this.inheritedPublications = new ArrayList();
 	}
-	
+
 	public void readCLRepositoryXML(JarFile jar, JarEntry jarEntry)
 		throws XMLReadException, SAXException, IOException, TransformerException
 	{
 		InputStream in = jar.getInputStream(jarEntry);
 		try {
-			String dir = jarEntry.getName();
-			int slashIdx = dir.lastIndexOf('/');
-			dir = dir.substring(0, slashIdx);
+// Because "dir" is not used at all and I just got an exception (see below), I comment the following out. Marco.
+//			String dir = jarEntry.getName();
+//			int slashIdx = dir.lastIndexOf('/');
+//			dir = dir.substring(0, slashIdx); // I just got this exception here: java.lang.StringIndexOutOfBoundsException: String index out of range: -1
 			readCLRepositoryXML(jarEntry.getName(), in, true);
 		} finally {
 			in.close();
 		}
 	}
-	
+
 	protected void readCLRepositoryXML(
 //			String clRepositoryDirectory,
 			final String clRepositoryAbsFileName,
