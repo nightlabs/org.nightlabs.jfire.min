@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-Class-Path: org.nightlabs.base.jar 
+XXXClass-Path: org.nightlabs.base.jar 
  org.nightlabs.jfire.base.jar 
  JFireBaseBean.jar 
  org.nightlabs.jdo.jar
