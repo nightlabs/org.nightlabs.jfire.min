@@ -33,7 +33,6 @@ import java.util.Map;
 import javax.annotation.security.RolesAllowed;
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
-import javax.ejb.SessionBean;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -52,9 +51,9 @@ import org.nightlabs.jfire.servermanager.JFireServerManager;
  */
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 @Stateless
-public abstract class JFireRCLBackendBean
+public class JFireRCLBackendBean
 extends BaseSessionBeanImpl
-implements SessionBean, JFireRCLBackendRemote
+implements JFireRCLBackendRemote
 {
 	private static final long serialVersionUID = 1L;
 	private static final Logger logger = Logger.getLogger(JFireRCLBackendBean.class);
