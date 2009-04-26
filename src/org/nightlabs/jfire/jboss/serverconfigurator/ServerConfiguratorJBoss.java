@@ -860,58 +860,58 @@ public class ServerConfiguratorJBoss
 		boolean changed;
 
 
-		// add the custom compression socket mbean service
-		// find if we already wrote the node
-
-		Node jrmp_node = NLDOMUtil.findNodeByAttribute(document, "server/mbean", "name",
-		"jboss:service=invoker,type=jrmp,socketType=CompressionSocketFactory");
-
-		if(jrmp_node == null) {
-
-			changed = true;
-
-			Element root = document.getDocumentElement();
-
-
-			// find the Node JRMP invoker to add our custom invoker before that node
-			jrmp_node = NLDOMUtil.findNodeByAttribute(document, "server/mbean", "code",
-			"org.jboss.invocation.jrmp.server.JRMPInvoker");
-
-			if(jrmp_node == null) {
-				logger.error("MBean attribute node org.jboss.invocation.jrmp.server.JRMPInvoker->code not found");
-			}
-			else
-			{
-				Element newnode = document.createElement("mbean");// Create Root Element
-				newnode.setAttribute("code", "org.jboss.invocation.jrmp.server.JRMPInvoker");
-				newnode.setAttribute("name", "jboss:service=invoker,type=jrmp,socketType=CompressionSocketFactory");
-
-
-				Comment comment = document.createComment("Add the Custom Compression SSL Socket mbean invoker");
-				newnode.appendChild(comment);
-
-				Element item = document.createElement("attribute");       // Create element
-				item.setAttribute("name", "RMIObjectPort");
-				item.appendChild( document.createTextNode("24445") );
-				newnode.appendChild( item );
-
-				item = document.createElement("attribute");       // Create element
-				item.setAttribute("name", "RMIClientSocketFactory");
-				item.appendChild( document.createTextNode("org.nightlabs.rmissl.socket.SSLCompressionRMIClientSocketFactory") );
-				newnode.appendChild( item );
-
-				item = document.createElement("attribute");       // Create element
-				item.setAttribute("name", "RMIServerSocketFactory");
-				item.appendChild( document.createTextNode("org.nightlabs.rmissl.socket.SSLCompressionRMIServerSocketFactory") );
-				newnode.appendChild( item );
-
-
-				root.insertBefore(newnode,jrmp_node);
-
-				logger.info("Added Custom MBean Invoker for the JRMP Compression invoker");
-			}
-
-		}
+//		// add the custom compression socket mbean service
+//		// find if we already wrote the node
+//
+//		Node jrmp_node = NLDOMUtil.findNodeByAttribute(document, "server/mbean", "name",
+//		"jboss:service=invoker,type=jrmp,socketType=CompressionSocketFactory");
+//
+//		if(jrmp_node == null) {
+//
+//			changed = true;
+//
+//			Element root = document.getDocumentElement();
+//
+//
+//			// find the Node JRMP invoker to add our custom invoker before that node
+//			jrmp_node = NLDOMUtil.findNodeByAttribute(document, "server/mbean", "code",
+//			"org.jboss.invocation.jrmp.server.JRMPInvoker");
+//
+//			if(jrmp_node == null) {
+//				logger.error("MBean attribute node org.jboss.invocation.jrmp.server.JRMPInvoker->code not found");
+//			}
+//			else
+//			{
+//				Element newnode = document.createElement("mbean");// Create Root Element
+//				newnode.setAttribute("code", "org.jboss.invocation.jrmp.server.JRMPInvoker");
+//				newnode.setAttribute("name", "jboss:service=invoker,type=jrmp,socketType=CompressionSocketFactory");
+//
+//
+//				Comment comment = document.createComment("Add the Custom Compression SSL Socket mbean invoker");
+//				newnode.appendChild(comment);
+//
+//				Element item = document.createElement("attribute");       // Create element
+//				item.setAttribute("name", "RMIObjectPort");
+//				item.appendChild( document.createTextNode("24445") );
+//				newnode.appendChild( item );
+//
+//				item = document.createElement("attribute");       // Create element
+//				item.setAttribute("name", "RMIClientSocketFactory");
+//				item.appendChild( document.createTextNode("org.nightlabs.rmissl.socket.SSLCompressionRMIClientSocketFactory") );
+//				newnode.appendChild( item );
+//
+//				item = document.createElement("attribute");       // Create element
+//				item.setAttribute("name", "RMIServerSocketFactory");
+//				item.appendChild( document.createTextNode("org.nightlabs.rmissl.socket.SSLCompressionRMIServerSocketFactory") );
+//				newnode.appendChild( item );
+//
+//
+//				root.insertBefore(newnode,jrmp_node);
+//
+//				logger.info("Added Custom MBean Invoker for the JRMP Compression invoker");
+//			}
+//
+//		}
 
 		// JAAS TIMEOUT
 		changed = replaceMBeanAttribute(
