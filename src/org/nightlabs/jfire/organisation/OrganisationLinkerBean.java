@@ -55,7 +55,7 @@ import org.nightlabs.jfire.base.Lookup;
 // It is essential that unknown business partners can access this bean (otherwise they could not *initiate* a
 // cross-organisation-contact). Therefore, we permit access to all. Marco.
 @PermitAll
-public abstract class OrganisationLinkerBean implements OrganisationLinkerRemote
+public class OrganisationLinkerBean implements OrganisationLinkerRemote
 {
 	private static final long serialVersionUID = 1L;
 
