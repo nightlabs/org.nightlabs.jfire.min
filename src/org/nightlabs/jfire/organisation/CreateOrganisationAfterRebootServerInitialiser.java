@@ -18,7 +18,7 @@ public class CreateOrganisationAfterRebootServerInitialiser
 		try {
 			JFireServerManager jfsm = getJFireServerManagerFactory().getJFireServerManager();
 			try {
-				CreateOrganisationAfterRebootData coard = new CreateOrganisationAfterRebootData(jfsm);
+				CreateOrganisationAfterRebootData coard = new CreateOrganisationAfterRebootData(); // jfsm);
 				if (coard.isEmpty())
 					return;
 

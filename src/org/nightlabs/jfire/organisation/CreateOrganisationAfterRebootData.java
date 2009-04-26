@@ -9,8 +9,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.LinkedList;
 
-import org.nightlabs.jfire.base.JFireBaseEAR;
-import org.nightlabs.jfire.servermanager.JFireServerManager;
+import org.nightlabs.jfire.server.data.dir.JFireServerDataDirectory;
 
 /**
  * @author marco schulze - marco at nightlabs dot de
@@ -39,10 +38,11 @@ public class CreateOrganisationAfterRebootData
 	}
 
 	@SuppressWarnings("unchecked")
-	public CreateOrganisationAfterRebootData(File j2eeDeployBaseDirectory)
+	public CreateOrganisationAfterRebootData() // File j2eeDeployBaseDirectory)
 	throws IOException
 	{
-		File dir = new File(new File(j2eeDeployBaseDirectory, JFireBaseEAR.MODULE_NAME + ".ear"), "config");
+//		File dir = new File(new File(j2eeDeployBaseDirectory, JFireBaseEAR.MODULE_NAME + ".ear"), "config");
+		File dir = JFireServerDataDirectory.getJFireServerDataDirFile();
 		if (!dir.isDirectory())
 			throw new IllegalStateException("The directory does not exist: " + dir.getAbsolutePath());
 
@@ -65,12 +65,12 @@ public class CreateOrganisationAfterRebootData
 			}
 		}
 	}
-	
-	public CreateOrganisationAfterRebootData(JFireServerManager jfsm)
-	throws IOException
-	{
-		this(new File(jfsm.getJFireServerConfigModule().getJ2ee().getJ2eeDeployBaseDirectory()));
-	}
+
+//	public CreateOrganisationAfterRebootData(JFireServerManager jfsm)
+//	throws IOException
+//	{
+//		this(new File(jfsm.getJFireServerConfigModule().getJ2ee().getJ2eeDeployBaseDirectory()));
+//	}
 
 	public void addOrganisation(String organisationID, String organisationDisplayName, String userID, String password, boolean isServerAdmin) throws IOException
 	{

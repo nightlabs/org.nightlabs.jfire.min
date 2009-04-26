@@ -116,13 +116,15 @@ public class OrganisationManagerBean
 	@Override
 	public void createOrganisationAfterReboot(String organisationID, String organisationDisplayName, String userID, String password, boolean isServerAdmin) throws IOException
 	{
-		JFireServerManager ism = getJFireServerManager();
-		try {
-			CreateOrganisationAfterRebootData coar = new CreateOrganisationAfterRebootData(ism);
-			coar.addOrganisation(organisationID, organisationDisplayName, userID, password, isServerAdmin);
-		} finally {
-			ism.close();
-		}
+//		JFireServerManager ism = getJFireServerManager();
+//		try {
+//			CreateOrganisationAfterRebootData coar = new CreateOrganisationAfterRebootData(ism);
+//			coar.addOrganisation(organisationID, organisationDisplayName, userID, password, isServerAdmin);
+//		} finally {
+//			ism.close();
+//		}
+		CreateOrganisationAfterRebootData coar = new CreateOrganisationAfterRebootData();
+		coar.addOrganisation(organisationID, organisationDisplayName, userID, password, isServerAdmin);
 	}
 
 	/* (non-Javadoc)
