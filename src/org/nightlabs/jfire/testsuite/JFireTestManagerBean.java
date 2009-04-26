@@ -30,7 +30,6 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
-import java.rmi.RemoteException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -41,10 +40,12 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.ejb.CreateException;
-import javax.ejb.EJBException;
-import javax.ejb.SessionBean;
-import javax.ejb.SessionContext;
+import javax.annotation.security.RolesAllowed;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.ejb.TransactionManagement;
+import javax.ejb.TransactionManagementType;
 import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 
@@ -77,9 +78,12 @@ import org.nightlabs.util.reflect.ReflectUtil;
  * @ejb.util generate="physical"
  * @ejb.transaction type="Required"
  */
-public abstract class JFireTestManagerBean
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
+@TransactionManagement(TransactionManagementType.CONTAINER)
+@Stateless
+public class JFireTestManagerBean
 extends BaseSessionBeanImpl
-implements SessionBean
+implements JFireTestManagerRemote, JFireTestManagerLocal
 {
 	private static final long serialVersionUID = 1L;
 	/**
@@ -87,36 +91,12 @@ implements SessionBean
 	 */
 	private static final Logger logger = Logger.getLogger(JFireTestManagerBean.class);
 
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.testsuite.JFireTestManagerRemote#logMemoryState(org.nightlabs.jfire.timer.id.TaskID)
+	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_System_")
 	@Override
-	public void setSessionContext(SessionContext sessionContext)
-	throws EJBException, RemoteException
-	{
-		super.setSessionContext(sessionContext);
-	}
-	@Override
-	public void unsetSessionContext() {
-		super.unsetSessionContext();
-	}
-
-	/**
-	 * @ejb.create-method
-	 * @ejb.permission role-name="_Guest_"
-	 */
-	public void ejbCreate() throws CreateException
-	{
-	}
-	/**
-	 * @see javax.ejb.SessionBean#ejbRemove()
-	 *
-	 * @ejb.permission unchecked="true"
-	 */
-	public void ejbRemove() throws EJBException, RemoteException { }
-
-	/**
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_System_"
-	 * @ejb.transaction type="Required"
-	 */
 	public void logMemoryState(TaskID taskID)
 	throws Exception
 	{
@@ -142,11 +122,12 @@ implements SessionBean
 		logger.info("logMemoryState: freeMemory = " + freeMemory / 1024 + " KB");
 	}
 
-	/**
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_System_"
-	 * @ejb.transaction type="Required"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.testsuite.JFireTestManagerRemote#runAllTestSuites(org.nightlabs.jfire.timer.id.TaskID)
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_System_")
+	@Override
 	public void runAllTestSuites(TaskID taskID)
 	throws Exception
 	{
@@ -158,17 +139,12 @@ implements SessionBean
 		runAllTestSuites();
 	}
 
-	/**
-	 * This method is called by the datastore initialisation mechanism.
-	 * It initializes the users needed for Test logins and other prerequisites for the Test system.
-	 *
-	 * @throws Exception When something went wrong.
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_System_"
-	 * @!ejb.permission unchecked="true"
-	 * @ejb.transaction type="Required"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.testsuite.JFireTestManagerRemote#initialiseTestSystem()
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_System_")
+	@Override
 	public void initialiseTestSystem()
 	throws Exception
 	{
@@ -189,7 +165,7 @@ implements SessionBean
 						Task task = new Task(
 								taskID,
 								User.getUser(pm, getPrincipal()),
-								JFireTestManagerHome.JNDI_NAME,
+								JFireTestManagerRemote.class,
 								"runAllTestSuites"
 						);
 
@@ -218,7 +194,7 @@ implements SessionBean
 						Task task = new Task(
 								taskID,
 								User.getUser(pm, getPrincipal()),
-								JFireTestManagerHome.JNDI_NAME,
+								JFireTestManagerLocal.class,
 								"logMemoryState"
 						);
 
@@ -244,7 +220,7 @@ implements SessionBean
 				PropertySetTestStruct.getTestStruct(getOrganisationID(), pm);
 
 				boolean runOnStartup;
-				String runOnStartupStr = System.getProperty(JFireTestManager.class.getName() + ".runOnStartup");
+				String runOnStartupStr = System.getProperty(JFireTestManagerRemote.class.getName() + ".runOnStartup");
 				if (runOnStartupStr == null || runOnStartupStr.isEmpty())
 					runOnStartup = true;
 				else
@@ -315,14 +291,11 @@ implements SessionBean
 		}
 	}
 
-	/**
-	 * Runs all TestSuits and TestCases found in the classpath under org.nightlabs.jfire.testsuite.
-	 * This method can be called by clients and is called by the {@link JFireTestRunnerInvocation} on every startup.
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
-	 * @!ejb.permission unchecked="true"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.testsuite.JFireTestManagerRemote#runAllTestSuites()
 	 */
+	@RolesAllowed("_Guest_")
+	@Override
 	public void runAllTestSuites()
 	throws SecurityException, IllegalArgumentException, ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException, ModuleException, IOException
 	{
@@ -330,12 +303,11 @@ implements SessionBean
 		runTestSuiteInstances(runSuites);
 	}
 
-	/**
-	 * Runs TestCases found in the classpath under org.nightlabs.jfire.testsuite that belong to the given TestSuites..
-	 *
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.testsuite.JFireTestManagerRemote#runTestSuites(java.util.List)
 	 */
+	@RolesAllowed("_Guest_")
+	@Override
 	public void runTestSuites(List<Class<? extends TestSuite>> testSuitesClasses)
 	throws SecurityException, IllegalArgumentException, ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException, ModuleException, IOException
 	{
@@ -393,18 +365,11 @@ implements SessionBean
 		}
 	}
 
-	/**
-	 * Executes {@link TestSuite#canRunTests(PersistenceManager)} within a nested transaction. It is invoked by
-	 * {@link JFireTestRunner#run(TestSuite, PersistenceManager)}
-	 * <p>
-	 * This only works if the JavaEE container passes the references, because {@link junit.framework.TestSuite}
-	 * is not {@link java.io.Serializable}.
-	 * </p>
-	 *
-	 * @ejb.interface-method view-type="local"
-	 * @ejb.permission unchecked="true"
-	 * @ejb.transaction type="RequiresNew"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.testsuite.JFireTestManagerLocal#evaluateCanRunTestsInNestedTransaction(org.nightlabs.jfire.testsuite.TestSuite)
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+	@Override
 	public String evaluateCanRunTestsInNestedTransaction(TestSuite testSuite)
 	throws Exception
 	{
@@ -417,18 +382,11 @@ implements SessionBean
 		}
 	}
 
-	/**
-	 * This only works if the JavaEE container passes the references, because neither {@link org.junit.Test} nor {@link TestResult}
-	 * are {@link java.io.Serializable}, the {@link TestResult} is not a return value, but the data is directly written into it and
-	 * there are listeners passed inside the parameter-objects.
-	 *
-	 * @param test The test to be run.
-	 * @param result The result into which the test's execution result will be written.
-	 *
-	 * @ejb.interface-method view-type="local"
-	 * @ejb.permission unchecked="true"
-	 * @ejb.transaction type="RequiresNew"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.testsuite.JFireTestManagerLocal#runTestInNestedTransaction(junit.framework.Test, junit.framework.TestResult)
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+	@Override
 	public void runTestInNestedTransaction(Test test, TestResult result)
 	throws Exception
 	{
@@ -436,33 +394,33 @@ implements SessionBean
 		test.run(result);
 	}
 
-	/**
-	 * @ejb.interface-method view-type="local"
-	 * @ejb.permission unchecked="true"
-	 * @ejb.transaction type="RequiresNew"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.testsuite.JFireTestManagerLocal#runTestInNestedTransaction_setUp(org.nightlabs.jfire.testsuite.TestCase)
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+	@Override
 	public void runTestInNestedTransaction_setUp(org.nightlabs.jfire.testsuite.TestCase test)
 	throws Exception
 	{
 		test.setUp();
 	}
 
-	/**
-	 * @ejb.interface-method view-type="local"
-	 * @ejb.permission unchecked="true"
-	 * @ejb.transaction type="RequiresNew"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.testsuite.JFireTestManagerLocal#runTestInNestedTransaction_tearDown(org.nightlabs.jfire.testsuite.TestCase)
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+	@Override
 	public void runTestInNestedTransaction_tearDown(org.nightlabs.jfire.testsuite.TestCase test)
 	throws Exception
 	{
 		test.tearDown();
 	}
 
-	/**
-	 * @ejb.interface-method view-type="local"
-	 * @ejb.permission unchecked="true"
-	 * @ejb.transaction type="RequiresNew"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.testsuite.JFireTestManagerLocal#runTestInNestedTransaction_runTest(org.nightlabs.jfire.testsuite.TestCase)
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+	@Override
 	public void runTestInNestedTransaction_runTest(org.nightlabs.jfire.testsuite.TestCase test)
 	throws Exception
 	{
@@ -512,6 +470,7 @@ implements SessionBean
 	 * @return A list of the created TestSuites.
 	 * @throws ClassNotFoundException
 	 */
+	@SuppressWarnings("unchecked")
 	private static List<TestSuite> createTestSuites(List<Class<? extends TestSuite>> testSuiteClassesFilter) throws ClassNotFoundException {
 		logger.debug("Scanning classpath for TestSuites and TestCases");
 		Collection<Class<?>> classes = ReflectUtil.listClassesInPackage("org.nightlabs.jfire.testsuite", true);

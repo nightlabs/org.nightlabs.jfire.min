@@ -6,9 +6,9 @@ import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.j2ee.LoginData;
+import org.nightlabs.jfire.base.JFireEjb3Factory;
 import org.nightlabs.jfire.organisation.Organisation;
-import org.nightlabs.jfire.organisation.OrganisationManager;
-import org.nightlabs.jfire.organisation.OrganisationManagerUtil;
+import org.nightlabs.jfire.organisation.OrganisationManagerRemote;
 import org.nightlabs.jfire.test.cascadedauthentication.TestRequestResultTreeNode;
 import org.nightlabs.jfire.testsuite.JFireTestSuite;
 import org.nightlabs.jfire.testsuite.login.JFireTestLogin;
@@ -23,8 +23,8 @@ extends TestCase
 	private String organisationID_root = null;
 	private String organisationID_chezfrancois = "chezfrancois.jfire.org";
 	private String organisationID_reseller = "reseller.jfire.org";
-	private String organisationID_a = "a.jfire.org";
-	private String organisationID_b = "b.jfire.org";
+//	private String organisationID_a = "a.jfire.org";
+//	private String organisationID_b = "b.jfire.org";
 
 	@Override
 	protected void setUp()
@@ -41,7 +41,7 @@ extends TestCase
 		LoginData loginData = JFireTestLogin.getUserLoginData(JFireTestLogin.USER_QUALIFIER_SALESMAN); // which user does not matter for this test.
 		TestRequestResultTreeNode tree = new TestRequestResultTreeNode(null, organisationID_chezfrancois);
 		tree.createChildTestRequestResultTree(organisationID_reseller).createChildTestRequestResultTree(organisationID_root);
-		OrganisationManager organisationManager = OrganisationManagerUtil.getHome(loginData.getInitialContextProperties()).create();
+		OrganisationManagerRemote organisationManager = JFireEjb3Factory.getRemoteBean(OrganisationManagerRemote.class, loginData.getInitialContextProperties());
 		tree = organisationManager.testCascadedAuthentication(tree);
 		checkResult(tree);
 	}
@@ -59,7 +59,7 @@ extends TestCase
 		TestRequestResultTreeNode child_0_1 = child_0.createChildTestRequestResultTree(organisationID_reseller);
 		TestRequestResultTreeNode child_0_2 = child_0.createChildTestRequestResultTree(organisationID_chezfrancois);
 
-		OrganisationManager organisationManager = OrganisationManagerUtil.getHome(loginData.getInitialContextProperties()).create();
+		OrganisationManagerRemote organisationManager = JFireEjb3Factory.getRemoteBean(OrganisationManagerRemote.class, loginData.getInitialContextProperties());
 		tree = organisationManager.testCascadedAuthentication(tree);
 		checkResult(tree);
 	}
@@ -91,7 +91,7 @@ extends TestCase
 		TestRequestResultTreeNode child_1_0_1 = child_1_0.createChildTestRequestResultTree(organisationID_root);
 		TestRequestResultTreeNode child_1_0_2 = child_1_0.createChildTestRequestResultTree(organisationID_chezfrancois);
 
-		OrganisationManager organisationManager = OrganisationManagerUtil.getHome(loginData.getInitialContextProperties()).create();
+		OrganisationManagerRemote organisationManager = JFireEjb3Factory.getRemoteBean(OrganisationManagerRemote.class, loginData.getInitialContextProperties());
 		tree = organisationManager.testCascadedAuthentication(tree);
 		checkResult(tree);
 	}

@@ -13,6 +13,7 @@ import junit.framework.TestResult;
 import junit.runner.BaseTestRunner;
 
 import org.apache.log4j.Logger;
+import org.nightlabs.jfire.base.JFireEjb3Factory;
 import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.security.SecurityReflector.UserDescriptor;
 import org.nightlabs.jfire.testsuite.TestSuite.Status;
@@ -107,7 +108,7 @@ public class JFireTestRunner extends BaseTestRunner {
 			else {
 				// If it's an ordinary TestCase, we run it in a nested transaction here.
 				try {
-					JFireTestManagerLocal m = JFireTestManagerUtil.getLocalHome().create();
+					JFireTestManagerLocal m = JFireEjb3Factory.getLocalBean(JFireTestManagerLocal.class);
 					m.runTestInNestedTransaction(test, result);
 				} catch (Exception e) {
 					throw new RuntimeException(e);
@@ -131,8 +132,8 @@ public class JFireTestRunner extends BaseTestRunner {
 		String skipReason;
 		Throwable checkError = null;
 		try {
-				JFireTestManagerLocal m = JFireTestManagerUtil.getLocalHome().create();
-				skipReason = m.evaluateCanRunTestsInNestedTransaction(suite);
+			JFireTestManagerLocal m = JFireEjb3Factory.getLocalBean(JFireTestManagerLocal.class);
+			skipReason = m.evaluateCanRunTestsInNestedTransaction(suite);
 //			skipReason = suite.canRunTests(pm);
 		} catch (Exception e) {
 			skipReason = e.getClass().getName() + ": " + e.getMessage();
@@ -173,7 +174,7 @@ public class JFireTestRunner extends BaseTestRunner {
 					// TestResult is not serialisable. We pray that the container will pass the reference
 					// *directly* to the *local* EJB without serialising/deserialising.
 					try {
-						JFireTestManagerLocal m = JFireTestManagerUtil.getLocalHome().create();
+						JFireTestManagerLocal m = JFireEjb3Factory.getLocalBean(JFireTestManagerLocal.class);
 						m.runTestInNestedTransaction(test, result);
 					} catch (Exception e) {
 						throw new RuntimeException(e);

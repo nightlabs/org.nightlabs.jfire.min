@@ -26,15 +26,16 @@
 
 package org.nightlabs.jfire.testsuite.jdo;
 
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 
-import javax.ejb.CreateException;
-import javax.ejb.EJBException;
-import javax.ejb.SessionBean;
-import javax.ejb.SessionContext;
+import javax.annotation.security.RolesAllowed;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.ejb.TransactionManagement;
+import javax.ejb.TransactionManagementType;
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
 
@@ -52,37 +53,15 @@ import org.nightlabs.jfire.security.User;
  * @ejb.util generate="physical"
  * @ejb.transaction type="Required"
  */
-public abstract class JDOTestBean
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
+@TransactionManagement(TransactionManagementType.CONTAINER)
+@Stateless
+public class JDOTestBean
 extends BaseSessionBeanImpl
-implements SessionBean
+implements JDOTestRemote
 {
 	private static final long serialVersionUID = 1L;
 	private static final Logger logger = Logger.getLogger(JDOTestBean.class);
-
-	@Override
-	public void setSessionContext(SessionContext sessionContext)
-	throws EJBException, RemoteException
-	{
-		super.setSessionContext(sessionContext);
-	}
-	@Override
-	public void unsetSessionContext() {
-		super.unsetSessionContext();
-	}
-
-	/**
-	 * @ejb.create-method
-	 * @ejb.permission role-name="_Guest_"
-	 */
-	public void ejbCreate() throws CreateException
-	{
-	}
-	/**
-	 * @see javax.ejb.SessionBean#ejbRemove()
-	 *
-	 * @ejb.permission unchecked="true"
-	 */
-	public void ejbRemove() throws EJBException, RemoteException { }
 
 	private static Query createUserQuery(PersistenceManager pm)
 	{
@@ -91,11 +70,11 @@ implements SessionBean
 		return q;
 	}
 
-	/**
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type="Required"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.testsuite.jdo.JDOTestRemote#createArrayListFromQueryResult()
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_Guest_")
 	public void createArrayListFromQueryResult()
 	{
 		PersistenceManager pm = getPersistenceManager();
@@ -211,11 +190,11 @@ implements SessionBean
 		}
 	}
 
-	/**
-	 * @ejb.interface-method
-	 * @ejb.permission role-name="_Guest_"
-	 * @ejb.transaction type="Required"
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.testsuite.jdo.JDOTestRemote#createHashSetFromQueryResult()
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_Guest_")
 	public void createHashSetFromQueryResult()
 	{
 		PersistenceManager pm = getPersistenceManager();

@@ -4,6 +4,7 @@ import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.j2ee.LoginData;
+import org.nightlabs.jfire.base.JFireEjb3Factory;
 import org.nightlabs.jfire.testsuite.JFireTestSuite;
 import org.nightlabs.jfire.testsuite.base.JFireBaseTestSuite;
 import org.nightlabs.jfire.testsuite.login.JFireTestLogin;
@@ -32,12 +33,12 @@ public class JDOTestCase extends TestCase
 	public void testCreateArrayListFromQueryResult() throws Exception
 	{
 		LoginData loginData = JFireTestLogin.getUserLoginData(JFireTestLogin.USER_QUALIFIER_SERVER_ADMIN);
-		JDOTestUtil.getHome(loginData.getInitialContextProperties()).create().createArrayListFromQueryResult();
+		JFireEjb3Factory.getRemoteBean(JDOTestRemote.class, loginData.getInitialContextProperties()).createArrayListFromQueryResult();
 	}
 
 	public void testCreateHashSetFromQueryResult() throws Exception
 	{
 		LoginData loginData = JFireTestLogin.getUserLoginData(JFireTestLogin.USER_QUALIFIER_SERVER_ADMIN);
-		JDOTestUtil.getHome(loginData.getInitialContextProperties()).create().createHashSetFromQueryResult();
+		JFireEjb3Factory.getRemoteBean(JDOTestRemote.class, loginData.getInitialContextProperties()).createHashSetFromQueryResult();
 	}
 }

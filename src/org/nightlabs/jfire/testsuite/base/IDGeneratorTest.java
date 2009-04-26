@@ -6,15 +6,17 @@ package org.nightlabs.jfire.testsuite.base;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 
+import javax.naming.InitialContext;
+
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.j2ee.LoginData;
 import org.nightlabs.jdo.ObjectIDUtil;
+import org.nightlabs.jfire.base.InvokeUtil;
 import org.nightlabs.jfire.base.login.JFireLogin;
 import org.nightlabs.jfire.base.login.JFireSecurityConfiguration;
-import org.nightlabs.jfire.idgenerator.IDGeneratorHelper;
-import org.nightlabs.jfire.idgenerator.IDGeneratorHelperUtil;
+import org.nightlabs.jfire.idgenerator.IDGeneratorHelperRemote;
 import org.nightlabs.jfire.testsuite.JFireTestSuite;
 import org.nightlabs.util.IOUtil;
 import org.nightlabs.util.ObservedProcess;
@@ -114,13 +116,15 @@ public class IDGeneratorTest extends TestCase
 		long maxID = -1;
 		String namespace = ObjectIDUtil.makeValidIDString("namespace", true);
 		for (int i = 0; i < ITERATION_QUANTITY; i++) {
+			InitialContext initialContext = null;
 			JFireLogin jfireLogin = null;
 			if (manualCascadedAuthentication) {
 				jfireLogin = new JFireLogin(ld);
 				jfireLogin.login();
 			}
 			try {
-				IDGeneratorHelper idGeneratorHelper = IDGeneratorHelperUtil.getHome(ld.getInitialContextProperties()).create();
+				initialContext = new InitialContext(ld.getInitialContextProperties());
+				IDGeneratorHelperRemote idGeneratorHelper = (IDGeneratorHelperRemote) initialContext.lookup(InvokeUtil.JNDI_PREFIX_EJB_BY_REMOTE_INTERFACE + IDGeneratorHelperRemote.class.getName());
 				long[] ids = idGeneratorHelper.clientNextIDs(namespace, 0, 5);
 				for (long id : ids) {
 					if (id <= maxID)
@@ -130,6 +134,9 @@ public class IDGeneratorTest extends TestCase
 			} finally {
 				if (jfireLogin != null)
 					jfireLogin.logout();
+
+				if (initialContext != null)
+					initialContext.close();
 			}
 		}
 	}

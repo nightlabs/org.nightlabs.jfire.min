@@ -9,9 +9,9 @@ import junit.framework.TestCase;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.nightlabs.j2ee.LoginData;
-import org.nightlabs.jfire.base.JFireEjbFactory;
+import org.nightlabs.jfire.base.JFireEjb3Factory;
 import org.nightlabs.jfire.base.login.JFireLogin;
-import org.nightlabs.jfire.security.JFireSecurityManager;
+import org.nightlabs.jfire.security.JFireSecurityManagerRemote;
 import org.nightlabs.jfire.testsuite.JFireTestSuite;
 
 /**
@@ -27,7 +27,8 @@ public class LoginTest extends TestCase
 	throws Exception
 	{
 		LoginData loginData = JFireTestLogin.getUserLoginData(JFireTestLogin.USER_QUALIFIER_SERVER_ADMIN);
-		JFireEjbFactory.getBean(JFireSecurityManager.class, loginData.getInitialContextProperties());
+		JFireSecurityManagerRemote ejb = JFireEjb3Factory.getRemoteBean(JFireSecurityManagerRemote.class, loginData.getInitialContextProperties());
+		ejb.ping("test");
 	}
 
 	public void testCorrectLoginManyTimes_onlyLogin()
@@ -111,7 +112,8 @@ public class LoginTest extends TestCase
 		LoginData loginData = new LoginData("chezfrancois.jfire.org", "francoiz", "test");
 		loginData.setDefaultValues();
 		try {
-			JFireEjbFactory.getBean(JFireSecurityManager.class, loginData.getInitialContextProperties());
+			JFireSecurityManagerRemote ejb = JFireEjb3Factory.getRemoteBean(JFireSecurityManagerRemote.class, loginData.getInitialContextProperties());
+			ejb.ping("test");
 		} catch (Exception e) {
 			if (ExceptionUtils.indexOfThrowable(e, LoginException.class) < 0)
 				throw e; // different error - not a LoginException
@@ -128,7 +130,8 @@ public class LoginTest extends TestCase
 		LoginData loginData = new LoginData("chezfrancois.jfire.org", "francois", "text");
 		loginData.setDefaultValues();
 		try {
-			JFireEjbFactory.getBean(JFireSecurityManager.class, loginData.getInitialContextProperties());
+			JFireSecurityManagerRemote ejb = JFireEjb3Factory.getRemoteBean(JFireSecurityManagerRemote.class, loginData.getInitialContextProperties());
+			ejb.ping("test");
 		} catch (Exception e) {
 			if (ExceptionUtils.indexOfThrowable(e, LoginException.class) < 0)
 				throw e; // different error - not a LoginException

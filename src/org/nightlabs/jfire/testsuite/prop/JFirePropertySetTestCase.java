@@ -14,12 +14,12 @@ import javax.jdo.JDOHelper;
 import javax.naming.NamingException;
 
 import org.nightlabs.jdo.NLJDOHelper;
+import org.nightlabs.jfire.base.JFireEjb3Factory;
 import org.nightlabs.jfire.base.jdo.cache.Cache;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleManager;
 import org.nightlabs.jfire.idgenerator.IDGenerator;
 import org.nightlabs.jfire.organisation.Organisation;
-import org.nightlabs.jfire.prop.PropertyManager;
-import org.nightlabs.jfire.prop.PropertyManagerUtil;
+import org.nightlabs.jfire.prop.PropertyManagerRemote;
 import org.nightlabs.jfire.prop.PropertySet;
 import org.nightlabs.jfire.prop.Struct;
 import org.nightlabs.jfire.prop.StructLocal;
@@ -66,9 +66,10 @@ public class JFirePropertySetTestCase extends TestCase {
 	private boolean isSetup = false;
 
 
-	protected PropertyManager getPropertyManager() throws RemoteException, CreateException, NamingException {
-//		return JFireEjbFactory.getBean(PropertyManager.class, login.getInitialContextProperties());
-		return PropertyManagerUtil.getHome().create();
+	protected PropertyManagerRemote getPropertyManager() throws RemoteException, CreateException, NamingException {
+//		return JFireEjb3Factory.getBean(PropertyManager.class, login.getInitialContextProperties());
+//		return PropertyManagerUtil.getHome().create();
+		return JFireEjb3Factory.getRemoteBean(PropertyManagerRemote.class, null);
 	}
 
 	@Override

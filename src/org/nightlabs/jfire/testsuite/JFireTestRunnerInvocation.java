@@ -4,6 +4,7 @@ import java.io.Serializable;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.jfire.asyncinvoke.Invocation;
+import org.nightlabs.jfire.base.JFireEjb3Factory;
 import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.security.SecurityReflector.UserDescriptor;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
@@ -44,7 +45,7 @@ extends Invocation
 				throw new IllegalStateException("SecurityReflector.getUserDescriptor() returned null!");
 
 			try {
-				JFireTestManagerLocal m = JFireTestManagerUtil.getLocalHome().create();
+				JFireTestManagerLocal m = JFireEjb3Factory.getLocalBean(JFireTestManagerLocal.class);
 				if (JFireTestManagerBean.getTestSuiteRunningCounter(getOrganisationID()) > 0)
 					logger.info("invoke: Tests are already running (probably due to a timer task). Won't start another run!");
 				else

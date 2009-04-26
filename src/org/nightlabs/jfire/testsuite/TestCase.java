@@ -1,6 +1,7 @@
 package org.nightlabs.jfire.testsuite;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.nightlabs.jfire.base.JFireEjb3Factory;
 
 /**
  * This implementation of {@link junit.framework.TestCase} ensures that
@@ -33,7 +34,7 @@ extends junit.framework.TestCase
 			throws Throwable
 	{
 		Throwable exception= null;
-		JFireTestManagerLocal m = JFireTestManagerUtil.getLocalHome().create();
+		JFireTestManagerLocal m = JFireEjb3Factory.getLocalBean(JFireTestManagerLocal.class);
 		m.runTestInNestedTransaction_setUp(this);
 		try {
 			m.runTestInNestedTransaction_runTest(this);

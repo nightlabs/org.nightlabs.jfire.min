@@ -3,9 +3,13 @@
 		"http://www.nightlabs.de/dtd/organisation-init_1_0.dtd">
 <organisation-initialisation>
 
+	<init bean="org.nightlabs.jfire.testsuite.JFireTestManagerRemote" method="initialiseTestSystem" priority="900"/>
+<!--
+before EJB2 => EJB3 migration:
 	<init bean="jfire/ejb/JFireTestSuite/JFireTestManager" method="initialiseTestSystem" priority="900">
 	</init>
-<!--
+
+before refactoring to async execution of tests:
 	<init bean="jfire/ejb/JFireTestSuite/JFireTestManager" method="runAllTestSuites" priority="950">
 		<depends module="JFireSimpleTrade.ear" resolution="optional" />
 		<depends module="JFireVoucher.ear" resolution="optional" />
