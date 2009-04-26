@@ -13,13 +13,13 @@ public class JDOCf extends JFireServerConfigPart implements Serializable
 	 * The serial version of this class.
 	 */
 	private static final long serialVersionUID = 1L;
-	
+
 	/**
 	 * LOG4J logger used by this class.
 	 */
 	private static final org.apache.log4j.Logger logger = org.apache.log4j.Logger
 			.getLogger(JDOCf.class);
-	
+
 	private String jdoDeploymentDirectory;
 
 	private String jdoDeploymentDescriptorFile;
@@ -38,13 +38,13 @@ public class JDOCf extends JFireServerConfigPart implements Serializable
 			jdoDeploymentDescriptorFile = "jdo-" + JFireServerConfigModule.ORGANISATION_ID_VAR + "-ds.xml";
 
 		if (jdoDeploymentDescriptorTemplateFile == null)
-			jdoDeploymentDescriptorTemplateFile = "../server/default/deploy/JFire.last/JFireBase.ear/jdo-datanucleus-1.0-ds.template.xml";
+			jdoDeploymentDescriptorTemplateFile = "../server/default/data/jfire/template/jdo-datanucleus-1.0-ds.template.xml";
 
 		if (jdoPersistenceConfigurationFile == null)
 			jdoPersistenceConfigurationFile = "persistence-" + JFireServerConfigModule.ORGANISATION_ID_VAR + ".xml";
 
 		if (jdoPersistenceConfigurationTemplateFile == null)
-			jdoPersistenceConfigurationTemplateFile = "../server/default/deploy/JFire.last/JFireBase.ear/jdo-datanucleus-1.0-persistence.template.xml";
+			jdoPersistenceConfigurationTemplateFile = "../server/default/data/jfire/template/jdo-datanucleus-1.0-persistence.template.xml";
 
 		logger.info("jdoDeploymentDirectory = "+jdoDeploymentDirectory);
 		logger.info("jdoDeploymentDescriptorFile = "+jdoDeploymentDescriptorFile);
@@ -68,7 +68,7 @@ public class JDOCf extends JFireServerConfigPart implements Serializable
 
 		return jdoDeploymentDirectory.replace(JFireServerConfigModule.ORGANISATION_ID_VAR, organisationID);
 	}
-	
+
 	/**
 	 * @param jdoDeploymentDirectory The jdoDeploymentDirectory to set.
 	 */
@@ -88,7 +88,7 @@ public class JDOCf extends JFireServerConfigPart implements Serializable
 	{
 		return jdoDeploymentDescriptorFile;
 	}
-	
+
 	public String getJdoDeploymentDescriptorFile(String organisationID)
 	{
 		if (organisationID == null || "".equals(organisationID))
@@ -116,7 +116,7 @@ public class JDOCf extends JFireServerConfigPart implements Serializable
 	{
 		return jdoDeploymentDescriptorTemplateFile;
 	}
-	
+
 	/**
 	 * @param jdoDeploymentDescriptorTemplateFile The jdoDeploymentDescriptorTemplateFile to set.
 	 */

@@ -54,7 +54,7 @@ public class DatabaseCf extends JFireServerConfigPart implements Serializable
 
 	private String datasourceConfigFile;
 	private String datasourceTemplateDSXMLFile;
-	
+
 	private static Map<String, DatabaseCf> createDefaults()
 	{
 		Map<String, DatabaseCf> defaults = new HashMap<String, DatabaseCf>();
@@ -72,7 +72,7 @@ public class DatabaseCf extends JFireServerConfigPart implements Serializable
 		} catch (Throwable t) {
 			logger.error("Creating database default values failed!", t);
 		}
-		
+
 		return defaults;
 	}
 	// TODO remove the metadatatypemapping... the template file is configurable, hence we don't need the type mapping here.
@@ -94,7 +94,7 @@ public class DatabaseCf extends JFireServerConfigPart implements Serializable
 		db.setDatabaseAdapter(DatabaseAdapterMySQL.class.getName());
 		db.setDatasourceMetadataTypeMapping("mySQL");
 //				db.setDatasourceConfigFile("db-mysql-" + ORGANISATION_ID_VAR + "-ds.xml");
-		db.setDatasourceTemplateDSXMLFile("../server/default/deploy/JFire.last/JFireBase.ear/db-mysql-ds.template.xml");
+		db.setDatasourceTemplateDSXMLFile("../server/default/data/jfire/template/db-mysql-ds.template.xml");
 		return db;
 	}
 
@@ -114,7 +114,7 @@ public class DatabaseCf extends JFireServerConfigPart implements Serializable
 		db.setDatabaseAdapter(DatabaseAdapterDerby.class.getName());
 		db.setDatasourceMetadataTypeMapping("Derby");
 //				db.setDatasourceConfigFile("db-derby-" + ORGANISATION_ID_VAR + "-ds.xml");
-		db.setDatasourceTemplateDSXMLFile("../server/default/deploy/JFire.last/JFireBase.ear/db-derby-ds.template.xml");
+		db.setDatasourceTemplateDSXMLFile("../server/default/data/jfire/template/db-derby-ds.template.xml");
 		return db;
 	}
 
@@ -136,7 +136,7 @@ public class DatabaseCf extends JFireServerConfigPart implements Serializable
 //		db.setDatasourceMetadataTypeMapping("mySQL"); // TODO - i have no idea???!!
 //		return db;
 //	}
-	
+
 	protected void _init()
 	{
 		if (databaseURL == null)
@@ -144,7 +144,7 @@ public class DatabaseCf extends JFireServerConfigPart implements Serializable
 
 		if (datasourceMetadataTypeMapping == null)
 			setDatasourceMetadataTypeMapping("mySQL");
-			
+
 		if (databasePrefix == null)
 			setDatabasePrefix("JFire_");
 
@@ -186,7 +186,7 @@ public class DatabaseCf extends JFireServerConfigPart implements Serializable
 			setDatasourceConfigFile("db-" + JFireServerConfigModule.ORGANISATION_ID_VAR + "-ds.xml");
 
 		if (datasourceTemplateDSXMLFile == null)
-			setDatasourceTemplateDSXMLFile("../server/default/deploy/JFire.last/JFireBase.ear/db-default-ds.template.xml");
+			setDatasourceTemplateDSXMLFile("../server/default/data/jfire/template/db-default-ds.template.xml");
 	}
 
 	/* (non-Javadoc)
@@ -247,7 +247,7 @@ public class DatabaseCf extends JFireServerConfigPart implements Serializable
 
 		return datasourceConfigFile.replace(JFireServerConfigModule.ORGANISATION_ID_VAR, organisationID);
 	}
-	
+
 	/**
 	 * Get the databaseAdapter.
 	 * @return the databaseAdapter
@@ -285,7 +285,7 @@ public class DatabaseCf extends JFireServerConfigPart implements Serializable
 //		this.databaseDriverName = _databaseDriverName;
 //		setChanged();
 //	}
-	
+
 	/**
 	 * Get the databaseDriverName_localTx.
 	 * @return the databaseDriverName_localTx
@@ -483,7 +483,7 @@ public class DatabaseCf extends JFireServerConfigPart implements Serializable
 
 		return databaseURL.replace(DATABASE_NAME_VAR, databaseName);
 	}
-	
+
 	public void setDatabaseURL(String databaseURL)
 	{
 		if (databaseURL == null)
@@ -495,7 +495,7 @@ public class DatabaseCf extends JFireServerConfigPart implements Serializable
 		this.databaseURL = databaseURL;
 		setChanged();
 	}
-	
+
 	/**
 	 * Get the datasourceConfigFile.
 	 * @return the datasourceConfigFile
@@ -504,7 +504,7 @@ public class DatabaseCf extends JFireServerConfigPart implements Serializable
 	{
 		return datasourceConfigFile;
 	}
-	
+
 	public void setDatasourceConfigFile(String datasourceConfigFile)
 	{
 		if (datasourceConfigFile == null)
