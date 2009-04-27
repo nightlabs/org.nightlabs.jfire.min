@@ -101,7 +101,7 @@ public abstract class BaseJDOObjectDAO<JDOObjectID extends ObjectID, JDOObject>
 	{
 		Set<JDOObjectID> objectIDs = new HashSet<JDOObjectID>(1);
 		objectIDs.add(objectID);
-		Collection<JDOObject> objects = retrieveJDOObjects(objectIDs, fetchGroups, maxFetchDepth, monitor);
+		Collection<? extends JDOObject> objects = retrieveJDOObjects(objectIDs, fetchGroups, maxFetchDepth, monitor);
 		if(objects == null || objects.isEmpty())
 			return null;
 		return objects.iterator().next();
@@ -125,7 +125,7 @@ public abstract class BaseJDOObjectDAO<JDOObjectID extends ObjectID, JDOObject>
 	 * @return All requested and existing JDO objects.
 	 * @throws Exception in case of an error
 	 */
-	protected abstract Collection<JDOObject> retrieveJDOObjects(Set<JDOObjectID> objectIDs, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
+	protected abstract Collection<? extends JDOObject> retrieveJDOObjects(Set<JDOObjectID> objectIDs, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
 	throws Exception;
 
 	/**
@@ -209,7 +209,7 @@ public abstract class BaseJDOObjectDAO<JDOObjectID extends ObjectID, JDOObject>
 			return objects;
 
 		// fetch all missing objects from datastore
-		Collection<JDOObject> fetchedObjects;
+		Collection<? extends JDOObject> fetchedObjects;
 		ProgressMonitor subMonitor = null;
 		try { //                               workaround for hashset.keyset != serializable
 			subMonitor = new SubProgressMonitor(monitor, objectIDs.size());
@@ -227,7 +227,7 @@ public abstract class BaseJDOObjectDAO<JDOObjectID extends ObjectID, JDOObject>
 
 		// put remaining objects in correct position of the result list
 		int index;
-		for(Iterator<JDOObject> it = fetchedObjects.iterator(); it.hasNext(); ) {
+		for(Iterator<? extends JDOObject> it = fetchedObjects.iterator(); it.hasNext(); ) {
 			JDOObject freshObject = it.next();
 			if (freshObject == null) {
 				it.remove();
