@@ -3,6 +3,6 @@
 		"http://www.nightlabs.de/dtd/organisation-init_1_0.dtd">
 <organisation-initialisation>
 
-	<init bean="jfire/ejb/JFireQueryStore/QueryStoreManager" method="initialise" priority="5"/>
+	<init bean="org.nightlabs.jfire.query.store.QueryStoreManagerRemote" method="initialise" priority="5"/>
 
 </organisation-initialisation>
