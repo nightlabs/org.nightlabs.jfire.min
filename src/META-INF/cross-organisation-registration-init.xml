@@ -4,6 +4,6 @@
 		"http://www.nightlabs.de/dtd/cross-organisation-registration-init_1_0.dtd">
 <cross-organisation-registration-initialisation>
   <init
-		bean="jfire/ejb/JFireBaseBean/JFireSecurityManager"
+		bean="org.nightlabs.jfire.security.JFireSecurityManagerRemote"
 		method="importAuthoritiesOnCrossOrganisationRegistration" />
 </cross-organisation-registration-initialisation>
