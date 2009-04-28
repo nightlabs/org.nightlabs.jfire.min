@@ -11,6 +11,7 @@ import java.io.UnsupportedEncodingException;
 import javax.xml.transform.TransformerException;
 
 import org.apache.log4j.Logger;
+import org.apache.xpath.CachedXPathAPI;
 import org.nightlabs.jfire.serverconfigurator.ServerConfigurationException;
 import org.nightlabs.jfire.serverconfigurator.ServerConfigurator;
 import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
@@ -27,8 +28,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.traversal.NodeIterator;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-
-import com.sun.org.apache.xpath.internal.CachedXPathAPI;
 
 /**
  * This implementation of {@link ServerConfigurator} will modify your JBossMQ
@@ -67,9 +66,9 @@ extends ServerConfiguratorJBoss
 			File jbossDeployDir = new File(getJFireServerConfigModule().getJ2ee().getJ2eeDeployBaseDirectory()).getParentFile().getAbsoluteFile();
 			File jbossConfDir = new File(jbossDeployDir.getParentFile(), "conf");
 			File jbossDeployJmsDir = new File(jbossDeployDir, "jms");
-	
+
 			boolean redeployJMS = false;
-	
+
 			// create the database
 			String databaseName = getJFireServerConfigModule().getDatabase().getDatabasePrefix() + "JBossMQ" + getJFireServerConfigModule().getDatabase().getDatabaseSuffix();
 			String databaseURL = getJFireServerConfigModule().getDatabase().getDatabaseURL(databaseName);
@@ -81,25 +80,25 @@ extends ServerConfiguratorJBoss
 			} catch (DatabaseAlreadyExistsException x) {
 				// the database already exists - ignore
 			}
-	
+
 			configureMySqlDsXml(jbossDeployDir, databaseName, databaseURL);
-			
+
 			boolean deletedDeploymentDescriptor = false;
 			deletedDeploymentDescriptor |= configureHsqldbJdbc2ServiceXml(jbossDeployJmsDir);
 			deletedDeploymentDescriptor |= configureHsqldbJdbcStateServiceXml(jbossDeployJmsDir);
 			deletedDeploymentDescriptor |= configureHsqldbDsXml(jbossDeployDir);
-			
+
 			if (deletedDeploymentDescriptor)
 				waitForServer();
-	
+
 			configureJfireJBossmqMysqlJdbcStateServiceXml(jbossDeployJmsDir);
 			configureJmsMysqlJdbc2Service(jbossDeployJmsDir);
 			configureEjbDeployerXml(jbossDeployDir);
 			configureLoginConfigXmlMySQL(jbossConfDir);
-			
+
 			if (redeployJMS)
 				redeployJms(jbossDeployDir, jbossDeployJmsDir);
-			
+
 		} catch(Exception e) {
 			throw new ServerConfigurationException("Server configuration failed in server configurator "+getClass().getName(), e);
 		}
@@ -153,7 +152,7 @@ extends ServerConfiguratorJBoss
 		String modifiedMarker = "!!!ModifiedByJFire!!!";
 		if (text.indexOf(modifiedMarker) < 0) {
 			backup(destFile);
-			
+
 			if (rebootOnDeployDirChanges)
 				setRebootRequired(true);
 

@@ -11,6 +11,7 @@ import java.io.UnsupportedEncodingException;
 import javax.xml.transform.TransformerException;
 
 import org.apache.log4j.Logger;
+import org.apache.xpath.CachedXPathAPI;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.serverconfigurator.ServerConfigurationException;
 import org.nightlabs.jfire.serverconfigurator.ServerConfigurator;
@@ -27,8 +28,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.traversal.NodeIterator;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-
-import com.sun.org.apache.xpath.internal.CachedXPathAPI;
 
 /**
  * This implementation of {@link ServerConfigurator} does the same as {@link ServerConfiguratorJBossMySQL} but

@@ -17,6 +17,7 @@ import java.util.regex.Pattern;
 import javax.xml.transform.TransformerException;
 
 import org.apache.log4j.Logger;
+import org.apache.xpath.CachedXPathAPI;
 import org.nightlabs.jfire.jboss.authentication.JFireServerLocalLoginModule;
 import org.nightlabs.jfire.jboss.authentication.JFireServerLoginModule;
 import org.nightlabs.jfire.serverconfigurator.ServerConfigurationException;
@@ -38,8 +39,6 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.traversal.NodeIterator;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-
-import com.sun.org.apache.xpath.internal.CachedXPathAPI;
 
 /**
  * This implementation of {@link ServerConfigurator} performs the following tasks in order
