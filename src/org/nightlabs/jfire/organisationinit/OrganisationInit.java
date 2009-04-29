@@ -1,10 +1,6 @@
 package org.nightlabs.jfire.organisationinit;
 
-import java.io.Serializable;
-
 import org.nightlabs.jfire.init.AbstractInit;
-import org.nightlabs.jfire.init.IDependency;
-import org.nightlabs.jfire.init.Resolution;
 
 public class OrganisationInit extends AbstractInit<OrganisationInit, OrganisationInitDependency>
 {
@@ -26,7 +22,7 @@ public class OrganisationInit extends AbstractInit<OrganisationInit, Organisatio
 
 	@Override
 	protected String getName() {
-	
+
 		return this.getClass().getSimpleName() + ": " + module + '/' + archive + '/' + bean + '#' + method
 			+ " (priority: " + priority + ")";
 	}
@@ -71,6 +67,7 @@ public class OrganisationInit extends AbstractInit<OrganisationInit, Organisatio
 	}
 }
 
+/*
 class OrganisationInitDependency implements IDependency<OrganisationInit>, Serializable
 {
 	private static final long serialVersionUID = 1L;
@@ -80,7 +77,7 @@ class OrganisationInitDependency implements IDependency<OrganisationInit>, Seria
 	private String bean;
 	private String method;
 	private Resolution resolution;
-	
+
 	public OrganisationInitDependency(String module, String archive, String bean, String method, Resolution res) {
 		this.module = module;
 		this.archive = archive;
@@ -120,7 +117,7 @@ class OrganisationInitDependency implements IDependency<OrganisationInit>, Seria
 	public void setModule(String module) {
 		this.module = module;
 	}
-	
+
 	@Override
 	public String toString() {
 		return this.getClass().getSimpleName() + ": " + module + '/'
@@ -130,8 +127,9 @@ class OrganisationInitDependency implements IDependency<OrganisationInit>, Seria
 	public Resolution getResolution() {
 		return resolution;
 	}
-	
+
 	public void setResolution(Resolution resolution) {
 		this.resolution = resolution;
 	}
 }
+*/
