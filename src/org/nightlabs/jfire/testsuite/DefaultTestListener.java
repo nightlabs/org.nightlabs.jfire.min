@@ -6,6 +6,7 @@ package org.nightlabs.jfire.testsuite;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringWriter;
 import java.text.DateFormat;
@@ -65,7 +66,7 @@ import org.w3c.dom.Node;
  *   <li>mail.from: The sender of the mail, default info@jfire.org</li>
  *   <li>mail.to: The recipients of the mail (,-separated list).</li>
  *   <li>mail.subject: The recipients of the mail (,-separated list), default "JFireTestSuite Testreport"</li>
- *   <li>mail.htmlReportXSL: The stylesheet to use to render the xml to the html mail body, default "htmlReport.xls"</li>
+ *   <li>mail.htmlReportXSL: The stylesheet to use to render the xml to the html mail body. If not defined or empty, the internal default resource "htmlReport.xsl" will be used.</li>
  * </ul>
  *
  * To override some settings without modifing the properties file you can alternatively
@@ -691,26 +692,41 @@ implements JFireTestListener
 	throws IOException, ModuleException, ParserConfigurationException, TransformerException
 	{
 		if (htmlFile == null) {
-			String xslFileName = getProperty("mail.htmlReportXSL", "htmlReport.xsl");
 			TransformerFactory factory = TransformerFactory.newInstance();
-			Transformer transformer = factory.newTransformer(new StreamSource(new File(JFireTestSuiteEAR.getEARDir(), xslFileName)));
+			Transformer transformer = null;
 
-			File tmpFileXml = getXmlFile();
+			InputStream internalHtmlReportXslInputStream = null;
+			try {
+				String xslFileName = getProperty("mail.htmlReportXSL", null);
+				if (xslFileName != null && xslFileName.length() > 0) {
+					File xslFile = new File(xslFileName);
+					transformer = factory.newTransformer(new StreamSource(xslFile));
+				}
+				else {
+					internalHtmlReportXslInputStream = DefaultTestListener.class.getResourceAsStream("htmlReport.xsl");
+					transformer = factory.newTransformer(new StreamSource(internalHtmlReportXslInputStream));
+				}
 
-			String html;
-			{
-				StringWriter writer = new StringWriter();
-				transformer.transform(new StreamSource(tmpFileXml), new StreamResult(writer));
-				writer.close();
-				html = writer.toString();
+				File tmpFileXml = getXmlFile();
+
+				String html;
+				{
+					StringWriter writer = new StringWriter();
+					transformer.transform(new StreamSource(tmpFileXml), new StreamResult(writer));
+					writer.close();
+					html = writer.toString();
+				}
+
+				File tmpFileHtml = new File(getTempDir(), getTempFilePrefix() + "report.html");
+				// delete on exit => cleaning up while at the same time keeping it for the developer to check (if he wants)
+				tmpFileHtml.deleteOnExit();
+
+				IOUtil.writeTextFile(tmpFileHtml, html);
+				htmlFile = tmpFileHtml;
+			} finally {
+				if (internalHtmlReportXslInputStream != null)
+					internalHtmlReportXslInputStream.close();
 			}
-
-			File tmpFileHtml = new File(getTempDir(), getTempFilePrefix() + "report.html");
-			// delete on exit => cleaning up while at the same time keeping it for the developer to check (if he wants)
-			tmpFileHtml.deleteOnExit();
-
-			IOUtil.writeTextFile(tmpFileHtml, html);
-			htmlFile = tmpFileHtml;
 		}
 		return htmlFile;
 	}
