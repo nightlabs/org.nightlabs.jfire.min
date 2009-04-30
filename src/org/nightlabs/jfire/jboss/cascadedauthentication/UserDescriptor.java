@@ -27,7 +27,6 @@
 package org.nightlabs.jfire.jboss.cascadedauthentication;
 
 import java.io.Serializable;
-import java.lang.reflect.Proxy;
 
 import org.nightlabs.util.Util;
 
@@ -38,51 +37,6 @@ class UserDescriptor
 implements Serializable
 {
 	public static final long serialVersionUID = 1L;
-
-	/**
-	 * @deprecated Not necessary anymore since {@link CascadedAuthenticationNamingContext} now uses its own {@link Proxy}.
-	 */
-	@Deprecated
-	protected static final String CONTEXT_KEY = "JFIRE_USER_DESCRIPTOR";
-
-	/**
-	 * @deprecated Not necessary anymore since {@link CascadedAuthenticationNamingContext} now uses its own {@link Proxy}.
-	 */
-	@Deprecated
-	private static ThreadLocal<UserDescriptor> userDescriptors = new ThreadLocal<UserDescriptor>();
-
-	/**
-	 * Clears the current user for current thread.
-	 * @deprecated Not necessary anymore since {@link CascadedAuthenticationNamingContext} now uses its own {@link Proxy}.
-	 */
-	@Deprecated
-	public static synchronized void unsetUserDescriptor()
-	{
-		userDescriptors.remove();
-	}
-
-	/**
-	 * Sets the user for the current thread. You must not forget to call unsetUser()
-	 * on the same thread as soon as you're done (best in a finally).
-	 *
-	 * @deprecated Not necessary anymore since {@link CascadedAuthenticationNamingContext} now uses its own {@link Proxy}.
-	 */
-	@Deprecated
-	public static synchronized void setUserDescriptor(UserDescriptor userDescriptor)
-	{
-		userDescriptors.set(userDescriptor);
-	}
-
-	/**
-	 * @return Returns the UserDescriptor that has been associated to
-	 * the current thread.
-	 * @deprecated Not necessary anymore since {@link CascadedAuthenticationNamingContext} now uses its own {@link Proxy}.
-	 */
-	@Deprecated
-	protected static synchronized UserDescriptor getUserDescriptor()
-	{
-		return userDescriptors.get();
-	}
 
 	public UserDescriptor(String userName, String password)
 	{
@@ -111,9 +65,15 @@ implements Serializable
 			Util.equals(o.userName, this.userName) &&
 			Util.equals(o.password, this.password);
 	}
+
 	@Override
 	public int hashCode()
 	{
 		return Util.hashCode(userName) ^ + Util.hashCode(password);
+	}
+
+	@Override
+	public String toString() {
+		return this.getClass().getName() + '[' + userName + ']';
 	}
 }

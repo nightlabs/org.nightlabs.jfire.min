@@ -311,26 +311,40 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 				logger.debug("(" + getIdentityHashStr() + ") logout: logging out " + jfirePrincipal);
 		}
 
+		if (jfirePrincipal == null) {
+			logger.warn(
+					"(" + getIdentityHashStr() + ") logout: Logging out without being logged in!!!",
+					new IllegalStateException("There is no jfirePrincipal! Either logout was already called or login+commit never happened!")
+			);
+
+			return super.logout();
+		}
+
 // copied more or less from JBoss' ClientLoginModule
 		SubjectContext subjectContext = SecurityAssociation.popSubjectContext();
 // end copy
 
-		if (jfirePrincipal != null && jfirePrincipal != subjectContext.getPrincipal()) {
-			if (logger.isDebugEnabled()) {
-				if (logger.isTraceEnabled())
-					logger.trace("(" + getIdentityHashStr() + ") logout: SecurityAssociation.popSubjectContext() did not reveal principal " + jfirePrincipal +  " but instead " + subjectContext.getPrincipal(), new Exception("StackTrace"));
-				else
-					logger.debug("(" + getIdentityHashStr() + ") logout: SecurityAssociation.popSubjectContext() did not reveal principal " + jfirePrincipal +  " but instead " + subjectContext.getPrincipal());
+		if (subjectContext == null) {
+			logger.warn("(" + getIdentityHashStr() + ") logout: SecurityAssociation.popSubjectContext() returned null!");
+		}
+		else {
+			if (jfirePrincipal != null && jfirePrincipal != subjectContext.getPrincipal()) {
+				if (logger.isDebugEnabled()) {
+					if (logger.isTraceEnabled())
+						logger.trace("(" + getIdentityHashStr() + ") logout: SecurityAssociation.popSubjectContext() did not reveal principal " + jfirePrincipal +  " but instead " + subjectContext.getPrincipal(), new Exception("StackTrace"));
+					else
+						logger.debug("(" + getIdentityHashStr() + ") logout: SecurityAssociation.popSubjectContext() did not reveal principal " + jfirePrincipal +  " but instead " + subjectContext.getPrincipal());
+				}
+
+				int counter = 0;
+				do {
+					++counter;
+					subjectContext = SecurityAssociation.popSubjectContext();
+
+					if (counter > 100)
+						throw new IllegalStateException("Popping " + counter + " times still did not reveal the principal we have pushed before!");
+				} while (jfirePrincipal != (subjectContext == null ? null : subjectContext.getPrincipal()));
 			}
-
-			int counter = 0;
-			do {
-				++counter;
-				subjectContext = SecurityAssociation.popSubjectContext();
-
-				if (counter > 100)
-					throw new IllegalStateException("Popping " + counter + " times still did not reveal the principal we have pushed before!");
-			} while (jfirePrincipal != subjectContext.getPrincipal());
 		}
 
 		subject.getPrincipals().remove(jfirePrincipal);

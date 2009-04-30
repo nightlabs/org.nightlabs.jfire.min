@@ -49,6 +49,7 @@ import org.jboss.security.SecurityAssociation;
 import org.nightlabs.j2ee.LoginData;
 import org.nightlabs.jfire.base.login.JFireLogin;
 import org.nightlabs.jfire.servermanager.j2ee.J2EEAdapter;
+import org.nightlabs.util.Util;
 
 /**
  * @author Marco Schulze - marco at nightlabs dot de
@@ -56,6 +57,7 @@ import org.nightlabs.jfire.servermanager.j2ee.J2EEAdapter;
 public class CascadedAuthenticationNamingContext implements Context
 {
 	private static final Logger logger = Logger.getLogger(CascadedAuthenticationNamingContext.class);
+	private static final boolean LOGIN_DURING_LOOKUP_ENABLED = false;
 
 	private Context delegate;
 	private UserDescriptor userDescriptor;
@@ -174,8 +176,15 @@ public class CascadedAuthenticationNamingContext implements Context
 		}
 	}
 
+	private static long invokeProxyMethod_invocationID = 0;
+	private static synchronized long next_invokeProxyMethod_invocationID() {
+		return ++invokeProxyMethod_invocationID;
+	}
+
 	protected Object invokeProxyMethod(Object wrappedProxy, Object wrappingProxy, Method method, Object[] args) throws Throwable
 	{
+		String invocationID = "invokeProxyMethod_" + Long.toHexString(next_invokeProxyMethod_invocationID());
+
 		// First of all, short-cut the local methods toString, hashCode and equals.
 		String methodName = method.getName();
 		if (
@@ -192,35 +201,49 @@ public class CascadedAuthenticationNamingContext implements Context
 		}
 
 
-		// Now, we find out our current identity to determine whether we need to change the identity.
-		Principal oldPrincipal = SecurityAssociation.getPrincipal();
-//		Object oldCredential = SecurityAssociation.getCredential();
+//		// Now, we find out our current identity to determine whether we need to change the identity.
+//		Principal oldPrincipal = SecurityAssociation.getPrincipal();
+////		Object oldCredential = SecurityAssociation.getCredential();
+//
+//		String oldUserName = oldPrincipal == null ? null : oldPrincipal.getName();
+//		if (oldUserName != null) {
+//			int idx = oldUserName.indexOf('?');
+//			if (idx >= 0)
+//				oldUserName = oldUserName.substring(0, idx);
+//		}
+//
+//		String newUserName = userDescriptor.getUserName();
+//		int idx = newUserName.indexOf('?');
+//		if (idx >= 0)
+//			newUserName = newUserName.substring(0, idx);
+//
+//		boolean changeIdentity = !newUserName.equals(oldUserName);
+//
+//		LoginContext loginContext = null;
+//		if (changeIdentity) {
+//			if (logger.isDebugEnabled()) {
+//				if (logger.isTraceEnabled()) {
+//					Principal principal = SecurityAssociation.getPrincipal();
+//					Principal callerPrincipal = SecurityAssociation.getCallerPrincipal();
+//					logger.trace("invokeProxyMethod["+invocationID+"]: Identity before loginContext.login(): principal=" + principal + " callerPrincipal=" + callerPrincipal);
+//				}
+//
+//				logger.debug("invokeProxyMethod["+invocationID+"]: Calling loginContext.login() to authenticate as " + userDescriptor.getUserName());
+//			}
+//
+//			LoginData loginData = new LoginData(userDescriptor.getUserName(), userDescriptor.getPassword());
+//			loginData.setDefaultValues();
+//
+//			loginContext = getJ2EEAdapter().createLoginContext(loginData.getSecurityProtocol(), new JFireLogin(loginData).getAuthCallbackHandler());
+//			loginContext.login();
+//		}
+		LoginDescriptor loginDescriptor = login(invocationID);
 
-		String oldUserName = oldPrincipal == null ? null : oldPrincipal.getName();
-		if (oldUserName != null) {
-			int idx = oldUserName.indexOf('?');
-			if (idx >= 0)
-				oldUserName = oldUserName.substring(0, idx);
-		}
-
-		String newUserName = userDescriptor.getUserName();
-		int idx = newUserName.indexOf('?');
-		if (idx >= 0)
-			newUserName = newUserName.substring(0, idx);
-
-		boolean changeIdentity = !newUserName.equals(oldUserName);
-
-		LoginData loginData = null;
-		LoginContext loginContext = null;
-		if (changeIdentity) {
-			if (logger.isDebugEnabled())
-				logger.debug("invokeProxyMethod: calling loginContext.login()");
-
-			loginData = new LoginData(userDescriptor.getUserName(), userDescriptor.getPassword());
-			loginData.setDefaultValues();
-
-			loginContext = getJ2EEAdapter().createLoginContext(loginData.getSecurityProtocol(), new JFireLogin(loginData).getAuthCallbackHandler());
-			loginContext.login();
+		if (logger.isTraceEnabled()) {
+			Principal principal = SecurityAssociation.getPrincipal();
+			Principal callerPrincipal = SecurityAssociation.getCallerPrincipal();
+			logger.trace("invokeProxyMethod["+invocationID+"]: Identity before delegation: principal=" + principal + " callerPrincipal=" + callerPrincipal);
+			logger.trace("invokeProxyMethod["+invocationID+"]: Method to be called: " + method.getDeclaringClass().getName() + '.' + method.getName());
 		}
 
 		Object result;
@@ -229,15 +252,28 @@ public class CascadedAuthenticationNamingContext implements Context
 			result = method.invoke(wrappedProxy, args);
 
 		} finally {
-			if (loginContext != null) {
-				// We have to logout, because we must use restore-login-identity, since it otherwise doesn't
-				// work with a mix of local beans (e.g. StoreManagerHelperLocal) and foreign-organisation
-				// non-local beans (e.g. TradeManager on another organisation).
-				if (logger.isDebugEnabled())
-					logger.debug("invoke: calling loginContext.logout()");
+			if (logger.isTraceEnabled()) {
+				Principal principal = SecurityAssociation.getPrincipal();
+				Principal callerPrincipal = SecurityAssociation.getCallerPrincipal();
+				logger.trace("invokeProxyMethod["+invocationID+"]: Identity after delegation: principal=" + principal + " callerPrincipal=" + callerPrincipal);
+			}
 
-				loginContext.logout();
-			} // if (loginContext != null) {
+			logout(invocationID, loginDescriptor);
+//			if (loginContext != null) {
+//				// We have to logout, because we must use restore-login-identity, since it otherwise doesn't
+//				// work with a mix of local beans (e.g. StoreManagerHelperLocal) and foreign-organisation
+//				// non-local beans (e.g. TradeManager on another organisation).
+//				if (logger.isDebugEnabled())
+//					logger.debug("invokeProxyMethod["+invocationID+"]: Calling loginContext.logout()");
+//
+//				loginContext.logout();
+//
+//				if (logger.isTraceEnabled()) {
+//					Principal principal = SecurityAssociation.getPrincipal();
+//					Principal callerPrincipal = SecurityAssociation.getCallerPrincipal();
+//					logger.trace("invokeProxyMethod["+invocationID+"]: Identity after loginContext.logout(): principal=" + principal + " callerPrincipal=" + callerPrincipal);
+//				}
+//			} // if (loginContext != null) {
 		}
 
 		return wrapProxy(result);
@@ -266,17 +302,131 @@ public class CascadedAuthenticationNamingContext implements Context
 		}
 	}
 
+	private static final class LoginDescriptor {
+		public Principal previousPrincipal;
+		public Principal previousCallerPrincipal;
+		public LoginContext loginContext;
+	}
+
+	private LoginDescriptor login(String invocationID)
+	{
+		try {
+			// Now, we find out our current identity to determine whether we need to change the identity.
+			Principal oldPrincipal = SecurityAssociation.getPrincipal();
+			LoginDescriptor loginDescriptor = new LoginDescriptor();
+			loginDescriptor.previousPrincipal = oldPrincipal;
+			loginDescriptor.previousCallerPrincipal = SecurityAssociation.getCallerPrincipal();
+	//		Object oldCredential = SecurityAssociation.getCredential();
+
+			String oldUserName = oldPrincipal == null ? null : oldPrincipal.getName();
+			if (oldUserName != null) {
+				int idx = oldUserName.indexOf('?');
+				if (idx >= 0)
+					oldUserName = oldUserName.substring(0, idx);
+			}
+
+			String newUserName = userDescriptor.getUserName();
+			int idx = newUserName.indexOf('?');
+			if (idx >= 0)
+				newUserName = newUserName.substring(0, idx);
+
+			boolean changeIdentity = !newUserName.equals(oldUserName);
+
+			LoginContext loginContext = null;
+			if (changeIdentity) {
+				if (logger.isDebugEnabled()) {
+					if (logger.isTraceEnabled()) {
+						Principal principal = SecurityAssociation.getPrincipal();
+						Principal callerPrincipal = SecurityAssociation.getCallerPrincipal();
+						logger.trace("login["+invocationID+"]: Identity before loginContext.login(): principal=" + principal + " callerPrincipal=" + callerPrincipal);
+					}
+
+					logger.debug("login["+invocationID+"]: Calling loginContext.login() to authenticate as " + userDescriptor.getUserName());
+				}
+
+				LoginData loginData = new LoginData(userDescriptor.getUserName(), userDescriptor.getPassword());
+				loginData.setDefaultValues();
+
+				loginContext = getJ2EEAdapter().createLoginContext(loginData.getSecurityProtocol(), new JFireLogin(loginData).getAuthCallbackHandler());
+				loginContext.login();
+			}
+
+			loginDescriptor.loginContext = loginContext;
+			return loginDescriptor;
+		} catch (RuntimeException x) {
+			throw x;
+		} catch (Exception x) {
+			throw new RuntimeException(x);
+		}
+	}
+
+	private void logout(String invocationID, LoginDescriptor loginDescriptor)
+	{
+		if (loginDescriptor == null)
+			return;
+
+		try {
+			LoginContext loginContext = loginDescriptor.loginContext;
+			if (loginContext != null) {
+				// We have to logout, because we must use restore-login-identity, since it otherwise doesn't
+				// work with a mix of local beans (e.g. StoreManagerHelperLocal) and foreign-organisation
+				// non-local beans (e.g. TradeManager on another organisation).
+				if (logger.isDebugEnabled())
+					logger.debug("logout["+invocationID+"]: Calling loginContext.logout()");
+
+				loginContext.logout();
+
+				if (logger.isTraceEnabled()) {
+					Principal principal = SecurityAssociation.getPrincipal();
+					Principal callerPrincipal = SecurityAssociation.getCallerPrincipal();
+					logger.trace("logout["+invocationID+"]: Identity after loginContext.logout(): principal=" + principal + " callerPrincipal=" + callerPrincipal);
+				}
+			} // if (loginContext != null) {
+		} catch (RuntimeException x) {
+			throw x;
+		} catch (Exception x) {
+			throw new RuntimeException(x);
+		}
+
+		Principal currentPrincipal = SecurityAssociation.getPrincipal();
+		if (!Util.equals(currentPrincipal, loginDescriptor.previousPrincipal))
+			throw new IllegalStateException("logout: Principal after logout is not equal to Principal before login! expected=" + loginDescriptor.previousPrincipal + " found=" + currentPrincipal);
+
+		Principal currentCallerPrincipal = SecurityAssociation.getCallerPrincipal();
+		if (!Util.equals(currentCallerPrincipal, loginDescriptor.previousCallerPrincipal))
+			throw new IllegalStateException("logout: CallerPrincipal after logout is not equal to CallerPrincipal before login! expected=" + loginDescriptor.previousCallerPrincipal + " found=" + currentCallerPrincipal);
+	}
 
 	@Override
 	public Object lookup(Name name) throws NamingException
 	{
-		return wrapProxy(delegate.lookup(name));
+		LoginDescriptor loginDescriptor = null;
+		String invocationID = null;
+		if (LOGIN_DURING_LOOKUP_ENABLED) {
+			invocationID = "lookupN_" + Long.toHexString(next_invokeProxyMethod_invocationID());
+			loginDescriptor = login(invocationID);
+		}
+		try {
+			return wrapProxy(delegate.lookup(name));
+		} finally {
+			logout(invocationID, loginDescriptor);
+		}
 	}
 
 	@Override
 	public Object lookup(String name) throws NamingException
 	{
-		return wrapProxy(delegate.lookup(name));
+		LoginDescriptor loginDescriptor = null;
+		String invocationID = null;
+		if (LOGIN_DURING_LOOKUP_ENABLED) {
+			invocationID = "lookupS_" + Long.toHexString(next_invokeProxyMethod_invocationID());
+			loginDescriptor = login(invocationID);
+		}
+		try {
+			return wrapProxy(delegate.lookup(name));
+		} finally {
+			logout(invocationID, loginDescriptor);
+		}
 	}
 
 	@Override
@@ -378,13 +528,33 @@ public class CascadedAuthenticationNamingContext implements Context
 	@Override
 	public Object lookupLink(Name name) throws NamingException
 	{
-		return wrapProxy(delegate.lookupLink(name));
+		LoginDescriptor loginDescriptor = null;
+		String invocationID = null;
+		if (LOGIN_DURING_LOOKUP_ENABLED) {
+			invocationID = "lookupLinkN_" + Long.toHexString(next_invokeProxyMethod_invocationID());
+			loginDescriptor = login(invocationID);
+		}
+		try {
+			return wrapProxy(delegate.lookupLink(name));
+		} finally {
+			logout(invocationID, loginDescriptor);
+		}
 	}
 
 	@Override
 	public Object lookupLink(String name) throws NamingException
 	{
-		return wrapProxy(delegate.lookupLink(name));
+		LoginDescriptor loginDescriptor = null;
+		String invocationID = null;
+		if (LOGIN_DURING_LOOKUP_ENABLED) {
+			invocationID = "lookupLinkS_" + Long.toHexString(next_invokeProxyMethod_invocationID());
+			loginDescriptor = login(invocationID);
+		}
+		try {
+			return wrapProxy(delegate.lookupLink(name));
+		} finally {
+			logout(invocationID, loginDescriptor);
+		}
 	}
 
 	@Override
