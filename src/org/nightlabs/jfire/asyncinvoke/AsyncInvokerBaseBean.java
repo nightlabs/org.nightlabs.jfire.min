@@ -26,6 +26,7 @@
 
 package org.nightlabs.jfire.asyncinvoke;
 
+import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.jms.ObjectMessage;
 import javax.naming.InitialContext;
@@ -46,7 +47,8 @@ import org.nightlabs.jfire.servermanager.j2ee.J2EEAdapter;
  * @author Marco Schulze - marco at nightlabs dot de
  */
 public abstract class AsyncInvokerBaseBean
-implements javax.ejb.MessageDrivenBean, javax.jms.MessageListener
+//implements javax.ejb.MessageDrivenBean, javax.jms.MessageListener
+implements javax.jms.MessageListener
 {
 	private static final long serialVersionUID = 1L;
 
@@ -57,16 +59,8 @@ implements javax.ejb.MessageDrivenBean, javax.jms.MessageListener
 		return Logger.getLogger(this.getClass());
 	}
 
+	@Resource
 	protected javax.ejb.MessageDrivenContext messageContext = null;
-
-	/**
-	 * Required method for container to set context.
-	 */
-	public void setMessageDrivenContext(javax.ejb.MessageDrivenContext messageContext)
-	throws javax.ejb.EJBException
-	{
-		this.messageContext = messageContext;
-	}
 
 	/**
 	 * Required creation method for message-driven beans.

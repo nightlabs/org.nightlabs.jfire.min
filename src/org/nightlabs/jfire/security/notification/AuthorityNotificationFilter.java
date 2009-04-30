@@ -4,6 +4,11 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.jdo.annotations.IdentityType;
+import javax.jdo.annotations.Inheritance;
+import javax.jdo.annotations.InheritanceStrategy;
+import javax.jdo.annotations.PersistenceCapable;
+
 import org.apache.log4j.Logger;
 import org.nightlabs.jdo.ObjectIDUtil;
 import org.nightlabs.jfire.jdo.notification.DirtyObjectID;
@@ -16,11 +21,6 @@ import org.nightlabs.jfire.security.id.AuthorityID;
 import org.nightlabs.jfire.security.id.AuthorizedObjectID;
 import org.nightlabs.jfire.security.id.AuthorizedObjectRefID;
 import org.nightlabs.jfire.security.id.UserLocalID;
-
-import javax.jdo.annotations.InheritanceStrategy;
-import javax.jdo.annotations.Inheritance;
-import javax.jdo.annotations.PersistenceCapable;
-import javax.jdo.annotations.IdentityType;
 
 /**
  * @author marco schulze - marco at nightlabs dot de
@@ -35,6 +35,7 @@ import javax.jdo.annotations.IdentityType;
 @Inheritance(strategy=InheritanceStrategy.SUPERCLASS_TABLE)
 public class AuthorityNotificationFilter extends NotificationFilter
 {
+	private static final long serialVersionUID = 1L;
 	private static final Logger logger = Logger.getLogger(AuthorityNotificationFilter.class);
 
 	/**

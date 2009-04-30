@@ -27,11 +27,11 @@
 package org.nightlabs.jfire.asyncinvoke;
 
 import javax.ejb.ActivationConfigProperty;
-import javax.ejb.TransactionManagement;
-import javax.ejb.TransactionManagementType;
+import javax.ejb.MessageDriven;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
-import javax.ejb.MessageDriven;
+import javax.ejb.TransactionManagement;
+import javax.ejb.TransactionManagementType;
 
 
 /**
@@ -51,14 +51,22 @@ import javax.ejb.MessageDriven;
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 @TransactionManagement(TransactionManagementType.CONTAINER)
 @MessageDriven(
-	name="jfire/mdb/JFireBaseBean/AsyncInvokerUndeliverableCallback",
-	activationConfig={@ActivationConfigProperty(
-		propertyName="acknowledgeMode",
-		propertyValue="Auto-acknowledge"), @ActivationConfigProperty(
-		propertyName="destinationType",
-		propertyValue="javax.jms.Queue"), @ActivationConfigProperty(
-		propertyName="destination",
-		propertyValue="queue/jfire/JFireBaseBean/AsyncInvokerUndeliverableCallbackQueue")})
+		name="jfire/mdb/JFireBaseBean/AsyncInvokerUndeliverableCallback",
+		activationConfig={
+				@ActivationConfigProperty(
+						propertyName="acknowledgeMode",
+						propertyValue="Auto-acknowledge"
+				),
+				@ActivationConfigProperty(
+						propertyName="destinationType",
+						propertyValue="javax.jms.Queue"
+				),
+				@ActivationConfigProperty(
+						propertyName="destination",
+						propertyValue="queue/jfire/JFireBaseBean/AsyncInvokerUndeliverableCallbackQueue"
+				)
+		}
+)
 public class AsyncInvokerUndeliverableCallbackBean
 extends AsyncInvokerBaseBean
 {

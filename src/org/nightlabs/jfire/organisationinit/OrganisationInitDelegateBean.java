@@ -41,6 +41,7 @@ import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.base.InvokeUtil;
 import org.nightlabs.jfire.crossorganisationregistrationinit.Context;
 import org.nightlabs.jfire.crossorganisationregistrationinit.CrossOrganisationRegistrationInit;
+import org.nightlabs.jfire.security.User;
 
 /**
  * @ejb.bean name="jfire/ejb/JFireBaseBean/OrganisationInitDelegate"
@@ -70,6 +71,10 @@ implements OrganisationInitDelegateRemote // , OrganisationInitDelegateLocal
 	throws Exception
 	{
 		Logger logger = Logger.getLogger(OrganisationInitDelegateBean.class);
+
+		if (!User.USER_ID_SYSTEM.equals(getUserID()))
+			throw new IllegalStateException("Method invokeOrganisationInitInNestedTransaction(...) is called by illegal user! Should be a system user but is: " + getPrincipal().getName());
+
 		InitialContext initCtx = new InitialContext();
 		try {
 			if (logger.isDebugEnabled())
@@ -93,6 +98,9 @@ implements OrganisationInitDelegateRemote // , OrganisationInitDelegateLocal
 	public void invokeCrossOrganisationRegistrationInitInNestedTransaction(CrossOrganisationRegistrationInit init, Context context)
 	throws Exception
 	{
+		if (!User.USER_ID_SYSTEM.equals(getUserID()))
+			throw new IllegalStateException("Method invokeOrganisationInitInNestedTransaction(...) is called by illegal user! Should be a system user but is: " + getPrincipal().getName());
+
 		Logger logger = Logger.getLogger(OrganisationInitDelegateBean.class);
 		InitialContext initCtx = new InitialContext();
 		try {
