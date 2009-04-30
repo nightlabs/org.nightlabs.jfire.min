@@ -110,15 +110,17 @@ public class JFireTestSuiteEAR
 	private static void readJFireTestSuitePropertiesRecursively(
 			Properties jfireTestSuiteProperties,
 			File propertiesFile, // null in case of EAR-file, then the following arg is assigned
-			InputStream propertiesInputStream, // null in case of EAR-directory, then the previous argument is assigned
+			String propertiesInputStreamName, InputStream propertiesInputStream, // null in case of EAR-directory, then the previous argument is assigned
 			Set<File> includeFilesProcessed
 	)
 	throws IOException
 	{
 		// read the properties file
 		Properties props;
-		if (propertiesFile != null)
+		if (propertiesFile != null) {
+			propertiesInputStreamName = propertiesFile.getAbsolutePath();
 			props = readJFireTestSuitePropertiesFile(propertiesFile);
+		}
 		else {
 			props = new Properties();
 			props.load(propertiesInputStream);
@@ -130,16 +132,16 @@ public class JFireTestSuiteEAR
 		// recursively process further include files which are defined in the include file we just read
 		for (File includeFile : getIncludeFilesFromProperties(props)) {
 			if (!includeFile.exists()) {
-				logger.info("readJFireTestSuitePropertiesRecursively: includeFile \"" + includeFile.getAbsolutePath() + "\" defined in propertiesFile \"" + propertiesFile.getAbsolutePath() + "\" does not exist!");
+				logger.info("readJFireTestSuitePropertiesRecursively: includeFile \"" + includeFile.getAbsolutePath() + "\" defined in propertiesFile \"" + propertiesInputStreamName + "\" does not exist!");
 				continue;
 			}
 
 			if (!includeFilesProcessed.add(includeFile)) {
-				logger.warn("readJFireTestSuitePropertiesRecursively: includeFile \"" + includeFile.getAbsolutePath() + "\" defined in propertiesFile \"" + propertiesFile.getAbsolutePath() + "\" has already been processed! Skipping in order to prevent circular include loops!");
+				logger.warn("readJFireTestSuitePropertiesRecursively: includeFile \"" + includeFile.getAbsolutePath() + "\" defined in propertiesFile \"" + propertiesInputStreamName + "\" has already been processed! Skipping in order to prevent circular include loops!");
 				continue;
 			}
 
-			readJFireTestSuitePropertiesRecursively(jfireTestSuiteProperties, includeFile, null, includeFilesProcessed);
+			readJFireTestSuitePropertiesRecursively(jfireTestSuiteProperties, includeFile, null, null, includeFilesProcessed);
 		}
 	}
 
@@ -159,6 +161,7 @@ public class JFireTestSuiteEAR
 
 						File jfireTestSuitePropertiesRealFile = null; // only assigned if the EAR is a directory and the properties thus a real file.
 						InputStream jfireTestSuitePropertiesInputStream = null; // only assigned if the EAR is a JAR file.
+						String jfireTestSuitePropertiesInputStreamName = null;
 
 						File earFile = getEARFile();
 						if (earFile.isDirectory()) {
@@ -176,6 +179,7 @@ public class JFireTestSuiteEAR
 								throw new FileNotFoundException("The file \"" + jfireTestSuitePropertiesRelativePath + "\" does not exist within the EAR jar-file \"" + earFile.getAbsolutePath() + "\"!");
 
 							jfireTestSuitePropertiesInputStream = earJarFile.getInputStream(je);
+							jfireTestSuitePropertiesInputStreamName = earFile.getAbsolutePath() + '/' + je.getName();
 						}
 
 						Properties newJFireTestSuiteProps = new Properties();
@@ -186,6 +190,7 @@ public class JFireTestSuiteEAR
 						readJFireTestSuitePropertiesRecursively(
 								newJFireTestSuiteProps,
 								jfireTestSuitePropertiesRealFile, // is null, if it is an EAR-file (i.e. only assigned in case of EAR-directory).
+								jfireTestSuitePropertiesInputStreamName,
 								jfireTestSuitePropertiesInputStream, // is null, if it is an EAR-directory (i.e. only assigned in case of EAR-JAR-file).
 								includeFilesProcessed);
 
