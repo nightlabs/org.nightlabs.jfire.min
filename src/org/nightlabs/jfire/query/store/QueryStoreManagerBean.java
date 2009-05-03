@@ -53,14 +53,6 @@ implements QueryStoreManagerRemote
 	 */
 	private static final Logger logger = Logger.getLogger(QueryStoreManagerBean.class);
 
-	/* (non-Javadoc)
-	 * @see org.nightlabs.jfire.query.store.QueryStoreManagerRemote#ping(java.lang.String)
-	 */
-	@Override
-	public String ping(String message) {
-		return super.ping(message);
-	}
-
 	/**
 	 *
 	 * @ejb.interface-method
