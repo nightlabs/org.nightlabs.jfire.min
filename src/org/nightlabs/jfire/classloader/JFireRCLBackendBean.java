@@ -58,17 +58,6 @@ implements JFireRCLBackendRemote
 	private static final long serialVersionUID = 1L;
 	private static final Logger logger = Logger.getLogger(JFireRCLBackendBean.class);
 
-//	@Override
-//	public void setSessionContext(SessionContext sessionContext)
-//	throws EJBException, RemoteException
-//	{
-//		super.setSessionContext(sessionContext);
-//	}
-//	@Override
-//	public void unsetSessionContext() {
-//		super.unsetSessionContext();
-//	}
-
 	/**
 	 * @ejb.create-method
 	 * @ejb.permission role-name="_Guest_"

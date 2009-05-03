@@ -6,7 +6,7 @@ import java.util.Map;
 import javax.ejb.Remote;
 
 @Remote
-public interface JFireRCLBackendRemote 
+public interface JFireRCLBackendRemote
 {
 	/**
 	 * @param rmd the meta-data describing the requested resource.
@@ -30,4 +30,6 @@ public interface JFireRCLBackendRemote
 	 * @return The timestamp of the map returned by {@link #getResourcesMetaDataMapBytes()}.
 	 */
 	long getResourcesMetaDataMapBytesTimestamp() throws ClassLoaderException;
+
+	String ping(String message);
 }
