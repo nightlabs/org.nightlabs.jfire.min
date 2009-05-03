@@ -37,7 +37,7 @@ import org.nightlabs.jfire.servermanager.JFireServerManagerUtil;
 public class JFireTestSuiteEAR
 {
 	private static final Logger logger = Logger.getLogger(JFireTestSuiteEAR.class);
-	public static final String MODULE_NAME = "JFireTestSuiteEAR";
+	public static final String MODULE_NAME = JFireTestSuiteEAR.class.getSimpleName();
 
 	protected JFireTestSuiteEAR() {}
 
