@@ -43,16 +43,6 @@ implements TimerManagerRemote, TimerManagerLocal
 	private static final long serialVersionUID = 1L;
 	private static final Logger logger = Logger.getLogger(TimerManagerBean.class);
 
-	/* (non-Javadoc)
-	 * @see org.nightlabs.jfire.timer.TimerManagerRemote#ping(java.lang.String)
-	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
-	@RolesAllowed("_Guest_")
-	@Override
-	public String ping(String message) {
-		return super.ping(message);
-	}
-
 	private static final String[] FETCH_GROUPS_TASK = new String[] {
 		FetchPlan.DEFAULT,
 		Task.FETCH_GROUP_USER,

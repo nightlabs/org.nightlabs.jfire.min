@@ -67,16 +67,6 @@ implements JDOManagerRemote
 	private static final Logger logger = Logger.getLogger(JDOManagerBean.class);
 
 	/* (non-Javadoc)
-	 * @see org.nightlabs.jfire.jdo.JDOManagerRemote#ping(java.lang.String)
-	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
-	@RolesAllowed("_Guest_")
-	@Override
-	public String ping(String message) {
-		return super.ping(message);
-	}
-
-	/* (non-Javadoc)
 	 * @see org.nightlabs.jfire.jdo.JDOManagerRemote#getPersistenceCapableClassName(java.lang.Object)
 	 */
 	@RolesAllowed("_Guest_")

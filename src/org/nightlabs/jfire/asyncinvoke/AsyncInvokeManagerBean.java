@@ -112,14 +112,4 @@ implements AsyncInvokeManagerRemote
 			pm.close();
 		}
 	}
-
-	/* (non-Javadoc)
-	 * @see org.nightlabs.jfire.asyncinvoke.AsyncInvokeManagerRemote#ping(java.lang.String)
-	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
-	@RolesAllowed("_Guest_")
-	@Override
-	public String ping(String message) {
-		return super.ping(message);
-	}
 }

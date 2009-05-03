@@ -102,16 +102,6 @@ implements JFireSecurityManagerRemote
 	private static final long serialVersionUID = 1L;
 	private static final Logger logger = Logger.getLogger(JFireSecurityManagerBean.class);
 
-	/* (non-Javadoc)
-	 * @see org.nightlabs.jfire.security.JFireSecurityManagerRemote#ping(java.lang.String)
-	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
-	@RolesAllowed("_Guest_")
-	@Override
-	public String ping(String message) {
-		return super.ping(message);
-	}
-
 	private static final boolean ASSERT_CONSISTENCY_BEFORE = false;
 	private static final boolean ASSERT_CONSISTENCY_AFTER = false;
 

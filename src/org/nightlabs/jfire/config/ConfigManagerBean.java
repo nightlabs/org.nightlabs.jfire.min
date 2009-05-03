@@ -716,15 +716,4 @@ public class ConfigManagerBean extends BaseSessionBeanImpl implements ConfigMana
 			pm.close();
 		}
 	}
-
-
-	/* (non-Javadoc)
-	 * @see org.nightlabs.jfire.config.ConfigManagerRemote#ping(java.lang.String)
-	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
-	@RolesAllowed("_Guest_")
-	@Override
-	public String ping(String message) {
-		return super.ping(message);
-	}
 }

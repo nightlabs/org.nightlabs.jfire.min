@@ -62,16 +62,6 @@ extends BaseSessionBeanImpl implements PersistentNotificationEJBRemote
 	private static final Logger logger = Logger.getLogger(PersistentNotificationEJBBean.class);
 
 	/* (non-Javadoc)
-	 * @see org.nightlabs.jfire.jdo.notification.persistent.PersistentNotificationEJBRemote#ping(java.lang.String)
-	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
-	@RolesAllowed("_Guest_")
-	@Override
-	public String ping(String message) {
-		return super.ping(message);
-	}
-
-	/* (non-Javadoc)
 	 * @see org.nightlabs.jfire.jdo.notification.persistent.PersistentNotificationEJBRemote#initialise()
 	 */
 	@TransactionAttribute(TransactionAttributeType.REQUIRED)

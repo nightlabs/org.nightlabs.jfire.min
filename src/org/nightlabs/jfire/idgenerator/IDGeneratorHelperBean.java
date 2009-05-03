@@ -54,16 +54,6 @@ extends BaseSessionBeanImpl implements IDGeneratorHelperRemote, IDGeneratorHelpe
 	private static final Logger logger = Logger.getLogger(IDGeneratorHelperBean.class);
 	private static final long serialVersionUID = 1L;
 
-	/* (non-Javadoc)
-	 * @see org.nightlabs.jfire.idgenerator.IDGeneratorHelperRemote#ping(java.lang.String)
-	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
-	@RolesAllowed("_Guest_")
-	@Override
-	public String ping(String message) {
-		return super.ping(message);
-	}
-
 	public static final long LIMIT_LOG_WARN = Long.MAX_VALUE / 10 * 8; // log a warning above 80 %
 	public static final long LIMIT_LOG_ERROR = Long.MAX_VALUE / 10 * 9; // log an error above 90 %
 	public static final long LIMIT_LOG_FATAL = Long.MAX_VALUE / 100 * 95; // log an error above 95 %

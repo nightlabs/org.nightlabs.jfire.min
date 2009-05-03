@@ -65,16 +65,6 @@ public class WorkstationManagerBean extends BaseSessionBeanImpl implements Works
 	private static final long serialVersionUID = 1L;
 
 	/* (non-Javadoc)
-	 * @see org.nightlabs.jfire.workstation.WorkstationManagerRemote#ping(java.lang.String)
-	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
-	@RolesAllowed("_Guest_")
-	@Override
-	public String ping(String message) {
-		return super.ping(message);
-	}
-
-	/* (non-Javadoc)
 	 * @see org.nightlabs.jfire.workstation.WorkstationManagerRemote#storeWorkstation(org.nightlabs.jfire.workstation.Workstation, boolean, java.lang.String[], int)
 	 */
 	@TransactionAttribute(TransactionAttributeType.REQUIRED)

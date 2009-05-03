@@ -1040,10 +1040,4 @@ public class OrganisationManagerBean
 		}
 	}
 
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
-	@RolesAllowed("_Guest_")
-	@Override
-	public String ping(String message) {
-		return super.ping(message);
-	}
 }

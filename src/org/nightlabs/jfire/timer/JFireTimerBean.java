@@ -49,16 +49,6 @@ implements TimedObject, JFireTimerRemote
 	 */
 	private static final Logger logger = Logger.getLogger(JFireTimerBean.class);
 
-	/* (non-Javadoc)
-	 * @see org.nightlabs.jfire.timer.JFireTimerRemote#ping(java.lang.String)
-	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
-	@RolesAllowed("_Guest_")
-	@Override
-	public String ping(String message) {
-		return super.ping(message);
-	}
-
 	@EJB
 	TimerManagerLocal timerManagerLocal;
 

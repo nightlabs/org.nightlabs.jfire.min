@@ -236,14 +236,4 @@ implements EditLockManagerRemote, EditLockManagerLocal
 			pm.close();
 		}
 	}
-
-	/* (non-Javadoc)
-	 * @see org.nightlabs.jfire.editlock.EditLockManagerRemote#ping(java.lang.String)
-	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
-	@RolesAllowed("_Guest_")
-	@Override
-	public String ping(String message) {
-		return super.ping(message);
-	}
 }

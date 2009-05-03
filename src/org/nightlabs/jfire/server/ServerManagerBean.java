@@ -58,16 +58,6 @@ public class ServerManagerBean
 	private static final long serialVersionUID = 1L;
 
 	/* (non-Javadoc)
-	 * @see org.nightlabs.jfire.server.ServerManagerRemote#ping(java.lang.String)
-	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
-	@RolesAllowed("_Guest_")
-	@Override
-	public String ping(String message) {
-		return super.ping(message);
-	}
-
-	/* (non-Javadoc)
 	 * @see org.nightlabs.jfire.server.ServerManagerRemote#isNewServerNeedingSetup()
 	 */
 	@RolesAllowed("_Guest_")

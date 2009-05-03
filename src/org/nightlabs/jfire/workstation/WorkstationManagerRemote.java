@@ -3,11 +3,14 @@ package org.nightlabs.jfire.workstation;
 import java.util.List;
 import java.util.Set;
 
+import javax.ejb.Remote;
+
 import org.nightlabs.jdo.query.QueryCollection;
 import org.nightlabs.jfire.workstation.id.WorkstationID;
 import org.nightlabs.jfire.workstation.search.WorkstationQuery;
 
-public interface WorkstationManagerRemote 
+@Remote
+public interface WorkstationManagerRemote
 {
 	String ping(String message);
 

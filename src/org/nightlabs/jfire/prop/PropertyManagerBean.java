@@ -85,16 +85,6 @@ public class PropertyManagerBean extends BaseSessionBeanImpl implements Property
 	private static final Logger logger = Logger.getLogger(PropertyManagerBean.class);
 
 	/* (non-Javadoc)
-	 * @see org.nightlabs.jfire.prop.PropertyManagerRemote#ping(java.lang.String)
-	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
-	@RolesAllowed("_Guest_")
-	@Override
-	public String ping(String message) {
-		return super.ping(message);
-	}
-
-	/* (non-Javadoc)
 	 * @see org.nightlabs.jfire.prop.PropertyManagerRemote#getFullStruct(java.lang.String, java.lang.String, java.lang.String, java.lang.String[], int)
 	 */
 	@TransactionAttribute(TransactionAttributeType.REQUIRED)
