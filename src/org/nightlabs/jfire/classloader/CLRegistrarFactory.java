@@ -67,14 +67,14 @@ public class CLRegistrarFactory
 	 * LOG4J logger used by this class
 	 */
 	private static final Logger logger = Logger.getLogger(CLRegistrarFactory.class);
-	
+
 	protected CLRegistryCfMod clRegistryCfMod;
 
 	public CLRegistrarFactory(CLRegistryCfMod _clRegistryCfMod)
 	{
 		this.clRegistryCfMod = _clRegistryCfMod;
 	}
-	
+
 	protected boolean loaded = false;
 
 	/**
@@ -101,7 +101,7 @@ public class CLRegistrarFactory
 	 *
 	 * @param name
 	 * @return
-	 * @throws XMLReadException 
+	 * @throws XMLReadException
 	 * @throws IOException
 	 */
 	protected synchronized List<ResourceMetaData> getResourcesMetaData(String name) throws XMLReadException, IOException
@@ -131,7 +131,7 @@ public class CLRegistrarFactory
 		resourcesMetaDataMapBytes_timestamp = System.currentTimeMillis();
 		return resourcesMetaDataMapBytes;
 	}
-	
+
 	protected synchronized long getResourcesMetaDataMapBytesTimestamp() throws XMLReadException, IOException
 	{
 		getResourcesMetaDataMapBytes(); // to initialize our byte array and its timestamp
@@ -208,7 +208,7 @@ public class CLRegistrarFactory
 	 * @param repository
 	 * @param directory
 	 * @throws XMLReadException
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	protected void scanDirectory(ResourceRepository repository, File directory, CLRepositoryMan clRepositoryMan)
 		throws XMLReadException, IOException
@@ -217,7 +217,7 @@ public class CLRegistrarFactory
 			throw new IllegalArgumentException("directory \""+directory.getAbsolutePath()+"\" is not a directory!");
 
 		File absoluteRepositoryFile = new File(repository.getPath()).getAbsoluteFile();
-		
+
 //	 read all CL Repository XML files, we have in the current directory
 		if (clRepositoryFileFilter == null)
 			clRepositoryFileFilter = new CLRepositoryFileFilter();
@@ -303,7 +303,7 @@ public class CLRegistrarFactory
 	public static final String[] jarFileExts = new String[] {
 			".jar",
 			".rar"};
-	
+
 	/**
 	 * This method scans a jar library and registers all resources from it. If it finds
 	 * other jar files within the current lib, it extracts them to the temp repository
@@ -407,7 +407,7 @@ public class CLRegistrarFactory
 
 						clRepositoryMan.writeCLRepositoryXML(
 								new File(tempExtractedJar.getParent(), CLRepositoryFileFilter.CLREPOSITORYFILESUFFIX),
-								"data.jar", false);
+								"data.jar", je.getName(), false);
 
 						tempJarFiles.add(tempExtractedJar.getParentFile());
 					} // if (isJar) {
@@ -444,13 +444,13 @@ public class CLRegistrarFactory
 			try {
 				if (rmd.getJar() == null) {
 					File f = new File(repository.getPath(), rmd.getPath());
-	
+
 					if (!f.exists())
 						throw new FileNotFoundException("File \"" + rmd.getPath() + "\" in repository \"" + rmd.getRepositoryName() + "\" does not exist!");
-	
+
 					if (rmd.getSize() >= 0 && f.length() != rmd.getSize())
 						throw new FileNotFoundException("File \"" + rmd.getPath() + "\" in repository \"" + rmd.getRepositoryName() + "\" has a different size (" + f.length() + ") than defined by the ResourceMetaData (" + rmd.getSize() + ")! ResourceMetaData.size must be -1 or match exactly!");
-	
+
 					rmd.setSize(f.length());
 					in = new FileInputStream(f);
 				} // if (rmd.getJar() == null) {
@@ -483,7 +483,7 @@ public class CLRegistrarFactory
 			} finally {
 				if (in != null)
 					in.close();
-				
+
 				if (jf != null)
 					jf.close();
 			}

@@ -344,7 +344,7 @@ public class CLRepositoryMan
 		return res;
 	}
 
-	public void writeCLRepositoryXML(File clRepositoryFile, String target, boolean inherit)
+	public void writeCLRepositoryXML(File clRepositoryFile, String target, String originalTarget, boolean inherit)
 		throws IOException
 	{
 		OutputStream out = new FileOutputStream(clRepositoryFile);
@@ -354,16 +354,24 @@ public class CLRepositoryMan
 				w.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE classloader-repository\nPUBLIC \"-//NightLabs GmbH//DTD ClassLoader Repository 1.0//EN\"\n\"http://www.nightlabs.de/dtd/clrepository_1_0.dtd\">\n\n");
 				w.write("<classloader-repository>\n");
 				w.write("	<publish target=\""+target+"\" inherit=\""+Boolean.toString(inherit)+"\">\n");
-				if(inheritedPublications != null)
-				{
-				  for (Iterator<Publication> it = inheritedPublications.iterator(); it.hasNext(); ) {
-				    Publication p = it.next();
-				    for (Iterator<String> itRes = p.getResourcePatterns().iterator(); itRes.hasNext(); ) {
-				      String pat = itRes.next();
-				      w.write("		<resources>"+pat+"</resources>\n");
-				    }
-				  }
+//				if(inheritedPublications != null)
+//				{
+//				  for (Iterator<Publication> it = inheritedPublications.iterator(); it.hasNext(); ) {
+//				    Publication p = it.next();
+//				    for (Iterator<String> itRes = p.getResourcePatterns().iterator(); itRes.hasNext(); ) {
+//				      String pat = itRes.next();
+//				      w.write("		<resources>"+pat+"</resources>\n");
+//				    }
+//				  }
+//				}
+
+				for (Publication p : getApplicablePublications(originalTarget)) {
+					for (Iterator<String> itRes = p.getResourcePatterns().iterator(); itRes.hasNext(); ) {
+						String pat = itRes.next();
+						w.write("		<resources>"+pat+"</resources>\n");
+					}
 				}
+
 				w.write("	</publish>\n");
 				w.write("</classloader-repository>\n");
 			} finally {
