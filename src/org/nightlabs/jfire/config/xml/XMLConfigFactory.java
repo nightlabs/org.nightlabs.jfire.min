@@ -11,6 +11,7 @@ import org.nightlabs.jfire.base.Lookup;
 import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.security.SecurityReflector.UserDescriptor;
 import org.nightlabs.jfire.security.id.UserID;
+import org.nightlabs.jfire.server.data.dir.JFireServerDataDirectory;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 
 /**
@@ -80,7 +81,8 @@ extends ConfigFactory
 						// TODO: isn't this code better:
 						//userConfigBaseDir = new File(jfsm.getJFireServerConfigModule()._getConfig().getConfigDir().getParentFile(), "user-config");
 						// than this ?:
-						userConfigBaseDir = new File(jfsm.getJFireServerConfigModule().getJ2ee().getJ2eeDeployBaseDirectory(),  "JFireBase.ear" + File.separatorChar + "user-config");
+//						userConfigBaseDir = new File(jfsm.getJFireServerConfigModule().getJ2ee().getJ2eeDeployBaseDirectory(),  "JFireBase.ear" + File.separatorChar + "user-config");
+						userConfigBaseDir = new File(JFireServerDataDirectory.getJFireServerDataDirFile(), "user-config");
 					} finally {
 						jfsm.close();
 					}
