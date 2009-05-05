@@ -392,7 +392,7 @@ public class JFireServerManagerImpl
 		boolean userIsOrganisation = userID.startsWith(User.USER_ID_PREFIX_TYPE_ORGANISATION);
 
 		try {
-			Lookup lookup = new Lookup(organisationID);
+//			Lookup lookup = new Lookup(organisationID);
 
 			boolean isAnonymousUser = Organisation.DEV_ORGANISATION_ID.equals(organisationID) && User.USER_ID_ANONYMOUS.equals(userID);
 			boolean isOrganisationUserOnRemoteServer = (
@@ -405,7 +405,7 @@ public class JFireServerManagerImpl
 				this.principal = new JFirePrincipal(
 						loginData,
 						userIsOrganisation,
-						lookup,
+//						lookup,
 						new RoleSet() // RoleSet.class.getName() + '[' + userPK + ']') // no roles!
 						);
 				return this.principal;
@@ -429,7 +429,7 @@ public class JFireServerManagerImpl
 				this.principal = new JFirePrincipal(
 						loginData,
 						userIsOrganisation,
-						lookup,
+//						lookup,
 						roleSet
 						);
 
@@ -453,7 +453,8 @@ public class JFireServerManagerImpl
 				);
 
 				// get persistence manager
-				PersistenceManager pm = lookup.getPersistenceManager();
+//				PersistenceManager pm = lookup.getPersistenceManager();
+				PersistenceManager pm = new Lookup(organisationID).getPersistenceManager();
 				try
 				{
 					if (User.USER_ID_SYSTEM.equals(userID)) {
@@ -527,7 +528,12 @@ public class JFireServerManagerImpl
 					}
 
 					// login succeeded, create principal
-					this.principal = new JFirePrincipal(loginData, userIsOrganisation, lookup, roleSet);
+					this.principal = new JFirePrincipal(
+							loginData,
+							userIsOrganisation,
+//							lookup,
+							roleSet
+					);
 					if(logger.isDebugEnabled())
 						logger.debug("Created JFirePrincipal \""+principal+"\".");
 				}

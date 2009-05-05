@@ -28,37 +28,50 @@ package org.nightlabs.jfire.base;
 
 import java.security.Principal;
 
+import org.apache.log4j.Logger;
 import org.nightlabs.j2ee.LoginData;
 import org.nightlabs.jfire.security.RoleSet;
 
 
 /**
  * @author nick@nightlabs.de
- *
- * TODO this needs refactoring. I don't understand, what the "getLookup()" method is good for. We should improve the API. Marco.
  */
 public class JFirePrincipal
-	extends JFireBasePrincipal
-	implements Principal
+extends JFireBasePrincipal
+implements Principal
 {
-	private static final long serialVersionUID = 1L;
-	private transient Lookup lookup;
+	private static final Logger logger = Logger.getLogger(JFirePrincipal.class);
 
-	public JFirePrincipal(LoginData loginData, boolean _userIsOrganisation, Lookup _lookup, RoleSet _roleSet)
+	private static final long serialVersionUID = 1L;
+//	private transient Lookup lookup;
+
+//	public JFirePrincipal(LoginData loginData, boolean _userIsOrganisation, Lookup _lookup, RoleSet _roleSet)
+	public JFirePrincipal(LoginData loginData, boolean _userIsOrganisation, RoleSet _roleSet)
 	{
 		super(loginData, _userIsOrganisation, _roleSet);
 
-		this.lookup = _lookup;
-		this.lookup.setJFirePrincipal(this);
+		if (logger.isDebugEnabled()) {
+			logger.debug("JFirePrincipal<init>: id=" + Integer.toHexString(System.identityHashCode(this)));
+		}
+
+//		this.lookup = _lookup;
+//		this.lookup.setJFirePrincipal(this);
 	}
 
 	public Lookup getLookup()
 	{
-		if (lookup == null) {
-			lookup = new Lookup(getOrganisationID());
-			lookup.setJFirePrincipal(this);
-		}
-
+		Lookup lookup = new Lookup(getOrganisationID());
+		lookup.setJFirePrincipal(this);
 		return lookup;
 	}
+
+//	public Lookup getLookup()
+//	{
+//		if (lookup == null) {
+//			lookup = new Lookup(getOrganisationID());
+//			lookup.setJFirePrincipal(this);
+//		}
+//
+//		return lookup;
+//	}
 }
