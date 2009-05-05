@@ -36,7 +36,6 @@ import java.util.Set;
 
 import javax.naming.Binding;
 import javax.naming.Context;
-import javax.naming.InitialContext;
 import javax.naming.Name;
 import javax.naming.NameClassPair;
 import javax.naming.NameParser;
@@ -48,7 +47,6 @@ import org.apache.log4j.Logger;
 import org.jboss.security.SecurityAssociation;
 import org.nightlabs.j2ee.LoginData;
 import org.nightlabs.jfire.base.login.JFireLogin;
-import org.nightlabs.jfire.servermanager.j2ee.J2EEAdapter;
 import org.nightlabs.util.Util;
 
 /**
@@ -75,21 +73,21 @@ public class CascadedAuthenticationNamingContext implements Context
 		this.userDescriptor = _userDescriptor;
 	}
 
-	private J2EEAdapter j2eeAdapter = null;
-
-	protected J2EEAdapter getJ2EEAdapter()
-	throws NamingException
-	{
-		if (j2eeAdapter == null) { // no need to do this synchronized - in the worst case we obtain it multiple times - doesn't have any negative consequences.
-			InitialContext ctx = new InitialContext();
-			try {
-				j2eeAdapter = (J2EEAdapter) ctx.lookup(J2EEAdapter.JNDI_NAME);
-			} finally {
-				ctx.close();
-			}
-		}
-		return j2eeAdapter;
-	}
+//	private J2EEAdapter j2eeAdapter = null;
+//
+//	protected J2EEAdapter getJ2EEAdapter()
+//	throws NamingException
+//	{
+//		if (j2eeAdapter == null) { // no need to do this synchronized - in the worst case we obtain it multiple times - doesn't have any negative consequences.
+//			InitialContext ctx = new InitialContext();
+//			try {
+//				j2eeAdapter = (J2EEAdapter) ctx.lookup(J2EEAdapter.JNDI_NAME);
+//			} finally {
+//				ctx.close();
+//			}
+//		}
+//		return j2eeAdapter;
+//	}
 
 	protected UserDescriptor getUserDescriptor() {
 		return userDescriptor;
@@ -347,7 +345,8 @@ public class CascadedAuthenticationNamingContext implements Context
 				LoginData loginData = new LoginData(userDescriptor.getUserName(), userDescriptor.getPassword());
 				loginData.setDefaultValues();
 
-				loginContext = getJ2EEAdapter().createLoginContext(loginData.getSecurityProtocol(), new JFireLogin(loginData).getAuthCallbackHandler());
+//				loginContext = getJ2EEAdapter().createLoginContext(loginData.getSecurityProtocol(), new JFireLogin(loginData).getAuthCallbackHandler());
+				loginContext = new LoginContext(loginData.getSecurityProtocol(), new JFireLogin(loginData).getAuthCallbackHandler());
 				loginContext.login();
 			}
 

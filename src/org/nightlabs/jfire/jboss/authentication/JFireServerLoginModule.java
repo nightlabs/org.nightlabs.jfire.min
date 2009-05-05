@@ -150,6 +150,7 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 
 	private JFirePrincipal jfirePrincipal = null;
 	private LoginData loginData = null;
+	private boolean ignoreLogout = false;
 
 	protected String getIdentityHashStr()
 	{
@@ -167,6 +168,7 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 	public boolean login() throws LoginException
 	{
 		super.loginOk = false;
+		ignoreLogout = false;
 
 		NameCallback nc = new NameCallback("username: ");
 		PasswordCallback pc = new PasswordCallback("password: ", false);
@@ -256,9 +258,9 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 
 		if (logger.isDebugEnabled()) {
 			if (logger.isTraceEnabled())
-				logger.trace("(" + getIdentityHashStr() + ") commit: " + jfirePrincipal, new Exception("StackTrace"));
+				logger.trace("(" + getIdentityHashStr() + ") commit: " + jfirePrincipal + " (id="+Integer.toHexString(System.identityHashCode(jfirePrincipal))+")", new Exception("StackTrace"));
 			else
-				logger.debug("(" + getIdentityHashStr() + ") commit: " + jfirePrincipal);
+				logger.debug("(" + getIdentityHashStr() + ") commit: " + jfirePrincipal + " (id="+Integer.toHexString(System.identityHashCode(jfirePrincipal))+")");
 		}
 
 		if (jfirePrincipal == null)
@@ -266,19 +268,37 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 
 // copied more or less from JBoss' ClientLoginModule
 		// Set the login principal and credential and subject
-		SecurityAssociation.pushSubjectContext(subject, jfirePrincipal, loginData.getPassword());
+		SubjectContext subjectContext = SecurityAssociation.peekSubjectContext();
+		Principal subjectContextPrincipal = subjectContext == null ? null : subjectContext.getPrincipal();
+		if (!jfirePrincipal.equals(subjectContextPrincipal)) {
+			SecurityAssociation.pushSubjectContext(subject, jfirePrincipal, loginData.getPassword());
 
-		// Add the login principal to the subject if is not there
-		Set<Principal> principals = subject.getPrincipals();
-		if (principals.contains(jfirePrincipal) == false)
-			principals.add(jfirePrincipal);
-// end copy
+			// Add the login principal to the subject if is not there
+			Set<Principal> principals = subject.getPrincipals();
+			if (principals.contains(jfirePrincipal) == false)
+				principals.add(jfirePrincipal);
+			// end copy
 
-		if (authenticatedLoginModule2loginDebugData != null) {
-			LoginDebugData ldd = new LoginDebugData();
-			ldd.commitTimestamp = System.currentTimeMillis();
-			ldd.commitStackTrace = new Exception("StackTrace");
-			authenticatedLoginModule2loginDebugData.put(this, ldd);
+			if (authenticatedLoginModule2loginDebugData != null) {
+				LoginDebugData ldd = new LoginDebugData();
+				ldd.commitTimestamp = System.currentTimeMillis();
+				ldd.commitStackTrace = new Exception("StackTrace");
+				authenticatedLoginModule2loginDebugData.put(this, ldd);
+			}
+		}
+		else {
+			if (logger.isDebugEnabled())
+				logger.debug("(" + getIdentityHashStr() + ") commit: " + jfirePrincipal + " (id="+Integer.toHexString(System.identityHashCode(jfirePrincipal))+"): We are already authenticated correctly - skipping this commit!");
+
+			Set<Principal> principals = subject.getPrincipals();
+			if (principals.contains(jfirePrincipal) == false)
+				throw new IllegalStateException("(" + getIdentityHashStr() + ") commit: We are authenticated correcly already according to the SecurityAssociation, but the subject does not contain our principal yet!!!");
+
+			// JBoss behaves very strangely concerning calling logout. In most cases, it does not call logout, if
+			// we encountered this situation (strange that it calls login in the first place, but well...
+			// We set the firePrincipal to another (previously logged-in) principal and suppress logout. Marco.
+			ignoreLogout = true;
+			jfirePrincipal = (JFirePrincipal) subjectContextPrincipal;
 		}
 
 		loginData = null; // forget the password - this login-module doesn't need its reference anymore
@@ -290,9 +310,9 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 	{
 		if (logger.isDebugEnabled()) {
 			if (logger.isTraceEnabled())
-				logger.trace("(" + getIdentityHashStr() + ") abort: " + jfirePrincipal, new Exception("StackTrace"));
+				logger.trace("(" + getIdentityHashStr() + ") abort: " + jfirePrincipal + " (id="+Integer.toHexString(System.identityHashCode(jfirePrincipal))+")", new Exception("StackTrace"));
 			else
-				logger.debug("(" + getIdentityHashStr() + ") abort: " + jfirePrincipal);
+				logger.debug("(" + getIdentityHashStr() + ") abort: " + jfirePrincipal + " (id="+Integer.toHexString(System.identityHashCode(jfirePrincipal))+")");
 		}
 
 		// Reset to the state before login() was called.
@@ -304,11 +324,16 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 	@Override
 	public boolean logout() throws LoginException
 	{
+		if (ignoreLogout) {
+			logger.debug("(" + getIdentityHashStr() + ") logout: ignoreLogout is true => skipping logout action in this login-module instance!");
+			return super.logout();
+		}
+
 		if (logger.isDebugEnabled()) {
 			if (logger.isTraceEnabled())
-				logger.trace("(" + getIdentityHashStr() + ") logout: logging out " + jfirePrincipal, new Exception("StackTrace"));
+				logger.trace("(" + getIdentityHashStr() + ") logout: logging out " + jfirePrincipal + " (id="+Integer.toHexString(System.identityHashCode(jfirePrincipal))+")", new Exception("StackTrace"));
 			else
-				logger.debug("(" + getIdentityHashStr() + ") logout: logging out " + jfirePrincipal);
+				logger.debug("(" + getIdentityHashStr() + ") logout: logging out " + jfirePrincipal + " (id="+Integer.toHexString(System.identityHashCode(jfirePrincipal))+")");
 		}
 
 		if (jfirePrincipal == null) {
@@ -328,22 +353,25 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 			logger.warn("(" + getIdentityHashStr() + ") logout: SecurityAssociation.popSubjectContext() returned null!");
 		}
 		else {
-			if (jfirePrincipal != null && jfirePrincipal != subjectContext.getPrincipal()) {
+			Principal subjectContextPrincipal = subjectContext.getPrincipal();
+			if (jfirePrincipal != null && jfirePrincipal != subjectContextPrincipal) {
 				if (logger.isDebugEnabled()) {
 					if (logger.isTraceEnabled())
-						logger.trace("(" + getIdentityHashStr() + ") logout: SecurityAssociation.popSubjectContext() did not reveal principal " + jfirePrincipal +  " but instead " + subjectContext.getPrincipal(), new Exception("StackTrace"));
+						logger.trace("(" + getIdentityHashStr() + ") logout: SecurityAssociation.popSubjectContext() did not reveal principal " + jfirePrincipal + " (id="+Integer.toHexString(System.identityHashCode(jfirePrincipal))+") but instead " + subjectContextPrincipal + " (id="+Integer.toHexString(System.identityHashCode(subjectContextPrincipal))+")", new Exception("StackTrace"));
 					else
-						logger.debug("(" + getIdentityHashStr() + ") logout: SecurityAssociation.popSubjectContext() did not reveal principal " + jfirePrincipal +  " but instead " + subjectContext.getPrincipal());
+						logger.debug("(" + getIdentityHashStr() + ") logout: SecurityAssociation.popSubjectContext() did not reveal principal " + jfirePrincipal + " (id="+Integer.toHexString(System.identityHashCode(jfirePrincipal))+") but instead " + subjectContextPrincipal + " (id="+Integer.toHexString(System.identityHashCode(subjectContextPrincipal))+")");
 				}
 
 				int counter = 0;
 				do {
 					++counter;
 					subjectContext = SecurityAssociation.popSubjectContext();
+					subjectContextPrincipal = subjectContext == null ? null : subjectContext.getPrincipal();
 
 					if (counter > 100)
-						throw new IllegalStateException("Popping " + counter + " times still did not reveal the principal we have pushed before!");
-				} while (jfirePrincipal != (subjectContext == null ? null : subjectContext.getPrincipal()));
+						throw new IllegalStateException("Popping " + (counter - 1) + " times still did not reveal the principal we have pushed before!");
+
+				} while (jfirePrincipal != subjectContextPrincipal);
 			}
 		}
 
