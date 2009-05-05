@@ -7,7 +7,6 @@
 	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.module.container"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/JFireBaseJ2EE"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/org.nightlabs.base"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/org.nightlabs.clientui"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/org.nightlabs.jdo"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/org.nightlabs.jfire.base"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/org.nightlabs.query"/>
