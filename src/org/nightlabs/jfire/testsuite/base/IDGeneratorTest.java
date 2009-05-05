@@ -5,6 +5,7 @@ package org.nightlabs.jfire.testsuite.base;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
 
 import javax.naming.InitialContext;
 
@@ -18,6 +19,7 @@ import org.nightlabs.jfire.base.login.JFireLogin;
 import org.nightlabs.jfire.base.login.JFireSecurityConfiguration;
 import org.nightlabs.jfire.idgenerator.IDGeneratorHelperRemote;
 import org.nightlabs.jfire.testsuite.JFireTestSuite;
+import org.nightlabs.util.CacheDirTag;
 import org.nightlabs.util.IOUtil;
 import org.nightlabs.util.ObservedProcess;
 
@@ -49,6 +51,34 @@ public class IDGeneratorTest extends TestCase
 		for (File child : dir.listFiles()) {
 			if (child.isDirectory())
 				populateClasspath(child, classpath);
+			else if (child.isFile() && child.getName().endsWith(".ear")) {
+				File tmpBaseDir;
+				try {
+					tmpBaseDir = new File(IOUtil.createUserTempDir("jfire_server.", null), "ear");
+					if (!tmpBaseDir.isDirectory())
+						tmpBaseDir.mkdirs();
+
+					if (!tmpBaseDir.isDirectory())
+						throw new IOException("Could not create directory: " + tmpBaseDir.getAbsolutePath());
+				} catch (IOException e) {
+					throw new RuntimeException(e);
+				}
+
+				CacheDirTag cacheDirTag = new CacheDirTag(tmpBaseDir);
+				try {
+					cacheDirTag.tag("JFire - http://www.jfire.org", true, false);
+				} catch (IOException e) {
+					logger.warn("initialise: " + e, e);
+				}
+
+				File tmpEarDir = new File(tmpBaseDir, child.getName());
+				try {
+					IOUtil.unzipArchiveIfModified(child, tmpEarDir);
+				} catch (IOException e) {
+					throw new RuntimeException(e);
+				}
+				populateClasspath(tmpEarDir, classpath);
+			}
 			else if (child.isFile() && child.getName().endsWith(".jar")) {
 				if (classpath.length() > 0)
 					classpath.append(File.pathSeparatorChar);
