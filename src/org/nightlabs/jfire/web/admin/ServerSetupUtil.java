@@ -15,7 +15,7 @@ public class ServerSetupUtil
 		try {
 			log.debug("Trying bogo login...");
 			SessionLogin login = new SessionLogin(
-					"__foobar_organisation_for_initial_login__",
+					"__foobar.organisation.for.initial.login__",
 					"__foobar_user_for_initial_login__",
 					"__foobar_password_for_initial_login__");
 			log.debug("Bogo login succeeded...");
