@@ -152,7 +152,14 @@ public class JFireEjb3Factory
 	public static final String JNDI_PREFIX_EJB_BY_REMOTE_INTERFACE = InvokeUtil.JNDI_PREFIX_EJB_BY_REMOTE_INTERFACE;
 	public static final String JNDI_PREFIX_EJB_BY_LOCAL_INTERFACE = InvokeUtil.JNDI_PREFIX_EJB_BY_LOCAL_INTERFACE;
 
-	private static <T> T lookupEjbByRemoteInterface(Class<T> ejbRemoteInterface, Hashtable<?, ?> environment)
+	/**
+	 * Lookup the given EJB (specified by its remote-interface) in the JNDI.
+	 * <p>
+	 * Since I had strange class-loader-problems (failing to load class Proxy$123), I made this method
+	 * synchronized from 2009-05-06 on.
+	 * </p>
+	 */
+	private static synchronized <T> T lookupEjbByRemoteInterface(Class<T> ejbRemoteInterface, Hashtable<?, ?> environment)
 	throws Exception
 	{
 		String jndiName = JNDI_PREFIX_EJB_BY_REMOTE_INTERFACE + ejbRemoteInterface.getName();
