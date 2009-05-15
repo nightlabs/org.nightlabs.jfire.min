@@ -13,6 +13,8 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.nightlabs.config.Config;
+import org.nightlabs.config.ConfigModuleNotFoundException;
 import org.nightlabs.jfire.server.data.dir.JFireServerDataDirectory;
 import org.nightlabs.jfire.serverconfigurator.ServerConfiguratorHistory.ServerConfiguratorAction;
 import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
@@ -36,7 +38,7 @@ public abstract class ServerConfigurator
 	private static final Logger logger = Logger.getLogger(ServerConfigurator.class);
 
 	/**
-	 * The config to use for configuration
+	 * The JFireServerConfigModule to use for configuration
 	 */
 	private JFireServerConfigModule jfireServerConfigModule;
 
@@ -44,6 +46,11 @@ public abstract class ServerConfigurator
 	 * Wether a reboot is required after doing the changes.
 	 */
 	private boolean rebootRequired = false;
+
+	/**
+	 * The config to use for configuration
+	 */
+	private Config config;
 
 	/**
 	 * Get the jfireServerConfigModule.
@@ -61,6 +68,22 @@ public abstract class ServerConfigurator
 	public void setJFireServerConfigModule(JFireServerConfigModule jfireServerConfigModule)
 	{
 		this.jfireServerConfigModule = jfireServerConfigModule;
+	}
+
+	/**
+	 * Returns the config.
+	 * @return the config
+	 */
+	public Config getConfig() {
+		return config;
+	}
+
+	/**
+	 * Sets the config.
+	 * @param config the config to set
+	 */
+	public void setConfig(Config config) {
+		this.config = config;
 	}
 
 	/**
@@ -92,15 +115,23 @@ public abstract class ServerConfigurator
 	 * given server config module.
 	 * <p>
 	 * This method will return <code>true</code> if the server needs to be restarted.
+	 * @param config TODO
 	 *
-	 * @param jfireServerConfigModule The server config module
 	 * @return <code>true</code> if the server needs to be restarted -
 	 * 		<code>false</code> otherwise.
 	 * @throws ServerConfigurationException In case of an error during configuration.
 	 */
-	public static boolean configureServer(JFireServerConfigModule jfireServerConfigModule) throws ServerConfigurationException
+//	public static boolean configureServer(JFireServerConfigModule jfireServerConfigModule) throws ServerConfigurationException
+	public static boolean configureServer(Config config) throws ServerConfigurationException
 	{
 		boolean rebootRequired = false;
+
+		JFireServerConfigModule jfireServerConfigModule = null;
+		try {
+			jfireServerConfigModule = config.getConfigModule(JFireServerConfigModule.class, true);
+		} catch (ConfigModuleNotFoundException e) {
+			jfireServerConfigModule = config.createConfigModule(JFireServerConfigModule.class);
+		}
 
 		// instantiating and calling ServerConfigurator
 		String serverConfiguratorClassName = jfireServerConfigModule.getJ2ee().getServerConfigurator();
@@ -144,6 +175,7 @@ public abstract class ServerConfigurator
 		ServerConfigurator serverConfigurator;
 		try {
 			serverConfigurator = (ServerConfigurator) serverConfiguratorClass.newInstance();
+			serverConfigurator.setConfig(config);
 			serverConfigurator.setJFireServerConfigModule(jfireServerConfigModule);
 		} catch (Throwable x) {
 			throw new ServerConfigurationException("Instantiating ServerConfigurator from class " + serverConfiguratorClassName + " (configured in JFireServerConfigModule) failed!", x);

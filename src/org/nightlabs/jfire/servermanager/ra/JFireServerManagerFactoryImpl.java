@@ -498,7 +498,7 @@ public class JFireServerManagerFactoryImpl
 	 */
 	public boolean configureServerAndShutdownIfNecessary(final long delayMSec) throws ServerConfigurationException
 	{
-		boolean rebootRequired = ServerConfigurator.configureServer(mcf.getConfigModule());
+		boolean rebootRequired = ServerConfigurator.configureServer(getConfig());
 
 		if (rebootRequired) {
 			shuttingDown = true;
