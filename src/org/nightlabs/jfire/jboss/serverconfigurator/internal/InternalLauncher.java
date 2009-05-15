@@ -4,13 +4,14 @@ import java.io.File;
 
 import org.apache.log4j.xml.DOMConfigurator;
 import org.nightlabs.config.Config;
+import org.nightlabs.jfire.server.data.dir.JFireServerDataDirectory;
 import org.nightlabs.jfire.serverconfigurator.ServerConfigurator;
 import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
 
 /**
  * Executes the {@link ServerConfigurator} configured in the JFire server configuration
  * (i.e. the module {@link JFireServerConfigModule}). Therefore, it first creates a {@link Config}
- * for the configuration in ${jboss}/server/default/JFire.last/JFireBase.ear/config and then
+ * for the configuration in ${jboss}/server/default/data/jfire/config and then
  * asks it for the instance of {@link JFireServerConfigModule}.
  * <p>
  * An instance of this class is created by the {@link Launcher} after it has loaded this class with its new
@@ -43,7 +44,9 @@ public class InternalLauncher
 
 		File jbossConfigDir = new File(serverDefaultFolder, "conf");
 		File jbossLogDir = new File(serverDefaultFolder, "log");
-		File jfireConfigDir = new File(new File(jfireLastFolder, "JFireBase.ear"), "config");
+//		File jfireConfigDir = new File(new File(jfireLastFolder, "JFireBase.ear"), "config");
+		File jfireDataDir =  new File(serverDefaultFolder, "data");
+		File jfireConfigDir = new File(jfireDataDir, "jfire/config");
 		File jfireConfigFile = new File(jfireConfigDir, "Config.xml");
 
 		System.setProperty("jboss.server.log.dir", jbossLogDir.getAbsolutePath());
@@ -68,7 +71,8 @@ public class InternalLauncher
 		}
 
 		Config config = Config.createSharedInstance(jfireConfigFile);
-		JFireServerConfigModule jfscm = config.createConfigModule(JFireServerConfigModule.class);
-		ServerConfigurator.configureServer(jfscm);
+//		JFireServerConfigModule jfscm = config.createConfigModule(JFireServerConfigModule.class);
+		System.setProperty(JFireServerDataDirectory.PROPERTY_KEY_JFIRE_DATA_DIRECTORY, jfireDataDir.getCanonicalPath());
+		ServerConfigurator.configureServer(config);
 	}
 }

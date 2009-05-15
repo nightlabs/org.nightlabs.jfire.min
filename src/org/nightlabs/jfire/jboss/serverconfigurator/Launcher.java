@@ -58,7 +58,7 @@ import java.util.jar.JarFile;
 public class Launcher
 {
 //	private static String[] jarFileExtensions = { "jar", "rar", "sar", "war", "ear", "zip" };
-	private static String[] jarFileExtensions = { "jar", "rar" }; // should be sufficient
+	private static String[] jarFileExtensions = { "jar", "rar" , "ear"}; // should be sufficient
 	private static Set<String> jarFileExtensionSet = null;
 
 	public static boolean isDebugEnabled()

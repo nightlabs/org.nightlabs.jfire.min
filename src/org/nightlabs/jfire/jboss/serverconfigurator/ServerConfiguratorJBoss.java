@@ -18,8 +18,10 @@ import javax.xml.transform.TransformerException;
 
 import org.apache.log4j.Logger;
 import org.apache.xpath.CachedXPathAPI;
+import org.nightlabs.config.ConfigModuleNotFoundException;
 import org.nightlabs.jfire.jboss.authentication.JFireServerLocalLoginModule;
 import org.nightlabs.jfire.jboss.authentication.JFireServerLoginModule;
+import org.nightlabs.jfire.jboss.serverconfigurator.config.ServicePortsConfigModule;
 import org.nightlabs.jfire.serverconfigurator.ServerConfigurationException;
 import org.nightlabs.jfire.serverconfigurator.ServerConfigurator;
 import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
@@ -976,6 +978,61 @@ public class ServerConfiguratorJBoss
 			}
 		}
 
+		// PORT CONFIGURATION
+		Node serviceBindingNode = NLDOMUtil.findNodeByAttribute(document, "server/mbean", "code",
+			"org.jboss.services.binding.ServiceBindingManager");
+
+		// find the Node ServiceBindingManager to add our custom port configuration
+		if (serviceBindingNode == null) {
+			changed = true;
+			Element root = document.getDocumentElement();
+
+			Element newnode = document.createElement("mbean");// Create Root Element
+			newnode.setAttribute("code", "org.jboss.services.binding.ServiceBindingManager");
+			newnode.setAttribute("name", "jboss.system:service=ServiceBindingManager");
+
+			String LINEBREAK = "\n" + "\t" + "\t";
+			String commentString = modificationMarker + LINEBREAK +
+				"Binding service manager for port/host mapping. This config loading its bindings from an XML file using the ServicesStoreFactory implementation returned by the XMLServicesStoreFactory. " + LINEBREAK +
+				"ServerName: The unique name assigned to a JBoss server instance for lookup purposes. This allows a single ServicesStore to handle mulitiple JBoss servers." + LINEBREAK +
+				"StoreURL: The URL string passed to org.jboss.services.binding.ServicesStore during initialization that specifies how to connect to the bindings store. StoreFactory: The org.jboss.services.binding.ServicesStoreFactory interface implementation to create to obtain the ServicesStore instance.";
+			Comment comment = document.createComment(commentString);
+			newnode.appendChild(comment);
+
+			Element item = document.createElement("attribute");
+			item.setAttribute("name", "ServerName");
+			item.setTextContent("ports-01");
+			newnode.appendChild( item );
+
+			item = document.createElement("attribute");
+			item.setAttribute("name", "StoreURL");
+			item.setTextContent("${jboss.home.url}/server/default/conf/service-bindings.xml");
+			newnode.appendChild( item );
+
+			item = document.createElement("attribute");
+			item.setAttribute("name", "StoreFactoryClassName");
+			item.setTextContent("org.jboss.services.binding.XMLServicesStoreFactory");
+			newnode.appendChild( item );
+
+			root.insertBefore(newnode, serviceBindingNode);
+
+			logger.info("Added Custom MBean ServiceBindingManager for the Services Port Configuration");
+		}
+
+		// copy service-bindings.xml
+		File serviceBindingsDestFile = new File(jbossConfDir, "service-bindings.xml");
+		IOUtil.copyResource(ServerConfiguratorJBoss.class,
+				"service-bindings.xml.jfire", serviceBindingsDestFile);
+
+		// configure service-bindings.xml based on ServicePortsConfigModule
+		ServicePortsConfigModule servicePortsConfigModule = null;
+		try {
+			servicePortsConfigModule = getConfig().getConfigModule(ServicePortsConfigModule.class, true);
+		} catch (ConfigModuleNotFoundException e) {
+			servicePortsConfigModule = getConfig().createConfigModule(ServicePortsConfigModule.class);
+		}
+		configureServiceBindingsXml(jbossConfDir, servicePortsConfigModule);
+
 		// write changes
 		if(haveChanges) {
 			backup(destFile);
@@ -1601,7 +1658,8 @@ public class ServerConfiguratorJBoss
 				new File(jbossConfDir, "standardjboss.xml"),
 				new File(new File(jbossDeployDir, "jboss-web.deployer"), "server.xml"),
 				new File(new File(new File(jbossDeployDir, "http-invoker.sar"), "META-INF"), "jboss-service.xml"),
-				new File(new File(new File(new File(jbossDeployDir, "http-invoker.sar"), "invoker.war"), "WEB-INF"), "web.xml")
+				new File(new File(new File(new File(jbossDeployDir, "http-invoker.sar"), "invoker.war"), "WEB-INF"), "web.xml"),
+				new File(jbossConfDir, "jndi.properties")
 		};
 
 		try {
@@ -1609,8 +1667,209 @@ public class ServerConfiguratorJBoss
 				restore(f);
 
 			new File(jbossBinDir, "CascadedAuthenticationClientInterceptor.properties").delete();
+			new File(jbossConfDir, "service-bindings.xml").delete();
 		} catch (IOException e) {
 			throw new ServerConfigurationException(e);
+		}
+	}
+
+	private static Node setServicePortAndHost(Document document, Node nodeServerNode, String serviceConfigName, int port, String host)
+	{
+		Node serviceNode = NLDOMUtil.findNodeByAttribute(nodeServerNode, "service-config", "name",
+				serviceConfigName);
+		if (serviceNode != null) {
+			Node oldBindingNode = NLDOMUtil.findElementNode("binding", serviceNode);
+			if (oldBindingNode != null) {
+				serviceNode.removeChild(oldBindingNode);
+			}
+			Element binding = document.createElement("binding");
+			binding.setAttribute("port", String.valueOf(port));
+			binding.setAttribute("host", host);
+			serviceNode.appendChild(binding);
+			return serviceNode;
+		}
+		return null;
+	}
+
+	private void configureServiceBindingsXml(File jbossConfDir, ServicePortsConfigModule servicePortsConfigModule) throws FileNotFoundException, IOException, SAXException
+	{
+//		// configure jndi.properties
+//		File jndiProperties = new File(jbossConfDir, "jndi.properties");
+//		configureJndiProperties(jndiProperties, servicePortsConfigModule);
+
+		File destFile = new File(jbossConfDir, "service-bindings.xml");
+		DOMParser parser = new DOMParser();
+		parser.parse(new InputSource(new FileInputStream(destFile)));
+		Document document = parser.getDocument();
+		Node nodeServerNode = NLDOMUtil.findNodeByAttribute(document, "service-bindings/server", "name",
+			"ports-01");
+
+		if (nodeServerNode != null)
+		{
+			// naming binding ports
+			Node serviceNamingNode = setServicePortAndHost(document, nodeServerNode, "jboss:service=Naming",
+					servicePortsConfigModule.getServiceNamingBindingPort(), servicePortsConfigModule.getServiceNamingBindingHost());
+			if (serviceNamingNode != null) {
+				Node delegateNode = NLDOMUtil.findNodeByAttribute(serviceNamingNode, "delegate-config", "portName", "Port");
+				Node oldAttributeNode = NLDOMUtil.findElementNode("attribute", delegateNode);
+				if (oldAttributeNode != null) {
+					delegateNode.removeChild(oldAttributeNode);
+				}
+				Element attribute = document.createElement("attribute");
+				attribute.setAttribute("name", "RmiPort");
+				attribute.appendChild( document.createTextNode(String.valueOf(servicePortsConfigModule.getServiceNamingRMIPort())) );
+				delegateNode.appendChild( attribute );
+			}
+
+			// webservice ports
+			setServicePortAndHost(document, nodeServerNode, "jboss:service=WebService",
+					servicePortsConfigModule.getServiceWebServicePort(), servicePortsConfigModule.getServiceWebServiceHost());
+
+			// jrmp ports
+			setServicePortAndHost(document, nodeServerNode, "jboss:service=invoker,type=jrmp",
+					servicePortsConfigModule.getServiceJrmpPort(), servicePortsConfigModule.getServiceJrmpHost());
+
+			// pooled ports
+			setServicePortAndHost(document, nodeServerNode, "jboss:service=invoker,type=pooled",
+					servicePortsConfigModule.getServicePooledPort(), servicePortsConfigModule.getServicePooledHost());
+
+			// HAJNDI (Cluster)
+			Node hajndiNode = setServicePortAndHost(document, nodeServerNode, "jboss:service=HAJNDI",
+					servicePortsConfigModule.getServiceClusterHAJNDIBindingPort(), servicePortsConfigModule.getServiceClusterHAJNDIBindingHost());
+			if (hajndiNode != null) {
+				Node delegateNode = NLDOMUtil.findNodeByAttribute(serviceNamingNode, "delegate-config", "portName", "Port");
+				Node oldAttributeNode = NLDOMUtil.findElementNode("attribute", delegateNode);
+				if (oldAttributeNode != null) {
+					delegateNode.removeChild(oldAttributeNode);
+				}
+				Element attribute = document.createElement("attribute");
+				attribute.setAttribute("name", "RmiPort");
+				attribute.appendChild( document.createTextNode(String.valueOf(servicePortsConfigModule.getServiceClusterHAJNDIRMIPort())) );
+				delegateNode.appendChild( attribute );
+			}
+
+			// jrmpha ports (Cluster)
+			setServicePortAndHost(document, nodeServerNode, "jboss:service=invoker,type=jrmpha",
+					servicePortsConfigModule.getServiceClusterJrmphaPort(), servicePortsConfigModule.getServiceClusterJrmphaHost());
+
+			// pooledha ports (Cluster)
+			setServicePortAndHost(document, nodeServerNode, "jboss:service=invoker,type=pooledha",
+					servicePortsConfigModule.getServiceClusterPooledhaPort(), servicePortsConfigModule.getServiceClusterPooledhaHost());
+
+			// corbaORB ports
+			setServicePortAndHost(document, nodeServerNode, "jboss:service=CorbaORB",
+					servicePortsConfigModule.getServiceCorbaORBPort(), servicePortsConfigModule.getServiceCorbaORBHost());
+
+			// jmx RMI ports
+			setServicePortAndHost(document, nodeServerNode, "jboss.jmx:type=Connector,name=RMI",
+					servicePortsConfigModule.getServiceJMXConnectorRMIPort(), servicePortsConfigModule.getServiceJMXConnectorRMIHost());
+
+			// SNMP trapd ports
+			setServicePortAndHost(document, nodeServerNode, "jboss.jmx:name=SnmpAgent,service=trapd,type=logger",
+					servicePortsConfigModule.getServiceSnmpAgentTrapdPort(), servicePortsConfigModule.getServiceSnmpAgentTrapdHost());
+
+			// SNMP snmp ports
+			setServicePortAndHost(document, nodeServerNode, "jboss.jmx:name=SnmpAgent,service=snmp,type=adaptor",
+					servicePortsConfigModule.getServiceSnmpAgentSnmpPort(), servicePortsConfigModule.getServiceSnmpAgentSnmpHost());
+
+			// JMS Ports (JBossMQ)
+			setServicePortAndHost(document, nodeServerNode, "jboss.mq:service=InvocationLayer,type=UIL2",
+					servicePortsConfigModule.getServiceJMSPort(), servicePortsConfigModule.getServiceJMSHost());
+
+			// JMS Http Ports (JBossMQ)
+			setServicePortAndHost(document, nodeServerNode, "jboss.mq:service=InvocationLayer,type=HTTP",
+					servicePortsConfigModule.getServiceJMSHttpPort(), servicePortsConfigModule.getServiceJMSHttpHost());
+
+			// JMS HAJNDI Ports
+			// TODO: add port and host in java.naming.provider.url in CDATA
+			setServicePortAndHost(document, nodeServerNode, "jboss.mq:service=JMSProviderLoader,name=HAJNDIJMSProvider",
+					servicePortsConfigModule.getServiceJSMHajndiPort(), servicePortsConfigModule.getServiceJSMHajndiHost());
+
+			// EJBInvoker ports
+			setServicePortAndHost(document, nodeServerNode, "jboss:service=invoker,type=http",
+					servicePortsConfigModule.getServiceEJB3InvokerHttpPort(), servicePortsConfigModule.getServiceEJB3InvokerHttpHost());
+
+			// EJB3 Remoting Connector ports
+			Node ejb3RemotingConnectorNode = setServicePortAndHost(document, nodeServerNode, "jboss.remoting:type=Connector,name=DefaultEjb3Connector,handler=ejb3",
+					servicePortsConfigModule.getServiceEJB3RemoteConnectorPort(), servicePortsConfigModule.getServiceEJB3RemoteConnectorHost());
+			if (ejb3RemotingConnectorNode != null) {
+				Collection<Node> nodes = NLDOMUtil.findNodeList(ejb3RemotingConnectorNode, "delegate-config", true, false);
+				Node delegateNode = nodes.iterator().next();
+				Element attribute = document.createElement("attribute");
+				attribute.setAttribute("name", "InvokerLocator");
+				StringBuilder sb = new StringBuilder();
+				sb.append("socket://");
+				sb.append(servicePortsConfigModule.getServiceEJB3RemoteConnectorHost());
+				sb.append(":");
+				sb.append(servicePortsConfigModule.getServiceEJB3RemoteConnectorPort());
+				attribute.appendChild( document.createTextNode(sb.toString()) );
+				delegateNode.appendChild(attribute);
+			}
+
+			// JMX Http ports
+			setServicePortAndHost(document, nodeServerNode, "jboss:service=invoker,type=http,target=Naming",
+					servicePortsConfigModule.getServiceInvokerJMXHttpPort(), servicePortsConfigModule.getServiceInvokerJMXHttpHost());
+
+			// JMX Http Readonly ports
+			setServicePortAndHost(document, nodeServerNode, "jboss:service=invoker,type=http,target=Naming,readonly=true",
+					servicePortsConfigModule.getServiceInvokerJMXHttpReadOnlyPort(), servicePortsConfigModule.getServiceInvokerJMXHttpReadOnlyHost());
+
+			// EJBInvokerHA ports
+			setServicePortAndHost(document, nodeServerNode, "jboss:service=invoker,type=httpHA",
+					servicePortsConfigModule.getServiceInvokerJMXHttpReadOnlyPort(), servicePortsConfigModule.getServiceInvokerJMXHttpReadOnlyHost());
+
+			// JMXInvokerHA ports
+			setServicePortAndHost(document, nodeServerNode, "jboss:service=invoker,type=http,target=HAJNDI",
+					servicePortsConfigModule.getServiceJMXInvokerHAPort(), servicePortsConfigModule.getServiceJMXInvokerHAHost());
+
+			// Webservice ports
+			setServicePortAndHost(document, nodeServerNode, "jboss.ws4ee:service=AxisService",
+					servicePortsConfigModule.getServiceAxisServicePort(), servicePortsConfigModule.getServiceAxisServiceHost());
+
+			// remoting connector ports
+			setServicePortAndHost(document, nodeServerNode, "jboss.remoting:service=Connector,transport=socket",
+					servicePortsConfigModule.getServiceRemotingConnectorPort(), servicePortsConfigModule.getServiceRemotingConnectorHost());
+
+			// tomcat ports
+			// TODO add values for portHttps and portAJP
+			Node webserverNode = setServicePortAndHost(document, nodeServerNode, "jboss.web:service=WebServer",
+					servicePortsConfigModule.getServiceTomcatPort(), servicePortsConfigModule.getServiceTomcatHost());
+
+			// jboss messaging
+			setServicePortAndHost(document, nodeServerNode, "jboss.messaging:service=Connector,transport=bisocket",
+					servicePortsConfigModule.getServiceJBossMessagingPort(), servicePortsConfigModule.getServiceJBossMessagingHost());
+
+			String encoding = document.getXmlEncoding();
+			if(encoding == null)
+				encoding = "UTF-8";
+
+			OutputStream fos = new FileOutputStream(destFile);
+			try {
+				NLDOMUtil.writeDocument(document, fos, encoding);
+			} finally {
+				fos.close();
+			}
+		}
+	}
+
+	private void configureJndiProperties(File jndiProperties, ServicePortsConfigModule portsConfigModule) throws IOException
+	{
+		String jndiHost = portsConfigModule.getServiceNamingBindingHost();
+		if (jndiHost != null && !ServicePortsConfigModule.getDefaultHostName().equals(jndiHost)) {
+			backup(jndiProperties);
+			int port = portsConfigModule.getServiceNamingBindingPort();
+			StringBuilder nameBuilder = new StringBuilder();
+			String content = IOUtil.readTextFile(jndiProperties);
+			StringBuilder sb = new StringBuilder(content);
+			sb.append("\n");
+			sb.append("# Added by JFire ServerConfiguratorJBoss");
+			sb.append("\n");
+			nameBuilder.append("java.naming.provider.url=jnp://");
+			nameBuilder.append(jndiHost);
+			nameBuilder.append(":");
+			nameBuilder.append(port);
+			sb.append(nameBuilder);
+			IOUtil.writeTextFile(jndiProperties, sb.toString());
 		}
 	}
 }
