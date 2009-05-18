@@ -4,21 +4,21 @@ import org.nightlabs.config.ConfigModule;
 import org.nightlabs.config.InitException;
 
 /**
- * ConfigModule for configuring the binding address (ports) and hosts for the JBoss application server services. 
- * 
+ * ConfigModule for configuring the binding address (ports) and hosts for the JBoss application server services.
+ *
  * The default values are taken from the file ../docs/examples/binding-manager/sample-bindings.xml inside the JBoss 4.2.2 GA
  * Further details see http://www.jboss.org/community/docs/DOC-9376.
- * 
+ *
  * @author Daniel Mazurek - Daniel.Mazurek [dot] nightlabs [dot] de
  *
  */
-public class ServicePortsConfigModule extends ConfigModule 
+public class ServicePortsConfigModule extends ConfigModule
 {
 	public static String getDefaultHostName() {
 		return "${jboss.bind.address}";
 	}
-	
-	private int serviceNamingBindingPort = 0;	
+
+	private int serviceNamingBindingPort = 0;
 	private int serviceNamingRMIPort = 0;
 	private int serviceWebServicePort = 0;
 	private int serviceTomcatPort = 0;
@@ -45,8 +45,8 @@ public class ServicePortsConfigModule extends ConfigModule
 	private int serviceAxisServicePort = 0;
 	private int serviceRemotingConnectorPort = 0;
 
-	private String serviceNamingBindingHost; 
-//	private String serviceNamingRMIHost;
+	private String serviceNamingBindingHost;
+	private String serviceNamingRMIHost;
 	private String serviceWebServiceHost;
 	private String serviceTomcatHost;
 	private String serviceJBossMessagingHost;
@@ -73,9 +73,9 @@ public class ServicePortsConfigModule extends ConfigModule
 	private String serviceRemotingConnectorHost;
 
 	private String globalServiceHost;
-	
+
 	@Override
-	public void init() throws InitException 
+	public void init() throws InitException
 	{
 		if (serviceNamingBindingPort == 0)
 			serviceNamingBindingPort = 1099;
@@ -88,10 +88,10 @@ public class ServicePortsConfigModule extends ConfigModule
 
 		if (serviceTomcatPort == 0)
 			serviceTomcatPort = 8080;
-		
+
 		if (serviceJBossMessagingPort == 0)
 			serviceJBossMessagingPort = 4457;
-		
+
 		if (serviceJrmpPort == 0)
 			serviceJrmpPort = 4444;
 
@@ -105,135 +105,138 @@ public class ServicePortsConfigModule extends ConfigModule
 			serviceClusterHAJNDIRMIPort = 1101;
 
 		if (serviceClusterJrmphaPort == 0)
-			serviceClusterJrmphaPort = 4444;	
-		
+			serviceClusterJrmphaPort = 4444;
+
 		if (serviceClusterPooledhaPort == 0)
-			serviceClusterPooledhaPort = 4448;	
+			serviceClusterPooledhaPort = 4448;
 
 		if (serviceCorbaORBPort == 0)
-			serviceCorbaORBPort = 3528;	
+			serviceCorbaORBPort = 3528;
 
 		if (serviceJMXConnectorRMIPort == 0)
-			serviceJMXConnectorRMIPort = 19001;	
-		
+			serviceJMXConnectorRMIPort = 19001;
+
 		if (serviceSnmpAgentTrapdPort == 0)
-			serviceJMXConnectorRMIPort = 1162;			
-		
+			serviceJMXConnectorRMIPort = 1162;
+
 		if (serviceSnmpAgentSnmpPort == 0)
-			serviceSnmpAgentSnmpPort = 1161;	
-		
+			serviceSnmpAgentSnmpPort = 1161;
+
 		if (serviceJMSPort == 0)
 			serviceJMSPort = 8093;
-		
+
 		if (serviceJMSHttpPort == 0)
-			serviceJMSHttpPort = 8080;	
-		
+			serviceJMSHttpPort = 8080;
+
 		if (serviceJSMHajndiPort == 0)
-			serviceJSMHajndiPort = 1100;	
-		
+			serviceJSMHajndiPort = 1100;
+
 		if (serviceEJB3InvokerHttpPort == 0)
-			serviceEJB3InvokerHttpPort = 8080;	
-		
+			serviceEJB3InvokerHttpPort = 8080;
+
 		if (serviceEJB3RemoteConnectorPort == 0)
-			serviceEJB3RemoteConnectorPort = 3873;		
-		
+			serviceEJB3RemoteConnectorPort = 3873;
+
 		if (serviceInvokerJMXHttpPort == 0)
-			serviceInvokerJMXHttpPort = 8080;	
-	
+			serviceInvokerJMXHttpPort = 8080;
+
 		if (serviceInvokerJMXHttpReadOnlyPort == 0)
 			serviceInvokerJMXHttpReadOnlyPort = 8080;
-		
+
 		if (serviceEJBInvokerHAPort == 0)
 			serviceEJBInvokerHAPort = 8080;
-		
+
 		if (serviceJMXInvokerHAPort == 0)
 			serviceJMXInvokerHAPort = 8080;
-		
+
 		if (serviceAxisServicePort == 0)
 			serviceAxisServicePort = 8080;
-		
+
 		if (serviceRemotingConnectorPort == 0)
 			serviceRemotingConnectorPort = 4446;
-		
+
 		String defaultHost = getDefaultHostName();
-		
+
 		if (globalServiceHost == null)
 			globalServiceHost = defaultHost;
-		
+
 		if (serviceAxisServiceHost == null)
 			serviceAxisServiceHost = defaultHost;
-		
+
 		if (serviceClusterHAJNDIBindingHost == null)
 			serviceClusterHAJNDIBindingHost = defaultHost;
 
 		if (serviceClusterHAJNDIRMIHost == null)
 			serviceClusterHAJNDIRMIHost = defaultHost;
-		
+
 		if (serviceClusterJrmphaHost == null)
 			serviceClusterJrmphaHost = defaultHost;
 
 		if (serviceClusterPooledhaHost == null)
 			serviceClusterPooledhaHost = defaultHost;
-		
+
 		if (serviceCorbaORBHost == null)
 			serviceCorbaORBHost = defaultHost;
-		
+
 		if (serviceEJB3InvokerHttpHost == null)
 			serviceEJB3InvokerHttpHost = defaultHost;
-		
+
 		if (serviceEJB3RemoteConnectorHost == null)
 			serviceEJB3RemoteConnectorHost = defaultHost;
-		
+
 		if (serviceEJBInvokerHAHost == null)
 			serviceEJBInvokerHAHost = defaultHost;
 
 		if (serviceInvokerJMXHttpHost == null)
 			serviceInvokerJMXHttpHost = defaultHost;
-		
+
 		if (serviceInvokerJMXHttpReadOnlyHost == null)
 			serviceInvokerJMXHttpReadOnlyHost = defaultHost;
-		
+
 		if (serviceJBossMessagingHost == null)
-			serviceJBossMessagingHost = defaultHost;		
+			serviceJBossMessagingHost = defaultHost;
 
 		if (serviceJMSHost == null)
-			serviceJMSHost = defaultHost;		
-		
+			serviceJMSHost = defaultHost;
+
 		if (serviceJMSHttpHost == null)
 			serviceJMSHttpHost = defaultHost;
-		
+
 		if (serviceJMXConnectorRMIHost == null)
 			serviceJMXConnectorRMIHost = defaultHost;
-		
+
 		if (serviceJMXInvokerHAHost == null)
-			serviceJMXInvokerHAHost = defaultHost;		
+			serviceJMXInvokerHAHost = defaultHost;
 
 		if (serviceJrmpHost == null)
 			serviceJrmpHost = defaultHost;
-		
+
 		if (serviceJSMHajndiHost == null)
-			serviceJSMHajndiHost = defaultHost;			
-		
+			serviceJSMHajndiHost = defaultHost;
+
 		if (serviceNamingBindingHost == null)
-			serviceNamingBindingHost = defaultHost;	
-		
+			serviceNamingBindingHost = defaultHost;
+
+		if (serviceNamingRMIHost == null)
+			serviceNamingRMIHost = defaultHost;
+
 		if (servicePooledHost == null)
 			servicePooledHost = defaultHost;
-		
+
 		if (serviceRemotingConnectorHost == null)
-			serviceRemotingConnectorHost = defaultHost;			
+			serviceRemotingConnectorHost = defaultHost;
 
 		if (serviceSnmpAgentSnmpHost == null)
-			serviceSnmpAgentSnmpHost = defaultHost;			
+			serviceSnmpAgentSnmpHost = defaultHost;
 
 		if (serviceSnmpAgentTrapdHost == null)
-			serviceSnmpAgentTrapdHost = defaultHost;			
-		
+			serviceSnmpAgentTrapdHost = defaultHost;
+
 		if (serviceTomcatHost == null)
 			serviceTomcatHost = defaultHost;
-		
+
 		if (serviceWebServiceHost == null)
-			serviceWebServiceHost = defaultHost;				
+			serviceWebServiceHost = defaultHost;
 	}
 
 	private void setTomcatDependentPorts(int port) {
@@ -241,7 +244,7 @@ public class ServicePortsConfigModule extends ConfigModule
 		serviceInvokerJMXHttpPort = port;
 		serviceInvokerJMXHttpReadOnlyPort = port;
 	}
-	
+
 	/**
 	 * Returns the serviceNamingBindingPort.
 	 * @return the serviceNamingBindingPort
@@ -544,10 +547,10 @@ public class ServicePortsConfigModule extends ConfigModule
 	 * Sets the serviceEJB3InvokerHttpPort.
 	 * @param serviceEJB3InvokerHttpPort the serviceEJB3InvokerHttpPort to set
 	 */
-	public void setServiceEJB3InvokerHttpPort(int serviceEJB3InvokerHttpPort) 
+	public void setServiceEJB3InvokerHttpPort(int serviceEJB3InvokerHttpPort)
 	{
 		if (serviceEJB3InvokerHttpPort == serviceTomcatPort)
-			this.serviceEJB3InvokerHttpPort = serviceEJB3InvokerHttpPort;	
+			this.serviceEJB3InvokerHttpPort = serviceEJB3InvokerHttpPort;
 	}
 
 	/**
@@ -1081,7 +1084,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	 */
 	public void setGlobalServiceHost(String globalServiceHost) {
 		this.globalServiceHost = globalServiceHost;
-		
+
 		serviceAxisServiceHost = globalServiceHost;
 		serviceClusterHAJNDIBindingHost = globalServiceHost;
 		serviceClusterHAJNDIRMIHost = globalServiceHost;
@@ -1101,12 +1104,21 @@ public class ServicePortsConfigModule extends ConfigModule
 		serviceJrmpHost = globalServiceHost;
 		serviceJSMHajndiHost = globalServiceHost;
 		serviceNamingBindingHost = globalServiceHost;
+		serviceNamingRMIHost = globalServiceHost;
 		servicePooledHost = globalServiceHost;
 		serviceRemotingConnectorHost = globalServiceHost;
 		serviceSnmpAgentSnmpHost = globalServiceHost;
 		serviceSnmpAgentTrapdHost = globalServiceHost;
 		serviceTomcatHost = globalServiceHost;
 		serviceWebServiceHost = globalServiceHost;
+	}
+
+	public String getServiceNamingRMIHost() {
+		return serviceNamingRMIHost;
+	}
+
+	public void setServiceNamingRMIHost(String serviceNamingRMIHost) {
+		this.serviceNamingRMIHost = serviceNamingRMIHost;
 	}
 
 }

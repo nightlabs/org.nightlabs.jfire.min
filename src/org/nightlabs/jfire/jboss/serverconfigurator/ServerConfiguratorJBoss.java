@@ -1031,6 +1031,13 @@ public class ServerConfiguratorJBoss
 		} catch (ConfigModuleNotFoundException e) {
 			servicePortsConfigModule = getConfig().createConfigModule(ServicePortsConfigModule.class);
 		}
+
+		// configure naming service (done here instead of service-binding.xml)
+		replaceMBeanAttribute(document, "org.jboss.naming.NamingService", "Port", null, String.valueOf(servicePortsConfigModule.getServiceNamingBindingPort()));
+		replaceMBeanAttribute(document, "org.jboss.naming.NamingService", "BindAddress", null, servicePortsConfigModule.getServiceNamingBindingHost());
+		replaceMBeanAttribute(document, "org.jboss.naming.NamingService", "RmiPort", null, String.valueOf(servicePortsConfigModule.getServiceNamingRMIPort()));
+		replaceMBeanAttribute(document, "org.jboss.naming.NamingService", "RmiBindAddress", null, servicePortsConfigModule.getServiceNamingRMIHost());
+
 		configureServiceBindingsXml(jbossConfDir, servicePortsConfigModule);
 
 		// write changes
@@ -1707,19 +1714,20 @@ public class ServerConfiguratorJBoss
 		if (nodeServerNode != null)
 		{
 			// naming binding ports
-			Node serviceNamingNode = setServicePortAndHost(document, nodeServerNode, "jboss:service=Naming",
-					servicePortsConfigModule.getServiceNamingBindingPort(), servicePortsConfigModule.getServiceNamingBindingHost());
-			if (serviceNamingNode != null) {
-				Node delegateNode = NLDOMUtil.findNodeByAttribute(serviceNamingNode, "delegate-config", "portName", "Port");
-				Node oldAttributeNode = NLDOMUtil.findElementNode("attribute", delegateNode);
-				if (oldAttributeNode != null) {
-					delegateNode.removeChild(oldAttributeNode);
-				}
-				Element attribute = document.createElement("attribute");
-				attribute.setAttribute("name", "RmiPort");
-				attribute.appendChild( document.createTextNode(String.valueOf(servicePortsConfigModule.getServiceNamingRMIPort())) );
-				delegateNode.appendChild( attribute );
-			}
+			// Commented because already defined in jboss-service.xml and leads to problem when starting the server (comp not bound)
+//			Node serviceNamingNode = setServicePortAndHost(document, nodeServerNode, "jboss:service=Naming",
+//					servicePortsConfigModule.getServiceNamingBindingPort(), servicePortsConfigModule.getServiceNamingBindingHost());
+//			if (serviceNamingNode != null) {
+//				Node delegateNode = NLDOMUtil.findNodeByAttribute(serviceNamingNode, "delegate-config", "portName", "Port");
+//				Node oldAttributeNode = NLDOMUtil.findElementNode("attribute", delegateNode);
+//				if (oldAttributeNode != null) {
+//					delegateNode.removeChild(oldAttributeNode);
+//				}
+//				Element attribute = document.createElement("attribute");
+//				attribute.setAttribute("name", "RmiPort");
+//				attribute.appendChild( document.createTextNode(String.valueOf(servicePortsConfigModule.getServiceNamingRMIPort())) );
+//				delegateNode.appendChild( attribute );
+//			}
 
 			// webservice ports
 			setServicePortAndHost(document, nodeServerNode, "jboss:service=WebService",
@@ -1737,7 +1745,7 @@ public class ServerConfiguratorJBoss
 			Node hajndiNode = setServicePortAndHost(document, nodeServerNode, "jboss:service=HAJNDI",
 					servicePortsConfigModule.getServiceClusterHAJNDIBindingPort(), servicePortsConfigModule.getServiceClusterHAJNDIBindingHost());
 			if (hajndiNode != null) {
-				Node delegateNode = NLDOMUtil.findNodeByAttribute(serviceNamingNode, "delegate-config", "portName", "Port");
+				Node delegateNode = NLDOMUtil.findNodeByAttribute(hajndiNode, "delegate-config", "portName", "Port");
 				Node oldAttributeNode = NLDOMUtil.findElementNode("attribute", delegateNode);
 				if (oldAttributeNode != null) {
 					delegateNode.removeChild(oldAttributeNode);
