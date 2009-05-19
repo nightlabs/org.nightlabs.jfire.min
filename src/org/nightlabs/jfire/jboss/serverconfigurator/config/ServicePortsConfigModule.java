@@ -1164,7 +1164,6 @@ public class ServicePortsConfigModule extends ConfigModule
 		serviceSnmpAgentTrapdHost = globalServiceHost;
 		serviceTomcatHost = globalServiceHost;
 		serviceWebServiceHost = globalServiceHost;
-
 		setChanged();
 	}
 

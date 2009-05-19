@@ -1032,11 +1032,11 @@ public class ServerConfiguratorJBoss
 			servicePortsConfigModule = getConfig().createConfigModule(ServicePortsConfigModule.class);
 		}
 
-		// configure naming service (done here instead of service-binding.xml)
-		replaceMBeanAttribute(document, "org.jboss.naming.NamingService", "Port", null, String.valueOf(servicePortsConfigModule.getServiceNamingBindingPort()));
-		replaceMBeanAttribute(document, "org.jboss.naming.NamingService", "BindAddress", null, servicePortsConfigModule.getServiceNamingBindingHost());
-		replaceMBeanAttribute(document, "org.jboss.naming.NamingService", "RmiPort", null, String.valueOf(servicePortsConfigModule.getServiceNamingRMIPort()));
-		replaceMBeanAttribute(document, "org.jboss.naming.NamingService", "RmiBindAddress", null, servicePortsConfigModule.getServiceNamingRMIHost());
+		// configure naming service
+		setMBeanAttribute(document, "org.jboss.naming.NamingService", "Port", null, String.valueOf(servicePortsConfigModule.getServiceNamingBindingPort()));
+		setMBeanAttribute(document, "org.jboss.naming.NamingService", "BindAddress", null, servicePortsConfigModule.getServiceNamingBindingHost());
+		setMBeanAttribute(document, "org.jboss.naming.NamingService", "RmiPort", null, String.valueOf(servicePortsConfigModule.getServiceNamingRMIPort()));
+		setMBeanAttribute(document, "org.jboss.naming.NamingService", "RmiBindAddress", null, servicePortsConfigModule.getServiceNamingRMIHost());
 
 		configureServiceBindingsXml(jbossConfDir, servicePortsConfigModule);
 
@@ -1700,9 +1700,9 @@ public class ServerConfiguratorJBoss
 
 	private void configureServiceBindingsXml(File jbossConfDir, ServicePortsConfigModule servicePortsConfigModule) throws FileNotFoundException, IOException, SAXException
 	{
-//		// configure jndi.properties
-//		File jndiProperties = new File(jbossConfDir, "jndi.properties");
-//		configureJndiProperties(jndiProperties, servicePortsConfigModule);
+		// configure jndi.properties
+		File jndiProperties = new File(jbossConfDir, "jndi.properties");
+		configureJndiProperties(jndiProperties, servicePortsConfigModule);
 
 		File destFile = new File(jbossConfDir, "service-bindings.xml");
 		DOMParser parser = new DOMParser();
@@ -1715,19 +1715,19 @@ public class ServerConfiguratorJBoss
 		{
 			// naming binding ports
 			// Commented because already defined in jboss-service.xml and leads to problem when starting the server (comp not bound)
-//			Node serviceNamingNode = setServicePortAndHost(document, nodeServerNode, "jboss:service=Naming",
-//					servicePortsConfigModule.getServiceNamingBindingPort(), servicePortsConfigModule.getServiceNamingBindingHost());
-//			if (serviceNamingNode != null) {
-//				Node delegateNode = NLDOMUtil.findNodeByAttribute(serviceNamingNode, "delegate-config", "portName", "Port");
-//				Node oldAttributeNode = NLDOMUtil.findElementNode("attribute", delegateNode);
-//				if (oldAttributeNode != null) {
-//					delegateNode.removeChild(oldAttributeNode);
-//				}
-//				Element attribute = document.createElement("attribute");
-//				attribute.setAttribute("name", "RmiPort");
-//				attribute.appendChild( document.createTextNode(String.valueOf(servicePortsConfigModule.getServiceNamingRMIPort())) );
-//				delegateNode.appendChild( attribute );
-//			}
+			Node serviceNamingNode = setServicePortAndHost(document, nodeServerNode, "jboss:service=Naming",
+					servicePortsConfigModule.getServiceNamingBindingPort(), servicePortsConfigModule.getServiceNamingBindingHost());
+			if (serviceNamingNode != null) {
+				Node delegateNode = NLDOMUtil.findNodeByAttribute(serviceNamingNode, "delegate-config", "portName", "Port");
+				Node oldAttributeNode = NLDOMUtil.findElementNode("attribute", delegateNode);
+				if (oldAttributeNode != null) {
+					delegateNode.removeChild(oldAttributeNode);
+				}
+				Element attribute = document.createElement("attribute");
+				attribute.setAttribute("name", "RmiPort");
+				attribute.appendChild( document.createTextNode(String.valueOf(servicePortsConfigModule.getServiceNamingRMIPort())) );
+				delegateNode.appendChild( attribute );
+			}
 
 			// webservice ports
 			setServicePortAndHost(document, nodeServerNode, "jboss:service=WebService",
