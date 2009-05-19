@@ -237,12 +237,15 @@ public class ServicePortsConfigModule extends ConfigModule
 
 		if (serviceWebServiceHost == null)
 			serviceWebServiceHost = defaultHost;
+
+		setChanged();
 	}
 
 	private void setTomcatDependentPorts(int port) {
 		serviceEJB3InvokerHttpPort = port;
 		serviceInvokerJMXHttpPort = port;
 		serviceInvokerJMXHttpReadOnlyPort = port;
+		setChanged();
 	}
 
 	/**
@@ -259,6 +262,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	 */
 	public void setServiceNamingBindingPort(int serviceNamingBindingPort) {
 		this.serviceNamingBindingPort = serviceNamingBindingPort;
+		setChanged();
 	}
 
 	/**
@@ -275,6 +279,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	 */
 	public void setServiceNamingRMIPort(int serviceNamingRMIPort) {
 		this.serviceNamingRMIPort = serviceNamingRMIPort;
+		setChanged();
 	}
 
 	/**
@@ -291,6 +296,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	 */
 	public void setServiceWebServicePort(int serviceWebServicePort) {
 		this.serviceWebServicePort = serviceWebServicePort;
+		setChanged();
 	}
 
 	/**
@@ -308,6 +314,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	public void setServiceTomcatPort(int serviceTomcatPort) {
 		this.serviceTomcatPort = serviceTomcatPort;
 		setTomcatDependentPorts(serviceTomcatPort);
+		setChanged();
 	}
 
 	/**
@@ -324,6 +331,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	 */
 	public void setServiceJBossMessagingPort(int serviceJBossMessagingPort) {
 		this.serviceJBossMessagingPort = serviceJBossMessagingPort;
+		setChanged();
 	}
 
 	/**
@@ -340,6 +348,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	 */
 	public void setServiceJrmpPort(int serviceJrmpPort) {
 		this.serviceJrmpPort = serviceJrmpPort;
+		setChanged();
 	}
 
 	/**
@@ -356,6 +365,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	 */
 	public void setServicePooledPort(int servicePooledPort) {
 		this.servicePooledPort = servicePooledPort;
+		setChanged();
 	}
 
 	/**
@@ -370,9 +380,9 @@ public class ServicePortsConfigModule extends ConfigModule
 	 * Sets the serviceClusterHAJNDIBindingPort.
 	 * @param serviceClusterHAJNDIBindingPort the serviceClusterHAJNDIBindingPort to set
 	 */
-	public void setServiceClusterHAJNDIBindingPort(
-			int serviceClusterHAJNDIBindingPort) {
+	public void setServiceClusterHAJNDIBindingPort(int serviceClusterHAJNDIBindingPort) {
 		this.serviceClusterHAJNDIBindingPort = serviceClusterHAJNDIBindingPort;
+		setChanged();
 	}
 
 	/**
@@ -389,6 +399,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	 */
 	public void setServiceClusterHAJNDIRMIPort(int serviceClusterHAJNDIRMIPort) {
 		this.serviceClusterHAJNDIRMIPort = serviceClusterHAJNDIRMIPort;
+		setChanged();
 	}
 
 	/**
@@ -405,6 +416,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	 */
 	public void setServiceClusterJrmphaPort(int serviceClusterJrmphaPort) {
 		this.serviceClusterJrmphaPort = serviceClusterJrmphaPort;
+		setChanged();
 	}
 
 	/**
@@ -421,6 +433,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	 */
 	public void setServiceClusterPooledhaPort(int serviceClusterPooledhaPort) {
 		this.serviceClusterPooledhaPort = serviceClusterPooledhaPort;
+		setChanged();
 	}
 
 	/**
@@ -437,6 +450,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	 */
 	public void setServiceCorbaORBPort(int serviceCorbaORBPort) {
 		this.serviceCorbaORBPort = serviceCorbaORBPort;
+		setChanged();
 	}
 
 	/**
@@ -453,6 +467,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	 */
 	public void setServiceJMXConnectorRMIPort(int serviceJMXConnectorRMIPort) {
 		this.serviceJMXConnectorRMIPort = serviceJMXConnectorRMIPort;
+		setChanged();
 	}
 
 	/**
@@ -469,6 +484,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	 */
 	public void setServiceSnmpAgentTrapdPort(int serviceSnmpAgentTrapdPort) {
 		this.serviceSnmpAgentTrapdPort = serviceSnmpAgentTrapdPort;
+		setChanged();
 	}
 
 	/**
@@ -485,6 +501,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	 */
 	public void setServiceSnmpAgentSnmpPort(int serviceSnmpAgentSnmpPort) {
 		this.serviceSnmpAgentSnmpPort = serviceSnmpAgentSnmpPort;
+		setChanged();
 	}
 
 	/**
@@ -501,6 +518,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	 */
 	public void setServiceJMSPort(int serviceJMSPort) {
 		this.serviceJMSPort = serviceJMSPort;
+		setChanged();
 	}
 
 	/**
@@ -517,6 +535,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	 */
 	public void setServiceJMSHttpPort(int serviceJMSHttpPort) {
 		this.serviceJMSHttpPort = serviceJMSHttpPort;
+		setChanged();
 	}
 
 	/**
@@ -533,6 +552,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	 */
 	public void setServiceJSMHajndiPort(int serviceJSMHajndiPort) {
 		this.serviceJSMHajndiPort = serviceJSMHajndiPort;
+		setChanged();
 	}
 
 	/**
@@ -549,8 +569,10 @@ public class ServicePortsConfigModule extends ConfigModule
 	 */
 	public void setServiceEJB3InvokerHttpPort(int serviceEJB3InvokerHttpPort)
 	{
-		if (serviceEJB3InvokerHttpPort == serviceTomcatPort)
+		if (serviceEJB3InvokerHttpPort == serviceTomcatPort) {
 			this.serviceEJB3InvokerHttpPort = serviceEJB3InvokerHttpPort;
+			setChanged();
+		}
 	}
 
 	/**
@@ -567,6 +589,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	 */
 	public void setServiceEJB3RemoteConnectorPort(int serviceEJB3RemoteConnectorPort) {
 		this.serviceEJB3RemoteConnectorPort = serviceEJB3RemoteConnectorPort;
+		setChanged();
 	}
 
 	/**
@@ -582,8 +605,10 @@ public class ServicePortsConfigModule extends ConfigModule
 	 * @param serviceInvokerJMXHttpPort the serviceInvokerJMXHttpPort to set
 	 */
 	public void setServiceInvokerJMXHttpPort(int serviceInvokerJMXHttpPort) {
-		if (serviceInvokerJMXHttpPort == serviceTomcatPort)
+		if (serviceInvokerJMXHttpPort == serviceTomcatPort) {
 			this.serviceInvokerJMXHttpPort = serviceInvokerJMXHttpPort;
+			setChanged();
+		}
 	}
 
 	/**
@@ -599,8 +624,10 @@ public class ServicePortsConfigModule extends ConfigModule
 	 * @param serviceInvokerJMXHttpReadOnlyPort the serviceInvokerJMXHttpReadOnlyPort to set
 	 */
 	public void setServiceInvokerJMXHttpReadOnlyPort(int serviceInvokerJMXHttpReadOnlyPort) {
-		if (serviceInvokerJMXHttpReadOnlyPort == serviceTomcatPort)
+		if (serviceInvokerJMXHttpReadOnlyPort == serviceTomcatPort) {
 			this.serviceInvokerJMXHttpReadOnlyPort = serviceInvokerJMXHttpReadOnlyPort;
+			setChanged();
+		}
 	}
 
 	/**
@@ -617,6 +644,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	 */
 	public void setServiceEJBInvokerHAPort(int serviceEJBInvokerHAPort) {
 		this.serviceEJBInvokerHAPort = serviceEJBInvokerHAPort;
+		setChanged();
 	}
 
 	/**
@@ -633,6 +661,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	 */
 	public void setServiceJMXInvokerHAPort(int serviceJMXInvokerHAPort) {
 		this.serviceJMXInvokerHAPort = serviceJMXInvokerHAPort;
+		setChanged();
 	}
 
 	/**
@@ -649,6 +678,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	 */
 	public void setServiceAxisServicePort(int serviceAxisServicePort) {
 		this.serviceAxisServicePort = serviceAxisServicePort;
+		setChanged();
 	}
 
 	/**
@@ -665,6 +695,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	 */
 	public void setServiceRemotingConnectorPort(int serviceRemotingConnectorPort) {
 		this.serviceRemotingConnectorPort = serviceRemotingConnectorPort;
+		setChanged();
 	}
 
 	/**
@@ -681,6 +712,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	 */
 	public void setServiceNamingBindingHost(String serviceNamingBindingHost) {
 		this.serviceNamingBindingHost = serviceNamingBindingHost;
+		setChanged();
 	}
 
 	/**
@@ -697,6 +729,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	 */
 	public void setServiceWebServiceHost(String serviceWebServiceHost) {
 		this.serviceWebServiceHost = serviceWebServiceHost;
+		setChanged();
 	}
 
 	/**
@@ -713,6 +746,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	 */
 	public void setServiceTomcatHost(String serviceTomcatHost) {
 		this.serviceTomcatHost = serviceTomcatHost;
+		setChanged();
 	}
 
 	/**
@@ -729,6 +763,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	 */
 	public void setServiceJBossMessagingHost(String serviceJBossMessagingHost) {
 		this.serviceJBossMessagingHost = serviceJBossMessagingHost;
+		setChanged();
 	}
 
 	/**
@@ -745,6 +780,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	 */
 	public void setServiceJrmpHost(String serviceJrmpHost) {
 		this.serviceJrmpHost = serviceJrmpHost;
+		setChanged();
 	}
 
 	/**
@@ -761,6 +797,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	 */
 	public void setServicePooledHost(String servicePooledHost) {
 		this.servicePooledHost = servicePooledHost;
+		setChanged();
 	}
 
 	/**
@@ -775,9 +812,9 @@ public class ServicePortsConfigModule extends ConfigModule
 	 * Sets the serviceClusterHAJNDIBindingHost.
 	 * @param serviceClusterHAJNDIBindingHost the serviceClusterHAJNDIBindingHost to set
 	 */
-	public void setServiceClusterHAJNDIBindingHost(
-			String serviceClusterHAJNDIBindingHost) {
+	public void setServiceClusterHAJNDIBindingHost(String serviceClusterHAJNDIBindingHost) {
 		this.serviceClusterHAJNDIBindingHost = serviceClusterHAJNDIBindingHost;
+		setChanged();
 	}
 
 	/**
@@ -794,6 +831,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	 */
 	public void setServiceClusterHAJNDIRMIHost(String serviceClusterHAJNDIRMIHost) {
 		this.serviceClusterHAJNDIRMIHost = serviceClusterHAJNDIRMIHost;
+		setChanged();
 	}
 
 	/**
@@ -810,6 +848,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	 */
 	public void setServiceClusterJrmphaHost(String serviceClusterJrmphaHost) {
 		this.serviceClusterJrmphaHost = serviceClusterJrmphaHost;
+		setChanged();
 	}
 
 	/**
@@ -826,6 +865,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	 */
 	public void setServiceClusterPooledhaHost(String serviceClusterPooledhaHost) {
 		this.serviceClusterPooledhaHost = serviceClusterPooledhaHost;
+		setChanged();
 	}
 
 	/**
@@ -842,6 +882,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	 */
 	public void setServiceCorbaORBHost(String serviceCorbaORBHost) {
 		this.serviceCorbaORBHost = serviceCorbaORBHost;
+		setChanged();
 	}
 
 	/**
@@ -858,6 +899,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	 */
 	public void setServiceJMXConnectorRMIHost(String serviceJMXConnectorRMIHost) {
 		this.serviceJMXConnectorRMIHost = serviceJMXConnectorRMIHost;
+		setChanged();
 	}
 
 	/**
@@ -874,6 +916,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	 */
 	public void setServiceSnmpAgentTrapdHost(String serviceSnmpAgentTrapdHost) {
 		this.serviceSnmpAgentTrapdHost = serviceSnmpAgentTrapdHost;
+		setChanged();
 	}
 
 	/**
@@ -890,6 +933,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	 */
 	public void setServiceSnmpAgentSnmpHost(String serviceSnmpAgentSnmpHost) {
 		this.serviceSnmpAgentSnmpHost = serviceSnmpAgentSnmpHost;
+		setChanged();
 	}
 
 	/**
@@ -906,6 +950,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	 */
 	public void setServiceJMSHost(String serviceJMSHost) {
 		this.serviceJMSHost = serviceJMSHost;
+		setChanged();
 	}
 
 	/**
@@ -922,6 +967,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	 */
 	public void setServiceJMSHttpHost(String serviceJMSHttpHost) {
 		this.serviceJMSHttpHost = serviceJMSHttpHost;
+		setChanged();
 	}
 
 	/**
@@ -938,6 +984,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	 */
 	public void setServiceJSMHajndiHost(String serviceJSMHajndiHost) {
 		this.serviceJSMHajndiHost = serviceJSMHajndiHost;
+		setChanged();
 	}
 
 	/**
@@ -954,6 +1001,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	 */
 	public void setServiceEJB3InvokerHttpHost(String serviceEJB3InvokerHttpHost) {
 		this.serviceEJB3InvokerHttpHost = serviceEJB3InvokerHttpHost;
+		setChanged();
 	}
 
 	/**
@@ -968,9 +1016,9 @@ public class ServicePortsConfigModule extends ConfigModule
 	 * Sets the serviceEJB3RemoteConnectorHost.
 	 * @param serviceEJB3RemoteConnectorHost the serviceEJB3RemoteConnectorHost to set
 	 */
-	public void setServiceEJB3RemoteConnectorHost(
-			String serviceEJB3RemoteConnectorHost) {
+	public void setServiceEJB3RemoteConnectorHost(String serviceEJB3RemoteConnectorHost) {
 		this.serviceEJB3RemoteConnectorHost = serviceEJB3RemoteConnectorHost;
+		setChanged();
 	}
 
 	/**
@@ -987,6 +1035,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	 */
 	public void setServiceInvokerJMXHttpHost(String serviceInvokerJMXHttpHost) {
 		this.serviceInvokerJMXHttpHost = serviceInvokerJMXHttpHost;
+		setChanged();
 	}
 
 	/**
@@ -1001,9 +1050,9 @@ public class ServicePortsConfigModule extends ConfigModule
 	 * Sets the serviceInvokerJMXHttpReadOnlyHost.
 	 * @param serviceInvokerJMXHttpReadOnlyHost the serviceInvokerJMXHttpReadOnlyHost to set
 	 */
-	public void setServiceInvokerJMXHttpReadOnlyHost(
-			String serviceInvokerJMXHttpReadOnlyHost) {
+	public void setServiceInvokerJMXHttpReadOnlyHost(String serviceInvokerJMXHttpReadOnlyHost) {
 		this.serviceInvokerJMXHttpReadOnlyHost = serviceInvokerJMXHttpReadOnlyHost;
+		setChanged();
 	}
 
 	/**
@@ -1020,6 +1069,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	 */
 	public void setServiceEJBInvokerHAHost(String serviceEJBInvokerHAHost) {
 		this.serviceEJBInvokerHAHost = serviceEJBInvokerHAHost;
+		setChanged();
 	}
 
 	/**
@@ -1036,6 +1086,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	 */
 	public void setServiceJMXInvokerHAHost(String serviceJMXInvokerHAHost) {
 		this.serviceJMXInvokerHAHost = serviceJMXInvokerHAHost;
+		setChanged();
 	}
 
 	/**
@@ -1052,6 +1103,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	 */
 	public void setServiceAxisServiceHost(String serviceAxisServiceHost) {
 		this.serviceAxisServiceHost = serviceAxisServiceHost;
+		setChanged();
 	}
 
 	/**
@@ -1068,6 +1120,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	 */
 	public void setServiceRemotingConnectorHost(String serviceRemotingConnectorHost) {
 		this.serviceRemotingConnectorHost = serviceRemotingConnectorHost;
+		setChanged();
 	}
 
 	/**
@@ -1111,6 +1164,8 @@ public class ServicePortsConfigModule extends ConfigModule
 		serviceSnmpAgentTrapdHost = globalServiceHost;
 		serviceTomcatHost = globalServiceHost;
 		serviceWebServiceHost = globalServiceHost;
+
+		setChanged();
 	}
 
 	public String getServiceNamingRMIHost() {
@@ -1119,6 +1174,7 @@ public class ServicePortsConfigModule extends ConfigModule
 
 	public void setServiceNamingRMIHost(String serviceNamingRMIHost) {
 		this.serviceNamingRMIHost = serviceNamingRMIHost;
+		setChanged();
 	}
 
 }
