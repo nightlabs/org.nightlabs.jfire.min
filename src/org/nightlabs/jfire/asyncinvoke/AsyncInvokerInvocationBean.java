@@ -50,6 +50,10 @@ import javax.ejb.TransactionManagementType;
  */
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 @TransactionManagement(TransactionManagementType.CONTAINER)
+/*
+ * See http://www.jboss.org/file-access/default/members/jbossejb3/freezone/docs/tutorial/1.0.6/html/Message_Driven_Beans.html
+ * TODO Maybe it would be better to configure some of these settings in a configuration file?! Marco.
+ */
 @MessageDriven(
 		name="jfire/mdb/JFireBaseBean/AsyncInvokerInvocation",
 		activationConfig={
@@ -64,7 +68,19 @@ import javax.ejb.TransactionManagementType;
 				@ActivationConfigProperty(
 						propertyName="destination",
 						propertyValue="queue/jfire/JFireBaseBean/AsyncInvokerInvocationQueue"
-				)
+				),
+				@ActivationConfigProperty(
+						propertyName="maxSession",
+						propertyValue="15" // How many concurrent invocations are processed?
+				),
+				@ActivationConfigProperty(
+						propertyName="dLQJNDIName",
+						propertyValue="queue/jfire/JFireBaseBean/AsyncInvokerUndeliverableCallbackQueue" // If processing fails and even retrying doesn't help, deliver it to this queue.
+				),
+				@ActivationConfigProperty(
+						propertyName="dLQMaxResent",
+						propertyValue="5" // How often should it be retried before sending to the DLQ.
+				),
 		}
 )
 public class AsyncInvokerInvocationBean

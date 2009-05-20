@@ -50,6 +50,9 @@ import javax.ejb.TransactionManagementType;
  */
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 @TransactionManagement(TransactionManagementType.CONTAINER)
+/*
+ * See http://www.jboss.org/file-access/default/members/jbossejb3/freezone/docs/tutorial/1.0.6/html/Message_Driven_Beans.html
+ */
 @MessageDriven(
 		name="jfire/mdb/JFireBaseBean/AsyncInvokerUndeliverableCallback",
 		activationConfig={
