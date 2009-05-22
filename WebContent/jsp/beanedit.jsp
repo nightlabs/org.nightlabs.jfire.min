@@ -33,7 +33,8 @@ if(shortDescription != null && !shortDescription.isEmpty() && !shortDescription.
 for(ExtendedPropertyDescriptor pd : pds) {
 	if(pd.getWriteMethod() != null && !pd.isHidden()) {
 		String name = "beanedit."+beanKey+".value."+pd.getName();
-		String value = String.valueOf(pd.getValue(bean));
+		Object realValue = pd.getValue(bean);
+		String value = realValue != null ? String.valueOf(realValue) : "";
 %>
 <tr>
 	<td valign="top"><%=pd.getDisplayName()%>: </td>
