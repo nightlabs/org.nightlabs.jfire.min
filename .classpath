@@ -9,5 +9,7 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/JFireServerManager"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/org.nightlabs.base"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/org.nightlabs.jfire.base"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/org.nightlabs.concurrent"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/org.nightlabs.config"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
