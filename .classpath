@@ -14,5 +14,7 @@
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/org.nightlabs.jdo"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/org.nightlabs.query"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/org.nightlabs.query.jdo"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/org.nightlabs.concurrent"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/org.nightlabs.config"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
