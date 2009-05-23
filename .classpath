@@ -6,5 +6,7 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
 	<classpathentry kind="con" path="org.nightlabs.eclipse.sdk.jdo.JDO_CONTAINER"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/JFireBaseBean"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/org.nightlabs.concurrent"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/org.nightlabs.config"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
