@@ -41,6 +41,12 @@
 		<java>org.nightlabs.base.jar</java>
 	</module>
 	<module>
+		<java>org.nightlabs.config.jar</java>
+	</module>
+	<module>
+		<java>org.nightlabs.concurrent.jar</java>
+	</module>
+	<module>
 		<java>JFireBasePublicBean.jar</java>
 	</module>
 	<module>

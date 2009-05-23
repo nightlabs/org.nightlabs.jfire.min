@@ -11,6 +11,8 @@
 		<project>org.nightlabs.query</project>
 		<project>org.nightlabs.clientui</project>
 		<project>org.nightlabs.base</project>
+		<project>org.nightlabs.config</project>
+		<project>org.nightlabs.concurrent</project>
 		<project>JFireBasePublicBean</project>
 		<project>JFireBaseBean</project>
 		<project>JFireBaseClientLib</project>

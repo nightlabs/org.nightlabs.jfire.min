@@ -48,5 +48,11 @@
         <dependent-module archiveName="JFireBaseDAO.jar" deploy-path="/" handle="module:/resource/JFireBaseDAO/JFireBaseDAO">
             <dependency-type>uses</dependency-type>
         </dependent-module>
+        <dependent-module archiveName="org.nightlabs.concurrent.jar" deploy-path="/" handle="module:/resource/org.nightlabs.concurrent/org.nightlabs.concurrent">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="org.nightlabs.config.jar" deploy-path="/" handle="module:/resource/org.nightlabs.config/org.nightlabs.config">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
     </wb-module>
 </project-modules>
