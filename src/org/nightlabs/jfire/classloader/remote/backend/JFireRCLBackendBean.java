@@ -24,7 +24,7 @@
  *                                                                             *
  ******************************************************************************/
 
-package org.nightlabs.jfire.classloader;
+package org.nightlabs.jfire.classloader.remote.backend;
 
 import java.rmi.RemoteException;
 import java.util.List;
@@ -39,6 +39,10 @@ import javax.ejb.TransactionAttributeType;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
+import org.nightlabs.jfire.classloader.CLRegistrar;
+import org.nightlabs.jfire.classloader.remote.backend.ClassLoaderException;
+import org.nightlabs.jfire.classloader.remote.backend.JFireRCLBackendRemote;
+import org.nightlabs.jfire.classloader.remote.backend.ResourceMetaData;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 
 /**

@@ -1,5 +1,8 @@
 Manifest-Version: 1.0
-XXXClass-Path: JFireBaseBean.jar 
+XXXClass-Path: JFireBaseBean.jar JFireServerManager.rar JFireRCLBacken
+ d.jar
+Class-Path: org.nightlabs.jfire.classloader.remote.backend.jar 
  JFireServerManager.rar 
- JFireRCLBackend.jar
+ org.nightlabs.base.jar 
+ JFireBaseBean.jar
 
