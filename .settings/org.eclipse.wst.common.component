@@ -42,9 +42,6 @@
             <dependent-object/>
             <dependency-type>uses</dependency-type>
         </dependent-module>
-        <dependent-module archiveName="JFireRCLBackend.jar" deploy-path="/" handle="module:/resource/JFireRCLBackend/JFireRCLBackend">
-            <dependency-type>uses</dependency-type>
-        </dependent-module>
         <dependent-module archiveName="JFireBaseDAO.jar" deploy-path="/" handle="module:/resource/JFireBaseDAO/JFireBaseDAO">
             <dependency-type>uses</dependency-type>
         </dependent-module>
@@ -52,6 +49,9 @@
             <dependency-type>uses</dependency-type>
         </dependent-module>
         <dependent-module archiveName="org.nightlabs.config.jar" deploy-path="/" handle="module:/resource/org.nightlabs.config/org.nightlabs.config">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="org.nightlabs.jfire.classloader.remote.backend.jar" deploy-path="/" handle="module:/resource/org.nightlabs.jfire.classloader.remote.backend/org.nightlabs.jfire.classloader.remote.backend">
             <dependency-type>uses</dependency-type>
         </dependent-module>
     </wb-module>

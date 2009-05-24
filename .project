@@ -17,8 +17,8 @@
 		<project>JFireBaseBean</project>
 		<project>JFireBaseClientLib</project>
 		<project>JFireRCLBackendBean</project>
-		<project>JFireRCLBackend</project>
 		<project>JFireBaseDAO</project>
+		<project>org.nightlabs.jfire.classloader.remote.backend</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
