@@ -1,10 +1,6 @@
 Manifest-Version: 1.0
-XXXClass-Path: JFireBaseJ2EE.jar 
- org.nightlabs.base.jar 
- org.nightlabs.clientui.jar 
- org.nightlabs.jdo.jar 
- org.nightlabs.jfire.base.jar 
- org.nightlabs.query.jar 
- org.nightlabs.query.jdo.jar 
- JFireRCLBackend.jar
+XXXClass-Path: JFireBaseJ2EE.jar org.nightlabs.base.jar org.nightlabs.
+ clientui.jar org.nightlabs.jdo.jar org.nightlabs.jfire.base.jar org.n
+ ightlabs.query.jar org.nightlabs.query.jdo.jar JFireRCLBackend.jar
+Class-Path: org.nightlabs.jfire.classloader.remote.backend.jar
 

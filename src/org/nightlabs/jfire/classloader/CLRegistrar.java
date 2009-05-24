@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.util.List;
 
 import org.nightlabs.jfire.base.JFireBasePrincipal;
+import org.nightlabs.jfire.classloader.remote.backend.ResourceMetaData;
 import org.nightlabs.xml.XMLReadException;
 
 /**
@@ -68,12 +69,12 @@ public class CLRegistrar
 		return clRegistrarFactory.getResourceBytes(rmd);
 	}
 
-	protected synchronized byte[] getResourcesMetaDataMapBytes() throws XMLReadException, IOException
+	public synchronized byte[] getResourcesMetaDataMapBytes() throws XMLReadException, IOException
 	{
 		return clRegistrarFactory.getResourcesMetaDataMapBytes();
 	}
 
-	protected synchronized long getResourcesMetaDataMapBytesTimestamp() throws XMLReadException, IOException
+	public synchronized long getResourcesMetaDataMapBytesTimestamp() throws XMLReadException, IOException
 	{
 		return clRegistrarFactory.getResourcesMetaDataMapBytesTimestamp();
 	}

@@ -50,6 +50,7 @@ import org.apache.log4j.Logger;
 import org.nightlabs.io.DataBuffer;
 import org.nightlabs.jfire.base.JFireBasePrincipal;
 import org.nightlabs.jfire.classloader.CLRegistryCfMod.ResourceRepository;
+import org.nightlabs.jfire.classloader.remote.backend.ResourceMetaData;
 import org.nightlabs.jfire.classloader.xml.CLRepositoryFileFilter;
 import org.nightlabs.jfire.classloader.xml.CLRepositoryMan;
 import org.nightlabs.jfire.classloader.xml.CLRepositoryMan.Publication;
