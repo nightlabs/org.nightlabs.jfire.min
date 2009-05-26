@@ -46,7 +46,7 @@ public class ServletSSLCf
 
 	/**
 	 * If this method returns an empty String "" then the keystoreURL has already been imported and
-	 * is located under <code>%jboss%/bin/jfire-server.keystore</code>.
+	 * is located under <code>%jboss%/server/default/config/jfire-server.keystore</code>.
 	 *
 	 * @return The URL.toString() pointing to a keystore that contains the servers ssl certificate.
 	 */
