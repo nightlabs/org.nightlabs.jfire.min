@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
+import java.net.URL;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Properties;
@@ -58,11 +59,14 @@ import org.xml.sax.SAXException;
 public class ServerConfiguratorJBoss
 		extends ServerConfigurator
 {
+	private static final String JFIRE_SERVER_KEYSTORE_FILE_NAME = "jfire-server.keystore";
+	private static final String JFIRE_SERVER_KEYSTORE_FILE = "conf/" + JFIRE_SERVER_KEYSTORE_FILE_NAME;
 	private static final String HTTPS_CONNECTOR_MODIFIED_COMMENT = "Connector was enabled via ServerConfigurator!";
 	private static final String HTTPS_CONNECTOR_KEY_ALIAS = "keyAlias";
 	private static final String HTTPS_CONNECTOR_KEYSTORE_PASS = "keystorePass";
 	private static final String HTTPS_CONNECTOR_KEYSTORE_FILE = "keystoreFile";
-	private static final String HTTPS_CONNECTOR_KEYSTORE_FILE_LOCATION = "../../bin/jfire-server.keystore";
+	private File jbossConfDir;
+	private File jfireServerKeystoreFile;
 
 	private static final Logger logger = Logger.getLogger(ServerConfiguratorJBoss.class);
 	protected static final boolean rebootOnDeployDirChanges = false;
@@ -132,10 +136,15 @@ public class ServerConfiguratorJBoss
 	{
 		try {
 			// jbossDeployDir is ${jboss}/server/default/deploy - not ${jboss}/server/default/deploy/JFire.last
+			// TODO: Why not using the system property set by JBoss to distinguish between different server configurations? (${jboss.server.home.dir}) and then append the deploy dir from the config module? (marius)
 			File jbossDeployDir = new File(getJFireServerConfigModule().getJ2ee().getJ2eeDeployBaseDirectory()).getParentFile().getAbsoluteFile();
-			File jbossConfDir = new File(jbossDeployDir.getParentFile(), "conf");
+
+			jbossConfDir = new File(jbossDeployDir.getParentFile(), "conf");
+			jfireServerKeystoreFile = new File(jbossConfDir, JFIRE_SERVER_KEYSTORE_FILE_NAME);
+
 			File jbossBaseDir = jbossDeployDir.getParentFile().getParentFile().getParentFile();
 			File jbossBinDir = new File(jbossBaseDir, "bin");
+
 
 			// due to changes, server version is not needed anymore.
 			// Please keep the commented code in the file - it might be useful for later use.
@@ -498,6 +507,14 @@ public class ServerConfiguratorJBoss
 	}
 
 	/**
+	 * @return the config directory of the jboss.
+	 */
+	protected File getJBossConfigDir()
+	{
+		return jbossConfDir;
+	}
+
+	/**
 	 * It is assumed that the jboss web deployer is in the
 	 * <pre>${jboss}/server/default/deploy/jboss-web.deployer/</pre> folder.
 	 *
@@ -560,7 +577,7 @@ public class ServerConfiguratorJBoss
 		if (httpsNode != null)
 		{
 			// there is a https connector -> modify it if necessary
-			modified = adaptHttpsConnector(document, httpsNode, getJFireServerConfigModule());
+			modified = adaptHttpsConnector(document, httpsNode, getJFireServerConfigModule(), getJBossConfigDir());
 		}
 		else
 		{
@@ -596,7 +613,7 @@ public class ServerConfiguratorJBoss
 			Node httpsConnectorNode = domParser.getDocument().getFirstChild();
 			Document conDoc = domParser.getDocument();
 
-			modified = adaptHttpsConnector(conDoc, httpsConnectorNode, getJFireServerConfigModule());
+			modified = adaptHttpsConnector(conDoc, httpsConnectorNode, getJFireServerConfigModule(), getJBossConfigDir());
 
 //			try
 //			{
@@ -660,11 +677,11 @@ public class ServerConfiguratorJBoss
 	 * @param httpsConnector The node corresponding to a https connector definition.
 	 * @param serverConfigModule The config module containing the information about the keystore &
 	 * 	the certificate.
-	 *
+	 * @param jbossConfigDir TODO
 	 * @return whether the attributes of the given httpsConnector node have been modified.
 	 */
 	private boolean adaptHttpsConnector(Document document, Node httpsConnector,
-			JFireServerConfigModule serverConfigModule)
+			JFireServerConfigModule serverConfigModule, File jbossConfigDir)
 	{
 		assert document != null;
 		assert httpsConnector != null;
@@ -678,8 +695,19 @@ public class ServerConfiguratorJBoss
 		NamedNodeMap attributes = httpsConnector.getAttributes();
 		boolean attributesChanged = false;
 
+		// ensures that the keystore is always in %JBoss%/server/%servername%/conf/jfire-server.keystore
+//		final File jbossBinDir = new File(jbossConfigDir.getParentFile().getParentFile().getParentFile(), "bin");
+//		String realtiveKeystoreFilePath = null;
+//		try
+//		{
+//			realtiveKeystoreFilePath = IOUtil.getRelativePath(jbossBinDir, new File(jbossConfigDir, JFIRE_SERVER_KEYSTORE_FILE_NAME));
+//		} catch (IOException e)
+//		{
+//			throw new IllegalStateException("Couldn't build a relative path to the keystore file!");
+//		}
+
 		if (attributes.getNamedItem(HTTPS_CONNECTOR_KEYSTORE_FILE) == null ||
-				!((Attr) attributes.getNamedItem(HTTPS_CONNECTOR_KEYSTORE_FILE)).getValue().equals(HTTPS_CONNECTOR_KEYSTORE_FILE_LOCATION))
+				!((Attr) attributes.getNamedItem(HTTPS_CONNECTOR_KEYSTORE_FILE)).getValue().equals(JFIRE_SERVER_KEYSTORE_FILE))
 		{
 			Attr keystoreFileAttr = (Attr) attributes.getNamedItem(HTTPS_CONNECTOR_KEYSTORE_FILE);
 			if (keystoreFileAttr == null) {
@@ -687,7 +715,7 @@ public class ServerConfiguratorJBoss
 				attributes.setNamedItem(keystoreFileAttr);
 			}
 
-			keystoreFileAttr.setValue(HTTPS_CONNECTOR_KEYSTORE_FILE_LOCATION);
+			keystoreFileAttr.setValue(JFIRE_SERVER_KEYSTORE_FILE);
 			attributesChanged = true;
 		}
 
@@ -1880,4 +1908,148 @@ public class ServerConfiguratorJBoss
 			IOUtil.writeTextFile(jndiProperties, sb.toString());
 		}
 	}
+
+	@Override
+	protected void afterDoConfigureServer(Throwable x)
+			throws ServerConfigurationException
+	{
+		super.afterDoConfigureServer(x);
+
+		if (x != null)
+			return;
+
+		final JFireServerConfigModule jfireServerConfigModule = getJFireServerConfigModule();
+
+		if (!jfireServerConfigModule.getServletSSLCf().isKeystoreURLImported())
+		{
+			final String keystoreURLToImport = jfireServerConfigModule.getServletSSLCf().getKeystoreURLToImport();
+			FileOutputStream keystorePropFileStream = null;
+
+			try
+			{
+				InputStream keystoreToImportStream;
+				// distinguish between default and non-default keystore via this constant
+				if ("".equals(keystoreURLToImport))
+				{
+					throw new IllegalStateException("No keystore can be found in " +
+							"%jboss%/server/default/config/jfire-server.keystore and no keystoreToImport is set!");
+				}
+				else if (ServletSSLCf.DEFAULT_KEYSTORE.equals(keystoreURLToImport))
+				{
+					keystoreToImportStream = ServerConfigurator.class.getResourceAsStream("/jfire-server.keystore");
+				}
+				else
+					keystoreToImportStream = new URL(keystoreURLToImport).openStream();
+
+				boolean transferData = false;
+				if (! jfireServerKeystoreFile.exists() || ! jfireServerKeystoreFile.canRead())
+				{
+					transferData = true;
+				}
+				else
+				{
+					FileInputStream fileInputStream = new FileInputStream(jfireServerKeystoreFile);
+					if (fileInputStream.available() != keystoreToImportStream.available() ||
+							! IOUtil.compareInputStreams(
+									keystoreToImportStream, fileInputStream, fileInputStream.available() ))
+					{
+						transferData = true;
+					}
+					fileInputStream.close();
+				}
+
+				final ServletSSLCf servletSSLCf = jfireServerConfigModule.getServletSSLCf();
+
+				// if files are equal -> don't need to copy.
+				if (! transferData)
+				{
+					// set the keystore file to the imported state (== set the keystoreURLToImport = "")
+					servletSSLCf.setKeystoreURLImported();
+					return;
+				}
+
+				// files differ or the destination file doesn't exist yet
+				FileOutputStream keyStoreStream = new FileOutputStream(jfireServerKeystoreFile);
+				try {
+					IOUtil.transferStreamData(keystoreToImportStream, keyStoreStream);
+				}	finally {
+					keyStoreStream.close();
+				}
+
+				// Write all ssl socket related infos into a properties file next to jfire-server.keystore,
+				// because the org.nightlabs.rmissl.socket.SSLCompressionServerSocketFactory and
+				// org.nightlabs.rmissl.socket.SSLCompressionRMIServerSocketFactory need to know these
+				// infos and the projects don't know anything from each other (and are not allowed to).
+				Properties props = new Properties();
+				props.put("org.nightlabs.ssl.keystorePassword", servletSSLCf.getKeystorePassword());
+				props.put("org.nightlabs.ssl.serverCertificateAlias", servletSSLCf.getSslServerCertificateAlias());
+				props.put("org.nightlabs.ssl.serverCertificatePassword", servletSSLCf.getSslServerCertificatePassword());
+				File keystorePropFile = new File(getJBossConfigDir(), "jfire-server.keystore.properties").getAbsoluteFile();
+				keystorePropFileStream = new FileOutputStream(keystorePropFile);
+				props.store(keystorePropFileStream, "The properties needed to read the correct private " +
+						"certificate from the jfire-server.keystore.\n" +
+						"These credentials are needed by the SSLCompressionServerSocketFactory.");
+
+				// set the keystore file to the imported state (== set the keystoreURLToImport = "")
+				servletSSLCf.setKeystoreURLImported();
+				setRebootRequired(true);
+			}
+			catch (IOException e) {
+				throw new ServerConfigurationException(e);
+			}
+			finally {
+				if (keystorePropFileStream != null)
+				{
+					try
+					{
+						keystorePropFileStream.close();
+					}
+					catch (IOException e)
+					{
+						throw new ServerConfigurationException("Couldn't close the output stream from writing "+
+								"the keystore properties!", e);
+					}
+				}
+			}
+		}
+	}
+
+	@Override
+	protected void afterUndoConfigureServer(Throwable x)
+			throws ServerConfigurationException
+	{
+		super.afterUndoConfigureServer(x);
+
+		if (x == null)
+		{
+			try {
+				clearKeystoreFile();
+			} catch (IOException e) {
+				throw new ServerConfigurationException(e);
+			}
+		}
+	}
+
+	private void clearKeystoreFile() throws IOException
+	{
+		if (!jfireServerKeystoreFile.exists())
+			return;
+
+		int backupFileIndex = 0;
+		File backupFile;
+		do {
+			backupFile = new File(jfireServerKeystoreFile.getAbsolutePath() + '.' + (backupFileIndex++) + ".bak");
+
+			if (backupFile.exists() && IOUtil.compareFiles(jfireServerKeystoreFile, backupFile)) {
+				jfireServerKeystoreFile.delete();
+				return;
+			}
+		} while (backupFile.exists());
+
+		if (!jfireServerKeystoreFile.renameTo(backupFile)) {
+			IOUtil.copyFile(jfireServerKeystoreFile, backupFile);
+			jfireServerKeystoreFile.delete();
+		}
+	}
+
 }
