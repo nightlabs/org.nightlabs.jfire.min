@@ -66,7 +66,6 @@ public class ServerConfiguratorJBoss
 	private static final String HTTPS_CONNECTOR_KEYSTORE_PASS = "keystorePass";
 	private static final String HTTPS_CONNECTOR_KEYSTORE_FILE = "keystoreFile";
 	private File jbossConfDir;
-	private File jfireServerKeystoreFile;
 
 	private static final Logger logger = Logger.getLogger(ServerConfiguratorJBoss.class);
 	protected static final boolean rebootOnDeployDirChanges = false;
@@ -140,7 +139,6 @@ public class ServerConfiguratorJBoss
 			File jbossDeployDir = new File(getJFireServerConfigModule().getJ2ee().getJ2eeDeployBaseDirectory()).getParentFile().getAbsoluteFile();
 
 			jbossConfDir = new File(jbossDeployDir.getParentFile(), "conf");
-			jfireServerKeystoreFile = new File(jbossConfDir, JFIRE_SERVER_KEYSTORE_FILE_NAME);
 
 			File jbossBaseDir = jbossDeployDir.getParentFile().getParentFile().getParentFile();
 			File jbossBinDir = new File(jbossBaseDir, "bin");
@@ -1942,6 +1940,7 @@ public class ServerConfiguratorJBoss
 					keystoreToImportStream = new URL(keystoreURLToImport).openStream();
 
 				boolean transferData = false;
+				File jfireServerKeystoreFile = new File(JFIRE_SERVER_KEYSTORE_FILE);
 				if (! jfireServerKeystoreFile.exists() || ! jfireServerKeystoreFile.canRead())
 				{
 					transferData = true;
@@ -2032,6 +2031,8 @@ public class ServerConfiguratorJBoss
 
 	private void clearKeystoreFile() throws IOException
 	{
+		final File jfireServerKeystoreFile = new File(JFIRE_SERVER_KEYSTORE_FILE);
+
 		if (!jfireServerKeystoreFile.exists())
 			return;
 
