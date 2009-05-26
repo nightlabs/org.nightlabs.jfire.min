@@ -29,8 +29,9 @@ public interface JFireRCDLDelegateFilter
 {
 	/**
 	 * This method is called by {@link JFireRCDLDelegate#getResources(String, boolean)}.
-	 * Because that method (the implementation of {@link org.nightlabs.classloader.ResourceFinder#getResources(String, boolean)})
-	 * is called only once for every resource, this class does not need to remember the already-queried resource names.
+	 * Because that method (the implementation of <code>org.nightlabs.classloader.ResourceFinder#getResources(String, boolean)</code>
+	 * (from the plugin org.nightlabs.jfire.base.j2ee) is called only once for every resource,
+	 * this class does not need to remember the already-queried resource names.
 	 * <p>
 	 * The currently only (known by us) implementation of this filter is
 	 * the class <code>org.nightlabs.jfire.base.j2ee.RemoteResourceFilterRegistry</code>
