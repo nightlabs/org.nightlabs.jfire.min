@@ -1,5 +1,10 @@
 package org.nightlabs.jfire.web.admin;
 
+import java.util.regex.Pattern;
+
+import javax.security.auth.login.LoginException;
+
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
 import org.nightlabs.jfire.base.JFireEjb3Factory;
 import org.nightlabs.jfire.organisation.OrganisationManagerRemote;
@@ -61,14 +66,85 @@ public class ServerSetupUtil
 		}
 	}
 
-	public static boolean isNewServerNeedingSetup()
+//	public static boolean isNewServerNeedingSetup()
+//	{
+//		try {
+//			return getBogoServerManager().isNewServerNeedingSetup();
+//		} catch(Throwable e) {
+//			// ignore exception and return false
+//			log.info("Error in isNewServerNeedingSetup()", e);
+//			return false;
+//		}
+//	}
+	
+	public enum ServerState
+	{
+		OK,
+		UNKNOWN_ERROR,
+		SHUTTING_DOWN,
+		NOT_YET_UP_AND_RUNNING,
+		NEED_SETUP
+	}
+	
+	public static ServerState getServerState()
 	{
 		try {
-			return getBogoServerManager().isNewServerNeedingSetup();
+			ServerManagerRemote bogoServerManager = getBogoServerManager();
+			if(bogoServerManager.isNewServerNeedingSetup())
+				return ServerState.NEED_SETUP;
+			else
+				return ServerState.OK;
 		} catch(Throwable e) {
-			// ignore exception and return false
-			log.info("Error in isNewServerNeedingSetup()", e);
-			return false;
+			if (findCause(e, LoginException.class, "org.jfire.serverShuttingDown") != null) //$NON-NLS-1$
+				return ServerState.SHUTTING_DOWN;
+			else if (findCause(e, LoginException.class, "org.jfire.serverNotYetUpAndRunning") != null) //$NON-NLS-1$
+				return ServerState.NOT_YET_UP_AND_RUNNING;
+			else {
+				log.info("Error in getServerState()", e);
+				return ServerState.UNKNOWN_ERROR;
+			}
 		}
+	}
+	
+	private static Throwable findCause(Throwable e, Class<? extends Throwable> searchedClass, String searchedMessageRegex)
+	{
+		if (e == null)
+			throw new IllegalArgumentException("e must not be null!"); //$NON-NLS-1$
+
+		if (searchedClass == null && searchedMessageRegex == null)
+			throw new IllegalArgumentException("searchedClass and searchedMessageRegex are both null! One must be defined!"); //$NON-NLS-1$
+
+		Pattern searchedMessageRegexPattern = searchedMessageRegex == null ? null : Pattern.compile(searchedMessageRegex);
+
+		Throwable cause = e;
+		while (cause != null) {
+			boolean found = true;
+
+			if (searchedClass != null) {
+				if (!searchedClass.isInstance(cause)) {
+					found = false;
+				}
+			}
+
+			if (found && searchedMessageRegexPattern != null) { // if the match already failed, there's no need to search further
+				String message = cause.getMessage();
+				if (message == null)
+					found = false;
+				else if (!searchedMessageRegexPattern.matcher(message).matches())
+					found = false;
+			}
+
+			if (found)
+				return cause;
+
+			Throwable newCause = ExceptionUtils.getCause(cause);
+			// not strange at all if you get the cause auf e all the time. Marc
+//			Throwable newCause = ExceptionUtils.getCause(e);
+//			if (cause == newCause) // really strange, but I just had an eternal loop because the cause of an exception was itself.
+//				return null;
+
+			cause = newCause;
+		}
+		return null;
 	}
 }
