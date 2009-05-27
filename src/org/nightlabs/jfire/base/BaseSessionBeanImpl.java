@@ -94,8 +94,6 @@ implements BaseSessionRemote
 		return getPrincipal().getLookup();
 	}
 
-	private transient PersistenceManager persistenceManager = null;
-
 	/**
 	 * This method is a shortcut to <code>getPrincipal().getLookup().getPersistenceManager()</code>.
 	 * <p>
@@ -108,8 +106,7 @@ implements BaseSessionRemote
 	 */
 	protected PersistenceManager getPersistenceManager()
 	{
-		persistenceManager = getPrincipal().getLookup().getPersistenceManager();
-		return persistenceManager;
+		return getPrincipal().getLookup().getPersistenceManager();
 	}
 
 	/**
@@ -151,19 +148,19 @@ implements BaseSessionRemote
 	protected Hashtable<?, ?> getInitialContextProperties(String organisationID)
 	throws NamingException
 	{
-		boolean managePM = false;
-		PersistenceManager pm;
-		if (persistenceManager == null || persistenceManager.isClosed()) {
-			managePM = true;
-			pm = getPersistenceManager();
-		}
-		else
-			pm = persistenceManager;
+//		boolean managePM = false;
+		PersistenceManager pm = getPersistenceManager();
+//		if (persistenceManager == null || persistenceManager.isClosed()) {
+//			managePM = true;
+//			pm = getPersistenceManager();
+//		}
+//		else
+//			pm = persistenceManager;
 
 		try {
 			return Lookup.getInitialContextProperties(pm, organisationID);
 		} finally {
-			if (managePM)
+//			if (managePM)
 				pm.close();
 		}
 	}
