@@ -1,5 +1,6 @@
 package org.nightlabs.jfire.web.admin;
 
+import java.util.Hashtable;
 import java.util.regex.Pattern;
 
 import javax.security.auth.login.LoginException;
@@ -10,6 +11,8 @@ import org.nightlabs.jfire.base.JFireEjb3Factory;
 import org.nightlabs.jfire.organisation.OrganisationManagerRemote;
 import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.server.ServerManagerRemote;
+
+import com.sun.xml.stream.buffer.sax.Properties;
 
 public class ServerSetupUtil
 {
@@ -31,27 +34,18 @@ public class ServerSetupUtil
 		}
 	}
 
-	public static ServerManagerRemote getServerManager()
+	public static ServerManagerRemote getServerManager(Hashtable<?, ?> initialContextProperties)
 	{
-		// we might already be logged in, so we first try to get the ServerManager normally
-		try {
-			ServerManagerRemote serverManager = JFireEjb3Factory.getRemoteBean(ServerManagerRemote.class, SecurityReflector.getInitialContextProperties());
-			serverManager.ping("test_authentication");
-			return serverManager;
-		} catch (Exception x) {
-			// silently ignore and try it the bogo way below
-		}
-
-		return getBogoServerManager();
+		ServerManagerRemote serverManager = JFireEjb3Factory.getRemoteBean(ServerManagerRemote.class, initialContextProperties);
+		serverManager.ping("test_authentication");
+		return serverManager;
 	}
 	
 	public static ServerManagerRemote getBogoServerManager()
 	{
 		try {
 			SessionLogin login = getBogoLogin();
-			ServerManagerRemote serverManager = JFireEjb3Factory.getRemoteBean(ServerManagerRemote.class, login.getInitialContextProperties());
-			serverManager.ping("test_authentication");
-			return serverManager;
+			return getServerManager(login.getInitialContextProperties());
 		} catch(Exception e) {
 //			log.info("Getting bogo server manager failed.", e);
 			throw new IllegalStateException("Getting bogo server manager failed", e);

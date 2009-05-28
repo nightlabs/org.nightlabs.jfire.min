@@ -58,8 +58,9 @@ public class SessionLogin
 		logout(session);
 		try {
 			SessionLogin login = new SessionLogin(_organisationID, _userID, _password);
+			// check if login really works:
+			ServerSetupUtil.getServerManager(login.getInitialContextProperties());
 			session.setAttribute(SESSION_KEY, login);
-			// TODO check if login really works!
 			log.info("Login successful");
 			return login;
 		} catch(Throwable e) {
