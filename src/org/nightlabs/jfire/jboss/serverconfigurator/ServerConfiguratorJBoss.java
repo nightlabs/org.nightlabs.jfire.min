@@ -60,6 +60,11 @@ public class ServerConfiguratorJBoss
 		extends ServerConfigurator
 {
 	private static final String JFIRE_SERVER_KEYSTORE_FILE_NAME = "jfire-server.keystore";
+	/**
+	 * The path to 'jfire-server.keystore' file relative from the server configuration root
+	 * directory.
+	 *
+	 */
 	private static final String JFIRE_SERVER_KEYSTORE_FILE = "conf/" + JFIRE_SERVER_KEYSTORE_FILE_NAME;
 	private static final String HTTPS_CONNECTOR_MODIFIED_COMMENT = "Connector was enabled via ServerConfigurator!";
 	private static final String HTTPS_CONNECTOR_KEY_ALIAS = "keyAlias";
@@ -694,7 +699,9 @@ public class ServerConfiguratorJBoss
 		boolean attributesChanged = false;
 
 		// ensures that the keystore is always in %JBoss%/server/%servername%/conf/jfire-server.keystore
+//		new File("");
 //		final File jbossBinDir = new File(jbossConfigDir.getParentFile().getParentFile().getParentFile(), "bin");
+//		final File jbossBinDir = new File("");
 //		String realtiveKeystoreFilePath = null;
 //		try
 //		{
@@ -1940,7 +1947,8 @@ public class ServerConfiguratorJBoss
 					keystoreToImportStream = new URL(keystoreURLToImport).openStream();
 
 				boolean transferData = false;
-				File jfireServerKeystoreFile = new File(JFIRE_SERVER_KEYSTORE_FILE);
+				File jfireServerKeystoreFile = new File(getJBossConfigDir(), JFIRE_SERVER_KEYSTORE_FILE_NAME);
+
 				if (! jfireServerKeystoreFile.exists() || ! jfireServerKeystoreFile.canRead())
 				{
 					transferData = true;
