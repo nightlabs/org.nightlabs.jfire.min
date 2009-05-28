@@ -3,6 +3,8 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
+<h1>Create a new Organisation</h1>
+
 <form method="post" onsubmit="showWaitBlock('Creating organisation - please stand by')">
 <table class="formtable">
 <tr><td>Organisation Id:</td><td><input type="text" name="organisationId" class="extrawide"/></td></tr>

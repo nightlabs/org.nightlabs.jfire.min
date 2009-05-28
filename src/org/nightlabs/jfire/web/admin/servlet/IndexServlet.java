@@ -38,14 +38,35 @@ public class IndexServlet extends HttpServlet
 				redirect = "/overview";
 			else {
 				ServerState serverState = ServerSetupUtil.getServerState();
-				if(serverState == ServerState.NEED_SETUP)
+				switch(serverState) {
+				case NEED_SETUP:
 					redirect = "/serverinitialize";
-				else if(serverState == ServerState.NOT_YET_UP_AND_RUNNING)
+					break;
+				case NEED_ORGANISATION:
+					redirect = "/createorganisation";
+					break;
+				case NOT_YET_UP_AND_RUNNING:
 					error = "The server is not yet up and running.";
-				else if(serverState == ServerState.SHUTTING_DOWN)
+					break;
+				case SHUTTING_DOWN:
 					error = "The server is shutting down.";
-				else
+					break;
+				case NEED_LOGIN:
 					redirect = "/login";
+					break;
+				default:
+					error = "Unexpected error.";
+				}
+//				if(serverState == ServerState.NEED_SETUP)
+//					redirect = "/serverinitialize";
+//				else if(serverState == ServerState.NEED_ORGANISATION)
+//					redirect = "/createorganisation";
+//				else if(serverState == ServerState.NOT_YET_UP_AND_RUNNING)
+//					error = "The server is not yet up and running.";
+//				else if(serverState == ServerState.SHUTTING_DOWN)
+//					error = "The server is shutting down.";
+//				else
+//					redirect = "/login";
 			}
 			if(error != null) {
 				request.setAttribute("internal_errors", Collections.singleton(new IllegalStateException(error)));

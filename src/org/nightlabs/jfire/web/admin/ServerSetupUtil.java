@@ -18,12 +18,12 @@ public class ServerSetupUtil
 	public static SessionLogin getBogoLogin()
 	{
 		try {
-			log.debug("Trying bogo login...");
+//			log.debug("Trying bogo login...");
 			SessionLogin login = new SessionLogin(
 					"__foobar.organisation.for.initial.login__",
 					"__foobar_user_for_initial_login__",
 					"__foobar_password_for_initial_login__");
-			log.debug("Bogo login succeeded...");
+//			log.debug("Bogo login succeeded...");
 			return login;
 		} catch(Exception e) {
 //			log.info("Bogo login failed.", e);
@@ -31,7 +31,7 @@ public class ServerSetupUtil
 		}
 	}
 
-	public static ServerManagerRemote getBogoServerManager()
+	public static ServerManagerRemote getServerManager()
 	{
 		// we might already be logged in, so we first try to get the ServerManager normally
 		try {
@@ -42,6 +42,11 @@ public class ServerSetupUtil
 			// silently ignore and try it the bogo way below
 		}
 
+		return getBogoServerManager();
+	}
+	
+	public static ServerManagerRemote getBogoServerManager()
+	{
 		try {
 			SessionLogin login = getBogoLogin();
 			ServerManagerRemote serverManager = JFireEjb3Factory.getRemoteBean(ServerManagerRemote.class, login.getInitialContextProperties());
@@ -79,11 +84,12 @@ public class ServerSetupUtil
 	
 	public enum ServerState
 	{
-		OK,
+		NEED_ORGANISATION,
 		UNKNOWN_ERROR,
 		SHUTTING_DOWN,
 		NOT_YET_UP_AND_RUNNING,
-		NEED_SETUP
+		NEED_SETUP, 
+		NEED_LOGIN
 	}
 	
 	public static ServerState getServerState()
@@ -91,14 +97,19 @@ public class ServerSetupUtil
 		try {
 			ServerManagerRemote bogoServerManager = getBogoServerManager();
 			if(bogoServerManager.isNewServerNeedingSetup())
+				// we can login using bogo data and the server says it needs to be set-up
 				return ServerState.NEED_SETUP;
 			else
-				return ServerState.OK;
+				// there server does not need setup, but we can login using
+				// bogo data. Thus, an oraginsation has not yet been created.
+				return ServerState.NEED_ORGANISATION;
 		} catch(Throwable e) {
 			if (findCause(e, LoginException.class, "org.jfire.serverShuttingDown") != null) //$NON-NLS-1$
 				return ServerState.SHUTTING_DOWN;
 			else if (findCause(e, LoginException.class, "org.jfire.serverNotYetUpAndRunning") != null) //$NON-NLS-1$
 				return ServerState.NOT_YET_UP_AND_RUNNING;
+			else if (findCause(e, LoginException.class, null) != null) //$NON-NLS-1$
+				return ServerState.NEED_LOGIN;
 			else {
 				log.info("Error in getServerState()", e);
 				return ServerState.UNKNOWN_ERROR;

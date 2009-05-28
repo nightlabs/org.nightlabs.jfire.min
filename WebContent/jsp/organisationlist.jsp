@@ -3,6 +3,8 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
+<h1>Organisations on this Server</h1>
+
 <div class="organisationlist">
 	<c:forEach items="${organisationCfs}" var="organisation" varStatus="organisationLoopStatus">
 	<div style="margin-top: 5px; margin-bottom: 5px; border: 1px solid black; padding: 5px;" class="organisationlistitem">

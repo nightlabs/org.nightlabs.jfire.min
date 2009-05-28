@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.jfire.web.admin.NotAuthenticatedException;
+import org.nightlabs.jfire.web.admin.SessionLogin;
 
 /**
  * @author Marc Klinger - marc[at]nightlabs[dot]de
@@ -26,11 +27,12 @@ public abstract class BaseServlet extends HttpServlet
 	private static final Logger log = Logger.getLogger(BaseServlet.class);
 	
 	private static final String KEY_PREFIX = "internal_";
-	private static final String KEY_PAGETITLE = KEY_PREFIX+"pagetitle";
-	private static final String KEY_FORWARDS = KEY_PREFIX+"forwards";
-	private static final String KEY_FORWARD_REQUESTS = KEY_PREFIX+"forwardrequests";
-	private static final String KEY_ERRORS = KEY_PREFIX+"errors";
-	private static final String KEY_INTERNALREDIRECT = KEY_PREFIX+"internalredirect";
+	private static final String KEY_PAGETITLE = KEY_PREFIX + "pagetitle";
+	private static final String KEY_FORWARDS = KEY_PREFIX + "forwards";
+	private static final String KEY_FORWARD_REQUESTS = KEY_PREFIX + "forwardrequests";
+	private static final String KEY_ERRORS = KEY_PREFIX + "errors";
+	private static final String KEY_INTERNALREDIRECT = KEY_PREFIX + "internalredirect";
+	private static final String KEY_LOGIN = KEY_PREFIX + "login";
 
 	protected abstract void handleRequest(HttpServletRequest req, HttpServletResponse resp) throws Exception;
 	
@@ -54,6 +56,14 @@ public abstract class BaseServlet extends HttpServlet
 	
 	private void handleRequestSafe(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException
 	{
+		// provide the login as information for the jsps
+		if(SessionLogin.haveLogin(req.getSession())) {
+			try {
+				req.setAttribute(KEY_LOGIN, SessionLogin.getLogin(req.getSession()));
+			} catch (NotAuthenticatedException e) {
+				// ignore
+			}
+		}
 		try {
 			handleRequest(req, resp);
 		} catch(NotAuthenticatedException e) {

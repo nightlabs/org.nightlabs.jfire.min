@@ -24,6 +24,15 @@
 	</servlet-mapping>
 
 	<servlet>
+		<servlet-name>LogoutServlet</servlet-name>
+		<servlet-class>org.nightlabs.jfire.web.admin.servlet.LogoutServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>LogoutServlet</servlet-name>
+		<url-pattern>/logout</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
 		<servlet-name>OverviewServlet</servlet-name>
 		<servlet-class>org.nightlabs.jfire.web.admin.servlet.OverviewServlet</servlet-class>
 	</servlet>

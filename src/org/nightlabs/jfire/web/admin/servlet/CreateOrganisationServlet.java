@@ -5,8 +5,11 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.nightlabs.jfire.base.JFireEjb3Factory;
 import org.nightlabs.jfire.organisation.OrganisationManagerRemote;
+import org.nightlabs.jfire.web.admin.NotAuthenticatedException;
+import org.nightlabs.jfire.web.admin.ServerSetupUtil;
 import org.nightlabs.jfire.web.admin.SessionLogin;
 import org.nightlabs.jfire.web.admin.Util;
+import org.nightlabs.jfire.web.admin.ServerSetupUtil.ServerState;
 
 /**
  * @author Marc Klinger - marc[at]nightlabs[dot]de
@@ -26,7 +29,19 @@ public class CreateOrganisationServlet extends BaseServlet
 	{
 		setContent(req, "/jsp/createorganisation.jsp");
 
-		SessionLogin login = SessionLogin.getLogin(req.getSession());
+		SessionLogin login;
+		boolean loginAsNewlyCreatedUser = false;
+		try {
+			login = SessionLogin.getLogin(req.getSession());
+		} catch(NotAuthenticatedException e) {
+			// one amy create an organisation when there is no organisation yet.
+			// Try bogo login.
+			if(ServerSetupUtil.getServerState() == ServerState.NEED_ORGANISATION) {
+				login = ServerSetupUtil.getBogoLogin();
+				loginAsNewlyCreatedUser = true;
+			} else
+				throw e;
+		}
 
 		if(Util.haveParameterValue(req, "action", "createorganisation")) {
 			String organisationId = Util.getParameter(req, "organisationId");
@@ -42,6 +57,9 @@ public class CreateOrganisationServlet extends BaseServlet
 			OrganisationManagerRemote manager = JFireEjb3Factory.getRemoteBean(OrganisationManagerRemote.class, login.getInitialContextProperties());
 			manager.createOrganisation(organisationId, organisationName, userName, password, serverAdmin);
 
+			if(loginAsNewlyCreatedUser)
+				SessionLogin.login(req.getSession(), organisationId, userName, password);
+			
 			redirect(req, resp, "/organisationlist");
 			return;
 		}

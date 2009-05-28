@@ -137,7 +137,7 @@ public class ServerInitializeServlet extends BaseServlet
 					stepToShow = findNextStep(req, stepToSave);
 					if(stepToShow == null || NAVIGATION_VALUE_FINISH.equals(navigation)) {
 						// we are done. do initialization
-						finish(req);
+						finish(req, resp);
 						return;
 					}
 				} else if(NAVIGATION_VALUE_PREVIOUS.equals(navigation)) {
@@ -148,7 +148,7 @@ public class ServerInitializeServlet extends BaseServlet
 			}
 			if(NAVIGATION_VALUE_FINISH.equals(navigation)) {
 				// we are done. do initialization
-				finish(req);
+				finish(req, resp);
 				return;
 			}
 			if(stepToShow == null)
@@ -195,13 +195,16 @@ public class ServerInitializeServlet extends BaseServlet
 		}
 	}
 
-	private void finish(HttpServletRequest req)
+	private void finish(HttpServletRequest req, HttpServletResponse resp) throws IOException
 	{
 		boolean needReboot = performInitialization(getStepsByName(req));
 		if(needReboot)
 			setContent(req, "/jsp/serverinitialize/reboot.jsp");
 		else
-			setContent(req, "/jsp/serverinitialize/success.jsp");
+			// redirect to index which will show the login form 
+			// or let the user create an organisation
+			redirect(req, resp, "/"); 
+			//setContent(req, "/jsp/serverinitialize/success.jsp");
 		resetSteps(req);
 	}
 

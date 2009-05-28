@@ -29,6 +29,17 @@
 	<body>
 		<div class="pagehead" style="border-top: 1px solid #dddddd; border-bottom: 1px solid #dddddd; margin-bottom: 30px;">
 			<img src="${url_img}/jfire-logo.jpg" />
+			<p style="font-size: small; padding-bottom: 0px; margin-bottom: 2px">
+			<c:choose>
+			<c:when test="${internal_login != null}">
+			<c:url value="/logout" var="logoutUrl"></c:url>
+			Logged in as ${internal_login.userID}@${internal_login.organisationID}. <a href="${logoutUrl}">Logout</a>
+			</c:when>
+			<c:otherwise>
+			Not logged in.
+			</c:otherwise>
+			</c:choose>
+			</p>
 		</div>
 
 		<div id="waitblock" style="display: none; padding: 32px;">

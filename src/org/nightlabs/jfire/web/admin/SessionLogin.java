@@ -59,6 +59,7 @@ public class SessionLogin
 		try {
 			SessionLogin login = new SessionLogin(_organisationID, _userID, _password);
 			session.setAttribute(SESSION_KEY, login);
+			// TODO check if login really works!
 			log.info("Login successful");
 			return login;
 		} catch(Throwable e) {
@@ -132,12 +133,12 @@ public class SessionLogin
 	public String getUserID() {
 		return userID;
 	}
-	/**
-	 * @return Returns the password.
-	 */
-	public String getPassword() {
-		return password;
-	}
+//	/**
+//	 * @return Returns the password.
+//	 */
+//	public String getPassword() {
+//		return password;
+//	}
 	// *** end of properties *************************
 
 	protected transient Hashtable<?, ?> initialContextProperties = null;
