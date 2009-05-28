@@ -392,7 +392,9 @@ extends org.nightlabs.notification.NotificationManager
 				throw new IllegalStateException("System property PROPERTY_KEY_JDO_LIFECYCLE_MANAGER (" + PROPERTY_KEY_JDO_LIFECYCLE_MANAGER + ") not set!");
 
 			try {
-				jdoLifecycleManagerClass = Class.forName(className);
+				//jdoLifecycleManagerClass = Class.forName(className);
+				// use the class loader of this class instead the context class loader:
+				jdoLifecycleManagerClass = Class.forName(className, true, JDOLifecycleManager.class.getClassLoader());
 			} catch (ClassNotFoundException e) {
 				throw new RuntimeException(e);
 			}
