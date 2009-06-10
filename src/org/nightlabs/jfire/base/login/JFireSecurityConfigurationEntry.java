@@ -31,7 +31,10 @@ import java.util.HashMap;
 
 /**
  * @author Alexander Bieber
+ * @deprecated Get rid of this class. See this issue for details: https://www.jfire.org/modules/bugs/view.php?id=1161 (Marc)
+ * 		A COPY OF THIS CLASS EXISTS IN org.nightlabs.jfire.base.ui
  */
+@Deprecated
 public class JFireSecurityConfigurationEntry implements Serializable {
 	private static final long serialVersionUID = 1L;
 	public static final String MODULE_CONTROL_FLAG_REQUIRED = "required"; //$NON-NLS-1$

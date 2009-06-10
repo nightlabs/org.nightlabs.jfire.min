@@ -38,7 +38,10 @@ import org.nightlabs.config.ConfigException;
 
 /**
  * @author Alexander Bieber
+ * @deprecated Get rid of this class. See this issue for details: https://www.jfire.org/modules/bugs/view.php?id=1161 (Marc)
+ * 		A COPY OF THIS CLASS EXISTS IN org.nightlabs.jfire.base.ui
  */
+@Deprecated
 public class JFireSecurityConfiguration extends Configuration {
 	/**
 	 * LOG4J logger used by this class
