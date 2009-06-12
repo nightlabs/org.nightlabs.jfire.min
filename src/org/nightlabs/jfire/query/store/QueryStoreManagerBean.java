@@ -76,7 +76,7 @@ implements QueryStoreManagerRemote
 	public Collection<BaseQueryStore> getQueryStores(
 		Set<QueryStoreID> storeIDs, String[] fetchGroups, int maxFetchDepth)
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try
 		{
 			Collection<BaseQueryStore> stores = NLJDOHelper.getDetachedObjectList(pm, storeIDs, BaseQueryStore.class,
@@ -109,7 +109,7 @@ implements QueryStoreManagerRemote
 	public Collection<QueryStoreID> getQueryStoreIDs(Class<?> resultType, UserID ownerID,
 		boolean allPublicAsWell, String[] fetchGroups, int maxFetchDepth)
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try
 		{
 			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
@@ -132,7 +132,7 @@ implements QueryStoreManagerRemote
 	public QueryStore storeQueryCollection(QueryStore queryStore, String[] fetchGroups,
 		int maxFetchDepth, boolean get)
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try
 		{
 			return NLJDOHelper.storeJDO(pm, queryStore, get, fetchGroups, maxFetchDepth);
@@ -148,7 +148,7 @@ implements QueryStoreManagerRemote
 	 */
 	public boolean removeQueryStore(QueryStore queryStore)
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		// TODO: Authority check!
 //		queryStore.getAuthority()
 		try
@@ -172,7 +172,7 @@ implements QueryStoreManagerRemote
 	 */
 	public void initialise()
 	{
-		PersistenceManager pm = getPersistenceManager();;
+		PersistenceManager pm = createPersistenceManager();;
 		try
 		{
 			ModuleMetaData moduleMetaData = ModuleMetaData.getModuleMetaData(pm, "JFireQueryStore");
@@ -204,7 +204,7 @@ implements QueryStoreManagerRemote
 	@RolesAllowed("_Guest_")
 	public QueryStoreID getDefaultQueryStoreID(Class<?> resultType, UserID ownerID, String[] fetchGroups, int maxFetchDepth)
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
 			if (fetchGroups != null) {
