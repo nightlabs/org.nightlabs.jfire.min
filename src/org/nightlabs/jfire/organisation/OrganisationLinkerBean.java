@@ -86,7 +86,7 @@ public class OrganisationLinkerBean implements OrganisationLinkerRemote
 		// We are not authenticated, thus we have to get the PersistenceManager manually.
 		// Which is not much work either ;-)
 		Lookup lookup = new Lookup(grantOrganisationID);
-		PersistenceManager pm = lookup.getPersistenceManager();
+		PersistenceManager pm = lookup.createPersistenceManager();
 		try {
 			LocalOrganisation localOrganisation = LocalOrganisation.getLocalOrganisation(pm);
 
@@ -122,7 +122,7 @@ public class OrganisationLinkerBean implements OrganisationLinkerRemote
 		// We are not authenticated, thus we have to get the PersistenceManager manually.
 		// Which is not much work either ;-)
 		Lookup lookup = new Lookup(grantOrganisationID);
-		PersistenceManager pm = lookup.getPersistenceManager();
+		PersistenceManager pm = lookup.createPersistenceManager();
 		try {
 			LocalOrganisation localOrganisation = LocalOrganisation.getLocalOrganisation(pm);
 			RegistrationStatus registrationStatus = localOrganisation.getPendingRegistration(applicantOrganisationID);
