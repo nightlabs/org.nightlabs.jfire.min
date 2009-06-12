@@ -154,7 +154,7 @@ implements JFireTestManagerRemote, JFireTestManagerLocal
 
 		JFireServerManager jfsm = getJFireServerManager();
 		try {
-			PersistenceManager pm = getPersistenceManager();
+			PersistenceManager pm = createPersistenceManager();
 			try {
 
 				{
@@ -374,7 +374,7 @@ implements JFireTestManagerRemote, JFireTestManagerLocal
 	throws Exception
 	{
 		logger.info("evaluateCanRunTestsInNestedTransaction: " + testSuite.toString());
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			return testSuite.canRunTests(pm);
 		} finally {

@@ -77,7 +77,7 @@ implements JDOTestRemote
 	@RolesAllowed("_Guest_")
 	public void createArrayListFromQueryResult()
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			ArrayList<User> userList;
 			{
@@ -197,7 +197,7 @@ implements JDOTestRemote
 	@RolesAllowed("_Guest_")
 	public void createHashSetFromQueryResult()
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			Query q = createUserQuery(pm);
 			Collection<?> c = (Collection<?>) q.execute();
