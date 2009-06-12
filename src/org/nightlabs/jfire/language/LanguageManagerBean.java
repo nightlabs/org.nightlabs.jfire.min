@@ -66,7 +66,7 @@ public class LanguageManagerBean extends BaseSessionBeanImpl implements Language
 	{
 		logger.debug("LanguageManagerBean.createLanguage");
 		try {
-			PersistenceManager pm = this.getPersistenceManager();
+			PersistenceManager pm = this.createPersistenceManager();
 			try {
 				pm.getExtent(Language.class, false);
 
@@ -100,7 +100,7 @@ public class LanguageManagerBean extends BaseSessionBeanImpl implements Language
 	throws LanguageException
 	{
 		try {
-		  PersistenceManager pm = getPersistenceManager();
+		  PersistenceManager pm = createPersistenceManager();
 		  try {
 		  	pm.getFetchPlan().setMaxFetchDepth(NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
 			  pm.getFetchPlan().addGroup(FetchPlan.ALL);

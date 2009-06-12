@@ -76,7 +76,7 @@ implements OrganisationManagerHelperLocal
 			)
 	{
 		String organisationID = getOrganisationID();
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			if(logger.isDebugEnabled())
 				logger.debug("Initializing JDO meta-data...");
@@ -249,7 +249,7 @@ implements OrganisationManagerHelperLocal
 			)
 	{
 		String organisationID = getOrganisationID();
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			boolean successful = false;
 			SecurityChangeController.beginChanging();

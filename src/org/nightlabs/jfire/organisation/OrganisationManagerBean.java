@@ -229,7 +229,7 @@ public class OrganisationManagerBean
 	@Override
 	public Collection<RegistrationStatus> getPendingRegistrations(String[] fetchGroups, int maxFetchDepth)
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
 
@@ -266,7 +266,7 @@ public class OrganisationManagerBean
 
 		String grantOrganisationID = userID.substring(User.USER_ID_PREFIX_TYPE_ORGANISATION.length());
 
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			LocalOrganisation localOrganisation = LocalOrganisation.getLocalOrganisation(pm);
 			RegistrationStatus registrationStatus = localOrganisation.getPendingRegistration(grantOrganisationID);
@@ -315,7 +315,7 @@ public class OrganisationManagerBean
 
 		String grantOrganisationID = userID.substring(User.USER_ID_PREFIX_TYPE_ORGANISATION.length());
 
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			LocalOrganisation localOrganisation = LocalOrganisation.getLocalOrganisation(pm);
 			RegistrationStatus registrationStatus = localOrganisation.getPendingRegistration(grantOrganisationID);
@@ -377,7 +377,7 @@ public class OrganisationManagerBean
 	{
 		logger.info("acceptRegistration: entered (called by "+getPrincipal().getName()+")");
 		try {
-			PersistenceManager pm = getPersistenceManager();
+			PersistenceManager pm = createPersistenceManager();
 			try {
 				LocalOrganisation localOrganisation = LocalOrganisation.getLocalOrganisation(pm);
 
@@ -457,7 +457,7 @@ public class OrganisationManagerBean
 	public void rejectRegistration(String applicantOrganisationID)
 	throws JFireRemoteException
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			LocalOrganisation localOrganisation = LocalOrganisation.getLocalOrganisation(pm);
 
@@ -498,7 +498,7 @@ public class OrganisationManagerBean
 	public void cancelRegistration(String grantOrganisationID)
 	throws JFireRemoteException
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			LocalOrganisation localOrganisation = LocalOrganisation.getLocalOrganisation(pm);
 			RegistrationStatus registrationStatus = localOrganisation.getPendingRegistration(grantOrganisationID);
@@ -549,7 +549,7 @@ public class OrganisationManagerBean
 			String initialContextFactory, String initialContextURL, String organisationID)
 	throws OrganisationAlreadyRegisteredException, JFireRemoteException
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			beginRegistration(pm, getPrincipal(), initialContextFactory, initialContextURL, organisationID);
 		} finally {
@@ -629,7 +629,7 @@ public class OrganisationManagerBean
 	@Override
 	public void ackRegistration(String grantOrganisationID)
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			LocalOrganisation localOrganisation = LocalOrganisation.getLocalOrganisation(pm);
 			RegistrationStatus registrationStatus = localOrganisation.getPendingRegistration(grantOrganisationID);
@@ -685,7 +685,7 @@ public class OrganisationManagerBean
 		}
 
 		if (!children.isEmpty()) {
-			PersistenceManager pm = getPersistenceManager();
+			PersistenceManager pm = createPersistenceManager();
 			try {
 				Map<String, OrganisationManagerRemote> organisationManagers = new HashMap<String, OrganisationManagerRemote>();
 
@@ -769,7 +769,7 @@ public class OrganisationManagerBean
 			String localOrganisationID = getOrganisationID();
 			if (!rootOrganisationID.equals(localOrganisationID)) {
 				ArrayList<Organisation> newRes;
-				PersistenceManager pm = getPersistenceManager();
+				PersistenceManager pm = createPersistenceManager();
 				try {
 					// authorize
 					Authority.getOrganisationAuthority(pm).assertContainsRoleRef(getPrincipal(), RoleConstants.queryOrganisations);
@@ -822,7 +822,7 @@ public class OrganisationManagerBean
 				return newRes;
 			} // if (!rootOrganisationID.equals(localOrganisationID)) {
 
-			PersistenceManager pm = getPersistenceManager();
+			PersistenceManager pm = createPersistenceManager();
 			try {
 				pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
 				if (fetchGroups != null)
@@ -908,7 +908,7 @@ public class OrganisationManagerBean
 
 			String rootOrganisationID = rootOrganisationCf.getOrganisationID();
 
-			PersistenceManager pm = getPersistenceManager();
+			PersistenceManager pm = createPersistenceManager();
 			try {
 				if (RegistrationStatus.getRegistrationStatusCount(pm, rootOrganisationID) > 0) {
 					if (!force) {
@@ -997,7 +997,7 @@ public class OrganisationManagerBean
 	@Override
 	public Set<OrganisationID> getOrganisationIDs()
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			Query q = pm.newQuery(Organisation.class);
 			q.setResult("JDOHelper.getObjectId(this)");
@@ -1014,7 +1014,7 @@ public class OrganisationManagerBean
 	@Override
 	public List<Organisation> getOrganisations(Collection<OrganisationID> organisationIDs, String[] fetchGroups, int maxFetchDepth)
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			return NLJDOHelper.getDetachedObjectList(pm, organisationIDs, Organisation.class, fetchGroups, maxFetchDepth);
 		} finally {
@@ -1030,7 +1030,7 @@ public class OrganisationManagerBean
 	@Override
 	public Organisation storeLocalOrganisation(Organisation organisation, boolean get, String[] fetchGroups, int maxFetchDepth)
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			if (!SecurityReflector.getUserDescriptor().getOrganisationID().equals(organisation.getOrganisationID()))
 				throw new IllegalArgumentException("Attempt to store a foreign organisation (" + organisation.getOrganisationID() + ")");

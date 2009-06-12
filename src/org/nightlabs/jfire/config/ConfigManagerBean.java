@@ -86,7 +86,7 @@ public class ConfigManagerBean extends BaseSessionBeanImpl implements ConfigMana
 	@Override
 	public ConfigModule storeConfigModule(ConfigModule configModule, boolean get, String[] fetchGroups, int maxFetchDepth)
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try
 		{
 			if (!getOrganisationID().equals(configModule.getOrganisationID()))
@@ -168,7 +168,7 @@ public class ConfigManagerBean extends BaseSessionBeanImpl implements ConfigMana
 	public Collection<ConfigGroup> getConfigGroups(String configType, String[] fetchGroups, int maxFetchDepth)
 	{
 		PersistenceManager pm;
-		pm = getPersistenceManager();
+		pm = createPersistenceManager();
 		try
 		{
 			Query q = pm.newQuery(ConfigGroup.class);
@@ -212,7 +212,7 @@ public class ConfigManagerBean extends BaseSessionBeanImpl implements ConfigMana
 			throw new IllegalArgumentException("The Set of ConfigIDs must not be null!");
 
 		PersistenceManager pm;
-		pm = getPersistenceManager();
+		pm = createPersistenceManager();
 		try
 		{
 			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
@@ -236,7 +236,7 @@ public class ConfigManagerBean extends BaseSessionBeanImpl implements ConfigMana
 	@Override
 	public Set<Config> getConfigs(String configType, String[] fetchGroups, int maxFetchDepth)
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		ConfigSetup.ensureAllPrerequisites(pm);
 
 		pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
@@ -256,7 +256,7 @@ public class ConfigManagerBean extends BaseSessionBeanImpl implements ConfigMana
 	@Override
 	public Set<ConfigID> getConfigIDsByConfigType(String configType,
 			String[] fetchGroups,	int maxFetchDepth) {
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		ConfigSetup.ensureAllPrerequisites(pm);
 		pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
 		if (fetchGroups != null)
@@ -286,7 +286,7 @@ public class ConfigManagerBean extends BaseSessionBeanImpl implements ConfigMana
 	public Config getConfig(ConfigID configID, String[] fetchGroups, int maxFetchDepth)
 	{
 		PersistenceManager pm;
-		pm = getPersistenceManager();
+		pm = createPersistenceManager();
 		try
 		{
 			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
@@ -315,7 +315,7 @@ public class ConfigManagerBean extends BaseSessionBeanImpl implements ConfigMana
 	@Override
 	public ConfigModule getConfigModule(ConfigID configID, Class<? extends ConfigModule> cfModClass, String cfModID, String[] fetchGroups, int maxFetchDepth)
 	{
-		return getConfigModule(getPersistenceManager(), configID, cfModClass, cfModID, fetchGroups, maxFetchDepth);
+		return getConfigModule(createPersistenceManager(), configID, cfModClass, cfModID, fetchGroups, maxFetchDepth);
 	}
 
 	/**
@@ -358,7 +358,7 @@ public class ConfigManagerBean extends BaseSessionBeanImpl implements ConfigMana
 			ObjectID keyObjectID, Class<? extends ConfigModule> cfModClass, String cfModID,
 			String[] fetchGroups, int maxFetchDepth)
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try
 		{
 			ConfigSetup.ensureAllPrerequisites(pm);
@@ -386,7 +386,7 @@ public class ConfigManagerBean extends BaseSessionBeanImpl implements ConfigMana
 			ConfigID keyObjectID, Class<? extends ConfigModule> cfModClass, String cfModID, boolean throwExceptionIfNotFound,
 			String[] fetchGroups, int maxFetchDepth)
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try
 		{
 			ConfigSetup.ensureAllPrerequisites(pm);
@@ -416,7 +416,7 @@ public class ConfigManagerBean extends BaseSessionBeanImpl implements ConfigMana
 	@Override
 	public Collection<ConfigModule> getConfigModules(Set<ConfigModuleID> moduleIDs, String[] fetchGroups, int maxFetchDepth)
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
 			if (fetchGroups != null)
@@ -462,7 +462,7 @@ public class ConfigManagerBean extends BaseSessionBeanImpl implements ConfigMana
 			ConfigID childID, Class<? extends ConfigModule> configModuleClass, String moduleID, boolean autoCreate,
 			String[] fetchGroups, int maxFetchDepth)
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		if (fetchGroups != null) {
 			pm.getFetchPlan().setGroups(fetchGroups);
 		}
@@ -502,7 +502,7 @@ public class ConfigManagerBean extends BaseSessionBeanImpl implements ConfigMana
 	public ConfigGroup addConfigGroup(String configKey, String groupType, String groupName, boolean get, String[] fetchGroups, int maxFetchDepth)
 	{
 		PersistenceManager pm;
-		pm = getPersistenceManager();
+		pm = createPersistenceManager();
 		try
 		{
 			ConfigGroup group = new ConfigGroup(getOrganisationID(), configKey, groupType);
@@ -541,7 +541,7 @@ public class ConfigManagerBean extends BaseSessionBeanImpl implements ConfigMana
 		)
 	{
 		PersistenceManager pm;
-		pm = getPersistenceManager();
+		pm = createPersistenceManager();
 		try
 		{
 			ConfigSetup configSetup = (ConfigSetup) pm.getObjectById(configSetupID);
@@ -563,7 +563,7 @@ public class ConfigManagerBean extends BaseSessionBeanImpl implements ConfigMana
 	@RolesAllowed("_Guest_")
 	@Override
 	public List<ConfigSetup> getConfigSetups(Set<ConfigSetupID> setupIDs, String[] fetchGroups, int maxFetchDepth) {
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			return NLJDOHelper.getDetachedObjectList(pm, setupIDs, ConfigSetup.class, fetchGroups, maxFetchDepth);
 		} finally {
@@ -578,7 +578,7 @@ public class ConfigManagerBean extends BaseSessionBeanImpl implements ConfigMana
 	@RolesAllowed("_Guest_")
 	@Override
 	public Collection<ConfigSetupID> getAllConfigSetupIDs() {
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			return ConfigSetup.getAllConfigSetupIDs(pm);
 		} finally {
@@ -595,7 +595,7 @@ public class ConfigManagerBean extends BaseSessionBeanImpl implements ConfigMana
 	public void storeConfigSetup(Collection<Config> setup)
 	{
 		PersistenceManager pm;
-		pm = getPersistenceManager();
+		pm = createPersistenceManager();
 		try
 		{
 //			if (! getOrganisationID().equals(setup.getOrganisationID()) )
@@ -614,7 +614,7 @@ public class ConfigManagerBean extends BaseSessionBeanImpl implements ConfigMana
 	@Override
 	public Config storeConfig(Config config, boolean get, String[] fetchGroups, int maxFetchDepth) {
 		PersistenceManager pm;
-		pm = getPersistenceManager();
+		pm = createPersistenceManager();
 		try {
 			config = pm.makePersistent(config);
 			if (!get)
@@ -638,7 +638,7 @@ public class ConfigManagerBean extends BaseSessionBeanImpl implements ConfigMana
 	@Override
 	public ConfigModule applyGroupInheritence(ConfigModuleID IDOfModuleToInherit, boolean get, String[] fetchGroups, int maxFetchDepth) {
 		PersistenceManager pm;
-		pm = getPersistenceManager();
+		pm = createPersistenceManager();
 		try
 		{
 			Set<String> fetchPlan = new HashSet<String>();
@@ -683,7 +683,7 @@ public class ConfigManagerBean extends BaseSessionBeanImpl implements ConfigMana
 	public void initialise()
 	{
 		PersistenceManager pm;
-		pm = getPersistenceManager();
+		pm = createPersistenceManager();
 		try {
 			// has been moved to the ConfigFactoryInitialiser
 //			System.setProperty(org.nightlabs.config.Config.PROPERTY_KEY_CONFIG_FACTORY, XMLConfigFactory.class.getName());

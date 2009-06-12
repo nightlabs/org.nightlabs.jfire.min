@@ -69,7 +69,7 @@ extends BaseSessionBeanImpl implements PersistentNotificationEJBRemote
 	@Override
 	public void initialise()
 	{
-		PersistenceManager pm = this.getPersistenceManager();
+		PersistenceManager pm = this.createPersistenceManager();
 		try {
 			pm.getExtent(PushNotifierOrganisation.class);
 			try {
@@ -92,7 +92,7 @@ extends BaseSessionBeanImpl implements PersistentNotificationEJBRemote
 	@Override
 	public List<NotificationFilter> getNotificationFilters(Set<NotificationFilterID> notificationFilterIDs, String[] fetchGroups, int maxFetchDepth)
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try  {
 			return NLJDOHelper.getDetachedObjectList(pm, notificationFilterIDs, NotificationFilter.class, fetchGroups, maxFetchDepth);
 		} finally {
@@ -107,7 +107,7 @@ extends BaseSessionBeanImpl implements PersistentNotificationEJBRemote
 	@Override
 	public NotificationFilter storeNotificationFilter(NotificationFilter notificationFilter, boolean get, String[] fetchGroups, int maxFetchDepth)
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			if (logger.isDebugEnabled())
 				logger.debug("storeNotificationFilter: user="+getPrincipal() + " notificationFilter: " + notificationFilter);
@@ -125,7 +125,7 @@ extends BaseSessionBeanImpl implements PersistentNotificationEJBRemote
 	@Override
 	public void deleteNotificationBundles(Set<NotificationBundleID> notificationBundleIDs)
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			Set<NotificationBundle> notificationBundles = NLJDOHelper.getObjectSet(pm, notificationBundleIDs, NotificationBundleID.class);
 			pm.deletePersistentAll(notificationBundles);
@@ -144,7 +144,7 @@ extends BaseSessionBeanImpl implements PersistentNotificationEJBRemote
 		if (notificationFilterID == null)
 			throw new IllegalArgumentException("subscriptionID must not be null!");
 
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try  {
 			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
 			if (fetchGroups != null)
@@ -164,7 +164,7 @@ extends BaseSessionBeanImpl implements PersistentNotificationEJBRemote
 	public void pushNotificationBundle(NotificationBundle notificationBundle)
 	throws Exception
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			pm.getExtent(NotificationReceiver.class);
 

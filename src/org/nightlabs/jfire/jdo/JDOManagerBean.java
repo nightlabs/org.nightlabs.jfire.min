@@ -86,7 +86,7 @@ implements JDOManagerRemote
 			if (clazz != null)
 				return clazz.getName();
 
-			PersistenceManager pm = getPersistenceManager();
+			PersistenceManager pm = createPersistenceManager();
 			try {
 				Object o = pm.getObjectById(objectID);
 				return o.getClass().getName();

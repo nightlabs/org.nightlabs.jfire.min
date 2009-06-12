@@ -72,7 +72,7 @@ public class WorkstationManagerBean extends BaseSessionBeanImpl implements Works
 	@Override
 	public Workstation storeWorkstation(Workstation ws, boolean get, String[] fetchGroups, int maxFetchDepth)
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try
 		{
 			if (fetchGroups != null)
@@ -99,7 +99,7 @@ public class WorkstationManagerBean extends BaseSessionBeanImpl implements Works
 	@Override
 	public Set<WorkstationID> getWorkstationIDs()
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			Query q = pm.newQuery(Workstation.class);
 			q.setResult("JDOHelper.getObjectId(this)");
@@ -117,7 +117,7 @@ public class WorkstationManagerBean extends BaseSessionBeanImpl implements Works
 	@Override
 	public List<Workstation> getWorkstations(Set<WorkstationID> workstationIDs, String[] fetchGroups, int maxFetchDepth)
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			return NLJDOHelper.getDetachedObjectList(pm, workstationIDs, null, fetchGroups, maxFetchDepth);
 		} finally {
@@ -141,7 +141,7 @@ public class WorkstationManagerBean extends BaseSessionBeanImpl implements Works
 					"Invalid return type= "+ workstationQueries.getResultClassName());
 		}
 
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			pm.getFetchPlan().setMaxFetchDepth(1);
 			pm.getFetchPlan().setGroup(FetchPlan.DEFAULT);

@@ -58,7 +58,7 @@ implements TimerManagerRemote, TimerManagerLocal
 	public boolean setExecutingIfActiveExecIDMatches(TaskID taskID, String activeExecID)
 	throws Exception
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			NLJDOHelper.enableTransactionSerializeReadObjects(pm);
 			try {
@@ -101,7 +101,7 @@ implements TimerManagerRemote, TimerManagerLocal
 		String activeExecID = ObjectIDUtil.makeValidIDString(null);
 
 		List<Task> tasks;
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			NLJDOHelper.enableTransactionSerializeReadObjects(pm);
 			try {
@@ -138,7 +138,7 @@ implements TimerManagerRemote, TimerManagerLocal
 	@Override
 	public List<TaskID> getTaskIDs()
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			return NLJDOHelper.getObjectIDList((Collection<?>)pm.newQuery(Task.class).execute());
 		} finally {
@@ -154,7 +154,7 @@ implements TimerManagerRemote, TimerManagerLocal
 	@Override
 	public List<TaskID> getTaskIDs(String taskTypeID)
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			return NLJDOHelper.getObjectIDList(Task.getTasksByTaskTypeID(pm, taskTypeID));
 		} finally {
@@ -170,7 +170,7 @@ implements TimerManagerRemote, TimerManagerLocal
 	@Override
 	public List<Task> getTasks(Collection<TaskID> taskIDs, String[] fetchGroups, int maxFetchDepth)
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			List<Task> tasks = NLJDOHelper.getDetachedObjectList(pm, taskIDs, Task.class, fetchGroups, maxFetchDepth);
 			return tasks;
@@ -188,7 +188,7 @@ implements TimerManagerRemote, TimerManagerLocal
 	@Override
 	public Task storeTask(Task task, boolean get, String[] fetchGroups, int maxFetchDepth)
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			User principalUser = User.getUser(pm, getPrincipal()); // do this before locking, because the user isn't changed in this transaction anyway - no need to lock it in the db
 			Task persistentTask = null;

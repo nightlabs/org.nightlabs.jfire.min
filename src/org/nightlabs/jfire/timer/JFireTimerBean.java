@@ -141,7 +141,7 @@ implements TimedObject, JFireTimerRemote
 
 		TimerService timerService = sessionContext.getTimerService();
 
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			// before we start the timer, we clear all Task.executing flags (it's not possible that there's sth. executing before we start the timer)
 			List<Task> tasks = Task.getTasksByExecuting(pm, true);

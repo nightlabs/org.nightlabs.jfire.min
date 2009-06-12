@@ -73,7 +73,7 @@ implements AsyncInvokerDelegateLocal
 	public void enqueueErrorCallback(AsyncInvokeEnvelope envelope, InvocationError error)
 	throws Exception
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			NLJDOHelper.enableTransactionSerializeReadObjects(pm);
 			try {
@@ -175,7 +175,7 @@ implements AsyncInvokerDelegateLocal
 	public void markAsyncInvokeProblemUndeliverable(org.nightlabs.jfire.asyncinvoke.AsyncInvokeEnvelope envelope, boolean undeliverable)
 	throws Exception
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			NLJDOHelper.enableTransactionSerializeReadObjects(pm);
 			try {
@@ -197,7 +197,7 @@ implements AsyncInvokerDelegateLocal
 	public void deleteAsyncInvokeProblem(AsyncInvokeEnvelope envelope)
 	throws java.lang.Exception
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			NLJDOHelper.enableTransactionSerializeReadObjects(pm);
 			try {

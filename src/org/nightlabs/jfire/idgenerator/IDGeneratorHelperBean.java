@@ -71,7 +71,7 @@ extends BaseSessionBeanImpl implements IDGeneratorHelperRemote, IDGeneratorHelpe
 			logger.trace("serverNextIDs: entered (namespace=\"" + namespace + "\")");
 		}
 
-		PersistenceManager pm = this.getPersistenceManager();
+		PersistenceManager pm = this.createPersistenceManager();
 		try {
 			pm.getExtent(IDNamespace.class);
 			String organisationID = getOrganisationID();
@@ -130,7 +130,7 @@ extends BaseSessionBeanImpl implements IDGeneratorHelperRemote, IDGeneratorHelpe
 			logger.trace("clientNextIDs: entered (namespace=\"" + namespace + "\")");
 		}
 
-		PersistenceManager pm = this.getPersistenceManager();
+		PersistenceManager pm = this.createPersistenceManager();
 		int quantity;
 		try {
 			pm.getExtent(IDNamespace.class);

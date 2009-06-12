@@ -65,7 +65,7 @@ extends NLLocale
 	protected Locale getUserLocale(UserDescriptor userDescriptor)
 	{
 		Lookup lookup = new Lookup(userDescriptor.getOrganisationID());
-		PersistenceManager pm = lookup.getPersistenceManager();
+		PersistenceManager pm = lookup.createPersistenceManager();
 		try {
 			Person person;
 			try {

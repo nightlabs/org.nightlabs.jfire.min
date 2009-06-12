@@ -103,10 +103,27 @@ implements BaseSessionRemote
 	 * @return Returns the PersistenceManager assigned to the current user.
 	 *
 	 * @see getPrincipal()
+	 * @deprecated Use {@link #createPersistenceManager()} instead. Deprecated since 2009-06-12 in order to emphasize by "create" that the returned {@link PersistenceManager} must be closed.
 	 */
+	@Deprecated
 	protected PersistenceManager getPersistenceManager()
 	{
-		return getPrincipal().getLookup().getPersistenceManager();
+		return createPersistenceManager();
+	}
+
+	/**
+	 * This method is a shortcut to <code>getPrincipal().getLookup().getPersistenceManager()</code>.
+	 * <p>
+	 * <b>Important:</b> You must call {@link PersistenceManager#close()} at the end of your EJB method!
+	 * </p>
+	 *
+	 * @return Returns the PersistenceManager assigned to the current user.
+	 *
+	 * @see getPrincipal()
+	 */
+	protected PersistenceManager createPersistenceManager()
+	{
+		return getPrincipal().getLookup().createPersistenceManager();
 	}
 
 	/**
@@ -149,7 +166,7 @@ implements BaseSessionRemote
 	throws NamingException
 	{
 //		boolean managePM = false;
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 //		if (persistenceManager == null || persistenceManager.isClosed()) {
 //			managePM = true;
 //			pm = getPersistenceManager();

@@ -56,7 +56,7 @@ implements EditLockManagerRemote, EditLockManagerLocal
 	public void cleanupEditLocks(TaskID taskID)
 	throws Exception
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 //			EditLockManagerLocal helperBean = JFireEjb3Factory.getLocalBean(EditLockManagerLocal.class, null);
 			EditLockManagerLocal helperBean = editLockManagerLocal;
@@ -88,7 +88,7 @@ implements EditLockManagerRemote, EditLockManagerLocal
 	@Override
 	public Collection<? extends EditLockID> cleanupEditLocks_getExpiredEditLocks()
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			List<EditLockID> expiredEditLockIDs = NLJDOHelper.getObjectIDList(EditLock.getExpiredEditLocks(pm));
 			return expiredEditLockIDs;
@@ -106,7 +106,7 @@ implements EditLockManagerRemote, EditLockManagerLocal
 	public void cleanupEditLocks_releaseEditLock(EditLockID editLockID)
 	throws Exception
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			EditLock editLock = (EditLock) pm.getObjectById(editLockID);
 			editLock.getEditLockType().onReleaseEditLock(editLock, ReleaseReason.clientLost);
@@ -125,7 +125,7 @@ implements EditLockManagerRemote, EditLockManagerLocal
 	public void initialise()
 	throws TimePatternFormatException
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			pm.getExtent(Task.class);
 			TaskID taskID = TaskID.create(
@@ -176,7 +176,7 @@ implements EditLockManagerRemote, EditLockManagerLocal
 			EditLockTypeID editLockTypeID, ObjectID objectID, String description,
 			String[] fetchGroups, int maxFetchDepth)
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
 			if (fetchGroups != null)
@@ -199,7 +199,7 @@ implements EditLockManagerRemote, EditLockManagerLocal
 	@Override
 	public void releaseEditLock(ObjectID objectID, ReleaseReason releaseReason)
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			EditLock.releaseEditLock(pm, UserID.create(getPrincipal()), getSessionID(), objectID, releaseReason);
 		} finally {
@@ -214,7 +214,7 @@ implements EditLockManagerRemote, EditLockManagerLocal
 	@Override
 	public Set<EditLockID> getEditLockIDs(ObjectID objectID)
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			return EditLock.getEditLockIDs(pm, objectID);
 		} finally {
@@ -229,7 +229,7 @@ implements EditLockManagerRemote, EditLockManagerLocal
 	@Override
 	public List<EditLock> getEditLocks(Collection<EditLockID> editLockIDs, String[] fetchGroups, int maxFetchDepth)
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			return NLJDOHelper.getDetachedObjectList(pm, editLockIDs, EditLock.class, fetchGroups, maxFetchDepth);
 		} finally {

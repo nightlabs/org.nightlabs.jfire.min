@@ -114,7 +114,7 @@ implements JFireSecurityManagerRemote
 	public void initialise()
 	throws Exception
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 // TODO re-enable this code! Temporarily commented out to make switching to EJB3 easier, because it's only a consistency check
 // and not essentially necessary for the server to be functional. Marco.
@@ -165,7 +165,7 @@ implements JFireSecurityManagerRemote
 	public void checkConsistency(TaskID taskID)
 	throws Exception
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			assertConsistency(pm);
 		} finally {
@@ -184,7 +184,7 @@ implements JFireSecurityManagerRemote
 		if (!userSecurityGroup.getOrganisationID().equals(getOrganisationID()))
 			throw new IllegalArgumentException("userSecurityGroup.organisationID must be equal to your organisationID!!!");
 
-		PersistenceManager pm = this.getPersistenceManager();
+		PersistenceManager pm = this.createPersistenceManager();
 		try {
 			boolean successful = false;
 			SecurityChangeController.beginChanging();
@@ -246,7 +246,7 @@ implements JFireSecurityManagerRemote
 		if (newPassword != null && !UserLocal.isValidPassword(newPassword))
 			throw new IllegalArgumentException("The new password is not a valid password!");
 
-		PersistenceManager pm = this.getPersistenceManager();
+		PersistenceManager pm = this.createPersistenceManager();
 		try {
 			boolean successful = false;
 			SecurityChangeController.beginChanging();
@@ -295,7 +295,7 @@ implements JFireSecurityManagerRemote
 	@Override
 	public Set<Role> getRolesForRequiredRoleIDs(Set<RoleID> roleIDs)
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			pm.getFetchPlan().setMaxFetchDepth(NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
 			pm.getFetchPlan().setDetachmentOptions(FetchPlan.DETACH_LOAD_FIELDS | FetchPlan.DETACH_UNLOAD_FIELDS);
@@ -320,7 +320,7 @@ implements JFireSecurityManagerRemote
 	@Override
 	public Set<UserID> getUserIDs(String organisationID, Set<String> userTypes)
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			Set<UserID> result = null;
 
@@ -370,7 +370,7 @@ implements JFireSecurityManagerRemote
 	@Override
 	public List<User> getUsers(Collection<UserID> userIDs, String[] fetchGroups, int maxFetchDepth)
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			return NLJDOHelper.getDetachedObjectList(pm, userIDs, User.class, fetchGroups, maxFetchDepth);
 		} finally {
@@ -386,7 +386,7 @@ implements JFireSecurityManagerRemote
 	@Override
 	public Set<UserSecurityGroupID> getUserSecurityGroupIDs()
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			Query q = pm.newQuery(UserSecurityGroup.class);
 			q.setResult("JDOHelper.getObjectId(this)");
@@ -403,7 +403,7 @@ implements JFireSecurityManagerRemote
 	@Override
 	public List<UserSecurityGroup> getUserSecurityGroups(Collection<UserSecurityGroupID> userSecurityGroupIDs, String[] fetchGroups, int maxFetchDepth)
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			return NLJDOHelper.getDetachedObjectList(pm, userSecurityGroupIDs, UserSecurityGroup.class, fetchGroups, maxFetchDepth);
 		} finally {
@@ -578,7 +578,7 @@ implements JFireSecurityManagerRemote
 		if (!organisationID.equals(authorityID.organisationID))
 			throw new IllegalArgumentException("Cannot manage foreign access rights! authorityID.organisationID=\""+authorityID.organisationID+"\" does not match our organisationID=\""+organisationID+"\"!");
 
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			Authority authority = (Authority) pm.getObjectById(authorityID);
 			Authority.resolveSecuringAuthority(
@@ -613,7 +613,7 @@ implements JFireSecurityManagerRemote
 		if (!organisationID.equals(authorityID.organisationID))
 			throw new IllegalArgumentException("Cannot manage foreign access rights! authorityID.organisationID=\""+authorityID.organisationID+"\" does not match our organisationID=\""+organisationID+"\"!");
 
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			AuthorizedObject authorizedObject = (AuthorizedObject) pm.getObjectById(authorizedObjectID);
 			if (!organisationID.equals(authorizedObject.getOrganisationID()))
@@ -666,7 +666,7 @@ implements JFireSecurityManagerRemote
 		if (!organisationID.equals(authorityID.organisationID))
 			throw new IllegalArgumentException("Cannot manage foreign access rights! authorityID.organisationID=\""+authorityID.organisationID+"\" does not match our organisationID=\""+organisationID+"\"!");
 
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			Authority authority = (Authority) pm.getObjectById(authorityID);
 
@@ -707,7 +707,7 @@ implements JFireSecurityManagerRemote
 	@Override
 	public Collection<RoleGroup> getRoleGroups(Collection<RoleGroupID> roleGroupIDs, String[] fetchGroups, int maxFetchDepth)
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			return NLJDOHelper.getDetachedObjectList(pm, roleGroupIDs, RoleGroup.class, fetchGroups, maxFetchDepth);
 		} finally {
@@ -722,7 +722,7 @@ implements JFireSecurityManagerRemote
 	@Override
 	public Set<AuthorityID> getAuthorityIDs(String organisationID, AuthorityTypeID authorityTypeID)
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			Query q = pm.newQuery(Authority.class);
 			q.setResult("JDOHelper.getObjectId(this)");
@@ -759,7 +759,7 @@ implements JFireSecurityManagerRemote
 	@Override
 	public List<Authority> getAuthorities(Collection<AuthorityID> authorityIDs, String[] fetchGroups, int maxFetchDepth)
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			return NLJDOHelper.getDetachedObjectList(pm, authorityIDs, Authority.class, fetchGroups, maxFetchDepth);
 		} finally {
@@ -774,7 +774,7 @@ implements JFireSecurityManagerRemote
 	@Override
 	public Set<AuthorityTypeID> getAuthorityTypeIDs()
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			Query q = pm.newQuery(AuthorityType.class);
 			q.setResult("JDOHelper.getObjectId(this)");
@@ -792,7 +792,7 @@ implements JFireSecurityManagerRemote
 	@Override
 	public List<AuthorityType> getAuthorityTypes(Collection<AuthorityTypeID> authorityTypeIDs, String[] fetchGroups, int maxFetchDepth)
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			return NLJDOHelper.getDetachedObjectList(pm, authorityTypeIDs, AuthorityType.class, fetchGroups, maxFetchDepth);
 		} finally {
@@ -808,7 +808,7 @@ implements JFireSecurityManagerRemote
 	@Override
 	public boolean userIDAlreadyRegistered(UserID userID)
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			Object test = pm.getObjectById(userID, true);
 
@@ -833,7 +833,7 @@ implements JFireSecurityManagerRemote
 	@Override
 	public Set<AuthorizedObjectID> getAuthorizedObjectIDs()
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			// Since the class AuthorizedObject is not persistence-capable, it cannot be queried directly => we query the known 2 subclasses instead
 			Class<?>[] authorizedObjectPersistenceCapables = {
@@ -869,7 +869,7 @@ implements JFireSecurityManagerRemote
 	@Override
 	public List<AuthorizedObject> getAuthorizedObjects(Collection<AuthorizedObjectID> authorizedObjectIDs, String[] fetchGroups, int maxFetchDepth)
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			return NLJDOHelper.getDetachedObjectList(pm, authorizedObjectIDs, AuthorizedObject.class, fetchGroups, maxFetchDepth);
 		} finally {
@@ -915,7 +915,7 @@ implements JFireSecurityManagerRemote
 		if (!organisationID.equals(authorityID.organisationID))
 			throw new IllegalArgumentException("Cannot manage foreign access rights! authorityID.organisationID=\""+authorityID.organisationID+"\" does not match our organisationID=\""+organisationID+"\"!");
 
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			if (ASSERT_CONSISTENCY_BEFORE)
 				assertConsistency(pm);
@@ -1031,7 +1031,7 @@ implements JFireSecurityManagerRemote
 	@Override
 	public void setUserSecurityGroupsOfMember(Set<UserSecurityGroupID> userSecurityGroupIDs, AuthorizedObjectID memberAuthorizedObjectID)
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			if (ASSERT_CONSISTENCY_BEFORE)
 				assertConsistency(pm);
@@ -1084,7 +1084,7 @@ implements JFireSecurityManagerRemote
 	@Override
 	public void setMembersOfUserSecurityGroup(UserSecurityGroupID userSecurityGroupID, Set<? extends AuthorizedObjectID> memberAuthorizedObjectIDs)
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			if (ASSERT_CONSISTENCY_BEFORE)
 				assertConsistency(pm);
@@ -1286,7 +1286,7 @@ implements JFireSecurityManagerRemote
 					"Invalid return type= "+ userQueries.getResultClassName());
 		}
 
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			pm.getFetchPlan().setMaxFetchDepth(1);
 			pm.getFetchPlan().setGroup(FetchPlan.DEFAULT);
@@ -1322,7 +1322,7 @@ implements JFireSecurityManagerRemote
 		String userID = SecurityReflector.getUserDescriptor().getUserID();
 		String organisationID = SecurityReflector.getUserDescriptor().getOrganisationID();
 
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			User user = (User) pm.getObjectById(UserID.create(organisationID, userID));
 			user.getUserLocal().setPasswordPlain(password);
@@ -1338,7 +1338,7 @@ implements JFireSecurityManagerRemote
 	@RolesAllowed("org.nightlabs.jfire.security.accessRightManagement")
 	@Override
 	public Authority storeAuthority(Authority authority, boolean get, String[] fetchGroups, int maxFetchDepth) {
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			if (ASSERT_CONSISTENCY_BEFORE)
 				assertConsistency(pm);
@@ -1387,7 +1387,7 @@ implements JFireSecurityManagerRemote
 	@Override
 	public void assignSecuringAuthority(Object securedObjectID, AuthorityID authorityID, boolean inherited)
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 
 			Object _securedObject = pm.getObjectById(securedObjectID);
@@ -1448,7 +1448,7 @@ implements JFireSecurityManagerRemote
 	@Override
 	public Set<RoleGroupID> getRoleGroupIDs()
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			Query q = pm.newQuery(RoleGroup.class);
 			q.setResult("JDOHelper.getObjectId(this)");
@@ -1469,7 +1469,7 @@ implements JFireSecurityManagerRemote
 		if (!getPrincipal().userIsOrganisation())
 			throw new IllegalStateException("This method can only be called by organisations!");
 
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			User user = User.getUser(pm, getPrincipal());
 			UserLocal userLocal = user.getUserLocal();
@@ -1547,7 +1547,7 @@ implements JFireSecurityManagerRemote
 	public void importAuthoritiesOnCrossOrganisationRegistration(Context context)
 	throws Exception
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			String emitterOrganisationID = context.getOtherOrganisationID();
 			Hashtable<?, ?> initialContextProperties = getInitialContextProperties(emitterOrganisationID);

@@ -93,7 +93,7 @@ public class PropertyManagerBean extends BaseSessionBeanImpl implements Property
 	public Struct getFullStruct(
 			String organisationID, String linkClass, String structScope, String[] fetchGroups, int maxFetchDepth)
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			if (fetchGroups != null) {
 				pm.getFetchPlan().setGroups(fetchGroups);
@@ -131,7 +131,7 @@ public class PropertyManagerBean extends BaseSessionBeanImpl implements Property
 	public StructLocal getFullStructLocal(
 			String organisationID, String linkClass, String structScope, String structLocalScope, String[] fetchGroups, int maxFetchDepth)
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			if (fetchGroups != null) {
 				HashSet<String> fetchGroupSet = CollectionUtil.array2HashSet(fetchGroups);
@@ -170,7 +170,7 @@ public class PropertyManagerBean extends BaseSessionBeanImpl implements Property
 	@RolesAllowed("_Guest_")
 	@Override
 	public PropertySet getPropertySet(PropertySetID propID, String[] fetchGroups, int maxFetchDepth) {
-		PersistenceManager pm = this.getPersistenceManager();
+		PersistenceManager pm = this.createPersistenceManager();
 		try {
 			pm.getExtent(PropertySet.class, true);
 			PropertySet prop = (PropertySet) pm.getObjectById(propID, true);
@@ -193,7 +193,7 @@ public class PropertyManagerBean extends BaseSessionBeanImpl implements Property
 	@RolesAllowed("_Guest_")
 	@Override
 	public Set<?> searchPropertySets(PropSearchFilter propSearchFilter, String[] fetchGroups, int maxFetchDepth) {
-		PersistenceManager pm = this.getPersistenceManager();
+		PersistenceManager pm = this.createPersistenceManager();
 		try {
 			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
 			if (fetchGroups != null)
@@ -214,7 +214,7 @@ public class PropertyManagerBean extends BaseSessionBeanImpl implements Property
 	@RolesAllowed("_Guest_")
 	@Override
 	public Set<PropertySetID> searchPropertySetIDs(PropSearchFilter propSearchFilter) {
-		PersistenceManager pm = this.getPersistenceManager();
+		PersistenceManager pm = this.createPersistenceManager();
 		try {
 			propSearchFilter.setPersistenceManager(pm);
 			Collection<?> props = propSearchFilter.getResult();
@@ -238,7 +238,7 @@ public class PropertyManagerBean extends BaseSessionBeanImpl implements Property
 	@RolesAllowed("_Guest_")
 	@Override
 	public PropertySet storePropertySet(PropertySet propertySet, boolean get, String[] fetchGroups, int maxFetchDepth) {
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			return NLJDOHelper.storeJDO(pm, propertySet, get, fetchGroups, maxFetchDepth);
 		} finally {
@@ -253,7 +253,7 @@ public class PropertyManagerBean extends BaseSessionBeanImpl implements Property
 	@RolesAllowed("_Guest_")
 	@Override
 	public IStruct storeStruct(IStruct struct, boolean get, String[] fetchGroups, int maxFetchDepth) {
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			IStruct persistenStruct = null;
 			if (struct instanceof Struct) {
@@ -351,7 +351,7 @@ public class PropertyManagerBean extends BaseSessionBeanImpl implements Property
 	@RolesAllowed("_Guest_")
 	@Override
 	public Collection<StructID> getAvailableStructIDs() {
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			return getAvailableStructIDs(pm);
 		} finally {
@@ -379,7 +379,7 @@ public class PropertyManagerBean extends BaseSessionBeanImpl implements Property
 	@RolesAllowed("_Guest_")
 	@Override
 	public Collection<StructLocalID> getAvailableStructLocalIDs() {
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			return getAvailableStructLocalIDs(pm);
 		} finally {
@@ -396,7 +396,7 @@ public class PropertyManagerBean extends BaseSessionBeanImpl implements Property
 	public Set<PropertySet> getPropertySets(Set<PropertySetID> propIDs, String[] fetchGroups, int maxFetchDepth) {
 		// MultiPageSearchResult multiPageSearchResult = new
 		// MultiPageSearchResult();
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			long time = System.currentTimeMillis();
 			Set<PropertySet> result = NLJDOHelper.getDetachedObjectSet(pm, propIDs, null, fetchGroups, maxFetchDepth);
@@ -413,7 +413,7 @@ public class PropertyManagerBean extends BaseSessionBeanImpl implements Property
 	@RolesAllowed("_Guest_")
 	@Override
 	public long getDataFieldInstanceCount(StructFieldID fieldID) {
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			return DataField.getDataFieldInstanceCountByStructFieldType(pm, fieldID);
 		} finally {
@@ -430,7 +430,7 @@ public class PropertyManagerBean extends BaseSessionBeanImpl implements Property
 	@RolesAllowed("_Guest_")
 	@Override
 	public Set<PropertySetFieldBasedEditLayoutUseCaseID> getAllPropertySetFieldBasedEditLayoutUseCaseIDs() {
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			return NLJDOHelper.getDetachedQueryResultAsSet(pm, PropertySetFieldBasedEditLayoutUseCase.getAllUseCaseIDs(pm));
 		} finally {
@@ -448,7 +448,7 @@ public class PropertyManagerBean extends BaseSessionBeanImpl implements Property
 	@RolesAllowed("_Guest_")
 	@Override
 	public Set<PropertySetFieldBasedEditLayoutUseCase> getPropertySetFieldBasedEditLayoutUseCases(Set<PropertySetFieldBasedEditLayoutUseCaseID> ids, String[] fetchGroups, int maxFetchDepth) {
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			Set<PropertySetFieldBasedEditLayoutUseCase> result = NLJDOHelper.getDetachedObjectSet(pm, ids, null, fetchGroups, maxFetchDepth);
 			return result;
@@ -465,7 +465,7 @@ public class PropertyManagerBean extends BaseSessionBeanImpl implements Property
 	@RolesAllowed("_System_")
 	@Override
 	public void initialise() {
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			PersonStruct.getPersonStructLocal(pm);
 

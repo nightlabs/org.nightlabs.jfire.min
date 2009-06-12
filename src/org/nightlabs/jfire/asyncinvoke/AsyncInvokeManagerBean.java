@@ -44,7 +44,7 @@ implements AsyncInvokeManagerRemote
 	@SuppressWarnings("unchecked")
 	@Override
 	public Set<AsyncInvokeProblemID> getAsyncInvokeProblemIDs() {
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			javax.jdo.Query q = pm.newQuery(AsyncInvokeProblem.class);
 			q.setResult("JDOHelper.getObjectId(this)");
@@ -60,7 +60,7 @@ implements AsyncInvokeManagerRemote
 	@RolesAllowed("org.nightlabs.jfire.asyncinvoke.administrateAsyncInvokes")
 	@Override
 	public List<AsyncInvokeProblem> getAsyncInvokeProblems(Collection<AsyncInvokeProblemID> asyncInvokeProblemIDs, String[] fetchGroups, int maxFetchDepth) {
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			return NLJDOHelper.getDetachedObjectList(pm, asyncInvokeProblemIDs, AsyncInvokeProblem.class, fetchGroups, maxFetchDepth);
 		} finally {
@@ -75,7 +75,7 @@ implements AsyncInvokeManagerRemote
 	@RolesAllowed("org.nightlabs.jfire.asyncinvoke.administrateAsyncInvokes")
 	@Override
 	public void deleteAsyncInvokeProblems(Collection<AsyncInvokeProblemID> asyncInvokeProblemIDs) {
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			Set<AsyncInvokeProblem> problems = NLJDOHelper.getObjectSet(pm, asyncInvokeProblemIDs, AsyncInvokeProblem.class);
 			for (Iterator<AsyncInvokeProblem> it = problems.iterator(); it.hasNext();) {
@@ -98,7 +98,7 @@ implements AsyncInvokeManagerRemote
 	@Override
 	public void retryAsyncInvokeProblems(Collection<AsyncInvokeProblemID> asyncInvokeProblemIDs) throws AsyncInvokeEnqueueException
 	{
-		PersistenceManager pm = getPersistenceManager();
+		PersistenceManager pm = createPersistenceManager();
 		try {
 			Set<AsyncInvokeProblem> problems = NLJDOHelper.getObjectSet(pm, asyncInvokeProblemIDs, AsyncInvokeProblem.class);
 			for (Iterator<AsyncInvokeProblem> it = problems.iterator(); it.hasNext();) {

@@ -94,7 +94,7 @@ implements Serializable
 	 */
 	protected PersistenceManager getPersistenceManager()
 	{
-		persistenceManager = getPrincipal().getLookup().getPersistenceManager();
+		persistenceManager = getPrincipal().getLookup().createPersistenceManager();
 		return persistenceManager;
 	}
 
