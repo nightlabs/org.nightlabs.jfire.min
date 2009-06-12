@@ -137,8 +137,24 @@ public class Lookup
 	 * </p>
 	 *
 	 * @return a new {@link PersistenceManager} obtained from the {@link PersistenceManagerFactory} accessible via {@link #getPersistenceManagerFactory()}.
+	 * @deprecated Use {@link #createPersistenceManager()} instead. Deprecated since 2009-06-12 in order to emphasize by "create" that the returned {@link PersistenceManager} must be closed.
 	 */
+	@Deprecated
 	public PersistenceManager getPersistenceManager()
+	{
+		return createPersistenceManager();
+	}
+
+	/**
+	 * This method returns a PersistenceManager that is providing access to
+	 * the database that is linked to the organisationID of the current user.
+	 * <p>
+	 * <b>Important:</b> You must call {@link PersistenceManager#close()} at the end of your EJB method!
+	 * </p>
+	 *
+	 * @return a new {@link PersistenceManager} obtained from the {@link PersistenceManagerFactory} accessible via {@link #getPersistenceManagerFactory()}.
+	 */
+	public PersistenceManager createPersistenceManager()
 	{
 		PersistenceManager pm = getPersistenceManagerFactory().getPersistenceManager();
 

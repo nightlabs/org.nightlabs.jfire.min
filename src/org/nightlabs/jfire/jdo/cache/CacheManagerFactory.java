@@ -1407,7 +1407,7 @@ public class CacheManagerFactory
 						try {
 
 							Lookup lookup = new Lookup(organisationID);
-							PersistenceManager pm = lookup.getPersistenceManager();
+							PersistenceManager pm = lookup.createPersistenceManager();
 							try {
 								for (FilterWithDirtyObjectIDs filterWithDirtyObjectIDs : filterID2FilterWithDirtyObjectIDs.values()) {
 									JDOLifecycleRemoteEvent event = new JDOLifecycleRemoteEvent(

@@ -454,7 +454,7 @@ public class JFireServerManagerImpl
 
 				// get persistence manager
 //				PersistenceManager pm = lookup.getPersistenceManager();
-				PersistenceManager pm = new Lookup(organisationID).getPersistenceManager();
+				PersistenceManager pm = new Lookup(organisationID).createPersistenceManager();
 				try
 				{
 					if (User.USER_ID_SYSTEM.equals(userID)) {
