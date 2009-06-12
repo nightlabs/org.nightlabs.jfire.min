@@ -98,7 +98,7 @@ public class SecurityReflectorJBoss extends SecurityReflector
 		boolean closePM = false;
 		try {
 			if (pm == null) {
-				pm = new Lookup(userDescriptor.getOrganisationID()).getPersistenceManager();
+				pm = new Lookup(userDescriptor.getOrganisationID()).createPersistenceManager();
 				closePM = true;
 			}
 			// FIXME: DATANULEUS WORKAROUND: The commented code somehow returns all RoleIDs instead of 
