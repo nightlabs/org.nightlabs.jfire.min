@@ -326,13 +326,18 @@ extends ServerConfiguratorJBoss
 			text = text.replaceAll("\\$\\{databaseDriverName_localTx\\}", getJFireServerConfigModule().getDatabase().getDatabaseDriverName_localTx());
 			text = text.replaceAll("\\$\\{databaseDriverName_xa\\}", getJFireServerConfigModule().getDatabase().getDatabaseDriverName_xa());
 			text = text.replaceAll("\\$\\{databaseName\\}", databaseName);
-			text = text.replaceAll("\\$\\{databaseURL\\}", databaseURL);
+			text = text.replaceAll("\\$\\{databaseURL\\}", xmlEncode(databaseURL));
 			text = text.replaceAll("\\$\\{databaseUserName\\}", getJFireServerConfigModule().getDatabase().getDatabaseUserName());
-			text = text.replaceAll("\\$\\{databasePassword\\}", getJFireServerConfigModule().getDatabase().getDatabasePassword());
+			text = text.replaceAll("\\$\\{databasePassword\\}", xmlEncode(getJFireServerConfigModule().getDatabase().getDatabasePassword()));
 			text = text.replaceAll("\\$\\{datasourceMetadataTypeMapping\\}", getJFireServerConfigModule().getDatabase().getDatasourceMetadataTypeMapping());
 
 			IOUtil.writeTextFile(destFile, text);
 		}
+	}
+
+	private String xmlEncode(String s)
+	{
+		return "<![CDATA[" + s + "]]>";
 	}
 
 	@Override
