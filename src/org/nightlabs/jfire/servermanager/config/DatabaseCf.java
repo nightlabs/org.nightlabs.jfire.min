@@ -88,7 +88,7 @@ public class DatabaseCf extends JFireServerConfigPart implements Serializable
 		db.setDatabaseDriverName_noTx("com.mysql.jdbc.Driver");
 		db.setDatabaseDriverName_localTx("com.mysql.jdbc.Driver");
 		db.setDatabaseDriverName_xa("com.mysql.jdbc.jdbc2.optional.MysqlXADataSource");
-		db.setDatabaseURL("jdbc:mysql://localhost/" + DATABASE_NAME_VAR);
+		db.setDatabaseURL("jdbc:mysql://localhost/" + DATABASE_NAME_VAR + "?useLegacyDatetimeCode=false&serverTimezone=UTC");
 //				db.setDatabaseUserName("jfire");
 //				db.setDatabasePassword("jfire_password");
 		db.setDatabaseAdapter(DatabaseAdapterMySQL.class.getName());

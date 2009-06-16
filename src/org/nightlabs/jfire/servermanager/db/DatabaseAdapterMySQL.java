@@ -87,6 +87,13 @@ extends AbstractDatabaseAdapter
 		String dbServerURL = databaseURL.substring(0, lastSlashPos + 1);
 		String databaseName = databaseURL.substring(lastSlashPos + 1);
 
+		int firstQuestionMarkPos = databaseName.indexOf('?');
+		if (firstQuestionMarkPos >= 0) {
+			String optionSuffix = databaseName.substring(firstQuestionMarkPos);
+			databaseName = databaseName.substring(0, firstQuestionMarkPos);
+			dbServerURL += optionSuffix;
+		}
+
 		logger.info("Creating database \""+databaseName+"\" on server \""+dbServerURL+"\"");
 
 		try {
