@@ -60,7 +60,11 @@ implements IJDOObjectDAO<PropertySet>
 	{
 		try {
 			PropertyManagerRemote pm = JFireEjb3Factory.getRemoteBean(PropertyManagerRemote.class, SecurityReflector.getInitialContextProperties());
-			return pm.storePropertySet(propertySet, get, fetchGroups, maxFetchDepth);
+			PropertySet result = pm.storePropertySet(propertySet, get, fetchGroups, maxFetchDepth);
+			if (result != null) {
+				getCache().put(null, result, fetchGroups, maxFetchDepth);
+			}
+			return result;
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
