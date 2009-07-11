@@ -51,15 +51,15 @@ import org.nightlabs.math.Base62Coder;
  * <p>
  * The Login can be configured via a {@link Properties} instance where it expects the following keys:
  * <ul>
- *   <li><b>organisationID</b> (the value of {@link #ORGANISATION_ID}), defines the organisationID to login to.</li>
- *   <li><b>userID</b> (the value of {@link #USER_ID}), defines the userID to log in with. Note that organisationID and userID will be concatted to form the username: userID@organisationID</li>
- *   <li><b>password</b> (the value of {@link #PASSWORD}), defines the password to login with.</li>
- *   <li><b>providerURL</b> (the value of {@link #PROVIDER_URL}), defines the URL of the server to login to.
+ *   <li><b>jfire.login.organisationID</b> (the value of {@link #PROP_ORGANISATION_ID}), defines the organisationID to login to.</li>
+ *   <li><b>jfire.login.userID</b> (the value of {@link #PROP_USER_ID}), defines the userID to log in with. Note that organisationID and userID will be concatted to form the username: userID@organisationID</li>
+ *   <li><b>jfire.login.password</b> (the value of {@link #PROP_PASSWORD}), defines the password to login with.</li>
+ *   <li><b>jfire.login.providerURL</b> (the value of {@link #PROP_PROVIDER_URL}), defines the URL of the server to login to.
  *   	This defaults to the value defined in {@link InitialContext#getEnvironment()} or to "jnp://127.0.0.1:1099"</li>
- *   <li><b>initialContextFactory</b> (the value of {@link #INITIAL_CONTEXT_FACTORY}), defines the login context factory to use,
+ *   <li><b>jfire.login.initialContextFactory</b> (the value of {@link #PROP_INITIAL_CONTEXT_FACTORY}), defines the login context factory to use,
  *   	defaults to "org.nightlabs.jfire.jboss.cascadedauthentication.LoginInitialContextFactory"</li>
- *   <li><b>securityProtocol</b> (the value of {@link #SECURITY_PROTOCOL}), defines the security protocol to use, defaults to "jfire".</li>
- *   <li><b>workstationID</b> (the value of {@link #WORKSTATION_ID}), defines the optional workstation-identifier.</li>
+ *   <li><b>jfire.login.securityProtocol</b> (the value of {@link #PROP_SECURITY_PROTOCOL}), defines the security protocol to use, defaults to "jfire".</li>
+ *   <li><b>jfire.login.workstationID</b> (the value of {@link #PROP_WORKSTATION_ID}), defines the optional workstation-identifier.</li>
  * </ul>
  * </p>
  *
@@ -73,6 +73,7 @@ public class JFireLogin
 	 */
 	private static final Logger logger = Logger.getLogger(JFireLogin.class);
 
+	public static final String LOGIN_PREFIX = "jfire.login.";
 
 	public static final String ORGANISATION_ID = "organisationID";
 	public static final String USER_ID = "userID";
@@ -81,6 +82,14 @@ public class JFireLogin
 	public static final String INITIAL_CONTEXT_FACTORY = "initialContextFactory";
 	public static final String SECURITY_PROTOCOL = "securityProtocol";
 	public static final String WORKSTATION_ID = LoginData.WORKSTATION_ID;
+
+	public static final String PROP_ORGANISATION_ID = LOGIN_PREFIX + ORGANISATION_ID;
+	public static final String PROP_USER_ID = LOGIN_PREFIX + USER_ID;
+	public static final String PROP_PASSWORD = LOGIN_PREFIX + PASSWORD;
+	public static final String PROP_PROVIDER_URL = LOGIN_PREFIX + PROVIDER_URL;
+	public static final String PROP_INITIAL_CONTEXT_FACTORY = LOGIN_PREFIX + INITIAL_CONTEXT_FACTORY;
+	public static final String PROP_SECURITY_PROTOCOL = LOGIN_PREFIX + SECURITY_PROTOCOL;
+	public static final String PROP_WORKSTATION_ID = LOGIN_PREFIX + WORKSTATION_ID;
 
 	/**
 	 * Encapsulates all necessary login information.
@@ -97,26 +106,27 @@ public class JFireLogin
 	 */
 	public JFireLogin(Properties properties)
 	{
+		Properties loginProps = org.nightlabs.util.Properties.getProperties(properties, LOGIN_PREFIX);
 		String organisationID, userID, password;
-		organisationID = properties.getProperty(ORGANISATION_ID, "");
-		userID = properties.getProperty(USER_ID, "");
-		password = properties.getProperty(PASSWORD, "");
+		organisationID = loginProps.getProperty(ORGANISATION_ID, "");
+		userID = loginProps.getProperty(USER_ID, "");
+		password = loginProps.getProperty(PASSWORD, "");
 		loginData = new LoginData(organisationID, userID, password);
 
-		for (Object propKey : properties.keySet()) {
+		for (Object propKey : loginProps.keySet()) {
 			if (USER_ID.equals(propKey) || PASSWORD.equals(propKey) || ORGANISATION_ID.equals(propKey))
 				continue;
 
 			if (PROVIDER_URL.equals(propKey))
-				loginData.setProviderURL(properties.getProperty(PROVIDER_URL, null));
+				loginData.setProviderURL(loginProps.getProperty(PROVIDER_URL, null));
 			else if (INITIAL_CONTEXT_FACTORY.equals(propKey))
-				loginData.setInitialContextFactory(properties.getProperty(INITIAL_CONTEXT_FACTORY, "org.nightlabs.jfire.jboss.cascadedauthentication.LoginInitialContextFactory"));
+				loginData.setInitialContextFactory(loginProps.getProperty(INITIAL_CONTEXT_FACTORY, "org.nightlabs.jfire.jboss.cascadedauthentication.LoginInitialContextFactory"));
 			else if (SECURITY_PROTOCOL.equals(propKey))
-				loginData.setSecurityProtocol(properties.getProperty(SECURITY_PROTOCOL, "jfire"));
+				loginData.setSecurityProtocol(loginProps.getProperty(SECURITY_PROTOCOL, "jfire"));
 			else {
 				loginData.getAdditionalParams().put(
 						(String) propKey,
-						properties.getProperty((String)propKey)
+						loginProps.getProperty((String)propKey)
 						);
 			}
 		}
@@ -161,9 +171,9 @@ public class JFireLogin
 	 */
 	private static Properties createLoginProperties(String _organisationID, String _userID, String _password) {
 		Properties props = new Properties();
-		props.setProperty(ORGANISATION_ID, _organisationID);
-		props.setProperty(USER_ID, _userID);
-		props.setProperty(PASSWORD, _password);
+		props.setProperty(PROP_ORGANISATION_ID, _organisationID);
+		props.setProperty(PROP_USER_ID, _userID);
+		props.setProperty(PROP_PASSWORD, _password);
 		return props;
 	}
 
