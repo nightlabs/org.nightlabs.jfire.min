@@ -1,6 +1,9 @@
 Manifest-Version: 1.0
-XXXClass-Path: JFireBaseBean.jar JFireServerManager.rar JFireRCLBacken
- d.jar
+EAR-Module-ID: JFireBaseEAR
+EAR-Module-Version: 1.0.0
+EAR-Schema-Version: 1.0.0
+Bundle-SymbolicName: JFireRCLBackendBean
+Bundle-Version: 1.0.0
 Class-Path: org.nightlabs.jfire.classloader.remote.backend.jar 
  JFireServerManager.rar 
  org.nightlabs.base.jar 
