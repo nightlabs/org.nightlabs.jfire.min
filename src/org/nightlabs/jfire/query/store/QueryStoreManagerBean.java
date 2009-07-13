@@ -19,7 +19,6 @@ import org.nightlabs.jdo.moduleregistry.ModuleMetaData;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.query.store.id.QueryStoreID;
 import org.nightlabs.jfire.security.id.UserID;
-import org.nightlabs.version.MalformedVersionException;
 
 /**
  *
@@ -170,12 +169,11 @@ implements QueryStoreManagerRemote
 	/* (non-Javadoc)
 	 * @see org.nightlabs.jfire.query.store.QueryStoreManagerRemote#initialise()
 	 */
-	public void initialise()
+	public void initialise() throws Exception
 	{
 		PersistenceManager pm = createPersistenceManager();;
-		try
-		{
-			ModuleMetaData moduleMetaData = ModuleMetaData.getModuleMetaData(pm, "JFireQueryStore");
+		try {
+			ModuleMetaData moduleMetaData = ModuleMetaData.getModuleMetaData(pm, JFireQueryStoreEAR.MODULE_NAME);
 			if (moduleMetaData != null)
 				return;
 
@@ -183,14 +181,10 @@ implements QueryStoreManagerRemote
 			pm.getExtent(BaseQueryStore.class);
 
 			// version is {major}.{minor}.{release}-{patchlevel}-{suffix}
-			moduleMetaData = new ModuleMetaData("JFireQueryStore", "0.9.7-0-beta", "0.9.7-0-beta");
-			pm.makePersistent(moduleMetaData);
-		} catch (MalformedVersionException e)
-		{
-			throw new RuntimeException(e);
-		}
-		finally
-		{
+			moduleMetaData = pm.makePersistent(
+					ModuleMetaData.createModuleMetaDataFromManifest(JFireQueryStoreEAR.MODULE_NAME, JFireQueryStoreEAR.class)
+			);
+		} finally {
 			pm.close();
 		}
 	}

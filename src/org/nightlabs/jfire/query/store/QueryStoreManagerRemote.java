@@ -67,8 +67,9 @@ public interface QueryStoreManagerRemote {
 	 * @ejb.interface-method
 	 * @ejb.permission role-name="_System_"
 	 * @ejb.transaction type="Required"
+	 * @throws Exception TODO
 	 */
-	void initialise();
+	void initialise() throws Exception;
 
 	/**
 	 *
