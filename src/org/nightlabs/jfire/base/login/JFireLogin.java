@@ -42,7 +42,12 @@ import org.nightlabs.math.Base62Coder;
 /**
  * Helper class to login to a JFire server.
  * <p>
- * It can be instantiated and serves IntialContextProperties
+ * It can be instantiated and is capable of configuring a {@link LoginContext} with the values
+ * provided in the constructor. Note, that before communicating with JFire {@link #login()} needs to be called
+ * and you should make sure in a try-finally block that {@link #logout()} will be called, too.
+ * </p>
+ * <p> 
+ * Additionally an instance of {@link JFireLogin} can serve IntialContextProperties
  * that developers will need for example to create EJB proxies to
  * the services, the jfire server provides. (See {@link #getInitialContextProperties()})
  * </p>
