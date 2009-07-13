@@ -1,8 +1,6 @@
 Manifest-Version: 1.0
-XXXClass-Path: JFireBaseBean.jar 
- org.nightlabs.base.jar 
- org.nightlabs.jdo.jar 
- org.nightlabs.jfire.base.jar 
- JFireServerManager.rar 
- JFireBaseClientLib.jar
-
+EAR-Module-ID: JFireBaseEAR
+EAR-Module-Version: 1.0.0
+EAR-Schema-Version: 1.0.0
+Bundle-SymbolicName: JFireBaseDAO
+Bundle-Version: 1.0.0
