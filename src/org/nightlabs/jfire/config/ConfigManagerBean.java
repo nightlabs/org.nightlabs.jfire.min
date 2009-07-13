@@ -680,7 +680,7 @@ public class ConfigManagerBean extends BaseSessionBeanImpl implements ConfigMana
 	@TransactionAttribute(TransactionAttributeType.REQUIRED)
 	@RolesAllowed("_System_")
 	@Override
-	public void initialise()
+	public void initialise() throws Exception
 	{
 		PersistenceManager pm;
 		pm = createPersistenceManager();
@@ -689,6 +689,8 @@ public class ConfigManagerBean extends BaseSessionBeanImpl implements ConfigMana
 //			System.setProperty(org.nightlabs.config.Config.PROPERTY_KEY_CONFIG_FACTORY, XMLConfigFactory.class.getName());
 
 			String organisationID = getOrganisationID();
+
+			ModuleMetaData.createModuleMetaDataFromManifest(JFireBaseEAR.MODULE_NAME, JFireBaseEAR.class);
 
 			ModuleMetaData moduleMetaData = ModuleMetaData.getModuleMetaData(pm, JFireBaseEAR.MODULE_NAME);
 			if (moduleMetaData != null)

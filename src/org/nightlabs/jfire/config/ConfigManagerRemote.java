@@ -240,8 +240,9 @@ public interface ConfigManagerRemote
 
 	/**
 	 * Initializes the JFireBase Config-System.
+	 * @throws Exception TODO
 	 */
-	void initialise();
+	void initialise() throws Exception;
 
 	String ping(String message);
 }
