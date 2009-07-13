@@ -1,6 +1,8 @@
 Manifest-Version: 1.0
-XXXClass-Path: JFireBaseJ2EE.jar org.nightlabs.base.jar org.nightlabs.
- clientui.jar org.nightlabs.jdo.jar org.nightlabs.jfire.base.jar org.n
- ightlabs.query.jar org.nightlabs.query.jdo.jar JFireRCLBackend.jar
+EAR-Module-ID: JFireBaseEAR
+EAR-Module-Version: 1.0.0
+EAR-Schema-Version: 1.0.0
+Bundle-SymbolicName: JFireServerManager
+Bundle-Version: 1.0.0
 Class-Path: org.nightlabs.jfire.classloader.remote.backend.jar
 
