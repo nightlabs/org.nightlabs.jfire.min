@@ -1,2 +1,6 @@
 Manifest-Version: 1.0
-
+EAR-Module-ID: JFireIntegrationJBossEAR
+EAR-Module-Version: 1.0.0
+EAR-Schema-Version: 1.0.0
+Bundle-SymbolicName: JFireIntegrationJBoss
+Bundle-Version: 1.0.0
