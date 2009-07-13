@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE application PUBLIC "-//Sun Microsystems, Inc.//DTD J2EE Application 1.3//EN" "http://java.sun.com/dtd/application_1_3.dtd">
+<application>
+	<display-name>NightLabs JFire Base</display-name>
+	<module>
+		<java>JFireBase.jar</java>
+	</module>
+	<module>
+		<java>JFireRCLBackend.jar</java>
+	</module>
+	<module>
+		<connector>JFireServerManager.rar</connector>
+	</module>
+	<module>
+		<ejb>JFireBaseBean.jar</ejb>
+	</module>
+	<module>
+		<ejb>JFireBasePublicBean.jar</ejb>
+	</module>
+	<module>
+		<ejb>JFireRCLBackendBean.jar</ejb>
+	</module>
+	<module>
+		<java>JFireWebLib.jar</java>
+	</module>
+	<module>
+		<java>JFireBaseClientLib.jar</java>
+	</module>
+	<module>
+		<java>JFireBaseDAO.jar</java>
+	</module>
+	<module>
+		<web>
+			<web-uri>JFireBaseWeb.war</web-uri>
+			<context-root>/jfire</context-root>
+		</web>
+	</module>
+</application>
