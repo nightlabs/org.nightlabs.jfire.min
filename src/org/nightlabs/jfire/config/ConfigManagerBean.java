@@ -55,7 +55,6 @@ import org.nightlabs.jfire.config.id.ConfigModuleID;
 import org.nightlabs.jfire.config.id.ConfigSetupID;
 import org.nightlabs.jfire.editlock.EditLockType;
 import org.nightlabs.util.CollectionUtil;
-import org.nightlabs.version.Version;
 
 /**
  * @ejb.bean name="jfire/ejb/JFireBaseBean/ConfigManager"
@@ -690,8 +689,6 @@ public class ConfigManagerBean extends BaseSessionBeanImpl implements ConfigMana
 
 			String organisationID = getOrganisationID();
 
-			ModuleMetaData.createModuleMetaDataFromManifest(JFireBaseEAR.MODULE_NAME, JFireBaseEAR.class);
-
 			ModuleMetaData moduleMetaData = ModuleMetaData.getModuleMetaData(pm, JFireBaseEAR.MODULE_NAME);
 			if (moduleMetaData != null)
 				return;
@@ -699,8 +696,9 @@ public class ConfigManagerBean extends BaseSessionBeanImpl implements ConfigMana
 			logger.info("Initialization of Configuration in JFireBase started...");
 
 			// version is {major}.{minor}.{release}-{patchlevel}-{suffix}
-			Version version = new Version(0, 9, 5, 0, "beta");
-			moduleMetaData = new ModuleMetaData(JFireBaseEAR.MODULE_NAME, version, version);
+//			Version version = new Version(0, 9, 5, 0, "beta");
+//			moduleMetaData = new ModuleMetaData(JFireBaseEAR.MODULE_NAME, version, version);
+			moduleMetaData = ModuleMetaData.createModuleMetaDataFromManifest(JFireBaseEAR.MODULE_NAME, JFireBaseEAR.class);
 			pm.makePersistent(moduleMetaData);
 
 			UserConfigSetup userConfigSetup = new UserConfigSetup(organisationID);
