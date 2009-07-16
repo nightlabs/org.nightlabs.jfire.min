@@ -485,7 +485,7 @@ public class JdoCacheBridgeDefault extends JdoCacheBridge
 			try {
 				securityReflector = SecurityReflector.lookupSecurityReflector(initialContext);
 			} finally {
-				initialContext.close();
+//				initialContext.close(); // https://www.jfire.org/modules/bugs/view.php?id=1178
 			}
 		} catch (NamingException e) {
 			throw new RuntimeException(e);

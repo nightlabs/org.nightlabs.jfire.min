@@ -3,6 +3,7 @@ EAR-Module-ID: JFireBaseEAR
 EAR-Module-Version: 1.0.0
 EAR-Schema-Version: 1.0.0
 Bundle-SymbolicName: JFireServerManager
-Bundle-Version: 1.0.0
+Bundle-Version: 1.0.1
 Class-Path: org.nightlabs.jfire.classloader.remote.backend.jar
+Bundle-Vendor: NightLabs
 
