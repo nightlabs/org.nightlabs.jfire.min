@@ -227,7 +227,7 @@ public class JFireEjbFactory
 			else
 				home = objRef;
 		} finally {
-			initialContext.close();
+//			initialContext.close(); // https://www.jfire.org/modules/bugs/view.php?id=1178
 		}
 		return home;
 	}

@@ -169,7 +169,7 @@ public class JFireEjb3Factory
 			Object objRef = initialContext.lookup(jndiName);
 			return ejbRemoteInterface.cast(objRef);
 		} finally {
-			initialContext.close();
+//			initialContext.close(); // https://www.jfire.org/modules/bugs/view.php?id=1178
 		}
 	}
 
@@ -204,7 +204,7 @@ public class JFireEjb3Factory
 			try {
 				return ejbLocalInterface.cast(initialContext.lookup(JNDI_PREFIX_EJB_BY_LOCAL_INTERFACE + ejbLocalInterface.getName()));
 			} finally {
-				initialContext.close();
+//				initialContext.close(); // https://www.jfire.org/modules/bugs/view.php?id=1178
 			}
 		} catch (NamingException e) {
 			throw new RuntimeException(e);
