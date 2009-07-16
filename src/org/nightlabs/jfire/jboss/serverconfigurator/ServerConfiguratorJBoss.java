@@ -10,6 +10,7 @@ import java.io.OutputStream;
 import java.io.StringReader;
 import java.net.URL;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Matcher;
@@ -74,6 +75,14 @@ public class ServerConfiguratorJBoss
 
 	private static final Logger logger = Logger.getLogger(ServerConfiguratorJBoss.class);
 	protected static final boolean rebootOnDeployDirChanges = false;
+
+	/**
+	 * Used to mark the files modified by this server configurator.
+	 */
+	public static final String ModificationMarker = "!!!ModifiedByJFire!!!";
+
+	private static final String HTTP_INVOKER_SERVICE_HTTP_CONNECTORS = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n <root>\n <!-- "+ModificationMarker+" -->\n <!-- STARTING with JNDI exposition! -->\n   <!-- Expose the Naming service interface via the UnifiedInvoker using Servlet transport -->\n   <mbean code=\"org.jboss.invocation.jrmp.server.JRMPProxyFactory\"\n      name=\"jboss:service=proxyfactory,type=unified,transport=servlet,target=naming\">\n      <attribute name=\"InvokerName\">jboss.remoting:service=invoker,type=unified,transport=servlet</attribute>\n      <attribute name=\"TargetName\">jboss:service=Naming</attribute>\n      <attribute name=\"JndiName\"></attribute>\n      <attribute name=\"ExportedInterface\">org.jnp.interfaces.Naming</attribute>\n      <attribute name=\"ClientInterceptors\">\n          <interceptors>\n             <interceptor>org.jboss.proxy.ClientMethodInterceptor</interceptor>\n             <interceptor>org.jboss.proxy.SecurityInterceptor</interceptor>\n             <interceptor>org.jboss.naming.interceptors.ExceptionInterceptor</interceptor>\n             <interceptor>org.jboss.invocation.InvokerInterceptor</interceptor>\n          </interceptors>\n      </attribute>\n      <depends>jboss.remoting:service=invoker,type=unified,transport=servlet</depends>\n   </mbean>\n   \n   <!-- Expose the Naming service interface via the UnifiedInvoker using SSL Servlet transport -->\n   <mbean code=\"org.jboss.invocation.jrmp.server.JRMPProxyFactory\"\n      name=\"jboss:service=proxyfactory,type=unified,transport=sslservlet,target=naming\">\n      <attribute name=\"InvokerName\">jboss.remoting:service=invoker,type=unified,transport=sslservlet</attribute>\n      <attribute name=\"TargetName\">jboss:service=Naming</attribute>\n      <attribute name=\"JndiName\"></attribute>\n      <attribute name=\"ExportedInterface\">org.jnp.interfaces.Naming</attribute>\n      <attribute name=\"ClientInterceptors\">\n          <interceptors>\n             <interceptor>org.jboss.proxy.ClientMethodInterceptor</interceptor>\n             <interceptor>org.jboss.proxy.SecurityInterceptor</interceptor>\n             <interceptor>org.jboss.naming.interceptors.ExceptionInterceptor</interceptor>\n             <interceptor>org.jboss.invocation.InvokerInterceptor</interceptor>\n          </interceptors>\n      </attribute>\n      <depends>jboss.remoting:service=invoker,type=unified,transport=sslservlet</depends>\n   </mbean>      \n \n   <!-- Unified invoker (based on remoting) for invocations via HTTP with target EJB2 beans or JNDI -->\n   <mbean code=\"org.jboss.invocation.unified.server.UnifiedInvoker\"\n      name=\"jboss.remoting:service=invoker,type=unified,transport=servlet\">\n      <depends>jboss:service=TransactionManager</depends>\n      <depends>jboss.remoting:service=connector,transport=servlet</depends>\n   </mbean>\n\n   <!-- Remoting connector for standard EJB2 beans and JNDI. \n\n        To test JBREM-960, set an incorrect path like:\n        <attribute name=\"path\">invoker/ServerInvokerServlet</attribute>  \n   -->\n   <mbean code=\"org.jboss.remoting.transport.Connector\"\n      name=\"jboss.remoting:service=connector,transport=servlet\"\n      display-name=\"Servlet transport Connector\">\n<!--      <attribute name=\"InvokerLocator\">\n         servlet://${jboss.bind.address}:8080/invoker/ServerInvokerServlet\n      </attribute>-->\n      \n      <attribute name=\"Configuration\">\n         <config>\n\t <!-- Removed ecplicit declaration of invoker for testing purpose -->\n            <invoker transport=\"servlet\">\n               <attribute name=\"dataType\" isParam=\"true\">invocation</attribute>\n               <attribute name=\"marshaller\" isParam=\"true\">org.jboss.invocation.unified.marshall.InvocationMarshaller</attribute>\n               <attribute name=\"unmarshaller\" isParam=\"true\">org.jboss.invocation.unified.marshall.InvocationUnMarshaller</attribute>\n               <attribute name=\"return-exception\" isParam=\"true\">true</attribute>\n               <attribute name=\"serverBindAddress\">${jboss.bind.address}</attribute>\n               <attribute name=\"serverBindPort\">8080</attribute>\n               <attribute name=\"path\">invoker/ServerInvokerServlet</attribute>\n            </invoker>\n            <handlers>\n               <handler subsystem=\"invoker\">jboss.remoting:service=invoker,type=unified,transport=servlet</handler>\n            </handlers>\n         </config>\n      </attribute>      \n   </mbean>\n   \n   <!-- Unified invoker (based on remoting) for invocations via HTTPs with target EJB2 beans or JNDI -->\n   <mbean code=\"org.jboss.invocation.unified.server.UnifiedInvoker\"\n      name=\"jboss.remoting:service=invoker,type=unified,transport=sslservlet\">\n      <depends>jboss:service=TransactionManager</depends>\n      <depends>jboss.remoting:service=connector,transport=sslservlet</depends>\n   </mbean>\n\n   <mbean code=\"org.jboss.remoting.transport.Connector\"\n      name=\"jboss.remoting:service=connector,transport=sslservlet\"\n      display-name=\"SSL Servlet transport Connector\">\n<!--      <attribute name=\"InvokerLocator\">\n\tsslservlet://${jboss.bind.address}:8443/invoker/SSLServerInvokerServlet\n      </attribute>-->\n\n      <attribute name=\"Configuration\">\n         <config>\n\t  <!-- Removed ecplicit declaration of invoker for testing purpose -->\n            <invoker transport=\"sslservlet\">\n               <attribute name=\"dataType\" isParam=\"true\">invocation</attribute>\n               <attribute name=\"marshaller\" isParam=\"true\">org.jboss.invocation.unified.marshall.InvocationMarshaller</attribute>\n               <attribute name=\"unmarshaller\" isParam=\"true\">org.jboss.invocation.unified.marshall.InvocationUnMarshaller</attribute>\n               <attribute name=\"return-exception\" isParam=\"true\">true</attribute>\n               <attribute name=\"serverBindAddress\">${jboss.bind.address}</attribute>\n               <attribute name=\"serverBindPort\">8443</attribute>\n               <attribute name=\"path\">invoker/SSLServerInvokerServlet</attribute>\n            </invoker>\n            <handlers>\n               <handler subsystem=\"invoker\">jboss.remoting:service=invoker,type=unified,transport=sslservlet</handler>\n            </handlers>\n         </config>\n      </attribute>      \n   </mbean>\n\n<!-- FINISHED with JNDI exposition! -->\n\n\n<!-- Exposing EJB3 via servlet transport. -->\n\n   <!-- Unified invoker (based on remoting) for invocations via HTTP with target EJB3 beans. -->\n   <mbean code=\"org.jboss.remoting.transport.Connector\"\n      name=\"jboss.remoting:service=connector,transport=servlet,target=ejb3\"\n      display-name=\"EJB3 Servlet transport Connector\">\n      <depends>jboss.aop:service=AspectDeployer</depends>\n      <attribute name=\"InvokerLocator\">\n        servlet://${jboss.bind.address}:8080/invoker/Ejb3ServerInvokerServlet\n      </attribute>      \n      <attribute name=\"Configuration\">\n         <handlers>\n            <handler subsystem=\"AOP\">org.jboss.aspects.remoting.AOPRemotingInvocationHandler</handler>\n         </handlers>\n      </attribute>\n   </mbean>\n   \n   <!-- Unified invoker (based on remoting) for invocations via HTTPs with target EJB3 beans -->\n   <mbean code=\"org.jboss.remoting.transport.Connector\"\n      name=\"jboss.remoting:service=connector,transport=sslservlet,target=ejb3\"\n      display-name=\"EJB3 Servlet SSL transport Connector\">\n      <depends>jboss.aop:service=AspectDeployer</depends>\n      <attribute name=\"InvokerLocator\">\n        sslservlet://${jboss.bind.address}:8443/invoker/SSLEjb3ServerInvokerServlet\n      </attribute>\n      <attribute name=\"Configuration\">\n         <handlers>\n            <handler subsystem=\"AOP\">org.jboss.aspects.remoting.AOPRemotingInvocationHandler</handler>\n         </handlers>\n      </attribute>\n   </mbean>\n </root>";
+	private static final String HTTP_INVOKER_WEB_XML_SERVLETS = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n <root>\n <!-- "+ModificationMarker+" -->\n <!-- START JNDI Exposition  -->\n  <servlet>\n    <servlet-name>JNDIFactory</servlet-name>\n    <description>A servlet that exposes the JBoss JNDI Naming service stub\n    through http. The return content is a serialized\n    MarshalledValue containg the org.jnp.interfaces.Naming stub. This\n    configuration handles requests for the standard JNDI naming service.\n    </description>\n    <servlet-class>org.jboss.invocation.http.servlet.NamingFactoryServlet</servlet-class>\n    <init-param>\n      <param-name>namingProxyMBean</param-name>\n      <param-value>jboss:service=proxyfactory,type=unified,transport=servlet,target=naming</param-value>\n    </init-param>\n    <init-param>\n      <param-name>proxyAttribute</param-name>\n      <param-value>Proxy</param-value>\n    </init-param>\n    <load-on-startup>2</load-on-startup>\n  </servlet>\n  <servlet-mapping>\n    <servlet-name>JNDIFactory</servlet-name>\n    <url-pattern>/JNDIFactory/*</url-pattern>\n  </servlet-mapping>  \n\n  <servlet>\n    <servlet-name>SSLJNDIFactory</servlet-name>\n    <description>A servlet that exposes the JBoss JNDI Naming service stub\n    through http. The return content is a serialized\n    MarshalledValue containg the org.jnp.interfaces.Naming stub. This\n    configuration handles requests for the standard JNDI naming service.\n    </description>\n    <servlet-class>org.jboss.invocation.http.servlet.NamingFactoryServlet</servlet-class>\n    <init-param>\n      <param-name>namingProxyMBean</param-name>\n      <param-value>jboss:service=proxyfactory,type=unified,transport=sslservlet,target=naming</param-value>\n    </init-param>\n    <init-param>\n      <param-name>proxyAttribute</param-name>\n      <param-value>Proxy</param-value>\n    </init-param>\n    <load-on-startup>2</load-on-startup>\n  </servlet>\n  <servlet-mapping>\n    <servlet-name>SSLJNDIFactory</servlet-name>\n    <url-pattern>/SSLJNDIFactory/*</url-pattern>\n  </servlet-mapping>\n\n  <!-- JNDI lookup calls are routed through these two servlets (no EJB3 authentication is bound to the corresponding Connectors.  -->\n    <servlet>\n        <servlet-name>ServerInvokerServlet</servlet-name>\n        <description>The ServerInvokerServlet receives requests via HTTP\n           protocol from within a web container and passes it onto the\n           ServletServerInvoker for processing.\n        </description>\n        <servlet-class>org.jboss.remoting.transport.servlet.web.ServerInvokerServlet</servlet-class>\n        <init-param>\n<!--            <param-name>invokerName</param-name>\n            <param-value>jboss.remoting:service=connector,transport=servlet</param-value>-->\n<!--             <param-value>jboss.remoting:service=invoker,type=unified,transport=servlet</param-value> -->\n<!--             <description>The servlet server invoker</description> -->\n           \n            <param-name>locatorUrl</param-name>\n            <param-value><![CDATA[servlet://127.0.0.1:8080/invoker/ServerInvokerServlet/?dataType=invocation&marshaller=org.jboss.invocation.unified.marshall.InvocationMarshaller&return-exception=true&unmarshaller=org.jboss.invocation.unified.marshall.InvocationUnMarshaller]]></param-value>\n<!--             <param-value>servlet://${jboss.bind.address}:8080/invoker/ServerInvokerServlet</param-value> -->\n            <description>The servlet server invoker locator url</description>\n           \n        </init-param>\n        <load-on-startup>1</load-on-startup>\n    </servlet>\n    <servlet-mapping>\n        <servlet-name>ServerInvokerServlet</servlet-name>\n        <url-pattern>/ServerInvokerServlet/*</url-pattern>\n    </servlet-mapping>\n\n    <servlet>\n\t<servlet-name>SSLServerInvokerServlet</servlet-name>\n        <description>The ServerInvokerServlet receives requests via HTTPS\n           protocol from within a web container and passes it onto the\n           ServletServerInvoker for processing.\n        </description>\n        <servlet-class>org.jboss.remoting.transport.servlet.web.ServerInvokerServlet</servlet-class>\n        <init-param>\n\t<!-- Using locatorUrl instead of invokerName due to a bug (UnifiedInvoker has/had a hardcoded name!!) -->\n<!--            <param-name>invokerName</param-name>\n            <param-value>jboss.remoting:service=connector,transport=sslservlet</param-value>-->\n<!--             <param-value>jboss.remoting:service=invoker,type=unified,transport=sslservlet</param-value> -->\n<!--             <description>The servlet server invoker</description> -->\n\t    <param-name>locatorUrl</param-name>\n\t    <param-value><![CDATA[sslservlet://127.0.0.1:8443/invoker/SSLServerInvokerServlet/?dataType=invocation&marshaller=org.jboss.invocation.unified.marshall.InvocationMarshaller&return-exception=true&unmarshaller=org.jboss.invocation.unified.marshall.InvocationUnMarshaller]]></param-value>\n<!-- \t    <param-value>sslservlet://${jboss.bind.address}:8443/invoker/SSLServerInvokerServlet</param-value> -->\n\t    <description>The ssl servlet server invoker locator url</description>\n         </init-param>\n        <load-on-startup>1</load-on-startup>\n    </servlet>\n    <servlet-mapping>\n        <servlet-name>SSLServerInvokerServlet</servlet-name>\n        <url-pattern>/SSLServerInvokerServlet/*</url-pattern>\n    </servlet-mapping>\n<!-- END JNDI Exposition  -->\n  \n  <servlet>\n    <servlet-name>Ejb3ServerInvokerServlet</servlet-name>\n    <description>The ServerInvokerServlet receives requests via HTTP\n       protocol from within a web container and passes it onto the\n       ServletServerInvoker for processing.\n    </description>\n    <servlet-class>org.jboss.remoting.transport.servlet.web.ServerInvokerServlet</servlet-class>\n    <!-- Pass locatorUrl instead of invokerName because otherwise you end up\n    sharing the same server invoker for org.jboss.invocation and org.jboss.aop \n    type of invocations which you don\'t wanna do. Worth noting that invokerName \n    is hardcoded and hence you cannot create a separate one that way, hence the \n    use of locatorUrl. -->\n    <init-param>\n         <param-name>locatorUrl</param-name>\n         <param-value>servlet://${jboss.bind.address}:8080/invoker/Ejb3ServerInvokerServlet</param-value>\n         <description>The servlet server invoker</description>\n     </init-param>\n    <!--  init-param>\n        <param-name>invokerName</param-name>\n        <param-value>jboss.remoting:service=invoker,transport=servlet</param-value>\n        <description>The servlet server invoker</description>\n    </init-param -->\n    <load-on-startup>1</load-on-startup>\n  </servlet>\n  <servlet-mapping>\n    <servlet-name>Ejb3ServerInvokerServlet</servlet-name>\n    <url-pattern>/Ejb3ServerInvokerServlet/*</url-pattern>\n  </servlet-mapping>\n    \n  <servlet>\n    <servlet-name>SSLEjb3ServerInvokerServlet</servlet-name>\n    <description>The ServerInvokerServlet receives requests via HTTPS\n       protocol from within a web container and passes it onto the\n       ServletServerInvoker for processing.\n    </description>\n    <servlet-class>org.jboss.remoting.transport.servlet.web.ServerInvokerServlet</servlet-class>\n    <init-param>\n         <param-name>locatorUrl</param-name>\n         <param-value>sslservlet://${jboss.bind.address}:8443/invoker/SSLEjb3ServerInvokerServlet</param-value>\n         <description>The ssl servlet server invoker locator url</description>\n     </init-param>\n    <load-on-startup>1</load-on-startup>\n  </servlet>\n  <servlet-mapping>\n    <servlet-name>SSLEjb3ServerInvokerServlet</servlet-name>\n    <url-pattern>/SSLEjb3ServerInvokerServlet/*</url-pattern>\n  </servlet-mapping>\n </root>";
 
 	protected static void waitForServer()
 	{
@@ -158,14 +167,15 @@ public class ServerConfiguratorJBoss
 //			}
 
 			configureLoginConfigXml(jbossConfDir);
-			configureStandardJBossXml(jbossConfDir);
+			configureUnifiedEjbJndiJBoss(jbossConfDir);
+//			configureStandardJBossXml(jbossConfDir); Not necessary anymore, since custom compression Sockets aren't used anymore.
 			configureMailServiceXml(jbossDeployDir);
 			configureJBossjtaPropertiesXml(jbossConfDir);
 			configureJBossServiceXml(jbossConfDir);
 			configureCascadedAuthenticationClientInterceptorProperties(jbossBinDir);
 			configureTomcatServerXml(jbossDeployDir);
-			configureInvokerJBossServiceXml(jbossDeployDir);
-			configureInvokerWebXml(jbossDeployDir);
+			configureHTTPInvoker(jbossDeployDir);
+//			configureInvokerWebXml(jbossDeployDir);
 			patchRunScripts(jbossBinDir);
 			configureJavaOpts(jbossBinDir);
 			removeUnneededFiles(jbossDeployDir);
@@ -173,6 +183,29 @@ public class ServerConfiguratorJBoss
 		} catch(Exception e) {
 			throw new ServerConfigurationException("Server configuration failed in server configurator "+getClass().getName(), e);
 		}
+	}
+
+	/**
+	 * Writes the default httpProxy.properties file to %server%/conf/props/ in which the http(s)invoker's addresses are
+	 * written into.
+	 *
+	 * @param jbossConfDir The configuration directory of the current JBoss server.
+	 * @throws IOException In case we couldn't write the httpProxy.properties file.
+	 */
+	private void configureUnifiedEjbJndiJBoss(File jbossConfDir)
+		throws IOException
+	{
+		final File httpProxyProperties = new File(new File(jbossConfDir, "props"), "httpProxy.properties").getAbsoluteFile();
+		if (httpProxyProperties.exists())
+			return;
+
+		final Properties httpProxyProps = new Properties();
+		final ServletSSLCf servletConfig = getJFireServerConfigModule().getServletSSLCf();
+		httpProxyProps.put("httpProxy.invoker.url", servletConfig.getServletBaseURL() + "/invoker/Ejb3ServerInvokerServlet");
+		httpProxyProps.put("httpsProxy.invoker.url", servletConfig.getServletBaseURLHttps()+"/invoker/Ejb3ServerInvokerServlet");
+		FileOutputStream propStream = new FileOutputStream(httpProxyProperties);
+		httpProxyProps.store(propStream, ModificationMarker);
+		setRebootRequired(true);
 	}
 
 	/**
@@ -186,7 +219,7 @@ public class ServerConfiguratorJBoss
 	 * @throws SAXException
 	 * @throws IOException
 	 */
-	private void configureInvokerJBossServiceXml(File jbossDeployDir) throws SAXException, IOException
+	private void configureHTTPInvoker(File jbossDeployDir) throws SAXException, IOException
 	{
 		final File invokerDeployerDir = new File(jbossDeployDir, "http-invoker.sar").getAbsoluteFile();
 		if (! invokerDeployerDir.exists())
@@ -196,17 +229,38 @@ public class ServerConfiguratorJBoss
 			return;
 		}
 
-		final File jbossHttpInvokerServerXml = new File(new File(invokerDeployerDir, "META-INF"),
+		final File httpInvokerServerXml = new File(new File(invokerDeployerDir, "META-INF"),
 				"jboss-service.xml").getAbsoluteFile();
-		if (! jbossHttpInvokerServerXml.exists())
+
+		final File httpInvokerWebXml = new File(new File(new File(invokerDeployerDir,"invoker.war"), "WEB-INF"), "web.xml");
+		if (! httpInvokerServerXml.exists())
 		{
-			logger.error("Couldn't find the http invoker jboss-server.xml! Assumed to be " +
-					jbossHttpInvokerServerXml.toString());
+			logger.error("Couldn't find the http invoker jboss-server.xml! Assumed to be here: " +
+					httpInvokerServerXml.toString());
+			return;
+		}
+		if (! httpInvokerWebXml.exists())
+		{
+			logger.error("Couldn't find the http-invoker's web.xml! Assumed to be here: " +
+					httpInvokerServerXml.toString());
 			return;
 		}
 
+		configureHTTPInvokerServiceXML(httpInvokerServerXml);
+		configureHTTPInvokerWebXML(httpInvokerWebXml);
+	}
+
+	/**
+	 *
+	 * @param httpInvokerServerXml
+	 * @throws FileNotFoundException
+	 * @throws SAXException
+	 */
+	private void configureHTTPInvokerServiceXML(File httpInvokerServerXml)
+		throws SAXException, IOException
+	{
 		final DOMParser parser = new DOMParser();
-		FileInputStream serverXmlStream = new FileInputStream(jbossHttpInvokerServerXml);;
+		FileInputStream serverXmlStream = new FileInputStream(httpInvokerServerXml);;
 		try
 		{
 			parser.parse(new InputSource(serverXmlStream));
@@ -217,229 +271,47 @@ public class ServerConfiguratorJBoss
 		}
 		final Document document = parser.getDocument();
 
-		Collection<Node> invokerMBeans = NLDOMUtil.findNodeList(document, "server/mbean");
-		final Node invokerMBeansParent = invokerMBeans.iterator().next().getParentNode();
-		boolean configChanged = false;
+		String encoding = document.getXmlEncoding();
+		if (encoding == null)
+			encoding = "UTF-8";
 
-		// ensure all invoker point to read-only-filtered urls (URLs that are in the domain specified by
-		// the read-only filter in the web.xml of the invoker web deployment.
-		// See #configureInvokerWebXml()
-		Node httpsInvokerNode = null;
-		InvokerBeans: for (Node invokerMBean : invokerMBeans)
+		if (NLDOMUtil.getDocumentAsString(document, encoding).contains(ModificationMarker))
+			return;
+
+		Node serverNode = NLDOMUtil.findSingleNode(document, "server");
+		parser.reset();
+		parser.parse(new InputSource(new StringReader(HTTP_INVOKER_SERVICE_HTTP_CONNECTORS)));
+		Document additions = parser.getDocument();
+		NodeList childNodes = additions.getChildNodes().item(0).getChildNodes();
+		for (int i=0; i < childNodes.getLength(); i++)
 		{
-			final Attr invokerClass = (Attr) invokerMBean.getAttributes().getNamedItem("code");
-			// skip the default HttpInvoker
-			if (! invokerClass.getValue().endsWith("HttpProxyFactory"))
-				continue;
-
-			// check if generated https invoker was found
-			final String invokerName = ((Attr) invokerMBean.getAttributes().getNamedItem("name")).getValue();
-			if ("jboss:service=invoker,type=https,target=Naming,readonly=true".equalsIgnoreCase(invokerName))
-				httpsInvokerNode = invokerMBean;
-
-			NodeList attributeChildNodes = invokerMBean.getChildNodes();
-			for (int i=0; i < attributeChildNodes.getLength(); i++)
-			{
-				final Node attrNode = attributeChildNodes.item(i);
-				if (attrNode.getNodeType() == Node.TEXT_NODE || attrNode.getNodeType() == Node.COMMENT_NODE)
-					continue;
-
-				NamedNodeMap attrNodeAttributes = attrNode.getAttributes();
-				final Attr nameAttribute = (Attr) attrNodeAttributes.getNamedItem("code");
-				if (nameAttribute == null || ! "InvokerURLSuffix".equals(nameAttribute.getValue()))
-					continue;
-
-				final String invokerURLSuffix = attrNode.getTextContent();
-				// check if invoker URL is in the read-only domain (the default == 'readonly')
-				if (invokerURLSuffix.contains("readonly"))
-					continue InvokerBeans;
-
-				int invokerIndex = invokerURLSuffix.lastIndexOf("invoker/");
-				if (invokerIndex == -1)
-				{
-					logger.warn("Cannot modify the URL suffix of the http invokers since the URL pattern " +
-					"is unkown! \n It is assumed to be ':%port/%path/invoker/%servletname");
-					return;
-				}
-
-				int endOfInvoker = invokerIndex + "invoker/".length();
-				String newInvokerURLSuffix = invokerURLSuffix.substring(0, endOfInvoker);
-				newInvokerURLSuffix += "readonly/" + invokerURLSuffix.substring(endOfInvoker);
-				attrNode.setTextContent(newInvokerURLSuffix);
-				configChanged = true;
-			}
+			Node additionsNode = document.importNode(childNodes.item(i), true);
+			serverNode.appendChild(additionsNode);
 		}
 
-		final ServletSSLCf servletSSLCf = getJFireServerConfigModule().getServletSSLCf();
+		// write modified file
+		backup(httpInvokerServerXml);
 
-		if (httpsInvokerNode == null)
-		{ // create default https invoker that has the following structure
-			httpsInvokerNode = document.createElement("mbean");
-
-			// add code & name attributes
-			NamedNodeMap attributes = httpsInvokerNode.getAttributes();
-			Attr codeAttr = document.createAttribute("code");
-			codeAttr.setValue("org.jboss.invocation.http.server.HttpProxyFactory");
-			attributes.setNamedItem(codeAttr);
-
-			Attr nameAttr = document.createAttribute("name");
-			nameAttr.setValue("jboss:service=invoker,type=https,target=Naming,readonly=true");
-			attributes.setNamedItem(nameAttr);
-
-			// add child nodes (all the attribute-nodes like URLPrefix, URLSuffix, ExportedInterface, etc.)
-			Node childNode = document.createElement("attribute");
-
-			childNode.setTextContent("jboss:service=Naming");
-			nameAttr = document.createAttribute("name");
-			nameAttr.setValue("InvokerName");
-			childNode.getAttributes().setNamedItem(nameAttr);
-			httpsInvokerNode.appendChild(childNode);
-
-			childNode = document.createElement("attribute");
-			childNode.setTextContent("https://");
-			nameAttr = document.createAttribute("name");
-			nameAttr.setValue("InvokerURLPrefix");
-			childNode.getAttributes().setNamedItem(nameAttr);
-			httpsInvokerNode.appendChild(childNode);
-
-			childNode = document.createElement("attribute");
-			childNode.setTextContent(":"+ servletSSLCf.getSSLPort()+"/invoker/readonly/JMXInvokerServlet");
-			nameAttr = document.createAttribute("name");
-			nameAttr.setValue("InvokerURLSuffix");
-			childNode.getAttributes().setNamedItem(nameAttr);
-			httpsInvokerNode.appendChild(childNode);
-
-			childNode = document.createElement("attribute");
-			childNode.setTextContent("true");
-			nameAttr = document.createAttribute("name");
-			nameAttr.setValue("UseHostName");
-			childNode.getAttributes().setNamedItem(nameAttr);
-			httpsInvokerNode.appendChild(childNode);
-
-			childNode = document.createElement("attribute");
-			childNode.setTextContent("org.jnp.interfaces.Naming");
-			nameAttr = document.createAttribute("name");
-			nameAttr.setValue("ExportedInterface");
-			childNode.getAttributes().setNamedItem(nameAttr);
-			httpsInvokerNode.appendChild(childNode);
-
-			childNode = document.createElement("attribute");
-			nameAttr = document.createAttribute("name");
-			nameAttr.setValue("JndiName");
-			childNode.getAttributes().setNamedItem(nameAttr);
-			httpsInvokerNode.appendChild(childNode);
-
-			childNode = document.createElement("attribute");
-			nameAttr = document.createAttribute("name");
-			nameAttr.setValue("ClientInterceptors");
-			childNode.getAttributes().setNamedItem(nameAttr);
-			httpsInvokerNode.appendChild(childNode);
-
-			Node clientInterceptors = document.createElement("interceptors");
-			childNode.appendChild(clientInterceptors);
-
-			Node interceptor = document.createElement("interceptor");
-			interceptor.setTextContent("org.jboss.proxy.ClientMethodInterceptor");
-			clientInterceptors.appendChild(interceptor);
-
-			interceptor = document.createElement("interceptor");
-			interceptor.setTextContent("org.jboss.proxy.SecurityInterceptor");
-			clientInterceptors.appendChild(interceptor);
-
-			interceptor = document.createElement("interceptor");
-			interceptor.setTextContent("org.jboss.naming.interceptors.ExceptionInterceptor");
-			clientInterceptors.appendChild(interceptor);
-
-			interceptor = document.createElement("interceptor");
-			interceptor.setTextContent("org.jboss.invocation.InvokerInterceptor");
-			clientInterceptors.appendChild(interceptor);
-
-			invokerMBeansParent.appendChild(httpsInvokerNode);
-			configChanged = true;
-		}
-		else
-		{ // update the invoker declaration to meet the https port specs from the server config.
-			NodeList childNodes = httpsInvokerNode.getChildNodes();
-			for (int i = 0; i < childNodes.getLength(); i++) {
-				final Node childNode = childNodes.item(i);
-
-				if (childNode.getNodeType() == Node.TEXT_NODE || childNode.getNodeType() == Node.COMMENT_NODE)
-					continue;
-
-				if (! "InvokerURLSuffix".equals(
-						((Attr)childNode.getAttributes().getNamedItem("name")).getValue()))
-					continue;
-
-				final String oldURLSuffix = childNode.getTextContent();
-				String newUrlSuffix = oldURLSuffix;
-				Pattern pattern = Pattern.compile(":(\\d*).*");
-				Matcher matcher = pattern.matcher(oldURLSuffix);
-
-				if (! matcher.matches())
-				{
-					logger.warn("In the URL suffix of the https Invoker no port definition was found! \n"+
-							"suffix: "+ oldURLSuffix);
-					break;
-				}
-
-				int oldPort = Integer.parseInt(matcher.group(1));
-				if (oldPort != servletSSLCf.getSSLPort())
-				{
-					newUrlSuffix = oldURLSuffix.replaceFirst(":(\\d*)", ":"+Integer.toString(servletSSLCf.getSSLPort()));
-					configChanged = true;
-					childNode.setTextContent(newUrlSuffix);
-				}
-				break;
-			}
-		}
-
-		if (configChanged)
-		{
-			setRebootRequired(true);
-
-			// write modified file
-			backup(jbossHttpInvokerServerXml);
-			String xmlEncoding = document.getXmlEncoding();
-			if(xmlEncoding == null)
-				xmlEncoding = "UTF-8";
-
-			FileOutputStream out = new FileOutputStream(jbossHttpInvokerServerXml);
-			try {
-				NLDOMUtil.writeDocument(document, out, xmlEncoding);
-			} finally {
-				out.close();
-			}
+		setRebootRequired(true);
+		FileOutputStream out = new FileOutputStream(httpInvokerServerXml);
+		try {
+			NLDOMUtil.writeDocument(document, out, encoding);
+		} finally {
+			out.close();
 		}
 	}
 
 	/**
-	 * This method edits the ReadOnlyAccessFilter for servlets to allow read-only access to all
-	 * domains and modifies the JNDIFactory servlet to use the read-only invoker.
 	 *
-	 * @param jbossDeployDir the deploy directory of the JBoss J2EE server.
-	 * @throws SAXException
+	 * @param httpInvokerWebXml
 	 * @throws IOException
+	 * @throws SAXException
 	 */
-	private void configureInvokerWebXml(File jbossDeployDir) throws SAXException, IOException
+	private void configureHTTPInvokerWebXML(File httpInvokerWebXml)
+		throws IOException, SAXException
 	{
-		final File invokerDeployerDir = new File(jbossDeployDir, "http-invoker.sar").getAbsoluteFile();
-		if (! invokerDeployerDir.exists())
-		{
-			logger.error("Couldn't find the jboss http invoker deployer folder! Assumed to be in" +
-					invokerDeployerDir.toString());
-			return;
-		}
-
-		final File httpInvokerWebXml = new File(new File(new File(invokerDeployerDir, "invoker.war"), "WEB-INF"), "web.xml").getAbsoluteFile();
-		if (! httpInvokerWebXml.exists())
-		{
-			logger.error("Couldn't find the http invoker web.xml! Assumed to be " +
-					httpInvokerWebXml.toString());
-			return;
-		}
-
 		final DOMParser parser = new DOMParser();
-		FileInputStream serverXmlStream = new FileInputStream(httpInvokerWebXml);
+		FileInputStream serverXmlStream = new FileInputStream(httpInvokerWebXml);;
 		try
 		{
 			parser.parse(new InputSource(serverXmlStream));
@@ -450,64 +322,368 @@ public class ServerConfiguratorJBoss
 		}
 		final Document document = parser.getDocument();
 
-		boolean configChanged = false;
-		Collection<Node> filterList = NLDOMUtil.findNodeList(document, "web-app/filter");
-		for (Node filter : filterList)
+		String encoding = document.getXmlEncoding();
+		if (encoding == null)
+			encoding = "UTF-8";
+
+		if (NLDOMUtil.getDocumentAsString(document, encoding).contains(ModificationMarker))
+			return;
+
+		// remove the defined JNDI servlet and add ours.
+		Collection<Node> servlets = NLDOMUtil.findNodeList(document, "web-app/servlet");
+		Collection<Node> servletMappings = NLDOMUtil.findNodeList(document, "web-app/servlet-mapping");
+
+		Node servlet = null;
+		Collection<Node> jndiFactoryMappings = new HashSet<Node>();
+		for (Node tmp : servlets)
 		{
-			Node filterNameNode = NLDOMUtil.findElementNode("filter-name", filter);
-			if (! "ReadOnlyAccessFilter".equals(filterNameNode.getTextContent()))
+			if (!"JNDIFactory".equalsIgnoreCase(NLDOMUtil.getTextContent(NLDOMUtil.findElementNode("servlet-name", tmp), false)))
 				continue;
 
-			Collection<Node> paramValues = NLDOMUtil.findNodeList(filter, "init-param/param-value");
-			for (Node paramValue : paramValues) {
-				if (! "readonly".equals(paramValue.getTextContent()))
-					continue;
-
-				// allow all domains to be read
-				paramValue.setTextContent("");
-				configChanged = true;
-				break;
-			}
+			servlet = tmp;
+			break;
 		}
-
-		Collection<Node> servletList = NLDOMUtil.findNodeList(document, "web-app/servlet");
-		Servlets: for (Node servlet : servletList)
+		for (Node tmp : servletMappings)
 		{
-			Node servletNameNode = NLDOMUtil.findElementNode("servlet-name", servlet);
-			if (! "JNDIFactory".equals(servletNameNode.getTextContent()))
+			if (!"JNDIFactory".equalsIgnoreCase(NLDOMUtil.getTextContent(NLDOMUtil.findElementNode("servlet-name", tmp), false)))
 				continue;
 
-			Collection<Node> paramValues = NLDOMUtil.findNodeList(servlet, "init-param/param-value",
-					false, false);
-			for (Node paramValue : paramValues)
-			{
-				if (! "jboss:service=invoker,type=http,target=Naming".equals(paramValue.getTextContent()))
-					continue;
-
-				paramValue.setTextContent("jboss:service=invoker,type=http,target=Naming,readonly=true");
-				configChanged = true;
-				break Servlets;
-			}
+			jndiFactoryMappings.add(tmp);
 		}
 
-		if (configChanged)
+		if (servlet != null)
+			servlet.getParentNode().removeChild(servlet);
+		if (! jndiFactoryMappings.isEmpty())
+			for (Node node : jndiFactoryMappings)
+				node.getParentNode().removeChild(node);
+
+
+		Node serverNode = NLDOMUtil.findSingleNode(document, "web-app");
+		parser.reset();
+
+		parser.parse(new InputSource(new StringReader(HTTP_INVOKER_WEB_XML_SERVLETS)));
+		Document additions = parser.getDocument();
+		NodeList childNodes = additions.getChildNodes().item(0).getChildNodes();
+		for (int i=0; i < childNodes.getLength(); i++)
 		{
-			setRebootRequired(true);
+			Node additionsNode = document.importNode(childNodes.item(i), true);
+			serverNode.appendChild(additionsNode);
+		}
 
-			// write modified file
-			backup(httpInvokerWebXml);
-			String xmlEncoding = document.getXmlEncoding();
-			if(xmlEncoding == null)
-				xmlEncoding = "UTF-8";
+		// write modified file
+		backup(httpInvokerWebXml);
 
-			FileOutputStream out = new FileOutputStream(httpInvokerWebXml);
-			try {
-				NLDOMUtil.writeDocument(document, out, xmlEncoding);
-			} finally {
-				out.close();
-			}
+		setRebootRequired(true);
+		FileOutputStream out = new FileOutputStream(httpInvokerWebXml);
+		try {
+			NLDOMUtil.writeDocument(document, out, encoding);
+		} finally {
+			out.close();
 		}
 	}
+
+//	if (configChanged)
+//	{
+//		setRebootRequired(true);
+//
+//		// write modified file
+//		backup(httpInvokerServerXml);
+//		String xmlEncoding = document.getXmlEncoding();
+//		if(xmlEncoding == null)
+//			xmlEncoding = "UTF-8";
+//
+//		FileOutputStream out = new FileOutputStream(httpInvokerServerXml);
+//		try {
+//			NLDOMUtil.writeDocument(document, out, xmlEncoding);
+//		} finally {
+//			out.close();
+//		}
+//	}
+//
+//
+//	final DOMParser parser = new DOMParser();
+//	FileInputStream serverXmlStream = new FileInputStream(httpInvokerServerXml);;
+//	try
+//	{
+//		parser.parse(new InputSource(serverXmlStream));
+//	}
+//	finally
+//	{
+//		serverXmlStream.close();
+//	}
+//	final Document document = parser.getDocument();
+//
+//	Collection<Node> invokerMBeans = NLDOMUtil.findNodeList(document, "server/mbean");
+//	final Node invokerMBeansParent = invokerMBeans.iterator().next().getParentNode();
+//
+//	// ensure all invoker point to read-only-filtered urls (URLs that are in the domain specified by
+//	// the read-only filter in the web.xml of the invoker web deployment.
+//	// See #configureInvokerWebXml()
+//	Node httpsInvokerNode = null;
+//	InvokerBeans: for (Node invokerMBean : invokerMBeans)
+//	{
+//		final Attr invokerClass = (Attr) invokerMBean.getAttributes().getNamedItem("code");
+//		// skip the default HttpInvoker
+//		if (! invokerClass.getValue().endsWith("HttpProxyFactory"))
+//			continue;
+//
+//		// check if generated https invoker was found
+//		final String invokerName = ((Attr) invokerMBean.getAttributes().getNamedItem("name")).getValue();
+//		if ("jboss:service=invoker,type=https,target=Naming,readonly=true".equalsIgnoreCase(invokerName))
+//			httpsInvokerNode = invokerMBean;
+//
+//		NodeList attributeChildNodes = invokerMBean.getChildNodes();
+//		for (int i=0; i < attributeChildNodes.getLength(); i++)
+//		{
+//			final Node attrNode = attributeChildNodes.item(i);
+//			if (attrNode.getNodeType() == Node.TEXT_NODE || attrNode.getNodeType() == Node.COMMENT_NODE)
+//				continue;
+//
+//			NamedNodeMap attrNodeAttributes = attrNode.getAttributes();
+//			final Attr nameAttribute = (Attr) attrNodeAttributes.getNamedItem("code");
+//			if (nameAttribute == null || ! "InvokerURLSuffix".equals(nameAttribute.getValue()))
+//				continue;
+//
+//			final String invokerURLSuffix = attrNode.getTextContent();
+//			// check if invoker URL is in the read-only domain (the default == 'readonly')
+//			if (invokerURLSuffix.contains("readonly"))
+//				continue InvokerBeans;
+//
+//			int invokerIndex = invokerURLSuffix.lastIndexOf("invoker/");
+//			if (invokerIndex == -1)
+//			{
+//				logger.warn("Cannot modify the URL suffix of the http invokers since the URL pattern " +
+//				"is unkown! \n It is assumed to be ':%port/%path/invoker/%servletname");
+//				return;
+//			}
+//
+//			int endOfInvoker = invokerIndex + "invoker/".length();
+//			String newInvokerURLSuffix = invokerURLSuffix.substring(0, endOfInvoker);
+//			newInvokerURLSuffix += "readonly/" + invokerURLSuffix.substring(endOfInvoker);
+//			attrNode.setTextContent(newInvokerURLSuffix);
+//			configChanged = true;
+//		}
+//	}
+//
+//	final ServletSSLCf servletSSLCf = getJFireServerConfigModule().getServletSSLCf();
+//
+//	if (httpsInvokerNode == null)
+//	{ // create default https invoker that has the following structure
+//		httpsInvokerNode = document.createElement("mbean");
+//
+//		// add code & name attributes
+//		NamedNodeMap attributes = httpsInvokerNode.getAttributes();
+//		Attr codeAttr = document.createAttribute("code");
+//		codeAttr.setValue("org.jboss.invocation.http.server.HttpProxyFactory");
+//		attributes.setNamedItem(codeAttr);
+//
+//		Attr nameAttr = document.createAttribute("name");
+//		nameAttr.setValue("jboss:service=invoker,type=https,target=Naming,readonly=true");
+//		attributes.setNamedItem(nameAttr);
+//
+//		// add child nodes (all the attribute-nodes like URLPrefix, URLSuffix, ExportedInterface, etc.)
+//		Node childNode = document.createElement("attribute");
+//
+//		childNode.setTextContent("jboss:service=Naming");
+//		nameAttr = document.createAttribute("name");
+//		nameAttr.setValue("InvokerName");
+//		childNode.getAttributes().setNamedItem(nameAttr);
+//		httpsInvokerNode.appendChild(childNode);
+//
+//		childNode = document.createElement("attribute");
+//		childNode.setTextContent("https://");
+//		nameAttr = document.createAttribute("name");
+//		nameAttr.setValue("InvokerURLPrefix");
+//		childNode.getAttributes().setNamedItem(nameAttr);
+//		httpsInvokerNode.appendChild(childNode);
+//
+//		childNode = document.createElement("attribute");
+//		childNode.setTextContent(":"+ servletSSLCf.getSSLPort()+"/invoker/readonly/JMXInvokerServlet");
+//		nameAttr = document.createAttribute("name");
+//		nameAttr.setValue("InvokerURLSuffix");
+//		childNode.getAttributes().setNamedItem(nameAttr);
+//		httpsInvokerNode.appendChild(childNode);
+//
+//		childNode = document.createElement("attribute");
+//		childNode.setTextContent("true");
+//		nameAttr = document.createAttribute("name");
+//		nameAttr.setValue("UseHostName");
+//		childNode.getAttributes().setNamedItem(nameAttr);
+//		httpsInvokerNode.appendChild(childNode);
+//
+//		childNode = document.createElement("attribute");
+//		childNode.setTextContent("org.jnp.interfaces.Naming");
+//		nameAttr = document.createAttribute("name");
+//		nameAttr.setValue("ExportedInterface");
+//		childNode.getAttributes().setNamedItem(nameAttr);
+//		httpsInvokerNode.appendChild(childNode);
+//
+//		childNode = document.createElement("attribute");
+//		nameAttr = document.createAttribute("name");
+//		nameAttr.setValue("JndiName");
+//		childNode.getAttributes().setNamedItem(nameAttr);
+//		httpsInvokerNode.appendChild(childNode);
+//
+//		childNode = document.createElement("attribute");
+//		nameAttr = document.createAttribute("name");
+//		nameAttr.setValue("ClientInterceptors");
+//		childNode.getAttributes().setNamedItem(nameAttr);
+//		httpsInvokerNode.appendChild(childNode);
+//
+//		Node clientInterceptors = document.createElement("interceptors");
+//		childNode.appendChild(clientInterceptors);
+//
+//		Node interceptor = document.createElement("interceptor");
+//		interceptor.setTextContent("org.jboss.proxy.ClientMethodInterceptor");
+//		clientInterceptors.appendChild(interceptor);
+//
+//		interceptor = document.createElement("interceptor");
+//		interceptor.setTextContent("org.jboss.proxy.SecurityInterceptor");
+//		clientInterceptors.appendChild(interceptor);
+//
+//		interceptor = document.createElement("interceptor");
+//		interceptor.setTextContent("org.jboss.naming.interceptors.ExceptionInterceptor");
+//		clientInterceptors.appendChild(interceptor);
+//
+//		interceptor = document.createElement("interceptor");
+//		interceptor.setTextContent("org.jboss.invocation.InvokerInterceptor");
+//		clientInterceptors.appendChild(interceptor);
+//
+//		invokerMBeansParent.appendChild(httpsInvokerNode);
+//		configChanged = true;
+//	}
+//	else
+//	{ // update the invoker declaration to meet the https port specs from the server config.
+//		NodeList childNodes = httpsInvokerNode.getChildNodes();
+//		for (int i = 0; i < childNodes.getLength(); i++) {
+//			final Node childNode = childNodes.item(i);
+//
+//			if (childNode.getNodeType() == Node.TEXT_NODE || childNode.getNodeType() == Node.COMMENT_NODE)
+//				continue;
+//
+//			if (! "InvokerURLSuffix".equals(
+//					((Attr)childNode.getAttributes().getNamedItem("name")).getValue()))
+//				continue;
+//
+//			final String oldURLSuffix = childNode.getTextContent();
+//			String newUrlSuffix = oldURLSuffix;
+//			Pattern pattern = Pattern.compile(":(\\d*).*");
+//			Matcher matcher = pattern.matcher(oldURLSuffix);
+//
+//			if (! matcher.matches())
+//			{
+//				logger.warn("In the URL suffix of the https Invoker no port definition was found! \n"+
+//						"suffix: "+ oldURLSuffix);
+//				break;
+//			}
+//
+//			int oldPort = Integer.parseInt(matcher.group(1));
+//			if (oldPort != servletSSLCf.getSSLPort())
+//			{
+//				newUrlSuffix = oldURLSuffix.replaceFirst(":(\\d*)", ":"+Integer.toString(servletSSLCf.getSSLPort()));
+//				configChanged = true;
+//				childNode.setTextContent(newUrlSuffix);
+//			}
+//			break;
+//		}
+//	}
+
+//	/**
+//	 * This method edits the ReadOnlyAccessFilter for servlets to allow read-only access to all
+//	 * domains and modifies the JNDIFactory servlet to use the read-only invoker.
+//	 *
+//	 * @param jbossDeployDir the deploy directory of the JBoss J2EE server.
+//	 * @throws SAXException
+//	 * @throws IOException
+//	 */
+//	private void configureInvokerWebXml(File jbossDeployDir) throws SAXException, IOException
+//	{
+//		final File invokerDeployerDir = new File(jbossDeployDir, "http-invoker.sar").getAbsoluteFile();
+//		if (! invokerDeployerDir.exists())
+//		{
+//			logger.error("Couldn't find the jboss http invoker deployer folder! Assumed to be in" +
+//					invokerDeployerDir.toString());
+//			return;
+//		}
+//
+//		final File httpInvokerWebXml = new File(new File(new File(invokerDeployerDir, "invoker.war"), "WEB-INF"), "web.xml").getAbsoluteFile();
+//		if (! httpInvokerWebXml.exists())
+//		{
+//			logger.error("Couldn't find the http invoker web.xml! Assumed to be " +
+//					httpInvokerWebXml.toString());
+//			return;
+//		}
+//
+//		final DOMParser parser = new DOMParser();
+//		FileInputStream serverXmlStream = new FileInputStream(httpInvokerWebXml);
+//		try
+//		{
+//			parser.parse(new InputSource(serverXmlStream));
+//		}
+//		finally
+//		{
+//			serverXmlStream.close();
+//		}
+//		final Document document = parser.getDocument();
+//
+//		boolean configChanged = false;
+//		Collection<Node> filterList = NLDOMUtil.findNodeList(document, "web-app/filter");
+//		for (Node filter : filterList)
+//		{
+//			Node filterNameNode = NLDOMUtil.findElementNode("filter-name", filter);
+//			if (! "ReadOnlyAccessFilter".equals(filterNameNode.getTextContent()))
+//				continue;
+//
+//			Collection<Node> paramValues = NLDOMUtil.findNodeList(filter, "init-param/param-value");
+//			for (Node paramValue : paramValues) {
+//				if (! "readonly".equals(paramValue.getTextContent()))
+//					continue;
+//
+//				// allow all domains to be read
+//				paramValue.setTextContent("");
+//				configChanged = true;
+//				break;
+//			}
+//		}
+//
+//		Collection<Node> servletList = NLDOMUtil.findNodeList(document, "web-app/servlet");
+//		Servlets: for (Node servlet : servletList)
+//		{
+//			Node servletNameNode = NLDOMUtil.findElementNode("servlet-name", servlet);
+//			if (! "JNDIFactory".equals(servletNameNode.getTextContent()))
+//				continue;
+//
+//			Collection<Node> paramValues = NLDOMUtil.findNodeList(servlet, "init-param/param-value",
+//					false, false);
+//			for (Node paramValue : paramValues)
+//			{
+//				if (! "jboss:service=invoker,type=http,target=Naming".equals(paramValue.getTextContent()))
+//					continue;
+//
+//				paramValue.setTextContent("jboss:service=invoker,type=http,target=Naming,readonly=true");
+//				configChanged = true;
+//				break Servlets;
+//			}
+//		}
+//
+//		if (configChanged)
+//		{
+//			setRebootRequired(true);
+//
+//			// write modified file
+//			backup(httpInvokerWebXml);
+//			String xmlEncoding = document.getXmlEncoding();
+//			if(xmlEncoding == null)
+//				xmlEncoding = "UTF-8";
+//
+//			FileOutputStream out = new FileOutputStream(httpInvokerWebXml);
+//			try {
+//				NLDOMUtil.writeDocument(document, out, xmlEncoding);
+//			} finally {
+//				out.close();
+//			}
+//		}
+//	}
 
 	/**
 	 * @return the config directory of the jboss.
@@ -1092,136 +1268,136 @@ public class ServerConfiguratorJBoss
 			setRebootRequired(true);
 	}
 
-	/**
-	 * *** work necessary for NightLabsCascadedAuthenticationJBoss ***
-	 * check/modify ${jboss.conf}/standardjboss.xml and REBOOT if changes occured
-	 *
-	 * @param jbossConfDir The JBoss config dir
-	 * @throws FileNotFoundException If the file eas not found
-	 * @throws IOException In case of an io error
-	 * @throws TransformerException
-	 */
-	private void configureStandardJBossXml(File jbossConfDir) throws FileNotFoundException, IOException, SAXException, TransformerException
-	{
-		boolean backupDone = false; // track whether the backup is already done - we don't need 2 backups for this one method.
-		File destFile = new File(jbossConfDir, "standardjboss.xml");
-		String text = IOUtil.readTextFile(destFile);
-
-		//check if we already had the stateless container for the SSL Compression Invoker
-		if (text.indexOf("<name>stateless-compression-invoker</name>") < 0)
-		{
-			logger.info("configureStandardJBossXml: Will add Compression SSL invoker to file: " + destFile.getAbsolutePath());
-
-			if (!backupDone) {
-				backup(destFile);
-				backupDone = true;
-			}
-
-			setRebootRequired(true); // this is a must, because the conf directory doesn't support redeployment
-
-			DOMParser parser = new DOMParser();
-			InputStream in = new FileInputStream(destFile);
-			try {
-				parser.parse(new InputSource(in));
-			} finally {
-				in.close();
-			}
-			Document document = parser.getDocument();
-
-			//configure the ssl compression invoker
-
-			Node root = document.getDocumentElement();
-
-			Node proxynode = NLDOMUtil.findSingleNode(root, "invoker-proxy-bindings");;
-
-			Element newnode = document.createElement("invoker-proxy-binding");// Create Root Element
-
-			Comment comment = document.createComment("Add the Custom Compression SSL Socket proxy Bindings");
-			newnode.appendChild(comment);
-
-			Element item = document.createElement("name");       // Create element
-			item.appendChild( document.createTextNode("stateless-compression-invoker") );
-			newnode.appendChild( item );
-
-			item = document.createElement("invoker-mbean");       // Create element
-			item.appendChild( document.createTextNode("jboss:service=invoker,type=jrmp,socketType=CompressionSocketFactory") );
-			newnode.appendChild( item );
-
-			item = document.createElement("proxy-factory");       // Create element
-			item.appendChild( document.createTextNode("org.jboss.proxy.ejb.ProxyFactory") );
-			newnode.appendChild( item );
-
-
-			item = document.createElement("proxy-factory-config");
-
-			Element item_sub = document.createElement("client-interceptors");
-
-			// add the home tag
-
-			Element item_sub1 = document.createElement("home");
-
-			Element item_value = document.createElement("interceptor");
-			item_value.appendChild( document.createTextNode("org.jboss.proxy.ejb.HomeInterceptor") );
-			item_sub1.appendChild(item_value);
-
-			item_value = document.createElement("interceptor");
-			item_value.appendChild( document.createTextNode("org.jboss.proxy.SecurityInterceptor") );
-			item_sub1.appendChild(item_value);
-
-			item_value = document.createElement("interceptor");
-			item_value.appendChild( document.createTextNode("org.jboss.proxy.TransactionInterceptor") );
-			item_sub1.appendChild(item_value);
-
-			item_value = document.createElement("interceptor");
-			item_value.appendChild( document.createTextNode("org.jboss.invocation.InvokerInterceptor") );
-			item_sub1.appendChild(item_value);
-
-
-			item_sub.appendChild(item_sub1);
-
-
-			// add the bean tag
-
-			item_sub1 = document.createElement("bean");
-
-			item_value = document.createElement("interceptor");
-			item_value.appendChild( document.createTextNode("org.jboss.proxy.ejb.StatelessSessionInterceptor") );
-			item_sub1.appendChild(item_value);
-
-			item_value = document.createElement("interceptor");
-			item_value.appendChild( document.createTextNode("org.jboss.proxy.SecurityInterceptor") );
-			item_sub1.appendChild(item_value);
-
-			item_value = document.createElement("interceptor");
-			item_value.appendChild( document.createTextNode("org.jboss.proxy.TransactionInterceptor") );
-			item_sub1.appendChild(item_value);
-
-			item_value = document.createElement("interceptor");
-			item_value.appendChild( document.createTextNode("org.jboss.invocation.InvokerInterceptor") );
-			item_sub1.appendChild(item_value);
-
-			item_sub.appendChild(item_sub1);
-
-
-			item.appendChild( item_sub );
-
-			newnode.appendChild( item );
-
-			proxynode.appendChild(newnode);
-
-
-			FileOutputStream out = new FileOutputStream(destFile);
-			try {
-				NLDOMUtil.writeDocument(
-						document,
-						out,
-						"UTF-8","-//JBoss//DTD JBOSS 4.0//EN",
-						"http://www.jboss.org/j2ee/dtd/jboss_4_0.dtd"
-				);
-			} finally {
-				out.close();
-			}
-		}
+//	/**
+//	 * *** work necessary for NightLabsCascadedAuthenticationJBoss ***
+//	 * check/modify ${jboss.conf}/standardjboss.xml and REBOOT if changes occured
+//	 *
+//	 * @param jbossConfDir The JBoss config dir
+//	 * @throws FileNotFoundException If the file eas not found
+//	 * @throws IOException In case of an io error
+//	 * @throws TransformerException
+//	 */
+//	private void configureStandardJBossXml(File jbossConfDir) throws FileNotFoundException, IOException, SAXException, TransformerException
+//	{
+//		boolean backupDone = false; // track whether the backup is already done - we don't need 2 backups for this one method.
+//		File destFile = new File(jbossConfDir, "standardjboss.xml");
+//		String text = IOUtil.readTextFile(destFile);
+//
+//		//check if we already had the stateless container for the SSL Compression Invoker
+//		if (text.indexOf("<name>stateless-compression-invoker</name>") < 0)
+//		{
+//			logger.info("configureStandardJBossXml: Will add Compression SSL invoker to file: " + destFile.getAbsolutePath());
+//
+//			if (!backupDone) {
+//				backup(destFile);
+//				backupDone = true;
+//			}
+//
+//			setRebootRequired(true); // this is a must, because the conf directory doesn't support redeployment
+//
+//			DOMParser parser = new DOMParser();
+//			InputStream in = new FileInputStream(destFile);
+//			try {
+//				parser.parse(new InputSource(in));
+//			} finally {
+//				in.close();
+//			}
+//			Document document = parser.getDocument();
+//
+//			//configure the ssl compression invoker
+//
+//			Node root = document.getDocumentElement();
+//
+//			Node proxynode = NLDOMUtil.findSingleNode(root, "invoker-proxy-bindings");;
+//
+//			Element newnode = document.createElement("invoker-proxy-binding");// Create Root Element
+//
+//			Comment comment = document.createComment("Add the Custom Compression SSL Socket proxy Bindings");
+//			newnode.appendChild(comment);
+//
+//			Element item = document.createElement("name");       // Create element
+//			item.appendChild( document.createTextNode("stateless-compression-invoker") );
+//			newnode.appendChild( item );
+//
+//			item = document.createElement("invoker-mbean");       // Create element
+//			item.appendChild( document.createTextNode("jboss:service=invoker,type=jrmp,socketType=CompressionSocketFactory") );
+//			newnode.appendChild( item );
+//
+//			item = document.createElement("proxy-factory");       // Create element
+//			item.appendChild( document.createTextNode("org.jboss.proxy.ejb.ProxyFactory") );
+//			newnode.appendChild( item );
+//
+//
+//			item = document.createElement("proxy-factory-config");
+//
+//			Element item_sub = document.createElement("client-interceptors");
+//
+//			// add the home tag
+//
+//			Element item_sub1 = document.createElement("home");
+//
+//			Element item_value = document.createElement("interceptor");
+//			item_value.appendChild( document.createTextNode("org.jboss.proxy.ejb.HomeInterceptor") );
+//			item_sub1.appendChild(item_value);
+//
+//			item_value = document.createElement("interceptor");
+//			item_value.appendChild( document.createTextNode("org.jboss.proxy.SecurityInterceptor") );
+//			item_sub1.appendChild(item_value);
+//
+//			item_value = document.createElement("interceptor");
+//			item_value.appendChild( document.createTextNode("org.jboss.proxy.TransactionInterceptor") );
+//			item_sub1.appendChild(item_value);
+//
+//			item_value = document.createElement("interceptor");
+//			item_value.appendChild( document.createTextNode("org.jboss.invocation.InvokerInterceptor") );
+//			item_sub1.appendChild(item_value);
+//
+//
+//			item_sub.appendChild(item_sub1);
+//
+//
+//			// add the bean tag
+//
+//			item_sub1 = document.createElement("bean");
+//
+//			item_value = document.createElement("interceptor");
+//			item_value.appendChild( document.createTextNode("org.jboss.proxy.ejb.StatelessSessionInterceptor") );
+//			item_sub1.appendChild(item_value);
+//
+//			item_value = document.createElement("interceptor");
+//			item_value.appendChild( document.createTextNode("org.jboss.proxy.SecurityInterceptor") );
+//			item_sub1.appendChild(item_value);
+//
+//			item_value = document.createElement("interceptor");
+//			item_value.appendChild( document.createTextNode("org.jboss.proxy.TransactionInterceptor") );
+//			item_sub1.appendChild(item_value);
+//
+//			item_value = document.createElement("interceptor");
+//			item_value.appendChild( document.createTextNode("org.jboss.invocation.InvokerInterceptor") );
+//			item_sub1.appendChild(item_value);
+//
+//			item_sub.appendChild(item_sub1);
+//
+//
+//			item.appendChild( item_sub );
+//
+//			newnode.appendChild( item );
+//
+//			proxynode.appendChild(newnode);
+//
+//
+//			FileOutputStream out = new FileOutputStream(destFile);
+//			try {
+//				NLDOMUtil.writeDocument(
+//						document,
+//						out,
+//						"UTF-8","-//JBoss//DTD JBOSS 4.0//EN",
+//						"http://www.jboss.org/j2ee/dtd/jboss_4_0.dtd"
+//				);
+//			} finally {
+//				out.close();
+//			}
+//		}
 
 
 //		// reload the file - not necessary anymore since we now use a DOM parser which reloads (and the cascaded auth stuff isn't modified by the above code)
@@ -1298,7 +1474,7 @@ public class ServerConfiguratorJBoss
 //				out.close();
 //			}
 //		}
-	}
+//	}
 
 	private void configureMailServiceXml(File jbossDeployDir) throws FileNotFoundException, IOException, SAXException
 	{

@@ -112,7 +112,7 @@ public class J2EEAdapterJBoss extends AbstractJ2EEAdapter
 		try {
 			return (Remote) initialContext.lookup("jmx/invoker/RMIAdaptor");
 		} finally {
-			initialContext.close();
+//			initialContext.close(); // https://www.jfire.org/modules/bugs/view.php?id=1178
 		}
 	}
 
