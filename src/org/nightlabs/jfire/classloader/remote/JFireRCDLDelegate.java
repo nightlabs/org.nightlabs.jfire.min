@@ -157,7 +157,8 @@ public class JFireRCDLDelegate implements ClassDataLoaderDelegate
 		try {
 			jFireRCLBackend = (JFireRCLBackendRemote) initialContext.lookup("ejb/byRemoteInterface/" + JFireRCLBackendRemote.class.getName());
 		} finally {
-			initialContext.close();
+			// Commented because could lead to clearing of initialContext credentials
+//			initialContext.close();
 		}
 
 		return jFireRCLBackend;
