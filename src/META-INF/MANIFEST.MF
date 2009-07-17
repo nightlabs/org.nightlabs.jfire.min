@@ -3,7 +3,7 @@ Class-Path: org.nightlabs.jfire.classloader.remote.backend.jar
  JFireServerManager.rar 
  JFireBaseBean.jar
 Bundle-Version: 1.0.1
-EAR-Module-Version: 1.0.0
+EAR-Module-Version: 1.0.1
 Bundle-SymbolicName: JFireRCLBackendBean
 EAR-Schema-Version: 1.0.0
 EAR-Module-ID: JFireBaseEAR
