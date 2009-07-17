@@ -13,5 +13,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/org.nightlabs.query.jdo"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/org.nightlabs.concurrent"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/org.nightlabs.config"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/org.nightlabs.jfire.classloader.remote.backend"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
