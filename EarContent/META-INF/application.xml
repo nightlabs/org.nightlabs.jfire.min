@@ -49,4 +49,7 @@
   <module>
     <java>JFireBaseDAO.jar</java>
   </module>
+  <module>
+  	<java>org.nightlabs.jfire.classloader.remote.backend.jar</java>
+  </module>
 </application>
