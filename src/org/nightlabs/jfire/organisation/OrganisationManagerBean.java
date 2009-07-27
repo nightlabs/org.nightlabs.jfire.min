@@ -69,6 +69,7 @@ import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.security.UserLocal;
 import org.nightlabs.jfire.security.id.UserID;
+import org.nightlabs.jfire.server.Server;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.servermanager.OrganisationNotFoundException;
 import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
@@ -900,8 +901,8 @@ public class OrganisationManagerBean
 				if (!localServer.getJ2eeServerType().equals(rootServer.getJ2eeServerType()))
 					logger.error("localOrganisation.server.j2eeServerType == \"" + localServer.getJ2eeServerType() + "\" != rootOrganisation.server.j2eeServerType == \"" + rootServer.getJ2eeServerType() + "\"");
 
-				if (!localServer.getInitialContextURL().equals(rootServer.getInitialContextURL()))
-					logger.error("localOrganisation.server.initialContextURL == \"" + localServer.getInitialContextURL() + "\" != rootOrganisation.server.initialContextURL == \"" + rootServer.getInitialContextURL() + "\"");
+				if (!localServer.getProtocol2initialContextURL().equals(rootServer.getProtocol2initialContextURL()))
+					logger.error("localOrganisation.server.protocol2initialContextURL != rootOrganisation.server.protocol2initialContextURL");
 
 				return;
 			}
@@ -918,13 +919,21 @@ public class OrganisationManagerBean
 					}
 				} // if (RegistrationStatus.getRegistrationStatusCount(pm, rootOrganisationID) > 0) {
 
+				Server localServer = LocalOrganisation.getLocalOrganisation(pm).getOrganisation().getServer();
+				String protocol;
+				if (localServer.getDistinctiveDataCentreID().equals(rootServer.getDistinctiveDataCentreID()))
+					protocol = Server.PROTOCOL_JNP;
+				else
+					protocol = Server.PROTOCOL_HTTPS;
+
 				logger.info("Registering organisation \""+localOrganisationID+"\" in the root organisation \""+rootOrganisationID+"\".");
 				beginRegistration(
 						pm,
 						getPrincipal(),
 						getJFireServerManagerFactory().getJ2eeRemoteServer(rootOrganisationCf.getServer().getJ2eeServerType()).getAnonymousInitialContextFactory(),
-						rootServer.getInitialContextURL(),
-						rootOrganisationID);
+						rootServer.getInitialContextURL(protocol, true),
+						rootOrganisationID
+				);
 
 			} finally {
 				pm.close();

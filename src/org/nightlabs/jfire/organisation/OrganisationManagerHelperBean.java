@@ -2,6 +2,7 @@ package org.nightlabs.jfire.organisation;
 
 import java.util.Iterator;
 import java.util.Locale;
+import java.util.Map;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ejb.Stateless;
@@ -130,7 +131,9 @@ implements OrganisationManagerHelperLocal
 				logger.debug("  serverID                 = " + localServer.getServerID());
 				logger.debug("  server.serverName        = " + localServer.getServer().getServerName());
 				logger.debug("  server.j2eeServerType    = " + localServer.getServer().getJ2eeServerType());
-				logger.debug("  server.initialContextURL = " + localServer.getServer().getInitialContextURL());
+				for (Map.Entry<String, String> me: localServer.getServer().getProtocol2initialContextURL().entrySet()) {
+					logger.debug("  server.initialContextURL[" + me.getKey() + "] = " + me.getValue());
+				}
 			}
 			localServer = pm.makePersistent(localServer);
 			if(logger.isDebugEnabled())
