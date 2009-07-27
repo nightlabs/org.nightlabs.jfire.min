@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.jfire.organisation.OrganisationManagerRemote;
+import org.nightlabs.jfire.server.Server;
 import org.nightlabs.jfire.server.ServerManagerRemote;
 import org.nightlabs.jfire.serverconfigurator.ServerConfigurator;
 import org.nightlabs.jfire.servermanager.config.DatabaseCf;
@@ -201,9 +202,9 @@ public class ServerInitializeServlet extends BaseServlet
 		if(needReboot)
 			setContent(req, "/jsp/serverinitialize/reboot.jsp");
 		else
-			// redirect to index which will show the login form 
+			// redirect to index which will show the login form
 			// or let the user create an organisation
-			redirect(req, resp, "/"); 
+			redirect(req, resp, "/");
 			//setContent(req, "/jsp/serverinitialize/success.jsp");
 		resetSteps(req);
 	}
@@ -335,7 +336,8 @@ public class ServerInitializeServlet extends BaseServlet
 					rootOrgServer);
 			rootOrgServer.setServerName(rootOrganisationBean.getServerName());
 			rootOrgServer.setJ2eeServerType(rootOrganisationBean.getJ2eeServerType());
-			rootOrgServer.setInitialContextURL(rootOrganisationBean.getInitialContextURL());
+			rootOrgServer.setInitialContextURL(Server.PROTOCOL_JNP, rootOrganisationBean.getInitialContextURL_jnp());
+			rootOrgServer.setInitialContextURL(Server.PROTOCOL_HTTPS, rootOrganisationBean.getInitialContextURL_https());
 			cfMod.setRootOrganisation(rootOrg);
 		}
 
