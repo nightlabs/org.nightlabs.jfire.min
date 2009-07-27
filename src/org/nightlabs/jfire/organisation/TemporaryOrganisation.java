@@ -36,19 +36,18 @@ import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
 import javax.jdo.JDOHelper;
-
-import org.nightlabs.jfire.server.Server;
-import org.nightlabs.util.Util;
-
-import javax.jdo.annotations.Persistent;
-import javax.jdo.annotations.InheritanceStrategy;
-import javax.jdo.annotations.Inheritance;
-import javax.jdo.annotations.PrimaryKey;
-import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Column;
 import javax.jdo.annotations.IdentityType;
+import javax.jdo.annotations.Inheritance;
+import javax.jdo.annotations.InheritanceStrategy;
+import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.PersistenceModifier;
+import javax.jdo.annotations.Persistent;
+import javax.jdo.annotations.PrimaryKey;
+
 import org.nightlabs.jfire.organisation.id.TemporaryOrganisationID;
+import org.nightlabs.jfire.server.Server;
+import org.nightlabs.util.Util;
 
 /**
  * An instance of this class is persisted when an organisation initiates the cross-organisation-registration.
@@ -65,7 +64,7 @@ import org.nightlabs.jfire.organisation.id.TemporaryOrganisationID;
  * </p>
  *
  * @author marco schulze - marco at nightlabs dot de
- * 
+ *
  * @jdo.persistence-capable
  *		identity-type="application"
  *   	objectid-class="org.nightlabs.jfire.organisation.id.TemporaryOrganisationID"
@@ -128,8 +127,11 @@ public class TemporaryOrganisation implements Serializable
 		if (server == null)
 			throw new IllegalArgumentException("organisation.getServer() returned null!");
 
-		if (server.getInitialContextURL() == null)
-			throw new IllegalArgumentException("organisation.getServer().getInitialContextURL() returned null!");
+		if (server.getInitialContextURL(Server.PROTOCOL_JNP, false) == null)
+			throw new IllegalArgumentException("organisation.getServer().getInitialContextURL(Server.PROTOCOL_JNP, false) returned null!");
+
+		if (server.getInitialContextURL(Server.PROTOCOL_HTTPS, false) == null)
+			throw new IllegalArgumentException("organisation.getServer().getInitialContextURL(Server.PROTOCOL_HTTPS, false) returned null!");
 
 		if (server.getJ2eeServerType() == null)
 			throw new IllegalArgumentException("organisation.getServer().getJ2eeServerType() returned null!");
