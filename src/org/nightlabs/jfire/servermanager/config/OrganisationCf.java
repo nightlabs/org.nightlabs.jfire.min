@@ -367,4 +367,8 @@ public class OrganisationCf
 			parentConfigModule.setChanged();
 		thisString = null;
 	}
+
+	public void init() {
+		// Even though this method is empty, please call super.init() when overriding this method!!! Marco.
+	}
 }

@@ -47,6 +47,7 @@ import org.nightlabs.jfire.organisation.TemporaryOrganisation;
 import org.nightlabs.jfire.organisation.id.OrganisationID;
 import org.nightlabs.jfire.organisation.id.TemporaryOrganisationID;
 import org.nightlabs.jfire.security.User;
+import org.nightlabs.jfire.security.id.UserID;
 import org.nightlabs.jfire.server.Server;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.servermanager.JFireServerManagerFactory;
@@ -313,6 +314,8 @@ public class Lookup
 		if (organisationID.equals(localOrganisation.getOrganisationID()))
 			return null;
 
+		Server localServer = localOrganisation.getOrganisation().getServer();
+
 		InitialContext initCtx = new InitialContext();
 		try {
 			JFireServerManagerFactory jfireServerManagerFactory = (JFireServerManagerFactory)initCtx.lookup(JFireServerManagerFactory.JNDI_NAME);
@@ -338,11 +341,20 @@ public class Lookup
 				}
 			}
 
+			String initialContextURL;
+			if (localServer.getDistinctiveDataCentreID().equals(server.getDistinctiveDataCentreID()))
+				initialContextURL = server.getInitialContextURL(Server.PROTOCOL_JNP, true);
+			else
+				initialContextURL = server.getInitialContextURL(Server.PROTOCOL_HTTPS, true);
+
 			return InvokeUtil.getInitialContextProperties(
 					jfireServerManagerFactory.getInitialContextFactory(server.getJ2eeServerType(), true),
-					server.getInitialContextURL(),
-					organisationID,
-					User.USER_ID_PREFIX_TYPE_ORGANISATION + localOrganisation.getOrganisationID(), password
+					initialContextURL,
+					UserID.create(
+							organisationID,
+							User.USER_ID_PREFIX_TYPE_ORGANISATION + localOrganisation.getOrganisationID()
+					),
+					password
 			);
 		} finally {
 			initCtx.close();

@@ -43,7 +43,7 @@ public class OrganisationConfigModule extends ConfigModule
 	 * The serial version of this class.
 	 */
 	private static final long serialVersionUID = 1L;
-	
+
 	protected List<OrganisationCf> organisations = null;
 
 	/**
@@ -69,9 +69,9 @@ public class OrganisationConfigModule extends ConfigModule
 	{
 		OrganisationCf org = new OrganisationCf(
 				organisationID,
-				organisationCaption);
-//				masterOrganisationID);
-//				jdoPersistenceManagerJNDIName);
+				organisationCaption
+		);
+		org.setParentConfigModule(this);
 		organisations.add(org);
 		setChanged();
 		return org;
@@ -90,12 +90,18 @@ public class OrganisationConfigModule extends ConfigModule
 		return false;
 	}
 
-	/**
-	 * @see org.nightlabs.config.Initializable#init()
-	 */
 	@Override
 	public void init() throws InitException {
 		if (organisations == null)
 			setOrganisations(new ArrayList<OrganisationCf>());
+
+		for (OrganisationCf organisationCf : organisations) {
+			if (organisationCf.getParentConfigModule() != this) {
+				organisationCf.setParentConfigModule(this);
+				setChanged();
+			}
+
+			organisationCf.init();
+		}
 	}
 }

@@ -77,7 +77,7 @@ public class J2eeServerTypeRegistryConfigModule extends ConfigModule
 
 			}
 		}
-		
+
 		/**
 		 * @return Returns the j2eeRemoteServers.
 		 */
@@ -220,10 +220,7 @@ public class J2eeServerTypeRegistryConfigModule extends ConfigModule
 	}
 
 	private List<J2eeLocalServer> j2eeLocalServers;
-	
-	/**
-	 * @see org.nightlabs.config.ConfigModule#init()
-	 */
+
 	@Override
 	public void init() throws InitException
 	{
@@ -296,7 +293,7 @@ public class J2eeServerTypeRegistryConfigModule extends ConfigModule
 		}
 
 	}
-	
+
 	/**
 	 * @return Returns the j2eeLocalServers.
 	 */

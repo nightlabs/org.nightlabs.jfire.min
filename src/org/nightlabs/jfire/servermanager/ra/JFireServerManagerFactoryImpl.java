@@ -1747,9 +1747,10 @@ public class JFireServerManagerFactoryImpl
 									// we cannot reference the classes directly, because the project JFireBaseBean is dependent on JFireServerManager.
 									// therefore, we reference it via the names.
 									ServerCf localServerCf = mcf.getConfigModule().getLocalServer();
+									UserID systemUserID = UserID.create(organisationID, User.USER_ID_SYSTEM);
 									Properties props = InvokeUtil.getInitialContextProperties(
-											this, localServerCf, organisationID, User.USER_ID_SYSTEM,
-											jfireSecurity_createTempUserPassword(organisationID, User.USER_ID_SYSTEM));
+											this, systemUserID,
+											jfireSecurity_createTempUserPassword(systemUserID));
 									InitialContext initCtx = new InitialContext(props);
 									try {
 //										Object bean = InvokeUtil.createBean(initCtx, "jfire/ejb/JFireBaseBean/OrganisationManager");

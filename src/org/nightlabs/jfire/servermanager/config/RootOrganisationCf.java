@@ -38,7 +38,7 @@ public class RootOrganisationCf extends OrganisationCf
 	 * The serial version of this class.
 	 */
 	private static final long serialVersionUID = 1L;
-	
+
 	private ServerCf server;
 
 	public RootOrganisationCf()
@@ -71,7 +71,7 @@ public class RootOrganisationCf extends OrganisationCf
 		super.setServerAdmins(null);
 		setChanged();
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see org.nightlabs.jfire.servermanager.config.OrganisationCf#getServerAdmins()
 	 */
@@ -88,5 +88,14 @@ public class RootOrganisationCf extends OrganisationCf
 	public void addServerAdmin(String userID)
 	{
 		setChanged();
+	}
+
+	@Override
+	public void init() {
+		super.init();
+		if (server != null) {
+			if (server.init())
+				setChanged();
+		}
 	}
 }

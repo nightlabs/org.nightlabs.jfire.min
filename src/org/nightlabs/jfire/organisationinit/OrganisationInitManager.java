@@ -19,6 +19,7 @@ import org.nightlabs.jfire.init.DependencyCycleException;
 import org.nightlabs.jfire.init.InitException;
 import org.nightlabs.jfire.init.Resolution;
 import org.nightlabs.jfire.security.User;
+import org.nightlabs.jfire.security.id.UserID;
 import org.nightlabs.jfire.servermanager.JFireServerManagerFactory;
 import org.nightlabs.jfire.servermanager.config.ServerCf;
 import org.nightlabs.jfire.servermanager.createorganisation.CreateOrganisationProgress;
@@ -321,7 +322,7 @@ extends AbstractInitManager<OrganisationInit, OrganisationInitDependency>
 		}
 
 		try {
-			Properties props = InvokeUtil.getInitialContextProperties(ismf, localServer, organisationID, User.USER_ID_SYSTEM, systemUserPassword);
+			Properties props = InvokeUtil.getInitialContextProperties(ismf, UserID.create(organisationID, User.USER_ID_SYSTEM), systemUserPassword);
 			InitialContext initCtx = new InitialContext(props);
 			try {
 				for (OrganisationInit init : inits) {

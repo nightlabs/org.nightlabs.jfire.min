@@ -20,6 +20,7 @@ import org.nightlabs.jfire.init.InitException;
 import org.nightlabs.jfire.init.Resolution;
 import org.nightlabs.jfire.organisationinit.OrganisationInitException;
 import org.nightlabs.jfire.security.User;
+import org.nightlabs.jfire.security.id.UserID;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.servermanager.JFireServerManagerFactory;
 import org.nightlabs.jfire.servermanager.config.ServerCf;
@@ -300,7 +301,7 @@ extends AbstractInitManager<CrossOrganisationRegistrationInit, OrganisationInitD
 		}
 
 		try {
-			Properties props = InvokeUtil.getInitialContextProperties(ismf, localServer, organisationID, User.USER_ID_SYSTEM, systemUserPassword);
+			Properties props = InvokeUtil.getInitialContextProperties(ismf, UserID.create(organisationID, User.USER_ID_SYSTEM), systemUserPassword);
 			InitialContext initCtx = new InitialContext(props);
 			try {
 				Throwable firstInitException = null;

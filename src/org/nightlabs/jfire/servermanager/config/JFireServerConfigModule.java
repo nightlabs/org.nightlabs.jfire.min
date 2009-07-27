@@ -63,25 +63,48 @@ public class JFireServerConfigModule extends ConfigModule
 	public void init() throws InitException
 	{
 		if (rootOrganisation == null) {
+			setChanged();
+
 			ServerCf server = new ServerCf("jfire.nightlabs.org");
-			server.init();
+			if (server.init())
+				setChanged();
+
 			server.setServerID("jfire.nightlabs.org");
 			server.setServerName("JFire Dev Server");
 			rootOrganisation = new RootOrganisationCf("", "Leave root-organisation-id empty for stand-alone mode or ask your administrator for the correct values.", server);
 		} // if (rootOrganisation == null) {
-		if (j2ee == null)
+		if (j2ee == null) {
 			setJ2ee(new J2eeCf());
-		if (smtp == null)
+			setChanged();
+		}
+		if (smtp == null) {
 			setSmtp(new SmtpMailServiceCf());
-		if (database == null)
+			setChanged();
+		}
+		if (database == null) {
 			setDatabase(DatabaseCf.defaults().get(DatabaseCf.DEFAULTS_DEFAULT_KEY));
-		if (jdo == null)
+			setChanged();
+		}
+		if (jdo == null) {
 			setJdo(new JDOCf());
-		if (servletSSLCf == null)
+			setChanged();
+		}
+		if (servletSSLCf == null) {
 			setServletSSLCf(new ServletSSLCf());
+			setChanged();
+		}
 
-		if (localServer != null)
-			localServer.init();
+		if (localServer != null) {
+			if (localServer.init())
+				setChanged();
+		}
+
+		if (rootOrganisation.getParentConfigModule() != this) {
+			rootOrganisation.setParentConfigModule(this);
+			setChanged();
+		}
+
+		rootOrganisation.init();
 	}
 
 	public RootOrganisationCf getRootOrganisation()
