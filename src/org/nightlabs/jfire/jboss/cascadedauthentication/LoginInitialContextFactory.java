@@ -40,7 +40,11 @@ import org.jnp.interfaces.NamingContextFactory;
  * Cascaded authentication is described here:
  *
  * @author Marco Schulze - marco at nightlabs dot de
+ * @deprecated This class will soon be removed since the new
+ * <code>org.nightlabs.unifiedjndi.jboss.client.UnifiedNamingContextFactory</code>
+ * supports the same functionality plus additionally HTTPS connections.
  */
+@Deprecated
 public class LoginInitialContextFactory extends NamingContextFactory
 {
 	/**

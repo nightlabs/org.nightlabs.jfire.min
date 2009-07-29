@@ -32,7 +32,11 @@ import org.nightlabs.util.Util;
 
 /**
  * @author Marco Schulze - marco at nightlabs dot de
+ * @deprecated This class will soon be removed since it is periphery of {@link LoginInitialContextFactory},
+ * which is about to be replaced by
+ * <code>org.nightlabs.unifiedjndi.jboss.client.UnifiedNamingContextFactory</code>.
  */
+@Deprecated
 class UserDescriptor
 implements Serializable
 {
