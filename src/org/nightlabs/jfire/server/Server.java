@@ -64,7 +64,7 @@ public class Server implements Serializable
 	 */
 	private static final long serialVersionUID = 2L;
 
-	public static final String J2EESERVERTYPE_JBOSS32X = "jboss_32x";
+//	public static final String J2EESERVERTYPE_JBOSS32X = "jboss_32x";
 	public static final String J2EESERVERTYPE_JBOSS40X = "jboss_40x";
 
 	public static final String PROTOCOL_JNP = "jnp";
