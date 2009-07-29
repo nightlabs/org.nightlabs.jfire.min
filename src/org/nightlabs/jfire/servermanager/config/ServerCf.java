@@ -152,6 +152,9 @@ public class ServerCf implements Serializable, Cloneable {
 	}
 
 	public Map<String, String> getProtocol2initialContextURL() {
+		if (protocol2initialContextURL == null) {
+			protocol2initialContextURL = new HashMap<String, String>();
+		}
 		return protocol2initialContextURL;
 	}
 
@@ -165,7 +168,7 @@ public class ServerCf implements Serializable, Cloneable {
 		if (protocol == null)
 			throw new IllegalArgumentException("protocol must not be null!");
 
-		String result = this.protocol2initialContextURL.get(protocol);
+		String result = getProtocol2initialContextURL().get(protocol);
 
 		if (result == null && throwExceptionIfNotExisting)
 			throw new IllegalArgumentException("There is no initialContextURL for the protocol \"" + protocol + "\"!!!");
@@ -179,9 +182,9 @@ public class ServerCf implements Serializable, Cloneable {
 			throw new IllegalArgumentException("protocol must not be null!");
 
 		if (initialContextURL == null || initialContextURL.isEmpty())
-			this.protocol2initialContextURL.remove(protocol);
+			getProtocol2initialContextURL().remove(protocol);
 		else
-			this.protocol2initialContextURL.put(protocol, initialContextURL);
+			getProtocol2initialContextURL().put(protocol, initialContextURL);
 	}
 
 	/**
@@ -332,4 +335,21 @@ public class ServerCf implements Serializable, Cloneable {
 			throw new RuntimeException(e); // should never happen since we implement clone()
 		}
 	}
+
+	public void setInitialContextURL_HTTPS(String initialContextURL) {
+		setInitialContextURL(Server.PROTOCOL_HTTPS, initialContextURL);
+	}
+
+	public String getInitialContextURL_HTTPS() {
+		return getInitialContextURL(Server.PROTOCOL_HTTPS, false);
+	}
+
+	public void setInitialContextURL_JNP(String initialContextURL) {
+		setInitialContextURL(Server.PROTOCOL_JNP, initialContextURL);
+	}
+
+	public String getInitialContextURL_JNP() {
+		return getInitialContextURL(Server.PROTOCOL_JNP, false);
+	}
+
 }
