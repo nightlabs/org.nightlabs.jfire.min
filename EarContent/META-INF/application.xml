@@ -4,4 +4,7 @@
   <module>
 	<java>JFireIntegrationJBoss.jar</java>
   </module>
+  <module>
+  	<java>org.nightlabs.unifiedjndi.jboss.client.jar</java>
+  </module>
 </application>

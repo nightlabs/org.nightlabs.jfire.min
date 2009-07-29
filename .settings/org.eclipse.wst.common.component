@@ -5,5 +5,8 @@
         <dependent-module archiveName="JFireIntegrationJBoss.jar" deploy-path="/" handle="module:/resource/JFireIntegrationJBoss/JFireIntegrationJBoss">
             <dependency-type>uses</dependency-type>
         </dependent-module>
+        <dependent-module archiveName="org.nightlabs.unifiedjndi.jboss.client.jar" deploy-path="/" handle="module:/resource/org.nightlabs.unifiedjndi.jboss.client/org.nightlabs.unifiedjndi.jboss.client">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
     </wb-module>
 </project-modules>
