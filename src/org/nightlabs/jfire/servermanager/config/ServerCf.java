@@ -295,7 +295,7 @@ public class ServerCf implements Serializable, Cloneable {
 
 		if (!protocol2initialContextURL.containsKey(Server.PROTOCOL_JNP)) {
 			modified = true;
-			protocol2initialContextURL.put(Server.PROTOCOL_JNP, "jnp://127.0.0.1:1099");
+			protocol2initialContextURL.put(Server.PROTOCOL_JNP, "jnp://localhost:1099");
 
 			// BEGIN downward compatibility
 			if (initialContextURL != null && !initialContextURL.isEmpty())
@@ -307,7 +307,7 @@ public class ServerCf implements Serializable, Cloneable {
 
 		if (!protocol2initialContextURL.containsKey(Server.PROTOCOL_HTTPS)) {
 			modified = true;
-			protocol2initialContextURL.put(Server.PROTOCOL_HTTPS, "https://127.0.0.1:8080");
+			protocol2initialContextURL.put(Server.PROTOCOL_HTTPS, "https://localhost:8443/invoker/SSLJNDIFactory");
 		}
 
 		for (Iterator<Map.Entry<String, String>> it = protocol2initialContextURL.entrySet().iterator(); it.hasNext(); ) {

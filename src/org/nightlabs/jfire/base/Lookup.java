@@ -341,14 +341,19 @@ public class Lookup
 				}
 			}
 
-			String initialContextURL;
+			String protocol;
 			if (localServer.getDistinctiveDataCentreID().equals(server.getDistinctiveDataCentreID()))
-				initialContextURL = server.getInitialContextURL(Server.PROTOCOL_JNP, true);
+				protocol = Server.PROTOCOL_JNP;
 			else
-				initialContextURL = server.getInitialContextURL(Server.PROTOCOL_HTTPS, true);
+				protocol = Server.PROTOCOL_HTTPS;
+
+			String initialContextFactory = jfireServerManagerFactory.getLoginInitialContextFactory(
+					server.getJ2eeServerType(), protocol, true
+			);
+			String initialContextURL = server.getInitialContextURL(protocol, true);
 
 			return InvokeUtil.getInitialContextProperties(
-					jfireServerManagerFactory.getInitialContextFactory(server.getJ2eeServerType(), true),
+					initialContextFactory,
 					initialContextURL,
 					UserID.create(
 							organisationID,

@@ -44,7 +44,11 @@ public interface JFireServerManagerFactory
 
 	public JFireServerManager getJFireServerManager(JFirePrincipal jfirePrincipal);
 
-	public String getInitialContextFactory(String j2eeServerTypeRemote, boolean throwExceptionIfUnknownServerType);
+//	public String getInitialContextFactory(String j2eeServerTypeRemote, boolean throwExceptionIfUnknownServerType);
+
+	public String getLoginInitialContextFactory(String j2eeServerTypeRemote, String protocol, boolean throwExceptionIfNotFound);
+
+	public String getAnonymousInitialContextFactory(String j2eeServerTypeRemote, String protocol, boolean throwExceptionIfNotFound);
 
 	public List<J2eeServerTypeRegistryConfigModule.J2eeRemoteServer> getJ2eeRemoteServers();
 	public J2eeServerTypeRegistryConfigModule.J2eeRemoteServer getJ2eeRemoteServer(String j2eeServerType);

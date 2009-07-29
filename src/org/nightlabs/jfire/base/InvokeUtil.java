@@ -129,9 +129,12 @@ public class InvokeUtil
 	{
 		ServerCf localServerCf = jFireServerManagerFactory.getLocalServer();
 
+		String protocol = Server.PROTOCOL_JNP;
 		return getInitialContextProperties(
-				jFireServerManagerFactory.getInitialContextFactory(localServerCf.getJ2eeServerType(), true),
-				localServerCf.getInitialContextURL(Server.PROTOCOL_JNP, true),
+				jFireServerManagerFactory.getLoginInitialContextFactory(
+						localServerCf.getJ2eeServerType(), protocol, true
+				),
+				localServerCf.getInitialContextURL(protocol, true),
 				userID, password
 		);
 	}
@@ -154,9 +157,12 @@ public class InvokeUtil
 			ServerCf localServerCf, String organisationID, String userID, String password
 	)
 	{
+		String protocol = Server.PROTOCOL_JNP;
 		return getInitialContextProperties(
-				jFireServerManagerFactory.getInitialContextFactory(localServerCf.getJ2eeServerType(), true),
-				localServerCf.getInitialContextURL(Server.PROTOCOL_JNP, true),
+				jFireServerManagerFactory.getLoginInitialContextFactory(
+						localServerCf.getJ2eeServerType(), protocol, true
+				),
+				localServerCf.getInitialContextURL(protocol, true),
 				UserID.create(organisationID, userID), password
 		);
 	}

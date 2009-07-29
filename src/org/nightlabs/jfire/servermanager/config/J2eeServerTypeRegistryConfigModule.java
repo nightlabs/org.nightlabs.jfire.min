@@ -37,6 +37,7 @@ import org.nightlabs.config.ConfigModule;
 import org.nightlabs.config.InitException;
 import org.nightlabs.config.Initializable;
 import org.nightlabs.jfire.server.Server;
+import org.nightlabs.util.Util;
 
 /**
  * @author Marco Schulze - marco at nightlabs dot de
@@ -58,9 +59,7 @@ public class J2eeServerTypeRegistryConfigModule extends ConfigModule
 
 		private Map<String, J2eeRemoteServer> j2eeRemoteServersByServerType = null;
 
-		/**
-		 * @see org.nightlabs.config.Initializable#init()
-		 */
+		@Override
 		public void init() throws InitException
 		{
 			if (j2eeRemoteServers == null) {
@@ -69,9 +68,11 @@ public class J2eeServerTypeRegistryConfigModule extends ConfigModule
 			}
 			else {
 
-				for (Iterator<J2eeRemoteServer> it = j2eeRemoteServers.iterator(); it.hasNext(); ) {
-					J2eeRemoteServer server = it.next();
-					server.cfMod = cfMod;
+				for (J2eeRemoteServer server : j2eeRemoteServers) {
+					if (server.cfMod != cfMod && cfMod != null) {
+						server.cfMod = cfMod;
+						cfMod.setChanged();
+					}
 					server.init();
 				}
 
@@ -152,56 +153,201 @@ public class J2eeServerTypeRegistryConfigModule extends ConfigModule
 	public static class J2eeRemoteServer
 	implements Initializable, Serializable
 	{
-		private static final long serialVersionUID = 1L;
+		private static final long serialVersionUID = 2L;
 
 		private J2eeServerTypeRegistryConfigModule cfMod;
 
 		private String j2eeServerType;
 		/**
 		 * This initialContextFactory is used for normal (authenticated) communication.
+		 * @deprecated Replaced by {@link #protocol2loginInitialContextFactory}.
 		 */
+		@Deprecated
 		private String initialContextFactory;
 		/**
 		 * This initialContextFactory is used for anonymous (not-authenticated) communication
 		 * during organisation-handshake.
+		 *
+		 * @deprecated Replaced by {@link #protocol2anonymousInitialContextFactory}.
 		 */
+		@Deprecated
 		private String anonymousInitialContextFactory;
+
+		private Map<String, String> protocol2anonymousInitialContextFactory;
+
+		private Map<String, String> protocol2loginInitialContextFactory;
 
 		public void init() throws InitException
 		{
-			if (anonymousInitialContextFactory == null)
-				setAnonymousInitialContextFactory("org.jnp.interfaces.NamingContextFactory");
+//			if (anonymousInitialContextFactory == null)
+//				setAnonymousInitialContextFactory("org.jnp.interfaces.NamingContextFactory");
+
+			if (protocol2anonymousInitialContextFactory == null) {
+				protocol2anonymousInitialContextFactory = new HashMap<String, String>();
+				setChanged();
+			}
+
+			if (protocol2loginInitialContextFactory == null) {
+				protocol2loginInitialContextFactory = new HashMap<String, String>();
+				setChanged();
+			}
+
+			if (getAnonymousInitialContextFactory(Server.PROTOCOL_JNP, false) == null) {
+				setAnonymousInitialContextFactory(Server.PROTOCOL_JNP, "org.jnp.interfaces.NamingContextFactory");
+
+				// TODO BEGIN downward compatibility
+				if (anonymousInitialContextFactory != null)
+					setAnonymousInitialContextFactory(Server.PROTOCOL_JNP, anonymousInitialContextFactory);
+				// END downward compatibility
+			}
+
+			if (getAnonymousInitialContextFactory(Server.PROTOCOL_HTTPS, false) == null)
+				setAnonymousInitialContextFactory(Server.PROTOCOL_HTTPS, "org.jboss.naming.HttpNamingContextFactory");
+
+			if (getLoginInitialContextFactory(Server.PROTOCOL_JNP, false) == null) {
+				setLoginInitialContextFactory(Server.PROTOCOL_JNP, "org.nightlabs.jfire.jboss.cascadedauthentication.LoginInitialContextFactory");
+
+				// TODO BEGIN downward compatibility
+				if (initialContextFactory != null)
+					setLoginInitialContextFactory(Server.PROTOCOL_JNP, initialContextFactory);
+				// END downward compatibility
+			}
+
+			if (getLoginInitialContextFactory(Server.PROTOCOL_HTTPS, false) == null)
+				setLoginInitialContextFactory(Server.PROTOCOL_HTTPS, "org.nightlabs.unified.jndi.jboss.ui.UnifiedNamingContextFactory");
+
+			anonymousInitialContextFactory = null;
+			initialContextFactory = null;
 		}
+
+		public Map<String, String> getProtocol2anonymousInitialContextFactory() {
+			return protocol2anonymousInitialContextFactory;
+		}
+		public void setProtocol2anonymousInitialContextFactory(Map<String, String> protocol2anonymousInitialContextFactory) {
+			this.protocol2anonymousInitialContextFactory = protocol2anonymousInitialContextFactory;
+		}
+
+		public Map<String, String> getProtocol2loginInitialContextFactory() {
+			return protocol2loginInitialContextFactory;
+		}
+		public void setProtocol2loginInitialContextFactory(Map<String, String> protocol2loginInitialContextFactory) {
+			this.protocol2loginInitialContextFactory = protocol2loginInitialContextFactory;
+		}
+
+		public String getAnonymousInitialContextFactory(String protocol, boolean throwExceptionIfNotFound)
+		{
+			if (protocol == null)
+				throw new IllegalArgumentException("protocol must not be null!");
+
+			if (protocol.isEmpty())
+				throw new IllegalArgumentException("protocol must not be an empty string!");
+
+			String result = protocol2anonymousInitialContextFactory.get(protocol);
+			if (result == null && throwExceptionIfNotFound)
+				throw new IllegalArgumentException("There is no anonymousInitialContextFactory registered for protocol \"" + protocol + "\"!!!");
+
+			return result;
+		}
+
+		public void setAnonymousInitialContextFactory(String protocol, String initialContextFactory)
+		{
+			if (protocol == null)
+				throw new IllegalArgumentException("protocol must not be null!");
+
+			if (protocol.isEmpty())
+				throw new IllegalArgumentException("protocol must not be an empty string!");
+
+			if (initialContextFactory == null || initialContextFactory.isEmpty()) {
+				if (protocol2anonymousInitialContextFactory.remove(protocol) != null)
+					setChanged();
+			}
+			else {
+				if (!Util.equals(initialContextFactory, protocol2anonymousInitialContextFactory.get(protocol))) {
+					protocol2anonymousInitialContextFactory.put(protocol, initialContextFactory);
+					setChanged();
+				}
+			}
+		}
+
+		public String getLoginInitialContextFactory(String protocol, boolean throwExceptionIfNotFound)
+		{
+			if (protocol == null)
+				throw new IllegalArgumentException("protocol must not be null!");
+
+			if (protocol.isEmpty())
+				throw new IllegalArgumentException("protocol must not be an empty string!");
+
+			String result = protocol2loginInitialContextFactory.get(protocol);
+			if (result == null && throwExceptionIfNotFound)
+				throw new IllegalArgumentException("There is no loginInitialContextFactory registered for protocol \"" + protocol + "\"!!!");
+
+			return result;
+		}
+
+		public void setLoginInitialContextFactory(String protocol, String initialContextFactory)
+		{
+			if (protocol == null)
+				throw new IllegalArgumentException("protocol must not be null!");
+
+			if (protocol.isEmpty())
+				throw new IllegalArgumentException("protocol must not be an empty string!");
+
+			if (initialContextFactory == null || initialContextFactory.isEmpty()) {
+				if (protocol2loginInitialContextFactory.remove(protocol) != null)
+					setChanged();
+			}
+			else {
+				if (!Util.equals(initialContextFactory, protocol2loginInitialContextFactory.get(protocol))) {
+					protocol2loginInitialContextFactory.put(protocol, initialContextFactory);
+					setChanged();
+				}
+			}
+		}
+
+
 		/**
 		 * @return the fully qualified class name of the initialContextFactory that is used for normal
 		 *		(authenticated) communication between organisations.
+		 *
+		 * @deprecated Replaced by {@link #getLoginInitialContextFactory(String, boolean)}
 		 */
+		@Deprecated
 		public String getInitialContextFactory()
 		{
 			return initialContextFactory;
 		}
 		/**
 		 * @param initialContextFactory The initialContextFactory to set.
+		 * @deprecated
 		 */
+		@Deprecated
 		public void setInitialContextFactory(String initialContextFactory)
 		{
 			this.initialContextFactory = initialContextFactory;
-			if (cfMod != null) cfMod.setChanged();
+			setChanged();
 		}
 		/**
 		 * @return the fully qualified class name of the context factory that is used for anonymous communication
 		 *		during organisation-handshake.
+		 *
+		 * @deprecated Replaced by {@link #getAnonymousInitialContextFactory(String, boolean)}.
 		 */
+		@Deprecated
 		public String getAnonymousInitialContextFactory()
 		{
 			return anonymousInitialContextFactory;
 		}
-		public void setAnonymousInitialContextFactory(
-				String anonymousInitialContextFactory)
+		/**
+		 * @deprecated
+		 */
+		@Deprecated
+		public void setAnonymousInitialContextFactory(String anonymousInitialContextFactory)
 		{
 			this.anonymousInitialContextFactory = anonymousInitialContextFactory;
-			if (cfMod != null) cfMod.setChanged();
+			setChanged();
 		}
+
+
 		/**
 		 * @return Returns the j2eeServerType.
 		 */
@@ -215,7 +361,12 @@ public class J2eeServerTypeRegistryConfigModule extends ConfigModule
 		public void setJ2eeServerType(String serverType)
 		{
 			j2eeServerType = serverType;
-			if (cfMod != null) cfMod.setChanged();
+			setChanged();
+		}
+
+		private void setChanged() {
+			if (cfMod != null)
+				cfMod.setChanged();
 		}
 	}
 
@@ -230,30 +381,30 @@ public class J2eeServerTypeRegistryConfigModule extends ConfigModule
 			J2eeLocalServer localServer;
 			J2eeRemoteServer remoteServer;
 
-			// default config for local jboss 3.2x
-			localServer = new J2eeLocalServer();
-			localServer.cfMod = this;
-			localServer.setJ2eeServerType(Server.J2EESERVERTYPE_JBOSS32X);
-			localServer.setJ2eeVendorAdapterClassName("org.nightlabs.jfire.jboss.j2ee.J2EEAdapterJBoss");
-			localServer.init();
-
-			remoteServer = new J2eeRemoteServer();
-			remoteServer.cfMod = this;
-			remoteServer.setJ2eeServerType(Server.J2EESERVERTYPE_JBOSS32X);
-			remoteServer.setInitialContextFactory("org.nightlabs.jfire.jboss.cascadedauthentication.LoginInitialContextFactory");
-			remoteServer.setAnonymousInitialContextFactory("org.jnp.interfaces.NamingContextFactory");
-			remoteServer.init();
-			localServer.addJ2eeRemoteServer(remoteServer);
-
-			remoteServer = new J2eeRemoteServer();
-			remoteServer.cfMod = this;
-			remoteServer.setJ2eeServerType(Server.J2EESERVERTYPE_JBOSS40X);
-			remoteServer.setInitialContextFactory("org.nightlabs.jfire.jboss.cascadedauthentication.LoginInitialContextFactory");
-			remoteServer.setAnonymousInitialContextFactory("org.jnp.interfaces.NamingContextFactory");
-			remoteServer.init();
-			localServer.addJ2eeRemoteServer(remoteServer);
-
-			j2eeLocalServers.add(localServer);
+//			// default config for local jboss 3.2x
+//			localServer = new J2eeLocalServer();
+//			localServer.cfMod = this;
+//			localServer.setJ2eeServerType(Server.J2EESERVERTYPE_JBOSS32X);
+//			localServer.setJ2eeVendorAdapterClassName("org.nightlabs.jfire.jboss.j2ee.J2EEAdapterJBoss");
+//			localServer.init();
+//
+//			remoteServer = new J2eeRemoteServer();
+//			remoteServer.cfMod = this;
+//			remoteServer.setJ2eeServerType(Server.J2EESERVERTYPE_JBOSS32X);
+////			remoteServer.setInitialContextFactory("org.nightlabs.jfire.jboss.cascadedauthentication.LoginInitialContextFactory");
+////			remoteServer.setAnonymousInitialContextFactory("org.jnp.interfaces.NamingContextFactory");
+//			remoteServer.init();
+//			localServer.addJ2eeRemoteServer(remoteServer);
+//
+//			remoteServer = new J2eeRemoteServer();
+//			remoteServer.cfMod = this;
+//			remoteServer.setJ2eeServerType(Server.J2EESERVERTYPE_JBOSS40X);
+////			remoteServer.setInitialContextFactory("org.nightlabs.jfire.jboss.cascadedauthentication.LoginInitialContextFactory");
+////			remoteServer.setAnonymousInitialContextFactory("org.jnp.interfaces.NamingContextFactory");
+//			remoteServer.init();
+//			localServer.addJ2eeRemoteServer(remoteServer);
+//
+//			j2eeLocalServers.add(localServer);
 
 
 			// default config for local jboss 4.0x
@@ -263,19 +414,19 @@ public class J2eeServerTypeRegistryConfigModule extends ConfigModule
 			localServer.setJ2eeVendorAdapterClassName("org.nightlabs.jfire.jboss.j2ee.J2EEAdapterJBoss");
 			localServer.init();
 
-			remoteServer = new J2eeRemoteServer();
-			remoteServer.cfMod = this;
-			remoteServer.setJ2eeServerType(Server.J2EESERVERTYPE_JBOSS32X);
-			remoteServer.setInitialContextFactory("org.nightlabs.jfire.jboss.cascadedauthentication.LoginInitialContextFactory");
-			remoteServer.setAnonymousInitialContextFactory("org.jnp.interfaces.NamingContextFactory");
-			remoteServer.init();
-			localServer.addJ2eeRemoteServer(remoteServer);
+//			remoteServer = new J2eeRemoteServer();
+//			remoteServer.cfMod = this;
+//			remoteServer.setJ2eeServerType(Server.J2EESERVERTYPE_JBOSS32X);
+////			remoteServer.setInitialContextFactory("org.nightlabs.jfire.jboss.cascadedauthentication.LoginInitialContextFactory");
+////			remoteServer.setAnonymousInitialContextFactory("org.jnp.interfaces.NamingContextFactory");
+//			remoteServer.init();
+//			localServer.addJ2eeRemoteServer(remoteServer);
 
 			remoteServer = new J2eeRemoteServer();
 			remoteServer.cfMod = this;
 			remoteServer.setJ2eeServerType(Server.J2EESERVERTYPE_JBOSS40X);
-			remoteServer.setInitialContextFactory("org.nightlabs.jfire.jboss.cascadedauthentication.LoginInitialContextFactory");
-			remoteServer.setAnonymousInitialContextFactory("org.jnp.interfaces.NamingContextFactory");
+//			remoteServer.setInitialContextFactory("org.nightlabs.jfire.jboss.cascadedauthentication.LoginInitialContextFactory");
+//			remoteServer.setAnonymousInitialContextFactory("org.jnp.interfaces.NamingContextFactory");
 			remoteServer.init();
 			localServer.addJ2eeRemoteServer(remoteServer);
 
@@ -284,14 +435,14 @@ public class J2eeServerTypeRegistryConfigModule extends ConfigModule
 			setChanged();
 		}
 		else {
-
-			for (Iterator<J2eeLocalServer> it = j2eeLocalServers.iterator(); it.hasNext(); ) {
-				J2eeLocalServer server = it.next();
-				server.cfMod = this;
+			for (J2eeLocalServer server : j2eeLocalServers) {
+				if (server.cfMod != this) {
+					server.cfMod = this;
+					setChanged();
+				}
 				server.init();
 			}
 		}
-
 	}
 
 	/**

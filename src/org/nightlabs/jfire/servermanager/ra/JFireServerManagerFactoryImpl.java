@@ -2773,18 +2773,43 @@ public class JFireServerManagerFactoryImpl
 		return j2eeLocalServerCf.getJ2eeRemoteServer(j2eeServerType);
 	}
 
+//	@Override
+//	public String getInitialContextFactory(String j2eeServerTypeRemote, boolean throwExceptionIfUnknownServerType)
+//	{
+//		J2eeServerTypeRegistryConfigModule.J2eeRemoteServer j2eeRemoteServerCf = j2eeLocalServerCf.getJ2eeRemoteServer(j2eeServerTypeRemote);
+//		if (j2eeRemoteServerCf == null) {
+//			if (throwExceptionIfUnknownServerType)
+//				throw new IllegalArgumentException("No configuration for remote j2eeServerType \""+j2eeServerTypeRemote+"\"!");
+//
+//			return null;
+//		}
+//		return j2eeRemoteServerCf.getInitialContextFactory();
+//	}
+
 	@Override
-	public String getInitialContextFactory(String j2eeServerTypeRemote, boolean throwExceptionIfUnknownServerType)
+	public String getLoginInitialContextFactory(String j2eeServerTypeRemote, String protocol, boolean throwExceptionIfNotFound)
 	{
-		J2eeServerTypeRegistryConfigModule.J2eeRemoteServer j2eeRemoteServerCf =
-				j2eeLocalServerCf.getJ2eeRemoteServer(j2eeServerTypeRemote);
+		J2eeServerTypeRegistryConfigModule.J2eeRemoteServer j2eeRemoteServerCf = j2eeLocalServerCf.getJ2eeRemoteServer(j2eeServerTypeRemote);
 		if (j2eeRemoteServerCf == null) {
-			if (throwExceptionIfUnknownServerType)
+			if (throwExceptionIfNotFound)
 				throw new IllegalArgumentException("No configuration for remote j2eeServerType \""+j2eeServerTypeRemote+"\"!");
 
 			return null;
 		}
-		return j2eeRemoteServerCf.getInitialContextFactory();
+		return j2eeRemoteServerCf.getLoginInitialContextFactory(protocol, throwExceptionIfNotFound);
+	}
+
+	@Override
+	public String getAnonymousInitialContextFactory(String j2eeServerTypeRemote, String protocol, boolean throwExceptionIfNotFound)
+	{
+		J2eeServerTypeRegistryConfigModule.J2eeRemoteServer j2eeRemoteServerCf = j2eeLocalServerCf.getJ2eeRemoteServer(j2eeServerTypeRemote);
+		if (j2eeRemoteServerCf == null) {
+			if (throwExceptionIfNotFound)
+				throw new IllegalArgumentException("No configuration for remote j2eeServerType \""+j2eeServerTypeRemote+"\"!");
+
+			return null;
+		}
+		return j2eeRemoteServerCf.getAnonymousInitialContextFactory(protocol, throwExceptionIfNotFound);
 	}
 
 	@Override
