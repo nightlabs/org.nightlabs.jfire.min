@@ -31,8 +31,9 @@ public class LoginDataInitialiser extends ServerInitialiserDelegate {
 					// TODO do we really need these default values?
 					// Is there any way we can get rid of them?
 					// I think we should think about a better solution. Marco.
-					String initialContextFactory = jfsmf.getInitialContextFactory(server.getJ2eeServerType(), true);
-					String initialContextURL = server.getInitialContextURL(Server.PROTOCOL_JNP, true);
+					String protocol = Server.PROTOCOL_JNP;
+					String initialContextFactory = jfsmf.getLoginInitialContextFactory(server.getJ2eeServerType(), protocol, true);
+					String initialContextURL = server.getInitialContextURL(protocol, true);
 
 					LoginData.setDefaultInitialContextFactory(initialContextFactory);
 					LoginData.setDefaultProviderURL(initialContextURL);

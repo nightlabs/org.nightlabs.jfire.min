@@ -930,7 +930,7 @@ public class OrganisationManagerBean
 				beginRegistration(
 						pm,
 						getPrincipal(),
-						getJFireServerManagerFactory().getJ2eeRemoteServer(rootOrganisationCf.getServer().getJ2eeServerType()).getAnonymousInitialContextFactory(),
+						getJFireServerManagerFactory().getAnonymousInitialContextFactory(rootOrganisationCf.getServer().getJ2eeServerType(), protocol, true),
 						rootServer.getInitialContextURL(protocol, true),
 						rootOrganisationID
 				);
