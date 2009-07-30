@@ -5,6 +5,7 @@ import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 /**
@@ -14,6 +15,10 @@ public class ExtendedPropertyDescriptor extends PropertyDescriptor implements Co
 {
 	private ExtendedBeanInfo beanInfo;
 	private int orderHint;
+
+	private boolean isMap;
+	private Class<?> mapKeyType = null;
+	private Class<?> mapValueType = null;
 
 	public ExtendedPropertyDescriptor(ExtendedBeanInfo beanInfo, PropertyDescriptor pd) throws IntrospectionException
 	{
@@ -30,18 +35,43 @@ public class ExtendedPropertyDescriptor extends PropertyDescriptor implements Co
 				e.printStackTrace();
 			}
 		}
+
+		isMap = Map.class.isAssignableFrom(pd.getPropertyType());
+		if (isMap) {
+			s = getPropertyValue("mapKeyType");
+			if (s != null) {
+				try {
+					mapKeyType = Class.forName(s);
+				} catch (ClassNotFoundException e) {
+					IntrospectionException x = new IntrospectionException("Bean \"" + beanInfo.getBeanClassSymbolicName() + "\" property \"" + pd.getName() + "\": mapKeyType \"" + s + "\" caused ClassNotFoundException: " + e.getMessage());
+					x.initCause(e);
+					throw x;
+				}
+			}
+
+			s = getPropertyValue("mapValueType");
+			if (s != null) {
+				try {
+					mapValueType = Class.forName(s);
+				} catch (ClassNotFoundException e) {
+					IntrospectionException x = new IntrospectionException("Bean \"" + beanInfo.getBeanClassSymbolicName() + "\" property \"" + pd.getName() + "\": mapValueType \"" + s + "\" caused ClassNotFoundException: " + e.getMessage());
+					x.initCause(e);
+					throw x;
+				}
+			}
+		}
 	}
-	
+
 	public String getLocalizedPropertyValue(String key)
 	{
 		return beanInfo.getLocalizedValue("property."+getName()+"."+key);
 	}
-	
+
 	public String getPropertyValue(String key)
 	{
 		return beanInfo.getValue("property."+getName()+"."+key);
 	}
-	
+
 	public Boolean getBooleanPropertyValue(String key)
 	{
 		String b = getPropertyValue(key);
@@ -53,7 +83,7 @@ public class ExtendedPropertyDescriptor extends PropertyDescriptor implements Co
 		}
 		return null;
 	}
-	
+
 	public List<String> getPossibleValues()
 	{
 		String valuesString = getPropertyValue("values");
@@ -65,39 +95,39 @@ public class ExtendedPropertyDescriptor extends PropertyDescriptor implements Co
 			result.add(st.nextToken());
 		return result;
 	}
-	
+
 	public String getPossibleValueDisplayName(String valueName)
 	{
 		String s = getLocalizedPropertyValue(valueName+".displayName");
 		return s == null ? valueName : s;
 	}
-	
+
 	@Override
-	public String getDisplayName() 
+	public String getDisplayName()
 	{
 		String s = getLocalizedPropertyValue("displayName");
 		return s == null ? super.getDisplayName() : s;
 	}
-	
+
 	@Override
-	public String getShortDescription() 
+	public String getShortDescription()
 	{
 		String s = getLocalizedPropertyValue("shortDescription");
 		return s == null ? super.getShortDescription() : s;
 	}
-	
+
 	@Override
-	public boolean isHidden() 
+	public boolean isHidden()
 	{
 		Boolean b = getBooleanPropertyValue("hidden");
 		return b == null ? super.isHidden() : b;
 	}
-	
+
 	public ExtendedBeanInfo getBeanInfo()
 	{
 		return beanInfo;
 	}
-	
+
 	public void setOrderHint(int orderHint)
 	{
 		this.orderHint = orderHint;
@@ -113,7 +143,7 @@ public class ExtendedPropertyDescriptor extends PropertyDescriptor implements Co
 			return getName().compareTo(o.getName());
 		return orderHint - o.orderHint;
 	}
-	
+
 	public Object getValue(Object bean)
 	{
 		Method readMethod = getReadMethod();
@@ -136,5 +166,16 @@ public class ExtendedPropertyDescriptor extends PropertyDescriptor implements Co
 		} catch(Exception e) {
 			throw new RuntimeException("Error setting bean property value: "+getName(), e);
 		}
+	}
+
+	public boolean isMap() {
+		return isMap;
+	}
+
+	public Class<?> getMapKeyType() {
+		return mapKeyType;
+	}
+	public Class<?> getMapValueType() {
+		return mapValueType;
 	}
 }

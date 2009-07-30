@@ -1,6 +1,8 @@
 package org.nightlabs.jfire.web.admin.serverinit;
 
-import org.nightlabs.jfire.server.Server;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.nightlabs.jfire.servermanager.config.RootOrganisationCf;
 import org.nightlabs.jfire.servermanager.config.ServerCf;
 
@@ -16,8 +18,9 @@ public class RootOrganisationBean
 	private String serverID;
 	private String serverName;
 	private String j2eeServerType;
-	private String initialContextURL_jnp;
-	private String initialContextURL_https;
+	private Map<String, String> protocol2initialContextURL = new HashMap<String, String>();
+//	private String initialContextURL_jnp;
+//	private String initialContextURL_https;
 
 	/**
 	 * Get the organisationID.
@@ -99,29 +102,11 @@ public class RootOrganisationBean
 	{
 		j2eeServerType = serverType;
 	}
-	/**
-	 * Get the initialContextURL_jnp.
-	 * @return the initialContextURL_jnp
-	 */
-	public String getInitialContextURL_jnp()
-	{
-		return initialContextURL_jnp;
+	public Map<String, String> getProtocol2initialContextURL() {
+		return protocol2initialContextURL;
 	}
-	/**
-	 * Set the initialContextURL_jnp.
-	 * @param initialContextURL_jnp the initialContextURL_jnp to set
-	 */
-	public void setInitialContextURL_jnp(String initialContextURL)
-	{
-		this.initialContextURL_jnp = initialContextURL;
-	}
-
-	public String getInitialContextURL_https() {
-		return initialContextURL_https;
-	}
-
-	public void setInitialContextURL_https(String initialContextURL_https) {
-		this.initialContextURL_https = initialContextURL_https;
+	public void setProtocol2initialContextURL(Map<String, String> protocol2initialContextURL) {
+		this.protocol2initialContextURL = protocol2initialContextURL;
 	}
 
 	public void copyFromCf(RootOrganisationCf rootOrganisationCf)
@@ -136,8 +121,7 @@ public class RootOrganisationBean
 		setServerID(server.getServerID());
 		setServerName(server.getServerName());
 		setJ2eeServerType(server.getJ2eeServerType());
-		setInitialContextURL_jnp(server.getInitialContextURL(Server.PROTOCOL_JNP, false));
-		setInitialContextURL_https(server.getInitialContextURL(Server.PROTOCOL_HTTPS, false));
+		protocol2initialContextURL = new HashMap<String, String>(server.getProtocol2initialContextURL());
 	}
 
 	public void copyToCf(RootOrganisationCf rootOrganisationCf)
@@ -150,8 +134,7 @@ public class RootOrganisationBean
 		server.setServerID(getServerID());
 		server.setServerName(getServerName());
 		server.setJ2eeServerType(getJ2eeServerType());
-		server.setInitialContextURL(Server.PROTOCOL_JNP, getInitialContextURL_jnp());
-		server.setInitialContextURL(Server.PROTOCOL_HTTPS, getInitialContextURL_https());
+		server.setProtocol2initialContextURL(new HashMap<String, String>(protocol2initialContextURL));
 		rootOrganisationCf.setServer(server);
 	}
 }

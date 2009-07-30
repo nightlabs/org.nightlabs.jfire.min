@@ -31,7 +31,41 @@ if(shortDescription != null && !shortDescription.isEmpty() && !shortDescription.
 <table class="formtable">
 <%
 for(ExtendedPropertyDescriptor pd : pds) {
-	if(pd.getWriteMethod() != null && !pd.isHidden()) {
+	if (pd.isHidden())
+		continue;
+
+	if (pd.isMap()) {
+		// We currently handle a map as if it was an object with each entry being a field.
+		// Thus, at the moment we don't allow to add/remove entries - this functionality might be added later.
+		// Furthermore, we currently only support maps of type Map<String, String>. 
+		// Marco.
+		if (pd.getMapKeyType() == String.class && pd.getMapValueType() == String.class) {
+			@SuppressWarnings("unchecked")
+			Map<String, String> map = (Map<String, String>)pd.getValue(bean);
+			for (Map.Entry<String, String> me : map.entrySet()) {
+				String name = "beanedit."+beanKey+".value."+pd.getName()+'['+me.getKey()+']';
+				Object realValue = me.getValue();
+				String value = realValue != null ? String.valueOf(realValue) : "";
+%>
+				<tr>
+					<td valign="top"><%=pd.getDisplayName()%> (<%=me.getKey()%>): </td>
+					<td valign="top" style="padding-left: 8px;">
+						<input type="text" name="<%=name%>" value="<%=(value==null ? "" : value)%>" class="extrawide"/>
+					</td>
+<%
+				String propertyShortDescription = pd.getShortDescription();
+				if(propertyShortDescription != null && !propertyShortDescription.isEmpty() && !propertyShortDescription.equals(pd.getDisplayName())) {
+%>
+					<td valign="middle" style="padding-left: 16px;"><small><i>(<%=propertyShortDescription%>)</i></small></td>
+<%
+				}
+%>
+				</tr>
+<%
+			}
+		}
+	}
+	else if(pd.getWriteMethod() != null) {
 		String name = "beanedit."+beanKey+".value."+pd.getName();
 		Object realValue = pd.getValue(bean);
 		String value = realValue != null ? String.valueOf(realValue) : "";

@@ -13,7 +13,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.jfire.organisation.OrganisationManagerRemote;
-import org.nightlabs.jfire.server.Server;
 import org.nightlabs.jfire.server.ServerManagerRemote;
 import org.nightlabs.jfire.serverconfigurator.ServerConfigurator;
 import org.nightlabs.jfire.servermanager.config.DatabaseCf;
@@ -60,7 +59,7 @@ public class ServerInitializeServlet extends BaseServlet
 		final JFireServerConfigModule cfMod;
 		try {
 			cfMod = serverManager.getJFireServerConfigModule();
-			if (cfMod.getLocalServer() == null) { // this shouldn't happen anymore.
+			if (cfMod.getLocalServer() == null) { // this indicates it's a new server needing setup - see implementation of JFireServerManagerFactoryImpl.isNewServerNeedingSetup()
 				ServerCf server = new ServerCf();
 				server.init();
 				cfMod.setLocalServer(server);
@@ -68,6 +67,9 @@ public class ServerInitializeServlet extends BaseServlet
 		} catch (Throwable e) {
 			throw new RuntimeException("Error accessing server configuration", e);
 		}
+
+		RootOrganisationBean rootOrganisationBean = new RootOrganisationBean();
+		rootOrganisationBean.copyFromCf(cfMod.getRootOrganisation());
 
 		ServerInitializeStep[] steps = new ServerInitializeStep[] {
 				new ServerInitializeStep("welcome", "/jsp/serverinitialize/welcome.jsp", null),
@@ -94,7 +96,7 @@ public class ServerInitializeServlet extends BaseServlet
 				new ServerInitializeStep("jdo", null, cfMod.getJdo()),
 				new ServerInitializeStep("smtp", null, cfMod.getSmtp()),
 				new ServerInitializeStep("servletssl", null, cfMod.getServletSSLCf()),
-				new ServerInitializeStep("rootorganisation", null, new RootOrganisationBean()),
+				new ServerInitializeStep("rootorganisation", null, rootOrganisationBean),
 				new ServerInitializeStep("firstorganisation", null, new FirstOrganisationBean()),
 				new ServerInitializeStep("overview", "/jsp/serverinitialize/overview.jsp", null)
 		};
@@ -333,12 +335,15 @@ public class ServerInitializeServlet extends BaseServlet
 			RootOrganisationCf rootOrg = new RootOrganisationCf(
 					rootOrganisationBean.getOrganisationID(),
 					rootOrganisationBean.getOrganisationName(),
-					rootOrgServer);
-			rootOrgServer.setServerName(rootOrganisationBean.getServerName());
-			rootOrgServer.setJ2eeServerType(rootOrganisationBean.getJ2eeServerType());
-			rootOrgServer.setInitialContextURL(Server.PROTOCOL_JNP, rootOrganisationBean.getInitialContextURL_jnp());
-			rootOrgServer.setInitialContextURL(Server.PROTOCOL_HTTPS, rootOrganisationBean.getInitialContextURL_https());
+					rootOrgServer
+			);
+//			rootOrgServer.setServerName(rootOrganisationBean.getServerName());
+//			rootOrgServer.setJ2eeServerType(rootOrganisationBean.getJ2eeServerType());
+//			rootOrgServer.setInitialContextURL(Server.PROTOCOL_JNP, rootOrganisationBean.getInitialContextURL_jnp());
+//			rootOrgServer.setInitialContextURL(Server.PROTOCOL_HTTPS, rootOrganisationBean.getInitialContextURL_https());
 			cfMod.setRootOrganisation(rootOrg);
+			rootOrg.init();
+			rootOrganisationBean.copyToCf(rootOrg);
 		}
 
 		// local server:

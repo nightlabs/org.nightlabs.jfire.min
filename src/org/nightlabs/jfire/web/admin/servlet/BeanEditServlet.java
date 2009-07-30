@@ -40,33 +40,33 @@ public class BeanEditServlet extends HttpServlet
 	public static final String BEANKEY_ATTRIBUTE_KEY = "beanedit.beankey";
 	public static final String BEANINFO_ATTRIBUTE_KEY = "beanedit.beaninfo";
 	public static final String BEAN_ATTRIBUTE_KEY = "beanedit.bean";
-	
+
 	public static final String BEANS_ATTRIBUTE_KEY = "beanedit.beans";
 	public static final String BEANINFOS_ATTRIBUTE_KEY = "beanedit.beaninfos";
-	
+
 	@Override
-	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException 
+	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException
 	{
 		handleRequest(req, resp);
 	}
-	
+
 	@Override
-	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException 
+	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException
 	{
 		handleRequest(req, resp);
 	}
-	
+
 	protected void handleRequest(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException
 	{
 		Integer beanKey = (Integer) req.getAttribute(BEANKEY_ATTRIBUTE_KEY);
 		log.info("BeanKey to show: "+beanKey);
-		
+
 		// no bean key found
 		if(beanKey == null)
 			throw new IllegalStateException("No bean key");
-		
+
 		// TODO: implement saving here for parameter beankey
-		
+
 		// prepare bean and show jsp
 		Map<Integer, Object> beans = getBeans(req);
 		if(beans == null)
@@ -74,33 +74,34 @@ public class BeanEditServlet extends HttpServlet
 		Object bean = beans.get(beanKey);
 		if(bean == null)
 			throw new IllegalStateException("Bean not found for key "+beanKey);
-		
+
 		Map<Integer, ExtendedBeanInfo> beanInfos = getBeanInfos(req);
 		if(beanInfos == null)
 			throw new IllegalStateException("No bean infos known");
 		ExtendedBeanInfo beanInfo = beanInfos.get(beanKey);
 		if(beanInfo == null)
 			throw new IllegalStateException("Bean info not found for key "+beanKey);
-		
+
 		req.setAttribute(BEAN_ATTRIBUTE_KEY, bean);
 		req.setAttribute(BEANINFO_ATTRIBUTE_KEY, beanInfo);
-		
+
 		req.getRequestDispatcher("/jsp/beanedit.jsp").include(req, resp);
 	}
 
-	private static ExtendedBeanInfo getExtendedBeanInfo(Object bean) 
+	private static ExtendedBeanInfo getExtendedBeanInfo(Object bean)
 	{
 		ExtendedBeanInfo beanInfo;
 		try {
 			BeanInfo baseBeanInfo = Introspector.getBeanInfo(bean.getClass());
 			// TODO use correct locale
+			// Note added: Switching to NLLocale from Locale isn't easily possible, because NLLocale throws an exception when not being authenticated (what's most likely the case here). Maybe we should find out the correct Locale from the browser (the priority of preferred Locales is part of the HTTP reques). Marco.
 			beanInfo = new ExtendedBeanInfo(baseBeanInfo, Locale.getDefault());
 		} catch (IntrospectionException e) {
 			throw new RuntimeException(e);
 		}
 		return beanInfo;
 	}
-	
+
 	private static Random random = new Random();
 
 	/**
@@ -110,7 +111,7 @@ public class BeanEditServlet extends HttpServlet
 	{
 		return startEdit(req, bean, null);
 	}
-	
+
 	/**
 	 * @return The bean key to be included as request attribute
 	 */
@@ -122,42 +123,42 @@ public class BeanEditServlet extends HttpServlet
 			beans = new HashMap<Integer, Object>();
 			req.getSession().setAttribute(BEANS_ATTRIBUTE_KEY, beans);
 		}
-		
+
 		Map<Integer, ExtendedBeanInfo> beanInfos = getBeanInfos(req);
 		if(beanInfos == null) {
 			beanInfos = new HashMap<Integer, ExtendedBeanInfo>();
 			req.getSession().setAttribute(BEANINFOS_ATTRIBUTE_KEY, beanInfos);
 		}
-		
+
 		int beanKey;
 		do {
 			beanKey = Math.abs(random.nextInt());
 		} while(beans.containsKey(beanKey));
-		
+
 		beans.put(beanKey, bean);
 		req.setAttribute(BEANKEY_ATTRIBUTE_KEY, beanKey);
-		
+
 		if(beanInfo == null)
 			beanInfo = getExtendedBeanInfo(bean);
 		beanInfos.put(beanKey, beanInfo);
 		req.setAttribute(BEANINFOS_ATTRIBUTE_KEY, beanInfo);
-		
+
 		return beanKey;
 	}
 
 	@SuppressWarnings("unchecked")
-	private static Map<Integer, Object> getBeans(HttpServletRequest req) 
+	private static Map<Integer, Object> getBeans(HttpServletRequest req)
 	{
 		return (Map<Integer, Object>) req.getSession().getAttribute(BEANS_ATTRIBUTE_KEY);
 	}
-	
+
 	@SuppressWarnings("unchecked")
-	private static Map<Integer, ExtendedBeanInfo> getBeanInfos(HttpServletRequest req) 
+	private static Map<Integer, ExtendedBeanInfo> getBeanInfos(HttpServletRequest req)
 	{
 		return (Map<Integer, ExtendedBeanInfo>) req.getSession().getAttribute(BEANINFOS_ATTRIBUTE_KEY);
 	}
-	
-	
+
+
 	private static Set<Integer> findBeanKeys(HttpServletRequest req)
 	{
 		HashSet<Integer> beanKeys = new HashSet<Integer>();
@@ -171,7 +172,7 @@ public class BeanEditServlet extends HttpServlet
 		}
 		return beanKeys;
 	}
-	
+
 	/**
 	 * Save data to the bean. This is done by using the request parameters.
 	 * The bean key must also be available in the request parameters.
@@ -181,17 +182,17 @@ public class BeanEditServlet extends HttpServlet
 	public static Map<Integer, Object> finishEdit(HttpServletRequest req)
 	{
 		log.info("Finish edit beans");
-		
+
 		Set<Integer> beanKeys = findBeanKeys(req);
 		if(beanKeys.isEmpty()) {
 			log.error("No bean keys found in request. Nothing to do.");
 			return Collections.emptyMap();
 		}
-			
+
 		Map<Integer, Object> beans = getBeans(req);
 		if(beans == null)
 			throw new IllegalStateException("No beans known");
-		
+
 //		String beanKey = req.getParameter("beanedit.beankey");
 //		if(beanKey == null)
 //			throw new IllegalStateException("Invalid finish edit request: Parameter beanedit.beankey not found");
@@ -203,7 +204,7 @@ public class BeanEditServlet extends HttpServlet
 //		}
 
 		Map<Integer, Object> result = new HashMap<Integer, Object>(beanKeys.size());
-		
+
 		for(Integer beanKey : beanKeys) {
 			log.info("Saving bean for key: "+beanKey);
 			try {
@@ -218,10 +219,10 @@ public class BeanEditServlet extends HttpServlet
 				beans.remove(beanKey);
 			}
 		}
-		
+
 		return result;
 	}
-	
+
 	private static void saveBean(Object bean, int beanKey, HttpServletRequest req) throws IllegalAccessException, InvocationTargetException, IntrospectionException
 	{
 		log.info("Saving bean: "+bean.getClass().getName());
@@ -233,14 +234,41 @@ public class BeanEditServlet extends HttpServlet
 			String name = (String)parameterNames.nextElement();
 			if(name.startsWith(valueParameterPrefix)) {
 				String propertyName = name.substring(valueParameterPrefix.length());
+				int bracketOpenIndex = propertyName.indexOf('[');
+				String mapEntryKey = null;
+				if (bracketOpenIndex >= 0) {
+					// we're dealing with a map => extract the key
+					if (!propertyName.endsWith("]"))
+						throw new IllegalStateException("propertyName contains '[' but does not end on ']': " + propertyName);
+
+					mapEntryKey = propertyName.substring(bracketOpenIndex + 1, propertyName.length() - 1);
+					propertyName = propertyName.substring(0, bracketOpenIndex);
+				}
+
 				ExtendedPropertyDescriptor epd = epds.get(propertyName);
-				Object realValue = getRealValue(bean, epd, req.getParameter(name));
-				epd.setValue(bean, realValue);
+
+				if (mapEntryKey != null && !epd.isMap())
+					throw new IllegalStateException("propertyName encodes a map key, but ExtendedPropertyDescriptor says it's not a map! " + name);
+
+				if (mapEntryKey == null) {
+					Object realValue = getRealValue(bean, epd, req.getParameter(name));
+					epd.setValue(bean, realValue);
+				}
+				else {
+					if (epd.getMapKeyType() == String.class && epd.getMapValueType() == String.class) {
+						String realValue = req.getParameter(name);
+
+						@SuppressWarnings("unchecked")
+						Map<String, String> map = (Map<String, String>)epd.getValue(bean);
+						map.put(mapEntryKey, realValue);
+					}
+				}
+
 			}
 		}
 	}
 
-	private static Object getRealValue(Object bean, ExtendedPropertyDescriptor epd, String parameter) 
+	private static Object getRealValue(Object bean, ExtendedPropertyDescriptor epd, String parameter)
 	{
 		if(epd.getPropertyType() == String.class)
 			return parameter;
