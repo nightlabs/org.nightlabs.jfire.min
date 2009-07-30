@@ -41,13 +41,13 @@ import org.nightlabs.jfire.server.id.ServerID;
 import org.nightlabs.util.Util;
 
 /**
- * @author marco
+ * @author marco schulze - marco at nightlabs dot de
  */
 public class ServerCf implements Serializable, Cloneable {
 	/**
 	 * The serial version of this class.
 	 */
-	private static final long serialVersionUID = 2L;
+	private static final long serialVersionUID = 3L;
 
 	public ServerCf() {
 	}
@@ -141,20 +141,20 @@ public class ServerCf implements Serializable, Cloneable {
 		return dataCentreID;
 	}
 	public void setDataCentreID(String dataCentreID) {
+		if (dataCentreID == null)
+			dataCentreID = "";
+
 		this.dataCentreID = dataCentreID;
 	}
 
 	public String getDistinctiveDataCentreID() {
-		if (dataCentreID != null)
+		if (dataCentreID != null && !dataCentreID.isEmpty())
 			return dataCentreID;
 
 		return serverID;
 	}
 
 	public Map<String, String> getProtocol2initialContextURL() {
-		if (protocol2initialContextURL == null) {
-			protocol2initialContextURL = new HashMap<String, String>();
-		}
 		return protocol2initialContextURL;
 	}
 
@@ -168,7 +168,10 @@ public class ServerCf implements Serializable, Cloneable {
 		if (protocol == null)
 			throw new IllegalArgumentException("protocol must not be null!");
 
-		String result = getProtocol2initialContextURL().get(protocol);
+		if (this.protocol2initialContextURL == null)
+			throw new IllegalStateException("This ServerCf instance has not beeen initialised! You must call the init() method first!");
+
+		String result = this.protocol2initialContextURL.get(protocol);
 
 		if (result == null && throwExceptionIfNotExisting)
 			throw new IllegalArgumentException("There is no initialContextURL for the protocol \"" + protocol + "\"!!!");
@@ -181,10 +184,13 @@ public class ServerCf implements Serializable, Cloneable {
 		if (protocol == null)
 			throw new IllegalArgumentException("protocol must not be null!");
 
+		if (this.protocol2initialContextURL == null)
+			throw new IllegalStateException("This ServerCf instance has not beeen initialised! You must call the init() method first!");
+
 		if (initialContextURL == null || initialContextURL.isEmpty())
-			getProtocol2initialContextURL().remove(protocol);
+			this.protocol2initialContextURL.remove(protocol);
 		else
-			getProtocol2initialContextURL().put(protocol, initialContextURL);
+			this.protocol2initialContextURL.put(protocol, initialContextURL);
 	}
 
 	/**
@@ -202,6 +208,7 @@ public class ServerCf implements Serializable, Cloneable {
 		Server server;
 		try {
 			server = (Server) pm.getObjectById(ServerID.create(getServerID()), true);
+			copyTo(server);
 		} catch (JDOObjectNotFoundException x) {
 			server = new Server(getServerID());
 			copyTo(server);
@@ -221,6 +228,9 @@ public class ServerCf implements Serializable, Cloneable {
 	public boolean copyTo(Server server)
 	throws IllegalArgumentException
 	{
+		if (this.protocol2initialContextURL == null)
+			throw new IllegalStateException("This ServerCf instance has not beeen initialised! You must call the init() method first!");
+
 		boolean modified = false;
 
 		if (!Util.equals(getServerID(), server.getServerID()))
@@ -291,6 +301,11 @@ public class ServerCf implements Serializable, Cloneable {
 			j2eeServerType = Server.J2EESERVERTYPE_JBOSS40X;
 		}
 
+		if (dataCentreID == null) {
+			modified = true;
+			dataCentreID = "";
+		}
+
 		if (protocol2initialContextURL == null) {
 			modified = true;
 			protocol2initialContextURL = new HashMap<String, String>();
@@ -327,6 +342,9 @@ public class ServerCf implements Serializable, Cloneable {
 	@Override
 	public Object clone()
 	{
+		if (this.protocol2initialContextURL == null)
+			throw new IllegalStateException("This ServerCf instance has not beeen initialised! You must call the init() method first!");
+
 		try {
 			ServerCf c = (ServerCf) super.clone();
 			c.protocol2initialContextURL = new HashMap<String, String>(c.protocol2initialContextURL);
@@ -335,21 +353,4 @@ public class ServerCf implements Serializable, Cloneable {
 			throw new RuntimeException(e); // should never happen since we implement clone()
 		}
 	}
-
-	public void setInitialContextURL_HTTPS(String initialContextURL) {
-		setInitialContextURL(Server.PROTOCOL_HTTPS, initialContextURL);
-	}
-
-	public String getInitialContextURL_HTTPS() {
-		return getInitialContextURL(Server.PROTOCOL_HTTPS, false);
-	}
-
-	public void setInitialContextURL_JNP(String initialContextURL) {
-		setInitialContextURL(Server.PROTOCOL_JNP, initialContextURL);
-	}
-
-	public String getInitialContextURL_JNP() {
-		return getInitialContextURL(Server.PROTOCOL_JNP, false);
-	}
-
 }

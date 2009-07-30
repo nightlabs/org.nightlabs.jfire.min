@@ -115,6 +115,9 @@ public class JFireServerConfigModule extends ConfigModule
 	public void setRootOrganisation(RootOrganisationCf rootOrganisation)
 	{
 		this.rootOrganisation = rootOrganisation;
+		if (this.rootOrganisation != null)
+			this.rootOrganisation.setParentConfigModule(this);
+
 		setChanged();
 	}
 
