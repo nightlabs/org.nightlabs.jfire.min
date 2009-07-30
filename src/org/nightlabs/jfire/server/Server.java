@@ -42,6 +42,7 @@ import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.PersistenceModifier;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
+import javax.jdo.listener.StoreCallback;
 
 import org.nightlabs.jdo.ObjectIDUtil;
 import org.nightlabs.jfire.server.id.ServerID;
@@ -57,7 +58,7 @@ import org.nightlabs.util.Util;
 		table="JFireBase_Server"
 )
 @Inheritance(strategy=InheritanceStrategy.NEW_TABLE)
-public class Server implements Serializable
+public class Server implements Serializable, StoreCallback
 {
 	/**
 	 * The serial version of this class.
@@ -205,38 +206,45 @@ public class Server implements Serializable
 	@Deprecated
 	private String initialContextURL;
 
-	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
-	@Column(length=100)
-	private String dataCentreID;
+	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT, nullValue=NullValue.EXCEPTION)
+	@Column(length=100, defaultValue="")
+	private String dataCentreID; // this must never be null and I hope that updating an old datastore works because of the default-value (empty string)
 
 	/**
-	 * Get the identifier of the server's data centre or <code>null</code> to specify that the
-	 * server is an individual without a real data centre. This information is used to decide
+	 * Get the identifier of the server's data centre or an empty <code>String</code> to specify that the
+	 * server is an individual without a specific data centre. This information is used to decide
 	 * what protocol to use for communication. If two different data centres are involved,
 	 * encryption via HTTPS is used - otherwise an unencrypted connection (JNP + RMI) is used.
 	 *
-	 * @return the data centre ID or <code>null</code>.
+	 * @return the data centre ID or an empty <code>String</code>; never <code>null</code>.
 	 * @see #getDistinctiveDataCentreID()
 	 */
 	public String getDataCentreID() {
+		if (dataCentreID == null) // should never happen, but we ensure this anyway here - safer is better
+			return "";
+
 		return dataCentreID;
 	}
 
 	/**
 	 * Get the identifier of the server's data centre or the server-ID, if there is no data centre ID specified.
-	 * This method will never return <code>null</code> and should be used to decide which protocol
-	 * to use (because unencrypted communication should be employed within the same server, too).
+	 * This method will never return <code>null</code>, never return an empty <code>String</code> and should
+	 * be used to decide which protocol to use (because unencrypted communication should be employed within
+	 * the same server, too).
 	 *
-	 * @return the identifier of the server's data centre or the server-ID - never <code>null</code>.
+	 * @return the identifier of the server's data centre or the server-ID - never <code>null</code>, never an empty <code>String</code>.
 	 */
 	public String getDistinctiveDataCentreID() {
-		if (dataCentreID != null)
+		if (dataCentreID != null && !dataCentreID.isEmpty())
 			return dataCentreID;
 
 		return serverID;
 	}
 
 	public void setDataCentreID(String dataCentreID) {
+		if (dataCentreID == null) // silently map null to the empty String.
+			dataCentreID = "";
+
 		this.dataCentreID = dataCentreID;
 	}
 
@@ -310,5 +318,11 @@ public class Server implements Serializable
 	@Override
 	public String toString() {
 		return this.getClass().getName() + '@' + Integer.toHexString(System.identityHashCode(this)) + '[' + serverID + ']';
+	}
+
+	@Override
+	public void jdoPreStore() {
+		if (dataCentreID == null)
+			dataCentreID = "";
 	}
 }
