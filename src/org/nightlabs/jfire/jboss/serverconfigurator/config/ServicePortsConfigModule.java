@@ -117,7 +117,7 @@ public class ServicePortsConfigModule extends ConfigModule
 			serviceJMXConnectorRMIPort = 19001;
 
 		if (serviceSnmpAgentTrapdPort == 0)
-			serviceJMXConnectorRMIPort = 1162;
+			serviceSnmpAgentTrapdPort = 1162;
 
 		if (serviceSnmpAgentSnmpPort == 0)
 			serviceSnmpAgentSnmpPort = 1161;
