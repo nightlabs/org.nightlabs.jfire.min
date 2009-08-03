@@ -1299,49 +1299,49 @@ public class ServerConfiguratorJBoss
 		} catch (ConfigModuleNotFoundException e) {
 			servicePortsConfigModule = getConfig().createConfigModule(ServicePortsConfigModule.class);
 		}
-		
+
 		String comment = null;
-		
+
 		// configure naming service
 		changed = replaceMBeanAttribute(document, "org.jboss.naming.NamingService", "Port", comment, String.valueOf(servicePortsConfigModule.getServiceNamingBindingPort()));
 		haveChanges |= changed;
 		if (changed)
 			logger.info("Have changes after configuring naming service binding port");
-		
+
 		changed = replaceMBeanAttribute(document, "org.jboss.naming.NamingService", "BindAddress", comment, servicePortsConfigModule.getServiceNamingBindingHost());
 		haveChanges |= changed;
 		if (changed)
 			logger.info("Have changes after configuring naming service binding host");
-		
+
 		changed = replaceMBeanAttribute(document, "org.jboss.naming.NamingService", "RmiPort", comment, String.valueOf(servicePortsConfigModule.getServiceNamingRMIPort()));
 		haveChanges |= changed;
 		if (changed)
 			logger.info("Have changes after configuring naming service binding rmi port");
-		
+
 		changed = replaceMBeanAttribute(document, "org.jboss.naming.NamingService", "RmiBindAddress", comment, servicePortsConfigModule.getServiceNamingRMIHost());
 		haveChanges |= changed;
 		if (changed)
 			logger.info("Have changes after configuring naming service binding rmi host");
-		
+
 		// configure web-service
 		changed = replaceMBeanAttribute(document, "org.jboss.web.WebService", "Port", comment, String.valueOf(servicePortsConfigModule.getServiceWebServicePort()));
 		haveChanges |= changed;
 		if (changed)
 			logger.info("Have changes after configuring web service port");
 
-		// Do not change host because not declared in service-bindings.xml and in jboss-service.xml declared as  ${java.rmi.server.hostname} 
+		// Do not change host because not declared in service-bindings.xml and in jboss-service.xml declared as  ${java.rmi.server.hostname}
 		// and not ${jboss.bind.address} which is the default value of servicePortsConfigModule.getServiceWebServiceHost()
 //		changed = replaceMBeanAttribute(document, "org.jboss.web.WebService", "Host", null, String.valueOf(servicePortsConfigModule.getServiceWebServiceHost()));
 //		haveChanges |= changed;
 //		if (changed)
 //			logger.info("Have changes after configuring web service port");
-		 
+
 		// RMI/JRMP Invoker
 		changed = replaceMBeanAttribute(document, "org.jboss.invocation.jrmp.server.JRMPInvoker", "RMIObjectPort", comment, String.valueOf(servicePortsConfigModule.getServiceJrmpPort()));
 		haveChanges |= changed;
 		if (changed)
 			logger.info("Have changes after configuring JRMP Port");
-		
+
 		changed = replaceMBeanAttribute(document, "org.jboss.invocation.jrmp.server.JRMPInvoker", "ServerAddress", comment, String.valueOf(servicePortsConfigModule.getServiceJrmpHost()));
 		haveChanges |= changed;
 		if (changed)
@@ -1356,20 +1356,20 @@ public class ServerConfiguratorJBoss
 		haveChanges |= changed;
 		if (changed)
 			logger.info("Have changes after configuring PooledInvoker Host");
-		
+
 		// remoting service
 //		changed = replaceMBeanAttribute(document, "org.jboss.remoting.transport.Connector", "serverBindPort", comment, String.valueOf(servicePortsConfigModule.getServiceRemotingConnectorPort()));
-		changed = setMBeanChild(document, "org.jboss.remoting.transport.Connector", "attribute/config/invoker/attribute", "serverBindPort", comment, String.valueOf(servicePortsConfigModule.getServiceRemotingConnectorPort()));		
+		changed = setMBeanChild(document, "org.jboss.remoting.transport.Connector", "attribute/config/invoker/attribute", "serverBindPort", comment, String.valueOf(servicePortsConfigModule.getServiceRemotingConnectorPort()));
 		haveChanges |= changed;
 		if (changed)
 			logger.info("Have changes after configuring remoting service Port");
 
 //		changed = replaceMBeanAttribute(document, "org.jboss.remoting.transport.Connector", "serverBindAddress", comment, String.valueOf(servicePortsConfigModule.getServiceRemotingConnectorHost()));
-		changed = setMBeanChild(document, "org.jboss.remoting.transport.Connector", "attribute/config/invoker/attribute", "serverBindAddress", comment, String.valueOf(servicePortsConfigModule.getServiceRemotingConnectorHost()));		
+		changed = setMBeanChild(document, "org.jboss.remoting.transport.Connector", "attribute/config/invoker/attribute", "serverBindAddress", comment, String.valueOf(servicePortsConfigModule.getServiceRemotingConnectorHost()));
 		haveChanges |= changed;
 		if (changed)
-			logger.info("Have changes after configuring remoting service Host");		
-		
+			logger.info("Have changes after configuring remoting service Host");
+
 		// copy service-bindings.xml
 		File serviceBindingsDestFile = new File(jbossConfDir, "service-bindings.xml");
 		IOUtil.copyResource(ServerConfiguratorJBoss.class,
@@ -2002,6 +2002,7 @@ public class ServerConfiguratorJBoss
 				new File(jbossDeployDir, "mail-service.xml"),
 				new File(jbossConfDir, "jboss-service.xml"),
 				new File(jbossConfDir, "standardjboss.xml"),
+				new File(new File(new File(jbossDeployDir, "jboss-aop-jdk50.deployer"), "META-INF"), "jboss-service.xml"),
 				new File(new File(jbossDeployDir, "jboss-web.deployer"), "server.xml"),
 				new File(new File(new File(jbossDeployDir, "http-invoker.sar"), "META-INF"), "jboss-service.xml"),
 				new File(new File(new File(new File(jbossDeployDir, "http-invoker.sar"), "invoker.war"), "WEB-INF"), "web.xml"),
