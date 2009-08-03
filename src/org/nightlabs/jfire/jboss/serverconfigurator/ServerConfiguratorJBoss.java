@@ -167,6 +167,7 @@ public class ServerConfiguratorJBoss
 //			}
 
 			configureLoginConfigXml(jbossConfDir);
+			configureAOP(jbossDeployDir);
 			configureUnifiedEjbJndiJBoss(jbossConfDir);
 //			configureStandardJBossXml(jbossConfDir); Not necessary anymore, since custom compression Sockets aren't used anymore.
 			configureMailServiceXml(jbossDeployDir);
@@ -182,6 +183,69 @@ public class ServerConfiguratorJBoss
 
 		} catch(Exception e) {
 			throw new ServerConfigurationException("Server configuration failed in server configurator "+getClass().getName(), e);
+		}
+	}
+
+	private void configureAOP(File jbossDeployDir)
+	throws SAXException, IOException {
+		final File jbossAOPDir = new File(jbossDeployDir, "jboss-aop-jdk50.deployer").getAbsoluteFile();
+		if (! jbossAOPDir.exists())
+		{
+			logger.error("Couldn't find the jboss aop folder! Assumed to be in" +
+					jbossAOPDir.toString());
+			return;
+		}
+
+		final File aopJbossServiceXml = new File(new File(jbossAOPDir, "META-INF"),
+		"jboss-service.xml").getAbsoluteFile();
+		configureLoadtimeWeaving(aopJbossServiceXml);
+	}
+
+	/**
+	 *
+	 * @param aopJbossServiceXml
+	 * @throws FileNotFoundException
+	 * @throws SAXException
+	 */
+	private void configureLoadtimeWeaving(File aopJbossServiceXml)
+		throws SAXException, IOException
+	{
+		final DOMParser parser = new DOMParser();
+		FileInputStream serverXmlStream = new FileInputStream(aopJbossServiceXml);
+		try
+		{
+			parser.parse(new InputSource(serverXmlStream));
+		}
+		finally
+		{
+			serverXmlStream.close();
+		}
+		final Document document = parser.getDocument();
+
+		String encoding = document.getXmlEncoding();
+		if (encoding == null)
+			encoding = "UTF-8";
+
+		if (NLDOMUtil.getDocumentAsString(document, encoding).contains(ModificationMarker))
+			return;
+
+		Comment comment = document.createComment(ModificationMarker);
+		Node mbeanNode = NLDOMUtil.findSingleNode(document, "server/mbean");
+		mbeanNode.appendChild(comment);
+		Node enableLoadtimeWeavingNode = NLDOMUtil.findNodeByAttribute(
+				mbeanNode, "attribute", "name", "EnableLoadtimeWeaving"
+		);
+		enableLoadtimeWeavingNode.setTextContent("true");
+
+		// write modified file
+		backup(aopJbossServiceXml);
+
+		setRebootRequired(true);
+		FileOutputStream out = new FileOutputStream(aopJbossServiceXml);
+		try {
+			NLDOMUtil.writeDocument(document, out, encoding);
+		} finally {
+			out.close();
 		}
 	}
 
@@ -1333,6 +1397,7 @@ public class ServerConfiguratorJBoss
 			setRebootRequired(true);
 	}
 
+
 //	/**
 //	 * *** work necessary for NightLabsCascadedAuthenticationJBoss ***
 //	 * check/modify ${jboss.conf}/standardjboss.xml and REBOOT if changes occured
@@ -1778,7 +1843,7 @@ public class ServerConfiguratorJBoss
 //		}
 
 		// issue #58:
-		javaOpts += " -XX:PermSize=64m -XX:MaxPermSize=128m";
+		javaOpts += " -XX:PermSize=64m -XX:MaxPermSize=128m -javaagent:../server/default/deploy/jboss-aop-jdk50.deployer/pluggable-instrumentor.jar";
 
 		configureRunConf(jbossBinDir, javaOpts);
 		configureRunBat(jbossBinDir, javaOpts);
