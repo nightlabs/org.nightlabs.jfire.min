@@ -51,7 +51,7 @@ nsCertType=server
 nsCertType=server
 
 # AltNames for local server
-subjectAltName=IP:127.0.0.1,DNS:localhost
+subjectAltName=IP:127.0.0.1,DNS:localhost,DNS:testing.jfire.org
 
 # Extensions for a typical CA
 
