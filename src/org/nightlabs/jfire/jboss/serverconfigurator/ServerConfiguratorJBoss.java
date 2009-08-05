@@ -52,7 +52,7 @@ import org.xml.sax.SAXException;
  * <li>Add the <code>CascadedAuthenticationClientInterceptor</code> to the <code>standard-jboss.xml</code></li>
  * <li>Add the <code>CascadedAuthenticationClientInterceptor.properties</code> file, if it does not yet exist (in JBoss' bin directory)</li>
  * </ul>
- * Note, that it has been tested only with the JBoss version 4.0.4 and 4.2.0.
+ * Note, that it only has been tested with and requires JBoss version 4.2.3 due to bugs in JBossRemoting (until 4.2.2).
  *
  * @author Marco Schulze - marco at nightlabs dot de
  * @author Marc Klinger - marc[at]nightlabs[dot]de
@@ -71,6 +71,7 @@ public class ServerConfiguratorJBoss
 	private static final String HTTPS_CONNECTOR_KEY_ALIAS = "keyAlias";
 	private static final String HTTPS_CONNECTOR_KEYSTORE_PASS = "keystorePass";
 	private static final String HTTPS_CONNECTOR_KEYSTORE_FILE = "keystoreFile";
+	private static final String HTTPS_ADDRESS = "address";
 	private File jbossConfDir;
 
 	private static final Logger logger = Logger.getLogger(ServerConfiguratorJBoss.class);
@@ -81,8 +82,258 @@ public class ServerConfiguratorJBoss
 	 */
 	public static final String ModificationMarker = "!!!ModifiedByJFire!!!";
 
-	private static final String HTTP_INVOKER_SERVICE_HTTP_CONNECTORS = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n <root>\n <!-- "+ModificationMarker+" -->\n <!-- STARTING with JNDI exposition! -->\n   <!-- Expose the Naming service interface via the UnifiedInvoker using Servlet transport -->\n   <mbean code=\"org.jboss.invocation.jrmp.server.JRMPProxyFactory\"\n      name=\"jboss:service=proxyfactory,type=unified,transport=servlet,target=naming\">\n      <attribute name=\"InvokerName\">jboss.remoting:service=invoker,type=unified,transport=servlet</attribute>\n      <attribute name=\"TargetName\">jboss:service=Naming</attribute>\n      <attribute name=\"JndiName\"></attribute>\n      <attribute name=\"ExportedInterface\">org.jnp.interfaces.Naming</attribute>\n      <attribute name=\"ClientInterceptors\">\n          <interceptors>\n             <interceptor>org.jboss.proxy.ClientMethodInterceptor</interceptor>\n             <interceptor>org.jboss.proxy.SecurityInterceptor</interceptor>\n             <interceptor>org.jboss.naming.interceptors.ExceptionInterceptor</interceptor>\n             <interceptor>org.jboss.invocation.InvokerInterceptor</interceptor>\n          </interceptors>\n      </attribute>\n      <depends>jboss.remoting:service=invoker,type=unified,transport=servlet</depends>\n   </mbean>\n   \n   <!-- Expose the Naming service interface via the UnifiedInvoker using SSL Servlet transport -->\n   <mbean code=\"org.jboss.invocation.jrmp.server.JRMPProxyFactory\"\n      name=\"jboss:service=proxyfactory,type=unified,transport=sslservlet,target=naming\">\n      <attribute name=\"InvokerName\">jboss.remoting:service=invoker,type=unified,transport=sslservlet</attribute>\n      <attribute name=\"TargetName\">jboss:service=Naming</attribute>\n      <attribute name=\"JndiName\"></attribute>\n      <attribute name=\"ExportedInterface\">org.jnp.interfaces.Naming</attribute>\n      <attribute name=\"ClientInterceptors\">\n          <interceptors>\n             <interceptor>org.jboss.proxy.ClientMethodInterceptor</interceptor>\n             <interceptor>org.jboss.proxy.SecurityInterceptor</interceptor>\n             <interceptor>org.jboss.naming.interceptors.ExceptionInterceptor</interceptor>\n             <interceptor>org.jboss.invocation.InvokerInterceptor</interceptor>\n          </interceptors>\n      </attribute>\n      <depends>jboss.remoting:service=invoker,type=unified,transport=sslservlet</depends>\n   </mbean>      \n \n   <!-- Unified invoker (based on remoting) for invocations via HTTP with target EJB2 beans or JNDI -->\n   <mbean code=\"org.jboss.invocation.unified.server.UnifiedInvoker\"\n      name=\"jboss.remoting:service=invoker,type=unified,transport=servlet\">\n      <depends>jboss:service=TransactionManager</depends>\n      <depends>jboss.remoting:service=connector,transport=servlet</depends>\n   </mbean>\n\n   <!-- Remoting connector for standard EJB2 beans and JNDI. \n\n        To test JBREM-960, set an incorrect path like:\n        <attribute name=\"path\">invoker/ServerInvokerServlet</attribute>  \n   -->\n   <mbean code=\"org.jboss.remoting.transport.Connector\"\n      name=\"jboss.remoting:service=connector,transport=servlet\"\n      display-name=\"Servlet transport Connector\">\n<!--      <attribute name=\"InvokerLocator\">\n         servlet://${jboss.bind.address}:8080/invoker/ServerInvokerServlet\n      </attribute>-->\n      \n      <attribute name=\"Configuration\">\n         <config>\n\t <!-- Removed ecplicit declaration of invoker for testing purpose -->\n            <invoker transport=\"servlet\">\n               <attribute name=\"dataType\" isParam=\"true\">invocation</attribute>\n               <attribute name=\"marshaller\" isParam=\"true\">org.jboss.invocation.unified.marshall.InvocationMarshaller</attribute>\n               <attribute name=\"unmarshaller\" isParam=\"true\">org.jboss.invocation.unified.marshall.InvocationUnMarshaller</attribute>\n               <attribute name=\"return-exception\" isParam=\"true\">true</attribute>\n               <attribute name=\"serverBindAddress\">${jboss.bind.address}</attribute>\n               <attribute name=\"serverBindPort\">8080</attribute>\n               <attribute name=\"path\">invoker/ServerInvokerServlet</attribute>\n            </invoker>\n            <handlers>\n               <handler subsystem=\"invoker\">jboss.remoting:service=invoker,type=unified,transport=servlet</handler>\n            </handlers>\n         </config>\n      </attribute>      \n   </mbean>\n   \n   <!-- Unified invoker (based on remoting) for invocations via HTTPs with target EJB2 beans or JNDI -->\n   <mbean code=\"org.jboss.invocation.unified.server.UnifiedInvoker\"\n      name=\"jboss.remoting:service=invoker,type=unified,transport=sslservlet\">\n      <depends>jboss:service=TransactionManager</depends>\n      <depends>jboss.remoting:service=connector,transport=sslservlet</depends>\n   </mbean>\n\n   <mbean code=\"org.jboss.remoting.transport.Connector\"\n      name=\"jboss.remoting:service=connector,transport=sslservlet\"\n      display-name=\"SSL Servlet transport Connector\">\n<!--      <attribute name=\"InvokerLocator\">\n\tsslservlet://${jboss.bind.address}:8443/invoker/SSLServerInvokerServlet\n      </attribute>-->\n\n      <attribute name=\"Configuration\">\n         <config>\n\t  <!-- Removed ecplicit declaration of invoker for testing purpose -->\n            <invoker transport=\"sslservlet\">\n               <attribute name=\"dataType\" isParam=\"true\">invocation</attribute>\n               <attribute name=\"marshaller\" isParam=\"true\">org.jboss.invocation.unified.marshall.InvocationMarshaller</attribute>\n               <attribute name=\"unmarshaller\" isParam=\"true\">org.jboss.invocation.unified.marshall.InvocationUnMarshaller</attribute>\n               <attribute name=\"return-exception\" isParam=\"true\">true</attribute>\n               <attribute name=\"serverBindAddress\">${jboss.bind.address}</attribute>\n               <attribute name=\"serverBindPort\">8443</attribute>\n               <attribute name=\"path\">invoker/SSLServerInvokerServlet</attribute>\n            </invoker>\n            <handlers>\n               <handler subsystem=\"invoker\">jboss.remoting:service=invoker,type=unified,transport=sslservlet</handler>\n            </handlers>\n         </config>\n      </attribute>      \n   </mbean>\n\n<!-- FINISHED with JNDI exposition! -->\n\n\n<!-- Exposing EJB3 via servlet transport. -->\n\n   <!-- Unified invoker (based on remoting) for invocations via HTTP with target EJB3 beans. -->\n   <mbean code=\"org.jboss.remoting.transport.Connector\"\n      name=\"jboss.remoting:service=connector,transport=servlet,target=ejb3\"\n      display-name=\"EJB3 Servlet transport Connector\">\n      <depends>jboss.aop:service=AspectDeployer</depends>\n      <attribute name=\"InvokerLocator\">\n        servlet://${jboss.bind.address}:8080/invoker/Ejb3ServerInvokerServlet\n      </attribute>      \n      <attribute name=\"Configuration\">\n         <handlers>\n            <handler subsystem=\"AOP\">org.jboss.aspects.remoting.AOPRemotingInvocationHandler</handler>\n         </handlers>\n      </attribute>\n   </mbean>\n   \n   <!-- Unified invoker (based on remoting) for invocations via HTTPs with target EJB3 beans -->\n   <mbean code=\"org.jboss.remoting.transport.Connector\"\n      name=\"jboss.remoting:service=connector,transport=sslservlet,target=ejb3\"\n      display-name=\"EJB3 Servlet SSL transport Connector\">\n      <depends>jboss.aop:service=AspectDeployer</depends>\n      <attribute name=\"InvokerLocator\">\n        sslservlet://${jboss.bind.address}:8443/invoker/SSLEjb3ServerInvokerServlet\n      </attribute>\n      <attribute name=\"Configuration\">\n         <handlers>\n            <handler subsystem=\"AOP\">org.jboss.aspects.remoting.AOPRemotingInvocationHandler</handler>\n         </handlers>\n      </attribute>\n   </mbean>\n </root>";
-	private static final String HTTP_INVOKER_WEB_XML_SERVLETS = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n <root>\n <!-- "+ModificationMarker+" -->\n <!-- START JNDI Exposition  -->\n  <servlet>\n    <servlet-name>JNDIFactory</servlet-name>\n    <description>A servlet that exposes the JBoss JNDI Naming service stub\n    through http. The return content is a serialized\n    MarshalledValue containg the org.jnp.interfaces.Naming stub. This\n    configuration handles requests for the standard JNDI naming service.\n    </description>\n    <servlet-class>org.jboss.invocation.http.servlet.NamingFactoryServlet</servlet-class>\n    <init-param>\n      <param-name>namingProxyMBean</param-name>\n      <param-value>jboss:service=proxyfactory,type=unified,transport=servlet,target=naming</param-value>\n    </init-param>\n    <init-param>\n      <param-name>proxyAttribute</param-name>\n      <param-value>Proxy</param-value>\n    </init-param>\n    <load-on-startup>2</load-on-startup>\n  </servlet>\n  <servlet-mapping>\n    <servlet-name>JNDIFactory</servlet-name>\n    <url-pattern>/JNDIFactory/*</url-pattern>\n  </servlet-mapping>  \n\n  <servlet>\n    <servlet-name>SSLJNDIFactory</servlet-name>\n    <description>A servlet that exposes the JBoss JNDI Naming service stub\n    through http. The return content is a serialized\n    MarshalledValue containg the org.jnp.interfaces.Naming stub. This\n    configuration handles requests for the standard JNDI naming service.\n    </description>\n    <servlet-class>org.jboss.invocation.http.servlet.NamingFactoryServlet</servlet-class>\n    <init-param>\n      <param-name>namingProxyMBean</param-name>\n      <param-value>jboss:service=proxyfactory,type=unified,transport=sslservlet,target=naming</param-value>\n    </init-param>\n    <init-param>\n      <param-name>proxyAttribute</param-name>\n      <param-value>Proxy</param-value>\n    </init-param>\n    <load-on-startup>2</load-on-startup>\n  </servlet>\n  <servlet-mapping>\n    <servlet-name>SSLJNDIFactory</servlet-name>\n    <url-pattern>/SSLJNDIFactory/*</url-pattern>\n  </servlet-mapping>\n\n  <!-- JNDI lookup calls are routed through these two servlets (no EJB3 authentication is bound to the corresponding Connectors.  -->\n    <servlet>\n        <servlet-name>ServerInvokerServlet</servlet-name>\n        <description>The ServerInvokerServlet receives requests via HTTP\n           protocol from within a web container and passes it onto the\n           ServletServerInvoker for processing.\n        </description>\n        <servlet-class>org.jboss.remoting.transport.servlet.web.ServerInvokerServlet</servlet-class>\n        <init-param>\n<!--            <param-name>invokerName</param-name>\n            <param-value>jboss.remoting:service=connector,transport=servlet</param-value>-->\n<!--             <param-value>jboss.remoting:service=invoker,type=unified,transport=servlet</param-value> -->\n<!--             <description>The servlet server invoker</description> -->\n           \n            <param-name>locatorUrl</param-name>\n            <param-value><![CDATA[servlet://127.0.0.1:8080/invoker/ServerInvokerServlet/?dataType=invocation&marshaller=org.jboss.invocation.unified.marshall.InvocationMarshaller&return-exception=true&unmarshaller=org.jboss.invocation.unified.marshall.InvocationUnMarshaller]]></param-value>\n<!--             <param-value>servlet://${jboss.bind.address}:8080/invoker/ServerInvokerServlet</param-value> -->\n            <description>The servlet server invoker locator url</description>\n           \n        </init-param>\n        <load-on-startup>1</load-on-startup>\n    </servlet>\n    <servlet-mapping>\n        <servlet-name>ServerInvokerServlet</servlet-name>\n        <url-pattern>/ServerInvokerServlet/*</url-pattern>\n    </servlet-mapping>\n\n    <servlet>\n\t<servlet-name>SSLServerInvokerServlet</servlet-name>\n        <description>The ServerInvokerServlet receives requests via HTTPS\n           protocol from within a web container and passes it onto the\n           ServletServerInvoker for processing.\n        </description>\n        <servlet-class>org.jboss.remoting.transport.servlet.web.ServerInvokerServlet</servlet-class>\n        <init-param>\n\t<!-- Using locatorUrl instead of invokerName due to a bug (UnifiedInvoker has/had a hardcoded name!!) -->\n<!--            <param-name>invokerName</param-name>\n            <param-value>jboss.remoting:service=connector,transport=sslservlet</param-value>-->\n<!--             <param-value>jboss.remoting:service=invoker,type=unified,transport=sslservlet</param-value> -->\n<!--             <description>The servlet server invoker</description> -->\n\t    <param-name>locatorUrl</param-name>\n\t    <param-value><![CDATA[sslservlet://127.0.0.1:8443/invoker/SSLServerInvokerServlet/?dataType=invocation&marshaller=org.jboss.invocation.unified.marshall.InvocationMarshaller&return-exception=true&unmarshaller=org.jboss.invocation.unified.marshall.InvocationUnMarshaller]]></param-value>\n<!-- \t    <param-value>sslservlet://${jboss.bind.address}:8443/invoker/SSLServerInvokerServlet</param-value> -->\n\t    <description>The ssl servlet server invoker locator url</description>\n         </init-param>\n        <load-on-startup>1</load-on-startup>\n    </servlet>\n    <servlet-mapping>\n        <servlet-name>SSLServerInvokerServlet</servlet-name>\n        <url-pattern>/SSLServerInvokerServlet/*</url-pattern>\n    </servlet-mapping>\n<!-- END JNDI Exposition  -->\n  \n  <servlet>\n    <servlet-name>Ejb3ServerInvokerServlet</servlet-name>\n    <description>The ServerInvokerServlet receives requests via HTTP\n       protocol from within a web container and passes it onto the\n       ServletServerInvoker for processing.\n    </description>\n    <servlet-class>org.jboss.remoting.transport.servlet.web.ServerInvokerServlet</servlet-class>\n    <!-- Pass locatorUrl instead of invokerName because otherwise you end up\n    sharing the same server invoker for org.jboss.invocation and org.jboss.aop \n    type of invocations which you don\'t wanna do. Worth noting that invokerName \n    is hardcoded and hence you cannot create a separate one that way, hence the \n    use of locatorUrl. -->\n    <init-param>\n         <param-name>locatorUrl</param-name>\n         <param-value>servlet://${jboss.bind.address}:8080/invoker/Ejb3ServerInvokerServlet</param-value>\n         <description>The servlet server invoker</description>\n     </init-param>\n    <!--  init-param>\n        <param-name>invokerName</param-name>\n        <param-value>jboss.remoting:service=invoker,transport=servlet</param-value>\n        <description>The servlet server invoker</description>\n    </init-param -->\n    <load-on-startup>1</load-on-startup>\n  </servlet>\n  <servlet-mapping>\n    <servlet-name>Ejb3ServerInvokerServlet</servlet-name>\n    <url-pattern>/Ejb3ServerInvokerServlet/*</url-pattern>\n  </servlet-mapping>\n    \n  <servlet>\n    <servlet-name>SSLEjb3ServerInvokerServlet</servlet-name>\n    <description>The ServerInvokerServlet receives requests via HTTPS\n       protocol from within a web container and passes it onto the\n       ServletServerInvoker for processing.\n    </description>\n    <servlet-class>org.jboss.remoting.transport.servlet.web.ServerInvokerServlet</servlet-class>\n    <init-param>\n         <param-name>locatorUrl</param-name>\n         <param-value>sslservlet://${jboss.bind.address}:8443/invoker/SSLEjb3ServerInvokerServlet</param-value>\n         <description>The ssl servlet server invoker locator url</description>\n     </init-param>\n    <load-on-startup>1</load-on-startup>\n  </servlet>\n  <servlet-mapping>\n    <servlet-name>SSLEjb3ServerInvokerServlet</servlet-name>\n    <url-pattern>/SSLEjb3ServerInvokerServlet/*</url-pattern>\n  </servlet-mapping>\n </root>";
+	private static final String HTTP_INVOKER_SERVICE_HTTP_CONNECTORS =
+		"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n " +
+		"<root>\n <!-- "+ModificationMarker+" -->\n " +
+		"    <!-- STARTING with JNDI exposition! -->\n" +
+		"    <!-- Expose the Naming service interface via the UnifiedInvoker using Servlet transport -->\n" +
+		"    <mbean code=\"org.jboss.invocation.jrmp.server.JRMPProxyFactory\" name=\"jboss:service=proxyfactory,type=unified,transport=servlet,target=naming\">\n" +
+		"        <attribute name=\"InvokerName\">jboss.remoting:service=invoker,type=unified,transport=servlet</attribute>\n" +
+		"        <attribute name=\"TargetName\">jboss:service=Naming</attribute>\n" +
+		"        <attribute name=\"JndiName\"/>\n" +
+		"        <attribute name=\"ExportedInterface\">org.jnp.interfaces.Naming</attribute>\n" +
+		"        <attribute name=\"ClientInterceptors\">\n" +
+		"            <interceptors>\n" +
+		"                <interceptor>org.jboss.proxy.ClientMethodInterceptor</interceptor>\n" +
+		"                <interceptor>org.jboss.proxy.SecurityInterceptor</interceptor>\n" +
+		"                <interceptor>org.jboss.naming.interceptors.ExceptionInterceptor</interceptor>\n" +
+		"                <interceptor>org.jboss.invocation.InvokerInterceptor</interceptor>\n" +
+		"            </interceptors>\n" +
+		"        </attribute>\n" +
+		"        <depends>jboss.remoting:service=invoker,type=unified,transport=servlet</depends>\n" +
+		"    </mbean>\n" +
+		"    <!-- Expose the Naming service interface via the UnifiedInvoker using SSL Servlet transport -->\n" +
+		"    <mbean code=\"org.jboss.invocation.jrmp.server.JRMPProxyFactory\" name=\"jboss:service=proxyfactory,type=unified,transport=sslservlet,target=naming\">\n" +
+		"        <attribute name=\"InvokerName\">jboss.remoting:service=invoker,type=unified,transport=sslservlet</attribute>\n" +
+		"        <attribute name=\"TargetName\">jboss:service=Naming</attribute>\n" +
+		"        <attribute name=\"JndiName\"/>\n" +
+		"        <attribute name=\"ExportedInterface\">org.jnp.interfaces.Naming</attribute>\n" +
+		"        <attribute name=\"ClientInterceptors\">\n" +
+		"            <interceptors>\n" +
+		"                <interceptor>org.jboss.proxy.ClientMethodInterceptor</interceptor>\n" +
+		"                <interceptor>org.jboss.proxy.SecurityInterceptor</interceptor>\n" +
+		"                <interceptor>org.jboss.naming.interceptors.ExceptionInterceptor</interceptor>\n" +
+		"                <interceptor>org.jboss.invocation.InvokerInterceptor</interceptor>\n" +
+		"            </interceptors>\n" +
+		"        </attribute>\n" +
+		"        <depends>jboss.remoting:service=invoker,type=unified,transport=sslservlet</depends>\n" +
+		"    </mbean>\n" +
+		"    <!-- Unified invoker (based on remoting) for invocations via HTTP with target EJB2 beans or JNDI -->\n" +
+		"    <mbean code=\"org.jboss.invocation.unified.server.UnifiedInvoker\" name=\"jboss.remoting:service=invoker,type=unified,transport=servlet\">\n" +
+		"        <depends>jboss:service=TransactionManager</depends>\n" +
+		"        <depends>jboss.remoting:service=connector,transport=servlet</depends>\n" +
+		"    </mbean>\n" +
+		"    <!-- Remoting connector for standard EJB2 beans and JNDI. \n" +
+		"\n" +
+		"        To test JBREM-960, set an incorrect path like:\n" +
+		"        <attribute name=\"path\">invoker/ServerInvokerServlet</attribute>  \n" +
+		"   -->\n" +
+		"    <mbean code=\"org.jboss.remoting.transport.Connector\"\n" +
+		"        display-name=\"Servlet transport Connector\" name=\"jboss.remoting:service=connector,transport=servlet\">\n" +
+		"        <!--      <attribute name=\"InvokerLocator\">\n" +
+		"         servlet://${jboss.bind.address}:8080/invoker/ServerInvokerServlet\n" +
+		"      </attribute>-->\n" +
+		"        <attribute name=\"Configuration\">\n" +
+		"            <config>\n" +
+		"                <invoker transport=\"servlet\">\n" +
+		"                    <attribute isParam=\"true\" name=\"dataType\">invocation</attribute>\n" +
+		"                    <attribute isParam=\"true\" name=\"marshaller\">org.jboss.invocation.unified.marshall.InvocationMarshaller</attribute>\n" +
+		"                    <attribute isParam=\"true\" name=\"unmarshaller\">org.jboss.invocation.unified.marshall.InvocationUnMarshaller</attribute>\n" +
+		"                    <attribute isParam=\"true\" name=\"return-exception\">true</attribute>\n" +
+		"                    <attribute name=\"serverBindAddress\">${jboss.bind.address}</attribute>\n" +
+		"                    <attribute name=\"serverBindPort\">8080</attribute>\n" +
+		"                    <attribute name=\"path\">invoker/ServerInvokerServlet</attribute>\n" +
+		"                </invoker>\n" +
+		"                <handlers>\n" +
+		"                    <handler subsystem=\"invoker\">jboss.remoting:service=invoker,type=unified,transport=servlet</handler>\n" +
+		"                </handlers>\n" +
+		"            </config>\n" +
+		"        </attribute>\n" +
+		"    </mbean>\n" +
+		"    <!-- Unified invoker (based on remoting) for invocations via HTTPs with target EJB2 beans or JNDI -->\n" +
+		"    <mbean code=\"org.jboss.invocation.unified.server.UnifiedInvoker\" name=\"jboss.remoting:service=invoker,type=unified,transport=sslservlet\">\n" +
+		"        <depends>jboss:service=TransactionManager</depends>\n" +
+		"        <depends>jboss.remoting:service=connector,transport=sslservlet</depends>\n" +
+		"    </mbean>\n" +
+		"    <mbean code=\"org.jboss.remoting.transport.Connector\"\n" +
+		"        display-name=\"SSL Servlet transport Connector\" name=\"jboss.remoting:service=connector,transport=sslservlet\">\n" +
+		"        <!--      <attribute name=\"InvokerLocator\">\n" +
+		"	sslservlet://${jboss.bind.address}:8443/invoker/SSLServerInvokerServlet\n" +
+		"      </attribute>-->\n" +
+		"        <attribute name=\"Configuration\">\n" +
+		"            <config>\n" +
+		"                <invoker transport=\"sslservlet\">\n" +
+		"                    <attribute isParam=\"true\" name=\"dataType\">invocation</attribute>\n" +
+		"                    <attribute isParam=\"true\" name=\"marshaller\">org.jboss.invocation.unified.marshall.InvocationMarshaller</attribute>\n" +
+		"                    <attribute isParam=\"true\" name=\"unmarshaller\">org.jboss.invocation.unified.marshall.InvocationUnMarshaller</attribute>\n" +
+		"                    <attribute isParam=\"true\" name=\"return-exception\">true</attribute>\n" +
+		"                    <attribute name=\"serverBindAddress\">${jboss.bind.address}</attribute>\n" +
+		"                    <attribute name=\"serverBindPort\">8443</attribute>\n" +
+		"                    <attribute name=\"path\">invoker/SSLServerInvokerServlet</attribute>\n" +
+		"                </invoker>\n" +
+		"                <handlers>\n" +
+		"                    <handler subsystem=\"invoker\">jboss.remoting:service=invoker,type=unified,transport=sslservlet</handler>\n" +
+		"                </handlers>\n" +
+		"            </config>\n" +
+		"        </attribute>\n" +
+		"    </mbean>\n" +
+		"    <!-- FINISHED with JNDI exposition! -->\n" +
+		"    <!-- Exposing EJB3 via servlet transport. -->\n" +
+		"    <!-- Unified invoker (based on remoting) for invocations via HTTP with target EJB3 beans. -->\n" +
+		"    <mbean code=\"org.jboss.remoting.transport.Connector\"\n" +
+		"        display-name=\"EJB3 Servlet transport Connector\" name=\"jboss.remoting:service=connector,transport=servlet,target=ejb3\">\n" +
+		"        <depends>jboss.aop:service=AspectDeployer</depends>\n" +
+		"        <attribute name=\"InvokerLocator\">\n" +
+		"        servlet://${jboss.bind.address}:8080/invoker/Ejb3ServerInvokerServlet\n" +
+		"      </attribute>\n" +
+		"        <attribute name=\"Configuration\">\n" +
+		"            <handlers>\n" +
+		"                <handler subsystem=\"AOP\">org.jboss.aspects.remoting.AOPRemotingInvocationHandler</handler>\n" +
+		"            </handlers>\n" +
+		"        </attribute>\n" +
+		"    </mbean>\n" +
+		"    <!-- Unified invoker (based on remoting) for invocations via HTTPs with target EJB3 beans -->\n" +
+		"    <mbean code=\"org.jboss.remoting.transport.Connector\"\n" +
+		"        display-name=\"EJB3 Servlet SSL transport Connector\" name=\"jboss.remoting:service=connector,transport=sslservlet,target=ejb3\">\n" +
+		"        <depends>jboss.aop:service=AspectDeployer</depends>\n" +
+		"        <attribute name=\"InvokerLocator\">\n" +
+		"        sslservlet://${jboss.bind.address}:8443/invoker/SSLEjb3ServerInvokerServlet\n" +
+		"      </attribute>\n" +
+		"        <attribute name=\"Configuration\">\n" +
+		"            <handlers>\n" +
+		"                <handler subsystem=\"AOP\">org.jboss.aspects.remoting.AOPRemotingInvocationHandler</handler>\n" +
+		"            </handlers>\n" +
+		"        </attribute>\n" +
+		"    </mbean>\n" +
+		"</root>";
+	private static final String HTTP_INVOKER_WEB_XML_SERVLETS =
+		"<?xml version=\"1.0\" encoding=\"UTF-8\"?> \n"+
+		"<root>\n <!-- "+ModificationMarker+" -->\n     " +
+		"    <!-- START JNDI Exposition  -->\n" +
+		"    <servlet>\n" +
+		"        <servlet-name>JNDIFactory</servlet-name>\n" +
+		"        <description>A servlet that exposes the JBoss JNDI Naming service stub\n" +
+		"    through http. The return content is a serialized\n" +
+		"    MarshalledValue containg the org.jnp.interfaces.Naming stub. This\n" +
+		"    configuration handles requests for the standard JNDI naming service.\n" +
+		"    </description>\n" +
+		"        <servlet-class>org.jboss.invocation.http.servlet.NamingFactoryServlet</servlet-class>\n" +
+		"        <init-param>\n" +
+		"            <param-name>namingProxyMBean</param-name>\n" +
+		"            <param-value>jboss:service=proxyfactory,type=unified,transport=servlet,target=naming</param-value>\n" +
+		"        </init-param>\n" +
+		"        <init-param>\n" +
+		"            <param-name>proxyAttribute</param-name>\n" +
+		"            <param-value>Proxy</param-value>\n" +
+		"        </init-param>\n" +
+		"        <load-on-startup>2</load-on-startup>\n" +
+		"    </servlet>\n" +
+		"    <servlet-mapping>\n" +
+		"        <servlet-name>JNDIFactory</servlet-name>\n" +
+		"        <url-pattern>/JNDIFactory/*</url-pattern>\n" +
+		"    </servlet-mapping>\n" +
+		"    <servlet>\n" +
+		"        <servlet-name>SSLJNDIFactory</servlet-name>\n" +
+		"        <description>A servlet that exposes the JBoss JNDI Naming service stub\n" +
+		"    through http. The return content is a serialized\n" +
+		"    MarshalledValue containg the org.jnp.interfaces.Naming stub. This\n" +
+		"    configuration handles requests for the standard JNDI naming service.\n" +
+		"    </description>\n" +
+		"        <servlet-class>org.jboss.invocation.http.servlet.NamingFactoryServlet</servlet-class>\n" +
+		"        <init-param>\n" +
+		"            <param-name>namingProxyMBean</param-name>\n" +
+		"            <param-value>jboss:service=proxyfactory,type=unified,transport=sslservlet,target=naming</param-value>\n" +
+		"        </init-param>\n" +
+		"        <init-param>\n" +
+		"            <param-name>proxyAttribute</param-name>\n" +
+		"            <param-value>Proxy</param-value>\n" +
+		"        </init-param>\n" +
+		"        <load-on-startup>2</load-on-startup>\n" +
+		"    </servlet>\n" +
+		"    <servlet-mapping>\n" +
+		"        <servlet-name>SSLJNDIFactory</servlet-name>\n" +
+		"        <url-pattern>/SSLJNDIFactory/*</url-pattern>\n" +
+		"    </servlet-mapping>\n" +
+		"    <!-- JNDI lookup calls are routed through these two servlets (no EJB3 authentication) is bound to the corresponding Connectors.  -->\n" +
+		"    <servlet>\n" +
+		"        <servlet-name>ServerInvokerServlet</servlet-name>\n" +
+		"        <description>The ServerInvokerServlet receives requests via HTTP\n" +
+		"           protocol from within a web container and passes it onto the\n" +
+		"           ServletServerInvoker for processing.\n" +
+		"        </description>\n" +
+		"        <servlet-class>org.jboss.remoting.transport.servlet.web.ServerInvokerServlet</servlet-class>\n" +
+		"        <init-param>\n" +
+		"            <param-name>locatorUrl</param-name>\n" +
+		"            <param-value><![CDATA[servlet://${jboss.bind.address}:8080/invoker/ServerInvokerServlet/?dataType=invocation&marshaller=org.jboss.invocation.unified.marshall.InvocationMarshaller&return-exception=true&unmarshaller=org.jboss.invocation.unified.marshall.InvocationUnMarshaller]]></param-value>\n" +
+		"            <description>The servlet server invoker locator url</description>\n" +
+		"        </init-param>\n" +
+		"        <load-on-startup>1</load-on-startup>\n" +
+		"    </servlet>\n" +
+		"    <servlet-mapping>\n" +
+		"        <servlet-name>ServerInvokerServlet</servlet-name>\n" +
+		"        <url-pattern>/ServerInvokerServlet/*</url-pattern>\n" +
+		"    </servlet-mapping>\n" +
+		"    <servlet>\n" +
+		"        <servlet-name>SSLServerInvokerServlet</servlet-name>\n" +
+		"        <description>The ServerInvokerServlet receives requests via HTTPS\n" +
+		"           protocol from within a web container and passes it onto the\n" +
+		"           ServletServerInvoker for processing.\n" +
+		"        </description>\n" +
+		"        <servlet-class>org.jboss.remoting.transport.servlet.web.ServerInvokerServlet</servlet-class>\n" +
+		"        <init-param>\n" +
+		"            <param-name>locatorUrl</param-name>\n" +
+		"            <param-value><![CDATA[sslservlet://${jboss.bind.address}:8443/invoker/SSLServerInvokerServlet/?dataType=invocation&marshaller=org.jboss.invocation.unified.marshall.InvocationMarshaller&return-exception=true&unmarshaller=org.jboss.invocation.unified.marshall.InvocationUnMarshaller]]></param-value>\n" +
+		"            <description>The ssl servlet server invoker locator url</description>\n" +
+		"        </init-param>\n" +
+		"        <load-on-startup>1</load-on-startup>\n" +
+		"    </servlet>\n" +
+		"    <servlet-mapping>\n" +
+		"        <servlet-name>SSLServerInvokerServlet</servlet-name>\n" +
+		"        <url-pattern>/SSLServerInvokerServlet/*</url-pattern>\n" +
+		"    </servlet-mapping>\n" +
+		"    <!-- END JNDI Exposition  -->\n" +
+		"    <servlet>\n" +
+		"        <servlet-name>Ejb3ServerInvokerServlet</servlet-name>\n" +
+		"        <description>The ServerInvokerServlet receives requests via HTTP\n" +
+		"       protocol from within a web container and passes it onto the\n" +
+		"       ServletServerInvoker for processing.\n" +
+		"    </description>\n" +
+		"        <servlet-class>org.jboss.remoting.transport.servlet.web.ServerInvokerServlet</servlet-class>\n" +
+		"        <!-- Pass locatorUrl instead of invokerName because otherwise you end up\n" +
+		"    sharing the same server invoker for org.jboss.invocation and org.jboss.aop \n" +
+		"    type of invocations which you don't wanna do. Worth noting that invokerName \n" +
+		"    is hardcoded and hence you cannot create a separate one that way, hence the \n" +
+		"    use of locatorUrl. Was fixed in JBoss 4.2.3. -->\n" +
+		"        <init-param>\n" +
+		"            <param-name>locatorUrl</param-name>\n" +
+		"            <param-value>servlet://${jboss.bind.address}:8080/invoker/Ejb3ServerInvokerServlet</param-value>\n" +
+		"            <description>The servlet server invoker</description>\n" +
+		"        </init-param>\n" +
+		"        <load-on-startup>1</load-on-startup>\n" +
+		"    </servlet>\n" +
+		"    <servlet-mapping>\n" +
+		"        <servlet-name>Ejb3ServerInvokerServlet</servlet-name>\n" +
+		"        <url-pattern>/Ejb3ServerInvokerServlet/*</url-pattern>\n" +
+		"    </servlet-mapping>\n" +
+		"    <servlet>\n" +
+		"        <servlet-name>SSLEjb3ServerInvokerServlet</servlet-name>\n" +
+		"        <description>The ServerInvokerServlet receives requests via HTTPS\n" +
+		"       protocol from within a web container and passes it onto the\n" +
+		"       ServletServerInvoker for processing.\n" +
+		"    </description>\n" +
+		"        <servlet-class>org.jboss.remoting.transport.servlet.web.ServerInvokerServlet</servlet-class>\n" +
+		"        <init-param>\n" +
+		"            <param-name>locatorUrl</param-name>\n" +
+		"            <param-value>sslservlet://${jboss.bind.address}:8443/invoker/SSLEjb3ServerInvokerServlet</param-value>\n" +
+		"            <description>The ssl servlet server invoker locator url</description>\n" +
+		"        </init-param>\n" +
+		"        <load-on-startup>1</load-on-startup>\n" +
+		"    </servlet>\n" +
+		"    <servlet-mapping>\n" +
+		"        <servlet-name>SSLEjb3ServerInvokerServlet</servlet-name>\n" +
+		"        <url-pattern>/SSLEjb3ServerInvokerServlet/*</url-pattern>\n" +
+		"    </servlet-mapping>\n" +
+		"</root>";
 
 	protected static void waitForServer()
 	{
@@ -855,6 +1106,19 @@ public class ServerConfiguratorJBoss
 			domParser.parse(new InputSource(new StringReader(httpsConnectorComment.getTextContent())));
 			Node httpsConnectorNode = domParser.getDocument().getFirstChild();
 			Document conDoc = domParser.getDocument();
+
+			NamedNodeMap attributes = httpsConnectorNode.getAttributes();
+			if (attributes.getNamedItem(HTTPS_ADDRESS) == null ||
+					!((Attr) attributes.getNamedItem(HTTPS_ADDRESS)).getValue().equals("${jboss.bind.address}"))
+			{
+				Attr addressAttr = (Attr) attributes.getNamedItem(HTTPS_ADDRESS);
+				if (addressAttr == null) {
+					addressAttr = domParser.getDocument().createAttribute(HTTPS_ADDRESS);
+					attributes.setNamedItem(addressAttr);
+				}
+
+				addressAttr.setValue("${jboss.bind.address}");
+			}
 
 			modified = adaptHttpsConnector(conDoc, httpsConnectorNode, getJFireServerConfigModule(), getJBossConfigDir());
 
