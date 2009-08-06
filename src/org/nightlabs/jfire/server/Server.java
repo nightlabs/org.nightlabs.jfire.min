@@ -104,6 +104,20 @@ public class Server implements Serializable, StoreCallback
 		return validServerIDPattern.matcher(serverID).matches();
 	}
 
+	public static boolean isValidDataCentreID(String dataCentreID)
+	{
+		// We map null to an empty string in our setters thus it's probably a good idea to accept null here, too.
+		if (dataCentreID == null)
+			return true;
+
+		// An empty dataCentreID is allowed, because that simply means to default to
+		// the server-ID (maybe with a prefix?).
+		if (dataCentreID.isEmpty())
+			return true;
+
+		return isValidServerID(dataCentreID);
+	}
+
 	private static final Pattern validServerIDPattern = Pattern.compile("[a-zA-Z0-9\\._\\-]+\\.[a-zA-Z0-9\\._\\-]+");
 
 	/**
@@ -117,9 +131,15 @@ public class Server implements Serializable, StoreCallback
 	throws IllegalArgumentException
 	{
 		if (!isValidServerID(serverID))
-			throw new IllegalArgumentException("serverID \""+serverID+"\" is not valid!");
+			throw new IllegalArgumentException("serverID \""+serverID+"\" is not valid! Must be a valid host-style identifier (e.g. \"jfire.organisation.tld\").");
 	}
 
+	public static void assertValidDataCentreID(String dataCentreID)
+	throws IllegalArgumentException
+	{
+			if (!Server.isValidDataCentreID(dataCentreID))
+				throw new IllegalArgumentException("dataCentreID \"" + dataCentreID + "\" is not valid! Must be either empty or a valid host-style identifier (e.g. \"datacentre.domain.tld\").");
+	}
 
 	public Server() { }
 
@@ -244,6 +264,8 @@ public class Server implements Serializable, StoreCallback
 	public void setDataCentreID(String dataCentreID) {
 		if (dataCentreID == null) // silently map null to the empty String.
 			dataCentreID = "";
+
+		assertValidDataCentreID(dataCentreID);
 
 		this.dataCentreID = dataCentreID;
 	}

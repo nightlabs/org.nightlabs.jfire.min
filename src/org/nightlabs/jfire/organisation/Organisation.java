@@ -31,6 +31,16 @@ import java.util.Date;
 
 import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
+import javax.jdo.annotations.Column;
+import javax.jdo.annotations.FetchGroup;
+import javax.jdo.annotations.FetchGroups;
+import javax.jdo.annotations.IdentityType;
+import javax.jdo.annotations.Inheritance;
+import javax.jdo.annotations.InheritanceStrategy;
+import javax.jdo.annotations.PersistenceCapable;
+import javax.jdo.annotations.PersistenceModifier;
+import javax.jdo.annotations.Persistent;
+import javax.jdo.annotations.PrimaryKey;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
@@ -41,20 +51,9 @@ import org.nightlabs.jfire.security.SecurityReflector.UserDescriptor;
 import org.nightlabs.jfire.server.Server;
 import org.nightlabs.util.Util;
 
-import javax.jdo.annotations.Persistent;
-import javax.jdo.annotations.FetchGroups;
-import javax.jdo.annotations.InheritanceStrategy;
-import javax.jdo.annotations.Inheritance;
-import javax.jdo.annotations.PrimaryKey;
-import javax.jdo.annotations.FetchGroup;
-import javax.jdo.annotations.PersistenceCapable;
-import javax.jdo.annotations.Column;
-import javax.jdo.annotations.IdentityType;
-import javax.jdo.annotations.PersistenceModifier;
-
 /**
  * @author marco
- * 
+ *
  * @jdo.persistence-capable
  *		identity-type="application"
  *   	objectid-class="org.nightlabs.jfire.organisation.id.OrganisationID"
@@ -227,7 +226,7 @@ public class Organisation implements Serializable
 	throws IllegalArgumentException
 	{
 		if (!isValidOrganisationID(organisationID))
-			throw new IllegalArgumentException("organisationID \"" + organisationID + "\" is not valid!");
+			throw new IllegalArgumentException("organisationID \"" + organisationID + "\" is not valid! Must be a valid host-style identifier (e.g. \"jfire.organisation.tld\").");
 	}
 
 //	public Organisation(String _organisationID, String _masterOrganisationID)
@@ -235,7 +234,7 @@ public class Organisation implements Serializable
 //		this.organisationID = _organisationID;
 //		this.masterOrganisationID = _masterOrganisationID;
 //	}
-	
+
 	public String getOrganisationID()
   {
 		return organisationID;
@@ -273,20 +272,20 @@ public class Organisation implements Serializable
 	 */
 @Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
 	private Date createDT;
-	
+
 	/**
 	 * @return Returns the createDT.
 	 */
 	public Date getCreateDT() {
 		return createDT;
 	}
-	
+
 	/**
 	 * @jdo.field persistence-modifier="persistent"
 	 */
 	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
 	private Date changeDT;
-	
+
 	/**
 	 * @return Returns the changeDT.
 	 */
@@ -300,12 +299,12 @@ public class Organisation implements Serializable
 	public void setChangeDT(Date changeDT) {
 		this.changeDT = changeDT;
 	}
-	
+
 	public void setChangeDT() {
 		this.changeDT = new Date();
 	}
-	
-	
+
+
 	/**
 	 * @jdo.field persistence-modifier="persistent"
 	 */
@@ -332,7 +331,7 @@ public class Organisation implements Serializable
 	 */
 	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
 	private Person person = null;
-	
+
 	/**
 	 * @return Returns the person.
 	 */
@@ -359,7 +358,7 @@ public class Organisation implements Serializable
 	public static Organisation getOrganisation(PersistenceManager pm, String organisationID) {
 		return getOrganisation(pm, organisationID, true);
 	}
-	
+
 	/**
 	 * @param pm
 	 * @param organisationID
