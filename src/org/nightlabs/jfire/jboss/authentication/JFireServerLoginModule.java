@@ -50,8 +50,6 @@ import org.jboss.security.auth.spi.AbstractServerLoginModule;
 import org.nightlabs.j2ee.LoginData;
 import org.nightlabs.jfire.base.JFirePrincipal;
 import org.nightlabs.jfire.base.Lookup;
-import org.nightlabs.jfire.security.RoleSet;
-import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.util.IOUtil;
 import org.nightlabs.util.Util;
@@ -64,8 +62,6 @@ import org.nightlabs.util.Util;
 public class JFireServerLoginModule extends AbstractServerLoginModule
 {
 	private static final Logger logger = Logger.getLogger(JFireServerLoginModule.class);
-	private static Map<String, RoleSet> userPK2roleSet = Collections.synchronizedMap(new HashMap<String, RoleSet>());
-//	private static ThreadLocal<Principal> cascadedAuthenticationRestoreIdentityPrincipal = new ThreadLocal<Principal>();
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -107,46 +103,6 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 			IOUtil.writeTextFile(f, Util.getStackTraceAsString(me.getValue().commitStackTrace));
 		}
 	}
-
-//	/**
-//	 * Prepare restoring a previous principal. This is necessary, because {@link CascadedAuthenticationClientInterceptorDelegate}
-//	 * might restore a previous identity when a transaction is being rolled back. In this situation, the {@link JFireServerManager#login(LoginData)}
-//	 * will otherwise fail, because the transaction is not active anymore. In order to guarantee that restoring the old identity succeeds,
-//	 * we keep RoleSets in {@link #userPK2roleSet} and create a {@link JFirePrincipal} from there instead of calling
-//	 * {@link JFireServerManager#login(LoginData)} which would require an active transaction.
-//	 * <p>
-//	 * If this method was called, the {@link #login()} method below (or more precisely the {@link #commit()} method) will
-//	 * restore from the stack instead of really logging in.
-//	 * </p>
-//	 *
-//	 * @param principalToRestore the principal that is about to be restored.
-//	 */
-//	public static void cascadedAuthenticationRestoreIdentityBegin(Principal principalToRestore)
-//	{
-//		if (principalToRestore == null)
-//			throw new IllegalArgumentException("principal must not be null!");
-//
-//		Principal principalAlreadyPreparedForRestoring = cascadedAuthenticationRestoreIdentityPrincipal.get();
-//		if (principalAlreadyPreparedForRestoring != null)
-//			throw new IllegalStateException("There is already another principal prepared for restoring: " + principalAlreadyPreparedForRestoring);
-//
-//		cascadedAuthenticationRestoreIdentityPrincipal.set(principalToRestore);
-//	}
-//
-//	public static void cascadedAuthenticationRestoreIdentityEnd(Principal principalToRestore)
-//	{
-//		if (principalToRestore == null)
-//			throw new IllegalArgumentException("principal must not be null!");
-//
-//		Principal principalPreparedForRestoring = cascadedAuthenticationRestoreIdentityPrincipal.get();
-//		if (principalPreparedForRestoring == null)
-//			throw new IllegalStateException("cascadedAuthenticationRestoreIdentityBegin was not called!");
-//
-//		if (principalPreparedForRestoring != principalToRestore)
-//			throw new IllegalStateException("cascadedAuthenticationRestoreIdentityBegin was called with a different principal! principalPreparedForRestoring=" + principalPreparedForRestoring + " principalToRestore=" + principalToRestore);
-//
-//		cascadedAuthenticationRestoreIdentityPrincipal.remove();
-//	}
 
 	private JFirePrincipal jfirePrincipal = null;
 	private LoginData loginData = null;
@@ -204,38 +160,23 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 
 		loginData = new LoginData(login, password);
 
-		String userKey = loginData.getUserID() + User.SEPARATOR_BETWEEN_USER_ID_AND_ORGANISATION_ID + loginData.getOrganisationID();
-//		Principal principalPreparedForRestoring = cascadedAuthenticationRestoreIdentityPrincipal.get();
-//		if (principalPreparedForRestoring != null) {
-////			this.ip = principalPreparedForRestoring;
-//
-//			RoleSet roleSet = userPK2roleSet.get(userKey);
-//			if (roleSet == null)
-//				throw new IllegalStateException("No RoleSet found for userKey=" + userKey);
-//
-//			this.ip = new JFirePrincipal(loginData, loginData.getUserID().startsWith(User.USER_ID_PREFIX_TYPE_ORGANISATION), new Lookup(loginData.getOrganisationID()), roleSet);
-//		}
-//		else {
+		try {
+			// create lookup object for user's organisationID
+			Lookup lookup = new Lookup(loginData.getOrganisationID());
+
+			// and delegate the login to the jfireServerManager
+			JFireServerManager jfireServerManager = lookup.getJFireServerManager();
 			try {
-				// create lookup object for user's organisationID
-				Lookup lookup = new Lookup(loginData.getOrganisationID());
-
-				// and delegate the login to the jfireServerManager
-				JFireServerManager jfireServerManager = lookup.getJFireServerManager();
-				try {
-					this.jfirePrincipal = jfireServerManager.login(loginData);
-				} finally {
-					jfireServerManager.close();
-				}
-
-				userPK2roleSet.put(userKey, jfirePrincipal.getRoleSet());
-			} catch (LoginException e) {
-				throw e;
-			} catch(Throwable e) {
-				logger.fatal("Login failed!", e);
-				throw new LoginException(e.getMessage());
+				this.jfirePrincipal = jfireServerManager.login(loginData);
+			} finally {
+				jfireServerManager.close();
 			}
-//		}
+		} catch (LoginException e) {
+			throw e;
+		} catch(Throwable e) {
+			logger.fatal("Login failed!", e);
+			throw new LoginException(e.getMessage());
+		}
 
 //		super.subject.getPrincipals().add(ip); // doing this in commit
 
