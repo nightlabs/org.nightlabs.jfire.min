@@ -58,6 +58,7 @@ import org.nightlabs.util.Util;
 /**
  * @author niklas schiffler - nick at nightlabs dot de
  * @author Marc Klinger - marc[at]nightlabs[dot]de
+ * @author marco schulze - marco at nightlabs dot de
  */
 public class JFireServerLoginModule extends AbstractServerLoginModule
 {
