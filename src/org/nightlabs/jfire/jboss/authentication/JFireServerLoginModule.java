@@ -108,6 +108,7 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 	private JFirePrincipal jfirePrincipal = null;
 	private LoginData loginData = null;
 	private boolean ignoreLogout = false;
+	private boolean popSecurityAssociationSubjectContextInAbort = false;
 
 	protected String getIdentityHashStr()
 	{
@@ -126,6 +127,7 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 	{
 		super.loginOk = false;
 		ignoreLogout = false;
+		popSecurityAssociationSubjectContextInAbort = false;
 
 		NameCallback nc = new NameCallback("username: ");
 		PasswordCallback pc = new PasswordCallback("password: ", false);
@@ -208,18 +210,19 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 		if (jfirePrincipal == null)
 			throw new NullPointerException("Why the hell is commit() called before login?!");
 
-// copied more or less from JBoss' ClientLoginModule
 		// Set the login principal and credential and subject
 		SubjectContext subjectContext = SecurityAssociation.peekSubjectContext();
 		Principal subjectContextPrincipal = subjectContext == null ? null : subjectContext.getPrincipal();
 		if (!jfirePrincipal.equals(subjectContextPrincipal)) {
 			SecurityAssociation.pushSubjectContext(subject, jfirePrincipal, loginData.getPassword());
+			// I never saw the abort() method being called after commit(), but in case this ever
+			// happens, we have to pop what we just pushed, thus we indicate it with this flag. Marco.
+			popSecurityAssociationSubjectContextInAbort = true;
 
 			// Add the login principal to the subject if is not there
 			Set<Principal> principals = subject.getPrincipals();
 			if (principals.contains(jfirePrincipal) == false)
 				principals.add(jfirePrincipal);
-			// end copy
 
 			if (authenticatedLoginModule2loginDebugData != null) {
 				LoginDebugData ldd = new LoginDebugData();
@@ -260,6 +263,17 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 		// Reset to the state before login() was called.
 		loginData = null;
 		jfirePrincipal = null;
+
+		// And just in case the commit() was already called and already pushed the
+		// SubjectContext, we have to pop it now.
+		// (I never saw this situation in my debug sessions, though. Marco.)
+		if (popSecurityAssociationSubjectContextInAbort) {
+			if (logger.isDebugEnabled())
+				logger.debug("(" + getIdentityHashStr() + ") abort: Commit was called before and the SubjectContext was pushed onto the stack, thus we have to pop it now.");
+
+			SecurityAssociation.popSubjectContext();
+		}
+
 		return super.abort();
 	}
 
@@ -287,9 +301,7 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 			return super.logout();
 		}
 
-// copied more or less from JBoss' ClientLoginModule
 		SubjectContext subjectContext = SecurityAssociation.popSubjectContext();
-// end copy
 
 		if (subjectContext == null) {
 			logger.warn("(" + getIdentityHashStr() + ") logout: SecurityAssociation.popSubjectContext() returned null!");
