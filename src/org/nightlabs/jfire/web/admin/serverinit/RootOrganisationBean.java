@@ -19,8 +19,7 @@ public class RootOrganisationBean
 	private String serverName;
 	private String j2eeServerType;
 	private Map<String, String> protocol2initialContextURL = new HashMap<String, String>();
-//	private String initialContextURL_jnp;
-//	private String initialContextURL_https;
+	private String dataCentreID;
 
 	/**
 	 * Get the organisationID.
@@ -109,6 +108,16 @@ public class RootOrganisationBean
 		this.protocol2initialContextURL = protocol2initialContextURL;
 	}
 
+	public String getDataCentreID() {
+		return dataCentreID;
+	}
+	public void setDataCentreID(String dataCentreID) {
+		if (dataCentreID == null)
+			dataCentreID = "";
+
+		this.dataCentreID = dataCentreID;
+	}
+
 	public void copyFromCf(RootOrganisationCf rootOrganisationCf)
 	{
 		if(rootOrganisationCf == null)
@@ -121,6 +130,7 @@ public class RootOrganisationBean
 		setServerID(server.getServerID());
 		setServerName(server.getServerName());
 		setJ2eeServerType(server.getJ2eeServerType());
+		setDataCentreID(server.getDataCentreID());
 		protocol2initialContextURL = new HashMap<String, String>(server.getProtocol2initialContextURL());
 	}
 
@@ -135,6 +145,7 @@ public class RootOrganisationBean
 		server.setServerName(getServerName());
 		server.setJ2eeServerType(getJ2eeServerType());
 		server.setProtocol2initialContextURL(new HashMap<String, String>(protocol2initialContextURL));
+		server.setDataCentreID(getDataCentreID());
 		rootOrganisationCf.setServer(server);
 	}
 }

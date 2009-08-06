@@ -7,7 +7,10 @@
 <c:url value="/img" var="url_img"/>
 <?xml version="1.0" encoding="iso-8859-1"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+
+<%@page import="java.util.List"%>
+<%@page import="org.nightlabs.jfire.web.admin.servlet.BaseServlet"%>
+<%@page import="org.apache.commons.lang.exception.ExceptionUtils"%><html xmlns="http://www.w3.org/1999/xhtml">
 	<head>
 		<c:if test="${title != null}">
 		<title>${title}</title>
@@ -52,9 +55,41 @@
 		<div class="errorblock">
 		Errors:
 		<ul>
+		
+		<%
+			@SuppressWarnings("unchecked")
+			List<Throwable> errors = (List<Throwable>) request.getAttribute("internal_errors");
+			for(Throwable error : errors) {
+				pageContext.setAttribute("error", error);
+				%>
+				<li>
+					<c:if test="${error.localizedMessage == '' || error.localizedMessage == null}">${error.class.simpleName} </c:if>${error.localizedMessage}
+					<ul>
+						<%
+							Throwable cause = ExceptionUtils.getCause(error);
+							while (cause != null) {
+								pageContext.setAttribute("cause", cause);
+								%>
+								<li>
+									caused by: <c:if test="${cause.localizedMessage == '' || cause.localizedMessage == null}">${cause.class.simpleName} </c:if>${cause.localizedMessage}
+								</li>
+								
+								<%
+								cause = ExceptionUtils.getCause(cause);
+							}
+						%>
+					</ul>
+				</li>
+				<%
+			}
+		%>
+<%-- I don't know how to climb up the causes via JSP code, thus I'm using Java above. Sorry! Marco ;-)
 		<c:forEach items="${internal_errors}" var="error">
-		<li><c:if test="${error.localizedMessage == '' || error.localizedMessage == null}">${error.class.simpleName} </c:if>${error.localizedMessage}</li>
+			<li>
+				<c:if test="${error.localizedMessage == '' || error.localizedMessage == null}">${error.class.simpleName} </c:if>${error.localizedMessage}
+			</li>
 		</c:forEach>
+--%>
 		</ul>
 		</div>
 		</c:if>
