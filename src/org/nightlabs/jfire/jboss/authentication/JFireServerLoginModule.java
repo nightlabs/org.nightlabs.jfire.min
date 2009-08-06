@@ -268,6 +268,7 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 		// SubjectContext, we have to pop it now.
 		// (I never saw this situation in my debug sessions, though. Marco.)
 		if (popSecurityAssociationSubjectContextInAbort) {
+			popSecurityAssociationSubjectContextInAbort = false;
 			if (logger.isDebugEnabled())
 				logger.debug("(" + getIdentityHashStr() + ") abort: Commit was called before and the SubjectContext was pushed onto the stack, thus we have to pop it now.");
 
