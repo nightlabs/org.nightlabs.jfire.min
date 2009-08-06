@@ -109,6 +109,7 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 	private LoginData loginData = null;
 	private boolean ignoreLogout = false;
 	private boolean popSecurityAssociationSubjectContextInAbort = false;
+	private boolean removeSubjectPrincipalInAbort = false;
 
 	protected String getIdentityHashStr()
 	{
@@ -128,6 +129,7 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 		super.loginOk = false;
 		ignoreLogout = false;
 		popSecurityAssociationSubjectContextInAbort = false;
+		removeSubjectPrincipalInAbort = false;
 
 		NameCallback nc = new NameCallback("username: ");
 		PasswordCallback pc = new PasswordCallback("password: ", false);
@@ -221,8 +223,10 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 
 			// Add the login principal to the subject if is not there
 			Set<Principal> principals = subject.getPrincipals();
-			if (principals.contains(jfirePrincipal) == false)
+			if (principals.contains(jfirePrincipal) == false) {
 				principals.add(jfirePrincipal);
+				removeSubjectPrincipalInAbort = true;
+			}
 
 			if (authenticatedLoginModule2loginDebugData != null) {
 				LoginDebugData ldd = new LoginDebugData();
@@ -261,6 +265,17 @@ public class JFireServerLoginModule extends AbstractServerLoginModule
 		}
 
 		// Reset to the state before login() was called.
+
+		// Just in case, commit() was already called and added the principal, we have to remove it now.
+		if (removeSubjectPrincipalInAbort && jfirePrincipal != null) {
+			removeSubjectPrincipalInAbort = false;
+			if (subject != null) {
+				Set<Principal> subjectPrincipals = subject.getPrincipals();
+				if (subjectPrincipals != null)
+					subjectPrincipals.remove(jfirePrincipal);
+			}
+		}
+
 		loginData = null;
 		jfirePrincipal = null;
 
