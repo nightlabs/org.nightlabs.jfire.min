@@ -35,7 +35,6 @@ import java.util.Map;
 import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 
-import org.nightlabs.jdo.ObjectIDUtil;
 import org.nightlabs.jfire.server.Server;
 import org.nightlabs.jfire.server.id.ServerID;
 import org.nightlabs.util.Util;
@@ -82,8 +81,7 @@ public class ServerCf implements Serializable, Cloneable {
 	 * @param serverID The serverID to set.
 	 */
 	public void setServerID(String _serverID) {
-		if (!ObjectIDUtil.isValidIDString(_serverID))
-			throw new IllegalArgumentException("serverID \"" + _serverID + "\" is not a valid id!");
+		Server.assertValidServerID(_serverID);
 		this.serverID = _serverID;
 	}
 
@@ -143,6 +141,8 @@ public class ServerCf implements Serializable, Cloneable {
 	public void setDataCentreID(String dataCentreID) {
 		if (dataCentreID == null)
 			dataCentreID = "";
+
+		Server.assertValidDataCentreID(dataCentreID);
 
 		this.dataCentreID = dataCentreID;
 	}
