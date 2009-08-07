@@ -13,15 +13,15 @@ public class ServiceSettingsConfigModule extends ConfigModule
 	 */
 	private static final long serialVersionUID = 1L;
 
-	private Integer jaasCacheTimeout;
-	private Integer transactionTimeout;
+	private int jaasCacheTimeout = -1;
+	private int transactionTimeout = -1;
 
 	@Override
 	public void init() throws InitException
 	{
-		if(jaasCacheTimeout == null)
+		if(jaasCacheTimeout == -1)
 			jaasCacheTimeout = 300;
-		if(transactionTimeout == null)
+		if(transactionTimeout == -1)
 			transactionTimeout = 900;
 
 		// this is actually not how the config should be used. But without this call,
