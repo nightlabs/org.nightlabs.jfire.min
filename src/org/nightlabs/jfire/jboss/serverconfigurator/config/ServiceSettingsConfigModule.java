@@ -23,6 +23,10 @@ public class ServiceSettingsConfigModule extends ConfigModule
 			jaasCacheTimeout = 300;
 		if(transactionTimeout == null)
 			transactionTimeout = 900;
+
+		// this is actually not how the config should be used. But without this call,
+		// the config may never be changed by the user because it is never written.
+		setChanged();
 	}
 
 	/**
