@@ -69,6 +69,7 @@ public class Server implements Serializable, StoreCallback
 	public static final String J2EESERVERTYPE_JBOSS40X = "jboss_40x";
 
 	public static final String PROTOCOL_JNP = "jnp";
+	public static final String PROTOCOL_HTTP = "http";
 	public static final String PROTOCOL_HTTPS = "https";
 
 	/**
