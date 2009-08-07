@@ -14,7 +14,6 @@ import javax.jdo.PersistenceManager;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
-import org.nightlabs.jfire.config.Config;
 import org.nightlabs.jfire.idgenerator.IDGenerator;
 import org.nightlabs.jfire.person.Person;
 import org.nightlabs.jfire.person.PersonStruct;
@@ -22,28 +21,21 @@ import org.nightlabs.jfire.prop.IStruct;
 import org.nightlabs.jfire.prop.PropertySet;
 import org.nightlabs.jfire.prop.datafield.PhoneNumberDataField;
 import org.nightlabs.jfire.prop.datafield.SelectionDataField;
-import org.nightlabs.jfire.prop.exception.DataBlockGroupNotFoundException;
-import org.nightlabs.jfire.prop.exception.DataBlockNotFoundException;
-import org.nightlabs.jfire.prop.exception.DataFieldNotFoundException;
-import org.nightlabs.jfire.prop.exception.StructBlockNotFoundException;
-import org.nightlabs.jfire.prop.exception.StructFieldNotFoundException;
-import org.nightlabs.jfire.prop.exception.StructFieldValueNotFoundException;
 import org.nightlabs.jfire.prop.structfield.SelectionStructField;
 import org.nightlabs.jfire.prop.structfield.StructFieldValue;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.security.UserLocal;
 import org.nightlabs.jfire.security.id.UserID;
-import org.nightlabs.jfire.store.deliver.DeliveryData;
 import org.nightlabs.jfire.trade.LegalEntity;
 import org.nightlabs.jfire.trade.Trader;
-import org.nightlabs.jfire.trade.config.TradeConfigModule;
-import org.nightlabs.jfire.trade.recurring.RecurringOrder;
 
-
+/**
+ * @author Fitas Amine <!-- fitas[at]nightlabs[dot]de -->
+ * 
+ */
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 @TransactionManagement(TransactionManagementType.CONTAINER)
 @Stateless
-
 public class JFireTestSuiteBaseManagerBean extends BaseSessionBeanImpl
 implements JFireTestSuiteBaseManagerRemote{
 
@@ -60,7 +52,7 @@ implements JFireTestSuiteBaseManagerRemote{
 	}
 
 	@TransactionAttribute(TransactionAttributeType.REQUIRED)
-	@RolesAllowed("_System_")
+	@RolesAllowed("_Guest_")
 	public User createUser(String userID, String password, Person person)throws Exception
 	{
 
@@ -83,7 +75,7 @@ implements JFireTestSuiteBaseManagerRemote{
 	}
 	
 	@TransactionAttribute(TransactionAttributeType.REQUIRED)
-	@RolesAllowed("_System_")
+	@RolesAllowed("_Guest_")
 	public Person createPerson(String company, String name, String firstName, String eMail,
 			Date dateOfBirth, String salutation, String title, String postAdress, String postCode,
 			String postCity, String postRegion, String postCountry, String phoneCountryCode,
@@ -158,7 +150,7 @@ implements JFireTestSuiteBaseManagerRemote{
 	
 	
 	@TransactionAttribute(TransactionAttributeType.REQUIRED)
-	@RolesAllowed("_System_")
+	@RolesAllowed("_Guest_")
 	public LegalEntity createLegalEntity(Person person)throws Exception
 	{
 		if (person == null)

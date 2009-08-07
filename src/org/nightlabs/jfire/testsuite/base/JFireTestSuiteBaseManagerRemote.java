@@ -20,12 +20,12 @@ public interface JFireTestSuiteBaseManagerRemote {
 	
 	
 	@TransactionAttribute(TransactionAttributeType.REQUIRED)
-	@RolesAllowed("_System_")		
+	@RolesAllowed("_Guest_")		
 	public User createUser(String userID, String password, Person person) throws Exception;
 
 
 	@TransactionAttribute(TransactionAttributeType.REQUIRED)
-	@RolesAllowed("_System_")
+	@RolesAllowed("_Guest_")
 	public Person createPerson(String company, String name, String firstName, String eMail,
 			Date dateOfBirth, String salutation, String title, String postAdress, String postCode,
 			String postCity, String postRegion, String postCountry, String phoneCountryCode,
@@ -37,7 +37,7 @@ public interface JFireTestSuiteBaseManagerRemote {
 	
 
 	@TransactionAttribute(TransactionAttributeType.REQUIRED)
-	@RolesAllowed("_System_")
+	@RolesAllowed("_Guest_")
 	public LegalEntity createLegalEntity(Person person)
 	throws Exception;
 
