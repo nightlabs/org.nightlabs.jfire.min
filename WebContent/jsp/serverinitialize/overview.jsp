@@ -1,11 +1,13 @@
 <%@ page language="java"%>
 
-OVERVIEW HERE TO COME...
+<h1>Ready for initialisation</h1>
 
-<form method="post" onsubmit="showWaitBlock('Please wait while initializing server...')">
+<br/><br/>
+
+<form method="post" onsubmit="showWaitBlock('Please wait while initialising server...')">
 
 <input type="hidden" name="navigation" value="finish"/>
-<input type="submit" value="Initialize Server Now!"/>
+<input type="submit" value="Initialise Server Now!"/>
 
 </form>
 

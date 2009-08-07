@@ -45,8 +45,8 @@
 			</p>
 		</div>
 
-		<div id="waitblock" style="display: none; padding: 32px;">
-			<img id="waitblockimage" src="${url_img}/loading.gif"/>
+		<div id="waitblock" style="display: none; padding: 32px; text-align: center">
+			<img style="margin-bottom: 8px" id="waitblockimage" src="${url_img}/loading.gif"/>
 			<div id="waitblockmessage"></div>
 		</div>
 
