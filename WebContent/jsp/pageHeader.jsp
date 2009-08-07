@@ -8,9 +8,10 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
-<%@page import="java.util.List"%>
+<%@page import="java.util.Collection"%>
 <%@page import="org.nightlabs.jfire.web.admin.servlet.BaseServlet"%>
-<%@page import="org.apache.commons.lang.exception.ExceptionUtils"%><html xmlns="http://www.w3.org/1999/xhtml">
+<%@page import="org.apache.commons.lang.exception.ExceptionUtils"%>
+<html xmlns="http://www.w3.org/1999/xhtml">
 	<head>
 		<c:if test="${title != null}">
 		<title>${title}</title>
@@ -58,7 +59,7 @@
 		
 		<%
 			@SuppressWarnings("unchecked")
-			List<Throwable> errors = (List<Throwable>) request.getAttribute("internal_errors");
+			Collection<Throwable> errors = (Collection<Throwable>) request.getAttribute("internal_errors");
 			for(Throwable error : errors) {
 				pageContext.setAttribute("error", error);
 				%>
