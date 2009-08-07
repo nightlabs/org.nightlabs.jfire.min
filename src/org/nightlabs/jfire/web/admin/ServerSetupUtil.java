@@ -9,10 +9,7 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
 import org.nightlabs.jfire.base.JFireEjb3Factory;
 import org.nightlabs.jfire.organisation.OrganisationManagerRemote;
-import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.server.ServerManagerRemote;
-
-import com.sun.xml.stream.buffer.sax.Properties;
 
 public class ServerSetupUtil
 {
@@ -40,7 +37,7 @@ public class ServerSetupUtil
 		serverManager.ping("test_authentication");
 		return serverManager;
 	}
-	
+
 	public static ServerManagerRemote getBogoServerManager()
 	{
 		try {
@@ -75,17 +72,17 @@ public class ServerSetupUtil
 //			return false;
 //		}
 //	}
-	
+
 	public enum ServerState
 	{
 		NEED_ORGANISATION,
 		UNKNOWN_ERROR,
 		SHUTTING_DOWN,
 		NOT_YET_UP_AND_RUNNING,
-		NEED_SETUP, 
+		NEED_SETUP,
 		NEED_LOGIN
 	}
-	
+
 	public static ServerState getServerState()
 	{
 		try {
@@ -110,7 +107,7 @@ public class ServerSetupUtil
 			}
 		}
 	}
-	
+
 	private static Throwable findCause(Throwable e, Class<? extends Throwable> searchedClass, String searchedMessageRegex)
 	{
 		if (e == null)

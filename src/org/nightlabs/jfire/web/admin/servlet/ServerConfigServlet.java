@@ -16,7 +16,7 @@ import org.nightlabs.jfire.servermanager.config.JDOCf;
 import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
 import org.nightlabs.jfire.servermanager.config.RootOrganisationCf;
 import org.nightlabs.jfire.servermanager.config.ServerCf;
-import org.nightlabs.jfire.servermanager.config.ServletSSLCf;
+import org.nightlabs.jfire.servermanager.config.SslCf;
 import org.nightlabs.jfire.servermanager.config.SmtpMailServiceCf;
 import org.nightlabs.jfire.web.admin.SessionLogin;
 import org.nightlabs.jfire.web.admin.Util;
@@ -85,8 +85,8 @@ public class ServerConfigServlet extends BaseServlet
 					config.setJdo((JDOCf) bean);
 				else if(bean instanceof SmtpMailServiceCf)
 					config.setSmtp((SmtpMailServiceCf) bean);
-				else if(bean instanceof ServletSSLCf)
-					config.setServletSSLCf((ServletSSLCf) bean);
+				else if(bean instanceof SslCf)
+					config.setSslCf((SslCf) bean);
 				else if(bean instanceof RootOrganisationBean) {
 					RootOrganisationBean rob = (RootOrganisationBean)bean;
 					RootOrganisationCf rootOrganisationCf = config.getRootOrganisation();
@@ -106,7 +106,7 @@ public class ServerConfigServlet extends BaseServlet
 		addContent(req, "/beanedit", new BeanEditRequest(req, BeanEditServlet.startEdit(req, config.getJ2ee())));
 		addContent(req, "/beanedit", new BeanEditRequest(req, BeanEditServlet.startEdit(req, config.getJdo())));
 		addContent(req, "/beanedit", new BeanEditRequest(req, BeanEditServlet.startEdit(req, config.getSmtp())));
-		addContent(req, "/beanedit", new BeanEditRequest(req, BeanEditServlet.startEdit(req, config.getServletSSLCf())));
+		addContent(req, "/beanedit", new BeanEditRequest(req, BeanEditServlet.startEdit(req, config.getSslCf())));
 		RootOrganisationBean rootOrganisationBean = new RootOrganisationBean();
 		rootOrganisationBean.copyFromCf(rootOrganisationCf);
 		addContent(req, "/beanedit", new BeanEditRequest(req, BeanEditServlet.startEdit(req, rootOrganisationBean)));

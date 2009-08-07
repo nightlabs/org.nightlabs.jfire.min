@@ -21,7 +21,7 @@ import org.nightlabs.jfire.servermanager.config.JDOCf;
 import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
 import org.nightlabs.jfire.servermanager.config.RootOrganisationCf;
 import org.nightlabs.jfire.servermanager.config.ServerCf;
-import org.nightlabs.jfire.servermanager.config.ServletSSLCf;
+import org.nightlabs.jfire.servermanager.config.SslCf;
 import org.nightlabs.jfire.servermanager.config.SmtpMailServiceCf;
 import org.nightlabs.jfire.web.admin.ServerSetupUtil;
 import org.nightlabs.jfire.web.admin.serverinit.FirstOrganisationBean;
@@ -95,7 +95,7 @@ public class ServerInitializeServlet extends BaseServlet
 				new ServerInitializeStep("database", null, cfMod.getDatabase()),
 				new ServerInitializeStep("jdo", null, cfMod.getJdo()),
 				new ServerInitializeStep("smtp", null, cfMod.getSmtp()),
-				new ServerInitializeStep("servletssl", null, cfMod.getServletSSLCf()),
+				new ServerInitializeStep("servletssl", null, cfMod.getSslCf()),
 				new ServerInitializeStep("rootorganisation", null, rootOrganisationBean),
 				new ServerInitializeStep("firstorganisation", null, new FirstOrganisationBean()),
 				new ServerInitializeStep("overview", "/jsp/serverinitialize/overview.jsp", null)
@@ -351,16 +351,16 @@ public class ServerInitializeServlet extends BaseServlet
 		cfMod.setLocalServer(localServer);
 
 		// servlet / ssl
-		ServletSSLCf servletSSLCf = (ServletSSLCf) stepsByName.get("servletssl").getBean();
-		String keystoreURLToImport = servletSSLCf.getKeystoreURLToImport();
+		SslCf sslCf = (SslCf) stepsByName.get("servletssl").getBean();
+		String keystoreURLToImport = sslCf.getKeystoreURLToImport();
 		if(keystoreURLToImport != null && !keystoreURLToImport.isEmpty()) {
 			try
 			{
 				KeyStore ks = KeyStore.getInstance( "JKS" );
-				final String keystorePassword = servletSSLCf.getKeystorePassword();
+				final String keystorePassword = sslCf.getKeystorePassword();
 				InputStream keystoreToImportStream;
 				// distinguish between default and non-default keystore via this constant
-				if (ServletSSLCf.DEFAULT_KEYSTORE.equals(keystoreURLToImport))
+				if (SslCf.DEFAULT_KEYSTORE.equals(keystoreURLToImport))
 				{
 					keystoreToImportStream = ServerConfigurator.class.getResourceAsStream("/jfire-server.keystore");
 				}
@@ -369,7 +369,7 @@ public class ServerInitializeServlet extends BaseServlet
 
 				ks.load(keystoreToImportStream, keystorePassword.toCharArray());
 
-				final String wantedAlias = servletSSLCf.getSslServerCertificateAlias();
+				final String wantedAlias = sslCf.getSslServerCertificateAlias();
 				if (! ks.containsAlias(wantedAlias))
 					throw new IllegalStateException("No certificate with alias '"+ wantedAlias+"' found in "+ keystoreURLToImport);
 
@@ -380,7 +380,7 @@ public class ServerInitializeServlet extends BaseServlet
 				throw new IllegalStateException("Keystore initialisation error:", e);
 			}
 		}
-		cfMod.setServletSSLCf(servletSSLCf);
+		cfMod.setSslCf(sslCf);
 
 		// j2ee
 		J2eeCf j2ee = (J2eeCf) stepsByName.get("jee").getBean();
