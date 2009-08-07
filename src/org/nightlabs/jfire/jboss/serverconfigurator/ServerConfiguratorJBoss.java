@@ -25,11 +25,12 @@ import org.nightlabs.jfire.jboss.authentication.JFireServerLocalLoginModule;
 import org.nightlabs.jfire.jboss.authentication.JFireServerLoginModule;
 import org.nightlabs.jfire.jboss.serverconfigurator.config.ServicePortsConfigModule;
 import org.nightlabs.jfire.jboss.serverconfigurator.config.ServiceSettingsConfigModule;
+import org.nightlabs.jfire.server.Server;
 import org.nightlabs.jfire.serverconfigurator.ServerConfigurationException;
 import org.nightlabs.jfire.serverconfigurator.ServerConfigurator;
 import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
-import org.nightlabs.jfire.servermanager.config.ServletSSLCf;
 import org.nightlabs.jfire.servermanager.config.SmtpMailServiceCf;
+import org.nightlabs.jfire.servermanager.config.SslCf;
 import org.nightlabs.util.IOUtil;
 import org.nightlabs.xml.DOMParser;
 import org.nightlabs.xml.NLDOMUtil;
@@ -61,6 +62,10 @@ import org.xml.sax.SAXException;
 public class ServerConfiguratorJBoss
 		extends ServerConfigurator
 {
+	private static final String JAVAX_NET_SSL_TRUSTSTORE_PASSWORD = "javax.net.ssl.trustStorePassword";
+	private static final String JAVAX_NET_SSL_TRUSTSTORE = "javax.net.ssl.trustStore";
+	private static final String HTTPS_PROXY_INVOKER_URL = "httpsProxy.invoker.url";
+	private static final String HTTP_PROXY_INVOKER_URL = "httpProxy.invoker.url";
 	private static final String JFIRE_SERVER_KEYSTORE_FILE_NAME = "jfire-server.keystore";
 	/**
 	 * The path to 'jfire-server.keystore' file relative from the server configuration root
@@ -68,6 +73,7 @@ public class ServerConfiguratorJBoss
 	 *
 	 */
 	private static final String JFIRE_SERVER_KEYSTORE_FILE = "conf/" + JFIRE_SERVER_KEYSTORE_FILE_NAME;
+	private static final String JFIRE_SERVER_TRUSTSTORE_FILE_NAME = "jfire-server.truststore";
 	private static final String HTTPS_CONNECTOR_MODIFIED_COMMENT = "Connector was enabled via ServerConfigurator!";
 	private static final String HTTPS_CONNECTOR_KEY_ALIAS = "keyAlias";
 	private static final String HTTPS_CONNECTOR_KEYSTORE_PASS = "keystorePass";
@@ -404,11 +410,8 @@ public class ServerConfiguratorJBoss
 			// TODO: Why not using the system property set by JBoss to distinguish between different server configurations? (${jboss.server.home.dir}) and then append the deploy dir from the config module? (marius)
 			File jbossDeployDir = new File(getJFireServerConfigModule().getJ2ee().getJ2eeDeployBaseDirectory()).getParentFile().getAbsoluteFile();
 
-			jbossConfDir = new File(jbossDeployDir.getParentFile(), "conf");
-
 			File jbossBaseDir = jbossDeployDir.getParentFile().getParentFile().getParentFile();
 			File jbossBinDir = new File(jbossBaseDir, "bin");
-
 
 			// due to changes, server version is not needed anymore.
 			// Please keep the commented code in the file - it might be useful for later use.
@@ -417,7 +420,7 @@ public class ServerConfiguratorJBoss
 //				logger.error("Could not find out the server version!", new Exception("Could not find out the server version: jbossDeployDir=" + jbossDeployDir.getAbsolutePath()));
 //				return;
 //			}
-
+			File jbossConfDir = getJBossConfigDir();
 			configureLoginConfigXml(jbossConfDir);
 			configureAOP(jbossDeployDir);
 			configureUnifiedEjbJndiJBoss(jbossConfDir);
@@ -432,6 +435,15 @@ public class ServerConfiguratorJBoss
 			patchRunScripts(jbossBinDir);
 			configureJavaOpts(jbossBinDir);
 			removeUnneededFiles(jbossDeployDir);
+
+//		Publish the JVM wide SSL settings:
+			final SslCf sslCf = getJFireServerConfigModule().getSslCf();
+			if (System.getProperty(JAVAX_NET_SSL_TRUSTSTORE) == null)
+			{
+				File defaultTruststore = new File(getJBossConfigDir(), JFIRE_SERVER_TRUSTSTORE_FILE_NAME).getAbsoluteFile();
+				System.setProperty(JAVAX_NET_SSL_TRUSTSTORE, defaultTruststore.toString());
+				System.setProperty(JAVAX_NET_SSL_TRUSTSTORE_PASSWORD, sslCf.getTruststorePassword());
+			}
 
 		} catch(Exception e) {
 			throw new ServerConfigurationException("Server configuration failed in server configurator "+getClass().getName(), e);
@@ -512,16 +524,63 @@ public class ServerConfiguratorJBoss
 		throws IOException
 	{
 		final File httpProxyProperties = new File(new File(jbossConfDir, "props"), "httpProxy.properties").getAbsoluteFile();
-		if (httpProxyProperties.exists())
-			return;
 
 		final Properties httpProxyProps = new Properties();
-		final ServletSSLCf servletConfig = getJFireServerConfigModule().getServletSSLCf();
-		httpProxyProps.put("httpProxy.invoker.url", servletConfig.getServletBaseURL() + "/invoker/Ejb3ServerInvokerServlet");
-		httpProxyProps.put("httpsProxy.invoker.url", servletConfig.getServletBaseURLHttps()+"/invoker/Ejb3ServerInvokerServlet");
-		FileOutputStream propStream = new FileOutputStream(httpProxyProperties);
-		httpProxyProps.store(propStream, ModificationMarker);
-		setRebootRequired(true);
+		if (httpProxyProperties.exists())
+		{
+			FileInputStream inStream = new FileInputStream(httpProxyProperties);
+			httpProxyProps.load(inStream);
+		}
+//			return;
+
+//		We haven't initialised the server yet, so no necessary information is available.
+		if (getJFireServerConfigModule() == null || getJFireServerConfigModule().getLocalServer() == null)
+			return;
+
+		boolean propsModified = false;
+		URL serverHttpURL = new URL(getJFireServerConfigModule().getLocalServer().getInitialContextURL(Server.PROTOCOL_HTTP, false));
+		serverHttpURL = new URL("http://" +serverHttpURL.getAuthority());
+		String httpURL = httpProxyProps.getProperty(HTTP_PROXY_INVOKER_URL);
+		if (serverHttpURL != null)
+		{
+			if (httpURL == null || !httpURL.startsWith(serverHttpURL.toString()))
+			{
+				httpProxyProps.put(HTTP_PROXY_INVOKER_URL, serverHttpURL + "/invoker/Ejb3ServerInvokerServlet");
+				propsModified |= true;
+			}
+		}
+		else
+		{
+			if (httpURL != null)
+			{
+				httpProxyProps.put(HTTPS_PROXY_INVOKER_URL, null);
+				propsModified |= true;
+			}
+			logger.warn("No InitalContextURL for http protocol found, hence no http proxies can be created.");
+		}
+
+		URL serverHttpsURL = new URL(getJFireServerConfigModule().getLocalServer().getInitialContextURL(Server.PROTOCOL_HTTPS, false));
+		serverHttpsURL = new URL("https://" +serverHttpsURL.getAuthority());
+		String httpsURL = httpProxyProps.getProperty(HTTPS_PROXY_INVOKER_URL);
+		if (serverHttpsURL != null)
+		{
+			if (httpsURL == null || !httpsURL.startsWith(serverHttpsURL.toString()))
+			{
+				httpProxyProps.put(HTTPS_PROXY_INVOKER_URL, serverHttpsURL + "/invoker/SSLEjb3ServerInvokerServlet");
+				propsModified |= true;
+			}
+		}
+		else
+			logger.warn("No InitalContextURL for https protocol found, hence no https proxies can be created.");
+
+		if (propsModified)
+		{
+			FileOutputStream propStream = new FileOutputStream(httpProxyProperties);
+			httpProxyProps.store(propStream, ModificationMarker);
+			logger.warn("The external context url of either the http(s) changed, hence a restart is required to generate " +
+					"the proxies pointing to the changed URL.");
+			setRebootRequired(true);
+		}
 	}
 
 	/**
@@ -781,7 +840,7 @@ public class ServerConfiguratorJBoss
 //		}
 //	}
 //
-//	final ServletSSLCf servletSSLCf = getJFireServerConfigModule().getServletSSLCf();
+//	final SslCf servletSSLCf = getJFireServerConfigModule().getServletSSLCf();
 //
 //	if (httpsInvokerNode == null)
 //	{ // create default https invoker that has the following structure
@@ -1006,6 +1065,14 @@ public class ServerConfiguratorJBoss
 	 */
 	protected File getJBossConfigDir()
 	{
+		if (jbossConfDir == null)
+		{
+			// jbossDeployDir is ${jboss}/server/default/deploy - not ${jboss}/server/default/deploy/JFire.last
+			// TODO: Why not using the system property set by JBoss to distinguish between different server configurations? (${jboss.server.home.dir}) and then append the deploy dir from the config module? (marius)
+			File jbossDeployDir = new File(getJFireServerConfigModule().getJ2ee().getJ2eeDeployBaseDirectory()).getParentFile().getAbsoluteFile();
+
+			jbossConfDir = new File(jbossDeployDir.getParentFile(), "conf");
+		}
 		return jbossConfDir;
 	}
 
@@ -1194,7 +1261,7 @@ public class ServerConfiguratorJBoss
 		assert document != null;
 		assert httpsConnector != null;
 		assert serverConfigModule != null;
-		final ServletSSLCf servletSSLCf = serverConfigModule.getServletSSLCf();
+		final SslCf sslCf = serverConfigModule.getSslCf();
 
 		// Add keystore and password (currently it is assumed that there is only one certificate in
 		// the keystore which will then be used for this connector.
@@ -1231,7 +1298,7 @@ public class ServerConfiguratorJBoss
 
 		// keystorePass="nightlabs"
 		if (attributes.getNamedItem(HTTPS_CONNECTOR_KEYSTORE_PASS) == null ||
-				!((Attr) attributes.getNamedItem(HTTPS_CONNECTOR_KEYSTORE_PASS)).getValue().equals(servletSSLCf.getKeystorePassword()))
+				!((Attr) attributes.getNamedItem(HTTPS_CONNECTOR_KEYSTORE_PASS)).getValue().equals(sslCf.getKeystorePassword()))
 		{
 			Attr keyPassAttr = (Attr) attributes.getNamedItem(HTTPS_CONNECTOR_KEYSTORE_PASS);
 			if (keyPassAttr == null) {
@@ -1239,13 +1306,13 @@ public class ServerConfiguratorJBoss
 				attributes.setNamedItem(keyPassAttr);
 			}
 
-			keyPassAttr.setValue(servletSSLCf.getKeystorePassword());
+			keyPassAttr.setValue(sslCf.getKeystorePassword());
 			attributesChanged = true;
 		}
 
 		// keyAlias= the chosen certificate
 		if (attributes.getNamedItem(HTTPS_CONNECTOR_KEY_ALIAS) == null ||
-				!((Attr) attributes.getNamedItem(HTTPS_CONNECTOR_KEY_ALIAS)).getValue().equals(servletSSLCf.getSslServerCertificateAlias()))
+				!((Attr) attributes.getNamedItem(HTTPS_CONNECTOR_KEY_ALIAS)).getValue().equals(sslCf.getSslServerCertificateAlias()))
 		{
 			Attr keyAliasAttr = (Attr) attributes.getNamedItem(HTTPS_CONNECTOR_KEY_ALIAS);
 			if (keyAliasAttr == null) {
@@ -1253,7 +1320,7 @@ public class ServerConfiguratorJBoss
 				attributes.setNamedItem(keyAliasAttr);
 			}
 
-			keyAliasAttr.setValue(servletSSLCf.getSslServerCertificateAlias());
+			keyAliasAttr.setValue(sslCf.getSslServerCertificateAlias());
 			attributesChanged = true;
 		}
 
@@ -1967,7 +2034,7 @@ public class ServerConfiguratorJBoss
 
 	/**
 	 * *** work necessary for using JFire Authentication & Authorization ***
-	 * add our JFire security domains to ${jboss.conf]/login-config.xml if necessary
+	 * add our JFire security domains to ${jboss.conf}/login-config.xml if necessary
 	 *
 	 * @param jbossConfDir The JBoss config dir
 	 * @throws FileNotFoundException If the file was not found
@@ -2451,33 +2518,48 @@ public class ServerConfiguratorJBoss
 
 		final JFireServerConfigModule jfireServerConfigModule = getJFireServerConfigModule();
 
-		if (!jfireServerConfigModule.getServletSSLCf().isKeystoreURLImported())
+		if (!jfireServerConfigModule.getSslCf().isKeystoreURLImported())
 		{
-			final String keystoreURLToImport = jfireServerConfigModule.getServletSSLCf().getKeystoreURLToImport();
-			FileOutputStream keystorePropFileStream = null;
+			final String keystoreURLToImport = jfireServerConfigModule.getSslCf().getKeystoreURLToImport();
+			final String truststoreURLToImport = jfireServerConfigModule.getSslCf().getTruststoreURLToImport();
+//			FileOutputStream keystorePropFileStream = null;
 
 			try
 			{
 				InputStream keystoreToImportStream;
+				InputStream truststoreToImportStream;
+
 				// distinguish between default and non-default keystore via this constant
 				if ("".equals(keystoreURLToImport))
 				{
 					throw new IllegalStateException("No keystore can be found in " +
 							"%jboss%/server/default/config/jfire-server.keystore and no keystoreToImport is set!");
 				}
-				else if (ServletSSLCf.DEFAULT_KEYSTORE.equals(keystoreURLToImport))
+				else if (SslCf.DEFAULT_KEYSTORE.equals(keystoreURLToImport))
 				{
 					keystoreToImportStream = ServerConfigurator.class.getResourceAsStream("/jfire-server.keystore");
 				}
 				else
 					keystoreToImportStream = new URL(keystoreURLToImport).openStream();
 
-				boolean transferData = false;
-				File jfireServerKeystoreFile = new File(getJBossConfigDir(), JFIRE_SERVER_KEYSTORE_FILE_NAME);
+				if ("".equals(truststoreURLToImport))
+				{
+					throw new IllegalStateException("No keystore can be found in " +
+							"%jboss%/server/default/config/jfire-server.keystore and no keystoreToImport is set!");
+				}
+				else if (SslCf.DEFAULT_TRUSTSTORE.equals(truststoreURLToImport))
+				{
+					truststoreToImportStream = ServerConfigurator.class.getResourceAsStream("/jfire-server.truststore");
+				}
+				else
+					truststoreToImportStream = new URL(truststoreURLToImport).openStream();
 
+
+				boolean transferKeyData = false;
+				File jfireServerKeystoreFile = new File(getJBossConfigDir(), JFIRE_SERVER_KEYSTORE_FILE_NAME);
 				if (! jfireServerKeystoreFile.exists() || ! jfireServerKeystoreFile.canRead())
 				{
-					transferData = true;
+					transferKeyData = true;
 				}
 				else
 				{
@@ -2486,65 +2568,99 @@ public class ServerConfiguratorJBoss
 							! IOUtil.compareInputStreams(
 									keystoreToImportStream, fileInputStream, fileInputStream.available() ))
 					{
-						transferData = true;
+						transferKeyData = true;
 					}
 					fileInputStream.close();
 				}
 
-				final ServletSSLCf servletSSLCf = jfireServerConfigModule.getServletSSLCf();
+				boolean transferTrustData = false;
+				File jfireServerTruststoreFile = new File(getJBossConfigDir(), JFIRE_SERVER_TRUSTSTORE_FILE_NAME);
+				if (! jfireServerTruststoreFile.exists() || ! jfireServerTruststoreFile.canRead())
+				{
+					transferTrustData = true;
+				}
+				else
+				{
+					FileInputStream fileInputStream = new FileInputStream(jfireServerTruststoreFile);
+					if (fileInputStream.available() != truststoreToImportStream.available() ||
+							! IOUtil.compareInputStreams(
+									truststoreToImportStream, fileInputStream, fileInputStream.available() ))
+					{
+						transferTrustData = true;
+					}
+					fileInputStream.close();
+				}
+
+				final SslCf sslCf = jfireServerConfigModule.getSslCf();
 
 				// if files are equal -> don't need to copy.
-				if (! transferData)
+				if (! transferKeyData && !transferTrustData)
 				{
 					// set the keystore file to the imported state (== set the keystoreURLToImport = "")
-					servletSSLCf.setKeystoreURLImported();
+					sslCf.setKeystoreURLImported();
+					sslCf.setTruststoreURLImported();
 					return;
 				}
 
 				// files differ or the destination file doesn't exist yet
-				FileOutputStream keyStoreStream = new FileOutputStream(jfireServerKeystoreFile);
-				try {
-					IOUtil.transferStreamData(keystoreToImportStream, keyStoreStream);
-				}	finally {
-					keyStoreStream.close();
+				if (transferKeyData)
+				{
+					FileOutputStream keyStoreStream = new FileOutputStream(jfireServerKeystoreFile);
+					try {
+						IOUtil.transferStreamData(keystoreToImportStream, keyStoreStream);
+						sslCf.setKeystoreURLImported();
+					}	finally {
+						keyStoreStream.close();
+					}
+				}
+
+				if (transferTrustData)
+				{
+					FileOutputStream trustStoreStream = new FileOutputStream(jfireServerTruststoreFile);
+					try {
+						IOUtil.transferStreamData(truststoreToImportStream, trustStoreStream);
+						sslCf.setTruststoreURLImported();
+					}	finally {
+						trustStoreStream.close();
+					}
 				}
 
 				// Write all ssl socket related infos into a properties file next to jfire-server.keystore,
 				// because the org.nightlabs.rmissl.socket.SSLCompressionServerSocketFactory and
 				// org.nightlabs.rmissl.socket.SSLCompressionRMIServerSocketFactory need to know these
 				// infos and the projects don't know anything from each other (and are not allowed to).
-				Properties props = new Properties();
-				props.put("org.nightlabs.ssl.keystorePassword", servletSSLCf.getKeystorePassword());
-				props.put("org.nightlabs.ssl.serverCertificateAlias", servletSSLCf.getSslServerCertificateAlias());
-				props.put("org.nightlabs.ssl.serverCertificatePassword", servletSSLCf.getSslServerCertificatePassword());
-				File keystorePropFile = new File(getJBossConfigDir(), "jfire-server.keystore.properties").getAbsoluteFile();
-				keystorePropFileStream = new FileOutputStream(keystorePropFile);
-				props.store(keystorePropFileStream, "The properties needed to read the correct private " +
-						"certificate from the jfire-server.keystore.\n" +
-						"These credentials are needed by the SSLCompressionServerSocketFactory.");
+//				Properties props = new Properties();
+//				props.put("org.nightlabs.ssl.keystorePassword", servletSSLCf.getKeystorePassword());
+//				props.put("org.nightlabs.ssl.serverCertificateAlias", servletSSLCf.getSslServerCertificateAlias());
+//				props.put("org.nightlabs.ssl.serverCertificatePassword", servletSSLCf.getSslServerCertificatePassword());
+//				File keystorePropFile = new File(getJBossConfigDir(), "jfire-server.keystore.properties").getAbsoluteFile();
+//				keystorePropFileStream = new FileOutputStream(keystorePropFile);
+//				props.store(keystorePropFileStream, "The properties needed to read the correct private " +
+//						"certificate from the jfire-server.keystore.\n" +
+//						"These credentials are needed by the SSLCompressionServerSocketFactory.");
 
-				// set the keystore file to the imported state (== set the keystoreURLToImport = "")
-				servletSSLCf.setKeystoreURLImported();
 				setRebootRequired(true);
 			}
 			catch (IOException e) {
 				throw new ServerConfigurationException(e);
 			}
-			finally {
-				if (keystorePropFileStream != null)
-				{
-					try
-					{
-						keystorePropFileStream.close();
-					}
-					catch (IOException e)
-					{
-						throw new ServerConfigurationException("Couldn't close the output stream from writing "+
-								"the keystore properties!", e);
-					}
-				}
-			}
+//			finally {
+//				if (keystorePropFileStream != null)
+//				{
+//					try
+//					{
+//						keystorePropFileStream.close();
+//					}
+//					catch (IOException e)
+//					{
+//						throw new ServerConfigurationException("Couldn't close the output stream from writing "+
+//								"the keystore properties!", e);
+//					}
+//				}
+//			}
 		}
+
+
 	}
 
 	@Override
@@ -2556,19 +2672,20 @@ public class ServerConfiguratorJBoss
 		if (x == null)
 		{
 			try {
-				clearKeystoreFile();
+				clearSSLStoreFiles();
 			} catch (IOException e) {
 				throw new ServerConfigurationException(e);
 			}
 		}
 	}
 
-	private void clearKeystoreFile() throws IOException
+	private void clearSSLStoreFiles() throws IOException
 	{
-		final File jfireServerKeystoreFile = new File(JFIRE_SERVER_KEYSTORE_FILE);
+		final File jfireServerKeystoreFile = new File(getJBossConfigDir(), JFIRE_SERVER_KEYSTORE_FILE_NAME);
+		final File jfireServerTruststoreFile = new File(getJBossConfigDir(), JFIRE_SERVER_TRUSTSTORE_FILE_NAME);
 
-		if (!jfireServerKeystoreFile.exists())
-			return;
+//		if (!jfireServerKeystoreFile.exists() && !)
+//			return;
 
 		int backupFileIndex = 0;
 		File backupFile;
@@ -2576,7 +2693,7 @@ public class ServerConfiguratorJBoss
 			backupFile = new File(jfireServerKeystoreFile.getAbsolutePath() + '.' + (backupFileIndex++) + ".bak");
 
 			if (backupFile.exists() && IOUtil.compareFiles(jfireServerKeystoreFile, backupFile)) {
-				jfireServerKeystoreFile.delete();
+				backupFile.delete();
 				return;
 			}
 		} while (backupFile.exists());
@@ -2585,6 +2702,21 @@ public class ServerConfiguratorJBoss
 			IOUtil.copyFile(jfireServerKeystoreFile, backupFile);
 			jfireServerKeystoreFile.delete();
 		}
+
+		do {
+			backupFile = new File(jfireServerTruststoreFile.getAbsolutePath() + '.' + (backupFileIndex++) + ".bak");
+
+			if (backupFile.exists() && IOUtil.compareFiles(jfireServerTruststoreFile, backupFile)) {
+				backupFile.delete();
+				return;
+			}
+		} while (backupFile.exists());
+
+		if (!jfireServerTruststoreFile.renameTo(backupFile)) {
+			IOUtil.copyFile(jfireServerTruststoreFile, backupFile);
+			jfireServerTruststoreFile.delete();
+		}
+
 	}
 
 }
