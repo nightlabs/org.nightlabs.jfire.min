@@ -14,6 +14,11 @@ import org.nightlabs.config.InitException;
  */
 public class ServicePortsConfigModule extends ConfigModule
 {
+	/**
+	 * The serial version UID.
+	 */
+	private static final long serialVersionUID = 1L;
+
 	public static String getDefaultHostName() {
 		return "${jboss.bind.address}";
 	}

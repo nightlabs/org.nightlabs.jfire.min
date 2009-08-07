@@ -24,6 +24,7 @@ import org.nightlabs.config.ConfigModuleNotFoundException;
 import org.nightlabs.jfire.jboss.authentication.JFireServerLocalLoginModule;
 import org.nightlabs.jfire.jboss.authentication.JFireServerLoginModule;
 import org.nightlabs.jfire.jboss.serverconfigurator.config.ServicePortsConfigModule;
+import org.nightlabs.jfire.jboss.serverconfigurator.config.ServiceSettingsConfigModule;
 import org.nightlabs.jfire.serverconfigurator.ServerConfigurationException;
 import org.nightlabs.jfire.serverconfigurator.ServerConfigurator;
 import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
@@ -1375,9 +1376,9 @@ public class ServerConfiguratorJBoss
 	}
 
 	/**
-	 * We deactivate the JAAS cache, because we have our own cache that is
-	 * proactively managed and reflects changes immediately.
-	 * Additionally, we extend the transaction timeout to 15 min (default is 5 min).
+	 * Set the JAAS cache timeout and the transaction timout according to the settings in
+	 * {@link ServiceSettingsConfigModule}.
+	 * Set the listening ports as configured in {@link ServicePortsConfigModule}.
 	 *
 	 * @param jbossConfDir The JBoss config dir
 	 * @throws FileNotFoundException If the file was not found
@@ -1397,59 +1398,13 @@ public class ServerConfiguratorJBoss
 		boolean haveChanges = false;
 		boolean changed;
 
-
-//		// add the custom compression socket mbean service
-//		// find if we already wrote the node
-//
-//		Node jrmp_node = NLDOMUtil.findNodeByAttribute(document, "server/mbean", "name",
-//		"jboss:service=invoker,type=jrmp,socketType=CompressionSocketFactory");
-//
-//		if(jrmp_node == null) {
-//
-//			changed = true;
-//
-//			Element root = document.getDocumentElement();
-//
-//
-//			// find the Node JRMP invoker to add our custom invoker before that node
-//			jrmp_node = NLDOMUtil.findNodeByAttribute(document, "server/mbean", "code",
-//			"org.jboss.invocation.jrmp.server.JRMPInvoker");
-//
-//			if(jrmp_node == null) {
-//				logger.error("MBean attribute node org.jboss.invocation.jrmp.server.JRMPInvoker->code not found");
-//			}
-//			else
-//			{
-//				Element newnode = document.createElement("mbean");// Create Root Element
-//				newnode.setAttribute("code", "org.jboss.invocation.jrmp.server.JRMPInvoker");
-//				newnode.setAttribute("name", "jboss:service=invoker,type=jrmp,socketType=CompressionSocketFactory");
-//
-//
-//				Comment comment = document.createComment("Add the Custom Compression SSL Socket mbean invoker");
-//				newnode.appendChild(comment);
-//
-//				Element item = document.createElement("attribute");       // Create element
-//				item.setAttribute("name", "RMIObjectPort");
-//				item.appendChild( document.createTextNode("24445") );
-//				newnode.appendChild( item );
-//
-//				item = document.createElement("attribute");       // Create element
-//				item.setAttribute("name", "RMIClientSocketFactory");
-//				item.appendChild( document.createTextNode("org.nightlabs.rmissl.socket.SSLCompressionRMIClientSocketFactory") );
-//				newnode.appendChild( item );
-//
-//				item = document.createElement("attribute");       // Create element
-//				item.setAttribute("name", "RMIServerSocketFactory");
-//				item.appendChild( document.createTextNode("org.nightlabs.rmissl.socket.SSLCompressionRMIServerSocketFactory") );
-//				newnode.appendChild( item );
-//
-//
-//				root.insertBefore(newnode,jrmp_node);
-//
-//				logger.info("Added Custom MBean Invoker for the JRMP Compression invoker");
-//			}
-//
-//		}
+		// read ServicePortsConfigModule
+		ServiceSettingsConfigModule serviceSettingsConfigModule = null;
+		try {
+			serviceSettingsConfigModule = getConfig().getConfigModule(ServiceSettingsConfigModule.class, true);
+		} catch (ConfigModuleNotFoundException e) {
+			serviceSettingsConfigModule = getConfig().createConfigModule(ServiceSettingsConfigModule.class);
+		}
 
 		// JAAS TIMEOUT
 		changed = replaceMBeanAttribute(
@@ -1458,10 +1413,10 @@ public class ServerConfiguratorJBoss
 				"DefaultCacheTimeout",
 				" " +
 						modificationMarker + "\n " +
-						ServerConfiguratorJBoss.class.getName() + " has reduced the JAAS cache timeout to 5 min.\n" +
+						ServerConfiguratorJBoss.class.getName() + " has set the JAAS cache timeout according to configuration.\n" +
 						" JFire has its own cache, which is updated immediately. We cannot completely deactivate the JAAS cache, however,\n" +
 						" because that causes JPOX bugs (why?!).\n Marco :-) ",
-				"300") || needRestart;
+				String.valueOf(serviceSettingsConfigModule.getJaasCacheTimeout())) || needRestart;
 		if(changed)
 			logger.info("Have changes after DefaultCacheTimeout update");
 		needRestart |= changed;
@@ -1481,8 +1436,8 @@ public class ServerConfiguratorJBoss
 				"TransactionTimeout",
 				" " +
 						modificationMarker + "\n " +
-						ServerConfiguratorJBoss.class.getName() + " has increased the transaction timeout to 15 min. ",
-				"900") || needRestart;
+						ServerConfiguratorJBoss.class.getName() + " has set the transaction timeout according to configuration. ",
+				String.valueOf(serviceSettingsConfigModule.getTransactionTimeout())) || needRestart;
 		if(changed)
 			logger.info("Have changes after TransactionTimeout update");
 		needRestart |= changed;
@@ -2444,7 +2399,7 @@ public class ServerConfiguratorJBoss
 
 			// tomcat ports
 			// TODO add values for portHttps and portAJP
-			Node webserverNode = setServicePortAndHost(document, nodeServerNode, "jboss.web:service=WebServer",
+			setServicePortAndHost(document, nodeServerNode, "jboss.web:service=WebServer",
 					servicePortsConfigModule.getServiceTomcatPort(), servicePortsConfigModule.getServiceTomcatHost());
 
 			// jboss messaging
