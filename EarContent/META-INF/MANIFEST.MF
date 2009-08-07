@@ -1,5 +1,7 @@
 Manifest-Version: 1.0
 EAR-Module-ID: JFireTestSuiteEAR
-EAR-Schema-Version: 1.0.1
+EAR-Schema-Version: 1.0.2
 Comment: Update note 1.0.1:
 added a new test case for creating a dummy user and a person.
+Comment: Update note 1.0.2:
+added a new method to list all the users in the system.
