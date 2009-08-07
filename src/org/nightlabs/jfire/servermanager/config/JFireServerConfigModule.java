@@ -54,7 +54,7 @@ public class JFireServerConfigModule extends ConfigModule
 	private DatabaseCf database = null;
 	private RootOrganisationCf rootOrganisation = null;
 	private ServerCf localServer = null;
-	private ServletSSLCf servletSSLCf = null;
+	private SslCf sslCf = null;
 
 	/* (non-Javadoc)
 	 * @see org.nightlabs.config.ConfigModule#init()
@@ -89,8 +89,8 @@ public class JFireServerConfigModule extends ConfigModule
 			setJdo(new JDOCf());
 			setChanged();
 		}
-		if (servletSSLCf == null) {
-			setServletSSLCf(new ServletSSLCf());
+		if (sslCf == null) {
+			setSslCf(new SslCf());
 			setChanged();
 		}
 
@@ -250,23 +250,23 @@ public class JFireServerConfigModule extends ConfigModule
 	}
 
 	/**
-	 * @return the servletSSLCf
+	 * @return the sslCf
 	 */
-	public ServletSSLCf getServletSSLCf()
+	public SslCf getSslCf()
 	{
-		return servletSSLCf;
+		return sslCf;
 	}
 
 	/**
-	 * @param servletSSLCf the servletSSLCf to set
+	 * @param sslCf the sslCf to set
 	 */
-	public void setServletSSLCf(ServletSSLCf servletSSLCf)
+	public void setSslCf(SslCf sslCf)
 	{
-		this.servletSSLCf = servletSSLCf;
-		if (servletSSLCf != null)
+		this.sslCf = sslCf;
+		if (sslCf != null)
 		{
-			servletSSLCf.setParentConfigModule(this);
-			servletSSLCf.init();
+			sslCf.setParentConfigModule(this);
+			sslCf.init();
 		}
 		setChanged();
 	}

@@ -202,7 +202,7 @@ public class J2eeServerTypeRegistryConfigModule extends ConfigModule
 			}
 
 			if (getAnonymousInitialContextFactory(Server.PROTOCOL_HTTPS, false) == null)
-				setAnonymousInitialContextFactory(Server.PROTOCOL_HTTPS, "org.jboss.naming.HttpNamingContextFactory");
+				setAnonymousInitialContextFactory(Server.PROTOCOL_HTTPS, "org.nightlabs.unifiedjndi.jboss.client.UnifiedNamingContextFactory");
 
 			if (getLoginInitialContextFactory(Server.PROTOCOL_JNP, false) == null) {
 //				setLoginInitialContextFactory(Server.PROTOCOL_JNP, "org.nightlabs.jfire.jboss.cascadedauthentication.LoginInitialContextFactory");

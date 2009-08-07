@@ -323,6 +323,11 @@ public class ServerCf implements Serializable, Cloneable {
 
 		initialContextURL = null;
 
+		if (!protocol2initialContextURL.containsKey(Server.PROTOCOL_HTTP)) {
+			modified = true;
+			protocol2initialContextURL.put(Server.PROTOCOL_HTTP, "http://localhost:8080/invoker/JNDIFactory");
+		}
+
 		if (!protocol2initialContextURL.containsKey(Server.PROTOCOL_HTTPS)) {
 			modified = true;
 			protocol2initialContextURL.put(Server.PROTOCOL_HTTPS, "https://localhost:8443/invoker/SSLJNDIFactory");
