@@ -7,24 +7,35 @@ import java.rmi.RemoteException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import javax.ejb.CreateException;
+import javax.jdo.FetchPlan;
 import javax.naming.NamingException;
 
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 import org.junit.Test;
+import org.nightlabs.jdo.NLJDOHelper;
+import org.nightlabs.jdo.query.QueryCollection;
 import org.nightlabs.jfire.base.JFireEjb3Factory;
 import org.nightlabs.jfire.idgenerator.IDGenerator;
 import org.nightlabs.jfire.person.Person;
+import org.nightlabs.jfire.security.JFireSecurityManagerRemote;
 import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.security.User;
+import org.nightlabs.jfire.security.dao.UserDAO;
+import org.nightlabs.jfire.security.id.UserID;
+import org.nightlabs.jfire.security.search.UserQuery;
+import org.nightlabs.jfire.store.ProductType;
 import org.nightlabs.jfire.testsuite.JFireTestSuite;
 import org.nightlabs.jfire.trade.LegalEntity;
-import org.nightlabs.jfire.trade.Order;
+import org.nightlabs.progress.NullProgressMonitor;
 
 /**
  * A simple TestCase for demonstration.
@@ -127,20 +138,30 @@ public class UserTest extends TestCase
 	}
 	
 	
-	
-	
-	
 	/**
 	 * This method is invoked by the JUnit run,
 	 * as it is annotated with the Test annotation.
 	 */
-	@Test
-	public void listUsers() {
+	public void testListUsers() throws Exception{
 		// if fails, however ;-)
 		// fail("Well, somewhere is an error.");
-
 		logger.info("listUsers: begin");
-		// TODO implement!
-		logger.info("listUsers: end");
+		// TODO implement!		
+		JFireSecurityManagerRemote um = JFireEjb3Factory.getRemoteBean(JFireSecurityManagerRemote.class,SecurityReflector.getInitialContextProperties());
+		final QueryCollection<UserQuery> queries =new QueryCollection<UserQuery>(User.class);
+		UserQuery userQuery = new UserQuery();
+		queries.add(userQuery);			
+		Set<UserID> userIDs = um.getUserIDs(queries);
+		
+		if (userIDs != null && !userIDs.isEmpty()) {
+			Collection<User> users = um.getUsers(userIDs, new String[] {FetchPlan.DEFAULT}, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);			
+			if (users.isEmpty())
+				fail("No Users was found!!!");	
+			logger.info("the following Users found with");
+			for (User user : users) {
+				logger.info("name = "+user.getName());
+			}	
+		}	
+		logger.info("listUsers: end");		
 	}
 }
