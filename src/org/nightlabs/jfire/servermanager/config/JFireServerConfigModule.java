@@ -44,7 +44,7 @@ public class JFireServerConfigModule extends ConfigModule
 	/**
 	 * The serial version of this class.
 	 */
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 2L;
 
 	public static final String ORGANISATION_ID_VAR = "${organisationID}";
 
@@ -55,6 +55,12 @@ public class JFireServerConfigModule extends ConfigModule
 	private RootOrganisationCf rootOrganisation = null;
 	private ServerCf localServer = null;
 	private SslCf sslCf = null;
+
+	/**
+	 * @deprecated Do not use this field! It exists only to allow for reading the old XML file! This field will soon be removed!
+	 */
+	@Deprecated
+	private ServletSSLCf servletSSLCf = null;
 
 	/* (non-Javadoc)
 	 * @see org.nightlabs.config.ConfigModule#init()
@@ -105,6 +111,18 @@ public class JFireServerConfigModule extends ConfigModule
 		}
 
 		rootOrganisation.init();
+
+
+		// BEGIN cleanup because of downward compatibility
+		// We do not copy anything from the old ServletSSLCf to the new SslCf, because
+		// it is very unlikely that anything was changed at all (using the default settings
+		// is recommended). Instead we just null it to get rid of the old data so that we
+		// can soon drop the field 'servletSSLCf' and the class 'ServletSSLCf'. Marco.
+		if (servletSSLCf != null) {
+			servletSSLCf = null;
+			setChanged();
+		}
+		// END cleanup because of downward compatibility
 	}
 
 	public RootOrganisationCf getRootOrganisation()
@@ -269,5 +287,21 @@ public class JFireServerConfigModule extends ConfigModule
 			sslCf.init();
 		}
 		setChanged();
+	}
+
+	/**
+	 * @deprecated Do not use this method! It exists only to allow for reading the old XML file! It will soon be removed!
+	 */
+	@Deprecated
+	public ServletSSLCf getServletSSLCf() {
+		return servletSSLCf;
+	}
+
+	/**
+	 * @deprecated Do not use this method! It exists only to allow for reading the old XML file! It will soon be removed!
+	 */
+	@Deprecated
+	public void setServletSSLCf(ServletSSLCf servletSSLCf) {
+		this.servletSSLCf = servletSSLCf;
 	}
 }

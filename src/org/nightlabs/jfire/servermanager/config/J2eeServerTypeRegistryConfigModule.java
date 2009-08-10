@@ -204,6 +204,9 @@ public class J2eeServerTypeRegistryConfigModule extends ConfigModule
 			if (getAnonymousInitialContextFactory(Server.PROTOCOL_HTTPS, false) == null)
 				setAnonymousInitialContextFactory(Server.PROTOCOL_HTTPS, "org.nightlabs.unifiedjndi.jboss.client.UnifiedNamingContextFactory");
 
+			if (getAnonymousInitialContextFactory(Server.PROTOCOL_HTTP, false) == null)
+				setAnonymousInitialContextFactory(Server.PROTOCOL_HTTP, "org.nightlabs.unifiedjndi.jboss.client.UnifiedNamingContextFactory");
+
 			if (getLoginInitialContextFactory(Server.PROTOCOL_JNP, false) == null) {
 //				setLoginInitialContextFactory(Server.PROTOCOL_JNP, "org.nightlabs.jfire.jboss.cascadedauthentication.LoginInitialContextFactory");
 				setLoginInitialContextFactory(Server.PROTOCOL_JNP, "org.nightlabs.unifiedjndi.jboss.client.UnifiedNamingContextFactory");
@@ -216,6 +219,9 @@ public class J2eeServerTypeRegistryConfigModule extends ConfigModule
 
 			if (getLoginInitialContextFactory(Server.PROTOCOL_HTTPS, false) == null)
 				setLoginInitialContextFactory(Server.PROTOCOL_HTTPS, "org.nightlabs.unifiedjndi.jboss.client.UnifiedNamingContextFactory");
+
+			if (getLoginInitialContextFactory(Server.PROTOCOL_HTTP, false) == null)
+				setLoginInitialContextFactory(Server.PROTOCOL_HTTP, "org.nightlabs.unifiedjndi.jboss.client.UnifiedNamingContextFactory");
 
 			anonymousInitialContextFactory = null;
 			initialContextFactory = null;
