@@ -13,7 +13,7 @@ import org.nightlabs.config.InitException;
  *
  * @author Marius Heinzmann - marius[at]nightlabs[dot]com
  * @deprecated This class exists only for downward compatibility! Without this class, it's not possible to read the old
- * XML config file. You must not use it anymore! It does not contain any useful information anymore!
+ * XML config file. You must not use this class anymore! Instances of this class do not contain any useful information anymore!
  */
 @Deprecated
 public class ServletSSLCf
