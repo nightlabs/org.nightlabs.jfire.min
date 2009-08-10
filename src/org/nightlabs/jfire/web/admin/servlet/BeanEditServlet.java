@@ -277,6 +277,6 @@ public class BeanEditServlet extends HttpServlet
 		else if(epd.getPropertyType() == Integer.class || epd.getPropertyType() == Integer.TYPE)
 			return Integer.valueOf(parameter);
 		else
-			throw new IllegalArgumentException("NYI: type: "+epd.getPropertyType());
+			throw new IllegalArgumentException("NYI: property: " + epd.getName() + " of " + bean.getClass() + ", type: "+epd.getPropertyType());
 	}
 }
