@@ -43,6 +43,21 @@ import java.util.Set;
 import javax.jdo.FetchPlan;
 import javax.jdo.JDOHelper;
 import javax.jdo.PersistenceManager;
+import javax.jdo.annotations.Column;
+import javax.jdo.annotations.Discriminator;
+import javax.jdo.annotations.DiscriminatorStrategy;
+import javax.jdo.annotations.Element;
+import javax.jdo.annotations.FetchGroup;
+import javax.jdo.annotations.FetchGroups;
+import javax.jdo.annotations.IdentityType;
+import javax.jdo.annotations.Inheritance;
+import javax.jdo.annotations.InheritanceStrategy;
+import javax.jdo.annotations.Join;
+import javax.jdo.annotations.NullValue;
+import javax.jdo.annotations.PersistenceCapable;
+import javax.jdo.annotations.PersistenceModifier;
+import javax.jdo.annotations.Persistent;
+import javax.jdo.annotations.PrimaryKey;
 import javax.jdo.listener.AttachCallback;
 import javax.jdo.listener.DetachCallback;
 import javax.jdo.listener.StoreCallback;
@@ -59,6 +74,7 @@ import org.nightlabs.jfire.prop.exception.DataBlockNotFoundException;
 import org.nightlabs.jfire.prop.exception.DataFieldNotFoundException;
 import org.nightlabs.jfire.prop.exception.DataNotFoundException;
 import org.nightlabs.jfire.prop.exception.StructureViolationException;
+import org.nightlabs.jfire.prop.id.PropertySetID;
 import org.nightlabs.jfire.prop.id.StructBlockID;
 import org.nightlabs.jfire.prop.id.StructFieldID;
 import org.nightlabs.jfire.prop.id.StructID;
@@ -67,23 +83,6 @@ import org.nightlabs.jfire.prop.validation.IPropertySetValidator;
 import org.nightlabs.jfire.prop.validation.ValidationResult;
 import org.nightlabs.jfire.prop.validation.ValidationResultType;
 import org.nightlabs.util.Util;
-
-import javax.jdo.annotations.FetchGroups;
-import javax.jdo.annotations.Inheritance;
-import javax.jdo.annotations.PrimaryKey;
-import javax.jdo.annotations.FetchGroup;
-import javax.jdo.annotations.PersistenceModifier;
-import javax.jdo.annotations.Discriminator;
-import javax.jdo.annotations.Element;
-import javax.jdo.annotations.PersistenceCapable;
-import javax.jdo.annotations.DiscriminatorStrategy;
-import org.nightlabs.jfire.prop.id.PropertySetID;
-import javax.jdo.annotations.Join;
-import javax.jdo.annotations.NullValue;
-import javax.jdo.annotations.Persistent;
-import javax.jdo.annotations.InheritanceStrategy;
-import javax.jdo.annotations.Column;
-import javax.jdo.annotations.IdentityType;
 
 /**
  * Instances of this class represent the actual set of properties
@@ -192,12 +191,12 @@ public class PropertySet implements Serializable, StoreCallback, AttachCallback,
 	 * @see #getDataFieldCount()
 	 */
 	public static final String FETCH_GROUP_DATA_FIELD_COUNT = "PropertySet.dataFieldCount";
-	
+
 	/**
-	 * Property constant for a {@link PropertySet}s display name. 
+	 * Property constant for a {@link PropertySet}s display name.
 	 */
 	public static final String PROP_DISPLAY_NAME = "displayName";
-	
+
 	/**
 	 * The {@link Struct} that this instance corresponds to.
 	 * This is set after a {@link PropertySet} was inflated and is set to <code>null</code> while deflating. Thus it is ensured,
@@ -721,11 +720,11 @@ public class PropertySet implements Serializable, StoreCallback, AttachCallback,
 
 	/**
 	 * Returns the DataFields of all DataBlockGroups that represent the given {@link StructFieldID}.
-	 * This means if the {@link DataBlockGroup} for the StructBlock the given StructField is in 
-	 * has - let's say - 3 DataBlock entries, the resulting List will have 3 entries as well. 
-	 *   
+	 * This means if the {@link DataBlockGroup} for the StructBlock the given StructField is in
+	 * has - let's say - 3 DataBlock entries, the resulting List will have 3 entries as well.
+	 *
 	 * @param structFieldID The {@link StructFieldID} to get all {@link DataField}s for.
-	 * 
+	 *
 	 * @return All {@link DataField}s for the given {@link StructFieldID}.
 	 * @throws DataBlockGroupNotFoundException If the referenced {@link DataBlockGroup} could not be found.
 	 * @throws DataFieldNotFoundException If the referenced {@link DataField} could not be found.
@@ -739,7 +738,7 @@ public class PropertySet implements Serializable, StoreCallback, AttachCallback,
 		}
 		return result;
 	}
-	
+
 //	/**
 //	 * @jdo.field persistence-modifier="persistent"
 //	 */
@@ -1167,10 +1166,11 @@ public class PropertySet implements Serializable, StoreCallback, AttachCallback,
 	 * @return The {@link DataField} for the given key, or <code>null</code> it this can't be found.
 	 */
 	public DataField getPersistentDataField(StructFieldID structFieldID, int dataBlockID) {
-		if (!getDataFieldsMap().containsKey(structFieldID))
+		Collection<DataField> dataFields = getDataFieldsMap().get(structFieldID);
+		if (dataFields == null)
 			return null;
 
-		for (DataField dataField : getDataFieldsMap().get(structFieldID)) {
+		for (DataField dataField : dataFields) {
 			if (dataField.getDataBlockID() == dataBlockID)
 				return dataField;
 		}
@@ -1188,10 +1188,14 @@ public class PropertySet implements Serializable, StoreCallback, AttachCallback,
 	 * @return The {@link DataField} for the given key, or <code>null</code> it this can't be found.
 	 */
 	public DataField getPersistentDataFieldByIndex(StructFieldID structFieldID, int dataBlockIndex) {
-		if (!getDataFieldsMap().containsKey(structFieldID))
+		List<DataField> dataFields = getDataFieldsMap().get(structFieldID);
+		if (dataFields == null)
 			return null;
 
-		return getDataFieldsMap().get(structFieldID).get(dataBlockIndex);
+		if (dataFields.size() <= dataBlockIndex)
+			return null;
+
+		return dataFields.get(dataBlockIndex);
 	}
 
 	/**
@@ -1282,7 +1286,7 @@ public class PropertySet implements Serializable, StoreCallback, AttachCallback,
 	 * <p>
 	 * This method can be called on inflated and deflated instances of {@link PropertySet}.
 	 * </p>
-	 * 
+	 *
 	 * @param struct The {@link IStruct} against which to validated.
 	 * @return A list of all {@link ValidationFailureResult} occurred during the validation or <code>null</code> if the validation succeeded..
 	 */
@@ -1306,8 +1310,8 @@ public class PropertySet implements Serializable, StoreCallback, AttachCallback,
 		else
 			return results;
 	}
-	
-	
+
+
 	/**
 	 * Validates this {@link PropertySet} with priority (in order) given to the referenced StructFields and StructBlocks.
 	 * First the validators for the complete PropertySet will be executed with no way to skip that.
@@ -1315,12 +1319,12 @@ public class PropertySet implements Serializable, StoreCallback, AttachCallback,
 	 * are validated. Last all remaining StructBlocks in this PropertySet are validated.
 	 * <p>
 	 * This method returns either all {@link ValidationResult}s found, or if breakOnFirstError all results till the first
-	 * error is found. If the validation did not result in any {@link ValidationResult}s, <code>null</code> is returned. 
+	 * error is found. If the validation did not result in any {@link ValidationResult}s, <code>null</code> is returned.
 	 * </p>
 	 * <p>
 	 * This method can be called on inflated and deflated instances of {@link PropertySet}.
 	 * </p>
-	 * 
+	 *
 	 * @param struct The {@link IStruct} against which to validate.
 	 * @param fieldsOfInterest The list of {@link StructField}s that should have priority over the (other) blocks. Might be <code>null</code>.
 	 * @param blocksOfInterest The list of {@link StructBlock}s that should have priority over the other blocks. Might be <code>null</code>.
@@ -1338,7 +1342,7 @@ public class PropertySet implements Serializable, StoreCallback, AttachCallback,
 		if (fieldsOfInterest != null) {
 			for (StructField<?> structField : fieldsOfInterest) {
 				validationOrder.add(structField);
-				if (!blockOrder.contains(structField.getStructBlock())) {	
+				if (!blockOrder.contains(structField.getStructBlock())) {
 					// if the block of the found field is not in the interest-list
 					// we add it as prioritised entry
 					blockOrder.add(structField.getStructBlock());
@@ -1355,7 +1359,7 @@ public class PropertySet implements Serializable, StoreCallback, AttachCallback,
 				validationOrder.add(structBlock);
 			}
 		}
-		
+
 		// now validate in the computed order
 		validationOrderLoop: for (Object orderItem : validationOrder) {
 			if (orderItem instanceof StructField) {
@@ -1389,7 +1393,7 @@ public class PropertySet implements Serializable, StoreCallback, AttachCallback,
 				}
 			}
 		}
-		
+
 		if (results.isEmpty())
 			return null;
 		else
@@ -1400,7 +1404,7 @@ public class PropertySet implements Serializable, StoreCallback, AttachCallback,
 	 * Checks the validation results of this {@link PropertySet}
 	 * for {@link ValidationResultType#ERROR}s. Returns <code>true</code>
 	 * if an error was found and <code>false</code> otherwise.
-	 * 
+	 *
 	 * @param struct The structure to validate against.
 	 * @return Whether this {@link PropertySet} has validation errors.
 	 */
@@ -1414,7 +1418,7 @@ public class PropertySet implements Serializable, StoreCallback, AttachCallback,
 		}
 		return false;
 	}
-	
+
 	/**
 	 * Used by {@link #validate(IStruct, List, List, boolean)}
 	 */
