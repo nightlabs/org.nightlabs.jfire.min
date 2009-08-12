@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.nightlabs.jfire.testsuite.base;
 
 import java.rmi.RemoteException;
@@ -9,7 +6,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
@@ -20,7 +16,6 @@ import javax.naming.NamingException;
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
-import org.junit.Test;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jdo.query.QueryCollection;
 import org.nightlabs.jfire.base.JFireEjb3Factory;
@@ -29,15 +24,15 @@ import org.nightlabs.jfire.person.Person;
 import org.nightlabs.jfire.security.JFireSecurityManagerRemote;
 import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.security.User;
-import org.nightlabs.jfire.security.dao.UserDAO;
 import org.nightlabs.jfire.security.id.UserID;
 import org.nightlabs.jfire.security.search.UserQuery;
-import org.nightlabs.jfire.store.ProductType;
 import org.nightlabs.jfire.testsuite.JFireTestSuite;
 import org.nightlabs.jfire.trade.LegalEntity;
-import org.nightlabs.progress.NullProgressMonitor;
 
 /**
+ * 
+ * @author Fitas Amine - fitas [at] nightlabs [dot] de
+ * 
  * A simple TestCase for demonstration.
  * With the annotation it is linked to
  * the JFireBaseTestSuite, that will check

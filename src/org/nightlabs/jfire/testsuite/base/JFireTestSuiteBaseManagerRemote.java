@@ -8,6 +8,7 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import org.nightlabs.jfire.person.Person;
 import org.nightlabs.jfire.security.User;
+import org.nightlabs.jfire.security.UserSecurityGroup;
 import org.nightlabs.jfire.trade.LegalEntity;
 
 @Remote
@@ -35,7 +36,12 @@ public interface JFireTestSuiteBaseManagerRemote {
 			int creditCardExpiryMonth, int creditCardExpiryYear, String comment)
 	throws Exception;
 	
-
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_Guest_")
+	public UserSecurityGroup createUserGroup(String userGroupID) throws Exception;
+	
+	
+	
 	@TransactionAttribute(TransactionAttributeType.REQUIRED)
 	@RolesAllowed("_Guest_")
 	public LegalEntity createLegalEntity(Person person)

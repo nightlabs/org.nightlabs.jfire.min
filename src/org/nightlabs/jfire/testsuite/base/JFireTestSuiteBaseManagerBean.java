@@ -25,6 +25,7 @@ import org.nightlabs.jfire.prop.structfield.SelectionStructField;
 import org.nightlabs.jfire.prop.structfield.StructFieldValue;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.security.UserLocal;
+import org.nightlabs.jfire.security.UserSecurityGroup;
 import org.nightlabs.jfire.security.id.UserID;
 import org.nightlabs.jfire.trade.LegalEntity;
 import org.nightlabs.jfire.trade.Trader;
@@ -145,13 +146,20 @@ implements JFireTestSuiteBaseManagerRemote{
 		person.deflate();
 		pm.makePersistent(person);
 		return person;
+	}	
+
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_Guest_")
+	public UserSecurityGroup createUserGroup(String userGroupID) throws Exception
+	{
+		PersistenceManager pm = getPersistenceManager();
+		UserSecurityGroup userSecurityGroup = new UserSecurityGroup(getOrganisationID(), userGroupID);
+		return pm.makePersistent(userSecurityGroup);	
 	}
-	
-	
 	
 	@TransactionAttribute(TransactionAttributeType.REQUIRED)
 	@RolesAllowed("_Guest_")
-	public LegalEntity createLegalEntity(Person person)throws Exception
+	public LegalEntity createLegalEntity(Person person) throws Exception
 	{
 		if (person == null)
 			throw new IllegalArgumentException("person must not be null!");
