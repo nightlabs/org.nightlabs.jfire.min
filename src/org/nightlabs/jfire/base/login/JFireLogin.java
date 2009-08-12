@@ -230,10 +230,8 @@ public class JFireLogin
 	 * access JFire server methods.
 	 *
 	 * @return Properties for an {@link InitialContext} configured with the values of this JFireLogin.
-	 * @throws NamingException Might occur when trying to auto-resolve the providerURL.
 	 */
 	public Properties getInitialContextProperties()
-	throws NamingException
 	{
 		if (logger.isDebugEnabled())
 			logger.debug("getInitialContextProperties: begin");
