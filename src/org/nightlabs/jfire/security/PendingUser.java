@@ -1,5 +1,6 @@
 package org.nightlabs.jfire.security;
 
+import java.io.Serializable;
 import java.util.Date;
 
 import javax.jdo.annotations.Column;
@@ -42,8 +43,13 @@ import org.nightlabs.util.IOUtil;
 		name=PendingUser.FETCH_GROUP_PENDING_USER_DATA,
 		members=@Persistent(name="pendingUserData")),
 })
-public class PendingUser
+public class PendingUser implements Serializable
 {
+	/**
+	 * The serial version.
+	 */
+	private static final long serialVersionUID = 1L;
+
 	public static final String FETCH_GROUP_PERSON = "PendingUser.person";
 	public static final String FETCH_GROUP_NAME = "PendingUser.name";
 	public static final String FETCH_GROUP_PENDING_USER_DATA = "PendingUser.pendingUserData";
