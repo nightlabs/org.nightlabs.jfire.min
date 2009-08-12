@@ -147,6 +147,8 @@
 			Erlaubt es, Benutzer in die Datenbank zu schreiben - also neue Benutzer anzulegen oder bestehende zu aendern.
 		</description>
 		<role id="org.nightlabs.jfire.security.storeUser" />
+		<role id="org.nightlabs.jfire.security.storePendingUser" />
+		<role id="org.nightlabs.jfire.security.storePendingUserAsUser" />
 	</role-group>
 
 	<authority-type id="org.nightlabs.jfire.security.AuthorityType#organisation">

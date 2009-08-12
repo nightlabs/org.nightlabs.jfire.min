@@ -66,6 +66,7 @@ import org.nightlabs.jfire.security.id.AuthorityID;
 import org.nightlabs.jfire.security.id.AuthorityTypeID;
 import org.nightlabs.jfire.security.id.AuthorizedObjectID;
 import org.nightlabs.jfire.security.id.AuthorizedObjectRefID;
+import org.nightlabs.jfire.security.id.PendingUserID;
 import org.nightlabs.jfire.security.id.RoleGroupID;
 import org.nightlabs.jfire.security.id.RoleID;
 import org.nightlabs.jfire.security.id.UserID;
@@ -219,21 +220,20 @@ implements JFireSecurityManagerRemote
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.nightlabs.jfire.security.JFireSecurityManagerRemote#storeUser(org.nightlabs.jfire.security.User, java.lang.String, boolean, java.lang.String[], int)
-	 */
-	@TransactionAttribute(TransactionAttributeType.REQUIRED)
-	@RolesAllowed("org.nightlabs.jfire.security.storeUser")
-	@Override
-	public User storeUser(User user, String newPassword, boolean get, String[] fetchGroups, int maxFetchDepth)
+	private void validateUserData(String userID, String organisationID)
 	{
-		if (User.USER_ID_SYSTEM.equals(user.getUserID()))
+		if (User.USER_ID_SYSTEM.equals(userID))
 			throw new IllegalArgumentException("Cannot manipulate system user \"" + User.USER_ID_SYSTEM + "\"!");
-		if (User.USER_ID_OTHER.equals(user.getUserID()))
+		if (User.USER_ID_OTHER.equals(userID))
 			throw new IllegalArgumentException("Cannot change properties of special user \"" + User.USER_ID_OTHER + "\"!");
 
-		if (user.getOrganisationID() != null && !user.getOrganisationID().equals(getOrganisationID()))
+		if (organisationID != null && !organisationID.equals(getOrganisationID()))
 			throw new IllegalArgumentException("user.organisationID must be null or equal to your organisationID!!!");
+	}
+
+	protected User storeUser(PersistenceManager pm, User user, String newPassword, boolean checkForPendingUser, boolean get, String[] fetchGroups, int maxFetchDepth)
+	{
+		validateUserData(user.getUserID(), user.getOrganisationID());
 
 		try {
 			UserLocal userLocal = user.getUserLocal();
@@ -246,34 +246,92 @@ implements JFireSecurityManagerRemote
 		if (newPassword != null && !UserLocal.isValidPassword(newPassword))
 			throw new IllegalArgumentException("The new password is not a valid password!");
 
+		if(checkForPendingUser && isIDAlreadyRegistered(PendingUserID.create(user.getOrganisationID(), user.getUserID()), pm))
+			throw new UserExistsException("A pending user already exists with user id "+user.getUserID()+" for organisation "+user.getOrganisationID());
+
+		boolean successful = false;
+		SecurityChangeController.beginChanging();
+		try {
+			if (ASSERT_CONSISTENCY_BEFORE)
+				assertConsistency(pm);
+
+			user = pm.makePersistent(user);
+
+			if (user.getUserLocal() == null)
+				new UserLocal(user); // self-registering
+
+			// ensure that the user has a AuthorizedObjectRef in the organisation-authority (everyone should have one).
+			Authority.getOrganisationAuthority(pm).createAuthorizedObjectRef(user.getUserLocal());
+
+			if (newPassword != null)
+				user.getUserLocal().setPasswordPlain(newPassword);
+
+			ConfigSetup.ensureAllPrerequisites(pm);
+
+			if (ASSERT_CONSISTENCY_AFTER)
+				assertConsistency(pm);
+
+			successful = true;
+		} finally {
+			SecurityChangeController.endChanging(successful);
+		}
+
+		if (!get)
+			return null;
+
+		pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
+		if (fetchGroups != null)
+			pm.getFetchPlan().setGroups(fetchGroups);
+
+		return pm.detachCopy(user);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.security.JFireSecurityManagerRemote#storeUser(org.nightlabs.jfire.security.User, java.lang.String, boolean, java.lang.String[], int)
+	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("org.nightlabs.jfire.security.storeUser")
+	@Override
+	public User storeUser(User user, String newPassword, boolean get, String[] fetchGroups, int maxFetchDepth)
+	{
 		PersistenceManager pm = this.createPersistenceManager();
 		try {
-			boolean successful = false;
-			SecurityChangeController.beginChanging();
+			return storeUser(pm, user, newPassword, true, get, fetchGroups, maxFetchDepth);
+		} finally {
+			pm.close();
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.security.JFireSecurityManagerRemote#storePendingUser(org.nightlabs.jfire.security.PendingUser, boolean, java.lang.String[], int)
+	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("org.nightlabs.jfire.security.storePendingUser")
+	@Override
+	public PendingUser storePendingUser(PendingUser user, boolean get, String[] fetchGroups, int maxFetchDepth)
+	{
+		validateUserData(user.getUserID(), user.getOrganisationID());
+
+		String newPassword = user.getPasswordPlain();
+		if (newPassword != null && !UserLocal.isValidPassword(newPassword))
+			throw new IllegalArgumentException("The new password is not a valid password!");
+
+		PersistenceManager pm = this.createPersistenceManager();
+		try {
+
+			pm.getExtent(User.class);
+			pm.getExtent(PendingUser.class);
 			try {
-				if (ASSERT_CONSISTENCY_BEFORE)
-					assertConsistency(pm);
-
-				user = pm.makePersistent(user);
-
-				if (user.getUserLocal() == null)
-					new UserLocal(user); // self-registering
-
-				// ensure that the user has a AuthorizedObjectRef in the organisation-authority (everyone should have one).
-				Authority.getOrganisationAuthority(pm).createAuthorizedObjectRef(user.getUserLocal());
-
-				if (newPassword != null)
-					user.getUserLocal().setPasswordPlain(newPassword);
-
-				ConfigSetup.ensureAllPrerequisites(pm);
-
-				if (ASSERT_CONSISTENCY_AFTER)
-					assertConsistency(pm);
-
-				successful = true;
-			} finally {
-				SecurityChangeController.endChanging(successful);
+				User existingUser = (User) pm.getObjectById(UserID.create(user.getOrganisationID(), user.getUserID()));
+				// TODO WORKAROUND: DataNucleus workaround - is this still needed?
+				existingUser.getUserID();
+				// the user does exist -> throw exception
+				throw new UserExistsException("A user already exists with user id "+user.getUserID()+" for organisation "+user.getOrganisationID());
+			} catch(JDOObjectNotFoundException e) {
+				// the pending user does not exist -> continue.
 			}
+
+			user = pm.makePersistent(user);
 
 			if (!get)
 				return null;
@@ -283,6 +341,32 @@ implements JFireSecurityManagerRemote
 				pm.getFetchPlan().setGroups(fetchGroups);
 
 			return pm.detachCopy(user);
+		} finally {
+			pm.close();
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.security.JFireSecurityManagerRemote#storePendingUserAsUser(org.nightlabs.jfire.security.PendingUser, boolean, java.lang.String[], int)
+	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("org.nightlabs.jfire.security.storePendingUserAsUser")
+	@Override
+	public User storePendingUserAsUser(PendingUser user, boolean get, String[] fetchGroups, int maxFetchDepth)
+	{
+		PersistenceManager pm = this.createPersistenceManager();
+		try {
+			user = (PendingUser) pm.getObjectById(PendingUserID.create(user.getOrganisationID(), user.getUserID()));
+
+			User newUser = new User(user.getOrganisationID(), user.getUserID());
+			newUser.setDescription(user.getDescription());
+			newUser.setName(user.getName());
+			newUser.setPerson(user.getPerson());
+			newUser = storeUser(pm, newUser, user.getPasswordPlain(), false, get, fetchGroups, maxFetchDepth);
+
+			pm.deletePersistent(user);
+
+			return newUser;
 		} finally {
 			pm.close();
 		}
@@ -800,27 +884,77 @@ implements JFireSecurityManagerRemote
 		}
 	}
 
-
-	/* (non-Javadoc)
-	 * @see org.nightlabs.jfire.security.JFireSecurityManagerRemote#userIDAlreadyRegistered(org.nightlabs.jfire.security.id.UserID)
-	 */
-	@RolesAllowed("org.nightlabs.jfire.security.accessRightManagement")
-	@Override
-	public boolean userIDAlreadyRegistered(UserID userID)
+	private boolean isIDAlreadyRegistered(Object objectID, PersistenceManager pm)
 	{
-		PersistenceManager pm = createPersistenceManager();
 		try {
-			Object test = pm.getObjectById(userID, true);
+			Object test = pm.getObjectById(objectID, true);
 
 			if (logger.isDebugEnabled())
-				logger.debug("userIDAlreadyRegistered(\"" + userID + "\") = " + (test != null));
+				logger.debug("idAlreadyRegistered(\"" + objectID + "\") = " + (test != null));
 
 			return (test != null);
 		} catch(JDOObjectNotFoundException e) {
 			if (logger.isDebugEnabled())
-				logger.debug("userIDAlreadyRegistered(\"" + userID + "\") = false");
+				logger.debug("idAlreadyRegistered(\"" + objectID + "\") = false");
 
 			return false;
+		}
+	}
+
+	/**
+	 * @see org.nightlabs.jfire.security.JFireSecurityManagerRemote#userIDAlreadyRegistered(org.nightlabs.jfire.security.id.UserID)
+	 * @deprecated use {@link #isUserIDAlreadyRegistered(UserID)} instead
+	 */
+	@RolesAllowed("org.nightlabs.jfire.security.accessRightManagement")
+	@Override
+	@Deprecated
+	public boolean userIDAlreadyRegistered(UserID userID)
+	{
+		return isUserIDAlreadyRegistered(userID);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.security.JFireSecurityManagerRemote#isUserIDAlreadyRegistered(org.nightlabs.jfire.security.id.UserID)
+	 */
+	@RolesAllowed("org.nightlabs.jfire.security.accessRightManagement")
+	@Override
+	public boolean isUserIDAlreadyRegistered(UserID userID)
+	{
+		PersistenceManager pm = createPersistenceManager();
+		try {
+			return isIDAlreadyRegistered(userID, pm);
+		} finally {
+			pm.close();
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.security.JFireSecurityManagerRemote#isPendingUserIDAlreadyRegistered(org.nightlabs.jfire.security.id.PendingUserID)
+	 */
+	@RolesAllowed("org.nightlabs.jfire.security.accessRightManagement")
+	@Override
+	public boolean isPendingUserIDAlreadyRegistered(PendingUserID userID)
+	{
+		PersistenceManager pm = createPersistenceManager();
+		try {
+			return isIDAlreadyRegistered(userID, pm);
+		} finally {
+			pm.close();
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.security.JFireSecurityManagerRemote#isUserIDAvailable(java.lang.String, java.lang.String)
+	 */
+	@RolesAllowed("org.nightlabs.jfire.security.accessRightManagement")
+	@Override
+	public boolean isUserIDAvailable(String organisationID, String userID)
+	{
+		PersistenceManager pm = createPersistenceManager();
+		try {
+			return
+				!isIDAlreadyRegistered(UserID.create(organisationID, userID), pm) &&
+				!isIDAlreadyRegistered(PendingUserID.create(organisationID, userID), pm);
 		} finally {
 			pm.close();
 		}

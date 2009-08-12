@@ -12,6 +12,7 @@ import org.nightlabs.jfire.security.id.AuthorityID;
 import org.nightlabs.jfire.security.id.AuthorityTypeID;
 import org.nightlabs.jfire.security.id.AuthorizedObjectID;
 import org.nightlabs.jfire.security.id.AuthorizedObjectRefID;
+import org.nightlabs.jfire.security.id.PendingUserID;
 import org.nightlabs.jfire.security.id.RoleGroupID;
 import org.nightlabs.jfire.security.id.RoleID;
 import org.nightlabs.jfire.security.id.UserID;
@@ -20,7 +21,7 @@ import org.nightlabs.jfire.security.search.UserQuery;
 import org.nightlabs.jfire.timer.id.TaskID;
 
 @Remote
-public interface JFireSecurityManagerRemote 
+public interface JFireSecurityManagerRemote
 {
 	String ping(String message);
 
@@ -40,6 +41,26 @@ public interface JFireSecurityManagerRemote
 	UserSecurityGroup storeUserSecurityGroup(
 			UserSecurityGroup userSecurityGroup, boolean get,
 			String[] fetchGroups, int maxFetchDepth);
+
+	/**
+	 * Create a new pending user or change an existing one.
+	 *
+	 * @param user the pending user to save.
+	 * @param get Whether to return the newly saved pending user.
+	 * @param fetchGroups The fetch-groups to detach the returned PendingUser with.
+	 * @param maxFetchDepth The maximum fetch-depth to use when detaching.
+	 */
+	PendingUser storePendingUser(PendingUser user, boolean get, String[] fetchGroups, int maxFetchDepth);
+
+	/**
+	 * Create a new pending user or change an existing one.
+	 *
+	 * @param user the pending user to save.
+	 * @param get Whether to return the newly saved user.
+	 * @param fetchGroups The fetch-groups to detach the returned User with.
+	 * @param maxFetchDepth The maximum fetch-depth to use when detaching.
+	 */
+	User storePendingUserAsUser(PendingUser user, boolean get, String[] fetchGroups, int maxFetchDepth);
 
 	/**
 	 * Create a new user or change an existing one.
@@ -158,8 +179,30 @@ public interface JFireSecurityManagerRemote
 
 	/**
 	 * Check if a user ID exists. This method is used to check the ID while creating a new user.
+	 * @deprecated Use {@link #isUserIDAlreadyRegistered(UserID)} instead
 	 */
+	@Deprecated
 	boolean userIDAlreadyRegistered(UserID userID);
+
+	/**
+	 * Check if a user ID exists. This method is used to check the ID while creating a new user.
+	 */
+	boolean isUserIDAlreadyRegistered(UserID userID);
+
+	/**
+	 * Check if a pending user ID exists. This method is used to check the ID while creating a new user.
+	 */
+	boolean isPendingUserIDAlreadyRegistered(PendingUserID userID);
+
+	/**
+	 * Check if the given ids are currently available for a new user to create.
+	 * This also checks for existence of pending users.
+	 * @param organisationID The user's organisation id
+	 * @param userID The user id
+	 * @return <code>true</code> if the user id is available to create either a user
+	 * 		or a pending user.
+	 */
+	boolean isUserIDAvailable(String organisationID, String userID);
 
 	Set<AuthorizedObjectID> getAuthorizedObjectIDs();
 
