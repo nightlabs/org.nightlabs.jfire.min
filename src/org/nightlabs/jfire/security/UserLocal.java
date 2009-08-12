@@ -40,6 +40,18 @@ import javax.jdo.JDOHelper;
 import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
+import javax.jdo.annotations.Column;
+import javax.jdo.annotations.FetchGroup;
+import javax.jdo.annotations.FetchGroups;
+import javax.jdo.annotations.IdentityType;
+import javax.jdo.annotations.Inheritance;
+import javax.jdo.annotations.InheritanceStrategy;
+import javax.jdo.annotations.Join;
+import javax.jdo.annotations.Key;
+import javax.jdo.annotations.PersistenceCapable;
+import javax.jdo.annotations.PersistenceModifier;
+import javax.jdo.annotations.Persistent;
+import javax.jdo.annotations.PrimaryKey;
 import javax.jdo.listener.AttachCallback;
 import javax.jdo.listener.DetachCallback;
 
@@ -51,19 +63,6 @@ import org.nightlabs.jfire.security.id.UserLocalID;
 import org.nightlabs.util.CollectionUtil;
 import org.nightlabs.util.IOUtil;
 import org.nightlabs.util.Util;
-
-import javax.jdo.annotations.Join;
-import javax.jdo.annotations.FetchGroups;
-import javax.jdo.annotations.Inheritance;
-import javax.jdo.annotations.PrimaryKey;
-import javax.jdo.annotations.FetchGroup;
-import javax.jdo.annotations.PersistenceModifier;
-import javax.jdo.annotations.Persistent;
-import javax.jdo.annotations.Key;
-import javax.jdo.annotations.InheritanceStrategy;
-import javax.jdo.annotations.PersistenceCapable;
-import javax.jdo.annotations.Column;
-import javax.jdo.annotations.IdentityType;
 
 /**
  * @author Marco Schulze - marco at nightlabs dot de
@@ -463,7 +462,12 @@ implements DetachCallback, AttachCallback
 	 * <p>
 	 * This method is used by <code>JFireServerManagerImpl.login(...)</code>.
 	 * </p>
-	 * @param plainPassword The password in NOT encrypted form to check. Note that a <code>null</code> password always causes this method to return <code>false</code> - even if this {@link UserLocal} does not have a password assigned. The same applies to any password failing the {@link #isValidPassword(String)} test.
+	 * @param plainPassword The password in NOT encrypted form to check.
+	 * 		Note that a <code>null</code> password always causes this
+	 * 		method to return <code>false</code> - even if this
+	 * 		{@link UserLocal} does not have a password assigned.
+	 * 		The same applies to any password failing the
+	 * 		{@link #isValidPassword(String)} test.
 	 * @return <code>true</code> if the password matches, <code>false</code> otherwise.
 	 */
 	public boolean checkPassword(String plainPassword)
