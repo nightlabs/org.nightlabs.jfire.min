@@ -372,6 +372,17 @@ implements JFireSecurityManagerRemote
 		}
 	}
 
+	@Override
+	public void deletePendingUser(PendingUserID pendingUserID)
+	{
+		PersistenceManager pm = this.createPersistenceManager();
+		try {
+			pm.deletePersistent(pm.getObjectById(pendingUserID));
+		} finally {
+			pm.close();
+		}
+	}
+
 	/* (non-Javadoc)
 	 * @see org.nightlabs.jfire.security.JFireSecurityManagerRemote#getRolesForRequiredRoleIDs(java.util.Set)
 	 */
@@ -457,6 +468,43 @@ implements JFireSecurityManagerRemote
 		PersistenceManager pm = createPersistenceManager();
 		try {
 			return NLJDOHelper.getDetachedObjectList(pm, userIDs, User.class, fetchGroups, maxFetchDepth);
+		} finally {
+			pm.close();
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.security.JFireSecurityManagerRemote#getPendingUserIDs(java.lang.String)
+	 */
+	@RolesAllowed({"org.nightlabs.jfire.security.accessRightManagement", "org.nightlabs.jfire.security.queryPendingUsers"})
+	@SuppressWarnings("unchecked")
+	@Override
+	public Set<PendingUserID> getPendingUserIDs(String organisationID)
+	{
+		PersistenceManager pm = createPersistenceManager();
+		try {
+			Query query = pm.newQuery(pm.getExtent(PendingUser.class, true));
+			query.setResult("JDOHelper.getObjectId(this)");
+
+			HashMap<String, Object> params = new HashMap<String, Object>(1);
+			if(organisationID != null) {
+				query.setFilter("this.organisationID == :organisationID");
+				params.put("organisationID", organisationID);
+			}
+
+			return new HashSet<PendingUserID>((Collection<? extends PendingUserID>) query.executeWithMap(params));
+		} finally {
+			pm.close();
+		}
+	}
+
+	@RolesAllowed({"org.nightlabs.jfire.security.accessRightManagement", "org.nightlabs.jfire.security.queryPendingUsers"})
+	@Override
+	public List<PendingUser> getPendingUsers(Collection<PendingUserID> pendingUserIDs, String[] fetchGroups, int maxFetchDepth)
+	{
+		PersistenceManager pm = createPersistenceManager();
+		try {
+			return NLJDOHelper.getDetachedObjectList(pm, pendingUserIDs, PendingUser.class, fetchGroups, maxFetchDepth);
 		} finally {
 			pm.close();
 		}

@@ -135,6 +135,7 @@
 			bestimmten Kontext zu tun hat.
 		</description>
 		<role id="org.nightlabs.jfire.security.queryUsers" />
+		<role id="org.nightlabs.jfire.security.queryPendingUsers" />
 	</role-group>
 	
 	<role-group id="org.nightlabs.jfire.security.storeUser">

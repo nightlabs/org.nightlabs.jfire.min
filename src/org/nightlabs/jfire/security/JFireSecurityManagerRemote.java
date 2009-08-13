@@ -118,6 +118,27 @@ public interface JFireSecurityManagerRemote
 	List<User> getUsers(Collection<UserID> userIDs, String[] fetchGroups,
 			int maxFetchDepth);
 
+	/**
+	 * @param organisationID an organisationID in order to filter for it or <code>null</code> to get all.
+	 * @return the unique IDs of those pending users that match the given criteria.
+	 */
+	Set<PendingUserID> getPendingUserIDs(String organisationID);
+
+	/**
+	 * Returns a Collection of {@link User}s corresponding to the given set of {@link PendingUserID}s.
+	 *
+	 * @param pendingUserIDs the {@link PendingUserID}s for which to retrieve the {@link PendingUser}s
+	 * @param fetchGroups the FetchGroups for the detached Users
+	 * @param maxFetchDepth the maximum fetch depth of the detached Users.
+	 * @return a Collection of {@link User}s corresponding to the given set of {@link UserID}s.
+	 */
+	List<PendingUser> getPendingUsers(Collection<PendingUserID> pendingUserIDs, String[] fetchGroups, int maxFetchDepth);
+
+	/**
+	 * Delete a pending user.
+	 */
+	void deletePendingUser(PendingUserID pendingUserID);
+
 	Set<UserSecurityGroupID> getUserSecurityGroupIDs();
 
 	/**
