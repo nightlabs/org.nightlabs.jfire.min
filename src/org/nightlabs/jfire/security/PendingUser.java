@@ -57,6 +57,7 @@ public class PendingUser implements Serializable
 	/**
 	 * The user id to register. Analogical to {@link User}.
 	 */
+	@Persistent
 	@PrimaryKey
 	@Column(length=100)
 	private String userID;
@@ -64,6 +65,7 @@ public class PendingUser implements Serializable
 	/**
 	 * The organisationID to which the pending user belongs. Analogical to {@link User}.
 	 */
+	@Persistent
 	@PrimaryKey
 	@Column(length=100)
 	private String organisationID;
@@ -93,29 +95,36 @@ public class PendingUser implements Serializable
 	 * needs to be readable when creating the user, it is only Base64 encoded but
 	 * not hashed.
 	 */
+	@Persistent
+	@Column(length=255)
 	private String password;
 
 	/**
 	 * The date when this pending user was created.
 	 */
+	@Persistent
 	private Date createDT;
 
 	/**
 	 * The date until this pending user is valid. <code>null</code> if this
 	 * pending user is valid forever.
 	 */
+	@Persistent
 	private Date validUntilDT;
 
 	/**
 	 * Flag indicating that timer tasks are allowed to delete this pending user
 	 * after the {@link #validUntil} date was reached.
 	 */
+	@Persistent
 	private boolean deleteAutomatically;
 
 	/**
 	 * Arbitrary data to be used by the application creating such a pending user e.g
 	 * a random confirmation string.
 	 */
+	@Persistent
+	@Column(sqlType="blob")
 	private byte[] pendingUserData;
 
 
