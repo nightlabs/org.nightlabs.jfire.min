@@ -36,7 +36,7 @@ import org.nightlabs.jfire.trade.LegalEntity;
  * A simple TestCase for demonstration.
  * With the annotation it is linked to
  * the JFireBaseTestSuite, that will check
- * if JFireBase is deployed.
+ * if JFireBase is deployedsss.
  */
 @JFireTestSuite(JFireBaseTestSuite.class)
 public class UserTest extends TestCase
