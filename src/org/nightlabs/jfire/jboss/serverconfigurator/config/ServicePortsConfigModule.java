@@ -11,6 +11,12 @@ import org.nightlabs.config.InitException;
  *
  * @author Daniel Mazurek - Daniel.Mazurek [dot] nightlabs [dot] de
  *
+ * FIXME: this class has several problems.
+ * 1st: It must distinguish between bind addresses and connection addresses and provide a default for both separately.
+ * bind address can be something like 0.0.0.0 which can never be a connection address.
+ * 2nd: The default ${jboss.bin.address} does not work in all affected configuration files. Thus, I changed the default
+ * to 127.0.0.1 (I would have used 0.0.0.0 but this does not work because of the problem above.
+ * Marc
  */
 public class ServicePortsConfigModule extends ConfigModule
 {
@@ -19,9 +25,9 @@ public class ServicePortsConfigModule extends ConfigModule
 	 */
 	private static final long serialVersionUID = 1L;
 
-	public static String getDefaultHostName() {
-		return "${jboss.bind.address}";
-	}
+//	public static String getDefaultHostName() {
+//		return "${jboss.bind.address}";
+//	}
 
 	private int serviceNamingBindingPort = 0;
 	private int serviceNamingRMIPort = 0;
@@ -77,7 +83,12 @@ public class ServicePortsConfigModule extends ConfigModule
 	private String serviceAxisServiceHost;
 	private String serviceRemotingConnectorHost;
 
-	private String globalServiceHost;
+//	private String globalServiceHost;
+
+	/**
+	 * To be used when a specific host is set to <code>null</code>.
+	 */
+	private String defaultServiceHost;
 
 	@Override
 	public void init() throws InitException
@@ -160,88 +171,10 @@ public class ServicePortsConfigModule extends ConfigModule
 		if (serviceRemotingConnectorPort == 0)
 			serviceRemotingConnectorPort = 4446;
 
-		String defaultHost = getDefaultHostName();
-
-		if (globalServiceHost == null)
-			globalServiceHost = defaultHost;
-
-		if (serviceAxisServiceHost == null)
-			serviceAxisServiceHost = defaultHost;
-
-		if (serviceClusterHAJNDIBindingHost == null)
-			serviceClusterHAJNDIBindingHost = defaultHost;
-
-		if (serviceClusterHAJNDIRMIHost == null)
-			serviceClusterHAJNDIRMIHost = defaultHost;
-
-		if (serviceClusterJrmphaHost == null)
-			serviceClusterJrmphaHost = defaultHost;
-
-		if (serviceClusterPooledhaHost == null)
-			serviceClusterPooledhaHost = defaultHost;
-
-		if (serviceCorbaORBHost == null)
-			serviceCorbaORBHost = defaultHost;
-
-		if (serviceEJB3InvokerHttpHost == null)
-			serviceEJB3InvokerHttpHost = defaultHost;
-
-		if (serviceEJB3RemoteConnectorHost == null)
-			serviceEJB3RemoteConnectorHost = defaultHost;
-
-		if (serviceEJBInvokerHAHost == null)
-			serviceEJBInvokerHAHost = defaultHost;
-
-		if (serviceInvokerJMXHttpHost == null)
-			serviceInvokerJMXHttpHost = defaultHost;
-
-		if (serviceInvokerJMXHttpReadOnlyHost == null)
-			serviceInvokerJMXHttpReadOnlyHost = defaultHost;
-
-		if (serviceJBossMessagingHost == null)
-			serviceJBossMessagingHost = defaultHost;
-
-		if (serviceJMSHost == null)
-			serviceJMSHost = defaultHost;
-
-		if (serviceJMSHttpHost == null)
-			serviceJMSHttpHost = defaultHost;
-
-		if (serviceJMXConnectorRMIHost == null)
-			serviceJMXConnectorRMIHost = defaultHost;
-
-		if (serviceJMXInvokerHAHost == null)
-			serviceJMXInvokerHAHost = defaultHost;
-
-		if (serviceJrmpHost == null)
-			serviceJrmpHost = defaultHost;
-
-		if (serviceJSMHajndiHost == null)
-			serviceJSMHajndiHost = defaultHost;
-
-		if (serviceNamingBindingHost == null)
-			serviceNamingBindingHost = defaultHost;
-
-		if (serviceNamingRMIHost == null)
-			serviceNamingRMIHost = defaultHost;
-
-		if (servicePooledHost == null)
-			servicePooledHost = defaultHost;
-
-		if (serviceRemotingConnectorHost == null)
-			serviceRemotingConnectorHost = defaultHost;
-
-		if (serviceSnmpAgentSnmpHost == null)
-			serviceSnmpAgentSnmpHost = defaultHost;
-
-		if (serviceSnmpAgentTrapdHost == null)
-			serviceSnmpAgentTrapdHost = defaultHost;
-
-		if (serviceTomcatHost == null)
-			serviceTomcatHost = defaultHost;
-
-		if (serviceWebServiceHost == null)
-			serviceWebServiceHost = defaultHost;
+		if(defaultServiceHost == null)
+			defaultServiceHost = "127.0.0.1";
+		// see class-comment
+		//	defaultServiceHost = "${jboss.bind.address}";
 
 		setChanged();
 	}
@@ -255,7 +188,9 @@ public class ServicePortsConfigModule extends ConfigModule
 
 	/**
 	 * Returns the serviceNamingBindingPort.
-	 * @return the serviceNamingBindingPort
+	 * @return the serviceNamingBindingPort or <code>null</code> if it is not set. In this case,
+	 * 		use the value given by {@link #getDefaultServiceHost()}.
+	 * @see #getDefaultServiceHost()
 	 */
 	public int getServiceNamingBindingPort() {
 		return serviceNamingBindingPort;
@@ -273,6 +208,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	/**
 	 * Returns the serviceNamingRMIPort.
 	 * @return the serviceNamingRMIPort
+	 * @see #getDefaultServiceHost()
 	 */
 	public int getServiceNamingRMIPort() {
 		return serviceNamingRMIPort;
@@ -290,6 +226,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	/**
 	 * Returns the serviceWebServicePort.
 	 * @return the serviceWebServicePort
+	 * @see #getDefaultServiceHost()
 	 */
 	public int getServiceWebServicePort() {
 		return serviceWebServicePort;
@@ -307,6 +244,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	/**
 	 * Returns the serviceTomcatPort.
 	 * @return the serviceTomcatPort
+	 * @see #getDefaultServiceHost()
 	 */
 	public int getServiceTomcatPort() {
 		return serviceTomcatPort;
@@ -325,6 +263,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	/**
 	 * Returns the serviceJBossMessagingPort.
 	 * @return the serviceJBossMessagingPort
+	 * @see #getDefaultServiceHost()
 	 */
 	public int getServiceJBossMessagingPort() {
 		return serviceJBossMessagingPort;
@@ -342,6 +281,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	/**
 	 * Returns the serviceJrmpPort.
 	 * @return the serviceJrmpPort
+	 * @see #getDefaultServiceHost()
 	 */
 	public int getServiceJrmpPort() {
 		return serviceJrmpPort;
@@ -359,6 +299,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	/**
 	 * Returns the servicePooledPort.
 	 * @return the servicePooledPort
+	 * @see #getDefaultServiceHost()
 	 */
 	public int getServicePooledPort() {
 		return servicePooledPort;
@@ -376,6 +317,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	/**
 	 * Returns the serviceClusterHAJNDIBindingPort.
 	 * @return the serviceClusterHAJNDIBindingPort
+	 * @see #getDefaultServiceHost()
 	 */
 	public int getServiceClusterHAJNDIBindingPort() {
 		return serviceClusterHAJNDIBindingPort;
@@ -393,6 +335,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	/**
 	 * Returns the serviceClusterHAJNDIRMIPort.
 	 * @return the serviceClusterHAJNDIRMIPort
+	 * @see #getDefaultServiceHost()
 	 */
 	public int getServiceClusterHAJNDIRMIPort() {
 		return serviceClusterHAJNDIRMIPort;
@@ -410,6 +353,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	/**
 	 * Returns the serviceClusterJrmphaPort.
 	 * @return the serviceClusterJrmphaPort
+	 * @see #getDefaultServiceHost()
 	 */
 	public int getServiceClusterJrmphaPort() {
 		return serviceClusterJrmphaPort;
@@ -427,6 +371,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	/**
 	 * Returns the serviceClusterPooledhaPort.
 	 * @return the serviceClusterPooledhaPort
+	 * @see #getDefaultServiceHost()
 	 */
 	public int getServiceClusterPooledhaPort() {
 		return serviceClusterPooledhaPort;
@@ -444,6 +389,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	/**
 	 * Returns the serviceCorbaORBPort.
 	 * @return the serviceCorbaORBPort
+	 * @see #getDefaultServiceHost()
 	 */
 	public int getServiceCorbaORBPort() {
 		return serviceCorbaORBPort;
@@ -461,6 +407,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	/**
 	 * Returns the serviceJMXConnectorRMIPort.
 	 * @return the serviceJMXConnectorRMIPort
+	 * @see #getDefaultServiceHost()
 	 */
 	public int getServiceJMXConnectorRMIPort() {
 		return serviceJMXConnectorRMIPort;
@@ -478,6 +425,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	/**
 	 * Returns the serviceSnmpAgentTrapdPort.
 	 * @return the serviceSnmpAgentTrapdPort
+	 * @see #getDefaultServiceHost()
 	 */
 	public int getServiceSnmpAgentTrapdPort() {
 		return serviceSnmpAgentTrapdPort;
@@ -495,6 +443,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	/**
 	 * Returns the serviceSnmpAgentSnmpPort.
 	 * @return the serviceSnmpAgentSnmpPort
+	 * @see #getDefaultServiceHost()
 	 */
 	public int getServiceSnmpAgentSnmpPort() {
 		return serviceSnmpAgentSnmpPort;
@@ -512,6 +461,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	/**
 	 * Returns the serviceJMSPort.
 	 * @return the serviceJMSPort
+	 * @see #getDefaultServiceHost()
 	 */
 	public int getServiceJMSPort() {
 		return serviceJMSPort;
@@ -529,6 +479,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	/**
 	 * Returns the serviceJMSHttpPort.
 	 * @return the serviceJMSHttpPort
+	 * @see #getDefaultServiceHost()
 	 */
 	public int getServiceJMSHttpPort() {
 		return serviceJMSHttpPort;
@@ -546,6 +497,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	/**
 	 * Returns the serviceJSMHajndiPort.
 	 * @return the serviceJSMHajndiPort
+	 * @see #getDefaultServiceHost()
 	 */
 	public int getServiceJSMHajndiPort() {
 		return serviceJSMHajndiPort;
@@ -563,6 +515,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	/**
 	 * Returns the serviceEJB3InvokerHttpPort.
 	 * @return the serviceEJB3InvokerHttpPort
+	 * @see #getDefaultServiceHost()
 	 */
 	public int getServiceEJB3InvokerHttpPort() {
 		return serviceEJB3InvokerHttpPort;
@@ -583,6 +536,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	/**
 	 * Returns the serviceEJB3RemoteConnectorPort.
 	 * @return the serviceEJB3RemoteConnectorPort
+	 * @see #getDefaultServiceHost()
 	 */
 	public int getServiceEJB3RemoteConnectorPort() {
 		return serviceEJB3RemoteConnectorPort;
@@ -600,6 +554,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	/**
 	 * Returns the serviceInvokerJMXHttpPort.
 	 * @return the serviceInvokerJMXHttpPort
+	 * @see #getDefaultServiceHost()
 	 */
 	public int getServiceInvokerJMXHttpPort() {
 		return serviceInvokerJMXHttpPort;
@@ -619,6 +574,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	/**
 	 * Returns the serviceInvokerJMXHttpReadOnlyPort.
 	 * @return the serviceInvokerJMXHttpReadOnlyPort
+	 * @see #getDefaultServiceHost()
 	 */
 	public int getServiceInvokerJMXHttpReadOnlyPort() {
 		return serviceInvokerJMXHttpReadOnlyPort;
@@ -638,6 +594,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	/**
 	 * Returns the serviceEJBInvokerHAPort.
 	 * @return the serviceEJBInvokerHAPort
+	 * @see #getDefaultServiceHost()
 	 */
 	public int getServiceEJBInvokerHAPort() {
 		return serviceEJBInvokerHAPort;
@@ -655,6 +612,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	/**
 	 * Returns the serviceJMXInvokerHAPort.
 	 * @return the serviceJMXInvokerHAPort
+	 * @see #getDefaultServiceHost()
 	 */
 	public int getServiceJMXInvokerHAPort() {
 		return serviceJMXInvokerHAPort;
@@ -672,6 +630,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	/**
 	 * Returns the serviceAxisServicePort.
 	 * @return the serviceAxisServicePort
+	 * @see #getDefaultServiceHost()
 	 */
 	public int getServiceAxisServicePort() {
 		return serviceAxisServicePort;
@@ -689,6 +648,7 @@ public class ServicePortsConfigModule extends ConfigModule
 	/**
 	 * Returns the serviceRemotingConnectorPort.
 	 * @return the serviceRemotingConnectorPort
+	 * @see #getDefaultServiceHost()
 	 */
 	public int getServiceRemotingConnectorPort() {
 		return serviceRemotingConnectorPort;
@@ -705,7 +665,9 @@ public class ServicePortsConfigModule extends ConfigModule
 
 	/**
 	 * Returns the serviceNamingBindingHost.
-	 * @return the serviceNamingBindingHost
+	 * @return the serviceNamingBindingHost or <code>null</code> if it is not set. In this case,
+	 * 		use the value given by {@link #getDefaultServiceHost()}.
+	 * @see #getDefaultServiceHost()
 	 */
 	public String getServiceNamingBindingHost() {
 		return serviceNamingBindingHost;
@@ -722,7 +684,9 @@ public class ServicePortsConfigModule extends ConfigModule
 
 	/**
 	 * Returns the serviceWebServiceHost.
-	 * @return the serviceWebServiceHost
+	 * @return the serviceWebServiceHost or <code>null</code> if it is not set. In this case,
+	 * 		use the value given by {@link #getDefaultServiceHost()}.
+	 * @see #getDefaultServiceHost()
 	 */
 	public String getServiceWebServiceHost() {
 		return serviceWebServiceHost;
@@ -739,7 +703,9 @@ public class ServicePortsConfigModule extends ConfigModule
 
 	/**
 	 * Returns the serviceTomcatHost.
-	 * @return the serviceTomcatHost
+	 * @return the serviceTomcatHost or <code>null</code> if it is not set. In this case,
+	 * 		use the value given by {@link #getDefaultServiceHost()}.
+	 * @see #getDefaultServiceHost()
 	 */
 	public String getServiceTomcatHost() {
 		return serviceTomcatHost;
@@ -756,7 +722,9 @@ public class ServicePortsConfigModule extends ConfigModule
 
 	/**
 	 * Returns the serviceJBossMessagingHost.
-	 * @return the serviceJBossMessagingHost
+	 * @return the serviceJBossMessagingHost or <code>null</code> if it is not set. In this case,
+	 * 		use the value given by {@link #getDefaultServiceHost()}.
+	 * @see #getDefaultServiceHost()
 	 */
 	public String getServiceJBossMessagingHost() {
 		return serviceJBossMessagingHost;
@@ -773,7 +741,9 @@ public class ServicePortsConfigModule extends ConfigModule
 
 	/**
 	 * Returns the serviceJrmpHost.
-	 * @return the serviceJrmpHost
+	 * @return the serviceJrmpHost or <code>null</code> if it is not set. In this case,
+	 * 		use the value given by {@link #getDefaultServiceHost()}.
+	 * @see #getDefaultServiceHost()
 	 */
 	public String getServiceJrmpHost() {
 		return serviceJrmpHost;
@@ -790,7 +760,9 @@ public class ServicePortsConfigModule extends ConfigModule
 
 	/**
 	 * Returns the servicePooledHost.
-	 * @return the servicePooledHost
+	 * @return the servicePooledHost or <code>null</code> if it is not set. In this case,
+	 * 		use the value given by {@link #getDefaultServiceHost()}.
+	 * @see #getDefaultServiceHost()
 	 */
 	public String getServicePooledHost() {
 		return servicePooledHost;
@@ -807,7 +779,9 @@ public class ServicePortsConfigModule extends ConfigModule
 
 	/**
 	 * Returns the serviceClusterHAJNDIBindingHost.
-	 * @return the serviceClusterHAJNDIBindingHost
+	 * @return the serviceClusterHAJNDIBindingHost or <code>null</code> if it is not set. In this case,
+	 * 		use the value given by {@link #getDefaultServiceHost()}.
+	 * @see #getDefaultServiceHost()
 	 */
 	public String getServiceClusterHAJNDIBindingHost() {
 		return serviceClusterHAJNDIBindingHost;
@@ -824,7 +798,9 @@ public class ServicePortsConfigModule extends ConfigModule
 
 	/**
 	 * Returns the serviceClusterHAJNDIRMIHost.
-	 * @return the serviceClusterHAJNDIRMIHost
+	 * @return the serviceClusterHAJNDIRMIHost or <code>null</code> if it is not set. In this case,
+	 * 		use the value given by {@link #getDefaultServiceHost()}.
+	 * @see #getDefaultServiceHost()
 	 */
 	public String getServiceClusterHAJNDIRMIHost() {
 		return serviceClusterHAJNDIRMIHost;
@@ -841,7 +817,9 @@ public class ServicePortsConfigModule extends ConfigModule
 
 	/**
 	 * Returns the serviceClusterJrmphaHost.
-	 * @return the serviceClusterJrmphaHost
+	 * @return the serviceClusterJrmphaHost or <code>null</code> if it is not set. In this case,
+	 * 		use the value given by {@link #getDefaultServiceHost()}.
+	 * @see #getDefaultServiceHost()
 	 */
 	public String getServiceClusterJrmphaHost() {
 		return serviceClusterJrmphaHost;
@@ -858,7 +836,9 @@ public class ServicePortsConfigModule extends ConfigModule
 
 	/**
 	 * Returns the serviceClusterPooledhaHost.
-	 * @return the serviceClusterPooledhaHost
+	 * @return the serviceClusterPooledhaHost or <code>null</code> if it is not set. In this case,
+	 * 		use the value given by {@link #getDefaultServiceHost()}.
+	 * @see #getDefaultServiceHost()
 	 */
 	public String getServiceClusterPooledhaHost() {
 		return serviceClusterPooledhaHost;
@@ -875,7 +855,9 @@ public class ServicePortsConfigModule extends ConfigModule
 
 	/**
 	 * Returns the serviceCorbaORBHost.
-	 * @return the serviceCorbaORBHost
+	 * @return the serviceCorbaORBHost or <code>null</code> if it is not set. In this case,
+	 * 		use the value given by {@link #getDefaultServiceHost()}.
+	 * @see #getDefaultServiceHost()
 	 */
 	public String getServiceCorbaORBHost() {
 		return serviceCorbaORBHost;
@@ -892,7 +874,9 @@ public class ServicePortsConfigModule extends ConfigModule
 
 	/**
 	 * Returns the serviceJMXConnectorRMIHost.
-	 * @return the serviceJMXConnectorRMIHost
+	 * @return the serviceJMXConnectorRMIHost or <code>null</code> if it is not set. In this case,
+	 * 		use the value given by {@link #getDefaultServiceHost()}.
+	 * @see #getDefaultServiceHost()
 	 */
 	public String getServiceJMXConnectorRMIHost() {
 		return serviceJMXConnectorRMIHost;
@@ -909,7 +893,9 @@ public class ServicePortsConfigModule extends ConfigModule
 
 	/**
 	 * Returns the serviceSnmpAgentTrapdHost.
-	 * @return the serviceSnmpAgentTrapdHost
+	 * @return the serviceSnmpAgentTrapdHost or <code>null</code> if it is not set. In this case,
+	 * 		use the value given by {@link #getDefaultServiceHost()}.
+	 * @see #getDefaultServiceHost()
 	 */
 	public String getServiceSnmpAgentTrapdHost() {
 		return serviceSnmpAgentTrapdHost;
@@ -926,7 +912,9 @@ public class ServicePortsConfigModule extends ConfigModule
 
 	/**
 	 * Returns the serviceSnmpAgentSnmpHost.
-	 * @return the serviceSnmpAgentSnmpHost
+	 * @return the serviceSnmpAgentSnmpHost or <code>null</code> if it is not set. In this case,
+	 * 		use the value given by {@link #getDefaultServiceHost()}.
+	 * @see #getDefaultServiceHost()
 	 */
 	public String getServiceSnmpAgentSnmpHost() {
 		return serviceSnmpAgentSnmpHost;
@@ -943,7 +931,9 @@ public class ServicePortsConfigModule extends ConfigModule
 
 	/**
 	 * Returns the serviceJMSHost.
-	 * @return the serviceJMSHost
+	 * @return the serviceJMSHost or <code>null</code> if it is not set. In this case,
+	 * 		use the value given by {@link #getDefaultServiceHost()}.
+	 * @see #getDefaultServiceHost()
 	 */
 	public String getServiceJMSHost() {
 		return serviceJMSHost;
@@ -960,7 +950,9 @@ public class ServicePortsConfigModule extends ConfigModule
 
 	/**
 	 * Returns the serviceJMSHttpHost.
-	 * @return the serviceJMSHttpHost
+	 * @return the serviceJMSHttpHost or <code>null</code> if it is not set. In this case,
+	 * 		use the value given by {@link #getDefaultServiceHost()}.
+	 * @see #getDefaultServiceHost()
 	 */
 	public String getServiceJMSHttpHost() {
 		return serviceJMSHttpHost;
@@ -977,7 +969,9 @@ public class ServicePortsConfigModule extends ConfigModule
 
 	/**
 	 * Returns the serviceJSMHajndiHost.
-	 * @return the serviceJSMHajndiHost
+	 * @return the serviceJSMHajndiHost or <code>null</code> if it is not set. In this case,
+	 * 		use the value given by {@link #getDefaultServiceHost()}.
+	 * @see #getDefaultServiceHost()
 	 */
 	public String getServiceJSMHajndiHost() {
 		return serviceJSMHajndiHost;
@@ -994,7 +988,9 @@ public class ServicePortsConfigModule extends ConfigModule
 
 	/**
 	 * Returns the serviceEJB3InvokerHttpHost.
-	 * @return the serviceEJB3InvokerHttpHost
+	 * @return the serviceEJB3InvokerHttpHost or <code>null</code> if it is not set. In this case,
+	 * 		use the value given by {@link #getDefaultServiceHost()}.
+	 * @see #getDefaultServiceHost()
 	 */
 	public String getServiceEJB3InvokerHttpHost() {
 		return serviceEJB3InvokerHttpHost;
@@ -1011,7 +1007,9 @@ public class ServicePortsConfigModule extends ConfigModule
 
 	/**
 	 * Returns the serviceEJB3RemoteConnectorHost.
-	 * @return the serviceEJB3RemoteConnectorHost
+	 * @return the serviceEJB3RemoteConnectorHost or <code>null</code> if it is not set. In this case,
+	 * 		use the value given by {@link #getDefaultServiceHost()}.
+	 * @see #getDefaultServiceHost()
 	 */
 	public String getServiceEJB3RemoteConnectorHost() {
 		return serviceEJB3RemoteConnectorHost;
@@ -1028,7 +1026,9 @@ public class ServicePortsConfigModule extends ConfigModule
 
 	/**
 	 * Returns the serviceInvokerJMXHttpHost.
-	 * @return the serviceInvokerJMXHttpHost
+	 * @return the serviceInvokerJMXHttpHost or <code>null</code> if it is not set. In this case,
+	 * 		use the value given by {@link #getDefaultServiceHost()}.
+	 * @see #getDefaultServiceHost()
 	 */
 	public String getServiceInvokerJMXHttpHost() {
 		return serviceInvokerJMXHttpHost;
@@ -1045,7 +1045,9 @@ public class ServicePortsConfigModule extends ConfigModule
 
 	/**
 	 * Returns the serviceInvokerJMXHttpReadOnlyHost.
-	 * @return the serviceInvokerJMXHttpReadOnlyHost
+	 * @return the serviceInvokerJMXHttpReadOnlyHost or <code>null</code> if it is not set. In this case,
+	 * 		use the value given by {@link #getDefaultServiceHost()}.
+	 * @see #getDefaultServiceHost()
 	 */
 	public String getServiceInvokerJMXHttpReadOnlyHost() {
 		return serviceInvokerJMXHttpReadOnlyHost;
@@ -1062,7 +1064,9 @@ public class ServicePortsConfigModule extends ConfigModule
 
 	/**
 	 * Returns the serviceEJBInvokerHAHost.
-	 * @return the serviceEJBInvokerHAHost
+	 * @return the serviceEJBInvokerHAHost or <code>null</code> if it is not set. In this case,
+	 * 		use the value given by {@link #getDefaultServiceHost()}.
+	 * @see #getDefaultServiceHost()
 	 */
 	public String getServiceEJBInvokerHAHost() {
 		return serviceEJBInvokerHAHost;
@@ -1079,7 +1083,9 @@ public class ServicePortsConfigModule extends ConfigModule
 
 	/**
 	 * Returns the serviceJMXInvokerHAHost.
-	 * @return the serviceJMXInvokerHAHost
+	 * @return the serviceJMXInvokerHAHost or <code>null</code> if it is not set. In this case,
+	 * 		use the value given by {@link #getDefaultServiceHost()}.
+	 * @see #getDefaultServiceHost()
 	 */
 	public String getServiceJMXInvokerHAHost() {
 		return serviceJMXInvokerHAHost;
@@ -1096,7 +1102,9 @@ public class ServicePortsConfigModule extends ConfigModule
 
 	/**
 	 * Returns the serviceAxisServiceHost.
-	 * @return the serviceAxisServiceHost
+	 * @return the serviceAxisServiceHost or <code>null</code> if it is not set. In this case,
+	 * 		use the value given by {@link #getDefaultServiceHost()}.
+	 * @see #getDefaultServiceHost()
 	 */
 	public String getServiceAxisServiceHost() {
 		return serviceAxisServiceHost;
@@ -1113,7 +1121,9 @@ public class ServicePortsConfigModule extends ConfigModule
 
 	/**
 	 * Returns the serviceRemotingConnectorHost.
-	 * @return the serviceRemotingConnectorHost
+	 * @return the serviceRemotingConnectorHost or <code>null</code> if it is not set. In this case,
+	 * 		use the value given by {@link #getDefaultServiceHost()}.
+	 * @see #getDefaultServiceHost()
 	 */
 	public String getServiceRemotingConnectorHost() {
 		return serviceRemotingConnectorHost;
@@ -1129,56 +1139,41 @@ public class ServicePortsConfigModule extends ConfigModule
 	}
 
 	/**
-	 * Returns the globalServiceHost.
-	 * @return the globalServiceHost
+	 * Get the serviceNamingRMIHost.
+	 * @return the serviceNamingRMIHost or <code>null</code> if it is not set. In this case,
+	 * 		use the value given by {@link #getDefaultServiceHost()}.
+	 * @see #getDefaultServiceHost()
 	 */
-	public String getGlobalServiceHost() {
-		return globalServiceHost;
-	}
-
-	/**
-	 * Sets the globalServiceHost.
-	 * @param globalServiceHost the globalServiceHost to set
-	 */
-	public void setGlobalServiceHost(String globalServiceHost) {
-		this.globalServiceHost = globalServiceHost;
-
-		serviceAxisServiceHost = globalServiceHost;
-		serviceClusterHAJNDIBindingHost = globalServiceHost;
-		serviceClusterHAJNDIRMIHost = globalServiceHost;
-		serviceClusterJrmphaHost = globalServiceHost;
-		serviceClusterPooledhaHost = globalServiceHost;
-		serviceCorbaORBHost = globalServiceHost;
-		serviceEJB3InvokerHttpHost = globalServiceHost;
-		serviceEJB3RemoteConnectorHost = globalServiceHost;
-		serviceEJBInvokerHAHost = globalServiceHost;
-		serviceInvokerJMXHttpHost = globalServiceHost;
-		serviceInvokerJMXHttpReadOnlyHost = globalServiceHost;
-		serviceJBossMessagingHost = globalServiceHost;
-		serviceJMSHost = globalServiceHost;
-		serviceJMSHttpHost = globalServiceHost;
-		serviceJMXConnectorRMIHost = globalServiceHost;
-		serviceJMXInvokerHAHost = globalServiceHost;
-		serviceJrmpHost = globalServiceHost;
-		serviceJSMHajndiHost = globalServiceHost;
-		serviceNamingBindingHost = globalServiceHost;
-		serviceNamingRMIHost = globalServiceHost;
-		servicePooledHost = globalServiceHost;
-		serviceRemotingConnectorHost = globalServiceHost;
-		serviceSnmpAgentSnmpHost = globalServiceHost;
-		serviceSnmpAgentTrapdHost = globalServiceHost;
-		serviceTomcatHost = globalServiceHost;
-		serviceWebServiceHost = globalServiceHost;
-		setChanged();
-	}
-
-	public String getServiceNamingRMIHost() {
+	public String getServiceNamingRMIHost()
+	{
 		return serviceNamingRMIHost;
 	}
 
-	public void setServiceNamingRMIHost(String serviceNamingRMIHost) {
+	public void setServiceNamingRMIHost(String serviceNamingRMIHost)
+	{
 		this.serviceNamingRMIHost = serviceNamingRMIHost;
 		setChanged();
 	}
 
+	/**
+	 * Set the default service host. This value is to be used when a specific
+	 * host setting is <code>null</code>.
+	 * @param defaultServiceHost The host to set
+	 */
+	public void setDefaultServiceHost(String defaultServiceHost)
+	{
+		if(defaultServiceHost == null)
+			throw new NullPointerException("defaultServiceHost");
+		this.defaultServiceHost = defaultServiceHost;
+	}
+
+	/**
+	 * Get the default service host. This value is to be used when a specific
+	 * host setting is <code>null</code>.
+	 * @return The default service host
+	 */
+	public String getDefaultServiceHost()
+	{
+		return defaultServiceHost;
+	}
 }
