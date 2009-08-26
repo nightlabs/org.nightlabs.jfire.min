@@ -510,7 +510,9 @@ public class ServerConfiguratorJBoss
 				", org.nightlabs.jfire.web.admin.servlet.ServerConfigServlet, " +
 				"org.nightlabs.jfire.web.admin.servlet.OrganisationListServlet, " +
 				"org.nightlabs.jfire.web.admin.servlet.CreateOrganisationServlet," +
-				"org.nightlabs.jfire.web.admin.servlet.ServerInitializeServlet");
+				"org.nightlabs.jfire.web.admin.servlet.ServerInitializeServlet, " +
+				"org.datanucleus.store.rdbms.mapping.oracle.OracleBlobRDBMSMapping"
+		);
 
 		// write modified file
 		backup(aopJbossServiceXml);
