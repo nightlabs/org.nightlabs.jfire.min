@@ -503,6 +503,15 @@ public class ServerConfiguratorJBoss
 		);
 		enableLoadtimeWeavingNode.setTextContent("true");
 
+		Node excludeNode = NLDOMUtil.findNodeByAttribute(
+				mbeanNode, "attribute", "name", "Exclude"
+		);
+		excludeNode.setTextContent(excludeNode.getTextContent() +
+				"org.nightlabs.jfire.web.admin.servlet.ServerConfigServlet, " +
+				"org.nightlabs.jfire.web.admin.servlet.OrganisationListServlet, " +
+				"org.nightlabs.jfire.web.admin.servlet.CreateOrganisationServlet," +
+				"org.nightlabs.jfire.web.admin.servlet.ServerInitializeServlet");
+
 		// write modified file
 		backup(aopJbossServiceXml);
 
