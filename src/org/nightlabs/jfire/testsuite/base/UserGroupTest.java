@@ -1,15 +1,11 @@
 /**
- * 
+ *
  */
 package org.nightlabs.jfire.testsuite.base;
 
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
-import org.nightlabs.jfire.base.JFireEjb3Factory;
-import org.nightlabs.jfire.idgenerator.IDGenerator;
-import org.nightlabs.jfire.security.SecurityReflector;
-import org.nightlabs.jfire.security.UserSecurityGroup;
 import org.nightlabs.jfire.testsuite.JFireTestSuite;
 
 /**
@@ -35,19 +31,21 @@ public class UserGroupTest extends TestCase {
 
 	public void testCreateUserGroup() throws Exception {
 		logger.info("Create UserGroup: begin");
-		JFireTestSuiteBaseManagerRemote um = JFireEjb3Factory.getRemoteBean(JFireTestSuiteBaseManagerRemote.class, SecurityReflector.getInitialContextProperties());
-		UserSecurityGroup UserGroup = um.createUserGroup("UserGroup"+String.valueOf(IDGenerator.nextID(UserSecurityGroup.class)));
-		UserGroup.setName("Test User Group");
-		UserGroup.setDescription("This group consists out of testing scenario.");
-
-		if(UserGroup!=null)
-		{
-			logger.info("the following UserSecurityGroup was created"+UserGroup.getName());
-		}
-		else
-			fail("No Users was found!!!");		
-
-		logger.info("Create UserGroup: end");
+		// This is nonsense. It should use API methods to create a User*Security*Group. This class
+		// should be renamed, too.
+//		JFireTestSuiteBaseManagerRemote um = JFireEjb3Factory.getRemoteBean(JFireTestSuiteBaseManagerRemote.class, SecurityReflector.getInitialContextProperties());
+//		UserSecurityGroup UserGroup = um.createUserGroup("UserGroup"+String.valueOf(IDGenerator.nextID(UserSecurityGroup.class)));
+//		UserGroup.setName("Test User Group");
+//		UserGroup.setDescription("This group consists out of testing scenario.");
+//
+//		if(UserGroup!=null)
+//		{
+//			logger.info("the following UserSecurityGroup was created"+UserGroup.getName());
+//		}
+//		else
+//			fail("No Users was found!!!");
+//
+//		logger.info("Create UserGroup: end");
 	}
 
 }
