@@ -28,13 +28,39 @@ package org.nightlabs.jfire.idgenerator;
 import javax.jdo.spi.PersistenceCapable;
 
 import org.apache.log4j.Logger;
+import org.nightlabs.jdo.ObjectIDUtil;
 
 
 /**
  * This class should be used to create unique IDs within the scope of an organisation
  * and a namespace. You can use the same API on the client as on the server side:
- * Call {@link #nextID(String) } in order to obtain a single unique identifier or
- * {@link #nextIDs(String, int) } if you need multiple IDs.
+ * Call {@link #nextID(String)} in order to obtain a single unique identifier or
+ * {@link #nextIDs(String, int)} if you need multiple IDs.
+ * <p>
+ * If you obtain identifiers for instances of a JDO class, it is highly
+ * recommended to use one of the overloaded <code>nextID(...)</code> methods that
+ * take a class as argument:
+ * <ul>
+ *	<li>{@link #nextID(Class)}</li>
+ *	<li>{@link #nextID(Class, String)}</li>
+ *	<li>{@link #nextIDs(Class, int)}</li>
+ *	<li>{@link #nextIDs(Class, String, int)}</li>
+ * </ul>
+ * These methods check if the specified class is the root of a persistent inheritance hierarchy
+ * and thus prevent duplicate key exceptions.
+ * </p>
+ * <p>
+ * As a convenience, there are additionally methods that convert the resulting <code>long</code> numbers
+ * into <code>String</code> instances:
+ * <ul>
+ *	<li>{@link #nextIDString(Class)}</li>
+ *	<li>{@link #nextIDString(Class, String)}</li>
+ *	<li>{@link #nextIDStrings(Class, int)}</li>
+ *	<li>{@link #nextIDStrings(Class, String, int)}</li>
+ *	<li>{@link #nextIDString(String)}</li>
+ *	<li>{@link #nextIDStrings(String, int)}</li>
+ * </ul>
+ * </p>
  *
  * @author Marco Schulze - marco at nightlabs dot de
  */
@@ -45,7 +71,7 @@ public abstract class IDGenerator
 	private static IDGenerator sharedInstance = null;
 
 	/**
-	 * @return Returns the shared instance of the ID generator. Note, that a clustered server might have
+	 * @return the shared instance of the ID generator. Note, that a clustered server might have
 	 *		multiple shared instances and thus it must be ensured that not two different instances return
 	 *		colliding IDs (e.g. each one must have a separate range of cached IDs, if they cache IDs).
 	 */
@@ -85,7 +111,7 @@ public abstract class IDGenerator
 	 * @param namespace At most 255 characters. Specifies a namespace within which the generated IDs must be unique.
 	 * @param quantity How many IDs shall be generated? Once generated, they'll never occur again, thus are lost if
 	 *		they will not be used. This must be >= 1.
-	 * @return Returns as many IDs (unique within the scope of <code>namespace</code>) as defined by <code>quanitity</code>.
+	 * @return as many IDs (unique within the scope of <code>namespace</code>) as defined by <code>quanitity</code>.
 	 */
 	protected abstract long[] _nextIDs(String namespace, int quantity);
 
@@ -96,8 +122,8 @@ public abstract class IDGenerator
 	 *
 	 * @param namespace A String identifier with not more than 255 characters. It should not contain
 	 *		special characters (stay within the ASCII charset). You can use "-", "/", "." etc. though.
-	 *		If it is the first time, this namespace is used, the first generated ID will be 0.
-	 * @return Returns a unique number within current organisation and given <code>namespace</code>.
+	 *		If it is the first time, this namespace is used, the first generated ID will be 1.
+	 * @return a unique number within current organisation and given <code>namespace</code>.
 	 */
 	public static long nextID(String namespace)
 	{
@@ -110,9 +136,9 @@ public abstract class IDGenerator
 	 *
 	 * @param namespace A String identifier with not more than 255 characters. It should not contain
 	 *		special characters (stay within the ASCII charset). You can use "-", "/", "." etc. though.
-	 *		If it is the first time, this namespace is used, the first generated ID will be 0.
+	 *		If it is the first time, this namespace is used, the first generated ID will be 1.
 	 * @param quantity How many IDs shall be generated? Must be at least 1.
-	 * @return Returns an array of unique numbers with the size as specified by <code>quantity</code>.
+	 * @return an array of unique numbers with the size as specified by <code>quantity</code>.
 	 *		They are unique within the current organisation and the given <code>namespace</code>.
 	 */
 	public static long[] nextIDs(String namespace, int quantity)
@@ -153,7 +179,7 @@ public abstract class IDGenerator
 	 * is the root class of a <code>PersistenceCapable</code> type hierarchy!
 	 *
 	 * @param clazz The class whose name should be used as namespace.
-	 * @return Returns the next unique ID in the namespace of the class name.
+	 * @return the next unique ID in the namespace of the class name.
 	 */
 	public static long nextID(Class<?> clazz)
 	{
@@ -169,7 +195,7 @@ public abstract class IDGenerator
 	 *
 	 * @param clazz The class whose name should be used as namespace.
 	 * @param quantity The number of desired IDs. Must be at least 1.
-	 * @return Returns the next unique IDs in the namespace of the class name.
+	 * @return the next unique IDs in the namespace of the class name.
 	 */
 	public static long[] nextIDs(Class<?> clazz, int quantity)
 	{
@@ -188,7 +214,7 @@ public abstract class IDGenerator
 	 * @param suffix The <code>suffix</code> which will be appended to the class name, if it's neither <code>null</code>,
 	 *		nor an empty space. If the suffix is appended, the separator {@link #classSuffixSeparator}
 	 *		({@value #classSuffixSeparator}) will be used inbetween.
-	 * @return Returns the next unique ID in the namespace of the class name.
+	 * @return the next unique ID in the namespace of the class name.
 	 */
 	public static long nextID(Class<?> clazz, String suffix)
 	{
@@ -211,7 +237,7 @@ public abstract class IDGenerator
 	 *		nor an empty space. If the suffix is appended, the separator {@link #classSuffixSeparator}
 	 *		({@value #classSuffixSeparator}) will be used inbetween.
 	 * @param quantity The number of desired IDs. Must be at least 1.
-	 * @return Returns the next unique IDs in the namespace of the class name.
+	 * @return the next unique IDs in the namespace of the class name.
 	 */
 	public static long[] nextIDs(Class<?> clazz, String suffix, int quantity)
 	{
@@ -251,5 +277,105 @@ public abstract class IDGenerator
 
 			throw new IllegalArgumentException("Class " + clazz.getName() + " is not the top-most PersistenceCapable in the type hierarchy! You must pass the class " + topPC.getName() + " instead!");
 		}
+	}
+
+	/**
+	 * This method calls {@link #nextID(String)} and converts the resulting identifier
+	 * into a <code>String</code> using {@link ObjectIDUtil#longObjectIDFieldToString(long)}.
+	 *
+	 * @param namespace A String identifier with not more than 255 characters. It should not contain
+	 *		special characters (stay within the ASCII charset). You can use "-", "/", "." etc. though.
+	 *		If it is the first time, this namespace is used, the first generated ID will be 1.
+	 * @return a unique number within current organisation and given <code>namespace</code> (converted into a <code>String</code>).
+	 */
+	public static String nextIDString(String namespace)
+	{
+		return ObjectIDUtil.longObjectIDFieldToString(nextID(namespace));
+	}
+
+	/**
+	 * This method calls {@link #nextID(String)} and converts the resulting identifier
+	 * into a <code>String</code> using {@link ObjectIDUtil#longObjectIDFieldToString(long)}.
+	 *
+	 * @param namespace A String identifier with not more than 255 characters. It should not contain
+	 *		special characters (stay within the ASCII charset). You can use "-", "/", "." etc. though.
+	 *		If it is the first time, this namespace is used, the first generated ID will be 1.
+	 * @return a unique number within current organisation and given <code>namespace</code> (converted into a <code>String</code>).
+	 */
+	public static String nextIDString(Class<?> clazz)
+	{
+		return ObjectIDUtil.longObjectIDFieldToString(nextID(clazz));
+	}
+
+	/**
+	 * This method calls {@link #nextID(Class, String)} and converts the resulting identifier
+	 * into a <code>String</code> using {@link ObjectIDUtil#longObjectIDFieldToString(long)}.
+	 *
+	 * @param clazz The class whose name should be used as namespace.
+	 * @param suffix The <code>suffix</code> which will be appended to the class name, if it's neither <code>null</code>,
+	 *		nor an empty space. If the suffix is appended, the separator {@link #classSuffixSeparator}
+	 *		({@value #classSuffixSeparator}) will be used inbetween.
+	 * @return the next unique ID in the namespace of the class name.
+	 */
+	public static String nextIDString(Class<?> clazz, String suffix)
+	{
+		return ObjectIDUtil.longObjectIDFieldToString(nextID(clazz, suffix));
+	}
+
+	/**
+	 * This method calls {@link #nextIDs(String, int)} and converts the resulting identifiers
+	 * into a <code>String</code> array using {@link ObjectIDUtil#longObjectIDFieldToString(long)}.
+	 *
+	 * @param namespace A String identifier with not more than 255 characters. It should not contain
+	 *		special characters (stay within the ASCII charset). You can use "-", "/", "." etc. though.
+	 *		If it is the first time, this namespace is used, the first generated ID will be 1.
+	 * @param quantity How many IDs shall be generated? Must be at least 1.
+	 * @return an array of unique numbers with the size as specified by <code>quantity</code>.
+	 *		They are unique within the current organisation and the given <code>namespace</code>.
+	 */
+	public static String[] nextIDStrings(String namespace, int quantity)
+	{
+		long[] ids = nextIDs(namespace, quantity);
+		return convertIDs(ids);
+	}
+
+	/**
+	 * This method calls {@link #nextIDs(Class, int)} and converts the resulting identifiers
+	 * into a <code>String</code> array using {@link ObjectIDUtil#longObjectIDFieldToString(long)}.
+	 *
+	 * @param clazz The class whose name should be used as namespace.
+	 * @param quantity The number of desired IDs. Must be at least 1.
+	 * @return the next unique IDs in the namespace of the class name.
+	 */
+	public static String[] nextIDStrings(Class<?> clazz, int quantity)
+	{
+		long[] ids = nextIDs(clazz, quantity);
+		return convertIDs(ids);
+	}
+
+	/**
+	 * This method calls {@link #nextIDs(Class, String, int)} and converts the resulting identifiers
+	 * into a <code>String</code> array using {@link ObjectIDUtil#longObjectIDFieldToString(long)}.
+	 *
+	 * @param clazz The class whose name should be (together with the <code>suffix</code>) used as namespace.
+	 * @param suffix The <code>suffix</code> which will be appended to the class name, if it's neither <code>null</code>,
+	 *		nor an empty space. If the suffix is appended, the separator {@link #classSuffixSeparator}
+	 *		({@value #classSuffixSeparator}) will be used inbetween.
+	 * @param quantity The number of desired IDs. Must be at least 1.
+	 * @return the next unique IDs in the namespace of the class name.
+	 */
+	public static String[] nextIDStrings(Class<?> clazz, String suffix, int quantity)
+	{
+		long[] ids = nextIDs(clazz, suffix, quantity);
+		return convertIDs(ids);
+	}
+
+	private static String[] convertIDs(long[] ids)
+	{
+		String[] result = new String[ids.length];
+		for (int idx = 0; idx < ids.length; ++idx)
+			result[idx] = ObjectIDUtil.longObjectIDFieldToString(ids[idx]);
+
+		return result;
 	}
 }
