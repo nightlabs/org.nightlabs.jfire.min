@@ -6,13 +6,12 @@ import org.apache.log4j.Logger;
 import org.nightlabs.j2ee.LoginData;
 import org.nightlabs.jfire.base.JFireEjb3Factory;
 import org.nightlabs.jfire.testsuite.JFireTestSuite;
-import org.nightlabs.jfire.testsuite.base.JFireBaseTestSuite;
 import org.nightlabs.jfire.testsuite.login.JFireTestLogin;
 
 /**
  * This test case tests some basic functionality of the JDO implementation.
  */
-@JFireTestSuite(JFireBaseTestSuite.class)
+@JFireTestSuite(JFireJDOTestSuite.class)
 public class JDOTestCase extends TestCase
 {
 	Logger logger = Logger.getLogger(JDOTestCase.class);

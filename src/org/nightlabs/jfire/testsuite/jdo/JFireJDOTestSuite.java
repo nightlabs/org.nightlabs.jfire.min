@@ -1,7 +1,4 @@
-/**
- *
- */
-package org.nightlabs.jfire.testsuite.base;
+package org.nightlabs.jfire.testsuite.jdo;
 
 import javax.jdo.PersistenceManager;
 
@@ -9,22 +6,15 @@ import junit.framework.TestCase;
 
 import org.nightlabs.jfire.testsuite.TestSuite;
 
-/**
- * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] de -->
- *
- */
-public class JFireBaseTestSuite extends TestSuite
-{
-
-//	public JFireBaseTestSuite() {
-//	}
+public class JFireJDOTestSuite extends TestSuite{
+	
 
 	/**
 	 * @param classes
 	 */
-	public JFireBaseTestSuite(Class<? extends TestCase>... classes) {
+	public JFireJDOTestSuite(Class<? extends TestCase>... classes) {
 		super(classes);
-		setName("JFireBase Testsuite");
+		setName("JFireJDOTestSuite");
 	}
 	/**
 	 * {@inheritDoc}
@@ -42,3 +32,12 @@ public class JFireBaseTestSuite extends TestSuite
 	}
 
 }
+	
+	
+	
+	
+	
+	
+	
+	
+	
