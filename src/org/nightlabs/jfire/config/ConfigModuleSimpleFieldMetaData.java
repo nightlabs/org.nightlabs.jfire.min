@@ -28,16 +28,16 @@ package org.nightlabs.jfire.config;
 
 import java.io.Serializable;
 
+import javax.jdo.annotations.Column;
+import javax.jdo.annotations.IdentityType;
+import javax.jdo.annotations.PersistenceCapable;
+import javax.jdo.annotations.PersistenceModifier;
+import javax.jdo.annotations.Persistent;
+import javax.jdo.annotations.PrimaryKey;
+
 import org.apache.log4j.Logger;
 import org.nightlabs.inheritance.FieldMetaData;
 import org.nightlabs.inheritance.NotWritableException;
-
-import javax.jdo.annotations.PrimaryKey;
-import javax.jdo.annotations.PersistenceCapable;
-import javax.jdo.annotations.Persistent;
-import javax.jdo.annotations.Column;
-import javax.jdo.annotations.IdentityType;
-import javax.jdo.annotations.PersistenceModifier;
 import org.nightlabs.jfire.config.id.ConfigModuleSimpleFieldMetaDataID;
 
 /**
@@ -60,7 +60,7 @@ public class ConfigModuleSimpleFieldMetaData
 implements FieldMetaData, Serializable
 {
 	private static final long serialVersionUID = 1L;
-	
+
 	private static final Logger logger = Logger.getLogger(ConfigModuleSimpleFieldMetaData.class);
 
 	/**
@@ -91,7 +91,7 @@ implements FieldMetaData, Serializable
 	 * @jdo.column length="200"
 	 */
 	@PrimaryKey
-	@Column(length=200)
+//	@Column(length=200)
 	private String configKey;
 
 	/**
