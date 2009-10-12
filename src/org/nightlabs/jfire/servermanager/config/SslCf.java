@@ -15,35 +15,26 @@ public class SslCf
 	extends JFireServerConfigPart
 	implements Serializable
 {
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 2L;
 
 	/**
 	 * Damn Sun's URLJARFile doesn't work correctly when used via an URL that is pointing to a
 	 * resource inside a jar. If tried, URL.openStream() fails with a
 	 * "java.util.zip.ZipException: error in opening zip file".
 	 * <br>
-	 * Hence, we need constant to distuinguish between default keystore (inside jar) and non-default
+	 * Hence, we need constant to distinguish between default keystore (inside jar) and non-default
 	 * keystore (hopefully a file that is not contained in a jar).
 	 */
 	public static final String DEFAULT_KEYSTORE = "JFIRE_DEFAULT_KEYSTORE";
 	public static final String DEFAULT_TRUSTSTORE = "JFIRE_DEFAULT_TRUSTSTORE";
 
-	/**
-	 * This field may be in one of the three states:
-	 * <ul>
-	 * 	<li>null <=> not yet initialised</li>
-	 * 	<li>the value of an URL.toString() <=> set to a keystore that shall be copied to %jboss%/bin/jfire-server.keystore</li>
-	 * 	<li>"" <=> The former URL has been imported (copied) and is not needed anymore.</li>
-	 * </ul>
-	 */
+	private Boolean jksStoresImported;
 	private String keystoreURLToImport;
 	private String keystorePassword;
 	private String sslServerCertificateAlias;
 	private String truststoreURLToImport;
 	private String truststorePassword;
 	private String sslServerCertificatePassword;
-//	private String servletBaseURL;
-//	private String servletBaseURLHttps;
 
 	/**
 	 * If this method returns an empty String "" then the keystoreURL has already been imported and
@@ -167,98 +158,21 @@ public class SslCf
 		setChanged();
 	}
 
-//	/**
-//	 * @return the base URL to the servlet container engine where all servlets are located.
-//	 */
-//	public String getServletBaseURL()
-//	{
-//		return servletBaseURL;
-//	}
-//
-//	/**
-//	 * Sets the base URL to the servlet container which is then extended to point to servlet based
-//	 * services, e.g. to the update site servlet that shall be used for setting up the runtimes of
-//	 * the users when they authenticate.
-//	 *
-//	 * @param servletBaseURL the URL that points to the servlet container.
-//	 */
-//	public void setServletBaseURL(String servletBaseURL)
-//	{
-//		this.servletBaseURL = servletBaseURL;
-//		setChanged();
-//	}
-//
-//	/**
-//	 * Returns the base URL for all servlets that are accessible via non-encrypted http.
-//	 * @return the base URL for all servlets that are accessible via non-encrypted http.
-//	 */
-//	public String getServletBaseURLHttps()
-//	{
-//		return servletBaseURLHttps;
-//	}
-//
-//	/**
-//	 * Sets the base URL for all servlets that are accessible via non-encrypted http.
-//	 * @param servletBaseURLHttps the base URL for all servlets that are accessible via non-encrypted http.
-//	 */
-//	public void setServletBaseURLHttps(String servletBaseURLHttps)
-//	{
-//		this.servletBaseURLHttps = servletBaseURLHttps;
-//		setChanged();
-//	}
-//
-//	/**
-//	 * Returns the port of the URL pointed to by {@link #getServletBaseURLHttps()}.
-//	 * @return the port of the URL pointed to by {@link #getServletBaseURLHttps()}.
-//	 */
-//	public int getSSLPort()
-//	{
-//		try
-//		{
-//			URL url = new URL(getServletBaseURLHttps());
-//			return url.getPort();
-//		}
-//		catch (MalformedURLException e)
-//		{
-//			throw new IllegalStateException("The servletBaseURLHttps is not an URL!", e);
-//		}
-//	}
-
 	/**
-	 * Returns <code>true</code> iff the {@link #setKeystoreURLImported()} has been called, which
-	 * means that the file pointed to by the former {@link #keystoreURLToImport} has been copied to
-	 * the {@link #DEFAULT_KEYSTORE}.
-	 *
-	 * @return <code>true</code> iff the {@link #setKeystoreURLImported()} has been called.
+	 * @return <code>true</code> iff the jks stores have been imported and {@link #setKeystoreURLImported()} has been called.
 	 */
-	public boolean isKeystoreURLImported()
+	public Boolean getJksStoresImported()
 	{
-		return "".equals(getKeystoreURLToImport());
+		return jksStoresImported;
 	}
 
 	/**
 	 * This method should be called when the file pointed to by the former
 	 * {@link #keystoreURLToImport} has been copied to the {@link #DEFAULT_KEYSTORE}.
 	 */
-	public void setKeystoreURLImported()
+	public void setJksStoresImported(Boolean imported)
 	{
-		if ("".equals(getKeystoreURLToImport()))
-			return;
-
-		setKeystoreURLToImport("");
-		setChanged();
-	}
-
-	/**
-	 * This method should be called when the file pointed to by the former
-	 * {@link #truststoreURLToImport} has been copied to the {@link #DEFAULT_TRUSTSTORE}.
-	 */
-	public void setTruststoreURLImported()
-	{
-		if ("".equals(getTruststoreURLToImport()))
-			return;
-
-		setTruststoreURLToImport("");
+		this.jksStoresImported = imported;
 		setChanged();
 	}
 
@@ -266,10 +180,6 @@ public class SslCf
 	public void init() throws InitException
 	{
 		super.init();
-//		if (getServletBaseURL() == null)
-//			setServletBaseURL("http://localhost:8080/");
-//		if (getServletBaseURLHttps() == null)
-//			setServletBaseURLHttps("https://localhost:8443");
 
 		if (getSslServerCertificateAlias() == null)
 			setSslServerCertificateAlias("localhost");
@@ -300,5 +210,8 @@ public class SslCf
 		}
 		if (getTruststorePassword() == null)
 			setTruststorePassword("nightlabs");
+		
+		if (jksStoresImported == null)
+			jksStoresImported = Boolean.FALSE;
 	}
 }
