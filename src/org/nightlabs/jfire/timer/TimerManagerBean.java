@@ -127,7 +127,7 @@ implements TimerManagerRemote, TimerManagerLocal
 			pm.close();
 		}
 
-		logger.info("ejbTimeoutDelegate: organisationID=\""+timerParam.organisationID+"\": end");
+		logger.debug("ejbTimeoutDelegate: organisationID=\""+timerParam.organisationID+"\": end");
 	}
 
 
