@@ -1,7 +1,7 @@
 /**
  *
  */
-package org.nightlabs.jfire.testsuite.base.user;
+package org.nightlabs.jfire.base.testsuite.user;
 
 import javax.jdo.PersistenceManager;
 

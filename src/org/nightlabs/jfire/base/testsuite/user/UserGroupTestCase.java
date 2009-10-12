@@ -1,7 +1,7 @@
 /**
  *
  */
-package org.nightlabs.jfire.testsuite.base.user;
+package org.nightlabs.jfire.base.testsuite.user;
 
 import junit.framework.TestCase;
 
@@ -20,18 +20,18 @@ import org.nightlabs.jfire.testsuite.JFireTestSuite;
  *
  */
 @JFireTestSuite(JFireBaseUserTestSuite.class)
-public class UserGroupTest extends TestCase {
+public class UserGroupTestCase extends TestCase {
 
-	Logger logger = Logger.getLogger(UserGroupTest.class);
+	Logger logger = Logger.getLogger(UserGroupTestCase.class);
 
-	public UserGroupTest() {
+	public UserGroupTestCase() {
 		this("Testing the functionality around usergroups.");
 	}
 
 	/**
 	 * @param name
 	 */
-	public UserGroupTest(String name) {
+	public UserGroupTestCase(String name) {
 		super(name);
 	}
 

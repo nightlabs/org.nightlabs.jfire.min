@@ -1,4 +1,4 @@
-package org.nightlabs.jfire.testsuite.base.user;
+package org.nightlabs.jfire.base.testsuite.user;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -14,6 +14,7 @@ import javax.jdo.FetchPlan;
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
+import org.junit.Test;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jdo.query.QueryCollection;
 import org.nightlabs.jfire.base.JFireEjb3Factory;
@@ -47,22 +48,9 @@ import org.nightlabs.jfire.testsuite.JFireTestSuite;
  * if JFireBase is deployedsss.
  */
 @JFireTestSuite(JFireBaseUserTestSuite.class)
-public class UserTest extends TestCase
+public class UserTestCase extends TestCase
 {
-	Logger logger = Logger.getLogger(UserTest.class);
-
-	@Override
-	protected void setUp() throws Exception
-	{
-		logger.info("setUp: invoked");
-	}
-
-	@Override
-	protected void tearDown()
-	throws Exception
-	{
-		logger.info("tearDown: invoked");
-	}
+	Logger logger = Logger.getLogger(UserTestCase.class);
 
 	//Commented out this nonsense method. It should use API methods rather than its own EJB and
 	//especially it is wrong to work with a LegalEntity here. I'll remove the dependency on JFireTrade, too. Marco.
@@ -71,6 +59,7 @@ public class UserTest extends TestCase
 	 * This method is invoked by the JUnit run,
 	 * as its name starts with test!
 	 */
+	@Test
 	public void testCreateUser() throws Exception{
 
 		Properties initialContextProperties = SecurityReflector.getInitialContextProperties();
@@ -205,6 +194,7 @@ public class UserTest extends TestCase
 	 * This method is invoked by the JUnit run,
 	 * as it is annotated with the Test annotation.
 	 */
+	@Test
 	public void testListUsers() throws Exception{
 		// if fails, however ;-)
 		// fail("Well, somewhere is an error.");

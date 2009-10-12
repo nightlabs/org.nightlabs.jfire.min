@@ -1,7 +1,7 @@
 /**
  *
  */
-package org.nightlabs.jfire.testsuite.base.id;
+package org.nightlabs.jfire.base.testsuite.id;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -12,6 +12,7 @@ import javax.naming.InitialContext;
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
+import org.junit.Test;
 import org.nightlabs.j2ee.LoginData;
 import org.nightlabs.jdo.ObjectIDUtil;
 import org.nightlabs.jfire.base.InvokeUtil;
@@ -32,19 +33,6 @@ public class IDGeneratorTest extends TestCase
 	private static Logger logger = Logger.getLogger(IDGeneratorTest.class);
 
 	private static boolean SKIPPED = false;
-
-	@Override
-	protected void setUp() throws Exception
-	{
-		logger.info("setUp: invoked");
-	}
-
-	@Override
-	protected void tearDown()
-			throws Exception
-	{
-		logger.info("tearDown: invoked");
-	}
 
 	private static void populateClasspath(File dir, StringBuilder classpath)
 	{
@@ -87,7 +75,8 @@ public class IDGeneratorTest extends TestCase
 			}
 		}
 	}
-
+	
+	@Test
 	public void testGetIDsExternally()
 	throws Exception
 	{
@@ -118,7 +107,8 @@ public class IDGeneratorTest extends TestCase
 		if (exitCode != 0)
 			fail("Process finished with exitCode=" + exitCode + " and the following output: " + processOutput.toString());
 	}
-
+	
+	@Test
 	public void testGetIDsInternally()
 	throws Exception
 	{
@@ -134,6 +124,7 @@ public class IDGeneratorTest extends TestCase
 
 	private static boolean manualCascadedAuthentication = false;
 
+	@Test
 	public void _testGetIDs()
 	throws Exception
 	{
@@ -171,9 +162,9 @@ public class IDGeneratorTest extends TestCase
 		}
 	}
 
-	public static void main(String[] args) throws Exception {
-		JFireSecurityConfiguration.declareConfiguration();
-		new IDGeneratorTest()._testGetIDs();
-	}
+//	public static void main(String[] args) throws Exception {
+//		JFireSecurityConfiguration.declareConfiguration();
+//		new IDGeneratorTest()._testGetIDs();
+//	}
 
 }

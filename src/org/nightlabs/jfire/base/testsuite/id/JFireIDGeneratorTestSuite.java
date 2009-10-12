@@ -1,4 +1,4 @@
-package org.nightlabs.jfire.testsuite.base.id;
+package org.nightlabs.jfire.base.testsuite.id;
 
 import javax.jdo.PersistenceManager;
 
