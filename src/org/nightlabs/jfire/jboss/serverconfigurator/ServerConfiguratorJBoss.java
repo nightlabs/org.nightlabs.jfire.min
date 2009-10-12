@@ -2721,6 +2721,12 @@ public class ServerConfiguratorJBoss
 		}
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * Additionally copies the set jks stores (keystore and truststore) to (%server%/conf/jfire-server.{key,trust}store).
+	 * If there is an already exisiting store, it will be backed up.
+	 */
 	@Override
 	protected void afterDoConfigureServer(Throwable x)
 			throws ServerConfigurationException
@@ -2731,13 +2737,13 @@ public class ServerConfiguratorJBoss
 			return;
 
 		final JFireServerConfigModule jfireServerConfigModule = getJFireServerConfigModule();
+		final SslCf sslCf = jfireServerConfigModule.getSslCf();
 
-		if (!jfireServerConfigModule.getSslCf().isKeystoreURLImported())
+		if (! sslCf.getJksStoresImported())
 		{
-			final String keystoreURLToImport = jfireServerConfigModule.getSslCf().getKeystoreURLToImport();
-			final String truststoreURLToImport = jfireServerConfigModule.getSslCf().getTruststoreURLToImport();
-//			FileOutputStream keystorePropFileStream = null;
-
+			String keystoreURLToImport = jfireServerConfigModule.getSslCf().getKeystoreURLToImport();
+			String truststoreURLToImport = jfireServerConfigModule.getSslCf().getTruststoreURLToImport();
+			
 			try
 			{
 				InputStream keystoreToImportStream;
@@ -2746,8 +2752,7 @@ public class ServerConfiguratorJBoss
 				// distinguish between default and non-default keystore via this constant
 				if ("".equals(keystoreURLToImport))
 				{
-					throw new IllegalStateException("No keystore can be found in " +
-							"%jboss%/server/default/config/jfire-server.keystore and no keystoreToImport is set!");
+					throw new IllegalStateException("The URL pointing to the keystore to import is empty!");
 				}
 				else if (SslCf.DEFAULT_KEYSTORE.equals(keystoreURLToImport))
 				{
@@ -2758,8 +2763,7 @@ public class ServerConfiguratorJBoss
 
 				if ("".equals(truststoreURLToImport))
 				{
-					throw new IllegalStateException("No keystore can be found in " +
-							"%jboss%/server/default/config/jfire-server.keystore and no keystoreToImport is set!");
+					throw new IllegalStateException("The URL pointing to the truststore to import is empty!");
 				}
 				else if (SslCf.DEFAULT_TRUSTSTORE.equals(truststoreURLToImport))
 				{
@@ -2768,7 +2772,7 @@ public class ServerConfiguratorJBoss
 				else
 					truststoreToImportStream = new URL(truststoreURLToImport).openStream();
 
-
+				int backupJKSStore = 0;
 				boolean transferKeyData = false;
 				File jfireServerKeystoreFile = new File(getJBossConfigDir(), JFIRE_SERVER_KEYSTORE_FILE_NAME);
 				if (! jfireServerKeystoreFile.exists() || ! jfireServerKeystoreFile.canRead())
@@ -2783,6 +2787,7 @@ public class ServerConfiguratorJBoss
 									keystoreToImportStream, fileInputStream, fileInputStream.available() ))
 					{
 						transferKeyData = true;
+						backupJKSStore = backupJKSStore(jfireServerKeystoreFile, 0);
 					}
 					fileInputStream.close();
 				}
@@ -2801,19 +2806,9 @@ public class ServerConfiguratorJBoss
 									truststoreToImportStream, fileInputStream, fileInputStream.available() ))
 					{
 						transferTrustData = true;
+						backupJKSStore(jfireServerTruststoreFile, backupJKSStore);
 					}
 					fileInputStream.close();
-				}
-
-				final SslCf sslCf = jfireServerConfigModule.getSslCf();
-
-				// if files are equal -> don't need to copy.
-				if (! transferKeyData && !transferTrustData)
-				{
-					// set the keystore file to the imported state (== set the keystoreURLToImport = "")
-					sslCf.setKeystoreURLImported();
-					sslCf.setTruststoreURLImported();
-					return;
 				}
 
 				// files differ or the destination file doesn't exist yet
@@ -2822,7 +2817,6 @@ public class ServerConfiguratorJBoss
 					FileOutputStream keyStoreStream = new FileOutputStream(jfireServerKeystoreFile);
 					try {
 						IOUtil.transferStreamData(keystoreToImportStream, keyStoreStream);
-						sslCf.setKeystoreURLImported();
 					}	finally {
 						keyStoreStream.close();
 					}
@@ -2833,50 +2827,24 @@ public class ServerConfiguratorJBoss
 					FileOutputStream trustStoreStream = new FileOutputStream(jfireServerTruststoreFile);
 					try {
 						IOUtil.transferStreamData(truststoreToImportStream, trustStoreStream);
-						sslCf.setTruststoreURLImported();
 					}	finally {
 						trustStoreStream.close();
 					}
 				}
-
-				// Write all ssl socket related infos into a properties file next to jfire-server.keystore,
-				// because the org.nightlabs.rmissl.socket.SSLCompressionServerSocketFactory and
-				// org.nightlabs.rmissl.socket.SSLCompressionRMIServerSocketFactory need to know these
-				// infos and the projects don't know anything from each other (and are not allowed to).
-//				Properties props = new Properties();
-//				props.put("org.nightlabs.ssl.keystorePassword", servletSSLCf.getKeystorePassword());
-//				props.put("org.nightlabs.ssl.serverCertificateAlias", servletSSLCf.getSslServerCertificateAlias());
-//				props.put("org.nightlabs.ssl.serverCertificatePassword", servletSSLCf.getSslServerCertificatePassword());
-//				File keystorePropFile = new File(getJBossConfigDir(), "jfire-server.keystore.properties").getAbsoluteFile();
-//				keystorePropFileStream = new FileOutputStream(keystorePropFile);
-//				props.store(keystorePropFileStream, "The properties needed to read the correct private " +
-//						"certificate from the jfire-server.keystore.\n" +
-//						"These credentials are needed by the SSLCompressionServerSocketFactory.");
-
-				setRebootRequired(true);
+				
+				sslCf.setJksStoresImported(Boolean.TRUE);
+				if (transferKeyData || transferTrustData)
+					setRebootRequired(true);
 			}
 			catch (IOException e) {
 				throw new ServerConfigurationException(e);
 			}
-//			finally {
-//				if (keystorePropFileStream != null)
-//				{
-//					try
-//					{
-//						keystorePropFileStream.close();
-//					}
-//					catch (IOException e)
-//					{
-//						throw new ServerConfigurationException("Couldn't close the output stream from writing "+
-//								"the keystore properties!", e);
-//					}
-//				}
-//			}
 		}
-
-
 	}
 
+	/**
+	 * When undoing a JBoss server configurator, the jks store files are backed up and deleted. 
+	 */
 	@Override
 	protected void afterUndoConfigureServer(Throwable x)
 			throws ServerConfigurationException
@@ -2893,44 +2861,56 @@ public class ServerConfiguratorJBoss
 		}
 	}
 
+	/**
+	 * Backs up the jks stores (keystore and truststore) and deletes them.
+	 * 
+	 * @throws IOException In case some File problems occur.
+	 */
 	private void clearSSLStoreFiles() throws IOException
 	{
 		final File jfireServerKeystoreFile = new File(getJBossConfigDir(), JFIRE_SERVER_KEYSTORE_FILE_NAME);
 		final File jfireServerTruststoreFile = new File(getJBossConfigDir(), JFIRE_SERVER_TRUSTSTORE_FILE_NAME);
 
-//		if (!jfireServerKeystoreFile.exists() && !)
-//			return;
+		if (!jfireServerKeystoreFile.exists() && !jfireServerTruststoreFile.exists())
+			return;
 
-		int backupFileIndex = 0;
-		File backupFile;
-		do {
-			backupFile = new File(jfireServerKeystoreFile.getAbsolutePath() + '.' + (backupFileIndex++) + ".bak");
-
-			if (backupFile.exists() && IOUtil.compareFiles(jfireServerKeystoreFile, backupFile)) {
-				backupFile.delete();
-				return;
+		int backupJKSStore = backupJKSStore(jfireServerKeystoreFile, 0);
+		backupJKSStore(jfireServerTruststoreFile, backupJKSStore);
+		getJFireServerConfigModule().getSslCf().setJksStoresImported(Boolean.FALSE);
+	}
+	
+	/**
+	 * Create a backup of the given jksstore file and append it with a suffix. The suffix is determined by finding the 
+	 * first free suffix for a backup or by finding a previous backup of the given jksstore.
+	 * 
+	 * @param jksstore The jks store to backup.
+	 * @param initialSuffix The suffix with which to start trying to backup the jksstore. 
+	 * @return The suffix used for backup up the given jks store.
+	 * @throws IOException In case some file operation failed.
+	 */
+	private int backupJKSStore(File jksstore, int initialSuffix)
+		throws IOException
+	{
+		if (! jksstore.exists())
+			return initialSuffix;
+		
+		File backupFile = new File(jksstore.getAbsolutePath() + '.' + (initialSuffix) + ".bak");
+		while (backupFile.exists())
+		{
+			if (backupFile.exists() && IOUtil.compareFiles(jksstore, backupFile))
+			{
+				jksstore.delete();
+				return initialSuffix;
 			}
-		} while (backupFile.exists());
-
-		if (!jfireServerKeystoreFile.renameTo(backupFile)) {
-			IOUtil.copyFile(jfireServerKeystoreFile, backupFile);
-			jfireServerKeystoreFile.delete();
+			backupFile = new File(jksstore.getAbsolutePath() + '.' + (++initialSuffix) + ".bak");
 		}
 
-		do {
-			backupFile = new File(jfireServerTruststoreFile.getAbsolutePath() + '.' + (backupFileIndex++) + ".bak");
-
-			if (backupFile.exists() && IOUtil.compareFiles(jfireServerTruststoreFile, backupFile)) {
-				backupFile.delete();
-				return;
-			}
-		} while (backupFile.exists());
-
-		if (!jfireServerTruststoreFile.renameTo(backupFile)) {
-			IOUtil.copyFile(jfireServerTruststoreFile, backupFile);
-			jfireServerTruststoreFile.delete();
+		if (!jksstore.renameTo(backupFile))
+		{
+			IOUtil.copyFile(jksstore, backupFile);
+			jksstore.delete();
 		}
-
+		return initialSuffix;
 	}
 
 }
