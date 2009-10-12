@@ -1,4 +1,4 @@
-package org.nightlabs.jfire.base.testsuite.user;
+package org.nightlabs.jfire.testsuite.user;
 
 import java.text.DateFormat;
 import java.text.ParseException;

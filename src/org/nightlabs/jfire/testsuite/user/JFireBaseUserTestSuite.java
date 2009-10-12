@@ -1,22 +1,30 @@
-package org.nightlabs.jfire.base.testsuite.id;
+/**
+ *
+ */
+package org.nightlabs.jfire.testsuite.user;
 
 import javax.jdo.PersistenceManager;
 
-import org.nightlabs.jfire.testsuite.TestSuite;
-
 import junit.framework.TestCase;
 
-public class JFireIDGeneratorTestSuite extends TestSuite{
-	
+import org.nightlabs.jfire.testsuite.TestSuite;
+
+/**
+ * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] de -->
+ *
+ */
+public class JFireBaseUserTestSuite extends TestSuite
+{
+
 //	public JFireBaseTestSuite() {
 //	}
 
 	/**
 	 * @param classes
 	 */
-	public JFireIDGeneratorTestSuite(Class<? extends TestCase>... classes) {
+	public JFireBaseUserTestSuite(Class<? extends TestCase>... classes) {
 		super(classes);
-		setName("JFireIDGeneratorTestSuite Testsuite");
+		setName("JFireBaseUser Testsuite");
 	}
 	/**
 	 * {@inheritDoc}
@@ -32,7 +40,5 @@ public class JFireIDGeneratorTestSuite extends TestSuite{
 		}
 		return null;
 	}
-
-	
 
 }

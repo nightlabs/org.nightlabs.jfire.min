@@ -1,7 +1,7 @@
 /**
  *
  */
-package org.nightlabs.jfire.base.testsuite.id;
+package org.nightlabs.jfire.testsuite.id;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -162,9 +162,9 @@ public class IDGeneratorTest extends TestCase
 		}
 	}
 
-//	public static void main(String[] args) throws Exception {
-//		JFireSecurityConfiguration.declareConfiguration();
-//		new IDGeneratorTest()._testGetIDs();
-//	}
+	public static void main(String[] args) throws Exception {
+		JFireSecurityConfiguration.declareConfiguration();
+		new IDGeneratorTest()._testGetIDs();
+	}
 
 }

@@ -1,7 +1,7 @@
 /**
  *
  */
-package org.nightlabs.jfire.base.testsuite.user;
+package org.nightlabs.jfire.testsuite.user;
 
 import junit.framework.TestCase;
 
