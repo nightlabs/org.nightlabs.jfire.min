@@ -48,6 +48,7 @@ import javax.jdo.JDOHelper;
 import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
+import javax.naming.InitialContext;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.inheritance.Inheritable;
@@ -77,6 +78,7 @@ import org.nightlabs.jfire.security.notification.AuthorityNotificationFilter;
 import org.nightlabs.jfire.security.notification.AuthorityNotificationReceiver;
 import org.nightlabs.jfire.security.search.UserQuery;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
+import org.nightlabs.jfire.servermanager.j2ee.J2EEAdapter;
 import org.nightlabs.jfire.timer.id.TaskID;
 import org.nightlabs.util.CollectionUtil;
 import org.nightlabs.util.Util;
@@ -105,6 +107,7 @@ implements JFireSecurityManagerRemote
 
 	private static final boolean ASSERT_CONSISTENCY_BEFORE = false;
 	private static final boolean ASSERT_CONSISTENCY_AFTER = false;
+	private static final Collection<?> Collection = null;
 
 	/* (non-Javadoc)
 	 * @see org.nightlabs.jfire.security.JFireSecurityManagerRemote#initialise()
@@ -420,6 +423,7 @@ implements JFireSecurityManagerRemote
 			Set<UserID> result = null;
 
 			Query query = pm.newQuery(pm.getExtent(User.class, true));
+
 			query.setResult("JDOHelper.getObjectId(this)");
 
 			StringBuffer filter = new StringBuffer();
@@ -1749,6 +1753,62 @@ implements JFireSecurityManagerRemote
 			);
 
 			authorityNotificationReceiver.replicateAuthorities(emitterOrganisationID, authorityIDs, null);
+		} finally {
+			pm.close();
+		}
+	}
+
+	@RolesAllowed("_ServerAdmin_")
+	@Override
+	public void grantAllRoleGroupsInAllAuthorities(UserID userID)
+	{
+		PersistenceManager pm = createPersistenceManager();
+		try {
+
+			boolean successful = false;
+			SecurityChangeController.beginChanging();
+			try {
+
+				// Query all existing Authority instances and iterate them.
+				// Grant all role-groups that are declared in the Authority's AuthorityType.
+				User user = (User) pm.getObjectById(userID);
+				UserLocal userLocal = user.getUserLocal();
+
+				for (Iterator<Authority> it = pm.getExtent(Authority.class).iterator(); it.hasNext(); ) {
+					Authority authority = it.next();
+					AuthorizedObjectRef authorizedObjectRef = authority.createAuthorizedObjectRef(userLocal);
+
+					Set<RoleGroup> roleGroups = authority.getAuthorityType().getRoleGroups();
+					for (RoleGroup roleGroup : roleGroups) {
+						RoleGroupRef roleGroupRef = authority.createRoleGroupRef(roleGroup);
+						authorizedObjectRef.addRoleGroupRef(roleGroupRef);
+					}
+				}
+
+				// Finally, we flush the security cache.
+				JFireServerManager jfsm = getJFireServerManager();
+				try {
+					jfsm.jfireSecurity_flushCache(userID);
+				} finally {
+					jfsm.close();
+				}
+
+				successful = true;
+			} finally {
+				SecurityChangeController.endChanging(successful);
+			}
+
+			// The JEE server (more precisely JAAS) manages its own cache that would be invalidated only after a delay
+			// of some minutes (usually 5 minutes). Since this method is not called often but rather
+			// an emergency tool to reverse an accidental lock-out, we flush the JAAS-cache immediately.
+			try {
+				InitialContext initialContext = new InitialContext();
+				J2EEAdapter j2eeAdapter = (J2EEAdapter) initialContext.lookup(J2EEAdapter.JNDI_NAME);
+				j2eeAdapter.flushAuthenticationCache();
+			} catch (Exception e) {
+				logger.warn("grantAllRoleGroupsInAllAuthorities: Flushing the JEE-server's authentication cache failed.", e);
+			}
+
 		} finally {
 			pm.close();
 		}

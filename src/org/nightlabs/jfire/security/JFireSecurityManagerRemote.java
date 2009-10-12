@@ -300,4 +300,20 @@ public interface JFireSecurityManagerRemote
 
 	void importAuthoritiesOnCrossOrganisationRegistration(Context context)
 			throws Exception;
+
+	/**
+	 * Grant all access rights (in the complete organisation, in all {@link Authority}s) to the specified user.
+	 * This will not grant the special rights "_System_" or "_ServerAdmin_" - only ordinary rights are granted.
+	 * <p>
+	 * This method is useful when an administrator locked itself out of the system. He can call this method for
+	 * himself as well as for every other user (usually another administrator) to grant all access rights.
+	 * </p>
+	 * <p>
+	 * This method can only be called by server administrators (special role "_ServerAdmin_"). Ordinary administrators
+	 * (who are admins solely in the scope of their organisation) are not allowed to invoke this method.
+	 * </p>
+	 *
+	 * @param userID the user whom to give all access rights.
+	 */
+	void grantAllRoleGroupsInAllAuthorities(UserID userID);
 }
