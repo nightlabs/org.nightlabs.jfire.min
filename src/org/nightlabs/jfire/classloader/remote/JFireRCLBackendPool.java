@@ -78,4 +78,12 @@ class JFireRCLBackendPool
 		if (logger.isDebugEnabled())
 			logger.debug("putJFireRCLBackend: added a JFireRCLBackend to pool. instancesAvailable.size()=" + instancesAvailable.size());
 	}
+
+	/**
+	 * Clears the list of all cached bean stubs.
+	 */
+	public void clear()
+	{
+		instancesAvailable.clear();
+	}
 }

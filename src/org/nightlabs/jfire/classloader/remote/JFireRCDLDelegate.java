@@ -83,10 +83,10 @@ public class JFireRCDLDelegate implements ClassDataLoaderDelegate
 
 		return _sharedInstance;
 	}
+	
 	/**
-	 *
+	 * Creates a shared instance of this class.
 	 */
-
 	public static synchronized JFireRCDLDelegate createSharedInstance(InitialContextProvider initialContextProvider, File cacheDir)
 	throws FileNotFoundException, IOException
 	{
@@ -508,6 +508,14 @@ public class JFireRCDLDelegate implements ClassDataLoaderDelegate
 			}
 		}
 		return outOfSync;
+	}
+	
+	/**
+	 * Invalidates all cached bean stubs and clears the cache.
+	 */
+	public void clearCache()
+	{
+		jFireRCLBackendPool.clear();
 	}
 
 }
