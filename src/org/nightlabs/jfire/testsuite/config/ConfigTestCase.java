@@ -3,7 +3,7 @@ package org.nightlabs.jfire.testsuite.config;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Random;
+import java.util.Set;
 
 import javax.jdo.FetchPlan;
 
@@ -15,6 +15,7 @@ import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jdo.ObjectIDUtil;
 import org.nightlabs.jfire.base.JFireEjb3Factory;
 import org.nightlabs.jfire.config.Config;
+import org.nightlabs.jfire.config.ConfigGroup;
 import org.nightlabs.jfire.config.ConfigManagerRemote;
 import org.nightlabs.jfire.config.ConfigSetup;
 import org.nightlabs.jfire.config.WorkstationConfigSetup;
@@ -32,7 +33,7 @@ import org.nightlabs.jfire.testsuite.JFireTestSuite;
 @JFireTestSuite(JFireBaseConfigTestSuite.class)
 public class ConfigTestCase extends TestCase{
 	Logger logger = Logger.getLogger(ConfigTestCase.class);	
-
+	
 	@Test
 	public void testWorkstationConfigSetup() throws Exception	
 	{			
@@ -48,22 +49,35 @@ public class ConfigTestCase extends TestCase{
 				configGroupKey,
 				WorkstationConfigSetup.CONFIG_GROUP_CONFIG_TYPE_WORKSTATION_CONFIG);
 		
-		configManager.addConfigGroup(
+		ConfigGroup  configGroup = configManager.addConfigGroup(
 				configID.configKey,
 				configID.configType,
 				configGroupName,
-				false,
-				null, 0
+				true,
+				null, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT
 		);
-
+					
 		Collection<ConfigSetupID> setupIDs = configManager.getAllConfigSetupIDs();
 		List<ConfigSetup> configSetups = configManager.getConfigSetups(new HashSet<ConfigSetupID>(setupIDs),
-				new String[] {FetchPlan.DEFAULT, Config.FETCH_GROUP_CONFIG_GROUP}, 
+				new String[] {FetchPlan.DEFAULT,ConfigSetup.FETCH_GROUP_CONFIG_MODULE_CLASSES, Config.FETCH_GROUP_CONFIG_GROUP}, 
 				NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
-
+		
+		
+		
+		
+		
 		for (ConfigSetup configSetup : configSetups) {
 			if (configSetup.getConfigGroupType().equals(configID.configType)) 
-			{
+			{		
+				configSetup = (WorkstationConfigSetup)configSetup;
+				List<Config> notAssignedConfigs = configSetup.getConfigsNotInGroup(configID.configKey);
+				Set<String> modules = configSetup.getConfigModuleClasses();
+				
+				if(notAssignedConfigs.isEmpty())
+				{
+					logger.info("the following configs has been found");
+				}			
+				
 			//	List<Config> configs = configSetup.getConfigsForGroup(configID.configKey);
 				
 //				Collection<Config> configs = configSetup.getConfigs();
@@ -76,7 +90,7 @@ public class ConfigTestCase extends TestCase{
 //					logger.info("the following configs has been found");
 //
 //				}
-//				logger.info("the following configs has been found");
+				logger.info("the following configs has been found");
 //				Random rndGen = new Random(System.currentTimeMillis());		
 //
 //				// assign 3 random configs

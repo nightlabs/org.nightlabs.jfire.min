@@ -1,4 +1,4 @@
-package org.nightlabs.jfire.testsuite.user;
+package org.nightlabs.jfire.testsuite.security;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -10,6 +10,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import javax.jdo.FetchPlan;
+import javax.jdo.JDOHelper;
 
 import junit.framework.TestCase;
 
@@ -47,11 +48,13 @@ import org.nightlabs.jfire.testsuite.JFireTestSuite;
  * the JFireBaseTestSuite, that will check
  * if JFireBase is deployedsss.
  */
-@JFireTestSuite(JFireBaseUserTestSuite.class)
-public class UserTestCase extends TestCase
+@JFireTestSuite(JFireBaseSecurityTestSuite.class)
+public class NewUserTestCase extends TestCase
 {
-	Logger logger = Logger.getLogger(UserTestCase.class);
+	Logger logger = Logger.getLogger(NewUserTestCase.class);
 
+	private static ThreadLocal<UserID> newUserID = new ThreadLocal<UserID>();
+		
 	//Commented out this nonsense method. It should use API methods rather than its own EJB and
 	//especially it is wrong to work with a LegalEntity here. I'll remove the dependency on JFireTrade, too. Marco.
 
@@ -63,7 +66,7 @@ public class UserTestCase extends TestCase
 	public void testCreateUser() throws Exception{
 
 		Properties initialContextProperties = SecurityReflector.getInitialContextProperties();
-		JFireSecurityManagerRemote um = JFireEjb3Factory.getRemoteBean(JFireSecurityManagerRemote.class, initialContextProperties);		
+		JFireSecurityManagerRemote sm = JFireEjb3Factory.getRemoteBean(JFireSecurityManagerRemote.class, initialContextProperties);		
 
 		//
 		long ID = IDGenerator.nextID(User.class);
@@ -166,7 +169,7 @@ public class UserTestCase extends TestCase
 
 		logger.info("test Create Person: end");
 
-		String userID = "User"+String.valueOf(ID);
+		String userID = "UserTCT"+String.valueOf(ID);
 		String password = "test";
 
 		logger.info("testCreateUser: begin");
@@ -175,8 +178,8 @@ public class UserTestCase extends TestCase
 		UserLocal userLocal = new UserLocal(newUser);
 		userLocal.setPasswordPlain(password);
 		newUser.setPerson(newPerson);	
-
-		um.storeUser(newUser, password,true, new String[] {
+		
+		newUser = sm.storeUser(newUser, password,true, new String[] {
 				FetchPlan.DEFAULT,
 				User.FETCH_GROUP_USER_LOCAL,
 				User.FETCH_GROUP_PERSON,
@@ -184,30 +187,54 @@ public class UserTestCase extends TestCase
 				IExpression.FETCH_GROUP_IEXPRESSION_FULL_DATA
 		},NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
 
+	
+		if(newUser!=null)
+		{
+			newUserID.set((UserID)JDOHelper.getObjectId(newUser));
+		//	sm.grantAllRoleGroupsInAllAuthorities((UserID)JDOHelper.getObjectId(newUser));
+			logger.info("the following User was created"+newUser.getName());
+		}	
 		logger.info("testCreateUser: end");
-
 	}
 
-
-
+	
+//	@Test
+//	public void testLoginNewUser() throws Exception{
+//		JFireSecurityManagerRemote sm = JFireEjb3Factory.getRemoteBean(JFireSecurityManagerRemote.class,SecurityReflector.getInitialContextProperties());
+//		User user = sm.getUsers(Collections.singleton(newUserID.get()), new String[] {
+//				User.FETCH_GROUP_NAME,
+//				User.FETCH_GROUP_USER_LOCAL
+//		}, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT).iterator().next();
+//		 		
+//		JFireLogin login = new JFireLogin(user.getOrganisationID(), user.getUserID(), user.getUserLocal().getPassword());
+//		try {
+//			login.login();
+//		} catch (LoginException e) {
+//			fail("Could not login with the new users");
+//			return;
+//		}
+//	
+//		login.logout();		
+//	}
+//	
 	/**
 	 * This method is invoked by the JUnit run,
 	 * as it is annotated with the Test annotation.
 	 */
 	@Test
-	public void testListUsers() throws Exception{
+	public void testQueryNewUsers() throws Exception{
 		// if fails, however ;-)
 		// fail("Well, somewhere is an error.");
 		logger.info("listUsers: begin");
 		// TODO implement!
-		JFireSecurityManagerRemote um = JFireEjb3Factory.getRemoteBean(JFireSecurityManagerRemote.class,SecurityReflector.getInitialContextProperties());
+		JFireSecurityManagerRemote sm = JFireEjb3Factory.getRemoteBean(JFireSecurityManagerRemote.class,SecurityReflector.getInitialContextProperties());
 		final QueryCollection<UserQuery> queries =new QueryCollection<UserQuery>(User.class);
 		UserQuery userQuery = new UserQuery();
+		userQuery.setUserID("UserTC");
 		queries.add(userQuery);
-		Set<UserID> userIDs = um.getUserIDs(queries);
-
+		Set<UserID> userIDs = sm.getUserIDs(queries);
 		if (userIDs != null && !userIDs.isEmpty()) {
-			Collection<User> users = um.getUsers(userIDs, new String[] {FetchPlan.DEFAULT}, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
+			Collection<User> users = sm.getUsers(userIDs, new String[] {FetchPlan.DEFAULT}, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
 			if (users.isEmpty())
 				fail("No Users was found!!!");
 			logger.info("the following Users found with");

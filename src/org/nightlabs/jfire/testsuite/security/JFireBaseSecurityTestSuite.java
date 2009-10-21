@@ -1,7 +1,7 @@
 /**
  *
  */
-package org.nightlabs.jfire.testsuite.user;
+package org.nightlabs.jfire.testsuite.security;
 
 import javax.jdo.PersistenceManager;
 
@@ -13,18 +13,15 @@ import org.nightlabs.jfire.testsuite.TestSuite;
  * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] de -->
  *
  */
-public class JFireBaseUserTestSuite extends TestSuite
+public class JFireBaseSecurityTestSuite extends TestSuite
 {
-
-//	public JFireBaseTestSuite() {
-//	}
 
 	/**
 	 * @param classes
 	 */
-	public JFireBaseUserTestSuite(Class<? extends TestCase>... classes) {
+	public JFireBaseSecurityTestSuite(Class<? extends TestCase>... classes) {
 		super(classes);
-		setName("JFireBaseUser Testsuite");
+		setName("JFireBaseSecurity Testsuite");
 	}
 	/**
 	 * {@inheritDoc}
