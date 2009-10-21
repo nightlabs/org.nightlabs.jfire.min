@@ -14,7 +14,6 @@ import java.util.Set;
 
 import javax.jdo.FetchPlan;
 import javax.jdo.JDOHelper;
-import javax.naming.InitialContext;
 
 import junit.framework.TestCase;
 
@@ -29,18 +28,14 @@ import org.nightlabs.jfire.security.AuthorityType;
 import org.nightlabs.jfire.security.AuthorizedObjectRef;
 import org.nightlabs.jfire.security.JFireSecurityManagerRemote;
 import org.nightlabs.jfire.security.RoleGroup;
-import org.nightlabs.jfire.security.RoleGroupRef;
 import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.security.UserSecurityGroup;
-import org.nightlabs.jfire.security.UserSecurityGroupRef;
 import org.nightlabs.jfire.security.id.AuthorityID;
 import org.nightlabs.jfire.security.id.RoleGroupID;
 import org.nightlabs.jfire.security.id.UserID;
 import org.nightlabs.jfire.security.id.UserLocalID;
 import org.nightlabs.jfire.security.id.UserSecurityGroupID;
-import org.nightlabs.jfire.security.listener.SecurityChangeController;
-import org.nightlabs.jfire.servermanager.j2ee.J2EEAdapter;
 import org.nightlabs.jfire.testsuite.JFireTestSuite;
 
 
@@ -54,6 +49,7 @@ public class UserSecurityGroupTestCase extends TestCase {
 
 	Logger logger = Logger.getLogger(UserSecurityGroupTestCase.class);
 
+	private final String QUERY_USER_ROLEGROUP_ID =  "org.nightlabs.jfire.security.queryUsers";
 
 	private static String[] FETCH_GROUP_SECURITYGROUP =new String[] {FetchPlan.DEFAULT,
 		UserSecurityGroup.FETCH_GROUP_MEMBERS,
@@ -83,7 +79,7 @@ public class UserSecurityGroupTestCase extends TestCase {
 				"UserGroup"+String.valueOf(IDGenerator.nextID(UserSecurityGroup.class)));
 
 		userSecurityGroup.setName("Test User Group");
-		userSecurityGroup.setDescription("This group consists out of testing scenario.");	
+		userSecurityGroup.setDescription("This User Security group is for a testing scenario.");	
 		JFireSecurityManagerRemote m = JFireEjb3Factory.getRemoteBean(JFireSecurityManagerRemote.class, SecurityReflector.getInitialContextProperties());
 
 		userSecurityGroup = m.storeUserSecurityGroup(userSecurityGroup, 
@@ -104,7 +100,13 @@ public class UserSecurityGroupTestCase extends TestCase {
 
 	@Test
 	public void testAssignUsersToSecurityGroup() throws Exception {	
-
+		
+		logger.info("Assign UsersToSecurityGroup: begin");		
+		
+		if (newUserSecurityGroupID.get() == null) {
+			fail("Seems that creating the User Security Group has failed, no UserSecurityGroupID was registered in the ThreadLocal");
+		}
+	
 		JFireSecurityManagerRemote sm = JFireEjb3Factory.getRemoteBean(JFireSecurityManagerRemote.class, SecurityReflector.getInitialContextProperties());
 
 		UserSecurityGroup group = sm.getUserSecurityGroups(
@@ -131,29 +133,37 @@ public class UserSecurityGroupTestCase extends TestCase {
 				members.add(user);
 		}
 
-		Set<UserLocalID> includedUserLocalIDs = new HashSet<UserLocalID>(1);
+		Set<UserLocalID> includedUserLocalIDs = new HashSet<UserLocalID>();
 
 		Random rndGen = new Random(System.currentTimeMillis());	
 
 		// add a random user to the group
 		includedUserLocalIDs.add((UserLocalID) JDOHelper.getObjectId( 
-					(members.get(rndGen.nextInt(members.size())).getUserLocal())));
-		
+				(members.get(rndGen.nextInt(members.size())).getUserLocal())));
+
 
 		sm.setMembersOfUserSecurityGroup(newUserSecurityGroupID.get(), includedUserLocalIDs);
 		sm.storeUserSecurityGroup(group, 
 				false, 
 				FETCH_GROUP_SECURITYGROUP,
 				NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
+		
+		logger.info("Assign UsersToSecurityGroup: end");	
 	}
 
 
-	
-	
-	
+
+
+
 	@Test
 	public void testAssignRoleGroup() throws Exception {	
-
+		
+		logger.info("Assign AssignRoleGroup: begin");	
+		
+		if (newUserSecurityGroupID.get() == null) {
+			fail("Seems that creating the User Security Group has failed, no UserSecurityGroupID was registered in the ThreadLocal");
+		}
+		
 		JFireSecurityManagerRemote sm = JFireEjb3Factory.getRemoteBean(JFireSecurityManagerRemote.class, SecurityReflector.getInitialContextProperties());
 
 		AuthorityID authorityID = AuthorityID.create(SecurityReflector.getUserDescriptor().getOrganisationID(), 
@@ -177,27 +187,34 @@ public class UserSecurityGroupTestCase extends TestCase {
 			NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT).iterator().next();
 
 
+		//UserSecurityGroupRef userGroupRef = (UserSecurityGroupRef) authority.createAuthorizedObjectRef(group);
+		//sm.setGrantedRoleGroups(authorizedObjectID, authorityID, roleGroupIDs);
 
-			//UserSecurityGroupRef userGroupRef = (UserSecurityGroupRef) authority.createAuthorizedObjectRef(group);
-			//sm.setGrantedRoleGroups(authorizedObjectID, authorityID, roleGroupIDs);
-
-			//List<RoleGroupIDSetCarrier>  roleGroupIDSetCarrier = sm.getRoleGroupIDSetCarriers(authorityID);
-			Set<RoleGroupID> roleGroupIDs = new HashSet<RoleGroupID>(); 
-			Set<RoleGroup> roleGroups = authority.getAuthorityType().getRoleGroups();
-			for (RoleGroup roleGroup : roleGroups) {
-				if(roleGroup.getRoleGroupID().equals("org.nightlabs.jfire.security.queryUsers"))
-				{
-					logger.info("I found the role group");
-					logger.info(roleGroup.getRoleGroupID());
-					roleGroupIDs.add((RoleGroupID) JDOHelper.getObjectId(roleGroup));
-				}	
-
+		//List<RoleGroupIDSetCarrier>  roleGroupIDSetCarrier = sm.getRoleGroupIDSetCarriers(authorityID);
+		Set<RoleGroupID> roleGroupIDs = new HashSet<RoleGroupID>(); 
+		Set<RoleGroup> roleGroups = authority.getAuthorityType().getRoleGroups();
+		for (RoleGroup roleGroup : roleGroups) {
+			if(roleGroup.getRoleGroupID().equals(QUERY_USER_ROLEGROUP_ID))
+			{
+				logger.info("I found the role group");
 				logger.info(roleGroup.getRoleGroupID());
-			}
-			
-			sm.setGrantedRoleGroups(newUserSecurityGroupID.get(), authorityID, roleGroupIDs);
-			
+				roleGroupIDs.add((RoleGroupID) JDOHelper.getObjectId(roleGroup));
+			}	
+
+			logger.info(roleGroup.getRoleGroupID());
+		}
+
+		sm.setGrantedRoleGroups(newUserSecurityGroupID.get(), authorityID, roleGroupIDs);		
+
+		sm.storeUserSecurityGroup(group, 
+				false, 
+				FETCH_GROUP_SECURITYGROUP,
+				NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
+
+
+		logger.info("Assign AssignRoleGroup: end");	
+		
 	}
-	
-	
+
+
 }
