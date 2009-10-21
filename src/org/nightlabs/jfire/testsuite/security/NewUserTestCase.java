@@ -4,6 +4,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Properties;
@@ -11,6 +12,7 @@ import java.util.Set;
 
 import javax.jdo.FetchPlan;
 import javax.jdo.JDOHelper;
+import javax.security.auth.login.LoginException;
 
 import junit.framework.TestCase;
 
@@ -20,6 +22,7 @@ import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jdo.query.QueryCollection;
 import org.nightlabs.jfire.base.JFireEjb3Factory;
 import org.nightlabs.jfire.base.expression.IExpression;
+import org.nightlabs.jfire.base.login.JFireLogin;
 import org.nightlabs.jfire.idgenerator.IDGenerator;
 import org.nightlabs.jfire.person.Person;
 import org.nightlabs.jfire.person.PersonStruct;
@@ -30,10 +33,14 @@ import org.nightlabs.jfire.prop.datafield.PhoneNumberDataField;
 import org.nightlabs.jfire.prop.datafield.SelectionDataField;
 import org.nightlabs.jfire.prop.structfield.SelectionStructField;
 import org.nightlabs.jfire.prop.structfield.StructFieldValue;
+import org.nightlabs.jfire.security.Authority;
 import org.nightlabs.jfire.security.JFireSecurityManagerRemote;
 import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.security.UserLocal;
+import org.nightlabs.jfire.security.id.AuthorityID;
+import org.nightlabs.jfire.security.id.AuthorizedObjectID;
+import org.nightlabs.jfire.security.id.RoleGroupID;
 import org.nightlabs.jfire.security.id.UserID;
 import org.nightlabs.jfire.security.search.UserQuery;
 import org.nightlabs.jfire.testsuite.JFireTestSuite;
@@ -54,7 +61,17 @@ public class NewUserTestCase extends TestCase
 	Logger logger = Logger.getLogger(NewUserTestCase.class);
 
 	private static ThreadLocal<UserID> newUserID = new ThreadLocal<UserID>();
-		
+
+
+	private static String[] FETCH_GROUP_USER =new String[]{FetchPlan.DEFAULT,
+		User.FETCH_GROUP_NAME,
+		User.FETCH_GROUP_USER_LOCAL,
+		User.FETCH_GROUP_PERSON,
+		PropertySet.FETCH_GROUP_FULL_DATA,
+		IExpression.FETCH_GROUP_IEXPRESSION_FULL_DATA};
+
+
+
 	//Commented out this nonsense method. It should use API methods rather than its own EJB and
 	//especially it is wrong to work with a LegalEntity here. I'll remove the dependency on JFireTrade, too. Marco.
 
@@ -169,7 +186,7 @@ public class NewUserTestCase extends TestCase
 
 		logger.info("test Create Person: end");
 
-		String userID = "UserTCT"+String.valueOf(ID);
+		String userID = "UserTC"+String.valueOf(ID);
 		String password = "test";
 
 		logger.info("testCreateUser: begin");
@@ -178,45 +195,57 @@ public class NewUserTestCase extends TestCase
 		UserLocal userLocal = new UserLocal(newUser);
 		userLocal.setPasswordPlain(password);
 		newUser.setPerson(newPerson);	
-		
-		newUser = sm.storeUser(newUser, password,true, new String[] {
-				FetchPlan.DEFAULT,
-				User.FETCH_GROUP_USER_LOCAL,
-				User.FETCH_GROUP_PERSON,
-				PropertySet.FETCH_GROUP_FULL_DATA,
-				IExpression.FETCH_GROUP_IEXPRESSION_FULL_DATA
-		},NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
 
-	
+		newUser = sm.storeUser(newUser, password, true, FETCH_GROUP_USER, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
+
+
 		if(newUser!=null)
 		{
 			newUserID.set((UserID)JDOHelper.getObjectId(newUser));
-		//	sm.grantAllRoleGroupsInAllAuthorities((UserID)JDOHelper.getObjectId(newUser));
+			//	sm.grantAllRoleGroupsInAllAuthorities((UserID)JDOHelper.getObjectId(newUser));
 			logger.info("the following User was created"+newUser.getName());
 		}	
 		logger.info("testCreateUser: end");
 	}
+	//  Assign the User the login right.
+	@Test
+	public void testAssignRoleGroupToNewUser() throws Exception{
+		JFireSecurityManagerRemote sm = JFireEjb3Factory.getRemoteBean(JFireSecurityManagerRemote.class,SecurityReflector.getInitialContextProperties());
 
-	
-//	@Test
-//	public void testLoginNewUser() throws Exception{
-//		JFireSecurityManagerRemote sm = JFireEjb3Factory.getRemoteBean(JFireSecurityManagerRemote.class,SecurityReflector.getInitialContextProperties());
-//		User user = sm.getUsers(Collections.singleton(newUserID.get()), new String[] {
-//				User.FETCH_GROUP_NAME,
-//				User.FETCH_GROUP_USER_LOCAL
-//		}, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT).iterator().next();
-//		 		
-//		JFireLogin login = new JFireLogin(user.getOrganisationID(), user.getUserID(), user.getUserLocal().getPassword());
-//		try {
-//			login.login();
-//		} catch (LoginException e) {
-//			fail("Could not login with the new users");
-//			return;
-//		}
-//	
-//		login.logout();		
-//	}
-//	
+		final String LOGWITHOUT_WORKSTATION_ROLEGROUP_ID =  "org.nightlabs.jfire.workstation.loginWithoutWorkstation";
+
+		User user = sm.getUsers(Collections.singleton(newUserID.get()), FETCH_GROUP_USER
+				, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT).iterator().next();
+
+		AuthorityID authorityID = AuthorityID.create(SecurityReflector.getUserDescriptor().getOrganisationID(), 
+				Authority.AUTHORITY_ID_ORGANISATION);
+		RoleGroupID logUserRoleGroupID  = RoleGroupID.create(LOGWITHOUT_WORKSTATION_ROLEGROUP_ID);
+		sm.setGrantedRoleGroups((AuthorizedObjectID) JDOHelper.getObjectId(user.getUserLocal()), authorityID, Collections.singleton(logUserRoleGroupID));		
+		sm.storeUser(user, null, false, FETCH_GROUP_USER, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);	
+	}
+
+
+	@Test
+	public void testLoginNewUser() throws Exception{
+
+		logger.info("LoginNewUser: begin");
+		JFireSecurityManagerRemote sm = JFireEjb3Factory.getRemoteBean(JFireSecurityManagerRemote.class,SecurityReflector.getInitialContextProperties());
+		User user = sm.getUsers(Collections.singleton(newUserID.get()), FETCH_GROUP_USER,
+				NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT).iterator().next();
+
+		JFireLogin login = new JFireLogin(user.getUserLocal().getOrganisationID(), 
+				user.getUserLocal().getUserID(), "test");
+		try {
+			login.login();
+		} catch (LoginException e) {
+			fail("Could not login with the new users");
+			return;
+		}
+
+		login.logout();		
+		logger.info("LoginNewUser: end");
+	}
+
 	/**
 	 * This method is invoked by the JUnit run,
 	 * as it is annotated with the Test annotation.

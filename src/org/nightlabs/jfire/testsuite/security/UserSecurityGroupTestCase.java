@@ -49,8 +49,6 @@ public class UserSecurityGroupTestCase extends TestCase {
 
 	Logger logger = Logger.getLogger(UserSecurityGroupTestCase.class);
 
-	private final String QUERY_USER_ROLEGROUP_ID =  "org.nightlabs.jfire.security.queryUsers";
-
 	private static String[] FETCH_GROUP_SECURITYGROUP =new String[] {FetchPlan.DEFAULT,
 		UserSecurityGroup.FETCH_GROUP_MEMBERS,
 		User.FETCH_GROUP_USER_LOCAL,
@@ -133,16 +131,14 @@ public class UserSecurityGroupTestCase extends TestCase {
 				members.add(user);
 		}
 
-		Set<UserLocalID> includedUserLocalIDs = new HashSet<UserLocalID>();
-
 		Random rndGen = new Random(System.currentTimeMillis());	
-
 		// add a random user to the group
-		includedUserLocalIDs.add((UserLocalID) JDOHelper.getObjectId( 
-				(members.get(rndGen.nextInt(members.size())).getUserLocal())));
+		UserLocalID addedUserLocalID  = (UserLocalID) JDOHelper.getObjectId( 
+				(members.get(rndGen.nextInt(members.size())).getUserLocal()));
 
-
-		sm.setMembersOfUserSecurityGroup(newUserSecurityGroupID.get(), includedUserLocalIDs);
+		sm.setMembersOfUserSecurityGroup(newUserSecurityGroupID.get(), 
+				Collections.singleton(addedUserLocalID));
+	
 		sm.storeUserSecurityGroup(group, 
 				false, 
 				FETCH_GROUP_SECURITYGROUP,
@@ -153,7 +149,7 @@ public class UserSecurityGroupTestCase extends TestCase {
 
 
 
-
+	private final String QUERY_USER_ROLEGROUP_ID =  "org.nightlabs.jfire.security.queryUsers";
 
 	@Test
 	public void testAssignRoleGroup() throws Exception {	
@@ -186,25 +182,35 @@ public class UserSecurityGroupTestCase extends TestCase {
 			RoleGroup.FETCH_GROUP_NAME}, 
 			NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT).iterator().next();
 
-
 		//UserSecurityGroupRef userGroupRef = (UserSecurityGroupRef) authority.createAuthorizedObjectRef(group);
 		//sm.setGrantedRoleGroups(authorizedObjectID, authorityID, roleGroupIDs);
 
+
 		//List<RoleGroupIDSetCarrier>  roleGroupIDSetCarrier = sm.getRoleGroupIDSetCarriers(authorityID);
-		Set<RoleGroupID> roleGroupIDs = new HashSet<RoleGroupID>(); 
-		Set<RoleGroup> roleGroups = authority.getAuthorityType().getRoleGroups();
-		for (RoleGroup roleGroup : roleGroups) {
-			if(roleGroup.getRoleGroupID().equals(QUERY_USER_ROLEGROUP_ID))
-			{
-				logger.info("I found the role group");
-				logger.info(roleGroup.getRoleGroupID());
-				roleGroupIDs.add((RoleGroupID) JDOHelper.getObjectId(roleGroup));
-			}	
+		Set<RoleGroupID> assignedRoleGroupIDs = new HashSet<RoleGroupID>(); 
+		Set<RoleGroupID> roleGroupIDs = sm.getRoleGroupIDs();	
+		RoleGroupID queryUserRoleGroupID  = RoleGroupID.create(QUERY_USER_ROLEGROUP_ID);
+		
+		// check if the Query User ID exists among the role groups
+		for (RoleGroupID roleGroupID :  roleGroupIDs) 
+			if(roleGroupID.equals(queryUserRoleGroupID))
+				assignedRoleGroupIDs.add(roleGroupID);
+				
+		
+//		Set<RoleGroupID> roleGroupIDs = new HashSet<RoleGroupID>(); 
+//		Set<RoleGroup> roleGroups = authority.getAuthorityType().getRoleGroups();
+//		for (RoleGroup roleGroup : roleGroups) {
+//			if(roleGroup.getRoleGroupID().equals(QUERY_USER_ROLEGROUP_ID))
+//			{
+//				logger.info("I found the role group");
+//				logger.info(roleGroup.getRoleGroupID());
+//				roleGroupIDs.add((RoleGroupID) JDOHelper.getObjectId(roleGroup));
+//			}	
+//
+//			logger.info(roleGroup.getRoleGroupID());
+//		}
 
-			logger.info(roleGroup.getRoleGroupID());
-		}
-
-		sm.setGrantedRoleGroups(newUserSecurityGroupID.get(), authorityID, roleGroupIDs);		
+		sm.setGrantedRoleGroups(newUserSecurityGroupID.get(), authorityID, assignedRoleGroupIDs);		
 
 		sm.storeUserSecurityGroup(group, 
 				false, 
