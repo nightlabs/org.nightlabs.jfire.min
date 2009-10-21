@@ -189,8 +189,6 @@ public class UserSecurityGroupTestCase extends TestCase {
 				{
 					logger.info("I found the role group");
 					logger.info(roleGroup.getRoleGroupID());
-					//RoleGroupRef roleGroupRef = authority.createRoleGroupRef(roleGroup);
-					//userGroupRef.addRoleGroupRef(roleGroupRef);
 					roleGroupIDs.add((RoleGroupID) JDOHelper.getObjectId(roleGroup));
 				}	
 
