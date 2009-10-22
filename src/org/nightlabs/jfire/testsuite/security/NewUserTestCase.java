@@ -202,6 +202,9 @@ public class NewUserTestCase extends TestCase
 		if(newUser!=null)
 		{
 			newUserID.set((UserID)JDOHelper.getObjectId(newUser));
+			
+			// TODO: currently we cant test grantAllRoleGroupsInAllAuthorities as it throws runtime exceptions.
+			// take a look at https://www.jfire.org/modules/bugs/view.php?id=1337
 			//	sm.grantAllRoleGroupsInAllAuthorities((UserID)JDOHelper.getObjectId(newUser));
 			logger.info("the following User was created"+newUser.getName());
 		}	
