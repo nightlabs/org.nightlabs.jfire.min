@@ -229,7 +229,7 @@ public class NewUserTestCase extends TestCase
 
 
 	@Test
-	public void testLoginNewUser() throws Exception{
+	public void testLoginNewUserWithoutRights() throws Exception{
 
 		logger.info("LoginNewUser: begin");
 		JFireSecurityManagerRemote sm = JFireEjb3Factory.getRemoteBean(JFireSecurityManagerRemote.class,SecurityReflector.getInitialContextProperties());
@@ -245,10 +245,23 @@ public class NewUserTestCase extends TestCase
 			return;
 		}
 
-		login.logout();		
+		try {
+			// violate the role of querying users as this user doesnt have the right to do so.
+			QueryNewUsers();
+			fail("Could Access unauthirized EJB method");	
+		} catch (Exception e) {
+			// success because an exception should be thrown
+			logger.info("ended with success");
+		}
+		finally
+		{
+			login.logout();		
+		}
+
 		logger.info("LoginNewUser: end");
 	}
 
+	
 	/**
 	 * This method is invoked by the JUnit run,
 	 * as it is annotated with the Test annotation.
@@ -258,7 +271,12 @@ public class NewUserTestCase extends TestCase
 		// if fails, however ;-)
 		// fail("Well, somewhere is an error.");
 		logger.info("listUsers: begin");
-		// TODO implement!
+		QueryNewUsers();
+		logger.info("listUsers: end");
+	}
+	
+	
+	private void QueryNewUsers() throws Exception{
 		JFireSecurityManagerRemote sm = JFireEjb3Factory.getRemoteBean(JFireSecurityManagerRemote.class,SecurityReflector.getInitialContextProperties());
 		final QueryCollection<UserQuery> queries =new QueryCollection<UserQuery>(User.class);
 		UserQuery userQuery = new UserQuery();
@@ -274,6 +292,5 @@ public class NewUserTestCase extends TestCase
 				logger.info("name = "+user.getName());
 			}
 		}
-		logger.info("listUsers: end");
 	}
 }
