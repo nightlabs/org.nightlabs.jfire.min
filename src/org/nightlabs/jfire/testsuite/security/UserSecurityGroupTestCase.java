@@ -3,39 +3,42 @@
  */
 package org.nightlabs.jfire.testsuite.security;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
 import javax.jdo.FetchPlan;
 import javax.jdo.JDOHelper;
+import javax.security.auth.login.LoginException;
 
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 import org.junit.Test;
 import org.nightlabs.jdo.NLJDOHelper;
+import org.nightlabs.jdo.query.QueryCollection;
 import org.nightlabs.jfire.base.JFireEjb3Factory;
+import org.nightlabs.jfire.base.login.JFireLogin;
 import org.nightlabs.jfire.idgenerator.IDGenerator;
 import org.nightlabs.jfire.prop.PropertySet;
 import org.nightlabs.jfire.security.Authority;
 import org.nightlabs.jfire.security.AuthorityType;
+import org.nightlabs.jfire.security.AuthorizedObject;
 import org.nightlabs.jfire.security.AuthorizedObjectRef;
 import org.nightlabs.jfire.security.JFireSecurityManagerRemote;
 import org.nightlabs.jfire.security.RoleGroup;
 import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.security.User;
+import org.nightlabs.jfire.security.UserLocal;
 import org.nightlabs.jfire.security.UserSecurityGroup;
 import org.nightlabs.jfire.security.id.AuthorityID;
 import org.nightlabs.jfire.security.id.RoleGroupID;
 import org.nightlabs.jfire.security.id.UserID;
 import org.nightlabs.jfire.security.id.UserLocalID;
 import org.nightlabs.jfire.security.id.UserSecurityGroupID;
+import org.nightlabs.jfire.security.search.UserQuery;
 import org.nightlabs.jfire.testsuite.JFireTestSuite;
 
 
@@ -98,52 +101,28 @@ public class UserSecurityGroupTestCase extends TestCase {
 
 	@Test
 	public void testAssignUsersToSecurityGroup() throws Exception {	
-		
+
 		logger.info("Assign UsersToSecurityGroup: begin");		
-		
+
 		if (newUserSecurityGroupID.get() == null) {
 			fail("Seems that creating the User Security Group has failed, no UserSecurityGroupID was registered in the ThreadLocal");
 		}
-	
+
 		JFireSecurityManagerRemote sm = JFireEjb3Factory.getRemoteBean(JFireSecurityManagerRemote.class, SecurityReflector.getInitialContextProperties());
 
 		UserSecurityGroup group = sm.getUserSecurityGroups(
 				Collections.singleton(newUserSecurityGroupID.get()), 
 				FETCH_GROUP_SECURITYGROUP
 				, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT).iterator().next();
-
-
-		Collection<UserID> ids = sm.getUserIDs(SecurityReflector.getUserDescriptor().getOrganisationID(), null);
-
-		Collection<User> users = sm.getUsers(ids, new String[] {
-				User.FETCH_GROUP_NAME,
-				User.FETCH_GROUP_USER_LOCAL
-		}, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
-
-
-		// filter out all internal users (concrete _System_ and _Other_), since they should not end up in a user-group
-		List<User> members = new ArrayList<User>();
-		for (Iterator<User> it = users.iterator(); it.hasNext(); ) {
-			User user = it.next();
-			if (user.getName().startsWith("_") && user.getName().endsWith("_")) //$NON-NLS-1$ //$NON-NLS-2$
-				it.remove();
-			else
-				members.add(user);
-		}
-
-		Random rndGen = new Random(System.currentTimeMillis());	
-		// add a random user to the group
-		UserLocalID addedUserLocalID  = (UserLocalID) JDOHelper.getObjectId( 
-				(members.get(rndGen.nextInt(members.size())).getUserLocal()));
-
-		sm.setMembersOfUserSecurityGroup(newUserSecurityGroupID.get(), 
-				Collections.singleton(addedUserLocalID));
-	
-		sm.storeUserSecurityGroup(group, 
-				false, 
-				FETCH_GROUP_SECURITYGROUP,
-				NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
 		
+		Random rndGen = new Random(System.currentTimeMillis());	
+		// add a random test case user to the group	
+		List<User> users = QueryNewUsers(NewUserTestCase.NEW_USER_PREFEXID);		
+		sm.setMembersOfUserSecurityGroup(newUserSecurityGroupID.get(), 
+				Collections.singleton(
+						(UserLocalID) JDOHelper.getObjectId(
+								users.get(rndGen.nextInt(users.size())).getUserLocal()) ));
+
 		logger.info("Assign UsersToSecurityGroup: end");	
 	}
 
@@ -153,13 +132,13 @@ public class UserSecurityGroupTestCase extends TestCase {
 
 	@Test
 	public void testAssignRoleGroup() throws Exception {	
-		
+
 		logger.info("Assign AssignRoleGroup: begin");	
-		
+
 		if (newUserSecurityGroupID.get() == null) {
 			fail("Seems that creating the User Security Group has failed, no UserSecurityGroupID was registered in the ThreadLocal");
 		}
-		
+
 		JFireSecurityManagerRemote sm = JFireEjb3Factory.getRemoteBean(JFireSecurityManagerRemote.class, SecurityReflector.getInitialContextProperties());
 
 		AuthorityID authorityID = AuthorityID.create(SecurityReflector.getUserDescriptor().getOrganisationID(), 
@@ -190,25 +169,25 @@ public class UserSecurityGroupTestCase extends TestCase {
 		Set<RoleGroupID> assignedRoleGroupIDs = new HashSet<RoleGroupID>(); 
 		Set<RoleGroupID> roleGroupIDs = sm.getRoleGroupIDs();	
 		RoleGroupID queryUserRoleGroupID  = RoleGroupID.create(QUERY_USER_ROLEGROUP_ID);
-		
+
 		// check if the Query User ID exists among the role groups
 		for (RoleGroupID roleGroupID :  roleGroupIDs) 
 			if(roleGroupID.equals(queryUserRoleGroupID))
 				assignedRoleGroupIDs.add(roleGroupID);
-				
-		
-//		Set<RoleGroupID> roleGroupIDs = new HashSet<RoleGroupID>(); 
-//		Set<RoleGroup> roleGroups = authority.getAuthorityType().getRoleGroups();
-//		for (RoleGroup roleGroup : roleGroups) {
-//			if(roleGroup.getRoleGroupID().equals(QUERY_USER_ROLEGROUP_ID))
-//			{
-//				logger.info("I found the role group");
-//				logger.info(roleGroup.getRoleGroupID());
-//				roleGroupIDs.add((RoleGroupID) JDOHelper.getObjectId(roleGroup));
-//			}	
-//
-//			logger.info(roleGroup.getRoleGroupID());
-//		}
+
+
+		//		Set<RoleGroupID> roleGroupIDs = new HashSet<RoleGroupID>(); 
+		//		Set<RoleGroup> roleGroups = authority.getAuthorityType().getRoleGroups();
+		//		for (RoleGroup roleGroup : roleGroups) {
+		//			if(roleGroup.getRoleGroupID().equals(QUERY_USER_ROLEGROUP_ID))
+		//			{
+		//				logger.info("I found the role group");
+		//				logger.info(roleGroup.getRoleGroupID());
+		//				roleGroupIDs.add((RoleGroupID) JDOHelper.getObjectId(roleGroup));
+		//			}	
+		//
+		//			logger.info(roleGroup.getRoleGroupID());
+		//		}
 
 		sm.setGrantedRoleGroups(newUserSecurityGroupID.get(), authorityID, assignedRoleGroupIDs);		
 
@@ -219,8 +198,64 @@ public class UserSecurityGroupTestCase extends TestCase {
 
 
 		logger.info("Assign AssignRoleGroup: end");	
-		
+
 	}
 
 
+	
+	@Test
+	public void testLoginUserofSecurityGroup() throws Exception {	
+		logger.info("testLoginUserofSecurityGroup: begin");	
+		
+		if (newUserSecurityGroupID.get() == null) {
+			fail("Seems that creating the User Security Group has failed, no UserSecurityGroupID was registered in the ThreadLocal");
+		}
+
+		JFireSecurityManagerRemote sm = JFireEjb3Factory.getRemoteBean(JFireSecurityManagerRemote.class, SecurityReflector.getInitialContextProperties());
+
+		UserSecurityGroup group = sm.getUserSecurityGroups(
+				Collections.singleton(newUserSecurityGroupID.get()), 
+				FETCH_GROUP_SECURITYGROUP
+				, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT).iterator().next();
+		for (AuthorizedObject member : group.getMembers()) {
+			if (member instanceof UserLocal) {
+				UserLocal userLocal = (UserLocal) member;
+				JFireLogin login = new JFireLogin(userLocal.getOrganisationID(), 
+						userLocal.getUserID(), NewUserTestCase.NEW_USER_PASSWORD);
+				try {
+					login.login();
+				} catch (LoginException e) {
+					fail("Could not login with the new user");
+					return;
+				}
+
+				try {
+					QueryNewUsers(NewUserTestCase.NEW_USER_PREFEXID);
+				} catch (Exception e) {
+					logger.info("ended with failure.");
+					fail("Could not Access the authirized EJB method");	
+				}
+				finally
+				{
+					login.logout();		
+				}
+			}
+		}
+		logger.info("testLoginUserofSecurityGroup: end");	
+	}
+	
+	private List<User> QueryNewUsers(String query) throws Exception{
+		JFireSecurityManagerRemote sm = JFireEjb3Factory.getRemoteBean(JFireSecurityManagerRemote.class,SecurityReflector.getInitialContextProperties());
+		final QueryCollection<UserQuery> queries =new QueryCollection<UserQuery>(User.class);
+		UserQuery userQuery = new UserQuery();
+		userQuery.setUserID(query);
+		queries.add(userQuery);
+		Set<UserID> userIDs = sm.getUserIDs(queries);
+		if (userIDs == null || userIDs.isEmpty())
+			fail("No Test Users was found!!!");
+		List<User> users = sm.getUsers(userIDs, FETCH_GROUP_SECURITYGROUP, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
+		if (users.isEmpty())
+			fail("No Users was found!!!");
+		return users;		
+	}
 }

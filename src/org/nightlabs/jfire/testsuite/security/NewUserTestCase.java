@@ -61,7 +61,8 @@ public class NewUserTestCase extends TestCase
 	Logger logger = Logger.getLogger(NewUserTestCase.class);
 
 	private static ThreadLocal<UserID> newUserID = new ThreadLocal<UserID>();
-
+	public static final String NEW_USER_PREFEXID = "UserTC";
+	public static final String NEW_USER_PASSWORD = "test";
 
 	private static String[] FETCH_GROUP_USER =new String[]{FetchPlan.DEFAULT,
 		User.FETCH_GROUP_NAME,
@@ -186,23 +187,28 @@ public class NewUserTestCase extends TestCase
 
 		logger.info("test Create Person: end");
 
-		String userID = "UserTC"+String.valueOf(ID);
-		String password = "test";
+		String userID = NEW_USER_PREFEXID +String.valueOf(ID);
+
 
 		logger.info("testCreateUser: begin");
 
+		if(!sm.isUserIDAvailable(SecurityReflector.getUserDescriptor().getOrganisationID(), userID))
+			fail("User ID already Exists");
+
 		User newUser = new User(SecurityReflector.getUserDescriptor().getOrganisationID(), userID);
 		UserLocal userLocal = new UserLocal(newUser);
-		userLocal.setPasswordPlain(password);
+		userLocal.setPasswordPlain(NEW_USER_PASSWORD);
 		newUser.setPerson(newPerson);	
 
-		newUser = sm.storeUser(newUser, password, true, FETCH_GROUP_USER, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
+		newUser = sm.storeUser(newUser, NEW_USER_PASSWORD, true, FETCH_GROUP_USER, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
 
+		if(sm.isUserIDAvailable(SecurityReflector.getUserDescriptor().getOrganisationID(), userID))
+			fail("User ID Has been created can not be created again !!!");
 
 		if(newUser!=null)
 		{
 			newUserID.set((UserID)JDOHelper.getObjectId(newUser));
-			
+
 			// TODO: currently we cant test grantAllRoleGroupsInAllAuthorities as it throws runtime exceptions.
 			// take a look at https://www.jfire.org/modules/bugs/view.php?id=1337
 			//	sm.grantAllRoleGroupsInAllAuthorities((UserID)JDOHelper.getObjectId(newUser));
@@ -219,7 +225,7 @@ public class NewUserTestCase extends TestCase
 
 		User user = sm.getUsers(Collections.singleton(newUserID.get()), FETCH_GROUP_USER
 				, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT).iterator().next();
-
+		// Assign login authority to the User
 		AuthorityID authorityID = AuthorityID.create(SecurityReflector.getUserDescriptor().getOrganisationID(), 
 				Authority.AUTHORITY_ID_ORGANISATION);
 		RoleGroupID logUserRoleGroupID  = RoleGroupID.create(LOGWITHOUT_WORKSTATION_ROLEGROUP_ID);
@@ -227,9 +233,9 @@ public class NewUserTestCase extends TestCase
 		sm.storeUser(user, null, false, FETCH_GROUP_USER, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);	
 	}
 
-
+	// try to login the new user and violate a role group later on
 	@Test
-	public void testLoginNewUserWithoutRights() throws Exception{
+	public void testLoginNewUser() throws Exception{
 
 		logger.info("LoginNewUser: begin");
 		JFireSecurityManagerRemote sm = JFireEjb3Factory.getRemoteBean(JFireSecurityManagerRemote.class,SecurityReflector.getInitialContextProperties());
@@ -237,7 +243,7 @@ public class NewUserTestCase extends TestCase
 				NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT).iterator().next();
 
 		JFireLogin login = new JFireLogin(user.getUserLocal().getOrganisationID(), 
-				user.getUserLocal().getUserID(), "test");
+				user.getUserLocal().getUserID(), NEW_USER_PASSWORD);
 		try {
 			login.login();
 		} catch (LoginException e) {
@@ -261,7 +267,7 @@ public class NewUserTestCase extends TestCase
 		logger.info("LoginNewUser: end");
 	}
 
-	
+
 	/**
 	 * This method is invoked by the JUnit run,
 	 * as it is annotated with the Test annotation.
@@ -274,8 +280,8 @@ public class NewUserTestCase extends TestCase
 		QueryNewUsers();
 		logger.info("listUsers: end");
 	}
-	
-	
+
+
 	private void QueryNewUsers() throws Exception{
 		JFireSecurityManagerRemote sm = JFireEjb3Factory.getRemoteBean(JFireSecurityManagerRemote.class,SecurityReflector.getInitialContextProperties());
 		final QueryCollection<UserQuery> queries =new QueryCollection<UserQuery>(User.class);
