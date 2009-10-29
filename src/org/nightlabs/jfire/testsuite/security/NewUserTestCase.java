@@ -193,7 +193,8 @@ public class NewUserTestCase extends TestCase
 		logger.info("testCreateUser: begin");
 
 		if(!sm.isUserIDAvailable(SecurityReflector.getUserDescriptor().getOrganisationID(), userID))
-			fail("User ID already Exists");
+			fail("User ID is not Available.");
+
 
 		User newUser = new User(SecurityReflector.getUserDescriptor().getOrganisationID(), userID);
 		UserLocal userLocal = new UserLocal(newUser);
@@ -202,8 +203,8 @@ public class NewUserTestCase extends TestCase
 
 		newUser = sm.storeUser(newUser, NEW_USER_PASSWORD, true, FETCH_GROUP_USER, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
 
-		if(sm.isUserIDAvailable(SecurityReflector.getUserDescriptor().getOrganisationID(), userID))
-			fail("User ID Has been created can not be created again !!!");
+		if(!sm.isUserIDAlreadyRegistered((UserID)JDOHelper.getObjectId(newUser)))
+			fail("the new User has not been registered.");
 
 		if(newUser!=null)
 		{

@@ -98,7 +98,28 @@ public class UserSecurityGroupTestCase extends TestCase {
 
 		logger.info("Create UserGroup: end");
 	}
+	
+	@Test
+	public void testListUserSecurityGroups() throws Exception{
+		logger.info("List UserSecurityGroups: begin");		
+		
+		if (newUserSecurityGroupID.get() == null) 
+			fail("Seems that creating the User Security Group has failed, no UserSecurityGroupID was registered in the ThreadLocal");
+		
+		JFireSecurityManagerRemote sm = JFireEjb3Factory.getRemoteBean(JFireSecurityManagerRemote.class,SecurityReflector.getInitialContextProperties());
 
+		Set<UserSecurityGroupID> userSecurityGroupIDs = sm.getUserSecurityGroupIDs();	
+		if (userSecurityGroupIDs == null || userSecurityGroupIDs.isEmpty())
+			fail("No UserSecurityGroups was found!!!");
+		
+		List<UserSecurityGroup> userSecurityGroups = sm.getUserSecurityGroups(userSecurityGroupIDs, FETCH_GROUP_SECURITYGROUP, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);			
+		logger.info("the following UserSecurityGroups was found!!!");
+		for (UserSecurityGroup group : userSecurityGroups) {
+			logger.info("group name = "+ group.getName());
+		}
+		logger.info("List UserSecurityGroups: end");
+	}	
+	
 	@Test
 	public void testAssignUsersToSecurityGroup() throws Exception {	
 
@@ -258,4 +279,7 @@ public class UserSecurityGroupTestCase extends TestCase {
 			fail("No Users was found!!!");
 		return users;		
 	}
+	
+	
+
 }
