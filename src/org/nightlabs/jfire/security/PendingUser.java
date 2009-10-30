@@ -41,7 +41,7 @@ import org.nightlabs.util.IOUtil;
 		members=@Persistent(name="name")),
 	@FetchGroup(
 		name=PendingUser.FETCH_GROUP_PENDING_USER_DATA,
-		members=@Persistent(name="pendingUserData")),
+		members=@Persistent(name="pendingUserData"))
 })
 public class PendingUser implements Serializable
 {
