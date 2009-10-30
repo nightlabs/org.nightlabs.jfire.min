@@ -80,7 +80,7 @@ import javax.ejb.TransactionManagementType;
 				@ActivationConfigProperty(
 						propertyName="dLQMaxResent",
 						propertyValue="5" // How often should it be retried before sending to the DLQ.
-				),
+				)
 		}
 )
 public class AsyncInvokerInvocationBean
