@@ -198,9 +198,9 @@ implements Serializable
 					if (boolean.class.isAssignableFrom(fieldType))
 						field.set(this, Boolean.FALSE);
 					else if (char.class.isAssignableFrom(fieldType))
-						field.set(this, new Character((char)0));
+						field.set(this, Character.valueOf((char)0));
 					else // for all other primitives - i.e. byte, short, int, long, float, double
-						field.set(this, new Byte((byte)0));					
+						field.set(this, Byte.valueOf((byte)0));					
 				}
 			}
 			else {
