@@ -107,7 +107,7 @@ public class IDGeneratorClient
 					IDGeneratorHelperRemote idGeneratorHelper = JFireEjb3Factory.getRemoteBean(IDGeneratorHelperRemote.class, SecurityReflector.getInitialContextProperties());
 					long[] nextIDs = idGeneratorHelper.clientNextIDs(namespace, cachedIDs.size(), quantity);
 					for (int i = 0; i < nextIDs.length; i++) {
-						cachedIDs.add(new Long(nextIDs[i]));
+						cachedIDs.add(Long.valueOf(nextIDs[i]));
 					}
 				}
 
