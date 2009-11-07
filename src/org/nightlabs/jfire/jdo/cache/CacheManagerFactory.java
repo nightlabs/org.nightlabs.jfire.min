@@ -2025,7 +2025,7 @@ public class CacheManagerFactory
 
 				for (Map.Entry<AbsoluteFilterID, Map<Object, Map<JDOLifecycleState, DirtyObjectID>>> me1 : dirtyObjectIDGroup.filterID2DirtyObjectIDs
 						.entrySet()) {
-					Long filterID = new Long(me1.getKey().getFilterID());
+					Long filterID = Long.valueOf(me1.getKey().getFilterID());
 					TreeSet<DirtyObjectID> doids = null;
 					for (Map<JDOLifecycleState, DirtyObjectID> m2 : me1
 							.getValue().values()) {
