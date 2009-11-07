@@ -139,7 +139,7 @@ extends IDGenerator
 						IDGeneratorHelperLocal idGeneratorHelper = JFireEjb3Factory.getLocalBean(IDGeneratorHelperLocal.class);
 						long[] nextIDs = idGeneratorHelper.serverNextIDs(namespace, cachedIDs.size(), quantity);
 						for (int i = 0; i < nextIDs.length; i++) {
-							cachedIDs.add(new Long(nextIDs[i]));
+							cachedIDs.add(Long.valueOf(nextIDs[i]));
 						}
 					}
 

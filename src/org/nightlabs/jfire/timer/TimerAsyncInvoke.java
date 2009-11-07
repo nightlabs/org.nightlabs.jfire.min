@@ -171,7 +171,7 @@ extends AsyncInvoke
 					initCtx.close();
 				}
 
-				return new Long(System.currentTimeMillis() - startDT); // we pass the duration
+				return Long.valueOf(System.currentTimeMillis() - startDT); // we pass the duration
 			} catch (Throwable t) {
 				logger.error("Invocation of ejb method failed: taskID=\"" + invocationParam.getTaskID() + "\" bean=\"" + invocationParam.getBean() + "\" method=\""+invocationParam.getMethod()+"\"", t);
 
