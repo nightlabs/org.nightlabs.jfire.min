@@ -192,7 +192,7 @@ implements Serializable, DetachCallback, AttachCallback, StoreCallback
 	@SuppressWarnings("unchecked")
 	public static List<Task> getTasksByExecuting(PersistenceManager pm, boolean executing)
 	{
-		return (List<Task>) pm.newNamedQuery(Task.class, "getTasksByExecuting").execute(new Boolean(executing));
+		return (List<Task>) pm.newNamedQuery(Task.class, "getTasksByExecuting").execute(Boolean.valueOf(executing));
 	}
 
 	@SuppressWarnings("unchecked")

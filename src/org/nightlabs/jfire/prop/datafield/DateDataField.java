@@ -130,7 +130,7 @@ implements II18nTextDataField
 	 */
 	@Override
 	public boolean isEmpty() {
-		return date == null || date.equals("");
+		return date == null;
 	}
 
 	/**
