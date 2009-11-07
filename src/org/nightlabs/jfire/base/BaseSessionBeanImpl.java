@@ -235,7 +235,7 @@ implements BaseSessionRemote
 			try {
 				InitialContext ctx = new InitialContext();
 				try {
-					hasRootOrganisation = new Boolean(Organisation.hasRootOrganisation(ctx));
+					hasRootOrganisation = Boolean.valueOf(Organisation.hasRootOrganisation(ctx));
 				} finally {
 					ctx.close();
 				}
