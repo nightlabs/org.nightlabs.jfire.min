@@ -132,7 +132,11 @@ public class BeanEditServlet extends HttpServlet
 
 		int beanKey;
 		do {
-			beanKey = Math.abs(random.nextInt());
+			int tmpKey = random.nextInt();
+			if(tmpKey == Integer.MIN_VALUE)
+				beanKey = Integer.MAX_VALUE;
+			else
+				beanKey = Math.abs(tmpKey);
 		} while(beans.containsKey(beanKey));
 
 		beans.put(beanKey, bean);

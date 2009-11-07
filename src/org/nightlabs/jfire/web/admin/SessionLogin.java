@@ -26,6 +26,7 @@
 
 package org.nightlabs.jfire.web.admin;
 
+import java.io.Serializable;
 import java.util.Hashtable;
 import java.util.Properties;
 
@@ -39,8 +40,13 @@ import org.apache.log4j.Logger;
  * @author marco
  * @author Marc Klinger - marc[at]nightlabs[dot]de
  */
-public class SessionLogin
+public class SessionLogin implements Serializable
 {
+	/**
+	 * The serial version UID. 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	private static final Logger log = Logger.getLogger(SessionLogin.class);
 
 	private static final String SESSION_KEY = "login";
