@@ -510,7 +510,7 @@ public class StructLocal extends AbstractStruct implements DetachCallback, Attac
 			public int compare(StructBlock block1, StructBlock block2) {
 				StructBlockOrderItem orderItem1 = block1 != null ? getStructBlockOrderItemMap().get(block1.getStructBlockIDObj()) : null;
 				StructBlockOrderItem orderItem2 = block2 != null ? getStructBlockOrderItemMap().get(block2.getStructBlockIDObj()) : null;
-				return new Integer(_getStructBlockOrderItems().indexOf(orderItem1)).compareTo(_getStructBlockOrderItems().indexOf(orderItem2));
+				return Integer.valueOf(_getStructBlockOrderItems().indexOf(orderItem1)).compareTo(_getStructBlockOrderItems().indexOf(orderItem2));
 			}
 		};
 	}

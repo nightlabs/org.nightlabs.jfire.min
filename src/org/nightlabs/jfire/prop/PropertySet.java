@@ -475,7 +475,7 @@ public class PropertySet implements Serializable, StoreCallback, AttachCallback,
 
 	private static Comparator<DataField> dataFieldIndexComparator = new Comparator<DataField>() {
 		public int compare(DataField o1, DataField o2) {
-			return new Integer(o1.getDataBlockIndex()).compareTo(o2.getDataBlockIndex());
+			return Integer.valueOf(o1.getDataBlockIndex()).compareTo(o2.getDataBlockIndex());
 		}
 	};
 

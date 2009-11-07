@@ -223,7 +223,7 @@ public class DataBlockGroup implements Serializable, Comparable<DataBlockGroup> 
 	public DataBlock getDataBlock(int dataBlockID, boolean throwExceptionIfNotFound) throws DataBlockNotFoundException {
 		DataBlock pdb = null;
 		if (dataBlockMap != null) {
-			pdb = dataBlockMap.get(new Integer(dataBlockID));
+			pdb = dataBlockMap.get(Integer.valueOf(dataBlockID));
 		}
 
 		if (throwExceptionIfNotFound && pdb == null)
@@ -405,7 +405,7 @@ public class DataBlockGroup implements Serializable, Comparable<DataBlockGroup> 
 
 		Collections.sort(dataBlocks, new Comparator<DataBlock>() {
 			public int compare(DataBlock o1, DataBlock o2) {
-				return new Integer(o1.getIndex()).compareTo(o2.getIndex());
+				return Integer.valueOf(o1.getIndex()).compareTo(o2.getIndex());
 			}
 		});
 	}

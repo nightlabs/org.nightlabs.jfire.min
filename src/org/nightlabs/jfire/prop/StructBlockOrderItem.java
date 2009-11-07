@@ -255,6 +255,6 @@ public class StructBlockOrderItem implements Serializable, Comparator<StructFiel
 		StructFieldOrderItem fieldItem2 = fieldID2 != null ? getStructFieldOrderItem(fieldID2) : null;
 		int idx1 = fieldItem1 != null ? structFieldOrderItems.indexOf(fieldItem1) : -1;
 		int idx2 = fieldItem1 != null ? structFieldOrderItems.indexOf(fieldItem2) : -1;
-		return new Integer(idx1).compareTo(idx2);
+		return Integer.valueOf(idx1).compareTo(idx2);
 	}
 }
