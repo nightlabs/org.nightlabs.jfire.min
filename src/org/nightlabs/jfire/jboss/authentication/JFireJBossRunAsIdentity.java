@@ -52,11 +52,17 @@ implements JFirePrincipalContainer
 
 	@Override
 	public boolean equals(Object another) {
-		if (this == another) return true;
+		if (another == null)
+			return false;
+		
+		if (this == another)
+			return true;
+		
 		if (this.getClass() == another.getClass()) {
 			JFireJBossRunAsIdentity o = (JFireJBossRunAsIdentity) another;
 			return this.delegate.equals(o.delegate);
 		}
+		
 		if (!(another instanceof RunAsIdentity))
 			return false;
 
