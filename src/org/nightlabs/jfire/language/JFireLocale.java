@@ -12,6 +12,7 @@ import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 
 import org.apache.log4j.Logger;
+import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.Lookup;
 import org.nightlabs.jfire.organisation.LocalOrganisation;
 import org.nightlabs.jfire.person.Person;
@@ -64,8 +65,22 @@ extends NLLocale
 
 	protected Locale getUserLocale(UserDescriptor userDescriptor)
 	{
-		Lookup lookup = new Lookup(userDescriptor.getOrganisationID());
-		PersistenceManager pm = lookup.createPersistenceManager();
+//		Lookup lookup = new Lookup(userDescriptor.getOrganisationID());
+//		PersistenceManager pm = lookup.createPersistenceManager();
+		// Creating (and closing) this new PM causes the "real" PM assigned to the current TX to be cleared (e.g. the fetch-plan is reset).
+		// Therefore, we first try to get a current one assigned to the current TX. Marco.
+		boolean closePM = false;
+		PersistenceManager pm = NLJDOHelper.getThreadPersistenceManager(false);
+		if (pm != null) {
+			// We check, if the pm is (still) the right one, because maybe we changed the user.
+			if (!LocalOrganisation.getLocalOrganisation(pm).getOrganisationID().equals(userDescriptor.getOrganisationID()))
+				pm = null;
+		}
+		if (pm == null) {
+			Lookup lookup = new Lookup(userDescriptor.getOrganisationID());
+			closePM = true;
+			pm = lookup.createPersistenceManager();
+		}
 		try {
 			Person person;
 			try {
@@ -113,7 +128,8 @@ extends NLLocale
 
 			return Locale.getDefault();
 		} finally {
-			pm.close();
+			if (closePM)
+				pm.close();
 		}
 	}
 }
