@@ -5,6 +5,7 @@ package org.nightlabs.jfire.language;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 
@@ -72,9 +73,19 @@ extends NLLocale
 		boolean closePM = false;
 		PersistenceManager pm = NLJDOHelper.getThreadPersistenceManager(false);
 		if (pm != null) {
-			// We check, if the pm is (still) the right one, because maybe we changed the user.
-			if (!LocalOrganisation.getLocalOrganisation(pm).getOrganisationID().equals(userDescriptor.getOrganisationID()))
-				pm = null;
+			// We check, if the pm is (still) the right one, because maybe we changed the user (without yet acquiring a new PM for the new current org).
+			Iterator<LocalOrganisation> iteratorLocalOrganisation = pm.getExtent(LocalOrganisation.class).iterator();
+			if (iteratorLocalOrganisation.hasNext()) { // during organisation setup, there is no LocalOrganisation, yet, thus we have to check (and cannot use LocalOrganisation.getLocalOrganisation(...))
+				LocalOrganisation localOrganisation = iteratorLocalOrganisation.next();
+
+				if (iteratorLocalOrganisation.hasNext())
+					throw new IllegalStateException("There are multiple instances of LocalOrganisation in the datastore!!!");
+
+				if (!localOrganisation.getOrganisationID().equals(userDescriptor.getOrganisationID()))
+					pm = null;
+			}
+			else
+				logger.info("getUserLocale: There is no LocalOrganisation existing!");
 		}
 		if (pm == null) {
 			Lookup lookup = new Lookup(userDescriptor.getOrganisationID());
