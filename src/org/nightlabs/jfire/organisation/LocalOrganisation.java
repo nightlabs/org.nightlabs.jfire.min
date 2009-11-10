@@ -35,20 +35,19 @@ import java.util.StringTokenizer;
 
 import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
-
-import org.nightlabs.util.Util;
-
-import javax.jdo.annotations.Persistent;
-import javax.jdo.annotations.Join;
-import javax.jdo.annotations.NullValue;
-import org.nightlabs.jfire.organisation.id.LocalOrganisationID;
-import javax.jdo.annotations.InheritanceStrategy;
-import javax.jdo.annotations.Inheritance;
-import javax.jdo.annotations.PrimaryKey;
-import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Column;
 import javax.jdo.annotations.IdentityType;
+import javax.jdo.annotations.Inheritance;
+import javax.jdo.annotations.InheritanceStrategy;
+import javax.jdo.annotations.Join;
+import javax.jdo.annotations.NullValue;
+import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.PersistenceModifier;
+import javax.jdo.annotations.Persistent;
+import javax.jdo.annotations.PrimaryKey;
+
+import org.nightlabs.jfire.organisation.id.LocalOrganisationID;
+import org.nightlabs.util.Util;
 
 /**
  * @author marco schulze - marco at nightlabs dot de
@@ -128,9 +127,15 @@ public class LocalOrganisation implements Serializable
 	public static LocalOrganisation getLocalOrganisation(PersistenceManager pm)
 	{
 		Iterator<?> it = pm.getExtent(LocalOrganisation.class).iterator();
+
 		if (!it.hasNext())
 			throw new JDOObjectNotFoundException("LocalOrganisation undefined in datastore!");
+
 		LocalOrganisation localOrganisation = (LocalOrganisation)it.next();
+
+		if (it.hasNext())
+			throw new IllegalStateException("There are multiple instances of LocalOrganisation in the datastore!!!");
+
 		return localOrganisation;
 	}
 
