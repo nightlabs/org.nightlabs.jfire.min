@@ -46,7 +46,7 @@ import org.nightlabs.jfire.prop.id.StructFieldID;
  *
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  */
-public class PropSearchFilter
+public abstract class PropSearchFilter
 	extends SearchFilter
 {
 	/**
@@ -183,7 +183,11 @@ public class PropSearchFilter
 			// no PersonSearchFilterItem found
 			// or none was constraining
 			// find nothing
-			filter.append("1 == 0");
+//			filter.append("1 == 0");
+			
+			// Empty query should now return ALL records.
+			// 2009-11-12, Kai
+			filter.append("1 == 1");
 			return;
 		}
 
