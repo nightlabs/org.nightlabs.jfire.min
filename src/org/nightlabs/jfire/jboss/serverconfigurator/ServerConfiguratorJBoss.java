@@ -2161,11 +2161,12 @@ public class ServerConfiguratorJBoss
 		Matcher m = oldOpts.matcher(text);
 		boolean changed = false;
 		boolean found = m.find();
-//		if(found && !m.group(1).equals(javaOpts)) { I commented this out, because I think it should be possible to modify these options manually. Marco.
+//		if(found && !m.group(1).equals(javaOpts)) { // I commented this out, because I think it should be possible to modify these options manually. Marco.
 //			text = m.replaceFirst(Matcher.quoteReplacement(newSetting));
 //			changed = true;
 //		} else if(!found) {
 		if(!found) {
+			text = increaseHeapMemory(text);
 			text += "\n"+newSetting;
 			changed = true;
 		}
@@ -2174,6 +2175,16 @@ public class ServerConfiguratorJBoss
 			backup(destFile);
 			IOUtil.writeTextFile(destFile, text);
 		}
+	}
+
+	private String increaseHeapMemory(String text)
+	{
+		// run.conf: JAVA_OPTS="-Xms128m -Xmx512m ....
+		// run.bat: JAVA_OPTS=%JAVA_OPTS% -Xms128m -Xmx512m ....
+		// We match both
+		Pattern pattern = Pattern.compile("(JAVA_OPTS=.*-Xms128m\\s+)-Xmx512m");
+		Matcher matcher = pattern.matcher(text);
+		return matcher.replaceAll("$1-Xmx1024m");
 	}
 
 	/**
@@ -2245,12 +2256,14 @@ public class ServerConfiguratorJBoss
 			Matcher m = oldOpts.matcher(text);
 			boolean changed = false;
 			boolean found = m.find();
-			if(found && !m.group(1).equals(javaOpts)) {
-				logger.debug("Have change in "+destFile.getAbsolutePath());
-				text = m.replaceFirst(Matcher.quoteReplacement(newSetting));
-				changed = true;
-			} else if(!found) {
+//			if(found && !m.group(1).equals(javaOpts)) { // I commented this out, because I think it should be possible to modify these options manually. Marco.
+//				logger.debug("Have change in "+destFile.getAbsolutePath());
+//				text = m.replaceFirst(Matcher.quoteReplacement(newSetting));
+//				changed = true;
+//			} else if(!found) {
+			if(!found) {
 				logger.debug("Have new entry in "+destFile.getAbsolutePath());
+				text = increaseHeapMemory(text);				
 				Matcher m2 = lastJavaOpts.matcher(text);
 				text = m2.replaceFirst("$0"+Matcher.quoteReplacement("\r\n"+newSetting+"\r\n"));
 				changed = true;
@@ -2723,7 +2736,7 @@ public class ServerConfiguratorJBoss
 
 	/**
 	 * {@inheritDoc}
-	 * 
+	 *
 	 * Additionally copies the set jks stores (keystore and truststore) to (%server%/conf/jfire-server.{key,trust}store).
 	 * If there is an already exisiting store, it will be backed up.
 	 */
@@ -2743,7 +2756,7 @@ public class ServerConfiguratorJBoss
 		{
 			String keystoreURLToImport = jfireServerConfigModule.getSslCf().getKeystoreURLToImport();
 			String truststoreURLToImport = jfireServerConfigModule.getSslCf().getTruststoreURLToImport();
-			
+
 			try
 			{
 				InputStream keystoreToImportStream;
@@ -2831,7 +2844,7 @@ public class ServerConfiguratorJBoss
 						trustStoreStream.close();
 					}
 				}
-				
+
 				sslCf.setJksStoresImported(Boolean.TRUE);
 				if (transferKeyData || transferTrustData)
 					setRebootRequired(true);
@@ -2843,7 +2856,7 @@ public class ServerConfiguratorJBoss
 	}
 
 	/**
-	 * When undoing a JBoss server configurator, the jks store files are backed up and deleted. 
+	 * When undoing a JBoss server configurator, the jks store files are backed up and deleted.
 	 */
 	@Override
 	protected void afterUndoConfigureServer(Throwable x)
@@ -2863,7 +2876,7 @@ public class ServerConfiguratorJBoss
 
 	/**
 	 * Backs up the jks stores (keystore and truststore) and deletes them.
-	 * 
+	 *
 	 * @throws IOException In case some File problems occur.
 	 */
 	private void clearSSLStoreFiles() throws IOException
@@ -2878,13 +2891,13 @@ public class ServerConfiguratorJBoss
 		backupJKSStore(jfireServerTruststoreFile, backupJKSStore);
 		getJFireServerConfigModule().getSslCf().setJksStoresImported(Boolean.FALSE);
 	}
-	
+
 	/**
-	 * Create a backup of the given jksstore file and append it with a suffix. The suffix is determined by finding the 
+	 * Create a backup of the given jksstore file and append it with a suffix. The suffix is determined by finding the
 	 * first free suffix for a backup or by finding a previous backup of the given jksstore.
-	 * 
+	 *
 	 * @param jksstore The jks store to backup.
-	 * @param initialSuffix The suffix with which to start trying to backup the jksstore. 
+	 * @param initialSuffix The suffix with which to start trying to backup the jksstore.
 	 * @return The suffix used for backup up the given jks store.
 	 * @throws IOException In case some file operation failed.
 	 */
@@ -2893,7 +2906,7 @@ public class ServerConfiguratorJBoss
 	{
 		if (! jksstore.exists())
 			return initialSuffix;
-		
+
 		File backupFile = new File(jksstore.getAbsolutePath() + '.' + (initialSuffix) + ".bak");
 		while (backupFile.exists())
 		{
