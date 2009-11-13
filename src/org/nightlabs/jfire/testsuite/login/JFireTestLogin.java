@@ -79,8 +79,8 @@ public class JFireTestLogin
 	 * @param userQualifier The userQualifier.
 	 * @return A configured {@link JFireLogin}.
 	 */
-	public static LoginData getUserLoginData(String userQualifier) throws ModuleException, IOException {
-		Properties properties = JFireTestSuiteEAR.getProperties(JFireTestSuiteEAR.getJFireTestSuiteProperties(), PROP_TEST_USER_PREFIX + "." + userQualifier + ".");
+	public static LoginData getUserLoginData(final String userQualifier) throws ModuleException, IOException {
+		Properties properties = JFireTestSuiteEAR.getProperties(PROP_TEST_USER_PREFIX + "." + userQualifier + ".");
 		properties.setProperty(JFireLogin.PROP_ORGANISATION_ID, SecurityReflector.getUserDescriptor().getOrganisationID());
 		return new JFireLogin(properties).getLoginData();
 	}
@@ -94,8 +94,8 @@ public class JFireTestLogin
 	 * @throws NamingException
 	 * @throws OrganisationNotFoundException 
 	 */
-	public static boolean checkCreateLoginsAndRegisterInAuthorities(PersistenceManager pm) throws InitException, IOException, NamingException, OrganisationNotFoundException {
-		Properties properties = JFireTestSuiteEAR.getProperties(JFireTestSuiteEAR.getJFireTestSuiteProperties(), PROP_TEST_USER_PREFIX + ".");
+	public static boolean checkCreateLoginsAndRegisterInAuthorities(final PersistenceManager pm) throws InitException, IOException, NamingException, OrganisationNotFoundException {
+		Properties properties = JFireTestSuiteEAR.getProperties(PROP_TEST_USER_PREFIX + ".");
 		Pattern findUserPropName = Pattern.compile("([^.]*).*");
 		Set<String> userPropNames = new HashSet<String>();
 		for (Object _key : properties.keySet()) {
@@ -112,14 +112,14 @@ public class JFireTestLogin
 		return result;
 	}
 
-	private static boolean checkCreateLoginUsers(PersistenceManager pm, Properties userProperties,
-			Set<String> userPropNames) throws InitException, NamingException, OrganisationNotFoundException
+	private static boolean checkCreateLoginUsers(final PersistenceManager pm, final Properties userProperties,
+			final Set<String> userPropNames) throws InitException, NamingException, OrganisationNotFoundException
 	{
 		SecurityChangeController.beginChanging();
 		boolean successful = false;
 		try {
 			for (String userPropName : userPropNames) {
-				Properties userProps = JFireTestSuiteEAR.getProperties(userProperties, userPropName + ".");
+				Properties userProps = org.nightlabs.util.Properties.getProperties(userProperties, userPropName + ".");
 
 				String organisationID = SecurityReflector.getUserDescriptor().getOrganisationID();
 
@@ -201,7 +201,7 @@ public class JFireTestLogin
 			}
 
 			for (String userPropName : userPropNames) {
-				Properties userProps = JFireTestSuiteEAR.getProperties(userProperties, userPropName + ".");
+				Properties userProps = org.nightlabs.util.Properties.getProperties(userProperties, userPropName + ".");
 				String _userID = userProps.getProperty(JFireLogin.PROP_USER_ID);
 				String organisationID = SecurityReflector.getUserDescriptor().getOrganisationID();
 				UserID userID = UserID.create(organisationID, _userID);
@@ -219,8 +219,8 @@ public class JFireTestLogin
 		return true;
 	}
 
-	private static boolean checkSetRoleGroupRegistrationToAuthorities(PersistenceManager pm,
-			Properties userProperties, Set<String> userPropNames)
+	private static boolean checkSetRoleGroupRegistrationToAuthorities(final PersistenceManager pm,
+			final Properties userProperties, final Set<String> userPropNames)
 	{
 		return true; // TODO implement this method!
 	}

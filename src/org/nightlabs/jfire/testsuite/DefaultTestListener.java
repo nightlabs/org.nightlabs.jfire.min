@@ -1,16 +1,16 @@
-/**
- *
- */
 package org.nightlabs.jfire.testsuite;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.StringWriter;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -19,18 +19,21 @@ import java.util.Properties;
 import java.util.StringTokenizer;
 
 import javax.activation.DataHandler;
-import javax.activation.FileDataSource;
+import javax.activation.DataSource;
+import javax.mail.MessagingException;
 import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
+import javax.mail.util.ByteArrayDataSource;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
@@ -38,17 +41,17 @@ import junit.framework.AssertionFailedError;
 import junit.framework.Test;
 
 import org.apache.log4j.Logger;
-import org.nightlabs.ModuleException;
 import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.testsuite.TestSuite.Status;
+import org.nightlabs.jfire.testsuite.internal.TestCaseResult;
+import org.nightlabs.jfire.testsuite.internal.TestResult;
+import org.nightlabs.jfire.testsuite.internal.TestSuiteResult;
 import org.nightlabs.util.IOUtil;
 import org.nightlabs.util.Util;
 import org.nightlabs.xml.NLDOMUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-
-//import com.sun.org.apache.xerces.internal.dom.DocumentImpl;
 
 /**
  * The default {@link JFireTestListener} gathers all {@link Test} data
@@ -57,45 +60,55 @@ import org.w3c.dom.Node;
  * <p>
  * The listener accepts the following configuration properties (file references are relative to the ear directory)
  * <ul>
- *   <li>xmlReport.enabled: Whether an xml report should be stored to file</li>
- *   <li>xmlReport.fileName: The xml reports file name, default jfire-test-report.xml</li>
+ *   <li>report.enabled: Whether to create report files</li>
+ *   <li>report.todir: The directory to store the report files in (default: a temporary directory)</li>
+ *   <li>report.filenameprefix: A file name prefix for generated report files (default: a random prefix)</li>
+ *   <li>report.stylesheets: A comma separated list of XSLT stylesheet identifiers</li>
+ *   <li>report.stylesheet.&lt;identifier&gt;.location: location of XSLT stylesheet</li>
+ *   <li>report.stylesheet.&lt;identifier&gt;.filesuffix: The report file suffix (default: ".xml")
  *   <li>mail.alwaysSend.enabled: Whether an email notification should be send for every test run.</li>
  *   <li>mail.onFailure.enabled: Whether an email notification should be send, when at least one suite fails.</li>
  *   <li>mail.onSkip.enabled: Whether an email notification should be send, when at least one suite is skipped.</li>
- *   <li>mail.smtp.host: The smtp host to send mail with.</li>
+ *   <li>mail.smtp.host: The SMTP host to send mail with.</li>
  *   <li>mail.from: The sender of the mail, default info@jfire.org</li>
  *   <li>mail.to: The recipients of the mail (,-separated list).</li>
- *   <li>mail.subject: The recipients of the mail (,-separated list), default "JFireTestSuite Testreport"</li>
- *   <li>mail.htmlReportXSL: The stylesheet to use to render the xml to the html mail body. If not defined or empty, the internal default resource "htmlReport.xsl" will be used.</li>
+ *   <li>mail.subject: The mail subject, default "JFireTestSuite Testreport"</li>
+ *   <li>mail.stylesheet: The XSLT stylesheet identifier to render the xml to the html mail body. If not defined or empty, the internal default resource "htmlReport.xsl" will be used.</li>
  * </ul>
- *
- * To override some settings without modifing the properties file you can alternatively
- * set the following environment variables on your system.
- * 'jfiretestsuite.mail.smtp.host' to override 'mail.smtp.host'
- * 'jfiretestsuite.mail.to' to override 'mail.to'
- * 'jfiretestsuite.mail.from' to override 'mail.from'
- *
  * <p>
  * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] de -->
  * @author marco schulze - marco at nightlabs dot de
+ * @author Marc Klinger - marc[at]nightlabs[dot]de
  */
 public class DefaultTestListener
 implements JFireTestListener
 {
-	public static final String PROPERTY_KEY_SMTP_HOST = "mail.smtp.host";
-	public static final String PROPERTY_KEY_MAIL_TO = "mail.to";
-	public static final String PROPERTY_KEY_MAIL_FROM = "mail.from";
-	public static final String PROPERTY_KEY_MAIL_SUBJECT = "mail.subject";
+	private static final String INTERNAL_LOCATION_PREFIX = "internal:";
+	private static final String PROPERTY_KEY_SMTP_HOST = "mail.smtp.host";
+	private static final String PROPERTY_KEY_MAIL_TO = "mail.to";
+	private static final String PROPERTY_KEY_MAIL_FROM = "mail.from";
+	private static final String PROPERTY_KEY_MAIL_SUBJECT = "mail.subject";
 
-	public static final String PROPERTY_KEY_SMTP_AUTH = "mail.smtp.auth";
-	public static final String PROPERTY_KEY_SMTP_USER = "mail.smtp.user";
+	private static final String PROPERTY_KEY_SMTP_AUTH = "mail.smtp.auth";
+	private static final String PROPERTY_KEY_SMTP_USER = "mail.smtp.user";
 
+	private static final String PROPERTY_KEY_MAIL_STYLESHEET = "mail.stylesheet";
+	private static final String DEFAULT_MAIL_STYLESHEET_LOCATION = "internal:htmlReport.xsl";
+	
 	/**
 	 * The password to be used for authentication. Note that this is not understood by
-	 * the java mail api as property, but needs to be handled manually (see code below).
+	 * the java mail API as property, but needs to be handled manually (see code below).
 	 */
-	public static final String PROPERTY_KEY_SMTP_PASSWORD = "mail.smtp.password";
+	private static final String PROPERTY_KEY_SMTP_PASSWORD = "mail.smtp.password";
 
+	private static final String PROPERTY_KEY_REPORT_ENABLED = "report.enabled";
+	private static final String PROPERTY_KEY_REPORT_TODIR = "report.todir";
+	private static final String PROPERTY_KEY_REPORT_FILENAME_PREFIX = "report.filenameprefix";
+	private static final String PROPERTY_KEY_STYLESHEETS = "report.stylesheets";
+	private static final String PROPERTY_KEY_STYLESHEET_PREFIX = "report.stylesheet.";
+	private static final String PROPERTY_KEY_STYLESHEET_LOCATION_SUFFIX = ".location";
+	private static final String PROPERTY_KEY_STYLESHEET_FILESUFFIX_SUFFIX = ".filesuffix";
+	
 	/**
 	 * Log4J Logger for this class
 	 */
@@ -104,325 +117,10 @@ implements JFireTestListener
 	/**
 	 * Date format used for output.
 	 */
-	private static final DateFormat ISO_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z");
+	private static final DateFormat ISO_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
 
 	/**
-	 * Created and populated by this listener for all {@link TestSuite}s that are run.
-	 */
-	public static class TestSuiteResult {
-		private TestSuite suite;
-		private Status status;
-		private Date startTime;
-		private Date endTime;
-		private boolean hasFailures;
-		private Throwable suiteStartError;
-		private List<TestCaseResult> testCaseResults = new LinkedList<TestCaseResult>();
-		/**
-		 * Returns the endTime of this DefaultTestListener.TestSuiteResult.
-		 * @return the endTime.
-		 */
-		public Date getEndTime() {
-			return endTime;
-		}
-		/**
-		 * Sets the endTime of this DefaultTestListener.TestSuiteResult.
-		 * @param endTime the endTime to set.
-		 */
-		public void setEndTime(Date endTime) {
-			this.endTime = endTime;
-		}
-		/**
-		 * Returns the hasFailures of this DefaultTestListener.TestSuiteResult.
-		 * @return the hasFailures.
-		 */
-		public boolean isHasFailures() {
-			return hasFailures;
-		}
-		/**
-		 * Sets the hasFailures of this DefaultTestListener.TestSuiteResult.
-		 * @param hasFailures the hasFailures to set.
-		 */
-		public void setHasFailures(boolean hasFailures) {
-			this.hasFailures = hasFailures;
-		}
-		/**
-		 * Returns the startTime of this DefaultTestListener.TestSuiteResult.
-		 * @return the startTime.
-		 */
-		public Date getStartTime() {
-			return startTime;
-		}
-		/**
-		 * Sets the startTime of this DefaultTestListener.TestSuiteResult.
-		 * @param startTime the startTime to set.
-		 */
-		public void setStartTime(Date startTime) {
-			this.startTime = startTime;
-		}
-		/**
-		 * Returns the status of this DefaultTestListener.TestSuiteResult.
-		 * @return the status.
-		 */
-		public Status getStatus() {
-			return status;
-		}
-		/**
-		 * Sets the status of this DefaultTestListener.TestSuiteResult.
-		 * @param status the status to set.
-		 */
-		public void setStatus(Status status) {
-			this.status = status;
-		}
-		/**
-		 * Returns the suite of this DefaultTestListener.TestSuiteResult.
-		 * @return the suite.
-		 */
-		public TestSuite getSuite() {
-			return suite;
-		}
-		/**
-		 * Sets the suite of this DefaultTestListener.TestSuiteResult.
-		 * @param suite the suite to set.
-		 */
-		public void setSuite(TestSuite suite) {
-			this.suite = suite;
-		}
-		/**
-		 * Returns the testCaseResults of this DefaultTestListener.TestSuiteResult.
-		 * @return the testCaseResults.
-		 */
-		public List<TestCaseResult> getTestCaseResults() {
-			return testCaseResults;
-		}
-		/**
-		 * Sets the testCaseResults of this DefaultTestListener.TestSuiteResult.
-		 * @param testCaseResults the testCaseResults to set.
-		 */
-		public void setTestCaseResults(List<TestCaseResult> testCaseResults) {
-			this.testCaseResults = testCaseResults;
-		}
-		/**
-		 * Returns the suiteStartError of this DefaultTestListener.TestSuiteResult.
-		 * @return the suiteStartError.
-		 */
-		public Throwable getSuiteStartError() {
-			return suiteStartError;
-		}
-		/**
-		 * Sets the suiteStartError of this DefaultTestListener.TestSuiteResult.
-		 * @param suiteStartError the suiteStartError to set.
-		 */
-		public void setSuiteStartError(Throwable suiteStartError) {
-			this.suiteStartError = suiteStartError;
-		}
-	}
-
-	/**
-	 * Created and populated by this listener for all {@link TestSuite}s that are run.
-	 */
-	public static class TestCaseResult {
-		private TestSuiteResult testSuiteResult;
-		private Class<? extends Test> testCaseClass;
-		private Date startTime;
-		private Date endTime;
-		private boolean hasFailures;
-		private List<TestResult> testResults = new LinkedList<TestResult>();
-		/**
-		 * Returns the endTime of this DefaultTestListener.TestCaseResult.
-		 * @return the endTime.
-		 */
-		public Date getEndTime() {
-			return endTime;
-		}
-		/**
-		 * Sets the endTime of this DefaultTestListener.TestCaseResult.
-		 * @param endTime the endTime to set.
-		 */
-		public void setEndTime(Date endTime) {
-			this.endTime = endTime;
-		}
-		/**
-		 * Returns the hasFailures of this DefaultTestListener.TestCaseResult.
-		 * @return the hasFailures.
-		 */
-		public boolean isHasFailures() {
-			return hasFailures;
-		}
-		/**
-		 * Sets the hasFailures of this DefaultTestListener.TestCaseResult.
-		 * @param hasFailures the hasFailures to set.
-		 */
-		public void setHasFailures(boolean hasFailures) {
-			this.hasFailures = hasFailures;
-			if (hasFailures) {
-				if (testSuiteResult != null)
-					testSuiteResult.setHasFailures(true);
-			}
-		}
-		/**
-		 * Returns the startTime of this DefaultTestListener.TestCaseResult.
-		 * @return the startTime.
-		 */
-		public Date getStartTime() {
-			return startTime;
-		}
-		/**
-		 * Sets the startTime of this DefaultTestListener.TestCaseResult.
-		 * @param startTime the startTime to set.
-		 */
-		public void setStartTime(Date startTime) {
-			this.startTime = startTime;
-		}
-		/**
-		 * Returns the testCaseClass of this DefaultTestListener.TestCaseResult.
-		 * @return the testCaseClass.
-		 */
-		public Class<? extends Test> getTestCaseClass() {
-			return testCaseClass;
-		}
-		/**
-		 * Sets the testCaseClass of this DefaultTestListener.TestCaseResult.
-		 * @param testCaseClass the testCaseClass to set.
-		 */
-		public void setTestCaseClass(Class<? extends Test> testCaseClass) {
-			this.testCaseClass = testCaseClass;
-		}
-		/**
-		 * Returns the testResults of this DefaultTestListener.TestCaseResult.
-		 * @return the testResults.
-		 */
-		public List<TestResult> getTestResults() {
-			return testResults;
-		}
-		/**
-		 * Sets the testResults of this DefaultTestListener.TestCaseResult.
-		 * @param testResults the testResults to set.
-		 */
-		public void setTestResults(List<TestResult> testResults) {
-			this.testResults = testResults;
-		}
-		/**
-		 * Returns the testSuiteResult of this DefaultTestListener.TestCaseResult.
-		 * @return the testSuiteResult.
-		 */
-		public TestSuiteResult getTestSuiteResult() {
-			return testSuiteResult;
-		}
-		/**
-		 * Sets the testSuiteResult of this DefaultTestListener.TestCaseResult.
-		 * @param testSuiteResult the testSuiteResult to set.
-		 */
-		public void setTestSuiteResult(TestSuiteResult testSuiteResult) {
-			this.testSuiteResult = testSuiteResult;
-		}
-
-	}
-
-	/**
-	 * Created and populated by this listener for all {@link TestSuite}s that are run.
-	 */
-	private static class TestResult {
-		private TestCaseResult testCaseResult;
-		private String testName;
-		private Date startTime;
-		private Date endTime;
-		private boolean success = true;
-		private Throwable error;
-
-		/**
-		 * Returns the endTime of this DefaultTestListener.TestResult.
-		 * @return the endTime.
-		 */
-		public Date getEndTime() {
-			return endTime;
-		}
-		/**
-		 * Sets the endTime of this DefaultTestListener.TestResult.
-		 * @param endTime the endTime to set.
-		 */
-		public void setEndTime(Date endTime) {
-			this.endTime = endTime;
-		}
-		/**
-		 * Returns the error of this DefaultTestListener.TestResult.
-		 * @return the error.
-		 */
-		public Throwable getError() {
-			return error;
-		}
-		/**
-		 * Sets the error of this DefaultTestListener.TestResult.
-		 * @param error the error to set.
-		 */
-		public void setError(Throwable error) {
-			this.error = error;
-		}
-		/**
-		 * Returns the startTime of this DefaultTestListener.TestResult.
-		 * @return the startTime.
-		 */
-		public Date getStartTime() {
-			return startTime;
-		}
-		/**
-		 * Sets the startTime of this DefaultTestListener.TestResult.
-		 * @param startTime the startTime to set.
-		 */
-		public void setStartTime(Date startTime) {
-			this.startTime = startTime;
-		}
-		/**
-		 * Returns the success of this DefaultTestListener.TestResult.
-		 * @return the success.
-		 */
-		public boolean isSuccess() {
-			return success;
-		}
-		/**
-		 * Sets the success of this DefaultTestListener.TestResult.
-		 * @param success the success to set.
-		 */
-		public void setSuccess(boolean success) {
-			this.success = success;
-			if (!success) {
-				if (testCaseResult != null)
-					testCaseResult.setHasFailures(true);
-			}
-		}
-		/**
-		 * Returns the test of this DefaultTestListener.TestResult.
-		 * @return the test.
-		 */
-		public String getTestName() {
-			return testName;
-		}
-		/**
-		 * Sets the test of this DefaultTestListener.TestResult.
-		 * @param test the test to set.
-		 */
-		public void setTestName(String testName) {
-			this.testName = testName;
-		}
-		/**
-		 * Returns the testCaseResult of this DefaultTestListener.TestResult.
-		 * @return the testCaseResult.
-		 */
-		public TestCaseResult getTestCaseResult() {
-			return testCaseResult;
-		}
-		/**
-		 * Sets the testCaseResult of this DefaultTestListener.TestResult.
-		 * @param testCaseResult the testCaseResult to set.
-		 */
-		public void setTestCaseResult(TestCaseResult testCaseResult) {
-			this.testCaseResult = testCaseResult;
-		}
-
-	}
-
-
-	/**
-	 * The gatherd results.
+	 * The gathered results.
 	 */
 	private List<TestSuiteResult> testSuiteResults;
 
@@ -452,7 +150,10 @@ implements JFireTestListener
 	 */
 	private Properties config = null;
 
-	private String organisationID;
+	private final String organisationID;
+
+	private File reportDir = null;
+	private Document reportDocument = null;
 
 	/**
 	 * Default constructor used by the framework to instantiate {@link JFireTestListener}s.
@@ -461,23 +162,136 @@ implements JFireTestListener
 		organisationID = SecurityReflector.getUserDescriptor().getOrganisationID();
 	}
 
-	/**
-	 * {@inheritDoc}
+	/* (non-Javadoc)
 	 * @see org.nightlabs.jfire.testsuite.JFireTestListener#configure(java.util.Properties)
 	 */
-	public void configure(Properties config) {
+	@Override
+	public void configure(final Properties config) 
+	{
 		this.config = config;
 	}
 
-	/**
-	 * Write the gathered test data to XML.
-	 *
-	 * @param out The {@link OutputStream} the XML should be written to.
-	 * @throws ParserConfigurationException
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.testsuite.JFireTestListener#endTestRun()
 	 */
-	protected void writeReportAsXML(OutputStream out) throws ParserConfigurationException
+	@Override
+	public void endTestRun() throws Exception {
+		endTime = new Date();
+		processTestRun();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.testsuite.JFireTestListener#startTestRun()
+	 */
+	@Override
+	public void startTestRun() throws Exception {
+		testSuiteResults = new LinkedList<TestSuiteResult>();
+		startTime = new Date();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.testsuite.JFireTestListener#testSuiteStatus(org.nightlabs.jfire.testsuite.TestSuite, org.nightlabs.jfire.testsuite.TestSuite.Status)
+	 */
+	@Override
+	public void testSuiteStatus(final TestSuite suite, final Status status) throws Exception {
+		if (status == Status.START || status == Status.SKIP) {
+			TestSuiteResult suiteResult = new TestSuiteResult();
+			suiteResult.setStartTime(new Date());
+			suiteResult.setStatus(status);
+			if (status == Status.SKIP) {
+				suiteResult.setEndTime(new Date());
+			}
+			testSuiteResults.add(suiteResult);
+			suiteResult.setSuite(suite);
+			currSuiteResult = suiteResult;
+		} else if (status == Status.END) {
+			if (currSuiteResult == null)
+				return;
+			currSuiteResult.setEndTime(new Date());
+		}
+
+	}
+
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.testsuite.JFireTestListener#addSuiteStartError(org.nightlabs.jfire.testsuite.TestSuite, java.lang.Throwable)
+	 */
+	@Override
+	public void addSuiteStartError(final TestSuite suite, final Throwable t) {
+		if (currSuiteResult != null) {
+			currSuiteResult.setSuiteStartError(t);
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see junit.framework.TestListener#addError(junit.framework.Test, java.lang.Throwable)
+	 */
+	@Override
+	public void addError(final Test test, final Throwable t) {
+		if (currTestResult == null)
+			return;
+		currTestResult.setSuccess(false);
+		currTestResult.setError(t);
+	}
+
+	/* (non-Javadoc)
+	 * @see junit.framework.TestListener#addFailure(junit.framework.Test, junit.framework.AssertionFailedError)
+	 */
+	@Override
+	public void addFailure(final Test test, final AssertionFailedError t) {
+		if (currTestResult == null)
+			return;
+		currTestResult.setSuccess(false);
+		currTestResult.setError(t);
+	}
+
+	/* (non-Javadoc)
+	 * @see junit.framework.TestListener#endTest(junit.framework.Test)
+	 */
+	@Override
+	public void endTest(final Test test) {
+		if (currTestResult == null)
+			return;
+		if (currTestCaseResult != null)
+			currTestCaseResult.setEndTime(new Date());
+		currTestResult.setEndTime(new Date());
+	}
+
+	/* (non-Javadoc)
+	 * @see junit.framework.TestListener#startTest(junit.framework.Test)
+	 */
+	@Override
+	public void startTest(final Test test) {
+		if (currTestCaseResult == null || !currTestCaseResult.getTestCaseClass().equals(test.getClass())) {
+			if (currTestCaseResult != null) {
+				currTestCaseResult.setEndTime(new Date());
+			}
+			currTestCaseResult = new TestCaseResult();
+			currTestCaseResult.setTestSuiteResult(currSuiteResult);
+			currSuiteResult.getTestCaseResults().add(currTestCaseResult);
+			currTestCaseResult.setTestCaseClass(test.getClass());
+			currTestCaseResult.setStartTime(new Date());
+		}
+		if (currTestCaseResult == null)
+			return;
+		currTestResult = new TestResult();
+		currTestResult.setTestCaseResult(currTestCaseResult);
+		currTestCaseResult.getTestResults().add(currTestResult);
+		currTestResult.setStartTime(new Date());
+		String name = test.toString();
+		String testName = name.substring(0, name.indexOf('('));
+		currTestResult.setTestName(testName);
+	}
+
+
+	private Document getReportDocument() throws ParserConfigurationException 
 	{
-//		Document doc = new DocumentImpl();
+		if(reportDocument == null)
+			reportDocument = createReportDocument();
+		return reportDocument;
+	}
+	
+	private Document createReportDocument() throws ParserConfigurationException 
+	{
 		Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
 		Element rootNode = doc.createElement("JFireServerTestResult");
 		rootNode.setAttribute("startTime", ISO_DATE_FORMAT.format(startTime));
@@ -527,288 +341,139 @@ implements JFireTestListener
 			}
 		}
 		doc.appendChild(rootNode);
-		NLDOMUtil.writeDocument(doc, out, "UTF-8");
+		return doc;
+	}
+	
+	private static File createTempDir() throws IOException
+	{
+		File tmpDir = IOUtil.getUserTempDir("JFireTestSuite.", null);
+		if (!tmpDir.isDirectory()) {
+			boolean success = tmpDir.mkdirs();
+			if(!success)
+				throw new IOException("Create directory failed: "+tmpDir.getAbsolutePath());
+		}
+		return tmpDir;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * @see org.nightlabs.jfire.testsuite.JFireTestListener#endTestRun()
-	 */
-	public void endTestRun() throws Exception {
-		endTime = new Date();
-		processTestRun();
+	private String getTempFilePrefix()
+	{
+		return Long.toString(System.currentTimeMillis(), 36) + '-' + Long.toString(System.identityHashCode(this)) + '-';
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * @see org.nightlabs.jfire.testsuite.JFireTestListener#startTestRun()
-	 */
-	public void startTestRun() throws Exception {
-		testSuiteResults = new LinkedList<TestSuiteResult>();
-		startTime = new Date();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @see org.nightlabs.jfire.testsuite.JFireTestListener#testSuiteStatus(org.nightlabs.jfire.testsuite.TestSuite, org.nightlabs.jfire.testsuite.TestSuite.Status)
-	 */
-	public void testSuiteStatus(TestSuite suite, Status status) throws Exception {
-		if (status == Status.START || status == Status.SKIP) {
-			TestSuiteResult suiteResult = new TestSuiteResult();
-			suiteResult.setStartTime(new Date());
-			suiteResult.setStatus(status);
-			if (status == Status.SKIP) {
-				suiteResult.setEndTime(new Date());
+	private File getReportDir() throws IOException
+	{
+		if(reportDir == null) {
+			String dirString = getProperty(PROPERTY_KEY_REPORT_TODIR, null);
+			if(dirString == null || dirString.isEmpty()) {
+				reportDir = createTempDir();
+			} else {
+				File dir = new File(dirString);
+				if(!dir.isDirectory()) {
+					boolean success = dir.mkdirs();
+					if(!success)
+						throw new IOException("Create directory failed: "+dirString);
+				}
+				reportDir = dir;
 			}
-			testSuiteResults.add(suiteResult);
-			suiteResult.setSuite(suite);
-			currSuiteResult = suiteResult;
-		} else if (status == Status.END) {
-			if (currSuiteResult == null)
-				return;
-			currSuiteResult.setEndTime(new Date());
 		}
-
+		return reportDir;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * @see org.nightlabs.jfire.testsuite.JFireTestListener#addSuiteStartError(org.nightlabs.jfire.testsuite.TestSuite, java.lang.Throwable)
-	 */
-	public void addSuiteStartError(TestSuite suite, Throwable t) {
-		if (currSuiteResult != null) {
-			currSuiteResult.setSuiteStartError(t);
-		}
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @see junit.framework.TestListener#addError(junit.framework.Test, java.lang.Throwable)
-	 */
-	public void addError(Test test, Throwable t) {
-		if (currTestResult == null)
-			return;
-		currTestResult.setSuccess(false);
-		currTestResult.setError(t);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @see junit.framework.TestListener#addFailure(junit.framework.Test, junit.framework.AssertionFailedError)
-	 */
-	public void addFailure(Test test, AssertionFailedError t) {
-		if (currTestResult == null)
-			return;
-		currTestResult.setSuccess(false);
-		currTestResult.setError(t);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @see junit.framework.TestListener#endTest(junit.framework.Test)
-	 */
-	public void endTest(Test test) {
-		if (currTestResult == null)
-			return;
-		if (currTestCaseResult != null)
-			currTestCaseResult.setEndTime(new Date());
-		currTestResult.setEndTime(new Date());
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @see junit.framework.TestListener#startTest(junit.framework.Test)
-	 */
-	public void startTest(Test test) {
-		if (currTestCaseResult == null || !currTestCaseResult.getTestCaseClass().equals(test.getClass())) {
-			if (currTestCaseResult != null) {
-				currTestCaseResult.setEndTime(new Date());
-			}
-			currTestCaseResult = new TestCaseResult();
-			currTestCaseResult.setTestSuiteResult(currSuiteResult);
-			currSuiteResult.getTestCaseResults().add(currTestCaseResult);
-			currTestCaseResult.setTestCaseClass(test.getClass());
-			currTestCaseResult.setStartTime(new Date());
-		}
-		if (currTestCaseResult == null)
-			return;
-		currTestResult = new TestResult();
-		currTestResult.setTestCaseResult(currTestCaseResult);
-		currTestCaseResult.getTestResults().add(currTestResult);
-		currTestResult.setStartTime(new Date());
-		String name = test.toString();
-		String testName = name.substring(0, name.indexOf('('));
-		currTestResult.setTestName(testName);
-	}
-
-	private File tempDir = null;
-
-	protected File getTempDir()
+	private void applyStylesheetById(final String stylesheet, final OutputStream out) throws IOException, TransformerException, ParserConfigurationException
 	{
-		if (tempDir == null) {
-			File tmpDir = IOUtil.getUserTempDir("JFireTestSuite.", null);
-			if (!tmpDir.exists())
-				tmpDir.mkdirs();
+		String stylesheetLocation = getProperty(PROPERTY_KEY_STYLESHEET_PREFIX + stylesheet + PROPERTY_KEY_STYLESHEET_LOCATION_SUFFIX, null);
+		if(stylesheetLocation == null || stylesheetLocation.isEmpty()) {
+			throw new RuntimeException("Undefined stylesheet location for stylesheet '"+stylesheet+"'");
+		}
+		applyStylesheetByLocation(stylesheetLocation, out);
+	}
 
-			tempDir = tmpDir;
+	private void applyStylesheetByLocation(final String stylesheetLocation, final OutputStream out) throws IOException, TransformerException, ParserConfigurationException 
+	{
+		InputStream in;
+		if(stylesheetLocation.startsWith(INTERNAL_LOCATION_PREFIX)) {
+			in = getClass().getResourceAsStream(stylesheetLocation.substring(INTERNAL_LOCATION_PREFIX.length()));
+			if(in == null)
+				throw new IOException("Internal stylesheet not found: "+stylesheetLocation);
+		} else {
+			in = new FileInputStream(stylesheetLocation);
 		}
 
-		return tempDir;
+		try {
+			TransformerFactory factory = TransformerFactory.newInstance();
+			Transformer transformer = factory.newTransformer(new StreamSource(in));
+			transformer.transform(new DOMSource(getReportDocument()), new StreamResult(out));
+		} finally {
+			in.close();
+		}
 	}
-
-	protected String getTempFilePrefix()
+	
+	private void createReportFiles() throws IOException, TransformerException, ParserConfigurationException
 	{
-		if (tempFilePrefix == null)
-			tempFilePrefix = Long.toString(System.currentTimeMillis(), 36) + '-' + Long.toString(System.identityHashCode(this)) + '-';
-
-		return tempFilePrefix;
-	}
-
-	private String tempFilePrefix = null;
-
-	private File xmlFile = null;
-	private File htmlFile = null;
-
-	protected File getXmlFile() throws IOException, ParserConfigurationException
-	{
-		if (xmlFile == null) {
-			File tmpFileXml = new File(getTempDir(), getTempFilePrefix() + "report.xml");
-			// delete on exit => cleaning up while at the same time keeping it for the developer to check (if he wants)
-			tmpFileXml.deleteOnExit();
-
-			FileOutputStream out = new FileOutputStream(tmpFileXml);
+		String filePrefix = getProperty(PROPERTY_KEY_REPORT_FILENAME_PREFIX, getTempFilePrefix());
+		File defaultOutputFile = new File(getReportDir(), filePrefix + "report.xml");
+		logger.info("Creating default test report file: "+defaultOutputFile.getAbsolutePath());
+		FileOutputStream defaultOut = new FileOutputStream(defaultOutputFile);
+		try {
+			NLDOMUtil.writeDocument(getReportDocument(), defaultOut, "UTF-8");
+		} finally {
+			defaultOut.close();
+		}
+		
+		List<String> stylesheets = getStylesheets();
+		for (String stylesheet : stylesheets) {
+			String fileSuffix = getProperty(PROPERTY_KEY_STYLESHEET_PREFIX + stylesheet + PROPERTY_KEY_STYLESHEET_FILESUFFIX_SUFFIX, ".xml");
+			
+			File outputFile = new File(getReportDir(), filePrefix + stylesheet + "-report" + fileSuffix);
+			logger.info("Creating "+stylesheet+" test report file: "+outputFile.getAbsolutePath());
+			FileOutputStream out = new FileOutputStream(outputFile);
 			try {
-				writeReportAsXML(out);
+				applyStylesheetById(stylesheet, out);
 			} finally {
 				out.close();
 			}
-			xmlFile = tmpFileXml;
 		}
-
-		return xmlFile;
 	}
-
-	protected File getHtmlFile()
-	throws IOException, ModuleException, ParserConfigurationException, TransformerException
+	
+	private List<String> getStylesheets()
 	{
-		if (htmlFile == null) {
-			TransformerFactory factory = TransformerFactory.newInstance();
-			Transformer transformer = null;
-
-			InputStream internalHtmlReportXslInputStream = null;
-			try {
-				String xslFileName = getProperty("mail.htmlReportXSL", null);
-				if (xslFileName != null && xslFileName.length() > 0) {
-					File xslFile = new File(xslFileName);
-					transformer = factory.newTransformer(new StreamSource(xslFile));
-				}
-				else {
-					internalHtmlReportXslInputStream = DefaultTestListener.class.getResourceAsStream("htmlReport.xsl");
-					transformer = factory.newTransformer(new StreamSource(internalHtmlReportXslInputStream));
-				}
-
-				File tmpFileXml = getXmlFile();
-
-				String html;
-				{
-					StringWriter writer = new StringWriter();
-					transformer.transform(new StreamSource(tmpFileXml), new StreamResult(writer));
-					writer.close();
-					html = writer.toString();
-				}
-
-				File tmpFileHtml = new File(getTempDir(), getTempFilePrefix() + "report.html");
-				// delete on exit => cleaning up while at the same time keeping it for the developer to check (if he wants)
-				tmpFileHtml.deleteOnExit();
-
-				IOUtil.writeTextFile(tmpFileHtml, html);
-				htmlFile = tmpFileHtml;
-			} finally {
-				if (internalHtmlReportXslInputStream != null)
-					internalHtmlReportXslInputStream.close();
-			}
-		}
-		return htmlFile;
+		String stylesheets = getProperty(PROPERTY_KEY_STYLESHEETS, null);
+		if(stylesheets == null || stylesheets.isEmpty())
+			return Collections.emptyList();
+		List<String> stylesheetList = new ArrayList<String>();
+		StringTokenizer st = new StringTokenizer(stylesheets, ",");
+		while(st.hasMoreTokens()) {
+			String stylesheet = st.nextToken().trim();
+			if(!stylesheet.isEmpty())
+				stylesheetList.add(stylesheet);
+		}		
+		return stylesheetList;
 	}
 
 	/**
 	 * According to the contract of {@link JFireTestListener}, an instance is created for each test run.
 	 * Therefore, we assert it really is this way and we have no cached data yet.
 	 */
-	protected void assertClearCache()
+	private void assertClearCache()
 	{
-		if (xmlFile != null)
-			throw new IllegalStateException("xmlFile != null");
-
-		if (htmlFile != null)
-			throw new IllegalStateException("htmlFile != null");
-
-		if (tempFilePrefix != null)
-			throw new IllegalStateException("tempFilePrefix != null");
-
-		if (tempDir != null)
-			throw new IllegalStateException("tempDir != null");
+		if (reportDir != null)
+			throw new IllegalStateException("reportDir != null");
+		if (reportDocument != null)
+			throw new IllegalStateException("reportDocument != null");
 	}
 
 	/**
 	 * Checks whether the results should be written to XML and does so if desired.
 	 * Also checks whether the results should be send by email and does so.
 	 */
-	protected void processTestRun()
+	private void processTestRun() throws IOException, TransformerException, ParserConfigurationException
 	{
 		assertClearCache();
 
-		boolean xmlReportEnabled = getProperty("xmlReport.enabled", false);
-		boolean htmlReportEnabled = getProperty("htmlReport.enabled", false);
-//		xmlGeneration: {
-//			if (xmlReportEnabled) {
-//				String fileName = getProperty("xmlReport.fileName", "jfire-test-report.xml");
-//				File xmlFile = null;
-//				try {
-//					xmlFile = new File(JFireTestSuiteEAR.getEARDir(), fileName);
-//				} catch (Exception e) {
-//					logger.error("Error creating file from xmlReport.fileName " + fileName, e);
-//					break xmlGeneration;
-//				}
-//				FileOutputStream out;
-//				try {
-//					out = new FileOutputStream(xmlFile);
-//				} catch (FileNotFoundException e) {
-//					logger.error("Error creating FileStream for xmlReport.fileName " + fileName, e);
-//					break xmlGeneration;
-//				}
-//				try {
-//					try {
-//						writeReportAsXML(out);
-//					} catch (Exception e) {
-//						logger.error("Error writing XML report! xmlReport.fileName " + fileName, e);
-//					}
-//				} finally {
-//					try {
-//						out.close();
-//					} catch (IOException e) {
-//						logger.error("Error closing FileStream for xmlReport.fileName " + fileName, e);
-//					}
-//				}
-//			}
-//		}
-
-		if (xmlReportEnabled) {
-			try {
-				getXmlFile();
-			} catch (Exception e) {
-				logger.error("Creating XML report failed!", e);
-			}
-		}
-
-		if (htmlReportEnabled) {
-			try {
-				getHtmlFile();
-			} catch (Exception e) {
-				logger.error("Creating HTML report failed!", e);
-			}
-		}
-
+		boolean reportEnabled = getProperty(PROPERTY_KEY_REPORT_ENABLED, false);
+		if(reportEnabled)
+			createReportFiles();
+		
 		boolean sendMailOnFailure = getProperty("mail.onFailure.enabled", false);
 		boolean sendMailOnSuccess = getProperty("mail.alwaysSend.enabled", false);
 		boolean sendMailOnSkip = getProperty("mail.onSkip.enabled", false);
@@ -838,7 +503,8 @@ implements JFireTestListener
 	 * @param key The key of the property.
 	 * @param def The properties default value.
 	 */
-	protected boolean getProperty(String key, boolean def) {
+	private boolean getProperty(final String key, final boolean def)
+	{
 		boolean result = def;
 		String str = config.getProperty(key);
 		if (str != null && !"".equals(str)) {
@@ -859,7 +525,8 @@ implements JFireTestListener
 	 * @param key The key of the property.
 	 * @param def The properties default value.
 	 */
-	protected String getProperty(String key, String def) {
+	private String getProperty(final String key, final String def)
+	{
 		String result = def;
 		String str = config.getProperty(key);
 		if (str != null) {
@@ -871,153 +538,95 @@ implements JFireTestListener
 	/**
 	 * Sends the gathered results as email.
 	 * Sender, recipient etc. is configured in the listener properties.
-	 *
-	 * @throws Exception When it failed.
 	 */
-	public void sendReportAsMail() throws Exception {
-		// create the html report
-		try {
-//			TransformerFactory factory = TransformerFactory.newInstance();
-//			String xslFileName = getProperty("mail.htmlReportXSL", "htmlReport.xsl");
-//			Transformer transformer = factory.newTransformer(new StreamSource(new File(JFireTestSuiteEAR.getEARDir(), xslFileName)));
+	private void sendReportAsMail() throws ParserConfigurationException, IOException, TransformerException, MessagingException
+	{
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		String mailStylesheet = getProperty(PROPERTY_KEY_MAIL_STYLESHEET, null);
+		if(mailStylesheet == null || mailStylesheet.isEmpty()) {
+			String location = getProperty(PROPERTY_KEY_MAIL_STYLESHEET, DEFAULT_MAIL_STYLESHEET_LOCATION);
+			applyStylesheetByLocation(location, out);
+		} else {
+			applyStylesheetById(mailStylesheet, out);
+		}
+		
+		byte[] xml = NLDOMUtil.getDocumentAsByteArray(getReportDocument(), "UTF-8");
+		String html = out.toString("UTF-8");
+		
+		
+		String smtpHost = getProperty(PROPERTY_KEY_SMTP_HOST, null);
+		String mailFrom = getProperty(PROPERTY_KEY_MAIL_FROM, "info@jfire.org");
+		String mailTo = getProperty(PROPERTY_KEY_MAIL_TO, "info@jfire.org");
+		
+		if (smtpHost == null || smtpHost.isEmpty())
+			throw new IllegalStateException("There is no SMTP host defined! Check your jfireTestSuite.properties (key suffix " + PROPERTY_KEY_SMTP_HOST + ") and your included properties-files!");
 
-			File tmpFileXml = getXmlFile();
+		// create/send the message
+		Session session = Session.getInstance(config, null);
+		MimeMessage message = new MimeMessage(session);
 
-//			File tmpDir = IOUtil.getUserTempDir("JFireTestSuite.", null);
-//			if (!tmpDir.exists())
-//				tmpDir.mkdirs();
-//
-//			String tmpFilePrefix = Long.toString(System.currentTimeMillis(), 36) + "-";
-//
-//			File tmpFileXml = new File(tmpDir, tmpFilePrefix + "report.xml");
-//			// delete on exit => cleaning up while at the same time keeping it for the developer to check (if he wants)
-//			tmpFileXml.deleteOnExit();
-//
-//			FileOutputStream out = new FileOutputStream(tmpFileXml);
-//			try {
-//				writeReportAsXML(out);
-//			} finally {
-//				out.close();
-//			}
+		message.setFrom(new InternetAddress(mailFrom));
 
-//			String html;
-//			{
-//				StringWriter writer = new StringWriter();
-//				transformer.transform(new StreamSource(tmpFileXml), new StreamResult(writer));
-//				writer.close();
-//				html = writer.toString();
-//			}
-//
-//			File tmpFileHtml = new File(getTempDir(), tmpFilePrefix + "report.html");
-//			// delete on exit => cleaning up while at the same time keeping it for the developer to check (if he wants)
-//			tmpFileHtml.deleteOnExit();
-//
-//			IOUtil.writeTextFile(tmpFileHtml, html);
+		if(mailTo.contains(",")) {
+			StringTokenizer t = new StringTokenizer(mailTo, ",");
+			while(t.hasMoreTokens())
+				message.addRecipient(javax.mail.Message.RecipientType.TO, new InternetAddress(t.nextToken().trim()));
+		} else {
+			message.addRecipient(javax.mail.Message.RecipientType.TO, new InternetAddress(mailTo));
+		}
 
-			String html = IOUtil.readTextFile(getHtmlFile());
+		String subject = getProperty(PROPERTY_KEY_MAIL_SUBJECT, "JFireTestSuite Testreport");
+		message.setSubject(subject);
 
-// we now support include files - no need for these environment variables anymore!
-//			// check for environment variable for the smtp host
-//			String envSmtpHost = System.getenv(ENVIRONMENT_VARIABLE_SMTP_HOST);
-//			if (envSmtpHost != null) {
-//				config.setProperty(PROPERTY_KEY_SMTP_HOST, envSmtpHost);
-//			}
-//
-//			// check for environment variable for the mail to
-//			String envMailTo = System.getenv(ENVIRONMENT_VARIABLE_MAIL_TO);
-//			if (envMailTo != null) {
-//				config.setProperty(PROPERTY_KEY_MAIL_TO, envMailTo);
-//			}
-//
-//			// check for environment variable for the mail from
-//			String envMailFrom = System.getenv(ENVIRONMENT_VARIABLE_MAIL_FROM);
-//			if (envMailFrom != null) {
-//				config.setProperty(PROPERTY_KEY_MAIL_FROM, envMailFrom);
-//			}
+		//		message.setContent(writer.toString(), "text/html");
 
-			if ("".equals(getProperty(PROPERTY_KEY_SMTP_HOST, "")))
-				throw new IllegalStateException("There is no SMTP host defined! Check your jfireTestSuite.properties (key suffix " + PROPERTY_KEY_SMTP_HOST + ") and your included properties-files!");
+		// set html report
+		MimeBodyPart mimebodypart = new MimeBodyPart();
+		mimebodypart.setContent(html, "text/html");
 
-			if ("".equals(getProperty(PROPERTY_KEY_MAIL_FROM, "")))
-				throw new IllegalStateException("There is no mail-from defined! Check your jfireTestSuite.properties (key suffix " + PROPERTY_KEY_MAIL_FROM + ") and your included properties-files!");
+		// attach xml report
+		MimeMultipart mimemultipart = new MimeMultipart();
+		mimemultipart.addBodyPart(mimebodypart);
+		mimebodypart = new MimeBodyPart();
+		DataSource filedatasource = new ByteArrayDataSource(xml, "text/xml");
+		mimebodypart.setDataHandler(new DataHandler(filedatasource));
 
-			if ("".equals(getProperty(PROPERTY_KEY_MAIL_TO, "")))
-				throw new IllegalStateException("There is no mail-to defined! Check your jfireTestSuite.properties (key suffix " + PROPERTY_KEY_MAIL_TO + ") and your included properties-files!");
+		mimebodypart.setFileName("jfire-test-report.xml");
+		mimemultipart.addBodyPart(mimebodypart);
+		message.setContent(mimemultipart);
+		message.saveChanges(); // according to the docs, this should not be forgotten - but it worked without, too - nevertheless it doesn't hurt to use it.
 
-			// create/send the message
-			Session session = Session.getInstance(config, null);
-			MimeMessage message = new MimeMessage(session);
+		boolean authenticate = getProperty(PROPERTY_KEY_SMTP_AUTH, false);
 
-			message.setFrom(new InternetAddress(getProperty(PROPERTY_KEY_MAIL_FROM, "info@jfire.org")));
+		if (!authenticate) {
+			logger.info("sendReportAsMail: Sending TestSuite report email without authentication via SMTP host " + smtpHost + " to: "+mailTo);
+			Transport.send(message); // use simple API since this is tested well and seems to work fine.
+		}
+		else {
+			logger.info("sendReportAsMail: Sending TestSuite report email with authentication via SMTP host " + smtpHost + " to: "+mailTo);
 
-			String to = getProperty(PROPERTY_KEY_MAIL_TO, "info@jfire.org");
-			if(to.contains(",")) {
-				StringTokenizer t = new StringTokenizer(to, ",");
-				while(t.hasMoreTokens())
-					message.addRecipient(javax.mail.Message.RecipientType.TO, new InternetAddress(t.nextToken().trim()));
-			} else {
-				message.addRecipient(javax.mail.Message.RecipientType.TO, new InternetAddress(to));
+			String smtpUsername = config.getProperty(PROPERTY_KEY_SMTP_USER);
+			String smtpPassword = config.getProperty(PROPERTY_KEY_SMTP_PASSWORD);
+
+			if (smtpUsername == null || "".equals(smtpUsername))
+				logger.warn("sendReportAsMail: property " + PROPERTY_KEY_SMTP_AUTH + " has been set to 'true', but there is no user name defined! You should add a user name using the property "+ PROPERTY_KEY_SMTP_USER +"!");
+
+			if (smtpPassword == null || "".equals(smtpPassword))
+				logger.warn("sendReportAsMail: property " + PROPERTY_KEY_SMTP_AUTH + " has been set to 'true', but there is no password defined! You should add a password using the property "+ PROPERTY_KEY_SMTP_PASSWORD +"!");
+
+			if (logger.isTraceEnabled()) {
+				logger.trace("sendReportAsMail: properties:");
+				for (Map.Entry<?, ?> me : config.entrySet())
+					logger.trace("sendReportAsMail:   * " + me.getKey() + '=' + me.getValue());
 			}
 
-			String subject = getProperty(PROPERTY_KEY_MAIL_SUBJECT, "JFireTestSuite Testreport");
-			message.setSubject(subject);
-
-			//		message.setContent(writer.toString(), "text/html");
-
-			// set html report
-			MimeBodyPart mimebodypart = new MimeBodyPart();
-			mimebodypart.setContent(html, "text/html");
-
-			// attach xml report
-			MimeMultipart mimemultipart = new MimeMultipart();
-			mimemultipart.addBodyPart(mimebodypart);
-			mimebodypart = new MimeBodyPart();
-			FileDataSource filedatasource = new FileDataSource(tmpFileXml);
-			mimebodypart.setDataHandler(new DataHandler(filedatasource));
-
-			mimebodypart.setFileName("jfire-test-report.xml");
-			mimemultipart.addBodyPart(mimebodypart);
-			message.setContent(mimemultipart);
-			message.saveChanges(); // according to the docs, this should not be forgotten - but it worked without, too - nevertheless it doesn't hurt to use it.
-
-			boolean authenticate = "true".equals(config.getProperty(PROPERTY_KEY_SMTP_AUTH, "false"));
-
-			String smtpHost = config.getProperty(PROPERTY_KEY_SMTP_HOST);
-			if (!authenticate) {
-				logger.info("sendReportAsMail: Sending TestSuite report email without authentication via SMTP host " + smtpHost + " to: "+to);
-				Transport.send(message); // use simple API since this is tested well and seems to work fine.
+			Transport tr = session.getTransport("smtp");
+			try {
+				tr.connect(smtpHost, smtpUsername, smtpPassword);
+				tr.sendMessage(message, message.getAllRecipients());
+			} finally {
+				tr.close();
 			}
-			else {
-				logger.info("sendReportAsMail: Sending TestSuite report email with authentication via SMTP host " + smtpHost + " to: "+to);
-
-				String smtpUsername = config.getProperty(PROPERTY_KEY_SMTP_USER);
-				String smtpPassword = config.getProperty(PROPERTY_KEY_SMTP_PASSWORD);
-
-				if (smtpUsername == null || "".equals(smtpUsername))
-					logger.warn("sendReportAsMail: property " + PROPERTY_KEY_SMTP_AUTH + " has been set to 'true', but there is no user name defined! You should add a user name using the property "+ PROPERTY_KEY_SMTP_USER +"!");
-
-				if (smtpPassword == null || "".equals(smtpPassword))
-					logger.warn("sendReportAsMail: property " + PROPERTY_KEY_SMTP_AUTH + " has been set to 'true', but there is no password defined! You should add a password using the property "+ PROPERTY_KEY_SMTP_PASSWORD +"!");
-
-				if (logger.isTraceEnabled()) {
-					logger.trace("sendReportAsMail: properties:");
-					for (Map.Entry<?, ?> me : config.entrySet())
-						logger.trace("sendReportAsMail:   * " + me.getKey() + '=' + me.getValue());
-				}
-
-				Transport tr = session.getTransport("smtp");
-				try {
-					tr.connect(smtpHost, smtpUsername, smtpPassword);
-					tr.sendMessage(message, message.getAllRecipients());
-				} finally {
-					tr.close();
-				}
-			}
-
-//			tmpFile.delete(); // We do NOT delete these files immediately anymore, but when exiting the VM.
-		} catch(Exception e) {
-			logger.error("Sending TestSuite report email failed! Escalating exception...", e);
-			throw e;
 		}
 	}
 }

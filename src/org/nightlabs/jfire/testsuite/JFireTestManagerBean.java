@@ -97,7 +97,7 @@ implements JFireTestManagerRemote, JFireTestManagerLocal
 	@TransactionAttribute(TransactionAttributeType.REQUIRED)
 	@RolesAllowed("_System_")
 	@Override
-	public void logMemoryState(TaskID taskID)
+	public void logMemoryState(final TaskID taskID)
 	throws Exception
 	{
 		logger.info("testSuiteTimerTask: Memory usage before gc:");
@@ -128,7 +128,7 @@ implements JFireTestManagerRemote, JFireTestManagerLocal
 	@TransactionAttribute(TransactionAttributeType.REQUIRED)
 	@RolesAllowed("_System_")
 	@Override
-	public void runAllTestSuites(TaskID taskID)
+	public void runAllTestSuites(final TaskID taskID)
 	throws Exception
 	{
 		if (getTestSuiteRunningCounter(getOrganisationID()) > 0) {
@@ -245,7 +245,7 @@ implements JFireTestManagerRemote, JFireTestManagerLocal
 
 	private static Map<String, Integer> organisationID2testSuiteRunningCounter = new HashMap<String, Integer>();
 
-	protected static int getTestSuiteRunningCounter(String organisationID)
+	protected static int getTestSuiteRunningCounter(final String organisationID)
 	{
 		synchronized (organisationID2testSuiteRunningCounter) {
 			Integer counter = organisationID2testSuiteRunningCounter.get(organisationID);
@@ -256,7 +256,7 @@ implements JFireTestManagerRemote, JFireTestManagerLocal
 		}
 	}
 
-	private static int incrementTestSuiteRunningCounter(String organisationID)
+	private static int incrementTestSuiteRunningCounter(final String organisationID)
 	{
 		synchronized (organisationID2testSuiteRunningCounter) {
 			Integer counter = organisationID2testSuiteRunningCounter.get(organisationID);
@@ -270,7 +270,7 @@ implements JFireTestManagerRemote, JFireTestManagerLocal
 		}
 	}
 
-	private static int decrementTestSuiteRunningCounter(String organisationID)
+	private static int decrementTestSuiteRunningCounter(final String organisationID)
 	{
 		synchronized (organisationID2testSuiteRunningCounter) {
 			Integer counter = organisationID2testSuiteRunningCounter.get(organisationID);
@@ -308,14 +308,14 @@ implements JFireTestManagerRemote, JFireTestManagerLocal
 	 */
 	@RolesAllowed("_Guest_")
 	@Override
-	public void runTestSuites(List<Class<? extends TestSuite>> testSuitesClasses)
+	public void runTestSuites(final List<Class<? extends TestSuite>> testSuitesClasses)
 	throws SecurityException, IllegalArgumentException, ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException, ModuleException, IOException
 	{
 		List<TestSuite> runSuites = createTestSuites(testSuitesClasses);
 		runTestSuiteInstances(runSuites);
 	}
 
-	private static void runTestSuiteInstances(List<TestSuite> testSuites) throws ModuleException, IOException {
+	private static void runTestSuiteInstances(final List<TestSuite> testSuites) throws ModuleException, IOException {
 		List<JFireTestListener> listeners = getTestListeners();
 		UserDescriptor userDescriptorOnStart = SecurityReflector.getUserDescriptor();
 		if (userDescriptorOnStart == null)
@@ -370,7 +370,7 @@ implements JFireTestManagerRemote, JFireTestManagerLocal
 	 */
 	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
 	@Override
-	public String evaluateCanRunTestsInNestedTransaction(TestSuite testSuite)
+	public String evaluateCanRunTestsInNestedTransaction(final TestSuite testSuite)
 	throws Exception
 	{
 		logger.info("evaluateCanRunTestsInNestedTransaction: " + testSuite.toString());
@@ -387,7 +387,7 @@ implements JFireTestManagerRemote, JFireTestManagerLocal
 	 */
 	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
 	@Override
-	public void runTestInNestedTransaction(Test test, TestResult result)
+	public void runTestInNestedTransaction(final Test test, final TestResult result)
 	throws Exception
 	{
 		logger.info("runTestInNestedTransaction: " + test.toString());
@@ -399,7 +399,7 @@ implements JFireTestManagerRemote, JFireTestManagerLocal
 	 */
 	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
 	@Override
-	public void runTestInNestedTransaction_setUp(org.nightlabs.jfire.testsuite.TestCase test)
+	public void runTestInNestedTransaction_setUp(final org.nightlabs.jfire.testsuite.TestCase test)
 	throws Exception
 	{
 		test.setUp();
@@ -410,7 +410,7 @@ implements JFireTestManagerRemote, JFireTestManagerLocal
 	 */
 	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
 	@Override
-	public void runTestInNestedTransaction_tearDown(org.nightlabs.jfire.testsuite.TestCase test)
+	public void runTestInNestedTransaction_tearDown(final org.nightlabs.jfire.testsuite.TestCase test)
 	throws Exception
 	{
 		test.tearDown();
@@ -421,7 +421,7 @@ implements JFireTestManagerRemote, JFireTestManagerLocal
 	 */
 	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
 	@Override
-	public void runTestInNestedTransaction_runTest(org.nightlabs.jfire.testsuite.TestCase test)
+	public void runTestInNestedTransaction_runTest(final org.nightlabs.jfire.testsuite.TestCase test)
 	throws Exception
 	{
 		try {
@@ -434,11 +434,10 @@ implements JFireTestManagerRemote, JFireTestManagerLocal
 	}
 
 	private static List<JFireTestListener> getTestListeners() throws ModuleException, IOException {
-		Properties mainProps = JFireTestSuiteEAR.getJFireTestSuiteProperties();
-		Collection<Matcher> listenerMatches = JFireTestSuiteEAR.getPropertyKeyMatches(mainProps, Pattern.compile("(listener\\.(?:[^.]*?)\\.)class"));
+		Collection<Matcher> listenerMatches = JFireTestSuiteEAR.getPropertyKeyMatches(Pattern.compile("(listener\\.(?:[^.]*?)\\.)class"));
 		List<JFireTestListener> listeners = new LinkedList<JFireTestListener>();
 		for (Matcher matcher : listenerMatches) {
-			Properties listenerProps = JFireTestSuiteEAR.getProperties(mainProps, matcher.group(1));
+			Properties listenerProps = JFireTestSuiteEAR.getProperties(matcher.group(1));
 			Class<?> clazz = null;
 			try {
 				clazz = Class.forName(listenerProps.getProperty("class"));
@@ -471,7 +470,7 @@ implements JFireTestManagerRemote, JFireTestManagerLocal
 	 * @throws ClassNotFoundException
 	 */
 	@SuppressWarnings("unchecked")
-	private static List<TestSuite> createTestSuites(List<Class<? extends TestSuite>> testSuiteClassesFilter) throws ClassNotFoundException {
+	private static List<TestSuite> createTestSuites(final List<Class<? extends TestSuite>> testSuiteClassesFilter) throws ClassNotFoundException {
 		logger.debug("Scanning classpath for TestSuites and TestCases");
 		Collection<Class<?>> classes = ReflectUtil.listClassesInPackage("org.nightlabs.jfire.testsuite", true);
 		logger.debug("Found " + classes.size() + " classes");
