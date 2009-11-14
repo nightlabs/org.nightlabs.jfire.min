@@ -83,31 +83,31 @@ import org.w3c.dom.Node;
 public class DefaultTestListener
 implements JFireTestListener
 {
-	private static final String INTERNAL_LOCATION_PREFIX = "internal:";
-	private static final String PROPERTY_KEY_SMTP_HOST = "mail.smtp.host";
-	private static final String PROPERTY_KEY_MAIL_TO = "mail.to";
-	private static final String PROPERTY_KEY_MAIL_FROM = "mail.from";
-	private static final String PROPERTY_KEY_MAIL_SUBJECT = "mail.subject";
+	protected static final String INTERNAL_LOCATION_PREFIX = "internal:";
+	protected static final String PROPERTY_KEY_SMTP_HOST = "mail.smtp.host";
+	protected static final String PROPERTY_KEY_MAIL_TO = "mail.to";
+	protected static final String PROPERTY_KEY_MAIL_FROM = "mail.from";
+	protected static final String PROPERTY_KEY_MAIL_SUBJECT = "mail.subject";
 
-	private static final String PROPERTY_KEY_SMTP_AUTH = "mail.smtp.auth";
-	private static final String PROPERTY_KEY_SMTP_USER = "mail.smtp.user";
+	protected static final String PROPERTY_KEY_SMTP_AUTH = "mail.smtp.auth";
+	protected static final String PROPERTY_KEY_SMTP_USER = "mail.smtp.user";
 
-	private static final String PROPERTY_KEY_MAIL_STYLESHEET = "mail.stylesheet";
-	private static final String DEFAULT_MAIL_STYLESHEET_LOCATION = "internal:htmlReport.xsl";
+	protected static final String PROPERTY_KEY_MAIL_STYLESHEET = "mail.stylesheet";
+	protected static final String DEFAULT_MAIL_STYLESHEET_LOCATION = "internal:htmlReport.xsl";
 	
 	/**
 	 * The password to be used for authentication. Note that this is not understood by
 	 * the java mail API as property, but needs to be handled manually (see code below).
 	 */
-	private static final String PROPERTY_KEY_SMTP_PASSWORD = "mail.smtp.password";
+	protected static final String PROPERTY_KEY_SMTP_PASSWORD = "mail.smtp.password";
 
-	private static final String PROPERTY_KEY_REPORT_ENABLED = "report.enabled";
-	private static final String PROPERTY_KEY_REPORT_TODIR = "report.todir";
-	private static final String PROPERTY_KEY_REPORT_FILENAME_PREFIX = "report.filenameprefix";
-	private static final String PROPERTY_KEY_STYLESHEETS = "report.stylesheets";
-	private static final String PROPERTY_KEY_STYLESHEET_PREFIX = "report.stylesheet.";
-	private static final String PROPERTY_KEY_STYLESHEET_LOCATION_SUFFIX = ".location";
-	private static final String PROPERTY_KEY_STYLESHEET_FILESUFFIX_SUFFIX = ".filesuffix";
+	protected static final String PROPERTY_KEY_REPORT_ENABLED = "report.enabled";
+	protected static final String PROPERTY_KEY_REPORT_TODIR = "report.todir";
+	protected static final String PROPERTY_KEY_REPORT_FILENAME_PREFIX = "report.filenameprefix";
+	protected static final String PROPERTY_KEY_STYLESHEETS = "report.stylesheets";
+	protected static final String PROPERTY_KEY_STYLESHEET_PREFIX = "report.stylesheet.";
+	protected static final String PROPERTY_KEY_STYLESHEET_LOCATION_SUFFIX = ".location";
+	protected static final String PROPERTY_KEY_STYLESHEET_FILESUFFIX_SUFFIX = ".filesuffix";
 	
 	/**
 	 * Log4J Logger for this class
@@ -283,7 +283,7 @@ implements JFireTestListener
 	}
 
 
-	private Document getReportDocument() throws ParserConfigurationException 
+	protected Document getReportDocument() throws ParserConfigurationException 
 	{
 		if(reportDocument == null)
 			reportDocument = createReportDocument();
@@ -379,7 +379,7 @@ implements JFireTestListener
 		return reportDir;
 	}
 
-	private void applyStylesheetById(final String stylesheet, final OutputStream out) throws IOException, TransformerException, ParserConfigurationException
+	protected void applyStylesheetById(final String stylesheet, final OutputStream out) throws IOException, TransformerException, ParserConfigurationException
 	{
 		String stylesheetLocation = getProperty(PROPERTY_KEY_STYLESHEET_PREFIX + stylesheet + PROPERTY_KEY_STYLESHEET_LOCATION_SUFFIX, null);
 		if(stylesheetLocation == null || stylesheetLocation.isEmpty()) {
@@ -470,7 +470,7 @@ implements JFireTestListener
 	{
 		assertClearCache();
 
-		boolean reportEnabled = getProperty(PROPERTY_KEY_REPORT_ENABLED, false);
+		boolean reportEnabled = getProperty(PROPERTY_KEY_REPORT_ENABLED, true);
 		if(reportEnabled)
 			createReportFiles();
 		
@@ -503,8 +503,10 @@ implements JFireTestListener
 	 * @param key The key of the property.
 	 * @param def The properties default value.
 	 */
-	private boolean getProperty(final String key, final boolean def)
+	protected boolean getProperty(final String key, final boolean def)
 	{
+		if(config == null)
+			throw new IllegalStateException("Test listener is not configured");
 		boolean result = def;
 		String str = config.getProperty(key);
 		if (str != null && !"".equals(str)) {
@@ -525,8 +527,10 @@ implements JFireTestListener
 	 * @param key The key of the property.
 	 * @param def The properties default value.
 	 */
-	private String getProperty(final String key, final String def)
+	protected String getProperty(final String key, final String def)
 	{
+		if(config == null)
+			throw new IllegalStateException("Test listener is not configured");
 		String result = def;
 		String str = config.getProperty(key);
 		if (str != null) {
