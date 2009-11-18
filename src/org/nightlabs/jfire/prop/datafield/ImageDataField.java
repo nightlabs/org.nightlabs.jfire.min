@@ -12,6 +12,16 @@ import java.util.Date;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterOutputStream;
 
+import javax.jdo.annotations.Column;
+import javax.jdo.annotations.FetchGroup;
+import javax.jdo.annotations.FetchGroups;
+import javax.jdo.annotations.IdentityType;
+import javax.jdo.annotations.Inheritance;
+import javax.jdo.annotations.InheritanceStrategy;
+import javax.jdo.annotations.PersistenceCapable;
+import javax.jdo.annotations.PersistenceModifier;
+import javax.jdo.annotations.Persistent;
+
 import org.apache.log4j.Logger;
 import org.nightlabs.io.DataBuffer;
 import org.nightlabs.jdo.ObjectIDUtil;
@@ -20,16 +30,6 @@ import org.nightlabs.jfire.prop.DataField;
 import org.nightlabs.jfire.prop.PropertySet;
 import org.nightlabs.jfire.prop.StructField;
 import org.nightlabs.util.IOUtil;
-
-import javax.jdo.annotations.FetchGroups;
-import javax.jdo.annotations.Inheritance;
-import javax.jdo.annotations.FetchGroup;
-import javax.jdo.annotations.PersistenceModifier;
-import javax.jdo.annotations.Persistent;
-import javax.jdo.annotations.InheritanceStrategy;
-import javax.jdo.annotations.PersistenceCapable;
-import javax.jdo.annotations.Column;
-import javax.jdo.annotations.IdentityType;
 
 /**
  * {@link DataField} that stores an image in binary form.
@@ -227,7 +227,7 @@ implements IContentDataField
 	public byte[] getContent() {
 		return content;
 	}
-	
+
 	@Override
 	public byte[] getPlainContent() {
 		if (isEmpty())
@@ -279,6 +279,11 @@ implements IContentDataField
 		buf.flush();
 		// I don't close any streams here as they are all delegating
 		// to the parameter stream and won't allocate resources themselves, I hope ;-)
+		// @Tobias: I think the comment above was written by you and I think it is totally correct not to close these streams,
+		// because a view in the source code of FilterOutputStream (the super-class of BufferedOutputStream) revealed
+		// that it closes its underlying stream. It seems to be a general contract: InflaterOutputStream, DeflaterOutputStream
+		// and OutputStreamWriter all behave the same way.
+		// Since we didn't open the argument 'out', we must not close it. Marco.
 	}
 
 	public void saveToFile(File file) throws IOException {

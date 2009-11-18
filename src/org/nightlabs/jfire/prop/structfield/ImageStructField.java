@@ -5,6 +5,17 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import javax.jdo.annotations.FetchGroup;
+import javax.jdo.annotations.FetchGroups;
+import javax.jdo.annotations.IdentityType;
+import javax.jdo.annotations.Inheritance;
+import javax.jdo.annotations.InheritanceStrategy;
+import javax.jdo.annotations.Join;
+import javax.jdo.annotations.NullValue;
+import javax.jdo.annotations.PersistenceCapable;
+import javax.jdo.annotations.PersistenceModifier;
+import javax.jdo.annotations.Persistent;
+
 import org.nightlabs.jfire.prop.DataBlock;
 import org.nightlabs.jfire.prop.DataField;
 import org.nightlabs.jfire.prop.StructBlock;
@@ -12,21 +23,10 @@ import org.nightlabs.jfire.prop.StructField;
 import org.nightlabs.jfire.prop.datafield.ImageDataField;
 import org.nightlabs.jfire.prop.id.StructFieldID;
 
-import javax.jdo.annotations.Join;
-import javax.jdo.annotations.Persistent;
-import javax.jdo.annotations.FetchGroups;
-import javax.jdo.annotations.NullValue;
-import javax.jdo.annotations.InheritanceStrategy;
-import javax.jdo.annotations.Inheritance;
-import javax.jdo.annotations.FetchGroup;
-import javax.jdo.annotations.PersistenceCapable;
-import javax.jdo.annotations.IdentityType;
-import javax.jdo.annotations.PersistenceModifier;
-
 /**
  * {@link StructField} that represents a {@link DataField} holding the binary data of an image.
  * The {@link ImageStructField} can configure valid file extensions and maximum size of the images.
- * 
+ *
  * @jdo.persistence-capable
  * 		identity-type="application"
  *    persistence-capable-superclass="org.nightlabs.jfire.prop.StructField"
@@ -74,6 +74,7 @@ public class ImageStructField extends StructField<ImageDataField> {
 		table="JFireBase_Prop_ImageStructField_formats",
 		persistenceModifier=PersistenceModifier.PERSISTENT)
 	private List<String> formats = new LinkedList<String>();
+	// TODO we should instead or additionally support content-types here. Marco.
 
 	/** @jdo.field persistence-modifier="persistent" */
 	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
@@ -86,9 +87,9 @@ public class ImageStructField extends StructField<ImageDataField> {
 	protected ImageStructField() { }
 
 	/**
-	 * Create a new {@link ImageStructField} for the given {@link StructBlock} 
+	 * Create a new {@link ImageStructField} for the given {@link StructBlock}
 	 * and with primary-key values from the given {@link StructFieldID}.
-	 * 
+	 *
 	 * @param structBlock The {@link StructBlock} the new {@link ImageStructField} will be part of.
 	 * @param structFieldID The {@link StructFieldID} the new {@link ImageStructField} should take primary-key values from.
 	 */
@@ -98,7 +99,7 @@ public class ImageStructField extends StructField<ImageDataField> {
 
 	/**
 	 * Create a new {@link ImageStructField} for the given {@link StructBlock}.
-	 * 
+	 *
 	 * @see StructField#StructField(StructBlock)
 	 * @param structBlock The {@link StructBlock} the new {@link ImageStructField} will be part of.
 	 */
