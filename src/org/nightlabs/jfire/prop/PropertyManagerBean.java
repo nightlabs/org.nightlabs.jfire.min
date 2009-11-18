@@ -54,11 +54,31 @@ import org.nightlabs.jfire.prop.config.PropertySetFieldBasedEditConstants;
 import org.nightlabs.jfire.prop.config.PropertySetFieldBasedEditLayoutConfigModule;
 import org.nightlabs.jfire.prop.config.PropertySetFieldBasedEditLayoutUseCase;
 import org.nightlabs.jfire.prop.config.id.PropertySetFieldBasedEditLayoutUseCaseID;
+import org.nightlabs.jfire.prop.datafield.DateDataField;
+import org.nightlabs.jfire.prop.datafield.I18nTextDataField;
+import org.nightlabs.jfire.prop.datafield.ImageDataField;
+import org.nightlabs.jfire.prop.datafield.MultiSelectionDataField;
+import org.nightlabs.jfire.prop.datafield.NumberDataField;
+import org.nightlabs.jfire.prop.datafield.PhoneNumberDataField;
+import org.nightlabs.jfire.prop.datafield.RegexDataField;
+import org.nightlabs.jfire.prop.datafield.SelectionDataField;
+import org.nightlabs.jfire.prop.datafield.TextDataField;
+import org.nightlabs.jfire.prop.datafield.TimePatternSetDataField;
 import org.nightlabs.jfire.prop.id.PropertySetID;
 import org.nightlabs.jfire.prop.id.StructFieldID;
 import org.nightlabs.jfire.prop.id.StructID;
 import org.nightlabs.jfire.prop.id.StructLocalID;
 import org.nightlabs.jfire.prop.search.PropSearchFilter;
+import org.nightlabs.jfire.prop.structfield.DateStructField;
+import org.nightlabs.jfire.prop.structfield.I18nTextStructField;
+import org.nightlabs.jfire.prop.structfield.ImageStructField;
+import org.nightlabs.jfire.prop.structfield.MultiSelectionStructField;
+import org.nightlabs.jfire.prop.structfield.NumberStructField;
+import org.nightlabs.jfire.prop.structfield.PhoneNumberStructField;
+import org.nightlabs.jfire.prop.structfield.RegexStructField;
+import org.nightlabs.jfire.prop.structfield.SelectionStructField;
+import org.nightlabs.jfire.prop.structfield.TextStructField;
+import org.nightlabs.jfire.prop.structfield.TimePatternSetStructField;
 import org.nightlabs.util.CollectionUtil;
 import org.nightlabs.util.Util;
 
@@ -467,6 +487,37 @@ public class PropertyManagerBean extends BaseSessionBeanImpl implements Property
 	public void initialise() {
 		PersistenceManager pm = createPersistenceManager();
 		try {
+			// We initialise all meta data, because there is a DataNucleus bug with lazy initialisation of
+			// some classes (=> inheritance) related to the SelectionStructField. This bug does not happen after DataNucleus was
+			// restarted and thus this code makes sure that the 2nd time JFire is started, the bug does not occur.
+			// Maybe it even solves (workaround) the bug by specifying a reliable order of initialisation.
+			// Marco.
+			try {
+				pm.getExtent(DateStructField.class);
+				pm.getExtent(I18nTextStructField.class);
+				pm.getExtent(ImageStructField.class);
+				pm.getExtent(MultiSelectionStructField.class);
+				pm.getExtent(NumberStructField.class);
+				pm.getExtent(PhoneNumberStructField.class);
+				pm.getExtent(RegexStructField.class);
+				pm.getExtent(SelectionStructField.class);
+				pm.getExtent(TextStructField.class);
+				pm.getExtent(TimePatternSetStructField.class);
+
+				pm.getExtent(DateDataField.class);
+				pm.getExtent(I18nTextDataField.class);
+				pm.getExtent(ImageDataField.class);
+				pm.getExtent(MultiSelectionDataField.class);
+				pm.getExtent(NumberDataField.class);
+				pm.getExtent(PhoneNumberDataField.class);
+				pm.getExtent(RegexDataField.class);
+				pm.getExtent(SelectionDataField.class);
+				pm.getExtent(TextDataField.class);
+				pm.getExtent(TimePatternSetDataField.class);
+			} catch (Exception x) {
+				logger.warn("initialise: Initialising of PropertySet-class-meta-data failed!", x);
+			}
+
 			PersonStruct.getPersonStructLocal(pm);
 
 			PropertySetFieldBasedEditLayoutUseCaseID useCaseID = PropertySetFieldBasedEditLayoutUseCaseID.create(
