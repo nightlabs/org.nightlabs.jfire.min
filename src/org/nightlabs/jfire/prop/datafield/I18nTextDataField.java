@@ -26,6 +26,14 @@
 
 package org.nightlabs.jfire.prop.datafield;
 
+import javax.jdo.annotations.FetchGroup;
+import javax.jdo.annotations.FetchGroups;
+import javax.jdo.annotations.Inheritance;
+import javax.jdo.annotations.InheritanceStrategy;
+import javax.jdo.annotations.PersistenceCapable;
+import javax.jdo.annotations.PersistenceModifier;
+import javax.jdo.annotations.Persistent;
+
 import org.nightlabs.i18n.I18nText;
 import org.nightlabs.jfire.prop.DataBlock;
 import org.nightlabs.jfire.prop.DataField;
@@ -34,20 +42,12 @@ import org.nightlabs.jfire.prop.StructField;
 import org.nightlabs.jfire.prop.i18n.I18nDataFieldText;
 import org.nightlabs.util.NLLocale;
 
-import javax.jdo.annotations.Persistent;
-import javax.jdo.annotations.FetchGroups;
-import javax.jdo.annotations.InheritanceStrategy;
-import javax.jdo.annotations.Inheritance;
-import javax.jdo.annotations.PersistenceCapable;
-import javax.jdo.annotations.FetchGroup;
-import javax.jdo.annotations.PersistenceModifier;
-
 /**
- * {@link DataField} that stores a internationalised text value using a {@link I18nText}. 
- * 
+ * {@link DataField} that stores a internationalised text value using a {@link I18nText}.
+ *
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  * @author Tobias Langner <!-- tobias[dot]langner[at]nightlabs[dot]de -->
- * 
+ *
  * @jdo.persistence-capable
  * 		persistence-capable-superclass="org.nightlabs.jfire.prop.DataField"
  *		detachable="true"
@@ -91,7 +91,7 @@ implements II18nTextDataField
 	/**
 	 * Create a new {@link I18nTextDataField} for the given {@link DataBlock} that
 	 * represents the given {@link StructField}.
-	 * 
+	 *
 	 * @param dataBlock The {@link DataBlock} the new {@link I18nDataField} will be part of.
 	 * @param structField The {@link StructField} the new {@link I18nDataField} represents in the data structure.
 	 */
@@ -110,14 +110,16 @@ implements II18nTextDataField
 
 	/**
 	 * The {@link I18nText} storing the values of this data field.
-	 * 
+	 *
 	 * @jdo.field
 	 * 		persistence-modifier="persistent"
 	 * 		mapped-by="dataField"
 	 */
 	@Persistent(
 		mappedBy="dataField",
-		persistenceModifier=PersistenceModifier.PERSISTENT)
+		dependent="true",
+		persistenceModifier=PersistenceModifier.PERSISTENT
+	)
 	protected I18nDataFieldText fieldText;
 
 	/**
@@ -136,7 +138,7 @@ implements II18nTextDataField
 	public boolean isEmpty() {
 		return getI18nText().isEmpty();
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * @see org.nightlabs.jfire.prop.DataField#cloneDataField(org.nightlabs.jfire.prop.PropertySet)

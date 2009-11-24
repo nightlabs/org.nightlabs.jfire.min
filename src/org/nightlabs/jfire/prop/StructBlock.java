@@ -36,6 +36,16 @@ import java.util.List;
 import java.util.Map;
 
 import javax.jdo.JDOHelper;
+import javax.jdo.annotations.Column;
+import javax.jdo.annotations.FetchGroup;
+import javax.jdo.annotations.FetchGroups;
+import javax.jdo.annotations.IdentityType;
+import javax.jdo.annotations.Inheritance;
+import javax.jdo.annotations.InheritanceStrategy;
+import javax.jdo.annotations.PersistenceCapable;
+import javax.jdo.annotations.PersistenceModifier;
+import javax.jdo.annotations.Persistent;
+import javax.jdo.annotations.PrimaryKey;
 
 import org.nightlabs.jfire.base.DuplicateKeyException;
 import org.nightlabs.jfire.idgenerator.IDGenerator;
@@ -49,21 +59,10 @@ import org.nightlabs.jfire.prop.validation.IDataBlockValidator;
 import org.nightlabs.util.CollectionUtil;
 import org.nightlabs.util.NLLocale;
 
-import javax.jdo.annotations.FetchGroups;
-import javax.jdo.annotations.Inheritance;
-import javax.jdo.annotations.PrimaryKey;
-import javax.jdo.annotations.FetchGroup;
-import javax.jdo.annotations.PersistenceModifier;
-import javax.jdo.annotations.Persistent;
-import javax.jdo.annotations.InheritanceStrategy;
-import javax.jdo.annotations.PersistenceCapable;
-import javax.jdo.annotations.Column;
-import javax.jdo.annotations.IdentityType;
-
 /**
  * {@link StructBlock} are the top level of the two-level structure of a {@link PropertySet}.
  * They are basically a container for {@link StructField}s.
- * 
+ *
  * @author Tobias Langner <!-- tobias[dot]langner[at]nightlabs[dot]de -->
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  *
@@ -143,7 +142,7 @@ public class StructBlock implements Serializable
 	/**
 	 * Create a new {@link StructBlock} for the given structure and with the given structBlockID.
 	 * The organisationID of the new {@link StructBlock} will be the one of the given {@link IStruct}.
-	 * 
+	 *
 	 * @param struct The {@link IStruct} the new {@link StructBlock} should be contained in.
 	 * @param structBlockID The structBlockID for the new {@link StructBlock}.
 	 */
@@ -155,7 +154,7 @@ public class StructBlock implements Serializable
 	/**
 	 * Create a new {@link StructBlock} for the given {@link IStruct} using the given
 	 * primary key fields.
-	 * 
+	 *
 	 * @param struct The {@link IStruct} the new {@link StructBlock} should be contained in.
 	 * @param _structBlockOrganisationID The organisationID for the new {@link StructBlock}.
 	 * @param _structBlockID The structBlockID for the new {@link StructBlock}.
@@ -329,7 +328,7 @@ public class StructBlock implements Serializable
 	/**
 	 * Returns the <b>ordered</b> {@link StructField}s.
 	 * The order is determined by the {@link StructBlockOrderItem} set to this instance of StructBlock.
-	 * 
+	 *
 	 * @return  Returns the structFields.
 	 */
 	public List<StructField<? extends DataField>> getStructFields()
@@ -397,7 +396,7 @@ public class StructBlock implements Serializable
 
 		structFieldMap.put(structFieldKey, structField);
 		structFields.add(structField);
-		
+
 		// if orderItem is not set, the order will be inconsestent
 		if (orderItem != null) {
 			orderItem.addStructFieldOrderItem(
@@ -415,12 +414,15 @@ public class StructBlock implements Serializable
 		if (structFieldMap == null)
 			initialiseStructFieldMap();
 
-		if (JDOHelper.isNew(field) || JDOHelper.getObjectId(field) == null) {
-			structFieldMap.remove(field.getStructFieldKey());
-			structFields.remove(field);
-		} else
-			throw new IllegalStructureModificationException("Cannot remove persistent StructField.");
-		
+//		if (JDOHelper.isNew(field) || JDOHelper.getObjectId(field) == null) {
+//			structFieldMap.remove(field.getStructFieldKey());
+//			structFields.remove(field);
+//		} else
+//			throw new IllegalStructureModificationException("Cannot remove persistent StructField.");
+		// I think, there's no need to disallow it. Hence I commented out the above and copied the remove operations. Marco.
+		structFieldMap.remove(field.getStructFieldKey());
+		structFields.remove(field);
+
 		if (orderItem != null) {
 			orderItem.removeStructFieldOrderItem(orderItem.getStructFieldOrderItem(field.getStructFieldIDObj()));
 		}
@@ -454,7 +456,7 @@ public class StructBlock implements Serializable
 	 * If the unique property is <code>true</code> only one instance
 	 * of the {@link DataBlock} will be allowed for the {@link DataBlockGroup}
 	 * it is in.
-	 * 
+	 *
 	 * @return  Returns the unique.
 	 */
 	public boolean isUnique()
@@ -481,7 +483,7 @@ public class StructBlock implements Serializable
 	protected void setStructBlockOrderItem(StructBlockOrderItem orderItem) {
 		this.orderItem = orderItem;
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Object#toString()
@@ -518,7 +520,7 @@ public class StructBlock implements Serializable
 			}
 		};
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
@@ -579,7 +581,7 @@ public class StructBlock implements Serializable
 	private List<DataBlockValidator> dataBlockValidators;
 
 	/**
-	 * Adds an implementation of IDataBlockValidator to the StructBlock, 
+	 * Adds an implementation of IDataBlockValidator to the StructBlock,
 	 * which will be used to validate it.
 	 * @param validator the IDataBlockValidator to add.
 	 */

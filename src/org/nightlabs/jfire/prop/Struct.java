@@ -125,7 +125,7 @@ public class Struct extends AbstractStruct {
 	@Persistent(
 		dependentElement="true",
 		nullValue=NullValue.EXCEPTION,
-		mappedBy="struct",
+		mappedBy="struct", // TODO why this mappedBy, if we have a @Join and a join-table?!??! Marco.
 		table="JFireBase_Prop_Struct_structBlockList",
 		persistenceModifier=PersistenceModifier.PERSISTENT)
 	protected List<StructBlock> structBlockList;
@@ -236,7 +236,7 @@ public class Struct extends AbstractStruct {
 	public void removeStructBlock(StructBlock psb) {
 		// if (IDGenerator.getOrganisationID().equals()
 		structBlockList.remove(psb);
-		psb.setStruct(null);
+//		psb.setStruct(null); // Must NOT do this, because the StructBlock is dependent and thus deleted and DN cannot write to a deleted object.
 	}
 
 	/**
