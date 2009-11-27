@@ -3,6 +3,8 @@ package org.nightlabs.jfire.prop.dao;
 import java.util.Collection;
 import java.util.Set;
 
+import javax.jdo.JDOHelper;
+
 import org.nightlabs.jfire.base.JFireEjb3Factory;
 import org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO;
 import org.nightlabs.jfire.base.jdo.IJDOObjectDAO;
@@ -59,11 +61,16 @@ implements IJDOObjectDAO<PropertySet>
 	public PropertySet storeJDOObject(PropertySet propertySet, boolean get, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
 	{
 		try {
+			PropertySetID propertySetID = (PropertySetID) JDOHelper.getObjectId(propertySet);
 			PropertyManagerRemote pm = JFireEjb3Factory.getRemoteBean(PropertyManagerRemote.class, SecurityReflector.getInitialContextProperties());
 			PropertySet result = pm.storePropertySet(propertySet, get, fetchGroups, maxFetchDepth);
-			if (result != null) {
+
+			if (propertySetID != null)
+				getCache().removeByObjectID(propertySetID, false);
+
+			if (result != null)
 				getCache().put(null, result, fetchGroups, maxFetchDepth);
-			}
+
 			return result;
 		} catch (Exception e) {
 			throw new RuntimeException(e);
