@@ -10,9 +10,15 @@ import org.nightlabs.jfire.base.expression.OrCondition;
 import org.nightlabs.jfire.person.resource.Messages;
 import org.nightlabs.jfire.prop.IStruct;
 import org.nightlabs.jfire.prop.StructBlock;
+import org.nightlabs.jfire.prop.StructField;
+import org.nightlabs.jfire.prop.datafield.RegexDataField;
 import org.nightlabs.jfire.prop.exception.StructBlockNotFoundException;
+import org.nightlabs.jfire.prop.exception.StructFieldNotFoundException;
+import org.nightlabs.jfire.prop.structfield.RegexStructField;
 import org.nightlabs.jfire.prop.validation.ExpressionDataBlockValidator;
+import org.nightlabs.jfire.prop.validation.ExpressionDataFieldValidator;
 import org.nightlabs.jfire.prop.validation.GenericDataFieldNotEmptyExpression;
+import org.nightlabs.jfire.prop.validation.RexDataFieldExpression;
 import org.nightlabs.jfire.prop.validation.ValidationResultType;
 
 /**
@@ -22,10 +28,13 @@ import org.nightlabs.jfire.prop.validation.ValidationResultType;
 public class PersonStructValidationInitialiser 
 {
 	public static void initialiseStructureValidators(IStruct struct)
-	throws StructBlockNotFoundException
+	throws StructBlockNotFoundException, StructFieldNotFoundException
 	{ 
-		StructBlock personalDataStructBlock;
-		personalDataStructBlock = struct.getStructBlock(PersonStruct.PERSONALDATA);
+		StructBlock personalDataStructBlock = struct.getStructBlock(PersonStruct.PERSONALDATA);
+		
+		StructBlock internetDataStructBlock = struct.getStructBlock(PersonStruct.INTERNET);
+		StructField emailStructField = internetDataStructBlock.getStructField(PersonStruct.INTERNET_EMAIL);
+		
 		String baseName = "org.nightlabs.jfire.person.resource.messages";
 		ClassLoader loader = PersonStructValidationInitialiser.class.getClassLoader();
 		
@@ -72,8 +81,13 @@ public class PersonStructValidationInitialiser
 		salutationNotNeededValidator.getValidationResult().getI18nValidationResultMessage().readFromProperties(baseName, loader, 
 			"org.nightlabs.jfire.person.PersonStruct.SalutationNotNeededValidationError"); //$NON-NLS-1$
 		personalDataStructBlock.addDataBlockValidator(salutationNotNeededValidator);
-    }
 		
+		// add email validator
+		RexDataFieldExpression rexDataFieldExpression = new RexDataFieldExpression(PersonStruct.INTERNET_EMAIL);
+		ExpressionDataFieldValidator<RegexDataField, RegexStructField> rexValidator = 
+			new ExpressionDataFieldValidator<RegexDataField, RegexStructField>(rexDataFieldExpression, Messages.getString("org.nightlabs.jfire.person.PersonStruct.EmailValidationWarning"), ValidationResultType.WARNING, emailStructField);
+		emailStructField.addDataFieldValidator(rexValidator);
+    }
 //	public static void initialiseStructureValidators(IStruct struct)
 //	throws StructBlockNotFoundException, StructFieldNotFoundException
 //	{
