@@ -41,14 +41,6 @@ import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.language.id.LanguageID;
 import org.nightlabs.language.LanguageCf;
 
-/**
- * @ejb.bean name="jfire/ejb/JFireBaseBean/LanguageManager"
- *	jndi-name="jfire/ejb/JFireBaseBean/LanguageManager"
- *	type="Stateless"
- *
- * @ejb.util generate="physical"
- * @ejb.transaction type="Required"
- */
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 @Stateless
 public class LanguageManagerBean extends BaseSessionBeanImpl implements LanguageManagerRemote
@@ -64,22 +56,50 @@ public class LanguageManagerBean extends BaseSessionBeanImpl implements Language
 	public void createLanguage(LanguageCf langCf)
 	throws LanguageException
 	{
+		createLanguage(langCf, true, false);
+	}
+
+	@RolesAllowed("org.nightlabs.jfire.language.createLanguage")
+	@Override
+	public Language createLanguage(LanguageCf langCf, boolean autoSync, boolean get)
+	throws LanguageException
+	{
+		if (langCf == null)
+			throw new IllegalArgumentException("langCf == null");
+
 		logger.debug("LanguageManagerBean.createLanguage");
 		try {
 			PersistenceManager pm = this.createPersistenceManager();
 			try {
-				pm.getExtent(Language.class, false);
+				pm.getExtent(Language.class);
 
+				Language language;
 				try {
-					pm.getObjectById(LanguageID.create(langCf.getLanguageID()));
-					return;
+					language = (Language) pm.getObjectById(LanguageID.create(langCf.getLanguageID()));
 				} catch (JDOObjectNotFoundException e) {
+					if (autoSync) {
+						switch (LanguageConfig.getLanguageConfig(pm).getLanguageSyncMode()) {
+							case off:
+								throw new LanguageSyncDeactivatedException("LanguageSyncMode is off!");
+							case oneOnly:
+								if (pm.getExtent(Language.class).iterator().hasNext())
+									throw new LanguageSyncDeactivatedException("LanguageSyncMode is oneOnly and at least one language already exists!");
+								else
+									break;
+							default:
+								break;
+						}
+					}
+
 					// ignore and create a new language afterwards
+					language = new Language(langCf);
+					language = pm.makePersistent(language);
+					logger.debug("new language created..");
 				}
 
-				Language newLang = new Language(langCf);
-				pm.makePersistent(newLang);
-				logger.debug("new language created..");
+				pm.getFetchPlan().setMaxFetchDepth(NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
+				pm.getFetchPlan().addGroup(FetchPlan.ALL);
+				return pm.detachCopy(language);
 			} finally {
 				pm.close();
 			}
@@ -100,16 +120,66 @@ public class LanguageManagerBean extends BaseSessionBeanImpl implements Language
 	throws LanguageException
 	{
 		try {
-		  PersistenceManager pm = createPersistenceManager();
-		  try {
-		  	pm.getFetchPlan().setMaxFetchDepth(NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
-			  pm.getFetchPlan().addGroup(FetchPlan.ALL);
-			  return pm.detachCopyAll((Collection<Language>)pm.newQuery(Language.class).execute());
-		  } finally {
-		  	pm.close();
-		  }
+			PersistenceManager pm = createPersistenceManager();
+			try {
+				pm.getFetchPlan().setMaxFetchDepth(NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
+				pm.getFetchPlan().addGroup(FetchPlan.ALL);
+				return pm.detachCopyAll((Collection<Language>)pm.newQuery(Language.class).execute());
+			} finally {
+				pm.close();
+			}
 		} catch (Exception x) {
 			throw new LanguageException(x);
+		}
+	}
+
+	@RolesAllowed("_Guest_")
+	@Override
+	public LanguageConfig getLanguageConfig(String[] fetchGroups, int maxFetchDepth) {
+		PersistenceManager pm = createPersistenceManager();
+		try {
+			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
+			if (fetchGroups != null)
+				pm.getFetchPlan().setGroups(fetchGroups);
+			return pm.detachCopy(LanguageConfig.getLanguageConfig(pm));
+		} finally {
+			pm.close();
+		}
+	}
+
+	@RolesAllowed("org.nightlabs.jfire.language.createLanguage") // TODO not nice, but for now it's OK.
+	@Override
+	public LanguageConfig setLanguageConfig(LanguageConfig languageConfig, boolean get, String[] fetchGroups, int maxFetchDepth) {
+		if (languageConfig == null)
+			throw new IllegalArgumentException("languageConfig == null");
+
+		PersistenceManager pm = createPersistenceManager();
+		try {
+			return NLJDOHelper.storeJDO(pm, languageConfig, get, fetchGroups, maxFetchDepth);
+		} finally {
+			pm.close();
+		}
+	}
+
+	@Override
+	public boolean deleteLanguage(LanguageID languageID) {
+		if (languageID == null)
+			throw new IllegalArgumentException("languageID == null");
+
+		PersistenceManager pm = createPersistenceManager();
+		try {
+			Object language = null;
+			try {
+				language = pm.getObjectById(languageID);
+			} catch (JDOObjectNotFoundException x) { } // silently ignore non-existent language
+
+			if (language != null) {
+				pm.deletePersistent(language);
+				return true;
+			}
+			return false;
+		} finally {
+			pm.close();
 		}
 	}
 }
