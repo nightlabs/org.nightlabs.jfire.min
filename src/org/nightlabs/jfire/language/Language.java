@@ -28,36 +28,23 @@ package org.nightlabs.jfire.language;
 
 import java.io.Serializable;
 
-import org.nightlabs.jdo.ObjectIDUtil;
-import org.nightlabs.language.LanguageCf;
-
-import javax.jdo.annotations.Persistent;
-import javax.jdo.annotations.FetchGroups;
-import javax.jdo.annotations.InheritanceStrategy;
-import javax.jdo.annotations.Inheritance;
-import javax.jdo.annotations.PrimaryKey;
-import javax.jdo.annotations.PersistenceCapable;
-import javax.jdo.annotations.FetchGroup;
-import org.nightlabs.jfire.language.id.LanguageID;
 import javax.jdo.annotations.Column;
+import javax.jdo.annotations.FetchGroup;
+import javax.jdo.annotations.FetchGroups;
 import javax.jdo.annotations.IdentityType;
-import javax.jdo.annotations.PersistenceModifier;
+import javax.jdo.annotations.Inheritance;
+import javax.jdo.annotations.InheritanceStrategy;
+import javax.jdo.annotations.PersistenceCapable;
+import javax.jdo.annotations.Persistent;
+import javax.jdo.annotations.PrimaryKey;
+
+import org.nightlabs.jdo.ObjectIDUtil;
+import org.nightlabs.jfire.language.id.LanguageID;
+import org.nightlabs.language.LanguageCf;
 
 /**
  * @author nick
  * @author Marco Schulze - Marco at NightLabs dot de
- *
- * @jdo.persistence-capable
- *		identity-type="application"
- *		objectid-class="org.nightlabs.jfire.language.id.LanguageID"
- *		detachable="true"
- *		table="JFireBase_Language"
- *
- * @jdo.inheritance strategy="new-table"
- *
- * @jdo.create-objectid-class include-body="id/LanguageID.body.inc"
- *
- * @jdo.fetch-group name="Language.name" fields="name"
  */
 @PersistenceCapable(
 	objectIdClass=LanguageID.class,
@@ -74,29 +61,17 @@ public class Language implements Serializable
 {
 	private static final long serialVersionUID = 1L;
 
-	/**
-	 * @jdo.field persistence-modifier="persistent" primary-key="true"
-	 * @jdo.column length="25"
-	 */
 	@PrimaryKey
-	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
 	@Column(length=25)
 	private String languageID = null;
-	
-	/**
-	 * @jdo.field persistence-modifier="persistent"
-	 * @jdo.column length="100"
-	 */
-	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
+
 	@Column(length=100)
 	private String nativeName = null;
 
-	/**
-	 * @jdo.field persistence-modifier="persistent" mapped-by="language"
-	 */
 	@Persistent(
-		mappedBy="language",
-		persistenceModifier=PersistenceModifier.PERSISTENT)
+			dependent="true",
+			mappedBy="language"
+	)
 	private LanguageName name;
 
 	protected Language() {}
@@ -105,7 +80,7 @@ public class Language implements Serializable
 	{
 		if (!ObjectIDUtil.isValidIDString(langCf.getLanguageID()))
 			throw new IllegalArgumentException("languageID \""+langCf.getLanguageID()+"\" is not a valid id!");
-		
+
 		this.languageID = langCf.getLanguageID();
 		this.nativeName = langCf.getNativeName();
 		this.name = new LanguageName(this);
