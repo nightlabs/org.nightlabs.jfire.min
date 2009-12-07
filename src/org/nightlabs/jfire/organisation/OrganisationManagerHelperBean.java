@@ -1,8 +1,12 @@
 package org.nightlabs.jfire.organisation;
 
+import java.lang.annotation.Annotation;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ejb.Stateless;
@@ -18,6 +22,7 @@ import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.base.expression.AndCondition;
 import org.nightlabs.jfire.base.expression.Negation;
 import org.nightlabs.jfire.base.expression.OrCondition;
+import org.nightlabs.jfire.person.PersonStruct;
 import org.nightlabs.jfire.prop.Struct;
 import org.nightlabs.jfire.prop.StructBlockOrderItem;
 import org.nightlabs.jfire.prop.StructLocal;
@@ -42,6 +47,7 @@ import org.nightlabs.jfire.servermanager.RoleImportSet;
 import org.nightlabs.jfire.servermanager.config.OrganisationCf;
 import org.nightlabs.jfire.servermanager.config.ServerCf;
 import org.nightlabs.jfire.workstation.Workstation;
+import org.nightlabs.util.reflect.ReflectUtil;
 
 /**
  * @author Marco Schulze - marco at nightlabs dot de
@@ -64,19 +70,12 @@ implements OrganisationManagerHelperLocal
 	private static final long serialVersionUID = 1L;
 	private static final Logger logger = Logger.getLogger(OrganisationManagerBean.class);
 
-	/* (non-Javadoc)
-	 * @see org.nightlabs.jfire.organisation.OrganisationManagerHelperLocal#internalInitializeEmptyOrganisation_step1(org.nightlabs.jfire.servermanager.config.ServerCf, org.nightlabs.jfire.servermanager.config.OrganisationCf, java.lang.String, java.lang.String)
-	 */
 	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
 	@RolesAllowed("_System_")
 	@Override
-	public void internalInitializeEmptyOrganisation_step1(
-			ServerCf localServerCf,
-			OrganisationCf organisationCf,
-			String userID, String password
-			)
+	public void internalInitializeEmptyOrganisation_step0()
+	throws Exception
 	{
-		String organisationID = getOrganisationID();
 		PersistenceManager pm = createPersistenceManager();
 		try {
 			if(logger.isDebugEnabled())
@@ -105,8 +104,149 @@ implements OrganisationManagerHelperLocal
 			pm.getExtent(StructLocal.class);
 			pm.getExtent(StructBlockOrderItem.class);
 
+			// BEGIN added 2009-12-07 for PostgreSQL (complete initialisation of all meta-data)
+			Set<Class<?>> classesInPackage = new HashSet<Class<?>>();
+			Collection<Class<?>> c;
+
+			c = ReflectUtil.listClassesInPackage(org.nightlabs.jfire.asyncinvoke.AsyncInvokeProblem.class.getPackage().getName(), false);
+			classesInPackage.addAll(c);
+
+			c = ReflectUtil.listClassesInPackage(org.nightlabs.jfire.base.DuplicateKeyException.class.getPackage().getName(), false);
+			classesInPackage.addAll(c);
+
+			c = ReflectUtil.listClassesInPackage(org.nightlabs.jfire.base.expression.AndCondition.class.getPackage().getName(), false);
+			classesInPackage.addAll(c);
+
+			c = ReflectUtil.listClassesInPackage(org.nightlabs.jfire.config.Config.class.getPackage().getName(), false);
+			classesInPackage.addAll(c);
+
+			c = ReflectUtil.listClassesInPackage(org.nightlabs.jfire.editlock.EditLock.class.getPackage().getName(), false);
+			classesInPackage.addAll(c);
+
+			c = ReflectUtil.listClassesInPackage(org.nightlabs.jfire.idgenerator.IDNamespace.class.getPackage().getName(), false);
+			classesInPackage.addAll(c);
+
+			c = ReflectUtil.listClassesInPackage(org.nightlabs.jfire.jdo.notification.AbsoluteFilterID.class.getPackage().getName(), false);
+			classesInPackage.addAll(c);
+
+			c = ReflectUtil.listClassesInPackage(org.nightlabs.jfire.jdo.notification.persistent.NotificationBundle.class.getPackage().getName(), false);
+			classesInPackage.addAll(c);
+
+			c = ReflectUtil.listClassesInPackage(org.nightlabs.jfire.language.Language.class.getPackage().getName(), false);
+			classesInPackage.addAll(c);
+
+			c = ReflectUtil.listClassesInPackage(org.nightlabs.jfire.multitxjob.MultiTxJob.class.getPackage().getName(), false);
+			classesInPackage.addAll(c);
+
+			c = ReflectUtil.listClassesInPackage(org.nightlabs.jfire.organisation.Organisation.class.getPackage().getName(), false);
+			classesInPackage.addAll(c);
+
+			c = ReflectUtil.listClassesInPackage(org.nightlabs.jfire.person.Person.class.getPackage().getName(), false);
+			classesInPackage.addAll(c);
+
+			c = ReflectUtil.listClassesInPackage(org.nightlabs.jfire.prop.AbstractStruct.class.getPackage().getName(), false);
+			classesInPackage.addAll(c);
+
+			c = ReflectUtil.listClassesInPackage(org.nightlabs.jfire.prop.config.PropertySetFieldBasedEditLayoutConfigModule.class.getPackage().getName(), false);
+			classesInPackage.addAll(c);
+
+			c = ReflectUtil.listClassesInPackage(org.nightlabs.jfire.prop.datafield.DateDataField.class.getPackage().getName(), false);
+			classesInPackage.addAll(c);
+
+			c = ReflectUtil.listClassesInPackage(org.nightlabs.jfire.prop.i18n.I18nDataFieldText.class.getPackage().getName(), false);
+			classesInPackage.addAll(c);
+
+			c = ReflectUtil.listClassesInPackage(org.nightlabs.jfire.prop.search.DisplayNameSearchFilterItem.class.getPackage().getName(), false);
+			classesInPackage.addAll(c);
+
+			c = ReflectUtil.listClassesInPackage(org.nightlabs.jfire.prop.structfield.DateStructField.class.getPackage().getName(), false);
+			classesInPackage.addAll(c);
+
+			c = ReflectUtil.listClassesInPackage(org.nightlabs.jfire.prop.validation.DataBlockValidator.class.getPackage().getName(), false);
+			classesInPackage.addAll(c);
+
+			c = ReflectUtil.listClassesInPackage(org.nightlabs.jfire.security.Authority.class.getPackage().getName(), false);
+			classesInPackage.addAll(c);
+
+			c = ReflectUtil.listClassesInPackage(org.nightlabs.jfire.security.listener.SecurityChangeController.class.getPackage().getName(), false);
+			classesInPackage.addAll(c);
+
+			c = ReflectUtil.listClassesInPackage(org.nightlabs.jfire.security.search.UserQuery.class.getPackage().getName(), false);
+			classesInPackage.addAll(c);
+
+			c = ReflectUtil.listClassesInPackage(org.nightlabs.jfire.server.LocalServer.class.getPackage().getName(), false);
+			classesInPackage.addAll(c);
+
+			c = ReflectUtil.listClassesInPackage(org.nightlabs.jfire.timer.Task.class.getPackage().getName(), false);
+			classesInPackage.addAll(c);
+
+			c = ReflectUtil.listClassesInPackage(org.nightlabs.jfire.workstation.Workstation.class.getPackage().getName(), false);
+			classesInPackage.addAll(c);
+
+			c = ReflectUtil.listClassesInPackage(org.nightlabs.jfire.workstation.search.WorkstationQuery.class.getPackage().getName(), false);
+			classesInPackage.addAll(c);
+
+			for (Class<?> clazz : classesInPackage) {
+				boolean isPersistenceCapable = false;
+				Annotation[] declaredAnnotations = clazz.getDeclaredAnnotations();
+				for (Annotation annotation : declaredAnnotations) {
+					if (javax.jdo.annotations.PersistenceCapable.class == annotation.annotationType())
+						isPersistenceCapable = true;
+				}
+//				if (!PersistenceCapable.class.isAssignableFrom(clazz)) {
+				if (!isPersistenceCapable) {
+					if(logger.isDebugEnabled())
+						logger.debug("internalInitializeEmptyOrganisation_step0: Ignoring non-persistence-capable class: " + clazz.getName());
+
+					continue;
+				}
+
+				if(logger.isDebugEnabled())
+					logger.debug("internalInitializeEmptyOrganisation_step0: Initializing meta-data for class: " + clazz.getName());
+
+				try {
+					pm.getExtent(clazz);
+				} catch (Exception x) {
+					logger.warn("internalInitializeEmptyOrganisation_step0: Initializing meta-data for class \"" + clazz.getName() + "\" failed: " + x.getClass().getName() + ": " + x.getMessage(), x);
+				}
+			}
+			// END added 2009-12-07 for PostgreSQL (complete initialisation of all meta-data)
+
 			if(logger.isDebugEnabled())
 				logger.debug("Initializing JDO meta-data done.");
+
+		} catch (Exception x) {
+			logger.error("internalInitializeEmptyOrganisation_step0: " + x.getClass().getName() + ": " + x.getMessage(), x);
+			throw x;
+		} finally {
+			pm.close();
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.organisation.OrganisationManagerHelperLocal#internalInitializeEmptyOrganisation_step1(org.nightlabs.jfire.servermanager.config.ServerCf, org.nightlabs.jfire.servermanager.config.OrganisationCf, java.lang.String, java.lang.String)
+	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+	@RolesAllowed("_System_")
+	@Override
+	public void internalInitializeEmptyOrganisation_step1(
+			ServerCf localServerCf,
+			OrganisationCf organisationCf,
+			String userID, String password
+	)
+	throws Exception
+	{
+		String organisationID = getOrganisationID();
+		PersistenceManager pm = createPersistenceManager();
+		try {
+			if(logger.isDebugEnabled())
+				logger.debug("Initializing default person structure...");
+
+			PersonStruct.getPersonStructLocal(pm);
+
+			if(logger.isDebugEnabled())
+				logger.debug("Initializing default person structure done.");
+
 
 			ServerID serverID = ServerID.create(localServerCf.getServerID());
 			try {
@@ -211,6 +351,9 @@ implements OrganisationManagerHelperLocal
 			if(logger.isDebugEnabled())
 				logger.debug("pm.makePersistent(authority) done.");
 
+		} catch (Exception x) {
+			logger.error("internalInitializeEmptyOrganisation_step1: " + x.getClass().getName() + ": " + x.getMessage(), x);
+			throw x;
 		} finally {
 			pm.close();
 		}
@@ -222,7 +365,7 @@ implements OrganisationManagerHelperLocal
 	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
 	@RolesAllowed("_System_")
 	@Override
-	public void internalInitializeEmptyOrganisation_step2()
+	public void internalInitializeEmptyOrganisation_step2() throws Exception
 	{
 		String organisationID = getOrganisationID();
 		JFireServerManager jfsm = getJFireServerManager();
@@ -234,6 +377,9 @@ implements OrganisationManagerHelperLocal
 			jfsm.roleImport_commit(roleImportSet);
 			if(logger.isDebugEnabled())
 				logger.debug("Import of roles and role groups done.");
+		} catch (Exception x) {
+			logger.error("internalInitializeEmptyOrganisation_step2: " + x.getClass().getName() + ": " + x.getMessage(), x);
+			throw x;
 		} finally {
 			jfsm.close();
 		}
@@ -249,7 +395,8 @@ implements OrganisationManagerHelperLocal
 			ServerCf localServerCf,
 			OrganisationCf organisationCf,
 			String userID
-			)
+	)
+	throws Exception
 	{
 		String organisationID = getOrganisationID();
 		PersistenceManager pm = createPersistenceManager();
@@ -312,6 +459,9 @@ implements OrganisationManagerHelperLocal
 				SecurityChangeController.endChanging(successful);
 			}
 
+		} catch (Exception x) {
+			logger.error("internalInitializeEmptyOrganisation_step3: " + x.getClass().getName() + ": " + x.getMessage(), x);
+			throw x;
 		} finally {
 			pm.close();
 		}

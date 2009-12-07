@@ -38,7 +38,6 @@ import java.util.Properties;
 import java.util.Set;
 
 import javax.annotation.security.RolesAllowed;
-import javax.ejb.CreateException;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
@@ -958,7 +957,7 @@ public class OrganisationManagerBean
 			OrganisationCf organisationCf,
 			String userID, String password
 			)
-	throws CreateException, NamingException
+	throws Exception
 	{
 //		OrganisationManagerHelperLocal m = OrganisationManagerHelperUtil.getLocalHome().create();
 //		OrganisationManagerHelperLocal m = JFireEjb3Factory.getLocalBean(OrganisationManagerHelperLocal.class, null);
@@ -970,6 +969,8 @@ public class OrganisationManagerBean
 		try {
 			jfsm.createOrganisationProgress_addCreateOrganisationStatus(createOrganisationProgressID,
 					new CreateOrganisationStatus(CreateOrganisationStep.OrganisationManagerHelper_initializeEmptyOrganisation_step1_begin));
+
+			m.internalInitializeEmptyOrganisation_step0();
 
 			m.internalInitializeEmptyOrganisation_step1(localServerCf, organisationCf, userID, password);
 

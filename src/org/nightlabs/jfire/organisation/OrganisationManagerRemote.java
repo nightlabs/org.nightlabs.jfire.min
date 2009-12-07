@@ -5,9 +5,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import javax.ejb.CreateException;
 import javax.ejb.Remote;
-import javax.naming.NamingException;
 
 import org.nightlabs.jfire.base.JFireException;
 import org.nightlabs.jfire.base.JFireRemoteException;
@@ -190,12 +188,12 @@ public interface OrganisationManagerRemote
 	 * This method is used internally to fill a newly created organisation with initial
 	 * objects like {@link org.nightlabs.jfire.server.Server}, {@link Organisation}, {@link User}, {@link UserLocal} and
 	 * many more.
+	 * @throws Exception TODO
 	 */
 	void internalInitializeEmptyOrganisation(
 			CreateOrganisationProgressID createOrganisationProgressID,
 			ServerCf localServerCf, OrganisationCf organisationCf,
-			String userID, String password) throws CreateException,
-			NamingException;
+			String userID, String password) throws Exception;
 
 	Set<OrganisationID> getOrganisationIDs();
 
