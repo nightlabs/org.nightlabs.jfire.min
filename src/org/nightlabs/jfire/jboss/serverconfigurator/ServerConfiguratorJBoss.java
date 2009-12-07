@@ -20,6 +20,7 @@ import javax.xml.transform.TransformerException;
 
 import org.apache.log4j.Logger;
 import org.apache.xpath.CachedXPathAPI;
+import org.jboss.system.server.ServerConfig;
 import org.nightlabs.config.ConfigModuleNotFoundException;
 import org.nightlabs.jfire.jboss.authentication.JFireServerLocalLoginModule;
 import org.nightlabs.jfire.jboss.authentication.JFireServerLoginModule;
@@ -436,8 +437,9 @@ public class ServerConfiguratorJBoss
 //			configureInvokerWebXml(jbossDeployDir);
 			patchRunScripts(jbossBinDir);
 			configureJavaOpts(jbossBinDir);
+//			configureJBossBindAdress();
 			removeUnneededFiles(jbossDeployDir);
-
+			
 //		Publish the JVM wide SSL settings:
 			final SslCf sslCf = getJFireServerConfigModule().getSslCf();
 			if (System.getProperty(JAVAX_NET_SSL_TRUSTSTORE) == null)
@@ -2111,8 +2113,7 @@ public class ServerConfiguratorJBoss
 	}
 
 	/**
-	 * Add custom values to the JAVA_OPTS (by property java.opts)
-	 * and set PermSize.
+	 * Add custom values to the JAVA_OPTS 
 	 * @param jbossBinDir The JBoss bin dir
 	 * @throws FileNotFoundException If the file was not found
 	 * @throws IOException In case of an io error
@@ -2126,27 +2127,147 @@ public class ServerConfiguratorJBoss
 		if(javaOpts == null)
 			javaOpts = "";
 
-		String rmiHost = serverConfiguratorSettings == null ? null : serverConfiguratorSettings.getProperty("java.rmi.server.hostname");
-		if (rmiHost != null) {
-			javaOpts += " -Djava.rmi.server.hostname="+rmiHost+" "+javaOpts;
-			// issue #87:
-			javaOpts += " -Djava.rmi.server.useLocalHostname=true";
-		}
+		// issue #58:
+		javaOpts += " -XX:PermSize=64m -XX:MaxPermSize=128m -javaagent:../server/default/deploy/jboss-aop-jdk50.deployer/pluggable-instrumentor.jar";
 
+		// Moved to configure bind adress and rmi host
+//		String rmiHost = serverConfiguratorSettings == null ? null : serverConfiguratorSettings.getProperty("java.rmi.server.hostname");
+//		if (rmiHost != null) {
+//			javaOpts += " -Djava.rmi.server.hostname="+rmiHost+" "+javaOpts;
+//			// issue #87:
+//			javaOpts += " -Djava.rmi.server.useLocalHostname=true";
+//		}
+		
 		// not working :-( - see #374
+		// This is related to https://jira.jboss.org/jira/browse/JBAS-6872 but is also fixed with issue #1391
 //		String bindAddress = serverConfiguratorSettings == null ? null : serverConfiguratorSettings.getProperty("j2ee.bind.address");
 //		if(bindAddress != null) {
 //			javaOpts += " -Djboss.bind.address="+bindAddress;
 //		}
 
-		// issue #58:
-		javaOpts += " -XX:PermSize=64m -XX:MaxPermSize=128m -javaagent:../server/default/deploy/jboss-aop-jdk50.deployer/pluggable-instrumentor.jar";
-
 		configureRunConf(jbossBinDir, javaOpts);
 		configureRunBat(jbossBinDir, javaOpts);
+		
+		// issue #1391
+		String bindAddress = getJBossBindAddress();		
+		String rmiHost = getRMIHost();		
+		String bindJavaOpts = "-Djboss.bind.address="+bindAddress;
+		// issue #1391 (ip adress as global service host is only working if rmi host is also set 
+		// until switch to JBoss 5.1 where JBoss Bug https://jira.jboss.org/jira/browse/JBAS-6872 is fixed
+		bindJavaOpts += " -Djava.rmi.server.hostname="+rmiHost;
+		// issue #87:
+		bindJavaOpts += " -Djava.rmi.server.useLocalHostname=true";
+		
+		configureRunConfBindAddress(jbossBinDir, bindJavaOpts);
+		configureRunBatBindAddress(jbossBinDir, bindJavaOpts);
 	}
 
-	private void configureRunConf(File jbossBinDir, String javaOpts) throws FileNotFoundException, IOException
+	private String getJBossBindAddress() 
+	{
+		Properties serverConfiguratorSettings = getJFireServerConfigModule().getJ2ee().getServerConfiguratorSettings();
+		String bindAddress = serverConfiguratorSettings == null ? null : serverConfiguratorSettings.getProperty("j2ee.bind.address");
+		// if no bind address has been configured via serverConfiguratorSettings, take the default service host from servicePortsSettings
+		if (bindAddress == null) {
+			// read ServicePortsConfigModule
+			ServicePortsConfigModule servicePortsConfigModule = null;
+			try {
+				servicePortsConfigModule = getConfig().getConfigModule(ServicePortsConfigModule.class, true);
+			} catch (ConfigModuleNotFoundException e) {
+				servicePortsConfigModule = getConfig().createConfigModule(ServicePortsConfigModule.class);
+			}
+			String defaultServiceHost = servicePortsConfigModule.getDefaultServiceHost();
+			if (defaultServiceHost != null) {
+				bindAddress = defaultServiceHost;
+			}
+		}
+		return bindAddress;
+	}
+	
+	private String getRMIHost() 
+	{
+		Properties serverConfiguratorSettings = getJFireServerConfigModule().getJ2ee().getServerConfiguratorSettings();
+		String rmiHost = serverConfiguratorSettings == null ? null : serverConfiguratorSettings.getProperty("java.rmi.server.hostname");
+		// if rmiHost is not yet set by serverConfiguratorSettings take rmi host from service port config module and 
+		// if this is also not explicitly set take the default service host as rmi host
+		if (rmiHost == null) {
+			// read ServicePortsConfigModule
+			ServicePortsConfigModule servicePortsConfigModule = null;
+			try {
+				servicePortsConfigModule = getConfig().getConfigModule(ServicePortsConfigModule.class, true);
+			} catch (ConfigModuleNotFoundException e) {
+				servicePortsConfigModule = getConfig().createConfigModule(ServicePortsConfigModule.class);
+			}
+			String rmiNamingHost = servicePortsConfigModule.getServiceNamingRMIHost();
+			if (rmiNamingHost != null) {
+				rmiHost = rmiNamingHost;
+			}
+			if (rmiHost == null) {
+				rmiHost = servicePortsConfigModule.getDefaultServiceHost();
+			}
+		}
+		return rmiHost;
+	}
+	
+	/**
+	 * Adds an entry to the run.bat where the given javaOpts are set
+	 * This is done in a different method then {@link #configureRunConf(File, String)}
+	 * because different settings are used (e.g. bind-address) and the the behaviour is slightly different.
+	 * 
+	 * The behaviour is the following:
+	 * - if the entry is not yet existing it is added
+	 * - if the entry is commented it is left untouched
+	 * - if the values for the entry have changed they get replaced
+	 * 
+	 * @param jbossBinDir the path to the jboss bin directory
+	 * @param javaOpts the javaOpts to be set
+	 */	
+	private void configureRunConfBindAddress(File jbossBinDir, String javaOpts)
+	throws FileNotFoundException, IOException
+	{
+		String javaOptsString = "JAVA_OPTS=\"$JAVA_OPTS ";
+		String comment = "# JAVA_OPTS jboss.bind.address by JFire server configurator\n";
+		String optsBegin = comment + javaOptsString;
+		String optsEnd = "\"";
+		Pattern oldOpts = Pattern.compile("(" + Pattern.quote(optsBegin) + ")([^\"]*)" + Pattern.quote(optsEnd));
+		Pattern oldCommentOpts = Pattern.compile(
+				"(" + comment + "#" + "\\s*" + Pattern.quote(javaOptsString) + ")[^\"]*" + Pattern.quote(optsEnd));
+				
+		File destFile = new File(jbossBinDir, "run.conf");
+		String text = IOUtil.readTextFile(destFile);
+		
+		String newSetting = javaOpts + optsEnd;
+		Matcher m = oldOpts.matcher(text);
+		Matcher commentMatcher = oldCommentOpts.matcher(text);
+		
+		boolean changed = false;
+		boolean found = m.find();		
+		boolean commented = commentMatcher.find();
+				
+		if (found) {
+			// if entry is found and values have changed replace it
+			String opts = m.group(2);
+			if (!opts.equals(javaOpts)) {
+				logger.debug("Changed bind.address javaOpts to "+javaOpts+" because values have changed");
+				text = m.replaceFirst("$1" + Matcher.quoteReplacement(newSetting));
+				changed = true;				
+			}
+		}
+		if (!found && !commented) {
+			// if entry is not yet existing and not commented add it
+			logger.debug("Added bind.address javaOpts "+javaOpts);
+			text += "\n" + optsBegin + newSetting;
+			changed = true;
+		}
+		
+		if (changed) {
+			setRebootRequired(true);
+			backup(destFile);
+			IOUtil.writeTextFile(destFile, text);
+		}
+	}
+	
+	private void configureRunConf(File jbossBinDir, String javaOpts) 
+	throws FileNotFoundException, IOException
 	{
 		String optsBegin = "# JAVA_OPTS by JFire server configurator\nJAVA_OPTS=\"$JAVA_OPTS";
 		String optsEnd = "\"";
@@ -2237,6 +2358,68 @@ public class ServerConfiguratorJBoss
 		}
 	}
 
+	/**
+	 * Adds an entry to the run.bat where the given javaOpts are set
+	 * This is done in a different method then {@link #configureRunBat(File, String)}
+	 * because different settings are used (e.g. bind-address) and the the behaviour is slightly different.
+	 * 
+	 * The behaviour is the following:
+	 * - if the entry is not yet existing it is added
+	 * - if the entry is commented it is left untouched
+	 * - if the values for the entry have changed they get replaced
+	 * 
+	 * @param jbossBinDir the path to the jboss bin directory
+	 * @param javaOpts the javaOpts to be set
+	 */
+	private void configureRunBatBindAddress(File jbossBinDir, String javaOpts)
+	{
+		String text;
+		try {
+			Pattern lastJavaOpts = Pattern.compile(".*set JAVA_OPTS.*?\n", Pattern.DOTALL);
+			
+			String lineBreak = "\r\n";
+			String optsBegin = "rem set JAVA_OPTS jboss.bind.address by JFire server configurator"+lineBreak;
+			String javaOptsString = "set JAVA_OPTS=%JAVA_OPTS% ";
+			Pattern oldOpts = Pattern.compile("("+optsBegin+javaOptsString+")(.*?)$", Pattern.MULTILINE);
+			Pattern oldCommentOpts = Pattern.compile("("+optsBegin+")"+"rem\\s*"+javaOptsString+"(.*?)$", Pattern.MULTILINE);
+			
+			File destFile = new File(jbossBinDir, "run.bat");
+			text = IOUtil.readTextFile(destFile);
+			
+			Matcher m = oldOpts.matcher(text);
+			Matcher commentMatcher = oldCommentOpts.matcher(text);
+			
+			boolean changed = false;
+			boolean found = m.find();
+			boolean commented = commentMatcher.find();
+			
+			if (found) {
+				// if entry is found and values have changed replace it
+				String opts = m.group(2);
+				if (!opts.equals(javaOpts)) {
+					logger.debug("Changed bind.address javaOpts to "+javaOpts+" because values have changed");
+					text = m.replaceFirst("$1"+Matcher.quoteReplacement(javaOpts));
+					changed = true;
+				}
+			}
+			if (!found && !commented) {
+				// if entry is not yet existing and not commented add it
+				logger.debug("Added bind.address javaOpts "+javaOpts);
+				Matcher m2 = lastJavaOpts.matcher(text);
+				text = m2.replaceFirst("$0"+Matcher.quoteReplacement(lineBreak + optsBegin + javaOptsString + javaOpts + lineBreak));
+				changed = true;
+			}
+						
+			if (changed) {
+				setRebootRequired(true);
+				backup(destFile);
+				IOUtil.writeTextFile(destFile, text);
+			}
+		} catch (IOException e) {
+			System.out.println("Changing the run.bat file failed. Please set the rmi host by changing the file manually or overwrite it with run.bat.jfire if it exists.");
+		}
+	}
+	
 	private void configureRunBat(File jbossBinDir, String javaOpts)
 	{
 		String text;
@@ -2268,13 +2451,14 @@ public class ServerConfiguratorJBoss
 				text = m2.replaceFirst("$0"+Matcher.quoteReplacement("\r\n"+newSetting+"\r\n"));
 				changed = true;
 			}
+			
 			if(changed) {
 				setRebootRequired(true);
 				backup(destFile);
 				IOUtil.writeTextFile(destFile, text);
 			}
 		} catch (IOException e) {
-			logger.error("Changing the run.bat file failed. Please set the rmi host by changing the file manually or overwrite it with run.bat.jfire if it exists.");
+			logger.error("Changing the run.bat file failed. Please set the javaOpts by changing the file manually.");
 		}
 	}
 
@@ -2926,4 +3110,18 @@ public class ServerConfiguratorJBoss
 		return initialSuffix;
 	}
 
+	/**
+	 * This method gets always called at each server start inside doConfigureServer to set the bind address
+	 * because of JBoss Bug https://jira.jboss.org/jira/browse/JBAS-6872
+	 * This causes the JFire server to set the ServerConfig.SERVER_BIND_ADDRESS after server start again. 
+	 * 
+	 * Once the JBoss Bug is fixed, this can be removed because then it is already done in configureJavaOpts(File)
+	 */
+	private void configureJBossBindAdress() 
+	{
+		String defaultBindHost = getJBossBindAddress();
+		if (defaultBindHost != null) {
+			System.setProperty(ServerConfig.SERVER_BIND_ADDRESS, defaultBindHost);
+		}
+	}
 }
