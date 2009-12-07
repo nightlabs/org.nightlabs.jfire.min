@@ -1826,15 +1826,6 @@ public class JFireServerManagerFactoryImpl
 //								logger.error("Rolling back transaction failed!", t);
 //								}
 
-								// We drop the database after rollback(), because it might be the case that JDO tries to do sth. with
-								// the database during rollback.
-								try {
-									if (dropDatabase && databaseAdapter != null)
-										databaseAdapter.dropDatabase();
-								} catch (Throwable t) {
-									logger.error("Dropping database failed!", t);
-								}
-
 								try {
 									if (jdoConfigDir != null) {
 										if (!IOUtil.deleteDirectoryRecursively(jdoConfigDir))
@@ -1854,6 +1845,19 @@ public class JFireServerManagerFactoryImpl
 									} catch (Throwable t) {
 										logger.error("Removing organisation \"" + organisationCf.getOrganisationID() + "\" from JFire server configuration failed!", t);
 									}
+								}
+
+								try {
+									Thread.sleep(10000); // Give server time to undeploy... postgreSQL otherwise doesn't allow DROP DATABASE :-(
+								} catch (InterruptedException x) { } // ignore
+
+								// We drop the database after rollback() and after undeploying the descriptors, because it might be the case
+								// that JDO tries to do sth. with the database or the database being locked by the DB server.
+								try {
+									if (dropDatabase && databaseAdapter != null)
+										databaseAdapter.dropDatabase();
+								} catch (Throwable t) {
+									logger.error("Dropping database failed!", t);
 								}
 							}
 							databaseAdapter.close(); databaseAdapter = null;
