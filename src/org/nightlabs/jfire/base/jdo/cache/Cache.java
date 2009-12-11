@@ -1091,8 +1091,9 @@ public class Cache
 			++removedContainerCount;
 		}
 
-		if (logger.isInfoEnabled())
-			logger.info("roll_objectID2KeySet_dependency_removed_history: created new container and removed " + removedContainerCount + " with " + removedObjectIDCount + " dependency records.");
+		// I think the following message should be debug. Tobias
+		if (logger.isDebugEnabled())
+			logger.debug("roll_objectID2KeySet_dependency_removed_history: created new container and removed " + removedContainerCount + " with " + removedObjectIDCount + " dependency records.");
 	}
 
 	private CacheCfMod cacheCfMod;
