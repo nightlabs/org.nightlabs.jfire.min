@@ -1261,8 +1261,8 @@ public class PropertySet implements Serializable, StoreCallback, AttachCallback,
 		PropertySet detached = pm.detachCopy(propertySet);
 		for (Iterator<DataField> iter = detached.dataFields.iterator(); iter.hasNext();) {
 			DataField field = iter.next();
-			StructFieldID dataStructFieldID = StructFieldID.create(field.getStructBlockOrganisationID(), field.getStructBlockID(), field
-					.getStructFieldOrganisationID(), field.getStructFieldID());
+			StructFieldID dataStructFieldID = field.getStructFieldIDObj();
+			
 			if (!structFieldIDs.contains(dataStructFieldID))
 				iter.remove();
 		}
