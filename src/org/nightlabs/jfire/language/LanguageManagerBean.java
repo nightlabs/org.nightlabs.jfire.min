@@ -90,13 +90,13 @@ public class LanguageManagerBean extends BaseSessionBeanImpl implements Language
 								break;
 						}
 					}
-
 					// ignore and create a new language afterwards
 					language = new Language(langCf);
 					language = pm.makePersistent(language);
 					logger.debug("new language created..");
 				}
-
+				if (!get)
+					return null;
 				pm.getFetchPlan().setMaxFetchDepth(NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
 				pm.getFetchPlan().addGroup(FetchPlan.ALL);
 				return pm.detachCopy(language);
