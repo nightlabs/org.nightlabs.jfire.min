@@ -26,25 +26,18 @@ public class LanguageTestCase extends TestCase{
 
 	@Test
 	public void testLanguage() throws Exception{	
-			
 		LanguageCf newLanguageCf = new LanguageCf("epo");
 		newLanguageCf.init(null);
 		newLanguageCf.setNativeName("Esperanto");
 		newLanguageCf.getName().setText(Locale.ENGLISH.getLanguage(),"Esperanto");
-		
 		LanguageManagerRemote  lm = JFireEjb3Factory.getRemoteBean(LanguageManagerRemote.class, SecurityReflector.getInitialContextProperties());
 		// creates the new language and if it exists it does nothing
-		lm.createLanguage(newLanguageCf);
-
+		Language newLanguage = lm.createLanguage(newLanguageCf, true, false);	
 		Collection<Language> languages = lm.getLanguages();		
 		// List all the languages available in the system.
 		logger.info("The following Languages was found on the system.");
 		for (Language lang : languages) {
 			logger.info("Language = "+ lang.getName().getText());
-		}		
-		
+		}			
 	}
-	
-		
-
 }
