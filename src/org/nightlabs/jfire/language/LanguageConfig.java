@@ -31,7 +31,8 @@ implements Serializable
 	@Persistent(nullValue=NullValue.EXCEPTION)
 	private LanguageSyncMode languageSyncMode = LanguageSyncMode.oneOnly;
 
-	private LanguageConfig() { }
+	// Organisation is a primary field making this contsructor useless
+	// private LanguageConfig() { }
 
 	private LanguageConfig(String organisationID) {
 		Organisation.assertValidOrganisationID(organisationID);
@@ -48,7 +49,7 @@ implements Serializable
 		try {
 			languageConfig = (LanguageConfig) pm.getObjectById(languageConfigID);
 		} catch (JDOObjectNotFoundException x) {
-			languageConfig = new LanguageConfig();
+			languageConfig = new LanguageConfig(organisationID);
 			languageConfig = pm.makePersistent(languageConfig);
 		}
 		return languageConfig;
