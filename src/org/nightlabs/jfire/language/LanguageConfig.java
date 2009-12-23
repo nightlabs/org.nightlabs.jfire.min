@@ -31,7 +31,7 @@ implements Serializable
 	@Persistent(nullValue=NullValue.EXCEPTION)
 	private LanguageSyncMode languageSyncMode = LanguageSyncMode.oneOnly;
 
-	// Organisation is a primary field making this contsructor useless
+	// Organization is a primary field making this constructor useless
 	// private LanguageConfig() { }
 
 	private LanguageConfig(String organisationID) {
