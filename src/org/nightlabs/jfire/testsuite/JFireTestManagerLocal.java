@@ -10,6 +10,7 @@ import junit.framework.Test;
 import junit.framework.TestResult;
 
 import org.nightlabs.ModuleException;
+import org.nightlabs.jdo.ObjectID;
 import org.nightlabs.jfire.timer.id.TaskID;
 
 @Local
@@ -47,4 +48,5 @@ public interface JFireTestManagerLocal {
 
 	public void runTestInNestedTransaction_runTest(org.nightlabs.jfire.testsuite.TestCase test) throws Exception;
 
+	public boolean checkObjectExistence(ObjectID objectId) throws Exception;
 }

@@ -55,6 +55,7 @@ import junit.framework.TestResult;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.ModuleException;
+import org.nightlabs.jdo.ObjectID;
 import org.nightlabs.jfire.asyncinvoke.AsyncInvoke;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.security.SecurityReflector;
@@ -537,4 +538,17 @@ implements JFireTestManagerRemote, JFireTestManagerLocal
 
 		return runSuites;
 	}
+	@Override
+	public boolean checkObjectExistence(ObjectID objectId) throws Exception {
+		PersistenceManager pm = createPersistenceManager();
+		try {
+			pm.getObjectById(objectId);
+			return true;
+		} catch (JDOObjectNotFoundException e) {
+			return false;
+		}
+		finally {
+			pm.close();
+		}		
+	}	
 }

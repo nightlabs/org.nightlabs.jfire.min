@@ -7,6 +7,7 @@ import java.util.List;
 import javax.ejb.Remote;
 
 import org.nightlabs.ModuleException;
+import org.nightlabs.jdo.ObjectID;
 import org.nightlabs.jfire.timer.id.TaskID;
 
 @Remote
@@ -42,4 +43,7 @@ public interface JFireTestManagerRemote {
 			InstantiationException, IllegalAccessException,
 			InvocationTargetException, ModuleException, IOException;
 
+	
+	
+	boolean checkObjectExistence(ObjectID objectId) throws Exception;
 }
