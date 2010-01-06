@@ -221,7 +221,7 @@ public class RoleGroupDef implements Serializable, Comparable<RoleGroupDef>
 		if (includedRoleGroupID2roleGroupDef == null) {
 			Map<String, RoleGroupDef> m = new HashMap<String, RoleGroupDef>();
 			for (String includedRoleGroupID : includedRoleGroupIDs) {
-				RoleGroupDef roleGroupDef = jfireSecurityMan.getRoleGroup(roleGroupID);
+				RoleGroupDef roleGroupDef = jfireSecurityMan.getRoleGroup(includedRoleGroupID);
 				if (roleGroupDef == null)
 					throw new IllegalStateException("role-group with id=" + roleGroupID + " declares non-existent included-role-group with id=" + includedRoleGroupID);
 
@@ -252,7 +252,7 @@ public class RoleGroupDef implements Serializable, Comparable<RoleGroupDef>
 
 	/**
 	 * This method is expensive.
-	 * 
+	 *
 	 * @return all roles as instances of RoleDef including the ones that
 	 *   are indirectly included by includedRoleGroups.
 	 */
