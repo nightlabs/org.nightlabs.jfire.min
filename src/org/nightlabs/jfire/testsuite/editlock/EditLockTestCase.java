@@ -33,7 +33,7 @@ import org.nightlabs.jfire.testsuite.JFireTestSuite;
 
 /**
  * 
- * this Test Case tests all the possible API used in the EditLockManager. 
+ * this Test Case tests all the APIs used in the EditLockManager Bean. 
  * 
  * the following EJB methods has been tested and Called
  * 
@@ -55,6 +55,9 @@ import org.nightlabs.jfire.testsuite.JFireTestSuite;
 public class EditLockTestCase extends TestCase{
 	Logger logger = Logger.getLogger(EditLockTestCase.class);	
 	private static ThreadLocal<PropertySetID> newObjectforEditLock = new ThreadLocal<PropertySetID>();
+	public static final String USER_TEST = "francois";
+	public static final String USER_PASSWORD = "test";
+	public static final String ORGANISATION_TEST = "chezfrancois.jfire.org";
 	private static String[] FETCH_GROUP_EDITLOCK = new String[]{
 		FetchPlan.DEFAULT,
 		EditLock.FETCH_GROUP_LOCK_OWNER_USER, 
@@ -65,27 +68,55 @@ public class EditLockTestCase extends TestCase{
 	protected void setUp()throws Exception
 	{
 		super.setUp();
-		// create a dummy Object to Test Edit Locking
+		// create a dummy Object to Test EditLocking on it
 		PropertySetID ObjectEditLock = createDemoObjectForEditLocking();	
-		EditLockManagerRemote elm = JFireEjb3Factory.getRemoteBean(EditLockManagerRemote.class, SecurityReflector.getInitialContextProperties());
 		newObjectforEditLock.set(ObjectEditLock);
-		elm.acquireEditLock(JFireBaseEAR.EDIT_LOCK_TYPE_ID_CONFIG,
-				ObjectEditLock, 
-				"testEditLock-1", 
-				FETCH_GROUP_EDITLOCK, 
-				NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);	
 	}
+
+	@Test
+	public void testUserEditLockingAndReleasing() throws Exception{	
+		if (newObjectforEditLock.get() == null) {
+			fail("Seems that creating the dummy EditLock Object failed, no PropertySetID in the ThreadLocal");
+		}
+		EditLockManagerRemote elm = JFireEjb3Factory.getRemoteBean(EditLockManagerRemote.class, SecurityReflector.getInitialContextProperties());
+		for (int i = 0; i < 20; ++i) {
+			elm.acquireEditLock(JFireBaseEAR.EDIT_LOCK_TYPE_ID_CONFIG,
+					newObjectforEditLock.get(), 
+					"testEditLock-1", 
+					FETCH_GROUP_EDITLOCK, 
+					NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);	
+			elm.releaseEditLock(newObjectforEditLock.get(), ReleaseReason.normal);	
+		}
+		// log with another user and check if the Object is still locked
+		JFireLogin login = new JFireLogin(ORGANISATION_TEST, USER_TEST, USER_PASSWORD);
+		try {
+			login.login();
+			Set<EditLockID> editLockIDs = elm.getEditLockIDs(newObjectforEditLock.get());
+			if(editLockIDs.size() > 0)
+				fail("no Locks should exist on the the Object!!!!");				
+			elm.releaseEditLock(newObjectforEditLock.get(), ReleaseReason.normal);			
+		}catch (LoginException e) {
+			fail("couldnt log with another User Account to test the EditLock!!!!");		
+		}
+		login.logout();
+	}
+	
+
 	@Test
 	public void testDetectEditLockCollision() throws Exception{	
-		{
 			if (newObjectforEditLock.get() == null) {
 				fail("Seems that creating the dummy EditLock Object failed, no PropertySetID in the ThreadLocal");
 			}
-			// login with another User to detect the Collision.
-			JFireLogin login = new JFireLogin("chezfrancois.jfire.org", "francois", "test");
+			EditLockManagerRemote elm = JFireEjb3Factory.getRemoteBean(EditLockManagerRemote.class, SecurityReflector.getInitialContextProperties());
+			elm.acquireEditLock(JFireBaseEAR.EDIT_LOCK_TYPE_ID_CONFIG,
+					newObjectforEditLock.get(), 
+					"testEditLock-1", 
+					FETCH_GROUP_EDITLOCK, 
+					NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);	
+			// login with another User to detect the editLock Collision.
+			JFireLogin login = new JFireLogin(ORGANISATION_TEST, USER_TEST, USER_PASSWORD);
 			try {
 				login.login();
-				EditLockManagerRemote elm = JFireEjb3Factory.getRemoteBean(EditLockManagerRemote.class, SecurityReflector.getInitialContextProperties());
 				AcquireEditLockResult acquireEditLockResult = elm.acquireEditLock(JFireBaseEAR.EDIT_LOCK_TYPE_ID_CONFIG,
 						newObjectforEditLock.get(), 
 						"testEditLock-francois", 
@@ -95,8 +126,8 @@ public class EditLockTestCase extends TestCase{
 					NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);	
 				if(acquireEditLockResult.getEditLockCount()!= 2)
 					fail("the Object should have been locked already !!!!");				
-				Set<EditLockID> editLockIDs =  elm.getEditLockIDs(newObjectforEditLock.get());
-				logger.info("our Object Got EditLocks" + editLockIDs.size());
+				Set<EditLockID> editLockIDs = elm.getEditLockIDs(newObjectforEditLock.get());
+				logger.info("our new Object Got EditLocks:" + editLockIDs.size());
 				Collection<EditLock> editLocks = elm.getEditLocks(editLockIDs, 
 						FETCH_GROUP_EDITLOCK, 
 						NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
@@ -109,12 +140,13 @@ public class EditLockTestCase extends TestCase{
 					logger.info("Locked-Object-ID :" + editLock.getLockedObjectIDStr());
 					logger.info("-------------------------------------------");
 				}
+				elm.releaseEditLock(newObjectforEditLock.get(), ReleaseReason.normal);
 			}catch (LoginException e) {
 				fail("couldnt log with another User Account to test the EditLock!!!!");		
 			}
 			login.logout();
 		}
-	}
+	
 	private PropertySetID createDemoObjectForEditLocking() throws Exception{	
 		logger.info("test Create IssueLink: begin");
 		// create a dummy person and link it to a new Issue
@@ -136,10 +168,5 @@ public class EditLockTestCase extends TestCase{
 	protected void tearDown()throws Exception
 	{
 		super.tearDown();
-		EditLockManagerRemote elm = JFireEjb3Factory.getRemoteBean(EditLockManagerRemote.class, SecurityReflector.getInitialContextProperties());
-		elm.releaseEditLock(newObjectforEditLock.get(), ReleaseReason.normal);
 	}
 }
-
-
-
