@@ -55,9 +55,9 @@ import org.nightlabs.jfire.testsuite.JFireTestSuite;
 public class EditLockTestCase extends TestCase{
 	Logger logger = Logger.getLogger(EditLockTestCase.class);	
 	private static ThreadLocal<PropertySetID> newObjectforEditLock = new ThreadLocal<PropertySetID>();
-	public static final String USER_TEST = "francois";
+	public static final String USER_ID = "francois";
 	public static final String USER_PASSWORD = "test";
-	public static final String ORGANISATION_TEST = "chezfrancois.jfire.org";
+	public static final String ORGANISATION = "chezfrancois.jfire.org";
 	private static String[] FETCH_GROUP_EDITLOCK = new String[]{
 		FetchPlan.DEFAULT,
 		EditLock.FETCH_GROUP_LOCK_OWNER_USER, 
@@ -88,7 +88,7 @@ public class EditLockTestCase extends TestCase{
 			elm.releaseEditLock(newObjectforEditLock.get(), ReleaseReason.normal);	
 		}
 		// log with another user and check if the Object is still locked
-		JFireLogin login = new JFireLogin(ORGANISATION_TEST, USER_TEST, USER_PASSWORD);
+		JFireLogin login = new JFireLogin(ORGANISATION, USER_ID, USER_PASSWORD);
 		try {
 			login.login();
 			Set<EditLockID> editLockIDs = elm.getEditLockIDs(newObjectforEditLock.get());
@@ -114,7 +114,7 @@ public class EditLockTestCase extends TestCase{
 					FETCH_GROUP_EDITLOCK, 
 					NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);	
 			// login with another User to detect the editLock Collision.
-			JFireLogin login = new JFireLogin(ORGANISATION_TEST, USER_TEST, USER_PASSWORD);
+			JFireLogin login = new JFireLogin(ORGANISATION, USER_ID, USER_PASSWORD);
 			try {
 				login.login();
 				AcquireEditLockResult acquireEditLockResult = elm.acquireEditLock(JFireBaseEAR.EDIT_LOCK_TYPE_ID_CONFIG,
@@ -148,8 +148,7 @@ public class EditLockTestCase extends TestCase{
 		}
 	
 	private PropertySetID createDemoObjectForEditLocking() throws Exception{	
-		logger.info("test Create IssueLink: begin");
-		// create a dummy person and link it to a new Issue
+		// create a dummy Object for Locking
 		PropertyManagerRemote pm = JFireEjb3Factory.getRemoteBean(PropertyManagerRemote.class, SecurityReflector.getInitialContextProperties());
 		Person person = new Person(IDGenerator.getOrganisationID(), IDGenerator.nextID(PropertySet.class));		
 		IStruct personStruct  = pm.getFullStructLocal(person.getStructLocalObjectID(), 
