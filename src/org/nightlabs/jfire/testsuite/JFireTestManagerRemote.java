@@ -43,7 +43,8 @@ public interface JFireTestManagerRemote {
 			InstantiationException, IllegalAccessException,
 			InvocationTargetException, ModuleException, IOException;
 
-	
-	
-	boolean checkObjectExistence(ObjectID objectId) throws Exception;
+	/**
+	 * very useful method to check if a particular JDO Object exist in the data store.
+	 */
+	boolean checkJDOObjectByID(ObjectID objectId) throws Exception;
 }

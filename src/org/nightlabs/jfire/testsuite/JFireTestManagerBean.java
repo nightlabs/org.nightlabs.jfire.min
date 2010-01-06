@@ -539,7 +539,7 @@ implements JFireTestManagerRemote, JFireTestManagerLocal
 		return runSuites;
 	}
 	@Override
-	public boolean checkObjectExistence(ObjectID objectId) throws Exception {
+	public boolean checkJDOObjectByID(ObjectID objectId) throws Exception {
 		PersistenceManager pm = createPersistenceManager();
 		try {
 			pm.getObjectById(objectId);
@@ -551,4 +551,5 @@ implements JFireTestManagerRemote, JFireTestManagerLocal
 			pm.close();
 		}		
 	}	
+
 }

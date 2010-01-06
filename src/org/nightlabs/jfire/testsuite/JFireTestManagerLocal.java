@@ -47,6 +47,6 @@ public interface JFireTestManagerLocal {
 	public void runTestInNestedTransaction_tearDown(org.nightlabs.jfire.testsuite.TestCase test) throws Exception;
 
 	public void runTestInNestedTransaction_runTest(org.nightlabs.jfire.testsuite.TestCase test) throws Exception;
-
-	public boolean checkObjectExistence(ObjectID objectId) throws Exception;
+	
+	public boolean checkJDOObjectByID(ObjectID objectId) throws Exception;
 }
