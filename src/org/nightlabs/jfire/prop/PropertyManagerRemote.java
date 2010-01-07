@@ -127,4 +127,15 @@ public interface PropertyManagerRemote
 	Set<PropertySetFieldBasedEditLayoutUseCase> getPropertySetFieldBasedEditLayoutUseCases(Set<PropertySetFieldBasedEditLayoutUseCaseID> ids, String[] fetchGroups, int maxFetchDepth);
 
 	void initialise();
+
+	/**
+	 * Detaches and returns the {@link PropertySet}s with the given IDs trimmed to contain only the {@link DataField}s for the given {@link StructField}s.
+	 * 
+	 * @param propIDs The {@link PropertySetID}s of the {@link PropertySet}s that are to be retrieved.
+	 * @param structFieldIDs The IDs of the {@link StructField}s that determine the {@link DataField}s that are to be detached.
+	 * @param fetchGroups The jdo fetch-groups used to detach the {@link PropertySet}s.
+	 * @param maxFetchDepth The max fetch depth.
+	 * @return The detached {@link PropertySet}s with the given IDs trimmed to contain only the {@link DataField}s for the given {@link StructField}s.
+	 */
+	Set<PropertySet> getDetachedTrimmedPropertySets(Set<PropertySetID> propIDs, Set<StructFieldID> structFieldIDs, String[] fetchGroups, int maxFetchDepth);
 }

@@ -206,6 +206,27 @@ public class PropertyManagerBean extends BaseSessionBeanImpl implements Property
 		}
 	}
 
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_Guest_")
+	@Override
+	public Set<PropertySet> getDetachedTrimmedPropertySets(Set<PropertySetID> propIDs, Set<StructFieldID> structFieldIDs, String[] fetchGroups, int maxFetchDepth) {
+		PersistenceManager pm = this.createPersistenceManager();
+		try {
+			Collection<PropertySet> propertySets = pm.getObjectsById(propIDs);
+			Set<PropertySet> detachedPropertySets = new HashSet<PropertySet>(propertySets.size());
+//			Set<StructFieldID> structFieldIdSet = new HashSet<StructFieldID>(Arrays.asList(structFieldIDs));
+			
+			for (PropertySet ps : propertySets) {
+				PropertySet detachedPropertySet = PropertySet.detachPropertySetWithTrimmedFieldList(pm, ps, structFieldIDs, fetchGroups, maxFetchDepth);
+				detachedPropertySets.add(detachedPropertySet);
+			}
+			
+			return detachedPropertySets;
+		} finally {
+			pm.close();
+		}
+	}
+
 	/* (non-Javadoc)
 	 * @see org.nightlabs.jfire.prop.PropertyManagerRemote#searchPropertySets(org.nightlabs.jfire.prop.search.PropSearchFilter, java.lang.String[], int)
 	 */
