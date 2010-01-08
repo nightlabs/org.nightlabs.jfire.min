@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.nightlabs.jfire.config;
 
 import java.util.ArrayList;
@@ -11,23 +8,23 @@ import java.util.List;
 
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
+import javax.jdo.annotations.Column;
+import javax.jdo.annotations.Discriminator;
+import javax.jdo.annotations.DiscriminatorStrategy;
+import javax.jdo.annotations.FetchGroup;
+import javax.jdo.annotations.FetchGroups;
+import javax.jdo.annotations.IdentityType;
+import javax.jdo.annotations.Inheritance;
+import javax.jdo.annotations.InheritanceStrategy;
+import javax.jdo.annotations.PersistenceCapable;
+import javax.jdo.annotations.PersistenceModifier;
+import javax.jdo.annotations.Persistent;
+import javax.jdo.annotations.PrimaryKey;
+import javax.jdo.annotations.Queries;
+import javax.jdo.annotations.Version;
+import javax.jdo.annotations.VersionStrategy;
 
 import org.nightlabs.jfire.config.id.ConfigModuleInitialiserID;
-import javax.jdo.annotations.Persistent;
-import javax.jdo.annotations.FetchGroups;
-import javax.jdo.annotations.InheritanceStrategy;
-import javax.jdo.annotations.Inheritance;
-import javax.jdo.annotations.Queries;
-import javax.jdo.annotations.PrimaryKey;
-import javax.jdo.annotations.FetchGroup;
-import javax.jdo.annotations.PersistenceCapable;
-import javax.jdo.annotations.VersionStrategy;
-import javax.jdo.annotations.DiscriminatorStrategy;
-import javax.jdo.annotations.Column;
-import javax.jdo.annotations.Version;
-import javax.jdo.annotations.IdentityType;
-import javax.jdo.annotations.PersistenceModifier;
-import javax.jdo.annotations.Discriminator;
 
 /**
  * ConfigModuleInitaliser can be registered to a certain type (className)
@@ -37,30 +34,8 @@ import javax.jdo.annotations.Discriminator;
  * Multiple initialisers can be registered for the same ConfigModule type.
  * Then all of them, ordered by their priority will be invoked.
  * </p>
- * 
+ *
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
- *
- * @jdo.persistence-capable
- *		identity-type="application"
- *		objectid-class="org.nightlabs.jfire.config.id.ConfigModuleInitialiserID"
- *		detachable="true"
- *		table="JFireBase_ConfigModuleIntialiser"
- *
- * @jdo.version strategy="version-number"
- *
- * @jdo.inheritance strategy="new-table"
- * @jdo.inheritance-discriminator strategy="class-name"
- *
- * @jdo.create-objectid-class field-order="organisationID, configModuleClassName, configModuleInitialiserID"
- *
- * @jdo.query
- *    name="getConfigModuleInitialiserForClass"
- *    query="SELECT
- *      WHERE organisationID == :pOrganisationID &&
- *            configModuleClassName == :pConfigModuleClassName
- *      import java.lang.String"
- * 
- * @jdo.fetch-group name="ConfigModuleInitialiser.this" fetch-groups="default"
  */@PersistenceCapable(
 	objectIdClass=ConfigModuleInitialiserID.class,
 	identityType=IdentityType.APPLICATION,
@@ -80,11 +55,10 @@ import javax.jdo.annotations.Discriminator;
 		value="SELECT WHERE organisationID == :pOrganisationID && configModuleClassName == :pConfigModuleClassName import java.lang.String")
 )
 @Inheritance(strategy=InheritanceStrategy.NEW_TABLE)
-
-public abstract class ConfigModuleInitialiser {
-
+public abstract class ConfigModuleInitialiser
+{
 	public static final Integer PRIORITY_DEFAULT = 500;
-	
+
 	/**
 	 * @jdo.field primary-key="true"
 	 * @jdo.column length="100"
@@ -104,7 +78,7 @@ public abstract class ConfigModuleInitialiser {
 	 */	@PrimaryKey
 
 	protected String configModuleInitialiserID;
-	
+
 	/**
 	 * @jdo.field persistence-modifier="persistent"
 	 */	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
@@ -122,7 +96,7 @@ public abstract class ConfigModuleInitialiser {
 	 * Create a new {@link ConfigModuleInitialiser} for the given organisation,
 	 * with the given initialiser id and the type of ConfigModule it is linked to.
 	 * The new initialiser will have the default priority of 500 (see {@link #PRIORITY_DEFAULT}).
-	 * 
+	 *
 	 * @param organisationID The organisation this initialiser is for.
 	 * @param configModuleInitialiserID The id of this initialiser in the scope of the type of ConfigModule.
 	 * @param configModuleClassName The type of ConfigModule this initialiser is for.
@@ -140,12 +114,12 @@ public abstract class ConfigModuleInitialiser {
 		this.priority = PRIORITY_DEFAULT;
 	}
 
-	
+
 	/**
 	 * Create a new {@link ConfigModuleInitialiser} for the given organisation,
 	 * with the given initialiser id and the type of ConfigModule it is linked to.
 	 * The new initialiser will have the default priority of 500 (see {@link #PRIORITY_DEFAULT}).
-	 * 
+	 *
 	 * @param organisationID The organisation this initialiser is for.
 	 * @param configModuleInitialiserID The id of this initialiser in the scope of the type of ConfigModule.
 	 * @param configModuleClassName The type of ConfigModule this initialiser is for.
@@ -208,22 +182,22 @@ public abstract class ConfigModuleInitialiser {
 	public void setPriority(Integer priority) {
 		this.priority = priority;
 	}
-	
+
 	/**
 	 * This method is called to initialise the given ConfigModule.
-	 * It is invoked by the framework when ConfigModules are created 
+	 * It is invoked by the framework when ConfigModules are created
 	 * (i.e. instantiated and right after made persistent for the first time),
 	 * it is therefore called with an attached instance of ConfigModule.
-	 * 
+	 *
 	 * @param configModule The ConfigModule to intialise.
 	 */
 	public abstract void initialiseConfigModule(PersistenceManager pm, ConfigModule configModule);
-	
+
 	/**
 	 * This method is also called to initialise a ConfigModule, but
 	 * it is intended to be called with detached modules, possibly
 	 * in some client to reset configuration.
-	 * 
+	 *
 	 * @param configModule The detached ConfigModule to initialise.
 	 */
 	public abstract void initialiseDetachedConfigModule(ConfigModule configModule);
@@ -231,7 +205,7 @@ public abstract class ConfigModuleInitialiser {
 	/**
 	 * Get all {@link ConfigModuleInitialiser}s for the given ConfigModule sorted
 	 * by their priority.
-	 * 
+	 *
 	 * @param pm The PersistenceManager to use.
 	 * @param cfMod The ConfigModule to find initialisers for.
 	 * @return All {@link ConfigModuleInitialiser}s for the given ConfigModule sorted
@@ -243,11 +217,11 @@ public abstract class ConfigModuleInitialiser {
 	) {
 		return getSortedInitialisersForConfigModuleClass(pm, cfMod.getOrganisationID(), cfMod.getClass());
 	}
-	
+
 	/**
 	 * Get all {@link ConfigModuleInitialiser}s for the given ConfigModule sorted
 	 * by their priority.
-	 * 
+	 *
 	 * @param pm The PersistenceManager to use.
 	 * @param organisationID The orgainsationID of the initialiser (and ConfigModule)
 	 * @param configModuleClass The fully qualified class-name of the ConfigModule to find initialisers for.

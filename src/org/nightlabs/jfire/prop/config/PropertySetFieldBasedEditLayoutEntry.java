@@ -5,6 +5,17 @@ import java.util.Set;
 
 import javax.jdo.JDOHelper;
 import javax.jdo.PersistenceManager;
+import javax.jdo.annotations.Discriminator;
+import javax.jdo.annotations.DiscriminatorStrategy;
+import javax.jdo.annotations.FetchGroup;
+import javax.jdo.annotations.FetchGroups;
+import javax.jdo.annotations.IdentityType;
+import javax.jdo.annotations.Inheritance;
+import javax.jdo.annotations.InheritanceStrategy;
+import javax.jdo.annotations.PersistenceCapable;
+import javax.jdo.annotations.PersistenceModifier;
+import javax.jdo.annotations.Persistent;
+import javax.jdo.annotations.PrimaryKey;
 import javax.jdo.listener.AttachCallback;
 import javax.jdo.listener.DetachCallback;
 import javax.jdo.listener.StoreCallback;
@@ -13,22 +24,11 @@ import org.nightlabs.clientui.layout.GridData;
 import org.nightlabs.jfire.prop.StructField;
 import org.nightlabs.jfire.prop.id.StructFieldID;
 
-import javax.jdo.annotations.Persistent;
-import javax.jdo.annotations.FetchGroups;
-import javax.jdo.annotations.InheritanceStrategy;
-import javax.jdo.annotations.Inheritance;
-import javax.jdo.annotations.PrimaryKey;
-import javax.jdo.annotations.FetchGroup;
-import javax.jdo.annotations.PersistenceCapable;
-import javax.jdo.annotations.DiscriminatorStrategy;
-import org.nightlabs.jfire.prop.config.PropertySetFieldBasedEditLayoutEntryID;
-import javax.jdo.annotations.IdentityType;
-import javax.jdo.annotations.PersistenceModifier;
-import javax.jdo.annotations.Discriminator;
-
 /**
+ * @deprecated use {@link PropertySetFieldBasedEditLayoutEntry2} instead!
+ *
  * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] -->
- * 
+ *
  * @jdo.persistence-capable
  *		identity-type="application"
  *		objectid-class="org.nightlabs.jfire.prop.config.PropertySetFieldBasedEditLayoutEntryID"
@@ -39,11 +39,12 @@ import javax.jdo.annotations.Discriminator;
  * @jdo.inheritance-discriminator strategy="class-name"
  *
  * @jdo.create-objectid-class field-order="propertySetFieldBasedEditLayoutEntryID"
- * 
+ *
  * @jdo.fetch-group name="PropertySetFieldBasedEditLayoutEntry.gridData" fetch-groups="default" fields="gridData"
  * @jdo.fetch-group name="PropertySetFieldBasedEditLayoutEntry.structField" fetch-groups="default" fields="structField"
  * @jdo.fetch-group name="PropertySetFieldBasedEditLayoutConfigModule.editLayoutEntries" fields="configModule"
  */
+@Deprecated
 @PersistenceCapable(
 	objectIdClass=PropertySetFieldBasedEditLayoutEntryID.class,
 	identityType=IdentityType.APPLICATION,
@@ -70,60 +71,61 @@ public class PropertySetFieldBasedEditLayoutEntry implements Serializable, Detac
 
 	public static final String ENTRY_TYPE_STRUCT_FIELD_REFERENCE = "structFieldReference";
 	public static final String ENTRY_TYPE_SEPARATOR = "separator";
-	
+
 	public static final String FETCH_GROUP_GRID_DATA = "PropertySetFieldBasedEditLayoutEntry.gridData";
 	public static final String FETCH_GROUP_STRUCT_FIELD = "PropertySetFieldBasedEditLayoutEntry.structField";
 	public static final String FETCH_GROUP_STRUCT_FIELD_ID = "PropertySetFieldBasedEditLayoutEntry.structFieldID";
 
-	
+
 	public static class FieldName {
 		public static final String gridData = "gridData";
 		public static final String structField = "structField";
 		public static final String structFieldID = "structFieldID";
 	}
-	
+
 	/**
 	 * @jdo.field primary-key="true"
 	 */
 	@PrimaryKey
 	private long propertySetFieldBasedEditLayoutEntryID;
-	
+
 	/**
  	 * @jdo.field persistence-modifier="persistent"
 	 */
 	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
 	private PropertySetFieldBasedEditLayoutConfigModule configModule;
-	
+
 	/**
  	 * @jdo.field persistence-modifier="persistent"
 	 */
 	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
 	private String entryType;
-	
+
 	/**
  	 * @jdo.field persistence-modifier="persistent"
 	 */
 	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
 	private GridData gridData;
-	
+
 	/**
  	 * @jdo.field persistence-modifier="persistent"
 	 */
 	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
 	private StructField<?> structField;
-	
+
 	/**
  	 * @jdo.field persistence-modifier="none"
 	 */
 	@Persistent(persistenceModifier=PersistenceModifier.NONE)
 	private StructFieldID structFieldID;
-	
+
 	/**
 	 * @deprecated Only for JDO
 	 */
+	@Deprecated
 	protected PropertySetFieldBasedEditLayoutEntry() {
 	}
-	
+
 	public PropertySetFieldBasedEditLayoutEntry(
 			PropertySetFieldBasedEditLayoutConfigModule configModule,
 			long propertySetFieldBasedEditLayoutEntryID,
@@ -138,11 +140,11 @@ public class PropertySetFieldBasedEditLayoutEntry implements Serializable, Detac
 	public long getPropertySetFieldBasedEditLayoutEntryID() {
 		return propertySetFieldBasedEditLayoutEntryID;
 	}
-	
+
 	public GridData getGridData() {
 		return gridData;
 	}
-	
+
 	public void setGridData(GridData gridData) {
 		this.gridData = gridData;
 	}
@@ -150,23 +152,23 @@ public class PropertySetFieldBasedEditLayoutEntry implements Serializable, Detac
 	public StructField<?> getStructField() {
 		return structField;
 	}
-	
+
 	public void setStructField(StructField<?> structField) {
 		this.structField = structField;
 	}
-	
+
 	public StructFieldID getStructFieldID() {
 		return structFieldID;
 	}
-	
+
 	public void setStructFieldID(StructFieldID structFieldID) {
 		this.structFieldID = structFieldID;
 	}
-	
+
 	public String getEntryType() {
 		return entryType;
 	}
-	
+
 	@Override
 	public void jdoPostDetach(Object attached) {
 		PersistenceManager pm = JDOHelper.getPersistenceManager(attached);
@@ -176,7 +178,7 @@ public class PropertySetFieldBasedEditLayoutEntry implements Serializable, Detac
 			StructField<?> pStructField = ((PropertySetFieldBasedEditLayoutEntry) attached).getStructField();
 			if (pStructField == null)
 				this.structFieldID = null;
-			else 
+			else
 				this.structFieldID = (StructFieldID) JDOHelper.getObjectId(pStructField);
 		}
 	}
@@ -210,5 +212,5 @@ public class PropertySetFieldBasedEditLayoutEntry implements Serializable, Detac
 	public void jdoPreStore() {
 		jdoPostAttach(this);
 	}
-	
+
 }
