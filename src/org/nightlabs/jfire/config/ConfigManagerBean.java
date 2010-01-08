@@ -54,6 +54,7 @@ import org.nightlabs.jfire.config.id.ConfigID;
 import org.nightlabs.jfire.config.id.ConfigModuleID;
 import org.nightlabs.jfire.config.id.ConfigSetupID;
 import org.nightlabs.jfire.editlock.EditLockType;
+import org.nightlabs.jfire.layout.stringbased.StringBasedEditLayoutConfigModule;
 import org.nightlabs.util.CollectionUtil;
 
 /**
@@ -703,6 +704,8 @@ public class ConfigManagerBean extends BaseSessionBeanImpl implements ConfigMana
 
 			UserConfigSetup userConfigSetup = new UserConfigSetup(organisationID);
 			pm.makePersistent(userConfigSetup);
+
+			userConfigSetup.getConfigModuleClasses().add(StringBasedEditLayoutConfigModule.class.getName());
 
 			WorkstationConfigSetup workstationConfigSetup = new WorkstationConfigSetup(organisationID);
 			pm.makePersistent(workstationConfigSetup);

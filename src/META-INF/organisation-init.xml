@@ -16,7 +16,10 @@
 	<init bean="org.nightlabs.jfire.organisation.OrganisationManagerRemote" method="registerInRootOrganisation" priority="999"/>
 	<init bean="org.nightlabs.jfire.timer.JFireTimerRemote" method="startTimer" priority="998"/>
 	<init bean="org.nightlabs.jfire.jdo.notification.persistent.PersistentNotificationEJBRemote" method="initialise"/>
-	<init bean="org.nightlabs.jfire.prop.PropertyManagerRemote" method="initialise"/>
+	
+	<!--  Depends on ConfigManagerRemote having defined the UserConfigSetup for the current organisation. -->
+	<init bean="org.nightlabs.jfire.prop.PropertyManagerRemote" method="initialise" priority="501"/>
+	
 	<init bean="org.nightlabs.jfire.editlock.EditLockManagerRemote" method="initialise"/>
 	<init bean="org.nightlabs.jfire.security.JFireSecurityManagerRemote" method="initialise"/>
 

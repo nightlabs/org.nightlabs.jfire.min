@@ -1,6 +1,3 @@
-/**
- *
- */
 package org.nightlabs.jfire.config;
 
 import org.nightlabs.jfire.config.xml.JFireDateFormatterFactory;

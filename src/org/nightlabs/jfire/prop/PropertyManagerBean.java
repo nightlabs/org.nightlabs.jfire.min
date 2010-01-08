@@ -46,12 +46,16 @@ import org.nightlabs.i18n.MultiLanguagePropertiesBundle;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.base.expression.IExpression;
+import org.nightlabs.jfire.config.ConfigSetup;
+import org.nightlabs.jfire.config.UserConfigSetup;
 import org.nightlabs.jfire.config.id.ConfigModuleInitialiserID;
+import org.nightlabs.jfire.layout.LegalEntitySearchEditLayoutIntialiser;
 import org.nightlabs.jfire.organisation.Organisation;
 import org.nightlabs.jfire.person.Person;
 import org.nightlabs.jfire.person.PersonStruct;
 import org.nightlabs.jfire.prop.config.PropertySetFieldBasedEditConstants;
 import org.nightlabs.jfire.prop.config.PropertySetFieldBasedEditLayoutConfigModule;
+import org.nightlabs.jfire.prop.config.PropertySetFieldBasedEditLayoutConfigModule2;
 import org.nightlabs.jfire.prop.config.PropertySetFieldBasedEditLayoutUseCase;
 import org.nightlabs.jfire.prop.config.id.PropertySetFieldBasedEditLayoutUseCaseID;
 import org.nightlabs.jfire.prop.datafield.DateDataField;
@@ -215,12 +219,12 @@ public class PropertyManagerBean extends BaseSessionBeanImpl implements Property
 			Collection<PropertySet> propertySets = pm.getObjectsById(propIDs);
 			Set<PropertySet> detachedPropertySets = new HashSet<PropertySet>(propertySets.size());
 //			Set<StructFieldID> structFieldIdSet = new HashSet<StructFieldID>(Arrays.asList(structFieldIDs));
-			
+
 			for (PropertySet ps : propertySets) {
 				PropertySet detachedPropertySet = PropertySet.detachPropertySetWithTrimmedFieldList(pm, ps, structFieldIDs, fetchGroups, maxFetchDepth);
 				detachedPropertySets.add(detachedPropertySet);
 			}
-			
+
 			return detachedPropertySets;
 		} finally {
 			pm.close();
@@ -540,6 +544,23 @@ public class PropertyManagerBean extends BaseSessionBeanImpl implements Property
 			}
 
 			PersonStruct.getPersonStructLocal(pm);
+
+			// register ConfigModule type
+			UserConfigSetup userConfigSetup = (UserConfigSetup)	ConfigSetup.getConfigSetup(
+					pm, getOrganisationID(), UserConfigSetup.CONFIG_SETUP_TYPE_USER);
+			final String cfModClassName = PropertySetFieldBasedEditLayoutConfigModule2.class.getName();
+			userConfigSetup.getConfigModuleClasses().add(cfModClassName);
+			// register the corresponding ConfigModuleIntialiser
+			ConfigModuleInitialiserID legalEntitiySearchInitialiserID = ConfigModuleInitialiserID.create(getOrganisationID(),
+					cfModClassName, Person.class.getSimpleName());
+			LegalEntitySearchEditLayoutIntialiser legalEntityInitialiser = null;
+			try {
+				legalEntityInitialiser = (LegalEntitySearchEditLayoutIntialiser) pm.getObjectById(legalEntitiySearchInitialiserID);
+			} catch (JDOObjectNotFoundException e) {
+				legalEntityInitialiser = new LegalEntitySearchEditLayoutIntialiser(legalEntitiySearchInitialiserID.organisationID,
+						legalEntitiySearchInitialiserID.configModuleInitialiserID);
+				legalEntityInitialiser = pm.makePersistent(legalEntityInitialiser);
+			}
 
 			PropertySetFieldBasedEditLayoutUseCaseID useCaseID = PropertySetFieldBasedEditLayoutUseCaseID.create(
 					getOrganisationID(), PropertySetFieldBasedEditConstants.USE_CASE_ID_EDIT_PERSON);

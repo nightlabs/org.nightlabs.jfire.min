@@ -1,6 +1,3 @@
-/**
- *
- */
 package org.nightlabs.jfire.prop;
 
 import javax.jdo.JDOHelper;
@@ -16,6 +13,7 @@ import org.nightlabs.clientui.layout.GridData;
 import org.nightlabs.jfire.config.ConfigModule;
 import org.nightlabs.jfire.config.ConfigModuleInitialiser;
 import org.nightlabs.jfire.idgenerator.IDGenerator;
+import org.nightlabs.jfire.layout.EditLayoutEntry;
 import org.nightlabs.jfire.person.Person;
 import org.nightlabs.jfire.person.PersonStruct;
 import org.nightlabs.jfire.prop.config.PropertySetFieldBasedEditLayoutConfigModule;
@@ -126,7 +124,7 @@ public class PropertySetFieldBasedEditLayoutCfModIntialiser extends ConfigModule
 	}
 
 	private PropertySetFieldBasedEditLayoutEntry createSeparatorEntry(PropertySetFieldBasedEditLayoutConfigModule cfMod, int horSpan) {
-		PropertySetFieldBasedEditLayoutEntry entry = cfMod.createEditLayoutEntry(PropertySetFieldBasedEditLayoutEntry.ENTRY_TYPE_SEPARATOR);
+		PropertySetFieldBasedEditLayoutEntry entry = cfMod.createEditLayoutEntry(EditLayoutEntry.ENTRY_TYPE_SEPARATOR);
 		GridData gd = new GridData(IDGenerator.nextID(GridData.class));
 		gd.setHorizontalAlignment(GridData.FILL);
 		gd.setHorizontalSpan(horSpan);
