@@ -79,6 +79,7 @@ public class EditLockTestCase extends TestCase{
 			fail("Seems that creating the dummy EditLock Object failed, no PropertySetID in the ThreadLocal");
 		}
 		EditLockManagerRemote elm = JFireEjb3Factory.getRemoteBean(EditLockManagerRemote.class, SecurityReflector.getInitialContextProperties());
+		// lock and release the Object Multiple times
 		for (int i = 0; i < 20; ++i) {
 			elm.acquireEditLock(JFireBaseEAR.EDIT_LOCK_TYPE_ID_CONFIG,
 					newObjectforEditLock.get(), 
@@ -87,7 +88,7 @@ public class EditLockTestCase extends TestCase{
 					NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);	
 			elm.releaseEditLock(newObjectforEditLock.get(), ReleaseReason.normal);	
 		}
-		// log with another user and check if the Object is still locked
+		// login with another user and check if a lock is still placed on the Object 
 		JFireLogin login = new JFireLogin(ORGANISATION, USER_ID, USER_PASSWORD);
 		try {
 			login.login();
@@ -96,7 +97,7 @@ public class EditLockTestCase extends TestCase{
 				fail("no Locks should exist on the the Object!!!!");				
 			elm.releaseEditLock(newObjectforEditLock.get(), ReleaseReason.normal);			
 		}catch (LoginException e) {
-			fail("couldnt log with another User Account to test the EditLock!!!!");		
+			fail("couldnt login with another User Account to test the EditLock!!!!");		
 		}
 		login.logout();
 	}
@@ -142,7 +143,7 @@ public class EditLockTestCase extends TestCase{
 				}
 				elm.releaseEditLock(newObjectforEditLock.get(), ReleaseReason.normal);
 			}catch (LoginException e) {
-				fail("couldnt log with another User Account to test the EditLock!!!!");		
+				fail("couldnt login with another User Account to test the EditLock!!!!");		
 			}
 			login.logout();
 		}
