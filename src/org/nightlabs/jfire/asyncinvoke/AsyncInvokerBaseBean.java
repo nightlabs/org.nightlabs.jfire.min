@@ -146,7 +146,9 @@ implements javax.jms.MessageListener
 
 					if (!jfireServerManagerFactory.isUpAndRunning()) {
 						try { Thread.sleep(3000); } catch (InterruptedException x) { }
-						logger().info("JFireServerManagerFactory is not (yet) up and running! Will wait and try again...");
+						
+						if (logger().isDebugEnabled())
+							logger().debug("JFireServerManagerFactory is not (yet) up and running! Will wait and try again...");
 					}
 
 				} while (!jfireServerManagerFactory.isUpAndRunning());
