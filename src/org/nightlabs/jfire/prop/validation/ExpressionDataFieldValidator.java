@@ -1,19 +1,19 @@
 package org.nightlabs.jfire.prop.validation;
 
+import javax.jdo.annotations.FetchGroup;
+import javax.jdo.annotations.FetchGroups;
+import javax.jdo.annotations.IdentityType;
+import javax.jdo.annotations.Inheritance;
+import javax.jdo.annotations.InheritanceStrategy;
+import javax.jdo.annotations.PersistenceCapable;
+import javax.jdo.annotations.PersistenceModifier;
+import javax.jdo.annotations.Persistent;
+
 import org.nightlabs.jfire.base.expression.IExpression;
 import org.nightlabs.jfire.idgenerator.IDGenerator;
 import org.nightlabs.jfire.prop.DataField;
 import org.nightlabs.jfire.prop.StructField;
 import org.nightlabs.util.NLLocale;
-
-import javax.jdo.annotations.Persistent;
-import javax.jdo.annotations.FetchGroups;
-import javax.jdo.annotations.InheritanceStrategy;
-import javax.jdo.annotations.Inheritance;
-import javax.jdo.annotations.PersistenceCapable;
-import javax.jdo.annotations.FetchGroup;
-import javax.jdo.annotations.IdentityType;
-import javax.jdo.annotations.PersistenceModifier;
 
 /**
  * Implementation of {@link IPropertySetValidator} that is able to validate a {@link DataField}
@@ -108,7 +108,7 @@ implements IExpressionValidator
 //	{
 //		super(organisationID, validatorID);
 //		this.expression = expression;
-//		this.validationResult = new I18nValidationResult(organisationID, IDGenerator.nextID(I18nValidationResult.class), 
+//		this.validationResult = new I18nValidationResult(organisationID, IDGenerator.nextID(I18nValidationResult.class),
 //				validationResultType);
 //		this.validationResult.getI18nValidationResultMessage().setText(NLLocale.getDefault().getLanguage(), message);
 //	}
@@ -129,7 +129,7 @@ implements IExpressionValidator
 	{
 		super(organisationID, validatorID, structField);
 		this.expression = expression;
-		this.validationResult = new I18nValidationResult(organisationID, IDGenerator.nextID(I18nValidationResult.class), 
+		this.validationResult = new I18nValidationResult(organisationID, IDGenerator.nextID(I18nValidationResult.class),
 				validationResultType);
 		this.validationResult.getI18nValidationResultMessage().setText(NLLocale.getDefault().getLanguage(), message);
 	}
@@ -151,7 +151,7 @@ implements IExpressionValidator
 			this.expression = (IDataFieldExpression) expression;
 		}
 		else {
-			throw new IllegalArgumentException("Param expression must be of type IDataFieldExpression but os of type "+expression.getClass());
+			throw new IllegalArgumentException("Param expression must be of type IDataFieldExpression but is of type "+expression.getClass());
 		}
 	}
 	

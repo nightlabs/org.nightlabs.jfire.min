@@ -30,18 +30,17 @@ import java.util.Collection;
 
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
+import javax.jdo.annotations.FetchGroup;
+import javax.jdo.annotations.FetchGroups;
+import javax.jdo.annotations.IdentityType;
+import javax.jdo.annotations.Inheritance;
+import javax.jdo.annotations.InheritanceStrategy;
+import javax.jdo.annotations.PersistenceCapable;
+import javax.jdo.annotations.PersistenceModifier;
+import javax.jdo.annotations.Persistent;
+import javax.jdo.annotations.Queries;
 
 import org.nightlabs.jfire.config.id.ConfigID;
-
-import javax.jdo.annotations.Persistent;
-import javax.jdo.annotations.FetchGroups;
-import javax.jdo.annotations.InheritanceStrategy;
-import javax.jdo.annotations.Queries;
-import javax.jdo.annotations.Inheritance;
-import javax.jdo.annotations.PersistenceCapable;
-import javax.jdo.annotations.FetchGroup;
-import javax.jdo.annotations.IdentityType;
-import javax.jdo.annotations.PersistenceModifier;
 
 /**
  * A ConfigGroup is itself a Config so it can hold ConfigModules. Configs have
@@ -98,8 +97,9 @@ public class ConfigGroup extends Config
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 * @deprecated The *.this-FetchGroups lead to bad programming style and are therefore deprecated, now. They should be removed soon! 
+	 * @deprecated The *.this-FetchGroups lead to bad programming style and are therefore deprecated, now. They should be removed soon!
 	 */
+	@Deprecated
 	public static final String FETCH_GROUP_THIS_CONFIG_GROUP = "ConfigGroup.this";
 	
 	public static final String FETCH_GROUP_NAME = "ConfigGroup.name";
@@ -169,7 +169,6 @@ public class ConfigGroup extends Config
 	 * ConfigGroups should use their configType as group type. One group
 	 * type should be created for all keyObjects used by Configs.
 	 */
-	@SuppressWarnings("unchecked")
 	public static Collection<ConfigGroup> getConfigGroupsByKeyObjectClass(PersistenceManager pm, String organistationID, String configType) {
 		Query q = pm.newNamedQuery(ConfigGroup.class, QUERY_GET_CONFIG_GROUPS_BY_KEY_OBJECT_CLASS);
 		Collection<ConfigGroup> configs = (Collection<ConfigGroup>)q.execute(organistationID, configType);

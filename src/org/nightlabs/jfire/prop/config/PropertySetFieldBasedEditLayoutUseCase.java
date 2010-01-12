@@ -274,8 +274,6 @@ public class PropertySetFieldBasedEditLayoutUseCase implements Serializable, Det
 	public void jdoPreDetach() {
 	}
 
-
-	@SuppressWarnings("unchecked")
 	public static Collection<PropertySetFieldBasedEditLayoutUseCaseID> getAllUseCaseIDs(PersistenceManager pm) {
 		Query q = pm.newNamedQuery(PropertySetFieldBasedEditLayoutUseCase.class, "getAllUseCaseIDs");
 		return (Collection<PropertySetFieldBasedEditLayoutUseCaseID>) q.execute();

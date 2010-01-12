@@ -40,25 +40,24 @@ import javax.jdo.FetchPlan;
 import javax.jdo.JDOHelper;
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
+import javax.jdo.annotations.Column;
+import javax.jdo.annotations.FetchGroup;
+import javax.jdo.annotations.FetchGroups;
+import javax.jdo.annotations.IdentityType;
+import javax.jdo.annotations.Inheritance;
+import javax.jdo.annotations.InheritanceStrategy;
+import javax.jdo.annotations.Join;
+import javax.jdo.annotations.PersistenceCapable;
+import javax.jdo.annotations.PersistenceModifier;
+import javax.jdo.annotations.Persistent;
+import javax.jdo.annotations.PrimaryKey;
+import javax.jdo.annotations.Queries;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.config.id.ConfigID;
 import org.nightlabs.jfire.config.id.ConfigSetupID;
 import org.nightlabs.util.Util;
-
-import javax.jdo.annotations.Join;
-import javax.jdo.annotations.FetchGroups;
-import javax.jdo.annotations.Inheritance;
-import javax.jdo.annotations.PrimaryKey;
-import javax.jdo.annotations.FetchGroup;
-import javax.jdo.annotations.PersistenceModifier;
-import javax.jdo.annotations.Persistent;
-import javax.jdo.annotations.InheritanceStrategy;
-import javax.jdo.annotations.Queries;
-import javax.jdo.annotations.PersistenceCapable;
-import javax.jdo.annotations.Column;
-import javax.jdo.annotations.IdentityType;
 
 /**
  * A ConfigSetup represents the setup of the membership of {@link Config}s of a certain
@@ -124,8 +123,9 @@ public abstract class ConfigSetup implements Serializable {
 	private static final long serialVersionUID = 1L;
 	public static final String FETCH_GROUP_CONFIG_MODULE_CLASSES = "ConfigSetup.configModuleClasses";
 	/**
-	 * @deprecated The *.this-FetchGroups lead to bad programming style and are therefore deprecated, now. They should be removed soon! 
+	 * @deprecated The *.this-FetchGroups lead to bad programming style and are therefore deprecated, now. They should be removed soon!
 	 */
+	@Deprecated
 	public static final String FETCH_GROUP_THIS_CONFIG_SETUP = "ConfigSetup.this";
 
 	public static final String QUERY_GET_ALL_CONFIGSETUPIDS = "getAllConfigSetupIDs";
@@ -591,7 +591,6 @@ public abstract class ConfigSetup implements Serializable {
 	/**
 	 * @return All ConfigSetups in datastore.
 	 */
-	@SuppressWarnings("unchecked")
 	public static Collection<ConfigSetup> getConfigSetups(PersistenceManager pm) {
 		return (Collection<ConfigSetup>)pm.newQuery(pm.getExtent(ConfigSetup.class, true)).execute();
 	}
@@ -625,7 +624,6 @@ public abstract class ConfigSetup implements Serializable {
 	 * @param pm the {@link PersistenceManager} to use.
 	 * @return a usable Collection with all {@link ConfigSetupID}s of all ConfigSetups.
 	 */
-	@SuppressWarnings("unchecked")
 	public static Set<ConfigSetupID> getAllConfigSetupIDs(PersistenceManager pm) {
 		Query query = pm.newNamedQuery(ConfigSetup.class, ConfigSetup.QUERY_GET_ALL_CONFIGSETUPIDS);
 		return NLJDOHelper.getDetachedQueryResultAsSet(pm, (Collection<ConfigSetupID>) query.execute());

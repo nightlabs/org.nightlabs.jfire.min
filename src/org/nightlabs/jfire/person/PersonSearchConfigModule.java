@@ -12,23 +12,20 @@ import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.PersistenceModifier;
 import javax.jdo.annotations.Persistent;
 
-import org.nightlabs.clientui.layout.GridLayout;
 import org.nightlabs.jdo.ObjectIDUtil;
-import org.nightlabs.jfire.config.ConfigModule;
+import org.nightlabs.jfire.prop.StructField;
+import org.nightlabs.jfire.prop.config.PropertySetFieldBasedEditLayoutConfigModule;
 import org.nightlabs.jfire.prop.id.StructFieldID;
 
 @PersistenceCapable(
 		identityType=IdentityType.APPLICATION,
 		detachable="true",
-		table="JFireBase_PersonSearchConfigModule")
+		table="JFireBase_Prop_PersonSearchConfigModule")
 	@Inheritance(strategy=InheritanceStrategy.NEW_TABLE)
-public class PersonSearchConfigModule extends ConfigModule {
+public class PersonSearchConfigModule
+extends PropertySetFieldBasedEditLayoutConfigModule {
 
 	private static final long serialVersionUID = 1L;
-	
-	@Persistent(
-			persistenceModifier=PersistenceModifier.PERSISTENT)
-	private GridLayout simplePersonSearchGridLayout;
 	
 	@Join
 	@Persistent(
@@ -36,24 +33,20 @@ public class PersonSearchConfigModule extends ConfigModule {
 		table="JFireBase_PersonSearchConfigModule_resultViewerStructFieldIds",
 		persistenceModifier=PersistenceModifier.PERSISTENT)
 	private List<String> resultViewerStructFieldIds;
+	
+	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
+	private String resultViewerUiIdentifier;
 
 	@Override
 	public void init() {
+		super.init();
 		resultViewerStructFieldIds = new LinkedList<String>();
 	}
 	
 	/**
-	 * Returns the {@link GridLayout} to be used for displaying the simple person search compositie
-	 * @param gridLayout
+	 * Sets the IDs of the {@link StructField}s that should be displayed in the result viewer of the PersonSearch configured by this config module.
+	 * @param structFieldIds The IDs of the the {@link StructField}s that shoule be displayed in the result viewer.
 	 */
-	public void setSimplePersonSearchGridLayout(GridLayout gridLayout) {
-		this.simplePersonSearchGridLayout = gridLayout;
-	}
-	
-	public GridLayout getSimplePersonSearchGridLayout() {
-		return simplePersonSearchGridLayout;
-	}
-	
 	public void setResultViewerStructFieldIds(List<StructFieldID> structFieldIds) {
 		List<String> stringIds = new LinkedList<String>();
 		
@@ -64,6 +57,10 @@ public class PersonSearchConfigModule extends ConfigModule {
 		this.resultViewerStructFieldIds = stringIds;
 	}
 	
+	/**
+	 * Returns the IDs of the {@link StructField}s that should be displayed in the result viewer of the PersonSearch configured by this config module.
+	 * @return the IDs of the {@link StructField}s that should be displayed in the result viewer of the PersonSearch configured by this config module.
+	 */
 	public List<StructFieldID> getResultViewStructFieldIDs() {
 		List<StructFieldID> structFieldIds = new LinkedList<StructFieldID>();
 		
@@ -73,5 +70,20 @@ public class PersonSearchConfigModule extends ConfigModule {
 		
 		return structFieldIds;
 	}
-
+	
+	/**
+	 * Returns an identifier for the UI element that should display the results of the PersonSearch configured by this config module.
+	 * @return an identifier for the UI element that should display the results of the PersonSearch configured by this config module.
+	 */
+	public String getResultViewerUiIdentifier() {
+		return resultViewerUiIdentifier;
+	}
+	
+	/**
+	 * Sets an identifier for the UI element that should display the results of the PersonSearch configured by this config module.
+	 * @param resultViewerUiIdentifier an identifier for the UI element that should display the results of the PersonSearch configured by this config module.
+	 */
+	public void setResultViewerUiIdentifier(String resultViewerUiIdentifier) {
+		this.resultViewerUiIdentifier = resultViewerUiIdentifier;
+	}
 }

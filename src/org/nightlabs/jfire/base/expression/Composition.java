@@ -107,6 +107,8 @@ javax.jdo.JDODetachedFieldAccessException: You have just attempted to access fie
 @Inheritance(strategy=InheritanceStrategy.NEW_TABLE)
 public abstract class Composition implements IExpression
 {
+	private static final long serialVersionUID = 20091216L;
+
 	/**
 	 * @jdo.field primary-key="true"
 	 * @jdo.column length="100"

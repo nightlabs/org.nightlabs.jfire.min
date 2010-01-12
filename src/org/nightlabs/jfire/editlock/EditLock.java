@@ -12,6 +12,19 @@ import java.util.Set;
 import javax.jdo.JDOHelper;
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
+import javax.jdo.annotations.Column;
+import javax.jdo.annotations.Element;
+import javax.jdo.annotations.FetchGroup;
+import javax.jdo.annotations.FetchGroups;
+import javax.jdo.annotations.IdentityType;
+import javax.jdo.annotations.Inheritance;
+import javax.jdo.annotations.InheritanceStrategy;
+import javax.jdo.annotations.NullValue;
+import javax.jdo.annotations.PersistenceCapable;
+import javax.jdo.annotations.PersistenceModifier;
+import javax.jdo.annotations.Persistent;
+import javax.jdo.annotations.PrimaryKey;
+import javax.jdo.annotations.Queries;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.ModuleException;
@@ -23,20 +36,6 @@ import org.nightlabs.jfire.idgenerator.IDGenerator;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.security.id.UserID;
 import org.nightlabs.util.Util;
-
-import javax.jdo.annotations.FetchGroups;
-import javax.jdo.annotations.NullValue;
-import javax.jdo.annotations.Inheritance;
-import javax.jdo.annotations.PrimaryKey;
-import javax.jdo.annotations.FetchGroup;
-import javax.jdo.annotations.PersistenceModifier;
-import javax.jdo.annotations.Persistent;
-import javax.jdo.annotations.InheritanceStrategy;
-import javax.jdo.annotations.Queries;
-import javax.jdo.annotations.Element;
-import javax.jdo.annotations.PersistenceCapable;
-import javax.jdo.annotations.Column;
-import javax.jdo.annotations.IdentityType;
 
 /**
  * @author Marco Schulze - Marco at NightLabs dot de
@@ -119,7 +118,6 @@ implements Serializable
 	public static final String FETCH_GROUP_LOCK_OWNER_USER = "EditLock.lockOwnerUser";
 	public static final String FETCH_GROUP_EDIT_LOCK_TYPE = "EditLock.editLockType";
 
-	@SuppressWarnings("unchecked")
 	public static Set<EditLockID> getEditLockIDs(PersistenceManager pm, ObjectID objectID)
 	{
 		if (pm == null)
@@ -199,7 +197,7 @@ implements Serializable
 			editLock.setLastAcquireDT();
 			if (logger.isDebugEnabled()) {
 				logger.debug("editLock.getLastAquireDT() after update = "+editLock.getLastAcquireDT());
-			}			
+			}
 			editLock.setDescription(description);
 			refresh = true;
 		}
@@ -261,7 +259,6 @@ implements Serializable
 //		return (List<EditLock>) q.execute(new Date());
 	}
 
-	@SuppressWarnings("unchecked")
 	public static List<EditLockType> getEditLockTypesHavingEditLocks(PersistenceManager pm)
 	{
 		if (pm == null)
@@ -271,7 +268,6 @@ implements Serializable
 		return (List<EditLockType>) q.execute(new Date());
 	}
 
-	@SuppressWarnings("unchecked")
 	public static List<EditLock> getEditLocksWithLastAcquireDTOlderThan(PersistenceManager pm, EditLockType editLockType, Date lastAcquireDT)
 	{
 		if (pm == null)
@@ -458,7 +454,7 @@ implements Serializable
 
 		if (logger.isDebugEnabled()) {
 			logger.debug("setLastAcquireDT: after update = "+getLastAcquireDT()+" for EditLock "+this);
-		}		
+		}
 	}
 	
 	/**
@@ -504,8 +500,8 @@ implements Serializable
 	}
 	
 	@Override
-	public String toString() 
+	public String toString()
 	{
 		return this.getClass().getName() + '@' + Integer.toHexString(System.identityHashCode(this)) + '[' + organisationID + ',' + editLockID + ']';
-	}	
+	}
 }

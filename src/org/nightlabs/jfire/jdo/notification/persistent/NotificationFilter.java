@@ -428,7 +428,6 @@ implements StoreCallback, Serializable
 			return toArray(new JDOLifecycleState[size()]);
 		}
 
-		@SuppressWarnings("unchecked")
 		public <T> T[] toArray(T[] a)
 		{
 			int size = size();

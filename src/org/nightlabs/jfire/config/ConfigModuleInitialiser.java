@@ -228,7 +228,6 @@ public abstract class ConfigModuleInitialiser
 	 * @return All {@link ConfigModuleInitialiser}s for the given ConfigModule sorted
 	 * 	by their priority.
 	 */
-	@SuppressWarnings("unchecked")
 	public static List<ConfigModuleInitialiser> getSortedInitialisersForConfigModuleClass(
 			PersistenceManager pm,
 			String organisationID,

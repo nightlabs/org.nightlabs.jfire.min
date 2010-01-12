@@ -39,6 +39,17 @@ import javax.jdo.JDOHelper;
 import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
+import javax.jdo.annotations.Column;
+import javax.jdo.annotations.FetchGroup;
+import javax.jdo.annotations.FetchGroups;
+import javax.jdo.annotations.IdentityType;
+import javax.jdo.annotations.Inheritance;
+import javax.jdo.annotations.InheritanceStrategy;
+import javax.jdo.annotations.PersistenceCapable;
+import javax.jdo.annotations.PersistenceModifier;
+import javax.jdo.annotations.Persistent;
+import javax.jdo.annotations.PrimaryKey;
+import javax.jdo.annotations.Queries;
 import javax.jdo.listener.AttachCallback;
 import javax.jdo.listener.DetachCallback;
 import javax.jdo.listener.StoreCallback;
@@ -55,18 +66,6 @@ import org.nightlabs.jfire.security.SecurityReflector.UserDescriptor;
 import org.nightlabs.jfire.security.id.AuthorityID;
 import org.nightlabs.jfire.security.id.UserID;
 import org.nightlabs.jfire.security.id.UserLocalID;
-
-import javax.jdo.annotations.FetchGroups;
-import javax.jdo.annotations.Inheritance;
-import javax.jdo.annotations.PrimaryKey;
-import javax.jdo.annotations.FetchGroup;
-import javax.jdo.annotations.PersistenceModifier;
-import javax.jdo.annotations.Persistent;
-import javax.jdo.annotations.InheritanceStrategy;
-import javax.jdo.annotations.Queries;
-import javax.jdo.annotations.PersistenceCapable;
-import javax.jdo.annotations.Column;
-import javax.jdo.annotations.IdentityType;
 
 /**
  * @author alex
@@ -556,7 +555,6 @@ implements Serializable, Comparable<User>, AttachCallback, DetachCallback, Store
 	/**
 	 * @deprecated should not be used anymore
 	 */
-	@SuppressWarnings("unchecked")
 	@Deprecated
 	public static UserSearchResult searchUsers(PersistenceManager pm, String userType, String searchStr, boolean exact, int itemsPerPage,
 			int pageIndex, int userIncludeMask) throws SecurityException {
@@ -627,7 +625,6 @@ implements Serializable, Comparable<User>, AttachCallback, DetachCallback, Store
 	 * @param systemUserID The userID to exclude
 	 * @return All users of the given type exluding the user with the given systemUserID
 	 */
-	@SuppressWarnings("unchecked")
 	public static Collection<User> getUsersByType(PersistenceManager pm, String userType, String systemUserID) {
 		Query q = pm.newNamedQuery(User.class, "getUsersByType");
 		return (Collection<User>) q.execute(userType, systemUserID);

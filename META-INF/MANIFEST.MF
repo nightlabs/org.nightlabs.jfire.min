@@ -61,3 +61,4 @@ Require-Bundle: org.apache.log4j;bundle-version="1.2.13",
  org.nightlabs.query.jdo;bundle-version="1.0.0",
  org.nightlabs.concurrent,
  org.nightlabs.config
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6

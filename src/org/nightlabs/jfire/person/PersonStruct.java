@@ -203,6 +203,8 @@ public class PersonStruct
 			RegexStructField regexStructField = PropHelper.createRegexField(psb, INTERNET_EMAIL, "Email", "Email"); //$NON-NLS-1$ //$NON-NLS-2$
 			// old regex, changed by marc 2008-04-30. Source: http://www.regular-expressions.info/email.html
 			//regexStructField.setRegex("^([a-zA-Z0-9_\\-\\.])+@((([a-zA-Z0-9\\-])+\\.)+([a-zA-Z]){2,4})$");
+			
+			// TODO: Somehow this regular expression seems not to work properly. Tobias
 			regexStructField.setRegex("^[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\\.)+[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$"); //$NON-NLS-1$
 			psb.addStructField(regexStructField);
 			psb.addStructField(PropHelper.createTextField(psb,INTERNET_HOMEPAGE, "Homepage", "Homepage")); //$NON-NLS-1$ //$NON-NLS-2$

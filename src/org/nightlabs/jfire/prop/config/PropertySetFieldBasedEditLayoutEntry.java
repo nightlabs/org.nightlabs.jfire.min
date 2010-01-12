@@ -92,6 +92,7 @@ public class PropertySetFieldBasedEditLayoutEntry implements Serializable, Detac
 	/**
  	 * @jdo.field persistence-modifier="persistent"
 	 */
+	@SuppressWarnings("unused")
 	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
 	private PropertySetFieldBasedEditLayoutConfigModule configModule;
 

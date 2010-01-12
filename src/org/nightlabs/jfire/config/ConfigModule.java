@@ -37,6 +37,23 @@ import java.util.Set;
 import javax.jdo.JDOHelper;
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
+import javax.jdo.annotations.Column;
+import javax.jdo.annotations.Discriminator;
+import javax.jdo.annotations.DiscriminatorStrategy;
+import javax.jdo.annotations.FetchGroup;
+import javax.jdo.annotations.FetchGroups;
+import javax.jdo.annotations.IdentityType;
+import javax.jdo.annotations.Inheritance;
+import javax.jdo.annotations.InheritanceStrategy;
+import javax.jdo.annotations.Key;
+import javax.jdo.annotations.PersistenceCapable;
+import javax.jdo.annotations.PersistenceModifier;
+import javax.jdo.annotations.Persistent;
+import javax.jdo.annotations.PrimaryKey;
+import javax.jdo.annotations.Queries;
+import javax.jdo.annotations.Value;
+import javax.jdo.annotations.Version;
+import javax.jdo.annotations.VersionStrategy;
 
 import org.nightlabs.inheritance.FieldInheriter;
 import org.nightlabs.inheritance.FieldMetaData;
@@ -44,26 +61,8 @@ import org.nightlabs.inheritance.Inheritable;
 import org.nightlabs.inheritance.InheritanceCallbacks;
 import org.nightlabs.jdo.inheritance.JDOInheritanceManager;
 import org.nightlabs.jdo.inheritance.JDOSimpleFieldInheriter;
-import org.nightlabs.util.Util;
-
-import javax.jdo.annotations.Value;
-import javax.jdo.annotations.FetchGroups;
-import javax.jdo.annotations.Inheritance;
-import javax.jdo.annotations.PrimaryKey;
-import javax.jdo.annotations.FetchGroup;
-import javax.jdo.annotations.VersionStrategy;
 import org.nightlabs.jfire.config.id.ConfigModuleID;
-import javax.jdo.annotations.Version;
-import javax.jdo.annotations.PersistenceModifier;
-import javax.jdo.annotations.Discriminator;
-import javax.jdo.annotations.Persistent;
-import javax.jdo.annotations.Key;
-import javax.jdo.annotations.InheritanceStrategy;
-import javax.jdo.annotations.Queries;
-import javax.jdo.annotations.PersistenceCapable;
-import javax.jdo.annotations.DiscriminatorStrategy;
-import javax.jdo.annotations.Column;
-import javax.jdo.annotations.IdentityType;
+import org.nightlabs.util.Util;
 
 /**
  * Subclasses of ConfigModule are used to store User, Workstation (or more)
@@ -546,7 +545,6 @@ public abstract class ConfigModule implements Serializable, Inheritable, Inherit
 	/**
 	 * Get all ConfigModules that were already created for the given config.
 	 */
-	@SuppressWarnings("unchecked")
 	public static Collection<ConfigModule> getExistingConfigModulesForConfig(PersistenceManager pm, Config config) {
 		Query query = pm.newNamedQuery(ConfigModule.class, QUERY_GET_EXISTING_CONFIG_MODULES_FOR_CONFIG);
 		return (Collection<ConfigModule> )query.execute(config.getOrganisationID(), config.getConfigKey(), config.getConfigType());

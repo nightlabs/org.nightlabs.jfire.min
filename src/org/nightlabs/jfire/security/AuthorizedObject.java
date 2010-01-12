@@ -13,6 +13,8 @@ import java.util.Collection;
 public abstract class AuthorizedObject
 implements IAuthorizedObject, Serializable
 {
+	private static final long serialVersionUID = 20091216L;
+	
 	public static final String FETCH_GROUP_NAME = "AuthorizedObject.name";
 	public static final String FETCH_GROUP_DESCRIPTION = "AuthorizedObject.description";
 

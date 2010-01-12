@@ -37,6 +37,17 @@ import javax.jdo.JDOHelper;
 import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
+import javax.jdo.annotations.FetchGroup;
+import javax.jdo.annotations.FetchGroups;
+import javax.jdo.annotations.IdentityType;
+import javax.jdo.annotations.Inheritance;
+import javax.jdo.annotations.InheritanceStrategy;
+import javax.jdo.annotations.Key;
+import javax.jdo.annotations.PersistenceCapable;
+import javax.jdo.annotations.PersistenceModifier;
+import javax.jdo.annotations.Persistent;
+import javax.jdo.annotations.PrimaryKey;
+import javax.jdo.annotations.Queries;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.ModuleException;
@@ -45,18 +56,6 @@ import org.nightlabs.config.ConfigModuleNotFoundException;
 import org.nightlabs.jfire.config.id.ConfigID;
 import org.nightlabs.jfire.config.id.ConfigModuleID;
 import org.nightlabs.util.Util;
-
-import javax.jdo.annotations.FetchGroups;
-import javax.jdo.annotations.Inheritance;
-import javax.jdo.annotations.PrimaryKey;
-import javax.jdo.annotations.FetchGroup;
-import javax.jdo.annotations.PersistenceModifier;
-import javax.jdo.annotations.Persistent;
-import javax.jdo.annotations.Key;
-import javax.jdo.annotations.InheritanceStrategy;
-import javax.jdo.annotations.Queries;
-import javax.jdo.annotations.PersistenceCapable;
-import javax.jdo.annotations.IdentityType;
 
 /**
  * Configs mainly hold a list of ConfigModules and are intended to be linked
@@ -298,7 +297,6 @@ public class Config implements Serializable
 	 * @param throwExceptionIfNotFound If <code>true</code> and the ConfigModule does not exist, a {@link ConfigModuleNotFoundException} will be thrown. If it's <code>false</code>, <code>null</code> will be returned instead of an exception.
 	 * @return The defined ConfigModule.
 	 */
-	@SuppressWarnings("unchecked")
 	public <T extends ConfigModule> T getConfigModule(Class<T> cfModClass, String cfModID, boolean throwExceptionIfNotFound)
 	throws ConfigModuleNotFoundException
 	{
@@ -420,9 +418,9 @@ public class Config implements Serializable
 	/**
 	 * A Config should be linked to an object in datastore (e.g User,
 	 * Workstation). This member is either used to represent the objects
-	 * the Config is linked to (in ObjectID-String-representation) 
+	 * the Config is linked to (in ObjectID-String-representation)
 	 * or is used customly by ConfigGroups.
-	 *  
+	 * 
 	 * @return The configKey of this config.
 	 */
 	public String getConfigKey()
@@ -516,7 +514,6 @@ public class Config implements Serializable
 	 * @return the ConfigModule corresponding to the given ConfigModuleID
 	 * @throws ModuleException a wrapper for many kinds of Exceptions
 	 */
-	@SuppressWarnings("unchecked")
 	public static ConfigModule getConfigModule(PersistenceManager pm, ConfigModuleID moduleID) {
 		if (moduleID == null)
 			throw new IllegalArgumentException("Given ConfigModuleID is null!");
@@ -539,7 +536,6 @@ public class Config implements Serializable
 	 * @param configType The configType of the Configs to return
 	 * @return All Configs of given configType
 	 */
-	@SuppressWarnings("unchecked")
 	public static Collection<Config> getConfigsByType(PersistenceManager pm, String organisationID, String configType) {
 		Query q = pm.newNamedQuery(Config.class, QUERY_GET_CONFIGS_BY_TYPE);
 		return (Collection<Config>)q.execute(organisationID, configType);
@@ -552,7 +548,6 @@ public class Config implements Serializable
 	 * @param configType The configType of the Configs to return
 	 * @return All ConfigIDs corresponding to Configs of the given <code>configType</code>
 	 */
-	@SuppressWarnings("unchecked")
 	public static Collection<ConfigID> getConfigIDsByConfigType(PersistenceManager pm, String organisationID, String configType) {
 		Query q = pm.newNamedQuery(Config.class, QUERY_GET_CONFIGIDS_BY_TYPE);
 		return (Collection<ConfigID>) q.execute(organisationID, configType);
@@ -564,7 +559,6 @@ public class Config implements Serializable
 	 * @param pm The PersistenceManager to use
 	 * @param configGroup The ConfigGroup to search members for
 	 */
-	@SuppressWarnings("unchecked")
 	public static Collection<Config> getConfigsForGroup(PersistenceManager pm, ConfigGroup configGroup) {
 		Query q = pm.newNamedQuery(Config.class, QUERY_GET_CONFIGS_FOR_GROUP);
 		return (Collection<Config>) q.execute(
@@ -578,7 +572,6 @@ public class Config implements Serializable
 	 * Get all Configs that are members of the ConfigGroup defined by the
 	 * given ids.
 	 */
-	@SuppressWarnings("unchecked")
 	public static Collection<Config> getConfigsForGroup(PersistenceManager pm, String organisationID, String configType, String configKey) {
 		Query q = pm.newNamedQuery(Config.class, QUERY_GET_CONFIGS_FOR_GROUP);
 		return (Collection<Config>) q.execute(organisationID, configType, configKey);

@@ -8,15 +8,14 @@ import javax.jdo.annotations.PersistenceCapable;
 
 import org.nightlabs.jfire.base.expression.IEvaluationContext;
 import org.nightlabs.jfire.idgenerator.IDGenerator;
-import org.nightlabs.jfire.prop.DataField;
 import org.nightlabs.jfire.prop.datafield.RegexDataField;
 import org.nightlabs.jfire.prop.id.StructFieldID;
 import org.nightlabs.jfire.prop.structfield.RegexStructField;
 
 @PersistenceCapable(detachable="true")
 @Inheritance(strategy=InheritanceStrategy.SUPERCLASS_TABLE)
-public class RexDataFieldExpression 
-extends DataFieldExpression<RegexDataField> 
+public class RexDataFieldExpression
+extends DataFieldExpression<RegexDataField>
 {
 	private static final long serialVersionUID = 1L;
 	
@@ -47,10 +46,9 @@ extends DataFieldExpression<RegexDataField>
 		return true;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public boolean evaluate(IEvaluationContext context) {
-		return evaluate((IPropertySetEvaluationContext<DataField>) context);
+		return evaluate(context);
 	}
 
 	@Override

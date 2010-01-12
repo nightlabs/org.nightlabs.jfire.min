@@ -8,23 +8,22 @@ import java.util.List;
 
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
+import javax.jdo.annotations.Column;
+import javax.jdo.annotations.Discriminator;
+import javax.jdo.annotations.DiscriminatorStrategy;
+import javax.jdo.annotations.IdGeneratorStrategy;
+import javax.jdo.annotations.IdentityType;
+import javax.jdo.annotations.Inheritance;
+import javax.jdo.annotations.InheritanceStrategy;
+import javax.jdo.annotations.PersistenceCapable;
+import javax.jdo.annotations.PersistenceModifier;
+import javax.jdo.annotations.Persistent;
+import javax.jdo.annotations.PrimaryKey;
+import javax.jdo.annotations.Queries;
 
 import org.nightlabs.jfire.jdo.notification.DirtyObjectID;
-import org.nightlabs.jfire.jdo.notification.persistent.id.NotificationFilterID;
-
-import javax.jdo.annotations.IdGeneratorStrategy;
-import javax.jdo.annotations.Persistent;
-import javax.jdo.annotations.InheritanceStrategy;
-import javax.jdo.annotations.Inheritance;
-import javax.jdo.annotations.Queries;
-import javax.jdo.annotations.PrimaryKey;
-import javax.jdo.annotations.PersistenceCapable;
-import javax.jdo.annotations.DiscriminatorStrategy;
-import javax.jdo.annotations.Column;
 import org.nightlabs.jfire.jdo.notification.persistent.id.NotificationBundleID;
-import javax.jdo.annotations.IdentityType;
-import javax.jdo.annotations.PersistenceModifier;
-import javax.jdo.annotations.Discriminator;
+import org.nightlabs.jfire.jdo.notification.persistent.id.NotificationFilterID;
 
 /**
  * @author Marco Schulze - marco at nightlabs dot de
@@ -182,7 +181,6 @@ implements Serializable
 		return subscriptionID;
 	}
 
-	@SuppressWarnings("unchecked")
 	public ArrayList<DirtyObjectID> getDirtyObjectIDs()
 	{
 		return (ArrayList<DirtyObjectID>) dirtyObjectIDs;

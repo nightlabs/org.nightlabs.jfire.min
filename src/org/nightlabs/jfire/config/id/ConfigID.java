@@ -373,7 +373,7 @@ implements ObjectID
 	 * Creates an id-object that points to the given linkObject. Pass here the
 	 * object-id of the linked object you whant to create a ConfigID for.
 	 */
-	public static ConfigID create(String organistaionID, ObjectID linkObjectID, Class linkObjectClass) {
+	public static ConfigID create(String organistaionID, ObjectID linkObjectID, Class<?> linkObjectClass) {
 		return create(organistaionID, getConfigKeyForLinkObject(linkObjectID), linkObjectClass.getName());
 	}
 

@@ -29,6 +29,15 @@ package org.nightlabs.jfire.prop.structfield;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import javax.jdo.annotations.FetchGroup;
+import javax.jdo.annotations.FetchGroups;
+import javax.jdo.annotations.IdentityType;
+import javax.jdo.annotations.Inheritance;
+import javax.jdo.annotations.InheritanceStrategy;
+import javax.jdo.annotations.PersistenceCapable;
+import javax.jdo.annotations.PersistenceModifier;
+import javax.jdo.annotations.Persistent;
+
 import org.nightlabs.jfire.prop.DataBlock;
 import org.nightlabs.jfire.prop.DataField;
 import org.nightlabs.jfire.prop.StructBlock;
@@ -36,19 +45,10 @@ import org.nightlabs.jfire.prop.StructField;
 import org.nightlabs.jfire.prop.datafield.RegexDataField;
 import org.nightlabs.jfire.prop.id.StructFieldID;
 
-import javax.jdo.annotations.Persistent;
-import javax.jdo.annotations.FetchGroups;
-import javax.jdo.annotations.InheritanceStrategy;
-import javax.jdo.annotations.Inheritance;
-import javax.jdo.annotations.PersistenceCapable;
-import javax.jdo.annotations.FetchGroup;
-import javax.jdo.annotations.IdentityType;
-import javax.jdo.annotations.PersistenceModifier;
-
 /**
- * {@link StructField} that represents a {@link DataField} that stores text 
- * but whose value should be validated against a regular expression. 
- * The regular expression is {@link #getRegex()}. 
+ * {@link StructField} that represents a {@link DataField} that stores text
+ * but whose value should be validated against a regular expression.
+ * The regular expression is {@link #getRegex()}.
  * 
  * @jdo.persistence-capable
  * 		identity-type="application"
@@ -149,7 +149,8 @@ public class RegexStructField extends StructField<RegexDataField> {
 		if (pattern == null)
 			pattern = Pattern.compile(regex);
 
-		return pattern.matcher(value).matches();
+		boolean matches = pattern.matcher(value).matches();
+		return matches;
 	}
 
 	@Override

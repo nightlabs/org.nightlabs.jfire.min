@@ -169,7 +169,6 @@ implements Serializable, DetachCallback, AttachCallback, StoreCallback
 	 * @param until The timestamp at which the tasks are due (normally NOW - i.e. <code>new Date()</code>).
 	 * @return Returns instances of {@link Task}.
 	 */
-	@SuppressWarnings("unchecked")
 	public static List<Task> getTasksToDo(PersistenceManager pm, Date until)
 	{
 		return (List<Task>) pm.newNamedQuery(Task.class, "getTasksToDo").execute(until);
@@ -183,19 +182,16 @@ implements Serializable, DetachCallback, AttachCallback, StoreCallback
 	 * @param until The timestamp at which the recalculation is due (normally NOW - i.e. <code>new Date()</code>).
 	 * @return Returns instances of {@link Task}.
 	 */
-	@SuppressWarnings("unchecked")
 	public static List<Task> getTasksToRecalculateNextExecDT(PersistenceManager pm, Date until)
 	{
 		return (List<Task>) pm.newNamedQuery(Task.class, "getTasksToRecalculateNextExecDT").execute(until);
 	}
 
-	@SuppressWarnings("unchecked")
 	public static List<Task> getTasksByExecuting(PersistenceManager pm, boolean executing)
 	{
 		return (List<Task>) pm.newNamedQuery(Task.class, "getTasksByExecuting").execute(Boolean.valueOf(executing));
 	}
 
-	@SuppressWarnings("unchecked")
 	public static List<Task> getTasksByTaskTypeID(PersistenceManager pm, String taskTypeID)
 	{
 		return (List<Task>) pm.newNamedQuery(Task.class, "getTasksByTaskTypeID").execute(taskTypeID);

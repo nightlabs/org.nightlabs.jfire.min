@@ -481,7 +481,6 @@ public abstract class DataField implements Serializable, Comparable<DataField>, 
 	 * @param struct The {@link IStruct} against which to validated.
 	 * @return A list of all {@link ValidationFailureResult} occurred during the validation or <code>null</code> if the validation succeeded..
 	 */
-	@SuppressWarnings("unchecked")
 	public List<ValidationResult> validate(IStruct struct) {
 		List<ValidationResult> results = new LinkedList<ValidationResult>();
 		try {

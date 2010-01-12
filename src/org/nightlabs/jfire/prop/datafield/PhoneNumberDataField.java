@@ -1,20 +1,20 @@
 package org.nightlabs.jfire.prop.datafield;
 
+import javax.jdo.annotations.FetchGroup;
+import javax.jdo.annotations.FetchGroups;
+import javax.jdo.annotations.IdentityType;
+import javax.jdo.annotations.Inheritance;
+import javax.jdo.annotations.InheritanceStrategy;
+import javax.jdo.annotations.PersistenceCapable;
+import javax.jdo.annotations.PersistenceModifier;
+import javax.jdo.annotations.Persistent;
+
 import org.nightlabs.i18n.I18nText;
 import org.nightlabs.i18n.StaticI18nText;
 import org.nightlabs.jfire.prop.DataBlock;
 import org.nightlabs.jfire.prop.DataField;
 import org.nightlabs.jfire.prop.PropertySet;
 import org.nightlabs.jfire.prop.StructField;
-
-import javax.jdo.annotations.Persistent;
-import javax.jdo.annotations.FetchGroups;
-import javax.jdo.annotations.InheritanceStrategy;
-import javax.jdo.annotations.Inheritance;
-import javax.jdo.annotations.PersistenceCapable;
-import javax.jdo.annotations.FetchGroup;
-import javax.jdo.annotations.IdentityType;
-import javax.jdo.annotations.PersistenceModifier;
 
 /**
  * {@link DataField} that stores a phone number in form of three parts:
@@ -64,8 +64,8 @@ implements II18nTextDataField
 	
 	/** @jdo.field persistence-modifier="none" */
 	@Persistent(persistenceModifier=PersistenceModifier.NONE)
-	private transient StaticI18nText textBuffer = null;	
-
+	private transient StaticI18nText textBuffer = null;
+	
 	/**
 	 * Create a new {@link PhoneNumberDataField} for the given {@link DataBlock}
 	 * that represents the given {@link StructField}.
@@ -84,10 +84,6 @@ implements II18nTextDataField
 		super(organisationID, propertySetID, cloneField);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.nightlabs.jfire.prop.DataField#cloneDataField(org.nightlabs.jfire.prop.PropertySet)
-	 */
 	@Override
 	public DataField cloneDataField(PropertySet propertySet) {
 		PhoneNumberDataField newField = new PhoneNumberDataField(propertySet.getOrganisationID(), propertySet.getPropertySetID(), this);
@@ -97,10 +93,6 @@ implements II18nTextDataField
 		return newField;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.nightlabs.jfire.prop.DataField#isEmpty()
-	 */
 	@Override
 	public boolean isEmpty() {
 		// empty when all parts empty
@@ -212,23 +204,24 @@ implements II18nTextDataField
 	 * @return The phone number represented by this {@link PhoneNumberDataField} as String.
 	 */
 	public String getPhoneNumberAsString() {
-		final StringBuilder sb = new StringBuilder();
-		if (countryCode != null && countryCode.trim().length() > 0)
-			sb.append("+").append(countryCode);
-
-		if (areaCode != null && areaCode.trim().length() > 0) {
-			if (countryCode != null && !countryCode.trim().isEmpty())
-				sb.append("-");
-			sb.append(areaCode);
-		}
-
-		if (localNumber != null && localNumber.trim().length() > 0) {
-			if (areaCode != null && !areaCode.trim().isEmpty())
-				sb.append("-");
-			sb.append(localNumber);
-		}
-
-		return sb.toString();
+		return new PhoneNumber(countryCode, areaCode, localNumber).toString();
+//		final StringBuilder sb = new StringBuilder();
+//		if (countryCode != null && countryCode.trim().length() > 0)
+//			sb.append("+").append(countryCode);
+//
+//		if (areaCode != null && areaCode.trim().length() > 0) {
+//			if (countryCode != null && !countryCode.trim().isEmpty())
+//				sb.append("-");
+//			sb.append(areaCode);
+//		}
+//
+//		if (localNumber != null && localNumber.trim().length() > 0) {
+//			if (areaCode != null && !areaCode.trim().isEmpty())
+//				sb.append("-");
+//			sb.append(localNumber);
+//		}
+//
+//		return sb.toString();
 	}
 
 	/**
@@ -250,18 +243,18 @@ implements II18nTextDataField
 	/**
 	 * {@inheritDoc}
 	 * <p>
-	 * Calling this method is equal to calling {@link #getPhoneNumberAsString()}.
+	 * Returns a {@link PhoneNumber} instance of the data of this instance.
 	 * </p>
 	 */
 	@Override
 	public Object getData() {
-		return getPhoneNumberAsString();
+		return new PhoneNumber(countryCode, areaCode, localNumber);
 	}
 
 	/**
 	 * {@inheritDoc}
 	 * <p>
-	 * Supports only other {@link PhoneNumberDataField}s and Strings. 
+	 * Supports only other {@link PhoneNumberDataField}s and Strings.
 	 * For strings {@link #parsePhoneNumber(String)} will be used.
 	 * </p>
 	 */
@@ -276,6 +269,11 @@ implements II18nTextDataField
 			this.setLocalNumber(other.getLocalNumber());
 		} else if (data instanceof String) {
 			parsePhoneNumber((String) data);
+		} else if (data instanceof PhoneNumber) {
+			PhoneNumber pn = (PhoneNumber) data;
+			this.setCountryCode(pn.getCountryCode());
+			this.setAreaCode(pn.getAreaCode());
+			this.setLocalNumber(pn.getLocalNumber());
 		} else {
 			throw new IllegalArgumentException(this.getClass().getName() + " does not support input data of type " + data.getClass());
 		}
@@ -289,8 +287,9 @@ implements II18nTextDataField
 	 */
 	@Override
 	public boolean supportsInputType(Class<?> inputType) {
-		return 
+		return
 			PhoneNumberDataField.class.isAssignableFrom(inputType) ||
-			String.class.isAssignableFrom(inputType);
+			String.class.isAssignableFrom(inputType) ||
+			PhoneNumber.class.isAssignableFrom(inputType);
 	}
 }
