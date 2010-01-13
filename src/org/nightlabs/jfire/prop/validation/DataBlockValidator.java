@@ -1,19 +1,19 @@
 package org.nightlabs.jfire.prop.validation;
 
+import javax.jdo.annotations.Column;
+import javax.jdo.annotations.Discriminator;
+import javax.jdo.annotations.DiscriminatorStrategy;
+import javax.jdo.annotations.IdentityType;
+import javax.jdo.annotations.Inheritance;
+import javax.jdo.annotations.InheritanceStrategy;
+import javax.jdo.annotations.PersistenceCapable;
+import javax.jdo.annotations.PersistenceModifier;
+import javax.jdo.annotations.Persistent;
+import javax.jdo.annotations.PrimaryKey;
+
 import org.nightlabs.jfire.prop.DataBlock;
 import org.nightlabs.jfire.prop.StructBlock;
-
-import javax.jdo.annotations.Persistent;
 import org.nightlabs.jfire.prop.validation.id.DataBlockValidatorID;
-import javax.jdo.annotations.InheritanceStrategy;
-import javax.jdo.annotations.Inheritance;
-import javax.jdo.annotations.PrimaryKey;
-import javax.jdo.annotations.PersistenceCapable;
-import javax.jdo.annotations.DiscriminatorStrategy;
-import javax.jdo.annotations.Column;
-import javax.jdo.annotations.IdentityType;
-import javax.jdo.annotations.PersistenceModifier;
-import javax.jdo.annotations.Discriminator;
 
 /**
  * Abstract base class for {@link DataBlockValidator}s that are able to validate a {@link DataBlock}.
@@ -38,7 +38,7 @@ import javax.jdo.annotations.Discriminator;
 @Discriminator(strategy=DiscriminatorStrategy.CLASS_NAME)
 @Inheritance(strategy=InheritanceStrategy.NEW_TABLE)
 
-public abstract class DataBlockValidator implements IDataBlockValidator 
+public abstract class DataBlockValidator implements IDataBlockValidator
 {
 	private static final long serialVersionUID = 1L;
 
@@ -58,27 +58,28 @@ public abstract class DataBlockValidator implements IDataBlockValidator
 	
 	/**
 	 * @jdo.field persistence-modifier="persistent"
-	 */	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
-
-	private StructBlock structBlock; 
+	 */	@SuppressWarnings("unused")
+	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
+	private StructBlock structBlock;
 	
 	/**
 	 * @deprecated only for JDO
 	 */
+	@Deprecated
 	protected DataBlockValidator() {
 		super();
 	}
 	
 //	/**
 //	 * Creates a DataBlockValidator.
-//	 * 
+//	 *
 //	 * @param organisationID
 //	 * @param validatorID
 //	 */
 //	public DataBlockValidator(String organisationID, long validatorID) {
 //		if (organisationID == null)
 //			throw new IllegalArgumentException("Param organisationID must not be null");
-//		
+//
 //		this.organisationID = organisationID;
 //		this.validatorID = validatorID;
 //	}
@@ -106,10 +107,10 @@ public abstract class DataBlockValidator implements IDataBlockValidator
 //	{
 //		if (structBlock == null)
 //			throw new IllegalArgumentException("structBlock must not be null!");
-//		
+//
 //		if (this.structBlock != null)
 //			throw new IllegalStateException("Field structBlock is already initialised! Cannot call this method twice!");
-//		
+//
 //		this.structBlock = structBlock;
 //	}
 

@@ -56,6 +56,7 @@ public abstract class AbstractEditLayoutEntry<T>
 	@PrimaryKey
 	private long editLayoutEntryID;
 
+	@SuppressWarnings("unused")
 	@Persistent(persistenceModifier = PersistenceModifier.PERSISTENT)
 	private AbstractEditLayoutConfigModule<T, ?>	configModule;
 

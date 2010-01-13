@@ -5,20 +5,20 @@ package org.nightlabs.jfire.prop.validation;
 
 import java.io.Serializable;
 
+import javax.jdo.annotations.Column;
+import javax.jdo.annotations.Discriminator;
+import javax.jdo.annotations.DiscriminatorStrategy;
+import javax.jdo.annotations.IdentityType;
+import javax.jdo.annotations.Inheritance;
+import javax.jdo.annotations.InheritanceStrategy;
+import javax.jdo.annotations.PersistenceCapable;
+import javax.jdo.annotations.PersistenceModifier;
+import javax.jdo.annotations.Persistent;
+import javax.jdo.annotations.PrimaryKey;
+
 import org.nightlabs.jfire.prop.DataField;
 import org.nightlabs.jfire.prop.StructField;
-
-import javax.jdo.annotations.Persistent;
 import org.nightlabs.jfire.prop.validation.id.DataFieldValidatorID;
-import javax.jdo.annotations.InheritanceStrategy;
-import javax.jdo.annotations.Inheritance;
-import javax.jdo.annotations.PrimaryKey;
-import javax.jdo.annotations.PersistenceCapable;
-import javax.jdo.annotations.DiscriminatorStrategy;
-import javax.jdo.annotations.Column;
-import javax.jdo.annotations.IdentityType;
-import javax.jdo.annotations.PersistenceModifier;
-import javax.jdo.annotations.Discriminator;
 
 /**
  * Abstract base class for {@link DataFieldValidator}s that are able to validate a {@link DataField}.
@@ -64,27 +64,28 @@ implements IDataFieldValidator<DataFieldType, StructFieldType>, Serializable
 	
 	/**
 	 * @jdo.field persistence-modifier="persistent"
-	 */	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
-
+	 */	@SuppressWarnings("unused")
+	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
 	private StructField<?> structField;
 	
 	/**
 	 * @deprecated only for JDO
 	 */
+	@Deprecated
 	protected DataFieldValidator() {
 		super();
 	}
 
 //	/**
-//	 * 
+//	 *
 //	 * @param organisationID
 //	 * @param validatorID
 //	 */
-//	public DataFieldValidator(String organisationID, long validatorID) 
+//	public DataFieldValidator(String organisationID, long validatorID)
 //	{
 //		if (organisationID == null)
 //			throw new IllegalArgumentException("Param organisationID must not be null");
-//				
+//
 //		this.organisationID = organisationID;
 //		this.validatorID = validatorID;
 //	}
@@ -105,17 +106,17 @@ implements IDataFieldValidator<DataFieldType, StructFieldType>, Serializable
 	}
 	
 //	/**
-//	 * 
+//	 *
 //	 * @param structField
 //	 */
-//	public void setStructField(StructField<?> structField) 
+//	public void setStructField(StructField<?> structField)
 //	{
 //		if (structField == null)
 //			throw new IllegalArgumentException("structField must not be null!");
-//		
+//
 //		if (this.structField != null)
 //			throw new IllegalStateException("Field structField is already initialised! Cannot call this method twice!");
-//		
+//
 //		this.structField = structField;
 //	}
 	

@@ -408,7 +408,7 @@ implements Serializable
 	public boolean equals(Object obj) {
 		if (this == obj) return true;
 		if (obj == null) return false;
-		if (! (obj instanceof StructField) )	return false;
+		if (! (obj instanceof StructField<?>) )	return false;
 		final StructField<?> other = (StructField<?>) obj;
 
 		return Util.equals(structBlockOrganisationID, other.structBlockOrganisationID) &&

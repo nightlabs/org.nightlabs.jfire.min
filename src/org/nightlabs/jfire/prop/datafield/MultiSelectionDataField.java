@@ -207,18 +207,12 @@ implements DetachCallback, II18nTextDataField
 //		return field;
 //	}
 
-	/* (non-Javadoc)
-	 * @see org.nightlabs.jfire.prop.DataField#getStructField()
-	 */
 	@Override
 	public MultiSelectionStructField getStructField()
 	{
 		return (MultiSelectionStructField) super.getStructField();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.nightlabs.jfire.prop.DataField#isEmpty()
-	 */
 	@Override
 	public boolean isEmpty()
 	{
@@ -229,9 +223,6 @@ implements DetachCallback, II18nTextDataField
 		       (getStructField().getDefaultValues() == null || getStructField().getDefaultValues().isEmpty());
 	}
 
-	/* (non-Javadoc)
-	 * @see org.nightlabs.jfire.prop.DataField#cloneDataField(org.nightlabs.jfire.prop.PropertySet)
-	 */
 	@Override
 	public DataField cloneDataField(PropertySet propertySet)
 	{
@@ -277,9 +268,6 @@ implements DetachCallback, II18nTextDataField
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.nightlabs.jfire.prop.datafield.II18nTextDataField#getI18nText()
-	 */
 	@Override
 	public I18nTextBuffer getI18nText()
 	{
@@ -295,7 +283,6 @@ implements DetachCallback, II18nTextDataField
 	 * the values and set the non-persistent member structFieldValues (see {@link #getStructFieldValues()}).
 	 */
 	@Override
-	@SuppressWarnings("unchecked")
 	public void jdoPostDetach(Object detached)
 	{
 		MultiSelectionDataField attached = (MultiSelectionDataField) detached;
@@ -316,10 +303,6 @@ implements DetachCallback, II18nTextDataField
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see javax.jdo.listener.DetachCallback#jdoPreDetach()
-	 */
 	@Override
 	public void jdoPreDetach() {
 	}
@@ -331,7 +314,6 @@ implements DetachCallback, II18nTextDataField
 	 * @param dataField The {@link MultiSelectionDataField} to resolve the selection for.
 	 * @return The {@link MultiSelectionStructFieldValue} that is selected by the given dataField.
 	 */
-	@SuppressWarnings("unchecked")
 	public static Collection<MultiSelectionStructFieldValue> resolveStructFieldValue(PersistenceManager pm, MultiSelectionDataField dataField)
 	{
 		Set<MultiSelectionStructFieldValueID> structFieldValueIDs = getStructFieldValueIDs(dataField);
@@ -367,11 +349,7 @@ implements DetachCallback, II18nTextDataField
 		return getStructFieldValues();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.nightlabs.jfire.prop.IDataField#setData(java.lang.Object)
-	 */
 	@Override
-	@SuppressWarnings("unchecked")
 	public void setData(Object data)
 	{
 		if (data == null) {
@@ -388,9 +366,6 @@ implements DetachCallback, II18nTextDataField
 		resetTextBuffer();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.nightlabs.jfire.prop.IDataField#supportsInputType(java.lang.Class)
-	 */
 	@Override
 	public boolean supportsInputType(Class<?> inputType)
 	{

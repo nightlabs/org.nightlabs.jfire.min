@@ -775,7 +775,6 @@ public class StructLocal extends AbstractStruct implements DetachCallback, Attac
 //		return getStructLocal(pm, organisationID, linkClass, structScope, structLocalScope);
 //	}
 
-	@SuppressWarnings("unchecked")
 	public static Collection<StructLocalID> getAllStructLocalIDs(PersistenceManager pm) {
 		Query q = pm.newNamedQuery(StructLocal.class, "getAllStructLocalIDs");
 		return (Collection<StructLocalID>) q.execute();

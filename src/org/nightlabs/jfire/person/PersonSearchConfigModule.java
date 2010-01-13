@@ -13,17 +13,26 @@ import javax.jdo.annotations.PersistenceModifier;
 import javax.jdo.annotations.Persistent;
 
 import org.nightlabs.jdo.ObjectIDUtil;
+import org.nightlabs.jfire.config.ConfigModule;
 import org.nightlabs.jfire.prop.StructField;
-import org.nightlabs.jfire.prop.config.PropertySetFieldBasedEditLayoutConfigModule;
+import org.nightlabs.jfire.prop.config.PropertySetFieldBasedEditLayoutConfigModule2;
 import org.nightlabs.jfire.prop.id.StructFieldID;
 
+/**
+ * {@link ConfigModule} that stores the configuration of the person search per use case. This configuration
+ * comprises the layout of the search fields as well as an identifier for the viewer that should be used
+ * to display the result of the search along with the IDs of the {@link StructField}s to be displayed
+ * in this viewer.
+ * 
+ * @author Tobias Langner <!-- tobias[dot]langner[at]nightlabs[dot]de -->
+ */
 @PersistenceCapable(
 		identityType=IdentityType.APPLICATION,
 		detachable="true",
 		table="JFireBase_Prop_PersonSearchConfigModule")
 	@Inheritance(strategy=InheritanceStrategy.NEW_TABLE)
 public class PersonSearchConfigModule
-extends PropertySetFieldBasedEditLayoutConfigModule {
+extends PropertySetFieldBasedEditLayoutConfigModule2 {
 
 	private static final long serialVersionUID = 1L;
 	

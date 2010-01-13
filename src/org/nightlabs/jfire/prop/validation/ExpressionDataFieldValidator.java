@@ -147,8 +147,8 @@ implements IExpressionValidator
 	}
 	
 	public void setExpression(IExpression expression) {
-		if (expression instanceof IDataFieldExpression) {
-			this.expression = (IDataFieldExpression) expression;
+		if (expression instanceof IDataFieldExpression<?>) {
+			this.expression = (IDataFieldExpression<DataFieldType>) expression;
 		}
 		else {
 			throw new IllegalArgumentException("Param expression must be of type IDataFieldExpression but is of type "+expression.getClass());

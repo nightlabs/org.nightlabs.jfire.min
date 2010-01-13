@@ -308,7 +308,6 @@ public class Struct extends AbstractStruct {
 		return name;
 	}
 
-	@SuppressWarnings("unchecked")
 	public static Collection<StructID> getAllStructIDs(PersistenceManager pm) {
 		Query q = pm.newNamedQuery(Struct.class, "getAllStructIDs");
 		return (Collection<StructID>) q.execute();

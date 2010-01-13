@@ -655,7 +655,6 @@ public class PropertySet implements Serializable, StoreCallback, AttachCallback,
 	 * @throws DataBlockGroupNotFoundException
 	 * @throws DataFieldNotFoundException
 	 */
-	@SuppressWarnings("unchecked")
 	public <T> T getDataField(StructFieldID structFieldID, Class<T> dataFieldType)
 	throws DataBlockNotFoundException, DataBlockGroupNotFoundException, DataFieldNotFoundException {
 		return (T) getDataField(structFieldID);
@@ -677,7 +676,6 @@ public class PropertySet implements Serializable, StoreCallback, AttachCallback,
 	 * @param index The index of the DataBlock to get
 	 * @return All {@link DataField}s in {@link DataBlock}s with the given index and of the given type.
 	 */
-	@SuppressWarnings("unchecked")
 	public <T> Collection<T> getDataFields(Class<T> dataFieldType, int index) {
 		Collection<T> result = new ArrayList<T>();
 		for (DataBlockGroup dbg : getDataBlockGroups()) {
@@ -1362,7 +1360,7 @@ public class PropertySet implements Serializable, StoreCallback, AttachCallback,
 
 		// now validate in the computed order
 		validationOrderLoop: for (Object orderItem : validationOrder) {
-			if (orderItem instanceof StructField) {
+			if (orderItem instanceof StructField<?>) {
 				try {
 					List<DataField> dataFields = getDataFields(((StructField<?>) orderItem).getStructFieldIDObj());
 					for (DataField dataField : dataFields) {
