@@ -52,6 +52,7 @@ import org.nightlabs.jfire.config.id.ConfigModuleInitialiserID;
 import org.nightlabs.jfire.layout.LegalEntitySearchEditLayoutIntialiser;
 import org.nightlabs.jfire.organisation.Organisation;
 import org.nightlabs.jfire.person.Person;
+import org.nightlabs.jfire.person.PersonSearchConfigModule;
 import org.nightlabs.jfire.person.PersonStruct;
 import org.nightlabs.jfire.prop.config.PropertySetFieldBasedEditConstants;
 import org.nightlabs.jfire.prop.config.PropertySetFieldBasedEditLayoutConfigModule;
@@ -549,7 +550,12 @@ public class PropertyManagerBean extends BaseSessionBeanImpl implements Property
 			UserConfigSetup userConfigSetup = (UserConfigSetup)	ConfigSetup.getConfigSetup(
 					pm, getOrganisationID(), UserConfigSetup.CONFIG_SETUP_TYPE_USER);
 			final String cfModClassName = PropertySetFieldBasedEditLayoutConfigModule2.class.getName();
-			userConfigSetup.getConfigModuleClasses().add(cfModClassName);
+			if (!userConfigSetup.getConfigModuleClasses().contains(cfModClassName))
+				userConfigSetup.getConfigModuleClasses().add(cfModClassName);
+			
+			if (!userConfigSetup.getConfigModuleClasses().contains(PersonSearchConfigModule.class.getName()))
+				userConfigSetup.getConfigModuleClasses().add(PersonSearchConfigModule.class.getName());
+			
 			// register the corresponding ConfigModuleIntialiser
 			ConfigModuleInitialiserID legalEntitiySearchInitialiserID = ConfigModuleInitialiserID.create(getOrganisationID(),
 					cfModClassName, Person.class.getSimpleName());
