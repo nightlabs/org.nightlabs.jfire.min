@@ -555,7 +555,7 @@ public class PropertyManagerBean extends BaseSessionBeanImpl implements Property
 			
 			if (!userConfigSetup.getConfigModuleClasses().contains(PersonSearchConfigModule.class.getName()))
 				userConfigSetup.getConfigModuleClasses().add(PersonSearchConfigModule.class.getName());
-			
+				
 			// register the corresponding ConfigModuleIntialiser
 			ConfigModuleInitialiserID legalEntitiySearchInitialiserID = ConfigModuleInitialiserID.create(getOrganisationID(),
 					cfModClassName, Person.class.getSimpleName());
