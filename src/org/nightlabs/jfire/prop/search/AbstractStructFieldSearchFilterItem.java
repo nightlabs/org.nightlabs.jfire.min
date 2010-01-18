@@ -26,63 +26,68 @@
 
 package org.nightlabs.jfire.prop.search;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
+import org.nightlabs.jdo.search.MatchType;
 import org.nightlabs.jdo.search.SearchFilterItem;
+import org.nightlabs.jfire.prop.DataField;
 import org.nightlabs.jfire.prop.id.StructFieldID;
 
 
+
+
 /**
- * Representation of a {@link org.nightlabs.jdo.search.SearchFilterItem} for props.
- * <p>
- * Implements {@link org.nightlabs.jdo.search.SearchFilterItem#getSearchField()} and returns
- * the property structFieldID of this filter item.
- * <p>
- * Subclasses have to return an inheritor of {@link org.nightlabs.jfire.prop.DataField}
- * for {@link org.nightlabs.jdo.search.SearchFilterItem#getItemTargetClass()} in order to
- * can be used by PropSearchFilterItem.
- *
+ * Default implementation of {@link IStructFieldSearchFilterItem} that contains basic
+ * code for most search filter items for struct fields. It implements the methods
+ * {@link #getStructFieldID()} and {@link #getStructFieldIDs()} where it returns the
+ * IDs that are passed in the constructor call.<p>
+ * 
+ * Subclasses have to implement {@link #getDataFieldClass()} and return the class of the
+ * {@link DataField} that should be matched by the filter item.
+ * 
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  * @author Marc Klinger - marc[at]nightlabs[dot]de
+ * @author Tobias Langner <!-- tobias[dot]langner[at]nightlabs[dot]de --> *
  */
-public abstract class PropSearchFilterItem extends SearchFilterItem
+public abstract class AbstractStructFieldSearchFilterItem
+extends SearchFilterItem
+implements IStructFieldSearchFilterItem
 {
 	private static final long serialVersionUID = 1L;
 
-	public static final String QUERY_DATAFIELD_VARNAME = "propField";
+	public static final String QUERY_DATAFIELD_VARNAME = "dataField";
 
-	protected List<StructFieldID> personStructFieldIDs = new ArrayList<StructFieldID>();
+	protected List<StructFieldID> structFieldIDs = new ArrayList<StructFieldID>();
 
-	protected PropSearchFilterItem(StructFieldID personStructFieldID, int matchType, String needle) {
-		super(matchType, needle);
-		this.personStructFieldIDs.clear();
-		this.personStructFieldIDs.add(personStructFieldID);
+	protected AbstractStructFieldSearchFilterItem(Collection<StructFieldID> structFieldIDs, MatchType matchType) {
+		super(matchType);
+		
+		if (!getSupportedMatchTypes().contains(matchType))
+			throw new IllegalArgumentException("The given MatchType is not legal for this SearchFilterItem.");
+		
+		if (structFieldIDs != null)
+			this.structFieldIDs = new LinkedList<StructFieldID>(structFieldIDs);
 	}
-
-	protected PropSearchFilterItem(StructFieldID[] personStructFieldIDs, int matchType, String needle) {
-		super(matchType, needle);
-		if (personStructFieldIDs.length == 0)
-			throw new IllegalArgumentException("At least one PersonStructFieldID has to be defined in the given array.");
-		this.personStructFieldIDs.clear();
-		for (int i = 0; i < personStructFieldIDs.length; i++) {
-			this.personStructFieldIDs.add(personStructFieldIDs[i]);
-		}
+	
+	protected AbstractStructFieldSearchFilterItem(StructFieldID structFieldID, MatchType matchType) {
+		this(Collections.singleton(structFieldID), matchType);
 	}
-
-	protected PropSearchFilterItem(int matchType, String needle) {
-		super(matchType, needle);
+	
+	@Override
+	public void appendSubQuery(int itemIndex, Set<Class<?>> imports, StringBuffer vars, StringBuffer filter, StringBuffer params,
+			Map<String, Object> paramMap) {
 	}
-
+	
 	public StructFieldID getStructFieldID() {
-		return personStructFieldIDs.get(0);
+		return structFieldIDs.get(0);
 	}
 
 	public List<StructFieldID> getStructFieldIDs() {
-		return personStructFieldIDs;
-	}
-
-	@Override
-	public Object getSearchField() {
-		throw new UnsupportedOperationException("Do not use getSearchField for PersonSearchFilterItem. Use getPersonStructFieldIDs instead.");
+		return structFieldIDs;
 	}
 }

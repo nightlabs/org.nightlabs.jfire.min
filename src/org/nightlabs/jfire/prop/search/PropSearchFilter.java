@@ -34,8 +34,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.nightlabs.jdo.search.ISearchFilterItem;
 import org.nightlabs.jdo.search.SearchFilter;
-import org.nightlabs.jdo.search.SearchFilterItem;
 import org.nightlabs.jfire.prop.DataField;
 import org.nightlabs.jfire.prop.PropertySet;
 import org.nightlabs.jfire.prop.StructField;
@@ -49,6 +49,11 @@ import org.nightlabs.jfire.prop.id.StructFieldID;
 public abstract class PropSearchFilter
 	extends SearchFilter
 {
+	/**
+	 * The prefix of the data field variables in the JDO query.
+	 */
+	public static String QUERY_DATAFIELD_VARNAME_PREFIX = "dataField";
+	
 	/**
 	 * The serial version id.
 	 */
@@ -155,44 +160,47 @@ public abstract class PropSearchFilter
 	}
 
 	public void addPropFilterItems(Set<Class<?>> imports, StringBuffer vars, StringBuffer filter, StringBuffer params, Map<String, Object> paramMap) {
-		boolean firstItemProcessed = false;
-		Map<Class<?>, List<SearchFilterItem>> filterItemsPerClass = new HashMap<Class<?>, List<SearchFilterItem>>();
+//		boolean firstItemProcessed = false;
+		Map<Class<?>, List<AbstractStructFieldSearchFilterItem>> filterItemsPerClass = new HashMap<Class<?>, List<AbstractStructFieldSearchFilterItem>>();
 
 		// check if it does constrain at all
 		// and if query has to be executed
 		// sort all filterItems by targetClasses in personFilterItemsPerClass
-		for (Iterator<SearchFilterItem> it = getFilters().iterator(); it.hasNext(); ) {
-			SearchFilterItem searchFilterItem = it.next();
-			if (!SearchFilterItem.class.isAssignableFrom(searchFilterItem.getClass())) {
+		for (Iterator<ISearchFilterItem> it = getFilters().iterator(); it.hasNext(); ) {
+			ISearchFilterItem item = it.next();
+			if (!AbstractStructFieldSearchFilterItem.class.isAssignableFrom(item.getClass()))
 				continue;
-			}
-			SearchFilterItem item = searchFilterItem;
-			if (item.isConstraint()) {
-				if (!firstItemProcessed) { firstItemProcessed = true;}
-			}
-			List<SearchFilterItem> itemList = filterItemsPerClass.get(item.getItemTargetClass());
-			if (itemList == null) {
-				itemList = new ArrayList<SearchFilterItem>();
-				filterItemsPerClass.put(item.getItemTargetClass(),itemList);
-			}
-			itemList.add(item);
-
-		}
-
-		if (!firstItemProcessed) {
-			// no PersonSearchFilterItem found
-			// or none was constraining
-			// find nothing
-//			filter.append("1 == 0");
 			
-			// Empty query should now return ALL records.
-			// 2009-11-12, Kai
-			filter.append("1 == 1");
-			return;
+			AbstractStructFieldSearchFilterItem searchFilterItem = (AbstractStructFieldSearchFilterItem) item;
+			
+//		Change in the API: Now the SearchFilterItemEditor indicates whether it has a constraint
+//		and SearchFilterItems are only added for those with constraint. Therefore this check is skipped. Tobias.
+//			if (item.isConstraint()) {
+//				if (!firstItemProcessed) { firstItemProcessed = true;}
+//			}
+			
+			List<AbstractStructFieldSearchFilterItem> itemList = filterItemsPerClass.get(searchFilterItem.getDataFieldClass());
+			if (itemList == null) {
+				itemList = new ArrayList<AbstractStructFieldSearchFilterItem>();
+				filterItemsPerClass.put(searchFilterItem.getDataFieldClass(),itemList);
+			}
+			itemList.add(searchFilterItem);
 		}
 
-		firstItemProcessed = false;
-
+//		if (!firstItemProcessed) {
+//			// no PersonSearchFilterItem found
+//			// or none was constraining
+//			// find nothing
+////			filter.append("1 == 0");
+//
+//			// Empty query should now return ALL records.
+//			// 2009-11-12, Kai
+//			filter.append("1 == 1");
+//			return;
+//		}
+//
+//		firstItemProcessed = false;
+//
 //		vars.append("; ");
 //		vars.append(PersonDataBlockGroup.class.getName()+" personDataBlockGroup");
 //		vars.append("; ");
@@ -210,24 +218,25 @@ public abstract class PropSearchFilter
 		if (params.length() > 0)
 			params.append(", ");
 
-		int n = 0;
-		int fieldClassNo = 0;
+//		int n = 0;
+//		int fieldClassNo = 0;
+		int itemIndex = 0;
 		// itearte a second time to fill the query
-		for (Iterator<SearchFilterItem> iter = getFilters().iterator(); iter.hasNext(); ) {
+		for (Iterator<ISearchFilterItem> iter = getFilters().iterator(); iter.hasNext(); ) {
 			if (params.length() > 0)
 				params.append(", ");
-			PropSearchFilterItem item = (PropSearchFilterItem) iter.next();
+			IStructFieldSearchFilterItem item = (IStructFieldSearchFilterItem) iter.next();
 
-			Class<?> itemDataFieldClass = item.getItemTargetClass();
+			Class<?> itemDataFieldClass = item.getDataFieldClass();
 			if (itemDataFieldClass == null)
 				throw new IllegalArgumentException("Some SearchFilterItem returned null value in getDataFieldClass().");
 			if (!DataField.class.isAssignableFrom(itemDataFieldClass))
 				throw new IllegalArgumentException("Some SearchFilterItem did not return an inheritor of AbstractPersonDataField in getDataFieldClass() but instead "+itemDataFieldClass.getName());
 			vars.append("; ");
-			vars.append(itemDataFieldClass.getName()+" propField"+fieldClassNo);
+			vars.append(itemDataFieldClass.getName()+" "+QUERY_DATAFIELD_VARNAME_PREFIX+itemIndex);
 
 			filter.append("(");
-			filter.append(PROPERTY_VARNAME+".dataFields.contains(propField"+fieldClassNo+")");
+			filter.append(PROPERTY_VARNAME+".dataFields.contains("+QUERY_DATAFIELD_VARNAME_PREFIX+itemIndex+")");
 			filter.append(" && (");
 
 			filter.append("(");
@@ -235,7 +244,7 @@ public abstract class PropSearchFilter
 			filter.append("(");
 			int sub_n = 0;
 			for (Iterator<StructFieldID> iterator = item.getStructFieldIDs().iterator(); iterator.hasNext();) {
-				String structIdentifier = n+"_"+sub_n;
+				String structIdentifier = itemIndex+"_"+sub_n;
 
 				filter.append("(");
 				StructFieldID structFieldID = iterator.next();
@@ -259,13 +268,13 @@ public abstract class PropSearchFilter
 				paramMap.put("structFieldID"+structIdentifier, structFieldID.structFieldID);
 
 				// begin primary key of PersonStructField
-				filter.append("propField"+fieldClassNo+".structBlockOrganisationID == structBlockOrganisationID"+structIdentifier);
+				filter.append(QUERY_DATAFIELD_VARNAME_PREFIX+itemIndex+".structBlockOrganisationID == structBlockOrganisationID"+structIdentifier);
 				filter.append(" && ");
-				filter.append("propField"+fieldClassNo+".structBlockID == structBlockID"+structIdentifier);
+				filter.append(QUERY_DATAFIELD_VARNAME_PREFIX+itemIndex+".structBlockID == structBlockID"+structIdentifier);
 				filter.append(" && ");
-				filter.append("propField"+fieldClassNo+".structFieldOrganisationID == structFieldOrganisationID"+structIdentifier);
+				filter.append(QUERY_DATAFIELD_VARNAME_PREFIX+itemIndex+".structFieldOrganisationID == structFieldOrganisationID"+structIdentifier);
 				filter.append(" && ");
-				filter.append("propField"+fieldClassNo+".structFieldID == structFieldID"+structIdentifier);
+				filter.append(QUERY_DATAFIELD_VARNAME_PREFIX+itemIndex+".structFieldID == structFieldID"+structIdentifier);
 				filter.append(")");
 				if (iterator.hasNext())
 					filter.append(" || ");
@@ -275,7 +284,7 @@ public abstract class PropSearchFilter
 
 			filter.append(" && ");
 
-			item.appendSubQuery(n, fieldClassNo, imports, vars, filter, params, paramMap);
+			item.appendSubQuery(itemIndex, imports, vars, filter, params, paramMap);
 
 			filter.append(")");
 
@@ -295,8 +304,9 @@ public abstract class PropSearchFilter
 					throw new IllegalStateException("conjunction invalid!");
 				}
 			}
-			n++;
-			fieldClassNo++;
+			itemIndex++;
+//			n++;
+//			fieldClassNo++;
 		}  // for (Iterator iter = itemList.iterator(); iter.hasNext();)
 
 	}

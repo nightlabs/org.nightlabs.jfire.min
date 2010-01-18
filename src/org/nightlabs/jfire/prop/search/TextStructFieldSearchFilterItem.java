@@ -26,9 +26,14 @@
 
 package org.nightlabs.jfire.prop.search;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.nightlabs.jdo.search.MatchType;
+import org.nightlabs.jfire.prop.DataField;
 import org.nightlabs.jfire.prop.datafield.TextDataField;
 import org.nightlabs.jfire.prop.id.StructFieldID;
 
@@ -36,82 +41,102 @@ import org.nightlabs.jfire.prop.id.StructFieldID;
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  * @author Marc Klinger - marc[at]nightlabs[dot]de
  */
-public class TextPropSearchFilterItem extends PropSearchFilterItem
+public class TextStructFieldSearchFilterItem extends AbstractStructFieldSearchFilterItem
 {
+	public static final EnumSet<MatchType> SUPPORTED_MATCH_TYPES = EnumSet.of(
+			MatchType.EQUALS,
+			MatchType.BEGINSWITH,
+			MatchType.ENDSWITH,
+			MatchType.CONTAINS,
+			MatchType.NOTEQUALS,
+			MatchType.MATCHES,
+			MatchType.NOTCONTAINS);
+	
 	/**
 	 * The serial version of this class.
 	 */
 	private static final long serialVersionUID = 20080811L;
+	
+	private String searchText;
 
-	public TextPropSearchFilterItem(StructFieldID structFieldID, int matchType, String needle) {
-		super(structFieldID, matchType, needle);
+	public TextStructFieldSearchFilterItem(Collection<StructFieldID> collection, MatchType matchType, String searchText) {
+		super(collection, matchType);
+
+		this.searchText = searchText;
 	}
-
-	public TextPropSearchFilterItem(StructFieldID[] structFieldIDs, int matchType, String needle) {
-		super(structFieldIDs, matchType, needle);
+	
+	public TextStructFieldSearchFilterItem(StructFieldID structFieldID, MatchType matchType, String searchText) {
+		this(Collections.singleton(structFieldID), matchType, searchText);
 	}
-
-	/* (non-Javadoc)
-	 * @see org.nightlabs.jdo.search.SearchFilterItem#isConstraint()
-	 */
-	@Override
-	public boolean isConstraint() {
-		return !"".equals(this.needle);
+	
+	protected String getSearchString() {
+		return searchText;
 	}
 
 	private boolean addedParams = false;
 
-	/* (non-Javadoc)
-	 * @see org.nightlabs.jdo.search.SearchFilterItem#appendSubQuery(int, int, java.util.Set, java.lang.StringBuffer, java.lang.StringBuffer, java.lang.StringBuffer, java.util.Map)
-	 */
 	@Override
-	public void appendSubQuery(int itemIndex, int itemSubIndex, Set<Class<?>> imports, StringBuffer vars,
-			StringBuffer filter, StringBuffer params, Map<String, Object> paramMap) {
+	public void appendSubQuery(int itemIndex, Set<Class<?>> imports, StringBuffer vars, StringBuffer filter,
+			StringBuffer params, Map<String, Object> paramMap) {
 
-		String needleLowerCase = "needle"+itemIndex+".toLowerCase()";
+		String searchTextLowerCase = "searchText"+itemIndex+".toLowerCase()";
 		if (!addedParams) {
 			params.append(", ");
-			params.append(String.class.getName()+" needle"+itemIndex);
-			paramMap.put("needle"+itemIndex, getNeedle());
+			params.append(String.class.getName()+" searchText"+itemIndex);
+			paramMap.put("searchText"+itemIndex, getSearchString());
 			addedParams = true;
 		}
 
-		filter.append(QUERY_DATAFIELD_VARNAME+itemSubIndex+".text.toLowerCase()");
+		filter.append(getComparisonLeftHandSide(itemIndex));
 		switch (matchType) {
-			case MATCHTYPE_BEGINSWITH:
-				filter.append(".startsWith("+needleLowerCase+")");
+			case BEGINSWITH:
+				filter.append(".startsWith("+searchTextLowerCase+")");
 				break;
-			case MATCHTYPE_ENDSWITH:
-				filter.append(".endsWith("+needleLowerCase+")");
+			case ENDSWITH:
+				filter.append(".endsWith("+searchTextLowerCase+")");
 				break;
-			case MATCHTYPE_CONTAINS:
-				filter.append(".indexOf("+needleLowerCase+") >= 0");
+			case CONTAINS:
+				filter.append(".indexOf("+searchTextLowerCase+") >= 0");
 				break;
-			case MATCHTYPE_NOTCONTAINS:
-				filter.append(".indexOf("+needleLowerCase+") < 0");
+			case NOTCONTAINS:
+				filter.append(".indexOf("+searchTextLowerCase+") < 0");
 				break;
-			case MATCHTYPE_EQUALS:
-				filter.append(" == "+needleLowerCase);
+			case EQUALS:
+				filter.append(" == "+searchTextLowerCase);
 				break;
-			case MATCHTYPE_NOTEQUALS:
-				filter.append(" != "+needleLowerCase);
+			case NOTEQUALS:
+				filter.append(" != "+searchTextLowerCase);
 				break;
-			case MATCHTYPE_MATCHES:
+			case MATCHES:
 				params.append(", ");
 				params.append(String.class.getName()+" regex"+itemIndex);
-				paramMap.put("regex"+itemIndex, getNeedle());
+				paramMap.put("regex"+itemIndex, getSearchString());
 				filter.append(".toLowerCase().matches(regex"+itemIndex+".toLowerCase())");
 				break;
 			default:
-				filter.append(" == "+needleLowerCase);
+				filter.append(" == "+searchTextLowerCase);
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.nightlabs.jdo.search.SearchFilterItem#getItemTargetClass()
+	/**
+	 * Extendors may return a different string here to represent the left-hand-side of the
+	 * comparison in the query for the given <code>itemSubIndex</code>.
+	 * 
+	 * @see DisplayNameSearchFilterItem#getComparisonLeftHandSide(int)
+	 * @param itemIndex The index of the search filter item in the list.
+	 * @return
 	 */
+	protected String getComparisonLeftHandSide(int itemIndex) {
+		return PropSearchFilter.QUERY_DATAFIELD_VARNAME_PREFIX+itemIndex+".text.toLowerCase()";
+	}
+
 	@Override
-	public Class<TextDataField> getItemTargetClass() {
+	public Class<? extends DataField> getDataFieldClass() {
 		return TextDataField.class;
+	}
+
+	@Override
+	public EnumSet<MatchType> getSupportedMatchTypes() {
+		return SUPPORTED_MATCH_TYPES;
 	}
 }

@@ -26,74 +26,68 @@
 
 package org.nightlabs.jfire.prop.search;
 
-import java.util.Map;
-import java.util.Set;
+import java.util.Collection;
+
+import org.nightlabs.jdo.search.MatchType;
+import org.nightlabs.jfire.prop.DataField;
+import org.nightlabs.jfire.prop.id.StructFieldID;
 
 /**
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  * @author Marc Klinger - marc[at]nightlabs[dot]de
  */
-public class DisplayNameSearchFilterItem extends PropSearchFilterItem
+public class DisplayNameSearchFilterItem extends TextStructFieldSearchFilterItem
 {
 	/**
 	 * The serial version of this class.
 	 */
 	private static final long serialVersionUID = 1L;
-
-	public DisplayNameSearchFilterItem(int matchType, String needle) {
-		super(matchType, needle);
+	
+	public DisplayNameSearchFilterItem(MatchType matchType, String searchText) {
+		super((Collection<StructFieldID>) null, matchType, searchText);
 	}
-
-	/* (non-Javadoc)
-	 * @see org.nightlabs.jdo.search.SearchFilterItem#isConstraint()
-	 */
+	
 	@Override
-	public boolean isConstraint() {
-		return !"".equals(needle);
-	}
-
-	/* (non-Javadoc)
-	 * @see org.nightlabs.jdo.search.SearchFilterItem#getItemTargetClass()
-	 */
-	@Override
-	public Class<?> getItemTargetClass() {
+	public Class<? extends DataField> getDataFieldClass() {
 		return null;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.nightlabs.jdo.search.SearchFilterItem#appendSubQuery(int, int, java.util.Set, java.lang.StringBuffer, java.lang.StringBuffer, java.lang.StringBuffer, java.util.Map)
-	 */
+//	@Override
+//	public void appendSubQuery(int itemIndex, int itemSubIndex, Set<Class<?>> imports,
+//			StringBuffer vars, StringBuffer filter, StringBuffer params, Map<String, Object> paramMap) {
+//
+//		params.append(", ");
+//		String needleLowerCase = "needle"+itemIndex+".toLowerCase()";
+//		params.append(String.class.getName()+" needle"+itemIndex);
+//		paramMap.put("needle"+itemIndex, getSearchString());
+//
+//		filter.append(PropSearchFilter.PROPERTY_VARNAME+".displayName.toLowerCase()");
+//		switch (matchType) {
+//			case MATCHTYPE_BEGINSWITH:
+//				filter.append(".startsWith("+needleLowerCase+")");
+//				break;
+//			case MATCHTYPE_ENDSWITH:
+//				filter.append(".endsWith("+needleLowerCase+")");
+//				break;
+//			case MATCHTYPE_CONTAINS:
+//				filter.append(".indexOf("+needleLowerCase+") >= 0");
+//				break;
+//			case MATCHTYPE_NOTCONTAINS:
+//				filter.append(".indexOf("+needleLowerCase+") < 0");
+//				break;
+//			case MATCHTYPE_EQUALS:
+//				filter.append(" == "+needleLowerCase);
+//				break;
+//			case MATCHTYPE_NOTEQUALS:
+//				filter.append(" != "+needleLowerCase);
+//				break;
+//			default:
+//				filter.append(" == "+needleLowerCase);
+//		}
+//	}
+	
 	@Override
-	public void appendSubQuery(int itemIndex, int itemSubIndex, Set<Class<?>> imports,
-			StringBuffer vars, StringBuffer filter, StringBuffer params, Map<String, Object> paramMap) {
-
-		params.append(", ");
-		String needleLowerCase = "needle"+itemIndex+".toLowerCase()";
-		params.append(String.class.getName()+" needle"+itemIndex);
-		paramMap.put("needle"+itemIndex, getNeedle());
-
-		filter.append(PropSearchFilter.PROPERTY_VARNAME+".displayName.toLowerCase()");
-		switch (matchType) {
-			case MATCHTYPE_BEGINSWITH:
-				filter.append(".startsWith("+needleLowerCase+")");
-				break;
-			case MATCHTYPE_ENDSWITH:
-				filter.append(".endsWith("+needleLowerCase+")");
-				break;
-			case MATCHTYPE_CONTAINS:
-				filter.append(".indexOf("+needleLowerCase+") >= 0");
-				break;
-			case MATCHTYPE_NOTCONTAINS:
-				filter.append(".indexOf("+needleLowerCase+") < 0");
-				break;
-			case MATCHTYPE_EQUALS:
-				filter.append(" == "+needleLowerCase);
-				break;
-			case MATCHTYPE_NOTEQUALS:
-				filter.append(" != "+needleLowerCase);
-				break;
-			default:
-				filter.append(" == "+needleLowerCase);
-		}
+	protected String getComparisonLeftHandSide(int itemSubIndex) {
+		return PropSearchFilter.PROPERTY_VARNAME+".displayName.toLowerCase()";
 	}
 }
