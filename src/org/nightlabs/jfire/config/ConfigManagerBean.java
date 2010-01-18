@@ -705,7 +705,8 @@ public class ConfigManagerBean extends BaseSessionBeanImpl implements ConfigMana
 			UserConfigSetup userConfigSetup = new UserConfigSetup(organisationID);
 			pm.makePersistent(userConfigSetup);
 
-			userConfigSetup.getConfigModuleClasses().add(StringBasedEditLayoutConfigModule.class.getName());
+			if (!userConfigSetup.getConfigModuleClasses().contains(StringBasedEditLayoutConfigModule.class.getName()))
+				userConfigSetup.getConfigModuleClasses().add(StringBasedEditLayoutConfigModule.class.getName());
 
 			WorkstationConfigSetup workstationConfigSetup = new WorkstationConfigSetup(organisationID);
 			pm.makePersistent(workstationConfigSetup);
