@@ -2,10 +2,10 @@
 <project-modules id="moduleCoreId" project-version="1.5.0">
     <wb-module deploy-name="NightLabsXStreamEAR">
         <wb-resource deploy-path="/" source-path="/EarContent"/>
-        <dependent-module deploy-path="/lib" handle="module:/classpath/lib/NightLabsXStream/dist/lib/xpp3-1.1.3.4.jar">
+        <dependent-module archiveName="com.thoughtworks.xstream.jar" deploy-path="/" handle="module:/resource/com.thoughtworks.xstream/com.thoughtworks.xstream">
             <dependency-type>uses</dependency-type>
         </dependent-module>
-        <dependent-module deploy-path="/lib" handle="module:/classpath/lib/NightLabsXStream/dist/lib/xstream-1.2.jar">
+        <dependent-module archiveName="org.xmlpull.jar" deploy-path="/" handle="module:/resource/org.xmlpull/org.xmlpull">
             <dependency-type>uses</dependency-type>
         </dependent-module>
     </wb-module>

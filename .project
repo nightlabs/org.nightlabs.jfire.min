@@ -3,8 +3,9 @@
 	<name>NightLabsXStreamEAR</name>
 	<comment></comment>
 	<projects>
-		<project>NightLabsXStream</project>
 		<project>NightLabsXStreamEAR</project>
+		<project>com.thoughtworks.xstream</project>
+		<project>org.xmlpull</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
