@@ -72,6 +72,13 @@ public interface IStruct
 	 * @return All {@link StructBlock}s for this Struct.
 	 */
 	public List<StructBlock> getStructBlocks();
+	
+	/**
+	 * Returns <b>all</b> {@link StructField}s of this Struct.
+	 * 
+	 * @return all {@link StructField}s of this Struct.
+	 */
+	public List<StructField<?>> getStructFields();
 
 	/**
 	 * A shortcut to {@link #getStructBlock(String, String)}.

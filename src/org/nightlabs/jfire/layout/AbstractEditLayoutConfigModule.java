@@ -83,7 +83,7 @@ public abstract class AbstractEditLayoutConfigModule<O, E extends AbstractEditLa
 	 */
 	public static String getCfModID(String clientType, String useCaseName)
 	{
-		if (clientType.contains("/") || useCaseName.contains("/"))
+		if (clientType.contains(CFMODID_SEPARATOR) || useCaseName.contains(CFMODID_SEPARATOR))
 			throw new IllegalArgumentException("Either the given clientType or the useCaseName contains a '"+
 					CFMODID_SEPARATOR+"', this is not allowed: clientType="+clientType+", useCaseName="+useCaseName);
 		return clientType + CFMODID_SEPARATOR + useCaseName;
@@ -106,7 +106,8 @@ public abstract class AbstractEditLayoutConfigModule<O, E extends AbstractEditLa
 	@Persistent(
 		nullValue=NullValue.EXCEPTION,
 		mappedBy="configModule",
-		persistenceModifier=PersistenceModifier.PERSISTENT)
+		persistenceModifier=PersistenceModifier.PERSISTENT,
+		dependentElement="true")
 	private List<AbstractEditLayoutEntry<?>> editLayoutEntries;
 
 	/* (non-Javadoc)

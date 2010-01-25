@@ -163,22 +163,26 @@ public abstract class PropSearchFilter
 //		boolean firstItemProcessed = false;
 		Map<Class<?>, List<AbstractStructFieldSearchFilterItem>> filterItemsPerClass = new HashMap<Class<?>, List<AbstractStructFieldSearchFilterItem>>();
 
-		// check if it does constrain at all
-		// and if query has to be executed
-		// sort all filterItems by targetClasses in personFilterItemsPerClass
-		for (Iterator<ISearchFilterItem> it = getFilters().iterator(); it.hasNext(); ) {
+		// If there are no FilterItems registered, the search is unconstrained and we add a true expression and return
+		if (getFilterItems().isEmpty()) {
+			filter.append("1 == 1");
+			return;
+		}
+			
+		// Otherwise, we build the query
+		for (Iterator<ISearchFilterItem> it = getFilterItems().iterator(); it.hasNext(); ) {
 			ISearchFilterItem item = it.next();
 			if (!AbstractStructFieldSearchFilterItem.class.isAssignableFrom(item.getClass()))
 				continue;
-			
+
 			AbstractStructFieldSearchFilterItem searchFilterItem = (AbstractStructFieldSearchFilterItem) item;
-			
-//		Change in the API: Now the SearchFilterItemEditor indicates whether it has a constraint
-//		and SearchFilterItems are only added for those with constraint. Therefore this check is skipped. Tobias.
-//			if (item.isConstraint()) {
-//				if (!firstItemProcessed) { firstItemProcessed = true;}
-//			}
-			
+
+			//		Change in the API: Now the SearchFilterItemEditor indicates whether it has a constraint
+			//		and SearchFilterItems are only added for those with constraint. Therefore this check is skipped. Tobias.
+			//			if (item.isConstraint()) {
+			//				if (!firstItemProcessed) { firstItemProcessed = true;}
+			//			}
+
 			List<AbstractStructFieldSearchFilterItem> itemList = filterItemsPerClass.get(searchFilterItem.getDataFieldClass());
 			if (itemList == null) {
 				itemList = new ArrayList<AbstractStructFieldSearchFilterItem>();
@@ -222,7 +226,7 @@ public abstract class PropSearchFilter
 //		int fieldClassNo = 0;
 		int itemIndex = 0;
 		// itearte a second time to fill the query
-		for (Iterator<ISearchFilterItem> iter = getFilters().iterator(); iter.hasNext(); ) {
+		for (Iterator<ISearchFilterItem> iter = getFilterItems().iterator(); iter.hasNext(); ) {
 			if (params.length() > 0)
 				params.append(", ");
 			IStructFieldSearchFilterItem item = (IStructFieldSearchFilterItem) iter.next();

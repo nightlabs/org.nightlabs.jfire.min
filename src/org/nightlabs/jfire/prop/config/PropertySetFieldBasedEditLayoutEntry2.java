@@ -1,25 +1,22 @@
 package org.nightlabs.jfire.prop.config;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 
-import javax.jdo.JDOHelper;
-import javax.jdo.PersistenceManager;
 import javax.jdo.annotations.FetchGroup;
 import javax.jdo.annotations.FetchGroups;
 import javax.jdo.annotations.IdentityType;
 import javax.jdo.annotations.Inheritance;
 import javax.jdo.annotations.InheritanceStrategy;
+import javax.jdo.annotations.Join;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.PersistenceModifier;
 import javax.jdo.annotations.Persistent;
-import javax.jdo.listener.AttachCallback;
-import javax.jdo.listener.DetachCallback;
-import javax.jdo.listener.StoreCallback;
 
 import org.nightlabs.jfire.layout.AbstractEditLayoutEntry;
 import org.nightlabs.jfire.layout.EditLayoutEntry;
 import org.nightlabs.jfire.prop.StructField;
-import org.nightlabs.jfire.prop.id.StructFieldID;
 
 /**
  * Base implementation for FieldBased UI of PropertySets.
@@ -33,7 +30,7 @@ import org.nightlabs.jfire.prop.id.StructFieldID;
 @PersistenceCapable(
 	identityType=IdentityType.APPLICATION,
 	detachable="true",
-	table="JFireBase_Layout_PropertySetFieldBasedEditLayoutEntry")
+	table="JFireBase_Prop_PropertySetFieldBasedEditLayoutEntry2")
 @FetchGroups({
 //	@FetchGroup(
 //		fetchGroups={"default"},
@@ -41,29 +38,29 @@ import org.nightlabs.jfire.prop.id.StructFieldID;
 //		members=@Persistent(name="gridData")),
 	@FetchGroup(
 		fetchGroups={"default"},
-		name=PropertySetFieldBasedEditLayoutEntry2.FETCH_GROUP_STRUCT_FIELD,
-		members=@Persistent(name="object"))
+		name=PropertySetFieldBasedEditLayoutEntry2.FETCH_GROUP_STRUCT_FIELDS,
+		members=@Persistent(name="structFields"))
 })
 @Inheritance(strategy=InheritanceStrategy.NEW_TABLE)
 public class PropertySetFieldBasedEditLayoutEntry2
-	extends AbstractEditLayoutEntry<StructField<?>>
-	implements DetachCallback, AttachCallback, StoreCallback
+	extends AbstractEditLayoutEntry<Set<StructField>>
 {
 	private static final long serialVersionUID = 20100108L;
 
 	public static final String ENTRY_TYPE_STRUCT_FIELD_REFERENCE = "structFieldReference";
-	public static final String FETCH_GROUP_STRUCT_FIELD = "PropertySetFieldBasedEditLayoutEntry.structField";
-	public static final String FETCH_GROUP_STRUCT_FIELD_ID = "PropertySetFieldBasedEditLayoutEntry.structFieldID";
+	public static final String ENTRY_TYPE_MULTI_STRUCT_FIELD_REFERENCE = "multiStructFieldReference";
+	public static final String FETCH_GROUP_STRUCT_FIELDS = "PropertySetFieldBasedEditLayoutEntry.structFields";
 
 	public static class FieldName {
 		public static final String structFieldID = "structFieldID";
 	}
-
-	@Persistent(persistenceModifier=PersistenceModifier.NONE)
-	private StructFieldID structFieldID;
-	@Persistent
-	private StructField<?> structField;
-
+	
+	@Join
+	@Persistent(
+			table="JFireBase_Prop_PropertySetFieldBasedEditLayoutEntry_structFields",
+			persistenceModifier=PersistenceModifier.PERSISTENT)
+	private Set<StructField> structFields;
+	
 	/**
 	 * @deprecated Only for JDO
 	 */
@@ -78,69 +75,22 @@ public class PropertySetFieldBasedEditLayoutEntry2
 	{
 		super(configModule, entryID, entryType);
 	}
-
-	public StructFieldID getStructFieldID() {
-		return structFieldID;
+	
+	public Set<StructField> getStructFields() {
+		return Collections.unmodifiableSet(structFields);
 	}
-
-	public void setStructFieldID(StructFieldID structFieldID) {
-		this.structFieldID = structFieldID;
-	}
-
-	@Override
-	public void jdoPostDetach(Object attached) {
-		PersistenceManager pm = JDOHelper.getPersistenceManager(attached);
-		if (pm == null)
-			throw new IllegalStateException("PersistenceManager is null on attached instance?");
-		if (pm.getFetchPlan().getGroups().contains(FETCH_GROUP_STRUCT_FIELD_ID)) {
-			StructField<?> pStructField = ((PropertySetFieldBasedEditLayoutEntry2) attached).getObject();
-			if (pStructField == null)
-				this.structFieldID = null;
-			else
-				this.structFieldID = (StructFieldID) JDOHelper.getObjectId(pStructField);
-		}
+	
+	public void setStructFields(Set<StructField> structFields) {
+		 this.structFields = new HashSet<StructField>(structFields);
 	}
 
 	@Override
-	public void jdoPreDetach() {
-		PersistenceManager pm = JDOHelper.getPersistenceManager(this);
-		if (pm == null)
-			throw new IllegalStateException("PersistenceManager is null on attached instance?");
-		Set<?> groups = pm.getFetchPlan().getGroups();
-		if (groups.contains(FETCH_GROUP_STRUCT_FIELD_ID) && groups.contains(FETCH_GROUP_STRUCT_FIELD))
-			throw new IllegalStateException("For consistency reasons you can't detach both " + FETCH_GROUP_STRUCT_FIELD + " and " + FETCH_GROUP_STRUCT_FIELD_ID + " of an " + this.getClass().getSimpleName());
+	public Set<StructField> getObject() {
+		return getStructFields();
 	}
 
 	@Override
-	public void jdoPostAttach(Object detached) {
-		PropertySetFieldBasedEditLayoutEntry2 detachedEntry = (PropertySetFieldBasedEditLayoutEntry2) detached;
-		if (detachedEntry.structFieldID == null)
-			return;
-		PersistenceManager pm = JDOHelper.getPersistenceManager(this);
-		if (pm == null)
-			throw new IllegalStateException("PersistenceManager is null on attached instance?");
-		setObject((StructField<?>) pm.getObjectById(detachedEntry.structFieldID));
+	public void setObject(Set<StructField> object) {
+		setStructFields(object);
 	}
-
-	@Override
-	public void jdoPreAttach() {
-	}
-
-	@Override
-	public void jdoPreStore() {
-		jdoPostAttach(this);
-	}
-
-	@Override
-	public StructField<?> getObject()
-	{
-		return structField;
-	}
-
-	@Override
-	public void setObject(StructField<?> object)
-	{
-		this.structField = object;
-	}
-
 }

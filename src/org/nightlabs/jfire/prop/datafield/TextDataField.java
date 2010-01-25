@@ -26,21 +26,21 @@
 
 package org.nightlabs.jfire.prop.datafield;
 
+import javax.jdo.annotations.FetchGroup;
+import javax.jdo.annotations.FetchGroups;
+import javax.jdo.annotations.IdentityType;
+import javax.jdo.annotations.Inheritance;
+import javax.jdo.annotations.InheritanceStrategy;
+import javax.jdo.annotations.PersistenceCapable;
+import javax.jdo.annotations.PersistenceModifier;
+import javax.jdo.annotations.Persistent;
+
 import org.nightlabs.i18n.I18nText;
 import org.nightlabs.i18n.StaticI18nText;
 import org.nightlabs.jfire.prop.DataBlock;
 import org.nightlabs.jfire.prop.DataField;
 import org.nightlabs.jfire.prop.PropertySet;
 import org.nightlabs.jfire.prop.StructField;
-
-import javax.jdo.annotations.Persistent;
-import javax.jdo.annotations.FetchGroups;
-import javax.jdo.annotations.InheritanceStrategy;
-import javax.jdo.annotations.Inheritance;
-import javax.jdo.annotations.PersistenceCapable;
-import javax.jdo.annotations.FetchGroup;
-import javax.jdo.annotations.IdentityType;
-import javax.jdo.annotations.PersistenceModifier;
 
 /**
  * {@link DataField} that stores a text value.
@@ -76,7 +76,6 @@ implements II18nTextDataField
 	 */
 	private static final long serialVersionUID = 20090116L;
 	
-	/** @jdo.field persistence-modifier="none" */
 	@Persistent(persistenceModifier=PersistenceModifier.NONE)
 	private transient StaticI18nText textBuffer = null;
 
@@ -99,15 +98,12 @@ implements II18nTextDataField
 	}
 
 	/**
-	 * Used for cloning. 
+	 * Used for cloning.
 	 */
 	protected TextDataField(String organisationID, long propertySetID, DataField cloneField) {
 		super(organisationID, propertySetID, cloneField);
 	}
 
-	/**
-	 * @jdo.field persistence-modifier="persistent"
-	 */
 	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
 	protected String text;
 
@@ -130,9 +126,6 @@ implements II18nTextDataField
 		getI18nText().setStaticText(getStaticTextValue());
 	}
 
-	/* (non-Javadoc)
-	 * @see org.nightlabs.jfire.prop.DataField#isEmpty()
-	 */
 	@Override
 	public boolean isEmpty()
 	{
@@ -141,9 +134,6 @@ implements II18nTextDataField
 		return getText().equals("");
 	}
 
-	/* (non-Javadoc)
-	 * @see org.nightlabs.jfire.prop.DataField#cloneDataField(org.nightlabs.jfire.prop.PropertySet)
-	 */
 	@Override
 	public DataField cloneDataField(PropertySet propertySet) {
 		TextDataField newField = new TextDataField(
@@ -211,7 +201,7 @@ implements II18nTextDataField
 	 */
 	@Override
 	public boolean supportsInputType(Class<?> inputType) {
-		return 
+		return
 			String.class.isAssignableFrom(inputType) ||
 			TextDataField.class.isAssignableFrom(inputType) ||
 			I18nTextDataField.class.isAssignableFrom(inputType) ||

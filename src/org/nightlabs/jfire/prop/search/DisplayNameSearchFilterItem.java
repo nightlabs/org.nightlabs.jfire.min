@@ -36,7 +36,7 @@ import org.nightlabs.jfire.prop.id.StructFieldID;
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  * @author Marc Klinger - marc[at]nightlabs[dot]de
  */
-public class DisplayNameSearchFilterItem extends TextStructFieldSearchFilterItem
+public class DisplayNameSearchFilterItem extends AbstractTextBasedStructFieldSearchFilterItem
 {
 	/**
 	 * The serial version of this class.

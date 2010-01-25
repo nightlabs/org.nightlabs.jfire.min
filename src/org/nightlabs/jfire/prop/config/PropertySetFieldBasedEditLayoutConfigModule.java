@@ -77,7 +77,8 @@ public class PropertySetFieldBasedEditLayoutConfigModule extends ConfigModule {
 	@Persistent(
 		nullValue=NullValue.EXCEPTION,
 		mappedBy="configModule",
-		persistenceModifier=PersistenceModifier.PERSISTENT)
+		persistenceModifier=PersistenceModifier.PERSISTENT,
+		dependentElement="true")
 	private List<PropertySetFieldBasedEditLayoutEntry> editLayoutEntries;
 
 	/**

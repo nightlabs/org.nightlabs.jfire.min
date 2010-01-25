@@ -32,6 +32,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.jdo.annotations.FetchGroup;
+import javax.jdo.annotations.FetchGroups;
+import javax.jdo.annotations.IdentityType;
+import javax.jdo.annotations.Inheritance;
+import javax.jdo.annotations.InheritanceStrategy;
+import javax.jdo.annotations.PersistenceCapable;
+import javax.jdo.annotations.PersistenceModifier;
+import javax.jdo.annotations.Persistent;
+
 import org.nightlabs.jfire.prop.DataBlock;
 import org.nightlabs.jfire.prop.DataField;
 import org.nightlabs.jfire.prop.StructBlock;
@@ -40,15 +49,6 @@ import org.nightlabs.jfire.prop.IStruct.OrderMoveDirection;
 import org.nightlabs.jfire.prop.datafield.SelectionDataField;
 import org.nightlabs.jfire.prop.exception.StructFieldValueNotFoundException;
 import org.nightlabs.jfire.prop.id.StructFieldID;
-
-import javax.jdo.annotations.Persistent;
-import javax.jdo.annotations.FetchGroups;
-import javax.jdo.annotations.InheritanceStrategy;
-import javax.jdo.annotations.Inheritance;
-import javax.jdo.annotations.FetchGroup;
-import javax.jdo.annotations.PersistenceCapable;
-import javax.jdo.annotations.IdentityType;
-import javax.jdo.annotations.PersistenceModifier;
 
 /**
  * {@link StructField} that represents a {@link DataField} that references a

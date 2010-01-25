@@ -3,6 +3,7 @@ package org.nightlabs.jfire.prop;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -43,14 +44,26 @@ public abstract class AbstractStruct implements IStruct, Serializable
 	 * returns an unmodifiable view of that.
 	 * </p>
 	 * <p>
-	 * Note that extendors (like {@link StructLocal}) might 
-	 * override and return other blocks here. 
+	 * Note that extendors (like {@link StructLocal}) might
+	 * override and return other blocks here.
 	 * </p>
 	 */
 	@Override
 	public List<StructBlock> getStructBlocks()
 	{
 		return Collections.unmodifiableList(getStructBlockList());
+	}
+
+	@Override
+	public List<StructField<?>> getStructFields() {
+		List<StructBlock> structBlocks = getStructBlocks();
+		List<StructField<?>> structFieldList = new LinkedList<StructField<?>>();
+		
+		for (StructBlock block : structBlocks) {
+			structFieldList.addAll(block.getStructFields());
+		}
+		
+		return Collections.unmodifiableList(structFieldList);
 	}
 
 	/*
@@ -85,7 +98,7 @@ public abstract class AbstractStruct implements IStruct, Serializable
 
 	private void initialiseStructBlockMap()
 	{
-		// The structBlockMap is initialized with ALL blocks of  
+		// The structBlockMap is initialized with ALL blocks of
 		// the Struct and possibly others from the StructLocal
 		// getStructBlockList()
 		structBlockMap = new HashMap<String, StructBlock>(getStructBlocks().size());
@@ -250,8 +263,8 @@ public abstract class AbstractStruct implements IStruct, Serializable
 	}
 
 	/**
-	 * @return the set of {@link IPropertySetValidator}s associated with this 
-	 * structure. 
+	 * @return the set of {@link IPropertySetValidator}s associated with this
+	 * structure.
 	 */
 	protected abstract Set<IPropertySetValidator> getPropertySetValidatorSet();
 

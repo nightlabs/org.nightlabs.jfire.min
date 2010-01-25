@@ -461,7 +461,7 @@ public class StructLocal extends AbstractStruct implements DetachCallback, Attac
 		Collections.sort(blocks, getStructBlockComparator());
 		return blocks;
 	}
-
+	
 	/**
 	 * @jdo.field persistence-modifier="none"
 	 */
