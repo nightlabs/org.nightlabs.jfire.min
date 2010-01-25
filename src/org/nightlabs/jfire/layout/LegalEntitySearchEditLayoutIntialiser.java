@@ -1,5 +1,7 @@
 package org.nightlabs.jfire.layout;
 
+import java.util.Collections;
+
 import javax.jdo.JDOHelper;
 import javax.jdo.annotations.IdentityType;
 import javax.jdo.annotations.Inheritance;
@@ -57,8 +59,8 @@ public class LegalEntitySearchEditLayoutIntialiser
 			int horSpan)
 	{
 		PropertySetFieldBasedEditLayoutEntry2 entry = cfMod.createEditLayoutEntry(PropertySetFieldBasedEditLayoutEntry2.ENTRY_TYPE_STRUCT_FIELD_REFERENCE);
-		StructField<?> structField = (StructField<?>) JDOHelper.getPersistenceManager(this).getObjectById(structFieldID);
-		entry.setObject(structField);
+		StructField structField = (StructField<?>) JDOHelper.getPersistenceManager(this).getObjectById(structFieldID);
+		entry.setObject(Collections.singleton(structField));
 		GridData gd = new GridData(IDGenerator.nextID(GridData.class));
 		gd.setHorizontalAlignment(GridData.FILL);
 		gd.setGrabExcessHorizontalSpace(true);
