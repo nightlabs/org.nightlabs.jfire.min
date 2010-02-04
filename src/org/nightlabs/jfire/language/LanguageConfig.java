@@ -18,7 +18,8 @@ import org.nightlabs.jfire.organisation.Organisation;
 @PersistenceCapable(
 		identityType=IdentityType.APPLICATION,
 		objectIdClass=LanguageConfigID.class,
-		table="JFireBase_LanguageConfig"
+		table="JFireBase_LanguageConfig",
+		detachable="true"
 )
 public class LanguageConfig
 implements Serializable
