@@ -25,6 +25,7 @@
  ******************************************************************************/
 
 package org.nightlabs.jfire.language;
+
 import java.util.Collection;
 
 import javax.annotation.security.RolesAllowed;
@@ -48,17 +49,9 @@ public class LanguageManagerBean extends BaseSessionBeanImpl implements Language
 	private static final long serialVersionUID = 1L;
 	private static final Logger logger = Logger.getLogger(LanguageManagerBean.class);
 
-	/* (non-Javadoc)
-	 * @see org.nightlabs.jfire.language.LanguageManagerRemote#createLanguage(org.nightlabs.language.LanguageCf)
+	/**
+	 * {@inheritDoc}
 	 */
-	@RolesAllowed("org.nightlabs.jfire.language.createLanguage")
-	@Override
-	public void createLanguage(LanguageCf langCf)
-	throws LanguageException
-	{
-		createLanguage(langCf, true, false);
-	}
-
 	@RolesAllowed("org.nightlabs.jfire.language.createLanguage")
 	@Override
 	public Language createLanguage(LanguageCf langCf, boolean autoSync, boolean get)
@@ -109,7 +102,9 @@ public class LanguageManagerBean extends BaseSessionBeanImpl implements Language
 		}
 	}
 
-
+	/**
+	 * {@inheritDoc}
+	 */
 	/* (non-Javadoc)
 	 * @see org.nightlabs.jfire.language.LanguageManagerRemote#getLanguages()
 	 */
@@ -133,6 +128,9 @@ public class LanguageManagerBean extends BaseSessionBeanImpl implements Language
 		}
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@RolesAllowed("_Guest_")
 	@Override
 	public LanguageConfig getLanguageConfig(String[] fetchGroups, int maxFetchDepth) {
@@ -147,9 +145,12 @@ public class LanguageManagerBean extends BaseSessionBeanImpl implements Language
 		}
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@RolesAllowed("org.nightlabs.jfire.language.createLanguage") // TODO not nice, but for now it's OK.
 	@Override
-	public LanguageConfig setLanguageConfig(LanguageConfig languageConfig, boolean get, String[] fetchGroups, int maxFetchDepth) {
+	public LanguageConfig storeLanguageConfig(LanguageConfig languageConfig, boolean get, String[] fetchGroups, int maxFetchDepth) {
 		if (languageConfig == null)
 			throw new IllegalArgumentException("languageConfig == null");
 
@@ -161,6 +162,24 @@ public class LanguageManagerBean extends BaseSessionBeanImpl implements Language
 		}
 	}
 
+//	@Override
+//	public boolean deleteLanguageConfig() {
+//		PersistenceManager pm = createPersistenceManager();
+//		try {
+//			LanguageConfig languageConfig = LanguageConfig.getLanguageConfig(pm);
+//			if (languageConfig != null) {
+//				pm.deletePersistent(languageConfig);
+//				return true;
+//			}
+//			return false;
+//		} finally {
+//			pm.close();
+//		}
+//	}
+
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean deleteLanguage(LanguageID languageID) {
 		if (languageID == null)
