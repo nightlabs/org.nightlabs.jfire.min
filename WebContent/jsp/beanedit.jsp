@@ -56,13 +56,11 @@
 					Object realValue = me.getValue();
 					String value = realValue != null ? String
 							.valueOf(realValue) : "";
-					// check if the field is Password or a normal text edit !!
-					String inputType = pd.isPasswordField()? "password" : "text";
 %>
 				<tr>
 					<td valign="top"><%=pd.getDisplayName()%> (<%=me.getKey()%>): </td>
 					<td valign="top" style="padding-left: 8px;">
-						<input type="<%=inputType%>" name="<%=name%>" value="<%=(value == null ? "" : value)%>" class="extrawide"/>
+						<input type="<%=pd.isPasswordField()? "password" : "text"%>" name="<%=name%>" value="<%=(value == null ? "" : value)%>" class="extrawide"/>
 					</td>
 <%
 	String propertyShortDescription = pd
@@ -113,10 +111,8 @@
 		</select>
 		<%
 			} else {
-						// check if the field is Password or a normal text edit !!
-						String inputType = pd.isPasswordField()? "password" : "text";
 		%>
-		<input type="<%=inputType%>" name="<%=name%>" value="<%=(value == null ? "" : value)%>" class="extrawide"/>
+		<input type="<%=pd.isPasswordField()? "password" : "text"%>" name="<%=name%>" value="<%=(value == null ? "" : value)%>" class="extrawide"/>
 		<%
 			}
 					}

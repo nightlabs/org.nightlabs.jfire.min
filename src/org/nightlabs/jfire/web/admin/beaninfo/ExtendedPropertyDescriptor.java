@@ -112,7 +112,7 @@ public class ExtendedPropertyDescriptor extends PropertyDescriptor implements Co
 
 	public Boolean isPasswordField()
 	{
-		String s = getLocalizedPropertyValue("isPasswordField");
+		String s = getLocalizedPropertyValue("passwordField");
 		return s == null ? false : Boolean.parseBoolean(s);
 	}
 	
