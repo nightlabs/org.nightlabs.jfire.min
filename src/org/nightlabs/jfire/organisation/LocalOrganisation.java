@@ -29,12 +29,12 @@ package org.nightlabs.jfire.organisation;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.StringTokenizer;
 
 import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
+import javax.jdo.Query;
 import javax.jdo.annotations.Column;
 import javax.jdo.annotations.IdentityType;
 import javax.jdo.annotations.Inheritance;
@@ -45,6 +45,7 @@ import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.PersistenceModifier;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
+import javax.jdo.annotations.Queries;
 
 import org.nightlabs.jfire.organisation.id.LocalOrganisationID;
 import org.nightlabs.util.Util;
@@ -68,6 +69,9 @@ import org.nightlabs.util.Util;
 	detachable="true",
 	table="JFireBase_LocalOrganisation")
 @Inheritance(strategy=InheritanceStrategy.NEW_TABLE)
+@Queries({
+	@javax.jdo.annotations.Query(name="LocalOrganisation", value="SELECT UNIQUE")
+})
 public class LocalOrganisation implements Serializable
 {
 	private static final long serialVersionUID = 1L;
@@ -126,15 +130,21 @@ public class LocalOrganisation implements Serializable
 
 	public static LocalOrganisation getLocalOrganisation(PersistenceManager pm)
 	{
-		Iterator<?> it = pm.getExtent(LocalOrganisation.class).iterator();
+		// Unfortunately, DataNucleus creates a new Query instance everytime 'pm.getExtent(...).iterator()' is called and it keeps
+		// this Query instance until the PM is closed :-( Therefore, we now use a simple named query - it seems to exist only once per PM.
+		// Marco. 2010-02-16
+		Query q = pm.newNamedQuery(LocalOrganisation.class, "getLocalOrganisation");
+		LocalOrganisation localOrganisation = (LocalOrganisation) q.execute();
+		q.closeAll();
+//		Iterator<?> it = pm.getExtent(LocalOrganisation.class).iterator();
 
-		if (!it.hasNext())
+		if (localOrganisation == null)
 			throw new JDOObjectNotFoundException("LocalOrganisation undefined in datastore!");
 
-		LocalOrganisation localOrganisation = (LocalOrganisation)it.next();
-
-		if (it.hasNext())
-			throw new IllegalStateException("There are multiple instances of LocalOrganisation in the datastore!!!");
+//		localOrganisation = (LocalOrganisation)it.next();
+//
+//		if (it.hasNext())
+//			throw new IllegalStateException("There are multiple instances of LocalOrganisation in the datastore!!!");
 
 		return localOrganisation;
 	}
