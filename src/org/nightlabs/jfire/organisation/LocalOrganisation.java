@@ -70,7 +70,7 @@ import org.nightlabs.util.Util;
 	table="JFireBase_LocalOrganisation")
 @Inheritance(strategy=InheritanceStrategy.NEW_TABLE)
 @Queries({
-	@javax.jdo.annotations.Query(name="LocalOrganisation", value="SELECT UNIQUE")
+	@javax.jdo.annotations.Query(name="getLocalOrganisation", value="SELECT UNIQUE")
 })
 public class LocalOrganisation implements Serializable
 {
