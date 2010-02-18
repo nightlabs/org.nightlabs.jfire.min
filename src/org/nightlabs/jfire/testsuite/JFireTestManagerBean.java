@@ -539,7 +539,7 @@ implements JFireTestManagerRemote, JFireTestManagerLocal
 		return runSuites;
 	}
 	@Override
-	public boolean checkJDOObjectByID(ObjectID objectId) throws Exception {
+	public boolean isJDOObjectExisting(ObjectID objectId) throws Exception {
 		PersistenceManager pm = createPersistenceManager();
 		try {
 			pm.getObjectById(objectId);

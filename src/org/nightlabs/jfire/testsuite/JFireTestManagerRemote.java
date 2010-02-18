@@ -46,5 +46,5 @@ public interface JFireTestManagerRemote {
 	/**
 	 * very useful method to check if a particular JDO Object exist in the data store.
 	 */
-	boolean checkJDOObjectByID(ObjectID objectId) throws Exception;
+	boolean isJDOObjectExisting(ObjectID objectId) throws Exception;
 }

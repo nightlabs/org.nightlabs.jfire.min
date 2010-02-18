@@ -48,5 +48,5 @@ public interface JFireTestManagerLocal {
 
 	public void runTestInNestedTransaction_runTest(org.nightlabs.jfire.testsuite.TestCase test) throws Exception;
 	
-	public boolean checkJDOObjectByID(ObjectID objectId) throws Exception;
+	public boolean isJDOObjectExisting(ObjectID objectId) throws Exception;
 }
