@@ -24,7 +24,7 @@ import org.nightlabs.jfire.prop.StructField;
 	identityType=IdentityType.APPLICATION,
 	detachable="true")
 @Inheritance(strategy=InheritanceStrategy.SUPERCLASS_TABLE)
-public class PropertySetFieldBasedEditLayoutConfigModule2
+public class PropertySetEditLayoutConfigModule
 	extends AbstractEditLayoutConfigModule<Set<StructField>, PropertySetFieldBasedEditLayoutEntry2>
 {
 	private static final long serialVersionUID = 20100108L;
@@ -32,7 +32,7 @@ public class PropertySetFieldBasedEditLayoutConfigModule2
 	/**
 	 * Constructs a new {@link PropertySetFieldBasedEditLayoutConfigModule}
 	 */
-	public PropertySetFieldBasedEditLayoutConfigModule2() {
+	public PropertySetEditLayoutConfigModule() {
 	}
 
 	@Override

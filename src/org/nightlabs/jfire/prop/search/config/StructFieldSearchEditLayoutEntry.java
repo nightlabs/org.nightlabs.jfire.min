@@ -11,7 +11,7 @@ import javax.jdo.annotations.Persistent;
 
 import org.nightlabs.jdo.search.MatchType;
 import org.nightlabs.jfire.prop.StructField;
-import org.nightlabs.jfire.prop.config.PropertySetFieldBasedEditLayoutConfigModule2;
+import org.nightlabs.jfire.prop.config.PropertySetEditLayoutConfigModule;
 import org.nightlabs.jfire.prop.config.PropertySetFieldBasedEditLayoutEntry2;
 
 @PersistenceCapable(
@@ -31,7 +31,7 @@ public class StructFieldSearchEditLayoutEntry extends PropertySetFieldBasedEditL
 
 	public static final String FETCH_GROUP_MATCH_TYPE = "StructFieldSearchEditLayoutEntry.matchType";
 	
-	public StructFieldSearchEditLayoutEntry(PropertySetFieldBasedEditLayoutConfigModule2 configModule, long entryID, String entryType) {
+	public StructFieldSearchEditLayoutEntry(PropertySetEditLayoutConfigModule configModule, long entryID, String entryType) {
 		super(configModule, entryID, entryType);
 	}
 
@@ -44,6 +44,14 @@ public class StructFieldSearchEditLayoutEntry extends PropertySetFieldBasedEditL
 	
 	public MatchType getMatchType() {
 		return matchType;
+	}
+	
+	@Override
+	public String getName() {
+		StringBuilder name = new StringBuilder(super.getName());
+		if (getMatchType() != null)
+			name.append("[").append(getMatchType().getLocalisedName()).append("]");
+		return name.toString();
 	}
 	
 	@Override

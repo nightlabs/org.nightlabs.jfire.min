@@ -24,10 +24,11 @@ import org.nightlabs.jfire.config.ConfigModule;
 import org.nightlabs.jfire.idgenerator.IDGenerator;
 import org.nightlabs.jfire.layout.AbstractEditLayoutEntry;
 import org.nightlabs.jfire.layout.EditLayoutEntry;
+import org.nightlabs.jfire.prop.PropertySet;
 import org.nightlabs.jfire.prop.StructField;
-import org.nightlabs.jfire.prop.config.PropertySetFieldBasedEditLayoutConfigModule2;
 import org.nightlabs.jfire.prop.config.PropertySetFieldBasedEditLayoutEntry2;
 import org.nightlabs.jfire.prop.id.StructFieldID;
+import org.nightlabs.jfire.prop.search.config.PropertySetSearchEditLayoutConfigModule;
 import org.nightlabs.jfire.prop.search.config.StructFieldSearchEditLayoutEntry;
 import org.nightlabs.util.CollectionUtil;
 
@@ -52,31 +53,23 @@ import org.nightlabs.util.CollectionUtil;
 	)
 	
 public class PersonSearchConfigModule
-extends PropertySetFieldBasedEditLayoutConfigModule2
+extends PropertySetSearchEditLayoutConfigModule
 {
 	private static final long serialVersionUID = 1L;
 	
-	public static final String FETCH_GROUP_QUICK_SEARCH_ENTRY = "PropertySetFieldBasedEditLayoutConfigModule2.quickSearchEntry";
+	public static final String FETCH_GROUP_QUICK_SEARCH_ENTRY = "PersonSearchConfigModule.quickSearchEntry";
 	
 	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
 	private StructFieldSearchEditLayoutEntry quickSearchEntry;
 	
 	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
 	private String resultViewerUiIdentifier;
-	
-//	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
-//	private IResultViewerConfiguration resultViewerConfiguration;
 
-	@Override
-	public void init() {
-		super.init();
-		initialiseDefaultLayout();
-	}
-	
 	/**
 	 * Returns an identifier for the UI element that should display the results of the PersonSearch configured by this config module.
 	 * @return an identifier for the UI element that should display the results of the PersonSearch configured by this config module.
 	 */
+	@Override
 	public String getResultViewerUiIdentifier() {
 		return resultViewerUiIdentifier;
 	}
@@ -85,6 +78,7 @@ extends PropertySetFieldBasedEditLayoutConfigModule2
 	 * Sets an identifier for the UI element that should display the results of the PersonSearch configured by this config module.
 	 * @param resultViewerUiIdentifier an identifier for the UI element that should display the results of the PersonSearch configured by this config module.
 	 */
+	@Override
 	public void setResultViewerUiIdentifier(String resultViewerUiIdentifier) {
 		this.resultViewerUiIdentifier = resultViewerUiIdentifier;
 	}
@@ -109,6 +103,7 @@ extends PropertySetFieldBasedEditLayoutConfigModule2
 		return quickSearchEntry;
 	};
 	
+	@SuppressWarnings("unchecked")
 	private StructFieldSearchEditLayoutEntry createEntry(Collection<StructFieldID> structFieldIDs, int horSpan, String entryType, MatchType matchType) {
 		StructFieldSearchEditLayoutEntry entry = createEditLayoutEntry(entryType);
 		Set<StructField> structFields = NLJDOHelper.getObjectSet(JDOHelper.getPersistenceManager(this), structFieldIDs, null, (QueryOption[]) null);
@@ -122,8 +117,6 @@ extends PropertySetFieldBasedEditLayoutConfigModule2
 		return entry;
 	}
 
-//nullValue=NullValue.EXCEPTION,
-//table="J
 	private StructFieldSearchEditLayoutEntry createSingleEntry(StructFieldID structFieldID, int horSpan, MatchType matchType) {
 		return createEntry(Collections.singleton(structFieldID), horSpan, PropertySetFieldBasedEditLayoutEntry2.ENTRY_TYPE_STRUCT_FIELD_REFERENCE, matchType);
 	}
@@ -141,12 +134,13 @@ extends PropertySetFieldBasedEditLayoutConfigModule2
 		return entry;
 	}
 
+	@Override
 	protected void initialiseDefaultLayout() {
 		getGridLayout().setNumColumns(3);
 		getGridLayout().setMakeColumnsEqualWidth(true);
 		
-		if (!getEditLayoutEntries().isEmpty())
-			clearEditLayoutEntries();
+//		if (!getEditLayoutEntries().isEmpty())
+//			clearEditLayoutEntries();
 		
 		addEditLayoutEntry(createSingleEntry(PersonStruct.PERSONALDATA_SALUTATION, 1, MatchType.EQUALS));
 		
@@ -168,5 +162,10 @@ extends PropertySetFieldBasedEditLayoutConfigModule2
 		addEditLayoutEntry(createSingleEntry(PersonStruct.POSTADDRESS_COUNTRY, 1, MatchType.CONTAINS));
 		
 		setQuickSearchEntry(defaultEntry);
+	}
+
+	@Override
+	public Class<? extends PropertySet> getCandidateClass() {
+		return Person.class;
 	}
 }

@@ -50,5 +50,10 @@ public class StringBasedEditLayoutEntry
 	{
 		this.objectString = object;
 	}
-
+	
+	@Override
+	public String getName() {
+		// TODO Do something useful here.
+		return "";
+	}
 }

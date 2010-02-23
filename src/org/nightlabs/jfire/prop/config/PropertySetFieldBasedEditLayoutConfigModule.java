@@ -19,7 +19,7 @@ import org.nightlabs.jfire.config.ConfigModule;
 import org.nightlabs.jfire.idgenerator.IDGenerator;
 
 /**
- * @deprecated use {@link PropertySetFieldBasedEditLayoutConfigModule2} instead!
+ * @deprecated use {@link PropertySetEditLayoutConfigModule} instead!
  *
  * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] -->
  *

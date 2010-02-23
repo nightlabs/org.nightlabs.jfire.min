@@ -141,6 +141,11 @@ public abstract class AbstractEditLayoutEntry<T>
 		return entryType;
 	}
 	
+	/**
+	 * Return a descriptive name of this entry to be displayed in lists of entries.
+	 */
+	public abstract String getName();
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;

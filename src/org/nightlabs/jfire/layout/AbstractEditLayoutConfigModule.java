@@ -110,9 +110,6 @@ public abstract class AbstractEditLayoutConfigModule<O, E extends AbstractEditLa
 		dependentElement="true")
 	private List<AbstractEditLayoutEntry<?>> editLayoutEntries;
 
-	/* (non-Javadoc)
-	 * @see org.nightlabs.jfire.config.ConfigModule#init()
-	 */
 	@Override
 	public void init() {
 		gridLayout = new GridLayout(IDGenerator.nextID(GridLayout.class));

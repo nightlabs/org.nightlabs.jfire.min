@@ -69,7 +69,7 @@ public class PropertySetFieldBasedEditLayoutEntry2
 	}
 
 	public PropertySetFieldBasedEditLayoutEntry2(
-			PropertySetFieldBasedEditLayoutConfigModule2 configModule,
+			PropertySetEditLayoutConfigModule configModule,
 			long entryID,
 			String entryType)
 	{
@@ -92,5 +92,22 @@ public class PropertySetFieldBasedEditLayoutEntry2
 	@Override
 	public void setObject(Set<StructField> object) {
 		setStructFields(object);
+	}
+
+	@Override
+	public String getName() {
+		if (getEntryType().equals(EditLayoutEntry.ENTRY_TYPE_SEPARATOR)) {
+			return "Separator"; //$NON-NLS-1$
+		}
+		
+		StringBuilder name = new StringBuilder();
+		
+		for (StructField field : getStructFields()) {
+			name.append(field.getName().getText()).append(", ");
+		}
+
+		name.delete(name.length()-2, name.length());
+
+		return name.toString();
 	}
 }
