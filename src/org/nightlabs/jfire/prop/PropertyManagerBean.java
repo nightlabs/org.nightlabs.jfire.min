@@ -54,9 +54,9 @@ import org.nightlabs.jfire.organisation.Organisation;
 import org.nightlabs.jfire.person.Person;
 import org.nightlabs.jfire.person.PersonSearchConfigModule;
 import org.nightlabs.jfire.person.PersonStruct;
+import org.nightlabs.jfire.prop.config.PropertySetEditLayoutConfigModule;
 import org.nightlabs.jfire.prop.config.PropertySetFieldBasedEditConstants;
 import org.nightlabs.jfire.prop.config.PropertySetFieldBasedEditLayoutConfigModule;
-import org.nightlabs.jfire.prop.config.PropertySetFieldBasedEditLayoutConfigModule2;
 import org.nightlabs.jfire.prop.config.PropertySetFieldBasedEditLayoutUseCase;
 import org.nightlabs.jfire.prop.config.id.PropertySetFieldBasedEditLayoutUseCaseID;
 import org.nightlabs.jfire.prop.datafield.DateDataField;
@@ -74,6 +74,7 @@ import org.nightlabs.jfire.prop.id.StructFieldID;
 import org.nightlabs.jfire.prop.id.StructID;
 import org.nightlabs.jfire.prop.id.StructLocalID;
 import org.nightlabs.jfire.prop.search.PropSearchFilter;
+import org.nightlabs.jfire.prop.search.config.PropertySetSearchEditLayoutConfigModule;
 import org.nightlabs.jfire.prop.structfield.DateStructField;
 import org.nightlabs.jfire.prop.structfield.I18nTextStructField;
 import org.nightlabs.jfire.prop.structfield.ImageStructField;
@@ -84,6 +85,8 @@ import org.nightlabs.jfire.prop.structfield.RegexStructField;
 import org.nightlabs.jfire.prop.structfield.SelectionStructField;
 import org.nightlabs.jfire.prop.structfield.TextStructField;
 import org.nightlabs.jfire.prop.structfield.TimePatternSetStructField;
+import org.nightlabs.jfire.prop.view.PersonTableViewerConfiguration;
+import org.nightlabs.jfire.prop.view.PropertySetViewerConfiguration;
 import org.nightlabs.util.CollectionUtil;
 import org.nightlabs.util.Util;
 
@@ -543,13 +546,22 @@ public class PropertyManagerBean extends BaseSessionBeanImpl implements Property
 			} catch (Exception x) {
 				logger.warn("initialise: Initialising of PropertySet-class-meta-data failed!", x);
 			}
-
+			
+			try {
+				logger.info("Initialising meta data of PropertySetViewerConfigurations.");
+				pm.getExtent(PropertySetViewerConfiguration.class);
+				pm.getExtent(PersonTableViewerConfiguration.class);
+				pm.getExtent(PropertySetSearchEditLayoutConfigModule.class);
+			} catch (Exception x) {
+				logger.warn("initialise: Initialising of PropertySetSearch class-meta-data failed!", x);
+			}
+			
 			PersonStruct.getPersonStructLocal(pm);
 
 			// register ConfigModule type
 			UserConfigSetup userConfigSetup = (UserConfigSetup)	ConfigSetup.getConfigSetup(
 					pm, getOrganisationID(), UserConfigSetup.CONFIG_SETUP_TYPE_USER);
-			final String cfModClassName = PropertySetFieldBasedEditLayoutConfigModule2.class.getName();
+			final String cfModClassName = PropertySetEditLayoutConfigModule.class.getName();
 			if (!userConfigSetup.getConfigModuleClasses().contains(cfModClassName))
 				userConfigSetup.getConfigModuleClasses().add(cfModClassName);
 			

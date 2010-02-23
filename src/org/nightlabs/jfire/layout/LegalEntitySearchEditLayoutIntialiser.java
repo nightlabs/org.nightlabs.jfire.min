@@ -13,7 +13,7 @@ import org.nightlabs.clientui.layout.GridData;
 import org.nightlabs.jfire.idgenerator.IDGenerator;
 import org.nightlabs.jfire.person.PersonStruct;
 import org.nightlabs.jfire.prop.StructField;
-import org.nightlabs.jfire.prop.config.PropertySetFieldBasedEditLayoutConfigModule2;
+import org.nightlabs.jfire.prop.config.PropertySetEditLayoutConfigModule;
 import org.nightlabs.jfire.prop.config.PropertySetFieldBasedEditLayoutEntry2;
 import org.nightlabs.jfire.prop.id.StructFieldID;
 
@@ -37,7 +37,7 @@ public class LegalEntitySearchEditLayoutIntialiser
 	public LegalEntitySearchEditLayoutIntialiser(
 			String organisationID, String configModuleInitialiserID)
 	{
-		super(organisationID, PropertySetFieldBasedEditLayoutConfigModule2.class.getName(),
+		super(organisationID, PropertySetEditLayoutConfigModule.class.getName(),
 				configModuleInitialiserID, UseCaseNames.LEGAL_ENTITY_SEARCH, null);
 	}
 
@@ -49,12 +49,12 @@ public class LegalEntitySearchEditLayoutIntialiser
 	public LegalEntitySearchEditLayoutIntialiser(
 			String organisationID, String configModuleInitialiserID, Integer priority)
 	{
-		super(organisationID, PropertySetFieldBasedEditLayoutConfigModule2.class.getName(),
+		super(organisationID, PropertySetEditLayoutConfigModule.class.getName(),
 				configModuleInitialiserID, priority, UseCaseNames.LEGAL_ENTITY_SEARCH, null);
 	}
 
 	private PropertySetFieldBasedEditLayoutEntry2 createEntry(
-			PropertySetFieldBasedEditLayoutConfigModule2 cfMod,
+			PropertySetEditLayoutConfigModule cfMod,
 			StructFieldID structFieldID,
 			int horSpan)
 	{
@@ -69,7 +69,7 @@ public class LegalEntitySearchEditLayoutIntialiser
 		return entry;
 	}
 
-	private PropertySetFieldBasedEditLayoutEntry2 createSeparatorEntry(PropertySetFieldBasedEditLayoutConfigModule2 cfMod, int horSpan) {
+	private PropertySetFieldBasedEditLayoutEntry2 createSeparatorEntry(PropertySetEditLayoutConfigModule cfMod, int horSpan) {
 		PropertySetFieldBasedEditLayoutEntry2 entry = cfMod.createEditLayoutEntry(EditLayoutEntry.ENTRY_TYPE_SEPARATOR);
 		GridData gd = new GridData(IDGenerator.nextID(GridData.class));
 		gd.setHorizontalAlignment(GridData.FILL);
@@ -81,8 +81,8 @@ public class LegalEntitySearchEditLayoutIntialiser
 	@Override
 	protected void initialiseLayoutConfigModule(AbstractEditLayoutConfigModule<?, ?> confMod)
 	{
-		PropertySetFieldBasedEditLayoutConfigModule2 cfMod =
-			(PropertySetFieldBasedEditLayoutConfigModule2) confMod;
+		PropertySetEditLayoutConfigModule cfMod =
+			(PropertySetEditLayoutConfigModule) confMod;
 
 		cfMod.getGridLayout().setNumColumns(6);
 		if (!cfMod.getEditLayoutEntries().isEmpty())
