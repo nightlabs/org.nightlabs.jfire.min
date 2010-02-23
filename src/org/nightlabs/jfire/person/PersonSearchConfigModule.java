@@ -62,27 +62,6 @@ extends PropertySetSearchEditLayoutConfigModule
 	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
 	private StructFieldSearchEditLayoutEntry quickSearchEntry;
 	
-	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
-	private String resultViewerUiIdentifier;
-
-	/**
-	 * Returns an identifier for the UI element that should display the results of the PersonSearch configured by this config module.
-	 * @return an identifier for the UI element that should display the results of the PersonSearch configured by this config module.
-	 */
-	@Override
-	public String getResultViewerUiIdentifier() {
-		return resultViewerUiIdentifier;
-	}
-	
-	/**
-	 * Sets an identifier for the UI element that should display the results of the PersonSearch configured by this config module.
-	 * @param resultViewerUiIdentifier an identifier for the UI element that should display the results of the PersonSearch configured by this config module.
-	 */
-	@Override
-	public void setResultViewerUiIdentifier(String resultViewerUiIdentifier) {
-		this.resultViewerUiIdentifier = resultViewerUiIdentifier;
-	}
-	
 	@Override
 	public StructFieldSearchEditLayoutEntry createEditLayoutEntry(String entryType) {
 		StructFieldSearchEditLayoutEntry entry = new StructFieldSearchEditLayoutEntry(
