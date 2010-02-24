@@ -2,7 +2,9 @@ package org.nightlabs.jfire.testsuite;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import javax.ejb.Local;
 
@@ -11,6 +13,7 @@ import junit.framework.TestResult;
 
 import org.nightlabs.ModuleException;
 import org.nightlabs.jdo.ObjectID;
+import org.nightlabs.jfire.testsuite.id.TestCaseObjectsMapID;
 import org.nightlabs.jfire.timer.id.TaskID;
 
 @Local
@@ -48,5 +51,14 @@ public interface JFireTestManagerLocal {
 
 	public void runTestInNestedTransaction_runTest(org.nightlabs.jfire.testsuite.TestCase test) throws Exception;
 	
-	public boolean isJDOObjectExisting(ObjectID objectId) throws Exception;
+	public boolean isJDOObjectExisting(ObjectID objectID);
+	
+	public void deleteTestCaseObjectsMap(TestCaseObjectsMapID testCaseObjectsMapID);
+	
+	public Set<TestCaseObjectsMapID> getTestCaseObjectsMapIDs();
+	
+	public List<TestCaseObjectsMap> getTestCaseObjectsMaps(Collection<TestCaseObjectsMapID> testCaseObjectsMapIDs, String[] fetchGroups, int maxFetchDepth);
+
+	public TestCaseObjectsMap storeTestCaseObjectsMap(TestCaseObjectsMap testCaseObjectsMap, Boolean get, String[] fetchGroups, int maxFetchDepth);	
+
 }

@@ -2,12 +2,15 @@ package org.nightlabs.jfire.testsuite;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import javax.ejb.Remote;
 
 import org.nightlabs.ModuleException;
 import org.nightlabs.jdo.ObjectID;
+import org.nightlabs.jfire.testsuite.id.TestCaseObjectsMapID;
 import org.nightlabs.jfire.timer.id.TaskID;
 
 @Remote
@@ -46,5 +49,15 @@ public interface JFireTestManagerRemote {
 	/**
 	 * very useful method to check if a particular JDO Object exist in the data store.
 	 */
-	boolean isJDOObjectExisting(ObjectID objectId) throws Exception;
+	boolean isJDOObjectExisting(ObjectID objectID);
+	
+	
+	
+	TestCaseObjectsMap storeTestCaseObjectsMap(TestCaseObjectsMap testCaseObjectsMap, Boolean get, String[] fetchGroups, int maxFetchDepth);	
+
+	Set<TestCaseObjectsMapID> getTestCaseObjectsMapIDs();
+	
+	List<TestCaseObjectsMap> getTestCaseObjectsMaps(Collection<TestCaseObjectsMapID> testCaseObjectsMapIDs, String[] fetchGroups, int maxFetchDepth);
+	
+	void deleteTestCaseObjectsMap(TestCaseObjectsMapID testCaseObjectsMapID);		
 }

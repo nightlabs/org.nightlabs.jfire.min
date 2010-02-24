@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -46,8 +47,10 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
+import javax.jdo.FetchPlan;
 import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
+import javax.jdo.Query;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -55,6 +58,7 @@ import junit.framework.TestResult;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.ModuleException;
+import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jdo.ObjectID;
 import org.nightlabs.jfire.asyncinvoke.AsyncInvoke;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
@@ -63,10 +67,12 @@ import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.security.SecurityReflector.UserDescriptor;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.shutdownafterstartup.ShutdownControlHandle;
+import org.nightlabs.jfire.testsuite.id.TestCaseObjectsMapID;
 import org.nightlabs.jfire.testsuite.login.JFireTestLogin;
 import org.nightlabs.jfire.testsuite.prop.PropertySetTestStruct;
 import org.nightlabs.jfire.timer.Task;
 import org.nightlabs.jfire.timer.id.TaskID;
+import org.nightlabs.util.CollectionUtil;
 import org.nightlabs.util.reflect.ReflectUtil;
 
 
@@ -539,10 +545,10 @@ implements JFireTestManagerRemote, JFireTestManagerLocal
 		return runSuites;
 	}
 	@Override
-	public boolean isJDOObjectExisting(ObjectID objectId) throws Exception {
+	public boolean isJDOObjectExisting(ObjectID objectID) {
 		PersistenceManager pm = createPersistenceManager();
 		try {
-			pm.getObjectById(objectId);
+			pm.getObjectById(objectID);
 			return true;
 		} catch (JDOObjectNotFoundException e) {
 			return false;
@@ -551,5 +557,70 @@ implements JFireTestManagerRemote, JFireTestManagerLocal
 			pm.close();
 		}		
 	}	
+	
+	
+	@RolesAllowed("_Guest_")
+	@Override
+	public Set<TestCaseObjectsMapID> getTestCaseObjectsMapIDs()
+	{
+		PersistenceManager pm = createPersistenceManager();
+		try {
+			Query q = pm.newQuery(TestCaseObjectsMap.class);
+			q.setResult("JDOHelper.getObjectId(this)");
+			return CollectionUtil.createHashSetFromCollection( q.execute() );
+		} finally {
+			pm.close();
+		}
+	}
+	
+	
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_Guest_")
+	@Override
+	public List<TestCaseObjectsMap> getTestCaseObjectsMaps(Collection<TestCaseObjectsMapID> testCaseObjectsMapIDs, String[] fetchGroups, int maxFetchDepth)
+		
+	{
+	PersistenceManager pm = createPersistenceManager();
+	try {
+		return NLJDOHelper.getDetachedObjectList(pm, testCaseObjectsMapIDs, TestCaseObjectsMap.class, fetchGroups, maxFetchDepth);
+	} finally {
+		pm.close();
+	}
+	}
+	
 
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_Guest_")
+	@Override
+	public TestCaseObjectsMap storeTestCaseObjectsMap(
+			TestCaseObjectsMap testCaseObjectsMap, Boolean get, String[] fetchGroups, int maxFetchDepth) {
+		PersistenceManager pm = createPersistenceManager();
+		try {
+			return NLJDOHelper.storeJDO(pm, testCaseObjectsMap, get, fetchGroups, maxFetchDepth);
+		}
+		finally {
+			pm.close();
+		}
+	}
+
+	
+	
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_Guest_")
+	@Override
+	public void deleteTestCaseObjectsMap(
+			TestCaseObjectsMapID testCaseObjectsMapID) {
+		PersistenceManager pm = createPersistenceManager();
+		try {
+			pm.getFetchPlan().setGroup(FetchPlan.DEFAULT);
+			pm.getExtent(TestCaseObjectsMap.class, true);
+			TestCaseObjectsMap objectsMap = (TestCaseObjectsMap) pm.getObjectById(testCaseObjectsMapID);
+			pm.deletePersistent(objectsMap);
+			pm.flush();
+		}
+		finally {
+			pm.close();
+		}		
+	}
+	
 }
