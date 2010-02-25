@@ -281,10 +281,10 @@ public abstract class BaseJDOObjectDAO<JDOObjectID extends ObjectID, JDOObject>
 	{
 		// How many chunks should be used? Every chunk will cost an additional round-trip to the server, but provide higher granularity
 		// of the process indicator.
-		int maxChunkCount = 100;
+		int maxChunkCount = 50;
 
 		// How many objects should be in every chunk at least? A chunk will only be smaller, if there are less objectIDs to process left.
-		int minChunkSize = 20;
+		int minChunkSize = 30;
 
 		int chunkSize = (objectIDs.size() / maxChunkCount) + 1;
 		if (chunkSize < minChunkSize)
