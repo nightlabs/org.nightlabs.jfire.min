@@ -143,6 +143,7 @@ public abstract class BaseJDOObjectDAO<JDOObjectID extends ObjectID, JDOObject>
 	 * @return All requested and existing JDO objects.
 	 * @throws Exception in case of an error
 	 */
+	@SuppressWarnings("unchecked")
 	protected synchronized JDOObject getJDOObject(String scope, JDOObjectID objectID, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
 	{
 		try {
@@ -176,84 +177,158 @@ public abstract class BaseJDOObjectDAO<JDOObjectID extends ObjectID, JDOObject>
 	 * @return All requested and existing JDO objects.
 	 * @throws Exception in case of an error
 	 */
+	@SuppressWarnings("unchecked")
 	protected synchronized List<JDOObject> getJDOObjects(String scope, Collection<JDOObjectID> objectIDs, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
 	{
-		if (objectIDs == null || objectIDs.isEmpty()) {
-			monitor.done();
-			return new ArrayList<JDOObject>(0);
-		}
-//		objectIDs.size * 2, so that the retrieval be at least as important, as the processing
-		monitor.beginTask("Getting "+objectIDs.size()+" Objects through Cache", objectIDs.size() * 2);
-		ArrayList<JDOObject> objects = new ArrayList<JDOObject>(objectIDs.size());
+		// ratio retrieve x to post-process y with y = 2, i.e. ratio x : 2
+		int tickRatio_retrieve_to_postProcess = 15;
+		int monitorRestTicks = objectIDs.size() * (tickRatio_retrieve_to_postProcess + 2);
+		monitor.beginTask(String.format("Getting %s objects through cache.", objectIDs.size()), monitorRestTicks);
+		try {
 
-		List<JDOObjectID> listetIDs = new ArrayList<JDOObjectID>(objectIDs);
-		Map<JDOObjectID, Integer> notInCache = new HashMap<JDOObjectID, Integer>();
-
-		// search the cache for the wanted Objects
-		for (int i=0; i < listetIDs.size(); i++) {
-			JDOObject cachedObject = (JDOObject) cache.get(scope, listetIDs.get(i), fetchGroups, maxFetchDepth);
-			if (cachedObject != null) {
-				objects.add(cachedObject);
-				monitor.worked(1);
+			if (objectIDs == null || objectIDs.isEmpty()) {
+				return new ArrayList<JDOObject>(0);
 			}
-			else {
-				notInCache.put(listetIDs.get(i), i); // if not in cache save (objectID, position)
-				objects.add(null); // fill the result array, so that we're later able to replace the
-													 // JDOObject at the correct position
+			ArrayList<JDOObject> objects = new ArrayList<JDOObject>(objectIDs.size());
+
+			List<JDOObjectID> listetIDs = new ArrayList<JDOObjectID>(objectIDs);
+			Map<JDOObjectID, Integer> notInCache = new HashMap<JDOObjectID, Integer>();
+
+			// search the cache for the wanted Objects
+			for (int i=0; i < listetIDs.size(); i++) {
+				JDOObject cachedObject = (JDOObject) cache.get(scope, listetIDs.get(i), fetchGroups, maxFetchDepth);
+				if (cachedObject != null) {
+					objects.add(cachedObject);
+					monitor.worked(tickRatio_retrieve_to_postProcess);
+					monitorRestTicks -= tickRatio_retrieve_to_postProcess;
+				}
+				else {
+					notInCache.put(listetIDs.get(i), i); // if not in cache save (objectID, position)
+					objects.add(null); // fill the result array, so that we're later able to replace the
+					// JDOObject at the correct position
+				}
 			}
-		}
 
-		if (notInCache.isEmpty())
-			return objects;
+			if (monitorRestTicks < (2 * objectIDs.size()))
+				throw new IllegalStateException("monitorRestTicks < (2 * objectIDs.size())");
 
-		// fetch all missing objects from datastore
-		Collection<? extends JDOObject> fetchedObjects;
-		ProgressMonitor subMonitor = null;
-		try { //                               workaround for hashset.keyset != serializable
-			subMonitor = new SubProgressMonitor(monitor, objectIDs.size());
-			fetchedObjects = retrieveJDOObjects(new HashSet<JDOObjectID>(notInCache.keySet()),
-					fetchGroups, maxFetchDepth, subMonitor);
-		} catch (Exception e) {
-			if (subMonitor != null)
-				subMonitor.setCanceled(true);
-			throw new RuntimeException("Error occured while fetching Objects from the data store!\n", e);
-		} finally {
-			if (subMonitor != null)
-				// done can be called multiple times
+			if (notInCache.isEmpty())
+				return objects;
+
+			// fetch all missing objects from datastore
+			Collection<? extends JDOObject> fetchedObjects;
+			int localTix = monitorRestTicks - (2 * objectIDs.size());
+			monitorRestTicks -= localTix;
+			ProgressMonitor subMonitor = new SubProgressMonitor(monitor, localTix);
+			try {
+				fetchedObjects = chunkedRetrieveJDOObjects(
+//						new HashSet<JDOObjectID>(notInCache.keySet()), // workaround for hashset.keyset != serializable
+						notInCache.keySet(), // the above is not necessary with the chunked version of the retrieve method.
+						fetchGroups, maxFetchDepth, subMonitor
+				);
+			} finally {
+				// done can be called multiple times and even if there was no beginTask (having no effect in both cases)
 				subMonitor.done();
-		}
-
-		// put remaining objects in correct position of the result list
-		int index;
-		for(Iterator<? extends JDOObject> it = fetchedObjects.iterator(); it.hasNext(); ) {
-			JDOObject freshObject = it.next();
-			if (freshObject == null) {
-				it.remove();
-				continue;
 			}
-			JDOObjectID freshObjectID = (JDOObjectID) JDOHelper.getObjectId(freshObject);
-			if (freshObjectID == null)
-				throw new IllegalStateException("It seems like the Objects returned from the Bean are not detached, since one of their IDs is null!");
 
-			index = notInCache.get(freshObjectID);
-			objects.set(index, freshObject);
-			monitor.worked(1);
-		}
-
-		// Note: The server may not return all wanted Objects, if e.g. they are of a different organisation.
-		// 			 These objects are discarded! Hence, we're deleting the "null"-Objects of the list.
-		if (notInCache.size() != fetchedObjects.size()) {
-			for (Iterator<JDOObject> it = objects.iterator(); it.hasNext();) {
-				if (it.next() == null)
+			// put remaining objects in correct position of the result list
+			int index;
+			for(Iterator<? extends JDOObject> it = fetchedObjects.iterator(); it.hasNext(); ) {
+				JDOObject freshObject = it.next();
+				if (freshObject == null) {
 					it.remove();
+					continue;
+				}
+				JDOObjectID freshObjectID = (JDOObjectID) JDOHelper.getObjectId(freshObject);
+				if (freshObjectID == null)
+					throw new IllegalStateException("It seems like the Objects returned from the Bean are not detached, since one of their IDs is null!");
+
+				index = notInCache.get(freshObjectID);
+				objects.set(index, freshObject);
+				monitor.worked(1);
+				--monitorRestTicks;
 			}
+
+			// Note: The server may not return all wanted Objects, if e.g. they are of a different organisation.
+			// 			 These objects are discarded! Hence, we're deleting the "null"-Objects of the list.
+			if (notInCache.size() != fetchedObjects.size()) {
+				for (Iterator<JDOObject> it = objects.iterator(); it.hasNext();) {
+					if (it.next() == null)
+						it.remove();
+				}
+			}
+
+			localTix = monitorRestTicks - objectIDs.size();
+			monitorRestTicks -= localTix;
+
+			if (monitorRestTicks < objectIDs.size())
+				throw new IllegalStateException("monitorRestTicks < objectIDs.size()");
+
+			monitor.worked(localTix); // localTix is pretty often 0, but that is a valid parameter.
+
+			Cache.sharedInstance().putAll(scope, fetchedObjects, fetchGroups, maxFetchDepth);
+			objects.trimToSize();
+
+			monitor.worked(monitorRestTicks);
+
+			return objects;
+		} finally {
+			monitor.done();
+		}
+	}
+
+	private List<JDOObject> chunkedRetrieveJDOObjects(Set<JDOObjectID> objectIDs, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
+	{
+		// How many chunks should be used? Every chunk will cost an additional round-trip to the server, but provide higher granularity
+		// of the process indicator.
+		int maxChunkCount = 100;
+
+		// How many objects should be in every chunk at least? A chunk will only be smaller, if there are less objectIDs to process left.
+		int minChunkSize = 20;
+
+		int chunkSize = (objectIDs.size() / maxChunkCount) + 1;
+		if (chunkSize < minChunkSize)
+			chunkSize = minChunkSize;
+
+		List<JDOObject> result = new ArrayList<JDOObject>(objectIDs.size());
+
+		String monitorName = String.format("Retrieving %s objects from server.", objectIDs.size());
+		monitor.beginTask(monitorName, objectIDs.size());
+		try {
+			Set<JDOObjectID> chunkObjectIDs = new HashSet<JDOObjectID>();
+			for (Iterator<JDOObjectID> it = objectIDs.iterator(); it.hasNext(); ) {
+				chunkObjectIDs.add(it.next());
+
+				if (chunkObjectIDs.size() >= chunkSize || !it.hasNext()) {
+					// We double-wrap the SubProgressMonitors, because we must ensure that beginTask(...) and done() is called,
+					// but we don't know if the implementor of retrieveJDOObjects(...) does it and we can't check.
+					ProgressMonitor subMonitor = new SubProgressMonitor(monitor, chunkObjectIDs.size()); // sub-monitor 1 - definitely started and stopped
+					try {
+						subMonitor.beginTask(monitorName, 1);
+						Collection<? extends JDOObject> retrievedJDOObjects = retrieveJDOObjects(
+								chunkObjectIDs,
+								fetchGroups, maxFetchDepth, new SubProgressMonitor(subMonitor, 1) // sub-monitor 2 - maybe totally unused
+						);
+						result.addAll(retrievedJDOObjects);
+						chunkObjectIDs.clear();
+					} catch (Exception e) {
+						if (subMonitor != null)
+							subMonitor.setCanceled(true);
+
+						if (e instanceof RuntimeException)
+							throw (RuntimeException)e;
+						else
+							throw new RuntimeException(e);
+					} finally {
+						subMonitor.done();
+					}
+				}
+			}
+		} finally {
+			monitor.done();
 		}
 
-		Cache.sharedInstance().putAll(scope, fetchedObjects, fetchGroups, maxFetchDepth);
-
-		monitor.done();
-		objects.trimToSize();
-		return objects;
+		return result;
 	}
 
 	/**
