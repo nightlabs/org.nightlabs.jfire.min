@@ -13,7 +13,7 @@ import junit.framework.TestResult;
 
 import org.nightlabs.ModuleException;
 import org.nightlabs.jdo.ObjectID;
-import org.nightlabs.jfire.testsuite.id.TestCaseObjectsMapID;
+import org.nightlabs.jfire.testsuite.id.TestCaseObjectIDsID;
 import org.nightlabs.jfire.timer.id.TaskID;
 
 @Local
@@ -53,12 +53,12 @@ public interface JFireTestManagerLocal {
 	
 	public boolean isJDOObjectExisting(ObjectID objectID);
 	
-	public void deleteTestCaseObjectsMap(TestCaseObjectsMapID testCaseObjectsMapID);
+	public void deleteTestCaseObjectsMap(TestCaseObjectIDsID testCaseObjectsMapID);
 	
-	public Set<TestCaseObjectsMapID> getTestCaseObjectsMapIDs();
+	public Set<TestCaseObjectIDsID> getTestCaseObjectsMapIDs();
 	
-	public List<TestCaseObjectsMap> getTestCaseObjectsMaps(Collection<TestCaseObjectsMapID> testCaseObjectsMapIDs, String[] fetchGroups, int maxFetchDepth);
+	public List<TestCaseObjectIDs> getTestCaseObjectsMaps(Collection<TestCaseObjectIDsID> testCaseObjectsMapIDs, String[] fetchGroups, int maxFetchDepth);
 
-	public TestCaseObjectsMap storeTestCaseObjectsMap(TestCaseObjectsMap testCaseObjectsMap, Boolean get, String[] fetchGroups, int maxFetchDepth);	
+	public TestCaseObjectIDs storeTestCaseObjectsMap(TestCaseObjectIDs testCaseObjectsMap, Boolean get, String[] fetchGroups, int maxFetchDepth);	
 
 }

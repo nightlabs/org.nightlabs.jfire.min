@@ -14,7 +14,7 @@ import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
 import org.nightlabs.jdo.ObjectID;
-import org.nightlabs.jfire.testsuite.id.TestCaseObjectsMapID;
+import org.nightlabs.jfire.testsuite.id.TestCaseObjectIDsID;
 
 
 /**
@@ -24,13 +24,13 @@ import org.nightlabs.jfire.testsuite.id.TestCaseObjectsMapID;
  *
  */
 @PersistenceCapable(
-		objectIdClass=TestCaseObjectsMapID.class,
+		objectIdClass=TestCaseObjectIDsID.class,
 		identityType=IdentityType.APPLICATION,
 		detachable="true",
 		table="JFireTestSuite_ObjectsMap")
 
 @Inheritance(strategy=InheritanceStrategy.NEW_TABLE)
-public class TestCaseObjectsMap implements Serializable{
+public class TestCaseObjectIDs implements Serializable{
 
 	/**
 	 * The serial version of this class.
@@ -44,7 +44,7 @@ public class TestCaseObjectsMap implements Serializable{
 	
 	@PrimaryKey
 	@Column(length=100)
-	private String testCaseObjectsMapID;
+	private String testCaseObjectIDsID;
 	
 
 
@@ -54,16 +54,16 @@ public class TestCaseObjectsMap implements Serializable{
 	private  Map<String, ObjectID>  objectIDsMap;
 	
 	
-	public TestCaseObjectsMap(String organisationID, String objectsMapID)
+	public TestCaseObjectIDs(String organisationID, String objectsMapID)
 	{
 		if (organisationID == null)
 			throw new NullPointerException("organisationID");
 
 		if (objectsMapID == null)
-			throw new NullPointerException("locationID");
+			throw new NullPointerException("objectsMapID");
 
 		this.organisationID = organisationID;
-		this.testCaseObjectsMapID = objectsMapID;
+		this.testCaseObjectIDsID = objectsMapID;
 		this.objectIDsMap = new HashMap<String, ObjectID>();
 	}
 
@@ -72,9 +72,9 @@ public class TestCaseObjectsMap implements Serializable{
 	{
 		return organisationID;
 	}
-	public String getObjectsMapID()
+	public String getObjectIDsID()
 	{
-		return testCaseObjectsMapID;
+		return testCaseObjectIDsID;
 	}
 	
 	

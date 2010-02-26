@@ -15,18 +15,18 @@ import org.nightlabs.jdo.ObjectID;
 
 
 /**
- * The JDO object id class for {@link org.nightlabs.jfire.testsuite.TestCaseObjectsMap}.
+ * The JDO object id class for {@link org.nightlabs.jfire.testsuite.TestCaseObjectIDs}.
  * <p>This class was auto-generated.</p>
  */
 @Generated("org.nightlabs.eclipse.sdk.jdo.ObjectIdGenerator")
-public class TestCaseObjectsMapID
+public class TestCaseObjectIDsID
 implements ObjectID
 {
 	/**
 	 * The serial version uid of this class.
 	 */ 
 	@Generated("org.nightlabs.eclipse.sdk.jdo.ObjectIdGenerator")
-	private static final long serialVersionUID = -69110641L;
+	private static final long serialVersionUID = -1803344697L;
 	
 	/**
 	 * The values of all fields are URL encoded in UTF-8.
@@ -78,45 +78,45 @@ implements ObjectID
 
 	/**
 	 * Primary key field organisationID.
-	 * Declared as primary key field in {@link org.nightlabs.jfire.testsuite.TestCaseObjectsMap}.
+	 * Declared as primary key field in {@link org.nightlabs.jfire.testsuite.TestCaseObjectIDs}.
 	 */
 	@Generated("org.nightlabs.eclipse.sdk.jdo.ObjectIdGenerator")
 	public java.lang.String organisationID;
 	
 	/**
-	 * Primary key field testCaseObjectsMapID.
-	 * Declared as primary key field in {@link org.nightlabs.jfire.testsuite.TestCaseObjectsMap}.
+	 * Primary key field testCaseObjectIDsID.
+	 * Declared as primary key field in {@link org.nightlabs.jfire.testsuite.TestCaseObjectIDs}.
 	 */
 	@Generated("org.nightlabs.eclipse.sdk.jdo.ObjectIdGenerator")
-	public java.lang.String testCaseObjectsMapID;
+	public java.lang.String testCaseObjectIDsID;
 	
 	/**
-	 * Create a new empty instance of TestCaseObjectsMapID.
+	 * Create a new empty instance of TestCaseObjectIDsID.
 	 */
 	@Generated("org.nightlabs.eclipse.sdk.jdo.ObjectIdGenerator")
-	public TestCaseObjectsMapID()
+	public TestCaseObjectIDsID()
 	{
 	}
 
 	/**
-	 * Create a new instance of TestCaseObjectsMapID.
+	 * Create a new instance of TestCaseObjectIDsID.
 	 * This is done by parsing the <code>keyStr</code> that has been created
 	 * by {@link #toString()} and setting all fields to the values from the string.
 	 * <p>
 	 * This means, the following code will create a copy of this class:<br/><br/>
-	 * <code>TestCaseObjectsMapID newTestCaseObjectsMapID = new TestCaseObjectsMapID(oldTestCaseObjectsMapID.toString());</code>
+	 * <code>TestCaseObjectIDsID newTestCaseObjectIDsID = new TestCaseObjectIDsID(oldTestCaseObjectIDsID.toString());</code>
 	 * </p>
 	 * @param keyStr A String formatted as "jdo/{className}?{field0}={value0}&amp;{field1}={value1}...&amp;{fieldN}={valueN}"
 	 *     where all values are url encoded using {@link #ENCODING}.
 	 */
 	@Generated("org.nightlabs.eclipse.sdk.jdo.ObjectIdGenerator")
-	public TestCaseObjectsMapID(final String keyStr)
+	public TestCaseObjectIDsID(final String keyStr)
 	throws ParseException, SecurityException,
 			NoSuchFieldException, IllegalArgumentException,
 			IllegalAccessException, NoSuchMethodException,
 			InstantiationException, InvocationTargetException
 	{
-		Class<? extends TestCaseObjectsMapID> clazz = this.getClass();
+		Class<? extends TestCaseObjectIDsID> clazz = this.getClass();
 
 		StringTokenizer st = new StringTokenizer(keyStr, SEPARATORS_FOR_TOKENIZER, true);
 		String jdoPrefix = st.nextToken();
@@ -237,7 +237,7 @@ implements ObjectID
 	 * Create a string representation of this object id.
 	 * <p>
 	 * JDO expects the result of this method to be compatible with the constructor
-	 * {@link #TestCaseObjectsMapID(String)}.
+	 * {@link #TestCaseObjectIDsID(String)}.
 	 * This method takes all the primary-key-fields and encodes them with their name
 	 * and their value.
 	 * </p>
@@ -257,8 +257,8 @@ implements ObjectID
 			sb.append("organisationID="); //$NON-NLS-1$
 			sb.append(URLEncoder.encode(String.valueOf(organisationID), ENCODING));
 			sb.append('&');
-			sb.append("testCaseObjectsMapID="); //$NON-NLS-1$
-			sb.append(URLEncoder.encode(String.valueOf(testCaseObjectsMapID), ENCODING));
+			sb.append("testCaseObjectIDsID="); //$NON-NLS-1$
+			sb.append(URLEncoder.encode(String.valueOf(testCaseObjectIDsID), ENCODING));
 		} catch (UnsupportedEncodingException e) {
 			throw new RuntimeException(
 					"Encoding failed with encoding " + //$NON-NLS-1$ 
@@ -283,16 +283,16 @@ implements ObjectID
 			return false;
 		if(getClass() != obj.getClass())
 			return false;
-		TestCaseObjectsMapID other = (TestCaseObjectsMapID) obj;
+		TestCaseObjectIDsID other = (TestCaseObjectIDsID) obj;
 		if(organisationID == null) {
 			if(other.organisationID != null)
 				return false;
 		} else if(!organisationID.equals(other.organisationID))
 			return false;
-		if(testCaseObjectsMapID == null) {
-			if(other.testCaseObjectsMapID != null)
+		if(testCaseObjectIDsID == null) {
+			if(other.testCaseObjectIDsID != null)
 				return false;
-		} else if(!testCaseObjectsMapID.equals(other.testCaseObjectsMapID))
+		} else if(!testCaseObjectIDsID.equals(other.testCaseObjectIDsID))
 			return false;
 		return true;
 	}
@@ -311,23 +311,23 @@ implements ObjectID
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((organisationID == null) ? 0 : organisationID.hashCode());
-		result = prime * result + ((testCaseObjectsMapID == null) ? 0 : testCaseObjectsMapID.hashCode());
+		result = prime * result + ((testCaseObjectIDsID == null) ? 0 : testCaseObjectIDsID.hashCode());
 		return result;
 	}
 
 	/**
 	 * Create a new object id instance.
 	 * @param organisationID The primary key field organisationID.
-	 * @param testCaseObjectsMapID The primary key field testCaseObjectsMapID.
-	 * @return a newly created instance of <code>TestCaseObjectsMapID</code>
+	 * @param testCaseObjectIDsID The primary key field testCaseObjectIDsID.
+	 * @return a newly created instance of <code>TestCaseObjectIDsID</code>
 	 *     with the primary-key fields set to the given parameters.
 	 */
 	@Generated("org.nightlabs.eclipse.sdk.jdo.ObjectIdGenerator")
-	public static TestCaseObjectsMapID create(String organisationID, String testCaseObjectsMapID)
+	public static TestCaseObjectIDsID create(String organisationID, String testCaseObjectIDsID)
 	{
-		TestCaseObjectsMapID n = new TestCaseObjectsMapID();
+		TestCaseObjectIDsID n = new TestCaseObjectIDsID();
 		n.organisationID = organisationID;
-		n.testCaseObjectsMapID = testCaseObjectsMapID;
+		n.testCaseObjectIDsID = testCaseObjectIDsID;
 		return n;
 	}
 }

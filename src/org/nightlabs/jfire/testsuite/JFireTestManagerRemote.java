@@ -10,7 +10,7 @@ import javax.ejb.Remote;
 
 import org.nightlabs.ModuleException;
 import org.nightlabs.jdo.ObjectID;
-import org.nightlabs.jfire.testsuite.id.TestCaseObjectsMapID;
+import org.nightlabs.jfire.testsuite.id.TestCaseObjectIDsID;
 import org.nightlabs.jfire.timer.id.TaskID;
 
 @Remote
@@ -53,11 +53,11 @@ public interface JFireTestManagerRemote {
 	
 	
 	
-	TestCaseObjectsMap storeTestCaseObjectsMap(TestCaseObjectsMap testCaseObjectsMap, Boolean get, String[] fetchGroups, int maxFetchDepth);	
+	TestCaseObjectIDs storeTestCaseObjectsMap(TestCaseObjectIDs testCaseObjectsMap, Boolean get, String[] fetchGroups, int maxFetchDepth);	
 
-	Set<TestCaseObjectsMapID> getTestCaseObjectsMapIDs();
+	Set<TestCaseObjectIDsID> getTestCaseObjectsMapIDs();
 	
-	List<TestCaseObjectsMap> getTestCaseObjectsMaps(Collection<TestCaseObjectsMapID> testCaseObjectsMapIDs, String[] fetchGroups, int maxFetchDepth);
+	List<TestCaseObjectIDs> getTestCaseObjectsMaps(Collection<TestCaseObjectIDsID> testCaseObjectsMapIDs, String[] fetchGroups, int maxFetchDepth);
 	
-	void deleteTestCaseObjectsMap(TestCaseObjectsMapID testCaseObjectsMapID);		
+	void deleteTestCaseObjectsMap(TestCaseObjectIDsID testCaseObjectsMapID);		
 }
