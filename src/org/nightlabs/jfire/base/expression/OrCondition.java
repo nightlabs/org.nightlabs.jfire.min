@@ -1,8 +1,8 @@
 package org.nightlabs.jfire.base.expression;
 
-import javax.jdo.annotations.PersistenceCapable;
-import javax.jdo.annotations.InheritanceStrategy;
 import javax.jdo.annotations.Inheritance;
+import javax.jdo.annotations.InheritanceStrategy;
+import javax.jdo.annotations.PersistenceCapable;
 
 /**
  * Instances of this class represent a logical disjunction of multiple {@link IExpression}s.
@@ -28,8 +28,8 @@ public class OrCondition extends Composition
 {
 	private static final long serialVersionUID = 1L;
 
-	public static final String OPERATOR_TEXT = "OR"; 
-	
+	public static final String OPERATOR_TEXT = "OR";
+
 	/**
 	 * @deprecated Only for JDO.
 	 */
@@ -44,7 +44,7 @@ public class OrCondition extends Composition
 	@Override
 	public boolean evaluate(IEvaluationContext context) {
 		for (IExpression expression : getExpressions())
-			if (expression.evaluate(context))
+			if (expression != null && expression.evaluate(context))
 				return true;
 
 		return false;

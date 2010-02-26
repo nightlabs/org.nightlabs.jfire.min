@@ -1,8 +1,8 @@
 package org.nightlabs.jfire.base.expression;
 
-import javax.jdo.annotations.PersistenceCapable;
-import javax.jdo.annotations.InheritanceStrategy;
 import javax.jdo.annotations.Inheritance;
+import javax.jdo.annotations.InheritanceStrategy;
+import javax.jdo.annotations.PersistenceCapable;
 
 /**
  * Instances of this class represent a logical conjunction of multiple {@link IExpression}s.
@@ -26,8 +26,8 @@ public class AndCondition extends Composition
 {
 	private static final long serialVersionUID = 1L;
 
-	public static final String OPERATOR_TEXT = "AND"; 
-	
+	public static final String OPERATOR_TEXT = "AND";
+
 	/**
 	 * @deprecated Only for JDO.
 	 */
@@ -42,7 +42,7 @@ public class AndCondition extends Composition
 	@Override
 	public boolean evaluate(IEvaluationContext context) {
 		for (IExpression expression : getExpressions())
-			if (!expression.evaluate(context))
+			if (expression != null && !expression.evaluate(context))
 				return false;
 
 		return true;
