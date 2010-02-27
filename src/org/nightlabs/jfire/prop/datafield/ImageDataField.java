@@ -166,12 +166,16 @@ implements IContentDataField
 		ImageDataField newField = new ImageDataField(propertySet.getOrganisationID(), propertySet.getPropertySetID(), this);
 		newField.fileName = this.fileName;
 		newField.fileTimestamp = this.fileTimestamp;
+		newField.contentType = this.contentType;
+		newField.contentEncoding = this.contentEncoding;
+		newField.description = this.description;
 
 		if (this.content != null) {
 			newField.content = new byte[this.content.length];
-			for (int i = 0; i < this.content.length; i++) {
-				newField.content[i] = this.content[i];
-			}
+			System.arraycopy(this.content, 0, newField.content, 0, this.content.length);
+//			for (int i = 0; i < this.content.length; i++) {
+//				newField.content[i] = this.content[i];
+//			}
 //			newField.content = this.content.clone();
 		}
 		return newField;
