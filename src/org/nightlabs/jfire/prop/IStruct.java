@@ -1,6 +1,5 @@
 package org.nightlabs.jfire.prop;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -178,7 +177,7 @@ public interface IStruct
 	/**
 	 * @return all {@link DisplayNamePart}s of this structure.
 	 */
-	public Collection<DisplayNamePart> getDisplayNameParts();
+	public List<DisplayNamePart> getDisplayNameParts();
 
 	/**
 	 * Adds the given {@link DisplayNamePart} to the end of

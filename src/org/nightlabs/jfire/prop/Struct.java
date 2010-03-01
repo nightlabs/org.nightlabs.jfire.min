@@ -25,6 +25,7 @@ package org.nightlabs.jfire.prop;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -181,9 +182,10 @@ public class Struct extends AbstractStruct {
 	 */
 	@Join
 	@Persistent(
-		dependentElement="true",
-		table="JFireBase_Prop_Struct_displayNameParts",
-		persistenceModifier=PersistenceModifier.PERSISTENT)
+//			dependentElement="true", // It is wrong to mark it dependent in *both* Struct and StructLocal. Instead, there should be code in the remove method that checks, if it is still used and delete it otherwise. Marco.
+			table="JFireBase_Prop_Struct_displayNameParts",
+			persistenceModifier=PersistenceModifier.PERSISTENT
+	)
 	protected List<DisplayNamePart> displayNameParts;
 
 	/**
@@ -263,8 +265,13 @@ public class Struct extends AbstractStruct {
 	}
 
 	@Override
-	public Collection<DisplayNamePart> getDisplayNameParts() {
+	protected List<DisplayNamePart> _getDisplayNameParts() {
 		return displayNameParts;
+	}
+
+	@Override
+	public List<DisplayNamePart> getDisplayNameParts() {
+		return Collections.unmodifiableList(displayNameParts);
 	}
 
 	@Override

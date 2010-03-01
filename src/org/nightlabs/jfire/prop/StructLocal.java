@@ -181,7 +181,7 @@ public class StructLocal extends AbstractStruct implements DetachCallback, Attac
 	 */
 	@Join
 	@Persistent(
-		dependentElement="true",
+//		dependentElement="true", // It is wrong to mark it dependent in *both* Struct and StructLocal. Instead, there should be code in the remove method that checks, if it is still used and delete it otherwise. Marco.
 		table="JFireBase_Prop_StructLocal_displayNameParts",
 		persistenceModifier=PersistenceModifier.PERSISTENT)
 	private List<DisplayNamePart> displayNameParts;
@@ -399,13 +399,14 @@ public class StructLocal extends AbstractStruct implements DetachCallback, Attac
 		return orderItem;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.nightlabs.jfire.prop.IStruct#getDisplayNameParts()
-	 */
 	@Override
-	public Collection<DisplayNamePart> getDisplayNameParts() {
+	protected List<DisplayNamePart> _getDisplayNameParts() {
 		return displayNameParts;
+	}
+
+	@Override
+	public List<DisplayNamePart> getDisplayNameParts() {
+		return Collections.unmodifiableList(displayNameParts);
 	}
 
 	/*
@@ -461,7 +462,7 @@ public class StructLocal extends AbstractStruct implements DetachCallback, Attac
 		Collections.sort(blocks, getStructBlockComparator());
 		return blocks;
 	}
-	
+
 	/**
 	 * @jdo.field persistence-modifier="none"
 	 */
@@ -779,6 +780,5 @@ public class StructLocal extends AbstractStruct implements DetachCallback, Attac
 		Query q = pm.newNamedQuery(StructLocal.class, "getAllStructLocalIDs");
 		return (Collection<StructLocalID>) q.execute();
 	}
-
 
 }

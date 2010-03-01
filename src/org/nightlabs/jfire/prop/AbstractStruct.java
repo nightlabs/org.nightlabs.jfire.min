@@ -1,27 +1,40 @@
 package org.nightlabs.jfire.prop;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.jdo.JDOHelper;
+import javax.jdo.JDOObjectNotFoundException;
+import javax.jdo.PersistenceManager;
+import javax.jdo.Query;
+import javax.jdo.annotations.PersistenceModifier;
+import javax.jdo.annotations.Persistent;
+import javax.jdo.listener.AttachCallback;
+
 import org.nightlabs.jfire.base.DuplicateKeyException;
 import org.nightlabs.jfire.prop.exception.PropertyException;
 import org.nightlabs.jfire.prop.exception.StructBlockNotFoundException;
 import org.nightlabs.jfire.prop.exception.StructFieldNotFoundException;
+import org.nightlabs.jfire.prop.id.DisplayNamePartID;
 import org.nightlabs.jfire.prop.id.StructBlockID;
 import org.nightlabs.jfire.prop.id.StructFieldID;
 import org.nightlabs.jfire.prop.validation.IPropertySetValidator;
 
 /**
  * @author Tobias Langner <!-- tobias[dot]langner[at]nightlabs[dot]de -->
+ * @author Marco หงุ่ยตระกูล-Schulze - marco at nightlabs dot de
  *
  * Abstract implementation of a property structure.
  */
-public abstract class AbstractStruct implements IStruct, Serializable
+public abstract class AbstractStruct implements IStruct, Serializable, AttachCallback
 {
 	private static final long serialVersionUID = 1L;
 
@@ -58,11 +71,11 @@ public abstract class AbstractStruct implements IStruct, Serializable
 	public List<StructField<?>> getStructFields() {
 		List<StructBlock> structBlocks = getStructBlocks();
 		List<StructField<?>> structFieldList = new LinkedList<StructField<?>>();
-		
+
 		for (StructBlock block : structBlocks) {
 			structFieldList.addAll(block.getStructFields());
 		}
-		
+
 		return Collections.unmodifiableList(structFieldList);
 	}
 
@@ -187,7 +200,7 @@ public abstract class AbstractStruct implements IStruct, Serializable
 	@Override
 	public void addDisplayNamePart(DisplayNamePart part)
 	{
-		getDisplayNameParts().add(part);
+		_getDisplayNameParts().add(part);
 	}
 
 	/*
@@ -197,8 +210,86 @@ public abstract class AbstractStruct implements IStruct, Serializable
 	@Override
 	public void removeDisplayNamePart(DisplayNamePart part)
 	{
-		getDisplayNameParts().remove(part);
+		if (!_getDisplayNameParts().remove(part))
+			return;
+
+		PersistenceManager pm = JDOHelper.getPersistenceManager(this);
+		if (pm == null) {
+			DisplayNamePartID id = (DisplayNamePartID) JDOHelper.getObjectId(part);
+			if (id != null) { // was it ever persisted? (otherwise this id is null)
+				if (removedDisplayNamePartIDs == null)
+					removedDisplayNamePartIDs = new HashSet<DisplayNamePartID>();
+
+				removedDisplayNamePartIDs.add(id);
+			}
+		}
+		else
+			deleteOrphanedDisplayNamePart(pm, part);
 	}
+
+	@Override
+	public void jdoPreAttach() { }
+
+	@Override
+	public void jdoPostAttach(Object o) {
+		PersistenceManager pm = JDOHelper.getPersistenceManager(this);
+		if (pm == null)
+			throw new IllegalStateException("JDOHelper.getPersistenceManager(this) returned null!");
+
+		if (removedDisplayNamePartIDs != null) {
+			for (DisplayNamePartID displayNamePartID : removedDisplayNamePartIDs) {
+				DisplayNamePart displayNamePart;
+				try {
+					displayNamePart = (DisplayNamePart) pm.getObjectById(displayNamePartID);
+				} catch (JDOObjectNotFoundException x) {
+					displayNamePart = null;
+				}
+
+				if (displayNamePart != null)
+					deleteOrphanedDisplayNamePart(pm, displayNamePart);
+			}
+		}
+	}
+
+	private static Collection<IStruct> getOwnerStructs(PersistenceManager pm, Class<? extends IStruct> candidateClass, DisplayNamePart displayNamePart) {
+		Query query = pm.newQuery(candidateClass);
+		try {
+			query.setFilter("this.displayNameParts.contains(:displayNamePart)");
+			@SuppressWarnings("unchecked")
+			Collection<IStruct> ownerStructs = new ArrayList<IStruct>((Collection<IStruct>) query.execute(displayNamePart));
+			return ownerStructs;
+		} finally {
+			query.closeAll();
+		}
+	}
+
+	private static void deleteOrphanedDisplayNamePart(PersistenceManager pm, DisplayNamePart displayNamePart) {
+		// In order to make sure, the data is written to the DB when we execute our queries, we flush first.
+		pm.flush();
+
+		// Check, if the displayNamePart is orphaned.
+		boolean isOrphan = getOwnerStructs(pm, Struct.class, displayNamePart).isEmpty();
+		if (!isOrphan)
+			return;
+
+		isOrphan = getOwnerStructs(pm, StructLocal.class, displayNamePart).isEmpty();
+		if (!isOrphan)
+			return;
+
+		// Delete the instance from the datastore, since it obviously is an orphan.
+		pm.deletePersistent(displayNamePart);
+		pm.flush();
+	}
+
+	@Persistent(persistenceModifier=PersistenceModifier.NONE)
+	private Set<DisplayNamePartID> removedDisplayNamePartIDs = null;
+
+	/**
+	 * Get a writable list of the {@link DisplayNamePart}s since {@link IStruct#getDisplayNameParts()} is read-only.
+	 * @return a writable list of {@link DisplayNamePart}s.
+	 */
+	protected abstract List<DisplayNamePart> _getDisplayNameParts();
+
 
 	/*
 	 * (non-Javadoc)
@@ -276,7 +367,7 @@ public abstract class AbstractStruct implements IStruct, Serializable
 	public void addPropertySetValidator(IPropertySetValidator validator) {
 		getPropertySetValidatorSet().add(validator);
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * @see org.nightlabs.jfire.prop.IStruct#removePropertySetValidator(org.nightlabs.jfire.prop.validation.IPropertySetValidator)
