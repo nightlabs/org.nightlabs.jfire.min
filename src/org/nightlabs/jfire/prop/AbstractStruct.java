@@ -114,9 +114,16 @@ public abstract class AbstractStruct implements IStruct, Serializable, AttachCal
 		// The structBlockMap is initialized with ALL blocks of
 		// the Struct and possibly others from the StructLocal
 		// getStructBlockList()
-		structBlockMap = new HashMap<String, StructBlock>(getStructBlocks().size());
+		// Bugfix: the following old code is not thread-safe, but called from multiple threads in the client!
+//		structBlockMap = new HashMap<String, StructBlock>(getStructBlocks().size());
+//		for (StructBlock block : getStructBlocks())
+//			structBlockMap.put(block.getPrimaryKey(), block);
+
+		Map<String, StructBlock> m = new HashMap<String, StructBlock>(getStructBlocks().size());
 		for (StructBlock block : getStructBlocks())
-			structBlockMap.put(block.getPrimaryKey(), block);
+			m.put(block.getPrimaryKey(), block);
+
+		structBlockMap = m;
 	}
 
 	/*

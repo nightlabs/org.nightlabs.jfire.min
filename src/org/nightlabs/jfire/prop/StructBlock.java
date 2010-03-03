@@ -297,16 +297,19 @@ public class StructBlock implements Serializable
 		if (structFieldMap != null)
 			return;
 
-		if (structFields.isEmpty()) {
-			structFieldMap = new HashMap<String, StructField<? extends DataField>>();
-			return;
-		}	else {
-			structFieldMap = new HashMap<String, StructField<? extends DataField>>(structFields.size());
-		}
+		// Bugfix by Marco: The old implemetation was not thread-safe. This one is (in the worst case, it creates multiple maps).
+		Map<String, StructField<? extends DataField>> m = new HashMap<String, StructField<? extends DataField>>(structFields.size());
+//		if (structFields.isEmpty()) {
+//			structFieldMap = new HashMap<String, StructField<? extends DataField>>();
+//			return;
+//		}	else {
+//			structFieldMap = new HashMap<String, StructField<? extends DataField>>(structFields.size());
+//		}
 
 		for (StructField<? extends DataField> field : structFields) {
-			structFieldMap.put(field.getStructFieldKey(), field);
+			m.put(field.getStructFieldKey(), field);
 		}
+		structFieldMap = m;
 	}
 
 	/**
