@@ -53,7 +53,7 @@ public abstract class PropSearchFilter
 	 * The prefix of the data field variables in the JDO query.
 	 */
 	public static String QUERY_DATAFIELD_VARNAME_PREFIX = "dataField";
-	
+
 	/**
 	 * The serial version id.
 	 */
@@ -168,7 +168,7 @@ public abstract class PropSearchFilter
 			filter.append("1 == 1");
 			return;
 		}
-			
+
 		// Otherwise, we build the query
 		for (Iterator<ISearchFilterItem> it = getFilterItems().iterator(); it.hasNext(); ) {
 			ISearchFilterItem item = it.next();
@@ -257,15 +257,15 @@ public abstract class PropSearchFilter
 					params.append(", ");
 				// begin primary key PersonStructField
 				params.append(String.class.getName()+" structBlockOrganisationID"+structIdentifier);
-				paramMap.put("structBlockOrganisationID"+structIdentifier, item.getStructFieldID().structBlockOrganisationID);
+				paramMap.put("structBlockOrganisationID"+structIdentifier, structFieldID.structBlockOrganisationID);
 
 				params.append(", ");
 				params.append(String.class.getName()+" structBlockID"+structIdentifier);
-				paramMap.put("structBlockID"+structIdentifier, item.getStructFieldID().structBlockID);
+				paramMap.put("structBlockID"+structIdentifier, structFieldID.structBlockID);
 
 				params.append(", ");
 				params.append(String.class.getName()+" structFieldOrganisationID"+structIdentifier);
-				paramMap.put("structFieldOrganisationID"+structIdentifier, item.getStructFieldID().structFieldOrganisationID);
+				paramMap.put("structFieldOrganisationID"+structIdentifier, structFieldID.structFieldOrganisationID);
 
 				params.append(", ");
 				params.append(String.class.getName()+" structFieldID"+structIdentifier);
