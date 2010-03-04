@@ -46,6 +46,7 @@ public abstract class AbstractStruct implements IStruct, Serializable, AttachCal
 		if (!getStructBlockList().contains(psb)) {
 			getStructBlockList().add(psb);
 			psb.setStruct(this);
+			structBlockMap = null; // clear cache, because it does not yet contain our new block.
 		} else
 			throw new DuplicateKeyException("The StructBlock " + psb.getPrimaryKey() + " does already exist.");
 	}
