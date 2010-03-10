@@ -5,6 +5,9 @@
     <ejb>JFireTestSuite.jar</ejb>
   </module>
   <module>
-    <java>lib/junit-4.3.1.jar</java>
+    <java>lib/junit-4.8.1.jar</java>
+  </module>
+  <module>
+    <java>lib/hamcrest-all-1.2.jar</java>
   </module>
 </application>
