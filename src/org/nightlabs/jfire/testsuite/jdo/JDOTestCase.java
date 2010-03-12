@@ -31,12 +31,14 @@ public class JDOTestCase extends TestCase
 
 	public void testCreateArrayListFromQueryResult() throws Exception
 	{
+		// REV Alex: What is this testing?!?
 		LoginData loginData = JFireTestLogin.getUserLoginData(JFireTestLogin.USER_QUALIFIER_SERVER_ADMIN);
 		JFireEjb3Factory.getRemoteBean(JDOTestRemote.class, loginData.getInitialContextProperties()).createArrayListFromQueryResult();
 	}
 
 	public void testCreateHashSetFromQueryResult() throws Exception
 	{
+		// REV Alex: What is this testing?!?
 		LoginData loginData = JFireTestLogin.getUserLoginData(JFireTestLogin.USER_QUALIFIER_SERVER_ADMIN);
 		JFireEjb3Factory.getRemoteBean(JDOTestRemote.class, loginData.getInitialContextProperties()).createHashSetFromQueryResult();
 	}

@@ -142,6 +142,9 @@ public class JFirePropertySetTestCase extends TestCase {
 //					new NullProgressMonitor()
 //			);
 			propertySet.inflate(structLocal);
+			
+			// REV Alex: Here it should be checked, if the structures are equal after inflation
+			
 		} catch (Exception e) {
 			throw new RuntimeException("Exploding propertySet failed", e);
 		}
