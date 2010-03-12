@@ -71,6 +71,10 @@ public class EditLockTestCase extends TestCase{
 		// create a dummy Object to Test EditLocking on it
 		PropertySetID ObjectEditLock = createDemoObjectForEditLocking();	
 		newObjectforEditLock.set(ObjectEditLock);
+		
+		// REV Alex: As far as I know setUp is called once before every
+		// test-method, not once per test. Fitas, were you aware of this when
+		// writing this test?
 	}
 
 	@Test
@@ -100,6 +104,13 @@ public class EditLockTestCase extends TestCase{
 			fail("couldnt login with another User Account to test the EditLock!!!!");		
 		}
 		login.logout();
+		
+		// REV Alex: try-finally for the login missing. An error inbetween might
+		// have influence on other tests. 
+		
+		// REV Alex: After releasing, the test should also check if the lock was
+		// really removed from the datastore
+		
 	}
 	
 
@@ -146,6 +157,8 @@ public class EditLockTestCase extends TestCase{
 				fail("couldnt login with another User Account to test the EditLock!!!!");		
 			}
 			login.logout();
+			// REV Alex: try-finally for the login missing. An error inbetween might
+			// have influence on other tests. Detect-test is ok.
 		}
 	
 	private PropertySetID createDemoObjectForEditLocking() throws Exception{	

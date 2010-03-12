@@ -39,6 +39,10 @@ public class ConfigTestCase extends TestCase{
 	{			
 		logger.info("test WorkstationConfigSetup: Begin");
 
+		// REV Alex: Sorry, I don't understand this test. What is it supposed to
+		// do? The method-name implies it tests the Workstation-ConfigSetup.
+		// What exactly does it test?
+		
 		ConfigManagerRemote configManager = JFireEjb3Factory.getRemoteBean(ConfigManagerRemote.class, SecurityReflector.getInitialContextProperties());
 		
 		String configGroupName = "workstationtest";

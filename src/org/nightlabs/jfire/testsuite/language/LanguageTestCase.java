@@ -3,6 +3,7 @@ package org.nightlabs.jfire.testsuite.language;
 import java.util.Collection;
 import java.util.Locale;
 
+import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
@@ -38,6 +39,10 @@ public class LanguageTestCase extends TestCase{
 		logger.info("The following Languages was found on the system.");
 		for (Language lang : languages) {
 			logger.info("Language = "+ lang.getName().getText());
-		}			
+		}
+		// REV Alex: A check is missing whether what the server returned was
+		// what this test expects it to return.
+//		Assert.assertEquals(newLanguageCf.getLanguageID(), newLanguage.getLanguageID());
+		// and more...
 	}
 }
