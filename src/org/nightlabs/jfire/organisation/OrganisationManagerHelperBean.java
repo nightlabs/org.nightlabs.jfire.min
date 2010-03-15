@@ -17,6 +17,7 @@ import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 
 import org.apache.log4j.Logger;
+import org.nightlabs.jdo.moduleregistry.UpdateHistoryItem;
 import org.nightlabs.jfire.asyncinvoke.AsyncInvokeProblem;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.base.expression.AndCondition;
@@ -81,6 +82,7 @@ implements OrganisationManagerHelperLocal
 			if(logger.isDebugEnabled())
 				logger.debug("Initializing JDO meta-data...");
 
+			pm.getExtent(UpdateHistoryItem.class); // This table *must* exist, since it is accessed via plain SQL.
 			pm.getExtent(Server.class);
 			pm.getExtent(LocalServer.class);
 			pm.getExtent(TemporaryOrganisation.class);

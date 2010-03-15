@@ -40,11 +40,15 @@ import javax.ejb.TransactionManagementType;
 import javax.jdo.JDOHelper;
 import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
+import javax.jdo.Query;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.i18n.MultiLanguagePropertiesBundle;
 import org.nightlabs.jdo.NLJDOHelper;
+import org.nightlabs.jdo.moduleregistry.UpdateHistoryItem;
+import org.nightlabs.jdo.moduleregistry.UpdateNeededHandle;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
+import org.nightlabs.jfire.base.JFireBaseEAR;
 import org.nightlabs.jfire.base.expression.IExpression;
 import org.nightlabs.jfire.config.ConfigSetup;
 import org.nightlabs.jfire.config.UserConfigSetup;
@@ -88,6 +92,7 @@ import org.nightlabs.jfire.prop.structfield.TimePatternSetStructField;
 import org.nightlabs.jfire.prop.view.PersonTableViewerConfiguration;
 import org.nightlabs.jfire.prop.view.PropertySetViewerConfiguration;
 import org.nightlabs.util.CollectionUtil;
+import org.nightlabs.util.Stopwatch;
 import org.nightlabs.util.Util;
 
 /**
@@ -546,7 +551,7 @@ public class PropertyManagerBean extends BaseSessionBeanImpl implements Property
 			} catch (Exception x) {
 				logger.warn("initialise: Initialising of PropertySet-class-meta-data failed!", x);
 			}
-			
+
 			try {
 				logger.info("Initialising meta data of PropertySetViewerConfigurations.");
 				pm.getExtent(PropertySetViewerConfiguration.class);
@@ -555,7 +560,7 @@ public class PropertyManagerBean extends BaseSessionBeanImpl implements Property
 			} catch (Exception x) {
 				logger.warn("initialise: Initialising of PropertySetSearch class-meta-data failed!", x);
 			}
-			
+
 			PersonStruct.getPersonStructLocal(pm);
 
 			// register ConfigModule type
@@ -564,10 +569,10 @@ public class PropertyManagerBean extends BaseSessionBeanImpl implements Property
 			final String cfModClassName = PropertySetEditLayoutConfigModule.class.getName();
 			if (!userConfigSetup.getConfigModuleClasses().contains(cfModClassName))
 				userConfigSetup.getConfigModuleClasses().add(cfModClassName);
-			
+
 			if (!userConfigSetup.getConfigModuleClasses().contains(PersonSearchConfigModule.class.getName()))
 				userConfigSetup.getConfigModuleClasses().add(PersonSearchConfigModule.class.getName());
-				
+
 			// register the corresponding ConfigModuleIntialiser
 			ConfigModuleInitialiserID legalEntitiySearchInitialiserID = ConfigModuleInitialiserID.create(getOrganisationID(),
 					cfModClassName, Person.class.getSimpleName());
@@ -603,6 +608,32 @@ public class PropertyManagerBean extends BaseSessionBeanImpl implements Property
 				initialiser = new PropertySetFieldBasedEditLayoutCfModIntialiser(initialiserID.organisationID, initialiserID.configModuleClassName, initialiserID.configModuleInitialiserID);
 				initialiser = pm.makePersistent(initialiser);
 			}
+
+			// BEGIN conversion of wrong data
+			UpdateNeededHandle handle = UpdateHistoryItem.updateNeeded(pm, JFireBaseEAR.MODULE_NAME, MultiSelectionDataField.class.getName() + "#convertBinarySerialisedStructFieldValueIDs");
+			if (handle != null) {
+				UpdateHistoryItem.updateDone(handle);
+
+				Stopwatch sw = new Stopwatch();
+				sw.start("convertMultiSelectionDataField.structFieldValueIDs.query.create");
+				Query q = pm.newQuery(MultiSelectionDataField.class);
+//				q.setFilter("this.structFieldValueIDs != null"); // This causes an exception: org.datanucleus.exceptions.NucleusUserException: Impossible to query a collection/map field ("org.nightlabs.jfire.prop.datafield.MultiSelectionDataField.structFieldValueIDs") when it is serialised. Either change your query, or change the field to not be serialised.
+				sw.stop("convertMultiSelectionDataField.structFieldValueIDs.query.create");
+
+				sw.start("convertMultiSelectionDataField.structFieldValueIDs.query.execute");
+				@SuppressWarnings("unchecked")
+				Collection<MultiSelectionDataField> c = (Collection<MultiSelectionDataField>) q.execute();
+				sw.stop("convertMultiSelectionDataField.structFieldValueIDs.query.execute");
+
+				for (MultiSelectionDataField msdf : c) {
+					sw.start("convertMultiSelectionDataField.structFieldValueIDs.convertInstance");
+					msdf.setSelection(msdf.getStructFieldValues());
+					sw.stop("convertMultiSelectionDataField.structFieldValueIDs.convertInstance");
+				}
+
+				logger.warn("initialise: Conversion of MultiSelectionDataField: " + sw.createHumanReport(true));
+			}
+			// END conversion of wrong data
 
 		} finally {
 			pm.close();
