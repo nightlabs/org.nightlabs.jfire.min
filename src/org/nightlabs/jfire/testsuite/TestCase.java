@@ -3,8 +3,6 @@ package org.nightlabs.jfire.testsuite;
 import java.lang.reflect.Method;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
-
-
 import org.nightlabs.jfire.base.JFireEjb3Factory;
 
 
@@ -26,25 +24,31 @@ import org.nightlabs.jfire.base.JFireEjb3Factory;
 public abstract class TestCase
 extends junit.framework.TestCase
 {
-
+	// REV Marco: Why are these public??? They should be private!
+	// And ARGGGG!!!! This is *not* thread-safe!!! You MUST write this in a thread-safe way!!!
+	// And for the future *ALWAYS* think about multi-threading *BEFORE* you check-in such code!!!
+	// Finding such bugs is very cumbersome!!! If you only want to test sth. quickly, then clearly
+	// mark it as TODO tag and write that it needs to be made thread-safe!!!
+	// But this should be a rare exception since it's always better and easier to make things
+	// thread-safe from the beginning!
 	public static boolean hasBeenInit = false;
 	public static int testMethodsLeft = 0;
-	
-	
+
+
 	public TestCase()
 	{
 	}
-	
-	
+
+
 	public TestCase(String name)
 	{
 		super(name);
 	}
 
-	
+
 	/**
 	 * the method is called once upon initialization of each Testcase
-	 * 
+	 *
 	 */
     protected void setUpBeforeClass() throws Exception
 	{
@@ -52,13 +56,13 @@ extends junit.framework.TestCase
 
 	/**
 	 * the method is called once all test methods has been run
-	 * 
+	 *
 	 */
     protected void cleanUpAfterClass() throws Exception
 	{
 	}
-    
-	
+
+
 	@Override
 	public void runBare()
 			throws Throwable
@@ -89,12 +93,13 @@ extends junit.framework.TestCase
 		if (exception != null) throw exception;
 	}
 
-	
+
 	@Override
 	protected void setUp()
 			throws Exception
 	{
 		super.setUp();
+		// REV Marco: *NOT* thread-safe!!! Make it thread-safe!!!
 		if(!hasBeenInit)
 		{
 			// count the number of test methods in the current test case
@@ -105,7 +110,7 @@ extends junit.framework.TestCase
 			}
 			// calls setup once at the beginning of a testcase cycle
 			setUpBeforeClass();
-			hasBeenInit = true;	
+			hasBeenInit = true;
 		}
 	}
 
@@ -121,12 +126,13 @@ extends junit.framework.TestCase
 	throws Exception
 	{
 		super.tearDown();
+		// REV Marco: *NOT* thread-safe!!! Make it thread-safe!!!
 		// increment the counter of the test methods if zero is left then call up the clean up code
 		if (--testMethodsLeft == 0) {
-			// call cleanUp method 
+			// call cleanUp method
 			cleanUpAfterClass();
 	    	hasBeenInit = false;
 		}
-		
+
 	}
 }
