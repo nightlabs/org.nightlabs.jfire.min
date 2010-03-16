@@ -1,7 +1,12 @@
 package org.nightlabs.jfire.testsuite;
 
+import java.lang.reflect.Method;
+
 import org.apache.commons.lang.exception.ExceptionUtils;
+
+
 import org.nightlabs.jfire.base.JFireEjb3Factory;
+
 
 /**
  * This implementation of {@link junit.framework.TestCase} ensures that
@@ -16,19 +21,44 @@ import org.nightlabs.jfire.base.JFireEjb3Factory;
  * </p>
  *
  * @author marco schulze - marco at nightlabs dot de
+ * @author fitas - fitas at nightlabs dot de
  */
 public abstract class TestCase
 extends junit.framework.TestCase
 {
+
+	public static boolean hasBeenInit = false;
+	public static int testMethodsLeft = 0;
+	
+	
 	public TestCase()
 	{
 	}
-
+	
+	
 	public TestCase(String name)
 	{
 		super(name);
 	}
 
+	
+	/**
+	 * the method is called once upon initialization of each Testcase
+	 * 
+	 */
+    protected void setUpBeforeClass() throws Exception
+	{
+	}
+
+	/**
+	 * the method is called once all test methods has been run
+	 * 
+	 */
+    protected void cleanUpAfterClass() throws Exception
+	{
+	}
+    
+	
 	@Override
 	public void runBare()
 			throws Throwable
@@ -59,11 +89,24 @@ extends junit.framework.TestCase
 		if (exception != null) throw exception;
 	}
 
+	
 	@Override
 	protected void setUp()
 			throws Exception
 	{
 		super.setUp();
+		if(!hasBeenInit)
+		{
+			// count the number of test methods in the current test case
+			for (Method method : getClass().getMethods()) {
+				if (method.getName().startsWith("test")) {
+					testMethodsLeft++;
+				}
+			}
+			// calls setup once at the beginning of a testcase cycle
+			setUpBeforeClass();
+			hasBeenInit = true;	
+		}
 	}
 
 	@Override
@@ -78,5 +121,12 @@ extends junit.framework.TestCase
 	throws Exception
 	{
 		super.tearDown();
+		// increment the counter of the test methods if zero is left then call up the clean up code
+		if (--testMethodsLeft == 0) {
+			// call cleanUp method 
+			cleanUpAfterClass();
+	    	hasBeenInit = false;
+		}
+		
 	}
 }
