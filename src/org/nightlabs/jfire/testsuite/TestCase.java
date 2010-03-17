@@ -1,8 +1,15 @@
 package org.nightlabs.jfire.testsuite;
 
 import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
+
+
+import org.nightlabs.jdo.ObjectID;
 import org.nightlabs.jfire.base.JFireEjb3Factory;
 
 
@@ -24,6 +31,8 @@ import org.nightlabs.jfire.base.JFireEjb3Factory;
 public abstract class TestCase
 extends junit.framework.TestCase
 {
+
+
 	// REV Marco: Why are these public??? They should be private!
 	// And ARGGGG!!!! This is *not* thread-safe!!! You MUST write this in a thread-safe way!!!
 	// And for the future *ALWAYS* think about multi-threading *BEFORE* you check-in such code!!!
@@ -31,10 +40,12 @@ extends junit.framework.TestCase
 	// mark it as TODO tag and write that it needs to be made thread-safe!!!
 	// But this should be a rare exception since it's always better and easier to make things
 	// thread-safe from the beginning!
-	public static boolean hasBeenInit = false;
-	public static int testMethodsLeft = 0;
+	private static boolean hasBeenInit = false;
+	private static int testMethodsLeft = 0;
+	// a useful local thread Map where it s possible to store ObjectIDs used in some testcases
+	private static ThreadLocal<Map<String,ObjectID>> testCaseObjectIDsMap = new ThreadLocal<Map<String,ObjectID>>();
 
-
+	
 	public TestCase()
 	{
 	}
@@ -47,8 +58,8 @@ extends junit.framework.TestCase
 
 
 	/**
-	 * the method is called once upon initialization of each Testcase
-	 *
+	 * the method is called once upon initialization of each Test case
+	 * 
 	 */
     protected void setUpBeforeClass() throws Exception
 	{
@@ -61,8 +72,31 @@ extends junit.framework.TestCase
     protected void cleanUpAfterClass() throws Exception
 	{
 	}
+    
+    public ObjectID getVariableObjectID(String key)
+    {	
+    	if (testCaseObjectIDsMap.get() == null) 
+    		return null;
+    	return testCaseObjectIDsMap.get().get(key);
+    }
 
+    public Collection<ObjectID> getVariableObjectIDs()
+    {	
+    	if (testCaseObjectIDsMap.get() == null) 
+    		return null;
+    	return Collections.unmodifiableCollection(testCaseObjectIDsMap.get().values());
+    }
 
+    
+    public void addVariableObjectID(String key, ObjectID objectID)
+    {
+    	if (testCaseObjectIDsMap.get() != null) 
+    	{
+    		testCaseObjectIDsMap.get().put(key, objectID);
+    	}
+    }
+    
+	
 	@Override
 	public void runBare()
 			throws Throwable
@@ -108,12 +142,17 @@ extends junit.framework.TestCase
 					testMethodsLeft++;
 				}
 			}
+			// setup the Objectmap IDs
+			testCaseObjectIDsMap.set(new HashMap<String,ObjectID>());
 			// calls setup once at the beginning of a testcase cycle
 			setUpBeforeClass();
 			hasBeenInit = true;
 		}
 	}
 
+	
+	
+	
 	@Override
 	protected void runTest()
 			throws Throwable
@@ -131,8 +170,9 @@ extends junit.framework.TestCase
 		if (--testMethodsLeft == 0) {
 			// call cleanUp method
 			cleanUpAfterClass();
+			testCaseObjectIDsMap.get().clear();
+			testCaseObjectIDsMap.remove();
 	    	hasBeenInit = false;
 		}
-
 	}
 }
