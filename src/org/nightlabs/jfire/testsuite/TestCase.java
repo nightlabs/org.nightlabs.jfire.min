@@ -32,16 +32,17 @@ public abstract class TestCase
 extends junit.framework.TestCase
 {
 
+	private static ThreadLocal<Boolean> hasBeenInit = new ThreadLocal<Boolean>(){
+        protected synchronized Boolean initialValue() {
+            return new Boolean(false);
+        }
+    };
 
-	// REV Marco: Why are these public??? They should be private!
-	// And ARGGGG!!!! This is *not* thread-safe!!! You MUST write this in a thread-safe way!!!
-	// And for the future *ALWAYS* think about multi-threading *BEFORE* you check-in such code!!!
-	// Finding such bugs is very cumbersome!!! If you only want to test sth. quickly, then clearly
-	// mark it as TODO tag and write that it needs to be made thread-safe!!!
-	// But this should be a rare exception since it's always better and easier to make things
-	// thread-safe from the beginning!
-	private static boolean hasBeenInit = false;
-	private static int testMethodsLeft = 0;
+	private static ThreadLocal<Integer> testMethodsLeft = new ThreadLocal<Integer>(){
+         protected synchronized Integer initialValue() {
+             return new Integer(0);
+         }
+     };
 	// a useful local thread Map where it s possible to store ObjectIDs used in some testcases
 	private static ThreadLocal<Map<String,ObjectID>> testCaseObjectIDsMap = new ThreadLocal<Map<String,ObjectID>>();
 
@@ -127,31 +128,31 @@ extends junit.framework.TestCase
 		if (exception != null) throw exception;
 	}
 
-
 	@Override
 	protected void setUp()
 			throws Exception
 	{
 		super.setUp();
-		// REV Marco: *NOT* thread-safe!!! Make it thread-safe!!!
-		if(!hasBeenInit)
-		{
-			// count the number of test methods in the current test case
-			for (Method method : getClass().getMethods()) {
-				if (method.getName().startsWith("test")) {
-					testMethodsLeft++;
+		synchronized (this){
+			if(!hasBeenInit.get())
+			{
+				// count the number of test methods in the current test case
+				int methodCount = 0;
+				for (Method method : getClass().getMethods()) {
+					if (method.getName().startsWith("test")) {
+						methodCount++;
+					}
 				}
+				testMethodsLeft.set(methodCount);
+				// setup the Object map IDs
+				testCaseObjectIDsMap.set(new HashMap<String,ObjectID>());
+				// calls setup once at the beginning of a test case cycle
+				setUpBeforeClass();
+				hasBeenInit.set(true);
 			}
-			// setup the Objectmap IDs
-			testCaseObjectIDsMap.set(new HashMap<String,ObjectID>());
-			// calls setup once at the beginning of a testcase cycle
-			setUpBeforeClass();
-			hasBeenInit = true;
 		}
 	}
 
-	
-	
 	
 	@Override
 	protected void runTest()
@@ -165,14 +166,15 @@ extends junit.framework.TestCase
 	throws Exception
 	{
 		super.tearDown();
-		// REV Marco: *NOT* thread-safe!!! Make it thread-safe!!!
-		// increment the counter of the test methods if zero is left then call up the clean up code
-		if (--testMethodsLeft == 0) {
-			// call cleanUp method
-			cleanUpAfterClass();
-			testCaseObjectIDsMap.get().clear();
-			testCaseObjectIDsMap.remove();
-	    	hasBeenInit = false;
+		synchronized (this) {
+			testMethodsLeft.set(testMethodsLeft.get() - 1);
+			if (testMethodsLeft.get() == 0) {
+				// call cleanUp method
+				cleanUpAfterClass();
+				testCaseObjectIDsMap.get().clear();
+				testCaseObjectIDsMap.remove();
+				hasBeenInit.set(false);
+			}
 		}
 	}
 }
