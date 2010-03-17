@@ -32,12 +32,14 @@ public abstract class TestCase
 extends junit.framework.TestCase
 {
 
+	// determines if method setUpBeforeClass() has been already called
 	private static ThreadLocal<Boolean> hasBeenInit = new ThreadLocal<Boolean>(){
         protected synchronized Boolean initialValue() {
             return new Boolean(false);
         }
     };
-
+    // counts the total number of test methods left to be executed
+    // upon zero fires up the method cleanUpAfterClass()
 	private static ThreadLocal<Integer> testMethodsLeft = new ThreadLocal<Integer>(){
          protected synchronized Integer initialValue() {
              return new Integer(0);
