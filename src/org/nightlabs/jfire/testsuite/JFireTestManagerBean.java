@@ -423,11 +423,13 @@ implements JFireTestManagerRemote, JFireTestManagerLocal
 		test.tearDown();
 	}
 
+	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
 	@Override
 	public void runTestInNestedTransaction_cleanUpAfterClass(final org.nightlabs.jfire.testsuite.TestCase test) throws Exception {
 		test.cleanUpAfterClass();
 	}
-
+	
+	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
 	@Override
 	public void runTestInNestedTransaction_setUpBeforeClass(final org.nightlabs.jfire.testsuite.TestCase test) throws Exception {
 		test.setUpBeforeClass();
