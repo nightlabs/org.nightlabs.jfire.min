@@ -423,6 +423,16 @@ implements JFireTestManagerRemote, JFireTestManagerLocal
 		test.tearDown();
 	}
 
+	@Override
+	public void runTestInNestedTransaction_cleanUpAfterClass(final org.nightlabs.jfire.testsuite.TestCase test) throws Exception {
+		test.cleanUpAfterClass();
+	}
+
+	@Override
+	public void runTestInNestedTransaction_setUpBeforeClass(final org.nightlabs.jfire.testsuite.TestCase test) throws Exception {
+		test.setUpBeforeClass();
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.nightlabs.jfire.testsuite.JFireTestManagerLocal#runTestInNestedTransaction_runTest(org.nightlabs.jfire.testsuite.TestCase)
 	 */

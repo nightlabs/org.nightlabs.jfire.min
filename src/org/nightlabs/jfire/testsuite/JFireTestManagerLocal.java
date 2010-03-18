@@ -45,11 +45,18 @@ public interface JFireTestManagerLocal {
 
 	void runTestInNestedTransaction(Test test, TestResult result) throws Exception;
 
+	public void runTestInNestedTransaction_setUpBeforeClass(org.nightlabs.jfire.testsuite.TestCase test) throws Exception;
+
+	public void runTestInNestedTransaction_cleanUpAfterClass(org.nightlabs.jfire.testsuite.TestCase test) throws Exception;
+	
 	public void runTestInNestedTransaction_setUp(org.nightlabs.jfire.testsuite.TestCase test) throws Exception;
 
 	public void runTestInNestedTransaction_tearDown(org.nightlabs.jfire.testsuite.TestCase test) throws Exception;
 
 	public void runTestInNestedTransaction_runTest(org.nightlabs.jfire.testsuite.TestCase test) throws Exception;
+
+	
+	
 	
 	public boolean isJDOObjectExisting(ObjectID objectID);
 	

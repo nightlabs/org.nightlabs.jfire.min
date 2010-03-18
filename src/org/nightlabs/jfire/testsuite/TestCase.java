@@ -1,15 +1,10 @@
 package org.nightlabs.jfire.testsuite;
 
 import java.lang.reflect.Method;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
-
-
-import org.nightlabs.jdo.ObjectID;
 import org.nightlabs.jfire.base.JFireEjb3Factory;
 
 
@@ -31,22 +26,11 @@ import org.nightlabs.jfire.base.JFireEjb3Factory;
 public abstract class TestCase
 extends junit.framework.TestCase
 {
-
-	// determines if method setUpBeforeClass() has been already called
-	private static ThreadLocal<Boolean> hasBeenInit = new ThreadLocal<Boolean>(){
-        protected synchronized Boolean initialValue() {
-            return new Boolean(false);
-        }
-    };
     // counts the total number of test methods left to be executed
     // upon zero fires up the method cleanUpAfterClass()
-	private static ThreadLocal<Integer> testMethodsLeft = new ThreadLocal<Integer>(){
-         protected synchronized Integer initialValue() {
-             return new Integer(0);
-         }
-     };
+	private static ThreadLocal<Integer> testMethodsLeft = new ThreadLocal<Integer>();
 	// a useful local thread Map where it s possible to store ObjectIDs used in some testcases
-	private static ThreadLocal<Map<String,ObjectID>> testCaseObjectIDsMap = new ThreadLocal<Map<String,ObjectID>>();
+	private static ThreadLocal<Map<String,Object>> testCaseContextObjectsMap = new ThreadLocal<Map<String,Object>>();
 
 	
 	public TestCase()
@@ -76,29 +60,49 @@ extends junit.framework.TestCase
 	{
 	}
     
-    public ObjectID getVariableObjectID(String key)
+    public Object getTestCaseContextObject(String key)
     {	
-    	if (testCaseObjectIDsMap.get() == null) 
-    		return null;
-    	return testCaseObjectIDsMap.get().get(key);
-    }
-
-    public Collection<ObjectID> getVariableObjectIDs()
-    {	
-    	if (testCaseObjectIDsMap.get() == null) 
-    		return null;
-    	return Collections.unmodifiableCollection(testCaseObjectIDsMap.get().values());
+    	if (testCaseContextObjectsMap.get() == null) 
+    		throw new IllegalStateException("the ContextObjectsMap has not been initialized !!");
+    	return testCaseContextObjectsMap.get().get(key);
     }
 
     
-    public void addVariableObjectID(String key, ObjectID objectID)
+    public void setTestCaseContextObject(String key, Object object)
     {
-    	if (testCaseObjectIDsMap.get() != null) 
-    	{
-    		testCaseObjectIDsMap.get().put(key, objectID);
-    	}
+    	if (testCaseContextObjectsMap.get() == null) 
+    		throw new IllegalStateException("the ContextObjectsMap has not been initialized !!");
+    	testCaseContextObjectsMap.get().put(key, object);
     }
     
+	private boolean initSetUpBeforeClass()
+	{
+		if(testMethodsLeft.get() != null)
+			return false;	
+		// count the number of test methods in the current test case
+		int methodCount = 0;
+		for (Method method : getClass().getMethods()) {
+			if (method.getName().startsWith("test")) {
+				methodCount++;
+			}
+		}
+		testMethodsLeft.set(methodCount);
+		// setup the Object map IDs
+		testCaseContextObjectsMap.set(new HashMap<String,Object>());
+		return true;	
+	}
+	
+	private boolean initCleanUpAfterClass()
+	{
+		testMethodsLeft.set(testMethodsLeft.get() - 1);
+		if (testMethodsLeft.get() == 0) {
+			testCaseContextObjectsMap.get().clear();
+			testCaseContextObjectsMap.remove();
+			testMethodsLeft.remove();
+			return true;
+		}
+		return false;		
+	}
 	
 	@Override
 	public void runBare()
@@ -106,6 +110,8 @@ extends junit.framework.TestCase
 	{
 		Throwable exception= null;
 		JFireTestManagerLocal m = JFireEjb3Factory.getLocalBean(JFireTestManagerLocal.class);
+		if(initSetUpBeforeClass())
+			m.runTestInNestedTransaction_setUpBeforeClass(this);
 		m.runTestInNestedTransaction_setUp(this);
 		try {
 			m.runTestInNestedTransaction_runTest(this);
@@ -123,6 +129,8 @@ extends junit.framework.TestCase
 		finally {
 			try {
 				m.runTestInNestedTransaction_tearDown(this);
+				if(initCleanUpAfterClass())
+					m.runTestInNestedTransaction_cleanUpAfterClass(this);
 			} catch (Throwable tearingDown) {
 				if (exception == null) exception= tearingDown;
 			}
@@ -131,52 +139,21 @@ extends junit.framework.TestCase
 	}
 
 	@Override
-	protected void setUp()
-			throws Exception
+	protected void setUp() throws Exception
 	{
 		super.setUp();
-		synchronized (this){
-			if(!hasBeenInit.get())
-			{
-				// count the number of test methods in the current test case
-				int methodCount = 0;
-				for (Method method : getClass().getMethods()) {
-					if (method.getName().startsWith("test")) {
-						methodCount++;
-					}
-				}
-				testMethodsLeft.set(methodCount);
-				// setup the Object map IDs
-				testCaseObjectIDsMap.set(new HashMap<String,ObjectID>());
-				// calls setup once at the beginning of a test case cycle
-				setUpBeforeClass();
-				hasBeenInit.set(true);
-			}
-		}
 	}
 
 	
 	@Override
-	protected void runTest()
-			throws Throwable
+	protected void runTest() throws Throwable
 	{
 		super.runTest();
 	}
 
 	@Override
-	protected void tearDown()
-	throws Exception
+	protected void tearDown() throws Exception
 	{
 		super.tearDown();
-		synchronized (this) {
-			testMethodsLeft.set(testMethodsLeft.get() - 1);
-			if (testMethodsLeft.get() == 0) {
-				// call cleanUp method
-				cleanUpAfterClass();
-				testCaseObjectIDsMap.get().clear();
-				testCaseObjectIDsMap.remove();
-				hasBeenInit.set(false);
-			}
-		}
 	}
 }
