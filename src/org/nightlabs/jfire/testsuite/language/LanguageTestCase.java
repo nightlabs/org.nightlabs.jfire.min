@@ -103,7 +103,8 @@ public class LanguageTestCase extends TestCase{
 		LanguageID newLanguageID = (LanguageID)getTestCaseContextObject(NEW_LANGUAGE);
 		assertThat(newLanguageID,notNullValue()); 
 		// delete the language !!!!			
-		lm.deleteLanguage(newLanguageID);	
+		lm.deleteLanguage(newLanguageID);
+		// verifiy that the language has been definitly deleted from the data store
 		Collection<Language> languages = lm.getLanguages();		
 		for (Language lang : languages) 
 			assertThat(lang.getLanguageID(),not(equalTo(newLanguageID.languageID)));

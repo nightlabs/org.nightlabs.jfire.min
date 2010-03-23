@@ -1,20 +1,21 @@
 package org.nightlabs.jfire.testsuite.security;
 
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.both;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.nullValue;
+import static org.nightlabs.jfire.testsuite.hamcrest.IsNotEmptyMatcher.isNotEmpty;
+import static org.nightlabs.jfire.testsuite.hamcrest.IsNotNullMatcher.isNotNull;
+
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
-import java.util.Locale;
 import java.util.Properties;
 import java.util.Set;
 
 import javax.jdo.FetchPlan;
 import javax.jdo.JDOHelper;
 import javax.security.auth.login.LoginException;
-
-import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 import org.junit.Test;
@@ -44,26 +45,22 @@ import org.nightlabs.jfire.security.id.RoleGroupID;
 import org.nightlabs.jfire.security.id.UserID;
 import org.nightlabs.jfire.security.search.UserQuery;
 import org.nightlabs.jfire.testsuite.JFireTestSuite;
-
+import org.nightlabs.jfire.testsuite.TestCase;
 
 /**
  *
  * @author Fitas Amine - fitas [at] nightlabs [dot] de
  *
- * A simple TestCase for demonstration.
- * With the annotation it is linked to
- * the JFireBaseTestSuite, that will check
- * if JFireBase is deployedsss.
  */
 @JFireTestSuite(JFireBaseSecurityTestSuite.class)
 public class NewUserTestCase extends TestCase
 {
 	Logger logger = Logger.getLogger(NewUserTestCase.class);
 
-	private static ThreadLocal<UserID> newUserID = new ThreadLocal<UserID>();
 	public static final String NEW_USER_PREFEXID = "UserTC";
 	public static final String NEW_USER_PASSWORD = "test";
-
+	private static String NEW_USER = "NEWUSER";
+		
 	private static String[] FETCH_GROUP_USER =new String[]{FetchPlan.DEFAULT,
 		User.FETCH_GROUP_NAME,
 		User.FETCH_GROUP_USER_LOCAL,
@@ -72,21 +69,11 @@ public class NewUserTestCase extends TestCase
 		IExpression.FETCH_GROUP_IEXPRESSION_FULL_DATA};
 
 
-
-	//Commented out this nonsense method. It should use API methods rather than its own EJB and
-	//especially it is wrong to work with a LegalEntity here. I'll remove the dependency on JFireTrade, too. Marco.
-
-	/**
-	 * This method is invoked by the JUnit run,
-	 * as its name starts with test!
-	 */
 	@Test
 	public void testCreateUser() throws Exception{
 
 		Properties initialContextProperties = SecurityReflector.getInitialContextProperties();
 		JFireSecurityManagerRemote sm = JFireEjb3Factory.getRemoteBean(JFireSecurityManagerRemote.class, initialContextProperties);		
-
-		//
 		long ID = IDGenerator.nextID(User.class);
 		// Person 's information.
 		String company = "Company";
@@ -94,7 +81,6 @@ public class NewUserTestCase extends TestCase
 		String firstName = "Firstname";
 		String eMail = "email";
 		String dateOfBirth = "";
-		String salutation = "Mr";
 		String title = "Mr";
 		String postAdress = "4B strasse";
 		String postCode = "478541";
@@ -116,23 +102,12 @@ public class NewUserTestCase extends TestCase
 		int creditCardExpiryMonth = 11;
 		int creditCardExpiryYear = 2020;
 		String comment = "";
-
-		DateFormat formatter = new SimpleDateFormat("dd.MM.yyyy", Locale.ENGLISH);
-		Date dob;
-		try { dob = formatter.parse( dateOfBirth ); }
-		catch (ParseException e) { dob = new Date(); }
-
 		logger.info("test Create Person: begin");
-
 		Person newPerson = new Person(IDGenerator.getOrganisationID(), IDGenerator.nextID(PropertySet.class));
-
-
 		PropertyManagerRemote pm2  = JFireEjb3Factory.getRemoteBean(PropertyManagerRemote.class, SecurityReflector.getInitialContextProperties());
 		IStruct personStruct  = pm2.getFullStructLocal(newPerson.getStructLocalObjectID(), 
 				new String[] {FetchPlan.DEFAULT, IStruct.FETCH_GROUP_ISTRUCT_FULL_DATA}, 
 				NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
-
-
 		newPerson.inflate(personStruct);
 		newPerson.getDataField(PersonStruct.PERSONALDATA_COMPANY).setData(company);
 		newPerson.getDataField(PersonStruct.PERSONALDATA_NAME).setData(name);
@@ -144,7 +119,6 @@ public class NewUserTestCase extends TestCase
 				PersonStruct.PERSONALDATA, PersonStruct.PERSONALDATA_SALUTATION);
 		StructFieldValue sfv = salutationSelectionStructField.getStructFieldValue(PersonStruct.PERSONALDATA_SALUTATION_MR);
 		newPerson.getDataField(PersonStruct.PERSONALDATA_SALUTATION, SelectionDataField.class).setSelection(sfv);
-
 		newPerson.getDataField(PersonStruct.PERSONALDATA_TITLE).setData(title);
 		newPerson.getDataField(PersonStruct.POSTADDRESS_ADDRESS).setData(postAdress);
 		newPerson.getDataField(PersonStruct.POSTADDRESS_POSTCODE).setData(postCode);
@@ -186,15 +160,12 @@ public class NewUserTestCase extends TestCase
 		newPerson.deflate();
 
 		logger.info("test Create Person: end");
-
 		String userID = NEW_USER_PREFEXID +String.valueOf(ID);
-
 
 		logger.info("testCreateUser: begin");
 
 		if(!sm.isUserIDAvailable(SecurityReflector.getUserDescriptor().getOrganisationID(), userID))
 			fail("User ID is not Available.");
-
 
 		User newUser = new User(SecurityReflector.getUserDescriptor().getOrganisationID(), userID);
 		UserLocal userLocal = new UserLocal(newUser);
@@ -202,36 +173,32 @@ public class NewUserTestCase extends TestCase
 		newUser.setPerson(newPerson);	
 
 		newUser = sm.storeUser(newUser, NEW_USER_PASSWORD, true, FETCH_GROUP_USER, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
-
-		if(!sm.isUserIDAlreadyRegistered((UserID)JDOHelper.getObjectId(newUser)))
-			fail("the new User has not been registered.");
-
-		if(newUser!=null)
-		{
-			newUserID.set((UserID)JDOHelper.getObjectId(newUser));
-
-			// TODO: currently we cant test grantAllRoleGroupsInAllAuthorities as it throws runtime exceptions.
-			// take a look at https://www.jfire.org/modules/bugs/view.php?id=1337
-			//	sm.grantAllRoleGroupsInAllAuthorities((UserID)JDOHelper.getObjectId(newUser));
-			logger.info("the following User was created"+newUser.getName());
-		}	
+		assertThat(newUser,notNullValue());
+		UserID newUserID = (UserID)JDOHelper.getObjectId(newUser);
+		assertThat(sm.isUserIDAlreadyRegistered(newUserID), equalTo(true));
+		setTestCaseContextObject(NEW_USER, newUserID);
+		// TODO: currently we cant test grantAllRoleGroupsInAllAuthorities as it throws runtime exceptions.
+		// take a look at https://www.jfire.org/modules/bugs/view.php?id=1337
+		//	sm.grantAllRoleGroupsInAllAuthorities((UserID)JDOHelper.getObjectId(newUser));
+		logger.info("the following User was created" + newUser.getName());
 		logger.info("testCreateUser: end");
 	}
 	//  Assign the User the login right.
 	@Test
 	public void testAssignRoleGroupToNewUser() throws Exception{
 		JFireSecurityManagerRemote sm = JFireEjb3Factory.getRemoteBean(JFireSecurityManagerRemote.class,SecurityReflector.getInitialContextProperties());
-
+		UserID newUserID =  (UserID)getTestCaseContextObject(NEW_USER);
 		final String LOGWITHOUT_WORKSTATION_ROLEGROUP_ID =  "org.nightlabs.jfire.workstation.loginWithoutWorkstation";
-
-		User user = sm.getUsers(Collections.singleton(newUserID.get()), FETCH_GROUP_USER
+		User user = sm.getUsers(Collections.singleton(newUserID), FETCH_GROUP_USER
 				, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT).iterator().next();
+		assertThat(user,notNullValue());
 		// Assign login authority to the User
 		AuthorityID authorityID = AuthorityID.create(SecurityReflector.getUserDescriptor().getOrganisationID(), 
 				Authority.AUTHORITY_ID_ORGANISATION);
 		RoleGroupID logUserRoleGroupID  = RoleGroupID.create(LOGWITHOUT_WORKSTATION_ROLEGROUP_ID);
 		sm.setGrantedRoleGroups((AuthorizedObjectID) JDOHelper.getObjectId(user.getUserLocal()), authorityID, Collections.singleton(logUserRoleGroupID));		
-		sm.storeUser(user, null, false, FETCH_GROUP_USER, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);	
+		user = sm.storeUser(user, null, false, FETCH_GROUP_USER, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);	
+		assertThat(user,nullValue());
 	}
 
 	// try to login the new user and violate a role group later on
@@ -240,7 +207,8 @@ public class NewUserTestCase extends TestCase
 
 		logger.info("LoginNewUser: begin");
 		JFireSecurityManagerRemote sm = JFireEjb3Factory.getRemoteBean(JFireSecurityManagerRemote.class,SecurityReflector.getInitialContextProperties());
-		User user = sm.getUsers(Collections.singleton(newUserID.get()), FETCH_GROUP_USER,
+		UserID newUserID =  (UserID)getTestCaseContextObject(NEW_USER);
+		User user = sm.getUsers(Collections.singleton(newUserID), FETCH_GROUP_USER,
 				NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT).iterator().next();
 
 		JFireLogin login = new JFireLogin(user.getUserLocal().getOrganisationID(), 
@@ -249,10 +217,14 @@ public class NewUserTestCase extends TestCase
 			login.login();
 		} catch (LoginException e) {
 			fail("Could not login with the new users");
-			return;
 		}
-
+		finally
+		{
+			login.logout();		
+		}
+		// try to login again and access unauthorized method
 		try {
+			login.login();
 			// violate the role of querying users as this user doesnt have the right to do so.
 			QueryNewUsers();
 			fail("Could Access unauthirized EJB method");	
@@ -262,9 +234,8 @@ public class NewUserTestCase extends TestCase
 		}
 		finally
 		{
-			login.logout();		
+			login.logout();
 		}
-
 		logger.info("LoginNewUser: end");
 	}
 
@@ -290,14 +261,14 @@ public class NewUserTestCase extends TestCase
 		userQuery.setUserID("UserTC");
 		queries.add(userQuery);
 		Set<UserID> userIDs = sm.getUserIDs(queries);
-		if (userIDs != null && !userIDs.isEmpty()) {
-			Collection<User> users = sm.getUsers(userIDs, new String[] {FetchPlan.DEFAULT}, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
-			if (users.isEmpty())
-				fail("No Users was found!!!");
-			logger.info("the following Users found with");
-			for (User user : users) {
-				logger.info("name = "+user.getName());
-			}
+		assertThat("No UserIDs was found!!!",
+				userIDs,both(isNotNull()).and(isNotEmpty())); 
+		Collection<User> users = sm.getUsers(userIDs, new String[] {FetchPlan.DEFAULT}, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
+		assertThat("No Users was found!!!",
+				users,both(isNotNull()).and(isNotEmpty())); 
+		logger.info("the following Users found with");
+		for (User user : users) {
+			logger.info("name = "+user.getName());
 		}
 	}
 }

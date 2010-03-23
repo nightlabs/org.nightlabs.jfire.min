@@ -3,6 +3,11 @@
  */
 package org.nightlabs.jfire.testsuite.security;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.both;
+import static org.nightlabs.jfire.testsuite.hamcrest.IsNotEmptyMatcher.isNotEmpty;
+import static org.nightlabs.jfire.testsuite.hamcrest.IsNotNullMatcher.isNotNull;
+
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -249,7 +254,11 @@ public class UserSecurityGroupTestCase extends TestCase {
 					fail("Could not login with the new user");
 					return;
 				}
-
+				finally
+				{
+					login.logout();		
+				}
+				
 				try {
 					QueryNewUsers(NewUserTestCase.NEW_USER_PREFEXID);
 				} catch (Exception e) {
@@ -272,11 +281,11 @@ public class UserSecurityGroupTestCase extends TestCase {
 		userQuery.setUserID(query);
 		queries.add(userQuery);
 		Set<UserID> userIDs = sm.getUserIDs(queries);
-		if (userIDs == null || userIDs.isEmpty())
-			fail("No Test Users was found!!!");
+		assertThat("No UserIDs was found!!!",
+				userIDs,both(isNotNull()).and(isNotEmpty())); 
 		List<User> users = sm.getUsers(userIDs, FETCH_GROUP_SECURITYGROUP, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
-		if (users.isEmpty())
-			fail("No Users was found!!!");
+		assertThat("No Users was found!!!",
+				users,both(isNotNull()).and(isNotEmpty())); 
 		return users;		
 	}
 	
