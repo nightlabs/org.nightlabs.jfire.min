@@ -1,6 +1,221 @@
 <!DOCTYPE organisation-initialisation
-		PUBLIC "-//NightLabs GmbH//DTD Datastore Initialization 1.1//EN"
-		"http://www.nightlabs.de/dtd/datastoreinit_1_1.dtd">
+		PUBLIC "-//NightLabs GmbH//DTD Organisation Initialisation 1.0//EN"
+		"http://www.nightlabs.de/dtd/organisation-init_1_0.dtd">
 <organisation-initialisation>
-	<init bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initialise" priority="400" />
+<!-- All inits in this file should be registered with the same priority! Marco. -->
+
+	<init bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="searchClasses" priority="4" />
+
+	<init bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_00" priority="4">
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="searchClasses" />
+	</init>
+	<init bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_01" priority="4">
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="searchClasses" />
+	</init>
+	<init bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_02" priority="4">
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="searchClasses" />
+	</init>
+	<init bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_03" priority="4">
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="searchClasses" />
+	</init>
+	<init bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_04" priority="4">
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="searchClasses" />
+	</init>
+	<init bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_05" priority="4">
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="searchClasses" />
+	</init>
+	<init bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_06" priority="4">
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="searchClasses" />
+	</init>
+	<init bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_07" priority="4">
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="searchClasses" />
+	</init>
+	<init bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_08" priority="4">
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="searchClasses" />
+	</init>
+	<init bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_09" priority="4">
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="searchClasses" />
+	</init>
+
+	<init bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_10" priority="4">
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="searchClasses" />
+	</init>
+	<init bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_11" priority="4">
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="searchClasses" />
+	</init>
+	<init bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_12" priority="4">
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="searchClasses" />
+	</init>
+	<init bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_13" priority="4">
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="searchClasses" />
+	</init>
+	<init bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_14" priority="4">
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="searchClasses" />
+	</init>
+	<init bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_15" priority="4">
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="searchClasses" />
+	</init>
+	<init bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_16" priority="4">
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="searchClasses" />
+	</init>
+	<init bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_17" priority="4">
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="searchClasses" />
+	</init>
+	<init bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_18" priority="4">
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="searchClasses" />
+	</init>
+	<init bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_19" priority="4">
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="searchClasses" />
+	</init>
+
+	<init bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_20" priority="4">
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="searchClasses" />
+	</init>
+	<init bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_21" priority="4">
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="searchClasses" />
+	</init>
+	<init bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_22" priority="4">
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="searchClasses" />
+	</init>
+	<init bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_23" priority="4">
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="searchClasses" />
+	</init>
+	<init bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_24" priority="4">
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="searchClasses" />
+	</init>
+	<init bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_25" priority="4">
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="searchClasses" />
+	</init>
+	<init bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_26" priority="4">
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="searchClasses" />
+	</init>
+	<init bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_27" priority="4">
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="searchClasses" />
+	</init>
+	<init bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_28" priority="4">
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="searchClasses" />
+	</init>
+	<init bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_29" priority="4">
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="searchClasses" />
+	</init>
+
+	<init bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_30" priority="4">
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="searchClasses" />
+	</init>
+	<init bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_31" priority="4">
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="searchClasses" />
+	</init>
+	<init bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_32" priority="4">
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="searchClasses" />
+	</init>
+	<init bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_33" priority="4">
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="searchClasses" />
+	</init>
+	<init bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_34" priority="4">
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="searchClasses" />
+	</init>
+	<init bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_35" priority="4">
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="searchClasses" />
+	</init>
+	<init bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_36" priority="4">
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="searchClasses" />
+	</init>
+	<init bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_37" priority="4">
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="searchClasses" />
+	</init>
+	<init bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_38" priority="4">
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="searchClasses" />
+	</init>
+	<init bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_39" priority="4">
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="searchClasses" />
+	</init>
+
+	<init bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_40" priority="4">
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="searchClasses" />
+	</init>
+	<init bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_41" priority="4">
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="searchClasses" />
+	</init>
+	<init bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_42" priority="4">
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="searchClasses" />
+	</init>
+	<init bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_43" priority="4">
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="searchClasses" />
+	</init>
+	<init bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_44" priority="4">
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="searchClasses" />
+	</init>
+	<init bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_45" priority="4">
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="searchClasses" />
+	</init>
+	<init bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_46" priority="4">
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="searchClasses" />
+	</init>
+	<init bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_47" priority="4">
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="searchClasses" />
+	</init>
+	<init bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_48" priority="4">
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="searchClasses" />
+	</init>
+	<init bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_49" priority="4">
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="searchClasses" />
+	</init>
+
+	<init bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="checkAfterInitClasses" priority="4">
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_00" />
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_01" />
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_02" />
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_03" />
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_04" />
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_05" />
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_06" />
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_07" />
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_08" />
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_09" />
+		
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_10" />
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_11" />
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_12" />
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_13" />
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_14" />
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_15" />
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_16" />
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_17" />
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_18" />
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_19" />
+		
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_20" />
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_21" />
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_22" />
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_23" />
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_24" />
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_25" />
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_26" />
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_27" />
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_28" />
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_29" />
+		
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_30" />
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_31" />
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_32" />
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_33" />
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_34" />
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_35" />
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_36" />
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_37" />
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_38" />
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_39" />
+		
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_40" />
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_41" />
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_42" />
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_43" />
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_44" />
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_45" />
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_46" />
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_47" />
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_48" />
+		<depends module="JFireInitialiseJDOEAR.ear" archive="JFireInitialiseJDO.jar" bean="org.nightlabs.initialisejdo.InitialiseJDORemote" method="initClasses_49" />
+	</init>
+
 </organisation-initialisation>
