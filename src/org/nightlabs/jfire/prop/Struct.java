@@ -53,7 +53,7 @@ import org.nightlabs.jfire.security.SecurityReflector;
 /**
  * Global structure definition of the {@link PropertySet} linked to instances of the class {@link #getLinkClass()}.
  * <p>
- * Although {@link Struct} is an implemenation of {@link IStruct}, it is not intended to be used as the structure
+ * Although {@link Struct} is an implementation of {@link IStruct}, it is not intended to be used as the structure
  * definition of a {@link PropertySet} directly. It is rather the base definition a {@link StructLocal}
  * is build upon. Each {@link PropertySet} references a {@link StructLocal} as structure, not a {@link Struct}.
  * </p>
