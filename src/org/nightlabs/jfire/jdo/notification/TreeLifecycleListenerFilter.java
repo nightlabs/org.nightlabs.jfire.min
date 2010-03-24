@@ -139,37 +139,46 @@ extends JDOLifecycleListenerFilter
 			}
 			else if (multiParentResolver != null) {
 				Collection<ObjectID> parentIDs = multiParentResolver.getParentObjectIDs(obj);
-				for (ObjectID parentID : parentIDs) {
-					if (parentID == null) {
-						res.add(dirtyObjectID);
-						if (logger.isDebugEnabled()) {
-							logger.debug("object added, because its parent is null and we want to be notified about top-level-objects:");
-							logger.debug("    objectID: " + dirtyObjectID.getObjectID());
+				// add null check so that contract (null can be returned) is still fulfilled
+				if (parentIDs != null && !parentIDs.isEmpty()) {
+					for (ObjectID parentID : parentIDs) {
+						if (parentID == null) {
+							res.add(dirtyObjectID);
+							if (logger.isDebugEnabled()) {
+								logger.debug("object added, because its parent is null and we want to be notified about top-level-objects:");
+								logger.debug("    objectID: " + dirtyObjectID.getObjectID());
+							}
+							continue iterateDirtyObjectIDs;
 						}
-						continue iterateDirtyObjectIDs;
+						else if (parentObjectIDs.contains(parentID)) {
+							res.add(dirtyObjectID);
+							if (logger.isDebugEnabled()) {
+								logger.debug("object added, because parentObjectIDs does contain parent:");
+								logger.debug("    objectID: " + dirtyObjectID.getObjectID());
+								logger.debug("    parentID: " + parentID);
+							}
+							continue iterateDirtyObjectIDs;
+						}
 					}
-					else if (parentObjectIDs.contains(parentID)) {
-						res.add(dirtyObjectID);
-						if (logger.isDebugEnabled()) {
-							logger.debug("object added, because parentObjectIDs does contain parent:");
-							logger.debug("    objectID: " + dirtyObjectID.getObjectID());
+
+					if (logger.isDebugEnabled()) {
+						logger.debug("ignoring object, because parentObjectIDs does not contain any of the parents:");
+						logger.debug("    objectID: " + dirtyObjectID.getObjectID());
+						for (ObjectID parentID : parentIDs) {
 							logger.debug("    parentID: " + parentID);
 						}
-						continue iterateDirtyObjectIDs;
 					}
 				}
-
-				if (logger.isDebugEnabled()) {
-					logger.debug("ignoring object, because parentObjectIDs does not contain any of the parents:");
-					logger.debug("    objectID: " + dirtyObjectID.getObjectID());
-					for (ObjectID parentID : parentIDs) {
-						logger.debug("    parentID: " + parentID);
+				else {
+					res.add(dirtyObjectID);
+					if (logger.isDebugEnabled()) {
+						logger.debug("object added, because it has no parent at all and we want to be notified about top-level-objects:");
+						logger.debug("    objectID: " + dirtyObjectID.getObjectID());
 					}
 				}
 			}
 			else
 				throw new IllegalStateException("parentResolver and multiParentResolver are both null!");
-
 		}
 		return res;
 	}
