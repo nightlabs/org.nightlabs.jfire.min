@@ -441,12 +441,18 @@ implements IContentDataField
 
 	@Override
 	public Object getData() {
-		throw new UnsupportedOperationException();
+		return getPlainContent();
 	}
 
 	@Override
 	public void setData(Object data) {
-		throw new UnsupportedOperationException();
+		if (data instanceof byte[]) {
+			this.content = (byte[]) data;
+		} if (data == null) {
+			this.content = new byte[0];
+		} else {
+			throw new IllegalArgumentException("The given type of the given data " + data.getClass() + " is not supported.");
+		}
 	}
 
 	@Override
