@@ -1,8 +1,12 @@
 package org.nightlabs.jfire.testsuite;
 
 import java.lang.reflect.Method;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.nightlabs.jfire.base.JFireEjb3Factory;
@@ -59,6 +63,15 @@ extends junit.framework.TestCase
     protected void cleanUpAfterClass() throws Exception
 	{
 	}
+
+    // used  for as an extension for names in testcase
+    public static String getExtension(String string) {
+        DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd-HHmmss");
+        Date date = new Date();
+        Integer rnd = (int)( Math.random()* 100000 );      
+        return string.concat("-" + dateFormat.format(date)+ rnd.toString());
+    }
+    
     
     public Object getTestCaseContextObject(String key)
     {	
