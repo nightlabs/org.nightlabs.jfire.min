@@ -1714,8 +1714,10 @@ public class CacheManagerFactory
 		synchronized (nextDirtyObjectIDSerialMutex) {
 			File f = new File(sysConfigDirectory, "nextDirtyObjectIDSerial." + organisationID + ".conf");
 			File f2 = new File(sysConfigDirectory, "nextDirtyObjectIDSerial." + organisationID + ".conf.new");
-			if (f2.exists())
-				throw new IllegalStateException("File \""+f2.getAbsolutePath()+"\" exists! Seems, there was a problem with deleting the old version or renaming the new one!");
+			if (f2.exists()) {
+				Exception x = new IllegalStateException("File \""+f2.getAbsolutePath()+"\" exists! Seems, there was a problem with deleting the old version or renaming the new one!");
+				logger.warn(x.getMessage(), x);
+			}
 
 			try {
 				if (nextDirtyObjectIDSerial_ram == -Long.MAX_VALUE) {
