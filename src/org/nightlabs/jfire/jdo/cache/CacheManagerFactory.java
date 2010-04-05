@@ -1715,7 +1715,24 @@ public class CacheManagerFactory
 			File f = new File(sysConfigDirectory, "nextDirtyObjectIDSerial." + organisationID + ".conf");
 			File f2 = new File(sysConfigDirectory, "nextDirtyObjectIDSerial." + organisationID + ".conf.new");
 			if (f2.exists()) {
-				Exception x = new IllegalStateException("File \""+f2.getAbsolutePath()+"\" exists! Seems, there was a problem with deleting the old version or renaming the new one!");
+				// If both files exist, we use the old one (f), because we can be pretty sure that it
+				// is clean (i.e. complete and not corrupt) while the new one (f2) might be incompletely
+				// written.
+				// If only the new file exists, the old one was already deleted, but the new one not
+				// yet renamed. This might happen in the very unlikely case that the server is killed
+				// just between f.delete() and f2.renameTo(f). In this situation, we hope, the new file
+				// is OK and rename it now. 
+				// Marco.
+				Exception x; 
+				if (!f.exists()) {
+					x = new IllegalStateException("File \""+f2.getAbsolutePath()+"\" exists, but \"" + f.getAbsolutePath() + "\" does not exist! Seems, the server was interrupted between deleting the old version and renaming the new one! Will try to do the renaming now.");
+					f2.renameTo(f);
+					if (!f.exists() || f2.exists())
+						throw new IllegalStateException("Renaming the new file \""+f2.getAbsolutePath()+"\" to \""+f.getAbsolutePath()+"\" failed!");
+				}
+				else
+					x = new IllegalStateException("File \""+f2.getAbsolutePath()+"\" exists! Seems, there was a problem with deleting the old version or renaming the new one!");
+
 				logger.warn(x.getMessage(), x);
 			}
 
