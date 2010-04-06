@@ -1,6 +1,8 @@
 package org.nightlabs.jfire.testsuite.hamcrest;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 
 import javax.jdo.JDOHelper;
 
@@ -17,7 +19,7 @@ import org.nightlabs.jdo.ObjectID;
  * very useful Matcher to quick matches of an ObjectID exists among the list of JDO Objects 
  *
  */
-public class HasItemJDOIDMatcher extends TypeSafeMatcher<Collection<Object>> {
+public class HasItemJDOIDMatcher extends TypeSafeMatcher<Collection<?>> {
 
 	
     private final ObjectID objectID;
@@ -30,13 +32,13 @@ public class HasItemJDOIDMatcher extends TypeSafeMatcher<Collection<Object>> {
     }
 	
 	  @Override
-	  public boolean matchesSafely(Collection<Object> collections) {
-		  Collection<Object> objectIDs =  JDOHelper.getObjectIds(collections);
+	  public boolean matchesSafely(Collection<?> collections) {		  
+		  Collection<Object> objectIDs =  JDOHelper.getObjectIds( new HashSet<Object>(collections));
 		 return objectIDs.contains(objectID);
 	  }
 
 	  @Override
-	  public void describeMismatchSafely(Collection<Object> item, Description mismatchDescription) {
+	  public void describeMismatchSafely(Collection<?> item, Description mismatchDescription) {
 		  mismatchDescription.appendValue(item);
 	  }
 
@@ -45,7 +47,7 @@ public class HasItemJDOIDMatcher extends TypeSafeMatcher<Collection<Object>> {
 	  }
 
 	  @Factory
-	  public static <T> Matcher<Collection<Object>> HasItemJDOID(ObjectID objectID) {
+	  public static <T> Matcher<Collection<?>> HasItemJDOID(ObjectID objectID) {
 		  return new HasItemJDOIDMatcher(objectID);
 	  }
 }
