@@ -1,7 +1,6 @@
 package org.nightlabs.jfire.testsuite.hamcrest;
 
 import java.util.Collection;
-
 import org.hamcrest.Description;
 import org.hamcrest.Factory;
 import org.hamcrest.Matcher;
