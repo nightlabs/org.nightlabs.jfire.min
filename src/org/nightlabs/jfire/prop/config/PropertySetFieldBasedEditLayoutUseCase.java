@@ -56,37 +56,19 @@ import org.nightlabs.util.Util;
 
 /**
  * @author Alexander Bieber <!-- alex [AT] nightlabs [DT] de -->
- *
- * @jdo.persistence-capable
- *    identity-type="application"
- *    objectid-class="org.nightlabs.jfire.prop.config.id.PropertySetFieldBasedEditLayoutUseCaseID"
- *    detachable="true"
- *    table="JFireBase_Prop_PropertySetFieldBasedEditLayoutUseCase"
- *
- * @jdo.inheritance strategy="new-table"
- *
- * @jdo.create-objectid-class field-order="organisationID, useCaseID"
- *
- * @jdo.fetch-group name="PropertySetFieldBasedEditLayoutUseCase.name" fetch-groups="default" fields="name"
- * @jdo.fetch-group name="PropertySetFieldBasedEditLayoutUseCase.description" fetch-groups="default" fields="description"
- * @jdo.fetch-group name="PropertySetFieldBasedEditLayoutUseCase.structLocal" fetch-groups="default" fields="structLocal"
- *
- * @jdo.query name="getAllUseCaseIDs"
- * 						query="SELECT JDOHelper.getObjectId(this) import javax.jdo.JDOHelper"
- *
  */
 @PersistenceCapable(
-	objectIdClass=PropertySetFieldBasedEditLayoutUseCaseID.class,
-	identityType=IdentityType.APPLICATION,
-	detachable="true",
-	table="JFireBase_Prop_PropertySetFieldBasedEditLayoutUseCase"
+		objectIdClass=PropertySetFieldBasedEditLayoutUseCaseID.class,
+		identityType=IdentityType.APPLICATION,
+		detachable="true",
+		table="JFireBase_Prop_PropertySetFieldBasedEditLayoutUseCase"
 )
 @Inheritance(strategy=InheritanceStrategy.NEW_TABLE)
 @FetchGroups({
 	@FetchGroup(
-		name=PropertySetFieldBasedEditLayoutUseCase.FETCH_GROUP_NAME,
-		fetchGroups={FetchPlan.DEFAULT},
-		members=@Persistent(name=PropertySetFieldBasedEditLayoutUseCase.FieldName.name)
+			name=PropertySetFieldBasedEditLayoutUseCase.FETCH_GROUP_NAME,
+			fetchGroups={FetchPlan.DEFAULT},
+			members=@Persistent(name=PropertySetFieldBasedEditLayoutUseCase.FieldName.name)
 	),
 	@FetchGroup(
 			name=PropertySetFieldBasedEditLayoutUseCase.FETCH_GROUP_DESCRIPTION,
@@ -119,55 +101,30 @@ public class PropertySetFieldBasedEditLayoutUseCase implements Serializable, Det
 	public static final String FETCH_GROUP_STRUCT_LOCAL = "PropertySetFieldBasedEditLayoutUseCase.structLocal";
 	public static final String FETCH_GROUP_STRUCT_LOCAL_ID = "PropertySetFieldBasedEditLayoutUseCase.structLocalID";
 
-	/**
-	 * @jdo.field primary-key="true"
-	 * @jdo.column length="100"
-	 */
 	@PrimaryKey
 	@Column(length=100)
 	private String organisationID;
 
-	/**
-	 * @jdo.field primary-key="true"
-	 * @jdo.column length="50"
-	 */
 	@PrimaryKey
 	@Column(length=50)
 	private String useCaseID;
 
-	/**
-	 * @jdo.field persistence-modifier="persistent" mapped-by="useCase"
-	 */
-	@Persistent(
-		mappedBy="useCase",
-		persistenceModifier=PersistenceModifier.PERSISTENT)
+	@Persistent(mappedBy="useCase")
 	private PropertySetFieldBasedEditLayoutUseCaseName name;
 
-	/**
-	 * @jdo.field persistence-modifier="persistent" mapped-by="useCase"
-	 */
-	@Persistent(
-		mappedBy="useCase",
-		persistenceModifier=PersistenceModifier.PERSISTENT)
+	@Persistent(mappedBy="useCase")
 	private PropertySetFieldBasedEditLayoutUseCaseDescription description;
 
-	/**
-	 * @jdo.field persistence-modifier="persistent"
-	 */
 	private StructLocal structLocal;
 
 	/**
 	 * Only used with virtual fetch-group.
-	 *
-	 * @jdo.field persistence-modifier="none"
 	 */
 	@Persistent(persistenceModifier=PersistenceModifier.NONE)
 	private boolean structLocalIDDetached;
 
 	/**
 	 * Only used with virtual fetch-group.
-	 *
-	 * @jdo.field persistence-modifier="none"
 	 */
 	@Persistent(persistenceModifier=PersistenceModifier.NONE)
 	private StructLocalID structLocalID;
@@ -176,11 +133,10 @@ public class PropertySetFieldBasedEditLayoutUseCase implements Serializable, Det
 	 * @deprecated Only for JDO!
 	 */
 	@Deprecated
-	public PropertySetFieldBasedEditLayoutUseCase() {
-	}
+	public PropertySetFieldBasedEditLayoutUseCase() { }
 
-	public PropertySetFieldBasedEditLayoutUseCase(
-			String organisationID, String useCaseID, StructLocal structLocal) {
+	public PropertySetFieldBasedEditLayoutUseCase(String organisationID, String useCaseID, StructLocal structLocal)
+	{
 		Organisation.assertValidOrganisationID(organisationID);
 		this.organisationID = organisationID;
 		ObjectIDUtil.assertValidIDString(useCaseID, "useCaseID");
@@ -271,12 +227,13 @@ public class PropertySetFieldBasedEditLayoutUseCase implements Serializable, Det
 	}
 
 	@Override
-	public void jdoPreDetach() {
-	}
+	public void jdoPreDetach() { }
 
 	public static Collection<PropertySetFieldBasedEditLayoutUseCaseID> getAllUseCaseIDs(PersistenceManager pm) {
 		Query q = pm.newNamedQuery(PropertySetFieldBasedEditLayoutUseCase.class, "getAllUseCaseIDs");
-		return (Collection<PropertySetFieldBasedEditLayoutUseCaseID>) q.execute();
+		@SuppressWarnings("unchecked")
+		Collection<PropertySetFieldBasedEditLayoutUseCaseID> c = (Collection<PropertySetFieldBasedEditLayoutUseCaseID>) q.execute();
+		return c;
 	}
 }
 
