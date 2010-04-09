@@ -34,6 +34,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.jboss.logging.Logger;
 import org.nightlabs.jfire.prop.exception.DataBlockNotFoundException;
 import org.nightlabs.jfire.prop.exception.DataBlockRemovalException;
 import org.nightlabs.jfire.prop.exception.DataBlockUniqueException;
@@ -63,6 +64,8 @@ public class DataBlockGroup implements Serializable, Comparable<DataBlockGroup> 
 	 */
 	private static final long serialVersionUID = 1L;
 
+	private static final Logger LOGGER = Logger.getLogger(DataBlockGroup.class);
+
 	protected DataBlockGroup() {
 	}
 
@@ -70,7 +73,7 @@ public class DataBlockGroup implements Serializable, Comparable<DataBlockGroup> 
 	 * Create a new {@link DataBlockGroup} for the given {@link PropertySet}
 	 * and corresponding to the {@link StructBlock} referenced by the given
 	 * {@link StructBlock} primary key fields.
-	 * 
+	 *
 	 * @param _prop The {@link PropertySet} the {@link DataBlockGroup} should be created for.
 	 * @param _structBlockOrganisationID The organisation ID of the {@link StructBlock} this {@link DataBlockGroup} should represent.
 	 * @param _structBlockID The ID of the {@link StructBlock} this {@link DataBlockGroup} should represent.
@@ -89,7 +92,7 @@ public class DataBlockGroup implements Serializable, Comparable<DataBlockGroup> 
 	 * Adds the given field {@link DataField} to the block
 	 * it belongs to, i.e. it will be added only to the
 	 * non-persistent structure of the {@link PropertySet}.
-	 * 
+	 *
 	 * @param field The {@link DataField} to add.
 	 */
 	void addDataFieldToStructure(DataField field) {
@@ -187,7 +190,7 @@ public class DataBlockGroup implements Serializable, Comparable<DataBlockGroup> 
 	 * {@link DataBlock#getDataBlockID()}, but is the index
 	 * in the list of {@link DataBlock}s of this {@link DataBlockGroup}.
 	 * </p>
-	 * 
+	 *
 	 * @param index The index of the data block to be returned
 	 * @return The data block with the given index
 	 * @throws DataBlockNotFoundException If no such {@link DataBlock} exists.
@@ -206,7 +209,7 @@ public class DataBlockGroup implements Serializable, Comparable<DataBlockGroup> 
 	 * {@link DataBlock#getDataBlockID()} and is not
 	 * the index in the list of {@link DataBlock}s of this {@link DataBlockGroup}.
 	 * </p>
-	 * 
+	 *
 	 * @param dataBlockID
 	 *          The ID of the desired DataBlock.
 	 * @param throwExceptionIfNotFound
@@ -235,14 +238,14 @@ public class DataBlockGroup implements Serializable, Comparable<DataBlockGroup> 
 	/**
 	 * Adds a new DataBlock to this group. All fields within the Block are
 	 * initialized as well.<br/> If the second Block for a unique StructBlock
-	 * should be created a DataBlockUniqueException is thrown.
-	 *
+	 * should be created a DataBlockUniqueException is thrown.<br>
+	 * TODO delete this method later
 	 * @param structBlock The structBlock according to which a new {@link DataBlock} should be added.
 	 * @param index The index at which the new {@link DataBlock} should be inserted or <code>-1</code> if it should be appended at the end.
 	 * @return the just created {@link DataBlock}.
 	 * @throws DataBlockUniqueException If the corresponding {@link StructBlock} is marked unique.
 	 */
-	public DataBlock addDataBlock(StructBlock structBlock, int index) throws DataBlockUniqueException {
+	public DataBlock addDataBlock_old(StructBlock structBlock, int index) throws DataBlockUniqueException {
 		if (index < -1 || index > dataBlockMap.size())
 			throw new IllegalArgumentException("index < -1 || index > dataBlockMap.size() !!!");
 
@@ -263,7 +266,7 @@ public class DataBlockGroup implements Serializable, Comparable<DataBlockGroup> 
 
 		if (index == -1)
 			index = dataBlockMap.size();
-		newBlock.setIndex(index);
+		newBlock.setIndex(index, true);
 
 		dataBlocks.add(index, newBlock);
 		dataBlockMap.put(newBlock.getDataBlockID(), newBlock);
@@ -272,6 +275,56 @@ public class DataBlockGroup implements Serializable, Comparable<DataBlockGroup> 
 		newBlock.inflate(structBlock);
 
 		return newBlock;
+	}
+
+	/**
+	 * Adds a new DataBlock to this group. All fields within the Block are initialized as well.<br/> If the second Block for a unique StructBlock
+	 * should be created a DataBlockUniqueException is thrown.
+	 * @param structBlock The structBlock according to which a new {@link DataBlock} should be added.
+	 * @param index The index at which the new {@link DataBlock} should be inserted or <code>-1</code> if it should be appended at the end.
+	 * @return the just created {@link DataBlock}.
+	 * @throws DataBlockUniqueException If the corresponding {@link StructBlock} is marked unique.
+	 */
+	public DataBlock addDataBlock(StructBlock structBlock, int index) throws DataBlockUniqueException {
+		if (index < -1 || index > dataBlockMap.size()) {
+			throw new IllegalArgumentException("index < -1 || index > dataBlockMap.size() !!!");
+		}
+		if (dataBlockMap.size() > 0) { // not the first DataBlock
+			if (structBlock.isUnique()) {
+				throw new DataBlockUniqueException("Attempt to add second DataBlock for StructBlock " + structBlock.getPrimaryKey()	+ " which is unique!");
+			}
+		}
+		int tries = 0;
+		int newBlockID;
+		do {
+			newBlockID = (int) (Integer.MAX_VALUE * Math.random());
+			if (tries++ > 10000) {
+				throw new RuntimeException("Could not generate new dataBlockID in 10000 tries.");
+			}
+		} while (dataBlockMap.containsKey(newBlockID));
+
+		// This constructor initializes fields as well
+		final DataBlock newDataBlock = new DataBlock(this, newBlockID);
+
+		if (index == -1) {
+			index = dataBlockMap.size();
+		}
+		newDataBlock.setIndex(index, false);	// The computed index is set for the new DataBlock only, not for its DataFields. This is performed later after inflation.
+		dataBlocks.add(index, newDataBlock);
+		if (dataBlocks.size() > index + 1) {
+			for (int j = index + 1; j < dataBlocks.size(); j++) {
+				if (LOGGER.isDebugEnabled())
+					LOGGER.debug("Adjusting moved data block " + j + "...");
+				dataBlocks.get(j).setIndex(j, true);	// Adjust the ID of all DataBlocks and associated DataFields that have changed their position in this DataBlockGroup due to the insertion of the new DataBlock.
+			}
+		}
+		dataBlockMap.put(newDataBlock.getDataBlockID(), newDataBlock);
+		newDataBlock.inflate(structBlock);
+
+		if (LOGGER.isDebugEnabled())
+			LOGGER.debug("Added new DataBlock (index " + index + ") to DataBlockGroup " + this.getStructBlockKey());
+
+		return newDataBlock;
 	}
 
 	/**
@@ -302,9 +355,8 @@ public class DataBlockGroup implements Serializable, Comparable<DataBlockGroup> 
 	 */
 	private void storeDataBlockIndices() {
 		int blockIndex = 0;
-		for (DataBlock dataBlock : dataBlocks) {
-			dataBlock.setIndex(blockIndex++);
-		}
+		for (DataBlock dataBlock : dataBlocks)
+			dataBlock.setIndex(blockIndex++, true);
 	}
 
 	/**
@@ -314,6 +366,8 @@ public class DataBlockGroup implements Serializable, Comparable<DataBlockGroup> 
 	 * @param dataBlock The {@link DataBlock} to be added.
 	 */
 	void addDataBlock(DataBlock dataBlock) {
+		if (LOGGER.isDebugEnabled())
+			LOGGER.debug("Adding DataBlock " + dataBlock.getDataBlockID() + " (index " + dataBlock.getIndex() + ") to DataBlockGroup " + this.getStructBlockKey());
 		dataBlockMap.put(dataBlock.getDataBlockID(), dataBlock);
 		dataBlocks.add(dataBlock);
 	}
@@ -377,7 +431,7 @@ public class DataBlockGroup implements Serializable, Comparable<DataBlockGroup> 
 				it.remove();
 				dataBlockMap.remove(block.getDataBlockID());
 			} else {
-				block.setIndex(blockIndex++);
+				block.setIndex(blockIndex++, true);
 			}
 		}
 	}
@@ -389,25 +443,30 @@ public class DataBlockGroup implements Serializable, Comparable<DataBlockGroup> 
 	void inflate(StructBlock structBlock) {
 		if (dataBlockMap.isEmpty()) {
 			try {
+				if (LOGGER.isDebugEnabled())
+					LOGGER.debug("DataBlockMap is empty.");
 				addDataBlock(structBlock, -1);
-			} catch (DataBlockUniqueException e) {
+			} catch (final DataBlockUniqueException e) {
 				// weird state, should never happen
 				throw new RuntimeException(e);
 			}
 		}
-
 		for (DataBlock dataBlock : dataBlockMap.values()) {
 			dataBlock.inflate(structBlock);
 		}
-
 		dataBlocks.clear();
 		dataBlocks.addAll(dataBlockMap.values());
-
 		Collections.sort(dataBlocks, new Comparator<DataBlock>() {
 			public int compare(DataBlock o1, DataBlock o2) {
 				return Integer.valueOf(o1.getIndex()).compareTo(o2.getIndex());
 			}
 		});
+		if (LOGGER.isDebugEnabled()) {
+			LOGGER.debug("*********************** Sorted DataBlocks ***********************");
+			for (DataBlock db : dataBlocks)
+				LOGGER.debug(db.getDataBlockID());
+			LOGGER.debug("*****************************************************************");
+		}
 	}
 
 	private int priority = Integer.MAX_VALUE;

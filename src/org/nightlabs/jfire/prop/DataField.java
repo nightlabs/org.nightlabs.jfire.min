@@ -56,8 +56,8 @@ import org.nightlabs.jfire.prop.validation.ValidationResult;
 
 /**
  * Base class for all types of data fields that can be stored in a {@link PropertySet}.
- * It contains the primary key of a data field that is a composed of the
- * reference to the structure block and field the datafield corresponds and
+ * It contains the primary key of a data field that is composed of the
+ * reference to the structure block and field the data field corresponds and
  * the reference to the PropertySet it is stored in.
  * <p>
  * Custom data field types should be build by extending this class and adding the
@@ -159,6 +159,17 @@ public abstract class DataField implements Serializable, Comparable<DataField>, 
 		this.structBlockOrganisationID = cloneField.getStructBlockOrganisationID();
 		this.structBlockID = cloneField.getStructBlockID();
 		this.dataBlockID = cloneField.getDataBlockID();
+	}
+
+	public DataField(String organisationID, long propertySetID, int dataBlockID, DataField cloneField)
+	{
+		this.structFieldOrganisationID = cloneField.getStructFieldOrganisationID();
+		this.structFieldID = cloneField.getStructFieldID();
+		this.organisationID = organisationID;
+		this.propertySetID = propertySetID;
+		this.structBlockOrganisationID = cloneField.getStructBlockOrganisationID();
+		this.structBlockID = cloneField.getStructBlockID();
+		this.dataBlockID = dataBlockID;
 	}
 
 	/**
@@ -370,10 +381,10 @@ public abstract class DataField implements Serializable, Comparable<DataField>, 
 		if (obj instanceof DataField) {
 			DataField other = (DataField) obj;
 			return (this.organisationID.equals(other.organisationID)) && (this.propertySetID == other.propertySetID)
-					&& (this.structBlockOrganisationID.equals(other.structBlockOrganisationID))
-					&& (this.structBlockID.equals(other.structBlockID)) && (this.dataBlockID == other.dataBlockID)
-					&& (this.structFieldOrganisationID.equals(other.structFieldOrganisationID))
-					&& (this.structFieldID.equals(other.structFieldID));
+				&& (this.structBlockOrganisationID.equals(other.structBlockOrganisationID))
+				&& (this.structBlockID.equals(other.structBlockID)) && (this.dataBlockID == other.dataBlockID)
+				&& (this.structFieldOrganisationID.equals(other.structFieldOrganisationID))
+				&& (this.structFieldID.equals(other.structFieldID));
 		} else
 			return super.equals(obj);
 	}
@@ -457,6 +468,8 @@ public abstract class DataField implements Serializable, Comparable<DataField>, 
 	 *         with a copy of its data and linked to the given {@link PropertySet}.
 	 */
 	public abstract DataField cloneDataField(PropertySet propertySet);
+
+	public abstract DataField cloneDataField(PropertySet propertySet, int dataBlockID);
 
 	/**
 	 * Returns the order index of the {@link DataBlock} that contains this {@link DataField}.

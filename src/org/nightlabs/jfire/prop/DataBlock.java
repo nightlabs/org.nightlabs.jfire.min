@@ -34,6 +34,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.jboss.logging.Logger;
 import org.nightlabs.jfire.base.DuplicateKeyException;
 import org.nightlabs.jfire.prop.exception.DataFieldNotFoundException;
 import org.nightlabs.jfire.prop.id.StructFieldID;
@@ -58,6 +59,8 @@ public class DataBlock implements Serializable
 	 */
 	private static final long serialVersionUID = 1L;
 
+	private static final Logger LOGGER = Logger.getLogger(DataBlock.class);
+
 	private int index = -1;
 
 	/**
@@ -67,7 +70,7 @@ public class DataBlock implements Serializable
 	}
 
 	/**
-	 * Constructor allowing control of the initialization of fields.
+	 * Constructor allowing control of the initialisation of fields.
 	 *
 	 * @param _propBlockGroup
 	 * @param _propBlockID
@@ -85,38 +88,33 @@ public class DataBlock implements Serializable
 
 	/**
 	 * Checks if this block has a data representation of the given structField.
-	 *
 	 * @param structField
-	 * @return a boolean indicating if this block has a data representation of the given structField.
+	 * @return The data representation of the given structField or null if there is no such representation.
 	 */
 	private DataField getStructFieldRepresentation(StructField<? extends DataField> structField) {
 		return dataFields.get(structField.getStructFieldKey());
 	}
 
 	/**
-	 * Inflates this block by creating instantiating empty {@link DataField}s for each {@link StructField} of the given {@link StructBlock}.
+	 * Inflates this block by creating/instantiating empty {@link DataField}s for each {@link StructField} of the given {@link StructBlock}.
 	 * @param structBlock The structBlock according to which this {@link DataBlock} should be inflated.
 	 */
 	void inflate(StructBlock structBlock) {
+		if (LOGGER.isDebugEnabled())
+			LOGGER.debug("Inflating DataBlock " + this.dataBlockID + " (index: " + index + ")");
 		if (this.dataBlockGroup == null)
 			return;
-		
 		setStructBlock(structBlock);
-
-		boolean indexSet = false;
 		for (StructField<? extends DataField> structField : structBlock.getStructFields()) {
 			DataField dataField = getStructFieldRepresentation(structField);
-			if (dataField == null)
+			if (dataField == null) {
 				dataField = structField.addNewDataFieldInstance(this);
-			
-			dataField.setStructField(structField);
-			
-			if (!indexSet) {
-				index = dataField.getDataBlockIndex();
-				indexSet = true;
+				if (LOGGER.isDebugEnabled())
+					LOGGER.debug("Setting index of new DataField to " + index);
+				dataField.setDataBlockIndex(index);
 			}
+			dataField.setStructField(structField);
 		}
-		setIndex(index);
 	}
 
 	private DataBlockGroup dataBlockGroup;
@@ -128,7 +126,7 @@ public class DataBlock implements Serializable
 	private String structBlockOrganisationID;
 
 	private String structBlockID;
-	
+
 	/**
 	 * This field is set when inflating and set to <code>null</code> when deflating. Thus it is never transmitted to the server.
 	 */
@@ -250,7 +248,7 @@ public class DataBlock implements Serializable
 	 * Returns the {@link DataField} corresponding to the given {@link StructFieldID}.
 	 * If the data field can not be found a {@link DataFieldNotFoundException}
 	 * will be thrown.
-	 * 
+	 *
 	 * @param structFieldID The id of the {@link StructField} the data field should be searched for.
 	 * @return The {@link DataField} corresponding to the given data field.
 	 * @throws DataFieldNotFoundException If the data field can not be found.
@@ -258,14 +256,14 @@ public class DataBlock implements Serializable
 	public DataField getDataField(StructFieldID structFieldID) throws DataFieldNotFoundException {
 		return getDataField(structFieldID.structFieldOrganisationID, structFieldID.structFieldID);
 	}
-	
+
 	/**
 	 * Returns the {@link DataField} corresponding to the given primary key fields
 	 * of a {@link StructField} within this block.
-	 * 
+	 *
 	 * If the data field can not be found a {@link DataFieldNotFoundException}
 	 * will be thrown.
-	 * 
+	 *
 	 * @param structFieldOrganisationID The organisation ID of the {@link StructField} to search the data field for.
 	 * @param structFieldID The ID of the {@link StructField} to search the data field for.
 	 * @return The {@link DataField} corresponding to the given primary key fields
@@ -288,7 +286,7 @@ public class DataBlock implements Serializable
 	 */
 	boolean deflate() {
 		setStructBlock(null);
-		
+
 		for (Iterator<Map.Entry<String, DataField>> it = dataFields.entrySet().iterator(); it.hasNext();) {
 			Map.Entry<String, DataField> entry = it.next();
 			DataField field = entry.getValue();
@@ -305,14 +303,16 @@ public class DataBlock implements Serializable
 	/**
 	 * Set the index of this {@link DataBlock}.
 	 * Note, that affects all {@link DataField}s contained in this block,
-	 * their {@link DataField#setDataBlockIndex(int)} wil also be invoked
+	 * their {@link DataField#setDataBlockIndex(int)} will also be invoked
 	 * with the given index.
 	 * @param index The index to set.
+	 * @param setDataBlockIndexForDataFields True in the case the DataBlock index shall be set for each DataField of this DataBlock, otherwise false.
 	 */
-	void setIndex(int index) {
-		for (DataField df : dataFields.values())
-			df.setDataBlockIndex(index);
-
+	void setIndex(final int index, final boolean setDataBlockIndexForDataFields) {
+		if (setDataBlockIndexForDataFields) {
+			for (DataField df : dataFields.values())
+				df.setDataBlockIndex(index);
+		}
 		this.index = index;
 	}
 
@@ -368,7 +368,7 @@ public class DataBlock implements Serializable
 		else
 			return results;
 	}
-	
+
 	/**
 	 * Sets the {@link StructBlock} of this instance. This should be set while inflating and set to <code>null</code> again when deflating.
 	 * @param structBlock the {@link StructBlock} to be set.
@@ -376,10 +376,10 @@ public class DataBlock implements Serializable
 	public void setStructBlock(StructBlock structBlock) {
 		this.structBlock = structBlock;
 	}
-	
+
 	/**
 	 * Returns the {@link StructBlock} of this instance when it is inflated and null otherwise.
-	 * @return the {@link StructBlock} of this instance.
+	 * @return the {@link StructBlock} of this instance or null.
 	 */
 	public StructBlock getStructBlock() {
 		return structBlock;

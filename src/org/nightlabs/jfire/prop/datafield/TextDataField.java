@@ -44,7 +44,7 @@ import org.nightlabs.jfire.prop.StructField;
 
 /**
  * {@link DataField} that stores a text value.
- * 
+ *
  * @jdo.persistence-capable identity-type="application"
  *                          persistence-capable-superclass="org.nightlabs.jfire.prop.DataField"
  *                          detachable="true"
@@ -75,7 +75,7 @@ implements II18nTextDataField
 	 * The serial version of this class.
 	 */
 	private static final long serialVersionUID = 20090116L;
-	
+
 	@Persistent(persistenceModifier=PersistenceModifier.NONE)
 	private transient StaticI18nText textBuffer = null;
 
@@ -89,7 +89,7 @@ implements II18nTextDataField
 	/**
 	 * Create a new {@link TextDataField} for the given {@link DataBlock}
 	 * that represents the given {@link StructField}.
-	 * 
+	 *
 	 * @param dataBlock The {@link DataBlock} the new {@link TextDataField} will be part of.
 	 * @param structField The {@link StructField} the new {@link TextDataField} represents in the data structure.
 	 */
@@ -102,6 +102,13 @@ implements II18nTextDataField
 	 */
 	protected TextDataField(String organisationID, long propertySetID, DataField cloneField) {
 		super(organisationID, propertySetID, cloneField);
+	}
+
+	/**
+	 * Used for cloning.
+	 */
+	protected TextDataField(String organisationID, long propertySetID, int dataBlockID, DataField cloneField) {
+		super(organisationID, propertySetID, dataBlockID, cloneField);
 	}
 
 	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
@@ -136,9 +143,15 @@ implements II18nTextDataField
 
 	@Override
 	public DataField cloneDataField(PropertySet propertySet) {
+		return cloneDataField(propertySet, 0);
+	}
+
+	@Override
+	public DataField cloneDataField(PropertySet propertySet, int dataBlockID) {
 		TextDataField newField = new TextDataField(
 				propertySet.getOrganisationID(),
 				propertySet.getPropertySetID(),
+				dataBlockID,
 				this
 			);
 		newField.setText(getText());
@@ -150,7 +163,7 @@ implements II18nTextDataField
 			return "";
 		return getText();
 	}
-	
+
 	@Override
 	public StaticI18nText getI18nText() {
 		if (textBuffer == null) {

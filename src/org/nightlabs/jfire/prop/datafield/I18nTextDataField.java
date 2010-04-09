@@ -109,6 +109,14 @@ implements II18nTextDataField
 	}
 
 	/**
+	 * Used for cloning.
+	 */
+	protected I18nTextDataField(String organisationID, long propertySetID, int dataBlockID, I18nTextDataField cloneField) {
+		super(organisationID, propertySetID, dataBlockID, cloneField);
+		fieldText = new I18nDataFieldText(this);
+	}
+
+	/**
 	 * The {@link I18nText} storing the values of this data field.
 	 *
 	 * @jdo.field
@@ -145,7 +153,16 @@ implements II18nTextDataField
 	 */
 	@Override
 	public DataField cloneDataField(PropertySet propertySet) {
-		I18nTextDataField newField = new I18nTextDataField(getOrganisationID(), propertySet.getPropertySetID(), this);
+		return cloneDataField(propertySet, 0);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.nightlabs.jfire.prop.DataField#cloneDataField(org.nightlabs.jfire.prop.PropertySet, int)
+	 */
+	@Override
+	public DataField cloneDataField(PropertySet propertySet, int dataBlockID) {
+		I18nTextDataField newField = new I18nTextDataField(getOrganisationID(), propertySet.getPropertySetID(), dataBlockID, this);
 		if (getI18nText() != null) {
 			newField.getI18nText().copyFrom(getI18nText());
 		}

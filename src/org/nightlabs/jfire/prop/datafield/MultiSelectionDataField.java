@@ -129,6 +129,16 @@ implements DetachCallback, II18nTextDataField
 		super(organisationID, propertySetID, cloneField);
 		structFieldValueIDs_correct = new HashSet<String>();
 	}
+
+	/**
+	 * Used for cloning.
+	 */
+	protected MultiSelectionDataField(String organisationID, long propertySetID, int dataBlockID, MultiSelectionDataField cloneField)
+	{
+		super(organisationID, propertySetID, dataBlockID, cloneField);
+		structFieldValueIDs_correct = new HashSet<String>();
+	}
+
 	/**
 	 * Set the {@link MultiSelectionStructFieldValue} selected for this {@link MultiSelectionDataField}.
 	 * Note, that only the {@link StructFieldValue#getStructFieldValueID()}
@@ -252,7 +262,17 @@ implements DetachCallback, II18nTextDataField
 	@Override
 	public DataField cloneDataField(PropertySet propertySet)
 	{
-		MultiSelectionDataField newField = new MultiSelectionDataField(getOrganisationID(), propertySet.getPropertySetID(), this);
+		return cloneDataField(propertySet, 0);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.nightlabs.jfire.prop.DataField#cloneDataField(org.nightlabs.jfire.prop.PropertySet, int)
+	 */
+	@Override
+	public DataField cloneDataField(PropertySet propertySet, int dataBlockID)
+	{
+		MultiSelectionDataField newField = new MultiSelectionDataField(getOrganisationID(), propertySet.getPropertySetID(), dataBlockID, this);
 		newField.structFieldValueIDs_correct = new HashSet<String>(this.getStructFieldValueIDs());
 		return newField;
 	}

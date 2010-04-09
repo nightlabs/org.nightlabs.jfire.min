@@ -4,6 +4,15 @@ import java.text.DateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+import javax.jdo.annotations.FetchGroup;
+import javax.jdo.annotations.FetchGroups;
+import javax.jdo.annotations.IdentityType;
+import javax.jdo.annotations.Inheritance;
+import javax.jdo.annotations.InheritanceStrategy;
+import javax.jdo.annotations.PersistenceCapable;
+import javax.jdo.annotations.PersistenceModifier;
+import javax.jdo.annotations.Persistent;
+
 import org.nightlabs.i18n.I18nText;
 import org.nightlabs.i18n.I18nTextBuffer;
 import org.nightlabs.jfire.prop.DataBlock;
@@ -11,20 +20,11 @@ import org.nightlabs.jfire.prop.DataField;
 import org.nightlabs.jfire.prop.PropertySet;
 import org.nightlabs.jfire.prop.StructField;
 
-import javax.jdo.annotations.Persistent;
-import javax.jdo.annotations.FetchGroups;
-import javax.jdo.annotations.InheritanceStrategy;
-import javax.jdo.annotations.Inheritance;
-import javax.jdo.annotations.PersistenceCapable;
-import javax.jdo.annotations.FetchGroup;
-import javax.jdo.annotations.IdentityType;
-import javax.jdo.annotations.PersistenceModifier;
-
 /**
  * {@link DataField} that stores a {@link Date} value.
- * 
+ *
  * @author Tobias Langner <!-- tobias[dot]langner[at]nightlabs[dot]de -->
- * 
+ *
  * @jdo.persistence-capable identity-type="application"
  *                          persistence-capable-superclass="org.nightlabs.jfire.prop.DataField"
  *                          detachable="true"
@@ -52,7 +52,7 @@ implements II18nTextDataField
 	private static class DateI18nText extends I18nTextBuffer {
 		private static final long serialVersionUID = 20090126L;
 		private Date date;
-		
+
 		public DateI18nText(Date date) {
 			this.date = date;
 		}
@@ -82,28 +82,44 @@ implements II18nTextDataField
 	/**
 	 * Create a new {@link DateDataField} for the given {@link DataBlock}
 	 * that represents the given {@link StructField}.
-	 * 
+	 *
 	 * @param dataBlock The {@link DataBlock} the new {@link DateDataField} will be part of.
 	 * @param structField The {@link StructField} the new {@link DateDataField} represents in the data structure.
 	 */
 	public DateDataField(DataBlock dataBlock, StructField<DateDataField> structField) {
 		super(dataBlock, structField);
 	}
-	
+
 	/**
 	 * Used internally for cloning.
 	 */
 	protected DateDataField(String organisationID, long propertySetID, DataField cloneField) {
 		super(organisationID, propertySetID, cloneField);
 	}
-	
+
+	/**
+	 * Used internally for cloning.
+	 */
+	protected DateDataField(String organisationID, long propertySetID, int dataBlockID, DataField cloneField) {
+		super(organisationID, propertySetID, dataBlockID, cloneField);
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see org.nightlabs.jfire.prop.DataField#cloneDataField(org.nightlabs.jfire.prop.PropertySet)
 	 */
 	@Override
 	public DataField cloneDataField(PropertySet propertySet) {
-		DateDataField newField = new DateDataField(propertySet.getOrganisationID(), propertySet.getPropertySetID(), this);
+		return cloneDataField(propertySet, 0);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.nightlabs.jfire.prop.DataField#cloneDataField(org.nightlabs.jfire.prop.PropertySet, int)
+	 */
+	@Override
+	public DataField cloneDataField(PropertySet propertySet, int dataBlockID) {
+		DateDataField newField = new DateDataField(propertySet.getOrganisationID(), propertySet.getPropertySetID(), dataBlockID, this);
 		newField.setDate(getDate());
 		return newField;
 	}
@@ -115,15 +131,15 @@ implements II18nTextDataField
 	public Date getDate() {
 		return date;
 	}
-	
+
 	/**
-	 * Set the {@link Date} value of this {@link DataField}. 
+	 * Set the {@link Date} value of this {@link DataField}.
 	 * @param date The {@link Date} value to set.
 	 */
 	public void setDate(Date date) {
 		this.date = date;
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * @see org.nightlabs.jfire.prop.DataField#isEmpty()
@@ -137,7 +153,7 @@ implements II18nTextDataField
 	 * {@inheritDoc}
 	 * <p>
 	 * Returns an I18n Text giving the current Date formatted for each Locale.
-	 * </p> 
+	 * </p>
 	 */
 	@Override
 	public I18nText getI18nText() {
@@ -183,7 +199,7 @@ implements II18nTextDataField
 	 */
 	@Override
 	public boolean supportsInputType(Class<?> inputType) {
-		return 
+		return
 			Date.class.isAssignableFrom(inputType) ||
 			DateDataField.class.isAssignableFrom(inputType);
 	}

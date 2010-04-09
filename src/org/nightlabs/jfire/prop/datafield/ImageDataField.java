@@ -157,13 +157,29 @@ implements IContentDataField
 		super(organisationID, propertySetID, imageDataField);
 	}
 
+	/**
+	 * Used for cloning.
+	 */
+	protected ImageDataField(String organisationID, long propertySetID, int dataBlockID, ImageDataField imageDataField) {
+		super(organisationID, propertySetID, dataBlockID, imageDataField);
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see org.nightlabs.jfire.prop.DataField#cloneDataField(org.nightlabs.jfire.prop.PropertySet)
 	 */
 	@Override
 	public DataField cloneDataField(PropertySet propertySet) {
-		ImageDataField newField = new ImageDataField(propertySet.getOrganisationID(), propertySet.getPropertySetID(), this);
+		return cloneDataField(propertySet, 0);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.nightlabs.jfire.prop.DataField#cloneDataField(org.nightlabs.jfire.prop.PropertySet, int)
+	 */
+	@Override
+	public DataField cloneDataField(PropertySet propertySet, int dataBlockID) {
+		ImageDataField newField = new ImageDataField(propertySet.getOrganisationID(), propertySet.getPropertySetID(), dataBlockID, this);
 		newField.fileName = this.fileName;
 		newField.fileTimestamp = this.fileTimestamp;
 		newField.contentType = this.contentType;

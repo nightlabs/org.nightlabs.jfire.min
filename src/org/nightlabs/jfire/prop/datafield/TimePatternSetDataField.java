@@ -1,5 +1,14 @@
 package org.nightlabs.jfire.prop.datafield;
 
+import javax.jdo.annotations.FetchGroup;
+import javax.jdo.annotations.FetchGroups;
+import javax.jdo.annotations.IdentityType;
+import javax.jdo.annotations.Inheritance;
+import javax.jdo.annotations.InheritanceStrategy;
+import javax.jdo.annotations.PersistenceCapable;
+import javax.jdo.annotations.PersistenceModifier;
+import javax.jdo.annotations.Persistent;
+
 import org.nightlabs.i18n.StaticI18nText;
 import org.nightlabs.jfire.prop.DataBlock;
 import org.nightlabs.jfire.prop.DataField;
@@ -7,18 +16,9 @@ import org.nightlabs.jfire.prop.PropertySet;
 import org.nightlabs.jfire.prop.StructField;
 import org.nightlabs.timepattern.TimePatternSet;
 
-import javax.jdo.annotations.Persistent;
-import javax.jdo.annotations.FetchGroups;
-import javax.jdo.annotations.InheritanceStrategy;
-import javax.jdo.annotations.Inheritance;
-import javax.jdo.annotations.PersistenceCapable;
-import javax.jdo.annotations.FetchGroup;
-import javax.jdo.annotations.IdentityType;
-import javax.jdo.annotations.PersistenceModifier;
-
 /**
  * {@link DataField} that stores a {@link TimePatternSet}.
- * 
+ *
  * @jdo.persistence-capable identity-type="application"
  *                          persistence-capable-superclass="org.nightlabs.jfire.prop.DataField"
  *                          detachable="true"
@@ -53,17 +53,17 @@ implements II18nTextDataField
 	/** @jdo.field persistence-modifier="persistent" */
 	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
 	protected TimePatternSet timePatternSet;
-	
+
 	/**
 	 * For JDO only.
 	 */
 	protected TimePatternSetDataField() {
 	}
-	
+
 	/**
 	 * Create a new {@link TimePatternSetDataField} for the given {@link DataBlock}
 	 * that represents the given {@link StructField}.
-	 * 
+	 *
 	 * @param dataBlock The {@link DataBlock} the new {@link PhoneNumberDataField} will be part of.
 	 * @param structField The {@link StructField} the new {@link PhoneNumberDataField} represents in the data structure.
 	 */
@@ -78,16 +78,33 @@ implements II18nTextDataField
 		super(organisationID, propertySetID, cloneField);
 	}
 
+	/**
+	 * Used for cloning.
+	 */
+	protected TimePatternSetDataField(String organisationID, long propertySetID, int dataBlockID, DataField cloneField) {
+		super(organisationID, propertySetID, dataBlockID, cloneField);
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see org.nightlabs.jfire.prop.DataField#cloneDataField(org.nightlabs.jfire.prop.PropertySet)
 	 */
 	@Override
 	public DataField cloneDataField(PropertySet propertySet) {
-		TimePatternSetDataField newField = new TimePatternSetDataField(propertySet.getOrganisationID(), propertySet.getPropertySetID(), this);
+		return cloneDataField(propertySet, 0);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.nightlabs.jfire.prop.DataField#cloneDataField(org.nightlabs.jfire.prop.PropertySet, int)
+	 */
+	@Override
+	public DataField cloneDataField(PropertySet propertySet, int dataBlockID) {
+		TimePatternSetDataField newField = new TimePatternSetDataField(propertySet.getOrganisationID(), propertySet.getPropertySetID(), dataBlockID, this);
 		newField.setTimePatternSet(this.timePatternSet);
 		return newField;
 	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see org.nightlabs.jfire.prop.DataField#isEmpty()
@@ -96,7 +113,7 @@ implements II18nTextDataField
 	public boolean isEmpty() {
 		return timePatternSet == null;
 	}
-	
+
 	/**
 	 * Set the {@link TimePatternSet} for this {@link TimePatternSetDataField}.
 	 * @param timePatternSet The {@link TimePatternSet} to set.
@@ -122,13 +139,13 @@ implements II18nTextDataField
 	 * {@inheritDoc}
 	 * <p>
 	 * Calling this method is equal to {@link #getTimePatternSet()}.
-	 * </p> 
+	 * </p>
 	 */
 	@Override
 	public Object getData() {
 		return getTimePatternSet();
 	}
-	
+
 	@Override
 	public void setData(Object data) {
 		if (data == null) {
@@ -145,7 +162,7 @@ implements II18nTextDataField
 
 	@Override
 	public boolean supportsInputType(Class<?> inputType) {
-		return 
+		return
 			TimePatternSet.class.isAssignableFrom(inputType) ||
 			TimePatternSetDataField.class.isAssignableFrom(inputType);
 	}

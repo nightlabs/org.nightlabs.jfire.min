@@ -61,11 +61,11 @@ implements II18nTextDataField
 	/** @jdo.field persistence-modifier="persistent" */
 	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
 	private String localNumber = "";
-	
+
 	/** @jdo.field persistence-modifier="none" */
 	@Persistent(persistenceModifier=PersistenceModifier.NONE)
 	private transient StaticI18nText textBuffer = null;
-	
+
 	/**
 	 * Create a new {@link PhoneNumberDataField} for the given {@link DataBlock}
 	 * that represents the given {@link StructField}.
@@ -84,9 +84,21 @@ implements II18nTextDataField
 		super(organisationID, propertySetID, cloneField);
 	}
 
+	/**
+	 * Used for cloning.
+	 */
+	protected PhoneNumberDataField(String organisationID, long propertySetID, int dataBlockID, DataField cloneField) {
+		super(organisationID, propertySetID, dataBlockID, cloneField);
+	}
+
 	@Override
 	public DataField cloneDataField(PropertySet propertySet) {
-		PhoneNumberDataField newField = new PhoneNumberDataField(propertySet.getOrganisationID(), propertySet.getPropertySetID(), this);
+		return cloneDataField(propertySet, 0);
+	}
+
+	@Override
+	public DataField cloneDataField(PropertySet propertySet, int dataBlockID) {
+		PhoneNumberDataField newField = new PhoneNumberDataField(propertySet.getOrganisationID(), propertySet.getPropertySetID(), dataBlockID, this);
 		newField.countryCode = countryCode;
 		newField.areaCode = areaCode;
 		newField.localNumber = localNumber;
@@ -282,7 +294,7 @@ implements II18nTextDataField
 	/**
 	 * {@inheritDoc}
 	 * <p>
-	 * 
+	 *
 	 * </p>
 	 */
 	@Override

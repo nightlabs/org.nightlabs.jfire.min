@@ -31,6 +31,14 @@ import java.util.Set;
 import javax.jdo.FetchPlan;
 import javax.jdo.JDOHelper;
 import javax.jdo.PersistenceManager;
+import javax.jdo.annotations.FetchGroup;
+import javax.jdo.annotations.FetchGroups;
+import javax.jdo.annotations.IdentityType;
+import javax.jdo.annotations.Inheritance;
+import javax.jdo.annotations.InheritanceStrategy;
+import javax.jdo.annotations.PersistenceCapable;
+import javax.jdo.annotations.PersistenceModifier;
+import javax.jdo.annotations.Persistent;
 import javax.jdo.listener.DetachCallback;
 
 import org.nightlabs.i18n.I18nTextBuffer;
@@ -43,15 +51,6 @@ import org.nightlabs.jfire.prop.StructField;
 import org.nightlabs.jfire.prop.id.StructFieldValueID;
 import org.nightlabs.jfire.prop.structfield.SelectionStructField;
 import org.nightlabs.jfire.prop.structfield.StructFieldValue;
-
-import javax.jdo.annotations.Persistent;
-import javax.jdo.annotations.FetchGroups;
-import javax.jdo.annotations.InheritanceStrategy;
-import javax.jdo.annotations.Inheritance;
-import javax.jdo.annotations.FetchGroup;
-import javax.jdo.annotations.PersistenceCapable;
-import javax.jdo.annotations.IdentityType;
-import javax.jdo.annotations.PersistenceModifier;
 
 /**
  *
@@ -88,7 +87,7 @@ implements DetachCallback, II18nTextDataField
 	 * The serial version of this class.
 	 */
 	private static final long serialVersionUID = 20090116L;
-	
+
 	/** @jdo.field persistence-modifier="none" */
 	@Persistent(persistenceModifier=PersistenceModifier.NONE)
 	private transient I18nTextBuffer textBuffer = null;
@@ -104,7 +103,7 @@ implements DetachCallback, II18nTextDataField
 	/**
 	 * Create a new {@link SelectionDataField} for the given {@link DataBlock}
 	 * that represents the given {@link StructField}.
-	 * 
+	 *
 	 * @param dataBlock The {@link DataBlock} the new {@link SelectionDataField} will be part of.
 	 * @param structField The {@link StructField} the new {@link SelectionDataField} represents in the data structure.
 	 */
@@ -121,6 +120,14 @@ implements DetachCallback, II18nTextDataField
 		super(organisationID, propertySetID, cloneField);
 	}
 
+	/**
+	 * Used for cloning.
+	 */
+	protected SelectionDataField(String organisationID, long propertySetID, int dataBlockID, SelectionDataField cloneField)
+	{
+		super(organisationID, propertySetID, dataBlockID, cloneField);
+	}
+
 	/** @jdo.field persistence-modifier="persistent" */
 	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
 	protected String structFieldValueID;
@@ -128,13 +135,13 @@ implements DetachCallback, II18nTextDataField
 		/** @jdo.field persistence-modifier="none" */
 		@Persistent(persistenceModifier=PersistenceModifier.NONE)
 	protected StructFieldValue structFieldValue;
-	
+
 
 	/**
 	 * Set the {@link StructFieldValue} selected for this {@link SelectionDataField}.
 	 * Note, that only the {@link StructFieldValue#getStructFieldValueID()}
 	 * is stored in this data field.
-	 * 
+	 *
 	 * @param selection The selection to set.
 	 */
 	public void setSelection(StructFieldValue value)
@@ -152,7 +159,7 @@ implements DetachCallback, II18nTextDataField
 	 * {@link StructFieldValue} selected for this {@link SelectionDataField}.
 	 * The {@link StructFieldValue} corresponding to the selection can be
 	 * retrieved using {@link #getStructFieldValue()}.
-	 * 
+	 *
 	 * @return The structFieldValueID of the selected {@link StructFieldValue}.
 	 */
 	public String getStructFieldValueID() {
@@ -208,13 +215,18 @@ implements DetachCallback, II18nTextDataField
 	{
 		if (getStructField() == null)
 			throw new IllegalStateException("isEmpty() was called on deflated data field.");
-		
+
 		return getStructFieldValueID() == null && ((SelectionStructField) getStructField()).getDefaultValue() == null;
 	}
 
 	@Override
 	public DataField cloneDataField(PropertySet propertySet) {
-		SelectionDataField newField = new SelectionDataField(getOrganisationID(), propertySet.getPropertySetID(), this);
+		return cloneDataField(propertySet, 0);
+	}
+
+	@Override
+	public DataField cloneDataField(PropertySet propertySet, int dataBlockID) {
+		SelectionDataField newField = new SelectionDataField(getOrganisationID(), propertySet.getPropertySetID(), dataBlockID, this);
 		newField.structFieldValueID = this.structFieldValueID;
 		return newField;
 	}
@@ -322,8 +334,8 @@ implements DetachCallback, II18nTextDataField
 
 	@Override
 	public boolean supportsInputType(Class<?> inputType) {
-		return 
-			StructFieldValue.class.isAssignableFrom(inputType) || 
+		return
+			StructFieldValue.class.isAssignableFrom(inputType) ||
 			SelectionDataField.class.isAssignableFrom(inputType);
 	}
 }
