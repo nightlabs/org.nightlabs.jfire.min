@@ -271,7 +271,13 @@ public class PropertyManagerBean extends BaseSessionBeanImpl implements Property
 		PersistenceManager pm = this.createPersistenceManager();
 		try {
 			propSearchFilter.setPersistenceManager(pm);
+			long start = System.currentTimeMillis();
 			Collection<?> props = propSearchFilter.getResult();
+			if (logger.isDebugEnabled()) {
+				long duration = System.currentTimeMillis() - start;
+				logger.debug("propSearchFilter.getResult() took "+duration+" ms!");
+			}
+
 			Set<PropertySetID> result = new HashSet<PropertySetID>();
 			for (Object element : props) {
 				if (element instanceof PropertySet) {
