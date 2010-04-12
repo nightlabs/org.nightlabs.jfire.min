@@ -80,20 +80,8 @@ implements II18nTextDataField
 	/**
 	 * Used for cloning.
 	 */
-	protected PhoneNumberDataField(String organisationID, long propertySetID, DataField cloneField) {
-		super(organisationID, propertySetID, cloneField);
-	}
-
-	/**
-	 * Used for cloning.
-	 */
 	protected PhoneNumberDataField(String organisationID, long propertySetID, int dataBlockID, DataField cloneField) {
 		super(organisationID, propertySetID, dataBlockID, cloneField);
-	}
-
-	@Override
-	public DataField cloneDataField(PropertySet propertySet) {
-		return cloneDataField(propertySet, 0);
 	}
 
 	@Override

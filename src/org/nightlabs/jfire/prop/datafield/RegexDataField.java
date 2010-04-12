@@ -103,13 +103,6 @@ implements II18nTextDataField
 	/**
 	 * Used for cloning.
 	 */
-	protected RegexDataField(String organisationID, long propertySetID, DataField cloneField) {
-		super(organisationID, propertySetID, cloneField);
-	}
-
-	/**
-	 * Used for cloning.
-	 */
 	protected RegexDataField(String organisationID, long propertySetID, int dataBlockID, DataField cloneField) {
 		super(organisationID, propertySetID, dataBlockID, cloneField);
 	}
@@ -136,11 +129,6 @@ implements II18nTextDataField
 	@Override
 	public boolean isEmpty() {
 		return text == null || text.isEmpty();
-	}
-
-	@Override
-	public DataField cloneDataField(PropertySet propertySet) {
-		return cloneDataField(propertySet, 0);
 	}
 
 	@Override

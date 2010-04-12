@@ -1138,7 +1138,7 @@ public class PropertySet implements Serializable, StoreCallback, AttachCallback,
 	public PropertySet clonePropertySet() {
 		PropertySet newProperty = createPropertySetClone();
 		for (DataField dataField : dataFields) {
-			DataField newField = dataField.cloneDataField(newProperty);
+			DataField newField = dataField.cloneDataField(newProperty, -1);
 			newProperty.dataFields.add(newField);
 		}
 		return newProperty;

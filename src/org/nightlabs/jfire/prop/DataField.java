@@ -141,26 +141,15 @@ public abstract class DataField implements Serializable, Comparable<DataField>, 
 	}
 
 	/**
-	 * Create a new {@link DataField} that will have the same location (DataBlock)
-	 * as the given one but will be inside the {@link PropertySet} referenced
-	 * by the given organisationID and propertySetID.
-	 *
+	 * Create a new {@link DataField} that will be inside the {@link PropertySet} referenced
+	 * by the given organisationID and propertySetID and be placed in a DataBlock according to the given DataBlock ID.
 	 * @param organisationID The organisation ID referencing the {@link PropertySet} the new {@link DataField} should be in.
 	 * @param propertySetID The propertySetID referencing the {@link PropertySet} the new {@link DataField} should be in.
-	 * @param cloneField The {@link DataField} inside another PropertySet whose position
-	 *                   in the referenced {@link PropertySet} the new {@link DataField} should have.
+	 * @param dataBlockID The ID of the DataBlock the new DataField (the clone) shall be placed in or -1 in the case the clone
+	 * shall be placed in a DataBlock with the same ID like the DataField to be cloned (the cloneable).
+	 * @param cloneField The {@link DataField} inside another PropertySet whose position in the referenced {@link PropertySet}
+	 * the new {@link DataField} should have.
 	 */
-	public DataField(String organisationID, long propertySetID, DataField cloneField)
-	{
-		this.structFieldOrganisationID = cloneField.getStructFieldOrganisationID();
-		this.structFieldID = cloneField.getStructFieldID();
-		this.organisationID = organisationID;
-		this.propertySetID = propertySetID;
-		this.structBlockOrganisationID = cloneField.getStructBlockOrganisationID();
-		this.structBlockID = cloneField.getStructBlockID();
-		this.dataBlockID = cloneField.getDataBlockID();
-	}
-
 	public DataField(String organisationID, long propertySetID, int dataBlockID, DataField cloneField)
 	{
 		this.structFieldOrganisationID = cloneField.getStructFieldOrganisationID();
@@ -169,7 +158,7 @@ public abstract class DataField implements Serializable, Comparable<DataField>, 
 		this.propertySetID = propertySetID;
 		this.structBlockOrganisationID = cloneField.getStructBlockOrganisationID();
 		this.structBlockID = cloneField.getStructBlockID();
-		this.dataBlockID = dataBlockID;
+		this.dataBlockID = dataBlockID == -1 ? cloneField.getDataBlockID() : dataBlockID;
 	}
 
 	/**
@@ -455,20 +444,14 @@ public abstract class DataField implements Serializable, Comparable<DataField>, 
 	}
 
 	/**
-	 * Subclasses should create a new {@link DataField} of their type
-	 * here and <b>copy</b> their data to the new instance.
-	 * <p>
-	 * The clone should be connected to the given {@link PropertySet},
-	 * the constructor {@link #DataField(String, long, DataField)}
+	 * Subclasses should create a new {@link DataField} of their type here and <b>copy</b> their data to the new instance.<p>
+	 * The clone should be connected to the given {@link PropertySet}, the constructor {@link #DataField(String, long, int, DataField)}
 	 * is intended to help constructing the new instance.
-	 * </p>
-	 * @param propertySet The {@link PropertySet} the new {@link DataField}
-	 *                    instance should be linked to.
-	 * @return A new {@link DataField} instance of this {@link DataField}
-	 *         with a copy of its data and linked to the given {@link PropertySet}.
+	 * @param propertySet The {@link PropertySet} the new {@link DataField} instance should be linked to.
+	 * @param dataBlockID The ID of the DataBlock the new DataField (the clone) shall be placed in or -1 in the case the clone shall be placed in a
+	 * DataBlock with the same ID like the DataField to be cloned (the cloneable).
+	 * @return A new {@link DataField} instance of this {@link DataField} with a copy of its data and linked to the given {@link PropertySet}.
 	 */
-	public abstract DataField cloneDataField(PropertySet propertySet);
-
 	public abstract DataField cloneDataField(PropertySet propertySet, int dataBlockID);
 
 	/**

@@ -115,14 +115,6 @@ implements DetachCallback, II18nTextDataField
 	/**
 	 * Used for cloning.
 	 */
-	protected SelectionDataField(String organisationID, long propertySetID, SelectionDataField cloneField)
-	{
-		super(organisationID, propertySetID, cloneField);
-	}
-
-	/**
-	 * Used for cloning.
-	 */
 	protected SelectionDataField(String organisationID, long propertySetID, int dataBlockID, SelectionDataField cloneField)
 	{
 		super(organisationID, propertySetID, dataBlockID, cloneField);
@@ -217,11 +209,6 @@ implements DetachCallback, II18nTextDataField
 			throw new IllegalStateException("isEmpty() was called on deflated data field.");
 
 		return getStructFieldValueID() == null && ((SelectionStructField) getStructField()).getDefaultValue() == null;
-	}
-
-	@Override
-	public DataField cloneDataField(PropertySet propertySet) {
-		return cloneDataField(propertySet, 0);
 	}
 
 	@Override

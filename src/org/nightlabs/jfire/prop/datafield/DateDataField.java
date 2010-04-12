@@ -93,24 +93,8 @@ implements II18nTextDataField
 	/**
 	 * Used internally for cloning.
 	 */
-	protected DateDataField(String organisationID, long propertySetID, DataField cloneField) {
-		super(organisationID, propertySetID, cloneField);
-	}
-
-	/**
-	 * Used internally for cloning.
-	 */
 	protected DateDataField(String organisationID, long propertySetID, int dataBlockID, DataField cloneField) {
 		super(organisationID, propertySetID, dataBlockID, cloneField);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.nightlabs.jfire.prop.DataField#cloneDataField(org.nightlabs.jfire.prop.PropertySet)
-	 */
-	@Override
-	public DataField cloneDataField(PropertySet propertySet) {
-		return cloneDataField(propertySet, 0);
 	}
 
 	/*

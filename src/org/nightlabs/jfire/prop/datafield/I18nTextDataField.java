@@ -103,14 +103,6 @@ implements II18nTextDataField
 	/**
 	 * Used for cloning.
 	 */
-	protected I18nTextDataField(String organisationID, long propertySetID, I18nTextDataField cloneField) {
-		super(organisationID, propertySetID, cloneField);
-		fieldText = new I18nDataFieldText(this);
-	}
-
-	/**
-	 * Used for cloning.
-	 */
 	protected I18nTextDataField(String organisationID, long propertySetID, int dataBlockID, I18nTextDataField cloneField) {
 		super(organisationID, propertySetID, dataBlockID, cloneField);
 		fieldText = new I18nDataFieldText(this);
@@ -145,15 +137,6 @@ implements II18nTextDataField
 	@Override
 	public boolean isEmpty() {
 		return getI18nText().isEmpty();
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.nightlabs.jfire.prop.DataField#cloneDataField(org.nightlabs.jfire.prop.PropertySet)
-	 */
-	@Override
-	public DataField cloneDataField(PropertySet propertySet) {
-		return cloneDataField(propertySet, 0);
 	}
 
 	/*
