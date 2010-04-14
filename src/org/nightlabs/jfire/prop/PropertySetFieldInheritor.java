@@ -52,8 +52,9 @@ public class PropertySetFieldInheritor implements FieldInheriter {
 	private PropertySet propSet_Child;
 	/** Map keeping track of StructBlock keys and corresponding DataBlockGroups of the child. */
 	private Map<String, DataBlockGroup> structBlockKeyToDataBlockGroup_Child = new HashMap<String, DataBlockGroup>();
-	/** Map whereby key is the DataBlockID of the cloneable DataField (that belongs to the mother) and value an instance of CloneDataBlockDescriptor that keeps track of the newly generated DataBlockID of the clone (that belongs to the child) and the DataBlock index this clone is placed in. */
+	/** Map whereby key is the DataBlockID of the cloneable DataField (that belongs to the mother) and value an instance of CloneDataBlockDescriptor that keeps track of the ID and index of the newly generated DataBlock the clone (that belongs to the child) is placed in. */
 	private Map<Integer, CloneDataBlockDescriptor> cloneableDataBlockIDToCloneDataBlockDescriptor = new HashMap<Integer, CloneDataBlockDescriptor>();
+
 	/** Helper class used for keeping track of the ID and the index of the DataBlock a cloned DataField (that belongs to the child) is placed in. Instances of this class are set as value of the map cloneableDataBlockIDToCloneDataBlockDescriptor. */
 	private class CloneDataBlockDescriptor {
 		private int cloneDataBlockID;
@@ -123,8 +124,8 @@ public class PropertySetFieldInheritor implements FieldInheriter {
 		}
 
 		// Traverse all DataBlockGroups of the mother and compare the amount of appropriate DataBocks with the amount of DataBlocks of the corresponding DataBlockGroup of the child.
-		// If the mother has more blocks add the missing amount of DataFields (not blocks) to the child. If the mother has less data blocks remove all redundant DataBlocks (in this case blocks) from the child.
-		// Finally, if mother and child have the same amount of DataBlocks for this DataBlockGroup data is copied from mother to child.
+		// If the mother has more DataBlocks add the missing amount of DataFields (not blocks) to the child. If the mother has less DataBlocks remove all redundant DataBlocks (in this case blocks) from the child.
+		// Finally, if mother and child have the same amount of DataBlocks for this DataBlockGroup data is copied from mother to child (only considering non-cloned DataFields as clones do already contain the data of their corresponding cloneable).
 		for (Map.Entry<String, List<DataBlock>> entry : structBlockKeyToDataBlocks_Mother.entrySet()) {
 			final String structBlockKey = entry.getKey();
 			final List<DataBlock> dataBlocks_Mother = entry.getValue();
@@ -241,39 +242,38 @@ public class PropertySetFieldInheritor implements FieldInheriter {
 	 * @param structBlockKey The key of the currently considered StructBlock.
 	 */
 	private void addMissingDataFields(final String structBlockKey) {
-		for (final Map.Entry<StructFieldID, List<DataField>> entry : propSet_Mother.getDataFieldsMap().entrySet()) {
+		OUTER: for (final Map.Entry<StructFieldID, List<DataField>> entry : propSet_Mother.getDataFieldsMap().entrySet()) {
 			final StructFieldID structFieldID = entry.getKey();
 			if (LOGGER.isDebugEnabled())
 				LOGGER.debug("Amount of data fields of StructFieldID " + structFieldID + " (mother): " + entry.getValue().size());
-			if ((structFieldID.structBlockOrganisationID + "/" + structFieldID.structBlockID).equals(structBlockKey)) {	// Test whether the considered DataFields belong to the currently considered StructBlock, e.g. dev.jfire.org/SimpleProductType.description.
-				final List<DataField> dataFields_Mother = entry.getValue();
-				final List<DataField> dataFields_Child = propSet_Child.getDataFieldsMap().get(structFieldID);
-				if (dataFields_Child != null && dataFields_Mother.size() > dataFields_Child.size()) {
-					final int diffDataFields = dataFields_Mother.size() - dataFields_Child.size();
-					for (int j = 0; j < diffDataFields; j++) {
-						final DataField cloneable = dataFields_Mother.get(dataFields_Mother.size() - diffDataFields + j);
-						if (!cloneableDataBlockIDToCloneDataBlockDescriptor.containsKey(cloneable.getDataBlockID())) {
-//							do {
-//								newBlockID = (int) (Integer.MAX_VALUE * Math.random());
-//								if (tries++ > 10000)
-//									throw new RuntimeException("Could not generate new dataBlockID in 10000 tries.");
-//							} while (dataBlockMap.containsKey(newBlockID));
-							final CloneDataBlockDescriptor cdbDesc = new CloneDataBlockDescriptor(new Long(System.currentTimeMillis()).intValue(), cloneable.getDataBlockIndex());	// TODO Generate a new DataBlockID by using the code above and testing whether it is not already available. Using the current method results in negative values for new DataBlocks.
-							cloneableDataBlockIDToCloneDataBlockDescriptor.put(cloneable.getDataBlockID(), cdbDesc);
-						}
-						if (cloneableDataBlockIDToCloneDataBlockDescriptor.get(cloneable.getDataBlockID()) != null) {
-							final DataField clone = cloneable.cloneDataField(propSet_Child, cloneableDataBlockIDToCloneDataBlockDescriptor.get(cloneable.getDataBlockID()).getCloneDataBlockID());	// Transfer new DataBlockID as parameter, i.e. adapt DataField constructor accordingly and create new clone method (adapt each DataField type). Done.
-							clone.setDataBlockIndex(cloneable.getDataBlockIndex());	// Keep DataBlock index as set in mother.
-							propSet_Child.internalAddDataFieldToPersistentCollection(clone);
-							logDataFieldPrimaryKeyContent(clone, false);
-						}
-						logDataFieldPrimaryKeyContent(cloneable, true);
+			if (!(structFieldID.structBlockOrganisationID + "/" + structFieldID.structBlockID).equals(structBlockKey))	// Test whether the considered StructField belongs to the currently considered StructBlock like e.g. dev.jfire.org/SimpleProductType.description (this test is necessary as we consider all persistent DataFields when we call PropertySet#getDataFieldsMap).
+				continue OUTER;
+			final List<DataField> dataFields_Mother = entry.getValue();
+			final List<DataField> dataFields_Child = propSet_Child.getDataFieldsMap().get(structFieldID);
+			if (dataFields_Child != null) {
+				final int diffDataFields = dataFields_Mother.size() - dataFields_Child.size();
+				for (int j = 0; j < diffDataFields; j++) {
+					final DataField cloneable = dataFields_Mother.get(dataFields_Mother.size() - diffDataFields + j);
+					if (!cloneableDataBlockIDToCloneDataBlockDescriptor.containsKey(cloneable.getDataBlockID())) {
+//						do {
+//							newBlockID = (int) (Integer.MAX_VALUE * Math.random());
+//							if (tries++ > 10000)
+//								throw new RuntimeException("Could not generate new dataBlockID in 10000 tries.");
+//						} while (dataBlockMap.containsKey(newBlockID));
+						final CloneDataBlockDescriptor cdbDesc = new CloneDataBlockDescriptor(new Long(System.currentTimeMillis()).intValue(), cloneable.getDataBlockIndex());	// TODO Generate a new DataBlockID by using the code above and testing whether it is not already available. Using the current method results in negative values for new DataBlocks.
+						cloneableDataBlockIDToCloneDataBlockDescriptor.put(cloneable.getDataBlockID(), cdbDesc);
 					}
+					final DataField clone = cloneable.cloneDataField(propSet_Child, cloneableDataBlockIDToCloneDataBlockDescriptor.get(cloneable.getDataBlockID()).getCloneDataBlockID());	// Transfer new DataBlockID as parameter, i.e. adapt DataField constructor accordingly and create new clone method (adapt each DataField type). Done.
+					clone.setDataBlockIndex(cloneable.getDataBlockIndex());	// Keep DataBlock index as set in mother!
+					propSet_Child.internalAddDataFieldToPersistentCollection(clone);
+
+					logDataFieldPrimaryKeyContent(clone, false);
+					logDataFieldPrimaryKeyContent(cloneable, true);
 				}
 			}
 		}
-		for (CloneDataBlockDescriptor cdbDesc : cloneableDataBlockIDToCloneDataBlockDescriptor.values()) {
-			DataBlock db = new DataBlock(structBlockKeyToDataBlockGroup_Child.get(structBlockKey), cdbDesc.getCloneDataBlockID());	// Create a new DataBlock that will be placed in the currently considered DataBlockGroup of the child and set its ID according to the DataBlockID of the appropriate clones.
+		for (final CloneDataBlockDescriptor cdbDesc : cloneableDataBlockIDToCloneDataBlockDescriptor.values()) {
+			final DataBlock db = new DataBlock(structBlockKeyToDataBlockGroup_Child.get(structBlockKey), cdbDesc.getCloneDataBlockID());	// Create a new DataBlock that will be placed in the currently considered DataBlockGroup of the child and set its ID according to the DataBlockID of the appropriate clones.
 			if (LOGGER.isDebugEnabled())
 				LOGGER.debug("Index of new DataBlock (child): " + cdbDesc.getCloneDataBlockIndex());
 			db.setIndex(cdbDesc.getCloneDataBlockIndex(), true);
