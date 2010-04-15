@@ -451,10 +451,10 @@ implements IContentDataField
 	}
 
 	/**
-	 * Helper class wrapping properties, i.e. data of a certain image. It is used for inheritance purposes in the case the contents of ImageDataFields are inherited from mother to child.
+	 * Helper class wrapping properties of this {@link DataField} instance. It is used for inheritance purposes in the case the contents of {@link ImageDataFields} are inherited from mother to child.
 	 * @author Frederik Loeser <!-- frederik [AT] nightlabs [DOT] de -->
 	 */
-	private class ImageDataDescriptor {
+	private class ImageDataFieldContentDescriptor {
 		private byte[] content;
 		private String contentEncoding;
 		private String contentType;
@@ -463,7 +463,7 @@ implements IContentDataField
 		private Date fileTimestamp;
 
 		/**
-		 * Initialises a new {@link ImageDataDescriptor} instance.
+		 * Initialises a new {@link ImageDataFieldContentDescriptor} instance.
 		 * @param content The content of the image.
 		 * @param contentEncoding The content encoding of the image.
 		 * @param contentType The content type of the image.
@@ -471,7 +471,7 @@ implements IContentDataField
 		 * @param filename The name of the file under which the image is stored.
 		 * @param fileTimestamp
 		 */
-		public ImageDataDescriptor(final byte[] content, final String contentEncoding, final String contentType, final String description,
+		public ImageDataFieldContentDescriptor(final byte[] content, final String contentEncoding, final String contentType, final String description,
 			final String filename, final Date fileTimestamp) {
 
 			this.content = content;
@@ -504,7 +504,7 @@ implements IContentDataField
 
 	@Override
 	public Object getData() {
-		return new ImageDataDescriptor(getPlainContent(), contentEncoding, contentType, description, fileName, fileTimestamp);
+		return new ImageDataFieldContentDescriptor(getPlainContent(), contentEncoding, contentType, description, fileName, fileTimestamp);
 	}
 
 	@Override
@@ -520,8 +520,8 @@ implements IContentDataField
 				}
 			}
 		}
-		else if (data_ instanceof ImageDataDescriptor) {
-			final ImageDataDescriptor data = (ImageDataDescriptor) data_;
+		else if (data_ instanceof ImageDataFieldContentDescriptor) {
+			final ImageDataFieldContentDescriptor data = (ImageDataFieldContentDescriptor) data_;
 			if (data.getContent() != null && data.getContent().length > 0) {
 				if (IContentDataField.CONTENT_ENCODING_PLAIN.equals(data.getContentEncoding())) {
 					this.content = data.getContent();
