@@ -1,6 +1,7 @@
 package org.nightlabs.jfire.prop.datafield;
 
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -187,7 +188,7 @@ implements IContentDataField
 	 */
 	@Override
 	public boolean isEmpty() {
-		return content == null;
+		return content == null || content.length == 0;
 	}
 
 	/*
@@ -323,27 +324,37 @@ implements IContentDataField
 	 * @param contentType The content-type to set for the data read.
 	 * @throws IOException If reading the stream fails.
 	 */
-	public void loadStream(InputStream in, long length, Date fileTimestamp, String fileName, String contentType)
+	public void loadStream(final InputStream in, final long length, final Date fileTimestamp, final String fileName, final String contentType)
 	throws IOException
 	{
-		logger.debug("Loading stream for ImageDataField");
+		if (logger.isDebugEnabled())
+			logger.debug("Loading stream for ImageDataField");
+		deflateInputStream(in, length);
+
+		this.fileTimestamp = fileTimestamp;
+		this.fileName = fileName;
+		this.contentEncoding = IContentDataField.CONTENT_ENCODING_DEFLATE;
+		this.contentType = contentType;
+		this.description = fileName;
+	}
+
+	/**
+	 * Encodes the data from the given InputStream using the deflate algorithm.
+	 * @param in The InputStream to read data from.
+	 * @param length The length of the data to read. This is just a hint, it is not treated as the exact length of the data to read.
+	 * @throws IOException If reading the stream fails.
+	 */
+	private void deflateInputStream(final InputStream in, final long length) throws IOException {
 		boolean error = true;
 		try {
-			DataBuffer db = new DataBuffer((long) (length * 0.6));
-			OutputStream out = new DeflaterOutputStream(db.createOutputStream());
+			final DataBuffer db = new DataBuffer((long) (length * 0.6));
+			final OutputStream out = new DeflaterOutputStream(db.createOutputStream());
 			try {
 				IOUtil.transferStreamData(in, out);
 			} finally {
 				out.close();
 			}
 			content = db.createByteArray();
-
-			this.fileTimestamp = fileTimestamp;
-			this.fileName = fileName;
-			this.contentEncoding = IContentDataField.CONTENT_ENCODING_DEFLATE;
-			this.contentType = contentType;
-			this.description = fileName;
-
 			error = false;
 		} finally {
 			if (error) { // make sure that in case of an error all the file members are null.
@@ -387,7 +398,7 @@ implements IContentDataField
 
 	/**
 	 * Get the (file)name of the data.
-	 * Note, that this might not be set to a filename with the correct
+	 * Note, that this might not be set to a fileName with the correct
 	 * extension according to the content-type.
 	 *
 	 * @return The (file)name of the data.
@@ -439,20 +450,101 @@ implements IContentDataField
 		this.description = imageDescription;
 	}
 
-	@Override
-	public Object getData() {
-		return getPlainContent();
+	/**
+	 * Helper class wrapping properties, i.e. data of a certain image. It is used for inheritance purposes in the case the contents of ImageDataFields are inherited from mother to child.
+	 * @author Frederik Loeser <!-- frederik [AT] nightlabs [DOT] de -->
+	 */
+	private class ImageDataDescriptor {
+		private byte[] content;
+		private String contentEncoding;
+		private String contentType;
+		private String description;
+		private String fileName;
+		private Date fileTimestamp;
+
+		/**
+		 * Initialises a new {@link ImageDataDescriptor} instance.
+		 * @param content The content of the image.
+		 * @param contentEncoding The content encoding of the image.
+		 * @param contentType The content type of the image.
+		 * @param description A description for the image.
+		 * @param filename The name of the file under which the image is stored.
+		 * @param fileTimestamp
+		 */
+		public ImageDataDescriptor(final byte[] content, final String contentEncoding, final String contentType, final String description,
+			final String filename, final Date fileTimestamp) {
+
+			this.content = content;
+			this.contentEncoding = contentEncoding;
+			this.contentType = contentType;
+			this.description = description;
+			this.fileName = filename;
+			this.fileTimestamp = fileTimestamp;
+
+		}
+		public byte[] getContent() {
+			return content;
+		}
+		public String getContentEncoding() {
+			return contentEncoding;
+		}
+		public String getContentType() {
+			return contentType;
+		}
+		public String getDescription() {
+			return description;
+		}
+		public String getFileName() {
+			return fileName;
+		}
+		public Date getFileTimestamp() {
+			return fileTimestamp;
+		}
 	}
 
 	@Override
-	public void setData(Object data) {
-		if (data instanceof byte[]) {
-			this.content = (byte[]) data;
-		} if (data == null) {
-			this.content = new byte[0];
-		} else {
-			throw new IllegalArgumentException("The given type of the given data " + data.getClass() + " is not supported.");
+	public Object getData() {
+		return new ImageDataDescriptor(getPlainContent(), contentEncoding, contentType, description, fileName, fileTimestamp);
+	}
+
+	@Override
+	public void setData(final Object data_) {
+		if (data_ instanceof byte[]) {
+			if (IContentDataField.CONTENT_ENCODING_PLAIN.equals(getContentEncoding())) {
+				this.content = (byte[]) data_;
+			} else if (IContentDataField.CONTENT_ENCODING_DEFLATE.equals(getContentEncoding())) {
+				try {
+					deflateInputStream(new ByteArrayInputStream((byte[]) data_), (long) (((byte[]) data_).length * 0.6));
+				} catch (final IOException e) {
+					throw new RuntimeException(e);
+				}
+			}
 		}
+		else if (data_ instanceof ImageDataDescriptor) {
+			final ImageDataDescriptor data = (ImageDataDescriptor) data_;
+			if (data.getContent() != null && data.getContent().length > 0) {
+				if (IContentDataField.CONTENT_ENCODING_PLAIN.equals(data.getContentEncoding())) {
+					this.content = data.getContent();
+				} else if (IContentDataField.CONTENT_ENCODING_DEFLATE.equals(data.getContentEncoding())) {
+					try {
+						deflateInputStream(new ByteArrayInputStream(data.getContent()), (long) (data.getContent().length * 0.6));
+					} catch (final IOException e) {
+						throw new RuntimeException(e);
+					}
+				}
+				this.contentEncoding = data.getContentEncoding();
+				this.contentType = data.getContentType();
+				this.description = data.getDescription();
+				this.fileName = data.getFileName();
+//				this.fileTimestamp = data.getFileTimestamp();	//javax.jdo.JDOUserException: Cannot share owned second-class objects, object owned by field fileTimestamp of object chezfrancois.jfire.org/(dev.jfire.org.SimpleProductType.images)/(dev.jfire.org.SmallImage)
+				this.fileTimestamp = new Date(data.getFileTimestamp().getTime());
+			} else
+				clear();
+		}
+		else if (data_ == null)
+			clear();
+		else
+			throw new IllegalArgumentException("The given type of the given data " + data_.getClass() + " is not supported.");
 	}
 
 	@Override

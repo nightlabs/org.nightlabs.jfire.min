@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: JFireBase
 Bundle-SymbolicName: org.nightlabs.jfire.base
-Bundle-Version: 1.1.5.qualifier
+Bundle-Version: 1.1.6.qualifier
 Export-Package: org.nightlabs.jfire.asyncinvoke,
  org.nightlabs.jfire.asyncinvoke.id,
  org.nightlabs.jfire.base,
