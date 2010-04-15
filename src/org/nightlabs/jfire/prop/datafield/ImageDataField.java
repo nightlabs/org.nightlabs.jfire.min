@@ -246,6 +246,13 @@ implements IContentDataField
 				inflater.write(getContent());
 			} catch (IOException e) {
 				throw new RuntimeException("Could not decode image data", e);
+			} finally {
+				if (inflater != null)
+					try {
+						inflater.close();
+					} catch (final IOException e) {
+						throw new RuntimeException(e);
+					}
 			}
 			return out.toByteArray();
 		}
@@ -451,62 +458,21 @@ implements IContentDataField
 	}
 
 	/**
-	 * Helper class wrapping properties of this {@link DataField} instance. It is used for inheritance purposes in the case the contents of {@link ImageDataFields} are inherited from mother to child.
-	 * @author Frederik Loeser <!-- frederik [AT] nightlabs [DOT] de -->
+	 * {@inheritDoc}
+	 * <p>
+	 * Returns a new instance of {@link ImageDataFieldContent} wrapping properties of this data field.
 	 */
-	private class ImageDataFieldContentDescriptor {
-		private byte[] content;
-		private String contentEncoding;
-		private String contentType;
-		private String description;
-		private String fileName;
-		private Date fileTimestamp;
-
-		/**
-		 * Initialises a new {@link ImageDataFieldContentDescriptor} instance.
-		 * @param content The content of the image.
-		 * @param contentEncoding The content encoding of the image.
-		 * @param contentType The content type of the image.
-		 * @param description A description for the image.
-		 * @param filename The name of the file under which the image is stored.
-		 * @param fileTimestamp
-		 */
-		public ImageDataFieldContentDescriptor(final byte[] content, final String contentEncoding, final String contentType, final String description,
-			final String filename, final Date fileTimestamp) {
-
-			this.content = content;
-			this.contentEncoding = contentEncoding;
-			this.contentType = contentType;
-			this.description = description;
-			this.fileName = filename;
-			this.fileTimestamp = fileTimestamp;
-
-		}
-		public byte[] getContent() {
-			return content;
-		}
-		public String getContentEncoding() {
-			return contentEncoding;
-		}
-		public String getContentType() {
-			return contentType;
-		}
-		public String getDescription() {
-			return description;
-		}
-		public String getFileName() {
-			return fileName;
-		}
-		public Date getFileTimestamp() {
-			return fileTimestamp;
-		}
-	}
-
 	@Override
 	public Object getData() {
-		return new ImageDataFieldContentDescriptor(getPlainContent(), contentEncoding, contentType, description, fileName, fileTimestamp);
+		return new ImageDataFieldContent(getPlainContent(), contentEncoding, contentType, description, fileName, fileTimestamp);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * Sets the data of this data field according to the data given. In the case an instance of {@link ImageDataFieldContent} is
+	 * given data are set according to the values wrapped by this instance.
+	 */
 	@Override
 	public void setData(final Object data_) {
 		if (data_ instanceof byte[]) {
@@ -520,8 +486,8 @@ implements IContentDataField
 				}
 			}
 		}
-		else if (data_ instanceof ImageDataFieldContentDescriptor) {
-			final ImageDataFieldContentDescriptor data = (ImageDataFieldContentDescriptor) data_;
+		else if (data_ instanceof ImageDataFieldContent) {
+			final ImageDataFieldContent data = (ImageDataFieldContent) data_;
 			if (data.getContent() != null && data.getContent().length > 0) {
 				if (IContentDataField.CONTENT_ENCODING_PLAIN.equals(data.getContentEncoding())) {
 					this.content = data.getContent();
