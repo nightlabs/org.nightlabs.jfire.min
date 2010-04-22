@@ -22,8 +22,15 @@ import org.nightlabs.progress.ProgressMonitor;
 import org.nightlabs.util.CollectionUtil;
 
 /**
- * Data access objects for {@link PropertySet}s whose {@link DataField}s are trimmed
- * to a subsect of the {@link StructField}s of the underlying {@link Struct}.
+ * Data access objects for {@link PropertySet}s whose {@link DataField}s are trimmed to a subsect of
+ * the {@link StructField}s of the underlying {@link Struct}.
+ * <p>
+ * This DAO uses a special scope in the Cache-system in order to not interfere with the normally
+ * detached objects.
+ * </p>
+ * <p>
+ * Note that objects obtained using this DAO can't be re-attached to the datastore after change.
+ * </p>
  * 
  * @author Tobias Langner <!-- tobias[dot]langner[at]nightlabs[dot]de -->
  */
@@ -79,8 +86,14 @@ extends BaseJDOObjectDAO<PropertySetID, PropertySet>
 	}
 	
 	protected static String[] getMergedFetchGroups(String[] fetchGroups, Collection<StructFieldID> structFieldIDs) {
-		String[] result = Arrays.copyOf(fetchGroups, fetchGroups.length + structFieldIDs.size());
-		int i = fetchGroups.length;
+		String[] result = null; 
+		int i = 0;
+		if (fetchGroups != null) {
+			result =  Arrays.copyOf(fetchGroups, fetchGroups.length + structFieldIDs.size());
+			i = fetchGroups.length;
+		} else {
+			result = new String[structFieldIDs.size()];
+		}
 		
 		for (StructFieldID id : structFieldIDs)
 			result[i++] = id.toString();
@@ -123,37 +136,5 @@ extends BaseJDOObjectDAO<PropertySetID, PropertySet>
 		
 		return getJDOObjects(TRIMMED_PROPERTY_SETS_SCOPE, propertySetIds, mergedFetchGroups, maxFetchDepth, monitor);
 	}
-	
-//	public static void main(String[] args) {
-//		StructFieldID fieldID1 = StructFieldID.create("sbo1", "sb1", "sfo1", "sf1");
-//		StructFieldID fieldID2 = StructFieldID.create("sbo1", "sb1", "sfo2", "sf2");
-//		StructFieldID fieldID3 = StructFieldID.create("sbo2", "sb2", "sfo1", "sf1");
-//		StructFieldID fieldID4 = StructFieldID.create("sbo2", "sb2", "sfo2", "sf2");
-//		Collection<StructFieldID> _structFieldIDs = new LinkedList<StructFieldID>();
-//		_structFieldIDs.add(fieldID1);
-//		_structFieldIDs.add(fieldID2);
-//		_structFieldIDs.add(fieldID3);
-//		_structFieldIDs.add(fieldID4);
-//		String[] fetchGroupArray = getMergedFetchGroups(new String[] { "fg1", "fg2", "fg3" }, _structFieldIDs);
-//		List<String> fetchGroupList = CollectionUtil.array2ArrayList(fetchGroupArray);
-//
-//		System.out.println(Arrays.toString(fetchGroupArray));
-//		Set<StructFieldID> structFieldIDs = new HashSet<StructFieldID>();
-//
-//		final String JDO_PREFIX = ObjectIDUtil.JDO_PREFIX + ObjectIDUtil.JDO_PREFIX_SEPARATOR;
-//
-//		for (Iterator<String> it = fetchGroupList.iterator(); it.hasNext(); ) {
-//			String fetchGroup = it.next();
-//
-//			if (fetchGroup.startsWith(JDO_PREFIX)) {
-//				structFieldIDs.add((StructFieldID) ObjectIDUtil.createObjectID(fetchGroup));
-//				it.remove();
-//			}
-//		}
-//
-//		String[] fetchGroups = CollectionUtil.collection2TypedArray(fetchGroupList, String.class);
-//
-//		System.out.println(Arrays.toString(fetchGroups));
-//		System.out.println(structFieldIDs.toString());
-//	}
+
 }
