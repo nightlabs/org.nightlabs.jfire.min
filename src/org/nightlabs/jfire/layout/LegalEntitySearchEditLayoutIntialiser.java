@@ -14,7 +14,7 @@ import org.nightlabs.jfire.idgenerator.IDGenerator;
 import org.nightlabs.jfire.person.PersonStruct;
 import org.nightlabs.jfire.prop.StructField;
 import org.nightlabs.jfire.prop.config.PropertySetEditLayoutConfigModule;
-import org.nightlabs.jfire.prop.config.PropertySetFieldBasedEditLayoutEntry2;
+import org.nightlabs.jfire.prop.config.PropertySetEditLayoutEntry;
 import org.nightlabs.jfire.prop.id.StructFieldID;
 
 /**
@@ -53,12 +53,12 @@ public class LegalEntitySearchEditLayoutIntialiser
 				configModuleInitialiserID, priority, UseCaseNames.LEGAL_ENTITY_SEARCH, null);
 	}
 
-	private PropertySetFieldBasedEditLayoutEntry2 createEntry(
+	private PropertySetEditLayoutEntry createEntry(
 			PropertySetEditLayoutConfigModule cfMod,
 			StructFieldID structFieldID,
 			int horSpan)
 	{
-		PropertySetFieldBasedEditLayoutEntry2 entry = cfMod.createEditLayoutEntry(PropertySetFieldBasedEditLayoutEntry2.ENTRY_TYPE_STRUCT_FIELD_REFERENCE);
+		PropertySetEditLayoutEntry entry = cfMod.createEditLayoutEntry(PropertySetEditLayoutEntry.ENTRY_TYPE_STRUCT_FIELD_REFERENCE);
 		StructField structField = (StructField<?>) JDOHelper.getPersistenceManager(this).getObjectById(structFieldID);
 		entry.setObject(Collections.singleton(structField));
 		GridData gd = new GridData(IDGenerator.nextID(GridData.class));
@@ -69,8 +69,8 @@ public class LegalEntitySearchEditLayoutIntialiser
 		return entry;
 	}
 
-	private PropertySetFieldBasedEditLayoutEntry2 createSeparatorEntry(PropertySetEditLayoutConfigModule cfMod, int horSpan) {
-		PropertySetFieldBasedEditLayoutEntry2 entry = cfMod.createEditLayoutEntry(EditLayoutEntry.ENTRY_TYPE_SEPARATOR);
+	private PropertySetEditLayoutEntry createSeparatorEntry(PropertySetEditLayoutConfigModule cfMod, int horSpan) {
+		PropertySetEditLayoutEntry entry = cfMod.createEditLayoutEntry(EditLayoutEntry.ENTRY_TYPE_SEPARATOR);
 		GridData gd = new GridData(IDGenerator.nextID(GridData.class));
 		gd.setHorizontalAlignment(GridData.FILL);
 		gd.setHorizontalSpan(horSpan);

@@ -89,7 +89,7 @@ import org.nightlabs.jfire.prop.structfield.RegexStructField;
 import org.nightlabs.jfire.prop.structfield.SelectionStructField;
 import org.nightlabs.jfire.prop.structfield.TextStructField;
 import org.nightlabs.jfire.prop.structfield.TimePatternSetStructField;
-import org.nightlabs.jfire.prop.view.PersonTableViewerConfiguration;
+import org.nightlabs.jfire.prop.view.PropertySetTableViewerConfiguration;
 import org.nightlabs.jfire.prop.view.PropertySetViewerConfiguration;
 import org.nightlabs.util.CollectionUtil;
 import org.nightlabs.util.Stopwatch;
@@ -561,7 +561,7 @@ public class PropertyManagerBean extends BaseSessionBeanImpl implements Property
 			try {
 				logger.info("Initialising meta data of PropertySetViewerConfigurations.");
 				pm.getExtent(PropertySetViewerConfiguration.class);
-				pm.getExtent(PersonTableViewerConfiguration.class);
+				pm.getExtent(PropertySetTableViewerConfiguration.class);
 				pm.getExtent(PropertySetSearchEditLayoutConfigModule.class);
 			} catch (Exception x) {
 				logger.warn("initialise: Initialising of PropertySetSearch class-meta-data failed!", x);
