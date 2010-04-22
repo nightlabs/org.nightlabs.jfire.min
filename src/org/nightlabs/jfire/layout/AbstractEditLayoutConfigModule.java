@@ -24,11 +24,15 @@ import org.nightlabs.jfire.idgenerator.IDGenerator;
 import org.nightlabs.util.CollectionUtil;
 
 /**
- * The base class for any server-side stored layout information that fits into the Config-Framework. <br>
- * Each ConfigModule defines a layout for a specific use-case. The use-case is encoded into the {@link #getCfModID()}.
- * It adheres to the following semantic: <i>cfModID = clienttype/useCaseName</i>. Hence <b>NO</b> '/' is allowed to appear in
- * either of the cfModID's parts!
- *
+ * The base class for any server-side stored layout information that uses the JFire
+ * Client-UI-GridLayout to layout its parts.<br>
+ * The parts layouted might be individual to a use-case and therefore have to be created by
+ * implementations of this class in {@link #createEditLayoutEntry(String)}. <br>
+ * Each ConfigModule defines a layout for a specific use-case. The use-case is encoded into the
+ * {@link #getCfModID()}. It adheres to the following semantic: 
+ * <i>cfModID = clienttype/useCaseName</i>. 
+ * Hence <b>NO</b> '/' is allowed to appear in either of the cfModID's parts!
+ * 
  * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] -->
  * @author Marius Heinzmann <!-- marius [AT] nightlabs [DOT] de -->
  */
@@ -110,36 +114,72 @@ public abstract class AbstractEditLayoutConfigModule<O, E extends AbstractEditLa
 		dependentElement="true")
 	private List<AbstractEditLayoutEntry<?>> editLayoutEntries;
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void init() {
 		gridLayout = new GridLayout(IDGenerator.nextID(GridLayout.class));
 		editLayoutEntries = new LinkedList<AbstractEditLayoutEntry<?>>();
 	}
-
+	
+	/**
+	 * @return The GridLayout of this config-module.
+	 */
 	public GridLayout getGridLayout() {
 		return gridLayout;
 	}
-
+	
+	/**
+	 * @return An unmodifiable list of all EditLayoutEntries of this config-module.
+	 */
 	public List<E> getEditLayoutEntries() {
 		List<E> result = CollectionUtil.castList(editLayoutEntries);
 		return Collections.unmodifiableList(result);
 	}
 
+	/**
+	 * Create a new instance of an EditLayoutEntry that can be used as entry for this config-module.
+	 * 
+	 * @param entryType The entry-type for the new entry.
+	 * @return A new instance of an EditLayoutEntry that can be used as entry for this
+	 *         config-module.
+	 */
 	public abstract E createEditLayoutEntry(String entryType);
 
+	/**
+	 * Clears the list of EditLayoutEntries.
+	 */
 	public void clearEditLayoutEntries()
 	{
 		editLayoutEntries.clear();
 	}
 
+	/**
+	 * Adds the given EditLayoutEntry to the list of EditLayoutEntries of this config-module.
+	 * 
+	 * @param editLayoutEntry The EditLayoutEntry to add.
+	 */
 	public void addEditLayoutEntry(E editLayoutEntry) {
 		editLayoutEntries.add(editLayoutEntry);
 	}
 
+	/**
+	 * Removes the given EditLayoutEntry from the list of EditLayoutEntries of this config-module.
+	 * 
+	 * @param editLayoutEntry The EditLayoutEntry to remove.
+	 * @return Whether the given entry was contained and successfully removed from the list.
+	 */
 	public boolean removeEditLayoutEntry(E editLayoutEntry) {
 		return editLayoutEntries.remove(editLayoutEntry);
 	}
 
+	/**
+	 * Move the given EditLayoutEntry one position up in the list of EditLayoutEntries of this config-module.
+	 * 
+	 * @param editLayoutEntry The EditLayoutEntry to move.
+	 * @return Whether the operation succeeded.
+	 */
 	public boolean moveEditLayoutEntryUp(E editLayoutEntry) {
 		int idx = editLayoutEntries.indexOf(editLayoutEntry);
 		if (idx <= 0)
@@ -148,6 +188,12 @@ public abstract class AbstractEditLayoutConfigModule<O, E extends AbstractEditLa
 		return true;
 	}
 
+	/**
+	 * Move the given EditLayoutEntry one position down in the list of EditLayoutEntries of this config-module.
+	 * 
+	 * @param editLayoutEntry The EditLayoutEntry to move.
+	 * @return Whether the operation succeeded.
+	 */
 	public boolean moveEditLayoutEntryDown(E editLayoutEntry) {
 		int idx = editLayoutEntries.indexOf(editLayoutEntry);
 		if (idx < 0 || idx >= editLayoutEntries.size() -1)

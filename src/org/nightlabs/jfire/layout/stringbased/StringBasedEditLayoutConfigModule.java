@@ -9,7 +9,9 @@ import org.nightlabs.jfire.idgenerator.IDGenerator;
 import org.nightlabs.jfire.layout.AbstractEditLayoutConfigModule;
 
 /**
- *
+ * ConfigModule that stores a layout of arbitrary parts (EditLayoutEntries) that are referenced by
+ * an identifier-string. The type of EditLayoutEntry it uses is {@link StringBasedEditLayoutEntry}.
+ * 
  * @author Marius Heinzmann <!-- marius [AT] nightlabs [DOT] de -->
  */
 @PersistenceCapable(
@@ -21,6 +23,12 @@ public class StringBasedEditLayoutConfigModule
 {
 	private static final long serialVersionUID = 20100108L;
 
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * Creates {@link StringBasedEditLayoutEntry}s.
+	 * </p>
+	 */
 	@Override
 	public StringBasedEditLayoutEntry createEditLayoutEntry(String entryType)
 	{

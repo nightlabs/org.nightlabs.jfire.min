@@ -18,8 +18,18 @@ import org.nightlabs.clientui.layout.GridData;
 import org.nightlabs.jfire.layout.id.AbstractEditLayoutEntryID;
 
 /**
- *
+ * Base class for EditLayoutEntries that can be managed by {@link AbstractEditLayoutConfigModule}.
+ * Implementations have to manage their individual configuration-information in
+ * {@link #setObject(Object)} and {@link #getObject()}.<br>
+ * The individual configuration-information will provide the the information for consumers what to
+ * render inside the cell created for this entry. The configurable {@link GridData} (
+ * {@link #getGridData()}) of this config-module, however, will define how the cell is layouted in
+ * its parents layout.
+ * 
+ * @param <T> The type of individual information-object used for this entry.
+ * 
  * @author Marius Heinzmann <!-- marius [AT] nightlabs [DOT] de -->
+ * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] de -->
  */
 @PersistenceCapable(
 		objectIdClass = AbstractEditLayoutEntryID.class,
@@ -78,6 +88,8 @@ public abstract class AbstractEditLayoutEntry<T>
 	}
 
 	/**
+	 * Create a new {@link AbstractEditLayoutEntry}.
+	 * 
 	 * @param configModule The ConfigModule this entry is contained in.
 	 * @param entryID The unique ID assigned to it.
 	 * @param entryType The type of entry this element is representing.
@@ -96,56 +108,55 @@ public abstract class AbstractEditLayoutEntry<T>
 		return editLayoutEntryID;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.nightlabs.jfire.prop.config.EditLayoutEntry#getGridData()
+	/**
+	 * {@inheritDoc}
 	 */
+	@Override
 	public GridData getGridData()
 	{
 		return gridData;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.nightlabs.jfire.prop.config.EditLayoutEntry#setGridData(org.nightlabs.clientui.layout.GridData)
+	/**
+	 * {@inheritDoc}
 	 */
+	@Override
 	public void setGridData(GridData gridData)
 	{
 		this.gridData = gridData;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.nightlabs.jfire.layout.EditLayoutEntry#getObject()
+	/**
+	 * @return The individual object that configures what should be shown in the cell created for
+	 *         this entry.
 	 */
 	public abstract T getObject();
-//	{
-//		return object;
-//	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.nightlabs.jfire.layout.EditLayoutEntry#setObject(java.lang.Object)
+	/**
+	 * Set the object that will give individual, use-case-dependent information about what to show
+	 * in the cell created for this entry.
+	 * 
+	 * @param object The object to set.
 	 */
 	public abstract void setObject(T object);
-//	{
-//		this.object = object;
-//	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.nightlabs.jfire.prop.config.EditLayoutEntry#getEntryType()
+	/**
+	 * {@inheritDoc}
 	 */
+	@Override
 	public String getEntryType()
 	{
 		return entryType;
 	}
 	
 	/**
-	 * Return a descriptive name of this entry to be displayed in lists of entries.
+	 * @return A descriptive name of this entry to be displayed in lists of entries.
 	 */
 	public abstract String getName();
-	
+
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -154,6 +165,10 @@ public abstract class AbstractEditLayoutEntry<T>
 		return result;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)

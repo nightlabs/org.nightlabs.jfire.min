@@ -1,9 +1,10 @@
 package org.nightlabs.jfire.layout;
 
 import org.nightlabs.clientui.layout.GridData;
+import org.nightlabs.clientui.layout.GridLayout;
 
 /**
- * Used to describe an entry in a Layout Grid:
+ * Used to describe an entry in a {@link GridLayout}:
  * <ul>
  * 	<li>The actual layout information via {@link #getGridData()}</li>
  * 	<li>The type of entry it is {@link #getEntryType()}</li>

@@ -19,11 +19,14 @@ import org.nightlabs.jfire.layout.EditLayoutEntry;
 import org.nightlabs.jfire.prop.StructField;
 
 /**
- * Base implementation for FieldBased UI of PropertySets.
- *
+ * Base implementation of an EditLayoutEntry that can be used in an configuration of a GridLayout
+ * which is capable of storing a reference to one or more StructFields. <br>
+ * Additionally this entry understands the notion of a separator-type, meaning that an entry of this
+ * type represents a separator in the ui.
+ * 
  * @see AbstractEditLayoutEntry
  * @see EditLayoutEntry
- *
+ * 
  * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] -->
  * @author Marius Heinzmann <!-- marius [AT] nightlabs [DOT] de -->
  */
@@ -32,17 +35,14 @@ import org.nightlabs.jfire.prop.StructField;
 	detachable="true",
 	table="JFireBase_Prop_PropertySetFieldBasedEditLayoutEntry2")
 @FetchGroups({
-//	@FetchGroup(
-//		fetchGroups={"default"},
-//		name=PropertySetFieldBasedEditLayoutEntry2.FETCH_GROUP_GRID_DATA,
-//		members=@Persistent(name="gridData")),
 	@FetchGroup(
 		fetchGroups={"default"},
-		name=PropertySetFieldBasedEditLayoutEntry2.FETCH_GROUP_STRUCT_FIELDS,
+		name=PropertySetEditLayoutEntry.FETCH_GROUP_STRUCT_FIELDS,
 		members=@Persistent(name="structFields"))
 })
 @Inheritance(strategy=InheritanceStrategy.NEW_TABLE)
-public class PropertySetFieldBasedEditLayoutEntry2
+@SuppressWarnings("unchecked")
+public class PropertySetEditLayoutEntry
 	extends AbstractEditLayoutEntry<Set<StructField>>
 {
 	private static final long serialVersionUID = 20100108L;
@@ -65,10 +65,10 @@ public class PropertySetFieldBasedEditLayoutEntry2
 	 * @deprecated Only for JDO
 	 */
 	@Deprecated
-	protected PropertySetFieldBasedEditLayoutEntry2() {
+	protected PropertySetEditLayoutEntry() {
 	}
 
-	public PropertySetFieldBasedEditLayoutEntry2(
+	public PropertySetEditLayoutEntry(
 			PropertySetEditLayoutConfigModule configModule,
 			long entryID,
 			String entryType)

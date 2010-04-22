@@ -10,7 +10,8 @@ import org.nightlabs.jfire.layout.AbstractEditLayoutConfigModule;
 import org.nightlabs.jfire.layout.AbstractEditLayoutEntry;
 
 /**
- *
+ * A EditLayoutEntry that stores an identfier-String representing the content of a cell.
+ *  
  * @author Marius Heinzmann <!-- marius [AT] nightlabs [DOT] de -->
  */
 @PersistenceCapable(
@@ -54,6 +55,6 @@ public class StringBasedEditLayoutEntry
 	@Override
 	public String getName() {
 		// TODO Do something useful here.
-		return "";
+		return objectString;
 	}
 }

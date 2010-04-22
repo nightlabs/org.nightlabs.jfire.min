@@ -1258,6 +1258,14 @@ public class PropertySet implements Serializable, StoreCallback, AttachCallback,
 	private boolean trimmedDetached = false;
 
 	/**
+	 * @return Whether this instance of PropertySet was detached with a trimmed list of
+	 *         StructFields. Note, that trimmed-detached PropertySets can't be re-attached.
+	 */
+	public boolean isTrimmedDetached() {
+		return trimmedDetached;
+	}
+	
+	/**
 	 * Does nothing.
 	 */
 	@Override
@@ -1292,9 +1300,40 @@ public class PropertySet implements Serializable, StoreCallback, AttachCallback,
 		if (fetchGroups != null)
 			_fetchGroups.addAll(Arrays.asList(fetchGroups));
 		_fetchGroups.add(PropertySet.FETCH_GROUP_DATA_FIELDS);
+		
+		// FIXME: DataNucleus WORKAROUND BEGIN: This is a workaround for: 
+		/*		
+		[Persistence] DETACH ERROR : Error thrown while detaching org.nightlabs.jfire.person.Person@d0a532 (id=jdo/org.nightlabs.jfire.prop.id.PropertySetID?organisationID=chezfrancois.jfire.org&propertySetID=1h)
+		java.lang.NullPointerException                                                                                                                                                                                 
+		        at org.datanucleus.store.rdbms.query.PersistentIDROF.getObjectForApplicationId(PersistentIDROF.java:377)                                                                                               
+		        at org.datanucleus.store.rdbms.query.PersistentIDROF.getObject(PersistentIDROF.java:276)                                                                                                               
+		        at org.datanucleus.store.mapped.scostore.SetStoreIterator.<init>(SetStoreIterator.java:104)                                                                                                            
+		        at org.datanucleus.store.rdbms.scostore.RDBMSSetStoreIterator.<init>(RDBMSSetStoreIterator.java:40)                                                                                                    
+		        at org.datanucleus.store.rdbms.scostore.RDBMSJoinSetStore.iterator(RDBMSJoinSetStore.java:666)                                                                                                         
+		        at org.datanucleus.sco.backed.Set.loadFromStore(Set.java:286)                                                                                                                                          
+		        at org.datanucleus.sco.backed.Set.initialise(Set.java:235)                                                                                                                                             
+		        at org.datanucleus.sco.SCOUtils.newSCOInstance(SCOUtils.java:183)                                                                                                                                      
+		        at org.datanucleus.store.mapped.mapping.AbstractContainerMapping.replaceFieldWithWrapper(AbstractContainerMapping.java:426)                                                                            
+		        at org.datanucleus.store.mapped.mapping.AbstractContainerMapping.postFetch(AbstractContainerMapping.java:444)                                                                                          
+		        at org.datanucleus.store.rdbms.request.FetchRequest2.execute(FetchRequest2.java:391)                                                                                                                   
+		        at org.datanucleus.store.rdbms.RDBMSPersistenceHandler.fetchObject(RDBMSPersistenceHandler.java:271)                                                                                                   
+		        at org.datanucleus.state.JDOStateManagerImpl.loadUnloadedFieldsInFetchPlan(JDOStateManagerImpl.java:1627)                                                                                              
+		        at org.datanucleus.state.JDOStateManagerImpl.detachCopy(JDOStateManagerImpl.java:3623)                                                                                                                 
+		        at org.datanucleus.ObjectManagerImpl.detachObjectCopy(ObjectManagerImpl.java:1880)                                                                                                                     
+		        at org.datanucleus.jdo.JDOPersistenceManager.jdoDetachCopy(JDOPersistenceManager.java:1105)                                                                                                            
+		        at org.datanucleus.jdo.JDOPersistenceManager.detachCopy(JDOPersistenceManager.java:1134)                                                                                                               
+		        at org.datanucleus.jdo.connector.PersistenceManagerImpl.detachCopy(PersistenceManagerImpl.java:883)                                                                                                    
+		        at org.nightlabs.jfire.prop.PropertySet.detachPropertySetWithTrimmedFieldList(PropertySet.java:1259)                                                                                                   
+		        at org.nightlabs.jfire.prop.PropertyManagerBean.getDetachedTrimmedPropertySets(PropertyManagerBean.java:233)
+		*/
+		// Without adding the default fetch-group the above exception happens
+		_fetchGroups.add(FetchPlan.DEFAULT);
+				// WORKAROUND END
+		
 		pm.getFetchPlan().setGroups(_fetchGroups);
 		pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
-
+		
+		
 		PropertySet detached = pm.detachCopy(propertySet);
 		for (Iterator<DataField> iter = detached.dataFields.iterator(); iter.hasNext();) {
 			DataField field = iter.next();

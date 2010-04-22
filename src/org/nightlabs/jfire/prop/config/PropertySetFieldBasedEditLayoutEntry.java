@@ -25,7 +25,7 @@ import org.nightlabs.jfire.prop.StructField;
 import org.nightlabs.jfire.prop.id.StructFieldID;
 
 /**
- * @deprecated use {@link PropertySetFieldBasedEditLayoutEntry2} instead!
+ * @deprecated use {@link PropertySetEditLayoutEntry} instead!
  *
  * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] -->
  *
