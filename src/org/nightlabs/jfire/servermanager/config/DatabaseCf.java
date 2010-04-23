@@ -146,7 +146,7 @@ public class DatabaseCf extends JFireServerConfigPart implements Serializable
 			setDatasourceMetadataTypeMapping("mySQL");
 
 		if (databasePrefix == null)
-			setDatabasePrefix("JFire_");
+			setDatabasePrefix("jfire_");
 
 		if (databaseSuffix == null)
 			setDatabaseSuffix("");
