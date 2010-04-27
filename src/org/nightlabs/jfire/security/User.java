@@ -227,6 +227,11 @@ implements Serializable, Comparable<User>, AttachCallback, DetachCallback, Store
 	public static final String USERID_ANONYMOUS = USER_ID_ANONYMOUS;
 
 	/**
+	 * This user is utilised as "virtual" user that is replaced by the real currently logged-in user when performing certain kinds of stored queries.
+	 */
+	public static final UserID USER_ID_CURRENT_USER = UserID.create(Organisation.DEV_ORGANISATION_ID, "_CurrentUser_");
+
+	/**
 	 * Get the <code>User</code> object of the currently authenticated user. This method uses
 	 * the {@link SecurityReflector} to find this information out.
 	 *
@@ -652,7 +657,7 @@ implements Serializable, Comparable<User>, AttachCallback, DetachCallback, Store
 	protected static boolean isDisableDetachUserLocalAccessRightCheck() {
 		return Boolean.TRUE.equals(disableDetachUserLocalAccessRightCheck.get());
 	}
-	
+
 	private static final ThreadLocal<Boolean> disableAttachUserLocalCheck = new ThreadLocal<Boolean>();
 	public static void disableAttachUserLocalCheck(boolean disable)
 	{
@@ -665,7 +670,7 @@ implements Serializable, Comparable<User>, AttachCallback, DetachCallback, Store
 	protected static boolean isDisableAttachUserLocalCheck() {
 		return Boolean.TRUE.equals(disableAttachUserLocalCheck.get());
 	}
-	
+
 	@Override
 	public void jdoPostDetach(Object o)
 	{
