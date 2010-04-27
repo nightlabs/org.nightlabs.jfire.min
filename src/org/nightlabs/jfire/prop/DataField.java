@@ -541,7 +541,7 @@ public abstract class DataField implements Serializable, Comparable<DataField>, 
 		return managedBy;
 	}
 	/**
-	 * Get the managed-by property or <code>null</code>, if it is not managed by an import-interface.
+	 * Set the managed-by property or <code>null</code>, if it is not managed by an import-interface.
 	 * @param managedBy the managed-by property or <code>null</code>.
 	 * @see #getManagedBy()
 	 */
