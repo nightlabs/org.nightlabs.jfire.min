@@ -26,6 +26,7 @@ import javax.jdo.annotations.PrimaryKey;
 import javax.jdo.annotations.Queries;
 import javax.jdo.listener.StoreCallback;
 
+import org.apache.log4j.Logger;
 import org.nightlabs.i18n.I18nText;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jdo.query.AbstractSearchQuery;
@@ -165,6 +166,8 @@ public class BaseQueryStore
 	 * The serial version id.
 	 */
 	private static final long serialVersionUID = 2L;
+
+	private static final Logger logger = Logger.getLogger(BaseQueryStore.class);
 
 //	/**
 //	 * This is the name of the member returned by {@link QueryCollection#getResultClassName()}.
@@ -368,6 +371,8 @@ public class BaseQueryStore
 	 */
 	public void setQueryCollection(QueryCollection<?> queries)
 	{
+		if (logger.isDebugEnabled())
+			logger.debug("Queries to set: " + queries);
 		this.deSerialisedQueries = queries;
 		this.resultClassName = queries == null ? "" : queries.getResultClassName();
 	}
@@ -485,9 +490,13 @@ public class BaseQueryStore
 	 */
 	public void serialiseCollection()
 	{
-		if (deSerialisedQueries == null || deSerialisedQueries == null)
+		if (deSerialisedQueries == null || deSerialisedQueries.size() == 0)
 		{
 			serialisedQueries = null;
+			if (logger.isDebugEnabled()) {
+				logger.debug("serialiseCollection(), deSerialisedQueries = " + deSerialisedQueries);
+				logger.debug("serialiseCollection(), serialisedQueries = " + serialisedQueries);
+			}
 		}
 		else
 		{
@@ -677,6 +686,10 @@ public class BaseQueryStore
 							"resultClass "+resultClassName+" and the user "+getOwnerID());
 				}
 			}
+		}
+		if (logger.isDebugEnabled()) {
+			logger.debug("jdoPreStore() " + this + ".serialisedQueries = " + serialisedQueries);
+			logger.debug("jdoPreStore() " + this + ".deSerialisedQueries = " + deSerialisedQueries);
 		}
 	}
 
