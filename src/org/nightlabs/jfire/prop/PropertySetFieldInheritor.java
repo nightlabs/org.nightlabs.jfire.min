@@ -36,6 +36,7 @@ import org.nightlabs.inheritance.FieldInheriter;
 import org.nightlabs.inheritance.FieldMetaData;
 import org.nightlabs.inheritance.Inheritable;
 import org.nightlabs.jfire.prop.exception.DataBlockRemovalException;
+import org.nightlabs.jfire.prop.exception.DataFieldNotFoundException;
 import org.nightlabs.jfire.prop.id.StructFieldID;
 
 /**
@@ -186,10 +187,21 @@ public class PropertySetFieldInheritor implements FieldInheriter {
 									if (db_Child.getIndex() == i) {
 										if (LOGGER.isDebugEnabled())
 											LOGGER.debug("Will now copy data from DataBlock index " + db_Mother.getIndex() + " (mother) to DataBlock index " + db_Child.getIndex() + " (child)");
-										final Iterator<DataField> it1 = db_Mother.getDataFields().iterator();
-										final Iterator<DataField> it2 = db_Child.getDataFields().iterator();
-										while (it1.hasNext() && it2.hasNext())
-											it2.next().setData(it1.next().getData());
+//										final Iterator<DataField> it1 = db_Mother.getDataFields().iterator();
+//										final Iterator<DataField> it2 = db_Child.getDataFields().iterator();
+//										while (it1.hasNext() && it2.hasNext())
+//											it2.next().setData(it1.next().getData());
+
+										final Iterator<DataField> it = db_Mother.getDataFields().iterator();
+										while (it.hasNext()) {
+											final DataField df_Mother = it.next();
+											try {
+												final DataField df_Child = db_Child.getDataField(df_Mother.getStructFieldOrganisationID(), df_Mother.getStructFieldID());
+												df_Child.setData(df_Mother.getData());
+											} catch (final DataFieldNotFoundException exception) {
+												throw new RuntimeException(exception);
+											}
+										}
 										continue OUTER;
 									}
 								}
