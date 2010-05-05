@@ -272,6 +272,12 @@ public class DataBlock implements Serializable
 	 */
 	public DataField getDataField(String structFieldOrganisationID, String structFieldID) throws DataFieldNotFoundException {
 		String structFieldKey = StructField.getStructFieldKey(structFieldOrganisationID, structFieldID);
+		if (LOGGER.isDebugEnabled()) {
+			for (Map.Entry<String, DataField> entry : dataFields.entrySet()) {
+				LOGGER.debug("getDataField, key:   " + entry.getKey());
+				LOGGER.debug("getDataField, value: " + entry.getValue());
+			}
+		}
 		DataField field = dataFields.get(structFieldKey);
 		if (field == null)
 			throw new DataFieldNotFoundException("No field " + structFieldKey + " found in this DataBlock for StructBlock "
