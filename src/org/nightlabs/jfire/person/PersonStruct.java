@@ -103,9 +103,9 @@ public class PersonStruct
 		try {
 			StructBlock psb = PropHelper.createStructBlock(ps, PERSONALDATA, "Personal Data", "Persönliche Daten"); //$NON-NLS-1$ //$NON-NLS-2$
 			psb.setUnique(true);
-			TextStructField companyField = PropHelper.createTextField(psb, PERSONALDATA_COMPANY, "Company", "Firma"); //$NON-NLS-1$ //$NON-NLS-2$
-			TextStructField nameField = PropHelper.createTextField(psb, PERSONALDATA_NAME, "Name", "Name"); //$NON-NLS-1$ //$NON-NLS-2$
-			TextStructField firstNameField = PropHelper.createTextField(psb, PERSONALDATA_FIRSTNAME, "First Name", "Vorname"); //$NON-NLS-1$ //$NON-NLS-2$
+			TextStructField companyField = PropHelper.createTextDataField(psb, PERSONALDATA_COMPANY, "Company", "Firma"); //$NON-NLS-1$ //$NON-NLS-2$
+			TextStructField nameField = PropHelper.createTextDataField(psb, PERSONALDATA_NAME, "Name", "Name"); //$NON-NLS-1$ //$NON-NLS-2$
+			TextStructField firstNameField = PropHelper.createTextDataField(psb, PERSONALDATA_FIRSTNAME, "First Name", "Vorname"); //$NON-NLS-1$ //$NON-NLS-2$
 
 			psb.addStructField(companyField);
 			psb.addStructField(nameField);
@@ -155,13 +155,13 @@ public class PersonStruct
 			sfv.getValueName().setText(Locale.GERMAN.getLanguage(), "Frau"); //$NON-NLS-1$
 			psb.addStructField(selField);
 
-			psb.addStructField(PropHelper.createTextField(psb,PERSONALDATA_TITLE, "Title", "Titel")); //$NON-NLS-1$ //$NON-NLS-2$
+			psb.addStructField(PropHelper.createTextDataField(psb,PERSONALDATA_TITLE, "Title", "Titel")); //$NON-NLS-1$ //$NON-NLS-2$
 
-			DateStructField dateStructField = PropHelper.createDateField(psb, PERSONALDATA_DATEOFBIRTH, "Date of Birth", "Geburtsdatum"); //$NON-NLS-1$ //$NON-NLS-2$
+			DateStructField dateStructField = PropHelper.createDateDataField(psb, PERSONALDATA_DATEOFBIRTH, "Date of Birth", "Geburtsdatum"); //$NON-NLS-1$ //$NON-NLS-2$
 			dateStructField.setDateTimeEditFlags(DateFormatter.FLAGS_DATE_SHORT);
 			psb.addStructField(dateStructField);
 
-			ImageStructField imageStructField = PropHelper.createImageField(psb, PERSONALDATA_PHOTO, "Photo", "Bild"); //$NON-NLS-1$ //$NON-NLS-2$
+			ImageStructField imageStructField = PropHelper.createImageDataField(psb, PERSONALDATA_PHOTO, "Photo", "Bild"); //$NON-NLS-1$ //$NON-NLS-2$
 			imageStructField.addImageFormat("gif"); //$NON-NLS-1$
 			imageStructField.addImageFormat("jpg"); //$NON-NLS-1$
 			imageStructField.addImageFormat("jpeg"); //$NON-NLS-1$
@@ -172,19 +172,19 @@ public class PersonStruct
 
 
 			psb = PropHelper.createStructBlock(ps,POSTADDRESS, "Post address", "Anschrift"); //$NON-NLS-1$ //$NON-NLS-2$
-			psb.addStructField(PropHelper.createTextField(psb,POSTADDRESS_ADDRESS, "Address", "Adresse")); //$NON-NLS-1$ //$NON-NLS-2$
+			psb.addStructField(PropHelper.createTextDataField(psb,POSTADDRESS_ADDRESS, "Address", "Adresse")); //$NON-NLS-1$ //$NON-NLS-2$
 			// There are countries which use alphanumeric postcodes (e.g. Canada) => we cannot use NumberStructField. Marco.
 //			psb.addStructField(new NumberStructField(psb, POSTADDRESS_POSTCODE));
-			psb.addStructField(PropHelper.createTextField(psb,POSTADDRESS_POSTCODE, "Postcode", "Postleitzahl")); //$NON-NLS-1$ //$NON-NLS-2$
-			psb.addStructField(PropHelper.createTextField(psb,POSTADDRESS_CITY, "City", "Stadt")); //$NON-NLS-1$ //$NON-NLS-2$
-			psb.addStructField(PropHelper.createTextField(psb,POSTADDRESS_REGION, "Region", "Region")); //$NON-NLS-1$ //$NON-NLS-2$
-			psb.addStructField(PropHelper.createTextField(psb,POSTADDRESS_COUNTRY, "Country", "Land")); //$NON-NLS-1$ //$NON-NLS-2$
+			psb.addStructField(PropHelper.createTextDataField(psb,POSTADDRESS_POSTCODE, "Postcode", "Postleitzahl")); //$NON-NLS-1$ //$NON-NLS-2$
+			psb.addStructField(PropHelper.createTextDataField(psb,POSTADDRESS_CITY, "City", "Stadt")); //$NON-NLS-1$ //$NON-NLS-2$
+			psb.addStructField(PropHelper.createTextDataField(psb,POSTADDRESS_REGION, "Region", "Region")); //$NON-NLS-1$ //$NON-NLS-2$
+			psb.addStructField(PropHelper.createTextDataField(psb,POSTADDRESS_COUNTRY, "Country", "Land")); //$NON-NLS-1$ //$NON-NLS-2$
 			ps.addStructBlock(psb);
 
 
 			psb = PropHelper.createStructBlock(ps, PHONE, "Phone", "Telefon"); //$NON-NLS-1$ //$NON-NLS-2$
-			psb.addStructField(PropHelper.createPhoneNumberField(psb, PHONE_PRIMARY, "Phone", "Telefon")); //$NON-NLS-1$ //$NON-NLS-2$
-			psb.addStructField(PropHelper.createPhoneNumberField(psb, FAX, "Fax", "Fax")); //$NON-NLS-1$ //$NON-NLS-2$
+			psb.addStructField(PropHelper.createPhoneNumberDataField(psb, PHONE_PRIMARY, "Phone", "Telefon")); //$NON-NLS-1$ //$NON-NLS-2$
+			psb.addStructField(PropHelper.createPhoneNumberDataField(psb, FAX, "Fax", "Fax")); //$NON-NLS-1$ //$NON-NLS-2$
 //			psb.addStructField(new TextStructField(psb,PHONE_COUNTRYCODE
 			ps.addStructBlock(psb);
 
@@ -200,45 +200,45 @@ public class PersonStruct
 
 			psb = PropHelper.createStructBlock(ps,INTERNET, "Internet", "Internet"); //$NON-NLS-1$ //$NON-NLS-2$
 			// psb.addStructField(new TextStructField(psb,INTERNET_EMAIL));
-			RegexStructField regexStructField = PropHelper.createRegexField(psb, INTERNET_EMAIL, "Email", "Email"); //$NON-NLS-1$ //$NON-NLS-2$
+			RegexStructField regexStructField = PropHelper.createRegexDataField(psb, INTERNET_EMAIL, "Email", "Email"); //$NON-NLS-1$ //$NON-NLS-2$
 			// old regex, changed by marc 2008-04-30. Source: http://www.regular-expressions.info/email.html
 			//regexStructField.setRegex("^([a-zA-Z0-9_\\-\\.])+@((([a-zA-Z0-9\\-])+\\.)+([a-zA-Z]){2,4})$");
 			
 			// TODO: Somehow this regular expression seems not to work properly. Tobias
 			regexStructField.setRegex("^[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\\.)+[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$"); //$NON-NLS-1$
 			psb.addStructField(regexStructField);
-			psb.addStructField(PropHelper.createTextField(psb,INTERNET_HOMEPAGE, "Homepage", "Homepage")); //$NON-NLS-1$ //$NON-NLS-2$
+			psb.addStructField(PropHelper.createTextDataField(psb,INTERNET_HOMEPAGE, "Homepage", "Homepage")); //$NON-NLS-1$ //$NON-NLS-2$
 			ps.addStructBlock(psb);
 
 
 			psb = PropHelper.createStructBlock(ps,BANKDATA, "Bankdata", "Bankdaten"); //$NON-NLS-1$ //$NON-NLS-2$
-			psb.addStructField(PropHelper.createTextField(psb,BANKDATA_ACCOUNTHOLDER, "Account Holder", "Kontoinhaber")); //$NON-NLS-1$ //$NON-NLS-2$
+			psb.addStructField(PropHelper.createTextDataField(psb,BANKDATA_ACCOUNTHOLDER, "Account Holder", "Kontoinhaber")); //$NON-NLS-1$ //$NON-NLS-2$
 //			psb.addStructField(new TextStructField(psb,BANKDATA_ACCOUNTNUMBER));
 //			psb.addStructField(PropHelper.createNumberField(psb,BANKDATA_ACCOUNTNUMBER, "Account Number", "Kontonummer")); //$NON-NLS-1$ //$NON-NLS-2$
-			psb.addStructField(PropHelper.createTextField(psb,BANKDATA_ACCOUNTNUMBER, "Account Number", "Kontonummer")); //$NON-NLS-1$ //$NON-NLS-2$
+			psb.addStructField(PropHelper.createTextDataField(psb,BANKDATA_ACCOUNTNUMBER, "Account Number", "Kontonummer")); //$NON-NLS-1$ //$NON-NLS-2$
 //			psb.addStructField(new TextStructField(psb,BANKDATA_BANKCODE));
-			psb.addStructField(PropHelper.createTextField(psb,BANKDATA_BANKCODE, "Bank Code", "Bankleitzahl")); //$NON-NLS-1$ //$NON-NLS-2$
-			psb.addStructField(PropHelper.createTextField(psb,BANKDATA_BANKNAME, "Bank Name", "Bank")); //$NON-NLS-1$ //$NON-NLS-2$
-			psb.addStructField(PropHelper.createTextField(psb,BANKDATA_BIC, "Bank Identifier Code BIC", "Internationale Bankleitzahl BIC")); //$NON-NLS-1$ //$NON-NLS-2$
-			psb.addStructField(PropHelper.createTextField(psb,BANKDATA_IBAN, "International Bank Account Number IBAN", "Internationale Kontonummer IBAN")); //$NON-NLS-1$ //$NON-NLS-2$
+			psb.addStructField(PropHelper.createTextDataField(psb,BANKDATA_BANKCODE, "Bank Code", "Bankleitzahl")); //$NON-NLS-1$ //$NON-NLS-2$
+			psb.addStructField(PropHelper.createTextDataField(psb,BANKDATA_BANKNAME, "Bank Name", "Bank")); //$NON-NLS-1$ //$NON-NLS-2$
+			psb.addStructField(PropHelper.createTextDataField(psb,BANKDATA_BIC, "Bank Identifier Code BIC", "Internationale Bankleitzahl BIC")); //$NON-NLS-1$ //$NON-NLS-2$
+			psb.addStructField(PropHelper.createTextDataField(psb,BANKDATA_IBAN, "International Bank Account Number IBAN", "Internationale Kontonummer IBAN")); //$NON-NLS-1$ //$NON-NLS-2$
 			ps.addStructBlock(psb);
 
 
 			psb = PropHelper.createStructBlock(ps,GOVERNMENTALDATA, "Governmental Data", "Staatliche Daten"); //$NON-NLS-1$ //$NON-NLS-2$
-			psb.addStructField(PropHelper.createTextField(psb,GOVERNMENTALDATA_VATIN, "VAT Number", "USt-IdNr.")); //$NON-NLS-1$ //$NON-NLS-2$
-			psb.addStructField(PropHelper.createTextField(psb,GOVERNMENTALDATA_NATIONALTAXNUMBER, "National tax number", "Nationale Steuernummer")); //$NON-NLS-1$ //$NON-NLS-2$
-			psb.addStructField(PropHelper.createTextField(psb,GOVERNMENTALDATA_TRADEREGISTERNAME, "Trade register name", "Handelsregister-Name")); //$NON-NLS-1$ //$NON-NLS-2$
-			psb.addStructField(PropHelper.createTextField(psb,GOVERNMENTALDATA_TRADEREGISTERNUMBER, "Trade register number", "Handelsregister-Nummer")); //$NON-NLS-1$ //$NON-NLS-2$
+			psb.addStructField(PropHelper.createTextDataField(psb,GOVERNMENTALDATA_VATIN, "VAT Number", "USt-IdNr.")); //$NON-NLS-1$ //$NON-NLS-2$
+			psb.addStructField(PropHelper.createTextDataField(psb,GOVERNMENTALDATA_NATIONALTAXNUMBER, "National tax number", "Nationale Steuernummer")); //$NON-NLS-1$ //$NON-NLS-2$
+			psb.addStructField(PropHelper.createTextDataField(psb,GOVERNMENTALDATA_TRADEREGISTERNAME, "Trade register name", "Handelsregister-Name")); //$NON-NLS-1$ //$NON-NLS-2$
+			psb.addStructField(PropHelper.createTextDataField(psb,GOVERNMENTALDATA_TRADEREGISTERNUMBER, "Trade register number", "Handelsregister-Nummer")); //$NON-NLS-1$ //$NON-NLS-2$
 			ps.addStructBlock(psb);
 
 
 			psb = PropHelper.createStructBlock(ps,CREDITCARD, "Credit Card", "Kreditkarte"); //$NON-NLS-1$ //$NON-NLS-2$
-			psb.addStructField(PropHelper.createTextField(psb,CREDITCARD_CREDITCARDHOLDER, "Credit Card Holder", "Karteninhaber")); //$NON-NLS-1$ //$NON-NLS-2$
+			psb.addStructField(PropHelper.createTextDataField(psb,CREDITCARD_CREDITCARDHOLDER, "Credit Card Holder", "Karteninhaber")); //$NON-NLS-1$ //$NON-NLS-2$
 //			psb.addStructField(new TextStructField(psb,CREDITCARD_NUMBER));
 //			psb.addStructField(new TextStructField(psb,CREDITCARD_EXPIRYYEAR));
 //			psb.addStructField(new TextStructField(psb,CREDITCARD_EXPIRYMONTH));
-			psb.addStructField(PropHelper.createTextField(psb,CREDITCARD_NUMBER, "Credit Card Number", "Kreditkartennummer")); //$NON-NLS-1$ //$NON-NLS-2$
-			psb.addStructField(PropHelper.createNumberField(psb,CREDITCARD_EXPIRYYEAR, "Expiry Year", "Gültigkeit Jahr")); //$NON-NLS-1$ //$NON-NLS-2$
+			psb.addStructField(PropHelper.createTextDataField(psb,CREDITCARD_NUMBER, "Credit Card Number", "Kreditkartennummer")); //$NON-NLS-1$ //$NON-NLS-2$
+			psb.addStructField(PropHelper.createNumberDataField(psb,CREDITCARD_EXPIRYYEAR, "Expiry Year", "Gültigkeit Jahr")); //$NON-NLS-1$ //$NON-NLS-2$
 //			psb.addStructField(PropHelper.createNumberField(psb,CREDITCARD_EXPIRYMONTH, "Expiry Month", "Gültigkeit Monat")); //$NON-NLS-1$ //$NON-NLS-2$
 
 			selField = new SelectionStructField(psb, CREDITCARD_EXPIRYMONTH);
@@ -299,7 +299,7 @@ public class PersonStruct
 
 
 			psb = PropHelper.createStructBlock(ps,COMMENT, "Comment", "Kommentar"); //$NON-NLS-1$ //$NON-NLS-2$
-			TextStructField commentField = PropHelper.createTextField(psb,COMMENT_COMMENT, "Comment", "Kommentar");
+			TextStructField commentField = PropHelper.createTextDataField(psb,COMMENT_COMMENT, "Comment", "Kommentar");
 			commentField.setLineCount(10);
 			psb.addStructField(commentField); //$NON-NLS-1$ //$NON-NLS-2$
 			ps.addStructBlock(psb);
