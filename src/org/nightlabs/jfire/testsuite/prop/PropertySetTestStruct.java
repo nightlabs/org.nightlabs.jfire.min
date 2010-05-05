@@ -71,7 +71,7 @@ public class PropertySetTestStruct
 			PropertySetTestStruct.createStandardStructure(struct);
 			struct = pm.makePersistent(struct);
 
-			// WORKAROUND: Workaround for JPOX error 'cannot delete/update child row', foreign key problem, maybe this is also wron tagging problem
+			// WORKAROUND: Workaround for JPOX error 'cannot delete/update child row', foreign key problem, maybe this is also wrong tagging problem
 			if (struct instanceof AbstractStruct) {
 				try {
 					struct.addDisplayNamePart(
@@ -79,7 +79,7 @@ public class PropertySetTestStruct
 									organisationID, ObjectIDUtil.longObjectIDFieldToString(IDGenerator.nextID(DisplayNamePart.class)),
 									struct.getStructField(TESTBLOCK_TEXT), ": "));
 				} catch (Exception e1) {
-					logger.error("Error createing PropertySetTestStruct DisplayNameParts: ", e);
+					logger.error("Error creating PropertySetTestStruct DisplayNameParts: ", e1);
 				}
 			}
 			structLocal = new StructLocal(struct, StructLocal.DEFAULT_SCOPE);
@@ -93,11 +93,11 @@ public class PropertySetTestStruct
 		try {
 
 			StructBlock structBlock = PropHelper.createStructBlock(struct, TESTBLOCK, "TestBlock", "TestBlock");
-			structBlock.addStructField(PropHelper.createTextField(structBlock,TESTBLOCK_TEXT, "Text", "Text"));
-			structBlock.addStructField(PropHelper.createRegexField(structBlock,TESTBLOCK_REGEX, "Regex", "Regex"));
-			structBlock.addStructField(PropHelper.createNumberField(structBlock,TESTBLOCK_NUMBER, "Number", "Nummer"));
-			structBlock.addStructField(PropHelper.createPhoneNumberField(structBlock,TESTBLOCK_PHONENUMBER, "PhoneNumber", "Telefonnummer"));
-			structBlock.addStructField(PropHelper.createDateField(structBlock,TESTBLOCK_DATE, "Date", "Datum"));
+			structBlock.addStructField(PropHelper.createTextDataField(structBlock,TESTBLOCK_TEXT, "Text", "Text"));
+			structBlock.addStructField(PropHelper.createRegexDataField(structBlock,TESTBLOCK_REGEX, "Regex", "Regex"));
+			structBlock.addStructField(PropHelper.createNumberDataField(structBlock,TESTBLOCK_NUMBER, "Number", "Nummer"));
+			structBlock.addStructField(PropHelper.createPhoneNumberDataField(structBlock,TESTBLOCK_PHONENUMBER, "PhoneNumber", "Telefonnummer"));
+			structBlock.addStructField(PropHelper.createDateDataField(structBlock,TESTBLOCK_DATE, "Date", "Datum"));
 
 			SelectionStructField selField = new SelectionStructField(structBlock, TESTBLOCK_SELECTION);
 			selField.getName().setText(Locale.ENGLISH.getLanguage(), "Selection Test");
@@ -108,7 +108,7 @@ public class PropertySetTestStruct
 			sfv.getValueName().setText(Locale.ENGLISH.getLanguage(), "Selection 2");
 			structBlock.addStructField(selField);
 
-			ImageStructField imageStructField = PropHelper.createImageField(structBlock, TESTBLOCK_IMAGE, "Iamge", "Bild");
+			ImageStructField imageStructField = PropHelper.createImageDataField(structBlock, TESTBLOCK_IMAGE, "Iamge", "Bild");
 			imageStructField.addImageFormat("gif");
 			imageStructField.addImageFormat("jpg");
 			imageStructField.addImageFormat("png");
