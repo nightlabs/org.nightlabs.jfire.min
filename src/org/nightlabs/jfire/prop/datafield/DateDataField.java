@@ -163,7 +163,7 @@ implements II18nTextDataField
 	 */
 	@Override
 	public void setData(Object data) {
-		if (date == null) {
+		if (data == null) {
 			setDate(null);
 			return;
 		} else if (data instanceof Date) {
