@@ -54,5 +54,14 @@
         <dependent-module archiveName="org.nightlabs.jfire.classloader.remote.backend.jar" deploy-path="/" handle="module:/resource/org.nightlabs.jfire.classloader.remote.backend/org.nightlabs.jfire.classloader.remote.backend">
             <dependency-type>uses</dependency-type>
         </dependent-module>
+        <dependent-module archiveName="org.nightlabs.i18n.jar" deploy-path="/" handle="module:/resource/org.nightlabs.i18n/org.nightlabs.i18n">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="org.nightlabs.progress.jar" deploy-path="/" handle="module:/resource/org.nightlabs.progress/org.nightlabs.progress">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="org.nightlabs.util.jar" deploy-path="/" handle="module:/resource/org.nightlabs.util/org.nightlabs.util">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
     </wb-module>
 </project-modules>

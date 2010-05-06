@@ -19,6 +19,9 @@
 		<project>JFireRCLBackendBean</project>
 		<project>JFireBaseDAO</project>
 		<project>org.nightlabs.jfire.classloader.remote.backend</project>
+		<project>org.nightlabs.i18n</project>
+		<project>org.nightlabs.progress</project>
+		<project>org.nightlabs.util</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
