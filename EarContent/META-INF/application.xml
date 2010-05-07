@@ -52,4 +52,13 @@
   <module>
   	<java>org.nightlabs.jfire.classloader.remote.backend.jar</java>
   </module>
+  <module>
+  	<java>org.nightlabs.i18n.jar</java>
+  </module>
+  <module>
+  	<java>org.nightlabs.util.jar</java>
+  </module>
+  <module>
+  	<java>org.nightlabs.progress.jar</java>
+  </module>
 </application>
