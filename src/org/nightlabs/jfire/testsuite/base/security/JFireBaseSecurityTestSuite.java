@@ -1,24 +1,27 @@
-package org.nightlabs.jfire.testsuite.workstation;
-
+/**
+ *
+ */
+package org.nightlabs.jfire.testsuite.base.security;
 
 import javax.jdo.PersistenceManager;
 
 import junit.framework.TestCase;
 
-import org.nightlabs.jfire.testsuite.JFireTestSuite;
 import org.nightlabs.jfire.testsuite.TestSuite;
 
-
 /**
-*
-* @author Fitas Amine - fitas [at] nightlabs [dot] de
-*
-*/
-public class JFireBaseWorkstationTestSuite extends TestSuite{
-	
-	public JFireBaseWorkstationTestSuite(Class<? extends TestCase>... classes) {
+ * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] de -->
+ *
+ */
+public class JFireBaseSecurityTestSuite extends TestSuite
+{
+
+	/**
+	 * @param classes
+	 */
+	public JFireBaseSecurityTestSuite(Class<? extends TestCase>... classes) {
 		super(classes);
-		setName("JFireBaseWorkstation Testsuite");
+		setName("JFireBaseSecurity Testsuite");
 	}
 	/**
 	 * {@inheritDoc}
@@ -26,7 +29,7 @@ public class JFireBaseWorkstationTestSuite extends TestSuite{
 	 */
 	@Override
 	public String canRunTests(PersistenceManager pm) throws Exception {
-		String className = "org.nightlabs.jfire.workstation.Workstation";
+		String className = "org.nightlabs.jfire.security.User";
 		try {
 			Class.forName(className);
 		} catch (ClassNotFoundException x) {
@@ -34,5 +37,5 @@ public class JFireBaseWorkstationTestSuite extends TestSuite{
 		}
 		return null;
 	}
-	
+
 }

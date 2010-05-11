@@ -1,4 +1,4 @@
-package org.nightlabs.jfire.testsuite.language;
+package org.nightlabs.jfire.testsuite.base.language;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.both;

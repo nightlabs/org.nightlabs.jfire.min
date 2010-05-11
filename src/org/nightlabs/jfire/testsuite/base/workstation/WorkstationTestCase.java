@@ -1,4 +1,4 @@
-package org.nightlabs.jfire.testsuite.workstation;
+package org.nightlabs.jfire.testsuite.base.workstation;
 
 import java.util.Collection;
 import java.util.Set;

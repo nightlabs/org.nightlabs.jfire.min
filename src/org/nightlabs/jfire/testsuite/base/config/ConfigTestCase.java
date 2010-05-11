@@ -1,4 +1,4 @@
-package org.nightlabs.jfire.testsuite.config;
+package org.nightlabs.jfire.testsuite.base.config;
 
 import java.util.Collection;
 import java.util.HashSet;

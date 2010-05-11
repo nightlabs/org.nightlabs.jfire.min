@@ -1,4 +1,4 @@
-package org.nightlabs.jfire.testsuite.prop.inheritance;
+package org.nightlabs.jfire.testsuite.base.prop.inheritance;
 
 import java.io.IOException;
 import java.io.InputStream;

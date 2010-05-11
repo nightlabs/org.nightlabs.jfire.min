@@ -1,16 +1,19 @@
-package org.nightlabs.jfire.testsuite.security;
+package org.nightlabs.jfire.testsuite.base.security;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.both;
-import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.nightlabs.jfire.testsuite.hamcrest.IsNotEmptyMatcher.isNotEmpty;
 import static org.nightlabs.jfire.testsuite.hamcrest.IsNotNullMatcher.isNotNull;
 
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Properties;
+import java.util.Random;
 import java.util.Set;
 
 import javax.jdo.FetchPlan;
@@ -60,7 +63,7 @@ public class NewUserTestCase extends TestCase
 	public static final String NEW_USER_PREFEXID = "UserTC";
 	public static final String NEW_USER_PASSWORD = "test";
 	private static String NEW_USER = "NEWUSER";
-		
+
 	private static String[] FETCH_GROUP_USER =new String[]{FetchPlan.DEFAULT,
 		User.FETCH_GROUP_NAME,
 		User.FETCH_GROUP_USER_LOCAL,
@@ -68,7 +71,17 @@ public class NewUserTestCase extends TestCase
 		PropertySet.FETCH_GROUP_FULL_DATA,
 		IExpression.FETCH_GROUP_IEXPRESSION_FULL_DATA};
 
-
+	// a simple function to generate a random birthday date between 1955 until 1985
+	private Date getRandomBirthDayDate()
+	{
+		Calendar cdr = Calendar.getInstance();
+		Random rand = new Random();
+		cdr.set(Calendar.DAY_OF_MONTH, 1 + rand.nextInt(25));
+		cdr.set(Calendar.YEAR, rand.nextInt(30) + 1955);
+		cdr.set(Calendar.MONTH, 1 + rand.nextInt(11));
+		return cdr.getTime();
+	}
+	
 	@Test
 	public void testCreateUser() throws Exception{
 
@@ -80,7 +93,6 @@ public class NewUserTestCase extends TestCase
 		String name = "Name"+ID;
 		String firstName = "Firstname";
 		String eMail = "email";
-		String dateOfBirth = "";
 		String title = "Mr";
 		String postAdress = "4B strasse";
 		String postCode = "478541";
@@ -102,6 +114,8 @@ public class NewUserTestCase extends TestCase
 		int creditCardExpiryMonth = 11;
 		int creditCardExpiryYear = 2020;
 		String comment = "";
+		// pick up a random birthday
+		Date birthDate = getRandomBirthDayDate();
 		logger.info("test Create Person: begin");
 		Person newPerson = new Person(IDGenerator.getOrganisationID(), IDGenerator.nextID(PropertySet.class));
 		PropertyManagerRemote pm2  = JFireEjb3Factory.getRemoteBean(PropertyManagerRemote.class, SecurityReflector.getInitialContextProperties());
@@ -113,7 +127,7 @@ public class NewUserTestCase extends TestCase
 		newPerson.getDataField(PersonStruct.PERSONALDATA_NAME).setData(name);
 		newPerson.getDataField(PersonStruct.PERSONALDATA_FIRSTNAME).setData(firstName);
 		newPerson.getDataField(PersonStruct.INTERNET_EMAIL).setData(eMail);
-		newPerson.getDataField(PersonStruct.PERSONALDATA_DATEOFBIRTH).setData(dateOfBirth);
+		newPerson.getDataField(PersonStruct.PERSONALDATA_DATEOFBIRTH).setData(birthDate);
 
 		SelectionStructField salutationSelectionStructField = (SelectionStructField) personStruct.getStructField(
 				PersonStruct.PERSONALDATA, PersonStruct.PERSONALDATA_SALUTATION);

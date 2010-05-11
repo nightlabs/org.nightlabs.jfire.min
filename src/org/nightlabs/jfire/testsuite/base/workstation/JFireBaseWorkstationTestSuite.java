@@ -1,15 +1,24 @@
-package org.nightlabs.jfire.testsuite.editlock;
+package org.nightlabs.jfire.testsuite.base.workstation;
+
 
 import javax.jdo.PersistenceManager;
 
 import junit.framework.TestCase;
+
+import org.nightlabs.jfire.testsuite.JFireTestSuite;
 import org.nightlabs.jfire.testsuite.TestSuite;
 
-public class JFireBaseEditLockTestSuite extends TestSuite{
 
-	public JFireBaseEditLockTestSuite(Class<? extends TestCase>... classes) {
+/**
+*
+* @author Fitas Amine - fitas [at] nightlabs [dot] de
+*
+*/
+public class JFireBaseWorkstationTestSuite extends TestSuite{
+	
+	public JFireBaseWorkstationTestSuite(Class<? extends TestCase>... classes) {
 		super(classes);
-		setName("JFireBaseEditLock Testsuite");
+		setName("JFireBaseWorkstation Testsuite");
 	}
 	/**
 	 * {@inheritDoc}
@@ -17,7 +26,7 @@ public class JFireBaseEditLockTestSuite extends TestSuite{
 	 */
 	@Override
 	public String canRunTests(PersistenceManager pm) throws Exception {
-		String className = "org.nightlabs.jfire.editlock.EditLock";
+		String className = "org.nightlabs.jfire.workstation.Workstation";
 		try {
 			Class.forName(className);
 		} catch (ClassNotFoundException x) {
@@ -26,5 +35,4 @@ public class JFireBaseEditLockTestSuite extends TestSuite{
 		return null;
 	}
 	
-
 }

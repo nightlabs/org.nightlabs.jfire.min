@@ -1,7 +1,7 @@
 /**
  *
  */
-package org.nightlabs.jfire.testsuite.id;
+package org.nightlabs.jfire.testsuite.base.id;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;

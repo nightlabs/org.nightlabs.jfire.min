@@ -1,7 +1,7 @@
 /**
  *
  */
-package org.nightlabs.jfire.testsuite.security;
+package org.nightlabs.jfire.testsuite.base.security;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.both;
