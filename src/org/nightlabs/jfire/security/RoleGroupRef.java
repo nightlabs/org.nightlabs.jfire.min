@@ -33,61 +33,49 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.jdo.JDOHelper;
+import javax.jdo.annotations.Column;
+import javax.jdo.annotations.FetchGroup;
+import javax.jdo.annotations.FetchGroups;
+import javax.jdo.annotations.IdentityType;
+import javax.jdo.annotations.Inheritance;
+import javax.jdo.annotations.InheritanceStrategy;
+import javax.jdo.annotations.Join;
+import javax.jdo.annotations.Key;
+import javax.jdo.annotations.PersistenceCapable;
+import javax.jdo.annotations.PersistenceModifier;
+import javax.jdo.annotations.Persistent;
+import javax.jdo.annotations.PrimaryKey;
 
 import org.apache.log4j.Logger;
+import org.nightlabs.jfire.security.id.RoleGroupRefID;
 import org.nightlabs.util.Util;
 
-import javax.jdo.annotations.Join;
-import javax.jdo.annotations.Persistent;
-import javax.jdo.annotations.Key;
-import javax.jdo.annotations.FetchGroups;
-import javax.jdo.annotations.InheritanceStrategy;
-import javax.jdo.annotations.Inheritance;
-import org.nightlabs.jfire.security.id.RoleGroupRefID;
-import javax.jdo.annotations.PrimaryKey;
-import javax.jdo.annotations.PersistenceCapable;
-import javax.jdo.annotations.FetchGroup;
-import javax.jdo.annotations.Column;
-import javax.jdo.annotations.IdentityType;
-import javax.jdo.annotations.PersistenceModifier;
-
 /**
- * @author marco
- *
- * @jdo.persistence-capable
- *		identity-type="application"
- *		objectid-class="org.nightlabs.jfire.security.id.RoleGroupRefID"
- *		detachable="true"
- *		table="JFireBase_RoleGroupRef"
- *
- * @jdo.create-objectid-class field-order="organisationID, authorityID, roleGroupID"
- * 
- * @jdo.inheritance strategy="new-table"
- *
- * @jdo.fetch-group name="Authority.roleGroupRefs" fields="authority"
- *
- * @jdo.fetch-group name="RoleGroupRef.authority" fields="authority"
- * @jdo.fetch-group name="RoleGroupRef.roleGroup" fields="roleGroup"
- * @jdo.fetch-group name="RoleGroupRef.authorizedObjectRefs" fields="authorizedObjectRefs"
+ * @author Marco หงุ่ยตระกูล-Schulze - marco at nightlabs dot de
  */
 @PersistenceCapable(
-	objectIdClass=RoleGroupRefID.class,
-	identityType=IdentityType.APPLICATION,
-	detachable="true",
-	table="JFireBase_RoleGroupRef")
+		objectIdClass=RoleGroupRefID.class,
+		identityType=IdentityType.APPLICATION,
+		detachable="true",
+		table="JFireBase_RoleGroupRef"
+)
 @FetchGroups({
 	@FetchGroup(
-		name="Authority.roleGroupRefs",
-		members=@Persistent(name="authority")),
+			name="Authority.roleGroupRefs",
+			members=@Persistent(name="authority")
+	),
 	@FetchGroup(
-		name=RoleGroupRef.FETCH_GROUP_AUTHORITY,
-		members=@Persistent(name="authority")),
+			name=RoleGroupRef.FETCH_GROUP_AUTHORITY,
+			members=@Persistent(name="authority")
+	),
 	@FetchGroup(
-		name=RoleGroupRef.FETCH_GROUP_ROLE_GROUP,
-		members=@Persistent(name="roleGroup")),
+			name=RoleGroupRef.FETCH_GROUP_ROLE_GROUP,
+			members=@Persistent(name="roleGroup")
+	),
 	@FetchGroup(
-		name=RoleGroupRef.FETCH_GROUP_USER_REFS,
-		members=@Persistent(name="authorizedObjectRefs"))
+			name=RoleGroupRef.FETCH_GROUP_USER_REFS,
+			members=@Persistent(name="authorizedObjectRefs")
+	)
 })
 @Inheritance(strategy=InheritanceStrategy.NEW_TABLE)
 public class RoleGroupRef implements Serializable
@@ -99,44 +87,24 @@ public class RoleGroupRef implements Serializable
 	public static final String FETCH_GROUP_ROLE_GROUP = "RoleGroupRef.roleGroup";
 	public static final String FETCH_GROUP_USER_REFS = "RoleGroupRef.authorizedObjectRefs";
 
-	/**
-	 * @jdo.field persistence-modifier="persistent" primary-key="true"
-	 * @jdo.column length="100"
-	 */
 	@PrimaryKey
 	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
 	@Column(length=100)
 	private String organisationID;
 
-	/**
-	 * @jdo.field persistence-modifier="persistent" primary-key="true"
-	 * @jdo.column length="50"
-	 */
 	@PrimaryKey
 	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
 	@Column(length=50)
 	private String authorityID;
 
-	/**
-	 * @jdo.field persistence-modifier="persistent" primary-key="true"
-	 * @jdo.column length="100"
-	 */
 	@PrimaryKey
 	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
 	@Column(length=100)
 	private String roleGroupID;
 
-	/**
-	 * @jdo.field persistence-modifier="persistent"
-	 * @!jdo.field-vendor-extension vendor-name="jpox" key="map-field" value="roleGroupRefs"
-	 */
 	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
 	private Authority authority;
 
-	/**
-	 * @jdo.field persistence-modifier="persistent"
-	 * @!jdo.field-vendor-extension vendor-name="jpox" key="map-field" value="roleGroupRefs"
-	 */
 	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
 	private RoleGroup roleGroup;
 
@@ -145,33 +113,19 @@ public class RoleGroupRef implements Serializable
 	 * value: AuthorizedObjectRef authorizedObjectRef
 	 * <br/><br/>
 	 * AuthorizedObjectRef (m) - (n) RoleGroupRef
-	 *
-	 * @jdo.field
-	 *		persistence-modifier="persistent"
-	 *		collection-type="map"
-	 *		key-type="java.lang.String"
-	 *		value-type="AuthorizedObjectRef"
-	 *		table="JFireBase_RoleGroupRef_authorizedObjectRefs"
-	 *
-	 * @jdo.key mapped-by="authorizedObjectID"
-	 * @jdo.key-column length="255"
-	 *
-	 * @jdo.join
 	 */
 	@Join
-	@Persistent(
-		table="JFireBase_RoleGroupRef_authorizedObjectRefs",
-		persistenceModifier=PersistenceModifier.PERSISTENT)
+	@Persistent(table="JFireBase_RoleGroupRef_authorizedObjectRefs")
 	@Key(mappedBy="authorizedObjectID")
 	private Map<String, AuthorizedObjectRef> authorizedObjectRefs = new HashMap<String, AuthorizedObjectRef>();
-	
+
 	public RoleGroupRef() { }
-	
+
 	public RoleGroupRef(Authority _authority, RoleGroup _roleGroup)
 	{
 		if (_authority == null)
 			throw new NullPointerException("authority must not be null!");
-		
+
 		if (_roleGroup == null)
 			throw new NullPointerException("roleGroup must not be null!");
 
@@ -210,7 +164,7 @@ public class RoleGroupRef implements Serializable
 	public RoleGroup getRoleGroup() {
 		return roleGroup;
 	}
-	
+
 	/**
 	 * This method is called by the User if this roleGroup is removed there.
 	 * It does not update the RoleRefs, because User.removeRoleGroup(...) does
@@ -287,6 +241,7 @@ public class RoleGroupRef implements Serializable
 	{
 		final int prime = 31;
 		int result = 1;
+		result = prime * result + ((organisationID == null) ? 0 : organisationID.hashCode());
 		result = prime * result + ((authorityID == null) ? 0 : authorityID.hashCode());
 		result = prime * result + ((roleGroupID == null) ? 0 : roleGroupID.hashCode());
 		return result;
@@ -300,7 +255,11 @@ public class RoleGroupRef implements Serializable
 		if (getClass() != obj.getClass()) return false;
 		final RoleGroupRef other = (RoleGroupRef) obj;
 
-		return Util.equals(this.authorityID, other.authorityID) && Util.equals(this.roleGroupID, other.roleGroupID);
+		return (
+				Util.equals(this.roleGroupID, other.roleGroupID) &&
+				Util.equals(this.authorityID, other.authorityID) &&
+				Util.equals(this.organisationID, other.organisationID)
+		);
 	}
 
 	@Override

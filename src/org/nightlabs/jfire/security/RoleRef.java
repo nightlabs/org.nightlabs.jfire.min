@@ -46,37 +46,27 @@ import org.nightlabs.util.Util;
 
 
 /**
- * @author marco schulze - marco at nightlabs dot de
- *
- * @jdo.persistence-capable
- *		identity-type="application"
- *		objectid-class="org.nightlabs.jfire.security.id.RoleRefID"
- *		detachable="true"
- *		table="JFireBase_RoleRef"
- *
- * @jdo.create-objectid-class field-order="organisationID, authorityID, authorizedObjectID, roleID"
- *
- * @jdo.inheritance strategy="new-table"
- *
- * @jdo.fetch-group name="RoleRef.authority" fields="authority"
- * @jdo.fetch-group name="RoleRef.authorizedObjectRef" fields="authorizedObjectRef"
- * @jdo.fetch-group name="RoleRef.role" fields="role"
+ * @author Marco หงุ่ยตระกูล-Schulze - marco at nightlabs dot de
  */
 @PersistenceCapable(
 	objectIdClass=RoleRefID.class,
 	identityType=IdentityType.APPLICATION,
 	detachable="true",
-	table="JFireBase_RoleRef")
+	table="JFireBase_RoleRef"
+)
 @FetchGroups({
 	@FetchGroup(
 		name=RoleRef.FETCH_GROUP_AUTHORITY,
-		members=@Persistent(name="authority")),
+		members=@Persistent(name="authority")
+	),
 	@FetchGroup(
 		name=RoleRef.FETCH_GROUP_AUTHORIZED_OBJECT_REF,
-		members=@Persistent(name="authorizedObjectRef")),
+		members=@Persistent(name="authorizedObjectRef")
+	),
 	@FetchGroup(
 		name=RoleRef.FETCH_GROUP_ROLE,
-		members=@Persistent(name="role"))
+		members=@Persistent(name="role")
+	)
 })
 @Inheritance(strategy=InheritanceStrategy.NEW_TABLE)
 public class RoleRef implements Serializable
@@ -92,51 +82,30 @@ public class RoleRef implements Serializable
 	 * all the users have their organisation's ID stored here, thus it's the same
 	 * value for all of them. Even if the User object represents another organisation,
 	 * this member is the organisationID to which the user logs in.
-	 *
-	 * @jdo.field persistence-modifier="persistent" primary-key="true"
-	 * @jdo.column length="100"
 	 */
 	@PrimaryKey
 	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
 	@Column(length=100)
 	private String organisationID;
 
-	/**
-	 * @jdo.field persistence-modifier="persistent" primary-key="true"
-	 * @jdo.column length="50"
-	 */
 	@PrimaryKey
 	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
 	@Column(length=50)
 	private String authorityID;
 
-	/**
-	 * @jdo.field persistence-modifier="persistent" primary-key="true"
-	 * @jdo.column length="255"
-	 */
 	@PrimaryKey
 	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
 	@Column(length=255)
 	private String authorizedObjectID;
 
-	/**
-	 * @jdo.field persistence-modifier="persistent" primary-key="true"
-	 * @jdo.column length="100"
-	 */
 	@PrimaryKey
 	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
 	@Column(length=100)
 	private String roleID;
 
-	/**
-	 * @jdo.field persistence-modifier="persistent"
-	 */
 	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
 	private Authority authority;
 
-	/**
-	 * @jdo.field persistence-modifier="persistent"
-	 */
 	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
 	private AuthorizedObjectRef authorizedObjectRef;
 
@@ -227,53 +196,6 @@ public class RoleRef implements Serializable
 	public Role getRole() {
 		return role;
 	}
-
-//	public static final int INCLUDE_NONE = 0;
-////	public static final int INCLUDE_USER = 0x1;
-////	public static final int INCLUDE_USER_PERSON = INCLUDE_USER | 0x2;
-////	public static final int INCLUDE_USER_ROLEGROUPS = INCLUDE_USER | 0x4;
-//	public static final int INCLUDE_ROLE = 0x8;
-//	public static final int INCLUDE_ROLE_ROLEGROUPS = INCLUDE_ROLE | 0x10;
-//
-//	public void makeTransient(int includeMask)
-//	{
-//		PersistenceManager pm = ((PersistenceCapable)this).jdoGetPersistenceManager();
-//		if (pm == null)
-//			return;
-//
-//		pm.retrieve(this);
-////		if ((includeMask & INCLUDE_USER) != 0)
-////			getUser();
-//
-//		if ((includeMask & INCLUDE_ROLE) != 0)
-//			getRole();
-//
-//		pm.makeTransient(this);
-//
-////		if ((includeMask & INCLUDE_USER) != 0) {
-////			int userIncludeMask = 0;
-////			if ((includeMask & INCLUDE_USER_PERSON) != 0)
-////				userIncludeMask = userIncludeMask | User.INCLUDE_PERSON;
-////			if ((includeMask & INCLUDE_USER_ROLEGROUPS) != 0)
-////				userIncludeMask = userIncludeMask | User.INCLUDE_ROLEGROUPS;
-////
-////			this.user.makeTransient(userIncludeMask);
-////		}
-////		else
-////			this.user = null;
-//
-//		if ((includeMask & INCLUDE_ROLE) != 0) {
-//			int roleIncludeMask = 0;
-//			if ((includeMask & INCLUDE_ROLE_ROLEGROUPS) != 0)
-//				roleIncludeMask = roleIncludeMask | Role.INCLUDE_ROLEGROUPS;
-//
-//			this.role.makeTransient(roleIncludeMask);
-//		}
-//		else
-//			this.role = null;
-//	}
-//
-//	protected transient String thisString = null;
 
 	@Override
 	public String toString() {
