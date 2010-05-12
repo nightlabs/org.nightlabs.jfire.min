@@ -610,19 +610,21 @@ implements DetachCallback, AttachCallback
 		int result = 1;
 		result = prime * result + ((organisationID == null) ? 0 : organisationID.hashCode());
 		result = prime * result + ((userID == null) ? 0 : userID.hashCode());
+		result = prime * result + ((localOrganisationID == null) ? 0 : localOrganisationID.hashCode());
 		return result;
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
+		if (this == obj) return true;
+		if (obj == null) return false;
+		if (getClass() != obj.getClass()) return false;
 		final UserLocal other = (UserLocal) obj;
-		return Util.equals(other.organisationID, this.organisationID) && Util.equals(other.userID, this.userID);
+		return (
+				Util.equals(other.organisationID, this.organisationID) &&
+				Util.equals(other.userID, this.userID) &&
+				Util.equals(other.localOrganisationID, this.localOrganisationID)
+		);
 	}
 
 	@Override
