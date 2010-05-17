@@ -24,7 +24,7 @@
  *                                                                             *
  ******************************************************************************/
 
-package org.nightlabs.jfire.testsuite.prop;
+package org.nightlabs.jfire.testsuite;
 
 import java.util.Locale;
 
@@ -49,6 +49,7 @@ import org.nightlabs.jfire.prop.id.StructLocalID;
 import org.nightlabs.jfire.prop.structfield.ImageStructField;
 import org.nightlabs.jfire.prop.structfield.SelectionStructField;
 import org.nightlabs.jfire.prop.structfield.StructFieldValue;
+
 
 /**
  * PropertySetTestStruct is a test {@link PropertySet} structure

@@ -69,7 +69,6 @@ import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.shutdownafterstartup.ShutdownControlHandle;
 import org.nightlabs.jfire.testsuite.id.TestCaseObjectIDsID;
 import org.nightlabs.jfire.testsuite.login.JFireTestLogin;
-import org.nightlabs.jfire.testsuite.prop.PropertySetTestStruct;
 import org.nightlabs.jfire.timer.Task;
 import org.nightlabs.jfire.timer.id.TaskID;
 import org.nightlabs.util.CollectionUtil;
