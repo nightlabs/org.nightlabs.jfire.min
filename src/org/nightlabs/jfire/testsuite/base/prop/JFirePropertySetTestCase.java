@@ -36,9 +36,9 @@ import org.nightlabs.jfire.prop.id.StructLocalID;
 import org.nightlabs.jfire.prop.structfield.SelectionStructField;
 import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.testsuite.JFireTestSuite;
+import org.nightlabs.jfire.testsuite.PropertySetTestStruct;
 import org.nightlabs.jfire.testsuite.TestCase;
-import org.nightlabs.jfire.testsuite.prop.JFirePropertySetTestSuite;
-import org.nightlabs.jfire.testsuite.prop.PropertySetTestStruct;
+
 
 /**
  * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] de -->

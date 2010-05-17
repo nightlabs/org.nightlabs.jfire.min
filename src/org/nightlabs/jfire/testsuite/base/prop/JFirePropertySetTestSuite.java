@@ -8,8 +8,8 @@ import javax.jdo.PersistenceManager;
 import junit.framework.TestCase;
 
 import org.nightlabs.jfire.security.SecurityReflector;
+import org.nightlabs.jfire.testsuite.PropertySetTestStruct;
 import org.nightlabs.jfire.testsuite.TestSuite;
-import org.nightlabs.jfire.testsuite.prop.PropertySetTestStruct;
 
 /**
  * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] de -->
