@@ -52,7 +52,7 @@ public abstract class PropSearchFilter
 	/**
 	 * The prefix of the data field variables in the JDO query.
 	 */
-	public static String QUERY_DATAFIELD_VARNAME_PREFIX = "dataField";
+	public static final String QUERY_DATAFIELD_VARNAME_PREFIX = "dataField";
 
 	/**
 	 * The serial version id.

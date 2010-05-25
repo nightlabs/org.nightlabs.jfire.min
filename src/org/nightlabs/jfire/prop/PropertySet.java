@@ -171,7 +171,7 @@ public class PropertySet implements Serializable, StoreCallback, AttachCallback,
 
 	private static Set<String> nonInheritableFields = new HashSet<String>();
 
-	public static long TEMPORARY_PROP_ID = -1;
+	public static final long TEMPORARY_PROP_ID = -1;
 
 	/**
 	 * Fetch-group for detaching the full data of all {@link DataField}s.

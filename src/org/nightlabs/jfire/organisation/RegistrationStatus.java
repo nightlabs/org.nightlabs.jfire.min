@@ -117,23 +117,23 @@ public class RegistrationStatus
 	 */
 	private static final long serialVersionUID = 1L;
 
-	public static String DIRECTION_OUTGOING = "outgoing";
-	public static String DIRECTION_INCOMING = "incoming";
+	public static final String DIRECTION_OUTGOING = "outgoing";
+	public static final String DIRECTION_INCOMING = "incoming";
 
-	public static String STATUS_PENDING = "pending";
-	public static String STATUS_ACCEPTED = "accepted";
-	public static String STATUS_REJECTED = "rejected";
-	public static String STATUS_CANCELLED = "cancelled";
+	public static final String STATUS_PENDING = "pending";
+	public static final String STATUS_ACCEPTED = "accepted";
+	public static final String STATUS_REJECTED = "rejected";
+	public static final String STATUS_CANCELLED = "cancelled";
 
-  public static final String FETCH_GROUP_USERS = "RegistrationStatus.users";
+	public static final String FETCH_GROUP_USERS = "RegistrationStatus.users";
 
-  public static long getRegistrationStatusCount(PersistenceManager pm, String organisationID)
-  {
-  	Query q = pm.newNamedQuery(RegistrationStatus.class, "getRegistrationStatusCountForOrganisation");
-  	//Long res = (Long) ((Collection)q.execute(organisationID)).iterator().next();
-  	Long res = (Long) q.execute(organisationID);
-  	return res.longValue();
-  }
+	public static long getRegistrationStatusCount(PersistenceManager pm, String organisationID)
+	{
+		Query q = pm.newNamedQuery(RegistrationStatus.class, "getRegistrationStatusCountForOrganisation");
+		//Long res = (Long) ((Collection)q.execute(organisationID)).iterator().next();
+		Long res = (Long) q.execute(organisationID);
+		return res.longValue();
+	}
 
 	public static void ensureRegisterability(
 			PersistenceManager pm,

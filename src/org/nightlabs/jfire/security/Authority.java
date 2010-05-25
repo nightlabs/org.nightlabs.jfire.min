@@ -175,7 +175,7 @@ implements Serializable, SecuredObject, StoreCallback
 	 * the organisation itself.
 	 * @see #getOrganisationAuthority(PersistenceManager)
 	 */
-	public static String AUTHORITY_ID_ORGANISATION = "_Organisation_";
+	public static final String AUTHORITY_ID_ORGANISATION = "_Organisation_";
 
 	/**
 	 * Get the <code>Authority</code> that is used for the global per-organisation access right configuration.
