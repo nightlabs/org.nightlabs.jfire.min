@@ -28,7 +28,7 @@ public class DatabaseCf extends JFireServerConfigPart implements Serializable
 
 	public static final String DATABASE_NAME_VAR = "${databaseName}";
 
-	public static String DEFAULTS_DEFAULT_KEY = "Derby";
+	public static final String DEFAULTS_DEFAULT_KEY = "Derby";
 
 	private static Map<String, DatabaseCf> _defaults = null;
 

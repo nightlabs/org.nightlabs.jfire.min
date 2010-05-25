@@ -36,8 +36,8 @@ import javax.naming.NamingException;
  */
 public class JMSConnectionFactoryLookup
 {
-	public static String QUEUECF_JNDI_LINKNAME = "java:/jfire/system/QueueConnectionFactory";
-	public static String TOPICCF_JNDI_LINKNAME = "java:/jfire/system/TopicConnectionFactory";
+	public static final String QUEUECF_JNDI_LINKNAME = "java:/jfire/system/QueueConnectionFactory";
+	public static final String TOPICCF_JNDI_LINKNAME = "java:/jfire/system/TopicConnectionFactory";
 
 	public static QueueConnectionFactory lookupQueueConnectionFactory(InitialContext initialContext)
 	throws NamingException
