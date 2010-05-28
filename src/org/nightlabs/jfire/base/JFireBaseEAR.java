@@ -33,7 +33,6 @@ import org.nightlabs.jfire.organisation.Organisation;
  * Class defining global values for the JFireBase EAR.
  *
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
- *
  */
 public final class JFireBaseEAR {
 
@@ -50,5 +49,6 @@ public final class JFireBaseEAR {
 	public static final EditLockTypeID EDIT_LOCK_TYPE_ID_CONFIG_MODULE = EditLockTypeID.create(
 			Organisation.DEV_ORGANISATION_ID, "EditLockTypeConfigModule");
 
-	public static boolean JPOX_WORKAROUND_FLUSH_ENABLED = true;
+	// WORKAROUND
+	public static final boolean JPOX_WORKAROUND_FLUSH_ENABLED = true;
 }
