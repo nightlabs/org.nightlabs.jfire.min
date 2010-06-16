@@ -1,12 +1,17 @@
 package org.nightlabs.jfire.testsuite.base.prop.inheritance;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.notNullValue;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.rmi.RemoteException;
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 
 import javax.ejb.CreateException;
@@ -15,9 +20,11 @@ import javax.jdo.JDOHelper;
 import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
+import org.junit.Test;
 import org.nightlabs.i18n.I18nText;
 import org.nightlabs.inheritance.InheritanceManager;
 import org.nightlabs.jdo.NLJDOHelper;
+import org.nightlabs.jdo.timepattern.TimePatternSetJDOImpl;
 import org.nightlabs.jfire.base.JFireEjb3Factory;
 import org.nightlabs.jfire.base.jdo.cache.Cache;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleManager;
@@ -46,12 +53,10 @@ import org.nightlabs.jfire.prop.id.StructLocalID;
 import org.nightlabs.jfire.prop.structfield.MultiSelectionStructFieldValue;
 import org.nightlabs.jfire.prop.structfield.SelectionStructField;
 import org.nightlabs.jfire.security.SecurityReflector;
-import org.nightlabs.jfire.testsuite.JFireTestSuite;
 import org.nightlabs.jfire.testsuite.TestCase;
 import org.nightlabs.timepattern.TimePattern;
 import org.nightlabs.timepattern.TimePatternImpl;
 import org.nightlabs.timepattern.TimePatternSet;
-import org.nightlabs.timepattern.TimePatternSetImpl;
 
 /**
  * Extension of {@link TestCase} for testing proper persistence and inheritance of different {@link DataField} kinds.
@@ -67,76 +72,76 @@ import org.nightlabs.timepattern.TimePatternSetImpl;
  * <li> {@link TextDataField}
  * <li> {@link TimePatternSetDataField}
  * @author Frederik Loeser <!-- frederik [AT] nightlabs [DOT] de -->
+ * @author Fitas Amine - fitas [at] nightlabs [dot] de
  */
-@JFireTestSuite(JFirePropertySetInheritanceTestSuite.class)
+
 public class JFirePropertySetInheritanceTestCase extends TestCase {
 
-	private static final Logger LOGGER = Logger.getLogger(JFirePropertySetInheritanceTestCase.class);
-	private static final String[] FETCH_GROUPS = new String[] {FetchPlan.DEFAULT, PropertySet.FETCH_GROUP_FULL_DATA};
+	private static final Logger logger = Logger.getLogger(JFirePropertySetInheritanceTestCase.class);
+	private static final String[] FETCH_GROUPS = new String[] {FetchPlan.DEFAULT, 
+		PropertySet.FETCH_GROUP_FULL_DATA,
+		MultiSelectionStructFieldValue.FETCH_GROUP_VALUE_NAME,
+		PropertySet.FETCH_GROUP_DATA_FIELDS,
+		TimePatternSetJDOImpl.FETCH_GROUP_TIME_PATTERNS};
 	private static final int FETCH_DEPTH = NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT;
-	private boolean isSetup = false;
-	private PropertySetID propertySetID_Mother;
-	private PropertySetID propertySetID_Child;
+	
+	private static final String PROPERTY_SET_ID_MOTHER = "propertySetIDMother";
+	private static final String PROPERTY_SET_ID_CHILD = "propertySetIDChild";
 
+	
 	private PropertyManagerRemote getPropertyManager() throws RemoteException, CreateException, NamingException {
-		return JFireEjb3Factory.getRemoteBean(PropertyManagerRemote.class, null);
+		return JFireEjb3Factory.getRemoteBean(PropertyManagerRemote.class, SecurityReflector.getInitialContextProperties());
 	}
 
 	@Override
-	protected void setUp() throws Exception {
-		if (isSetup)
-			return;
+	 protected void setUpBeforeClass() throws Exception{
 		PropertySet propertySet_Mother = new PropertySet(IDGenerator.getOrganisationID(), IDGenerator.nextID(PropertySet.class), Organisation.DEV_ORGANISATION_ID,
 			PropertySetInheritanceTestStruct.class.getName(), Struct.DEFAULT_SCOPE,	StructLocal.DEFAULT_SCOPE);
 		propertySet_Mother = getPropertyManager().storePropertySet(propertySet_Mother, true, FETCH_GROUPS, FETCH_DEPTH);
-		propertySetID_Mother = (PropertySetID) JDOHelper.getObjectId(propertySet_Mother);
+		PropertySetID propertySetID_Mother = (PropertySetID) JDOHelper.getObjectId(propertySet_Mother);
 
 		PropertySet propertySet_Child = new PropertySet(IDGenerator.getOrganisationID(), IDGenerator.nextID(PropertySet.class), Organisation.DEV_ORGANISATION_ID,
 			PropertySetInheritanceTestStruct.class.getName(), Struct.DEFAULT_SCOPE, StructLocal.DEFAULT_SCOPE);
 		propertySet_Child = getPropertyManager().storePropertySet(propertySet_Child, true, FETCH_GROUPS, FETCH_DEPTH);
-		propertySetID_Child = (PropertySetID) JDOHelper.getObjectId(propertySet_Child);
-
+		PropertySetID propertySetID_Child = (PropertySetID) JDOHelper.getObjectId(propertySet_Child);
+		// set the context IDs
+		setTestCaseContextObject(PROPERTY_SET_ID_MOTHER, propertySetID_Mother);
+		setTestCaseContextObject(PROPERTY_SET_ID_CHILD, propertySetID_Child);				
 		Cache.setServerMode(true);
 		String className = System.getProperty(JDOLifecycleManager.PROPERTY_KEY_JDO_LIFECYCLE_MANAGER);
 		if (className == null) {
 			className = JDOLifecycleManager.class.getName();
 			System.setProperty(JDOLifecycleManager.PROPERTY_KEY_JDO_LIFECYCLE_MANAGER, className);
 		}
-		super.setUp();
-		isSetup = true;
 	}
 
-	@Override
-	protected void tearDown() throws Exception {
-		super.tearDown();
-	}
 
 	/**
 	 * Fetch and inflate a {@link PropertySet} used for this test.
 	 * @return A propertySet used for this test.
+	 * @throws NamingException 
+	 * @throws CreateException 
+	 * @throws RemoteException 
 	 */
-	private PropertySet fetchPropertySet(final PropertySetID propertySetID) {
+	private PropertySet fetchPropertySet(final PropertySetID propertySetID) throws RemoteException, CreateException, NamingException {
 		PropertySet propertySet;
-		try {
-			propertySet = getPropertyManager().getPropertySet(propertySetID, FETCH_GROUPS, FETCH_DEPTH);
-		} catch (final Exception e) {
-			throw new RuntimeException("Fetching propertySet failed.", e);
-		}
-		try {
-			// Fetching the stuff directly from the beans in order to avoid using the Cache. Marco.
-			final StructLocalID structLocalID = StructLocalID.create(
+		assertThat("PropertySetID is Null",propertySetID, notNullValue());
+		propertySet = getPropertyManager().getPropertySet(propertySetID, FETCH_GROUPS, FETCH_DEPTH);
+
+		// Fetching the stuff directly from the beans in order to avoid using the Cache. Marco.
+		final StructLocalID structLocalID = StructLocalID.create(
 				SecurityReflector.getUserDescriptor().getOrganisationID(), propertySet.getStructLinkClass(), propertySet.getStructScope(), propertySet.getStructLocalScope()
-			);
-			final StructLocal structLocal = getPropertyManager().getFullStructLocal(
+		);
+
+		final StructLocal structLocal = getPropertyManager().getFullStructLocal(
 				structLocalID, StructLocalDAO.DEFAULT_FETCH_GROUPS, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT
-			);
-			propertySet.inflate(structLocal);
-		} catch (final Exception exception) {
-			throw new RuntimeException("Exploding propertySet failed", exception);
-		}
+		);
+		propertySet.inflate(structLocal);
+
 		return propertySet;
 	}
 
+	
 	private PropertySet storePropertySet(final PropertySet propertySet, final boolean get) {
 		try {
 			propertySet.deflate();
@@ -175,7 +180,10 @@ public class JFirePropertySetInheritanceTestCase extends TestCase {
 	/**
 	 * Test fetching and exploding of mother's and child's {@link PropertySet}s.
 	 */
+    @Test
 	public void testFetchPropertySet() throws Exception {
+    	PropertySetID propertySetID_Mother = (PropertySetID)getTestCaseContextObject(PROPERTY_SET_ID_MOTHER);
+    	PropertySetID propertySetID_Child = (PropertySetID)getTestCaseContextObject(PROPERTY_SET_ID_CHILD);
 		fetchPropertySet(propertySetID_Mother);
 		fetchPropertySet(propertySetID_Child);
 	}
@@ -183,9 +191,11 @@ public class JFirePropertySetInheritanceTestCase extends TestCase {
 	/**
 	 * Test proper persistence and inheritance of {@link ImageDataField} contents.
 	 */
-	public void testInheritImageDataField() {
-		PropertySet propertySet_Mother = fetchPropertySet(propertySetID_Mother);
-		PropertySet propertySet_Child = fetchPropertySet(propertySetID_Child);
+    @Test
+	public void testInheritImageDataField() throws Exception {
+
+    	PropertySet propertySet_Mother = fetchPropertySet((PropertySetID)getTestCaseContextObject(PROPERTY_SET_ID_MOTHER));
+		PropertySet propertySet_Child = fetchPropertySet((PropertySetID)getTestCaseContextObject(PROPERTY_SET_ID_CHILD));
 
 		try {
 			// Test whether data have been stored in a correct way considering this DataField.
@@ -224,9 +234,11 @@ public class JFirePropertySetInheritanceTestCase extends TestCase {
 	/**
 	 * Test proper persistence and inheritance of {@link I18nTextDataField} contents.
 	 */
-	public void testInheritI18nTextDataField() {
-		PropertySet propertySet_Mother = fetchPropertySet(propertySetID_Mother);
-		PropertySet propertySet_Child = fetchPropertySet(propertySetID_Child);
+    @Test
+	public void testInheritI18nTextDataField() throws Exception{
+		    	
+    	PropertySet propertySet_Mother = fetchPropertySet((PropertySetID)getTestCaseContextObject(PROPERTY_SET_ID_MOTHER));
+		PropertySet propertySet_Child = fetchPropertySet((PropertySetID)getTestCaseContextObject(PROPERTY_SET_ID_CHILD));
 
 		try {
 			// Test whether data have been stored in a correct way considering this DataField.
@@ -248,16 +260,14 @@ public class JFirePropertySetInheritanceTestCase extends TestCase {
 		}
 	}
 
-	public void testInheritHTMLDataField() {
-		// TODO to be implemented in other plug-in
-	}
-
 	/**
 	 * Test proper persistence and inheritance of {@link DateDataField} contents.
 	 */
-	public void testInheritDateDataField() {
-		PropertySet propertySet_Mother = fetchPropertySet(propertySetID_Mother);
-		PropertySet propertySet_Child = fetchPropertySet(propertySetID_Child);
+    @Test
+	public void testInheritDateDataField() throws Exception {
+
+    	PropertySet propertySet_Mother = fetchPropertySet((PropertySetID)getTestCaseContextObject(PROPERTY_SET_ID_MOTHER));
+		PropertySet propertySet_Child = fetchPropertySet((PropertySetID)getTestCaseContextObject(PROPERTY_SET_ID_CHILD));
 
 		try {
 			// Test whether data have been stored in a correct way considering this DataField.
@@ -278,67 +288,49 @@ public class JFirePropertySetInheritanceTestCase extends TestCase {
 			throw new RuntimeException(exception);
 		}
 	}
+    
+    /**
+     * Test proper persistence and inheritance of {@link MultiSelectionDataField} contents.
+     */
+	@Test
+    public void testInheritMultiSelectionDataField() throws Exception{
+    	PropertySet propertySet_Mother = fetchPropertySet((PropertySetID)getTestCaseContextObject(PROPERTY_SET_ID_MOTHER));
+    	PropertySet propertySet_Child = fetchPropertySet((PropertySetID)getTestCaseContextObject(PROPERTY_SET_ID_CHILD));
+    	// Test whether data have been stored in a correct way considering this DataField.
+    	final MultiSelectionDataField dataField_Mother = propertySet_Mother.getDataField(PropertySetInheritanceTestStruct.STRUCTFIELD_ID_MULTISELECTION_DATAFIELD, MultiSelectionDataField.class);
+    	List<MultiSelectionStructFieldValue> predefinedValues = dataField_Mother.getStructField().getStructFieldValues();	
+    	assertThat(predefinedValues.size(), equalTo(3));
+    	// select three selections
+    	HashSet<MultiSelectionStructFieldValue> structFieldValues = new HashSet<MultiSelectionStructFieldValue>();
+    	for(MultiSelectionStructFieldValue value:predefinedValues)
+    	{
+    		String valueID = value.getStructFieldValueID();    		
+    		if(valueID.equals(PropertySetInheritanceTestStruct.TESTBLOCK_MULTISELECTION_3) || valueID.equals(PropertySetInheritanceTestStruct.TESTBLOCK_MULTISELECTION_2))
+    			structFieldValues.add(value);
+    	}
+    	dataField_Mother.setData(structFieldValues);
+    	// store the PropertySet
+    	final PropertySet detpropertySet_Mother = storePropertySet(propertySet_Mother, true);
+    	final MultiSelectionDataField defdataField_Mother = detpropertySet_Mother.getDataField(PropertySetInheritanceTestStruct.STRUCTFIELD_ID_MULTISELECTION_DATAFIELD, MultiSelectionDataField.class);
+    	Collection<MultiSelectionStructFieldValue> values = defdataField_Mother.getStructFieldValues();
+    	assertThat("the selection size doesnt match our selection",values.size(), equalTo(2));
+    	assertThat(values, equalTo(dataField_Mother.getStructFieldValues()));
+    	propertySet_Mother = detpropertySet_Mother;
+    	// Test whether the content of the considered DataField is inherited in a correct way between mother and child.
+    	propertySet_Child = inheritPropertySet(propertySet_Mother, propertySet_Child);
+    	final MultiSelectionDataField dataField_child = propertySet_Child.getDataField(PropertySetInheritanceTestStruct.STRUCTFIELD_ID_MULTISELECTION_DATAFIELD, MultiSelectionDataField.class);
+    	assertThat("the selection size doesnt match our selection", dataField_child.getStructFieldValues().size(), equalTo(2));
+    	assertThat(dataField_child.getStructFieldValues(), equalTo(dataField_Mother.getStructFieldValues()));
+    }
 
-	public void testInheritDepartmentDataField() {
-		// TODO to be implemented in other plug-in
-	}
-
-	public void testInheritFileDataField() {
-		// TODO to be implemented in other plug-in
-	}
-
-	/**
-	 * Test proper persistence and inheritance of {@link MultiSelectionDataField} contents.
-	 */
-	public void testInheritMultiSelectionDataField() {
-		if (true)
-			return;
-
-		// TODO java.lang.RuntimeException: org.nightlabs.jfire.prop.exception.DataFieldNotFoundException: No field dev.jfire.org/MultiSelectionDataField found in this DataBlock for StructBlock dev.jfire.org/StructBlockID
-		PropertySet propertySet_Mother = fetchPropertySet(propertySetID_Mother);
-		PropertySet propertySet_Child = fetchPropertySet(propertySetID_Child);
-
-		try {
-			// Test whether data have been stored in a correct way considering this DataField.
-			final MultiSelectionDataField dataField_Mother = propertySet_Mother.getDataField(PropertySetInheritanceTestStruct.STRUCTFIELD_ID_MULTISELECTION_DATAFIELD, MultiSelectionDataField.class);
-			List<MultiSelectionStructFieldValue> values = new ArrayList<MultiSelectionStructFieldValue>();
-
-			// TODO set struct field values
-
-			List<MultiSelectionStructFieldValue> structFieldValues = dataField_Mother.getStructField().getStructFieldValues();
-			if (structFieldValues.size() < 2)
-				throw new IllegalStateException("There are not enough (at least 2) StructFieldValues configured for the MultiSelectionStructField: " + dataField_Mother.getStructField());
-			values.add(structFieldValues.get(structFieldValues.size() - 1));
-			values.add(structFieldValues.get(0));
-
-			dataField_Mother.setData(values);
-			{
-				final PropertySet newPropertySet_Mother = storePropertySet(propertySet_Mother, true);
-				final MultiSelectionDataField detDataField_Mother = newPropertySet_Mother.getDataField(PropertySetInheritanceTestStruct.STRUCTFIELD_ID_MULTISELECTION_DATAFIELD, MultiSelectionDataField.class);
-				// TODO assert...
-
-				propertySet_Mother = newPropertySet_Mother;	// Continue working with the new one (the old one is not needed anymore).
-			}
-
-			// Test whether the content of the considered DataField is inherited in a correct way between mother and child.
-			propertySet_Child = inheritPropertySet(propertySet_Mother, propertySet_Child);
-			final MultiSelectionDataField dataField_Child = propertySet_Child.getDataField(PropertySetInheritanceTestStruct.STRUCTFIELD_ID_MULTISELECTION_DATAFIELD, MultiSelectionDataField.class);
-			// TODO assert...
-
-			// TODO test removal
-			// Inflate to make sure we have empty fields.
-
-		} catch (final Exception exception) {
-			throw new RuntimeException(exception);
-		}
-	}
-
+	
 	/**
 	 * Test proper persistence and inheritance of {@link NumberDataField} contents.
 	 */
-	public void testInheritNumberDataField() {
-		PropertySet propertySet_Mother = fetchPropertySet(propertySetID_Mother);
-		PropertySet propertySet_Child = fetchPropertySet(propertySetID_Child);
+    @Test
+	public void testInheritNumberDataField() throws Exception{
+    	PropertySet propertySet_Mother = fetchPropertySet((PropertySetID)getTestCaseContextObject(PROPERTY_SET_ID_MOTHER));
+		PropertySet propertySet_Child = fetchPropertySet((PropertySetID)getTestCaseContextObject(PROPERTY_SET_ID_CHILD));
 
 		try {
 			// Test whether data have been stored in a correct way considering this DataField.
@@ -363,9 +355,10 @@ public class JFirePropertySetInheritanceTestCase extends TestCase {
 	/**
 	 * Test proper persistence and inheritance of {@link PhoneNumberDataField} contents.
 	 */
-	public void testInheritPhoneNumberDataField() {
-		PropertySet propertySet_Mother = fetchPropertySet(propertySetID_Mother);
-		PropertySet propertySet_Child = fetchPropertySet(propertySetID_Child);
+    @Test
+	public void testInheritPhoneNumberDataField() throws Exception{
+    	PropertySet propertySet_Mother = fetchPropertySet((PropertySetID)getTestCaseContextObject(PROPERTY_SET_ID_MOTHER));
+		PropertySet propertySet_Child = fetchPropertySet((PropertySetID)getTestCaseContextObject(PROPERTY_SET_ID_CHILD));
 
 		try {
 			// Test whether data have been stored in a correct way considering this DataField.
@@ -394,9 +387,10 @@ public class JFirePropertySetInheritanceTestCase extends TestCase {
 	/**
 	 * Test proper persistence and inheritance of {@link RegexDataField} contents.
 	 */
-	public void testInheritRegexDataField() {
-		PropertySet propertySet_Mother = fetchPropertySet(propertySetID_Mother);
-		PropertySet propertySet_Child = fetchPropertySet(propertySetID_Child);
+    @Test
+	public void testInheritRegexDataField() throws Exception{
+    	PropertySet propertySet_Mother = fetchPropertySet((PropertySetID)getTestCaseContextObject(PROPERTY_SET_ID_MOTHER));
+		PropertySet propertySet_Child = fetchPropertySet((PropertySetID)getTestCaseContextObject(PROPERTY_SET_ID_CHILD));
 
 		try {
 			// Test whether data have been stored in a correct way considering this DataField.
@@ -421,9 +415,10 @@ public class JFirePropertySetInheritanceTestCase extends TestCase {
 	/**
 	 * Test proper persistence and inheritance of {@link SelectionDataField} contents.
 	 */
-	public void testInheritSelectionDataField() {
-		PropertySet propertySet_Mother = fetchPropertySet(propertySetID_Mother);
-		PropertySet propertySet_Child = fetchPropertySet(propertySetID_Child);
+    @Test
+	public void testInheritSelectionDataField() throws Exception{
+    	PropertySet propertySet_Mother = fetchPropertySet((PropertySetID)getTestCaseContextObject(PROPERTY_SET_ID_MOTHER));
+		PropertySet propertySet_Child = fetchPropertySet((PropertySetID)getTestCaseContextObject(PROPERTY_SET_ID_CHILD));
 
 		try {
 			// Test whether data have been stored in a correct way considering this DataField.
@@ -449,9 +444,10 @@ public class JFirePropertySetInheritanceTestCase extends TestCase {
 	/**
 	 * Test proper persistence and inheritance of {@link TextDataField} contents.
 	 */
-	public void testInheritTextDataField() {
-		PropertySet propertySet_Mother = fetchPropertySet(propertySetID_Mother);
-		PropertySet propertySet_Child = fetchPropertySet(propertySetID_Child);
+    @Test
+	public void testInheritTextDataField() throws Exception {
+    	PropertySet propertySet_Mother = fetchPropertySet((PropertySetID)getTestCaseContextObject(PROPERTY_SET_ID_MOTHER));
+		PropertySet propertySet_Child = fetchPropertySet((PropertySetID)getTestCaseContextObject(PROPERTY_SET_ID_CHILD));
 
 		try {
 			// Test whether data have been stored in a correct way considering this DataField.
@@ -476,16 +472,14 @@ public class JFirePropertySetInheritanceTestCase extends TestCase {
 	/**
 	 * Test proper persistence and inheritance of {@link TimePatternSetDataField} contents.
 	 */
-	public void testInheritTimePatternSetDataField() {
-		if (true)
-			return;
-		PropertySet propertySet_Mother = fetchPropertySet(propertySetID_Mother);
-		PropertySet propertySet_Child = fetchPropertySet(propertySetID_Child);
+    @Test
+	public void testInheritTimePatternSetDataField() throws Exception {
 
-		try {
+		PropertySet propertySet_Mother = fetchPropertySet((PropertySetID)getTestCaseContextObject(PROPERTY_SET_ID_MOTHER));
+		PropertySet propertySet_Child = fetchPropertySet((PropertySetID)getTestCaseContextObject(PROPERTY_SET_ID_CHILD));
 			// Test whether data have been stored in a correct way considering this DataField.
 			final TimePatternSetDataField dataField_Mother = propertySet_Mother.getDataField(PropertySetInheritanceTestStruct.STRUCTFIELD_ID_TIMEPATTERNSET_DATAFIELD, TimePatternSetDataField.class);
-			TimePatternSet tps = new TimePatternSetImpl();
+			TimePatternSetJDOImpl tps = new TimePatternSetJDOImpl(IDGenerator.nextIDString(TimePatternSetJDOImpl.class));
 			tps.addTimePattern(new TimePatternImpl(tps));
 			dataField_Mother.setData(tps);
 			final TimePattern tp_Mother = ((TimePatternSet) dataField_Mother.getData()).getTimePatterns().iterator().next();
@@ -512,8 +506,5 @@ public class JFirePropertySetInheritanceTestCase extends TestCase {
 			assertEquals("TimePatternSetDataField - months of mother and child differ after applying inheritance", tp_Mother.getMonth(), tp_Child.getMonth());
 			assertEquals("TimePatternSetDataField - years of mother and child differ after applying inheritance", tp_Mother.getYear(), tp_Child.getYear());
 
-		} catch (final Exception exception) {
-			throw new RuntimeException(exception);
-		}
 	}
 }

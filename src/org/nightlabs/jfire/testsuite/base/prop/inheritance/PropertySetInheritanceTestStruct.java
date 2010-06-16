@@ -1,5 +1,7 @@
 package org.nightlabs.jfire.testsuite.base.prop.inheritance;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Locale;
 
 import javax.jdo.JDOObjectNotFoundException;
@@ -19,6 +21,8 @@ import org.nightlabs.jfire.prop.StructBlock;
 import org.nightlabs.jfire.prop.StructLocal;
 import org.nightlabs.jfire.prop.id.StructBlockID;
 import org.nightlabs.jfire.prop.id.StructFieldID;
+import org.nightlabs.jfire.prop.structfield.MultiSelectionStructField;
+import org.nightlabs.jfire.prop.structfield.MultiSelectionStructFieldValue;
 import org.nightlabs.jfire.prop.structfield.SelectionStructField;
 import org.nightlabs.jfire.prop.structfield.StructFieldValue;
 
@@ -34,9 +38,6 @@ public class PropertySetInheritanceTestStruct {
 	static final String DEV_ORGANISATION_ID = Organisation.DEV_ORGANISATION_ID;
 	static final StructBlockID STRUCTBLOCK_ID = StructBlockID.create(DEV_ORGANISATION_ID, "StructBlockID");
 	static final StructFieldID STRUCTFIELD_ID_DATE_DATAFIELD = StructFieldID.create(STRUCTBLOCK_ID, "DateDataField");
-//	static final StructFieldID STRUCTFIELD_ID_DEPARTMENT_DATAFIELD = StructFieldID.create(STRUCTBLOCK_ID, "DepartmentDataField");
-//	static final StructFieldID STRUCTFIELD_ID_FILE_DATAFIELD = StructFieldID.create(STRUCTBLOCK_ID, "FileDataField");
-//	static final StructFieldID STRUCTFIELD_ID_HTML_DATAFIELD = StructFieldID.create(STRUCTBLOCK_ID, "HTMLDataField");
 	static final StructFieldID STRUCTFIELD_ID_I18NTEXT_DATAFIELD = StructFieldID.create(STRUCTBLOCK_ID, "I18nTextDataField");
 	static final StructFieldID STRUCTFIELD_ID_IMAGE_DATAFIELD = StructFieldID.create(STRUCTBLOCK_ID, "ImageDataField");
 	static final StructFieldID STRUCTFIELD_ID_MULTISELECTION_DATAFIELD = StructFieldID.create(STRUCTBLOCK_ID, "MultiSelectionDataField");
@@ -48,7 +49,11 @@ public class PropertySetInheritanceTestStruct {
 	static final StructFieldID STRUCTFIELD_ID_TIMEPATTERNSET_DATAFIELD = StructFieldID.create(STRUCTBLOCK_ID, "TimePatternSetDataField");
 	static final String TESTBLOCK_SELECTION_1 = "Selection1";
 	static final String TESTBLOCK_SELECTION_2 = "Selection2";
+	static final String TESTBLOCK_MULTISELECTION_1 = "MultiSelection1";
+	static final String TESTBLOCK_MULTISELECTION_2 = "MultiSelection2";
+	static final String TESTBLOCK_MULTISELECTION_3 = "MultiSelection3";
 
+	
 	public static IStruct getInheritanceTestStructure(final String organisationID, final PersistenceManager pm) {
 		Struct struct = null;
 		StructLocal structLocal = null;
@@ -81,25 +86,39 @@ public class PropertySetInheritanceTestStruct {
 
 		try {
 			sb.addStructField(PropHelper.createDateDataField(sb, STRUCTFIELD_ID_DATE_DATAFIELD, "Date", "Datum"));
-//			structBlock.addStructField(PropHelper.createDepartmentDataField(structBlock,STRUCTFIELD_ID_DEPARTMENT_DATAFIELD, "Department", "Dienststelle"));
-//			structBlock.addStructField(PropHelper.createFileDataField(structBlock,STRUCTFIELD_ID_FILE_DATAFIELD, "File", "Datei"));
-//			structBlock.addStructField(PropHelper.createHTMLDataField(structBlock, STRUCTFIELD_ID_HTML_DATAFIELD, "HTML", "HTML"));
 			sb.addStructField(PropHelper.createI18nTextDataField(sb, STRUCTFIELD_ID_I18NTEXT_DATAFIELD, "I18n text", "I18n-Text"));
-			sb.addStructField(PropHelper.createImageDataField(sb, STRUCTFIELD_ID_IMAGE_DATAFIELD, "Image", "Bild"));
-			sb.addStructField(PropHelper.createMultiSelectionDataField(sb, STRUCTFIELD_ID_MULTISELECTION_DATAFIELD, "Multi selection", "Mehrfachauswahl"));
+			sb.addStructField(PropHelper.createImageDataField(sb, STRUCTFIELD_ID_IMAGE_DATAFIELD, "Image", "Bild"));			
+			addMultiSelectionStructField(sb);
 			sb.addStructField(PropHelper.createNumberDataField(sb, STRUCTFIELD_ID_NUMBER_DATAFIELD, "Number", "Nummer"));
 			sb.addStructField(PropHelper.createPhoneNumberDataField(sb, STRUCTFIELD_ID_PHONENUMBER_DATAFIELD, "Phone number", "Telefonnummer"));
 			sb.addStructField(PropHelper.createRegexDataField(sb, STRUCTFIELD_ID_REGEX_DATAFIELD, "Regular expression", "Regulärer Ausdruck"));
 			addSelectionStructField(sb);
 			sb.addStructField(PropHelper.createTextDataField(sb, STRUCTFIELD_ID_TEXT_DATAFIELD, "Text", "Text"));
 			sb.addStructField(PropHelper.createTimePatternSetDataField(sb, STRUCTFIELD_ID_TIMEPATTERNSET_DATAFIELD, "", ""));	// java.lang.IllegalArgumentException: org.nightlabs.jfire.prop.datafield.TimePatternSetDataField does not support input data of type class org.nightlabs.jfire.prop.structfield.StructFieldValue => FIXED
-
 			struct.addStructBlock(sb);
 		} catch (final DuplicateKeyException e) {
 			throw new RuntimeException(e);
 		}
 	}
-
+	
+	private static void addMultiSelectionStructField(final StructBlock sb) {
+		MultiSelectionStructField structField = PropHelper.createMultiSelectionDataField(sb, STRUCTFIELD_ID_MULTISELECTION_DATAFIELD, "Multi selection", "Mehrfachauswahl");
+		// add the multi selection values
+		MultiSelectionStructFieldValue fieldNameValue1 = structField.newStructFieldValue(TESTBLOCK_MULTISELECTION_1);
+    	fieldNameValue1.getValueName().setText(Locale.ENGLISH.getLanguage(), "Multi Selection 1"); 
+    	MultiSelectionStructFieldValue fieldNameValue2 = structField.newStructFieldValue(TESTBLOCK_MULTISELECTION_2);
+    	fieldNameValue2.getValueName().setText(Locale.ENGLISH.getLanguage(),  "Multi Selection 2"); 
+    	MultiSelectionStructFieldValue fieldNameValue3 = structField.newStructFieldValue(TESTBLOCK_MULTISELECTION_3);
+    	fieldNameValue3.getValueName().setText(Locale.ENGLISH.getLanguage(),  "Multi Selection 3"); 
+    	structField.setDefaultValues( new HashSet<MultiSelectionStructFieldValue>(Collections.singleton(fieldNameValue1)));
+      	structField.setMinimumSelectionCount(1);		
+		try {
+			sb.addStructField(structField);
+		} catch (final DuplicateKeyException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
 	private static void addSelectionStructField(final StructBlock sb) {
 		final SelectionStructField selField = new SelectionStructField(sb, STRUCTFIELD_ID_SELECTION_DATAFIELD);
 		selField.getName().setText(Locale.ENGLISH.getLanguage(), "Selection Test");
