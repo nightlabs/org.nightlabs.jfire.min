@@ -107,7 +107,6 @@ implements JFireSecurityManagerRemote
 
 	private static final boolean ASSERT_CONSISTENCY_BEFORE = false;
 	private static final boolean ASSERT_CONSISTENCY_AFTER = false;
-	private static final Collection<?> Collection = null;
 
 	/* (non-Javadoc)
 	 * @see org.nightlabs.jfire.security.JFireSecurityManagerRemote#initialise()
@@ -1805,7 +1804,7 @@ implements JFireSecurityManagerRemote
 				InitialContext initialContext = new InitialContext();
 				J2EEAdapter j2eeAdapter = (J2EEAdapter) initialContext.lookup(J2EEAdapter.JNDI_NAME);
 				// TODO: this line should be removed to avoid the runtime exception caused
-				// take a look at https://www.jfire.org/modules/bugs/view.php?id=1337	
+				// take a look at https://www.jfire.org/modules/bugs/view.php?id=1337
 				j2eeAdapter.flushAuthenticationCache();
 			} catch (Exception e) {
 				logger.warn("grantAllRoleGroupsInAllAuthorities: Flushing the JEE-server's authentication cache failed.", e);
