@@ -29,6 +29,7 @@ public class JFirePropertySetTestSuite extends TestSuite {
 	@Override
 	public String canRunTests(PersistenceManager pm) throws Exception {
 		PropertySetTestStruct.getTestStruct(SecurityReflector.getUserDescriptor().getOrganisationID(), pm);
+		PropertySetInheritanceTestStruct.getInheritanceTestStructure(SecurityReflector.getUserDescriptor().getOrganisationID(), pm);	
 		pm.flush();
 		return null;
 	}

@@ -1,4 +1,4 @@
-package org.nightlabs.jfire.testsuite.base.prop.inheritance;
+package org.nightlabs.jfire.testsuite.base.prop;
 
 import java.util.Collections;
 import java.util.HashSet;
