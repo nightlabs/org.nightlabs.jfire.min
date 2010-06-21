@@ -65,13 +65,12 @@ public interface PropertyManagerRemote
 			int maxFetchDepth);
 
 	/**
-	 * Returns those objects found by the given search filter.
-	 * The results therefore might not be an instance
-	 * of {@link PropertySet}, this depends on the result columns
-	 * set in the search filter.
+	 * Returns those objects found by the given search filter. The results therefore might not be an
+	 * instance of {@link PropertySet}, this depends on the actual candidate class of the filter and the
+	 * result columns set in the filter.
 	 * <p>
-	 * All found objects are detached with the given fetch-groups
-	 * if they are {@link PersistenceCapable}.
+	 * All found objects are detached with the given fetch-groups if they are
+	 * {@link PersistenceCapable}.
 	 * </p>
 	 */
 	Set<?> searchPropertySets(PropSearchFilter propSearchFilter,
