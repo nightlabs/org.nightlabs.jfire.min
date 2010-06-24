@@ -55,11 +55,8 @@ import org.nightlabs.jfire.prop.structfield.SelectionStructField;
 import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.testsuite.JFireTestSuite;
 import org.nightlabs.jfire.testsuite.TestCase;
-import org.nightlabs.math.Base36Coder;
 import org.nightlabs.timepattern.TimePattern;
-import org.nightlabs.timepattern.TimePatternImpl;
 import org.nightlabs.timepattern.TimePatternSet;
-import org.nightlabs.timepattern.TimePatternSetImpl;
 
 /**
  * Extension of {@link TestCase} for testing proper persistence and inheritance of different {@link DataField} kinds.
@@ -130,17 +127,14 @@ public class JFirePropertySetInheritanceTestCase extends TestCase {
 		PropertySet propertySet;
 		assertThat("PropertySetID is Null",propertySetID, notNullValue());
 		propertySet = getPropertyManager().getPropertySet(propertySetID, FETCH_GROUPS, FETCH_DEPTH);
-
 		// Fetching the stuff directly from the beans in order to avoid using the Cache. Marco.
 		final StructLocalID structLocalID = StructLocalID.create(
 				SecurityReflector.getUserDescriptor().getOrganisationID(), propertySet.getStructLinkClass(), propertySet.getStructScope(), propertySet.getStructLocalScope()
 		);
-
 		final StructLocal structLocal = getPropertyManager().getFullStructLocal(
 				structLocalID, StructLocalDAO.DEFAULT_FETCH_GROUPS, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT
 		);
 		propertySet.inflate(structLocal);
-
 		return propertySet;
 	}
 
@@ -482,33 +476,50 @@ public class JFirePropertySetInheritanceTestCase extends TestCase {
     	// Test whether data have been stored in a correct way considering this DataField.
     	final TimePatternSetDataField dataField_Mother = propertySet_Mother.getDataField(PropertySetInheritanceTestStruct.STRUCTFIELD_ID_TIMEPATTERNSET_DATAFIELD, TimePatternSetDataField.class);
     	TimePatternSetJDOImpl tps = new TimePatternSetJDOImpl(IDGenerator.nextIDString(TimePatternSetJDOImpl.class));
-    	tps.createTimePattern();
+    	// pick up random TimePatternSet values
+    	String year = String.valueOf((int)(2010 + Math.random() * 10));
+    	String month = String.valueOf((int)(1 + Math.random() * 10));
+    	String day = String.valueOf((int)(1 + Math.random() * 25));
+    	String dayofweek = String.valueOf((int)(1 + Math.random() * 5));
+    	String hour = String.valueOf((int)(1 + Math.random() * 22));
+    	String minute = String.valueOf((int)(1 + Math.random() * 59));
+    	tps.createTimePattern(
+    			year, // year
+    			month, // month
+    			day, // day
+    			dayofweek, // dayOfWeek
+    			hour, //  hour
+    			minute); // minute
     	dataField_Mother.setData(tps);
-    	final PropertySet detPropertySet_Mother = storePropertySet(propertySet_Mother, true);
-    	//		
-    	//			final TimePattern tp_Mother = ((TimePatternSet) dataField_Mother.getData()).getTimePatterns().iterator().next();
-    	//			{
-    	//				final PropertySet detPropertySet_Mother = storePropertySet(propertySet_Mother, true);
-    	//				final TimePatternSetDataField detDataField_Mother = detPropertySet_Mother.getDataField(PropertySetInheritanceTestStruct.STRUCTFIELD_ID_TIMEPATTERNSET_DATAFIELD, TimePatternSetDataField.class);
-    	//				final TimePattern detTp_Mother = ((TimePatternSet) detDataField_Mother.getData()).getTimePatterns().iterator().next();
-    	//				assertEquals("TimePatternSetDataField - days differ after storing", tp_Mother.getDay(), detTp_Mother.getDay());
-    	//				assertEquals("TimePatternSetDataField - days of week differ after storing", tp_Mother.getDayOfWeek(), detTp_Mother.getDayOfWeek());
-    	//				assertEquals("TimePatternSetDataField - hours differ after storing", tp_Mother.getHour(), detTp_Mother.getHour());
-    	//				assertEquals("TimePatternSetDataField - minutes differ after storing", tp_Mother.getMinute(), detTp_Mother.getMinute());
-    	//				assertEquals("TimePatternSetDataField - months differ after storing", tp_Mother.getMonth(), detTp_Mother.getMonth());
-    	//				assertEquals("TimePatternSetDataField - years differ after storing", tp_Mother.getYear(), detTp_Mother.getYear());
-    	//				propertySet_Mother = detPropertySet_Mother;
-    	//			}
-    	//			// Test whether the content of the considered DataField is inherited in a correct way between mother and child.
-    	//			propertySet_Child = inheritPropertySet(propertySet_Mother, propertySet_Child);
-    	//			final TimePatternSetDataField dataField_Child = propertySet_Child.getDataField(PropertySetInheritanceTestStruct.STRUCTFIELD_ID_TIMEPATTERNSET_DATAFIELD, TimePatternSetDataField.class);
-    	//			final TimePattern tp_Child = ((TimePatternSet) dataField_Child.getData()).getTimePatterns().iterator().next();
-    	//			assertEquals("TimePatternSetDataField - days of mother and child differ after applying inheritance", tp_Mother.getDay(), tp_Child.getDay());
-    	//			assertEquals("TimePatternSetDataField - days of week of mother and child differ after applying inheritance", tp_Mother.getDayOfWeek(), tp_Child.getDayOfWeek());
-    	//			assertEquals("TimePatternSetDataField - hours of mother and child differ after applying inheritance", tp_Mother.getHour(), tp_Child.getHour());
-    	//			assertEquals("TimePatternSetDataField - minutes of mother and child differ after applying inheritance", tp_Mother.getMinute(), tp_Child.getMinute());
-    	//			assertEquals("TimePatternSetDataField - months of mother and child differ after applying inheritance", tp_Mother.getMonth(), tp_Child.getMonth());
-    	//			assertEquals("TimePatternSetDataField - years of mother and child differ after applying inheritance", tp_Mother.getYear(), tp_Child.getYear());
-
+    	final TimePattern tp_Mother = ((TimePatternSet) dataField_Mother.getData()).getTimePatterns().iterator().next();
+    	// check that the values has been set
+    	assertEquals(tp_Mother.getDay(), day);
+		assertEquals(tp_Mother.getDayOfWeek(), dayofweek);
+		assertEquals(tp_Mother.getHour(), hour);
+		assertEquals(tp_Mother.getMinute(), minute);
+		assertEquals(tp_Mother.getMonth(), month);
+		assertEquals(tp_Mother.getYear(), year);
+    	{
+    		final PropertySet detPropertySet_Mother = storePropertySet(propertySet_Mother, true);
+    		final TimePatternSetDataField detDataField_Mother = detPropertySet_Mother.getDataField(PropertySetInheritanceTestStruct.STRUCTFIELD_ID_TIMEPATTERNSET_DATAFIELD, TimePatternSetDataField.class);
+    		final TimePattern detTp_Mother = ((TimePatternSet) detDataField_Mother.getData()).getTimePatterns().iterator().next();
+    		assertEquals("TimePatternSetDataField - days differ after storing", tp_Mother.getDay(), detTp_Mother.getDay());
+    		assertEquals("TimePatternSetDataField - days of week differ after storing", tp_Mother.getDayOfWeek(), detTp_Mother.getDayOfWeek());
+    		assertEquals("TimePatternSetDataField - hours differ after storing", tp_Mother.getHour(), detTp_Mother.getHour());
+    		assertEquals("TimePatternSetDataField - minutes differ after storing", tp_Mother.getMinute(), detTp_Mother.getMinute());
+    		assertEquals("TimePatternSetDataField - months differ after storing", tp_Mother.getMonth(), detTp_Mother.getMonth());
+    		assertEquals("TimePatternSetDataField - years differ after storing", tp_Mother.getYear(), detTp_Mother.getYear());
+    		propertySet_Mother = detPropertySet_Mother;
+    	}
+    	// Test whether the content of the considered DataField is inherited in a correct way between mother and child.
+    	propertySet_Child = inheritPropertySet(propertySet_Mother, propertySet_Child);
+    	final TimePatternSetDataField dataField_Child = propertySet_Child.getDataField(PropertySetInheritanceTestStruct.STRUCTFIELD_ID_TIMEPATTERNSET_DATAFIELD, TimePatternSetDataField.class);
+    	final TimePattern tp_Child = ((TimePatternSet) dataField_Child.getData()).getTimePatterns().iterator().next();
+    	assertEquals("TimePatternSetDataField - days of mother and child differ after applying inheritance", tp_Mother.getDay(), tp_Child.getDay());
+    	assertEquals("TimePatternSetDataField - days of week of mother and child differ after applying inheritance", tp_Mother.getDayOfWeek(), tp_Child.getDayOfWeek());
+    	assertEquals("TimePatternSetDataField - hours of mother and child differ after applying inheritance", tp_Mother.getHour(), tp_Child.getHour());
+    	assertEquals("TimePatternSetDataField - minutes of mother and child differ after applying inheritance", tp_Mother.getMinute(), tp_Child.getMinute());
+    	assertEquals("TimePatternSetDataField - months of mother and child differ after applying inheritance", tp_Mother.getMonth(), tp_Child.getMonth());
+    	assertEquals("TimePatternSetDataField - years of mother and child differ after applying inheritance", tp_Mother.getYear(), tp_Child.getYear());
     }
 }
