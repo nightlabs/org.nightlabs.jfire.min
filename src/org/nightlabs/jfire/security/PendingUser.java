@@ -12,6 +12,7 @@ import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
 import org.nightlabs.jdo.ObjectIDUtil;
+import org.nightlabs.jfire.idgenerator.IDGenerator;
 import org.nightlabs.jfire.organisation.Organisation;
 import org.nightlabs.jfire.person.Person;
 import org.nightlabs.jfire.security.id.PendingUserID;
@@ -128,11 +129,22 @@ public class PendingUser implements Serializable
 	private byte[] pendingUserData;
 
 
+	@Deprecated
+	protected PendingUser() {}
+
+
+	/**
+	 *
+	 * @param _organisationID
+	 * @param _userID Can be left 'null' to create an adequate next _userID-String.
+	 */
 	public PendingUser(String _organisationID, String _userID)
 	{
 		Organisation.assertValidOrganisationID(_organisationID);
-		ObjectIDUtil.assertValidIDString(_userID, "userID");
-
+		if (_userID == null)
+			_userID = IDGenerator.nextIDString(PendingUser.class);
+		else
+			ObjectIDUtil.assertValidIDString(_userID, "userID");
 		this.organisationID = _organisationID;
 		this.userID = _userID;
 	}
