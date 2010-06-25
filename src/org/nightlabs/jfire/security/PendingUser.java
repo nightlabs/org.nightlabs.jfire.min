@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.Date;
 
 import javax.jdo.annotations.Column;
+import javax.jdo.annotations.Discriminator;
+import javax.jdo.annotations.DiscriminatorStrategy;
 import javax.jdo.annotations.FetchGroup;
 import javax.jdo.annotations.FetchGroups;
 import javax.jdo.annotations.IdentityType;
@@ -44,6 +46,7 @@ import org.nightlabs.util.IOUtil;
 		name=PendingUser.FETCH_GROUP_PENDING_USER_DATA,
 		members=@Persistent(name="pendingUserData"))
 })
+@Discriminator(strategy=DiscriminatorStrategy.CLASS_NAME)
 public class PendingUser implements Serializable
 {
 	/**
@@ -136,17 +139,26 @@ public class PendingUser implements Serializable
 	/**
 	 *
 	 * @param _organisationID
-	 * @param _userID Can be left 'null' to create an adequate next _userID-String.
+	 * @param userID Can be left 'null' to create an adequate next _userID-String.
+	 * @deprecated Use {@link #PendingUser(PendingUserID)} instead!
 	 */
-	public PendingUser(String _organisationID, String _userID)
+	@Deprecated
+	public PendingUser(String organisationID, String userID)
 	{
-		Organisation.assertValidOrganisationID(_organisationID);
-		if (_userID == null)
-			_userID = IDGenerator.nextIDString(PendingUser.class);
-		else
-			ObjectIDUtil.assertValidIDString(_userID, "userID");
-		this.organisationID = _organisationID;
-		this.userID = _userID;
+		this(organisationID == null || userID == null ? null : PendingUserID.create(organisationID, userID));
+	}
+	public PendingUser(PendingUserID pendingUserID)
+	{
+		if (pendingUserID == null) {
+			this.organisationID = IDGenerator.getOrganisationID();
+			this.userID = IDGenerator.nextIDString(PendingUser.class);
+		}
+		else {
+			Organisation.assertValidOrganisationID(pendingUserID.organisationID);
+			ObjectIDUtil.assertValidIDString(pendingUserID.userID, "userID");
+			this.organisationID = pendingUserID.organisationID;
+			this.userID = pendingUserID.userID;
+		}
 	}
 
 	/**
