@@ -84,6 +84,9 @@ import org.nightlabs.jfire.prop.id.StructLocalID;
 import org.nightlabs.jfire.prop.validation.IPropertySetValidator;
 import org.nightlabs.jfire.prop.validation.ValidationResult;
 import org.nightlabs.jfire.prop.validation.ValidationResultType;
+import org.nightlabs.jfire.security.SecuredObject;
+import org.nightlabs.jfire.security.id.AuthorityID;
+import org.nightlabs.jfire.security.id.AuthorityTypeID;
 import org.nightlabs.util.Util;
 
 /**
@@ -157,7 +160,7 @@ import org.nightlabs.util.Util;
 })
 @Discriminator(strategy=DiscriminatorStrategy.CLASS_NAME)
 @Inheritance(strategy=InheritanceStrategy.NEW_TABLE)
-public class PropertySet implements Serializable, StoreCallback, AttachCallback, DetachCallback, Inheritable
+public class PropertySet implements Serializable, StoreCallback, AttachCallback, DetachCallback, Inheritable, SecuredObject
 {
 	/**
 	 * The Log4j Logger used by this class.
@@ -347,6 +350,25 @@ public class PropertySet implements Serializable, StoreCallback, AttachCallback,
 	@Column(length=100)
 	private String structLocalScope;
 
+	/**
+	 * @jdo.field persistence-modifier="persistent"
+	 */
+	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
+	private String securingAuthorityID;
+
+	/**
+	 * @jdo.field persistence-modifier="persistent"
+	 */
+	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
+	private String securingAuthorityTypeID;
+
+	public void setSecuringAuthorityTypeID(AuthorityTypeID securingAuthorityTypeID) {
+		if (this.securingAuthorityTypeID != null && !this.getSecuringAuthorityTypeID().equals(securingAuthorityTypeID))
+			throw new IllegalStateException("A different AuthorityType has already been assigned! Cannot change this value afterwards! Currently assigned: " + this.securingAuthorityTypeID + " New value: " + securingAuthorityTypeID);
+
+		this.securingAuthorityTypeID = securingAuthorityTypeID == null ? null : securingAuthorityTypeID.toString();
+	}
+	
 	/**
 	 * @return The scope of the StructLocal this PropertySet
 	 * is build of.
@@ -1270,6 +1292,7 @@ public class PropertySet implements Serializable, StoreCallback, AttachCallback,
 	 */
 	@Override
 	public void jdoPostAttach(Object arg0) {
+		// do nothing
 	}
 
 	/**
@@ -1278,6 +1301,20 @@ public class PropertySet implements Serializable, StoreCallback, AttachCallback,
 	public void jdoPreAttach() {
 		if (trimmedDetached)
 			throw new UnsupportedOperationException("Trimmed detached PropertySets are not allowed to be re-attached");
+		
+		// commented check because DataNucleus does not find Authority with given ID although it exists in the datastore
+//		PersistenceManager pm = NLJDOHelper.getThreadPersistenceManager();
+//		if (pm == null)
+//			throw new IllegalStateException("This instance of " + this.getClass().getName() + " is not yet persistent or currently not attached to a datastore! Cannot obtain PersistenceManager!");
+//		if (this.securingAuthorityID != null) {
+//			// WORKAROUND because otherwise DataNucleus throws JDOObjectNotFound although object exists
+//			pm.getExtent(Authority.class);
+//			// Check if the AuthorityType is correct. This is already done by JFireSecurityManager.assignAuthority(...), but just to be absolutely sure since this method might be called by someone else.
+//			final Authority authority = (Authority) pm.getObjectById(securingAuthorityID);
+//			final AuthorityType securingAuthorityType = (AuthorityType) pm.getObjectById(getSecuringAuthorityTypeID());
+//			if (!authority.getAuthorityType().equals(securingAuthorityType))
+//				throw new IllegalArgumentException("securingAuthority.authorityType does not match this.securingAuthorityTypeID! securingAuthority: " + securingAuthorityID + " this: " + organisationID + "/" + propertySetID);
+//		}		
 	}
 
 	/**
@@ -1628,4 +1665,49 @@ public class PropertySet implements Serializable, StoreCallback, AttachCallback,
 
 		return nonPersistentUserObjectMap;
 	}
+	
+	@Override
+	public AuthorityID getSecuringAuthorityID() {
+		if (securingAuthorityID == null)
+			return null;
+		try {
+			return new AuthorityID(securingAuthorityID);
+		} catch (final Exception e) {
+			throw new RuntimeException(e); // should never happen.
+		}
+	}
+
+	@Override
+	public AuthorityTypeID getSecuringAuthorityTypeID() {
+		return (AuthorityTypeID) ObjectIDUtil.createObjectID(securingAuthorityTypeID);
+	}
+
+//	@Override
+//	public void setSecuringAuthorityID(AuthorityID authorityID) {
+//		// Already obtain the persistence manager directly at the beginning of the method so that it always fails outside of the server (independent from the parameter).
+//		final PersistenceManager pm = JDOHelper.getPersistenceManager(this);
+//		if (pm == null)
+//			throw new IllegalStateException("This instance of " + this.getClass().getName() + " is not yet persistent or currently not attached to a datastore! Cannot obtain PersistenceManager!");
+//		final AuthorityID oldSecuringAuthorityID = this.getSecuringAuthorityID();
+//		if (Util.equals(authorityID, oldSecuringAuthorityID))
+//			return; // nothing to do
+//		if (authorityID != null) {
+//			// Check if the AuthorityType is correct. This is already done by JFireSecurityManager.assignAuthority(...), but just to be absolutely sure since this method might be called by someone else.
+//			final Authority authority = (Authority) pm.getObjectById(authorityID);
+//			final AuthorityType securingAuthorityType = (AuthorityType) pm.getObjectById(getSecuringAuthorityTypeID());
+//			if (!authority.getAuthorityType().equals(securingAuthorityType))
+//				throw new IllegalArgumentException("securingAuthority.authorityType does not match this.securingAuthorityTypeID! securingAuthority: " + authorityID + " this: " + JDOHelper.getObjectId(this));
+//		}
+//		this.securingAuthorityID = authorityID == null ? null : authorityID.toString();
+//	}
+
+	@Override
+	public void setSecuringAuthorityID(AuthorityID authorityID)
+	{
+		// checking if authority type is right is done in preAttach()
+		final AuthorityID oldSecuringAuthorityID = this.getSecuringAuthorityID();
+		if (Util.equals(authorityID, oldSecuringAuthorityID))
+			return; // nothing to do
+		this.securingAuthorityID = authorityID == null ? null : authorityID.toString();
+	}	
 }
