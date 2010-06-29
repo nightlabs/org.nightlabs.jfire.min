@@ -9,6 +9,7 @@ import javax.ejb.Remote;
 import org.nightlabs.jdo.query.QueryCollection;
 import org.nightlabs.jfire.crossorganisationregistrationinit.Context;
 import org.nightlabs.jfire.security.id.AuthorityID;
+import org.nightlabs.jfire.security.id.AuthorityMetaID;
 import org.nightlabs.jfire.security.id.AuthorityTypeID;
 import org.nightlabs.jfire.security.id.AuthorizedObjectID;
 import org.nightlabs.jfire.security.id.AuthorizedObjectRefID;
@@ -271,9 +272,32 @@ public interface JFireSecurityManagerRemote
 	 */
 	void setUserPassword(String password);
 
+	/**
+	 *
+	 * @param authority the {@link Authority} to store
+	 * @param get determines if the stored authority should be return as detached object if true or returns null if false
+	 * @param fetchGroups the (optional) fetchGroups for detaching if get is true
+	 * @param maxFetchDepth the fetch depth for detaching if get is true
+	 * @return the detached saved authority if get is true or null if get is false
+	 */
 	Authority storeAuthority(Authority authority, boolean get,
 			String[] fetchGroups, int maxFetchDepth);
 
+	/**
+	 * Returns the {@link AuthorityMeta} for the given {@link AuthorityID}. If no {@link AuthorityMeta} for the {@link Authority}
+	 * with the given {@link AuthorityID} is yet existing a new one is created, persisted and returned.
+	 *
+	 * @param authorityID the {@link AuthorityID} to get the corresponding {@link AuthorityMeta} for.
+	 * @param fetchGroups the fetch groups for detaching
+	 * @param maxFetchDepth the maximum fetch depth for detaching
+	 * @return the detached {@link AuthorityMeta} for the given {@link AuthorityID}
+	 */
+	AuthorityMeta getAuthorityMeta(final AuthorityID authorityID, String[] fetchGroups, int maxFetchDepth);
+
+	Collection<AuthorityMeta> getAuthorityMetas(Collection<AuthorityMetaID> authorityMetaIDs, String[] fetchGroups, int maxFetchDepth);
+
+	AuthorityMeta storeAuthorityMeta(AuthorityMeta authorityMeta, boolean get, String[] fetchGroups, int maxFetchDepth);
+	
 	/**
 	 * @param securedObjectID the object-id of an object implementing {@link SecuredObject}.
 	 * @param authorityID the object-id of the {@link Authority} that shall be assigned to the object specified by <code>securedObjectID</code>.

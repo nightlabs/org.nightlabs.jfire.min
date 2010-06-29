@@ -387,5 +387,28 @@
 *******************************************************************
 ***             END org.nightlabs.jfire.workstation             ***
 *******************************************************************
+
+*******************************************************************
+***            BEGIN org.nightlabs.jfire.prop                   ***
+*******************************************************************
+-->
+	<role-group id="org.nightlabs.jfire.prop.seePropertySet">
+		<name>View a property set</name>
+		<name language="de">Eine Menge von Eigenschaften ansehen</name>
+		<description>Allows to view a set of properties.</description>
+		<description language="de">Erlaubt die Ansicht einer Menge von Eigenschaften.</description>
+		<role id="org.nightlabs.jfire.prop.seePropertySet" />
+	</role-group>
+	<role-group id="org.nightlabs.jfire.prop.editPropertySet">
+		<name>Edit a property set</name>
+		<name language="de">Eine Menge von Eigenschaften bearbeiten</name>
+		<description>Allows to edit a set of properties.</description>
+		<description language="de">Erlaubt die Bearbeitung einer Menge von Eigenschaften.</description>
+		<role id="org.nightlabs.jfire.prop.editPropertySet" />
+	</role-group>
+<!--
+*******************************************************************
+***             END org.nightlabs.jfire.prop                    ***
+*******************************************************************
 -->
 </jfire-security>

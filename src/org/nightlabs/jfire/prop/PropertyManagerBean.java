@@ -26,6 +26,7 @@
 
 package org.nightlabs.jfire.prop;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -91,6 +92,8 @@ import org.nightlabs.jfire.prop.structfield.TextStructField;
 import org.nightlabs.jfire.prop.structfield.TimePatternSetStructField;
 import org.nightlabs.jfire.prop.view.PropertySetTableViewerConfiguration;
 import org.nightlabs.jfire.prop.view.PropertySetViewerConfiguration;
+import org.nightlabs.jfire.security.Authority;
+import org.nightlabs.jfire.security.ResolveSecuringAuthorityStrategy;
 import org.nightlabs.util.CollectionUtil;
 import org.nightlabs.util.Stopwatch;
 import org.nightlabs.util.Util;
@@ -200,6 +203,7 @@ public class PropertyManagerBean extends BaseSessionBeanImpl implements Property
 	 * @see org.nightlabs.jfire.prop.PropertyManagerRemote#getPropertySet(org.nightlabs.jfire.prop.id.PropertySetID, java.lang.String[], int)
 	 */
 	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+//	@RolesAllowed("org.nightlabs.jfire.prop.seePropertySet")
 	@RolesAllowed("_Guest_")
 	@Override
 	public PropertySet getPropertySet(PropertySetID propID, String[] fetchGroups, int maxFetchDepth) {
@@ -213,7 +217,15 @@ public class PropertyManagerBean extends BaseSessionBeanImpl implements Property
 				pm.getFetchPlan().setGroups(fetchGroups);
 
 			PropertySet result = pm.detachCopy(prop);
-			return result;
+
+			/* filter secured objects (begin) */
+			final List<PropertySet> resultSet = new ArrayList<PropertySet>();
+			resultSet.add(result);
+			final List<PropertySet> result_ = Authority.filterSecuredObjects(pm, resultSet, getPrincipal(), RoleConstants.seePropertySet, ResolveSecuringAuthorityStrategy.allow);
+			if (result_.size() == 1)
+				return result_.get(0);
+			return null;
+			/* filter secured objects (end) */
 		} finally {
 			pm.close();
 		}
@@ -255,7 +267,24 @@ public class PropertyManagerBean extends BaseSessionBeanImpl implements Property
 
 			propSearchFilter.setPersistenceManager(pm);
 			Collection<?> props = propSearchFilter.getResult();
-			return NLJDOHelper.getDetachedQueryResultAsSet(pm, props);
+			
+//			Set result = NLJDOHelper.getDetachedQueryResultAsSet(pm, props);
+//			return (Set<?>) Authority.filterSecuredObjects(pm, result, getPrincipal(), RoleConstants.seePropertySet, ResolveSecuringAuthorityStrategy.allow);
+
+			Set detachedProps = NLJDOHelper.getDetachedQueryResultAsSet(pm, props);
+			Set result = new HashSet();
+			Set filteredProps = new HashSet();
+			// because this method can also return other objects then PropertySet we only filter PropertySets and in case it is no PropertySet we dont filter at all.
+			for (Object detachedProp : detachedProps) {
+				if (detachedProp instanceof PropertySet) {
+					filteredProps.add(detachedProp);
+				}
+				else {
+					result.add(detachedProp);
+				}
+			}
+			result.addAll(Authority.filterSecuredObjects(pm, filteredProps, getPrincipal(), RoleConstants.seePropertySet, ResolveSecuringAuthorityStrategy.allow));
+			return result;
 		} finally {
 			pm.close();
 		}
@@ -285,7 +314,8 @@ public class PropertyManagerBean extends BaseSessionBeanImpl implements Property
 					result.add((PropertySetID) JDOHelper.getObjectId(propertySet));
 				}
 			}
-			return result;
+//			return result;
+			return Authority.filterSecuredObjectIDs(pm, result, getPrincipal(), RoleConstants.seePropertySet, ResolveSecuringAuthorityStrategy.allow);
 		} finally {
 			pm.close();
 		}
@@ -300,6 +330,14 @@ public class PropertyManagerBean extends BaseSessionBeanImpl implements Property
 	public PropertySet storePropertySet(PropertySet propertySet, boolean get, String[] fetchGroups, int maxFetchDepth) {
 		PersistenceManager pm = createPersistenceManager();
 		try {
+			/* test if user is allowed to store the property set (begin) */
+			// TODO is this sufficient?
+			if (JDOHelper.isDetached(propertySet)) {
+				PropertySet propertySet_ = (PropertySet) pm.getObjectById(JDOHelper.getObjectId(propertySet));
+				Authority.resolveSecuringAuthority(pm, propertySet_, ResolveSecuringAuthorityStrategy.allow)
+					.assertContainsRoleRef(getPrincipal(), RoleConstants.editPropertySet);
+			}
+			/* test if user is allowed to store the property set (end) */
 			return NLJDOHelper.storeJDO(pm, propertySet, get, fetchGroups, maxFetchDepth);
 		} finally {
 			pm.close();
@@ -451,6 +489,7 @@ public class PropertyManagerBean extends BaseSessionBeanImpl implements Property
 	 * @see org.nightlabs.jfire.prop.PropertyManagerRemote#getPropertySets(java.util.Set, java.lang.String[], int)
 	 */
 	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+//	@RolesAllowed("org.nightlabs.jfire.prop.seePropertySet")
 	@RolesAllowed("_Guest_")
 	@Override
 	public Set<PropertySet> getPropertySets(Set<PropertySetID> propIDs, String[] fetchGroups, int maxFetchDepth) {
@@ -461,7 +500,9 @@ public class PropertyManagerBean extends BaseSessionBeanImpl implements Property
 			long time = System.currentTimeMillis();
 			Set<PropertySet> result = NLJDOHelper.getDetachedObjectSet(pm, propIDs, null, fetchGroups, maxFetchDepth);
 			logger.debug("Detaching " + result.size() + " PropertySets took " + Util.getTimeDiffString(time));
-			return result;
+			/* filter secured objects (begin) */
+			return Authority.filterSecuredObjects(pm, result, getPrincipal(), RoleConstants.seePropertySet, ResolveSecuringAuthorityStrategy.allow);
+			/* filter secured objects (end) */
 		} finally {
 			pm.close();
 		}

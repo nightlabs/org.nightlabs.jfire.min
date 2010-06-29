@@ -54,6 +54,7 @@ import org.apache.log4j.Logger;
 import org.nightlabs.inheritance.Inheritable;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jdo.ObjectID;
+import org.nightlabs.jdo.QueryOption;
 import org.nightlabs.jdo.query.JDOQueryCollectionDecorator;
 import org.nightlabs.jdo.query.QueryCollection;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
@@ -64,6 +65,7 @@ import org.nightlabs.jfire.jdo.notification.persistent.PersistentNotificationEJB
 import org.nightlabs.jfire.jdo.notification.persistent.SubscriptionUtil;
 import org.nightlabs.jfire.organisation.LocalOrganisation;
 import org.nightlabs.jfire.security.id.AuthorityID;
+import org.nightlabs.jfire.security.id.AuthorityMetaID;
 import org.nightlabs.jfire.security.id.AuthorityTypeID;
 import org.nightlabs.jfire.security.id.AuthorizedObjectID;
 import org.nightlabs.jfire.security.id.AuthorizedObjectRefID;
@@ -1639,6 +1641,64 @@ implements JFireSecurityManagerRemote
 			q.setResult("JDOHelper.getObjectId(this)");
 			Collection<RoleGroupID> c = CollectionUtil.castCollection((Collection<?>) q.execute());
 			return new HashSet<RoleGroupID>(c);
+		} finally {
+			pm.close();
+		}
+	}
+
+	@RolesAllowed("_Guest_")
+	@Override
+	public AuthorityMeta getAuthorityMeta(final AuthorityID authorityID, String[] fetchGroups, int maxFetchDepth)
+	{
+		PersistenceManager pm = createPersistenceManager();
+		try {
+			Authority authority = (Authority) pm.getObjectById(authorityID);
+			AuthorityMeta authorityMeta = AuthorityMeta.getAuthorityMetaByAuthorityID(pm, authorityID);
+			if (authorityMeta == null) {
+				authorityMeta = new AuthorityMeta(authority.getOrganisationID(), authority.getAuthorityID());
+				authorityMeta.setSecuringAuthorityID(authorityID);
+				authorityMeta.setSecuringAuthorityTypeID(authority.getSecuringAuthorityTypeID());
+				return NLJDOHelper.storeJDO(pm, authorityMeta, true, fetchGroups, maxFetchDepth);
+			}
+			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
+			if (fetchGroups != null)
+				pm.getFetchPlan().setGroups(fetchGroups);
+			return pm.detachCopy(authorityMeta);
+		}
+		catch (JDOObjectNotFoundException e)
+		{
+			// if no authority for the given authorityID exists return null
+			return null;
+		} finally {
+			pm.close();
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.security.JFireSecurityManagerRemote#getAuthorityMetas(java.util.Collection, java.lang.String[], int)
+	 */
+	@Override
+	public Collection<AuthorityMeta> getAuthorityMetas(Collection<AuthorityMetaID> authorityMetaIDs,
+			String[] fetchGroups, int maxFetchDepth)
+	{
+		PersistenceManager pm = createPersistenceManager();
+		try {
+			return NLJDOHelper.getDetachedObjectSet(pm, authorityMetaIDs, AuthorityMeta.class, fetchGroups, maxFetchDepth, (QueryOption)null);
+		} finally {
+			pm.close();
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.security.JFireSecurityManagerRemote#storeAuthorityMeta(org.nightlabs.jfire.security.AuthorityMeta, boolean, java.lang.String[], int)
+	 */
+	@Override
+	public AuthorityMeta storeAuthorityMeta(AuthorityMeta authorityMeta,
+			boolean get, String[] fetchGroups, int maxFetchDepth)
+	{
+		PersistenceManager pm = createPersistenceManager();
+		try {
+			return NLJDOHelper.storeJDO(pm, authorityMeta, get, fetchGroups, maxFetchDepth);
 		} finally {
 			pm.close();
 		}
