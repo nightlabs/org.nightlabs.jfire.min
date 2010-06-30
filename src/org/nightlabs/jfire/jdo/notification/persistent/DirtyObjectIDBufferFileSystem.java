@@ -166,6 +166,12 @@ implements DirtyObjectIDBuffer
 				if (lockedFiles.contains(file))
 					continue;
 
+				// in case a file is 0 bytes delete it and continues
+				if (file.length() == 0) {
+					file.delete();
+					continue;
+				}
+					
 				filesInProcess.add(file);
 
 				InputStream in = new BufferedInputStream(new FileInputStream(file));
