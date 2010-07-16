@@ -527,6 +527,8 @@ public class PropertySet implements Serializable, StoreCallback, AttachCallback,
 		public static final String structOrganisationID = "structOrganisationID";
 		public static final String structScope = "structScope";
 		public static final String trimmedDetached = "trimmedDetached";
+		public static final String securingAuthorityID = "securingAuthorityID";
+		public static final String securingAuthorityTypeID = "securingAuthorityTypeID";
 	}
 
 	/**
@@ -1419,6 +1421,10 @@ public class PropertySet implements Serializable, StoreCallback, AttachCallback,
 				nonInheritableFields.add(FieldName.structLinkClass);
 				nonInheritableFields.add(FieldName.structScope);
 				nonInheritableFields.add(FieldName.structLocalScope);
+				
+				// for the beginning we don't inherit the securingAuthorityID and securingAuthorityTypeID
+				nonInheritableFields.add(FieldName.securingAuthorityID);
+				nonInheritableFields.add(FieldName.securingAuthorityTypeID);
 			}
 			if (nonInheritableFields.contains(fieldName))
 				return null;
