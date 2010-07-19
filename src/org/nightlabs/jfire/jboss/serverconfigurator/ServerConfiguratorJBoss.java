@@ -710,8 +710,9 @@ public class ServerConfiguratorJBoss
 			backup(destFile);
 			setRebootRequired(true); 
 			// replace the jboss AuthenticationInterceptorFactory 
+			//TODO: add class name reference instead of string
 			text = text.replaceAll(AuthenticationInterceptorFactory.class.getName(),
-					JFireEjb3AuthenticationInterceptorFactory.class.getName());
+					"org.nightlabs.jfire.jboss.ejb3.JFireEjb3AuthenticationInterceptorFactory");
 			IOUtil.writeTextFile(destFile, text);
 		}
 	}
