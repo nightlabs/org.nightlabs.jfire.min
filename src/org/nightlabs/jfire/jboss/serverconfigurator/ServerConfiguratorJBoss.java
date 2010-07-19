@@ -21,6 +21,8 @@ import javax.xml.transform.TransformerException;
 import org.apache.log4j.Logger;
 import org.apache.xpath.CachedXPathAPI;
 import org.jboss.system.server.ServerConfig;
+import org.jboss.ejb3.security.AuthenticationInterceptorFactory;
+import org.nightlabs.jfire.jboss.ejb3.JFireEjb3AuthenticationInterceptorFactory;
 import org.nightlabs.config.ConfigModuleNotFoundException;
 import org.nightlabs.jfire.jboss.authentication.JFireServerLocalLoginModule;
 import org.nightlabs.jfire.jboss.authentication.JFireServerLoginModule;
@@ -424,6 +426,7 @@ public class ServerConfiguratorJBoss
 			File jbossConfDir = getJBossConfigDir();
 			configureLoginConfigXml(jbossConfDir);
 			configureAOP(jbossDeployDir);
+			configureEjb3AOPInterceptorDeployerXml(jbossDeployDir);
 			configureUnifiedEjbJndiJBoss(jbossConfDir);
 //			configureStandardJBossXml(jbossConfDir); Not necessary anymore, since custom compression Sockets aren't used anymore.
 			configureMailServiceXml(jbossDeployDir);
@@ -688,6 +691,28 @@ public class ServerConfiguratorJBoss
 			NLDOMUtil.writeDocument(document, out, encoding);
 		} finally {
 			out.close();
+		}
+	}
+	
+	private void configureEjb3AOPInterceptorDeployerXml(File jbossDeployDir) throws FileNotFoundException, IOException
+	{
+		File destFile = new File(jbossDeployDir, "ejb3-interceptors-aop.xml");
+		if (!destFile.exists())
+		{
+			logger.error("Couldn't find the file ejb3-interceptors-aop.xml in the jboss folder! Assumed to be in" +
+					jbossDeployDir.toString());
+			return;
+		}
+		String text = IOUtil.readTextFile(destFile);
+		// find the reference of the jboss's AuthenticationInterceptorFactory class 
+		if (text.indexOf(AuthenticationInterceptorFactory.class.getName()) >= 0) {
+			// backup the file !!!
+			backup(destFile);
+			setRebootRequired(true); 
+			// replace the jboss AuthenticationInterceptorFactory 
+			text = text.replaceAll(AuthenticationInterceptorFactory.class.getName(),
+					JFireEjb3AuthenticationInterceptorFactory.class.getName());
+			IOUtil.writeTextFile(destFile, text);
 		}
 	}
 
