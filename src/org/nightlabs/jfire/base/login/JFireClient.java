@@ -139,6 +139,7 @@ public class JFireClient {
 		// and probably we're OFFLINE and can't do that!
 		System.setProperty("org.nightlabs.jfire.idgenerator.idGeneratorClass", "org.nightlabs.jfire.base.idgenerator.IDGeneratorClient"); //$NON-NLS-1$ //$NON-NLS-2$
 		System.setProperty("org.nightlabs.jfire.security.SecurityReflector", "org.nightlabs.jfire.base.security.SecurityReflectorClient"); //$NON-NLS-1$ //$NON-NLS-2$
-		System.setProperty("org.nightlabs.jfire.base.jdo.notification.JDOLifecycleManager", "org.nightlabs.jfire.base.ui.jdo.notification.JDOLifecycleManager"); //$NON-NLS-1$ //$NON-NLS-2$
+//		System.setProperty("org.nightlabs.jfire.base.jdo.notification.JDOLifecycleManager", "org.nightlabs.jfire.base.ui.jdo.notification.JDOLifecycleManager"); //$NON-NLS-1$ //$NON-NLS-2$
+		System.setProperty("org.nightlabs.jfire.base.jdo.notification.JDOLifecycleManager", "org.nightlabs.jfire.base.jdo.notification.JDOLifecycleManager"); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 }
