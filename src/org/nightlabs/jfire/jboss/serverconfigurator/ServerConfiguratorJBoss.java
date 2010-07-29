@@ -23,6 +23,7 @@ import org.apache.xpath.CachedXPathAPI;
 import org.jboss.system.server.ServerConfig;
 import org.jboss.ejb3.security.AuthenticationInterceptorFactory;
 import org.nightlabs.jfire.jboss.ejb3.JFireEjb3AuthenticationInterceptorFactory;
+import org.nightlabs.jfire.jboss.ejb3.JFireEjb3TransactionRetryInterceptor;
 import org.nightlabs.config.ConfigModuleNotFoundException;
 import org.nightlabs.jfire.jboss.authentication.JFireServerLocalLoginModule;
 import org.nightlabs.jfire.jboss.authentication.JFireServerLoginModule;
@@ -91,7 +92,7 @@ public class ServerConfiguratorJBoss
 	 * Used to mark the files modified by this server configurator.
 	 */
 	public static final String ModificationMarker = "!!!ModifiedByJFire!!!";
-
+	
 	private static final String HTTP_INVOKER_SERVICE_HTTP_CONNECTORS =
 		"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n " +
 		"<root>\n <!-- "+ModificationMarker+" -->\n " +
@@ -426,7 +427,8 @@ public class ServerConfiguratorJBoss
 			File jbossConfDir = getJBossConfigDir();
 			configureLoginConfigXml(jbossConfDir);
 			configureAOP(jbossDeployDir);
-			configureEjb3AOPInterceptorDeployerXml(jbossDeployDir);
+			configureEjb3AOPRetryTransactionInterceptorXml(jbossDeployDir);
+			configureEjb3AOPExceptionInterceptorXml(jbossDeployDir);
 			configureUnifiedEjbJndiJBoss(jbossConfDir);
 //			configureStandardJBossXml(jbossConfDir); Not necessary anymore, since custom compression Sockets aren't used anymore.
 			configureMailServiceXml(jbossDeployDir);
@@ -694,7 +696,91 @@ public class ServerConfiguratorJBoss
 		}
 	}
 	
-	private void configureEjb3AOPInterceptorDeployerXml(File jbossDeployDir) throws FileNotFoundException, IOException
+	/**
+	 *
+	 * adds the EJB Transaction interceptor which retry a failed EJB invocation multiple times. 
+	 *
+	 * @param jbossDeployDir the deploy directory of the JBoss J2EE server.
+	 * @throws SAXException
+	 * @throws IOException
+	 * @throws IFileNotFoundException
+	 */
+	private void configureEjb3AOPRetryTransactionInterceptorXml(File jbossDeployDir) throws FileNotFoundException, IOException, SAXException
+	{
+		File destFile = new File(jbossDeployDir, "ejb3-interceptors-aop.xml");
+		if (!destFile.exists())
+		{
+			logger.error("Couldn't find the file ejb3-interceptors-aop.xml in the jboss folder! Assumed to be in" +
+					jbossDeployDir.toString());
+			return;
+		}
+
+		final DOMParser parser = new DOMParser();
+		FileInputStream serverXmlStream = new FileInputStream(destFile);
+		try
+		{
+			parser.parse(new InputSource(serverXmlStream));
+		}
+		finally
+		{
+			serverXmlStream.close();
+		}
+
+		final Document document = parser.getDocument();
+		String encoding = document.getXmlEncoding();
+		if (encoding == null)
+			encoding = "UTF-8";
+		if (NLDOMUtil.getDocumentAsString(document, encoding).contains(ModificationMarker))
+			return;
+		// find the root AOP
+		Node aopNode = NLDOMUtil.findSingleNode(document, "aop");
+		if (!destFile.exists())
+		{
+			logger.error("Couldn't find the file ejb3-interceptors-aop.xml in the jboss folder! Assumed to be in" +
+					jbossDeployDir.toString());
+			return;
+		}
+		Node firstInterceptorChildNode = NLDOMUtil.findSingleNode(document, "aop/interceptor");		
+		Comment comment = document.createComment(ModificationMarker);		
+		// create the interceptor Node
+		Element newnode = document.createElement("interceptor");// Create Root Element
+		newnode.setAttribute("class", JFireEjb3TransactionRetryInterceptor.class.getName());
+		newnode.setAttribute("scope", "PER_VM");
+		aopNode.insertBefore(newnode, firstInterceptorChildNode);
+		aopNode.insertBefore(comment,newnode);
+		// create the bind point
+		Element bindNode = document.createElement("bind");// Create Root Element
+		bindNode.setAttribute("pointcut", "execution(public * *->*(..))");
+		Element interceptorNode = document.createElement("interceptor-ref");// Create Root Element		
+		interceptorNode.setAttribute("name", JFireEjb3TransactionRetryInterceptor.class.getName());		
+		bindNode.appendChild(interceptorNode);	
+		// add the bind points to all beans nodes
+		Collection<Node> domainNodes = NLDOMUtil.findNodeList(document, "aop/domain");
+		for (Node node : domainNodes)
+		{			
+			node.appendChild(bindNode.cloneNode(true));	
+		}
+		backup(destFile);
+		// write modified file
+		setRebootRequired(true);
+		FileOutputStream out = new FileOutputStream(destFile);
+		try {
+			NLDOMUtil.writeDocument(document, out, encoding);
+		} finally {
+			out.close();
+		}
+	}
+	
+	/**
+	 *
+	 * adds Exception handler interceptor which re-propagates the Exceptions caught during the execution of EJB methods
+	 *
+	 * @param jbossDeployDir the deploy directory of the JBoss J2EE server.
+	 * @throws SAXException
+	 * @throws IOException
+	 * @throws IFileNotFoundException
+	 */
+	private void configureEjb3AOPExceptionInterceptorXml(File jbossDeployDir) throws FileNotFoundException, IOException
 	{
 		File destFile = new File(jbossDeployDir, "ejb3-interceptors-aop.xml");
 		if (!destFile.exists())
@@ -709,10 +795,8 @@ public class ServerConfiguratorJBoss
 			// backup the file !!!
 			backup(destFile);
 			setRebootRequired(true); 
-			// replace the jboss AuthenticationInterceptorFactory 
-			//TODO: add class name reference instead of string
 			text = text.replaceAll(AuthenticationInterceptorFactory.class.getName(),
-					"org.nightlabs.jfire.jboss.ejb3.JFireEjb3AuthenticationInterceptorFactory");
+					JFireEjb3AuthenticationInterceptorFactory.class.getName());
 			IOUtil.writeTextFile(destFile, text);
 		}
 	}
