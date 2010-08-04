@@ -20,10 +20,8 @@ import javax.xml.transform.TransformerException;
 
 import org.apache.log4j.Logger;
 import org.apache.xpath.CachedXPathAPI;
-import org.jboss.system.server.ServerConfig;
 import org.jboss.ejb3.security.AuthenticationInterceptorFactory;
-import org.nightlabs.jfire.jboss.ejb3.JFireEjb3AuthenticationInterceptorFactory;
-import org.nightlabs.jfire.jboss.ejb3.JFireEjb3TransactionRetryInterceptor;
+import org.jboss.system.server.ServerConfig;
 import org.nightlabs.config.ConfigModuleNotFoundException;
 import org.nightlabs.jfire.jboss.authentication.JFireServerLocalLoginModule;
 import org.nightlabs.jfire.jboss.authentication.JFireServerLoginModule;
@@ -345,7 +343,14 @@ public class ServerConfiguratorJBoss
 		"        <url-pattern>/SSLEjb3ServerInvokerServlet/*</url-pattern>\n" +
 		"    </servlet-mapping>\n" +
 		"</root>";
-
+	
+	
+	/**
+	 * the class names of JFire's JBoss custom interceptors 
+	 */
+	private static final String JFIRE_AUTHENTICATION_INTERCEPTOR = "org.nightlabs.jfire.jboss.ejb3.JFireEjb3AuthenticationInterceptorFactory";
+	private static final String JFIRE_TRANSACTION_INTERCEPTOR = "org.nightlabs.jfire.jboss.ejb3.JFireEjb3TransactionRetryInterceptor";
+	
 	protected static void waitForServer()
 	{
 		if(System.getProperty("jboss.home.dir") != null) {
@@ -744,7 +749,7 @@ public class ServerConfiguratorJBoss
 		Comment comment = document.createComment(ModificationMarker);		
 		// create the interceptor Node
 		Element newnode = document.createElement("interceptor");// Create Root Element
-		newnode.setAttribute("class", JFireEjb3TransactionRetryInterceptor.class.getName());
+		newnode.setAttribute("class", JFIRE_TRANSACTION_INTERCEPTOR);
 		newnode.setAttribute("scope", "PER_VM");
 		aopNode.insertBefore(newnode, firstInterceptorChildNode);
 		aopNode.insertBefore(comment,newnode);
@@ -752,7 +757,7 @@ public class ServerConfiguratorJBoss
 		Element bindNode = document.createElement("bind");// Create Root Element
 		bindNode.setAttribute("pointcut", "execution(public * *->*(..))");
 		Element interceptorNode = document.createElement("interceptor-ref");// Create Root Element		
-		interceptorNode.setAttribute("name", JFireEjb3TransactionRetryInterceptor.class.getName());		
+		interceptorNode.setAttribute("name", JFIRE_TRANSACTION_INTERCEPTOR);		
 		bindNode.appendChild(interceptorNode);	
 		// add the bind points to all beans nodes
 		Collection<Node> domainNodes = NLDOMUtil.findNodeList(document, "aop/domain");
@@ -796,7 +801,7 @@ public class ServerConfiguratorJBoss
 			backup(destFile);
 			setRebootRequired(true); 
 			text = text.replaceAll(AuthenticationInterceptorFactory.class.getName(),
-					JFireEjb3AuthenticationInterceptorFactory.class.getName());
+					JFIRE_AUTHENTICATION_INTERCEPTOR);
 			IOUtil.writeTextFile(destFile, text);
 		}
 	}
