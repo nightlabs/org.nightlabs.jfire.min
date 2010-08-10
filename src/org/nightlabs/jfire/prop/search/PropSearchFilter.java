@@ -155,6 +155,20 @@ public abstract class PropSearchFilter
 	 */
 	public static final String PROPERTY_VARNAME = "queryProp";
 
+	/**
+	 * This method sets the filter (constraint) for the propertySet variable. 
+	 * The default implementation assumes that the candidate class is itself the PropertySet and will set the constraint to 
+	 * <code>queryProp == this</code>.
+	 * <p>
+	 * Override this method to redirect the PropertySet variable. Example: You query an entity with a field propertySet then the condition would be:
+	 * <code>queryProp == this.propertySet</code>
+	 * </p> 
+	 * <p>
+	 * The name of the variable is defined as constant {@link #PROPERTY_VARNAME}.
+	 * </p>
+	 * 
+	 * @param filter
+	 */
 	public void setPropVariableCondition(StringBuffer filter){
 		filter.append(PROPERTY_VARNAME+" == this");
 	}
