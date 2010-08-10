@@ -53,6 +53,7 @@ import org.nightlabs.jfire.prop.id.DataFieldID;
 import org.nightlabs.jfire.prop.id.StructFieldID;
 import org.nightlabs.jfire.prop.validation.IDataFieldValidator;
 import org.nightlabs.jfire.prop.validation.ValidationResult;
+import org.nightlabs.jfire.prop.validation.ValidationResultType;
 
 /**
  * Base class for all types of data fields that can be stored in a {@link PropertySet}.
@@ -487,7 +488,8 @@ public abstract class DataField implements Serializable, Comparable<DataField>, 
 					results.add(result);
 			}
 		} catch (PropertyException e) {
-			throw new IllegalArgumentException("StructField for this datafield was not found.");
+			results.add(new ValidationResult(ValidationResultType.WARNING,"StructField for this datafield was not found."));  
+//			throw new IllegalArgumentException("StructField for this datafield was not found.");
 		}
 
 		if (results.isEmpty())
