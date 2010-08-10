@@ -61,4 +61,9 @@ extends AbstractStructFieldSearchFilterItem
 	public EnumSet<MatchType> getSupportedMatchTypes() {
 		return SUPPORTED_MATCH_TYPES;
 	}
+	
+	@Override
+	public boolean isConstraint() {
+		return selectedStructFieldValueID != null && !selectedStructFieldValueID.isEmpty();
+	}
 }

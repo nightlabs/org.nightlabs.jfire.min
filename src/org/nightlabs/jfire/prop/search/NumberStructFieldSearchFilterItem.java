@@ -14,7 +14,7 @@ extends AbstractStructFieldSearchFilterItem
 {
 	public static final EnumSet<MatchType> SUPPORTED_MATCH_TYPES = EnumSet.of(MatchType.EQUALS, MatchType.GREATER_THAN, MatchType.LESS_THAN, MatchType.NOTEQUALS);
 	
-	private int number;
+	private Integer number;
 	
 	public NumberStructFieldSearchFilterItem(MatchType matchType, StructFieldID structFieldID, int number) {
 		super(structFieldID, matchType);
@@ -63,5 +63,10 @@ extends AbstractStructFieldSearchFilterItem
 	@Override
 	public EnumSet<MatchType> getSupportedMatchTypes() {
 		return SUPPORTED_MATCH_TYPES;
+	}
+	
+	@Override
+	public boolean isConstraint() {
+		return number != null;
 	}
 }

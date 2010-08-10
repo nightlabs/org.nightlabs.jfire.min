@@ -128,4 +128,9 @@ public abstract class AbstractTextBasedStructFieldSearchFilterItem extends Abstr
 	public EnumSet<MatchType> getSupportedMatchTypes() {
 		return SUPPORTED_MATCH_TYPES;
 	}
+	
+	@Override
+	public boolean isConstraint() {
+		return getSearchString() != null && !getSearchString().isEmpty();
+	}
 }
