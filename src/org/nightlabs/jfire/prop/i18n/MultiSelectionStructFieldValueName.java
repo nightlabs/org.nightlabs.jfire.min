@@ -61,7 +61,7 @@ import org.nightlabs.jfire.prop.structfield.MultiSelectionStructFieldValue;
 	@FetchGroup(
 		fetchGroups={"default"},
 		name="IStruct.fullData",
-		members=@Persistent(name="names")),
+		members={@Persistent(name="names"), @Persistent(name="structFieldValue")}),
 	@FetchGroup(
 		fetchGroups={"default"},
 		name="MultiSelectionStructFieldValue.valueName",
