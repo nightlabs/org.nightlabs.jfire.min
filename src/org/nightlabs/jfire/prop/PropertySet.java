@@ -994,10 +994,16 @@ public class PropertySet implements Serializable, StoreCallback, AttachCallback,
 	 * corresponding {@link StructField}.
 	 */
 	public void validateStructure(IStruct refStruct) throws StructureViolationException {
-		for (DataField field : dataFields) {
-			if (!refStruct.containsDataField(field))
-				throw new StructureViolationException("The structure of this property does not match " + refStruct);
-		}
+		// FIXME: Commented, as it is possible to delete StructFields from a
+		// StructLocal and leaving PropertySets with DataFields not
+		// corresponding to a StructField in the Structure. Maybe later we
+		// should force the deletion of all DataFields when a StructField is
+		// deleted.
+		
+//		for (DataField field : dataFields) {
+//			if (!refStruct.containsDataField(field))
+//				throw new StructureViolationException("The structure of this property does not match " + refStruct);
+//		}
 	}
 
 	/**
