@@ -864,15 +864,8 @@ public class PropertySet implements Serializable, StoreCallback, AttachCallback,
 			this.displayName = "";
 			displayName = "";
 			for (DisplayNamePart displayNamePart : structure.getDisplayNameParts()) {
-				DataField field = null;
-				try {
-					field = getDataField(displayNamePart.getStructField().getStructBlockOrganisationID(), displayNamePart.getStructField().getStructBlockID(),
-							displayNamePart.getStructField().getStructFieldOrganisationID(), displayNamePart.getStructField().getStructFieldID());
-				} catch (DataNotFoundException e) {
-					// prop does not have this field
-					continue;
-				}
-				if (!field.isEmpty()) {
+				DataField field = getPersistentDataFieldByIndex(displayNamePart.getStructField().getStructFieldIDObj(), 0);
+				if (field != null && !field.isEmpty()) {
 					if (field instanceof II18nTextDataField) {
 //						displayName += ((II18nTextDataField) field).getText(new Locale(languageID)) + displayNamePart.getStructFieldSuffix();
 						displayName += ((II18nTextDataField) field).getI18nText().getText() + displayNamePart.getStructFieldSuffix();
