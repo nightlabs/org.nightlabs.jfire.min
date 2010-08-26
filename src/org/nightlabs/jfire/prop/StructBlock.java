@@ -129,6 +129,13 @@ public class StructBlock implements Serializable
 		mappedBy="block",
 		persistenceModifier=PersistenceModifier.PERSISTENT)
 	protected StructBlockName blockName;
+	
+	/** 
+	 * How many columns should the display of a DataBlock of this StructBlock have.
+	 * TODO: Later we might replace this by a complex entity.
+	 */
+	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
+	private int displayFieldColumnCount;
 
 	/**
 	 * This constructor is for JDO only.
@@ -168,6 +175,7 @@ public class StructBlock implements Serializable
 		this.blockName = new StructBlockName(this);
 		this.structFields = new LinkedList<StructField<? extends DataField>>();
 		this.dataBlockValidators = new LinkedList<DataBlockValidator>();
+		this.displayFieldColumnCount = 1;
 	}
 
 	/**
@@ -620,5 +628,22 @@ public class StructBlock implements Serializable
 			return true;
 		else
 			throw new IllegalStateException("StructBlock is neither defined in Struct nor in StructLocal.");
+	}
+
+	/**
+	 * How many columns should the display of a DataBlock of this StructBlock
+	 * have. I.e. how many DataFields should be displayed next to each other.
+	 * 
+	 * @return The number of columns a display of this StructBlock should have.
+	 */
+	public int getDisplayFieldColumnCount() {
+		return displayFieldColumnCount;
+	}
+	
+	/**
+	 * @param displayFieldColumnCount How many columns should the display of a DataBlock of this StructBlock have.
+	 */
+	public void setDisplayFieldColumnCount(int displayFieldColumnCount) {
+		this.displayFieldColumnCount = displayFieldColumnCount;
 	}
 }
