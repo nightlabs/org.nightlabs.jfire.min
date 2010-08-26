@@ -29,6 +29,7 @@ package org.nightlabs.jfire.prop;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -681,6 +682,20 @@ public class PropertyManagerBean extends BaseSessionBeanImpl implements Property
 				logger.warn("initialise: Conversion of MultiSelectionDataField: " + sw.createHumanReport(true));
 			}
 			// END conversion of wrong data
+			
+			// BEGIN set default displayFieldColumnCount for StructBlocks
+			handle = UpdateHistoryItem.updateNeeded(pm, JFireBaseEAR.MODULE_NAME, MultiSelectionDataField.class.getName() + "#setDefaultDisplayFieldColumnCount");
+			if (handle != null) {
+				UpdateHistoryItem.updateDone(handle);
+				// iterate all StructBlocks and set the default displayFieldColumnCount of 1 if necessary
+				Iterator<StructBlock> structBlocks = pm.getExtent(StructBlock.class).iterator();
+				while (structBlocks.hasNext()) {
+					StructBlock structBlock = structBlocks.next();
+					if (structBlock.getDisplayFieldColumnCount() <= 0) {
+						structBlock.setDisplayFieldColumnCount(1);
+					}
+				}
+			}
 
 		} finally {
 			pm.close();
