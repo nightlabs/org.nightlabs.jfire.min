@@ -56,7 +56,7 @@ import org.nightlabs.util.IOUtil;
 @FetchGroups(
 	@FetchGroup(
 		fetchGroups={"default"},
-		name="FetchGroupsProp.fullData",
+		name=PropertySet.FETCH_GROUP_FULL_DATA,
 		members={@Persistent(name="content"), @Persistent(name="fileTimestamp"), @Persistent(name="fileName")})
 )
 @Inheritance(strategy=InheritanceStrategy.NEW_TABLE)

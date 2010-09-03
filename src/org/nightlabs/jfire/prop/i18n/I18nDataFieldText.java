@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.nightlabs.i18n.I18nText;
+import org.nightlabs.jfire.prop.PropertySet;
 import org.nightlabs.jfire.prop.datafield.I18nTextDataField;
 
 import javax.jdo.annotations.Join;
@@ -78,7 +79,7 @@ import javax.jdo.annotations.PersistenceModifier;
 		members={@Persistent(name="dataField"), @Persistent(name="textValues")}),
 	@FetchGroup(
 		fetchGroups={"default"},
-		name="FetchGroupsProp.fullData",
+		name=PropertySet.FETCH_GROUP_FULL_DATA,
 		members={@Persistent(name="dataField"), @Persistent(name="textValues")})
 })
 @Inheritance(strategy=InheritanceStrategy.NEW_TABLE)

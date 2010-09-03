@@ -37,7 +37,7 @@ import org.nightlabs.timepattern.TimePatternSet;
 @FetchGroups(
 	@FetchGroup(
 		fetchGroups={"default"},
-		name="FetchGroupsProp.fullData",
+		name=PropertySet.FETCH_GROUP_FULL_DATA,
 		members=@Persistent(name="timePatternSet"))
 )
 @Inheritance(strategy=InheritanceStrategy.NEW_TABLE)

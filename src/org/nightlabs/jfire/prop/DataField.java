@@ -104,7 +104,7 @@ import org.nightlabs.jfire.prop.validation.ValidationResultType;
 @FetchGroups(
 	@FetchGroup(
 		fetchGroups={"default"},
-		name="FetchGroupsProp.fullData",
+		name=PropertySet.FETCH_GROUP_FULL_DATA,
 		members={})
 )
 @Discriminator(strategy=DiscriminatorStrategy.CLASS_NAME)

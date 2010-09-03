@@ -75,7 +75,7 @@ import org.nightlabs.jfire.prop.structfield.StructFieldValue;
 @FetchGroups(
 	@FetchGroup(
 		fetchGroups={"default"},
-		name="FetchGroupsProp.fullData",
+		name=PropertySet.FETCH_GROUP_FULL_DATA,
 		members={})
 )
 @Inheritance(strategy=InheritanceStrategy.NEW_TABLE)

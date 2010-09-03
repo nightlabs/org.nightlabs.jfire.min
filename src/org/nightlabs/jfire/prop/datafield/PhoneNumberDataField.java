@@ -39,7 +39,7 @@ import org.nightlabs.jfire.prop.StructField;
 @FetchGroups(
 	@FetchGroup(
 		fetchGroups={"default"},
-		name="FetchGroupsProp.fullData",
+		name=PropertySet.FETCH_GROUP_FULL_DATA,
 		members={@Persistent(name="countryCode"), @Persistent(name="areaCode"), @Persistent(name="localNumber")})
 )
 @Inheritance(strategy=InheritanceStrategy.NEW_TABLE)

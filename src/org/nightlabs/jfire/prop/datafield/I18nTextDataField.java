@@ -55,7 +55,7 @@ import org.nightlabs.util.NLLocale;
  *
  * @jdo.inheritance strategy="new-table"
  *
- * @jdo.fetch-group name="FetchGroupsProp.fullData" fetch-groups="default" fields="fieldText"
+ * @jdo.fetch-group name=PropertySet.FETCH_GROUP_FULL_DATA fetch-groups="default" fields="fieldText"
  * @jdo.fetch-group name="I18nTextDataField.fieldText" fetch-groups="default" fields="fieldText"
  */
 @PersistenceCapable(
@@ -64,7 +64,7 @@ import org.nightlabs.util.NLLocale;
 @FetchGroups({
 	@FetchGroup(
 		fetchGroups={"default"},
-		name="FetchGroupsProp.fullData",
+		name=PropertySet.FETCH_GROUP_FULL_DATA,
 		members=@Persistent(name="fieldText")),
 	@FetchGroup(
 		fetchGroups={"default"},
