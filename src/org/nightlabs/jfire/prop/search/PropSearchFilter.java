@@ -179,7 +179,7 @@ public abstract class PropSearchFilter
 
 		// If there are no FilterItems registered, the search is unconstrained and we add a true expression and return
 		if (getFilterItems().isEmpty()) {
-			filter.append("1 == 1");
+			filter.append("true == true");
 			return;
 		}
 
@@ -391,7 +391,7 @@ public abstract class PropSearchFilter
 		if (resultFields.size() > 0)
 			filter.append(")");
 
-		result.append("DISTINCT this");
+		result.append("this");
 	}
 
 	@Override
