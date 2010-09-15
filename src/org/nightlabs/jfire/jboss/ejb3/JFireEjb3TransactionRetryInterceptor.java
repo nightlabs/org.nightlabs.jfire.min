@@ -45,8 +45,7 @@ public class JFireEjb3TransactionRetryInterceptor  implements Interceptor
 			{
 				if (retryCount >= times)
 					throw e;
-				retryCount++;
-				logger.debug("JFireEjb3TransactionInterceptor EJB3 Exception has been caught method invoke retry Exception message:" + e.getMessage());
+				retryCount++;	
 			}    	  
 		}
 		return result;
