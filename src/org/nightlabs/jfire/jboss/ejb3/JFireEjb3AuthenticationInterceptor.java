@@ -11,7 +11,7 @@ import org.jboss.security.AuthenticationManager;
 
 /**
  *
- * custom Interceptor class which catches exceptions not thrown by the default JBoss Ejb3AuthenticationInterceptor
+ * a custom Interceptor class which catches the general security exceptions not thrown by the default JBoss Ejb3AuthenticationInterceptor
  *  
  * @author Fitas Amine - fitas [at] nightlabs [dot] de
  */
@@ -28,7 +28,6 @@ public class JFireEjb3AuthenticationInterceptor extends Ejb3AuthenticationInterc
 	@Override
 	protected void handleGeneralSecurityException(GeneralSecurityException gse)
 	{
-		logger.debug("handleGeneralSecurityException() has been called !!!");
 		throw new SecurityException(gse.getMessage(), gse.getCause());
 	}
 
