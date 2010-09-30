@@ -106,8 +106,9 @@ public class JFirePropertySetInheritanceTestCase extends TestCase {
 		PropertySetID propertySetID_Child = (PropertySetID) JDOHelper.getObjectId(propertySet_Child);
 		// set the context IDs
 		setTestCaseContextObject(PROPERTY_SET_ID_MOTHER, propertySetID_Mother);
-		setTestCaseContextObject(PROPERTY_SET_ID_CHILD, propertySetID_Child);				
-		Cache.setServerMode(true);
+		setTestCaseContextObject(PROPERTY_SET_ID_CHILD, propertySetID_Child);
+		// FIXME what is the intended behaviour here? Marc
+		//Cache.setServerMode(true);
 		String className = System.getProperty(JDOLifecycleManager.PROPERTY_KEY_JDO_LIFECYCLE_MANAGER);
 		if (className == null) {
 			className = JDOLifecycleManager.class.getName();

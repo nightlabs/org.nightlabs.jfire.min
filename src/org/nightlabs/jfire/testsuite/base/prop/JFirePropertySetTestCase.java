@@ -87,7 +87,8 @@ public class JFirePropertySetTestCase extends TestCase {
 				PropertySetTestStruct.class.getName(), Struct.DEFAULT_SCOPE, StructLocal.DEFAULT_SCOPE);
 		propertySet = getPropertyManager().storePropertySet(propertySet, true, FETCH_GROUPS, FETCH_DEPTH);
 		propertySetID = (PropertySetID) JDOHelper.getObjectId(propertySet);
-		Cache.setServerMode(true);
+		// FIXME what is the intended behaviour here? Marc
+		//Cache.setServerMode(true);
 		String className = System.getProperty(JDOLifecycleManager.PROPERTY_KEY_JDO_LIFECYCLE_MANAGER);
 		if (className == null) {
 			className = JDOLifecycleManager.class.getName();
