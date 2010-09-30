@@ -29,9 +29,6 @@ public class JFireEjbFactory
 			this.ejbHome = ejbHome;
 		}
 
-		public long getCreateTimestamp() {
-			return createTimestamp;
-		}
 		public Object getEjbHome() {
 			return ejbHome;
 		}
@@ -54,9 +51,6 @@ public class JFireEjbFactory
 			this.ejbInstance = ejbInstance;
 		}
 
-		public long getCreateTimestamp() {
-			return createTimestamp;
-		}
 		public Object getEjbInstance() {
 			return ejbInstance;
 		}

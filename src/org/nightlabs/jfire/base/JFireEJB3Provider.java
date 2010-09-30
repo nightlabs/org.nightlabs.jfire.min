@@ -3,18 +3,12 @@ package org.nightlabs.jfire.base;
 import java.util.Hashtable;
 
 /**
- * Static utility class to access JFire EJBs.
- * @see JFireEJB3Provider
+ * Interface defining a way to obtain instances of stateless JavaEE session beans (EJBs).
+ *
  * @author Marc Klinger - marc[at]nightlabs[dot]de
  * @author marco schulze - marco at nightlabs dot de
  */
-public class JFireEjb3Factory
-{
-	public static final String JNDI_PREFIX_EJB_BY_REMOTE_INTERFACE = JFireEJB3ProviderImpl.JNDI_PREFIX_EJB_BY_REMOTE_INTERFACE;
-	public static final String JNDI_PREFIX_EJB_BY_LOCAL_INTERFACE = JFireEJB3ProviderImpl.JNDI_PREFIX_EJB_BY_LOCAL_INTERFACE;
-	
-	private static JFireEJB3Provider provider = new JFireEJB3ProviderImpl();
-
+public interface JFireEJB3Provider {
 	/**
 	 * Get a remote instance of an Enterprise Java Bean. This method returns the same EJB-proxy
 	 * when called multiple times with the same EJB-interface, because it caches the instances
@@ -50,10 +44,7 @@ public class JFireEjb3Factory
 	 * @param environment the environment (aka. JNDI initial context properties) specifying the coordinates where to get the bean from (e.g. which server to connect to, which user to authenticate as etc.).
 	 * @return an instance of an EJB-proxy implementing the interface specified by the argument <code>ejbRemoteInterface</code>.
 	 */
-	public static <T> T getRemoteBean(Class<T> ejbRemoteInterface, Hashtable<?, ?> environment)
-	{
-		return provider.getRemoteBean(ejbRemoteInterface, environment);
-	}
+	<T> T getRemoteBean(Class<T> ejbRemoteInterface, Hashtable<?, ?> environment);
 
 	/**
 	 * Get a local instance of an Enterprise Java Bean. This method currently does not yet cache
@@ -77,8 +68,5 @@ public class JFireEjb3Factory
 	 * @param ejbLocalInterface the local EJB-business-interface (e.g. {@link org.nightlabs.jfire.timer.TimerManagerLocal}) for which to get an instance.
 	 * @return an instance of an EJB-proxy implementing the interface specified by the argument <code>ejbLocalInterface</code>.
 	 */
-	public static <T> T getLocalBean(Class<T> ejbLocalInterface)
-	{
-		return provider.getLocalBean(ejbLocalInterface);
-	}
+	<T> T getLocalBean(Class<T> ejbLocalInterface);
 }
