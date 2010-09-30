@@ -44,18 +44,15 @@ public class JDOObjectID2PCClassMap
 	 */
 	private static final Logger logger = Logger.getLogger(JDOObjectID2PCClassMap.class);
 
-	private static JDOObjectID2PCClassMap _sharedInstance = null;
-
+	/**
+	 * @deprecated Use {@link GlobalJDOManagerProvider}
+	 */
+	@Deprecated
 	public static JDOObjectID2PCClassMap sharedInstance()
 	{
-		if (_sharedInstance == null)
-			_sharedInstance = new JDOObjectID2PCClassMap();
-
-		return _sharedInstance;
+		return GlobalJDOManagerProvider.sharedInstance().getObjectID2PCClassMap();
 	}
 	
-//	private JDOManager jdoManager = null;
-
 	/**
 	 * key: JDOObjectID objectID<br/>
 	 * value: Class objectClass

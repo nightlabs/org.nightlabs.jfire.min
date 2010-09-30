@@ -38,7 +38,7 @@ import java.util.Set;
 
 import javax.jdo.JDOHelper;
 
-import org.nightlabs.jfire.base.jdo.JDOObjectID2PCClassMap;
+import org.nightlabs.jfire.base.jdo.JDOManagerProvider;
 
 /**
  * @author Marco Schulze - marco at nightlabs dot de
@@ -67,8 +67,10 @@ public class Carrier
 	private long accessDT = System.currentTimeMillis();
 
 	private CarrierContainer carrierContainer;
+	
+	private JDOManagerProvider jdoManagerProvider;
 
-	public Carrier(Key key, Object pcObject, CarrierContainer carrierContainer)
+	public Carrier(Key key, Object pcObject, CarrierContainer carrierContainer, JDOManagerProvider jdoManagerProvider)
 	{
 		if (key == null)
 			throw new NullPointerException("Parameter key must not be null!");
@@ -79,7 +81,11 @@ public class Carrier
 		if (carrierContainer == null)
 			throw new NullPointerException("Parameter carrierContainer must not be null!");
 
+		if (jdoManagerProvider == null)
+			throw new NullPointerException("Parameter jdoManagerProvider must not be null!");
+		
 		this.key = key;
+		this.jdoManagerProvider = jdoManagerProvider;
 
 		if (referenceType == null)
 			referenceType = carrierContainer.getCache().getCacheCfMod().getReferenceType();
@@ -234,7 +240,7 @@ public class Carrier
 		if (objectID != null && !objectIDs.contains(objectID)) {
 			objectIDs.add(objectID);
 
-			JDOObjectID2PCClassMap.sharedInstance().initPersistenceCapableClass(
+			jdoManagerProvider.getObjectID2PCClassMap().initPersistenceCapableClass(
 					objectID, object.getClass());
 		}
 

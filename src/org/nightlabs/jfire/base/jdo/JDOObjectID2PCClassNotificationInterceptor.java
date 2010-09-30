@@ -43,6 +43,13 @@ implements Interceptor
 {
 	private static final Logger logger = Logger.getLogger(JDOObjectID2PCClassNotificationInterceptor.class);
 
+	private JDOManagerProvider jdoManagerProvider;
+	
+	public JDOObjectID2PCClassNotificationInterceptor(JDOManagerProvider jdoManagerProvider)
+	{
+		this.jdoManagerProvider = jdoManagerProvider;
+	}
+	
 	public NotificationEvent intercept(NotificationEvent event)
 	{
 		for (Iterator<SubjectCarrier> itSubjectCarriers = event.getSubjectCarriers().iterator(); itSubjectCarriers.hasNext(); ) {
@@ -50,7 +57,7 @@ implements Interceptor
 			Object subject = subjectCarrier.getSubject();
 
  			if (subject instanceof ObjectID) {
- 				Class<?> jdoObjectClass = JDOObjectID2PCClassMap.sharedInstance().getPersistenceCapableClass(subject);
+ 				Class<?> jdoObjectClass = jdoManagerProvider.getObjectID2PCClassMap().getPersistenceCapableClass(subject);
  				subjectCarrier.getSubjectClasses().add(jdoObjectClass);
  			} // if (subject instanceof ObjectID) {
  			else if (subject instanceof DirtyObjectID) {
@@ -76,7 +83,7 @@ implements Interceptor
  						logger.debug("jdoObjectID does not implement " + ObjectID.class.getName() + "! It is an instance of " + (jdoObjectID == null ? null : jdoObjectID.getClass().getName()) + ": " + jdoObjectID);
  				}
  				else {
-	 				Class<?> jdoObjectClass = JDOObjectID2PCClassMap.sharedInstance().getPersistenceCapableClass(jdoObjectID);
+	 				Class<?> jdoObjectClass = jdoManagerProvider.getObjectID2PCClassMap().getPersistenceCapableClass(jdoObjectID);
 	 				subjectCarrier.getSubjectClasses().add(jdoObjectClass);
  				}
  			}

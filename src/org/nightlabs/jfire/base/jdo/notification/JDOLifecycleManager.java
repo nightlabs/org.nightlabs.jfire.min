@@ -13,11 +13,12 @@ import java.util.Set;
 import javax.swing.SwingUtilities;
 
 import org.apache.log4j.Logger;
+import org.nightlabs.jfire.base.jdo.GlobalJDOManagerProvider;
+import org.nightlabs.jfire.base.jdo.JDOManagerProvider;
 import org.nightlabs.jfire.base.jdo.cache.Cache;
 import org.nightlabs.jfire.jdo.notification.AbsoluteFilterID;
 import org.nightlabs.jfire.jdo.notification.DirtyObjectID;
 import org.nightlabs.jfire.jdo.notification.IJDOLifecycleListenerFilter;
-import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.notification.NotificationEvent;
 import org.nightlabs.notification.NotificationManager;
 import org.nightlabs.util.Util;
@@ -87,17 +88,61 @@ import org.nightlabs.util.Util;
 public class JDOLifecycleManager
 extends org.nightlabs.notification.NotificationManager
 {
-	public static final String PROPERTY_KEY_JDO_LIFECYCLE_MANAGER = JDOLifecycleManager.class.getName();
+	/**
+	 * @deprecated Use {@link GlobalJDOManagerProvider}
+	 */
+	@Deprecated
+	public static final String PROPERTY_KEY_JDO_LIFECYCLE_MANAGER = GlobalJDOManagerProvider.PROPERTY_KEY_JDO_LIFECYCLE_MANAGER;
 
 	private static final Logger logger = Logger.getLogger(JDOLifecycleManager.class);
-
-	protected JDOLifecycleManager()
-	{
-	}
 
 	private long nextFilterID = 0;
 	private Object nextFilterIDMutex = new Object();
 
+	private Set<JDOLifecycleListener> lifecycleListeners = new HashSet<JDOLifecycleListener>();
+	
+	/**
+	 * Accessing this object must be synchronized using {@link #lifecycleListeners} as mutex.
+	 */
+	private Map<Long, JDOLifecycleListener> filterID2LifecycleListener = new HashMap<Long, JDOLifecycleListener>();
+
+	/**
+	 * This is a cache used by {@link #getLifecycleListenerFilters()} and invalidated (i.e. set to <code>null</code>)
+	 * by {@link #addLifecycleListener(JDOLifecycleListener)} and {@link #removeLifecycleListener(JDOLifecycleListener)}.
+	 * Once it has been created, it is not modified anymore - thus it can be safely returned to the outside world
+	 * (as a read-only list).
+	 * <p>
+	 * From 2008-10-30 on, the elements in this List are clones (created via {@link Util#cloneSerializable(Object, ClassLoader)}).
+	 * </p>
+	 */
+	private List<IJDOLifecycleListenerFilter> lifecycleListenerFilters = null;
+	
+	
+	/**
+	 * The manager provider instance. There is a 1-1 dependency between lifecycle manager and cache.
+	 * Never access this field directly - use {@link #getJdoManagerProvider()}.
+	 */
+	private JDOManagerProvider jdoManagerProvider;
+	
+	/**
+	 * Get the jdoManagerProvider.
+	 * @return the jdoManagerProvider
+	 */
+	public JDOManagerProvider getJdoManagerProvider() {
+		if (jdoManagerProvider == null)
+			throw new IllegalStateException("No JDOManagerProvider assigned!");
+		return jdoManagerProvider;
+	}
+	
+	/**
+	 * Set the jdoManagerProvider.
+	 * @param jdoManagerProvider the jdoManagerProvider to set
+	 */
+	public void setJdoManagerProvider(JDOManagerProvider jdoManagerProvider) {
+		this.jdoManagerProvider = jdoManagerProvider;
+	}
+
+	
 	protected long nextFilterID()
 	{
 		long res;
@@ -222,7 +267,7 @@ extends org.nightlabs.notification.NotificationManager
 
 		// assign sessionID and a unique id
 		jdoLifecycleListenerFilter.setFilterID(
-				new AbsoluteFilterID(cache.getSessionID(), nextFilterID()));
+				new AbsoluteFilterID(getJdoManagerProvider().getCache().getSessionID(), nextFilterID()));
 
 		// add the listener
 		synchronized (lifecycleListeners) {
@@ -231,7 +276,7 @@ extends org.nightlabs.notification.NotificationManager
 			lifecycleListenerFilters = null;
 		}
 
-		cache.addLifecycleListenerFilter(jdoLifecycleListenerFilter, 0);
+		getJdoManagerProvider().getCache().addLifecycleListenerFilter(jdoLifecycleListenerFilter, 0);
 	}
 
 	public void removeLifecycleListener(JDOLifecycleListener listener)
@@ -258,7 +303,7 @@ extends org.nightlabs.notification.NotificationManager
 //      at org.nightlabs.jfire.jdo.cache.CacheManagerFactory.resubscribeAllListeners(CacheManagerFactory.java:574)
 //      at org.nightlabs.jfire.jdo.cache.CacheManager.resubscribeAllListeners(CacheManager.java:119)
 //      at org.nightlabs.jfire.jdo.JDOManagerBean.resubscribeAllListeners(JDOManagerBean.java:217)
-			cache.removeLifecycleListenerFilter(jdoLifecycleListenerFilter, 0);
+			getJdoManagerProvider().getCache().removeLifecycleListenerFilter(jdoLifecycleListenerFilter, 0);
 		}
 
 		// clear the filterID in case the JDOLifecycleListener wants to re-register this filter
@@ -268,23 +313,6 @@ extends org.nightlabs.notification.NotificationManager
 		if (jdoLifecycleListenerFilter.getFilterID() != null)
 			throw new IllegalStateException("jdoLifecycleListenerFilter.getFilterID() is not null!");
 	}
-
-	private Set<JDOLifecycleListener> lifecycleListeners = new HashSet<JDOLifecycleListener>();
-	/**
-	 * Accessing this object must be synchronized using {@link #lifecycleListeners} as mutex.
-	 */
-	private Map<Long, JDOLifecycleListener> filterID2LifecycleListener = new HashMap<Long, JDOLifecycleListener>();
-
-	/**
-	 * This is a cache used by {@link #getLifecycleListenerFilters()} and invalidated (i.e. set to <code>null</code>)
-	 * by {@link #addLifecycleListener(JDOLifecycleListener)} and {@link #removeLifecycleListener(JDOLifecycleListener)}.
-	 * Once it has been created, it is not modified anymore - thus it can be safely returned to the outside world
-	 * (as a read-only list).
-	 * <p>
-	 * From 2008-10-30 on, the elements in this List are clones (created via {@link Util#cloneSerializable(Object, ClassLoader)}).
-	 * </p>
-	 */
-	private List<IJDOLifecycleListenerFilter> lifecycleListenerFilters = null;
 
 	/**
 	 * @param filterID The ID of the filter.
@@ -324,94 +352,12 @@ extends org.nightlabs.notification.NotificationManager
 		}
 	}
 
-	private static boolean serverMode = false;
-
-	public static synchronized void setServerMode(boolean serverMode)
-	{
-		logger.info("setServerMode: serverMode="+serverMode);
-
-		if (serverMode && _sharedInstance != null)
-			throw new IllegalStateException("Cannot switch to serverMode after a client-mode-sharedInstance has been created!");
-
-		if (!serverMode && serverModeSharedInstances != null)
-			throw new IllegalStateException("Cannot switch to clientMode after a server-mode-sharedInstance has been created!");
-
-		JDOLifecycleManager.serverMode = serverMode;
-	}
-
-	public static boolean isServerMode()
-	{
-		return serverMode;
-	}
-
-	private static Map<String, JDOLifecycleManager> serverModeSharedInstances = null;
-
 	/**
-	 * This is used, if we're not using JNDI, but a System property (i.e. in the client)
+	 * @deprecated Use {@link GlobalJDOManagerProvider}
 	 */
-	private static JDOLifecycleManager _sharedInstance = null;
-
-
+	@Deprecated
 	public static JDOLifecycleManager sharedInstance()
 	{
-		synchronized (Cache.class) { // we synchronise both sharedInstance-methods (of JDOLifecycleManager and Cache) via the same mutex in order to prevent dead-locks
-			if (serverMode) {
-				if (serverModeSharedInstances == null)
-					serverModeSharedInstances = new HashMap<String, JDOLifecycleManager>();
-
-				String userName = getCurrentUserName();
-				JDOLifecycleManager jdoLifecycleManager = serverModeSharedInstances.get(userName);
-				if (jdoLifecycleManager == null) {
-					logger.info("sharedInstance: creating new JDOLifecycleManager in serverMode");
-					jdoLifecycleManager = createJDOLifecycleManager();
-					serverModeSharedInstances.put(userName, jdoLifecycleManager);
-					jdoLifecycleManager.cache = Cache.sharedInstance();
-				}
-				return jdoLifecycleManager;
-			}
-			else {
-				if (_sharedInstance == null) {
-					logger.info("sharedInstance: creating new JDOLifecycleManager in clientMode (non-serverMode)");
-					_sharedInstance = createJDOLifecycleManager();
-					_sharedInstance.cache = Cache.sharedInstance();
-				}
-				return _sharedInstance;
-			}
-		} // synchronized (Cache.class) {
+		return GlobalJDOManagerProvider.sharedInstance().getLifecycleManager();
 	}
-
-	private Cache cache;
-
-	private static Class<?> jdoLifecycleManagerClass = null;
-
-	private static JDOLifecycleManager createJDOLifecycleManager()
-	{
-		if (jdoLifecycleManagerClass == null) {
-			String className = System.getProperty(PROPERTY_KEY_JDO_LIFECYCLE_MANAGER);
-			if (className == null)
-				throw new IllegalStateException("System property PROPERTY_KEY_JDO_LIFECYCLE_MANAGER (" + PROPERTY_KEY_JDO_LIFECYCLE_MANAGER + ") not set!");
-
-			try {
-				//jdoLifecycleManagerClass = Class.forName(className);
-				// use the class loader of this class instead the context class loader:
-				jdoLifecycleManagerClass = Class.forName(className, true, JDOLifecycleManager.class.getClassLoader());
-			} catch (ClassNotFoundException e) {
-				throw new RuntimeException(e);
-			}
-		}
-
-		try {
-			return (JDOLifecycleManager) jdoLifecycleManagerClass.newInstance();
-		} catch (InstantiationException e) {
-			throw new RuntimeException(e);
-		} catch (IllegalAccessException e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	private static String getCurrentUserName()
-	{
-		return SecurityReflector.getUserDescriptor().getCompleteUserID();
-	}
-
 }

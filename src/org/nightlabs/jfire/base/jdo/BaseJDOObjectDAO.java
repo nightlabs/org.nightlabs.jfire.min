@@ -60,11 +60,8 @@ import org.nightlabs.util.CollectionUtil;
  */
 public abstract class BaseJDOObjectDAO<JDOObjectID extends ObjectID, JDOObject>
 {
-	/**
-	 * The cache shared instance.
-	 */
-	private Cache cache = Cache.sharedInstance();
-
+	private JDOManagerProvider jdoManagerProvider;
+	
 	/**
 	 * Default constructor.
 	 */
@@ -147,6 +144,7 @@ public abstract class BaseJDOObjectDAO<JDOObjectID extends ObjectID, JDOObject>
 	protected synchronized JDOObject getJDOObject(String scope, JDOObjectID objectID, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
 	{
 		try {
+			Cache cache = getCache();
 			JDOObject res = (JDOObject)cache.get(scope, objectID, fetchGroups, maxFetchDepth);
 			if (res == null) {
 				res = retrieveJDOObject(objectID, fetchGroups, maxFetchDepth, monitor);
@@ -195,6 +193,7 @@ public abstract class BaseJDOObjectDAO<JDOObjectID extends ObjectID, JDOObject>
 			Map<JDOObjectID, Integer> notInCache = new HashMap<JDOObjectID, Integer>();
 
 			// search the cache for the wanted Objects
+			Cache cache = getCache();
 			for (int i=0; i < listetIDs.size(); i++) {
 				JDOObject cachedObject = (JDOObject) cache.get(scope, listetIDs.get(i), fetchGroups, maxFetchDepth);
 				if (cachedObject != null) {
@@ -266,7 +265,7 @@ public abstract class BaseJDOObjectDAO<JDOObjectID extends ObjectID, JDOObject>
 
 			monitor.worked(localTix); // localTix is pretty often 0, but that is a valid parameter.
 
-			Cache.sharedInstance().putAll(scope, fetchedObjects, fetchGroups, maxFetchDepth);
+			getCache().putAll(scope, fetchedObjects, fetchGroups, maxFetchDepth);
 			objects.trimToSize();
 
 			monitor.worked(monitorRestTicks);
@@ -416,11 +415,32 @@ public abstract class BaseJDOObjectDAO<JDOObjectID extends ObjectID, JDOObject>
 	}
 
 	/**
-	 * Get the cache shared instance.
-	 * @return The cache shared instance.
+	 * Get the JDOManagerProvider. If no provider was set using the
+	 * {@link #setJdoManagerProvider(JDOManagerProvider)}, {@link GlobalJDOManagerProvider}
+	 * will be used as fall-back. This will be sufficient for applications that
+	 * only need one global scope cache and lifecyle.
+	 */
+	public JDOManagerProvider getJDOManagerProvider() {
+		if(jdoManagerProvider == null) {
+			return GlobalJDOManagerProvider.sharedInstance();
+		}
+		return jdoManagerProvider;
+	}
+
+	/**
+	 * Set the JDOManagerProvider.
+	 * @param jdoManagerProvider the JDOManagerProvider to set
+	 */
+	public void setJdoManagerProvider(JDOManagerProvider jdoManagerProvider) {
+		this.jdoManagerProvider = jdoManagerProvider;
+	}
+	
+	/**
+	 * Get the cache instance for this DAO.
+	 * @return The cache instance.
 	 */
 	protected Cache getCache()
 	{
-		return cache;
+		return getJDOManagerProvider().getCache();
 	}
 }

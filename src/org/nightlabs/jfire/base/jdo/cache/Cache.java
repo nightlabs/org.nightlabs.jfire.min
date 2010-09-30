@@ -43,12 +43,13 @@ import java.util.Map.Entry;
 import javax.jdo.JDOHelper;
 
 import org.apache.log4j.Logger;
-import org.nightlabs.config.Config;
 import org.nightlabs.config.ConfigException;
 import org.nightlabs.environment.Environment;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jdo.ObjectID;
 import org.nightlabs.jfire.base.JFireEjb3Factory;
+import org.nightlabs.jfire.base.jdo.GlobalJDOManagerProvider;
+import org.nightlabs.jfire.base.jdo.JDOManagerProvider;
 import org.nightlabs.jfire.base.jdo.JDOObjectID2PCClassMap;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleEvent;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleListener;
@@ -94,26 +95,41 @@ public class Cache
 	 */
 	private static final Logger logger = Logger.getLogger(Cache.class);
 
-	private static Cache _sharedInstance = null;
-
 	private NotificationThread notificationThread;
-	private JDOLifecycleManager _jdoLifecycleManager;
-	protected JDOLifecycleManager getJDOLifecycleManager() {
-		if (_jdoLifecycleManager == null)
-			throw new IllegalStateException("No JDOLifecycleManager assigned!");
-
-		return _jdoLifecycleManager;
+	
+	/**
+	 * The manager provider instance. There is a 1-1 dependency between lifecycle manager and cache.
+	 * Never access this field directly - use {@link #getJdoManagerProvider()}.
+	 */
+	private JDOManagerProvider jdoManagerProvider;
+	
+	/**
+	 * Get the jdoManagerProvider.
+	 * @return the jdoManagerProvider
+	 */
+	public JDOManagerProvider getJdoManagerProvider() {
+		if (jdoManagerProvider == null)
+			throw new IllegalStateException("No JDOManagerProvider assigned!");
+		return jdoManagerProvider;
 	}
-
+	
+	/**
+	 * Set the jdoManagerProvider.
+	 * @param jdoManagerProvider the jdoManagerProvider to set
+	 */
+	public void setJdoManagerProvider(JDOManagerProvider jdoManagerProvider) {
+		this.jdoManagerProvider = jdoManagerProvider;
+	}
+	
 	protected static class NotificationThread extends Thread
 	{
 		private static volatile int nextID = 0;
 
-		private Cache cache;
+		private JDOManagerProvider jdoManagerProvider;
 
-		public NotificationThread(Cache cache)
+		public NotificationThread(JDOManagerProvider jdoManagerProvider)
 		{
-			this.cache = cache;
+			this.jdoManagerProvider = jdoManagerProvider;
 			setName("Cache.NotificationThread-" + (nextID++));
 			setDaemon(true);
 			setPriority(Thread.NORM_PRIORITY);
@@ -139,6 +155,7 @@ public class Cache
 //				logger.debug("NotificationThread.run: DEBUG_TEST=" + DEBUG_TEST);
 
 			while (!isInterrupted()) {
+				Cache cache = jdoManagerProvider.getCache();
 				try {
 //					if (jdoManager == null)
 //						jdoManager = JDOManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
@@ -186,7 +203,7 @@ public class Cache
 									// DirtyObjectID.getObjectID() implements org.nightlabs.jdo.ObjectID
 //									Class objectClass = cache.getObjectClassForObjectID(removedKey.getObjectID());
 									Object removedKeyObjectID = removedKey.getObjectID();
-									DirtyObjectID doid = createSyntheticDirtyObjectID(removedKeyObjectID);
+									DirtyObjectID doid = createSyntheticDirtyObjectID(removedKeyObjectID, jdoManagerProvider.getObjectID2PCClassMap());
 									indirectlyAffectedDirtyObjectIDs.put(doid.getObjectID(), doid);
 
 									if (logger.isDebugEnabled())
@@ -220,7 +237,7 @@ public class Cache
 
 							// notify via local class based notification mechanism
 							// the interceptor org.nightlabs.jfire.base.jdo.JDOObjectID2PCClassNotificationInterceptor takes care about correct class mapping
-							cache.getJDOLifecycleManager().notify(new NotificationEvent(
+							cache.getJdoManagerProvider().getLifecycleManager().notify(new NotificationEvent(
 									cache,             // source
 									(String)null,     // zone
 									dirtyObjectIDsForNotification // dirtyObjectIDs    // subjects
@@ -265,7 +282,7 @@ public class Cache
 								Long filterID = me.getKey();
 								SortedSet<DirtyObjectID> dirtyObjectIDs = me.getValue();
 
-								cache.getJDOLifecycleManager().notify(filterID, new JDOLifecycleEvent(cache, dirtyObjectIDs));
+								cache.getJdoManagerProvider().getLifecycleManager().notify(filterID, new JDOLifecycleEvent(cache, dirtyObjectIDs));
 //								JDOLifecycleListener listener = JDOLifecycleManager.sharedInstance().getLifecycleListener(filterID);
 //								if (listener == null)
 //									logger.error("No listener found for filterID="+filterID);
@@ -348,12 +365,12 @@ public class Cache
 	{
 		private static volatile int nextID = 0;
 
-		private Cache cache;
+		private JDOManagerProvider jdoManagerProvider;
 //		private long lastResyncDT = System.currentTimeMillis();
 
-		public CacheManagerThread(Cache cache)
+		public CacheManagerThread(JDOManagerProvider jdoManagerProvider)
 		{
-			this.cache = cache;
+			this.jdoManagerProvider = jdoManagerProvider;
 			setName("Cache.CacheManagerThread-" + (nextID++));
 			setDaemon(true);
 			setPriority(Thread.NORM_PRIORITY);
@@ -370,6 +387,7 @@ public class Cache
 //			boolean resync;
 
 			while (!isInterrupted()) {
+				Cache cache = jdoManagerProvider.getCache();
 				try {
 					try {
 						sleep(cache.getCacheCfMod().getCacheManagerThreadIntervalMSec());
@@ -499,7 +517,7 @@ public class Cache
 
 								jdoManager.resubscribeAllListeners(
 										currentlySubscribedObjectIDs,
-										cache.getJDOLifecycleManager().getLifecycleListenerFilters());
+										cache.getJdoManagerProvider().getLifecycleManager().getLifecycleListenerFilters());
 								resubscribeFailed = false;
 							} finally {
 								if (resubscribeFailed)
@@ -870,13 +888,18 @@ public class Cache
 		}
 	}
 
-	private static boolean serverMode = false;
-
-	private static boolean autoOpen = true;
-
+	/**
+	 * @deprecated Use {@link GlobalJDOManagerProvider}
+	 */
+	@Deprecated
 	public static synchronized boolean isAutoOpen()
 	{
-		return autoOpen;
+		JDOManagerProvider managerProvider = GlobalJDOManagerProvider.sharedInstance();
+		if(managerProvider instanceof GlobalJDOManagerProvider) {
+			return ((GlobalJDOManagerProvider)managerProvider).isAutoOpenCache();
+		} else {
+			return true;
+		}
 	}
 	/**
 	 * If the <code>Cache</code> is used in server-mode, it ignores this flag and always opens automatically.
@@ -887,76 +910,27 @@ public class Cache
 	 *
 	 * @param autoOpen if <code>true</code>, automatically open the <code>Cache</code> as soon as
 	 *		the shared instance is created.
+	 * @deprecated Use {@link GlobalJDOManagerProvider}
 	 */
+	@Deprecated
 	public static synchronized void setAutoOpen(boolean autoOpen)
 	{
-		Cache.autoOpen = autoOpen;
-	}
-
-	public static synchronized void setServerMode(boolean serverMode)
-	{
-		logger.info("setServerMode: serverMode="+serverMode);
-
-		if (serverMode && _sharedInstance != null)
-			throw new IllegalStateException("Cannot switch to serverMode after a client-mode-sharedInstance has been created!");
-
-		if (!serverMode && serverModeSharedInstances != null)
-			throw new IllegalStateException("Cannot switch to clientMode after a server-mode-sharedInstance has been created!");
-
-		Cache.serverMode = serverMode;
-	}
-
-	private static Map<String, Cache> serverModeSharedInstances = null;
-
-	private static String getCurrentUserName()
-	{
-		return SecurityReflector.getUserDescriptor().getCompleteUserID();
-	}
-
-	private static String getCurrentSessionID()
-	{
-		return SecurityReflector.getUserDescriptor().getSessionID();
+		JDOManagerProvider managerProvider = GlobalJDOManagerProvider.sharedInstance();
+		if(managerProvider instanceof GlobalJDOManagerProvider) {
+			((GlobalJDOManagerProvider)managerProvider).setAutoOpenCache(autoOpen);
+		}
 	}
 
 	/**
 	 * @return Returns the singleton of this class - or the pseudo-shared instance for the currently logged in user.
 	 *
 	 * @throws In case the cache needs to be created and a {@link ConfigException} occurs while obtaining {@link CacheCfMod}.
+	 * @deprecated Use {@link GlobalJDOManagerProvider}
 	 */
+	@Deprecated
 	public static Cache sharedInstance()
 	{
-		synchronized (Cache.class) { // we synchronise both sharedInstance-methods (of JDOLifecycleManager and Cache) via the same mutex in order to prevent dead-locks
-			try {
-				if (serverMode) {
-					if (serverModeSharedInstances == null) {
-						serverModeSharedInstances = new HashMap<String, Cache>();
-						JDOLifecycleManager.setServerMode(true);
-					}
-
-					String userName = getCurrentUserName();
-					Cache cache = serverModeSharedInstances.get(userName);
-					if (cache == null) {
-						logger.info("sharedInstance: creating new Cache instance in serverMode");
-						cache = new Cache();
-						serverModeSharedInstances.put(userName, cache);
-						cache.open(getCurrentSessionID());
-					}
-					return cache;
-				}
-				else {
-					if (_sharedInstance == null) {
-						logger.info("sharedInstance: creating new Cache instance in clientMode (not-serverMode)");
-						_sharedInstance = new Cache();
-						if (autoOpen)
-							_sharedInstance.open(getCurrentSessionID());
-					}
-
-					return _sharedInstance;
-				}
-			} catch (ConfigException e) {
-				throw new RuntimeException(e);
-			}
-		} // synchronized (Cache.class) {
+		return GlobalJDOManagerProvider.sharedInstance().getCache();
 	}
 
 	private String sessionID = null;
@@ -1104,15 +1078,14 @@ public class Cache
 	}
 
 	/**
-	 * Should not be used! Use {@link #sharedInstance()} instead!
+	 * Should not be used! Use {@link org.nightlabs.jfire.base.jdo.JDOManagerProvider#getCache()} instead!
 	 *
 	 * @throws ConfigException If it fails to obtain the {@link CacheCfMod} config module.
 	 */
-	protected Cache() throws ConfigException
+	public Cache(CacheCfMod cacheCfMod) throws ConfigException
 	{
 		logger.info("Creating new Cache instance.");
-		cacheCfMod = Config.sharedInstance().createConfigModule(CacheCfMod.class);
-		Config.sharedInstance().save(); // TODO remove this as soon as we have a thread that periodically saves it.
+		this.cacheCfMod = cacheCfMod;
 
 		// set initial active containers
 		rollCarrierContainers();
@@ -1436,7 +1409,7 @@ public class Cache
 		if (object == null)
 			throw new NullPointerException("object must not be null!");
 
-		JDOObjectID2PCClassMap.sharedInstance().initPersistenceCapableClass(objectID, object.getClass());
+		getJdoManagerProvider().getObjectID2PCClassMap().initPersistenceCapableClass(objectID, object.getClass());
 
 		Key key = new Key(scope, objectID, fetchGroups, maxFetchDepth);
 
@@ -1465,7 +1438,7 @@ public class Cache
 			}
 
 			// the constructor of Carrier self-registers in the active CarrierContainer
-			Carrier carrier = new Carrier(key, object, getActiveCarrierContainer());
+			Carrier carrier = new Carrier(key, object, getActiveCarrierContainer(), getJdoManagerProvider());
 
 			// store the new carrier in our main cache map
 			key2Carrier.put(key, carrier);
@@ -1784,10 +1757,8 @@ public class Cache
 
 		this.sessionID = sessionID;
 
-		this._jdoLifecycleManager = JDOLifecycleManager.sharedInstance(); // force this to be initialised :-)
-
-		this.cacheManagerThread = new CacheManagerThread(this);
-		this.notificationThread = new NotificationThread(this);
+		this.cacheManagerThread = new CacheManagerThread(getJdoManagerProvider());
+		this.notificationThread = new NotificationThread(getJdoManagerProvider());
 	}
 
 	public synchronized void close()
@@ -1824,20 +1795,20 @@ public class Cache
 		synchronized(this) {
 			for (Object objectID : objectID2KeySet_dependency.keySet()) {
 				if (objectIDs.add(objectID))
-					dirtyObjectIDs.add(createSyntheticDirtyObjectID(objectID));
+					dirtyObjectIDs.add(createSyntheticDirtyObjectID(objectID, getJdoManagerProvider().getObjectID2PCClassMap()));
 			}
 
 			for (Map<Object, Set<Key>> m : objectID2KeySet_dependency_removed_history) {
 				for (Object objectID : m.keySet()) {
 					if (objectIDs.add(objectID))
-						dirtyObjectIDs.add(createSyntheticDirtyObjectID(objectID));
+						dirtyObjectIDs.add(createSyntheticDirtyObjectID(objectID, getJdoManagerProvider().getObjectID2PCClassMap()));
 				}
 			}
 
 			for (Key key : key2Carrier.keySet()) {
 				Object objectID = key.getObjectID();
 				if (objectIDs.add(objectID))
-					dirtyObjectIDs.add(createSyntheticDirtyObjectID(objectID));
+					dirtyObjectIDs.add(createSyntheticDirtyObjectID(objectID, getJdoManagerProvider().getObjectID2PCClassMap()));
 			}
 
 			removeAll();
@@ -1850,7 +1821,7 @@ public class Cache
 					try {
 						// notify via local class based notification mechanism
 						// the interceptor org.nightlabs.jfire.base.jdo.JDOObjectID2PCClassNotificationInterceptor takes care about correct class mapping
-						getJDOLifecycleManager().notify(new NotificationEvent(
+						getJdoManagerProvider().getLifecycleManager().notify(new NotificationEvent(
 								this,             // source
 								(String)null,     // zone
 								dirtyObjectIDs    // subjects
@@ -1864,11 +1835,12 @@ public class Cache
 		}
 	}
 
-	private static DirtyObjectID createSyntheticDirtyObjectID(Object objectID)
+	private static DirtyObjectID createSyntheticDirtyObjectID(Object objectID, JDOObjectID2PCClassMap objectID2PCClassMap)
 	{
 		String jdoObjectClassName = null;
-		if (objectID instanceof ObjectID)
-			jdoObjectClassName = JDOObjectID2PCClassMap.sharedInstance().getPersistenceCapableClass(objectID).getName(); // TODO can't this line cause problems if it's not a JDOObjectID?
+		if (objectID instanceof ObjectID) {
+			jdoObjectClassName = objectID2PCClassMap.getPersistenceCapableClass(objectID).getName();
+		} // TODO can't this line cause problems if it's not a JDOObjectID?
 
 		DirtyObjectID doid = new DirtyObjectID(
 				JDOLifecycleState.DIRTY, objectID,

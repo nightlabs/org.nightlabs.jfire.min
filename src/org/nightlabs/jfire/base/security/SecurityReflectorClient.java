@@ -14,10 +14,10 @@ import javax.naming.NamingException;
 import org.hibernate.exception.ExceptionUtils;
 import org.nightlabs.j2ee.LoginData;
 import org.nightlabs.jfire.base.JFireEjb3Factory;
+import org.nightlabs.jfire.base.jdo.GlobalJDOManagerProvider;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleAdapterWorkerThreadAsync;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleEvent;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleListener;
-import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleManager;
 import org.nightlabs.jfire.jdo.notification.IJDOLifecycleListenerFilter;
 import org.nightlabs.jfire.jdo.notification.JDOLifecycleState;
 import org.nightlabs.jfire.security.AuthorizedObjectRefLifecycleListenerFilter;
@@ -85,7 +85,6 @@ public class SecurityReflectorClient extends SecurityReflector {
 
 	private Map<AuthorityID, Set<RoleID>> cache_authorityID2roleIDSet = new HashMap<AuthorityID, Set<RoleID>>();
 
-	@SuppressWarnings("unchecked") //$NON-NLS-1$
 	@Override
 	protected synchronized Set<RoleID> _getRoleIDs(AuthorityID authorityID) throws NoUserException
 	{
@@ -149,7 +148,7 @@ public class SecurityReflectorClient extends SecurityReflector {
 	public synchronized void unregisterAuthorizedObjectRefLifecycleListener()
 	{
 		if (authorizedObjectRefLifecycleListener != null) {
-			JDOLifecycleManager.sharedInstance().removeLifecycleListener(authorizedObjectRefLifecycleListener);
+			GlobalJDOManagerProvider.sharedInstance().getLifecycleManager().removeLifecycleListener(authorizedObjectRefLifecycleListener);
 			authorizedObjectRefLifecycleListener = null;
 			cache_authorityID2roleIDSet.clear();
 		}
@@ -160,7 +159,7 @@ public class SecurityReflectorClient extends SecurityReflector {
 		unregisterAuthorizedObjectRefLifecycleListener();
 
 		authorizedObjectRefLifecycleListener = new AuthorizedObjectRefLifecycleListener();
-		JDOLifecycleManager.sharedInstance().addLifecycleListener(authorizedObjectRefLifecycleListener);
+		GlobalJDOManagerProvider.sharedInstance().getLifecycleManager().addLifecycleListener(authorizedObjectRefLifecycleListener);
 		cache_authorityID2roleIDSet.clear();
 	}
 }
