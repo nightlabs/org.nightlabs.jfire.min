@@ -1,10 +1,8 @@
 package org.nightlabs.jfire.query.store.dao;
 
 import java.util.Collection;
-import java.util.Properties;
 import java.util.Set;
 
-import org.nightlabs.jfire.base.JFireEjb3Factory;
 import org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO;
 import org.nightlabs.jfire.query.store.BaseQueryStore;
 import org.nightlabs.jfire.query.store.QueryStore;
@@ -47,7 +45,7 @@ public class QueryStoreDAO
 		String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor) throws Exception
 	{
 		monitor.beginTask("Fetching QueryStores...", objectIDs.size());
-		QueryStoreManagerRemote qsm = JFireEjb3Factory.getRemoteBean(QueryStoreManagerRemote.class, SecurityReflector.getInitialContextProperties());
+		QueryStoreManagerRemote qsm = getEjbProvider().getRemoteBean(QueryStoreManagerRemote.class);
 
 		try
 		{
@@ -154,8 +152,7 @@ public class QueryStoreDAO
 	{
 		try
 		{
-			Properties initialContext = SecurityReflector.getInitialContextProperties();
-			QueryStoreManagerRemote qsm = JFireEjb3Factory.getRemoteBean(QueryStoreManagerRemote.class, initialContext);
+			QueryStoreManagerRemote qsm = getEjbProvider().getRemoteBean(QueryStoreManagerRemote.class);
 			// QueryStoreManager qsm = QueryStoreManagerUtil.getHome(
 			// SecurityReflector.getInitialContextProperties()).create();
 
@@ -199,7 +196,7 @@ public class QueryStoreDAO
 		try
 		{
 			monitor.beginTask("Saving QueryStore", 10);
-			QueryStoreManagerRemote qsm = JFireEjb3Factory.getRemoteBean(QueryStoreManagerRemote.class, SecurityReflector.getInitialContextProperties());
+			QueryStoreManagerRemote qsm = getEjbProvider().getRemoteBean(QueryStoreManagerRemote.class);
 			queryStore.serialiseCollection();
 			monitor.worked(1);
 
@@ -235,7 +232,7 @@ public class QueryStoreDAO
 		try
 		{
 			monitor.beginTask("Removing QueryStore", 3);
-			QueryStoreManagerRemote qsm = JFireEjb3Factory.getRemoteBean(QueryStoreManagerRemote.class, SecurityReflector.getInitialContextProperties());
+			QueryStoreManagerRemote qsm = getEjbProvider().getRemoteBean(QueryStoreManagerRemote.class);
 			monitor.worked(1);
 
 			boolean removed = qsm.removeQueryStore(queryStore);
@@ -273,7 +270,7 @@ public class QueryStoreDAO
 	{
 		try {
 			monitor.beginTask("Fetching default QueryStore", 3);
-			QueryStoreManagerRemote qsm = JFireEjb3Factory.getRemoteBean(QueryStoreManagerRemote.class, SecurityReflector.getInitialContextProperties());
+			QueryStoreManagerRemote qsm = getEjbProvider().getRemoteBean(QueryStoreManagerRemote.class);
 			monitor.worked(1);
 			QueryStoreID defaultQueryStoreID = qsm.getDefaultQueryStoreID(resultType, ownerID, fetchGroups, maxFetchDepth);
 			monitor.worked(2);
