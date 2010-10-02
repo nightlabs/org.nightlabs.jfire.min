@@ -19,7 +19,7 @@ import org.nightlabs.jfire.organisation.LocalOrganisation;
 import org.nightlabs.jfire.person.Person;
 import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.security.User;
-import org.nightlabs.jfire.security.SecurityReflector.UserDescriptor;
+import org.nightlabs.jfire.security.UserDescriptor;
 import org.nightlabs.util.NLLocale;
 
 /**

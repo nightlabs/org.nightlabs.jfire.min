@@ -6,7 +6,7 @@ import java.util.Map;
 
 import org.nightlabs.config.Config;
 import org.nightlabs.jfire.security.SecurityReflector;
-import org.nightlabs.jfire.security.SecurityReflector.UserDescriptor;
+import org.nightlabs.jfire.security.UserDescriptor;
 import org.nightlabs.jfire.security.id.UserID;
 import org.nightlabs.l10n.DateFormatter;
 import org.nightlabs.util.NLLocale;

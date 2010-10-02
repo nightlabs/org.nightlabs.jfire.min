@@ -35,6 +35,7 @@ import javax.naming.NamingException;
 
 import org.nightlabs.jfire.asyncinvoke.id.AsyncInvokeProblemID;
 import org.nightlabs.jfire.security.SecurityReflector;
+import org.nightlabs.jfire.security.UserDescriptor;
 import org.nightlabs.math.Base62Coder;
 
 
@@ -59,7 +60,7 @@ implements Serializable, IAsyncInvokeEnvelopeReference
 
 	private Date createDT = new Date();
 
-	private SecurityReflector.UserDescriptor caller;
+	private UserDescriptor caller;
 
 	/**
 	 * The invocation that should be done. Must not be null!
@@ -100,7 +101,7 @@ implements Serializable, IAsyncInvokeEnvelopeReference
 	 */
 	private UndeliverableCallback undeliverableCallback = null;
 
-	protected static SecurityReflector.UserDescriptor getUserDescriptor()
+	protected static UserDescriptor getUserDescriptor()
 	throws NamingException
 	{
 		return SecurityReflector.getUserDescriptor();
@@ -119,7 +120,7 @@ implements Serializable, IAsyncInvokeEnvelopeReference
 	}
 
 	public AsyncInvokeEnvelope(
-			SecurityReflector.UserDescriptor caller, Invocation invocation,
+			UserDescriptor caller, Invocation invocation,
 			SuccessCallback successCallback, ErrorCallback errorCallback,
 			UndeliverableCallback undeliverableCallback)
 	{
@@ -146,7 +147,7 @@ implements Serializable, IAsyncInvokeEnvelopeReference
 	/**
 	 * @return Returns the caller.
 	 */
-	public SecurityReflector.UserDescriptor getCaller()
+	public UserDescriptor getCaller()
 	{
 		return caller;
 	}

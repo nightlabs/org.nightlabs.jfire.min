@@ -3,7 +3,7 @@ package org.nightlabs.jfire.log4j;
 import org.apache.log4j.spi.LoggingEvent;
 import org.nightlabs.jfire.security.NoUserException;
 import org.nightlabs.jfire.security.SecurityReflector;
-import org.nightlabs.jfire.security.SecurityReflector.UserDescriptor;
+import org.nightlabs.jfire.security.UserDescriptor;
 
 public class JFirePatternConverterDelegateImpl
 implements JFirePatternConverterDelegate

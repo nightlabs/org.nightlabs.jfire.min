@@ -37,7 +37,7 @@ import org.apache.log4j.Logger;
 import org.nightlabs.j2ee.LoginData;
 import org.nightlabs.jdo.ObjectIDUtil;
 import org.nightlabs.jfire.base.AuthCallbackHandler;
-import org.nightlabs.jfire.security.SecurityReflector;
+import org.nightlabs.jfire.security.UserDescriptor;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.servermanager.JFireServerManagerFactory;
 import org.nightlabs.jfire.servermanager.j2ee.J2EEAdapter;
@@ -271,7 +271,7 @@ implements javax.jms.MessageListener
 	}
 
 	private static AuthCallbackHandler createAuthCallbackHandler(JFireServerManager ism, AsyncInvokeEnvelope envelope) {
-		SecurityReflector.UserDescriptor caller = envelope.getCaller();
+		UserDescriptor caller = envelope.getCaller();
 		return new AuthCallbackHandler(ism,
 				caller.getOrganisationID(),
 				caller.getUserID(),

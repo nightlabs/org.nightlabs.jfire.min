@@ -9,7 +9,7 @@ import org.nightlabs.config.ConfigException;
 import org.nightlabs.config.ConfigFactory;
 import org.nightlabs.jfire.base.Lookup;
 import org.nightlabs.jfire.security.SecurityReflector;
-import org.nightlabs.jfire.security.SecurityReflector.UserDescriptor;
+import org.nightlabs.jfire.security.UserDescriptor;
 import org.nightlabs.jfire.security.id.UserID;
 import org.nightlabs.jfire.server.data.dir.JFireServerDataDirectory;
 import org.nightlabs.jfire.servermanager.JFireServerManager;

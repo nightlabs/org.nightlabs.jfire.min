@@ -9,7 +9,7 @@ import java.util.Map;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-public class JFireEJB3ProviderImpl implements JFireEJB3Provider {
+public abstract class AbstractJFireEjb3Provider implements JFireEjb3Provider {
 	public static final String JNDI_PREFIX_EJB_BY_REMOTE_INTERFACE = InvokeUtil.JNDI_PREFIX_EJB_BY_REMOTE_INTERFACE;
 	public static final String JNDI_PREFIX_EJB_BY_LOCAL_INTERFACE = InvokeUtil.JNDI_PREFIX_EJB_BY_LOCAL_INTERFACE;
 	
@@ -55,10 +55,20 @@ public class JFireEJB3ProviderImpl implements JFireEJB3Provider {
 		}
 	}
 
+	protected abstract Hashtable<?, ?> getInitialContextProperties();
+	
 	private Map<Class<?>, Map<Hashtable<?, ?>, EjbInstanceWrapper>> ejbInterface2Environment2Instance = Collections.synchronizedMap(
 		new HashMap<Class<?>, Map<Hashtable<?,?>,EjbInstanceWrapper>>()
 	);
 
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.base.JFireEJB3Provider#getRemoteBean(java.lang.Class)
+	 */
+	@Override
+	public <T> T getRemoteBean(Class<T> ejbRemoteInterface) {
+		return getRemoteBean(ejbRemoteInterface, getInitialContextProperties());
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.nightlabs.jfire.base.JFireEJB3Provider#getRemoteBean(java.lang.Class, java.util.Hashtable)
 	 */

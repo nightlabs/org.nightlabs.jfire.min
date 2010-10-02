@@ -12,7 +12,9 @@ import java.util.Map;
  * your stateless EJBs.
  *
  * @author marco schulze - marco at nightlabs dot de
+ * @deprecated Not in use anymore - use {@link GlobalJFireEjb3Provider} or {@link JFireEjb3Factory}
  */
+@Deprecated
 public class JFireEjbFactory
 {
 	private static final long CACHE_LIFETIME_HOME = 2L * 60L * 60L * 1000L; // keep EJB homes for 2 hours

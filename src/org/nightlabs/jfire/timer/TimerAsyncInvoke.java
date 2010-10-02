@@ -25,7 +25,7 @@ import org.nightlabs.jfire.asyncinvoke.UndeliverableCallback;
 import org.nightlabs.jfire.asyncinvoke.UndeliverableCallbackResult;
 import org.nightlabs.jfire.asyncinvoke.id.AsyncInvokeProblemID;
 import org.nightlabs.jfire.base.JFireEjb3Factory;
-import org.nightlabs.jfire.security.SecurityReflector.UserDescriptor;
+import org.nightlabs.jfire.security.UserDescriptor;
 import org.nightlabs.jfire.timer.id.TaskID;
 
 public class TimerAsyncInvoke
