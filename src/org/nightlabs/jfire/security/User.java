@@ -62,7 +62,6 @@ import org.nightlabs.jfire.base.JFireBasePrincipal;
 import org.nightlabs.jfire.organisation.LocalOrganisation;
 import org.nightlabs.jfire.organisation.Organisation;
 import org.nightlabs.jfire.person.Person;
-import org.nightlabs.jfire.security.SecurityReflector.UserDescriptor;
 import org.nightlabs.jfire.security.id.AuthorityID;
 import org.nightlabs.jfire.security.id.UserID;
 import org.nightlabs.jfire.security.id.UserLocalID;

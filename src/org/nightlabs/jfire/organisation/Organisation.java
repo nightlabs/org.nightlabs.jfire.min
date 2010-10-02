@@ -47,7 +47,7 @@ import javax.naming.NamingException;
 import org.nightlabs.jfire.organisation.id.OrganisationID;
 import org.nightlabs.jfire.person.Person;
 import org.nightlabs.jfire.security.SecurityReflector;
-import org.nightlabs.jfire.security.SecurityReflector.UserDescriptor;
+import org.nightlabs.jfire.security.UserDescriptor;
 import org.nightlabs.jfire.server.Server;
 import org.nightlabs.util.Util;
 

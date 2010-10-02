@@ -36,7 +36,7 @@ import org.nightlabs.jfire.base.JFireBasePrincipal;
 import org.nightlabs.jfire.config.ConfigSetup;
 import org.nightlabs.jfire.organisation.Organisation;
 import org.nightlabs.jfire.security.SecurityReflector;
-import org.nightlabs.jfire.security.SecurityReflector.UserDescriptor;
+import org.nightlabs.jfire.security.UserDescriptor;
 import org.nightlabs.jfire.workstation.id.WorkstationID;
 import org.nightlabs.util.Util;
 
