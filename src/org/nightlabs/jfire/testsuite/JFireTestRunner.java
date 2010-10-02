@@ -15,7 +15,7 @@ import junit.runner.BaseTestRunner;
 import org.apache.log4j.Logger;
 import org.nightlabs.jfire.base.JFireEjb3Factory;
 import org.nightlabs.jfire.security.SecurityReflector;
-import org.nightlabs.jfire.security.SecurityReflector.UserDescriptor;
+import org.nightlabs.jfire.security.UserDescriptor;
 import org.nightlabs.jfire.testsuite.TestSuite.Status;
 
 /**

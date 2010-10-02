@@ -64,7 +64,7 @@ import org.nightlabs.jfire.asyncinvoke.AsyncInvoke;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.security.User;
-import org.nightlabs.jfire.security.SecurityReflector.UserDescriptor;
+import org.nightlabs.jfire.security.UserDescriptor;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.shutdownafterstartup.ShutdownControlHandle;
 import org.nightlabs.jfire.testsuite.id.TestCaseObjectIDsID;
