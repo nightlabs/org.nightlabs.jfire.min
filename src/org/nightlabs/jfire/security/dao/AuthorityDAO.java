@@ -4,12 +4,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import org.nightlabs.jfire.base.JFireEjb3Factory;
 import org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO;
-import org.nightlabs.jfire.base.jdo.cache.Cache;
 import org.nightlabs.jfire.security.Authority;
 import org.nightlabs.jfire.security.JFireSecurityManagerRemote;
-import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.security.id.AuthorityID;
 import org.nightlabs.jfire.security.id.AuthorityTypeID;
 import org.nightlabs.jfire.security.id.AuthorizedObjectID;
@@ -33,7 +30,7 @@ public class AuthorityDAO extends BaseJDOObjectDAO<AuthorityID, Authority>
 	{
 		JFireSecurityManagerRemote um = userManager;
 		if (um == null)
-			um = JFireEjb3Factory.getRemoteBean(JFireSecurityManagerRemote.class, SecurityReflector.getInitialContextProperties());
+			um = getEjbProvider().getRemoteBean(JFireSecurityManagerRemote.class);
 
 		return um.getAuthorities(authorityIDs, fetchGroups, maxFetchDepth);
 	}
@@ -45,7 +42,7 @@ public class AuthorityDAO extends BaseJDOObjectDAO<AuthorityID, Authority>
 			String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
 	{
 		try {
-			userManager = JFireEjb3Factory.getRemoteBean(JFireSecurityManagerRemote.class, SecurityReflector.getInitialContextProperties());
+			userManager = getEjbProvider().getRemoteBean(JFireSecurityManagerRemote.class);
 			Set<AuthorityID> authorityIDs = userManager.getAuthorityIDs(organisationID, authorityTypeID);
 
 			return getJDOObjects(null, authorityIDs, fetchGroups, maxFetchDepth, monitor);
@@ -74,11 +71,11 @@ public class AuthorityDAO extends BaseJDOObjectDAO<AuthorityID, Authority>
 	{
 		monitor.beginTask("Storing authority", 1);
 		try {
-			JFireSecurityManagerRemote sm = JFireEjb3Factory.getRemoteBean(JFireSecurityManagerRemote.class, SecurityReflector.getInitialContextProperties());
+			JFireSecurityManagerRemote sm = getEjbProvider().getRemoteBean(JFireSecurityManagerRemote.class);
 			authority = sm.storeAuthority(authority, get, fetchGroups, maxFetchDepth);
 
 			if (authority != null)
-				Cache.sharedInstance().put(null, authority, fetchGroups, maxFetchDepth);
+				getCache().put(null, authority, fetchGroups, maxFetchDepth);
 
 			return authority;
 		} catch (Exception e) {
@@ -93,9 +90,9 @@ public class AuthorityDAO extends BaseJDOObjectDAO<AuthorityID, Authority>
 	{
 		monitor.beginTask("Assigning authority to secured object", 1);
 		try {
-			JFireSecurityManagerRemote sm = JFireEjb3Factory.getRemoteBean(JFireSecurityManagerRemote.class, SecurityReflector.getInitialContextProperties());
+			JFireSecurityManagerRemote sm = getEjbProvider().getRemoteBean(JFireSecurityManagerRemote.class);
 			sm.assignSecuringAuthority(securedObjectID, authorityID, inherited);
-			Cache.sharedInstance().removeByObjectID(securedObjectID, false);
+			getCache().removeByObjectID(securedObjectID, false);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		} finally {
@@ -108,7 +105,7 @@ public class AuthorityDAO extends BaseJDOObjectDAO<AuthorityID, Authority>
 	{
 		monitor.beginTask("Setting granted role groups", 1);
 		try {
-			JFireSecurityManagerRemote sm = JFireEjb3Factory.getRemoteBean(JFireSecurityManagerRemote.class, SecurityReflector.getInitialContextProperties());
+			JFireSecurityManagerRemote sm = getEjbProvider().getRemoteBean(JFireSecurityManagerRemote.class);
 			sm.setGrantedRoleGroups(authorizedObjectID, authorityID, roleGroupIDs);
 		} catch (Exception e) {
 			throw new RuntimeException(e);

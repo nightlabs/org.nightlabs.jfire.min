@@ -7,13 +7,11 @@ import java.util.Set;
 import javax.jdo.FetchPlan;
 
 import org.nightlabs.jdo.NLJDOHelper;
-import org.nightlabs.jfire.base.JFireEjb3Factory;
 import org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO;
 import org.nightlabs.jfire.prop.IStruct;
 import org.nightlabs.jfire.prop.PropertyManagerRemote;
 import org.nightlabs.jfire.prop.StructLocal;
 import org.nightlabs.jfire.prop.id.StructLocalID;
-import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.progress.ProgressMonitor;
 
 public class StructLocalDAO extends BaseJDOObjectDAO<StructLocalID, StructLocal> {
@@ -45,7 +43,7 @@ public class StructLocalDAO extends BaseJDOObjectDAO<StructLocalID, StructLocal>
 	@Override
 	protected Collection<StructLocal> retrieveJDOObjects(Set<StructLocalID> objectIDs, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor) throws Exception {
 		if (pm == null)
-			pm = JFireEjb3Factory.getRemoteBean(PropertyManagerRemote.class, SecurityReflector.getInitialContextProperties());
+			pm = getEjbProvider().getRemoteBean(PropertyManagerRemote.class);
 		try {
 			ArrayList<StructLocal> structLocals = new ArrayList<StructLocal>(objectIDs.size());
 			for (StructLocalID structLocalID : objectIDs)
@@ -60,7 +58,7 @@ public class StructLocalDAO extends BaseJDOObjectDAO<StructLocalID, StructLocal>
 	protected StructLocal retrieveJDOObject(StructLocalID objectID, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor) throws Exception {
 		PropertyManagerRemote pm2 = pm;
 		if (pm2 == null)
-			pm2 = JFireEjb3Factory.getRemoteBean(PropertyManagerRemote.class, SecurityReflector.getInitialContextProperties());
+			pm2 = getEjbProvider().getRemoteBean(PropertyManagerRemote.class);
 		StructLocal structLocal = pm2.getFullStructLocal(objectID, fetchGroups, maxFetchDepth);
 		if (monitor != null)
 			monitor.worked(1);
@@ -106,7 +104,7 @@ public class StructLocalDAO extends BaseJDOObjectDAO<StructLocalID, StructLocal>
 
 	public StructLocal storeStructLocal(StructLocal structLocal, boolean get, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor) {
 		try {
-			PropertyManagerRemote propManager = JFireEjb3Factory.getRemoteBean(PropertyManagerRemote.class, SecurityReflector.getInitialContextProperties());
+			PropertyManagerRemote propManager = getEjbProvider().getRemoteBean(PropertyManagerRemote.class);
 			return (StructLocal) propManager.storeStruct(structLocal, get, fetchGroups, maxFetchDepth);
 		} catch (Exception e) {
 			throw new RuntimeException("Storing StructLocal failed", e);

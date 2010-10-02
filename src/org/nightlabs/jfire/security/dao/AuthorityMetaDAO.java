@@ -3,11 +3,9 @@ package org.nightlabs.jfire.security.dao;
 import java.util.Collection;
 import java.util.Set;
 
-import org.nightlabs.jfire.base.JFireEjb3Factory;
 import org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO;
 import org.nightlabs.jfire.security.AuthorityMeta;
 import org.nightlabs.jfire.security.JFireSecurityManagerRemote;
-import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.security.id.AuthorityID;
 import org.nightlabs.jfire.security.id.AuthorityMetaID;
 import org.nightlabs.progress.ProgressMonitor;
@@ -36,8 +34,7 @@ public class AuthorityMetaDAO extends BaseJDOObjectDAO<AuthorityMetaID, Authorit
 			Set<AuthorityMetaID> objectIDs, String[] fetchGroups,
 			int maxFetchDepth, ProgressMonitor monitor) throws Exception
 	{
-		JFireSecurityManagerRemote jsm = JFireEjb3Factory.getRemoteBean(JFireSecurityManagerRemote.class,
-				SecurityReflector.getInitialContextProperties());
+		JFireSecurityManagerRemote jsm = getEjbProvider().getRemoteBean(JFireSecurityManagerRemote.class);
 		return jsm.getAuthorityMetas(objectIDs, fetchGroups, maxFetchDepth);
 	}
 
@@ -73,8 +70,7 @@ public class AuthorityMetaDAO extends BaseJDOObjectDAO<AuthorityMetaID, Authorit
 	{
 		try {
 			monitor.beginTask("Save Authority Meta Data", 100);
-			JFireSecurityManagerRemote jsm = JFireEjb3Factory.getRemoteBean(JFireSecurityManagerRemote.class,
-					SecurityReflector.getInitialContextProperties());
+			JFireSecurityManagerRemote jsm = getEjbProvider().getRemoteBean(JFireSecurityManagerRemote.class);
 			authorityMeta = jsm.storeAuthorityMeta(authorityMeta, get, fetchGroups, maxFetchDepth);
 			monitor.worked(100);
 			return authorityMeta;
@@ -88,8 +84,7 @@ public class AuthorityMetaDAO extends BaseJDOObjectDAO<AuthorityMetaID, Authorit
 	{
 		try {
 			monitor.beginTask("Load Authority Meta Data", 100);
-			JFireSecurityManagerRemote jsm = JFireEjb3Factory.getRemoteBean(JFireSecurityManagerRemote.class,
-					SecurityReflector.getInitialContextProperties());
+			JFireSecurityManagerRemote jsm = getEjbProvider().getRemoteBean(JFireSecurityManagerRemote.class);
 			AuthorityMeta authorityMeta = jsm.getAuthorityMeta(authorityID, fetchGroups, maxFetchDepth);
 			monitor.worked(100);
 			return authorityMeta;

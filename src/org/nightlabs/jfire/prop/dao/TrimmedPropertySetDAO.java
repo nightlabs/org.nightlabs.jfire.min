@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.nightlabs.jdo.ObjectIDUtil;
-import org.nightlabs.jfire.base.JFireEjb3Factory;
 import org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO;
 import org.nightlabs.jfire.prop.DataField;
 import org.nightlabs.jfire.prop.PropertyManagerRemote;
@@ -17,7 +16,6 @@ import org.nightlabs.jfire.prop.Struct;
 import org.nightlabs.jfire.prop.StructField;
 import org.nightlabs.jfire.prop.id.PropertySetID;
 import org.nightlabs.jfire.prop.id.StructFieldID;
-import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.progress.ProgressMonitor;
 import org.nightlabs.util.CollectionUtil;
 
@@ -64,7 +62,7 @@ extends BaseJDOObjectDAO<PropertySetID, PropertySet>
 			ProgressMonitor monitor) throws Exception
 	{
 		List<String> fetchGroupList = CollectionUtil.array2ArrayList(fetchGroupArray);
-		PropertyManagerRemote pm = JFireEjb3Factory.getRemoteBean(PropertyManagerRemote.class, SecurityReflector.getInitialContextProperties());
+		PropertyManagerRemote pm = getEjbProvider().getRemoteBean(PropertyManagerRemote.class);
 		
 		// Extract StructFieldIDs encoded within the fetchGroups and remove them from the fetch groups afterwards
 		Set<StructFieldID> structFieldIDs = new HashSet<StructFieldID>();

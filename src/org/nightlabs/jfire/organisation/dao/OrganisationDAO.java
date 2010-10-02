@@ -4,13 +4,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import org.nightlabs.jfire.base.JFireEjb3Factory;
 import org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO;
 import org.nightlabs.jfire.base.jdo.IJDOObjectDAO;
 import org.nightlabs.jfire.organisation.Organisation;
 import org.nightlabs.jfire.organisation.OrganisationManagerRemote;
 import org.nightlabs.jfire.organisation.id.OrganisationID;
-import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.progress.ProgressMonitor;
 
 /**
@@ -50,7 +48,7 @@ public class OrganisationDAO extends BaseJDOObjectDAO<OrganisationID, Organisati
 	{
 		OrganisationManagerRemote organisationManager = this.organisationManager;
 		if (organisationManager == null)
-			organisationManager = JFireEjb3Factory.getRemoteBean(OrganisationManagerRemote.class, SecurityReflector.getInitialContextProperties());
+			organisationManager = getEjbProvider().getRemoteBean(OrganisationManagerRemote.class);
 
 		return organisationManager.getOrganisations(organisationIDs, fetchGroups, maxFetchDepth);
 	}
@@ -74,7 +72,7 @@ public class OrganisationDAO extends BaseJDOObjectDAO<OrganisationID, Organisati
 		monitor.beginTask("Loading Organisations", 2);
 		try {
 			try {
-				organisationManager = JFireEjb3Factory.getRemoteBean(OrganisationManagerRemote.class, SecurityReflector.getInitialContextProperties());
+				organisationManager = getEjbProvider().getRemoteBean(OrganisationManagerRemote.class);
 				try {
 					Set<OrganisationID> organisationIDs = organisationManager.getOrganisationIDs();
 					monitor.worked(1); --restWorked;
@@ -149,7 +147,7 @@ public class OrganisationDAO extends BaseJDOObjectDAO<OrganisationID, Organisati
 		try {
 			OrganisationManagerRemote organisationManager = this.organisationManager;
 			if (organisationManager == null)
-				organisationManager = JFireEjb3Factory.getRemoteBean(OrganisationManagerRemote.class, SecurityReflector.getInitialContextProperties());
+				organisationManager = getEjbProvider().getRemoteBean(OrganisationManagerRemote.class);
 
 			return organisationManager.storeLocalOrganisation(organisation, get, fetchGroups, maxFetchDepth);
 		} catch (Exception e) {

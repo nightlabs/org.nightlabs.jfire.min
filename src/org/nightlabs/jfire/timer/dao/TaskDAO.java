@@ -7,9 +7,7 @@ import java.util.Set;
 import javax.jdo.FetchPlan;
 
 import org.nightlabs.jdo.NLJDOHelper;
-import org.nightlabs.jfire.base.JFireEjb3Factory;
 import org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO;
-import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.timer.Task;
 import org.nightlabs.jfire.timer.TimerManagerRemote;
 import org.nightlabs.jfire.timer.id.TaskID;
@@ -33,7 +31,7 @@ public class TaskDAO extends BaseJDOObjectDAO<TaskID, Task> {
 	@Override
 	protected Collection<Task> retrieveJDOObjects(Set<TaskID> objectIDs, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
 	throws Exception {
-		TimerManagerRemote timerManager = JFireEjb3Factory.getRemoteBean(TimerManagerRemote.class, SecurityReflector.getInitialContextProperties());
+		TimerManagerRemote timerManager = getEjbProvider().getRemoteBean(TimerManagerRemote.class);
 		return timerManager.getTasks(objectIDs, fetchGroups, maxFetchDepth);
 	}
 
@@ -52,7 +50,7 @@ public class TaskDAO extends BaseJDOObjectDAO<TaskID, Task> {
 	public List<Task> getTasks(String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
 	{
 		try {
-			TimerManagerRemote timerManager = JFireEjb3Factory.getRemoteBean(TimerManagerRemote.class, SecurityReflector.getInitialContextProperties());
+			TimerManagerRemote timerManager = getEjbProvider().getRemoteBean(TimerManagerRemote.class);
 			try {
 				List<TaskID> promoterIDs = timerManager.getTaskIDs();
 
@@ -68,7 +66,7 @@ public class TaskDAO extends BaseJDOObjectDAO<TaskID, Task> {
 	public synchronized List<Task> getTasks(String taskTypeID, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
 	{
 		try {
-			TimerManagerRemote timerManager = JFireEjb3Factory.getRemoteBean(TimerManagerRemote.class, SecurityReflector.getInitialContextProperties());
+			TimerManagerRemote timerManager = getEjbProvider().getRemoteBean(TimerManagerRemote.class);
 			try {
 				List<TaskID> promoterIDs = timerManager.getTaskIDs(taskTypeID);
 
@@ -83,7 +81,7 @@ public class TaskDAO extends BaseJDOObjectDAO<TaskID, Task> {
 
 	public synchronized Task storeTask(Task task, boolean get, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor) {
 		try {
-			TimerManagerRemote m = JFireEjb3Factory.getRemoteBean(TimerManagerRemote.class, SecurityReflector.getInitialContextProperties());
+			TimerManagerRemote m = getEjbProvider().getRemoteBean(TimerManagerRemote.class);
 			Task newTask = m.storeTask(task, get, fetchGroups, maxFetchDepth);
 			if (newTask != null)
 				getCache().put(null, newTask, fetchGroups, maxFetchDepth);

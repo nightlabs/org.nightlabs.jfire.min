@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import org.nightlabs.jfire.base.JFireEjb3Factory;
 import org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO;
 import org.nightlabs.jfire.security.Authority;
 import org.nightlabs.jfire.security.AuthorizedObject;
@@ -12,7 +11,6 @@ import org.nightlabs.jfire.security.AuthorizedObjectRef;
 import org.nightlabs.jfire.security.JFireSecurityManagerRemote;
 import org.nightlabs.jfire.security.RoleGroup;
 import org.nightlabs.jfire.security.RoleGroupRef;
-import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.security.id.AuthorityID;
 import org.nightlabs.jfire.security.id.AuthorizedObjectID;
 import org.nightlabs.jfire.security.id.RoleGroupID;
@@ -40,7 +38,7 @@ public class AuthorizedObjectDAO extends BaseJDOObjectDAO<AuthorizedObjectID, Au
 		try {
 			JFireSecurityManagerRemote m = jfireSecurityManager;
 			if (m == null)
-				m = JFireEjb3Factory.getRemoteBean(JFireSecurityManagerRemote.class, SecurityReflector.getInitialContextProperties());
+				m = getEjbProvider().getRemoteBean(JFireSecurityManagerRemote.class);
 
 			return m.getAuthorizedObjects(authorizedObjectIDs, fetchGroups, maxFetchDepth);
 		} finally {
@@ -57,7 +55,7 @@ public class AuthorizedObjectDAO extends BaseJDOObjectDAO<AuthorizedObjectID, Au
 	{
 		monitor.beginTask("Loading authorized objects", 100);
 		try {
-			jfireSecurityManager = JFireEjb3Factory.getRemoteBean(JFireSecurityManagerRemote.class, SecurityReflector.getInitialContextProperties());
+			jfireSecurityManager = getEjbProvider().getRemoteBean(JFireSecurityManagerRemote.class);
 			monitor.worked(10);
 			Set<AuthorizedObjectID> authorizedObjectIDs = jfireSecurityManager.getAuthorizedObjectIDs();
 			monitor.worked(30);
@@ -110,7 +108,7 @@ public class AuthorizedObjectDAO extends BaseJDOObjectDAO<AuthorizedObjectID, Au
 	{
 		monitor.beginTask("Setting granted role groups within an authority.", 1);
 		try {
-			JFireSecurityManagerRemote um = JFireEjb3Factory.getRemoteBean(JFireSecurityManagerRemote.class, SecurityReflector.getInitialContextProperties());
+			JFireSecurityManagerRemote um = getEjbProvider().getRemoteBean(JFireSecurityManagerRemote.class);
 			um.setGrantedRoleGroups(authorizedObjectID, authorityID, roleGroupIDs);
 		} catch(RuntimeException e) {
 			throw e;

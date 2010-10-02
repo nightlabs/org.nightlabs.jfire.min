@@ -9,9 +9,7 @@ import java.util.Set;
 import javax.jdo.FetchPlan;
 
 import org.nightlabs.jdo.NLJDOHelper;
-import org.nightlabs.jfire.base.JFireEjb3Factory;
 import org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO;
-import org.nightlabs.jfire.base.jdo.cache.Cache;
 import org.nightlabs.jfire.config.Config;
 import org.nightlabs.jfire.config.ConfigGroup;
 import org.nightlabs.jfire.config.ConfigManagerRemote;
@@ -116,7 +114,7 @@ public class ConfigSetupDAO extends BaseJDOObjectDAO<ConfigSetupID, ConfigSetup>
 	@Override
 	protected Collection<ConfigSetup> retrieveJDOObjects(Set<ConfigSetupID> objectIDs, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor) throws Exception {
 		Collection<ConfigSetup> configSetups;
-		ConfigManagerRemote cm = JFireEjb3Factory.getRemoteBean(ConfigManagerRemote.class, SecurityReflector.getInitialContextProperties());
+		ConfigManagerRemote cm = getEjbProvider().getRemoteBean(ConfigManagerRemote.class);
 		if (completeSetupParameters != null) {
 			monitor.beginTask("Fetching ConfigSetups", objectIDs.size());
 			configSetups = new ArrayList<ConfigSetup>(objectIDs.size());
@@ -153,12 +151,12 @@ public class ConfigSetupDAO extends BaseJDOObjectDAO<ConfigSetupID, ConfigSetup>
 	public Collection<ConfigSetup> getAllConfigSetups(String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor) {
 		Collection<ConfigSetupID> allIDs;
 		try {
-			ConfigManagerRemote cm = JFireEjb3Factory.getRemoteBean(ConfigManagerRemote.class, SecurityReflector.getInitialContextProperties());
+			ConfigManagerRemote cm = getEjbProvider().getRemoteBean(ConfigManagerRemote.class);
 			allIDs = getAllConfigSetupIDs(cm);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
-		Cache.sharedInstance().put(SCOPE_COMPLETE_SETUPS, KEY_ALL_SETUP_IDS, allIDs, new String[] {}, -1);
+		getCache().put(SCOPE_COMPLETE_SETUPS, KEY_ALL_SETUP_IDS, allIDs, new String[] {}, -1);
 		return getJDOObjects(null, allIDs, fetchGroups, maxFetchDepth, monitor);
 	}
 
@@ -223,7 +221,7 @@ public class ConfigSetupDAO extends BaseJDOObjectDAO<ConfigSetupID, ConfigSetup>
 	 * @return All {@link ConfigSetupID}s of all known {@link ConfigSetup}s.
 	 */
 	private Collection<ConfigSetupID> getAllConfigSetupIDs(ConfigManagerRemote cm)  {
-		AllSetupIDsResult result = (AllSetupIDsResult) Cache.sharedInstance().get(SCOPE_COMPLETE_SETUPS, KEY_ALL_SETUP_IDS, new String[] {}, -1);
+		AllSetupIDsResult result = (AllSetupIDsResult) getCache().get(SCOPE_COMPLETE_SETUPS, KEY_ALL_SETUP_IDS, new String[] {}, -1);
 		if (result == null) {
 			return cm.getAllConfigSetupIDs();
 		}
@@ -247,14 +245,14 @@ public class ConfigSetupDAO extends BaseJDOObjectDAO<ConfigSetupID, ConfigSetup>
 	{
 		Collection<ConfigSetupID> allIDs;
 		try {
-			ConfigManagerRemote cm = JFireEjb3Factory.getRemoteBean(ConfigManagerRemote.class, SecurityReflector.getInitialContextProperties());
+			ConfigManagerRemote cm = getEjbProvider().getRemoteBean(ConfigManagerRemote.class);
 			allIDs = getAllConfigSetupIDs(cm);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 		Collection<ConfigSetup> setups = getCompleteConfigSetups(new HashSet<ConfigSetupID>(allIDs), groupsFetchGroups, groupsMaxFetchDepth, configsFetchGroups, configsMaxFetchDepth, monitor);
 		AllSetupIDsResult allSetupDsResult = new AllSetupIDsResult(allIDs, setups.iterator().next());
-		Cache.sharedInstance().put(SCOPE_COMPLETE_SETUPS, KEY_ALL_SETUP_IDS, allSetupDsResult, new String[] {}, -1);
+		getCache().put(SCOPE_COMPLETE_SETUPS, KEY_ALL_SETUP_IDS, allSetupDsResult, new String[] {}, -1);
 		return setups;
 	}
 

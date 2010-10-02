@@ -6,12 +6,10 @@ package org.nightlabs.jfire.prop.dao;
 import java.util.Collection;
 import java.util.Set;
 
-import org.nightlabs.jfire.base.JFireEjb3Factory;
 import org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO;
 import org.nightlabs.jfire.prop.PropertyManagerRemote;
 import org.nightlabs.jfire.prop.config.PropertySetFieldBasedEditLayoutUseCase;
 import org.nightlabs.jfire.prop.config.id.PropertySetFieldBasedEditLayoutUseCaseID;
-import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.progress.ProgressMonitor;
 
 /**
@@ -25,7 +23,7 @@ extends BaseJDOObjectDAO<PropertySetFieldBasedEditLayoutUseCaseID, PropertySetFi
 			Set<PropertySetFieldBasedEditLayoutUseCaseID> objectIDs,
 			String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
 			throws Exception {
-		PropertyManagerRemote pm = JFireEjb3Factory.getRemoteBean(PropertyManagerRemote.class, SecurityReflector.getInitialContextProperties());
+		PropertyManagerRemote pm = getEjbProvider().getRemoteBean(PropertyManagerRemote.class);
 		return pm.getPropertySetFieldBasedEditLayoutUseCases(objectIDs, fetchGroups, maxFetchDepth);
 	}
 
@@ -47,7 +45,7 @@ extends BaseJDOObjectDAO<PropertySetFieldBasedEditLayoutUseCaseID, PropertySetFi
 	}
 
 	public Collection<PropertySetFieldBasedEditLayoutUseCase> getAllUseCases(String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor) {
-		PropertyManagerRemote pm = JFireEjb3Factory.getRemoteBean(PropertyManagerRemote.class, SecurityReflector.getInitialContextProperties());
+		PropertyManagerRemote pm = getEjbProvider().getRemoteBean(PropertyManagerRemote.class);
 		Set<PropertySetFieldBasedEditLayoutUseCaseID> useCaseIDs = pm.getAllPropertySetFieldBasedEditLayoutUseCaseIDs();
 		return getJDOObjects(null, useCaseIDs, fetchGroups, maxFetchDepth, monitor);
 	}

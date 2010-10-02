@@ -5,9 +5,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.nightlabs.jdo.query.QueryCollection;
-import org.nightlabs.jfire.base.JFireEjb3Factory;
 import org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO;
-import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.workstation.Workstation;
 import org.nightlabs.jfire.workstation.WorkstationManagerRemote;
 import org.nightlabs.jfire.workstation.id.WorkstationID;
@@ -39,7 +37,7 @@ extends BaseJDOObjectDAO<WorkstationID, Workstation>
 		WorkstationManagerRemote wm = workstationManager;
 
 		if (wm == null)
-			wm = JFireEjb3Factory.getRemoteBean(WorkstationManagerRemote.class, SecurityReflector.getInitialContextProperties());
+			wm = getEjbProvider().getRemoteBean(WorkstationManagerRemote.class);
 
 		return wm.getWorkstations(workstationIDs, fetchGroups, maxFetchDepth);
 	}
@@ -52,7 +50,7 @@ extends BaseJDOObjectDAO<WorkstationID, Workstation>
 	public synchronized List<Workstation> getWorkstations(QueryCollection<? extends WorkstationQuery> workstationQueries, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
 	{
 		try {
-			workstationManager = JFireEjb3Factory.getRemoteBean(WorkstationManagerRemote.class, SecurityReflector.getInitialContextProperties());
+			workstationManager = getEjbProvider().getRemoteBean(WorkstationManagerRemote.class);
 			Set<WorkstationID> workstationIDs = workstationManager.getWorkstationIDs(workstationQueries);
 			return getJDOObjects(null, workstationIDs, fetchGroups, maxFetchDepth, monitor);
 		} catch (Exception e) {
@@ -65,7 +63,7 @@ extends BaseJDOObjectDAO<WorkstationID, Workstation>
 	public synchronized List<Workstation> getWorkstations(String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
 	{
 		try {
-			workstationManager = JFireEjb3Factory.getRemoteBean(WorkstationManagerRemote.class, SecurityReflector.getInitialContextProperties());
+			workstationManager = getEjbProvider().getRemoteBean(WorkstationManagerRemote.class);
 			Set<WorkstationID> workstationIDs = workstationManager.getWorkstationIDs();
 			return getJDOObjects(null, workstationIDs, fetchGroups, maxFetchDepth, monitor);
 		} catch (Exception e) {
@@ -82,7 +80,7 @@ extends BaseJDOObjectDAO<WorkstationID, Workstation>
 
 	public Workstation storeWorkstation(Workstation workstation, boolean get, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor) {
 		try {
-			WorkstationManagerRemote wm = JFireEjb3Factory.getRemoteBean(WorkstationManagerRemote.class, SecurityReflector.getInitialContextProperties());
+			WorkstationManagerRemote wm = getEjbProvider().getRemoteBean(WorkstationManagerRemote.class);
 			Workstation res = wm.storeWorkstation(workstation, get, fetchGroups, maxFetchDepth);
 			if (res != null)
 				getCache().put(null, res, fetchGroups, maxFetchDepth);

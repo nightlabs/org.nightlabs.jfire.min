@@ -4,11 +4,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import org.nightlabs.jfire.base.JFireEjb3Factory;
 import org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO;
 import org.nightlabs.jfire.security.AuthorityType;
 import org.nightlabs.jfire.security.JFireSecurityManagerRemote;
-import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.security.id.AuthorityTypeID;
 import org.nightlabs.progress.ProgressMonitor;
 
@@ -29,7 +27,7 @@ public class AuthorityTypeDAO extends BaseJDOObjectDAO<AuthorityTypeID, Authorit
 	{
 		JFireSecurityManagerRemote sm = securityManager;
 		if (sm == null)
-			sm = JFireEjb3Factory.getRemoteBean(JFireSecurityManagerRemote.class, SecurityReflector.getInitialContextProperties());
+			sm = getEjbProvider().getRemoteBean(JFireSecurityManagerRemote.class);
 
 		return sm.getAuthorityTypes(authorityTypeIDs, fetchGroups, maxFetchDepth);
 	}
@@ -41,7 +39,7 @@ public class AuthorityTypeDAO extends BaseJDOObjectDAO<AuthorityTypeID, Authorit
 			int maxFetchDepth, ProgressMonitor monitor)
 	{
 		try {
-			securityManager = JFireEjb3Factory.getRemoteBean(JFireSecurityManagerRemote.class, SecurityReflector.getInitialContextProperties());
+			securityManager = getEjbProvider().getRemoteBean(JFireSecurityManagerRemote.class);
 			Set<AuthorityTypeID> authorityTypeIDs = securityManager.getAuthorityTypeIDs();
 			return getJDOObjects(null, authorityTypeIDs, fetchGroups, maxFetchDepth, monitor);
 		} catch (RuntimeException x) {

@@ -5,13 +5,11 @@ import java.util.Set;
 
 import javax.jdo.JDOHelper;
 
-import org.nightlabs.jfire.base.JFireEjb3Factory;
 import org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO;
 import org.nightlabs.jfire.base.jdo.IJDOObjectDAO;
 import org.nightlabs.jfire.prop.PropertyManagerRemote;
 import org.nightlabs.jfire.prop.PropertySet;
 import org.nightlabs.jfire.prop.id.PropertySetID;
-import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.progress.ProgressMonitor;
 
 /**
@@ -45,7 +43,7 @@ implements IJDOObjectDAO<PropertySet>
 			Set<PropertySetID> objectIDs, String[] fetchGroups, int maxFetchDepth,
 			ProgressMonitor monitor) throws Exception
 	{
-		PropertyManagerRemote pm = JFireEjb3Factory.getRemoteBean(PropertyManagerRemote.class, SecurityReflector.getInitialContextProperties());
+		PropertyManagerRemote pm = getEjbProvider().getRemoteBean(PropertyManagerRemote.class);
 		return pm.getPropertySets(objectIDs, fetchGroups, maxFetchDepth);
 	}
 
@@ -62,7 +60,7 @@ implements IJDOObjectDAO<PropertySet>
 	{
 		try {
 			PropertySetID propertySetID = (PropertySetID) JDOHelper.getObjectId(propertySet);
-			PropertyManagerRemote pm = JFireEjb3Factory.getRemoteBean(PropertyManagerRemote.class, SecurityReflector.getInitialContextProperties());
+			PropertyManagerRemote pm = getEjbProvider().getRemoteBean(PropertyManagerRemote.class);
 			PropertySet result = pm.storePropertySet(propertySet, get, fetchGroups, maxFetchDepth);
 
 			if (propertySetID != null)

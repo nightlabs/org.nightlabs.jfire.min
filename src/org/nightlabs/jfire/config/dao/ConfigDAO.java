@@ -27,12 +27,10 @@ import java.util.Collection;
 import java.util.Set;
 
 import org.nightlabs.jdo.NLJDOHelper;
-import org.nightlabs.jfire.base.JFireEjb3Factory;
 import org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO;
 import org.nightlabs.jfire.config.Config;
 import org.nightlabs.jfire.config.ConfigManagerRemote;
 import org.nightlabs.jfire.config.id.ConfigID;
-import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.progress.ProgressMonitor;
 
 /**
@@ -71,7 +69,7 @@ public class ConfigDAO extends BaseJDOObjectDAO<ConfigID, Config>
 		Collection<Config> configs;
 		monitor.beginTask("Fetching Configs", 1);
 		try {
-			ConfigManagerRemote cm = JFireEjb3Factory.getRemoteBean(ConfigManagerRemote.class, SecurityReflector.getInitialContextProperties());
+			ConfigManagerRemote cm = getEjbProvider().getRemoteBean(ConfigManagerRemote.class);
 			// ConfigManagerRemote does not provide a way to get multiple Configs...
 			configs = cm.getConfigs(configIDs, fetchGroups, maxFetchDepth);
 		} catch (Exception e) {
@@ -129,7 +127,7 @@ public class ConfigDAO extends BaseJDOObjectDAO<ConfigID, Config>
 		// get all ConfigIDs of the corresponding Configs
 		Collection<ConfigID> configIDs;
 		try {
-			ConfigManagerRemote cm = JFireEjb3Factory.getRemoteBean(ConfigManagerRemote.class, SecurityReflector.getInitialContextProperties());
+			ConfigManagerRemote cm = getEjbProvider().getRemoteBean(ConfigManagerRemote.class);
 			configIDs = cm.getConfigIDsByConfigType(configType, fetchGroups, maxFetchDepth);
 		} catch (Exception e) {
 			throw new RuntimeException("Error while downloading ConfigIDs!\n" ,e);
@@ -150,7 +148,7 @@ public class ConfigDAO extends BaseJDOObjectDAO<ConfigID, Config>
 	public synchronized Config storeConfig(Config config, boolean get, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor) {
 		monitor.beginTask("Saving config...", 10);
 		try {
-			ConfigManagerRemote cm = JFireEjb3Factory.getRemoteBean(ConfigManagerRemote.class, SecurityReflector.getInitialContextProperties());
+			ConfigManagerRemote cm = getEjbProvider().getRemoteBean(ConfigManagerRemote.class);
 			return cm.storeConfig(config, get, fetchGroups, maxFetchDepth);
 		} catch (Exception e) {
 			throw new RuntimeException("Error while saving the config.");

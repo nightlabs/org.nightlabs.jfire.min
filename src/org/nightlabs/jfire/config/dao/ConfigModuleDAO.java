@@ -9,7 +9,6 @@ import java.util.Set;
 import javax.jdo.JDOHelper;
 
 import org.nightlabs.jdo.NLJDOHelper;
-import org.nightlabs.jfire.base.JFireEjb3Factory;
 import org.nightlabs.jfire.base.jdo.BaseJDOObjectDAO;
 import org.nightlabs.jfire.config.Config;
 import org.nightlabs.jfire.config.ConfigGroup;
@@ -17,7 +16,6 @@ import org.nightlabs.jfire.config.ConfigManagerRemote;
 import org.nightlabs.jfire.config.ConfigModule;
 import org.nightlabs.jfire.config.id.ConfigID;
 import org.nightlabs.jfire.config.id.ConfigModuleID;
-import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.progress.ProgressMonitor;
 
 /**
@@ -57,7 +55,7 @@ public class ConfigModuleDAO extends BaseJDOObjectDAO<ConfigModuleID, ConfigModu
 		monitor.beginTask("Retrieving ConfigModules", 1);
 		Collection<ConfigModule> result;
 		try {
-			ConfigManagerRemote configManager = JFireEjb3Factory.getRemoteBean(ConfigManagerRemote.class, SecurityReflector.getInitialContextProperties());
+			ConfigManagerRemote configManager = getEjbProvider().getRemoteBean(ConfigManagerRemote.class);
 			result = configManager.getConfigModules(configModuleIDs, fetchGroups, maxFetchDepth);
 			monitor.worked(1);
 		} catch (Exception e) {
@@ -152,7 +150,7 @@ public class ConfigModuleDAO extends BaseJDOObjectDAO<ConfigModuleID, ConfigModu
 	{
 		monitor.beginTask("Getting Groups ConfigModule...", 1);
 		try {
-			ConfigManagerRemote cm = JFireEjb3Factory.getRemoteBean(ConfigManagerRemote.class, SecurityReflector.getInitialContextProperties());
+			ConfigManagerRemote cm = getEjbProvider().getRemoteBean(ConfigManagerRemote.class);
 			ConfigModule searchedModule = cm.getGroupConfigModule(childID, configModuleClass, moduleID, true,
 					fetchGroups, maxFetchDepth);
 			monitor.worked(1);
@@ -168,7 +166,7 @@ public class ConfigModuleDAO extends BaseJDOObjectDAO<ConfigModuleID, ConfigModu
 	public ConfigModule storeConfigModule(ConfigModule configModule, boolean get, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor) {
 		monitor.beginTask("Storing ConfigModule...", 1);
 		try {
-			ConfigManagerRemote cm = JFireEjb3Factory.getRemoteBean(ConfigManagerRemote.class, SecurityReflector.getInitialContextProperties());
+			ConfigManagerRemote cm = getEjbProvider().getRemoteBean(ConfigManagerRemote.class);
 			ConfigModule storedModule = cm.storeConfigModule(configModule, get,
 					fetchGroups, maxFetchDepth);
 			monitor.worked(1);
