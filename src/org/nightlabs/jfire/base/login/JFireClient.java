@@ -9,7 +9,8 @@ import javax.security.auth.login.LoginException;
 import org.apache.log4j.Logger;
 import org.nightlabs.j2ee.LoginData;
 import org.nightlabs.jfire.base.security.SecurityReflectorClient;
-import org.nightlabs.jfire.security.SecurityReflector;
+import org.nightlabs.jfire.security.GlobalSecurityReflector;
+import org.nightlabs.jfire.security.ISecurityReflector;
 
 /**
  * {@link JFireClient} can be used to build a simple Java JFire client.
@@ -95,7 +96,7 @@ public class JFireClient {
 	{
 		getLogin().login();
 		try {
-			SecurityReflector sr = SecurityReflector.sharedInstance();
+			ISecurityReflector sr = GlobalSecurityReflector.sharedInstance();
 			if (!(sr instanceof SecurityReflectorClient))
 				throw new IllegalStateException("SecurityReflector is not an instance of " + SecurityReflectorClient.class.getName());
 			((SecurityReflectorClient) sr).setLoginData(getLogin().getLoginData());
@@ -115,7 +116,7 @@ public class JFireClient {
 	{
 		getLogin().logout();
 		try {
-			SecurityReflector sr = SecurityReflector.sharedInstance();
+			ISecurityReflector sr = GlobalSecurityReflector.sharedInstance();
 			if (!(sr instanceof SecurityReflectorClient))
 				throw new IllegalStateException("SecurityReflector is not an instance of " + SecurityReflectorClient.class.getName());
 			((SecurityReflectorClient) sr).unregisterAuthorizedObjectRefLifecycleListener();

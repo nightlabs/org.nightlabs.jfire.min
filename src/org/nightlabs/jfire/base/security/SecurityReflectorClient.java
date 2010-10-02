@@ -20,10 +20,13 @@ import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleEvent;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleListener;
 import org.nightlabs.jfire.jdo.notification.IJDOLifecycleListenerFilter;
 import org.nightlabs.jfire.jdo.notification.JDOLifecycleState;
+import org.nightlabs.jfire.security.AbstractSecurityReflector;
 import org.nightlabs.jfire.security.AuthorizedObjectRefLifecycleListenerFilter;
+import org.nightlabs.jfire.security.ISecurityReflector;
 import org.nightlabs.jfire.security.JFireSecurityManagerRemote;
 import org.nightlabs.jfire.security.NoUserException;
 import org.nightlabs.jfire.security.SecurityReflector;
+import org.nightlabs.jfire.security.UserDescriptor;
 import org.nightlabs.jfire.security.id.AuthorityID;
 import org.nightlabs.jfire.security.id.RoleID;
 import org.nightlabs.jfire.security.id.UserLocalID;
@@ -34,7 +37,7 @@ import org.nightlabs.jfire.security.id.UserLocalID;
  * @author Marco Schulze - marco at nightlabs dot de 
  * @author Alexander Bieber <!-- alex [AT] nightlabs.d [DOT] de -->
  */
-public class SecurityReflectorClient extends SecurityReflector {
+public class SecurityReflectorClient extends AbstractSecurityReflector implements ISecurityReflector {
 
 	private static final long serialVersionUID = 20080906L;
 	
@@ -53,10 +56,10 @@ public class SecurityReflectorClient extends SecurityReflector {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.nightlabs.jfire.security.SecurityReflector#_createInitialContext()
+	 * @see org.nightlabs.jfire.security.ISecurityReflector#createInitialContext()
 	 */
 	@Override
-	protected InitialContext _createInitialContext() throws NoUserException {
+	public InitialContext createInitialContext() throws NoUserException {
 		if (loginData == null)
 			throw new NoUserException("No loginData was yet provided for this " + this.getClass().getSimpleName());
 		try {
@@ -67,17 +70,20 @@ public class SecurityReflectorClient extends SecurityReflector {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.nightlabs.jfire.security.SecurityReflector#_getInitialContextProperties()
+	 * @see org.nightlabs.jfire.security.ISecurityReflector#getInitialContextProperties()
 	 */
 	@Override
-	protected Properties _getInitialContextProperties() throws NoUserException {
+	public Properties getInitialContextProperties() throws NoUserException {
 		if (loginData == null)
 			throw new NoUserException("No loginData was yet provided for this " + this.getClass().getSimpleName());
 		return loginData.getInitialContextProperties();
 	}
 
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.security.ISecurityReflector#getUserDescriptor()
+	 */
 	@Override
-	public UserDescriptor _getUserDescriptor() throws NoUserException {
+	public UserDescriptor getUserDescriptor() throws NoUserException {
 		if (loginData == null)
 			throw new NoUserException("No loginData was yet provided for this " + this.getClass().getSimpleName());
 		return new UserDescriptor(loginData.getOrganisationID(), loginData.getUserID(), loginData.getWorkstationID(), loginData.getSessionID());
@@ -85,15 +91,18 @@ public class SecurityReflectorClient extends SecurityReflector {
 
 	private Map<AuthorityID, Set<RoleID>> cache_authorityID2roleIDSet = new HashMap<AuthorityID, Set<RoleID>>();
 
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.security.AbstractSecurityReflector#getRoleIDs(org.nightlabs.jfire.security.id.AuthorityID)
+	 */
 	@Override
-	protected synchronized Set<RoleID> _getRoleIDs(AuthorityID authorityID) throws NoUserException
+	public synchronized Set<RoleID> getRoleIDs(AuthorityID authorityID) throws NoUserException
 	{
 		Set<RoleID> result = cache_authorityID2roleIDSet.get(authorityID);
 		if (result != null)
 			return result;
 
 		try {
-			JFireSecurityManagerRemote jfireSecurityManager = JFireEjb3Factory.getRemoteBean(JFireSecurityManagerRemote.class, _getInitialContextProperties());
+			JFireSecurityManagerRemote jfireSecurityManager = JFireEjb3Factory.getRemoteBean(JFireSecurityManagerRemote.class, getInitialContextProperties());
 			result = jfireSecurityManager.getRoleIDs(authorityID);
 		} catch (NoUserException e) {
 			throw e;
@@ -132,7 +141,7 @@ public class SecurityReflectorClient extends SecurityReflector {
 	}
 
 	protected IJDOLifecycleListenerFilter createAuthorizedObjectRefLifecycleListenerFilter() {
-		UserDescriptor userDescriptor = _getUserDescriptor();
+		UserDescriptor userDescriptor = getUserDescriptor();
 		return new AuthorizedObjectRefLifecycleListenerFilter(
 				UserLocalID.create(userDescriptor.getOrganisationID(), userDescriptor.getUserID(), userDescriptor.getOrganisationID()),
 				JDOLifecycleState.DIRTY, JDOLifecycleState.DELETED

@@ -39,6 +39,8 @@ import javax.jdo.JDOHelper;
 
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jdo.ObjectID;
+import org.nightlabs.jfire.base.GlobalJFireEjb3Provider;
+import org.nightlabs.jfire.base.JFireEjb3Provider;
 import org.nightlabs.jfire.base.jdo.cache.Cache;
 import org.nightlabs.progress.ProgressMonitor;
 import org.nightlabs.progress.SubProgressMonitor;
@@ -61,6 +63,7 @@ import org.nightlabs.util.CollectionUtil;
 public abstract class BaseJDOObjectDAO<JDOObjectID extends ObjectID, JDOObject>
 {
 	private JDOManagerProvider jdoManagerProvider;
+	private JFireEjb3Provider ejbProvider;
 	
 	/**
 	 * Default constructor.
@@ -434,7 +437,7 @@ public abstract class BaseJDOObjectDAO<JDOObjectID extends ObjectID, JDOObject>
 	public void setJdoManagerProvider(JDOManagerProvider jdoManagerProvider) {
 		this.jdoManagerProvider = jdoManagerProvider;
 	}
-	
+
 	/**
 	 * Get the cache instance for this DAO.
 	 * @return The cache instance.
@@ -442,5 +445,24 @@ public abstract class BaseJDOObjectDAO<JDOObjectID extends ObjectID, JDOObject>
 	protected Cache getCache()
 	{
 		return getJDOManagerProvider().getCache();
+	}
+	
+	/**
+	 * Get the ejbProvider.
+	 * @return the ejbProvider
+	 */
+	public JFireEjb3Provider getEjbProvider() {
+		if(ejbProvider == null) {
+			return GlobalJFireEjb3Provider.sharedInstance();
+		}
+		return ejbProvider;
+	}
+	
+	/**
+	 * Set the ejbProvider.
+	 * @param ejbProvider the ejbProvider to set
+	 */
+	public void setEjbProvider(JFireEjb3Provider ejbProvider) {
+		this.ejbProvider = ejbProvider;
 	}
 }
