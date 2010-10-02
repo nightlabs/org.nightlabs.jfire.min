@@ -40,12 +40,14 @@ import javax.naming.NamingException;
 import org.jboss.security.SecurityAssociation;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.Lookup;
+import org.nightlabs.jfire.security.AbstractSecurityReflector;
 import org.nightlabs.jfire.security.Authority;
 import org.nightlabs.jfire.security.AuthorizedObjectRef;
+import org.nightlabs.jfire.security.ISecurityReflector;
 import org.nightlabs.jfire.security.NoUserException;
 import org.nightlabs.jfire.security.RoleRef;
-import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.security.User;
+import org.nightlabs.jfire.security.UserDescriptor;
 import org.nightlabs.jfire.security.id.AuthorityID;
 import org.nightlabs.jfire.security.id.RoleID;
 import org.nightlabs.jfire.security.id.UserLocalID;
@@ -53,12 +55,15 @@ import org.nightlabs.jfire.security.id.UserLocalID;
 /**
  * @author Marco Schulze - marco at nightlabs dot de
  */
-public class SecurityReflectorJBoss extends SecurityReflector
+public class SecurityReflectorJBoss extends AbstractSecurityReflector implements ISecurityReflector
 {
 	private static final long serialVersionUID = 1L;
 
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.security.ISecurityReflector#getUserDescriptor()
+	 */
 	@Override
-	public UserDescriptor _getUserDescriptor() throws NoUserException
+	public UserDescriptor getUserDescriptor() throws NoUserException
 	{
 		Principal principal = SecurityAssociation.getPrincipal();
 		if (principal == null)
@@ -75,8 +80,11 @@ public class SecurityReflectorJBoss extends SecurityReflector
 //				(parts.length < 3 || "".equals(parts[2])) ? (parts[1] + '_' + parts[0]) : parts[2]);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.security.ISecurityReflector#createInitialContext()
+	 */
 	@Override
-	protected InitialContext _createInitialContext() throws NoUserException {
+	public InitialContext createInitialContext() throws NoUserException {
 		try {
 			return new InitialContext();
 		} catch (NamingException e) {
@@ -84,15 +92,21 @@ public class SecurityReflectorJBoss extends SecurityReflector
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.security.ISecurityReflector#getInitialContextProperties()
+	 */
 	@Override
-	protected Properties _getInitialContextProperties() throws NoUserException {
+	public Properties getInitialContextProperties() throws NoUserException {
 		return null; // null is a valid argument e.g. for new InitialContext(null) and it's documented in SecurityReflector.getInitialContextProperties() that null is a valid result
 	}
 
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.security.ISecurityReflector#getRoleIDs(org.nightlabs.jfire.security.id.AuthorityID)
+	 */
 	@Override
-	protected Set<RoleID> _getRoleIDs(AuthorityID authorityID) throws NoUserException
+	public Set<RoleID> getRoleIDs(AuthorityID authorityID) throws NoUserException
 	{
-		UserDescriptor userDescriptor = _getUserDescriptor();
+		UserDescriptor userDescriptor = getUserDescriptor();
 
 		PersistenceManager pm = NLJDOHelper.getThreadPersistenceManager(false);
 		boolean closePM = false;

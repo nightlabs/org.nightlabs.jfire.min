@@ -51,7 +51,7 @@ import javax.transaction.UserTransaction;
 import org.jboss.ejb3.Ejb3ModuleMBean;
 import org.jboss.ejb3.SessionContainer;
 import org.nightlabs.jfire.jboss.authentication.JFireJBossLoginContext;
-import org.nightlabs.jfire.security.SecurityReflector;
+import org.nightlabs.jfire.security.ISecurityReflector;
 import org.nightlabs.jfire.servermanager.j2ee.AbstractJ2EEAdapter;
 import org.nightlabs.jfire.servermanager.j2ee.J2EEAdapterException;
 import org.nightlabs.jfire.servermanager.j2ee.ServerStartNotificationListener;
@@ -155,10 +155,10 @@ public class J2EEAdapterJBoss extends AbstractJ2EEAdapter
 		}
 	}
 
-	private SecurityReflector userResolver = null;
+	private ISecurityReflector userResolver = null;
 
 	@Override
-	public SecurityReflector getSecurityReflector()
+	public ISecurityReflector getSecurityReflector()
 	{
 		if (userResolver == null)
 			userResolver = new SecurityReflectorJBoss();
