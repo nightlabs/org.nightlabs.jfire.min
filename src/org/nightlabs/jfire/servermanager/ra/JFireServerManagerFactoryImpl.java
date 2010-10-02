@@ -105,13 +105,14 @@ import org.nightlabs.jfire.organisationinit.OrganisationInitManager;
 import org.nightlabs.jfire.security.Authority;
 import org.nightlabs.jfire.security.AuthorityType;
 import org.nightlabs.jfire.security.AuthorizedObjectRef;
+import org.nightlabs.jfire.security.GlobalSecurityReflector;
+import org.nightlabs.jfire.security.ISecurityReflector;
 import org.nightlabs.jfire.security.Role;
 import org.nightlabs.jfire.security.RoleConstants;
 import org.nightlabs.jfire.security.RoleGroup;
 import org.nightlabs.jfire.security.RoleGroupRef;
 import org.nightlabs.jfire.security.RoleRef;
 import org.nightlabs.jfire.security.RoleSet;
-import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.security.UndeployedRoleGroupAuthorityUserRecord;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.security.UserLocal;
@@ -391,16 +392,16 @@ public class JFireServerManagerFactoryImpl
 		}
 
 		try {
-			SecurityReflector userResolver = j2EEAdapter.getSecurityReflector();
+			ISecurityReflector userResolver = j2EEAdapter.getSecurityReflector();
 			if (userResolver == null)
 				throw new NullPointerException("J2EEVendorAdapter "+j2EEAdapter.getClass()+".getSecurityReflector() returned null!");
 			try
 			{
-				initialContext.bind(SecurityReflector.JNDI_NAME, userResolver);
+				initialContext.bind(GlobalSecurityReflector.JNDI_NAME, userResolver);
 			}
 			catch (NameAlreadyBoundException e)
 			{
-				initialContext.rebind(SecurityReflector.JNDI_NAME, userResolver);
+				initialContext.rebind(GlobalSecurityReflector.JNDI_NAME, userResolver);
 			}
 		} catch (Exception e) {
 			logger.error("Creating SecurityReflector and binding it into JNDI failed!", e);

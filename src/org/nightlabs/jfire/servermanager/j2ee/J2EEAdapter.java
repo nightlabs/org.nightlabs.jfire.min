@@ -36,7 +36,7 @@ import javax.security.auth.login.LoginContext;
 import javax.security.auth.login.LoginException;
 import javax.transaction.UserTransaction;
 
-import org.nightlabs.jfire.security.SecurityReflector;
+import org.nightlabs.jfire.security.ISecurityReflector;
 import org.nightlabs.jfire.servermanager.ra.JFireServerManagerFactoryImpl;
 
 
@@ -71,7 +71,7 @@ public interface J2EEAdapter extends Serializable {
 	public UserTransaction getUserTransaction(InitialContext initialContext)
 		throws J2EEAdapterException;
 
-	public SecurityReflector getSecurityReflector();
+	public ISecurityReflector getSecurityReflector();
 
 	/**
 	 * This method shuts the server down. It should do so nicely.

@@ -57,6 +57,7 @@ import org.nightlabs.jfire.jdo.cache.CacheCfMod;
 import org.nightlabs.jfire.jdo.cache.CacheManagerFactory;
 import org.nightlabs.jfire.jdo.notification.DirtyObjectID;
 import org.nightlabs.jfire.jdo.notification.JDOLifecycleState;
+import org.nightlabs.jfire.security.ISecurityReflector;
 import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.math.Base62Coder;
 
@@ -90,7 +91,7 @@ public class JdoCacheBridgeDefault extends JdoCacheBridge
 		public CacheTransactionListener(JdoCacheBridgeDefault bridge)
 		{
 			this.bridge = bridge;
-			_sessionID = bridge.securityReflector._getUserDescriptor().getSessionID();
+			_sessionID = bridge.securityReflector.getUserDescriptor().getSessionID();
 			if (_sessionID == null)
 				throw new IllegalStateException("constructor: sessionID is not assigned!");
 		}
@@ -521,7 +522,7 @@ public class JdoCacheBridgeDefault extends JdoCacheBridge
 
 	private static final Class<?>[] objectClassArray = null; // new Class[] { Object.class };
 
-	private SecurityReflector securityReflector;
+	private ISecurityReflector securityReflector;
 
 	/* non-javadoc
 	 * @see org.nightlabs.jfire.jdo.cache.bridge.JdoCacheBridge#close()
