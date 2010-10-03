@@ -22,8 +22,6 @@ public class StructLocalDAO extends BaseJDOObjectDAO<StructLocalID, StructLocal>
 	// earlier with proper fetch groups and could thus have been fetched from the cache.
 	public static final String[] DEFAULT_FETCH_GROUPS = new String[] {FetchPlan.DEFAULT, IStruct.FETCH_GROUP_ISTRUCT_FULL_DATA};
 
-	PropertyManagerRemote pm;
-
 	/**
 	 * The shared instance
 	 */
@@ -42,24 +40,16 @@ public class StructLocalDAO extends BaseJDOObjectDAO<StructLocalID, StructLocal>
 
 	@Override
 	protected Collection<StructLocal> retrieveJDOObjects(Set<StructLocalID> objectIDs, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor) throws Exception {
-		if (pm == null)
-			pm = getEjbProvider().getRemoteBean(PropertyManagerRemote.class);
-		try {
-			ArrayList<StructLocal> structLocals = new ArrayList<StructLocal>(objectIDs.size());
-			for (StructLocalID structLocalID : objectIDs)
-				structLocals.add(retrieveJDOObject(structLocalID, fetchGroups, maxFetchDepth, monitor));
-			return structLocals;
-		} finally {
-			pm = null;
-		}
+		ArrayList<StructLocal> structLocals = new ArrayList<StructLocal>(objectIDs.size());
+		for (StructLocalID structLocalID : objectIDs)
+			structLocals.add(retrieveJDOObject(structLocalID, fetchGroups, maxFetchDepth, monitor));
+		return structLocals;
 	}
 
 	@Override
 	protected StructLocal retrieveJDOObject(StructLocalID objectID, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor) throws Exception {
-		PropertyManagerRemote pm2 = pm;
-		if (pm2 == null)
-			pm2 = getEjbProvider().getRemoteBean(PropertyManagerRemote.class);
-		StructLocal structLocal = pm2.getFullStructLocal(objectID, fetchGroups, maxFetchDepth);
+		PropertyManagerRemote pm = getEjbProvider().getRemoteBean(PropertyManagerRemote.class);
+		StructLocal structLocal = pm.getFullStructLocal(objectID, fetchGroups, maxFetchDepth);
 		if (monitor != null)
 			monitor.worked(1);
 		return structLocal;
@@ -68,31 +58,8 @@ public class StructLocalDAO extends BaseJDOObjectDAO<StructLocalID, StructLocal>
 	private synchronized StructLocal getStructLocal(StructLocalID structLocalID, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor)
 	{
 		StructLocal structLocal = getJDOObject(null, structLocalID, fetchGroups, maxFetchDepth, monitor);
-//		structLocal.restoreAdoptedBlocks();
 		return structLocal;
 	}
-
-
-//	public StructLocal getStructLocal(String organisationID, String linkClass, String[] fetchGroups, String structScope, String structLocalScope, ProgressMonitor monitor) {
-//		StructLocalID structLocalID = StructLocalID.create(organisationID, linkClass, structScope, structLocalScope);
-//		return getStructLocal(structLocalID, fetchGroups, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT, monitor);
-//	}
-//
-//	public StructLocal getStructLocal(String organisationID, Class<?> linkClass, String[] fetchGroups, String structScope, String structLocalScope, ProgressMonitor monitor) {
-//		return getStructLocal(organisationID, linkClass.getName(), fetchGroups, structScope, structLocalScope, monitor);
-//	}
-//
-//	public StructLocal getStructLocal(String organisationID, Class<?> linkClass, String structScope, String structLocalScope, ProgressMonitor monitor) {
-//		return getStructLocal(organisationID, linkClass.getName(), DEFAULT_FETCH_GROUPS, structScope, structLocalScope, monitor);
-////		return getStructLocal(linkClass.getName(), structScope, structLocalScope, monitor);
-//	}
-//
-//	public StructLocal getStructLocal(String organisationID, String linkClass, String structScope, String structLocalScope, ProgressMonitor monitor) {
-////		StructLocalID structLocalID = StructLocalID.create(
-////				SecurityReflector.getUserDescriptor().getOrganisationID(), linkClass, structScope, structLocalScope);
-////		return getStructLocal(structLocalID, DEFAULT_FETCH_GROUPS, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT, monitor);
-//		return getStructLocal(organisationID, linkClass, DEFAULT_FETCH_GROUPS, structScope, structLocalScope, monitor);
-//	}
 
 	public StructLocal getStructLocal(StructLocalID structLocalID, ProgressMonitor monitor) {
 		return getStructLocal(structLocalID, DEFAULT_FETCH_GROUPS, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT, monitor);
