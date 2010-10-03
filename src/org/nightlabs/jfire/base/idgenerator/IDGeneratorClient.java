@@ -32,14 +32,13 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.nightlabs.jfire.base.JFireEjb3Factory;
 import org.nightlabs.jfire.idgenerator.IDGenerator;
-import org.nightlabs.jfire.idgenerator.IDGeneratorHelperBean;
 import org.nightlabs.jfire.idgenerator.IDGeneratorHelperRemote;
 import org.nightlabs.jfire.security.SecurityReflector;
 
 /**
  * This implementation of {@link IDGenerator} is used in on the client side for ID generation.
  * It holds a local cache of IDs and queries IDs from the server via
- * {@link IDGeneratorHelperBean#clientNextIDs(String, int, int)}.
+ * {@link IDGeneratorHelperRemote#clientNextIDs(String, int, int)}.
  * <p>
  * You <b>must not</b> use this class directly! Use the static methods provided by {@link IDGenerator} instead!
  * </p>
