@@ -264,17 +264,23 @@ public class JFireLogin
 	public void login()
 	throws LoginException
 	{
-//		userDescriptorOnLogin = SecurityReflector.getUserDescriptor();
-//		logout();
-
-		Base62Coder coder = Base62Coder.sharedInstance();
-		loginData.setSessionID(
-				coder.encode(System.currentTimeMillis(), 1) + '-' +
-				coder.encode((long)(Math.random() * 14776335), 1)); // 14776335 is the highest value encoded in 4 digits ("zzzz")
-
+		loginData.setSessionID(getLoginSessionID());
 		LoginContext lc = new LoginContext("jfire", getAuthCallbackHandler());
 		lc.login();
 		loginContext = lc; // only assign the field if the login was successful - otherwise leave it null.
+	}
+	
+	/**
+	 * Get the session id for the login. By default, this will return a unique id
+	 * every time the method if called. Subclasses may override this method to
+	 * change this behaviour (i.e. re-use a session id).
+	 * @return The login session id
+	 */
+	protected String getLoginSessionID() {
+		Base62Coder coder = Base62Coder.sharedInstance();
+		return 
+				coder.encode(System.currentTimeMillis(), 1) + '-' +
+				coder.encode((long)(Math.random() * 14776335), 1); // 14776335 is the highest value encoded in 4 digits ("zzzz")
 	}
 
 	/**

@@ -47,7 +47,8 @@ import org.nightlabs.config.ConfigException;
 import org.nightlabs.environment.Environment;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jdo.ObjectID;
-import org.nightlabs.jfire.base.JFireEjb3Factory;
+import org.nightlabs.jfire.base.GlobalJFireEjb3Provider;
+import org.nightlabs.jfire.base.JFireEjb3Provider;
 import org.nightlabs.jfire.base.jdo.GlobalJDOManagerProvider;
 import org.nightlabs.jfire.base.jdo.JDOManagerProvider;
 import org.nightlabs.jfire.base.jdo.JDOObjectID2PCClassMap;
@@ -59,7 +60,6 @@ import org.nightlabs.jfire.jdo.cache.NotificationBundle;
 import org.nightlabs.jfire.jdo.notification.DirtyObjectID;
 import org.nightlabs.jfire.jdo.notification.IJDOLifecycleListenerFilter;
 import org.nightlabs.jfire.jdo.notification.JDOLifecycleState;
-import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.notification.NotificationEvent;
 import org.nightlabs.util.CollectionUtil;
 import org.nightlabs.util.Util;
@@ -103,6 +103,8 @@ public class Cache
 	 */
 	private JDOManagerProvider jdoManagerProvider;
 	
+	private JFireEjb3Provider ejbProvider;
+	
 	/**
 	 * Get the jdoManagerProvider.
 	 * @return the jdoManagerProvider
@@ -121,15 +123,28 @@ public class Cache
 		this.jdoManagerProvider = jdoManagerProvider;
 	}
 	
+	public void setEjbProvider(JFireEjb3Provider ejbProvider) {
+		this.ejbProvider = ejbProvider;
+	}
+	
+	public JFireEjb3Provider getEjbProvider() {
+		if(ejbProvider == null) {
+			return GlobalJFireEjb3Provider.sharedInstance();
+		}
+		return ejbProvider;
+	}
+	
 	protected static class NotificationThread extends Thread
 	{
 		private static volatile int nextID = 0;
 
 		private JDOManagerProvider jdoManagerProvider;
+		private JFireEjb3Provider ejbProvider;
 
-		public NotificationThread(JDOManagerProvider jdoManagerProvider)
+		public NotificationThread(JDOManagerProvider jdoManagerProvider, JFireEjb3Provider ejbProvider)
 		{
 			this.jdoManagerProvider = jdoManagerProvider;
+			this.ejbProvider = ejbProvider;
 			setName("Cache.NotificationThread-" + (nextID++));
 			setDaemon(true);
 			setPriority(Thread.NORM_PRIORITY);
@@ -157,9 +172,7 @@ public class Cache
 			while (!isInterrupted()) {
 				Cache cache = jdoManagerProvider.getCache();
 				try {
-//					if (jdoManager == null)
-//						jdoManager = JDOManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
-					JDOManagerRemote jdoManager = JFireEjb3Factory.getRemoteBean(JDOManagerRemote.class, SecurityReflector.getInitialContextProperties());
+					JDOManagerRemote jdoManager = ejbProvider.getRemoteBean(JDOManagerRemote.class);
 
 					NotificationBundle notificationBundle = jdoManager.waitForChanges(
 							cache.getCacheCfMod().getWaitForChangesTimeoutMSec());
@@ -366,11 +379,12 @@ public class Cache
 		private static volatile int nextID = 0;
 
 		private JDOManagerProvider jdoManagerProvider;
-//		private long lastResyncDT = System.currentTimeMillis();
+		private JFireEjb3Provider ejbProvider;
 
-		public CacheManagerThread(JDOManagerProvider jdoManagerProvider)
+		public CacheManagerThread(JDOManagerProvider jdoManagerProvider, JFireEjb3Provider ejbProvider)
 		{
 			this.jdoManagerProvider = jdoManagerProvider;
+			this.ejbProvider = ejbProvider;
 			setName("Cache.CacheManagerThread-" + (nextID++));
 			setDaemon(true);
 			setPriority(Thread.NORM_PRIORITY);
@@ -501,9 +515,7 @@ public class Cache
 							}
 						}
 
-//						if (jdoManager == null)
-//							jdoManager = JDOManagerUtil.getHome(SecurityReflector.getInitialContextProperties()).create();
-						JDOManagerRemote jdoManager = JFireEjb3Factory.getRemoteBean(JDOManagerRemote.class, SecurityReflector.getInitialContextProperties());
+						JDOManagerRemote jdoManager = ejbProvider.getRemoteBean(JDOManagerRemote.class);
 
 						if (cache.isResubscribeAllListeners()) {
 							if (logger.isDebugEnabled())
@@ -1757,8 +1769,8 @@ public class Cache
 
 		this.sessionID = sessionID;
 
-		this.cacheManagerThread = new CacheManagerThread(getJdoManagerProvider());
-		this.notificationThread = new NotificationThread(getJdoManagerProvider());
+		this.cacheManagerThread = new CacheManagerThread(getJdoManagerProvider(), getEjbProvider());
+		this.notificationThread = new NotificationThread(getJdoManagerProvider(), getEjbProvider());
 	}
 
 	public synchronized void close()
@@ -1774,7 +1786,7 @@ public class Cache
 		}
 
 		try {
-			JDOManagerRemote jm = JFireEjb3Factory.getRemoteBean(JDOManagerRemote.class, SecurityReflector.getInitialContextProperties());
+			JDOManagerRemote jm = ejbProvider.getRemoteBean(JDOManagerRemote.class);
 
 			// remove all listeners for this session - done by remote closeCacheSession(...)
 			jm.closeCacheSession();
