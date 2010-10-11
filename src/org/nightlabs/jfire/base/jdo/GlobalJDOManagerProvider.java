@@ -1,7 +1,8 @@
 package org.nightlabs.jfire.base.jdo;
 
 import org.nightlabs.config.Config;
-import org.nightlabs.jfire.base.jdo.cache.Cache;
+import org.nightlabs.jfire.base.GlobalJFireEjb3Provider;
+import org.nightlabs.jfire.base.JFireEjb3Provider;
 import org.nightlabs.jfire.base.jdo.cache.CacheCfMod;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleManager;
 import org.nightlabs.jfire.security.SecurityReflector;
@@ -13,7 +14,7 @@ import org.nightlabs.jfire.security.SecurityReflector;
  * 
  * @author Marc Klinger - marc[at]nightlabs[dot]de
  */
-public class GlobalJDOManagerProvider implements JDOManagerProvider {
+public class GlobalJDOManagerProvider extends AbstractJDOManagerProvider {
 
 	public static final String PROPERTY_KEY_JDO_LIFECYCLE_MANAGER = "org.nightlabs.jfire.base.jdo.notification.JDOLifecycleManager";
 	
@@ -43,12 +44,8 @@ public class GlobalJDOManagerProvider implements JDOManagerProvider {
 		GlobalJDOManagerProvider.sharedInstance = sharedInstance;
 	}
 
-	private boolean initialized = false;
-	private Cache cache;
 	private boolean autoOpenCache = true;
-	private JDOLifecycleManager lifecycleManager;
 	private Class<?> jdoLifecycleManagerClass = null;
-	private JDOObjectID2PCClassMap objectID2PCClassMap;
 	
 	/**
 	 * Not to be initialized. Use {@link #sharedInstance()}.
@@ -56,7 +53,11 @@ public class GlobalJDOManagerProvider implements JDOManagerProvider {
 	protected GlobalJDOManagerProvider() {
 	}
 
-	private JDOLifecycleManager createJDOLifecycleManager()
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.base.jdo.AbstractJDOManagerProvider#createLifecycleManager()
+	 */
+	@Override
+	protected JDOLifecycleManager createLifecycleManager()
 	{
 		if (jdoLifecycleManagerClass == null) {
 			String className = System.getProperty(PROPERTY_KEY_JDO_LIFECYCLE_MANAGER);
@@ -79,52 +80,32 @@ public class GlobalJDOManagerProvider implements JDOManagerProvider {
 		}
 	}
 	
-	/**
-	 * Initialize all members. Currently, the only reason to do this here
-	 * and not already in the constructor is the {@link #autoOpenCache} flag
-	 * which may only be set after calling {@link #sharedInstance()}.
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.base.jdo.AbstractJDOManagerProvider#getEJBProvider()
 	 */
-	protected void initialize() {
-		if(!initialized) {
-			CacheCfMod cacheCfMod = Config.sharedInstance().createConfigModule(CacheCfMod.class);
-			Config.sharedInstance().save(); // TODO remove this as soon as we have a thread that periodically saves it.
-			cache = new Cache(cacheCfMod);
-			cache.setJdoManagerProvider(this);
-			lifecycleManager = createJDOLifecycleManager();
-			lifecycleManager.setJdoManagerProvider(this);
-			objectID2PCClassMap = new JDOObjectID2PCClassMap();
-			if(autoOpenCache) {
-				cache.open(SecurityReflector.getUserDescriptor().getSessionID());
-			}
-		}
-		initialized = true;
+	@Override
+	protected JFireEjb3Provider getEJBProvider() {
+		return GlobalJFireEjb3Provider.sharedInstance();
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.nightlabs.jfire.base.jdo.JDOManagerProvider#getCache()
+	 * @see org.nightlabs.jfire.base.jdo.AbstractJDOManagerProvider#getCacheConfig()
 	 */
 	@Override
-	public Cache getCache() {
-		initialize();
-		return cache;
+	protected CacheCfMod getCacheConfig() {
+		CacheCfMod cacheCfMod = Config.sharedInstance().createConfigModule(CacheCfMod.class);
+		Config.sharedInstance().save(); // TODO remove this as soon as we have a thread that periodically saves it.
+		return cacheCfMod;
 	}
-
+	
 	/* (non-Javadoc)
-	 * @see org.nightlabs.jfire.base.jdo.JDOManagerProvider#getLifecycleManager()
+	 * @see org.nightlabs.jfire.base.jdo.AbstractJDOManagerProvider#afterInitialization()
 	 */
 	@Override
-	public JDOLifecycleManager getLifecycleManager() {
-		initialize();
-		return lifecycleManager;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.nightlabs.jfire.base.jdo.JDOManagerProvider#getObjectID2PCClassMap()
-	 */
-	@Override
-	public JDOObjectID2PCClassMap getObjectID2PCClassMap() {
-		initialize();
-		return objectID2PCClassMap;
+	protected void afterInitialization() {
+		if(autoOpenCache) {
+			getCache().open(SecurityReflector.getUserDescriptor().getSessionID());
+		}
 	}
 	
 	/**
@@ -132,7 +113,7 @@ public class GlobalJDOManagerProvider implements JDOManagerProvider {
 	 * @param autoOpenCache the autoOpenCache to set
 	 */
 	public void setAutoOpenCache(boolean autoOpenCache) {
-		if(initialized) {
+		if(isInitialized()) {
 			throw new IllegalStateException("Cache is already initialized");
 		}
 		this.autoOpenCache = autoOpenCache;

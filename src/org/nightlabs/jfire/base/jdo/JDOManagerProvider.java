@@ -38,4 +38,9 @@ public interface JDOManagerProvider {
 	 * @return The ObjectId PersistenceCapable class map
 	 */
 	JDOObjectID2PCClassMap getObjectID2PCClassMap();
+	
+	/**
+	 * Close this manager provider and all manager instances owned by this provider.
+	 */
+	void close();
 }
