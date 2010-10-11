@@ -163,4 +163,11 @@ public abstract class AbstractJFireEjb3Provider implements JFireEjb3Provider {
 			throw new RuntimeException(e);
 		}
 	}
+	
+	/**
+	 * Clear the EJB instance cache.
+	 */
+	public void clearCache() {
+		ejbInterface2Environment2Instance.clear();
+	}
 }
