@@ -121,6 +121,11 @@ public class JFireRCDLDelegate implements ClassDataLoaderDelegate
 		delegator.removeDelegate(this);
 		registered = false;
 	}
+	
+	public synchronized boolean isRegistered()
+	{
+		return registered;
+	}
 
 	protected InitialContextProvider initialContextProvider;
 	protected File cacheDir;
