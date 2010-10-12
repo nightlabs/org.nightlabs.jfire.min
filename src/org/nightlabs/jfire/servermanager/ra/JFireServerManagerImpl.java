@@ -413,6 +413,11 @@ public class JFireServerManagerImpl
 
 
 			if (this.isOrganisationCfsEmpty()) {
+				if (!UserLocal.isValidPassword(password))
+					throw new LoginException("The password \"" + password + "\" is not valid!");
+
+				Organisation.assertValidOrganisationID(organisationID);
+				
 				RoleSet roleSet = new RoleSet(); // RoleSet.class.getName() + '[' + userPK + ']');
 				// add roles needed for setup
 				roleSet.addMember(JFireServerManagerFactoryImpl.guestRolePrincipal); // EVERYONE has this role!
