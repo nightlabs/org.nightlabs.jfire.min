@@ -102,6 +102,14 @@ public abstract class IDGenerator
 	}
 
 	/**
+	 * Set the shared instance. This allows injection of an IDGenerator whithout using a system property.
+	 * @param sharedInstance The IDGenerator instance
+	 */
+	public synchronized static void setSharedInstance(IDGenerator sharedInstance) {
+		IDGenerator.sharedInstance = sharedInstance;
+	}
+	
+	/**
 	 * @return You must return that organisationID in which the created IDs are unique - this means the organisationID
 	 *	of the current user.
 	 */
