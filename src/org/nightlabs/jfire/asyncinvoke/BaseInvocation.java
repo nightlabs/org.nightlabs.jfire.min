@@ -70,7 +70,7 @@ implements Serializable
 	/**
 	 * @param callerPrincipal The callerPrincipal to set.
 	 */
-	public void setPrincipal(JFirePrincipal callerPrincipal)
+	public void setPrincipal(final JFirePrincipal callerPrincipal)
 	{
 		this.callerPrincipal = callerPrincipal;
 	}
@@ -91,11 +91,27 @@ implements Serializable
 	 * @return Returns the PersistenceManager assigned to the current user.
 	 *
 	 * @see getPrincipal()
+	 * @deprecated Use {@link #createPersistenceManager()} instead. Deprecated since 2009-06-12 in order to emphasize by "create" that the returned {@link PersistenceManager} must be closed.
 	 */
+	@Deprecated
 	protected PersistenceManager getPersistenceManager()
 	{
-		persistenceManager = getPrincipal().getLookup().createPersistenceManager();
-		return persistenceManager;
+		return createPersistenceManager();
+	}
+
+	/**
+	 * This method is a shortcut to <code>getPrincipal().getLookup().getPersistenceManager()</code>.
+	 * <p>
+	 * <b>Important:</b> You must call {@link PersistenceManager#close()} at the end of your EJB method!
+	 * </p>
+	 *
+	 * @return Returns the PersistenceManager assigned to the current user.
+	 *
+	 * @see getPrincipal()
+	 */
+	protected PersistenceManager createPersistenceManager()
+	{
+		return getPrincipal().getLookup().createPersistenceManager();
 	}
 
 	/**
@@ -110,7 +126,7 @@ implements Serializable
 	 * @param organisationID The organisationID with wich to communicate.
 	 * @return Returns an InitialContext that is configured properly to authenticate at and communicate with another organisation (wherever it may be - e.g. on another server).
 	 */
-	protected InitialContext getInitialContext(String organisationID)
+	protected InitialContext getInitialContext(final String organisationID)
 	throws NamingException
 	{
 		return new InitialContext(getInitialContextProperties(organisationID));
@@ -130,7 +146,7 @@ implements Serializable
 	 *
 	 * @see getInitialContext(String organisationID)
 	 */
-	protected Hashtable<?, ?> getInitialContextProperties(String organisationID)
+	protected Hashtable<?, ?> getInitialContextProperties(final String organisationID)
 	throws NamingException
 	{
 		boolean managePM = false;
@@ -196,14 +212,14 @@ implements Serializable
 	{
 		try {
 			if (rootOrganisationID == null) {
-				InitialContext ctx = new InitialContext();
+				final InitialContext ctx = new InitialContext();
 				try {
 					rootOrganisationID = Organisation.getRootOrganisationID(ctx);
 				} finally {
 					ctx.close();
 				}
 			}
-		} catch (Exception x) {
+		} catch (final Exception x) {
 			throw new RuntimeException(x);
 		}
 
