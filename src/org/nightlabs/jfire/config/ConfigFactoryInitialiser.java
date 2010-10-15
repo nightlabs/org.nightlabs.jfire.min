@@ -5,8 +5,8 @@ import org.nightlabs.jfire.config.xml.JFireNumberFormatterFactory;
 import org.nightlabs.jfire.config.xml.XMLConfigFactory;
 import org.nightlabs.jfire.init.InitException;
 import org.nightlabs.jfire.serverinit.ServerInitialiserDelegate;
-import org.nightlabs.l10n.DateFormatter;
-import org.nightlabs.l10n.NumberFormatter;
+import org.nightlabs.l10n.GlobalDateFormatter;
+import org.nightlabs.l10n.GlobalNumberFormatter;
 
 /**
  * @author Daniel Mazurek - daniel [at] nightlabs [dot] de
@@ -25,8 +25,8 @@ public class ConfigFactoryInitialiser extends ServerInitialiserDelegate {
 		System.setProperty(org.nightlabs.config.Config.PROPERTY_KEY_CONFIG_FACTORY, XMLConfigFactory.class.getName());
 
 		// Since the Date/Number formatting is closely related to the config, we initialise it here.
-		System.setProperty(DateFormatter.PROPERTY_KEY_DATE_FORMATTER_FACTORY, JFireDateFormatterFactory.class.getName());
-		System.setProperty(NumberFormatter.PROPERTY_KEY_NUMBER_FORMATTER_FACTORY, JFireNumberFormatterFactory.class.getName());
+		System.setProperty(GlobalDateFormatter.PROPERTY_KEY_DATE_FORMATTER_FACTORY, JFireDateFormatterFactory.class.getName());
+		System.setProperty(GlobalNumberFormatter.PROPERTY_KEY_NUMBER_FORMATTER_FACTORY, JFireNumberFormatterFactory.class.getName());
 	}
 
 }
