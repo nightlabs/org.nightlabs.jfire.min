@@ -29,11 +29,14 @@ package org.nightlabs.jfire.servermanager.ra;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
+import javax.naming.AuthenticationException;
 import javax.naming.InitialContext;
 import javax.resource.ResourceException;
 import javax.resource.cci.Connection;
@@ -58,6 +61,8 @@ import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.security.UserLocal;
 import org.nightlabs.jfire.security.id.UserID;
 import org.nightlabs.jfire.security.id.UserLocalID;
+import org.nightlabs.jfire.security.integration.Session;
+import org.nightlabs.jfire.security.integration.UserManagementSystem;
 import org.nightlabs.jfire.serverconfigurator.ServerConfigurationException;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.servermanager.OrganisationNotFoundException;
@@ -348,17 +353,85 @@ public class JFireServerManagerImpl
 	private static final long waitAfterLoginFailureMSec = 2000;
 
 	public static final String LOGIN_PARAM_ALLOW_EARLY_LOGIN = "allowEarlyLogin";
+	
+	/**
+	 * A set of active UserManagementSystems used by {@link #login(LoginData)}
+	 */
+	private static Set<UserManagementSystem> activeUserManagementSystems = new HashSet<UserManagementSystem>();
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public void registerActiveUserManagementSystem(UserManagementSystem activeUms){
+		activeUserManagementSystems.add(activeUms);
+	}
+
+	private Session loginExternal(LoginData loginData) throws AuthenticationException {
+
+		Session session = null;
+		StringBuffer triedUms = new StringBuffer();
+		
+		// We try to authenticate at least against one active UserManagementSystem
+		for (UserManagementSystem ums : activeUserManagementSystems){
+			
+			try{
+				triedUms.append("\n\nUMS name: ");
+				triedUms.append(ums.getName());
+				triedUms.append("\nLogin result: ");
+				
+				session = ums.login(loginData);
+				
+				if (session != null){
+					
+					triedUms.append("successful");
+					
+					return session;
+				}
+				
+			}catch(Exception e){
+				e.printStackTrace();
+				triedUms.append("failed for reason: ");
+				triedUms.append(e.getMessage());
+			}
+			
+		}
+		
+		throw new AuthenticationException(
+				"Authentication failed! Next User Management Systems were tried: " + triedUms.toString()
+				);
+		
+	}
 
 	@Override
 	public JFirePrincipal login(LoginData loginData)
 		throws LoginException
 	{
+
 		String organisationID = loginData.getOrganisationID();
 		String userID = loginData.getUserID();
 		String workstationID = loginData.getWorkstationID();
 		String password = loginData.getPassword();
 		this.principal = null;
 
+		
+		Session session = null;
+		try{
+			if (!User.USER_ID_SYSTEM.equals(userID)
+					&& activeUserManagementSystems.size() > 0){
+				
+				session = loginExternal(loginData);
+			}
+		}catch(AuthenticationException e){
+			// Authentication failed
+			// TODO: For now we just proceed with JFire local auth
+		}
+		if (session != null){
+			// could be used later on
+			session.getLoginData();
+		}
+		
+		
 		if (logger.isDebugEnabled()) {
 			// I think we should NOT log the user's password! If this proves really necessary, then we should only do it in TRACE mode (not DEBUG). Marco.
 			logger.debug("login: organisationID=\"" + organisationID + "\" userID=\"" + userID +"\""); // password=\"" + password + "\"");

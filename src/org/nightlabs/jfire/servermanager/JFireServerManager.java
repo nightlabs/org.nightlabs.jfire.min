@@ -40,6 +40,7 @@ import org.nightlabs.jfire.base.JFirePrincipal;
 import org.nightlabs.jfire.classloader.CLRegistrar;
 import org.nightlabs.jfire.organisationinit.OrganisationInitException;
 import org.nightlabs.jfire.security.id.UserID;
+import org.nightlabs.jfire.security.integration.UserManagementSystem;
 import org.nightlabs.jfire.serverconfigurator.ServerConfigurationException;
 import org.nightlabs.jfire.servermanager.config.JFireServerConfigModule;
 import org.nightlabs.jfire.servermanager.config.OrganisationCf;
@@ -248,4 +249,12 @@ public interface JFireServerManager
 	void shutdownAfterStartup_shutdown(ShutdownControlHandle shutdownControlHandle);
 
 //	boolean shutdownAfterStartup_isActive(ShutdownControlHandle shutdownControlHandle);
+	
+	/**
+	 * If there's a concrete UserManagementSystem module deployed it should register its active
+	 * UserManagementSystem instances inside JFireServerManager by calling this method (during 
+	 * organisation-init or in a different way). 
+	 * These registered UserManagementSystems will be used in {@link #login(LoginData)}.
+	 */
+	void registerActiveUserManagementSystem(UserManagementSystem activeUms);
 }
