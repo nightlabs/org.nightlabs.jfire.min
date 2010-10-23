@@ -37,6 +37,7 @@ import java.util.Map;
 import org.jboss.logging.Logger;
 import org.nightlabs.jfire.base.DuplicateKeyException;
 import org.nightlabs.jfire.prop.exception.DataFieldNotFoundException;
+import org.nightlabs.jfire.prop.exception.StructFieldNotFoundException;
 import org.nightlabs.jfire.prop.id.StructFieldID;
 import org.nightlabs.jfire.prop.validation.IDataBlockValidator;
 import org.nightlabs.jfire.prop.validation.ValidationResult;
@@ -239,6 +240,16 @@ public class DataBlock implements Serializable
 		String structFieldKey = StructField.getStructFieldKey(dataField.getStructFieldOrganisationID(), dataField.getStructFieldID());
 		if (dataFields.containsKey(structFieldKey))
 			throw new DuplicateKeyException("DataBlock " + this + " already contains a field with structFieldKey = " + structFieldKey);
+
+		dataField.setDataBlockIndex(index);
+		try {
+			dataField.setStructField(
+					structBlock.getStructField(dataField.getStructFieldOrganisationID(), dataField.getStructFieldID())
+			);
+		} catch (final StructFieldNotFoundException e) {
+			throw new IllegalStateException(e); // should never happen => rethrow
+		}
+		
 		dataFields.put(structFieldKey, dataField);
 		// add it to the persistent list in prop as well
 		dataBlockGroup.getProperty().internalAddDataFieldToPersistentCollection(dataField);
