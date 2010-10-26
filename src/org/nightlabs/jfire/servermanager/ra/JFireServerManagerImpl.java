@@ -29,14 +29,15 @@ package org.nightlabs.jfire.servermanager.ra;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
+import javax.jdo.FetchPlan;
 import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
+import javax.jdo.Query;
 import javax.naming.AuthenticationException;
+import javax.naming.CommunicationException;
 import javax.naming.InitialContext;
 import javax.resource.ResourceException;
 import javax.resource.cci.Connection;
@@ -354,52 +355,65 @@ public class JFireServerManagerImpl
 
 	public static final String LOGIN_PARAM_ALLOW_EARLY_LOGIN = "allowEarlyLogin";
 	
-	/**
-	 * A set of active UserManagementSystems used by {@link #login(LoginData)}
-	 */
-	private static Set<UserManagementSystem> activeUserManagementSystems = new HashSet<UserManagementSystem>();
-	
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void registerActiveUserManagementSystem(UserManagementSystem activeUms){
-		activeUserManagementSystems.add(activeUms);
-	}
-
-	private Session loginExternal(LoginData loginData) throws AuthenticationException {
+	private Session loginExternal(LoginData loginData) throws AuthenticationException, CommunicationException {
 
 		Session session = null;
-		StringBuffer triedUms = new StringBuffer();
 		
-		// We try to authenticate at least against one active UserManagementSystem
-		for (UserManagementSystem ums : activeUserManagementSystems){
+		PersistenceManager pm = new Lookup(loginData.getOrganisationID()).createPersistenceManager();
+		
+		try{
+
+			Query q = pm.newNamedQuery(UserManagementSystem.class, UserManagementSystem.GET_ACTIVE_USER_MANAGEMENT_SYSTEMS);
+
+			pm.getFetchPlan().setMaxFetchDepth(-1);
+			pm.getFetchPlan().setGroups(
+					FetchPlan.DEFAULT,
+					UserManagementSystem.FETCH_GROUP_NAME
+					);
 			
-			try{
-				triedUms.append("\n\nUMS name: ");
-				triedUms.append(ums.getName());
-				triedUms.append("\nLogin result: ");
+			List<UserManagementSystem> activeUserManagementSystems = 
+				(List<UserManagementSystem>) pm.detachCopyAll( (List<UserManagementSystem>) q.execute() );
+
+			// We try to authenticate at least against one active UserManagementSystem
+			int communicationProblems = 0;
+			for (UserManagementSystem ums : activeUserManagementSystems){
 				
-				session = ums.login(loginData);
-				
-				if (session != null){
+				try{
 					
-					triedUms.append("successful");
+					session = ums.login(loginData);
 					
-					return session;
+				} catch (CommunicationException e){
+					
+					logger.error("Can't connect to User Management System!", e);
+					communicationProblems++;
+					
+				} catch (AuthenticationException e){
+					logger.error("Authentication failed!", e);
 				}
 				
-			}catch(Exception e){
-				e.printStackTrace();
-				triedUms.append("failed for reason: ");
-				triedUms.append(e.getMessage());
+				if (session != null){
+					return session;
+				}
+					
 			}
 			
+			if (communicationProblems == activeUserManagementSystems.size()){
+				
+				throw new CommunicationException(
+						"Failed to connect to any active UserManagementSystem! See log for details."
+						);
+				
+			}else{
+			
+				throw new AuthenticationException(
+						"Authentication failed for " + 
+						loginData.getUserID() + LoginData.USER_ORGANISATION_SEPARATOR + loginData.getOrganisationID()
+						);
+			}
+			
+		} finally {
+			pm.close();
 		}
-		
-		throw new AuthenticationException(
-				"Authentication failed! Next User Management Systems were tried: " + triedUms.toString()
-				);
 		
 	}
 
@@ -417,14 +431,21 @@ public class JFireServerManagerImpl
 		
 		Session session = null;
 		try{
-			if (!User.USER_ID_SYSTEM.equals(userID)
-					&& activeUserManagementSystems.size() > 0){
-				
+			
+			if (!User.USER_ID_SYSTEM.equals(userID)){
 				session = loginExternal(loginData);
 			}
-		}catch(AuthenticationException e){
-			// Authentication failed
-			// TODO: For now we just proceed with JFire local auth
+			
+		} catch (AuthenticationException e){
+			
+			// TODO: now we just log the exception and proceed to JFire login
+			logger.error("Authentication failed!", e);
+			
+		} catch (CommunicationException e) {
+			
+			// TODO: now we just log the exception and proceed to JFire login
+			logger.error("Authentication failed!", e);
+			
 		}
 		if (session != null){
 			// could be used later on
