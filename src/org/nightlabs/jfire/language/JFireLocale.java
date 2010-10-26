@@ -17,6 +17,7 @@ import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.Lookup;
 import org.nightlabs.jfire.organisation.LocalOrganisation;
 import org.nightlabs.jfire.person.Person;
+import org.nightlabs.jfire.security.NoUserException;
 import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.security.UserDescriptor;
@@ -47,7 +48,13 @@ extends NLLocale
 		// it doesn't really matter (a little bit of unnecessary work, but no real problem). In this rare case, the
 		// JDO 2nd-level cache will reduce the unnecessary work to a minimum, anyway.
 
-		UserDescriptor userDescriptor = SecurityReflector.getUserDescriptor();
+		UserDescriptor userDescriptor = null;
+		try{
+			userDescriptor = SecurityReflector.getUserDescriptor();
+		}catch(NoUserException e){
+			logger.warn("No UserDescriptor found, returning default System Locale. Reason: " + e.getMessage());
+			return super._getDefault();
+		}
 		String completeUserID = userDescriptor.getCompleteUserID();
 		UserLocaleWrapper userLocaleWrapper = completeUserID2UserLocaleWrapper.get(completeUserID);
 		long currentTime = System.currentTimeMillis();
