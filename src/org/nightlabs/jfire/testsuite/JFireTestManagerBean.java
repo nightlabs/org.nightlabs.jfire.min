@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Random;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -48,6 +49,7 @@ import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 import javax.jdo.FetchPlan;
+import javax.jdo.JDODataStoreException;
 import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
@@ -62,6 +64,7 @@ import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jdo.ObjectID;
 import org.nightlabs.jfire.asyncinvoke.AsyncInvoke;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
+import org.nightlabs.jfire.idgenerator.IDGenerator;
 import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.security.UserDescriptor;
@@ -613,7 +616,29 @@ implements JFireTestManagerRemote, JFireTestManagerLocal
 			pm.close();
 		}
 	}
-
+	
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("_Guest_")
+	@Override
+	public TestCaseObjectIDs retryPersistance(TestCaseObjectIDs newObject, Boolean get, String[] fetchGroups, int maxFetchDepth) throws Exception
+	{
+		logger.info("retryPersistance(..) has been invoked.");
+		Random rndGen = new Random( System.currentTimeMillis() );
+		// sells a random amount of products !!!
+		int result = rndGen.nextInt(1);	
+		if(result > 0)
+		{	
+			logger.info("retryPersistance(..) has failed !!!");
+			throw new JDODataStoreException("method Store RetryPersistance has failed!!!");
+		}
+			PersistenceManager pm = createPersistenceManager();
+		try {
+			return NLJDOHelper.storeJDO(pm, newObject, get, fetchGroups, maxFetchDepth);
+		}
+		finally {
+			pm.close();
+		}
+	}
 	
 	
 	@TransactionAttribute(TransactionAttributeType.REQUIRED)

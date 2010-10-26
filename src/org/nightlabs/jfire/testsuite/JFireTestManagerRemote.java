@@ -51,7 +51,7 @@ public interface JFireTestManagerRemote {
 	 */
 	boolean isJDOObjectExisting(ObjectID objectID);
 	
-	
+	TestCaseObjectIDs retryPersistance(TestCaseObjectIDs newObject, Boolean get, String[] fetchGroups, int maxFetchDepth) throws Exception;	
 	
 	TestCaseObjectIDs storeTestCaseObjectsMap(TestCaseObjectIDs testCaseObjectsMap, Boolean get, String[] fetchGroups, int maxFetchDepth);	
 
