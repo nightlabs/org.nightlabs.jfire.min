@@ -3,7 +3,6 @@ package org.nightlabs.jfire.security.integration;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Locale;
 
 import javax.jdo.FetchPlan;
 import javax.jdo.PersistenceManager;
@@ -21,6 +20,7 @@ import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 import javax.jdo.annotations.Queries;
 
+import org.nightlabs.i18n.I18nText;
 import org.nightlabs.jfire.idgenerator.IDGenerator;
 import org.nightlabs.jfire.security.integration.id.UserManagementSystemTypeID;
 import org.nightlabs.util.NLLocale;
@@ -183,10 +183,10 @@ public abstract class UserManagementSystemType<T extends UserManagementSystem> i
 
 	/**
 	 * 
-	 * @return UMSType name or empty string if name is null (i.e. not loaded from datastore)
+	 * @return UMSType I18nText name
 	 */
-	public String getName() {
-		return name!=null?name.getText(getLocale()):"";
+	public I18nText getName() {
+		return name;
 	}
 	
 	/**
@@ -201,15 +201,15 @@ public abstract class UserManagementSystemType<T extends UserManagementSystem> i
 		if (name == null || "".equals(name)){
 			name = this.getClass().getName();
 		}
-		this.name.setText(getLocale(), name);
+		this.name.setText(NLLocale.getDefault(), name);
 	}
 	
 	/**
 	 * 
-	 * @return UMSType description or empty string if description is null
+	 * @return UMSType I18nText description
 	 */
-	public String getDescription() {
-		return description!=null?description.getText(getLocale()):"";
+	public I18nText getDescription() {
+		return description;
 	}
 	
 	/**
@@ -221,7 +221,7 @@ public abstract class UserManagementSystemType<T extends UserManagementSystem> i
 		if (this.description == null){
 			this.description = new UserManagementSystemTypeDescription(this);
 		}
-		this.description.setText(getLocale(), description);
+		this.description.setText(NLLocale.getDefault(), description);
 	}
 	
 	/**
@@ -238,17 +238,6 @@ public abstract class UserManagementSystemType<T extends UserManagementSystem> i
 	 */
 	public long getID() {
 		return umsTypeID;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.nightlabs.jfire.security.integration.UserManagementSystem#getLocale()
-	 */
-	private static Locale getLocale(){
-		try{
-			return NLLocale.getDefault();
-		}catch(Exception e){
-			return Locale.getDefault();
-		}
 	}
 
 }

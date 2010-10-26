@@ -1,7 +1,6 @@
 package org.nightlabs.jfire.security.integration;
 
 import java.io.Serializable;
-import java.util.Locale;
 
 import javax.jdo.annotations.Column;
 import javax.jdo.annotations.Discriminator;
@@ -16,7 +15,12 @@ import javax.jdo.annotations.InheritanceStrategy;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
+import javax.jdo.annotations.Queries;
+import javax.jdo.annotations.Query;
+import javax.naming.AuthenticationException;
+import javax.naming.CommunicationException;
 
+import org.nightlabs.i18n.I18nText;
 import org.nightlabs.j2ee.LoginData;
 import org.nightlabs.jfire.idgenerator.IDGenerator;
 import org.nightlabs.jfire.security.integration.id.UserManagementSystemID;
@@ -52,11 +56,19 @@ import org.nightlabs.util.NLLocale;
 })
 @Inheritance(strategy=InheritanceStrategy.NEW_TABLE)
 @Discriminator(column="className", strategy=DiscriminatorStrategy.CLASS_NAME)
+@Queries(
+		@Query(
+				name=UserManagementSystem.GET_ACTIVE_USER_MANAGEMENT_SYSTEMS, 
+				value="SELECT this WHERE this.isActive == true ORDER BY JDOHelper.getObjectId(this) ASCENDING"
+					)
+		)
 public abstract class UserManagementSystem implements Serializable{
 
 	public static final String FETCH_GROUP_NAME = "UserManagementSystem.name";
 	public static final String FETCH_GROUP_DESCRIPTION = "UserManagementSystem.description";
 	public static final String FETCH_GROUP_TYPE = "UserManagementSystem.type";
+
+	public static final String GET_ACTIVE_USER_MANAGEMENT_SYSTEMS = "getActiveUserManagementSystems";
 
 	/**
 	 * The serial version UID of this class.
@@ -90,6 +102,13 @@ public abstract class UserManagementSystem implements Serializable{
 	private UserManagementSystemDescription description;
 	
 	/**
+	 * Indicates whether this UMS should be used for authentication
+	 */
+	@Persistent
+	private boolean isActive = false;
+
+	
+	/**
 	 * Perform the login via the UMS and return a {@link Session) descriptor if the login was successful.
 	 * Return null or throw an exception, if the login failed (additional information should be logged – 
 	 * the exception should be caught and logged)
@@ -97,7 +116,7 @@ public abstract class UserManagementSystem implements Serializable{
 	 * @param loginData
 	 * @return {@link Session) descriptor in case of successful login and null otherwise
 	 */
-	public abstract Session login(LoginData loginData);
+	public abstract Session login(LoginData loginData) throws AuthenticationException, CommunicationException;
 
 	/**
 	 * The {@link Session} that was returned by the login method is passed here as is.
@@ -105,7 +124,7 @@ public abstract class UserManagementSystem implements Serializable{
 	 * 
 	 * @param session
 	 */
-	public abstract void logout(Session session);
+	public abstract void logout(Session session) throws CommunicationException;
 	
 	/**
 	 * Constructor which generates object ID and sets UMS name
@@ -130,10 +149,10 @@ public abstract class UserManagementSystem implements Serializable{
 	
 	/**
 	 * 
-	 * @return UMS description or empty string if description is null (i.e. not loaded from datastore)
+	 * @return UMS I18nText description
 	 */
-	public String getDescription() {
-		return description!=null?description.getText(getLocale()):"";
+	public I18nText getDescription() {
+		return description;
 	}
 	
 	/**
@@ -145,15 +164,15 @@ public abstract class UserManagementSystem implements Serializable{
 		if (this.description == null){
 			this.description = new UserManagementSystemDescription(this);
 		}
-		this.description.setText(getLocale(), description);
+		this.description.setText(NLLocale.getDefault(), description);
 	}
 	
 	/**
 	 * 
-	 * @return UMS name or empty string if name is null (i.e. not loaded from datastore)
+	 * @return UMS I18nText name
 	 */
-	public String getName() {
-		return name!=null?name.getText(getLocale()):"";
+	public I18nText getName() {
+		return name;
 	}
 	
 	/**
@@ -168,7 +187,24 @@ public abstract class UserManagementSystem implements Serializable{
 		if (name == null || "".equals(name)){
 			name = this.getClass().getName();
 		}
-		this.name.setText(getLocale(), name);
+		this.name.setText(NLLocale.getDefault(), name);
+	}
+	
+	/**
+	 * Set this UMS active which means it will be used for authentication
+	 * 
+	 * @param isActive
+	 */
+	public void setActive(boolean isActive) {
+		this.isActive = isActive;
+	}
+	
+	/**
+	 * 
+	 * @return whether this UMS is active
+	 */
+	public boolean isActive() {
+		return isActive;
 	}
 	
 	/**
@@ -187,21 +223,4 @@ public abstract class UserManagementSystem implements Serializable{
 		return umsID;
 	}
 	
-	/**
-	 * FIXME:
-	 * I found that {@link JFireLocale} could not be used when the user is not logged in, so
-	 * I decided that System's default <code>Locale</code> should be retuned until this happen.
-	 * Probably there's already some code like that somewhere so either point me there or
-	 * we need to decide how to handle gettig default <code>Locale</code> before logging in. 
-	 * 
-	 * @return user <code>Locale</code> or in case no user is logged in default System's <code>Locale</code>
-	 */
-	private static Locale getLocale(){
-		try{
-			return NLLocale.getDefault();
-		}catch(Exception e){
-			return Locale.getDefault();
-		}
-	}
-
 }
