@@ -6,13 +6,18 @@ import org.jboss.logging.Logger;
 
 /**
  * @author Fitas Amine - fitas [at] nightlabs [dot] de
- * @author Marco หงุ่ยตระกูล-Schulze - marco at nightlabs dot de
+ * @author Marco Schulze - marco at nightlabs dot de
  */
 public class JFireEjb3TransactionRetryInterceptor  implements Interceptor
 {
 	private static final Logger logger = Logger.getLogger(JFireEjb3TransactionRetryInterceptor.class);
-	public static final int TRANSACTION_RETRY_TIMES = 3;
 
+	/**max retry times before finally give-up*/
+	private transient int TRANSACTION_RETRY_TIMES = 6;
+
+	/** Number of ms to sleep before each attempt to retry calling the metod again */
+	private transient long sleepTime = 200;
+	   
 	public JFireEjb3TransactionRetryInterceptor()
 	{
 		logger.debug("JFireEjbTransactionInterceptor has been initialized !!!");
@@ -28,15 +33,17 @@ public class JFireEjb3TransactionRetryInterceptor  implements Interceptor
 	public Object invoke(final Invocation invocation) throws Throwable {
 		Object result = null;
 		int retryCount = 0;
+		long totalSleepTime = sleepTime;
 		Throwable firstException = null;
 		while (true) {
 			try {
 				result = invocation.invokeNext();
 				break;
 			} catch (final Exception e) {
+				logger.debug("before retry invoking sleeping for ms:" + totalSleepTime);
+				Thread.sleep(totalSleepTime);
 				if (firstException == null)
 					firstException = e;
-
 				if (retryCount >= TRANSACTION_RETRY_TIMES) {
 					logger.error("Caught exception (not retrying again): " + e, e);
 //					throw e;
@@ -47,8 +54,8 @@ public class JFireEjb3TransactionRetryInterceptor  implements Interceptor
 				}
 				else
 					logger.warn("Caught exception (will retry again): " + e, e);
-
 				retryCount++;
+				totalSleepTime+=100;
 			}
 		}
 		return result;
