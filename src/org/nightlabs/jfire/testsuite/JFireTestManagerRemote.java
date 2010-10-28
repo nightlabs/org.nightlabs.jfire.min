@@ -6,7 +6,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import javax.annotation.security.RolesAllowed;
 import javax.ejb.Remote;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 
 import org.nightlabs.ModuleException;
 import org.nightlabs.jdo.ObjectID;
@@ -50,8 +53,6 @@ public interface JFireTestManagerRemote {
 	 * very useful method to check if a particular JDO Object exist in the data store.
 	 */
 	boolean isJDOObjectExisting(ObjectID objectID);
-	
-	TestCaseObjectIDs retryPersistance(TestCaseObjectIDs newObject, Boolean get, String[] fetchGroups, int maxFetchDepth) throws Exception;	
 	
 	TestCaseObjectIDs storeTestCaseObjectsMap(TestCaseObjectIDs testCaseObjectsMap, Boolean get, String[] fetchGroups, int maxFetchDepth);	
 

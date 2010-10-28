@@ -617,29 +617,6 @@ implements JFireTestManagerRemote, JFireTestManagerLocal
 		}
 	}
 	
-	@TransactionAttribute(TransactionAttributeType.REQUIRED)
-	@RolesAllowed("_Guest_")
-	@Override
-	public TestCaseObjectIDs retryPersistance(TestCaseObjectIDs newObject, Boolean get, String[] fetchGroups, int maxFetchDepth) throws Exception
-	{
-		logger.info("retryPersistance(..) has been invoked.");
-		Random rndGen = new Random( System.currentTimeMillis() );
-		// sells a random amount of products !!!
-		int result = rndGen.nextInt(1);	
-		if(result > 0)
-		{	
-			logger.info("retryPersistance(..) has failed !!!");
-			throw new JDODataStoreException("method Store RetryPersistance has failed!!!");
-		}
-			PersistenceManager pm = createPersistenceManager();
-		try {
-			return NLJDOHelper.storeJDO(pm, newObject, get, fetchGroups, maxFetchDepth);
-		}
-		finally {
-			pm.close();
-		}
-	}
-	
 	
 	@TransactionAttribute(TransactionAttributeType.REQUIRED)
 	@RolesAllowed("_Guest_")

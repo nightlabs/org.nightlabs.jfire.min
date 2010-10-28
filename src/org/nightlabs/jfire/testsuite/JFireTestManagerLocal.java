@@ -54,9 +54,7 @@ public interface JFireTestManagerLocal {
 	public void runTestInNestedTransaction_tearDown(org.nightlabs.jfire.testsuite.TestCase test) throws Exception;
 
 	public void runTestInNestedTransaction_runTest(org.nightlabs.jfire.testsuite.TestCase test) throws Exception;
-	
-	public TestCaseObjectIDs retryPersistance(TestCaseObjectIDs newObject, Boolean get, String[] fetchGroups, int maxFetchDepth) throws Exception;
-			
+				
 	public boolean isJDOObjectExisting(ObjectID objectID);
 	
 	public void deleteTestCaseObjectsMap(TestCaseObjectIDsID testCaseObjectsMapID);
@@ -66,5 +64,4 @@ public interface JFireTestManagerLocal {
 	public List<TestCaseObjectIDs> getTestCaseObjectsMaps(Collection<TestCaseObjectIDsID> testCaseObjectsMapIDs, String[] fetchGroups, int maxFetchDepth);
 
 	public TestCaseObjectIDs storeTestCaseObjectsMap(TestCaseObjectIDs testCaseObjectsMap, Boolean get, String[] fetchGroups, int maxFetchDepth);	
-
 }
