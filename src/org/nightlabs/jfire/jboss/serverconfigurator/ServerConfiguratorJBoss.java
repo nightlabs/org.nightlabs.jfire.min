@@ -351,6 +351,10 @@ public class ServerConfiguratorJBoss
 	private static final String JFIRE_AUTHENTICATION_INTERCEPTOR = "org.nightlabs.jfire.jboss.ejb3.JFireEjb3AuthenticationInterceptorFactory";
 	private static final String JFIRE_TRANSACTION_INTERCEPTOR = "org.nightlabs.jfire.jboss.ejb3.JFireEjb3TransactionRetryInterceptor";
 	
+	/** the name of the JBoss interceptor that JFire retry interceptor should be placed before **/
+	private static final String JFIRE_TRANSACTION_REFERENCE_INTERCEPTOR = "org.jboss.ejb3.AllowedOperationsInterceptor";
+	
+	
 	protected static void waitForServer()
 	{
 		if(System.getProperty("jboss.home.dir") != null) {
@@ -754,16 +758,21 @@ public class ServerConfiguratorJBoss
 		aopNode.insertBefore(newnode, firstInterceptorChildNode);
 		aopNode.insertBefore(comment,newnode);
 		// create the bind point
-		Element bindNode = document.createElement("bind");// Create Root Element
-		bindNode.setAttribute("pointcut", "execution(public * *->*(..))");
+		//Element bindNode = document.createElement("bind");// Create Root Element
+		//bindNode.setAttribute("pointcut", "execution(public * *->*(..))");
 		Element interceptorNode = document.createElement("interceptor-ref");// Create Root Element		
 		interceptorNode.setAttribute("name", JFIRE_TRANSACTION_INTERCEPTOR);		
-		bindNode.appendChild(interceptorNode);	
+		//bindNode.appendChild(interceptorNode);	
 		// add the bind points to all beans nodes
-		Collection<Node> domainNodes = NLDOMUtil.findNodeList(document, "aop/domain");
+		Collection<Node> domainNodes = NLDOMUtil.findNodeList(document, "aop/domain/bind",false,true);
 		for (Node node : domainNodes)
 		{			
-			node.appendChild(bindNode.cloneNode(true));	
+			Node attributeNode = NLDOMUtil.findNodeByAttribute(node, 
+					"interceptor-ref", 
+					"name",
+					JFIRE_TRANSACTION_REFERENCE_INTERCEPTOR);
+			if(attributeNode != null)
+				node.insertBefore(interceptorNode.cloneNode(true), attributeNode);
 		}
 		backup(destFile);
 		// write modified file
