@@ -80,7 +80,13 @@ extends junit.framework.TestCase
     	return testCaseContextObjectsMap.get().get(key);
     }
 
-    
+    public int getTestCaseContextObjectSize()
+    {	
+     	if (testCaseContextObjectsMap.get() == null) 
+    		throw new IllegalStateException("the ContextObjectsMap has not been initialized !!");
+    	return testCaseContextObjectsMap.get().size();
+    }
+   
     public void setTestCaseContextObject(String key, Object object)
     {
     	if (testCaseContextObjectsMap.get() == null) 

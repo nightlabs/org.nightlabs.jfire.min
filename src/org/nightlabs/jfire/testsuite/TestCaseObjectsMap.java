@@ -1,6 +1,7 @@
 package org.nightlabs.jfire.testsuite;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -13,8 +14,7 @@ import javax.jdo.annotations.PersistenceModifier;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
-import org.nightlabs.jdo.ObjectID;
-import org.nightlabs.jfire.testsuite.id.TestCaseObjectIDsID;
+import org.nightlabs.jfire.testsuite.id.TestCaseObjectsMapID;
 
 
 /**
@@ -24,13 +24,13 @@ import org.nightlabs.jfire.testsuite.id.TestCaseObjectIDsID;
  *
  */
 @PersistenceCapable(
-		objectIdClass=TestCaseObjectIDsID.class,
+		objectIdClass=TestCaseObjectsMapID.class,
 		identityType=IdentityType.APPLICATION,
 		detachable="true",
 		table="JFireTestSuite_ObjectsMap")
 
 @Inheritance(strategy=InheritanceStrategy.NEW_TABLE)
-public class TestCaseObjectIDs implements Serializable{
+public class TestCaseObjectsMap implements Serializable{
 
 	/**
 	 * The serial version of this class.
@@ -44,17 +44,17 @@ public class TestCaseObjectIDs implements Serializable{
 	
 	@PrimaryKey
 	@Column(length=100)
-	private String testCaseObjectIDsID;
+	private String testCaseObjectsMapID;
 	
 
 
 	@Persistent(serialized="true",
 	defaultFetchGroup="true",
 	persistenceModifier=PersistenceModifier.PERSISTENT)
-	private  Map<String, ObjectID>  objectIDsMap;
+	private  Map<String, Object>  objectIDsMap;
 	
 	
-	public TestCaseObjectIDs(String organisationID, String objectsMapID)
+	public TestCaseObjectsMap(String organisationID, String objectsMapID)
 	{
 		if (organisationID == null)
 			throw new NullPointerException("organisationID");
@@ -63,8 +63,8 @@ public class TestCaseObjectIDs implements Serializable{
 			throw new NullPointerException("objectsMapID");
 
 		this.organisationID = organisationID;
-		this.testCaseObjectIDsID = objectsMapID;
-		this.objectIDsMap = new HashMap<String, ObjectID>();
+		this.testCaseObjectsMapID = objectsMapID;
+		this.objectIDsMap = new HashMap<String, Object>();
 	}
 
 	
@@ -72,22 +72,27 @@ public class TestCaseObjectIDs implements Serializable{
 	{
 		return organisationID;
 	}
-	public String getObjectIDsID()
+	
+	public Map<String, Object> getAllObjects()
 	{
-		return testCaseObjectIDsID;
+		return Collections.unmodifiableMap(objectIDsMap);
 	}
 	
-	
-	public ObjectID getObjectID(String key)
+
+	public Object getObjects(String key)
 	{	
 		return objectIDsMap.get(key);
 	}
 	
-	public void addObjectID(String key, ObjectID objectID)
-	{
-		objectIDsMap.put(key, objectID);
+	public Object getObject(String key)
+	{	
+		return objectIDsMap.get(key);
 	}
-
+	
+	public void addObject(String key, Object object)
+	{
+		objectIDsMap.put(key, object);
+	}
 	
 	public Boolean isEmpty()
 	{

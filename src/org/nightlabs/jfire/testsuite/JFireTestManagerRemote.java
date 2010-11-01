@@ -13,7 +13,7 @@ import javax.ejb.TransactionAttributeType;
 
 import org.nightlabs.ModuleException;
 import org.nightlabs.jdo.ObjectID;
-import org.nightlabs.jfire.testsuite.id.TestCaseObjectIDsID;
+import org.nightlabs.jfire.testsuite.id.TestCaseObjectsMapID;
 import org.nightlabs.jfire.timer.id.TaskID;
 
 @Remote
@@ -54,11 +54,11 @@ public interface JFireTestManagerRemote {
 	 */
 	boolean isJDOObjectExisting(ObjectID objectID);
 	
-	TestCaseObjectIDs storeTestCaseObjectsMap(TestCaseObjectIDs testCaseObjectsMap, Boolean get, String[] fetchGroups, int maxFetchDepth);	
+	TestCaseObjectsMap storeTestCaseObjectsMap(TestCaseObjectsMap testCaseObjectsMap, Boolean get, String[] fetchGroups, int maxFetchDepth);	
 
-	Set<TestCaseObjectIDsID> getTestCaseObjectsMapIDs();
+	Set<TestCaseObjectsMapID> getTestCaseObjectsMapIDs();
 	
-	List<TestCaseObjectIDs> getTestCaseObjectsMaps(Collection<TestCaseObjectIDsID> testCaseObjectsMapIDs, String[] fetchGroups, int maxFetchDepth);
+	List<TestCaseObjectsMap> getTestCaseObjectsMaps(Collection<TestCaseObjectsMapID> testCaseObjectsMapIDs, String[] fetchGroups, int maxFetchDepth);
 	
-	void deleteTestCaseObjectsMap(TestCaseObjectIDsID testCaseObjectsMapID);		
+	void deleteTestCaseObjectsMap(TestCaseObjectsMapID testCaseObjectsMapID);		
 }

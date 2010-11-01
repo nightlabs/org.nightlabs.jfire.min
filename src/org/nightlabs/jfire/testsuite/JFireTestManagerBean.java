@@ -70,7 +70,7 @@ import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.security.UserDescriptor;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.shutdownafterstartup.ShutdownControlHandle;
-import org.nightlabs.jfire.testsuite.id.TestCaseObjectIDsID;
+import org.nightlabs.jfire.testsuite.id.TestCaseObjectsMapID;
 import org.nightlabs.jfire.testsuite.login.JFireTestLogin;
 import org.nightlabs.jfire.timer.Task;
 import org.nightlabs.jfire.timer.id.TaskID;
@@ -575,11 +575,11 @@ implements JFireTestManagerRemote, JFireTestManagerLocal
 	
 	@RolesAllowed("_Guest_")
 	@Override
-	public Set<TestCaseObjectIDsID> getTestCaseObjectsMapIDs()
+	public Set<TestCaseObjectsMapID> getTestCaseObjectsMapIDs()
 	{
 		PersistenceManager pm = createPersistenceManager();
 		try {
-			Query q = pm.newQuery(TestCaseObjectIDs.class);
+			Query q = pm.newQuery(TestCaseObjectsMap.class);
 			q.setResult("JDOHelper.getObjectId(this)");
 			return CollectionUtil.createHashSetFromCollection( q.execute() );
 		} finally {
@@ -591,12 +591,12 @@ implements JFireTestManagerRemote, JFireTestManagerLocal
 	@TransactionAttribute(TransactionAttributeType.REQUIRED)
 	@RolesAllowed("_Guest_")
 	@Override
-	public List<TestCaseObjectIDs> getTestCaseObjectsMaps(Collection<TestCaseObjectIDsID> testCaseObjectsMapIDs, String[] fetchGroups, int maxFetchDepth)
+	public List<TestCaseObjectsMap> getTestCaseObjectsMaps(Collection<TestCaseObjectsMapID> testCaseObjectsMapIDs, String[] fetchGroups, int maxFetchDepth)
 		
 	{
 	PersistenceManager pm = createPersistenceManager();
 	try {
-		return NLJDOHelper.getDetachedObjectList(pm, testCaseObjectsMapIDs, TestCaseObjectIDs.class, fetchGroups, maxFetchDepth);
+		return NLJDOHelper.getDetachedObjectList(pm, testCaseObjectsMapIDs, TestCaseObjectsMap.class, fetchGroups, maxFetchDepth);
 	} finally {
 		pm.close();
 	}
@@ -606,8 +606,8 @@ implements JFireTestManagerRemote, JFireTestManagerLocal
 	@TransactionAttribute(TransactionAttributeType.REQUIRED)
 	@RolesAllowed("_Guest_")
 	@Override
-	public TestCaseObjectIDs storeTestCaseObjectsMap(
-			TestCaseObjectIDs testCaseObjectsMap, Boolean get, String[] fetchGroups, int maxFetchDepth) {
+	public TestCaseObjectsMap storeTestCaseObjectsMap(
+			TestCaseObjectsMap testCaseObjectsMap, Boolean get, String[] fetchGroups, int maxFetchDepth) {
 		PersistenceManager pm = createPersistenceManager();
 		try {
 			return NLJDOHelper.storeJDO(pm, testCaseObjectsMap, get, fetchGroups, maxFetchDepth);
@@ -622,12 +622,12 @@ implements JFireTestManagerRemote, JFireTestManagerLocal
 	@RolesAllowed("_Guest_")
 	@Override
 	public void deleteTestCaseObjectsMap(
-			TestCaseObjectIDsID testCaseObjectIDsID) {
+			TestCaseObjectsMapID testCaseObjectIDsID) {
 		PersistenceManager pm = createPersistenceManager();
 		try {
 			pm.getFetchPlan().setGroup(FetchPlan.DEFAULT);
-			pm.getExtent(TestCaseObjectIDs.class, true);
-			TestCaseObjectIDs objectsMap = (TestCaseObjectIDs) pm.getObjectById(testCaseObjectIDsID);
+			pm.getExtent(TestCaseObjectsMap.class, true);
+			TestCaseObjectsMap objectsMap = (TestCaseObjectsMap) pm.getObjectById(testCaseObjectIDsID);
 			pm.deletePersistent(objectsMap);
 			pm.flush();
 		}
