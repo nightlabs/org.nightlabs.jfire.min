@@ -13,7 +13,7 @@ public class JFireEjb3TransactionRetryInterceptor  implements Interceptor
 	private static final Logger logger = Logger.getLogger(JFireEjb3TransactionRetryInterceptor.class);
 
 	/**max retry times before finally give-up*/
-	private transient int TRANSACTION_RETRY_TIMES = 6;
+	public static final int TRANSACTION_RETRY_TIMES = 6;
 
 	/** Number of ms to sleep before each attempt to retry calling the metod again */
 	private transient long sleepTime = 200;
