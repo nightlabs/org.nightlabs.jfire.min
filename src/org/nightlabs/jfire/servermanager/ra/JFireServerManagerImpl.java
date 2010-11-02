@@ -429,28 +429,28 @@ public class JFireServerManagerImpl
 		this.principal = null;
 
 		
-		Session session = null;
-		try{
-			
-			if (!User.USER_ID_SYSTEM.equals(userID)){
-				session = loginExternal(loginData);
-			}
-			
-		} catch (AuthenticationException e){
-			
-			// TODO: now we just log the exception and proceed to JFire login
-			logger.error("Authentication failed!", e);
-			
-		} catch (CommunicationException e) {
-			
-			// TODO: now we just log the exception and proceed to JFire login
-			logger.error("Authentication failed!", e);
-			
-		}
-		if (session != null){
-			// could be used later on
-			session.getLoginData();
-		}
+//		Session session = null;
+//		try{
+//			
+//			if (!User.USER_ID_SYSTEM.equals(userID)){
+//				session = loginExternal(loginData);
+//			}
+//			
+//		} catch (AuthenticationException e){
+//			
+//			// TODO: now we just log the exception and proceed to JFire login
+//			logger.error("Authentication failed!", e);
+//			
+//		} catch (CommunicationException e) {
+//			
+//			// TODO: now we just log the exception and proceed to JFire login
+//			logger.error("Authentication failed!", e);
+//			
+//		}
+//		if (session != null){
+//			// could be used later on
+//			session.getLoginData();
+//		}
 		
 		
 		if (logger.isDebugEnabled()) {
