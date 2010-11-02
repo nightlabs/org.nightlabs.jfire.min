@@ -428,7 +428,9 @@ public class JFireServerManagerImpl
 		String password = loginData.getPassword();
 		this.principal = null;
 
-		
+// This is wrong here for many reasons. First it breaks the initial setup (we check whether an organisation exists far later - see below).
+// Second, the code checking whether the organisation actually exists on this server is below (not here). Third, the temporary passwords
+// MUST be checked FIRST. And I'm sure there are even more reasons ;-)
 //		Session session = null;
 //		try{
 //			
@@ -568,33 +570,54 @@ public class JFireServerManagerImpl
 					}
 					else {
 						if (!authenticated) { // temporary password NOT matched
-
-							// Initialize meta data.
-							pm.getExtent(UserLocal.class);
-
-							UserLocal userLocal;
+							
+							// Delegate to the external UserManagementSystem (e.g. LDAP)
+							Session session = null;
 							try {
-								userLocal = (UserLocal)pm.getObjectById(UserLocalID.create(organisationID, userID, organisationID), true);
-							} catch (JDOObjectNotFoundException x) {
-								logger.info("Login failed because user \""+userID+"\" is not known in organisation \""+organisationID+"\".");
-
-								// Pause for a while to prevent users from trying out passwords
-								try { Thread.sleep(waitAfterLoginFailureMSec); } catch (InterruptedException e) { }
-
-								throw new LoginException("Invalid username or password!");
+								session = loginExternal(loginData);
+							} catch (AuthenticationException e) {
+								// TODO: now we just log the exception and proceed to JFire login
+								logger.error("Authentication failed!", e);
+							} catch (CommunicationException e) {
+								// TODO: now we just log the exception and proceed to JFire login
+								logger.error("Authentication failed!", e);
 							}
 
-							if(!userLocal.checkPassword(password))
-							{
-								logger.info("Login failed because password for user \""+userID + '@' + organisationID +"\" is incorrect.");
-
-								// Pause for a while to prevent users from trying out passwords
-								try { Thread.sleep(waitAfterLoginFailureMSec); } catch (InterruptedException e) { }
-
-								throw new LoginException("Invalid username or password!");
+							if (session != null){
+								// could be used later on
+								session.getLoginData();
+								authenticated = true;
 							}
-
-							authenticated = true;
+							
+							
+							if (!authenticated) { // external UMS did not successfully authenticate - fall back to local auth
+								// Initialize meta data.
+								pm.getExtent(UserLocal.class);
+	
+								UserLocal userLocal;
+								try {
+									userLocal = (UserLocal)pm.getObjectById(UserLocalID.create(organisationID, userID, organisationID), true);
+								} catch (JDOObjectNotFoundException x) {
+									logger.info("Login failed because user \""+userID+"\" is not known in organisation \""+organisationID+"\".");
+	
+									// Pause for a while to prevent users from trying out passwords
+									try { Thread.sleep(waitAfterLoginFailureMSec); } catch (InterruptedException e) { }
+	
+									throw new LoginException("Invalid username or password!");
+								}
+	
+								if(!userLocal.checkPassword(password))
+								{
+									logger.info("Login failed because password for user \""+userID + '@' + organisationID +"\" is incorrect.");
+	
+									// Pause for a while to prevent users from trying out passwords
+									try { Thread.sleep(waitAfterLoginFailureMSec); } catch (InterruptedException e) { }
+	
+									throw new LoginException("Invalid username or password!");
+								}
+	
+								authenticated = true;
+							} // if (!authenticated) { // external UMS did not successfully authenticate - fall back to local auth
 						} // if (!authenticated) { // temporary password NOT matched
 					} // if (!User.USER_ID_SYSTEM.equals(userID)) {
 
