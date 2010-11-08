@@ -47,6 +47,9 @@ public class TestCaseObjectsMap implements Serializable{
 	private String testCaseObjectsMapID;
 	
 
+	public String getTestCaseObjectsMapID() {
+		return testCaseObjectsMapID;
+	}
 
 	@Persistent(serialized="true",
 	defaultFetchGroup="true",
