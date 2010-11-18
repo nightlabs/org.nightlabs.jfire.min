@@ -67,15 +67,11 @@ implements Serializable
 	@SuppressWarnings("unchecked")
 	public static List<NotificationBundle> getNotificationBundles(PersistenceManager pm, NotificationFilterID notificationFilterID)
 	{
-		pm.getExtent(NotificationFilter.class);
-//		NotificationFilter subscription;
-//		try {
-//			subscription = (NotificationFilter) pm.getObjectById(subscriptionID);
-//		} catch (JDOObjectNotFoundException x) {
-//			return new ArrayList<NotificationBundle>();
-//		}
 		HashMap params = new HashMap(4);
 		params.put("organisationID", notificationFilterID.organisationID);
+		params.put("subscriberType", notificationFilterID.subscriberType);
+		params.put("subscriberID", notificationFilterID.subscriberID);
+		params.put("subscriptionID", notificationFilterID.subscriptionID);
 		Query q = pm.newNamedQuery(NotificationBundle.class, "getNotificationBundlesForSubscription");
 		return (List<NotificationBundle>) q.executeWithMap(params);
 	}
