@@ -32,10 +32,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import javax.jdo.FetchPlan;
 import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
-import javax.jdo.Query;
 import javax.naming.AuthenticationException;
 import javax.naming.CommunicationException;
 import javax.naming.InitialContext;
@@ -49,7 +47,6 @@ import javax.security.auth.login.LoginException;
 import javax.transaction.Status;
 import javax.transaction.UserTransaction;
 
-import org.apache.log4j.Logger;
 import org.nightlabs.config.ConfigException;
 import org.nightlabs.j2ee.LoginData;
 import org.nightlabs.jfire.base.JFirePrincipal;
@@ -82,6 +79,8 @@ import org.nightlabs.jfire.shutdownafterstartup.ShutdownControlHandle;
 import org.nightlabs.jfire.workstation.Workstation;
 import org.nightlabs.jfire.workstation.id.WorkstationID;
 import org.nightlabs.util.IOUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author marco schulze - marco at nightlabs dot de
@@ -90,7 +89,11 @@ import org.nightlabs.util.IOUtil;
 public class JFireServerManagerImpl
 	implements Connection, JFireServerManager
 {
-	private static final Logger logger = Logger.getLogger(JFireServerManagerImpl.class);
+	// *** REV_marco ***
+	// Please use slf4j instead of log4j. I know that this is my code (very old), but I write this
+	// here just to make you aware of slf4j.
+//	private static final Logger logger = Logger.getLogger(JFireServerManagerImpl.class);
+	private static final Logger logger = LoggerFactory.getLogger(JFireServerManagerImpl.class);
 
 	private ManagedConnectionImpl managedConnectionImpl;
 	private JFireServerManagerFactoryImpl jfireServerManagerFactoryImpl;
@@ -354,67 +357,111 @@ public class JFireServerManagerImpl
 	private static final long waitAfterLoginFailureMSec = 2000;
 
 	public static final String LOGIN_PARAM_ALLOW_EARLY_LOGIN = "allowEarlyLogin";
-	
-	private Session loginExternal(LoginData loginData) throws AuthenticationException, CommunicationException {
+
+	private Session loginExternal(PersistenceManager pm, LoginData loginData) throws AuthenticationException, CommunicationException {
 
 		Session session = null;
-		
-		PersistenceManager pm = new Lookup(loginData.getOrganisationID()).createPersistenceManager();
-		
-		try{
 
-			Query q = pm.newNamedQuery(UserManagementSystem.class, UserManagementSystem.GET_ACTIVE_USER_MANAGEMENT_SYSTEMS);
+		// *** REV_marco ***
+		// Why do you create another PersistenceManager? There is already one in the context where this method is called. Why not
+		// simply pass it?
+		// OK. I just saw that it was probably because there was no PM before I moved the method call to the right location.
+		// Marco ;-)
+//		PersistenceManager pm = new Lookup(loginData.getOrganisationID()).createPersistenceManager();
+//
+//		try {
+			// *** REV_marco ***
+			// You should not use queries outside of the entity class! Use a static method encapsulating them.
+			// There are many reasons for this - if you want to know them (and they're not clear already when thinking about it),
+			// please ask me by e-mail.
+			// Marco.
+//			Query q = pm.newNamedQuery(UserManagementSystem.class, UserManagementSystem.GET_ACTIVE_USER_MANAGEMENT_SYSTEMS);
 
-			pm.getFetchPlan().setMaxFetchDepth(-1);
-			pm.getFetchPlan().setGroups(
-					FetchPlan.DEFAULT,
-					UserManagementSystem.FETCH_GROUP_NAME
-					);
-			
-			List<UserManagementSystem> activeUserManagementSystems = 
-				(List<UserManagementSystem>) pm.detachCopyAll( (List<UserManagementSystem>) q.execute() );
+			// *** REV_marco ***
+			// Why do you DETACH? IMHO this is unnecessary and should not be done. It only costs time and it reduces the possibilities
+			// of the UserManagementSystem implementation (it can easily access fields and other entities when you don't detach).
+			// Marco.
+			// ...again after reading some more stuff, I saw that you keep the LDAPServer instance inside your LDAPConnection
+			// and thus detach. However, IMHO you still detach at the wrong location. If the LDAPServer UMS-implementation
+			// requires a detached instance of UserManagementSystem, you should instead detach THERE. There are many reasons:
+			// You know there what fetch-groups you really need. Here you can only detach using a specific fetch-group
+			// that the UMS must implement properly (e.g. you declare a constant like FetchGroupsUserManagementSystem.FETCH_GROUP_LOGIN),
+			// but this makes things unnecessarily complicated. We do use such use-case-specific fetch-groups - e.g. see class
+			// org.nightlabs.jfire.trade.FetchGroupsTrade, but IMHO we should not use such design patterns, if it's not absolutely
+			// necessary.
+			// Here, I'd definitely avoid it and leave the decision IF and WHAT to detach to the UMS implementation. Chances are pretty
+			// high, that a UMS implementation does not need detachment at all.
+			//
+			// Btw. if you do things that are wrong on the first look, you should document the reason WHY you do this.
+			// This prevents other people from "fixing" the mistake (and thus introduce a bug).
+			// I'll refactor your code so that the detachment here is not necessary anymore.
+//			pm.getFetchPlan().setMaxFetchDepth(-1);
+//			pm.getFetchPlan().setGroups(
+//					FetchPlan.DEFAULT,
+//					UserManagementSystem.FETCH_GROUP_NAME
+//					);
+//
+//			List<UserManagementSystem> activeUserManagementSystems =
+//				(List<UserManagementSystem>) pm.detachCopyAll( (List<UserManagementSystem>) q.execute() );
+
+			// The new code: Only one single line ;-)
+			Collection<? extends UserManagementSystem> activeUserManagementSystems = UserManagementSystem.getActiveUserManagementSystems(pm);
+
+			// *** REV_marco ***
+			// I added the following check, because otherwise, the
+			//
+			//      throw new CommunicationException("Failed to connect to any active UserManagementSystem! ....
+			//
+			// (see below) happens at EVERY login. It is definitely not nice to have such a log pollution.
+			// I therefore simply log a debug message here.
+			if (activeUserManagementSystems.isEmpty()) {
+				logger.debug("loginExternal: There is no active UserManagementSystem. Skipping external authentication.");
+				return null;
+			}
 
 			// We try to authenticate at least against one active UserManagementSystem
 			int communicationProblems = 0;
 			for (UserManagementSystem ums : activeUserManagementSystems){
-				
-				try{
-					
+
+				try {
+
 					session = ums.login(loginData);
-					
-				} catch (CommunicationException e){
-					
+
+				} catch (CommunicationException e){ // TODO see the todo in the method's javadoc. IMHO we should use different exceptions as our UMS has nothing to do with JNDI.
+
 					logger.error("Can't connect to User Management System!", e);
 					communicationProblems++;
-					
-				} catch (AuthenticationException e){
+
+				} catch (AuthenticationException e){ // TODO see the todo in the method's javadoc. IMHO we should use different exceptions as our UMS has nothing to do with JNDI.
 					logger.error("Authentication failed!", e);
 				}
-				
+
 				if (session != null){
 					return session;
 				}
-					
+
 			}
-			
+
 			if (communicationProblems == activeUserManagementSystems.size()){
-				
+
 				throw new CommunicationException(
 						"Failed to connect to any active UserManagementSystem! See log for details."
 						);
-				
+
 			}else{
-			
+
 				throw new AuthenticationException(
-						"Authentication failed for " + 
+						"Authentication failed for " +
 						loginData.getUserID() + LoginData.USER_ORGANISATION_SEPARATOR + loginData.getOrganisationID()
 						);
 			}
-			
-		} finally {
-			pm.close();
-		}
-		
+
+		// *** REV_marco ***
+		// Now using the PM passed to this method. We must not close it since we didn't create it. Marco.
+//		} finally {
+//			pm.close();
+//		}
+
 	}
 
 	@Override
@@ -428,33 +475,34 @@ public class JFireServerManagerImpl
 		String password = loginData.getPassword();
 		this.principal = null;
 
+// *** REV_marco ***
 // This is wrong here for many reasons. First it breaks the initial setup (we check whether an organisation exists far later - see below).
 // Second, the code checking whether the organisation actually exists on this server is below (not here). Third, the temporary passwords
 // MUST be checked FIRST. And I'm sure there are even more reasons ;-)
 //		Session session = null;
 //		try{
-//			
+//
 //			if (!User.USER_ID_SYSTEM.equals(userID)){
 //				session = loginExternal(loginData);
 //			}
-//			
+//
 //		} catch (AuthenticationException e){
-//			
+//
 //			// TODO: now we just log the exception and proceed to JFire login
 //			logger.error("Authentication failed!", e);
-//			
+//
 //		} catch (CommunicationException e) {
-//			
+//
 //			// TODO: now we just log the exception and proceed to JFire login
 //			logger.error("Authentication failed!", e);
-//			
+//
 //		}
 //		if (session != null){
 //			// could be used later on
 //			session.getLoginData();
 //		}
-		
-		
+
+
 		if (logger.isDebugEnabled()) {
 			// I think we should NOT log the user's password! If this proves really necessary, then we should only do it in TRACE mode (not DEBUG). Marco.
 			logger.debug("login: organisationID=\"" + organisationID + "\" userID=\"" + userID +"\""); // password=\"" + password + "\"");
@@ -513,7 +561,7 @@ public class JFireServerManagerImpl
 					throw new LoginException("The password \"" + password + "\" is not valid!");
 
 				Organisation.assertValidOrganisationID(organisationID);
-				
+
 				RoleSet roleSet = new RoleSet(); // RoleSet.class.getName() + '[' + userPK + ']');
 				// add roles needed for setup
 				roleSet.addMember(JFireServerManagerFactoryImpl.guestRolePrincipal); // EVERYONE has this role!
@@ -570,11 +618,11 @@ public class JFireServerManagerImpl
 					}
 					else {
 						if (!authenticated) { // temporary password NOT matched
-							
+
 							// Delegate to the external UserManagementSystem (e.g. LDAP)
 							Session session = null;
 							try {
-								session = loginExternal(loginData);
+								session = loginExternal(pm, loginData);
 							} catch (AuthenticationException e) {
 								// TODO: now we just log the exception and proceed to JFire login
 								logger.error("Authentication failed!", e);
@@ -588,34 +636,34 @@ public class JFireServerManagerImpl
 								session.getLoginData();
 								authenticated = true;
 							}
-							
-							
+
+
 							if (!authenticated) { // external UMS did not successfully authenticate - fall back to local auth
 								// Initialize meta data.
 								pm.getExtent(UserLocal.class);
-	
+
 								UserLocal userLocal;
 								try {
 									userLocal = (UserLocal)pm.getObjectById(UserLocalID.create(organisationID, userID, organisationID), true);
 								} catch (JDOObjectNotFoundException x) {
 									logger.info("Login failed because user \""+userID+"\" is not known in organisation \""+organisationID+"\".");
-	
+
 									// Pause for a while to prevent users from trying out passwords
 									try { Thread.sleep(waitAfterLoginFailureMSec); } catch (InterruptedException e) { }
-	
+
 									throw new LoginException("Invalid username or password!");
 								}
-	
+
 								if(!userLocal.checkPassword(password))
 								{
 									logger.info("Login failed because password for user \""+userID + '@' + organisationID +"\" is incorrect.");
-	
+
 									// Pause for a while to prevent users from trying out passwords
 									try { Thread.sleep(waitAfterLoginFailureMSec); } catch (InterruptedException e) { }
-	
+
 									throw new LoginException("Invalid username or password!");
 								}
-	
+
 								authenticated = true;
 							} // if (!authenticated) { // external UMS did not successfully authenticate - fall back to local auth
 						} // if (!authenticated) { // temporary password NOT matched
