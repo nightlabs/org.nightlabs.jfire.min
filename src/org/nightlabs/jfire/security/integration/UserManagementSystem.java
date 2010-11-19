@@ -74,7 +74,7 @@ public abstract class UserManagementSystem implements Serializable
 	public static final String FETCH_GROUP_DESCRIPTION = "UserManagementSystem.description";
 	public static final String FETCH_GROUP_TYPE = "UserManagementSystem.type";
 
-	private static final String GET_ACTIVE_USER_MANAGEMENT_SYSTEMS = "getActiveUserManagementSystems";
+	protected static final String GET_ACTIVE_USER_MANAGEMENT_SYSTEMS = "getActiveUserManagementSystems";
 	
 	public static Collection<? extends UserManagementSystem> getActiveUserManagementSystems(PersistenceManager pm)
 	{
