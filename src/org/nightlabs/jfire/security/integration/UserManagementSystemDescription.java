@@ -37,26 +37,33 @@ public class UserManagementSystemDescription extends I18nText
 	@Column(length=100)
 	private String organisationID;
 
+	// *** REV_marco ***
+	// Renamed this for the same reason as in class UserManagementSystem.
 	@PrimaryKey
-	private long umsID;
+	private long userManagementSystemID;
 
+	// *** REV_marco ***
+	// Please don't abbreviate! The modern IDEs write a lot of code for you, thus there's no need to abbreviate.
+	// Abbreviations make the code harder to understand - even to yourself when you read it a year later again ;-)
 	/**
 	 * Described UserManagementSystem
 	 */
 	@Persistent(defaultFetchGroup="true")
-	private UserManagementSystem ums;
+//	private UserManagementSystem ums;
+	private UserManagementSystem userManagementSystem;
 
 
-	public UserManagementSystemDescription(UserManagementSystem ums) {
-		this.organisationID = ums.getOrganisationID();
-		this.umsID = ums.getID();
-		this.ums = ums;
+	public UserManagementSystemDescription(UserManagementSystem userManagementSystem) {
+		this.organisationID = userManagementSystem.getOrganisationID();
+		this.userManagementSystemID = userManagementSystem.getUserManagementSystemID();
+		this.userManagementSystem = userManagementSystem;
 	}
 
 	@Join
 	@Persistent(
 		table="JFireBase_UserManagementSystemDescription_names",
-		defaultFetchGroup="true")
+		defaultFetchGroup="true"
+	)
 	private Map<String, String> names = new HashMap<String, String>();
 
 	/* (non-Javadoc)
@@ -73,7 +80,10 @@ public class UserManagementSystemDescription extends I18nText
 	 */
 	@Override
 	protected String getFallBackValue(String languageID) {
-		return umsID+"@"+organisationID;
+		// *** REV_marco ***
+		// For a description, an empty value is OK. For a name, that's different.
+//		return umsID+"@"+organisationID;
+		return ""; 
 	}
 	
 	/**
@@ -83,12 +93,16 @@ public class UserManagementSystemDescription extends I18nText
 		return organisationID;
 	}
 	
+	public long getUserManagementSystemID() {
+		return userManagementSystemID;
+	}
+	
 	/**
 	 * 
 	 * @return described UserManagementSystem
 	 */
 	public UserManagementSystem getUserManagementSystem() {
-		return ums;
+		return userManagementSystem;
 	}
 
 }

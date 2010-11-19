@@ -1,7 +1,11 @@
 package org.nightlabs.jfire.security.integration;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
+import javax.jdo.PersistenceManager;
 import javax.jdo.annotations.Column;
 import javax.jdo.annotations.Discriminator;
 import javax.jdo.annotations.DiscriminatorStrategy;
@@ -25,6 +29,7 @@ import org.nightlabs.j2ee.LoginData;
 import org.nightlabs.jfire.idgenerator.IDGenerator;
 import org.nightlabs.jfire.security.integration.id.UserManagementSystemID;
 import org.nightlabs.util.NLLocale;
+import org.nightlabs.util.Util;
 
 /**
  * An abstract represention of an external User Management Systems (UMS)
@@ -62,13 +67,32 @@ import org.nightlabs.util.NLLocale;
 				value="SELECT this WHERE this.isActive == true ORDER BY JDOHelper.getObjectId(this) ASCENDING"
 					)
 		)
-public abstract class UserManagementSystem implements Serializable{
+public abstract class UserManagementSystem implements Serializable
+{
 
 	public static final String FETCH_GROUP_NAME = "UserManagementSystem.name";
 	public static final String FETCH_GROUP_DESCRIPTION = "UserManagementSystem.description";
 	public static final String FETCH_GROUP_TYPE = "UserManagementSystem.type";
 
-	public static final String GET_ACTIVE_USER_MANAGEMENT_SYSTEMS = "getActiveUserManagementSystems";
+	private static final String GET_ACTIVE_USER_MANAGEMENT_SYSTEMS = "getActiveUserManagementSystems";
+	
+	public static Collection<? extends UserManagementSystem> getActiveUserManagementSystems(PersistenceManager pm)
+	{
+		javax.jdo.Query q = pm.newNamedQuery(UserManagementSystem.class, UserManagementSystem.GET_ACTIVE_USER_MANAGEMENT_SYSTEMS);
+		@SuppressWarnings("unchecked")
+		List<UserManagementSystem> activeUserManagementSystems = (List<UserManagementSystem>) q.execute();
+		
+		// We copy them into a new ArrayList in order to be able to already close the query (save resources).
+		// That would only be a bad idea, if we had really a lot of them and we would not need to iterate all afterwards.
+		// But as we need to iterate most of them anyway, we can fetch the whole result set already here.
+		// Note that this has only a positive effect in long-running transactions (because the query will be closed at the end of the
+		// transaction, anyway). However, it has no negative effect besides the one already mentioned and we don't know in
+		// which contexts this method might be used => better close the query quickly.
+		// Marco.
+		activeUserManagementSystems = new ArrayList<UserManagementSystem>(activeUserManagementSystems);
+		q.closeAll();
+		return activeUserManagementSystems;
+	}
 
 	/**
 	 * The serial version UID of this class.
@@ -80,7 +104,7 @@ public abstract class UserManagementSystem implements Serializable{
 	private String organisationID;
 
 	@PrimaryKey
-	private long umsID;
+	private long userManagementSystemID;
 	
 	/**
 	 * Type of the UMS, see {@link UserManagementSystemType} for details
@@ -115,6 +139,20 @@ public abstract class UserManagementSystem implements Serializable{
 	 * 
 	 * @param loginData
 	 * @return {@link Session) descriptor in case of successful login and null otherwise
+	 *
+	 * *** REV_marco ***
+	 * TODO why do you use javax.NAMING.*Exception? What we do here has nothing to do with JNDI. IMHO
+	 * we should use different (our own?!) exceptions.
+	 * Marco.
+	 * ...well, I read a bit more of your code and saw that you use JNDI classes for accessing the LDAP
+	 * server. This explains why you came to use the JNDI exceptions here. But even though using JNDI is a good
+	 * way to communicate with LDAP, I still don't like the JNDI exceptions here.
+	 * After all, this UserManagementSystem is an abstract class that knows nothing about LDAP and an implementation
+	 * might very well deal with other exceptions in its specific back-end. Hence, UMS-specific or generic java-security
+	 * exceptions would be more appropriate here.
+	 * It's the same with SQL and JDO: JDO might use SQL in the background just like our UMS might use LDAP with JNDI,
+	 * but it might as well use sth. completely different. Just like JDO introduces its own exceptions, IMHO we should
+	 * do the same or alternatively use the generic (not JNDI-related) java.security.auth.login.LoginException and its subclasses. 
 	 */
 	public abstract Session login(LoginData loginData) throws AuthenticationException, CommunicationException;
 
@@ -123,6 +161,9 @@ public abstract class UserManagementSystem implements Serializable{
 	 * Thus, a subclass can be used to keep additional information, specific to the UMSimplementation
 	 * 
 	 * @param session
+	 *
+	 * *** REV_marco ***
+	 * TODO see my to-do-comment in {@link #login(LoginData)} above.
 	 */
 	public abstract void logout(Session session) throws CommunicationException;
 	
@@ -133,7 +174,7 @@ public abstract class UserManagementSystem implements Serializable{
 	 * @param type used for creating and initializing this UMS 
 	 */
 	public UserManagementSystem(String name, UserManagementSystemType<?> type){
-		this.umsID = IDGenerator.nextID(UserManagementSystem.class);
+		this.userManagementSystemID = IDGenerator.nextID(UserManagementSystem.class);
 		this.organisationID = IDGenerator.getOrganisationID();
 		this.type = type;
 		setName(name);
@@ -215,12 +256,39 @@ public abstract class UserManagementSystem implements Serializable{
 		return organisationID;
 	}
 
-	/**
-	 * 
-	 * @return umsID
-	 */
-	public long getID() {
-		return umsID;
+	// *** REV_marco ***
+	// This method was named getID(). The field was named umsID. The class is named UserManagementSystem.
+	// Why this inconsistency? I renamed the field and the method so they are consistent with all other codes.
+//	public long getID() {
+//		return umsID;
+//	}
+	public long getUserManagementSystemID() {
+		return userManagementSystemID;
 	}
 	
+	// *** REV_marco ***
+	// hashCode() and equals(...) were missing. They should be present in every entity
+	// and they should take all and only primary key fields into account.
+	// Btw. they can be auto-generated by Eclipse (though I usually modify the equals(...) method for
+	// the sake of readability).
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((organisationID == null) ? 0 : organisationID.hashCode());
+		result = prime * result + (int) (userManagementSystemID ^ (userManagementSystemID >>> 32));
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) return true;
+		if (obj == null) return false;
+		if (getClass() != obj.getClass()) return false;
+		UserManagementSystem other = (UserManagementSystem) obj;
+		return (
+				Util.equals(this.userManagementSystemID, other.userManagementSystemID) &&
+				Util.equals(this.organisationID, other.organisationID)
+		);
+	}
 }

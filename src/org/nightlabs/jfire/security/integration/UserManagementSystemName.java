@@ -63,9 +63,14 @@ public class UserManagementSystemName extends I18nText
 	@Column(length=100)
 	private String organisationID;
 
+	// *** REV_marco ***
+	// TODO Please rename this for the same reason as in class UserManagementSystem and UserManagementSystemDescription
+	// (and then recreate the ID class).
 	@PrimaryKey
 	private long umsID;
 
+	// *** REV_marco ***
+	// TODO Please rename this like in UserManagementSystemDescription.
 	/**
 	 * Named UserManagementSystem
 	 */
@@ -75,7 +80,7 @@ public class UserManagementSystemName extends I18nText
 
 	public UserManagementSystemName(UserManagementSystem ums) {
 		this.organisationID = ums.getOrganisationID();
-		this.umsID = ums.getID();
+		this.umsID = ums.getUserManagementSystemID();
 		this.ums = ums;
 	}
 
