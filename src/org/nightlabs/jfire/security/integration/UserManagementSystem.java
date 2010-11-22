@@ -122,7 +122,7 @@ public abstract class UserManagementSystem implements Serializable
 	/**
 	 * Description of the UMS
 	 */
-	@Persistent(dependent="true",mappedBy="ums")
+	@Persistent(dependent="true",mappedBy="userManagementSystem")
 	private UserManagementSystemDescription description;
 	
 	/**
