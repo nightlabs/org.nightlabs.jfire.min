@@ -3,7 +3,6 @@ package org.nightlabs.jfire.security.integration.id;
 
 import javax.annotation.Generated;
 import java.io.Serializable;
-import org.nightlabs.jdo.ObjectID;
 import java.text.ParseException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.StringTokenizer;
@@ -19,13 +18,13 @@ import java.net.URLEncoder;
  */
 @Generated("org.nightlabs.eclipse.sdk.jdo.ObjectIdGenerator")
 public class UserManagementSystemNameID
-implements Serializable, ObjectID
+implements Serializable
 {
 	/**
 	 * The serial version uid of this class.
 	 */ 
 	@Generated("org.nightlabs.eclipse.sdk.jdo.ObjectIdGenerator")
-	private static final long serialVersionUID = -1802707148098756904L;
+	private static final long serialVersionUID = -897650636L;
 	
 	/**
 	 * The values of all fields are URL encoded in UTF-8.
@@ -83,11 +82,11 @@ implements Serializable, ObjectID
 	public java.lang.String organisationID;
 	
 	/**
-	 * Primary key field umsID.
+	 * Primary key field userManagementSystemID.
 	 * Declared as primary key field in {@link org.nightlabs.jfire.security.integration.UserManagementSystemName}.
 	 */
 	@Generated("org.nightlabs.eclipse.sdk.jdo.ObjectIdGenerator")
-	public long umsID;
+	public long userManagementSystemID;
 	
 	/**
 	 * Create a new empty instance of UserManagementSystemNameID.
@@ -256,8 +255,8 @@ implements Serializable, ObjectID
 			sb.append("organisationID="); //$NON-NLS-1$
 			sb.append(URLEncoder.encode(String.valueOf(organisationID), ENCODING));
 			sb.append('&');
-			sb.append("umsID="); //$NON-NLS-1$
-			sb.append(URLEncoder.encode(Long.toString(umsID, RADIX), ENCODING));
+			sb.append("userManagementSystemID="); //$NON-NLS-1$
+			sb.append(URLEncoder.encode(Long.toString(userManagementSystemID, RADIX), ENCODING));
 		} catch (UnsupportedEncodingException e) {
 			throw new RuntimeException(
 					"Encoding failed with encoding " + //$NON-NLS-1$ 
@@ -288,7 +287,7 @@ implements Serializable, ObjectID
 				return false;
 		} else if(!organisationID.equals(other.organisationID))
 			return false;
-		if(umsID != other.umsID)
+		if(userManagementSystemID != other.userManagementSystemID)
 			return false;
 		return true;
 	}
@@ -307,23 +306,23 @@ implements Serializable, ObjectID
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((organisationID == null) ? 0 : organisationID.hashCode());
-		result = prime * result + (int) (umsID ^ (umsID >>> 32));
+		result = prime * result + (int) (userManagementSystemID ^ (userManagementSystemID >>> 32));
 		return result;
 	}
 
 	/**
 	 * Create a new object id instance.
 	 * @param organisationID The primary key field organisationID.
-	 * @param umsID The primary key field umsID.
+	 * @param userManagementSystemID The primary key field userManagementSystemID.
 	 * @return a newly created instance of <code>UserManagementSystemNameID</code>
 	 *     with the primary-key fields set to the given parameters.
 	 */
 	@Generated("org.nightlabs.eclipse.sdk.jdo.ObjectIdGenerator")
-	public static UserManagementSystemNameID create(String organisationID, long umsID)
+	public static UserManagementSystemNameID create(String organisationID, long userManagementSystemID)
 	{
 		UserManagementSystemNameID n = new UserManagementSystemNameID();
 		n.organisationID = organisationID;
-		n.umsID = umsID;
+		n.userManagementSystemID = userManagementSystemID;
 		return n;
 	}
 }

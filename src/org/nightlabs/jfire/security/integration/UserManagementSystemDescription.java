@@ -37,19 +37,13 @@ public class UserManagementSystemDescription extends I18nText
 	@Column(length=100)
 	private String organisationID;
 
-	// *** REV_marco ***
-	// Renamed this for the same reason as in class UserManagementSystem.
 	@PrimaryKey
 	private long userManagementSystemID;
 
-	// *** REV_marco ***
-	// Please don't abbreviate! The modern IDEs write a lot of code for you, thus there's no need to abbreviate.
-	// Abbreviations make the code harder to understand - even to yourself when you read it a year later again ;-)
 	/**
 	 * Described UserManagementSystem
 	 */
 	@Persistent(defaultFetchGroup="true")
-//	private UserManagementSystem ums;
 	private UserManagementSystem userManagementSystem;
 
 
@@ -80,9 +74,6 @@ public class UserManagementSystemDescription extends I18nText
 	 */
 	@Override
 	protected String getFallBackValue(String languageID) {
-		// *** REV_marco ***
-		// For a description, an empty value is OK. For a name, that's different.
-//		return umsID+"@"+organisationID;
 		return ""; 
 	}
 	

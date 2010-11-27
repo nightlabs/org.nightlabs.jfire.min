@@ -63,25 +63,20 @@ public class UserManagementSystemName extends I18nText
 	@Column(length=100)
 	private String organisationID;
 
-	// *** REV_marco ***
-	// TODO Please rename this for the same reason as in class UserManagementSystem and UserManagementSystemDescription
-	// (and then recreate the ID class).
 	@PrimaryKey
-	private long umsID;
+	private long userManagementSystemID;
 
-	// *** REV_marco ***
-	// TODO Please rename this like in UserManagementSystemDescription.
 	/**
 	 * Named UserManagementSystem
 	 */
 	@Persistent(defaultFetchGroup="true")
-	private UserManagementSystem ums;
+	private UserManagementSystem userManagementSystem;
 
 
 	public UserManagementSystemName(UserManagementSystem ums) {
 		this.organisationID = ums.getOrganisationID();
-		this.umsID = ums.getUserManagementSystemID();
-		this.ums = ums;
+		this.userManagementSystemID = ums.getUserManagementSystemID();
+		this.userManagementSystem = ums;
 	}
 
 	@Join
@@ -104,7 +99,7 @@ public class UserManagementSystemName extends I18nText
 	 */
 	@Override
 	protected String getFallBackValue(String languageID) {
-		return umsID+"@"+organisationID;
+		return userManagementSystemID+"@"+organisationID;
 	}
 	
 	/**
@@ -119,7 +114,7 @@ public class UserManagementSystemName extends I18nText
 	 * @return named UserManagementSystem
 	 */
 	public UserManagementSystem getUserManagementSystem() {
-		return ums;
+		return userManagementSystem;
 	}
 
 }

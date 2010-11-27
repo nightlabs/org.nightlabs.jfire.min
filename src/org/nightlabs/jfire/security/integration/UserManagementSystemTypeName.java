@@ -64,19 +64,19 @@ public class UserManagementSystemTypeName extends I18nText
 	private String organisationID;
 
 	@PrimaryKey
-	private long umsTypeID;
+	private long userManagementSystemTypeID;
 
 	/**
 	 * Named UserManagementSystemType
 	 */
 	@Persistent
-	private UserManagementSystemType<?> umsType;
+	private UserManagementSystemType<?> userManagementSystemType;
 
 
 	public UserManagementSystemTypeName(UserManagementSystemType<?> umsType) {
 		this.organisationID = umsType.getOrganisationID();
-		this.umsTypeID = umsType.getID();
-		this.umsType = umsType;
+		this.userManagementSystemTypeID = umsType.getUserManagementSystemTypeID();
+		this.userManagementSystemType = umsType;
 	}
 
 	@Join
@@ -99,7 +99,7 @@ public class UserManagementSystemTypeName extends I18nText
 	 */
 	@Override
 	protected String getFallBackValue(String languageID) {
-		return umsTypeID+"@"+organisationID;
+		return userManagementSystemTypeID+"@"+organisationID;
 	}
 	
 	/**
@@ -114,7 +114,7 @@ public class UserManagementSystemTypeName extends I18nText
 	 * @return named UserManagementSystemType
 	 */
 	public UserManagementSystemType<?> getUserManagementSystemType() {
-		return umsType;
+		return userManagementSystemType;
 	}
 	
 }

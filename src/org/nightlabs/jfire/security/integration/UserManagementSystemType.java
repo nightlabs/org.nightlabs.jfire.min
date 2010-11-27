@@ -81,14 +81,14 @@ public abstract class UserManagementSystemType<T extends UserManagementSystem> i
 	private String organisationID;
 
 	@PrimaryKey
-	private long umsTypeID;
+	private long userManagementSystemTypeID;
 	
 	/**
 	 * Human readable name for the UMSType
 	 */
 	@Persistent(
 		dependent="true",
-		mappedBy="umsType")
+		mappedBy="userManagementSystemType")
 	private UserManagementSystemTypeName name;
 	
 	/**
@@ -96,7 +96,7 @@ public abstract class UserManagementSystemType<T extends UserManagementSystem> i
 	 */
 	@Persistent(
 		dependent="true",
-		mappedBy="umsType")
+		mappedBy="userManagementSystemType")
 	private UserManagementSystemTypeDescription description;
 	
 	
@@ -169,7 +169,7 @@ public abstract class UserManagementSystemType<T extends UserManagementSystem> i
 	 * Constructor generating object ID and setting default name.
 	 */
 	public UserManagementSystemType(String name) {
-		this.umsTypeID = IDGenerator.nextID(UserManagementSystemType.class);
+		this.userManagementSystemTypeID = IDGenerator.nextID(UserManagementSystemType.class);
 		this.organisationID = IDGenerator.getOrganisationID();
 		setName(name);
 	}
@@ -236,8 +236,8 @@ public abstract class UserManagementSystemType<T extends UserManagementSystem> i
 	 * 
 	 * @return umsTypeID
 	 */
-	public long getID() {
-		return umsTypeID;
+	public long getUserManagementSystemTypeID() {
+		return userManagementSystemTypeID;
 	}
 
 }
