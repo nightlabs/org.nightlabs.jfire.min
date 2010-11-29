@@ -1,13 +1,13 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page language="java" contentType="text/html+xml; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <c:url value="/" var="url_home"/>
 <c:url value="/css" var="url_css"/>
 <c:url value="/img" var="url_img"/>
-<?xml version="1.0" encoding="iso-8859-1"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<?xml version="1.0" encoding="iso-8859-1"?>
 <%@page import="java.util.Collection"%>
 <%@page import="org.nightlabs.jfire.web.admin.servlet.BaseServlet"%>
 <%@page import="org.apache.commons.lang.exception.ExceptionUtils"%>
@@ -56,7 +56,6 @@
 		<div class="errorblock">
 		Errors:
 		<ul>
-		
 		<%
 			@SuppressWarnings("unchecked")
 			Collection<Throwable> errors = (Collection<Throwable>) request.getAttribute("internal_errors");
@@ -73,8 +72,7 @@
 								%>
 								<li>
 									caused by: <c:if test="${cause.localizedMessage == '' || cause.localizedMessage == null}">${cause.class.simpleName} </c:if>${cause.localizedMessage}
-								</li>
-								
+								</li>	
 								<%
 								cause = ExceptionUtils.getCause(cause);
 							}
