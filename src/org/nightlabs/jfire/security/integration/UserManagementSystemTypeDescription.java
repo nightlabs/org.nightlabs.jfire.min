@@ -110,6 +110,13 @@ public class UserManagementSystemTypeDescription extends I18nText
 	}
 	
 	/**
+	 * @return userManagementSystemTypeID
+	 */
+	public long getUserManagementSystemTypeID() {
+		return userManagementSystemTypeID;
+	}
+	
+	/**
 	 * 
 	 * @return described UserManagementSystemType
 	 */
