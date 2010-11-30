@@ -90,10 +90,6 @@ import org.slf4j.LoggerFactory;
 public class JFireServerManagerImpl
 	implements Connection, JFireServerManager
 {
-	// *** REV_marco ***
-	// Please use slf4j instead of log4j. I know that this is my code (very old), but I write this
-	// here just to make you aware of slf4j.
-//	private static final Logger logger = Logger.getLogger(JFireServerManagerImpl.class);
 	private static final Logger logger = LoggerFactory.getLogger(JFireServerManagerImpl.class);
 
 	private ManagedConnectionImpl managedConnectionImpl;
