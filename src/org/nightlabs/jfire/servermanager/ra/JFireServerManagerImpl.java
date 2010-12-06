@@ -423,9 +423,14 @@ public class JFireServerManagerImpl
 //
 // *** REV_denis ***
 // I was sure that it was wrong :) I just wasn't sure where to put this loginExternal() code, that's why I placed it here just to test login interception.
-// I wanted to ask you about the right place for this code during the second milestone - should have done it earlier, sorry :) 
-		
-
+// I wanted to ask you about the right place for this code during the second milestone - should have done it earlier, sorry :)
+//
+// *** REV_marco_2 ***
+// It's great that you already knew it was wrong! It's totally fine, that you add temporary code like this. But in the future, please mark
+// it with a TODO or FIXME - this way it's easier for others to find the problem (my colleague was stuck at the problem you introduced
+// and he might have found it, if you had put a comment - I only found it so quickly, because I originally coded these classes here).
+// Please delete all these REV_* comments here, after you read this one. If you want to continue the discussion, please do so by e-mail.
+// The original code has been moved already, and the comments here are thus not needed anymore.
 
 		if (logger.isDebugEnabled()) {
 			// I think we should NOT log the user's password! If this proves really necessary, then we should only do it in TRACE mode (not DEBUG). Marco.
