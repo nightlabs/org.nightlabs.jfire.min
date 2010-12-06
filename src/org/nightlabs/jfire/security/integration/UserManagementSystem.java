@@ -35,7 +35,7 @@ import org.nightlabs.util.Util;
  * used for authentication. Basically it does nothing except for providing
  * common interface, object's ID, name and description. All the work including
  * user-data synchronization is done by subclasses.
- * 
+ *
  * @author Denis Dudnik <deniska.dudnik[at]gmail{dot}com>
  *
  */
@@ -62,7 +62,7 @@ import org.nightlabs.util.Util;
 @Discriminator(column="className", strategy=DiscriminatorStrategy.CLASS_NAME)
 @Queries(
 		@Query(
-				name=UserManagementSystem.GET_ACTIVE_USER_MANAGEMENT_SYSTEMS, 
+				name=UserManagementSystem.GET_ACTIVE_USER_MANAGEMENT_SYSTEMS,
 				value="SELECT this WHERE this.isActive == true ORDER BY JDOHelper.getObjectId(this) ASCENDING"
 					)
 		)
@@ -74,13 +74,13 @@ public abstract class UserManagementSystem implements Serializable
 	public static final String FETCH_GROUP_TYPE = "UserManagementSystem.type";
 
 	protected static final String GET_ACTIVE_USER_MANAGEMENT_SYSTEMS = "getActiveUserManagementSystems";
-	
+
 	public static Collection<? extends UserManagementSystem> getActiveUserManagementSystems(PersistenceManager pm)
 	{
 		javax.jdo.Query q = pm.newNamedQuery(UserManagementSystem.class, UserManagementSystem.GET_ACTIVE_USER_MANAGEMENT_SYSTEMS);
 		@SuppressWarnings("unchecked")
 		List<UserManagementSystem> activeUserManagementSystems = (List<UserManagementSystem>) q.execute();
-		
+
 		// We copy them into a new ArrayList in order to be able to already close the query (save resources).
 		// That would only be a bad idea, if we had really a lot of them and we would not need to iterate all afterwards.
 		// But as we need to iterate most of them anyway, we can fetch the whole result set already here.
@@ -97,45 +97,45 @@ public abstract class UserManagementSystem implements Serializable
 	 * The serial version UID of this class.
 	 */
 	private static final long serialVersionUID = 1L;
-	
+
 	@PrimaryKey
 	@Column(length=100)
 	private String organisationID;
 
 	@PrimaryKey
 	private long userManagementSystemID;
-	
+
 	/**
 	 * Type of the UMS, see {@link UserManagementSystemType} for details
 	 */
 	@Persistent
-	@ForeignKey(deleteAction=ForeignKeyAction.CASCADE)
+	@ForeignKey(deleteAction=ForeignKeyAction.CASCADE) // Isn't
 	private UserManagementSystemType<?> type;
-	
+
 	/**
 	 * Human readable name for the UMS
 	 */
 	@Persistent(dependent="true", mappedBy="userManagementSystem")
 	private UserManagementSystemName name;
-	
+
 	/**
 	 * Description of the UMS
 	 */
 	@Persistent(dependent="true",mappedBy="userManagementSystem")
 	private UserManagementSystemDescription description;
-	
+
 	/**
 	 * Indicates whether this UMS should be used for authentication
 	 */
 	@Persistent
 	private boolean isActive = false;
 
-	
+
 	/**
 	 * Perform the login via the UMS and return a {@link Session) descriptor if the login was successful.
-	 * Return null or throw an exception, if the login failed (additional information should be logged – 
+	 * Return null or throw an exception, if the login failed (additional information should be logged –
 	 * the exception should be caught and logged)
-	 * 
+	 *
 	 * @param loginData
 	 * @return {@link Session) descriptor in case of successful login and null otherwise
 	 */
@@ -144,17 +144,17 @@ public abstract class UserManagementSystem implements Serializable
 	/**
 	 * The {@link Session} that was returned by the login method is passed here as is.
 	 * Thus, a subclass can be used to keep additional information, specific to the UMSimplementation
-	 * 
+	 *
 	 * @param session
 	 *
 	 */
 	public abstract void logout(Session session) throws UserManagementSystemCommunicationException;
-	
+
 	/**
 	 * Constructor which generates object ID and sets UMS name
-	 * 
+	 *
 	 * @param name for the UMS, if empty or null UMS class name will be used
-	 * @param type used for creating and initializing this UMS 
+	 * @param type used for creating and initializing this UMS
 	 */
 	public UserManagementSystem(String name, UserManagementSystemType<?> type){
 		this.userManagementSystemID = IDGenerator.nextID(UserManagementSystem.class);
@@ -162,26 +162,51 @@ public abstract class UserManagementSystem implements Serializable
 		this.type = type;
 		setName(name);
 	}
-	
+
+	// *** REV_marco_2 ***
+	// See my comment for the corresponding constructor in LDAPServer.
+	// This constructor is currently considered best-practice: It OPTIONALLY takes the object-ID and additionally all absolutely
+	// required *and* *immutable* properties, but no other properties.
 	/**
-	 * 
+	 * Create an instance of <code>UserManagementSystem</code>.
+	 * @param userManagementSystemID optional unique ID of this new instance. If <code>null</code>, an ID will be created automatically.
+	 * @param type the {@link UserManagementSystemType} for which this UMS is an instance. Required (must not be <code>null</code>).
+	 */
+	public UserManagementSystem(UserManagementSystemID userManagementSystemID, UserManagementSystemType<?> type) {
+		// *** REV_marco_2 ***
+		// Fast failure (we don't wait until the instance is persisted, but check as soon as we can - and the type is really essential).
+		if (type == null)
+			throw new IllegalArgumentException("type == null");
+
+		if (userManagementSystemID == null) {
+			this.organisationID = IDGenerator.getOrganisationID();
+			this.userManagementSystemID = IDGenerator.nextID(UserManagementSystem.class);
+		}
+		else {
+			this.organisationID = userManagementSystemID.organisationID;
+			this.userManagementSystemID = userManagementSystemID.userManagementSystemID;
+		}
+	}
+
+	/**
+	 *
 	 * @return type of the UMS
 	 */
 	public UserManagementSystemType<?> getType() {
 		return type;
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @return UMS I18nText description
 	 */
 	public I18nText getDescription() {
 		return description;
 	}
-	
+
 	/**
 	 * Set description for the UMS
-	 * 
+	 *
 	 * @param description
 	 */
 	public void setDescription(String description) {
@@ -190,18 +215,18 @@ public abstract class UserManagementSystem implements Serializable
 		}
 		this.description.setText(NLLocale.getDefault(), description);
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @return UMS I18nText name
 	 */
 	public I18nText getName() {
 		return name;
 	}
-	
+
 	/**
 	 * Set UMS name. If null or empty string is provided than class full name is used as default.
-	 * 
+	 *
 	 * @param name
 	 */
 	public void setName(String name){
@@ -213,26 +238,26 @@ public abstract class UserManagementSystem implements Serializable
 		}
 		this.name.setText(NLLocale.getDefault(), name);
 	}
-	
+
 	/**
 	 * Set this UMS active which means it will be used for authentication
-	 * 
+	 *
 	 * @param isActive
 	 */
 	public void setActive(boolean isActive) {
 		this.isActive = isActive;
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @return whether this UMS is active
 	 */
 	public boolean isActive() {
 		return isActive;
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @return organisationID
 	 */
 	public String getOrganisationID() {
@@ -240,13 +265,13 @@ public abstract class UserManagementSystem implements Serializable
 	}
 
 	/**
-	 * 
+	 *
 	 * @return userManagementSystemID
 	 */
 	public long getUserManagementSystemID() {
 		return userManagementSystemID;
 	}
-	
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;

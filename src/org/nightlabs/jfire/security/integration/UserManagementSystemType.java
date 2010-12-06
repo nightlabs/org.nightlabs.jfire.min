@@ -27,18 +27,18 @@ import org.nightlabs.util.NLLocale;
 
 /**
  * <p>Every implementation of {@link UserManagementSystem} is represented by a persistent singleton-instance
- * of this class in the datastore. It provides meta-data for the <code>UserManagementSystem</code> 
+ * of this class in the datastore. It provides meta-data for the <code>UserManagementSystem</code>
  * (additionally to its Java class) and is the factory for creating new instances.</p>
- * 
+ *
  * <p>Being a factory, multiple differently pre-configured flavours of the same <code>UserManagementSystem<code>
  * subclass can be created in {@link #createUserManagementSystem()} by persisting different implementations
- * of <code>UserManagementSystemType</code>.</p> 
- * 
- * <p>For example, the {@link LDAPServer} would always be the same class (no subclassing), 
- * but one UMSType can create a pre-configured LDAPServer instance for a SAMBA-LDAP-Schema, 
- * one for Microsoft's default Domain-Controller-Schema and another UMSType creates LDAPServers 
+ * of <code>UserManagementSystemType</code>.</p>
+ *
+ * <p>For example, the {@link LDAPServer} would always be the same class (no subclassing),
+ * but one UMSType can create a pre-configured LDAPServer instance for a SAMBA-LDAP-Schema,
+ * one for Microsoft's default Domain-Controller-Schema and another UMSType creates LDAPServers
  * pre-configured for InetOrgPerson.</p>
- * 
+ *
  * @author Denis Dudnik <deniska.dudnik[at]gmail{dot}com>
  *
  * @param <T> represents concrete UMS
@@ -60,12 +60,12 @@ import org.nightlabs.util.NLLocale;
 @Discriminator(strategy=DiscriminatorStrategy.CLASS_NAME, column="className")
 @Queries(
 		@javax.jdo.annotations.Query(
-				name=UserManagementSystemType.GET_ALL_USER_MANAGEMENT_SYSTEM_TYPES_IDS, 
+				name=UserManagementSystemType.GET_ALL_USER_MANAGEMENT_SYSTEM_TYPES_IDS,
 				value="SELECT JDOHelper.getObjectId(this)"
 					)
 		)
 public abstract class UserManagementSystemType<T extends UserManagementSystem> implements Serializable{
-	
+
 	public final static String FETCH_GROUP_NAME = "UserManagementSystemType.name";
 	public final static String FETCH_GROUP_DESCRIPTION = "UserManagementSystemType.description";
 
@@ -75,14 +75,14 @@ public abstract class UserManagementSystemType<T extends UserManagementSystem> i
 	 * The serial version of this class.
 	 */
 	private static final long serialVersionUID = 1L;
-	
+
 	@PrimaryKey
 	@Column(length=100)
 	private String organisationID;
 
 	@PrimaryKey
 	private long userManagementSystemTypeID;
-	
+
 	/**
 	 * Human readable name for the UMSType
 	 */
@@ -90,7 +90,7 @@ public abstract class UserManagementSystemType<T extends UserManagementSystem> i
 		dependent="true",
 		mappedBy="userManagementSystemType")
 	private UserManagementSystemTypeName name;
-	
+
 	/**
 	 * Description of the UMSType
 	 */
@@ -98,38 +98,45 @@ public abstract class UserManagementSystemType<T extends UserManagementSystem> i
 		dependent="true",
 		mappedBy="userManagementSystemType")
 	private UserManagementSystemTypeDescription description;
-	
-	
+
+	// *** REV_marco_2 ***
+	// TODO remove static field.
+	// There is no need to keep any instance of UserManagementSystemType in a static field.
+	// When they are needed, they can be queried from the datastore.
 	/**
-	 * Since every UMSType is a singleton we keep all the possible instances here and 
+	 * Since every UMSType is a singleton we keep all the possible instances here and
 	 * UMSType class name is used as a key.
-	 * Concrete UMS module is responsible for requesting to put in this map all UMS types it provides 
-	 * by calling {@link #loadSingleInstance(PersistenceManager, Class)} method. 
+	 * Concrete UMS module is responsible for requesting to put in this map all UMS types it provides
+	 * by calling {@link #loadSingleInstance(PersistenceManager, Class)} method.
 	 */
-	protected static final HashMap<String, UserManagementSystemType<?>> _instances = 
+	protected static final HashMap<String, UserManagementSystemType<?>> _instances =
 		new HashMap<String, UserManagementSystemType<?>>();
-	
+
+	// *** REV_marco_2 ***
+	// TODO remove static field.
+	// As said above, there should be no statically held instances. Query from JDO whenever
+	// it's needed.
 	/**
 	 * Retrieve UMSType instance for specified class
-	 * 
+	 *
 	 * @param <T>
 	 * @param clazz - class object of the specific UMSType
 	 * @return a singleton instance of needed UMSType
 	 */
 	@SuppressWarnings("unchecked")
 	public static final <T extends UserManagementSystemType<?>> T getInstance(Class<T> clazz){
-		
+
 		// FIXME: not sure what needs to be done if there's no UMSType instance for requested class
-		
+
 		return (T) _instances.get(clazz.getName());
 	}
-	
+
 	/**
 	 * Loads an instance of requested UMSType instance and put it into {@link #_instances} map.
 	 * Loading all object IDs for the specified class and takes first if there's more than one.
 	 * So it's guaranteed that only one UMSType instance will be available. Made protected so only
 	 * concrete UMSType subclasses can call it after the specific instance is created inside them.
-	 * 
+	 *
 	 * @param <T>
 	 * @param pm
 	 * @param clazz
@@ -139,14 +146,14 @@ public abstract class UserManagementSystemType<T extends UserManagementSystem> i
 	protected static synchronized <T extends UserManagementSystemType<?>> T loadSingleInstance(
 			PersistenceManager pm, Class<T> clazz
 			){
-		
+
 		if (_instances.get(clazz.getName()) != null){
 			return (T) _instances.get(clazz.getName());
 		}
-		
+
 		Query q = pm.newNamedQuery(UserManagementSystemType.class, GET_ALL_USER_MANAGEMENT_SYSTEM_TYPES_IDS);
 		q.setClass(clazz);
-		
+
 		Collection<UserManagementSystemTypeID> typesIds = (Collection<UserManagementSystemTypeID>) q.execute();
 		T singleInstance = null;
 		if (typesIds.size() > 0){
@@ -154,17 +161,17 @@ public abstract class UserManagementSystemType<T extends UserManagementSystem> i
 			int oldFetchSize = pm.getFetchPlan().getFetchSize();
 			pm.getFetchPlan().setFetchSize(-1);
 			pm.getFetchPlan().setGroups(FetchPlan.DEFAULT, UserManagementSystemType.FETCH_GROUP_NAME);
-			
+
 			singleInstance = (T) pm.detachCopy(pm.getObjectById(typesIds.iterator().next()));
 			_instances.put(clazz.getName(), singleInstance);
-			
+
 			pm.getFetchPlan().setMaxFetchDepth(oldFetchSize!=0?oldFetchSize:-1);
 			pm.getFetchPlan().removeGroup(UserManagementSystemType.FETCH_GROUP_NAME);
 		}
-		
+
 		return singleInstance;
 	}
-	
+
 	/**
 	 * Constructor generating object ID and setting default name.
 	 */
@@ -173,7 +180,7 @@ public abstract class UserManagementSystemType<T extends UserManagementSystem> i
 		this.organisationID = IDGenerator.getOrganisationID();
 		setName(name);
 	}
-	
+
 	/**
 	 * Factory method for creation of specifically configured UMS instances.
 	 * @return created UMS instance
@@ -182,16 +189,16 @@ public abstract class UserManagementSystemType<T extends UserManagementSystem> i
 
 
 	/**
-	 * 
+	 *
 	 * @return UMSType I18nText name
 	 */
 	public I18nText getName() {
 		return name;
 	}
-	
+
 	/**
 	 * Set UMSType name. If null or empty string is provided than class full name is used as default.
-	 * 
+	 *
 	 * @param name
 	 */
 	public void setName(String name) {
@@ -203,18 +210,18 @@ public abstract class UserManagementSystemType<T extends UserManagementSystem> i
 		}
 		this.name.setText(NLLocale.getDefault(), name);
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @return UMSType I18nText description
 	 */
 	public I18nText getDescription() {
 		return description;
 	}
-	
+
 	/**
 	 * Set UMSType description
-	 * 
+	 *
 	 * @param description
 	 */
 	public void setDescription(String description) {
@@ -223,9 +230,9 @@ public abstract class UserManagementSystemType<T extends UserManagementSystem> i
 		}
 		this.description.setText(NLLocale.getDefault(), description);
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @return organisationID
 	 */
 	public String getOrganisationID() {
@@ -233,7 +240,7 @@ public abstract class UserManagementSystemType<T extends UserManagementSystem> i
 	}
 
 	/**
-	 * 
+	 *
 	 * @return umsTypeID
 	 */
 	public long getUserManagementSystemTypeID() {
