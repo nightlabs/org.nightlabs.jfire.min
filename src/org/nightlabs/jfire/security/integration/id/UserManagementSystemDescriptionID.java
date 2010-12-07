@@ -3,6 +3,7 @@ package org.nightlabs.jfire.security.integration.id;
 
 import javax.annotation.Generated;
 import java.io.Serializable;
+import org.nightlabs.jdo.ObjectID;
 import java.text.ParseException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.StringTokenizer;
@@ -18,7 +19,7 @@ import java.net.URLEncoder;
  */
 @Generated("org.nightlabs.eclipse.sdk.jdo.ObjectIdGenerator")
 public class UserManagementSystemDescriptionID
-implements Serializable
+implements Serializable, ObjectID
 {
 	/**
 	 * The serial version uid of this class.
