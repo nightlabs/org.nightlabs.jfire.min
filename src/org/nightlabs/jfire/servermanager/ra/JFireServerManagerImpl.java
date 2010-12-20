@@ -359,7 +359,8 @@ public class JFireServerManagerImpl
 
 		Session session = null;
 
-		Collection<? extends UserManagementSystem> activeUserManagementSystems = UserManagementSystem.getActiveUserManagementSystems(pm);
+		Collection<? extends UserManagementSystem> activeUserManagementSystems = 
+			UserManagementSystem.getActiveUserManagementSystems(pm, UserManagementSystem.class);
 
 		if (activeUserManagementSystems.isEmpty()) {
 			logger.debug("loginExternal: There is no active UserManagementSystem. Skipping external authentication.");
