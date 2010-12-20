@@ -63,7 +63,7 @@ import org.nightlabs.util.Util;
 @Queries(
 		@Query(
 				name=UserManagementSystem.GET_ACTIVE_USER_MANAGEMENT_SYSTEMS,
-				value="SELECT this WHERE this.isActive == true ORDER BY JDOHelper.getObjectId(this) ASCENDING"
+				value="SELECT this FROM :class WHERE this.isActive == true PARAMETERS String class ORDER BY JDOHelper.getObjectId(this) ASCENDING"
 					)
 		)
 public abstract class UserManagementSystem implements Serializable
@@ -75,12 +75,17 @@ public abstract class UserManagementSystem implements Serializable
 
 	protected static final String GET_ACTIVE_USER_MANAGEMENT_SYSTEMS = "getActiveUserManagementSystems";
 
-	public static Collection<? extends UserManagementSystem> getActiveUserManagementSystems(PersistenceManager pm)
-	{
-		javax.jdo.Query q = pm.newNamedQuery(UserManagementSystem.class, UserManagementSystem.GET_ACTIVE_USER_MANAGEMENT_SYSTEMS);
-		@SuppressWarnings("unchecked")
-		List<UserManagementSystem> activeUserManagementSystems = (List<UserManagementSystem>) q.execute();
-
+	@SuppressWarnings("unchecked")
+	public static <T extends UserManagementSystem> Collection<T> getActiveUserManagementSystems(
+			PersistenceManager pm, Class<T> userManagementSystemClass
+			) {
+		
+		javax.jdo.Query q = pm.newNamedQuery(
+				UserManagementSystem.class, 
+				UserManagementSystem.GET_ACTIVE_USER_MANAGEMENT_SYSTEMS
+				);
+		List<T> activeUserManagementSystems = (List<T>) q.execute(userManagementSystemClass.getName());
+		
 		// We copy them into a new ArrayList in order to be able to already close the query (save resources).
 		// That would only be a bad idea, if we had really a lot of them and we would not need to iterate all afterwards.
 		// But as we need to iterate most of them anyway, we can fetch the whole result set already here.
@@ -88,7 +93,7 @@ public abstract class UserManagementSystem implements Serializable
 		// transaction, anyway). However, it has no negative effect besides the one already mentioned and we don't know in
 		// which contexts this method might be used => better close the query quickly.
 		// Marco.
-		activeUserManagementSystems = new ArrayList<UserManagementSystem>(activeUserManagementSystems);
+		activeUserManagementSystems = new ArrayList<T>(activeUserManagementSystems);
 		q.closeAll();
 		return activeUserManagementSystems;
 	}
@@ -163,20 +168,16 @@ public abstract class UserManagementSystem implements Serializable
 		setName(name);
 	}
 
-	// *** REV_marco_2 ***
-	// See my comment for the corresponding constructor in LDAPServer.
-	// This constructor is currently considered best-practice: It OPTIONALLY takes the object-ID and additionally all absolutely
-	// required *and* *immutable* properties, but no other properties.
 	/**
 	 * Create an instance of <code>UserManagementSystem</code>.
 	 * @param userManagementSystemID optional unique ID of this new instance. If <code>null</code>, an ID will be created automatically.
 	 * @param type the {@link UserManagementSystemType} for which this UMS is an instance. Required (must not be <code>null</code>).
 	 */
 	public UserManagementSystem(UserManagementSystemID userManagementSystemID, UserManagementSystemType<?> type) {
-		// *** REV_marco_2 ***
-		// Fast failure (we don't wait until the instance is persisted, but check as soon as we can - and the type is really essential).
-		if (type == null)
-			throw new IllegalArgumentException("type == null");
+
+		if (type == null){
+			throw new IllegalArgumentException("UserManagemenSystemType can't be null!");
+		}
 
 		if (userManagementSystemID == null) {
 			this.organisationID = IDGenerator.getOrganisationID();
