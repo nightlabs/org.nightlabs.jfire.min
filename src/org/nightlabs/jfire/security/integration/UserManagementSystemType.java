@@ -24,6 +24,7 @@ import org.nightlabs.i18n.I18nText;
 import org.nightlabs.jfire.idgenerator.IDGenerator;
 import org.nightlabs.jfire.security.integration.id.UserManagementSystemTypeID;
 import org.nightlabs.util.NLLocale;
+import org.nightlabs.util.Util;
 
 /**
  * <p>Every implementation of {@link UserManagementSystem} is represented by a persistent singleton-instance
@@ -247,4 +248,25 @@ public abstract class UserManagementSystemType<T extends UserManagementSystem> i
 		return userManagementSystemTypeID;
 	}
 
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((organisationID == null) ? 0 : organisationID.hashCode());
+		result = prime * result + (int) (userManagementSystemTypeID ^ (userManagementSystemTypeID >>> 32));
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) return true;
+		if (obj == null) return false;
+		if (getClass() != obj.getClass()) return false;
+		UserManagementSystemType<?> other = (UserManagementSystemType<?>) obj;
+		return (
+				Util.equals(this.userManagementSystemTypeID, other.userManagementSystemTypeID) &&
+				Util.equals(this.organisationID, other.organisationID)
+		);
+	}
+	
 }
