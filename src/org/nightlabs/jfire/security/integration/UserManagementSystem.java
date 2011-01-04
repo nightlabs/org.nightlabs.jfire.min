@@ -63,7 +63,7 @@ import org.nightlabs.util.Util;
 @Queries(
 		@Query(
 				name=UserManagementSystem.GET_ACTIVE_USER_MANAGEMENT_SYSTEMS,
-				value="SELECT this FROM :class WHERE this.isActive == true PARAMETERS String class ORDER BY JDOHelper.getObjectId(this) ASCENDING"
+				value="SELECT WHERE this.isActive == true ORDER BY JDOHelper.getObjectId(this) ASCENDING"
 					)
 		)
 public abstract class UserManagementSystem implements Serializable
@@ -84,7 +84,7 @@ public abstract class UserManagementSystem implements Serializable
 				UserManagementSystem.class, 
 				UserManagementSystem.GET_ACTIVE_USER_MANAGEMENT_SYSTEMS
 				);
-		List<T> activeUserManagementSystems = (List<T>) q.execute(userManagementSystemClass.getName());
+		List<T> activeUserManagementSystems = (List<T>) q.execute();
 		
 		// We copy them into a new ArrayList in order to be able to already close the query (save resources).
 		// That would only be a bad idea, if we had really a lot of them and we would not need to iterate all afterwards.
