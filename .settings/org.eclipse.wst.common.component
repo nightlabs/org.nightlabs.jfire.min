@@ -6,10 +6,13 @@
             <dependent-object/>
             <dependency-type>uses</dependency-type>
         </dependent-module>
-        <dependent-module deploy-path="/lib" handle="module:/classpath/lib/JFireTestSuite/lib/junit-4.8.1.jar">
+        <dependent-module deploy-path="/lib" handle="module:/classpath/lib/JFireTestSuite/lib/junit-4.8.2.jar">
             <dependency-type>uses</dependency-type>
         </dependent-module>
         <dependent-module deploy-path="/lib" handle="module:/classpath/lib/JFireTestSuite/lib/hamcrest-all-1.2.jar">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module deploy-path="/lib" handle="module:/classpath/lib/JFireTestSuite/lib/commons-lang.jar">
             <dependency-type>uses</dependency-type>
         </dependent-module>
     </wb-module>
