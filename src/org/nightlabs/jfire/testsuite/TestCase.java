@@ -6,17 +6,20 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.junit.runner.RunWith;
 import org.nightlabs.jfire.base.JFireEjb3Factory;
 
 
 /**
+ * This class can be used as base class for JUnit3-TestCases for server-side tests.
+ * <p>
  * This implementation of {@link junit.framework.TestCase} ensures that
  * <code>setUp()</code> and <code>tearDown()</code> will be executed in
  * separate (nested) transactions before and after the actual test (which
  * is itself executed in a nested transaction). This way
+ * </p>
  * <p>
  * The JFire testsuite supports executing subclasses of the normal
  * {@link junit.framework.TestCase} as well as subclasses of this class.
@@ -27,6 +30,8 @@ import org.nightlabs.jfire.base.JFireEjb3Factory;
  * @author marco schulze - marco at nightlabs dot de
  * @author fitas - fitas at nightlabs dot de
  */
+//@RunWith(JFireRemoteTestClassRunner.class)
+@RunWith(JFireJUnit3RemoteTestRunner.class)
 public abstract class TestCase
 extends junit.framework.TestCase
 {

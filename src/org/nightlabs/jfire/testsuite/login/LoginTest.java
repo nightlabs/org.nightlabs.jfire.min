@@ -5,24 +5,24 @@ package org.nightlabs.jfire.testsuite.login;
 
 import javax.security.auth.login.LoginException;
 
-import junit.framework.TestCase;
-
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.junit.Test;
 import org.nightlabs.j2ee.LoginData;
 import org.nightlabs.jfire.base.JFireEjb3Factory;
 import org.nightlabs.jfire.base.login.JFireLogin;
 import org.nightlabs.jfire.security.JFireSecurityManagerRemote;
-import org.nightlabs.jfire.testsuite.JFireTestSuite;
+import org.nightlabs.jfire.testsuite.TestCase;
 
 /**
  * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] de -->
  *
  */
-@JFireTestSuite(JFireLoginTestSuite.class)
+
 public class LoginTest extends TestCase
 {
 	public LoginTest() { }
 
+	@Test
 	public void testCorrectLogin()
 	throws Exception
 	{
@@ -31,9 +31,11 @@ public class LoginTest extends TestCase
 		ejb.ping("test");
 	}
 
+	@Test
 	public void testCorrectLoginManyTimes_onlyLogin()
 	throws Exception
 	{
+		fail("This is a fail test");
 		for (int i = 0; i < 10000; ++i) {
 			JFireLogin login = new JFireLogin("chezfrancois.jfire.org", "francois", "test");
 			login.login();
@@ -41,6 +43,7 @@ public class LoginTest extends TestCase
 		}
 	}
 
+	@Test
 	public void testIncorrectLogin_wrongUserName_onlyLogin()
 	throws Exception
 	{
@@ -57,6 +60,7 @@ public class LoginTest extends TestCase
 		fail("Could login with wrong credentials");
 	}
 
+	@Test
 	public void testIncorrectLogin_wrongUserName_onlyLogin_2()
 	throws Exception
 	{
@@ -73,6 +77,7 @@ public class LoginTest extends TestCase
 		fail("Could login with wrong credentials");
 	}
 
+	@Test
 	public void testIncorrectLogin_wrongPassword_onlyLogin()
 	throws Exception
 	{
@@ -89,6 +94,7 @@ public class LoginTest extends TestCase
 		fail("Could login with wrong credentials");
 	}
 
+	@Test
 	public void testIncorrectLogin_wrongPassword_onlyLogin_2()
 	throws Exception
 	{
@@ -105,7 +111,7 @@ public class LoginTest extends TestCase
 		fail("Could login with wrong credentials");
 	}
 
-
+	@Test
 	public void testIncorrectLogin_wrongUserName_createBean()
 	throws Exception
 	{
@@ -124,6 +130,7 @@ public class LoginTest extends TestCase
 		fail("Could login with wrong credentials");
 	}
 
+	@Test
 	public void testIncorrectLogin_wrongPassword_createBean()
 	throws Exception
 	{

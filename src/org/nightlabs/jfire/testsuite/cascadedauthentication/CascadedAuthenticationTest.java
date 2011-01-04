@@ -2,19 +2,19 @@ package org.nightlabs.jfire.testsuite.cascadedauthentication;
 
 import javax.naming.InitialContext;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
+import org.junit.Test;
 import org.nightlabs.j2ee.LoginData;
 import org.nightlabs.jfire.base.JFireEjb3Factory;
 import org.nightlabs.jfire.organisation.Organisation;
 import org.nightlabs.jfire.organisation.OrganisationManagerRemote;
 import org.nightlabs.jfire.test.cascadedauthentication.TestRequestResultTreeNode;
 import org.nightlabs.jfire.testsuite.JFireTestSuite;
+import org.nightlabs.jfire.testsuite.TestCase;
 import org.nightlabs.jfire.testsuite.login.JFireTestLogin;
 import org.nightlabs.util.Util;
 
-@JFireTestSuite(CascadedAuthenticationTestSuite.class)
+
 public class CascadedAuthenticationTest
 extends TestCase
 {
@@ -35,6 +35,7 @@ extends TestCase
 		initialContext.close();
 	}
 
+	@Test
 	public void testCascadedAuthenticationOneOrganisationPerLevel()
 	throws Exception
 	{
@@ -47,6 +48,7 @@ extends TestCase
 	}
 
 	@SuppressWarnings("unused")
+	@Test
 	public void testCascadedAuthenticationMultipleOrganisationsPerLevelNoLoopbacks()
 	throws Exception
 	{
@@ -65,6 +67,7 @@ extends TestCase
 	}
 
 	@SuppressWarnings("unused")
+	@Test
 	public void testCascadedAuthenticationMultipleOrganisationsPerLevelWithLoopbacks()
 	throws Exception
 	{

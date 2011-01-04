@@ -4,12 +4,10 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
-import javax.annotation.security.RolesAllowed;
 import javax.ejb.Remote;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
 
 import org.nightlabs.ModuleException;
 import org.nightlabs.jdo.ObjectID;
@@ -21,7 +19,7 @@ public interface JFireTestManagerRemote {
 
 	void logMemoryState(TaskID taskID) throws Exception;
 
-	void runAllTestSuites(TaskID taskID) throws Exception;
+//	void runAllTestSuites(TaskID taskID) throws Exception;
 
 	/**
 	 * This method is called by the datastore initialisation mechanism.
@@ -31,23 +29,23 @@ public interface JFireTestManagerRemote {
 	 */
 	void initialiseTestSystem() throws Exception;
 
-	/**
-	 * Runs all TestSuits and TestCases found in the classpath under org.nightlabs.jfire.testsuite.
-	 * This method can be called by clients and is called by the {@link JFireTestRunnerInvocation} on every startup.
-	 */
-	void runAllTestSuites() throws SecurityException, IllegalArgumentException,
-			ClassNotFoundException, NoSuchMethodException,
-			InstantiationException, IllegalAccessException,
-			InvocationTargetException, ModuleException, IOException;
+//	/**
+//	 * Runs all TestSuits and TestCases found in the classpath under org.nightlabs.jfire.testsuite.
+//	 * This method can be called by clients and is called by the {@link JFireTestRunnerInvocation} on every startup.
+//	 */
+//	void runAllTestSuites() throws SecurityException, IllegalArgumentException,
+//			ClassNotFoundException, NoSuchMethodException,
+//			InstantiationException, IllegalAccessException,
+//			InvocationTargetException, ModuleException, IOException;
 
-	/**
-	 * Runs TestCases found in the classpath under org.nightlabs.jfire.testsuite that belong to the given TestSuites.
-	 */
-	void runTestSuites(List<Class<? extends TestSuite>> testSuitesClasses)
-			throws SecurityException, IllegalArgumentException,
-			ClassNotFoundException, NoSuchMethodException,
-			InstantiationException, IllegalAccessException,
-			InvocationTargetException, ModuleException, IOException;
+//	/**
+//	 * Runs TestCases found in the classpath under org.nightlabs.jfire.testsuite that belong to the given TestSuites.
+//	 */
+//	void runTestSuites(List<Class<? extends TestSuite>> testSuitesClasses)
+//			throws SecurityException, IllegalArgumentException,
+//			ClassNotFoundException, NoSuchMethodException,
+//			InstantiationException, IllegalAccessException,
+//			InvocationTargetException, ModuleException, IOException;
 
 	/**
 	 * very useful method to check if a particular JDO Object exist in the data store.
@@ -60,5 +58,9 @@ public interface JFireTestManagerRemote {
 	
 	List<TestCaseObjectsMap> getTestCaseObjectsMaps(Collection<TestCaseObjectsMapID> testCaseObjectsMapIDs, String[] fetchGroups, int maxFetchDepth);
 	
-	void deleteTestCaseObjectsMap(TestCaseObjectsMapID testCaseObjectsMapID);		
+	void deleteTestCaseObjectsMap(TestCaseObjectsMapID testCaseObjectsMapID);
+	
+	String runTestAsync(Class<?> testClass) throws Exception;
+	
+	List<JFireTestSuiteNotification> getTestNotifications(String identifier);
 }

@@ -1,17 +1,17 @@
 package org.nightlabs.jfire.testsuite.jdo;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
+import org.junit.Test;
 import org.nightlabs.j2ee.LoginData;
 import org.nightlabs.jfire.base.JFireEjb3Factory;
 import org.nightlabs.jfire.testsuite.JFireTestSuite;
+import org.nightlabs.jfire.testsuite.TestCase;
 import org.nightlabs.jfire.testsuite.login.JFireTestLogin;
 
 /**
  * This test case tests some basic functionality of the JDO implementation.
  */
-@JFireTestSuite(JFireJDOTestSuite.class)
+
 public class JDOTestCase extends TestCase
 {
 	Logger logger = Logger.getLogger(JDOTestCase.class);
@@ -29,6 +29,7 @@ public class JDOTestCase extends TestCase
 		logger.info("tearDown: invoked");
 	}
 
+	@Test
 	public void testCreateArrayListFromQueryResult() throws Exception
 	{
 		// REV Alex: What is this testing?!?
@@ -38,6 +39,7 @@ public class JDOTestCase extends TestCase
 		JFireEjb3Factory.getRemoteBean(JDOTestRemote.class, loginData.getInitialContextProperties()).createArrayListFromQueryResult();
 	}
 
+	@Test
 	public void testCreateHashSetFromQueryResult() throws Exception
 	{
 		// REV Alex: What is this testing?!?

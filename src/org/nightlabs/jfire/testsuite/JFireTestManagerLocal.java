@@ -21,23 +21,23 @@ public interface JFireTestManagerLocal {
 
 	void logMemoryState(TaskID taskID) throws Exception;
 
-	/**
-	 * Runs all TestSuits and TestCases found in the classpath under org.nightlabs.jfire.testsuite.
-	 * This method can be called by clients and is called by the {@link JFireTestRunnerInvocation} on every startup.
-	 */
-	void runAllTestSuites() throws SecurityException, IllegalArgumentException,
-			ClassNotFoundException, NoSuchMethodException,
-			InstantiationException, IllegalAccessException,
-			InvocationTargetException, ModuleException, IOException;
-
-	/**
-	 * Runs TestCases found in the classpath under org.nightlabs.jfire.testsuite that belong to the given TestSuites.
-	 */
-	void runTestSuites(List<Class<? extends TestSuite>> testSuitesClasses)
-			throws SecurityException, IllegalArgumentException,
-			ClassNotFoundException, NoSuchMethodException,
-			InstantiationException, IllegalAccessException,
-			InvocationTargetException, ModuleException, IOException;
+//	/**
+//	 * Runs all TestSuits and TestCases found in the classpath under org.nightlabs.jfire.testsuite.
+//	 * This method can be called by clients and is called by the {@link JFireTestRunnerInvocation} on every startup.
+//	 */
+//	void runAllTestSuites() throws SecurityException, IllegalArgumentException,
+//			ClassNotFoundException, NoSuchMethodException,
+//			InstantiationException, IllegalAccessException,
+//			InvocationTargetException, ModuleException, IOException;
+//
+//	/**
+//	 * Runs TestCases found in the classpath under org.nightlabs.jfire.testsuite that belong to the given TestSuites.
+//	 */
+//	void runTestSuites(List<Class<? extends TestSuite>> testSuitesClasses)
+//			throws SecurityException, IllegalArgumentException,
+//			ClassNotFoundException, NoSuchMethodException,
+//			InstantiationException, IllegalAccessException,
+//			InvocationTargetException, ModuleException, IOException;
 
 
 
