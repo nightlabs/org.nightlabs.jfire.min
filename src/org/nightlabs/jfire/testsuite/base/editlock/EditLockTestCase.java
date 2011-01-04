@@ -53,7 +53,7 @@ import org.nightlabs.jfire.testsuite.TestCase;
  * 
  *  @author Fitas Amine - fitas [at] nightlabs [dot] de
  */
-@JFireTestSuite(JFireBaseEditLockTestSuite.class)
+
 public class EditLockTestCase extends TestCase{
 	Logger logger = Logger.getLogger(EditLockTestCase.class);	
 	public static final String USER_ID = "francois";

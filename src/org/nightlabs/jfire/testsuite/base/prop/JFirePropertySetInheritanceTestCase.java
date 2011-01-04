@@ -74,7 +74,7 @@ import org.nightlabs.timepattern.TimePatternSet;
  * @author Frederik Loeser <!-- frederik [AT] nightlabs [DOT] de -->
  * @author Fitas Amine - fitas [at] nightlabs [dot] de
  */
-@JFireTestSuite(JFirePropertySetTestSuite.class)
+
 public class JFirePropertySetInheritanceTestCase extends TestCase {
 
 	private static final Logger logger = Logger.getLogger(JFirePropertySetInheritanceTestCase.class);

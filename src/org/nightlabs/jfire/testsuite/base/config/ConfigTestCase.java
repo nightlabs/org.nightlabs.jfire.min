@@ -7,8 +7,6 @@ import java.util.Set;
 
 import javax.jdo.FetchPlan;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
 import org.junit.Test;
 import org.nightlabs.jdo.NLJDOHelper;
@@ -23,6 +21,7 @@ import org.nightlabs.jfire.config.id.ConfigID;
 import org.nightlabs.jfire.config.id.ConfigSetupID;
 import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.testsuite.JFireTestSuite;
+import org.nightlabs.jfire.testsuite.TestCase;
 
 
 /**
@@ -30,8 +29,8 @@ import org.nightlabs.jfire.testsuite.JFireTestSuite;
  * @author Fitas Amine - fitas [at] nightlabs [dot] de
  *
  */
-@JFireTestSuite(JFireBaseConfigTestSuite.class)
-public class ConfigTestCase extends TestCase{
+
+public class ConfigTestCase extends TestCase {
 	Logger logger = Logger.getLogger(ConfigTestCase.class);	
 	
 	@Test

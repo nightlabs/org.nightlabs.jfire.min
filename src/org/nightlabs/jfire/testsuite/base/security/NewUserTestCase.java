@@ -55,7 +55,7 @@ import org.nightlabs.jfire.testsuite.TestCase;
  * @author Fitas Amine - fitas [at] nightlabs [dot] de
  *
  */
-@JFireTestSuite(JFireBaseSecurityTestSuite.class)
+
 public class NewUserTestCase extends TestCase
 {
 	Logger logger = Logger.getLogger(NewUserTestCase.class);

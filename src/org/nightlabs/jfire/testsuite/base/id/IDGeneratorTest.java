@@ -9,8 +9,6 @@ import java.io.IOException;
 
 import javax.naming.InitialContext;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
 import org.junit.Test;
 import org.nightlabs.j2ee.LoginData;
@@ -20,6 +18,7 @@ import org.nightlabs.jfire.base.login.JFireLogin;
 import org.nightlabs.jfire.base.login.JFireSecurityConfiguration;
 import org.nightlabs.jfire.idgenerator.IDGeneratorHelperRemote;
 import org.nightlabs.jfire.testsuite.JFireTestSuite;
+import org.nightlabs.jfire.testsuite.TestCase;
 import org.nightlabs.util.CacheDirTag;
 import org.nightlabs.util.IOUtil;
 import org.nightlabs.util.ObservedProcess;
@@ -27,7 +26,7 @@ import org.nightlabs.util.ObservedProcess;
 /**
  * A TestCase that checks ID generation
  */
-@JFireTestSuite(JFireIDGeneratorTestSuite.class)
+
 public class IDGeneratorTest extends TestCase
 {
 	private static Logger logger = Logger.getLogger(IDGeneratorTest.class);

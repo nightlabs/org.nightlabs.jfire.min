@@ -17,6 +17,7 @@ import javax.jdo.JDOHelper;
 
 import org.apache.log4j.Logger;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.JFireEjb3Factory;
 import org.nightlabs.jfire.language.Language;
@@ -25,6 +26,7 @@ import org.nightlabs.jfire.language.LanguageManagerRemote;
 import org.nightlabs.jfire.language.LanguageSyncMode;
 import org.nightlabs.jfire.language.id.LanguageID;
 import org.nightlabs.jfire.security.SecurityReflector;
+import org.nightlabs.jfire.testsuite.JFireRemoteTestClassRunner;
 import org.nightlabs.jfire.testsuite.JFireTestSuite;
 import org.nightlabs.jfire.testsuite.TestCase;
 import org.nightlabs.language.LanguageCf;
@@ -36,7 +38,6 @@ import org.nightlabs.language.LanguageCf;
  * @author Fitas Amine - fitas [at] nightlabs [dot] de
  *
  */
-@JFireTestSuite(JFireBaseLanguageTestSuite.class)
 public class LanguageTestCase extends TestCase{
 
 	Logger logger = Logger.getLogger(LanguageTestCase.class);	
@@ -44,7 +45,8 @@ public class LanguageTestCase extends TestCase{
 
 
 	@Test
-	public void testAddNewLanguage() throws Exception{	
+	public void testAddNewLanguage() throws Exception{
+		logger.error("testAddNewLanguage invoked");
 		LanguageManagerRemote  lm = JFireEjb3Factory.getRemoteBean(LanguageManagerRemote.class, SecurityReflector.getInitialContextProperties());	
 		LanguageCf newLanguageCf = new LanguageCf("mak");
 		newLanguageCf.init(null);

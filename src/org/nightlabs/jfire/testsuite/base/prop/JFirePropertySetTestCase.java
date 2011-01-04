@@ -11,11 +11,12 @@ import java.util.Date;
 import javax.ejb.CreateException;
 import javax.jdo.FetchPlan;
 import javax.jdo.JDOHelper;
+import javax.jdo.PersistenceManager;
 import javax.naming.NamingException;
 
+import org.junit.Test;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.JFireEjb3Factory;
-import org.nightlabs.jfire.base.jdo.cache.Cache;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleManager;
 import org.nightlabs.jfire.idgenerator.IDGenerator;
 import org.nightlabs.jfire.organisation.Organisation;
@@ -35,7 +36,6 @@ import org.nightlabs.jfire.prop.id.PropertySetID;
 import org.nightlabs.jfire.prop.id.StructLocalID;
 import org.nightlabs.jfire.prop.structfield.SelectionStructField;
 import org.nightlabs.jfire.security.SecurityReflector;
-import org.nightlabs.jfire.testsuite.JFireTestSuite;
 import org.nightlabs.jfire.testsuite.PropertySetTestStruct;
 import org.nightlabs.jfire.testsuite.TestCase;
 
@@ -44,21 +44,8 @@ import org.nightlabs.jfire.testsuite.TestCase;
  * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] de -->
  *
  */
-@JFireTestSuite(JFirePropertySetTestSuite.class)
+
 public class JFirePropertySetTestCase extends TestCase {
-
-	/**
-	 *
-	 */
-	public JFirePropertySetTestCase() {
-	}
-
-	/**
-	 * @param name
-	 */
-	public JFirePropertySetTestCase(String name) {
-		super(name);
-	}
 
 	private static final String[] FETCH_GROUPS = new String[] {FetchPlan.DEFAULT, PropertySet.FETCH_GROUP_FULL_DATA};
 	private static final int FETCH_DEPTH = NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT;
@@ -78,6 +65,12 @@ public class JFirePropertySetTestCase extends TestCase {
 	protected void setUp() throws Exception {
 		if (isSetup)
 			return;
+
+		PersistenceManager pm = NLJDOHelper.getThreadPersistenceManager();
+		PropertySetTestStruct.getTestStruct(SecurityReflector.getUserDescriptor().getOrganisationID(), pm);
+		PropertySetInheritanceTestStruct.getInheritanceTestStructure(SecurityReflector.getUserDescriptor().getOrganisationID(), pm);	
+		pm.flush();
+		
 //		login = JFireTestLogin.getUserLogin(JFireTestLogin.USER_QUALIFIER_SERVER_ADMIN);
 //		login.login(); // TO DO shouldn't we logout??!!! Marco. I think we don't need to do anything! And we better should not!
 
@@ -157,11 +150,13 @@ public class JFirePropertySetTestCase extends TestCase {
 	/**
 	 * Test the fetching and exploding of a {@link PropertySet}
 	 */
+	@Test
 	public void testFetchPropertySet() throws Exception {
 		fetchPropertySet();
 	}
 
 
+	@Test
 	public void testSetTextDataField() {
 		PropertySet propertySet = fetchPropertySet();
 		TextDataField dataField = null;
@@ -183,6 +178,7 @@ public class JFirePropertySetTestCase extends TestCase {
 		assertEquals("Text field text differs", dataField.getText(), detachedDataField.getText());
 	}
 
+	@Test
 	public void testSetRegexDataField() {
 		PropertySet propertySet = fetchPropertySet();
 		RegexDataField dataField = null;
@@ -204,6 +200,7 @@ public class JFirePropertySetTestCase extends TestCase {
 		assertEquals("Regex field text differs", dataField.getText(), detachedDataField.getText());
 	}
 
+	@Test
 	public void testSetNumberDataField() {
 		PropertySet propertySet = fetchPropertySet();
 		NumberDataField dataField = null;
@@ -225,6 +222,7 @@ public class JFirePropertySetTestCase extends TestCase {
 		assertEquals("Number field numbers differ", dataField.getIntValue(), detachedDataField.getIntValue());
 	}
 
+	@Test
 	public void testSetPhoneNumberDataField() {
 		String cCode = "+49";
 		String aCode = "(0)761";
@@ -256,6 +254,7 @@ public class JFirePropertySetTestCase extends TestCase {
 		assertEquals("Phone number field local number differs", lNumber, detachedField.getLocalNumber());
 	}
 
+	@Test
 	public void testSelectionDataField() {
 
 		PropertySet propertySet = fetchPropertySet();
@@ -279,6 +278,7 @@ public class JFirePropertySetTestCase extends TestCase {
 		assertEquals("Selection field selection differs", dataField.getStructFieldValueID(), detachedDataField.getStructFieldValueID());
 	}
 
+	@Test
 	public void testDateDataField() {
 		Date date = new Date();
 		PropertySet propertySet = fetchPropertySet();
@@ -305,6 +305,7 @@ public class JFirePropertySetTestCase extends TestCase {
 		assertEquals("Date field date differs", dataField.getDate(), detachedDataField.getDate());
 	}
 
+	@Test
 	public void testImageDataField() {
 		PropertySet propertySet = fetchPropertySet();
 		try {

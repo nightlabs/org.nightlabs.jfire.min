@@ -5,8 +5,6 @@ import java.util.Set;
 
 import javax.jdo.FetchPlan;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
 import org.junit.Test;
 import org.nightlabs.jdo.NLJDOHelper;
@@ -15,6 +13,7 @@ import org.nightlabs.jfire.base.JFireEjb3Factory;
 import org.nightlabs.jfire.idgenerator.IDGenerator;
 import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.testsuite.JFireTestSuite;
+import org.nightlabs.jfire.testsuite.TestCase;
 import org.nightlabs.jfire.workstation.Workstation;
 import org.nightlabs.jfire.workstation.WorkstationManagerRemote;
 import org.nightlabs.jfire.workstation.id.WorkstationID;
@@ -26,8 +25,8 @@ import org.nightlabs.jfire.workstation.search.WorkstationQuery;
  * @author Fitas Amine - fitas [at] nightlabs [dot] de
  *
  */
-@JFireTestSuite(JFireBaseWorkstationTestSuite.class)
-public class WorkstationTestCase extends TestCase{
+
+public class WorkstationTestCase extends TestCase {
 
 	Logger logger = Logger.getLogger(WorkstationTestCase.class);	
 	

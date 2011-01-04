@@ -18,8 +18,6 @@ import javax.jdo.FetchPlan;
 import javax.jdo.JDOHelper;
 import javax.security.auth.login.LoginException;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
 import org.junit.Test;
 import org.nightlabs.jdo.NLJDOHelper;
@@ -45,6 +43,7 @@ import org.nightlabs.jfire.security.id.UserLocalID;
 import org.nightlabs.jfire.security.id.UserSecurityGroupID;
 import org.nightlabs.jfire.security.search.UserQuery;
 import org.nightlabs.jfire.testsuite.JFireTestSuite;
+import org.nightlabs.jfire.testsuite.TestCase;
 
 
 /**
@@ -52,7 +51,7 @@ import org.nightlabs.jfire.testsuite.JFireTestSuite;
  * @author Fitas Amine - fitas [at] nightlabs [dot] de
  *
  */
-@JFireTestSuite(JFireBaseSecurityTestSuite.class)
+
 public class UserSecurityGroupTestCase extends TestCase {
 
 	Logger logger = Logger.getLogger(UserSecurityGroupTestCase.class);
@@ -65,18 +64,6 @@ public class UserSecurityGroupTestCase extends TestCase {
 
 
 	private static ThreadLocal<UserSecurityGroupID> newUserSecurityGroupID = new ThreadLocal<UserSecurityGroupID>();
-
-
-	public UserSecurityGroupTestCase() {
-		this("Testing the functionality around usergroups.");
-	}
-
-	/**
-	 * @param name
-	 */
-	public UserSecurityGroupTestCase(String name) {
-		super(name);
-	}
 
 	@Test
 	public void testCreateUserGroup() throws Exception {
