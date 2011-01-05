@@ -82,7 +82,7 @@ public class JFireTestLogin
 	public static LoginData getUserLoginData(final String userQualifier) throws ModuleException, IOException {
 		Properties properties = JFireTestSuiteEAR.getProperties(PROP_TEST_USER_PREFIX + "." + userQualifier + ".");
 		properties.setProperty(JFireLogin.PROP_ORGANISATION_ID, SecurityReflector.getUserDescriptor().getOrganisationID());
-		return new JFireLogin(properties).getLoginData();
+		return new JFireLogin(properties, true).getLoginData();
 	}
 
 	/**
