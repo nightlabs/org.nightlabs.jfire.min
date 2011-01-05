@@ -26,12 +26,9 @@
 
 package org.nightlabs.jfire.base.login;
 
-import java.util.Hashtable;
 import java.util.Properties;
 
-import javax.naming.Context;
 import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import javax.security.auth.login.LoginContext;
 import javax.security.auth.login.LoginException;
 
@@ -102,14 +99,30 @@ public class JFireLogin
 	private LoginData loginData;
 
 	/**
+	 * Creates a new {@link JFireLogin}. The values like username and password
+	 * will be taken from the given Properties, see the class documentation for
+	 * more details.
+	 * <p>
+	 * Note, that values for provider-url and initial-context-factory will not
+	 * be automatically created from an InitialContext.
+	 * </p>
+	 * 
+	 * @param properties The login configuration
+	 */
+	public JFireLogin(Properties properties) {
+		this(properties, false);
+	}
+	
+	/**
 	 * Creates a new {@link JFireLogin}.
 	 * The values like username and password will
 	 * be taken from the given Properties,
 	 * see the class documentation for more details.
 	 *
-	 * @param loginProperties The login configuration, this can also be a pr
+	 * @param loginProperties The login configuration
+	 * @param createMissingValuesFromInitialContext Whether to fill missing parameters from an initial context
 	 */
-	public JFireLogin(Properties properties)
+	public JFireLogin(Properties properties, boolean createMissingValuesFromInitialContext)
 	{
 		Properties loginProps = org.nightlabs.util.Properties.getProperties(properties, LOGIN_PREFIX);
 		String organisationID, userID, password;
@@ -136,21 +149,11 @@ public class JFireLogin
 			}
 		}
 
-		// set default values if login information is incomplete
-		if (loginData.getProviderURL() == null || loginData.getProviderURL().length() == 0) {
-			try {
-				InitialContext initContext = new InitialContext();
-				Hashtable<?,?> initialContextProperties = initContext.getEnvironment();
-				// TODO does this really work? Alternatively, we might read it from a registry - in the server, this registry exists already (but this is a client lib)...
-				loginData.setProviderURL((String) initialContextProperties.get(Context.PROVIDER_URL));
-				loginData.setInitialContextFactory((String) initialContextProperties.get(Context.INITIAL_CONTEXT_FACTORY));
-				initContext.close();
-			} catch (NamingException e) {
-				throw new RuntimeException("Could not retrieve the missing connection information " +
-						"via an initial context!", e);
-			}
+		if (createMissingValuesFromInitialContext) {
+			// set default values if login information is incomplete
+			loginData.setConnectionParametersFromInitialContext();
 		}
-
+		
 		if (loginData.getSecurityProtocol() == null || loginData.getSecurityProtocol().length() == 0)
 			loginData.setSecurityProtocol(LoginData.DEFAULT_SECURITY_PROTOCOL);
 	}
