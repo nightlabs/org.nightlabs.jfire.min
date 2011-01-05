@@ -8,6 +8,7 @@ import javax.security.auth.login.LoginException;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.junit.Test;
 import org.nightlabs.j2ee.LoginData;
+import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.JFireEjb3Factory;
 import org.nightlabs.jfire.base.login.JFireLogin;
 import org.nightlabs.jfire.security.JFireSecurityManagerRemote;
@@ -22,6 +23,11 @@ public class LoginTest extends TestCase
 {
 	public LoginTest() { }
 
+	@Override
+	protected void setUpBeforeClass() throws Exception {
+		JFireTestLogin.checkCreateLoginsAndRegisterInAuthorities(NLJDOHelper.getThreadPersistenceManager());
+	}
+	
 	@Test
 	public void testCorrectLogin()
 	throws Exception
@@ -35,8 +41,7 @@ public class LoginTest extends TestCase
 	public void testCorrectLoginManyTimes_onlyLogin()
 	throws Exception
 	{
-		fail("This is a fail test");
-		for (int i = 0; i < 10000; ++i) {
+		for (int i = 0; i < 1000; ++i) {
 			JFireLogin login = new JFireLogin("chezfrancois.jfire.org", "francois", "test");
 			login.login();
 			login.logout();

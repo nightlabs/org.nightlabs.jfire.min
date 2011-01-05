@@ -3,8 +3,8 @@ package org.nightlabs.jfire.testsuite.jdo;
 import org.apache.log4j.Logger;
 import org.junit.Test;
 import org.nightlabs.j2ee.LoginData;
+import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.JFireEjb3Factory;
-import org.nightlabs.jfire.testsuite.JFireTestSuite;
 import org.nightlabs.jfire.testsuite.TestCase;
 import org.nightlabs.jfire.testsuite.login.JFireTestLogin;
 
@@ -16,6 +16,12 @@ public class JDOTestCase extends TestCase
 {
 	Logger logger = Logger.getLogger(JDOTestCase.class);
 
+	
+	@Override
+	protected void setUpBeforeClass() throws Exception {
+		JFireTestLogin.checkCreateLoginsAndRegisterInAuthorities(NLJDOHelper.getThreadPersistenceManager());
+	}
+	
 	@Override
 	protected void setUp() throws Exception
 	{
