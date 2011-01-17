@@ -384,6 +384,22 @@ implements JFireTestManagerRemote, JFireTestManagerLocal
 		}
 	}
 
+	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+	@Override
+	public String evaluateCanRunTestInNestedTransaction(TestCase testCase) 
+	throws Exception
+	{
+		logger.info("evaluateCanRunTestInNestedTransaction: " + testCase.toString());
+		PersistenceManager pm = createPersistenceManager();
+		try {
+			return testCase.canRunTest(pm);
+		} finally {
+			pm.close();
+		}
+	}
+
+	
+	
 	/* (non-Javadoc)
 	 * @see org.nightlabs.jfire.testsuite.JFireTestManagerLocal#runTestInNestedTransaction(junit.framework.Test, junit.framework.TestResult)
 	 */

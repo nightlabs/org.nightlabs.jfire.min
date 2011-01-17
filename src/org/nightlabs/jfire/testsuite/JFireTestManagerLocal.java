@@ -41,6 +41,8 @@ public interface JFireTestManagerLocal {
 
 
 
+	String evaluateCanRunTestInNestedTransaction(TestCase testCase) throws Exception;
+	
 	String evaluateCanRunTestsInNestedTransaction(TestSuite testSuite) throws Exception;
 
 	void runTestInNestedTransaction(Test test, TestResult result) throws Exception;

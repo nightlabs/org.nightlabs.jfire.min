@@ -7,9 +7,12 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.jdo.PersistenceManager;
+
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.junit.runner.RunWith;
 import org.nightlabs.jfire.base.JFireEjb3Factory;
+import org.nightlabs.jfire.testsuite.TestSuite.Status;
 
 
 /**
@@ -40,7 +43,8 @@ extends junit.framework.TestCase
 	private static ThreadLocal<Integer> testMethodsLeft = new ThreadLocal<Integer>();
 	// a useful local thread Map where it s possible to store ObjectIDs used in some testcases
 	private static ThreadLocal<Map<String,Object>> testCaseContextObjectsMap = new ThreadLocal<Map<String,Object>>();
-
+	private static ThreadLocal<String> skipReason = new ThreadLocal<String>();
+	
 	
 	public TestCase()
 	{
@@ -53,6 +57,12 @@ extends junit.framework.TestCase
 	}
 
 
+	
+	protected String canRunTest(PersistenceManager pm) throws Exception
+	{
+		return null;	
+	}
+	
 	/**
 	 * the method is called once upon initialization of each Test case
 	 * 
@@ -134,9 +144,20 @@ extends junit.framework.TestCase
 	{
 		Throwable exception= null;
 		JFireTestManagerLocal m = JFireEjb3Factory.getLocalBean(JFireTestManagerLocal.class);
+		if (skipReason.get()!= null) {
+			fail(skipReason.get());
+		}
 		if(initSetUpBeforeClass())
+		{
+			try {
+				skipReason.set(m.evaluateCanRunTestInNestedTransaction(this));
+			} catch (Exception e) {
+				skipReason.set(e.getClass().getName() + ": " + e.getMessage());
+			}
+			if (skipReason.get()!= null) 
+				fail(skipReason.get());
 			m.runTestInNestedTransaction_setUpBeforeClass(this);
-		m.runTestInNestedTransaction_setUp(this);
+		}	
 		try {
 			m.runTestInNestedTransaction_runTest(this);
 		} catch (Throwable running) {
