@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 import javax.jdo.FetchPlan;
+import javax.jdo.PersistenceManager;
 
 import org.apache.log4j.Logger;
 import org.junit.Test;
@@ -32,6 +33,19 @@ import org.nightlabs.jfire.testsuite.TestCase;
 
 public class ConfigTestCase extends TestCase {
 	Logger logger = Logger.getLogger(ConfigTestCase.class);	
+	
+	
+	@Override
+	protected String canRunTest(PersistenceManager pm) throws Exception
+	{
+		String className = "org.nightlabs.jfire.editlock.EditLock";
+		try {
+			Class.forName(className);
+		} catch (ClassNotFoundException x) {
+			return "The module JFireBase seems not to be installed (Class \"" + className + "\" could not be found)!";
+		}
+		return null;
+	}
 	
 	@Test
 	public void testWorkstationConfigSetup() throws Exception	

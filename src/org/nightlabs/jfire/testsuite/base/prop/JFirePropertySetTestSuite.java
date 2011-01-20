@@ -3,35 +3,15 @@
  */
 package org.nightlabs.jfire.testsuite.base.prop;
 
-import javax.jdo.PersistenceManager;
-
-import junit.framework.TestCase;
-
-import org.nightlabs.jfire.security.SecurityReflector;
-import org.nightlabs.jfire.testsuite.PropertySetTestStruct;
-import org.nightlabs.jfire.testsuite.TestSuite;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
+import org.junit.runners.Suite.SuiteClasses;
 
 /**
  * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] de -->
  *
  */
-public class JFirePropertySetTestSuite extends TestSuite {
-
-	/**
-	 * @param classes
-	 */
-	public JFirePropertySetTestSuite(Class<? extends TestCase>... classes) {
-		super(classes);
-	}
-
-	/** {@inheritDoc}
-	 */
-	@Override
-	public String canRunTests(PersistenceManager pm) throws Exception {
-		PropertySetTestStruct.getTestStruct(SecurityReflector.getUserDescriptor().getOrganisationID(), pm);
-		PropertySetInheritanceTestStruct.getInheritanceTestStructure(SecurityReflector.getUserDescriptor().getOrganisationID(), pm);	
-		pm.flush();
-		return null;
-	}
-
+@RunWith(Suite.class)
+@SuiteClasses({JFirePropertySetTestCase.class, JFirePropertySetInheritanceTestCase.class}) 
+public class JFirePropertySetTestSuite{
 }

@@ -7,6 +7,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 
+import javax.jdo.PersistenceManager;
 import javax.naming.InitialContext;
 
 import org.apache.log4j.Logger;
@@ -17,7 +18,6 @@ import org.nightlabs.jfire.base.InvokeUtil;
 import org.nightlabs.jfire.base.login.JFireLogin;
 import org.nightlabs.jfire.base.login.JFireSecurityConfiguration;
 import org.nightlabs.jfire.idgenerator.IDGeneratorHelperRemote;
-import org.nightlabs.jfire.testsuite.JFireTestSuite;
 import org.nightlabs.jfire.testsuite.TestCase;
 import org.nightlabs.util.CacheDirTag;
 import org.nightlabs.util.IOUtil;
@@ -33,6 +33,19 @@ public class IDGeneratorTest extends TestCase
 
 	private static boolean SKIPPED = false;
 
+	
+	@Override
+	public String canRunTest(PersistenceManager pm) throws Exception {
+		String className = "org.nightlabs.jfire.security.User";
+		try {
+			Class.forName(className);
+		} catch (ClassNotFoundException x) {
+			return "The module JFireBase seems not to be installed (Class \"" + className + "\" could not be found)!";
+		}
+		return null;
+	}
+
+	
 	private static void populateClasspath(File dir, StringBuilder classpath)
 	{
 		for (File child : dir.listFiles()) {

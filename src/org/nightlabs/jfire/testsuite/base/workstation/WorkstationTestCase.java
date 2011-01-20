@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Set;
 
 import javax.jdo.FetchPlan;
+import javax.jdo.PersistenceManager;
 
 import org.apache.log4j.Logger;
 import org.junit.Test;
@@ -12,7 +13,6 @@ import org.nightlabs.jdo.query.QueryCollection;
 import org.nightlabs.jfire.base.JFireEjb3Factory;
 import org.nightlabs.jfire.idgenerator.IDGenerator;
 import org.nightlabs.jfire.security.SecurityReflector;
-import org.nightlabs.jfire.testsuite.JFireTestSuite;
 import org.nightlabs.jfire.testsuite.TestCase;
 import org.nightlabs.jfire.workstation.Workstation;
 import org.nightlabs.jfire.workstation.WorkstationManagerRemote;
@@ -29,6 +29,17 @@ import org.nightlabs.jfire.workstation.search.WorkstationQuery;
 public class WorkstationTestCase extends TestCase {
 
 	Logger logger = Logger.getLogger(WorkstationTestCase.class);	
+	
+	@Override
+	public String canRunTest(PersistenceManager pm) throws Exception {
+		String className = "org.nightlabs.jfire.workstation.Workstation";
+		try {
+			Class.forName(className);
+		} catch (ClassNotFoundException x) {
+			return "The module JFireBase seems not to be installed (Class \"" + className + "\" could not be found)!";
+		}
+		return null;
+	}
 	
 	//	WorkstationManagerRemote wm = JFireEjb3Factory.getRemoteBean(WorkstationManagerRemote.class, SecurityReflector.getInitialContextProperties());
 	//	Workstation res = wm.storeWorkstation(workstation, get, fetchGroups, maxFetchDepth);

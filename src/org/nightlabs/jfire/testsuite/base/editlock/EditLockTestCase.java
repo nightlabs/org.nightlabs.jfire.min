@@ -8,6 +8,7 @@ import java.util.Set;
 
 import javax.jdo.FetchPlan;
 import javax.jdo.JDOHelper;
+import javax.jdo.PersistenceManager;
 import javax.security.auth.login.LoginException;
 
 import org.apache.log4j.Logger;
@@ -66,6 +67,17 @@ public class EditLockTestCase extends TestCase{
 	};	
 	
 	private static String NEWOBJECT_EDITLOCK = "NEWOBJECTFOREDITLOCK";
+	
+	@Override
+	public String canRunTest(PersistenceManager pm) throws Exception {
+		String className = "org.nightlabs.jfire.editlock.EditLock";
+		try {
+			Class.forName(className);
+		} catch (ClassNotFoundException x) {
+			return "The module JFireBase seems not to be installed (Class \"" + className + "\" could not be found)!";
+		}
+		return null;
+	}
 	
     protected void setUpBeforeClass() throws Exception
     {

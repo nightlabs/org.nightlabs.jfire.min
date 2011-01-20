@@ -14,6 +14,7 @@ import java.util.Locale;
 
 import javax.jdo.FetchPlan;
 import javax.jdo.JDOHelper;
+import javax.jdo.PersistenceManager;
 
 import org.apache.log4j.Logger;
 import org.junit.Test;
@@ -42,7 +43,17 @@ public class LanguageTestCase extends TestCase{
 
 	Logger logger = Logger.getLogger(LanguageTestCase.class);	
 	private static String NEW_LANGUAGE = "NEWLANGUAGE";
-
+	
+	@Override
+	public String canRunTest(PersistenceManager pm) throws Exception {
+		String className = "org.nightlabs.jfire.language.Language";
+		try {
+			Class.forName(className);
+		} catch (ClassNotFoundException x) {
+			return "The module JFireBase seems not to be installed (Class \"" + className + "\" could not be found)!";
+		}
+		return null;
+	}
 
 	@Test
 	public void testAddNewLanguage() throws Exception{

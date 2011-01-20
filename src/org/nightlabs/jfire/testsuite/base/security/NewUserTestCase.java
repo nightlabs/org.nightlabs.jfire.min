@@ -18,6 +18,7 @@ import java.util.Set;
 
 import javax.jdo.FetchPlan;
 import javax.jdo.JDOHelper;
+import javax.jdo.PersistenceManager;
 import javax.security.auth.login.LoginException;
 
 import org.apache.log4j.Logger;
@@ -71,6 +72,18 @@ public class NewUserTestCase extends TestCase
 		PropertySet.FETCH_GROUP_FULL_DATA,
 		IExpression.FETCH_GROUP_IEXPRESSION_FULL_DATA};
 
+	
+	@Override
+	public String canRunTest(PersistenceManager pm) throws Exception {
+		String className = "org.nightlabs.jfire.security.User";
+		try {
+			Class.forName(className);
+		} catch (ClassNotFoundException x) {
+			return "The module JFireBase seems not to be installed (Class \"" + className + "\" could not be found)!";
+		}
+		return null;
+	}
+	
 	// a simple function to generate a random birthday date between 1955 until 1985
 	private Date getRandomBirthDayDate()
 	{

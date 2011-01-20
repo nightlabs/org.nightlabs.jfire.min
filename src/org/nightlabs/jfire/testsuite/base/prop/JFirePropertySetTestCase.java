@@ -52,7 +52,6 @@ public class JFirePropertySetTestCase extends TestCase {
 
 	private PropertySetID propertySetID;
 //	private JFireLogin login;
-	private boolean isSetup = false;
 
 
 	protected PropertyManagerRemote getPropertyManager() throws RemoteException, CreateException, NamingException {
@@ -62,9 +61,7 @@ public class JFirePropertySetTestCase extends TestCase {
 	}
 
 	@Override
-	protected void setUp() throws Exception {
-		if (isSetup)
-			return;
+	protected void setUpBeforeClass() throws Exception {
 
 		PersistenceManager pm = NLJDOHelper.getThreadPersistenceManager();
 		PropertySetTestStruct.getTestStruct(SecurityReflector.getUserDescriptor().getOrganisationID(), pm);
@@ -95,8 +92,6 @@ public class JFirePropertySetTestCase extends TestCase {
 //				+ '-' +
 //				Integer.toString((int) (Math.random() * Integer.parseInt("zzzz", 36)), 36)
 //		);
-		super.setUp();
-		isSetup = true;
 	}
 
 	@Override
