@@ -42,7 +42,7 @@ import org.nightlabs.jfire.testsuite.TestCase;
 
 /**
  * @author Alexander Bieber <!-- alex [AT] nightlabs [DOT] de -->
- *
+ * @author Fitas Amine - fitas [at] nightlabs [dot] de
  */
 
 public class JFirePropertySetTestCase extends TestCase {
@@ -50,7 +50,8 @@ public class JFirePropertySetTestCase extends TestCase {
 	private static final String[] FETCH_GROUPS = new String[] {FetchPlan.DEFAULT, PropertySet.FETCH_GROUP_FULL_DATA};
 	private static final int FETCH_DEPTH = NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT;
 
-	private PropertySetID propertySetID;
+	private static String NEW_PROPERTY_ID = "NEWPROPERTY";
+	
 //	private JFireLogin login;
 
 
@@ -61,13 +62,15 @@ public class JFirePropertySetTestCase extends TestCase {
 	}
 
 	@Override
-	protected void setUpBeforeClass() throws Exception {
-
-		PersistenceManager pm = NLJDOHelper.getThreadPersistenceManager();
+	public String canRunTest(PersistenceManager pm) throws Exception {
 		PropertySetTestStruct.getTestStruct(SecurityReflector.getUserDescriptor().getOrganisationID(), pm);
 		PropertySetInheritanceTestStruct.getInheritanceTestStructure(SecurityReflector.getUserDescriptor().getOrganisationID(), pm);	
 		pm.flush();
-		
+		return null;
+	}
+	
+	@Override
+	protected void setUpBeforeClass() throws Exception {		
 //		login = JFireTestLogin.getUserLogin(JFireTestLogin.USER_QUALIFIER_SERVER_ADMIN);
 //		login.login(); // TO DO shouldn't we logout??!!! Marco. I think we don't need to do anything! And we better should not!
 
@@ -75,8 +78,8 @@ public class JFirePropertySetTestCase extends TestCase {
 				IDGenerator.getOrganisationID(), IDGenerator.nextID(PropertySet.class),
 				Organisation.DEV_ORGANISATION_ID,
 				PropertySetTestStruct.class.getName(), Struct.DEFAULT_SCOPE, StructLocal.DEFAULT_SCOPE);
-		propertySet = getPropertyManager().storePropertySet(propertySet, true, FETCH_GROUPS, FETCH_DEPTH);
-		propertySetID = (PropertySetID) JDOHelper.getObjectId(propertySet);
+		propertySet = getPropertyManager().storePropertySet(propertySet, true, FETCH_GROUPS, FETCH_DEPTH);		
+		setTestCaseContextObject(NEW_PROPERTY_ID, (PropertySetID) JDOHelper.getObjectId(propertySet));
 		// FIXME what is the intended behaviour here? Marc
 		//Cache.setServerMode(true);
 		String className = System.getProperty(JDOLifecycleManager.PROPERTY_KEY_JDO_LIFECYCLE_MANAGER);
@@ -106,6 +109,7 @@ public class JFirePropertySetTestCase extends TestCase {
 	 */
 	private PropertySet fetchPropertySet() {
 		PropertySet propertySet;
+		PropertySetID propertySetID = (PropertySetID)getTestCaseContextObject(NEW_PROPERTY_ID);
 		try {
 			propertySet = getPropertyManager().getPropertySet(propertySetID, FETCH_GROUPS, FETCH_DEPTH);
 		} catch (Exception e) {
@@ -126,12 +130,6 @@ public class JFirePropertySetTestCase extends TestCase {
 					NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT
 			);
 
-//			StructLocal structLocal = StructLocalDAO.sharedInstance().getStructLocal(
-//					propertySet.getStructLocalLinkClass(),
-//					propertySet.getStructScope(),
-//					propertySet.getStructLocalScope(),
-//					new NullProgressMonitor()
-//			);
 			propertySet.inflate(structLocal);
 			
 			// REV Alex: Here it should be checked, if the structures are equal after inflation
