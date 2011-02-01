@@ -573,6 +573,7 @@ implements JFireTestManagerRemote, JFireTestManagerLocal
 	public boolean isJDOObjectExisting(ObjectID objectID) {
 		PersistenceManager pm = createPersistenceManager();
 		try {
+			pm.refreshAll();
 			pm.getObjectById(objectID);
 			return true;
 		} catch (JDOObjectNotFoundException e) {
