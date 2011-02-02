@@ -157,7 +157,8 @@ extends junit.framework.TestCase
 			if (skipReason.get()!= null) 
 				fail(skipReason.get());
 			m.runTestInNestedTransaction_setUpBeforeClass(this);
-		}	
+		}
+		m.runTestInNestedTransaction_setUp(this);
 		try {
 			m.runTestInNestedTransaction_runTest(this);
 		} catch (Throwable running) {
