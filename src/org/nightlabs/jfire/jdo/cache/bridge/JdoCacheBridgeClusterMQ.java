@@ -30,34 +30,6 @@ public class JdoCacheBridgeClusterMQ extends JdoCacheBridgeDefault
 {
 	private Logger logger = LoggerFactory.getLogger(JdoCacheBridgeClusterMQ.class);
 
-//	protected static class AuthCallbackHandler implements CallbackHandler
-//	{
-//		private String userName;
-//		private char[] password;
-//
-//		public AuthCallbackHandler(String userName, char[] password) {
-//			this.userName = userName;
-//			this.password = password;
-//		}
-//
-//		@Override
-//		public void handle(Callback[] callbacks)
-//		throws IOException,
-//		UnsupportedCallbackException
-//		{
-//			for (int i = 0; i < callbacks.length; ++i) {
-//				Callback cb = callbacks[i];
-//				if (cb instanceof NameCallback) {
-//					((NameCallback)cb).setName(userName);
-//				}
-//				else if (cb instanceof PasswordCallback) {
-//					((PasswordCallback)cb).setPassword(password);
-//				}
-//				else throw new UnsupportedCallbackException(cb);
-//			}
-//		}
-//	}
-
 	protected static final String TOPIC_JNDI = "topic/jfire/JFireBaseBean/RawDirtyObjectIDs";
 
 	private Thread jmsConsumerThread;
@@ -243,91 +215,10 @@ public class JdoCacheBridgeClusterMQ extends JdoCacheBridgeDefault
 					}
 					stopwatch.stop("05._send");
 
-//					JFireServerLocalLoginManager m = JFireServerLocalLoginManager.getJFireServerLocalLoginManager(initialContext);
-//
-//					AuthCallbackHandler mqCallbackHandler = new AuthCallbackHandler(
-//							JFireServerLocalLoginManager.PRINCIPAL_LOCALQUEUEWRITER,
-//							m.getPrincipal(JFireServerLocalLoginManager.PRINCIPAL_LOCALQUEUEWRITER).getPassword().toCharArray());
-//
-//					LoginContext loginContext = new LoginContext("jfireLocal", mqCallbackHandler);
-//					loginContext.login();
-//					try {
-//						stopwatch.start("00.preparePublisher");
-//						TopicConnection connection = createTopicConnection(initialContext);
-////						connection.start(); // not necessary for sending messages?!
-//						TopicSession session = connection.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
-//						Topic topic = (Topic)initialContext.lookup(TOPIC_JNDI);
-//						TopicPublisher publisher = session.createPublisher(topic);
-//						stopwatch.stop("00.preparePublisher");
-
-//						stopwatch.start("10.createMessage");
-//						Message message = session.createObjectMessage(event);
-//						stopwatch.stop("10.createMessage");
-//
-//						stopwatch.start("20.publish");
-//						publisher.publish(message);
-//						stopwatch.stop("20.publish");
-//
-//						stopwatch.start("30.cleanup");
-////						connection.stop();
-//						publisher.close();
-//						session.close();
-//						connection.close();
-//						stopwatch.stop("30.cleanup");
-
-						logger.debug(
-								"localDirtyListener.notifyDirtyObjectIDs: myCacheManagerFactoryID = {} {}",
-								new Object[] { myCacheManagerFactoryID, stopwatch.createHumanReport(true) }
-						);
-
-//						if (enableXA) {
-//							// TODO "java:/JmsXA" should be configurable?!
-//							ConnectionFactory connectionFactory = (ConnectionFactory) initialContext.lookup("java:/JmsXA");
-//
-//							Connection connection = null;
-//							Session session = null;
-//							MessageProducer sender = null;
-//
-//							try {
-//								Queue queue = (Queue) initialContext.lookup(queueJNDIName);
-//								connection = connectionFactory.createConnection();
-//								session = connection.createSession(true, Session.AUTO_ACKNOWLEDGE);
-//								sender = session.createProducer(queue);
-//
-//								Message message = session.createObjectMessage(envelope);
-//								sender.send(message);
-//							} finally {
-//								if (sender != null) try { sender.close(); } catch (Exception ignore) { }
-//								if (session != null) try { session.close(); } catch (Exception ignore) { }
-//								if (connection != null) try { connection.close(); } catch (Exception ignore) { }
-//							}
-//						}
-//						else {
-//							QueueConnectionFactory connectionFactory = JMSConnectionFactoryLookup.lookupQueueConnectionFactory(initialContext);
-//
-//							QueueConnection connection = null;
-//							QueueSession session = null;
-//							QueueSender sender = null;
-//
-//							try {
-//								connection = connectionFactory.createQueueConnection();
-//								session = connection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
-//								//					session = connection.createQueueSession(true, Session.AUTO_ACKNOWLEDGE); // transacted = true
-//								Queue queue = (Queue) initialContext.lookup(queueJNDIName);
-//								sender = session.createSender(queue);
-//
-//								Message message = session.createObjectMessage(envelope);
-//								sender.send(message);
-//							} finally {
-//								if (sender != null) try { sender.close(); } catch (Exception ignore) { }
-//								if (session != null) try { session.close(); } catch (Exception ignore) { }
-//								if (connection != null) try { connection.close(); } catch (Exception ignore) { }
-//							}
-//						}
-
-//					} finally {
-//						loginContext.logout();
-//					}
+					logger.debug(
+							"localDirtyListener.notifyDirtyObjectIDs: myCacheManagerFactoryID = {} {}",
+							new Object[] { myCacheManagerFactoryID, stopwatch.createHumanReport(true) }
+					);
 
 				} finally {
 					localContext.close();
