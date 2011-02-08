@@ -7,7 +7,7 @@ http://www.mysql.com/downloads/api-jdbc-stable.html
 
 <datasources>
   <local-tx-datasource>
-    <jndi-name>JFireJBossMQDS</jndi-name>
+    <jndi-name>DefaultDS</jndi-name>
     <connection-url>${databaseURL}</connection-url>
     <driver-class>${databaseDriverName_localTx}</driver-class>
     <user-name>${databaseUserName}</user-name>

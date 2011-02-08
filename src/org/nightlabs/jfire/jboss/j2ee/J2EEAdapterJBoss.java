@@ -26,6 +26,7 @@
 
 package org.nightlabs.jfire.jboss.j2ee;
 
+import java.io.File;
 import java.lang.reflect.Method;
 import java.rmi.Remote;
 import java.util.Collection;
@@ -54,6 +55,7 @@ import org.nightlabs.jfire.jboss.authentication.JFireJBossLoginContext;
 import org.nightlabs.jfire.security.ISecurityReflector;
 import org.nightlabs.jfire.servermanager.j2ee.AbstractJ2EEAdapter;
 import org.nightlabs.jfire.servermanager.j2ee.J2EEAdapterException;
+import org.nightlabs.jfire.servermanager.j2ee.JMSConnection;
 import org.nightlabs.jfire.servermanager.j2ee.ServerStartNotificationListener;
 
 /**
@@ -241,5 +243,37 @@ public class J2EEAdapterJBoss extends AbstractJ2EEAdapter
 		}
 
 		return result;
+	}
+
+	@Override
+	public JMSConnection createJMSConnection(boolean transacted, int acknowledgeMode) throws J2EEAdapterException {
+		return new JMSConnectionJBoss(this, transacted, acknowledgeMode);
+	}
+
+	private static Boolean inCluster = null; // we can cache this statically, because we definitely have to restart the JVM to change this situation.
+
+	@Override
+	public boolean isInCluster() {
+		if (inCluster == null) {
+			String sysPropKey = "jboss.server.home.dir";
+			String serverHomeDirStr = System.getProperty(sysPropKey);
+			if (serverHomeDirStr == null)
+				throw new IllegalStateException("System property \"" + sysPropKey + "\" does not exist!!!");
+
+			File serverHomeDir = new File(serverHomeDirStr);
+			if (!serverHomeDir.isDirectory())
+				throw new IllegalStateException("System property \"" + sysPropKey + "\" points to a non-existent directory: " + serverHomeDir.getAbsolutePath());
+
+			File deployDir = new File(serverHomeDir, "deploy");
+			if (!deployDir.isDirectory())
+				throw new IllegalStateException("Very strange - the deploy directory does not exist: " + deployDir.getAbsolutePath());
+
+			File deployHADir = new File(serverHomeDir, "deploy-hasingleton");
+			inCluster = deployHADir.exists();
+
+			System.out.println("isInCluster: " + inCluster);
+		}
+
+		return inCluster;
 	}
 }

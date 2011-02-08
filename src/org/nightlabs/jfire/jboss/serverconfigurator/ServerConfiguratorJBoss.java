@@ -90,7 +90,7 @@ public class ServerConfiguratorJBoss
 	 * Used to mark the files modified by this server configurator.
 	 */
 	public static final String ModificationMarker = "!!!ModifiedByJFire!!!";
-	
+
 	private static final String HTTP_INVOKER_SERVICE_HTTP_CONNECTORS =
 		"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n " +
 		"<root>\n <!-- "+ModificationMarker+" -->\n " +
@@ -343,18 +343,18 @@ public class ServerConfiguratorJBoss
 		"        <url-pattern>/SSLEjb3ServerInvokerServlet/*</url-pattern>\n" +
 		"    </servlet-mapping>\n" +
 		"</root>";
-	
-	
+
+
 	/**
-	 * the class names of JFire's JBoss custom interceptors 
+	 * the class names of JFire's JBoss custom interceptors
 	 */
 	private static final String JFIRE_AUTHENTICATION_INTERCEPTOR = "org.nightlabs.jfire.jboss.ejb3.JFireEjb3AuthenticationInterceptorFactory";
 	private static final String JFIRE_TRANSACTION_INTERCEPTOR = "org.nightlabs.jfire.jboss.ejb3.JFireEjb3TransactionRetryInterceptor";
-	
+
 	/** the name of the JBoss interceptor that JFire retry interceptor should be placed before **/
 	private static final String JFIRE_TRANSACTION_REFERENCE_INTERCEPTOR = "org.jboss.ejb3.AllowedOperationsInterceptor";
-	
-	
+
+
 	protected static void waitForServer()
 	{
 		if(System.getProperty("jboss.home.dir") != null) {
@@ -362,6 +362,22 @@ public class ServerConfiguratorJBoss
 			logger.debug("Waiting for server...");
 			try { Thread.sleep(15000); } catch (InterruptedException ignore) { }
 		}
+	}
+
+	protected File getJBossDeployJmsDir()
+	{
+		File jbossDeployDir = new File(getJFireServerConfigModule().getJ2ee().getJ2eeDeployBaseDirectory()).getParentFile().getAbsoluteFile();
+		String s = jbossDeployDir.getAbsolutePath();
+		while (s.endsWith(File.separator))
+			s = s.substring(0, s.length() - 1);
+
+		s = s + "-hasingleton";
+		File f = new File(s);
+		if (f.isDirectory())
+			jbossDeployDir = f;
+
+		File jbossDeployJmsDir = new File(jbossDeployDir, "jms");
+		return jbossDeployJmsDir;
 	}
 
 //	private static File getNonExistingFile(String pattern)
@@ -452,8 +468,9 @@ public class ServerConfiguratorJBoss
 			patchRunScripts(jbossBinDir);
 			configureJavaOpts(jbossBinDir);
 //			configureJBossBindAdress();
+			deployJfireJmsDestinationsServiceXml();
 			removeUnneededFiles(jbossDeployDir);
-			
+
 //		Publish the JVM wide SSL settings:
 			final SslCf sslCf = getJFireServerConfigModule().getSslCf();
 			if (System.getProperty(JAVAX_NET_SSL_TRUSTSTORE) == null)
@@ -704,10 +721,10 @@ public class ServerConfiguratorJBoss
 			out.close();
 		}
 	}
-	
+
 	/**
 	 *
-	 * adds the EJB Transaction interceptor which retry a failed EJB invocation multiple times. 
+	 * adds the EJB Transaction interceptor which retry a failed EJB invocation multiple times.
 	 *
 	 * @param jbossDeployDir the deploy directory of the JBoss J2EE server.
 	 * @throws SAXException
@@ -749,8 +766,8 @@ public class ServerConfiguratorJBoss
 					jbossDeployDir.toString());
 			return;
 		}
-		Node firstInterceptorChildNode = NLDOMUtil.findSingleNode(document, "aop/interceptor");		
-		Comment comment = document.createComment(ModificationMarker);		
+		Node firstInterceptorChildNode = NLDOMUtil.findSingleNode(document, "aop/interceptor");
+		Comment comment = document.createComment(ModificationMarker);
 		// create the interceptor Node
 		Element newnode = document.createElement("interceptor");// Create Root Element
 		newnode.setAttribute("class", JFIRE_TRANSACTION_INTERCEPTOR);
@@ -760,15 +777,15 @@ public class ServerConfiguratorJBoss
 		// create the bind point
 		//Element bindNode = document.createElement("bind");// Create Root Element
 		//bindNode.setAttribute("pointcut", "execution(public * *->*(..))");
-		Element interceptorNode = document.createElement("interceptor-ref");// Create Root Element		
-		interceptorNode.setAttribute("name", JFIRE_TRANSACTION_INTERCEPTOR);		
-		//bindNode.appendChild(interceptorNode);	
+		Element interceptorNode = document.createElement("interceptor-ref");// Create Root Element
+		interceptorNode.setAttribute("name", JFIRE_TRANSACTION_INTERCEPTOR);
+		//bindNode.appendChild(interceptorNode);
 		// add the bind points to all beans nodes
 		Collection<Node> domainNodes = NLDOMUtil.findNodeList(document, "aop/domain/bind",false,true);
 		for (Node node : domainNodes)
-		{			
-			Node attributeNode = NLDOMUtil.findNodeByAttribute(node, 
-					"interceptor-ref", 
+		{
+			Node attributeNode = NLDOMUtil.findNodeByAttribute(node,
+					"interceptor-ref",
 					"name",
 					JFIRE_TRANSACTION_REFERENCE_INTERCEPTOR);
 			if(attributeNode != null)
@@ -784,7 +801,7 @@ public class ServerConfiguratorJBoss
 			out.close();
 		}
 	}
-	
+
 	/**
 	 *
 	 * adds Exception handler interceptor which re-propagates the Exceptions caught during the execution of EJB methods
@@ -804,11 +821,11 @@ public class ServerConfiguratorJBoss
 			return;
 		}
 		String text = IOUtil.readTextFile(destFile);
-		// find the reference of the jboss's AuthenticationInterceptorFactory class 
+		// find the reference of the jboss's AuthenticationInterceptorFactory class
 		if (text.indexOf(AuthenticationInterceptorFactory.class.getName()) >= 0) {
 			// backup the file !!!
 			backup(destFile);
-			setRebootRequired(true); 
+			setRebootRequired(true);
 			text = text.replaceAll(AuthenticationInterceptorFactory.class.getName(),
 					JFIRE_AUTHENTICATION_INTERCEPTOR);
 			IOUtil.writeTextFile(destFile, text);
@@ -893,6 +910,32 @@ public class ServerConfiguratorJBoss
 			NLDOMUtil.writeDocument(document, out, encoding);
 		} finally {
 			out.close();
+		}
+	}
+
+	private void deployJfireJmsDestinationsServiceXml() throws IOException
+	{
+		// BEGIN downward compatibility: delete the old descriptor, if it exists
+		File oldDescriptor = new File(
+				new File(getJFireServerConfigModule().getJ2ee().getJ2eeDeployBaseDirectory()),
+				"JFire-AsyncInvokeQueue-JBoss-service.xml"
+		);
+		if (oldDescriptor.exists()) {
+			setRebootRequired(true);
+			oldDescriptor.delete();
+			if (oldDescriptor.exists())
+				logger.error("deployJfireJmsDestinationsServiceXml: Could not delete old deployment descriptor! Please delete it manually: " + oldDescriptor.getAbsolutePath());
+		}
+		// END downward compatibility
+
+		File jbossDeployJmsDir = getJBossDeployJmsDir();
+
+		File destFile = new File(jbossDeployJmsDir, "jfire-jms-destinations-service.xml");
+		if (!destFile.exists()) {
+			if (rebootOnDeployDirChanges)
+				setRebootRequired(true);
+
+			IOUtil.copyResource(ServerConfiguratorJBoss.class, "jfire-jms-destinations-service.xml.jfire", destFile);
 		}
 	}
 
@@ -2237,7 +2280,7 @@ public class ServerConfiguratorJBoss
 	}
 
 	/**
-	 * Add custom values to the JAVA_OPTS 
+	 * Add custom values to the JAVA_OPTS
 	 * @param jbossBinDir The JBoss bin dir
 	 * @throws FileNotFoundException If the file was not found
 	 * @throws IOException In case of an io error
@@ -2261,7 +2304,7 @@ public class ServerConfiguratorJBoss
 //			// issue #87:
 //			javaOpts += " -Djava.rmi.server.useLocalHostname=true";
 //		}
-		
+
 		// not working :-( - see #374
 		// This is related to https://jira.jboss.org/jira/browse/JBAS-6872 but is also fixed with issue #1391
 //		String bindAddress = serverConfiguratorSettings == null ? null : serverConfiguratorSettings.getProperty("j2ee.bind.address");
@@ -2271,22 +2314,22 @@ public class ServerConfiguratorJBoss
 
 		configureRunConf(jbossBinDir, javaOpts);
 		configureRunBat(jbossBinDir, javaOpts);
-		
+
 		// issue #1391
-		String bindAddress = getJBossBindAddress();		
-		String rmiHost = getRMIHost();		
+		String bindAddress = getJBossBindAddress();
+		String rmiHost = getRMIHost();
 		String bindJavaOpts = "-Djboss.bind.address="+bindAddress;
-		// issue #1391 (ip adress as global service host is only working if rmi host is also set 
+		// issue #1391 (ip adress as global service host is only working if rmi host is also set
 		// until switch to JBoss 5.1 where JBoss Bug https://jira.jboss.org/jira/browse/JBAS-6872 is fixed
 		bindJavaOpts += " -Djava.rmi.server.hostname="+rmiHost;
 		// issue #87:
 		bindJavaOpts += " -Djava.rmi.server.useLocalHostname=true";
-		
+
 		configureRunConfBindAddress(jbossBinDir, bindJavaOpts);
 		configureRunBatBindAddress(jbossBinDir, bindJavaOpts);
 	}
 
-	private String getJBossBindAddress() 
+	private String getJBossBindAddress()
 	{
 		Properties serverConfiguratorSettings = getJFireServerConfigModule().getJ2ee().getServerConfiguratorSettings();
 		String bindAddress = serverConfiguratorSettings == null ? null : serverConfiguratorSettings.getProperty("j2ee.bind.address");
@@ -2306,12 +2349,12 @@ public class ServerConfiguratorJBoss
 		}
 		return bindAddress;
 	}
-	
-	private String getRMIHost() 
+
+	private String getRMIHost()
 	{
 		Properties serverConfiguratorSettings = getJFireServerConfigModule().getJ2ee().getServerConfiguratorSettings();
 		String rmiHost = serverConfiguratorSettings == null ? null : serverConfiguratorSettings.getProperty("java.rmi.server.hostname");
-		// if rmiHost is not yet set by serverConfiguratorSettings take rmi host from service port config module and 
+		// if rmiHost is not yet set by serverConfiguratorSettings take rmi host from service port config module and
 		// if this is also not explicitly set take the default service host as rmi host
 		if (rmiHost == null) {
 			// read ServicePortsConfigModule
@@ -2331,20 +2374,20 @@ public class ServerConfiguratorJBoss
 		}
 		return rmiHost;
 	}
-	
+
 	/**
 	 * Adds an entry to the run.bat where the given javaOpts are set
 	 * This is done in a different method then {@link #configureRunConf(File, String)}
 	 * because different settings are used (e.g. bind-address) and the the behaviour is slightly different.
-	 * 
+	 *
 	 * The behaviour is the following:
 	 * - if the entry is not yet existing it is added
 	 * - if the entry is commented it is left untouched
 	 * - if the values for the entry have changed they get replaced
-	 * 
+	 *
 	 * @param jbossBinDir the path to the jboss bin directory
 	 * @param javaOpts the javaOpts to be set
-	 */	
+	 */
 	private void configureRunConfBindAddress(File jbossBinDir, String javaOpts)
 	throws FileNotFoundException, IOException
 	{
@@ -2355,25 +2398,25 @@ public class ServerConfiguratorJBoss
 		Pattern oldOpts = Pattern.compile("(" + Pattern.quote(optsBegin) + ")([^\"]*)" + Pattern.quote(optsEnd));
 		Pattern oldCommentOpts = Pattern.compile(
 				"(" + comment + "#" + "\\s*" + Pattern.quote(javaOptsString) + ")[^\"]*" + Pattern.quote(optsEnd));
-				
+
 		File destFile = new File(jbossBinDir, "run.conf");
 		String text = IOUtil.readTextFile(destFile);
-		
+
 		String newSetting = javaOpts + optsEnd;
 		Matcher m = oldOpts.matcher(text);
 		Matcher commentMatcher = oldCommentOpts.matcher(text);
-		
+
 		boolean changed = false;
-		boolean found = m.find();		
+		boolean found = m.find();
 		boolean commented = commentMatcher.find();
-				
+
 		if (found) {
 			// if entry is found and values have changed replace it
 			String opts = m.group(2);
 			if (!opts.equals(javaOpts)) {
 				logger.debug("Changed bind.address javaOpts to "+javaOpts+" because values have changed");
 				text = m.replaceFirst("$1" + Matcher.quoteReplacement(newSetting));
-				changed = true;				
+				changed = true;
 			}
 		}
 		if (!found && !commented) {
@@ -2382,15 +2425,15 @@ public class ServerConfiguratorJBoss
 			text += "\n" + optsBegin + newSetting;
 			changed = true;
 		}
-		
+
 		if (changed) {
 			setRebootRequired(true);
 			backup(destFile);
 			IOUtil.writeTextFile(destFile, text);
 		}
 	}
-	
-	private void configureRunConf(File jbossBinDir, String javaOpts) 
+
+	private void configureRunConf(File jbossBinDir, String javaOpts)
 	throws FileNotFoundException, IOException
 	{
 		String optsBegin = "# JAVA_OPTS by JFire server configurator\nJAVA_OPTS=\"$JAVA_OPTS";
@@ -2486,12 +2529,12 @@ public class ServerConfiguratorJBoss
 	 * Adds an entry to the run.bat where the given javaOpts are set
 	 * This is done in a different method then {@link #configureRunBat(File, String)}
 	 * because different settings are used (e.g. bind-address) and the the behaviour is slightly different.
-	 * 
+	 *
 	 * The behaviour is the following:
 	 * - if the entry is not yet existing it is added
 	 * - if the entry is commented it is left untouched
 	 * - if the values for the entry have changed they get replaced
-	 * 
+	 *
 	 * @param jbossBinDir the path to the jboss bin directory
 	 * @param javaOpts the javaOpts to be set
 	 */
@@ -2500,23 +2543,23 @@ public class ServerConfiguratorJBoss
 		String text;
 		try {
 			Pattern lastJavaOpts = Pattern.compile(".*set JAVA_OPTS.*?\n", Pattern.DOTALL);
-			
+
 			String lineBreak = "\r\n";
 			String optsBegin = "rem set JAVA_OPTS jboss.bind.address by JFire server configurator"+lineBreak;
 			String javaOptsString = "set JAVA_OPTS=%JAVA_OPTS% ";
 			Pattern oldOpts = Pattern.compile("("+optsBegin+javaOptsString+")(.*?)$", Pattern.MULTILINE);
 			Pattern oldCommentOpts = Pattern.compile("("+optsBegin+")"+"rem\\s*"+javaOptsString+"(.*?)$", Pattern.MULTILINE);
-			
+
 			File destFile = new File(jbossBinDir, "run.bat");
 			text = IOUtil.readTextFile(destFile);
-			
+
 			Matcher m = oldOpts.matcher(text);
 			Matcher commentMatcher = oldCommentOpts.matcher(text);
-			
+
 			boolean changed = false;
 			boolean found = m.find();
 			boolean commented = commentMatcher.find();
-			
+
 			if (found) {
 				// if entry is found and values have changed replace it
 				String opts = m.group(2);
@@ -2533,7 +2576,7 @@ public class ServerConfiguratorJBoss
 				text = m2.replaceFirst("$0"+Matcher.quoteReplacement(lineBreak + optsBegin + javaOptsString + javaOpts + lineBreak));
 				changed = true;
 			}
-						
+
 			if (changed) {
 				setRebootRequired(true);
 				backup(destFile);
@@ -2543,7 +2586,7 @@ public class ServerConfiguratorJBoss
 			System.out.println("Changing the run.bat file failed. Please set the rmi host by changing the file manually or overwrite it with run.bat.jfire if it exists.");
 		}
 	}
-	
+
 	private void configureRunBat(File jbossBinDir, String javaOpts)
 	{
 		String text;
@@ -2570,12 +2613,12 @@ public class ServerConfiguratorJBoss
 //			} else if(!found) {
 			if(!found) {
 				logger.debug("Have new entry in "+destFile.getAbsolutePath());
-				text = increaseHeapMemory(text);				
+				text = increaseHeapMemory(text);
 				Matcher m2 = lastJavaOpts.matcher(text);
 				text = m2.replaceFirst("$0"+Matcher.quoteReplacement("\r\n"+newSetting+"\r\n"));
 				changed = true;
 			}
-			
+
 			if(changed) {
 				setRebootRequired(true);
 				backup(destFile);
@@ -3237,11 +3280,11 @@ public class ServerConfiguratorJBoss
 	/**
 	 * This method gets always called at each server start inside doConfigureServer to set the bind address
 	 * because of JBoss Bug https://jira.jboss.org/jira/browse/JBAS-6872
-	 * This causes the JFire server to set the ServerConfig.SERVER_BIND_ADDRESS after server start again. 
-	 * 
+	 * This causes the JFire server to set the ServerConfig.SERVER_BIND_ADDRESS after server start again.
+	 *
 	 * Once the JBoss Bug is fixed, this can be removed because then it is already done in configureJavaOpts(File)
 	 */
-	private void configureJBossBindAdress() 
+	private void configureJBossBindAdress()
 	{
 		String defaultBindHost = getJBossBindAddress();
 		if (defaultBindHost != null) {

@@ -64,8 +64,7 @@ extends ServerConfiguratorJBoss
 
 			// jbossDeployDir is ${jboss}/server/default/deploy - not ${jboss}/server/default/deploy/JFire.last
 			File jbossDeployDir = new File(getJFireServerConfigModule().getJ2ee().getJ2eeDeployBaseDirectory()).getParentFile().getAbsoluteFile();
-			File jbossConfDir = new File(jbossDeployDir.getParentFile(), "conf");
-			File jbossDeployJmsDir = new File(jbossDeployDir, "jms");
+			File jbossDeployJmsDir = getJBossDeployJmsDir();
 
 			boolean redeployJMS = false;
 
@@ -94,7 +93,7 @@ extends ServerConfiguratorJBoss
 			configureJfireJBossmqMysqlJdbcStateServiceXml(jbossDeployJmsDir);
 			configureJmsMysqlJdbc2Service(jbossDeployJmsDir);
 			configureEjbDeployerXml(jbossDeployDir);
-			configureLoginConfigXmlMySQL(jbossConfDir);
+//			configureLoginConfigXmlMySQL(jbossConfDir);
 
 			if (redeployJMS)
 				redeployJms(jbossDeployDir, jbossDeployJmsDir);
@@ -129,18 +128,18 @@ extends ServerConfiguratorJBoss
 			logger.error("Moving JMS deploy directory back from temporary location " + tmpJmsDir.getAbsolutePath() + " to " + jbossDeployJmsDir.getAbsolutePath() + " failed!!!");
 	}
 
-	private void configureLoginConfigXmlMySQL(File jbossConfDir) throws FileNotFoundException, IOException, UnsupportedEncodingException
-	{
-		// check/modify ${jboss.conf}/login-config.xml and REBOOT if changes occured
-		File destFile = new File(jbossConfDir, "login-config.xml");
-		String text = IOUtil.readTextFile(destFile);
-		if (text.indexOf("java:/DefaultDS") >= 0) {
-			setRebootRequired(true); // this is a must, because the conf directory doesn't support redeployment
-			text = text.replaceAll("java:/DefaultDS", "java:/JFireJBossMQDS");
-
-			IOUtil.writeTextFile(destFile, text);
-		}
-	}
+//	private void configureLoginConfigXmlMySQL(File jbossConfDir) throws FileNotFoundException, IOException, UnsupportedEncodingException
+//	{
+//		// check/modify ${jboss.conf}/login-config.xml and REBOOT if changes occured
+//		File destFile = new File(jbossConfDir, "login-config.xml");
+//		String text = IOUtil.readTextFile(destFile);
+//		if (text.indexOf("java:/DefaultDS") >= 0) {
+//			setRebootRequired(true); // this is a must, because the conf directory doesn't support redeployment
+//			text = text.replaceAll("java:/DefaultDS", "java:/JFireJBossMQDS");
+//
+//			IOUtil.writeTextFile(destFile, text);
+//		}
+//	}
 
 	private void configureEjbDeployerXml(File jbossDeployDir)
 	throws IOException, UnsupportedEncodingException, SAXException, DOMException, TransformerException
@@ -156,27 +155,6 @@ extends ServerConfiguratorJBoss
 			if (rebootOnDeployDirChanges)
 				setRebootRequired(true);
 
-//			String replacementText = "<!-- "
-//					+ modifiedMarker
-//					+ " Do not change this line!!! The modification has been done by "
-//					+ ServerConfiguratorJBossMySQL.class.getName()
-//					+ ". -->\n"
-//					+ "  <!-- A persistence policy that persistes timers to a database\n"
-//					+ "  <mbean code=\"org.jboss.ejb.txtimer.DatabasePersistencePolicy\" name=\"jboss.ejb:service=EJBTimerService,persistencePolicy=database\">\n"
-//					+ "    <!- DataSource JNDI name ->\n"
-//					+ "    <depends optional-attribute-name=\"DataSource\"JFire_JBossMQ>jboss.jca:service=DataSourceBinding,name=JFireJBossMQDS</depends>\n"
-//					+ "    <!- The plugin that handles database persistence ->\n"
-//					+ "    <attribute name=\"DatabasePersistencePlugin\">org.jboss.ejb.txtimer.GeneralPurposeDatabasePersistencePlugin</attribute>\n"
-//					+ "  </mbean>\n"
-//					+ "  -->\n"
-//					+ "  <!-- For JFire, there is no need to persist the timer -->\n"
-//					+ "  <mbean code=\"org.jboss.ejb.txtimer.NoopPersistencePolicy\" name=\"jboss.ejb:service=EJBTimerService,persistencePolicy=noop\"/>\n"
-//					+ "\n";
-//			Pattern pattern = Pattern
-//					.compile("<mbean[^<]*?EJBTimerService,persistencePolicy=database(.|\\n)*?</mbean>");
-//			text = pattern.matcher(text).replaceAll(replacementText);
-//
-//			IOUtil.writeTextFile(destFile, text);
 
 			DOMParser parser = new DOMParser();
 			InputStream in = new FileInputStream(destFile);
@@ -343,20 +321,13 @@ extends ServerConfiguratorJBoss
 	@Override
 	protected void undoConfigureServer() throws ServerConfigurationException {
 		File jbossDeployDir = new File(getJFireServerConfigModule().getJ2ee().getJ2eeDeployBaseDirectory()).getParentFile().getAbsoluteFile();
-//		File jbossConfDir = new File(jbossDeployDir.getParentFile(), "conf");
-		File jbossDeployJmsDir = new File(jbossDeployDir, "jms");
-
-		File[] filesToRestore = {
-				new File(jbossDeployDir, "hsqldb-ds.xml"),
-//				new File(jbossConfDir, "login-config.xml"), // no need to restore this file, because it is already restored by super.undoConfigureServer()!
-				new File(jbossDeployDir, "ejb-deployer.xml"),
-				new File(jbossDeployJmsDir, "hsqldb-jdbc-state-service.xml"),
-				new File(jbossDeployJmsDir, "hsqldb-jdbc2-service.xml"),
-		};
+		File jbossDeployJmsDir = getJBossDeployJmsDir();
 
 		try {
-			for (File f : filesToRestore)
-				restore(f);
+			restore(new File(jbossDeployDir, "hsqldb-ds.xml"));
+			restore(new File(jbossDeployDir, "ejb-deployer.xml"));
+			restore(new File(jbossDeployJmsDir, "hsqldb-jdbc-state-service.xml"));
+			restore(new File(jbossDeployJmsDir, "hsqldb-jdbc2-service.xml"));
 
 			new File(jbossDeployDir, "mysql-ds.xml").delete();
 			new File(jbossDeployJmsDir, "mysql-jdbc2-service.xml").delete();

@@ -5,7 +5,7 @@
 <datasources>
 <!-- The creation of the tables (especially JMS_MESSAGES) fails when using xa - hence we're using local-tx - at least temporarily -->
     <local-tx-datasource>
-		<jndi-name>JFireJBossMQDS</jndi-name>
+		<jndi-name>DefaultDS</jndi-name>
         <connection-url>${databaseURL};create=true</connection-url>
         <driver-class>${databaseDriverName_localTx}</driver-class>
 
@@ -23,7 +23,7 @@
 
 <!--
 	<xa-datasource>
-		<jndi-name>JFireJBossMQDS</jndi-name>
+		<jndi-name>DefaultDS</jndi-name>
 		<xa-datasource-class>${databaseDriverName_xa}</xa-datasource-class>
 		<xa-datasource-property name="DatabaseName">${databaseName}</xa-datasource-property>
 		<user-name>${databaseUserName}</user-name>
