@@ -57,6 +57,7 @@ import org.nightlabs.jfire.base.AuthCallbackHandler;
 import org.nightlabs.jfire.base.JFirePrincipal;
 import org.nightlabs.jfire.base.Lookup;
 import org.nightlabs.jfire.jdo.cache.bridge.JdoCacheBridge;
+import org.nightlabs.jfire.jdo.cache.cluster.DirtyObjectIDPropagator;
 import org.nightlabs.jfire.jdo.notification.AbsoluteFilterID;
 import org.nightlabs.jfire.jdo.notification.DirtyObjectID;
 import org.nightlabs.jfire.jdo.notification.FilterRegistry;
@@ -65,6 +66,7 @@ import org.nightlabs.jfire.jdo.notification.JDOLifecycleRemoteEvent;
 import org.nightlabs.jfire.jdo.notification.JDOLifecycleState;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.servermanager.config.OrganisationCf;
+import org.nightlabs.jfire.servermanager.j2ee.J2EEAdapterException;
 import org.nightlabs.jfire.servermanager.ra.JFireServerManagerFactoryImpl;
 import org.nightlabs.jfire.servermanager.ra.JFireServerManagerImpl;
 import org.nightlabs.util.IOUtil;
@@ -219,10 +221,9 @@ public class CacheManagerFactory
 
 	public CacheManagerFactory(JFireServerManagerFactoryImpl jfsmf,
 			InitialContext ctx, OrganisationCf organisation, CacheCfMod cacheCfMod, File sysConfigDirectory)
-			throws NamingException
+			throws NamingException, J2EEAdapterException
 	{
 		this.jFireServerManagerFactory = jfsmf;
-		// this.j2eeVendorAdapter = j2eeVendorAdapter;
 		this.organisationID = organisation.getOrganisationID();
 		this.cacheCfMod = cacheCfMod;
 		this.sysConfigDirectory = sysConfigDirectory;
@@ -274,8 +275,13 @@ public class CacheManagerFactory
 		// if (!organisationID.equals(organisation.getMasterOrganisationID()))
 		// ctx.bind(getJNDIName(organisation.getMasterOrganisationID()), this);
 
+		if (jfsmf.getJ2EEVendorAdapter().isInCluster())
+			dirtyObjectIDPropagator = new DirtyObjectIDPropagator(this);
+
 		logger.info("CacheManagerFactory for organisation " + organisationID + " instantiated and bound into JNDI " + jndiName);
 	}
+
+	private DirtyObjectIDPropagator dirtyObjectIDPropagator;
 
 	/**
 	 * key: String cacheSessionID<br/> value: CacheSession cacheSession
@@ -2264,10 +2270,16 @@ public class CacheManagerFactory
 //				}
 //			}
 //		}, 0, 30000); // TODO should be configurable
+
 	}
 
 	public void close()
 	{
+		if (dirtyObjectIDPropagator != null) {
+			dirtyObjectIDPropagator.close();
+			dirtyObjectIDPropagator = null;
+		}
+
 		notificationThread.interrupt();
 		cacheSessionContainerManagerThread.interrupt();
 		freshDirtyObjectIDContainerManagerThread.interrupt();

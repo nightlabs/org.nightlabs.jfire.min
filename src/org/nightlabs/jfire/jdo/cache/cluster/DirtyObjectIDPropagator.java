@@ -1,5 +1,4 @@
-package org.nightlabs.jfire.jdo.cache.bridge;
-
+package org.nightlabs.jfire.jdo.cache.cluster;
 
 import java.util.Map;
 import java.util.UUID;
@@ -15,6 +14,7 @@ import javax.jms.Session;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+import org.nightlabs.jfire.jdo.cache.CacheManagerFactory;
 import org.nightlabs.jfire.jdo.cache.LocalDirtyEvent;
 import org.nightlabs.jfire.jdo.cache.LocalDirtyListener;
 import org.nightlabs.jfire.jdo.notification.DirtyObjectID;
@@ -26,11 +26,38 @@ import org.nightlabs.util.Stopwatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class JdoCacheBridgeClusterMQ extends JdoCacheBridgeDefault
+/**
+ * <code>DirtyObjectIDPropagator</code> propagates {@link DirtyObjectID}s across all cluster nodes.
+ * If the server is running in {@link J2EEAdapter#isInCluster() cluster-mode}, the {@link CacheManagerFactory}
+ * creates an instance of this class, otherwise it is unused.
+ * <p>
+ * The JDO runtime propagates lifecycle events only within one JVM. Thus, a separate cluster node is not
+ * notified about objects becoming dirty and therefore cannot notify its own clients. This problem is
+ * solved by this class.
+ * </p>
+ * <p>
+ * This class uses the Java Messaging System (JMS) to notify all cluster nodes.
+ * </p>
+ *
+ * @author marco
+ */
+public class DirtyObjectIDPropagator
 {
-	private Logger logger = LoggerFactory.getLogger(JdoCacheBridgeClusterMQ.class);
+	private Logger logger = LoggerFactory.getLogger(DirtyObjectIDPropagator.class);
 
 	protected static final String TOPIC_JNDI = "topic/jfire/JFireBaseBean/RawDirtyObjectIDs";
+
+	private CacheManagerFactory cacheManagerFactory;
+
+	public DirtyObjectIDPropagator(CacheManagerFactory cacheManagerFactory) {
+		if (cacheManagerFactory == null)
+			throw new IllegalArgumentException("cacheManagerFactory == null");
+
+		this.cacheManagerFactory = cacheManagerFactory;
+
+		cacheManagerFactory.addLocalDirtyListener(localDirtyListener);
+		jmsConsumerThread = new JMSConsumerThread();
+	}
 
 	private Thread jmsConsumerThread;
 
@@ -131,18 +158,18 @@ public class JdoCacheBridgeClusterMQ extends JdoCacheBridgeDefault
 			}
 		}
 
-		if (getCacheManagerFactory().getCacheManagerFactoryID().equals(event.getCacheManagerFactoryID())) {
+		if (cacheManagerFactory.getCacheManagerFactoryID().equals(event.getCacheManagerFactoryID())) {
 			logger.debug("onMessage: Skipping event, because it originates from our CacheManagerFactory (and should not be sent there again).");
 			return;
 		}
 
-		event.setProperty(JdoCacheBridgeClusterMQ.EVENT_PROPERTY_FROM_JMS, Boolean.TRUE.toString());
+		event.setProperty(DirtyObjectIDPropagator.EVENT_PROPERTY_FROM_JMS, Boolean.TRUE.toString());
 
-		getCacheManagerFactory().addDirtyObjectIDs(event);
+		cacheManagerFactory.addDirtyObjectIDs(event);
 	}
 
 
-	public static final String EVENT_PROPERTY_FROM_JMS =  JdoCacheBridgeClusterMQ.class.getName() + ".fromJMS";
+	public static final String EVENT_PROPERTY_FROM_JMS =  DirtyObjectIDPropagator.class.getName() + ".fromJMS";
 
 	private static volatile Destination destination = null;
 
@@ -187,7 +214,7 @@ public class JdoCacheBridgeClusterMQ extends JdoCacheBridgeDefault
 	{
 		@Override
 		public void notifyDirtyObjectIDs(LocalDirtyEvent event) {
-			UUID myCacheManagerFactoryID = getCacheManagerFactory().getCacheManagerFactoryID();
+			UUID myCacheManagerFactoryID = cacheManagerFactory.getCacheManagerFactoryID();
 
 			logger.debug("localDirtyListener.notifyDirtyObjectIDs: myCacheManagerFactoryID = {}", myCacheManagerFactoryID);
 			logger.debug("localDirtyListener.notifyDirtyObjectIDs: event.cacheManagerFactoryID = {}", event.getCacheManagerFactoryID());
@@ -229,21 +256,11 @@ public class JdoCacheBridgeClusterMQ extends JdoCacheBridgeDefault
 		}
 	};
 
-	@Override
-	public void init() {
-		super.init();
-		getCacheManagerFactory().addLocalDirtyListener(localDirtyListener);
-		jmsConsumerThread = new JMSConsumerThread();
-	}
-
-	@Override
 	public void close() {
 		if (jmsConsumerThread != null) {
 			jmsConsumerThread.interrupt();
 			jmsConsumerThread = null;
 		}
-
-		super.close();
 	}
 
 	@Override
