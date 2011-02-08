@@ -3,6 +3,7 @@ package org.nightlabs.jfire.timer;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import javax.jdo.JDODetachedFieldAccessException;
 import javax.jdo.JDOHelper;
@@ -27,7 +28,6 @@ import javax.jdo.listener.StoreCallback;
 import javax.jdo.spi.PersistenceCapable;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.apache.log4j.Logger;
 import org.nightlabs.jdo.ObjectIDUtil;
 import org.nightlabs.jdo.timepattern.TimePatternSetJDOImpl;
 import org.nightlabs.jfire.idgenerator.IDGenerator;
@@ -38,6 +38,8 @@ import org.nightlabs.math.Base36Coder;
 import org.nightlabs.timepattern.TimePattern;
 import org.nightlabs.timepattern.TimePatternSet;
 import org.nightlabs.util.Util;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A <code>Task</code> specifies an action that will be executed once or repeatedly at certain
@@ -51,47 +53,6 @@ import org.nightlabs.util.Util;
  * </p>
  *
  * @author Marco Schulze - marco at nightlabs dot de
- *
- * @jdo.persistence-capable
- *		identity-type="application"
- *		objectid-class="org.nightlabs.jfire.timer.id.TaskID"
- *		detachable="true"
- *		table="JFireBase_Task"
- *
- * @jdo.inheritance strategy="new-table"
- *
- * @jdo.create-objectid-class field-order="organisationID, taskTypeID, taskID"
- *
- * @jdo.version strategy="version-number"
- *
- * @jdo.fetch-group name="Task.user" fields="user"
- * @jdo.fetch-group name="Task.timePatternSet" fields="timePatternSet"
- * @jdo.fetch-group name="Task.name" fields="name"
- * @jdo.fetch-group name="Task.description" fields="description"
- * @jdo.fetch-group name="Task.this" fields="user, timePatternSet, name, description"
- *
- * @jdo.query
- *		name="getTasksToDo"
- *		query="SELECT
- *				WHERE this.enabled && !this.executing && this.nextExecDT <= :untilTime
- *				ORDER BY this.nextExecDT ascending"
- *
- * @jdo.query
- *		name="getTasksToRecalculateNextExecDT"
- *		query="SELECT
- *				WHERE this.nextCalculateNextExecDT <= :untilTime
- *				ORDER BY this.nextCalculateNextExecDT ascending"
- *
- * @jdo.query
- *		name="getTasksByExecuting"
- *		query="SELECT
- *				WHERE this.executing == :executing"
- *
- *
- * @jdo.query
- *		name="getTasksByTaskTypeID"
- *		query="SELECT
- *				WHERE this.taskTypeID == :pTaskTypeID"
  */
 @javax.jdo.annotations.PersistenceCapable(
 	objectIdClass=TaskID.class,
@@ -124,8 +85,8 @@ import org.nightlabs.util.Util;
 		name="getTasksToRecalculateNextExecDT",
 		value="SELECT WHERE this.nextCalculateNextExecDT <= :untilTime ORDER BY this.nextCalculateNextExecDT ascending"),
 	@Query(
-		name="getTasksByExecuting",
-		value="SELECT WHERE this.executing == :executing"),
+		name="getTasksExecutingByNotClusterNodeID",
+		value="SELECT WHERE this.executing && this.executingClusterNodeID != :executingClusterNodeID"),
 	@Query(
 		name="getTasksByTaskTypeID",
 		value="SELECT WHERE this.taskTypeID == :pTaskTypeID")
@@ -134,12 +95,9 @@ import org.nightlabs.util.Util;
 public class Task
 implements Serializable, DetachCallback, AttachCallback, StoreCallback
 {
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 2L;
 
-	/**
-	 * LOG4J logger used by this class
-	 */
-	private static final Logger logger = Logger.getLogger(Task.class);
+	private static final Logger logger = LoggerFactory.getLogger(Task.class);
 
 	public static final String FETCH_GROUP_USER = "Task.user";
 	public static final String FETCH_GROUP_TIME_PATTERN_SET = "Task.timePatternSet";
@@ -169,6 +127,7 @@ implements Serializable, DetachCallback, AttachCallback, StoreCallback
 	 * @param until The timestamp at which the tasks are due (normally NOW - i.e. <code>new Date()</code>).
 	 * @return Returns instances of {@link Task}.
 	 */
+	@SuppressWarnings("unchecked")
 	public static List<Task> getTasksToDo(PersistenceManager pm, Date until)
 	{
 		return (List<Task>) pm.newNamedQuery(Task.class, "getTasksToDo").execute(until);
@@ -182,68 +141,40 @@ implements Serializable, DetachCallback, AttachCallback, StoreCallback
 	 * @param until The timestamp at which the recalculation is due (normally NOW - i.e. <code>new Date()</code>).
 	 * @return Returns instances of {@link Task}.
 	 */
+	@SuppressWarnings("unchecked")
 	public static List<Task> getTasksToRecalculateNextExecDT(PersistenceManager pm, Date until)
 	{
 		return (List<Task>) pm.newNamedQuery(Task.class, "getTasksToRecalculateNextExecDT").execute(until);
 	}
 
-	public static List<Task> getTasksByExecuting(PersistenceManager pm, boolean executing)
+	@SuppressWarnings("unchecked")
+	public static List<Task> getTasksExecutingByNotClusterNodeID(PersistenceManager pm, UUID executingClusterNodeID)
 	{
-		return (List<Task>) pm.newNamedQuery(Task.class, "getTasksByExecuting").execute(Boolean.valueOf(executing));
+		return (List<Task>) pm.newNamedQuery(Task.class, "getTasksExecutingByNotClusterNodeID").execute(executingClusterNodeID);
 	}
 
+	@SuppressWarnings("unchecked")
 	public static List<Task> getTasksByTaskTypeID(PersistenceManager pm, String taskTypeID)
 	{
 		return (List<Task>) pm.newNamedQuery(Task.class, "getTasksByTaskTypeID").execute(taskTypeID);
 	}
 
-	/**
-	 * @jdo.field primary-key="true"
-	 * @jdo.column length="100"
-	 */
 	@PrimaryKey
 	@Column(length=100)
 	private String organisationID;
 
-	/**
-	 * @jdo.field primary-key="true"
-	 * @jdo.column length="100"
-	 */
 	@PrimaryKey
 	@Column(length=100)
 	private String taskTypeID;
 
-	/**
-	 * @jdo.field primary-key="true"
-	 * @jdo.column length="100"
-	 */
 	@PrimaryKey
 	@Column(length=100)
 	private String taskID;
 
-	/*
-	 * @jdo.field persistence-modifier="persistent" dependent="true" mapped-by="task"
-	 */
-
-	/**
-	 * @!jdo.field persistence-modifier="persistent" embedded="true" null-value="exception"
-	 * @!jdo.embedded owner-field="task"
-	 *
-	 * @jdo.field persistence-modifier="persistent" dependent="true" mapped-by="task"
-	 */
-	@Persistent(
-		dependent="true",
-		mappedBy="task",
-		persistenceModifier=PersistenceModifier.PERSISTENT)
+	@Persistent(dependent="true", mappedBy="task")
 	private TaskName name;
 
-	/**
-	 * @jdo.field persistence-modifier="persistent" dependent="true" mapped-by="task"
-	 */
-	@Persistent(
-		dependent="true",
-		mappedBy="task",
-		persistenceModifier=PersistenceModifier.PERSISTENT)
+	@Persistent(dependent="true", mappedBy="task")
 	private TaskDescription description;
 
 	/**
@@ -384,12 +315,7 @@ implements Serializable, DetachCallback, AttachCallback, StoreCallback
 		return taskID;
 	}
 
-	/**
-	 * @jdo.field persistence-modifier="persistent" dependent="true"
-	 */
-	@Persistent(
-		dependent="true",
-		persistenceModifier=PersistenceModifier.PERSISTENT)
+	@Persistent(dependent="true")
 	private TimePatternSetJDOImpl timePatternSet;
 
 	/**
@@ -404,18 +330,9 @@ implements Serializable, DetachCallback, AttachCallback, StoreCallback
 		return timePatternSet;
 	}
 
-	/**
-	 * @jdo.field persistence-modifier="persistent" null-value="exception"
-	 */
-	@Persistent(
-		nullValue=NullValue.EXCEPTION,
-		persistenceModifier=PersistenceModifier.PERSISTENT)
+	@Persistent(nullValue=NullValue.EXCEPTION)
 	private User user;
 
-	/**
-	 * @jdo.field persistence-modifier="persistent"
-	 */
-	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
 	private Workstation workstation;
 
 	/**
@@ -468,99 +385,60 @@ implements Serializable, DetachCallback, AttachCallback, StoreCallback
 		return description;
 	}
 
-	/**
-	 * @jdo.field persistence-modifier="persistent" null-value="exception"
-	 */
-	@Persistent(
-		nullValue=NullValue.EXCEPTION,
-		persistenceModifier=PersistenceModifier.PERSISTENT)
+	@Persistent(nullValue=NullValue.EXCEPTION)
 	private String bean;
 
-	/**
-	 * @jdo.field persistence-modifier="persistent" null-value="exception"
-	 */
-	@Persistent(
-		nullValue=NullValue.EXCEPTION,
-		persistenceModifier=PersistenceModifier.PERSISTENT)
+	@Persistent(nullValue=NullValue.EXCEPTION)
 	private String method;
 
-	/**
-	 * @jdo.field persistence-modifier="persistent"
-	 */
-	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
+	@Persistent
 	private String paramObjectIDStr;
 
-	/**
-	 * @jdo.field persistence-modifier="none"
-	 */
 	@Persistent(persistenceModifier=PersistenceModifier.NONE)
 	private Object param = null;
 
-	/**
-	 * @jdo.field persistence-modifier="persistent"
-	 */
-	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
+	@Persistent
 	private Date lastExecDT = null;
 
+	@Persistent
 	private long lastExecDurationMSec;
 
-	/**
-	 * @jdo.field persistence-modifier="persistent"
-	 */
-	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
+	@Persistent
 	private boolean lastExecFailed;
 
 	/**
 	 * This is <code>null</code>, if the last execution was fine, otherwise
 	 * this is the Exception message (no stacktrace).
-	 *
-	 * @jdo.field persistence-modifier="persistent"
-	 * @jdo.column sql-type="CLOB"
 	 */
-	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
+	@Persistent
 	@Column(sqlType="CLOB")
 	private String lastExecMessage;
 
 	/**
 	 * This is <code>null</code>, if the last execution was fine, otherwise
 	 * this is the Exception stacktrace.
-	 *
-	 * @jdo.field persistence-modifier="persistent"
-	 * @jdo.column sql-type="CLOB"
 	 */
-	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
+	@Persistent
 	@Column(sqlType="CLOB")
 	private String lastExecStackTrace;
 
-	/**
-	 * @jdo.field persistence-modifier="persistent"
-	 */
-	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
+	@Persistent
 	private Date nextExecDT = null;
 
-	/**
-	 * @jdo.field persistence-modifier="persistent"
-	 */
-	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
+	@Persistent
 	private Date nextCalculateNextExecDT = null;
 
-	/**
-	 * @jdo.field persistence-modifier="persistent"
-	 */
-	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
+	@Persistent
 	private boolean enabled;
 
-	/**
-	 * @jdo.field persistence-modifier="persistent"
-	 */
-	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
+	@Persistent
 	private String activeExecID;
 
-	/**
-	 * @jdo.field persistence-modifier="persistent"
-	 */
-	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
+	@Persistent
 	private boolean executing;
+
+	@Persistent
+	private UUID executingClusterNodeID;
 
 	/**
 	 * @return The JNDI name of the EJB that will be called.
@@ -767,9 +645,18 @@ implements Serializable, DetachCallback, AttachCallback, StoreCallback
 	{
 		return executing;
 	}
-	public void setExecuting(boolean executing)
-	{
-		this.executing = executing;
+//	public void setExecuting(boolean executing)
+//	{
+//		this.executing = executing;
+//		calculateNextExecDT();
+//	}
+
+	public UUID getExecutingClusterNodeID() {
+		return executingClusterNodeID;
+	}
+	public void setExecutingClusterNodeID(UUID executingClusterNodeID) {
+		this.executingClusterNodeID = executingClusterNodeID;
+		this.executing = executingClusterNodeID != null;
 		calculateNextExecDT();
 	}
 
@@ -806,7 +693,7 @@ implements Serializable, DetachCallback, AttachCallback, StoreCallback
 		this.lastExecStackTrace = null;
 		this.lastExecDurationMSec = durationMSec;
 		this.activeExecID = null;
-		setExecuting(false);
+		setExecutingClusterNodeID(null);
 	}
 
 	public void lastExecFailed(Throwable error)
@@ -835,7 +722,7 @@ implements Serializable, DetachCallback, AttachCallback, StoreCallback
 			this.lastExecMessage = msg;
 			this.lastExecStackTrace = Util.getStackTraceAsString(error);
 		}
-		setExecuting(false);
+		setExecutingClusterNodeID(null);
 	}
 
 	public void lastExecFailed(String lastExecMessage, String lastExecStackTrace)
@@ -845,7 +732,7 @@ implements Serializable, DetachCallback, AttachCallback, StoreCallback
 		this.lastExecDurationMSec = 0;
 		this.lastExecMessage = lastExecMessage;
 		this.lastExecStackTrace = lastExecStackTrace;
-		setExecuting(false);
+		setExecutingClusterNodeID(null);
 	}
 
 	public long getLastExecDurationMSec()
