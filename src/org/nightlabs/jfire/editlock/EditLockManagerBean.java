@@ -63,8 +63,6 @@ implements EditLockManagerRemote, EditLockManagerLocal
 			if (helperBean == null)
 				throw new IllegalStateException("Dependency injection of EditLockManagerLocal did not work!");
 
-			Thread.sleep(60000L * 10);
-
 //			for (EditLock editLock : EditLock.getExpiredEditLocks(pm)) {
 //				editLock.getEditLockType().onReleaseEditLock(editLock, ReleaseReason.clientLost);
 //				pm.deletePersistent(editLock);
