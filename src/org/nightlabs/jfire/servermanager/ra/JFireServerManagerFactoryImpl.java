@@ -151,7 +151,6 @@ import org.nightlabs.jfire.servermanager.deploy.DeployedFileAlreadyExistsExcepti
 import org.nightlabs.jfire.servermanager.deploy.DeploymentJarItem;
 import org.nightlabs.jfire.servermanager.j2ee.J2EEAdapter;
 import org.nightlabs.jfire.servermanager.j2ee.J2EEAdapterException;
-import org.nightlabs.jfire.servermanager.j2ee.JMSConnectionFactoryLookup;
 import org.nightlabs.jfire.servermanager.j2ee.ServerStartNotificationListener;
 import org.nightlabs.jfire.servermanager.xml.AuthorityTypeDef;
 import org.nightlabs.jfire.servermanager.xml.EARApplication;
@@ -346,23 +345,23 @@ public class JFireServerManagerFactoryImpl
 				initialContext.rebind(Organisation.ROOT_ORGANISATION_ID_JNDI_NAME, rootOrganisationID);
 			}
 
-			try
-			{
-				initialContext.bind(JMSConnectionFactoryLookup.QUEUECF_JNDI_LINKNAME, "UIL2ConnectionFactory");
-			}
-			catch (NameAlreadyBoundException e)
-			{
-				initialContext.rebind(JMSConnectionFactoryLookup.QUEUECF_JNDI_LINKNAME, "UIL2ConnectionFactory");
-			}
-
-			try
-			{
-				initialContext.bind(JMSConnectionFactoryLookup.TOPICCF_JNDI_LINKNAME, "UIL2ConnectionFactory");
-			}
-			catch (NameAlreadyBoundException e)
-			{
-				initialContext.rebind(JMSConnectionFactoryLookup.TOPICCF_JNDI_LINKNAME, "UIL2ConnectionFactory");
-			}
+//			try
+//			{
+//				initialContext.bind(JMSConnectionFactoryLookup.QUEUECF_JNDI_LINKNAME, "UIL2ConnectionFactory");
+//			}
+//			catch (NameAlreadyBoundException e)
+//			{
+//				initialContext.rebind(JMSConnectionFactoryLookup.QUEUECF_JNDI_LINKNAME, "UIL2ConnectionFactory");
+//			}
+//
+//			try
+//			{
+//				initialContext.bind(JMSConnectionFactoryLookup.TOPICCF_JNDI_LINKNAME, "UIL2ConnectionFactory");
+//			}
+//			catch (NameAlreadyBoundException e)
+//			{
+//				initialContext.rebind(JMSConnectionFactoryLookup.TOPICCF_JNDI_LINKNAME, "UIL2ConnectionFactory");
+//			}
 
 		} catch (Exception e) {
 			logger.error("Binding some config settings into JNDI failed!", e);

@@ -1,5 +1,6 @@
 package org.nightlabs.jfire.servermanager.j2ee;
 
+import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Collection;
@@ -8,6 +9,11 @@ import java.util.LinkedList;
 import java.util.Set;
 
 import javax.annotation.security.RolesAllowed;
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.NameCallback;
+import javax.security.auth.callback.PasswordCallback;
+import javax.security.auth.callback.UnsupportedCallbackException;
 
 
 public abstract class AbstractJ2EEAdapter implements J2EEAdapter
@@ -69,4 +75,53 @@ public abstract class AbstractJ2EEAdapter implements J2EEAdapter
 			throw new J2EEAdapterException(x);
 		}
 	}
+
+	protected static class AuthCallbackHandler implements CallbackHandler
+	{
+		private String userName;
+		private char[] password;
+
+		public AuthCallbackHandler(String userName, char[] password) {
+			this.userName = userName;
+			this.password = password;
+		}
+
+		@Override
+		public void handle(Callback[] callbacks)
+		throws IOException,
+		UnsupportedCallbackException
+		{
+			for (int i = 0; i < callbacks.length; ++i) {
+				Callback cb = callbacks[i];
+				if (cb instanceof NameCallback) {
+					((NameCallback)cb).setName(userName);
+				}
+				else if (cb instanceof PasswordCallback) {
+					((PasswordCallback)cb).setPassword(password);
+				}
+				else throw new UnsupportedCallbackException(cb);
+			}
+		}
+	}
+
+//	@Override
+//	public LoginContext jms_createLoginContext()
+//	throws J2EEAdapterException
+//	{
+//		try {
+//			InitialContext localContext = new InitialContext();
+//			JFireServerLocalLoginManager m = JFireServerLocalLoginManager.getJFireServerLocalLoginManager(localContext);
+//
+//			AuthCallbackHandler mqCallbackHandler = new AuthCallbackHandler(
+//					JFireServerLocalLoginManager.PRINCIPAL_LOCALQUEUEWRITER,
+//					m.getPrincipal(JFireServerLocalLoginManager.PRINCIPAL_LOCALQUEUEWRITER).getPassword().toCharArray());
+//
+//			LoginContext loginContext = new LoginContext("jfireLocal", mqCallbackHandler);
+//			return loginContext;
+//		} catch (NamingException x) {
+//			throw new J2EEAdapterException(x);
+//		} catch (LoginException x) {
+//			throw new J2EEAdapterException(x);
+//		}
+//	}
 }

@@ -62,6 +62,18 @@ implements Serializable
 
 	private FilterRegistry filterRegistry;
 
+//	public CacheSessionCoordinate getCoordinate() {
+//		return new CacheSessionCoordinate(cacheManagerFactory.getOrganisationID(), userID, sessionID);
+//	}
+//
+//	public CacheSession(CacheManagerFactory cacheManagerFactory, CacheSessionCoordinate coordinate)
+//	{
+//		this(cacheManagerFactory, coordinate.getSessionID(), coordinate.getUserID());
+//
+//		if (!cacheManagerFactory.getOrganisationID().equals(coordinate.getOrganisationID()))
+//			throw new IllegalArgumentException("cacheManagerFactory.organisationID != coordinateSet.organisationID :: " + cacheManagerFactory.getOrganisationID() + " != " + coordinate.getOrganisationID());
+//	}
+
 	/**
 	 * @param cacheManagerFactory The {@link CacheManagerFactory} which created this {@link CacheSession}.
 	 * @param sessionID The sessionID as specified by the client. He cannot "hijack" sessions anyway, because the userID is checked.
@@ -160,7 +172,7 @@ implements Serializable
 			_subscribedObjectIDs = null;
 		}
 	}
-	
+
 	/**
 	* This method removes the given <tt>objectID</tt> from the backing <tt>Set</tt>.
 	*
@@ -496,7 +508,7 @@ implements Serializable
 //		do {
 			long actualWaitMSec = waitTimeout;
 			synchronized (dirtyObjectIDsMutex) {
-	
+
 //				if (!dirtyObjectIDs.isEmpty()) {
 //					long delayMSec = cacheManagerFactory.getCacheCfMod().getDelayNotificationMSec();
 //

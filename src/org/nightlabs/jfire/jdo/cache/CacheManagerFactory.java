@@ -42,6 +42,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.UUID;
 
 import javax.jdo.PersistenceManager;
 import javax.jdo.PersistenceManagerFactory;
@@ -52,7 +53,6 @@ import javax.security.auth.login.LoginContext;
 import javax.security.auth.login.LoginException;
 import javax.transaction.UserTransaction;
 
-import org.apache.log4j.Logger;
 import org.nightlabs.jfire.base.AuthCallbackHandler;
 import org.nightlabs.jfire.base.JFirePrincipal;
 import org.nightlabs.jfire.base.Lookup;
@@ -69,6 +69,8 @@ import org.nightlabs.jfire.servermanager.ra.JFireServerManagerFactoryImpl;
 import org.nightlabs.jfire.servermanager.ra.JFireServerManagerImpl;
 import org.nightlabs.util.IOUtil;
 import org.nightlabs.util.Util;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Marco Schulze - marco at nightlabs dot de
@@ -77,7 +79,7 @@ public class CacheManagerFactory
 		implements Serializable
 {
 	private static final long serialVersionUID = 1L;
-	private static final Logger logger = Logger.getLogger(CacheManagerFactory.class);
+	private static final Logger logger = LoggerFactory.getLogger(CacheManagerFactory.class);
 
 	public static final String JNDI_PREFIX = "java:/jfire/cacheManagerFactory/";
 
@@ -1035,8 +1037,7 @@ public class CacheManagerFactory
 
 	private transient Object objectIDsWaitingForNotificationMutex = new Object();
 
-	private void notifyLocalListeners(
-			Map<JDOLifecycleState, Map<Object, DirtyObjectID>> dirtyObjectIDs)
+	private void notifyLocalListeners(LocalDirtyEvent event)
 	{
 		List<LocalDirtyListener> listeners = null;
 		synchronized (localDirtyListenersMutex) {
@@ -1050,8 +1051,21 @@ public class CacheManagerFactory
 
 		if (listeners != null) {
 			for (LocalDirtyListener localDirtyListener : listeners)
-				localDirtyListener.notifyDirtyObjectIDs(dirtyObjectIDs);
+				localDirtyListener.notifyDirtyObjectIDs(event);
 		}
+	}
+
+	private UUID cacheManagerFactoryID = UUID.randomUUID();
+
+	/**
+	 * Unique identifier of this CMF instance. This ID is transient. After every reboot, there will thus be another
+	 * <code>cacheManagerFactoryID</code> for the same {@link #getOrganisationID() organisationID}.
+	 * In a clustered environment, every cluster node has a different <code>cacheManagerFactoryID</code>
+	 * for the same organisationID, too.
+	 * @return the transient ID of this <code>CacheManagerFactory</code> instance.
+	 */
+	public UUID getCacheManagerFactoryID() {
+		return cacheManagerFactoryID;
 	}
 
 	/**
@@ -1083,19 +1097,44 @@ public class CacheManagerFactory
 		if (dirtyObjectIDs == null)
 			throw new IllegalArgumentException("dirtyObjectIDs is null");
 
+		Map<Object, Class<?>> objectID2ClassMap = new HashMap<Object, Class<?>>();
+
 		// the dirtyObjectIDs don't have the sessionID assigned yet => assign it now
 		for (Map.Entry<JDOLifecycleState, Map<Object, DirtyObjectID>> me1 : dirtyObjectIDs.entrySet()) {
 			for (DirtyObjectID dirtyObjectID : me1.getValue().values()) {
+				Object objectID = dirtyObjectID.getObjectID();
 				dirtyObjectID.addSourceSessionID(sessionID);
+				objectID2ClassMap.put(objectID, getClassByObjectID(objectID));
 			}
 		}
+
+//		CacheSession cacheSession = getCacheSession(sessionID);
+//		if (cacheSession == null) {
+//			logger.warn("addDirtyObjectIDs: There is no CacheSession with sessionID={}!!! Skipping silently.", sessionID);
+//			return;
+//		}
+
+		LocalDirtyEvent localDirtyEvent = new LocalDirtyEvent(cacheManagerFactoryID, organisationID, sessionID, dirtyObjectIDs, objectID2ClassMap);
+		_addDirtyObjectIDs(localDirtyEvent);
+	}
+
+	public void addDirtyObjectIDs(LocalDirtyEvent localDirtyEvent)
+	{
+		addObjectID2ClassMap(localDirtyEvent.getObjectID2ClassMap());
+		_addDirtyObjectIDs(localDirtyEvent);
+	}
+
+	private void _addDirtyObjectIDs(LocalDirtyEvent localDirtyEvent)
+	{
+		String sessionID = localDirtyEvent.getSessionID();
+		Map<JDOLifecycleState, Map<Object, DirtyObjectID>> dirtyObjectIDs = localDirtyEvent.getDirtyObjectIDs();
 
 		// local listeners are triggered here (i.e. during commit), because they
 		// might require to be
 		// done for sure. If we did it in the NotificationThread, they might be
 		// never triggered,
 		// in case the server is restarted.
-		notifyLocalListeners(dirtyObjectIDs);
+		notifyLocalListeners(localDirtyEvent);
 
 		// merge the parameter dirtyObjectIDs into
 		// this.lifecycleType2objectIDsWaitingForNotification
@@ -1721,9 +1760,9 @@ public class CacheManagerFactory
 				// If only the new file exists, the old one was already deleted, but the new one not
 				// yet renamed. This might happen in the very unlikely case that the server is killed
 				// just between f.delete() and f2.renameTo(f). In this situation, we hope, the new file
-				// is OK and rename it now. 
+				// is OK and rename it now.
 				// Marco.
-				Exception x; 
+				Exception x;
 				if (!f.exists()) {
 					x = new IllegalStateException("File \""+f2.getAbsolutePath()+"\" exists, but \"" + f.getAbsolutePath() + "\" does not exist! Seems, the server was interrupted between deleting the old version and renaming the new one! Will try to do the renaming now.");
 					f2.renameTo(f);

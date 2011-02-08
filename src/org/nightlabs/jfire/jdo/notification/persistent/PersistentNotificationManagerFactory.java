@@ -49,11 +49,11 @@ import javax.naming.NamingException;
 import javax.security.auth.login.LoginContext;
 import javax.transaction.UserTransaction;
 
-import org.apache.log4j.Logger;
 import org.nightlabs.j2ee.LoginData;
 import org.nightlabs.jdo.ObjectIDUtil;
 import org.nightlabs.jfire.base.AuthCallbackHandler;
 import org.nightlabs.jfire.jdo.cache.CacheManagerFactory;
+import org.nightlabs.jfire.jdo.cache.LocalDirtyEvent;
 import org.nightlabs.jfire.jdo.cache.LocalDirtyListener;
 import org.nightlabs.jfire.jdo.notification.DirtyObjectID;
 import org.nightlabs.jfire.jdo.notification.JDOLifecycleState;
@@ -65,11 +65,13 @@ import org.nightlabs.jfire.servermanager.JFireServerManagerFactory;
 import org.nightlabs.jfire.servermanager.j2ee.J2EEAdapter;
 import org.nightlabs.jfire.servermanager.ra.JFireServerManagerFactoryImpl;
 import org.nightlabs.jfire.servermanager.ra.JFireServerManagerImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class PersistentNotificationManagerFactory implements Serializable
 {
 	private static final long serialVersionUID = 1L;
-	private static final Logger logger = Logger.getLogger(PersistentNotificationManagerFactory.class);
+	private static final Logger logger = LoggerFactory.getLogger(PersistentNotificationManagerFactory.class);
 
 	public static final String JNDI_PREFIX = "java:/jfire/persistentNotificationManagerFactory/";
 
@@ -123,12 +125,16 @@ public class PersistentNotificationManagerFactory implements Serializable
 
 		ctx.bind(getJNDIName(organisationID), this);
 
-		CacheManagerFactory.getCacheManagerFactory(ctx, organisationID)
-				.addLocalDirtyListener(new LocalDirtyListener() {
-					public void notifyDirtyObjectIDs(Map<JDOLifecycleState, Map<Object, DirtyObjectID>> dirtyObjectIDs)
+		final CacheManagerFactory cacheManagerFactory = CacheManagerFactory.getCacheManagerFactory(ctx, organisationID);
+		cacheManagerFactory.addLocalDirtyListener(new LocalDirtyListener() {
+					public void notifyDirtyObjectIDs(LocalDirtyEvent event)
 					{
+						if (!cacheManagerFactory.getCacheManagerFactoryID().equals(event.getCacheManagerFactoryID())) {
+							logger.debug("LocalDirtyListener.notifyDirtyObjectIDs: Ignoring dirty object IDs from ");
+						}
+
 						try {
-							dirtyObjectIDBuffer.addDirtyObjectIDs(dirtyObjectIDs);
+							dirtyObjectIDBuffer.addDirtyObjectIDs(event.getDirtyObjectIDs());
 						} catch (Exception x) {
 							logger.error("Storing DirtyObjectIDs into temporary persistent buffer failed!", x);
 						}

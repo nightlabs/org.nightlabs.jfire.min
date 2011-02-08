@@ -30,6 +30,7 @@ import java.io.Serializable;
 import java.util.Set;
 
 import javax.annotation.security.RolesAllowed;
+import javax.jms.Connection;
 import javax.naming.InitialContext;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.login.LoginContext;
@@ -92,4 +93,26 @@ public interface J2EEAdapter extends Serializable {
 	 * @throws J2EEAdapterException in case obtaining the roles fails.
 	 */
 	Set<String> getAllEjb3Roles() throws J2EEAdapterException;
+
+	/**
+	 * Create a connection to the JMS which allows for sending (and receiving) messages via queues or topics.
+	 *
+	 * @param transacted whether to use a transaction. If <code>true</code>, a distributed XA transaction will be used
+	 * and <code>acknowledgeMode</code> will be ignored (according to JEE spec, see {@link Connection#createSession(boolean, int)}.
+	 * If <code>false</code>, no transaction will be used. Note, that without a transaction, messages sent to a queue
+	 * (or topic) will be <b>immediately</b> processed (and thus not yet see data written in the current transaction).
+	 * @param acknowledgeMode indicates whether the consumer or the client will acknowledge any messages it receives;
+	 * ignored if the session is transacted. See {@link Connection#createSession(boolean, int)}.
+	 * @return a connection to the JMS.
+	 * @throws J2EEAdapterException in case there is a problem accessing the JMS.
+	 */
+	JMSConnection createJMSConnection(boolean transacted, int acknowledgeMode) throws J2EEAdapterException;
+
+	/**
+	 * Determine whether we are running in a clustered environment. Certain features use this to automatically
+	 * toggle themselves on when needed in a cluster.
+	 * @return <code>true</code>, if the server is running in cluster-mode. <code>false</code>, if the server runs
+	 * in single-JVM-mode.
+	 */
+	public boolean isInCluster();
 }
