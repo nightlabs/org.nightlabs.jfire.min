@@ -12,5 +12,9 @@ implements Serializable
 	{
 		this.organisationID = organisationID;
 	}
-	public String organisationID;
+	private String organisationID;
+
+	public String getOrganisationID() {
+		return organisationID;
+	}
 }

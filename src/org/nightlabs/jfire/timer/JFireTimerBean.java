@@ -1,7 +1,8 @@
 package org.nightlabs.jfire.timer;
 
+import java.io.Serializable;
+import java.util.Collection;
 import java.util.Date;
-import java.util.List;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ejb.EJB;
@@ -11,12 +12,10 @@ import javax.ejb.Timer;
 import javax.ejb.TimerService;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
-import javax.jdo.JDOHelper;
 import javax.jdo.PersistenceManager;
 import javax.naming.InitialContext;
 import javax.security.auth.login.LoginContext;
 
-import org.apache.log4j.Logger;
 import org.nightlabs.j2ee.LoginData;
 import org.nightlabs.jfire.base.AuthCallbackHandler;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
@@ -24,17 +23,11 @@ import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.servermanager.JFireServerManagerFactory;
 import org.nightlabs.jfire.servermanager.j2ee.J2EEAdapter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Marco Schulze - marco at nightlabs dot de
- *
- * @ejb.bean
- *		name="jfire/ejb/JFireBaseBean/JFireTimer"
- *		jndi-name="jfire/ejb/JFireBaseBean/JFireTimer"
- *		type="Stateless"
- *
- * @ejb.util generate="physical"
- * @ejb.transaction type="Required"
  */
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 @Stateless
@@ -44,10 +37,7 @@ implements TimedObject, JFireTimerRemote
 {
 	private static final long serialVersionUID = 1L;
 
-	/**
-	 * LOG4J logger used by this class
-	 */
-	private static final Logger logger = Logger.getLogger(JFireTimerBean.class);
+	private static final Logger logger = LoggerFactory.getLogger(JFireTimerBean.class);
 
 	@EJB
 	TimerManagerLocal timerManagerLocal;
@@ -61,7 +51,7 @@ implements TimedObject, JFireTimerRemote
 				throw new IllegalStateException("timer.getInfo() returned null! Should be an instance of TimerParam!!!");
 
 			if(logger.isDebugEnabled())
-				logger.debug("ejbTimeout: organisationID=" + timerParam.organisationID);
+				logger.debug("ejbTimeout: organisationID={}", timerParam.getOrganisationID());
 
 			// We are not authenticated here, thus we cannot access the persistence manager properly.
 			// Therefore, we wrap this in an AsyncInvoke
@@ -94,7 +84,7 @@ implements TimedObject, JFireTimerRemote
 //					);
 					LoginContext loginContext = j2eeAdapter.createLoginContext(
 							LoginData.DEFAULT_SECURITY_PROTOCOL,
-							new AuthCallbackHandler(ism, timerParam.organisationID, User.USER_ID_SYSTEM)
+							new AuthCallbackHandler(ism, timerParam.getOrganisationID(), User.USER_ID_SYSTEM)
 					);
 
 					loginContext.login();
@@ -105,7 +95,8 @@ implements TimedObject, JFireTimerRemote
 						if (timerManagerLocal == null)
 							throw new IllegalStateException("Dependency injection for timerManagerLocal failed!");
 
-						timerManagerLocal.ejbTimeoutDelegate(timerParam);
+						timerManagerLocal.cleanupTasksMarkedAsExecutingByDeadClusterNodes();
+						timerManagerLocal.execTasksToDo(timerParam);
 
 					} finally {
 						loginContext.logout();
@@ -143,29 +134,61 @@ implements TimedObject, JFireTimerRemote
 
 		PersistenceManager pm = createPersistenceManager();
 		try {
-			// before we start the timer, we clear all Task.executing flags (it's not possible that there's sth. executing before we start the timer)
-			List<Task> tasks = Task.getTasksByExecuting(pm, true);
-			if (!tasks.isEmpty()) {
-				logger.warn("startTimer: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-				logger.warn("startTimer: There are " + tasks.size() + " Tasks currently marked with executing=true! This is impossible! Will clear that flag now:");
-				for (Task task : tasks) {
-					task.setExecuting(false);
-					logger.warn("startTimer:  cleared Task.executing: " + JDOHelper.getObjectId(task));
+//			// before we start the timer, we clear all Task.executing flags (it's not possible that there's sth. executing before we start the timer)
+//			List<Task> tasks = Task.getTasksByExecuting(pm, true);
+//			if (!tasks.isEmpty()) {
+//				logger.warn("startTimer: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+//				logger.warn("startTimer: There are " + tasks.size() + " Tasks currently marked with executing=true! This is impossible! Will clear that flag now:");
+//				for (Task task : tasks) {
+//					task.setExecuting(false);
+//					logger.warn("startTimer:  cleared Task.executing: " + JDOHelper.getObjectId(task));
+//				}
+//			}
+			// This is now in TimerManagerBean.cleanupTasksMarkedAsExecutingByDeadClusterNodes(...), because the
+			// situation is different in a cluster environment. Marco.
+
+			String organisationID = getOrganisationID();
+
+			@SuppressWarnings("unchecked")
+			Collection<Timer> timers = timerService.getTimers();
+
+			boolean timerAlreadyRegistered = false;
+			for (Timer timer : timers) {
+				Serializable timerInfo = timer.getInfo();
+
+				if (timerInfo == null)
+					continue;
+
+				if (!(timerInfo instanceof TimerParam))
+					continue;
+
+				TimerParam timerParam = (TimerParam) timerInfo;
+				if (organisationID.equals(timerParam.getOrganisationID())) {
+					timerAlreadyRegistered = true;
+					break;
 				}
 			}
 
-			long timeout = 60 * 1000; // call once every minute
+			if (timerAlreadyRegistered) {
+				logger.info("startTimer: organisationID={}: Timer already registered. Skipping registration.", organisationID);
+			}
+			else {
+				logger.info("startTimer: organisationID={}: Timer not yet registered. Registering it now.", organisationID);
 
-			// We want the timer to start as exactly as possible at the starting of the minute (at 00 sec).
-			long start = System.currentTimeMillis();
-			start = start + timeout - (start % timeout);
+				long timeout = 60 * 1000; // call once every minute
 
-			Date firstExecDate = new Date(start);
-			timerService.createTimer(
-					firstExecDate,
-					timeout,
-					new TimerParam(getOrganisationID()) // this object can be retrieved by Timer#getInfo()
-					);
+				// We want the timer to start as exactly as possible at the starting of the minute (at 00 sec).
+				long start = System.currentTimeMillis();
+				start = start + timeout - (start % timeout);
+
+				Date firstExecDate = new Date(start);
+
+				timerService.createTimer(
+						firstExecDate,
+						timeout,
+						new TimerParam(organisationID) // this object can be retrieved by Timer#getInfo()
+				);
+			}
 		} finally {
 			pm.close();
 		}

@@ -15,10 +15,13 @@ public interface TimerManagerLocal
 	boolean setExecutingIfActiveExecIDMatches(TaskID taskID, String activeExecID)
 			throws Exception;
 
+	void cleanupTasksMarkedAsExecutingByDeadClusterNodes();
+
 	/**
 	 * Because the method {@link JFireTimerBean#ejbTimeout(javax.ejb.Timer)} is called without authentication
 	 * and thus accessing the datastore doesn't work properly, we use this method as
 	 * a delegate.
 	 */
-	void ejbTimeoutDelegate(TimerParam timerParam) throws Exception;
+	void execTasksToDo(TimerParam timerParam) throws Exception;
+
 }

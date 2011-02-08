@@ -2,8 +2,12 @@ package org.nightlabs.jfire.timer;
 
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ejb.Stateless;
@@ -14,25 +18,19 @@ import javax.jdo.JDODetachedFieldAccessException;
 import javax.jdo.JDOHelper;
 import javax.jdo.PersistenceManager;
 
-import org.apache.log4j.Logger;
 import org.nightlabs.jdo.NLJDOHelper;
-import org.nightlabs.jdo.ObjectIDUtil;
 import org.nightlabs.jdo.timepattern.TimePatternSetJDOImpl;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
+import org.nightlabs.jfire.cluster.ClusterNode;
+import org.nightlabs.jfire.cluster.ClusterNodeIDSharedInstance;
 import org.nightlabs.jfire.security.Authority;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.timer.id.TaskID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Marco Schulze - marco at nightlabs dot de
- *
- * @ejb.bean
- *		name="jfire/ejb/JFireBaseBean/TimerManager"
- *		jndi-name="jfire/ejb/JFireBaseBean/TimerManager"
- *		type="Stateless"
- *
- * @ejb.util generate="physical"
- * @ejb.transaction type="Required"
  */
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 @Stateless
@@ -41,13 +39,14 @@ extends BaseSessionBeanImpl
 implements TimerManagerRemote, TimerManagerLocal
 {
 	private static final long serialVersionUID = 1L;
-	private static final Logger logger = Logger.getLogger(TimerManagerBean.class);
+	private static final Logger logger = LoggerFactory.getLogger(TimerManagerBean.class);
 
 	private static final String[] FETCH_GROUPS_TASK = new String[] {
 		FetchPlan.DEFAULT,
-		Task.FETCH_GROUP_USER,
+//		Task.FETCH_GROUP_USER,
 		Task.FETCH_GROUP_TIME_PATTERN_SET,
-		TimePatternSetJDOImpl.FETCH_GROUP_TIME_PATTERNS };
+		TimePatternSetJDOImpl.FETCH_GROUP_TIME_PATTERNS
+	};
 
 
 	/* (non-Javadoc)
@@ -58,6 +57,12 @@ implements TimerManagerRemote, TimerManagerLocal
 	public boolean setExecutingIfActiveExecIDMatches(TaskID taskID, String activeExecID)
 	throws Exception
 	{
+		if (taskID == null)
+			throw new IllegalArgumentException("taskID == null");
+
+		if (activeExecID == null)
+			throw new IllegalArgumentException("activeExecID == null");
+
 		PersistenceManager pm = createPersistenceManager();
 		try {
 			NLJDOHelper.enableTransactionSerializeReadObjects(pm);
@@ -69,7 +74,8 @@ implements TimerManagerRemote, TimerManagerLocal
 					return false;
 				}
 
-				task.setExecuting(true);
+//				task.setExecuting(true);
+				task.setExecutingClusterNodeID(ClusterNodeIDSharedInstance.getClusterNodeID());
 				return true;
 
 			} finally {
@@ -81,53 +87,155 @@ implements TimerManagerRemote, TimerManagerLocal
 	}
 
 
-	/* (non-Javadoc)
-	 * @see org.nightlabs.jfire.timer.TimerManagerLocal#ejbTimeoutDelegate(org.nightlabs.jfire.timer.TimerParam)
-	 */
 	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
 	@Override
-	public void ejbTimeoutDelegate(TimerParam timerParam)
+	public void cleanupTasksMarkedAsExecutingByDeadClusterNodes()
+	{
+		PersistenceManager pm = createPersistenceManager();
+		try {
+			logger.debug("cleanupTasksMarkedAsExecutingByDeadClusterNodes: entered");
+
+			// Maybe we should make this configurable?! A node is considered dead, if its last
+			// heartbeat-timestamp is older than this time in milliseconds.
+			long minClusterNodeHeartbeatAgeMSecConsideredDead = 1000L * 60L * 5; // 5 minutes.
+
+			Date oldestClusterNodeHeartbeatDateConsideredAlive = new Date(System.currentTimeMillis() - minClusterNodeHeartbeatAgeMSecConsideredDead);
+
+			// Mark our own cluster node as alive (save the current timestamp).
+			UUID myClusterNodeID = ClusterNodeIDSharedInstance.getClusterNodeID();
+			ClusterNode myClusterNode = ClusterNode.createClusterNode(pm, myClusterNodeID);
+			myClusterNode.setLastHeartbeatDate(new Date());
+			pm.flush(); // Only necessary to see the correct timings, if debug logging is enabled.
+
+			logger.debug("cleanupTasksMarkedAsExecutingByDeadClusterNodes: Registered my heartbeat timestamp.");
+
+
+			// Clean up old cluster nodes (prevent them from piling up).
+			long beginDeletingOldDeadClusterNodes = System.currentTimeMillis();
+			List<? extends ClusterNode> veryOldDeadClusterNodes = ClusterNode.getClusterNodesWithLastHeartbeatDateBefore(
+					pm,
+					new Date(
+							System.currentTimeMillis() - 1000L * 3600L * 24L // Make this configurable?
+					)
+			);
+			pm.deletePersistentAll(veryOldDeadClusterNodes);
+			pm.flush(); // Necessary to measure the correct timings.
+			long durationDeletingOldDeadClusterNodes = System.currentTimeMillis() - beginDeletingOldDeadClusterNodes;
+			if (durationDeletingOldDeadClusterNodes > 100)
+				logger.warn("cleanupTasksMarkedAsExecutingByDeadClusterNodes: Deleting {} cluster nodes which disappeared longer than one day ago took {} msec, which is too long!!!.", veryOldDeadClusterNodes.size(), durationDeletingOldDeadClusterNodes);
+			else
+				logger.debug("cleanupTasksMarkedAsExecutingByDeadClusterNodes: Deleting {} cluster nodes which disappeared longer than one day ago took {} msec.", veryOldDeadClusterNodes.size(), durationDeletingOldDeadClusterNodes);
+
+
+			// Find all tasks that are currently marked with executing=true, but not by this node.
+			List<Task> tasks;
+			NLJDOHelper.enableTransactionSerializeReadObjects(pm);
+			try {
+				tasks = Task.getTasksExecutingByNotClusterNodeID(pm, myClusterNodeID);
+			} finally {
+				NLJDOHelper.disableTransactionSerializeReadObjects(pm);
+			}
+
+			// Collect all tasks that need to be released in this list.
+			List<Task> tasksMarkedAsExecutingByDeadClusterNodes = new LinkedList<Task>();
+
+			// Cache all alive and dead nodes (so that we don't need to check the same node multiple times).
+			Set<UUID> clusterNodeIDs_alive = new HashSet<UUID>();
+			Set<UUID> clusterNodeIDs_dead = new HashSet<UUID>();
+
+			// Iterate all tasks and decide whether they need to be released.
+			for (Task task : tasks) {
+				UUID executingClusterNodeID = task.getExecutingClusterNodeID();
+				if (clusterNodeIDs_alive.contains(executingClusterNodeID))
+					continue;
+
+				if (clusterNodeIDs_dead.contains(executingClusterNodeID)) {
+					tasksMarkedAsExecutingByDeadClusterNodes.add(task);
+					continue;
+				}
+
+				ClusterNode clusterNode = ClusterNode.getClusterNode(pm, executingClusterNodeID);
+				if (clusterNode == null) {
+					logger.debug("cleanupTasksMarkedAsExecutingByDeadClusterNodes: ClusterNode {} assumed to be dead, because it was not found in the database.", executingClusterNodeID);
+					clusterNodeIDs_dead.add(executingClusterNodeID);
+					tasksMarkedAsExecutingByDeadClusterNodes.add(task);
+				}
+				else if (clusterNode.getLastHeartbeatDate().before(oldestClusterNodeHeartbeatDateConsideredAlive)) {
+					logger.debug(
+							"cleanupTasksMarkedAsExecutingByDeadClusterNodes: ClusterNode {} assumed to be dead, because its last heartbeat was seen {}.",
+							new Object[] { executingClusterNodeID, clusterNode.getLastHeartbeatDate() }
+					);
+					clusterNodeIDs_dead.add(executingClusterNodeID);
+					tasksMarkedAsExecutingByDeadClusterNodes.add(task);
+				}
+				else {
+					logger.debug(
+							"cleanupTasksMarkedAsExecutingByDeadClusterNodes: ClusterNode {} assumed to be alive, because its last heartbeat was seen {}.",
+							new Object[] { executingClusterNodeID, clusterNode.getLastHeartbeatDate() }
+					);
+					clusterNodeIDs_alive.add(executingClusterNodeID);
+				}
+			}
+
+			if (!tasksMarkedAsExecutingByDeadClusterNodes.isEmpty()) {
+				logger.warn("cleanupTasksMarkedAsExecutingByDeadClusterNodes: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+				logger.warn("cleanupTasksMarkedAsExecutingByDeadClusterNodes: There are " + tasks.size() + " Tasks currently marked with executing=true by nodes that are not alive anymore! Will clear that flag now:");
+				for (Task task : tasks) {
+					logger.warn("cleanupTasksMarkedAsExecutingByDeadClusterNodes:  * executingClusterNodeID={} taskID={}", new Object[] { task.getExecutingClusterNodeID(), JDOHelper.getObjectId(task) });
+					task.setExecutingClusterNodeID(null);
+					task.setActiveExecID(null);
+				}
+			}
+		} finally {
+			pm.close();
+		}
+	}
+
+	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+	@Override
+	public void execTasksToDo(TimerParam timerParam)
 	throws Exception
 	{
 		if (!User.USER_ID_SYSTEM.equals(getUserID()))
 			throw new SecurityException("This method can only be called by user " + User.USER_ID_SYSTEM);
 
 		if (logger.isDebugEnabled())
-			logger.debug("ejbTimeoutDelegate: principal.organisationID=\""+getOrganisationID()+"\" timerParam.organisationID=\""+timerParam.organisationID+"\": begin");
+			logger.debug("execTasksToDo: principal.organisationID=\""+getOrganisationID()+"\" timerParam.organisationID=\""+timerParam.getOrganisationID()+"\": begin");
 
-		if (!getOrganisationID().equals(timerParam.organisationID))
-			throw new IllegalStateException("principal.organisationID=\""+getOrganisationID()+"\" != timerParam.organisationID=\""+timerParam.organisationID+"\"");
+		if (!getOrganisationID().equals(timerParam.getOrganisationID()))
+			throw new IllegalStateException("principal.organisationID=\""+getOrganisationID()+"\" != timerParam.organisationID=\""+timerParam.getOrganisationID()+"\"");
 
-		String activeExecID = ObjectIDUtil.makeValidIDString(null);
+		String activeExecID = UUID.randomUUID().toString();
 
-		List<Task> tasks;
 		PersistenceManager pm = createPersistenceManager();
 		try {
+			Date now = new Date();
+
+			List<Task> tasks;
 			NLJDOHelper.enableTransactionSerializeReadObjects(pm);
 			try {
-
 				pm.getFetchPlan().setMaxFetchDepth(NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT);
 				pm.getFetchPlan().setGroups(FETCH_GROUPS_TASK);
-				Date now = new Date();
 				tasks = Task.getTasksToDo(pm, now);
-				for (Iterator<Task> it = tasks.iterator(); it.hasNext(); ) {
-					Task task = it.next();
-					task.setActiveExecID(activeExecID);
-					TimerAsyncInvoke.exec(task, true); // this method does not use the task instance later outside the current transaction (it only fetches the TaskID)
-				}
-
-				for (Iterator<Task> it = Task.getTasksToRecalculateNextExecDT(pm, now).iterator(); it.hasNext(); ) {
-					Task task = it.next();
-					task.calculateNextExecDT();
-				}
 			} finally {
 				NLJDOHelper.disableTransactionSerializeReadObjects(pm);
+			}
+
+			for (Iterator<Task> it = tasks.iterator(); it.hasNext(); ) {
+				Task task = it.next();
+				task.setActiveExecID(activeExecID);
+				TimerAsyncInvoke.exec(task); // this method does not use the task instance later outside the current transaction (it only fetches the TaskID)
+			}
+
+			for (Iterator<Task> it = Task.getTasksToRecalculateNextExecDT(pm, now).iterator(); it.hasNext(); ) {
+				Task task = it.next();
+				task.calculateNextExecDT();
 			}
 		} finally {
 			pm.close();
 		}
 
-		logger.debug("ejbTimeoutDelegate: organisationID=\""+timerParam.organisationID+"\": end");
+		logger.debug("execTasksToDo: organisationID=\""+timerParam.getOrganisationID()+"\": end");
 	}
 
 

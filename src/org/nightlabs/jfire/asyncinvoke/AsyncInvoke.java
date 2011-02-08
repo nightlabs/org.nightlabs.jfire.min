@@ -26,29 +26,23 @@
 
 package org.nightlabs.jfire.asyncinvoke;
 
-import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
+import javax.jms.Destination;
+import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageProducer;
-import javax.jms.Queue;
-import javax.jms.QueueConnection;
-import javax.jms.QueueConnectionFactory;
-import javax.jms.QueueSender;
-import javax.jms.QueueSession;
 import javax.jms.Session;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.security.auth.callback.Callback;
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.callback.NameCallback;
-import javax.security.auth.callback.PasswordCallback;
-import javax.security.auth.callback.UnsupportedCallbackException;
-import javax.security.auth.login.LoginContext;
 
-import org.nightlabs.jfire.base.JFireServerLocalLoginManager;
-import org.nightlabs.jfire.servermanager.j2ee.JMSConnectionFactoryLookup;
+import org.nightlabs.jfire.servermanager.j2ee.J2EEAdapter;
+import org.nightlabs.jfire.servermanager.j2ee.J2EEAdapterException;
+import org.nightlabs.jfire.servermanager.j2ee.JMSConnection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -60,6 +54,8 @@ import org.nightlabs.jfire.servermanager.j2ee.JMSConnectionFactoryLookup;
  */
 public class AsyncInvoke
 {
+	private static Logger logger = LoggerFactory.getLogger(AsyncInvoke.class);
+
 	protected static final String QUEUE_INVOCATION = "queue/jfire/JFireBaseBean/AsyncInvokerInvocationQueue";
 	protected static final String QUEUE_SUCCESSCALLBACK = "queue/jfire/JFireBaseBean/AsyncInvokerSuccessCallbackQueue";
 	protected static final String QUEUE_ERRORCALLBACK = "queue/jfire/JFireBaseBean/AsyncInvokerErrorCallbackQueue";
@@ -156,33 +152,56 @@ public class AsyncInvoke
 		enqueue(QUEUE_INVOCATION, envelope, enableXA);
 	}
 
-	protected static class AuthCallbackHandler implements CallbackHandler
+//	protected static class AuthCallbackHandler implements CallbackHandler
+//	{
+//		private String userName;
+//		private char[] password;
+//
+//		public AuthCallbackHandler(String userName, char[] password) {
+//			this.userName = userName;
+//			this.password = password;
+//		}
+//
+//		@Override
+//		public void handle(Callback[] callbacks)
+//		throws IOException,
+//		UnsupportedCallbackException
+//		{
+//			for (int i = 0; i < callbacks.length; ++i) {
+//				Callback cb = callbacks[i];
+//				if (cb instanceof NameCallback) {
+//					((NameCallback)cb).setName(userName);
+//				}
+//				else if (cb instanceof PasswordCallback) {
+//					((PasswordCallback)cb).setPassword(password);
+//				}
+//				else throw new UnsupportedCallbackException(cb);
+//			}
+//		}
+//	}
+
+	private static Map<String, Destination> jndiName2Queue = Collections.synchronizedMap(new HashMap<String, Destination>());
+
+	private static void _enqueue(J2EEAdapter j2eeAdapter, String queueJNDIName, AsyncInvokeEnvelope envelope, boolean enableXA)
+	throws NamingException, J2EEAdapterException, JMSException
 	{
-		private String userName;
-		private char[] password;
+		JMSConnection jmsConnection = j2eeAdapter.createJMSConnection(enableXA, Session.AUTO_ACKNOWLEDGE);
+		try {
+			Message message = jmsConnection.getSession().createObjectMessage(envelope);
 
-		public AuthCallbackHandler(String userName, char[] password) {
-			this.userName = userName;
-			this.password = password;
-		}
-
-		@Override
-		public void handle(Callback[] callbacks)
-		throws IOException,
-		UnsupportedCallbackException
-		{
-			for (int i = 0; i < callbacks.length; ++i) {
-				Callback cb = callbacks[i];
-				if (cb instanceof NameCallback) {
-					((NameCallback)cb).setName(userName);
-				}
-				else if (cb instanceof PasswordCallback) {
-					((PasswordCallback)cb).setPassword(password);
-				}
-				else throw new UnsupportedCallbackException(cb);
+			Destination destination = jndiName2Queue.get(queueJNDIName);
+			if (destination == null) {
+				destination = jmsConnection.getDestination(queueJNDIName);
+				jndiName2Queue.put(queueJNDIName, destination);
 			}
+
+			MessageProducer producer = jmsConnection.getSession().createProducer(destination);
+			producer.send(message);
+		} finally {
+			jmsConnection.close();
 		}
 	}
+
 
 	/**
 	 * @param queueJNDIName The queue into which the <code>envelope</code> should be enqueued. This should be one
@@ -200,69 +219,113 @@ public class AsyncInvoke
 	throws AsyncInvokeEnqueueException
 	{
 		try {
-			InitialContext initialContext = new InitialContext();
+			InitialContext localContext = new InitialContext();
 			try {
-				JFireServerLocalLoginManager m = JFireServerLocalLoginManager.getJFireServerLocalLoginManager(initialContext);
+				J2EEAdapter j2eeAdapter = (J2EEAdapter) localContext.lookup(J2EEAdapter.JNDI_NAME);
 
-				AuthCallbackHandler mqCallbackHandler = new AuthCallbackHandler(
-						JFireServerLocalLoginManager.PRINCIPAL_LOCALQUEUEWRITER,
-						m.getPrincipal(JFireServerLocalLoginManager.PRINCIPAL_LOCALQUEUEWRITER).getPassword().toCharArray());
-
-				LoginContext loginContext = new LoginContext("jfireLocal", mqCallbackHandler);
-				loginContext.login();
 				try {
-					if (enableXA) {
-						// TODO "java:/JmsXA" should be configurable?!
-						ConnectionFactory connectionFactory = (ConnectionFactory) initialContext.lookup("java:/JmsXA");
-
-						Connection connection = null;
-						Session session = null;
-						MessageProducer sender = null;
-
-						try {
-							Queue queue = (Queue) initialContext.lookup(queueJNDIName);
-							connection = connectionFactory.createConnection();
-							session = connection.createSession(true, Session.AUTO_ACKNOWLEDGE);
-							sender = session.createProducer(queue);
-
-							Message message = session.createObjectMessage(envelope);
-							sender.send(message);
-						} finally {
-							if (sender != null) try { sender.close(); } catch (Exception ignore) { }
-							if (session != null) try { session.close(); } catch (Exception ignore) { }
-							if (connection != null) try { connection.close(); } catch (Exception ignore) { }
-						}
-					}
-					else {
-						QueueConnectionFactory connectionFactory = JMSConnectionFactoryLookup.lookupQueueConnectionFactory(initialContext);
-
-						QueueConnection connection = null;
-						QueueSession session = null;
-						QueueSender sender = null;
-
-						try {
-							connection = connectionFactory.createQueueConnection();
-							session = connection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
-							//					session = connection.createQueueSession(true, Session.AUTO_ACKNOWLEDGE); // transacted = true
-							Queue queue = (Queue) initialContext.lookup(queueJNDIName);
-							sender = session.createSender(queue);
-
-							Message message = session.createObjectMessage(envelope);
-							sender.send(message);
-						} finally {
-							if (sender != null) try { sender.close(); } catch (Exception ignore) { }
-							if (session != null) try { session.close(); } catch (Exception ignore) { }
-							if (connection != null) try { connection.close(); } catch (Exception ignore) { }
-						}
-					}
-				} finally {
-					loginContext.logout();
+					_enqueue(j2eeAdapter, queueJNDIName, envelope, enableXA);
+				} catch (Exception x) {
+					logger.warn("enqueue: Failed (but I will retry again): " + x, x);
+					jndiName2Queue.remove(queueJNDIName);
+					_enqueue(j2eeAdapter, queueJNDIName, envelope, enableXA);
 				}
+
 			} finally {
-				initialContext.close();
+				localContext.close();
 			}
 		} catch(Exception e) {
 			throw new AsyncInvokeEnqueueException(e);
 		}
+
+//		try {
+//			// Cluster and JBoss specific. This must be configurable!!!
+//			Properties p = new Properties();
+//			p.put(Context.INITIAL_CONTEXT_FACTORY, "org.jnp.interfaces.NamingContextFactory");
+//			p.put(Context.URL_PKG_PREFIXES, "jboss.naming:org.jnp.interfaces");
+//			p.put(Context.PROVIDER_URL, "localhost:1100"); // HA-JNDI port.
+//			InitialContext initialContext = new InitialContext(p);
+//
+////			InitialContext initialContext = new InitialContext();
+//			try {
+//				InitialContext localContext = new InitialContext();
+//				J2EEAdapter j2eeAdapter = (J2EEAdapter) localContext.lookup(J2EEAdapter.JNDI_NAME);
+////				JFireServerLocalLoginManager m = JFireServerLocalLoginManager.getJFireServerLocalLoginManager(localContext);
+////
+////				AuthCallbackHandler mqCallbackHandler = new AuthCallbackHandler(
+////						JFireServerLocalLoginManager.PRINCIPAL_LOCALQUEUEWRITER,
+////						m.getPrincipal(JFireServerLocalLoginManager.PRINCIPAL_LOCALQUEUEWRITER).getPassword().toCharArray());
+////
+////				LoginContext loginContext = new LoginContext("jfireLocal", mqCallbackHandler);
+//				LoginContext loginContext = j2eeAdapter.jms_createLoginContext();
+//				loginContext.login();
+//				try {
+//					ConnectionFactory connectionFactory;
+//					if (enableXA) {
+//						// TODO "java:/JmsXA" should be configurable?!
+//						connectionFactory = (ConnectionFactory) localContext.lookup("java:/JmsXA");
+////						connectionFactory = (ConnectionFactory) initialContext.lookup("XAConnectionFactory"); // This does not work :-(
+//					}
+//					else {
+//						// TODO "ConnectionFactory" should be configurable?!
+//						connectionFactory = (QueueConnectionFactory) initialContext.lookup("ConnectionFactory");
+//					}
+//
+//					Connection connection = null;
+//					Session session = null;
+//					MessageProducer sender = null;
+//					try {
+//						Queue queue = (Queue) initialContext.lookup(queueJNDIName);
+//						connection = connectionFactory.createConnection();
+//						session = connection.createSession(enableXA, Session.AUTO_ACKNOWLEDGE);
+//						sender = session.createProducer(queue);
+//
+//						Message message = session.createObjectMessage(envelope);
+//						sender.send(message);
+//					} finally {
+//						if (sender != null) try { sender.close(); } catch (Exception e) {
+//							logger.warn("sender.close() failed: " + e, e);
+//						}
+//						if (session != null) try { session.close(); } catch (Exception e) {
+//							logger.warn("session.close() failed: " + e, e);
+//						}
+//						if (connection != null) try { connection.close(); } catch (Exception e) {
+//							logger.warn("connection.close() failed: " + e, e);
+//						}
+//					}
+////					}
+////					else {
+//////						QueueConnectionFactory connectionFactory = (QueueConnectionFactory) initialContext.lookup("UIL2ConnectionFactory"); // TODO switch to normal ConnectionFactory below? maybe more portable? or make this configurable?
+////						connectionFactory = (QueueConnectionFactory) initialContext.lookup("ConnectionFactory");
+////
+////						QueueConnection connection = null;
+////						QueueSession session = null;
+////						QueueSender sender = null;
+////
+////						try {
+////							connection = connectionFactory.createQueueConnection();
+////							session = connection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
+////							//					session = connection.createQueueSession(true, Session.AUTO_ACKNOWLEDGE); // transacted = true
+////							Queue queue = (Queue) initialContext.lookup(queueJNDIName);
+////							sender = session.createSender(queue);
+////
+////							Message message = session.createObjectMessage(envelope);
+////							sender.send(message);
+////						} finally {
+////							if (sender != null) try { sender.close(); } catch (Exception ignore) { }
+////							if (session != null) try { session.close(); } catch (Exception ignore) { }
+////							if (connection != null) try { connection.close(); } catch (Exception ignore) { }
+////						}
+////					}
+//				} finally {
+//					loginContext.logout();
+//				}
+//				localContext.close();
+//			} finally {
+//				initialContext.close();
+//			}
+//		} catch(Exception e) {
+//			throw new AsyncInvokeEnqueueException(e);
+//		}
 	}
 }

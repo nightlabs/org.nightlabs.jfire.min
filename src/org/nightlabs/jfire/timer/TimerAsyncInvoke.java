@@ -318,7 +318,7 @@ extends AsyncInvoke
 		public UndeliverableCallbackResult handle(AsyncInvokeEnvelope envelope)
 		throws Exception
 		{
-			PersistenceManager pm = getPersistenceManager();
+			PersistenceManager pm = createPersistenceManager();
 			try {
 				NLJDOHelper.enableTransactionSerializeReadObjects(pm);
 				try {
@@ -339,7 +339,7 @@ extends AsyncInvoke
 		}
 	}
 
-	protected static void exec(Task task, boolean enableXA)
+	protected static void exec(Task task)
 	throws AsyncInvokeEnqueueException
 	{
 		UserDescriptor caller = new UserDescriptor(
@@ -361,6 +361,6 @@ extends AsyncInvoke
 		AsyncInvokeEnvelope envelope = new AsyncInvokeEnvelope(
 				caller,
 				invocation, successCallback, errorCallback, undeliverableCallback);
-		enqueue(QUEUE_INVOCATION, envelope, enableXA);
+		enqueue(QUEUE_INVOCATION, envelope, true);
 	}
 }
