@@ -642,12 +642,16 @@ public class ServerConfiguratorJBoss
 	 */
 	private void configureHTTPInvoker(File jbossDeployDir) throws SAXException, IOException
 	{
-		final File invokerDeployerDir = new File(jbossDeployDir, "http-invoker.sar").getAbsoluteFile();
+		File invokerDeployerDir = new File(jbossDeployDir, "http-invoker.sar").getAbsoluteFile();
 		if (! invokerDeployerDir.exists())
 		{
-			logger.error("Couldn't find the jboss http invoker deployer folder! Assumed to be in" +
-					invokerDeployerDir.toString());
-			return;
+			File haInvokerDeployerDir = new File(jbossDeployDir, "httpha-invoker.sar").getAbsoluteFile();
+			if (!haInvokerDeployerDir.exists()) {
+				logger.error("Couldn't find the jboss http invoker deployer folder! Assumed to be in " + invokerDeployerDir + " or " + haInvokerDeployerDir);
+				return;
+			}
+			else
+				invokerDeployerDir = haInvokerDeployerDir;
 		}
 
 		final File httpInvokerServerXml = new File(new File(invokerDeployerDir, "META-INF"),
@@ -2666,7 +2670,9 @@ public class ServerConfiguratorJBoss
 				new File(new File(new File(jbossDeployDir, "jboss-aop-jdk50.deployer"), "META-INF"), "jboss-service.xml"),
 				new File(new File(jbossDeployDir, "jboss-web.deployer"), "server.xml"),
 				new File(new File(new File(jbossDeployDir, "http-invoker.sar"), "META-INF"), "jboss-service.xml"),
+				new File(new File(new File(jbossDeployDir, "httpha-invoker.sar"), "META-INF"), "jboss-service.xml"),
 				new File(new File(new File(new File(jbossDeployDir, "http-invoker.sar"), "invoker.war"), "WEB-INF"), "web.xml"),
+				new File(new File(new File(new File(jbossDeployDir, "httpha-invoker.sar"), "invoker.war"), "WEB-INF"), "web.xml"),
 				new File(jbossConfDir, "jndi.properties")
 		};
 
