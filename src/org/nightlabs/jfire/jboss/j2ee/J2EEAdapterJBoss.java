@@ -34,6 +34,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import javax.management.MBeanServer;
@@ -42,6 +43,7 @@ import javax.management.MBeanServerInvocationHandler;
 import javax.management.Notification;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
+import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.security.auth.callback.CallbackHandler;
@@ -275,5 +277,18 @@ public class J2EEAdapterJBoss extends AbstractJ2EEAdapter
 		}
 
 		return inCluster;
+	}
+
+	@Override
+	public InitialContext createClusterInitialContext() throws NamingException {
+		if (isInCluster()) {
+			Properties p = new Properties();
+			p.put(Context.INITIAL_CONTEXT_FACTORY, "org.jnp.interfaces.NamingContextFactory");
+			p.put(Context.URL_PKG_PREFIXES, "jboss.naming:org.jnp.interfaces");
+			p.put(Context.PROVIDER_URL, "localhost:1100"); // HA-JNDI port.
+			return new InitialContext(p);
+		}
+		else
+			return new InitialContext();
 	}
 }

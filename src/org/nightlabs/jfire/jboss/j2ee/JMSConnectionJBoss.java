@@ -1,11 +1,8 @@
 package org.nightlabs.jfire.jboss.j2ee;
 
-import java.util.Properties;
-
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
 import javax.jms.QueueConnectionFactory;
-import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
@@ -18,18 +15,18 @@ public class JMSConnectionJBoss extends AbstractJMSConnection
 		super(j2eeAdapter, transacted, acknowledgeMode);
 	}
 
-	@Override
-	protected InitialContext _createInitialContext() throws NamingException {
-		if (getJ2EEAdapter().isInCluster()) {
-			Properties p = new Properties();
-			p.put(Context.INITIAL_CONTEXT_FACTORY, "org.jnp.interfaces.NamingContextFactory");
-			p.put(Context.URL_PKG_PREFIXES, "jboss.naming:org.jnp.interfaces");
-			p.put(Context.PROVIDER_URL, "localhost:1100"); // HA-JNDI port.
-			return new InitialContext(p);
-		}
-		else
-			return new InitialContext();
-	}
+//	@Override
+//	protected InitialContext _createInitialContext() throws NamingException {
+//		if (getJ2EEAdapter().isInCluster()) {
+//			Properties p = new Properties();
+//			p.put(Context.INITIAL_CONTEXT_FACTORY, "org.jnp.interfaces.NamingContextFactory");
+//			p.put(Context.URL_PKG_PREFIXES, "jboss.naming:org.jnp.interfaces");
+//			p.put(Context.PROVIDER_URL, "localhost:1100"); // HA-JNDI port.
+//			return new InitialContext(p);
+//		}
+//		else
+//			return new InitialContext();
+//	}
 
 	@Override
 	protected ConnectionFactory _getConnectionFactory()
