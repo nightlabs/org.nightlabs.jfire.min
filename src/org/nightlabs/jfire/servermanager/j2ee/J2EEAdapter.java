@@ -32,6 +32,7 @@ import java.util.Set;
 import javax.annotation.security.RolesAllowed;
 import javax.jms.Connection;
 import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.login.LoginContext;
 import javax.security.auth.login.LoginException;
@@ -115,4 +116,21 @@ public interface J2EEAdapter extends Serializable {
 	 * in single-JVM-mode.
 	 */
 	public boolean isInCluster();
+
+	/**
+	 * <p>
+	 * Get access to the cluster-wide JNDI. If the JavaEE server implementation does not differentiate
+	 * between local-node JNDI and cluster-wide JNDI or if {@link #isInCluster()} returns
+	 * <code>false</code>, this is the same as <code>new InitialContext()</code>.
+	 * </p>
+	 * <p>
+	 * Important: You should call {@link InitialContext#close()} on the resulting instance when you don't need
+	 * it anymore. This is not essentially necessary, because garbage collection usually is sufficient, but it
+	 * is urgently recommended to release resources as early as possible.
+	 * </p>
+	 *
+	 * @return an {@link InitialContext} connected to the cluster-wide JNDI.
+	 * @throws NamingException
+	 */
+	public InitialContext createClusterInitialContext() throws NamingException;
 }

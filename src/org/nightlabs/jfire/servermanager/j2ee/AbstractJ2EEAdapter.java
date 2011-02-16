@@ -9,6 +9,8 @@ import java.util.LinkedList;
 import java.util.Set;
 
 import javax.annotation.security.RolesAllowed;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
@@ -124,4 +126,9 @@ public abstract class AbstractJ2EEAdapter implements J2EEAdapter
 //			throw new J2EEAdapterException(x);
 //		}
 //	}
+
+	@Override
+	public InitialContext createClusterInitialContext() throws NamingException {
+		return new InitialContext();
+	}
 }

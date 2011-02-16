@@ -26,9 +26,11 @@
 
 package org.nightlabs.jfire.jdo.cache;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -92,10 +94,12 @@ public class CacheManager
 	 */
 	public void addChangeListener(Object objectID)
 	{
-		assertPrincipalExisting();
-		cacheManagerFactory.addChangeListener(
-				principal.getUserID(),
-				new ChangeListenerDescriptor(principal.getSessionID(), objectID));
+//		assertPrincipalExisting();
+//		cacheManagerFactory.addChangeListeners(
+//				principal.getUserID(),
+//				new ChangeListenerDescriptor(principal.getSessionID(), objectID)
+//		);
+		addChangeListeners(Collections.singleton(objectID));
 	}
 
 	/**
@@ -106,10 +110,15 @@ public class CacheManager
 	public void addChangeListeners(Collection<?> objectIDs)
 	{
 		assertPrincipalExisting();
-		for (Iterator<?> it = objectIDs.iterator(); it.hasNext(); )
-			cacheManagerFactory.addChangeListener(
-					principal.getUserID(),
-					new ChangeListenerDescriptor(principal.getSessionID(), it.next()));
+//		for (Iterator<?> it = objectIDs.iterator(); it.hasNext(); )
+//			cacheManagerFactory.addChangeListener(
+//					principal.getUserID(),
+//					new ChangeListenerDescriptor(principal.getSessionID(), it.next()));
+		List<ChangeListenerDescriptor> listeners = new ArrayList<ChangeListenerDescriptor>(objectIDs.size());
+		for (Object objectID : objectIDs)
+			listeners.add(new ChangeListenerDescriptor(principal.getSessionID(), objectID));
+
+		cacheManagerFactory.addChangeListeners(principal.getUserID(), listeners);
 	}
 
 	public void resubscribeAllListeners(Set<Object> subscribedObjectIDs,
@@ -149,7 +158,8 @@ public class CacheManager
 	public void removeChangeListener(Object objectID)
 	{
 		assertPrincipalExisting();
-		cacheManagerFactory.removeChangeListener(principal.getSessionID(), objectID);
+//		cacheManagerFactory.removeChangeListener(principal.getSessionID(), objectID);
+		removeChangeListeners(Collections.singleton(objectID));
 	}
 
 	/**
@@ -160,8 +170,13 @@ public class CacheManager
 	public void removeChangeListeners(Collection<?> objectIDs)
 	{
 		assertPrincipalExisting();
-		for (Iterator<?> it = objectIDs.iterator(); it.hasNext(); )
-			cacheManagerFactory.removeChangeListener(principal.getSessionID(), it.next());
+//		for (Iterator<?> it = objectIDs.iterator(); it.hasNext(); )
+//			cacheManagerFactory.removeChangeListener(principal.getSessionID(), it.next());
+		List<ChangeListenerDescriptor> listeners = new ArrayList<ChangeListenerDescriptor>(objectIDs.size());
+		for (Object objectID : objectIDs)
+			listeners.add(new ChangeListenerDescriptor(principal.getSessionID(), objectID));
+
+		cacheManagerFactory.removeChangeListeners(listeners);
 	}
 
 	/**

@@ -132,18 +132,16 @@ implements JMSConnection
 	 * Create an instance of {@link InitialContext} that is able to look up the
 	 * JMS {@link Destination}s as well as the {@link ConnectionFactory} from JNDI.
 	 * <p>
-	 * The default implementation simply executes <code>new InitialContext()</code>,
+	 * The default implementation simply executes {@link J2EEAdapter#createClusterInitialContext()},
 	 * but you might need to override this method and configure your <code>InitialContext</code>
-	 * (with some properties) in certain situations
-	 * (e.g. when your JEE server provides a separate HA JNDI in a cluster and you
-	 * cannot access the "normal" [i.e. local] JNDI).
+	 * (with some properties) in certain special situations.
 	 * </p>
 	 * @return the {@link InitialContext} used to look up JMS objects.
 	 * @throws NamingException in case creating the {@link InitialContext} fails.
 	 */
 	protected InitialContext _createInitialContext() throws NamingException
 	{
-		return new InitialContext();
+		return getJ2EEAdapter().createClusterInitialContext();
 	}
 
 	private InitialContext initialContext;

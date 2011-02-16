@@ -39,7 +39,7 @@ import org.slf4j.LoggerFactory;
  * This class uses the Java Messaging System (JMS) to notify all cluster nodes.
  * </p>
  *
- * @author marco
+ * @author Marco หงุ่ยตระกูล-Schulze - marco at nightlabs dot de
  */
 public class DirtyObjectIDPropagator
 {

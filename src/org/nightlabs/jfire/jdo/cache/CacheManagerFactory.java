@@ -58,6 +58,8 @@ import org.nightlabs.jfire.base.JFirePrincipal;
 import org.nightlabs.jfire.base.Lookup;
 import org.nightlabs.jfire.jdo.cache.bridge.JdoCacheBridge;
 import org.nightlabs.jfire.jdo.cache.cluster.DirtyObjectIDPropagator;
+import org.nightlabs.jfire.jdo.cache.cluster.SessionDescriptor;
+import org.nightlabs.jfire.jdo.cache.cluster.SessionFailOverManager;
 import org.nightlabs.jfire.jdo.notification.AbsoluteFilterID;
 import org.nightlabs.jfire.jdo.notification.DirtyObjectID;
 import org.nightlabs.jfire.jdo.notification.FilterRegistry;
@@ -275,13 +277,18 @@ public class CacheManagerFactory
 		// if (!organisationID.equals(organisation.getMasterOrganisationID()))
 		// ctx.bind(getJNDIName(organisation.getMasterOrganisationID()), this);
 
-		if (jfsmf.getJ2EEVendorAdapter().isInCluster())
+		if (jfsmf.getJ2EEVendorAdapter().isInCluster()) {
 			dirtyObjectIDPropagator = new DirtyObjectIDPropagator(this);
+
+			if (sessionFailOverManager == null)
+				sessionFailOverManager = new SessionFailOverManager();
+		}
 
 		logger.info("CacheManagerFactory for organisation " + organisationID + " instantiated and bound into JNDI " + jndiName);
 	}
 
 	private DirtyObjectIDPropagator dirtyObjectIDPropagator;
+	private static SessionFailOverManager sessionFailOverManager;
 
 	/**
 	 * key: String cacheSessionID<br/> value: CacheSession cacheSession
@@ -411,13 +418,10 @@ public class CacheManagerFactory
 		{
 			while (!isInterrupted()) {
 				try {
-					long cacheSessionContainerActivityMSec = cacheManagerFactory
-							.getCacheCfMod().getCacheSessionContainerActivityMSec();
-					CacheSessionContainer active = cacheManagerFactory
-							.getActiveCacheSessionContainer();
+					long cacheSessionContainerActivityMSec = cacheManagerFactory.getCacheCfMod().getCacheSessionContainerActivityMSec();
+					CacheSessionContainer active = cacheManagerFactory.getActiveCacheSessionContainer();
 
-					long sleepMSec = cacheSessionContainerActivityMSec
-							- (System.currentTimeMillis() - active.getCreateDT()) + 1;
+					long sleepMSec = cacheSessionContainerActivityMSec - (System.currentTimeMillis() - active.getCreateDT()) + 1;
 					if (sleepMSec > 60000) // if the thread is requested to stop, we
 																	// never wait longer than 1 min (we should get
 																	// an InterruptedException, but to be sure)
@@ -430,18 +434,13 @@ public class CacheManagerFactory
 						// ignore
 					}
 
-					active = cacheManagerFactory.getActiveCacheSessionContainer(); // should
-																																					// still
-																																					// be
-																																					// the
-																																					// same,
-																																					// but
-																																					// just
-																																					// to
-																																					// be
-																																					// sure...
+					active = cacheManagerFactory.getActiveCacheSessionContainer(); // should still be the same, but just to be sure...
 					if (System.currentTimeMillis() - active.getCreateDT() > cacheSessionContainerActivityMSec)
 						cacheManagerFactory.rollCacheSessionContainers();
+
+					if (sessionFailOverManager != null) {
+						sessionFailOverManager.cleanUpPeriodically();
+					}
 
 				} catch (Throwable t) {
 					logger.error("Exception in CacheSessionContainerManagerThread!", t);
@@ -504,26 +503,38 @@ public class CacheManagerFactory
 	 */
 	protected void rollCacheSessionContainers()
 	{
+		Set<String> sessionIDs = sessionFailOverManager != null ? new HashSet<String>() : null;
+
 		synchronized (cacheSessionContainers) {
+			if (sessionIDs != null) {
+				if (cacheSessionContainers.size() > 0)
+					sessionIDs.addAll(cacheSessionContainers.get(0).getCacheSessionIDs());
+
+				if (cacheSessionContainers.size() > 1)
+					sessionIDs.addAll(cacheSessionContainers.get(1).getCacheSessionIDs());
+			}
+
 			CacheSessionContainer newActiveCSC = new CacheSessionContainer(this);
-			logger.debug("Creating new activeCacheSessionContainer (createDT="
-					+ newActiveCSC.getCreateDT() + ").");
+
+			logger.debug("Creating new activeCacheSessionContainer (createDT={}).", newActiveCSC.getCreateDT());
+
 			cacheSessionContainers.addFirst(newActiveCSC);
 			activeCacheSessionContainer = newActiveCSC;
 
-			int cacheSessionContainerCount = getCacheCfMod()
-					.getCacheSessionContainerCount();
+			int cacheSessionContainerCount = getCacheCfMod().getCacheSessionContainerCount();
 			if (cacheSessionContainerCount < 2)
 				throw new IllegalStateException("cacheSessionContainerCount = "
 						+ cacheSessionContainerCount + " but must be at least 2!!!");
 
 			while (cacheSessionContainers.size() > cacheSessionContainerCount) {
 				CacheSessionContainer csc = cacheSessionContainers.removeLast();
-				logger.debug("Dropping cacheSessionContainer (createDT="
-						+ csc.getCreateDT() + ")");
+				logger.debug("Dropping cacheSessionContainer (createDT={})", csc.getCreateDT());
 				csc.close();
 			}
 		}
+
+		if (sessionFailOverManager != null)
+			sessionFailOverManager.refreshTimestamps(sessionIDs);
 	}
 
 	public String getOrganisationID()
@@ -533,8 +544,14 @@ public class CacheManagerFactory
 
 	protected CacheSession createCacheSession(String sessionID, String userID)
 	{
+		CacheSession session;
+		SessionDescriptor sessionDescriptor = null;
+
 		synchronized (cacheSessions) {
-			CacheSession session = cacheSessions.get(sessionID);
+			session = cacheSessions.get(sessionID);
+			if (session == null && sessionFailOverManager != null)
+				sessionDescriptor = sessionFailOverManager.loadSession(sessionID);
+
 			if (session == null) {
 				session = new CacheSession(this, sessionID, userID);
 				cacheSessions.put(sessionID, session);
@@ -551,8 +568,34 @@ public class CacheManagerFactory
 
 			session.setCacheSessionContainer(getActiveCacheSessionContainer());
 
-			return session;
+			if (sessionDescriptor != null)
+				session.setVirginCacheSession(false);
 		} // synchronized (cacheSessions) {
+
+		if (sessionDescriptor != null) {
+			logger.warn("createCacheSession: Fail-over from another cluster-node! If this happens often, your configuration is probably not correct (e.g. load-balancer not managing sticky sessions).");
+			resubscribeAllListeners(sessionID, userID, sessionDescriptor.getSubscribedObjectIDs(), sessionDescriptor.getFilters().values());
+		}
+
+		return session;
+	}
+
+	protected void storeCacheSessionsForFailOver(Collection<? extends CacheSession> sessions)
+	{
+		if (sessionFailOverManager == null || sessions == null)
+			return;
+
+		for (CacheSession session : sessions)
+			storeCacheSessionForFailOver(session);
+	}
+
+	protected void storeCacheSessionForFailOver(CacheSession session)
+	{
+		if (sessionFailOverManager == null || session == null)
+			return;
+
+		SessionDescriptor sessionDescriptor = new SessionDescriptor(session);
+		sessionFailOverManager.storeSession(sessionDescriptor);
 	}
 
 	protected CacheSession getCacheSession(String sessionID)
@@ -575,6 +618,7 @@ public class CacheManagerFactory
 			after_addChangeListener(session, new ChangeListenerDescriptor(sessionID, objectID), false);
 
 		after_addLifecycleListenerFilters(userID, res.filtersAdded);
+		storeCacheSessionForFailOver(session);
 	}
 
 	/**
@@ -613,6 +657,7 @@ public class CacheManagerFactory
 		if (filters.isEmpty())
 			return;
 
+		Set<CacheSession> sessions = new HashSet<CacheSession>();
 		CacheSession session = null;
 		for (IJDOLifecycleListenerFilter filter : filters) {
 			if (filter.getFilterID() == null) {
@@ -624,9 +669,11 @@ public class CacheManagerFactory
 				session = createCacheSession(filter.getFilterID().getSessionID(), userID);
 
 			session.addFilter(filter);
+			sessions.add(session);
 		}
 
 		after_addLifecycleListenerFilters(userID, filters); // , true);
+		storeCacheSessionsForFailOver(sessions);
 	}
 
 	private void after_addLifecycleListenerFilters(String userID, Collection<IJDOLifecycleListenerFilter> filters) // , boolean excludeLocalSessionFromNotification)
@@ -806,15 +853,18 @@ public class CacheManagerFactory
 		if (filterIDs.isEmpty())
 			return;
 
+		Set<CacheSession> sessions = new HashSet<CacheSession>();
 		CacheSession session = null;
 		for (AbsoluteFilterID filterID : filterIDs) {
-			if (session == null
-					|| !session.getSessionID().equals(filterID.getSessionID()))
+			if (session == null || !session.getSessionID().equals(filterID.getSessionID()))
 				session = getCacheSession(filterID.getSessionID());
 
-			if (session != null)
+			if (session != null) {
 				session.removeFilter(filterID);
+				sessions.add(session);
+			}
 		}
+		storeCacheSessionsForFailOver(sessions);
 	}
 
 	/**
@@ -828,18 +878,23 @@ public class CacheManagerFactory
 	 * This method implicitely opens a new {@link CacheSession} if it is not yet
 	 * existing.
 	 */
-	protected void addChangeListener(String userID, ChangeListenerDescriptor l)
+	protected void addChangeListeners(String userID, Collection<ChangeListenerDescriptor> listeners)
 	{
-		String sessionID = l.getSessionID();
-		Object objectID = l.getObjectID();
+		Set<CacheSession> sessions = new HashSet<CacheSession>();
+		for (ChangeListenerDescriptor l : listeners) {
+			String sessionID = l.getSessionID();
+			Object objectID = l.getObjectID();
 
-		if (logger.isDebugEnabled())
-			logger.debug("addChangeListener: sessionID=" + sessionID + " objectID=" + objectID);
+			if (logger.isDebugEnabled())
+				logger.debug("addChangeListener: sessionID=" + sessionID + " objectID=" + objectID);
 
-		CacheSession session = createCacheSession(sessionID, userID);
-		session.subscribeObjectID(objectID); // is synchronized itself
+			CacheSession session = createCacheSession(sessionID, userID);
+			session.subscribeObjectID(objectID); // is synchronized itself
 
-		after_addChangeListener(session, l, true);
+			after_addChangeListener(session, l, true);
+			sessions.add(session);
+		}
+		storeCacheSessionsForFailOver(sessions);
 	}
 
 	private void after_addChangeListener(CacheSession session, ChangeListenerDescriptor l, boolean excludeLocalSessionFromNotification)
@@ -950,17 +1005,24 @@ public class CacheManagerFactory
 	 * Removes a listener which has previously been added by
 	 * <tt>addChangeListener(...)</tt>.
 	 */
-	protected void removeChangeListener(String sessionID, Object objectID)
+	protected void removeChangeListeners(Collection<ChangeListenerDescriptor> listeners)
 	{
-		if (logger.isDebugEnabled())
-			logger.debug("removeChangeListener: sessionID="
-					+ sessionID + " objectID=" + objectID);
+		Set<CacheSession> sessions = new HashSet<CacheSession>();
+		for(ChangeListenerDescriptor l : listeners) {
+			String sessionID = l.getSessionID();
+			Object objectID = l.getObjectID();
+			if (logger.isDebugEnabled())
+				logger.debug("removeChangeListeners: sessionID="+ sessionID + " objectID=" + objectID);
 
-		CacheSession session = getCacheSession(sessionID);
-		if (session != null)
-			session.unsubscribeObjectID(objectID); // is synchronized itself
+			CacheSession session = getCacheSession(sessionID);
+			if (session != null) {
+				sessions.add(session);
+				session.unsubscribeObjectID(objectID); // is synchronized itself
+			}
 
-		after_removeChangeListener(sessionID, objectID);
+			after_removeChangeListener(sessionID, objectID);
+		}
+		storeCacheSessionsForFailOver(sessions);
 	}
 
 	private void after_removeChangeListener(String sessionID, Object objectID)
@@ -987,8 +1049,7 @@ public class CacheManagerFactory
 	protected void closeCacheSession(String cacheSessionID)
 	{
 		if (logger.isDebugEnabled())
-			logger.debug("Closing CacheSession with cacheSessionID=\""
-					+ cacheSessionID + "\"");
+			logger.debug("Closing CacheSession with cacheSessionID=\"" + cacheSessionID + "\"");
 
 		CacheSession session = getCacheSession(cacheSessionID);
 		if (session == null) {

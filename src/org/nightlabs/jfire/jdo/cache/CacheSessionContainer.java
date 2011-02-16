@@ -27,6 +27,9 @@
 package org.nightlabs.jfire.jdo.cache;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -44,7 +47,7 @@ implements Serializable
 	 * The serial version of this class.
 	 */
 	private static final long serialVersionUID = 1L;
-	
+
 	/**
 	 * LOG4J logger used by this class
 	 */
@@ -98,6 +101,18 @@ implements Serializable
 		synchronized (cacheSessions) {
 			cacheSessions.put(cacheSession.getSessionID(), cacheSession);
 		}
+	}
+
+	protected Collection<String> getCacheSessionIDs()
+	{
+		if (closed)
+			return Collections.emptyList();
+
+		Collection<String> result;
+		synchronized (cacheSessions) {
+			result = new ArrayList<String>(cacheSessions.keySet());
+		}
+		return result;
 	}
 
 	/**
