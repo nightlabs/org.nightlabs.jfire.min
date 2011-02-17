@@ -53,6 +53,7 @@ import javax.security.auth.login.LoginContext;
 import javax.security.auth.login.LoginException;
 import javax.transaction.UserTransaction;
 
+import org.nightlabs.jdo.ObjectIDCanonicaliser;
 import org.nightlabs.jfire.base.AuthCallbackHandler;
 import org.nightlabs.jfire.base.JFirePrincipal;
 import org.nightlabs.jfire.base.Lookup;
@@ -71,6 +72,7 @@ import org.nightlabs.jfire.servermanager.config.OrganisationCf;
 import org.nightlabs.jfire.servermanager.j2ee.J2EEAdapterException;
 import org.nightlabs.jfire.servermanager.ra.JFireServerManagerFactoryImpl;
 import org.nightlabs.jfire.servermanager.ra.JFireServerManagerImpl;
+import org.nightlabs.util.Canonicaliser;
 import org.nightlabs.util.IOUtil;
 import org.nightlabs.util.Util;
 import org.slf4j.Logger;
@@ -608,6 +610,11 @@ public class CacheManagerFactory
 	protected void resubscribeAllListeners(String sessionID, String userID,
 			Set<Object> subscribedObjectIDs, Collection<IJDOLifecycleListenerFilter> filters)
 	{
+		sessionID = canonicaliser.canonicalise(sessionID);
+		userID = canonicaliser.canonicalise(userID);
+		subscribedObjectIDs = canonicaliser.canonicalise(subscribedObjectIDs);
+		filters = canonicaliser.canonicalise(filters);
+
 		CacheSession session = createCacheSession(sessionID, userID);
 		CacheSession.ResubscribeResult res = session.resubscribeAllListeners(subscribedObjectIDs, filters);
 
@@ -649,6 +656,8 @@ public class CacheManagerFactory
 		}
 	}
 
+	private static final Canonicaliser canonicaliser = ObjectIDCanonicaliser.sharedInstance();
+
 	protected void addLifecycleListenerFilters(String userID, Collection<IJDOLifecycleListenerFilter> filters)
 	{
 		if (logger.isDebugEnabled())
@@ -656,6 +665,9 @@ public class CacheManagerFactory
 
 		if (filters.isEmpty())
 			return;
+
+		userID = canonicaliser.canonicalise(userID);
+		filters = canonicaliser.canonicalise(filters);
 
 		Set<CacheSession> sessions = new HashSet<CacheSession>();
 		CacheSession session = null;
@@ -880,6 +892,9 @@ public class CacheManagerFactory
 	 */
 	protected void addChangeListeners(String userID, Collection<ChangeListenerDescriptor> listeners)
 	{
+		userID = canonicaliser.canonicalise(userID);
+		listeners = canonicaliser.canonicalise(listeners);
+
 		Set<CacheSession> sessions = new HashSet<CacheSession>();
 		for (ChangeListenerDescriptor l : listeners) {
 			String sessionID = l.getSessionID();
