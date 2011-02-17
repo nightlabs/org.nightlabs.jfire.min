@@ -546,6 +546,9 @@ public class CacheManagerFactory
 
 	protected CacheSession createCacheSession(String sessionID, String userID)
 	{
+		sessionID = canonicaliser.canonicalise(sessionID);
+		userID = canonicaliser.canonicalise(userID);
+
 		CacheSession session;
 		SessionDescriptor sessionDescriptor = null;
 
