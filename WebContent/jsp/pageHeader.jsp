@@ -19,7 +19,6 @@
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 		<link rel="StyleSheet" href="${url_css}/jfire.css" type="text/css"/>
 		<script type="text/javascript">
-		<!--
 		function showWaitBlock(message)
 		{
 			document.getElementById('allcontents').style.display = "none";
@@ -27,7 +26,48 @@
 			if(message != null)
 				document.getElementById('waitblockmessage').innerHTML = message;
 		}
-		-->
+		
+		function validatePwd() 
+		{
+			var inputs = document.getElementsByTagName("input");
+			var o;
+			for (var i=0; i < inputs.length; i++)
+			{
+			   if (inputs[i].getAttribute("type") == "password")
+			   {
+				   var name = inputs[i].getAttribute("name");
+				   if (name.search("confirm") == -1) {
+				         o[name] = input[i];
+				   }
+			   }
+			}
+
+			var matchAll = true;
+			var msg = "";
+			for (var i=0; i < inputs.length; i++)
+			{
+			   if (inputs[i].getAttribute("type") == "password")
+			   {
+				   var name = inputs[i].getAttribute("name");
+				   if (name.search("confirm") != -1) {
+					   var confirmName = name.substr("confirm".length, name.length);
+					   input = o[confirmName];
+					   if (input.value != input[i].value) {
+						   matchAll = false;
+					   }
+				   }
+			   }
+			}
+
+			if (matchAll == false) {
+				alert("Passwords mismatch!!!!");
+			}
+		}
+		
+		function trim (str)
+		{
+		     return str.replace (/^\s+|\s+$/g, '');
+		}
 		</script>
 	</head>
 	<body>

@@ -5,6 +5,6 @@
 
 <br/>
 <input type="hidden" name="action" value="save"/>
-<input type="submit" value="Save" class="wide"/>
+<input type="submit" value="Save" class="wide" onclick="return validatePwd()"/>
 
 </form>

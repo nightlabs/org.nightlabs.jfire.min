@@ -45,8 +45,7 @@
 			// Thus, at the moment we don't allow to add/remove entries - this functionality might be added later.
 			// Furthermore, we currently only support maps of type Map<String, String>. 
 			// Marco.
-			if (pd.getMapKeyType() == String.class
-					&& pd.getMapValueType() == String.class) {
+			if (pd.getMapKeyType() == String.class && pd.getMapValueType() == String.class) {
 				@SuppressWarnings("unchecked")
 				Map<String, String> map = (Map<String, String>) pd
 						.getValue(bean);
@@ -63,8 +62,7 @@
 						<input type="<%=pd.isPasswordField()? "password" : "text"%>" name="<%=name%>" value="<%=(value == null ? "" : value)%>" class="extrawide"/>
 					</td>
 <%
-	String propertyShortDescription = pd
-							.getShortDescription();
+					String propertyShortDescription = pd.getShortDescription();
 					if (propertyShortDescription != null
 							&& !propertyShortDescription.isEmpty()
 							&& !propertyShortDescription.equals(pd
@@ -72,68 +70,80 @@
 %>
 					<td valign="middle" style="padding-left: 16px;"><small><i>(<%=propertyShortDescription%>)</i></small></td>
 <%
-	}
+					}//if
 %>
 				</tr>
 <%
-	}
-			}
-		} else if (pd.getWriteMethod() != null) {
+				}//for
+			}//if (pd.getMapKeyType() == String.class && pd.getMapValueType() == String.class)
+		}//if(pd.isMap())
+		else if (pd.getWriteMethod() != null) {
 			String name = "beanedit." + beanKey + ".value."
 					+ pd.getName();
 			Object realValue = pd.getValue(bean);
 			String value = realValue != null ? String
 					.valueOf(realValue) : "";
 %>
-<tr>
-	<td valign="top"><%=pd.getDisplayName()%>: </td>
-	<td valign="top" style="padding-left: 8px;">
+	<tr>
+		<td valign="top"><%=pd.getDisplayName()%>: </td>
+		<td valign="top" style="padding-left: 8px;">
 		<%
 			if (pd.getPropertyType() == Boolean.class
 							|| pd.getPropertyType() == Boolean.TYPE) {
 		%>
-		<input type="radio" name="<%=name%>" value="true" <%if ("true".equals(value)) {%> checked="checked"<%}%>> Yes
-		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-		<input type="radio" name="<%=name%>" value="false" <%if (!"true".equals(value)) {%> checked="checked"<%}%>> No
+			<input type="radio" name="<%=name%>" value="true" <%if ("true".equals(value)) {%> checked="checked"<%}%>> Yes
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			<input type="radio" name="<%=name%>" value="false" <%if (!"true".equals(value)) {%> checked="checked"<%}%>> No
 		<%
-			} else {
-						List<String> values = pd.getPossibleValues();
-						if (values != null && !values.isEmpty()) {
+			} 
+			else {
+					List<String> values = pd.getPossibleValues();
+					if (values != null && !values.isEmpty()) {
 		%>
-		<select name="<%=name%>">
+						<select name="<%=name%>">
 		<%
-			for (String v : values) {
+						for (String v : values) {
 		%>
-			<option value="<%=v%>"<%if (v.equals(value)) {%> selected="selected"<%}%>><%=pd.getPossibleValueDisplayName(v)%></option>
+							<option value="<%=v%>"<%if (v.equals(value)) {%> selected="selected"<%}%>><%=pd.getPossibleValueDisplayName(v)%></option>
 		<%
-			}
+						}
 		%>
-		</select>
+						</select>
 		<%
-			} else {
+					} else {
 		%>
-		<input type="<%=pd.isPasswordField()? "password" : "text"%>" name="<%=name%>" value="<%=(value == null ? "" : value)%>" class="extrawide"/>
+						<input type="<%=pd.isPasswordField()? "password" : "text"%>" name="<%=name%>" value="<%=(value == null ? "" : value)%>" class="extrawide"/>
 		<%
-			}
 					}
+			}//else
 		%>
-	</td>
-	<%
+		</td>
+		<%
 		String propertyShortDescription = pd.getShortDescription();
 				if (propertyShortDescription != null
 						&& !propertyShortDescription.isEmpty()
 						&& !propertyShortDescription.equals(pd
 								.getDisplayName())) {
-	%>
-	<td valign="middle" style="padding-left: 16px;"><small><i>(<%=propertyShortDescription%>)</i></small></td>
+		%>
+		<td valign="middle" style="padding-left: 16px;"><small><i>(<%=propertyShortDescription%>)</i></small></td>
+		<%
+				}
+		%>
+	</tr>
+	<% if (pd.isPasswordField()) { %>
+	<tr>
+		<td valign="top"> </td>
+		<td valign="top" style="padding-left: 8px;">
+			<input type="password" name="confirm<%=name%>" value="<%=(value == null ? "" : value)%>" class="extrawide"/>
+		</td>
+		<td valign="middle" style="padding-left: 16px;"><small><i>(Confirm <%=propertyShortDescription%>)</i></small></td>
+	</tr>
 	<%
 		}
 	%>
-	
-</tr>
 <%
-	}
-	}
+		} //else if (pd.getWriteMethod() != null)
+	}//for (ExtendedPropertyDescriptor pd : pds)
 %>
 </table>
 <br/>
