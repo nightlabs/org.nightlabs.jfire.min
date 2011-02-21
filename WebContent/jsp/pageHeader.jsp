@@ -30,14 +30,14 @@
 		function validatePwd() 
 		{
 			var inputs = document.getElementsByTagName("input");
-			var o;
+			var o = {};
 			for (var i=0; i < inputs.length; i++)
 			{
 			   if (inputs[i].getAttribute("type") == "password")
 			   {
 				   var name = inputs[i].getAttribute("name");
 				   if (name.search("confirm") == -1) {
-				         o[name] = input[i];
+				         o[name] = inputs[i];
 				   }
 			   }
 			}
@@ -52,7 +52,7 @@
 				   if (name.search("confirm") != -1) {
 					   var confirmName = name.substr("confirm".length, name.length);
 					   input = o[confirmName];
-					   if (input.value != input[i].value) {
+					   if (input.value != inputs[i].value) {
 						   matchAll = false;
 					   }
 				   }
@@ -61,7 +61,10 @@
 
 			if (matchAll == false) {
 				alert("Passwords mismatch!!!!");
+				return false;
 			}
+
+			return true;
 		}
 		
 		function trim (str)

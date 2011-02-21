@@ -3,5 +3,5 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
-<form method="post">
+<form method="post" onsubmit="return validatePwd()">
 
