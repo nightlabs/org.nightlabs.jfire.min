@@ -28,7 +28,7 @@ public class JFireEjb3AuthenticationInterceptor extends Ejb3AuthenticationInterc
 	@Override
 	protected void handleGeneralSecurityException(GeneralSecurityException gse)
 	{
-		throw new SecurityException(gse.getMessage(), gse.getCause());
+		throw new SecurityException(gse.getMessage(), gse);
 	}
 
 }
