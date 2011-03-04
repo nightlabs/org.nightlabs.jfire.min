@@ -128,6 +128,13 @@
 		<td valign="middle" style="padding-left: 16px;"><small><i>(<%=propertyShortDescription%>)</i></small></td>
 		<%
 				}
+				else {
+					if (pd.isPasswordField()) {
+		%>
+		<td valign="middle" style="padding-left: 16px;"><small><i>(Default Password -- "<%=pd.getValue(bean) == null?"empty":pd.getValue(bean)%>")</i></small></td>
+		<%
+					}
+				}
 		%>
 	</tr>
 	<% if (pd.isPasswordField()) { %>
