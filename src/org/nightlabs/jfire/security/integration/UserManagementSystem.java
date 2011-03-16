@@ -77,7 +77,7 @@ public abstract class UserManagementSystem implements Serializable
 
 	@SuppressWarnings("unchecked")
 	public static <T extends UserManagementSystem> Collection<T> getActiveUserManagementSystems(
-			PersistenceManager pm, Class<T> userManagementSystemClass
+			PersistenceManager pm
 			) {
 		
 		javax.jdo.Query q = pm.newNamedQuery(
@@ -143,6 +143,8 @@ public abstract class UserManagementSystem implements Serializable
 	 *
 	 * @param loginData
 	 * @return {@link Session) descriptor in case of successful login and null otherwise
+	 * @throws UserManagementSystemCommunicationException
+	 * @throws LoginException
 	 */
 	public abstract Session login(LoginData loginData) throws LoginException, UserManagementSystemCommunicationException;
 
@@ -151,7 +153,7 @@ public abstract class UserManagementSystem implements Serializable
 	 * Thus, a subclass can be used to keep additional information, specific to the UMSimplementation
 	 *
 	 * @param session
-	 *
+	 * @throws UserManagementSystemCommunicationException
 	 */
 	public abstract void logout(Session session) throws UserManagementSystemCommunicationException;
 

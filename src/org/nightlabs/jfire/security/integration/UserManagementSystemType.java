@@ -1,10 +1,9 @@
 package org.nightlabs.jfire.security.integration;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 
-import javax.jdo.FetchPlan;
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
 import javax.jdo.annotations.Column;
@@ -100,74 +99,31 @@ public abstract class UserManagementSystemType<T extends UserManagementSystem> i
 		mappedBy="userManagementSystemType")
 	private UserManagementSystemTypeDescription description;
 
-	// *** REV_marco_2 ***
-	// TODO remove static field.
-	// There is no need to keep any instance of UserManagementSystemType in a static field.
-	// When they are needed, they can be queried from the datastore.
 	/**
-	 * Since every UMSType is a singleton we keep all the possible instances here and
-	 * UMSType class name is used as a key.
-	 * Concrete UMS module is responsible for requesting to put in this map all UMS types it provides
-	 * by calling {@link #loadSingleInstance(PersistenceManager, Class)} method.
-	 */
-	protected static final HashMap<String, UserManagementSystemType<?>> _instances =
-		new HashMap<String, UserManagementSystemType<?>>();
-
-	// *** REV_marco_2 ***
-	// TODO remove static field.
-	// As said above, there should be no statically held instances. Query from JDO whenever
-	// it's needed.
-	/**
-	 * Retrieve UMSType instance for specified class
+	 * Loads an instance of requested UMSType instance. Loads all object IDs for the specified class 
+	 * and takes first if there's more than one. So it's guaranteed that only one UMSType instance 
+	 * of the specified class will be available.
 	 *
-	 * @param <T>
-	 * @param clazz - class object of the specific UMSType
-	 * @return a singleton instance of needed UMSType
-	 */
-	@SuppressWarnings("unchecked")
-	public static final <T extends UserManagementSystemType<?>> T getInstance(Class<T> clazz){
-
-		// FIXME: not sure what needs to be done if there's no UMSType instance for requested class
-
-		return (T) _instances.get(clazz.getName());
-	}
-
-	/**
-	 * Loads an instance of requested UMSType instance and put it into {@link #_instances} map.
-	 * Loading all object IDs for the specified class and takes first if there's more than one.
-	 * So it's guaranteed that only one UMSType instance will be available. Made protected so only
-	 * concrete UMSType subclasses can call it after the specific instance is created inside them.
-	 *
-	 * @param <T>
+	 * @param <T> specific UserManagementSystemType 
 	 * @param pm
 	 * @param clazz
-	 * @return
+	 * @return instance of UserManagemenSystemType of the specific class
 	 */
 	@SuppressWarnings("unchecked")
-	protected static synchronized <T extends UserManagementSystemType<?>> T loadSingleInstance(
+	public static synchronized <T extends UserManagementSystemType<?>> T loadSingleInstance(
 			PersistenceManager pm, Class<T> clazz
 			){
-
-		if (_instances.get(clazz.getName()) != null){
-			return (T) _instances.get(clazz.getName());
-		}
 
 		Query q = pm.newNamedQuery(UserManagementSystemType.class, GET_ALL_USER_MANAGEMENT_SYSTEM_TYPES_IDS);
 		q.setClass(clazz);
 
 		Collection<UserManagementSystemTypeID> typesIds = (Collection<UserManagementSystemTypeID>) q.execute();
+		typesIds = new ArrayList<UserManagementSystemTypeID>(typesIds);
+		q.closeAll();
+		
 		T singleInstance = null;
 		if (typesIds.size() > 0){
-
-			int oldFetchSize = pm.getFetchPlan().getFetchSize();
-			pm.getFetchPlan().setFetchSize(-1);
-			pm.getFetchPlan().setGroups(FetchPlan.DEFAULT, UserManagementSystemType.FETCH_GROUP_NAME);
-
-			singleInstance = (T) pm.detachCopy(pm.getObjectById(typesIds.iterator().next()));
-			_instances.put(clazz.getName(), singleInstance);
-
-			pm.getFetchPlan().setMaxFetchDepth(oldFetchSize!=0?oldFetchSize:-1);
-			pm.getFetchPlan().removeGroup(UserManagementSystemType.FETCH_GROUP_NAME);
+			singleInstance = (T) pm.getObjectById(typesIds.iterator().next());
 		}
 
 		return singleInstance;
