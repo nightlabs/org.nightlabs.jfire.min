@@ -6,6 +6,9 @@ import org.nightlabs.jfire.base.JFireEjb3Provider;
 import org.nightlabs.jfire.base.jdo.cache.CacheCfMod;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleManager;
 import org.nightlabs.jfire.security.SecurityReflector;
+import org.nightlabs.singleton.ISingletonProvider;
+import org.nightlabs.singleton.SingletonProviderFactory;
+import org.nightlabs.singleton.ISingletonProvider.ISingletonFactory;
 
 /**
  * JDO manager provider using a global scope shared instance. {@link JDOLifecycleManager} is
@@ -18,17 +21,27 @@ public class GlobalJDOManagerProvider extends AbstractJDOManagerProvider {
 
 	public static final String PROPERTY_KEY_JDO_LIFECYCLE_MANAGER = "org.nightlabs.jfire.base.jdo.notification.JDOLifecycleManager";
 	
-	private static JDOManagerProvider sharedInstance;
+	//private static JDOManagerProvider sharedInstance;
+	
+	private static ISingletonProvider<JDOManagerProvider> sharedInstanceProvider;
+	
 	
 	/**
 	 * Get the global JDO manager provider shared instance.
 	 * @return The shared instance.
 	 */
 	public static JDOManagerProvider sharedInstance() {
-		if(sharedInstance == null) {
-			sharedInstance = new GlobalJDOManagerProvider();
+		if(sharedInstanceProvider == null) {
+			sharedInstanceProvider = SingletonProviderFactory.createProvider();
+			sharedInstanceProvider.setFactory(new ISingletonFactory<JDOManagerProvider>() {
+				@Override
+				public JDOManagerProvider makeInstance() {
+					return new GlobalJDOManagerProvider();
+				}
+			});
 		}
-		return sharedInstance;
+		
+		return sharedInstanceProvider.getInstance();
 	}
 	
 	/**
@@ -37,11 +50,12 @@ public class GlobalJDOManagerProvider extends AbstractJDOManagerProvider {
 	 * @param sharedInstance the sharedInstance to set
 	 * @throws IllegalStateException If the shared instance was already created or set.
 	 */
-	public static void setSharedInstance(JDOManagerProvider sharedInstance) {
-		if(GlobalJDOManagerProvider.sharedInstance != null) {
-			throw new IllegalStateException("Shared instance is already set");
+	public static void setSharedInstanceProvider(ISingletonProvider<JDOManagerProvider> provider) {
+		if(sharedInstanceProvider != null) {
+			throw new IllegalStateException("Shared instance provider is already set");
 		}
-		GlobalJDOManagerProvider.sharedInstance = sharedInstance;
+		
+		sharedInstanceProvider = provider;
 	}
 
 	private boolean autoOpenCache = true;
@@ -52,7 +66,7 @@ public class GlobalJDOManagerProvider extends AbstractJDOManagerProvider {
 	 */
 	protected GlobalJDOManagerProvider() {
 	}
-
+	
 	/* (non-Javadoc)
 	 * @see org.nightlabs.jfire.base.jdo.AbstractJDOManagerProvider#createLifecycleManager()
 	 */

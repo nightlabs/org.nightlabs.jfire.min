@@ -4,16 +4,21 @@ import org.nightlabs.jfire.base.JFireEjb3Provider;
 import org.nightlabs.jfire.base.jdo.cache.Cache;
 import org.nightlabs.jfire.base.jdo.cache.CacheCfMod;
 import org.nightlabs.jfire.base.jdo.notification.JDOLifecycleManager;
+import org.nightlabs.singleton.IServiceContext;
+import org.nightlabs.singleton.IServiceContextAware;
 
-public abstract class AbstractJDOManagerProvider implements JDOManagerProvider {
+public abstract class AbstractJDOManagerProvider implements JDOManagerProvider, IServiceContextAware {
 
 	private boolean initialized = false;
 	private Cache cache;
 	private JDOLifecycleManager lifecycleManager;
 	private JDOObjectID2PCClassMap objectID2PCClassMap;
+	private IServiceContext serviceContext;
 	
 	protected Cache createCache() {
-		return new Cache(getCacheConfig());
+		Cache cache = new Cache(getCacheConfig());
+		cache.setServiceContext(serviceContext);
+		return cache;
 	}
 	
 	protected JDOLifecycleManager createLifecycleManager() {
@@ -41,6 +46,12 @@ public abstract class AbstractJDOManagerProvider implements JDOManagerProvider {
 		}
 	}
 
+	
+	@Override
+	public void setServiceContext(IServiceContext context) {
+		serviceContext = context;
+	}
+	
 	protected void beforeInitialization() {
 	}
 

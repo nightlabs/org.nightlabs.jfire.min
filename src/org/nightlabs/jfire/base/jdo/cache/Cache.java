@@ -61,8 +61,12 @@ import org.nightlabs.jfire.jdo.notification.DirtyObjectID;
 import org.nightlabs.jfire.jdo.notification.IJDOLifecycleListenerFilter;
 import org.nightlabs.jfire.jdo.notification.JDOLifecycleState;
 import org.nightlabs.notification.NotificationEvent;
+import org.nightlabs.singleton.IServiceContext;
+import org.nightlabs.singleton.IServiceContextAware;
 import org.nightlabs.util.CollectionUtil;
 import org.nightlabs.util.Util;
+
+import bsh.This;
 
 /**
  * This cache was designed to hold JFire JDO objects on the client side.
@@ -86,7 +90,7 @@ import org.nightlabs.util.Util;
  *
  * @author Marco Schulze - marco at nightlabs dot de
  */
-public class Cache
+public class Cache implements IServiceContextAware
 {
 //	private static final boolean DEBUG_TEST = true;
 
@@ -104,6 +108,8 @@ public class Cache
 	private JDOManagerProvider jdoManagerProvider;
 	
 	private JFireEjb3Provider ejbProvider;
+
+	private IServiceContext serviceContext;
 	
 	/**
 	 * Get the jdoManagerProvider.
@@ -133,6 +139,12 @@ public class Cache
 		}
 		return ejbProvider;
 	}
+
+
+	@Override
+	public void setServiceContext(IServiceContext context) {
+		serviceContext = context;
+	}
 	
 	protected static class NotificationThread extends Thread
 	{
@@ -140,11 +152,13 @@ public class Cache
 
 		private JDOManagerProvider jdoManagerProvider;
 		private JFireEjb3Provider ejbProvider;
+		private final IServiceContext serviceContext;
 
-		public NotificationThread(JDOManagerProvider jdoManagerProvider, JFireEjb3Provider ejbProvider)
+		public NotificationThread(JDOManagerProvider jdoManagerProvider, JFireEjb3Provider ejbProvider, IServiceContext serviceContext)
 		{
 			this.jdoManagerProvider = jdoManagerProvider;
 			this.ejbProvider = ejbProvider;
+			this.serviceContext = serviceContext;
 			setName("Cache.NotificationThread-" + (nextID++));
 			setDaemon(true);
 			setPriority(Thread.NORM_PRIORITY);
@@ -169,6 +183,8 @@ public class Cache
 //			if (logger.isDebugEnabled())
 //				logger.debug("NotificationThread.run: DEBUG_TEST=" + DEBUG_TEST);
 
+			serviceContext.associateThread();
+			
 			while (!isInterrupted()) {
 				Cache cache = jdoManagerProvider.getCache();
 				try {
@@ -330,6 +346,8 @@ public class Cache
 					lastErrorDT = System.currentTimeMillis();
 				}
 			}
+			
+			serviceContext.disposeThread();
 		}
 
 		private volatile boolean terminated = false;
@@ -380,11 +398,13 @@ public class Cache
 
 		private JDOManagerProvider jdoManagerProvider;
 		private JFireEjb3Provider ejbProvider;
+		private IServiceContext serviceContext;
 
-		public CacheManagerThread(JDOManagerProvider jdoManagerProvider, JFireEjb3Provider ejbProvider)
+		public CacheManagerThread(JDOManagerProvider jdoManagerProvider, JFireEjb3Provider ejbProvider, IServiceContext serviceContext)
 		{
 			this.jdoManagerProvider = jdoManagerProvider;
 			this.ejbProvider = ejbProvider;
+			this.serviceContext = serviceContext;
 			setName("Cache.CacheManagerThread-" + (nextID++));
 			setDaemon(true);
 			setPriority(Thread.NORM_PRIORITY);
@@ -400,6 +420,9 @@ public class Cache
 //			JDOManager jdoManager = null;
 //			boolean resync;
 
+			
+			serviceContext.associateThread();
+			
 			while (!isInterrupted()) {
 				Cache cache = jdoManagerProvider.getCache();
 				try {
@@ -633,6 +656,8 @@ public class Cache
 					lastErrorDT = System.currentTimeMillis();
 				}
 			}
+			
+			serviceContext.disposeThread();
 		}
 
 		private volatile boolean terminated = false;
@@ -1769,8 +1794,8 @@ public class Cache
 
 		this.sessionID = sessionID;
 
-		this.cacheManagerThread = new CacheManagerThread(getJdoManagerProvider(), getEjbProvider());
-		this.notificationThread = new NotificationThread(getJdoManagerProvider(), getEjbProvider());
+		this.cacheManagerThread = new CacheManagerThread(getJdoManagerProvider(), getEjbProvider(), serviceContext);
+		this.notificationThread = new NotificationThread(getJdoManagerProvider(), getEjbProvider(), serviceContext);
 	}
 
 	public synchronized void close()
@@ -1831,6 +1856,8 @@ public class Cache
 				@Override
 				public void run() {
 					try {
+						serviceContext.associateThread();
+						
 						// notify via local class based notification mechanism
 						// the interceptor org.nightlabs.jfire.base.jdo.JDOObjectID2PCClassNotificationInterceptor takes care about correct class mapping
 						getJdoManagerProvider().getLifecycleManager().notify(new NotificationEvent(
@@ -1840,9 +1867,14 @@ public class Cache
 						));
 					} catch (Throwable t) {
 						logger.error("refreshAll: notificationThread.run: " + t.getClass() + ": " + t.getMessage(), t);
+					} finally {
+						serviceContext.disposeThread();
 					}
+					
+					
 				}
 			};
+			
 			notificationThread.start();
 		}
 	}
