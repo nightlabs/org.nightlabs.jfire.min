@@ -63,5 +63,8 @@
         <dependent-module archiveName="org.nightlabs.util.jar" deploy-path="/" handle="module:/resource/org.nightlabs.util/org.nightlabs.util">
             <dependency-type>uses</dependency-type>
         </dependent-module>
+        <dependent-module archiveName="org.nightlabs.singleton.jar" deploy-path="/" handle="module:/resource/org.nightlabs.singleton/org.nightlabs.singleton">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
     </wb-module>
 </project-modules>

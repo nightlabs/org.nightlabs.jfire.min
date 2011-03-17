@@ -22,6 +22,7 @@
 		<project>org.nightlabs.i18n</project>
 		<project>org.nightlabs.progress</project>
 		<project>org.nightlabs.util</project>
+		<project>org.nightlabs.singleton</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

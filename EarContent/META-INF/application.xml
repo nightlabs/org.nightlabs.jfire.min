@@ -61,4 +61,7 @@
   <module>
   	<java>org.nightlabs.progress.jar</java>
   </module>
+  <module>
+  	<java>org.nightlabs.singleton.jar</java>
+  </module>  
 </application>
