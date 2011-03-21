@@ -3,6 +3,7 @@ package org.nightlabs.jfire.security.integration;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.jdo.PersistenceManager;
@@ -60,20 +61,32 @@ import org.nightlabs.util.Util;
 })
 @Inheritance(strategy=InheritanceStrategy.NEW_TABLE)
 @Discriminator(column="className", strategy=DiscriminatorStrategy.CLASS_NAME)
-@Queries(
+@Queries({
 		@Query(
-				name=UserManagementSystem.GET_ACTIVE_USER_MANAGEMENT_SYSTEMS,
-				value="SELECT WHERE this.isActive == true ORDER BY JDOHelper.getObjectId(this) ASCENDING"
-					)
-		)
-public abstract class UserManagementSystem implements Serializable
-{
+			name=UserManagementSystem.GET_ACTIVE_USER_MANAGEMENT_SYSTEMS,
+			value="SELECT WHERE this.isActive == true ORDER BY JDOHelper.getObjectId(this) ASCENDING"
+			),
+		@Query(
+			name=UserManagementSystem.GET_USER_MANAGEMENT_SYSTEMS_BY_LEADING,
+			value="SELECT WHERE this.isLeading == :isLeading ORDER BY JDOHelper.getObjectId(this) ASCENDING"
+			)
+})
+public abstract class UserManagementSystem implements Serializable{
+	
+	/**
+	 * Key for a System property which is used to configure UserMagementSystem synchronization process
+	 * to fetch user data from specific UserManagementSystem ignoring who is the leading system.
+	 * It might help in certain situations (e.g. when you want to use JFire as leading system, 
+	 * but initially have some users in the UMS which you want to import).
+	 */
+	public static final String SHOULD_FETCH_USER_DATA = "org.nightlabs.jfire.security.integration.fetchUserData";
 
 	public static final String FETCH_GROUP_NAME = "UserManagementSystem.name";
 	public static final String FETCH_GROUP_DESCRIPTION = "UserManagementSystem.description";
 	public static final String FETCH_GROUP_TYPE = "UserManagementSystem.type";
 
-	protected static final String GET_ACTIVE_USER_MANAGEMENT_SYSTEMS = "getActiveUserManagementSystems";
+	private static final String GET_ACTIVE_USER_MANAGEMENT_SYSTEMS = "getActiveUserManagementSystems";
+	private static final String GET_USER_MANAGEMENT_SYSTEMS_BY_LEADING = "getLeadingUserManagementSystems";
 
 	@SuppressWarnings("unchecked")
 	public static <T extends UserManagementSystem> Collection<T> getActiveUserManagementSystems(
@@ -96,6 +109,30 @@ public abstract class UserManagementSystem implements Serializable
 		activeUserManagementSystems = new ArrayList<T>(activeUserManagementSystems);
 		q.closeAll();
 		return activeUserManagementSystems;
+	}
+
+	@SuppressWarnings("unchecked")
+	public static <T extends UserManagementSystem> Collection<T> getUserManagementSystemsByLeading(
+			PersistenceManager pm, boolean isLeading, Class<T> umsClass
+			) {
+		
+		javax.jdo.Query q = pm.newNamedQuery(
+				UserManagementSystem.class, 
+				UserManagementSystem.GET_USER_MANAGEMENT_SYSTEMS_BY_LEADING
+				);
+		List<T> userManagementSystems = (List<T>) q.execute(isLeading);
+		userManagementSystems = new ArrayList<T>(userManagementSystems);
+		q.closeAll();
+
+		// filter by class
+		for (Iterator<T> iterator = userManagementSystems.iterator(); iterator.hasNext();) {
+			T ums = iterator.next();
+			if (!umsClass.isInstance(ums)){
+				iterator.remove();
+			}
+		}
+		
+		return userManagementSystems;
 	}
 
 	/**
@@ -135,6 +172,12 @@ public abstract class UserManagementSystem implements Serializable
 	@Persistent
 	private boolean isActive = false;
 
+	/**
+	 * Indicates whether this UMS should be used as leading system. If <code>false</code> than JFire is
+	 * considered as leading system.
+	 */
+	@Persistent
+	private boolean isLeading = false;
 
 	/**
 	 * Perform the login via the UMS and return a {@link Session) descriptor if the login was successful.
@@ -257,6 +300,22 @@ public abstract class UserManagementSystem implements Serializable
 	 */
 	public boolean isActive() {
 		return isActive;
+	}
+	
+	/**
+	 * Set leading system state to this UMS
+	 * @param isLeadingSystem
+	 */
+	public void setLeading(boolean isLeading) {
+		this.isLeading = isLeading;
+	}
+	
+	/**
+	 * 
+	 * @return whether this UMS should be used as leading system
+	 */
+	public boolean isLeading() {
+		return isLeading;
 	}
 
 	/**
