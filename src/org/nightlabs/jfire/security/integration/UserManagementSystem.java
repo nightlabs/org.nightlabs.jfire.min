@@ -63,11 +63,11 @@ import org.nightlabs.util.Util;
 @Discriminator(column="className", strategy=DiscriminatorStrategy.CLASS_NAME)
 @Queries({
 		@Query(
-			name=UserManagementSystem.GET_ACTIVE_USER_MANAGEMENT_SYSTEMS,
+			name="getActiveUserManagementSystems",
 			value="SELECT WHERE this.isActive == true ORDER BY JDOHelper.getObjectId(this) ASCENDING"
 			),
 		@Query(
-			name=UserManagementSystem.GET_USER_MANAGEMENT_SYSTEMS_BY_LEADING,
+			name="getLeadingUserManagementSystems",
 			value="SELECT WHERE this.isLeading == :isLeading ORDER BY JDOHelper.getObjectId(this) ASCENDING"
 			)
 })
