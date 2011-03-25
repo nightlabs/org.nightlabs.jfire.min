@@ -150,9 +150,9 @@ public class CLRegistrarFactory
 		resourceRepositories.clear();
 
 		// we recursively delete our temp repository if it exists
-		File tempRepositoryFile = new File(clRegistryCfMod.getTempRepository().getPath());
+		File tempRepositoryFile = new File(clRegistryCfMod.getTempRepository(true).getPath());
 		if (!IOUtil.deleteDirectoryRecursively(tempRepositoryFile))
-			logger.error("Deleting temporary repository \""+clRegistryCfMod.getTempRepository().getPath()+"\" failed!");
+			logger.error("Deleting temporary repository \""+clRegistryCfMod.getTempRepository(true).getPath()+"\" failed!");
 	}
 
 	/**
@@ -175,10 +175,10 @@ public class CLRegistrarFactory
 			clear();
 
 			// tag the temp repository with CacheDirTag
-			File tempRepositoryFile = new File(clRegistryCfMod.getTempRepository().getPath());
+			File tempRepositoryFile = new File(clRegistryCfMod.getTempRepository(true).getPath());
 			new CacheDirTag(tempRepositoryFile).tag("http://JFire.org - JFireRemoteClassLoader (Temporary Repository)", true, false);
 
-			resourceRepositories.put(clRegistryCfMod.getTempRepository().getName(), clRegistryCfMod.getTempRepository());
+			resourceRepositories.put(clRegistryCfMod.getTempRepository(true).getName(), clRegistryCfMod.getTempRepository(true));
 			tempJarFiles = new ArrayList<File>();
 			for (Iterator<ResourceRepository> it = clRegistryCfMod.getResourceRepositories().iterator(); it.hasNext(); ) {
 				ResourceRepository repository = it.next();
@@ -190,7 +190,7 @@ public class CLRegistrarFactory
 			// it is iterated.
 			for (int i = 0; i < tempJarFiles.size(); ++i) {
 				File tmpJarFile = tempJarFiles.get(i); // must be within temp repository
-				scanDirectory(clRegistryCfMod.getTempRepository(), tmpJarFile.getAbsoluteFile(), null);
+				scanDirectory(clRegistryCfMod.getTempRepository(true), tmpJarFile.getAbsoluteFile(), null);
 			}
 			tempJarFiles = null;
 			loaded = true;
@@ -374,7 +374,7 @@ public class CLRegistrarFactory
 						// We extract wrapped jars into a temp repository to index them and make their content available
 						// to the clients.
 						File tempExtractedJar = new File(
-								clRegistryCfMod.getTempRepository().getPath(),
+								clRegistryCfMod.getTempRepository(true).getPath(),
 								repository.getName() + File.separatorChar +
 								jarFileMetaData.getPath() + File.separatorChar +
 								je.getName() + File.separatorChar + "data.jar");

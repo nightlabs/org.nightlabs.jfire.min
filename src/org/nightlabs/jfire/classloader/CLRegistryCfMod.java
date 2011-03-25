@@ -26,13 +26,17 @@
 
 package org.nightlabs.jfire.classloader;
 
-import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.nightlabs.config.ConfigModule;
 import org.nightlabs.config.InitException;
-import org.nightlabs.jfire.servermanager.ra.JFireServerManagerImpl;
+import org.nightlabs.util.IOUtil;
+import org.nightlabs.util.ParameterCoder;
+import org.nightlabs.util.ParameterCoderMinusHexExt;
+import org.nightlabs.util.Util;
 
 /**
  * @author marco
@@ -139,6 +143,25 @@ public class CLRegistryCfMod extends ConfigModule
 	{
 		return tempRepository;
 	}
+	
+	public ResourceRepository getTempRepository(boolean resolve) {
+		if (resolve) {
+			Map<String, String> variables = new HashMap<String, String>(); 
+			variables.put("java.io.tmpdir", System.getProperty("java.io.tmpdir"));
+			
+			String userName = String.valueOf(Util.getUserName());
+			// the user name might contain illegal characters (in windows) => we encode basically all characters.
+			ParameterCoder pc = new ParameterCoderMinusHexExt();
+			userName = pc.encode(userName);
+			variables.put("user.name", userName);
+			
+			if (tempRepository != null) 
+				tempRepository.setPath(IOUtil.replaceTemplateVariables(tempRepository.getPath(), variables));
+			return tempRepository;
+		}
+		return tempRepository;
+	}
+	
 	/**
 	 * @param tempRepository The tempRepository to set.
 	 */
@@ -162,7 +185,7 @@ public class CLRegistryCfMod extends ConfigModule
 		if (tempRepository == null) {
 			tempRepository = new ResourceRepository(
 					"temp",
-					new File(JFireServerManagerImpl.getServerTempDir(), "classloader").getAbsolutePath(),
+					"${java.io.tmpdir}/jfire_server.${user.name}/classloader",
 					true
 			);
 //			tempRepository = new ResourceRepository("temp", IOUtil.addFinalSlash(System.getProperty("java.io.tmpdir")) + "jfire" + File.separatorChar + "classloader", true);
