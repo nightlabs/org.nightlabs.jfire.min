@@ -355,8 +355,6 @@ public class JFireServerManagerImpl
 
 	private Session loginExternal(PersistenceManager pm, LoginData loginData) throws UserManagementSystemCommunicationException, LoginException {
 
-		Session session = null;
-
 		Collection<? extends UserManagementSystem> activeUserManagementSystems = 
 			UserManagementSystem.getActiveUserManagementSystems(pm);
 
@@ -371,7 +369,7 @@ public class JFireServerManagerImpl
 
 			try {
 
-				session = ums.login(loginData);
+				return ums.login(loginData);
 
 			} catch (UserManagementSystemCommunicationException e){
 
@@ -380,10 +378,6 @@ public class JFireServerManagerImpl
 
 			} catch (LoginException e){
 				logger.error("Authentication failed!", e);
-			}
-
-			if (session != null){
-				return session;
 			}
 
 		}
