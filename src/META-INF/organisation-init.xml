@@ -22,5 +22,7 @@
 	
 	<init bean="org.nightlabs.jfire.editlock.EditLockManagerRemote" method="initialise"/>
 	<init bean="org.nightlabs.jfire.security.JFireSecurityManagerRemote" method="initialise"/>
-
+	
+	<init bean="org.nightlabs.jfire.security.integration.UserManagementSystemManagerRemote" method="initialise"/>
+	
 </organisation-initialisation>
