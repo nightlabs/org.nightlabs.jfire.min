@@ -146,17 +146,8 @@ public class CLRegistryCfMod extends ConfigModule
 	
 	public ResourceRepository getTempRepository(boolean resolve) {
 		if (resolve) {
-			Map<String, String> variables = new HashMap<String, String>(); 
-			variables.put("java.io.tmpdir", System.getProperty("java.io.tmpdir"));
-			
-			String userName = String.valueOf(Util.getUserName());
-			// the user name might contain illegal characters (in windows) => we encode basically all characters.
-			ParameterCoder pc = new ParameterCoderMinusHexExt();
-			userName = pc.encode(userName);
-			variables.put("user.name", userName);
-			
 			if (tempRepository != null) 
-				tempRepository.setPath(IOUtil.replaceTemplateVariables(tempRepository.getPath(), variables));
+				tempRepository.setPath(IOUtil.replaceTemplateVariables(tempRepository.getPath(), Util.getEncodedSystemPropertyMap()));
 			return tempRepository;
 		}
 		return tempRepository;
