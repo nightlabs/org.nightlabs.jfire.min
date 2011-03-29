@@ -35,7 +35,7 @@ public class Session {
 	public Session(LoginData loginData){
 		
 		LoginData loginDataCopy = Util.cloneSerializable(loginData);
-		loginDataCopy.setPassword("");
+		loginDataCopy.setPassword(null);
 		this.loginData = loginDataCopy;
 		
 		this.sessionID = UUID.nameUUIDFromBytes(
