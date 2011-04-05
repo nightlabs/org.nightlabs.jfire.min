@@ -151,7 +151,7 @@ public abstract class UserManagementSystem implements Serializable{
 	 * Type of the UMS, see {@link UserManagementSystemType} for details
 	 */
 	@Persistent
-	@ForeignKey(deleteAction=ForeignKeyAction.CASCADE) // Isn't
+	@ForeignKey(deleteAction=ForeignKeyAction.CASCADE)
 	private UserManagementSystemType<?> type;
 
 	/**
@@ -199,6 +199,13 @@ public abstract class UserManagementSystem implements Serializable{
 	 * @throws UserManagementSystemCommunicationException
 	 */
 	public abstract void logout(Session session) throws UserManagementSystemCommunicationException;
+
+	
+	/**
+	 * @deprecated For JDO only!
+	 */
+	@Deprecated
+	protected UserManagementSystem(){}
 
 	/**
 	 * Constructor which generates object ID and sets UMS name

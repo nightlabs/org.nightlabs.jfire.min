@@ -1,6 +1,7 @@
 package org.nightlabs.jfire.security.integration;
 
 import java.io.Serializable;
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -24,6 +25,8 @@ import org.nightlabs.jfire.idgenerator.IDGenerator;
 import org.nightlabs.jfire.security.integration.id.UserManagementSystemTypeID;
 import org.nightlabs.util.NLLocale;
 import org.nightlabs.util.Util;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * <p>Every implementation of {@link UserManagementSystem} is represented by a persistent singleton-instance
@@ -66,6 +69,8 @@ import org.nightlabs.util.Util;
 		)
 public abstract class UserManagementSystemType<T extends UserManagementSystem> implements Serializable{
 
+	private static final Logger logger = LoggerFactory.getLogger(UserManagementSystemType.class);
+
 	public final static String FETCH_GROUP_NAME = "UserManagementSystemType.name";
 	public final static String FETCH_GROUP_DESCRIPTION = "UserManagementSystemType.description";
 
@@ -76,29 +81,28 @@ public abstract class UserManagementSystemType<T extends UserManagementSystem> i
 	 */
 	private static final long serialVersionUID = 1L;
 
-	@PrimaryKey
-	@Column(length=100)
-	private String organisationID;
-
-	@PrimaryKey
-	private long userManagementSystemTypeID;
-
+	
 	/**
-	 * Human readable name for the UMSType
+	 * Creates single instance of the class if it's not found in datastore.
+	 * 
+	 * @param pm
+	 * @param name
 	 */
-	@Persistent(
-		dependent="true",
-		mappedBy="userManagementSystemType")
-	private UserManagementSystemTypeName name;
-
-	/**
-	 * Description of the UMSType
-	 */
-	@Persistent(
-		dependent="true",
-		mappedBy="userManagementSystemType")
-	private UserManagementSystemTypeDescription description;
-
+	public static synchronized void createSingleInstance(PersistenceManager pm, Class<? extends UserManagementSystemType<?>> typeClass, String name){
+		pm.getExtent(typeClass);
+		UserManagementSystemType<?> singleInstance = loadSingleInstance(pm, typeClass);
+		if (singleInstance == null && typeClass != null){
+			try{
+				Constructor<? extends UserManagementSystemType<?>> declaredConstructor = typeClass.getDeclaredConstructor(String.class);
+				declaredConstructor.setAccessible(true);
+				singleInstance = declaredConstructor.newInstance(name);
+				singleInstance = pm.makePersistent(singleInstance);
+			}catch(Exception e){
+				logger.error("Can't create single instance of " + typeClass.getName(), e);
+			}
+		}
+	}
+	
 	/**
 	 * Loads an instance of requested UMSType instance. Loads all object IDs for the specified class 
 	 * and takes first if there's more than one. So it's guaranteed that only one UMSType instance 
@@ -129,10 +133,39 @@ public abstract class UserManagementSystemType<T extends UserManagementSystem> i
 		return singleInstance;
 	}
 
+	
+	@PrimaryKey
+	@Column(length=100)
+	private String organisationID;
+
+	@PrimaryKey
+	private long userManagementSystemTypeID;
+
+	/**
+	 * Human readable name for the UMSType
+	 */
+	@Persistent(
+		dependent="true",
+		mappedBy="userManagementSystemType")
+	private UserManagementSystemTypeName name;
+
+	/**
+	 * Description of the UMSType
+	 */
+	@Persistent(
+		dependent="true",
+		mappedBy="userManagementSystemType")
+	private UserManagementSystemTypeDescription description;
+	
+	/**
+	 * @deprecated For JDO only! 
+	 */
+	protected UserManagementSystemType(){}
+
 	/**
 	 * Constructor generating object ID and setting default name.
 	 */
-	public UserManagementSystemType(String name) {
+	protected UserManagementSystemType(String name) {
 		this.userManagementSystemTypeID = IDGenerator.nextID(UserManagementSystemType.class);
 		this.organisationID = IDGenerator.getOrganisationID();
 		setName(name);
