@@ -279,4 +279,23 @@ public class MultiSelectionStructField extends StructField<MultiSelectionDataFie
 	{
 		this.minimumSelectionCount = minimumSelectionCount;
 	}
+	
+	public Set<MultiSelectionStructFieldValue> getMultiSelectionStructFieldValue(Set<String> structFieldValueIDs) {
+		Set<MultiSelectionStructFieldValue> values = new HashSet<MultiSelectionStructFieldValue>();
+		for (MultiSelectionStructFieldValue value : structFieldValues) {
+			if (structFieldValueIDs.contains(value.getStructFieldValueID())) {
+				values.add(value);
+			}
+		}
+		return values;
+	}
+	
+	public MultiSelectionStructFieldValue getMultiSelectionStructFieldValue(String structFieldValueID) {
+		for (MultiSelectionStructFieldValue value : structFieldValues) {
+			if (structFieldValueID.equals(value.getStructFieldValueID())) {
+				return value;
+			}
+		}
+		return null;
+	}
 }

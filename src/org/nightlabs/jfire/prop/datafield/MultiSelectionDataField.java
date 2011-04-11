@@ -424,4 +424,56 @@ implements DetachCallback, II18nTextDataField
 			Collection.class.isAssignableFrom(inputType) ||
 			MultiSelectionDataField.class.isAssignableFrom(inputType);
 	}
+	
+	/**
+	 * Adds the given {@link Collection} of {@link MultiSelectionStructFieldValue}s to the selection.
+	 * @param values the {@link MultiSelectionStructFieldValue}s to add to the selection.
+	 */
+	public void addSelection(Collection<MultiSelectionStructFieldValue> values) 
+	{
+		if (values == null || values.isEmpty())
+			return;
+		
+		for (MultiSelectionStructFieldValue structFieldValue : values) {
+			structFieldValueIDs_correct.add(structFieldValue.getStructFieldValueID());	
+		}
+		structFieldValues = new HashSet<MultiSelectionStructFieldValue>(getStructFieldValues());
+		structFieldValues.addAll(values);
+		resetTextBuffer();
+	}
+	
+	/**
+	 * Adds the given {@link MultiSelectionStructFieldValue} to the selection.
+	 * @param value the {@link MultiSelectionStructFieldValue} to add to the selection.
+	 */
+	public void addSelection(MultiSelectionStructFieldValue value) 
+	{
+		addSelection(Collections.singleton(value));
+	}
+	
+	/**
+	 * Removes the given {@link Collection} of {@link MultiSelectionStructFieldValue}s from the selection.
+	 * @param values the {@link MultiSelectionStructFieldValue}s to remove from the selection.
+	 */
+	public void removeSelection(Collection<MultiSelectionStructFieldValue> values) 
+	{
+		if (values == null || values.isEmpty())
+			return;
+
+		for (MultiSelectionStructFieldValue structFieldValue : values) {
+			structFieldValueIDs_correct.remove(structFieldValue.getStructFieldValueID());	
+		}
+		structFieldValues = new HashSet<MultiSelectionStructFieldValue>(getStructFieldValues());
+		structFieldValues.removeAll(values);
+		resetTextBuffer();
+	}
+	
+	/**
+	 * Removes the given {@link MultiSelectionStructFieldValue} from the selection.
+	 * @param value the {@link MultiSelectionStructFieldValue} to remove from the selection.
+	 */
+	public void removeSelection(MultiSelectionStructFieldValue value) 
+	{
+		removeSelection(Collections.singleton(value));
+	}
 }
