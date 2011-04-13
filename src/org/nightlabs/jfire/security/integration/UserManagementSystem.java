@@ -63,11 +63,11 @@ import org.nightlabs.util.Util;
 @Discriminator(column="className", strategy=DiscriminatorStrategy.CLASS_NAME)
 @Queries({
 		@Query(
-			name=UserManagementSystem.GET_ACTIVE_USER_MANAGEMENT_SYSTEMS,
+			name="UserManagementSystem.getActiveUserManagementSystems",
 			value="SELECT WHERE this.isActive == true ORDER BY JDOHelper.getObjectId(this) ASCENDING"
 			),
 		@Query(
-			name=UserManagementSystem.GET_USER_MANAGEMENT_SYSTEMS_BY_LEADING,
+			name="UserManagementSystem.getLeadingUserManagementSystems",
 			value="SELECT WHERE this.isLeading == :isLeading ORDER BY JDOHelper.getObjectId(this) ASCENDING"
 			)
 })
@@ -85,9 +85,6 @@ public abstract class UserManagementSystem implements Serializable{
 	public static final String FETCH_GROUP_DESCRIPTION = "UserManagementSystem.description";
 	public static final String FETCH_GROUP_TYPE = "UserManagementSystem.type";
 
-	private static final String GET_ACTIVE_USER_MANAGEMENT_SYSTEMS = "UserManagementSystem.getActiveUserManagementSystems";
-	private static final String GET_USER_MANAGEMENT_SYSTEMS_BY_LEADING = "UserManagementSystem.getLeadingUserManagementSystems";
-
 	@SuppressWarnings("unchecked")
 	public static <T extends UserManagementSystem> Collection<T> getActiveUserManagementSystems(
 			PersistenceManager pm
@@ -95,7 +92,7 @@ public abstract class UserManagementSystem implements Serializable{
 		
 		javax.jdo.Query q = pm.newNamedQuery(
 				UserManagementSystem.class, 
-				UserManagementSystem.GET_ACTIVE_USER_MANAGEMENT_SYSTEMS
+				"UserManagementSystem.getActiveUserManagementSystems"
 				);
 		List<T> activeUserManagementSystems = (List<T>) q.execute();
 		
@@ -118,7 +115,7 @@ public abstract class UserManagementSystem implements Serializable{
 		
 		javax.jdo.Query q = pm.newNamedQuery(
 				UserManagementSystem.class, 
-				UserManagementSystem.GET_USER_MANAGEMENT_SYSTEMS_BY_LEADING
+				"UserManagementSystem.getLeadingUserManagementSystems"
 				);
 		List<T> userManagementSystems = (List<T>) q.execute(isLeading);
 		userManagementSystems = new ArrayList<T>(userManagementSystems);
