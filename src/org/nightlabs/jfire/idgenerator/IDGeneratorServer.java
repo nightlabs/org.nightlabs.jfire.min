@@ -32,7 +32,7 @@ import java.util.Map;
 import javax.naming.InitialContext;
 
 import org.nightlabs.jfire.base.JFireEjb3Factory;
-import org.nightlabs.jfire.security.SecurityReflector;
+import org.nightlabs.jfire.security.GlobalSecurityReflector;
 
 /**
  * This implementation of {@link IDGenerator} is used in on the server side for ID generation.
@@ -56,22 +56,13 @@ extends IDGenerator
 	 */
 	private Map<String, Map<String, LinkedList<Long>>> organisationID2IDCache = new HashMap<String, Map<String, LinkedList<Long>>>();
 
-//	private SecurityReflector securityReflector = null;
-
 	@Override
 	protected String _getOrganisationID()
 	{
 		try {
 			InitialContext initialContext = null;
 			try {
-//				if (securityReflector == null) {
-//					if (initialContext == null)
-//						initialContext = new InitialContext();
-//
-//					securityReflector = SecurityReflector.lookupSecurityReflector(initialContext);
-//				}
-//				return securityReflector._getUserDescriptor().getOrganisationID();
-				return SecurityReflector.getUserDescriptor().getOrganisationID();
+				return GlobalSecurityReflector.sharedInstance().getUserDescriptor().getOrganisationID();
 			} finally {
 				if (initialContext != null)
 					initialContext.close();
@@ -98,14 +89,7 @@ extends IDGenerator
 
 			InitialContext initialContext = null;
 			try {
-//				if (securityReflector == null) {
-//					if (initialContext == null)
-//						initialContext = new InitialContext();
-//
-//					securityReflector = SecurityReflector.lookupSecurityReflector(initialContext);
-//				}
-//				organisationID = securityReflector._getUserDescriptor().getOrganisationID();
-				organisationID = SecurityReflector.getUserDescriptor().getOrganisationID();
+				organisationID = GlobalSecurityReflector.sharedInstance().getUserDescriptor().getOrganisationID();
 
 				Map<String, LinkedList<Long>> namespace2cachedIDs;
 				synchronized (organisationID2IDCache) {
