@@ -1,10 +1,6 @@
-/**
- * 
- */
 package org.nightlabs.jfire.testsuite;
 
 import java.io.IOException;
-
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Properties;
@@ -19,8 +15,8 @@ import org.nightlabs.jfire.base.login.JFireSecurityConfiguration;
  * 
  * @author alex
  */
-class JFireRemoteTestRunnerLogin {
-
+public class JFireRemoteTestRunnerLogin
+{
 	private static final String PROP_FILE = "JFireTestRunner.properties";
 	private static final String PROP_FILE_DEF = "JFireTestRunner-default.properties";
 
