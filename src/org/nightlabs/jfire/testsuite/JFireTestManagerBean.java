@@ -42,6 +42,7 @@ import javax.jdo.FetchPlan;
 import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
+import javax.jdo.spi.PersistenceCapable;
 
 import junit.framework.Test;
 import junit.framework.TestResult;
@@ -241,8 +242,43 @@ public class JFireTestManagerBean
 		finally {
 			pm.close();
 		}		
-	}	
+	}
 	
+	@Override
+	public Object getObject(ObjectID objectID)
+	{
+		PersistenceManager pm = createPersistenceManager();
+		try
+		{
+			return pm.getObjectById(objectID);
+		}
+		catch (JDOObjectNotFoundException e)
+		{
+			return null;
+		}
+		finally
+		{
+			pm.close();
+		}		
+	}
+	
+	@Override
+	public void storeObject(Object object)
+	{
+		if (! PersistenceCapable.class.isInstance(object))
+			throw new IllegalArgumentException(
+					"Given object does not implement PersistenceCapable! givenType=" + object.getClass().getName());
+				
+		PersistenceManager pm = createPersistenceManager();
+		try
+		{
+			pm.makePersistent(object);
+		}
+		finally
+		{
+			pm.close();
+		}		
+	}
 	
 	@RolesAllowed("_Guest_")
 	@Override
