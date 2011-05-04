@@ -63,7 +63,7 @@ import org.slf4j.LoggerFactory;
 @Discriminator(strategy=DiscriminatorStrategy.CLASS_NAME, column="className")
 @Queries(
 		@javax.jdo.annotations.Query(
-				name=UserManagementSystemType.GET_ALL_USER_MANAGEMENT_SYSTEM_TYPES_IDS,
+				name="UserManagementSystemType.getAllUserManagementSystemTypesIds",
 				value="SELECT JDOHelper.getObjectId(this)"
 					)
 		)
@@ -73,8 +73,6 @@ public abstract class UserManagementSystemType<T extends UserManagementSystem> i
 
 	public final static String FETCH_GROUP_NAME = "UserManagementSystemType.name";
 	public final static String FETCH_GROUP_DESCRIPTION = "UserManagementSystemType.description";
-
-	public final static String GET_ALL_USER_MANAGEMENT_SYSTEM_TYPES_IDS = "getAllUserManagementSystemTypesIds";
 
 	/**
 	 * The serial version of this class.
@@ -118,7 +116,7 @@ public abstract class UserManagementSystemType<T extends UserManagementSystem> i
 			PersistenceManager pm, Class<T> clazz
 			){
 
-		Query q = pm.newNamedQuery(UserManagementSystemType.class, GET_ALL_USER_MANAGEMENT_SYSTEM_TYPES_IDS);
+		Query q = pm.newNamedQuery(UserManagementSystemType.class, "UserManagementSystemType.getAllUserManagementSystemTypesIds");
 		q.setClass(clazz);
 
 		Collection<UserManagementSystemTypeID> typesIds = (Collection<UserManagementSystemTypeID>) q.execute();

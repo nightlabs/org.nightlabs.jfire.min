@@ -71,7 +71,7 @@ import org.nightlabs.util.Util;
 			value="SELECT WHERE this.isLeading == :isLeading ORDER BY JDOHelper.getObjectId(this) ASCENDING"
 			)
 })
-public abstract class UserManagementSystem implements Serializable{
+public abstract class UserManagementSystem implements Serializable, Comparable<UserManagementSystem>{
 	
 	/**
 	 * Key for a System property which is used to configure UserMagementSystem synchronization process
@@ -228,6 +228,8 @@ public abstract class UserManagementSystem implements Serializable{
 			throw new IllegalArgumentException("UserManagemenSystemType can't be null!");
 		}
 
+		this.type = type;
+		
 		if (userManagementSystemID == null) {
 			this.organisationID = IDGenerator.getOrganisationID();
 			this.userManagementSystemID = IDGenerator.nextID(UserManagementSystem.class);
@@ -357,5 +359,32 @@ public abstract class UserManagementSystem implements Serializable{
 				Util.equals(this.userManagementSystemID, other.userManagementSystemID) &&
 				Util.equals(this.organisationID, other.organisationID)
 		);
+	}
+	
+	/**
+	 * Active {@link UserManagementSystem}s go first. If both are either active or non-active than 
+	 * their {@link UserManagementSystemName}s are compared if non-null (delegate to corresponding method 
+	 * in {@link UserManagementSystemName} class). Otherwise comparation of {@link #userManagementSystemID}s is made. 
+	 */
+	@Override
+	public int compareTo(UserManagementSystem userManagementSystem) {
+		if (this.isActive && !userManagementSystem.isActive){
+			return 1;
+		}else if (!this.isActive && userManagementSystem.isActive){
+			return -1;
+		}else {
+			if (this.name != null && userManagementSystem.getName() != null){
+				return this.name.compareTo(userManagementSystem.getName());
+			}else{
+				long otherUserManagementSystemID = userManagementSystem.getUserManagementSystemID();
+				if (this.userManagementSystemID < otherUserManagementSystemID){
+					return -1;
+				}else if (this.userManagementSystemID > otherUserManagementSystemID){
+					return 1;
+				}else {
+					return 0;
+				}
+			}
+		}
 	}
 }

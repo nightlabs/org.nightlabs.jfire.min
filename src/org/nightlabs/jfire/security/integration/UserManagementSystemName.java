@@ -52,8 +52,7 @@ import org.nightlabs.jfire.security.integration.id.UserManagementSystemNameID;
 	detachable="true",
 	table="JFireBase_UserManagementSystemName")
 @Inheritance(strategy=InheritanceStrategy.NEW_TABLE)
-public class UserManagementSystemName extends I18nText
-{
+public class UserManagementSystemName extends I18nText implements Comparable<I18nText>{
 	/**
 	 * The serial version of this class.
 	 */
@@ -115,6 +114,14 @@ public class UserManagementSystemName extends I18nText
 	 */
 	public UserManagementSystem getUserManagementSystem() {
 		return userManagementSystem;
+	}
+
+	@Override
+	public int compareTo(I18nText o) {
+		if (this.getText() != null){
+			return this.getText().compareTo(o.getText());
+		}
+		return 0;
 	}
 
 }
