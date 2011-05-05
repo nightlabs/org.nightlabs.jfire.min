@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 
 import javax.jdo.PersistenceManager;
 import javax.jdo.annotations.Column;
@@ -257,7 +258,7 @@ public abstract class UserManagementSystem implements Serializable, Comparable<U
 	}
 
 	/**
-	 * Set description for the UMS
+	 * Set description for as a {@link String} to system's defaul {@link Locale}
 	 *
 	 * @param description
 	 */
@@ -266,6 +267,20 @@ public abstract class UserManagementSystem implements Serializable, Comparable<U
 			this.description = new UserManagementSystemDescription(this);
 		}
 		this.description.setText(NLLocale.getDefault(), description);
+	}
+	
+	/**
+	 * Set description as a {@link I18nText}
+	 * 
+	 * @param description
+	 */
+	public void setDescription(I18nText description){
+		if (this.description == null){
+			this.description = new UserManagementSystemDescription(this);
+		}
+		if (description != null){
+			this.description.copyFrom(description);
+		}
 	}
 
 	/**
@@ -277,7 +292,7 @@ public abstract class UserManagementSystem implements Serializable, Comparable<U
 	}
 
 	/**
-	 * Set UMS name. If null or empty string is provided than class full name is used as default.
+	 * Set name as a {@link String} to system's default {@link Locale}. If null or empty string is provided than class simple name is used as default.
 	 *
 	 * @param name
 	 */
@@ -286,9 +301,25 @@ public abstract class UserManagementSystem implements Serializable, Comparable<U
 			this.name = new UserManagementSystemName(this);
 		}
 		if (name == null || "".equals(name)){
-			name = this.getClass().getName();
+			name = getClass().getSimpleName();
 		}
 		this.name.setText(NLLocale.getDefault(), name);
+	}
+	
+	/**
+	 * Set name as {@link I18nText}. If null or empty string is provided than class simple name is used as default.
+	 * 
+	 * @param name
+	 */
+	public void setName(I18nText name){
+		if (this.name == null){
+			this.name = new UserManagementSystemName(this);
+		}
+		if (name != null){
+			this.name.copyFrom(name);
+		}else{
+			setName(getClass().getSimpleName());
+		}
 	}
 
 	/**
