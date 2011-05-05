@@ -19,6 +19,7 @@ import org.nightlabs.j2ee.LoginData;
 import org.nightlabs.jdo.ObjectIDUtil;
 import org.nightlabs.jfire.asyncinvoke.Invocation;
 import org.nightlabs.jfire.base.AuthCallbackHandler;
+import org.nightlabs.jfire.jboss.ejb3.JFireEjb3TransactionRetryInterceptor;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.servermanager.JFireServerManager;
 import org.nightlabs.jfire.servermanager.j2ee.J2EEAdapter;
@@ -26,7 +27,7 @@ import org.nightlabs.jfire.servermanager.j2ee.J2EEAdapter;
 /**
  * This is the Invocation that is started by
  * {@link JFireTestManagerBean#runTestAsync(Class)}. It runs all tests of a
- * test-class an notifies the client using the identifier the invocation was created with.
+ * test-class and notifies the client using the identifier the invocation was created with.
  * <p>
  * This class is used internally and not intended for direct use.
  * </p>
@@ -54,6 +55,11 @@ public class JFireRemoteTestRunInvocation extends Invocation {
 	@Override
 	public Serializable invoke() throws Exception {
 		PersistenceManager pm = createPersistenceManager();
+		String oldTransactionRetryProp = System.getProperty(JFireEjb3TransactionRetryInterceptor.SYSTEM_PROPERY_NAME_RETRY_TRANSACTIONS);
+		if (oldTransactionRetryProp == null) {
+			oldTransactionRetryProp = "";
+		}
+		System.setProperty(JFireEjb3TransactionRetryInterceptor.SYSTEM_PROPERY_NAME_RETRY_TRANSACTIONS, String.valueOf(false));
 		try {
 			final JFireTestSuiteNotificationManager notificationManager = JFireTestSuiteNotificationManager.getNotificationManager();
 			
@@ -104,6 +110,7 @@ public class JFireRemoteTestRunInvocation extends Invocation {
 			return null;
 		} finally {
 			pm.close();
+			System.setProperty(JFireEjb3TransactionRetryInterceptor.SYSTEM_PROPERY_NAME_RETRY_TRANSACTIONS, oldTransactionRetryProp);
 		}
 	}
 	
