@@ -194,7 +194,7 @@ public abstract class UserManagementSystemType<T extends UserManagementSystem> i
 			this.name = new UserManagementSystemTypeName(this);
 		}
 		if (name == null || "".equals(name)){
-			name = this.getClass().getName();
+			name = this.getClass().getSimpleName();
 		}
 		this.name.setText(NLLocale.getDefault(), name);
 	}
