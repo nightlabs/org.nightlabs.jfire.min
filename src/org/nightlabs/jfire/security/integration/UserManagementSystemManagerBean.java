@@ -1,6 +1,8 @@
 package org.nightlabs.jfire.security.integration;
 
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ejb.Stateless;
@@ -9,11 +11,14 @@ import javax.ejb.TransactionAttributeType;
 import javax.jdo.JDOFatalUserException;
 import javax.jdo.JDOHelper;
 import javax.jdo.PersistenceManager;
+import javax.jdo.Query;
 import javax.jdo.listener.CreateLifecycleListener;
 import javax.jdo.listener.InstanceLifecycleEvent;
 
+import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.security.User;
+import org.nightlabs.jfire.security.integration.id.UserManagementSystemID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,7 +37,6 @@ public class UserManagementSystemManagerBean extends BaseSessionBeanImpl impleme
 	
 	private static final Logger logger = LoggerFactory.getLogger(UserManagementSystemManagerBean.class);
 
-	
 	private static CreateLifecycleListener createListener = new ForbidUserCreationLyfecycleListener(); 
 	
 	public static class ForbidUserCreationLyfecycleListener implements CreateLifecycleListener{
@@ -54,7 +58,7 @@ public class UserManagementSystemManagerBean extends BaseSessionBeanImpl impleme
 		
 		/**
 		 * 
-		 * @return if this listener is enabled and will throw an exception if new User is created
+		 * @return <code>true</code> if this listener is enabled
 		 */
 		public static boolean isEnabled(){
 			return isEnabledTL.get();
@@ -86,6 +90,9 @@ public class UserManagementSystemManagerBean extends BaseSessionBeanImpl impleme
 		
 	};
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@TransactionAttribute(TransactionAttributeType.REQUIRED)
 	@RolesAllowed("_System_")
 	@Override
@@ -107,4 +114,70 @@ public class UserManagementSystemManagerBean extends BaseSessionBeanImpl impleme
 		
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
+	@RolesAllowed("org.nightlabs.jfire.security.accessRightManagement")
+	@Override
+	public List<UserManagementSystem> getUserManagementSystems(Collection<UserManagementSystemID> userManagementSystemIDs, String[] fetchGroups, int maxFetchDepth){
+		if (userManagementSystemIDs == null){
+			throw new IllegalArgumentException("Object IDs should be specified (not null) for loading User Management Systems!");
+		}
+		PersistenceManager pm = createPersistenceManager();
+		try {
+			return NLJDOHelper.getDetachedObjectList(pm, userManagementSystemIDs, UserManagementSystem.class, fetchGroups, maxFetchDepth);
+		} finally {
+			pm.close();
+		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@RolesAllowed("org.nightlabs.jfire.security.accessRightManagement")
+	@SuppressWarnings("unchecked")
+	@Override
+	public Collection<UserManagementSystemID> getAllUserManagementSystemIDs() {
+		PersistenceManager pm = createPersistenceManager();
+		try{
+			Query query = pm.newQuery(pm.getExtent(UserManagementSystem.class, true));
+			query.setResult("JDOHelper.getObjectId(this)");
+			return new HashSet<UserManagementSystemID>((Collection<? extends UserManagementSystemID>) query.execute());
+		}finally{
+			pm.close();
+		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@RolesAllowed("org.nightlabs.jfire.security.accessRightManagement")
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@Override
+	public <T extends UserManagementSystem> T storeUserManagementSystem(T userManagementSystem, boolean get, String[] fetchGroups, int maxFetchDepth) {
+		if (userManagementSystem == null){
+			logger.warn("Can't store NULL userManagementSystem, return null.");
+			return null;
+		}
+		
+		PersistenceManager pm = createPersistenceManager();
+		try{
+			
+			userManagementSystem = pm.makePersistent(userManagementSystem);
+			
+			if (!get){
+				return null;
+			}
+
+			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
+			if (fetchGroups != null)
+				pm.getFetchPlan().setGroups(fetchGroups);
+
+			return pm.detachCopy(userManagementSystem);
+			
+		}finally{
+			pm.close();
+		}
+	}
+	
 }
