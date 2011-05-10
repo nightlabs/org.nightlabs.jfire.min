@@ -400,9 +400,9 @@ public abstract class UserManagementSystem implements Serializable, Comparable<U
 	@Override
 	public int compareTo(UserManagementSystem userManagementSystem) {
 		if (this.isActive && !userManagementSystem.isActive){
-			return 1;
-		}else if (!this.isActive && userManagementSystem.isActive){
 			return -1;
+		}else if (!this.isActive && userManagementSystem.isActive){
+			return 1;
 		}else {
 			if (this.name != null && userManagementSystem.getName() != null){
 				return this.name.compareTo(userManagementSystem.getName());
