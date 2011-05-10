@@ -23,25 +23,25 @@ public class JFireEjb3TransactionRetryInterceptor  implements Interceptor
 	 * Name of the system-property to configure whether this interceptor should retry failed transactions.
 	 * Set the value of this property to a boolean value.
 	 */
-	public static final String SYSTEM_PROPERY_NAME_RETRY_TRANSACTIONS = JFireEjb3TransactionRetryInterceptor.class + "#retryTransactions";
+	public static final String SYSTEM_PROPERY_NAME_RETRY_TRANSACTIONS = JFireEjb3TransactionRetryInterceptor.class.getName() + "#retryTransactions";
 	/**
 	 * Name of the system-property to configure how many times this interceptor should retry a failed transaction.
 	 * Set the value of this property to an int value.
 	 */
-	public static final String SYSTEM_PROPERY_NAME_RETRY_COUNT = JFireEjb3TransactionRetryInterceptor.class + "#retryCount";
+	public static final String SYSTEM_PROPERY_NAME_RETRY_COUNT = JFireEjb3TransactionRetryInterceptor.class.getName() + "#retryCount";
 	/**
 	 * Name of the system-property to configure the amount of milliseconds this interceptor should sleep between retrying failed transaction.
 	 * Set the value of this property to a long value.
 	 */
-	public static final String SYSTEM_PROPERY_NAME_RETRY_SLEEP = JFireEjb3TransactionRetryInterceptor.class + "#retrySleep";
+	public static final String SYSTEM_PROPERY_NAME_RETRY_SLEEP = JFireEjb3TransactionRetryInterceptor.class.getName() + "#retrySleep";
 	
 	private static final Logger logger = Logger.getLogger(JFireEjb3TransactionRetryInterceptor.class);
-
+	
 	/**Default max retry times before finally give-up*/
 	private static final int defaultRetryCount = 6;
 
 	/** Default Number of ms to sleep before each attempt to retry calling the metod again */
-	private transient long defaultSleepTime = 200;
+	private static transient long defaultSleepTime = 200;
 	   
 	public JFireEjb3TransactionRetryInterceptor()
 	{
@@ -105,7 +105,7 @@ public class JFireEjb3TransactionRetryInterceptor  implements Interceptor
 	 *         to <code>true</code>, but will read
 	 *         {@link #SYSTEM_PROPERY_NAME_RETRY_TRANSACTIONS} if set.
 	 */
-	private boolean isRetryTransactions() {
+	public static boolean isRetryTransactions() {
 		String doRetry = System.getProperty(SYSTEM_PROPERY_NAME_RETRY_TRANSACTIONS);
 		return doRetry == null || doRetry.isEmpty() || Boolean.parseBoolean(doRetry);
 	}
@@ -114,7 +114,7 @@ public class JFireEjb3TransactionRetryInterceptor  implements Interceptor
 	 * @return The number of retries. Defaults to {@link #defaultRetryCount} but
 	 *         will read {@link #SYSTEM_PROPERY_NAME_RETRY_COUNT} if set.
 	 */
-	private int getRetryTimes() {
+	public static int getRetryTimes() {
 		try {
 			return Integer.parseInt(System.getProperty(SYSTEM_PROPERY_NAME_RETRY_COUNT));
 		} catch (Exception e) {
@@ -126,7 +126,7 @@ public class JFireEjb3TransactionRetryInterceptor  implements Interceptor
 	 * @return The number ms to sleep between retries. Defaults to {@link #defaultSleepTime} but
 	 *         will read {@link #SYSTEM_PROPERY_NAME_RETRY_SLEEP} if set.
 	 */
-	private long getSleepTime() {
+	public static long getSleepTime() {
 		try {
 			return Long.parseLong(System.getProperty(SYSTEM_PROPERY_NAME_RETRY_SLEEP));
 		} catch (Exception e) {
