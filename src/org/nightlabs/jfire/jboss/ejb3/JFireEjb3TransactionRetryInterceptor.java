@@ -59,7 +59,7 @@ public class JFireEjb3TransactionRetryInterceptor  implements Interceptor
 		Object result = null;
 		int retryCount = 0;
 		Throwable originalException = null;
-		Boolean doRetry = null;
+		Boolean doRetry = isRetryTransactions();
 		Integer retryTimes = null;
 		long retrySleepTime = defaultSleepTime;
 		
@@ -70,11 +70,12 @@ public class JFireEjb3TransactionRetryInterceptor  implements Interceptor
 			} catch (final Exception e) {
 				if (originalException == null)
 					originalException = e;
-				if (doRetry == null) 
-					doRetry = isRetryTransactions();
 				// If we should not retry, we have to re-throw the originalException.
 				if (!doRetry)
+				{
+					logger.error("Caught an exception, but will not retry failed transaction.", originalException);
 					throw originalException;
+				}
 				
 				if (retryTimes == null) {
 					retryTimes = getRetryTimes();
