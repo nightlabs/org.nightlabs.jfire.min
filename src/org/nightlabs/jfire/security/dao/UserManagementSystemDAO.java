@@ -141,4 +141,25 @@ public class UserManagementSystemDAO extends BaseJDOObjectDAO<UserManagementSyst
 		}
 	}
 
+	/**
+	 * Delete persistent {@link UserManagementSystem} instances by their IDs.
+	 * 
+	 * @param userManagementSystemIDs The {@link Collection} of IDs of {@link UserManagementSystem}s to delete
+	 * @param monitor The progress monitor for this action
+	 */
+	public synchronized void removeUserManagementSystems(Collection<UserManagementSystemID> userManagementSystemIDs, ProgressMonitor monitor){
+		monitor.beginTask("Deleting UserManagementSystem(s)", userManagementSystemIDs.size());
+		try{
+			UserManagementSystemManagerRemote um = getEjbProvider().getRemoteBean(UserManagementSystemManagerRemote.class);
+			for (UserManagementSystemID userManagementSystemID : userManagementSystemIDs){
+				um.deleteUserManagementSystem(userManagementSystemID);
+				monitor.worked(1);
+			}
+		}catch(Exception e){
+			monitor.setCanceled(true);
+			throw new RuntimeException("Failed to delete UserManagementSystem!", e);
+		}finally{
+			monitor.done();
+		}
+	}
 }
