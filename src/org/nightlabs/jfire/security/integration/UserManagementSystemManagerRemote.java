@@ -7,6 +7,7 @@ import javax.ejb.Remote;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.security.integration.UserManagementSystemManagerBean.ForbidUserCreationLyfecycleListener;
 import org.nightlabs.jfire.security.integration.id.UserManagementSystemID;
+import org.nightlabs.jfire.security.integration.id.UserManagementSystemTypeID;
 
 /**
  * Remote interface for UserManagementSystemManagerBean
@@ -51,4 +52,29 @@ public interface UserManagementSystemManagerRemote {
 	 * @return Stored detached {@link UserManagementSystem} object if <code>get</code> is <code>true</code> or <code>null</code> otherwise 
 	 */
 	<T extends UserManagementSystem> T storeUserManagementSystem(T userManagementSystem, boolean get, String[] fetchGroups, int maxFetchDepth);
+
+	/**
+	 * Get IDs of all persistent {@link UserManagementSystemType} objects.
+	 * Returns an empty {@link Collection} if non of them exist. 
+	 * 
+	 * @return collection of {@link UserManagementSystemTypeID}s
+	 */
+	Collection<UserManagementSystemTypeID> getAllUserManagementSystemTypesIDs();
+
+	/**
+	 * Retrieves a {@link List} of detached {@link UserManagementSystemType}s by given {@link UserManagementSystemTypeID}s.
+	 * 
+	 * @param userManagementSystemIDs IDs of {@link UserManagementSystemType}s, will throw {@link IllegalArgumentException} if <code>null</code>
+	 * @param fetchGroups Which fetch groups to use
+	 * @param maxFetchDepth Fetch depth or {@link NLJDOHelper#MAX_FETCH_DEPTH_NO_LIMIT}
+	 * @return list of detached {@link UserManagementSystemType} objects
+	 */
+	List<UserManagementSystemType<?>> getUserManagementSystemTypes(Collection<UserManagementSystemTypeID> userManagementSystemIDs, String[] fetchGroups, int maxFetchDepth);
+	
+	/**
+	 * Delete persistent {@link UserManagementSystem} instance by its ID.
+	 * 
+	 * @param userManagementSystemID The {@link UserManagementSystemID} of instance to delete
+	 */
+	void deleteUserManagementSystem(UserManagementSystemID userManagementSystem);
 }

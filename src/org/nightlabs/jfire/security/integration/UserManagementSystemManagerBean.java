@@ -10,6 +10,7 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.jdo.JDOFatalUserException;
 import javax.jdo.JDOHelper;
+import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
 import javax.jdo.listener.CreateLifecycleListener;
@@ -19,6 +20,7 @@ import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.security.integration.id.UserManagementSystemID;
+import org.nightlabs.jfire.security.integration.id.UserManagementSystemTypeID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -179,5 +181,60 @@ public class UserManagementSystemManagerBean extends BaseSessionBeanImpl impleme
 			pm.close();
 		}
 	}
-	
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@RolesAllowed("org.nightlabs.jfire.security.accessRightManagement")
+	@SuppressWarnings("unchecked")
+	@Override
+	public Collection<UserManagementSystemTypeID> getAllUserManagementSystemTypesIDs() {
+		PersistenceManager pm = createPersistenceManager();
+		try{
+			Query query = pm.newQuery(pm.getExtent(UserManagementSystemType.class, true));
+			query.setResult("JDOHelper.getObjectId(this)");
+			return new HashSet<UserManagementSystemTypeID>((Collection<? extends UserManagementSystemTypeID>) query.execute());
+		}finally{
+			pm.close();
+		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@RolesAllowed("org.nightlabs.jfire.security.accessRightManagement")
+	@Override
+	public List<UserManagementSystemType<?>> getUserManagementSystemTypes(Collection<UserManagementSystemTypeID> userManagementSystemTypeIDs, String[] fetchGroups, int maxFetchDepth){
+		if (userManagementSystemTypeIDs == null){
+			throw new IllegalArgumentException("Object IDs should be specified (not null) for loading User Management System Types!");
+		}
+		PersistenceManager pm = createPersistenceManager();
+		try {
+			return NLJDOHelper.getDetachedObjectList(pm, userManagementSystemTypeIDs, UserManagementSystemType.class, fetchGroups, maxFetchDepth);
+		} finally {
+			pm.close();
+		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@RolesAllowed("org.nightlabs.jfire.security.accessRightManagement")
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@Override
+	public void deleteUserManagementSystem(UserManagementSystemID userManagementSystemID) {
+		PersistenceManager pm = createPersistenceManager();
+		try{
+			
+			pm.deletePersistent(
+					pm.getObjectById(userManagementSystemID)
+					);
+			
+		}catch(JDOObjectNotFoundException e){
+			logger.warn("Can't delete UserManagementSyste cause it does not exist in datastore!", e);
+		}finally{
+			pm.close();
+		}
+	}
+
 }
