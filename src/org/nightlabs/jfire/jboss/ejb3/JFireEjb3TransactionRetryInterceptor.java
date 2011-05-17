@@ -60,8 +60,8 @@ public class JFireEjb3TransactionRetryInterceptor  implements Interceptor
 		int retryCount = 0;
 		Throwable originalException = null;
 		Boolean doRetry = isRetryTransactions();
-		Integer retryTimes = null;
-		long retrySleepTime = defaultSleepTime;
+		Integer retryTimes = getRetryTimes();
+		long retrySleepTime = getSleepTime();
 		
 		while (true) {
 			try {
@@ -77,15 +77,10 @@ public class JFireEjb3TransactionRetryInterceptor  implements Interceptor
 					throw originalException;
 				}
 				
-				if (retryTimes == null) {
-					retryTimes = getRetryTimes();
-					retrySleepTime = getSleepTime();
-				}
-				
 				logger.debug("before retry invoking sleeping for ms:" + retrySleepTime);
 				Thread.sleep(retrySleepTime);
 				if (retryCount >= retryTimes) {
-					logger.error("Caught exception (not retrying again): " + e, e);
+					logger.error("Failed to successfully retry transaction due to exception: " + e, e);
 //					throw e;
 					// We throw the first exception, because currently the following exceptions are all the same due
 					// to the tx already being aborted and not restarted when retrying.
@@ -93,7 +88,8 @@ public class JFireEjb3TransactionRetryInterceptor  implements Interceptor
 					throw originalException;
 				}
 				else
-					logger.warn("Caught exception (will retry again): " + e, e);
+					logger.trace("Caught exception (will retry again): " + e, e);
+				
 				retryCount++;
 				retrySleepTime+=100;
 			}
