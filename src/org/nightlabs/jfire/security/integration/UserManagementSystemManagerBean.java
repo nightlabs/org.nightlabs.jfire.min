@@ -15,6 +15,7 @@ import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
 import javax.jdo.listener.CreateLifecycleListener;
 import javax.jdo.listener.InstanceLifecycleEvent;
+import javax.resource.spi.IllegalStateException;
 
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
@@ -212,6 +213,48 @@ public class UserManagementSystemManagerBean extends BaseSessionBeanImpl impleme
 		try {
 			return NLJDOHelper.getDetachedObjectList(pm, userManagementSystemTypeIDs, UserManagementSystemType.class, fetchGroups, maxFetchDepth);
 		} finally {
+			pm.close();
+		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @throws IllegalStateException 
+	 */
+	@RolesAllowed("org.nightlabs.jfire.security.accessRightManagement")
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@Override
+	public <T extends UserManagementSystemType<?>> T storeUserManagementSystemType(T userManagementSystemType, boolean get, String[] fetchGroups, int maxFetchDepth) throws IllegalStateException {
+		if (userManagementSystemType == null){
+			logger.warn("Can't store NULL userManagementSystemType, return null.");
+			return null;
+		}
+		
+		PersistenceManager pm = createPersistenceManager();
+		try{
+			
+			// check if such object exist in datastore, NO new UserManagementSystemTypes should be created by this method
+			UserManagementSystemType<?> singleInstance = UserManagementSystemType.loadSingleInstance(pm, userManagementSystemType.getClass());
+			if (singleInstance == null){
+				throw new IllegalStateException("User management system type can't be stored because there no single instance of this type in datastore!");
+			}else if (singleInstance.getUserManagementSystemTypeID() != userManagementSystemType.getUserManagementSystemTypeID()
+					|| !singleInstance.getOrganisationID().equals(userManagementSystemType.getOrganisationID())){
+				throw new IllegalStateException("User management system with this type already exists in datastore! No new instance of this type can be stored!");
+			}
+			
+			userManagementSystemType = pm.makePersistent(userManagementSystemType);
+			
+			if (!get){
+				return null;
+			}
+
+			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
+			if (fetchGroups != null)
+				pm.getFetchPlan().setGroups(fetchGroups);
+
+			return pm.detachCopy(userManagementSystemType);
+			
+		}finally{
 			pm.close();
 		}
 	}
