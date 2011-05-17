@@ -200,6 +200,22 @@ public abstract class UserManagementSystemType<T extends UserManagementSystem> i
 	}
 
 	/**
+	 * Set name as {@link I18nText}. If null or empty string is provided than class simple name is used as default.
+	 * 
+	 * @param name
+	 */
+	public void setName(I18nText name){
+		if (this.name == null){
+			this.name = new UserManagementSystemTypeName(this);
+		}
+		if (name != null){
+			this.name.copyFrom(name);
+		}else{
+			setName(getClass().getSimpleName());
+		}
+	}
+
+	/**
 	 *
 	 * @return UMSType I18nText description
 	 */
@@ -217,6 +233,20 @@ public abstract class UserManagementSystemType<T extends UserManagementSystem> i
 			this.description = new UserManagementSystemTypeDescription(this);
 		}
 		this.description.setText(NLLocale.getDefault(), description);
+	}
+
+	/**
+	 * Set description as a {@link I18nText}
+	 * 
+	 * @param description
+	 */
+	public void setDescription(I18nText description){
+		if (this.description == null){
+			this.description = new UserManagementSystemTypeDescription(this);
+		}
+		if (description != null){
+			this.description.copyFrom(description);
+		}
 	}
 
 	/**
