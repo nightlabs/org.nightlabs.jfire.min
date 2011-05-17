@@ -103,5 +103,43 @@ public class UserManagementSystemTypeDAO extends BaseJDOObjectDAO<UserManagement
 			monitor.done();
 		}
 	}
+	
+
+	/**
+	 * Stores a {@link UserManagementSystemType} on the server.
+	 * 
+	 * @param <T> Specific implementation type of {@link UserManagementSystemType}
+	 * @param userManagementSystemType The {@link UserManagementSystemType} to store, will throw {@link IllegalArgumentException} if <code>null</code>
+	 * @param get If stored object should be detached and returned
+	 * @param fetchGroups Which fetch groups to use
+	 * @param maxFetchDepth Fetch depth or {@link NLJDOHelper#MAX_FETCH_DEPTH_NO_LIMIT}
+	 * @param monitor The progress monitor for this action
+	 * @return Stored detached {@link UserManagementSystemType} object if <code>get</code> is <code>true</code> or <code>null</code> otherwise
+	 */
+	public synchronized <T extends UserManagementSystemType<?>> T storeUserManagementSystemType(T userManagementSystemType, boolean get, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor){
+		if(userManagementSystemType == null){
+			throw new IllegalArgumentException("UserManagementSystemType to store must not be null!");
+		}
+
+		monitor.beginTask("Storing UserManagementSystemType", 3);
+		try{
+			UserManagementSystemManagerRemote um = getEjbProvider().getRemoteBean(UserManagementSystemManagerRemote.class);
+			monitor.worked(1);
+
+			T result = um.storeUserManagementSystemType(userManagementSystemType, get, fetchGroups, maxFetchDepth);
+			if (result != null){
+				getCache().put(null, result, fetchGroups, maxFetchDepth);
+			}
+
+			monitor.worked(1);
+
+			return result;
+		}catch (Exception e){
+			monitor.setCanceled(true);
+			throw new RuntimeException("Failed to store UserManagementSystemType!", e);
+		}finally{
+			monitor.done();
+		}
+	}
 
 }
