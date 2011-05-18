@@ -52,6 +52,13 @@ public interface JFireTestManagerRemote {
 	
 	void storeObject(Object object);
 	
+	/**
+	 * Deletes the object corresponding to the given objectID within a new transaction.
+	 * 
+	 * @param objectID corresponds to the object to delete.
+	 */
+	void deleteObject(ObjectID objectID);
+	
 	TestCaseObjectsMap storeTestCaseObjectsMap(TestCaseObjectsMap testCaseObjectsMap, Boolean get, String[] fetchGroups, int maxFetchDepth);	
 
 	Set<TestCaseObjectsMapID> getTestCaseObjectsMapIDs();

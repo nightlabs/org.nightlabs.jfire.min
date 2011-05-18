@@ -281,6 +281,25 @@ public class JFireTestManagerBean
 	}
 	
 	@RolesAllowed("_Guest_")
+	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+	@Override
+	public void deleteObject(ObjectID objectID)
+	{
+		if (objectID == null)
+			return;
+		
+		PersistenceManager pm = createPersistenceManager();
+		try
+		{
+			pm.deletePersistent(pm.getObjectById(objectID));
+		}
+		finally
+		{
+			pm.close();
+		}
+	}
+	
+	@RolesAllowed("_Guest_")
 	@Override
 	public Set<TestCaseObjectsMapID> getTestCaseObjectsMapIDs()
 	{
@@ -358,5 +377,5 @@ public class JFireTestManagerBean
 	public List<JFireTestSuiteNotification> getTestNotifications(String identifier) {
 		return JFireTestSuiteNotificationManager.getNotificationManager().popNotifications(identifier);
 	}
-	
+
 }
