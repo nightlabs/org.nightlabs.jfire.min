@@ -26,8 +26,11 @@ public class UserManagementSystemDAO extends BaseJDOObjectDAO<UserManagementSyst
 	 * @return The shared instance
 	 */
 	public static UserManagementSystemDAO sharedInstance(){
-		if (sharedInstance == null){
-			sharedInstance = new UserManagementSystemDAO();
+		if (sharedInstance == null) {
+			synchronized (UserManagementSystemDAO.class) {
+				if (sharedInstance == null)
+					sharedInstance = new UserManagementSystemDAO();
+			}
 		}
 		return sharedInstance;
 	}
