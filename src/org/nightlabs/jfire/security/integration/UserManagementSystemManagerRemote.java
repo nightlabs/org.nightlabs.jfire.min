@@ -93,4 +93,11 @@ public interface UserManagementSystemManagerRemote {
 	 * @param userManagementSystemID The {@link UserManagementSystemID} of instance to delete
 	 */
 	void deleteUserManagementSystem(UserManagementSystemID userManagementSystem);
+	
+	/**
+	 * Get IDs of all JFire entities which should be synchronized with some {@link UserManagementSystem}.
+	 * 
+	 * @return {@link Collection} of object IDs
+	 */
+	Collection<Object> getAllUserManagementSystemRelatedEntityIDs();
 }

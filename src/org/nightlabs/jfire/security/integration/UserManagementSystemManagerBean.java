@@ -19,6 +19,7 @@ import javax.resource.spi.IllegalStateException;
 
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
+import org.nightlabs.jfire.person.Person;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.security.integration.id.UserManagementSystemID;
 import org.nightlabs.jfire.security.integration.id.UserManagementSystemTypeID;
@@ -275,6 +276,30 @@ public class UserManagementSystemManagerBean extends BaseSessionBeanImpl impleme
 			
 		}catch(JDOObjectNotFoundException e){
 			logger.warn("Can't delete UserManagementSyste cause it does not exist in datastore!", e);
+		}finally{
+			pm.close();
+		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@RolesAllowed("org.nightlabs.jfire.security.accessRightManagement")
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@Override
+	public Collection<Object> getAllUserManagementSystemRelatedEntityIDs() {
+		PersistenceManager pm = createPersistenceManager();
+		try{
+			Query query = pm.newQuery(pm.getExtent(User.class, true));
+			query.setResult("JDOHelper.getObjectId(this)");
+			Collection<Object> result = new HashSet<Object>((Collection<?>) query.execute());
+			query.closeAll();
+			
+			query = pm.newQuery(pm.getExtent(Person.class, true));
+			query.setResult("JDOHelper.getObjectId(this)");
+			result.addAll(new HashSet<Object>((Collection<?>) query.execute()));
+			
+			return result;
 		}finally{
 			pm.close();
 		}
