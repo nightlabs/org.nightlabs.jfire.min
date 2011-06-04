@@ -18,5 +18,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/org.nightlabs.i18n"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/org.nightlabs.progress"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/org.nightlabs.singleton"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/org.nightlabs.xml"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
