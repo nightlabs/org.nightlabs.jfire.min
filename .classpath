@@ -11,5 +11,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/org.nightlabs.jfire.base"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/org.nightlabs.concurrent"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/org.nightlabs.config"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/org.nightlabs.xml"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
