@@ -16,5 +16,6 @@
 	<classpathentry exported="true" kind="lib" path="lib/commons-lang.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/junit-4.8.2.jar" sourcepath="lib/junit-4.8.2-src.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.module.container"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/org.nightlabs.xml"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
