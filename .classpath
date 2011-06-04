@@ -7,5 +7,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/JFireServerManager"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/org.nightlabs.jfire.classloader.remote.backend"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/JFireBaseBean"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/org.nightlabs.xml"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
