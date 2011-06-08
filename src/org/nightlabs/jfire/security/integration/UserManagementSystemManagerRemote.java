@@ -11,7 +11,7 @@ import org.nightlabs.jfire.security.integration.id.UserManagementSystemID;
 import org.nightlabs.jfire.security.integration.id.UserManagementSystemTypeID;
 
 /**
- * Remote interface for UserManagementSystemManagerBean
+ * Remote interface for {@link UserManagementSystemManagerBean}
  * 
  * @author Denis Dudnik <deniska.dudnik[at]gmail{dot}com>
  *
