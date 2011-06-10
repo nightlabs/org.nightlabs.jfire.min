@@ -1,8 +1,5 @@
 package org.nightlabs.jfire.table.config;
 
-import org.apache.derby.iapi.sql.dictionary.ColumnDescriptor;
-
-
 /**
  * Used together inside a {@link ColumnDescriptor}, specificifying what kind of content
  * will be displayed within the table-item in the column.

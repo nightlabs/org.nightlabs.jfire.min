@@ -34,7 +34,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.jboss.logging.Logger;
+import org.apache.log4j.Logger;
 import org.nightlabs.jfire.base.DuplicateKeyException;
 import org.nightlabs.jfire.prop.exception.DataFieldNotFoundException;
 import org.nightlabs.jfire.prop.exception.StructFieldNotFoundException;
