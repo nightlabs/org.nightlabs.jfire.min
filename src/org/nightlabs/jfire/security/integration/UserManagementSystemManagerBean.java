@@ -15,7 +15,6 @@ import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
 import javax.jdo.listener.CreateLifecycleListener;
 import javax.jdo.listener.InstanceLifecycleEvent;
-import javax.resource.spi.IllegalStateException;
 
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;

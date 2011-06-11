@@ -1,9 +1,9 @@
 package org.nightlabs.jfire.security.integration;
+
 import java.util.Collection;
 import java.util.List;
 
 import javax.ejb.Remote;
-import javax.resource.spi.IllegalStateException;
 
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.security.integration.UserManagementSystemManagerBean.ForbidUserCreationLyfecycleListener;
