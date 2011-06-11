@@ -66,8 +66,6 @@ import org.nightlabs.singleton.IServiceContextAware;
 import org.nightlabs.util.CollectionUtil;
 import org.nightlabs.util.Util;
 
-import bsh.This;
-
 /**
  * This cache was designed to hold JFire JDO objects on the client side.
  * <p>
