@@ -29,7 +29,6 @@ package org.nightlabs.jfire.servermanager.j2ee;
 import java.io.Serializable;
 import java.util.Set;
 
-import javax.annotation.security.RolesAllowed;
 import javax.jms.Connection;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -88,7 +87,7 @@ public interface J2EEAdapter extends Serializable {
 	LoginContext createLoginContext(String securityProtocol, CallbackHandler callbackHandler) throws LoginException;
 
 	/**
-	 * Get all roles that have been declared via {@link RolesAllowed} in all EJBs.
+	 * Get all roles that have been declared via {@link javax.annotation.security.RolesAllowed} in all EJBs.
 	 *
 	 * @return a {@link Set} of roles; never <code>null</code>.
 	 * @throws J2EEAdapterException in case obtaining the roles fails.
