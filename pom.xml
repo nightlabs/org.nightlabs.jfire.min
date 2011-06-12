@@ -46,11 +46,7 @@
 			<artifactId>org.nightlabs.jfire.base.bean</artifactId>
 			<scope>provided</scope>
 		</dependency>
-		<dependency>
-			<groupId>org.nightlabs.jfire</groupId>
-			<artifactId>org.nightlabs.jfire.base.clientlib</artifactId>
-			<scope>provided</scope>
-		</dependency>
+		
 		<dependency>
 			<groupId>javax.jdo</groupId>
 			<artifactId>jdo2-api</artifactId>
