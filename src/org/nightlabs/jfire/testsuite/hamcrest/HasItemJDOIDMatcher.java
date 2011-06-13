@@ -1,7 +1,6 @@
 package org.nightlabs.jfire.testsuite.hamcrest;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 
 import javax.jdo.JDOHelper;
