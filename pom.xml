@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	
-	<!-- @generated - Auto generated POM. Remove this marker after review. -->
-	
+
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.nightlabs.jfire</groupId>
 	<artifactId>org.nightlabs.jfire.jboss.ejb3</artifactId>
@@ -22,7 +20,59 @@
 			<groupId>org.nightlabs.jfire</groupId>
 			<artifactId>org.nightlabs.jfire.jboss</artifactId>
 			<scope>provided</scope>
-		</dependency>		
+		</dependency>
+
+		<dependency>
+			<groupId>jboss</groupId>
+			<artifactId>jboss-ejb3</artifactId>
+			<version>4.2.3.GA</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>jboss</groupId>
+			<artifactId>jboss-annotations-ejb3</artifactId>
+			<version>4.2.3.GA</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>jboss</groupId>
+			<artifactId>jboss-system</artifactId>
+			<version>4.2.3.GA</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>jboss</groupId>
+			<artifactId>jboss-common</artifactId>
+			<version>4.2.3.GA</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>jboss.aop</groupId>
+			<artifactId>jboss-aop-jdk50</artifactId>
+			<version>1.5.6.GA</version>
+			<scope>provided</scope>
+		</dependency>
+		<!-- strange version - but needed for compilation (transitive) -->
+		<dependency>
+			<groupId>jboss.jbossas.core-libs</groupId>
+			<artifactId>jboss-aspect-library</artifactId>
+			<version>4.0.4.GA</version>
+		</dependency>
+		<dependency>
+			<groupId>jboss</groupId>
+			<artifactId>jboss-remoting</artifactId>
+			<version>4.2.2.GA</version>
+		</dependency>
+		<dependency>
+			<groupId>jboss</groupId>
+			<artifactId>jboss-remoting</artifactId>
+			<version>2.2.2.SP8</version>
+		</dependency>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>servlet-api</artifactId>
+			<version>2.5</version>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -36,7 +86,5 @@
 				</excludes>
 			</resource>
 		</resources>
-
-
 	</build>
 </project>
