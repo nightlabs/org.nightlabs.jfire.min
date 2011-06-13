@@ -2,8 +2,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	
-	<!-- @generated - Auto generated POM. Remove this marker after review. -->
-	
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.nightlabs.jfire</groupId>
 	<artifactId>org.nightlabs.jfire.aggregator</artifactId>
@@ -25,7 +23,8 @@
 		<module>../org.nightlabs.jfire.base.j2ee</module>  --> <!-- org.nightlabs.jfire:org.nightlabs.jfire.base.j2ee -->
 		<!-- TODO has Eclipse dependencies
 		<module>../org.nightlabs.jfire.base.j2ee.osgi</module> --> <!-- org.nightlabs.jfire:org.nightlabs.jfire.base.j2ee.osgi -->
-		<module>../JFireChezFrancois</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.chezfrancois -->
+		<!-- requires a lot
+		<module>../JFireChezFrancois</module> --> <!-- org.nightlabs.jfire:org.nightlabs.jfire.chezfrancois -->
 		<module>../org.nightlabs.jfire.classloader.remote</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.classloader.remote -->
 		<module>../JFireRCLBackendBean</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.classloader.remote.backend -->
 		<module>../org.nightlabs.jfire.classloader.remote.backend</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.classloader.remote.backend -->
@@ -38,7 +37,8 @@
 		<module>../JFireGeography</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.geography -->
 		<module>../JFireIssueTracking</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.issue -->
 		<module>../JFireIssueTrackerBugTracking</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.issue.bug -->
-		<module>../JFireIssueTimeTracking</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.issuetimetracking -->
+		<!-- depends on trade (!)
+		<module>../JFireIssueTimeTracking</module> --> <!-- org.nightlabs.jfire:org.nightlabs.jfire.issuetimetracking -->
 		<module>../JFireIntegrationJBoss</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.jboss -->
 		<module>../JFireJBossInterceptors</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.jboss.ejb3 -->
 		<module>../JFireJbpm</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.jbpm -->
@@ -73,10 +73,14 @@
 		<!-- requires trade
 		<module>../JFireSimpleTrade</module> --> <!-- org.nightlabs.jfire:org.nightlabs.jfire.simpletrade -->
 		<module>../JFireTestSuite</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.testsuite -->
-		<module>../JFireTestSuiteJFireBase</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.testsuite.base -->
-		<module>../JFireTestSuiteDepartment</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.testsuite.department -->
-		<module>../JFireTestSuiteEntityUserSet</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.testsuite.entityuserset -->
-		<module>../JFireTestSuiteIssueTracking</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.testsuite.issuetracking -->
+		<!-- generics compile error with javac
+		<module>../JFireTestSuiteJFireBase</module> --> <!-- org.nightlabs.jfire:org.nightlabs.jfire.testsuite.base -->
+		<!-- generics compile error with javac
+		<module>../JFireTestSuiteDepartment</module> --> <!-- org.nightlabs.jfire:org.nightlabs.jfire.testsuite.department -->
+		<!-- requires trade
+		<module>../JFireTestSuiteEntityUserSet</module> --> <!-- org.nightlabs.jfire:org.nightlabs.jfire.testsuite.entityuserset -->
+		<!-- generics compile error with javac
+		<module>../JFireTestSuiteIssueTracking</module> --> <!-- org.nightlabs.jfire:org.nightlabs.jfire.testsuite.issuetracking -->
 		<!-- requires nl-rhino
 		<module>../JFireTrade</module> --> <!-- org.nightlabs.jfire:org.nightlabs.jfire.trade -->
 		<!-- requires trade
@@ -91,8 +95,9 @@
 		<!-- requires trade
 		<module>../JFireVoucherEditor2D</module> --> <!-- org.nightlabs.jfire:org.nightlabs.jfire.voucher.editor2d.iofilter -->
 		<module>../JFireWebAdmin</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.web.admin -->
-		<module>../JFireWebShopDemo</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.web.demoshop -->
-		<module>../JFireWebShopBase</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.web.webshop -->
-
+		<!-- requires trade
+		<module>../JFireWebShopDemo</module> --> <!-- org.nightlabs.jfire:org.nightlabs.jfire.web.demoshop -->
+		<!-- requires trade
+		<module>../JFireWebShopBase</module> --> <!-- org.nightlabs.jfire:org.nightlabs.jfire.web.webshop -->
 	</modules>
 </project>
