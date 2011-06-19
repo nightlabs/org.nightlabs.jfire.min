@@ -70,7 +70,7 @@
 		</dependency>
 		<dependency>
 		    <groupId>javax.jdo</groupId>
-		    <artifactId>jdo2-api</artifactId>
+		    <artifactId>jdo-api</artifactId>
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>
@@ -86,8 +86,8 @@
 				</excludes>
 			</resource>
 		</resources>
-		<!-- FIXME the package names should be fixed (?). -->
 		<plugins>
+			<!-- FIXME the package names should be fixed (?). -->
 			<plugin>
 				<groupId>org.apache.felix</groupId>
 				<artifactId>maven-bundle-plugin</artifactId>
@@ -102,6 +102,10 @@
 						</Export-Package>
 					</instructions>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.datanucleus</groupId>
+				<artifactId>maven-datanucleus-plugin</artifactId>
 			</plugin>
 		</plugins>
 	</build>
