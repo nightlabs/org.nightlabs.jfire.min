@@ -23,6 +23,7 @@
 		<project>org.nightlabs.progress</project>
 		<project>org.nightlabs.util</project>
 		<project>org.nightlabs.singleton</project>
+		<project>org.nightlabs.xml</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

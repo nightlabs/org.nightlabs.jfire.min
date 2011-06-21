@@ -50,18 +50,21 @@
     <java>JFireBaseDAO.jar</java>
   </module>
   <module>
-  	<java>org.nightlabs.jfire.classloader.remote.backend.jar</java>
+    <java>org.nightlabs.jfire.classloader.remote.backend.jar</java>
   </module>
   <module>
-  	<java>org.nightlabs.i18n.jar</java>
+    <java>org.nightlabs.i18n.jar</java>
   </module>
   <module>
-  	<java>org.nightlabs.util.jar</java>
+    <java>org.nightlabs.util.jar</java>
   </module>
   <module>
-  	<java>org.nightlabs.progress.jar</java>
+    <java>org.nightlabs.progress.jar</java>
   </module>
   <module>
-  	<java>org.nightlabs.singleton.jar</java>
-  </module>  
+    <java>org.nightlabs.singleton.jar</java>
+  </module>
+  <module>
+    <java>org.nightlabs.xml.jar</java>
+  </module>
 </application>
