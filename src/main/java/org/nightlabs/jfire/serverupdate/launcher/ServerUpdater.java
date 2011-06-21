@@ -24,14 +24,6 @@ public class ServerUpdater
 							Loading the class loader
 		 *****************************************************************/
 		ServerUpdateClassLoader serverUpdateClassLoader = ServerUpdateClassLoader.createSharedInstance(config, ServerUpdater.class.getClassLoader());
-		Enumeration<URL> resources = serverUpdateClassLoader.getResources("org/nightlabs/liquibase/datanucleus/update/");
-		while (resources.hasMoreElements()) {
-			URL nextElement = resources.nextElement();
-			System.err.println(nextElement);
-		}
-//		if (true) {
-//			System.exit(1);
-//		}
 		Thread.currentThread().setContextClassLoader(serverUpdateClassLoader);
 
 		Class<?> clazz;
