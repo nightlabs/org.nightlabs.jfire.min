@@ -1,10 +1,10 @@
-package org.nightlabs.jfire.update.base;
+package org.nightlabs.jfire.serverupdate.base;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-import org.nightlabs.jfire.update.base.db.JDBCConfiguration;
+import org.nightlabs.jfire.serverupdate.base.db.JDBCConfiguration;
 
 /**
  * @author Chairat Kongarayawetchakun - chairat [AT] nightlabs [DOT] de

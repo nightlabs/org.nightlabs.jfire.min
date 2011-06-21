@@ -1,4 +1,4 @@
-package org.nightlabs.jfire.update.base;
+package org.nightlabs.jfire.serverupdate.base;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -20,11 +20,11 @@ import java.util.regex.Pattern;
 import org.nightlabs.datastructure.Pair;
 import org.nightlabs.jdo.moduleregistry.ModuleMetaData;
 import org.nightlabs.jdo.moduleregistry.UpdateHistoryItemSQL;
+import org.nightlabs.jfire.serverupdate.base.db.JDBCConfiguration;
 import org.nightlabs.jfire.serverupdate.launcher.Log;
 import org.nightlabs.jfire.serverupdate.launcher.ServerUpdateClassLoader;
 import org.nightlabs.jfire.serverupdate.launcher.config.Directory;
 import org.nightlabs.jfire.serverupdate.launcher.config.ServerUpdateConfig;
-import org.nightlabs.jfire.update.base.db.JDBCConfiguration;
 import org.nightlabs.util.reflect.ReflectUtil;
 import org.nightlabs.util.reflect.ReflectUtil.ResourceFilter;
 import org.nightlabs.version.Version;

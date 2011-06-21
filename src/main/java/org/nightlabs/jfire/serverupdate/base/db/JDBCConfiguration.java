@@ -1,4 +1,4 @@
-package org.nightlabs.jfire.update.base.db;
+package org.nightlabs.jfire.serverupdate.base.db;
 
 public class JDBCConfiguration 
 {

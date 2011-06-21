@@ -1,4 +1,4 @@
-package org.nightlabs.jfire.update.base.util;
+package org.nightlabs.jfire.serverupdate.base.util;
 
 import java.io.File;
 import java.io.FileOutputStream;

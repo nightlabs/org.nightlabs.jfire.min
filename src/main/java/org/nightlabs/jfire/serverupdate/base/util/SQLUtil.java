@@ -1,4 +1,4 @@
-package org.nightlabs.jfire.update.base.util;
+package org.nightlabs.jfire.serverupdate.base.util;
 
 import java.lang.reflect.Field;
 import java.sql.Connection;

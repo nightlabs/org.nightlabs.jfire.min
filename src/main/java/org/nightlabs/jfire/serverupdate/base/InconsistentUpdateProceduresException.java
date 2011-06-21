@@ -1,4 +1,4 @@
-package org.nightlabs.jfire.update.base;
+package org.nightlabs.jfire.serverupdate.base;
 
 /**
  * @author Marco หงุ่ยตระกูล-Schulze - marco at nightlabs dot de

@@ -1,4 +1,4 @@
-package org.nightlabs.jfire.update.base;
+package org.nightlabs.jfire.serverupdate.base;
 
 public class UpdatePersistendDataException 
 extends Exception
