@@ -1,8 +1,6 @@
 package org.nightlabs.jfire.serverupdate.launcher;
 
 import java.lang.reflect.Method;
-import java.net.URL;
-import java.util.Enumeration;
 
 import org.nightlabs.jfire.serverupdate.launcher.config.ServerUpdateConfig;
 
@@ -12,7 +10,7 @@ import org.nightlabs.jfire.serverupdate.launcher.config.ServerUpdateConfig;
  */
 public class ServerUpdater
 {
-	private static final String SERVER_UPDATER_DELEGATE_CLASS = "org.nightlabs.jfire.update.ServerUpdaterDelegate";
+	private static final String SERVER_UPDATER_DELEGATE_CLASS = "org.nightlabs.jfire.serverupdate.base.ServerUpdaterDelegate";
 
 	public static void main(String[] args)
 	throws Throwable
