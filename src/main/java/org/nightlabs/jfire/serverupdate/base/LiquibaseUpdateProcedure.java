@@ -22,9 +22,7 @@ import liquibase.database.DatabaseFactory;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.resource.ClassLoaderResourceAccessor;
 
-import org.nightlabs.jfire.serverupdate.launcher.ServerUpdateParameters;
 import org.nightlabs.liquibase.datanucleus.LiquibaseDNConstants;
-import org.nightlabs.util.IOUtil;
 import org.nightlabs.version.MalformedVersionException;
 import org.nightlabs.version.Version;
 import org.xml.sax.Attributes;
@@ -164,7 +162,7 @@ public class LiquibaseUpdateProcedure extends UpdateProcedure {
 	}
 	
 	@Override
-	public void run(ServerUpdateParameters parameters) throws Exception {
+	public void run() throws Exception {
 		
 		// TODO: We know that for JFire we configure this value, however later we should read that from the persistence.xml
 		System.setProperty(LiquibaseDNConstants.IDENTIFIER_CASE, "lowercase");
@@ -187,17 +185,13 @@ public class LiquibaseUpdateProcedure extends UpdateProcedure {
 				new ClassLoaderResourceAccessor(getClass().getClassLoader()),
 				database);
 		
-		if (!parameters.isDryRun()) {
+		if (!getUpdateContext().getParameters().isDryRun()) {
 			// We are not running dry, so we actually perform an update using liquibase
 			liquibase.update(null);
 		} else {
-			// We are running dry, so we configure liquibase to print a PrintWriter
-			PrintWriter lqWriter = new PrintWriter(System.out);
-			if (parameters.getDryRunFile() != null) {
-				lqWriter = new PrintWriter(parameters.getDryRunFile(), IOUtil.CHARSET_NAME_UTF_8);
-			}
-			liquibase.update(null, lqWriter);
-			lqWriter.flush();
+			// We are running dry, so we configure liquibase to print to a PrintWriter
+			liquibase.update(null, getUpdateContext().getDryRunPrintWriter());
+			getUpdateContext().getDryRunPrintWriter().flush();
 		}
 		
 		liquibase.update(null, new PrintWriter(System.err));

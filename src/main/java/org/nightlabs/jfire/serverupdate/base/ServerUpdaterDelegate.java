@@ -11,6 +11,8 @@ import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -64,7 +66,7 @@ public class ServerUpdaterDelegate
 //	private Map<Class<? extends UpdateProcedure>, UpdateProcedureDelegate> upClazz2updMap = new HashMap<Class<? extends UpdateProcedure>, UpdateProcedureDelegate>();
 	
 	//Properties keys
-	private Map<String, JDBCConfiguration> jndiName2JDBCConnectionMap = new HashMap<String, JDBCConfiguration>();
+	private List<JDBCConfiguration> jdbcConfigurations = new LinkedList<JDBCConfiguration>();
 
 	/**
 	 * Filled by {@link #analyseModuleVersionUpdates()}. Holds the update from to for each module for each db to udpate.
@@ -105,7 +107,7 @@ public class ServerUpdaterDelegate
 			});
 
 			for (File jdoDDFile : jdoDeploymentDescriptorFileArray) {
-				generateLocalTXDatasourceConfiguration(jdoDDFile, jndiName2JDBCConnectionMap);
+				jdbcConfigurations.add(generateLocalTXDatasourceConfiguration(jdoDDFile));
 			}
 		}
 	}
@@ -142,12 +144,13 @@ public class ServerUpdaterDelegate
 		Log.info("====================================================================");
 
 		//For each database server
-		for (String jndiName : jndiName2JDBCConnectionMap.keySet()) {
+		for (JDBCConfiguration jdbcConfig : jdbcConfigurations) {
 			Log.info("********************************************************************");
+			String jndiName = jdbcConfig.getJndiName();
 			Log.info("*** Updating " + jndiName);
 			Map<String, Pair<Version, Version>> moduleUpdateSteps = neccessaryUpdateSteps.get(jndiName);
-			JDBCConfiguration configuration = jndiName2JDBCConnectionMap.get(jndiName);
-			UpdateContext updateContext = new UpdateContext(configuration);
+			UpdateContext updateContext = new UpdateContext(jdbcConfig);
+			updateContext.setParameters(parameters);
 			Connection connection = updateContext.getConnection();
 			try {
 				try {
@@ -175,7 +178,7 @@ public class ServerUpdaterDelegate
 	
 							try {
 								updateHistoryItemSQL.beginUpdate();
-								updateProcedure.run(parameters);
+								updateProcedure.run();
 								updateHistoryItemSQL.endUpdate(!parameters.isDryRun() && !parameters.isTryRun());
 							} catch (Exception e) {
 								e.printStackTrace(System.out);
@@ -231,12 +234,12 @@ public class ServerUpdaterDelegate
 		}
 		
 		try {
-			for (String jndiName : jndiName2JDBCConnectionMap.keySet()) {
+			for (JDBCConfiguration configuration : jdbcConfigurations) {
 				Log.info("********************************************************************");
-				JDBCConfiguration configuration = jndiName2JDBCConnectionMap.get(jndiName);
 				UpdateContext updateContext = new UpdateContext(configuration);
 				Connection connection = updateContext.getConnection();
 				try {
+					String jndiName = configuration.getJndiName();
 					Log.info("*** UpdateSteps for " + jndiName);
 					for (Map.Entry<String, Version> newlyDeployedVersion : newlyDeployedShemaVersions.entrySet()) {
 						ModuleMetaData persistentModuleMetaData = ModuleMetaData.getModuleMetaData(connection, newlyDeployedVersion.getKey());
@@ -377,7 +380,7 @@ public class ServerUpdaterDelegate
 	}
 
 	// REV Marco: It would be nicer to extract this into a separate class.
-	private void generateLocalTXDatasourceConfiguration(File ddFile, Map<String, JDBCConfiguration> jndiName2JDBCConnectionMap)
+	private JDBCConfiguration generateLocalTXDatasourceConfiguration(File ddFile)
 	throws SAXException, IOException
 	{
 		InputSource inputSource;
@@ -403,11 +406,12 @@ public class ServerUpdaterDelegate
 		Log.info("***   connectionURL: " + connectionURLNode.getTextContent());
 		Log.info("***   driverClass: " + driverClassNode.getTextContent());
 		
-		jndiName2JDBCConnectionMap.put(jndiNameNode.getTextContent(), new JDBCConfiguration(
+		return new JDBCConfiguration(
+				jndiNameNode.getTextContent(),
 				connectionURLNode.getTextContent(),
 				driverClassNode.getTextContent(),
 				userNameNode.getTextContent(),
-				passwordNode.getTextContent()));
+				passwordNode.getTextContent());
 
 	}
 }
