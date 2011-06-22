@@ -23,8 +23,8 @@ import org.nightlabs.jdo.moduleregistry.UpdateHistoryItemSQL;
 import org.nightlabs.jfire.serverupdate.base.db.JDBCConfiguration;
 import org.nightlabs.jfire.serverupdate.launcher.Log;
 import org.nightlabs.jfire.serverupdate.launcher.ServerUpdateClassLoader;
+import org.nightlabs.jfire.serverupdate.launcher.ServerUpdateParameters;
 import org.nightlabs.jfire.serverupdate.launcher.config.Directory;
-import org.nightlabs.jfire.serverupdate.launcher.config.ServerUpdateConfig;
 import org.nightlabs.util.reflect.ReflectUtil;
 import org.nightlabs.util.reflect.ReflectUtil.ResourceFilter;
 import org.nightlabs.version.Version;
@@ -58,8 +58,6 @@ public class ServerUpdaterDelegate
 			IGNORED_PACKAGE_REGEX_COMPILED[++idx] = Pattern.compile(s);
 	}
 
-	private ServerUpdateConfig config;
-
 	/** All found and successfully instantiated UpdateProcedures **/
 	private UpdateProcedureSet updateProcedureSet = new UpdateProcedureSet();
 	
@@ -72,15 +70,14 @@ public class ServerUpdaterDelegate
 	 * Filled by {@link #analyseModuleVersionUpdates()}. Holds the update from to for each module for each db to udpate.
 	 */
 	private Map<String, Map<String, Pair<Version, Version>>> neccessaryUpdateSteps = new HashMap<String, Map<String,Pair<Version,Version>>>();
+	
+	private ServerUpdateParameters parameters;
 
-	public void execute()
+	public void execute(ServerUpdateParameters parameters)
 	throws Throwable
 	{
-		Log.debug("====================================================================");
-		Log.debug("                Loading configuration                               ");
-		Log.debug("====================================================================");
-		this.config = new ServerUpdateConfig();
-
+		this.parameters = parameters;
+		
 		searchDatasourceDeploymentDescriptors();
 
 		searchClasses();
@@ -97,7 +94,7 @@ public class ServerUpdaterDelegate
 		Log.info("====================================================================");
 
 		Set<File> resolvedDeploymentDirs = new TreeSet<File>();
-		scanDeploymentDirs(resolvedDeploymentDirs, config.getDeploymentDirectories());
+		scanDeploymentDirs(resolvedDeploymentDirs, parameters.getConfig().getDeploymentDirectories());
 
 		for (File deploymentDirectory : resolvedDeploymentDirs) {
 			File[] jdoDeploymentDescriptorFileArray = deploymentDirectory.listFiles(new FileFilter() {
@@ -151,41 +148,47 @@ public class ServerUpdaterDelegate
 			Map<String, Pair<Version, Version>> moduleUpdateSteps = neccessaryUpdateSteps.get(jndiName);
 			JDBCConfiguration configuration = jndiName2JDBCConnectionMap.get(jndiName);
 			UpdateContext updateContext = new UpdateContext(configuration);
+			Connection connection = updateContext.getConnection();
 			try {
-				//For update procedures
-				for (UpdateProcedure updateProcedure : updateProcedureSet) {
-					// Check if updateProcedure has to run according to the schemaVersion in DB
-					Pair<Version, Version> moduleUpdate = moduleUpdateSteps.get(updateProcedure.getModuleID());
-					if (moduleUpdate.getFirst().compareTo(updateProcedure.getFromVersion()) > 0) {
-						// The UpdateProcedures fromVersion is smaller than currently stored schemaVersion, we do not execute this UpdateProcedure
-						continue;
-					}
-					
-					updateProcedure.setUpdateContext(updateContext);
-					
-					//UpdateHistoryItemSQL
-					UpdateHistoryItemSQL updateHistoryItemSQL =
-						new UpdateHistoryItemSQL(updateContext.createConnection(), updateProcedure.getModuleID(), updateProcedure.getClass().getName());
-
-					if (!updateHistoryItemSQL.isUpdateDone()) {
-						if (Log.isDebugEnabled()) {
-							Log.debug("====================================================================");
-							Log.debug("    Executing Update for " + updateProcedure.getModuleID() + " " + updateProcedure.getFromVersion() + " --> " + updateProcedure.getToVersion());
-							Log.debug("====================================================================");
+				try {
+					//For update procedures
+					for (UpdateProcedure updateProcedure : updateProcedureSet) {
+						// Check if updateProcedure has to run according to the schemaVersion in DB
+						Pair<Version, Version> moduleUpdate = moduleUpdateSteps.get(updateProcedure.getModuleID());
+						if (moduleUpdate.getFirst().compareTo(updateProcedure.getFromVersion()) > 0) {
+							// The UpdateProcedures fromVersion is smaller than currently stored schemaVersion, we do not execute this UpdateProcedure
+							continue;
 						}
-
-						try {
-							updateHistoryItemSQL.beginUpdate();
-							updateProcedure.run();
-							updateHistoryItemSQL.endUpdate();
-						} catch (Exception e) {
-							e.printStackTrace(System.out);
-							break;
+						
+						updateProcedure.setUpdateContext(updateContext);
+						
+						//UpdateHistoryItemSQL
+						UpdateHistoryItemSQL updateHistoryItemSQL =
+							new UpdateHistoryItemSQL(updateContext.getConnection(), updateProcedure.getModuleID(), updateProcedure.getClass().getName());
+	
+						if (!updateHistoryItemSQL.isUpdateDone()) {
+							if (Log.isDebugEnabled()) {
+								Log.debug("====================================================================");
+								Log.debug("    Executing Update for " + updateProcedure.getModuleID() + " " + updateProcedure.getFromVersion() + " --> " + updateProcedure.getToVersion());
+								Log.debug("====================================================================");
+							}
+	
+							try {
+								updateHistoryItemSQL.beginUpdate();
+								updateProcedure.run(parameters);
+								updateHistoryItemSQL.endUpdate(!parameters.isDryRun() && !parameters.isTryRun());
+							} catch (Exception e) {
+								e.printStackTrace(System.out);
+								break;
+							}
 						}
 					}
+					Log.info("*** Updating " + jndiName + " finished");
+					Log.info("********************************************************************");
+					
+				} finally {
+					connection.close();
 				}
-				Log.info("*** Updating " + jndiName + " finished");
-				Log.info("********************************************************************");
 			}
 			catch (SQLException e) {
 				Log.error("SQLException: " + e.getMessage());
@@ -232,7 +235,7 @@ public class ServerUpdaterDelegate
 				Log.info("********************************************************************");
 				JDBCConfiguration configuration = jndiName2JDBCConnectionMap.get(jndiName);
 				UpdateContext updateContext = new UpdateContext(configuration);
-				Connection connection = updateContext.createConnection();
+				Connection connection = updateContext.getConnection();
 				try {
 					Log.info("*** UpdateSteps for " + jndiName);
 					for (Map.Entry<String, Version> newlyDeployedVersion : newlyDeployedShemaVersions.entrySet()) {

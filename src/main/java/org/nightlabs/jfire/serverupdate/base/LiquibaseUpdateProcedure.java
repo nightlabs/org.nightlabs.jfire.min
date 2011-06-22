@@ -5,7 +5,13 @@ package org.nightlabs.jfire.serverupdate.base;
 
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.net.URL;
+import java.sql.Connection;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -16,6 +22,9 @@ import liquibase.database.DatabaseFactory;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.resource.ClassLoaderResourceAccessor;
 
+import org.nightlabs.jfire.serverupdate.launcher.ServerUpdateParameters;
+import org.nightlabs.liquibase.datanucleus.LiquibaseDNConstants;
+import org.nightlabs.util.IOUtil;
 import org.nightlabs.version.MalformedVersionException;
 import org.nightlabs.version.Version;
 import org.xml.sax.Attributes;
@@ -61,7 +70,7 @@ public class LiquibaseUpdateProcedure extends UpdateProcedure {
 							String jfireAttributesString = attributes.getValue("id");
 							String[] jfireAttrs = jfireAttributesString.split("\\|");
 							if (jfireAttrs == null || jfireAttrs.length != 3) {
-								throw new IllegalArgumentException("The udpate-changeLog-changeSet-id attribute was malformed '" + jfireAttributesString + "'. Format should be moduleID|fromVersion|toVersion");
+								throw new IllegalArgumentException("The udpate-changeLog-changeSet-id attribute was malformed '" + jfireAttributesString + "'. Format should be \"moduleID|fromVersion|toVersion\"");
 							}
 							changeLogModuleID = jfireAttrs[0].trim();
 							try {
@@ -71,31 +80,11 @@ public class LiquibaseUpdateProcedure extends UpdateProcedure {
 								throw new SAXException(e);
 							}
 						}
-						
-						if ("property".equals(qName)) {
-							String nameValue = attributes.getValue("name");
-							String value = attributes.getValue("value");
-							if ("jfire.update.moduleID".equals(nameValue)) {
-								changeLogModuleID = value;
-							} else if ("jfire.update.fromVersion".equals(nameValue)) {
-								try {
-									changeLogFromVersion = new Version(value);
-								} catch (MalformedVersionException e) {
-									throw new SAXException(e);
-								}
-							} else if ("jfire.update.toVersion".equals(nameValue)) {
-								try {
-									changeLogToVersion = new Version(value);
-								} catch (MalformedVersionException e) {
-									throw new SAXException(e);
-								}
-							}
-						}
 					}
 				});
 				
 				if (changeLogModuleID == null || changeLogFromVersion == null || changeLogToVersion == null) {
-					throw new IllegalArgumentException("The update-changelog '" + url.toString() + "' does not have the necessary jfire-properties set (moduleID, fromVersion, toVersion).");
+					throw new IllegalArgumentException("The update-changelog '" + url.toString() + "' does not have the necessary jfire-properties set in its id-attribute (moduleID, fromVersion, toVersion).");
 				}
 					
 			} finally {
@@ -108,25 +97,16 @@ public class LiquibaseUpdateProcedure extends UpdateProcedure {
 		
 	}
 
-	/* (non-Javadoc)
-	 * @see org.nightlabs.jfire.update.UpdateProcedure#_getModuleID()
-	 */
 	@Override
 	protected String _getModuleID() {
 		return changeLogModuleID;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.nightlabs.jfire.update.UpdateProcedure#_getFromVersion()
-	 */
 	@Override
 	protected Version _getFromVersion() {
 		return changeLogFromVersion;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.nightlabs.jfire.update.UpdateProcedure#_getToVersion()
-	 */
 	@Override
 	protected Version _getToVersion() {
 		return changeLogToVersion;
@@ -136,20 +116,90 @@ public class LiquibaseUpdateProcedure extends UpdateProcedure {
 		return changeLogURL;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.nightlabs.jfire.update.UpdateProcedure#run()
+	
+	/**
+	 * InvocationHandler that implements a Proxy to {@link Connection} that will ignore all
+	 * transaction-relevant calls. Transactions are managed by the {@link ServerUpdaterDelegate}
+	 * so the Liquibase-transaction-management is cut off.
 	 */
+	static class ConnectionProxyHandler implements InvocationHandler {
+		
+		/** ignored methods */
+		private static Set<String> ignoredMethods; 
+		static {
+			ignoredMethods = new HashSet<String>();
+			ignoredMethods.add("setAutoCommit");
+			ignoredMethods.add("commit");
+			ignoredMethods.add("rollback");
+		}
+		/** The connection of this Handler */
+		private Connection connection;
+		
+		public ConnectionProxyHandler(Connection connection) {
+			super();
+			this.connection = connection;
+		}
+		
+		@Override
+		public Object invoke(Object proxy, Method method, Object[] args)
+				throws Throwable {
+			if (ignoredMethods.contains(method.getName())) {
+				// we ignore this method
+				return null;
+			}
+			return method.invoke(connection, args);
+		}
+	};
+	
+	/**
+	 * Creates a proxy-{@link Connection} that will be passed to the Liquibase-run. 
+	 * 
+	 * @param connection The connection to create a proxy for.
+	 * @return A new proxy implementing {@link Connection} and delegating to the given connection.
+	 */
+	protected Connection createLiquibaseConnectionProxy(Connection connection) {
+		return (Connection) Proxy.newProxyInstance(getClass().getClassLoader(),
+				new Class<?>[] { Connection.class },
+				new ConnectionProxyHandler(connection));
+	}
+	
 	@Override
-	public void run() throws Exception {
-//		getUpdateContext().createConnection();
+	public void run(ServerUpdateParameters parameters) throws Exception {
+		
+		// TODO: We know that for JFire we configure this value, however later we should read that from the persistence.xml
+		System.setProperty(LiquibaseDNConstants.IDENTIFIER_CASE, "lowercase");
+		
+		// Create the Liquibase database using a connection-proxy from out UpdateContext
 		DatabaseFactory databaseFactory = DatabaseFactory.getInstance();
-		Database database = databaseFactory.findCorrectDatabaseImplementation(new JdbcConnection(getUpdateContext().createConnection()));
+		Connection connectionProxy = createLiquibaseConnectionProxy(getUpdateContext().getConnection());
+		Database database = databaseFactory.findCorrectDatabaseImplementation(new JdbcConnection(connectionProxy));
+		
+		// Prepare the Resource-Path for the ClassLoaderResourceAccessor
 		String resourcePath = changeLogURL.toString();
 		if (changeLogURL.getProtocol().equalsIgnoreCase("jar")) {
 			resourcePath = changeLogURL.getPath();
 			resourcePath = resourcePath.substring(resourcePath.indexOf("!") + 2);
 		}
-		Liquibase liquibase = new Liquibase(resourcePath, new ClassLoaderResourceAccessor(getClass().getClassLoader()), database);
+		
+		// Create the Liquibase instance
+		Liquibase liquibase = new Liquibase(
+				resourcePath,
+				new ClassLoaderResourceAccessor(getClass().getClassLoader()),
+				database);
+		
+		if (!parameters.isDryRun()) {
+			// We are not running dry, so we actually perform an update using liquibase
+			liquibase.update(null);
+		} else {
+			// We are running dry, so we configure liquibase to print a PrintWriter
+			PrintWriter lqWriter = new PrintWriter(System.out);
+			if (parameters.getDryRunFile() != null) {
+				lqWriter = new PrintWriter(parameters.getDryRunFile(), IOUtil.CHARSET_NAME_UTF_8);
+			}
+			liquibase.update(null, lqWriter);
+			lqWriter.flush();
+		}
+		
 		liquibase.update(null, new PrintWriter(System.err));
 		System.err.flush();
 	}

@@ -1,5 +1,6 @@
 package org.nightlabs.jfire.serverupdate.base;
 
+import org.nightlabs.jfire.serverupdate.launcher.ServerUpdateParameters;
 import org.nightlabs.version.Version;
 
 /**
@@ -99,7 +100,7 @@ implements Comparable<UpdateProcedure>
 //		return true;
 //	}
 
-	public abstract void run() throws Exception;
+	public abstract void run(ServerUpdateParameters parameters) throws Exception;
 	
 	/**
 	 * This UpdateContext provides access to the database (JDBC)

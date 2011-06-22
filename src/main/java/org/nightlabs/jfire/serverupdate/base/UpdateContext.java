@@ -18,13 +18,12 @@ public class UpdateContext
 		this.configuration = configuration;
 	}
 	
-	public Connection createConnection() {
+	public Connection getConnection() {
 		try {
 			if (connection == null)
 				System.setProperty("jdbc.drivers", configuration.getDriverClass());
 				connection = DriverManager.getConnection(
 						configuration.getDatabaseURL(), configuration.getUserName(), configuration.getPassword());
-				connection.setAutoCommit(false); // We use transactions for all connection!
 		} catch (SQLException e) {
 			throw new RuntimeException(e);		
 		}
