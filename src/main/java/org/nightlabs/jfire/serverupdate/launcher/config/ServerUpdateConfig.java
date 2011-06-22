@@ -19,10 +19,9 @@ import org.xml.sax.SAXException;
 
 public class ServerUpdateConfig
 {
-	public ServerUpdateConfig()
+	public ServerUpdateConfig(File configFile)
 	throws SAXException, IOException, ParserConfigurationException
 	{
-		File configFile = new File("update_server.xml");
 		Log.info("Loading configuration file: %s", configFile.getAbsolutePath());
 		if (!configFile.exists())
 			throw new IllegalStateException("Config file does not exist: " + configFile.getAbsolutePath());

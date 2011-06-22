@@ -2,7 +2,8 @@ package org.nightlabs.jfire.serverupdate.launcher;
 
 import java.lang.reflect.Method;
 
-import org.nightlabs.jfire.serverupdate.launcher.config.ServerUpdateConfig;
+import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.args4j.CmdLineParser;
 
 /**
  * @author Chairat Kongarayawetchakun - chairat [AT] nightlabs [DOT] de
@@ -15,13 +16,33 @@ public class ServerUpdater
 	public static void main(String[] args)
 	throws Throwable
 	{
-		// Read the configuration
-		ServerUpdateConfig config = new ServerUpdateConfig();
-
+		
+		ServerUpdateParameters parameters = new ServerUpdateParameters();
+		
+		CmdLineParser parser = new CmdLineParser(parameters);
+		try {
+			parser.parseArgument(args);
+		} catch (CmdLineException e) {
+			// handling of wrong arguments
+			parser.printUsage(System.err);
+			System.err.flush();
+			System.exit(2);
+			System.err.println();
+		}
+		
+		if (parameters.isShowHelp()) {
+			parser.printUsage(System.out);
+			System.exit(0);
+		}
+		
+		if (Log.isDebugEnabled()) {
+			parameters.logValues(Log.DEBUG);
+		}
+		
 		/*****************************************************************
 							Loading the class loader
 		 *****************************************************************/
-		ServerUpdateClassLoader serverUpdateClassLoader = ServerUpdateClassLoader.createSharedInstance(config, ServerUpdater.class.getClassLoader());
+		ServerUpdateClassLoader serverUpdateClassLoader = ServerUpdateClassLoader.createSharedInstance(parameters.getConfig(), ServerUpdater.class.getClassLoader());
 		Thread.currentThread().setContextClassLoader(serverUpdateClassLoader);
 
 		Class<?> clazz;
@@ -39,7 +60,7 @@ public class ServerUpdater
 			);
 
 		Object instance = clazz.newInstance();
-		Method m = clazz.getDeclaredMethod("execute");
-		m.invoke(instance);
+		Method m = clazz.getDeclaredMethod("execute", ServerUpdateParameters.class);
+		m.invoke(instance, parameters);
 	}
 }

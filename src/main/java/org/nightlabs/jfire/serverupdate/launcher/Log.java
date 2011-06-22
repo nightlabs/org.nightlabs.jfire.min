@@ -5,6 +5,12 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class Log {
+	
+	public static final String DEBUG = "DEBUG";
+	public static final String INFO = "INFO";
+	public static final String WARN = "WARN";
+	public static final String ERROR = "ERROR";
+	
 	private static DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 	private static Boolean debugEnabled = null;
@@ -19,26 +25,26 @@ public class Log {
 	private Log() { }
 	public static void info(String message, Object ... args)
 	{
-		log("INFO", message, args);
+		log(INFO, message, args);
 	}
 
 	public static void debug(String message, Object ... args)
 	{
 		if (isDebugEnabled())
-			log("DEBUG", message, args);
+			log(DEBUG, message, args);
 	}
 
 	public static void warn(String message, Object ... args)
 	{
-		log("WARN", message, args);
+		log(WARN, message, args);
 	}
 
 	public static void error(String message, Object ... args)
 	{
-		log("ERROR", message, args);
+		log(ERROR, message, args);
 	}
 
-	private static void log(String loglevel, String message, Object ... args)
+	public static void log(String loglevel, String message, Object ... args)
 	{
 		if (args != null && args.length > 0)
 			message = String.format(message, args);
