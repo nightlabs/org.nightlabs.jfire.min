@@ -96,11 +96,8 @@
 		<module>../JFireTrade</module> --> <!-- org.nightlabs.jfire:org.nightlabs.jfire.trade -->
 		<!-- requires trade
 		<module>../org.nightlabs.jfire.trade.editor2d</module> --> <!-- org.nightlabs.jfire:org.nightlabs.jfire.trade.editor2d -->
-		<module>../JFireServerUpdateLauncher</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.update -->
-		<module>../JFireServerUpdateBase</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.update -->
-		<module>../JFireServerUpdateDerby</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.update.derby -->
-		<module>../JFireServerUpdateJBoss</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.update.jboss -->
-		<module>../JFireServerUpdateMySQL</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.update.mysql -->
+		<module>../org.nightlabs.jfire.serverupdate.base</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.serverupdate.base -->
+		<module>../org.nightlabs.jfire.serverupdate.launcher</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.serverupdate.launcher -->
 		<!-- requires trade
 		<module>../JFireVoucher</module> --> <!-- org.nightlabs.jfire:org.nightlabs.jfire.voucher -->
 		<!-- requires trade

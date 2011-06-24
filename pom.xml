@@ -282,27 +282,12 @@
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
-				<artifactId>org.nightlabs.jfire.update.base</artifactId>
+				<artifactId>org.nightlabs.jfire.serverupdate.base</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
-				<artifactId>org.nightlabs.jfire.update.launcher</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.nightlabs.jfire</groupId>
-				<artifactId>org.nightlabs.jfire.update.derby</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.nightlabs.jfire</groupId>
-				<artifactId>org.nightlabs.jfire.update.jboss</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.nightlabs.jfire</groupId>
-				<artifactId>org.nightlabs.jfire.update.mysql</artifactId>
+				<artifactId>org.nightlabs.jfire.serverupdate.launcher</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
