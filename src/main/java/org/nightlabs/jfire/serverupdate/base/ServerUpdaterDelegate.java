@@ -179,8 +179,16 @@ public class ServerUpdaterDelegate
 							try {
 								updateHistoryItemSQL.beginUpdate();
 								updateProcedure.run();
-								updateHistoryItemSQL.endUpdate(!parameters.isDryRun() && !parameters.isTryRun());
+								boolean doCommit = !parameters.isDryRun() && !parameters.isTryRun();
+								if (Log.isDebugEnabled()) {
+									Log.debug("====================================================================");
+									Log.debug("    Update finished for " + updateProcedure.getModuleID() + " " + updateProcedure.getFromVersion() + " --> " + updateProcedure.getToVersion());
+									Log.debug("    Doing commit " + doCommit);
+									Log.debug("====================================================================");
+								}
+								updateHistoryItemSQL.endUpdate(doCommit);
 							} catch (Exception e) {
+								connection.rollback();
 								e.printStackTrace(System.out);
 								break;
 							}

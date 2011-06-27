@@ -28,10 +28,11 @@ public class UpdateContext
 	
 	public Connection getConnection() {
 		try {
-			if (connection == null)
+			if (connection == null) {
 				System.setProperty("jdbc.drivers", configuration.getDriverClass());
 				connection = DriverManager.getConnection(
 						configuration.getDatabaseURL(), configuration.getUserName(), configuration.getPassword());
+			}
 		} catch (SQLException e) {
 			throw new RuntimeException(e);		
 		}

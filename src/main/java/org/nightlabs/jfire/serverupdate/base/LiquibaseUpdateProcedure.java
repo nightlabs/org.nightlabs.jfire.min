@@ -4,7 +4,6 @@
 package org.nightlabs.jfire.serverupdate.base;
 
 import java.io.InputStream;
-import java.io.PrintWriter;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -23,6 +22,7 @@ import liquibase.database.jvm.JdbcConnection;
 import liquibase.resource.ClassLoaderResourceAccessor;
 
 import org.nightlabs.liquibase.datanucleus.LiquibaseDNConstants;
+import org.nightlabs.liquibase.datanucleus.util.Log;
 import org.nightlabs.version.MalformedVersionException;
 import org.nightlabs.version.Version;
 import org.xml.sax.Attributes;
@@ -142,9 +142,11 @@ public class LiquibaseUpdateProcedure extends UpdateProcedure {
 		public Object invoke(Object proxy, Method method, Object[] args)
 				throws Throwable {
 			if (ignoredMethods.contains(method.getName())) {
+//				Log.debug("Ignoring call to method %s for Liquibase-connection", method.getName());
 				// we ignore this method
 				return null;
 			}
+//			Log.debug("Invoking method %s for Liquibase-connection", method.getName());
 			return method.invoke(connection, args);
 		}
 	};
@@ -193,9 +195,6 @@ public class LiquibaseUpdateProcedure extends UpdateProcedure {
 			liquibase.update(null, getUpdateContext().getDryRunPrintWriter());
 			getUpdateContext().getDryRunPrintWriter().flush();
 		}
-		
-		liquibase.update(null, new PrintWriter(System.err));
-		System.err.flush();
 	}
 
 }
