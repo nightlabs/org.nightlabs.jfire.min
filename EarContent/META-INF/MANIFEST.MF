@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 EAR-Module-ID: JFireBaseEAR
-EAR-Schema-Version: 1.1.2
+EAR-Schema-Version: 1.2.0
 Comment: - please leave this here and keep spaces in empty lines!!! Otherwise this is not a correctly formatted manifest. -
   
   Update note 1.1.2:
@@ -16,5 +16,7 @@ Comment: - please leave this here and keep spaces in empty lines!!! Otherwise th
   New classes:
     PropertySetTableViewerColumnDescriptor
   Deleted classes:
-    AbstractEditLayoutUseCase, EditLayoutUseCaseDescripton, EditLayoutUseCaseName   
-  
+    AbstractEditLayoutUseCase, EditLayoutUseCaseDescripton, EditLayoutUseCaseName
+    
+Comment: Update note 1.2.0:
+  Raised version for release   
