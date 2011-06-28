@@ -22,7 +22,6 @@ import liquibase.database.jvm.JdbcConnection;
 import liquibase.resource.ClassLoaderResourceAccessor;
 
 import org.nightlabs.liquibase.datanucleus.LiquibaseDNConstants;
-import org.nightlabs.liquibase.datanucleus.util.Log;
 import org.nightlabs.version.MalformedVersionException;
 import org.nightlabs.version.Version;
 import org.xml.sax.Attributes;
