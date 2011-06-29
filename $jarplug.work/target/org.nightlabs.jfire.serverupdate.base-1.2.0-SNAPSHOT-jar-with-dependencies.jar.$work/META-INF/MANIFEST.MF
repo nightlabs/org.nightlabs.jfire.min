@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+Archiver-Version: Plexus Archiver
+Created-By: Apache Maven
+Built-By: abieber
+Build-Jdk: 1.6.0_24
+Main-Class: org.nightlabs.jfire.serverupdate.base.ServerUpdater
+

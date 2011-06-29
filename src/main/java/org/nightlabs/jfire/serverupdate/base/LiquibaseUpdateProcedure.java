@@ -116,7 +116,7 @@ public class LiquibaseUpdateProcedure extends UpdateProcedure {
 	
 	/**
 	 * InvocationHandler that implements a Proxy to {@link Connection} that will ignore all
-	 * transaction-relevant calls. Transactions are managed by the {@link ServerUpdater}
+	 * transaction-relevant calls. Transactions are managed by the {@link ServerUpdaterDelegate}
 	 * so the Liquibase-transaction-management is cut off.
 	 */
 	static class ConnectionProxyHandler implements InvocationHandler {
