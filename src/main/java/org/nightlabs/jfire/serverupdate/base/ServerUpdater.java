@@ -5,6 +5,7 @@ import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -19,14 +20,15 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 
+import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.args4j.CmdLineParser;
+import org.nightlabs.classloader.url.NestedURLClassLoader;
 import org.nightlabs.datastructure.Pair;
 import org.nightlabs.jdo.moduleregistry.ModuleMetaData;
 import org.nightlabs.jdo.moduleregistry.UpdateHistoryItemSQL;
+import org.nightlabs.jfire.serverupdate.base.config.Directory;
 import org.nightlabs.jfire.serverupdate.base.db.JDBCConfiguration;
-import org.nightlabs.jfire.serverupdate.launcher.Log;
-import org.nightlabs.jfire.serverupdate.launcher.ServerUpdateClassLoader;
-import org.nightlabs.jfire.serverupdate.launcher.ServerUpdateParameters;
-import org.nightlabs.jfire.serverupdate.launcher.config.Directory;
+import org.nightlabs.util.Util;
 import org.nightlabs.util.reflect.ReflectUtil;
 import org.nightlabs.util.reflect.ReflectUtil.ResourceFilter;
 import org.nightlabs.version.Version;
@@ -37,7 +39,7 @@ import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-public class ServerUpdaterDelegate
+public class ServerUpdater
 {
 	/**
 	 * These packages definitely contain nothing of interest to the update system
@@ -75,18 +77,31 @@ public class ServerUpdaterDelegate
 	
 	private ServerUpdateParameters parameters;
 
+	private NestedURLClassLoader serverUpdateClassLoader;
+
 	public void execute(ServerUpdateParameters parameters)
 	throws Throwable
 	{
 		this.parameters = parameters;
 		
 		searchDatasourceDeploymentDescriptors();
+		
+		initSubClassLoader();
 
 		searchClasses();
 		
 		analyseUpdateSteps();
 
 		updateDatabases();
+	}
+	
+	private void initSubClassLoader() throws IOException {
+		serverUpdateClassLoader = new NestedURLClassLoader(ClassLoader.getSystemClassLoader().getParent());
+		for (Directory dir : parameters.getConfig().getClasspath()) {
+			serverUpdateClassLoader.addURL(dir.getURL(), dir.isRecursive());
+		}
+
+		Thread.currentThread().setContextClassLoader(serverUpdateClassLoader);
 	}
 
 	private void searchDatasourceDeploymentDescriptors() throws SAXException, IOException
@@ -129,11 +144,18 @@ public class ServerUpdaterDelegate
 	private static void scanDeploymentDirs(Set<File> resolvedDeploymentDirs, Collection<Directory> deploymentDirs)
 	{
 		for (Directory directory : deploymentDirs) {
-			if (directory.getFile().isDirectory())
-				resolvedDeploymentDirs.add(directory.getFile());
+			URL dirURL = directory.getURL();
+			File dirFile;
+			try {
+				dirFile = new File(Util.urlToUri(dirURL));
+			} catch (MalformedURLException e) {
+				throw new IllegalArgumentException("Deployment-descriptor search-path is invalid: " + dirURL);
+			}
+			if (dirFile.isDirectory())
+				resolvedDeploymentDirs.add(dirFile);
 
 			if (directory.isRecursive())
-				scanDeploymentDirChildren(resolvedDeploymentDirs, directory.getFile());
+				scanDeploymentDirChildren(resolvedDeploymentDirs, dirFile);
 		}
 	}
 
@@ -280,9 +302,7 @@ public class ServerUpdaterDelegate
 		Log.info("                Searching UpdateProcedures (ChangeLog-files)        ");
 		Log.info("====================================================================");
 
-		ServerUpdateClassLoader classLoader = ServerUpdateClassLoader.sharedInstance();
-
-		Set<String> packageNames = classLoader.getPackageNames();
+		Set<String> packageNames = serverUpdateClassLoader.getPackageNames();
 
 //		Collection<Class<?>> c;
 		Collection<URL> r;
@@ -360,7 +380,7 @@ public class ServerUpdaterDelegate
 			
 			r = Collections.emptySet(); // initialise c, in case the ReflectUtil method fails.
 			try {
-				r = ReflectUtil.listResourcesInPackage(packageName, classLoader, new ResourceFilter() {
+				r = ReflectUtil.listResourcesInPackage(packageName, serverUpdateClassLoader, new ResourceFilter() {
 
 					@Override
 					public boolean accept(URL resourceURL) {
@@ -421,5 +441,38 @@ public class ServerUpdaterDelegate
 				userNameNode.getTextContent(),
 				passwordNode.getTextContent());
 
+	}
+	
+	
+	public static void main(String[] args)
+	throws Throwable
+	{
+		
+		ServerUpdateParameters parameters = new ServerUpdateParameters();
+		
+		CmdLineParser parser = new CmdLineParser(parameters);
+		try {
+			parser.parseArgument(args);
+		} catch (CmdLineException e) {
+			// handling of wrong arguments
+			parser.printUsage(System.err);
+			System.err.flush();
+			System.exit(2);
+			System.err.println();
+		}
+		
+		if (parameters.isShowHelp()) {
+			parser.printUsage(System.out);
+			System.exit(0);
+		}
+		
+		if (Log.isDebugEnabled()) {
+			parameters.logValues(Log.DEBUG);
+		}
+		
+		ServerUpdater serverUpdater = new ServerUpdater();
+		
+		serverUpdater.execute(parameters);
+		
 	}
 }
