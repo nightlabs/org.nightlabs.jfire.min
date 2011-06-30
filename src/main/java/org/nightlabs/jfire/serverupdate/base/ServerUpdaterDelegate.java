@@ -5,6 +5,7 @@ import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -19,14 +20,15 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 
+import org.nightlabs.classloader.url.NestedURLClassLoader;
 import org.nightlabs.datastructure.Pair;
 import org.nightlabs.jdo.moduleregistry.ModuleMetaData;
 import org.nightlabs.jdo.moduleregistry.UpdateHistoryItemSQL;
 import org.nightlabs.jfire.serverupdate.base.db.JDBCConfiguration;
 import org.nightlabs.jfire.serverupdate.launcher.Log;
-import org.nightlabs.jfire.serverupdate.launcher.ServerUpdateClassLoader;
 import org.nightlabs.jfire.serverupdate.launcher.ServerUpdateParameters;
 import org.nightlabs.jfire.serverupdate.launcher.config.Directory;
+import org.nightlabs.util.Util;
 import org.nightlabs.util.reflect.ReflectUtil;
 import org.nightlabs.util.reflect.ReflectUtil.ResourceFilter;
 import org.nightlabs.version.Version;
@@ -129,11 +131,18 @@ public class ServerUpdaterDelegate
 	private static void scanDeploymentDirs(Set<File> resolvedDeploymentDirs, Collection<Directory> deploymentDirs)
 	{
 		for (Directory directory : deploymentDirs) {
-			if (directory.getFile().isDirectory())
-				resolvedDeploymentDirs.add(directory.getFile());
+			URL dirURL = directory.getURL();
+			File dirFile;
+			try {
+				dirFile = new File(Util.urlToUri(dirURL));
+			} catch (MalformedURLException e) {
+				throw new IllegalArgumentException("Deployment-descriptor search-path is invalid: " + dirURL);
+			}
+			if (dirFile.isDirectory())
+				resolvedDeploymentDirs.add(dirFile);
 
 			if (directory.isRecursive())
-				scanDeploymentDirChildren(resolvedDeploymentDirs, directory.getFile());
+				scanDeploymentDirChildren(resolvedDeploymentDirs, dirFile);
 		}
 	}
 
@@ -280,9 +289,9 @@ public class ServerUpdaterDelegate
 		Log.info("                Searching UpdateProcedures (ChangeLog-files)        ");
 		Log.info("====================================================================");
 
-		ServerUpdateClassLoader classLoader = ServerUpdateClassLoader.sharedInstance();
+		NestedURLClassLoader cl = (NestedURLClassLoader) Thread.currentThread().getContextClassLoader();
 
-		Set<String> packageNames = classLoader.getPackageNames();
+		Set<String> packageNames = cl.getPackageNames();
 
 //		Collection<Class<?>> c;
 		Collection<URL> r;
@@ -360,7 +369,7 @@ public class ServerUpdaterDelegate
 			
 			r = Collections.emptySet(); // initialise c, in case the ReflectUtil method fails.
 			try {
-				r = ReflectUtil.listResourcesInPackage(packageName, classLoader, new ResourceFilter() {
+				r = ReflectUtil.listResourcesInPackage(packageName, cl, new ResourceFilter() {
 
 					@Override
 					public boolean accept(URL resourceURL) {
