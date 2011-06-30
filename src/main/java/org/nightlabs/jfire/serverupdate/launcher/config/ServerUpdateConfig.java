@@ -42,7 +42,7 @@ public class ServerUpdateConfig
 				Directory directory = new Directory(node);
 
 				if (Log.isDebugEnabled())
-					Log.debug("Classpath " + numClasspath + ": " + directory.getFile().getAbsolutePath() + ", exist: " + directory.getFile().exists());
+					Log.debug("Classpath " + numClasspath + ": " + directory.getURL());
 
 				classpath.add(directory);
 			}
@@ -59,7 +59,7 @@ public class ServerUpdateConfig
 				Directory directory = new Directory(node);
 
 				if (Log.isDebugEnabled())
-					Log.debug("Deployment " + numdeploymentDirectory + ": " + directory.getFile().getAbsolutePath() + ", exist: " + directory.getFile().exists());
+					Log.debug("Deployment " + numdeploymentDirectory + ": " + directory.getURL());
 
 				deploymentDirectories.add(directory);
 			}

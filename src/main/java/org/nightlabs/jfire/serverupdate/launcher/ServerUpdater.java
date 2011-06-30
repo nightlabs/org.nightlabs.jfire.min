@@ -4,6 +4,8 @@ import java.lang.reflect.Method;
 
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
+import org.nightlabs.classloader.url.NestedURLClassLoader;
+import org.nightlabs.jfire.serverupdate.launcher.config.Directory;
 
 /**
  * @author Chairat Kongarayawetchakun - chairat [AT] nightlabs [DOT] de
@@ -42,15 +44,18 @@ public class ServerUpdater
 		/*****************************************************************
 							Loading the class loader
 		 *****************************************************************/
-		ServerUpdateClassLoader serverUpdateClassLoader = ServerUpdateClassLoader.createSharedInstance(parameters.getConfig(), ServerUpdater.class.getClassLoader());
-		Thread.currentThread().setContextClassLoader(serverUpdateClassLoader);
+		NestedURLClassLoader cl = new NestedURLClassLoader(ServerUpdater.class.getClassLoader());
+		for (Directory dir : parameters.getConfig().getClasspath()) {
+			cl.addURL(dir.getURL(), dir.isRecursive());
+		}
+		Thread.currentThread().setContextClassLoader(cl);
 
 		Class<?> clazz;
 		// The class to be loaded should definitely not be available to the current class loader.
-		clazz = serverUpdateClassLoader.loadClass(SERVER_UPDATER_DELEGATE_CLASS);
+		clazz = cl.loadClass(SERVER_UPDATER_DELEGATE_CLASS);
 
 		// And thus, we ensure it now.
-		if (serverUpdateClassLoader != clazz.getClassLoader())
+		if (cl != clazz.getClassLoader())
 			throw new IllegalStateException(
 					String.format(
 							"The class %s should have been loaded by our ServerUpdateClassLoader, but it is loaded by %s!!!",
