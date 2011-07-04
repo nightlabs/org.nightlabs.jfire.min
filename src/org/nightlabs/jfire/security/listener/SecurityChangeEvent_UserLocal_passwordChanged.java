@@ -1,7 +1,6 @@
 package org.nightlabs.jfire.security.listener;
 
 import org.nightlabs.jfire.security.User;
-import org.nightlabs.jfire.security.id.UserID;
 
 /**
  * Instances of this event class are propagated to
@@ -12,9 +11,9 @@ import org.nightlabs.jfire.security.id.UserID;
 public class SecurityChangeEvent_UserLocal_passwordChanged extends SecurityChangeEvent{
 	
 	/**
-	 * {@link UserID} of a {@link User} which has new password set
+	 * {@link User} which has new password set
 	 */
-	private UserID userID;
+	private User user;
 	
 	/**
 	 * New password as plain text, so please be careful when using this field
@@ -24,21 +23,21 @@ public class SecurityChangeEvent_UserLocal_passwordChanged extends SecurityChang
 	/**
 	 * Constructs new {@link SecurityChangeEvent_UserLocal_passwordChanged} object with given {@link User} and new password.
 	 * 
-	 * @param userID The {@link UserID} of a {@link User} object which has new password set
+	 * @param user The {@link User} object which has new password set
 	 * @param newPassword The new password as a plin text
 	 */
-	public SecurityChangeEvent_UserLocal_passwordChanged(UserID userID, String newPassword) {
-		this.userID = userID;
+	public SecurityChangeEvent_UserLocal_passwordChanged(User user, String newPassword) {
+		this.user = user;
 		this.newPassword = newPassword;
 	}
 	
 	/**
-	 * Get UserID.
+	 * Get User.
 	 * 
-	 * @return {@link UserID} of a {@link User} which has new password set
+	 * @return {@link User} which has new password set
 	 */
-	public UserID getUserID() {
-		return userID;
+	public User getUser() {
+		return user;
 	}
 	
 	/**

@@ -497,8 +497,7 @@ implements DetachCallback, AttachCallback
 			
 			setPassword(encryptPassword(password));
 			
-			UserID userID = UserID.create(getUser().getOrganisationID(), getUserID());
-			SecurityChangeController.getInstance().fireSecurityChangeEvent_on_UserLocal_passwordChanged(userID, password);			
+			SecurityChangeController.getInstance().fireSecurityChangeEvent_on_UserLocal_passwordChanged(getUser(), password);			
 			successful = true;
 		}finally{
 			SecurityChangeController.endChanging(successful);
