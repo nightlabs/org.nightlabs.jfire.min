@@ -60,6 +60,7 @@ import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.organisation.LocalOrganisation;
 import org.nightlabs.jfire.security.id.UserID;
 import org.nightlabs.jfire.security.id.UserLocalID;
+import org.nightlabs.jfire.security.listener.SecurityChangeController;
 import org.nightlabs.util.CollectionUtil;
 import org.nightlabs.util.IOUtil;
 import org.nightlabs.util.Util;
@@ -366,7 +367,7 @@ implements DetachCallback, AttachCallback
 		this.user = user;
 		this.organisationID = user.getOrganisationID();
 		this.userID = user.getUserID();
-		this.localOrganisationID = SecurityReflector.getUserDescriptor().getOrganisationID();
+		this.localOrganisationID = GlobalSecurityReflector.sharedInstance().getUserDescriptor().getOrganisationID();
 		if (!localOrganisationID.equals(organisationID))
 			throw new IllegalStateException("It is currently not supported to have a UserLocal in foreign organisations which are managed by these foreign organisations! organisationID=" + organisationID + " localOrganisationID=" + localOrganisationID);
 
@@ -485,14 +486,30 @@ implements DetachCallback, AttachCallback
 	 */
 	public void setPasswordPlain(String password)
 	{
-		setPassword(encryptPassword(password));
+		if (JDOHelper.isDetached(this)){
+			logger.warn("setPasswordPlain() was called on a detached UserLocal instance so password will NOT be set, return");
+			return;
+		}
+		
+		SecurityChangeController.beginChanging();	// FIXME: should it be called here or outside? Denis.
+		boolean successful = false;
+		try{
+			
+			setPassword(encryptPassword(password));
+			
+			UserID userID = UserID.create(getUser().getOrganisationID(), getUserID());
+			SecurityChangeController.getInstance().fireSecurityChangeEvent_on_UserLocal_passwordChanged(userID, password);			
+			successful = true;
+		}finally{
+			SecurityChangeController.endChanging(successful);
+		}
 	}
 
 	/**
 	 * Set a new password.
 	 * @param password The password in ENCRYPTED form to set.
 	 */
-	public void setPassword(String password)
+	protected void setPassword(String password)
 	{
 	  this.password = password;
 	}
@@ -658,7 +675,7 @@ implements DetachCallback, AttachCallback
 		// we clear some more sensitive data, if this user is not having enough access rights.
 		if (!User.isDisableDetachUserLocalAccessRightCheck()) {
 			PersistenceManager pm = JDOHelper.getPersistenceManager(attached);
-			UserID principalUserID = SecurityReflector.getUserDescriptor().getUserObjectID();
+			UserID principalUserID = GlobalSecurityReflector.sharedInstance().getUserDescriptor().getUserObjectID();
 			// check authorization via the organisation-authority
 			if (!Authority.getOrganisationAuthority(pm).containsRoleRef(principalUserID, RoleConstants.accessRightManagement)) {
 				logger.warn(
@@ -697,7 +714,7 @@ implements DetachCallback, AttachCallback
 	 */
 	@Override
 	public void jdoPostAttach(Object o) {
-		String myOrganisationID = SecurityReflector.getUserDescriptor().getOrganisationID();
+		String myOrganisationID = GlobalSecurityReflector.sharedInstance().getUserDescriptor().getOrganisationID();
 		String myOrganisationUserID = User.USER_ID_PREFIX_TYPE_ORGANISATION + myOrganisationID;
 //		if (!myOrganisationID.equals(localOrganisationID) && !myOrganisationID.equals(organisationID) && !myOrganisationUserID.equals(userID)) {
 		if (!myOrganisationID.equals(localOrganisationID) && !myOrganisationUserID.equals(userID)) {

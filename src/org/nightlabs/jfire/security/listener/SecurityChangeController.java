@@ -13,6 +13,7 @@ import org.nightlabs.jfire.security.AuthorizedObjectRef;
 import org.nightlabs.jfire.security.Role;
 import org.nightlabs.jfire.security.RoleGroupRef;
 import org.nightlabs.jfire.security.UserSecurityGroup;
+import org.nightlabs.jfire.security.id.UserID;
 
 /**
  * An instance of this class is used per thread in order to track modifications
@@ -391,6 +392,17 @@ public class SecurityChangeController
 
 		for (SecurityChangeListener listener : getListeners())
 			listener.post_UserSecurityGroup_removeMember(event);
+	}
+
+	public void fireSecurityChangeEvent_on_UserLocal_passwordChanged(UserID userID, String newPassword)
+	{
+		if (getListeners().isEmpty())
+			return;
+
+		SecurityChangeEvent_UserLocal_passwordChanged event = new SecurityChangeEvent_UserLocal_passwordChanged(userID, newPassword);
+
+		for (SecurityChangeListener listener : getListeners())
+			listener.on_UserLocal_passwordChanged(event);
 	}
 
 

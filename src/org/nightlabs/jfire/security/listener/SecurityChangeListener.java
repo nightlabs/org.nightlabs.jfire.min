@@ -8,6 +8,7 @@ import javax.jdo.PersistenceManager;
 import org.nightlabs.jfire.security.AuthorizedObjectRef;
 import org.nightlabs.jfire.security.Role;
 import org.nightlabs.jfire.security.RoleGroupRef;
+import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.security.UserLocal;
 import org.nightlabs.jfire.security.UserSecurityGroup;
 import org.nightlabs.util.Util;
@@ -119,6 +120,15 @@ implements Serializable
 		// override to do sth.
 	}
 
+	/**
+	 * Called when a new password is set to a {@link User} (i.e. via {@link UserLocal#setPasswordPlain(String)}).
+	 * 
+	 * @param event the event object containing some details.
+	 */
+	public void on_UserLocal_passwordChanged(SecurityChangeEvent_UserLocal_passwordChanged event)
+	{
+		// override to do sth.
+	}
 
 	/**
 	 * Called before an {@link AuthorizedObjectRef} is created. Since it is not yet created,
