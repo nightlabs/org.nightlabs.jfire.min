@@ -81,6 +81,18 @@ public class SecurityReflectorJBoss extends AbstractSecurityReflector implements
 	}
 
 	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.security.ISecurityReflector#getCredential()
+	 */
+	@Override
+	public Object getCredential() throws NoUserException {
+		UserDescriptor userDescriptor = getUserDescriptor();
+		if (userDescriptor == null){
+			return null;
+		}
+		return SecurityAssociation.getCredential();
+	}
+
+	/* (non-Javadoc)
 	 * @see org.nightlabs.jfire.security.ISecurityReflector#createInitialContext()
 	 */
 	@Override
