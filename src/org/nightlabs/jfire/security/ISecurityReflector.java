@@ -61,6 +61,18 @@ public interface ISecurityReflector {
 	 * @throws NoUserException if there is currently no user authenticated.
 	 */
 	UserDescriptor getUserDescriptor() throws NoUserException;
+	
+	/**
+	 * Get a credential object for the current user. The return value depends on authentication type.
+	 * For example, it will return {@link String} password as plain text for basic authentication. 
+	 * For other authentication types the return value could be a digest of some kind or a session key
+	 * or whatever else this authentication type supports. <code>null</code> also could be returned
+	 * if there's no possibility to get any credential so do not forget to check the returned value.
+	 * 
+	 * @return credential of the current user or <code>null</code> if there's no credential or no possibility to get one
+	 * @throws NoUserException if there is currently no user authenticated.
+	 */
+	Object getCredential() throws NoUserException;
 
 	/**
 	 * Get a {@link Set} containing the object-ids of all {@link Role}s that are granted to the current
