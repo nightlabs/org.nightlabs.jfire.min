@@ -51,6 +51,7 @@
 		<!-- depends on trade (!)
 		<module>../JFireIssueTimeTracking</module> --> <!-- org.nightlabs.jfire:org.nightlabs.jfire.issuetimetracking -->
 		<module>../JFireIntegrationJBoss</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.jboss -->
+		<module>../JFireIntegrationJBossEAR</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.jboss.ear -->
 		<module>../JFireJBossInterceptors</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.jboss.ejb3 -->
 		<module>../JFireJbpm</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.jbpm -->
 		<module>../JFireJbpmAOP</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.jbpm.aop -->
