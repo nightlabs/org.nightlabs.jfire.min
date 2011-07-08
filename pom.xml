@@ -8,7 +8,7 @@
 	<groupId>org.nightlabs.jfire</groupId>
 	<artifactId>org.nightlabs.jfire.web.admin</artifactId>
 	<version>1.2.0-SNAPSHOT</version>
-	<packaging>bundle</packaging>
+	<packaging>war</packaging>
 	<name>${project.artifactId}</name>
 
 	<parent>
@@ -73,30 +73,43 @@
 	</dependencies>
 
 	<build>
-		<sourceDirectory>src</sourceDirectory>
-		<outputDirectory>build/classes</outputDirectory>
-		<resources>
-			<resource>
-				<directory>src</directory>
-				<excludes>
-					<exclude>**/*.java</exclude>
-				</excludes>
-			</resource>
-		</resources>
-
         <plugins>
+			<!-- use the BND MANIFEST.MF: -->
+			<plugin>
+				<artifactId>maven-war-plugin</artifactId>
+				<configuration>
+					<archive>
+						<manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+					</archive>
+				</configuration>
+			</plugin>  
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>bundle-manifest</id>
+						<phase>process-classes</phase>
+						<goals>
+							<goal>manifest</goal>
+						</goals>
+					</execution>
+				</executions>
                 <configuration>
+					<supportedProjectTypes>
+						<supportedProjectType>war</supportedProjectType>
+					</supportedProjectTypes>
                     <instructions>
                         <Web-ContextPath>/JFireWebAdmin</Web-ContextPath>
+                        <Export-Package>!org.nightlabs.jfire.web.admin.*</Export-Package>
                         <Private-Package>org.nightlabs.jfire.web.admin.*</Private-Package>
                         <Import-Package>
                             javax.servlet*;version=2.5,
                             *
                         </Import-Package>
-                        <_wab>WebContent/</_wab>
+                        <!-- 
+                        <_wab>src/main/webapp/</_wab>
+                        -->
                    </instructions>
                 </configuration>
             </plugin>
