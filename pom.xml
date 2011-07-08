@@ -82,7 +82,7 @@
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
-				<artifactId>org.nightlabs.jfire.classloader.remote.backend</artifactId>
+				<artifactId>org.nightlabs.jfire.classloader.remote.backend.bean</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
