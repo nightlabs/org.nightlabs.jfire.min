@@ -25,14 +25,13 @@ import org.nightlabs.jfire.security.AuthorizedObjectRefLifecycleListenerFilter;
 import org.nightlabs.jfire.security.ISecurityReflector;
 import org.nightlabs.jfire.security.JFireSecurityManagerRemote;
 import org.nightlabs.jfire.security.NoUserException;
-import org.nightlabs.jfire.security.SecurityReflector;
 import org.nightlabs.jfire.security.UserDescriptor;
 import org.nightlabs.jfire.security.id.AuthorityID;
 import org.nightlabs.jfire.security.id.RoleID;
 import org.nightlabs.jfire.security.id.UserLocalID;
 
 /**
- * This is the implementation of {@link SecurityReflector} that can be used for JFire clients.
+ * This is the implementation of {@link ISecurityReflector} that can be used for JFire clients.
  * 
  * @author Marco Schulze - marco at nightlabs dot de 
  * @author Alexander Bieber <!-- alex [AT] nightlabs.d [DOT] de -->
@@ -47,7 +46,7 @@ public class SecurityReflectorClient extends AbstractSecurityReflector implement
 	}
 	
 	/**
-	 * Set the {@link LoginData} this {@link SecurityReflector} should work with.
+	 * Set the {@link LoginData} this {@link ISecurityReflector} should work with.
 	 * 
 	 * @param loginData The login data to set.
 	 */
@@ -87,6 +86,16 @@ public class SecurityReflectorClient extends AbstractSecurityReflector implement
 		if (loginData == null)
 			throw new NoUserException("No loginData was yet provided for this " + this.getClass().getSimpleName());
 		return new UserDescriptor(loginData.getOrganisationID(), loginData.getUserID(), loginData.getWorkstationID(), loginData.getSessionID());
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.nightlabs.jfire.security.ISecurityReflector#getCredential()
+	 */
+	@Override
+	public Object getCredential() throws NoUserException {
+		if (loginData == null)
+			throw new NoUserException("No loginData was yet provided for this " + this.getClass().getSimpleName());
+		return loginData.getPassword();
 	}
 
 	private Map<AuthorityID, Set<RoleID>> cache_authorityID2roleIDSet = new HashMap<AuthorityID, Set<RoleID>>();
