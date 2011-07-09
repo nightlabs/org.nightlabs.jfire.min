@@ -127,8 +127,8 @@
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-		    <groupId>javax.annotation</groupId>
-		    <artifactId>jsr250-api</artifactId>
+			<groupId>javax.annotation</groupId>
+			<artifactId>jsr250-api</artifactId>
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>
@@ -154,12 +154,34 @@
 				<inherited>true</inherited>
 				<configuration>
 					<instructions>
-						<!-- SPECIAL CASE HERE as the bundle name does not correspond to the base package name. -->						
+						<!-- SPECIAL CASE HERE as the bundle name does not correspond to the 
+							base package name. -->
 						<Export-Package>
 							org.nightlabs.jfire.*;version="${project.version}"
 						</Export-Package>
 					</instructions>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>build-helper-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>attach-artifacts</id>
+						<phase>package</phase>
+						<goals>
+							<goal>attach-artifact</goal>
+						</goals>
+						<configuration>
+							<artifacts>
+								<artifact>
+									<file>${project.build.directory}/${project.artifactId}-${project.version}.jar</file>
+									<type>rar</type>
+								</artifact>
+							</artifacts>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
