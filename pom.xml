@@ -234,6 +234,7 @@
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.server.data.dir.jboss</artifactId>
 				<version>${project.version}</version>
+				<type>sar</type>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
@@ -310,6 +311,7 @@
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.web.admin</artifactId>
 				<version>${project.version}</version>
+				<type>war</type>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
@@ -319,6 +321,38 @@
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.web.webshop</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<!-- ###### jfire ears ###### -->
+			<dependency>
+				<groupId>org.nightlabs.jfire</groupId>
+				<artifactId>org.nightlabs.jfire.base.ear</artifactId>
+				<type>ear</type>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.nightlabs.jfire</groupId>
+				<artifactId>org.nightlabs.jfire.initialisejdo.ear</artifactId>
+				<type>ear</type>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.nightlabs.jfire</groupId>
+				<artifactId>org.nightlabs.jfire.jboss.ear</artifactId>
+				<type>ear</type>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.nightlabs.jfire</groupId>
+				<artifactId>org.nightlabs.jfire.query.store.ear</artifactId>
+				<type>ear</type>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.nightlabs.jfire</groupId>
+				<artifactId>org.nightlabs.jfire.testsuite.ear</artifactId>
+				<type>ear</type>
 				<version>${project.version}</version>
 			</dependency>
 
