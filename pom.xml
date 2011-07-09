@@ -52,11 +52,6 @@
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
-				<artifactId>org.nightlabs.jfire.base.j2ee</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.base.j2ee.osgi</artifactId>
 				<version>${project.version}</version>
 			</dependency>
