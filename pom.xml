@@ -247,6 +247,12 @@
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
+				<artifactId>org.nightlabs.jfire.servermanager</artifactId>
+				<version>${project.version}</version>
+				<type>rar</type>
+			</dependency>
+			<dependency>
+				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.simpletrade</artifactId>
 				<version>${project.version}</version>
 			</dependency>
