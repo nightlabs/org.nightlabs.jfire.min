@@ -18,10 +18,62 @@
 			<version>4.2.3.GA</version>
 			<type>zip</type>
 		</dependency>
+
+		<dependency>
+			<groupId>org.nightlabs.jfire</groupId>
+			<artifactId>org.nightlabs.jfire.server.data.dir.jboss</artifactId>
+			<type>sar</type>
+		</dependency>
+		<dependency>
+			<groupId>org.nightlabs</groupId>
+			<artifactId>org.nightlabs.unifiedejbjndi.jboss</artifactId>
+			<type>sar</type>
+		</dependency>
+		<dependency>
+			<groupId>org.nightlabs.jfire</groupId>
+			<artifactId>org.nightlabs.jfire.web.admin</artifactId>
+			<type>war</type>
+		</dependency>
+
+		<dependency>
+			<groupId>org.nightlabs.jfire</groupId>
+			<artifactId>org.nightlabs.jfire.base.ear</artifactId>
+			<type>ear</type>
+		</dependency>
+		<dependency>
+			<groupId>org.nightlabs.jfire</groupId>
+			<artifactId>org.nightlabs.jfire.initialisejdo.ear</artifactId>
+			<type>ear</type>
+		</dependency>
+		<dependency>
+			<groupId>org.nightlabs.jfire</groupId>
+			<artifactId>org.nightlabs.jfire.jboss.ear</artifactId>
+			<type>ear</type>
+		</dependency>
+		<dependency>
+			<groupId>org.nightlabs.jfire</groupId>
+			<artifactId>org.nightlabs.jfire.query.store.ear</artifactId>
+			<type>ear</type>
+		</dependency>
+		<dependency>
+			<groupId>org.nightlabs.jfire</groupId>
+			<artifactId>org.nightlabs.jfire.testsuite.ear</artifactId>
+			<type>ear</type>
+		</dependency>
+
+		<dependency>
+			<groupId>org.datanucleus</groupId>
+			<artifactId>datanucleus-jca</artifactId>
+			<type>rar</type>
+		</dependency>
+
 	</dependencies>
 
 	<properties>
 		<assembly.directory>${project.build.directory}/assembly</assembly.directory>
+		<jboss.subdirectory>jboss-4.2.3.GA</jboss.subdirectory>
+		<assembly.deploy.directory>${assembly.directory}/${jboss.subdirectory}/server/default/deploy</assembly.deploy.directory>
+		<assembly.jfire.deploy.directory>${assembly.deploy.directory}/JFire.last</assembly.jfire.deploy.directory>
 	</properties>
 
 	<build>
@@ -37,18 +89,45 @@
 							<goal>unpack-dependencies</goal>
 						</goals>
 						<configuration>
+							<outputDirectory>${assembly.directory}</outputDirectory>
 							<includeGroupIds>org.jboss.jbossas</includeGroupIds>
 							<includeArtifactIds>jboss-as-dist</includeArtifactIds>
-							<aoutputDirectory>${assembly.directory}</aoutputDirectory>
+							<excludes>${jboss.subdirectory}/server/all/**,${jboss.subdirectory}/server/minimal/**</excludes>
+						</configuration>
+					</execution>
+					<execution>
+						<id>copy-deploy</id>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${assembly.deploy.directory}</outputDirectory>
+							<!-- 
+							<includeGroupIds>org.nightlabs,org.nightlabs.jfire,org.datanucleus</includeGroupIds>
+							-->
+							<includeTypes>sar,war,rar</includeTypes>
+						</configuration>
+					</execution>
+					<execution>
+						<id>copy-jfire-deploy</id>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${assembly.jfire.deploy.directory}</outputDirectory>
+							<!-- 
+							<includeGroupIds>org.nightlabs,org.nightlabs.jfire</includeGroupIds>
+							-->
+							<includeTypes>ear</includeTypes>
 						</configuration>
 					</execution>
 				</executions>
 			</plugin>
 			<!-- <plugin> <artifactId>maven-antrun-plugin</artifactId> <executions> 
 				<execution> <phase>package</phase> <goals> <goal>run</goal> </goals> <configuration> 
-				<target> <property name="assembly.dir" value="target/${project.artifactId}-${project.version}"/> 
-				<mkdir dir="${assembly.dir}" /> </target> </configuration> </execution> </executions> 
-				</plugin> -->
+				<target> <property name="assembly.dir" value="target/${project.artifactId}-${project.version}" 
+				/> <mkdir dir="${assembly.dir}" /> </target> </configuration> </execution> 
+				</executions> </plugin> -->
 		</plugins>
 	</build>
 </project>
