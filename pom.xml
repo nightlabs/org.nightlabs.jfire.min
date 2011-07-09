@@ -22,11 +22,6 @@
 			<!-- ###### jfire ###### -->
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
-				<artifactId>org.nightlabs.initialisejdo</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.asterisk</artifactId>
 				<version>${project.version}</version>
 			</dependency>
@@ -108,6 +103,11 @@
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.geography</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.nightlabs.jfire</groupId>
+				<artifactId>org.nightlabs.jfire.initialisejdo</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
