@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 EAR-Module-ID: JFireBaseEAR
 EAR-Schema-Version: 1.2.0
-Comment: - please leave this here and keep spaces in empty lines!!! Otherwise this is not a correctly formatted manifest. -
+Comment-1: - please leave this here and keep spaces in empty lines!!! Otherwise this is not a correctly formatted manifest. -
   
   Update note 1.1.2:
   Added field displayFieldColumnCount to StructBlock. No UpdateProcedure required.
@@ -18,5 +18,5 @@ Comment: - please leave this here and keep spaces in empty lines!!! Otherwise th
   Deleted classes:
     AbstractEditLayoutUseCase, EditLayoutUseCaseDescripton, EditLayoutUseCaseName
     
-Comment: Update note 1.2.0:
+Comment-2: Update note 1.2.0:
   Raised version for release   
