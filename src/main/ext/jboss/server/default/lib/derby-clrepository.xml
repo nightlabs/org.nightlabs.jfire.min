@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE classloader-repository
+PUBLIC "-//NightLabs GmbH//DTD ClassLoader Repository 1.1//EN"
+"http://www.nightlabs.de/dtd/clrepository_1_1.dtd">
+
+<classloader-repository>
+	<publish target="derby.jar">
+		<resources>.*</resources>
+	</publish>
+	<publish target="derbyclient.jar">
+		<resources>.*</resources>
+	</publish>
+</classloader-repository>

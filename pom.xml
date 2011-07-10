@@ -72,7 +72,8 @@
 	<properties>
 		<assembly.directory>${project.build.directory}/assembly</assembly.directory>
 		<jboss.subdirectory>jboss-4.2.3.GA</jboss.subdirectory>
-		<assembly.deploy.directory>${assembly.directory}/${jboss.subdirectory}/server/default/deploy</assembly.deploy.directory>
+		<assembly.jboss.directory>${assembly.directory}/${jboss.subdirectory}</assembly.jboss.directory>
+		<assembly.deploy.directory>${assembly.jboss.directory}/server/default/deploy</assembly.deploy.directory>
 		<assembly.jfire.deploy.directory>${assembly.deploy.directory}/JFire.last</assembly.jfire.deploy.directory>
 	</properties>
 
@@ -102,10 +103,9 @@
 						</goals>
 						<configuration>
 							<outputDirectory>${assembly.deploy.directory}</outputDirectory>
-							<!-- 
-							<includeGroupIds>org.nightlabs,org.nightlabs.jfire,org.datanucleus</includeGroupIds>
-							-->
+							<!-- <includeGroupIds>org.nightlabs,org.nightlabs.jfire,org.datanucleus</includeGroupIds> -->
 							<includeTypes>sar,war,rar</includeTypes>
+							<stripVersion>true</stripVersion>
 						</configuration>
 					</execution>
 					<execution>
@@ -115,19 +115,32 @@
 						</goals>
 						<configuration>
 							<outputDirectory>${assembly.jfire.deploy.directory}</outputDirectory>
-							<!-- 
-							<includeGroupIds>org.nightlabs,org.nightlabs.jfire</includeGroupIds>
-							-->
+							<!-- <includeGroupIds>org.nightlabs,org.nightlabs.jfire</includeGroupIds> -->
 							<includeTypes>ear</includeTypes>
+							<stripVersion>true</stripVersion>
 						</configuration>
 					</execution>
 				</executions>
 			</plugin>
-			<!-- <plugin> <artifactId>maven-antrun-plugin</artifactId> <executions> 
-				<execution> <phase>package</phase> <goals> <goal>run</goal> </goals> <configuration> 
-				<target> <property name="assembly.dir" value="target/${project.artifactId}-${project.version}" 
-				/> <mkdir dir="${assembly.dir}" /> </target> </configuration> </execution> 
-				</executions> </plugin> -->
+			<plugin>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy-ext</id>
+						<phase>package</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<target>
+								<copy todir="${assembly.jboss.directory}" overwrite="true">
+									<fileset dir="src/main/ext/jboss" includes="**/*"/>
+								</copy>
+							</target>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 </project>

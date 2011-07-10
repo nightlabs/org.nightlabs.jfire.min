@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<connection-factories>
+
+	<tx-connection-factory>
+		<jndi-name>jfire/system/JFireServerManagerFactory</jndi-name>
+
+<!-- JBoss 3.2.x: begin
+		<adapter-display-name>JFire Server Manager</adapter-display-name>
+JBoss 3.2.x: end -->
+
+<!-- JBoss 4.x: begin -->
+		<rar-name>JFire.last#JFireBaseEAR.ear#JFireServerManager.rar</rar-name>
+		<connection-definition>javax.resource.cci.ConnectionFactory</connection-definition>
+<!-- JBoss 4.x: end -->
+
+<!--
+'SysConfigDirectory' is not passed to the RA anymore. Instead, we use the system property "java.server.data.dir".
+See project JFireServerDataDirectoryJBoss and class org.nightlabs.jfire.server.data.dir.JFireServerDataDirectory for
+further details.
+
+		<config-property name="SysConfigDirectory" type="java.lang.String">../server/default/deploy/JFire.last/JFireBase.ear/config/</config-property>
+-->
+		<max-pool-size>100</max-pool-size> 	
+	</tx-connection-factory>
+
+</connection-factories>
