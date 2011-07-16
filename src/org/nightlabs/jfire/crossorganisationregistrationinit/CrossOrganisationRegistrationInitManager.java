@@ -56,7 +56,8 @@ extends AbstractInitManager<CrossOrganisationRegistrationInit, OrganisationInitD
 
 		// Scan all JARs within all EARs for organisation-init.xml files.
 		scan(
-				jfsm, new String[] { "META-INF/cross-organisation-registration-init.xml" },
+				jfsm.getJFireServerConfigModule().getJ2ee().getJ2eeDeployBaseDirectory(),
+				new String[] { "META-INF/cross-organisation-registration-init.xml" },
 				new JarEntryHandler[] {
 						new JarEntryHandler() {
 							@Override
@@ -100,7 +101,7 @@ extends AbstractInitManager<CrossOrganisationRegistrationInit, OrganisationInitD
 		if (logger.isDebugEnabled()) {
 			logger.debug("************************************************");
 			logger.debug("Organisation Inits in execution order:");
-			printInits(inits);
+			printInits(inits, logger);
 			logger.debug("************************************************");
 		}
 	}
@@ -266,11 +267,6 @@ extends AbstractInitManager<CrossOrganisationRegistrationInit, OrganisationInitD
 		}
 
 		return _inits;
-	}
-
-	@Override
-	protected Logger getLogger() {
-		return logger;
 	}
 
 	@Override

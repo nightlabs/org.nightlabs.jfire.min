@@ -57,7 +57,8 @@ public class ServerInitManager extends AbstractInitManager<ServerInit, ServerIni
 
 		// Scan all JARs within all EARs for serverinit.xml files.
 		scan(
-				mcf, new String[] {
+				mcf.getConfigModule().getJ2ee().getJ2eeDeployBaseDirectory(),
+				new String[] {
 						"META-INF/server-init.xml",
 						"META-INF/serverinit.xml" // downward compatibility
 				},
@@ -123,9 +124,9 @@ public class ServerInitManager extends AbstractInitManager<ServerInit, ServerIni
 			logger.debug("************************************************");
 			logger.debug("Server Inits in execution order:");
 			logger.debug("Early server inits:");
-			printInits(earlyInits);
+			printInits(earlyInits, logger);
 			logger.debug("Late server inits:");
-			printInits(lateInits);
+			printInits(lateInits, logger);
 			logger.debug("************************************************");
 		}
 	}
@@ -311,10 +312,5 @@ public class ServerInitManager extends AbstractInitManager<ServerInit, ServerIni
 				logger.error("Init failed! " + init, x);
 			}
 		}
-	}
-
-	@Override
-	protected Logger getLogger() {
-		return logger;
 	}
 }
