@@ -67,6 +67,14 @@
 			<type>rar</type>
 		</dependency>
 
+		<dependency>
+			<groupId>org.nightlabs.jfire</groupId>
+			<artifactId>org.nightlabs.jfire.jboss.ejb3</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.nightlabs.jfire</groupId>
+			<artifactId>org.nightlabs.jfire.log4j</artifactId>
+		</dependency>
 	</dependencies>
 
 	<properties>
@@ -74,6 +82,7 @@
 		<jboss.subdirectory>jboss-4.2.3.GA</jboss.subdirectory>
 		<assembly.jboss.directory>${assembly.directory}/${jboss.subdirectory}</assembly.jboss.directory>
 		<assembly.deploy.directory>${assembly.jboss.directory}/server/default/deploy</assembly.deploy.directory>
+		<assembly.lib.directory>${assembly.jboss.directory}/server/default/lib</assembly.lib.directory>
 		<assembly.jfire.deploy.directory>${assembly.deploy.directory}/JFire.last</assembly.jfire.deploy.directory>
 	</properties>
 
@@ -109,6 +118,17 @@
 						</configuration>
 					</execution>
 					<execution>
+						<id>copy-lib</id>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${assembly.lib.directory}</outputDirectory>
+							<includeTypes>jar</includeTypes>
+							<stripVersion>true</stripVersion>
+						</configuration>
+					</execution>
+					<execution>
 						<id>copy-jfire-deploy</id>
 						<goals>
 							<goal>copy-dependencies</goal>
@@ -134,8 +154,11 @@
 						<configuration>
 							<target>
 								<copy todir="${assembly.jboss.directory}" overwrite="true">
-									<fileset dir="src/main/ext/jboss" includes="**/*"/>
+									<fileset dir="src/main/ext/jboss" includes="**/*" />
 								</copy>
+								<chmod dir="${assembly.jboss.directory}/bin" perm="+x"
+									includes="**/*.sh" />
+								<delete dir="${assembly.lib.directory}" includes="jboss-aspect-library.jar"/>
 							</target>
 						</configuration>
 					</execution>

@@ -9,7 +9,8 @@
 JBoss 3.2.x: end -->
 
 <!-- JBoss 4.x: begin -->
-		<rar-name>JFire.last#JFireBaseEAR.ear#JFireServerManager.rar</rar-name>
+		<!-- FIXME: version in path. we could remove the version with maven - but is this really needed? -->
+		<rar-name>JFire.last#org.nightlabs.jfire.base.ear.ear#org.nightlabs.jfire.servermanager-1.2.0-SNAPSHOT.rar</rar-name>
 		<connection-definition>javax.resource.cci.ConnectionFactory</connection-definition>
 <!-- JBoss 4.x: end -->
 
