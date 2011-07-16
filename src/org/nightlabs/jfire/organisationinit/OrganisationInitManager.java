@@ -118,7 +118,7 @@ extends AbstractInitManager<OrganisationInit, OrganisationInitDependency>
 
 					if (createOrganisationProgress != null)
 						createOrganisationProgress.addCreateOrganisationStatus(
-								new CreateOrganisationStatus(CreateOrganisationStep.DatastoreInitManager_initialiseDatastore_begin, new String[] { init.getName() }));
+								new CreateOrganisationStatus(CreateOrganisationStep.DatastoreInitManager_initialiseDatastore_begin, init.getName()));
 
 					try {
 						// we force a new (nested) transaction by using a delegate-ejb with the appropriate tags
@@ -128,7 +128,7 @@ extends AbstractInitManager<OrganisationInit, OrganisationInitDependency>
 
 						if (createOrganisationProgress != null)
 							createOrganisationProgress.addCreateOrganisationStatus(
-									new CreateOrganisationStatus(CreateOrganisationStep.DatastoreInitManager_initialiseDatastore_endWithSuccess, new String[] { init.getName() }));
+									new CreateOrganisationStatus(CreateOrganisationStep.DatastoreInitManager_initialiseDatastore_endWithSuccess, init.getName()));
 					} catch (Exception x) {
 						logger.error("Init failed! " + init, x);
 
