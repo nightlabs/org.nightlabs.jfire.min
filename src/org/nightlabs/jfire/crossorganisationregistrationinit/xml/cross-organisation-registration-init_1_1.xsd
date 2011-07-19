@@ -45,7 +45,7 @@
 
 	<simpleType name="Invocation">
 		<restriction base="string">
-			<pattern value="[^\d\.]+[^\.]*(\.[^\.\d]+)*"></pattern>
+			<pattern value="[^\d\.]+[^\.]*(\.[^\.\d]+[^\.]*)*"></pattern>
 		</restriction>
 	</simpleType>
 </schema>
