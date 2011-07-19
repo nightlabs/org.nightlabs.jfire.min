@@ -80,21 +80,22 @@ extends AbstractInitManager<OrganisationInit, OrganisationInitDependency>
 
 	@Override
 	protected String[] getTriePath(OrganisationInitDependency dependency) {
-		String[] fields = new String[4];
-		fields[0] = dependency.getModule();
-		fields[1] = dependency.getArchive();
-		fields[2] = dependency.getBean();
-		fields[3] = dependency.getMethod();
-
-		List<String> toReturn = new ArrayList<String>(fields.length);
-
-		for (int i = 0; i < fields.length; i++) {
-			if (fields[i] == null || fields[i].equals(""))
-				break;
-			toReturn.add(fields[i]);
-		}
-
-		return toReturn.toArray(new String[toReturn.size()]);
+		return dependency.getInvocationPath();
+//		String[] fields = new String[4];
+//		fields[0] = dependency.getModule();
+//		fields[1] = dependency.getArchive();
+//		fields[2] = dependency.getBean();
+//		fields[3] = dependency.getMethod();
+//
+//		List<String> toReturn = new ArrayList<String>(fields.length);
+//
+//		for (int i = 0; i < fields.length; i++) {
+//			if (fields[i] == null || fields[i].equals(""))
+//				break;
+//			toReturn.add(fields[i]);
+//		}
+//
+//		return toReturn.toArray(new String[toReturn.size()]);
 	}
 
 	public void initialiseOrganisation(JFireServerManagerFactory ismf, ServerCf localServer, String organisationID, String systemUserPassword) throws OrganisationInitException

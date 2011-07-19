@@ -2,13 +2,15 @@
 <schema xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.example.org/server-init" xmlns:tns="http://www.example.org/server-init" elementFormDefault="qualified">
 
     <element name="server-initialisation"
-    	type="tns:EarlyInit">
+    	type="tns:ServerInitialisation">
     </element>
-    
+
     <complexType name="ServerInitialisation">
     	<sequence>
-    		<element name="earlyInit" type="tns:EarlyInit" maxOccurs="unbounded" minOccurs="0"></element>
-    		<element name="lateInit" type="tns:LateInit" maxOccurs="unbounded" minOccurs="0"></element>
+    		<element name="earlyInit" type="tns:Init" maxOccurs="unbounded" minOccurs="0"></element>
+    		<element name="lateInit" type="tns:Init"
+    			maxOccurs="unbounded" minOccurs="0">
+    		</element>
     	</sequence>
     </complexType>
     
@@ -16,27 +18,20 @@
     	<attribute name="resolution" type="tns:Resolution"
     		use="optional">
     	</attribute>
-    	<attribute name="class" type="tns:Class" use="optional"></attribute>
-    	<attribute name="archive" type="string"></attribute>
-    	<attribute name="module" type="string" use="required"></attribute>
+    	<attribute name="class" type="tns:Class" use="optional">
+    		<annotation>
+    			<documentation>Fully qualified class (e.g. "a.b.c.d.Init1") or a package that should match (e.g. "a.b.c" to match "a.b.c.d.Init1" as well as "a.b.c.x.Init4"). If this specifies a part, it must be complete from the left and omit path elements on the right.</documentation>
+    		</annotation>
+    	</attribute>
     </complexType>
 
-    <complexType name="EarlyInit">
+    <complexType name="Init">
     	<sequence>
     		<element name="depends" type="tns:Depends"></element>
     	</sequence>
     	<attribute name="priority" type="tns:Priority" use="optional"></attribute>
     	<attribute name="class" type="tns:Class" use="required"></attribute>
     </complexType>
-
-    <complexType name="LateInit">
-    	<sequence>
-    		<element name="depends" type="tns:Depends"></element>
-    	</sequence>
-    	<attribute name="priority" type="tns:Priority" use="optional"></attribute>
-    	<attribute name="class" type="tns:Class" use="required"></attribute>
-    </complexType>
-
 
     <simpleType name="Priority">
     	<restriction base="int">

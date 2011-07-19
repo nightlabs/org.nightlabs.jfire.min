@@ -1,54 +1,55 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<schema xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.example.org/organisation-init_1_1" xmlns:tns="http://www.example.org/organisation-init_1_1" elementFormDefault="qualified">
+<xsd:schema
+		targetNamespace="urn:jfire.org:organisation-init_1_1"
+		elementFormDefault="qualified"
+		xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+		xmlns:init="urn:jfire.org:organisation-init_1_1">
 
+    <xsd:element name="organisation-initialisation" type="init:OrganisationInitialisation">
+    </xsd:element>
 
-    <element name="organisation-initialisation"
-    	type="tns:OrganisationInitialisation">
+    <xsd:complexType name="Init">
+    	<xsd:sequence>
+    		<xsd:element name="depends" type="init:Depends" maxOccurs="unbounded" minOccurs="0">
+    		</xsd:element>
+    	</xsd:sequence>
+    	<xsd:attribute name="priority" type="init:Priority" default="500" use="optional">
+    	</xsd:attribute>
+    	<xsd:attribute name="invocation" type="init:Invocation" use="required"></xsd:attribute>
+    </xsd:complexType>
 
-    </element>
-    
-    <complexType name="Init">
-    	<sequence>
-    		<element name="depends" type="tns:Depends"
-    			maxOccurs="unbounded" minOccurs="0">
-    		</element>
-    	</sequence>
-    	<attribute name="priority" type="tns:Priority" default="500"
-    		use="optional">
-    	</attribute>
-    	<attribute name="invocation" type="tns:Invocation" use="required"></attribute>
-    </complexType>
+    <xsd:complexType name="OrganisationInitialisation">
+    	<xsd:sequence>
+    		<xsd:element name="init" type="init:Init" maxOccurs="unbounded" minOccurs="1"></xsd:element>
+    	</xsd:sequence>
+    </xsd:complexType>
 
-    <complexType name="OrganisationInitialisation">
-    	<sequence>
-    		<element name="init" type="tns:Init" maxOccurs="unbounded" minOccurs="1"></element>
-    	</sequence>
-    </complexType>
+    <xsd:complexType name="Depends">
+    	<xsd:attribute name="resolution" type="init:Resolution" use="optional">
+    	</xsd:attribute>
+    	<xsd:attribute name="invocation" type="init:Invocation" use="required">
+    		<xsd:annotation>
+    			<xsd:documentation>Fully qualified invocation (e.g. "a.b.c.d.Inv1.method") or a part of all invocations that should match (e.g. "a.b.c" to match "a.b.c.d.Inv1.method" as well as "a.b.c.x.Inv4.method"). If this specifies a part, it must be complete from the left and omit path elements on the right.</xsd:documentation>
+    		</xsd:annotation>
+    	</xsd:attribute>
+    </xsd:complexType>
 
-    <complexType name="Depends">
-    	<attribute name="resolution" type="tns:Resolution"
-    		use="optional">
-    	</attribute>
-    	<attribute name="value" type="tns:Invocation" use="required"></attribute>
-    </complexType>
-    
-    <simpleType name="Resolution">
-    	<restriction base="string">
-    		<enumeration value="optional"></enumeration>
-    		<enumeration value="required"></enumeration>
-    	</restriction>
-    </simpleType>
-        <simpleType name="Priority">
-    	<restriction base="int">
-    		<maxInclusive value="999"></maxInclusive>
-    		<minInclusive value="0"></minInclusive>
-    	</restriction>
-    </simpleType>
+    <xsd:simpleType name="Resolution">
+    	<xsd:restriction base="xsd:string">
+    		<xsd:enumeration value="optional"></xsd:enumeration>
+    		<xsd:enumeration value="required"></xsd:enumeration>
+    	</xsd:restriction>
+    </xsd:simpleType>
+        <xsd:simpleType name="Priority">
+    	<xsd:restriction base="xsd:int">
+    		<xsd:maxInclusive value="999"></xsd:maxInclusive>
+    		<xsd:minInclusive value="0"></xsd:minInclusive>
+    	</xsd:restriction>
+    </xsd:simpleType>
 
-    
-    <simpleType name="Invocation">
-    	<restriction base="string">
-    		<pattern value="[^\d\.]+[^\.]*(\.[^\.\d]+)*"></pattern>
-    	</restriction>
-    </simpleType>
-</schema>
+    <xsd:simpleType name="Invocation">
+    	<xsd:restriction base="xsd:string">
+    		<xsd:pattern value="[^\d\.]+[^\.]*(\.[^\.\d]+)*"></xsd:pattern>
+    	</xsd:restriction>
+    </xsd:simpleType>
+</xsd:schema>

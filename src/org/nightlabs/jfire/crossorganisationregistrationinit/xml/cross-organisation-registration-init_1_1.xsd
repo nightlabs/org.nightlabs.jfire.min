@@ -26,7 +26,7 @@
 	<complexType name="Depends">
 		<attribute name="resolution" type="tns:Resolution" use="optional">
 		</attribute>
-		<attribute name="value" type="tns:Invocation" use="required"></attribute>
+		<attribute name="invocation" type="tns:Invocation" use="required"></attribute>
 	</complexType>
 
 	<simpleType name="Resolution">

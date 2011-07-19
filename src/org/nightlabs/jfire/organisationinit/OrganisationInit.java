@@ -6,42 +6,83 @@ public class OrganisationInit extends AbstractInit<OrganisationInit, Organisatio
 {
 	private static final long serialVersionUID = 1L;
 
-	private String module;
-	private String archive;
-	private String bean;
-	private String method;
+	private String invocation;
+//	private String module;
+//	private String archive;
+//	private String bean;
+//	private String method;
 	private int priority;
 
-	public OrganisationInit(String module, String archive, String bean, String method, int priority) {
-		this.module = module;
-		this.archive = archive;
-		this.bean = bean;
-		this.method = method;
+//	public OrganisationInit(String module, String archive, String bean, String method, int priority) {
+//		this.module = module;
+//		this.archive = archive;
+//		this.bean = bean;
+//		this.method = method;
+//		this.priority = priority;
+//	}
+	public OrganisationInit(String invocation, int priority)
+	{
+		if (invocation == null)
+			throw new IllegalArgumentException("invocation == null");
+
+		this.invocation = invocation;
 		this.priority = priority;
+		getBean(); // test validity of invocation.
 	}
 
 	@Override
 	protected String getName() {
-
-		return this.getClass().getSimpleName() + ": " + module + '/' + archive + '/' + bean + '#' + method
-			+ " (priority: " + priority + ")";
+		return this.getClass().getSimpleName() + ": " + invocation + " (priority: " + priority + ")";
+	}
+	
+	public String getInvocation() {
+		return invocation;
+	}
+	
+	public void setInvocation(String invocation) {
+		this.invocation = invocation;
+		this.invocationPath = null;
+	}
+	
+	private String[] invocationPath;
+	
+	public String[] getInvocationPath() {
+		if (invocationPath == null) {
+			this.invocationPath = invocation.split(".");
+		}
+		return invocationPath;
 	}
 
-	public String getBean() {
-		return bean;
+	public String getBean()
+	{
+		int idx = invocation.lastIndexOf('.');
+		if (idx < 0)
+			throw new IllegalStateException("There is no '.' in the invocation!");
+
+		return invocation.substring(0, idx);
 	}
 
-	public void setBean(String bean) {
-		this.bean = bean;
+	public String getMethod()
+	{
+		String[] path = getInvocationPath();
+		return path[path.length - 1];
 	}
 
-	public String getMethod() {
-		return method;
-	}
-
-	public void setMethod(String method) {
-		this.method = method;
-	}
+//	public String getBean() {
+//		return bean;
+//	}
+//
+//	public void setBean(String bean) {
+//		this.bean = bean;
+//	}
+//
+//	public String getMethod() {
+//		return method;
+//	}
+//
+//	public void setMethod(String method) {
+//		this.method = method;
+//	}
 
 	public int getPriority() {
 		return priority;
@@ -58,13 +99,13 @@ public class OrganisationInit extends AbstractInit<OrganisationInit, Organisatio
 		this.priority = priority;
 	}
 
-	public String getArchive() {
-		return archive;
-	}
-
-	public String getModule() {
-		return module;
-	}
+//	public String getArchive() {
+//		return archive;
+//	}
+//
+//	public String getModule() {
+//		return module;
+//	}
 }
 
 /*

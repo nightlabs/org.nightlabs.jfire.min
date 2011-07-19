@@ -31,7 +31,8 @@ public class OrganisationInitJarEntryHandler implements JarEntryHandler {
 		List<OrganisationInit> serverInits = parseOrganisationInitXML(ear.getEar().getName(), jarName, in);
 		for (OrganisationInit init : serverInits) {
 			inits.add(init);
-			initTrie.insert(new String[] {init.getModule(), init.getArchive(), init.getBean(), init.getMethod()}, init);
+//			initTrie.insert(new String[] {init.getModule(), init.getArchive(), init.getBean(), init.getMethod()}, init);
+			initTrie.insert(init.getInvocationPath(), init);
 		}
 	}
 
@@ -75,30 +76,33 @@ public class OrganisationInitJarEntryHandler implements JarEntryHandler {
 			CachedXPathAPI xpa = new CachedXPathAPI();
 
 			String rootNodeName = "organisation-initialisation";
-			if (xpa.selectSingleNode(parser.getDocument(), "//" + rootNodeName) == null) {
-				rootNodeName = "datastore-initialisation";
-				if (xpa.selectSingleNode(parser.getDocument(), "//" + rootNodeName) != null)
-					logger.warn("https://www.jfire.org/modules/bugs/view.php?id=579 : organisation-init.xml or datastoreinit.xml contains old elements: EAR=" + jfireEAR + " JAR=" + jfireJAR);
-			}
 			NodeIterator ni = xpa.selectNodeIterator(parser.getDocument(), "//" + rootNodeName + "/init");
 			Node nInit = ni.nextNode();
 			while (nInit != null) {
-				Node nBean = nInit.getAttributes().getNamedItem("bean");
-				String beanStr = null;
-				if (nBean != null) {
-					Node txt = nBean.getFirstChild();
+				Node nInvocation = nInit.getAttributes().getNamedItem("invocation");
+				String invocationStr = null;
+				if (nInvocation != null) {
+					Node txt = nInvocation.getFirstChild();
 					if (txt != null)
-						beanStr = txt.getNodeValue();
+						invocationStr = txt.getNodeValue();
 				}
-
-				Node nMethod = nInit.getAttributes().getNamedItem("method");
-				String methodStr = null;
-				if (nMethod != null) {
-					Node txt = nMethod.getFirstChild();
-					if (txt != null)
-						methodStr = txt.getNodeValue();
-				}
-
+				
+//				Node nBean = nInit.getAttributes().getNamedItem("bean");
+//				String beanStr = null;
+//				if (nBean != null) {
+//					Node txt = nBean.getFirstChild();
+//					if (txt != null)
+//						beanStr = txt.getNodeValue();
+//				}
+//
+//				Node nMethod = nInit.getAttributes().getNamedItem("method");
+//				String methodStr = null;
+//				if (nMethod != null) {
+//					Node txt = nMethod.getFirstChild();
+//					if (txt != null)
+//						methodStr = txt.getNodeValue();
+//				}
+//
 				Node nPriority = nInit.getAttributes().getNamedItem("priority");
 				String priorityStr = null;
 				if (nPriority != null) {
@@ -107,11 +111,14 @@ public class OrganisationInitJarEntryHandler implements JarEntryHandler {
 						priorityStr = txt.getNodeValue();
 				}
 
-				if (beanStr == null)
-					throw new XMLReadException("jfireEAR '"+jfireEAR+"' jfireJAR '"+jfireJAR+"': Reading organisation-init.xml failed: Attribute 'bean' of element 'init' must be defined!");
+//				if (beanStr == null)
+//					throw new XMLReadException("jfireEAR '"+jfireEAR+"' jfireJAR '"+jfireJAR+"': Reading organisation-init.xml failed: Attribute 'bean' of element 'init' must be defined!");
+//
+//				if (methodStr == null)
+//					throw new XMLReadException("jfireEAR '"+jfireEAR+"' jfireJAR '"+jfireJAR+"': Reading organisation-init.xml failed: Attribute 'method' of element 'init' must be defined!");
 
-				if (methodStr == null)
-					throw new XMLReadException("jfireEAR '"+jfireEAR+"' jfireJAR '"+jfireJAR+"': Reading organisation-init.xml failed: Attribute 'method' of element 'init' must be defined!");
+				if (invocationStr == null)
+					throw new XMLReadException("jfireEAR '"+jfireEAR+"' jfireJAR '"+jfireJAR+"': Reading organisation-init.xml failed: Attribute 'invocation' of element 'init' must be defined!");
 
 				int priority = 500;
 				if (priorityStr != null) {
@@ -122,42 +129,50 @@ public class OrganisationInitJarEntryHandler implements JarEntryHandler {
 					}
 				}
 
-				OrganisationInit init = new OrganisationInit(jfireEAR, jfireJAR, beanStr, methodStr, priority);
+				OrganisationInit init = new OrganisationInit(invocationStr, priority);
 
 				NodeIterator niDepends = xpa.selectNodeIterator(nInit, "depends");
 				Node nDepends = niDepends.nextNode();
 				while (nDepends != null) {
-					Node nModule = nDepends.getAttributes().getNamedItem("module");
-					String moduleStr = null;
-					if (nModule != null) {
-						Node txt = nModule.getFirstChild();
+					nInvocation = nInit.getAttributes().getNamedItem("invocation");
+					invocationStr = null;
+					if (nInvocation != null) {
+						Node txt = nInvocation.getFirstChild();
 						if (txt != null)
-							moduleStr = txt.getNodeValue();
+							invocationStr = txt.getNodeValue();
 					}
-
-					Node nArchive = nDepends.getAttributes().getNamedItem("archive");
-					String archiveStr = null;
-					if (nArchive != null) {
-						Node txt = nArchive.getFirstChild();
-						if (txt != null)
-							archiveStr = txt.getNodeValue();
-					}
-
-					nBean = nDepends.getAttributes().getNamedItem("bean");
-					beanStr = null;
-					if (nBean != null) {
-						Node txt = nBean.getFirstChild();
-						if (txt != null)
-							beanStr = txt.getNodeValue();
-					}
-
-					nMethod = nDepends.getAttributes().getNamedItem("method");
-					methodStr = null;
-					if (nMethod != null) {
-						Node txt = nMethod.getFirstChild();
-						if (txt != null)
-							methodStr = txt.getNodeValue();
-					}
+					
+//					Node nModule = nDepends.getAttributes().getNamedItem("module");
+//					String moduleStr = null;
+//					if (nModule != null) {
+//						Node txt = nModule.getFirstChild();
+//						if (txt != null)
+//							moduleStr = txt.getNodeValue();
+//					}
+//
+//					Node nArchive = nDepends.getAttributes().getNamedItem("archive");
+//					String archiveStr = null;
+//					if (nArchive != null) {
+//						Node txt = nArchive.getFirstChild();
+//						if (txt != null)
+//							archiveStr = txt.getNodeValue();
+//					}
+//
+//					nBean = nDepends.getAttributes().getNamedItem("bean");
+//					beanStr = null;
+//					if (nBean != null) {
+//						Node txt = nBean.getFirstChild();
+//						if (txt != null)
+//							beanStr = txt.getNodeValue();
+//					}
+//
+//					nMethod = nDepends.getAttributes().getNamedItem("method");
+//					methodStr = null;
+//					if (nMethod != null) {
+//						Node txt = nMethod.getFirstChild();
+//						if (txt != null)
+//							methodStr = txt.getNodeValue();
+//					}
 
 					Node nResolution = nDepends.getAttributes().getNamedItem("resolution");
 					String resolutionStr = null;
@@ -179,18 +194,21 @@ public class OrganisationInitJarEntryHandler implements JarEntryHandler {
 						resolution = Resolution.Required;
 					}
 
-					if (moduleStr == null)
-						throw new XMLReadException("jfireEAR '"+jfireEAR+"' jfireJAR '"+jfireJAR+"': Reading organisation-init.xml failed: Attribute 'module' of element 'depends' must be defined!");
+					if (invocationStr == null)
+						throw new XMLReadException("jfireEAR '"+jfireEAR+"' jfireJAR '"+jfireJAR+"': Reading organisation-init.xml failed: Attribute 'invocation' of element 'depends' must be defined!");
+					
+//					if (moduleStr == null)
+//						throw new XMLReadException("jfireEAR '"+jfireEAR+"' jfireJAR '"+jfireJAR+"': Reading organisation-init.xml failed: Attribute 'module' of element 'depends' must be defined!");
+//
+//					if (archiveStr == null && (beanStr != null || methodStr != null))
+//						throw new XMLReadException("jfireEAR '" + jfireEAR + "' jfireJAR '" + jfireJAR
+//										+ "': Reading organisation-init.xml failed: Attribute 'bean/method' of element 'depends' is defined whereas 'archive' is undefined!");
+//
+//					if (beanStr == null && methodStr != null)
+//						throw new XMLReadException("jfireEAR '" + jfireEAR + "' jfireJAR '" + jfireJAR
+//										+ "': Reading organisation-init.xml failed: Attribute 'method' of element 'depends' is defined whereas 'bean' is undefined!");
 
-					if (archiveStr == null && (beanStr != null || methodStr != null))
-						throw new XMLReadException("jfireEAR '" + jfireEAR + "' jfireJAR '" + jfireJAR
-										+ "': Reading organisation-init.xml failed: Attribute 'bean/method' of element 'depends' is defined whereas 'archive' is undefined!");
-
-					if (beanStr == null && methodStr != null)
-						throw new XMLReadException("jfireEAR '" + jfireEAR + "' jfireJAR '" + jfireJAR
-										+ "': Reading organisation-init.xml failed: Attribute 'method' of element 'depends' is defined whereas 'bean' is undefined!");
-
-					OrganisationInitDependency dep = new OrganisationInitDependency(moduleStr, archiveStr, beanStr, methodStr, resolution);
+					OrganisationInitDependency dep = new OrganisationInitDependency(invocationStr, resolution);
 					init.addDependency(dep);
 
 					nDepends = niDepends.nextNode();
