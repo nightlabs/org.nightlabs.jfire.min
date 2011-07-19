@@ -1,21 +1,8 @@
-<!DOCTYPE organisation-initialisation
-		PUBLIC "-//NightLabs GmbH//DTD Organisation Initialisation 1.0//EN"
-		"http://www.nightlabs.de/dtd/organisation-init_1_0.dtd">
-<organisation-initialisation>
+<organisation-initialisation
+		xmlns="urn:jfire.org:organisation-init_1_1"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xsi:schemaLocation="urn:jfire.org:organisation-init_1_1 http://dev.nightlabs.org/xml/organisation-init_1_1.xsd ">
 
-	<init bean="org.nightlabs.jfire.testsuite.JFireTestManagerRemote" method="initialiseTestSystem" priority="900"/>
-<!--
-before EJB2 => EJB3 migration:
-	<init bean="jfire/ejb/JFireTestSuite/JFireTestManager" method="initialiseTestSystem" priority="900">
-	</init>
+	<init invocation="org.nightlabs.jfire.testsuite.JFireTestManagerRemote.initialiseTestSystem" priority="900"/>
 
-before refactoring to async execution of tests:
-	<init bean="jfire/ejb/JFireTestSuite/JFireTestManager" method="runAllTestSuites" priority="950">
-		<depends module="JFireSimpleTrade.ear" resolution="optional" />
-		<depends module="JFireVoucher.ear" resolution="optional" />
-		<depends module="JFireDynamicTrade.ear" resolution="optional" />
-		<depends module="JFireChezFrancois.ear" resolution="optional" />
-		<depends module="CrossTicketWonderland.ear" resolution="optional" />
-	</init>
--->
 </organisation-initialisation>	
