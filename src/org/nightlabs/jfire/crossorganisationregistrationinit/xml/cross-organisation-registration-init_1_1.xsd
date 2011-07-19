@@ -1,51 +1,54 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<schema xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.example.org/cross-organisation-registration-initialisation" xmlns:tns="http://www.example.org/cross-organisation-registration-initialisation" elementFormDefault="qualified">
+<xsd:schema
+		targetNamespace="urn:jfire.org:cross-organisation-registration-init_1_1"
+		elementFormDefault="qualified"		
+		xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+		xmlns:init="urn:jfire.org:cross-organisation-registration-init_1_1">
 
-    <element name="cross-organisation-registration-initialisation" type="tns:CrossOrganisationRegistrationInitialisation"></element>
+    <xsd:element name="cross-organisation-registration-initialisation" type="init:CrossOrganisationRegistrationInitialisation"></xsd:element>
 
-    <complexType name="CrossOrganisationRegistrationInitialisation">
-		<sequence>
-			<element name="init" type="tns:Init" maxOccurs="unbounded"
+    <xsd:complexType name="CrossOrganisationRegistrationInitialisation">
+		<xsd:sequence>
+			<xsd:element name="init" type="init:Init" maxOccurs="unbounded"
 				minOccurs="1">
-			</element>
-		</sequence>
-	</complexType>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
 
-	<complexType name="Init">
-		<sequence>
-			<element name="depends" type="tns:Depends" maxOccurs="unbounded"
+	<xsd:complexType name="Init">
+		<xsd:sequence>
+			<xsd:element name="depends" type="init:Depends" maxOccurs="unbounded"
 				minOccurs="0">
-			</element>
-		</sequence>
-		<attribute name="priority" type="tns:Priority" default="500"
+			</xsd:element>
+		</xsd:sequence>
+		<xsd:attribute name="priority" type="init:Priority" default="500"
 			use="optional">
-		</attribute>
-		<attribute name="invocation" type="tns:Invocation" use="required"></attribute>
-	</complexType>
+		</xsd:attribute>
+		<xsd:attribute name="invocation" type="init:Invocation" use="required"></xsd:attribute>
+	</xsd:complexType>
 	
-	<complexType name="Depends">
-		<attribute name="resolution" type="tns:Resolution" use="optional">
-		</attribute>
-		<attribute name="invocation" type="tns:Invocation" use="required"></attribute>
-	</complexType>
+	<xsd:complexType name="Depends">
+		<xsd:attribute name="resolution" type="init:Resolution" use="optional"></xsd:attribute>
+		<xsd:attribute name="invocation" type="init:Invocation" use="required"></xsd:attribute>
+	</xsd:complexType>
 
-	<simpleType name="Resolution">
-		<restriction base="string">
-			<enumeration value="optional"></enumeration>
-			<enumeration value="required"></enumeration>
-		</restriction>
-	</simpleType>
-	<simpleType name="Priority">
-		<restriction base="int">
-			<maxInclusive value="999"></maxInclusive>
-			<minInclusive value="0"></minInclusive>
-		</restriction>
-	</simpleType>
+	<xsd:simpleType name="Resolution">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="optional"></xsd:enumeration>
+			<xsd:enumeration value="required"></xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="Priority">
+		<xsd:restriction base="xsd:int">
+			<xsd:maxInclusive value="999"></xsd:maxInclusive>
+			<xsd:minInclusive value="0"></xsd:minInclusive>
+		</xsd:restriction>
+	</xsd:simpleType>
 
 
-	<simpleType name="Invocation">
-		<restriction base="string">
-			<pattern value="[^\d\.]+[^\.]*(\.[^\.\d]+[^\.]*)*"></pattern>
-		</restriction>
-	</simpleType>
-</schema>
+	<xsd:simpleType name="Invocation">
+		<xsd:restriction base="xsd:string">
+			<xsd:pattern value="[^\d\.]+[^\.]*(\.[^\.\d]+[^\.]*)*"></xsd:pattern>
+		</xsd:restriction>
+	</xsd:simpleType>
+</xsd:schema>
