@@ -28,7 +28,7 @@
 		<depends invocation="org.nightlabs.jfire.editlock"/>
 		<depends invocation="org.nightlabs.jfire.jdo"/>
 		<depends invocation="org.nightlabs.jfire.organisation"/>
-		<depends invocation="org.nightlabs.jfire.prop"/>
+		<depends invocation="org.nightlabs.jfire.prop.PropertyManagerRemote"/>
 		<depends invocation="org.nightlabs.jfire.security"/>
 		<depends invocation="org.nightlabs.jfire.timer"/>
 	</init>
