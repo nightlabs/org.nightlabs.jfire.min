@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.example.org/server-init" xmlns:tns="http://www.example.org/server-init" elementFormDefault="qualified">
+
+    <element name="server-initialisation"
+    	type="tns:EarlyInit">
+    </element>
+    
+    <complexType name="ServerInitialisation">
+    	<sequence>
+    		<element name="earlyInit" type="tns:EarlyInit" maxOccurs="unbounded" minOccurs="0"></element>
+    		<element name="lateInit" type="tns:LateInit" maxOccurs="unbounded" minOccurs="0"></element>
+    	</sequence>
+    </complexType>
+    
+    <complexType name="Depends">
+    	<attribute name="resolution" type="tns:Resolution"
+    		use="optional">
+    	</attribute>
+    	<attribute name="class" type="tns:Class" use="optional"></attribute>
+    	<attribute name="archive" type="string"></attribute>
+    	<attribute name="module" type="string" use="required"></attribute>
+    </complexType>
+
+    <complexType name="EarlyInit">
+    	<sequence>
+    		<element name="depends" type="tns:Depends"></element>
+    	</sequence>
+    	<attribute name="priority" type="tns:Priority" use="optional"></attribute>
+    	<attribute name="class" type="tns:Class" use="required"></attribute>
+    </complexType>
+
+    <complexType name="LateInit">
+    	<sequence>
+    		<element name="depends" type="tns:Depends"></element>
+    	</sequence>
+    	<attribute name="priority" type="tns:Priority" use="optional"></attribute>
+    	<attribute name="class" type="tns:Class" use="required"></attribute>
+    </complexType>
+
+
+    <simpleType name="Priority">
+    	<restriction base="int">
+    		<maxInclusive value="999"></maxInclusive>
+    		<minInclusive value="0"></minInclusive>
+    	</restriction>
+    </simpleType>
+
+
+    <simpleType name="Class">
+    	<restriction base="string"></restriction>
+    </simpleType>
+    
+    <simpleType name="Resolution">
+    	<restriction base="string">
+    		<enumeration value="optional"></enumeration>
+    		<enumeration value="required"></enumeration>
+    	</restriction>
+    </simpleType>
+</schema>
