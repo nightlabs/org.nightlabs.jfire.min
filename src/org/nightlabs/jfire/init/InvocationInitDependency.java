@@ -2,7 +2,8 @@ package org.nightlabs.jfire.init;
 
 import java.io.Serializable;
 
-public class InvocationInitDependency implements IDependency<InvocationInit>, Serializable
+public class InvocationInitDependency<I extends InvocationInit<?, ?>>
+implements IDependency<I>, Serializable
 {
 	private static final long serialVersionUID = 1L;
 
@@ -12,25 +13,25 @@ public class InvocationInitDependency implements IDependency<InvocationInit>, Se
 	public InvocationInitDependency(String invocation, Resolution res) {
 		if (invocation == null)
 			throw new IllegalArgumentException("invocation == null");
-		
+
 		this.invocation = invocation;
 		this.resolution = res;
 	}
-	
+
 	public String getInvocation() {
 		return invocation;
 	}
-	
+
 	public void setInvocation(String invocation) {
 		this.invocation = invocation;
 		this.invocationPath = null;
 	}
-	
+
 	private String[] invocationPath;
-	
+
 	public String[] getInvocationPath() {
 		if (invocationPath == null) {
-			this.invocationPath = invocation.split(".");
+			this.invocationPath = invocation.split("\\.");
 		}
 		return invocationPath;
 	}

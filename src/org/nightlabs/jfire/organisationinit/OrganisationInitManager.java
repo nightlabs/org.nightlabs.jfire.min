@@ -1,19 +1,15 @@
 package org.nightlabs.jfire.organisationinit;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Properties;
 
 import javax.naming.InitialContext;
 
 import org.apache.log4j.Logger;
-import org.nightlabs.datastructure.PrefixTree;
 import org.nightlabs.jfire.base.InvokeUtil;
-import org.nightlabs.jfire.init.AbstractInitManager;
-import org.nightlabs.jfire.init.DependencyCycleException;
 import org.nightlabs.jfire.init.InitException;
+import org.nightlabs.jfire.init.InvocationInitJarEntryHandler;
+import org.nightlabs.jfire.init.InvocationInitManager;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.security.id.UserID;
 import org.nightlabs.jfire.servermanager.JFireServerManagerFactory;
@@ -24,78 +20,15 @@ import org.nightlabs.jfire.servermanager.createorganisation.CreateOrganisationSt
 import org.nightlabs.jfire.servermanager.j2ee.J2EEAdapter;
 import org.nightlabs.jfire.servermanager.ra.JFireServerManagerFactoryImpl;
 import org.nightlabs.jfire.servermanager.ra.ManagedConnectionFactoryImpl;
-import org.nightlabs.jfire.servermanager.xml.JarEntryHandler;
 
 public class OrganisationInitManager
-extends AbstractInitManager<OrganisationInit, OrganisationInitDependency>
+extends InvocationInitManager<OrganisationInit, OrganisationInitDependency>
 {
 	private static final Logger logger = Logger.getLogger(OrganisationInitManager.class);
 
-	private boolean canPerformInit = false;
-
-	/**
-	 * All found organisation inits.
-	 */
-	private List<OrganisationInit> inits = new ArrayList<OrganisationInit>();
-
-	public OrganisationInitManager(JFireServerManagerFactoryImpl jfsmf, ManagedConnectionFactoryImpl mcf, J2EEAdapter j2eeAdapter) throws OrganisationInitException
+	public OrganisationInitManager(JFireServerManagerFactoryImpl jfsmf, ManagedConnectionFactoryImpl mcf, J2EEAdapter j2eeAdapter) throws InitException
 	{
-		OrganisationInitJarEntryHandler organisationInitJarEntryHandler = new OrganisationInitJarEntryHandler();
-		scan(
-				mcf.getConfigModule().getJ2ee().getJ2eeDeployBaseDirectory(),
-				new String[] { "META-INF/organisation-init.xml" },
-				new JarEntryHandler[] { organisationInitJarEntryHandler }
-		);
-		this.inits = organisationInitJarEntryHandler.getInits();
-		final PrefixTree<OrganisationInit> initTrie = organisationInitJarEntryHandler.getInitTrie();
-		// Now all meta data files have been read.
-
-		// substitute the temporary dependency definitions by links to the actual inits
-		try {
-			establishDependencies(inits, initTrie);
-		} catch (InitException e1) {
-			throw new OrganisationInitException("Datastore initialisation failed: " + e1.getMessage());
-		}
-
-		// Now all inits have references of their required and dependent inits.
-		try {
-			inits = resolveDependencies(inits, new OrganisationInitComparator());
-		} catch (DependencyCycleException e) {
-			throw new OrganisationInitException(e + "Information regarding the cycle: "+ e.getCycleInfo());
-		}
-		canPerformInit = true;
-
-		if (logger.isDebugEnabled()) {
-			logger.debug("************************************************");
-			logger.debug("Organisation Inits in execution order:");
-			printInits(inits, logger);
-			logger.debug("************************************************");
-		}
-	}
-
-	public List<OrganisationInit> getInits()
-	{
-		return Collections.unmodifiableList(inits);
-	}
-
-	@Override
-	protected String[] getTriePath(OrganisationInitDependency dependency) {
-		return dependency.getInvocationPath();
-//		String[] fields = new String[4];
-//		fields[0] = dependency.getModule();
-//		fields[1] = dependency.getArchive();
-//		fields[2] = dependency.getBean();
-//		fields[3] = dependency.getMethod();
-//
-//		List<String> toReturn = new ArrayList<String>(fields.length);
-//
-//		for (int i = 0; i < fields.length; i++) {
-//			if (fields[i] == null || fields[i].equals(""))
-//				break;
-//			toReturn.add(fields[i]);
-//		}
-//
-//		return toReturn.toArray(new String[toReturn.size()]);
+		super(mcf.getConfigModule().getJ2ee().getJ2eeDeployBaseDirectory());
 	}
 
 	public void initialiseOrganisation(JFireServerManagerFactory ismf, ServerCf localServer, String organisationID, String systemUserPassword) throws OrganisationInitException
@@ -105,16 +38,11 @@ extends AbstractInitManager<OrganisationInit, OrganisationInitDependency>
 
 	public void initialiseOrganisation(JFireServerManagerFactory ismf, ServerCf localServer, String organisationID, String systemUserPassword, CreateOrganisationProgress createOrganisationProgress) throws OrganisationInitException
 	{
-		if (!canPerformInit) {
-			logger.error("Organisation initialisation can not be performed due to errors above.");
-			return;
-		}
-
 		try {
 			Properties props = InvokeUtil.getInitialContextProperties(ismf, UserID.create(organisationID, User.USER_ID_SYSTEM), systemUserPassword);
 			InitialContext initCtx = new InitialContext(props);
 			try {
-				for (OrganisationInit init : inits) {
+				for (OrganisationInit init : getInits()) {
 					logger.info("Invoking OrganisationInit: " + init);
 
 					if (createOrganisationProgress != null)
@@ -144,5 +72,10 @@ extends AbstractInitManager<OrganisationInit, OrganisationInitDependency>
 		} catch (Exception x) {
 			throw new OrganisationInitException(x);
 		}
+	}
+
+	@Override
+	protected InvocationInitJarEntryHandler<OrganisationInit, OrganisationInitDependency> createInvocationInitJarEntryHandler() {
+		return new OrganisationInitJarEntryHandler();
 	}
 }

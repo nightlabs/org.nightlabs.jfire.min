@@ -95,6 +95,7 @@ import org.nightlabs.jfire.classloader.CLRegistrar;
 import org.nightlabs.jfire.classloader.CLRegistrarFactory;
 import org.nightlabs.jfire.classloader.CLRegistryCfMod;
 import org.nightlabs.jfire.idgenerator.IDGenerator;
+import org.nightlabs.jfire.init.InitException;
 import org.nightlabs.jfire.jdo.cache.CacheCfMod;
 import org.nightlabs.jfire.jdo.cache.CacheManagerFactory;
 import org.nightlabs.jfire.jdo.notification.persistent.PersistentNotificationManagerFactory;
@@ -1541,6 +1542,8 @@ public class JFireServerManagerFactoryImpl
 		try {
 			datastoreInitManager = new OrganisationInitManager(this, mcf, getJ2EEVendorAdapter());
 		} catch (J2EEAdapterException e) {
+			throw new OrganisationInitException(e);
+		} catch (InitException e) { // TODO replace throws clause of this method!
 			throw new OrganisationInitException(e);
 		}
 

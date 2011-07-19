@@ -73,7 +73,8 @@ public abstract class AbstractInitManager<I extends AbstractInit<I, D>, D extend
 				}
 				for (I reqInit : reqInits) {
 					// and add them as required init
-					init.addRequiredInit(reqInit);
+					if (init != reqInit) // suppress self.
+						init.addRequiredInit(reqInit);
 				}
 			}
 		}

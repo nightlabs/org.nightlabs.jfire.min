@@ -1,6 +1,7 @@
 package org.nightlabs.jfire.init;
 
-public abstract class InvocationInit extends AbstractInit<InvocationInit, InvocationInitDependency>
+public abstract class InvocationInit<I extends InvocationInit<?, ?>, D extends InvocationInitDependency<I>>
+extends AbstractInit<I, D>
 {
 	private static final long serialVersionUID = 1L;
 
@@ -18,24 +19,24 @@ public abstract class InvocationInit extends AbstractInit<InvocationInit, Invoca
 	}
 
 	@Override
-	protected String getName() {
+	public String getName() {
 		return this.getClass().getSimpleName() + ": " + invocation + " (priority: " + priority + ")";
 	}
-	
+
 	public String getInvocation() {
 		return invocation;
 	}
-	
+
 	public void setInvocation(String invocation) {
 		this.invocation = invocation;
 		this.invocationPath = null;
 	}
-	
+
 	private String[] invocationPath;
-	
+
 	public String[] getInvocationPath() {
 		if (invocationPath == null) {
-			this.invocationPath = invocation.split(".");
+			this.invocationPath = invocation.split("\\.");
 		}
 		return invocationPath;
 	}

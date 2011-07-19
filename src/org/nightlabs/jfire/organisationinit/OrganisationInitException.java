@@ -5,8 +5,10 @@ import org.nightlabs.jfire.init.InitException;
 /**
  * @author unascribed
  * @author Marc Klinger - marc[at]nightlabs[dot]de
+ * @deprecated Should use InitException directly.
  */
-public class OrganisationInitException extends InitException 
+@Deprecated
+public class OrganisationInitException extends InitException
 {
 	/**
 	 * The serial version of this class.
