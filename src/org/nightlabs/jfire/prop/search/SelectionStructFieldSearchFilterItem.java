@@ -25,7 +25,6 @@ extends AbstractStructFieldSearchFilterItem
 	
 	private static final long serialVersionUID = 1L;
 	private String selectedStructFieldValueID;
-	private boolean addedParams = false;
 	
 	public SelectionStructFieldSearchFilterItem(StructFieldID structFieldID, String structFieldValueID) {
 		super(structFieldID, MatchType.EQUALS);
@@ -35,6 +34,8 @@ extends AbstractStructFieldSearchFilterItem
 		
 		this.selectedStructFieldValueID = structFieldValueID;
 	}
+	
+	private boolean addedParams = false;
 	
 	@Override
 	public void appendSubQuery(int itemIndex, Set<Class<?>> imports, StringBuffer vars, StringBuffer filter, StringBuffer params, Map<String, Object> paramMap) {

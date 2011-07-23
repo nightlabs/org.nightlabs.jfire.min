@@ -3,6 +3,10 @@ package org.nightlabs.jfire.security;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+import org.nightlabs.singleton.ISingletonProvider;
+import org.nightlabs.singleton.SingletonProviderFactory;
+import org.nightlabs.singleton.ISingletonProvider.ISingletonFactory;
+
 /**
  * VM-wide security reflector instance accessor. This implements the lookup behaviour formally implemented
  * in the now deprecated class {@link SecurityReflector}.
@@ -28,23 +32,13 @@ public class GlobalSecurityReflector {
 
 	public static final String PROPERTY_KEY_SECURITY_REFLECTOR_CLASS = "org.nightlabs.jfire.security.SecurityReflector";
 
-	/**
-	 * This is used, if we're not using JNDI, but a System property (i.e. in the client)
-	 */
-	private static ISecurityReflector sharedInstance = null;
+	private static ISingletonProvider<ISecurityReflector> sharedProvider;
 
 	/**
-	 * Get the global shared instance. If no shared instance yet exists, 
-	 * {@link #lookupSecurityReflector(InitialContext)} will be invoked
-	 * with initialContext == null.
+	 * Get the global shared instance.  
 	 */
-	public static ISecurityReflector sharedInstance()
-	{
-		if(sharedInstance == null) {
-			return lookupSecurityReflector(null);
-		} else {
-			return sharedInstance;
-		}
+	public static ISecurityReflector sharedInstance() {
+		return lookupSecurityReflector(null);
 	}
 	
 	/**
@@ -54,18 +48,35 @@ public class GlobalSecurityReflector {
 	 * @param sharedInstance the sharedInstance to set
 	 * @throws IllegalStateException If the shared instance was already created or set.
 	 */
-	public static void setSharedInstance(ISecurityReflector sharedInstance) {
-		if(GlobalSecurityReflector.sharedInstance != null) {
-			throw new IllegalStateException("Shared instance is already set");
-		}
-		GlobalSecurityReflector.sharedInstance = sharedInstance;
+	public static void setSharedInstanceProvider(ISingletonProvider<ISecurityReflector> provider) {
+		if(sharedProvider != null) 
+			throw new IllegalStateException("Shared instance provider is already set");
+		
+		sharedProvider = provider;
 	}
 
-	public static ISecurityReflector lookupSecurityReflector(InitialContext initialContext)
+	public static ISecurityReflector lookupSecurityReflector(final InitialContext initialContext) {
+		if(sharedProvider == null) {
+			sharedProvider = SingletonProviderFactory.createProvider();
+			
+			sharedProvider.setFactory(new ISingletonFactory<ISecurityReflector>() {
+				@Override
+				public ISecurityReflector makeInstance() {
+					return lookupOrCreateSecurityReflector(initialContext);
+				}
+			});
+		}
+
+		return sharedProvider.getInstance();
+	}
+	
+	private static ISecurityReflector lookupOrCreateSecurityReflector(InitialContext initialContext)
 	{
+		ISecurityReflector result = null;
+		
 		// FIXME this is even worse than goto! Marc
 		createLocalVMSharedInstance:
-		if (sharedInstance == null) {
+		if (result == null) {
 			String className = System.getProperty(PROPERTY_KEY_SECURITY_REFLECTOR_CLASS);
 			if (className == null)
 				break createLocalVMSharedInstance;
@@ -80,7 +91,7 @@ public class GlobalSecurityReflector {
 			}
 
 			try {
-				sharedInstance = (ISecurityReflector) clazz.newInstance();
+				result = (ISecurityReflector) clazz.newInstance();
 			} catch (InstantiationException e) {
 				throw new RuntimeException(e);
 			} catch (IllegalAccessException e) {
@@ -88,8 +99,8 @@ public class GlobalSecurityReflector {
 			}
 		}
 
-		if (sharedInstance != null)
-			return sharedInstance;
+		if (result != null)
+			return result;
 
 		boolean closeInitialContext = initialContext == null;
 		try {
@@ -97,7 +108,7 @@ public class GlobalSecurityReflector {
 				initialContext = new InitialContext();
 
 			try {
-				return (ISecurityReflector) initialContext.lookup(JNDI_NAME);
+				result = (ISecurityReflector) initialContext.lookup(JNDI_NAME);
 			} finally {
 				if (closeInitialContext)
 					initialContext.close();
@@ -105,5 +116,7 @@ public class GlobalSecurityReflector {
 		} catch (NamingException x) {
 			throw new RuntimeException("The SecurityReflector has neither been specified by the system property \""+PROPERTY_KEY_SECURITY_REFLECTOR_CLASS+"\" nor is it bound to JNDI!", x);
 		}
+		
+		return result;
 	}
 }

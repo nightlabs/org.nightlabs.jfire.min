@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: JFireBase
 Bundle-SymbolicName: org.nightlabs.jfire.base
-Bundle-Version: 1.1.20.qualifier
+Bundle-Version: 1.1.21.qualifier
 Export-Package: org.nightlabs.jfire.asyncinvoke,
  org.nightlabs.jfire.asyncinvoke.id,
  org.nightlabs.jfire.base,
@@ -62,5 +62,6 @@ Require-Bundle: org.apache.log4j;bundle-version="1.2.13",
  org.nightlabs.query;bundle-version="1.0.0",
  org.nightlabs.query.jdo;bundle-version="1.0.0",
  org.nightlabs.concurrent,
- org.nightlabs.config
+ org.nightlabs.config,
+ org.nightlabs.singleton;bundle-version="1.0.0";visibility:=reexport
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6

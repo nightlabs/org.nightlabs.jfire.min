@@ -29,6 +29,9 @@ import javax.jdo.spi.PersistenceCapable;
 
 import org.apache.log4j.Logger;
 import org.nightlabs.jdo.ObjectIDUtil;
+import org.nightlabs.singleton.ISingletonProvider;
+import org.nightlabs.singleton.SingletonProviderFactory;
+import org.nightlabs.singleton.ISingletonProvider.ISingletonFactory;
 
 
 /**
@@ -68,7 +71,7 @@ public abstract class IDGenerator
 {
 	public static final String PROPERTY_KEY_ID_GENERATOR_CLASS = "org.nightlabs.jfire.idgenerator.idGeneratorClass";
 
-	private static IDGenerator sharedInstance = null;
+	private static ISingletonProvider<IDGenerator> sharedInstance = SingletonProviderFactory.createProvider();
 
 	/**
 	 * @return the shared instance of the ID generator. Note, that a clustered server might have
@@ -77,36 +80,43 @@ public abstract class IDGenerator
 	 */
 	protected synchronized static IDGenerator sharedInstance()
 	{
-		if (sharedInstance == null) {
-			String className = System.getProperty(PROPERTY_KEY_ID_GENERATOR_CLASS);
-			if (className == null)
-				throw new IllegalStateException("System property " + PROPERTY_KEY_ID_GENERATOR_CLASS + " is not set!");
+		if (!sharedInstance.isFactorySet()) {
+			sharedInstance.setFactory(new ISingletonFactory<IDGenerator>() {
+				@Override
+				public IDGenerator makeInstance() {
+					String className = System.getProperty(PROPERTY_KEY_ID_GENERATOR_CLASS);
+					if (className == null)
+						throw new IllegalStateException("System property " + PROPERTY_KEY_ID_GENERATOR_CLASS + " is not set!");
 
-			Class<?> clazz;
-			try {
-				clazz = Class.forName(className);
-			} catch (ClassNotFoundException e) {
-				throw new RuntimeException(e);
-			}
+					Class<?> clazz;
+					try {
+						clazz = Class.forName(className);
+					} catch (ClassNotFoundException e) {
+						throw new RuntimeException(e);
+					}
 
-			try {
-				sharedInstance = (IDGenerator) clazz.newInstance();
-			} catch (InstantiationException e) {
-				throw new RuntimeException(e);
-			} catch (IllegalAccessException e) {
-				throw new RuntimeException(e);
-			}
+					try {
+					    return (IDGenerator) clazz.newInstance();
+					} catch (InstantiationException e) {
+						throw new RuntimeException(e);
+					} catch (IllegalAccessException e) {
+						throw new RuntimeException(e);
+					}
+				}
+			});
+			
+			
 		}
 
-		return sharedInstance;
+		return sharedInstance.getInstance();
 	}
 
 	/**
 	 * Set the shared instance. This allows injection of an IDGenerator whithout using a system property.
 	 * @param sharedInstance The IDGenerator instance
 	 */
-	public synchronized static void setSharedInstance(IDGenerator sharedInstance) {
-		IDGenerator.sharedInstance = sharedInstance;
+	public synchronized static void setSharedInstanceFactory(ISingletonFactory<IDGenerator> sharedInstance) {
+		IDGenerator.sharedInstance.setFactory(sharedInstance);
 	}
 	
 	/**
