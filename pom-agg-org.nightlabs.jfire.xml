@@ -22,7 +22,7 @@
 
 	<modules>
 		<module>../org.nightlabs.jfire.parent</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.parent -->
-
+		<module>../DelegatingClassLoader</module>
 		<module>../JFireInitialiseJDO</module> <!-- org.nightlabs.jfire:org.nightlabs.initialisejdo -->
 		<module>../JFireAsterisk</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.asterisk -->
 		<module>../JFireBaseBean</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.base.bean -->
