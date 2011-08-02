@@ -239,6 +239,11 @@
 							<artifactId>org.nightlabs.singleton</artifactId>
 							<includeInApplicationXml>true</includeInApplicationXml>
 						</jarModule>
+						<jarModule>
+							<groupId>org.nightlabs</groupId>
+							<artifactId>org.nightlabs.xml</artifactId>
+							<includeInApplicationXml>true</includeInApplicationXml>
+						</jarModule>
 					</modules>
 				</configuration>
 			</plugin>
