@@ -94,10 +94,17 @@
 				<inherited>true</inherited>
 				<configuration>
 					<instructions>
-						<!-- SPECIAL CASE HERE as the bundle name does not correspond to the base package name. -->						
+						<!-- SPECIAL CASE HERE as the bundle name does not correspond to the base package name. -->
+						<!-- 
 						<Export-Package>
 							org.nightlabs.jfire.*.dao;version="${project.version}"
 						</Export-Package>
+						The above is not necessary anymore (we can export more broadly again), because I deactivated
+						the "copy-dependencies"-behaviour of the maven-bundle-plugin in the parent-pom. Marco :-)
+						-->
+						<Export-Package>
+							org.nightlabs.jfire.*;version="${project.version}"
+						</Export-Package>		
 					</instructions>
 				</configuration>
 			</plugin>
