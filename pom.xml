@@ -189,13 +189,16 @@
 			<!-- this is orig. -->
 			<version>2.1.0</version>
 		</dependency>
-		<!-- is this xercesImpl? there are much later versions. is this an aggregator jar?? is xerces needed?? it exists in jboss/lib/endorsed -->
+		<!-- is this xercesImpl? there are much later versions. is this an aggregator jar?? is xerces needed?? it exists in jboss/lib/endorsed Marc. -->
+		<!-- I have no idea, but currently both are deployed and the xerces.jar does not exist
+		in the old server. Hence, I commented this out, temporarily (first trying to get it running, then optimizing). Marco :-)
 		<dependency>
 			<groupId>xerces</groupId>
 			<artifactId>xerces</artifactId>
-			<!-- orig 1.2? -->
+			<!- orig 1.2? ->
 			<version>1.2.3</version>
 		</dependency>
+		-->
 		<!-- xml-apis.jar??? WTF? we use at least java 6 -->
 	</dependencies>
 
