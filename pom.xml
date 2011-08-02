@@ -77,127 +77,126 @@
 			<artifactId>org.nightlabs.jfire.log4j</artifactId>
 		</dependency>
 		<dependency>
-  <groupId>org.apache.bcel</groupId>
-  <artifactId>bcel</artifactId>
-  <version>5.2</version>
-</dependency>
-<!-- C3PO 0.9.1-pre6 -->
-<dependency>
-  <groupId>commons-beanutils</groupId>
-  <artifactId>commons-beanutils</artifactId>
-  <!-- orig 1.6 -->
-  <version>1.8.0</version>
-</dependency>
-<dependency>
-  <groupId>commons-dbcp</groupId>
-  <artifactId>commons-dbcp</artifactId>
-  <!-- orig 1.2.1 -->
-  <version>1.2.2</version>
-</dependency>
-<dependency>
-  <groupId>commons-dbutils</groupId>
-  <artifactId>commons-dbutils</artifactId>
-  <!-- orig 1.0 -->
-  <version>1.3</version>
-</dependency>
-<dependency>
-  <groupId>commons-digester</groupId>
-  <artifactId>commons-digester</artifactId>
-  <!-- orig 1.5 - latest 2.1 -->
-  <version>1.8.1</version>
-</dependency>
-<dependency>
-  <groupId>commons-fileupload</groupId>
-  <artifactId>commons-fileupload</artifactId>
-  <!-- orig 1.0 -->
-  <version>1.2.2</version>
-</dependency>
-<dependency>
-  <groupId>commons-lang</groupId>
-  <artifactId>commons-lang</artifactId>
-  <!-- orig 2.2 -->
-  <version>2.6</version>
-</dependency>
-<dependency>
-  <groupId>commons-pool</groupId>
-  <artifactId>commons-pool</artifactId>
-  <!-- orig 1.3 -->
-  <version>1.5.6</version>
-</dependency>
-<dependency>
-  <groupId>commons-validator</groupId>
-  <artifactId>commons-validator</artifactId>
-  <!-- orig 1.0.2 -->
-  <version>1.3.1</version>
-</dependency>
-<dependency>
-  <groupId>org.apache.derby</groupId>
-  <artifactId>derby</artifactId>
-  <!-- orig 10.5.3000000.802917 -->
-  <version>10.8.1.2</version>
-</dependency>
-<dependency>
-  <groupId>org.apache.derby</groupId>
-  <artifactId>derbyclient</artifactId>
-  <!-- orig 10.5.3000000.802917 -->
-  <version>10.8.1.2</version>
-</dependency>
-<dependency>
-  <groupId>gnu-regexp</groupId>
-  <artifactId>gnu-regexp</artifactId>
-  <!-- orig 1.1.4 -->
-  <version>1.1.4</version>
-</dependency>
-<!-- retired: -->
-<dependency>
-  <groupId>apache-oro</groupId>
-  <artifactId>jakarta-oro</artifactId>
-  <!-- orig unknown -->
-  <version>2.0.8</version>
-</dependency>
-<!-- jboss remoting?? patched?? -->
-<!-- mckoidb?? not found. needed? -->
-<!-- mkjdbc : mckoi driver -->
-<dependency>
-  <groupId>mysql</groupId>
-  <artifactId>mysql-connector-java</artifactId>
-  <!-- orig 5.1.7 -->
-  <version>5.1.17</version>
-</dependency>
-<!-- only version found: -->
-<dependency>
-  <groupId>proxool</groupId>
-  <artifactId>proxool</artifactId>
-  <!-- orig 0.9.0RC2 -->
-  <version>0.8.3</version>
-</dependency>
-<dependency>
-  <groupId>org.slf4j</groupId>
-  <artifactId>slf4j-api</artifactId>
-  <!-- orig slf4j.api_1.5.11.jar -->
-</dependency>
-<dependency>
-  <groupId>org.slf4j</groupId>
-  <artifactId>slf4j-log4j12</artifactId>
-  <!-- orig slf4j.log4j12_1.5.11.jar -->
-</dependency>
-<!-- struts 1.1?? needed?? -->
-<!-- there are much later versions. is this an aggregator jar?? is xalan needed?? it exists in jboss/lib/endorsed -->
-<dependency>
-  <groupId>xalan</groupId>
-  <artifactId>xalan</artifactId>
-  <!-- this is orig. -->
-  <version>2.1.0</version>
-</dependency>
-<!-- is this xercesImpl? there are much later versions. is this an aggregator jar?? is xerces needed?? it exists in jboss/lib/endorsed -->
-<dependency>
-  <groupId>xerces</groupId>
-  <artifactId>xerces</artifactId>
-  <!-- orig 1.2? -->
-  <version>1.2.3</version>
-</dependency>
-<!-- xml-apis.jar??? WTF? we use at least java 6 -->
-
+			<groupId>org.apache.bcel</groupId>
+			<artifactId>bcel</artifactId>
+			<version>5.2</version>
+		</dependency>
+		<!-- C3PO 0.9.1-pre6 -->
+		<dependency>
+			<groupId>commons-beanutils</groupId>
+			<artifactId>commons-beanutils</artifactId>
+			<!-- orig 1.6 -->
+			<version>1.8.0</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-dbcp</groupId>
+			<artifactId>commons-dbcp</artifactId>
+			<!-- orig 1.2.1 -->
+			<version>1.2.2</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-dbutils</groupId>
+			<artifactId>commons-dbutils</artifactId>
+			<!-- orig 1.0 -->
+			<version>1.3</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-digester</groupId>
+			<artifactId>commons-digester</artifactId>
+			<!-- orig 1.5 - latest 2.1 -->
+			<version>1.8.1</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-fileupload</groupId>
+			<artifactId>commons-fileupload</artifactId>
+			<!-- orig 1.0 -->
+			<version>1.2.2</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-lang</groupId>
+			<artifactId>commons-lang</artifactId>
+			<!-- orig 2.2 -->
+			<version>2.6</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-pool</groupId>
+			<artifactId>commons-pool</artifactId>
+			<!-- orig 1.3 -->
+			<version>1.5.6</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-validator</groupId>
+			<artifactId>commons-validator</artifactId>
+			<!-- orig 1.0.2 -->
+			<version>1.3.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.derby</groupId>
+			<artifactId>derby</artifactId>
+			<!-- orig 10.5.3000000.802917 -->
+			<version>10.8.1.2</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.derby</groupId>
+			<artifactId>derbyclient</artifactId>
+			<!-- orig 10.5.3000000.802917 -->
+			<version>10.8.1.2</version>
+		</dependency>
+		<dependency>
+			<groupId>gnu-regexp</groupId>
+			<artifactId>gnu-regexp</artifactId>
+			<!-- orig 1.1.4 -->
+			<version>1.1.4</version>
+		</dependency>
+		<!-- retired: -->
+		<dependency>
+			<groupId>apache-oro</groupId>
+			<artifactId>jakarta-oro</artifactId>
+			<!-- orig unknown -->
+			<version>2.0.8</version>
+		</dependency>
+		<!-- jboss remoting?? patched?? -->
+		<!-- mckoidb?? not found. needed? -->
+		<!-- mkjdbc : mckoi driver -->
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<!-- orig 5.1.7 -->
+			<version>5.1.17</version>
+		</dependency>
+		<!-- only version found: -->
+		<dependency>
+			<groupId>proxool</groupId>
+			<artifactId>proxool</artifactId>
+			<!-- orig 0.9.0RC2 -->
+			<version>0.8.3</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<!-- orig slf4j.api_1.5.11.jar -->
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<!-- orig slf4j.log4j12_1.5.11.jar -->
+		</dependency>
+		<!-- struts 1.1?? needed?? -->
+		<!-- there are much later versions. is this an aggregator jar?? is xalan needed?? it exists in jboss/lib/endorsed -->
+		<dependency>
+			<groupId>xalan</groupId>
+			<artifactId>xalan</artifactId>
+			<!-- this is orig. -->
+			<version>2.1.0</version>
+		</dependency>
+		<!-- is this xercesImpl? there are much later versions. is this an aggregator jar?? is xerces needed?? it exists in jboss/lib/endorsed -->
+		<dependency>
+			<groupId>xerces</groupId>
+			<artifactId>xerces</artifactId>
+			<!-- orig 1.2? -->
+			<version>1.2.3</version>
+		</dependency>
+		<!-- xml-apis.jar??? WTF? we use at least java 6 -->
 	</dependencies>
 
 	<properties>
