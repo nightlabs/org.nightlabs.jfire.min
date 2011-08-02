@@ -101,6 +101,10 @@
 			<groupId>org.nightlabs</groupId>
 			<artifactId>org.nightlabs.singleton</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.nightlabs</groupId>
+			<artifactId>org.nightlabs.xml</artifactId>
+		</dependency>
 	</dependencies>
 	<build>
 		<plugins>
