@@ -81,5 +81,23 @@
 				</excludes>
 			</resource>
 		</resources>
+		
+		<plugins>
+			<!-- FIXME the package names should be fixed (?). -->
+			<plugin>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>maven-bundle-plugin</artifactId>
+				<extensions>true</extensions>
+				<inherited>true</inherited>
+				<configuration>
+					<instructions>
+						<!-- SPECIAL CASE HERE as the bundle name does not correspond to the base package name. -->						
+						<Export-Package>
+							org.nightlabs.initialisejdo.*;version="${project.version}"
+						</Export-Package>
+					</instructions>
+				</configuration>
+			</plugin>
+		</plugins>
 	</build>
 </project>
