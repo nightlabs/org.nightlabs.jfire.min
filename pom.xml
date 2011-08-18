@@ -107,8 +107,20 @@
 				<configuration>
 					<instructions>
 						<!-- SPECIAL CASE HERE as the bundle name does not correspond to the base package name. -->						
-						<Export-Package>org.nightlabs.jfire.base.*;version="${project.version}"</Export-Package>
-					</instructions>
+						<Export-Package>
+org.nightlabs.jfire.base.idgenerator;version="${project.version}";-split-package:=first,
+org.nightlabs.jfire.base.jdo;version="${project.version}";-split-package:=first,
+org.nightlabs.jfire.base.jdo.cache;version="${project.version}";-split-package:=first,
+org.nightlabs.jfire.base.jdo.notification;version="${project.version}";-split-package:=first,
+org.nightlabs.jfire.base.jdo.notification.queue;version="${project.version}";-split-package:=first,
+org.nightlabs.jfire.base.login;version="${project.version}";-split-package:=first,
+org.nightlabs.jfire.base.security;version="${project.version}";-split-package:=first
+						</Export-Package>
+	 					<!-- FIXME Fix split-package org.nightlabs.jfire.base -->
+						<!-- 
+	 					<Import-Package>org.nightlabs.jfire.base;servermanager=split;base=split,*</Import-Package>
+ -->
+ 					</instructions>
 				</configuration>
 			</plugin>
 			<plugin>
