@@ -95,17 +95,23 @@
 				<configuration>
 					<instructions>
 						<!-- SPECIAL CASE HERE as the bundle name does not correspond to the base package name. -->
-						<!-- 
+						<Export-Package>org.nightlabs.jfire.*.dao;version="${project.version}"</Export-Package>
+<!-- 
 						<Export-Package>
-							org.nightlabs.jfire.*.dao;version="${project.version}"
-						</Export-Package>
-						The above is not necessary anymore (we can export more broadly again), because I deactivated
-						the "copy-dependencies"-behaviour of the maven-bundle-plugin in the parent-pom. Marco :-)
-						-->
-						<Export-Package>
-							org.nightlabs.jfire.*;version="${project.version}"
+org.nightlabs.jfire.asyncinvoke.dao;version="${project.version}";-split-package:=first,
+org.nightlabs.jfire.config.dao;version="${project.version}";-split-package:=first,
+org.nightlabs.jfire.editlock.dao;version="${project.version}";-split-package:=first,
+org.nightlabs.jfire.language.dao;version="${project.version}";-split-package:=first,
+org.nightlabs.jfire.organisation.dao;version="${project.version}";-split-package:=first,
+org.nightlabs.jfire.prop.dao;version="${project.version}";-split-package:=first,
+org.nightlabs.jfire.security.dao;version="${project.version}";-split-package:=first,
+org.nightlabs.jfire.timer.dao;version="${project.version}";-split-package:=first,
+org.nightlabs.jfire.workstation.dao;version="${project.version}";-split-package:=first,						
 						</Export-Package>		
-					</instructions>
+ -->
+ 					<!-- FIXME Fix split-package org.nightlabs.jfire.base -->
+ 					<Import-Package>org.nightlabs.jfire.base;base=split,*</Import-Package>
+ 					</instructions>
 				</configuration>
 			</plugin>
 			<plugin>
