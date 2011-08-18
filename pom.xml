@@ -118,6 +118,12 @@
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
+		    <groupId>org.apache.geronimo.specs</groupId>
+		    <artifactId>geronimo-jta_1.1_spec</artifactId>
+		    <version>1.1.1</version>
+		    <scope>provided</scope>
+		</dependency>
+		<dependency>
 			<groupId>org.apache.servicemix.bundles</groupId>
 			<artifactId>org.apache.servicemix.bundles.xalan</artifactId>
 		</dependency>
@@ -162,8 +168,33 @@
 						<!-- SPECIAL CASE HERE as the bundle name does not correspond to the 
 							base package name. -->
 						<Export-Package>
-							org.nightlabs.jfire.*;version="${project.version}"
+org.nightlabs.jfire.base;base=split;mandatory:="base";version="${project.version}";-split-package:=first,
+org.nightlabs.jfire.classloader;version="${project.version}";-split-package:=first,
+org.nightlabs.jfire.classloader.xml;version="${project.version}";-split-package:=first,
+org.nightlabs.jfire.crossorganisationregistrationinit;version="${project.version}";-split-package:=first,
+org.nightlabs.jfire.crossorganisationregistrationinit.xml;version="${project.version}";-split-package:=first,
+org.nightlabs.jfire.init;version="${project.version}";-split-package:=first,
+org.nightlabs.jfire.jdo.cache;version="${project.version}";-split-package:=first,
+org.nightlabs.jfire.jdo.cache.bridge;version="${project.version}";-split-package:=first,
+org.nightlabs.jfire.jdo.cache.cluster;version="${project.version}";-split-package:=first,
+org.nightlabs.jfire.jdo.notification;base=split;mandatory:="base";version="${project.version}";-split-package:=first,
+org.nightlabs.jfire.jdo.notification.persistent;version="${project.version}";-split-package:=first,
+org.nightlabs.jfire.organisationinit;version="${project.version}";-split-package:=first,
+org.nightlabs.jfire.organisationinit.xml;version="${project.version}";-split-package:=first,
+org.nightlabs.jfire.serverconfigurator;version="${project.version}";-split-package:=first,
+org.nightlabs.jfire.serverinit;version="${project.version}";-split-package:=first,
+org.nightlabs.jfire.serverinit.xml;version="${project.version}";-split-package:=first,
+org.nightlabs.jfire.servermanager;version="${project.version}";-split-package:=first,
+org.nightlabs.jfire.servermanager.config;version="${project.version}";-split-package:=first,
+org.nightlabs.jfire.servermanager.createorganisation;version="${project.version}";-split-package:=first,
+org.nightlabs.jfire.servermanager.db;version="${project.version}";-split-package:=first,
+org.nightlabs.jfire.servermanager.deploy;version="${project.version}";-split-package:=first,
+org.nightlabs.jfire.servermanager.j2ee;version="${project.version}";-split-package:=first,
+org.nightlabs.jfire.servermanager.ra;version="${project.version}";-split-package:=first,
+org.nightlabs.jfire.servermanager.xml;version="${project.version}";-split-package:=first,
+org.nightlabs.jfire.shutdownafterstartup;version="${project.version}";-split-package:=first
 						</Export-Package>
+						<Import-Package>org.nightlabs.jfire.base;base=split,org.nightlabs.jfire.jdo.notification;base=split,*</Import-Package>
 					</instructions>
 				</configuration>
 			</plugin>
