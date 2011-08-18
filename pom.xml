@@ -65,5 +65,19 @@
 				</excludes>
 			</resource>
 		</resources>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>maven-bundle-plugin</artifactId>
+				<configuration>
+					<instructions>
+						<!-- FIXME bundle name does not correspond to the base package name. -->						
+						<Export-Package>
+							org.nightlabs.jfire.classloader.remote.backend.*;version="${project.version}";-split-package:=first
+						</Export-Package>
+					</instructions>
+				</configuration>
+			</plugin>
+		</plugins>
 	</build>
 </project>
