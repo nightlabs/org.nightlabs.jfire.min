@@ -3,8 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: JFire Remote Classloader
 Bundle-SymbolicName: org.nightlabs.jfire.classloader.remote
 Bundle-Version: 1.1.0
-Require-Bundle: org.apache.log4j,
- org.nightlabs.base,
+Require-Bundle: org.nightlabs.base,
  org.nightlabs.jfire.classloader.remote.backend;visibility:=reexport
-Import-Package: org.nightlabs.classloader.delegating
+Import-Package: org.apache.log4j, org.nightlabs.classloader.delegating
 Export-Package: org.nightlabs.jfire.classloader.remote
