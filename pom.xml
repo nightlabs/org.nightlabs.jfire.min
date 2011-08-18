@@ -34,5 +34,16 @@
 				</excludes>
 			</resource>
 		</resources>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>maven-bundle-plugin</artifactId>
+				<configuration>
+					<!-- FIXME: Needed to prevent version-mismatch of javax.ejb [3.0.0] import with export from org.nightlabs.jfire.base.j2ee [0.0.0] -> results in no versions in Import-Package
+					 -->
+					<excludeDependencies>*;scope=compile|provided|runtime</excludeDependencies>
+				</configuration>
+			</plugin>
+		</plugins>
 	</build>
 </project>
