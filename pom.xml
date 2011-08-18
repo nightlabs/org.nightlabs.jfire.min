@@ -151,7 +151,28 @@
 					<instructions>
 						<!-- SPECIAL CASE HERE as the bundle name does not correspond to the base package name. -->						
 						<Export-Package>
-							org.nightlabs.jfire.*;version="${project.version}"
+org.nightlabs.jfire.asyncinvoke;version="${project.version}";-split-package:=first,
+org.nightlabs.jfire.base;base=split;madatory:="base";version="${project.version}";-split-package:=first,
+org.nightlabs.jfire.config;version="${project.version}";-split-package:=first,
+org.nightlabs.jfire.config.xml;version="${project.version}";-split-package:=first,
+org.nightlabs.jfire.editlock;version="${project.version}";-split-package:=first,
+org.nightlabs.jfire.idgenerator;version="${project.version}";-split-package:=first,
+org.nightlabs.jfire.jdo;version="${project.version}";-split-package:=first,
+org.nightlabs.jfire.jdo.notification.persistent;base=split;madatory:="base";version="${project.version}";-split-package:=first,
+org.nightlabs.jfire.language;version="${project.version}";-split-package:=first,
+org.nightlabs.jfire.layout;version="${project.version}";-split-package:=first,
+org.nightlabs.jfire.log4j;version="${project.version}";-split-package:=first,
+org.nightlabs.jfire.organisation;version="${project.version}";-split-package:=first,
+org.nightlabs.jfire.organisationinit;version="${project.version}";-split-package:=first,
+org.nightlabs.jfire.prop;version="${project.version}";-split-package:=first,
+org.nightlabs.jfire.prop.resource;version="${project.version}";-split-package:=first,
+org.nightlabs.jfire.security;version="${project.version}";-split-package:=first,
+org.nightlabs.jfire.security.integration;version="${project.version}";-split-package:=first,
+org.nightlabs.jfire.security.notification;version="${project.version}";-split-package:=first,
+org.nightlabs.jfire.server;version="${project.version}";-split-package:=first,
+org.nightlabs.jfire.test.cascadedauthentication;version="${project.version}";-split-package:=first,
+org.nightlabs.jfire.timer;version="${project.version}";-split-package:=first,
+org.nightlabs.jfire.workstation;version="${project.version}";-split-package:=first
 						</Export-Package>
 					</instructions>
 				</configuration>
