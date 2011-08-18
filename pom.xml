@@ -125,7 +125,10 @@
 					<instructions>
 						<!-- SPECIAL CASE HERE as the bundle name does not correspond to the 
 							base package name. -->
-						<Export-Package>org.nightlabs.jfire.*;version="${project.version}"</Export-Package>
+						<Export-Package>
+org.nightlabs.jfire.base.*;base=split;mandatory:="base";version="${project.version}",
+org.nightlabs.jfire.jdo.notification.*;base=split;mandatory:="base";version="${project.version}",
+org.nightlabs.jfire.*;version="${project.version}"</Export-Package>
 					</instructions>
 				</configuration>
 			</plugin>
