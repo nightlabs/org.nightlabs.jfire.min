@@ -182,6 +182,13 @@
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
+				<artifactId>org.nightlabs.jfire.min.assembly</artifactId>
+				<version>${project.version}</version>
+				<type>zip</type>
+				<classifier>bin</classifier>
+			</dependency>
+			<dependency>
+				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.numorgid</artifactId>
 				<version>${project.version}</version>
 			</dependency>
