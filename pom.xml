@@ -47,318 +47,322 @@
 		<url>https://svn.jfire.org/svn/main/trunk/org.nightlabs.jfire.parent</url>
 	</scm>
 
+	<properties>
+		<jfire.version>${nightlabs.version}</jfire.version>
+	</properties>
+
 	<dependencyManagement>
 		<dependencies>
 			<!-- ###### jfire ###### -->
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.asterisk</artifactId>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.base</artifactId>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.base.bean</artifactId>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.base.clientlib</artifactId>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.base.dao</artifactId>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.base.j2ee</artifactId>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.base.j2ee.osgi</artifactId>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.chezfrancois</artifactId>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.classloader.remote</artifactId>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.classloader.remote.backend</artifactId>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.classloader.remote.backend.bean</artifactId>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.department</artifactId>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.dynamictrade</artifactId>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.entityuserset</artifactId>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.errorreport.mantis</artifactId>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.geography</artifactId>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.initialisejdo</artifactId>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.issue</artifactId>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.issue.bug</artifactId>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.issuetimetracking</artifactId>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.jboss</artifactId>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.jboss.ear</artifactId>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.jboss.ejb3</artifactId>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.jbpm</artifactId>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.jbpm.aop</artifactId>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.log4j</artifactId>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.min.assembly</artifactId>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 				<type>zip</type>
 				<classifier>bin</classifier>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.numorgid</artifactId>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.base.publicbean</artifactId>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.pbx</artifactId>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.personrelation</artifactId>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.personrelation.issuetracking</artifactId>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.prop.file</artifactId>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.prop.html</artifactId>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.query.store</artifactId>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.reporting</artifactId>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.reporting.birt</artifactId>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.reporting.engine.birt</artifactId>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.reporting.oda.client</artifactId>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.reporting.oda.wrapper</artifactId>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.reporting.trade</artifactId>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.scripting</artifactId>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.scripting.editor2d</artifactId>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.server.data.dir.jboss</artifactId>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 				<type>sar</type>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.servermanager</artifactId>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.servermanager</artifactId>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 				<type>rar</type>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.simpletrade</artifactId>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.testsuite</artifactId>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.testsuite.base</artifactId>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.testsuite.department</artifactId>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.testsuite.entityuserset</artifactId>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.testsuite.issuetracking</artifactId>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.trade</artifactId>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.trade.editor2d</artifactId>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.serverupdate.base</artifactId>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.serverupdate.launcher</artifactId>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.voucher</artifactId>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.voucher.editor2d.iofilter</artifactId>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.web.admin</artifactId>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 				<type>war</type>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.web.demoshop</artifactId>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.web.webshop</artifactId>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 			</dependency>
 
 			<!-- ###### jfire ears ###### -->
@@ -366,31 +370,31 @@
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.base.ear</artifactId>
 				<type>ear</type>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.initialisejdo.ear</artifactId>
 				<type>ear</type>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.jboss.ear</artifactId>
 				<type>ear</type>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.query.store.ear</artifactId>
 				<type>ear</type>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.testsuite.ear</artifactId>
 				<type>ear</type>
-				<version>${project.version}</version>
+				<version>${jfire.version}</version>
 			</dependency>
 
 
