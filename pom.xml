@@ -99,9 +99,10 @@
 				<configuration>
 					<instructions>
 					<!-- FIXME Needed special declaration because of split package org.jboss.remoting.transport.server and because packages not under project scope -->
+					<!-- FIXME 2 needed to declare package org.jboss.remoting.transport.servlet as this project contains it. Why do we declare an org.jboss-package?! Is there no cleaner way? Marco :-) -->
 						<Export-Package>
 org.nightlabs.jfire.asyncinvoke.dao;version="${project.version}";-split-package:=first,
-!${bundle.namespace}.internal.*,${bundle.namespace}.*;version="${project.version}"
+!${bundle.namespace}.internal.*,${bundle.namespace}.*;version="${project.version}",org.jboss.remoting.transport.servlet;-split-package:=first
 						</Export-Package>
 					</instructions>
 				</configuration>
