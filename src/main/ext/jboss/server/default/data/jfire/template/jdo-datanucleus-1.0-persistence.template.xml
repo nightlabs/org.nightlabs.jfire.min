@@ -110,8 +110,20 @@ Therefore, we deactivate this and use forward-query-results instead.
             	See: http://www.datanucleus.org/products/accessplatform_2_0/migration.html
             	By default, DataNucleus 2.0 and newer uses the factory "datanucleus2", which uses less underscores (e.g. "authorityid" instead of "authority_id").
             	In order to reduce migration work, we continue using the old factory - at least for now. Marco.
-            -->
             <property name="datanucleus.identifierFactory" value="datanucleus"/>
+            -->
+            <!--
+            	*** NEW DN 3.0 ***
+            	Since DN 3.0, this must be "datanucleus1" instead of "datanucleus". Marco :-)
+            -->
+            <property name="datanucleus.identifierFactory" value="datanucleus1"/>
+
+			<!--
+            	*** NEW DN 3.0 ***
+            	DN 3.0 is more restrictive and allows the listener-update (which we need!) only when
+            	this setting is present. Marco :-)
+            -->
+			<property name="datanucleus.allowListenerUpdateAfterInit" value="true"/>
         </properties>
     </persistence-unit>
 
