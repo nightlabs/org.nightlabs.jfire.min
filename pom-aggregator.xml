@@ -52,6 +52,7 @@
 		<module>../JFireBasePublicBean</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.organisation -->
 		<module>../JFirePBX</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.pbx -->
 		<module>../JFirePersonRelation</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.personrelation -->
+		<module>../JFirePersonRelationEAR</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.personrelation.ear -->
 		<module>../JFirePersonRelationIssueTracking</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.personrelation.issuetracking -->
 		<module>../JFirePropFile</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.prop.file -->
 		<module>../JFireHTMLProp</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.prop.html -->
