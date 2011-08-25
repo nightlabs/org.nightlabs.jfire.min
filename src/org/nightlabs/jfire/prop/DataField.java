@@ -32,6 +32,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import javax.jdo.JDOHelper;
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
 import javax.jdo.annotations.Column;
@@ -47,9 +48,14 @@ import javax.jdo.annotations.PersistenceModifier;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 import javax.jdo.annotations.Queries;
+import javax.jdo.listener.AttachCallback;
+import javax.jdo.listener.DeleteCallback;
+import javax.jdo.listener.StoreCallback;
 
+import org.nightlabs.jfire.prop.cache.DetachedPropertySetCache;
 import org.nightlabs.jfire.prop.exception.PropertyException;
 import org.nightlabs.jfire.prop.id.DataFieldID;
+import org.nightlabs.jfire.prop.id.PropertySetID;
 import org.nightlabs.jfire.prop.id.StructFieldID;
 import org.nightlabs.jfire.prop.validation.IDataFieldValidator;
 import org.nightlabs.jfire.prop.validation.ValidationResult;
@@ -114,7 +120,7 @@ import org.nightlabs.jfire.prop.validation.ValidationResultType;
 		value="SELECT UNIQUE count(this.structBlockOrganisationID) WHERE this.structBlockOrganisationID == paramStructBlockOrganisationID && this.structBlockID == paramStructBlockID && this.structFieldOrganisationID == paramStructFieldOrganisationID && this.structFieldID == paramStructFieldID PARAMETERS String paramStructBlockOrganisationID, String paramStructBlockID, String paramStructFieldOrganisationID, String paramStructFieldID")
 )
 @Inheritance(strategy=InheritanceStrategy.NEW_TABLE)
-public abstract class DataField implements Serializable, Comparable<DataField>, IDataField
+public abstract class DataField implements Serializable, Comparable<DataField>, IDataField, StoreCallback, DeleteCallback, AttachCallback
 {
 	private static final long serialVersionUID = 1L;
 
@@ -481,6 +487,7 @@ public abstract class DataField implements Serializable, Comparable<DataField>, 
 	public List<ValidationResult> validate(IStruct struct) {
 		List<ValidationResult> results = new LinkedList<ValidationResult>();
 		try {
+			@SuppressWarnings("unchecked")
 			StructField<DataField> structField = (StructField<DataField>) struct.getStructField(this);
 			for (IDataFieldValidator<DataField, StructField<DataField>> validator : structField.getDataFieldValidators()) {
 				ValidationResult result = validator.validate(this, structField);
@@ -549,5 +556,27 @@ public abstract class DataField implements Serializable, Comparable<DataField>, 
 	 */
 	public void setManagedBy(String managedBy) {
 		this.managedBy = managedBy;
+	}
+	@Override
+	public void jdoPreStore() {
+		PropertySetID propertySetID = PropertySetID.create(this.organisationID, this.propertySetID);
+		DetachedPropertySetCache.getInstance(JDOHelper.getPersistenceManager(this)).remove(propertySetID);
+	}
+
+	@Override
+	public void jdoPreAttach() {
+		// nothing to do
+	}
+
+	@Override
+	public void jdoPostAttach(Object arg0) {
+		PropertySetID propertySetID = PropertySetID.create(this.organisationID, this.propertySetID);
+		DetachedPropertySetCache.getInstance(JDOHelper.getPersistenceManager(this)).remove(propertySetID);
+	}
+
+	@Override
+	public void jdoPreDelete() {
+		PropertySetID propertySetID = PropertySetID.create(this.organisationID, this.propertySetID);
+		DetachedPropertySetCache.getInstance(JDOHelper.getPersistenceManager(this)).remove(propertySetID);
 	}
 }

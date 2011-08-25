@@ -59,8 +59,11 @@ import javax.jdo.annotations.PersistenceModifier;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 import javax.jdo.listener.AttachCallback;
+import javax.jdo.listener.DeleteCallback;
 import javax.jdo.listener.DetachCallback;
+import javax.jdo.listener.InstanceLifecycleEvent;
 import javax.jdo.listener.StoreCallback;
+import javax.jdo.listener.StoreLifecycleListener;
 
 import org.nightlabs.inheritance.FieldInheriter;
 import org.nightlabs.inheritance.FieldMetaData;
@@ -70,6 +73,7 @@ import org.nightlabs.jdo.ObjectIDUtil;
 import org.nightlabs.jdo.inheritance.JDOSimpleFieldInheriter;
 import org.nightlabs.jfire.idgenerator.IDGenerator;
 import org.nightlabs.jfire.person.Person;
+import org.nightlabs.jfire.prop.cache.DetachedPropertySetCache;
 import org.nightlabs.jfire.prop.datafield.II18nTextDataField;
 import org.nightlabs.jfire.prop.exception.DataBlockGroupNotFoundException;
 import org.nightlabs.jfire.prop.exception.DataBlockNotFoundException;
@@ -160,7 +164,7 @@ import org.nightlabs.util.Util;
 })
 @Discriminator(strategy=DiscriminatorStrategy.CLASS_NAME)
 @Inheritance(strategy=InheritanceStrategy.NEW_TABLE)
-public class PropertySet implements Serializable, StoreCallback, AttachCallback, DetachCallback, Inheritable, SecuredObject
+public class PropertySet implements Serializable, StoreCallback, AttachCallback, DetachCallback, DeleteCallback, Inheritable, SecuredObject
 {
 	/**
 	 * The Log4j Logger used by this class.
@@ -1192,6 +1196,27 @@ public class PropertySet implements Serializable, StoreCallback, AttachCallback,
 		// TODO reactivate this - currently a JPOX bug causes a JDOObjectNotFoundException when copying a Person from one datastore to another. Marco. 2007-02-15
 		//		if (isInflated())
 		//			throw new IllegalStateException("You just attempted to store an exploded property");
+		
+		// Replaced this with the code below, as this lead in some cases to org.datanucleus.store.exceptions.NotYetFlushedException: not yet flushed
+//		DetachedPropertySetCache.getInstance(JDOHelper.getPersistenceManager(this)).remove(this);
+		
+		final PersistenceManager pm = JDOHelper.getPersistenceManager(this);
+		pm.addInstanceLifecycleListener(
+				new StoreLifecycleListener() {
+					@Override
+					public void preStore(InstanceLifecycleEvent event) { }
+
+					@Override
+					public void postStore(InstanceLifecycleEvent event) {
+						if (!this.equals(event.getPersistentInstance()))
+							return;
+
+						pm.removeInstanceLifecycleListener(this);
+						DetachedPropertySetCache.getInstance(pm).remove(PropertySet.this);
+					}
+				},
+				PropertySet.class
+		);
 	}
 
 	/**
@@ -1293,7 +1318,7 @@ public class PropertySet implements Serializable, StoreCallback, AttachCallback,
 	 */
 	@Override
 	public void jdoPostAttach(Object arg0) {
-		// do nothing
+		DetachedPropertySetCache.getInstance(JDOHelper.getPersistenceManager(this)).remove(this);
 	}
 
 	/**
@@ -1714,5 +1739,10 @@ public class PropertySet implements Serializable, StoreCallback, AttachCallback,
 		if (Util.equals(authorityID, oldSecuringAuthorityID))
 			return; // nothing to do
 		this.securingAuthorityID = authorityID == null ? null : authorityID.toString();
-	}	
+	}
+	
+	@Override
+	public void jdoPreDelete() {
+		DetachedPropertySetCache.getInstance(JDOHelper.getPersistenceManager(this)).remove(this);
+	}
 }
