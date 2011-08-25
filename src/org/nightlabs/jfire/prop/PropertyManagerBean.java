@@ -60,6 +60,7 @@ import org.nightlabs.jfire.organisation.Organisation;
 import org.nightlabs.jfire.person.Person;
 import org.nightlabs.jfire.person.PersonSearchConfigModule;
 import org.nightlabs.jfire.person.PersonStruct;
+import org.nightlabs.jfire.prop.cache.DetachedPropertySetCache;
 import org.nightlabs.jfire.prop.config.PropertySetEditLayoutConfigModule;
 import org.nightlabs.jfire.prop.config.PropertySetFieldBasedEditConstants;
 import org.nightlabs.jfire.prop.config.PropertySetFieldBasedEditLayoutConfigModule;
@@ -267,24 +268,70 @@ public class PropertyManagerBean extends BaseSessionBeanImpl implements Property
 				pm.getFetchPlan().setGroups(fetchGroups);
 
 			propSearchFilter.setPersistenceManager(pm);
+
+			long time = System.currentTimeMillis();
 			Collection<?> props = propSearchFilter.getResult();
-			
+			if (logger.isDebugEnabled())
+				logger.debug("searchPropertySets: Query returned " + props.size() + " PropertySets and took " + Util.getTimeDiffString(time));
+
 //			Set result = NLJDOHelper.getDetachedQueryResultAsSet(pm, props);
 //			return (Set<?>) Authority.filterSecuredObjects(pm, result, getPrincipal(), RoleConstants.seePropertySet, ResolveSecuringAuthorityStrategy.allow);
 
-			Set detachedProps = NLJDOHelper.getDetachedQueryResultAsSet(pm, props);
-			Set result = new HashSet();
-			Set filteredProps = new HashSet();
+//			Set detachedProps = NLJDOHelper.getDetachedQueryResultAsSet(pm, props);
+//			Set result = new HashSet();
+//			Set filteredProps = new HashSet();
+//			// because this method can also return other objects then PropertySet we only filter PropertySets and in case it is no PropertySet we dont filter at all.
+//			for (Object detachedProp : detachedProps) {
+//				if (detachedProp instanceof PropertySet) {
+//					filteredProps.add(detachedProp);
+//				}
+//				else {
+//					result.add(detachedProp);
+//				}
+//			}
+//			result.addAll(Authority.filterSecuredObjects(pm, filteredProps, getPrincipal(), RoleConstants.seePropertySet, ResolveSecuringAuthorityStrategy.allow));
+//			return result;
+
+			DetachedPropertySetCache detachedPropertySetCache = DetachedPropertySetCache.getInstance(pm);
+
+			time = System.currentTimeMillis();
+			Set<Object> result = new HashSet<Object>();
+			Set<PropertySet> detachedProps = new HashSet<PropertySet>();
 			// because this method can also return other objects then PropertySet we only filter PropertySets and in case it is no PropertySet we dont filter at all.
-			for (Object detachedProp : detachedProps) {
-				if (detachedProp instanceof PropertySet) {
-					filteredProps.add(detachedProp);
+			for (Object prop : props) {
+				if (prop instanceof PropertySet) {
+					PropertySetID propertySetID = (PropertySetID) JDOHelper.getObjectId(prop);
+					PropertySet detachedProp = detachedPropertySetCache.get(propertySetID, fetchGroups, maxFetchDepth);
+					detachedProps.add(detachedProp);
 				}
 				else {
-					result.add(detachedProp);
+					result.add(prop);
 				}
 			}
-			result.addAll(Authority.filterSecuredObjects(pm, filteredProps, getPrincipal(), RoleConstants.seePropertySet, ResolveSecuringAuthorityStrategy.allow));
+			if (logger.isDebugEnabled())
+				logger.debug("searchPropertySets: Iterating " + props.size() + " PropertySets for 1st stage of postprocessing took " + Util.getTimeDiffString(time));
+
+			// result is not yet detached => detach now
+			if (!result.isEmpty()) {
+				time = System.currentTimeMillis();
+				result = new HashSet<Object>(pm.detachCopyAll(result));
+				if (logger.isDebugEnabled())
+					logger.debug("searchPropertySets: Detaching " + result.size() + " objects (not instances of PropertySet) took " + Util.getTimeDiffString(time));
+			}
+
+			// Filter the detached PropertySet instances.
+			time = System.currentTimeMillis();
+			Set<PropertySet> filteredDetachedProps = Authority.filterSecuredObjects(
+					pm, detachedProps, getPrincipal(),
+					RoleConstants.seePropertySet, ResolveSecuringAuthorityStrategy.allow
+			);
+			if (logger.isDebugEnabled())
+				logger.debug("searchPropertySets: Filtering " + detachedProps.size() + " PropertySets returned " + filteredDetachedProps.size() + " filtered elements and took " + Util.getTimeDiffString(time));
+
+			// Add the filtered detached PropertySets.
+			result.addAll(filteredDetachedProps);
+
+			// And return the result.
 			return result;
 		} finally {
 			pm.close();
@@ -499,11 +546,24 @@ public class PropertyManagerBean extends BaseSessionBeanImpl implements Property
 		PersistenceManager pm = createPersistenceManager();
 		try {
 			long time = System.currentTimeMillis();
-			Set<PropertySet> result = NLJDOHelper.getDetachedObjectSet(pm, propIDs, null, fetchGroups, maxFetchDepth);
-			logger.debug("Detaching " + result.size() + " PropertySets took " + Util.getTimeDiffString(time));
+//			Set<PropertySet> result = NLJDOHelper.getDetachedObjectSet(pm, propIDs, null, fetchGroups, maxFetchDepth);
+			List<PropertySet> l = DetachedPropertySetCache.getInstance(pm).get(propIDs, fetchGroups, maxFetchDepth);
+
+			if (logger.isDebugEnabled())
+			logger.debug("getPropertySets: Detaching " + l.size() + " PropertySets took " + Util.getTimeDiffString(time));
+
+			time = System.currentTimeMillis();
+			Set<PropertySet> result = new HashSet<PropertySet>(l);
+			if (logger.isDebugEnabled())
+				logger.debug("getPropertySets: Creating Set from List with " + result.size() + " PropertySets took " + Util.getTimeDiffString(time));
+
 			/* filter secured objects (begin) */
-			return Authority.filterSecuredObjects(pm, result, getPrincipal(), RoleConstants.seePropertySet, ResolveSecuringAuthorityStrategy.allow);
+			time = System.currentTimeMillis();
+			result = Authority.filterSecuredObjects(pm, result, getPrincipal(), RoleConstants.seePropertySet, ResolveSecuringAuthorityStrategy.allow);
+			if (logger.isDebugEnabled())
+				logger.debug("getPropertySets: filterSecuredObjects with  " + result.size() + " PropertySets took " + Util.getTimeDiffString(time));
 			/* filter secured objects (end) */
+			return result;
 		} finally {
 			pm.close();
 		}
