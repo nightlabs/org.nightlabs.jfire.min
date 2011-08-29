@@ -93,5 +93,6 @@
 		<module>../NightLabsXStreamEAR</module>
 		-->
 		<module>../org.nightlabs.jfire.min.assembly</module>
+		<module>../org.nightlabs.jfire.server.installer</module>
 	</modules>
 </project>
