@@ -161,13 +161,21 @@ public class DataBlockGroup implements Serializable, Comparable<DataBlockGroup> 
 	protected Map<Integer, DataBlock> dataBlockMap = new HashMap<Integer, DataBlock>();
 
 	/**
-	 * Checks whether this {@link DataBlockGroup} contains no {@link DataBlock}s.
-	 * @return Whether this {@link DataBlockGroup} contains no {@link DataBlock}s.
+	 * Checks whether this {@link DataBlockGroup} contains no {@link DataBlock}
+	 * s, or whether all fields in all existing DataBlocks are empty.
+	 * 
+	 * @return Whether this {@link DataBlockGroup} contains no or only empty
+	 *         {@link DataBlock} s.
 	 */
 	public boolean isEmpty() {
 		if (dataBlockMap == null)
 			return true;
-		return dataBlockMap.isEmpty();
+		for (DataBlock dataBlock : dataBlockMap.values()) {
+			if (!dataBlock.isEmpty()) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	/**

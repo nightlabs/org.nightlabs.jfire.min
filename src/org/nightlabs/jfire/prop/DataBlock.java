@@ -402,4 +402,17 @@ public class DataBlock implements Serializable
 		return structBlock;
 	}
 
+	/**
+	 * Checks whether this {@link DataBlock} contains only empty {@link DataField}s.
+	 * 
+	 * @return <code>true</code> if this DataBlock contains only empty {@link DataField}s. 
+	 */
+	public boolean isEmpty() {
+		for (DataField dataField : getDataFields()) {
+			if (!dataField.isEmpty()) {
+				return false;
+			}
+		}
+		return true;
+	}
 }
