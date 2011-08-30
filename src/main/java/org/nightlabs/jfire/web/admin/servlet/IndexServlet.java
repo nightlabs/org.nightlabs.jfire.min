@@ -33,6 +33,7 @@ public class IndexServlet extends HttpServlet
 	{
 		try {
 			String redirect = null;
+			int errorCode = 404;
 			String error = null;
 			if(SessionLogin.haveLogin(request.getSession()))
 				redirect = "/overview";
@@ -56,6 +57,7 @@ public class IndexServlet extends HttpServlet
 					break;
 				default:
 					error = "Unexpected error.";
+					errorCode = 500;
 				}
 //				if(serverState == ServerState.NEED_SETUP)
 //					redirect = "/serverinitialize";
@@ -69,9 +71,13 @@ public class IndexServlet extends HttpServlet
 //					redirect = "/login";
 			}
 			if(error != null) {
+				String errorCodeEnabled = request.getParameter("errorCodeEnabled");
 				request.setAttribute("internal_errors", Collections.singleton(new IllegalStateException(error)));
 				request.getRequestDispatcher("jsp/pageHeader.jsp").include(request, response);
 				request.getRequestDispatcher("jsp/pageFooter.jsp").include(request, response);
+
+				if (errorCodeEnabled != null && Boolean.parseBoolean(errorCodeEnabled))
+					response.sendError(errorCode, error);
 			} else {
 				response.sendRedirect(getServletContext().getContextPath()+redirect);
 			}
