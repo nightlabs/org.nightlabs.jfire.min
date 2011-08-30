@@ -55,7 +55,8 @@ import com.izforge.izpack.util.os.Shortcut;
  */
 public class Executer extends DefaultExecuter
 {
-	private static final String JAR_CONTENT_PATH = "jboss"; //$NON-NLS-1$
+//	private static final String JAR_CONTENT_PATH = "jboss"; //$NON-NLS-1$
+	private static final String JAR_CONTENT_PATH = "jfire-server"; //$NON-NLS-1$ // renamed 2011-08-30
 
 	public static final String ZIP_ENTRY_SEPARATOR = "/"; //$NON-NLS-1$
 

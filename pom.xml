@@ -2,7 +2,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.nightlabs.jfire</groupId>
-	<artifactId>org.nightlabs.jfire.server.installer</artifactId>
+	<artifactId>org.nightlabs.jfire.min.assembly.installer</artifactId>
 
 	<parent>
 		<groupId>org.nightlabs.jfire</groupId>
@@ -216,7 +216,7 @@
 							<target>
 								<mkdir dir="${project.build.assemblyDirectory}/main" />
 								<copy file="${project.build.directory}/${project.artifactId}-${project.version}.jar" tofile="${project.build.assemblyDirectory}/main/main.jar" />
-								<move file="${project.build.assemblyDirectory}/jfire-server" tofile="${project.build.assemblyDirectory}/jboss" />
+<!--								<move file="${project.build.assemblyDirectory}/jfire-server" tofile="${project.build.assemblyDirectory}/jboss" /> -->
 							</target>
 						</configuration>
 					</execution>

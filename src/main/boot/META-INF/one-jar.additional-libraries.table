@@ -4,36 +4,36 @@
 # by one-jar automatically). Therefore, we simply register them in this file.
 
 # hsql and mckoi aren't supported anymore. Marco.
-# jboss/server/default/lib/hsqldb.jar
-# jboss/server/default/lib/mckoidb.jar
+# jfire-server/server/default/lib/hsqldb.jar
+# jfire-server/server/default/lib/mckoidb.jar
 
 # The ServerConfigurator is now executed via the Launcher - hence, we don't need any DB drivers here anymore.
 # Commenting the following lines out. Marco. 
-#jboss/server/default/lib/derby.jar
+#jfire-server/server/default/lib/derby.jar
 
 # We use the MySQL driver to test whether the coordinates entered by the user are correct (rather than waiting for an exception later).
-jboss/server/default/lib/mysql-connector-java.jar
+jfire-server/server/default/lib/mysql-connector-java.jar
 
-jboss/server/default/lib/log4j.jar
-jboss/server/default/lib/slf4j-api.jar
-jboss/server/default/lib/slf4j-log4j12.jar
-jboss/server/default/lib/xercesImpl.jar
-jboss/server/default/lib/jboss.jar
-jboss/server/default/lib/jbosssx.jar
-jboss/server/default/lib/jboss-j2ee.jar
-#jboss/server/default/deploy/JFire.last/JFireBaseEAR.ear/org.nightlabs.base.jar
-#jboss/server/default/deploy/JFire.last/JFireBaseEAR.ear/org.nightlabs.jdo.jar
-#jboss/server/default/deploy/JFire.last/JFireBaseEAR.ear/JFireBase.jar
-#jboss/server/default/deploy/JFire.last/JFireBaseEAR.ear/JFireBaseBean.jar
-#jboss/server/default/deploy/JFire.last/JFireBaseEAR.ear/JFireServerManager.rar
-#jboss/server/default/deploy/JFire.last/JFireIntegrationJBoss.ear/JFireIntegrationJBoss.jar
+jfire-server/server/default/lib/log4j.jar
+jfire-server/server/default/lib/slf4j-api.jar
+jfire-server/server/default/lib/slf4j-log4j12.jar
+jfire-server/server/default/lib/xercesImpl.jar
+jfire-server/server/default/lib/jboss.jar
+jfire-server/server/default/lib/jbosssx.jar
+jfire-server/server/default/lib/jboss-j2ee.jar
+#jfire-server/server/default/deploy/JFire.last/JFireBaseEAR.ear/org.nightlabs.base.jar
+#jfire-server/server/default/deploy/JFire.last/JFireBaseEAR.ear/org.nightlabs.jdo.jar
+#jfire-server/server/default/deploy/JFire.last/JFireBaseEAR.ear/JFireBase.jar
+#jfire-server/server/default/deploy/JFire.last/JFireBaseEAR.ear/JFireBaseBean.jar
+#jfire-server/server/default/deploy/JFire.last/JFireBaseEAR.ear/JFireServerManager.rar
+#jfire-server/server/default/deploy/JFire.last/JFireIntegrationJBoss.ear/JFireIntegrationJBoss.jar
 
 ## new ear names after mavenization.
-#jboss/server/default/deploy/JFire.last/JFireBaseEAR.ear
-#jboss/server/default/deploy/JFire.last/JFireIntegrationJBossEAR.ear
-jboss/server/default/deploy/JFire.last/org.nightlabs.jfire.base.ear.ear
-jboss/server/default/deploy/JFire.last/org.nightlabs.jfire.jboss.ear.ear
+#jfire-server/server/default/deploy/JFire.last/JFireBaseEAR.ear
+#jfire-server/server/default/deploy/JFire.last/JFireIntegrationJBossEAR.ear
+jfire-server/server/default/deploy/JFire.last/org.nightlabs.jfire.base.ear.ear
+jfire-server/server/default/deploy/JFire.last/org.nightlabs.jfire.jboss.ear.ear
 
 # I extended One-JAR to support recursively nested JARs, hence we don't need to manually
 # process the jdo-api-2.0.jar within the datanucleus-jca.rar - that's done automatically.
-jboss/server/default/deploy/datanucleus-jca.rar
+jfire-server/server/default/deploy/datanucleus-jca.rar
