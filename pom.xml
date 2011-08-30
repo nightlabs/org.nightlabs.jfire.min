@@ -454,6 +454,47 @@
 				<artifactId>hamcrest-all</artifactId>
 				<version>1.2</version>
 			</dependency>
+
+			<dependency>
+				<groupId>org.jboss.client</groupId>
+				<artifactId>jbossall-client</artifactId>
+				<version>4.2.3.GA</version>
+			</dependency>
+			<dependency>
+				<groupId>jboss</groupId>
+				<artifactId>jbosssx</artifactId>
+				<version>4.2.3.GA</version>
+			</dependency>
+			<dependency>
+				<groupId>jboss</groupId>
+				<artifactId>jbosssx-client</artifactId>
+				<version>4.2.3.GA</version>
+			</dependency>
+			<dependency>
+				<groupId>jboss</groupId>
+				<artifactId>jnp-client</artifactId>
+				<version>4.2.2.GA</version>
+			</dependency>
+			<dependency>
+				<groupId>jboss</groupId>
+				<artifactId>jboss-common</artifactId>
+				<version>4.2.2.GA</version>
+			</dependency>
+			<dependency>
+				<groupId>jboss</groupId>
+				<artifactId>jboss-ejb3</artifactId>
+				<version>4.2.3.GA</version>
+			</dependency>
+			<dependency>
+				<groupId>jboss</groupId>
+				<artifactId>jboss-aop-jdk50-client</artifactId>
+				<version>4.2.2.GA</version>
+			</dependency>
+			<dependency>
+				<groupId>jboss</groupId>
+				<artifactId>jboss-j2ee</artifactId>
+				<version>4.2.3.GA</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 </project>
