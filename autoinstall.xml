@@ -1,0 +1,28 @@
+<project default="install" name="autoinstall">
+  <target name="install">
+  	
+  	<ant dir="../NightLabsInstaller" antfile="build-nightlabs.xml" target="dist"/>
+  	<ant antfile="build-nightlabs.xml" target="dist"/>
+
+ 		<delete dir="/tmp/jfire-auto-install" failonerror="false"/>
+  	
+		<exec executable="/usr/bin/mysql" failonerror="false">
+		  <arg value="--user=jfire"/>
+		  <arg value="--password=jfire_password"/>
+		  <arg value="--execute"/>
+		  <arg value="drop database jfire_auto_install_JBossMQ"/>
+		</exec>
+		<exec executable="/usr/bin/mysql" failonerror="false">
+		  <arg value="--user=jfire"/>
+		  <arg value="--password=jfire_password"/>
+		  <arg value="--execute"/>
+		  <arg value="drop database jfire_auto_install_chezfrancois_jfire_org"/>
+		</exec>
+  	
+		<java jar="dist/jfire-jboss-installer.jar" fork="true">
+			<arg line="--ui quiet -v --defaults autoinstall.properties"/>
+		</java>
+  	
+  	
+  </target>
+</project>
