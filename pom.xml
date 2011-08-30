@@ -487,6 +487,11 @@
 			</dependency>
 			<dependency>
 				<groupId>jboss</groupId>
+				<artifactId>jboss-ejb3x</artifactId>
+				<version>4.2.3.GA</version>
+			</dependency>
+			<dependency>
+				<groupId>jboss</groupId>
 				<artifactId>jboss-aop-jdk50-client</artifactId>
 				<version>4.2.2.GA</version>
 			</dependency>
