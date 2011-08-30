@@ -70,7 +70,7 @@ extends ServerConfiguratorJBoss
 			boolean redeployJMS = false;
 
 			// create the database
-			String databaseName = getJFireServerConfigModule().getDatabase().getDatabasePrefix() + "JBossMQ" + getJFireServerConfigModule().getDatabase().getDatabaseSuffix();
+			String databaseName = getJFireServerConfigModule().getDatabase().getDatabasePrefix() + "jbossmq" + getJFireServerConfigModule().getDatabase().getDatabaseSuffix();
 			databaseName = databaseName.toLowerCase(Locale.ENGLISH); // PostgreSQL supports only lowercase!
 			String databaseURL = getJFireServerConfigModule().getDatabase().getDatabaseURL(databaseName);
 			DatabaseAdapter databaseAdapter = getJFireServerConfigModule().getDatabase().instantiateDatabaseAdapter();
