@@ -152,10 +152,10 @@ public class DatabaseCf extends JFireServerConfigPart implements Serializable
 			setDatabaseSuffix("");
 
 		if (databaseUserName == null)
-			setDatabaseUserName("jfire");
+			setDatabaseUserName("root"); // setDatabaseUserName("jfire");
 
 		if (databasePassword == null)
-			setDatabasePassword("jfire_password");
+			setDatabasePassword(""); // setDatabasePassword("jfire_password");
 
 		if (databaseAdapter == null)
 			setDatabaseAdapter(DatabaseAdapterMySQL.class.getName());
