@@ -78,7 +78,6 @@ import org.nightlabs.jfire.prop.datafield.II18nTextDataField;
 import org.nightlabs.jfire.prop.exception.DataBlockGroupNotFoundException;
 import org.nightlabs.jfire.prop.exception.DataBlockNotFoundException;
 import org.nightlabs.jfire.prop.exception.DataFieldNotFoundException;
-import org.nightlabs.jfire.prop.exception.DataNotFoundException;
 import org.nightlabs.jfire.prop.exception.StructureViolationException;
 import org.nightlabs.jfire.prop.id.PropertySetID;
 import org.nightlabs.jfire.prop.id.StructBlockID;
@@ -1108,8 +1107,7 @@ public class PropertySet implements Serializable, StoreCallback, AttachCallback,
 
 		for (Iterator<Map.Entry<String, DataBlockGroup>> it = getDataBlockGroupMap().entrySet().iterator(); it.hasNext();) {
 			DataBlockGroup blockGroup = it.next().getValue();
-			blockGroup.deflate();
-			if (blockGroup.isEmpty())
+			if (blockGroup.deflate())
 				it.remove();
 		}
 		if (refStruct instanceof StructLocal) {

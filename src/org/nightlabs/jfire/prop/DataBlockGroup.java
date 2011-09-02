@@ -427,8 +427,9 @@ public class DataBlockGroup implements Serializable, Comparable<DataBlockGroup> 
 	/**
 	 * Scans all DataBlocks and its containing DataFields and removes all entries
 	 * where isEmpty() returns true.
+	 * @returns <code>true</code> if no {@link DataField}s are left in this block after deflating or <code>false</code> otherwise.
 	 */
-	void deflate() {
+	boolean deflate() {
 		int blockIndex = 0;
 
 		for (Iterator<DataBlock> it = getDataBlocks().iterator(); it.hasNext(); ) {
@@ -442,6 +443,7 @@ public class DataBlockGroup implements Serializable, Comparable<DataBlockGroup> 
 				block.setIndex(blockIndex++, true);
 			}
 		}
+		return dataBlockMap.size() == 0;
 	}
 
 	/**
