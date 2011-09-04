@@ -159,8 +159,10 @@ implements DetachCallback, II18nTextDataField
 		}
 		else {
 			structFieldValueIDs_correct.clear();
-			for (MultiSelectionStructFieldValue structFieldValue : values)
-				structFieldValueIDs_correct.add(structFieldValue.getStructFieldValueID());
+			for (MultiSelectionStructFieldValue structFieldValue : values) {
+				if (!structFieldValueIDs_correct.contains(structFieldValue.getStructFieldValueID()))
+					structFieldValueIDs_correct.add(structFieldValue.getStructFieldValueID());
+			}
 			// XXX: add hashCode() and equals() to StructFieldValue
 			structFieldValues = new HashSet<MultiSelectionStructFieldValue>(values);
 		}
@@ -435,10 +437,14 @@ implements DetachCallback, II18nTextDataField
 			return;
 		
 		for (MultiSelectionStructFieldValue structFieldValue : values) {
-			structFieldValueIDs_correct.add(structFieldValue.getStructFieldValueID());	
+			if (!structFieldValueIDs_correct.contains(structFieldValue.getStructFieldValueID()))
+				structFieldValueIDs_correct.add(structFieldValue.getStructFieldValueID());	
 		}
 		structFieldValues = new HashSet<MultiSelectionStructFieldValue>(getStructFieldValues());
-		structFieldValues.addAll(values);
+		for (MultiSelectionStructFieldValue structFieldValue : values) {
+			if (!structFieldValues.contains(structFieldValue))
+				structFieldValues.add(structFieldValue);
+		}
 		resetTextBuffer();
 	}
 	
