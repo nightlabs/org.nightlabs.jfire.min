@@ -67,21 +67,24 @@ public abstract class AbstractTextBasedStructFieldSearchFilterItem extends Abstr
 		return searchText;
 	}
 
-	private boolean addedParams = false;
-
 	@Override
 	public void appendSubQuery(int itemIndex, Set<Class<?>> imports, StringBuffer vars, StringBuffer filter,
 			StringBuffer params, Map<String, Object> paramMap) {
 
-		String searchTextLowerCase = "searchText"+itemIndex+".toLowerCase()";
-		if (!addedParams) {
-			params.append(", ");
-			params.append(String.class.getName()+" searchText"+itemIndex);
-			paramMap.put("searchText"+itemIndex, getSearchString());
-			addedParams = true;
-		}
 
 		filter.append(getComparisonLeftHandSide(itemIndex));
+		appendTextSearchMethod(matchType, itemIndex, filter, params, paramMap, getSearchString());
+	}
+
+	public static void appendTextSearchMethod(MatchType matchType, int itemIndex, StringBuffer filter,
+			StringBuffer params, Map<String, Object> paramMap,
+			String searchString) {
+		
+		String searchTextLowerCase = "searchText"+itemIndex+".toLowerCase()";
+		params.append(", ");
+		params.append(String.class.getName()+" searchText"+itemIndex);
+		paramMap.put("searchText"+itemIndex, searchString);
+		
 		switch (matchType) {
 			case BEGINSWITH:
 				filter.append(".startsWith("+searchTextLowerCase+")");
@@ -104,7 +107,7 @@ public abstract class AbstractTextBasedStructFieldSearchFilterItem extends Abstr
 			case MATCHES:
 				params.append(", ");
 				params.append(String.class.getName()+" regex"+itemIndex);
-				paramMap.put("regex"+itemIndex, getSearchString());
+				paramMap.put("regex"+itemIndex, searchString);
 				filter.append(".toLowerCase().matches(regex"+itemIndex+".toLowerCase())");
 				break;
 			default:
