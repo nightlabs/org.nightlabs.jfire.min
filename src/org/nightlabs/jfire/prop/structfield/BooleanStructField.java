@@ -43,7 +43,7 @@ extends StructField<BooleanDataField>
 	/**
 	 * The default value for initialization, by default <code>false</code>
 	 */
-	private Boolean defaultValue = false;
+	private Boolean defaultValue = null;
 	
 	/**
 	 * @deprecated Only for JDO!
