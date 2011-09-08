@@ -19,6 +19,7 @@ import javax.jdo.annotations.IdentityType;
 import javax.jdo.annotations.Inheritance;
 import javax.jdo.annotations.InheritanceStrategy;
 import javax.jdo.annotations.PersistenceCapable;
+import javax.jdo.annotations.PersistenceModifier;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 import javax.jdo.annotations.Queries;
@@ -369,6 +370,20 @@ public abstract class UserManagementSystem implements Serializable, Comparable<U
 	 */
 	public long getUserManagementSystemID() {
 		return userManagementSystemID;
+	}
+	
+	@Persistent(persistenceModifier=PersistenceModifier.NONE)
+	private UserManagementSystemID userManagementSystemIDObject;
+	/**
+	 * Convivnient method for obtaining {@link UserManagementSystemID} at once instead of creating it every time.
+	 * 
+	 * @return {@link UserManagementSystemID} object
+	 */
+	public UserManagementSystemID getUserManagementSystemObjectID(){
+		if (userManagementSystemIDObject == null){
+			userManagementSystemIDObject = UserManagementSystemID.create(organisationID, userManagementSystemID);
+		}
+		return userManagementSystemIDObject;
 	}
 
 	@Override
