@@ -47,6 +47,7 @@ import org.nightlabs.config.ConfigException;
 import org.nightlabs.environment.Environment;
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jdo.ObjectID;
+import org.nightlabs.jdo.ObjectIDCanonicaliser;
 import org.nightlabs.jfire.base.GlobalJFireEjb3Provider;
 import org.nightlabs.jfire.base.JFireEjb3Provider;
 import org.nightlabs.jfire.base.jdo.GlobalJDOManagerProvider;
@@ -63,6 +64,7 @@ import org.nightlabs.jfire.jdo.notification.JDOLifecycleState;
 import org.nightlabs.notification.NotificationEvent;
 import org.nightlabs.singleton.IServiceContext;
 import org.nightlabs.singleton.IServiceContextAware;
+import org.nightlabs.util.Canonicaliser;
 import org.nightlabs.util.CollectionUtil;
 import org.nightlabs.util.Util;
 
@@ -97,18 +99,20 @@ public class Cache implements IServiceContextAware
 	 */
 	private static final Logger logger = Logger.getLogger(Cache.class);
 
+	private static final Canonicaliser canonicaliser = ObjectIDCanonicaliser.sharedInstance();
+
 	private NotificationThread notificationThread;
-	
+
 	/**
 	 * The manager provider instance. There is a 1-1 dependency between lifecycle manager and cache.
 	 * Never access this field directly - use {@link #getJdoManagerProvider()}.
 	 */
 	private JDOManagerProvider jdoManagerProvider;
-	
+
 	private JFireEjb3Provider ejbProvider;
 
 	private IServiceContext serviceContext;
-	
+
 	/**
 	 * Get the jdoManagerProvider.
 	 * @return the jdoManagerProvider
@@ -118,7 +122,7 @@ public class Cache implements IServiceContextAware
 			throw new IllegalStateException("No JDOManagerProvider assigned!");
 		return jdoManagerProvider;
 	}
-	
+
 	/**
 	 * Set the jdoManagerProvider.
 	 * @param jdoManagerProvider the jdoManagerProvider to set
@@ -126,11 +130,11 @@ public class Cache implements IServiceContextAware
 	public void setJdoManagerProvider(JDOManagerProvider jdoManagerProvider) {
 		this.jdoManagerProvider = jdoManagerProvider;
 	}
-	
+
 	public void setEjbProvider(JFireEjb3Provider ejbProvider) {
 		this.ejbProvider = ejbProvider;
 	}
-	
+
 	public JFireEjb3Provider getEjbProvider() {
 		if(ejbProvider == null) {
 			return GlobalJFireEjb3Provider.sharedInstance();
@@ -143,7 +147,7 @@ public class Cache implements IServiceContextAware
 	public void setServiceContext(IServiceContext context) {
 		serviceContext = context;
 	}
-	
+
 	protected static class NotificationThread extends Thread
 	{
 		private static volatile int nextID = 0;
@@ -182,7 +186,7 @@ public class Cache implements IServiceContextAware
 //				logger.debug("NotificationThread.run: DEBUG_TEST=" + DEBUG_TEST);
 
 			serviceContext.associateThread();
-			
+
 			while (!isInterrupted()) {
 				Cache cache = jdoManagerProvider.getCache();
 				try {
@@ -344,7 +348,7 @@ public class Cache implements IServiceContextAware
 					lastErrorDT = System.currentTimeMillis();
 				}
 			}
-			
+
 			serviceContext.disposeThread();
 		}
 
@@ -418,9 +422,9 @@ public class Cache implements IServiceContextAware
 //			JDOManager jdoManager = null;
 //			boolean resync;
 
-			
+
 			serviceContext.associateThread();
-			
+
 			while (!isInterrupted()) {
 				Cache cache = jdoManagerProvider.getCache();
 				try {
@@ -654,7 +658,7 @@ public class Cache implements IServiceContextAware
 					lastErrorDT = System.currentTimeMillis();
 				}
 			}
-			
+
 			serviceContext.disposeThread();
 		}
 
@@ -1444,6 +1448,9 @@ public class Cache implements IServiceContextAware
 		if (object == null)
 			throw new NullPointerException("object must not be null!");
 
+		objectID = canonicaliser.canonicalise(objectID);
+		object = canonicaliser.canonicalise(object);
+
 		getJdoManagerProvider().getObjectID2PCClassMap().initPersistenceCapableClass(objectID, object.getClass());
 
 		Key key = new Key(scope, objectID, fetchGroups, maxFetchDepth);
@@ -1855,7 +1862,7 @@ public class Cache implements IServiceContextAware
 				public void run() {
 					try {
 						serviceContext.associateThread();
-						
+
 						// notify via local class based notification mechanism
 						// the interceptor org.nightlabs.jfire.base.jdo.JDOObjectID2PCClassNotificationInterceptor takes care about correct class mapping
 						getJdoManagerProvider().getLifecycleManager().notify(new NotificationEvent(
@@ -1868,11 +1875,11 @@ public class Cache implements IServiceContextAware
 					} finally {
 						serviceContext.disposeThread();
 					}
-					
-					
+
+
 				}
 			};
-			
+
 			notificationThread.start();
 		}
 	}
