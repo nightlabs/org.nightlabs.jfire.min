@@ -2299,7 +2299,7 @@ public class ServerConfiguratorJBoss
 			javaOpts = "";
 
 		// issue #58:
-		javaOpts += " -XX:PermSize=64m -XX:MaxPermSize=128m -javaagent:../server/default/deploy/jboss-aop-jdk50.deployer/pluggable-instrumentor.jar";
+		javaOpts += " -XX:PermSize=64m -XX:MaxPermSize=128m -XX:+UseConcMarkSweepGC -XX:+CMSClassUnloadingEnabled -javaagent:../server/default/deploy/jboss-aop-jdk50.deployer/pluggable-instrumentor.jar";
 
 		// Moved to configure bind adress and rmi host
 //		String rmiHost = serverConfiguratorSettings == null ? null : serverConfiguratorSettings.getProperty("java.rmi.server.hostname");
