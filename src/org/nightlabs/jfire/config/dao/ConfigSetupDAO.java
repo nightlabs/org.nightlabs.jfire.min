@@ -16,7 +16,7 @@ import org.nightlabs.jfire.config.ConfigManagerRemote;
 import org.nightlabs.jfire.config.ConfigSetup;
 import org.nightlabs.jfire.config.id.ConfigID;
 import org.nightlabs.jfire.config.id.ConfigSetupID;
-import org.nightlabs.jfire.security.SecurityReflector;
+import org.nightlabs.jfire.security.GlobalSecurityReflector;
 import org.nightlabs.progress.ProgressMonitor;
 
 /**
@@ -90,6 +90,7 @@ public class ConfigSetupDAO extends BaseJDOObjectDAO<ConfigSetupID, ConfigSetup>
 		Collection<ConfigSetupID> allSetupIDs;
 		// DummySetup is used in order for the result to get removed
 		// from the Cache when the ConfigSetup changes.
+		@SuppressWarnings("unused")
 		ConfigSetup dummySetup;
 		AllSetupIDsResult(Collection<ConfigSetupID> allSetupIDs, ConfigSetup dummySetup) {
 			this.allSetupIDs = allSetupIDs;
@@ -281,7 +282,7 @@ public class ConfigSetupDAO extends BaseJDOObjectDAO<ConfigSetupID, ConfigSetup>
 	 * @return The ConfigSetup of the given configSetupType or <code>null</code>.
 	 */
 	public ConfigSetup getCompleteConfigSetup(String configSetupType, ProgressMonitor monitor) {
-		ConfigSetupID configSetupID = ConfigSetupID.create(SecurityReflector.getUserDescriptor().getOrganisationID(), configSetupType);
+		ConfigSetupID configSetupID = ConfigSetupID.create(GlobalSecurityReflector.sharedInstance().getUserDescriptor().getOrganisationID(), configSetupType);
 		Collection<ConfigSetup> configSetups = getCompleteConfigSetups(
 				Collections.singleton(configSetupID),
 				FETCH_GROUPS_COMPLETE_GROUPS, NLJDOHelper.MAX_FETCH_DEPTH_NO_LIMIT,
@@ -310,7 +311,7 @@ public class ConfigSetupDAO extends BaseJDOObjectDAO<ConfigSetupID, ConfigSetup>
 		Collection<ConfigSetup> configSetups = getCompleteConfigSetups(monitor);
 
 		for (ConfigSetup configSetup : configSetups) {
-			if (configSetup.getConfigGroupType().equals(configType)) {
+			if (configType.equals(configSetup.getConfigGroupType())) {
 				return configSetup;
 			}
 		}
@@ -358,12 +359,12 @@ public class ConfigSetupDAO extends BaseJDOObjectDAO<ConfigSetupID, ConfigSetup>
 		Collection<ConfigSetup> configSetups = getCompleteConfigSetups(monitor);
 
 		for (ConfigSetup configSetup : configSetups) {
-			if (configSetup.getConfigType().equals(configType)) {
+			if (configType.equals(configSetup.getConfigType())) {
 				return configSetup;
 			}
 		}
 		for (ConfigSetup configSetup : configSetups) {
-			if (configSetup.getConfigGroupType().equals(configType)) {
+			if (configType.equals(configSetup.getConfigGroupType())) {
 				return configSetup;
 			}
 		}
