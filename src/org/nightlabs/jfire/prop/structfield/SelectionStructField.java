@@ -254,7 +254,8 @@ public class SelectionStructField extends StructField<SelectionDataField>
 		if (getDefaultValue() != null) {
 			selectionDataField.setSelection(getDefaultValue());
 		} else if (!allowsEmptySelection) {
-			selectionDataField.setSelection(getStructFieldValues().get(0));
+			List<StructFieldValue> structFieldValues = getStructFieldValues();
+			selectionDataField.setSelection(structFieldValues.size() > 0 ? structFieldValues.get(0) : null);
 		} else {
 			selectionDataField.setSelection(null);
 		}
