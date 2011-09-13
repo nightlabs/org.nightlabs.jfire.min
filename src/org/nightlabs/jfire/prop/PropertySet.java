@@ -69,6 +69,7 @@ import org.nightlabs.inheritance.FieldInheriter;
 import org.nightlabs.inheritance.FieldMetaData;
 import org.nightlabs.inheritance.Inheritable;
 import org.nightlabs.inheritance.StaticFieldMetaData;
+import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jdo.ObjectIDUtil;
 import org.nightlabs.jdo.inheritance.JDOSimpleFieldInheriter;
 import org.nightlabs.jfire.idgenerator.IDGenerator;
@@ -125,22 +126,6 @@ import org.nightlabs.util.Util;
  * @author Alexander Bieber <alex[AT]nightlabs[DOT]de>
  * @author nick
  * @author Tobias Langner <!-- tobias[dot]langner[at]nightlabs[dot]de -->
- *
- * @jdo.persistence-capable
- *		identity-type="application"
- *		objectid-class="org.nightlabs.jfire.prop.id.PropertySetID"
- *		detachable="true"
- *		table="JFireBase_Prop_PropertySet"
- *
- * @jdo.inheritance strategy="new-table"
- * @jdo.inheritance-discriminator strategy="class-name"
- *
- * @jdo.create-objectid-class field-order="organisationID, propertySetID"
- *
- * @jdo.fetch-group name="PropertySet.dataFields" fetch-groups="default" fields="dataFields"
- * @!jdo.fetch-group name="PropertySet.propTypes" fetch-groups="default" fields="propTypes"
- * @jdo.fetch-group name="PropertySet.this" fetch-groups="default" fields="dataFields"
- * @jdo.fetch-group name="FetchGroupsProp.fullData" fetch-groups="default" fields="dataFields"
  */
 @PersistenceCapable(
 	objectIdClass=PropertySetID.class,
@@ -165,14 +150,8 @@ import org.nightlabs.util.Util;
 @Inheritance(strategy=InheritanceStrategy.NEW_TABLE)
 public class PropertySet implements Serializable, StoreCallback, AttachCallback, DetachCallback, DeleteCallback, Inheritable, SecuredObject
 {
-	/**
-	 * The Log4j Logger used by this class.
-	 */
 	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger.getLogger(PropertySet.class);
 
-	/**
-	 * The serial version of this class.
-	 */
 	private static final long serialVersionUID = 20090304L;
 
 	private static Set<String> nonInheritableFields = new HashSet<String>();
@@ -211,15 +190,10 @@ public class PropertySet implements Serializable, StoreCallback, AttachCallback,
 	 * The {@link Struct} that this instance corresponds to.
 	 * This is set after a {@link PropertySet} was inflated and is set to <code>null</code> while deflating. Thus it is ensured,
 	 * that this instance is never submitted to the server.
-	 *
-	 * @jdo.field persistence-modifier="none"
 	 */
 	@Persistent(persistenceModifier=PersistenceModifier.NONE)
 	protected IStruct refStruct = null;
 
-	/**
-	 * @jdo.field persistence-modifier="none"
-	 */
 	@Persistent(persistenceModifier=PersistenceModifier.NONE)
 	protected Map<StructFieldID, Integer> dataFieldCount;
 
@@ -290,10 +264,6 @@ public class PropertySet implements Serializable, StoreCallback, AttachCallback,
 		this.structLocalScope = structLocalScope;
 	}
 
-	/**
-	 * @jdo.field persistence-modifier="persistent" primary-key="true"
-	 * @jdo.column length="100"
-	 */
 	@PrimaryKey
 	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
 	@Column(length=100)
@@ -306,9 +276,6 @@ public class PropertySet implements Serializable, StoreCallback, AttachCallback,
 		return organisationID;
 	}
 
-	/**
-	 * @jdo.field persistence-modifier="persistent" primary-key="true"
-	 */
 	@PrimaryKey
 	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
 	private long propertySetID;
@@ -320,48 +287,28 @@ public class PropertySet implements Serializable, StoreCallback, AttachCallback,
 		return propertySetID;
 	}
 
-	/**
-	 * @jdo.field persistence-modifier="persistent" indexed="true"
-	 */
 	@Element(indexed="true")
 	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
 	private String structOrganisationID;
 
-	/**
-	 * @jdo.field persistence-modifier="persistent" indexed="true"
-	 */
 	@Element(indexed="true")
 	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
 	private String structLinkClass;
 
 
-	/**
-	 * @jdo.field persistence-modifier="persistent" indexed="true"
-	 * @jdo.column length="100"
-	 */
 	@Element(indexed="true")
 	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
 	@Column(length=100)
 	private String structScope;
 
-	/**
-	 * @jdo.field persistence-modifier="persistent" indexed="true"
-	 * @jdo.column length="100"
-	 */
 	@Element(indexed="true")
 	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
 	@Column(length=100)
 	private String structLocalScope;
 
-	/**
-	 * @jdo.field persistence-modifier="persistent"
-	 */
 	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
 	private String securingAuthorityID;
 
-	/**
-	 * @jdo.field persistence-modifier="persistent"
-	 */
 	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
 	private String securingAuthorityTypeID;
 
@@ -371,7 +318,7 @@ public class PropertySet implements Serializable, StoreCallback, AttachCallback,
 
 		this.securingAuthorityTypeID = securingAuthorityTypeID == null ? null : securingAuthorityTypeID.toString();
 	}
-	
+
 	/**
 	 * @return The scope of the StructLocal this PropertySet
 	 * is build of.
@@ -468,8 +415,6 @@ public class PropertySet implements Serializable, StoreCallback, AttachCallback,
 	/**
 	 * key: String StructBlockID.getPrimaryKey(structBlockOrganisationID, structBlockID)<br/>
 	 * value: DataBlockGroup propBlockGroup
-	 *
-	 * @jdo.field persistence-modifier="none"
 	 */
 	@Persistent(persistenceModifier=PersistenceModifier.NONE)
 	protected transient Map<String, DataBlockGroup> dataBlockGroups;
@@ -477,23 +422,10 @@ public class PropertySet implements Serializable, StoreCallback, AttachCallback,
 	/**
 	 * Used internally to speed up {@link #getPersistentDataField(StructFieldID, int)}.
 	 * It maps each struct field into a list of the corresponding {@link DataField}s ordered by their index.
-	 *
-	 * @jdo.field persistence-modifier="none"
 	 */
 	@Persistent(persistenceModifier=PersistenceModifier.NONE)
 	private transient Map<StructFieldID, List<DataField>> dataFieldsMap;
 
-	/**
-	 * @jdo.field
-	 *		persistence-modifier="persistent"
-	 *		collection-type="collection"
-	 *		element-type="org.nightlabs.jfire.prop.DataField"
-	 *		table="JFireBase_Prop_PropertySet_dataFields"
-	 *		dependent-element="true"
-	 *		null-value="exception"
-	 *
-	 * @jdo.join
-	 */
 	@Join
 	@Persistent(
 		dependentElement="true",
@@ -503,6 +435,7 @@ public class PropertySet implements Serializable, StoreCallback, AttachCallback,
 	private Set<DataField> dataFields = new HashSet<DataField>();
 
 	private static Comparator<DataField> dataFieldIndexComparator = new Comparator<DataField>() {
+		@Override
 		public int compare(DataField o1, DataField o2) {
 			return Integer.valueOf(o1.getDataBlockIndex()).compareTo(o2.getDataBlockIndex());
 		}
@@ -815,10 +748,7 @@ public class PropertySet implements Serializable, StoreCallback, AttachCallback,
 //		this.languageID = _propLanguageID;
 //	}
 
-	/**
-	 * @jdo.field persistence-modifier="persistent"
-	 */
-@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
+	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
 	private String displayName;
 
 	/**
@@ -881,9 +811,6 @@ public class PropertySet implements Serializable, StoreCallback, AttachCallback,
 		}
 	}
 
-	/**
-	 * @jdo.field persistence-modifier="persistent"
-	 */
 	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT)
 	private boolean autoGenerateDisplayName = true;
 
@@ -995,7 +922,7 @@ public class PropertySet implements Serializable, StoreCallback, AttachCallback,
 		// corresponding to a StructField in the Structure. Maybe later we
 		// should force the deletion of all DataFields when a StructField is
 		// deleted.
-		
+
 //		for (DataField field : dataFields) {
 //			if (!refStruct.containsDataField(field))
 //				throw new StructureViolationException("The structure of this property does not match " + refStruct);
@@ -1194,10 +1121,10 @@ public class PropertySet implements Serializable, StoreCallback, AttachCallback,
 		// TODO reactivate this - currently a JPOX bug causes a JDOObjectNotFoundException when copying a Person from one datastore to another. Marco. 2007-02-15
 		//		if (isInflated())
 		//			throw new IllegalStateException("You just attempted to store an exploded property");
-		
+
 		// Replaced this with the code below, as this lead in some cases to org.datanucleus.store.exceptions.NotYetFlushedException: not yet flushed
 //		DetachedPropertySetCache.getInstance(JDOHelper.getPersistenceManager(this)).remove(this);
-		
+
 		final PersistenceManager pm = JDOHelper.getPersistenceManager(this);
 		pm.addInstanceLifecycleListener(
 				new StoreLifecycleListener() {
@@ -1294,23 +1221,28 @@ public class PropertySet implements Serializable, StoreCallback, AttachCallback,
 	}
 
 	/**
-	 * This field is used when a {@link PropertySet} is trimmed after detach.
-	 * A trimmed detached PropertySet can not be attached any more. This field will be checked and
-	 * an exception will be thrown.
-	 *
-	 * @jdo.field persistence-modifier="none"
+	 * @see #isTrimmedDetached()
 	 */
 	@Persistent(persistenceModifier=PersistenceModifier.NONE)
 	private boolean trimmedDetached = false;
 
 	/**
+	 * <p>
+	 * Was this {@link PropertySet} trimmed after being detached. Trimmed means, it contains an incomplete
+	 * subset of {@link DataField}s and can therefore only be used for read-only operations.
+	 * </p><p>
+	 * Attaching a trimmed detached PropertySet will <b>not</b> modify any data. Instead, this field will be checked and
+	 * the old data from the database will be loaded prior to the attachment process.
+	 * </p>
+	 *
 	 * @return Whether this instance of PropertySet was detached with a trimmed list of
-	 *         StructFields. Note, that trimmed-detached PropertySets can't be re-attached.
+	 *         StructFields. Note, that trimmed-detached PropertySets can't be modified by re-attaching.
+	 * @see #detachPropertySetWithTrimmedFieldList(PersistenceManager, PropertySet, Set, String[], int)
 	 */
 	public boolean isTrimmedDetached() {
 		return trimmedDetached;
 	}
-	
+
 	/**
 	 * Does nothing.
 	 */
@@ -1322,10 +1254,38 @@ public class PropertySet implements Serializable, StoreCallback, AttachCallback,
 	/**
 	 * Ensures not trimmed detached instances of {@link PropertySet} can be re-attached.
 	 */
+	@Override
 	public void jdoPreAttach() {
-		if (trimmedDetached)
-			throw new UnsupportedOperationException("Trimmed detached PropertySets are not allowed to be re-attached");
-		
+		if (trimmedDetached) {
+			LOGGER.debug("jdoPreAttach: trimmedDetached is true! Loading persistent data to prevent overwriting!");
+//			throw new UnsupportedOperationException("Trimmed detached PropertySets are not allowed to be re-attached");
+
+			PersistenceManager pm = NLJDOHelper.getThreadPersistenceManager();
+			PropertySetID propertySetID = PropertySetID.create(this.organisationID, this.propertySetID);
+
+			// If the following pm.getObjectById throws a JDOObjectNotFoundException, it means, the object does not exist in the database.
+			// There might be 2 reasons for this: Either we are copying it across datastores or it was deleted in the meantime. For the
+			// first situation: NEVER COPY TRIMMED INSTANCES ACROSS DATASTORES!!! For the second situation: We have a collision and can't
+			// solve it here (because of INCOMPLETE data!!!) We could only throw a nicer exception, but we're lazy and this comment here
+			// will hopefully help ;-)
+			// Sebl + Marco :-)
+			PropertySet attached = (PropertySet) pm.getObjectById(propertySetID);
+			this.autoGenerateDisplayName = attached.autoGenerateDisplayName;
+			this.dataBlockGroups = attached.dataBlockGroups;
+			this.dataFieldCount = attached.dataFieldCount;
+			this.dataFields = attached.dataFields;
+			this.dataFieldsMap = attached.dataFieldsMap;
+			this.displayName = attached.displayName;
+			this.nonPersistentUserObjectMap = attached.nonPersistentUserObjectMap;
+			this.refStruct = attached.refStruct;
+			this.securingAuthorityID = attached.securingAuthorityID;
+			this.securingAuthorityTypeID = attached.securingAuthorityTypeID;
+			this.structLinkClass = attached.structLinkClass;
+			this.structLocalScope = attached.structLocalScope;
+			this.structOrganisationID = attached.structOrganisationID;
+			this.structScope = attached.structScope;
+		}
+
 		// commented check because DataNucleus does not find Authority with given ID although it exists in the datastore
 //		PersistenceManager pm = NLJDOHelper.getThreadPersistenceManager();
 //		if (pm == null)
@@ -1338,14 +1298,19 @@ public class PropertySet implements Serializable, StoreCallback, AttachCallback,
 //			final AuthorityType securingAuthorityType = (AuthorityType) pm.getObjectById(getSecuringAuthorityTypeID());
 //			if (!authority.getAuthorityType().equals(securingAuthorityType))
 //				throw new IllegalArgumentException("securingAuthority.authorityType does not match this.securingAuthorityTypeID! securingAuthority: " + securingAuthorityID + " this: " + organisationID + "/" + propertySetID);
-//		}		
+//		}
 	}
 
 	/**
-	 * Returns a detached copy of the given {@link PropertySet} whose list of {@link DataField}s will be trimmed
-	 * so it will only contain these fields referenced in the given structFieldIDs.
 	 * <p>
-	 * Note that {@link PropertySet}s detached this way can not be re-attached.
+	 * Detach a copy of the given {@link PropertySet} with only a subset of its {@link DataField}s.
+	 * </p><p>
+	 * The resulting <code>PropertySet</code> will be a detached copy and trimmed
+	 * so that it will only contain the fields referenced by the given <code>structFieldIDs</code>.
+	 * </p><p>
+	 * Note that {@link PropertySet}s detached this way can not be used to modify any data via re-attaching.
+	 * Re-attaching will instead cause the old data to be loaded from the database and override the detached instance's
+	 * data in order to prevent data loss.
 	 * </p>
 	 *
 	 * @param pm The {@link PersistenceManager} to use.
@@ -1354,6 +1319,7 @@ public class PropertySet implements Serializable, StoreCallback, AttachCallback,
 	 * @param fetchGroups The fetchGroup to detach the {@link PropertySet} with.
 	 * @param maxFetchDepth The maxFetchDepth for the detach fetch plan
 	 * @return A detached PropertySet trimmed to include only the given structFieldIDs.
+	 * @see #isTrimmedDetached()
 	 */
 	public static PropertySet detachPropertySetWithTrimmedFieldList(PersistenceManager pm, PropertySet propertySet, Set<StructFieldID> structFieldIDs,
 			String[] fetchGroups, int maxFetchDepth) {
@@ -1361,40 +1327,40 @@ public class PropertySet implements Serializable, StoreCallback, AttachCallback,
 		if (fetchGroups != null)
 			_fetchGroups.addAll(Arrays.asList(fetchGroups));
 		_fetchGroups.add(PropertySet.FETCH_GROUP_DATA_FIELDS);
-		
-		// FIXME: DataNucleus WORKAROUND BEGIN: This is a workaround for: 
-		/*		
+
+		// FIXME: DataNucleus WORKAROUND BEGIN: This is a workaround for:
+		/*
 		[Persistence] DETACH ERROR : Error thrown while detaching org.nightlabs.jfire.person.Person@d0a532 (id=jdo/org.nightlabs.jfire.prop.id.PropertySetID?organisationID=chezfrancois.jfire.org&propertySetID=1h)
-		java.lang.NullPointerException                                                                                                                                                                                 
-		        at org.datanucleus.store.rdbms.query.PersistentIDROF.getObjectForApplicationId(PersistentIDROF.java:377)                                                                                               
-		        at org.datanucleus.store.rdbms.query.PersistentIDROF.getObject(PersistentIDROF.java:276)                                                                                                               
-		        at org.datanucleus.store.mapped.scostore.SetStoreIterator.<init>(SetStoreIterator.java:104)                                                                                                            
-		        at org.datanucleus.store.rdbms.scostore.RDBMSSetStoreIterator.<init>(RDBMSSetStoreIterator.java:40)                                                                                                    
-		        at org.datanucleus.store.rdbms.scostore.RDBMSJoinSetStore.iterator(RDBMSJoinSetStore.java:666)                                                                                                         
-		        at org.datanucleus.sco.backed.Set.loadFromStore(Set.java:286)                                                                                                                                          
-		        at org.datanucleus.sco.backed.Set.initialise(Set.java:235)                                                                                                                                             
-		        at org.datanucleus.sco.SCOUtils.newSCOInstance(SCOUtils.java:183)                                                                                                                                      
-		        at org.datanucleus.store.mapped.mapping.AbstractContainerMapping.replaceFieldWithWrapper(AbstractContainerMapping.java:426)                                                                            
-		        at org.datanucleus.store.mapped.mapping.AbstractContainerMapping.postFetch(AbstractContainerMapping.java:444)                                                                                          
-		        at org.datanucleus.store.rdbms.request.FetchRequest2.execute(FetchRequest2.java:391)                                                                                                                   
-		        at org.datanucleus.store.rdbms.RDBMSPersistenceHandler.fetchObject(RDBMSPersistenceHandler.java:271)                                                                                                   
-		        at org.datanucleus.state.JDOStateManagerImpl.loadUnloadedFieldsInFetchPlan(JDOStateManagerImpl.java:1627)                                                                                              
-		        at org.datanucleus.state.JDOStateManagerImpl.detachCopy(JDOStateManagerImpl.java:3623)                                                                                                                 
-		        at org.datanucleus.ObjectManagerImpl.detachObjectCopy(ObjectManagerImpl.java:1880)                                                                                                                     
-		        at org.datanucleus.jdo.JDOPersistenceManager.jdoDetachCopy(JDOPersistenceManager.java:1105)                                                                                                            
-		        at org.datanucleus.jdo.JDOPersistenceManager.detachCopy(JDOPersistenceManager.java:1134)                                                                                                               
-		        at org.datanucleus.jdo.connector.PersistenceManagerImpl.detachCopy(PersistenceManagerImpl.java:883)                                                                                                    
-		        at org.nightlabs.jfire.prop.PropertySet.detachPropertySetWithTrimmedFieldList(PropertySet.java:1259)                                                                                                   
+		java.lang.NullPointerException
+		        at org.datanucleus.store.rdbms.query.PersistentIDROF.getObjectForApplicationId(PersistentIDROF.java:377)
+		        at org.datanucleus.store.rdbms.query.PersistentIDROF.getObject(PersistentIDROF.java:276)
+		        at org.datanucleus.store.mapped.scostore.SetStoreIterator.<init>(SetStoreIterator.java:104)
+		        at org.datanucleus.store.rdbms.scostore.RDBMSSetStoreIterator.<init>(RDBMSSetStoreIterator.java:40)
+		        at org.datanucleus.store.rdbms.scostore.RDBMSJoinSetStore.iterator(RDBMSJoinSetStore.java:666)
+		        at org.datanucleus.sco.backed.Set.loadFromStore(Set.java:286)
+		        at org.datanucleus.sco.backed.Set.initialise(Set.java:235)
+		        at org.datanucleus.sco.SCOUtils.newSCOInstance(SCOUtils.java:183)
+		        at org.datanucleus.store.mapped.mapping.AbstractContainerMapping.replaceFieldWithWrapper(AbstractContainerMapping.java:426)
+		        at org.datanucleus.store.mapped.mapping.AbstractContainerMapping.postFetch(AbstractContainerMapping.java:444)
+		        at org.datanucleus.store.rdbms.request.FetchRequest2.execute(FetchRequest2.java:391)
+		        at org.datanucleus.store.rdbms.RDBMSPersistenceHandler.fetchObject(RDBMSPersistenceHandler.java:271)
+		        at org.datanucleus.state.JDOStateManagerImpl.loadUnloadedFieldsInFetchPlan(JDOStateManagerImpl.java:1627)
+		        at org.datanucleus.state.JDOStateManagerImpl.detachCopy(JDOStateManagerImpl.java:3623)
+		        at org.datanucleus.ObjectManagerImpl.detachObjectCopy(ObjectManagerImpl.java:1880)
+		        at org.datanucleus.jdo.JDOPersistenceManager.jdoDetachCopy(JDOPersistenceManager.java:1105)
+		        at org.datanucleus.jdo.JDOPersistenceManager.detachCopy(JDOPersistenceManager.java:1134)
+		        at org.datanucleus.jdo.connector.PersistenceManagerImpl.detachCopy(PersistenceManagerImpl.java:883)
+		        at org.nightlabs.jfire.prop.PropertySet.detachPropertySetWithTrimmedFieldList(PropertySet.java:1259)
 		        at org.nightlabs.jfire.prop.PropertyManagerBean.getDetachedTrimmedPropertySets(PropertyManagerBean.java:233)
 		*/
 		// Without adding the default fetch-group the above exception happens
 		_fetchGroups.add(FetchPlan.DEFAULT);
 				// WORKAROUND END
-		
+
 		pm.getFetchPlan().setGroups(_fetchGroups);
 		pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
-		
-		
+
+
 		PropertySet detached = pm.detachCopy(propertySet);
 		for (Iterator<DataField> iter = detached.dataFields.iterator(); iter.hasNext();) {
 			DataField field = iter.next();
@@ -1443,7 +1409,7 @@ public class PropertySet implements Serializable, StoreCallback, AttachCallback,
 				nonInheritableFields.add(FieldName.structLinkClass);
 				nonInheritableFields.add(FieldName.structScope);
 				nonInheritableFields.add(FieldName.structLocalScope);
-				
+
 				// for the beginning we don't inherit the securingAuthorityID and securingAuthorityTypeID
 				nonInheritableFields.add(FieldName.securingAuthorityID);
 				nonInheritableFields.add(FieldName.securingAuthorityTypeID);
@@ -1693,7 +1659,7 @@ public class PropertySet implements Serializable, StoreCallback, AttachCallback,
 
 		return nonPersistentUserObjectMap;
 	}
-	
+
 	@Override
 	public AuthorityID getSecuringAuthorityID() {
 		if (securingAuthorityID == null)
@@ -1738,7 +1704,7 @@ public class PropertySet implements Serializable, StoreCallback, AttachCallback,
 			return; // nothing to do
 		this.securingAuthorityID = authorityID == null ? null : authorityID.toString();
 	}
-	
+
 	@Override
 	public void jdoPreDelete() {
 		DetachedPropertySetCache.getInstance(JDOHelper.getPersistenceManager(this)).remove(this);
