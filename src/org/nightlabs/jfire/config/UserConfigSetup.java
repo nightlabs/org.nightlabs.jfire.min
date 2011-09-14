@@ -32,17 +32,16 @@ import java.util.Iterator;
 
 import javax.jdo.JDOHelper;
 import javax.jdo.PersistenceManager;
+import javax.jdo.annotations.IdentityType;
+import javax.jdo.annotations.Inheritance;
+import javax.jdo.annotations.InheritanceStrategy;
+import javax.jdo.annotations.PersistenceCapable;
 
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.config.id.ConfigID;
-import org.nightlabs.jfire.security.SecurityReflector;
+import org.nightlabs.jfire.security.GlobalSecurityReflector;
 import org.nightlabs.jfire.security.User;
 import org.nightlabs.jfire.security.id.UserID;
-
-import javax.jdo.annotations.InheritanceStrategy;
-import javax.jdo.annotations.Inheritance;
-import javax.jdo.annotations.PersistenceCapable;
-import javax.jdo.annotations.IdentityType;
 // WORKAROUND: Use inheritance strategy superclass-table when jpox bug fixed
 /**
  * UserConfigSetup provides the configuration-setup on User basis for JFire.
@@ -100,6 +99,8 @@ public class UserConfigSetup extends ConfigSetup
 	 */
 	protected static Collection<Config> ensureAllUsersHaveConfig(PersistenceManager pm, String organisationID, boolean get) {
 		boolean countEqual = false;
+		// FIXME: It seems that this condition could not be true IF _Other_ User is present in the system. 
+		// Should is also be added to the right side of this condition together with _System_ User? Denis.
 		if (
 				// number of all Configs linked to users
 				NLJDOHelper.getObjectCount(
@@ -185,7 +186,7 @@ public class UserConfigSetup extends ConfigSetup
 	 * @return The {@link ConfigModule} linked to the current {@link User}
 	 */
 	public static <T extends ConfigModule> T getUserConfigModule(PersistenceManager pm, Class<T> cfModClass) {
-		User user = SecurityReflector.getUserDescriptor().getUser(pm);
+		User user = GlobalSecurityReflector.sharedInstance().getUserDescriptor().getUser(pm);
 		Config config = Config.getConfig(pm, user.getOrganisationID(), user);		
 		return (T) config.createConfigModule(cfModClass);
 	}
