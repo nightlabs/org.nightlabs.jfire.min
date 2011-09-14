@@ -238,7 +238,7 @@ implements Serializable, Comparable<User>, AttachCallback, DetachCallback, Store
 	 * @return the <code>User</code> object corresponding to the currently logged-in user.
 	 */
 	public static User getUser(PersistenceManager pm) {
-		UserDescriptor userDescriptor = SecurityReflector.getUserDescriptor();
+		UserDescriptor userDescriptor = GlobalSecurityReflector.sharedInstance().getUserDescriptor();
 		return getUser(pm, userDescriptor.getOrganisationID(), userDescriptor.getUserID());
 	}
 
@@ -626,11 +626,18 @@ implements Serializable, Comparable<User>, AttachCallback, DetachCallback, Store
 	 *
 	 * @param pm PersistenceManager to use
 	 * @param userType The userType to search for
-	 * @param systemUserID The userID to exclude
+	 * @param systemUserID The userID to exclude, if <code>null</code> is given it will be replaced with empty string
 	 * @return All users of the given type exluding the user with the given systemUserID
 	 */
 	public static Collection<User> getUsersByType(PersistenceManager pm, String userType, String systemUserID) {
 		Query q = pm.newNamedQuery(User.class, "getUsersByType");
+		// If systemUserID param will be null than query will return nothing. I've checked similar SQL query on MySQL Server and found
+		// out that it also returns an empty result set. But if expression "user_id != null" is replaced with "user_id is not null" than
+		// we'll get the expected result set with all the records. Having no possibilty to make such a replacement for JDOQL I just replaced
+		// null value with an empty String. Denis.
+		if (systemUserID == null){
+			systemUserID = "";
+		}
 		return (Collection<User>) q.execute(userType, systemUserID);
 	}
 
@@ -688,7 +695,7 @@ implements Serializable, Comparable<User>, AttachCallback, DetachCallback, Store
 
 			if (checkAccessToUserLocal) {
 				PersistenceManager pm = JDOHelper.getPersistenceManager(attached);
-				UserID principalUserID = SecurityReflector.getUserDescriptor().getUserObjectID();
+				UserID principalUserID = GlobalSecurityReflector.sharedInstance().getUserDescriptor().getUserObjectID();
 				// check authorization via the organisation-authority
 				if (!Authority.getOrganisationAuthority(pm).containsRoleRef(principalUserID, RoleConstants.accessRightManagement)) {
 					// clear the confidential data
@@ -735,7 +742,7 @@ implements Serializable, Comparable<User>, AttachCallback, DetachCallback, Store
 
 	private void restoreFieldsWithMissingAccessRights(PersistenceManager pm) {
 		// If the currently logged-in user is allowed to store users, we don't restore any fields and return instead.
-		UserID principalUserID = SecurityReflector.getUserDescriptor().getUserObjectID();
+		UserID principalUserID = GlobalSecurityReflector.sharedInstance().getUserDescriptor().getUserObjectID();
 		if (Authority.getOrganisationAuthority(pm).containsRoleRef(principalUserID, RoleConstants.storeUser))
 			return;
 
