@@ -129,22 +129,29 @@ public abstract class DataField implements Serializable, Comparable<DataField>, 
 
 	/**
 	 * Create a new {@link DataField} with its primary key fields
+	 * set according to the given {@link DataFieldID}.
+	 *
+	 * @param dataFieldID The {@link DataFieldID} the should have.
+	 */
+	public DataField(DataFieldID dataFieldID) {
+		this.structFieldOrganisationID = dataFieldID.structFieldOrganisationID;
+		this.structFieldID = dataFieldID.structFieldID;
+		this.organisationID = dataFieldID.organisationID;
+		this.propertySetID = dataFieldID.propertySetID;
+		this.structBlockOrganisationID = dataFieldID.structBlockOrganisationID;
+		this.structBlockID = dataFieldID.structBlockID;
+		this.dataBlockID = dataFieldID.dataBlockID;
+	}
+	
+	/**
+	 * Create a new {@link DataField} with its primary key fields
 	 * set according to the given {@link DataBlock} and {@link StructField}-
 	 *
 	 * @param _dataBlock The {@link DataBlock} the new {@link DataField} should virtually be in.
 	 * @param _structField The {@link StructField} the new {@link DataField} should represent.
 	 */
 	public DataField(DataBlock _dataBlock, StructField<? extends DataField> _structField) {
-		// this.propBlock = _propBlock;
-		this.structFieldOrganisationID = _structField.getStructFieldOrganisationID();
-		this.structFieldID = _structField.getStructFieldID();
-		// initPK();
-		this.organisationID = _dataBlock.getOrganisationID();
-		this.propertySetID = _dataBlock.getPropertySetID();
-		this.structBlockOrganisationID = _dataBlock.getStructBlockOrganisationID();
-		this.structBlockID = _dataBlock.getStructBlockID();
-		this.dataBlockID = _dataBlock.getDataBlockID();
-//		this.structField = _structField;
+		this(DataFieldID.create(_dataBlock, _structField.getStructFieldOrganisationID(), _structField.getStructFieldID()));
 	}
 
 	/**

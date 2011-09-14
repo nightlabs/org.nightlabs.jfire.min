@@ -294,6 +294,18 @@ public class DataBlockGroup implements Serializable, Comparable<DataBlockGroup> 
 	 * @throws DataBlockUniqueException If the corresponding {@link StructBlock} is marked unique.
 	 */
 	public DataBlock addDataBlock(StructBlock structBlock, int index) throws DataBlockUniqueException {
+		return addDataBlock(structBlock, index, true);
+	}
+	
+	/**
+	 * Adds a new DataBlock to this group. All fields within the Block are initialized as well.<br/> If the second Block for a unique StructBlock
+	 * should be created a DataBlockUniqueException is thrown.
+	 * @param structBlock The structBlock according to which a new {@link DataBlock} should be added.
+	 * @param index The index at which the new {@link DataBlock} should be inserted or <code>-1</code> if it should be appended at the end.
+	 * @return the just created {@link DataBlock}.
+	 * @throws DataBlockUniqueException If the corresponding {@link StructBlock} is marked unique.
+	 */
+	public DataBlock addDataBlock(StructBlock structBlock, int index, boolean inflate) throws DataBlockUniqueException {
 		if (index < -1 || index > dataBlockMap.size()) {
 			throw new IllegalArgumentException("index < -1 || index > dataBlockMap.size() !!!");
 		}
@@ -327,7 +339,9 @@ public class DataBlockGroup implements Serializable, Comparable<DataBlockGroup> 
 			}
 		}
 		dataBlockMap.put(newDataBlock.getDataBlockID(), newDataBlock);
-		newDataBlock.inflate(structBlock);
+		if (inflate) {
+			newDataBlock.inflate(structBlock);
+		}
 
 		if (LOGGER.isDebugEnabled())
 			LOGGER.debug("Added new DataBlock (index " + index + ") to DataBlockGroup " + this.getStructBlockKey());

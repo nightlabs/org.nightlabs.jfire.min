@@ -15,6 +15,7 @@ import org.nightlabs.jfire.prop.DataBlock;
 import org.nightlabs.jfire.prop.DataField;
 import org.nightlabs.jfire.prop.PropertySet;
 import org.nightlabs.jfire.prop.StructField;
+import org.nightlabs.jfire.prop.id.DataFieldID;
 
 /**
  * {@link DataField} that stores a phone number in form of three parts:
@@ -75,6 +76,10 @@ implements II18nTextDataField
 	 */
 	public PhoneNumberDataField(DataBlock dataBlock, StructField<PhoneNumberDataField> structField) {
 		super (dataBlock, structField);
+	}
+	
+	public PhoneNumberDataField(DataFieldID dataFieldID) {
+		super(dataFieldID);
 	}
 
 	/**

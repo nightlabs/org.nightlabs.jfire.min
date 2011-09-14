@@ -78,6 +78,7 @@ import org.nightlabs.jfire.prop.cache.DetachedPropertySetCache;
 import org.nightlabs.jfire.prop.datafield.II18nTextDataField;
 import org.nightlabs.jfire.prop.exception.DataBlockGroupNotFoundException;
 import org.nightlabs.jfire.prop.exception.DataBlockNotFoundException;
+import org.nightlabs.jfire.prop.exception.DataBlockUniqueException;
 import org.nightlabs.jfire.prop.exception.DataFieldNotFoundException;
 import org.nightlabs.jfire.prop.exception.StructureViolationException;
 import org.nightlabs.jfire.prop.id.PropertySetID;
@@ -152,7 +153,7 @@ public class PropertySet implements Serializable, StoreCallback, AttachCallback,
 {
 	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger.getLogger(PropertySet.class);
 
-	private static final long serialVersionUID = 20090304L;
+	private static final long serialVersionUID = 20110914L;
 
 	private static Set<String> nonInheritableFields = new HashSet<String>();
 
@@ -192,7 +193,7 @@ public class PropertySet implements Serializable, StoreCallback, AttachCallback,
 	 * that this instance is never submitted to the server.
 	 */
 	@Persistent(persistenceModifier=PersistenceModifier.NONE)
-	protected IStruct refStruct = null;
+	protected transient IStruct refStruct = null;
 
 	@Persistent(persistenceModifier=PersistenceModifier.NONE)
 	protected Map<StructFieldID, Integer> dataFieldCount;
@@ -1709,4 +1710,76 @@ public class PropertySet implements Serializable, StoreCallback, AttachCallback,
 	public void jdoPreDelete() {
 		DetachedPropertySetCache.getInstance(JDOHelper.getPersistenceManager(this)).remove(this);
 	}
+
+	/**
+	 * Helper method that returns the DataField for the given StructFieldID and
+	 * creates it if it is not yet persistent. This method will create the
+	 * DataField without inflating the PropertySet so it can be (in fact has to
+	 * be) called for attached instances of PropertySet.
+	 * 
+	 * @param prop The PropertySet to get/create the field for.  
+	 * @param structFieldID The Id of the field to get.
+	 * @return A DataField that is persistent in the given PropertySet.
+	 */
+	public DataField getCreatePersistentDataField(StructFieldID structFieldID) {
+		DataField persistentDataField = getPersistentDataFieldByIndex(structFieldID, 0);
+		if (persistentDataField == null) {
+			PersistenceManager pm = JDOHelper.getPersistenceManager(this);
+			if (pm == null)
+				throw new IllegalArgumentException("This method can only be called for attached instances of Person (JDOHelper.getPersistenceManager(person) == null)");
+			
+			populateStructure();
+			String structBlockKey = StructBlock.getPrimaryKey(structFieldID.structBlockOrganisationID, structFieldID.structBlockID);
+			
+			// First we see if there is a half-inflated data-block, that still 'space' for a new field of the given structFieldID  ;-)
+			if (dataBlockGroups != null) {
+				DataBlockGroup dataBlockGroup = dataBlockGroups.get(structBlockKey);
+				if (dataBlockGroup != null) {
+					List<DataBlock> dataBlocks = dataBlockGroup.getDataBlocks();
+					dataBlockLoop: for (DataBlock dataBlock : dataBlocks) {
+						Collection<DataField> fields = dataBlock.getDataFields();
+						for (DataField dataField : fields) {
+							if (dataField.getStructFieldIDObj().equals(structFieldID)) {
+								continue dataBlockLoop;
+							}
+						}
+						// If we come here, we've found a datablock that does not contain a field of the given structFieldID.
+						@SuppressWarnings("rawtypes")
+						StructField structField = (StructField) pm.getObjectById(structFieldID);
+						return structField.addNewDataFieldInstance(dataBlock);
+					}
+				}
+			}
+			
+			
+			// The datafield is not in the persistent fields yet, and no existing DataBlock was half-inflated an thus had 'space' for the field, create a new Block. 
+			DataBlockGroup dataBlockGroup = null;
+			StructBlockID structBlockID = StructBlockID.create(structFieldID.structBlockOrganisationID, structFieldID.structBlockID);
+			try {
+				dataBlockGroup = getDataBlockGroup(structBlockID);
+			} catch (DataBlockGroupNotFoundException e) {
+				dataBlockGroup = new DataBlockGroup(this, structFieldID.structBlockOrganisationID, structFieldID.structBlockID);
+				dataBlockGroups.put(structBlockKey, dataBlockGroup);
+			}
+			if (dataBlockGroup.isEmpty()) {
+				StructBlock block = (StructBlock) pm.getObjectById(structBlockID);
+				try {
+					dataBlockGroup.addDataBlock(block, 0, false);
+				} catch (DataBlockUniqueException e) {
+					throw new IllegalStateException("This should never happen. Have exception creating a new DataBlock for a uinique StructBlock", e);
+				}
+			}
+			DataBlock dataBlock = null;
+			try {
+				dataBlock = dataBlockGroup.getDataBlockByIndex(0);
+			} catch (DataBlockNotFoundException e) {
+				throw new IllegalStateException("This should never happen. Have ensured above that the DataBlock should exist", e);
+			}
+			@SuppressWarnings("rawtypes")
+			StructField structField = (StructField) pm.getObjectById(structFieldID);
+			persistentDataField = structField.addNewDataFieldInstance(dataBlock);
+		}
+		return persistentDataField;
+	}
+	
 }

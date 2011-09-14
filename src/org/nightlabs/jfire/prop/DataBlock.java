@@ -243,9 +243,11 @@ public class DataBlock implements Serializable
 
 		dataField.setDataBlockIndex(index);
 		try {
-			dataField.setStructField(
-					structBlock.getStructField(dataField.getStructFieldOrganisationID(), dataField.getStructFieldID())
-			);
+			if (structBlock != null) {
+				dataField.setStructField(
+						structBlock.getStructField(dataField.getStructFieldOrganisationID(), dataField.getStructFieldID())
+				);
+			}
 		} catch (final StructFieldNotFoundException e) {
 			throw new IllegalStateException(e); // should never happen => rethrow
 		}

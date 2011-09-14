@@ -398,6 +398,14 @@ public class StructLocal extends AbstractStruct implements DetachCallback, Attac
 		}
 		return orderItem;
 	}
+	
+	public void addStructBlockOrderItem(StructBlock structBlock) {
+		StructBlockOrderItem structBlockOrderItem = getStructBlockOrderItemMap().get(structBlock.getStructBlockIDObj());
+		if (structBlockOrderItem == null) {
+			StructBlockOrderItem orderItem = createStructBlockOrderItem(structBlock);
+			structBlockOrderItems.add(orderItem);
+		}
+	}
 
 	@Override
 	protected List<DisplayNamePart> _getDisplayNameParts() {
