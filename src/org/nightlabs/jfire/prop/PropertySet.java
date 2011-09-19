@@ -1358,11 +1358,32 @@ public class PropertySet implements Serializable, StoreCallback, AttachCallback,
 		_fetchGroups.add(FetchPlan.DEFAULT);
 				// WORKAROUND END
 
-		pm.getFetchPlan().setGroups(_fetchGroups);
-		pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
+		PropertySet detached = DetachedPropertySetCache.getInstance(pm).get((PropertySetID)JDOHelper.getObjectId(propertySet), _fetchGroups.toArray(new String[_fetchGroups.size()]), maxFetchDepth);
+		
+		trimDetachedPropertySet(detached, structFieldIDs);
+		return detached;
+	}
 
-
-		PropertySet detached = pm.detachCopy(propertySet);
+	/**
+	 * Trims the given detached property-set to a subset of its {@link DataField}s
+	 * <p>
+	 * The resulting <code>PropertySet</code> will be a detached copy and trimmed
+	 * so that it will only contain the fields referenced by the given <code>structFieldIDs</code>.
+	 * </p><p>
+	 * Note that {@link PropertySet}s detached this way can not be used to modify any data via re-attaching.
+	 * Re-attaching will instead cause the old data to be loaded from the database and override the detached instance's
+	 * data in order to prevent data loss.
+	 * </p><p> 
+	 * Note, that this method modifies the given instance.
+	 * </p>
+	 * 
+	 * @param detached The detached (will be checked) property-set to trim.
+	 * @param structFieldIDs The StructField-IDs the property-set should be trimmed to.
+	 */
+	public static void trimDetachedPropertySet(PropertySet detached, Set<StructFieldID> structFieldIDs) {
+		if (!JDOHelper.isDetached(detached))
+			throw new IllegalArgumentException("Call this method only with detached PropertySets");
+		
 		for (Iterator<DataField> iter = detached.dataFields.iterator(); iter.hasNext();) {
 			DataField field = iter.next();
 			StructFieldID dataStructFieldID = field.getStructFieldIDObj();
@@ -1371,7 +1392,6 @@ public class PropertySet implements Serializable, StoreCallback, AttachCallback,
 				iter.remove();
 		}
 		detached.trimmedDetached = true;
-		return detached;
 	}
 
 	@Override
