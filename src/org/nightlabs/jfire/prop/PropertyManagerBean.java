@@ -27,6 +27,7 @@
 package org.nightlabs.jfire.prop;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -96,6 +97,7 @@ import org.nightlabs.jfire.prop.view.PropertySetTableViewerConfiguration;
 import org.nightlabs.jfire.prop.view.PropertySetViewerConfiguration;
 import org.nightlabs.jfire.security.Authority;
 import org.nightlabs.jfire.security.ResolveSecuringAuthorityStrategy;
+import org.nightlabs.jfire.security.id.RoleID;
 import org.nightlabs.util.CollectionUtil;
 import org.nightlabs.util.Stopwatch;
 import org.nightlabs.util.Util;
@@ -239,19 +241,29 @@ public class PropertyManagerBean extends BaseSessionBeanImpl implements Property
 	public Set<PropertySet> getDetachedTrimmedPropertySets(Set<PropertySetID> propIDs, Set<StructFieldID> structFieldIDs, String[] fetchGroups, int maxFetchDepth) {
 		PersistenceManager pm = this.createPersistenceManager();
 		try {
-			Collection<PropertySet> propertySets = pm.getObjectsById(propIDs);
-			Set<PropertySet> detachedPropertySets = new HashSet<PropertySet>(propertySets.size());
-//			Set<StructFieldID> structFieldIdSet = new HashSet<StructFieldID>(Arrays.asList(structFieldIDs));
-
-			for (PropertySet ps : propertySets) {
-				PropertySet detachedPropertySet = PropertySet.detachPropertySetWithTrimmedFieldList(pm, ps, structFieldIDs, fetchGroups, maxFetchDepth);
-				detachedPropertySets.add(detachedPropertySet);
-			}
-
-			return detachedPropertySets;
+			return getDetachedTrimmedPropertySets(pm, propIDs, structFieldIDs, fetchGroups, maxFetchDepth);
 		} finally {
 			pm.close();
 		}
+	}
+
+	private Set<PropertySet> getDetachedTrimmedPropertySets(PersistenceManager pm, Set<PropertySetID> propIDs, Set<StructFieldID> structFieldIDs, String[] fetchGroups, int maxFetchDepth) {
+		
+		Set<String> detachFetchGroups = new HashSet<String>();
+		if (fetchGroups != null) {
+			detachFetchGroups.addAll(Arrays.asList(fetchGroups));
+		}
+		if (!detachFetchGroups.contains(PropertySet.FETCH_GROUP_FULL_DATA) && !detachFetchGroups.contains(PropertySet.FETCH_GROUP_DATA_FIELDS)) {
+			// We don't need FULL_DATA to trim, but FULL_DATA includes dataFields, so if FULL_DATA is set that is more than sufficient.
+			detachFetchGroups.add(PropertySet.FETCH_GROUP_DATA_FIELDS);
+		}
+		
+		Set<PropertySet> detachedPropertySets = getCachedAndAuthorityFilteredDetachedPropertySets(
+				pm, propIDs, detachFetchGroups.toArray(new String[detachFetchGroups.size()]), maxFetchDepth, RoleConstants.seePropertySet);
+		for (PropertySet propertySet : detachedPropertySets) {
+			PropertySet.trimDetachedPropertySet(propertySet, structFieldIDs);
+		}
+		return detachedPropertySets;
 	}
 
 	/* (non-Javadoc)
@@ -537,36 +549,39 @@ public class PropertyManagerBean extends BaseSessionBeanImpl implements Property
 	 * @see org.nightlabs.jfire.prop.PropertyManagerRemote#getPropertySets(java.util.Set, java.lang.String[], int)
 	 */
 	@TransactionAttribute(TransactionAttributeType.REQUIRED)
-//	@RolesAllowed("org.nightlabs.jfire.prop.seePropertySet")
 	@RolesAllowed("_Guest_")
 	@Override
 	public Set<PropertySet> getPropertySets(Set<PropertySetID> propIDs, String[] fetchGroups, int maxFetchDepth) {
-		// MultiPageSearchResult multiPageSearchResult = new
-		// MultiPageSearchResult();
 		PersistenceManager pm = createPersistenceManager();
 		try {
-			long time = System.currentTimeMillis();
-//			Set<PropertySet> result = NLJDOHelper.getDetachedObjectSet(pm, propIDs, null, fetchGroups, maxFetchDepth);
-			List<PropertySet> l = DetachedPropertySetCache.getInstance(pm).get(propIDs, fetchGroups, maxFetchDepth);
-
-			if (logger.isDebugEnabled())
-			logger.debug("getPropertySets: Detaching " + l.size() + " PropertySets took " + Util.getTimeDiffString(time));
-
-			time = System.currentTimeMillis();
-			Set<PropertySet> result = new HashSet<PropertySet>(l);
-			if (logger.isDebugEnabled())
-				logger.debug("getPropertySets: Creating Set from List with " + result.size() + " PropertySets took " + Util.getTimeDiffString(time));
-
-			/* filter secured objects (begin) */
-			time = System.currentTimeMillis();
-			result = Authority.filterSecuredObjects(pm, result, getPrincipal(), RoleConstants.seePropertySet, ResolveSecuringAuthorityStrategy.allow);
-			if (logger.isDebugEnabled())
-				logger.debug("getPropertySets: filterSecuredObjects with  " + result.size() + " PropertySets took " + Util.getTimeDiffString(time));
-			/* filter secured objects (end) */
-			return result;
+			return getCachedAndAuthorityFilteredDetachedPropertySets(pm, propIDs, fetchGroups, maxFetchDepth, RoleConstants.seePropertySet);
 		} finally {
 			pm.close();
 		}
+	}
+
+	private Set<PropertySet> getCachedAndAuthorityFilteredDetachedPropertySets(
+			PersistenceManager pm, Set<PropertySetID> propIDs, String[] fetchGroups, int maxFetchDepth, RoleID roleID) {
+		
+		long time = System.currentTimeMillis();
+//			Set<PropertySet> result = NLJDOHelper.getDetachedObjectSet(pm, propIDs, null, fetchGroups, maxFetchDepth);
+		List<PropertySet> l = DetachedPropertySetCache.getInstance(pm).get(propIDs, fetchGroups, maxFetchDepth);
+
+		if (logger.isDebugEnabled())
+		logger.debug("getPropertySets: Detaching " + l.size() + " PropertySets took " + Util.getTimeDiffString(time));
+
+		time = System.currentTimeMillis();
+		Set<PropertySet> result = new HashSet<PropertySet>(l);
+		if (logger.isDebugEnabled())
+			logger.debug("getPropertySets: Creating Set from List with " + result.size() + " PropertySets took " + Util.getTimeDiffString(time));
+
+		/* filter secured objects (begin) */
+		time = System.currentTimeMillis();
+		result = Authority.filterSecuredObjects(pm, result, getPrincipal(), roleID, ResolveSecuringAuthorityStrategy.allow);
+		if (logger.isDebugEnabled())
+			logger.debug("getPropertySets: filterSecuredObjects with  " + result.size() + " PropertySets took " + Util.getTimeDiffString(time));
+		/* filter secured objects (end) */
+		return result;
 	}
 
 	/* (non-Javadoc)
