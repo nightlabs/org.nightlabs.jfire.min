@@ -457,6 +457,7 @@
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.pbx.ear</artifactId>
+				<type>ear</type>
 				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
