@@ -36,8 +36,6 @@
 		<module>../JFireLog4j</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.log4j -->
 		<module>../JFireNumericOrganisationID</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.numorgid -->
 		<module>../JFireBasePublicBean</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.organisation -->
-		<module>../JFirePropFile</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.prop.file -->
-		<module>../JFireHTMLProp</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.prop.html -->
 		<module>../JFireQueryStore</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.query.store -->
 		<module>../JFireServerDataDirectoryJBoss</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.server.data.dir.jboss -->
 		<module>../JFireServerManager</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.servermanager -->
