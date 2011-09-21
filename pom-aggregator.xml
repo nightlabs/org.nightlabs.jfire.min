@@ -31,7 +31,6 @@
 		<module>../org.nightlabs.jfire.classloader.remote</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.classloader.remote -->
 		<module>../JFireRCLBackendBean</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.classloader.remote.backend -->
 		<module>../org.nightlabs.jfire.classloader.remote.backend</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.classloader.remote.backend -->
-		<module>../JFireEntityUserSet</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.entityuserset -->
 		<module>../JFireIntegrationJBoss</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.jboss -->
 		<module>../JFireJBossInterceptors</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.jboss.ejb3 -->
 		<module>../JFireLog4j</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.log4j -->
