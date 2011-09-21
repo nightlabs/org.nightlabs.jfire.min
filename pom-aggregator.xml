@@ -22,66 +22,34 @@
 
 	<modules>
 		<module>../org.nightlabs.jfire.parent</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.parent -->
-		<module>../JFireInitialiseJDO</module> <!-- org.nightlabs.jfire:org.nightlabs.initialisejdo -->
-		<module>../JFireAsterisk</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.asterisk -->
+		<module>../JFireInitialiseJDO</module	> <!-- org.nightlabs.jfire:org.nightlabs.initialisejdo -->
 		<module>../JFireBaseBean</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.base.bean -->
 		<module>../JFireBaseClientLib</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.base.clientlib -->
 		<module>../JFireBaseDAO</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.base.dao -->
 		<module>../JFireBaseJ2EE</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.base.j2ee -->
 		<module>../org.nightlabs.jfire.base</module>
-		<!-- TODO has Eclipse dependencies <module>../org.nightlabs.jfire.base.j2ee</module> --> <!-- org.nightlabs.jfire:org.nightlabs.jfire.base.j2ee -->
-		<!-- TODO has Eclipse dependencies <module>../org.nightlabs.jfire.base.j2ee.osgi</module> --> <!-- org.nightlabs.jfire:org.nightlabs.jfire.base.j2ee.osgi -->
-		<!-- requires a lot <module>../JFireChezFrancois</module> --> <!-- org.nightlabs.jfire:org.nightlabs.jfire.chezfrancois -->
 		<module>../org.nightlabs.jfire.classloader.remote</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.classloader.remote -->
 		<module>../JFireRCLBackendBean</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.classloader.remote.backend -->
 		<module>../org.nightlabs.jfire.classloader.remote.backend</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.classloader.remote.backend -->
-		<module>../JFireDepartment</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.department -->
-		<!-- requires trade <module>../JFireDynamicTrade</module> --> <!-- org.nightlabs.jfire:org.nightlabs.jfire.dynamictrade -->
 		<module>../JFireEntityUserSet</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.entityuserset -->
-		<!-- TODO has ui dependency <module>../org.nightlabs.jfire.errorreport.mantis</module> --> <!-- org.nightlabs.jfire:org.nightlabs.jfire.errorreport.mantis -->
-		<module>../JFireGeography</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.geography -->
-		<module>../JFireIssueTracking</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.issue -->
-		<module>../JFireIssueTrackerBugTracking</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.issue.bug -->
-		<!-- depends on trade (!) <module>../JFireIssueTimeTracking</module> --> <!-- org.nightlabs.jfire:org.nightlabs.jfire.issuetimetracking -->
 		<module>../JFireIntegrationJBoss</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.jboss -->
 		<module>../JFireJBossInterceptors</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.jboss.ejb3 -->
-		<module>../JFireJbpm</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.jbpm -->
-		<module>../JFireJbpmAOP</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.jbpm.aop -->
 		<module>../JFireLog4j</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.log4j -->
 		<module>../JFireNumericOrganisationID</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.numorgid -->
 		<module>../JFireBasePublicBean</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.organisation -->
-		<module>../JFirePBX</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.pbx -->
-		<module>../JFirePersonRelation</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.personrelation -->
-		<module>../JFirePersonRelationEAR</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.personrelation.ear -->
-		<module>../JFirePersonRelationIssueTracking</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.personrelation.issuetracking -->
 		<module>../JFirePropFile</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.prop.file -->
 		<module>../JFireHTMLProp</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.prop.html -->
 		<module>../JFireQueryStore</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.query.store -->
-		<!-- requires scripting <module>../JFireReporting</module> --> <!-- org.nightlabs.jfire:org.nightlabs.jfire.reporting -->
-		<!-- TODO has eclipse dependencies <module>../org.nightlabs.jfire.reporting.birt</module> --> <!-- org.nightlabs.jfire:org.nightlabs.jfire.reporting.birt -->
-		<!-- requires a lot <module>../JFireReportingEngineBirt</module> --> <!-- org.nightlabs.jfire:org.nightlabs.jfire.reporting.engine.birt -->
-		<!-- TODO has eclipse dependencies <module>../org.nightlabs.jfire.reporting.oda.client</module> --> <!-- org.nightlabs.jfire:org.nightlabs.jfire.reporting.oda.client -->
-		<!-- TODO has eclipse dependencies <module>../org.nightlabs.jfire.reporting.oda.wrapper</module> --> <!-- org.nightlabs.jfire:org.nightlabs.jfire.reporting.oda.wrapper -->
-		<!-- requires trade <module>../JFireReportingTrade</module> --> <!-- org.nightlabs.jfire:org.nightlabs.jfire.reporting.trade -->
-		<!-- requires nl-rhino <module>../JFireScripting</module> --> <!-- org.nightlabs.jfire:org.nightlabs.jfire.scripting -->
-		<!-- requires scripting <module>../JFireScriptingEditor2D</module> --> <!-- org.nightlabs.jfire:org.nightlabs.jfire.scripting.editor2d -->
 		<module>../JFireServerDataDirectoryJBoss</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.server.data.dir.jboss -->
 		<module>../JFireServerManager</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.servermanager -->
-		<!-- requires trade <module>../JFireSimpleTrade</module> --> <!-- org.nightlabs.jfire:org.nightlabs.jfire.simpletrade -->
 		<module>../JFireTestSuite</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.testsuite -->
 		<!-- generics compile error with javac <module>../JFireTestSuiteJFireBase</module> --> <!-- org.nightlabs.jfire:org.nightlabs.jfire.testsuite.base -->
-		<!-- generics compile error with javac <module>../JFireTestSuiteDepartment</module> --> <!-- org.nightlabs.jfire:org.nightlabs.jfire.testsuite.department -->
 		<!-- requires trade <module>../JFireTestSuiteEntityUserSet</module> --> <!-- org.nightlabs.jfire:org.nightlabs.jfire.testsuite.entityuserset -->
-		<!-- generics compile error with javac <module>../JFireTestSuiteIssueTracking</module> --> <!-- org.nightlabs.jfire:org.nightlabs.jfire.testsuite.issuetracking -->
-		<!-- requires nl-rhino <module>../JFireTrade</module> --> <!-- org.nightlabs.jfire:org.nightlabs.jfire.trade -->
-		<!-- requires trade <module>../org.nightlabs.jfire.trade.editor2d</module> --> <!-- org.nightlabs.jfire:org.nightlabs.jfire.trade.editor2d -->
+		
 		<module>../org.nightlabs.jfire.serverupdate.base</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.serverupdate.base -->
 		<module>../org.nightlabs.jfire.serverupdate.launcher</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.serverupdate.launcher -->
-		<!-- requires trade <module>../JFireVoucher</module> --> <!-- org.nightlabs.jfire:org.nightlabs.jfire.voucher -->
-		<!-- requires trade <module>../JFireVoucherEditor2D</module> --> <!-- org.nightlabs.jfire:org.nightlabs.jfire.voucher.editor2d.iofilter -->
+		
 		<module>../JFireWebAdmin</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.web.admin -->
-		<!-- requires trade <module>../JFireWebShopDemo</module> --> <!-- org.nightlabs.jfire:org.nightlabs.jfire.web.demoshop -->
-		<!-- requires trade <module>../JFireWebShopBase</module> --> <!-- org.nightlabs.jfire:org.nightlabs.jfire.web.webshop -->
 
 		<module>../JFireBaseEAR</module>
 		<module>../JFireInitialiseJDOEAR</module>
