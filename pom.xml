@@ -12,13 +12,9 @@
 	</parent>
 
 	<repositories>
-		<!--
-		Here are only those repositories declared that are needed to download
-		the parent-pom.xml (which contains all used repositories).
-		
-		Important:
-		It is recommended that you use a mirror! See the parent-pom for details.
-		-->
+		<!-- Here are only those repositories declared that are needed to download 
+			the parent-pom.xml (which contains all used repositories). Important: It 
+			is recommended that you use a mirror! See the parent-pom for details. -->
 		<repository>
 			<id>dev.nightlabs.org-libs-releases-local</id>
 			<url>http://dev.nightlabs.org/maven-repository/libs-releases-local/</url>
@@ -49,6 +45,8 @@
 
 	<properties>
 		<jfire.version>${nightlabs.version}</jfire.version>
+		<jbpm.version>3.2.7</jbpm.version>
+		<rhino.version>1.7R2</rhino.version>
 	</properties>
 
 	<dependencyManagement>
@@ -156,6 +154,16 @@
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
+				<artifactId>org.nightlabs.jfire.jbpm</artifactId>
+				<version>${jfire.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.nightlabs.jfire</groupId>
+				<artifactId>org.nightlabs.jfire.jbpm.aop</artifactId>
+				<version>${jfire.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.jboss</artifactId>
 				<version>${jfire.version}</version>
 			</dependency>
@@ -167,16 +175,6 @@
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.jboss.ejb3</artifactId>
-				<version>${jfire.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.nightlabs.jfire</groupId>
-				<artifactId>org.nightlabs.jfire.jbpm</artifactId>
-				<version>${jfire.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.nightlabs.jfire</groupId>
-				<artifactId>org.nightlabs.jfire.jbpm.aop</artifactId>
 				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
@@ -209,11 +207,6 @@
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.personrelation</artifactId>
-				<version>${jfire.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.nightlabs.jfire</groupId>
-				<artifactId>org.nightlabs.jfire.personrelation.ear</artifactId>
 				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
@@ -373,7 +366,49 @@
 			<!-- ###### jfire ears ###### -->
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
+				<artifactId>org.nightlabs.jfire.asterisk.ear</artifactId>
+				<type>ear</type>
+				<version>${jfire.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.base.ear</artifactId>
+				<type>ear</type>
+				<version>${jfire.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.nightlabs.jfire</groupId>
+				<artifactId>org.nightlabs.jfire.chezfrancois.ear</artifactId>
+				<type>ear</type>
+				<version>${jfire.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.nightlabs.jfire</groupId>
+				<artifactId>org.nightlabs.jfire.department.ear</artifactId>
+				<type>ear</type>
+				<version>${jfire.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.nightlabs.jfire</groupId>
+				<artifactId>org.nightlabs.jfire.dynamictrade.ear</artifactId>
+				<type>ear</type>
+				<version>${jfire.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.nightlabs.jfire</groupId>
+				<artifactId>org.nightlabs.jfire.entityuserset.ear</artifactId>
+				<type>ear</type>
+				<version>${jfire.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.nightlabs.jfire</groupId>
+				<artifactId>org.nightlabs.jfire.geography.ear</artifactId>
+				<type>ear</type>
+				<version>${jfire.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.nightlabs.jfire</groupId>
+				<artifactId>org.nightlabs.jfire.prop.html.ear</artifactId>
 				<type>ear</type>
 				<version>${jfire.version}</version>
 			</dependency>
@@ -391,13 +426,120 @@
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
+				<artifactId>org.nightlabs.jfire.issuetimetracking.ear</artifactId>
+				<type>ear</type>
+				<version>${jfire.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.nightlabs.jfire</groupId>
+				<artifactId>org.nightlabs.jfire.issue.bug.ear</artifactId>
+				<type>ear</type>
+				<version>${jfire.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.nightlabs.jfire</groupId>
+				<artifactId>org.nightlabs.jfire.issue.ear</artifactId>
+				<type>ear</type>
+				<version>${jfire.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.nightlabs.jfire</groupId>
+				<artifactId>org.nightlabs.jfire.jbpm.ear</artifactId>
+				<type>ear</type>
+				<version>${jfire.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.nightlabs.jfire</groupId>
+				<artifactId>org.nightlabs.jfire.numorgid.ear</artifactId>
+				<type>ear</type>
+				<version>${jfire.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.nightlabs.jfire</groupId>
+				<artifactId>org.nightlabs.jfire.pbx.ear</artifactId>
+				<version>${jfire.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.nightlabs.jfire</groupId>
+				<artifactId>org.nightlabs.jfire.personrelation.ear</artifactId>
+				<type>ear</type>
+				<version>${jfire.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.nightlabs.jfire</groupId>
+				<artifactId>org.nightlabs.jfire.personrelation.issuetracking.ear</artifactId>
+				<type>ear</type>
+				<version>${jfire.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.nightlabs.jfire</groupId>
+				<artifactId>org.nightlabs.jfire.prop.file.ear</artifactId>
+				<type>ear</type>
+				<version>${jfire.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.query.store.ear</artifactId>
 				<type>ear</type>
 				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
+				<artifactId>org.nightlabs.jfire.reporting.ear</artifactId>
+				<type>ear</type>
+				<version>${jfire.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.nightlabs.jfire</groupId>
+				<artifactId>org.nightlabs.jfire.reporting.engine.birt.ear</artifactId>
+				<type>ear</type>
+				<version>${jfire.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.nightlabs.jfire</groupId>
+				<artifactId>org.nightlabs.jfire.reporting.trade.ear</artifactId>
+				<type>ear</type>
+				<version>${jfire.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.nightlabs.jfire</groupId>
+				<artifactId>org.nightlabs.jfire.scripting.ear</artifactId>
+				<type>ear</type>
+				<version>${jfire.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.nightlabs.jfire</groupId>
+				<artifactId>org.nightlabs.jfire.scripting.editor2d.ear</artifactId>
+				<type>ear</type>
+				<version>${jfire.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.nightlabs.jfire</groupId>
+				<artifactId>org.nightlabs.jfire.simpletrade.ear</artifactId>
+				<type>ear</type>
+				<version>${jfire.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.testsuite.ear</artifactId>
+				<type>ear</type>
+				<version>${jfire.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.nightlabs.jfire</groupId>
+				<artifactId>org.nightlabs.jfire.trade.ear</artifactId>
+				<type>ear</type>
+				<version>${jfire.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.nightlabs.jfire</groupId>
+				<artifactId>org.nightlabs.jfire.trade.editor2d.ear</artifactId>
+				<type>ear</type>
+				<version>${jfire.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.nightlabs.jfire</groupId>
+				<artifactId>org.nightlabs.jfire.voucher.ear</artifactId>
 				<type>ear</type>
 				<version>${jfire.version}</version>
 			</dependency>
@@ -430,9 +572,9 @@
 				<version>1.1</version>
 			</dependency>
 			<dependency>
-			    <groupId>javax.jmdns</groupId>
-			    <artifactId>jmdns</artifactId>
-			    <version>3.4.0</version>
+				<groupId>javax.jmdns</groupId>
+				<artifactId>jmdns</artifactId>
+				<version>3.4.0</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.geronimo.specs</groupId>
@@ -500,6 +642,32 @@
 				<artifactId>jboss-j2ee</artifactId>
 				<version>4.2.3.GA</version>
 			</dependency>
+
+			<dependency>
+				<groupId>org.jbpm.jbpm3</groupId>
+				<artifactId>jbpm-jpdl</artifactId>
+				<version>${jbpm.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.jbpm.jbpm3</groupId>
+				<artifactId>jbpm-identity</artifactId>
+				<version>${jbpm.version}</version>
+			</dependency>
+			<!-- ehcache needed for jfire.jbpm -->
+			<dependency>
+				<groupId>net.sf.ehcache</groupId>
+				<artifactId>ehcache</artifactId>
+				<version>1.2.3</version>
+			</dependency>
+
+			<dependency>
+				<groupId>rhino</groupId>
+				<artifactId>js</artifactId>
+				<version>${rhino.version}</version>
+				<scope>provided</scope>
+			</dependency>
+
+
 		</dependencies>
 	</dependencyManagement>
 </project>
