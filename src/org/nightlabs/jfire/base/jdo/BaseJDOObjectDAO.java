@@ -45,6 +45,7 @@ import org.nightlabs.jfire.base.jdo.cache.Cache;
 import org.nightlabs.progress.ProgressMonitor;
 import org.nightlabs.progress.SubProgressMonitor;
 import org.nightlabs.util.CollectionUtil;
+import org.nightlabs.util.Util;
 
 /**
  * JDO object retrieval through the JFire client cache.
@@ -168,6 +169,13 @@ public abstract class BaseJDOObjectDAO<JDOObjectID extends ObjectID, JDOObject>
 	 * <p>
 	 * Note that this will maintain the order of the objects given if you
 	 * pass a {@link List} as objectIDs.
+	 * <p>
+	 * Also note that client code should NOT modify returned object's List and its contents 
+	 * directly because of Cache being used. Objects MUST be cloned (via {@link Util#cloneSerializable(Object, ClassLoader)} 
+	 * or {@link Util#cloneSerializableAll(Collection, ClassLoader)}) PRIOR to modification.
+	 * You could also consider returning immutable Collections of objects but rememeber 
+	 * that this would only prevent addition/removal of elements but not the modification 
+	 * of objects themselves.
 	 *
 	 * @param scope The cache scope to use
 	 * @param objectIDs Wich objects to get
@@ -339,6 +347,13 @@ public abstract class BaseJDOObjectDAO<JDOObjectID extends ObjectID, JDOObject>
 	 * {@link #retrieveJDOObjects(Set, Set, int, IProgressMonitor)}
 	 * for all uncached objects.
 	 * <p>
+	 * Note that client code should NOT modify returned object's List and its contents 
+	 * directly because of Cache being used. Objects MUST be cloned (via {@link Util#cloneSerializable(Object, ClassLoader)} 
+	 * or {@link Util#cloneSerializableAll(Collection, ClassLoader)}) PRIOR to modification.
+	 * You could also consider returning immutable Collections of objects but rememeber 
+	 * that this would only prevent addition/removal of elements but not the modification 
+	 * of objects themselves.
+	 * <p>
 	 * This is a convenience method that calls
 	 * {@link #getJDOObjects(String, Collection, Set, int, IProgressMonitor)}.
 	 *
@@ -367,6 +382,13 @@ public abstract class BaseJDOObjectDAO<JDOObjectID extends ObjectID, JDOObject>
 	 * {@link #retrieveJDOObjects(Set, Set, int, IProgressMonitor)}
 	 * for all uncached objects.
 	 * <p>
+	 * Note that client code should NOT modify returned object's List and its contents 
+	 * directly because of Cache being used. Objects MUST be cloned (via {@link Util#cloneSerializable(Object, ClassLoader)} 
+	 * or {@link Util#cloneSerializableAll(Collection, ClassLoader)}) PRIOR to modification.
+	 * You could also consider returning immutable Collections of objects but rememeber 
+	 * that this would only prevent addition/removal of elements but not the modification 
+	 * of objects themselves.
+	 * <p>
 	 * This is a convenience method that calls
 	 * {@link #getJDOObjects(String, Collection, Set, int, IProgressMonitor)}.
 	 *
@@ -394,6 +416,13 @@ public abstract class BaseJDOObjectDAO<JDOObjectID extends ObjectID, JDOObject>
 	 * Object download for uncached objects is delegated by calling
 	 * {@link #retrieveJDOObjects(Set, Set, int, IProgressMonitor)}
 	 * for all uncached objects.
+	 * <p>
+	 * Note that client code should NOT modify returned object's List and its contents 
+	 * directly because of Cache being used. Objects MUST be cloned (via {@link Util#cloneSerializable(Object, ClassLoader)} 
+	 * or {@link Util#cloneSerializableAll(Collection, ClassLoader)}) PRIOR to modification.
+	 * You could also consider returning immutable Collections of objects but rememeber 
+	 * that this would only prevent addition/removal of elements but not the modification 
+	 * of objects themselves.
 	 * <p>
 	 * This is a convenience method that calls
 	 * {@link #getJDOObjects(String, Collection, Set, int, IProgressMonitor)}.
