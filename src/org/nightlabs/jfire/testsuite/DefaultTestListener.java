@@ -41,7 +41,7 @@ import junit.framework.AssertionFailedError;
 import junit.framework.Test;
 
 import org.apache.log4j.Logger;
-import org.nightlabs.jfire.security.SecurityReflector;
+import org.nightlabs.jfire.security.GlobalSecurityReflector;
 import org.nightlabs.jfire.testsuite.TestSuite.Status;
 import org.nightlabs.jfire.testsuite.internal.TestCaseResult;
 import org.nightlabs.jfire.testsuite.internal.TestResult;
@@ -159,7 +159,7 @@ implements JFireTestListener
 	 * Default constructor used by the framework to instantiate {@link JFireTestListener}s.
 	 */
 	public DefaultTestListener() {
-		organisationID = SecurityReflector.getUserDescriptor().getOrganisationID();
+		organisationID = GlobalSecurityReflector.sharedInstance().getUserDescriptor().getOrganisationID();
 	}
 
 	/* (non-Javadoc)
