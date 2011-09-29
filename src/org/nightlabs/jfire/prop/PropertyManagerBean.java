@@ -40,6 +40,7 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
+import javax.jdo.FetchPlan;
 import javax.jdo.JDOHelper;
 import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
@@ -256,6 +257,9 @@ public class PropertyManagerBean extends BaseSessionBeanImpl implements Property
 		if (!detachFetchGroups.contains(PropertySet.FETCH_GROUP_FULL_DATA) && !detachFetchGroups.contains(PropertySet.FETCH_GROUP_DATA_FIELDS)) {
 			// We don't need FULL_DATA to trim, but FULL_DATA includes dataFields, so if FULL_DATA is set that is more than sufficient.
 			detachFetchGroups.add(PropertySet.FETCH_GROUP_DATA_FIELDS);
+		}
+		if (!detachFetchGroups.contains(FetchPlan.DEFAULT)) {
+			detachFetchGroups.add(FetchPlan.DEFAULT);
 		}
 		
 		Set<PropertySet> detachedPropertySets = getCachedAndAuthorityFilteredDetachedPropertySets(
