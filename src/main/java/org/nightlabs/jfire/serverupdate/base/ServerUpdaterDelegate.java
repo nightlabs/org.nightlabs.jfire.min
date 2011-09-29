@@ -84,6 +84,10 @@ public class ServerUpdaterDelegate
 		
 		searchDatasourceDeploymentDescriptors();
 
+		if (parameters.isShowDatasources()) {
+			return;
+		}
+		
 		searchClasses();
 		
 		analyseUpdateSteps();
