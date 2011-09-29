@@ -45,6 +45,12 @@ public class ServerUpdateParameters {
 			usage="Show help")
 	private boolean showHelp;
 	
+	@Option(
+			name="-showDatasources",
+			required=false,
+			usage="Show all datasources the update will operate on and exit")
+	private boolean showDatasources;
+	
 	/** Not read as parameter, but set from outside */
 	private ServerUpdateConfig config;
 	
@@ -87,6 +93,13 @@ public class ServerUpdateParameters {
 	 */
 	public boolean isShowHelp() {
 		return showHelp;
+	}
+
+	/**
+	 * @return Whether to show the datasources.
+	 */
+	public boolean isShowDatasources() {
+		return showDatasources;
 	}
 	
 	/**

@@ -4,7 +4,13 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import org.apache.log4j.PropertyConfigurator;
+
 public class Log {
+	
+	static {
+		PropertyConfigurator.configure(Log.class.getResource("/log4j.properties"));
+	}
 	
 	public static final String DEBUG = "DEBUG";
 	public static final String INFO = "INFO";
