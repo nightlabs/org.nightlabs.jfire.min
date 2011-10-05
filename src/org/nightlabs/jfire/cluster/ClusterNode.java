@@ -66,6 +66,7 @@ implements Serializable
 	}
 
 	@PrimaryKey
+	@Persistent
 	private UUID clusterNodeID;
 
 	@Persistent(nullValue=NullValue.EXCEPTION)
