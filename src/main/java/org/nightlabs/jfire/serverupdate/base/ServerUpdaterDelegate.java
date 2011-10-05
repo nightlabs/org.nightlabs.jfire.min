@@ -20,6 +20,8 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 
+import liquibase.logging.LogFactory;
+
 import org.nightlabs.classloader.url.NestedURLClassLoader;
 import org.nightlabs.datastructure.Pair;
 import org.nightlabs.jdo.moduleregistry.ModuleMetaData;
@@ -155,7 +157,9 @@ public class ServerUpdaterDelegate
 		Log.info("====================================================================");
 		Log.info("                        Updating Databases                          ");
 		Log.info("====================================================================");
-
+		
+		LogFactory.setLoggingLevel("debug");
+		
 		//For each database server
 		for (JDBCConfiguration jdbcConfig : jdbcConfigurations) {
 			Log.info("********************************************************************");
@@ -171,8 +175,12 @@ public class ServerUpdaterDelegate
 					for (UpdateProcedure updateProcedure : updateProcedureSet) {
 						// Check if updateProcedure has to run according to the schemaVersion in DB
 						Pair<Version, Version> moduleUpdate = moduleUpdateSteps.get(updateProcedure.getModuleID());
-						if (moduleUpdate.getFirst().compareTo(updateProcedure.getFromVersion()) > 0) {
+						Log.info("====================================================================");
+						Log.info("    Check Update for " + updateProcedure.getModuleID() + " " + updateProcedure.getFromVersion() + " --> " + updateProcedure.getToVersion());
+						if (!needsExecution(updateProcedure, moduleUpdate)) {
 							// The UpdateProcedures fromVersion is smaller than currently stored schemaVersion, we do not execute this UpdateProcedure
+							Log.info("    Update older than current deployed schema: " + moduleUpdate.getFirst());
+							Log.info("====================================================================");
 							continue;
 						}
 						
@@ -180,31 +188,34 @@ public class ServerUpdaterDelegate
 						
 						//UpdateHistoryItemSQL
 						UpdateHistoryItemSQL updateHistoryItemSQL =
-							new UpdateHistoryItemSQL(updateContext.getConnection(), updateProcedure.getModuleID(), updateProcedure.getClass().getName());
+							new UpdateHistoryItemSQL(updateContext.getConnection(), updateProcedure.getModuleID(), updateProcedure.getClass().getSimpleName() + "|" + updateProcedure.getFromVersion() + "|" + updateProcedure.getToVersion());
 	
 						if (!updateHistoryItemSQL.isUpdateDone()) {
-							if (Log.isDebugEnabled()) {
-								Log.debug("====================================================================");
-								Log.debug("    Executing Update for " + updateProcedure.getModuleID() + " " + updateProcedure.getFromVersion() + " --> " + updateProcedure.getToVersion());
-								Log.debug("====================================================================");
-							}
+							Log.info("    Executing Update for " + updateProcedure.getModuleID() + " " + updateProcedure.getFromVersion() + " --> " + updateProcedure.getToVersion());
+							Log.info("====================================================================");
 	
 							try {
 								updateHistoryItemSQL.beginUpdate();
 								updateProcedure.run();
 								boolean doCommit = !parameters.isDryRun() && !parameters.isTryRun();
-								if (Log.isDebugEnabled()) {
-									Log.debug("====================================================================");
-									Log.debug("    Update finished for " + updateProcedure.getModuleID() + " " + updateProcedure.getFromVersion() + " --> " + updateProcedure.getToVersion());
-									Log.debug("    Doing commit " + doCommit);
-									Log.debug("====================================================================");
-								}
+								
 								updateHistoryItemSQL.endUpdate(doCommit);
+								
+								Log.info("====================================================================");
+								Log.info("    Update finished for " + updateProcedure.getModuleID() + " " + updateProcedure.getFromVersion() + " --> " + updateProcedure.getToVersion());
+								if (Log.isDebugEnabled()) {
+									Log.debug("    Did commit " + doCommit);
+								}
+								Log.info("====================================================================");
 							} catch (Exception e) {
 								connection.rollback();
 								e.printStackTrace(System.out);
 								break;
 							}
+						} else {
+							Log.info("    Update already done before " + updateProcedure.getModuleID() + " " + updateProcedure.getFromVersion() + " --> " + updateProcedure.getToVersion());
+							Log.info("====================================================================");
+							
 						}
 					}
 					Log.info("*** Updating " + jndiName + " finished");
@@ -218,6 +229,11 @@ public class ServerUpdaterDelegate
 				Log.error("SQLException: " + e.getMessage());
 			}
 		} //for
+	}
+
+	private boolean needsExecution(UpdateProcedure updateProcedure,
+			Pair<Version, Version> updateRange) {
+		return updateRange.getFirst().compareTo(updateProcedure.getFromVersion()) <= 0;
 	}
 
 	private void analyseUpdateSteps() {
@@ -273,8 +289,15 @@ public class ServerUpdaterDelegate
 							moduleUpdates = new HashMap<String, Pair<Version,Version>>();
 							neccessaryUpdateSteps.put(jndiName, moduleUpdates);
 						}
-						moduleUpdates.put(newlyDeployedVersion.getKey(), new Pair<Version, Version>(persistentModuleMetaData.getSchemaVersionObj(), newlyDeployedVersion.getValue()));
-						Log.info("*** Module " + newlyDeployedVersion.getKey() + ": from " + persistentModuleMetaData.getSchemaVersionObj() + " to " + newlyDeployedVersion.getValue());						
+						Pair<Version, Version> updateRange = new Pair<Version, Version>(persistentModuleMetaData.getSchemaVersionObj(), newlyDeployedVersion.getValue());
+						moduleUpdates.put(newlyDeployedVersion.getKey(), updateRange);
+						Log.info("*** Module " + newlyDeployedVersion.getKey() + ": from " + persistentModuleMetaData.getSchemaVersionObj() + " to " + newlyDeployedVersion.getValue());
+						UpdateProcedureSet moduleSubset = updateProcedureSet.subSet(newlyDeployedVersion.getKey());
+						for (UpdateProcedure moduleProcedure : moduleSubset) {
+							if (needsExecution(moduleProcedure, updateRange)) {
+								Log.info("     [" + moduleProcedure.getModuleID() + "|" + moduleProcedure.getFromVersion() + "|" + moduleProcedure.getToVersion() + "]");
+							}
+						}
 					}
 				} finally {
 					connection.close();
