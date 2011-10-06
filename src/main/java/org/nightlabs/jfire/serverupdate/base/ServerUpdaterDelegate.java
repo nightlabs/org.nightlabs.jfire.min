@@ -85,6 +85,8 @@ public class ServerUpdaterDelegate
 		this.parameters = parameters;
 		
 		searchDatasourceDeploymentDescriptors();
+		
+		new DeployTemplateUpdater(parameters).checkDeploymentFiles();
 
 		if (parameters.isShowDatasources()) {
 			return;
