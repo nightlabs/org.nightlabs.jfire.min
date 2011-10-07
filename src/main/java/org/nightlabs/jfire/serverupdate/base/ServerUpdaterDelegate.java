@@ -27,6 +27,7 @@ import org.nightlabs.datastructure.Pair;
 import org.nightlabs.jdo.moduleregistry.ModuleMetaData;
 import org.nightlabs.jdo.moduleregistry.UpdateHistoryItemSQL;
 import org.nightlabs.jfire.serverupdate.base.db.JDBCConfiguration;
+import org.nightlabs.jfire.serverupdate.base.util.ServerUpdateUtil;
 import org.nightlabs.jfire.serverupdate.launcher.Log;
 import org.nightlabs.jfire.serverupdate.launcher.ServerUpdateParameters;
 import org.nightlabs.jfire.serverupdate.launcher.config.Directory;
@@ -86,6 +87,8 @@ public class ServerUpdaterDelegate
 		
 		searchDatasourceDeploymentDescriptors();
 		
+		askForBackup();		
+		
 		new DeployTemplateUpdater(parameters).checkDeploymentFiles();
 
 		if (parameters.isShowDatasources()) {
@@ -120,6 +123,19 @@ public class ServerUpdaterDelegate
 				jdbcConfigurations.add(generateLocalTXDatasourceConfiguration(jdoDDFile));
 			}
 		}
+	}
+	
+	private boolean askForBackup() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("????????????????????????????????????????????????????????????????????\n");
+		sb.append("The following databases where found and will be modified:\n");
+		for (JDBCConfiguration jdbcConfig : jdbcConfigurations) {
+			sb.append(jdbcConfig.getDatabaseURL());
+		}
+		sb.append("HAVE YOU MADE A BACKUP OF THESE DATABASES SO THIS PROGRAM CAN SAFELY CONTINUE?\n");
+		sb.append("????????????????????????????????????????????????????????????????????\n");
+		sb.append("Continue with the database-update");
+		return ServerUpdateUtil.prompt(sb.toString(), "y");
 	}
 
 	private static void scanDeploymentDirChildren(Set<File> resolvedDeploymentDirs, File deploymentDir)

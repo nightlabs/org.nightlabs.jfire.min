@@ -3,13 +3,11 @@
  */
 package org.nightlabs.jfire.serverupdate.base;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
@@ -21,6 +19,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.nightlabs.jfire.serverupdate.base.db.JDBCConfiguration;
+import org.nightlabs.jfire.serverupdate.base.util.ServerUpdateUtil;
 import org.nightlabs.jfire.serverupdate.launcher.Log;
 import org.nightlabs.jfire.serverupdate.launcher.ServerUpdateParameters;
 import org.nightlabs.jfire.serverupdate.launcher.config.Directory;
@@ -96,7 +95,7 @@ public class DeployTemplateUpdater {
 							sb.append("The template for " + persistenceFile.getName() + " seems to have changed\n");
 							sb.append("????????????????????????????????????????????????????????????????????\n");
 							sb.append("Should the file be changed to match the current template (y/n)?");
-							if (prompt(sb.toString(), "y")) {
+							if (ServerUpdateUtil.prompt(sb.toString(), "y")) {
 								IOUtil.copyFile(persistenceTempFile, persistenceFile);
 							}
 						}
@@ -248,26 +247,5 @@ public class DeployTemplateUpdater {
 		variables.put("deploymentDescriptorFileName", deploymentDescriptorFile.getName());
 		
 		return variables;
-	}
-	
-	
-	private boolean prompt(String message, String expectedAnswer) {
-	//  prompt the user to enter their name
-	      System.out.println(message);
-
-	      //  open up standard input
-	      BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-
-	      String answer = null;
-
-	      //  read the username from the command-line; need to use try/catch with the
-	      //  readLine() method
-	      try {
-	         answer = br.readLine();
-	      } catch (IOException ioe) {
-	         System.out.println("IO error trying to read user input!");
-	         System.exit(1);
-	      }
-	      return answer.toLowerCase().equals(expectedAnswer);
 	}
 }
