@@ -146,6 +146,9 @@ public class RegexStructField extends StructField<RegexDataField> {
 	}
 
 	public boolean validateValue(String value) {
+		if (value == null || value.isEmpty())
+			return true;
+
 		if (pattern == null)
 			pattern = Pattern.compile(regex);
 
