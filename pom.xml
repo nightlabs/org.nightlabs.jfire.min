@@ -5,6 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.nightlabs.jfire</groupId>
 	<artifactId>org.nightlabs.jfire.base.bean</artifactId>
+	<!-- TODO XXX FIXME rename packages according to artifactID (Sebl, 2011-10-12) -->
 	<packaging>bundle</packaging>
 	<name>${project.artifactId}</name>
 
