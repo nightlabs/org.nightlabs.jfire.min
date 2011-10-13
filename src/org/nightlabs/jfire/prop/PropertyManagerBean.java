@@ -330,7 +330,7 @@ public class PropertyManagerBean extends BaseSessionBeanImpl implements Property
 			// result is not yet detached => detach now
 			if (!result.isEmpty()) {
 				time = System.currentTimeMillis();
-				result = new HashSet<Object>(pm.detachCopyAll(result));
+				result = NLJDOHelper.getDetachedQueryResultAsSet(pm, result);
 				if (logger.isDebugEnabled())
 					logger.debug("searchPropertySets: Detaching " + result.size() + " objects (not instances of PropertySet) took " + Util.getTimeDiffString(time));
 			}
