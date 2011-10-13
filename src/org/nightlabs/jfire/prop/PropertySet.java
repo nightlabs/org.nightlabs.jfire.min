@@ -153,7 +153,7 @@ public class PropertySet implements Serializable, StoreCallback, AttachCallback,
 {
 	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger.getLogger(PropertySet.class);
 
-	private static final long serialVersionUID = 20110914L;
+	private static final long serialVersionUID = 20111013L;
 
 	private static Set<String> nonInheritableFields = new HashSet<String>();
 
@@ -193,7 +193,7 @@ public class PropertySet implements Serializable, StoreCallback, AttachCallback,
 	 * that this instance is never submitted to the server.
 	 */
 	@Persistent(persistenceModifier=PersistenceModifier.NONE)
-	protected transient IStruct refStruct = null;
+	protected IStruct refStruct = null;
 
 	@Persistent(persistenceModifier=PersistenceModifier.NONE)
 	protected Map<StructFieldID, Integer> dataFieldCount;
@@ -418,14 +418,14 @@ public class PropertySet implements Serializable, StoreCallback, AttachCallback,
 	 * value: DataBlockGroup propBlockGroup
 	 */
 	@Persistent(persistenceModifier=PersistenceModifier.NONE)
-	protected transient Map<String, DataBlockGroup> dataBlockGroups;
+	protected Map<String, DataBlockGroup> dataBlockGroups;
 
 	/**
 	 * Used internally to speed up {@link #getPersistentDataField(StructFieldID, int)}.
 	 * It maps each struct field into a list of the corresponding {@link DataField}s ordered by their index.
 	 */
 	@Persistent(persistenceModifier=PersistenceModifier.NONE)
-	private transient Map<StructFieldID, List<DataField>> dataFieldsMap;
+	private Map<StructFieldID, List<DataField>> dataFieldsMap;
 
 	@Join
 	@Persistent(
@@ -1041,6 +1041,8 @@ public class PropertySet implements Serializable, StoreCallback, AttachCallback,
 		if (refStruct instanceof StructLocal) {
 			setStructLocalAttributes((StructLocal) refStruct);
 		}
+		dataBlockGroups = null;
+		dataFieldsMap = null;
 		setRefStruct(null);
 	}
 
