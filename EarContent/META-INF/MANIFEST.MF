@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 EAR-Module-ID: JFireTestSuiteEAR
-EAR-Schema-Version: 1.0.2
+EAR-Schema-Version: 1.2.0
 Comment-1: Update note 1.0.1:
  migrated a new classes to JDO 2.0
 Comment-2: Update note 1.0.2:
