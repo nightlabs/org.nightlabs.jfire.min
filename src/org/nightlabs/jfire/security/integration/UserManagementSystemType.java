@@ -67,7 +67,7 @@ import org.slf4j.LoggerFactory;
 				value="SELECT JDOHelper.getObjectId(this)"
 					)
 		)
-public abstract class UserManagementSystemType<T extends UserManagementSystem> implements Serializable{
+public abstract class UserManagementSystemType<T extends UserManagementSystem<? extends UserManagementSystemSyncEvent>> implements Serializable{
 
 	private static final Logger logger = LoggerFactory.getLogger(UserManagementSystemType.class);
 

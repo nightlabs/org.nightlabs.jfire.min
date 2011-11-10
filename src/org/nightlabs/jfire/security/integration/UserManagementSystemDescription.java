@@ -44,10 +44,10 @@ public class UserManagementSystemDescription extends I18nText
 	 * Described UserManagementSystem
 	 */
 	@Persistent(defaultFetchGroup="true")
-	private UserManagementSystem userManagementSystem;
+	private UserManagementSystem<?> userManagementSystem;
 
 
-	public UserManagementSystemDescription(UserManagementSystem userManagementSystem) {
+	public UserManagementSystemDescription(UserManagementSystem<?> userManagementSystem) {
 		this.organisationID = userManagementSystem.getOrganisationID();
 		this.userManagementSystemID = userManagementSystem.getUserManagementSystemID();
 		this.userManagementSystem = userManagementSystem;
@@ -92,7 +92,7 @@ public class UserManagementSystemDescription extends I18nText
 	 * 
 	 * @return described UserManagementSystem
 	 */
-	public UserManagementSystem getUserManagementSystem() {
+	public UserManagementSystem<?> getUserManagementSystem() {
 		return userManagementSystem;
 	}
 
