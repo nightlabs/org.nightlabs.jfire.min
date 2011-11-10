@@ -15,6 +15,7 @@ import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
 import javax.jdo.listener.CreateLifecycleListener;
 import javax.jdo.listener.InstanceLifecycleEvent;
+import javax.security.auth.login.LoginException;
 
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
@@ -81,7 +82,8 @@ public class UserManagementSystemManagerBean extends BaseSessionBeanImpl impleme
 				logger.error("Can't get PersistenceManager!", e);
 			}
 			if (pm != null){
-				Collection<UserManagementSystem> leadingSystems = UserManagementSystem.getUserManagementSystemsByLeading(
+				@SuppressWarnings("unchecked")
+				Collection<UserManagementSystem<?>> leadingSystems = UserManagementSystem.getUserManagementSystemsByLeading(
 						pm, true, UserManagementSystem.class
 						);
 				if (!leadingSystems.isEmpty()){	// forbid User creation
@@ -122,7 +124,7 @@ public class UserManagementSystemManagerBean extends BaseSessionBeanImpl impleme
 	 */
 	@RolesAllowed("org.nightlabs.jfire.security.accessRightManagement")
 	@Override
-	public List<UserManagementSystem> getUserManagementSystems(Collection<UserManagementSystemID> userManagementSystemIDs, String[] fetchGroups, int maxFetchDepth){
+	public List<UserManagementSystem<?>> getUserManagementSystems(Collection<UserManagementSystemID> userManagementSystemIDs, String[] fetchGroups, int maxFetchDepth){
 		if (userManagementSystemIDs == null){
 			throw new IllegalArgumentException("Object IDs should be specified (not null) for loading User Management Systems!");
 		}
@@ -157,7 +159,7 @@ public class UserManagementSystemManagerBean extends BaseSessionBeanImpl impleme
 	@RolesAllowed("org.nightlabs.jfire.security.accessRightManagement")
 	@TransactionAttribute(TransactionAttributeType.REQUIRED)
 	@Override
-	public <T extends UserManagementSystem> T storeUserManagementSystem(T userManagementSystem, boolean get, String[] fetchGroups, int maxFetchDepth) {
+	public <T extends UserManagementSystem<?>> T storeUserManagementSystem(T userManagementSystem, boolean get, String[] fetchGroups, int maxFetchDepth) {
 		if (userManagementSystem == null){
 			logger.warn("Can't store NULL userManagementSystem, return null.");
 			return null;
@@ -299,6 +301,32 @@ public class UserManagementSystemManagerBean extends BaseSessionBeanImpl impleme
 			result.addAll(new HashSet<Object>((Collection<?>) query.execute()));
 			
 			return result;
+		}finally{
+			pm.close();
+		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@RolesAllowed("org.nightlabs.jfire.security.accessRightManagement")
+	@Override
+	public <T extends UserManagementSystemSyncEvent> void runLDAPServerSynchronization(UserManagementSystemID userManagementSystemID, T syncEvent) throws LoginException, UserManagementSystemSyncException, UserManagementSystemCommunicationException {
+		if (userManagementSystemID == null){
+			throw new IllegalArgumentException("UserManagementSystem ID should be not null!");
+		}
+		if (syncEvent == null){
+			throw new IllegalArgumentException("UserManagementSystemSyncEvent should be not null!");
+		}
+		
+		PersistenceManager pm = createPersistenceManager();
+		try{
+			
+			@SuppressWarnings("unchecked")
+			UserManagementSystem<T> userManagementSystem = (UserManagementSystem<T>) pm.getObjectById(userManagementSystemID);
+			userManagementSystem.synchronize(syncEvent);
+			
 		}finally{
 			pm.close();
 		}

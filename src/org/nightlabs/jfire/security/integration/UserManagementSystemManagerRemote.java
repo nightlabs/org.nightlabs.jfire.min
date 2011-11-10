@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.List;
 
 import javax.ejb.Remote;
+import javax.security.auth.login.LoginException;
 
 import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.security.integration.UserManagementSystemManagerBean.ForbidUserCreationLyfecycleListener;
@@ -32,7 +33,7 @@ public interface UserManagementSystemManagerRemote {
 	 * @param maxFetchDepth Fetch depth or {@link NLJDOHelper#MAX_FETCH_DEPTH_NO_LIMIT}
 	 * @return list of detached {@link UserManagementSystem} objects
 	 */
-	List<UserManagementSystem> getUserManagementSystems(Collection<UserManagementSystemID> userManagementSystemIDs, String[] fetchGroups, int maxFetchDepth);
+	List<UserManagementSystem<?>> getUserManagementSystems(Collection<UserManagementSystemID> userManagementSystemIDs, String[] fetchGroups, int maxFetchDepth);
 	
 	/**
 	 * Get IDs of all persistent {@link UserManagementSystem} objects.
@@ -52,7 +53,7 @@ public interface UserManagementSystemManagerRemote {
 	 * @param maxFetchDepth Fetch depth or {@link NLJDOHelper#MAX_FETCH_DEPTH_NO_LIMIT}
 	 * @return Stored detached {@link UserManagementSystem} object if <code>get</code> is <code>true</code> or <code>null</code> otherwise 
 	 */
-	<T extends UserManagementSystem> T storeUserManagementSystem(T userManagementSystem, boolean get, String[] fetchGroups, int maxFetchDepth);
+	<T extends UserManagementSystem<?>> T storeUserManagementSystem(T userManagementSystem, boolean get, String[] fetchGroups, int maxFetchDepth);
 
 	/**
 	 * Get IDs of all persistent {@link UserManagementSystemType} objects.
@@ -100,4 +101,16 @@ public interface UserManagementSystemManagerRemote {
 	 * @return {@link Collection} of object IDs
 	 */
 	Collection<Object> getAllUserManagementSystemRelatedEntityIDs();
+	
+	/**
+	 * Run synchronization within attached {@link UserManagementSystem} instance on server. 
+	 * 
+	 * @param userManagementSystemID Object ID of {@link UserManagementSystem}
+	 * @param syncEvent {@link UserManagementSystemSyncEvent} for sync configuration
+	 * @throws LoginException
+	 * @throws UserManagementSystemSyncException
+	 * @throws UserManagementSystemCommunicationException
+	 */
+	<T extends UserManagementSystemSyncEvent> void runLDAPServerSynchronization(UserManagementSystemID userManagementSystemID, T syncEvent) throws LoginException, UserManagementSystemSyncException, UserManagementSystemCommunicationException;
+
 }
