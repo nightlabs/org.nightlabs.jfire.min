@@ -33,7 +33,7 @@ public interface UserManagementSystemManagerRemote {
 	 * @param maxFetchDepth Fetch depth or {@link NLJDOHelper#MAX_FETCH_DEPTH_NO_LIMIT}
 	 * @return list of detached {@link UserManagementSystem} objects
 	 */
-	List<UserManagementSystem<?>> getUserManagementSystems(Collection<UserManagementSystemID> userManagementSystemIDs, String[] fetchGroups, int maxFetchDepth);
+	List<UserManagementSystem> getUserManagementSystems(Collection<UserManagementSystemID> userManagementSystemIDs, String[] fetchGroups, int maxFetchDepth);
 	
 	/**
 	 * Get IDs of all persistent {@link UserManagementSystem} objects.
@@ -53,7 +53,7 @@ public interface UserManagementSystemManagerRemote {
 	 * @param maxFetchDepth Fetch depth or {@link NLJDOHelper#MAX_FETCH_DEPTH_NO_LIMIT}
 	 * @return Stored detached {@link UserManagementSystem} object if <code>get</code> is <code>true</code> or <code>null</code> otherwise 
 	 */
-	<T extends UserManagementSystem<?>> T storeUserManagementSystem(T userManagementSystem, boolean get, String[] fetchGroups, int maxFetchDepth);
+	<T extends UserManagementSystem> T storeUserManagementSystem(T userManagementSystem, boolean get, String[] fetchGroups, int maxFetchDepth);
 
 	/**
 	 * Get IDs of all persistent {@link UserManagementSystemType} objects.
@@ -104,8 +104,9 @@ public interface UserManagementSystemManagerRemote {
 	
 	/**
 	 * Run synchronization within attached {@link UserManagementSystem} instance on server. 
+	 * Note that this instance SHOULD implement {@link SynchronizableUserManagementSystem} interface!
 	 * 
-	 * @param userManagementSystemID Object ID of {@link UserManagementSystem}
+	 * @param userManagementSystemID Object ID of {@link UserManagementSystem} which implements {@link SynchronizableUserManagementSystem} interface
 	 * @param syncEvent {@link UserManagementSystemSyncEvent} for sync configuration
 	 * @throws LoginException
 	 * @throws UserManagementSystemSyncException
