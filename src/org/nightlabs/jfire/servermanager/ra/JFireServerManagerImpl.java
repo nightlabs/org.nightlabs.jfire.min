@@ -355,7 +355,7 @@ public class JFireServerManagerImpl
 
 	private Session loginExternal(PersistenceManager pm, LoginData loginData) throws UserManagementSystemCommunicationException, LoginException {
 
-		Collection<? extends UserManagementSystem<?>> activeUserManagementSystems = 
+		Collection<? extends UserManagementSystem> activeUserManagementSystems = 
 			UserManagementSystem.getActiveUserManagementSystems(pm);
 
 		if (activeUserManagementSystems.isEmpty()) {
@@ -365,7 +365,7 @@ public class JFireServerManagerImpl
 
 		// We try to authenticate at least against one active UserManagementSystem
 		int communicationProblems = 0;
-		for (UserManagementSystem<?> ums : activeUserManagementSystems){
+		for (UserManagementSystem ums : activeUserManagementSystems){
 
 			try {
 
