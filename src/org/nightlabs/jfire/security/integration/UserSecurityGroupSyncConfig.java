@@ -86,7 +86,7 @@ public abstract class UserSecurityGroupSyncConfig<UserManagementSystemSecurityTy
 	 */
 	@Persistent
 	@ForeignKey(deleteAction=ForeignKeyAction.CASCADE)
-	private UserManagementSystem<?> userManagementSystem;
+	private UserManagementSystem userManagementSystem;
 	
 	/**
 	 * Indicates if synchronization is enabled for underlying {@link #userSecurityGroup} to/from specified {@link #userManagementSystem}.
@@ -107,7 +107,7 @@ public abstract class UserSecurityGroupSyncConfig<UserManagementSystemSecurityTy
 	 * @param userSecurityGroup {@link UserSecurityGroup} which will be synchronized according to this configuration, not <code>null</code>
 	 * @param userManagementSystem {@link UserManagementSystem} to synchronize with, not <code>null</code>
 	 */
-	public UserSecurityGroupSyncConfig(UserSecurityGroup userSecurityGroup, UserManagementSystem<?> userManagementSystem) {
+	public UserSecurityGroupSyncConfig(UserSecurityGroup userSecurityGroup, UserManagementSystem userManagementSystem) {
 		if (userSecurityGroup == null){
 			throw new IllegalArgumentException("UserSecurityGroup can not be null!");
 		}
@@ -145,7 +145,7 @@ public abstract class UserSecurityGroupSyncConfig<UserManagementSystemSecurityTy
 	 * 
 	 * @return {@link UserManagementSystem}, not <code>null</code>
 	 */
-	public UserManagementSystem<?> getUserManagementSystem() {
+	public UserManagementSystem getUserManagementSystem() {
 		return userManagementSystem;
 	}
 	

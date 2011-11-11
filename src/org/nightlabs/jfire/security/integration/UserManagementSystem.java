@@ -39,11 +39,15 @@ import org.nightlabs.util.Util;
  * common interface, object's ID, name and description. All the work is done 
  * by the subclasses. 
  * 
- * Note that generic API for login/logout and synchronization of user data
- * is rather simple and places no big limitations on actual implementations
- * although you of course might prefer having your own inside specific modules.
- * However it is recommended to make use of this API in order to have all
- * UMS-specific implementations consistent and easy to understand.
+ * Note that generic API for login/logout is rather simple and has no big 
+ * limitations on actual implementations although you of course might prefer 
+ * having your own inside specific modules. However it is recommended to 
+ * make use of this API in order to have all UMS-specific implementations 
+ * consistent and easy to understand.
+ * 
+ * Specific {@link UserManagementSystem}s could also have synchronization
+ * configured, please implement it according to {@link SynchronizableUserManagementSystem}
+ * for consistency.
  *
  * @author Denis Dudnik <deniska.dudnik[at]gmail{dot}com>
  *
@@ -79,7 +83,7 @@ import org.nightlabs.util.Util;
 			value="SELECT WHERE this.isLeading == :isLeading ORDER BY JDOHelper.getObjectId(this) ASCENDING"
 			)
 })
-public abstract class UserManagementSystem<T extends UserManagementSystemSyncEvent> implements Serializable, Comparable<UserManagementSystem<T>>{
+public abstract class UserManagementSystem implements Serializable, Comparable<UserManagementSystem>{
 	
 	/**
 	 * Key for a System property which is used to configure UserMagementSystem synchronization process
@@ -94,7 +98,7 @@ public abstract class UserManagementSystem<T extends UserManagementSystemSyncEve
 	public static final String FETCH_GROUP_TYPE = "UserManagementSystem.type";
 
 	@SuppressWarnings("unchecked")
-	public static <V extends UserManagementSystemSyncEvent, T extends UserManagementSystem<V>> Collection<T> getActiveUserManagementSystems(
+	public static <T extends UserManagementSystem> Collection<T> getActiveUserManagementSystems(
 			PersistenceManager pm
 			) {
 		
@@ -117,7 +121,7 @@ public abstract class UserManagementSystem<T extends UserManagementSystemSyncEve
 	}
 
 	@SuppressWarnings("unchecked")
-	public static <V extends UserManagementSystemSyncEvent, T extends UserManagementSystem<V>> Collection<T> getUserManagementSystemsByLeading(
+	public static <T extends UserManagementSystem> Collection<T> getUserManagementSystemsByLeading(
 			PersistenceManager pm, boolean isLeading, Class<T> umsClass
 			) {
 		
@@ -204,20 +208,6 @@ public abstract class UserManagementSystem<T extends UserManagementSystemSyncEve
 	 * @throws UserManagementSystemCommunicationException
 	 */
 	public abstract void logout(Session session) throws UserManagementSystemCommunicationException;
-
-	/**
-	 * Starts synchronization process. It's driven by {@link UserManagementSystemSyncEvent} objects
-	 * which are telling what to do: send data to {@link UserManagementSystem} or recieve it and store
-	 * in JFire etc. These events could also contain pointers for the data to be synchronized 
-	 * (i.e. a userId for a User object). So please try to keep all the sync-related data inside your
-	 * implementations of {@link UserManagementSystemSyncEvent}.
-	 * 
-	 * @param syncEvent
-	 * @throws UserManagementSystemCommunicationException should be thrown when there's some problem in communication/network layer 
-	 * @throws LoginException should be thrown in case of authentication failure
-	 * @throws UserManagementSystemSyncException is thrown in case any other problems in sync process
-	 */
-	public abstract void synchronize(T syncEvent) throws UserManagementSystemSyncException, LoginException, UserManagementSystemCommunicationException;
 
 	
 	/**
@@ -420,7 +410,7 @@ public abstract class UserManagementSystem<T extends UserManagementSystemSyncEve
 		if (this == obj) return true;
 		if (obj == null) return false;
 		if (getClass() != obj.getClass()) return false;
-		UserManagementSystem<?> other = (UserManagementSystem<?>) obj;
+		UserManagementSystem other = (UserManagementSystem) obj;
 		return (
 				Util.equals(this.userManagementSystemID, other.userManagementSystemID) &&
 				Util.equals(this.organisationID, other.organisationID)
@@ -433,7 +423,7 @@ public abstract class UserManagementSystem<T extends UserManagementSystemSyncEve
 	 * in {@link UserManagementSystemName} class). Otherwise comparation of {@link #userManagementSystemID}s is made. 
 	 */
 	@Override
-	public int compareTo(UserManagementSystem<T> userManagementSystem) {
+	public int compareTo(UserManagementSystem userManagementSystem) {
 		if (this.isActive && !userManagementSystem.isActive){
 			return -1;
 		}else if (!this.isActive && userManagementSystem.isActive){

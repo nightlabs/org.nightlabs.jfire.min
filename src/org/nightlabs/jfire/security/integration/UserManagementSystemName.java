@@ -69,10 +69,10 @@ public class UserManagementSystemName extends I18nText implements Comparable<I18
 	 * Named UserManagementSystem
 	 */
 	@Persistent(defaultFetchGroup="true")
-	private UserManagementSystem<?> userManagementSystem;
+	private UserManagementSystem userManagementSystem;
 
 
-	public UserManagementSystemName(UserManagementSystem<?> ums) {
+	public UserManagementSystemName(UserManagementSystem ums) {
 		this.organisationID = ums.getOrganisationID();
 		this.userManagementSystemID = ums.getUserManagementSystemID();
 		this.userManagementSystem = ums;
@@ -112,7 +112,7 @@ public class UserManagementSystemName extends I18nText implements Comparable<I18
 	 * 
 	 * @return named UserManagementSystem
 	 */
-	public UserManagementSystem<?> getUserManagementSystem() {
+	public UserManagementSystem getUserManagementSystem() {
 		return userManagementSystem;
 	}
 
