@@ -17,7 +17,7 @@ import org.nightlabs.progress.SubProgressMonitor;
  *
  * @author Denis Dudnik <deniska.dudnik[at]gmail{dot}com>
  */
-public class UserManagementSystemDAO extends BaseJDOObjectDAO<UserManagementSystemID, UserManagementSystem<?>>{
+public class UserManagementSystemDAO extends BaseJDOObjectDAO<UserManagementSystemID, UserManagementSystem>{
 
 	private static UserManagementSystemDAO sharedInstance = null;
 
@@ -43,11 +43,11 @@ public class UserManagementSystemDAO extends BaseJDOObjectDAO<UserManagementSyst
 	 * {@inheritDoc}
 	 */
 	@Override
-	protected Collection<UserManagementSystem<?>> retrieveJDOObjects(Set<UserManagementSystemID> objectIDs, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor) throws Exception{
+	protected Collection<UserManagementSystem> retrieveJDOObjects(Set<UserManagementSystemID> objectIDs, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor) throws Exception{
 		monitor.beginTask("Fetching "+objectIDs.size()+" user management systems data", 1);
 		try{
 			UserManagementSystemManagerRemote remoteBean = getEjbProvider().getRemoteBean(UserManagementSystemManagerRemote.class);
-			Collection<UserManagementSystem<?>> userManagementSystems = remoteBean.getUserManagementSystems(objectIDs, fetchGroups, maxFetchDepth);
+			Collection<UserManagementSystem> userManagementSystems = remoteBean.getUserManagementSystems(objectIDs, fetchGroups, maxFetchDepth);
 			monitor.worked(1);
 			return userManagementSystems;
 		}catch(Exception e) {
@@ -66,7 +66,7 @@ public class UserManagementSystemDAO extends BaseJDOObjectDAO<UserManagementSyst
 	 * @param monitor The progress monitor for this action
 	 * @return {@link List} of all persistent {@link UserManagementSystem}s
 	 */
-	public synchronized List<UserManagementSystem<?>> getAllUserManagementSystems(String[] fetchgroups, int maxFetchDepth, ProgressMonitor monitor){
+	public synchronized List<UserManagementSystem> getAllUserManagementSystems(String[] fetchgroups, int maxFetchDepth, ProgressMonitor monitor){
 		monitor.beginTask("Load all user management systems", 1);
 		try{
 			UserManagementSystemManagerRemote remoteBean = getEjbProvider().getRemoteBean(UserManagementSystemManagerRemote.class);
@@ -90,7 +90,7 @@ public class UserManagementSystemDAO extends BaseJDOObjectDAO<UserManagementSyst
 	 * @param monitor The progress monitor for this action
 	 * @return The requested UserManagementSystem object
 	 */
-	public synchronized UserManagementSystem<?> getUserManagementSystem(UserManagementSystemID userManagementSystemID, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor){
+	public synchronized UserManagementSystem getUserManagementSystem(UserManagementSystemID userManagementSystemID, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor){
 		return getJDOObject(null, userManagementSystemID, fetchGroups, maxFetchDepth, monitor);
 	}
 
@@ -103,7 +103,7 @@ public class UserManagementSystemDAO extends BaseJDOObjectDAO<UserManagementSyst
 	 * @param monitor The progress monitor for this action
 	 * @return The requested UserManagementSystem objects
 	 */
-	public synchronized List<UserManagementSystem<?>> getUserManagementSystems(Set<UserManagementSystemID> userManagementSystemIDs, String[] fetchgroups, int maxFetchDepth, ProgressMonitor monitor){
+	public synchronized List<UserManagementSystem> getUserManagementSystems(Set<UserManagementSystemID> userManagementSystemIDs, String[] fetchgroups, int maxFetchDepth, ProgressMonitor monitor){
 		return getJDOObjects(null, userManagementSystemIDs, fetchgroups, maxFetchDepth, monitor);
 	}
 
@@ -118,7 +118,7 @@ public class UserManagementSystemDAO extends BaseJDOObjectDAO<UserManagementSyst
 	 * @param monitor The progress monitor for this action
 	 * @return Stored detached {@link UserManagementSystem} object if <code>get</code> is <code>true</code> or <code>null</code> otherwise
 	 */
-	public synchronized <T extends UserManagementSystem<?>> T storeUserManagementSystem(T userManagementSystem, boolean get, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor){
+	public synchronized <T extends UserManagementSystem> T storeUserManagementSystem(T userManagementSystem, boolean get, String[] fetchGroups, int maxFetchDepth, ProgressMonitor monitor){
 		if(userManagementSystem == null){
 			throw new IllegalArgumentException("UserManagementSystem to store must not be null!");
 		}
