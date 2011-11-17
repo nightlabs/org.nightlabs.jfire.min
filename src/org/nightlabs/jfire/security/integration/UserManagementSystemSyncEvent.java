@@ -45,10 +45,14 @@ public interface UserManagementSystemSyncEvent {
 	 */
 	enum SyncEventGenericType implements SyncEventType{
 		
-		FETCH("FETCH"),					// get data from UserManagementSystem and store in JFire
-		SEND("SEND"),					// send data to store in UserManagementSystem
-		SEND_DELETE("SEND_DELETE"),		// delete data in UserManagementSystem after JFire entry was deleted
-		FETCH_DELETE("FETCH_DELETE");	// delete JFire object after UserManagementSystem entry was deleted
+		SEND_USER("SEND_USER"),										// send user-related data to store in external UserManagementSystem
+		FETCH_USER("FETCH_USER"),									// get user-related data from UserManagementSystem and store in JFire
+		UMS_REMOVE_USER("UMS_REMOVE_USER"),							// remove corresponding data in UserManagementSystem after JFire user entry (i.e. User or Person) was removed
+		JFIRE_REMOVE_USER("JFIRE_REMOVE_USER"),						// remove JFire object (i.e. User or Person) after UserManagementSystem user-related entry was removed
+		SEND_AUTHORIZATION("SEND_AUTHORIZATION"),					// send authorization-related data to store in UserManagementSystem
+		FETCH_AUTHORIZATION("FETCH_AUTHORIZATION"),					// get authorization-related data from UserMangementSystem and store it in JFire
+		UMS_REMOVE_AUTHORIZATION("UMS_REMOVE_AUTHORIZATION"),		// remove authorization-related data in UserManagementSystem after it was removed in JFire
+		JFIRE_REMOVE_AUTHORIZATION("JFIRE_REMOVE_AUTHORIZATION");	// remove authorization-related data in JFire after it was removed in UserManagementSystem
         
 		private String stringValue;
 		
