@@ -26,37 +26,56 @@ package org.nightlabs.jfire.prop;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
 import org.nightlabs.inheritance.FieldInheriter;
 import org.nightlabs.inheritance.FieldMetaData;
 import org.nightlabs.inheritance.Inheritable;
+import org.nightlabs.jfire.base.DuplicateKeyException;
 import org.nightlabs.jfire.prop.exception.DataBlockRemovalException;
 import org.nightlabs.jfire.prop.exception.DataFieldNotFoundException;
 import org.nightlabs.jfire.prop.id.StructFieldID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- *
- * @author Frederik Loeser - frederik[at]nightlabs[dot]de
+ * {@link FieldInheriter} implementation for {@link PropertySet}s. This is used for inheriting data from a given mother
+ * PropertySet to a given child PropertySet.
+ * @author Frederik Loeser <!-- frederik [AT] nightlabs [DOT] de -->
+ * @author Marco Schulze
  */
 public class PropertySetFieldInheritor implements FieldInheriter {
 
 	/** Logger used by this class. */
-	private static final Logger LOGGER = Logger.getLogger(PropertySetFieldInheritor.class);
+	private static final Logger logger = LoggerFactory.getLogger(PropertySetFieldInheritor.class);
+
 	/** PropertySet of the mother. */
 	private PropertySet propSet_Mother;
+
 	/** PropertySet of the child. */
 	private PropertySet propSet_Child;
+
 	/** Map keeping track of StructBlock keys and corresponding DataBlockGroups of the child. */
 	private Map<String, DataBlockGroup> structBlockKeyToDataBlockGroup_Child = new HashMap<String, DataBlockGroup>();
-	/** Map whereby key is the DataBlockID of the cloneable DataField (that belongs to the mother) and value an instance of CloneDataBlockDescriptor that keeps track of the ID and index of the newly generated DataBlock the clone (that belongs to the child) is placed in. */
-	private Map<Integer, CloneDataBlockDescriptor> cloneableDataBlockIDToCloneDataBlockDescriptor = new HashMap<Integer, CloneDataBlockDescriptor>();
 
-	/** Helper class used for keeping track of the ID and the index of the DataBlock a cloned DataField (that belongs to the child) is placed in. Instances of this class are set as value of the map cloneableDataBlockIDToCloneDataBlockDescriptor. */
+	/**
+	 * Map whereby key is the DataBlockID of the cloneable DataField (that belongs to the mother) and value an instance of
+	 * CloneDataBlockDescriptor that keeps track of the ID and index of the newly generated DataBlock the clone (that belongs
+	 * to the child) is placed in.
+	 */
+	private Map<Integer, CloneDataBlockDescriptor> cloneableDBIDToCloneDBDescriptor
+		= new HashMap<Integer, CloneDataBlockDescriptor>();
+
+	/**
+	 * Helper class used for keeping track of the ID and the index of the DataBlock a cloned DataField (that belongs to the child)
+	 * is placed in. Instances of this class are set as value of the map cloneableDataBlockIDToCloneDataBlockDescriptor.
+	 * @author Frederik Loeser <!-- frederik [AT] nightlabs [DOT] de -->
+	 */
 	private class CloneDataBlockDescriptor {
 		private int cloneDataBlockID;
 		private int cloneDataBlockIndex;
@@ -74,8 +93,9 @@ public class PropertySetFieldInheritor implements FieldInheriter {
 	}
 
 	@Override
-	public void copyFieldValue(final Inheritable mother, final Inheritable child, final Class<?> motherClass, final Class<?> childClass,
-		final Field motherField, final Field childField, final FieldMetaData motherFieldMetaData, final FieldMetaData childFieldMetaData) {
+	public void copyFieldValue(final Inheritable mother, final Inheritable child, final Class<?> motherClass,
+		final Class<?> childClass, final Field motherField, final Field childField, final FieldMetaData motherFieldMetaData,
+		final FieldMetaData childFieldMetaData) {
 
 		if (!(mother instanceof PropertySet) || !(child instanceof PropertySet))
 			return;
@@ -88,194 +108,199 @@ public class PropertySetFieldInheritor implements FieldInheriter {
 		final Collection<DataBlockGroup> dataBlockGroups_Mother = propSet_Mother.getDataBlockGroups();
 		Collection<DataBlockGroup> dataBlockGroups_Child = propSet_Child.getDataBlockGroups();
 
-		if (LOGGER.isDebugEnabled()) {
-			LOGGER.debug("Amount of DataBlockGroups (mother): " + dataBlockGroups_Mother.size());
-			LOGGER.debug("Amount of DataBlockGroups (child):  " + dataBlockGroups_Child.size());
-		}
+		logger.debug("copyFieldValue: dataBlockGroups_Mother.size={}", dataBlockGroups_Mother.size()); //$NON-NLS-1$
+		logger.debug("copyFieldValue: dataBlockGroups_Child.size={}", dataBlockGroups_Child.size()); //$NON-NLS-1$
 
 		for (final Iterator<DataBlockGroup> it = dataBlockGroups_Mother.iterator(); it.hasNext();) {
 			final DataBlockGroup dbg = it.next();
-			final List<DataBlock> dataBlocksSorted_Mother = sortDataBlocks(dbg.getDataBlocks());
+			final List<DataBlock> dataBlocksSorted_Mother = sortDBs(dbg.getDataBlocks());
 			structBlockKeyToDataBlocks_Mother.put(dbg.getStructBlockKey(), dataBlocksSorted_Mother);
 		}
 
 		for (final Iterator<DataBlockGroup> it = dataBlockGroups_Child.iterator(); it.hasNext();) {
 			final DataBlockGroup dbg = it.next();
-			final List<DataBlock> dataBlocksSorted_Child = sortDataBlocks(dbg.getDataBlocks());
+			final List<DataBlock> dataBlocksSorted_Child = sortDBs(dbg.getDataBlocks());
 			structBlockKeyToDataBlocks_Child.put(dbg.getStructBlockKey(), dataBlocksSorted_Child);
 			structBlockKeyToDataBlockGroup_Child.put(dbg.getStructBlockKey(), dbg);
 		}
 
 		// In the case there are no mother data block groups at all.
 		if (dataBlockGroups_Mother.size() == 0) {
-			for (final List<DataBlock> dataBlocks_Child : structBlockKeyToDataBlocks_Child.values()) {
-				if (dataBlocks_Child.size() > 0) {
-					// Delete redundant child data blocks until one data block is left (for each data block group).
-					while (dataBlocks_Child.size() > 1) {
-						dataBlocks_Child.remove(dataBlocks_Child.size() - 1);
-					}
-					// Delete the content of the fields of the remaining data block (for each data block group).
-					final Collection<DataField> dataFieldsChild = dataBlocks_Child.get(0).getDataFields();
-					for (final Iterator<DataField> it2 = dataFieldsChild.iterator(); it2.hasNext();) {
-						it2.next().setData(null);
-					}
-				}
-			}
+			processMissingDBsMother(structBlockKeyToDataBlocks_Child);
 			return;
 		}
 
-		// Traverse all DataBlockGroups of the mother and compare the amount of appropriate DataBocks with the amount of DataBlocks of the corresponding DataBlockGroup of the child.
-		// If the mother has more DataBlocks add the missing amount of DataFields (not blocks) to the child. If the mother has less DataBlocks remove all redundant DataBlocks (in this case blocks) from the child.
-		// Finally, if mother and child have the same amount of DataBlocks for this DataBlockGroup data is copied from mother to child (only considering non-cloned DataFields as clones do already contain the data of their corresponding cloneable).
 		for (Map.Entry<String, List<DataBlock>> entry : structBlockKeyToDataBlocks_Mother.entrySet()) {
-			final String structBlockKey = entry.getKey();
-			final List<DataBlock> dataBlocks_Mother = entry.getValue();
-			List<DataBlock> dataBlocks_Child = structBlockKeyToDataBlocks_Child.get(structBlockKey);
-			if (dataBlocks_Child != null) {
-				final int diffDataBlocks = dataBlocks_Mother.size() - dataBlocks_Child.size();
-				final int dataBlocksToConsider = diffDataBlocks > 0 ? dataBlocks_Mother.size() - diffDataBlocks : dataBlocks_Mother.size();	// Do only consider a certain part of DataBlocks of the mother in the case it has more DataBlocks than the child as all DataFields of the additional blocks are cloned (see PropertySetFieldInheritor#addMissingDataFields).
-				if (diffDataBlocks < 0) {
-					// The mother has less DataBlocks than the child with respect to the currently considered DataBlockGroup.
-					// Therefore, delete all redundant child DataBlocks (and their data fields) by removing them from the group.
-					removeRedundantDataBlocks(dataBlocks_Child, diffDataBlocks);
-					// As DataBlocks and DataFields have been removed from the child some kind of re-initialisation is necessary.
-					dataBlockGroups_Child = propSet_Child.getDataBlockGroups();	// possibly not necessary, but...
-					for (final Iterator<DataBlockGroup> it = dataBlockGroups_Child.iterator(); it.hasNext();) {
-						final DataBlockGroup dbg = it.next();
-						structBlockKeyToDataBlocks_Child.put(dbg.getStructBlockKey(), dbg.getDataBlocks());
-					}
-					dataBlocks_Child = structBlockKeyToDataBlocks_Child.get(structBlockKey);
-				}
-				else if (diffDataBlocks > 0) {
-					// The mother has more DataBlocks than the child with respect to the currently considered DataBlockGroup.
-					// Therefore, add the missing amount of DataFields by cloning the appropriate mother DataFields and adding them to the PropertySet of the child.
-					// Note, a new DataBlockID has to be created as it is part of the primary key of the table JFireBase_Prop_PropertySet_dataFields. Otherwise
-					// an integrity constraint exception would occur. All other parts of the primary key of the clone will take over the value of the cloneable DataField (except the PropertySetID).
-					addMissingDataFields(structBlockKey);
-					// As DataBlocks and DataFields have been added to the child some kind of re-initialisation is necessary.
-					dataBlockGroups_Child = propSet_Child.getDataBlockGroups();	// possibly not necessary, but...
-					for (final Iterator<DataBlockGroup> it = dataBlockGroups_Child.iterator(); it.hasNext();) {
-						final DataBlockGroup dbg = it.next();
-						structBlockKeyToDataBlocks_Child.put(dbg.getStructBlockKey(), dbg.getDataBlocks());
-					}
-					dataBlocks_Child = structBlockKeyToDataBlocks_Child.get(structBlockKey);
-				}
-
-				// As now both mother and child have the same amount of DataBlocks (and DataFields) for the currently considered DataBlockGroup (struct block) copy the content of each mother DataField to the corresponding child DataField.
-				if (LOGGER.isDebugEnabled()) {
-					LOGGER.debug("Amount of DataBlocks to consider (excluding clones): " + dataBlocksToConsider);
-					LOGGER.debug("Amount of DataBlocks after adding/removing (mother): " + dataBlocks_Mother.size());
-					LOGGER.debug("Amount of DataBlocks after adding/removing (child):  " + dataBlocks_Child.size());
-				}
-				if (dataBlocks_Mother.size() == dataBlocks_Child.size()) {
-					OUTER: for (int i = 0; i < dataBlocksToConsider; i++) {
-						// 1st possibility (not working yet as list of DataBlocks is not sorted correctly, see PropertySetFieldInheritor#sortDataBlocks. Why?).
-//						if (LOGGER.isDebugEnabled()) {
-//							final DataBlock db_Mother = dataBlocks_Mother.get(i);
-//							final DataBlock db_Child = dataBlocks_Child.get(i);
-//							LOGGER.debug("Will now copy data from DataBlock index " + db_Mother.getIndex() + " (mother) to DataBlock index " + db_Child.getIndex() + " (child)");
-//						}
-//						final Iterator<DataField> it1 = dataBlocks_Mother.get(i).getDataFields().iterator();
-//						final Iterator<DataField> it2 = dataBlocks_Child.get(i).getDataFields().iterator();
-//						while (it1.hasNext() && it2.hasNext()) {
-//							it2.next().setData(it1.next().getData());
-//						}
-						// 2nd possibility (working, but...)
-						for (final DataBlock db_Mother : dataBlocks_Mother) {
-							if (db_Mother.getIndex() == i) {
-								for (final DataBlock db_Child : dataBlocks_Child) {
-									if (db_Child.getIndex() == i) {
-										if (LOGGER.isDebugEnabled())
-											LOGGER.debug("Will now copy data from DataBlock index " + db_Mother.getIndex() + " (mother) to DataBlock index " + db_Child.getIndex() + " (child)");
-//										final Iterator<DataField> it1 = db_Mother.getDataFields().iterator();
-//										final Iterator<DataField> it2 = db_Child.getDataFields().iterator();
-//										while (it1.hasNext() && it2.hasNext())
-//											it2.next().setData(it1.next().getData());
-
-										final Iterator<DataField> it = db_Mother.getDataFields().iterator();
-										while (it.hasNext()) {
-											final DataField df_Mother = it.next();
-											try {
-												final DataField df_Child = db_Child.getDataField(df_Mother.getStructFieldOrganisationID(), df_Mother.getStructFieldID());
-												df_Child.setData(df_Mother.getData());
-											} catch (final DataFieldNotFoundException exception) {
-												throw new RuntimeException(exception);
-											}
-										}
-										continue OUTER;
-									}
-								}
-							}
-						}
-					}
-				}
-			}
+			processDBsMother(structBlockKeyToDataBlocks_Child, entry);
 		}
 	}
 
 	/**
-	 * Sorts the given list of DataBlocks according to the indices of each DataBlock and returns a new list containing the sorted DataBlocks.
-	 * @param dataBlocks A list of DataBlocks to be sorted.
-	 * @return a new list containing the sorted DataBlocks.
+	 * Called in case there are no mother DataBlockGroups at all.
+	 * @param structBlockKeyToDataBlocks_Child The map keeping track of the child DataBlocks for each DataBlockGroup.
 	 */
-	private List<DataBlock> sortDataBlocks(final List<DataBlock> dataBlocks) {
-		final List<DataBlock> dataBlocksSorted = new ArrayList<DataBlock>();
-		OUTER: for (DataBlock db : dataBlocks) {
-			final int idx = db.getIndex();
-			if (idx >= dataBlocksSorted.size()) {
-				for (int j = 0; j < dataBlocksSorted.size(); j++) {
-					if (dataBlocksSorted.get(j).getIndex() > idx) {
-						dataBlocksSorted.add(j, db);
-						continue OUTER;
-					}
+	private void processMissingDBsMother(final Map<String, List<DataBlock>> structBlockKeyToDataBlocks_Child) {
+		for (final List<DataBlock> dataBlocks_Child : structBlockKeyToDataBlocks_Child.values()) {
+			if (dataBlocks_Child.size() > 0) {
+				// Delete redundant child data blocks until one data block is left (for each data block group).
+				while (dataBlocks_Child.size() > 1) {
+					dataBlocks_Child.remove(dataBlocks_Child.size() - 1);
 				}
-				dataBlocksSorted.add(db);
+				// Delete the content of the fields of the remaining data block (for each data block group).
+				final Collection<DataField> dataFieldsChild = dataBlocks_Child.get(0).getDataFields();
+				for (final Iterator<DataField> it2 = dataFieldsChild.iterator(); it2.hasNext();) {
+					it2.next().setData(null);
+				}
 			}
-			else
-				dataBlocksSorted.add(idx, db);
 		}
-		if (LOGGER.isDebugEnabled()) {
-			LOGGER.debug("Sorted DataBlock indices: ");
-			for (DataBlock db : dataBlocksSorted)
-				LOGGER.debug(db.getIndex());
-		}
-		// TODO This list is not sorted as the indices of certain DataBlocks change during the performance of this method. Why? At the moment a 2nd possibility is used (see PropertySetFieldInheritor#copyFieldValue).
-		return dataBlocksSorted;
 	}
 
 	/**
-	 * The mother has more DataBlocks than the child with respect to the currently considered DataBlockGroup. Therefore, add the missing amount of DataFields
-	 * by cloning the appropriate mother DataFields and adding them to the PropertySet of the child. Note, a new DataBlockID has to be created as it is part
-	 * of the primary key of the table JFireBase_Prop_PropertySet_dataFields. Otherwise an integrity constraint exception would occur. All other parts of the
-	 * primary key of the clone will take over the appropriate values of the cloneable DataField (except the PropertySetID that is set to the ID of the PropertySet of the child).<p>
-	 * Furthermore, a new DataBlock will be created and added to the considered DataBlockGroup of the child for each set of cloned DataFields that belong to a common DataBlock.
-	 * The indices of the new DataBlocks are set according to the indices of the DataBlocks whose DataFields have been cloned. E.g., if the DataFields df_mother_2_1 and
-	 * df_mother_2_2 of the DataBlock db_mother_2 have to be cloned, the cloned DataFields df_child_2_1 and df_child_2_2 will be placed in a common DataBlock db_child_2.
+	 * Traverses all mother DataBlockGroups and compares the amount of appropriate DataBocks with the amount of DataBlocks of
+	 * the corresponding DataBlockGroup of the child.
+	 * <ul>
+	 * <li>If the mother has more DataBlocks the missing amount of DataFields (not blocks) will be added to the child.</li>
+	 * <li>If the mother has less DataBlocks all redundant DataBlocks (in this case blocks) will be removed from the child.</li>
+	 * <li>If mother and child have the same amount of DataBlocks for this DataBlockGroup, data will be copied from mother to child
+	 * (only considering non-cloned DataFields as clones do already contain the data of their corresponding cloneable).</li>
+	 * </ul>
+	 * @param structBlockKeyToDataBlocks_Child The map keeping track of the child DataBlocks for each DataBlockGroup.
+	 * @param entry The currently considered entry of structBlockKeyToDataBlocks_Mother.
+	 */
+	private void processDBsMother(final Map<String, List<DataBlock>> structBlockKeyToDataBlocks_Child,
+		Map.Entry<String, List<DataBlock>> entry) {
+
+		final String structBlockKey = entry.getKey();
+		final List<DataBlock> dataBlocks_Mother = entry.getValue();
+		List<DataBlock> dataBlocks_Child = structBlockKeyToDataBlocks_Child.get(structBlockKey);
+
+		if (dataBlocks_Child != null) {
+			final int diffDBs = dataBlocks_Mother.size() - dataBlocks_Child.size();
+			// Do only consider a certain part of DataBlocks of the mother in the case it has more DataBlocks than the
+			// child as all DataFields of the additional blocks are cloned (see PropertySetFieldInheritor#addMissingDataFields).
+			final int amountDBsToConsider = diffDBs > 0 ? dataBlocks_Mother.size() - diffDBs : dataBlocks_Mother.size();
+
+			if (diffDBs < 0)
+				dataBlocks_Child = processRedundantDBs(structBlockKeyToDataBlocks_Child, structBlockKey, dataBlocks_Child, diffDBs);
+			else if (diffDBs > 0)
+				dataBlocks_Child = processMissingDBs(structBlockKeyToDataBlocks_Child, structBlockKey);
+
+			logger.debug("processDBsMother: #dataBlocks(toConsiderExcludingClones)={}", amountDBsToConsider); //$NON-NLS-1$
+			logger.debug("processDBsMother: #dataBlocks(afterAddingRemoving(mother))={}", dataBlocks_Mother.size()); //$NON-NLS-1$
+			logger.debug("processDBsMother: #dataBlocks(afterAddingRemoving(child))={}", dataBlocks_Child.size());	//$NON-NLS-1$
+
+			// As now both mother and child have the same amount of DataBlocks (and DataFields) for the currently considered
+			// DataBlockGroup (struct block), copy the content of each mother DataField to the corresponding child DataField.
+			processDBs(dataBlocks_Mother, dataBlocks_Child);
+		}
+	}
+
+	/**
+	 * Copies data from mother to child. If an appropriate DataField cannot be found on child side one will be cloned from mother
+	 * side and added to the suitable child DataBlock.
+	 * <p>
+	 * Note, mother and child must have the same amount of DataBlocks when this method is called, otherwise an exception
+	 * will be thrown.
+	 * </p>
+	 * @param dataBlocks_Mother The mother DataBlocks for the currently considered DataBlockGroup.
+	 * @param dataBlocks_Child The child DataBlocks for the currently considered DataBlockGroup.
+	 */
+	private void processDBs(final List<DataBlock> dataBlocks_Mother, List<DataBlock> dataBlocks_Child) {
+		if (dataBlocks_Mother.size() != dataBlocks_Child.size())
+			throw new IllegalArgumentException("dataBlocks_Mother.size() != dataBlocks_Child.size() :: " //$NON-NLS-1$
+				+ dataBlocks_Mother.size() + " != " + dataBlocks_Child.size()); //$NON-NLS-1$
+
+		Iterator<DataBlock> it_child = dataBlocks_Child.iterator();
+		for (final DataBlock db_Mother : dataBlocks_Mother) {
+			DataBlock db_Child = it_child.next();
+
+			for (DataField df_Mother : db_Mother.getDataFields()) {
+				DataField df_Child;
+				try {
+					df_Child = db_Child.getDataField(df_Mother.getStructFieldOrganisationID(), df_Mother.getStructFieldID());
+					df_Child.setData(df_Mother.getData());
+				} catch (final DataFieldNotFoundException exception) {
+					df_Child = df_Mother.cloneDataField(propSet_Child, db_Child.getDataBlockID());
+					try {
+						db_Child.addDataField(df_Child);
+					} catch (DuplicateKeyException e) {
+						throw new RuntimeException(e);
+					}
+				}
+			}
+		}
+	}
+
+	/**
+	 * The mother has more DataBlocks than the child with respect to the currently considered DataBlockGroup. Therefore, add
+	 * the missing amount of DataFields by cloning the appropriate mother DataFields and adding them to the PropertySet of
+	 * the child. Note, a new DataBlockID has to be created as it is part of the primary key of the table
+	 * jfirebase_prop_propertyset_datafields, otherwise an integrity constraint exception would occur. All other parts of
+	 * the primary key of the clone will take over the value of the cloneable DataField (except the PropertySetID).
+	 * @param structBlockKeyToDataBlocks_Child The map keeping track of the child DataBlocks for each DataBlockGroup.
+	 * @param structBlockKey The key of the currently considered DataBlockGroup.
+	 * @return the adapted list of child DataBlocks
+	 */
+	private List<DataBlock> processMissingDBs(final Map<String, List<DataBlock>> structBlockKeyToDataBlocks_Child,
+		final String structBlockKey) {
+
+		addMissingDataFields(structBlockKey);
+		// As DataBlocks and DataFields have been added to the child some kind of re-initialisation is necessary.
+		Collection<DataBlockGroup> dataBlockGroups_Child = propSet_Child.getDataBlockGroups();	// possibly not necessary, but...
+
+		for (final Iterator<DataBlockGroup> it = dataBlockGroups_Child.iterator(); it.hasNext();) {
+			final DataBlockGroup dbg = it.next();
+			structBlockKeyToDataBlocks_Child.put(dbg.getStructBlockKey(), dbg.getDataBlocks());
+		}
+		List<DataBlock> dataBlocks_Child = structBlockKeyToDataBlocks_Child.get(structBlockKey);
+
+		return dataBlocks_Child;
+	}
+
+	/**
+	 * The mother has more DataBlocks than the child with respect to the currently considered DataBlockGroup. Therefore, add the
+	 * missing amount of DataFields by cloning the appropriate mother DataFields and adding them to the PropertySet of the child.
+	 * <p>
+	 * A new DataBlock will be created and added to the considered DataBlockGroup of the child for each set of cloned
+	 * DataFields that belong to a common DataBlock. The indices of the new DataBlocks are set according to the indices of the
+	 * DataBlocks whose DataFields have been cloned. E.g., if the DataFields dfMother_2_1 and dfMother_2_2 of the DataBlock
+	 * dbMother_2 have to be cloned, the cloned DataFields dfChild_2_1 and dfChild_2_2 will be placed in a common DataBlock
+	 * dbChild_2.
+	 * </p><p>
+	 * Note, a new DataBlockID has to be created as it is part of the primary key of the table jfirebase_prop_propertyset_datafields,
+	 * otherwise an integrity constraint exception would occur. All other parts of the primary key of the clone will take over the
+	 * appropriate values of the cloneable DataField (except the PropertySetID that is set to the ID of the PropertySet of the child).
+	 * </p>
 	 * @param structBlockKey The key of the currently considered StructBlock.
 	 */
 	private void addMissingDataFields(final String structBlockKey) {
 		OUTER: for (final Map.Entry<StructFieldID, List<DataField>> entry : propSet_Mother.getDataFieldsMap().entrySet()) {
 			final StructFieldID structFieldID = entry.getKey();
-			if (LOGGER.isDebugEnabled())
-				LOGGER.debug("Amount of data fields of StructFieldID " + structFieldID + " (mother): " + entry.getValue().size());
-			if (!(structFieldID.structBlockOrganisationID + "/" + structFieldID.structBlockID).equals(structBlockKey))	// Test whether the considered StructField belongs to the currently considered StructBlock like e.g. dev.jfire.org/SimpleProductType.description (this test is necessary as we consider all persistent DataFields when we call PropertySet#getDataFieldsMap).
+
+			logger.debug("addMissingDataFields: #dataFields(structFieldID={}(mother))={}", structFieldID, entry.getValue().size());	//$NON-NLS-1$
+
+			// Test whether the considered StructField belongs to the currently considered StructBlock like e.g.
+			// dev.jfire.org/SimpleProductType.description (this test is necessary as we consider all persistent
+			// DataFields when we call PropertySet#getDataFieldsMap).
+			if (!(structFieldID.structBlockOrganisationID + "/" + structFieldID.structBlockID).equals(structBlockKey)) //$NON-NLS-1$
 				continue OUTER;
+
 			final List<DataField> dataFields_Mother = entry.getValue();
 			final List<DataField> dataFields_Child = propSet_Child.getDataFieldsMap().get(structFieldID);
+
 			if (dataFields_Child != null) {
 				final int diffDataFields = dataFields_Mother.size() - dataFields_Child.size();
 				for (int j = 0; j < diffDataFields; j++) {
 					final DataField cloneable = dataFields_Mother.get(dataFields_Mother.size() - diffDataFields + j);
-					if (!cloneableDataBlockIDToCloneDataBlockDescriptor.containsKey(cloneable.getDataBlockID())) {
-//						do {
-//							newBlockID = (int) (Integer.MAX_VALUE * Math.random());
-//							if (tries++ > 10000)
-//								throw new RuntimeException("Could not generate new dataBlockID in 10000 tries.");
-//						} while (dataBlockMap.containsKey(newBlockID));
-						final CloneDataBlockDescriptor cdbDesc = new CloneDataBlockDescriptor(new Long(System.currentTimeMillis()).intValue(), cloneable.getDataBlockIndex());	// TODO Generate a new DataBlockID by using the code above and testing whether it is not already available. Using the current method results in negative values for new DataBlocks.
-						cloneableDataBlockIDToCloneDataBlockDescriptor.put(cloneable.getDataBlockID(), cdbDesc);
+					if (!cloneableDBIDToCloneDBDescriptor.containsKey(cloneable.getDataBlockID())) {
+						final CloneDataBlockDescriptor cdbDesc = new CloneDataBlockDescriptor(
+							new Long(System.currentTimeMillis()).intValue(), cloneable.getDataBlockIndex());
+						cloneableDBIDToCloneDBDescriptor.put(cloneable.getDataBlockID(), cdbDesc);
 					}
-					final DataField clone = cloneable.cloneDataField(propSet_Child, cloneableDataBlockIDToCloneDataBlockDescriptor.get(cloneable.getDataBlockID()).getCloneDataBlockID());	// Transfer new DataBlockID as parameter, i.e. adapt DataField constructor accordingly and create new clone method (adapt each DataField type). Done.
+					// Transfer new DataBlockID as parameter, i.e., adapt DataField constructor accordingly and create new clone
+					// method (adapt each DataField type). => Done.
+					final DataField clone = cloneable.cloneDataField(propSet_Child, cloneableDBIDToCloneDBDescriptor.get(
+						cloneable.getDataBlockID()).getCloneDataBlockID());
 					clone.setDataBlockIndex(cloneable.getDataBlockIndex());	// Keep DataBlock index as set in mother!
 					propSet_Child.internalAddDataFieldToPersistentCollection(clone);
 
@@ -284,23 +309,53 @@ public class PropertySetFieldInheritor implements FieldInheriter {
 				}
 			}
 		}
-		for (final CloneDataBlockDescriptor cdbDesc : cloneableDataBlockIDToCloneDataBlockDescriptor.values()) {
-			final DataBlock db = new DataBlock(structBlockKeyToDataBlockGroup_Child.get(structBlockKey), cdbDesc.getCloneDataBlockID());	// Create a new DataBlock that will be placed in the currently considered DataBlockGroup of the child and set its ID according to the DataBlockID of the appropriate clones.
-			if (LOGGER.isDebugEnabled())
-				LOGGER.debug("Index of new DataBlock (child): " + cdbDesc.getCloneDataBlockIndex());
+
+		for (final CloneDataBlockDescriptor cdbDesc : cloneableDBIDToCloneDBDescriptor.values()) {
+			// Create a new DataBlock that will be placed in the currently considered child DataBlockGroup and set its
+			// ID according to the DataBlockID of the appropriate clones.
+			final DataBlock db = new DataBlock(structBlockKeyToDataBlockGroup_Child.get(structBlockKey), cdbDesc.getCloneDataBlockID());
 			db.setIndex(cdbDesc.getCloneDataBlockIndex(), true);
-			structBlockKeyToDataBlockGroup_Child.get(structBlockKey).addDataBlock(db);	// Add the new DataBlock to the list of DataBlocks of the currently considered DataBlockGroup of the child.
+			// Add the new DataBlock to the list of DataBlocks of the currently considered child DataBlockGroup.
+			structBlockKeyToDataBlockGroup_Child.get(structBlockKey).addDataBlock(db);
+
+			logger.debug("addMissingDataFields: indexNewDataBlock(child)={}", cdbDesc.getCloneDataBlockIndex()); //$NON-NLS-1$
 		}
-		logDataBlocks_Child();
+		logDBs_Child();
 	}
 
 	/**
-	 * The mother has less DataBlocks than the child with respect to the currently considered DataBlockGroup. Therefore, delete all redundant child DataBlocks
-	 * (and their data fields) by removing them from the group.
-	 * @param dataBlocks_Child The complete list of DataBlocks of the child for the currently considered DataBlockGroup before removing redundant DataBlocks.
+	 * The mother has less DataBlocks than the child with respect to the currently considered DataBlockGroup. Therefore, delete
+	 * all redundant child DataBlocks (and their data fields) by removing them from the group.
+	 * @param structBlockKeyToDataBlocks_Child The map keeping track of the child DataBlocks for each DataBlockGroup.
+	 * @param structBlockKey The key of the currently considered DataBlockGroup.
+	 * @param dataBlocks_Child The child DataBlocks for the currently considered DataBlockGroup.
+	 * @param diffDataBlocks The amount of DataBlocks to be removed (negative value).
+	 * @return the adapted list of child DataBlocks
+	 */
+	private List<DataBlock> processRedundantDBs(final Map<String, List<DataBlock>> structBlockKeyToDataBlocks_Child,
+		final String structBlockKey, List<DataBlock> dataBlocks_Child, final int diffDataBlocks) {
+
+		removeRedundantDBs(dataBlocks_Child, diffDataBlocks);
+		// As DataBlocks and DataFields have been removed from the child some kind of re-initialisation is necessary.
+		Collection<DataBlockGroup> dataBlockGroups_Child = propSet_Child.getDataBlockGroups();	// possibly not necessary, but...
+
+		for (final Iterator<DataBlockGroup> it = dataBlockGroups_Child.iterator(); it.hasNext();) {
+			final DataBlockGroup dbg = it.next();
+			structBlockKeyToDataBlocks_Child.put(dbg.getStructBlockKey(), dbg.getDataBlocks());
+		}
+		dataBlocks_Child = structBlockKeyToDataBlocks_Child.get(structBlockKey);
+
+		return dataBlocks_Child;
+	}
+
+	/**
+	 * The mother has less DataBlocks than the child with respect to the currently considered DataBlockGroup. Therefore, delete
+	 * all redundant child DataBlocks (and their data fields) by removing them from the group.
+	 * @param dataBlocks_Child The complete list of DataBlocks of the child for the currently considered DataBlockGroup before
+	 * removing redundant DataBlocks.
 	 * @param diffDataBlocks The amount of DataBlocks to be removed (negative value).
 	 */
-	private void removeRedundantDataBlocks(final List<DataBlock> dataBlocks_Child, final int diffDataBlocks) {
+	private void removeRedundantDBs(final List<DataBlock> dataBlocks_Child, final int diffDataBlocks) {
 		for (int i = 0; i < -diffDataBlocks; i++) {
 			final DataBlock db = dataBlocks_Child.get(dataBlocks_Child.size() - 1);
 			try {
@@ -312,36 +367,56 @@ public class PropertySetFieldInheritor implements FieldInheriter {
 		}
 	}
 
-	private void logDataFieldPrimaryKeyContent(final DataField dataField, final boolean isCloneable) {
-		if (LOGGER.isDebugEnabled()) {
-			if (isCloneable)
-				LOGGER.debug("*********************** DataField PK (mother) ***********************");
-			else
-				LOGGER.debug("*********************** DataField PK (child) ***********************");
-			LOGGER.debug("DataBlockID:    " + dataField.getDataBlockID());
-			LOGGER.debug("OrganisationID: " + dataField.getOrganisationID());
-			LOGGER.debug("PropertySetID:  " + dataField.getPropertySetID());
-			LOGGER.debug("StructBlockKey: " + dataField.getStructBlockKey());
-			LOGGER.debug("StructFieldPK:  " + dataField.getStructFieldPK());
-			if (isCloneable)
-				LOGGER.debug("*********************** DataField PK (mother) ***********************");
-			else
-				LOGGER.debug("*********************** DataField PK (child) ***********************");
-		}
+	/**
+	 * Sorts the given list of DataBlocks according to the indices of each DataBlock and returns a new list containing the
+	 * sorted DataBlocks.
+	 * @param dataBlocks A list of DataBlocks to be sorted.
+	 * @return a new list containing the sorted DataBlocks
+	 */
+	private List<DataBlock> sortDBs(final List<DataBlock> dataBlocks) {
+		final List<DataBlock> dataBlocksSorted = new ArrayList<DataBlock>(dataBlocks);
+		Collections.sort(dataBlocksSorted, new Comparator<DataBlock>() {
+			@Override
+			public int compare(DataBlock o1, DataBlock o2) {
+				int idx1 = o1.getIndex();
+				int idx2 = o2.getIndex();
+				return idx1 < idx2 ? -1 : (idx1 == idx2 ? 0 : +1);
+			}
+		});
+
+		logger.debug("Sorted DataBlock indices: "); //$NON-NLS-1$
+		for (DataBlock db : dataBlocksSorted)
+			logger.debug("{}", db.getIndex()); //$NON-NLS-1$
+
+		return dataBlocksSorted;
 	}
 
-	private void logDataBlocks_Child() {
-		if (LOGGER.isDebugEnabled()) {
-			final Iterator<DataBlockGroup> it = propSet_Child.getDataBlockGroups().iterator();
-			LOGGER.debug("*********************** DataBlocks (child) ***********************");
-			while (it.hasNext()) {
-				final List<DataBlock> dataBlocks = it.next().getDataBlocks();
-				for (DataBlock db : dataBlocks) {
-					LOGGER.debug("DataBlockID:     " + db.getDataBlockID());
-					LOGGER.debug("DataBlock index: " + db.getIndex());
-				}
+	private void logDataFieldPrimaryKeyContent(final DataField dataField, final boolean isCloneable) {
+		if (isCloneable)
+			logger.debug("*********************** DataField PK (mother) ***********************"); //$NON-NLS-1$
+		else
+			logger.debug("*********************** DataField PK (child) ***********************"); //$NON-NLS-1$
+		logger.debug("logDataFieldPrimaryKeyContent: dataBlockID={}", dataField.getDataBlockID()); //$NON-NLS-1$
+		logger.debug("logDataFieldPrimaryKeyContent: organisationID={}", dataField.getOrganisationID()); //$NON-NLS-1$
+		logger.debug("logDataFieldPrimaryKeyContent: propertySetID={}", dataField.getPropertySetID()); //$NON-NLS-1$
+		logger.debug("logDataFieldPrimaryKeyContent: structBlockKey={}", dataField.getStructBlockKey()); //$NON-NLS-1$
+		logger.debug("logDataFieldPrimaryKeyContent: structFieldPK={}", dataField.getStructFieldPK()); //$NON-NLS-1$
+		if (isCloneable)
+			logger.debug("*********************** DataField PK (mother) ***********************"); //$NON-NLS-1$
+		else
+			logger.debug("*********************** DataField PK (child) ***********************"); //$NON-NLS-1$
+	}
+
+	private void logDBs_Child() {
+		final Iterator<DataBlockGroup> it = propSet_Child.getDataBlockGroups().iterator();
+		logger.debug("*********************** DataBlocks (child) ***********************"); //$NON-NLS-1$
+		while (it.hasNext()) {
+			final List<DataBlock> dataBlocks = it.next().getDataBlocks();
+			for (DataBlock db : dataBlocks) {
+				logger.debug("logDBs_Child: dataBlockID={}", db.getDataBlockID()); //$NON-NLS-1$
+				logger.debug("logDBs_Child: dataBlockIndex={}", db.getIndex()); //$NON-NLS-1$
 			}
-			LOGGER.debug("*********************** DataBlocks (child) ***********************");
 		}
+		logger.debug("*********************** DataBlocks (child) ***********************"); //$NON-NLS-1$
 	}
 }
