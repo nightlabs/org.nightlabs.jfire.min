@@ -124,29 +124,30 @@ public class PropertySetFieldInheritor implements FieldInheriter {
 			structBlockKeyToDataBlockGroup_Child.put(dbg.getStructBlockKey(), dbg);
 		}
 
-		// In the case there are no mother data block groups at all.
+		// In the case there are no mother DataBlockGroups at all.
 		if (dataBlockGroups_Mother.size() == 0) {
-			processMissingDBsMother(structBlockKeyToDataBlocks_Child);
+			removeChildData(structBlockKeyToDataBlocks_Child);
 			return;
 		}
 
 		for (Map.Entry<String, List<DataBlock>> entry : structBlockKeyToDataBlocks_Mother.entrySet()) {
-			processDBsMother(structBlockKeyToDataBlocks_Child, entry);
+			compareDBGroups(structBlockKeyToDataBlocks_Child, entry);
 		}
 	}
 
 	/**
-	 * Called in case there are no mother DataBlockGroups at all.
+	 * Called in case there are no mother DataBlockGroups at all. Deletes redundant child DataBlocks until one DataBlock is left 
+	 * (for each DataBlockGroup). Furthermore, deletes the content of the fields of the remaining DataBlock (for each DataBlockGroup).
 	 * @param structBlockKeyToDataBlocks_Child The map keeping track of the child DataBlocks for each DataBlockGroup.
 	 */
-	private void processMissingDBsMother(final Map<String, List<DataBlock>> structBlockKeyToDataBlocks_Child) {
+	private void removeChildData(final Map<String, List<DataBlock>> structBlockKeyToDataBlocks_Child) {
 		for (final List<DataBlock> dataBlocks_Child : structBlockKeyToDataBlocks_Child.values()) {
 			if (dataBlocks_Child.size() > 0) {
-				// Delete redundant child data blocks until one data block is left (for each data block group).
+				// Delete redundant child DataBlocks until one DataBlock is left (for each DataBlockGroup).
 				while (dataBlocks_Child.size() > 1) {
 					dataBlocks_Child.remove(dataBlocks_Child.size() - 1);
 				}
-				// Delete the content of the fields of the remaining data block (for each data block group).
+				// Delete the content of the fields of the remaining DataBlock (for each DataBlockGroup).
 				final Collection<DataField> dataFieldsChild = dataBlocks_Child.get(0).getDataFields();
 				for (final Iterator<DataField> it2 = dataFieldsChild.iterator(); it2.hasNext();) {
 					it2.next().setData(null);
@@ -156,8 +157,8 @@ public class PropertySetFieldInheritor implements FieldInheriter {
 	}
 
 	/**
-	 * Traverses all mother DataBlockGroups and compares the amount of appropriate DataBocks with the amount of DataBlocks of
-	 * the corresponding DataBlockGroup of the child.
+	 * Compares the amount of DataBocks for each mother DataBlockGroup with the amount of DataBlocks of the corresponding 
+	 * child DataBlockGroup.
 	 * <ul>
 	 * <li>If the mother has more DataBlocks the missing amount of DataFields (not blocks) will be added to the child.</li>
 	 * <li>If the mother has less DataBlocks all redundant DataBlocks (in this case blocks) will be removed from the child.</li>
@@ -167,7 +168,7 @@ public class PropertySetFieldInheritor implements FieldInheriter {
 	 * @param structBlockKeyToDataBlocks_Child The map keeping track of the child DataBlocks for each DataBlockGroup.
 	 * @param entry The currently considered entry of structBlockKeyToDataBlocks_Mother.
 	 */
-	private void processDBsMother(final Map<String, List<DataBlock>> structBlockKeyToDataBlocks_Child,
+	private void compareDBGroups(final Map<String, List<DataBlock>> structBlockKeyToDataBlocks_Child,
 		Map.Entry<String, List<DataBlock>> entry) {
 
 		final String structBlockKey = entry.getKey();
@@ -191,7 +192,7 @@ public class PropertySetFieldInheritor implements FieldInheriter {
 
 			// As now both mother and child have the same amount of DataBlocks (and DataFields) for the currently considered
 			// DataBlockGroup (struct block), copy the content of each mother DataField to the corresponding child DataField.
-			processDBs(dataBlocks_Mother, dataBlocks_Child);
+			copyDBData(dataBlocks_Mother, dataBlocks_Child);
 		}
 	}
 
@@ -205,7 +206,7 @@ public class PropertySetFieldInheritor implements FieldInheriter {
 	 * @param dataBlocks_Mother The mother DataBlocks for the currently considered DataBlockGroup.
 	 * @param dataBlocks_Child The child DataBlocks for the currently considered DataBlockGroup.
 	 */
-	private void processDBs(final List<DataBlock> dataBlocks_Mother, List<DataBlock> dataBlocks_Child) {
+	private void copyDBData(final List<DataBlock> dataBlocks_Mother, List<DataBlock> dataBlocks_Child) {
 		if (dataBlocks_Mother.size() != dataBlocks_Child.size())
 			throw new IllegalArgumentException("dataBlocks_Mother.size() != dataBlocks_Child.size() :: " //$NON-NLS-1$
 				+ dataBlocks_Mother.size() + " != " + dataBlocks_Child.size()); //$NON-NLS-1$
@@ -304,8 +305,8 @@ public class PropertySetFieldInheritor implements FieldInheriter {
 					clone.setDataBlockIndex(cloneable.getDataBlockIndex());	// Keep DataBlock index as set in mother!
 					propSet_Child.internalAddDataFieldToPersistentCollection(clone);
 
-					logDataFieldPrimaryKeyContent(clone, false);
-					logDataFieldPrimaryKeyContent(cloneable, true);
+					logDataFieldPKContent(clone, false);
+					logDataFieldPKContent(cloneable, true);
 				}
 			}
 		}
@@ -368,8 +369,7 @@ public class PropertySetFieldInheritor implements FieldInheriter {
 	}
 
 	/**
-	 * Sorts the given list of DataBlocks according to the indices of each DataBlock and returns a new list containing the
-	 * sorted DataBlocks.
+	 * Sorts the given list of DataBlocks according to their indices and returns a new list containing the result.
 	 * @param dataBlocks A list of DataBlocks to be sorted.
 	 * @return a new list containing the sorted DataBlocks
 	 */
@@ -391,7 +391,7 @@ public class PropertySetFieldInheritor implements FieldInheriter {
 		return dataBlocksSorted;
 	}
 
-	private void logDataFieldPrimaryKeyContent(final DataField dataField, final boolean isCloneable) {
+	private void logDataFieldPKContent(final DataField dataField, final boolean isCloneable) {
 		if (isCloneable)
 			logger.debug("*********************** DataField PK (mother) ***********************"); //$NON-NLS-1$
 		else
