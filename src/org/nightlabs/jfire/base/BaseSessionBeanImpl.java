@@ -137,7 +137,7 @@ implements BaseSessionRemote
 	 * <p>
 	 * <b>You must not forget to close the initial context afterwards!</b>
 	 *
-	 * @param organisationID The organisationID with wich to communicate.
+	 * @param organisationID The organisationID with which to communicate.
 	 * @return Returns an InitialContext that is configured properly to authenticate at and communicate with another organisation (wherever it may be - e.g. on another server).
 	 * @throws NamingException
 	 */
