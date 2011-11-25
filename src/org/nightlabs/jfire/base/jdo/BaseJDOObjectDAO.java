@@ -78,7 +78,7 @@ public abstract class BaseJDOObjectDAO<JDOObjectID extends ObjectID, JDOObject>
 	 * {@link #getJDOObjects(String, Collection, Set, int, IProgressMonitor)}
 	 * for all objects that are not already in the cache.
 	 * <p>
-	 * Subclassers may override this method to provide a specialized way to
+	 * Subclasses may override this method to provide a specialized way to
 	 * retrieve a single JDO object from the server. The given implementation
 	 * works by calling {@link #retrieveJDOObjects(Set, Set, int, IProgressMonitor)}
 	 * for the single object.
@@ -89,8 +89,8 @@ public abstract class BaseJDOObjectDAO<JDOObjectID extends ObjectID, JDOObject>
 	 * <code>getJDOObjects(...)</code> methods!
 	 * </p>
 	 *
-	 * @param objectID Wich object to get
-	 * @param fetchGroups Wich fetch groups to use
+	 * @param objectID Which object to get
+	 * @param fetchGroups Which fetch groups to use
 	 * @param maxFetchDepth Fetch depth or {@link NLJDOHelper#MAX_FETCH_DEPTH_NO_LIMIT}
 	 * @param monitor The progress monitor for this action. After downloading the
 	 * 					object, <code>monitor.worked(1)</code> should be called.
@@ -136,8 +136,8 @@ public abstract class BaseJDOObjectDAO<JDOObjectID extends ObjectID, JDOObject>
 	 * for the uncached object.
 	 *
 	 * @param scope The cache scope to use
-	 * @param objectID Wich object to get
-	 * @param fetchGroups Wich fetch groups to use
+	 * @param objectID Which object to get
+	 * @param fetchGroups Which fetch groups to use
 	 * @param maxFetchDepth Fetch depth or {@link NLJDOHelper#MAX_FETCH_DEPTH_NO_LIMIT}
 	 * @param monitor The progress monitor for this action. For every cached
 	 * 					object, <code>monitor.worked(1)</code> will be called.
@@ -173,13 +173,13 @@ public abstract class BaseJDOObjectDAO<JDOObjectID extends ObjectID, JDOObject>
 	 * Also note that client code should NOT modify returned object's List and its contents 
 	 * directly because of Cache being used. Objects MUST be cloned (via {@link Util#cloneSerializable(Object, ClassLoader)} 
 	 * or {@link Util#cloneSerializableAll(Collection, ClassLoader)}) PRIOR to modification.
-	 * You could also consider returning immutable Collections of objects but rememeber 
+	 * You could also consider returning immutable Collections of objects but remember 
 	 * that this would only prevent addition/removal of elements but not the modification 
 	 * of objects themselves.
 	 *
 	 * @param scope The cache scope to use
-	 * @param objectIDs Wich objects to get
-	 * @param fetchGroups Wich fetch groups to use
+	 * @param objectIDs Which objects to get
+	 * @param fetchGroups Which fetch groups to use
 	 * @param maxFetchDepth Fetch depth or {@link NLJDOHelper#MAX_FETCH_DEPTH_NO_LIMIT}
 	 * @param monitor The progress monitor for this action. For every cached
 	 * 					object, <code>monitor.worked(1)</code> will be called.
@@ -350,7 +350,7 @@ public abstract class BaseJDOObjectDAO<JDOObjectID extends ObjectID, JDOObject>
 	 * Note that client code should NOT modify returned object's List and its contents 
 	 * directly because of Cache being used. Objects MUST be cloned (via {@link Util#cloneSerializable(Object, ClassLoader)} 
 	 * or {@link Util#cloneSerializableAll(Collection, ClassLoader)}) PRIOR to modification.
-	 * You could also consider returning immutable Collections of objects but rememeber 
+	 * You could also consider returning immutable Collections of objects but remember 
 	 * that this would only prevent addition/removal of elements but not the modification 
 	 * of objects themselves.
 	 * <p>
@@ -358,8 +358,8 @@ public abstract class BaseJDOObjectDAO<JDOObjectID extends ObjectID, JDOObject>
 	 * {@link #getJDOObjects(String, Collection, Set, int, IProgressMonitor)}.
 	 *
 	 * @param scope The cache scope to use
-	 * @param objectIDs Wich objects to get
-	 * @param fetchGroups Wich fetch groups to use
+	 * @param objectIDs Which objects to get
+	 * @param fetchGroups Which fetch groups to use
 	 * @param maxFetchDepth Fetch depth or {@link NLJDOHelper#MAX_FETCH_DEPTH_NO_LIMIT}
 	 * @param monitor The progress monitor for this action. For every cached
 	 * 					object, <code>monitor.worked(1)</code> will be called.
@@ -385,7 +385,7 @@ public abstract class BaseJDOObjectDAO<JDOObjectID extends ObjectID, JDOObject>
 	 * Note that client code should NOT modify returned object's List and its contents 
 	 * directly because of Cache being used. Objects MUST be cloned (via {@link Util#cloneSerializable(Object, ClassLoader)} 
 	 * or {@link Util#cloneSerializableAll(Collection, ClassLoader)}) PRIOR to modification.
-	 * You could also consider returning immutable Collections of objects but rememeber 
+	 * You could also consider returning immutable Collections of objects but remember 
 	 * that this would only prevent addition/removal of elements but not the modification 
 	 * of objects themselves.
 	 * <p>
@@ -393,8 +393,8 @@ public abstract class BaseJDOObjectDAO<JDOObjectID extends ObjectID, JDOObject>
 	 * {@link #getJDOObjects(String, Collection, Set, int, IProgressMonitor)}.
 	 *
 	 * @param scope The cache scope to use
-	 * @param objectIDs Wich objects to get
-	 * @param fetchGroups Wich fetch groups to use
+	 * @param objectIDs Which objects to get
+	 * @param fetchGroups Which fetch groups to use
 	 * @param maxFetchDepth Fetch depth or {@link NLJDOHelper#MAX_FETCH_DEPTH_NO_LIMIT}
 	 * @param monitor The progress monitor for this action. For every cached
 	 * 					object, <code>monitor.worked(1)</code> will be called.
@@ -420,7 +420,7 @@ public abstract class BaseJDOObjectDAO<JDOObjectID extends ObjectID, JDOObject>
 	 * Note that client code should NOT modify returned object's List and its contents 
 	 * directly because of Cache being used. Objects MUST be cloned (via {@link Util#cloneSerializable(Object, ClassLoader)} 
 	 * or {@link Util#cloneSerializableAll(Collection, ClassLoader)}) PRIOR to modification.
-	 * You could also consider returning immutable Collections of objects but rememeber 
+	 * You could also consider returning immutable Collections of objects but remember 
 	 * that this would only prevent addition/removal of elements but not the modification 
 	 * of objects themselves.
 	 * <p>
@@ -428,8 +428,8 @@ public abstract class BaseJDOObjectDAO<JDOObjectID extends ObjectID, JDOObject>
 	 * {@link #getJDOObjects(String, Collection, Set, int, IProgressMonitor)}.
 	 *
 	 * @param scope The cache scope to use
-	 * @param objectIDs Wich objects to get
-	 * @param fetchGroups Wich fetch groups to use
+	 * @param objectIDs Which objects to get
+	 * @param fetchGroups Which fetch groups to use
 	 * @param maxFetchDepth Fetch depth or {@link NLJDOHelper#MAX_FETCH_DEPTH_NO_LIMIT}
 	 * @param monitor The progress monitor for this action. For every cached
 	 * 					object, <code>monitor.worked(1)</code> will be called.
@@ -450,7 +450,7 @@ public abstract class BaseJDOObjectDAO<JDOObjectID extends ObjectID, JDOObject>
 	 * Get the JDOManagerProvider. If no provider was set using the
 	 * {@link #setJdoManagerProvider(JDOManagerProvider)}, {@link GlobalJDOManagerProvider}
 	 * will be used as fall-back. This will be sufficient for applications that
-	 * only need one global scope cache and lifecyle.
+	 * only need one global scope cache and lifecycle.
 	 */
 	public JDOManagerProvider getJDOManagerProvider() {
 		if(jdoManagerProvider == null) {
