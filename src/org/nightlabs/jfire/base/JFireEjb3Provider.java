@@ -86,7 +86,6 @@ public interface JFireEjb3Provider {
 	 *
 	 * @param <T> the type of the EJB-remote-interface.
 	 * @param ejbRemoteInterface the remote EJB-business-interface (e.g. {@link org.nightlabs.jfire.security.JFireSecurityManagerRemote}) for which to get an instance.
-	 * @param environment the environment (aka. JNDI initial context properties) specifying the coordinates where to get the bean from (e.g. which server to connect to, which user to authenticate as etc.).
 	 * @return an instance of an EJB-proxy implementing the interface specified by the argument <code>ejbRemoteInterface</code>.
 	 */
 	<T> T getRemoteBean(Class<T> ejbRemoteInterface);
