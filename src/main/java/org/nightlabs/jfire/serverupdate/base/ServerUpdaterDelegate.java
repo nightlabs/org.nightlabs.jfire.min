@@ -129,18 +129,15 @@ public class ServerUpdaterDelegate
 	
 	private boolean askForBackup() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("\n");
-		sb.append("\n");
+		sb.append("\n\n");
 		sb.append("????????????????????????????????????????????????????????????????????\n");
-		sb.append("\n");
 		sb.append("The following databases where found and will be modified:\n");
 		for (JDBCConfiguration jdbcConfig : jdbcConfigurations) {
 			sb.append("  ").append(jdbcConfig.getDatabaseURL() + "\n");
 		}
 		sb.append("HAVE YOU MADE A BACKUP OF THESE DATABASES SO THIS PROGRAM CAN SAFELY CONTINUE?\n");
 		sb.append("????????????????????????????????????????????????????????????????????\n");
-		sb.append("\n");
-		sb.append("\n");
+		sb.append("\n\n");
 		sb.append("Continue with the database-update (y/n)?");
 		return ServerUpdateUtil.prompt(sb.toString(), "y");
 	}
@@ -226,12 +223,17 @@ public class ServerUpdaterDelegate
 								
 								updateHistoryItemSQL.endUpdate(doCommit);
 								
+								ModuleMetaData.setSchemaVersion(connection, updateProcedure.getModuleID(), updateProcedure.getToVersion().toString());
+								
 								Log.info("====================================================================");
 								Log.info("    Update finished for " + updateProcedure.getModuleID() + " " + updateProcedure.getFromVersion() + " --> " + updateProcedure.getToVersion());
 								if (Log.isDebugEnabled()) {
 									Log.debug("    Did commit " + doCommit);
 								}
 								Log.info("====================================================================");
+								
+								
+								
 							} catch (Exception e) {
 								connection.rollback();
 								e.printStackTrace(System.out);
