@@ -1,6 +1,7 @@
 package org.nightlabs.jfire.security.integration;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 
 import javax.jdo.PersistenceManager;
@@ -65,6 +66,10 @@ import org.nightlabs.jfire.security.integration.id.UserSecurityGroupSyncConfigID
 })
 @Queries({
 	@javax.jdo.annotations.Query(
+			name="UserSecurityGroupSyncConfig.getAllSyncConfigsForUserManagementSystem",
+			value="SELECT where JDOHelper.getObjectId(this.userManagementSystem) == :userManagementSystemId ORDER BY JDOHelper.getObjectId(this) ASCENDING"
+			),
+	@javax.jdo.annotations.Query(
 			name="UserSecurityGroupSyncConfig.getSyncConfigForGroup",
 			value="SELECT where JDOHelper.getObjectId(this.userManagementSystem) == :userManagementSystemId && JDOHelper.getObjectId(this.userSecurityGroup) == :userSecurityGroupId ORDER BY JDOHelper.getObjectId(this) ASCENDING"
 			),
@@ -101,6 +106,27 @@ public abstract class UserSecurityGroupSyncConfig<T extends UserManagementSystem
 		UserSecurityGroupSyncConfig<?, ?> syncConfig = (UserSecurityGroupSyncConfig<?, ?>) q.execute(userManagementSystemId, userSecurityGroupId);
 		q.closeAll();
 		return syncConfig;
+	}
+
+	/**
+	 * Executes a named {@link Query} which returns a {@link Collection} of {@link UserSecurityGroupSyncConfig}s for given {@link UserManagementSystem}.
+	 * 
+	 * @param pm {@link PersistenceManager} to be used for execution
+	 * @param userManagementSystemId The ID of {@link UserManagementSystem}
+	 * @return {@link Collection} of found {@link UserSecurityGroupSyncConfig}s or empty {@link Collection} if nothing found
+	 */
+	public static Collection<UserSecurityGroupSyncConfig<?,?>> getAllSyncConfigsForUserManagementSystem(
+			PersistenceManager pm, UserManagementSystemID userManagementSystemId
+			) {
+		javax.jdo.Query q = pm.newNamedQuery(
+				UserSecurityGroupSyncConfig.class, 
+				"UserSecurityGroupSyncConfig.getAllSyncConfigsForUserManagementSystem"
+				);
+		@SuppressWarnings("unchecked")
+		Collection<UserSecurityGroupSyncConfig<?, ?>> syncConfigs = (Collection<UserSecurityGroupSyncConfig<?, ?>>) q.execute(userManagementSystemId);
+		syncConfigs = new ArrayList<UserSecurityGroupSyncConfig<?,?>>(syncConfigs);
+		q.closeAll();
+		return syncConfigs;
 	}
 
 	/**
