@@ -15,7 +15,7 @@
 	    </p>
 	    
 	    <br/><br/><br/>
-	
+<!-- 	
 	    <p>
 	    In case you just want to set up a demo system and don't care about the configuration details,
 	    click the button below to initialise JFire using the default values.
@@ -34,5 +34,6 @@
 			<input type="submit" value="Give me the demo system" class="wide"/>
 		</form>
 	    </p>
+ -->	    
     </div>
     
