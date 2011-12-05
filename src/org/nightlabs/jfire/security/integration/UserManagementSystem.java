@@ -86,8 +86,8 @@ import org.nightlabs.util.Util;
 public abstract class UserManagementSystem implements Serializable, Comparable<UserManagementSystem>{
 	
 	/**
-	 * Key for a System property which is used to configure UserMagementSystem synchronization process
-	 * to fetch user data from specific UserManagementSystem ignoring who is the leading system.
+	 * Key for a System property which is used to configure {@link UserManagementSystem} synchronization process
+	 * to fetch user-related data from specific {@link UserManagementSystem} ignoring who is the leading system.
 	 * It might help in certain situations (e.g. when you want to use JFire as leading system, 
 	 * but initially have some users in the UMS which you want to import).
 	 */
@@ -381,6 +381,37 @@ public abstract class UserManagementSystem implements Serializable, Comparable<U
 	public long getUserManagementSystemID() {
 		return userManagementSystemID;
 	}
+	
+	/**
+	 * Check whether we should fetch User-related data (User/Person itself and/or authorization data)
+	 * from external {@link UserManagementSystem}. Will return <code>true</code> if either 
+	 * this {@link UserManagementSystem} is leading or a {@link UserManagementSystem#SHOULD_FETCH_USER_DATA}
+	 * system property is set to <code>true</code>.
+	 * 
+	 * @return <code>true</code> if User-related data should be fetched
+	 */
+	public boolean shouldFetchUserData(){
+		// we can fetch user data from UserManagementSystem in both scenarios:
+		// - when JFire is a leading system we're doing it because it might help in certain situations 
+		//   (e.g. when you want to use JFire as leading system, but initially have some users in the 
+		//   LDAP which you want to import)
+		// - when UMS is a leading system it's done when user still does not exist in JFire
+		boolean fetchUserFromUMS;
+		if (isLeading()){
+			fetchUserFromUMS = true;
+		}else{
+			String fetchPropertyValue = System.getProperty(UserManagementSystem.SHOULD_FETCH_USER_DATA);
+			if (fetchPropertyValue != null && !fetchPropertyValue.isEmpty()){
+				fetchUserFromUMS = Boolean.parseBoolean(
+						System.getProperty(UserManagementSystem.SHOULD_FETCH_USER_DATA)
+						);
+			}else{
+				fetchUserFromUMS = true;
+			}
+		}
+		return fetchUserFromUMS;
+	}
+	
 	
 	@Persistent(persistenceModifier=PersistenceModifier.NONE)
 	private UserManagementSystemID userManagementSystemIDObject;
