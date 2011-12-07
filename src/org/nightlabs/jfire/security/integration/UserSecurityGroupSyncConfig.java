@@ -103,9 +103,14 @@ public abstract class UserSecurityGroupSyncConfig<T extends UserManagementSystem
 				UserSecurityGroupSyncConfig.class, 
 				"UserSecurityGroupSyncConfig.getSyncConfigForGroup"
 				);
-		UserSecurityGroupSyncConfig<?, ?> syncConfig = (UserSecurityGroupSyncConfig<?, ?>) q.execute(userManagementSystemId, userSecurityGroupId);
+		@SuppressWarnings("unchecked")
+		Collection<UserSecurityGroupSyncConfig<?, ?>> syncConfigs = (Collection<UserSecurityGroupSyncConfig<?, ?>>) q.execute(userManagementSystemId, userSecurityGroupId);
+		syncConfigs = new ArrayList<UserSecurityGroupSyncConfig<?,?>>(syncConfigs);
 		q.closeAll();
-		return syncConfig;
+		if (!syncConfigs.isEmpty()){
+			return syncConfigs.iterator().next();
+		}
+		return null;
 	}
 
 	/**
@@ -146,7 +151,7 @@ public abstract class UserSecurityGroupSyncConfig<T extends UserManagementSystem
 				);
 		@SuppressWarnings("unchecked")
 		Collection<UserSecurityGroupSyncConfig<?, ?>> syncConfigs = (Collection<UserSecurityGroupSyncConfig<?, ?>>) q.execute(userSecurityGroupId);
-		return syncConfigs.isEmpty();
+		return !syncConfigs.isEmpty();
 	}
 
 	
