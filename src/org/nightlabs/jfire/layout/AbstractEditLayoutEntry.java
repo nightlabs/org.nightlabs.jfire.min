@@ -15,6 +15,7 @@ import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
 import org.nightlabs.clientui.layout.GridData;
+import org.nightlabs.jfire.idgenerator.IDGenerator;
 import org.nightlabs.jfire.layout.id.AbstractEditLayoutEntryID;
 
 /**
@@ -101,6 +102,7 @@ public abstract class AbstractEditLayoutEntry<T>
 		this.editLayoutEntryID = entryID;
 		if (entryType == null) throw new IllegalArgumentException("entryType must not be null");
 		this.entryType = entryType;
+		this.gridData = new GridData(IDGenerator.nextID(GridData.class));
 	}
 
 	public long getEditLayoutEntryID()
