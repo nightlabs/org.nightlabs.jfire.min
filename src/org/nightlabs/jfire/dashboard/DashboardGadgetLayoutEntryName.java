@@ -3,6 +3,7 @@
  */
 package org.nightlabs.jfire.dashboard;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.jdo.annotations.FetchGroup;
@@ -56,6 +57,7 @@ public class DashboardGadgetLayoutEntryName extends I18nText {
 	public DashboardGadgetLayoutEntryName(DashboardGadgetLayoutEntry<?> entry) {
 		this.entry = entry;
 		this.dashboardGadgetLayoutEntryNameID = IDGenerator.nextID(DashboardGadgetLayoutEntryName.class);
+		this.names = new HashMap<String, String>();
 	}
 
 	/*

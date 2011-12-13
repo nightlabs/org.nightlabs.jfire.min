@@ -103,6 +103,8 @@ public class DashboardGadgetLayoutEntry<T> extends AbstractEditLayoutEntry<T> im
 	}
 	
 	protected byte[] serializeConfig(T config) {
+		if (config == null)
+			return null;
 		final ByteArrayOutputStream outStream = new ByteArrayOutputStream();
 		byte[] result = null;
 		DeflaterOutputStream zipStream = new DeflaterOutputStream(outStream);
@@ -119,6 +121,8 @@ public class DashboardGadgetLayoutEntry<T> extends AbstractEditLayoutEntry<T> im
 	
 	@SuppressWarnings("unchecked")
 	protected T deserializeConfig(byte[] serialisedConfig) {
+		if (serialisedConfig == null)
+			return null;
 		final ByteArrayInputStream inputStream = new ByteArrayInputStream(serialisedConfig);
 		final InflaterInputStream zipStream = new InflaterInputStream(inputStream);
 		T result = null;
