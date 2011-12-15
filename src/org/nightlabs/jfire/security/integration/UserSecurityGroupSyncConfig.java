@@ -34,7 +34,7 @@ import org.nightlabs.jfire.security.integration.id.UserSecurityGroupSyncConfigID
  * If concrete {@link UserManagementSystem} supports authorization which needs synchronization
  * with JFire than UserManagementSystem-specific module should provide implementation(s) for this class
  * specifying concrete type of authorization-related object. Actual synchronization is also supposed
- * to be implemented in this UserManagementSystem-specific module preferably using generic sync API 
+ * to be implemented by this UserManagementSystem-specific module preferably using generic sync API 
  * from {@link UserManagementSystem}.
  * 
  * Every {@link UserSecurityGroup} could have multiple {@link UserSecurityGroupSyncConfig}s for different
@@ -46,6 +46,8 @@ import org.nightlabs.jfire.security.integration.id.UserSecurityGroupSyncConfigID
  * 
  * @author Denis Dudnik <deniska.dudnik[at]gmail{dot}com>
  *
+ * @param <T> extends {@link UserManagementSystem}, to specify concrete type of {@link UserManagementSystem}
+ * @param <UserManagementSystemSecurityType> type of an object which maps to {@link UserSecurityGroup}
  */
 @PersistenceCapable(
 		objectIdClass=UserSecurityGroupSyncConfigID.class,
