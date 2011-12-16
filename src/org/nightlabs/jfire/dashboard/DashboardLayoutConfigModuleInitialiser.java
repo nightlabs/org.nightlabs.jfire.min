@@ -10,6 +10,7 @@ import javax.jdo.annotations.InheritanceStrategy;
 import javax.jdo.annotations.PersistenceCapable;
 
 import org.nightlabs.clientui.layout.GridData;
+import org.nightlabs.i18n.I18nText;
 import org.nightlabs.jfire.config.ConfigModule;
 import org.nightlabs.jfire.config.ConfigModuleInitialiser;
 import org.nightlabs.jfire.dashboard.resource.Messages;
@@ -56,7 +57,11 @@ public class DashboardLayoutConfigModuleInitialiser extends ConfigModuleInitiali
 		welcomeEntry.getGridData().setHorizontalSpan(2);
 		welcomeEntry.getGridData().setHorizontalAlignment(GridData.FILL);
 		welcomeEntry.getGridData().setGrabExcessHorizontalSpace(true);
-		welcomeEntry.getEntryName().readFromProperties(
+		initializeWelcomeGadgetName(welcomeEntry.getEntryName());
+	}
+
+	public static void initializeWelcomeGadgetName(I18nText gadgetName) {		
+		gadgetName.readFromProperties(
 				Messages.BUNDLE_NAME, 
 				DashboardLayoutConfigModuleInitialiser.class.getClassLoader(), 
 				DashboardLayoutConfigModuleInitialiser.class.getName() + ".welcomeGadget.title");
