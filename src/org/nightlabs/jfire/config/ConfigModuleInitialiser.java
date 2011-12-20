@@ -98,9 +98,9 @@ public abstract class ConfigModuleInitialiser
 	 * The new initialiser will have the default priority of 500 (see {@link #PRIORITY_DEFAULT}).
 	 *
 	 * @param organisationID The organisation this initialiser is for.
-	 * @param configModuleInitialiserID The id of this initialiser in the scope of the type of ConfigModule.
 	 * @param configModuleClassName The type of ConfigModule this initialiser is for.
 	 * 		Has to be the fully qualified class-name of the ConfigModule.
+	 * @param configModuleInitialiserID The id of this initialiser in the scope of the type of ConfigModule.
 	 */
 	public ConfigModuleInitialiser(
 			String organisationID,
@@ -121,9 +121,9 @@ public abstract class ConfigModuleInitialiser
 	 * The new initialiser will have the default priority of 500 (see {@link #PRIORITY_DEFAULT}).
 	 *
 	 * @param organisationID The organisation this initialiser is for.
-	 * @param configModuleInitialiserID The id of this initialiser in the scope of the type of ConfigModule.
 	 * @param configModuleClassName The type of ConfigModule this initialiser is for.
 	 * 		Has to be the fully qualified class-name of the ConfigModule.
+	 * @param configModuleInitialiserID The id of this initialiser in the scope of the type of ConfigModule.
 	 * @param priority The priority of this initialiser
 	 */
 	public ConfigModuleInitialiser(
