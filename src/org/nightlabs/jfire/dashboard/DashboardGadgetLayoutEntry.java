@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
+import javax.jdo.JDODetachedFieldAccessException;
 import javax.jdo.JDOHelper;
 import javax.jdo.PersistenceManager;
 import javax.jdo.annotations.Column;
@@ -44,7 +45,7 @@ import com.thoughtworks.xstream.XStream;
 )
 public class DashboardGadgetLayoutEntry<T> extends AbstractEditLayoutEntry<T> implements AttachCallback, DetachCallback {
 
-	private static final long serialVersionUID = 20111212L;
+	private static final long serialVersionUID = 20111221L;
 
 	@Persistent(mappedBy="entry", dependent="true")
 	private DashboardGadgetLayoutEntryName name;
@@ -61,6 +62,10 @@ public class DashboardGadgetLayoutEntry<T> extends AbstractEditLayoutEntry<T> im
 	 */
 	@Persistent(persistenceModifier=PersistenceModifier.NONE)
 	private T config;
+	
+	/** used to check access to config */
+	@Persistent(persistenceModifier=PersistenceModifier.NONE)
+	private boolean configDetached;
 	
 	/**
 	 * @param configModule
@@ -91,7 +96,7 @@ public class DashboardGadgetLayoutEntry<T> extends AbstractEditLayoutEntry<T> im
 	 */
 	@Override
 	public T getObject() {
-		return config;
+		return getConfig();
 	}
 
 	/* (non-Javadoc)
@@ -99,7 +104,7 @@ public class DashboardGadgetLayoutEntry<T> extends AbstractEditLayoutEntry<T> im
 	 */
 	@Override
 	public void setObject(T object) {
-		this.config = object;
+		setConfig(object);
 	}
 	
 	protected byte[] serializeConfig(T config) {
@@ -137,6 +142,8 @@ public class DashboardGadgetLayoutEntry<T> extends AbstractEditLayoutEntry<T> im
 	}
 	
 	public T getConfig() {
+		if (JDOHelper.isDetached(this) && !configDetached)
+			throw new JDODetachedFieldAccessException("config was not detached");
 		return config;
 	}
 	
@@ -150,6 +157,9 @@ public class DashboardGadgetLayoutEntry<T> extends AbstractEditLayoutEntry<T> im
 		if (pm.getFetchPlan().getGroups().contains(AbstractEditLayoutConfigModule.FETCH_GROUP_EDIT_LAYOUT_ENTRIES)) {
 			this.config = deserializeConfig(serialisedConfig);
 			this.serialisedConfig = null;
+			this.configDetached = true;
+		} else {
+			this.configDetached = false;
 		}
 	}
 
@@ -160,9 +170,8 @@ public class DashboardGadgetLayoutEntry<T> extends AbstractEditLayoutEntry<T> im
 	@SuppressWarnings("unchecked")
 	@Override
 	public void jdoPostAttach(Object detached) {
-		PersistenceManager pm = JDOHelper.getPersistenceManager(this);
-		if (pm.getFetchPlan().getGroups().contains(AbstractEditLayoutConfigModule.FETCH_GROUP_EDIT_LAYOUT_ENTRIES)) {
-			this.serialisedConfig = serializeConfig(((DashboardGadgetLayoutEntry<T>)detached).getObject());
+		if (((DashboardGadgetLayoutEntry<T>)detached).configDetached) {
+			this.serialisedConfig = serializeConfig(((DashboardGadgetLayoutEntry<T>)detached).getConfig());
 			this.config = null;
 		}
 	}
