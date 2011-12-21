@@ -20,6 +20,7 @@ import javax.jdo.annotations.Persistent;
 import javax.jdo.listener.AttachCallback;
 
 import org.nightlabs.jfire.base.DuplicateKeyException;
+import org.nightlabs.jfire.prop.datafield.II18nTextDataField;
 import org.nightlabs.jfire.prop.exception.PropertyException;
 import org.nightlabs.jfire.prop.exception.StructBlockNotFoundException;
 import org.nightlabs.jfire.prop.exception.StructFieldNotFoundException;
@@ -392,6 +393,22 @@ public abstract class AbstractStruct implements IStruct, Serializable, AttachCal
 	@Override
 	public Set<IPropertySetValidator> getPropertySetValidators() {
 		return Collections.unmodifiableSet(getPropertySetValidatorSet());
+	}
+	
+	@Override
+	public String createDisplayName(PropertySet propertySet) {
+		String lastSuffix = "";
+		String displayName = "";
+		for (DisplayNamePart displayNamePart : getDisplayNameParts()) {
+			DataField field = propertySet.getPersistentDataFieldByIndex(displayNamePart.getStructField().getStructFieldIDObj(), 0);
+			if (field != null && !field.isEmpty()) {
+				if (field instanceof II18nTextDataField) {
+					displayName += ((II18nTextDataField) field).getI18nText().getText() + displayNamePart.getStructFieldSuffix();
+					lastSuffix = displayNamePart.getStructFieldSuffix();
+				}
+			}
+		}
+		return displayName.substring(0, displayName.length() - lastSuffix.length());
 	}
 
 	/*

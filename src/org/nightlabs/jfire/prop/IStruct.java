@@ -192,6 +192,14 @@ public interface IStruct
 	 * @param part The part to remove.
 	 */
 	public void removeDisplayNamePart(DisplayNamePart part);
+	
+	/**
+	 * Creates a display-name for the given {@link PropertySet} based on the {@link DisplayNamePart}s of this {@link IStruct}.
+	 * 
+	 * @param propertySet The PropertySet to take the field-values from
+	 * @return A display-name.
+	 */
+	public String createDisplayName(PropertySet propertySet);
 
 	/**
 	 * Checks whether this struct has a {@link StructField} corresponding
