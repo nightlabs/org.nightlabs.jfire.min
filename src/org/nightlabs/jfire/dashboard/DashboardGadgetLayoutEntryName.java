@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.nightlabs.jfire.dashboard;
 
 import java.util.HashMap;
