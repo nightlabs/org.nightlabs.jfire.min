@@ -200,6 +200,10 @@ public class DashboardGadgetLayoutEntry<T> extends AbstractEditLayoutEntry<T> im
 
 	@Override
 	public void jdoPreStore() {
-		this.serialisedConfig = serializeConfig(getConfig());
+		if (JDOHelper.isNew(this)) {
+			this.serialisedConfig = serializeConfig(getConfig());
+			this.configDetached = false;
+			this.config = null;
+		}
 	}
 }
