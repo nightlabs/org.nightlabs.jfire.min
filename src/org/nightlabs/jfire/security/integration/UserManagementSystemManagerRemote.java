@@ -7,9 +7,12 @@ import javax.ejb.Remote;
 import javax.security.auth.login.LoginException;
 
 import org.nightlabs.jdo.NLJDOHelper;
+import org.nightlabs.jfire.security.UserSecurityGroup;
+import org.nightlabs.jfire.security.id.UserSecurityGroupID;
 import org.nightlabs.jfire.security.integration.UserManagementSystemManagerBean.ForbidUserCreationLyfecycleListener;
 import org.nightlabs.jfire.security.integration.id.UserManagementSystemID;
 import org.nightlabs.jfire.security.integration.id.UserManagementSystemTypeID;
+import org.nightlabs.jfire.security.integration.id.UserSecurityGroupSyncConfigContainerID;
 
 /**
  * Remote interface for {@link UserManagementSystemManagerBean}
@@ -93,7 +96,7 @@ public interface UserManagementSystemManagerRemote {
 	 * 
 	 * @param userManagementSystemID The {@link UserManagementSystemID} of instance to delete
 	 */
-	void deleteUserManagementSystem(UserManagementSystemID userManagementSystem);
+	void deleteUserManagementSystem(UserManagementSystemID userManagementSystemID);
 	
 	/**
 	 * Get IDs of all JFire entities which should be synchronized with some {@link UserManagementSystem}.
@@ -113,5 +116,49 @@ public interface UserManagementSystemManagerRemote {
 	 * @throws UserManagementSystemCommunicationException
 	 */
 	<T extends UserManagementSystemSyncEvent> void runLDAPServerSynchronization(UserManagementSystemID userManagementSystemID, T syncEvent) throws LoginException, UserManagementSystemSyncException, UserManagementSystemCommunicationException;
+
+	/**
+	 * Retrieves a {@link List} of detached {@link UserSecurityGroupSyncConfigContainer}s by given {@link UserSecurityGroupSyncConfigContainerID}s.
+	 * 
+	 * @param syncConfigContainerIDs IDs of {@link UserSecurityGroupSyncConfigContainer}s, will throw {@link IllegalArgumentException} if <code>null</code>
+	 * @param fetchGroups Which fetch groups to use
+	 * @param maxFetchDepth Fetch depth or {@link NLJDOHelper#MAX_FETCH_DEPTH_NO_LIMIT}
+	 * @return list of detached {@link UserSecurityGroupSyncConfigContainer} objects
+	 */
+	List<UserSecurityGroupSyncConfigContainer> getSyncConfigContainers(Collection<UserSecurityGroupSyncConfigContainerID> syncConfigContainerIDs, String[] fetchGroups, int maxFetchDepth);
+	
+	/**
+	 * Get IDs of all persistent {@link UserSecurityGroupSyncConfigContainer} objects.
+	 * Returns an empty {@link Collection} if non of them exist. 
+	 * 
+	 * @return collection of {@link UserSecurityGroupSyncConfigContainerID}s
+	 */
+	Collection<UserSecurityGroupSyncConfigContainerID> getAllSyncConfigContainersIDs();
+
+	/**
+	 * Get ID of {@link UserSecurityGroupSyncConfigContainer} for given {@link UserSecurityGroupID}.
+	 * 
+	 * @param userSecurityGroupID The ID of {@link UserSecurityGroup}
+	 * @return found {@link UserSecurityGroupSyncConfigContainer} or <code>null</code>
+	 */
+	UserSecurityGroupSyncConfigContainerID getSyncConfigsContainerIDForGroup(UserSecurityGroupID userSecurityGroupID);
+
+	/**
+	 * Stores {@link UserSecurityGroupSyncConfigContainer} object.
+	 * 
+	 * @param syncConfigContainer {@link UserSecurityGroupSyncConfigContainer} to store, will return <code>null</code> with a warning if <code>null</code> was specified
+	 * @param get If stored object should be detached and returned
+	 * @param fetchGroups Which fetch groups to use
+	 * @param maxFetchDepth Fetch depth or {@link NLJDOHelper#MAX_FETCH_DEPTH_NO_LIMIT}
+	 * @return Stored detached {@link UserSecurityGroupSyncConfigContainer} object if <code>get</code> is <code>true</code> or <code>null</code> otherwise 
+	 */
+	UserSecurityGroupSyncConfigContainer storeSyncConfigContainer(UserSecurityGroupSyncConfigContainer syncConfigContainer, boolean get, String[] fetchGroups, int maxFetchDepth);
+
+	/**
+	 * Delete persistent {@link UserSecurityGroupSyncConfigContainer} instance by its ID.
+	 * 
+	 * @param syncConfigContainerID The {@link UserSecurityGroupSyncConfigContainerID} of instance to delete
+	 */
+	void deleteSyncConfigContainer(UserSecurityGroupSyncConfigContainerID syncConfigContainerID);
 
 }

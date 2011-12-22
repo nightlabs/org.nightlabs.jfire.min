@@ -21,8 +21,10 @@ import org.nightlabs.jdo.NLJDOHelper;
 import org.nightlabs.jfire.base.BaseSessionBeanImpl;
 import org.nightlabs.jfire.person.Person;
 import org.nightlabs.jfire.security.User;
+import org.nightlabs.jfire.security.id.UserSecurityGroupID;
 import org.nightlabs.jfire.security.integration.id.UserManagementSystemID;
 import org.nightlabs.jfire.security.integration.id.UserManagementSystemTypeID;
+import org.nightlabs.jfire.security.integration.id.UserSecurityGroupSyncConfigContainerID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -275,7 +277,7 @@ public class UserManagementSystemManagerBean extends BaseSessionBeanImpl impleme
 					);
 			
 		}catch(JDOObjectNotFoundException e){
-			logger.warn("Can't delete UserManagementSyste cause it does not exist in datastore!", e);
+			logger.warn("Can't delete UserManagementSystem because it does not exist in datastore!", e);
 		}finally{
 			pm.close();
 		}
@@ -285,7 +287,6 @@ public class UserManagementSystemManagerBean extends BaseSessionBeanImpl impleme
 	 * {@inheritDoc}
 	 */
 	@RolesAllowed("org.nightlabs.jfire.security.accessRightManagement")
-	@TransactionAttribute(TransactionAttributeType.REQUIRED)
 	@Override
 	public Collection<Object> getAllUserManagementSystemRelatedEntityIDs() {
 		PersistenceManager pm = createPersistenceManager();
@@ -330,6 +331,112 @@ public class UserManagementSystemManagerBean extends BaseSessionBeanImpl impleme
 				logger.warn("Unable to run synchronization on non-SynchronizableUserManagementSystem! UMS type is: " + userManagementSystem.getClass().getName());
 			}
 			
+		}finally{
+			pm.close();
+		}
+	}
+
+	@RolesAllowed("org.nightlabs.jfire.security.accessRightManagement")
+	@Override
+	public List<UserSecurityGroupSyncConfigContainer> getSyncConfigContainers(
+			Collection<UserSecurityGroupSyncConfigContainerID> syncConfigContainerIDs,
+			String[] fetchGroups, int maxFetchDepth) {
+		if (syncConfigContainerIDs == null){
+			throw new IllegalArgumentException("Object IDs should be specified (not null) for loading User security group sync configs containers!");
+		}
+		PersistenceManager pm = createPersistenceManager();
+		try {
+			return NLJDOHelper.getDetachedObjectList(pm, syncConfigContainerIDs, UserManagementSystem.class, fetchGroups, maxFetchDepth);
+		} finally {
+			pm.close();
+		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@RolesAllowed("org.nightlabs.jfire.security.accessRightManagement")
+	@SuppressWarnings("unchecked")
+	@Override
+	public Collection<UserSecurityGroupSyncConfigContainerID> getAllSyncConfigContainersIDs() {
+		PersistenceManager pm = createPersistenceManager();
+		try{
+			Query query = pm.newQuery(pm.getExtent(UserSecurityGroupSyncConfigContainer.class, true));
+			query.setResult("JDOHelper.getObjectId(this)");
+			return new HashSet<UserSecurityGroupSyncConfigContainerID>((Collection<? extends UserSecurityGroupSyncConfigContainerID>) query.execute());
+		}finally{
+			pm.close();
+		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@RolesAllowed("org.nightlabs.jfire.security.accessRightManagement")
+	@Override
+	public UserSecurityGroupSyncConfigContainerID getSyncConfigsContainerIDForGroup(UserSecurityGroupID userSecurityGroupID) {
+		PersistenceManager pm = createPersistenceManager();
+		try{
+			UserSecurityGroupSyncConfigContainer syncConfigContainer = UserSecurityGroupSyncConfigContainer.getSyncConfigContainerForGroup(pm, userSecurityGroupID);
+			if (syncConfigContainer != null){
+				return UserSecurityGroupSyncConfigContainerID.create(syncConfigContainer.getContainerID(), syncConfigContainer.getOrganisationID());
+			}
+			return null;
+		}finally{
+			pm.close();
+		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@RolesAllowed("org.nightlabs.jfire.security.accessRightManagement")
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@Override
+	public UserSecurityGroupSyncConfigContainer storeSyncConfigContainer(
+			UserSecurityGroupSyncConfigContainer syncConfigContainer,
+			boolean get, String[] fetchGroups, int maxFetchDepth) {
+		if (syncConfigContainer == null){
+			logger.warn("Can't store NULL syncCofigContainer, return null.");
+			return null;
+		}
+		
+		PersistenceManager pm = createPersistenceManager();
+		try{
+			
+			syncConfigContainer = pm.makePersistent(syncConfigContainer);
+			
+			if (!get){
+				return null;
+			}
+
+			pm.getFetchPlan().setMaxFetchDepth(maxFetchDepth);
+			if (fetchGroups != null)
+				pm.getFetchPlan().setGroups(fetchGroups);
+
+			return pm.detachCopy(syncConfigContainer);
+			
+		}finally{
+			pm.close();
+		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@RolesAllowed("org.nightlabs.jfire.security.accessRightManagement")
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+	@Override
+	public void deleteSyncConfigContainer(UserSecurityGroupSyncConfigContainerID syncConfigContainerID) {
+		PersistenceManager pm = createPersistenceManager();
+		try{
+			
+			pm.deletePersistent(
+					pm.getObjectById(syncConfigContainerID)
+					);
+			
+		}catch(JDOObjectNotFoundException e){
+			logger.warn("Can't delete UserSecurityGroupSyncConfigContainer because it does not exist in datastore!", e);
 		}finally{
 			pm.close();
 		}
