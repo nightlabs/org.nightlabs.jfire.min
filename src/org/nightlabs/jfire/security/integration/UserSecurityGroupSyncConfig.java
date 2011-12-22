@@ -23,7 +23,6 @@ import javax.jdo.annotations.Queries;
 
 import org.nightlabs.jfire.idgenerator.IDGenerator;
 import org.nightlabs.jfire.security.UserSecurityGroup;
-import org.nightlabs.jfire.security.id.UserSecurityGroupID;
 import org.nightlabs.jfire.security.integration.id.UserManagementSystemID;
 import org.nightlabs.jfire.security.integration.id.UserSecurityGroupSyncConfigID;
 
@@ -38,7 +37,8 @@ import org.nightlabs.jfire.security.integration.id.UserSecurityGroupSyncConfigID
  * from {@link UserManagementSystem}.
  * 
  * Every {@link UserSecurityGroup} could have multiple {@link UserSecurityGroupSyncConfig}s for different
- * {@link UserManagementSystem}s.
+ * {@link UserManagementSystem}s but only one {@link UserSecurityGroupSyncConfigContainer} which holds 
+ * all of this {@link UserSecurityGroupSyncConfig}s.
  * 
  * Since we assume that there will be not many {@link UserSecurityGroup}s created in JFire
  * and not many {@link UserManagementSystem}s used for sync we recommend to keep all the 
@@ -58,10 +58,6 @@ import org.nightlabs.jfire.security.integration.id.UserSecurityGroupSyncConfigID
 @Discriminator(column="className", strategy=DiscriminatorStrategy.CLASS_NAME)
 @FetchGroups({
 	@FetchGroup(
-			name=UserSecurityGroupSyncConfig.FETCH_GROUP_USER_SECURITY_GROUP,
-			members=@Persistent(name="userSecurityGroup")
-			),
-	@FetchGroup(
 			name=UserSecurityGroupSyncConfig.FETCH_GROUP_USER_MANAGEMENT_SYSTEM,
 			members=@Persistent(name="userManagementSystem")
 			)
@@ -70,19 +66,10 @@ import org.nightlabs.jfire.security.integration.id.UserSecurityGroupSyncConfigID
 	@javax.jdo.annotations.Query(
 			name="UserSecurityGroupSyncConfig.getAllSyncConfigsForUserManagementSystem",
 			value="SELECT where JDOHelper.getObjectId(this.userManagementSystem) == :userManagementSystemId ORDER BY JDOHelper.getObjectId(this) ASCENDING"
-			),
-	@javax.jdo.annotations.Query(
-			name="UserSecurityGroupSyncConfig.getSyncConfigForGroup",
-			value="SELECT where JDOHelper.getObjectId(this.userManagementSystem) == :userManagementSystemId && JDOHelper.getObjectId(this.userSecurityGroup) == :userSecurityGroupId ORDER BY JDOHelper.getObjectId(this) ASCENDING"
-			),
-	@javax.jdo.annotations.Query(
-			name="UserSecurityGroupSyncConfig.getAllSyncConfigsForGroup",
-			value="SELECT where JDOHelper.getObjectId(this.userSecurityGroup) == :userSecurityGroupId ORDER BY JDOHelper.getObjectId(this) ASCENDING"
 			)
 	})
 public abstract class UserSecurityGroupSyncConfig<T extends UserManagementSystem, UserManagementSystemSecurityType> implements Serializable{
 
-	public static final String FETCH_GROUP_USER_SECURITY_GROUP = "UserSecurityGroupSyncConfig.userSecurityGroup";
 	public static final String FETCH_GROUP_USER_MANAGEMENT_SYSTEM = "UserSecurityGroupSyncConfig.userManagementSystem";
 
 	/**
@@ -90,31 +77,6 @@ public abstract class UserSecurityGroupSyncConfig<T extends UserManagementSystem
 	 */
 	private static final long serialVersionUID = 1L;
 	
-	/**
-	 * Executes a named {@link Query} which returns a {@link UserSecurityGroupSyncConfig} for given {@link UserSecurityGroup}.
-	 * 
-	 * @param pm {@link PersistenceManager} to be used for execution
-	 * @param userManagementSystemId The ID of {@link UserManagementSystem}
-	 * @param userSecurityGroupId The ID of {@link UserSecurityGroup}
-	 * @return found {@link UserSecurityGroupSyncConfig} or <code>null</code>
-	 */
-	public static UserSecurityGroupSyncConfig<?, ?> getSyncConfigForGroup(
-			PersistenceManager pm, UserManagementSystemID userManagementSystemId, UserSecurityGroupID userSecurityGroupId
-			) {
-		javax.jdo.Query q = pm.newNamedQuery(
-				UserSecurityGroupSyncConfig.class, 
-				"UserSecurityGroupSyncConfig.getSyncConfigForGroup"
-				);
-		@SuppressWarnings("unchecked")
-		Collection<UserSecurityGroupSyncConfig<?, ?>> syncConfigs = (Collection<UserSecurityGroupSyncConfig<?, ?>>) q.execute(userManagementSystemId, userSecurityGroupId);
-		syncConfigs = new ArrayList<UserSecurityGroupSyncConfig<?,?>>(syncConfigs);
-		q.closeAll();
-		if (!syncConfigs.isEmpty()){
-			return syncConfigs.iterator().next();
-		}
-		return null;
-	}
-
 	/**
 	 * Executes a named {@link Query} which returns a {@link Collection} of {@link UserSecurityGroupSyncConfig}s for given {@link UserManagementSystem}.
 	 * 
@@ -136,26 +98,6 @@ public abstract class UserSecurityGroupSyncConfig<T extends UserManagementSystem
 		return syncConfigs;
 	}
 
-	/**
-	 * Executes a named {@link Query} to check if given {@link UserSecurityGroup} has any {@link UserSecurityGroupSyncConfig}s
-	 * referencing it.
-	 * 
-	 * @param pm {@link PersistenceManager} to be used for execution
-	 * @param userSecurityGroupId The ID of {@link UserSecurityGroup}
-	 * @return <code>true</code> if referencing {@link UserSecurityGroupSyncConfig}s are found
-	 */
-	public static boolean syncConfigsExistForGroup(
-			PersistenceManager pm, UserSecurityGroupID userSecurityGroupId
-			) {
-		javax.jdo.Query q = pm.newNamedQuery(
-				UserSecurityGroupSyncConfig.class, 
-				"UserSecurityGroupSyncConfig.getAllSyncConfigsForGroup"
-				);
-		@SuppressWarnings("unchecked")
-		Collection<UserSecurityGroupSyncConfig<?, ?>> syncConfigs = (Collection<UserSecurityGroupSyncConfig<?, ?>>) q.execute(userSecurityGroupId);
-		return !syncConfigs.isEmpty();
-	}
-
 	
 	@PrimaryKey
 	private long userSecurityGroupSyncConfigID;
@@ -165,11 +107,11 @@ public abstract class UserSecurityGroupSyncConfig<T extends UserManagementSystem
 	private String organisationID;
 
 	/**
-	 * {@link UserSecurityGroup} to be synchronized
+	 * {@link UserSecurityGroup} which holds this {@link UserSecurityGroupSyncConfig}
 	 */
-	@Persistent
+	@Persistent(defaultFetchGroup="true")
 	@ForeignKey(deleteAction=ForeignKeyAction.CASCADE)
-	private UserSecurityGroup userSecurityGroup;
+	private UserSecurityGroupSyncConfigContainer syncConfigsContainer;
 	
 	/**
 	 * {@link UserManagementSystem} which will synchronize with selected {@link #userSecurityGroup}
@@ -194,29 +136,38 @@ public abstract class UserSecurityGroupSyncConfig<T extends UserManagementSystem
 	/**
 	 * Constructs new synchronization config for given {@link UserSecurityGroup} with given {@link UserManagementSystem}.
 	 * 
-	 * @param userSecurityGroup {@link UserSecurityGroup} which will be synchronized according to this configuration, not <code>null</code>
+	 * @param container {@link UserSecurityGroupSyncConfigContainer} which holds this {@link UserSecurityGroupSyncConfig}, not <code>null</code>
 	 * @param userManagementSystem {@link UserManagementSystem} to synchronize with, not <code>null</code>
 	 */
-	public UserSecurityGroupSyncConfig(UserSecurityGroup userSecurityGroup, T userManagementSystem) {
-		if (userSecurityGroup == null){
-			throw new IllegalArgumentException("UserSecurityGroup can not be null!");
+	public UserSecurityGroupSyncConfig(UserSecurityGroupSyncConfigContainer container, T userManagementSystem) {
+		if (container == null){
+			throw new IllegalArgumentException("UserSecurityGroupSyncConfigContainer can not be null!");
 		}
 		if (userManagementSystem == null){
 			throw new IllegalArgumentException("UserManagementSystem can not be null!");
 		}
 		this.userSecurityGroupSyncConfigID = IDGenerator.nextID(UserSecurityGroupSyncConfig.class);
 		this.organisationID = IDGenerator.getOrganisationID();
-		this.userSecurityGroup = userSecurityGroup;
+		this.syncConfigsContainer = container;
 		this.userManagementSystem = userManagementSystem;
 	}
 	
 	/**
-	 * Get {@link UserSecurityGroup} of this sync config.
+	 * Get {@link UserSecurityGroupSyncConfigContainer} which holds this {@link UserSecurityGroupSyncConfig}
+	 * 
+	 * @return
+	 */
+	public UserSecurityGroupSyncConfigContainer getContainer() {
+		return syncConfigsContainer;
+	}
+	
+	/**
+	 * Get {@link UserSecurityGroup} of this sync config via its {@link UserSecurityGroupSyncConfigContainer}.
 	 * 
 	 * @return {@link UserSecurityGroup} of this sync config, not <code>null</code>
 	 */
 	public UserSecurityGroup getUserSecurityGroup() {
-		return userSecurityGroup;
+		return syncConfigsContainer.getUserSecurityGroup();
 	}
 
 	
