@@ -19,6 +19,7 @@ import javax.jdo.annotations.PersistenceModifier;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.listener.AttachCallback;
 import javax.jdo.listener.DetachCallback;
+import javax.jdo.listener.StoreCallback;
 
 import org.nightlabs.jfire.layout.AbstractEditLayoutConfigModule;
 import org.nightlabs.jfire.layout.AbstractEditLayoutEntry;
@@ -45,9 +46,9 @@ import com.thoughtworks.xstream.XStream;
 				@Persistent(name = "serialisedConfig"), 
 				@Persistent(name = "name")}
 )
-public class DashboardGadgetLayoutEntry<T> extends AbstractEditLayoutEntry<T> implements AttachCallback, DetachCallback {
+public class DashboardGadgetLayoutEntry<T> extends AbstractEditLayoutEntry<T> implements AttachCallback, DetachCallback, StoreCallback {
 
-	private static final long serialVersionUID = 20111221L;
+	private static final long serialVersionUID = 20111222L;
 
 	@Persistent(mappedBy="entry", dependent="true")
 	private DashboardGadgetLayoutEntryName name;
@@ -182,6 +183,8 @@ public class DashboardGadgetLayoutEntry<T> extends AbstractEditLayoutEntry<T> im
 	public void jdoPreDetach() {
 	}
 
+	
+	
 	@SuppressWarnings("unchecked")
 	@Override
 	public void jdoPostAttach(Object detached) {
@@ -194,6 +197,9 @@ public class DashboardGadgetLayoutEntry<T> extends AbstractEditLayoutEntry<T> im
 	@Override
 	public void jdoPreAttach() {
 	}
-	
 
+	@Override
+	public void jdoPreStore() {
+		this.serialisedConfig = serializeConfig(getConfig());
+	}
 }
