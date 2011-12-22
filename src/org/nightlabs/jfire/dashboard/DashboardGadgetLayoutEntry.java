@@ -26,8 +26,13 @@ import org.nightlabs.jfire.layout.AbstractEditLayoutEntry;
 import com.thoughtworks.xstream.XStream;
 
 /**
+ * Instances of this class are used by {@link DashboardLayoutConfigModule} to
+ * configure the GridData and content of a JFireDashboard gadget. Each entry has
+ * a GridData (from its superclass) and a {@link #getName() name}. Additionally
+ * each entry can store a configuration of the gadget. This configuration can be
+ * a POJO as it is stored in the database by serializing it.
+ * 
  * @author abieber
- *
  */
 @PersistenceCapable(
 		identityType=IdentityType.APPLICATION,
@@ -64,11 +69,6 @@ public class DashboardGadgetLayoutEntry<T> extends AbstractEditLayoutEntry<T> im
 	@Persistent(persistenceModifier=PersistenceModifier.NONE)
 	private boolean configDetached;
 	
-	/**
-	 * @param configModule
-	 * @param entryID
-	 * @param entryType
-	 */
 	public DashboardGadgetLayoutEntry(
 			AbstractEditLayoutConfigModule<T, ?> configModule,
 			long entryID, String entryType) {
@@ -88,22 +88,31 @@ public class DashboardGadgetLayoutEntry<T> extends AbstractEditLayoutEntry<T> im
 		return name;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.nightlabs.jfire.layout.AbstractEditLayoutEntry#getObject()
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * This delegates to {@link #getConfig()}
+	 * </p>
 	 */
 	@Override
 	public T getObject() {
 		return getConfig();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.nightlabs.jfire.layout.AbstractEditLayoutEntry#setObject(java.lang.Object)
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * This delegates to {@link #setConfig(Object)}
+	 * </p>
 	 */
 	@Override
 	public void setObject(T object) {
 		setConfig(object);
 	}
 	
+	/**
+	 * Serialize the given config so the resulting byte[] can be stored in the database.
+	 */
 	protected byte[] serializeConfig(T config) {
 		if (config == null)
 			return null;
@@ -120,7 +129,10 @@ public class DashboardGadgetLayoutEntry<T> extends AbstractEditLayoutEntry<T> im
 		}
 		return result;
 	}
-	
+
+	/**
+	 * Deserialize the stored config.
+	 */
 	@SuppressWarnings("unchecked")
 	protected T deserializeConfig(byte[] serialisedConfig) {
 		if (serialisedConfig == null)
@@ -138,12 +150,18 @@ public class DashboardGadgetLayoutEntry<T> extends AbstractEditLayoutEntry<T> im
 		return result;
 	}
 	
+	/**
+	 * @return The configuration object for this entry.
+	 */
 	public T getConfig() {
 		if (JDOHelper.isDetached(this) && !configDetached)
 			throw new JDODetachedFieldAccessException("config was not detached");
 		return config;
 	}
-	
+
+	/**
+	 * Set the configuration object for this entry.
+	 */
 	public void setConfig(T config) {
 		this.config = config;
 	}

@@ -10,8 +10,11 @@ import org.nightlabs.jfire.layout.AbstractEditLayoutConfigModule;
 import org.nightlabs.jfire.layout.AbstractEditLayoutEntry;
 
 /**
+ * This ConfigModule stores the layout of the JFireDashboard. It uses its
+ * (super-class) GridLayout for that. The configuration of the GridData of each
+ * cell is done using {@link DashboardGadgetLayoutEntry}-elements.
+ * 
  * @author abieber
- *
  */
 @PersistenceCapable(
 		identityType=IdentityType.APPLICATION,
@@ -21,21 +24,12 @@ public class DashboardLayoutConfigModule<T> extends AbstractEditLayoutConfigModu
 
 	private static final long serialVersionUID = 20111212L;
 
-	/**
-	 * 
-	 */
 	public DashboardLayoutConfigModule() {
 	}
 
-	/* (non-Javadoc)
-	 * @see org.nightlabs.jfire.layout.AbstractEditLayoutConfigModule#createEditLayoutEntry(java.lang.String)
-	 */
 	@Override
 	public DashboardGadgetLayoutEntry<T> createEditLayoutEntry(String entryType) {
 		DashboardGadgetLayoutEntry<T> entry = new DashboardGadgetLayoutEntry<T>(this, IDGenerator.nextID(AbstractEditLayoutEntry.class), entryType);
 		return entry;
 	}
-
-	
-	
 }

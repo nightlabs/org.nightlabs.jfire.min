@@ -17,8 +17,9 @@ import org.nightlabs.jfire.idgenerator.IDGenerator;
 import org.nightlabs.jfire.layout.AbstractEditLayoutConfigModule;
 
 /**
+ * name-member of {@link DashboardGadgetLayoutEntry}.
+ * 
  * @author abieber
- *
  */
 @PersistenceCapable(
 		identityType=IdentityType.APPLICATION,
@@ -48,30 +49,17 @@ public class DashboardGadgetLayoutEntryName extends I18nText {
 	@Join
 	private Map<String, String> names;
 
-	/**
-	 * 
-	 */
 	public DashboardGadgetLayoutEntryName(DashboardGadgetLayoutEntry<?> entry) {
 		this.entry = entry;
 		this.dashboardGadgetLayoutEntryNameID = IDGenerator.nextID(DashboardGadgetLayoutEntryName.class);
 		this.names = new HashMap<String, String>();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.nightlabs.i18n.I18nText#getFallBackValue(java.lang.String)
-	 */
 	@Override
 	protected String getFallBackValue(String languageID) {
 		return String.valueOf(entry.getEditLayoutEntryID());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.nightlabs.i18n.I18nText#getI18nMap()
-	 */
 	@Override
 	protected Map<String, String> getI18nMap() {
 		return names;
