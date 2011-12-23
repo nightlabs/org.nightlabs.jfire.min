@@ -346,7 +346,7 @@ public class UserManagementSystemManagerBean extends BaseSessionBeanImpl impleme
 		}
 		PersistenceManager pm = createPersistenceManager();
 		try {
-			return NLJDOHelper.getDetachedObjectList(pm, syncConfigContainerIDs, UserManagementSystem.class, fetchGroups, maxFetchDepth);
+			return NLJDOHelper.getDetachedObjectList(pm, syncConfigContainerIDs, UserSecurityGroupSyncConfigContainer.class, fetchGroups, maxFetchDepth);
 		} finally {
 			pm.close();
 		}
