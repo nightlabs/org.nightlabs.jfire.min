@@ -164,6 +164,9 @@ public class DashboardGadgetLayoutEntry<T> extends AbstractEditLayoutEntry<T> im
 	 * Set the configuration object for this entry.
 	 */
 	public void setConfig(T config) {
+		if (JDOHelper.isPersistent(this)) {
+			this.serialisedConfig = serializeConfig(config);
+		}
 		this.config = config;
 	}
 	
