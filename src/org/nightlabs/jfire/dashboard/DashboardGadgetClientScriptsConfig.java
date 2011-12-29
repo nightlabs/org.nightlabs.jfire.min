@@ -13,36 +13,49 @@ public class DashboardGadgetClientScriptsConfig implements Serializable {
 	private boolean confirmProcessing;
 	
 	public DashboardGadgetClientScriptsConfig() { 
-		clientScripts = new ArrayList<DashboardGadgetClientScriptsConfig.ClientScript>();
+		this.clientScripts = new ArrayList<DashboardGadgetClientScriptsConfig.ClientScript>();
+	}
+	
+	public DashboardGadgetClientScriptsConfig(final List<ClientScript> clientScripts) {
+		this.clientScripts = clientScripts;
 	}
 
 	public static class ClientScript {
 		
 		private String name;
-		private String script;
+		private String content;
 		
 		public ClientScript() {
 			this.name = "";
-			this.script = "";
+			this.content = "";
 		}
 		
-		public ClientScript(final String name, final String script) {
+		public ClientScript(final String name, final String content) {
 			this.name = name;
-			this.script = script;
+			this.content = content;
 		}
 
 		public String getName() {
 			return name;
 		}
 
-		public String getScript() {
-			return script;
+		public String getContent() {
+			return content;
 		}
+
+		public void setName(final String name) {
+			this.name = name;
+		}
+
+		public void setContent(final String content) {
+			this.content = content;
+		}
+		
 	}
 	
-	public ClientScript createNewClientScript(final String name, final String script) {
-		return new ClientScript(name, script);
-	}
+//	public ClientScript createNewClientScript(final String name, final String script) {
+//		return new ClientScript(name, script);
+//	}
 
 	public List<DashboardGadgetClientScriptsConfig.ClientScript> getClientScripts() {
 		return clientScripts;
