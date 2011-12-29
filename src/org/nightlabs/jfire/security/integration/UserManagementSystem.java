@@ -31,7 +31,6 @@ import org.nightlabs.j2ee.LoginData;
 import org.nightlabs.jfire.idgenerator.IDGenerator;
 import org.nightlabs.jfire.security.integration.id.UserManagementSystemID;
 import org.nightlabs.util.NLLocale;
-import org.nightlabs.util.Util;
 
 /**
  * An abstract represention of an external User Management Systems (UMS)
@@ -427,27 +426,6 @@ public abstract class UserManagementSystem implements Serializable, Comparable<U
 		return userManagementSystemIDObject;
 	}
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((organisationID == null) ? 0 : organisationID.hashCode());
-		result = prime * result + (int) (userManagementSystemID ^ (userManagementSystemID >>> 32));
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) return true;
-		if (obj == null) return false;
-		if (getClass() != obj.getClass()) return false;
-		UserManagementSystem other = (UserManagementSystem) obj;
-		return (
-				Util.equals(this.userManagementSystemID, other.userManagementSystemID) &&
-				Util.equals(this.organisationID, other.organisationID)
-		);
-	}
-	
 	/**
 	 * Active {@link UserManagementSystem}s go first. If both are either active or non-active than 
 	 * their {@link UserManagementSystemName}s are compared if non-null (delegate to corresponding method 
@@ -474,4 +452,42 @@ public abstract class UserManagementSystem implements Serializable, Comparable<U
 			}
 		}
 	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((organisationID == null) ? 0 : organisationID.hashCode());
+		result = prime
+				* result
+				+ (int) (userManagementSystemID ^ (userManagementSystemID >>> 32));
+		return result;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		UserManagementSystem other = (UserManagementSystem) obj;
+		if (organisationID == null) {
+			if (other.organisationID != null)
+				return false;
+		} else if (!organisationID.equals(other.organisationID))
+			return false;
+		if (userManagementSystemID != other.userManagementSystemID)
+			return false;
+		return true;
+	}
+	
 }
