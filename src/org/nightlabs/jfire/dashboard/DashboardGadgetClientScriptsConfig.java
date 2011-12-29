@@ -16,11 +16,9 @@ public class DashboardGadgetClientScriptsConfig implements Serializable {
 		this.clientScripts = new ArrayList<DashboardGadgetClientScriptsConfig.ClientScript>();
 	}
 	
-	public DashboardGadgetClientScriptsConfig(final List<ClientScript> clientScripts) {
-		this.clientScripts = clientScripts;
-	}
-
-	public static class ClientScript {
+	public static class ClientScript implements Serializable {
+		
+		private static final long serialVersionUID = 20111229L;
 		
 		private String name;
 		private String content;
@@ -50,13 +48,8 @@ public class DashboardGadgetClientScriptsConfig implements Serializable {
 		public void setContent(final String content) {
 			this.content = content;
 		}
-		
 	}
 	
-//	public ClientScript createNewClientScript(final String name, final String script) {
-//		return new ClientScript(name, script);
-//	}
-
 	public List<DashboardGadgetClientScriptsConfig.ClientScript> getClientScripts() {
 		return clientScripts;
 	}
