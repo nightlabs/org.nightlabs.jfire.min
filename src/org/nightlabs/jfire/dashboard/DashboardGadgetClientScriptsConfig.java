@@ -51,7 +51,7 @@ public class DashboardGadgetClientScriptsConfig implements Serializable {
 	}
 	
 	public List<DashboardGadgetClientScriptsConfig.ClientScript> getClientScripts() {
-		return clientScripts;
+		return clientScripts == null ? new ArrayList<DashboardGadgetClientScriptsConfig.ClientScript>() : clientScripts;
 	}
 
 	public void setClientScripts(final List<DashboardGadgetClientScriptsConfig.ClientScript> clientScripts) {
