@@ -28,7 +28,7 @@ public interface UserManagementSystemSyncEvent {
 	 * @author Denis Dudnik <deniska.dudnik[at]gmail{dot}com>
 	 *
 	 */
-	interface SyncEventType{
+	public interface SyncEventType{
 		/**
 		 * Get a {@link String} representing enum element. Currently used for logging and debug needs.
 		 * @return some string value which represents enum element
