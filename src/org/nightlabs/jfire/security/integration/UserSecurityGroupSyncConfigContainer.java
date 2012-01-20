@@ -136,7 +136,7 @@ public class UserSecurityGroupSyncConfigContainer implements Serializable{
 	/**
 	 * {@link UserSecurityGroupSyncConfig} which relate to underlying {@link UserSecurityGroup} which owns this container
 	 */
-	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT, mappedBy="syncConfigsContainer")
+	@Persistent(persistenceModifier=PersistenceModifier.PERSISTENT, mappedBy="syncConfigsContainer", dependentElement="true")
 	private Set<UserSecurityGroupSyncConfig<?, ?>> syncConfigs;
 	
 	
