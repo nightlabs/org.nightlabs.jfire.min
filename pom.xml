@@ -504,6 +504,12 @@
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
+				<artifactId>org.nightlabs.rhino.wrapper.ear</artifactId>
+				<type>ear</type>
+				<version>${jfire.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.reporting.ear</artifactId>
 				<type>ear</type>
 				<version>${jfire.version}</version>
