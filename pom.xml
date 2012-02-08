@@ -36,6 +36,15 @@
 				<enabled>false</enabled>
 			</releases>
 		</repository>
+	    <repository>
+			<id>nuxeo-jboss</id>
+			<name>Nuxeo Repo</name>
+			<layout>default</layout>
+			<url>http://svn.nuxeo.org/maven/repo</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>   
+	    </repository>		
 	</repositories>
 
 	<scm>
@@ -46,7 +55,7 @@
 
 	<properties>
 		<jfire.version>${nightlabs.version}</jfire.version>
-		<jbpm.version>3.2.7</jbpm.version>
+		<jbpm.version>3.1.4</jbpm.version>
 		<rhino.version>1.7R2</rhino.version>
 		<birt.version>2.6.0</birt.version><!-- must correspond to prop in org.nightlabs.jfire.eclipse.parent/pom.xml -->
 		<birt-runtime.group>org.eclipse.birt.runtime.v2-6-0-mvnzd</birt-runtime.group><!-- must correspond to prop in org.nightlabs.jfire.eclipse.parent/pom.xml -->
@@ -483,6 +492,12 @@
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
+				<artifactId>org.nightlabs.xstream.ear</artifactId>
+				<type>ear</type>
+				<version>${jfire.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.query.store.ear</artifactId>
 				<type>ear</type>
 				<version>${jfire.version}</version>
@@ -695,12 +710,12 @@
 			</dependency>
 
 			<dependency>
-				<groupId>org.jbpm.jbpm3</groupId>
-				<artifactId>jbpm-jpdl</artifactId>
+				<groupId>jboss</groupId>
+				<artifactId>jbpm</artifactId>
 				<version>${jbpm.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.jbpm.jbpm3</groupId>
+				<groupId>jboss</groupId>
 				<artifactId>jbpm-identity</artifactId>
 				<version>${jbpm.version}</version>
 			</dependency>
