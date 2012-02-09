@@ -36,6 +36,16 @@
 				<enabled>false</enabled>
 			</releases>
 		</repository>
+		<!-- !!! Maven central repo SHOUL be defined BEFORE the nuxeo-jboss repo cause the last one contains broken xpp3 jar -->
+	    <repository>
+			<id>repo1.maven.org-central</id>
+			<name>Maven central Repo</name>
+			<layout>default</layout>
+			<url>http://repo1.maven.org/maven2</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>   
+	    </repository>		
 	    <repository>
 			<id>nuxeo-jboss</id>
 			<name>Nuxeo Repo</name>
@@ -259,6 +269,11 @@
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.reporting.oda.client</artifactId>
+				<version>${jfire.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.nightlabs.jfire</groupId>
+				<artifactId>org.nightlabs.jfire.reporting.oda.server</artifactId>
 				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
@@ -508,21 +523,44 @@
 				<type>ear</type>
 				<version>${jfire.version}</version>
 			</dependency>
-			<dependency>
+			<!--dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.reporting.ear</artifactId>
 				<type>ear</type>
 				<version>${jfire.version}</version>
-			</dependency>
+			</dependency-->
+			<!-- FIXME: setting name to JFireReportingEAR because org.nightlabs.jfire.reporting.JFireReportingEAR.MODULE_NAME is used around the system, 
+						i.e. org.nightlabs.jfire.reporting.scripting.ScriptingInitialiser is looking for scripts inside JFireReportingEAR.ear -->				
 			<dependency>
+				<groupId>org.nightlabs.jfire</groupId>
+				<artifactId>JFireReportingEAR</artifactId>
+				<type>ear</type>
+				<version>${jfire.version}</version>
+			</dependency>
+			<!--dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.reporting.engine.birt.ear</artifactId>
 				<type>ear</type>
 				<version>${jfire.version}</version>
-			</dependency>
+			</dependency-->
+			<!-- FIXME: setting name to JFireReportingEngineBirtEAR because it is used in org.nightlabs.jfire.reporting.engine.birt.ReportingEngineBirtManagerBean initialise() as a simple string(!!!) for accessing files inside this ear -->
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
+				<artifactId>JFireReportingEngineBirtEAR</artifactId>
+				<type>ear</type>
+				<version>${jfire.version}</version>
+			</dependency>
+			<!--dependency>
+				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.reporting.trade.ear</artifactId>
+				<type>ear</type>
+				<version>${jfire.version}</version>
+			</dependency-->
+			<!-- FIXME: setting name to JFireReportingTradeEAR because org.nightlabs.jfire.reporting.trade.JFireReportingTradeEAR.MODULE_NAME is used around the system, 
+						i.e. org.nightlabs.jfire.reporting.trade.scripting.ScriptingInitialiser is looking for scripts inside JFireReportingTradeEAR.ear -->				
+			<dependency>
+				<groupId>org.nightlabs.jfire</groupId>
+				<artifactId>JFireReportingTradeEAR</artifactId>
 				<type>ear</type>
 				<version>${jfire.version}</version>
 			</dependency>
@@ -663,6 +701,16 @@
 				<groupId>org.apache.servicemix.bundles</groupId>
 				<artifactId>org.apache.servicemix.bundles.xalan</artifactId>
 				<version>2.7.1_4</version>
+			</dependency>
+			<dependency>
+				<groupId>xpp3</groupId>
+				<artifactId>xpp3</artifactId>
+				<version>1.1.3.4.O</version>
+			</dependency>
+			<dependency>
+				<groupId>xpp3</groupId>
+				<artifactId>xpp3_min</artifactId>
+				<version>1.1.4c</version>
 			</dependency>
 			<dependency>
 				<groupId>org.hamcrest</groupId>
