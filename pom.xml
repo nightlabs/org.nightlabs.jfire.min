@@ -18,14 +18,19 @@
 	<dependencies>
 	
 		<dependency>
-			<groupId>org.apache.servicemix.bundles</groupId>
-			<artifactId>org.apache.servicemix.bundles.xmlpull</artifactId>
+			<groupId>xpp3</groupId>
+			<artifactId>xpp3</artifactId>
 		</dependency>
-		
-		<!-- It will also include XPP_min jar with parser so do NOT add exclusions (groupId=*,artifactId=*) here -->
+            		
 		<dependency>
 			<groupId>org.apache.servicemix.bundles</groupId>
 			<artifactId>org.apache.servicemix.bundles.xstream</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>*</groupId>
+					<artifactId>*</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		
 	</dependencies>
@@ -67,8 +72,8 @@
 							<includeInApplicationXml>true</includeInApplicationXml>
 						</jarModule>
 						<jarModule>
-							<groupId>org.apache.servicemix.bundles</groupId>
-							<artifactId>org.apache.servicemix.bundles.xmlpull</artifactId>
+							<groupId>xpp3</groupId>
+							<artifactId>xpp3</artifactId>
 							<includeInApplicationXml>true</includeInApplicationXml>
 						</jarModule>
 					</modules>
