@@ -55,8 +55,8 @@
 		<module>../JFireTestSuiteEAR</module>
 		<!-- 
 		<module>../JFireTestSuiteJFireBaseEAR</module>
-		<module>../NightLabsXStreamEAR</module>
 		-->
+		<module>../NightLabsXStreamEAR</module>
 		<module>../org.nightlabs.jfire.min.assembly</module>
 		<module>../org.nightlabs.jfire.min.assembly.installer</module>
 	</modules>
