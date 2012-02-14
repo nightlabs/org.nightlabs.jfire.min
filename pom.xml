@@ -36,21 +36,21 @@
 				<enabled>false</enabled>
 			</releases>
 		</repository>
-		<!-- !!! Maven central repo SHOUL be defined BEFORE the nuxeo-jboss repo cause the last one contains broken xpp3 jar -->
+		<repository>
+			<id>dev.nightlabs.org-ext-releases-local</id>
+			<url>http://dev.nightlabs.org/maven-repository/ext-releases-local/</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+		</repository>
 	    <repository>
 			<id>repo1.maven.org-central</id>
 			<name>Maven central Repo</name>
 			<layout>default</layout>
 			<url>http://repo1.maven.org/maven2</url>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>   
-	    </repository>		
-	    <repository>
-			<id>nuxeo-jboss</id>
-			<name>Nuxeo Repo</name>
-			<layout>default</layout>
-			<url>http://svn.nuxeo.org/maven/repo</url>
 			<snapshots>
 				<enabled>false</enabled>
 			</snapshots>   
