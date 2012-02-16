@@ -13,6 +13,8 @@ import java.util.UUID;
 
 import javax.annotation.Generated;
 
+import org.nightlabs.jdo.ObjectID;
+
 
 /**
  * The JDO object id class for {@link org.nightlabs.jfire.cluster.ClusterNode}.
@@ -20,13 +22,13 @@ import javax.annotation.Generated;
  */
 @Generated("org.nightlabs.eclipse.sdk.jdo.ObjectIdGenerator")
 public class ClusterNodeID
-implements Serializable
+implements Serializable, ObjectID
 {
 	/**
 	 * The serial version uid of this class.
 	 */
 	@Generated("org.nightlabs.eclipse.sdk.jdo.ObjectIdGenerator")
-	private static final long serialVersionUID = -1282657378332827301L;
+	private static final long serialVersionUID = 20120216L;
 
 	/**
 	 * The values of all fields are URL encoded in UTF-8.
