@@ -11,7 +11,7 @@
 	<parent>
 		<groupId>org.nightlabs.jfire</groupId>
 		<artifactId>org.nightlabs.jfire.parent</artifactId>
-		<version>1.2.0-SNAPSHOT</version>
+		<version>1.3.0-SNAPSHOT</version>
 		<relativePath>../org.nightlabs.jfire.parent/pom.xml</relativePath>
 	</parent>
 
@@ -68,7 +68,7 @@
             </goals>
             <configuration>
               <instructions>
-                <Export-Package>org.nightlabs.jfire.classloader.remote;version="1.2.0-SNAPSHOT";-split-package:=first</Export-Package>
+                <Export-Package>org.nightlabs.jfire.classloader.remote;version="1.3.0-SNAPSHOT";-split-package:=first</Export-Package>
               </instructions>
             </configuration>
           </execution>
