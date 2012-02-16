@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>org.nightlabs</groupId>
 		<artifactId>org.nightlabs.parent</artifactId>
-		<version>1.2.0-SNAPSHOT</version>
+		<version>1.3.0-SNAPSHOT</version>
 	</parent>
 
 	<repositories>
@@ -391,6 +391,38 @@
 				<version>${jfire.version}</version>
 			</dependency>
 
+			<!-- ###### nightlabs ears ###### -->
+			<dependency>
+				<groupId>org.nightlabs</groupId>
+				<artifactId>org.nightlabs.xstream.ear</artifactId>
+				<type>ear</type>
+				<version>${nightlabs.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.nightlabs</groupId>
+				<artifactId>org.nightlabs.rhino.wrapper.ear</artifactId>
+				<type>ear</type>
+				<version>${nightlabs.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.nightlabs</groupId>
+				<artifactId>org.nightlabs.editor2d.ear</artifactId>
+				<type>ear</type>
+				<version>${nightlabs.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.nightlabs</groupId>
+				<artifactId>org.nightlabs.connection.ear</artifactId>
+				<type>ear</type>
+				<version>${nightlabs.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.nightlabs</groupId>
+				<artifactId>org.nightlabs.keyreader.ear</artifactId>
+				<type>ear</type>
+				<version>${nightlabs.version}</version>
+			</dependency>
+			
 			<!-- ###### jfire ears ###### -->
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
@@ -508,19 +540,7 @@
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
-				<artifactId>org.nightlabs.xstream.ear</artifactId>
-				<type>ear</type>
-				<version>${jfire.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.query.store.ear</artifactId>
-				<type>ear</type>
-				<version>${jfire.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.nightlabs.jfire</groupId>
-				<artifactId>org.nightlabs.rhino.wrapper.ear</artifactId>
 				<type>ear</type>
 				<version>${jfire.version}</version>
 			</dependency>
@@ -601,9 +621,23 @@
 				<type>ear</type>
 				<version>${jfire.version}</version>
 			</dependency>
-			<dependency>
+			<!--dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.voucher.ear</artifactId>
+				<type>ear</type>
+				<version>${jfire.version}</version>
+			</dependency-->
+			<!-- FIXME: setting name to JFireVoucherEAR because org.nightlabs.jfire.voucher.JFireVoucherEAR.MODULE_NAME is used around the system, 
+						i.e. org.nightlabs.jfire.voucher.scripting.ScriptingInitialiser is looking for scripts inside JFireVoucherEAR.ear -->				
+			<dependency>
+				<groupId>org.nightlabs.jfire</groupId>
+				<artifactId>JFireVoucherEAR</artifactId>
+				<type>ear</type>
+				<version>${jfire.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.nightlabs.jfire</groupId>
+				<artifactId>org.nightlabs.jfire.web.webshop.ear</artifactId>
 				<type>ear</type>
 				<version>${jfire.version}</version>
 			</dependency>

@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.nightlabs.jfire</groupId>
 	<artifactId>org.nightlabs.jfire.aggregator</artifactId>
-	<version>1.2.0-SNAPSHOT</version>
+	<version>1.3.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>${project.artifactId}</name>
 
@@ -34,7 +34,6 @@
 		<module>../JFireIntegrationJBoss</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.jboss -->
 		<module>../JFireJBossInterceptors</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.jboss.ejb3 -->
 		<module>../JFireLog4j</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.log4j -->
-		<module>../JFireNumericOrganisationID</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.numorgid -->
 		<module>../JFireBasePublicBean</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.organisation -->
 		<module>../JFireQueryStore</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.query.store -->
 		<module>../JFireServerDataDirectoryJBoss</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.server.data.dir.jboss -->
@@ -54,10 +53,10 @@
 		<module>../JFireQueryStoreEAR</module>
 		<module>../JFireTestSuiteEAR</module>
 		<!-- 
-		<module>../JFireTestSuiteJFireBaseEAR</module>
+		<module>../JFireTestSuiteJFireBaseEAR</module-->
 		<module>../NightLabsXStreamEAR</module>
-		-->
+		
 		<module>../org.nightlabs.jfire.min.assembly</module>
-		<module>../org.nightlabs.jfire.min.assembly.installer</module>
+		<!--module>../org.nightlabs.jfire.min.assembly.installer</module-->
 	</modules>
 </project>
