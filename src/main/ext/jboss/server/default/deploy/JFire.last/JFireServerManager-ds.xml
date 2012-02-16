@@ -9,8 +9,8 @@
 JBoss 3.2.x: end -->
 
 <!-- JBoss 4.x: begin -->
-		<!-- FIXME: version in path. we could remove the version with maven - but is this really needed? -->
-		<rar-name>JFire.last#org.nightlabs.jfire.base.ear.ear#org.nightlabs.jfire.servermanager-1.2.0-SNAPSHOT.rar</rar-name>
+		<!-- NOTE: jfire.version prop is taken from current build and inserted via maven resource filtering-->
+		<rar-name>JFire.last#org.nightlabs.jfire.base.ear.ear#org.nightlabs.jfire.servermanager-${jfire.version}.rar</rar-name>
 		<connection-definition>javax.resource.cci.ConnectionFactory</connection-definition>
 <!-- JBoss 4.x: end -->
 
