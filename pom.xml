@@ -129,6 +129,7 @@
 org.nightlabs.jfire.base.*;base=split;mandatory:="base";version="${project.version}",
 org.nightlabs.jfire.jdo.notification.*;base=split;mandatory:="base";version="${project.version}",
 org.nightlabs.jfire.*;version="${project.version}"</Export-Package>
+						<Import-Package>!javax.jdo.*,!org.apache.commons.lang.exception.*,!org.apache.commons.lang.time.*,*</Import-Package>
 					</instructions>
 				</configuration>
 			</plugin>
