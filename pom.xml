@@ -46,15 +46,6 @@
 				<enabled>true</enabled>
 			</releases>
 		</repository>
-	    <repository>
-			<id>repo1.maven.org-central</id>
-			<name>Maven central Repo</name>
-			<layout>default</layout>
-			<url>http://repo1.maven.org/maven2</url>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>   
-	    </repository>		
 	</repositories>
 
 	<scm>
@@ -97,6 +88,11 @@
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.base.dao</artifactId>
+				<version>${jfire.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.nightlabs.jfire</groupId>
+				<artifactId>org.nightlabs.jfire.dashboard</artifactId>
 				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
@@ -443,6 +439,12 @@
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.base.ear</artifactId>
+				<type>ear</type>
+				<version>${jfire.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.nightlabs.jfire</groupId>
+				<artifactId>org.nightlabs.jfire.dashboard.ear</artifactId>
 				<type>ear</type>
 				<version>${jfire.version}</version>
 			</dependency>
