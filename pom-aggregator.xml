@@ -27,6 +27,8 @@
 		<module>../JFireBaseClientLib</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.base.clientlib -->
 		<module>../JFireBaseDAO</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.base.dao -->
 		<module>../JFireBaseJ2EE</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.base.j2ee -->
+		<module>../JFireDashboard</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.base.dashboard -->
+		<module>../JFireDashboardEAR</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.base.dashboard.ear -->
 		<module>../org.nightlabs.jfire.base</module>
 		<module>../org.nightlabs.jfire.classloader.remote</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.classloader.remote -->
 		<module>../JFireRCLBackendBean</module> <!-- org.nightlabs.jfire:org.nightlabs.jfire.classloader.remote.backend -->
