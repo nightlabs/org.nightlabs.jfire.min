@@ -107,6 +107,11 @@
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
+				<artifactId>org.nightlabs.jfire.base.security.integration.ldap</artifactId>
+				<version>${jfire.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.chezfrancois</artifactId>
 				<version>${jfire.version}</version>
 			</dependency>
@@ -168,6 +173,11 @@
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.issue.bug</artifactId>
+				<version>${jfire.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.nightlabs.jfire</groupId>
+				<artifactId>org.nightlabs.jfire.issue.dashboard</artifactId>
 				<version>${jfire.version}</version>
 			</dependency>
 			<dependency>
@@ -362,6 +372,11 @@
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
+				<artifactId>org.nightlabs.jfire.trade.dashboard</artifactId>
+				<version>${jfire.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.serverupdate.base</artifactId>
 				<version>${jfire.version}</version>
 			</dependency>
@@ -486,6 +501,12 @@
 			</dependency>
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
+				<artifactId>org.nightlabs.jfire.ldap.ear</artifactId>
+				<type>ear</type>
+				<version>${jfire.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.prop.html.ear</artifactId>
 				<type>ear</type>
 				<version>${jfire.version}</version>
@@ -511,6 +532,12 @@
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.issue.bug.ear</artifactId>
+				<type>ear</type>
+				<version>${jfire.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.nightlabs.jfire</groupId>
+				<artifactId>org.nightlabs.jfire.issue.dashboard.ear</artifactId>
 				<type>ear</type>
 				<version>${jfire.version}</version>
 			</dependency>
@@ -636,6 +663,12 @@
 			<dependency>
 				<groupId>org.nightlabs.jfire</groupId>
 				<artifactId>org.nightlabs.jfire.trade.editor2d.ear</artifactId>
+				<type>ear</type>
+				<version>${jfire.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.nightlabs.jfire</groupId>
+				<artifactId>org.nightlabs.jfire.trade.dashboard.ear</artifactId>
 				<type>ear</type>
 				<version>${jfire.version}</version>
 			</dependency>
