@@ -27,8 +27,8 @@ public class DashboardLayoutConfigModuleInitialiser extends ConfigModuleInitiali
 
 	/**
 	 */
-	public DashboardLayoutConfigModuleInitialiser() {
-		super(IDGenerator.getOrganisationID(),
+	public DashboardLayoutConfigModuleInitialiser(String organisationID) {
+		super(organisationID,
 				DashboardLayoutConfigModule.class.getName(),
 				"DashboardGadgetFactoryWelcome", -1);
 	}
