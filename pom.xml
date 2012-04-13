@@ -3,7 +3,6 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>org.nightlabs.jfire</groupId>
 	<artifactId>org.nightlabs.jfire.testsuite</artifactId>
 	<packaging>bundle</packaging>
 	<name>${project.artifactId}</name>
@@ -39,6 +38,11 @@
 		<dependency>
 			<groupId>org.nightlabs</groupId>
 			<artifactId>org.nightlabs.util</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.nightlabs</groupId>
+			<artifactId>org.nightlabs.singleton</artifactId>
 			<scope>provided</scope>
 		</dependency>
 
