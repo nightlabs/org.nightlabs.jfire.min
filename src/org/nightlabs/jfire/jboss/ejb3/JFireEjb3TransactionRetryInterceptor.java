@@ -72,6 +72,11 @@ public class JFireEjb3TransactionRetryInterceptor implements Interceptor
 		int retryCount = 0;
 		Throwable originalException = null;
 		Boolean doRetry = isRetryTransactions();
+		
+		if (!doRetry) {
+			return invocation.invokeNext();
+		}
+		
 		Integer retryTimes = getRetryTimes();
 		long retrySleepTime = getSleepTime();
 
