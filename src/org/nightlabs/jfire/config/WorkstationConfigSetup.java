@@ -104,7 +104,6 @@ public class WorkstationConfigSetup extends ConfigSetup
 	 * @param get Whether to return all Workstation {@link Config}s.
 	 */
 	protected static Collection<Config> ensureAllWorkstationsHaveConfig(PersistenceManager pm, String organisationID, boolean get) {
-		boolean countEqual = false;
 		if (
 				// number of all Configs linked to users
 				NLJDOHelper.getObjectCount(
@@ -122,8 +121,6 @@ public class WorkstationConfigSetup extends ConfigSetup
 						false
 					)
 			) {
-			countEqual = true;
-			// count of Configs and Workstations are equal
 			if (!get)
 				// nothing has to be done when no result requested
 				return null;
@@ -138,8 +135,9 @@ public class WorkstationConfigSetup extends ConfigSetup
 			Workstation workstation = iter.next();
 			configs.add(Config.getConfig(pm, workstation.getOrganisationID(), workstation));
 		}
-		if (!countEqual)
-			JDOHelper.makeDirty(ConfigSetup.getConfigSetup(pm, organisationID, CONFIG_SETUP_TYPE_WORKSTATION), "configType");
+		// Commented as it led to configType beeing null in db afterwards
+//		if (!countEqual)
+//			JDOHelper.makeDirty(ConfigSetup.getConfigSetup(pm, organisationID, CONFIG_SETUP_TYPE_WORKSTATION), "configType");
 		return configs;
 	}
 

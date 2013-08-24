@@ -98,9 +98,6 @@ public class UserConfigSetup extends ConfigSetup
 	 * @param get Whether to return all User {@link Config}s.
 	 */
 	protected static Collection<Config> ensureAllUsersHaveConfig(PersistenceManager pm, String organisationID, boolean get) {
-		boolean countEqual = false;
-		// FIXME: It seems that this condition could not be true IF _Other_ User is present in the system. 
-		// Should is also be added to the right side of this condition together with _System_ User? Denis.
 		if (
 				// number of all Configs linked to users
 				NLJDOHelper.getObjectCount(
@@ -114,12 +111,11 @@ public class UserConfigSetup extends ConfigSetup
 						pm,
 						User.class,
 						"((userType == \""+User.USER_TYPE_USER+"\") || "+
-						"(userType == \""+User.USER_TYPE_ORGANISATION+"\")) && (userID != \""+User.USER_ID_SYSTEM+"\")",
+						"(userType == \""+User.USER_TYPE_ORGANISATION+"\")) && ((userID != \""+User.USER_ID_SYSTEM+"\") || (userID != \""+User.USER_ID_OTHER+"\"))",
 						"this.userID",
 						false
 					)
 			) {
-			countEqual = true;
 			// count of Configs and Users are equal
 			if (!get)
 				// nothing has to be done when no result requested
@@ -137,8 +133,9 @@ public class UserConfigSetup extends ConfigSetup
 			User user = iter.next();
 			configs.add(Config.getConfig(pm, user.getOrganisationID(), user));
 		}
-		if (!countEqual)
-			JDOHelper.makeDirty(ConfigSetup.getConfigSetup(pm, organisationID, CONFIG_SETUP_TYPE_USER), "configType");
+		// Commented as it led to configType beeing null in db afterwards
+//		if (!countEqual)
+//			JDOHelper.makeDirty(ConfigSetup.getConfigSetup(pm, organisationID, CONFIG_SETUP_TYPE_USER), "configType");
 		return configs;
 	}
 
