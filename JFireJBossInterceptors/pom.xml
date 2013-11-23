@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.nightlabs.jfire</groupId>
+	<artifactId>org.nightlabs.jfire.jboss.ejb3</artifactId>
+	<packaging>bundle</packaging>
+	<name>${project.artifactId}</name>
+
+	<parent>
+		<groupId>org.nightlabs.jfire</groupId>
+		<artifactId>org.nightlabs.jfire.parent</artifactId>
+		<version>1.3.3-SNAPSHOT</version>
+		<relativePath>../org.nightlabs.jfire.parent/pom.xml</relativePath>
+	</parent>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.nightlabs.jfire</groupId>
+			<artifactId>org.nightlabs.jfire.jboss</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>jboss</groupId>
+			<artifactId>jboss-ejb3</artifactId>
+			<version>4.2.3.GA</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>jboss</groupId>
+			<artifactId>jboss-annotations-ejb3</artifactId>
+			<version>4.2.3.GA</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>jboss</groupId>
+			<artifactId>jboss-system</artifactId>
+			<version>4.2.3.GA</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>jboss</groupId>
+			<artifactId>jboss-common</artifactId>
+			<version>4.2.3.GA</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>jboss.aop</groupId>
+			<artifactId>jboss-aop-jdk50</artifactId>
+			<version>1.5.6.GA</version>
+			<scope>provided</scope>
+		</dependency>
+		<!-- strange version - but needed for compilation (transitive) -->
+		<dependency>
+			<groupId>jboss.jbossas.core-libs</groupId>
+			<artifactId>jboss-aspect-library</artifactId>
+			<version>4.0.4.GA</version>
+		</dependency>
+		<dependency>
+			<groupId>jboss</groupId>
+			<artifactId>jboss-remoting</artifactId>
+			<version>4.2.2.GA</version>
+		</dependency>
+		<dependency>
+			<groupId>jboss</groupId>
+			<artifactId>jboss-remoting</artifactId>
+			<version>2.2.2.SP8</version>
+		</dependency>
+		<dependency>
+			<groupId>jboss</groupId>
+			<artifactId>jbosssx-client</artifactId>
+			<version>4.2.3.GA</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>servlet-api</artifactId>
+			<version>2.5</version>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<sourceDirectory>src</sourceDirectory>
+		<outputDirectory>bin</outputDirectory>
+		<resources>
+			<resource>
+				<directory>src</directory>
+				<excludes>
+					<exclude>**/*.java</exclude>
+				</excludes>
+			</resource>
+		</resources>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>maven-bundle-plugin</artifactId>
+				<configuration>
+					<instructions>
+					<!-- FIXME Needed special declaration because of split package org.jboss.remoting.transport.server and because packages not under project scope -->
+					<!-- FIXME 2 needed to declare package org.jboss.remoting.transport.servlet as this project contains it. Why do we declare an org.jboss-package?! Is there no cleaner way? Marco :-) -->
+						<Export-Package>
+org.nightlabs.jfire.asyncinvoke.dao;version="${project.version}";-split-package:=first,
+!${bundle.namespace}.internal.*,${bundle.namespace}.*;version="${project.version}",org.jboss.remoting.transport.servlet;-split-package:=first
+						</Export-Package>
+					</instructions>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>
