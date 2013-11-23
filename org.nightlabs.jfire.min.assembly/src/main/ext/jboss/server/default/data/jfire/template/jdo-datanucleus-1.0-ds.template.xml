@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<connection-factories>
+	<tx-connection-factory>
+		<jndi-name>${jdoPersistenceManagerFactoryJNDIName_relative}</jndi-name>
+
+		<rar-name>datanucleus-jca.rar</rar-name>
+		<connection-definition>javax.resource.cci.ConnectionFactory</connection-definition>
+		<xa-transaction/>
+		<config-property name="PersistenceUnitName" type="java.lang.String">${organisationID}</config-property>
+		<config-property name="PersistenceXmlFilename" type="java.lang.String">file:${deploymentDescriptorDirectory_relative}/persistence-${organisationID}.xml</config-property>
+
+		<track-connection-by-tx>true</track-connection-by-tx>
+		<max-pool-size>100</max-pool-size>
+		
+		<!--
+			Creating PMs from a PMF is not expensive, thus we remove most idle ones after a minute - hopefully that
+			saves a bit of memory and thus improves performance.
+		-->
+		<min-pool-size>2</min-pool-size>
+        <idle-timeout-minutes>1</idle-timeout-minutes>
+	</tx-connection-factory>
+</connection-factories>

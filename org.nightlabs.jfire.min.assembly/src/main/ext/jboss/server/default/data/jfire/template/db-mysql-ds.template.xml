@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<datasources>
+	<no-tx-datasource>
+		<jndi-name>${datasourceJNDIName_relative_noTx}</jndi-name>
+		<connection-url><![CDATA[${databaseURL}]]></connection-url>
+		<driver-class>${databaseDriverName_noTx}</driver-class>
+
+		<user-name>${databaseUserName}</user-name>
+		<password><![CDATA[${databasePassword}]]></password>
+
+		<connection-property name="autoReconnect">false</connection-property>
+		<connection-property name="auto-commit">false</connection-property>
+
+		<!-- BEGIN added by marco 2009-12-03 -->
+		<!-- should only be used on drivers after 3.22.1 with "ping" support -->
+		<valid-connection-checker-class-name>org.jboss.resource.adapter.jdbc.vendor.MySQLValidConnectionChecker</valid-connection-checker-class-name>
+		<!-- END added by marco 2009-12-03 -->
+
+		<metadata>
+			<type-mapping>${datasourceMetadataTypeMapping}</type-mapping>
+		</metadata>
+<!--
+		<prepared-statement-cache-size>0</prepared-statement-cache-size>
+-->
+		<max-pool-size>200</max-pool-size>
+		<!--
+		We had a lot of Communication Link Errors after a while of running JFire when running
+		the server on Windows and the database server being a separate machine.
+
+		While doing some research, we found out, that JBoss seems to *not* test the connections
+		in the pool and to *not* reconnect them. Setting the JDBC setting "autoReconnect" to
+		"true" (see above) would be a bad idea, because initialisation commands of JBoss/DataNucleus
+		would not be sent when the lower level reconnects silently. Additionally, we found out, that
+		there's the MySQL-setting "wait_timeout" in my.cnf/my.ini, section [mysqld], which tells
+		MySQL how long to keep idle connections.
+
+		In order to optimize MySQL, it is recommended to set this to 300 (seconds). See:
+		  * http://www.eliotk.net/12/21/mysql-wait_timeout-default-is-set-too-high/
+		  * http://www.mysqlperformanceblog.com/2007/07/08/mysql-net_write_timeout-vs-wait_timeout-and-protocol-notes/
+
+		In order to ensure, we don't keep dead connections lingering in our pool (died either because
+		of network problems or because of MySQL having closed them), we set 'min-pool-size = 0' and
+		'idle-timeout-minutes = 1' below. This means, *all* idle connections are closed by JBoss after
+		idling for 60 seconds, before MySQL would close them after 300 seconds (and hopefully clean up dead
+		connections [=> network errors], too).
+		-->
+		<min-pool-size>0</min-pool-size>
+		<idle-timeout-minutes>1</idle-timeout-minutes>
+	</no-tx-datasource>
+
+	<local-tx-datasource>
+		<jndi-name>${datasourceJNDIName_relative_localTx}</jndi-name>
+		<connection-url><![CDATA[${databaseURL}]]></connection-url>
+		<driver-class>${databaseDriverName_localTx}</driver-class>
+
+		<user-name>${databaseUserName}</user-name>
+		<password><![CDATA[${databasePassword}]]></password>
+
+		<connection-property name="autoReconnect">false</connection-property>
+		<connection-property name="auto-commit">false</connection-property>
+		
+		<!-- BEGIN added by marco 2009-12-03 -->
+		<!-- should only be used on drivers after 3.22.1 with "ping" support -->
+		<valid-connection-checker-class-name>org.jboss.resource.adapter.jdbc.vendor.MySQLValidConnectionChecker</valid-connection-checker-class-name>
+		<!-- END added by marco 2009-12-03 -->
+
+		<metadata>
+			<type-mapping>${datasourceMetadataTypeMapping}</type-mapping>
+		</metadata>
+<!--
+		<prepared-statement-cache-size>0</prepared-statement-cache-size>
+-->
+		<max-pool-size>200</max-pool-size>
+		<!-- See note above in no-tx-datasource. -->
+		<min-pool-size>0</min-pool-size>
+		<idle-timeout-minutes>1</idle-timeout-minutes>
+	</local-tx-datasource>
+
+	<xa-datasource>
+		<jndi-name>${datasourceJNDIName_relative_xa}</jndi-name>
+		<xa-datasource-class>${databaseDriverName_xa}</xa-datasource-class>
+		<xa-datasource-property name="URL"><![CDATA[${databaseURL}]]></xa-datasource-property>
+
+		<user-name>${databaseUserName}</user-name>
+		<password><![CDATA[${databasePassword}]]></password>
+
+		<track-connection-by-tx>true</track-connection-by-tx>
+		<new-connection-sql>set autocommit=1</new-connection-sql>
+		<no-tx-separate-pools>true</no-tx-separate-pools>
+
+		<exception-sorter-class-name>org.jboss.resource.adapter.jdbc.vendor.MySQLExceptionSorter</exception-sorter-class-name>
+		
+		<!-- BEGIN added by marco 2009-12-03 -->
+		<!-- should only be used on drivers after 3.22.1 with "ping" support -->
+		<valid-connection-checker-class-name>org.jboss.resource.adapter.jdbc.vendor.MySQLValidConnectionChecker</valid-connection-checker-class-name>
+		<!-- END added by marco 2009-12-03 -->
+		
+		<metadata>
+			<type-mapping>${datasourceMetadataTypeMapping}</type-mapping>
+		</metadata>
+<!--
+		<prepared-statement-cache-size>0</prepared-statement-cache-size>
+-->
+		<max-pool-size>200</max-pool-size>
+		<!-- See note above in no-tx-datasource. -->
+		<min-pool-size>0</min-pool-size>
+		<idle-timeout-minutes>1</idle-timeout-minutes>
+	</xa-datasource>
+</datasources>

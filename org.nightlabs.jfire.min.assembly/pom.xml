@@ -1,0 +1,355 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.nightlabs.jfire</groupId>
+		<artifactId>org.nightlabs.jfire.parent</artifactId>
+		<version>1.3.3-SNAPSHOT</version>
+		<relativePath>../org.nightlabs.jfire.parent/pom.xml</relativePath>
+	</parent>
+	
+	<artifactId>org.nightlabs.jfire.min.assembly</artifactId>
+	<packaging>pom</packaging>
+	<name>${project.artifactId}</name>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.jboss.jbossas</groupId>
+			<artifactId>jboss-as-dist</artifactId>
+			<version>4.2.3.GA</version>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>org.nightlabs.jfire</groupId>
+			<artifactId>org.nightlabs.jfire.server.data.dir.jboss</artifactId>
+			<type>sar</type>
+		</dependency>
+		<dependency>
+			<groupId>org.nightlabs</groupId>
+			<artifactId>org.nightlabs.unifiedejbjndi.jboss</artifactId>
+			<type>sar</type>
+		</dependency>
+		<dependency>
+			<groupId>org.nightlabs.jfire</groupId>
+			<artifactId>org.nightlabs.jfire.web.admin</artifactId>
+			<type>war</type>
+		</dependency>
+
+		<dependency>
+			<groupId>org.nightlabs.jfire</groupId>
+			<artifactId>org.nightlabs.jfire.base.ear</artifactId>
+			<type>ear</type>
+		</dependency>
+		<dependency>
+			<groupId>org.nightlabs.jfire</groupId>
+			<artifactId>org.nightlabs.jfire.dashboard.ear</artifactId>
+			<type>ear</type>
+		</dependency>
+		<dependency>
+			<groupId>org.nightlabs.jfire</groupId>
+			<artifactId>org.nightlabs.jfire.initialisejdo.ear</artifactId>
+			<type>ear</type>
+		</dependency>
+		<dependency>
+			<groupId>org.nightlabs.jfire</groupId>
+			<artifactId>org.nightlabs.jfire.jboss.ear</artifactId>
+			<type>ear</type>
+		</dependency>
+		<dependency>
+			<groupId>org.nightlabs</groupId>
+			<artifactId>org.nightlabs.xstream.ear</artifactId>
+			<type>ear</type>
+		</dependency>
+		<dependency>
+			<groupId>org.nightlabs.jfire</groupId>
+			<artifactId>org.nightlabs.jfire.query.store.ear</artifactId>
+			<type>ear</type>
+		</dependency>
+		<dependency>
+			<groupId>org.nightlabs.jfire</groupId>
+			<artifactId>org.nightlabs.jfire.testsuite.ear</artifactId>
+			<type>ear</type>
+		</dependency>
+
+		<dependency>
+			<groupId>org.datanucleus</groupId>
+			<artifactId>datanucleus-jca</artifactId>
+			<type>rar</type>
+		</dependency>
+
+		<!-- LIBRARIES -->
+		<dependency>
+			<groupId>org.nightlabs.jfire</groupId>
+			<artifactId>org.nightlabs.jfire.jboss.ejb3</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.nightlabs.jfire</groupId>
+			<artifactId>org.nightlabs.jfire.log4j</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.bcel</groupId>
+			<artifactId>bcel</artifactId>
+			<version>5.2</version>
+		</dependency>
+		<!-- C3PO 0.9.1-pre6 -->
+		<dependency>
+			<groupId>commons-beanutils</groupId>
+			<artifactId>commons-beanutils</artifactId>
+			<!-- orig 1.6 -->
+			<version>1.8.0</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-dbcp</groupId>
+			<artifactId>commons-dbcp</artifactId>
+			<!-- orig 1.2.1 -->
+			<version>1.2.2</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-dbutils</groupId>
+			<artifactId>commons-dbutils</artifactId>
+			<!-- orig 1.0 -->
+			<version>1.3</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-digester</groupId>
+			<artifactId>commons-digester</artifactId>
+			<!-- orig 1.5 - latest 2.1 -->
+			<version>1.8.1</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-fileupload</groupId>
+			<artifactId>commons-fileupload</artifactId>
+			<!-- orig 1.0 -->
+			<version>1.2.2</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-lang</groupId>
+			<artifactId>commons-lang</artifactId>
+			<!-- orig 2.2 -->
+			<version>2.6</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-pool</groupId>
+			<artifactId>commons-pool</artifactId>
+			<!-- orig 1.3 -->
+			<version>1.5.6</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-validator</groupId>
+			<artifactId>commons-validator</artifactId>
+			<!-- orig 1.0.2 -->
+			<version>1.3.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.derby</groupId>
+			<artifactId>derby</artifactId>
+			<!-- orig 10.5.3000000.802917 -->
+			<version>10.8.1.2</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.derby</groupId>
+			<artifactId>derbyclient</artifactId>
+			<!-- orig 10.5.3000000.802917 -->
+			<version>10.8.1.2</version>
+		</dependency>
+		<dependency>
+			<groupId>gnu-regexp</groupId>
+			<artifactId>gnu-regexp</artifactId>
+			<!-- orig 1.1.4 -->
+			<version>1.1.4</version>
+		</dependency>
+		<!-- retired: -->
+		<dependency>
+			<groupId>apache-oro</groupId>
+			<artifactId>jakarta-oro</artifactId>
+			<!-- orig unknown -->
+			<version>2.0.8</version>
+		</dependency>
+		<!-- jboss remoting?? patched?? -->
+		<!-- mckoidb?? not found. needed? -->
+		<!-- mkjdbc : mckoi driver -->
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<!-- orig 5.1.7 -->
+			<version>5.1.17</version>
+		</dependency>
+		<!-- only version found: -->
+		<dependency>
+			<groupId>proxool</groupId>
+			<artifactId>proxool</artifactId>
+			<!-- orig 0.9.0RC2 -->
+			<version>0.8.3</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<!-- orig slf4j.api_1.5.11.jar -->
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<!-- orig slf4j.log4j12_1.5.11.jar -->
+		</dependency>
+		<!-- struts 1.1?? needed?? -->
+		<!-- there are much later versions. is this an aggregator jar?? is xalan needed?? it exists in jboss/lib/endorsed -->
+		<dependency>
+			<groupId>xalan</groupId>
+			<artifactId>xalan</artifactId>
+			<!-- this is orig. -->
+			<version>2.1.0</version>
+		</dependency>
+		<!-- is this xercesImpl? there are much later versions. is this an aggregator jar?? is xerces needed?? it exists in jboss/lib/endorsed Marc. -->
+		<!-- I have no idea, but currently both are deployed and the xerces.jar does not exist
+		in the old server. Hence, I commented this out, temporarily (first trying to get it running, then optimizing). Marco :-)
+		<dependency>
+			<groupId>xerces</groupId>
+			<artifactId>xerces</artifactId>
+			<!- orig 1.2? ->
+			<version>1.2.3</version>
+		</dependency>
+		-->
+		<!-- xml-apis.jar??? WTF? we use at least java 6 -->
+	</dependencies>
+
+	<properties>
+		<assembly.directory>${project.build.directory}/assembly</assembly.directory>
+		<jboss.subdirectory>jboss-4.2.3.GA</jboss.subdirectory>
+		<assembly.jboss.directory>${assembly.directory}/${jboss.subdirectory}</assembly.jboss.directory>
+		<assembly.deploy.directory>${assembly.jboss.directory}/server/default/deploy</assembly.deploy.directory>
+		<assembly.lib.directory>${assembly.jboss.directory}/server/default/lib</assembly.lib.directory>
+		<assembly.jfire.deploy.directory>${assembly.deploy.directory}/JFire.last</assembly.jfire.deploy.directory>
+	</properties>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>unpack-jboss</id>
+						<phase>package</phase>
+						<goals>
+							<goal>unpack-dependencies</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${assembly.directory}</outputDirectory>
+							<includeGroupIds>org.jboss.jbossas</includeGroupIds>
+							<includeArtifactIds>jboss-as-dist</includeArtifactIds>
+							<excludes>${jboss.subdirectory}/server/all/**,${jboss.subdirectory}/server/minimal/**</excludes>
+						</configuration>
+					</execution>
+					<execution>
+						<id>copy-deploy</id>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${assembly.deploy.directory}</outputDirectory>
+							<!-- <includeGroupIds>org.nightlabs,org.nightlabs.jfire,org.datanucleus</includeGroupIds> -->
+							<includeTypes>sar,war,rar</includeTypes>
+							<stripVersion>true</stripVersion>
+						</configuration>
+					</execution>
+					<execution>
+						<id>copy-lib</id>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${assembly.lib.directory}</outputDirectory>
+							<includeTypes>jar</includeTypes>
+							<stripVersion>true</stripVersion>
+						</configuration>
+					</execution>
+					<execution>
+						<id>copy-jfire-deploy</id>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${assembly.jfire.deploy.directory}</outputDirectory>
+							<!-- <includeGroupIds>org.nightlabs,org.nightlabs.jfire</includeGroupIds> -->
+							<includeTypes>ear</includeTypes>
+							<stripVersion>true</stripVersion>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			
+			<plugin>
+				<artifactId>maven-resources-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy-resoures</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<resources>
+								<resource>
+									<directory>src/main/ext/jboss</directory>
+									<filtering>true</filtering>
+									<includes>
+										<include>server/default/deploy/JFire.last/JFireServerManager-ds.xml</include>
+									</includes>
+								</resource>
+								<resource>
+									<directory>src/main/ext/jboss</directory>
+									<filtering>false</filtering>
+									<excludes>
+										<exclude>server/default/deploy/JFire.last/JFireServerManager-ds.xml</exclude>
+									</excludes>
+								</resource>
+							</resources>
+							<outputDirectory>${assembly.jboss.directory}</outputDirectory>
+							<overwrite>true</overwrite>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy-ext</id>
+						<phase>package</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<target>
+								<chmod dir="${assembly.jboss.directory}/bin" perm="+x"
+									includes="**/*.sh" />
+								<delete dir="${assembly.lib.directory}" includes="jboss-aspect-library.jar"/>
+							</target>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<!-- <version>2.2.1</version> => parent -->
+				<configuration>
+					<descriptors>
+						<descriptor>src/main/assembly/bin.xml</descriptor>
+					</descriptors>
+				</configuration>
+				<executions>
+					<execution>
+						<id>make-assembly</id> <!-- this is used for inheritance merges -->
+						<phase>package</phase> <!-- bind to the packaging phase -->
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+		        </executions>
+			</plugin>
+		</plugins>
+	</build>
+</project>
