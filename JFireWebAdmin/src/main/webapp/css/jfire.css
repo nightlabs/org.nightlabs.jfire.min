@@ -1,0 +1,53 @@
+body,table,td,a,p {font-family:arial,sans-serif;}
+body {
+	padding: 20px;
+}
+/*
+input {
+  border: 1px solid #999999;
+}
+*/
+img {
+  border: none;
+}
+.wide {
+  width: 200px;
+}
+.extrawide {
+  width: 350px;
+}
+.name {
+  padding-right: 10px;
+}
+.value {
+  padding-right: 10px;
+}
+.annotation {
+  font-style: italic;
+  font-size: 10px;
+  color: #808080;
+}
+.description {
+  font-style: italic;
+  font-size: 11px;
+}
+
+/* OLD STYLE PAGES: */
+body.menu, body.status {
+	padding: 0px;
+	margin: 0px;
+}
+
+.errorblock {
+	border: 2px solid red;
+	padding: 5px;
+	margin-top: 5px;
+	margin-bottom: 16px;
+}
+
+.formtable td {
+	padding: 0px;
+}
+.formtable {
+	margin-bottom: 5px;
+}	
