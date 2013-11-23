@@ -1,0 +1,56 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+	<changeSet id="JFireBaseEAR|1.0.0|1.2.0" author="jfire">
+		<comment>DataNucleus is able to update the datastore itself.</comment>
+		
+		<!-- The following changes can be managed by DN automatically
+			New tables and fields:
+			
+		     jfirebase_authoritymeta
+		     jfirebase_clusternode
+		     jfirebase_columndescriptor
+		     jfirebase_columndescriptor_colfetchgroups
+		     jfirebase_columndescriptor_colfieldnames
+		     jfirebase_columnname
+		     jfirebase_columnname_names
+		     jfirebase_columntooltipdescription
+		     jfirebase_columntooltipdescription_descriptions
+		     jfirebase_languageconfig
+		     jfirebase_layout_abstracteditlayoutentry
+		     jfirebase_layout_configmoduleintialiser
+		     jfirebase_layout_editlayoutconfigmodule
+		     jfirebase_layout_stringbasededitlayoutentry
+		     jfirebase_pendinguser
+		     jfirebase_prop_personsearchconfigmodule
+		     jfirebase_prop_persontableviewerconfiguration_columndescriptors
+		     jfirebase_prop_propertysetfieldbasededitlayoutentry2
+		     jfirebase_prop_propertysetfieldbasededitlayoutentry_structfields
+		     jfirebase_prop_propertysetsearcheditlayoutconfigmodule
+		     jfirebase_prop_propertysetsearcheditlayoutconfigmodule_resul9602
+		     jfirebase_prop_propertysettableviewerconfiguration
+		     jfirebase_prop_propertysetviewerconfiguration
+		     jfirebase_prop_propertytableviewercolumndescriptor
+		     jfirebase_prop_propertytableviewercolumndescriptor_structfields
+		     jfirebase_prop_structfieldsearcheditlayoutentry
+		     jfirebase_usermanagementsystem
+		     jfirebase_usermanagementsystemdescription
+		     jfirebase_usermanagementsystemdescription_names
+		     jfirebase_usermanagementsystemname
+		     jfirebase_usermanagementsystemname_names
+		     jfirebase_usermanagementsystemtype
+		     jfirebase_usermanagementsystemtypedescription
+		     jfirebase_usermanagementsystemtypedescription_names
+		     jfirebase_usermanagementsystemtypename
+		     jfirebase_usermanagementsystemtypename_names
+		     
+    		 jfirebase_task.executing_cluster_node_id
+		-->		
+		
+    </changeSet>
+    
+</databaseChangeLog>
