@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="ASCII"?>
+<application xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:application="http://java.sun.com/xml/ns/javaee/application_5.xsd" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/application_5.xsd" version="5">
+  <display-name>JFireTestSuiteEAR</display-name>
+  <module>
+    <ejb>JFireTestSuite.jar</ejb>
+  </module>
+  <module>
+    <java>lib/junit-4.8.2.jar</java>
+  </module>
+  <module>
+    <java>lib/hamcrest-all-1.2.jar</java>
+  </module>
+  <module>
+    <java>lib/commons-lang.jar</java>
+  </module>
+</application>
