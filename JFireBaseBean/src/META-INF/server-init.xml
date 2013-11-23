@@ -1,0 +1,10 @@
+<!DOCTYPE server-initialisation
+		PUBLIC "-//NightLabs GmbH//DTD Server Initialisation 1.0//EN"
+		"http://www.nightlabs.de/dtd/server-init_1_0.dtd">
+<server-initialisation>
+	<early-init class="org.nightlabs.jfire.language.JFireLocaleInitialiser" priority="10" />
+	<early-init class="org.nightlabs.jfire.config.ConfigFactoryInitialiser" priority="10" />
+	<early-init class="org.nightlabs.jfire.security.LoginDataInitialiser" priority="8" />
+	<early-init class="org.nightlabs.jfire.log4j.RegisterJFirePatternConverterDelegatesServerInitialiser" priority="7" />
+	<late-init class="org.nightlabs.jfire.organisation.CreateOrganisationAfterRebootServerInitialiser" priority="50" />
+</server-initialisation>

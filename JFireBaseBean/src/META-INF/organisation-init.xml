@@ -1,0 +1,36 @@
+<organisation-initialisation
+		xmlns="urn:jfire.org:organisation-init_1_1"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xsi:schemaLocation="urn:jfire.org:organisation-init_1_1 http://dev.nightlabs.org/xml/organisation-init_1_1.xsd ">
+
+	<init invocation="org.nightlabs.jfire.config.ConfigManagerRemote.initialise"/>
+	<init invocation="org.nightlabs.jfire.organisation.OrganisationManagerRemote.registerInRootOrganisation" priority="999"/>
+	<init invocation="org.nightlabs.jfire.timer.JFireTimerRemote.startTimer" priority="998"/>
+	<init invocation="org.nightlabs.jfire.jdo.notification.persistent.PersistentNotificationEJBRemote.initialise"/>
+	
+	<!--  Depends on ConfigManagerRemote having defined the UserConfigSetup for the current organisation. -->
+	<init invocation="org.nightlabs.jfire.prop.PropertyManagerRemote.initialise" priority="501"/>
+	
+	<init invocation="org.nightlabs.jfire.editlock.EditLockManagerRemote.initialise"/>
+	<init invocation="org.nightlabs.jfire.security.JFireSecurityManagerRemote.initialise"/>
+	
+	<init invocation="org.nightlabs.jfire.security.integration.UserManagementSystemManagerRemote.initialise"/>
+
+	<!--
+		This init is empty and does nothing. It only serves the purpose of easily declaring dependencies. In
+		other modules that need to be dependent on the inits in JFireBaseEAR, you can simply declare the
+		following single 'depends':
+
+		<depends invocation="org.nightlabs.jfire.base"/>
+	-->
+	<init invocation="org.nightlabs.jfire.base.InitRemote.initialise">
+		<depends invocation="org.nightlabs.jfire.config"/>
+		<depends invocation="org.nightlabs.jfire.editlock"/>
+		<depends invocation="org.nightlabs.jfire.jdo"/>
+		<depends invocation="org.nightlabs.jfire.organisation"/>
+		<depends invocation="org.nightlabs.jfire.prop.PropertyManagerRemote"/>
+		<depends invocation="org.nightlabs.jfire.security"/>
+		<depends invocation="org.nightlabs.jfire.timer"/>
+	</init>
+
+</organisation-initialisation>

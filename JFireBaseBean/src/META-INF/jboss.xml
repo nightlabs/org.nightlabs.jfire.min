@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE jboss PUBLIC "-//JBoss//DTD JBOSS 4.2//EN" "http://www.jboss.org/j2ee/dtd/jboss_4_2.dtd">
+<jboss>
+	<security-domain>java:/jaas/jfire</security-domain>
+
+	<!--
+		The following invoker-proxy-binding configures the DeadLetterQueue (DLQ), i.e. the
+		queue that receives all those messages that could not be processed. It configures
+		that 1st, it is another queue (not the default JNDI address), and that 2nd it has
+		another configuration (e.g. the number of retries before moving a message to the DLQ).
+	-->
+	<invoker-proxy-bindings>
+		<invoker-proxy-binding>
+			<name>message-driven-bean</name>
+			<invoker-mbean>default</invoker-mbean>
+			<proxy-factory>org.jboss.ejb.plugins.jms.JMSContainerInvoker</proxy-factory>
+			<proxy-factory-config>
+				<JMSProviderAdapterJNDI>DefaultJMSProvider</JMSProviderAdapterJNDI>
+				<ServerSessionPoolFactoryJNDI>StdJMSPool</ServerSessionPoolFactoryJNDI>
+				<MinimumSize>1</MinimumSize>
+				<MaximumSize>15</MaximumSize>
+				<KeepAliveMillis>30000</KeepAliveMillis>
+				<MaxMessages>1</MaxMessages>
+				<MDBConfig>
+					<ReconnectIntervalSec>10</ReconnectIntervalSec>
+					<DLQConfig>
+						<DestinationQueue>queue/jfire/JFireBaseBean/AsyncInvokerUndeliverableCallbackQueue</DestinationQueue>
+						<MaxTimesRedelivered>11</MaxTimesRedelivered>
+						<TimeToLive>0</TimeToLive>
+						<!--
+							<DLQUser>john</DLQUser> <DLQPassword>needle</DLQPassword>
+						-->
+					</DLQConfig>
+				</MDBConfig>
+			</proxy-factory-config>
+		</invoker-proxy-binding>
+	</invoker-proxy-bindings>
+</jboss>
