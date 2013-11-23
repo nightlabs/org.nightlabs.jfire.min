@@ -1,0 +1,22 @@
+Manifest-Version: 1.0
+EAR-Module-ID: JFireBaseEAR
+EAR-Schema-Version: 1.2.0
+Comment-1: - please leave this here and keep spaces in empty lines!!! Otherwise this is not a correctly formatted manifest. -
+  
+  Update note 1.1.2:
+  Added field displayFieldColumnCount to StructBlock. No UpdateProcedure required.
+  
+  Update note 1.1.1:
+  Restructured the PropertySet-search-configuration. No changes made to classes existing in 1.0 branch!
+  Renamed classes: 
+    PropertySetFieldBasedEditLayoutEntry2 -> PropertySetEditLayoutEntry
+    PersonTableViewerConfiguration -> PropertySetTableViewerConfiguration
+  Structurally changed classes:
+    PropertySetEditLayoutConfigModule does not use PropertySetFieldBasedEditLayoutEntry2 any more as it was renamed
+  New classes:
+    PropertySetTableViewerColumnDescriptor
+  Deleted classes:
+    AbstractEditLayoutUseCase, EditLayoutUseCaseDescripton, EditLayoutUseCaseName
+    
+Comment-2: Update note 1.2.0:
+  Raised version for release   
