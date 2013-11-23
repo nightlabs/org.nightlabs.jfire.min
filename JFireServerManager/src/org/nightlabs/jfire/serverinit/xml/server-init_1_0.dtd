@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+Copyright (c) 2004-2006 NightLabs GmbH
+Rehlingstr. 6d
+79100 Freiburg, Germany
+All rights reserved.
+
+This is the DTD defining how to tell JFire (http://jfire.org) 
+which ServerInitialisers to call upon a server startup.
+
+   Use is subject to license terms.
+-->
+
+<!NOTATION ServerInitialisation.1_1 PUBLIC
+          "-//NightLabs GmbH//DTD Server Initialisation 1.0//EN">
+<!--
+This is the XML DTD for the initialisation of a JFire server
+upon startup.
+
+All server initialisation metadata descriptors must include a
+DOCTYPE of the following form:
+
+	<!DOCTYPE server-initialisation
+		PUBLIC "-//NightLabs GmbH//DTD Server Initialisation 1.0//EN"
+		"http://www.nightlabs.de/dtd/server-init_1_0.dtd">
+
+Every file must be named "server-init.xml" and it must be located
+in the META-INF directory of the JAR.
+
+Here is an example:
+	- - - example - - -
+	<!DOCTYPE server-initialisation
+		PUBLIC "-//NightLabs GmbH//DTD Server Initialisation 1.0//EN"
+		"http://www.nightlabs.de/dtd/server-init_1_0.dtd">
+	<server-initialisation>
+		<early-init class="org.nightlabs.jfire.chezfrancois.ChezFrancoisServerInitialiser" priority="200">
+			<depends
+					module="Dependency.ear"
+					archive="Dependency.jar"
+					class="org.nightlabs.jfire.dependency.DependencyServerInitialiser" />
+
+			<depends
+					module="AnotherModule.ear"
+					resolution="required" />
+		</early-init>
+
+		<late-init class="org.nightlabs.jfire.AnotherServerInitialiser" />
+	</server-initialisation>
+	- - - /example - - -
+-->
+
+
+
+<!--
+	The server-initialisation element is the root element.
+	It contains the following elements:
+		- init (one or more)
+-->
+<!ELEMENT server-initialisation (early-init*,late-init*)>
+
+<!--
+	The "early-init" and "late-init" elements define a class that must extend IServerInitialiser.
+	The given Initialiser is instantiated and its method initialise() called, after the execution
+	order has been determined by resolving dependencies between Initialiers.
+	
+	All "early-init"s are executed *before* all declared organisation inits whereas all "late-init"s
+	are executed *after* all declared organisation inits.
+
+	Both element have the following attributes:
+		- class (necessary)
+		- priority (optional, defaults to "500")
+	And it contains the following child nodes:
+		- depends (zero or more)
+
+	The attributes have the following meaning:
+		- class:
+			The implementor of IServerInitialiser that is supposed to do the initialisation.
+		- priority:
+			A number from 0 to 999 where 0 is the highest priority. If you omit
+			this attribute, it defaults to 500. You should not assign values below
+			100 and above 899, if you don't know what you're doing..
+-->
+<!ELEMENT early-init (depends*)>
+<!ATTLIST early-init class CDATA #REQUIRED>
+<!ATTLIST early-init priority CDATA #IMPLIED>
+
+<!ELEMENT late-init (depends*)>
+<!ATTLIST late-init class CDATA #REQUIRED>
+<!ATTLIST late-init priority CDATA #IMPLIED>
+
+<!--
+	The "depends" element defines another "init" declaration which should
+	have been done before. If a declared *required* dependency does not exist,
+	the initialisation will be aborted with an error. On the contrary, a missing
+	*optional* dependency won't cause any harm to the initialisation.
+	
+	When defining dependencies, you have to be aware, that inits of a type (early-init
+	or late-init) can only have dependencies of the *same* type.
+	I.e. dependencies from late-inits on early-inits or vice versa are not possible
+
+	If there are multiple "depends" declarations, this initialisation will be performed
+	after all dependent ones have been called. If there is a circular dependency, a
+	warning will be logged and the inits will be performed in arbitrary order.
+
+	The "depends" element has the following attributes:
+		- module (necessary)
+		- archive (optional but necessary when "class" is given)
+		- class (optional)
+		- type (optional)
+		- resolution (optional)
+
+	These attributes have the following meaning:
+		- module:
+			Defines the name of the J2EE enterprise archive. Example: "JFireBase.ear"
+		- archive:
+			Defines another archive in the form "ArchiveName.jar" where the required init is
+			defined in.
+		- class:
+			The implementor of IServerInitialiser that is supposed to do the initialisation.
+		- resolution:
+			States if the dependency is required or optional.
+			
+	If at least one of archive or method is empty or missing, all declared
+	inits which match the declared attributes, are understood as dependencies. In
+	other words: If you declare only module="JFireTrade.ear" as dependency and omit
+	archive and class, then all inits declared by the module JFireTrade.ear
+	must first be executed, before your init will be launched.
+-->
+<!ELEMENT depends EMPTY>
+<!ATTLIST depends module CDATA #REQUIRED>
+<!ATTLIST depends archive CDATA #IMPLIED>
+<!ATTLIST depends class CDATA #IMPLIED>
+<!ATTLIST depends resolution (optional|required) #IMPLIED>

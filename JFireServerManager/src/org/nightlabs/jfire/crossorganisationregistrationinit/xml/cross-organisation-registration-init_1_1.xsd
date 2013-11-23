@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema
+		targetNamespace="urn:jfire.org:cross-organisation-registration-init_1_1"
+		elementFormDefault="qualified"		
+		xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+		xmlns:init="urn:jfire.org:cross-organisation-registration-init_1_1">
+
+    <xsd:element name="cross-organisation-registration-initialisation" type="init:CrossOrganisationRegistrationInitialisation"></xsd:element>
+
+    <xsd:complexType name="CrossOrganisationRegistrationInitialisation">
+		<xsd:sequence>
+			<xsd:element name="init" type="init:Init" maxOccurs="unbounded"
+				minOccurs="1">
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:complexType name="Init">
+		<xsd:sequence>
+			<xsd:element name="depends" type="init:Depends" maxOccurs="unbounded"
+				minOccurs="0">
+			</xsd:element>
+		</xsd:sequence>
+		<xsd:attribute name="priority" type="init:Priority" default="500"
+			use="optional">
+		</xsd:attribute>
+		<xsd:attribute name="invocation" type="init:Invocation" use="required"></xsd:attribute>
+	</xsd:complexType>
+	
+	<xsd:complexType name="Depends">
+		<xsd:attribute name="resolution" type="init:Resolution" use="optional"></xsd:attribute>
+		<xsd:attribute name="invocation" type="init:Invocation" use="required"></xsd:attribute>
+	</xsd:complexType>
+
+	<xsd:simpleType name="Resolution">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="optional"></xsd:enumeration>
+			<xsd:enumeration value="required"></xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="Priority">
+		<xsd:restriction base="xsd:int">
+			<xsd:maxInclusive value="999"></xsd:maxInclusive>
+			<xsd:minInclusive value="0"></xsd:minInclusive>
+		</xsd:restriction>
+	</xsd:simpleType>
+
+
+	<xsd:simpleType name="Invocation">
+		<xsd:restriction base="xsd:string">
+			<xsd:pattern value="[^\d\.]+[^\.]*(\.[^\.\d]+[^\.]*)*"></xsd:pattern>
+		</xsd:restriction>
+	</xsd:simpleType>
+</xsd:schema>

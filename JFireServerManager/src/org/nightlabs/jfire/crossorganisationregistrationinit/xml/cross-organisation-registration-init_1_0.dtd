@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+Copyright (c) 2004-2006 NightLabs GmbH
+Rehlingstr. 6d
+79100 Freiburg, Germany
+All rights reserved.
+
+This is the DTD defining which bean methods should be called
+for initialisation of a new organisation or for each organisation
+when the JFire (http://jfire.org) server is started.
+
+   Use is subject to license terms.
+-->
+
+<!NOTATION CrossOrganisationRegistrationInitialisation.1_0 PUBLIC
+          "-//NightLabs GmbH//DTD Cross Organisation Registration Initialisation 1.0//EN">
+<!--
+This is the XML DTD for the initialisation of organisations done by
+JFire whenever two organisations decide to start a cooperation. All
+organisation initialisation metadata descriptors must include a
+DOCTYPE of the following form:
+
+	<!DOCTYPE cross-organisation-registration-initialisation
+		PUBLIC "-//NightLabs GmbH//DTD Organisation Initialisation 1.0//EN"
+		"http://www.nightlabs.de/dtd/cross-organisation-registration-init_1_0.dtd">
+
+Every file must be named "cross-organisation-registration-init.xml" and it must be located
+in the META-INF directory of the JAR.
+
+Here is an example:
+	- - - example - - -
+	<!DOCTYPE cross-organisation-registration-initialisation
+		PUBLIC "-//NightLabs GmbH//DTD Organisation Initialisation 1.0//EN"
+		"http://www.nightlabs.de/dtd/cross-organisation-registration-init_1_0.dtd">
+	<cross-organisation-registration-initialisation>
+		<init bean="jfire/ejb/JFireSimpleTrade/SimpleTradeManager" method="dosomething" priority="200">
+			<depends
+					module="JFireTrade.ear"
+					archive="JFireTrade.jar"
+					bean="jfire/ejb/JFireTrade/AccountingManager"
+					method="dosthbefore" />
+
+			<depends
+					module="AnotherModule.ear"
+					resolution="optional"	/>
+		</init>
+
+		<init bean="jfire/ejb/JFireSimpleTrade/SimpleTradeUser" method="dosomething"/>
+	</cross-organisation-registration-initialisation>
+	- - - /example - - -
+-->
+
+
+
+<!--
+	The cross-organisation-registration-initialisation element is the root element.
+	It contains the following elements:
+		- init (one or more)
+-->
+<!ELEMENT cross-organisation-registration-initialisation (init+)>
+
+<!--
+	The "init" element defines one call of one method of a given bean. The bean
+	will be instantiated and the method called. If there are multiple calls on
+	the same bean configured, the bean will be created multiple times, because it
+	is anyway unlikely that an initialisation makes multiple calls on the same
+	bean necessary.
+
+	The "init" element has the following attributes:
+		- bean (necessary)
+		- method (necessary)
+		- priority (optional, defaults to "500")
+	And it contains the following child nodes:
+		- depends (zero or more)
+
+	The attributes have the following meaning:
+		- bean:
+				The JNDI name of the bean which will be used to obtain the home
+				interface. The bean itself will be obtained by calling the create
+				method of this home.
+		- method:
+				The name of the method to call. This method must not have any
+				parameters.
+		- priority:
+				A number from 0 to 999 where 0 is the highest priority. If you omit
+				this attribute, it defaults to 500. You should not assign values below
+				100 and above 899, if you don't know what you're doing.
+-->
+<!ELEMENT init (depends*)>
+<!ATTLIST init bean CDATA #REQUIRED>
+<!ATTLIST init method CDATA #REQUIRED>
+<!ATTLIST init priority CDATA #IMPLIED>
+
+<!--
+	The "depends" element defines another "init" declaration which should
+	have been done before. If a declared *required* dependency does not exist,
+	the initialisation will be aborted with an error. On the contrary, a missing
+	*optional* dependency won't cause any harm to the initialisation.
+
+	If there are multiple "depends" declarations, the method will be called
+	after all have been called. If there is a circular dependency, the
+	initialisation will be aborted..
+
+	The "depends" element has the following attributes:
+		- module (necessary)
+		- archive (optional)
+		- bean (optional)
+		- method (optional)
+		- resolution (optional)
+
+	These attributes have the following meaning:
+		- module:
+				Defines the name of the J2EE enterprise archive. Example:
+				"JFireBase.ear"
+		- archive:
+				Defines another archive in the form "ArchiveName.jar" where the
+				other init is defined in.
+		- bean:
+				Same as the one in the other init declaration.
+		- method:
+				Same as the one in the other init declaration.
+		- resolution:
+				States if the dependency is required or optional.
+
+	If at least one of archive, bean or method is empty or missing, all declared
+	inits which match the declared attributes, are understood as dependencies. In
+	other words: If you declare only module="JFireTrade.ear" as dependency and omit
+	archive, bean and method, then all inits declared by the module JFireTrade.ear
+	must first be executed, before your init will be launched.
+-->
+<!ELEMENT depends EMPTY>
+<!ATTLIST depends module CDATA #REQUIRED>
+<!ATTLIST depends archive CDATA #IMPLIED>
+<!ATTLIST depends bean CDATA #IMPLIED>
+<!ATTLIST depends method CDATA #IMPLIED>
+<!ATTLIST depends resolution (optional|required) #IMPLIED>

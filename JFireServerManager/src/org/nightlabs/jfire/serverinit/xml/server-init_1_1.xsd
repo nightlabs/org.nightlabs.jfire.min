@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema
+		targetNamespace="urn:jfire.org:server-init_1_1"
+		elementFormDefault="qualified"
+		xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+		xmlns:init="urn:jfire.org:server-init_1_1">
+
+    <xsd:element name="server-initialisation"
+    	type="init:ServerInitialisation">
+    </xsd:element>
+
+    <xsd:complexType name="ServerInitialisation">
+    	<xsd:sequence>
+    		<xsd:element name="earlyInit" type="init:Init" maxOccurs="unbounded" minOccurs="0"></xsd:element>
+    		<xsd:element name="lateInit" type="init:Init"
+    			maxOccurs="unbounded" minOccurs="0">
+    		</xsd:element>
+    	</xsd:sequence>
+    </xsd:complexType>
+    
+    <xsd:complexType name="Depends">
+    	<xsd:attribute name="resolution" type="init:Resolution"
+    		use="optional">
+    	</xsd:attribute>
+    	<xsd:attribute name="class" type="init:Class" use="optional">
+    		<xsd:annotation>
+    			<xsd:documentation>Fully qualified class (e.g. "a.b.c.d.Init1") or a package that should match (e.g. "a.b.c" to match "a.b.c.d.Init1" as well as "a.b.c.x.Init4"). If this specifies a part, it must be complete from the left and omit path elements on the right.</xsd:documentation>
+    		</xsd:annotation>
+    	</xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:complexType name="Init">
+    	<xsd:sequence>
+    		<xsd:element name="depends" type="init:Depends"></xsd:element>
+    	</xsd:sequence>
+    	<xsd:attribute name="priority" type="init:Priority" use="optional"></xsd:attribute>
+    	<xsd:attribute name="class" type="init:Class" use="required"></xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:simpleType name="Priority">
+    	<xsd:restriction base="xsd:int">
+    		<xsd:maxInclusive value="999"></xsd:maxInclusive>
+    		<xsd:minInclusive value="0"></xsd:minInclusive>
+    	</xsd:restriction>
+    </xsd:simpleType>
+
+
+    <xsd:simpleType name="Class">
+    	<xsd:restriction base="xsd:string"></xsd:restriction>
+    </xsd:simpleType>
+    
+    <xsd:simpleType name="Resolution">
+    	<xsd:restriction base="xsd:string">
+    		<xsd:enumeration value="optional"></xsd:enumeration>
+    		<xsd:enumeration value="required"></xsd:enumeration>
+    	</xsd:restriction>
+    </xsd:simpleType>
+</xsd:schema>

@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema
+	targetNamespace="urn:jfire.org:jfire-security_1_0"
+	elementFormDefault="qualified"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:security="urn:jfire.org:jfire-security_1_0"
+>
+
+    <xsd:complexType name="JFireSecurity">
+        <xsd:choice minOccurs="0" maxOccurs="unbounded">
+    		<xsd:element name="role" type="security:Role"></xsd:element>
+    		<xsd:element name="role-group" type="security:RoleGroup"></xsd:element>
+    		<xsd:element name="authority-type" type="security:AuthorityType"></xsd:element>
+    	</xsd:choice>
+    </xsd:complexType>
+
+    <xsd:complexType name="Role">
+        <xsd:choice minOccurs="0" maxOccurs="unbounded">
+    		<xsd:element name="name" type="security:I18nText"></xsd:element>
+        	<xsd:element name="description" type="security:I18nText"></xsd:element>
+    	</xsd:choice>
+    	<xsd:attribute name="id" type="security:SecurityIdentifier" use="required"></xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:simpleType name="SecurityIdentifier">
+    	<xsd:restriction base="xsd:string">
+    		<xsd:pattern value="[A-Za-z0-9_.#]+"></xsd:pattern>
+    	</xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:complexType name="RoleGroup">
+        <xsd:choice minOccurs="0" maxOccurs="unbounded">
+        	<xsd:element name="name" type="security:I18nText"></xsd:element>
+        	<xsd:element name="description" type="security:I18nText"></xsd:element>
+        	<xsd:element name="role" type="security:Role"></xsd:element>
+        	<xsd:element name="include-role-group" type="security:IncludeRoleGroup"></xsd:element>
+        </xsd:choice>
+        <xsd:attribute name="id" type="security:SecurityIdentifier" use="required"></xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:complexType name="AuthorityType">
+        <xsd:choice minOccurs="0" maxOccurs="unbounded">
+        	<xsd:element name="name" type="security:I18nText"></xsd:element>
+        	<xsd:element name="description" type="security:I18nText">
+        	</xsd:element>
+        	<xsd:element name="role-group" type="security:RoleGroup"></xsd:element>
+        </xsd:choice>
+    	<xsd:attribute name="id" type="security:SecurityIdentifier" use="required"></xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:element name="jfire-security" type="security:JFireSecurity">
+    	<xsd:annotation>
+    		<xsd:documentation>
+    			The jfire-security element is the root element.
+
+    			It contains the following elements:
+    				- role (zero or more)
+    				- role-group (zero or more)
+    				- authority-type (zero or more)
+    		</xsd:documentation>
+    	</xsd:annotation></xsd:element>
+
+    <xsd:complexType name="I18nText" mixed="true">
+    	<xsd:attribute name="language">
+    		<xsd:simpleType>
+    			<xsd:restriction base="xsd:string">
+    				<xsd:pattern value="[a-z]{2,2}"></xsd:pattern>
+    			</xsd:restriction>
+    		</xsd:simpleType>
+    	</xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:complexType name="IncludeRoleGroup">
+    	<xsd:attribute name="id" type="security:SecurityIdentifier"></xsd:attribute>
+    </xsd:complexType>
+</xsd:schema>
