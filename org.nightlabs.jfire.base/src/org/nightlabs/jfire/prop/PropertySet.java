@@ -1075,9 +1075,30 @@ public class PropertySet implements Serializable, StoreCallback, AttachCallback,
 	 * @return The newly created clone.
 	 */
 	public PropertySet clonePropertySet() {
+		return clonePropertySet(null);
+	}
+	
+	/**
+	 * Creates a clone of this {@link PropertySet} and assigns it a clone of
+	 * each {@link DataField} within this {@link PropertySet}. Also keeps track
+	 * of {@link DataField} references.
+	 * 
+	 * @param referenceMap
+	 *            Empty map to keep track of the {@link DataField} references
+	 *            which would get lost during a {@see
+	 *            PropertySet#clonePropertySet()}. The key is the original
+	 *            {@link DataField}, the value is the new created
+	 *            {@link DataField}
+	 * 
+	 * @return The newly created clone.
+	 */
+	public PropertySet clonePropertySet(Map<DataField, DataField> referenceMap) {
 		PropertySet newProperty = createPropertySetClone();
 		for (DataField dataField : dataFields) {
 			DataField newField = dataField.cloneDataField(newProperty, dataField.getDataBlockID());
+			if (referenceMap != null) {
+				referenceMap.put(dataField, newField);
+			}
 			newProperty.dataFields.add(newField);
 		}
 		return newProperty;
