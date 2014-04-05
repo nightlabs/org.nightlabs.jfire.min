@@ -1117,7 +1117,7 @@ public class PropertySet implements Serializable, StoreCallback, AttachCallback,
 		return new PropertySet(
 				IDGenerator.getOrganisationID(), IDGenerator.nextID(PropertySet.class),
 				getStructOrganisationID(),
-				getStructLinkClass(), getStructLocalScope(), getStructLocalScope()
+				getStructLinkClass(), getStructScope(), getStructLocalScope()
 		);
 	}
 
