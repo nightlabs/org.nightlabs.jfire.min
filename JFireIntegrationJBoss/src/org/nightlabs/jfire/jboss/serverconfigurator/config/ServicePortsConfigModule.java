@@ -172,7 +172,7 @@ public class ServicePortsConfigModule extends ConfigModule
 			serviceRemotingConnectorPort = 4446;
 
 		if(defaultServiceHost == null)
-			defaultServiceHost = "127.0.0.1";
+			defaultServiceHost = "0.0.0.0";
 		// see class-comment
 		//	defaultServiceHost = "${jboss.bind.address}";
 
